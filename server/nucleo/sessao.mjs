@@ -1669,40 +1669,73 @@ export class Sessao {
 }
 
 /*
- * ---- Um relógio para todos ----
+ * ---- Um relógio para todos — em FATIAS ----
  *
  * Cada sessão tinha o seu `setInterval` de 250 ms. No Windows o timer tem
  * granulação de ~15 ms e o intervalo escorregava: os quadros saíam a cada
  * ~262 ms (medido, tools/carga.mjs), e com mais jogadores cada um escorregava
- * de um jeito. Agora um relógio só roda todas as sessões e marca o PRÓXIMO
- * quadro pela hora certa (`proximo += PASSO`), não "250 ms depois de agora":
- * o atraso de um quadro é descontado do seguinte, e a média fica em 250 ms.
+ * de um jeito. Um relógio só roda todas as sessões e marca o PRÓXIMO quadro
+ * pela hora certa (`proximo += PASSO`), não "250 ms depois de agora": o
+ * atraso de um quadro é descontado do seguinte, e a média fica em 250 ms.
+ *
+ * Isso resolveu o RITMO — mas com muita gente, "todo mundo de uma vez" ainda
+ * é um laço só, síncrono: 200 jogadores caçando levavam ~167 ms de cada
+ * 250 ms rodando (medido, docs/auditoria-performance.md), e QUALQUER
+ * mensagem que chegasse nesse meio-tempo — um clique, um `ping` — esperava
+ * atrás do laço inteiro. Daí as `FATIAS`: em vez de tocar todo mundo a cada
+ * 250 ms, cada sessão entra numa fatia FIXA (sorteada uma vez, na conexão) e
+ * só ela é tocada a cada passo de 50 ms — um quinto da gente, cinco vezes
+ * mais rápido. Em 250 ms (5 passos de 50 ms) todo mundo foi tocado UMA vez,
+ * exatamente como antes; o que muda é que nenhuma pausa síncrona passa de um
+ * quinto do tamanho de hoje.
+ *
  * Quem liga é o `index.mjs` (`ligarRelogio`); os testes criam sessões sem
- * ele e tocam `tique()` à mão.
+ * ele e tocam `tique()` à mão — o relógio nunca entra no meio de um teste.
  */
-const sessoesNoRelogio = new Set();
+export const FATIAS = 5;
+const sessoesPorFatia = Array.from({ length: FATIAS }, () => new Set());
+let proximaFatiaLivre = 0;
+
+/** As sessões vivas, para quem soma (`vivas.size` no `welcome`/`hello` continua por `vivas`, não por aqui). */
+const sessoesNoRelogio = {
+  add(sessao) {
+    // Round-robin: cada conexão nova cai na fatia que está há mais tempo sem
+    // receber ninguém, então mesmo com gente entrando e saindo o tempo todo
+    // as cinco continuam de tamanho parecido.
+    sessao.fatia = proximaFatiaLivre;
+    proximaFatiaLivre = (proximaFatiaLivre + 1) % FATIAS;
+    sessoesPorFatia[sessao.fatia].add(sessao);
+  },
+  delete(sessao) {
+    if (sessao.fatia != null) sessoesPorFatia[sessao.fatia].delete(sessao);
+  },
+};
+
 const PASSO_DO_RELOGIO = 1000 / R.TICKS_POR_SEGUNDO;
+const PASSO_DA_FATIA = PASSO_DO_RELOGIO / FATIAS;
 let proximoQuadro = 0;
 let relogioLigado = false;
+let fatiaAtual = 0;
 
 function rodarRelogio() {
-  for (const s of sessoesNoRelogio) {
+  for (const s of sessoesPorFatia[fatiaAtual]) {
     try {
       s.tique();
     } catch (e) {
       console.error('tique', s.personagem?.nome, '->', e.message);
     }
   }
+  fatiaAtual = (fatiaAtual + 1) % FATIAS;
   const agora = performance.now();
-  // Atrasou mais de um quadro inteiro (servidor engasgado): recomeça da hora
-  // atual em vez de disparar vários quadros seguidos para "alcançar".
-  proximoQuadro = Math.max(proximoQuadro + PASSO_DO_RELOGIO, agora);
+  // Atrasou mais de uma fatia inteira (servidor engasgado): recomeça da hora
+  // atual em vez de disparar vários passos seguidos para "alcançar".
+  proximoQuadro = Math.max(proximoQuadro + PASSO_DA_FATIA, agora);
   setTimeout(rodarRelogio, proximoQuadro - agora);
 }
 
 export function ligarRelogio() {
   if (relogioLigado) return;
   relogioLigado = true;
-  proximoQuadro = performance.now() + PASSO_DO_RELOGIO;
-  setTimeout(rodarRelogio, PASSO_DO_RELOGIO);
+  proximoQuadro = performance.now() + PASSO_DA_FATIA;
+  setTimeout(rodarRelogio, PASSO_DA_FATIA);
 }
