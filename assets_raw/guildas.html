@@ -1,8 +1,8 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quem está online — Ravox Idle</title>
-<meta name="description" content="Quem está jogando no Ravox Idle agora, e o que cada um está fazendo.">
+<title>Guildas — Ravox Idle</title>
+<meta name="description" content="As guildas do Ravox Idle, os membros de cada uma e os pontos de guerra.">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/client/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/client/favicon-192.png">
@@ -39,12 +39,20 @@
 </div>
 
 <main class="pagina-interna">
-  <section class="bloco">
+  <!-- =======================================================================
+       DUAS TELAS NUMA PAGINA SO'
+
+       A lista de guildas e a ficha de UMA guilda sao a mesma pagina, e trocam
+       pelo endereco (`/guildas` e `/guildas?nome=...`). Duas paginas dariam dois
+       cabecalhos, dois rodapes e duas copias do menu para manter iguais — e a
+       segunda so' existiria para mostrar uma tabela a mais.
+       ======================================================================= -->
+  <section class="bloco" id="tela-lista">
     <div class="bloco-cabeca">
-      <h2 data-t="online.titulo">Quem está online</h2>
+      <h2>Guildas</h2>
       <p class="legenda">
-        <b id="quantos">—</b> <span id="quantos-rotulo">pessoas</span> jogando neste instante.
-        A lista se atualiza sozinha a cada quinze segundos.
+        <b id="quantas">—</b> <span id="quantas-rotulo">guildas</span> no servidor.
+        Clique numa para ver os membros.
       </p>
     </div>
 
@@ -52,16 +60,36 @@
       <table class="tabela">
         <thead>
           <tr>
-            <th class="retrato-col"></th>
-            <!-- Cada cabeçalho é um botão de ordenar: clicar num outro troca o
-                 critério, clicar no mesmo vira o sentido. Ver `online.mjs`. -->
-            <th class="ordenavel" data-ordem="nome" role="button" aria-sort="ascending" data-t="ranking.personagem">Personagem</th>
-            <th class="ordenavel" data-ordem="vocacao" role="button" aria-sort="none" data-t="ranking.vocacao">Vocação</th>
-            <th class="num ordenavel" data-ordem="level" role="button" aria-sort="none" data-t="ranking.level">Level</th>
-            <th class="ordenavel" data-ordem="fazendo" role="button" aria-sort="none" data-t="online.fazendo">O que está fazendo</th>
+            <th class="brasao-col"></th>
+            <th>Guilda</th>
+            <th>Líder</th>
+            <th class="num">Membros</th>
+            <th class="num">Pontos</th>
           </tr>
         </thead>
-        <tbody id="lista-online">
+        <tbody id="lista-guildas">
+          <tr><td colspan="5" class="vazio">carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="bloco" id="tela-ficha" hidden>
+    <a class="voltar-guildas" href="/guildas">&larr; todas as guildas</a>
+    <div class="guilda-cabeca" id="guilda-cabeca"></div>
+
+    <div class="tabela-caixa">
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th class="retrato-col"></th>
+            <th>Membro</th>
+            <th>Posto</th>
+            <th>Vocação</th>
+            <th class="num">Level</th>
+          </tr>
+        </thead>
+        <tbody id="lista-membros">
           <tr><td colspan="5" class="vazio">carregando...</td></tr>
         </tbody>
       </table>
@@ -77,4 +105,4 @@
   <a href="/#ranking">Ranking</a>
 </footer>
 
-<script type="module" src="/client/site/online.mjs"></script>
+<script type="module" src="/client/site/guildas.mjs"></script>

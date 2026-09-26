@@ -7,6 +7,11 @@ import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from './nucleo/sessao.mjs';
 import * as Mapas from './sistemas/mapas.mjs';
 import * as Estaticos from './nucleo/estaticos.mjs';
+import * as Site from './sistemas/site.mjs';
+import * as DropsDoSite from './sistemas/drops-do-site.mjs';
+import * as Guildas from './sistemas/guildas.mjs';
+
+Site.ligar(vivas);
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets_raw');
 const PORTA = Number(process.env.PORTA ?? 8080);
@@ -17,6 +22,8 @@ const PAGINAS = {
   '/jogar': '/jogar.html',
   '/online': '/online.html',
   '/streamers': '/streamers.html',
+  '/guildas': '/guildas.html',
+  '/personagem': '/personagem.html',
   '/editor': '/editor.html',
 };
 
@@ -90,6 +97,22 @@ async function atender(req, res) {
     const id = caminho.slice('/api/mapas/'.length);
     const mapa = Mapas.carregar(id);
     return mapa ? json(res, 200, mapa) : json(res, 404, { ok: false, erro: 'Mapa não encontrado.' });
+  }
+
+  /*
+   * ---- As APIs públicas do site (capa, /online, /personagem, /guildas) ----
+   *
+   * Só leitura, sem conta: é o que ravoxidle.com.br responde para quem ainda
+   * nem entrou no jogo. Ver `sistemas/site.mjs` e `sistemas/drops-do-site.mjs`.
+   */
+  if (req.method === 'GET' && caminho.startsWith('/api/')) {
+    const q = url.searchParams;
+    if (caminho === '/api/status') return json(res, 200, Site.status(q.get('ranking') ?? 'level'));
+    if (caminho === '/api/online') return json(res, 200, Site.jogadoresOnline());
+    if (caminho === '/api/drops') return json(res, 200, DropsDoSite.vista());
+    if (caminho === '/api/personagem') return json(res, 200, Site.personagem(q.get('nome')));
+    if (caminho === '/api/guildas') return json(res, 200, { guildas: Guildas.listaDoSite() });
+    if (caminho === '/api/guilda') return json(res, 200, Guildas.fichaDoSite(q.get('nome')));
   }
 
   const alvo = PAGINAS[caminho] ?? caminho;

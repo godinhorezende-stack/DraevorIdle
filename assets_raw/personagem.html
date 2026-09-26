@@ -1,0 +1,845 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Personagem — Ravox Idle</title>
+<meta name="description" content="Ficha dos personagens do Ravox Idle: level, perícias, equipamento e o progresso nos sistemas do Ravox.">
+
+<link rel="icon" type="image/png" sizes="32x32" href="/client/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/client/favicon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/client/site/site.css">
+<link rel="stylesheet" href="/client/site/balao-do-item.css">
+
+<style>
+  /*
+   * A ficha no molde da página de personagem do Tibia, com a cara da tela
+   * inicial: painéis escuros, linhas finas, verde-água de destaque e cobre
+   * para o que é "primeiro lugar".
+   */
+  /* O topo do site é fixo: o conteúdo começa abaixo dele. */
+  .pj-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr) 240px; gap: 18px;
+               align-items: start; max-width: 1400px; margin-inline: auto;
+               padding-top: calc(96px + var(--altura-da-faixa, 0px)); padding-bottom: 60px; padding-inline: 16px; }
+  /* O `main` do site.css tem margem automática, e dentro do grid isso encolhe a
+     coluna até o tamanho do conteúdo. Aqui ele ocupa a coluna inteira. */
+  main.pj { min-width: 0; max-width: none; margin: 0; padding: 0; }
+  .lado { display: flex; flex-direction: column; gap: 14px; position: sticky; top: calc(96px + var(--altura-da-faixa, 0px)); }
+  @media (max-width: 1180px) {
+    .pj-layout { grid-template-columns: minmax(0, 1fr) 240px; }
+    .lado.esq { display: none; }
+  }
+  @media (max-width: 880px) {
+    .pj-layout { grid-template-columns: minmax(0, 1fr); }
+    .lado { position: static; }
+    .lado.dir { order: 2; }
+  }
+
+  /* ---- painéis (laterais e ficha) ---- */
+  .caixa, .tb { border: 1px solid var(--linha); border-radius: 6px; overflow: hidden; background: #0b1215e6; }
+  .tb { margin-bottom: 16px; }
+  .caixa > h3, .tb > h2 {
+    margin: 0; padding: 12px 16px; background: #0b1114; border-bottom: 1px solid var(--linha);
+    font-family: var(--cabeca); font-size: 11px; font-weight: 600; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--apagado);
+  }
+  .tb > h2 { font-size: 12px; color: var(--verde); }
+  .tb-corpo { padding: 14px 16px; }
+
+  /*
+   * O MEIO mais claro que as laterais: a ficha é o que se lê, e as colunas dos
+   * lados são moldura. Os tons são os mesmos azul-esverdeados da home, só uns
+   * degraus acima — e as laterais descem um degrau para o contraste aparecer.
+   */
+  .caixa { background: #080d10f0; border-color: #1a252b; }
+  .caixa > h3 { background: #060a0c; border-color: #1a252b; }
+  .tb { --claro-1: #1d303a; --claro-2: #243a46; --claro-3: #2b4552; --claro-linha: #385563;
+        background: linear-gradient(180deg, #213743f5, #1b2e39f5); border-color: var(--claro-linha);
+        box-shadow: 0 10px 30px #0008, inset 0 1px 0 #ffffff0d; color: #dde7ea; }
+  .tb > h2 { background: linear-gradient(90deg, #25504a, #213845 60%); border-color: var(--claro-linha);
+             color: #6fe3c6; box-shadow: inset 3px 0 0 var(--verde); }
+  .tb .linhas td { border-color: #2f4854; }
+  .tb .linhas tr:hover td { background: #ffffff06; }
+  .tb .linhas td:first-child { color: #a3b9c0; }
+  .tb .caixinha { background: var(--claro-2); border-color: var(--claro-linha); }
+  .tb .caixinha h3 { color: #a3b9c0; }
+  .tb .trilho, .tb .slot { background: #13212a; border-color: var(--claro-linha); }
+  .tb .pericia { background: var(--claro-3); border-color: var(--claro-linha); }
+  .tb .pericia span, .tb .stat span, .tb .exp-texto, .tb .cinza { color: #a3b9c0; }
+  .tb .stats { background: var(--claro-linha); border-color: var(--claro-linha); }
+  .tb .stat { background: var(--claro-2); }
+  .tb .stat:hover { background: var(--claro-3); }
+  main .pj-busca input { background: #1b2e39; border-color: #385563; }
+
+  .menu { display: flex; flex-direction: column; }
+  .menu a { display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 13px;
+            color: var(--texto); border-bottom: 1px solid var(--linha-suave); }
+  .menu a:last-child { border-bottom: 0; }
+  .menu a:hover { background: #ffffff07; color: var(--verde); }
+  .menu a.ativo { color: var(--verde); background: #12251f; box-shadow: inset 2px 0 0 var(--verde); }
+  .menu img { width: 16px; height: 16px; image-rendering: pixelated; }
+
+  .lista-lado { list-style: none; margin: 0; padding: 0; }
+  .lista-lado li { display: flex; align-items: center; gap: 10px; padding: 9px 14px; font-size: 13px; }
+  .lista-lado li + li { border-top: 1px solid var(--linha-suave); }
+  .lista-lado li:hover { background: #ffffff07; }
+  .lista-lado a { color: var(--texto); font-family: var(--cabeca); font-weight: 600; }
+  .lista-lado a:hover { color: var(--verde); }
+  .lista-lado .pos { width: 16px; text-align: right; font-family: var(--cabeca); color: var(--apagado); }
+  .lista-lado li.top1 { background: #c8823c0f; }
+  .lista-lado li.top1 .pos, .lista-lado li.top1 a { color: var(--cobre); }
+  .lista-lado .info { display: flex; flex-direction: column; min-width: 0; }
+  .lista-lado .info a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lista-lado small { color: var(--apagado); font-size: 11.5px; }
+  .lista-lado canvas { width: 32px; height: 32px; image-rendering: pixelated; flex: none; }
+  .lista-lado .vazio { color: var(--apagado); justify-content: center; }
+  .contador { padding: 14px; text-align: center; }
+  .contador b { display: block; font: 700 28px var(--titulo); color: var(--verde); }
+  .contador span { font-size: 12px; color: var(--apagado); }
+  .contador a { display: inline-block; margin-top: 4px; font-size: 12px; color: var(--verde); }
+  .contador a:hover { color: var(--texto); }
+
+  .pj-busca { display: flex; gap: 10px; margin-bottom: 16px; }
+  .pj-busca input { flex: 1; min-width: 0; padding: 11px 14px; border-radius: 4px;
+    border: 1px solid var(--linha); background: var(--painel); color: var(--texto); font: inherit; }
+  .pj-busca input:focus { outline: none; border-color: var(--verde); }
+  .pj-busca button { cursor: pointer; }
+  .pj-aviso { color: var(--apagado); text-align: center; padding: 30px 0; }
+
+  /* ---- tabela de informações ---- */
+  .linhas { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .linhas td { padding: 10px 4px; border-bottom: 1px solid var(--linha-suave); vertical-align: top; }
+  .linhas tr:last-child td { border-bottom: 0; }
+  .linhas td:first-child { width: 34%; white-space: nowrap; font-family: var(--cabeca); font-size: 11px;
+                           letter-spacing: .12em; text-transform: uppercase; color: var(--apagado); padding-top: 12px; }
+  .linhas b { font-family: var(--cabeca); color: #eef3f2; }
+  .ok { color: var(--verde); font-weight: 700; }
+  .cinza { color: var(--apagado); }
+  .marca { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 3px; vertical-align: middle;
+           border: 1px solid var(--cobre); color: var(--cobre); font: 700 10px var(--cabeca); letter-spacing: .08em; }
+
+  /* ---- detalhes: roupa + inventário | barras ---- */
+  .detalhes { display: grid; grid-template-columns: auto 1fr; gap: 12px; }
+  @media (max-width: 620px) { .detalhes { grid-template-columns: 1fr; } }
+  .caixinha { border: 1px solid var(--linha-suave); background: var(--painel-2); border-radius: 5px; padding: 12px; }
+  .caixinha h3 { margin: 0 0 8px; text-align: center; font-family: var(--cabeca); font-size: 10px;
+                 letter-spacing: .14em; text-transform: uppercase; color: var(--apagado); }
+  .esquerda { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+  .tb .retrato { width: 104px; height: 96px; margin: 0 auto; display: grid; place-items: center;
+                 background: radial-gradient(circle at 50% 60%, #3fbfa81f, transparent 70%); }
+  .retrato canvas { image-rendering: pixelated; }
+
+  .inventario { display: grid; grid-template-columns: repeat(3, 38px); gap: 4px; justify-content: center; }
+  .slot { width: 38px; height: 38px; position: relative; display: grid; place-items: center;
+          background: #0b1114 center / 32px no-repeat; border: 1px solid var(--linha); border-radius: 3px; }
+  .slot canvas { image-rendering: pixelated; }
+  .slot .tier { position: absolute; right: 1px; top: 0; font-size: 9px; font-weight: 700;
+                color: #ffd24a; text-shadow: 0 0 2px #000, 0 0 2px #000; }
+  .slot.vazio-slot { opacity: .5; }
+  .slot.raridade { border-color: var(--tier); box-shadow: inset 0 0 10px color-mix(in srgb, var(--tier) 35%, transparent); }
+
+  .barra { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: 10px;
+           font-family: var(--cabeca); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+           color: var(--apagado); margin-bottom: 10px; }
+  .barra:last-child { margin-bottom: 0; }
+  .barra .num { text-align: right; font-family: system-ui, sans-serif; font-size: 11.5px; letter-spacing: 0;
+                text-transform: none; color: var(--texto); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+  .trilho { height: 10px; background: #0b1114; border: 1px solid var(--linha); border-radius: 999px; overflow: hidden; }
+  .cheio { height: 100%; border-radius: 999px; }
+  .vida .cheio { background: linear-gradient(90deg, #8e2a20, #e0564a); }
+  .mana .cheio { background: linear-gradient(90deg, #1f4f9e, #4f9bf0); }
+  .xp .cheio { background: linear-gradient(90deg, var(--verde-fundo), #4fd0b2); }
+  .exp-texto { font-size: 13px; margin-bottom: 10px; color: var(--apagado); }
+  .exp-texto b { color: #eef3f2; font-weight: 600; }
+
+  .pericias { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 6px; }
+  .pericia { text-align: center; padding: 8px 2px; border: 1px solid var(--linha); background: var(--painel);
+             border-radius: 4px; transition: border-color .12s ease; }
+  .pericia:hover { border-color: var(--verde-fundo); }
+  .pericia .ico { height: 26px; display: grid; place-items: center; }
+  .pericia .ico img { width: 26px; height: 26px; object-fit: contain; }
+  .pericia span { display: block; margin-top: 3px; font-family: var(--cabeca); font-size: 9.5px;
+                  letter-spacing: .1em; text-transform: uppercase; color: var(--apagado); }
+  .pericia b { display: block; font-size: 15px; color: #eef3f2; font-variant-numeric: tabular-nums; }
+
+  /* ---- Ravox Stats ---- */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--linha-suave);
+           border: 1px solid var(--linha-suave); border-radius: 5px; overflow: hidden; }
+  /* Sobrou um sozinho na última linha: ele ocupa a linha, sem o buraco do lado. */
+  .stat:last-child:nth-child(3n+1) { grid-column: 1 / -1; }
+  @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); }
+    .stat:last-child:nth-child(3n+1) { grid-column: auto; } .stat:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+  .stat { background: var(--painel); padding: 12px 8px; text-align: center; }
+  .stat img { display: block; width: 32px; height: 32px; margin: 0 auto 4px; object-fit: contain; }
+  .stat .stat-item { display: grid; place-items: center; width: 32px; height: 32px; margin: 0 auto 4px; }
+  .stat:hover { background: var(--painel-2); }
+  .stat span { display: block; font-size: 12px; color: var(--apagado); }
+  .stat b { display: block; margin-top: 4px; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat small { font-size: 12px; font-weight: 400; }
+  .c-azul { color: #5fa8f5; } .c-roxo { color: #b590f5; } .c-verde { color: var(--verde); }
+  .c-verm { color: #ec6a5c; } .c-laranja { color: var(--cobre); } .c-ciano { color: #5fd3dc; }
+
+  /* ---- o ícone do resumo de afixos, no canto do Inventory ---- */
+  .caixinha-inv { position: relative; }
+  .afx-botao { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; cursor: help;
+               display: grid; place-items: center; border-radius: 50%;
+               filter: drop-shadow(0 0 4px #3fe0c466); transition: transform .12s ease, filter .12s ease; }
+  .afx-botao img { width: 22px; height: 22px; display: block; }
+  .afx-botao:hover { transform: scale(1.15); filter: drop-shadow(0 0 7px #3fe0c4aa); }
+  .afx-botao.sem-afixo { filter: grayscale(1); opacity: .45; }
+  .afx-botao[data-qtd]::after { content: attr(data-qtd); position: absolute; right: -5px; bottom: -4px;
+               min-width: 13px; height: 13px; padding: 0 3px; border-radius: 7px; background: #0d5f53;
+               border: 1px solid #3fe0c4; color: #eafffb; font: 700 9px/11px system-ui, sans-serif; text-align: center; }
+
+  /* ---- o balão do resumo (mora no .tooltip do jogo, fora do layout) ---- */
+  .afx { min-width: 250px; max-width: 320px; font-family: system-ui, "Segoe UI", sans-serif; }
+  .afx-cabeca { display: flex; align-items: center; gap: 10px; padding: 10px 12px 9px;
+                background: linear-gradient(90deg, #12423b, #0f1d22 75%); border-bottom: 1px solid #2a4c52; }
+  .afx-cabeca img { width: 30px; height: 30px; filter: drop-shadow(0 0 5px #3fe0c466); }
+  .afx-cabeca b { display: block; font-family: var(--cabeca); font-size: 12px; letter-spacing: .1em;
+                  text-transform: uppercase; color: #6fe3c6; }
+  .afx-cabeca small { display: block; font-size: 11px; color: #8aa3ab; }
+  .afx-lista { display: grid; padding: 4px 0; }
+  .afx-linha { padding: 6px 12px; }
+  .afx-linha + .afx-linha { border-top: 1px solid #1f3137; }
+  /* Duas colunas: as linhas viram células, e a divisão passa a ser a borda de cima de cada uma. */
+  /* O balão do jogo tem teto de 320px: o largo precisa soltar esse teto. */
+  .tooltip:has(.afx-largo) { max-width: min(640px, 94vw); }
+  .afx.afx-largo { max-width: none; width: min(640px, 94vw); }
+  .afx-largo .afx-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0; padding: 0; }
+  .afx-largo .afx-linha { padding: 6px 12px; border-top: 1px solid #1f3137; }
+  .afx-largo .afx-linha:nth-child(odd of .afx-linha) { border-right: 1px solid #1f3137; }
+  .afx-largo .afx-secao { grid-column: 1 / -1; }
+  .afx-largo .afx-resumo { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .afx-largo .afx-partes { gap: 3px; }
+  .afx-largo .afx-chip { padding: 0 5px 0 2px; }
+  .afx-topo { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 12.5px; color: #cfe6ee; }
+  .afx-topo b { font-size: 14px; color: #7fd3ff; font-variant-numeric: tabular-nums; text-shadow: 0 0 6px #3aa8e855; }
+  .afx-secao { padding: 7px 12px 1px; font-family: var(--cabeca); font-size: 10px; letter-spacing: .12em;
+               text-transform: uppercase; color: #e0a84a; }
+  .afx-secao small { font-size: 9px; color: #8a7652; letter-spacing: .06em; }
+  .afx-secao-solta { color: #7fb8d8; border-top: 1px solid #2a4c52; padding-top: 8px; }
+  .afx-tiers .afx-topo b { color: #f0c27a; text-shadow: 0 0 6px #e0a84a55; }
+  .afx-resumo { font-size: 10.5px; color: #8aa3ab; font-style: italic; }
+  .afx-chip-tier img { width: 14px; height: 14px; object-fit: contain; }
+  .afx-partes { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .afx-chip { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px 1px 2px; border-radius: 3px;
+              background: #0a1418; border: 1px solid #1f3137; font-size: 10.5px; color: #8aa3ab; }
+  .afx-chip canvas { width: 16px; height: 16px; image-rendering: pixelated; }
+  .afx-chip em { font-style: normal; font-variant-numeric: tabular-nums; }
+  .afx-chip .estrela { font-weight: 400; color: var(--estrela); }
+  .afx-chip .q1 { --estrela: #57a6e8; } .afx-chip .q2 { --estrela: #b184e8; }
+  .afx-chip .q3 { --estrela: #e0a84a; text-shadow: 0 0 5px #e0a84a; } .afx-chip .q4 { --estrela: #ff5a52; text-shadow: 0 0 6px #ff5a52; }
+
+  .summon { display: flex; align-items: center; gap: 14px; justify-content: center; margin-top: 12px; }
+  .summon canvas { image-rendering: pixelated; }
+  .summon b { font-family: var(--cabeca); color: #eef3f2; }
+</style>
+
+<header class="topo">
+  <a class="marca" href="/"><img src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle"></a>
+  <nav>
+    <a href="/#ranking" data-t="menu.ranking">Ranking</a>
+    <a href="/online" data-t="menu.online">Online</a>
+    <a href="/guildas" data-t="menu.guildas">Guildas</a>
+    <a href="/personagem">Personagens</a>
+
+    <span class="menu-sep"></span>
+
+    <a class="social discord" href="https://discord.gg/7w8j9DuZe" target="_blank" rel="noopener"
+       title="Discord do Ravox Idle" aria-label="Discord"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18.3 18.3 0 0 1 3 1.4 15 15 0 0 0-12.4 0 18.3 18.3 0 0 1 3-1.4L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 .1 13.4.4 17.8A19.9 19.9 0 0 0 6.4 21l.4-.6a13 13 0 0 1-2-1 8 8 0 0 0 .5-.4 14.2 14.2 0 0 0 13.4 0 8 8 0 0 0 .5.4 13 13 0 0 1-2 1l.4.6a19.9 19.9 0 0 0 6-3.2c.4-5-.4-9.4-3.3-13.4ZM8.3 15.4c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Z"/></svg></a>
+    <a class="social whatsapp" href="https://chat.whatsapp.com/D4B0n1pW3ef5kLLceSTGgh?s=cl&amp;p=a&amp;ilr=4" target="_blank" rel="noopener"
+       title="Grupo do WhatsApp do Ravox Idle" aria-label="WhatsApp"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.200l-.3-.2-3 .8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.6-6.1c-.3-.1-1.6-.8-1.800-.9-.2-.1-.4-.1-.6.1l-.8 1c-.2.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4 0-.5.2-.7l.4-.5c.1-.2.2-.3.3-.5v-.5l-.9-2c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.2 5.3 5.3 0 0 0 1.100 2.8 12 12 0 0 0 4.600 4c2.2.9 2.2.6 2.6.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-.9.2-1l-.4-.3Z"/></svg></a>
+
+    <a class="botao-entrar" href="/jogar" data-t="menu.entrar">Entrar</a>
+  </nav>
+</header>
+
+<div class="faixa-teste">
+  <span data-t="faixa.teste">Servidor de teste · em desenvolvimento — vai haver bugs</span>
+</div>
+
+<div class="pj-layout">
+  <aside class="lado esq">
+    <section class="caixa">
+      <h3>Menu</h3>
+      <nav class="menu">
+        <a href="/"><img src="/client/assets/ui/sk-misc.png" alt="">Início</a>
+        <a href="/#ranking"><img src="/client/assets/ui/sk-experience.png" alt="">Ranking</a>
+        <a href="/online"><img src="/client/assets/ui/sk-players.png" alt="">Quem está online</a>
+        <a href="/personagem" class="ativo"><img src="/client/assets/ui/sk-health.png" alt="">Personagens</a>
+        <a href="/streamers"><img src="/client/assets/ui/sk-options.png" alt="">Streamers</a>
+        <a href="/jogar"><img src="/client/assets/ui/sk-sword.png" alt="">Jogar agora</a>
+      </nav>
+    </section>
+    <section class="caixa">
+      <h3>Comunidade</h3>
+      <nav class="menu">
+        <a href="https://discord.gg/7w8j9DuZe" target="_blank" rel="noopener">💬 Discord</a>
+        <a href="https://chat.whatsapp.com/D4B0n1pW3ef5kLLceSTGgh?s=cl&amp;p=a&amp;ilr=4" target="_blank" rel="noopener">📱 Grupo WhatsApp</a>
+      </nav>
+    </section>
+    <section class="caixa">
+      <h3>Vistos por último</h3>
+      <ul class="lista-lado" id="recentes"><li class="vazio">nenhum ainda</li></ul>
+    </section>
+  </aside>
+
+  <main class="pj">
+    <form class="pj-busca" id="busca">
+      <input id="nome" placeholder="Nome do personagem" autocomplete="off" maxlength="40">
+      <button type="submit" class="botao-entrar">Buscar</button>
+    </form>
+    <div id="ficha"><p class="pj-aviso">Digite o nome de um personagem para ver a ficha.</p></div>
+  </main>
+
+  <aside class="lado dir">
+    <section class="caixa">
+      <h3>🏆 Top Level</h3>
+      <ul class="lista-lado" id="top"><li class="vazio">carregando...</li></ul>
+    </section>
+    <section class="caixa">
+      <h3>🟢 Online agora</h3>
+      <div class="contador"><b id="online-n">—</b><span>jogando neste instante</span></div>
+      <ul class="lista-lado" id="online"></ul>
+      <div class="contador" style="padding-top:0"><a href="/online">ver lista completa →</a></div>
+    </section>
+  </aside>
+</div>
+
+<footer>
+  <span>Ravox Idle</span>
+  <span class="separador">·</span>
+  <a href="/jogar">Entrar</a>
+  <span class="separador">·</span>
+  <a href="/#ranking">Ranking</a>
+</footer>
+
+<script type="module">
+import { loadSpriteData, outfitCanvas, itemCanvas } from '/client/src/sprites.mjs';
+// O balão de item do jogo, o mesmo da mochila: tier, imbuements e o que cada afixo dá.
+import { initTooltip, tipFor, tipPanel, seloDeEstrelas, estrelasDosAfixos, classeDaRaridade } from '/client/src/tooltip.mjs';
+/* O MESMO escudo da janela de guildas — ver `brasao-no-site.mjs`. */
+import { seloDaGuilda, linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
+
+const $ = (id) => document.getElementById(id);
+const n = (v) => Number(v ?? 0).toLocaleString('pt-BR');
+// Frações do servidor (0,05) viram porcentagem na tela (5%).
+const pct = (v) => `${(Number(v ?? 0) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+const VOCACOES = { knight: 'Knight', paladin: 'Paladin', druid: 'Druid', sorcerer: 'Sorcerer', monk: 'Monk', none: 'Sem vocação' };
+const ONDE = {
+  automatica: 'Caçando', online: 'Caça Online', boss: 'Numa sala de boss', patio: 'Treinando no pátio',
+  exercise: 'Treinando com exercise', treinando: 'Treinando', cidade: 'Na cidade', parado: 'Conectado',
+};
+// Os ícones das perícias são os mesmos da ficha dentro do jogo.
+const PERICIAS = [
+  ['magic', 'ML'], ['fist', 'Fist'], ['club', 'Club'], ['sword', 'Sword'],
+  ['axe', 'Axe'], ['distance', 'Dist'], ['shielding', 'Def'], ['fishing', 'Fish'],
+];
+// A arte nova da ficha (assets/icons), a mesma que o jogo usa em `artOrUiIcon`.
+const icone = (nome) => `<img src="/client/assets/icons/${nome}.png" alt="">`;
+// Disposição do inventário do Tibia: 3 colunas, 4 linhas.
+const GRADE = [
+  ['neck', 'neck'], ['head', 'head'], ['backpack', 'back'],
+  ['weapon', 'left-hand'], ['body', 'body'], ['shield', 'right-hand'],
+  ['ring', 'finger'], ['legs', 'legs'], ['ammo', 'ammo'],
+  [null, null], ['feet', 'feet'], [null, null],
+];
+
+const sprites = loadSpriteData().then(() => true).catch(() => false);
+
+function quando(ms) {
+  if (!ms) return '—';
+  return new Date(ms).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+}
+function duracao(segundos) {
+  const h = Math.floor((segundos ?? 0) / 3600);
+  const d = Math.floor(h / 24);
+  return d ? `${n(d)}d ${h % 24}h` : `${n(h)}h ${Math.floor(((segundos ?? 0) % 3600) / 60)}min`;
+}
+function linha(rotulo, valor) {
+  return `<tr><td>${rotulo}:</td><td>${valor}</td></tr>`;
+}
+function barra(classe, rotulo, atual, total, texto = null) {
+  const p = total ? Math.min(100, (atual / total) * 100) : 0;
+  texto ??= total ? `${n(atual)}/${n(total)} (${Math.round((atual / total) * 100)}%)` : n(atual);
+  return `<div class="barra ${classe}"><div>${rotulo}:</div>
+    <div><div class="num">${texto}</div><div class="trilho"><div class="cheio" style="width:${p}%"></div></div></div></div>`;
+}
+// `arte` em número é um ITEM (o pergaminho de entrada das hunts): o sprite entra em `desenharSprites`.
+function stat(rotulo, valor, cor, arte) {
+  if (typeof arte === 'number') return `<div class="stat"><i class="stat-item" data-item="${arte}"></i><span>${rotulo}</span><b class="${cor}">${valor}</b></div>`;
+  // As 'aba-*' nasceram grandes (1–3 MB): o site usa a cópia de 128px em icons/mini.
+  const img = arte ? `<img src="/client/assets/icons/${arte.startsWith('aba-') ? 'mini/' : ''}${arte}.png" alt="">` : '';
+  return `<div class="stat">${img}<span>${rotulo}</span><b class="${cor}">${valor}</b></div>`;
+}
+
+function desenhar(p) {
+  const r = p.ravox;
+  const status = p.jogando
+    ? `<span class="ok">Online</span>${p.atividade ? ` — ${ONDE[p.atividade.onde] ?? 'Conectado'}${p.atividade.lugar ? ` (${esc(p.atividade.lugar)})` : ''}` : ''}`
+    : '<span class="cinza">Offline</span>';
+  const conta = p.premium
+    ? `<span class="ok">Premium</span> até ${quando(p.premiumAte)}`
+    : 'Free Account';
+
+  $('ficha').innerHTML = `
+    <section class="tb">
+      <h2>Character Information</h2>
+      <div class="tb-corpo"><table class="linhas">
+        ${linha('Name', `<b>${esc(p.nome)}</b>${p.marca ? `<span class="marca">${esc(p.marca.tag ?? '')}</span>` : ''}`)}
+        ${linha('Sex', p.sexo === 'female' ? 'female' : 'male')}
+        ${linha('Vocation', esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao))}
+        ${p.guilda?.nome ? linha('Guild', `<span id="ficha-guilda"></span>`) : ''}
+        ${linha('Level', n(p.level))}
+        ${linha('World', 'Ravox')}
+        ${linha('Status', status)}
+        ${linha('Last Login', p.jogando ? 'agora' : quando(p.visto))}
+        ${linha('Account Status', conta)}
+        ${linha('Balance', `${n(p.banco ?? 0)} gold`)}
+      </table></div>
+    </section>
+
+    <section class="tb">
+      <h2>Account Information</h2>
+      <div class="tb-corpo"><table class="linhas">
+        ${linha('Created', quando(p.criadoEm))}
+      </table></div>
+    </section>
+
+    <section class="tb">
+      <h2>Character Details</h2>
+      <div class="tb-corpo">
+        <div class="detalhes">
+          <div class="esquerda">
+            <div class="caixinha"><h3>Current outfit</h3><div class="retrato" id="retrato"></div></div>
+            <div class="caixinha caixinha-inv"><h3>Inventory</h3>
+              <i class="afx-botao" id="afx-botao"><img src="/client/assets/icons/mini/aba-afixos.png" alt="Afixos"></i>
+              <div class="inventario balao-do-jogo" id="inventario"></div></div>
+          </div>
+          <div>
+            <div class="caixinha">
+              ${barra('vida', 'Health', p.hp, p.maxHp)}
+              ${barra('mana', 'Mana', p.mana, p.maxMana)}
+            </div>
+            <div class="caixinha" style="margin-top:10px">
+              <div class="exp-texto"><b>Experience:</b>
+                Tem <b>${n(p.exp)}</b> e precisa de <b>${n(p.expProximo)}</b> para o level <b>${n(p.level + 1)}</b>.</div>
+              ${barra('xp', 'Percent', p.expPercent, 1, pct(p.expPercent))}
+            </div>
+            <div class="caixinha" style="margin-top:10px">
+              <div class="pericias">
+                <div class="pericia"><div class="ico">${icone('ficha-level')}</div><span>Level</span><b>${n(p.level)}</b></div>
+                ${PERICIAS.map(([k, rot]) => `<div class="pericia"><div class="ico">${icone(`sk-${k}`)}</div><span>${rot}</span><b>${n(k === 'magic' ? p.magic : p.skills?.[k])}</b></div>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tb">
+      <h2>Ravox Stats</h2>
+      <div class="tb-corpo">
+        <div class="stats">
+          ${stat('Summon Lv', `${n(r.summonNivel)}<small class="cinza"> / ${n(r.summonTeto)}</small>`, 'c-verde', 'aba-especiais')}
+          ${stat('Pontos da Árvore', `${n(r.arvoreUsados)}<small class="cinza"> / ${n(r.arvoreTotal)}</small>`, 'c-roxo', 'arvore')}
+          ${stat('Mounts', n(r.montarias), 'c-azul', 'mounts')}
+          ${stat('Outfits', n(r.outfits), 'c-azul', 'aba-outfits')}
+          ${stat('Kills', n(r.kills), 'c-verm', 'ficha-kills')}
+          ${stat('Mortes', n(r.mortes), 'c-verm', 'ficha-mortes')}
+          ${stat('Tempo caçando', duracao(r.tempoCacando), 'c-laranja', 'ficha-tempo')}
+          ${stat('Tiers vestidos', n(r.tierTotal), 'c-laranja', 'aba-tier')}
+          ${stat('Crítico', pct(r.critico), 'c-laranja', 'ficha-critico')}
+          ${stat('EXP total ganha', n(r.expTotal), 'c-verde', 'ficha-exp')}
+          ${stat('Life Leech', pct(r.lifeLeech), 'c-verm', 'ficha-life-leech')}
+          ${stat('Mana Leech', pct(r.manaLeech), 'c-azul', 'ficha-mana-leech')}
+          ${stat('Blessings', `${n(r.blessings)}`, 'c-ciano', 'blessings')}
+          ${stat('Bestiário', `${n(r.bestiario)} bichos`, 'c-ciano', 'bestiary')}
+          ${stat('Charm Points', n(r.charms), 'c-ciano', 'charms')}
+          ${stat('Proficiências', n(r.proficiencias), 'c-ciano', 'proficiency')}
+          ${stat('Boss Tasks', n(r.bossTasks), 'c-verm', 'aba-bosses')}
+          ${stat('Mount Tasks', n(r.mountTasks), 'c-azul', 'aba-tasks')}
+          ${stat('Voltas em hunts', n(r.voltas), 'c-verde', 'hunts')}
+          ${stat('Slots de Party', n(r.partySlots), 'c-verde', 'amigos')}
+          ${stat('Instance Hunts', r.instance ? '<span class="ok">ativo</span>' : '<span class="cinza">—</span>', '', 22771)}
+          ${stat('Divine Hunts', r.divine ? '<span class="ok">ativo</span>' : '<span class="cinza">—</span>', '', 55335)}
+        </div>
+        ${r.summonNome ? `<div class="summon caixinha"><div id="summon"></div><div><b>${esc(r.summonNome)}</b><br><span class="cinza">Familiar · ${n(r.summonSkins)} skin(s)</span></div></div>` : ''}
+      </div>
+    </section>`;
+
+  desenharSprites(p);
+}
+
+/*
+ * A peça como no jogo: a cor da raridade, o selo de tier (a arte tier-N do
+ * client), as estrelas dos afixos e o balão do item ao passar o mouse.
+ */
+function enfeitarPeca(celula, slot, peca, p) {
+  const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
+  const meta = p.itens?.[peca.id];
+  if (meta) {
+    const classe = classeDaRaridade(meta);
+    celula.classList.add(classe);
+    if (classe !== 'tier-comum') celula.classList.add('raridade');
+  }
+  const tier = Math.floor(Number(inteira.tier) || 0);
+  if (tier > 0) {
+    celula.classList.add('com-tier');
+    const arte = document.createElement('img');
+    arte.className = 'selo-tier-arte';
+    arte.alt = `tier ${tier}`;
+    arte.src = `/client/assets/ui/tier/tier-${Math.min(tier, 10)}.png`;
+    celula.append(arte);
+  }
+  const estrelas = estrelasDosAfixos(inteira.af);
+  if (estrelas.length) {
+    celula.classList.add('com-afixo');
+    celula.append(seloDeEstrelas('selo-afixo', estrelas));
+  }
+  if (meta) tipFor(celula, peca.id, null, slot, inteira);
+}
+
+async function desenharSprites(p) {
+  // O balão lê a ficha dos itens e as tabelas de afixo/tier/imbuement desta resposta.
+  initTooltip(() => p.itens ?? {}, () => null, () => p.catalogo ?? null);
+  ligarResumoDosAfixos(p);
+  const inv = $('inventario');
+  for (const [slot, fundo] of GRADE) {
+    const celula = document.createElement('div');
+    celula.className = 'slot';
+    if (!slot) { celula.style.visibility = 'hidden'; inv.append(celula); continue; }
+    const peca = p.equipamento?.[slot];
+    if (!peca) {
+      celula.classList.add('vazio-slot');
+      celula.style.backgroundImage = `url(/client/assets/slots/${fundo}.png)`;
+    } else {
+      const partes = [peca.nome ?? `item ${peca.id}`];
+      if (peca.tier) partes.push(`Tier ${peca.tier}`);
+      if (peca.imbuements) partes.push(`${peca.imbuements} imbuement(s)`);
+      if (peca.afixos) partes.push(`${peca.afixos} afixo(s)`);
+      celula.setAttribute('aria-label', partes.join(' · '));
+    }
+    inv.append(celula);
+  }
+
+  /*
+   * O escudo entra por `append`, e nao dentro do `innerHTML` la' de cima.
+   *
+   * O brasao e' uma arvore de quatro camadas com variaveis CSS em cada uma:
+   * costura-lo em texto seria montar marcacao a mao a partir de dados que vem
+   * do servidor, que e' por onde se escreve HTML sem querer. `desenharBrasao`
+   * devolve nos prontos, e `append` nao interpreta nada.
+   *
+   * E vem ANTES do `await sprites`: o escudo nao depende da folha de sprites, e
+   * pendura-lo depois dela faria a guilda sumir da ficha sempre que a folha
+   * falhasse — por uma coisa que nao tem nada a ver com ela.
+   */
+  if (p.guilda?.nome) {
+    /*
+     * ---- NA FICHA, O DESENHO CHEIO ----
+     *
+     * "na ficha do personagem, brasão maior (~32px, desenho completo)."
+     *
+     * 32 esta' bem acima do corte do modo icone (20), entao aqui sai o escudo inteiro
+     * — simbolo, iniciais e o efeito que a guilda pagou. E' a unica tela do site em
+     * que a guilda de UMA pessoa e' o assunto, e cabe mostrar o que ela escolheu.
+     */
+    const selo = seloDaGuilda(p.guilda, 32);
+    if (selo) $('ficha-guilda')?.append(selo);
+  }
+
+  if (!(await sprites)) return;
+  try {
+    if (p.outfit?.type) $('retrato')?.append(outfitCanvas(p.outfit.type, p.outfit, 80));
+  } catch { /* outfit desconhecido: fica sem boneco */ }
+  try {
+    if (p.ravox.summonLook) $('summon')?.append(outfitCanvas(p.ravox.summonLook, {}, 56));
+  } catch { /* idem */ }
+
+  for (const lugar of document.querySelectorAll('.stat-item[data-item]')) {
+    try { lugar.append(itemCanvas(Number(lugar.dataset.item), 32)); } catch { /* sem sprite */ }
+  }
+
+  const celulas = [...inv.children];
+  GRADE.forEach(([slot], i) => {
+    const peca = slot && p.equipamento?.[slot];
+    if (!peca) return;
+    try {
+      celulas[i].prepend(itemCanvas(peca.id, 32, peca.count > 1 ? peca.count : undefined));
+    } catch { /* item sem sprite */ }
+    enfeitarPeca(celulas[i], slot, peca, p);
+  });
+}
+
+/*
+ * ---- O resumo dos afixos vestidos ----
+ *
+ * O ícone no canto do Inventory abre, ao passar o mouse, a soma de cada afixo
+ * por todas as peças: "+6% Crítico" e, embaixo, de quais peças veio cada pedaço
+ * (a sprite, a estrela na cor dela e o valor). Somar é o que a pessoa faria de
+ * cabeça passando o mouse peça por peça.
+ */
+const ORDEM_DOS_SLOTS = GRADE.map(([slot]) => slot).filter(Boolean);
+const valorDoAfixo = (ficha, v) => {
+  const redondo = Math.round(Number(v) * 100) / 100;
+  const texto = redondo.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  return ficha?.tipo === 'flat' ? `+${texto}` : `+${texto}%`;
+};
+
+function somaDosAfixos(p) {
+  const grupos = new Map();
+  let pecas = 0;
+  for (const slot of ORDEM_DOS_SLOTS) {
+    const peca = p.equipamento?.[slot];
+    const estrelas = estrelasDosAfixos(peca?.peca?.af);
+    if (!estrelas.length) continue;
+    pecas += 1;
+    for (const posto of estrelas) {
+      const grupo = grupos.get(posto.id) ?? { id: posto.id, total: 0, partes: [] };
+      grupo.total += Number(posto.value) || 0;
+      grupo.partes.push({ peca, posto });
+      grupos.set(posto.id, grupo);
+    }
+  }
+  const lista = [...grupos.values()].sort((a, b) => b.partes.length - a.partes.length
+    || String(p.catalogo?.afixos?.[a.id]?.nome ?? a.id).localeCompare(String(p.catalogo?.afixos?.[b.id]?.nome ?? b.id)));
+  return { lista, pecas, afixos: lista.reduce((s, g) => s + g.partes.length, 0) };
+}
+
+/*
+ * Os bônus do TIER que sobe na forja: cada slot tem o seu (Onslaught na arma,
+ * Momentum no elmo, Ruse na armadura, Amplification na bota), com a mesma conta
+ * do balão do item — a·t² + b·t + c, coeficientes do catálogo do servidor.
+ */
+function bonusDosTiers(p) {
+  const saida = [];
+  for (const slot of ORDEM_DOS_SLOTS) {
+    const peca = p.equipamento?.[slot];
+    const tier = Math.floor(Number(peca?.peca?.tier ?? peca?.tier) || 0);
+    if (!peca || tier <= 0) continue;
+    const meta = p.itens?.[peca.id];
+    const efeito = p.catalogo?.efeitosDeTier?.[meta?.slot ?? slot];
+    if (!efeito) continue;
+    const percent = efeito.a * tier * tier + efeito.b * tier + efeito.c;
+    saida.push({ peca, tier, efeito, percent });
+  }
+  return saida;
+}
+
+function painelDosAfixos(p) {
+  const { lista, pecas, afixos } = somaDosAfixos(p);
+  const tiers = bonusDosTiers(p);
+  const caixa = document.createElement('div');
+  caixa.className = 'afx';
+  /*
+   * Muita coisa (o set inteiro estrelado passa de dez blocos): o balão abre em
+   * DUAS colunas, largo e baixo, em vez de uma coluna que sai pela tela.
+   */
+  if (lista.length + tiers.length > 5) caixa.classList.add('afx-largo');
+  const partesDoResumo = [];
+  if (lista.length) partesDoResumo.push(`${afixos} afixo${afixos === 1 ? '' : 's'} em ${pecas} peça${pecas === 1 ? '' : 's'}`);
+  if (tiers.length) partesDoResumo.push(`${tiers.length} bônus de tier`);
+  caixa.innerHTML = `<div class="afx-cabeca"><img src="/client/assets/icons/mini/aba-afixos.png" alt="">
+    <div><b>Afixos e tiers</b><small>${partesDoResumo.length
+      ? partesDoResumo.join(' · ')
+      : 'nenhuma peça vestida tem afixo nem tier'}</small></div></div>`;
+  if (tiers.length) {
+    const bloco = document.createElement('div');
+    bloco.className = 'afx-lista afx-tiers';
+    bloco.innerHTML = '<div class="afx-secao">Bônus de tier <small>(forja)</small></div>';
+    for (const { peca, tier, efeito, percent } of tiers) {
+      const linha = document.createElement('div');
+      linha.className = 'afx-linha';
+      linha.innerHTML = `<div class="afx-topo"><span>${esc(efeito.nome)}</span><b>+${(Math.round(percent * 100) / 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%</b></div>
+        <div class="afx-resumo">${esc(efeito.resumo ?? '')}</div>`;
+      const partes = document.createElement('div');
+      partes.className = 'afx-partes';
+      const chip = document.createElement('span');
+      chip.className = 'afx-chip afx-chip-tier';
+      try { chip.append(itemCanvas(peca.id, 16)); } catch { /* sem sprite */ }
+      chip.insertAdjacentHTML('beforeend', `<img src="/client/assets/ui/tier/tier-${Math.min(tier, 10)}.png" alt=""><em>Tier ${tier}</em>`);
+      partes.append(chip);
+      linha.append(partes);
+      bloco.append(linha);
+    }
+    caixa.append(bloco);
+  }
+  if (!lista.length) return caixa;
+  if (tiers.length) {
+    const titulo = document.createElement('div');
+    titulo.className = 'afx-secao afx-secao-solta';
+    titulo.textContent = 'Afixos';
+    caixa.append(titulo);
+  }
+  const corpo = document.createElement('div');
+  corpo.className = 'afx-lista';
+  for (const grupo of lista) {
+    const ficha = p.catalogo?.afixos?.[grupo.id];
+    const linha = document.createElement('div');
+    linha.className = 'afx-linha';
+    linha.innerHTML = `<div class="afx-topo"><span>${esc(ficha?.nome ?? grupo.id)}</span><b>${valorDoAfixo(ficha, grupo.total)}</b></div>`;
+    const partes = document.createElement('div');
+    partes.className = 'afx-partes';
+    for (const { peca, posto } of grupo.partes) {
+      const chip = document.createElement('span');
+      chip.className = 'afx-chip';
+      try { chip.append(itemCanvas(peca.id, 16)); } catch { /* sem sprite */ }
+      chip.insertAdjacentHTML('beforeend', `<b class="estrela q${posto.q}">★</b><em>${valorDoAfixo(ficha, posto.value)}</em>`);
+      partes.append(chip);
+    }
+    linha.append(partes);
+    corpo.append(linha);
+  }
+  caixa.append(corpo);
+  return caixa;
+}
+
+function ligarResumoDosAfixos(p) {
+  const botao = $('afx-botao');
+  if (!botao) return;
+  const { lista } = somaDosAfixos(p);
+  const qtd = lista.length + bonusDosTiers(p).length;
+  botao.classList.toggle('sem-afixo', !qtd);
+  if (qtd) botao.dataset.qtd = String(qtd);
+  tipPanel(botao, () => painelDosAfixos(p));
+}
+
+async function buscar(nome) {
+  if (!nome) return;
+  $('ficha').innerHTML = '<p class="pj-aviso">procurando...</p>';
+  try {
+    const r = await fetch(`/api/personagem?nome=${encodeURIComponent(nome)}`, { cache: 'no-store' });
+    const d = await r.json();
+    if (!d.ok) {
+      $('ficha').innerHTML = `<p class="pj-aviso">${esc(d.reason ?? 'não encontrado')}</p>`;
+      return;
+    }
+    desenhar(d.personagem);
+    guardarRecente(d.personagem);
+    // O endereço acompanha a busca: assim o link pode ser mandado no Discord.
+    history.replaceState(null, '', `/personagem?nome=${encodeURIComponent(d.personagem.nome)}`);
+    document.title = `${d.personagem.nome} — Ravox Idle`;
+  } catch {
+    $('ficha').innerHTML = '<p class="pj-aviso">não deu para buscar agora</p>';
+  }
+}
+
+/* ---------------- laterais ---------------- */
+
+const linkDe = (nome) => `/personagem?nome=${encodeURIComponent(nome)}`;
+const vocacaoCurta = (v) => VOCACOES[v] ?? v ?? '';
+
+// Abrir outro personagem pela lateral troca a ficha sem recarregar a página.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[data-nome]');
+  if (!a || e.ctrlKey || e.metaKey || e.button !== 0) return;
+  e.preventDefault();
+  $('nome').value = a.dataset.nome;
+  buscar(a.dataset.nome);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// "Vistos por último" é só deste navegador.
+const CHAVE_RECENTES = 'ravox:personagens-vistos';
+function lerRecentes() {
+  try { return JSON.parse(localStorage.getItem(CHAVE_RECENTES) ?? '[]'); } catch { return []; }
+}
+function guardarRecente(p) {
+  const lista = [{ nome: p.nome, level: p.level, vocacao: p.vocacao }, ...lerRecentes().filter((r) => r.nome !== p.nome)].slice(0, 6);
+  try { localStorage.setItem(CHAVE_RECENTES, JSON.stringify(lista)); } catch { /* sem armazenamento: só não lembra */ }
+  pintarRecentes(lista);
+}
+function pintarRecentes(lista = lerRecentes()) {
+  $('recentes').innerHTML = lista.length
+    ? lista.map((r) => `<li><div class="info"><a href="${linkDe(r.nome)}" data-nome="${esc(r.nome)}">${esc(r.nome)}</a>
+        <small>${esc(vocacaoCurta(r.vocacao))} · lv ${n(r.level)}</small></div></li>`).join('')
+    : '<li class="vazio">nenhum ainda</li>';
+}
+
+async function pintarTop() {
+  try {
+    const d = await (await fetch('/api/status?ranking=level', { cache: 'no-store' })).json();
+    const lista = (d.highscore ?? []).slice(0, 5);
+    const ul = $('top');
+    if (!lista.length) {
+      ul.innerHTML = '<li class="vazio">sem ranking ainda</li>';
+      return;
+    }
+    /* =====================================================================
+     * ---- A GUILDA ENTRA COMO NÓ, E NÃO COMO TEXTO ----
+     *
+     * "faltou mostrar a guild embaixo da vocação (...) e lá na página de
+     *  characters também."
+     *
+     * A lista era uma linha de `innerHTML` só. O escudo não cabe nela: ele é uma
+     * árvore de quatro camadas com variáveis CSS em cada uma, montada a partir
+     * de dados do servidor — costurá-lo em texto seria escrever marcação à mão
+     * com nome de guilda dentro, que é por onde se escreve HTML sem querer.
+     *
+     * Então o `<li>` nasce com o texto e RECEBE o escudo por `append`, como o
+     * top 5 da capa já faz. É a mesma `linhaDaGuilda` das outras quatro telas do
+     * site: mesmo escudo, mesma fonte do nome e o mesmo link para a página da
+     * guilda.
+     * ===================================================================== */
+    ul.innerHTML = '';
+    for (const [i, e] of lista.entries()) {
+      const li = document.createElement('li');
+      if (i === 0) li.className = 'top1';
+      li.innerHTML = `<span class="pos">${i + 1}</span><div class="info">
+        <a href="${linkDe(e.name)}" data-nome="${esc(e.name)}">${esc(e.name)}</a>
+        <small>${esc(vocacaoCurta(e.vocation))} · lv ${n(e.level)}</small></div>`;
+      const daGuilda = linhaDaGuilda(e.guilda);
+      if (daGuilda) li.querySelector('.info')?.append(daGuilda);
+      ul.append(li);
+    }
+  } catch {
+    $('top').innerHTML = '<li class="vazio">indisponível</li>';
+  }
+}
+
+async function pintarOnline() {
+  try {
+    const d = await (await fetch('/api/online', { cache: 'no-store' })).json();
+    const lista = d.jogadores ?? [];
+    $('online-n').textContent = n(lista.length);
+    const ul = $('online');
+    ul.innerHTML = '';
+    const temSprites = await sprites;
+    for (const j of lista.slice(0, 6)) {
+      const li = document.createElement('li');
+      if (temSprites && j.outfit?.type) {
+        try { li.append(outfitCanvas(j.outfit.type, j.outfit, 32)); } catch { /* sem boneco */ }
+      }
+      li.insertAdjacentHTML('beforeend', `<div class="info"><a href="${linkDe(j.name)}" data-nome="${esc(j.name)}">${esc(j.name)}</a>
+        <small>${esc(vocacaoCurta(j.vocation))} · lv ${n(j.level)}</small></div>`);
+      /* E a guilda embaixo da vocação, como na lista de cima e no /online. */
+      const daGuilda = linhaDaGuilda(j.guilda);
+      if (daGuilda) li.querySelector('.info')?.append(daGuilda);
+      ul.append(li);
+    }
+  } catch {
+    $('online-n').textContent = '—';
+  }
+}
+
+pintarRecentes();
+pintarTop();
+pintarOnline();
+setInterval(pintarOnline, 30_000);
+
+$('busca').addEventListener('submit', (e) => {
+  e.preventDefault();
+  buscar($('nome').value.trim());
+});
+
+const inicial = new URLSearchParams(location.search).get('nome');
+if (inicial) {
+  $('nome').value = inicial;
+  buscar(inicial);
+}
+</script>

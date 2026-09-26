@@ -13,7 +13,20 @@
  * atlas de outfits, que é pesado. Sem o atlas o cartão sai igual, só sem o
  * desenho.
  */
-import { loadSpriteData, outfitCanvas, itemCanvas } from '/client/src/sprites.mjs';
+import { loadSpriteData, outfitCanvas } from '/client/src/sprites.mjs';
+/*
+ * A GRADE DO EQUIPAMENTO saiu daqui e virou um componente.
+ *
+ * Ela era deste arquivo — a cruz do Tibia, a borda por raridade, o selo de tier
+ * e as estrelas. O card do membro da guilda, no jogo, passou a precisar da MESMA
+ * grade, e copiá-la para lá seria manter dois desenhos que precisam concordar
+ * para sempre. Agora os dois chamam `gradeDeEquipamento`, e o CSS dela viaja
+ * junto (o `site.css` não é carregado pelo jogo).
+ *
+ * O que ficou aqui é o que é DAQUI: como esta página lê a ficha pública.
+ */
+import { gradeDeEquipamento } from '/client/src/paperdoll.mjs';
+import { linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
 
 const $ = (id) => document.getElementById(id);
 const numero = (valor) => Number(valor ?? 0).toLocaleString('pt-BR');
@@ -58,6 +71,26 @@ function linha(entrada, posicao, rotulo) {
       <span class="top5-voc">${icone ? `<img src="/client/assets/icons/${icone}.png" alt="">` : ''}${embaixo}</span>
     </div>
     <div class="top5-level"><small>${esc(rotulo)}</small><b>${numero(categoria === 'level' ? entrada.level : entrada.value)}</b></div>`;
+  /*
+   * O escudo é ACRESCENTADO depois do `innerHTML`, e não escrito dentro dele.
+   *
+   * O brasão é uma árvore de quatro camadas com variáveis CSS em cada uma —
+   * costurá-lo em texto seria montar HTML à mão a partir de dados que vêm do
+   * servidor, que é justamente por onde se escreve marcação sem querer. O
+   * `desenharBrasao` devolve nós prontos, e `append` não interpreta nada.
+   */
+  /*
+   * ---- A GUILDA FICA EMBAIXO DA VOCACAO ----
+   *
+   * Ela chegou a ir para DENTRO da linha da vocacao, e voltou: "a guild no site,
+   * coloque como estava embaixo da vocaçao".
+   *
+   * O que sobrou da passagem — e que era o problema de verdade — foi o TAMANHO: o
+   * escudo saiu de 12 para 18 pixels e agora desenha em modo icone, entao ele
+   * aparece. Ver `seloDaGuilda`.
+   */
+  const daGuilda = linhaDaGuilda(entrada.guilda);
+  if (daGuilda) li.querySelector('.top5-info')?.append(daGuilda);
   return li;
 }
 
@@ -274,6 +307,24 @@ function pintarTopExp(dados) {
         <small>${esc(rotulo)}</small>
         <b title="${numero(dono.value)} de experiência"><img src="/client/assets/icons/${arte}.png" alt=""><span>${curto(dono.value)}</span></b>
       </div>`;
+    /*
+     * ---- A GUILDA, EMBAIXO DA VOCAÇÃO ----
+     *
+     * "faltou mostrar a guild embaixo da vocação no shield em top 5 level e top
+     *  exp hoje."
+     *
+     * O mesmo selo das outras tabelas — mesmo escudo, mesma fonte do nome, mesmo
+     * link para a página da guilda —, porque é a mesma peça em todas elas. Ver
+     * `linhaDaGuilda`, em `brasao-no-site.mjs`.
+     *
+     * Dentro do `.top-exp-quem` e depois da vocação: o cartaz é uma coluna de
+     * nome → vocação → guilda, e um `append` na faixa a jogaria para baixo do
+     * número da experiência, do outro lado do cartaz.
+     *
+     * Quem não tem guilda não ganha linha nenhuma — a função devolve `null`.
+     */
+    const daGuilda = linhaDaGuilda(dono.guilda);
+    if (daGuilda) corpo.querySelector('.top-exp-quem')?.append(daGuilda);
     faixa.append(corpo);
     /*
      * ---- E o balão do equipamento também abre aqui ----
@@ -319,12 +370,7 @@ function pintarTopExp(dados) {
  * mouse e guardados por um minuto — passar o mouse de cima a baixo não vira
  * cinco pedidos a cada vez.
  */
-const GRADE = [
-  ['neck', 'neck'], ['head', 'head'], ['backpack', 'back'],
-  ['weapon', 'left-hand'], ['body', 'body'], ['shield', 'right-hand'],
-  ['ring', 'finger'], ['legs', 'legs'], ['ammo', 'ammo'],
-  [null, null], ['feet', 'feet'], [null, null],
-];
+/* A ordem das casas mora no componente — ver `ORDEM_DO_PAPERDOLL`. */
 // As perícias embaixo do inventário, na ordem e com os ícones da ficha (personagem.html).
 // A da categoria aberta no top 5 fica acesa.
 const PERICIAS = [
@@ -343,7 +389,6 @@ const periciasDa = (vocacao) => {
   const ordem = PERICIAS_DA_VOCACAO[vocacao] ?? PERICIAS.map(([chave]) => chave).filter((chave) => chave !== 'fishing');
   return ordem.map((chave) => PERICIAS.find(([k]) => k === chave));
 };
-const RARIDADES = new Set(['incomum', 'raro', 'epico', 'lendario', 'mitico']);
 const FICHA_VALE_MS = 60_000;
 const fichas = new Map(); // nome -> { quando, promessa }
 
@@ -421,45 +466,62 @@ async function mostrarInventario(li, entrada) {
       <div class="top5-pop-boneco"></div>
       <div>
         <b>${esc(p.nome)}</b>
-        <span>${esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao ?? '')}</span>
+        <span class="top5-pop-voc">${esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao ?? '')}</span>
         <span>Level <em>${numero(p.level)}</em></span>
         <span class="${p.jogando ? 'on' : 'off'}"><i class="ponto${p.jogando ? '' : ' off'}"></i>${p.jogando ? 'online agora' : 'offline'}</span>
       </div>
     </div>
     <div class="top5-pop-titulo">Inventory</div>
-    <div class="top5-pop-grade"></div>
+    <div class="top5-pop-equipamento"></div>
     <div class="top5-pop-titulo">Skills</div>
     <div class="top5-pop-skills" style="grid-template-columns: repeat(${periciasDa(p.vocacao).length}, 1fr)">${periciasDa(p.vocacao).map(([chave, rotulo]) => `
       <div class="top5-pop-skill${chave === categoria ? ' atual' : ''}" title="${rotulo}">
         <img src="/client/assets/icons/sk-${chave}.png" alt=""><b>${numero(chave === 'magic' ? p.magic : p.skills?.[chave])}</b><span>${rotulo}</span>
       </div>`).join('')}</div>
     <div class="top5-pop-rodape">clique para abrir a ficha completa</div>`;
-  const grade = balao.querySelector('.top5-pop-grade');
   const temSprites = await sprites;
-  for (const [slot, fundo] of GRADE) {
-    const celula = document.createElement('div');
-    celula.className = 'top5-slot';
-    if (!slot) { celula.classList.add('buraco'); grade.append(celula); continue; }
-    const peca = p.equipamento?.[slot];
-    if (!peca) {
-      celula.classList.add('vazio');
-      celula.style.backgroundImage = `url(/client/assets/slots/${fundo}.png)`;
-    } else {
-      const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
-      // O catálogo escreve com acento ("mítico", "épico"); a classe do CSS, sem.
-      const raridade = String(p.itens?.[peca.id]?.rarity ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      if (RARIDADES.has(raridade)) celula.classList.add('rar', `rar-${raridade}`);
-      celula.title = peca.nome ?? '';
-      if (temSprites) {
-        try { celula.append(itemCanvas(peca.id, 32, peca.count > 1 ? peca.count : undefined)); } catch { /* sem sprite */ }
-      }
-      const tier = Math.floor(Number(inteira.tier) || 0);
-      if (tier > 0) celula.insertAdjacentHTML('beforeend', `<img class="top5-slot-tier" src="/client/assets/ui/tier/tier-${Math.min(tier, 10)}.png" alt="tier ${tier}">`);
-      const qs = estrelas(inteira.af, p.catalogo);
-      if (qs.length) celula.insertAdjacentHTML('beforeend', `<i class="top5-slot-estrelas">${qs.map((q) => `<b class="q${q}">★</b>`).join('')}</i>`);
-    }
-    grade.append(celula);
-  }
+  /*
+   * O ADAPTADOR desta página: a ficha pública devolve um mapa por casa, com a
+   * peça inteira dentro (`.peca`), a raridade num mapa de itens e a régua dos
+   * afixos no catálogo. A grade não conhece nada disso — ela recebe a peça já
+   * traduzida. Ver `gradeDeEquipamento`.
+   */
+  balao.querySelector('.top5-pop-equipamento')?.append(
+    gradeDeEquipamento(
+      (slot) => {
+        const peca = p.equipamento?.[slot];
+        if (!peca) return null;
+        const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
+        return {
+          id: peca.id,
+          tier: inteira.tier,
+          count: peca.count,
+          titulo: peca.nome ?? '',
+          raridade: p.itens?.[peca.id]?.rarity,
+          estrelas: estrelas(inteira.af, p.catalogo),
+        };
+      },
+      { comSprites: temSprites },
+    ),
+  );
+  /*
+   * ---- A GUILDA NO CARTAO DO PERSONAGEM ----
+   *
+   * "no card do personagem na home (o de INVENTORY/SKILLS), mostrar a linha da guilda
+   *  embaixo da vocação, no mesmo formato."
+   *
+   * O mesmo selo das tabelas, e por isso o mesmo escudo, o mesmo corte e o mesmo
+   * link. `insertAdjacentElement('afterend')` e nao um `append` no bloco: ela tem de
+   * ficar EMBAIXO da vocacao e ACIMA do level, e um `append` a jogaria para o fim,
+   * depois do "online agora".
+   *
+   * E vem ANTES do `await sprites`: o escudo nao depende da folha de sprites, e
+   * pendura-lo depois dela faria a guilda sumir do cartao sempre que a folha
+   * falhasse — por uma coisa que nao tem nada a ver com ela.
+   */
+  const daGuilda = linhaDaGuilda(p.guilda);
+  if (daGuilda) balao.querySelector('.top5-pop-voc')?.insertAdjacentElement('afterend', daGuilda);
+
   if (temSprites && p.outfit?.type) {
     try { balao.querySelector('.top5-pop-boneco').append(outfitCanvas(p.outfit.type, p.outfit, 64, 2, true)); } catch { /* sem boneco */ }
   }

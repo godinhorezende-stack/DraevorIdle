@@ -539,3 +539,28 @@ export function comando(s, m) {
   }
 }
 
+
+// ------------------------------------------------------------ o site (/guildas)
+
+/** `GET /api/guildas` — a tabela do servidor, na ordem do shared (como a aba Servidor). */
+export function listaDoSite() {
+  return ordenarGuildas(Q.todas.all().map((x) => ({ id: x.id, nome: x.nome, dono: x.dono, pontos: x.pontos, nivel: x.nivel, membros: x.n, criadaEm: x.criada_em, brasao: brasaoDa(x) })));
+}
+
+/** `GET /api/guilda?nome=` — a ficha pública: sem baú, diário, convites nem pedidos. */
+export function fichaDoSite(nome) {
+  const g = Q.guildaPorNome.get(chaveDoNome(nome));
+  if (!g) return { ok: false, reason: `não existe guilda chamada ${nomeArrumado(nome)}` };
+  const membros = Q.membros.all(g.id);
+  return {
+    ok: true,
+    guilda: {
+      nome: g.nome, dono: g.dono, recado: g.recado, pontos: g.pontos, criadaEm: g.criada_em,
+      nivel: nivelDa(g, membros.length), brasao: brasaoDa(g),
+      membros: membros.map((m) => {
+        const v = membroParaVista(m);
+        return { nome: v.nome, cargo: v.cargo, posto: v.posto, entrouEm: v.entrouEm, level: v.level, vocation: v.vocation, outfit: v.outfit, online: v.online };
+      }),
+    },
+  };
+}

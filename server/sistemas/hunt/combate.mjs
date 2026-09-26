@@ -12,6 +12,8 @@ import * as Boosts from '../boosts.mjs';
 import * as BuffPower from '../buffpower.mjs';
 import * as Tiers from '../tiers.mjs';
 import * as Afixos from '../afixos.mjs';
+import * as DropsDoSite from '../drops-do-site.mjs';
+import { nomeDaHunt } from './terreno.mjs';
 import * as Prey from '../prey.mjs';
 import * as Arvore from '../arvore.mjs';
 import * as Bosses from '../bosses.mjs';
@@ -337,12 +339,15 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       continue;
     }
     const semCap = pesoDoInventario(estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(estado);
-    if (semCap || !Bolsa.porNaBolsa(estado, drop.id, 1, Afixos.rolarDrop(drop.id))) {
+    const af = Afixos.rolarDrop(drop.id);
+    if (semCap || !Bolsa.porNaBolsa(estado, drop.id, 1, af)) {
       conta('perdido', drop.id, 1);
       continue;
     }
     caiu.push({ id: drop.id, count: 1 });
     conta('loot', drop.id, 1);
+    // O drop raro vai para a capa do site (ver `drops-do-site.mjs`).
+    DropsDoSite.anotarDrop({ quem: personagem?.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af });
   }
   // Mesmo evento do original (`{t:'loot', name, items:[{id,count}]}`, capturado
   // ao vivo): é ele que escreve "Loot of a Troll: ..." no chat.

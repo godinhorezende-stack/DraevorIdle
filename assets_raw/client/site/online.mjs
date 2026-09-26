@@ -15,6 +15,7 @@
  * rua continua sendo HTML, um CSS e um módulo curto.
  */
 import { loadSpriteData, outfitCanvas } from '/client/src/sprites.mjs';
+import { linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
 import { t, aplicarIdioma, montarSeletor } from '/client/site/idiomas.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -198,6 +199,8 @@ function pintar(dados) {
     link.href = `/personagem?nome=${encodeURIComponent(entrada.name)}`;
     link.textContent = entrada.name;
     nome.append(link);
+    const daGuilda = linhaDaGuilda(entrada.guilda);
+    if (daGuilda) nome.append(daGuilda);
 
     const vocacao = document.createElement('td');
     vocacao.className = 'vocacao';

@@ -11,6 +11,7 @@
  * cada trinta segundos diz a mesma coisa e não custa nada.
  */
 import { t, aplicarIdioma, montarSeletor } from '/client/site/idiomas.mjs';
+import { linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
 
 const $ = (id) => document.getElementById(id);
 const numero = (valor) => Number(valor ?? 0).toLocaleString('pt-BR');
@@ -151,6 +152,13 @@ function pintarRanking(lista, categoria) {
     link.href = `/personagem?nome=${encodeURIComponent(entrada.name)}`;
     link.textContent = entrada.name;
     nome.append(ponto, link);
+    /*
+     * A guilda vai EMBAIXO do nome, e não numa coluna nova: a tabela já tem
+     * cinco colunas e uma sexta espremeria o nome, que é o que se procura aqui.
+     * Quem não tem guilda não ganha linha nenhuma — ver `linhaDaGuilda`.
+     */
+    const daGuilda = linhaDaGuilda(entrada.guilda);
+    if (daGuilda) nome.append(daGuilda);
 
     const vocacao = document.createElement('td');
     vocacao.className = 'vocacao';

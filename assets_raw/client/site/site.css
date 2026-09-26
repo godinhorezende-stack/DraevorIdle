@@ -625,28 +625,18 @@ a { color: inherit; text-decoration: none; }
   margin: 8px 0 6px; text-align: center; font-family: var(--cabeca); font-size: 10px;
   letter-spacing: .16em; text-transform: uppercase; color: var(--cobre);
 }
-.top5-pop-grade { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; justify-content: center; }
-.top5-slot {
-  --rar: var(--linha); position: relative; width: 40px; height: 40px; display: grid; place-items: center;
-  background: #0b1114 center / 32px no-repeat; border: 1px solid var(--rar); border-radius: 4px;
-}
-.top5-slot.buraco { visibility: hidden; }
-.top5-slot.vazio { opacity: .45; }
-.top5-slot canvas { image-rendering: pixelated; }
-.top5-slot.rar { box-shadow: inset 0 0 10px color-mix(in srgb, var(--rar) 40%, transparent); }
-.top5-slot.rar-incomum { --rar: #37c2a0; }
-.top5-slot.rar-raro { --rar: #57a6e8; }
-.top5-slot.rar-epico { --rar: #b184e8; }
-.top5-slot.rar-lendario { --rar: #e0a84a; }
-.top5-slot.rar-mitico { --rar: #f2503f; }
-.top5-slot-tier { position: absolute; left: 1px; top: 1px; width: 14px; height: 14px; object-fit: contain; }
-.top5-slot-estrelas {
-  position: absolute; right: 1px; top: -1px; display: flex; font-style: normal; font-size: 9px; line-height: 1;
-  text-shadow: 0 0 2px #000, 0 0 2px #000;
-}
-.top5-slot-estrelas b { font-weight: 400; }
-.top5-slot-estrelas .q1 { color: #57a6e8; } .top5-slot-estrelas .q2 { color: #b184e8; }
-.top5-slot-estrelas .q3 { color: #e0a84a; } .top5-slot-estrelas .q4 { color: #ff5a52; }
+/*
+ * ---- A GRADE DO EQUIPAMENTO MUDOU DE CASA ----
+ *
+ * As regras dela (`.top5-pop-grade` e `.top5-slot*`) foram para
+ * `client/src/paperdoll.mjs`, que as injeta com a grade. O motivo é que a MESMA
+ * grade passou a ser desenhada dentro do jogo, no card do membro da guilda — e o
+ * jogo não carrega esta folha. Mantê-las aqui faria as duas telas divergirem no
+ * primeiro ajuste de tamanho.
+ *
+ * Só a caixa que a recebe ficou: ela é o lugar da grade nesta página.
+ */
+.top5-pop-equipamento { display: flex; justify-content: center; }
 .top5-pop-skills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
 .top5-pop-skill {
   display: grid; justify-items: center; gap: 3px; padding: 6px 0 5px; border-radius: 4px;
@@ -749,8 +739,23 @@ a { color: inherit; text-decoration: none; }
 .top5-nome:hover { color: var(--verde); }
 .top5-nome-txt { overflow: hidden; text-overflow: ellipsis; }
 .top5-nome .ponto { flex: none; width: 6px; height: 6px; margin-right: 6px; }
-.top5-voc { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--apagado); }
+/*
+ * ---- A VOCACAO E A GUILDA NA MESMA LINHA ----
+ *
+ * "guilda na MESMA linha da vocação: [ícone vocação] Knight · [brasão] Nome da
+ *  guilda. Sem linha extra; todas as linhas com a mesma altura, com ou sem guilda."
+ *
+ * A guilda era uma terceira linha embaixo do nome, e as cinco linhas do cartaz
+ * ficavam com alturas diferentes — quem tinha guilda subia um degrau. Aqui ela nao
+ * custa altura nenhuma: esta linha ja' existia e sobrava largura nela.
+ *
+ * `min-width: 0` nos dois niveis e' o que faz a reticencia funcionar: um item flex
+ * nao encolhe abaixo do conteudo por padrao, e um nome de guilda comprido empurraria
+ * o numero do level para fora do cartaz em vez de cortar.
+ */
+.top5-voc { display: flex; align-items: center; gap: 5px; min-width: 0; font-size: 12px; color: var(--apagado); }
 .top5-voc img { width: 14px; height: 14px; object-fit: contain; }
+.top5-voc .site-guilda { min-width: 0; }
 .top5-level { text-align: right; line-height: 1.1; }
 .top5-level small { display: block; font-family: var(--cabeca); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--apagado); }
 .top5-level b { font-family: var(--cabeca); font-size: 19px; color: var(--verde); font-variant-numeric: tabular-nums; }
@@ -1234,3 +1239,74 @@ footer a:hover { color: var(--texto); }
 /* Nome do ranking/online que leva à ficha do personagem. */
 .link-personagem { color: inherit; text-decoration: none; }
 .link-personagem:hover { color: var(--cobre); text-decoration: underline; }
+
+/* =========================================================================
+ * A PÁGINA DE GUILDAS
+ *
+ * "ao lado de online tem que ter uma nova aba chamada guilds (...) e ao clicar
+ *  mostra informações como membros, pontos, level da guild."
+ *
+ * Ela empresta a moldura, a tabela e o menu das outras páginas do site — o que
+ * é dela são estas poucas regras: a coluna do escudo, o cabeçalho da ficha e os
+ * chips de número.
+ * ========================================================================= */
+/*
+ * 62 e nao 48: o escudo da lista passou de 34 para 46 pixels ("inclusive na aba de
+ * guilds do site"), e a coluna tinha 48 — dois pixels de folga de cada lado, com o
+ * enchimento da tabela por cima. O escudo encostaria no nome.
+ */
+.brasao-col { width: 62px; padding-right: 0; }
+.brasao-col .guilda-brasao { margin: 0 auto; }
+
+.guilda-idade { margin-top: 2px; font-size: 10.5px; color: #78848a; }
+
+.voltar-guildas {
+  display: inline-block; margin-bottom: 12px;
+  font-size: 12px; color: #9aa7ae; text-decoration: none;
+  transition: color .12s;
+}
+.voltar-guildas:hover { color: #ffd98a; }
+
+/* ---- o cabeçalho da ficha ---- */
+.guilda-cabeca {
+  display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.guilda-cabeca-escudo { flex: none; }
+.guilda-cabeca-texto { flex: 1 1 260px; min-width: 0; }
+.guilda-cabeca-texto h2 { margin: 0 0 4px; }
+
+/*
+ * Os números como CHIPS, e não como frase: são quatro respostas curtas a quatro
+ * perguntas diferentes, e numa frase só elas viram um parágrafo que ninguém lê
+ * até o fim.
+ */
+.guilda-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+.guilda-chip {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  padding: 4px 10px; border-radius: 12px;
+  border: 1px solid #8a6f4238; background: #10171ac9;
+  font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: #8f9aa0;
+}
+.guilda-chip b {
+  font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 0;
+  text-transform: none; color: #ffd98a;
+}
+
+.guilda-recado-site {
+  margin: 10px 0 0; padding: 8px 11px;
+  border-left: 2px solid #8a6f4266; border-radius: 0 4px 4px 0;
+  background: #0e1416a8;
+  font-size: 12px; font-style: italic; color: #b9c2c6;
+}
+
+/* ---- o posto de cada membro ---- */
+.guilda-posto {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  border: 1px solid #ffffff1c; background: #0d1416;
+  font-size: 10.5px; color: #9aa7ae;
+}
+.guilda-posto.cargo-3 { border-color: #e0a84a66; color: #ffd98a; }
+.guilda-posto.cargo-2 { border-color: #8a6f4255; color: #cbb388; }
+
+.voc-icone { width: 16px; height: 16px; vertical-align: -3px; margin-right: 5px; }
