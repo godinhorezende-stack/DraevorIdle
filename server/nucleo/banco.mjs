@@ -12,12 +12,11 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const banco = await Db.abrir(join(RAIZ, 'dados', 'jogo.db'));
 
 /*
- * `db` cru: o `node:sqlite` de sempre, só em modo SQLite — os módulos ainda
- * não convertidos (guildas, mercado, arena, amigos, drops-do-site, ranking,
- * site) continuam usando-o direto até a Fase 6 terminar de migrá-los. Em
- * modo Postgres ele não existe: rodar esses módulos ainda não convertidos
- * com `DATABASE_URL` ligado vai FALHAR ao tentar usá-lo — a migração deles
- * é o próximo passo, não algo que já funciona hoje.
+ * `db` cru: o `node:sqlite` de sempre, só em modo SQLite — todo o jogo (Fase 6)
+ * já fala com o repositório assíncrono (`banco`/`Db.abrir`), então isto só
+ * sobrevive como atalho dos testes (limpeza direta de tabelas entre casos).
+ * Em modo Postgres ele não existe: nenhum teste que dependa dele roda com
+ * `DATABASE_URL` ligado.
  */
 export const db = banco.dialeto === 'sqlite' ? banco.bruto : undefined;
 
