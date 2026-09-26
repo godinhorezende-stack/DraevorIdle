@@ -30,7 +30,7 @@ import * as Arena from './arena.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Bosses from './bosses.mjs';
 import { SPAWNS_CAPTURADOS, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt } from './hunt/terreno.mjs';
-import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros } from './hunt/monstros.mjs';
+import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
 import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia } from './hunt/caminho.mjs';
 import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/relatorio.mjs';
@@ -49,6 +49,39 @@ export { salaDe, virarDono, mudarDeDono, separar } from './hunt/sala.mjs';
 export { alvoAtual } from './hunt/alvo.mjs';
 export { runParaCliente } from './hunt/percurso.mjs';
 export { armaDoPersonagem, alcanceDaArma, subirDeLevel } from './hunt/combate.mjs';
+
+/*
+ * ---- A caçada no banco ----
+ *
+ * Os bichos vão sem o que é cópia do bestiário (ver `compactarMonstro`). A
+ * caçada viva não é tocada: sai uma cópia rasa com as listas de bichos
+ * trocadas.
+ */
+const compactarLista = (lista) => (Array.isArray(lista) ? lista.map(compactarMonstro) : lista);
+
+export function huntParaGravar(hunt) {
+  if (!hunt) return hunt;
+  const copia = { ...hunt, monstros: compactarLista(hunt.monstros) };
+  if (hunt.outrosAndares) {
+    copia.outrosAndares = Object.fromEntries(Object.entries(hunt.outrosAndares).map(([z, lista]) => [z, compactarLista(lista)]));
+  }
+  return copia;
+}
+
+/** A caçada lida do banco: os bichos completos de novo, e o contador de `uid` acima de todos eles. */
+export function huntAoCarregar(hunt) {
+  if (!hunt) return hunt;
+  const listas = [hunt.monstros, ...Object.values(hunt.outrosAndares ?? {})].filter(Array.isArray);
+  let maior = 0;
+  for (const lista of listas) {
+    for (const m of lista) {
+      completarMonstro(m);
+      if (Number(m.uid) > maior) maior = Number(m.uid);
+    }
+  }
+  garantirUidAcimaDe(maior);
+  return hunt;
+}
 
 /*
  * ---- Caçada offline ----

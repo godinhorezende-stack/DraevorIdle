@@ -1062,6 +1062,8 @@ export class Sessao {
 
     this.personagem = personagem;
     this.estado = JSON.parse(personagem.estado);
+    // Os bichos da caçada voltam completos (ver `Cacadas.huntParaGravar`).
+    Cacadas.huntAoCarregar(this.estado.hunt);
     this.estado.pos = corrigirPosicaoAntiga(this.estado.pos);
     // Migração: personagens salvos antes do sistema de recompensas existir
     // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
@@ -1146,7 +1148,7 @@ export class Sessao {
   gravarAgora() {
     if (!this.personagem || !this.estado) return;
     const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
-    const copia = estadoPersistido.hunt ? { ...estadoPersistido, hunt: { ...estadoPersistido.hunt, offlineDesde: Date.now() } } : estadoPersistido;
+    const copia = estadoPersistido.hunt ? { ...estadoPersistido, hunt: { ...Cacadas.huntParaGravar(estadoPersistido.hunt), offlineDesde: Date.now() } } : estadoPersistido;
     B.gravarEstadoPersonagem(this.personagem.id, copia);
     this.gravadoEm = Date.now();
   }
@@ -1166,6 +1168,7 @@ export class Sessao {
     if (this.estado.hunt) this.estado.hunt.offlineDesde = Date.now();
     // `bauDaConta` é da conta (tabela própria), não do personagem.
     const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
+    if (estadoPersistido.hunt) estadoPersistido.hunt = Cacadas.huntParaGravar(estadoPersistido.hunt);
     B.gravarEstadoPersonagem(this.personagem.id, estadoPersistido);
     if (vivas.get(this.personagem.nome) === this) vivas.delete(this.personagem.nome);
     // Os amigos online veem a bolinha apagar.

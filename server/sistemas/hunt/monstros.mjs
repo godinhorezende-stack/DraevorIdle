@@ -42,6 +42,76 @@ export function criarMonstro(posicao, hunt) {
  * ela é a mesma para todos da sala (ver `entrarNaSala`), e quem muda de andar
  * é o dono — os outros vão atrás (ver `tique`).
  */
+/*
+ * ---- O bicho gravado leva só o que é DELE ----
+ *
+ * `criarMonstro` copia para cada bicho o nome, a aparência, a vida máxima, a
+ * exp e a tabela de loot do bestiário. Em memória isso não custa nada (são as
+ * mesmas referências), mas no banco cada bicho virava ~1 KB — a hunt inteira
+ * (até 547 bichos) era 97% dos 150–720 KB do personagem, regravados a cada
+ * 30 s e relidos em todo login (ver docs/auditoria-performance.md, gargalo 6).
+ *
+ * Na gravação sai só o campo que é IGUAL ao do bestiário daquela `key`; ao
+ * carregar, o que falta volta de lá. Campo que mudou (a exp de um bicho que o
+ * combate ajustou, um boss com outra vida) continua gravado, e bicho sem `key`
+ * (os bonecos do pátio) vai inteiro. Personagem gravado antes disto tem todos
+ * os campos, e carregar não mexe em nada.
+ */
+const FIXOS_DO_BICHO = ['name', 'look', 'lookItem', 'colors', 'maxHp', 'armor', 'exp', 'loot'];
+const fixosPorKey = new Map();
+
+function fixosDe(key) {
+  if (key == null) return null;
+  let f = fixosPorKey.get(key);
+  if (f) return f;
+  const b = BESTIARY[key];
+  if (!b) return null;
+  // Os mesmos valores que `criarMonstro` põe no bicho.
+  const valores = { name: b.name, look: b.look, lookItem: b.lookItem || 0, colors: b.colors ?? null, maxHp: b.hp, armor: b.armor ?? 0, exp: b.exp ?? 0, loot: b.loot ?? [] };
+  const textos = Object.fromEntries(Object.entries(valores).map(([k, v]) => [k, JSON.stringify(v)]));
+  f = { valores, textos };
+  fixosPorKey.set(key, f);
+  return f;
+}
+
+/** O bicho para o banco: sem os campos que são cópia exata do bestiário. */
+export function compactarMonstro(m) {
+  const f = fixosDe(m?.key);
+  if (!f) return m;
+  const c = {};
+  for (const k in m) {
+    const v = m[k];
+    if (k in f.valores && (v === f.valores[k] || JSON.stringify(v) === f.textos[k])) continue;
+    c[k] = v;
+  }
+  // O ponto de nascimento repete a `key` do próprio bicho (ver `criarMonstro`).
+  if (c.spawn?.key === m.key) {
+    const { key, ...resto } = c.spawn;
+    c.spawn = resto;
+  }
+  return c;
+}
+
+/** O bicho lido do banco, com o que foi tirado na gravação de volta (no lugar). */
+export function completarMonstro(m) {
+  const f = fixosDe(m?.key);
+  if (!f) return m;
+  for (const k of FIXOS_DO_BICHO) if (!(k in m)) m[k] = f.valores[k];
+  // Na mesma ordem de `criarMonstro` (key primeiro), para a caçada voltar igual.
+  if (m.spawn && !('key' in m.spawn)) m.spawn = { key: m.key, ...m.spawn };
+  return m;
+}
+
+/*
+ * O contador de `uid` recomeça em 1 quando o servidor reinicia, mas os bichos
+ * de uma hunt carregada do banco já têm os deles: sem isto, o bicho que
+ * renascia podia pegar o `uid` de um que ainda estava vivo, e o cliente
+ * (que junta os bichos pelo `uid`) e o alvo confundiam os dois.
+ */
+export function garantirUidAcimaDe(n) {
+  if (Number.isFinite(n) && n >= proximoUid) proximoUid = n + 1;
+}
+
 export function trocarDeAndar(hunt, destino) {
   if (hunt.anfitriao) return false;
   const guardados = (hunt.outrosAndares ??= {});
