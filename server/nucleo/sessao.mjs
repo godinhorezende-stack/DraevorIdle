@@ -57,6 +57,7 @@ import * as Arvore from '../sistemas/arvore.mjs';
 import * as Banqueiro from '../sistemas/banqueiro.mjs';
 import * as Craft from '../sistemas/craft.mjs';
 import * as Desmanche from '../sistemas/desmanche.mjs';
+import * as SimulacaoOffline from './simulacao-offline.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -64,6 +65,8 @@ Inventario.semearChao(CITY_META.chao);
 
 /** Todas as sessões vivas, por nome de personagem — para quando o mapa tiver mais de um jogador. */
 export const vivas = new Map();
+/** Quem está entrando num personagem e esperando a simulação offline (por nome do personagem). */
+const carregandoAgora = new Map();
 Party.ligar(vivas);
 Amigos.ligar(vivas);
 Chat.ligar(vivas);
@@ -83,6 +86,7 @@ const AUTOSAVE_MS = 30_000;
 const CAMPOS_MEMORIZADOS = new Set(['entregas']);
 const QUADROS_POR_PERSONAGEM = 4;
 const INTERVALO_DO_PEDIDO_DE_MAPA = 2000;
+const PASSAM_CARREGANDO = new Set(['release', 'logout', 'login', 'resume', 'register', 'delta', 'jaTenhoCatalogo', 'oculta']);
 const CAMPOS_DE_TODO_QUADRO = ['hp', 'mana'];
 
 // Catálogo, itens e mapa da cidade: fixos e enormes, viram texto uma vez só (ver `json.mjs`).
@@ -606,6 +610,9 @@ export class Sessao {
     // O medidor de ping do client (`medidor.mjs`): `{t:'ping', at}` → `{t:'pong', at}`.
     // Sem resposta, o número mostrava há quanto tempo o ping saiu — só subia.
     if (m.t === 'ping') return this.enviar({ t: 'pong', at: m.at });
+    // Entrando no personagem (simulação offline rodando): comando de jogo ainda
+    // não tem personagem para agir. Sair, trocar de conta e o handshake passam.
+    if (this.carregando && !PASSAM_CARREGANDO.has(m.t)) return;
     switch (m.t) {
       case 'register':
         return this.registrar(m);
@@ -1045,43 +1052,111 @@ export class Sessao {
 
   entrarNoPersonagem({ name }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
-    const personagem = B.personagemPorNome(name);
+    // Já entrando num personagem (a simulação offline está rodando): o cliente
+    // manda `play` uma vez só; outro no meio é repetição.
+    if (this.carregando) return;
+    let personagem = B.personagemPorNome(name);
     if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
 
     // "Sem [o Slot de party], a conta joga e caça com até 2 chars" ao mesmo tempo.
+    // Quem ainda está carregando (simulação offline) já conta.
     const limite = Party.limiteDeChars(this.conta.id);
-    const daConta = [...vivas.values()].filter((s) => s !== this && s.conta?.id === this.conta.id && s.personagem?.nome !== personagem.nome);
+    const jogando = (s) => s.personagem?.nome ?? s.carregando?.nome;
+    const daConta = [...vivas.values(), ...carregandoAgora.values()].filter((s) => s !== this && s.conta?.id === this.conta.id && jogando(s) && jogando(s) !== personagem.nome);
     if (daConta.length >= limite) {
       return this.erroDeAuth(`Sua conta já está com ${daConta.length} personagens jogando — o limite é ${limite}. Mais: "Slot de party", na Ravox Store.`);
+    }
+    // O mesmo personagem aberto (ou ainda carregando) em outra aba: esta ganha.
+    const carregandoLa = carregandoAgora.get(personagem.nome);
+    if (carregandoLa && carregandoLa !== this) {
+      carregandoLa.cancelarCarregamento();
+      enviar(carregandoLa.ws, { t: 'released', notice: 'Você entrou neste personagem em outra aba.' });
     }
     const antiga = vivas.get(personagem.nome);
     if (antiga && antiga !== this) {
       antiga.soltarPersonagem();
       enviar(antiga.ws, { t: 'released', notice: 'Você entrou neste personagem em outra aba.' });
+      // A outra aba acabou de gravar: a linha lida lá em cima já está velha.
+      personagem = B.personagemPorNome(name);
     }
 
-    this.personagem = personagem;
-    this.estado = JSON.parse(personagem.estado);
+    const estado = JSON.parse(personagem.estado);
     // Os bichos da caçada voltam completos (ver `Cacadas.huntParaGravar`).
-    Cacadas.huntAoCarregar(this.estado.hunt);
-    this.estado.pos = corrigirPosicaoAntiga(this.estado.pos);
+    Cacadas.huntAoCarregar(estado.hunt);
+    estado.pos = corrigirPosicaoAntiga(estado.pos);
     // Migração: personagens salvos antes do sistema de recompensas existir
     // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
     // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
-    if (!this.estado.diario) Object.assign(this.estado, Recompensas.estadoInicial());
+    if (!estado.diario) Object.assign(estado, Recompensas.estadoInicial());
     // Mesma migração, agora para os campos que a Ravox Store passou a usar.
-    if (!this.estado.autoBoss) Object.assign(this.estado, Loja.estadoInicial());
+    if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
     // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
     // ganha a exp base do level que já tem, somada ao que caçou.
-    if ((this.estado.xp ?? 0) < R.expForLevel(this.estado.level)) this.estado.xp = (this.estado.xp ?? 0) + R.expForLevel(this.estado.level);
-    Treino.garantir(this.estado);
+    if ((estado.xp ?? 0) < R.expForLevel(estado.level)) estado.xp = (estado.xp ?? 0) + R.expForLevel(estado.level);
+    Treino.garantir(estado);
     // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
-    Gemas.sincronizarMaximos(this.estado);
-    Inventario.moedasParaOBolso(this.estado);
+    Gemas.sincronizarMaximos(estado);
+    Inventario.moedasParaOBolso(estado);
     // Treino offline / Exercise que ficou rodando com o jogador fora.
-    const treinoPendente = Treinos.voltaDoTreino(this.estado, personagem.visto_em);
+    const treinoPendente = Treinos.voltaDoTreino(estado, personagem.visto_em);
     // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
-    if (!this.estado.hunt && personagem.visto_em) Stamina.recuperar(this.estado, Date.now() - personagem.visto_em);
+    if (!estado.hunt && personagem.visto_em) Stamina.recuperar(estado, Date.now() - personagem.visto_em);
+    // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.
+    Arena.aoEntrar(estado);
+
+    /*
+     * ---- Caçou com a aba fechada? A simulação roda FORA da thread do jogo ----
+     *
+     * Até aqui nada foi gravado nem tirado do banco: se a pessoa sair, fechar
+     * a aba ou entrar neste personagem em outra aba enquanto a simulação roda,
+     * o resultado é só jogado fora (`cancelarCarregamento`) e a próxima entrada
+     * simula de novo a partir do mesmo estado gravado — nada se perde e nada
+     * se ganha duas vezes. Enquanto isso a sessão não tem personagem: o tique
+     * e os comandos de jogo passam por ela sem fazer nada.
+     */
+    const agora = Date.now();
+    if (!Cacadas.temAusenciaParaSimular(estado, agora)) {
+      return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora), treinoPendente);
+    }
+    const pedido = { nome: personagem.nome };
+    this.carregando = pedido;
+    carregandoAgora.set(personagem.nome, this);
+    const quem = { id: personagem.id, nome: personagem.nome, conta: personagem.conta, vocacao: personagem.vocacao };
+    const ida = { ...estado, hunt: Cacadas.huntParaGravar(estado.hunt) };
+    return SimulacaoOffline.simular(ida, quem, agora).then(
+      ({ estado: simulado, ausencia }) => {
+        if (this.carregando !== pedido) return;
+        this.pararDeCarregar();
+        // Trocou de conta no meio (login em outra): este personagem não é mais dela.
+        if (this.conta?.id !== personagem.conta) return;
+        Cacadas.huntAoCarregar(simulado.hunt);
+        this.concluirEntrada(personagem, simulado, ausencia, treinoPendente);
+      },
+      (e) => {
+        if (this.carregando !== pedido) return;
+        // A thread falhou: simula aqui mesmo (trava, mas o jogador entra).
+        console.error('simulação offline ->', e.message);
+        this.pararDeCarregar();
+        if (this.conta?.id !== personagem.conta) return;
+        this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora), treinoPendente);
+      },
+    );
+  }
+
+  pararDeCarregar() {
+    if (this.carregando && carregandoAgora.get(this.carregando.nome) === this) carregandoAgora.delete(this.carregando.nome);
+    this.carregando = null;
+  }
+
+  /** A entrada foi abandonada no meio da simulação offline: o resultado dela é descartado. */
+  cancelarCarregamento() {
+    this.pararDeCarregar();
+  }
+
+  /** O resto da entrada, com o estado já com a ausência simulada (`ausencia`: o que `simularAusencia` devolveu). */
+  concluirEntrada(personagem, estado, ausencia, treinoPendente) {
+    this.personagem = personagem;
+    this.estado = estado;
     this.estado.bauDaConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
     // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
     const doMercado = Mercado.receberCreditos(this.estado, personagem.id);
@@ -1090,12 +1165,8 @@ export class Sessao {
     this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado;
     vivas.set(personagem.nome, this);
 
-    // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.
-    Arena.aoEntrar(this.estado);
-    // Caçou com a aba fechada? Simula o tempo que passou e manda o relatório
-    // ("Progresso enquanto você esteve fora" — `andamento`, no client).
+    // "Progresso enquanto você esteve fora" — `andamento`, no client.
     let andamento = null;
-    const ausencia = Cacadas.simularAusencia(this.estado, personagem);
     if (ausencia) {
       andamento = ausencia.report;
       if (ausencia.morreu) {
@@ -1154,6 +1225,8 @@ export class Sessao {
   }
 
   soltarPersonagem() {
+    // Saiu no meio da simulação offline: nada foi gravado ainda, só descarta.
+    if (this.carregando) this.cancelarCarregamento();
     if (!this.personagem) return;
     // Campos de movimento são de ida (calculados a cada tique a partir do
     // último `walk`); gravá-los faria o personagem "lembrar" um rumo vencido

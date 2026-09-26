@@ -145,6 +145,12 @@ function projetar(estado, base, fator) {
   return extra;
 }
 
+/** Se a volta tem caçada offline para simular (o mesmo corte de `simularAusencia`: 5 s ou mais fora). */
+export function temAusenciaParaSimular(estado, agora = Date.now()) {
+  const desde = estado?.hunt?.offlineDesde;
+  return !!desde && Math.min(agora, desde + AUSENCIA_MAXIMA_MS) - desde >= 5000;
+}
+
 export function simularAusencia(estado, personagem, agora = Date.now()) {
   const hunt = estado.hunt;
   if (!hunt?.offlineDesde) return null;
