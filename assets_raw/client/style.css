@@ -3321,7 +3321,13 @@ body {
   /* O `--desloca-barra` (medido no actionbar.mjs) é o que põe a FILEIRA DE
      SLOTS no meio da tela, e não a barra: ela não é simétrica, e centrá-la
      deixava os slots à esquerda do personagem. Ver a nota longa lá. */
-  position: fixed; bottom: 0; left: 50%;
+  /*
+   * `env(safe-area-inset-bottom)` (0px em quem não tem gesto de início —
+   * praticamente todo mundo hoje, inclusive a mesa): a faixa horizontal do
+   * iPhone sem botão físico fica bem aqui, embaixo, e sem isto ela cai por
+   * cima da última fileira de slots.
+   */
+  position: fixed; bottom: env(safe-area-inset-bottom, 0px); left: 50%;
   transform: translateX(calc(-50% + var(--desloca-barra, 0px)));
   z-index: 25;
   display: flex; flex-direction: column; gap: 3px; align-items: stretch;
@@ -17455,7 +17461,26 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
  * divergir calada — foi exatamente o que aconteceu com a horizontal: o CSS
  * mudaria aqui e o analógico continuaria com o corte velho.
  */
-:root { --e-celular: 0; }
+:root { --e-celular: 0; --e-tablet: 0; }
+
+/*
+ * ---- E o TABLET, que não é nem um nem outro ----
+ *
+ * Um tablet de 1024px DEITADO não bate a régua de 820px de largura nem a de
+ * 540px de altura — cai inteiro no layout de MESA, com o mouse que ele não
+ * tem: fechar janela, recolher a topbar e o "+" de coins viravam alvos de
+ * 20-26px, do tamanho de antes de existir `--e-celular`.
+ *
+ * `--e-tablet` não troca o layout (a tela sobra: janela flutuante continua
+ * fazendo sentido, ao contrário do celular) — só destrava os MESMOS ajustes de
+ * alvo de toque que o celular já tem, mais abaixo, também para quem está
+ * nesta faixa de largura com o dedo. Retrato (768px) já cai em `--e-celular`
+ * sozinho (é mais estreito que 820) e ganha os dois — os alvos de toque não
+ * se importam com qual dos dois acendeu.
+ */
+@media (min-width: 600px) and (max-width: 1180px) and (pointer: coarse) {
+  :root { --e-tablet: 1; }
+}
 
 @media (max-width: 820px), (max-height: 540px) and (pointer: coarse) {
   :root {
@@ -17467,9 +17492,16 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
      * saber subir acima dela quando ela abre — e a conta de "acima da gaveta" é
      * esta altura mais a distância do chão. Escrita duas vezes, um dia uma
      * mudaria e a outra não, e o aviso voltaria a ficar por baixo.
+     *
+     * O `env(safe-area-inset-bottom)` entra AQUI, na fonte, e não como uma
+     * margem separada na gaveta: ela é `bottom: var(--gaveta-chao)`, então
+     * somando o entalhe uma vez só, tudo que se apoia nesta variável (a
+     * gaveta, o presente, os buffs) sobe junto — sem isto, o chão media
+     * `--barra-altura + 8px` e a gaveta ficaria por baixo da faixa do gesto de
+     * início do iPhone, que fica exatamente aqui embaixo.
      */
     --gaveta-altura: min(46vh, 430px);
-    --gaveta-chao: calc(var(--barra-altura, 110px) + 8px);
+    --gaveta-chao: calc(var(--barra-altura, 110px) + 8px + env(safe-area-inset-bottom, 0px));
   }
 
   /* ---- 1. As janelas viram uma gaveta ---- */
@@ -17705,8 +17737,14 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
      */
     left: 0 !important;
     right: 0;
-    /* "grude os slots de habilidade e as coisas no rodapé": encostada mesmo. */
-    bottom: 0;
+    /*
+     * "grude os slots de habilidade e as coisas no rodapé": encostada mesmo —
+     * no rodapé de VERDADE, que num iPhone sem botão físico já não é mais o
+     * pixel 0 (ver o `env()` na regra de mesa, logo acima no arquivo: aqui
+     * repete o MESMO valor, e não `0` puro, senão a versão de pé apagaria a
+     * folga que a de mesa criou).
+     */
+    bottom: env(safe-area-inset-bottom, 0px);
     transform: none !important;
     width: 100% !important;
     max-width: none;
@@ -18864,6 +18902,100 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
       overscroll-behavior: contain;
     }
   }
+}
+
+/*
+ * ================= ALVOS DE TOQUE: O QUE FICOU PEQUENO =================
+ *
+ * O grosso já tinha sido medido e corrigido (ver o comentário lá em cima: 91
+ * alvos abaixo de 44px, o mínimo que Apple e Google publicam para um dedo).
+ * Estes quatro escaparam daquela varredura porque não são o alvo óbvio — são
+ * botões da TOPBAR de mesa que continuam de pé no celular e no tablet
+ * (`--e-celular` ou `--e-tablet`), sem nenhuma regra própria para toque:
+ *
+ *   `#topbar-min` (recolher a topbar):        26x20
+ *   `#store-button` (a placa da loja):        91x22 — a imagem tem 22px de
+ *                                              altura desde a l.17647 (achatada
+ *                                              para caber ao lado dos outros)
+ *   `#market-button` (o mercado, à esquerda):  28x25
+ *   `.window-close` / `.window-min`:           34x34 — perto, mas abaixo
+ *
+ * Onde crescer o DESENHO ficaria estranho (a placa da loja, o "+" das coins —
+ * ver adiante), a área de toque cresce por fora, invisível, sem mexer no que
+ * está pintado. No celular o mercado É `.tools #market-button` — mas o
+ * ajuste dele não mora aqui: `.tools #market-button` tem uma regra própria
+ * mais abaixo no arquivo (a nota "O Mercado agora é FILHO da fileira"), que
+ * vence a de cima por vir depois — um ajuste escrito aqui seria apagado por
+ * ela sem aviso. Ver o padding a mais logo ao lado daquela regra.
+ */
+@media (max-width: 820px), (max-height: 540px) and (pointer: coarse), (min-width: 600px) and (max-width: 1180px) and (pointer: coarse) {
+  #topbar-min { min-width: 44px; min-height: 44px; }
+  .window-close, .window-min { min-width: 40px; min-height: 40px; }
+  /* A imagem continua do tamanho de sempre; o respiro em volta é que cresce. */
+  #store-button:not(.tools *) { padding: 11px 6px; }
+
+  /*
+   * ---- O "+" das coins: continua do tamanho que o dono pediu, só o toque cresce ----
+   *
+   * "coloca ele meio dourado... tipo em cima do último dígito" — aumentar os
+   * 14px visíveis brigaria com esse desenho (ele é para parecer um expoente,
+   * não um botão). O `::after` estende a área que responde ao toque SEM mudar
+   * um pixel do que aparece: mais para cima e para a direita (onde não há
+   * nada), pouco para baixo e para a esquerda (onde mora o número do saldo,
+   * que abre o banco com um clique — crescer por igual roubaria toque dele).
+   */
+  .carteira-mais { position: relative; }
+  .carteira-mais::after {
+    content: ''; position: absolute; top: -14px; right: -14px; bottom: -6px; left: -6px;
+  }
+}
+
+/*
+ * ================= SAFE AREA: ENTALHE E DYNAMIC ISLAND =================
+ *
+ * `viewport-fit=cover` (jogar.html) já pede a tela INTEIRA, entalhe incluso —
+ * sem isso nada abaixo faria diferença, `env()` só existe com essa cobertura
+ * pedida. Antes desta seção só o RODAPÉ de um modal usava `env()` (e agora o
+ * do `#actionbar`/`--gaveta-chao`, na FONTE de cada um — ver os comentários
+ * onde `bottom: 0` virou `bottom: env(...)`, lá em cima no arquivo).
+ *
+ * O que falta é só o analógico (o lado ESQUERDO, na paisagem, é onde ele
+ * encosta) e a topbar. Sem `@supports`: o resto do arquivo já usa `env()` sem
+ * essa proteção (a regra do modal, acima), e este jogo não mira navegador que
+ * não entenda `env()`.
+ *
+ * NÃO testável neste ambiente: Chromium sem hardware de entalhe sempre
+ * devolve `0px`, e é exatamente o valor que `bottom:0`/`left:8px` já tinham —
+ * o efeito só aparece de verdade num aparelho com entalhe/Dynamic Island.
+ *
+ * O TOPO fica de fora de propósito: `--altura-da-topbar` é um número FIXO
+ * (`:root { --altura-da-topbar: 62px }`, mais acima) do qual mais de uma dúzia
+ * de outras regras dependem para saber onde a topbar TERMINA (o HUD, os
+ * avisos, os cartazes — todos com `top: calc(var(--altura-da-topbar) + ...)`).
+ * Crescer a topbar de verdade sem também crescer esse número faria os dois
+ * discordarem, e tudo que vem depois dela passaria a nascer por baixo da
+ * borda — o mesmo tipo de coisa que este arquivo já resolveu uma vez trocando
+ * `matchMedia` duplicado por uma variável só. Dar ao entalhe do TOPO o
+ * tratamento certo pede mexer nesse número também, em todo lugar que o lê;
+ * fica para quem tiver um aparelho de verdade para confirmar que faz falta —
+ * em retrato, dentro do Safari normal (não instalado como app), a barra de
+ * endereço do próprio navegador já cobre essa faixa.
+ */
+@media (max-width: 820px), (max-height: 540px) and (pointer: coarse) {
+  /*
+   * PADDING, e não margem: o fundo escuro da topbar precisa ir até a borda
+   * de verdade (senão sobra uma tira do mapa por trás dela, exatamente onde
+   * o entalhe está); quem recua é só o CONTEÚDO.
+   *
+   * `4px` é o padding que a topbar já tem em qualquer tela deste tamanho
+   * (`@media (max-width: 1300px)`, mais acima — 820px, o teto de
+   * `--e-celular`, está sempre dentro dele). Repetir esse número aqui, na
+   * regra que vale por último, é a mesma soma que uma margem faria por fora,
+   * sem abrir o vão: quem não tem entalhe recebe o `4px` de sempre
+   * (`env(..., 0px)` soma zero), quem tem ganha o `4px` mais o entalhe.
+   */
+  #topbar { padding-left: calc(4px + env(safe-area-inset-left, 0px)); padding-right: calc(4px + env(safe-area-inset-right, 0px)); }
+  #analogico { margin-left: env(safe-area-inset-left, 0px); }
 }
 
 /* ---- o histórico da loja: uma lista só ---- */
@@ -21156,6 +21288,24 @@ body.topbar-recolhida .gaveta-da-barra { display: none; }
   width: var(--tamanho-do-icone, 30px); height: var(--tamanho-do-icone, 30px);
 }
 .tools.sem-legenda #market-button .label { display: none; }
+/*
+ * Alvo de toque (celular/tablet, `--e-celular`/`--e-tablet`): sem legenda
+ * (`.sem-legenda` esconde o texto nesta largura), o botão media só 28x25 —
+ * ícone de 30px mais os 3px/2px de cima/baixo do padding de mesa. Só a
+ * ALTURA cresce; `width` continua vindo de `--largura-do-botao` de propósito
+ * (ver o comentário "O Mercado agora é FILHO da fileira", logo acima).
+ *
+ * FORA do celular DEITADO (`max-height: 520px`, algumas linhas acima: "a
+ * altura é o recurso escasso"): a topbar ali já é a versão espremida de 54px
+ * (`--altura-da-topbar: 54px`), medida para caber a fileira do tamanho de
+ * MESA que ela é ali — testado ao vivo (852x393/915x412), os 19px a mais
+ * estouravam a fileira inteira para fora da tela, não só o botão. Nessa
+ * altura o botão fica do tamanho de sempre; o resto do celular (retrato,
+ * onde a topbar tem espaço de sobra) ganha o alvo maior.
+ */
+@media (min-height: 521px) and ((max-width: 820px) or ((max-height: 540px) and (pointer: coarse)) or ((min-width: 600px) and (max-width: 1180px) and (pointer: coarse))) {
+  .tools #market-button { padding-top: 10px; padding-bottom: 9px; }
+}
 
 /*
  * ---- As legendas da barra, legíveis ----
