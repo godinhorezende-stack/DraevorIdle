@@ -155,14 +155,32 @@ export function gravarBauDaConta(contaId, caixa) {
 // O que a Ravox Store vende para a CONTA (o slot de party: "comprou em um char,
 // vale para todos os chars da conta").
 
+/*
+ * Lidas toda hora: o tamanho da party (`Party.limiteDeChars`) vai no
+ * personagem a cada segundo, de cada jogador — era uma consulta SQL por
+ * jogador por segundo, dentro do tique. Só esta função e a de baixo escrevem
+ * na tabela, então o texto guardado aqui nunca fica velho (com mais de um
+ * processo escrevendo, isto vira cache invalidado por aviso — ver
+ * docs/auditoria-performance.md). Guarda o TEXTO e devolve um objeto novo a
+ * cada leitura: quem lê pode mexer no objeto (a Loja mexe antes de gravar)
+ * sem sujar o que está guardado.
+ */
+const melhoriasGuardadas = new Map(); // conta -> texto JSON
+
 export function lerMelhoriasDaConta(contaId) {
-  const linha = db.prepare('SELECT dados FROM melhorias_da_conta WHERE conta = ?').get(contaId);
-  return linha ? JSON.parse(linha.dados) : {};
+  let texto = melhoriasGuardadas.get(contaId);
+  if (texto === undefined) {
+    texto = db.prepare('SELECT dados FROM melhorias_da_conta WHERE conta = ?').get(contaId)?.dados ?? '{}';
+    melhoriasGuardadas.set(contaId, texto);
+  }
+  return JSON.parse(texto);
 }
 
 export function gravarMelhoriasDaConta(contaId, dados) {
+  const texto = JSON.stringify(dados);
   db.prepare('INSERT INTO melhorias_da_conta (conta, dados) VALUES (?, ?) ON CONFLICT(conta) DO UPDATE SET dados = excluded.dados').run(
     contaId,
-    JSON.stringify(dados)
+    texto
   );
+  melhoriasGuardadas.set(contaId, texto);
 }
