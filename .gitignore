@@ -18,3 +18,9 @@ bash.exe.stackdump
 *.db
 *.db-wal
 *.db-shm
+
+# Backups do Postgres (scripts/backup-postgres.sh) — ficam só no VPS
+backups/
+
+# .env de verdade (senhas de banco) — só o .env.example vai pro git
+.env

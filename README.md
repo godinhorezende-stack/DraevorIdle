@@ -98,10 +98,15 @@ npm install
 node index.mjs   # -> http://localhost:8080/jogar
 ```
 
+Banco: SQLite por padrão (nada para instalar); com `DATABASE_URL=postgres://...`
+no ambiente, o mesmo servidor fala com PostgreSQL — ver `docs/auditoria-performance.md`
+(Fase 6) e, para subir tudo com Docker Compose (nginx + game + postgres),
+`docs/deploy.md`.
+
 | arquivo | o que faz |
 |---|---|
 | `server/index.mjs` | gateway: serve o cliente por HTTP, abre o WebSocket em `/ws` |
-| `server/nucleo/banco.mjs` | SQLite — contas (scrypt), sessões, personagens |
+| `server/nucleo/banco.mjs` | contas (scrypt), sessões, personagens — SQLite ou Postgres, por `DATABASE_URL` |
 | `server/nucleo/regras.mjs` | constantes — looks por vocação, level inicial 8, fórmulas REAIS de vida/mana/velocidade/capacidade (importadas de `packages/shared/src/formulas.mjs`) |
 | `server/nucleo/dados.mjs` | carrega os arquivos capturados (mapa, catálogo, molde de personagem, equipamento) — só leitura de disco, nenhuma regra |
 | `server/nucleo/sessao.mjs` | camada de REDE só: uma conexão = uma `Sessao`, despacha comando→método, traduz resultado de `sistemas/*` em mensagem WebSocket |

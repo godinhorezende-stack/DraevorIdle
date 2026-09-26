@@ -765,11 +765,11 @@ troca ponta a ponta.
 - **Saída:** 1.000 bots caçando num VPS de 4 vCPU com intervalo p99 < 300 ms e ping p99 < 100 ms.
 
 ### Fase 6 — Banco / cache (PostgreSQL)
-1. Camada de repositórios (tirar SQL dos 9 módulos), primeiro sobre o SQLite atual, com API assíncrona.
-2. Colunas quentes + índices (ranking, busca por nome com `citext`), `sessoes` com expiração.
-3. Implementação PostgreSQL dos mesmos repositórios, escolhida por variável de ambiente; script de migração SQLite → PostgreSQL.
-4. Autosave write-behind com "sujo" e `versao`.
-- **Saída:** testes passam nos dois bancos; ranking < 10 ms com 100 mil personagens sintéticos; nenhuma chamada ao banco dentro do tique.
+1. ✅ Camada de repositórios (tirar SQL dos 9 módulos), primeiro sobre o SQLite atual, com API assíncrona — `nucleo/db.mjs`, `nucleo/banco.mjs` e os 9 módulos (guildas, mercado, arena, amigos, drops-do-site, ranking, site + banco/sessão) todos convertidos.
+2. ✅ Colunas quentes + índices (ranking, busca por nome com `citext`) — `citext` em email/nome dos dois bancos; índices mantidos dos schemas originais. `sessoes` com expiração ainda não foi feito (não bloqueava o resto da fase).
+3. ✅ Implementação PostgreSQL dos mesmos repositórios, escolhida por `DATABASE_URL`; script de migração SQLite → PostgreSQL (`server/scripts/migrar-sqlite-para-postgres.mjs`).
+4. ⬜ Autosave write-behind com "sujo" e `versao` — não feito nesta rodada; o autosave de hoje (grava tudo, todo intervalo) segue como estava.
+- **Saída:** testes (231, incluindo os parametrizados contra Postgres real) passam nos dois bancos; nenhuma chamada síncrona ao banco ficou no tique (os pontos quentes — `guildaDe`, `bonusDoPodio`, `Party.limiteDeChars` — usam cache em memória com atualização em segundo plano, o mesmo padrão da Fase 3). O "ranking < 10 ms com 100 mil personagens sintéticos" não foi remedido depois da conversão — os índices não mudaram, mas vale medir de novo antes de dar a fase por encerrada de verdade.
 
 ### Fase 7 — Desacoplamento
 1. `EventEmitter` com os 5 eventos da §5.
@@ -790,12 +790,18 @@ troca ponta a ponta.
 
 ### Trilha de infraestrutura (paralela, a partir do fim da fase 1)
 
-- `Dockerfile` do jogo: `node:22-slim`, usuário sem root, `HEALTHCHECK` em `/saude`, `stop_grace_period: 30s` para o autosave de saída.
-- `docker-compose.yml`: `nginx`, `game`, `postgres:16` (volume), e `redis` só quando existir o segundo processo.
-- nginx: TLS (Let's Encrypt), `brotli_static`/`gzip_static`, `Cache-Control: immutable` para URLs com versão, `proxy_pass` do `/ws` com `Upgrade`/`Connection`, `limit_conn`/`limit_req` por IP.
-- Backup: `pg_dump` diário com rotação, testado com restauração.
-- Métricas mínimas em `/saude`: duração do tique (p50/p99), atraso do event loop, online, heap, tamanho da fila de gravação.
-- Quando precisar de mais de um processo/máquina: nginx com afinidade (a sessão fica no mesmo processo), Redis para presença, pub/sub (chat, amigos, convites de party) e limite de ritmo; o ranking pode virar ZSET.
+- ✅ `Dockerfile` do jogo: `node:22-slim`, usuário sem root, `HEALTHCHECK` em `/saude`, `stop_grace_period: 30s` para o autosave de saída — `docker/Dockerfile`.
+- ✅ `docker-compose.yml`: `nginx`, `game`, `postgres:16` (volume), e `redis` atrás de `profiles: ["scale"]` (só quando existir o segundo processo — ver Fase 6, item de baixo). `docker-compose.override.yml` (dev) e `docker-compose.prod.yml` (limites de memória, rotação de log, `certbot` sob pedido).
+- 🟡 nginx: `proxy_pass` do `/ws` com `Upgrade`/`Connection` certos e `limit_conn`/`limit_req` por IP feitos e testados (ver `docker/nginx/conf.d/`); TLS deixado pronto mas comentado (falta domínio de verdade pra rodar o certbot). `brotli_static`/`gzip_static`/`Cache-Control: immutable` NÃO estão no nginx de propósito — o jogo já faz isso (`nucleo/estaticos.mjs`); nginx recomprimindo por cima seria trabalho em dobro e um `Cache-Control` por cima do certo.
+- ✅ Script de migração de banco: `server/scripts/migrar-sqlite-para-postgres.mjs` (Fase 6, item 3).
+- ⬜ Backup (`pg_dump` diário com rotação, testado com restauração), scripts de deploy pelo Git, e a documentação de deploy (`docs/deploy.md`) — próximo passo desta trilha.
+- ⬜ Métricas mínimas em `/saude` (duração do tique p50/p99, atraso do event loop, heap, fila de gravação) — hoje `/saude` só devolve `{ok, online}`.
+- Quando precisar de mais de um processo/máquina: nginx com afinidade (a sessão fica no mesmo processo), Redis para presença, pub/sub (chat, amigos, convites de party) e limite de ritmo; o ranking pode virar ZSET. Nada disto foi feito — é só o motivo do `redis` já existir no compose, desligado.
+
+Tudo isto foi feito e testado **só neste repositório** (build da imagem,
+subida dos três serviços, `/saude`/`/jogar`/WebSocket através do nginx,
+Postgres real) — nenhum VPS, domínio ou DNS de verdade foi tocado. Ver
+`docs/deploy.md` para o passo a passo de ligar isto num servidor de verdade.
 
 ---
 
