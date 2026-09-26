@@ -19,6 +19,12 @@
 // - PNG com um `<nome>.png.webp` ao lado (tools/imagens/converter.mjs): quem
 //   aceita WebP (o `Accept` que o navegador manda para imagem) recebe o WebP no
 //   mesmo endereço — o cliente continua pedindo `.png`, nada muda nele.
+// - Texto com um `<nome>.br`/`<nome>.gz` ao lado (tools/precomprimir.mjs, no
+//   build): serve o pronto, sem gastar Brotli síncrono na hora do pedido — que
+//   só era memorizado (1x por processo), não de graça: um arquivo de 1 MB
+//   comprimindo na 1ª visita depois de um deploy trava o event loop bem na
+//   hora em que todo mundo está reconectando. Sem o par (arquivo novo, editado
+//   à mão em dev), cai para o síncrono de sempre — nunca quebra.
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname } from 'node:path';
@@ -47,6 +53,17 @@ async function webpNoLugar(req, alvo, st) {
   try {
     const w = await stat(`${alvo}.webp`);
     return w.isFile() && w.mtimeMs >= st.mtimeMs ? { arquivo: `${alvo}.webp`, st: w } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** O `.br`/`.gz` pronto do build (`tools/precomprimir.mjs`) ao lado de `alvo`, se existir e não for mais velho que ele. */
+async function preComprimido(alvo, st, sufixo) {
+  try {
+    const pronto = `${alvo}.${sufixo}`;
+    const stp = await stat(pronto);
+    return stp.mtimeMs >= st.mtimeMs ? await readFile(pronto) : null;
   } catch {
     return null;
   }
@@ -119,10 +136,10 @@ export async function servir(req, res, alvo) {
   let corpo = arq.corpo;
   const cod = TEXTO.has(ext) && corpo.length > 1024 ? codificacao(req) : null;
   if (cod === 'br') {
-    arq.br ??= brotliCompressSync(arq.corpo, { params: { [constants.BROTLI_PARAM_QUALITY]: 9, [constants.BROTLI_PARAM_SIZE_HINT]: arq.corpo.length } });
+    arq.br ??= (await preComprimido(alvo, st, 'br')) ?? brotliCompressSync(arq.corpo, { params: { [constants.BROTLI_PARAM_QUALITY]: 9, [constants.BROTLI_PARAM_SIZE_HINT]: arq.corpo.length } });
     corpo = arq.br;
   } else if (cod === 'gzip') {
-    arq.gz ??= gzipSync(arq.corpo, { level: 9 });
+    arq.gz ??= (await preComprimido(alvo, st, 'gz')) ?? gzipSync(arq.corpo, { level: 9 });
     corpo = arq.gz;
   }
   if (cod) cabecalho['content-encoding'] = cod;
