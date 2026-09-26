@@ -82,6 +82,7 @@ const AUTOSAVE_MS = 30_000;
 /** Campos do `character` que devolvem o MESMO objeto enquanto não mudam (ver `Entregas.paraCliente`). */
 const CAMPOS_MEMORIZADOS = new Set(['entregas']);
 const QUADROS_POR_PERSONAGEM = 4;
+const INTERVALO_DO_PEDIDO_DE_MAPA = 2000;
 const CAMPOS_DE_TODO_QUADRO = ['hp', 'mana'];
 
 // Catálogo, itens e mapa da cidade: fixos e enormes, viram texto uma vez só (ver `json.mjs`).
@@ -626,8 +627,14 @@ export class Sessao {
         return this.andar(m);
       case 'virar':
         return this.virar(m);
-      case 'pedirMapa':
+      case 'pedirMapa': {
+        // O mapa da cidade tem 3,7 MB: o cliente pede no máximo a cada 3 s
+        // (`ultimoPedidoDeMapa`, main.mjs); mais que isso é repetição, não perda.
+        const agora = Date.now();
+        if (agora - (this.mapaPedidoEm ?? 0) < INTERVALO_DO_PEDIDO_DE_MAPA) return;
+        this.mapaPedidoEm = agora;
         return this.mandarEstado(true);
+      }
       case 'diario':
         return this.aplicar(Recompensas.coletarDiario(this.estado));
       case 'diarioEscolher':

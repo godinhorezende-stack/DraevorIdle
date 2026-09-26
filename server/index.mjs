@@ -10,6 +10,7 @@ import * as Estaticos from './nucleo/estaticos.mjs';
 import * as Site from './sistemas/site.mjs';
 import * as DropsDoSite from './sistemas/drops-do-site.mjs';
 import * as Guildas from './sistemas/guildas.mjs';
+import * as Limites from './nucleo/limites.mjs';
 
 Site.ligar(vivas);
 
@@ -135,6 +136,8 @@ const wss = new WebSocketServer({
   server: http,
   path: '/ws',
   perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 6 }, concurrencyLimit: 10 },
+  // Mensagem maior que isto fecha a conexão antes do `JSON.parse` (ver `nucleo/limites.mjs`).
+  maxPayload: Limites.TAMANHO_MAXIMO,
 });
 // Mesma razão do `ws.on('error', ...)` de cada conexão: sem isto, um erro do
 // SERVIDOR de WebSocket (porta ocupada, etc.) também derruba o processo.
@@ -143,8 +146,15 @@ wss.on('error', (e) => console.error('wss', e.message));
 wss.on('connection', (ws) => {
   const s = new Sessao(ws);
   s.ola();
+  const ritmo = new Limites.Ritmo();
 
   ws.on('message', (raw) => {
+    // Acima do ritmo, a mensagem nem é lida; insistindo, a conexão cai
+    // (1008 = violação de política). O cliente de verdade nunca chega perto.
+    if (!ritmo.aceitar()) {
+      if (ritmo.abusou) ws.close(1008, 'mensagens demais');
+      return;
+    }
     let m;
     try {
       m = JSON.parse(raw);
