@@ -64,11 +64,11 @@ export function sacar(estado, { amount }) {
  * `{ id, nome, estado, gravar }` — o `estado` vivo se ele estiver no jogo, o
  * gravado se não —, ou `null`. Aqui só a regra: conferir e mover o ouro.
  */
-export function transferir(estado, { name, amount }, eu, destino) {
+export async function transferir(estado, { name, amount }, eu, destino) {
   const pedido = quantia(amount);
   if (!pedido) return INVALIDO;
   const nome = String(name ?? '').trim();
-  const outro = nome ? destino(nome) : null;
+  const outro = nome ? await destino(nome) : null;
   if (!outro) return aviso('personagem não encontrado');
   if (outro.id === eu.id) return aviso('você não pode transferir para si mesmo');
   if (!outro.estado?.vocation) return aviso('o destinatário precisa ter vocação');
@@ -76,7 +76,7 @@ export function transferir(estado, { name, amount }, eu, destino) {
   if (!n) return INVALIDO;
   estado.bank -= n;
   outro.estado.bank = (outro.estado.bank ?? 0) + n;
-  outro.gravar();
+  await outro.gravar();
   return aviso(`Transferiu ${n} gold para ${outro.nome}`);
 }
 

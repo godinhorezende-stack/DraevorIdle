@@ -60,11 +60,11 @@ test('valores inválidos e ação desconhecida respondem "valor inválido" sem m
   assert.deepEqual([e.gold, e.bank], [999, 1001]);
 });
 
-test('transferir: sai do BANCO (nunca do bolso) e entra no banco do outro', () => {
+test('transferir: sai do BANCO (nunca do bolso) e entra no banco do outro', async () => {
   const e = comOuro(5000, 1000);
   const zoros = outro('Zoros');
   zoros.estado.bank = 50;
-  const r = Banqueiro.comando(e, { action: 'transfer', name: ' zoros ', amount: 700 }, { id: 'eu' }, (nome) => (nome.toLowerCase() === 'zoros' ? zoros : null));
+  const r = await Banqueiro.comando(e, { action: 'transfer', name: ' zoros ', amount: 700 }, { id: 'eu' }, (nome) => (nome.toLowerCase() === 'zoros' ? zoros : null));
   ok(r, 'Transferiu 700 gold para Zoros');
   assert.deepEqual([e.gold, e.bank], [5000, 300]);
   assert.equal(zoros.estado.bank, 750);
@@ -72,19 +72,19 @@ test('transferir: sai do BANCO (nunca do bolso) e entra no banco do outro', () =
   assert.equal(zoros.gravou, 1);
 });
 
-test('transferir: recusas na ordem do original (quantia antes do nome) sem mexer em nada', () => {
+test('transferir: recusas na ordem do original (quantia antes do nome) sem mexer em nada', async () => {
   const e = comOuro(1_000_000, 0);
   const zoros = outro('Zoros');
   const acha = (nome) => ({ zoros, eu: outro('Eu') }[nome.toLowerCase()] ?? null);
-  const t = (m) => Banqueiro.transferir(e, m, { id: 'id-Eu' }, acha).notice;
-  assert.equal(t({ name: 'Ninguem', amount: 0 }), 'valor inválido', 'quantia conferida antes do nome');
-  assert.equal(t({ name: '', amount: 10 }), 'personagem não encontrado');
-  assert.equal(t({ name: 'Ninguem', amount: 10 }), 'personagem não encontrado');
-  assert.equal(t({ name: 'Eu', amount: 10 }), 'você não pode transferir para si mesmo');
-  assert.equal(t({ name: 'Zoros', amount: 10 }), 'valor inválido', 'banco vazio, mesmo com ouro no bolso');
+  const t = async (m) => (await Banqueiro.transferir(e, m, { id: 'id-Eu' }, acha)).notice;
+  assert.equal(await t({ name: 'Ninguem', amount: 0 }), 'valor inválido', 'quantia conferida antes do nome');
+  assert.equal(await t({ name: '', amount: 10 }), 'personagem não encontrado');
+  assert.equal(await t({ name: 'Ninguem', amount: 10 }), 'personagem não encontrado');
+  assert.equal(await t({ name: 'Eu', amount: 10 }), 'você não pode transferir para si mesmo');
+  assert.equal(await t({ name: 'Zoros', amount: 10 }), 'valor inválido', 'banco vazio, mesmo com ouro no bolso');
   delete zoros.estado.vocation;
   e.bank = 100;
-  assert.equal(t({ name: 'Zoros', amount: 10 }), 'o destinatário precisa ter vocação');
+  assert.equal(await t({ name: 'Zoros', amount: 10 }), 'o destinatário precisa ter vocação');
   assert.deepEqual([e.gold, e.bank, zoros.gravou], [1_000_000, 100, 0]);
 });
 

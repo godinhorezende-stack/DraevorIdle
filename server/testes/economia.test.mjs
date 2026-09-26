@@ -21,10 +21,10 @@ async function jogador(t, prefixo) {
   const nome = `${prefixo}${randomUUID().replace(/[^a-z]/g, '').slice(0, 8)}`;
   const estado = personagemDeTeste({ level: 100 });
   estado.gold = 10_000;
-  const p = B.criarPersonagem({ conta: conta.id, nome, vocacao: 'knight', sexo: 'male', estadoInicial: estado });
+  const p = await B.criarPersonagem({ conta: conta.id, nome, vocacao: 'knight', sexo: 'male', estadoInicial: estado });
   const s = new Sessao(socket());
-  s.conta = B.contaPorId(conta.id);
-  s.receber({ t: 'play', name: nome });
+  s.conta = await B.contaPorId(conta.id);
+  await s.receber({ t: 'play', name: nome });
   assert.equal(vivas.get(nome), s, 'não entrou no jogo');
   t.after(() => {
     s.desconectar();
@@ -45,13 +45,13 @@ test('mercado: anunciar e comprar deixam o banco certo sem esperar o autosave', 
   assert.ok(item, 'o personagem de teste não tem item na mochila');
   const tinha = quantos(vendedor.s.estado, item);
 
-  vendedor.s.receber({ t: 'market', action: 'offer', kind: 'sell', id: item, count: 1, price: 700, moeda: 'gold' });
+  await vendedor.s.receber({ t: 'market', action: 'offer', kind: 'sell', id: item, count: 1, price: 700, moeda: 'gold' });
   const oferta = B.db.prepare('SELECT * FROM mercado_ofertas WHERE personagem = ?').get(vendedor.id);
   assert.ok(oferta, 'a oferta não foi criada');
   // A oferta existe no banco E o item já saiu da mochila gravada: uma queda agora não duplica.
   assert.equal(quantos(noBanco(vendedor.id), item), tinha - 1);
 
-  comprador.s.receber({ t: 'market', action: 'accept', offerId: oferta.id, count: 1 });
+  await comprador.s.receber({ t: 'market', action: 'accept', offerId: oferta.id, count: 1 });
   assert.equal(B.db.prepare('SELECT * FROM mercado_ofertas WHERE id = ?').get(oferta.id), undefined, 'a oferta continua no banco');
   const c = noBanco(comprador.id);
   const v = noBanco(vendedor.id);
@@ -68,15 +68,15 @@ test('olhar o mercado não abre transação nem grava ninguém', async (t) => {
   let gravou = 0;
   const gravar = j.s.gravarAgora;
   j.s.gravarAgora = () => (gravou++, gravar.call(j.s));
-  j.s.receber({ t: 'market', action: 'offers', filtros: {} });
-  j.s.receber({ t: 'market' });
+  await j.s.receber({ t: 'market', action: 'offers', filtros: {} });
+  await j.s.receber({ t: 'market' });
   assert.equal(gravou, 0);
 });
 
 test('erro no meio: nada do comando fica no banco (ROLLBACK)', async (t) => {
   const j = await jogador(t, 'Erro');
   const antes = B.db.prepare('SELECT count(*) AS n FROM mercado_historico WHERE personagem = ?').get(j.id).n;
-  assert.throws(() =>
+  await assert.rejects(() =>
     j.s.emTransacao(() => {
       B.db.prepare('INSERT INTO mercado_historico (personagem, lado, item, count, price, moeda, outro, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(j.id, 'compra', 1, 1, 1, 'gold', 'x', Date.now());
       throw new Error('falhou no meio');
@@ -84,5 +84,5 @@ test('erro no meio: nada do comando fica no banco (ROLLBACK)', async (t) => {
   );
   assert.equal(B.db.prepare('SELECT count(*) AS n FROM mercado_historico WHERE personagem = ?').get(j.id).n, antes);
   // E a sessão segue podendo abrir outra.
-  j.s.emTransacao(() => {});
+  await j.s.emTransacao(() => {});
 });

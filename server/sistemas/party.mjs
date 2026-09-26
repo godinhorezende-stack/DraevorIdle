@@ -65,8 +65,8 @@ const mandarJa = (s) => {
 };
 const avisar = (s, notice) => s?.enviar({ t: 'notice', notice });
 
-/** Slots comprados pela conta (0 a 3). */
-const slotsDaConta = (contaId) => Math.min(3, B.lerMelhoriasDaConta(contaId)?.slotsDeParty ?? 0);
+/** Slots comprados pela conta (0 a 3) — do cache síncrono (ver `banco.mjs`'s `melhoriasCache`), não do banco direto: isto roda a cada `mandarEstado`. */
+const slotsDaConta = (contaId) => Math.min(3, B.melhoriasCache(contaId)?.slotsDeParty ?? 0);
 /** Quantos chars desta conta podem jogar ao mesmo tempo. */
 export const limiteDeChars = (contaId) => 2 + slotsDaConta(contaId);
 /** O tamanho da party: o da conta com MENOS slots entre os nomes. */

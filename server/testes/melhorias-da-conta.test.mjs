@@ -13,26 +13,26 @@ test('ler, mexer no objeto lido, gravar e ler de novo', async (t) => {
     B.db.prepare('DELETE FROM contas WHERE id = ?').run(conta);
   });
 
-  assert.deepEqual(B.lerMelhoriasDaConta(conta), {});
-  const lida = B.lerMelhoriasDaConta(conta);
+  assert.deepEqual(await B.lerMelhoriasDaConta(conta), {});
+  const lida = await B.lerMelhoriasDaConta(conta);
   lida.slotsDeParty = 3; // mexeu e NÃO gravou (ex.: compra que falhou)
-  assert.deepEqual(B.lerMelhoriasDaConta(conta), {});
+  assert.deepEqual(await B.lerMelhoriasDaConta(conta), {});
 
-  B.gravarMelhoriasDaConta(conta, { slotsDeParty: 1 });
-  assert.deepEqual(B.lerMelhoriasDaConta(conta), { slotsDeParty: 1 });
+  await B.gravarMelhoriasDaConta(conta, { slotsDeParty: 1 });
+  assert.deepEqual(await B.lerMelhoriasDaConta(conta), { slotsDeParty: 1 });
   // O banco tem o mesmo que a memória.
   const noBanco = B.db.prepare('SELECT dados FROM melhorias_da_conta WHERE conta = ?').get(conta);
   assert.deepEqual(JSON.parse(noBanco.dados), { slotsDeParty: 1 });
 });
 
-test('a segunda leitura não consulta o banco', () => {
+test('a segunda leitura não consulta o banco', async () => {
   const conta = `teste-${randomUUID()}`;
-  B.lerMelhoriasDaConta(conta);
+  await B.lerMelhoriasDaConta(conta);
   const prepare = B.db.prepare;
   let consultas = 0;
   B.db.prepare = (...a) => (consultas++, prepare.apply(B.db, a));
   try {
-    for (let i = 0; i < 100; i++) B.lerMelhoriasDaConta(conta);
+    for (let i = 0; i < 100; i++) await B.lerMelhoriasDaConta(conta);
   } finally {
     B.db.prepare = prepare;
   }

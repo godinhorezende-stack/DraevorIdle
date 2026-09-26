@@ -1,66 +1,123 @@
-// Persistência. `node:sqlite` é nativo no Node 22+, sem dependência binária.
-// O arquivo do banco fica em `server/dados/jogo.db`.
-import { DatabaseSync } from 'node:sqlite';
-import { mkdirSync } from 'node:fs';
+// Persistência: contas, sessões, personagens, baú/melhorias da conta.
+// Fase 6: banco assíncrono, SQLite (padrão) ou PostgreSQL (`DATABASE_URL`) —
+// ver `nucleo/db.mjs` para a interface e o porquê de cada escolha.
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID, scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
+import * as Db from './db.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
-mkdirSync(join(RAIZ, 'dados'), { recursive: true });
 
-export const db = new DatabaseSync(join(RAIZ, 'dados', 'jogo.db'));
+export const banco = await Db.abrir(join(RAIZ, 'dados', 'jogo.db'));
 
-db.exec(`
-  PRAGMA journal_mode = WAL;
-  -- Há mais de uma conexão no mesmo arquivo: a thread do jogo e a da
-  -- simulação offline (nucleo/simulacao-offline.mjs), que anota drops. Sem
-  -- isto, uma escrita que encontrasse a outra no meio falhava na hora com
-  -- "database is locked" em vez de esperar os poucos milissegundos dela.
-  PRAGMA busy_timeout = 5000;
+/*
+ * `db` cru: o `node:sqlite` de sempre, só em modo SQLite — os módulos ainda
+ * não convertidos (guildas, mercado, arena, amigos, drops-do-site, ranking,
+ * site) continuam usando-o direto até a Fase 6 terminar de migrá-los. Em
+ * modo Postgres ele não existe: rodar esses módulos ainda não convertidos
+ * com `DATABASE_URL` ligado vai FALHAR ao tentar usá-lo — a migração deles
+ * é o próximo passo, não algo que já funciona hoje.
+ */
+export const db = banco.dialeto === 'sqlite' ? banco.bruto : undefined;
 
-  CREATE TABLE IF NOT EXISTS contas (
-    id        TEXT PRIMARY KEY,
-    email     TEXT UNIQUE NOT NULL,
-    senha     TEXT NOT NULL,
-    criada_em INTEGER NOT NULL
-  );
+if (banco.dialeto === 'sqlite') {
+  await banco.exec(`
+    PRAGMA journal_mode = WAL;
+    -- Há mais de uma conexão no mesmo arquivo: a thread do jogo e a da
+    -- simulação offline (nucleo/simulacao-offline.mjs), que anota drops. Sem
+    -- isto, uma escrita que encontrasse a outra no meio falhava na hora com
+    -- "database is locked" em vez de esperar os poucos milissegundos dela.
+    PRAGMA busy_timeout = 5000;
 
-  CREATE TABLE IF NOT EXISTS sessoes (
-    token  TEXT PRIMARY KEY,
-    conta  TEXT NOT NULL REFERENCES contas(id),
-    criada INTEGER NOT NULL
-  );
+    CREATE TABLE IF NOT EXISTS contas (
+      id        TEXT PRIMARY KEY,
+      email     TEXT UNIQUE NOT NULL,
+      senha     TEXT NOT NULL,
+      criada_em INTEGER NOT NULL
+    );
 
-  -- Um personagem = uma linha. A coluna estado guarda tudo que muda a cada
-  -- tique (posição, hp/mana, hunt) como JSON, igual ao projeto pokeidle-restore:
-  -- dá para separar em colunas próprias depois, se a leitura/escrita virar gargalo.
-  CREATE TABLE IF NOT EXISTS personagens (
-    id        TEXT PRIMARY KEY,
-    conta     TEXT NOT NULL REFERENCES contas(id),
-    nome      TEXT UNIQUE NOT NULL,
-    vocacao   TEXT NOT NULL,
-    sexo      TEXT NOT NULL,
-    criado_em INTEGER NOT NULL,
-    visto_em  INTEGER,
-    estado    TEXT NOT NULL
-  );
+    CREATE TABLE IF NOT EXISTS sessoes (
+      token  TEXT PRIMARY KEY,
+      conta  TEXT NOT NULL REFERENCES contas(id),
+      criada INTEGER NOT NULL
+    );
 
-  CREATE INDEX IF NOT EXISTS personagens_conta ON personagens(conta);
+    -- Um personagem = uma linha. A coluna estado guarda tudo que muda a cada
+    -- tique (posição, hp/mana, hunt) como JSON, igual ao projeto pokeidle-restore:
+    -- dá para separar em colunas próprias depois, se a leitura/escrita virar gargalo.
+    CREATE TABLE IF NOT EXISTS personagens (
+      id        TEXT PRIMARY KEY,
+      conta     TEXT NOT NULL REFERENCES contas(id),
+      nome      TEXT UNIQUE NOT NULL,
+      vocacao   TEXT NOT NULL,
+      sexo      TEXT NOT NULL,
+      criado_em INTEGER NOT NULL,
+      visto_em  INTEGER,
+      estado    TEXT NOT NULL
+    );
 
-  -- O "Baú da Conta": uma caixa do depósito dividida por todos os personagens
-  -- da conta (a caixa com compartilhada: true que o client mostra na aba própria).
-  CREATE TABLE IF NOT EXISTS bau_da_conta (
-    conta TEXT PRIMARY KEY REFERENCES contas(id),
-    caixa TEXT NOT NULL
-  );
+    CREATE INDEX IF NOT EXISTS personagens_conta ON personagens(conta);
 
-  CREATE TABLE IF NOT EXISTS melhorias_da_conta (
-    conta TEXT PRIMARY KEY REFERENCES contas(id),
-    dados TEXT NOT NULL
-  );
-`);
+    -- O "Baú da Conta": uma caixa do depósito dividida por todos os personagens
+    -- da conta (a caixa com compartilhada: true que o client mostra na aba própria).
+    CREATE TABLE IF NOT EXISTS bau_da_conta (
+      conta TEXT PRIMARY KEY REFERENCES contas(id),
+      caixa TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS melhorias_da_conta (
+      conta TEXT PRIMARY KEY REFERENCES contas(id),
+      dados TEXT NOT NULL
+    );
+  `);
+} else {
+  // Mesmas tabelas, tipos do Postgres: `citext` para nome/email (busca sem
+  // `lower()`/`COLLATE NOCASE` espalhado pelo código) e `BIGINT` para os
+  // carimbos de tempo em epoch-ms (`INTEGER` do Postgres é 32 bits — estoura
+  // em 2038, e as datas aqui já são ms, não segundos).
+  await banco.exec('CREATE EXTENSION IF NOT EXISTS citext');
+  await banco.exec(`
+    CREATE TABLE IF NOT EXISTS contas (
+      id        TEXT PRIMARY KEY,
+      email     CITEXT UNIQUE NOT NULL,
+      senha     TEXT NOT NULL,
+      criada_em BIGINT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS sessoes (
+      token  TEXT PRIMARY KEY,
+      conta  TEXT NOT NULL REFERENCES contas(id),
+      criada BIGINT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS personagens (
+      id        TEXT PRIMARY KEY,
+      conta     TEXT NOT NULL REFERENCES contas(id),
+      nome      CITEXT UNIQUE NOT NULL,
+      vocacao   TEXT NOT NULL,
+      sexo      TEXT NOT NULL,
+      criado_em BIGINT NOT NULL,
+      visto_em  BIGINT,
+      estado    TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS personagens_conta ON personagens(conta);
+
+    CREATE TABLE IF NOT EXISTS bau_da_conta (
+      conta TEXT PRIMARY KEY REFERENCES contas(id),
+      caixa TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS melhorias_da_conta (
+      conta TEXT PRIMARY KEY REFERENCES contas(id),
+      dados TEXT NOT NULL
+    );
+  `);
+}
+
+/** A transação de verdade (ver `nucleo/db.mjs`) — usada pela fila global em `nucleo/sessao.mjs`. */
+export const transacao = (fn) => banco.transacao(fn);
 
 // ------------------------------------------------------------------ senhas
 
@@ -89,42 +146,48 @@ export async function conferirSenha(senha, guardada) {
 export async function criarConta({ email, senha }) {
   const id = randomUUID();
   const hash = await hashSenha(senha);
-  db.prepare('INSERT INTO contas (id, email, senha, criada_em) VALUES (?, ?, ?, ?)').run(
+  await banco.prepare('INSERT INTO contas (id, email, senha, criada_em) VALUES (?, ?, ?, ?)').run(
     id, email, hash, Date.now(),
   );
   return { id, email };
 }
 
 export const contaPorEmail = (email) =>
-  email ? db.prepare('SELECT * FROM contas WHERE email = ?').get(String(email).trim().toLowerCase()) : undefined;
+  email ? banco.prepare('SELECT * FROM contas WHERE email = ?').get(String(email).trim().toLowerCase()) : Promise.resolve(undefined);
 
-export const contaPorId = (id) => db.prepare('SELECT * FROM contas WHERE id = ?').get(id);
+export const contaPorId = (id) => banco.prepare('SELECT * FROM contas WHERE id = ?').get(id);
 
-export function abrirSessao(contaId) {
+export async function abrirSessao(contaId) {
   const token = randomBytes(24).toString('hex');
-  db.prepare('INSERT INTO sessoes (token, conta, criada) VALUES (?, ?, ?)').run(token, contaId, Date.now());
+  await banco.prepare('INSERT INTO sessoes (token, conta, criada) VALUES (?, ?, ?)').run(token, contaId, Date.now());
   return token;
 }
 
-export function contaDaSessao(token) {
+export async function contaDaSessao(token) {
   if (!token) return null;
-  const s = db.prepare('SELECT conta FROM sessoes WHERE token = ?').get(token);
+  const s = await banco.prepare('SELECT conta FROM sessoes WHERE token = ?').get(token);
   return s ? contaPorId(s.conta) : null;
 }
 
-export const encerrarSessao = (token) => db.prepare('DELETE FROM sessoes WHERE token = ?').run(token);
+export const encerrarSessao = (token) => banco.prepare('DELETE FROM sessoes WHERE token = ?').run(token);
 
 // ------------------------------------------------------------- personagens
 
 export const personagensDaConta = (contaId) =>
-  db.prepare('SELECT * FROM personagens WHERE conta = ? ORDER BY criado_em ASC').all(contaId);
+  banco.prepare('SELECT * FROM personagens WHERE conta = ? ORDER BY criado_em ASC').all(contaId);
 
+/*
+ * `nome` é `CITEXT` no Postgres (busca sem diferenciar maiúsculas sozinha);
+ * no SQLite, o `COLLATE NOCASE` faz o mesmo — a coluna já nasce assim
+ * (`UNIQUE NOT NULL`, sem precisar repetir `COLLATE` em toda consulta:
+ * SQLite aplica a collation do UNIQUE também nas buscas por `=`).
+ */
 export const personagemPorNome = (nome) =>
-  nome ? db.prepare('SELECT * FROM personagens WHERE nome = ? COLLATE NOCASE').get(nome) : undefined;
+  nome ? banco.prepare('SELECT * FROM personagens WHERE nome = ?').get(nome) : Promise.resolve(undefined);
 
-export function criarPersonagem({ conta, nome, vocacao, sexo, estadoInicial }) {
+export async function criarPersonagem({ conta, nome, vocacao, sexo, estadoInicial }) {
   const id = randomUUID();
-  db.prepare(
+  await banco.prepare(
     `INSERT INTO personagens (id, conta, nome, vocacao, sexo, criado_em, estado)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
   ).run(id, conta, nome, vocacao, sexo, Date.now(), JSON.stringify(estadoInicial));
@@ -132,27 +195,27 @@ export function criarPersonagem({ conta, nome, vocacao, sexo, estadoInicial }) {
 }
 
 export const gravarEstadoPersonagem = (id, estado) =>
-  db.prepare('UPDATE personagens SET estado = ?, visto_em = ? WHERE id = ?').run(
+  banco.prepare('UPDATE personagens SET estado = ?, visto_em = ? WHERE id = ?').run(
     JSON.stringify(estado), Date.now(), id,
   );
 
 /** Regrava o estado de um personagem que NÃO está no jogo (ex.: recebeu uma transferência), sem mudar o `visto_em`. */
 export const regravarEstadoPersonagem = (id, estado) =>
-  db.prepare('UPDATE personagens SET estado = ? WHERE id = ?').run(JSON.stringify(estado), id);
+  banco.prepare('UPDATE personagens SET estado = ? WHERE id = ?').run(JSON.stringify(estado), id);
 
-export const excluirPersonagem = (id) => db.prepare('DELETE FROM personagens WHERE id = ?').run(id);
+export const excluirPersonagem = (id) => banco.prepare('DELETE FROM personagens WHERE id = ?').run(id);
 
 // ------------------------------------------------------------ baú da conta
 
-export function lerBauDaConta(contaId) {
-  const linha = db.prepare('SELECT caixa FROM bau_da_conta WHERE conta = ?').get(contaId);
+export async function lerBauDaConta(contaId) {
+  const linha = await banco.prepare('SELECT caixa FROM bau_da_conta WHERE conta = ?').get(contaId);
   return linha ? JSON.parse(linha.caixa) : null;
 }
 
 export function gravarBauDaConta(contaId, caixa) {
-  db.prepare('INSERT INTO bau_da_conta (conta, caixa) VALUES (?, ?) ON CONFLICT(conta) DO UPDATE SET caixa = excluded.caixa').run(
+  return banco.prepare('INSERT INTO bau_da_conta (conta, caixa) VALUES (?, ?) ON CONFLICT(conta) DO UPDATE SET caixa = excluded.caixa').run(
     contaId,
-    JSON.stringify(caixa)
+    JSON.stringify(caixa),
   );
 }
 
@@ -172,20 +235,33 @@ export function gravarBauDaConta(contaId, caixa) {
  */
 const melhoriasGuardadas = new Map(); // conta -> texto JSON
 
-export function lerMelhoriasDaConta(contaId) {
+export async function lerMelhoriasDaConta(contaId) {
   let texto = melhoriasGuardadas.get(contaId);
   if (texto === undefined) {
-    texto = db.prepare('SELECT dados FROM melhorias_da_conta WHERE conta = ?').get(contaId)?.dados ?? '{}';
+    texto = (await banco.prepare('SELECT dados FROM melhorias_da_conta WHERE conta = ?').get(contaId))?.dados ?? '{}';
     melhoriasGuardadas.set(contaId, texto);
   }
   return JSON.parse(texto);
 }
 
-export function gravarMelhoriasDaConta(contaId, dados) {
+/*
+ * A versão SÍNCRONA, só do cache — para o único lugar que não pode esperar
+ * um banco de verdade: `Party.limiteDeChars`, lido a cada `mandarEstado` (até
+ * 4x por segundo por jogador). `entrarNoPersonagem` chama `lerMelhoriasDaConta`
+ * (a de cima) UMA vez, no login, para aquecer o cache antes de qualquer
+ * tique — enquanto não aqueceu (nunca deveria acontecer fora de um teste que
+ * pule o login), `{}` é o mesmo "sem melhoria nenhuma" de antes de comprar.
+ */
+export function melhoriasCache(contaId) {
+  const texto = melhoriasGuardadas.get(contaId);
+  return texto ? JSON.parse(texto) : {};
+}
+
+export async function gravarMelhoriasDaConta(contaId, dados) {
   const texto = JSON.stringify(dados);
-  db.prepare('INSERT INTO melhorias_da_conta (conta, dados) VALUES (?, ?) ON CONFLICT(conta) DO UPDATE SET dados = excluded.dados').run(
+  await banco.prepare('INSERT INTO melhorias_da_conta (conta, dados) VALUES (?, ?) ON CONFLICT(conta) DO UPDATE SET dados = excluded.dados').run(
     contaId,
-    texto
+    texto,
   );
   melhoriasGuardadas.set(contaId, texto);
 }

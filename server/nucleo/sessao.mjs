@@ -67,6 +67,8 @@ Inventario.semearChao(CITY_META.chao);
 export const vivas = new Map();
 /** Quem está entrando num personagem e esperando a simulação offline (por nome do personagem). */
 const carregandoAgora = new Map();
+/** A fila global de transações (Fase 6) — ver `emTransacao`. */
+let filaDeTransacoes = Promise.resolve();
 Party.ligar(vivas);
 Amigos.ligar(vivas);
 Chat.ligar(vivas);
@@ -381,13 +383,31 @@ export class Sessao {
    * Operação que pode ser numa caixa do depósito (`from: 'depot:<n>'`): se for
    * no Baú da Conta, relê do banco antes e grava depois (ele é da conta).
    */
-  naCaixa(m, operacao) {
+  async naCaixa(m, operacao) {
     const daConta = String(m.from ?? '') === `depot:${Deposito.INDICE_DA_CONTA}`;
-    if (daConta) this.estado.bauDaConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
+    if (daConta) this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
     const r = operacao();
-    if (daConta && r.ok) B.gravarBauDaConta(this.conta.id, this.estado.bauDaConta);
+    if (daConta && r.ok) await B.gravarBauDaConta(this.conta.id, this.estado.bauDaConta);
     for (const c of [...(this.estado.deposito ?? []), this.estado.bauDaConta]) if (c) c.tipos = c.itens.length;
     return this.aplicar(r);
+  }
+
+  /** `send({t:'depot', ...})` — o Baú da Conta é da CONTA: lido do banco agora (outro personagem da conta pode ter mexido) e gravado de volta na hora. */
+  async despacharDepot(m) {
+    const daConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
+    const r = Deposito.comando(this.estado, m, daConta);
+    if (r.ok) await B.gravarBauDaConta(this.conta.id, daConta);
+    this.estado.bauDaConta = daConta;
+    this.aplicar(r);
+    /*
+     * O nome da caixa não entra na assinatura que faz a janela aberta se
+     * redesenhar (`renderAll`, main.mjs: só os ITENS das caixas) — o nome
+     * mudava no servidor e a tela ficava com o antigo. Uma mensagem que o
+     * client trata com `panelCtx.redraw()` força o redesenho, DEPOIS do
+     * state com o nome novo. É a `taskToken`, com a loja real dela, para
+     * não estragar o que ela guarda.
+     */
+    if (r.renomeou) this.enviar({ t: 'taskToken', loja: TASK_TOKEN_REAL.loja });
   }
 
   /** `send({t:'training', action, mode, itemId})` — por enquanto o Exercise (ver sistemas/exercicio.mjs). */
@@ -470,13 +490,18 @@ export class Sessao {
    * no jogo (a sessão dele grava sozinha), senão o gravado — que é regravado
    * aqui mesmo, sem mexer no "visto por último" dele.
    */
-  destinoDaTransferencia(nome) {
-    const linha = B.personagemPorNome(nome);
+  async destinoDaTransferencia(nome) {
+    const linha = await B.personagemPorNome(nome);
     if (!linha) return null;
     const vivo = this.estadoAoVivo(linha.id);
     if (vivo) return { id: linha.id, nome: linha.nome, estado: vivo, gravar: () => {} };
     const estado = JSON.parse(linha.estado);
     return { id: linha.id, nome: linha.nome, estado, gravar: () => B.regravarEstadoPersonagem(linha.id, estado) };
+  }
+
+  /** `send({t:'bank', action, ...})` — depósito/saque são síncronos; transferência lê o destinatário do banco. */
+  async despacharBank(m) {
+    return this.aplicar(await Banqueiro.comando(this.estado, m, this.personagem, (nome) => this.destinoDaTransferencia(nome)));
   }
 
   /**
@@ -550,24 +575,24 @@ export class Sessao {
    * novos). Erro de compra (sem saldo, produto que não existe) vira aviso
    * pelo canal de sempre, e a prateleira volta do mesmo jeito que estava.
    */
-  despacharLoja(m) {
+  async despacharLoja(m) {
     if (m.action === 'buy' && m.id === 'cofre-vagas') {
       // Vagas do Baú da Conta: a caixa é da conta, gravada na tabela própria.
-      const daConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
+      const daConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
       const r = Deposito.comprarVagas(this.estado, daConta);
-      if (r.ok) B.gravarBauDaConta(this.conta.id, daConta);
+      if (r.ok) await B.gravarBauDaConta(this.conta.id, daConta);
       this.estado.bauDaConta = daConta;
       this.aplicar(r.ok ? { ...r, notice: `Caixa compartilhada: ${daConta.teto} vagas.` } : r);
       // A prateleira volta com o "Agora X → Y" novo.
-      return this.enviar({ t: 'store', store: Loja.catalogoDaLoja(this.estado, B.lerMelhoriasDaConta(this.conta.id)) });
+      return this.enviar({ t: 'store', store: Loja.catalogoDaLoja(this.estado, await B.lerMelhoriasDaConta(this.conta.id)) });
     }
     // As melhorias da CONTA (slot de party) vêm do banco a cada vez: outro
     // personagem da conta pode ter comprado.
-    const daConta = B.lerMelhoriasDaConta(this.conta.id);
+    const daConta = await B.lerMelhoriasDaConta(this.conta.id);
     if (m.action === 'buy') {
       const resultado = Loja.comprar(this.estado, m, daConta);
       if (!resultado.ok) return this.erro(resultado.erro);
-      if (resultado.conta) B.gravarMelhoriasDaConta(this.conta.id, daConta);
+      if (resultado.conta) await B.gravarMelhoriasDaConta(this.conta.id, daConta);
       if (resultado.notice) this.avisoPendente = resultado.notice;
       this.mandarEstado();
     }
@@ -625,9 +650,12 @@ export class Sessao {
   receber(m) {
     try {
       // Login, cadastro e exclusão esperam o scrypt (assíncrono): o erro deles
-      // chega pela promessa, não pelo `catch` daqui.
+      // chega pela promessa, não pelo `catch` daqui. `return r`: quem chama
+      // (o `ws.on('message', ...)` de verdade nunca espera; os testes, que
+      // precisam saber quando um comando assíncrono terminou, podem `await`.
       const r = this.precisaDeTransacao(m) ? this.emTransacao(() => this.despachar(m)) : this.despachar(m);
       if (r && typeof r.catch === 'function') r.catch((e) => console.error('sessao', m?.t, '->', e.message));
+      return r;
     } catch (e) {
       console.error('sessao', m?.t, '->', e.message);
     }
@@ -653,21 +681,41 @@ export class Sessao {
     return COMANDOS_DE_ECONOMIA.has(m?.t) && !!m.action && !LEITURAS.has(m.action);
   }
 
+  /*
+   * ---- A fila global de transações (Fase 6) ----
+   *
+   * Antes do banco virar assíncrono, isto rodava tudo de forma SÍNCRONA:
+   * BEGIN → o comando inteiro → COMMIT, sem `await` no meio — e como nada
+   * mais roda no meio de um trecho síncrono em JS, a exclusão mútua vinha de
+   * graça. Assim que `fn()` pode conter um `await` de verdade (rede, no
+   * Postgres), essa garantia desaparece: OUTRA mensagem — de outra sessão, ou
+   * o próximo tique — podia entrar no meio e mexer no mesmo ouro/item antes
+   * do COMMIT. `filaDeTransacoes` restaura isso: toda transação do servidor
+   * INTEIRO (não só desta sessão) espera a vez, uma de cada vez, na ordem em
+   * que chegou. `B.transacao` (nucleo/db.mjs) cuida da outra metade — prender
+   * a transação numa única conexão, no Postgres.
+   */
   emTransacao(fn) {
-    if (this.tocadas) return fn(); // já dentro de uma
+    if (this.tocadas) return fn(); // já dentro de uma (reentrância, mesma sessão)
     const tocadas = (this.tocadas = new Set([this]));
-    B.db.exec('BEGIN IMMEDIATE');
-    try {
-      const r = fn();
-      for (const s of tocadas) s.gravarAgora();
-      B.db.exec('COMMIT');
-      return r;
-    } catch (e) {
-      B.db.exec('ROLLBACK');
-      throw e;
-    } finally {
-      this.tocadas = null;
-    }
+    const minhaVez = filaDeTransacoes.then(() =>
+      B.transacao(async () => {
+        try {
+          const r = await fn();
+          for (const s of tocadas) await s.gravarAgora();
+          return r;
+        } finally {
+          this.tocadas = null;
+        }
+      }),
+    );
+    // A fila anda mesmo se esta transação falhar — senão uma falha trava
+    // para sempre todo mundo que vier depois.
+    filaDeTransacoes = minhaVez.then(
+      () => {},
+      () => {},
+    );
+    return minhaVez;
   }
 
   despachar(m) {
@@ -794,7 +842,7 @@ export class Sessao {
       case 'party':
         return this.aplicar(Party.comandoDaCaca(this, m));
       case 'bank':
-        return this.aplicar(Banqueiro.comando(this.estado, m, this.personagem, (nome) => this.destinoDaTransferencia(nome)));
+        return this.despacharBank(m);
       case 'falarComNpc':
         return this.falarComNpc(m);
       case 'prey':
@@ -890,25 +938,8 @@ export class Sessao {
         return this.despacharTreino(m);
       case 'storeInbox':
         return this.aplicar(Loja.moverDaInbox(this.estado, m, Inventario.cabeNoPeso));
-      case 'depot': {
-        // O Baú da Conta é da CONTA: lido do banco agora (outro personagem da
-        // conta pode ter mexido) e gravado de volta na hora.
-        const daConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
-        const r = Deposito.comando(this.estado, m, daConta);
-        if (r.ok) B.gravarBauDaConta(this.conta.id, daConta);
-        this.estado.bauDaConta = daConta;
-        this.aplicar(r);
-        /*
-         * O nome da caixa não entra na assinatura que faz a janela aberta se
-         * redesenhar (`renderAll`, main.mjs: só os ITENS das caixas) — o nome
-         * mudava no servidor e a tela ficava com o antigo. Uma mensagem que o
-         * client trata com `panelCtx.redraw()` força o redesenho, DEPOIS do
-         * state com o nome novo. É a `taskToken`, com a loja real dela, para
-         * não estragar o que ela guarda.
-         */
-        if (r.renomeou) this.enviar({ t: 'taskToken', loja: TASK_TOKEN_REAL.loja });
-        return;
-      }
+      case 'depot':
+        return this.despacharDepot(m);
       case 'venderMochila': {
         const r = Bolsa.vendaDaMochila(this.estado, m);
         this.enviar(r.previa);
@@ -1022,41 +1053,41 @@ export class Sessao {
     if (!DOMINIO_EMAIL.test(mail)) return this.erroDeAuth('E-mail inválido.');
     if (!password || password.length < 6) return this.erroDeAuth('A senha precisa de 6 caracteres ou mais.');
     if (password !== confirm) return this.erroDeAuth('As senhas não conferem.');
-    if (B.contaPorEmail(mail)) return this.erroDeAuth('Este e-mail já tem conta.');
+    if (await B.contaPorEmail(mail)) return this.erroDeAuth('Este e-mail já tem conta.');
 
     const conta = await B.criarConta({ email: mail, senha: password });
     // Enquanto o hash rodava, outra aba pode ter criado a mesma conta.
     if (!conta) return this.erroDeAuth('Este e-mail já tem conta.');
-    this.conta = B.contaPorId(conta.id);
-    const token = B.abrirSessao(conta.id);
-    this.mandarConta(token);
+    this.conta = await B.contaPorId(conta.id);
+    const token = await B.abrirSessao(conta.id);
+    await this.mandarConta(token);
   }
 
   async login({ email, password }) {
-    const conta = B.contaPorEmail(email);
+    const conta = await B.contaPorEmail(email);
     if (!conta || !(await B.conferirSenha(password, conta.senha))) {
       return this.erroDeAuth('E-mail ou senha incorretos.');
     }
     this.conta = conta;
-    const token = B.abrirSessao(conta.id);
-    this.mandarConta(token);
+    const token = await B.abrirSessao(conta.id);
+    await this.mandarConta(token);
   }
 
-  resumir({ token }) {
-    const conta = B.contaDaSessao(token);
+  async resumir({ token }) {
+    const conta = await B.contaDaSessao(token);
     if (!conta) return this.erroDeAuth('sessão expirada');
     this.conta = conta;
-    this.mandarConta(token);
+    await this.mandarConta(token);
   }
 
-  logout({ token }) {
-    if (token) B.encerrarSessao(token);
+  async logout({ token }) {
+    if (token) await B.encerrarSessao(token);
     this.soltarPersonagem();
     this.conta = null;
   }
 
-  mandarConta(token) {
-    const personagens = B.personagensDaConta(this.conta.id);
+  async mandarConta(token) {
+    const personagens = await B.personagensDaConta(this.conta.id);
     this.enviar({
       t: 'account',
       token,
@@ -1073,17 +1104,17 @@ export class Sessao {
 
   // ------------------------------------------------------------ personagem
 
-  criarPersonagem({ name, vocation, sex }) {
+  async criarPersonagem({ name, vocation, sex }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
     const problema = R.problemaNoNomeDePersonagem(name);
     if (problema) return this.erroDeAuth(problema);
     if (!R.VOCACOES_VALIDAS.has(vocation)) return this.erroDeAuth('Vocação inválida.');
     if (sex !== 'male' && sex !== 'female') return this.erroDeAuth('Escolha inválida.');
-    if (B.personagemPorNome(name)) return this.erroDeAuth('Já existe um personagem com esse nome.');
-    const existentes = B.personagensDaConta(this.conta.id);
+    if (await B.personagemPorNome(name)) return this.erroDeAuth('Já existe um personagem com esse nome.');
+    const existentes = await B.personagensDaConta(this.conta.id);
     if (existentes.length >= R.MAXIMO_DE_PERSONAGENS) return this.erroDeAuth('Limite de personagens atingido.');
 
-    B.criarPersonagem({
+    await B.criarPersonagem({
       conta: this.conta.id,
       nome: name,
       vocacao: vocation,
@@ -1092,7 +1123,7 @@ export class Sessao {
     });
     // O cliente trata `account` como "a lista mudou, redesenhe" também fora do
     // login — ver `auth.mjs`'s `handle`.
-    this.mandarConta(null);
+    await this.mandarConta(null);
   }
 
   /*
@@ -1104,7 +1135,7 @@ export class Sessao {
   async excluirPersonagem({ name, password }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
     if (!(await B.conferirSenha(password, this.conta.senha))) return this.erroDeAuth('Senha incorreta.');
-    const personagem = B.personagemPorNome(name);
+    const personagem = await B.personagemPorNome(name);
     if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
 
     const viva = vivas.get(personagem.nome);
@@ -1114,19 +1145,24 @@ export class Sessao {
       vivas.delete(personagem.nome);
       if (viva !== this) enviar(viva.ws, { t: 'released', notice: 'Este personagem foi excluído.' });
     }
-    B.excluirPersonagem(personagem.id);
+    await B.excluirPersonagem(personagem.id);
     this.enviar({ t: 'characterDeleted', name: personagem.nome });
-    this.mandarConta(null);
+    await this.mandarConta(null);
   }
 
-  entrarNoPersonagem({ name }) {
+  async entrarNoPersonagem({ name }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
     // Já entrando num personagem (a simulação offline está rodando): o cliente
     // manda `play` uma vez só; outro no meio é repetição.
     if (this.carregando) return;
-    let personagem = B.personagemPorNome(name);
+    let personagem = await B.personagemPorNome(name);
     if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
 
+    // Aquece o cache síncrono das melhorias da conta (`Party.limiteDeChars`
+    // lê dele, não do banco — ver `B.melhoriasCache`) ANTES do primeiro
+    // tique deste personagem: sem isto, o tamanho da party ficaria "sem
+    // nenhum slot comprado" até a próxima vez que algo lesse do banco.
+    await B.lerMelhoriasDaConta(this.conta.id);
     // "Sem [o Slot de party], a conta joga e caça com até 2 chars" ao mesmo tempo.
     // Quem ainda está carregando (simulação offline) já conta.
     const limite = Party.limiteDeChars(this.conta.id);
@@ -1146,7 +1182,7 @@ export class Sessao {
       antiga.soltarPersonagem();
       enviar(antiga.ws, { t: 'released', notice: 'Você entrou neste personagem em outra aba.' });
       // A outra aba acabou de gravar: a linha lida lá em cima já está velha.
-      personagem = B.personagemPorNome(name);
+      personagem = await B.personagemPorNome(name);
     }
 
     const estado = JSON.parse(personagem.estado);
@@ -1223,10 +1259,10 @@ export class Sessao {
   }
 
   /** O resto da entrada, com o estado já com a ausência simulada (`ausencia`: o que `simularAusencia` devolveu). */
-  concluirEntrada(personagem, estado, ausencia, treinoPendente) {
+  async concluirEntrada(personagem, estado, ausencia, treinoPendente) {
     this.personagem = personagem;
     this.estado = estado;
-    this.estado.bauDaConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
+    this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
     // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
     const doMercado = Mercado.receberCreditos(this.estado, personagem.id);
     // Personagem que já estava acima da capacidade (loot de antes da regra):
@@ -1285,12 +1321,15 @@ export class Sessao {
    * volta simula a caçada a partir dali (ver `Cacadas.simularAusencia`); o
    * estado vivo não é tocado.
    */
-  gravarAgora() {
+  async gravarAgora() {
     if (!this.personagem || !this.estado) return;
     const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
     const copia = estadoPersistido.hunt ? { ...estadoPersistido, hunt: { ...Cacadas.huntParaGravar(estadoPersistido.hunt), offlineDesde: Date.now() } } : estadoPersistido;
-    B.gravarEstadoPersonagem(this.personagem.id, copia);
+    // ANTES do `await`: sem isto, o autosave do próximo tique (250ms depois)
+    // veria `gravadoEm` ainda velho enquanto esta gravação está em voo (rede,
+    // no Postgres) e disparava outra em cima, empilhando escritas.
     this.gravadoEm = Date.now();
+    await B.gravarEstadoPersonagem(this.personagem.id, copia);
   }
 
   soltarPersonagem() {
@@ -1311,7 +1350,7 @@ export class Sessao {
     // `bauDaConta` é da conta (tabela própria), não do personagem.
     const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
     if (estadoPersistido.hunt) estadoPersistido.hunt = Cacadas.huntParaGravar(estadoPersistido.hunt);
-    B.gravarEstadoPersonagem(this.personagem.id, estadoPersistido);
+    B.gravarEstadoPersonagem(this.personagem.id, estadoPersistido).catch((e) => console.error('gravar ao sair', this.personagem?.nome, '->', e.message));
     if (vivas.get(this.personagem.nome) === this) vivas.delete(this.personagem.nome);
     // Os amigos online veem a bolinha apagar.
     Amigos.mudouPresenca(this.personagem.nome);
@@ -1571,7 +1610,9 @@ export class Sessao {
     // nada (a caçada automática é assim) veria o crítico/dano de um Buff Power
     // que já acabou até o próximo comando chegar. Ver sistemas/ficha.mjs.
     Ficha.invalidar(this.estado);
-    if (Date.now() - (this.gravadoEm ?? Date.now()) >= AUTOSAVE_MS) this.gravarAgora();
+    // Fogo e esquece, de propósito: o tique não pode esperar a gravação (rede,
+    // no Postgres) — o erro só é logado; a próxima passagem por aqui tenta de novo.
+    if (Date.now() - (this.gravadoEm ?? Date.now()) >= AUTOSAVE_MS) this.gravarAgora().catch((e) => console.error('autosave', this.personagem?.nome, '->', e.message));
     this.gravadoEm ??= Date.now();
     if (this.estado.hunt) {
       try {

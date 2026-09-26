@@ -70,14 +70,14 @@ async function contaComPersonagem(t, horas) {
   const conta = await B.criarConta({ email: `offline-${randomUUID()}@teste.local`, senha: 'x' });
   const nome = `Off${randomUUID().replace(/[^a-z]/g, '').slice(0, 8)}`;
   const e = estadoCacandoOffline(horas);
-  const p = B.criarPersonagem({ conta: conta.id, nome, vocacao: 'knight', sexo: 'male', estadoInicial: { ...e, hunt: Cacadas.huntParaGravar(e.hunt) } });
+  const p = await B.criarPersonagem({ conta: conta.id, nome, vocacao: 'knight', sexo: 'male', estadoInicial: { ...e, hunt: Cacadas.huntParaGravar(e.hunt) } });
   t.after(() => {
     for (const s of [...vivas.values()]) if (s.personagem?.nome === nome) s.desconectar();
     B.db.prepare('DELETE FROM personagens WHERE id = ?').run(p.id);
     B.db.prepare('DELETE FROM sessoes WHERE conta = ?').run(conta.id);
     B.db.prepare('DELETE FROM contas WHERE id = ?').run(conta.id);
   });
-  return { conta: B.contaPorId(conta.id), nome, id: p.id };
+  return { conta: await B.contaPorId(conta.id), nome, id: p.id };
 }
 
 function sessao(conta) {
@@ -91,6 +91,11 @@ test('play com caçada offline: carrega sem personagem, e entra com o relatório
   const { conta, nome } = await contaComPersonagem(t, 1);
   const { s, ws } = sessao(conta);
   s.receber({ t: 'play', name: nome });
+  // `entrarNoPersonagem` agora é assíncrona (lê o banco antes de disparar a
+  // simulação offline) — um giro do event loop basta para ela chegar até lá
+  // (o banco de teste é SQLite, cada leitura sua é só um microtask, não I/O
+  // de verdade), sem esperar a simulação em si (essa sim, uma thread à parte).
+  await new Promise((r) => setImmediate(r));
   assert.equal(s.personagem, null, 'o personagem entrou antes da simulação acabar');
   assert.ok(s.carregando);
   s.tique(); // o relógio passando por ela no meio não faz nada
@@ -109,6 +114,7 @@ test('saiu no meio da simulação: nada é gravado, e a próxima entrada simula 
   const antes = B.db.prepare('SELECT estado FROM personagens WHERE id = ?').get(id).estado;
   const { s, ws } = sessao(conta);
   s.receber({ t: 'play', name: nome });
+  await new Promise((r) => setImmediate(r));
   assert.ok(s.carregando);
   s.desconectar();
   await dormir(2500);
@@ -122,7 +128,12 @@ test('a outra aba entra no meio: a primeira é solta e só a segunda recebe o pe
   const a = sessao(conta);
   const b = sessao(conta);
   a.s.receber({ t: 'play', name: nome });
+  // `a` precisa ter chegado até `carregandoAgora.set(...)` antes de `b`
+  // entrar, senão as duas leituras assíncronas do banco podem terminar em
+  // qualquer ordem e `b` não encontra `a` "no meio".
+  await new Promise((r) => setImmediate(r));
   b.s.receber({ t: 'play', name: nome });
+  await new Promise((r) => setImmediate(r));
   assert.ok(a.ws.tipos().includes('released'));
   await esperar(() => b.ws.tipos().includes('welcome'));
   await dormir(300);
