@@ -708,6 +708,56 @@ tirar a praça e o BFS do caminho**.
 4. Catálogo, itens e mapas por HTTP versionado; WS manda só os hashes.
 - **Saída:** 200 na cidade com CPU < 15%; login com cache < 50 KB no fio.
 
+#### Resultado da Fase 4 (feita em 2026-09-26)
+
+| Item | Commit | Medido |
+|---|---|---|
+| 4.1 Grade espacial da praça (`jogadoresNaPraca` por célula, cartão montado 1x/passo) | `0292255` | O(N²) → praticamente linear: `jogadoresNaPraca`+`garantirIndice` caíram para ~2-3% de CPU num perfil de 200 jogadores parados na cidade (antes, dominava o tique — 81-86% de CPU total na varredura força-bruta) |
+| 4.2 Personagem por seções "sujas" | — (já existia) | Conferido no código: `characterSujo`/`QUADROS_POR_PERSONAGEM` (o personagem inteiro só é remontado 1x/segundo, ou na hora depois de uma ação) já vem da restauração original (`9a0ea64`), antes de qualquer fase deste documento. Nada a fazer aqui. |
+| 4.3 Chat Global/Mercado/Local serializado uma vez (`enviarPronto`) | `0292255` | Remove os N-1 `JSON.stringify` redundantes por fala (200 no Global eram 200 stringifies do mesmo objeto); testado (`chat-broadcast.test.mjs`) que o conteúdo entregue continua idêntico |
+| 4.4 Catálogo/itens/mapa por HTTP versionado, WS só com o hash | **adiado** | Ver nota abaixo |
+
+**A meta agregada não foi batida, mas por um motivo diferente do esperado.**
+A primeira leitura de CPU com `tools/carga.mjs 200 40 cidade` (o modo novo
+deste commit, que deixa 200 jogadores parados/andando na praça em vez de
+caçando) deu 81-86% — parecia confirmar a praça O(N²) como o vilão. Só que
+essa leitura estava contaminada: o próprio script cria 200 CONTAS NOVAS a
+cada rodada (bcrypt no registro e no login), e isso sozinho já passa de 80%
+de CPU por dezenas de segundos — nada a ver com o jogo rodando. Descartando
+essa rampa (medindo só depois de `/saude` reportar `online:200`, com um
+`walk` mais realista — a maioria "parada", não 200 bonecos dançando em
+sincronia a cada 600 ms) e comparando profiler (`--inspect`) com `/proc`
+lado a lado: **34-46% de CPU** em regime estável, contra a meta de 15%. O
+perfil mostra o motivo — não é mais a praça (item 4.1 já resolveu essa
+parte, ~2-3%): é `write`/`writev` (a chamada nativa de `ws.send`, ~13-14% de
+tempo próprio) e o resto do ciclo `rodarRelogio`→`mandarEstado` somado, o
+custo fixo de 200 sessões × ~4 tiques/segundo cada. Não é mais um alvo
+único e óbvio como o da Fase 3 (BFS) ou o da praça — é o piso do modelo
+atual (WS por sessão, JSON por mensagem), que só cai com uma mudança maior
+de arquitetura (menos mensagens, ou mensagens compartilhadas de verdade
+entre sessões próximas), fora do escopo desta fase.
+
+**Por que o 4.4 ficou de fora:** o alvo dele (login < 50 KB no fio) é real
+— `hello`/`welcome` mandam o catálogo (2,3 MB), os itens (1 MB) e o mapa da
+cidade (2,7 MB) inteiros a cada conexão nova, com só um cache *por conexão*
+(`jaTenhoCatalogo`) que não sobrevive a um F5 ou queda de rede. A correção
+certa (servir os três por HTTP versionado, cache do navegador faz o resto,
+WS manda só o hash) exige mexer no `assets_raw/client/src/main.mjs`: hoje
+`handle()` lê `message.catalog`/`message.items`/`message.city.map`
+SINCRONAMENTE no mesmo tique que processa `hello`/`welcome`, e o resto do
+fluxo de entrada (`gate.start`, `entrarNoPersonagem`, `applyState`) conta
+com eles já estarem prontos. Trocar por um `fetch` exige tornar esse trecho
+assíncrono — reordenando um bloco grande do handshake de login que eu não
+escrevi e não tenho como testar em todos os casos (reconexão, troca de
+personagem, emulação mobile) sem uma sessão de navegador ao vivo cobrindo
+cada um. É exatamente o tipo de risco que a Fase 3 já recusou uma vez (o
+BFS com buffers reusados: "risco de correção pesa mais que o ganho não
+comprovado") — aqui o ganho É comprovado (o tamanho do payload não muda de
+opinião), mas o risco de quebrar o login de verdade por uma reordenação mal
+testada é alto o bastante para não empurrar sem visibilidade de navegador
+real. Fica desenhado para uma fase própria, com tempo para testar a
+troca ponta a ponta.
+
 ### Fase 5 — Backend
 1. Workers de simulação (`worker_threads`), jogador/sala fixo num worker.
 2. Grades de hunt compactas, pré-processadas no build e carregadas no boot.
