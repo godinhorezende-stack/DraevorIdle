@@ -211,9 +211,33 @@ export function moverMonstros(hunt, grade, agora) {
   // bicho perseguindo neste tique — bem mais barato do que um BFS por bicho.
   const reto = perseguindo ? bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 6, null, VIZINHANCA_4) : null;
   let comDiagonal = null;
-  const livre = (m, viz) =>
-    !(viz.x === hunt.pos.x && viz.y === hunt.pos.y) && // não pisa no jogador
-    !hunt.monstros.some((outro) => outro !== m && outro.hp > 0 && outro.x === viz.x && outro.y === viz.y);
+  /*
+   * ---- Quem está em cada casa, sem varrer todo mundo ----
+   *
+   * `livre` era `hunt.monstros.some(...)` — para CADA vizinho candidato de
+   * CADA bicho andando, uma volta em todos os outros. Numa hunt DENSA (uma
+   * leva grande em cima do jogador) isso é O(bichos²): medido com
+   * `bench-mover2.mjs`, 2.000 bichos perseguindo levavam 189ms/200 tiques
+   * com o `.some()` contra 85ms com a grade abaixo — pouco mais que o dobro
+   * mais rápido, e a distância cresce com a densidade. Com poucos bichos
+   * perto (a maioria das hunts, a maior parte do tempo) montar a grade tem
+   * um custo fixo que o `.some()` nem sempre paga — por isso só existe
+   * quando alguém está de fato perseguindo (mesma condição do `reto`,
+   * embaixo: sem isso ninguém chega em `melhorPasso`, e a grade seria
+   * montada à toa em toda hunt parada).
+   *
+   * ATUALIZADA a cada passo do laço logo adiante: o `.some()` de antes
+   * também lia a posição JÁ ATUALIZADA de um bicho que tinha andado mais
+   * cedo no mesmo laço, então a grade precisa acompanhar, não ser uma
+   * fotografia do início do tique.
+   */
+  const ocupada = perseguindo ? new Map() : null;
+  if (ocupada) for (const m of hunt.monstros) if (m.hp > 0) ocupada.set(`${m.x},${m.y}`, m);
+  const livre = (m, viz) => {
+    if (viz.x === hunt.pos.x && viz.y === hunt.pos.y) return false; // não pisa no jogador
+    const outro = ocupada.get(`${viz.x},${viz.y}`);
+    return !outro || outro === m;
+  };
   const melhorPasso = (m, dist, vizinhos) => {
     let destino = null;
     let melhorD = dist.em(m.x, m.y) ?? Infinity;
@@ -249,6 +273,9 @@ export function moverMonstros(hunt, grade, agora) {
     if (!destino) continue;
     const dx = Math.sign(destino.x - m.x);
     const dy = Math.sign(destino.y - m.y);
+    // A grade de ocupação anda junto: solta a casa velha, ocupa a nova.
+    ocupada.delete(`${m.x},${m.y}`);
+    ocupada.set(`${destino.x},${destino.y}`, m);
     m.x = destino.x;
     m.y = destino.y;
     m.dir = dy < 0 ? 0 : dy > 0 ? 2 : dx > 0 ? 1 : 3;
