@@ -14,31 +14,33 @@
 // é anunciado sai do personagem na hora (fica "em custódia" no anúncio) e volta
 // se cancelar. Quem recebe algo estando fora do jogo recebe ao entrar: o ouro
 // no bolso e os itens na caixa de Chegadas do depósito (ver `receberCreditos`).
-import { db } from '../nucleo/banco.mjs';
+import { banco } from '../nucleo/banco.mjs';
 import { ITEM_CATALOG } from '../nucleo/dados.mjs';
 import { darItem, cabeNoPeso } from './inventario.mjs';
 import * as Deposito from './deposito.mjs';
 
-db.exec(`
+const idAuto = banco.dialeto === 'postgres' ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+const inteiroGrande = banco.dialeto === 'postgres' ? 'BIGINT' : 'INTEGER';
+await banco.exec(`
   CREATE TABLE IF NOT EXISTS mercado_ofertas (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, personagem TEXT NOT NULL, vendedor TEXT NOT NULL,
+    id ${idAuto}, personagem TEXT NOT NULL, vendedor TEXT NOT NULL,
     kind TEXT NOT NULL, item INTEGER NOT NULL, count INTEGER NOT NULL, price INTEGER NOT NULL,
-    moeda TEXT NOT NULL, peca TEXT, criada INTEGER NOT NULL
+    moeda TEXT NOT NULL, peca TEXT, criada ${inteiroGrande} NOT NULL
   );
   CREATE TABLE IF NOT EXISTS mercado_historico (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, personagem TEXT NOT NULL, lado TEXT NOT NULL,
+    id ${idAuto}, personagem TEXT NOT NULL, lado TEXT NOT NULL,
     item INTEGER NOT NULL, count INTEGER NOT NULL, price INTEGER NOT NULL, moeda TEXT NOT NULL,
-    outro TEXT, at INTEGER NOT NULL
+    outro TEXT, at ${inteiroGrande} NOT NULL
   );
   CREATE TABLE IF NOT EXISTS coin_ordens (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, personagem TEXT NOT NULL, nome TEXT NOT NULL,
-    kind TEXT NOT NULL, amount INTEGER NOT NULL, price INTEGER NOT NULL, criada INTEGER NOT NULL
+    id ${idAuto}, personagem TEXT NOT NULL, nome TEXT NOT NULL,
+    kind TEXT NOT NULL, amount INTEGER NOT NULL, price INTEGER NOT NULL, criada ${inteiroGrande} NOT NULL
   );
   CREATE TABLE IF NOT EXISTS coin_historico (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, buyer TEXT, seller TEXT, amount INTEGER, price INTEGER, at INTEGER
+    id ${idAuto}, buyer TEXT, seller TEXT, amount INTEGER, price INTEGER, at ${inteiroGrande}
   );
   CREATE TABLE IF NOT EXISTS creditos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, personagem TEXT NOT NULL, gold INTEGER DEFAULT 0,
+    id ${idAuto}, personagem TEXT NOT NULL, gold INTEGER DEFAULT 0,
     coins INTEGER DEFAULT 0, itens TEXT DEFAULT '[]'
   );
 `);
@@ -69,10 +71,10 @@ function pagar(estado, valor, moeda) {
  * compra). `aoVivo(personagemId)` devolve o `estado` dele se estiver no jogo;
  * senão fica na tabela `creditos` e entra no próximo login.
  */
-function creditar(personagemId, { gold = 0, coins = 0, itens = [] }, aoVivo) {
+async function creditar(personagemId, { gold = 0, coins = 0, itens = [] }, aoVivo) {
   const estado = aoVivo?.(personagemId);
   if (estado) return entregar(estado, { gold, coins, itens });
-  db.prepare('INSERT INTO creditos (personagem, gold, coins, itens) VALUES (?, ?, ?, ?)').run(personagemId, gold, coins, JSON.stringify(itens));
+  await banco.prepare('INSERT INTO creditos (personagem, gold, coins, itens) VALUES (?, ?, ?, ?)').run(personagemId, gold, coins, JSON.stringify(itens));
 }
 
 /** Entrega no personagem: ouro/coins no bolso; itens na mochila se couber, senão nas Chegadas. */
@@ -94,8 +96,8 @@ function entregar(estado, { gold = 0, coins = 0, itens = [] }) {
 }
 
 /** No login: o que chegou enquanto estava fora. Devolve o aviso, ou null. */
-export function receberCreditos(estado, personagemId) {
-  const linhas = db.prepare('SELECT * FROM creditos WHERE personagem = ?').all(personagemId);
+export async function receberCreditos(estado, personagemId) {
+  const linhas = await banco.prepare('SELECT * FROM creditos WHERE personagem = ?').all(personagemId);
   if (!linhas.length) return null;
   let gold = 0, coins = 0, itens = 0;
   for (const l of linhas) {
@@ -105,7 +107,7 @@ export function receberCreditos(estado, personagemId) {
     coins += l.coins;
     itens += lista.length;
   }
-  db.prepare('DELETE FROM creditos WHERE personagem = ?').run(personagemId);
+  await banco.prepare('DELETE FROM creditos WHERE personagem = ?').run(personagemId);
   const partes = [gold && `${gold.toLocaleString('pt-BR')} gold`, coins && `${coins} Ravox Coins`, itens && `${itens} item(ns)`].filter(Boolean);
   return `Mercado: você recebeu ${partes.join(', ')} enquanto estava fora.`;
 }
@@ -124,8 +126,8 @@ const anuncio = (o, personagemId) => {
 };
 
 /** `market browse` → `{list, mine, gold}`. */
-export function balcao(estado, personagemId) {
-  const ofertas = db.prepare('SELECT * FROM mercado_ofertas').all();
+export async function balcao(estado, personagemId) {
+  const ofertas = await banco.prepare('SELECT * FROM mercado_ofertas').all();
   const porItem = new Map();
   for (const o of ofertas) {
     const l = porItem.get(o.item) ?? { buy: 0, sell: 0, bestBuy: 0, bestSell: 0 };
@@ -151,11 +153,11 @@ export function balcao(estado, personagemId) {
 }
 
 /** `market offers {filtros}` → `{offers, total, pagina, paginas}`. */
-export function ofertas(personagemId, filtros = {}) {
+export async function ofertas(personagemId, filtros = {}) {
   const kind = filtros.kind === 'buy' ? 'buy' : 'sell';
   const moeda = moedaValida(filtros.moeda);
   const busca = String(filtros.search ?? '').trim().toLowerCase();
-  let lista = db.prepare('SELECT * FROM mercado_ofertas WHERE kind = ? AND moeda = ?').all(kind, moeda).map((o) => anuncio(o, personagemId));
+  let lista = (await banco.prepare('SELECT * FROM mercado_ofertas WHERE kind = ? AND moeda = ?').all(kind, moeda)).map((o) => anuncio(o, personagemId));
   if (busca) lista = lista.filter((o) => o.name.toLowerCase().includes(busca));
   if (filtros.slot && filtros.slot !== 'all') lista = lista.filter((o) => o.slot === filtros.slot);
   if (filtros.rarity && filtros.rarity !== 'all') lista = lista.filter((o) => o.rarity === filtros.rarity);
@@ -170,12 +172,12 @@ export function ofertas(personagemId, filtros = {}) {
 }
 
 function historico(personagemId, { personagem, lado, item, count, price, moeda, outro }) {
-  db.prepare('INSERT INTO mercado_historico (personagem, lado, item, count, price, moeda, outro, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+  return banco.prepare('INSERT INTO mercado_historico (personagem, lado, item, count, price, moeda, outro, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
     .run(personagem ?? personagemId, lado, item, count, price, moeda, outro ?? null, Date.now());
 }
 
 /** `market offer {kind, id, count, price, peca, moeda}` — anunciar. */
-export function anunciar(estado, personagem, { kind, id, count, price, peca, moeda }) {
+export async function anunciar(estado, personagem, { kind, id, count, price, peca, moeda }) {
   kind = kind === 'buy' ? 'buy' : 'sell';
   moeda = moedaValida(moeda);
   id = Number(id);
@@ -206,14 +208,14 @@ export function anunciar(estado, personagem, { kind, id, count, price, peca, moe
   } else if (!pagar(estado, preco * n, moeda)) {
     return { ok: false, erro: moeda === 'coin' ? 'Ravox Coins insuficientes.' : 'Ouro insuficiente.' };
   }
-  db.prepare('INSERT INTO mercado_ofertas (personagem, vendedor, kind, item, count, price, moeda, peca, criada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+  await banco.prepare('INSERT INTO mercado_ofertas (personagem, vendedor, kind, item, count, price, moeda, peca, criada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run(personagem.id, personagem.nome, kind, id, n, preco, moeda, pecaGuardada ? JSON.stringify(pecaGuardada) : null, Date.now());
   return { ok: true, notice: `Anúncio criado: ${n}x ${ITEM_CATALOG[id].name}.`, anuncio: { kind, count: n, nome: ITEM_CATALOG[id].name, preco, moeda } };
 }
 
 /** `market accept {offerId, count}` — fechar negócio com um anúncio. */
-export function aceitar(estado, personagem, { offerId, count }, aoVivo) {
-  const o = db.prepare('SELECT * FROM mercado_ofertas WHERE id = ?').get(Number(offerId));
+export async function aceitar(estado, personagem, { offerId, count }, aoVivo) {
+  const o = await banco.prepare('SELECT * FROM mercado_ofertas WHERE id = ?').get(Number(offerId));
   if (!o) return { ok: false, erro: 'Esse anúncio não existe mais.' };
   if (o.personagem === personagem.id) return { ok: false, erro: 'Esse anúncio é seu.' };
   const n = Math.min(o.count, inteiro(count));
@@ -224,9 +226,9 @@ export function aceitar(estado, personagem, { offerId, count }, aoVivo) {
     // Eu compro: pago, recebo o item; o vendedor recebe o dinheiro.
     if (!pagar(estado, valor, o.moeda)) return { ok: false, erro: o.moeda === 'coin' ? 'Ravox Coins insuficientes.' : 'Ouro insuficiente.' };
     entregar(estado, { itens: [{ id: o.item, count: n, peca }] });
-    creditar(o.personagem, o.moeda === 'coin' ? { coins: valor } : { gold: valor }, aoVivo);
-    historico(personagem.id, { lado: 'compra', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: o.vendedor });
-    historico(null, { personagem: o.personagem, lado: 'venda', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: personagem.nome });
+    await creditar(o.personagem, o.moeda === 'coin' ? { coins: valor } : { gold: valor }, aoVivo);
+    await historico(personagem.id, { lado: 'compra', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: o.vendedor });
+    await historico(null, { personagem: o.personagem, lado: 'venda', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: personagem.nome });
   } else {
     // Anúncio de COMPRA: eu entrego o item, recebo o dinheiro que estava reservado.
     const inv = estado.inventory ?? [];
@@ -241,28 +243,28 @@ export function aceitar(estado, personagem, { offerId, count }, aoVivo) {
     }
     estado.inventory = inv.filter((p) => (p.count ?? 1) > 0);
     entregar(estado, o.moeda === 'coin' ? { coins: valor } : { gold: valor });
-    creditar(o.personagem, { itens: [{ id: o.item, count: n }] }, aoVivo);
-    historico(personagem.id, { lado: 'venda', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: o.vendedor });
-    historico(null, { personagem: o.personagem, lado: 'compra', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: personagem.nome });
+    await creditar(o.personagem, { itens: [{ id: o.item, count: n }] }, aoVivo);
+    await historico(personagem.id, { lado: 'venda', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: o.vendedor });
+    await historico(null, { personagem: o.personagem, lado: 'compra', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: personagem.nome });
   }
-  if (n >= o.count) db.prepare('DELETE FROM mercado_ofertas WHERE id = ?').run(o.id);
-  else db.prepare('UPDATE mercado_ofertas SET count = count - ? WHERE id = ?').run(n, o.id);
+  if (n >= o.count) await banco.prepare('DELETE FROM mercado_ofertas WHERE id = ?').run(o.id);
+  else await banco.prepare('UPDATE mercado_ofertas SET count = count - ? WHERE id = ?').run(n, o.id);
   return { ok: true, notice: `Negócio fechado: ${n}x ${nome} por ${valor.toLocaleString('pt-BR')} ${o.moeda === 'coin' ? 'Ravox Coins' : 'gold'}.` };
 }
 
 /** `market cancel {offerId}` — o que estava em custódia volta. */
-export function cancelar(estado, personagem, { offerId }) {
-  const o = db.prepare('SELECT * FROM mercado_ofertas WHERE id = ? AND personagem = ?').get(Number(offerId), personagem.id);
+export async function cancelar(estado, personagem, { offerId }) {
+  const o = await banco.prepare('SELECT * FROM mercado_ofertas WHERE id = ? AND personagem = ?').get(Number(offerId), personagem.id);
   if (!o) return { ok: false, erro: 'Esse anúncio não existe mais.' };
-  db.prepare('DELETE FROM mercado_ofertas WHERE id = ?').run(o.id);
+  await banco.prepare('DELETE FROM mercado_ofertas WHERE id = ?').run(o.id);
   if (o.kind === 'sell') entregar(estado, { itens: [{ id: o.item, count: o.count, peca: o.peca ? JSON.parse(o.peca) : null }] });
   else entregar(estado, o.moeda === 'coin' ? { coins: o.price * o.count } : { gold: o.price * o.count });
   return { ok: true, notice: 'Anúncio cancelado.' };
 }
 
 /** `market historico` → `{linhas, gasto, ganho, gastoCoin, ganhoCoin}`. */
-export function extrato(personagemId) {
-  const linhas = db.prepare('SELECT * FROM mercado_historico WHERE personagem = ? ORDER BY at DESC LIMIT 100').all(personagemId).map((h) => ({
+export async function extrato(personagemId) {
+  const linhas = (await banco.prepare('SELECT * FROM mercado_historico WHERE personagem = ? ORDER BY at DESC LIMIT 100').all(personagemId)).map((h) => ({
     item: h.item, name: ITEM_CATALOG[h.item]?.name ?? `item ${h.item}`, count: h.count, price: h.price,
     total: h.price * h.count, moeda: h.moeda, lado: h.lado, outro: h.outro, at: h.at,
   }));
@@ -273,8 +275,8 @@ export function extrato(personagemId) {
 // ------------------------------------------------------ balcão de coins
 
 /** `coinMarket {pagina}` → `{compra, venda, minhas, history, coins, gold}`. */
-export function balcaoDeCoins(estado, personagemId, pagina = 1) {
-  const todas = db.prepare('SELECT * FROM coin_ordens').all();
+export async function balcaoDeCoins(estado, personagemId, pagina = 1) {
+  const todas = await banco.prepare('SELECT * FROM coin_ordens').all();
   const linha = (o) => ({ id: o.id, amount: o.amount, price: o.price, total: o.amount * o.price, seller: o.nome, minha: o.personagem === personagemId });
   const lado = (kind, ordem) => {
     const lista = todas.filter((o) => o.kind === kind).sort(ordem).map(linha);
@@ -282,7 +284,7 @@ export function balcaoDeCoins(estado, personagemId, pagina = 1) {
     const p = Math.min(paginas, inteiro(pagina));
     return { linhas: lista.slice((p - 1) * POR_PAGINA, p * POR_PAGINA), total: lista.length, pagina: p, paginas };
   };
-  const history = db.prepare('SELECT * FROM coin_historico ORDER BY at DESC LIMIT 20').all();
+  const history = await banco.prepare('SELECT * FROM coin_historico ORDER BY at DESC LIMIT 20').all();
   return {
     compra: lado('buy', (a, b) => b.price - a.price),
     venda: lado('sell', (a, b) => a.price - b.price),
@@ -294,19 +296,19 @@ export function balcaoDeCoins(estado, personagemId, pagina = 1) {
 }
 
 /** `coinMarket order {kind, amount, price}` — `buy`: compra coins pagando ouro; `sell`: vende coins. */
-export function ordemDeCoins(estado, personagem, { kind, amount, price }) {
+export async function ordemDeCoins(estado, personagem, { kind, amount, price }) {
   kind = kind === 'sell' ? 'sell' : 'buy';
   const n = inteiro(amount);
   const preco = inteiro(price);
   const ok = kind === 'sell' ? pagar(estado, n, 'coin') : pagar(estado, n * preco, 'gold');
   if (!ok) return { ok: false, erro: kind === 'sell' ? 'Ravox Coins insuficientes.' : 'Ouro insuficiente.' };
-  db.prepare('INSERT INTO coin_ordens (personagem, nome, kind, amount, price, criada) VALUES (?, ?, ?, ?, ?, ?)').run(personagem.id, personagem.nome, kind, n, preco, Date.now());
+  await banco.prepare('INSERT INTO coin_ordens (personagem, nome, kind, amount, price, criada) VALUES (?, ?, ?, ?, ?, ?)').run(personagem.id, personagem.nome, kind, n, preco, Date.now());
   return { ok: true, notice: 'Ordem criada.' };
 }
 
 /** `coinMarket accept {orderId, amount}`. */
-export function aceitarCoins(estado, personagem, { orderId, amount }, aoVivo) {
-  const o = db.prepare('SELECT * FROM coin_ordens WHERE id = ?').get(Number(orderId));
+export async function aceitarCoins(estado, personagem, { orderId, amount }, aoVivo) {
+  const o = await banco.prepare('SELECT * FROM coin_ordens WHERE id = ?').get(Number(orderId));
   if (!o) return { ok: false, erro: 'Essa ordem não existe mais.' };
   if (o.personagem === personagem.id) return { ok: false, erro: 'Essa ordem é sua.' };
   const n = Math.min(o.amount, inteiro(amount));
@@ -315,25 +317,25 @@ export function aceitarCoins(estado, personagem, { orderId, amount }, aoVivo) {
     // Alguém vende coins: eu pago ouro, recebo as coins (que estavam reservadas).
     if (!pagar(estado, valor, 'gold')) return { ok: false, erro: 'Ouro insuficiente.' };
     estado.coins = (estado.coins ?? 0) + n;
-    creditar(o.personagem, { gold: valor }, aoVivo);
-    db.prepare('INSERT INTO coin_historico (buyer, seller, amount, price, at) VALUES (?, ?, ?, ?, ?)').run(personagem.nome, o.nome, n, o.price, Date.now());
+    await creditar(o.personagem, { gold: valor }, aoVivo);
+    await banco.prepare('INSERT INTO coin_historico (buyer, seller, amount, price, at) VALUES (?, ?, ?, ?, ?)').run(personagem.nome, o.nome, n, o.price, Date.now());
   } else {
     // Alguém compra coins: eu entrego as coins, recebo o ouro reservado.
     if (!pagar(estado, n, 'coin')) return { ok: false, erro: 'Ravox Coins insuficientes.' };
     estado.gold = (estado.gold ?? 0) + valor;
-    creditar(o.personagem, { coins: n }, aoVivo);
-    db.prepare('INSERT INTO coin_historico (buyer, seller, amount, price, at) VALUES (?, ?, ?, ?, ?)').run(o.nome, personagem.nome, n, o.price, Date.now());
+    await creditar(o.personagem, { coins: n }, aoVivo);
+    await banco.prepare('INSERT INTO coin_historico (buyer, seller, amount, price, at) VALUES (?, ?, ?, ?, ?)').run(o.nome, personagem.nome, n, o.price, Date.now());
   }
-  if (n >= o.amount) db.prepare('DELETE FROM coin_ordens WHERE id = ?').run(o.id);
-  else db.prepare('UPDATE coin_ordens SET amount = amount - ? WHERE id = ?').run(n, o.id);
+  if (n >= o.amount) await banco.prepare('DELETE FROM coin_ordens WHERE id = ?').run(o.id);
+  else await banco.prepare('UPDATE coin_ordens SET amount = amount - ? WHERE id = ?').run(n, o.id);
   return { ok: true, notice: `Negócio fechado: ${n} Ravox Coins.` };
 }
 
 /** `coinMarket cancel {orderId}` — devolve o reservado. */
-export function cancelarCoins(estado, personagem, { orderId }) {
-  const o = db.prepare('SELECT * FROM coin_ordens WHERE id = ? AND personagem = ?').get(Number(orderId), personagem.id);
+export async function cancelarCoins(estado, personagem, { orderId }) {
+  const o = await banco.prepare('SELECT * FROM coin_ordens WHERE id = ? AND personagem = ?').get(Number(orderId), personagem.id);
   if (!o) return { ok: false, erro: 'Essa ordem não existe mais.' };
-  db.prepare('DELETE FROM coin_ordens WHERE id = ?').run(o.id);
+  await banco.prepare('DELETE FROM coin_ordens WHERE id = ?').run(o.id);
   if (o.kind === 'sell') estado.coins = (estado.coins ?? 0) + o.amount;
   else estado.gold = (estado.gold ?? 0) + o.amount * o.price;
   return { ok: true, notice: 'Ordem cancelada.' };

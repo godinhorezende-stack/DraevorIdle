@@ -24,39 +24,41 @@ const knight = sessao(NOMES[0], 'knight', 600);
 const paladin = sessao(NOMES[1], 'paladin', 600);
 const baixo = sessao(NOMES[2], 'druid', 120);
 Arena.ligar(new Map([knight, paladin, baixo].map((s) => [s.personagem.nome, s])));
-const vista = (s) => Arena.vista(s).view;
+const vista = async (s) => (await Arena.vista(s)).view;
 const ultima = (s, t) => s.msgs.filter((m) => m.t === t).at(-1);
-const arenaId = vista(knight).arenas.find((a) => a.level === 500).id;
+/** `terminar` (arena.mjs) roda em segundo plano depois de `antesDoTique`/`saiuDoJogo` (fogo e esquece, de propósito — ver o comentário lá). Espera ela de fato terminar antes de olhar `msgs`/`vista`. */
+const tique = () => new Promise((r) => setImmediate(r));
+const arenaId = (await vista(knight)).arenas.find((a) => a.level === 500).id;
 
-test('fila do lobby: alistar, aparecer para os outros, sair', () => {
-  assert.match(Arena.comando(baixo, { action: 'alistar', arenaId }), /level 500/);
-  assert.equal(Arena.comando(paladin, { action: 'alistar', arenaId }), null);
-  assert.equal(vista(paladin).euAlistado, true);
-  assert.deepEqual(vista(knight).gente.map((g) => g.nome), [NOMES[1]]);
-  assert.deepEqual(vista(paladin).gente, [], 'ninguém vê o próprio card');
-  Arena.comando(paladin, { action: 'desalistar' });
-  assert.deepEqual([vista(paladin).euAlistado, vista(knight).gente.length], [false, 0]);
-  assert.match(Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId }), /não está mais na fila/);
+test('fila do lobby: alistar, aparecer para os outros, sair', async () => {
+  assert.match(await Arena.comando(baixo, { action: 'alistar', arenaId }), /level 500/);
+  assert.equal(await Arena.comando(paladin, { action: 'alistar', arenaId }), null);
+  assert.equal((await vista(paladin)).euAlistado, true);
+  assert.deepEqual((await vista(knight)).gente.map((g) => g.nome), [NOMES[1]]);
+  assert.deepEqual((await vista(paladin)).gente, [], 'ninguém vê o próprio card');
+  await Arena.comando(paladin, { action: 'desalistar' });
+  assert.deepEqual([(await vista(paladin)).euAlistado, (await vista(knight)).gente.length], [false, 0]);
+  assert.match(await Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId }), /não está mais na fila/);
 });
 
-test('enfrentar abre a sala dos dois e manda arenaPar aos dois', () => {
-  Arena.comando(paladin, { action: 'alistar', arenaId });
-  assert.equal(Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId }), null);
+test('enfrentar abre a sala dos dois e manda arenaPar aos dois', async () => {
+  await Arena.comando(paladin, { action: 'alistar', arenaId });
+  assert.equal(await Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId }), null);
   assert.equal(ultima(knight, 'arenaPar').de, NOMES[1]);
   assert.equal(ultima(paladin, 'arenaPar').de, NOMES[0]);
   assert.equal(ultima(paladin, 'arenaPar').arenaId, arenaId);
-  const sala = vista(knight).sala;
+  const sala = (await vista(knight)).sala;
   assert.deepEqual(sala.lados.map((l) => [l.nome, l.lider]), [[NOMES[0], true], [NOMES[1], false]]);
-  assert.equal(vista(paladin).euAlistado, false, 'sair da fila ao formar o par');
-  assert.match(Arena.comando(knight, { action: 'comecar' }), /prontos/);
-  Arena.comando(knight, { action: 'pronto' });
-  Arena.comando(paladin, { action: 'pronto' });
-  assert.match(Arena.comando(paladin, { action: 'comecar' }), /líder/);
+  assert.equal((await vista(paladin)).euAlistado, false, 'sair da fila ao formar o par');
+  assert.match(await Arena.comando(knight, { action: 'comecar' }), /prontos/);
+  await Arena.comando(knight, { action: 'pronto' });
+  await Arena.comando(paladin, { action: 'pronto' });
+  assert.match(await Arena.comando(paladin, { action: 'comecar' }), /líder/);
 });
 
-test('o duelo: lado a lado, sem bichos, até um cair — e o depois', () => {
+test('o duelo: lado a lado, sem bichos, até um cair — e o depois', async () => {
   const antes = { k: { ...knight.estado.arena }, p: { ...paladin.estado.arena } };
-  assert.equal(Arena.comando(knight, { action: 'comecar' }), null);
+  assert.equal(await Arena.comando(knight, { action: 'comecar' }), null);
   const [hk, hp] = [knight.estado.hunt, paladin.estado.hunt];
   assert.ok(hk?.pvp && hp?.pvp, 'os dois na arena, com pvp');
   assert.deepEqual([knight.estado.level, paladin.estado.level], [500, 500], 'a força do level da arena');
@@ -71,6 +73,7 @@ test('o duelo: lado a lado, sem bichos, até um cair — e o depois', () => {
   // Largada: ninguém bate nos primeiros 5 s.
   Arena.antesDoTique(knight, agora);
   Arena.antesDoTique(paladin, agora);
+  await tique();
   assert.equal(knight.msgs.filter((m) => m.t === 'events').length, 0);
 
   const golpes = { k: 0, p: 0 };
@@ -79,6 +82,7 @@ test('o duelo: lado a lado, sem bichos, até um cair — e o depois', () => {
       if (!s.estado.hunt) continue;
       const n = s.msgs.length;
       Arena.antesDoTique(s, agora);
+      await tique();
       const deu = s.msgs.slice(n).some((m) => m.t === 'events' && m.events.some((e) => e.t === 'dmg' && e.alvo));
       if (deu) golpes[s === knight ? 'k' : 'p']++;
     }
@@ -106,7 +110,7 @@ test('o duelo: lado a lado, sem bichos, até um cair — e o depois', () => {
     assert.equal(s.estado.hp, s.estado.maxHp);
     assert.equal(s.msgs.some((m) => m.t === 'death'), false);
   }
-  assert.equal(vista(knight).historico[0].vencedor.nome, ganhou.personagem.nome);
+  assert.equal((await vista(knight)).historico[0].vencedor.nome, ganhou.personagem.nome);
   // A tela de fim: level de volta, o antes/depois de pontos, moedas e patente, e o placar.
   const fimG = ultima(ganhou, 'arenaFim').fim;
   const fimP = ultima(perdeu, 'arenaFim').fim;
@@ -120,33 +124,35 @@ test('o duelo: lado a lado, sem bichos, até um cair — e o depois', () => {
   assert.deepEqual([perdeu.estado.pos.x, perdeu.estado.pos.y], [R.POSICAO_INICIAL.x, R.POSICAO_INICIAL.y]);
 });
 
-test('o degrau dos bichos avisa os dois (arenaOnda)', () => {
-  Arena.comando(paladin, { action: 'alistar', arenaId });
-  Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId });
-  Arena.comando(knight, { action: 'pronto' });
-  Arena.comando(paladin, { action: 'pronto' });
-  Arena.comando(knight, { action: 'comecar' });
+test('o degrau dos bichos avisa os dois (arenaOnda)', async () => {
+  await Arena.comando(paladin, { action: 'alistar', arenaId });
+  await Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId });
+  await Arena.comando(knight, { action: 'pronto' });
+  await Arena.comando(paladin, { action: 'pronto' });
+  await Arena.comando(knight, { action: 'comecar' });
   const inicio = Date.now();
   // Ninguém mira ninguém: 2 min depois da largada, o 1º degrau (+15%).
   Arena.antesDoTique(knight, inicio + 5000 + 120_000 + 10);
+  await tique();
   const onda = (s) => s.msgs.flatMap((m) => (m.t === 'events' ? m.events : [])).find((e) => e.t === 'arenaOnda');
   assert.deepEqual(onda(knight), { t: 'arenaOnda', degrau: 1, passo: 15, total: 15 });
   assert.deepEqual(onda(paladin), onda(knight));
   assert.ok(knight.estado.hunt.monstros.every((m) => m.forca === 1.15));
   // Sair no meio conta como derrota.
   Arena.saiuDoJogo(paladin);
+  await tique();
   assert.equal(ultima(knight, 'arenaFim').fim.venceu, true);
   assert.equal(knight.estado.level, 600);
 });
 
-test('cada um nasce numa ponta da arena e os dois se encontram pela caverna', () => {
+test('cada um nasce numa ponta da arena e os dois se encontram pela caverna', async () => {
   knight.msgs.length = 0;
   paladin.msgs.length = 0;
-  Arena.comando(paladin, { action: 'alistar', arenaId });
-  Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId });
-  Arena.comando(knight, { action: 'pronto' });
-  Arena.comando(paladin, { action: 'pronto' });
-  assert.equal(Arena.comando(knight, { action: 'comecar' }), null);
+  await Arena.comando(paladin, { action: 'alistar', arenaId });
+  await Arena.comando(knight, { action: 'enfrentar', quem: NOMES[1], arenaId });
+  await Arena.comando(knight, { action: 'pronto' });
+  await Arena.comando(paladin, { action: 'pronto' });
+  assert.equal(await Arena.comando(knight, { action: 'comecar' }), null);
   const [hk, hp] = [knight.estado.hunt, paladin.estado.hunt];
   hk.monstros.length = 0;
   hp.monstros.length = 0;
@@ -162,6 +168,7 @@ test('cada um nasce numa ponta da arena e os dois se encontram pela caverna', ()
       s.estado.hunt.guia = null; // a sessão recalcula o guia (party) a cada tique
       const n = s.msgs.length;
       Arena.antesDoTique(s, agora);
+      await tique();
       if (!s.estado.hunt) continue;
       Cacadas.tique(s.estado, s.personagem, agora);
       if (primeiroGolpe == null && s.msgs.slice(n).some((m) => m.t === 'events' && m.events.some((e) => e.t === 'dmg' && e.alvo))) primeiroGolpe = (i * 250) / 1000;
@@ -170,5 +177,8 @@ test('cada um nasce numa ponta da arena e os dois se encontram pela caverna', ()
   console.log(`  perseguição: ${longe} casas, primeiro golpe em ${primeiroGolpe}s de duelo`);
   assert.ok(primeiroGolpe != null, 'chegaram a trocar golpe');
   assert.ok(primeiroGolpe < 60, 'em menos de 1 minuto');
-  if (knight.estado.hunt) Arena.saiuDoJogo(paladin);
+  if (knight.estado.hunt) {
+    Arena.saiuDoJogo(paladin);
+    await tique();
+  }
 });

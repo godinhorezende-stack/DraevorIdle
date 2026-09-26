@@ -504,6 +504,14 @@ export class Sessao {
     return this.aplicar(await Banqueiro.comando(this.estado, m, this.personagem, (nome) => this.destinoDaTransferencia(nome)));
   }
 
+  /** `send({t:'arena', action?, ...})` — sem `action`, só o lobby; com ela, o comando (a vista nova vai para quem foi tocado). */
+  async despacharArena(m) {
+    if (!m.action) return this.enviar(await Arena.vista(this));
+    const erro = await Arena.comando(this, m);
+    if (erro) this.enviar(await Arena.vista(this, erro));
+    return this.aplicar({ ok: true });
+  }
+
   /** `send({t:'guilda', action?, ...})` — sem `action`, só a vista; com ela, o comando e a vista atualizada. */
   async despacharGuilda(m) {
     if (!m.action) return this.enviar(await Guildas.vista(this.personagem.nome));
@@ -525,37 +533,37 @@ export class Sessao {
   }
 
   /** `send({t:'market', action?})` — o balcão de itens (ver `sistemas/mercado.mjs`). */
-  despacharMercado(m) {
+  async despacharMercado(m) {
     const p = this.personagem;
     if (!p) return;
     const aoVivo = (id) => this.estadoAoVivo(id);
-    if (m.action === 'historico') return this.enviar({ t: 'marketHistorico', dados: Mercado.extrato(p.id) });
-    if (m.action === 'offers') return this.enviar({ t: 'marketOffers', dados: Mercado.ofertas(p.id, m.filtros) });
+    if (m.action === 'historico') return this.enviar({ t: 'marketHistorico', dados: await Mercado.extrato(p.id) });
+    if (m.action === 'offers') return this.enviar({ t: 'marketOffers', dados: await Mercado.ofertas(p.id, m.filtros) });
     let r = null;
-    if (m.action === 'offer') r = Mercado.anunciar(this.estado, p, m);
-    else if (m.action === 'accept') r = Mercado.aceitar(this.estado, p, m, aoVivo);
-    else if (m.action === 'cancel') r = Mercado.cancelar(this.estado, p, m);
+    if (m.action === 'offer') r = await Mercado.anunciar(this.estado, p, m);
+    else if (m.action === 'accept') r = await Mercado.aceitar(this.estado, p, m, aoVivo);
+    else if (m.action === 'cancel') r = await Mercado.cancelar(this.estado, p, m);
     if (r && !r.ok) return this.erro(r.erro);
     // Anúncio novo: sai também na aba Mercado do chat (ver Chat.anunciarOferta).
     if (m.action === 'offer' && r.anuncio) Chat.anunciarOferta(this, r.anuncio);
-    this.enviar({ t: 'market', market: Mercado.balcao(this.estado, p.id), ...(r?.notice ? { notice: r.notice } : {}) });
+    this.enviar({ t: 'market', market: await Mercado.balcao(this.estado, p.id), ...(r?.notice ? { notice: r.notice } : {}) });
     if (r) {
-      this.enviar({ t: 'marketOffers', dados: Mercado.ofertas(p.id, m.filtros ?? { kind: m.kind, moeda: m.moeda }) });
+      this.enviar({ t: 'marketOffers', dados: await Mercado.ofertas(p.id, m.filtros ?? { kind: m.kind, moeda: m.moeda }) });
       this.aplicar({ ok: true });
     }
   }
 
   /** `send({t:'coinMarket', action?, pagina})` — o balcão de Ravox Coins. */
-  despacharCoins(m) {
+  async despacharCoins(m) {
     const p = this.personagem;
     if (!p) return;
     const aoVivo = (id) => this.estadoAoVivo(id);
     let r = null;
-    if (m.action === 'order') r = Mercado.ordemDeCoins(this.estado, p, m);
-    else if (m.action === 'accept') r = Mercado.aceitarCoins(this.estado, p, m, aoVivo);
-    else if (m.action === 'cancel') r = Mercado.cancelarCoins(this.estado, p, m);
+    if (m.action === 'order') r = await Mercado.ordemDeCoins(this.estado, p, m);
+    else if (m.action === 'accept') r = await Mercado.aceitarCoins(this.estado, p, m, aoVivo);
+    else if (m.action === 'cancel') r = await Mercado.cancelarCoins(this.estado, p, m);
     if (r && !r.ok) return this.erro(r.erro);
-    this.enviar({ t: 'coinMarket', dados: Mercado.balcaoDeCoins(this.estado, p.id, m.pagina), ...(r?.notice ? { notice: r.notice } : {}) });
+    this.enviar({ t: 'coinMarket', dados: await Mercado.balcaoDeCoins(this.estado, p.id, m.pagina), ...(r?.notice ? { notice: r.notice } : {}) });
     if (r) this.aplicar({ ok: true });
   }
 
@@ -890,12 +898,8 @@ export class Sessao {
         return this.enviar({ t: 'ranking', ranking: Ranking.topo(m.category) });
       // A guilda: sem `action`, a vista; com, a ação e a vista nova — ver `sistemas/guildas.mjs`.
       // A Arena x1: sem `action`, o lobby; com, a ação (a vista nova vai para quem foi tocado).
-      case 'arena': {
-        if (!m.action) return this.enviar(Arena.vista(this));
-        const erro = Arena.comando(this, m);
-        if (erro) this.enviar(Arena.vista(this, erro));
-        return this.aplicar({ ok: true });
-      }
+      case 'arena':
+        return this.despacharArena(m);
       case 'guilda':
         return this.despacharGuilda(m);
       case 'friends':
@@ -1268,7 +1272,7 @@ export class Sessao {
     this.estado = estado;
     this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
     // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
-    const doMercado = Mercado.receberCreditos(this.estado, personagem.id);
+    const doMercado = await Mercado.receberCreditos(this.estado, personagem.id);
     // Personagem que já estava acima da capacidade (loot de antes da regra):
     // o excesso vai para o depósito, com aviso no primeiro `state`.
     this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado;

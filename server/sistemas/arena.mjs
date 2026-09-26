@@ -35,7 +35,7 @@
 // `ranking` e `emLuta` (vazios na captura); cair no duelo (bicho ou adversário,
 // ou sair do jogo) é derrota; o pódio vale durante a semana seguinte.
 import { readFileSync } from 'node:fs';
-import * as B from '../nucleo/banco.mjs';
+import { banco } from '../nucleo/banco.mjs';
 import * as R from '../nucleo/regras.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Ficha from './ficha.mjs';
@@ -68,31 +68,54 @@ export const REGRAS = {
   lugaresPremiados: 3,
 };
 
-B.db.exec(`
+const pg = banco.dialeto === 'postgres';
+const inteiroGrande = pg ? 'BIGINT' : 'INTEGER';
+await banco.exec(`
   CREATE TABLE IF NOT EXISTS arena_historico (
-    quando INTEGER NOT NULL, arena TEXT NOT NULL, duracao INTEGER NOT NULL, degraus INTEGER NOT NULL,
+    quando ${inteiroGrande} NOT NULL, arena TEXT NOT NULL, duracao INTEGER NOT NULL, degraus INTEGER NOT NULL,
     vencedor TEXT NOT NULL, perdedor TEXT NOT NULL
   );
   CREATE TABLE IF NOT EXISTS arena_podio (
-    semana INTEGER NOT NULL, lugar INTEGER NOT NULL, nome TEXT NOT NULL, pontos INTEGER NOT NULL,
+    semana ${inteiroGrande} NOT NULL, lugar INTEGER NOT NULL, nome TEXT NOT NULL, pontos INTEGER NOT NULL,
     PRIMARY KEY (semana, lugar)
   );
-  CREATE TABLE IF NOT EXISTS arena_semanas (semana INTEGER PRIMARY KEY);
+  CREATE TABLE IF NOT EXISTS arena_semanas (semana ${inteiroGrande} PRIMARY KEY);
 `);
+/*
+ * `daSemana`/`vencedores` leem dentro do JSON de `estado` (guardado como
+ * TEXTO — ver `nucleo/banco.mjs`): `json_extract` é SQLite; o mesmo caminho
+ * no Postgres é `estado::jsonb #>> '{...}'` (texto) convertido para número.
+ */
 const Q = {
-  historico: B.db.prepare('SELECT * FROM arena_historico ORDER BY quando DESC LIMIT 20'),
-  anotar: B.db.prepare('INSERT INTO arena_historico (quando, arena, duracao, degraus, vencedor, perdedor) VALUES (?, ?, ?, ?, ?, ?)'),
-  podio: B.db.prepare('SELECT * FROM arena_podio WHERE semana = ? ORDER BY lugar'),
-  porNoPodio: B.db.prepare('INSERT OR REPLACE INTO arena_podio (semana, lugar, nome, pontos) VALUES (?, ?, ?, ?)'),
-  semanaFeita: B.db.prepare('SELECT semana FROM arena_semanas WHERE semana = ?'),
-  fecharSemana: B.db.prepare('INSERT OR IGNORE INTO arena_semanas (semana) VALUES (?)'),
-  daSemana: B.db.prepare(`SELECT nome, json_extract(estado, '$.arena.pontos') AS pontos FROM personagens
-    WHERE json_extract(estado, '$.arena.semana') = ? AND json_extract(estado, '$.arena.pontos') > 0
-    ORDER BY pontos DESC LIMIT 3`),
-  vencedores: B.db.prepare(`SELECT nome, estado FROM personagens
-    WHERE coalesce(json_extract(estado, '$.arena.vitorias'), 0) > 0
-    ORDER BY json_extract(estado, '$.arena.vitorias') DESC LIMIT 10`),
-  personagem: B.db.prepare('SELECT nome, estado FROM personagens WHERE nome = ?'),
+  historico: banco.prepare('SELECT * FROM arena_historico ORDER BY quando DESC LIMIT 20'),
+  anotar: banco.prepare('INSERT INTO arena_historico (quando, arena, duracao, degraus, vencedor, perdedor) VALUES (?, ?, ?, ?, ?, ?)'),
+  podio: banco.prepare('SELECT * FROM arena_podio WHERE semana = ? ORDER BY lugar'),
+  porNoPodio: banco.prepare(
+    pg
+      ? 'INSERT INTO arena_podio (semana, lugar, nome, pontos) VALUES (?, ?, ?, ?) ON CONFLICT (semana, lugar) DO UPDATE SET nome = excluded.nome, pontos = excluded.pontos'
+      : 'INSERT OR REPLACE INTO arena_podio (semana, lugar, nome, pontos) VALUES (?, ?, ?, ?)',
+  ),
+  semanaFeita: banco.prepare('SELECT semana FROM arena_semanas WHERE semana = ?'),
+  fecharSemana: banco.prepare(pg ? 'INSERT INTO arena_semanas (semana) VALUES (?) ON CONFLICT DO NOTHING' : 'INSERT OR IGNORE INTO arena_semanas (semana) VALUES (?)'),
+  daSemana: banco.prepare(
+    pg
+      ? `SELECT nome, (estado::jsonb #>> '{arena,pontos}')::numeric AS pontos FROM personagens
+         WHERE (estado::jsonb #>> '{arena,semana}')::bigint = ? AND (estado::jsonb #>> '{arena,pontos}')::numeric > 0
+         ORDER BY pontos DESC LIMIT 3`
+      : `SELECT nome, json_extract(estado, '$.arena.pontos') AS pontos FROM personagens
+         WHERE json_extract(estado, '$.arena.semana') = ? AND json_extract(estado, '$.arena.pontos') > 0
+         ORDER BY pontos DESC LIMIT 3`,
+  ),
+  vencedores: banco.prepare(
+    pg
+      ? `SELECT nome, estado FROM personagens
+         WHERE coalesce((estado::jsonb #>> '{arena,vitorias}')::numeric, 0) > 0
+         ORDER BY (estado::jsonb #>> '{arena,vitorias}')::numeric DESC LIMIT 10`
+      : `SELECT nome, estado FROM personagens
+         WHERE coalesce(json_extract(estado, '$.arena.vitorias'), 0) > 0
+         ORDER BY json_extract(estado, '$.arena.vitorias') DESC LIMIT 10`,
+  ),
+  personagem: banco.prepare('SELECT nome, estado FROM personagens WHERE nome = ?'),
 };
 
 let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
@@ -142,34 +165,46 @@ const patenteDe = (estado) => {
 // ------------------------------------------------------------ o pódio da semana
 
 /** Fecha a semana que passou (uma vez): os 3 com mais pontos viram o pódio desta. */
-function fecharSemanaPassada(agora = Date.now()) {
+async function fecharSemanaPassada(agora = Date.now()) {
   const semana = semanaDe(agora);
-  if (Q.semanaFeita.get(semana)) return;
+  if (await Q.semanaFeita.get(semana)) return;
   const anterior = semana - SEMANA_MS;
   // Quem está online tem os pontos AO VIVO; o banco tem o que foi gravado.
-  const porNome = new Map(Q.daSemana.all(anterior).map((r) => [r.nome, r.pontos]));
+  const porNome = new Map((await Q.daSemana.all(anterior)).map((r) => [r.nome, r.pontos]));
   for (const s of vivas.values()) {
     const a = s.estado?.arena;
     if (a?.semana === anterior && a.pontos > 0) porNome.set(nomeDe(s), a.pontos);
   }
-  [...porNome.entries()]
-    .sort((x, y) => y[1] - x[1])
-    .slice(0, REGRAS.lugaresPremiados)
-    .forEach(([nome, pontos], i) => Q.porNoPodio.run(semana, i + 1, nome, pontos));
-  Q.fecharSemana.run(semana);
+  const top = [...porNome.entries()].sort((x, y) => y[1] - x[1]).slice(0, REGRAS.lugaresPremiados);
+  for (const [i, [nome, pontos]] of top.entries()) await Q.porNoPodio.run(semana, i + 1, nome, pontos);
+  await Q.fecharSemana.run(semana);
 }
 
-/** O bônus do pódio que o personagem tem nesta semana: {exp, loot, lugar} em %. Lembrado por semana (vale a cada bicho morto). */
+/*
+ * O bônus do pódio que o personagem tem nesta semana: {exp, loot, lugar} em
+ * %. Chamada em caminho quente (o combate, a cada bicho morto —
+ * `sistemas/hunt/combate.mjs`) que não pode virar assíncrono: fica no mesmo
+ * padrão de `Guildas.guildaDe` (Fase 6) — só lê do cache (`bonusLembrado`,
+ * nunca uma Promise) e dispara a busca de verdade em segundo plano quando
+ * erra, devolvendo "sem bônus" (nunca `undefined`) até ela voltar. Errar o
+ * cache custa, no pior caso, o bônus de pódio de UM bicho — o mesmo tipo de
+ * folga que `Ficha.combate` já aceita desde a Fase 3.
+ */
+const SEM_BONUS = { exp: 0, loot: 0, lugar: 0 };
 const bonusLembrado = new Map();
 export function bonusDoPodio(nome, agora = Date.now()) {
   const chave = `${semanaDe(agora)}:${nome}`;
-  if (!bonusLembrado.has(chave)) bonusLembrado.set(chave, buscarBonus(nome, agora));
-  return bonusLembrado.get(chave);
+  if (bonusLembrado.has(chave)) return bonusLembrado.get(chave);
+  bonusLembrado.set(chave, SEM_BONUS); // evita disparar 2 buscas em voo para a mesma chave
+  buscarBonus(nome, agora)
+    .then((r) => bonusLembrado.set(chave, r))
+    .catch((e) => console.error('bonusDoPodio', nome, '->', e.message));
+  return SEM_BONUS;
 }
 
-function buscarBonus(nome, agora) {
-  fecharSemanaPassada(agora);
-  const linha = Q.podio.all(semanaDe(agora)).find((r) => r.nome === nome);
+async function buscarBonus(nome, agora) {
+  await fecharSemanaPassada(agora);
+  const linha = (await Q.podio.all(semanaDe(agora))).find((r) => r.nome === nome);
   const premio = linha && REGRAS.premiosDoPodio.find((p) => p.lugar === linha.lugar);
   return premio ? { exp: premio.exp, loot: premio.loot, lugar: linha.lugar } : { exp: 0, loot: 0, lugar: 0 };
 }
@@ -227,25 +262,28 @@ function vistaDaSala(nome, agora = Date.now()) {
   };
 }
 
-const dadosDoLado = (nome) => {
+const dadosDoLado = async (nome) => {
   const s = sessaoDe(nome);
-  const e = s?.estado ?? JSON.parse(Q.personagem.get(nome)?.estado ?? '{}');
+  const e = s?.estado ?? JSON.parse((await Q.personagem.get(nome))?.estado ?? '{}');
   const a = e.arena ?? {};
   return { nome, patente: patente(a.pontos ?? 0, a.pontosTotais ?? 0), outfit: roupa(e), level: e.arenaGuardado?.level ?? e.level ?? 1 };
 };
 
 /** `{t:'arena', view}` — o lobby inteiro, do jeito do original. */
-export function vista(s, aviso = null, agora = Date.now()) {
+export async function vista(s, aviso = null, agora = Date.now()) {
   limpar(agora);
-  fecharSemanaPassada(agora);
+  await fecharSemanaPassada(agora);
   const eu = nomeDe(s);
   const e = s.estado;
   const a = garantir(e, agora);
   const semana = semanaDe(agora);
-  const podio = Q.podio.all(semana).map((r) => {
-    const premio = REGRAS.premiosDoPodio.find((p) => p.lugar === r.lugar);
-    return { lugar: r.lugar, nome: r.nome, pontos: r.pontos, exp: premio?.exp ?? 0, loot: premio?.loot ?? 0, ...(() => { const d = dadosDoLado(r.nome); return { outfit: d.outfit, patente: d.patente }; })() };
-  });
+  const podio = await Promise.all(
+    (await Q.podio.all(semana)).map(async (r) => {
+      const premio = REGRAS.premiosDoPodio.find((p) => p.lugar === r.lugar);
+      const d = await dadosDoLado(r.nome);
+      return { lugar: r.lugar, nome: r.nome, pontos: r.pontos, exp: premio?.exp ?? 0, loot: premio?.loot ?? 0, outfit: d.outfit, patente: d.patente };
+    }),
+  );
   const recebidos = [];
   const enviados = [];
   for (const d of desafios.values()) {
@@ -275,20 +313,20 @@ export function vista(s, aviso = null, agora = Date.now()) {
         .map(sessaoDe)
         .filter((o) => o && o !== s && livre(o))
         .map((o) => ({ nome: nomeDe(o), level: o.estado.level, pontos: garantir(o.estado, agora).pontos, patente: patenteDe(o.estado), outfit: roupa(o.estado) })),
-      emLuta: [...duelos.values()].map((d) => ({ arena: arenaPorId(d.arenaId)?.nome, desde: d.comecou, lados: d.lados.map((n) => dadosDoLado(n)) })),
+      emLuta: await Promise.all([...duelos.values()].map(async (d) => ({ arena: arenaPorId(d.arenaId)?.nome, desde: d.comecou, lados: await Promise.all(d.lados.map((n) => dadosDoLado(n))) }))),
       euAlistado: fila.has(eu),
       recebidos,
       enviados,
       sala: vistaDaSala(eu, agora),
       validadeDaSala: 60_000,
-      ranking: vencedores(),
-      historico: Q.historico.all().map((h) => ({ quando: h.quando, arena: h.arena, duracao: h.duracao, degraus: h.degraus, vencedor: JSON.parse(h.vencedor), perdedor: JSON.parse(h.perdedor) })),
+      ranking: await vencedores(),
+      historico: (await Q.historico.all()).map((h) => ({ quando: h.quando, arena: h.arena, duracao: h.duracao, degraus: h.degraus, vencedor: JSON.parse(h.vencedor), perdedor: JSON.parse(h.perdedor) })),
     },
   };
 }
 
-function vencedores() {
-  const porNome = new Map(Q.vencedores.all().map((r) => [r.nome, JSON.parse(r.estado)]));
+async function vencedores() {
+  const porNome = new Map((await Q.vencedores.all()).map((r) => [r.nome, JSON.parse(r.estado)]));
   for (const s of vivas.values()) if (s.estado?.arena?.vitorias > 0) porNome.set(nomeDe(s), s.estado);
   return [...porNome.entries()]
     .map(([nome, e]) => ({ nome, level: e.arenaGuardado?.level ?? e.level, vitorias: e.arena.vitorias, derrotas: e.arena.derrotas ?? 0, patente: patente(e.arena.pontos ?? 0, e.arena.pontosTotais ?? 0), outfit: roupa(e) }))
@@ -296,18 +334,18 @@ function vencedores() {
     .slice(0, 10);
 }
 
-const atualizar = (...nomes) => {
+const atualizar = async (...nomes) => {
   for (const n of nomes) {
     const s = sessaoDe(n);
-    if (s?.personagem) s.enviar(vista(s));
+    if (s?.personagem) s.enviar(await vista(s));
   }
 };
 
 /** A fila mudou: quem pode lutar (level da arena, na cidade) recebe o lobby novo. */
-const atualizarQuemPodeLutar = (...alem) => {
+const atualizarQuemPodeLutar = async (...alem) => {
   const nomes = new Set(alem);
   for (const o of vivas.values()) if (livre(o) && (o.estado.level ?? 0) >= REGRAS.levelParaEntrar) nomes.add(nomeDe(o));
-  atualizar(...nomes);
+  await atualizar(...nomes);
 };
 
 /** O cartão do par feito: o mesmo do convite, visto por `lado` (o `de` é o adversário). */
@@ -328,7 +366,7 @@ function abrirSala(arenaId, lados, agora) {
 }
 
 /** `{t:'arena', action, ...}`. Devolve a mensagem de erro (ou null); a vista nova vai para os envolvidos. */
-export function comando(s, m, agora = Date.now()) {
+export async function comando(s, m, agora = Date.now()) {
   limpar(agora);
   const eu = nomeDe(s);
   const a = garantir(s.estado, agora);
@@ -347,7 +385,7 @@ export function comando(s, m, agora = Date.now()) {
       const d = { de: eu, para: nomeDe(alvo), arenaId: arena.id, expira: agora + REGRAS.validadeDoDesafio };
       desafios.set(`${eu}>${d.para}`, d);
       alvo.enviar({ t: 'arenaDesafio', de: eu, arenaId: arena.id, arena: arena.nome, level: s.estado.level, outfit: roupa(s.estado), patente: patenteDe(s.estado), expiraEm: d.expira });
-      atualizar(eu, d.para);
+      await atualizar(eu, d.para);
       return null;
     }
     case 'aceitar': {
@@ -357,7 +395,7 @@ export function comando(s, m, agora = Date.now()) {
       desafios.delete(`${d.de}>${d.para}`);
       if (!livre(de) || !livre(s)) return 'Um de vocês não está mais livre na cidade.';
       abrirSala(d.arenaId, [d.de, eu], agora);
-      atualizarQuemPodeLutar(d.de, eu);
+      await atualizarQuemPodeLutar(d.de, eu);
       return null;
     }
     case 'alistar': {
@@ -366,12 +404,12 @@ export function comando(s, m, agora = Date.now()) {
       if (!livre(s)) return 'Você precisa estar livre na cidade para entrar na fila.';
       if (a.tickets < REGRAS.custoDoTicket) return 'Seus tickets acabaram — amanhã chegam mais 5.';
       fila.set(eu, { arenaId: arena.id, expira: agora + REGRAS.validadeDoAlistamento });
-      atualizarQuemPodeLutar(eu);
+      await atualizarQuemPodeLutar(eu);
       return null;
     }
     case 'desalistar': {
       fila.delete(eu);
-      atualizarQuemPodeLutar(eu);
+      await atualizarQuemPodeLutar(eu);
       return null;
     }
     case 'enfrentar': {
@@ -386,21 +424,25 @@ export function comando(s, m, agora = Date.now()) {
       abrirSala(arena.id, [eu, nomeDe(alvo)], agora);
       s.enviar(cartaoDoPar(alvo, arena));
       alvo.enviar(cartaoDoPar(s, arena));
-      atualizarQuemPodeLutar(eu, nomeDe(alvo));
+      await atualizarQuemPodeLutar(eu, nomeDe(alvo));
       return null;
     }
     case 'desistir': {
       // Um desafio mandado e ainda sem resposta: cancela. No duelo: entrega.
-      if (dueloDe.has(eu)) return void terminar(dueloDe.get(eu), outroLado(dueloDe.get(eu), eu), 'desistiu');
+      // Fogo e esquece: o resultado (histórico/vista) não precisa atrasar a resposta deste comando.
+      if (dueloDe.has(eu)) {
+        terminar(dueloDe.get(eu), outroLado(dueloDe.get(eu), eu), 'desistiu').catch((e) => console.error('arena desistir', e.message));
+        return null;
+      }
       for (const [k, d] of desafios) if (d.de === eu) desafios.delete(k);
-      atualizar(eu);
+      await atualizar(eu);
       return null;
     }
     case 'pronto': {
       const sala = salas.get(salaDe.get(eu));
       if (!sala) return 'Você não está numa sala de duelo.';
       sala.prontos.add(eu);
-      atualizar(...sala.lados);
+      await atualizar(...sala.lados);
       return null;
     }
     case 'sairDaSala': {
@@ -408,7 +450,7 @@ export function comando(s, m, agora = Date.now()) {
       if (!sala) return null;
       salas.delete(sala.id);
       for (const n of sala.lados) salaDe.delete(n);
-      atualizar(...sala.lados);
+      await atualizar(...sala.lados);
       return null;
     }
     case 'comecar': {
@@ -569,14 +611,21 @@ function golpeNoAdversario(s, outro, arma, id) {
   // Quem bateu vê o número em cima do adversário; quem apanhou, em cima de si.
   s.enviar({ t: 'events', events: [...eventos, { t: 'fx', id: 1, uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y }, { t: 'dmg', uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y, v: dano, foe: true, crit, alvo: nomeDe(outro), ...(cor ? { color: cor } : {}) }] });
   outro.enviar({ t: 'events', events: [{ t: 'fx', id: 1, uid: 'player', x: oh.pos.x, y: oh.pos.y }, { t: 'dmg', uid: 'player', quem: nomeDe(outro), x: oh.pos.x, y: oh.pos.y, v: dano, foe: false, de: nomeDe(s), golpe: 'corpo a corpo', ...(cor ? { color: cor } : {}) }] });
-  if (outro.estado.hp <= 0) terminar(id, nomeDe(s), 'caiu');
+  // Fogo e esquece (ver o comentário do `catch` em `caiu`, abaixo): quem bateu não pode esperar o banco.
+  if (outro.estado.hp <= 0) terminar(id, nomeDe(s), 'caiu').catch((e) => console.error('arena terminar', e.message));
 }
 
-/** Caiu no duelo (bicho ou adversário): quem ficou de pé vence. Devolve true se era duelo. */
+/*
+ * Caiu no duelo (bicho ou adversário): quem ficou de pé vence. Devolve true
+ * se era duelo. `terminar` fica em segundo plano de propósito — ela só grava
+ * o histórico e manda a vista nova; a mutação de verdade (pontos, level,
+ * posição) já aconteceu ANTES do primeiro `await` dela, então esperar aqui
+ * só atrasaria quem está no meio de um combate (`antesDoTique`, a cada tique).
+ */
 export function caiu(s) {
   const id = dueloDe.get(nomeDe(s));
   if (!id) return false;
-  terminar(id, outroLado(id, nomeDe(s)), 'caiu');
+  terminar(id, outroLado(id, nomeDe(s)), 'caiu').catch((e) => console.error('arena terminar', e.message));
   return true;
 }
 
@@ -589,9 +638,9 @@ export function saiuDoJogo(s) {
   if (sala) {
     salas.delete(sala.id);
     for (const n of sala.lados) salaDe.delete(n);
-    atualizar(...sala.lados.filter((n) => n !== nome));
+    atualizar(...sala.lados.filter((n) => n !== nome)).catch((e) => console.error('arena atualizar', e.message));
   }
-  if (dueloDe.has(nome)) terminar(dueloDe.get(nome), outroLado(dueloDe.get(nome), nome), 'saiu', s);
+  if (dueloDe.has(nome)) terminar(dueloDe.get(nome), outroLado(dueloDe.get(nome), nome), 'saiu', s).catch((e) => console.error('arena terminar', e.message));
 }
 
 /** Voltou ao jogo com um duelo que não terminou (servidor caiu no meio): o level de verdade volta. */
@@ -603,7 +652,7 @@ export function aoEntrar(estado) {
   }
 }
 
-function terminar(id, vencedor, motivo, quemSaiu = null) {
+async function terminar(id, vencedor, motivo, quemSaiu = null) {
   const d = duelos.get(id);
   if (!d) return;
   duelos.delete(id);
@@ -645,11 +694,13 @@ function terminar(id, vencedor, motivo, quemSaiu = null) {
     s.characterSujo = true;
   }
   const perdedor = d.lados.find((n) => n !== vencedor);
-  Q.anotar.run(agora, arena?.nome ?? d.arenaId, agora - d.largadaAte, d.degraus, JSON.stringify(fichas[vencedor] ?? dadosDoLado(vencedor)), JSON.stringify(fichas[perdedor] ?? dadosDoLado(perdedor)));
+  const fichaVencedor = fichas[vencedor] ?? (await dadosDoLado(vencedor));
+  const fichaPerdedor = fichas[perdedor] ?? (await dadosDoLado(perdedor));
+  await Q.anotar.run(agora, arena?.nome ?? d.arenaId, agora - d.largadaAte, d.degraus, JSON.stringify(fichaVencedor), JSON.stringify(fichaPerdedor));
   for (const nome of d.lados) {
     const s = sessaoDe(nome);
     if (!s?.personagem) continue;
     s.enviar({ t: 'arenaFim', fim: { venceu: nome === vencedor, adversario: nome === vencedor ? perdedor : vencedor, arena: arena?.nome, motivo, ...fins[nome] } });
-    s.enviar(vista(s));
+    s.enviar(await vista(s));
   }
 }
