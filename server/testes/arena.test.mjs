@@ -4,7 +4,7 @@
 // ticket, level de volta, nenhuma morte).
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import * as Arena from '../sistemas/arena.mjs';
 import * as Cacadas from '../sistemas/cacadas.mjs';
 import { personagemDeTeste } from './apoio.mjs';

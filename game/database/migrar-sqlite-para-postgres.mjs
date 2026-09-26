@@ -5,7 +5,7 @@
 //
 // Uso:
 //   DATABASE_URL="postgres://usuario:senha@host:5432/jogo" \
-//     node scripts/migrar-sqlite-para-postgres.mjs [caminho/para/jogo.db]
+//     node game/database/migrar-sqlite-para-postgres.mjs [caminho/para/jogo.db]
 //
 // O caminho do SQLite de origem é opcional — o padrão é `dados/jogo.db`
 // (o mesmo arquivo que o servidor usa em modo SQLite). O `DATABASE_URL` é
@@ -26,7 +26,7 @@ import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
+const RAIZ = dirname(fileURLToPath(import.meta.url));
 
 const destino = process.env.DATABASE_URL;
 if (!destino) {
@@ -49,16 +49,16 @@ console.log(`destino (Postgres): ${destino.replace(/:[^:@]+@/, ':***@')}`);
 const sqlite = new DatabaseSync(origem, { readOnly: true });
 
 // Só a criação do schema — cada import roda seu bloco `CREATE TABLE IF NOT
-// EXISTS` contra o destino, na primeira vez que `nucleo/banco.mjs` é aberto.
-const { banco } = await import('../nucleo/banco.mjs');
-await import('../sistemas/amigos.mjs');
-await import('../sistemas/arena.mjs');
-await import('../sistemas/drops-do-site.mjs');
-await import('../sistemas/guildas.mjs');
-await import('../sistemas/mercado.mjs');
+// EXISTS` contra o destino, na primeira vez que `banco.mjs` é aberto.
+const { banco } = await import('./banco.mjs');
+await import('../../server/sistemas/amigos.mjs');
+await import('../../server/sistemas/arena.mjs');
+await import('../../server/sistemas/drops-do-site.mjs');
+await import('../../server/sistemas/guildas.mjs');
+await import('../../server/sistemas/mercado.mjs');
 
 if (banco.dialeto !== 'postgres') {
-  console.error('DATABASE_URL não resultou em modo Postgres — nada a migrar (ver nucleo/db.mjs).');
+  console.error('DATABASE_URL não resultou em modo Postgres — nada a migrar (ver db.mjs).');
   process.exit(1);
 }
 

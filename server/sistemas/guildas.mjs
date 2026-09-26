@@ -34,7 +34,7 @@
 // relógio, o ranking, o site) por código que não pode virar assíncrono só
 // por causa disto — ela lê de um cache em memória e nunca do banco direto
 // (ver o comentário ali).
-import { banco } from '../nucleo/banco.mjs';
+import { banco } from '../../game/database/banco.mjs';
 import { ITEM_CATALOG } from '../nucleo/dados.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Premium from './premium.mjs';

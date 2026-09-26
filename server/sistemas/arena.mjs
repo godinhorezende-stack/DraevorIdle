@@ -35,7 +35,7 @@
 // `ranking` e `emLuta` (vazios na captura); cair no duelo (bicho ou adversário,
 // ou sair do jogo) é derrota; o pódio vale durante a semana seguinte.
 import { readFileSync } from 'node:fs';
-import { banco } from '../nucleo/banco.mjs';
+import { banco } from '../../game/database/banco.mjs';
 import * as R from '../nucleo/regras.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Ficha from './ficha.mjs';

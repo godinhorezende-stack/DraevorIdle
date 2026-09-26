@@ -1,6 +1,6 @@
 // O banco de ouro (o Banker da praça e o clique na carteira). Funções puras
-// sobre `estado` — quem manda a resposta é `sessao.mjs`. (`nucleo/banco.mjs` é
-// o banco de DADOS; este é o do jogo.)
+// sobre `estado` — quem manda a resposta é `sessao.mjs`. (`game/database/banco.mjs`
+// é o banco de DADOS; este é o do jogo.)
 //
 // As regras são as que o próprio client do original escreve na tela
 // (`renderBank`, panels.mjs — idêntico no site ao vivo em 2026-09-24):

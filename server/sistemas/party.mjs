@@ -24,7 +24,7 @@
 //
 // O grupo vive na memória do servidor ("a party dura entre uma caçada e
 // outra"); reiniciar o servidor desfaz as parties.
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Amigos from './amigos.mjs';

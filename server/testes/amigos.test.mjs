@@ -3,7 +3,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import * as Amigos from '../sistemas/amigos.mjs';
 
 const ler = (n) => JSON.parse(readFileSync(new URL(`../../api-mapeada/captura-social-0926/${n}`, import.meta.url), 'utf8'));

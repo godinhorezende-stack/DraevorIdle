@@ -5,7 +5,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import * as Cacadas from '../sistemas/cacadas.mjs';
 import * as SimulacaoOffline from '../nucleo/simulacao-offline.mjs';
 import { Sessao, vivas } from '../nucleo/sessao.mjs';

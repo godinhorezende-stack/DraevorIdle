@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node index.mjs",
-    "test": "node --test \"testes/*.test.mjs\""
+    "dev": "node server/index.mjs",
+    "test": "node --test \"server/testes/*.test.mjs\""
   },
   "dependencies": {
     "pg": "^8.23.0",

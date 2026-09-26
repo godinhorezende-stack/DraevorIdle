@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import * as Db from '../nucleo/db.mjs';
+import * as Db from '../../game/database/db.mjs';
 
 async function schema(db) {
   if (db.dialeto === 'postgres') {

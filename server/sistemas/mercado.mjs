@@ -14,7 +14,7 @@
 // é anunciado sai do personagem na hora (fica "em custódia" no anúncio) e volta
 // se cancelar. Quem recebe algo estando fora do jogo recebe ao entrar: o ouro
 // no bolso e os itens na caixa de Chegadas do depósito (ver `receberCreditos`).
-import { banco } from '../nucleo/banco.mjs';
+import { banco } from '../../game/database/banco.mjs';
 import { ITEM_CATALOG } from '../nucleo/dados.mjs';
 import { darItem, cabeNoPeso } from './inventario.mjs';
 import * as Deposito from './deposito.mjs';

@@ -16,7 +16,7 @@
 // amostras em memória, só de quem está online (some ao reiniciar o servidor).
 // `donate: false` e `googleClientId: null`: pagamento e login do Google não
 // existem neste servidor, e a capa esconde o que depende deles.
-import { banco } from '../nucleo/banco.mjs';
+import { banco } from '../../game/database/banco.mjs';
 import * as R from '../nucleo/regras.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../nucleo/dados.mjs';
 import * as Ranking from './ranking.mjs';

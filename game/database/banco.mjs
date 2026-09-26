@@ -7,7 +7,7 @@ import { randomUUID, scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import * as Db from './db.mjs';
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
+const RAIZ = dirname(fileURLToPath(import.meta.url));
 
 export const banco = await Db.abrir(join(RAIZ, 'dados', 'jogo.db'));
 

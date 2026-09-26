@@ -15,7 +15,7 @@
 // resultado fica guardado 15 s por categoria.
 //
 // ESTIMADO: o desempate (valor, depois level, depois nome).
-import { banco } from '../nucleo/banco.mjs';
+import { banco } from '../../game/database/banco.mjs';
 import { CATALOGO } from '../nucleo/dados.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';

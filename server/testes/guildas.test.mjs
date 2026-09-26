@@ -3,7 +3,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import * as Guildas from '../sistemas/guildas.mjs';
 import { CUSTO_DE_TROCAR, brasaoPadrao } from '../../game/engine/brasao-de-guilda.mjs';
 import { compararGuildas } from '../../game/engine/ordem-das-guildas.mjs';

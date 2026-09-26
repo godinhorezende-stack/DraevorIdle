@@ -4,7 +4,7 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import * as Site from '../sistemas/site.mjs';
 import * as DropsDoSite from '../sistemas/drops-do-site.mjs';
 import * as Guildas from '../sistemas/guildas.mjs';

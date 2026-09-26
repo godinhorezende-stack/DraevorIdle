@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 
 test('ler, mexer no objeto lido, gravar e ler de novo', async (t) => {
   const { id: conta } = await B.criarConta({ email: `melhorias-${randomUUID()}@teste.local`, senha: 'x' });

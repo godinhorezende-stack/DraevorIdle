@@ -156,9 +156,24 @@ Fora de `import.meta.url`, mais dois grupos de risco:
 
 ## 4. Estrutura alvo proposta
 
+**Achado durante a execução da etapa 3** (não previsto na análise original):
+`database/db.mjs` faz `await import('pg')` — um specifier NU, e a resolução
+de módulo do Node procura `node_modules` só nos diretórios **ancestrais** do
+arquivo que importa (nunca em irmãos). `game/database/` não é descendente de
+`server/`, então `server/node_modules/pg` deixou de ser visível de lá assim
+que o arquivo moveu — **quebrou os 2 testes de Postgres** até eu perceber.
+Correção: `package.json`/`package-lock.json`/`node_modules` moveram para a
+**raiz do repositório** (não para `game/backend/` como a proposta original
+dizia) — é o único lugar que é ancestral de `server/` (onde o código ainda
+mora, nas etapas de transição) E de todo `game/*` (onde ele mora no final).
+Ficam ali para sempre — mesmo depois da etapa 7 mover `index.mjs`, o
+`package.json` continua na raiz, só o `index.mjs` que ele aponta muda de
+lugar.
+
 ```
 game/
-  backend/                    — index.mjs (gateway), package.json, node_modules
+  backend/                    — index.mjs (gateway) — package.json/node_modules
+                                  ficam na RAIZ do repo (ver achado acima)
   engine/                     — o que é ISOMÓRFICO de verdade (client + server)
     formulas.mjs, tela.mjs, brasao-de-guilda.mjs, nome-de-guilda.mjs,
     ordem-das-guildas.mjs, portas-de-acesso.mjs, andar-visivel.mjs,
@@ -215,7 +230,7 @@ sem querer o mesmo padrão em código novo.
 |---|---|
 | `server/index.mjs` | `game/backend/index.mjs` |
 | `server/nucleo/estaticos.mjs` | `game/backend/estaticos.mjs` |
-| `server/package.json`, `package-lock.json`, `node_modules/` | `game/backend/` |
+| `server/package.json`, `package-lock.json`, `node_modules/` | raiz do repo (etapa 3, ver achado acima — não `game/backend/`) |
 | `server/nucleo/banco.mjs`, `db.mjs` | `game/database/` |
 | `server/scripts/migrar-sqlite-para-postgres.mjs` | `game/database/migrar-sqlite-para-postgres.mjs` |
 | `server/nucleo/sessao.mjs`, `quadro.mjs`, `json.mjs`, `limites.mjs` | `game/websocket/` |
@@ -282,12 +297,11 @@ commits).
 6. **`admin`**: extrair `mapas.mjs`
    de `game/systems/` para `game/admin/`, atualizar o único importador
    (`index.mjs`/`sessao.mjs`, o que despachar `/api/mapas`). Rodar `npm test`.
-7. **`backend`**: mover `index.mjs` + `nucleo/estaticos.mjs` + `package.json`/
-   `package-lock.json`/`node_modules` → `game/backend/`. Atualiza `RAIZ` (o
-   caminho pro frontend/gamedata) e o script `"test"` do `package.json`
-   (glob de `testes/*.test.mjs` → `../testes/*.test.mjs` ou similar, a
-   depender de onde `testes/` ficar). Rodar `npm test` de dentro de
-   `game/backend/`.
+7. **`backend`**: mover `index.mjs` + `nucleo/estaticos.mjs` → `game/backend/`
+   (`package.json`/`node_modules` já estão na raiz do repo desde a etapa 3 —
+   não movem de novo). Atualiza `RAIZ` (o caminho pro frontend/gamedata) e o
+   script `"dev"`/`"test"` do `package.json` da raiz (aponta pra
+   `game/backend/index.mjs` e `game/testes/*.test.mjs`). Rodar `npm test`.
 8. **`testes`**: mover `server/testes/` → `game/testes/`, atualizar todo
    import relativo (`../nucleo/X` → `../database/X` / `../websocket/X` /
    `../systems/X`, `../sistemas/X` → `../systems/X`). Ajustar

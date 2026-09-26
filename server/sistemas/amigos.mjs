@@ -18,7 +18,7 @@
 // amizade na hora; recusar apaga o pedido; tirar serve também para cancelar um
 // pedido enviado (o botão "Cancelar" do cliente manda `remove`).
 import { readFileSync } from 'node:fs';
-import { banco } from '../nucleo/banco.mjs';
+import { banco } from '../../game/database/banco.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';

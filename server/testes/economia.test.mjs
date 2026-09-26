@@ -6,7 +6,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import * as B from '../nucleo/banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import { Sessao, vivas } from '../nucleo/sessao.mjs';
 import { ITEM_CATALOG } from '../nucleo/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';

@@ -8,7 +8,7 @@
 //                         diario | diarioEscolher | marco | presente |
 //                         largar | destroy | pegar | mounts | outfit | mount |
 //                         delta | jaTenhoCatalogo | oculta
-import * as B from './banco.mjs';
+import * as B from '../../game/database/banco.mjs';
 import * as R from './regras.mjs';
 import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado } from './dados.mjs';
 import * as Inventario from '../sistemas/inventario.mjs';
@@ -708,7 +708,7 @@ export class Sessao {
    * o próximo tique — podia entrar no meio e mexer no mesmo ouro/item antes
    * do COMMIT. `filaDeTransacoes` restaura isso: toda transação do servidor
    * INTEIRO (não só desta sessão) espera a vez, uma de cada vez, na ordem em
-   * que chegou. `B.transacao` (nucleo/db.mjs) cuida da outra metade — prender
+   * que chegou. `B.transacao` (game/database/db.mjs) cuida da outra metade — prender
    * a transação numa única conexão, no Postgres.
    */
   emTransacao(fn) {

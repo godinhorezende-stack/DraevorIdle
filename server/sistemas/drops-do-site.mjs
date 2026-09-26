@@ -18,7 +18,7 @@
 // vazia até esse sistema existir; `anotarBag` já está pronto para ele.
 //
 // Este módulo é importado pelo combate: não importa nada de caçada/sessão.
-import { banco } from '../nucleo/banco.mjs';
+import { banco } from '../../game/database/banco.mjs';
 import { ITEM_CATALOG } from '../nucleo/dados.mjs';
 import * as Afixos from './afixos.mjs';
 
