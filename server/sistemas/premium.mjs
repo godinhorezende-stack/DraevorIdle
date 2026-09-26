@@ -16,7 +16,7 @@
 // Acabou o premium (ou o acesso) no meio da caçada: o personagem volta para a
 // cidade — senão uma caçada offline ficaria dias numa hunt premium de graça.
 import { CATALOGO } from '../nucleo/dados.mjs';
-import { PORTAS_DE_ACESSO } from '../../assets_raw/packages/shared/src/portas-de-acesso.mjs';
+import { PORTAS_DE_ACESSO } from '../../game/engine/portas-de-acesso.mjs';
 
 export const ACESSO_MS = 24 * 3_600_000;
 const PORTA_DO_ITEM = new Map(Object.values(PORTAS_DE_ACESSO).map((p) => [p.item, p]));

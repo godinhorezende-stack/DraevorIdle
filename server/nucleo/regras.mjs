@@ -2,7 +2,7 @@
 // `VOCATION_INFO`, panels.mjs "Todo personagem começa no level 8") e, onde
 // existe, das fórmulas REAIS capturadas do servidor original ainda vivo em
 // produção (ver `api-mapeada/character-real-example.json` e o pé desta
-// leitura em `packages/shared/src/formulas.mjs`, que o próprio cliente usa
+// leitura em `game/engine/formulas.mjs`, que o próprio cliente usa
 // para prever o resultado — client e servidor calculam a MESMA conta).
 import {
   maxHealth,
@@ -21,7 +21,7 @@ import {
   duracaoDoPasso,
   applyElement,
   RESISTENCIA_MAXIMA_DE_BOSS,
-} from '../../assets_raw/packages/shared/src/formulas.mjs';
+} from '../../game/engine/formulas.mjs';
 export { applyElement, RESISTENCIA_MAXIMA_DE_BOSS };
 
 export const NIVEL_INICIAL = 8;

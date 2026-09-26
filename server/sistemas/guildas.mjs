@@ -38,9 +38,9 @@ import { banco } from '../nucleo/banco.mjs';
 import { ITEM_CATALOG } from '../nucleo/dados.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Premium from './premium.mjs';
-import { normalizarBrasao, brasaoPadrao, precoDoBrasao, efeitosUsados, mesmoBrasao } from '../../assets_raw/packages/shared/src/brasao-de-guilda.mjs';
-import { recusaDoNome, chaveDoNome, nomeArrumado } from '../../assets_raw/packages/shared/src/nome-de-guilda.mjs';
-import { ordenarGuildas } from '../../assets_raw/packages/shared/src/ordem-das-guildas.mjs';
+import { normalizarBrasao, brasaoPadrao, precoDoBrasao, efeitosUsados, mesmoBrasao } from '../../game/engine/brasao-de-guilda.mjs';
+import { recusaDoNome, chaveDoNome, nomeArrumado } from '../../game/engine/nome-de-guilda.mjs';
+import { ordenarGuildas } from '../../game/engine/ordem-das-guildas.mjs';
 
 export const REGRAS = {
   levelParaFundar: 500,

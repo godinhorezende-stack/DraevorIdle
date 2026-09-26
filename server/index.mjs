@@ -16,6 +16,13 @@ import { aquecerGrades } from './sistemas/cacadas.mjs';
 Site.ligar(vivas);
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets_raw');
+// O cliente (extraído, sem bundler) pede estes arquivos por URL absoluta
+// (`/packages/shared/src/formulas.mjs`, etc.) — igual ao servidor de
+// verdade, que também os lê. Desde a refatoração pra `game/*`
+// (docs/refatoracao-estrutura.md) o arquivo físico mora em `game/engine/`,
+// não mais em `assets_raw/packages/shared/src/`; a URL fica a MESMA (o
+// cliente extraído não muda) — só o caminho físico por trás dela.
+const RAIZ_ENGINE = join(dirname(fileURLToPath(import.meta.url)), '..', 'game', 'engine');
 const PORTA = Number(process.env.PORTA ?? 8080);
 
 // Rotas sem extensão que o cliente pede como página (`/jogar`, etc.).
@@ -29,8 +36,15 @@ const PAGINAS = {
   '/editor': '/editor.html',
 };
 
+const PREFIXO_ENGINE = '/packages/shared/src/';
+
 /** Arquivo estático de dentro de `assets_raw` (cache e compressão: ver `nucleo/estaticos.mjs`). */
 async function servirArquivo(req, res, caminho) {
+  if (caminho.startsWith(PREFIXO_ENGINE)) {
+    const alvo = normalize(join(RAIZ_ENGINE, caminho.slice(PREFIXO_ENGINE.length)));
+    if (!alvo.startsWith(RAIZ_ENGINE)) return false;
+    return Estaticos.servir(req, res, alvo);
+  }
   const alvo = normalize(join(RAIZ, caminho));
   if (!alvo.startsWith(RAIZ)) return false;
   return Estaticos.servir(req, res, alvo);

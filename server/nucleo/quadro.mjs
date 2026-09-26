@@ -11,7 +11,7 @@
 //   o cliente guarda a do quadro anterior pelo `uid`.
 // Nada disto muda a regra do jogo: o `snapshotDaHunt` continua inteiro (os
 // testes e o próprio servidor leem ele); o recorte é só do que viaja.
-import { METADE_DA_TELA } from '../../assets_raw/packages/shared/src/tela.mjs';
+import { METADE_DA_TELA } from '../../game/engine/tela.mjs';
 
 /** A tela do cliente (23x13) e mais duas casas, para o bicho que entra já chegar desenhado. */
 const MARGEM = 2;

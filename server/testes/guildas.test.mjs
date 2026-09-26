@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as B from '../nucleo/banco.mjs';
 import * as Guildas from '../sistemas/guildas.mjs';
-import { CUSTO_DE_TROCAR, brasaoPadrao } from '../../assets_raw/packages/shared/src/brasao-de-guilda.mjs';
-import { compararGuildas } from '../../assets_raw/packages/shared/src/ordem-das-guildas.mjs';
+import { CUSTO_DE_TROCAR, brasaoPadrao } from '../../game/engine/brasao-de-guilda.mjs';
+import { compararGuildas } from '../../game/engine/ordem-das-guildas.mjs';
 
 const original = JSON.parse(readFileSync(new URL('../../api-mapeada/captura-guilda-arena-0926/guilda-zoros.json', import.meta.url), 'utf8')).view;
 const NOMES = ['Guildatesteum', 'Guildatestedois'];
