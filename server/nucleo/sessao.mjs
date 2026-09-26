@@ -895,7 +895,7 @@ export class Sessao {
         return this.enviar(Chat.presenca(m.nomes));
       // Highscores: o top 25 da categoria — ver `sistemas/ranking.mjs`.
       case 'ranking':
-        return this.enviar({ t: 'ranking', ranking: Ranking.topo(m.category) });
+        return Ranking.topo(m.category).then((ranking) => this.enviar({ t: 'ranking', ranking }));
       // A guilda: sem `action`, a vista; com, a ação e a vista nova — ver `sistemas/guildas.mjs`.
       // A Arena x1: sem `action`, o lobby; com, a ação (a vista nova vai para quem foi tocado).
       case 'arena':
@@ -1295,6 +1295,7 @@ export class Sessao {
     this.lembrarCharacter(completo);
     const itensNesteWelcome = !(this.guardaCatalogo && this.itensJaForam);
     this.itensJaForam = true;
+    const rankingDeExp = await Ranking.topo('exp');
     this.enviar({
       t: 'welcome',
       versao: Novidades.VERSAO,
@@ -1308,7 +1309,7 @@ export class Sessao {
       // em branco.
       ...(itensNesteWelcome ? { items: ITEM_CATALOG } : {}),
       // O top 25 de experiência, como no welcome do original.
-      ranking: Ranking.topo('exp'),
+      ranking: rankingDeExp,
       online: vivas.size,
       ...(andamento ? { andamento } : {}),
       ...(treinoPendente ? { treinoPendente } : {}),

@@ -309,7 +309,8 @@ export async function vista(eu, aviso = null) {
     const diario = Object.fromEntries(
       await Promise.all(['contribuicoes', 'membros', 'bau'].map(async (grupo) => [grupo, (await Q.diario.all(g.id, grupo, DIARIO_MAX)).map(linhaDoDiario)])),
     );
-    diario.placar = (await Q.placar.all(g.id)).map((r) => ({ quem: r.quem, total: r.total, vezes: r.vezes }));
+    // `sum`/`count` voltam como texto no Postgres (precisão de bigint) — `Number()` funciona nos dois bancos.
+    diario.placar = (await Q.placar.all(g.id)).map((r) => ({ quem: r.quem, total: Number(r.total), vezes: Number(r.vezes) }));
     minha = {
       id: g.id,
       nome: g.nome,
@@ -354,7 +355,7 @@ export async function vista(eu, aviso = null) {
       bau: g ? bauDa(g) : null,
       convites: convites.filter(Boolean),
       pedidos: pedidos.filter(Boolean),
-      lista: ordenarGuildas(todas.map((x) => ({ id: x.id, nome: x.nome, dono: x.dono, pontos: x.pontos, nivel: x.nivel, membros: x.n, criadaEm: x.criada_em, brasao: brasaoDa(x) }))),
+      lista: ordenarGuildas(todas.map((x) => ({ id: x.id, nome: x.nome, dono: x.dono, pontos: x.pontos, nivel: x.nivel, membros: Number(x.n), criadaEm: x.criada_em, brasao: brasaoDa(x) }))),
       regras: REGRAS,
       online: [...vivas.values()].map((s) => s.personagem?.nome).filter(Boolean),
       aviso,
@@ -638,7 +639,7 @@ export async function comando(s, m) {
 /** `GET /api/guildas` — a tabela do servidor, na ordem do shared (como a aba Servidor). */
 export async function listaDoSite() {
   const todas = await Q.todas.all();
-  return ordenarGuildas(todas.map((x) => ({ id: x.id, nome: x.nome, dono: x.dono, pontos: x.pontos, nivel: x.nivel, membros: x.n, criadaEm: x.criada_em, brasao: brasaoDa(x) })));
+  return ordenarGuildas(todas.map((x) => ({ id: x.id, nome: x.nome, dono: x.dono, pontos: x.pontos, nivel: x.nivel, membros: Number(x.n), criadaEm: x.criada_em, brasao: brasaoDa(x) })));
 }
 
 /** `GET /api/guilda?nome=` — a ficha pública: sem baú, diário, convites nem pedidos. */

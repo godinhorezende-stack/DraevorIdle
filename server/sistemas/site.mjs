@@ -16,7 +16,7 @@
 // amostras em memória, só de quem está online (some ao reiniciar o servidor).
 // `donate: false` e `googleClientId: null`: pagamento e login do Google não
 // existem neste servidor, e a capa esconde o que depende deles.
-import * as B from '../nucleo/banco.mjs';
+import { banco } from '../nucleo/banco.mjs';
 import * as R from '../nucleo/regras.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../nucleo/dados.mjs';
 import * as Ranking from './ranking.mjs';
@@ -80,8 +80,18 @@ export function amostrar(agora = Date.now()) {
   for (const nome of amostras.keys()) if (!vistos.has(nome)) amostras.delete(nome);
 }
 
-const consultaDoDia = B.db.prepare(`
-  SELECT nome, vocacao,
+const consultaDoDia = banco.prepare(
+  banco.dialeto === 'postgres'
+    ? `SELECT nome, vocacao,
+         (estado::jsonb #>> '{xp}')::numeric - (estado::jsonb #>> '{expDoDia,xp}')::numeric AS ganho,
+         (estado::jsonb #>> '{level}')::int AS level,
+         (estado::jsonb #>> '{level}')::int - (estado::jsonb #>> '{expDoDia,level}')::int AS levels,
+         estado::jsonb ->> 'outfit' AS outfit
+    FROM personagens
+   WHERE (estado::jsonb #>> '{expDoDia,dia}')::bigint = ?
+   ORDER BY ganho DESC
+   LIMIT 50`
+    : `SELECT nome, vocacao,
          json_extract(estado, '$.xp') - json_extract(estado, '$.expDoDia.xp') AS ganho,
          json_extract(estado, '$.level') AS level,
          json_extract(estado, '$.level') - json_extract(estado, '$.expDoDia.level') AS levels,
@@ -89,12 +99,13 @@ const consultaDoDia = B.db.prepare(`
     FROM personagens
    WHERE json_extract(estado, '$.expDoDia.dia') = ?
    ORDER BY ganho DESC
-   LIMIT 50`);
+   LIMIT 50`,
+);
 
-function expHoje(agora) {
+async function expHoje(agora) {
   const dia = diaDe(agora);
   const porNome = new Map();
-  for (const r of consultaDoDia.all(dia)) {
+  for (const r of await consultaDoDia.all(dia)) {
     if (!(r.ganho > 0)) continue;
     porNome.set(r.nome, { name: r.nome, vocation: r.vocacao, level: r.level, value: r.ganho, levels: r.levels ?? 0, online: false, outfit: roupa(r.outfit ? JSON.parse(r.outfit) : {}), guilda: guildaDe(r.nome) });
   }
@@ -123,14 +134,18 @@ function expHora(agora) {
 
 // ------------------------------------------------------------ /api/status
 
-const totais = B.db.prepare("SELECT count(*) AS n, max(coalesce(json_extract(estado, '$.level'), 1)) AS maior FROM personagens");
+const totais = banco.prepare(
+  banco.dialeto === 'postgres'
+    ? "SELECT count(*)::int AS n, max(coalesce((estado::jsonb #>> '{level}')::int, 1)) AS maior FROM personagens"
+    : "SELECT count(*) AS n, max(coalesce(json_extract(estado, '$.level'), 1)) AS maior FROM personagens",
+);
 const guardados = new Map(); // categoria -> {ate, corpo}
 
-export function status(categoria = 'level', agora = Date.now()) {
+export async function status(categoria = 'level', agora = Date.now()) {
   if (!Ranking.CATEGORIAS.includes(categoria)) categoria = 'level';
   const g = guardados.get(categoria);
   if (g && g.ate > agora) return g.corpo;
-  const t = totais.get();
+  const t = await totais.get();
   const vivosNoTopo = Math.max(0, ...online().map((s) => s.estado.level ?? 1));
   const corpo = {
     online: online().length,
@@ -142,8 +157,8 @@ export function status(categoria = 'level', agora = Date.now()) {
     googleClientId: null,
     packs: [],
     hunts: CATALOGO.hunts?.length ?? 0,
-    highscore: Ranking.topo(categoria).slice(0, TOPO).map(({ vocationName: _v, ...linha }) => linha),
-    expHoje: expHoje(agora),
+    highscore: (await Ranking.topo(categoria)).slice(0, TOPO).map(({ vocationName: _v, ...linha }) => linha),
+    expHoje: await expHoje(agora),
     expHora: expHora(agora),
   };
   guardados.set(categoria, { ate: agora + GUARDA_MS, corpo });
@@ -175,7 +190,7 @@ export function jogadoresOnline() {
 
 // ------------------------------------------------------------ /api/personagem
 
-const personagemPorNome = B.db.prepare('SELECT nome, sexo, criado_em, visto_em, estado FROM personagens WHERE lower(nome) = lower(?)');
+const personagemPorNome = banco.prepare('SELECT nome, sexo, criado_em, visto_em, estado FROM personagens WHERE lower(nome) = lower(?)');
 
 /** Um número, sem derrubar a ficha se o sistema dele reclamar do estado. */
 const seguro = (fn, padrao = 0) => {
@@ -239,9 +254,9 @@ function ravox(e) {
   };
 }
 
-export function personagem(nome, agora = Date.now()) {
+export async function personagem(nome, agora = Date.now()) {
   const vivo = online().find((s) => s.personagem.nome.toLowerCase() === String(nome ?? '').trim().toLowerCase());
-  const r = personagemPorNome.get(String(nome ?? '').trim());
+  const r = await personagemPorNome.get(String(nome ?? '').trim());
   if (!r && !vivo) return { ok: false, reason: `não existe ninguém chamado ${String(nome ?? '').trim()}` };
   const e = vivo?.estado ?? JSON.parse(r.estado);
   const nomeCerto = vivo?.personagem.nome ?? r.nome;

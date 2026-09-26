@@ -18,7 +18,7 @@
 // vazia até esse sistema existir; `anotarBag` já está pronto para ele.
 //
 // Este módulo é importado pelo combate: não importa nada de caçada/sessão.
-import * as B from '../nucleo/banco.mjs';
+import { banco } from '../nucleo/banco.mjs';
 import { ITEM_CATALOG } from '../nucleo/dados.mjs';
 import * as Afixos from './afixos.mjs';
 
@@ -36,19 +36,21 @@ let gravarEmTeste = false;
 export const gravarNosTestes = (sim = true) => void (gravarEmTeste = sim);
 const emTeste = () => !!process.env.NODE_TEST_CONTEXT && !gravarEmTeste;
 
-B.db.exec(`
+const idAuto = banco.dialeto === 'postgres' ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+const inteiroGrande = banco.dialeto === 'postgres' ? 'BIGINT' : 'INTEGER';
+await banco.exec(`
   CREATE TABLE IF NOT EXISTS site_drops (
-    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    id    ${idAuto},
     tipo  TEXT NOT NULL,   -- 'drop' ou 'bag'
-    em    INTEGER NOT NULL,
+    em    ${inteiroGrande} NOT NULL,
     dados TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS site_drops_tipo ON site_drops(tipo, em);
 `);
 const Q = {
-  anotar: B.db.prepare('INSERT INTO site_drops (tipo, em, dados) VALUES (?, ?, ?)'),
-  ultimos: B.db.prepare('SELECT dados FROM site_drops WHERE tipo = ? ORDER BY em DESC, id DESC LIMIT ?'),
-  aparar: B.db.prepare('DELETE FROM site_drops WHERE tipo = ? AND id NOT IN (SELECT id FROM site_drops WHERE tipo = ? ORDER BY em DESC, id DESC LIMIT ?)'),
+  anotar: banco.prepare('INSERT INTO site_drops (tipo, em, dados) VALUES (?, ?, ?)'),
+  ultimos: banco.prepare('SELECT dados FROM site_drops WHERE tipo = ? ORDER BY em DESC, id DESC LIMIT ?'),
+  aparar: banco.prepare('DELETE FROM site_drops WHERE tipo = ? AND id NOT IN (SELECT id FROM site_drops WHERE tipo = ? ORDER BY em DESC, id DESC LIMIT ?)'),
 };
 
 /** A cor de um afixo, na régua: 1 azul, 2 roxa, 3 dourada, 4 vermelha (acima do topo). */
@@ -103,27 +105,32 @@ export function valeAnotar(id, af, { boss = false } = {}) {
   return boss && estrelas >= 2 && DE_BOSS.has(ITEM_CATALOG[id]?.rarity);
 }
 
-function guardar(tipo, dados) {
-  Q.anotar.run(tipo, dados.em, JSON.stringify(dados));
-  Q.aparar.run(tipo, tipo, GUARDA);
+async function guardar(tipo, dados) {
+  await Q.anotar.run(tipo, dados.em, JSON.stringify(dados));
+  await Q.aparar.run(tipo, tipo, GUARDA);
 }
 
-/** Um drop de caçada: `quem` matou `bicho` em `onde` e caiu `id` (com os afixos `af`). */
-export function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0 }) {
+/*
+ * Um drop de caçada: `quem` matou `bicho` em `onde` e caiu `id` (com os
+ * afixos `af`). Chamada do combate (a cada morte com drop — caminho quente):
+ * fogo e esquece de propósito, é só um log para a capa do site, não pode
+ * atrasar o golpe que acabou de matar o bicho.
+ */
+export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0 }) {
   if (emTeste() || !valeAnotar(id, af, { boss })) return;
   const { afixos, ...resto } = fichaDaPeca(id, count, { af, tier });
-  guardar('drop', { ...resto, quem, em: Date.now(), onde, boss, bicho, chance: ITEM_CATALOG[id]?.dropChance ?? null, afixos });
+  await guardar('drop', { ...resto, quem, em: Date.now(), onde, boss, bicho, chance: ITEM_CATALOG[id]?.dropChance ?? null, afixos });
 }
 
 /** O que saiu de uma bag aberta (`bag` = o id da bag, `entre` = de quantas opções). */
-export function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0 }) {
+export async function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0 }) {
   // O que sai de uma bag vai sempre (a lista é "uma peça sorteada por bag").
   if (emTeste()) return;
-  guardar('bag', { ...fichaDaPeca(id, count, { af, tier }), quem, em: Date.now(), bag, bagNome: ITEM_CATALOG[bag]?.name ?? null, entre });
+  await guardar('bag', { ...fichaDaPeca(id, count, { af, tier }), quem, em: Date.now(), bag, bagNome: ITEM_CATALOG[bag]?.name ?? null, entre });
 }
 
 /** `GET /api/drops`. */
-export function vista() {
-  const ler = (tipo) => Q.ultimos.all(tipo, GUARDA).map((r) => JSON.parse(r.dados));
-  return { drops: ler('drop'), bags: ler('bag') };
+export async function vista() {
+  const ler = async (tipo) => (await Q.ultimos.all(tipo, GUARDA)).map((r) => JSON.parse(r.dados));
+  return { drops: await ler('drop'), bags: await ler('bag') };
 }

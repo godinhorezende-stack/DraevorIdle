@@ -109,10 +109,10 @@ async function atender(req, res) {
    */
   if (req.method === 'GET' && caminho.startsWith('/api/')) {
     const q = url.searchParams;
-    if (caminho === '/api/status') return json(res, 200, Site.status(q.get('ranking') ?? 'level'));
+    if (caminho === '/api/status') return json(res, 200, await Site.status(q.get('ranking') ?? 'level'));
     if (caminho === '/api/online') return json(res, 200, Site.jogadoresOnline());
-    if (caminho === '/api/drops') return json(res, 200, DropsDoSite.vista());
-    if (caminho === '/api/personagem') return json(res, 200, Site.personagem(q.get('nome')));
+    if (caminho === '/api/drops') return json(res, 200, await DropsDoSite.vista());
+    if (caminho === '/api/personagem') return json(res, 200, await Site.personagem(q.get('nome')));
     if (caminho === '/api/guildas') return json(res, 200, { guildas: await Guildas.listaDoSite() });
     if (caminho === '/api/guilda') return json(res, 200, await Guildas.fichaDoSite(q.get('nome')));
   }

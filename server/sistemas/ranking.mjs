@@ -15,7 +15,7 @@
 // resultado fica guardado 15 s por categoria.
 //
 // ESTIMADO: o desempate (valor, depois level, depois nome).
-import * as B from '../nucleo/banco.mjs';
+import { banco } from '../nucleo/banco.mjs';
 import { CATALOGO } from '../nucleo/dados.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';
@@ -39,18 +39,31 @@ function valorAoVivo(estado, cat) {
   return estado.skills?.[cat]?.value ?? PERICIA_INICIAL;
 }
 
+/** O mesmo caminho JSON, em Postgres: `estado::jsonb #>> '{a,b}'` (texto) em vez de `json_extract`. */
+const caminhoPg = (cat) => (cat === 'exp' ? '{xp}' : cat === 'level' ? '{level}' : cat === 'magic' ? '{magic,value}' : `{skills,${cat},value}`);
+
 const consultas = new Map();
 function consulta(cat) {
   if (!consultas.has(cat)) {
-    consultas.set(cat, B.db.prepare(`
-      SELECT nome, vocacao,
+    const sql =
+      banco.dialeto === 'postgres'
+        ? `SELECT nome, vocacao,
+             coalesce((estado::jsonb #>> '${caminhoPg(cat)}')::numeric, ${padrao(cat)}) AS valor,
+             (estado::jsonb #>> '{level}')::int AS level,
+             (estado::jsonb #>> '{promovido}')::boolean AS promovido,
+             estado::jsonb ->> 'outfit' AS outfit
+        FROM personagens
+       ORDER BY valor DESC, level DESC, nome
+       LIMIT ${TAMANHO}`
+        : `SELECT nome, vocacao,
              coalesce(json_extract(estado, '${caminho(cat)}'), ${padrao(cat)}) AS valor,
              json_extract(estado, '$.level') AS level,
              json_extract(estado, '$.promovido') AS promovido,
              json_extract(estado, '$.outfit') AS outfit
         FROM personagens
        ORDER BY valor DESC, level DESC, nome
-       LIMIT ${TAMANHO}`));
+       LIMIT ${TAMANHO}`;
+    consultas.set(cat, banco.prepare(sql));
   }
   return consultas.get(cat);
 }
@@ -66,13 +79,13 @@ const roupa = (o = {}) => ({ type: o.type ?? 0, head: o.head ?? 0, body: o.body 
 const guardados = new Map(); // categoria -> { ate, lista }
 
 /** O top 25 de uma categoria, no formato do original. */
-export function topo(cat) {
+export async function topo(cat) {
   if (!CATEGORIAS.includes(cat)) cat = 'exp';
   const agora = Date.now();
   const guardado = guardados.get(cat);
   if (guardado && guardado.ate > agora) return guardado.lista;
   const porNome = new Map();
-  for (const r of consulta(cat).all()) {
+  for (const r of await consulta(cat).all()) {
     porNome.set(r.nome, {
       name: r.nome,
       vocation: r.vocacao,

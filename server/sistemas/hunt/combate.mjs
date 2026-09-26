@@ -346,8 +346,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     }
     caiu.push({ id: drop.id, count: 1 });
     conta('loot', drop.id, 1);
-    // O drop raro vai para a capa do site (ver `drops-do-site.mjs`).
-    DropsDoSite.anotarDrop({ quem: personagem?.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af });
+    // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
+    // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
+    DropsDoSite.anotarDrop({ quem: personagem?.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af }).catch((e) => console.error('drops-do-site', e.message));
   }
   // Mesmo evento do original (`{t:'loot', name, items:[{id,count}]}`, capturado
   // ao vivo): é ele que escreve "Loot of a Troll: ..." no chat.

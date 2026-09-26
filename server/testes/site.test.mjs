@@ -23,8 +23,8 @@ Ranking.ligar(vivas); // no jogo quem liga é a sessão
 DropsDoSite.gravarNosTestes(); // este teste confere a gravação (e apaga o que gravou)
 after(() => B.db.prepare("DELETE FROM site_drops WHERE dados LIKE ?").run(`%"quem":"${NOME}"%`));
 
-test('/api/status: as chaves e as linhas do original', () => {
-  const nosso = Site.status('magic');
+test('/api/status: as chaves e as linhas do original', async () => {
+  const nosso = await Site.status('magic');
   const original = ler('status-magic.json');
   assert.deepEqual(chaves(nosso), chaves(original));
   assert.deepEqual(nosso.categorias, original.categorias);
@@ -34,13 +34,13 @@ test('/api/status: as chaves e as linhas do original', () => {
   assert.equal(nosso.online, 1);
 });
 
-test('exp de hoje e da última hora contam a partir da primeira amostra', () => {
+test('exp de hoje e da última hora contam a partir da primeira amostra', async () => {
   const t0 = Date.now();
   Site.amostrar(t0);
   s.estado.xp += 5_000_000;
   s.estado.level += 2;
   const agora = t0 + 1000;
-  const corpo = Site.status('exp', agora + 20_000); // fura a guarda de 15 s da categoria
+  const corpo = await Site.status('exp', agora + 20_000); // fura a guarda de 15 s da categoria
   const hoje = corpo.expHoje.find((l) => l.name === NOME);
   const hora = corpo.expHora.find((l) => l.name === NOME);
   assert.equal(hoje.value, 5_000_000);
@@ -50,8 +50,8 @@ test('exp de hoje e da última hora contam a partir da primeira amostra', () => 
   assert.deepEqual(chaves(hora), chaves(ler('status-level.json').expHora[0]));
 });
 
-test('/api/personagem: a ficha inteira e o "não existe"', () => {
-  const nosso = Site.personagem(NOME.toLowerCase());
+test('/api/personagem: a ficha inteira e o "não existe"', async () => {
+  const nosso = await Site.personagem(NOME.toLowerCase());
   const original = ler('personagem-zoros.json');
   assert.equal(nosso.ok, true);
   assert.deepEqual(chaves(nosso.personagem), chaves(original.personagem));
@@ -60,7 +60,7 @@ test('/api/personagem: a ficha inteira e o "não existe"', () => {
   assert.deepEqual(chaves(nosso.personagem.equipamento), chaves(original.personagem.equipamento));
   assert.equal(nosso.personagem.jogando, true);
   assert.equal(nosso.personagem.atividade.onde, 'cidade');
-  assert.deepEqual(Site.personagem('Ninguemaquixyz'), { ok: false, reason: 'não existe ninguém chamado Ninguemaquixyz' });
+  assert.deepEqual(await Site.personagem('Ninguemaquixyz'), { ok: false, reason: 'não existe ninguém chamado Ninguemaquixyz' });
 });
 
 test('/api/online: quem está no jogo, com onde está', () => {
@@ -69,11 +69,11 @@ test('/api/online: quem está no jogo, com onde está', () => {
   assert.deepEqual([j.name, j.onde, j.hunt], [NOME, 'cidade', null]);
 });
 
-test('/api/drops: só o raro entra, no formato do original', () => {
+test('/api/drops: só o raro entra, no formato do original', async () => {
   // Uma bag entra; um item comum sem afixo não.
-  DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 34109 });
-  DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 3081 });
-  const meus = DropsDoSite.vista().drops.filter((d) => d.quem === NOME);
+  await DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 34109 });
+  await DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 3081 });
+  const meus = (await DropsDoSite.vista()).drops.filter((d) => d.quem === NOME);
   assert.deepEqual(meus.map((d) => d.nome), ['Bag You Desire']);
   assert.deepEqual(chaves(meus[0]), chaves(ler('drops.json').drops.find((d) => d.afixos)));
   assert.equal(meus[0].chance, 0.01);
