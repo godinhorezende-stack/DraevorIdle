@@ -1,0 +1,3138 @@
+{
+ "brain-head": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "ice",
+    "valor": -30
+   }
+  ],
+  "player": {
+   "x": 32,
+   "y": 32,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 32,
+   "y": 27
+  },
+  "monstros": [
+   {
+    "name": "Brain Head",
+    "x": 32,
+    "y": 27,
+    "hp": 50000
+   }
+  ]
+ },
+ "brokul": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": -15
+   }
+  ],
+  "player": {
+   "x": 29,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Brokul",
+    "x": 29,
+    "y": 23,
+    "hp": 50000
+   }
+  ]
+ },
+ "chagorz": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "earth",
+    "valor": 10
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "Chagorz",
+    "x": 28,
+    "y": 22,
+    "hp": 50000
+   }
+  ]
+ },
+ "count-vlarkorth": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": -10
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 36,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 25
+  },
+  "monstros": [
+   {
+    "name": "Count Vlarkorth",
+    "x": 28,
+    "y": 25,
+    "hp": 50000
+   }
+  ]
+ },
+ "custodian": {
+  "hp": 47000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 36,
+   "y": 142,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 140
+  },
+  "monstros": [
+   {
+    "name": "Custodian",
+    "x": 30,
+    "y": 140,
+    "hp": 47000
+   }
+  ]
+ },
+ "dragonking-zyrtarch": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 23,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 23,
+   "y": 20
+  },
+  "monstros": [
+   {
+    "name": "Dragonking Zyrtarch",
+    "x": 23,
+    "y": 20,
+    "hp": 50000
+   }
+  ]
+ },
+ "duke-krule": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -15
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 20,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 29
+  },
+  "monstros": [
+   {
+    "name": "Duke Krule",
+    "x": 28,
+    "y": 29,
+    "hp": 50000
+   }
+  ]
+ },
+ "earl-osam": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": -5
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 20,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 31
+  },
+  "monstros": [
+   {
+    "name": "Earl Osam",
+    "x": 28,
+    "y": 31,
+    "hp": 50000
+   }
+  ]
+ },
+ "eradicator": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 32,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 27
+  },
+  "monstros": [
+   {
+    "name": "Eradicator",
+    "x": 28,
+    "y": 27,
+    "hp": 50000
+   }
+  ]
+ },
+ "essence-of-malice": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -50
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": -50
+   },
+   {
+    "id": "energy",
+    "valor": -50
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": -50
+   }
+  ],
+  "player": {
+   "x": 24,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 24,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "Essence of Malice",
+    "x": 24,
+    "y": 22,
+    "hp": 50000
+   }
+  ]
+ },
+ "faceless-bane": {
+  "hp": 35000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": -20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 25,
+   "y": 20,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 25,
+   "y": 17
+  },
+  "monstros": [
+   {
+    "name": "Faceless Bane",
+    "x": 25,
+    "y": 17,
+    "hp": 35000
+   }
+  ]
+ },
+ "ferumbras-mortal-shell": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 33,
+   "y": 38,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 33,
+   "y": 31
+  },
+  "monstros": [
+   {
+    "name": "Ferumbras Mortal Shell",
+    "x": 33,
+    "y": 31,
+    "hp": 50000
+   }
+  ]
+ },
+ "foreshock": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": -20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": -20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 30,
+   "y": 28,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Foreshock",
+    "x": 30,
+    "y": 23,
+    "hp": 50000
+   }
+  ]
+ },
+ "gaffir": {
+  "hp": 48500,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 30,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 27,
+   "y": 25
+  },
+  "monstros": [
+   {
+    "name": "Gaffir",
+    "x": 27,
+    "y": 25,
+    "hp": 48500
+   }
+  ]
+ },
+ "ghulosh": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": -5
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 10
+   },
+   {
+    "id": "holy",
+    "valor": -5
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 25,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 19
+  },
+  "monstros": [
+   {
+    "name": "Ghulosh",
+    "x": 28,
+    "y": 19,
+    "hp": 50000
+   }
+  ]
+ },
+ "gorzindel": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "energy",
+    "valor": 5
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 29,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 24
+  },
+  "monstros": [
+   {
+    "name": "Gorzindel",
+    "x": 28,
+    "y": 24,
+    "hp": 50000
+   }
+  ]
+ },
+ "goshnar-s-greed": {
+  "hp": 50000,
+  "elementos": [],
+  "player": {
+   "x": 29,
+   "y": 32,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 27
+  },
+  "monstros": [
+   {
+    "name": "Goshnar's Greed",
+    "x": 28,
+    "y": 27,
+    "hp": 50000
+   }
+  ]
+ },
+ "goshnar-s-megalomania-purple": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 29,
+   "y": 33,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 28
+  },
+  "monstros": [
+   {
+    "name": "Goshnar's Megalomania Purple",
+    "x": 29,
+    "y": 28,
+    "hp": 50000
+   }
+  ]
+ },
+ "guard-captain-quaid": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 15
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": -20
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 32,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 21,
+   "y": 31
+  },
+  "monstros": [
+   {
+    "name": "Guard Captain Quaid",
+    "x": 21,
+    "y": 31,
+    "hp": 50000
+   }
+  ]
+ },
+ "ichgahal": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 15
+   },
+   {
+    "id": "fire",
+    "valor": 15
+   },
+   {
+    "id": "ice",
+    "valor": 15
+   },
+   {
+    "id": "earth",
+    "valor": 15
+   },
+   {
+    "id": "energy",
+    "valor": 15
+   },
+   {
+    "id": "death",
+    "valor": 15
+   },
+   {
+    "id": "holy",
+    "valor": 15
+   }
+  ],
+  "player": {
+   "x": 23,
+   "y": 28,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 27,
+   "y": 20
+  },
+  "monstros": [
+   {
+    "name": "Ichgahal",
+    "x": 27,
+    "y": 20,
+    "hp": 50000
+   }
+  ]
+ },
+ "irgix-the-flimsy": {
+  "hp": 24000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 25,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 25,
+   "y": 24
+  },
+  "monstros": [
+   {
+    "name": "Irgix The Flimsy",
+    "x": 25,
+    "y": 24,
+    "hp": 24000
+   }
+  ]
+ },
+ "izcandar-the-banished": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 10
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 28,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "Izcandar the Banished",
+    "x": 26,
+    "y": 22,
+    "hp": 50000
+   }
+  ]
+ },
+ "jaul": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 1
+   },
+   {
+    "id": "death",
+    "valor": 15
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 27,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Jaul",
+    "x": 27,
+    "y": 23,
+    "hp": 50000
+   }
+  ]
+ },
+ "king-zelos": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 10
+   },
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "energy",
+    "valor": 3
+   }
+  ],
+  "player": {
+   "x": 30,
+   "y": 38,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 29
+  },
+  "monstros": [
+   {
+    "name": "King Zelos",
+    "x": 30,
+    "y": 29,
+    "hp": 50000
+   }
+  ]
+ },
+ "lady-tenebris": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "ice",
+    "valor": 15
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 1
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 26,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 27,
+   "y": 20
+  },
+  "monstros": [
+   {
+    "name": "Lady Tenebris",
+    "x": 27,
+    "y": 20,
+    "hp": 50000
+   }
+  ]
+ },
+ "lloyd": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 10
+   }
+  ],
+  "player": {
+   "x": 32,
+   "y": 35,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 31,
+   "y": 36
+  },
+  "monstros": [
+   {
+    "name": "Lloyd",
+    "x": 31,
+    "y": 36,
+    "hp": 50000
+   }
+  ]
+ },
+ "lokathmor": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 10
+   },
+   {
+    "id": "earth",
+    "valor": -15
+   },
+   {
+    "id": "energy",
+    "valor": -5
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 29,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 27,
+   "y": 25
+  },
+  "monstros": [
+   {
+    "name": "Lokathmor",
+    "x": 27,
+    "y": 25,
+    "hp": 50000
+   }
+  ]
+ },
+ "lord-azaram": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 21,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 29
+  },
+  "monstros": [
+   {
+    "name": "Lord Azaram",
+    "x": 28,
+    "y": 29,
+    "hp": 50000
+   }
+  ]
+ },
+ "magma-bubble": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "earth",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 35,
+   "y": 41,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 35,
+   "y": 36
+  },
+  "monstros": [
+   {
+    "name": "Magma Bubble",
+    "x": 35,
+    "y": 36,
+    "hp": 50000
+   }
+  ]
+ },
+ "malofur-mangrinder": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "Malofur Mangrinder",
+    "x": 26,
+    "y": 22,
+    "hp": 50000
+   }
+  ]
+ },
+ "maxxenius": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 5
+   },
+   {
+    "id": "ice",
+    "valor": 15
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Maxxenius",
+    "x": 26,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "mazoran": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 20
+  },
+  "monstros": [
+   {
+    "name": "Mazoran",
+    "x": 26,
+    "y": 20,
+    "hp": 50000
+   }
+  ]
+ },
+ "megasylvan-yselda": {
+  "hp": 32000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 36,
+   "y": 31,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 36,
+   "y": 26
+  },
+  "monstros": [
+   {
+    "name": "Megasylvan Yselda",
+    "x": 36,
+    "y": 26,
+    "hp": 32000
+   }
+  ]
+ },
+ "melting-frozen-horror": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 1
+   },
+   {
+    "id": "fire",
+    "valor": -15
+   },
+   {
+    "id": "energy",
+    "valor": -5
+   },
+   {
+    "id": "death",
+    "valor": -1
+   }
+  ],
+  "player": {
+   "x": 24,
+   "y": 29,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 24,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Melting Frozen Horror",
+    "x": 24,
+    "y": 23,
+    "hp": 50000
+   }
+  ]
+ },
+ "mitmah-vanguard": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 31,
+   "y": 33,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 31,
+   "y": 27
+  },
+  "monstros": [
+   {
+    "name": "Mitmah Vanguard",
+    "x": 31,
+    "y": 27,
+    "hp": 50000
+   }
+  ]
+ },
+ "murcion": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 15
+   },
+   {
+    "id": "fire",
+    "valor": 15
+   },
+   {
+    "id": "ice",
+    "valor": 15
+   },
+   {
+    "id": "earth",
+    "valor": 15
+   },
+   {
+    "id": "energy",
+    "valor": 15
+   },
+   {
+    "id": "death",
+    "valor": 15
+   },
+   {
+    "id": "holy",
+    "valor": 15
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Murcion",
+    "x": 28,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "obujos": {
+  "hp": 35000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 15
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 20,
+   "y": 28,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 20,
+   "y": 25
+  },
+  "monstros": [
+   {
+    "name": "Obujos",
+    "x": 20,
+    "y": 25,
+    "hp": 35000
+   }
+  ]
+ },
+ "outburst": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "energy",
+    "valor": -10
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 29,
+   "y": 26,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Outburst",
+    "x": 29,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "plagirath": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -25
+   },
+   {
+    "id": "ice",
+    "valor": 10
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": -10
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 27,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "Plagirath",
+    "x": 27,
+    "y": 22,
+    "hp": 50000
+   }
+  ]
+ },
+ "ragiaz": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 32,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 27
+  },
+  "monstros": [
+   {
+    "name": "Ragiaz",
+    "x": 28,
+    "y": 27,
+    "hp": 50000
+   }
+  ]
+ },
+ "ratmiral-blackwhiskers": {
+  "hp": 50000,
+  "elementos": [],
+  "player": {
+   "x": 22,
+   "y": 20,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 22,
+   "y": 15
+  },
+  "monstros": [
+   {
+    "name": "Ratmiral Blackwhiskers",
+    "x": 22,
+    "y": 15,
+    "hp": 50000
+   }
+  ]
+ },
+ "ravenous-hunger": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 24,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 24,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Ravenous Hunger",
+    "x": 24,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "razzagorn": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 10
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 26
+  },
+  "monstros": [
+   {
+    "name": "Razzagorn",
+    "x": 28,
+    "y": 26,
+    "hp": 50000
+   }
+  ]
+ },
+ "rupture": {
+  "hp": 50000,
+  "elementos": [],
+  "player": {
+   "x": 29,
+   "y": 28,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Rupture",
+    "x": 29,
+    "y": 23,
+    "hp": 50000
+   }
+  ]
+ },
+ "scarlett-etzel": {
+  "hp": 30000,
+  "elementos": [],
+  "player": {
+   "x": 25,
+   "y": 29,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 25,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Scarlett Etzel",
+    "x": 25,
+    "y": 21,
+    "hp": 30000
+   }
+  ]
+ },
+ "shulgrax": {
+  "hp": 40000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "ice",
+    "valor": 10
+   },
+   {
+    "id": "energy",
+    "valor": -10
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Shulgrax",
+    "x": 26,
+    "y": 23,
+    "hp": 40000
+   }
+  ]
+ },
+ "sir-baeloc": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": -10
+   }
+  ],
+  "player": {
+   "x": 29,
+   "y": 31,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 26
+  },
+  "monstros": [
+   {
+    "name": "Sir Baeloc",
+    "x": 29,
+    "y": 26,
+    "hp": 50000
+   }
+  ]
+ },
+ "sugar-daddy": {
+  "hp": 9500,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -5
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 34,
+   "y": 23,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Sugar Daddy",
+    "x": 26,
+    "y": 23,
+    "hp": 9500
+   }
+  ]
+ },
+ "tanjis": {
+  "hp": 30000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": -1
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": -5
+   },
+   {
+    "id": "energy",
+    "valor": 10
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 31,
+   "y": 24,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 20
+  },
+  "monstros": [
+   {
+    "name": "Tanjis",
+    "x": 30,
+    "y": 20,
+    "hp": 30000
+   }
+  ]
+ },
+ "tarbaz": {
+  "hp": 50000,
+  "elementos": [],
+  "player": {
+   "x": 26,
+   "y": 31,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 27
+  },
+  "monstros": [
+   {
+    "name": "Tarbaz",
+    "x": 26,
+    "y": 27,
+    "hp": 50000
+   }
+  ]
+ },
+ "tentugly-s-head": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -20
+   },
+   {
+    "id": "earth",
+    "valor": -30
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Tentugly's Head",
+    "x": 26,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-brainstealer": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 10
+   },
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "energy",
+    "valor": 3
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 19,
+   "y": 26,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 23,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "The Brainstealer",
+    "x": 23,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-dread-maiden": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "The Dread Maiden",
+    "x": 26,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-enraged-thorn-knight": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "death",
+    "valor": -100
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 28,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 24
+  },
+  "monstros": [
+   {
+    "name": "The Enraged Thorn Knight",
+    "x": 28,
+    "y": 24,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-false-god": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 10
+   },
+   {
+    "id": "fire",
+    "valor": 10
+   },
+   {
+    "id": "energy",
+    "valor": 10
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 24,
+   "y": 22,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 24,
+   "y": 18
+  },
+  "monstros": [
+   {
+    "name": "The False God",
+    "x": 24,
+    "y": 18,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-fear-feaster": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": -10
+   },
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": -10
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 19,
+   "y": 24,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 19,
+   "y": 19
+  },
+  "monstros": [
+   {
+    "name": "The Fear Feaster",
+    "x": 19,
+    "y": 19,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-last-lore-keeper": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 29,
+   "y": 31,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 28
+  },
+  "monstros": [
+   {
+    "name": "The Last Lore Keeper",
+    "x": 28,
+    "y": 28,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-lord-of-the-lice": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 43,
+   "y": 60,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 48,
+   "y": 50
+  },
+  "monstros": [
+   {
+    "name": "The Lord of the Lice",
+    "x": 48,
+    "y": 50,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-nightmare-beast": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 15
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 27,
+   "y": 24
+  },
+  "monstros": [
+   {
+    "name": "The Nightmare Beast",
+    "x": 27,
+    "y": 24,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-pale-worm": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 5
+   },
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "ice",
+    "valor": 5
+   },
+   {
+    "id": "earth",
+    "valor": 5
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 5
+   },
+   {
+    "id": "holy",
+    "valor": 5
+   }
+  ],
+  "player": {
+   "x": 33,
+   "y": 31,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "The Pale Worm",
+    "x": 30,
+    "y": 22,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-percht-queen": {
+  "hp": 2300,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 30,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 25
+  },
+  "monstros": [
+   {
+    "name": "The Percht Queen",
+    "x": 30,
+    "y": 25,
+    "hp": 2300
+   }
+  ]
+ },
+ "the-sandking": {
+  "hp": 50000,
+  "elementos": [],
+  "player": {
+   "x": 29,
+   "y": 32,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 26
+  },
+  "monstros": [
+   {
+    "name": "The Sandking",
+    "x": 29,
+    "y": 26,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-scourge-of-oblivion": {
+  "hp": 50000,
+  "elementos": [],
+  "player": {
+   "x": 33,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 33,
+   "y": 24
+  },
+  "monstros": [
+   {
+    "name": "The Scourge of Oblivion",
+    "x": 33,
+    "y": 24,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-shatterer": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 10
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 10
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 10
+   },
+   {
+    "id": "holy",
+    "valor": 10
+   }
+  ],
+  "player": {
+   "x": 25,
+   "y": 26,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 25,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "The Shatterer",
+    "x": 25,
+    "y": 23,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-time-guardian": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 25,
+   "y": 26,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 24,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "The Time Guardian",
+    "x": 24,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "the-unwelcome": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 22,
+   "y": 34,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 23,
+   "y": 28
+  },
+  "monstros": [
+   {
+    "name": "The Unwelcome",
+    "x": 23,
+    "y": 28,
+    "hp": 50000
+   }
+  ]
+ },
+ "timira-the-many-headed": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 10
+   },
+   {
+    "id": "ice",
+    "valor": 10
+   },
+   {
+    "id": "energy",
+    "valor": 10
+   },
+   {
+    "id": "death",
+    "valor": 10
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 25
+  },
+  "monstros": [
+   {
+    "name": "Timira the Many-Headed",
+    "x": 28,
+    "y": 25,
+    "hp": 50000
+   }
+  ]
+ },
+ "unaz-the-mean": {
+  "hp": 28000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": -10
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 36,
+   "y": 25,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 25,
+   "y": 27
+  },
+  "monstros": [
+   {
+    "name": "Unaz the Mean",
+    "x": 25,
+    "y": 27,
+    "hp": 28000
+   }
+  ]
+ },
+ "vemiath": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 15
+   },
+   {
+    "id": "fire",
+    "valor": 15
+   },
+   {
+    "id": "ice",
+    "valor": 15
+   },
+   {
+    "id": "earth",
+    "valor": 15
+   },
+   {
+    "id": "energy",
+    "valor": 15
+   },
+   {
+    "id": "death",
+    "valor": 15
+   },
+   {
+    "id": "holy",
+    "valor": 15
+   }
+  ],
+  "player": {
+   "x": 27,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 18
+  },
+  "monstros": [
+   {
+    "name": "Vemiath",
+    "x": 28,
+    "y": 18,
+    "hp": 50000
+   }
+  ]
+ },
+ "vok-the-freakish": {
+  "hp": 32000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": -10
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "Vok the Freakish",
+    "x": 26,
+    "y": 22,
+    "hp": 32000
+   }
+  ]
+ },
+ "world-devourer": {
+  "hp": 25000,
+  "elementos": [],
+  "player": {
+   "x": 36,
+   "y": 23,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "World Devourer",
+    "x": 30,
+    "y": 23,
+    "hp": 25000
+   }
+  ]
+ },
+ "zamulosh": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": -1
+   },
+   {
+    "id": "holy",
+    "valor": -1
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 26,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 22
+  },
+  "monstros": [
+   {
+    "name": "Zamulosh",
+    "x": 28,
+    "y": 22,
+    "hp": 50000
+   }
+  ]
+ },
+ "ahau": {
+  "hp": 9000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 24,
+   "y": 24,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 24,
+   "y": 17
+  },
+  "monstros": [
+   {
+    "name": "Ahau",
+    "x": 24,
+    "y": 17,
+    "hp": 9000
+   }
+  ]
+ },
+ "alptramun": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Alptramun",
+    "x": 26,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "anomaly": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": -20
+   },
+   {
+    "id": "fire",
+    "valor": -20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": -20
+   },
+   {
+    "id": "holy",
+    "valor": -20
+   }
+  ],
+  "player": {
+   "x": 29,
+   "y": 26,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Anomaly",
+    "x": 29,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "arbaziloth": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 15
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 24,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 24,
+   "y": 20
+  },
+  "monstros": [
+   {
+    "name": "Arbaziloth",
+    "x": 24,
+    "y": 20,
+    "hp": 50000
+   }
+  ]
+ },
+ "ascending-ferumbras": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "ice",
+    "valor": 20
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   },
+   {
+    "id": "death",
+    "valor": 20
+   },
+   {
+    "id": "holy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 33,
+   "y": 39,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 33,
+   "y": 33
+  },
+  "monstros": [
+   {
+    "name": "Ascending Ferumbras",
+    "x": 33,
+    "y": 33,
+    "hp": 50000
+   }
+  ]
+ },
+ "bakragore": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "physical",
+    "valor": 20
+   },
+   {
+    "id": "fire",
+    "valor": 5
+   },
+   {
+    "id": "ice",
+    "valor": 5
+   },
+   {
+    "id": "earth",
+    "valor": 5
+   },
+   {
+    "id": "energy",
+    "valor": 5
+   },
+   {
+    "id": "death",
+    "valor": 10
+   },
+   {
+    "id": "holy",
+    "valor": 10
+   }
+  ],
+  "player": {
+   "x": 29,
+   "y": 29,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 29,
+   "y": 24
+  },
+  "monstros": [
+   {
+    "name": "Bakragore",
+    "x": 29,
+    "y": 24,
+    "hp": 50000
+   }
+  ]
+ },
+ "mazzinor": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "energy",
+    "valor": 5
+   }
+  ],
+  "player": {
+   "x": 28,
+   "y": 30,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 28,
+   "y": 26
+  },
+  "monstros": [
+   {
+    "name": "Mazzinor",
+    "x": 28,
+    "y": 26,
+    "hp": 50000
+   }
+  ]
+ },
+ "plagueroot": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": -10
+   },
+   {
+    "id": "earth",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 1
+   }
+  ],
+  "player": {
+   "x": 26,
+   "y": 27,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 26,
+   "y": 21
+  },
+  "monstros": [
+   {
+    "name": "Plagueroot",
+    "x": 26,
+    "y": 21,
+    "hp": 50000
+   }
+  ]
+ },
+ "urmahlullu-the-immaculate": {
+  "hp": 50000,
+  "elementos": [
+   {
+    "id": "fire",
+    "valor": 20
+   },
+   {
+    "id": "energy",
+    "valor": 20
+   }
+  ],
+  "player": {
+   "x": 38,
+   "y": 23,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "boss": {
+   "x": 30,
+   "y": 23
+  },
+  "monstros": [
+   {
+    "name": "Urmahlullu the Immaculate",
+    "x": 30,
+    "y": 23,
+    "hp": 50000
+   }
+  ]
+ }
+}

@@ -1,0 +1,53 @@
+{
+ "comMapa": {
+  "t": "state",
+  "hunt": {},
+  "huntDelta": true
+ },
+ "seguintes": [
+  {
+   "t": "state",
+   "character": {
+    "skills": {
+     "~": {
+      "shielding": {
+       "~": {
+        "percent": {
+         "=": 0.775594
+        }
+       }
+      }
+     }
+    }
+   },
+   "charDelta": true,
+   "hunt": {
+    "clock": 28761
+   },
+   "huntDelta": true,
+   "fundo": {
+    "character": [
+     "skills"
+    ]
+   },
+   "events": [
+    {
+     "t": "block",
+     "uid": "player",
+     "quem": "Zoros",
+     "x": 18,
+     "y": 12,
+     "color": "#999999",
+     "n": 245
+    },
+    {
+     "t": "fx",
+     "id": 4,
+     "x": 18,
+     "y": 12,
+     "n": 246
+    }
+   ]
+  }
+ ]
+}

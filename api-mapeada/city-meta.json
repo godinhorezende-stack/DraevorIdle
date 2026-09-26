@@ -1,0 +1,977 @@
+{
+ "id": "city",
+ "name": "Ravox",
+ "mapId": "city",
+ "objetos": [
+  {
+   "uid": "dummy:0",
+   "x": 108,
+   "y": 62,
+   "item": null,
+   "acao": "exercise",
+   "nome": "Exercise Dummy"
+  },
+  {
+   "uid": "dummy:1",
+   "x": 108,
+   "y": 65,
+   "item": null,
+   "acao": "exercise",
+   "nome": "Exercise Dummy"
+  },
+  {
+   "uid": "dummy:2",
+   "x": 108,
+   "y": 68,
+   "item": null,
+   "acao": "exercise",
+   "nome": "Exercise Dummy"
+  },
+  {
+   "uid": "marco:aventuras:85,59",
+   "x": 85,
+   "y": 59,
+   "item": null,
+   "nome": "Aventuras",
+   "cor": "dourado",
+   "acao": "aventuras",
+   "pisar": true,
+   "nomeDx": -0.5,
+   "nomeDy": -0.6
+  },
+  {
+   "uid": "marco:boss-diarios:85,63",
+   "x": 85,
+   "y": 63,
+   "item": null,
+   "nome": "Boss Diarios",
+   "cor": "boss",
+   "acao": "boss-diarios",
+   "pisar": true,
+   "nomeDx": -0.5,
+   "nomeDy": -0.6
+  },
+  {
+   "uid": "marco:forja:93,61",
+   "x": 93,
+   "y": 61,
+   "item": null,
+   "nome": "Forja",
+   "cor": "vermelho",
+   "acao": "forja",
+   "pisar": false,
+   "nomeDx": -0.5,
+   "nomeDy": -0.5
+  },
+  {
+   "uid": "marco:imbuements:105,61",
+   "x": 105,
+   "y": 61,
+   "item": null,
+   "nome": "Imbuementos",
+   "cor": "roxo",
+   "acao": "imbuements",
+   "pisar": false,
+   "nomeDx": -0.5,
+   "nomeDy": -0.5
+  },
+  {
+   "uid": "marco:arvore:85,69:85,69",
+   "x": 85,
+   "y": 69,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:86,69",
+   "x": 86,
+   "y": 69,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:87,69",
+   "x": 87,
+   "y": 69,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:85,70",
+   "x": 85,
+   "y": 70,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:86,70",
+   "x": 86,
+   "y": 70,
+   "item": null,
+   "nome": "Arvore De Habilidade",
+   "cor": "verde-azul",
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:87,70",
+   "x": 87,
+   "y": 70,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:85,71",
+   "x": 85,
+   "y": 71,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:86,71",
+   "x": 86,
+   "y": 71,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:arvore:85,69:87,71",
+   "x": 87,
+   "y": 71,
+   "item": null,
+   "nome": null,
+   "cor": null,
+   "acao": "arvore"
+  },
+  {
+   "uid": "marco:treino-offline:99,71:99,71",
+   "x": 99,
+   "y": 71,
+   "item": null,
+   "nome": "Treino Offline",
+   "cor": "laranja",
+   "acao": "treino-offline"
+  },
+  {
+   "uid": "marco:treino-offline:26,91:26,91",
+   "x": 26,
+   "y": 91,
+   "item": null,
+   "nome": "Treino Offline",
+   "cor": "laranja",
+   "acao": "treino-offline"
+  }
+ ],
+ "npcs": [
+  {
+   "uid": "npc:naji",
+   "id": "naji",
+   "name": "Banker",
+   "x": 72,
+   "y": 53,
+   "z": 7,
+   "dir": 2,
+   "look": 1210,
+   "colors": {
+    "type": 1210,
+    "head": 114,
+    "body": 114,
+    "legs": 114,
+    "feet": 114,
+    "addons": 3
+   },
+   "addons": 3,
+   "tipo": "banco"
+  },
+  {
+   "uid": "npc:zuma",
+   "id": "zuma",
+   "name": "Zuma Magehide",
+   "x": 90,
+   "y": 56,
+   "z": 7,
+   "dir": 2,
+   "look": 138,
+   "colors": {
+    "type": 138,
+    "head": 58,
+    "body": 19,
+    "legs": 0,
+    "feet": 132,
+    "addons": 3
+   },
+   "addons": 3,
+   "tipo": "loja"
+  }
+ ],
+ "chao": [
+  {
+   "x": 99,
+   "y": 65,
+   "item": 29995,
+   "count": 35,
+   "sob": 0,
+   "nome": "sun fruit",
+   "pilha": [
+    {
+     "item": 29995,
+     "count": 35,
+     "nome": "sun fruit"
+    }
+   ]
+  },
+  {
+   "x": 100,
+   "y": 65,
+   "item": 3264,
+   "count": 1,
+   "sob": 0,
+   "nome": "sword",
+   "pilha": [
+    {
+     "item": 3264,
+     "count": 1,
+     "nome": "sword"
+    }
+   ]
+  },
+  {
+   "x": 102,
+   "y": 63,
+   "item": 3286,
+   "count": 1,
+   "sob": 0,
+   "nome": "mace",
+   "pilha": [
+    {
+     "item": 3286,
+     "count": 1,
+     "nome": "mace"
+    }
+   ]
+  },
+  {
+   "x": 103,
+   "y": 65,
+   "item": 3354,
+   "count": 1,
+   "sob": 0,
+   "nome": "brass helmet",
+   "pilha": [
+    {
+     "item": 3354,
+     "count": 1,
+     "nome": "brass helmet"
+    }
+   ]
+  },
+  {
+   "x": 104,
+   "y": 64,
+   "item": 3264,
+   "count": 1,
+   "sob": 0,
+   "nome": "sword",
+   "pilha": [
+    {
+     "item": 3264,
+     "count": 1,
+     "nome": "sword"
+    }
+   ]
+  }
+ ],
+ "z": 7,
+ "player": {
+  "x": 99,
+  "y": 65,
+  "z": 7,
+  "dir": 2,
+  "moveMs": 250
+ },
+ "players": [
+  {
+   "uid": "p:Hela",
+   "name": "Hela",
+   "x": 108,
+   "y": 63,
+   "z": 7,
+   "dir": 0,
+   "look": 1832,
+   "colors": {
+    "type": 1832,
+    "head": 17,
+    "body": 80,
+    "legs": 119,
+    "feet": 116,
+    "addons": 3,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 3,
+   "level": 541,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Kai Parker",
+   "name": "Kai Parker",
+   "x": 107,
+   "y": 62,
+   "z": 7,
+   "dir": 1,
+   "look": 130,
+   "colors": {
+    "type": 130,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 195,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Mephistopheles",
+   "name": "Mephistopheles",
+   "x": 107,
+   "y": 64,
+   "z": 7,
+   "dir": 2,
+   "look": 1662,
+   "colors": {
+    "type": 1662,
+    "head": 93,
+    "body": 93,
+    "legs": 93,
+    "feet": 81,
+    "addons": 3,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 3,
+   "level": 565,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Sir Lex",
+   "name": "Sir Lex",
+   "x": 107,
+   "y": 65,
+   "z": 7,
+   "dir": 1,
+   "look": 1618,
+   "colors": {
+    "type": 1618,
+    "head": 4,
+    "body": 85,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 1724
+   },
+   "mount": 1724,
+   "addons": 0,
+   "level": 396,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Bianca Baiano",
+   "name": "Bianca Baiano",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 139,
+   "colors": {
+    "type": 139,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 96,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Jessica do Norte",
+   "name": "Jessica do Norte",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 1825,
+   "colors": {
+    "type": 1825,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 8,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Joao do Sul",
+   "name": "Joao do Sul",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 133,
+   "colors": {
+    "type": 133,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 76,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Privacy",
+   "name": "Privacy",
+   "x": 97,
+   "y": 68,
+   "z": 7,
+   "dir": 2,
+   "look": 1619,
+   "colors": {
+    "type": 1619,
+    "head": 92,
+    "body": 92,
+    "legs": 92,
+    "feet": 92,
+    "addons": 3,
+    "mount": 1730
+   },
+   "mount": 1730,
+   "addons": 3,
+   "level": 1316,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:FastBack",
+   "name": "FastBack",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 129,
+   "colors": {
+    "type": 129,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 120,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:FastZinho Back",
+   "name": "FastZinho Back",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 130,
+   "colors": {
+    "type": 130,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 115,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:ms hkiisame",
+   "name": "ms hkiisame",
+   "x": 109,
+   "y": 65,
+   "z": 7,
+   "dir": 3,
+   "look": 133,
+   "colors": {
+    "type": 133,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 8,
+   "marca": null,
+   "moveMs": 250
+  },
+  {
+   "uid": "p:SouEu",
+   "name": "SouEu",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 1618,
+   "colors": {
+    "type": 1618,
+    "head": 0,
+    "body": 18,
+    "legs": 37,
+    "feet": 56,
+    "addons": 3,
+    "mount": 427
+   },
+   "mount": 427,
+   "addons": 3,
+   "level": 841,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:RP hkiisame",
+   "name": "RP hkiisame",
+   "x": 108,
+   "y": 61,
+   "z": 7,
+   "dir": 2,
+   "look": 129,
+   "colors": {
+    "type": 129,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 8,
+   "marca": null,
+   "moveMs": 250
+  },
+  {
+   "uid": "p:X X",
+   "name": "X X",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 129,
+   "colors": {
+    "type": 129,
+    "head": 77,
+    "body": 114,
+    "legs": 114,
+    "feet": 76,
+    "addons": 0,
+    "mount": 1724
+   },
+   "mount": 1724,
+   "addons": 0,
+   "level": 1194,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:T T",
+   "name": "T T",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 133,
+   "colors": {
+    "type": 133,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 1104,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Raio",
+   "name": "Raio",
+   "x": 108,
+   "y": 64,
+   "z": 7,
+   "dir": 2,
+   "look": 129,
+   "colors": {
+    "type": 129,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 66,
+   "marca": null,
+   "moveMs": 250
+  },
+  {
+   "uid": "p:oxoxo kina",
+   "name": "oxoxo kina",
+   "x": 109,
+   "y": 68,
+   "z": 7,
+   "dir": 3,
+   "look": 131,
+   "colors": {
+    "type": 131,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 346,
+   "marca": null,
+   "moveMs": 125
+  },
+  {
+   "uid": "p:Godz",
+   "name": "Godz",
+   "x": 87,
+   "y": 58,
+   "z": 7,
+   "dir": 2,
+   "look": 75,
+   "colors": {
+    "type": 75,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 3,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 3,
+   "level": 8,
+   "marca": {
+    "tag": "GOD",
+    "nivel": 3
+   },
+   "moveMs": 125
+  },
+  {
+   "uid": "p:PeepooMkk",
+   "name": "PeepooMkk",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 1837,
+   "colors": {
+    "type": 1837,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 3,
+    "mount": 1724
+   },
+   "mount": 1724,
+   "addons": 3,
+   "level": 649,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Tarik ms",
+   "name": "Tarik ms",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 133,
+   "colors": {
+    "type": 133,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 166,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Tarik",
+   "name": "Tarik",
+   "x": 109,
+   "y": 62,
+   "z": 7,
+   "dir": 3,
+   "look": 1824,
+   "colors": {
+    "type": 1824,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 171,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Zoros",
+   "name": "Zoros",
+   "x": 95,
+   "y": 63,
+   "z": 7,
+   "dir": 2,
+   "look": 1746,
+   "colors": {
+    "type": 1746,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 1724
+   },
+   "mount": 1724,
+   "addons": 0,
+   "level": 322,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Diegossss",
+   "name": "Diegossss",
+   "x": 107,
+   "y": 68,
+   "z": 7,
+   "dir": 1,
+   "look": 131,
+   "colors": {
+    "type": 131,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 8,
+   "marca": null,
+   "moveMs": 250
+  },
+  {
+   "uid": "p:Taka Fogo",
+   "name": "Taka Fogo",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 145,
+   "colors": {
+    "type": 145,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 1724
+   },
+   "mount": 1724,
+   "addons": 0,
+   "level": 1060,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Thiago Mineiro",
+   "name": "Thiago Mineiro",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 130,
+   "colors": {
+    "type": 130,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 31,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Ze Macedo",
+   "name": "Ze Macedo",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 129,
+   "colors": {
+    "type": 129,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 88,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Nerys",
+   "name": "Nerys",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 133,
+   "colors": {
+    "type": 133,
+    "head": 78,
+    "body": 88,
+    "legs": 58,
+    "feet": 76,
+    "addons": 0,
+    "mount": 0
+   },
+   "mount": 0,
+   "addons": 0,
+   "level": 397,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Mysterium",
+   "name": "Mysterium",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 1831,
+   "colors": {
+    "type": 1831,
+    "head": 0,
+    "body": 95,
+    "legs": 58,
+    "feet": 0,
+    "addons": 3,
+    "mount": 1724
+   },
+   "mount": 1724,
+   "addons": 3,
+   "level": 306,
+   "marca": null,
+   "moveMs": 400
+  },
+  {
+   "uid": "p:Tempest",
+   "name": "Tempest",
+   "x": 99,
+   "y": 65,
+   "z": 7,
+   "dir": 2,
+   "look": 1663,
+   "colors": {
+    "type": 1663,
+    "head": 0,
+    "body": 95,
+    "legs": 114,
+    "feet": 114,
+    "addons": 3,
+    "mount": 1724
+   },
+   "mount": 1724,
+   "addons": 3,
+   "level": 306,
+   "marca": null,
+   "moveMs": 400
+  }
+ ]
+}

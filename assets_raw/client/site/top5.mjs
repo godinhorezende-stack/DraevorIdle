@@ -1,0 +1,495 @@
+/*
+ * ---- O top 5 da capa ----
+ *
+ * A coluna da direita da capa, no lugar do antigo "O servidor agora": os cinco
+ * primeiros do servidor com o boneco como ele anda no mapa (roupa, addons e
+ * montaria), a vocação com o ícone da perícia dela (o mesmo da party no jogo)
+ * e o valor da categoria.
+ *
+ * Embaixo, os ícones das categorias (level, magic e as skills) trocam o top 5
+ * mostrado. São as mesmas categorias do ranking completo, mais abaixo.
+ *
+ * Separado do `site.mjs` pelo mesmo motivo do `drops.mjs`: o boneco precisa do
+ * atlas de outfits, que é pesado. Sem o atlas o cartão sai igual, só sem o
+ * desenho.
+ */
+import { loadSpriteData, outfitCanvas, itemCanvas } from '/client/src/sprites.mjs';
+
+const $ = (id) => document.getElementById(id);
+const numero = (valor) => Number(valor ?? 0).toLocaleString('pt-BR');
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+const VOCACOES = { knight: 'Knight', paladin: 'Paladin', druid: 'Druid', sorcerer: 'Sorcerer', monk: 'Monk', none: 'Sem vocação' };
+// O ícone da vocação é o da perícia dela, como no card da party (panels.mjs).
+const ICONE_DA_VOCACAO = {
+  knight: 'sk-sword', paladin: 'sk-distance', druid: 'sk-magic', sorcerer: 'sk-magic-sorcerer', monk: 'sk-fist',
+};
+// As mesmas artes das abas do ranking completo (site.mjs). "exp" fica de fora:
+// o top 5 de experiência é o mesmo de level.
+const CATEGORIAS = [
+  ['level', 'Level', 'ficha-level'],
+  ['magic', 'Magic', 'sk-magic'],
+  ['fist', 'Fist', 'sk-fist'],
+  ['club', 'Club', 'sk-club'],
+  ['sword', 'Sword', 'sk-sword'],
+  ['axe', 'Axe', 'sk-axe'],
+  ['distance', 'Distance', 'sk-distance'],
+  ['shielding', 'Shielding', 'sk-shielding'],
+  ['fishing', 'Fishing', 'sk-fishing'],
+];
+
+const sprites = loadSpriteData().then(() => true).catch(() => false);
+let categoria = 'level';
+let pedido = 0;
+
+function linha(entrada, posicao, rotulo) {
+  const li = document.createElement('li');
+  li.className = `top5-item pos${posicao}`;
+  const icone = ICONE_DA_VOCACAO[entrada.vocation];
+  const link = `/personagem?nome=${encodeURIComponent(entrada.name)}`;
+  const vocacao = esc(VOCACOES[entrada.vocation] ?? entrada.vocation ?? '—');
+  // Numa skill, o level vai junto da vocação: o número grande é o da skill.
+  const embaixo = categoria === 'level' ? vocacao : `${vocacao} · lv ${numero(entrada.level)}`;
+  li.innerHTML = `
+    <span class="top5-pos">${posicao}</span>
+    <a class="top5-retrato" href="${link}" aria-hidden="true" tabindex="-1"></a>
+    <div class="top5-info">
+      <a class="top5-nome" href="${link}"><i class="ponto${entrada.online ? '' : ' off'}" title="${entrada.online ? 'online agora' : 'offline'}"></i><span class="top5-nome-txt">${esc(entrada.name)}</span></a>
+      <span class="top5-voc">${icone ? `<img src="/client/assets/icons/${icone}.png" alt="">` : ''}${embaixo}</span>
+    </div>
+    <div class="top5-level"><small>${esc(rotulo)}</small><b>${numero(categoria === 'level' ? entrada.level : entrada.value)}</b></div>`;
+  return li;
+}
+
+function pintarAbas() {
+  const barra = $('top5-abas');
+  if (!barra) return;
+  if (barra.dataset.pronto !== '1') {
+    barra.dataset.pronto = '1';
+    for (const [chave, nome, arte] of CATEGORIAS) {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'top5-aba';
+      botao.dataset.categoria = chave;
+      botao.title = nome;
+      botao.setAttribute('role', 'tab');
+      botao.innerHTML = `<img src="/client/assets/icons/${arte}.png" alt="${esc(nome)}">`;
+      botao.onclick = () => {
+        if (categoria === chave) return;
+        categoria = chave;
+        pintar();
+      };
+      barra.append(botao);
+    }
+  }
+  for (const botao of barra.children) {
+    botao.setAttribute('aria-selected', String(botao.dataset.categoria === categoria));
+  }
+}
+
+async function pintar() {
+  const lista = $('top5');
+  if (!lista) return;
+  const meu = ++pedido;
+  const [, nome] = CATEGORIAS.find(([chave]) => chave === categoria) ?? [null, 'Level'];
+  if ($('top5-titulo')) $('top5-titulo').textContent = `Top 5 ${nome}`;
+  pintarAbas();
+  try {
+    const resposta = await fetch(`/api/status?ranking=${encodeURIComponent(categoria)}`, { cache: 'no-store' });
+    if (!resposta.ok || meu !== pedido) return;
+    const dados = await resposta.json();
+    if (meu !== pedido) return; // trocou de aba enquanto a resposta vinha
+    // Os dois cartazes de baixo vêm na MESMA resposta — ver `pintarTopExp`.
+    pintarTopExp(dados);
+    const top = (dados.highscore ?? []).slice(0, 5);
+    if (!top.length) {
+      lista.innerHTML = '<li class="vazio">ninguém no ranking ainda</li>';
+      return;
+    }
+    const itens = top.map((entrada, i) => linha(entrada, i + 1, nome));
+    // A lista é refeita a cada 30s: o balão da linha que sumiu some junto.
+    if (linhaAtual) esconderInventario();
+    itens.forEach((li, i) => ligarBalao(li, top[i]));
+    lista.replaceChildren(...itens);
+    if (!(await sprites) || meu !== pedido) return;
+    top.forEach((entrada, i) => {
+      if (!entrada.outfit?.type) return;
+      try {
+        itens[i].querySelector('.top5-retrato').append(outfitCanvas(entrada.outfit.type, entrada.outfit, 46));
+      } catch { /* outfit sem desenho: fica a moldura */ }
+    });
+  } catch {
+    // Servidor fora do ar: o cartão fica como está.
+  }
+}
+
+/*
+ * ---- Os dois cartazes de MOVIMENTO ----
+ *
+ * Pedido do dono: "embaixo do top 5 level, fora desse modal, coloca dois
+ * negócios flutuantes bonitos: Top exp hoje e embaixo Top exp/hr — o top xp
+ * total de hoje e o top xp/h que está agora. Só que esses 2 seriam pessoas
+ * únicas."
+ *
+ * O top 5 de level responde "quem é o mais forte do servidor", e a resposta
+ * dele é a mesma há semanas: quem começou ontem não aparece por mais que jogue.
+ * Estes dois respondem a outra pergunta, a que muda o dia inteiro — quem está
+ * jogando AGORA. Um recém-chegado que passa a tarde caçando aparece aqui.
+ *
+ * ---- Por que eles são "flutuantes", e fora da moldura ----
+ *
+ * Porque são outro placar. Postos dentro da moldura da Ravox Store, ao lado das
+ * abas de level/magic/axe, pareceriam mais duas categorias do mesmo top 5 — e
+ * não são: um mede acúmulo, os outros dois medem movimento.
+ *
+ * ---- Um NOME por cartaz, e estilo próprio ----
+ *
+ * "é pra mostrar o top xp e top xp/h só o PRIMEIRO, e não o segundo; e faz
+ * ficar mais perto entre eles; e usa um estilo diferente do top 5 level."
+ *
+ * São três coisas que dizem a mesma: estes dois não são um segundo pódio. O
+ * top 5 é uma lista e tem lugar para disputa; aqui a pergunta é "quem está
+ * detonando agora", e a resposta é UM nome. Mostrar o segundo transformava o
+ * cartaz numa lista curta e fazia a coluna inteira parecer três rankings
+ * empilhados.
+ *
+ * ---- E os dois moram num cartaz SÓ ----
+ *
+ * "faz um card só, com a linha separada mais ou menos igual o do top level, e
+ * deixa na mesma largura do top 5 level."
+ *
+ * Dois cartões empilhados eram duas molduras a seis pixels uma da outra, e a
+ * coluna virava três placares. Num cartaz só eles voltam a ser o que são: a
+ * mesma notícia — quem está detonando agora — em duas medidas, o dia e a hora.
+ * O que separa as duas é uma linha, do jeito que as linhas do top 5 se separam.
+ *
+ * A cor continua sendo a diferença entre elas: dourado no do dia, verde-água no
+ * do agora, que é a cor que o site já usa para o que está vivo. E cada faixa
+ * tem um brilho que a atravessa na cor dela — em tempos diferentes, senão as
+ * duas piscavam juntas e viravam uma coisa só de novo.
+ *
+ * O que continua igual ao top 5 é o que foi pedido antes e não mudou: o boneco
+ * com a roupa dele, o nome, o level e a vocação com ícone.
+ *
+ * ---- De onde saem os números ----
+ *
+ * Da mesma resposta do `/api/status` que o top 5 já pede (`expHoje` e
+ * `expHora`). Nenhum pedido a mais, e os três placares da coluna nunca ficam
+ * de tempos diferentes.
+ */
+/*
+ * Cada cartaz: a chave da resposta, o título, a legenda, a marca da cor, o
+ * rótulo do número e a ARTE do canto.
+ *
+ * As duas artes já existem e são as certas: a da experiência é a mesma da
+ * ficha do personagem, e a ampulheta é a do relógio das janelas. Pedir um
+ * `icone-xp.png` novo seria inventar arte para dizer o que a do jogo já diz.
+ */
+const CARTAZES = [
+  ['expHoje', 'Top exp hoje', 'desde a meia-noite', 'hoje', 'xp hoje', 'ficha-exp'],
+  ['expHora', 'Top exp/h', 'do analisador, agora', 'hora', 'xp/h', 'ficha-exp'],
+];
+
+/*
+ * ---- "+3 levels hoje" no cartaz de HOJE ----
+ *
+ * "onde tá o top exp hoje, informa quantos level ele upou, tipo +x level hoje,
+ * e mostra em verde."
+ *
+ * Ele fica colado no level atual porque é a mesma frase: "lv 2.018 +3 levels
+ * hoje" se lê de uma vez, e diz de onde o número saiu. Numa linha própria seria
+ * mais um número solto no cartaz, e o cartaz tem três.
+ *
+ * O verde é FIXO, e não a cor da faixa. É a única coisa do cartaz que não muda
+ * de cor junto com ela: no site o verde já quer dizer "subiu, está vivo" (o
+ * ponto de quem está online, os números do agora), e um "+3 levels" dourado no
+ * meio de um cartaz dourado sumiria dentro dele.
+ *
+ * Zero não aparece. "+0 levels" é uma informação que ninguém pediu, e num
+ * cartaz de três linhas ela ocuparia o lugar de nada — quem não subiu nenhum
+ * nível hoje já sabe disso.
+ *
+ * O cartaz do xp/h não tem o selo: `levels` só existe no placar do dia (ver
+ * `topDoDia`), e o do analisador é uma taxa, não um acumulado — "+3 levels por
+ * hora" seria uma conta que ninguém fez.
+ */
+const selo = (levels) => {
+  const n = Math.max(0, Math.floor(Number(levels) || 0));
+  if (!n) return '';
+  return ` <i class="top-exp-levels" title="${n} ${n === 1 ? 'nível' : 'níveis'} desde a meia-noite">+${n} ${n === 1 ? 'level' : 'levels'} hoje</i>`;
+};
+
+/** 1.234.567 vira "1,2M" — a coluna é estreita e o número é enorme. */
+function curto(valor) {
+  const n = Number(valor ?? 0);
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1).replace('.', ',')}B`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1).replace('.', ',')}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1).replace('.', ',')}k`;
+  return numero(n);
+}
+
+function pintarTopExp(dados) {
+  const caixa = $('top-exp');
+  if (!caixa) return;
+
+  // Um cartaz só, e as duas faixas dentro dele. Ver a nota acima.
+  const cartaz = document.createElement('article');
+  cartaz.className = 'top-exp-cartaz';
+
+  const feitos = [];
+  for (const [chave, titulo, legenda, marca, rotulo, arte] of CARTAZES) {
+    // Só o primeiro. Ver a nota acima: o cartaz é um nome, não uma lista.
+    const dono = (dados?.[chave] ?? [])[0] ?? null;
+
+    const faixa = document.createElement('section');
+    faixa.className = `top-exp-faixa ${marca}`;
+
+    const cabeca = document.createElement('h3');
+    cabeca.innerHTML =
+      `<img class="top-exp-arte" src="/client/assets/icons/${arte}.png" alt="">` +
+      `<span>${esc(titulo)}</span><em>${esc(legenda)}</em>`;
+    faixa.append(cabeca);
+
+    if (!dono) {
+      const vazio = document.createElement('p');
+      vazio.className = 'top-exp-vazio';
+      vazio.textContent = chave === 'expHora' ? 'ninguém caçando agora' : 'ninguém ganhou experiência hoje';
+      faixa.append(vazio);
+      cartaz.append(faixa);
+      feitos.push({ faixa, dono: null });
+      continue;
+    }
+
+    const link = `/personagem?nome=${encodeURIComponent(dono.name)}`;
+    const icone = ICONE_DA_VOCACAO[dono.vocation];
+    const corpo = document.createElement('div');
+    corpo.className = 'top-exp-corpo';
+    corpo.innerHTML = `
+      <a class="top-exp-retrato" href="${link}" aria-hidden="true" tabindex="-1"></a>
+      <div class="top-exp-quem">
+        <a class="top-exp-nome" href="${link}"><i class="ponto${dono.online ? '' : ' off'}" title="${dono.online ? 'online agora' : 'offline'}"></i><span class="top-exp-nome-txt">${esc(dono.name)}</span></a>
+        <span class="top-exp-voc">${icone ? `<img src="/client/assets/icons/${icone}.png" alt="">` : ''}${esc(VOCACOES[dono.vocation] ?? dono.vocation ?? '—')} · lv ${numero(dono.level)}${selo(dono.levels)}</span>
+      </div>
+      <div class="top-exp-valor">
+        <small>${esc(rotulo)}</small>
+        <b title="${numero(dono.value)} de experiência"><img src="/client/assets/icons/${arte}.png" alt=""><span>${curto(dono.value)}</span></b>
+      </div>`;
+    faixa.append(corpo);
+    /*
+     * ---- E o balão do equipamento também abre aqui ----
+     *
+     * "ao colocar o mouse em cima dos top exp e top exp/h tinha que mostrar o
+     * set e as coisas igual no top 5 level."
+     *
+     * É a MESMA função das linhas do top 5 (`ligarBalao`), e não uma cópia: o
+     * balão pede a ficha pública, guarda por um minuto e desenha a grade do
+     * Tibia com tier, estrelas e raridade. Duplicar isso aqui seria manter duas
+     * telas que precisam concordar para sempre — e o cartaz já é a mesma
+     * pergunta feita sobre outra pessoa.
+     */
+    ligarBalao(faixa, dono);
+    cartaz.append(faixa);
+    feitos.push({ faixa, dono });
+  }
+
+  caixa.replaceChildren(cartaz);
+
+  // O boneco, depois que o atlas chegar — como no top 5.
+  sprites.then((pronto) => {
+    if (!pronto) return;
+    for (const { faixa, dono } of feitos) {
+      if (!dono?.outfit?.type) continue;
+      const retrato = faixa.querySelector('.top-exp-retrato');
+      if (!retrato || retrato.firstChild) continue;
+      try {
+        retrato.append(outfitCanvas(dono.outfit.type, dono.outfit, 42));
+      } catch { /* outfit sem desenho: fica a moldura */ }
+    }
+  });
+}
+
+/*
+ * ---- O inventário ao passar o mouse ----
+ *
+ * Parar o mouse numa linha abre, ao lado do cartão, a moldura do antigo "O
+ * servidor agora" (panel-frame) com o boneco e o que a pessoa está vestindo,
+ * na grade do Tibia: tier no canto, estrelas dos afixos e a cor da raridade.
+ *
+ * Os dados são os da ficha pública (`/api/personagem`), pedidos só na hora do
+ * mouse e guardados por um minuto — passar o mouse de cima a baixo não vira
+ * cinco pedidos a cada vez.
+ */
+const GRADE = [
+  ['neck', 'neck'], ['head', 'head'], ['backpack', 'back'],
+  ['weapon', 'left-hand'], ['body', 'body'], ['shield', 'right-hand'],
+  ['ring', 'finger'], ['legs', 'legs'], ['ammo', 'ammo'],
+  [null, null], ['feet', 'feet'], [null, null],
+];
+// As perícias embaixo do inventário, na ordem e com os ícones da ficha (personagem.html).
+// A da categoria aberta no top 5 fica acesa.
+const PERICIAS = [
+  ['magic', 'ML'], ['fist', 'Fist'], ['club', 'Club'], ['sword', 'Sword'],
+  ['axe', 'Axe'], ['distance', 'Dist'], ['shielding', 'Def'], ['fishing', 'Fish'],
+];
+// Só as que importam para cada vocação (pedido do dono). Sem vocação: todas menos fishing.
+const PERICIAS_DA_VOCACAO = {
+  knight: ['axe', 'club', 'sword', 'magic', 'shielding'],
+  paladin: ['distance', 'magic', 'shielding'],
+  sorcerer: ['magic', 'shielding'],
+  druid: ['magic', 'shielding'],
+  monk: ['fist', 'magic', 'shielding'],
+};
+const periciasDa = (vocacao) => {
+  const ordem = PERICIAS_DA_VOCACAO[vocacao] ?? PERICIAS.map(([chave]) => chave).filter((chave) => chave !== 'fishing');
+  return ordem.map((chave) => PERICIAS.find(([k]) => k === chave));
+};
+const RARIDADES = new Set(['incomum', 'raro', 'epico', 'lendario', 'mitico']);
+const FICHA_VALE_MS = 60_000;
+const fichas = new Map(); // nome -> { quando, promessa }
+
+function fichaDe(nome) {
+  const guardada = fichas.get(nome);
+  if (guardada && Date.now() - guardada.quando < FICHA_VALE_MS) return guardada.promessa;
+  const promessa = fetch(`/api/personagem?nome=${encodeURIComponent(nome)}`, { cache: 'no-store' })
+    .then((r) => r.json())
+    .then((d) => (d.ok ? d.personagem : null))
+    .catch(() => null);
+  fichas.set(nome, { quando: Date.now(), promessa });
+  return promessa;
+}
+
+// A cor de cada estrela, pela régua do afixo (a mesma conta de `estrelasDosAfixos`).
+function estrelas(af, catalogo) {
+  return (Array.isArray(af) ? af : []).map((posto) => {
+    const ficha = catalogo?.afixos?.[posto?.id];
+    const valor = Number(posto?.value);
+    const fracao = ficha && Number.isFinite(valor) && ficha.max > ficha.min
+      ? Math.max(0, (valor - ficha.min) / (ficha.max - ficha.min))
+      : ((Number(posto?.tier) || 1) - 1) / 2;
+    return fracao > 1 ? 4 : fracao >= 2 / 3 ? 3 : fracao >= 1 / 3 ? 2 : 1;
+  }).sort((a, b) => b - a);
+}
+
+let balao = null;
+let linhaAtual = null;
+let espera = null;
+
+function garantirBalao() {
+  if (balao) return balao;
+  balao = document.createElement('div');
+  balao.className = 'top5-pop';
+  balao.hidden = true;
+  document.body.append(balao);
+  return balao;
+}
+
+function posicionar(li) {
+  /*
+   * A COLUNA da direita, e não o cartão do top 5.
+   *
+   * Era `li.closest('.top5')`, e isso valia enquanto o balão só abria nas
+   * linhas do top 5. Desde que os cartazes de experiência também o abrem
+   * (`ligarBalao`, lá embaixo), o `closest` devolvia `null` para eles — eles
+   * são irmãos do `.top5`, não filhos — e o balão aparecia e estourava no
+   * mesmo quadro.
+   *
+   * A coluna serve aos dois e não muda nada para o top 5: ela é a célula da
+   * grade que o cartão preenche, então as bordas esquerda e direita são as
+   * mesmas. E é o que se quer dos cartazes também — o balão encosta na coluna,
+   * e não em cada cartaz, senão ele dançaria de lugar entre um e outro.
+   */
+  const cartao = (li.closest('.capa-direita') ?? li.closest('.top5') ?? li).getBoundingClientRect();
+  const linhaRet = li.getBoundingClientRect();
+  const { width, height } = balao.getBoundingClientRect();
+  // À esquerda do cartão, que mora na coluna da direita; sem espaço, à direita.
+  let left = cartao.left - width - 10;
+  if (left < 8) left = Math.min(cartao.right + 10, innerWidth - width - 8);
+  // Nunca por baixo da barra fixa de cima (faixa de teste + menu).
+  const piso = (document.querySelector('.topo')?.getBoundingClientRect().bottom ?? 0) + 6;
+  const top = Math.max(piso, Math.min(linhaRet.top + linhaRet.height / 2 - height / 2, innerHeight - height - 8));
+  balao.style.left = `${Math.round(left)}px`;
+  balao.style.top = `${Math.round(top)}px`;
+}
+
+async function mostrarInventario(li, entrada) {
+  garantirBalao();
+  const p = await fichaDe(entrada.name);
+  if (linhaAtual !== li) return; // o mouse já saiu
+  if (!p) return esconderInventario();
+  balao.innerHTML = `
+    <div class="top5-pop-cabeca">
+      <div class="top5-pop-boneco"></div>
+      <div>
+        <b>${esc(p.nome)}</b>
+        <span>${esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao ?? '')}</span>
+        <span>Level <em>${numero(p.level)}</em></span>
+        <span class="${p.jogando ? 'on' : 'off'}"><i class="ponto${p.jogando ? '' : ' off'}"></i>${p.jogando ? 'online agora' : 'offline'}</span>
+      </div>
+    </div>
+    <div class="top5-pop-titulo">Inventory</div>
+    <div class="top5-pop-grade"></div>
+    <div class="top5-pop-titulo">Skills</div>
+    <div class="top5-pop-skills" style="grid-template-columns: repeat(${periciasDa(p.vocacao).length}, 1fr)">${periciasDa(p.vocacao).map(([chave, rotulo]) => `
+      <div class="top5-pop-skill${chave === categoria ? ' atual' : ''}" title="${rotulo}">
+        <img src="/client/assets/icons/sk-${chave}.png" alt=""><b>${numero(chave === 'magic' ? p.magic : p.skills?.[chave])}</b><span>${rotulo}</span>
+      </div>`).join('')}</div>
+    <div class="top5-pop-rodape">clique para abrir a ficha completa</div>`;
+  const grade = balao.querySelector('.top5-pop-grade');
+  const temSprites = await sprites;
+  for (const [slot, fundo] of GRADE) {
+    const celula = document.createElement('div');
+    celula.className = 'top5-slot';
+    if (!slot) { celula.classList.add('buraco'); grade.append(celula); continue; }
+    const peca = p.equipamento?.[slot];
+    if (!peca) {
+      celula.classList.add('vazio');
+      celula.style.backgroundImage = `url(/client/assets/slots/${fundo}.png)`;
+    } else {
+      const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
+      // O catálogo escreve com acento ("mítico", "épico"); a classe do CSS, sem.
+      const raridade = String(p.itens?.[peca.id]?.rarity ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      if (RARIDADES.has(raridade)) celula.classList.add('rar', `rar-${raridade}`);
+      celula.title = peca.nome ?? '';
+      if (temSprites) {
+        try { celula.append(itemCanvas(peca.id, 32, peca.count > 1 ? peca.count : undefined)); } catch { /* sem sprite */ }
+      }
+      const tier = Math.floor(Number(inteira.tier) || 0);
+      if (tier > 0) celula.insertAdjacentHTML('beforeend', `<img class="top5-slot-tier" src="/client/assets/ui/tier/tier-${Math.min(tier, 10)}.png" alt="tier ${tier}">`);
+      const qs = estrelas(inteira.af, p.catalogo);
+      if (qs.length) celula.insertAdjacentHTML('beforeend', `<i class="top5-slot-estrelas">${qs.map((q) => `<b class="q${q}">★</b>`).join('')}</i>`);
+    }
+    grade.append(celula);
+  }
+  if (temSprites && p.outfit?.type) {
+    try { balao.querySelector('.top5-pop-boneco').append(outfitCanvas(p.outfit.type, p.outfit, 64, 2, true)); } catch { /* sem boneco */ }
+  }
+  if (linhaAtual !== li) return;
+  balao.hidden = false;
+  posicionar(li);
+}
+
+function esconderInventario() {
+  clearTimeout(espera);
+  linhaAtual = null;
+  if (balao) balao.hidden = true;
+}
+
+function ligarBalao(li, entrada) {
+  li.addEventListener('pointerenter', (evento) => {
+    if (evento.pointerType === 'touch') return; // no toque o link já abre a ficha
+    clearTimeout(espera);
+    linhaAtual = li;
+    espera = setTimeout(() => mostrarInventario(li, entrada), 120);
+  });
+  li.addEventListener('pointerleave', () => { if (linhaAtual === li) esconderInventario(); });
+  // A linha inteira abre a ficha, como o rodapé do balão promete.
+  li.addEventListener('click', (evento) => {
+    if (evento.target.closest('a')) return;
+    location.href = `/personagem?nome=${encodeURIComponent(entrada.name)}`;
+  });
+}
+window.addEventListener('scroll', esconderInventario, { passive: true });
+
+pintar();
+// Trinta segundos, o mesmo ritmo do resto da capa.
+setInterval(pintar, 30_000);

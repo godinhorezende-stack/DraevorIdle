@@ -1,0 +1,1236 @@
+/*
+ * A porta da rua do Ravox Idle.
+ *
+ * Ela e' separada do `client/style.css` de proposito: o jogo carrega atlas de
+ * sprite, fontes e trinta modulos antes de desenhar o primeiro pixel, e quem
+ * ainda nao decidiu jogar nao deve pagar por isso. Esta pagina e' HTML, um CSS
+ * e um modulo curto.
+ *
+ * O arranjo e' de DUAS COLUNAS: a conversa a esquerda, o placar do servidor a
+ * direita. E' o formato das paginas de servidor de RPG de sempre — e responde
+ * na primeira tela a pergunta que quem chega faz antes de qualquer outra: "tem
+ * gente jogando?".
+ */
+
+:root {
+  --fundo: #07090b;
+  --painel: #0d1417;
+  --painel-2: #121b1f;
+  --linha: #23313a;
+  --linha-suave: #19242a;
+  --texto: #ccd8dc;
+  --apagado: #7b8d94;
+  --verde: #3fbfa8;
+  --verde-fundo: #226b5f;
+  --cobre: #c8823c;
+  --titulo: "Cinzel Decorative", Georgia, serif;
+  --cabeca: "Cinzel", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+
+/*
+ * A arte segue por baixo da pagina inteira, presa na janela.
+ *
+ * Sem isto, passada a capa o fundo virava um preto chapado e a pagina parecia
+ * outra. O veu escuro dos blocos garante que o texto continue legivel por cima.
+ */
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, #080e0ef2, #07090bfa),
+    url('/client/assets/ui/gate-bg.webp') center / cover no-repeat fixed;
+  background-color: var(--fundo);
+  color: var(--texto);
+  font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.65;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* ---------- a faixa de obra ---------- */
+
+/*
+ * Ela fica ACIMA de tudo e empurra a barra de cima — as duas sao fixas, e a
+ * altura da faixa desce para a barra por uma variavel. Um aviso que rola para
+ * fora da tela na primeira rolagem e' um aviso que so' vale nos primeiros
+ * centimetros.
+ */
+:root { --altura-da-faixa: 30px; }
+
+/*
+ * ---- Quanto a faixa de drops precisa, embaixo da capa ----
+ *
+ * "suba mais o ultimos drops pra ficar visivel em 1920x1080 sem ter que rolar a
+ * pagina."
+ *
+ * A capa tinha um TETO fixo, e isso resolvia numa altura de janela só: quem
+ * abre o navegador com a barra de favoritos, ou com a barra de tarefas na
+ * lateral, tem uma janela diferente da minha — e a faixa voltava a ser cortada
+ * por dez, quarenta, setenta pixels.
+ *
+ * Agora a conta é ao contrário: a capa ocupa a tela MENOS o que a faixa pede.
+ * São 320px, medidos — 20 de respiro, o título, a legenda e os 151 dos cards.
+ * Assim ela encosta no rodapé da primeira tela em qualquer monitor, e não em
+ * um.
+ *
+ * `min-height` é piso e não teto: numa janela baixa demais o conteúdo da capa
+ * continua mandando e ela cresce. Ali a faixa cai abaixo da dobra, e não há o
+ * que fazer — não cabem as duas coisas.
+ */
+:root { --espaco-dos-drops: 320px; }
+
+.faixa-teste {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 12;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: var(--altura-da-faixa); padding: 0 14px;
+  background: linear-gradient(90deg, #4a1512, #2b0e0c 50%, #4a1512);
+  border-bottom: 1px solid #7d2620;
+  font-family: var(--cabeca); font-size: 11px; letter-spacing: .08em;
+  color: #ff9a91; text-transform: uppercase; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.faixa-teste::before { content: '⚠'; font-size: 12px; }
+
+/* ---------- barra de cima ---------- */
+
+.topo {
+  position: fixed; top: var(--altura-da-faixa); left: 0; right: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 12px 26px;
+  background: linear-gradient(180deg, #07090bf2, #07090b00);
+}
+.marca img { height: 32px; display: block; }
+/* A logo e, colado nela, quantos estão jogando agora. */
+.topo-esq { display: flex; align-items: center; gap: 14px; }
+.topo-online {
+  display: inline-flex; align-items: center; gap: 2px; padding: 4px 11px 4px 9px; border-radius: 999px;
+  border: 1px solid #3fbfa844; background: #0d1417b3;
+  font-family: var(--cabeca); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--apagado);
+}
+.topo-online:hover { border-color: var(--verde); color: var(--texto); }
+.topo-online b { font-size: 14px; color: var(--verde); letter-spacing: 0; margin-right: 3px; font-variant-numeric: tabular-nums; }
+.topo-online .ponto { animation: ponto-vivo 1.8s ease-in-out infinite; }
+@keyframes ponto-vivo { 50% { opacity: .45; box-shadow: 0 0 3px var(--verde); } }
+.topo nav { display: flex; align-items: center; gap: 22px; }
+.topo nav a { font-family: var(--cabeca); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--apagado); }
+.topo nav a:hover { color: var(--texto); }
+
+.botao-entrar {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 22px; border-radius: 4px;
+  font-family: var(--cabeca); font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: #071110 !important;
+  background: linear-gradient(180deg, #4fd0b2, var(--verde-fundo));
+  border: 1px solid #6fe3c6;
+}
+.botao-entrar:hover { filter: brightness(1.12); }
+.botao-entrar.grande { padding: 14px 32px; font-size: 14px; border-radius: 5px; }
+
+.botao-conta {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 28px; border-radius: 5px;
+  font-family: var(--cabeca); font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
+  border: 1px solid var(--linha); background: #0d1417aa; color: var(--texto);
+}
+.botao-conta:hover { border-color: var(--cobre); color: var(--cobre); }
+
+/* ---------- Discord, WhatsApp e a engrenagem do idioma ---------- */
+
+.menu-sep { width: 1px; height: 18px; background: var(--linha); }
+
+.social {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 6px;
+  color: var(--apagado); border: 1px solid transparent;
+}
+.social:hover { color: var(--texto); border-color: var(--linha); background: #0d1417aa; }
+.social.discord:hover { color: #8ea1ff; border-color: #3a4680; }
+/* Sem link ainda: apagado, e o cursor nao promete clique. */
+/* Ícone de rede social que ainda não tem link: apagado e sem clique, em vez de
+   um link que leva a lugar nenhum. Nenhum usa isto agora (o WhatsApp ganhou o
+   link do grupo); fica para o próximo que nascer sem endereço. */
+.social.em-breve { opacity: .38; cursor: default; }
+.social.em-breve:hover { color: var(--apagado); border-color: transparent; background: none; }
+
+.idioma { position: relative; }
+.idioma-botao {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+  color: var(--apagado); background: none; border: 1px solid transparent;
+}
+.idioma-botao:hover { color: var(--verde); border-color: var(--linha); background: #0d1417aa; }
+.idioma-menu {
+  position: absolute; right: 0; top: 38px; z-index: 20;
+  display: grid; min-width: 132px; padding: 5px; border-radius: 6px;
+  background: var(--painel); border: 1px solid var(--linha);
+  box-shadow: 0 10px 26px #000a;
+}
+.idioma-menu[hidden] { display: none; }
+.idioma-menu button {
+  padding: 8px 12px; cursor: pointer; text-align: left; border-radius: 4px;
+  font-size: 13px; background: none; border: none; color: var(--texto);
+}
+.idioma-menu button:hover { background: var(--painel-2); }
+.idioma-menu button[aria-selected="true"] { color: var(--verde); }
+
+/* ---------- a capa ---------- */
+
+/*
+ * ---- A altura da capa, e por que ela tem TETO ----
+ *
+ * "move os ultimos drops um pouco pra cima pra ficar no limite do rodape de
+ * baixo de um monitor 1920x1080."
+ *
+ * Ela era `100vh` cheia, e a faixa de drops comecava 74px DEPOIS disso: num
+ * monitor de 1080 (uns 950px de janela, com as barras do navegador) ela caia
+ * inteira abaixo da dobra, e quem chegava no site nao tinha como saber que ela
+ * existia sem rolar.
+ *
+ * O teto de 780px resolve sem encolher a capa onde ela cabe: em telas altas ela
+ * para de crescer e a faixa aparece; em telas baixas o `100vh` continua
+ * mandando, e nada muda. A capa continua ocupando a maior parte da primeira
+ * tela — o que ela perde e o vazio de baixo.
+ */
+.capa {
+  position: relative; min-height: calc(100vh - var(--espaco-dos-drops));
+  display: flex; align-items: center;
+  padding: calc(62px + var(--altura-da-faixa)) 26px 22px; overflow: hidden;
+}
+
+/* O fundo e' UM arquivo, e a pagina funciona sem ele: enquanto
+   `client/site/capa.webp` nao existir, o navegador ignora a imagem que falta e
+   o degrade sozinho segura a tela. */
+/*
+ * O MESMO fundo da tela de entrada do jogo.
+ *
+ * A capa tinha um degrade proprio, e a porta da rua e a porta do jogo eram dois
+ * lugares diferentes. Sao o mesmo lugar: quem clica em "Entrar" tem de sentir
+ * que atravessou uma porta, e nao que trocou de site.
+ *
+ * `client/site/capa.webp` continua valendo — se existir, entra por cima e vira
+ * a capa. Sem ele, a arte da entrada segura a tela, que e' arte de verdade e
+ * nao um degrade.
+ */
+/*
+ * O MESMO fundo da tela de entrada do jogo, e ele nao rola com a pagina.
+ *
+ * `background-attachment: fixed` prende a arte na janela: o texto sobe e a
+ * caverna fica onde esta, como numa vitrine com profundidade. Rolando junto,
+ * a capa "acabava" nos primeiros centimetros e o resto da pagina caia num preto
+ * chapado.
+ *
+ * O brilho verde que havia aqui saiu: ele existia para a capa nao ficar vazia
+ * enquanto nao houvesse arte. Agora ha' arte, e o halo so' lavava a cor dela.
+ *
+ * `client/site/capa.webp` continua valendo — se existir, entra por cima e vira
+ * a capa.
+ */
+.capa-fundo {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    url('/client/site/capa.webp'),
+    url('/client/assets/ui/gate-bg.webp');
+  background-position: center, center;
+  background-size: cover, cover;
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
+  background-color: #080e0e;
+}
+/*
+ * O veu por cima: so' o bastante para o texto ter contraste.
+ *
+ * Ele sai do centro para as bordas — a arte respira no meio, onde o olho cai, e
+ * as beiradas ficam escuras onde moram o texto e o placar.
+ */
+.capa-fundo::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 42% 42%, #080e0e33 0%, #080e0e80 45%, #080e0ee6 100%),
+    linear-gradient(180deg, #080e0ee0 0%, #080e0e40 28%, #080e0e99 72%, var(--fundo) 100%);
+}
+
+.capa-grade {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 1140px; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.85fr);
+  gap: 50px; align-items: center;
+}
+/*
+ * A coluna da direita: o top 5 e, embaixo, os dois cartazes de experiencia.
+ *
+ * Eles moram numa celula so da grade de proposito. Soltos como irmaos do
+ * `.capa-grade` — que tem duas colunas — eles viravam uma TERCEIRA celula e
+ * caiam embaixo do texto da esquerda, longe do placar a que pertencem.
+ */
+.capa-direita { display: grid; align-content: start; gap: 0; }
+/* O top 5 guarda a altura que "O servidor agora" tinha. */
+.capa-direita > .top5 { min-height: 440px; }
+
+/*
+ * A logo no lugar do nome escrito.
+ *
+ * `height` em `clamp` e nao `width`: a arte e' larga e baixa, e prender pela
+ * largura fazia ela encolher demais no celular e estourar no monitor grande.
+ */
+.marca-grande { margin: 0 0 18px; line-height: 0; }
+.marca-grande img {
+  height: clamp(72px, 11vw, 132px); width: auto; max-width: 100%;
+  display: block;
+  filter: drop-shadow(0 6px 26px #000c);
+}
+
+.capa-fala h1 {
+  margin: 0 0 14px;
+  font-family: var(--titulo); font-weight: 900;
+  font-size: clamp(40px, 6.5vw, 74px); line-height: 1; letter-spacing: .02em;
+  color: #f2f6f5;
+}
+/* "Idle" desce e muda de cor: o nome tem duas metades e elas nao sao a mesma
+   coisa — uma e' o mundo, a outra e' o jeito de jogar. */
+.capa-fala h1 span {
+  display: block; color: var(--verde);
+  font-family: var(--cabeca); font-weight: 600;
+  font-size: .36em; letter-spacing: .5em; margin-top: 10px;
+}
+
+.linha-forte {
+  margin: 0 0 16px; max-width: 30ch;
+  font-family: var(--cabeca); font-size: clamp(17px, 2.2vw, 23px);
+  line-height: 1.35; color: #e6efee;
+}
+.chamada { margin: 0 0 30px; max-width: 52ch; font-size: 15px; color: #a9b8bd; }
+
+.acoes { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
+
+.promessas { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.promessas li {
+  position: relative; padding-left: 20px;
+  font-size: 13px; color: var(--apagado);
+}
+.promessas li::before {
+  content: ''; position: absolute; left: 0; top: .62em;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--verde-fundo); box-shadow: 0 0 0 3px #3fbfa81f;
+}
+
+/* ---------- o placar do servidor ---------- */
+
+/*
+ * ---- A moldura de painel do jogo, aqui tambem ----
+ *
+ * E' a mesma arte em 9 fatias que o cliente usa (`panel-frame.webp`), com as
+ * mesmas medidas: 48px de borda, fatia 110, esticada e nunca repetida — emendar
+ * copias da regua deixa costura a vista.
+ *
+ * O miolo tem fundo proprio porque a moldura vem com `fill`: sem uma cor por
+ * baixo, o texto do placar cairia direto sobre a arte da capa.
+ */
+.ui-frame {
+  border-style: solid;
+  border-width: 48px;
+  border-image-source: url('/client/assets/ui/panel-frame.webp');
+  border-image-slice: 110 fill;
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background: none;
+  padding: 0;
+  image-rendering: auto; /* arte em alta, nao pixel art */
+}
+@media (max-width: 600px) { .ui-frame { border-width: 28px; } }
+
+.placar { padding: 4px 6px; }
+.placar > * { position: relative; z-index: 1; }
+.placar h2 {
+  margin: 0 0 16px; font-family: var(--cabeca); font-size: 12px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--cobre);
+}
+.placar-linha {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding: 9px 0; border-bottom: 1px solid var(--linha-suave);
+  font-size: 13px; color: var(--apagado);
+}
+.placar-linha:last-of-type { border-bottom: none; }
+.placar-linha b { font-family: var(--cabeca); font-size: 19px; color: var(--texto); font-variant-numeric: tabular-nums; }
+.placar-linha.destaque b { color: var(--verde); font-size: 24px; }
+.placar-atalho {
+  display: block; margin-top: 14px; padding-top: 13px;
+  border-top: 1px solid var(--linha-suave);
+  font-family: var(--cabeca); font-size: 11px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--apagado);
+}
+.placar-atalho:hover { color: var(--verde); }
+
+/* ---------- o top 5 de level, na coluna da direita da capa ---------- */
+
+/*
+ * A moldura da Ravox Store (`prastore.png`, a mesma do `.modal-box.store` do
+ * jogo): 9 fatias, com a faixa de título embutida na fatia de cima — o `h2`
+ * sobe para dentro dela, como o header do modal.
+ */
+/*
+ * O top 5 com a moldura da Ravox Store (título na faixa de cima) e o balão do
+ * inventário com a do antigo "O servidor agora" (panel-frame).
+ *//*
+ * ---- Os dois cartazes de experiência, embaixo do top 5 ----
+ *
+ * "faz ficar mais perto entre eles, e usa um estilo diferente do top 5 level."
+ *
+ * A moldura dos cartazes é a do BALÃO DO EQUIPAMENTO — a mesma "panel-frame"
+ * que aparece quando o mouse para numa linha do top 5 (ver `.top5-pop`). Foi o
+ * que o dono pediu: "deixa o card dos top exp hoje e top exp/h igual o card do
+ * equipamento da pessoa quando coloca o mouse ali em top 5 level".
+ *
+ * Ela é a segunda moldura do site, e é por isso que ela serve: a do top 5 é a
+ * da Ravox Store, e usá-la aqui fazia a coluna virar três placares iguais
+ * empilhados. Esta diz "é sobre uma pessoa", que é exatamente o que os dois
+ * cartazes são.
+ *
+ * A cor de cada um continua distinguindo os dois — dourado no de hoje,
+ * verde-água no do agora —, agora no ícone, no nome e no número.
+ *
+ * E eles ficam COLADOS um no outro, porque são a mesma notícia em duas
+ * medidas. O respiro maior é só o que separa a dupla do top 5.
+ */
+.top-exp { display: grid; margin-top: 10px; }
+
+/*
+ * ---- Uma moldura so, com as duas faixas dentro ----
+ *
+ * As bordas laterais sao as MESMAS do top 5 (30px): as duas molduras ficam uma
+ * embaixo da outra na mesma coluna, e um pixel de diferenca no recuo apareceria
+ * como um degrau entre elas.
+ */
+.top-exp-cartaz {
+  position: relative; display: grid;
+  border-style: solid;
+  border-width: 26px 30px;
+  border-image-source: url('/client/assets/ui/panel-frame.webp');
+  border-image-slice: 110 fill;
+  border-image-repeat: stretch;
+  image-rendering: auto;
+}
+
+/* Cada metade do cartaz: o dia em dourado, a hora em verde-agua. */
+.top-exp-faixa {
+  --cor: #f0c27a;
+  position: relative; overflow: hidden;
+  display: grid; gap: 8px; padding: 2px 0 10px;
+}
+.top-exp-faixa.hora { --cor: #3fbfa8; padding: 12px 0 2px; }
+/*
+ * A linha que separa as duas — a mesma ideia das linhas do top 5. Ela nasce
+ * dourada e morre verde-agua, que e' o unico lugar do cartaz onde as duas cores
+ * se encontram: a linha diz "daqui pra baixo e' o outro placar" sem escrever.
+ */
+.top-exp-faixa + .top-exp-faixa::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, #f0c27a5c 20%, #3fbfa85c 80%, transparent);
+}
+/*
+ * ---- O brilho que corre, igual ao do top 5 ----
+ *
+ * "o efeito que te pedi pra passar no top xp hoje e top xp/hr nao era no card,
+ * era no NUMERO e em volta do card do addon, igual ta no top 5 level."
+ *
+ * Era no cartao inteiro: uma banda de luz atravessando a faixa. Ficava bonito e
+ * dizia a coisa errada — o que brilha e' o CAMPEAO, nao o quadro em que ele
+ * esta. No top 5 quem corre e' o numero do primeiro lugar e a moldura do boneco
+ * dele, e e' exatamente esse o efeito aqui: as mesmas duas voltas
+ * (`medalha-passa` no numero, `moldura-passa` na borda), com o mesmo tempo.
+ *
+ * O que muda entre as duas faixas e' so' a paleta: ouro no do dia, verde-agua
+ * no do agora.
+ */
+.top-exp-faixa.hoje { --m1: #8a5a12; --m2: #f3c55a; --m3: #fff6c9; --brilho: #e0a84a66; }
+.top-exp-faixa.hora { --m1: #12604f; --m2: #4fd8b8; --m3: #d6fff3; --brilho: #3fbfa866; }
+
+.top-exp-cartaz h3 {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  margin: 0; font-family: var(--cabeca); font-size: 11px; font-weight: 400;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--cor);
+}
+/*
+ * A arte da experiência, acesa na cor do cartaz.
+ *
+ * `drop-shadow` e não `filter: hue-rotate`: a arte é do jogo e tem as cores
+ * dela, e tingi-la faria o ícone da ficha e o daqui serem coisas diferentes.
+ * O brilho por trás é o que a amarra ao cartaz.
+ */
+.top-exp-arte {
+  width: 17px; height: 17px; flex: none;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--cor) 75%, transparent));
+}
+.top-exp-cartaz h3 em {
+  font-style: normal; font-size: 10px; letter-spacing: .04em;
+  color: #8fa3a8; text-transform: none;
+}
+
+/* O dono do cartaz: boneco, nome e o número, numa linha só. */
+.top-exp-corpo { display: flex; align-items: center; gap: 11px; min-width: 0; }
+/*
+ * O boneco sem caixa, sobre o mesmo halo do balão do equipamento
+ * (`.top5-pop-boneco`): dentro da moldura, uma borda em volta dele seria uma
+ * segunda moldura a um centímetro da primeira.
+ */
+/*
+ * A moldura do boneco com a cor correndo em volta, como a dos tres primeiros do
+ * top 5: o fundo fica no `padding-box` e o gradiente no `border-box`, e so' a
+ * camada da borda anda. Ver `.top5-item:is(.pos1,.pos2,.pos3) .top5-retrato`.
+ */
+.top-exp-retrato {
+  flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 6px;
+  border: 2px solid transparent;
+  background:
+    radial-gradient(circle at 50% 62%, var(--brilho), transparent 70%) padding-box,
+    linear-gradient(#0a1114, #0a1114) padding-box,
+    linear-gradient(100deg, var(--m1) 0%, var(--m2) 30%, var(--m3) 45%, var(--m2) 60%, var(--m1) 100%) border-box;
+  background-size: 100% 100%, 100% 100%, 200% 100%;
+  box-shadow: 0 0 10px var(--brilho);
+  animation: moldura-passa 3s linear infinite;
+}
+.top-exp-retrato canvas { image-rendering: pixelated; }
+.top-exp-quem { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.top-exp-nome {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--cabeca); font-size: 15px; color: #eaf3f4;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.top-exp-nome:hover { color: var(--cor); }
+/*
+ * O nome com o mesmo brilho correndo do numero e da moldura — e' o terceiro
+ * lugar em que o top 5 acende o primeiro colocado, e o dono pediu os tres.
+ *
+ * Num `span` proprio pelo mesmo motivo do numero: `background-clip: text` apaga
+ * tudo o que nao e' letra dentro do elemento, e a bolinha de "online agora"
+ * (`.ponto`, que e' um fundo redondo) sumiria junto.
+ */
+.top-exp-nome-txt {
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  background: linear-gradient(100deg, var(--m1) 0%, var(--m2) 30%, var(--m3) 45%, var(--m2) 60%, var(--m1) 100%) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 6px var(--brilho));
+  animation: medalha-passa 3s linear infinite;
+}
+/* A mesma bolinha das linhas do top 5 — o site já a usa para "está online". */
+.top-exp-nome .ponto {
+  flex: none; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--verde); box-shadow: 0 0 5px var(--verde);
+}
+.top-exp-nome .ponto.off { background: #47585e; box-shadow: none; }
+.top-exp-voc {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: #8fa3a8;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.top-exp-voc img { width: 13px; height: 13px; flex: none; }
+/*
+ * O "+3 hoje" colado no level. Pastilha pequena e na cor do cartaz: ela é uma
+ * boa notícia, e precisa ser lida como parte do level e não como um terceiro
+ * número do cartaz. Ver `selo`, no top5.mjs.
+ */
+.top-exp-levels {
+  flex: none; margin-left: 5px; padding: 1px 6px; border-radius: 999px;
+  font-style: normal; font-size: 10px; font-weight: 600; line-height: 1.5;
+  /* Verde fixo, e nao a cor da faixa — ver a nota do `selo`, no top5.mjs. */
+  color: #6fe0c2;
+  background: color-mix(in srgb, var(--verde) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--verde) 45%, transparent);
+  text-shadow: 0 0 6px #3fbfa855;
+}
+
+.top-exp-valor { flex: none; display: grid; justify-items: end; gap: 1px; }
+.top-exp-valor small {
+  font-family: var(--cabeca); font-size: 9px; letter-spacing: .12em;
+  text-transform: uppercase; color: #8fa3a8;
+}
+.top-exp-valor b {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--cabeca); font-size: 20px; line-height: 1;
+  color: var(--cor); font-variant-numeric: tabular-nums;
+}
+/*
+ * O numero com o brilho correndo por dentro dele — o mesmo do primeiro lugar do
+ * top 5. O gradiente e' duas vezes mais largo que o texto e a posicao dele anda
+ * em loop; `background-clip: text` e' o que o prende as letras.
+ *
+ * O `span` existe porque o `b` tambem carrega o icone da experiencia: recortar
+ * o gradiente no texto apaga tudo o que nao e' letra, e o icone sumia junto.
+ */
+.top-exp-valor b span {
+  background: linear-gradient(100deg, var(--m1) 0%, var(--m2) 30%, var(--m3) 45%, var(--m2) 60%, var(--m1) 100%) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 6px var(--brilho));
+  animation: medalha-passa 3s linear infinite;
+}
+/* O símbolo colado no número: ele diz o que o número é sem gastar palavra. */
+.top-exp-valor b img {
+  width: 15px; height: 15px; flex: none; opacity: .95;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--cor) 60%, transparent));
+}
+
+.top-exp-vazio { margin: 0; font-size: 11px; color: #8fa3a8; }
+
+.top5 {
+  position: relative; display: flex; flex-direction: column;
+  border-style: solid;
+  border-width: 54px 30px 32px 30px;
+  border-image-source: url('/client/assets/ui/prastore.png');
+  border-image-slice: 150 105 135 105 fill;
+  border-image-repeat: stretch;
+  padding: 4px 0 0;
+  image-rendering: auto;
+}
+.top5 h2 {
+  position: absolute; top: -35px; left: 30px; right: 30px; height: 34px; justify-content: center;
+  display: flex; align-items: center; gap: 8px;
+  margin: 0; font-family: var(--cabeca); font-size: 12px;
+  letter-spacing: .16em; text-transform: uppercase; color: #f0c27a;
+  text-shadow: 0 1px 2px #000;
+}
+.top5 h2 img { width: 24px; height: 24px; filter: drop-shadow(0 0 6px #e0a84a55); }
+.top5-lista { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.top5-item { cursor: pointer; }
+
+/*
+ * O balão do inventário, ao passar o mouse numa linha do top 5: a moldura do
+ * antigo "O servidor agora" (panel-frame), mais fina porque o balão é pequeno.
+ */
+.top5-pop {
+  position: fixed; z-index: 30; width: 268px; pointer-events: none;
+  border-style: solid;
+  border-width: 30px;
+  border-image-source: url('/client/assets/ui/panel-frame.webp');
+  border-image-slice: 110 fill;
+  border-image-repeat: stretch;
+  image-rendering: auto;
+  animation: top5-pop-entra .14s ease-out;
+}
+.top5-pop[hidden] { display: none; }
+@keyframes top5-pop-entra { from { opacity: 0; transform: translateX(6px); } }
+.top5-pop-cabeca { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--linha-suave); }
+.top5-pop-boneco {
+  width: 64px; height: 64px; flex: none; display: grid; place-items: center; border-radius: 6px;
+  background: radial-gradient(circle at 50% 62%, #3fbfa82e, transparent 70%);
+}
+.top5-pop-boneco canvas { image-rendering: pixelated; }
+.top5-pop-cabeca b { display: block; font-family: var(--cabeca); font-size: 14px; line-height: 1.2; color: #f0c27a; }
+.top5-pop-cabeca span { display: flex; align-items: center; font-size: 11.5px; line-height: 1.5; color: var(--apagado); }
+.top5-pop-cabeca span.on { color: var(--verde); }
+.top5-pop-cabeca em { font-style: normal; margin-left: 4px; font-family: var(--cabeca); font-weight: 700; color: #eef3f2; }
+.top5-pop-cabeca .ponto { width: 6px; height: 6px; margin-right: 5px; }
+.top5-pop-titulo {
+  margin: 8px 0 6px; text-align: center; font-family: var(--cabeca); font-size: 10px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--cobre);
+}
+.top5-pop-grade { display: grid; grid-template-columns: repeat(3, 40px); gap: 4px; justify-content: center; }
+.top5-slot {
+  --rar: var(--linha); position: relative; width: 40px; height: 40px; display: grid; place-items: center;
+  background: #0b1114 center / 32px no-repeat; border: 1px solid var(--rar); border-radius: 4px;
+}
+.top5-slot.buraco { visibility: hidden; }
+.top5-slot.vazio { opacity: .45; }
+.top5-slot canvas { image-rendering: pixelated; }
+.top5-slot.rar { box-shadow: inset 0 0 10px color-mix(in srgb, var(--rar) 40%, transparent); }
+.top5-slot.rar-incomum { --rar: #37c2a0; }
+.top5-slot.rar-raro { --rar: #57a6e8; }
+.top5-slot.rar-epico { --rar: #b184e8; }
+.top5-slot.rar-lendario { --rar: #e0a84a; }
+.top5-slot.rar-mitico { --rar: #f2503f; }
+.top5-slot-tier { position: absolute; left: 1px; top: 1px; width: 14px; height: 14px; object-fit: contain; }
+.top5-slot-estrelas {
+  position: absolute; right: 1px; top: -1px; display: flex; font-style: normal; font-size: 9px; line-height: 1;
+  text-shadow: 0 0 2px #000, 0 0 2px #000;
+}
+.top5-slot-estrelas b { font-weight: 400; }
+.top5-slot-estrelas .q1 { color: #57a6e8; } .top5-slot-estrelas .q2 { color: #b184e8; }
+.top5-slot-estrelas .q3 { color: #e0a84a; } .top5-slot-estrelas .q4 { color: #ff5a52; }
+.top5-pop-skills { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.top5-pop-skill {
+  display: grid; justify-items: center; gap: 3px; padding: 6px 0 5px; border-radius: 4px;
+  background: #0b1114; border: 1px solid var(--linha-suave); line-height: 1.1;
+}
+.top5-pop-skill img { width: 20px; height: 20px; object-fit: contain; margin-bottom: 1px; }
+.top5-pop-skill b { font-size: 13px; color: #eef3f2; font-variant-numeric: tabular-nums; }
+.top5-pop-skill span { font-family: var(--cabeca); font-size: 8px; letter-spacing: .08em; text-transform: uppercase; color: var(--apagado); }
+.top5-pop-skill.atual { border-color: #e0a84a; background: radial-gradient(circle at 50% 30%, #c8823c2e, #0b1114 80%); }
+.top5-pop-skill.atual b { color: #f0c27a; }
+.top5-pop-rodape { margin-top: 8px; text-align: center; font-size: 10px; color: #5f7278; font-style: italic; }
+
+/* As categorias, embaixo: um ícone por skill, o escolhido aceso em dourado. */
+.top5-abas {
+  display: flex; justify-content: space-between; gap: 3px;
+  margin: 8px -4px 0; padding-top: 8px; border-top: 1px solid #c8823c55;
+}
+.top5-aba {
+  flex: 1; display: grid; place-items: center; height: 32px; padding: 0; cursor: pointer;
+  background: #0a1114; border: 1px solid var(--linha-suave); border-radius: 5px;
+  transition: border-color .12s ease, background .12s ease, transform .12s ease;
+}
+.top5-aba img { width: 20px; height: 20px; object-fit: contain; opacity: .6; filter: grayscale(.4); transition: opacity .12s ease; }
+.top5-aba:hover { border-color: var(--verde-fundo); transform: translateY(-1px); }
+.top5-aba:hover img { opacity: 1; filter: none; }
+.top5-aba[aria-selected="true"] {
+  border-color: #e0a84a; background: radial-gradient(circle at 50% 40%, #c8823c33, #0a1114 75%);
+  box-shadow: 0 0 8px #e0a84a55, inset 0 0 6px #e0a84a33;
+}
+.top5-aba[aria-selected="true"] img { opacity: 1; filter: drop-shadow(0 0 4px #e0a84a88); }
+.top5-lista .vazio { padding: 14px 0; color: var(--apagado); font-size: 13px; }
+.top5-item {
+  position: relative;
+  display: grid; grid-template-columns: 22px 48px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 7px 6px; border-radius: 4px;
+  transition: background .15s ease, box-shadow .15s ease;
+}
+/*
+ * ---- A divisão entre os personagens ----
+ *
+ * Um fio de cobre que some nas pontas, com um losango no meio — o mesmo
+ * desenho de ornamento das molduras, em vez da linha cinza reta.
+ */
+/*
+ * Cada divisão tem a cor das letras da linha de CIMA dela: dourada embaixo do
+ * 1º, prata embaixo do 2º, bronze embaixo do 3º e verde-água no resto. O
+ * pseudo-elemento mora na linha de baixo, então a cor é a da posição anterior.
+ */
+.top5-item + .top5-item { --div-escura: #3fbfa855; --div-clara: #6fe3c6; --div-brilho: #3fbfa888; }
+.top5-item.pos2 { --div-escura: #c8823c66; --div-clara: #ffe7a3; --div-brilho: #e0a84a99; }
+.top5-item.pos3 { --div-escura: #9aa7ad66; --div-clara: #ffffff; --div-brilho: #d5dde088; }
+.top5-item.pos4 { --div-escura: #a8612c66; --div-clara: #ffd7b0; --div-brilho: #d88f5588; }
+.top5-item + .top5-item::before {
+  content: ''; position: absolute; left: 8%; right: 8%; top: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--div-escura) 30%, var(--div-clara) 50%, var(--div-escura) 70%, transparent);
+  opacity: .85;
+}
+.top5-item + .top5-item::after {
+  content: ''; position: absolute; left: 50%; top: -3px; width: 6px; height: 6px; pointer-events: none;
+  transform: translateX(-50%) rotate(45deg);
+  background: linear-gradient(135deg, var(--div-clara), var(--div-escura)); box-shadow: 0 0 6px var(--div-brilho);
+}
+.top5-item:hover { background: linear-gradient(90deg, #3fbfa812, #3fbfa806 60%, transparent); box-shadow: inset 2px 0 0 #3fbfa8aa; }
+.top5-item:hover { background: #ffffff08; }
+.top5-pos {
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  font: 700 12px var(--cabeca); color: var(--apagado); border: 1px solid var(--linha);
+}
+.top5-item.pos1 .top5-pos { color: #1a1204; background: radial-gradient(circle at 35% 30%, #ffe7a3, #d99a2b); border-color: #ffd36e; box-shadow: 0 0 10px #e0a84a88; }
+.top5-item.pos2 .top5-pos { color: #15191b; background: radial-gradient(circle at 35% 30%, #f4f7f8, #9aa7ad); border-color: #d5dde0; }
+.top5-item.pos3 .top5-pos { color: #1b0f06; background: radial-gradient(circle at 35% 30%, #f1b98a, #a8612c); border-color: #d88f55; }
+.top5-item.pos1 { background: linear-gradient(90deg, #c8823c14, transparent 70%); }
+.top5-retrato {
+  width: 48px; height: 48px; display: grid; place-items: center; border-radius: 6px;
+  background: radial-gradient(circle at 50% 62%, #3fbfa826, transparent 70%), #0a1114;
+  border: 1px solid var(--linha);
+}
+/*
+ * A moldura do boneco dos três primeiros na cor da medalha, com o mesmo brilho
+ * que corre no nome: o fundo fica no padding-box e o gradiente no border-box,
+ * e só a camada da borda anda.
+ */
+.top5-item:is(.pos1, .pos2, .pos3) .top5-retrato {
+  border: 2px solid transparent;
+  background:
+    radial-gradient(circle at 50% 62%, var(--brilho), transparent 70%) padding-box,
+    linear-gradient(#0a1114, #0a1114) padding-box,
+    linear-gradient(100deg, var(--m1) 0%, var(--m2) 30%, var(--m3) 45%, var(--m2) 60%, var(--m1) 100%) border-box;
+  background-size: 100% 100%, 100% 100%, 200% 100%;
+  box-shadow: 0 0 10px var(--brilho);
+  animation: moldura-passa 3s linear infinite;
+}
+@keyframes moldura-passa { from { background-position: 0 0, 0 0, 200% 0; } to { background-position: 0 0, 0 0, 0 0; } }
+.top5-retrato canvas { image-rendering: pixelated; }
+.top5-info { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.top5-nome {
+  display: flex; align-items: center; font-family: var(--cabeca); font-weight: 700; font-size: 14px;
+  color: #eef3f2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.top5-nome:hover { color: var(--verde); }
+.top5-nome-txt { overflow: hidden; text-overflow: ellipsis; }
+.top5-nome .ponto { flex: none; width: 6px; height: 6px; margin-right: 6px; }
+.top5-voc { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--apagado); }
+.top5-voc img { width: 14px; height: 14px; object-fit: contain; }
+.top5-level { text-align: right; line-height: 1.1; }
+.top5-level small { display: block; font-family: var(--cabeca); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--apagado); }
+.top5-level b { font-family: var(--cabeca); font-size: 19px; color: var(--verde); font-variant-numeric: tabular-nums; }
+.top5-item.pos1 .top5-level b { color: #f0c27a; }
+
+/*
+ * ---- Ouro, prata e bronze passando ----
+ *
+ * O nome, o level e o círculo do 1º, 2º e 3º têm um brilho que corre da
+ * esquerda para a direita: o gradiente é duas vezes mais largo que o texto e a
+ * posição dele anda em loop. No texto ele entra por `background-clip: text`.
+ */
+.top5-item.pos1 { --m1: #8a5a12; --m2: #f3c55a; --m3: #fff6c9; --brilho: #e0a84a66; }
+.top5-item.pos2 { --m1: #6b7479; --m2: #c9d2d6; --m3: #ffffff; --brilho: #d5dde055; }
+.top5-item.pos3 { --m1: #6e3a14; --m2: #d08a4e; --m3: #ffd7b0; --brilho: #d88f5555; }
+.top5-item:is(.pos1, .pos2, .pos3) .top5-nome-txt,
+.top5-item:is(.pos1, .pos2, .pos3) .top5-level b {
+  background: linear-gradient(100deg, var(--m1) 0%, var(--m2) 30%, var(--m3) 45%, var(--m2) 60%, var(--m1) 100%) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 6px var(--brilho));
+  animation: medalha-passa 3s linear infinite;
+}
+.top5-item:is(.pos1, .pos2, .pos3) .top5-pos {
+  color: #1a1204; border-color: var(--m3);
+  background: linear-gradient(100deg, var(--m1) 0%, var(--m2) 30%, var(--m3) 45%, var(--m2) 60%, var(--m1) 100%) 0 0 / 200% 100%;
+  box-shadow: 0 0 10px var(--brilho), inset 0 0 3px #0006;
+  animation: medalha-passa 3s linear infinite;
+}
+.top5-item.pos2 .top5-pos { color: #15191b; }
+.top5-item.pos3 .top5-pos { color: #1b0f06; }
+@keyframes medalha-passa { from { background-position: 200% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .top5-item:is(.pos1, .pos2, .pos3) :is(.top5-nome-txt, .top5-level b, .top5-pos) { animation: none; background-position: 50% 0; }
+  .top5-item:is(.pos1, .pos2, .pos3) .top5-retrato { animation: none; }
+  /* O numero e a moldura dos cartazes de experiencia tambem param. */
+  .top-exp-valor b span,
+  .top-exp-nome-txt { animation: none; background-position: 50% 0; }
+  .top-exp-retrato { animation: none; }
+}
+
+/* O ponto aceso de quem esta jogando neste instante. */
+.ponto {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--verde); box-shadow: 0 0 8px var(--verde); margin-right: 7px;
+}
+.ponto.off { background: #2f3d44; box-shadow: none; }
+
+/* ---------- blocos ---------- */
+
+main { max-width: 1140px; margin: 0 auto; padding: 0 26px; }
+.bloco { padding: 74px 0; border-top: 1px solid var(--linha-suave); }
+.bloco-cabeca { margin-bottom: 24px; }
+.bloco h2 { margin: 0 0 4px; font-family: var(--titulo); font-size: 26px; color: #eef3f2; letter-spacing: .02em; }
+.legenda { margin: 0; color: var(--apagado); font-size: 13px; }
+
+/* ---------- ranking ---------- */
+
+/* A tabela rola dentro da propria caixa: numa tela de celular ela e' mais larga
+   que a pagina, e sem isto a PAGINA inteira e' que rolava de lado. */
+/* A tabela nao leva a moldura de 48px: ela e' larga e comprida, e a arte
+   ornamentada em volta de vinte linhas vira enfeite que atrapalha a leitura. */
+.tabela-caixa { overflow-x: auto; border: 1px solid var(--linha); border-radius: 6px; background: #0b1215e6; }
+.tabela { width: 100%; border-collapse: collapse; min-width: 540px; }
+.tabela th {
+  text-align: left; padding: 12px 16px; font-family: var(--cabeca); font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--apagado);
+  background: #0b1114; border-bottom: 1px solid var(--linha);
+}
+.tabela td { padding: 11px 16px; border-bottom: 1px solid var(--linha-suave); font-size: 14px; }
+.tabela tr:last-child td { border-bottom: none; }
+.tabela tbody tr:hover td { background: #ffffff07; }
+.tabela .posicao, .tabela .num { text-align: right; width: 1%; white-space: nowrap; }
+.tabela .num { font-variant-numeric: tabular-nums; }
+.tabela .posicao { color: var(--apagado); font-family: var(--cabeca); }
+.tabela .top1 { background: #c8823c0f; }
+.tabela .top1 .posicao, .tabela .top1 .nome { color: var(--cobre); }
+.tabela .nome { font-family: var(--cabeca); }
+.tabela .vocacao { color: var(--apagado); font-size: 13px; }
+.tabela .vazio { text-align: center; color: var(--apagado); padding: 30px; }
+
+/* ---------- cabecalho que ordena ----------
+   A seta e o que torna o clique descoberto: uma tabela ordenavel sem marca
+   nenhuma e uma tabela que ninguem sabe que da para ordenar. */
+.tabela th.ordenavel { cursor: pointer; user-select: none; transition: color .12s ease; }
+.tabela th.ordenavel:hover, .tabela th.ordenavel:focus-visible { color: var(--cobre); outline: none; }
+.tabela th.ordenavel.ordenando { color: var(--cobre); }
+.tabela th .seta { margin-left: 6px; font-style: normal; font-size: 9px; opacity: .85; }
+
+/* ---------- as abas do ranking ---------- */
+
+.abas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.aba {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 14px; cursor: pointer; border-radius: 4px;
+  font-family: var(--cabeca); font-size: 12px; letter-spacing: .05em;
+  background: var(--painel); border: 1px solid var(--linha); color: var(--apagado);
+}
+.aba:hover { border-color: var(--verde-fundo); color: var(--texto); }
+.aba[aria-selected="true"] { border-color: var(--verde); background: #12251f; color: var(--verde); }
+/* Os icones sao os mesmos do jogo — pixel art, entao nada de suavizar. */
+.icone { image-rendering: pixelated; display: block; }
+.aba .icone { opacity: .85; }
+.aba[aria-selected="true"] .icone { opacity: 1; }
+
+/* ---------- quem está online ---------- */
+
+/* A pagina interna nao tem capa: o conteudo comeca logo abaixo da barra fixa. */
+.pagina-interna { padding-top: calc(78px + var(--altura-da-faixa)); }
+.pagina-interna .bloco:first-child { border-top: none; }
+
+.retrato-col { width: 1%; padding-right: 0 !important; }
+/* Pixel art: ampliar suavizando vira mingau. */
+.retrato { image-rendering: pixelated; display: block; }
+
+.selo {
+  display: inline-block; padding: 3px 10px; border-radius: 3px;
+  font-family: var(--cabeca); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  border: 1px solid; white-space: nowrap;
+}
+/* Cacando sozinho e' o estado de sempre; a Caca Online e' gente no teclado, e
+   ganha a cor de destaque porque e' de quem da' para chamar para cacar junto. */
+.selo.caca { color: #9fb2b8; border-color: #33454e; background: #131c21; }
+.selo.online { color: var(--verde); border-color: var(--verde-fundo); background: #12251f; }
+.selo.cidade { color: var(--cobre); border-color: #6b4a22; background: #221a10; }
+.selo.parado { color: var(--apagado); border-color: var(--linha); background: var(--painel); }
+/* Os tres estados que o "o que esta fazendo" ganhou: sala de boss e as duas
+   caras do treino (patio e exercise). Boss em vermelho porque e o unico com
+   relogio correndo do lado de fora; treino em azul, que ja e a cor de pericia
+   no jogo. */
+.selo.boss { color: #e2807a; border-color: #6b2c28; background: #24100f; }
+.selo.treino { color: #8fb6d8; border-color: #2c4658; background: #101a22; }
+.lugar { margin-left: 9px; font-size: 13px; color: var(--apagado); }
+
+/* ---------- os pacotes de coins ---------- */
+
+.pacotes { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.pacote {
+  display: grid; justify-items: center; gap: 3px; text-align: center;
+  padding: 18px 12px 16px; border-radius: 6px;
+  background: linear-gradient(180deg, var(--painel-2), var(--painel));
+  border: 1px solid var(--linha);
+  transition: border-color .15s ease, transform .15s ease;
+}
+.pacote:hover { border-color: var(--cobre); transform: translateY(-2px); }
+.pacote-topo { display: flex; align-items: center; gap: 7px; }
+.pacote-topo img { image-rendering: auto; }
+.pacote-topo b { font-family: var(--cabeca); font-size: 21px; color: var(--texto); }
+.pacote-rotulo { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--apagado); }
+.pacote-preco { margin-top: 8px; font-family: var(--cabeca); font-size: 16px; color: var(--cobre); }
+.doar-nota { margin-top: 14px; }
+
+/* O cartao do pacote virou botao: ele agora ABRE a doacao em vez de mandar
+   para o jogo. `button` e nao `a` porque nao ha' endereco para onde ir. */
+.pacote { cursor: pointer; font: inherit; color: inherit; text-align: center; }
+.pacote-acao {
+  margin-top: 10px; padding: 7px 0; width: 100%; border-radius: 4px;
+  font-family: var(--cabeca); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: #071110; background: linear-gradient(180deg, #4fd0b2, var(--verde-fundo));
+  border: 1px solid #6fe3c6;
+}
+.pacote:hover .pacote-acao { filter: brightness(1.12); }
+
+/* ---------- a janela de doar ---------- */
+
+.doar-back {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+  padding: 20px; background: #060a0bd9; backdrop-filter: blur(3px);
+}
+.doar-box {
+  width: min(420px, 100%); max-height: 90vh; overflow-y: auto;
+  background: var(--painel); border: 1px solid var(--linha); border-top: 2px solid var(--cobre);
+  border-radius: 8px; box-shadow: 0 20px 50px #000b;
+}
+.doar-cabeca {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 15px 20px; border-bottom: 1px solid var(--linha-suave);
+}
+.doar-cabeca h3 { margin: 0; font-family: var(--cabeca); font-size: 16px; color: var(--cobre); }
+.doar-x { background: none; border: none; color: var(--apagado); font-size: 22px; line-height: 1; cursor: pointer; }
+.doar-x:hover { color: var(--texto); }
+
+.doar-corpo { padding: 18px 20px 22px; display: grid; gap: 12px; }
+.doar-resumo { margin: 0; text-align: center; font-family: var(--cabeca); font-size: 19px; color: var(--verde); }
+.doar-corpo .doar-nota { margin: 0; font-size: 12px; color: var(--apagado); text-align: center; line-height: 1.55; }
+.doar-passos { margin: 0; font-size: 13px; color: var(--texto); text-align: center; line-height: 1.6; }
+.doar-erro { margin: 0; font-size: 12px; color: #ff8e85; text-align: center; min-height: 16px; }
+.doar-rodape { font-size: 11px; }
+
+.doar-google { display: grid; place-items: center; min-height: 40px; }
+/* A linha "ou", com o risco atravessando: separa os dois caminhos de entrar
+   sem precisar de um titulo para cada um. */
+.doar-ou { display: flex; align-items: center; gap: 10px; color: var(--apagado); font-size: 11px; }
+.doar-ou::before, .doar-ou::after { content: ''; flex: 1; height: 1px; background: var(--linha-suave); }
+
+.doar-form { display: grid; gap: 9px; }
+.doar-form input {
+  padding: 11px 13px; border-radius: 6px; font-size: 14px;
+  background: #080b0c; border: 1px solid var(--linha); color: var(--texto);
+}
+.doar-form input:focus { outline: none; border-color: var(--verde-fundo); }
+
+.doar-principal {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 20px; cursor: pointer; border-radius: 6px; text-decoration: none;
+  font-family: var(--cabeca); font-size: 13px; letter-spacing: .06em; color: #071110;
+  background: linear-gradient(180deg, #4fd0b2, var(--verde-fundo)); border: 1px solid #6fe3c6;
+}
+.doar-principal:hover { filter: brightness(1.1); }
+.doar-principal:disabled { opacity: .6; cursor: default; }
+.doar-ghost {
+  padding: 12px 18px; cursor: pointer; border-radius: 6px; font-size: 13px;
+  background: var(--painel-2); border: 1px solid var(--linha); color: var(--texto);
+}
+.doar-ghost:hover { border-color: var(--verde); color: var(--verde); }
+.doar-botoes { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+.doar-metodo {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  width: 100%; padding: 14px 16px; cursor: pointer; text-align: left; border-radius: 7px;
+  background: var(--painel-2); border: 1px solid var(--linha); color: var(--texto);
+}
+.doar-metodo:hover { border-color: var(--verde); }
+.doar-metodo-nome { display: grid; gap: 2px; }
+.doar-metodo-nome b { font-family: var(--cabeca); font-size: 14px; }
+.doar-metodo-nome em { font-style: normal; font-size: 10px; color: var(--apagado); }
+.doar-metodo-valor { font-family: var(--cabeca); font-size: 16px; color: var(--cobre); }
+
+/* Fundo branco e com folga: leitor de celular precisa de contraste e de borda
+   clara. Um QR bonito no tema escuro e' um QR que ninguem le. */
+.doar-qr { display: grid; place-items: center; padding: 12px; background: #fff; border-radius: 8px; width: max-content; margin: 0 auto; }
+.doar-qr canvas { display: block; image-rendering: pixelated; }
+
+/* ---------- os três passos ---------- */
+
+.passos {
+  list-style: none; counter-reset: passo; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 26px;
+}
+.passos li { counter-increment: passo; position: relative; padding-top: 46px; }
+/* O numero grande e apagado atras: e' ordem, e nao decoracao — os tres passos
+   acontecem nesta sequencia. */
+.passos li::before {
+  content: counter(passo, decimal-leading-zero);
+  position: absolute; top: -6px; left: -4px;
+  font-family: var(--titulo); font-size: 52px; line-height: 1;
+  color: #ffffff0d;
+}
+.passos b { display: block; margin-bottom: 6px; font-family: var(--cabeca); font-size: 16px; color: var(--verde); }
+.passos p { margin: 0; font-size: 14px; color: #a6b4b9; }
+
+.fecho { text-align: center; }
+.fecho .legenda { margin-bottom: 24px; }
+
+/* ---------- rodapé ---------- */
+
+footer {
+  display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 28px 20px 40px; border-top: 1px solid var(--linha-suave);
+  color: var(--apagado); font-size: 12px;
+}
+footer a:hover { color: var(--texto); }
+.separador { opacity: .5; }
+
+@media (max-width: 900px) {
+  .capa { padding-top: 96px; }
+  .capa-grade { grid-template-columns: 1fr; gap: 34px; }
+  .top5 { border-width: 50px 22px 26px 22px; }
+  .top5 h2 { left: 2px; right: 2px; }
+  /* No celular o fundo preso custa caro (o navegador repinta a cada rolagem) e
+     em alguns deles nem funciona: aqui ele volta a rolar com a pagina. */
+  .capa-fundo { background-attachment: scroll, scroll; }
+  body { background-attachment: scroll, scroll; }
+  .capa-fundo::after { background: linear-gradient(180deg, #080e0ee6 0%, #080e0ea6 40%, var(--fundo) 100%); }
+}
+@media (max-width: 640px) {
+  .topo { padding: 10px 16px; }
+  /* No celular so' sobram o essencial: entrar, os dois icones e o idioma. */
+  .topo nav a:not(.botao-entrar):not(.social) { display: none; }
+  .menu-sep { display: none; }
+  /* No celular a pílula fica só com o ponto e o número: a barra não cabe a palavra. */
+  .topo-online span { display: none; }
+  .topo-esq { gap: 8px; }
+  .faixa-teste { font-size: 9px; letter-spacing: .05em; }
+  .bloco { padding: 52px 0; }
+}
+
+
+/* ==========================================================================
+   A FAIXA DE ULTIMOS DROPS
+
+   Uma barra horizontal que rola sozinha na largura, com um card por peca. Ela
+   fica logo abaixo dos dois cartoes da capa e e' a primeira coisa "viva" da
+   pagina — por isso ela nao pode empurrar o resto para baixo: altura fixa, e o
+   que nao cabe rola para o lado.
+   ========================================================================== */
+
+/* O primeiro bloco da pagina vem colado na capa: e o que faz a faixa espiar no
+   rodape da primeira tela. Ver a nota da `.capa`. */
+.bloco-drops { padding-top: 10px; padding-bottom: 32px; border-top: none; }
+/* O cabecalho da faixa e compacto de proposito: cada pixel aqui e um pixel a
+   menos de card visivel na primeira tela. Ver `--espaco-dos-drops`. */
+.bloco-drops .bloco-cabeca { margin-bottom: 10px; }
+.bloco-drops h2 { font-size: 22px; margin-bottom: 2px; }
+.bloco-drops .legenda { font-size: 12px; }
+
+.drops-faixa {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3b45 transparent;
+}
+.drops-faixa::-webkit-scrollbar { height: 8px; }
+.drops-faixa::-webkit-scrollbar-thumb { background: #2a3b45; border-radius: 4px; }
+.drops-faixa .vazio { color: var(--apagado); font-size: 13px; padding: 22px 4px; }
+
+.drop-card {
+  flex: 0 0 auto;
+  width: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 6px 6px;
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #101a1ee6, #0a1114e6);
+  cursor: default;
+  transition: border-color .12s ease, transform .12s ease;
+}
+.drop-card:hover { border-color: var(--cobre); transform: translateY(-2px); }
+/* O que veio de sala de boss ganha a borda avermelhada e a cacamba: e a
+   diferenca que o dono pediu que aparecesse ("tanto de boss como de hunt"). */
+.drop-card.de-boss { border-color: #5d2a26; }
+.drop-card.de-boss:hover { border-color: #b4574f; }
+
+.drop-figura { position: relative; width: 40px; height: 40px; display: grid; place-items: center; }
+.drop-figura canvas { image-rendering: pixelated; }
+.drop-estrelas { position: absolute; right: -4px; bottom: -4px; display: flex; font-style: normal; line-height: 1; }
+.drop-estrelas b { font-size: 10px; text-shadow: 0 0 3px #000, 0 0 2px #000; }
+.drop-boss {
+  position: absolute; left: -6px; top: -4px; font-style: normal; font-size: 11px;
+  color: #e2807a; text-shadow: 0 0 3px #000;
+}
+
+/* ---------- a faixa das bags abertas ----------
+   Ela e a mesma faixa, com dois ajustes: a borda dourada (a bag e sempre uma
+   peca de fim de jogo) e o selo da bag no canto da figura, no lugar da cacamba
+   do boss. */
+.bloco-bags { padding-top: 4px; }
+.drop-card.de-bag { border-color: #4a3a1c; }
+.drop-card.de-bag:hover { border-color: var(--cobre); }
+.drop-bag {
+  position: absolute; left: -8px; top: -6px; width: 18px; height: 18px;
+  display: grid; place-items: center; border-radius: 4px;
+  background: #0b1216e8; border: 1px solid #4a3a1c;
+}
+.drop-bag canvas { image-rendering: pixelated; }
+/* De qual bag saiu, embaixo do nome da peca. Cabe numa linha so: o nome da bag
+   e curto e a fileira nao pode crescer de altura por causa dele. */
+.drop-de-bag {
+  font-size: 10px; color: var(--cobre); max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* As tres cores da estrela: azul, roxa, dourada. Sao as MESMAS do jogo — quem
+   viu a peca no inventario tem de reconhecer a cor aqui. */
+.estrela.q1 { color: #6ea8d8; }
+.estrela.q2 { color: #b57ae0; }
+.estrela.q3 { color: #e8b53c; }
+
+.drop-nome {
+  font-family: var(--cabeca); font-size: 11px; line-height: 1.25; text-align: center;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.drop-quem { font-size: 11px; color: var(--texto); opacity: .85; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* O bicho, embaixo de quem pegou. Menor e apagado: quem manda no card e a
+   peca e quem a achou; o bicho e a resposta de "onde farmo isso?". */
+.drop-bicho {
+  font-size: 10px; color: var(--cobre); max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.drop-quando { font-size: 10px; color: var(--apagado); font-variant-numeric: tabular-nums; }
+
+/* As cores de raridade, na escada do jogo. */
+.r-comum { color: #9fb2b8; }
+.r-incomum { color: #6fbf73; }
+.r-raro { color: #5aa9e6; }
+.r-epico { color: #b57ae0; }
+.r-lendario { color: #e8b53c; }
+.r-mitico { color: #e2645a; }
+
+/* ---------- o balao ----------
+   A mesma anatomia do balao de dentro do jogo (`tip-head`, `tip-stats`,
+   `tip-afixos`, `tip-rules`), redesenhada com as cores desta pagina. Preso na
+   janela (`position: fixed`) e nao no card: os cards da ponta ficam nas bordas
+   da tela, e um balao centrado neles sairia metade para fora. */
+.drop-balao {
+  position: fixed;
+  z-index: 60;
+  width: 296px;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  background: #0b1216f7;
+  box-shadow: 0 14px 34px #000b, 0 0 0 1px #0006;
+  font-size: 12px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ---- cabeca ---- */
+.db-head { display: flex; align-items: flex-start; gap: 11px; padding: 11px 12px 10px; }
+.db-art {
+  display: grid; place-items: center; width: 54px; height: 54px; flex: none;
+  background: radial-gradient(ellipse at center, #1c2a28 0%, #10171a 76%);
+  border: 1px solid var(--linha); border-radius: 7px;
+}
+.db-art canvas { image-rendering: pixelated; }
+.db-id { flex: 1; min-width: 0; }
+.db-id > b {
+  display: block; font-family: var(--cabeca); font-size: 14px; line-height: 1.25;
+}
+.db-qtd { color: var(--apagado); font-weight: 400; }
+.db-id em {
+  display: block; margin-top: 3px; font-style: normal; font-size: 10px;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--apagado);
+}
+.db-estrelas { display: inline-flex; margin-top: 4px; font-style: normal; line-height: 1; }
+.db-estrelas b { font-size: 12px; }
+
+/* ---- os numeros da peca, cada linha na cor do que ela diz ---- */
+.db-stats { display: grid; gap: 2px; padding: 8px 12px; border-top: 1px solid var(--linha-suave); }
+.db-stats div { font-weight: 500; color: var(--verde); }
+.db-stats div.atk { color: #ff5a4a; }
+.db-stats div.def { color: #9fc2d4; }
+.db-stats div.plain { color: var(--apagado); font-weight: 400; }
+.db-stats div.el-physical { color: #ff5a4a; }
+.db-stats div.el-fire { color: #ff9a3c; }
+.db-stats div.el-ice { color: #7fd4ff; }
+.db-stats div.el-earth { color: #5ad86a; }
+.db-stats div.el-energy { color: #c98aff; }
+.db-stats div.el-holy { color: #ffe066; }
+.db-stats div.el-death { color: #d05a6a; }
+
+/* ---- os atributos extras ---- */
+.db-afixos { padding: 8px 12px; border-top: 1px solid var(--linha-suave); background: #ffffff05; }
+.db-afixos-titulo {
+  font-family: var(--cabeca); font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--apagado); margin-bottom: 5px;
+}
+.db-afixo { display: flex; justify-content: space-between; gap: 10px; line-height: 1.65; }
+.db-afixo > span { color: var(--texto); }
+.db-afixo-tier { font-style: normal; font-size: 10px; color: var(--apagado); white-space: nowrap; }
+
+/* ---- quem pode usar ---- */
+.db-rules { display: grid; gap: 2px; padding: 8px 12px; border-top: 1px solid var(--linha-suave); font-size: 11px; }
+.db-rules div { display: flex; justify-content: space-between; gap: 16px; }
+.db-rules span { color: var(--apagado); }
+.db-rules b { color: var(--texto); font-weight: 500; }
+
+/* ---- de onde veio ----
+   O bicho em destaque: e a pergunta que se faz olhando um drop bom. */
+.db-pe {
+  display: grid; gap: 2px; padding: 8px 12px 10px;
+  border-top: 1px solid var(--linha); background: #ffffff07; font-size: 11px;
+}
+.db-pe div { display: flex; justify-content: space-between; gap: 16px; }
+.db-pe span { color: var(--apagado); }
+.db-pe b { color: var(--texto); font-family: var(--cabeca); font-weight: 500; }
+.db-de b { color: var(--cobre); }
+.db-de b.db-boss { color: #e2807a; }
+
+@media (max-width: 700px) {
+  .drop-card { width: 92px; }
+  .drop-balao { width: min(296px, calc(100vw - 16px)); }
+}
+
+/* Nome do ranking/online que leva à ficha do personagem. */
+.link-personagem { color: inherit; text-decoration: none; }
+.link-personagem:hover { color: var(--cobre); text-decoration: underline; }

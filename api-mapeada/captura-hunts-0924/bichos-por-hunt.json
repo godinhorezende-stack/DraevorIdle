@@ -1,0 +1,2969 @@
+{
+ "abandoned-sewers": {
+  "atlas": "hunts/abandoned-sewers-online",
+  "w": 120,
+  "h": 162,
+  "mapZ": 10,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 15
+   },
+   {
+    "uid": 26
+   },
+   {
+    "uid": 35
+   },
+   {
+    "uid": 37
+   },
+   {
+    "uid": 48
+   },
+   {
+    "uid": 50
+   },
+   {
+    "uid": 58
+   },
+   {
+    "uid": 60
+   },
+   {
+    "uid": 61
+   },
+   {
+    "uid": 68
+   },
+   {
+    "uid": 74
+   },
+   {
+    "uid": 81
+   },
+   {
+    "uid": 90
+   },
+   {
+    "uid": 91
+   },
+   {
+    "uid": 102
+   },
+   {
+    "uid": 118
+   },
+   {
+    "uid": 126,
+    "x": 78,
+    "y": 57,
+    "hp": 8200
+   },
+   {
+    "uid": 127
+   },
+   {
+    "uid": 141
+   },
+   {
+    "uid": 144
+   },
+   {
+    "uid": 154
+   },
+   {
+    "uid": 162
+   },
+   {
+    "uid": 165
+   },
+   {
+    "uid": 173
+   },
+   {
+    "uid": 176
+   },
+   {
+    "uid": 180
+   },
+   {
+    "uid": 185
+   },
+   {
+    "uid": 189
+   },
+   {
+    "uid": 195
+   },
+   {
+    "uid": 220
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Grim Reaper",
+    "x": 78,
+    "y": 39
+   },
+   {
+    "name": "Metal Gargoyle",
+    "x": 66,
+    "y": 59
+   },
+   {
+    "name": "Demon",
+    "x": 77,
+    "y": 40
+   },
+   {
+    "name": "Grim Reaper",
+    "x": 77,
+    "y": 38
+   },
+   {
+    "name": "Demon",
+    "x": 55,
+    "y": 59
+   },
+   {
+    "name": "Demon",
+    "x": 57,
+    "y": 69
+   },
+   {
+    "name": "Demon",
+    "x": 66,
+    "y": 63
+   },
+   {
+    "name": "Demon",
+    "x": 79,
+    "y": 76
+   },
+   {
+    "name": "Grim Reaper",
+    "x": 62,
+    "y": 54
+   },
+   {
+    "name": "Demon",
+    "x": 63,
+    "y": 64
+   },
+   {
+    "name": "Grim Reaper",
+    "x": 58,
+    "y": 67
+   },
+   {
+    "name": "Demon",
+    "x": 55,
+    "y": 57
+   },
+   {
+    "name": "Demon",
+    "x": 58,
+    "y": 69
+   },
+   {
+    "name": "Demon",
+    "x": 61,
+    "y": 51
+   },
+   {
+    "name": "Fire Elemental",
+    "x": 92,
+    "y": 57
+   },
+   {
+    "name": "Metal Gargoyle",
+    "x": 86,
+    "y": 43
+   },
+   {
+    "name": "Demon",
+    "x": 77,
+    "y": 47
+   },
+   {
+    "name": "Demon",
+    "x": 59,
+    "y": 41
+   },
+   {
+    "name": "Demon",
+    "x": 96,
+    "y": 41
+   },
+   {
+    "name": "Metal Gargoyle",
+    "x": 59,
+    "y": 52
+   },
+   {
+    "name": "Demon",
+    "x": 81,
+    "y": 42
+   },
+   {
+    "name": "Grim Reaper",
+    "x": 58,
+    "y": 42
+   },
+   {
+    "name": "Demon",
+    "x": 81,
+    "y": 73
+   },
+   {
+    "name": "Demon",
+    "x": 59,
+    "y": 78
+   },
+   {
+    "name": "Grim Reaper",
+    "x": 66,
+    "y": 51
+   },
+   {
+    "name": "Demon",
+    "x": 85,
+    "y": 38
+   },
+   {
+    "name": "Demon",
+    "x": 63,
+    "y": 55
+   },
+   {
+    "name": "Demon",
+    "x": 62,
+    "y": 55
+   },
+   {
+    "name": "Demon",
+    "x": 92,
+    "y": 55
+   },
+   {
+    "name": "Demon",
+    "x": 61,
+    "y": 44
+   }
+  ]
+ },
+ "asura-palace": {
+  "atlas": "hunts/asura-palace-online",
+  "w": 98,
+  "h": 111,
+  "mapZ": 9,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 7,
+    "x": 20,
+    "y": 38,
+    "hp": 2900
+   },
+   {
+    "uid": 9
+   },
+   {
+    "uid": 23
+   },
+   {
+    "uid": 26,
+    "x": 20,
+    "y": 37,
+    "hp": 3100
+   },
+   {
+    "uid": 41
+   },
+   {
+    "uid": 46
+   },
+   {
+    "uid": 52
+   },
+   {
+    "uid": 59
+   },
+   {
+    "uid": 63
+   },
+   {
+    "uid": 72
+   },
+   {
+    "uid": 88
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Dawnfire Asura",
+    "x": 29,
+    "y": 39
+   },
+   {
+    "name": "Midnight Asura",
+    "x": 40,
+    "y": 42
+   },
+   {
+    "name": "Hellspawn",
+    "x": 33,
+    "y": 36
+   },
+   {
+    "name": "Midnight Asura",
+    "x": 29,
+    "y": 35
+   },
+   {
+    "name": "Frost Flower Asura",
+    "x": 31,
+    "y": 47
+   },
+   {
+    "name": "Dawnfire Asura",
+    "x": 30,
+    "y": 52
+   },
+   {
+    "name": "Frost Flower Asura",
+    "x": 31,
+    "y": 51
+   },
+   {
+    "name": "Dawnfire Asura",
+    "x": 39,
+    "y": 35
+   },
+   {
+    "name": "Hellspawn",
+    "x": 40,
+    "y": 47
+   },
+   {
+    "name": "Dawnfire Asura",
+    "x": 42,
+    "y": 40
+   },
+   {
+    "name": "Dawnfire Asura",
+    "x": 44,
+    "y": 46
+   }
+  ]
+ },
+ "deathlings": {
+  "atlas": "hunts/deathlings-online",
+  "w": 123,
+  "h": 104,
+  "mapZ": 14,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 9
+   },
+   {
+    "uid": 10,
+    "x": 70,
+    "y": 30,
+    "hp": 7200
+   },
+   {
+    "uid": 12
+   },
+   {
+    "uid": 13
+   },
+   {
+    "uid": 20
+   },
+   {
+    "uid": 21
+   },
+   {
+    "uid": 27
+   },
+   {
+    "uid": 28
+   },
+   {
+    "uid": 31
+   },
+   {
+    "uid": 32
+   },
+   {
+    "uid": 50
+   },
+   {
+    "uid": 58
+   },
+   {
+    "uid": 60
+   },
+   {
+    "uid": 61
+   },
+   {
+    "uid": 62
+   },
+   {
+    "uid": 67
+   },
+   {
+    "uid": 72
+   },
+   {
+    "uid": 79
+   },
+   {
+    "uid": 85
+   },
+   {
+    "uid": 90
+   },
+   {
+    "uid": 93
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Deathling Spellsinger",
+    "x": 65,
+    "y": 14
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 60,
+    "y": 27
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 60,
+    "y": 29
+   },
+   {
+    "name": "Deathling Spellsinger",
+    "x": 52,
+    "y": 12
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 61,
+    "y": 12
+   },
+   {
+    "name": "Deathling Spellsinger",
+    "x": 51,
+    "y": 11
+   },
+   {
+    "name": "Deathling Spellsinger",
+    "x": 95,
+    "y": 49
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 96,
+    "y": 53
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 70,
+    "y": 11
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 97,
+    "y": 33
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 59,
+    "y": 21
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 77,
+    "y": 48
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 58,
+    "y": 25
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 69,
+    "y": 42
+   },
+   {
+    "name": "Deathling Spellsinger",
+    "x": 73,
+    "y": 41
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 50,
+    "y": 15
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 94,
+    "y": 49
+   },
+   {
+    "name": "Deathling Spellsinger",
+    "x": 58,
+    "y": 53
+   },
+   {
+    "name": "Deathling Scout",
+    "x": 95,
+    "y": 53
+   },
+   {
+    "name": "Deathling Spellsinger",
+    "x": 93,
+    "y": 52
+   },
+   {
+    "name": "Deathling Spellsinger",
+    "x": 67,
+    "y": 11
+   }
+  ]
+ },
+ "falcons": {
+  "atlas": "hunts/falcons-online",
+  "w": 81,
+  "h": 91,
+  "mapZ": 9,
+  "player": {
+   "x": 63,
+   "y": 52,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 4,
+    "name": "Falcon Knight",
+    "x": 42,
+    "y": 46,
+    "hp": 9000,
+    "maxHp": 9000
+   },
+   {
+    "uid": 5,
+    "name": "Falcon Paladin",
+    "x": 49,
+    "y": 43,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 8,
+    "name": "Falcon Knight",
+    "x": 57,
+    "y": 38,
+    "hp": 9000,
+    "maxHp": 9000
+   },
+   {
+    "uid": 9,
+    "name": "Falcon Paladin",
+    "x": 53,
+    "y": 31,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 11,
+    "name": "Falcon Paladin",
+    "x": 42,
+    "y": 35,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 12,
+    "name": "Falcon Knight",
+    "x": 48,
+    "y": 62,
+    "hp": 9000,
+    "maxHp": 9000
+   },
+   {
+    "uid": 17,
+    "name": "Falcon Paladin",
+    "x": 40,
+    "y": 49,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 21,
+    "name": "Falcon Paladin",
+    "x": 45,
+    "y": 63,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 24,
+    "name": "Falcon Paladin",
+    "x": 41,
+    "y": 64,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 25,
+    "name": "Falcon Knight",
+    "x": 64,
+    "y": 69,
+    "hp": 9000,
+    "maxHp": 9000
+   },
+   {
+    "uid": 26,
+    "name": "Falcon Paladin",
+    "x": 38,
+    "y": 60,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 29,
+    "name": "Falcon Knight",
+    "x": 43,
+    "y": 49,
+    "hp": 9000,
+    "maxHp": 9000
+   },
+   {
+    "uid": 32,
+    "name": "Falcon Knight",
+    "x": 46,
+    "y": 66,
+    "hp": 9000,
+    "maxHp": 9000
+   },
+   {
+    "uid": 34,
+    "name": "Falcon Paladin",
+    "x": 65,
+    "y": 67,
+    "hp": 8500,
+    "maxHp": 8500
+   },
+   {
+    "uid": 41,
+    "name": "Falcon Knight",
+    "x": 40,
+    "y": 62,
+    "hp": 9000,
+    "maxHp": 9000
+   },
+   {
+    "uid": 43,
+    "name": "Falcon Paladin",
+    "x": 47,
+    "y": 70,
+    "hp": 8500,
+    "maxHp": 8500
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Falcon Knight",
+    "x": 42,
+    "y": 46
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 49,
+    "y": 43
+   },
+   {
+    "name": "Falcon Knight",
+    "x": 57,
+    "y": 38
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 53,
+    "y": 31
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 42,
+    "y": 35
+   },
+   {
+    "name": "Falcon Knight",
+    "x": 48,
+    "y": 62
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 40,
+    "y": 49
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 45,
+    "y": 63
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 41,
+    "y": 64
+   },
+   {
+    "name": "Falcon Knight",
+    "x": 64,
+    "y": 69
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 38,
+    "y": 60
+   },
+   {
+    "name": "Falcon Knight",
+    "x": 43,
+    "y": 49
+   },
+   {
+    "name": "Falcon Knight",
+    "x": 46,
+    "y": 66
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 65,
+    "y": 67
+   },
+   {
+    "name": "Falcon Knight",
+    "x": 40,
+    "y": 62
+   },
+   {
+    "name": "Falcon Paladin",
+    "x": 47,
+    "y": 70
+   }
+  ]
+ },
+ "netherworld": {
+  "atlas": "hunts/netherworld-online",
+  "w": 115,
+  "h": 129,
+  "mapZ": 8,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 3
+   },
+   {
+    "uid": 11
+   },
+   {
+    "uid": 13
+   },
+   {
+    "uid": 25
+   },
+   {
+    "uid": 34
+   },
+   {
+    "uid": 40
+   },
+   {
+    "uid": 47
+   },
+   {
+    "uid": 48
+   },
+   {
+    "uid": 50,
+    "x": 79,
+    "y": 70,
+    "hp": 4000
+   },
+   {
+    "uid": 54
+   },
+   {
+    "uid": 57
+   },
+   {
+    "uid": 63
+   },
+   {
+    "uid": 67
+   },
+   {
+    "uid": 75
+   },
+   {
+    "uid": 77
+   },
+   {
+    "uid": 81
+   },
+   {
+    "uid": 83
+   },
+   {
+    "uid": 90
+   },
+   {
+    "uid": 94
+   },
+   {
+    "uid": 95,
+    "x": 78,
+    "y": 69,
+    "hp": 4000
+   },
+   {
+    "uid": 99
+   },
+   {
+    "uid": 103
+   },
+   {
+    "uid": 105
+   },
+   {
+    "uid": 109
+   },
+   {
+    "uid": 113
+   },
+   {
+    "uid": 115
+   },
+   {
+    "uid": 117
+   },
+   {
+    "uid": 120
+   },
+   {
+    "uid": 132,
+    "x": 77,
+    "y": 69,
+    "hp": 4000
+   },
+   {
+    "uid": 133
+   },
+   {
+    "uid": 141
+   },
+   {
+    "uid": 143
+   },
+   {
+    "uid": 146
+   },
+   {
+    "uid": 148
+   },
+   {
+    "uid": 149
+   },
+   {
+    "uid": 157
+   },
+   {
+    "uid": 158
+   },
+   {
+    "uid": 172
+   },
+   {
+    "uid": 174
+   },
+   {
+    "uid": 180
+   },
+   {
+    "uid": 184
+   },
+   {
+    "uid": 185
+   },
+   {
+    "uid": 186
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Mean Lost Soul",
+    "x": 69,
+    "y": 87
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 81,
+    "y": 56
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 73,
+    "y": 50
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 51,
+    "y": 57
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 75,
+    "y": 57
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 84,
+    "y": 54
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 91,
+    "y": 58
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 73,
+    "y": 90
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 88,
+    "y": 61
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 78,
+    "y": 86
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 83,
+    "y": 50
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 88,
+    "y": 58
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 65,
+    "y": 88
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 71,
+    "y": 51
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 68,
+    "y": 87
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 91,
+    "y": 67
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 91,
+    "y": 68
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 86,
+    "y": 60
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 90,
+    "y": 67
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 89,
+    "y": 61
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 64,
+    "y": 54
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 92,
+    "y": 62
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 57,
+    "y": 57
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 83,
+    "y": 58
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 92,
+    "y": 57
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 62,
+    "y": 55
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 89,
+    "y": 53
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 63,
+    "y": 50
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 88,
+    "y": 59
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 58,
+    "y": 50
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 67,
+    "y": 52
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 58,
+    "y": 67
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 91,
+    "y": 49
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 55,
+    "y": 51
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 88,
+    "y": 52
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 65,
+    "y": 52
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 72,
+    "y": 82
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 73,
+    "y": 86
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 52,
+    "y": 73
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 64,
+    "y": 52
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 68,
+    "y": 50
+   },
+   {
+    "name": "Flimsy Lost Soul",
+    "x": 82,
+    "y": 54
+   },
+   {
+    "name": "Mean Lost Soul",
+    "x": 68,
+    "y": 57
+   }
+  ]
+ },
+ "poi-dt-seal": {
+  "atlas": "hunts/poi-dt-seal-online",
+  "w": 57,
+  "h": 50,
+  "mapZ": 15,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 1
+   },
+   {
+    "uid": 2
+   },
+   {
+    "uid": 3
+   },
+   {
+    "uid": 4
+   },
+   {
+    "uid": 5
+   },
+   {
+    "uid": 6
+   },
+   {
+    "uid": 7,
+    "x": 35,
+    "y": 15,
+    "hp": 1000
+   },
+   {
+    "uid": 8
+   },
+   {
+    "uid": 9
+   },
+   {
+    "uid": 10
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Dark Torturer",
+    "x": 44,
+    "y": 37
+   },
+   {
+    "name": "Lost Soul",
+    "x": 33,
+    "y": 33
+   },
+   {
+    "name": "Dark Torturer",
+    "x": 39,
+    "y": 37
+   },
+   {
+    "name": "Dark Torturer",
+    "x": 43,
+    "y": 25
+   },
+   {
+    "name": "Lost Soul",
+    "x": 36,
+    "y": 31
+   },
+   {
+    "name": "Lost Soul",
+    "x": 43,
+    "y": 29
+   },
+   {
+    "name": "Banshee",
+    "x": 37,
+    "y": 26
+   },
+   {
+    "name": "Banshee",
+    "x": 30,
+    "y": 31
+   },
+   {
+    "name": "Lost Soul",
+    "x": 29,
+    "y": 29
+   },
+   {
+    "name": "Lost Soul",
+    "x": 44,
+    "y": 33
+   }
+  ]
+ },
+ "spike-8": {
+  "atlas": "hunts/spike-8-online",
+  "w": 224,
+  "h": 165,
+  "mapZ": 15,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 2
+   },
+   {
+    "uid": 12
+   },
+   {
+    "uid": 45
+   },
+   {
+    "uid": 54,
+    "x": 70,
+    "y": 85,
+    "hp": 1700
+   },
+   {
+    "uid": 67
+   },
+   {
+    "uid": 72
+   },
+   {
+    "uid": 74
+   },
+   {
+    "uid": 80
+   },
+   {
+    "uid": 89
+   },
+   {
+    "uid": 190
+   },
+   {
+    "uid": 232
+   },
+   {
+    "uid": 289
+   },
+   {
+    "uid": 333
+   },
+   {
+    "uid": 347
+   },
+   {
+    "uid": 360
+   },
+   {
+    "uid": 365
+   },
+   {
+    "uid": 383
+   },
+   {
+    "uid": 395
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Lost Thrower",
+    "x": 42,
+    "y": 66
+   },
+   {
+    "name": "Lost Husher",
+    "x": 78,
+    "y": 82
+   },
+   {
+    "name": "Dragon Lord",
+    "x": 84,
+    "y": 85
+   },
+   {
+    "name": "Lost Thrower",
+    "x": 75,
+    "y": 85
+   },
+   {
+    "name": "Wyrm",
+    "x": 46,
+    "y": 66
+   },
+   {
+    "name": "Vulcongra",
+    "x": 79,
+    "y": 87
+   },
+   {
+    "name": "Lost Thrower",
+    "x": 39,
+    "y": 97
+   },
+   {
+    "name": "Vulcongra",
+    "x": 43,
+    "y": 95
+   },
+   {
+    "name": "Wyrm",
+    "x": 90,
+    "y": 64
+   },
+   {
+    "name": "Lost Basher",
+    "x": 39,
+    "y": 77
+   },
+   {
+    "name": "Behemoth",
+    "x": 39,
+    "y": 93
+   },
+   {
+    "name": "Lost Thrower",
+    "x": 61,
+    "y": 102
+   },
+   {
+    "name": "Lost Thrower",
+    "x": 40,
+    "y": 96
+   },
+   {
+    "name": "Lost Thrower",
+    "x": 39,
+    "y": 86
+   },
+   {
+    "name": "Lost Thrower",
+    "x": 44,
+    "y": 65
+   },
+   {
+    "name": "Drillworm",
+    "x": 83,
+    "y": 104
+   },
+   {
+    "name": "Wyrm",
+    "x": 84,
+    "y": 103
+   },
+   {
+    "name": "Lost Thrower",
+    "x": 43,
+    "y": 67
+   }
+  ]
+ },
+ "summer-court": {
+  "atlas": "hunts/summer-court-online",
+  "w": 98,
+  "h": 91,
+  "mapZ": 13,
+  "player": {
+   "x": 45,
+   "y": 18,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 1,
+    "name": "Insane Siren",
+    "x": 35,
+    "y": 32,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 6,
+    "name": "Insane Siren",
+    "x": 46,
+    "y": 19,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 8,
+    "name": "Crazed Summer Vanguard",
+    "x": 46,
+    "y": 30,
+    "hp": 5500,
+    "maxHp": 5500
+   },
+   {
+    "uid": 10,
+    "name": "Crazed Summer Rearguard",
+    "x": 45,
+    "y": 19,
+    "hp": 5300,
+    "maxHp": 5300
+   },
+   {
+    "uid": 11,
+    "name": "Arachnophobica",
+    "x": 44,
+    "y": 31,
+    "hp": 5000,
+    "maxHp": 5000
+   },
+   {
+    "uid": 13,
+    "name": "Thanatursus",
+    "x": 44,
+    "y": 30,
+    "hp": 7200,
+    "maxHp": 7200
+   },
+   {
+    "uid": 17,
+    "name": "Arachnophobica",
+    "x": 33,
+    "y": 34,
+    "hp": 5000,
+    "maxHp": 5000
+   },
+   {
+    "uid": 20,
+    "name": "Crazed Summer Vanguard",
+    "x": 35,
+    "y": 33,
+    "hp": 5500,
+    "maxHp": 5500
+   },
+   {
+    "uid": 23,
+    "name": "Insane Siren",
+    "x": 46,
+    "y": 37,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 25,
+    "name": "Crazed Summer Rearguard",
+    "x": 55,
+    "y": 34,
+    "hp": 5300,
+    "maxHp": 5300
+   },
+   {
+    "uid": 26,
+    "name": "Thanatursus",
+    "x": 49,
+    "y": 33,
+    "hp": 7200,
+    "maxHp": 7200
+   },
+   {
+    "uid": 29,
+    "name": "Soul-Broken Harbinger",
+    "x": 71,
+    "y": 7,
+    "hp": 6300,
+    "maxHp": 6300
+   },
+   {
+    "uid": 33,
+    "name": "Insane Siren",
+    "x": 62,
+    "y": 18,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 41,
+    "name": "Insane Siren",
+    "x": 69,
+    "y": 12,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 50,
+    "name": "Insane Siren",
+    "x": 69,
+    "y": 16,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 51,
+    "name": "Insane Siren",
+    "x": 54,
+    "y": 31,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 55,
+    "name": "Insane Siren",
+    "x": 71,
+    "y": 5,
+    "hp": 6500,
+    "maxHp": 6500
+   },
+   {
+    "uid": 57,
+    "name": "Thanatursus",
+    "x": 72,
+    "y": 39,
+    "hp": 7200,
+    "maxHp": 7200
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Insane Siren",
+    "x": 35,
+    "y": 32
+   },
+   {
+    "name": "Insane Siren",
+    "x": 46,
+    "y": 29
+   },
+   {
+    "name": "Crazed Summer Vanguard",
+    "x": 46,
+    "y": 30
+   },
+   {
+    "name": "Crazed Summer Rearguard",
+    "x": 45,
+    "y": 29
+   },
+   {
+    "name": "Arachnophobica",
+    "x": 44,
+    "y": 31
+   },
+   {
+    "name": "Thanatursus",
+    "x": 44,
+    "y": 30
+   },
+   {
+    "name": "Arachnophobica",
+    "x": 33,
+    "y": 34
+   },
+   {
+    "name": "Crazed Summer Vanguard",
+    "x": 35,
+    "y": 33
+   },
+   {
+    "name": "Insane Siren",
+    "x": 46,
+    "y": 37
+   },
+   {
+    "name": "Crazed Summer Rearguard",
+    "x": 55,
+    "y": 34
+   },
+   {
+    "name": "Thanatursus",
+    "x": 49,
+    "y": 33
+   },
+   {
+    "name": "Soul-Broken Harbinger",
+    "x": 71,
+    "y": 7
+   },
+   {
+    "name": "Insane Siren",
+    "x": 62,
+    "y": 18
+   },
+   {
+    "name": "Insane Siren",
+    "x": 69,
+    "y": 12
+   },
+   {
+    "name": "Insane Siren",
+    "x": 69,
+    "y": 16
+   },
+   {
+    "name": "Insane Siren",
+    "x": 54,
+    "y": 31
+   },
+   {
+    "name": "Insane Siren",
+    "x": 71,
+    "y": 5
+   },
+   {
+    "name": "Thanatursus",
+    "x": 72,
+    "y": 39
+   }
+  ]
+ },
+ "port-hope-corym-dungeons": {
+  "atlas": "hunts/port-hope-corym-dungeons-online",
+  "w": 97,
+  "h": 76,
+  "mapZ": 8,
+  "player": null,
+  "levas": 5,
+  "monstros": [],
+  "primeiroEstado": [
+   {
+    "name": "Corym Charlatan",
+    "x": 20,
+    "y": 15
+   },
+   {
+    "name": "Corym Charlatan",
+    "x": 56,
+    "y": 27
+   },
+   {
+    "name": "Corym Skirmisher",
+    "x": 20,
+    "y": 21
+   },
+   {
+    "name": "Corym Charlatan",
+    "x": 24,
+    "y": 26
+   },
+   {
+    "name": "Corym Skirmisher",
+    "x": 38,
+    "y": 24
+   },
+   {
+    "name": "Corym Charlatan",
+    "x": 51,
+    "y": 22
+   },
+   {
+    "name": "Corym Charlatan",
+    "x": 42,
+    "y": 29
+   },
+   {
+    "name": "Corym Skirmisher",
+    "x": 20,
+    "y": 19
+   },
+   {
+    "name": "Corym Skirmisher",
+    "x": 38,
+    "y": 31
+   },
+   {
+    "name": "Corym Skirmisher",
+    "x": 60,
+    "y": 16
+   },
+   {
+    "name": "Corym Charlatan",
+    "x": 50,
+    "y": 30
+   },
+   {
+    "name": "Corym Skirmisher",
+    "x": 15,
+    "y": 8
+   },
+   {
+    "name": "Corym Skirmisher",
+    "x": 54,
+    "y": 25
+   },
+   {
+    "name": "Corym Charlatan",
+    "x": 61,
+    "y": 11
+   }
+  ]
+ },
+ "mother-of-scarabs-lair": {
+  "atlas": "hunts/mother-of-scarabs-lair-online",
+  "w": 98,
+  "h": 99,
+  "mapZ": 12,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 6
+   },
+   {
+    "uid": 8
+   },
+   {
+    "uid": 10
+   },
+   {
+    "uid": 16
+   },
+   {
+    "uid": 25
+   },
+   {
+    "uid": 29
+   },
+   {
+    "uid": 30
+   },
+   {
+    "uid": 31
+   },
+   {
+    "uid": 33
+   },
+   {
+    "uid": 40
+   },
+   {
+    "uid": 47
+   },
+   {
+    "uid": 48
+   },
+   {
+    "uid": 53
+   },
+   {
+    "uid": 54,
+    "x": 58,
+    "y": 28,
+    "hp": 1000
+   },
+   {
+    "uid": 55
+   },
+   {
+    "uid": 59
+   },
+   {
+    "uid": 60
+   },
+   {
+    "uid": 61
+   },
+   {
+    "uid": 63
+   },
+   {
+    "uid": 64
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Scarab",
+    "x": 79,
+    "y": 39
+   },
+   {
+    "name": "Bonebeast",
+    "x": 37,
+    "y": 47
+   },
+   {
+    "name": "Scarab",
+    "x": 78,
+    "y": 47
+   },
+   {
+    "name": "Bonebeast",
+    "x": 77,
+    "y": 39
+   },
+   {
+    "name": "Bonebeast",
+    "x": 36,
+    "y": 44
+   },
+   {
+    "name": "Ancient Scarab",
+    "x": 81,
+    "y": 40
+   },
+   {
+    "name": "Ancient Scarab",
+    "x": 44,
+    "y": 47
+   },
+   {
+    "name": "Ancient Scarab",
+    "x": 42,
+    "y": 48
+   },
+   {
+    "name": "Bonebeast",
+    "x": 75,
+    "y": 39
+   },
+   {
+    "name": "Bonebeast",
+    "x": 51,
+    "y": 46
+   },
+   {
+    "name": "Bonebeast",
+    "x": 65,
+    "y": 47
+   },
+   {
+    "name": "Bonebeast",
+    "x": 64,
+    "y": 47
+   },
+   {
+    "name": "Ancient Scarab",
+    "x": 66,
+    "y": 12
+   },
+   {
+    "name": "Ancient Scarab",
+    "x": 59,
+    "y": 18
+   },
+   {
+    "name": "Bonebeast",
+    "x": 42,
+    "y": 44
+   },
+   {
+    "name": "Bonebeast",
+    "x": 38,
+    "y": 40
+   },
+   {
+    "name": "Ancient Scarab",
+    "x": 37,
+    "y": 44
+   },
+   {
+    "name": "Bonebeast",
+    "x": 78,
+    "y": 41
+   },
+   {
+    "name": "Scarab",
+    "x": 67,
+    "y": 50
+   },
+   {
+    "name": "Scarab",
+    "x": 37,
+    "y": 49
+   }
+  ]
+ },
+ "edron-were-mobs": {
+  "atlas": "hunts/edron-were-mobs-online",
+  "w": 174,
+  "h": 126,
+  "mapZ": 8,
+  "player": null,
+  "levas": 5,
+  "monstros": [],
+  "primeiroEstado": [
+   {
+    "name": "Werebadger",
+    "x": 149,
+    "y": 64
+   },
+   {
+    "name": "Orc Warrior",
+    "x": 133,
+    "y": 95
+   },
+   {
+    "name": "Werebear",
+    "x": 162,
+    "y": 94
+   },
+   {
+    "name": "Werebear",
+    "x": 146,
+    "y": 60
+   },
+   {
+    "name": "Werefox",
+    "x": 147,
+    "y": 63
+   },
+   {
+    "name": "Fox",
+    "x": 138,
+    "y": 92
+   },
+   {
+    "name": "Werebadger",
+    "x": 128,
+    "y": 98
+   },
+   {
+    "name": "Werefox",
+    "x": 134,
+    "y": 99
+   },
+   {
+    "name": "Wereboar",
+    "x": 129,
+    "y": 99
+   },
+   {
+    "name": "Werebadger",
+    "x": 128,
+    "y": 77
+   }
+  ]
+ },
+ "old-fortress-hero-cave": {
+  "atlas": "hunts/old-fortress-hero-cave-online",
+  "w": 118,
+  "h": 106,
+  "mapZ": 9,
+  "player": {
+   "x": 45,
+   "y": 79,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 1
+   },
+   {
+    "uid": 3
+   },
+   {
+    "uid": 4
+   },
+   {
+    "uid": 7
+   },
+   {
+    "uid": 8
+   },
+   {
+    "uid": 9
+   },
+   {
+    "uid": 10
+   },
+   {
+    "uid": 15,
+    "x": 46,
+    "y": 80,
+    "hp": 1700
+   },
+   {
+    "uid": 20
+   },
+   {
+    "uid": 21
+   },
+   {
+    "uid": 24
+   },
+   {
+    "uid": 28
+   },
+   {
+    "uid": 30
+   },
+   {
+    "uid": 40
+   },
+   {
+    "uid": 41
+   },
+   {
+    "uid": 42
+   },
+   {
+    "uid": 44
+   },
+   {
+    "uid": 47
+   },
+   {
+    "uid": 51
+   },
+   {
+    "uid": 53
+   },
+   {
+    "uid": 59
+   },
+   {
+    "uid": 60
+   },
+   {
+    "uid": 65
+   },
+   {
+    "uid": 67
+   },
+   {
+    "uid": 71
+   },
+   {
+    "uid": 72
+   },
+   {
+    "uid": 73
+   },
+   {
+    "uid": 74
+   },
+   {
+    "uid": 77
+   },
+   {
+    "uid": 79
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Hero",
+    "x": 40,
+    "y": 65
+   },
+   {
+    "name": "Hero",
+    "x": 66,
+    "y": 78
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 70,
+    "y": 60
+   },
+   {
+    "name": "Hero",
+    "x": 27,
+    "y": 84
+   },
+   {
+    "name": "Vicious Squire",
+    "x": 24,
+    "y": 88
+   },
+   {
+    "name": "Hero",
+    "x": 63,
+    "y": 78
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 26,
+    "y": 84
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 47,
+    "y": 89
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 61,
+    "y": 90
+   },
+   {
+    "name": "Hero",
+    "x": 20,
+    "y": 60
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 72,
+    "y": 93
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 51,
+    "y": 91
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 52,
+    "y": 92
+   },
+   {
+    "name": "Vicious Squire",
+    "x": 57,
+    "y": 71
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 69,
+    "y": 71
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 28,
+    "y": 65
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 68,
+    "y": 82
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 61,
+    "y": 89
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 58,
+    "y": 58
+   },
+   {
+    "name": "Blood Priest",
+    "x": 65,
+    "y": 63
+   },
+   {
+    "name": "Vicious Squire",
+    "x": 57,
+    "y": 69
+   },
+   {
+    "name": "Blood Priest",
+    "x": 67,
+    "y": 63
+   },
+   {
+    "name": "Hero",
+    "x": 68,
+    "y": 84
+   },
+   {
+    "name": "Hero",
+    "x": 36,
+    "y": 61
+   },
+   {
+    "name": "Vicious Squire",
+    "x": 28,
+    "y": 59
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 61,
+    "y": 61
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 55,
+    "y": 94
+   },
+   {
+    "name": "Vile Grandmaster",
+    "x": 23,
+    "y": 67
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 25,
+    "y": 71
+   },
+   {
+    "name": "Renegade Knight",
+    "x": 36,
+    "y": 66
+   }
+  ]
+ },
+ "putrid-mummies": {
+  "atlas": "hunts/putrid-mummies-online",
+  "w": 174,
+  "h": 103,
+  "mapZ": 12,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 3
+   },
+   {
+    "uid": 9,
+    "name": "Putrid Mummy",
+    "x": 20,
+    "y": 49,
+    "hp": 1500,
+    "maxHp": 1500
+   },
+   {
+    "uid": 11
+   },
+   {
+    "uid": 18
+   },
+   {
+    "uid": 21,
+    "name": "Putrid Mummy",
+    "x": 22,
+    "y": 50,
+    "hp": 1500,
+    "maxHp": 1500
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Bonebeast",
+    "x": 37,
+    "y": 30
+   },
+   {
+    "name": "Putrid Mummy",
+    "x": 20,
+    "y": 49
+   },
+   {
+    "name": "Giant Spider",
+    "x": 40,
+    "y": 44
+   },
+   {
+    "name": "Putrid Mummy",
+    "x": 12,
+    "y": 32
+   },
+   {
+    "name": "Putrid Mummy",
+    "x": 22,
+    "y": 50
+   }
+  ]
+ },
+ "black-serpent-dungeon": {
+  "atlas": "hunts/black-serpent-dungeon-online",
+  "w": 104,
+  "h": 150,
+  "mapZ": 9,
+  "player": null,
+  "levas": 5,
+  "monstros": [],
+  "primeiroEstado": [
+   {
+    "name": "Lizard Chosen",
+    "x": 26,
+    "y": 30
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 39,
+    "y": 55
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 19,
+    "y": 57
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 25,
+    "y": 61
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 33,
+    "y": 49
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 39,
+    "y": 47
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 16,
+    "y": 60
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 39,
+    "y": 54
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 32,
+    "y": 51
+   },
+   {
+    "name": "Lizard Chosen",
+    "x": 28,
+    "y": 59
+   }
+  ]
+ },
+ "ghastly-dragon-lair": {
+  "atlas": "hunts/ghastly-dragon-lair-online",
+  "w": 90,
+  "h": 54,
+  "mapZ": 8,
+  "player": null,
+  "levas": 5,
+  "monstros": [],
+  "primeiroEstado": [
+   {
+    "name": "Ghastly Dragon",
+    "x": 28,
+    "y": 22
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 41,
+    "y": 26
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 64,
+    "y": 17
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 53,
+    "y": 24
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 69,
+    "y": 23
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 17,
+    "y": 19
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 18,
+    "y": 20
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 68,
+    "y": 31
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 67,
+    "y": 31
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 57,
+    "y": 26
+   },
+   {
+    "name": "Ghastly Dragon",
+    "x": 39,
+    "y": 31
+   }
+  ]
+ },
+ "feyrist-nightmare": {
+  "atlas": "hunts/feyrist-nightmare-online",
+  "w": 102,
+  "h": 78,
+  "mapZ": 8,
+  "player": {
+   "x": 24,
+   "y": 15,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 2,
+    "x": 17,
+    "y": 15,
+    "hp": 1100
+   },
+   {
+    "uid": 6
+   },
+   {
+    "uid": 7
+   },
+   {
+    "uid": 8
+   },
+   {
+    "uid": 15
+   },
+   {
+    "uid": 16
+   },
+   {
+    "uid": 21,
+    "x": 17,
+    "y": 14,
+    "hp": 1100
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Enfeebled Silencer",
+    "x": 17,
+    "y": 24
+   },
+   {
+    "name": "Enfeebled Silencer",
+    "x": 51,
+    "y": 19
+   },
+   {
+    "name": "Weakened Frazzlemaw",
+    "x": 50,
+    "y": 15
+   },
+   {
+    "name": "Weakened Frazzlemaw",
+    "x": 49,
+    "y": 21
+   },
+   {
+    "name": "Enfeebled Silencer",
+    "x": 41,
+    "y": 28
+   },
+   {
+    "name": "Weakened Frazzlemaw",
+    "x": 43,
+    "y": 24
+   },
+   {
+    "name": "Enfeebled Silencer",
+    "x": 14,
+    "y": 22
+   }
+  ]
+ },
+ "medusa-cave": {
+  "atlas": "hunts/medusa-cave-online",
+  "w": 97,
+  "h": 122,
+  "mapZ": 11,
+  "player": null,
+  "levas": 5,
+  "monstros": [],
+  "primeiroEstado": [
+   {
+    "name": "Medusa",
+    "x": 26,
+    "y": 19
+   },
+   {
+    "name": "Medusa",
+    "x": 74,
+    "y": 36
+   },
+   {
+    "name": "Medusa",
+    "x": 31,
+    "y": 30
+   },
+   {
+    "name": "Serpent Spawn",
+    "x": 33,
+    "y": 28
+   },
+   {
+    "name": "Medusa",
+    "x": 54,
+    "y": 27
+   },
+   {
+    "name": "Medusa",
+    "x": 29,
+    "y": 26
+   },
+   {
+    "name": "Medusa",
+    "x": 58,
+    "y": 31
+   },
+   {
+    "name": "Medusa",
+    "x": 35,
+    "y": 22
+   }
+  ]
+ },
+ "oramond-hydras": {
+  "atlas": "hunts/oramond-hydras-online",
+  "w": 116,
+  "h": 122,
+  "mapZ": 10,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 36
+   },
+   {
+    "uid": 46
+   },
+   {
+    "uid": 56,
+    "x": 94,
+    "y": 24,
+    "hp": 2350
+   },
+   {
+    "uid": 78
+   },
+   {
+    "uid": 79
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Hydra",
+    "x": 86,
+    "y": 39
+   },
+   {
+    "name": "Hydra",
+    "x": 86,
+    "y": 35
+   },
+   {
+    "name": "Hydra",
+    "x": 87,
+    "y": 34
+   },
+   {
+    "name": "Hydra",
+    "x": 76,
+    "y": 28
+   },
+   {
+    "name": "Hydra",
+    "x": 89,
+    "y": 44
+   }
+  ]
+ },
+ "medusa-tower": {
+  "atlas": "hunts/medusa-tower-online",
+  "w": 45,
+  "h": 44,
+  "mapZ": 7,
+  "player": null,
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 2
+   },
+   {
+    "uid": 3
+   },
+   {
+    "uid": 4
+   },
+   {
+    "uid": 5
+   },
+   {
+    "uid": 6
+   },
+   {
+    "uid": 7
+   },
+   {
+    "uid": 8
+   },
+   {
+    "uid": 9
+   },
+   {
+    "uid": 10
+   },
+   {
+    "uid": 11
+   },
+   {
+    "uid": 12
+   },
+   {
+    "uid": 13
+   },
+   {
+    "uid": 14
+   },
+   {
+    "uid": 16
+   },
+   {
+    "uid": 17,
+    "x": 17,
+    "y": 26,
+    "hp": 1200
+   },
+   {
+    "uid": 20
+   },
+   {
+    "uid": 21
+   },
+   {
+    "uid": 22
+   },
+   {
+    "uid": 23
+   },
+   {
+    "uid": 24
+   },
+   {
+    "uid": 25
+   },
+   {
+    "uid": 26
+   },
+   {
+    "uid": 27
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Behemoth",
+    "x": 22,
+    "y": 39
+   },
+   {
+    "name": "Poison Spider",
+    "x": 16,
+    "y": 8
+   },
+   {
+    "name": "Clay Guardian",
+    "x": 2,
+    "y": 37
+   },
+   {
+    "name": "Behemoth",
+    "x": 10,
+    "y": 9
+   },
+   {
+    "name": "Clay Guardian",
+    "x": 26,
+    "y": 18
+   },
+   {
+    "name": "Serpent Spawn",
+    "x": 14,
+    "y": 35
+   },
+   {
+    "name": "Behemoth",
+    "x": 2,
+    "y": 16
+   },
+   {
+    "name": "Medusa",
+    "x": 4,
+    "y": 23
+   },
+   {
+    "name": "Serpent Spawn",
+    "x": 17,
+    "y": 15
+   },
+   {
+    "name": "Omnivora",
+    "x": 1,
+    "y": 15
+   },
+   {
+    "name": "Skunk",
+    "x": 7,
+    "y": 21
+   },
+   {
+    "name": "Serpent Spawn",
+    "x": 1,
+    "y": 32
+   },
+   {
+    "name": "Medusa",
+    "x": 23,
+    "y": 13
+   },
+   {
+    "name": "Clay Guardian",
+    "x": 35,
+    "y": 6
+   },
+   {
+    "name": "Omnivora",
+    "x": 14,
+    "y": 17
+   },
+   {
+    "name": "Poison Spider",
+    "x": 23,
+    "y": 39
+   },
+   {
+    "name": "Clay Guardian",
+    "x": 28,
+    "y": 14
+   },
+   {
+    "name": "Serpent Spawn",
+    "x": 34,
+    "y": 12
+   },
+   {
+    "name": "Clay Guardian",
+    "x": 4,
+    "y": 32
+   },
+   {
+    "name": "Serpent Spawn",
+    "x": 40,
+    "y": 28
+   },
+   {
+    "name": "Clay Guardian",
+    "x": 18,
+    "y": 7
+   },
+   {
+    "name": "Serpent Spawn",
+    "x": 17,
+    "y": 6
+   },
+   {
+    "name": "Clay Guardian",
+    "x": 36,
+    "y": 42
+   }
+  ]
+ },
+ "wild-life-raid-oramond": {
+  "atlas": "hunts/wild-life-raid-oramond-online",
+  "w": 177,
+  "h": 87,
+  "mapZ": 13,
+  "player": {
+   "x": 160,
+   "y": 43,
+   "dir": 2,
+   "moving": false,
+   "moveMs": 500
+  },
+  "levas": 5,
+  "monstros": [
+   {
+    "uid": 1
+   },
+   {
+    "uid": 9,
+    "x": 160,
+    "y": 52,
+    "hp": 2700
+   },
+   {
+    "uid": 17,
+    "x": 158,
+    "y": 39,
+    "hp": 1500
+   },
+   {
+    "uid": 23
+   },
+   {
+    "uid": 27
+   },
+   {
+    "uid": 36
+   },
+   {
+    "uid": 52
+   },
+   {
+    "uid": 59,
+    "x": 159,
+    "y": 36,
+    "hp": 1500
+   },
+   {
+    "uid": 71
+   },
+   {
+    "uid": 72
+   },
+   {
+    "uid": 80
+   },
+   {
+    "uid": 87
+   },
+   {
+    "uid": 88
+   },
+   {
+    "uid": 95
+   },
+   {
+    "uid": 107,
+    "x": 159,
+    "y": 41,
+    "hp": 1500
+   },
+   {
+    "uid": 110
+   },
+   {
+    "uid": 113
+   },
+   {
+    "uid": 118
+   }
+  ],
+  "primeiroEstado": [
+   {
+    "name": "Elder Wyrm",
+    "x": 173,
+    "y": 25
+   },
+   {
+    "name": "Elder Wyrm",
+    "x": 149,
+    "y": 52
+   },
+   {
+    "name": "Drillworm",
+    "x": 151,
+    "y": 33
+   },
+   {
+    "name": "Wyrm",
+    "x": 133,
+    "y": 38
+   },
+   {
+    "name": "Behemoth",
+    "x": 143,
+    "y": 41
+   },
+   {
+    "name": "Behemoth",
+    "x": 146,
+    "y": 38
+   },
+   {
+    "name": "Glooth Blob",
+    "x": 136,
+    "y": 47
+   },
+   {
+    "name": "Drillworm",
+    "x": 150,
+    "y": 32
+   },
+   {
+    "name": "Glooth Anemone",
+    "x": 137,
+    "y": 50
+   },
+   {
+    "name": "Behemoth",
+    "x": 153,
+    "y": 53
+   },
+   {
+    "name": "Elder Wyrm",
+    "x": 167,
+    "y": 33
+   },
+   {
+    "name": "Elder Wyrm",
+    "x": 145,
+    "y": 56
+   },
+   {
+    "name": "Glooth Blob",
+    "x": 133,
+    "y": 36
+   },
+   {
+    "name": "Drillworm",
+    "x": 169,
+    "y": 58
+   },
+   {
+    "name": "Drillworm",
+    "x": 154,
+    "y": 33
+   },
+   {
+    "name": "Glooth Anemone",
+    "x": 144,
+    "y": 39
+   },
+   {
+    "name": "Glooth Anemone",
+    "x": 140,
+    "y": 40
+   },
+   {
+    "name": "Devourer",
+    "x": 136,
+    "y": 33
+   }
+  ]
+ }
+}

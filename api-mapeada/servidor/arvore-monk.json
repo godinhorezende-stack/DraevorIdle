@@ -1,0 +1,3320 @@
+{
+ "t": "arvore",
+ "view": {
+  "vocacao": "monk",
+  "pontos": {
+   "total": 0,
+   "usados": 0,
+   "livres": 0
+  },
+  "custoDaArvore": 1496,
+  "levelCheio": 3000,
+  "precoParaRefazer": 800000,
+  "habilidades": {
+   "escolhidas": [],
+   "vagas": 0,
+   "levelsPorVaga": 700,
+   "precoParaTirar": 160000
+  },
+  "montagens": [
+   null,
+   null
+  ],
+  "precoParaUsarMontagem": 240000,
+  "base": "n3",
+  "vinculos": [
+   [
+    "n0",
+    "n5"
+   ],
+   [
+    "n0",
+    "n7"
+   ],
+   [
+    "n1",
+    "n10"
+   ],
+   [
+    "n1",
+    "n80"
+   ],
+   [
+    "n2",
+    "n8"
+   ],
+   [
+    "n3",
+    "n75"
+   ],
+   [
+    "n4",
+    "n47"
+   ],
+   [
+    "n4",
+    "n52"
+   ],
+   [
+    "n4",
+    "n66"
+   ],
+   [
+    "n5",
+    "n7"
+   ],
+   [
+    "n5",
+    "n11"
+   ],
+   [
+    "n5",
+    "n13"
+   ],
+   [
+    "n5",
+    "n16"
+   ],
+   [
+    "n6",
+    "n8"
+   ],
+   [
+    "n6",
+    "n12"
+   ],
+   [
+    "n6",
+    "n14"
+   ],
+   [
+    "n7",
+    "n11"
+   ],
+   [
+    "n8",
+    "n12"
+   ],
+   [
+    "n9",
+    "n13"
+   ],
+   [
+    "n9",
+    "n15"
+   ],
+   [
+    "n9",
+    "n80"
+   ],
+   [
+    "n10",
+    "n14"
+   ],
+   [
+    "n10",
+    "n15"
+   ],
+   [
+    "n10",
+    "n80"
+   ],
+   [
+    "n11",
+    "n13"
+   ],
+   [
+    "n11",
+    "n16"
+   ],
+   [
+    "n11",
+    "n18"
+   ],
+   [
+    "n12",
+    "n14"
+   ],
+   [
+    "n12",
+    "n19"
+   ],
+   [
+    "n13",
+    "n16"
+   ],
+   [
+    "n13",
+    "n22"
+   ],
+   [
+    "n14",
+    "n17"
+   ],
+   [
+    "n14",
+    "n19"
+   ],
+   [
+    "n15",
+    "n20"
+   ],
+   [
+    "n15",
+    "n21"
+   ],
+   [
+    "n15",
+    "n80"
+   ],
+   [
+    "n16",
+    "n18"
+   ],
+   [
+    "n16",
+    "n22"
+   ],
+   [
+    "n16",
+    "n27"
+   ],
+   [
+    "n17",
+    "n19"
+   ],
+   [
+    "n18",
+    "n22"
+   ],
+   [
+    "n18",
+    "n25"
+   ],
+   [
+    "n18",
+    "n27"
+   ],
+   [
+    "n18",
+    "n31"
+   ],
+   [
+    "n19",
+    "n23"
+   ],
+   [
+    "n19",
+    "n26"
+   ],
+   [
+    "n19",
+    "n28"
+   ],
+   [
+    "n19",
+    "n32"
+   ],
+   [
+    "n20",
+    "n21"
+   ],
+   [
+    "n20",
+    "n24"
+   ],
+   [
+    "n20",
+    "n29"
+   ],
+   [
+    "n21",
+    "n23"
+   ],
+   [
+    "n21",
+    "n24"
+   ],
+   [
+    "n21",
+    "n30"
+   ],
+   [
+    "n22",
+    "n24"
+   ],
+   [
+    "n22",
+    "n27"
+   ],
+   [
+    "n22",
+    "n29"
+   ],
+   [
+    "n23",
+    "n24"
+   ],
+   [
+    "n24",
+    "n29"
+   ],
+   [
+    "n24",
+    "n30"
+   ],
+   [
+    "n24",
+    "n33"
+   ],
+   [
+    "n25",
+    "n27"
+   ],
+   [
+    "n25",
+    "n31"
+   ],
+   [
+    "n26",
+    "n28"
+   ],
+   [
+    "n26",
+    "n32"
+   ],
+   [
+    "n26",
+    "n79"
+   ],
+   [
+    "n27",
+    "n29"
+   ],
+   [
+    "n27",
+    "n31"
+   ],
+   [
+    "n27",
+    "n35"
+   ],
+   [
+    "n28",
+    "n30"
+   ],
+   [
+    "n28",
+    "n32"
+   ],
+   [
+    "n28",
+    "n36"
+   ],
+   [
+    "n29",
+    "n31"
+   ],
+   [
+    "n29",
+    "n33"
+   ],
+   [
+    "n29",
+    "n35"
+   ],
+   [
+    "n30",
+    "n36"
+   ],
+   [
+    "n31",
+    "n34"
+   ],
+   [
+    "n31",
+    "n35"
+   ],
+   [
+    "n31",
+    "n37"
+   ],
+   [
+    "n32",
+    "n36"
+   ],
+   [
+    "n32",
+    "n38"
+   ],
+   [
+    "n32",
+    "n79"
+   ],
+   [
+    "n33",
+    "n35"
+   ],
+   [
+    "n33",
+    "n36"
+   ],
+   [
+    "n33",
+    "n39"
+   ],
+   [
+    "n33",
+    "n77"
+   ],
+   [
+    "n34",
+    "n37"
+   ],
+   [
+    "n34",
+    "n42"
+   ],
+   [
+    "n35",
+    "n37"
+   ],
+   [
+    "n35",
+    "n40"
+   ],
+   [
+    "n35",
+    "n44"
+   ],
+   [
+    "n36",
+    "n38"
+   ],
+   [
+    "n36",
+    "n45"
+   ],
+   [
+    "n37",
+    "n40"
+   ],
+   [
+    "n37",
+    "n42"
+   ],
+   [
+    "n38",
+    "n41"
+   ],
+   [
+    "n38",
+    "n43"
+   ],
+   [
+    "n38",
+    "n79"
+   ],
+   [
+    "n39",
+    "n41"
+   ],
+   [
+    "n39",
+    "n44"
+   ],
+   [
+    "n39",
+    "n77"
+   ],
+   [
+    "n40",
+    "n42"
+   ],
+   [
+    "n40",
+    "n44"
+   ],
+   [
+    "n40",
+    "n46"
+   ],
+   [
+    "n40",
+    "n49"
+   ],
+   [
+    "n40",
+    "n51"
+   ],
+   [
+    "n40",
+    "n77"
+   ],
+   [
+    "n41",
+    "n43"
+   ],
+   [
+    "n41",
+    "n47"
+   ],
+   [
+    "n41",
+    "n50"
+   ],
+   [
+    "n41",
+    "n52"
+   ],
+   [
+    "n42",
+    "n46"
+   ],
+   [
+    "n42",
+    "n51"
+   ],
+   [
+    "n43",
+    "n47"
+   ],
+   [
+    "n43",
+    "n79"
+   ],
+   [
+    "n44",
+    "n45"
+   ],
+   [
+    "n44",
+    "n48"
+   ],
+   [
+    "n44",
+    "n49"
+   ],
+   [
+    "n44",
+    "n77"
+   ],
+   [
+    "n45",
+    "n48"
+   ],
+   [
+    "n45",
+    "n50"
+   ],
+   [
+    "n45",
+    "n77"
+   ],
+   [
+    "n46",
+    "n51"
+   ],
+   [
+    "n46",
+    "n57"
+   ],
+   [
+    "n47",
+    "n52"
+   ],
+   [
+    "n48",
+    "n50"
+   ],
+   [
+    "n48",
+    "n53"
+   ],
+   [
+    "n48",
+    "n54"
+   ],
+   [
+    "n49",
+    "n53"
+   ],
+   [
+    "n49",
+    "n55"
+   ],
+   [
+    "n50",
+    "n52"
+   ],
+   [
+    "n50",
+    "n54"
+   ],
+   [
+    "n50",
+    "n56"
+   ],
+   [
+    "n51",
+    "n57"
+   ],
+   [
+    "n52",
+    "n56"
+   ],
+   [
+    "n53",
+    "n54"
+   ],
+   [
+    "n53",
+    "n55"
+   ],
+   [
+    "n53",
+    "n58"
+   ],
+   [
+    "n53",
+    "n59"
+   ],
+   [
+    "n53",
+    "n62"
+   ],
+   [
+    "n54",
+    "n56"
+   ],
+   [
+    "n54",
+    "n58"
+   ],
+   [
+    "n54",
+    "n59"
+   ],
+   [
+    "n55",
+    "n58"
+   ],
+   [
+    "n55",
+    "n60"
+   ],
+   [
+    "n56",
+    "n59"
+   ],
+   [
+    "n56",
+    "n61"
+   ],
+   [
+    "n57",
+    "n60"
+   ],
+   [
+    "n57",
+    "n65"
+   ],
+   [
+    "n58",
+    "n59"
+   ],
+   [
+    "n58",
+    "n60"
+   ],
+   [
+    "n58",
+    "n62"
+   ],
+   [
+    "n58",
+    "n63"
+   ],
+   [
+    "n58",
+    "n67"
+   ],
+   [
+    "n59",
+    "n61"
+   ],
+   [
+    "n59",
+    "n62"
+   ],
+   [
+    "n59",
+    "n64"
+   ],
+   [
+    "n60",
+    "n63"
+   ],
+   [
+    "n60",
+    "n65"
+   ],
+   [
+    "n61",
+    "n66"
+   ],
+   [
+    "n62",
+    "n63"
+   ],
+   [
+    "n62",
+    "n64"
+   ],
+   [
+    "n63",
+    "n65"
+   ],
+   [
+    "n63",
+    "n67"
+   ],
+   [
+    "n64",
+    "n68"
+   ],
+   [
+    "n64",
+    "n70"
+   ],
+   [
+    "n65",
+    "n69"
+   ],
+   [
+    "n66",
+    "n70"
+   ],
+   [
+    "n67",
+    "n69"
+   ],
+   [
+    "n67",
+    "n71"
+   ],
+   [
+    "n67",
+    "n78"
+   ],
+   [
+    "n68",
+    "n70"
+   ],
+   [
+    "n68",
+    "n78"
+   ],
+   [
+    "n69",
+    "n71"
+   ],
+   [
+    "n69",
+    "n73"
+   ],
+   [
+    "n70",
+    "n72"
+   ],
+   [
+    "n70",
+    "n74"
+   ],
+   [
+    "n71",
+    "n73"
+   ],
+   [
+    "n71",
+    "n74"
+   ],
+   [
+    "n71",
+    "n75"
+   ],
+   [
+    "n72",
+    "n74"
+   ],
+   [
+    "n73",
+    "n75"
+   ],
+   [
+    "n73",
+    "n76"
+   ],
+   [
+    "n73",
+    "n78"
+   ],
+   [
+    "n74",
+    "n75"
+   ],
+   [
+    "n74",
+    "n76"
+   ],
+   [
+    "n74",
+    "n78"
+   ],
+   [
+    "n75",
+    "n76"
+   ]
+  ],
+  "vias": [
+   {
+    "id": "punho",
+    "nome": "Punho",
+    "resumo": "O eixo do dano.",
+    "preco": null,
+    "custo": null,
+    "graus": 0
+   },
+   {
+    "id": "sopro",
+    "nome": "Sopro",
+    "resumo": "Mais rápido que o golpe.",
+    "preco": null,
+    "custo": null,
+    "graus": 0
+   },
+   {
+    "id": "serenidade",
+    "nome": "Serenidade",
+    "resumo": "O que não se abala.",
+    "preco": null,
+    "custo": null,
+    "graus": 0
+   }
+  ],
+  "nos": [
+   {
+    "id": "n0",
+    "nome": "Mil mãos",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.013953488372093025,
+    "graus": 3,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "medalhao",
+    "ponto": {
+     "x": 0.1728,
+     "y": 0.1166
+    },
+    "raio": 0.0685,
+    "vizinhos": [
+     "n5",
+     "n7"
+    ],
+    "custos": [
+     13,
+     13,
+     14
+    ],
+    "teto": 0.2,
+    "especial": {
+     "id": "milMaos",
+     "nome": "Mil mãos",
+     "texto": "Cada golpe tem 15% de chance de acertar duas vezes; a segunda com metade do dano."
+    }
+   },
+   {
+    "id": "n1",
+    "nome": "Um com o vento",
+    "tipo": "attackInterval",
+    "alvo": null,
+    "por": -0.016666666666666666,
+    "graus": 3,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "medalhao",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.108
+    },
+    "raio": 0.0669,
+    "vizinhos": [
+     "n10",
+     "n80"
+    ],
+    "custos": [
+     13,
+     13,
+     14
+    ],
+    "teto": -0.15,
+    "especial": {
+     "id": "ventoQueVolta",
+     "nome": "Vento que volta",
+     "texto": "Cada golpe bloqueado ou esquivado devolve 2% da sua mana máxima."
+    }
+   },
+   {
+    "id": "n2",
+    "nome": "Vazio pleno",
+    "tipo": "regenHp",
+    "alvo": null,
+    "por": 0.039473684210526314,
+    "graus": 3,
+    "gasto": 0,
+    "via": "serenidade",
+    "escala": "medalhao",
+    "ponto": {
+     "x": 0.8325,
+     "y": 0.1166
+    },
+    "raio": 0.0673,
+    "vizinhos": [
+     "n8"
+    ],
+    "custos": [
+     13,
+     13,
+     14
+    ],
+    "teto": 0.25,
+    "especial": {
+     "id": "vazioPleno",
+     "nome": "Vazio pleno",
+     "texto": "Com a vida acima de 90%, você bate 5% mais forte."
+    }
+   },
+   {
+    "id": "n3",
+    "nome": "Postura",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.010416666666666666,
+    "graus": 4,
+    "gasto": 0,
+    "via": null,
+    "escala": "base",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.9177
+    },
+    "raio": 0.0292,
+    "vizinhos": [
+     "n75"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     4
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n4",
+    "nome": "Guarda alta",
+    "tipo": "skill",
+    "alvo": "shielding",
+    "por": 2.272727272727273,
+    "graus": 5,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.7266,
+     "y": 0.615
+    },
+    "raio": 0.0318,
+    "vizinhos": [
+     "n47",
+     "n52",
+     "n66"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     8
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n5",
+    "nome": "Mil repetições",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 1.1363636363636365,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.2804,
+     "y": 0.1914
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n0",
+     "n7",
+     "n11",
+     "n13",
+     "n16"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     8
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n6",
+    "nome": "Centro imóvel",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.020833333333333332,
+    "graus": 5,
+    "gasto": 0,
+    "via": "serenidade",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.725,
+     "y": 0.1925
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n8",
+     "n12",
+     "n14"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n7",
+    "nome": "Corpo de ferro",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.004545454545454546,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.1792,
+     "y": 0.2
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n0",
+     "n5",
+     "n11"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n8",
+    "nome": "Sopro do templo",
+    "tipo": "regenHp",
+    "alvo": null,
+    "por": 0.02631578947368421,
+    "graus": 5,
+    "gasto": 0,
+    "via": "serenidade",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.8277,
+     "y": 0.2011
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n2",
+     "n6",
+     "n12"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n9",
+    "nome": "Água no rochedo",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.009090909090909092,
+    "graus": 5,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.4264,
+     "y": 0.2053
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n13",
+     "n15",
+     "n80"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n10",
+    "nome": "Um com o ar",
+    "tipo": "attackInterval",
+    "alvo": null,
+    "por": -0.011111111111111112,
+    "graus": 5,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.5757,
+     "y": 0.2086
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n1",
+     "n14",
+     "n15",
+     "n80"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": -0.15,
+    "especial": null
+   },
+   {
+    "id": "n11",
+    "nome": "Palma de trovão",
+    "tipo": "elemento",
+    "alvo": "physical",
+    "por": 0.011764705882352941,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.2531,
+     "y": 0.2332
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n5",
+     "n7",
+     "n13",
+     "n16",
+     "n18"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n12",
+    "nome": "Centro imóvel",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.020833333333333332,
+    "graus": 5,
+    "gasto": 0,
+    "via": "serenidade",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.7475,
+     "y": 0.2342
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n6",
+     "n8",
+     "n14",
+     "n19"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n13",
+    "nome": "Osso partido",
+    "tipo": "armorPenetration",
+    "alvo": null,
+    "por": 0.011764705882352941,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.3542,
+     "y": 0.2321
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n5",
+     "n9",
+     "n11",
+     "n16",
+     "n22"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n14",
+    "nome": "Mente leve",
+    "tipo": "custoDeMana",
+    "alvo": null,
+    "por": -0.011111111111111112,
+    "graus": 5,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.6463,
+     "y": 0.2342
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n6",
+     "n10",
+     "n12",
+     "n17",
+     "n19"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n15",
+    "nome": "Passo de folha",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.011111111111111112,
+    "graus": 5,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.5003,
+     "y": 0.2439
+    },
+    "raio": 0.0346,
+    "vizinhos": [
+     "n9",
+     "n10",
+     "n20",
+     "n21",
+     "n80"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n16",
+    "nome": "Nó do dedo",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 0.5681818181818182,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3093,
+     "y": 0.2749
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n5",
+     "n11",
+     "n13",
+     "n18",
+     "n22",
+     "n27"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n17",
+    "nome": "Pés leves",
+    "tipo": "skill",
+    "alvo": "shielding",
+    "por": 1.1363636363636365,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6897,
+     "y": 0.2759
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n14",
+     "n19"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n18",
+    "nome": "Mão do templo",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.00411764705882353,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.2515,
+     "y": 0.2973
+    },
+    "raio": 0.0346,
+    "vizinhos": [
+     "n11",
+     "n16",
+     "n22",
+     "n25",
+     "n27",
+     "n31"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n19",
+    "nome": "Corpo vazio",
+    "tipo": "attackDamage",
+    "alvo": null,
+    "por": 0.022222222222222223,
+    "graus": 5,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.7491,
+     "y": 0.2973
+    },
+    "raio": 0.0346,
+    "vizinhos": [
+     "n12",
+     "n14",
+     "n17",
+     "n23",
+     "n26",
+     "n28",
+     "n32"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n20",
+    "nome": "Vazio",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.004545454545454546,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4489,
+     "y": 0.3037
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n15",
+     "n21",
+     "n24",
+     "n29"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n21",
+    "nome": "Compasso",
+    "tipo": "attackInterval",
+    "alvo": null,
+    "por": -0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.55,
+     "y": 0.3037
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n15",
+     "n20",
+     "n23",
+     "n24",
+     "n30"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.15,
+    "especial": null
+   },
+   {
+    "id": "n22",
+    "nome": "Pele de pedra",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.002272727272727273,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3799,
+     "y": 0.3123
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n13",
+     "n16",
+     "n18",
+     "n24",
+     "n27",
+     "n29"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n23",
+    "nome": "Respiro contado",
+    "tipo": "custoDeMana",
+    "alvo": null,
+    "por": -0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6255,
+     "y": 0.3123
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n19",
+     "n21",
+     "n24"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n24",
+    "nome": "Postura baixa",
+    "tipo": "elemento",
+    "alvo": "physical",
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5003,
+     "y": 0.3358
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n20",
+     "n21",
+     "n22",
+     "n23",
+     "n29",
+     "n30",
+     "n33"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n25",
+    "nome": "Golpe seco",
+    "tipo": "armorPenetration",
+    "alvo": null,
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2162,
+     "y": 0.3519
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n18",
+     "n27",
+     "n31"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n26",
+    "nome": "Sombra rápida",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.786,
+     "y": 0.3519
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n19",
+     "n28",
+     "n32",
+     "n79"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n27",
+    "nome": "Palma que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3253,
+     "y": 0.3529
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n16",
+     "n18",
+     "n22",
+     "n25",
+     "n29",
+     "n31",
+     "n35"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n28",
+    "nome": "Faísca interior",
+    "tipo": "attackDamage",
+    "alvo": null,
+    "por": 0.011111111111111112,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6752,
+     "y": 0.3519
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n19",
+     "n26",
+     "n30",
+     "n32",
+     "n36"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n29",
+    "nome": "Fôlego que volta",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3992,
+     "y": 0.3636
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n20",
+     "n22",
+     "n24",
+     "n27",
+     "n31",
+     "n33",
+     "n35"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n30",
+    "nome": "Respiro",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.013888888888888888,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6014,
+     "y": 0.3658
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n21",
+     "n24",
+     "n28",
+     "n36"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n31",
+    "nome": "Primeiro golpe",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.004651162790697674,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.282,
+     "y": 0.3893
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n18",
+     "n25",
+     "n27",
+     "n29",
+     "n34",
+     "n35",
+     "n37"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n32",
+    "nome": "Pés leves",
+    "tipo": "skill",
+    "alvo": "shielding",
+    "por": 1.1363636363636365,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7186,
+     "y": 0.3882
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n19",
+     "n26",
+     "n28",
+     "n36",
+     "n38",
+     "n79"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n33",
+    "nome": "Corpo que cura",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.00411764705882353,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.5003,
+     "y": 0.4021
+    },
+    "raio": 0.033,
+    "vizinhos": [
+     "n24",
+     "n29",
+     "n35",
+     "n36",
+     "n39",
+     "n77"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n34",
+    "nome": "Nó do dedo",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 0.5681818181818182,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.1889,
+     "y": 0.4182
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n31",
+     "n37",
+     "n42"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n35",
+    "nome": "Pele de pedra",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.002272727272727273,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3719,
+     "y": 0.4235
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n27",
+     "n29",
+     "n31",
+     "n33",
+     "n37",
+     "n40",
+     "n44"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n36",
+    "nome": "Vazio",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.004545454545454546,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6319,
+     "y": 0.4235
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n28",
+     "n30",
+     "n32",
+     "n33",
+     "n38",
+     "n45"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n37",
+    "nome": "Postura baixa",
+    "tipo": "elemento",
+    "alvo": "physical",
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2627,
+     "y": 0.4396
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n31",
+     "n34",
+     "n35",
+     "n40",
+     "n42"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n38",
+    "nome": "Compasso",
+    "tipo": "attackInterval",
+    "alvo": null,
+    "por": -0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.741,
+     "y": 0.4417
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n32",
+     "n36",
+     "n41",
+     "n43",
+     "n79"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.15,
+    "especial": null
+   },
+   {
+    "id": "n39",
+    "nome": "Golpe seco",
+    "tipo": "armorPenetration",
+    "alvo": null,
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5468,
+     "y": 0.4492
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n33",
+     "n41",
+     "n44",
+     "n77"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n40",
+    "nome": "Último golpe",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.009302325581395349,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.3285,
+     "y": 0.4877
+    },
+    "raio": 0.0334,
+    "vizinhos": [
+     "n35",
+     "n37",
+     "n42",
+     "n44",
+     "n46",
+     "n49",
+     "n51",
+     "n77"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n41",
+    "nome": "Mente parada",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.027777777777777776,
+    "graus": 5,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.6688,
+     "y": 0.4877
+    },
+    "raio": 0.0342,
+    "vizinhos": [
+     "n38",
+     "n39",
+     "n43",
+     "n47",
+     "n50",
+     "n52"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n42",
+    "nome": "Palma que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.213,
+     "y": 0.4856
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n34",
+     "n37",
+     "n40",
+     "n46",
+     "n51"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n43",
+    "nome": "Respiro contado",
+    "tipo": "custoDeMana",
+    "alvo": null,
+    "por": -0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7844,
+     "y": 0.4834
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n38",
+     "n41",
+     "n47",
+     "n79"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n44",
+    "nome": "Fôlego que volta",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4441,
+     "y": 0.4963
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n35",
+     "n39",
+     "n40",
+     "n45",
+     "n48",
+     "n49",
+     "n77"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n45",
+    "nome": "Primeiro golpe",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.004651162790697674,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5549,
+     "y": 0.4952
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n36",
+     "n44",
+     "n48",
+     "n50",
+     "n77"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n46",
+    "nome": "Nó do dedo",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 0.5681818181818182,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2467,
+     "y": 0.5337
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n40",
+     "n42",
+     "n51",
+     "n57"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n47",
+    "nome": "Sombra rápida",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7523,
+     "y": 0.5326
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n4",
+     "n41",
+     "n43",
+     "n52"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n48",
+    "nome": "Pele de pedra",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.002272727272727273,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4987,
+     "y": 0.538
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n44",
+     "n45",
+     "n50",
+     "n53",
+     "n54"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n49",
+    "nome": "Postura baixa",
+    "tipo": "elemento",
+    "alvo": "physical",
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3964,
+     "y": 0.5353
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n40",
+     "n44",
+     "n53",
+     "n55"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n50",
+    "nome": "Golpe seco",
+    "tipo": "armorPenetration",
+    "alvo": null,
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.595,
+     "y": 0.539
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n41",
+     "n45",
+     "n48",
+     "n52",
+     "n54",
+     "n56"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n51",
+    "nome": "Palma que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3141,
+     "y": 0.5412
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n40",
+     "n42",
+     "n46",
+     "n57"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n52",
+    "nome": "Faísca interior",
+    "tipo": "attackDamage",
+    "alvo": null,
+    "por": 0.011111111111111112,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6833,
+     "y": 0.5401
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n4",
+     "n41",
+     "n47",
+     "n50",
+     "n56"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n53",
+    "nome": "Fôlego que volta",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4666,
+     "y": 0.5882
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n48",
+     "n49",
+     "n54",
+     "n55",
+     "n58",
+     "n59",
+     "n62"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n54",
+    "nome": "Primeiro golpe",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.004651162790697674,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5356,
+     "y": 0.5904
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n48",
+     "n50",
+     "n53",
+     "n56",
+     "n58",
+     "n59"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n55",
+    "nome": "Nó do dedo",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 0.5681818181818182,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3715,
+     "y": 0.5904
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n49",
+     "n53",
+     "n58",
+     "n60"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n56",
+    "nome": "Pele de pedra",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.002272727272727273,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6223,
+     "y": 0.5957
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n50",
+     "n52",
+     "n54",
+     "n59",
+     "n61"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n57",
+    "nome": "Mil repetições",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 1.1363636363636365,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.2723,
+     "y": 0.615
+    },
+    "raio": 0.0334,
+    "vizinhos": [
+     "n46",
+     "n51",
+     "n60",
+     "n65"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n58",
+    "nome": "Postura baixa",
+    "tipo": "elemento",
+    "alvo": "physical",
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4361,
+     "y": 0.6342
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n53",
+     "n54",
+     "n55",
+     "n59",
+     "n60",
+     "n62",
+     "n63",
+     "n67"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n59",
+    "nome": "Golpe seco",
+    "tipo": "armorPenetration",
+    "alvo": null,
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5661,
+     "y": 0.6353
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n53",
+     "n54",
+     "n56",
+     "n58",
+     "n61",
+     "n62",
+     "n64"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n60",
+    "nome": "Palma que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3349,
+     "y": 0.6315
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n55",
+     "n57",
+     "n58",
+     "n63",
+     "n65"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n61",
+    "nome": "Fôlego que volta",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6624,
+     "y": 0.6374
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n56",
+     "n59",
+     "n66"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n62",
+    "nome": "Primeiro golpe",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.004651162790697674,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.6652
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n53",
+     "n58",
+     "n59",
+     "n63",
+     "n64"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n63",
+    "nome": "Nó do dedo",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 0.5681818181818182,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3992,
+     "y": 0.6791
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n58",
+     "n60",
+     "n62",
+     "n65",
+     "n67"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n64",
+    "nome": "Pele de pedra",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.002272727272727273,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6014,
+     "y": 0.6824
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n59",
+     "n62",
+     "n68",
+     "n70"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n65",
+    "nome": "Postura baixa",
+    "tipo": "elemento",
+    "alvo": "physical",
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3009,
+     "y": 0.6762
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n57",
+     "n60",
+     "n63",
+     "n69"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n66",
+    "nome": "Respiro",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.013888888888888888,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6929,
+     "y": 0.6802
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n4",
+     "n61",
+     "n70"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n67",
+    "nome": "Golpe seco",
+    "tipo": "armorPenetration",
+    "alvo": null,
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4537,
+     "y": 0.7198
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n58",
+     "n63",
+     "n69",
+     "n71",
+     "n78"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n68",
+    "nome": "Palma que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5468,
+     "y": 0.7198
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n64",
+     "n70",
+     "n78"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n69",
+    "nome": "Fôlego que volta",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3606,
+     "y": 0.7326
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n65",
+     "n67",
+     "n71",
+     "n73"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n70",
+    "nome": "Primeiro golpe",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.004651162790697674,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6431,
+     "y": 0.7294
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n64",
+     "n66",
+     "n68",
+     "n72",
+     "n74"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n71",
+    "nome": "Nó do dedo",
+    "tipo": "skill",
+    "alvo": "fist",
+    "por": 0.5681818181818182,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4088,
+     "y": 0.7786
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n67",
+     "n69",
+     "n73",
+     "n74",
+     "n75"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n72",
+    "nome": "Pele de pedra",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.002272727272727273,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5934,
+     "y": 0.7775
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n70",
+     "n74"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n73",
+    "nome": "Postura baixa",
+    "tipo": "elemento",
+    "alvo": "physical",
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4553,
+     "y": 0.7925
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n69",
+     "n71",
+     "n75",
+     "n76",
+     "n78"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n74",
+    "nome": "Golpe seco",
+    "tipo": "armorPenetration",
+    "alvo": null,
+    "por": 0.0058823529411764705,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5452,
+     "y": 0.7936
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n70",
+     "n71",
+     "n72",
+     "n75",
+     "n76",
+     "n78"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n75",
+    "nome": "Palma que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4473,
+     "y": 0.8299
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n3",
+     "n71",
+     "n73",
+     "n74",
+     "n76"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n76",
+    "nome": "Fôlego que volta",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.002058823529411765,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5549,
+     "y": 0.8289
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n73",
+     "n74",
+     "n75"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.07,
+    "especial": null
+   },
+   {
+    "id": "n77",
+    "nome": "Primeiro golpe",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.004651162790697674,
+    "graus": 4,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4537,
+     "y": 0.4471
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n33",
+     "n39",
+     "n40",
+     "n44",
+     "n45"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n78",
+    "nome": "Corpo de ferro",
+    "tipo": "danoRecebido",
+    "alvo": null,
+    "por": -0.004545454545454546,
+    "graus": 5,
+    "gasto": 0,
+    "via": "punho",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.5003,
+     "y": 0.7604
+    },
+    "raio": 0.0342,
+    "vizinhos": [
+     "n67",
+     "n68",
+     "n73",
+     "n74"
+    ],
+    "custos": [
+     7,
+     7,
+     7,
+     7,
+     7
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n79",
+    "nome": "Pés leves",
+    "tipo": "skill",
+    "alvo": "shielding",
+    "por": 1.1363636363636365,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.8069,
+     "y": 0.4182
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n26",
+     "n32",
+     "n38",
+     "n43"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 25,
+    "especial": null
+   },
+   {
+    "id": "n80",
+    "nome": "Vazio",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.004545454545454546,
+    "graus": 4,
+    "gasto": 0,
+    "via": "sopro",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4987,
+     "y": 0.185
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n1",
+     "n9",
+     "n10",
+     "n15"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   }
+  ],
+  "bonus": {}
+ },
+ "emCacada": false
+}

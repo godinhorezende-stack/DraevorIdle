@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor de mapas — Ravox Idle</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #10131a; color: #dfe3ea; font: 14px/1.4 system-ui, sans-serif; }
+  header { padding: 10px 16px; background: #171b26; border-bottom: 1px solid #2a3040; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; margin-right: 12px; color: #f5c542; }
+  header label { display: flex; align-items: center; gap: 4px; }
+  header input, header select, header button { background: #202636; color: #dfe3ea; border: 1px solid #333c50; border-radius: 4px; padding: 4px 8px; font: inherit; }
+  header input[type=number] { width: 64px; }
+  header button { cursor: pointer; }
+  header button.primario { background: #2f7a4a; border-color: #3a9a5c; }
+  #aviso { min-height: 18px; font-size: 12.5px; color: #f0a851; }
+  main { display: flex; height: calc(100vh - 46px); }
+  #paleta { width: 190px; padding: 10px; border-right: 1px solid #2a3040; overflow-y: auto; }
+  #paleta h2 { font-size: 12px; text-transform: uppercase; color: #8894ac; margin: 4px 0 8px; }
+  .swatch { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 4px; cursor: pointer; margin-bottom: 3px; }
+  .swatch:hover { background: #202636; }
+  .swatch.ativo { background: #2b3f5c; outline: 1px solid #4a6ea8; }
+  .swatch .cor { width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; }
+  #ferramentas { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+  #ferramentas button { text-align: left; }
+  #canvasWrap { flex: 1; overflow: auto; position: relative; }
+  #grade { image-rendering: pixelated; cursor: crosshair; display: block; }
+  #spawns { width: 230px; border-left: 1px solid #2a3040; padding: 10px; overflow-y: auto; }
+  #spawns h2 { font-size: 12px; text-transform: uppercase; color: #8894ac; margin: 4px 0 8px; }
+  #spawns select, #spawns input { width: 100%; margin-bottom: 6px; }
+  .item-spawn { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; border-radius: 4px; font-size: 12.5px; }
+  .item-spawn:hover { background: #202636; }
+  .item-spawn button { background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; }
+  .legenda-ferramenta { font-size: 12px; color: #8894ac; margin: 10px 0 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Editor de mapas</h1>
+  <label>Id <input id="mapaId" placeholder="minha-caverna"></label>
+  <label>Largura <input id="mapaW" type="number" value="40" min="5" max="300"></label>
+  <label>Altura <input id="mapaH" type="number" value="30" min="5" max="300"></label>
+  <button id="btNovo">Novo mapa</button>
+  <label>Carregar <select id="listaMapas"></select></label>
+  <button id="btCarregar">Abrir</button>
+  <button id="btSalvar" class="primario">Salvar</button>
+  <span id="aviso"></span>
+</header>
+<main>
+  <div id="paleta">
+    <div class="legenda-ferramenta">Ferramenta</div>
+    <div id="ferramentas">
+      <button id="ferPincel" class="swatch ativo">Pincel (andável)</button>
+      <button id="ferParede">Parede (bloqueado)</button>
+      <button id="ferSpawn">Marcar spawn</button>
+      <button id="ferApagarSpawn">Apagar spawn</button>
+    </div>
+    <h2>Piso — índices reais</h2>
+    <div id="paletaPiso"></div>
+  </div>
+  <div id="canvasWrap"><canvas id="grade"></canvas></div>
+  <div id="spawns">
+    <h2>Bicho pro próximo spawn</h2>
+    <input id="filtroBicho" placeholder="buscar...">
+    <select id="bicho" size="10"></select>
+    <h2>Spawns no mapa (<span id="contagemSpawns">0</span>)</h2>
+    <div id="listaSpawns"></div>
+  </div>
+</main>
+<script type="module" src="/client/src/editor.mjs"></script>
+</body>
+</html>

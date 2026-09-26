@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Teste de animações</title>
+<!-- Página de MEDIÇÃO (não é do jogo): os elementos que animam sem parar no
+     jogo, com as mesmas classes, para medir o custo de pintura com a folha real. -->
+<link rel="stylesheet" href="/client/style.css">
+<style>
+  body { background: #0b1012; margin: 0; padding: 16px; }
+  .linha { display: flex; gap: 16px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .hud-bars { width: 260px; }
+  .slot-t { position: relative; width: 34px; height: 34px; background: #151d20; border: 1px solid #2a3a40; }
+</style>
+</head>
+<body>
+  <div class="linha tools" style="display:flex">
+    <button class="alerta" style="width:56px;height:50px"><span class="facho" aria-hidden="true"><i></i></span>Sistemas</button>
+    <button class="alerta" style="width:56px;height:50px"><span class="facho" aria-hidden="true"><i></i></span>Árvore</button>
+    <button class="alerta" style="width:56px;height:50px"><span class="facho" aria-hidden="true"><i></i></span>Diária</button>
+    <button class="aviso-da-barra" style="width:56px;height:50px"><span class="icon" style="display:inline-block;width:24px;height:24px;background:#c8a13c"></span></button>
+    <button id="store-button" title="Ravox Store"><span class="facho" aria-hidden="true"><i></i></span><img src="/client/assets/ui/store-button.webp" alt=""></button>
+  </div>
+  <div class="linha">
+    <div class="hud-bars">
+      <div class="hud-bar hp" style="--fill:80%"><i style="--fill:80%;--liq-a:#e0584a;--liq-b:#8a1f18"></i><span>6200/6300</span></div>
+      <div class="hud-bar mana" style="--fill:60%"><i style="--fill:60%;--liq-a:#5b8dff;--liq-b:#1e3c96"></i><span>1040/2110</span></div>
+      <div class="bar-slot"><div class="hud-bar stamina enchendo" data-grau="cheia"><i style="--fill:70%;--liq-a:#5fe0a0;--liq-b:#1f8a56"></i><span>36h 45m</span></div></div>
+    </div>
+    <div class="hud-bars">
+      <div class="hud-bar hp"><i style="--fill:40%;--liq-a:#e0584a;--liq-b:#8a1f18"></i><span>barra 2</span></div>
+      <div class="hud-bar mana"><i style="--fill:90%;--liq-a:#5b8dff;--liq-b:#1e3c96"></i><span>barra 2</span></div>
+    </div>
+    <div class="hud-systems">
+      <button class="hud-system alert"><span class="hud-system-icon" style="background:#888"></span></button>
+      <button class="hud-system alert"><span class="hud-system-icon" style="background:#888"></span></button>
+    </div>
+  </div>
+  <div class="linha" style="width:260px">
+    <button class="autosell on"><b>AUTO VENDA ON</b><em>venda a cada 120s</em></button>
+  </div>
+  <div class="linha bag-actions" style="width:260px">
+    <button class="autosell off"><b>AUTO VENDA OFF</b></button>
+  </div>
+  <div class="linha" id="selos"></div>
+  <div class="linha">
+    <div class="efeito-pill gastando"><canvas class="sprite" width="32" height="32" style="background:#6a4"></canvas><div class="efeito-pill-texto"><span class="efeito-pill-nome">BUFF</span></div></div>
+  </div>
+  <script>
+    const selos = document.getElementById('selos');
+    for (let i = 0; i < 12; i++) selos.insertAdjacentHTML('beforeend', '<div class="slot-t"><em class="selo-tier">10</em></div>');
+  </script>
+</body>
+</html>

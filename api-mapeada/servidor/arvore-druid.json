@@ -1,0 +1,3439 @@
+{
+ "t": "arvore",
+ "view": {
+  "vocacao": "druid",
+  "pontos": {
+   "total": 0,
+   "usados": 0,
+   "livres": 0
+  },
+  "custoDaArvore": 1496,
+  "levelCheio": 3000,
+  "precoParaRefazer": 800000,
+  "habilidades": {
+   "escolhidas": [],
+   "vagas": 0,
+   "levelsPorVaga": 700,
+   "precoParaTirar": 160000
+  },
+  "montagens": [
+   null,
+   null
+  ],
+  "precoParaUsarMontagem": 240000,
+  "base": "n3",
+  "vinculos": [
+   [
+    "n0",
+    "n6"
+   ],
+   [
+    "n0",
+    "n9"
+   ],
+   [
+    "n1",
+    "n4"
+   ],
+   [
+    "n1",
+    "n5"
+   ],
+   [
+    "n1",
+    "n40"
+   ],
+   [
+    "n2",
+    "n7"
+   ],
+   [
+    "n2",
+    "n13"
+   ],
+   [
+    "n3",
+    "n75"
+   ],
+   [
+    "n3",
+    "n76"
+   ],
+   [
+    "n3",
+    "n77"
+   ],
+   [
+    "n4",
+    "n5"
+   ],
+   [
+    "n4",
+    "n8"
+   ],
+   [
+    "n5",
+    "n8"
+   ],
+   [
+    "n5",
+    "n18"
+   ],
+   [
+    "n5",
+    "n40"
+   ],
+   [
+    "n5",
+    "n51"
+   ],
+   [
+    "n6",
+    "n9"
+   ],
+   [
+    "n6",
+    "n10"
+   ],
+   [
+    "n7",
+    "n11"
+   ],
+   [
+    "n7",
+    "n13"
+   ],
+   [
+    "n7",
+    "n15"
+   ],
+   [
+    "n8",
+    "n11"
+   ],
+   [
+    "n8",
+    "n12"
+   ],
+   [
+    "n8",
+    "n19"
+   ],
+   [
+    "n9",
+    "n14"
+   ],
+   [
+    "n10",
+    "n14"
+   ],
+   [
+    "n10",
+    "n17"
+   ],
+   [
+    "n10",
+    "n21"
+   ],
+   [
+    "n10",
+    "n51"
+   ],
+   [
+    "n11",
+    "n15"
+   ],
+   [
+    "n11",
+    "n19"
+   ],
+   [
+    "n12",
+    "n18"
+   ],
+   [
+    "n13",
+    "n15"
+   ],
+   [
+    "n13",
+    "n20"
+   ],
+   [
+    "n14",
+    "n21"
+   ],
+   [
+    "n14",
+    "n82"
+   ],
+   [
+    "n15",
+    "n20"
+   ],
+   [
+    "n15",
+    "n78"
+   ],
+   [
+    "n16",
+    "n27"
+   ],
+   [
+    "n16",
+    "n34"
+   ],
+   [
+    "n16",
+    "n41"
+   ],
+   [
+    "n16",
+    "n43"
+   ],
+   [
+    "n16",
+    "n61"
+   ],
+   [
+    "n17",
+    "n18"
+   ],
+   [
+    "n17",
+    "n21"
+   ],
+   [
+    "n17",
+    "n22"
+   ],
+   [
+    "n17",
+    "n24"
+   ],
+   [
+    "n18",
+    "n22"
+   ],
+   [
+    "n18",
+    "n23"
+   ],
+   [
+    "n18",
+    "n26"
+   ],
+   [
+    "n19",
+    "n25"
+   ],
+   [
+    "n19",
+    "n78"
+   ],
+   [
+    "n20",
+    "n28"
+   ],
+   [
+    "n20",
+    "n78"
+   ],
+   [
+    "n20",
+    "n79"
+   ],
+   [
+    "n21",
+    "n24"
+   ],
+   [
+    "n21",
+    "n27"
+   ],
+   [
+    "n21",
+    "n82"
+   ],
+   [
+    "n22",
+    "n24"
+   ],
+   [
+    "n22",
+    "n26"
+   ],
+   [
+    "n22",
+    "n29"
+   ],
+   [
+    "n22",
+    "n30"
+   ],
+   [
+    "n23",
+    "n25"
+   ],
+   [
+    "n23",
+    "n26"
+   ],
+   [
+    "n24",
+    "n27"
+   ],
+   [
+    "n24",
+    "n30"
+   ],
+   [
+    "n25",
+    "n29"
+   ],
+   [
+    "n25",
+    "n31"
+   ],
+   [
+    "n25",
+    "n35"
+   ],
+   [
+    "n25",
+    "n78"
+   ],
+   [
+    "n26",
+    "n29"
+   ],
+   [
+    "n26",
+    "n30"
+   ],
+   [
+    "n26",
+    "n31"
+   ],
+   [
+    "n26",
+    "n36"
+   ],
+   [
+    "n27",
+    "n30"
+   ],
+   [
+    "n28",
+    "n79"
+   ],
+   [
+    "n28",
+    "n80"
+   ],
+   [
+    "n29",
+    "n31"
+   ],
+   [
+    "n29",
+    "n32"
+   ],
+   [
+    "n29",
+    "n33"
+   ],
+   [
+    "n29",
+    "n35"
+   ],
+   [
+    "n30",
+    "n33"
+   ],
+   [
+    "n30",
+    "n34"
+   ],
+   [
+    "n30",
+    "n38"
+   ],
+   [
+    "n31",
+    "n33"
+   ],
+   [
+    "n31",
+    "n36"
+   ],
+   [
+    "n32",
+    "n35"
+   ],
+   [
+    "n32",
+    "n36"
+   ],
+   [
+    "n32",
+    "n39"
+   ],
+   [
+    "n33",
+    "n34"
+   ],
+   [
+    "n33",
+    "n36"
+   ],
+   [
+    "n33",
+    "n37"
+   ],
+   [
+    "n34",
+    "n38"
+   ],
+   [
+    "n35",
+    "n39"
+   ],
+   [
+    "n35",
+    "n42"
+   ],
+   [
+    "n35",
+    "n80"
+   ],
+   [
+    "n36",
+    "n37"
+   ],
+   [
+    "n36",
+    "n39"
+   ],
+   [
+    "n36",
+    "n44"
+   ],
+   [
+    "n36",
+    "n47"
+   ],
+   [
+    "n36",
+    "n48"
+   ],
+   [
+    "n37",
+    "n38"
+   ],
+   [
+    "n37",
+    "n44"
+   ],
+   [
+    "n37",
+    "n47"
+   ],
+   [
+    "n38",
+    "n45"
+   ],
+   [
+    "n38",
+    "n47"
+   ],
+   [
+    "n38",
+    "n52"
+   ],
+   [
+    "n39",
+    "n44"
+   ],
+   [
+    "n39",
+    "n46"
+   ],
+   [
+    "n39",
+    "n48"
+   ],
+   [
+    "n40",
+    "n51"
+   ],
+   [
+    "n41",
+    "n43"
+   ],
+   [
+    "n41",
+    "n45"
+   ],
+   [
+    "n41",
+    "n49"
+   ],
+   [
+    "n42",
+    "n46"
+   ],
+   [
+    "n42",
+    "n80"
+   ],
+   [
+    "n42",
+    "n81"
+   ],
+   [
+    "n43",
+    "n49"
+   ],
+   [
+    "n44",
+    "n47"
+   ],
+   [
+    "n44",
+    "n48"
+   ],
+   [
+    "n44",
+    "n54"
+   ],
+   [
+    "n45",
+    "n49"
+   ],
+   [
+    "n45",
+    "n52"
+   ],
+   [
+    "n45",
+    "n57"
+   ],
+   [
+    "n46",
+    "n50"
+   ],
+   [
+    "n46",
+    "n53"
+   ],
+   [
+    "n46",
+    "n81"
+   ],
+   [
+    "n47",
+    "n52"
+   ],
+   [
+    "n47",
+    "n54"
+   ],
+   [
+    "n47",
+    "n57"
+   ],
+   [
+    "n48",
+    "n53"
+   ],
+   [
+    "n48",
+    "n54"
+   ],
+   [
+    "n48",
+    "n58"
+   ],
+   [
+    "n49",
+    "n55"
+   ],
+   [
+    "n50",
+    "n56"
+   ],
+   [
+    "n50",
+    "n81"
+   ],
+   [
+    "n52",
+    "n55"
+   ],
+   [
+    "n52",
+    "n57"
+   ],
+   [
+    "n52",
+    "n59"
+   ],
+   [
+    "n53",
+    "n56"
+   ],
+   [
+    "n53",
+    "n58"
+   ],
+   [
+    "n53",
+    "n60"
+   ],
+   [
+    "n53",
+    "n63"
+   ],
+   [
+    "n54",
+    "n57"
+   ],
+   [
+    "n54",
+    "n59"
+   ],
+   [
+    "n54",
+    "n60"
+   ],
+   [
+    "n54",
+    "n64"
+   ],
+   [
+    "n55",
+    "n62"
+   ],
+   [
+    "n56",
+    "n58"
+   ],
+   [
+    "n56",
+    "n63"
+   ],
+   [
+    "n57",
+    "n59"
+   ],
+   [
+    "n57",
+    "n62"
+   ],
+   [
+    "n57",
+    "n64"
+   ],
+   [
+    "n58",
+    "n60"
+   ],
+   [
+    "n58",
+    "n63"
+   ],
+   [
+    "n58",
+    "n64"
+   ],
+   [
+    "n59",
+    "n60"
+   ],
+   [
+    "n59",
+    "n64"
+   ],
+   [
+    "n59",
+    "n66"
+   ],
+   [
+    "n60",
+    "n63"
+   ],
+   [
+    "n60",
+    "n64"
+   ],
+   [
+    "n60",
+    "n67"
+   ],
+   [
+    "n61",
+    "n82"
+   ],
+   [
+    "n62",
+    "n66"
+   ],
+   [
+    "n62",
+    "n68"
+   ],
+   [
+    "n63",
+    "n67"
+   ],
+   [
+    "n63",
+    "n69"
+   ],
+   [
+    "n64",
+    "n65"
+   ],
+   [
+    "n64",
+    "n66"
+   ],
+   [
+    "n64",
+    "n71"
+   ],
+   [
+    "n65",
+    "n66"
+   ],
+   [
+    "n65",
+    "n67"
+   ],
+   [
+    "n65",
+    "n70"
+   ],
+   [
+    "n65",
+    "n74"
+   ],
+   [
+    "n65",
+    "n77"
+   ],
+   [
+    "n66",
+    "n68"
+   ],
+   [
+    "n66",
+    "n70"
+   ],
+   [
+    "n66",
+    "n72"
+   ],
+   [
+    "n66",
+    "n74"
+   ],
+   [
+    "n67",
+    "n69"
+   ],
+   [
+    "n67",
+    "n71"
+   ],
+   [
+    "n67",
+    "n73"
+   ],
+   [
+    "n67",
+    "n74"
+   ],
+   [
+    "n68",
+    "n72"
+   ],
+   [
+    "n69",
+    "n73"
+   ],
+   [
+    "n70",
+    "n71"
+   ],
+   [
+    "n70",
+    "n72"
+   ],
+   [
+    "n70",
+    "n74"
+   ],
+   [
+    "n70",
+    "n75"
+   ],
+   [
+    "n71",
+    "n74"
+   ],
+   [
+    "n71",
+    "n76"
+   ],
+   [
+    "n72",
+    "n75"
+   ],
+   [
+    "n73",
+    "n76"
+   ],
+   [
+    "n74",
+    "n75"
+   ],
+   [
+    "n74",
+    "n77"
+   ],
+   [
+    "n75",
+    "n77"
+   ],
+   [
+    "n78",
+    "n79"
+   ],
+   [
+    "n79",
+    "n80"
+   ],
+   [
+    "n80",
+    "n81"
+   ]
+  ],
+  "vias": [
+   {
+    "id": "geada",
+    "nome": "Geada",
+    "resumo": "O eixo do dano.",
+    "preco": null,
+    "custo": null,
+    "graus": 0
+   },
+   {
+    "id": "bosque",
+    "nome": "Bosque",
+    "resumo": "A terra que responde.",
+    "preco": null,
+    "custo": null,
+    "graus": 0
+   },
+   {
+    "id": "fonte",
+    "nome": "Fonte",
+    "resumo": "Mana que não seca.",
+    "preco": null,
+    "custo": null,
+    "graus": 0
+   }
+  ],
+  "nos": [
+   {
+    "id": "n0",
+    "nome": "Inverno sem fim",
+    "tipo": "elemento",
+    "alvo": "ice",
+    "por": 0.022222222222222227,
+    "graus": 3,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "medalhao",
+    "ponto": {
+     "x": 0.16,
+     "y": 0.123
+    },
+    "raio": 0.0865,
+    "vizinhos": [
+     "n6",
+     "n9"
+    ],
+    "custos": [
+     12,
+     12,
+     13
+    ],
+    "teto": 0.2,
+    "especial": {
+     "id": "invernoSemFim",
+     "nome": "Inverno sem fim",
+     "texto": "Magia de gelo deixa o bicho recebendo 10% mais dano de todos, por 4 segundos."
+    }
+   },
+   {
+    "id": "n1",
+    "nome": "Uma só carne",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.009836065573770493,
+    "graus": 3,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "medalhao",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.1048
+    },
+    "raio": 0.0789,
+    "vizinhos": [
+     "n4",
+     "n5",
+     "n40"
+    ],
+    "custos": [
+     12,
+     12,
+     13
+    ],
+    "teto": 0.2,
+    "especial": {
+     "id": "raizVenenosa",
+     "nome": "Raiz venenosa",
+     "texto": "Magia de terra tem 25% de chance de envenenar o bicho com 30% do dano, ao longo de 5 segundos."
+    }
+   },
+   {
+    "id": "n2",
+    "nome": "Fonte do bosque",
+    "tipo": "regenMana",
+    "alvo": null,
+    "por": 0.02027027027027027,
+    "graus": 3,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "medalhao",
+    "ponto": {
+     "x": 0.8438,
+     "y": 0.1209
+    },
+    "raio": 0.0825,
+    "vizinhos": [
+     "n7",
+     "n13"
+    ],
+    "custos": [
+     12,
+     12,
+     13
+    ],
+    "teto": 0.25,
+    "especial": {
+     "id": "fonteViva",
+     "nome": "Fonte viva",
+     "texto": "Suas magias de cura também põem um escudo de mana por 3 segundos, de 15% do que curaram."
+    }
+   },
+   {
+    "id": "n3",
+    "nome": "Raiz",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.006944444444444444,
+    "graus": 4,
+    "gasto": 0,
+    "via": null,
+    "escala": "base",
+    "ponto": {
+     "x": 0.5003,
+     "y": 0.8909
+    },
+    "raio": 0.0256,
+    "vizinhos": [
+     "n75",
+     "n76",
+     "n77"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     4
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n4",
+    "nome": "Raiz funda",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.006557377049180328,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.5741,
+     "y": 0.1733
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n1",
+     "n5",
+     "n8"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     10
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n5",
+    "nome": "Mão do bosque",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.008333333333333333,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.2021
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n1",
+     "n4",
+     "n8",
+     "n18",
+     "n40",
+     "n51"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     10
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n6",
+    "nome": "Inverno",
+    "tipo": "elemento",
+    "alvo": "ice",
+    "por": 0.014814814814814815,
+    "graus": 5,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.2451,
+     "y": 0.2043
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n0",
+     "n9",
+     "n10"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     10
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n7",
+    "nome": "Bênção do bosque",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.013888888888888888,
+    "graus": 5,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.7555,
+     "y": 0.2053
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n2",
+     "n11",
+     "n13",
+     "n15"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     10
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n8",
+    "nome": "Trama viva",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.6223,
+     "y": 0.2053
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n4",
+     "n5",
+     "n11",
+     "n12",
+     "n19"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n9",
+    "nome": "Ciclo das folhas",
+    "tipo": "skill",
+    "alvo": "magic",
+    "por": 2.2222222222222223,
+    "graus": 5,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.1648,
+     "y": 0.2182
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n0",
+     "n6",
+     "n14"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 20,
+    "especial": null
+   },
+   {
+    "id": "n10",
+    "nome": "Silêncio da mata",
+    "tipo": "custoDeMana",
+    "alvo": null,
+    "por": -0.011111111111111112,
+    "graus": 5,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.3125,
+     "y": 0.231
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n6",
+     "n14",
+     "n17",
+     "n21",
+     "n51"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n11",
+    "nome": "Lençol freático",
+    "tipo": "regenMana",
+    "alvo": null,
+    "por": 0.013513513513513514,
+    "graus": 5,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.6881,
+     "y": 0.2332
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n7",
+     "n8",
+     "n15",
+     "n19"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n12",
+    "nome": "Coração de carvalho",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.551,
+     "y": 0.2444
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n8",
+     "n18"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n13",
+    "nome": "Nascente",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.011111111111111112,
+    "graus": 5,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.8374,
+     "y": 0.2214
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n2",
+     "n7",
+     "n15",
+     "n20"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n14",
+    "nome": "Corrente",
+    "tipo": "attackDamage",
+    "alvo": null,
+    "por": 0.022222222222222223,
+    "graus": 5,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.2242,
+     "y": 0.2663
+    },
+    "raio": 0.0386,
+    "vizinhos": [
+     "n9",
+     "n10",
+     "n21",
+     "n82"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n15",
+    "nome": "Bênção do bosque",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.013888888888888888,
+    "graus": 5,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.7796,
+     "y": 0.2674
+    },
+    "raio": 0.0382,
+    "vizinhos": [
+     "n7",
+     "n11",
+     "n13",
+     "n20",
+     "n78"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n16",
+    "nome": "Casca que corta",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.028571428571428574,
+    "graus": 5,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.1969,
+     "y": 0.4267
+    },
+    "raio": 0.0402,
+    "vizinhos": [
+     "n27",
+     "n34",
+     "n41",
+     "n43",
+     "n61"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n17",
+    "nome": "Lasca de gelo",
+    "tipo": "elemento",
+    "alvo": "ice",
+    "por": 0.007407407407407408,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3943,
+     "y": 0.2695
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n10",
+     "n18",
+     "n21",
+     "n22",
+     "n24"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n18",
+    "nome": "Carne do bosque",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.005263157894736842,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.2781
+    },
+    "raio": 0.039,
+    "vizinhos": [
+     "n5",
+     "n12",
+     "n17",
+     "n22",
+     "n23",
+     "n26"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n19",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6544,
+     "y": 0.2802
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n8",
+     "n11",
+     "n25",
+     "n78"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n20",
+    "nome": "Mão que acalma",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.006944444444444444,
+    "graus": 4,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.8277,
+     "y": 0.3176
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n13",
+     "n15",
+     "n28",
+     "n78",
+     "n79"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n21",
+    "nome": "Frio na pedra",
+    "tipo": "skill",
+    "alvo": "magic",
+    "por": 1.1111111111111112,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2948,
+     "y": 0.3187
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n10",
+     "n14",
+     "n17",
+     "n24",
+     "n27",
+     "n82"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 20,
+    "especial": null
+   },
+   {
+    "id": "n22",
+    "nome": "Seiva que cura",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4473,
+     "y": 0.323
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n17",
+     "n18",
+     "n24",
+     "n26",
+     "n29",
+     "n30"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n23",
+    "nome": "Galho seco",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5532,
+     "y": 0.3219
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n18",
+     "n25",
+     "n26"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n24",
+    "nome": "Gota de orvalho",
+    "tipo": "custoDeMana",
+    "alvo": null,
+    "por": -0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3719,
+     "y": 0.339
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n17",
+     "n21",
+     "n22",
+     "n27",
+     "n30"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n25",
+    "nome": "Anel de tronco",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6207,
+     "y": 0.339
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n19",
+     "n23",
+     "n29",
+     "n31",
+     "n35",
+     "n78"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n26",
+    "nome": "Casca",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4987,
+     "y": 0.3487
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n18",
+     "n22",
+     "n23",
+     "n29",
+     "n30",
+     "n31",
+     "n36"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n27",
+    "nome": "Micélio",
+    "tipo": "attackDamage",
+    "alvo": null,
+    "por": 0.011111111111111112,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2499,
+     "y": 0.3604
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n16",
+     "n21",
+     "n24",
+     "n30"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n28",
+    "nome": "Orvalho",
+    "tipo": "regenMana",
+    "alvo": null,
+    "por": 0.006756756756756757,
+    "graus": 4,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.8614,
+     "y": 0.3636
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n20",
+     "n79",
+     "n80"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n29",
+    "nome": "Musgo",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.0013157894736842105,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5645,
+     "y": 0.3775
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n22",
+     "n25",
+     "n26",
+     "n31",
+     "n32",
+     "n33",
+     "n35"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n30",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3839,
+     "y": 0.3805
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n22",
+     "n24",
+     "n26",
+     "n27",
+     "n33",
+     "n34",
+     "n38"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n31",
+    "nome": "Seiva que cura",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.3925
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n25",
+     "n26",
+     "n29",
+     "n33",
+     "n36"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n32",
+    "nome": "Galho seco",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6158,
+     "y": 0.4064
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n29",
+     "n35",
+     "n36",
+     "n39"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n33",
+    "nome": "Anel de tronco",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4493,
+     "y": 0.4078
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n29",
+     "n30",
+     "n31",
+     "n34",
+     "n36",
+     "n37"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n34",
+    "nome": "Casca",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3141,
+     "y": 0.4225
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n16",
+     "n30",
+     "n33",
+     "n38"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n35",
+    "nome": "Musgo",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.0013157894736842105,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6849,
+     "y": 0.4235
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n25",
+     "n29",
+     "n32",
+     "n39",
+     "n42",
+     "n80"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n36",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5035,
+     "y": 0.4428
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n26",
+     "n31",
+     "n32",
+     "n33",
+     "n37",
+     "n39",
+     "n44",
+     "n47",
+     "n48"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n37",
+    "nome": "Seiva que cura",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4349,
+     "y": 0.4497
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n33",
+     "n36",
+     "n38",
+     "n44",
+     "n47"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n38",
+    "nome": "Seiva viva",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.359,
+     "y": 0.4749
+    },
+    "raio": 0.0378,
+    "vizinhos": [
+     "n30",
+     "n34",
+     "n37",
+     "n45",
+     "n47",
+     "n52"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n39",
+    "nome": "Raiz funda",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.006557377049180328,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.6335,
+     "y": 0.4759
+    },
+    "raio": 0.0342,
+    "vizinhos": [
+     "n32",
+     "n35",
+     "n36",
+     "n44",
+     "n46",
+     "n48"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n40",
+    "nome": "Galho seco",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4313,
+     "y": 0.1743
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n1",
+     "n5",
+     "n51"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n41",
+    "nome": "Espinho gelado",
+    "tipo": "critDamage",
+    "alvo": null,
+    "por": 0.014285714285714287,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2643,
+     "y": 0.4684
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n16",
+     "n43",
+     "n45",
+     "n49"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n42",
+    "nome": "Raiz que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7346,
+     "y": 0.4684
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n35",
+     "n46",
+     "n80",
+     "n81"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n43",
+    "nome": "Lasca de gelo",
+    "tipo": "elemento",
+    "alvo": "ice",
+    "por": 0.007407407407407408,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.1841,
+     "y": 0.4845
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n16",
+     "n41",
+     "n49"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n44",
+    "nome": "Anel de tronco",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5019,
+     "y": 0.4973
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n36",
+     "n37",
+     "n39",
+     "n47",
+     "n48",
+     "n54"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n45",
+    "nome": "Casca",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3141,
+     "y": 0.5144
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n38",
+     "n41",
+     "n49",
+     "n52",
+     "n57"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n46",
+    "nome": "Musgo",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.0013157894736842105,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6897,
+     "y": 0.5102
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n39",
+     "n42",
+     "n50",
+     "n53",
+     "n81"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n47",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4165,
+     "y": 0.5135
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n36",
+     "n37",
+     "n38",
+     "n44",
+     "n52",
+     "n54",
+     "n57"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n48",
+    "nome": "Seiva que cura",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5743,
+     "y": 0.5135
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n36",
+     "n39",
+     "n44",
+     "n53",
+     "n54",
+     "n58"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n49",
+    "nome": "Frio na pedra",
+    "tipo": "skill",
+    "alvo": "magic",
+    "por": 1.1111111111111112,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2322,
+     "y": 0.5318
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n41",
+     "n43",
+     "n45",
+     "n55"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 20,
+    "especial": null
+   },
+   {
+    "id": "n50",
+    "nome": "Mão que acalma",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.006944444444444444,
+    "graus": 4,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7587,
+     "y": 0.5318
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n46",
+     "n56",
+     "n81"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n51",
+    "nome": "Galho seco",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3815,
+     "y": 0.2043
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n5",
+     "n10",
+     "n40"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n52",
+    "nome": "Anel de tronco",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3622,
+     "y": 0.5561
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n38",
+     "n45",
+     "n47",
+     "n55",
+     "n57",
+     "n59"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n53",
+    "nome": "Casca",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6431,
+     "y": 0.5529
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n46",
+     "n48",
+     "n56",
+     "n58",
+     "n60",
+     "n63"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n54",
+    "nome": "Mão do bosque",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.008333333333333333,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.4987,
+     "y": 0.569
+    },
+    "raio": 0.0386,
+    "vizinhos": [
+     "n44",
+     "n47",
+     "n48",
+     "n57",
+     "n59",
+     "n60",
+     "n64"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n55",
+    "nome": "Musgo",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.0013157894736842105,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.2782,
+     "y": 0.582
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n49",
+     "n52",
+     "n62"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n56",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7186,
+     "y": 0.584
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n50",
+     "n53",
+     "n58",
+     "n63"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n57",
+    "nome": "Seiva que cura",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4042,
+     "y": 0.5858
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n45",
+     "n47",
+     "n52",
+     "n54",
+     "n59",
+     "n62",
+     "n64"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n58",
+    "nome": "Galho seco",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.595,
+     "y": 0.5882
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n48",
+     "n53",
+     "n56",
+     "n60",
+     "n63",
+     "n64"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n59",
+    "nome": "Anel de tronco",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4411,
+     "y": 0.6199
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n52",
+     "n54",
+     "n57",
+     "n60",
+     "n64",
+     "n66"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n60",
+    "nome": "Casca",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5532,
+     "y": 0.6235
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n53",
+     "n54",
+     "n58",
+     "n59",
+     "n63",
+     "n64",
+     "n67"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n61",
+    "nome": "Gota de orvalho",
+    "tipo": "custoDeMana",
+    "alvo": null,
+    "por": -0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.1391,
+     "y": 0.3647
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n16",
+     "n82"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": -0.1,
+    "especial": null
+   },
+   {
+    "id": "n62",
+    "nome": "Trama viva",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.3414,
+     "y": 0.6417
+    },
+    "raio": 0.039,
+    "vizinhos": [
+     "n55",
+     "n57",
+     "n66",
+     "n68"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n63",
+    "nome": "Coração de carvalho",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 5,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.6592,
+     "y": 0.6449
+    },
+    "raio": 0.039,
+    "vizinhos": [
+     "n53",
+     "n56",
+     "n58",
+     "n60",
+     "n67",
+     "n69"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n64",
+    "nome": "Musgo",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.0013157894736842105,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5003,
+     "y": 0.646
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n54",
+     "n57",
+     "n58",
+     "n59",
+     "n60",
+     "n65",
+     "n66",
+     "n71"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n65",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4987,
+     "y": 0.692
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n64",
+     "n66",
+     "n67",
+     "n70",
+     "n74",
+     "n77"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n66",
+    "nome": "Seiva que cura",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4008,
+     "y": 0.693
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n59",
+     "n62",
+     "n64",
+     "n65",
+     "n68",
+     "n70",
+     "n72",
+     "n74"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n67",
+    "nome": "Galho seco",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5998,
+     "y": 0.692
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n60",
+     "n63",
+     "n65",
+     "n69",
+     "n71",
+     "n73",
+     "n74"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n68",
+    "nome": "Anel de tronco",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3047,
+     "y": 0.691
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n62",
+     "n66",
+     "n72"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n69",
+    "nome": "Casca",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6913,
+     "y": 0.6952
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n63",
+     "n67",
+     "n73"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n70",
+    "nome": "Musgo",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.0013157894736842105,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4489,
+     "y": 0.7305
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n65",
+     "n66",
+     "n71",
+     "n72",
+     "n74",
+     "n75"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n71",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.55,
+     "y": 0.7273
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n64",
+     "n67",
+     "n70",
+     "n74",
+     "n76"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n72",
+    "nome": "Seiva que cura",
+    "tipo": "cura",
+    "alvo": null,
+    "por": 0.004166666666666667,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.3608,
+     "y": 0.7393
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n66",
+     "n68",
+     "n70",
+     "n75"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n73",
+    "nome": "Galho seco",
+    "tipo": "critChance",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.6351,
+     "y": 0.7422
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n67",
+     "n69",
+     "n76"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n74",
+    "nome": "Anel de tronco",
+    "tipo": "maxHp",
+    "alvo": null,
+    "por": 0.0020833333333333333,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4971,
+     "y": 0.7476
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n65",
+     "n66",
+     "n67",
+     "n70",
+     "n71",
+     "n75",
+     "n77"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n75",
+    "nome": "Casca",
+    "tipo": "absorb",
+    "alvo": null,
+    "por": 0.002631578947368421,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4172,
+     "y": 0.7847
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n3",
+     "n70",
+     "n72",
+     "n74",
+     "n77"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n76",
+    "nome": "Musgo",
+    "tipo": "lifeLeech",
+    "alvo": null,
+    "por": 0.0013157894736842105,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.5737,
+     "y": 0.7847
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n3",
+     "n71",
+     "n73"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.05,
+    "especial": null
+   },
+   {
+    "id": "n77",
+    "nome": "Raiz que racha",
+    "tipo": "elemento",
+    "alvo": "earth",
+    "por": 0.003278688524590164,
+    "graus": 4,
+    "gasto": 0,
+    "via": "bosque",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.4987,
+     "y": 0.7872
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n3",
+     "n65",
+     "n74",
+     "n75"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   },
+   {
+    "id": "n78",
+    "nome": "Orvalho",
+    "tipo": "regenMana",
+    "alvo": null,
+    "por": 0.006756756756756757,
+    "graus": 4,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7041,
+     "y": 0.3198
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n15",
+     "n19",
+     "n20",
+     "n25",
+     "n79"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n79",
+    "nome": "Raiz que bebe",
+    "tipo": "manaLeech",
+    "alvo": null,
+    "por": 0.005555555555555556,
+    "graus": 4,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.7507,
+     "y": 0.3626
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n20",
+     "n28",
+     "n78",
+     "n80"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.1,
+    "especial": null
+   },
+   {
+    "id": "n80",
+    "nome": "Lençol freático",
+    "tipo": "regenMana",
+    "alvo": null,
+    "por": 0.013513513513513514,
+    "graus": 5,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "grande",
+    "ponto": {
+     "x": 0.802,
+     "y": 0.4289
+    },
+    "raio": 0.0418,
+    "vizinhos": [
+     "n28",
+     "n35",
+     "n42",
+     "n79",
+     "n81"
+    ],
+    "custos": [
+     6,
+     6,
+     6,
+     6,
+     9
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n81",
+    "nome": "Mão que acalma",
+    "tipo": "maxMana",
+    "alvo": null,
+    "por": 0.006944444444444444,
+    "graus": 4,
+    "gasto": 0,
+    "via": "fonte",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.8096,
+     "y": 0.4831
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n42",
+     "n46",
+     "n50",
+     "n80"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.25,
+    "especial": null
+   },
+   {
+    "id": "n82",
+    "nome": "Micélio",
+    "tipo": "attackDamage",
+    "alvo": null,
+    "por": 0.011111111111111112,
+    "graus": 4,
+    "gasto": 0,
+    "via": "geada",
+    "escala": "comum",
+    "ponto": {
+     "x": 0.1776,
+     "y": 0.3209
+    },
+    "raio": 0.0127,
+    "vizinhos": [
+     "n14",
+     "n21",
+     "n61"
+    ],
+    "custos": [
+     3,
+     3,
+     3,
+     3
+    ],
+    "teto": 0.2,
+    "especial": null
+   }
+  ],
+  "bonus": {}
+ },
+ "emCacada": false
+}

@@ -1,0 +1,997 @@
+<!doctype html>
+<meta charset="utf-8">
+<!-- `viewport-fit=cover` faz a pagina ocupar tambem a faixa do entalhe e da
+     barra de gestos do celular; as `safe-area-inset-*` do CSS e' que devolvem o
+     respiro onde ele e' preciso. Sem isso sobram duas tarjas pretas num jogo
+     que ja' briga por altura. O zoom por pinca continua ligado de proposito:
+     desliga-lo e' o atalho comum e tira a unica saida de quem enxerga mal. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Instalado na tela inicial do Android, abre sem a barra do navegador. -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d1214">
+<title>Ravox Idle</title>
+<!-- O icone da aba, nos tamanhos que o navegador pede. O desenho grande
+     (client/assets/ui/idlefavicon.png, 1024x1024 e 1,5 MB) NAO entra aqui: ele
+     e a fonte, e `npm run favicon` corta estes tres a partir dele. Apontar
+     direto para o grande faria cada visitante baixar um megabyte e meio para
+     desenhar 16 pixels na aba. -->
+<link rel="icon" type="image/png" sizes="32x32" href="/client/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/client/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/client/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Cinzel para títulos; Oswald só para NÚMERO. Ver `--font-numero`. -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700;900&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/client/style.css?v=arena0926a">
+<!-- Pré-carrega os fundos da porta de entrada: sem isso a tela pisca em preto. -->
+<link rel="preload" as="image" href="/client/assets/ui/gate-bg.webp">
+<link rel="preload" as="image" href="/client/assets/ui/panel-frame.webp">
+<link rel="preload" as="image" href="/client/assets/ui/ravox-logo.webp">
+<link rel="preload" as="image" href="/client/assets/ui/gate-vocations.webp">
+
+<!-- ---------- a tela de carregamento ----------
+     Ela nasce VISÍVEL e no HTML, e não no JavaScript, de propósito: o que ela
+     cobre é justamente o tempo em que o JavaScript ainda não rodou. Quem abre o
+     jogo numa conexão lenta via, até aqui, uma tela preta sem explicação. -->
+<div id="boot">
+  <div class="boot-caixa">
+    <img class="boot-logo" src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+    <div class="boot-barra"><i id="boot-progresso"></i></div>
+    <span id="boot-passo">acordando o servidor…</span>
+    <small id="boot-detalhe"></small>
+  </div>
+</div>
+
+<script>
+  /*
+   * Rede de segurança da tela de carregamento.
+   *
+   * Quem a tira é o `main.mjs`, no fim do carregamento. Se ele não subir — erro
+   * de rede, arquivo pela metade, navegador antigo que não entende o módulo —,
+   * ela ficaria para sempre cobrindo tudo, e o jogador veria "carregando" eterno
+   * em vez do erro. Vinte segundos é muito mais que a entrada mais lenta e muito
+   * menos que a paciência de quem está olhando.
+   */
+  setTimeout(function () {
+    var tela = document.getElementById('boot');
+    if (!tela) return;
+    tela.remove();
+    document.body.dataset.bootTravou = '1';
+  }, 20000);
+</script>
+
+<!-- ---------- entrando no personagem ----------
+     A mesma cara da tela de carregamento da abertura, e pelo mesmo motivo: o
+     que ela cobre é o tempo em que o mapa, a folha de itens e o sprite do
+     personagem ainda estão chegando. Sem ela o jogo abria "pronto" e engasgava
+     nos primeiros segundos, que é quando o jogador mexe em tudo. -->
+<div id="entrada" hidden>
+  <div class="boot-caixa">
+    <img class="boot-logo" src="/client/assets/ui/ravox-logo.webp" alt="">
+    <b id="entrada-nome"></b>
+    <div class="boot-barra"><i id="entrada-progresso"></i></div>
+    <span id="entrada-passo"></span>
+    <small id="entrada-detalhe"></small>
+  </div>
+</div>
+
+<canvas id="map"></canvas>
+
+<!-- ---------- conta ---------- -->
+<div id="gate">
+  <!-- A volta para a porta da rua. Quem chega pelo site e resolve olhar o
+       ranking antes de criar conta ficava preso aqui: o unico caminho de volta
+       era o botao do navegador. -->
+  <a id="gate-voltar" href="/">&#8592; Voltar ao site</a>
+  <div class="gate-box ui-frame">
+   <div class="gate-inner">
+    <img class="logo" src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+
+    <section id="pane-auth">
+      <div class="gate-tabs">
+        <button data-auth="login" aria-selected="true">Entrar</button>
+        <button data-auth="register">Criar conta</button>
+      </div>
+
+      <!-- `action="#"` e `onsubmit="return false"` são rede, não estilo.
+           Formulário sem `method` envia por GET para a própria página, e aí
+           e-mail e senha vão parar na barra de endereço e no histórico do
+           navegador. O `preventDefault` do módulo cobre o caso normal; isto
+           cobre o instante antes de ele carregar, e o caso de ele falhar. -->
+      <form id="form-login" action="#" onsubmit="return false">
+        <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+        <label>Senha<input type="password" name="password" autocomplete="current-password" required></label>
+        <button type="submit" class="primary">Entrar</button>
+        <!-- Embaixo do botão, e não ao lado do campo de senha: quem está
+             entrando normalmente não deve tropeçar nele, e quem esqueceu a
+             senha só procura depois de o "Entrar" não ter funcionado. -->
+        <button type="button" id="esqueci-abrir" class="link-discreto">Esqueci minha senha</button>
+      </form>
+
+      <form id="form-register" action="#" onsubmit="return false" hidden>
+        <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+        <label>Senha<input type="password" name="password" autocomplete="new-password" minlength="6" required></label>
+        <label>Confirmar senha<input type="password" name="confirm" autocomplete="new-password" minlength="6" required></label>
+        <button type="submit" class="primary">Criar conta</button>
+      </form>
+
+      <div class="gate-or"><span>ou</span></div>
+      <div id="google-slot"></div>
+      <p id="google-note" class="gate-note"></p>
+      <small id="gate-error"></small>
+    </section>
+
+    <section id="pane-characters" hidden>
+      <h2>Seus personagens</h2>
+      <div id="character-list" class="character-list"></div>
+      <p id="character-slots" class="gate-note"></p>
+      <!-- Só para a conta que entra APENAS pela Google. Ver `criarSenhaDaConta`.
+           Uma linha só, embaixo da lista, colada nos botões da conta: é um
+           ajuste da CONTA, e não pode empurrar os personagens para baixo. -->
+      <div id="senha-google-aviso" class="senha-google-aviso" hidden>
+        <span>Criou a conta com a Google? Entre também com e-mail e senha.</span>
+        <button id="senha-google-abrir" class="pequeno">Criar senha</button>
+      </div>
+      <!-- A mesma linha discreta do aviso acima, e pelo mesmo motivo: é ajuste
+           da CONTA, e não pode empurrar os personagens para baixo. O texto e o
+           botão mudam conforme a verificação esteja ligada ou não. -->
+      <div id="seg-aviso" class="senha-google-aviso" hidden>
+        <span id="seg-estado"></span>
+        <!-- O texto fica num `span` PRÓPRIO porque o módulo o reescreve entre
+             "Ligar" e "Desligar". Escrevendo no botão inteiro, o ícone sumiria
+             na primeira troca. -->
+        <button id="seg-abrir" class="pequeno">
+          <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 1.6 13 3.4v4.2c0 3-2 5.4-5 6.8-3-1.4-5-3.8-5-6.8V3.4L8 1.6Z"/>
+          </svg><span id="seg-abrir-texto">Ligar</span>
+        </button>
+      </div>
+      <!-- ---------- os ícones dos botões ----------
+           Desenhados aqui, e não buscados como imagem: são três traços cada um,
+           herdam a cor do botão pelo `currentColor` (então o vermelho do excluir
+           e o verde do criar saem de graça) e não custam um pedido de rede. Os
+           ícones de ARTE do jogo continuam vindo de `client/assets/ui`; estes
+           são de interface, e lá não há desenho para eles. -->
+      <div class="escolha-acoes">
+        <button id="new-character" class="primary">
+          <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="6.5" cy="5" r="2.6"/>
+            <path d="M1.6 14c0-2.7 2.2-4.4 4.9-4.4 1 0 1.9.2 2.7.7"/>
+            <path d="M12.2 9.4v5M9.7 11.9h5"/>
+          </svg>Criar personagem
+        </button>
+        <button id="do-logout" class="ghost">
+          <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M9.8 2.4H3.4v11.2h6.4"/>
+            <path d="M11 5.2 14 8l-3 2.8M6.6 8H14"/>
+          </svg>Sair da conta
+        </button>
+        <!-- Pequeno e vermelho, ao lado de sair: apagar personagem é a coisa
+             mais destrutiva desta tela e a única sem volta. O tamanho menor
+             diz que ele não é para o uso do dia; a cor diz o que acontece se
+             ele for usado. -->
+        <button id="do-delete-character" class="ghost perigo pequeno">
+          <svg class="ico" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M2.8 4.3h10.4M6.2 4.3V2.8h3.6v1.5"/>
+            <path d="M4.2 4.3l.7 9h6.2l.7-9M6.7 6.6v4.4M9.3 6.6v4.4"/>
+          </svg>Excluir personagem
+        </button>
+      </div>
+      <small id="gate-error-2"></small>
+    </section>
+
+    <!-- ---------- excluir personagem: duas portas ----------
+         A primeira pede o NOME digitado; a segunda, a SENHA da conta. São duas
+         telas e não uma porque cada uma responde a um erro diferente: o nome
+         evita apagar o personagem errado, e a senha evita que quem passou na
+         frente do computador apague qualquer um. -->
+    <div id="excluir-overlay" hidden>
+      <div class="excluir-caixa ui-frame">
+        <div id="excluir-passo-nome">
+          <h3>Excluir personagem</h3>
+          <p class="gate-note">
+            Digite o <b>nome exato</b> do personagem que quer apagar. Só ele será
+            removido — os outros personagens da conta continuam como estão.
+          </p>
+          <label>Nome do personagem<input id="excluir-nome" autocomplete="off" maxlength="20"></label>
+          <div class="excluir-acoes">
+            <button id="excluir-nome-cancelar" class="ghost">Cancelar</button>
+            <button id="excluir-nome-confirmar" class="perigo">Confirmar</button>
+          </div>
+        </div>
+
+        <div id="excluir-passo-senha" hidden>
+          <h3>Confirme com a senha</h3>
+          <p class="gate-note">
+            <b id="excluir-alvo"></b> será apagado para sempre. Digite a senha da
+            sua conta para confirmar.
+          </p>
+          <label>Senha da conta<input id="excluir-senha" type="password" autocomplete="current-password"></label>
+          <div class="excluir-acoes">
+            <button id="excluir-senha-cancelar" class="ghost">Cancelar</button>
+            <button id="excluir-senha-confirmar" class="perigo">Apagar personagem</button>
+          </div>
+
+          <!--
+            Conta que tem senha E Google: as duas abrem, mas a caixa pergunta
+            UMA — a que a pessoa usou para entrar. A outra fica a um clique.
+          -->
+          <button id="excluir-usar-google" class="excluir-troca" hidden>Confirmar com a Google</button>
+        </div>
+
+        <!--
+          O terceiro passo, para quem entra pela Google.
+          Ele e o de senha sao ALTERNATIVOS: a conta tem uma chave ou a outra, e
+          a tela pergunta pela que existe. Ver `pelaGoogle`, em accounts.mjs.
+        -->
+        <div id="excluir-passo-google" hidden>
+          <h3>Confirme que é você</h3>
+          <p class="gate-note">
+            <b id="excluir-alvo-google"></b> será apagado para sempre. Esta conta entra
+            pela Google, então a confirmação é entrar com ela de novo — escolher a conta
+            na janela da Google já apaga o personagem.
+          </p>
+          <div id="excluir-google-slot"></div>
+          <div class="excluir-acoes">
+            <button id="excluir-google-cancelar" class="ghost">Cancelar</button>
+          </div>
+          <button id="excluir-usar-senha" class="excluir-troca" hidden>Usar a senha da conta</button>
+        </div>
+
+        <!--
+          O ULTIMO passo do caminho da Google.
+          Entrar na Google prova QUEM e' voce; nao diz que voce quer apagar. Sem
+          este passo, escolher a conta na janelinha apagava o personagem no
+          mesmo gesto — enquanto o caminho da senha exige digitar a senha E
+          clicar em "Apagar personagem". Duas portas de um lado e nenhuma do
+          outro nao e' a mesma confirmacao.
+        -->
+        <div id="excluir-passo-confirmar" hidden>
+          <h3>Apagar de verdade?</h3>
+          <p class="gate-note">
+            Confirmado como <b id="excluir-conta-final"></b>. Vai apagar
+            <b id="excluir-alvo-final"></b> — <b>isto não tem volta</b>: o level, os itens
+            e o depósito dele somem junto. Os outros personagens da conta ficam.
+          </p>
+          <div class="excluir-acoes">
+            <button id="excluir-final-cancelar" class="ghost">Cancelar</button>
+            <button id="excluir-final-confirmar" class="perigo">Apagar personagem</button>
+          </div>
+        </div>
+
+        <small id="excluir-erro"></small>
+      </div>
+    </div>
+
+    <!-- ---------- criar senha na conta da Google: duas portas ----------
+         Primeiro a senha, duas vezes; depois entrar na Google de novo, que é a
+         prova de que quem está no teclado é o dono da conta. -->
+    <div id="senha-overlay" hidden>
+      <div class="excluir-caixa ui-frame">
+        <div id="senha-passo-digitar">
+          <h3>Criar senha da conta</h3>
+          <p class="gate-note">
+            Depois disso você entra do jeito que quiser: pela Google, como sempre, ou com
+            o e-mail abaixo e esta senha.
+          </p>
+          <label>E-mail da conta<input id="senha-email" readonly></label>
+          <label>Nova senha<input id="senha-nova" type="password" autocomplete="new-password"></label>
+          <label>Repita a senha<input id="senha-repetir" type="password" autocomplete="new-password"></label>
+          <div class="excluir-acoes">
+            <button id="senha-cancelar" class="ghost">Cancelar</button>
+            <button id="senha-continuar" class="primary">Continuar</button>
+          </div>
+        </div>
+
+        <div id="senha-passo-google" hidden>
+          <h3>Confirme que é você</h3>
+          <p class="gate-note">
+            Entre com a sua conta Google de novo para confirmar. A senha é criada assim que
+            você escolher a conta na janela da Google.
+          </p>
+          <div id="senha-google-slot"></div>
+          <div class="excluir-acoes">
+            <button id="senha-google-cancelar" class="ghost">Cancelar</button>
+          </div>
+        </div>
+
+        <small id="senha-erro"></small>
+      </div>
+    </div>
+
+    <!-- ---------- esqueci minha senha ----------
+         Uma caixa, um campo. A resposta é sempre a mesma frase, exista a conta
+         ou não: o servidor não conta quem tem conta aqui (ver
+         `pedirRecuperacao`, no servidor) e a tela não pode contar por ele. -->
+    <div id="esqueci-overlay" hidden>
+      <div class="excluir-caixa ui-frame">
+        <h3>Esqueci minha senha</h3>
+        <p class="gate-note">
+          Digite o e-mail da conta. Mandamos um link para criar uma senha nova — ele vale uma
+          hora e só pode ser usado uma vez.
+        </p>
+        <label>E-mail da conta<input id="esqueci-email" type="email" autocomplete="email"></label>
+        <div class="excluir-acoes">
+          <button id="esqueci-cancelar" class="ghost">Cancelar</button>
+          <button id="esqueci-enviar" class="primary">Mandar o link</button>
+        </div>
+        <small id="esqueci-erro"></small>
+      </div>
+    </div>
+
+    <!-- ---------- o código da verificação em duas etapas, na ENTRADA ----------
+         Aparece depois da senha certa, quando a conta pede a segunda chave. A
+         senha já foi conferida e não volta: o que viaja daqui é o bilhete que o
+         servidor devolveu (ver `abrirDesafio`). -->
+    <div id="tfa-overlay" hidden>
+      <div class="excluir-caixa ui-frame">
+        <h3>Código de verificação</h3>
+        <p class="gate-note" id="tfa-explica"></p>
+        <label>Código
+          <!-- `one-time-code` faz o celular oferecer o código do SMS/e-mail e o
+               gerenciador de senhas oferecer o do aplicativo. -->
+          <input id="tfa-codigo" type="text" inputmode="text" autocomplete="one-time-code"
+                 maxlength="12" class="campo-codigo" placeholder="000000">
+        </label>
+        <div class="excluir-acoes">
+          <button id="tfa-cancelar" class="ghost">Cancelar</button>
+          <button id="tfa-confirmar" class="primary">Entrar</button>
+        </div>
+        <!-- Só no modo e-mail. Quem usa o aplicativo tem o código na mão. -->
+        <button type="button" id="tfa-de-novo" class="link-discreto" hidden>Não recebi — mandar de novo</button>
+        <p class="gate-note tfa-reserva">
+          Perdeu o celular? Use um dos códigos de reserva que você guardou.
+        </p>
+        <small id="tfa-erro"></small>
+      </div>
+    </div>
+
+    <!-- ---------- ligar/desligar a verificação, de dentro da conta ---------- -->
+    <div id="seg-overlay" hidden>
+      <div class="excluir-caixa ui-frame">
+        <!-- passo 1: escolher o caminho -->
+        <div id="seg-passo-escolher">
+          <h3>Verificação em duas etapas</h3>
+          <p class="gate-note">
+            Com ela ligada, a sua senha sozinha não abre mais a conta: toda entrada pede também
+            um código de seis dígitos.
+          </p>
+          <div class="seg-modos">
+            <label class="seg-modo">
+              <input type="radio" name="seg-modo" value="app" checked>
+              <span>
+                <b>Aplicativo no celular</b>
+                <small>Google Authenticator, Authy ou parecido. Funciona sem internet e sem sinal.
+                  É o mais seguro.</small>
+              </span>
+            </label>
+            <label class="seg-modo">
+              <input type="radio" name="seg-modo" value="email">
+              <span>
+                <b>Código por e-mail</b>
+                <small>Não precisa instalar nada. Mas quem abrir o seu e-mail abre a conta.</small>
+              </span>
+            </label>
+          </div>
+          <label>Senha da conta<input id="seg-senha" type="password" autocomplete="current-password"></label>
+          <div class="excluir-acoes">
+            <button id="seg-cancelar" class="ghost">Cancelar</button>
+            <button id="seg-continuar" class="primary">Continuar</button>
+          </div>
+        </div>
+
+        <!-- passo 2: o QR (ou o aviso do e-mail) e o código -->
+        <div id="seg-passo-codigo" hidden>
+          <h3>Confirme o código</h3>
+          <div id="seg-qr-bloco" hidden>
+            <p class="gate-note">
+              Aponte o aplicativo para o quadrado abaixo — ou digite o código escrito, se o
+              celular não estiver à mão.
+            </p>
+            <div id="seg-qr" class="seg-qr"></div>
+            <p class="seg-segredo" id="seg-segredo"></p>
+          </div>
+          <p class="gate-note" id="seg-email-aviso" hidden></p>
+          <label>Código de seis dígitos
+            <input id="seg-codigo" type="text" inputmode="numeric" autocomplete="one-time-code"
+                   maxlength="6" class="campo-codigo" placeholder="000000">
+          </label>
+          <div class="excluir-acoes">
+            <button id="seg-voltar" class="ghost">Voltar</button>
+            <button id="seg-ligar" class="primary">Ligar</button>
+          </div>
+        </div>
+
+        <!-- passo 3: os códigos de reserva, mostrados UMA vez -->
+        <div id="seg-passo-reservas" hidden>
+          <h3>Guarde estes códigos</h3>
+          <p class="gate-note">
+            Cada um entra na conta UMA vez, no lugar do código. São a sua saída se o celular
+            sumir, quebrar ou for formatado. <b>Eles não aparecem de novo.</b>
+          </p>
+          <ol class="seg-reservas" id="seg-reservas"></ol>
+          <div class="excluir-acoes">
+            <button id="seg-copiar" class="ghost">Copiar</button>
+            <button id="seg-pronto" class="primary">Guardei</button>
+          </div>
+        </div>
+
+        <!-- desligar: pede o código -->
+        <div id="seg-passo-desligar" hidden>
+          <h3>Desligar a verificação</h3>
+          <p class="gate-note">
+            Sem ela, a sua senha volta a ser a única coisa entre a sua conta e quem a descobrir.
+            Digite o código do aplicativo (ou um de reserva) para confirmar.
+          </p>
+          <label>Código<input id="seg-codigo-desligar" type="text" inputmode="text"
+                              autocomplete="one-time-code" maxlength="12" class="campo-codigo"></label>
+          <div class="excluir-acoes">
+            <button id="seg-desligar-cancelar" class="ghost">Cancelar</button>
+            <button id="seg-desligar-ok" class="ghost perigo">Desligar</button>
+          </div>
+        </div>
+
+        <small id="seg-erro"></small>
+      </div>
+    </div>
+
+    <section id="pane-create" hidden>
+      <h2>Novo personagem</h2>
+      <form id="form-create">
+        <div class="create-top">
+          <!--
+            O rótulo e o aviso dividem UMA linha, acima do campo: "Nome" na
+            esquerda, o recado na direita. Empilhados, o aviso ficava entre os
+            dois e afastava o "Nome" do campo que ele nomeia; e embaixo do
+            campo, empurrava a caixa para longe dos cards de vocação.
+          -->
+          <label>
+            <span class="campo-topo"><span>Nome</span><small id="nome-aviso" class="campo-aviso"></small></span>
+            <input name="name" maxlength="20" autocomplete="off" required>
+          </label>
+          <div class="sex-picker" id="sex-picker"></div>
+        </div>
+        <div class="vocation-picker" id="vocation-picker"></div>
+        <p class="gate-note">Todo personagem começa no level 8, com o equipamento da vocação.</p>
+        <div class="create-actions">
+          <button type="button" id="cancel-create" class="ghost">Voltar</button>
+          <button type="submit" class="primary">Criar</button>
+        </div>
+      </form>
+      <small id="gate-error-3"></small>
+    </section>
+   </div>
+  </div>
+</div>
+
+<!-- ---------- jogo ---------- -->
+<div id="game" hidden>
+  <!-- A faixa de obra: fica acima de tudo, some sozinha quando o servidor
+       mandar o aviso vazio (`avisoDeDesenvolvimento` no config). Nasce
+       escondida para nao piscar antes de o catalogo chegar. -->
+  <div id="aviso-dev" hidden>
+    <span id="aviso-dev-texto"></span>
+    <!-- O botão de reportar mora AQUI, e não só no cartaz grande: o cartaz
+         some com um clique e a faixa fica. Um canal de report que desaparece
+         junto com o aviso é um canal que não está lá na hora em que a pessoa
+         topa com o bug. -->
+    <button id="aviso-dev-report" type="button">Reportar</button>
+  </div>
+
+  <!-- ---------- A faixa de novidades ----------
+       Um jogador reportou: "as vezes o jogo atualiza e aquela tela some mt
+       rapido dai nao da pra gente saaber o que mudou". A caixa de "versao
+       nova" e' um empurrao para recarregar, e quem recarrega rapido nunca le'
+       a lista.
+
+       Esta faixa e' a lista com vida propria: ela fica no alto da tela ate' a
+       pessoa abrir e MARCAR COMO LIDO, e so' volta na publicacao seguinte.
+       Nao e' um icone da barra de cima de proposito — um icone a mais ali se
+       perde entre vinte, e este aviso quer ser visto uma vez. -->
+  <button id="faixa-novidades" type="button" hidden>
+    <span class="selo">Novidades</span>
+    <span class="resumo" id="faixa-novidades-resumo"></span>
+    <span class="abrir">ver o que mudou</span>
+  </button>
+
+  <!-- ---------- A faixa do Auto Boss ----------
+       "quando eu estiver em auto boss tem que aparecer la encima no topo Auto
+       Boss Ativo, e um botao do lado desativar auto boss".
+
+       Ela fica no alto e nao dentro da aba de Bosses porque a rotacao roda
+       enquanto a pessoa faz outra coisa: ela esta na mochila, no mercado, ou
+       so' olhando a luta. O unico aviso que existia morava na aba de Bosses —
+       ou seja, so' aparecia para quem ja' tinha ido conferir.
+
+       O botao de desligar mora junto pelo mesmo motivo do "Parar treino" da
+       faixa de treino: obrigar a abrir outro comodo para desistir e' o jeito
+       mais rapido de fazer um automatico parecer que nao obedece. -->
+  <div id="faixa-autoboss" hidden>
+    <span class="selo">Auto Boss ativo</span>
+    <span class="resumo" id="faixa-autoboss-resumo"></span>
+    <button id="faixa-autoboss-parar" type="button">Desativar</button>
+  </div>
+
+  <!-- ---------- A faixa do Server Save ----------
+       "todo dia as 10 da manha voce coloca pra salvar as contas e reiniciar
+        sabe? com aviso na tela".
+
+       NA TELA, e nao no chat — o dono viu a primeira versao e foi direto ao
+       ponto: "a mensagem tem que aparecer na tela e nao no chat". No chat o
+       aviso nasce morto, porque a aba aberta pode ser a Loot, a janela pode
+       estar minimizada, e quem esta cacando olha o campo de batalha.
+
+       Ela FICA enquanto a contagem corre, em vez de piscar e sumir como o
+       `#notice`: quem olhar a tela a qualquer momento dos quinze minutos tem de
+       ver, e nao so' quem estava olhando no segundo em que o aviso saiu. -->
+  <div id="faixa-serversave" hidden>
+    <span class="selo" id="faixa-serversave-conta"></span>
+    <span class="resumo" id="faixa-serversave-texto"></span>
+  </div>
+
+  <!-- ---------- O cartaz do boss que acabou de nascer ----------
+       "quando eu soltar um boss nao e' pra aparecer no chat e pra aparecer na
+        tela do jogador sabe bem bonito com o icone de boss e dps desaparece
+        apos 10 segundos".
+
+       Mesma conclusao do Server Save, e pelo mesmo motivo: no chat o aviso
+       nasce morto — a aba aberta pode ser a Loot, a janela pode estar
+       minimizada, e quem esta cacando olha o campo de batalha. Um boss que
+       aparece uma vez por dia nao pode depender de a pessoa estar com a aba
+       certa aberta no segundo certo.
+
+       Ao contrario das faixas de cima, este NAO fica: e' um acontecimento, e
+       nao um estado. Dez segundos e sai sozinho.
+
+       `pointer-events: none` no CSS: ele nasce no meio da tela, e um cartaz
+       que engole o clique de quem estava mirando num bicho e' pior do que nao
+       avisar nada. -->
+  <div id="cartaz-boss" hidden>
+    <div class="arte" id="cartaz-boss-arte"></div>
+    <div class="dizeres">
+      <span class="selo">Boss na área</span>
+      <b id="cartaz-boss-nome"></b>
+      <span class="resumo" id="cartaz-boss-texto"></span>
+    </div>
+    <!-- O loot abre no PASSAR DO MOUSE, e nao no clique: "um botao no card que
+         se eu passar o mouse eu posso ver o loot". Clicar tambem abre, para o
+         celular, que nao tem passar de mouse. -->
+    <button class="loot-botao" id="cartaz-boss-loot" type="button">Loot</button>
+    <!-- Ele fica um minuto. O X e' quem o tira antes. -->
+    <button class="fecha" id="cartaz-boss-fecha" type="button" aria-label="fechar o aviso">&#10005;</button>
+    <div class="loot-caixa" id="cartaz-boss-lootbox" hidden></div>
+  </div>
+
+  <!-- ---------- A barra de vida do BOSS ----------
+       Report do Garibas: "nos BOSS, ao inves de ficar sem saber a vida dele,
+       poderia ter uma barra de vida grande na tela pro usuario ver mais facil
+       a vida dele".
+
+       A barrinha em cima da cabeca existe, mas ela e do tamanho da cabeca: numa
+       luta de vinte e cinco minutos, com o boss batendo e o numero subindo, ela
+       nao responde a pergunta que importa — "falta muito?".
+
+       Fica no alto e nao no rodape porque o rodape ja e a barra DELE (vida,
+       mana, magias); duas barras coladas viram uma so aos olhos. E o `top` sai
+       do `empilharNoTopo`, medido: ela nasce embaixo do cartaz de beta, da
+       faixa de novidades e da de auto boss, quaisquer que estejam em cena. -->
+  <!-- ---------- A barra do boss ----------
+       O retrato à esquerda, o nome e as resistências no meio, e o trilho
+       embaixo. Ver `barraDoBoss`, em hud.mjs: o retrato é montado uma vez por
+       luta e os números são reescritos oito vezes por segundo. -->
+  <div id="barra-do-boss" hidden>
+    <div class="boss-cara" id="boss-cara"></div>
+    <div class="boss-corpo">
+      <div class="boss-topo">
+        <b id="boss-nome"></b>
+        <span class="boss-elementos" id="boss-elementos"></span>
+        <span id="boss-conta"></span>
+      </div>
+      <div class="boss-trilho">
+        <i id="boss-rastro"></i>
+        <i id="boss-cheio"></i>
+        <span id="boss-pct"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------- As barras dos bosses da arena de Boss Diarios ----------
+       "dentro da sala de boss diario tem que ter a vida dos bosses que estao
+        la sabe? igual a vida que aparece em bosses".
+
+       A barra de cima nao serve: ela e' de SALA de boss, e a arena nao e' sala
+       de boss (de proposito — ver `paraABossPouch`, no hunt.mjs). E la' vive um
+       so'; aqui vivem quantos a equipe plantar, entao isto e' uma pilha.
+
+       As linhas nascem do `bossesDaArena` que vem no retrato. Ver
+       `barrasDaArena`, no hud.mjs. -->
+  <div id="barras-da-arena" hidden></div>
+
+  <!-- ---------- O cartaz de beta ----------
+       A faixa fina acima e' o lembrete permanente; este e' o AVISO, e ele
+       existe para ser lido uma vez. Fica no meio da borda de cima, grande o
+       bastante para ninguem entrar no jogo sem ver, e sai com um clique.
+
+       Ele lembra que saiu: `localStorage`. Um cartaz que volta a cada tela
+       carregada deixa de ser aviso e vira estorvo — e quem ja' leu que o jogo
+       esta em beta nao precisa ler de novo a cada partida. Some sozinho quando
+       o servidor mandar o aviso vazio, como a faixa. -->
+  <div id="cartaz-beta" hidden>
+    <button id="cartaz-beta-fechar" type="button" title="Minimizar — o aviso vira a faixa fina lá em cima">—</button>
+    <b>Ravox Idle está em BETA</b>
+    <p>Em desenvolvimento: haverá diversos bugs até ficar pronto.</p>
+    <button id="cartaz-beta-report" type="button">Achou um bug? Conte pra gente</button>
+  </div>
+
+  <header id="topbar">
+    <img class="brand" src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+
+    <!-- Só as duas moedas. Capacidade fica no inventário, wildcards no prey e o
+         bônus de exp na ficha: repetir aqui em cima só enchia a barra. -->
+    <div class="wallets">
+      <!-- O número é bolso + banco: o tooltip abre as duas partes. -->
+      <div class="wallet"><span id="coin-gold" class="coin-icon"></span><b id="char-gold">0</b></div>
+      <div class="wallet" title="Ravox Coins"><img class="coin-icon" src="/client/assets/ui/coin-store.png" alt=""><b id="char-coins">0</b></div>
+    </div>
+
+    <!-- Só o número. A palavra "online" ocupava a largura de dois ícones da
+         barra para dizer o que o pontinho verde já diz. -->
+    <div class="online" title="jogadores online agora"><i></i><b id="online-count">0</b></div>
+
+    <!-- A loja tem placa própria: ela vende, e botão de ícone se perde no meio
+         das ferramentas. -->
+    <button id="store-button" title="Ravox Store">
+      <img src="/client/assets/ui/store-button.webp" alt="Ravox Store">
+    </button>
+
+    <!-- O mercado saiu de dentro da loja: um vende por Ravox Coins e é da casa,
+         o outro é entre jogadores e paga em ouro. Placa própria, ao lado. -->
+    <button id="market-button" title="Mercado">
+      <img src="/client/assets/icons/market.png" alt="Mercado">
+      <!-- A legenda que todos os ícones da barra têm. Sem ela o mercado era o
+           único desenho sem nome da fileira inteira. -->
+      <span class="label">Mercado</span>
+    </button>
+
+    <nav class="tools" id="tools"></nav>
+
+    <!-- A seta que recolhe a barra de cima, como a de baixo tem.
+         Ela e' o unico pedaco que FICA quando a barra sobe: sem ela nao
+         haveria como trazer a barra de volta. -->
+    <button id="topbar-min" title="Recolher a barra de cima">▲</button>
+  </header>
+
+  <!-- HUD do canto superior esquerdo -->
+  <aside id="hud">
+    <div class="hud-top">
+      <span id="hud-portrait"></span>
+      <div class="hud-id">
+        <strong id="hud-name">—</strong>
+        <span id="hud-vocation">—</span>
+      </div>
+      <button id="hud-sheet" title="abrir a ficha do personagem">☰</button>
+      <button id="hud-min" title="minimizar">—</button>
+      <button id="hud-dock-btn" title="mandar para a barra de baixo">▾</button>
+    </div>
+
+    <div id="hud-body">
+      <!-- O ícone mora DENTRO da régua, encostado na ponta esquerda: na fita
+           do rodapé as quatro se encostam sem folga, e um ícone do lado de fora
+           abriria uma fresta entre elas. No card ele fica escondido — lá a
+           barra é larga e o número já basta. -->
+      <div id="hud-bars" class="hud-bars">
+        <div class="bar-slot">
+          <div class="hud-bar hp">
+            <i id="bar-hp"></i>
+            <img class="bar-icon" src="/client/assets/ui/bar-hp.png" alt="vida">
+            <span id="text-hp">0/0</span>
+          </div>
+        </div>
+        <div class="bar-slot">
+          <div class="hud-bar mana">
+            <i id="bar-mana"></i>
+            <img class="bar-icon" src="/client/assets/ui/bar-mana.png" alt="mana">
+            <span id="text-mana">0/0</span>
+          </div>
+        </div>
+        <div class="bar-slot">
+          <div class="hud-bar exp">
+            <i id="bar-exp"></i>
+            <img class="bar-icon" src="/client/assets/ui/sk-experience.png" alt="experiência">
+            <span id="text-exp">0%</span>
+          </div>
+        </div>
+        <div class="bar-slot">
+          <div class="hud-bar stamina">
+            <i id="bar-stamina"></i>
+            <!-- Um quadrado, não um sprite: ele muda de cor com a stamina, e é
+                 a cor que carrega o aviso. -->
+            <span id="dot-stamina" class="bar-icon bar-dot" title="stamina"></span>
+            <span id="text-stamina">0h 00m</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium e blessings desceram para o inventário, embaixo do anel: são
+           estado do personagem, e é lá que se olha o personagem. A tira de
+           sistemas acabou — os quatro subiram para a barra de cima. -->
+    </div>
+  </aside>
+
+  <!--
+    ---- A faixa do treino ----
+
+    Duas réguas no alto da tela, no meio, e só enquanto o personagem treina:
+    a perícia que ele mandou treinar e o escudo ao lado dela.
+
+    Ela existe porque o treino é a única coisa no jogo cujo progresso não se vê:
+    a caçada tem número subindo na tela, o loot cai na bolsa, a experiência tem
+    régua no rodapé — o treino tem meia hora de nada e um resumo no fim. Com a
+    fração à mostra, com casas decimais, dá para ver o número andar.
+
+    No alto e no meio de propósito: o card do personagem fica no canto de cima à
+    esquerda e as janelas se espalham pelos lados. O meio de cima é o único
+    pedaço que costuma estar livre, e é para onde o olho vai.
+  -->
+  <div id="treino-faixa" hidden>
+    <div class="treino-faixa-titulo">
+      <span id="treino-faixa-modo">Treinando</span>
+      <!-- Há quanto tempo. "+0,8% de machado" sozinho não diz se o treino é bom;
+           "em 40 minutos, +0,8%" diz. -->
+      <b id="treino-faixa-tempo"></b>
+    </div>
+    <div class="treino-faixa-barras">
+      <div class="treino-faixa-item">
+        <div class="hud-bar treino"><i id="bar-treino"></i><span id="text-treino">—</span></div>
+        <em id="treino-faixa-nome">—</em>
+      </div>
+      <div class="treino-faixa-item" id="treino-faixa-escudo">
+        <div class="hud-bar treino escudo"><i id="bar-treino-escudo"></i><span id="text-treino-escudo">—</span></div>
+        <em>shielding</em>
+      </div>
+    </div>
+    <!-- Parar dali mesmo. A faixa é onde o jogador está olhando enquanto
+         treina; obrigá-lo a abrir a aba de Aventuras para parar seria mandar
+         procurar o botão em outro cômodo. -->
+    <button id="treino-faixa-parar" type="button">Parar treino</button>
+    <!--
+      O Scroll Speed Exercise, embaixo do botão de parar.
+
+      Ele mora AQUI dentro e não numa faixa própria porque só diz respeito a
+      este treino: o pergaminho deixou de ser um prazo de relógio de parede e
+      virou um saldo que desce enquanto a exercise weapon bate. Fora do treino
+      ele não está gastando nada, e um relógio no alto da tela o dia inteiro
+      seria um aviso sobre coisa nenhuma.
+    -->
+    <div id="efeitos-faixa" hidden></div>
+  </div>
+
+  <!-- ---- Os RELOGIOS do que esta ligado ----
+
+       Uma pilula por coisa com prazo correndo: os Buff Power, os boosts de
+       experiencia (Exp Potion e XP Boost) e os passes de Instance e Divine
+       Hunts.
+
+       Fora da faixa de treino, e nao dentro dela como a do pergaminho. A do
+       pergaminho mora la porque so' diz respeito AQUELE treino: ele so' gasta
+       enquanto a exercise weapon bate. Estes valem em tudo. Postos dentro da
+       faixa de treino, eles existiriam no documento e ficariam invisiveis fora
+       do treino: o codigo parece certo e a tela nao mostra nada.
+
+       Cada grupo se liga e desliga em Opcoes -> Relogios na tela, e o x da
+       pilula desliga o grupo dela. Todos nascem ligados. -->
+  <div id="pilulas-de-efeito" hidden></div>
+
+  <!-- Promoção: card dourado embaixo da ficha, só enquanto ela não foi feita. -->
+  <button id="hud-promotion" hidden>
+    <b>Promotion</b>
+    <em id="hud-promotion-text"></em>
+  </button>
+
+  <!--
+    ---- A faixa do presente SAIU daqui ----
+
+    Ela ficava no meio de baixo, logo acima da barra de ações, e tapava o chão
+    justamente onde se clica para andar. Os dois avisos que moravam nela — a
+    recompensa de level e a diária — foram para a janela de Tarefas, e a diária
+    ganhou também um botão na barra de cima, à direita de Social, que só existe
+    enquanto há o que pegar. Ver `AVISOS_DA_BARRA` e `pintarPresente`, no
+    main.mjs.
+  -->
+
+  <div id="stage-empty">
+    <h3>Você está em Ravox</h3>
+    <p>Ande com WASD ou clique no chão. Quando quiser, escolha uma hunt.</p>
+    <button data-window="hunts">Escolher hunt</button>
+  </div>
+
+  <div id="notice"></div>
+
+  <!-- Os balões do alto: hoje só a resposta do dono a um report. Uma PILHA e
+       não um lugar só — duas respostas podem chegar juntas, e a segunda não
+       pode apagar a primeira. Ver `avisarRespostaDeReport`, no main. -->
+  <div id="recados"></div>
+
+  <!-- Aviso de conexão caída. Ele não bloqueia a tela de propósito: o jogo
+       continua rodando no servidor, e o jogador precisa ver que o personagem
+       está lá enquanto a aba tenta voltar. -->
+  <div id="reconectando" hidden>
+    <b>Conexão perdida</b>
+    <span id="reconectando-nota">tentando reconectar...</span>
+    <div class="reconectando-barra"><i></i></div>
+  </div>
+
+  <!-- ---------- Os relogios das magias que ficam valendo ----------
+       Um card por magia ligada (utani hur, utamo tempo san, utito tempo...):
+       a sprite dela grande e o tempo pequeno DENTRO, no pe do card.
+
+       Ele flutua: mora solto no corpo da pagina, logo acima da barra de acoes,
+       e nao dentro dela. Ja morou dentro — primeiro no card da ficha (onde
+       sumia junto com o card, quando a ficha se encaixava embaixo) e depois na
+       fita das reguas (onde ficava preso ao recorte do rodape). O dono pediu
+       flutuando, e flutuando ele nao depende de caber em caixa nenhuma.
+
+       A altura e' escrita pelo JS a cada quadro, medida na propria barra: ela
+       muda de tamanho quando recolhe e quando a ficha encaixa. Vazio, some. -->
+  <div id="hud-buffs" class="hud-buffs" hidden></div>
+
+  <footer id="actionbar">
+    <!-- Os dois controles da barra, no canto de cima à direita: a engrenagem
+         com os ajustes e a seta que recolhe a barra. Ficam sobrepostos, sem
+         ocupar espaço no fluxo — a barra continua do tamanho que era. -->
+    <div class="bar-controls">
+      <!-- A engrenagem era o caractere ⚙ da fonte do sistema, do lado de uma
+           barra inteira desenhada à mão. Agora é a arte de "options" que veio
+           na pasta de ícones novos, no mesmo caminho dos outros. -->
+      <!-- 15/09: não abre mais os ajustes — troca a ficha entre a barra e o canto
+           de cima (ver hud.mjs). O desenho é um card com a seta para o canto. -->
+      <button id="bar-gear" aria-label="trocar a ficha de lugar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 13 20 4M13 4h7v7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button id="bar-min" title="minimizar a barra">▼</button>
+    </div>
+    <!-- Os ajustes da barra e das janelas moram num modal, e não num menuzinho
+         de um item só pendurado aqui. O botão continua sendo a engrenagem. -->
+
+    <!-- Slots e controles numa fileira só: alvo, distância e "Sair da hunt"
+         ficam ao lado das teclas, como sempre estiveram. -->
+    <!-- As réguas atravessam a barra INTEIRA, acima de tudo: uma fita só, os
+         quatro medidores lado a lado. Elas já moraram dentro da `.hotbar-stack`
+         para ficarem do tamanho exato dos slots; o dono preferiu a fita larga,
+         e como irmã da fileira ela pega a largura toda sem conta nenhuma. -->
+    <div id="hud-bars-dock" class="bars-dock" hidden></div>
+
+    <div class="bar-row">
+    <!-- Arranjos de teclas e o botão de devolver a ficha, encostados à esquerda
+         do primeiro slot: são controles da barra, e ficam onde a barra começa.
+         Moravam numa fileira própria em cima dos slots — uma faixa inteira
+         gasta com dois controles miúdos. -->
+    <div class="controls">
+      <div class="controls-row">
+      <label><span class="rotulo">Alvo</span>
+        <!-- Os rótulos são CURTOS porque um `<select>` fechado tem a largura da
+             maior opção da lista, e não da escolhida: com "Menor % de vida"
+             aqui dentro, a caixa media 141px mesmo mostrando "Mais próximo"
+             (87px). Quem explica por inteiro é o `title` de cada opção, que
+             aparece com o mouse parado — o mesmo trato do aviso de alcance no
+             campo de distância. -->
+        <select id="strategy">
+          <option value="nearest" title="Ataca a criatura mais perto do personagem">Mais perto</option>
+          <option value="lowest" title="Ataca a criatura com a menor porcentagem de vida — a mais perto de morrer">Menos vida</option>
+          <option value="highest" title="Ataca a criatura com a maior porcentagem de vida">Mais vida</option>
+        </select>      </label>
+      <label><span class="rotulo">Distância</span>
+        <select id="distance">
+          <option value="0">Corpo a corpo</option>
+          <option value="1">1 sqm</option>
+          <option value="2">2 sqm</option>
+          <option value="3">3 sqm</option>
+          <option value="4">4 sqm</option>
+          <option value="5">5 sqm</option>
+          <option value="6">6 sqm</option>
+        </select>
+      </label>
+      </div>
+      <!-- A SEGUNDA fileira de controles.
+           Os quatro controles moravam numa tira só, e ela era larga: com a
+           barra de slots em uma fileira, era a única forma que cabia. Agora a
+           barra tem duas fileiras e a coluna da direita ganhou altura de sobra
+           — dobrar os controles em duas linhas gasta essa altura que já estava
+           lá e devolve largura à barra inteira, que é o que estava faltando. -->
+      <div class="controls-row">
+      <!-- Lurar: em vez de parar no primeiro bicho, ele segue a rota juntando
+           criaturas atrás de si e só planta o pé quando a leva chega ao número
+           escolhido. "Não lurar" é o comportamento de sempre. -->
+      <!-- Os DOIS seletores do lure numa linha só.
+           O `<label>` é um grid de duas linhas (rótulo em cima, controle
+           embaixo); pendurar o segundo select direto nele o jogaria para uma
+           TERCEIRA linha e a barra inteira cresceria. Por isso os dois moram
+           dentro de um `.lure-dupla`, que é o "controle" do grid — a fileira
+           continua com a mesma altura, e o segundo fica meio separado do
+           primeiro pela barrinha, que é como o dono pediu. -->
+      <label><span class="rotulo">Lurar até</span>
+        <span class="lure-dupla">
+          <select id="lure">
+            <option value="0">Não lurar</option>
+            <option value="2">2 monstros</option>
+            <option value="3">3 monstros</option>
+            <option value="4">4 monstros</option>
+            <option value="5">5 monstros</option>
+            <option value="6">6 monstros</option>
+            <option value="8">8 monstros</option>
+            <option value="10">10 monstros</option>
+          </select>
+          <span class="lure-sep" id="lure-sep">·</span>
+          <select id="lure-volta" title="Com quantos monstros ele larga a briga e volta a juntar">
+            <option value="0">voltar: auto</option>
+            <option value="1">voltar em 1</option>
+            <option value="2">voltar em 2</option>
+            <option value="3">voltar em 3</option>
+            <option value="4">voltar em 4</option>
+            <option value="5">voltar em 5</option>
+            <option value="6">voltar em 6</option>
+            <option value="7">voltar em 7</option>
+            <option value="8">voltar em 8</option>
+            <option value="9">voltar em 9</option>
+          </select>
+        </span>
+      </label>
+      </div>
+    </div>
+    <div class="hotbar-stack">
+      <div id="hotbar" class="hotbar"></div>
+    </div>
+    <!-- ---- A coluna das RÉGUAS, à direita dos slots ----
+         As quatro réguas eram uma FITA DEITADA acima de tudo, com a largura da
+         fileira de slots. Isso gastava uma faixa inteira de altura para quatro
+         medidores de 22px, e deixava esta coluna com um botão só e vazio em
+         cima dela — dois desperdícios que eram o mesmo desperdício.
+         Em pé, elas ocupam a altura que a coluna já tinha e devolvem a faixa.
+         Ela nasceu à esquerda e trocou de lado com os controles a pedido do
+         dono: a classe continua `bar-side` porque o que ela é não mudou — é a
+         coluna de fora, e de qual lado ela cai é decisão de layout. -->
+    <div class="bar-side">
+      <!-- A coluna da direita: o Hunts em cima e os arranjos de hotkeys embaixo.
+           O Hunts mora AQUI e não na fileira dos controles.
+           Lá ele era o item mais largo da fileira de baixo, e por isso ela
+           ficava mais larga que a de cima — o `space-between` então empurrava
+           "Alvo" e "Distância" para as pontas e abria um rombo entre os dois.
+           Nesta coluna ele ocupa os pixels que sobravam, fica do tamanho dela e
+           não empurra mais ninguém. Vai EMBAIXO das réguas: vida e mana são o
+           que se olha de relance, e um botão entre elas e o topo da barra é uma
+           parada no caminho do olho. -->
+      <button id="leave-hunt" class="danger">Sair da hunt</button>
+      <div id="hotbar-presets"></div>
+    </div>
+    </div>
+  </footer>
+</div>
+
+<div id="modal" hidden>
+  <div class="modal-box">
+    <!--
+      `modal-acoes` é o canto do cabeçalho que cada painel preenche por conta
+      própria — hoje só a janela de Aventuras usa, com o botão de Filtro. Ele
+      é esvaziado a cada abertura e a cada troca de aba, então um painel que
+      não põe nada ali não deixa lixo do painel anterior.
+    -->
+    <header><div id="modal-selo"></div><h2 id="modal-title">—</h2><div id="modal-acoes"></div><button id="modal-close">✕</button></header>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- A cortina de viagem: entra na frente de tudo enquanto o personagem troca
+     de mapa. A sessão nasce e morre num tick do servidor, então sem ela o
+     personagem simplesmente aparecia noutro lugar. A arte de fundo é opcional
+     e some sozinha se o arquivo não existir. -->
+<div id="viagem" hidden>
+  <div class="viagem-caixa">
+    <img id="viagem-arte" alt="">
+    <h2 id="viagem-titulo">Partindo</h2>
+    <b id="viagem-hunt">—</b>
+    <div class="viagem-trilho"><i></i></div>
+    <em id="viagem-nota"></em>
+  </div>
+</div>
+
+<div id="context-menu" hidden></div>
+
+<script type="module" src="/client/src/main.mjs?v=arena0926a"></script>

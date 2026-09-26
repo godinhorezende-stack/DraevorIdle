@@ -1,0 +1,1539 @@
+// Uma sessão = uma conexão WebSocket. Antes do `hello`+login não há sessão de
+// conta; depois do `play` ela também carrega um personagem.
+//
+// Contrato lido do cliente recuperado (ver `api-mapeada/protocolo.md`):
+//   servidor -> cliente : hello | account | authError | welcome | state | released | error
+//   cliente -> servidor : register | login | resume | logout | createCharacter |
+//                         deleteCharacter | play | release | walk | virar | pedirMapa |
+//                         diario | diarioEscolher | marco | presente |
+//                         largar | destroy | pegar | mounts | outfit | mount |
+//                         delta | jaTenhoCatalogo | oculta
+import * as B from './banco.mjs';
+import * as R from './regras.mjs';
+import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado } from './dados.mjs';
+import * as Inventario from '../sistemas/inventario.mjs';
+import * as Recompensas from '../sistemas/recompensas.mjs';
+import * as Aparencia from '../sistemas/aparencia.mjs';
+import * as Loja from '../sistemas/loja.mjs';
+import * as Cacadas from '../sistemas/cacadas.mjs';
+import * as Acoes from '../sistemas/acoes.mjs';
+import * as Treino from '../sistemas/treino.mjs';
+import * as Bolsa from '../sistemas/bolsa.mjs';
+import * as Ficha from '../sistemas/ficha.mjs';
+import * as Deposito from '../sistemas/deposito.mjs';
+import * as Bau from '../sistemas/bau.mjs';
+import * as Mercado from '../sistemas/mercado.mjs';
+import * as Boosts from '../sistemas/boosts.mjs';
+import * as Stamina from '../sistemas/stamina.mjs';
+import * as Exercicio from '../sistemas/exercicio.mjs';
+import * as Treinos from '../sistemas/treinos.mjs';
+import * as Premium from '../sistemas/premium.mjs';
+import * as BuffPower from '../sistemas/buffpower.mjs';
+import * as Tiers from '../sistemas/tiers.mjs';
+import * as Summon from '../sistemas/summon.mjs';
+import * as Bosses from '../sistemas/bosses.mjs';
+import * as Party from '../sistemas/party.mjs';
+import * as Quadro from './quadro.mjs';
+import * as Gemas from '../sistemas/gemas.mjs';
+import * as Charms from '../sistemas/charms.mjs';
+import * as Proficiencia from '../sistemas/proficiencia.mjs';
+import * as Imbuements from '../sistemas/imbuements.mjs';
+import * as Morte from '../sistemas/morte.mjs';
+import * as Promocao from '../sistemas/promocao.mjs';
+import * as Tarefas from '../sistemas/tarefas.mjs';
+import * as Entregas from '../sistemas/entregas.mjs';
+import * as Amigos from '../sistemas/amigos.mjs';
+import * as Chat from '../sistemas/chat.mjs';
+import * as Novidades from '../sistemas/novidades.mjs';
+import * as Ranking from '../sistemas/ranking.mjs';
+import * as Guildas from '../sistemas/guildas.mjs';
+import * as Arena from '../sistemas/arena.mjs';
+import { descerDeLevel } from '../sistemas/hunt/combate.mjs';
+import { registrarGrandes, jsonComGrandes } from './json.mjs';
+import * as Forja from '../sistemas/forja.mjs';
+import * as Afixos from '../sistemas/afixos.mjs';
+import * as Prey from '../sistemas/prey.mjs';
+import * as Arvore from '../sistemas/arvore.mjs';
+import * as Banqueiro from '../sistemas/banqueiro.mjs';
+import * as Craft from '../sistemas/craft.mjs';
+import * as Desmanche from '../sistemas/desmanche.mjs';
+import { readFileSync } from 'node:fs';
+const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/task-token-real.json', import.meta.url), 'utf8'));
+
+Inventario.semearChao(CITY_META.chao);
+
+/** Todas as sessões vivas, por nome de personagem — para quando o mapa tiver mais de um jogador. */
+export const vivas = new Map();
+Party.ligar(vivas);
+Amigos.ligar(vivas);
+Chat.ligar(vivas);
+Ranking.ligar(vivas);
+Guildas.ligar(vivas);
+Arena.ligar(vivas);
+const AUTOSAVE_MS = 30_000;
+/*
+ * O personagem INTEIRO (~60 KB: inventário, bolsa, ficha, tarefas...) era
+ * montado e comparado chave a chave em todo quadro — 4 vezes por segundo por
+ * jogador, a maior conta do `mandarEstado` no teste de carga. Agora ele é
+ * comparado uma vez a cada QUADROS_POR_PERSONAGEM quadros (1 s), ou na hora
+ * depois de qualquer ação do jogador (`aplicar`); nos quadros do meio vão só
+ * as barras que precisam ser imediatas (`CAMPOS_DE_TODO_QUADRO`).
+ */
+/** Campos do `character` que devolvem o MESMO objeto enquanto não mudam (ver `Entregas.paraCliente`). */
+const CAMPOS_MEMORIZADOS = new Set(['entregas']);
+const QUADROS_POR_PERSONAGEM = 4;
+const CAMPOS_DE_TODO_QUADRO = ['hp', 'mana'];
+
+// Catálogo, itens e mapa da cidade: fixos e enormes, viram texto uma vez só (ver `json.mjs`).
+registrarGrandes(CATALOGO, ITEM_CATALOG, CITY_MAP);
+
+const enviar = (ws, msg) => {
+  if (ws.readyState !== 1) return;
+  // O mapa de uma hunt também é fixo (o objeto guardado por `Cacadas`).
+  if (msg.hunt?.map) registrarGrandes(msg.hunt.map);
+  const grande = msg.t === 'hello' || msg.t === 'welcome' || msg.city?.map || msg.hunt?.map;
+  ws.send(grande ? jsonComGrandes(msg) : JSON.stringify(msg));
+};
+
+const DOMINIO_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+function cartaoDaConta(personagens) {
+  return personagens.map((p) => {
+    const e = JSON.parse(p.estado);
+    return {
+      name: p.nome,
+      level: e.level,
+      vocation: p.vocacao,
+      // "Elite Knight · level 639" na lista, depois da promoção.
+      vocationName: Promocao.nomeDaClasse({ ...e, vocation: e.vocation ?? p.vocacao }),
+      outfit: e.outfit,
+      // "Caçando offline em Troll Cave" na lista, como no original (a hunt
+      // segue sozinha com a aba fechada — ver `Cacadas.simularAusencia`).
+      fazendo: e.hunt
+        ? { tipo: 'offline', onde: `Caçando offline em ${Cacadas.nomeDaHunt(e.hunt.huntId)}` }
+        : Treinos.fazendo(e),
+      lastSeen: p.visto_em ?? null,
+    };
+  });
+}
+
+function estadoInicialPersonagem(vocacao, sexo) {
+  const look = R.LOOK_DA_VOCACAO[vocacao][sexo];
+  const { maxHp, maxMana } = R.statsBase(vocacao, R.NIVEL_INICIAL);
+  return {
+    level: R.NIVEL_INICIAL,
+    // A exp REAL de um level 8 (o personagem de teste capturado nasceu com
+    // 4200). Com 0 a barra ficava em 0% e o level não subia nunca.
+    xp: R.expForLevel(R.NIVEL_INICIAL),
+    vocation: vocacao,
+    sex: sexo,
+    outfit: { type: look, head: 78, body: 88, legs: 58, feet: 76, mount: 0, addons: 0 },
+    hp: maxHp,
+    maxHp,
+    mana: maxMana,
+    maxMana,
+    // Ouro, capacidade e fôlego iniciais são os REAIS — capturados criando uma
+    // conta de teste no servidor original (`api-mapeada/character-real-example.json`).
+    gold: 500,
+    bank: 0,
+    coins: 0,
+    stamina: 2520,
+    maxStamina: 2520,
+    equipment: Inventario.equipamentoInicial(vocacao),
+    inventory: Inventario.inventarioInicial(vocacao),
+    pos: { ...R.POSICAO_INICIAL },
+    // Barra de ações: vazia (22 slots), teclas 1-9/0/-/= de fábrica (o mesmo
+    // molde de `CHARACTER_TEMPLATE.hotkeys`), sem arranjo salvo. Ver `acoes.mjs`.
+    actions: Array(Acoes.SLOTS).fill(null),
+    hotkeys: [...CHARACTER_TEMPLATE.hotkeys],
+    actionPresets: [],
+    settings: { ...CHARACTER_TEMPLATE.settings },
+    ...Recompensas.estadoInicial(),
+    ...Loja.estadoInicial(),
+  };
+}
+
+/*
+ * O `city` que vai em `welcome`/`state`: a cidade real + a posição do próprio
+ * jogador. `comMapa` só é `true` na primeira vez (welcome) e em resposta a um
+ * `pedirMapa` — igual ao original: `applyState`, no cliente, guarda o mapa
+ * recebido (`this.mapData`) e reusa enquanto o `mapId` não mudar
+ * (`payload.map = payload.map ?? this.mapData`, em `map.mjs`). Mandar os 3,7MB
+ * do mapa em TODO tique de 100ms seria 37MB/s por jogador conectado — o
+ * `city.map` só viaja de novo se o mapa mudar (nunca muda aqui) ou se o
+ * cliente perder o que já tinha e pedir de volta.
+ */
+function snapshotDaPraca(estado, comMapa, sessao = null) {
+  return {
+    mapId: 'city',
+    z: estado.pos.z ?? R.POSICAO_INICIAL.z,
+    ...(comMapa ? { map: CITY_MAP } : {}),
+    player: { x: estado.pos.x, y: estado.pos.y, dir: estado.pos.dir ?? 2, moveMs: R.PASSO_MS },
+    monsters: [],
+    // Os outros jogadores na tela, como no original (até 25) — ver `Chat.jogadoresNaPraca`.
+    ...(() => {
+      const players = sessao ? Chat.jogadoresNaPraca(sessao) : [];
+      return { players, brasoes: Chat.brasoesDaPraca(players) };
+    })(),
+    npcs: CITY_META.npcs,
+    objetos: CITY_META.objetos,
+    chao: Inventario.chaoParaCliente(),
+  };
+}
+
+/*
+ * Migração de posição antiga: personagens criados enquanto a praça ainda era
+ * o placeholder 15×11 (ou qualquer posição salva que caia fora do andar
+ * capturado, `z:7`, ou em água/bloqueio) voltam para o spawn real. Sem isto,
+ * quem já tinha personagem quando o mapa real entrou aparecia boiando no meio
+ * do oceano — a coordenada antiga (x:7,y:5) é literalmente mar na cidade de
+ * verdade, que é 187×108 e não 15×11.
+ */
+function corrigirPosicaoAntiga(pos) {
+  if (pos.z === R.POSICAO_INICIAL.z && !bloqueado(pos.x, pos.y)) return pos;
+  return { ...R.POSICAO_INICIAL };
+}
+
+function characterParaCliente(personagem, estado) {
+  return {
+    // O molde primeiro: todo campo que este servidor ainda não calcula sai
+    // dele, no formato real (skills todos em 10, wildcards:5, etc.) — ver o
+    // comentário de `CHARACTER_TEMPLATE`, em `dados.mjs`. As chaves abaixo
+    // SOBRESCREVEM as dele com o que é de fato deste personagem.
+    ...CHARACTER_TEMPLATE,
+    name: personagem.nome,
+    vocation: estado.vocation,
+    sex: estado.sex,
+    level: estado.level,
+    exp: estado.xp,
+    outfit: estado.outfit,
+    hp: estado.hp,
+    mana: estado.mana,
+    derived: {
+      ...CHARACTER_TEMPLATE.derived,
+      maxHp: estado.maxHp,
+      maxMana: estado.maxMana,
+      capacity: Afixos.capacidade(estado),
+      speed: R.baseSpeed(estado.level),
+      // Real (fórmula, não o valor fixo do molde): 48% no level 8 é a MESMA
+      // conta, mas fixo ele ficaria errado no primeiro level up.
+      expBonus: R.levelBonus(estado.level),
+      // Armadura, defesa, dano, crítico, bloqueio, leech, proteção, alcance,
+      // regeneração do equipamento e velocidade — do equipamento REAL.
+      ...Ficha.combate(estado),
+      // A promoção (o original: "Elite Knight", promoted, regen e hpRegen/manaRegen
+      // já multiplicados) — o card do HUD, a ficha e o balão de regeneração leem daqui.
+      ...Promocao.derivados(estado, Ficha.combate(estado).regenDaArvore),
+      // A Coleção (outfits e montarias que ele tem) — a faixa da aba Aparência. Ver `Aparencia.colecao`.
+      collection: Aparencia.colecao(estado),
+      // Quantos sqm a arma alcança — o seletor "Distância" marca "máx N" acima disso.
+      attackRange: Cacadas.alcanceDaArma(Cacadas.armaDoPersonagem(estado)),
+    },
+    marca: null,
+    gold: estado.gold ?? 0,
+    bank: estado.bank ?? 0,
+    coins: estado.coins ?? 0,
+    // O bestiary (mortes por criatura) e os pontos de charm — ver `sistemas/charms.mjs`.
+    ...Charms.paraCliente(estado),
+    // A proficiência da arma na mão (null sem arma com proficiência) — ver `sistemas/proficiencia.mjs`.
+    proficiency: Proficiencia.vistaDaMao(estado),
+    // Os imbuements vestidos e os encaixes de cada peça — ver `sistemas/imbuements.mjs`.
+    ...Imbuements.paraCliente(estado),
+    // A promoção de verdade (o molde trazia a do personagem capturado) — ver `sistemas/promocao.mjs`.
+    promotion: Promocao.paraCliente(estado),
+    // As entregas de outfit/montaria e as tasks de montaria — de cada personagem
+    // (o molde trazia as do capturado para todo mundo). Ver `entregas.mjs`/`tarefas.mjs`.
+    entregas: Entregas.paraCliente(estado),
+    mountTasks: Tarefas.mountTasks(estado),
+    // O alerta do botão da Árvore (ponto parado) e o balão dele (o que ela dá).
+    // Voltas completas no percurso de cada hunt ("Você já completou este percurso Nx").
+    huntLaps: estado.huntLaps ?? {},
+    arvorePontos: Arvore.pontos(estado),
+    arvoreBonus: Arvore.bonus(estado),
+    // Stamina de verdade: gasta caçando, volta na cidade (ver sistemas/stamina.mjs).
+    ...Stamina.paraCliente(estado),
+    ...Exercicio.paraCliente(estado),
+    treinoStamina: Treinos.tanqueParaCliente(estado),
+    training: estado.training ?? null,
+    weight: Inventario.pesoDoInventario(estado),
+    deposito: [...Deposito.garantir(estado), ...(estado.bauDaConta ? [estado.bauDaConta] : [])],
+    ...Bau.paraCliente(estado),
+    storeInbox: estado.storeInbox ?? [],
+    storeInboxSlots: Loja.VAGAS_DA_INBOX,
+    bossCooldownsAte: { ...CHARACTER_TEMPLATE.bossCooldownsAte, ...(estado.bossCooldownsAte ?? {}) },
+    progress: R.progressoDoLevel(estado.level, estado.xp),
+    ...Treino.paraCliente(estado),
+    totals: { ...Ficha.totais(estado), time: Math.floor(Ficha.totais(estado).time) },
+    ...Bolsa.paraCliente(estado, Cacadas.faltaParaVender(estado)),
+    equipment: estado.equipment ?? {},
+    inventory: estado.inventory ?? [],
+    // Estes três são MUTÁVEIS por personagem (ver `estadoInicialPersonagem`) —
+    // por isso vêm de `estado`, e não ficam para trás no molde compartilhado.
+    // `?? CHARACTER_TEMPLATE.X`: personagens salvos ANTES deste sistema
+    // existir (o Zoros, entre outros — ver a conversa) não têm estas chaves
+    // no `estado` gravado; sem o fallback, `diarioParaCliente` quebraria em
+    // `estado.diario.ultimoColetadoEm` de um `diario` que é `undefined`.
+    wildcards: estado.wildcards ?? CHARACTER_TEMPLATE.wildcards,
+    presentes: estado.presentes ?? CHARACTER_TEMPLATE.presentes,
+    // Idem: a barra de ações é mutável por personagem (ver `acoes.mjs`) e
+    // ficava para trás no molde — todo personagem via sempre os 22 slots
+    // vazios do `character-template.json`, nunca o que de fato configurou.
+    actions: estado.actions ?? CHARACTER_TEMPLATE.actions,
+    hotkeys: estado.hotkeys ?? CHARACTER_TEMPLATE.hotkeys,
+    actionPresets: estado.actionPresets ?? [],
+    settings: { ...CHARACTER_TEMPLATE.settings, ...(estado.settings ?? {}) },
+    diario: Recompensas.diarioParaCliente(estado.diario ?? CHARACTER_TEMPLATE.diario),
+    // Mesma razão das três de cima: mutáveis por personagem, vêm da Ravox Store.
+    preyThirdSlot: estado.preyThirdSlot ?? false,
+    // Os três slots de prey e o preço da lista nova (200 x level) — ver `sistemas/prey.mjs`.
+    ...Prey.paraCliente(estado),
+    blessings: estado.blessings ?? [],
+    ...Premium.paraCliente(estado), // premiumAte + os acessos `instance`/`divina`
+    ...Tiers.paraCliente(estado), // tiers, tierMax, proximoTier
+    summon: Summon.paraCliente(estado),
+    // Auto Boss e Boss Tasks são do personagem (ver `sistemas/bosses.mjs`); o
+    // molde trazia o progresso do personagem capturado para todo mundo.
+    autoBoss: Bosses.autoParaCliente(estado),
+    bossTasks: Bosses.tasks(estado),
+    autoTask: estado.autoTask ?? { passe: false, passeAte: 0 },
+    efeitos: {
+      ...CHARACTER_TEMPLATE.efeitos,
+      // Os boosts de exp ligados (XP Boost da loja, Exp Potions) — a janelinha
+      // com o relógio no alto e a linha na ficha. Ver `sistemas/boosts.mjs`.
+      exp: Boosts.paraCliente(estado),
+      // O Scroll Speed Exercise guardado: com saldo, a faixa do treino mostra
+      // "Scroll Speed x2" com o tempo em vez da oferta (hud.mjs, `efeitos.exerciseSpeed`).
+      exerciseSpeed: (estado.scrollExercise ?? 0) > 0 ? { fator: 2, restante: estado.scrollExercise } : null,
+      // Os três Buff Power com o relógio de cada um (ver `sistemas/buffpower.mjs`).
+      buffPower: BuffPower.paraCliente(estado),
+    },
+  };
+}
+
+export class Sessao {
+  constructor(ws) {
+    this.ws = ws;
+    this.conta = null;
+    this.personagem = null; // linha do banco
+    this.estado = null; // estado quente (JSON já parseado)
+    // 100ms: rápido o bastante para o passo (R.PASSO_MS) parecer contínuo, sem
+    // mandar `state` mais rápido do que o jogo original (~4x/s).
+    /*
+     * O tick do original é 250ms (4 por segundo — `R.TICKS_POR_SEGUNDO`; é o
+     * tick que faz `duracaoDoPasso` dar os 250ms reais do jogador level 8).
+     * Aqui era 100ms: 10 `state` por segundo, e o client redesenha HUD, barra,
+     * janelas e mapa a cada um — o FPS caía. Todo ritmo do jogo já é múltiplo
+     * de 250ms (passo, troll 750, golpe 2000, poção 1000).
+     */
+    sessoesNoRelogio.add(this);
+  }
+
+  enviar(msg) {
+    enviar(this.ws, msg);
+  }
+
+  erroDeAuth(mensagem) {
+    this.enviar({ t: 'authError', message: mensagem });
+  }
+
+  /** Erro de AÇÃO de jogo (fora do portão) — vira um aviso de 3s na tela, não a caixa de login. */
+  erro(mensagem) {
+    this.enviar({ t: 'error', message: mensagem });
+  }
+
+  /**
+   * Roda uma função de `sistemas/*` (que devolve `{ok, erro}` e nunca fala
+   * com a rede) e traduz o resultado: erro vira aviso na tela, sucesso vira
+   * `state` atualizado. Toda ação de jogo que só muda `estado` passa por
+   * aqui — é o único lugar que sabe que `erro`/`mandarEstado` existem.
+   */
+  /**
+   * Operação que pode ser numa caixa do depósito (`from: 'depot:<n>'`): se for
+   * no Baú da Conta, relê do banco antes e grava depois (ele é da conta).
+   */
+  naCaixa(m, operacao) {
+    const daConta = String(m.from ?? '') === `depot:${Deposito.INDICE_DA_CONTA}`;
+    if (daConta) this.estado.bauDaConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
+    const r = operacao();
+    if (daConta && r.ok) B.gravarBauDaConta(this.conta.id, this.estado.bauDaConta);
+    for (const c of [...(this.estado.deposito ?? []), this.estado.bauDaConta]) if (c) c.tipos = c.itens.length;
+    return this.aplicar(r);
+  }
+
+  /** `send({t:'training', action, mode, itemId})` — por enquanto o Exercise (ver sistemas/exercicio.mjs). */
+  /**
+   * `send({t:'arvore', action?})` — como o original: erro vira `{t:'error'}`;
+   * todo o resto responde com a vista inteira (`{t:'arvore', view, emCacada}`),
+   * e o `state` segue junto porque o ouro e os pontos podem ter mudado.
+   */
+  despacharArvore(m) {
+    const r = Arvore.comando(this.estado, m, !!this.estado.hunt);
+    if (!r.ok) return this.erro(r.erro);
+    Arvore.recalcularVida(this.estado);
+    // A árvore enche os vessels: a vida/mana das gemas acesas pode ter mudado.
+    Gemas.sincronizarMaximos(this.estado);
+    this.enviar({ t: 'arvore', view: Arvore.vista(this.estado), emCacada: !!this.estado.hunt });
+    if (m.action) this.mandarEstado();
+  }
+
+  /** `send({t:'gemas', action?})` — o Gem Atelier: responde com a vista inteira, como a árvore. */
+  despacharProficiencia(m) {
+    const r = Proficiencia.comando(this.estado, m);
+    if (!r.ok) return this.erro(r.erro);
+    this.enviar({ t: 'proficiency', view: r.view, ...(r.list ? { list: r.list } : {}) });
+    if (m.action) this.aplicar(r);
+  }
+
+  despacharCharms(m) {
+    const r = Charms.comando(this.estado, m);
+    if (!r.ok) return this.erro(r.erro);
+    this.enviar({ t: 'charms', view: Charms.vista(this.estado) });
+    if (m.action) this.aplicar(r);
+  }
+
+  despacharGemas(m) {
+    const r = Gemas.comando(this.estado, m);
+    if (!r.ok) return this.erro(r.erro);
+    this.enviar({ t: 'gemas', view: Gemas.vista(this.estado) });
+    if (m.action) this.aplicar(r);
+  }
+
+  despacharTreino(m) {
+    if (m.action === 'stop') {
+      const r = Exercicio.parar(this.estado);
+      if (r.relatorio) this.enviar(r.relatorio);
+      return this.aplicar(r);
+    }
+    if (m.action === 'start' && m.mode === 'exercise') return this.aplicar(Exercicio.comecar(this.estado, m));
+    if (m.action === 'start' && m.mode === 'online') {
+      if (this.estado.exercicio?.treinando) {
+        const r = Exercicio.parar(this.estado);
+        if (r.relatorio) this.enviar(r.relatorio);
+      }
+      return this.aplicar(Cacadas.entrarNoPatio(this.estado));
+    }
+    if (m.action === 'start' && m.mode === 'offline') {
+      // "Ao confirmar, você sai deste personagem e volta para a lista."
+      const r = Treinos.comecarOffline(this.estado, m);
+      if (!r.ok) return this.erro(r.erro);
+      this.soltarPersonagem();
+      return this.enviar({ t: 'released', notice: 'Treino offline começou — o personagem treina enquanto você está fora.' });
+    }
+    return this.erro('Modo de treino desconhecido.');
+  }
+
+  /** O estado de outro personagem que esteja no jogo agora (para o mercado creditar na hora). */
+  estadoAoVivo(personagemId) {
+    for (const s of vivas.values()) {
+      if (s.personagem?.id === personagemId && s.estado) {
+        setTimeout(() => s.mandarEstado(), 0);
+        return s.estado;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * O outro lado de uma transferência do banco: o `estado` vivo se ele estiver
+   * no jogo (a sessão dele grava sozinha), senão o gravado — que é regravado
+   * aqui mesmo, sem mexer no "visto por último" dele.
+   */
+  destinoDaTransferencia(nome) {
+    const linha = B.personagemPorNome(nome);
+    if (!linha) return null;
+    const vivo = this.estadoAoVivo(linha.id);
+    if (vivo) return { id: linha.id, nome: linha.nome, estado: vivo, gravar: () => {} };
+    const estado = JSON.parse(linha.estado);
+    return { id: linha.id, nome: linha.nome, estado, gravar: () => B.regravarEstadoPersonagem(linha.id, estado) };
+  }
+
+  /**
+   * `falarComNpc` — o clique direito no NPC da praça. O Banker responde como o
+   * original (`npcFala` com `tipo:'banco'`, capturado em
+   * `api-mapeada/servidor/npc-naji.json`), e o client abre o banco.
+   */
+  falarComNpc({ id }) {
+    const npc = CITY_META.npcs.find((n) => n.id === id);
+    if (!npc) return this.erro('Ninguém para conversar aqui.');
+    if (npc.tipo !== 'banco') return this.erro(`${npc.name} ainda não atende neste servidor.`);
+    this.enviar({ t: 'npcFala', id: npc.id, nome: npc.name, tipo: 'banco', fala: Banqueiro.FALA_DO_BANQUEIRO, catalogo: null, gold: this.estado.gold ?? 0 });
+  }
+
+  /** `send({t:'market', action?})` — o balcão de itens (ver `sistemas/mercado.mjs`). */
+  despacharMercado(m) {
+    const p = this.personagem;
+    if (!p) return;
+    const aoVivo = (id) => this.estadoAoVivo(id);
+    if (m.action === 'historico') return this.enviar({ t: 'marketHistorico', dados: Mercado.extrato(p.id) });
+    if (m.action === 'offers') return this.enviar({ t: 'marketOffers', dados: Mercado.ofertas(p.id, m.filtros) });
+    let r = null;
+    if (m.action === 'offer') r = Mercado.anunciar(this.estado, p, m);
+    else if (m.action === 'accept') r = Mercado.aceitar(this.estado, p, m, aoVivo);
+    else if (m.action === 'cancel') r = Mercado.cancelar(this.estado, p, m);
+    if (r && !r.ok) return this.erro(r.erro);
+    // Anúncio novo: sai também na aba Mercado do chat (ver Chat.anunciarOferta).
+    if (m.action === 'offer' && r.anuncio) Chat.anunciarOferta(this, r.anuncio);
+    this.enviar({ t: 'market', market: Mercado.balcao(this.estado, p.id), ...(r?.notice ? { notice: r.notice } : {}) });
+    if (r) {
+      this.enviar({ t: 'marketOffers', dados: Mercado.ofertas(p.id, m.filtros ?? { kind: m.kind, moeda: m.moeda }) });
+      this.aplicar({ ok: true });
+    }
+  }
+
+  /** `send({t:'coinMarket', action?, pagina})` — o balcão de Ravox Coins. */
+  despacharCoins(m) {
+    const p = this.personagem;
+    if (!p) return;
+    const aoVivo = (id) => this.estadoAoVivo(id);
+    let r = null;
+    if (m.action === 'order') r = Mercado.ordemDeCoins(this.estado, p, m);
+    else if (m.action === 'accept') r = Mercado.aceitarCoins(this.estado, p, m, aoVivo);
+    else if (m.action === 'cancel') r = Mercado.cancelarCoins(this.estado, p, m);
+    if (r && !r.ok) return this.erro(r.erro);
+    this.enviar({ t: 'coinMarket', dados: Mercado.balcaoDeCoins(this.estado, p.id, m.pagina), ...(r?.notice ? { notice: r.notice } : {}) });
+    if (r) this.aplicar({ ok: true });
+  }
+
+  aplicar(resultado) {
+    if (!resultado.ok) return this.erro(resultado.erro);
+    if (resultado.notice) this.avisoPendente = resultado.notice;
+    // O peso NUNCA passa da capacidade: qualquer ação que tenha trazido item
+    // demais (compra, presente de level, ...) manda o excesso para o depósito.
+    const excesso = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado));
+    if (excesso) this.avisoPendente = excesso;
+    this.characterSujo = true;
+    this.mandarEstado();
+  }
+
+  /** `send({t:'mounts'})` — consulta pura, não muda `estado`: manda direto, sem passar por `aplicar`. */
+  mandarMontarias() {
+    const { outfits, mounts } = Aparencia.montariasEOutfits(this.estado);
+    this.enviar({ t: 'mounts', outfits, mounts });
+  }
+
+  /**
+   * `send({t:'store'})` (só olhar) ou `send({t:'store', action:'buy', id})`
+   * (comprar). Não há um `ok` separado para a compra — a confirmação É a
+   * prateleira voltando atualizada (coins descontado, `owned`/`ativoAte`
+   * novos). Erro de compra (sem saldo, produto que não existe) vira aviso
+   * pelo canal de sempre, e a prateleira volta do mesmo jeito que estava.
+   */
+  despacharLoja(m) {
+    if (m.action === 'buy' && m.id === 'cofre-vagas') {
+      // Vagas do Baú da Conta: a caixa é da conta, gravada na tabela própria.
+      const daConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
+      const r = Deposito.comprarVagas(this.estado, daConta);
+      if (r.ok) B.gravarBauDaConta(this.conta.id, daConta);
+      this.estado.bauDaConta = daConta;
+      this.aplicar(r.ok ? { ...r, notice: `Caixa compartilhada: ${daConta.teto} vagas.` } : r);
+      // A prateleira volta com o "Agora X → Y" novo.
+      return this.enviar({ t: 'store', store: Loja.catalogoDaLoja(this.estado, B.lerMelhoriasDaConta(this.conta.id)) });
+    }
+    // As melhorias da CONTA (slot de party) vêm do banco a cada vez: outro
+    // personagem da conta pode ter comprado.
+    const daConta = B.lerMelhoriasDaConta(this.conta.id);
+    if (m.action === 'buy') {
+      const resultado = Loja.comprar(this.estado, m, daConta);
+      if (!resultado.ok) return this.erro(resultado.erro);
+      if (resultado.conta) B.gravarMelhoriasDaConta(this.conta.id, daConta);
+      if (resultado.notice) this.avisoPendente = resultado.notice;
+      this.mandarEstado();
+    }
+    this.enviar({ t: 'store', store: Loja.catalogoDaLoja(this.estado, daConta) });
+  }
+
+  /**
+   * `send({t:'actions'})` (só olhar o catálogo) ou `{action:'set'|'key'|'swap',
+   * ...}` (mudar um slot). Mesmo padrão do `despacharLoja`: sem catálogo
+   * separado, a resposta ao `set`/`key`/`swap` já É o `state` com a barra nova.
+   */
+  despacharAcoes(m) {
+    // Resposta ao pedido de catálogo é `actionCatalog` (com `catalog` dentro),
+    // não `actions` — é o que `setActionCatalog(message.catalog)` já espera
+    // no client (`main.mjs`); mandar `actions` de volta deixava `catalog`
+    // sempre `undefined` e a tela travada em "carregando...".
+    if (!m.action) return this.enviar({ t: 'actionCatalog', catalog: Acoes.catalogo(this.estado) });
+    const resultado =
+      m.action === 'set' ? Acoes.definir(this.estado, m) :
+      m.action === 'key' ? Acoes.trocarTecla(this.estado, m) :
+      m.action === 'swap' ? Acoes.trocar(this.estado, m) :
+      { ok: false, erro: 'Ação de barra desconhecida.' };
+    return this.aplicar(resultado);
+  }
+
+  /** `send({t:'actionPreset', action:'save'|'apply'|'delete', name})`. */
+  despacharPreset(m) {
+    const resultado =
+      m.action === 'save' ? Acoes.salvarPreset(this.estado, m) :
+      m.action === 'apply' ? Acoes.aplicarPreset(this.estado, m) :
+      m.action === 'delete' ? Acoes.apagarPreset(this.estado, m) :
+      { ok: false, erro: 'Arranjo desconhecido.' };
+    return this.aplicar(resultado);
+  }
+
+  /**
+   * `send({t:'huntAction', slot})` — clique ou tecla, fora da barra
+   * automática. Tem eventos (dano/cura/fx) igual ao `tique`, por isso não
+   * passa por `aplicar` (que só manda `state`, sem eventos).
+   */
+  dispararAcaoManual({ slot }) {
+    const resultado = Cacadas.disparoManual(this.estado, this.personagem, slot);
+    if (!resultado.ok) return this.erro(resultado.erro);
+    this.mandarEstado(false, resultado.eventos);
+  }
+
+  // ------------------------------------------------------------- handshake
+
+  ola() {
+    this.enviar({ t: 'hello', catalog: CATALOGO });
+  }
+
+  // -------------------------------------------------------------- receber
+
+  receber(m) {
+    try {
+      // Login, cadastro e exclusão esperam o scrypt (assíncrono): o erro deles
+      // chega pela promessa, não pelo `catch` daqui.
+      const r = this.despachar(m);
+      if (r && typeof r.catch === 'function') r.catch((e) => console.error('sessao', m?.t, '->', e.message));
+    } catch (e) {
+      console.error('sessao', m?.t, '->', e.message);
+    }
+  }
+
+  despachar(m) {
+    // O medidor de ping do client (`medidor.mjs`): `{t:'ping', at}` → `{t:'pong', at}`.
+    // Sem resposta, o número mostrava há quanto tempo o ping saiu — só subia.
+    if (m.t === 'ping') return this.enviar({ t: 'pong', at: m.at });
+    switch (m.t) {
+      case 'register':
+        return this.registrar(m);
+      case 'login':
+        return this.login(m);
+      case 'resume':
+        return this.resumir(m);
+      case 'logout':
+        return this.logout(m);
+      case 'createCharacter':
+        return this.criarPersonagem(m);
+      case 'deleteCharacter':
+        return this.excluirPersonagem(m);
+      case 'play':
+        return this.entrarNoPersonagem(m);
+      case 'release':
+        return this.soltarPersonagem();
+      case 'walk':
+        return this.andar(m);
+      case 'virar':
+        return this.virar(m);
+      case 'pedirMapa':
+        return this.mandarEstado(true);
+      case 'diario':
+        return this.aplicar(Recompensas.coletarDiario(this.estado));
+      case 'diarioEscolher':
+        return this.aplicar(Recompensas.escolherDiario(this.estado, m));
+      case 'marco':
+        return this.aplicar(Recompensas.coletarMarco(this.estado, m));
+      case 'presente':
+        return this.aplicar(Recompensas.coletarPresente(this.estado, m));
+      case 'largar':
+        return this.aplicar(Inventario.largar(this.estado, m));
+      case 'destroy':
+        return this.aplicar(Inventario.destruir(this.estado, m));
+      case 'clearBackpack':
+        return this.aplicar(Inventario.limparMochila(this.estado, m));
+      case 'equip':
+        return this.aplicar(Inventario.equipar(this.estado, m));
+      case 'unequip':
+        return this.aplicar(Inventario.desequipar(this.estado, m));
+      // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,
+      // retirar, inserir, fundir) — cada resposta é o retrato inteiro de novo.
+      case 'forja':
+        return this.enviar(Forja.viewDoTier(this.estado));
+      case 'forjaSubir':
+      case 'forjaTransferir': {
+        const r = m.t === 'forjaSubir' ? Forja.subirTier(this.estado, m) : Forja.transferirTier(this.estado, m);
+        if (r.erro) this.erro(r.erro);
+        else if (r.notice) this.avisoPendente = r.notice;
+        Afixos.sincronizarMaximos(this.estado);
+        this.mandarEstado();
+        return this.enviar(Forja.viewDoTier(this.estado, r.forjou));
+      }
+      // As outras duas abas da Forja: o Craft (sets Craftado e V2) e a Máquina
+      // de Desmanche — mesma regra: a resposta é a ficha inteira de novo.
+      case 'craft':
+        return this.enviar(Craft.view(this.estado, m));
+      case 'craftFazer': {
+        const r = Craft.craftar(this.estado, m);
+        if (!r.ok) this.erro(r.erro);
+        else this.avisoPendente = r.notice;
+        Afixos.sincronizarMaximos(this.estado);
+        this.mandarEstado();
+        // A aba Tier só pede a ficha dela ao abrir a Forja: sem esta, ela
+        // mostraria o ouro e as peças de ANTES do craft até alguém reabrir.
+        this.enviar(Forja.viewDoTier(this.estado));
+        return this.enviar(Craft.view(this.estado, m, r.craftou));
+      }
+      case 'desmanche':
+        return this.enviar(Desmanche.view(this.estado));
+      case 'desmancharPeca': {
+        const r = Desmanche.desmanchar(this.estado, m);
+        if (!r.ok) this.erro(r.erro);
+        else this.avisoPendente = r.notice;
+        this.mandarEstado();
+        this.enviar(Forja.viewDoTier(this.estado)); // mesma razão do craft: as peças mudaram
+        return this.enviar(Desmanche.view(this.estado));
+      }
+      case 'forjaAfixos':
+        return this.enviar(Forja.viewDosAfixos(this.estado));
+      case 'forjaAfixoPrevia':
+        return this.enviar(Forja.previaTransferir(this.estado, m));
+      case 'forjaAfixoPreviaRetirar':
+        return this.enviar(Forja.previaRetirar(this.estado, m));
+      case 'forjaAfixoPreviaInserir':
+        return this.enviar(Forja.previaInserir(this.estado, m));
+      case 'forjaAfixoPreviaFundir':
+        return this.enviar(Forja.previaFundir(this.estado, m));
+      case 'forjaAfixoReroll':
+      case 'forjaAfixoTransferir':
+      case 'forjaAfixoRetirar':
+      case 'forjaAfixoInserir':
+      case 'forjaAfixoFundir': {
+        const faz = { forjaAfixoReroll: Forja.rerrolar, forjaAfixoTransferir: Forja.transferir, forjaAfixoRetirar: Forja.retirar, forjaAfixoInserir: Forja.inserir, forjaAfixoFundir: Forja.fundir }[m.t];
+        const r = faz(this.estado, m);
+        if (r.erro) this.erro(r.erro);
+        Afixos.sincronizarMaximos(this.estado);
+        this.mandarEstado();
+        return this.enviar(Forja.viewDosAfixos(this.estado, r.fez));
+      }
+      case 'grupo':
+        return this.aplicar(Party.comandoDoGrupo(this, m));
+      case 'party':
+        return this.aplicar(Party.comandoDaCaca(this, m));
+      case 'bank':
+        return this.aplicar(Banqueiro.comando(this.estado, m, this.personagem, (nome) => this.destinoDaTransferencia(nome)));
+      case 'falarComNpc':
+        return this.falarComNpc(m);
+      case 'prey':
+        return this.aplicar(Prey.comando(this.estado, m));
+      case 'arvore':
+        return this.despacharArvore(m);
+      case 'gemas':
+        return this.despacharGemas(m);
+      case 'charms':
+        return this.despacharCharms(m);
+      case 'proficiency':
+        return this.despacharProficiencia(m);
+      // Abrir a oficina: a resposta é o próprio personagem (o cliente lê `imbuements`/`imbuementSlots` dele).
+      case 'blessings':
+        return this.enviar(Morte.vista(this.estado));
+      case 'bless': {
+        const r = Morte.comprar(this.estado, m);
+        if (r.ok) this.enviar(Morte.vista(this.estado));
+        return this.aplicar(r);
+      }
+      // Amigos (lista, pedir, aceitar, recusar, tirar) e o perfil de alguém — ver `sistemas/amigos.mjs`.
+      // O chat (Local, Global, Privado, áudio) e a presença — ver `sistemas/chat.mjs`.
+      case 'chat': {
+        const erro = Chat.falar(this, m);
+        return erro ? this.erro(erro) : undefined;
+      }
+      case 'chatAudio': {
+        const erro = Chat.falarAudio(this, m);
+        return erro ? this.erro(erro) : undefined;
+      }
+      case 'ouvirAudio':
+        return this.enviar(Chat.ouvirAudio(m.id));
+      case 'presenca':
+        return this.enviar(Chat.presenca(m.nomes));
+      // Highscores: o top 25 da categoria — ver `sistemas/ranking.mjs`.
+      case 'ranking':
+        return this.enviar({ t: 'ranking', ranking: Ranking.topo(m.category) });
+      // A guilda: sem `action`, a vista; com, a ação e a vista nova — ver `sistemas/guildas.mjs`.
+      // A Arena x1: sem `action`, o lobby; com, a ação (a vista nova vai para quem foi tocado).
+      case 'arena': {
+        if (!m.action) return this.enviar(Arena.vista(this));
+        const erro = Arena.comando(this, m);
+        if (erro) this.enviar(Arena.vista(this, erro));
+        return this.aplicar({ ok: true });
+      }
+      case 'guilda': {
+        if (!m.action) return this.enviar(Guildas.vista(this.personagem.nome));
+        const r = Guildas.comando(this, m);
+        this.enviar(Guildas.vista(this.personagem.nome, r.ok ? null : r.erro));
+        return this.aplicar(r.ok ? r : { ok: true });
+      }
+      case 'friends':
+        return this.enviar(Amigos.comando(this.personagem.nome, m));
+      case 'perfil':
+        return this.enviar(Amigos.perfil(m.name));
+      case 'tasksDeBicho': {
+        const r = Tarefas.comando(this.estado, m);
+        if (!r.ok) return this.erro(r.erro);
+        this.enviar({ t: 'tasksDeBicho', ficha: Tarefas.ficha(this.estado) });
+        return m.action ? this.aplicar(r) : undefined;
+      }
+      case 'taskToken':
+        return this.enviar({ t: 'taskToken', loja: Tarefas.loja(this.estado) });
+      case 'entrega':
+        return this.aplicar(Entregas.entregar(this.estado, m));
+      case 'promote':
+        return this.aplicar(Promocao.promover(this.estado));
+      case 'imbuements':
+        return this.aplicar({ ok: true });
+      case 'imbue':
+        return this.aplicar(Imbuements.comando(this.estado, m));
+      case 'tierUp':
+        return this.aplicar(Tiers.subir(this.estado, m));
+      case 'usar':
+        return this.aplicar(Inventario.usar(this.estado, m));
+      case 'split':
+        return this.naCaixa(m, () => Inventario.dividir(this.estado, m));
+      case 'juntar':
+        return this.naCaixa(m, () => Inventario.juntar(this.estado, m));
+      case 'trocar':
+        return this.naCaixa(m, () => Inventario.trocar(this.estado, m));
+      case 'organizar':
+        return this.naCaixa(m, () => Inventario.organizar(this.estado, m));
+      case 'pouch':
+        return this.aplicar(Bolsa.moverBolsa(this.estado, m));
+      case 'clearPouch':
+        return this.aplicar(Bolsa.limparBolsa(this.estado, m));
+      case 'market':
+        return this.despacharMercado(m);
+      case 'coinMarket':
+        return this.despacharCoins(m);
+      case 'training':
+        return this.despacharTreino(m);
+      case 'storeInbox':
+        return this.aplicar(Loja.moverDaInbox(this.estado, m, Inventario.cabeNoPeso));
+      case 'depot': {
+        // O Baú da Conta é da CONTA: lido do banco agora (outro personagem da
+        // conta pode ter mexido) e gravado de volta na hora.
+        const daConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
+        const r = Deposito.comando(this.estado, m, daConta);
+        if (r.ok) B.gravarBauDaConta(this.conta.id, daConta);
+        this.estado.bauDaConta = daConta;
+        this.aplicar(r);
+        /*
+         * O nome da caixa não entra na assinatura que faz a janela aberta se
+         * redesenhar (`renderAll`, main.mjs: só os ITENS das caixas) — o nome
+         * mudava no servidor e a tela ficava com o antigo. Uma mensagem que o
+         * client trata com `panelCtx.redraw()` força o redesenho, DEPOIS do
+         * state com o nome novo. É a `taskToken`, com a loja real dela, para
+         * não estragar o que ela guarda.
+         */
+        if (r.renomeou) this.enviar({ t: 'taskToken', loja: TASK_TOKEN_REAL.loja });
+        return;
+      }
+      case 'venderMochila': {
+        const r = Bolsa.vendaDaMochila(this.estado, m);
+        this.enviar(r.previa);
+        return this.aplicar(r);
+      }
+      // `venderSacolas` é a venda das SACOLAS DE BOSS (o baú), não da bolsa de loot.
+      case 'venderSacolas': {
+        const r = Bau.venderSacolas(this.estado, m);
+        this.enviar(r.previa);
+        return this.aplicar(r);
+      }
+      case 'reward':
+        return this.aplicar(Bau.comandoDoBau(this.estado, m));
+      case 'autoBoss':
+        return this.aplicar(Bosses.comandoDoAuto(this.estado, m));
+      case 'bossToken': {
+        const r = m.action === 'buy' ? Bosses.comprar(this.estado, m) : { ok: true };
+        this.enviar(Bosses.lojaParaCliente(this.estado));
+        return this.aplicar(r);
+      }
+      case 'bossPouch': {
+        const r = Bau.comandoDaBossPouch(this.estado, m);
+        if (r.ok) this.enviar(r.previa);
+        return this.aplicar(r);
+      }
+      case 'itemRule':
+        return this.aplicar(Bolsa.regraDeItem(this.estado, m));
+      case 'lootPreset':
+        return this.aplicar(Bolsa.presetDeLoot(this.estado, m));
+      case 'lootFiltro':
+        return this.aplicar(Bolsa.definirLootFiltro(this.estado, m));
+      case 'settings':
+        return this.aplicar(Bolsa.definirSettings(this.estado, m));
+      case 'resetAnalyzer':
+        return this.aplicar(Cacadas.zerarAnalisador(this.estado));
+      case 'pegar':
+        return this.aplicar(Inventario.pegar(this.estado, m));
+      case 'mounts':
+        return this.mandarMontarias();
+      case 'outfit':
+        return this.aplicar(Aparencia.salvarAparencia(this.estado, m));
+      case 'mount':
+        return this.aplicar(Aparencia.equiparMontaria(this.estado, m));
+      case 'store':
+        return this.despacharLoja(m);
+      case 'startHunt': {
+        // Treinando no boneco? Para o treino (com o relatório) antes de sair caçando.
+        if (this.estado.exercicio?.treinando) {
+          const r = Exercicio.parar(this.estado);
+          if (r.relatorio) this.enviar(r.relatorio);
+        }
+        Party.antesDeSairDaCacada(this);
+        return this.aplicar(Cacadas.entrar(this.estado, m));
+      }
+      case 'stopHunt': {
+        if (this.estado?.hunt?.huntId === 'treino') return this.despacharTreino({ action: 'stop' });
+        // "Caçada encerrada": o relatório da sessão, antes de a hunt sumir.
+        const report = this.estado?.hunt ? Cacadas.relatorio(this.estado) : null;
+        Party.antesDeSairDaCacada(this);
+        const resultado = this.aplicar(Cacadas.sair(this.estado));
+        if (report) this.enviar({ t: 'runReport', report });
+        return resultado;
+      }
+      case 'huntTarget':
+        return this.aplicar(Cacadas.definirAlvo(this.estado, m));
+      case 'huntWalk':
+        return void Cacadas.andar(this.estado, m);
+      case 'huntEscada':
+        return this.aplicar(Cacadas.usarEscada(this.estado, m));
+      case 'huntAssist':
+        return this.aplicar(Cacadas.definirAssistencia(this.estado, m));
+      case 'lure':
+        return this.aplicar(Cacadas.definirLure(this.estado, m));
+      case 'strategy':
+        return this.aplicar(Cacadas.definirEstrategia(this.estado, m));
+      case 'distance':
+        return this.aplicar(Cacadas.definirDistancia(this.estado, m));
+      case 'actions':
+        return this.despacharAcoes(m);
+      case 'actionPreset':
+        return this.despacharPreset(m);
+      case 'huntAction':
+        return this.dispararAcaoManual(m);
+      // O aperto de mão do cliente (main.mjs, na conexão): como ele quer os quadros.
+      case 'delta':
+        // "Sei juntar o que mudou." Pedido de novo = um remendo falhou lá: o
+        // próximo quadro vai inteiro, e o delta recomeça dele.
+        this.delta = m.on !== false;
+        this.recomecarQuadros();
+        return;
+      case 'jaTenhoCatalogo':
+        // Os itens (1 MB) vão uma vez por conexão, não em todo `welcome`.
+        this.guardaCatalogo = true;
+        return;
+      case 'oculta':
+        // Aba no fundo: efeito de tela é desenho para ninguém (o cliente nem desenha).
+        this.oculta = m.on === true;
+        return;
+      default:
+        // Comando ainda não implementado nesta restauração — ver
+        // api-mapeada/protocolo.md. Silencioso de propósito: um comando
+        // desconhecido não pode derrubar a conexão.
+        return;
+    }
+  }
+
+  // ------------------------------------------------------------------ auth
+
+  async registrar({ email, password, confirm }) {
+    const mail = String(email ?? '').trim().toLowerCase();
+    if (!DOMINIO_EMAIL.test(mail)) return this.erroDeAuth('E-mail inválido.');
+    if (!password || password.length < 6) return this.erroDeAuth('A senha precisa de 6 caracteres ou mais.');
+    if (password !== confirm) return this.erroDeAuth('As senhas não conferem.');
+    if (B.contaPorEmail(mail)) return this.erroDeAuth('Este e-mail já tem conta.');
+
+    const conta = await B.criarConta({ email: mail, senha: password });
+    // Enquanto o hash rodava, outra aba pode ter criado a mesma conta.
+    if (!conta) return this.erroDeAuth('Este e-mail já tem conta.');
+    this.conta = B.contaPorId(conta.id);
+    const token = B.abrirSessao(conta.id);
+    this.mandarConta(token);
+  }
+
+  async login({ email, password }) {
+    const conta = B.contaPorEmail(email);
+    if (!conta || !(await B.conferirSenha(password, conta.senha))) {
+      return this.erroDeAuth('E-mail ou senha incorretos.');
+    }
+    this.conta = conta;
+    const token = B.abrirSessao(conta.id);
+    this.mandarConta(token);
+  }
+
+  resumir({ token }) {
+    const conta = B.contaDaSessao(token);
+    if (!conta) return this.erroDeAuth('sessão expirada');
+    this.conta = conta;
+    this.mandarConta(token);
+  }
+
+  logout({ token }) {
+    if (token) B.encerrarSessao(token);
+    this.soltarPersonagem();
+    this.conta = null;
+  }
+
+  mandarConta(token) {
+    const personagens = B.personagensDaConta(this.conta.id);
+    this.enviar({
+      t: 'account',
+      token,
+      account: {
+        email: this.conta.email,
+        pelaGoogle: false,
+        temGoogle: false,
+        doisFatores: false,
+        reservasRestantes: 0,
+        characters: cartaoDaConta(personagens),
+      },
+    });
+  }
+
+  // ------------------------------------------------------------ personagem
+
+  criarPersonagem({ name, vocation, sex }) {
+    if (!this.conta) return this.erroDeAuth('sem sessão');
+    const problema = R.problemaNoNomeDePersonagem(name);
+    if (problema) return this.erroDeAuth(problema);
+    if (!R.VOCACOES_VALIDAS.has(vocation)) return this.erroDeAuth('Vocação inválida.');
+    if (sex !== 'male' && sex !== 'female') return this.erroDeAuth('Escolha inválida.');
+    if (B.personagemPorNome(name)) return this.erroDeAuth('Já existe um personagem com esse nome.');
+    const existentes = B.personagensDaConta(this.conta.id);
+    if (existentes.length >= R.MAXIMO_DE_PERSONAGENS) return this.erroDeAuth('Limite de personagens atingido.');
+
+    B.criarPersonagem({
+      conta: this.conta.id,
+      nome: name,
+      vocacao: vocation,
+      sexo: sex,
+      estadoInicial: estadoInicialPersonagem(vocation, sex),
+    });
+    // O cliente trata `account` como "a lista mudou, redesenhe" também fora do
+    // login — ver `auth.mjs`'s `handle`.
+    this.mandarConta(null);
+  }
+
+  /*
+   * A tela de exclusão só manda `password` neste backup (sem OAuth Google —
+   * ver `criarConta`/`registrar`, a conta só existe com senha). O cliente
+   * espera `characterDeleted` seguido de um `account` atualizado — ver
+   * `auth.mjs`'s `handle`, caso `characterDeleted`.
+   */
+  async excluirPersonagem({ name, password }) {
+    if (!this.conta) return this.erroDeAuth('sem sessão');
+    if (!(await B.conferirSenha(password, this.conta.senha))) return this.erroDeAuth('Senha incorreta.');
+    const personagem = B.personagemPorNome(name);
+    if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
+
+    const viva = vivas.get(personagem.nome);
+    if (viva) {
+      viva.personagem = null;
+      viva.estado = null;
+      vivas.delete(personagem.nome);
+      if (viva !== this) enviar(viva.ws, { t: 'released', notice: 'Este personagem foi excluído.' });
+    }
+    B.excluirPersonagem(personagem.id);
+    this.enviar({ t: 'characterDeleted', name: personagem.nome });
+    this.mandarConta(null);
+  }
+
+  entrarNoPersonagem({ name }) {
+    if (!this.conta) return this.erroDeAuth('sem sessão');
+    const personagem = B.personagemPorNome(name);
+    if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
+
+    // "Sem [o Slot de party], a conta joga e caça com até 2 chars" ao mesmo tempo.
+    const limite = Party.limiteDeChars(this.conta.id);
+    const daConta = [...vivas.values()].filter((s) => s !== this && s.conta?.id === this.conta.id && s.personagem?.nome !== personagem.nome);
+    if (daConta.length >= limite) {
+      return this.erroDeAuth(`Sua conta já está com ${daConta.length} personagens jogando — o limite é ${limite}. Mais: "Slot de party", na Ravox Store.`);
+    }
+    const antiga = vivas.get(personagem.nome);
+    if (antiga && antiga !== this) {
+      antiga.soltarPersonagem();
+      enviar(antiga.ws, { t: 'released', notice: 'Você entrou neste personagem em outra aba.' });
+    }
+
+    this.personagem = personagem;
+    this.estado = JSON.parse(personagem.estado);
+    this.estado.pos = corrigirPosicaoAntiga(this.estado.pos);
+    // Migração: personagens salvos antes do sistema de recompensas existir
+    // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
+    // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
+    if (!this.estado.diario) Object.assign(this.estado, Recompensas.estadoInicial());
+    // Mesma migração, agora para os campos que a Ravox Store passou a usar.
+    if (!this.estado.autoBoss) Object.assign(this.estado, Loja.estadoInicial());
+    // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
+    // ganha a exp base do level que já tem, somada ao que caçou.
+    if ((this.estado.xp ?? 0) < R.expForLevel(this.estado.level)) this.estado.xp = (this.estado.xp ?? 0) + R.expForLevel(this.estado.level);
+    Treino.garantir(this.estado);
+    // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
+    Gemas.sincronizarMaximos(this.estado);
+    Inventario.moedasParaOBolso(this.estado);
+    // Treino offline / Exercise que ficou rodando com o jogador fora.
+    const treinoPendente = Treinos.voltaDoTreino(this.estado, personagem.visto_em);
+    // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
+    if (!this.estado.hunt && personagem.visto_em) Stamina.recuperar(this.estado, Date.now() - personagem.visto_em);
+    this.estado.bauDaConta = Deposito.caixaDaConta(B.lerBauDaConta(this.conta.id));
+    // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
+    const doMercado = Mercado.receberCreditos(this.estado, personagem.id);
+    // Personagem que já estava acima da capacidade (loot de antes da regra):
+    // o excesso vai para o depósito, com aviso no primeiro `state`.
+    this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado;
+    vivas.set(personagem.nome, this);
+
+    // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.
+    Arena.aoEntrar(this.estado);
+    // Caçou com a aba fechada? Simula o tempo que passou e manda o relatório
+    // ("Progresso enquanto você esteve fora" — `andamento`, no client).
+    let andamento = null;
+    const ausencia = Cacadas.simularAusencia(this.estado, personagem);
+    if (ausencia) {
+      andamento = ausencia.report;
+      if (ausencia.morreu) {
+        const morte = this.morrerNaHunt();
+        andamento.motivo =
+          `Você morreu caçando enquanto estava fora e perdeu ${morte.lost.toLocaleString('pt-BR')} de experiência` +
+          `${morte.goldLost ? ` e ${morte.goldLost.toLocaleString('pt-BR')} de ouro` : ''}` +
+          `${morte.levelPerdido ? ` (caiu ${morte.levelPerdido} level)` : ''}.`;
+      }
+    }
+
+    const completo = characterParaCliente(personagem, this.estado);
+    this.lembrarCharacter(completo);
+    const itensNesteWelcome = !(this.guardaCatalogo && this.itensJaForam);
+    this.itensJaForam = true;
+    this.enviar({
+      t: 'welcome',
+      versao: Novidades.VERSAO,
+      novidades: Novidades.novidades(),
+      character: completo,
+      city: snapshotDaPraca(this.estado, true, this),
+      // O catálogo real (nome/peso/raridade de 6178 itens) — mandado uma vez
+      // por entrada, exatamente como o `welcome` de verdade faz. Sem isto o
+      // cliente sabe DESENHAR cada item (os atlas já vieram no passo 1/2 da
+      // extração) mas não sabe o NOME de nenhum — todo balão de item ficaria
+      // em branco.
+      ...(itensNesteWelcome ? { items: ITEM_CATALOG } : {}),
+      // O top 25 de experiência, como no welcome do original.
+      ranking: Ranking.topo('exp'),
+      online: vivas.size,
+      ...(andamento ? { andamento } : {}),
+      ...(treinoPendente ? { treinoPendente } : {}),
+    });
+    // A lista de amigos logo depois do welcome, como o original; e os amigos
+    // online veem a bolinha dele acender.
+    this.enviar(Amigos.lista(personagem.nome));
+    Amigos.mudouPresenca(personagem.nome);
+  }
+
+  /*
+   * ---- Salvamento automático ----
+   *
+   * O personagem só era gravado ao sair do jogo: um servidor derrubado (uma
+   * reinicialização, um travamento) perdia tudo desde o login — compras, itens
+   * usados, level. A cada `AUTOSAVE_MS` quem está online é gravado. Numa hunt,
+   * a cópia gravada leva `offlineDesde` = agora, então se o servidor cair a
+   * volta simula a caçada a partir dali (ver `Cacadas.simularAusencia`); o
+   * estado vivo não é tocado.
+   */
+  gravarAgora() {
+    if (!this.personagem || !this.estado) return;
+    const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
+    const copia = estadoPersistido.hunt ? { ...estadoPersistido, hunt: { ...estadoPersistido.hunt, offlineDesde: Date.now() } } : estadoPersistido;
+    B.gravarEstadoPersonagem(this.personagem.id, copia);
+    this.gravadoEm = Date.now();
+  }
+
+  soltarPersonagem() {
+    if (!this.personagem) return;
+    // Campos de movimento são de ida (calculados a cada tique a partir do
+    // último `walk`); gravá-los faria o personagem "lembrar" um rumo vencido
+    // — inofensivo (a validade já expirou até a próxima sessão), mas sujo.
+    // "O pátio de treino para quando você sai."
+    if (this.estado.hunt?.huntId === 'treino') this.estado.hunt = null;
+    // Arena x1: sair no meio do duelo é derrota (e o level de verdade volta).
+    Arena.saiuDoJogo(this);
+    // Party: sai do grupo; a caçada em grupo vira uma cópia só dele (segue offline).
+    Party.saiuDoJogo(this);
+    // Numa hunt, ela segue "offline": grava de quando, e a volta simula o resto.
+    if (this.estado.hunt) this.estado.hunt.offlineDesde = Date.now();
+    // `bauDaConta` é da conta (tabela própria), não do personagem.
+    const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
+    B.gravarEstadoPersonagem(this.personagem.id, estadoPersistido);
+    if (vivas.get(this.personagem.nome) === this) vivas.delete(this.personagem.nome);
+    // Os amigos online veem a bolinha apagar.
+    Amigos.mudouPresenca(this.personagem.nome);
+    this.personagem = null;
+    this.estado = null;
+  }
+
+  // -------------------------------------------------------------- mundo
+
+  /*
+   * O cliente não manda "ande um passo": ele manda o RUMO que o WASD segurado
+   * aponta agora (`{dx,dy}`, cada um -1/0/1 — ver `mandarRumo` em main.mjs) e
+   * repete a cada 100ms enquanto a tecla estiver presa. Quem decide o RITMO do
+   * passo é o servidor — este aqui anda uma casa a cada `R.PASSO_MS` enquanto
+   * o rumo mais recente continuar apontando para algum lado. `{dx:0,dy:0}` é o
+   * aviso explícito de "soltei a tecla".
+   */
+  andar({ dx, dy }) {
+    if (!this.estado) return;
+    if (!dx && !dy) {
+      this.estado.rumo = null;
+      return;
+    }
+    this.estado.rumo = { dx: Math.sign(dx), dy: Math.sign(dy) };
+    this.estado.rumoValidoAte = Date.now() + 500;
+  }
+
+  /*
+   * Ctrl+WASD: vira sem andar (`main.mjs`'s Ctrl handler manda `{dx,dy}`, a
+   * mesma tabela `KEYS` do rumo — não `{dir}`, que nunca chega e deixava isto
+   * sempre inerte).
+   */
+  virar({ dx, dy }) {
+    if (!this.estado) return;
+    if (dy < 0) this.estado.pos.dir = 0;
+    else if (dy > 0) this.estado.pos.dir = 2;
+    else if (dx > 0) this.estado.pos.dir = 1;
+    else if (dx < 0) this.estado.pos.dir = 3;
+  }
+
+  /** Avança um passo, se houver rumo válido e o passo anterior já tiver acabado. */
+  processarMovimento() {
+    const estado = this.estado;
+    if (!estado?.rumo) return;
+    const agora = Date.now();
+    if (agora > (estado.rumoValidoAte ?? 0)) {
+      estado.rumo = null;
+      return;
+    }
+    if (!R.jaPode(agora, estado.proximoPassoEm)) return;
+
+    const { dx, dy } = estado.rumo;
+    const pos = estado.pos;
+    if (dy < 0) pos.dir = 0;
+    else if (dy > 0) pos.dir = 2;
+    else if (dx > 0) pos.dir = 1;
+    else if (dx < 0) pos.dir = 3;
+    // Colisão real: `CITY_MAP.blocked` é o mesmo mapa de bloqueio que o
+    // servidor original manda (ver `bloqueado`, em `dados.mjs`). Sem o `if`,
+    // o personagem atravessava parede — o placeholder antigo só clampava
+    // numa caixa, e uma cidade de verdade não é uma caixa.
+    const destino = { x: pos.x + dx, y: pos.y + dy };
+    if (!bloqueado(destino.x, destino.y)) {
+      pos.x = destino.x;
+      pos.y = destino.y;
+    }
+    estado.proximoPassoEm = agora + R.PASSO_MS;
+  }
+
+  mandarEstado(comMapa = false, eventos = []) {
+    // A cortina de carregamento da hunt nova vai UMA vez (ver `Cacadas.entrar`).
+    const viagem = this.estado?.hunt?.viagem ?? null;
+    if (viagem) delete this.estado.hunt.viagem;
+    if (!this.personagem) return;
+    const naHunt = !!this.estado.hunt;
+    /*
+     * ---- Só o que MUDOU ----
+     *
+     * O LAG: cada `state` levava o personagem inteiro (~60 KB — o molde real
+     * tem `entregas`, `diario`, `mountTasks`...) dez vezes por segundo, e o
+     * client relia e redesenhava tudo a cada 100ms. O original manda
+     * `charDelta` (capturado ao vivo): só as chaves que mudaram, que o client
+     * mescla por cima do que já tem (`applyState`, em main.mjs). `city`/`hunt`
+     * iguais ao último envio nem vão — o client mantém o anterior quando a
+     * chave falta. Um `state` sem nada novo é pulado, com um envio de
+     * garantia por segundo.
+     */
+    const msg = { t: 'state' };
+    const cache = (this.cacheDoCharacter ??= {});
+    this.quadrosSemPersonagem = (this.quadrosSemPersonagem ?? 0) + 1;
+    const inteiro = !this.characterJaFoi || comMapa || this.characterSujo || this.quadrosSemPersonagem >= QUADROS_POR_PERSONAGEM;
+    let completo = null;
+    const delta = {};
+    if (inteiro) {
+      this.quadrosSemPersonagem = 0;
+      this.characterSujo = false;
+      completo = characterParaCliente(this.personagem, this.estado);
+      Object.assign(completo, Party.camposDoPersonagem(this));
+      const refs = (this.refDoCharacter ??= {});
+      for (const [k, v] of Object.entries(completo)) {
+        // ---- O mesmo objeto de antes ----
+        // Campo MEMORIZADO (`CAMPOS_MEMORIZADOS`) que voltou como o mesmo objeto não
+        // mudou: nem vira texto para comparar (as entregas são ~26 KB por jogador
+        // por segundo). Só para esses — a mochila, por exemplo, é o mesmo array
+        // mexido no lugar, e pular pela referência esconderia a mudança.
+        if (CAMPOS_MEMORIZADOS.has(k) && refs[k] === v) continue;
+        if (CAMPOS_MEMORIZADOS.has(k)) refs[k] = v;
+        const s = JSON.stringify(v) ?? 'undefined';
+        if (cache[k] !== s) {
+          delta[k] = v;
+          cache[k] = s;
+        }
+      }
+    } else {
+      for (const k of CAMPOS_DE_TODO_QUADRO) {
+        const v = this.estado[k];
+        const s = JSON.stringify(v) ?? 'undefined';
+        if (cache[k] !== s) {
+          delta[k] = v;
+          cache[k] = s;
+        }
+      }
+    }
+    // O relógio da auto-venda anda sozinho no cliente (main.mjs, "O relógio da
+    // auto-venda, sozinho"): o `pouchValue` (~3 KB) só vai quando a bolsa muda.
+    if (!completo && !this.characterJaFoi) completo = characterParaCliente(this.personagem, this.estado);
+    if (!this.characterJaFoi) {
+      msg.character = completo;
+      this.characterJaFoi = true;
+    } else if (Object.keys(delta).length) {
+      msg.character = delta;
+      msg.charDelta = true;
+    }
+    const city = naHunt ? null : snapshotDaPraca(this.estado, comMapa, this);
+    const hunt = naHunt ? Cacadas.snapshotDaHunt(this.estado, comMapa) : null;
+    if (hunt) Object.assign(hunt, Party.extrasDoRetrato(this), Arena.extrasDoRetrato(this));
+    /*
+     * ---- A praça por delta ----
+     *
+     * Com os outros jogadores na praça, ela muda todo quadro (alguém sempre
+     * anda). Mandar a praça INTEIRA de novo — objetos, NPCs, chão — a cada passo
+     * de outro jogador seria ~6 KB por quadro à toa. Com o delta ligado vai só a
+     * chave que mudou (`cityDelta`, que o cliente mescla — `aplicar`, main.mjs).
+     */
+    if (!city) this.cacheDaCity = null;
+    else if (comMapa || !this.delta || !this.cacheDaCity) {
+      msg.city = city;
+      this.cacheDaCity = {};
+      Quadro.deltaRaso(city, this.cacheDaCity, Quadro.SO_NO_PRIMEIRO_QUADRO);
+    } else {
+      const mudou = Quadro.deltaRaso(city, this.cacheDaCity, Quadro.SO_NO_PRIMEIRO_QUADRO);
+      if (Object.keys(mudou).length) {
+        msg.city = mudou;
+        msg.cityDelta = true;
+      }
+    }
+    this.quadroDaCacada(msg, hunt, comMapa);
+    // Onde ele está no laço da hunt. Vai em TODO quadro, como no original
+    // (`run: {passo}`): o client zera o `state.run` quando a chave falta.
+    const run = naHunt ? Cacadas.runParaCliente(this.estado) : null;
+    if (run) msg.run = run;
+    const centro = hunt?.player ?? this.estado.pos;
+    const visiveis = Quadro.eventosDoQuadro(eventos, this.delta ? centro : null, this.oculta);
+    if (visiveis?.length) msg.events = visiveis;
+    if (viagem) msg.viagem = viagem;
+    // A faixa de vitória do boss (`mostrarVitoria` no client) vai UMA vez.
+    const vitoria = this.estado.hunt?.vitoria;
+    if (vitoria) {
+      delete this.estado.hunt.vitoria;
+      this.enviar({ t: 'victory', ...vitoria });
+    }
+    if (this.avisoPendente) {
+      msg.notice = this.avisoPendente;
+      this.avisoPendente = null;
+    }
+    const agora = Date.now();
+    if (Object.keys(msg).length === 1 && agora - (this.ultimoEnvio ?? 0) < 1000) return;
+    this.ultimoEnvio = agora;
+    this.enviar(msg);
+  }
+
+  /** Depois de um envio COMPLETO (`welcome`), o próximo `state` pode ir só com a diferença. */
+  lembrarCharacter(completo) {
+    this.cacheDoCharacter = {};
+    // Recomeça junto: o objeto que acabou de ir inteiro é o "de antes" dos memorizados.
+    this.refDoCharacter = {};
+    for (const [k, v] of Object.entries(completo)) {
+      this.cacheDoCharacter[k] = JSON.stringify(v) ?? 'undefined';
+      if (CAMPOS_MEMORIZADOS.has(k)) this.refDoCharacter[k] = v;
+    }
+    this.characterJaFoi = true;
+    this.cacheDaCity = null;
+    this.huntNoCliente = null;
+  }
+
+  /** O cliente pediu tudo de novo (ou acabou de ligar o delta): o próximo quadro vai inteiro. */
+  recomecarQuadros() {
+    this.characterJaFoi = false;
+    this.cacheDaCity = null;
+    this.huntNoCliente = null;
+  }
+
+  /*
+   * ---- A caçada no quadro: só a tela, e só o que mudou ----
+   *
+   * Para o cliente que pediu delta (o jogo de verdade), `Quadro` recorta os
+   * bichos para a tela e tira a mobília dos que ele já tem, e a caçada vai com
+   * `huntDelta`: só as chaves que mudaram. O primeiro quadro de cada caçada (o
+   * que leva o `map`) vai inteiro. Quem não pediu delta (as ferramentas, os
+   * testes vivos) recebe a caçada inteira, como antes.
+   */
+  quadroDaCacada(msg, hunt, comMapa) {
+    if (!hunt) {
+      if (this.huntNoCliente !== undefined && this.huntNoCliente !== 'nenhuma') msg.hunt = null;
+      this.huntNoCliente = 'nenhuma';
+      this.ultimaHuntInteira = undefined;
+      return;
+    }
+    if (!this.delta) {
+      const texto = JSON.stringify(hunt);
+      if (comMapa || texto !== this.ultimaHuntInteira) msg.hunt = hunt;
+      this.ultimaHuntInteira = texto;
+      this.huntNoCliente = null;
+      return;
+    }
+    const base = this.huntNoCliente;
+    const inteira = comMapa || 'map' in hunt || !base || base === 'nenhuma' || base.mapId !== hunt.mapId;
+    const { lista, uids } = Quadro.bichosDoQuadro(hunt.monsters, hunt.player, inteira ? null : base.uids);
+    hunt.monsters = lista;
+    if (inteira) {
+      msg.hunt = hunt;
+      const textos = {};
+      Quadro.deltaRaso(hunt, textos, Quadro.SO_NO_PRIMEIRO_QUADRO);
+      this.huntNoCliente = { mapId: hunt.mapId, textos, uids };
+      return;
+    }
+    const d = Quadro.deltaRaso(hunt, base.textos, Quadro.SO_NO_PRIMEIRO_QUADRO);
+    if (Object.keys(d).length) {
+      msg.hunt = d;
+      msg.huntDelta = true;
+    }
+    base.uids = uids;
+  }
+
+  /*
+   * `setInterval` não tem quem apare uma exceção — sem este try/catch, um
+   * bug em QUALQUER hunt de QUALQUER jogador (aconteceu uma vez com um
+   * mapa recém-salvo no `/editor`, `TypeError` em `gradeDaHunt`) derruba o
+   * processo Node inteiro e desconecta todo mundo online, não só quem
+   * estava na hunt quebrada. Erro aqui só tira ESSE personagem da hunt.
+   */
+  tique() {
+    if (!this.personagem) return;
+    if (Date.now() - (this.gravadoEm ?? Date.now()) >= AUTOSAVE_MS) this.gravarAgora();
+    this.gravadoEm ??= Date.now();
+    if (this.estado.hunt) {
+      try {
+        // Party: quem seguir e a partilha da exp (não-enumeráveis — não vão para o banco).
+        const h = this.estado.hunt;
+        Object.defineProperty(h, 'guia', { value: Party.guia(this), enumerable: false, writable: true, configurable: true });
+        Object.defineProperty(h, 'partilha', { value: Party.partilha(this), enumerable: false, writable: true, configurable: true });
+        if (h.isBoss) this.ultimoBoss = h.bossId;
+        // Arena x1: a largada, o degrau dos bichos e o golpe no adversário.
+        Arena.antesDoTique(this);
+        if (!this.estado.hunt) return this.mandarEstado();
+        const eventos = Cacadas.tique(this.estado, this.personagem);
+        if (this.estado.avisoDaHunt) {
+          this.avisoPendente = this.estado.avisoDaHunt;
+          delete this.estado.avisoDaHunt;
+        }
+        // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
+        // Cair no duelo não é morte: é derrota, sem perder nada (ver `Arena.caiu`).
+        if (this.estado.hp <= 0 && !Arena.caiu(this)) this.enviar({ t: 'death', ...this.morrerNaHunt() });
+        if (!this.estado.hunt) return this.mandarEstado(false, eventos);
+        this.mandarEstado(false, eventos);
+      } catch (e) {
+        console.error('tique hunt', this.estado.hunt?.huntId, '->', e.message);
+        this.morrerNaHunt({ real: false });
+        this.mandarEstado();
+      }
+      return;
+    }
+    const agora = Date.now();
+    // Saiu de uma sala de boss (vitória, 25 min, teleporte): a rotação espera a pausa.
+    if (this.ultimoBoss) {
+      Bosses.depoisDoBoss(this.estado, agora);
+      this.ultimoBoss = null;
+    }
+    const proximoBoss = Bosses.proximoDoAuto(this.estado, agora);
+    if (proximoBoss) {
+      const r = Cacadas.entrar(this.estado, { huntId: proximoBoss, mode: 'auto', strategy: this.estado.settings?.strategy });
+      if (!r.ok) this.avisoPendente = r.erro;
+    }
+    if (this.estado.avisoDaHunt) {
+      this.avisoPendente = this.estado.avisoDaHunt;
+      delete this.estado.avisoDaHunt;
+    }
+    Cacadas.regenerar(this.estado, agora - (this.ultimaRegen ?? agora));
+    Stamina.recuperar(this.estado, agora - (this.ultimaRegen ?? agora));
+    // Os golpes no boneco (o efeito de cada carga gasta) vão junto com o estado.
+    const golpes = [];
+    const doTreino = Exercicio.tique(this.estado, agora - (this.ultimaRegen ?? agora), golpes);
+    if (doTreino) this.enviar(doTreino);
+    this.ultimaRegen = agora;
+    this.processarMovimento();
+    // Saiu andando de perto do boneco: o treino para, com o relatório.
+    if (this.estado.exercicio?.treinando && !Exercicio.noBoneco(this.estado)) {
+      const r = Exercicio.parar(this.estado);
+      if (r.relatorio) this.enviar(r.relatorio);
+      this.avisoPendente = 'Você se afastou do boneco: o treino parou.';
+    }
+    this.mandarEstado(false, golpes);
+  }
+
+  /**
+   * A morte do original (`Morte.morrer`): experiência pela curva do Tibia com
+   * teto de 80% de um level e o desconto das bênçãos/promoção, 20% do ouro
+   * carregado, e as bênçãos queimadas. Volta pra cidade com a vida cheia.
+   * `real: false` é a saída por erro do servidor (o `catch` do tique): um bug
+   * nosso não pode custar nada. Devolve os campos do `death`.
+   */
+  morrerNaHunt({ real = true } = {}) {
+    Party.antesDeSairDaCacada(this);
+    // "Morrer para a rotação" do Auto Boss.
+    if (real) Bosses.pararPorMorte(this.estado);
+    const morte = real ? Morte.morrer(this.estado, descerDeLevel) : { lost: 0, goldLost: 0 };
+    if (real) Ficha.totais(this.estado).deaths += 1;
+    this.estado.hunt = null;
+    this.estado.hp = this.estado.maxHp;
+    this.estado.pos = { ...R.POSICAO_INICIAL };
+    return morte;
+  }
+
+  desconectar() {
+    sessoesNoRelogio.delete(this);
+    this.soltarPersonagem();
+  }
+}
+
+/*
+ * ---- Um relógio para todos ----
+ *
+ * Cada sessão tinha o seu `setInterval` de 250 ms. No Windows o timer tem
+ * granulação de ~15 ms e o intervalo escorregava: os quadros saíam a cada
+ * ~262 ms (medido, tools/carga.mjs), e com mais jogadores cada um escorregava
+ * de um jeito. Agora um relógio só roda todas as sessões e marca o PRÓXIMO
+ * quadro pela hora certa (`proximo += PASSO`), não "250 ms depois de agora":
+ * o atraso de um quadro é descontado do seguinte, e a média fica em 250 ms.
+ * Quem liga é o `index.mjs` (`ligarRelogio`); os testes criam sessões sem
+ * ele e tocam `tique()` à mão.
+ */
+const sessoesNoRelogio = new Set();
+const PASSO_DO_RELOGIO = 1000 / R.TICKS_POR_SEGUNDO;
+let proximoQuadro = 0;
+let relogioLigado = false;
+
+function rodarRelogio() {
+  for (const s of sessoesNoRelogio) {
+    try {
+      s.tique();
+    } catch (e) {
+      console.error('tique', s.personagem?.nome, '->', e.message);
+    }
+  }
+  const agora = performance.now();
+  // Atrasou mais de um quadro inteiro (servidor engasgado): recomeça da hora
+  // atual em vez de disparar vários quadros seguidos para "alcançar".
+  proximoQuadro = Math.max(proximoQuadro + PASSO_DO_RELOGIO, agora);
+  setTimeout(rodarRelogio, proximoQuadro - agora);
+}
+
+export function ligarRelogio() {
+  if (relogioLigado) return;
+  relogioLigado = true;
+  proximoQuadro = performance.now() + PASSO_DO_RELOGIO;
+  setTimeout(rodarRelogio, PASSO_DO_RELOGIO);
+}

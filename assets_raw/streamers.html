@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Programa de Streamers — Ravox Idle</title>
+<meta name="description" content="Transforme sua audiência em recompensas divulgando o Ravox Idle: coins por indicação e comissão sobre doações.">
+<link rel="icon" type="image/png" sizes="32x32" href="/client/favicon-32.png">
+<link rel="stylesheet" href="/client/site/site.css">
+<style>
+  .st-topo { text-align: center; padding: 48px 20px 24px; }
+  .st-topo h1 { font-size: clamp(26px, 4vw, 38px); margin-bottom: 10px; }
+  .st-topo p { color: var(--apagado, #93A3BC); max-width: 52ch; margin: 0 auto; }
+
+  .st-grade { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+              max-width: 900px; margin: 32px auto; padding: 0 20px; }
+  .st-caixa { border: 1px solid var(--borda, rgba(148,163,184,.18)); border-radius: 14px;
+              padding: 20px; background: var(--painel, #0C1122); }
+  .st-caixa b { display: block; font-size: 16px; margin-bottom: 8px; color: var(--ouro-vivo, #FFD960); }
+  .st-caixa p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--apagado, #93A3BC); }
+
+  .st-aviso { max-width: 900px; margin: 0 auto 32px; padding: 16px 20px;
+              border: 1px dashed rgba(245,197,66,.4); background: rgba(245,197,66,.06);
+              border-radius: 12px; font-size: 13.5px; line-height: 1.6; }
+
+  .st-form { max-width: 560px; margin: 0 auto 60px; padding: 0 20px; }
+  .st-form h2 { font-size: 22px; margin-bottom: 6px; }
+  .st-form .legenda { color: var(--apagado, #93A3BC); font-size: 14px; margin-bottom: 20px; }
+  .st-form label { display: block; font-size: 13px; margin: 14px 0 5px; }
+  .st-form input, .st-form textarea {
+    width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 8px;
+    border: 1px solid var(--borda, rgba(148,163,184,.18)); background: rgba(7,11,22,.6);
+    color: var(--pergaminho, #E8EDF7); font-family: inherit; font-size: 14px;
+  }
+  .st-form button { width: 100%; margin-top: 20px; padding: 14px; border: 0; border-radius: 8px;
+                    font-weight: 800; font-size: 15px; cursor: pointer;
+                    background: linear-gradient(180deg, #E8C25A, #A8842F); color: #201804; }
+  #st-resposta { margin-top: 14px; font-size: 14px; text-align: center; }
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <a class="marca" href="/"><img src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle"></a>
+  <nav>
+    <a href="/">Início</a>
+    <a href="/online">Online</a>
+  </nav>
+</header>
+
+<main>
+  <div class="st-topo">
+    <h1>Programa de Streamers</h1>
+    <p>Transforme sua audiência em recompensas divulgando o Ravox Idle.</p>
+  </div>
+
+  <div class="st-grade">
+    <div class="st-caixa">
+      <b>50 coins por jogador indicado</b>
+      <p>Toda vez que alguém criar uma conta pelo seu link, você recebe 50 Ravox Coins
+         no seu personagem.</p>
+    </div>
+    <div class="st-caixa">
+      <b>20% de comissão sobre doações</b>
+      <p>Sempre que um jogador que você indicou fizer uma doação aprovada, você recebe
+         20% do valor — enquanto estiver ativo no jogo.</p>
+    </div>
+    <div class="st-caixa">
+      <b>Link exclusivo e rastreável</b>
+      <p>Você recebe um link só seu para divulgar no canal, sem confusão sobre quem
+         indicou quem.</p>
+    </div>
+    <div class="st-caixa">
+      <b>Acompanhamento</b>
+      <p>Enviamos seus números — quantos indicou e quanto rendeu — sempre que você pedir,
+         pelo WhatsApp ou Discord.</p>
+    </div>
+  </div>
+
+  <div class="st-aviso">
+    <b>Importante:</b> se você ficar <b>7 dias ou mais sem entrar no jogo</b>, não acumula
+    a comissão de 20% nesse período. Assim que voltar a jogar, ela volta a valer
+    normalmente, sem precisar pedir. Os <b>50 coins por cadastro</b> são concedidos
+    sempre, independente disso.
+  </div>
+
+  <form class="st-form" id="st-candidatura">
+    <h2>Candidate-se</h2>
+    <p class="legenda">Preencha o formulário para se candidatar ao programa.</p>
+
+    <label for="c-nome">Seu nome / nome do canal *</label>
+    <input id="c-nome" required maxlength="80">
+
+    <label for="c-conta">E-mail da sua conta no Ravox Idle *</label>
+    <input id="c-conta" type="email" required maxlength="120">
+
+    <label for="c-personagem">Nome do seu personagem *</label>
+    <input id="c-personagem" required maxlength="60">
+
+    <label for="c-live">Link do seu canal (TikTok, Twitch, YouTube...) *</label>
+    <input id="c-live" required maxlength="255" placeholder="https://">
+
+    <label for="c-recado">Conte um pouco sobre seu canal (opcional)</label>
+<label>WhatsApp *<input id="st-whats" name="whatsapp" required placeholder="(11) 99999-9999" maxlength="30"></label>
+    <textarea id="c-recado" rows="4" maxlength="800"></textarea>
+
+    <button type="submit">Enviar candidatura</button>
+    <p id="st-resposta"></p>
+  </form>
+</main>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+
+$('st-candidatura').addEventListener('submit', async (evento) => {
+  evento.preventDefault();
+  const resposta = $('st-resposta');
+  resposta.textContent = 'enviando...';
+  resposta.style.color = 'inherit';
+
+  try {
+    const pedido = await fetch('/api/streamer-candidatura', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        nome: $('c-nome').value,
+        // E-mail e personagem viajam juntos: e' o que voce precisa para achar a
+        // conta e creditar as coins depois.
+        contato: `${$('c-conta').value} · ${$('c-personagem').value}`,
+        live: $('c-live').value,
+        whatsapp: document.getElementById('st-whats').value, // PATCH_STREAMER_PAINEL_V1
+        recado: $('c-recado').value,
+      }),
+    });
+    const dados = await pedido.json();
+
+    if (dados.ok) {
+      resposta.textContent = 'Candidatura enviada. Entraremos em contato pelo seu canal.';
+      resposta.style.color = '#6EE7B7';
+      $('st-candidatura').reset();
+    } else {
+      resposta.textContent = dados.reason ?? 'não deu para enviar';
+      resposta.style.color = '#F87171';
+    }
+  } catch {
+    resposta.textContent = 'não deu para enviar — tente de novo em instantes';
+    resposta.style.color = '#F87171';
+  }
+});
+</script>
+</body>
+</html>

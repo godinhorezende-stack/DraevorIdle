@@ -1,0 +1,6569 @@
+{
+ "_fonte": "opentibiabr/canary monster.lua (ver tools/gerar-poderes-dos-bosses.mjs)",
+ "bosses": {
+  "ahau": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 456,
+     "intervalo": 1700,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 350,
+     "max": 422,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 1,
+     "noAlvo": true,
+     "efeito": 169,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 400,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 40,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 415,
+     "max": 570,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "area",
+     "raio": 2,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 189,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "boulder ring",
+     "elemento": "earth",
+     "min": 460,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 21,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "alptramun": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 200,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 700,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 6,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 17,
+     "tiro": 15
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 400,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 6,
+     "espalha": 0,
+     "alcance": 3,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 200,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 6,
+     "espalha": 0,
+     "alcance": 3,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "stone shower rune",
+     "elemento": "earth",
+     "min": 230,
+     "max": 450,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 7,
+     "efeito": 21,
+     "tiro": 30
+    }
+   ],
+   "curas": []
+  },
+  "anomaly": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 300,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "anomaly wave",
+     "elemento": "physical",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 600,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 150,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 30,
+     "efeito": 13
+    }
+   ]
+  },
+  "arbaziloth": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1520,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 100
+    }
+   ],
+   "curas": [
+    {
+     "min": 200,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 5,
+     "efeito": 13
+    }
+   ]
+  },
+  "ascending-ferumbras": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 425,
+     "max": 810,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 9,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 13,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 400,
+     "max": 650,
+     "intervalo": 2000,
+     "chance": 21,
+     "forma": "area",
+     "raio": 9,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "bakragore": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 3000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 900,
+     "max": 1100,
+     "intervalo": 3000,
+     "chance": 35,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": 29
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 100,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 13,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 1000,
+     "max": 2000,
+     "intervalo": 3000,
+     "chance": 30,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 950,
+     "max": 2400,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1000,
+     "max": 2500,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 2500,
+     "max": 3500,
+     "intervalo": 3000,
+     "chance": 15,
+     "efeito": null
+    }
+   ]
+  },
+  "brain-head": {
+   "ataques": [
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 700,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 80,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 900,
+     "max": 1300,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 221,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "brokul": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "holy",
+     "min": 100,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 14,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 300,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 18,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 5,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 300,
+     "max": 840,
+     "intervalo": 2000,
+     "chance": 14,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "holy",
+     "min": 300,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 14,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 50,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 300,
+     "max": 840,
+     "intervalo": 2000,
+     "chance": 29,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 200,
+     "max": 500,
+     "intervalo": 1000,
+     "chance": 20,
+     "efeito": 13
+    },
+    {
+     "min": 500,
+     "max": 1000,
+     "intervalo": 3000,
+     "chance": 20,
+     "efeito": 13
+    }
+   ]
+  },
+  "chagorz": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1300,
+     "max": 2250,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 9,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 1000,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 3,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 1500,
+     "max": 1900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 700,
+     "max": 1500,
+     "intervalo": 3000,
+     "chance": 10,
+     "efeito": null
+    }
+   ]
+  },
+  "count-vlarkorth": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 250,
+     "max": 350,
+     "intervalo": 2300,
+     "chance": 20,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 1,
+     "noAlvo": true,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 1,
+     "max": 250,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1500,
+     "intervalo": 2500,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 150,
+     "max": 350,
+     "intervalo": 2000,
+     "chance": 14,
+     "efeito": 13
+    }
+   ]
+  },
+  "custodian": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "explosion wave",
+     "elemento": "fire",
+     "min": 450,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 14,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 610,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 730,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 37,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "demodras": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 160,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 250,
+     "max": 350,
+     "intervalo": 3000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 250,
+     "max": 550,
+     "intervalo": 4000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 400,
+     "max": 700,
+     "intervalo": 1000,
+     "chance": 25,
+     "efeito": 13
+    }
+   ]
+  },
+  "dragonking-zyrtarch": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 100,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 110,
+     "max": 495,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 110,
+     "max": 495,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 110,
+     "max": 495,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 710,
+     "max": 895,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 4,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 710,
+     "max": 895,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "duke-krule": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 700,
+     "max": 1200,
+     "intervalo": 3500,
+     "chance": 37,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 1000,
+     "intervalo": 2500,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 300,
+     "max": 500,
+     "intervalo": 4200,
+     "chance": 40,
+     "forma": "area",
+     "raio": 9,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 150,
+     "max": 350,
+     "intervalo": 2000,
+     "chance": 14,
+     "efeito": 13
+    }
+   ]
+  },
+  "earl-osam": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 400,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 44,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "ice chain",
+     "elemento": "ice",
+     "min": 260,
+     "max": 360,
+     "intervalo": 2500,
+     "chance": 25,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 3,
+     "efeito": 42,
+     "tiro": 29
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 400,
+     "max": 1000,
+     "intervalo": 3500,
+     "chance": 37,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 2,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 21,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 350,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 35,
+     "efeito": 13
+    }
+   ]
+  },
+  "eradicator": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 300,
+     "max": 1800,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 600,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 600,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 450,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 8,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "big energy wave",
+     "elemento": "energy",
+     "min": 700,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 38,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 12,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "essence-of-malice": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 603,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 80,
+     "max": 230,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 120,
+     "max": 250,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 110,
+     "max": 180,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "faceless-bane": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 575,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 350,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 65,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 335,
+     "max": 450,
+     "intervalo": 2000,
+     "chance": 45,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 330,
+     "max": 380,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 5,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 300,
+     "max": 410,
+     "intervalo": 2000,
+     "chance": 35,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 385,
+     "max": 535,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 1,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": 38,
+     "tiro": 5
+    }
+   ],
+   "curas": []
+  },
+  "ferumbras-mortal-shell": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 225,
+     "max": 410,
+     "intervalo": 2000,
+     "chance": 16,
+     "forma": "area",
+     "raio": 6,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 425,
+     "max": 810,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 9,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 13,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 400,
+     "max": 650,
+     "intervalo": 2000,
+     "chance": 21,
+     "forma": "area",
+     "raio": 9,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 200,
+     "max": 450,
+     "intervalo": 2000,
+     "chance": 21,
+     "forma": "area",
+     "raio": 6,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 3,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 590,
+     "max": 1050,
+     "intervalo": 2000,
+     "chance": 17,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 17,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 600,
+     "max": 2490,
+     "intervalo": 2000,
+     "chance": 23,
+     "efeito": 15
+    },
+    {
+     "min": 20000,
+     "max": 35000,
+     "intervalo": 2000,
+     "chance": 3,
+     "efeito": 15
+    }
+   ]
+  },
+  "foreshock": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 400,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 350,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 8,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 10,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 350,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "holy",
+     "min": 350,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 40,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 150,
+     "max": 300,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 2,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 10,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "gaffir": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 450,
+     "max": 650,
+     "intervalo": 2000,
+     "chance": 8,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 400,
+     "max": 580,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 750,
+     "intervalo": 3000,
+     "chance": 14,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 500,
+     "max": 620,
+     "intervalo": 2000,
+     "chance": 16,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 9,
+     "tiro": 30
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 320,
+     "max": 500,
+     "intervalo": 3000,
+     "chance": 12,
+     "forma": "area",
+     "raio": 2,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 9,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "ghulosh": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 2240,
+     "intervalo": 1000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 900,
+     "max": 1500,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 210,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 210,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 1500,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 1,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "gorzindel": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "melee",
+     "min": 600,
+     "max": 2800,
+     "intervalo": 2000,
+     "chance": 15
+    },
+    {
+     "tipo": "melee",
+     "min": 800,
+     "max": 1300,
+     "intervalo": 1000,
+     "chance": 15
+    },
+    {
+     "tipo": "melee",
+     "min": 800,
+     "max": 1000,
+     "intervalo": 1000,
+     "chance": 15
+    },
+    {
+     "tipo": "melee",
+     "min": 200,
+     "max": 800,
+     "intervalo": 1000,
+     "chance": 15
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 200,
+     "max": 600,
+     "intervalo": 1000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 9,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "goshnar-s-greed": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 5000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1500,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 35,
+     "tiro": 11
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 1200,
+     "max": 2200,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "singlecloudchain",
+     "elemento": "energy",
+     "min": 1300,
+     "max": 1700,
+     "intervalo": 6000,
+     "chance": 40,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 6,
+     "efeito": 38,
+     "tiro": 5
+    }
+   ],
+   "curas": [
+    {
+     "min": 1250,
+     "max": 3250,
+     "intervalo": 2000,
+     "chance": 25,
+     "efeito": 13
+    }
+   ]
+  },
+  "goshnar-s-megalomania-purple": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 800,
+     "max": 2500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1550,
+     "max": 2620,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1550,
+     "max": 2620,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 202,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1050,
+     "max": 2020,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 206,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1050,
+     "max": 2020,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 950,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 1000,
+     "max": 1500,
+     "intervalo": 30000,
+     "chance": 100,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 179,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "grand-master-oberon": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "holy",
+     "min": 800,
+     "max": 1200,
+     "intervalo": 3000,
+     "chance": 40,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 50,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 4250,
+     "chance": 35,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 10,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 5000,
+     "chance": 37,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": 32
+    }
+   ],
+   "curas": []
+  },
+  "guard-captain-quaid": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 580,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 500,
+     "max": 620,
+     "intervalo": 2000,
+     "chance": 18,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 9,
+     "tiro": 30
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 450,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 22,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": 9
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 350,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 14,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 400,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 1,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 7
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 300,
+     "max": 480,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 300,
+     "max": 450,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 9,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "ichgahal": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1500,
+     "max": 2300,
+     "intervalo": 3000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 700,
+     "max": 1000,
+     "intervalo": 1000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 12,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 2600,
+     "max": 2300,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 12,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 900,
+     "max": 1500,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 6,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 800,
+     "max": 1200,
+     "intervalo": 3000,
+     "chance": 10,
+     "efeito": null
+    }
+   ]
+  },
+  "irgix-the-flimsy": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 100,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 300,
+     "max": 500,
+     "intervalo": 1500,
+     "chance": 15,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 17,
+     "tiro": 51
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 4,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 35,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 38,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "izcandar-the-banished": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1500,
+     "intervalo": 3600,
+     "chance": 17,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 2,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 2000,
+     "intervalo": 4100,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 500,
+     "max": 1500,
+     "intervalo": 4700,
+     "chance": 17,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 2,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 44,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 500,
+     "max": 2000,
+     "intervalo": 3100,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 43,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "jaul": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 2000,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 0,
+     "max": 1000,
+     "intervalo": 2200,
+     "chance": 19,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 200,
+     "max": 800,
+     "intervalo": 3000,
+     "chance": 32,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 0,
+     "max": 600,
+     "intervalo": 1300,
+     "chance": 27,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 5,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 900,
+     "intervalo": 1200,
+     "chance": 6,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 1000,
+     "chance": 5,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 1000,
+     "max": 2000,
+     "intervalo": 1000,
+     "chance": 5,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 42,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 4000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 54,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 12000,
+     "max": 19000,
+     "intervalo": 5000,
+     "chance": 7,
+     "efeito": 13
+    }
+   ]
+  },
+  "king-zelos": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 900,
+     "max": 2700,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 1200,
+     "max": 3200,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 600,
+     "max": 1600,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1200,
+     "max": 1500,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "area",
+     "raio": 6,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1700,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1450,
+     "max": 5350,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "lady-tenebris": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 800,
+     "max": 1800,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1200,
+     "max": 1500,
+     "intervalo": 6000,
+     "chance": 13,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 400,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 13,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 39,
+     "tiro": 11
+    }
+   ],
+   "curas": [
+    {
+     "min": 600,
+     "max": 2700,
+     "intervalo": 3000,
+     "chance": 25,
+     "efeito": 13
+    }
+   ]
+  },
+  "lloyd": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 200,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 330,
+     "max": 660,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 6,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 48,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "lloyd wave",
+     "elemento": "physical",
+     "min": 430,
+     "max": 560,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "lloyd wave2",
+     "elemento": "physical",
+     "min": 230,
+     "max": 460,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "lloyd wave3",
+     "elemento": "physical",
+     "min": 430,
+     "max": 660,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 180,
+     "max": 250,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": null
+    }
+   ]
+  },
+  "lokathmor": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 1100,
+     "max": 2800,
+     "intervalo": 2000,
+     "chance": 8,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 1,
+     "tiro": 26
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 800,
+     "max": 1900,
+     "intervalo": 1000,
+     "chance": 8,
+     "forma": "area",
+     "raio": 9,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 1000,
+     "max": 255,
+     "intervalo": 1000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 6,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 90,
+     "max": 200,
+     "intervalo": 2000,
+     "chance": 8,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 5,
+     "tiro": 26
+    }
+   ],
+   "curas": []
+  },
+  "lord-azaram": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "lord azaram wave",
+     "elemento": "physical",
+     "min": 360,
+     "max": 900,
+     "intervalo": 3500,
+     "chance": 50,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 500,
+     "max": 1200,
+     "intervalo": 2700,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 45,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "magma-bubble": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 275,
+     "max": 750,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 725,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 75,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 8,
+     "noAlvo": true,
+     "efeito": 16,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 1700,
+     "max": 2750,
+     "intervalo": 3700,
+     "chance": 37,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 1000,
+     "max": 2000,
+     "intervalo": 3100,
+     "chance": 27,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 8,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    }
+   ],
+   "curas": [
+    {
+     "min": 400,
+     "max": 500,
+     "intervalo": 3000,
+     "chance": 35,
+     "efeito": 13
+    }
+   ]
+  },
+  "malofur-mangrinder": {
+   "ataques": [
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 2500,
+     "intervalo": 2000,
+     "chance": 100,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 5500,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 35,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "maxxenius": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "energy beam",
+     "elemento": "energy",
+     "min": 500,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 38,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "energy wave",
+     "elemento": "energy",
+     "min": 500,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 38,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "mazoran": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1500,
+     "max": 2500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 3000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 300,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 37,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 2090,
+     "max": 4500,
+     "intervalo": 2000,
+     "chance": 10,
+     "efeito": 13
+    }
+   ]
+  },
+  "mazzinor": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "divine missile",
+     "elemento": "holy",
+     "min": 135,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 7,
+     "efeito": 50,
+     "tiro": 31
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "berserk",
+     "elemento": "physical",
+     "min": 90,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 1,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 135,
+     "max": 280,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 13,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 210,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 38,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "holy",
+     "min": 210,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 50,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "megasylvan-yselda": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 270,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "earth beamMY",
+     "elemento": "earth",
+     "min": 400,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 50,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 21,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 400,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 50,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 5,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 50,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "mana leechMY",
+     "elemento": "manadrain",
+     "min": 100,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 50,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 7,
+     "efeito": 13,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "melting-frozen-horror": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 70,
+     "max": 300,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 750,
+     "max": 1050,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 4,
+     "tiro": 29
+    }
+   ],
+   "curas": []
+  },
+  "mitmah-vanguard": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 600,
+     "max": 800,
+     "intervalo": 1500,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 300,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 8,
+     "noAlvo": true,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 500,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 12,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 4300,
+     "max": 5970,
+     "intervalo": 4000,
+     "chance": 10,
+     "forma": "area",
+     "raio": 10,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 216,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "boulder ring",
+     "elemento": "earth",
+     "min": 460,
+     "max": 850,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 21,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1000,
+     "max": 2500,
+     "intervalo": 10000,
+     "chance": 10,
+     "efeito": 13
+    }
+   ]
+  },
+  "murcion": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1400,
+     "max": 2300,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "holy",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 1000,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 1500,
+     "max": 1900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 800,
+     "max": 1500,
+     "intervalo": 3000,
+     "chance": 10,
+     "efeito": null
+    }
+   ]
+  },
+  "necropharus": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 80,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 60,
+     "max": 217,
+     "intervalo": 3000,
+     "chance": 70,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 5,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 80,
+     "max": 120,
+     "intervalo": 1000,
+     "chance": 20,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 1,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 50,
+     "max": 140,
+     "intervalo": 1000,
+     "chance": 17,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 50,
+     "max": 140,
+     "intervalo": 1000,
+     "chance": 17,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": 5
+    }
+   ],
+   "curas": [
+    {
+     "min": 0,
+     "max": 300,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "obujos": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1200,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 200,
+     "max": 800,
+     "intervalo": 3000,
+     "chance": 23,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 200,
+     "max": 600,
+     "intervalo": 3500,
+     "chance": 20,
+     "forma": "area",
+     "raio": 6,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 41,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 200,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 1,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 9,
+     "tiro": 6
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 600,
+     "max": 1300,
+     "intervalo": 1200,
+     "chance": 7,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 53,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 600,
+     "max": 1600,
+     "intervalo": 2000,
+     "chance": 14,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 43,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 800,
+     "max": 2200,
+     "intervalo": 1000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "outburst": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 300,
+     "max": 1800,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "big energy purple wave",
+     "elemento": "energy",
+     "min": 700,
+     "max": 1300,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 38,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 38,
+     "tiro": 5
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 800,
+     "max": 1300,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 10,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 600,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 13,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "plagirath": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1300,
+     "max": 2250,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 9,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": 3,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 1000,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 3,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 1500,
+     "max": 1900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 3,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 3000,
+     "max": 4000,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "plagueroot": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": -6160,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 350,
+     "max": 1050,
+     "intervalo": 1000,
+     "chance": 7,
+     "forma": "area",
+     "raio": 6,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 20,
+     "max": 100,
+     "intervalo": 1000,
+     "chance": 50,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 350,
+     "max": 650,
+     "intervalo": 1000,
+     "chance": 34,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 250,
+     "max": 600,
+     "intervalo": 1000,
+     "chance": 13,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 350,
+     "max": 600,
+     "intervalo": 1000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 500,
+     "max": 1000,
+     "intervalo": 1000,
+     "chance": 15,
+     "efeito": 13
+    },
+    {
+     "min": 200,
+     "max": 300,
+     "intervalo": 1000,
+     "chance": 25,
+     "efeito": 13
+    }
+   ]
+  },
+  "ragiaz": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1400,
+     "max": 2300,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": 3,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 1000,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 15,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 1500,
+     "max": 1900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 35,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1000,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 10,
+     "efeito": 13
+    }
+   ]
+  },
+  "ratmiral-blackwhiskers": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 270,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 40,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": 27
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 40,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 600,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 4,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 23,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "ravenous-hunger": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 100
+    }
+   ],
+   "curas": []
+  },
+  "razzagorn": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1000,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 3000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 300,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1500,
+     "max": 1800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 12,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1000,
+     "max": 3000,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "rupture": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 250,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 350,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 150,
+     "max": 300,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 39,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "rupture wave",
+     "elemento": "physical",
+     "min": 700,
+     "max": 1100,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 300,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 150,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "scarlett-etzel": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "sudden death rune",
+     "elemento": "death",
+     "min": 400,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 16,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 7,
+     "efeito": 18,
+     "tiro": 11
+    },
+    {
+     "tipo": "magia",
+     "elemento": "holy",
+     "min": 450,
+     "max": 640,
+     "intervalo": 2000,
+     "chance": 13,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 50,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 480,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "shulgrax": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1500,
+     "max": 2500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 3000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 300,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 37,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 400,
+     "max": 6000,
+     "intervalo": 3000,
+     "chance": 35,
+     "efeito": 13
+    }
+   ]
+  },
+  "sir-baeloc": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 1000,
+     "intervalo": 3100,
+     "chance": 37,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 1,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 350,
+     "max": 625,
+     "intervalo": 2500,
+     "chance": 35,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 5,
+     "noAlvo": true,
+     "efeito": 1,
+     "tiro": 26
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 180,
+     "max": 250,
+     "intervalo": 2700,
+     "chance": 30,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 1,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": 32
+    }
+   ],
+   "curas": [
+    {
+     "min": 350,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 35,
+     "efeito": 13
+    }
+   ]
+  },
+  "sugar-daddy": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 20
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 6,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 200,
+     "max": 300,
+     "intervalo": 2000,
+     "chance": 18,
+     "forma": "area",
+     "raio": 12,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 184,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 250,
+     "max": 410,
+     "intervalo": 2000,
+     "chance": 18,
+     "forma": "area",
+     "raio": 12,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 36,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 400,
+     "max": 1500,
+     "intervalo": 3000,
+     "chance": 25,
+     "efeito": 13
+    }
+   ]
+  },
+  "tanjis": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 200,
+     "max": 600,
+     "intervalo": 2500,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 47,
+     "tiro": 15
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 200,
+     "max": 400,
+     "intervalo": 3500,
+     "chance": 27,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 42,
+     "tiro": 29
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 100,
+     "max": 400,
+     "intervalo": 3500,
+     "chance": 15,
+     "forma": "area",
+     "raio": 1,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 1,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "drown",
+     "min": 200,
+     "max": 500,
+     "intervalo": 2300,
+     "chance": 11,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 54,
+     "tiro": 29
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 200,
+     "max": 600,
+     "intervalo": 2300,
+     "chance": 14,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 26,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 100,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "area",
+     "raio": 1,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": 12
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 800,
+     "intervalo": 1200,
+     "chance": 7,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 200,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 14,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 48,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 800,
+     "max": 1100,
+     "intervalo": 3000,
+     "chance": 40,
+     "efeito": 13
+    }
+   ]
+  },
+  "tarbaz": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1000,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 3000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 300,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 37,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 900,
+     "max": 3500,
+     "intervalo": 2000,
+     "chance": 10,
+     "efeito": 15
+    }
+   ]
+  },
+  "tentugly-s-head": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 100,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 40,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 5,
+     "noAlvo": true,
+     "efeito": 214,
+     "tiro": 5
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "energy waveT",
+     "elemento": "energy",
+     "min": 0,
+     "max": 250,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 38,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 100,
+     "max": 300,
+     "intervalo": 2000,
+     "chance": 50,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "the-brainstealer": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 1200,
+     "max": 1900,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 700,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 1,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 1200,
+     "max": 1600,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 221,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1450,
+     "max": 5350,
+     "intervalo": 2000,
+     "chance": 15,
+     "efeito": 13
+    }
+   ]
+  },
+  "the-dread-maiden": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 100,
+     "max": 600,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 350,
+     "max": 750,
+     "intervalo": 2000,
+     "chance": 35,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 39,
+     "tiro": 11
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 600,
+     "max": 1500,
+     "intervalo": 4000,
+     "chance": 50,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 3,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "dread rcircle",
+     "elemento": "death",
+     "min": 400,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 40,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 18,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1000,
+     "max": 2500,
+     "intervalo": 5000,
+     "chance": 60,
+     "efeito": 13
+    }
+   ]
+  },
+  "the-enraged-thorn-knight": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 600,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 400,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 4,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 3,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 1400,
+     "max": 1700,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 47,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 400,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 12,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 200,
+     "max": 250,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 10,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 4,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1550,
+     "max": 2550,
+     "intervalo": 2000,
+     "chance": 20,
+     "efeito": 13
+    }
+   ]
+  },
+  "the-false-god": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 0,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": 45,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "the-fear-feaster": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 600,
+     "max": 1050,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 900,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 100,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 1000,
+     "max": 1750,
+     "intervalo": 1000,
+     "chance": 40,
+     "forma": "area",
+     "raio": 2,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 17,
+     "tiro": 39
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 0,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 600,
+     "max": 1200,
+     "intervalo": 1000,
+     "chance": 34,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    }
+   ],
+   "curas": [
+    {
+     "min": 1000,
+     "max": 2500,
+     "intervalo": 5000,
+     "chance": 60,
+     "efeito": 13
+    }
+   ]
+  },
+  "the-horned-fox": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 100,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 0,
+     "max": 20,
+     "intervalo": 1000,
+     "chance": 25,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": 2
+    }
+   ],
+   "curas": [
+    {
+     "min": 25,
+     "max": 75,
+     "intervalo": 1000,
+     "chance": 15,
+     "efeito": 14
+    }
+   ]
+  },
+  "the-last-lore-keeper": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 650,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 7,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 5,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 850,
+     "max": 2260,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 640,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 420,
+     "max": 954,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 48,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 640,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 45,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 1500,
+     "max": 3000,
+     "intervalo": 2000,
+     "chance": 25,
+     "efeito": 15
+    }
+   ]
+  },
+  "the-lord-of-the-lice": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 550,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 120,
+     "max": 310,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 21,
+     "tiro": 15
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 300,
+     "max": 420,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 250,
+     "max": 550,
+     "intervalo": 2000,
+     "chance": 9,
+     "efeito": 17
+    }
+   ]
+  },
+  "the-nightmare-beast": {
+   "ataques": [
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 1000,
+     "max": 3500,
+     "intervalo": 2000,
+     "chance": 100,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "death beam",
+     "elemento": "death",
+     "min": 1000,
+     "max": 2100,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "big death wave",
+     "elemento": "death",
+     "min": 1000,
+     "max": 2000,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 700,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 25,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "the-pale-worm": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 600,
+     "max": 1050,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 900,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 100,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 1000,
+     "max": 1750,
+     "intervalo": 1000,
+     "chance": 40,
+     "forma": "area",
+     "raio": 2,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 17,
+     "tiro": 39
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 0,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 600,
+     "max": 1200,
+     "intervalo": 1000,
+     "chance": 34,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    }
+   ],
+   "curas": [
+    {
+     "min": 1000,
+     "max": 2500,
+     "intervalo": 5000,
+     "chance": 60,
+     "efeito": 13
+    }
+   ]
+  },
+  "the-percht-queen": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 100,
+     "max": 200,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 100,
+     "max": 200,
+     "intervalo": 1000,
+     "chance": 15,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": 29
+    }
+   ],
+   "curas": []
+  },
+  "the-primal-menace": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 763,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 1500,
+     "max": 2200,
+     "intervalo": 4000,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 47,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 700,
+     "max": 1000,
+     "intervalo": 2500,
+     "chance": 35,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 16,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "big death wave",
+     "elemento": "death",
+     "min": 250,
+     "max": 300,
+     "intervalo": 3500,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 7,
+     "espalha": 3,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 1200,
+     "max": 1300,
+     "intervalo": 5000,
+     "chance": 25,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 600,
+     "max": 1800,
+     "intervalo": 2700,
+     "chance": 35,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": null,
+     "tiro": 15
+    }
+   ],
+   "curas": []
+  },
+  "the-sandking": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 400,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 0,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 4,
+     "noAlvo": true,
+     "efeito": 45,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "the-scourge-of-oblivion": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 4550,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 900,
+     "max": 1500,
+     "intervalo": 1000,
+     "chance": 7,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 3,
+     "tiro": 5
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "energy strike",
+     "elemento": "energy",
+     "min": 2000,
+     "max": 2700,
+     "intervalo": 2000,
+     "chance": 30,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 1,
+     "efeito": 38,
+     "tiro": 5
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 1550,
+     "max": 2550,
+     "intervalo": 2000,
+     "chance": 8,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 1075,
+     "max": 2405,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 12,
+     "tiro": 36
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 600,
+     "max": 1500,
+     "intervalo": 1000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 8,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 750,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 48,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 450,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": 32
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 800,
+     "max": 2300,
+     "intervalo": 1000,
+     "chance": 10,
+     "forma": "area",
+     "raio": 8,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 15,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 100,
+     "max": 700,
+     "intervalo": 1000,
+     "chance": 34,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 300,
+     "max": 950,
+     "intervalo": 1000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 2000,
+     "max": 5000,
+     "intervalo": 6000,
+     "chance": 25,
+     "efeito": 13
+    }
+   ]
+  },
+  "the-shatterer": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 200,
+     "max": 3000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 200,
+     "max": 1000,
+     "intervalo": 2000,
+     "chance": 10,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 400,
+     "max": 2000,
+     "intervalo": 3000,
+     "chance": 44,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": 25
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 0,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": false,
+     "efeito": 51,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 400,
+     "max": 6000,
+     "intervalo": 3000,
+     "chance": 35,
+     "efeito": 13
+    }
+   ]
+  },
+  "the-time-guardian": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 3000,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 600,
+     "max": 780,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 12,
+     "tiro": 5
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 600,
+     "max": 780,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 600,
+     "max": 780,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 9,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 38,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "the-unwelcome": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 600,
+     "max": 1050,
+     "intervalo": 4000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 900,
+     "max": 1400,
+     "intervalo": 2000,
+     "chance": 100,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 1000,
+     "max": 1750,
+     "intervalo": 1000,
+     "chance": 40,
+     "forma": "area",
+     "raio": 2,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 17,
+     "tiro": 39
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 0,
+     "max": 900,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 5,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 600,
+     "max": 1200,
+     "intervalo": 1000,
+     "chance": 34,
+     "forma": "area",
+     "raio": 7,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 7,
+     "noAlvo": true,
+     "efeito": 7,
+     "tiro": 4
+    }
+   ],
+   "curas": [
+    {
+     "min": 1000,
+     "max": 2500,
+     "intervalo": 5000,
+     "chance": 60,
+     "efeito": 13
+    }
+   ]
+  },
+  "timira-the-many-headed": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "timira fire ring",
+     "elemento": "fire",
+     "min": 360,
+     "max": 425,
+     "intervalo": 3500,
+     "chance": 50,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "death chain",
+     "elemento": "death",
+     "min": 190,
+     "max": 225,
+     "intervalo": 2500,
+     "chance": 30,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 3,
+     "efeito": 18,
+     "tiro": 11
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "mana drain chain",
+     "elemento": "manadrain",
+     "min": 100,
+     "max": 130,
+     "intervalo": 2500,
+     "chance": 20,
+     "forma": "alvo",
+     "raio": 0,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": true,
+     "alcance": 7,
+     "efeito": 13,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "timira explosion",
+     "elemento": "fire",
+     "min": 350,
+     "max": 560,
+     "intervalo": 4200,
+     "chance": 40,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "physical",
+     "min": 580,
+     "max": 620,
+     "intervalo": 5500,
+     "chance": 45,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 6,
+     "espalha": 2,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 5,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 230,
+     "max": 450,
+     "intervalo": 5000,
+     "chance": 60,
+     "forma": "area",
+     "raio": 1,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 1,
+     "noAlvo": true,
+     "efeito": 12,
+     "tiro": 36
+    }
+   ],
+   "curas": []
+  },
+  "unaz-the-mean": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 100,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 300,
+     "max": 500,
+     "intervalo": 1500,
+     "chance": 15,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 17,
+     "tiro": 51
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 4,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 35,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 38,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "urmahlullu-the-immaculate": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 150,
+     "max": 1300,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 800,
+     "intervalo": 3000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 550,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 550,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": 36
+    },
+    {
+     "tipo": "magia",
+     "estimado": true,
+     "nome": "urmahlulluring",
+     "elemento": "physical",
+     "min": 450,
+     "max": 600,
+     "intervalo": 2000,
+     "chance": 18,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "noAlvo": false,
+     "alcance": 7,
+     "efeito": 35,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "vemiath": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1500,
+     "max": 2500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 1000,
+     "intervalo": 3000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "ice",
+     "min": 300,
+     "max": 700,
+     "intervalo": 2000,
+     "chance": 15,
+     "forma": "area",
+     "raio": 5,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": null,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 6,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 500,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 8,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 37,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 800,
+     "max": 1500,
+     "intervalo": 3000,
+     "chance": 10,
+     "efeito": null
+    }
+   ]
+  },
+  "vok-the-freakish": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 100,
+     "max": 500,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 300,
+     "max": 500,
+     "intervalo": 1500,
+     "chance": 15,
+     "forma": "area",
+     "raio": 3,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 17,
+     "tiro": 51
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 25,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 4,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 12,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 35,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "earth",
+     "min": 300,
+     "max": 650,
+     "intervalo": 1500,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 9,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "world-devourer": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 0,
+     "max": 1600,
+     "intervalo": 2000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "lifedrain",
+     "min": 400,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 14,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 400,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 39,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 400,
+     "max": 800,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "area",
+     "raio": 4,
+     "comprimento": 0,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": true,
+     "efeito": 49,
+     "tiro": 5
+    },
+    {
+     "tipo": "magia",
+     "elemento": "energy",
+     "min": 600,
+     "max": 1200,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 10,
+     "espalha": 0,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 2,
+     "tiro": null
+    }
+   ],
+   "curas": []
+  },
+  "zamulosh": {
+   "ataques": [
+    {
+     "tipo": "melee",
+     "min": 1500,
+     "max": 2300,
+     "intervalo": 3000,
+     "chance": 100
+    },
+    {
+     "tipo": "magia",
+     "elemento": "death",
+     "min": 700,
+     "max": 800,
+     "intervalo": 1000,
+     "chance": 10,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 12,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 18,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "manadrain",
+     "min": 2600,
+     "max": 3300,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 12,
+     "espalha": 3,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 11,
+     "tiro": null
+    },
+    {
+     "tipo": "magia",
+     "elemento": "fire",
+     "min": 900,
+     "max": 1500,
+     "intervalo": 2000,
+     "chance": 20,
+     "forma": "feixe",
+     "raio": 0,
+     "comprimento": 6,
+     "espalha": 2,
+     "alcance": 0,
+     "noAlvo": false,
+     "efeito": 7,
+     "tiro": null
+    }
+   ],
+   "curas": [
+    {
+     "min": 220,
+     "max": 535,
+     "intervalo": 2000,
+     "chance": 25,
+     "efeito": 8
+    }
+   ]
+  }
+ }
+}

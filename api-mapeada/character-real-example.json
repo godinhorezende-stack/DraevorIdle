@@ -1,0 +1,4664 @@
+{
+ "name": "ClaudeSondaTeste",
+ "vocation": "knight",
+ "level": 8,
+ "exp": 4200,
+ "hp": 255,
+ "mana": 70,
+ "gold": 500,
+ "coins": 0,
+ "wildcards": 5,
+ "stamina": 2520,
+ "maxStamina": 2520,
+ "staminaRegen": {
+  "ativo": true,
+  "cheia": true,
+  "onde": "na cidade",
+  "segundosPorMinuto": 30
+ },
+ "settings": {
+  "healAt": 0.65,
+  "autoLoot": true,
+  "autoSellPouch": true,
+  "guardarAfixo": 1
+ },
+ "bank": 0,
+ "deposito": [
+  {
+   "indice": 0,
+   "nome": "Caixa I",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 1,
+   "nome": "Caixa II",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 2,
+   "nome": "Caixa III",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 3,
+   "nome": "Caixa IV",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 4,
+   "nome": "Caixa V",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 5,
+   "nome": "Caixa VI",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 6,
+   "nome": "Caixa VII",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 7,
+   "nome": "Caixa VIII",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 8,
+   "nome": "Caixa IX",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 9,
+   "nome": "Caixa X",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 10,
+   "nome": "Caixa XI",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 11,
+   "nome": "Caixa XII",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 12,
+   "nome": "Caixa XIII",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 13,
+   "nome": "Caixa XIV",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 14,
+   "nome": "Caixa XV",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 15,
+   "nome": "Caixa XVI",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": false
+  },
+  {
+   "indice": 16,
+   "nome": "Chegadas",
+   "tipos": 0,
+   "teto": 100,
+   "itens": [],
+   "chegadas": true
+  },
+  {
+   "indice": 17,
+   "nome": "Compartilhada",
+   "tipos": 0,
+   "teto": 20,
+   "podeComprarVagas": true,
+   "vagasPorCompra": 20,
+   "vagasNoMaximo": 100,
+   "coinsPorCompra": 25,
+   "itens": [],
+   "compartilhada": true,
+   "semConta": false
+  }
+ ],
+ "rewards": [],
+ "prey": [
+  {
+   "index": 0,
+   "state": "selection",
+   "key": null,
+   "bonus": "defense",
+   "rarity": 10,
+   "percent": 30,
+   "left": 0,
+   "total": 7200000,
+   "locked": false,
+   "autoReroll": false,
+   "freeRerollAte": 1790164273070,
+   "options": [
+    "cyclursus",
+    "goldhanded-cultist-bride",
+    "duke-bloodthorne",
+    "fruit-drop",
+    "hyaena",
+    "boar",
+    "troll-guard",
+    "brain-squid",
+    "parder"
+   ]
+  },
+  {
+   "index": 1,
+   "state": "selection",
+   "key": null,
+   "bonus": "exp",
+   "rarity": 7,
+   "percent": 31,
+   "left": 0,
+   "total": 7200000,
+   "locked": false,
+   "autoReroll": false,
+   "freeRerollAte": 1790164273070,
+   "options": [
+    "orc-cult-priest",
+    "headwalker",
+    "shaburak-prince",
+    "blood-crab",
+    "goblin-scavenger",
+    "swamp-troll",
+    "gingerbread-man",
+    "squid-warden",
+    "infernoid-blob"
+   ]
+  },
+  {
+   "index": 2,
+   "state": "locked",
+   "key": null,
+   "bonus": null,
+   "rarity": 1,
+   "percent": 0,
+   "left": 0,
+   "total": 7200000,
+   "locked": false,
+   "autoReroll": false,
+   "freeRerollAte": 0,
+   "options": []
+  }
+ ],
+ "preyRerollCost": 1600,
+ "preyThirdSlot": false,
+ "training": null,
+ "presentes": {
+  "pendentes": 1,
+  "marcosAbertos": 0,
+  "degrau": 8,
+  "custo": 0,
+  "proximo": 20,
+  "total": 6,
+  "pegos": 0,
+  "degraus": [
+   {
+    "level": 8,
+    "custo": 0,
+    "boosted": false,
+    "pego": false,
+    "aberto": true,
+    "podePagar": true
+   },
+   {
+    "level": 20,
+    "custo": 0,
+    "boosted": false,
+    "pego": false,
+    "aberto": false,
+    "podePagar": true
+   },
+   {
+    "level": 30,
+    "custo": 0,
+    "boosted": false,
+    "pego": false,
+    "aberto": false,
+    "podePagar": true
+   },
+   {
+    "level": 40,
+    "custo": 0,
+    "boosted": false,
+    "pego": false,
+    "aberto": false,
+    "podePagar": true
+   },
+   {
+    "level": 50,
+    "custo": 0,
+    "boosted": false,
+    "pego": false,
+    "aberto": false,
+    "podePagar": true
+   },
+   {
+    "level": 150,
+    "custo": 150000,
+    "boosted": true,
+    "pego": false,
+    "aberto": false,
+    "podePagar": false
+   }
+  ],
+  "marcos": [
+   {
+    "level": 50,
+    "custo": 50000,
+    "tipo": "set",
+    "titulo": "Set intermediário",
+    "itens": [
+     {
+      "itemId": 21170,
+      "name": "gearwheel chain",
+      "count": 1
+     },
+     {
+      "itemId": 3392,
+      "name": "royal helmet",
+      "count": 1
+     },
+     {
+      "itemId": 10384,
+      "name": "Zaoan armor",
+      "count": 1
+     },
+     {
+      "itemId": 3371,
+      "name": "knight legs",
+      "count": 1
+     },
+     {
+      "itemId": 3079,
+      "name": "boots of haste",
+      "count": 1
+     },
+     {
+      "itemId": 7383,
+      "name": "relic sword",
+      "count": 1
+     },
+     {
+      "itemId": 7389,
+      "name": "heroic axe",
+      "count": 1
+     },
+     {
+      "itemId": 14250,
+      "name": "deepling squelcher",
+      "count": 1
+     },
+     {
+      "itemId": 3434,
+      "name": "vampire shield",
+      "count": 1
+     }
+    ],
+    "pego": false,
+    "aberto": false,
+    "podePagar": false
+   },
+   {
+    "level": 100,
+    "custo": 100000,
+    "tipo": "set",
+    "titulo": "Set completo",
+    "itens": [
+     {
+      "itemId": 16109,
+      "name": "prismatic helmet",
+      "count": 1
+     },
+     {
+      "itemId": 11686,
+      "name": "royal draken mail",
+      "count": 1
+     },
+     {
+      "itemId": 13999,
+      "name": "ornate legs",
+      "count": 1
+     },
+     {
+      "itemId": 3079,
+      "name": "boots of haste",
+      "count": 1
+     },
+     {
+      "itemId": 16175,
+      "name": "shiny blade",
+      "count": 1
+     },
+     {
+      "itemId": 16161,
+      "name": "crystalline axe",
+      "count": 1
+     },
+     {
+      "itemId": 16162,
+      "name": "mycological mace",
+      "count": 1
+     },
+     {
+      "itemId": 3414,
+      "name": "mastermind shield",
+      "count": 1
+     }
+    ],
+    "pego": false,
+    "aberto": false,
+    "podePagar": false
+   },
+   {
+    "level": 120,
+    "custo": 120000,
+    "tipo": "montaria",
+    "titulo": "Montaria",
+    "mount": 223,
+    "look": 1724,
+    "name": "Gorgon Hydra",
+    "itens": [],
+    "pego": false,
+    "aberto": false,
+    "podePagar": false
+   },
+   {
+    "level": 130,
+    "custo": 130000,
+    "tipo": "outfit",
+    "titulo": "Outfit Blade Dancer",
+    "look": 1746,
+    "name": "Blade Dancer",
+    "itens": [],
+    "pego": false,
+    "aberto": false,
+    "podePagar": false
+   }
+  ],
+  "escolhas": [
+   {
+    "itemId": 35279,
+    "name": "Durable Exercise Sword",
+    "skill": "sword",
+    "cargas": 64400,
+    "arte": 35279
+   },
+   {
+    "itemId": 35280,
+    "name": "Durable Exercise Axe",
+    "skill": "axe",
+    "cargas": 64400,
+    "arte": 35280
+   },
+   {
+    "itemId": 35281,
+    "name": "Durable Exercise Club",
+    "skill": "club",
+    "cargas": 64400,
+    "arte": 35281
+   },
+   {
+    "itemId": 35282,
+    "name": "Durable Exercise Bow",
+    "skill": "distance",
+    "cargas": 64400,
+    "arte": 35282
+   },
+   {
+    "itemId": 35283,
+    "name": "Durable Exercise Rod",
+    "skill": "magic",
+    "cargas": 64400,
+    "arte": 35283
+   },
+   {
+    "itemId": 35284,
+    "name": "Durable Exercise Wand",
+    "skill": "magic",
+    "cargas": 64400,
+    "arte": 35284
+   },
+   {
+    "itemId": 44066,
+    "name": "Durable Exercise Shield",
+    "skill": "shielding",
+    "cargas": 64400,
+    "arte": 44066
+   },
+   {
+    "itemId": 50294,
+    "name": "Durable Exercise Wraps",
+    "skill": "fist",
+    "cargas": 64400,
+    "arte": 50294
+   }
+  ],
+  "escolhasBoosted": [
+   {
+    "itemId": 55717,
+    "name": "Boosted Exercise Sword",
+    "skill": "sword",
+    "cargas": 64400,
+    "arte": 55717
+   },
+   {
+    "itemId": 55714,
+    "name": "Boosted Exercise Axe",
+    "skill": "axe",
+    "cargas": 64400,
+    "arte": 55714
+   },
+   {
+    "itemId": 55716,
+    "name": "Boosted Exercise Club",
+    "skill": "club",
+    "cargas": 64400,
+    "arte": 55716
+   },
+   {
+    "itemId": 55715,
+    "name": "Boosted Exercise Bow",
+    "skill": "distance",
+    "cargas": 64400,
+    "arte": 55715
+   },
+   {
+    "itemId": 55718,
+    "name": "Boosted Exercise Rod",
+    "skill": "magic",
+    "cargas": 64400,
+    "arte": 55718
+   },
+   {
+    "itemId": 55719,
+    "name": "Boosted Exercise Wand",
+    "skill": "magic",
+    "cargas": 64400,
+    "arte": 55719
+   },
+   {
+    "itemId": 55731,
+    "name": "Boosted Exercise Wraps",
+    "skill": "fist",
+    "cargas": 64400,
+    "arte": 55731
+   }
+  ]
+ },
+ "diario": {
+  "sequencia": 0,
+  "dia": 1,
+  "podePegar": true,
+  "jaPegouHoje": false,
+  "vaiZerar": false,
+  "pendente": null,
+  "dias": [
+   {
+    "dia": 1,
+    "tipo": "wildcards",
+    "rotulo": "5 Prey Wildcards",
+    "curto": "5 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": true
+   },
+   {
+    "dia": 2,
+    "tipo": "xpboost",
+    "rotulo": "+50% de experiência por 30 min",
+    "curto": "+50% exp · 30 min",
+    "explica": "Aumenta em 50% toda a experiência que você ganhar, durante o tempo que durar. Soma com o premium e com os outros bônus.",
+    "itemId": null,
+    "itens": null,
+    "arte": "xp-boost",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 3,
+    "tipo": "wildcards",
+    "rotulo": "8 Prey Wildcards",
+    "curto": "8 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 4,
+    "tipo": "item",
+    "rotulo": "1 Ravox Tier UP",
+    "curto": "1 Ravox Tier UP",
+    "explica": "Sobe um tier de uma peça que você está VESTINDO, e com o tier vem o efeito dela. Cada degrau pede tantas pedras quanto o tier de destino, mais ouro.",
+    "itemId": 50051,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 5,
+    "tipo": "escolha",
+    "rotulo": "Uma Durable Exercise, a sua escolha",
+    "curto": "Durable Exercise",
+    "explica": "Arma de treino com 64.400 cargas: ela sobe a perícia sozinha, batendo no boneco da cidade, mesmo com o jogo fechado. Você escolhe qual — e a escolha não tem volta.",
+    "itemId": 35279,
+    "itens": [
+     35279,
+     35282,
+     35284,
+     44066
+    ],
+    "arte": null,
+    "look": null,
+    "escolha": "exercicio",
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 6,
+    "tipo": "item",
+    "rotulo": "1 Ravox Tier UP",
+    "curto": "1 Ravox Tier UP",
+    "explica": "Sobe um tier de uma peça que você está VESTINDO, e com o tier vem o efeito dela. Cada degrau pede tantas pedras quanto o tier de destino, mais ouro.",
+    "itemId": 50051,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 7,
+    "tipo": "escolha",
+    "rotulo": "Instance Hunts ou Divine Hunts, a sua escolha",
+    "curto": "Instance ou Divine",
+    "explica": "O pergaminho que abre as hunts fechadas. Escolha com cuidado: cada uma pede um level mínimo e premium ativo, e o que você escolher é o que fica.",
+    "itemId": 22771,
+    "itens": [
+     22771,
+     55335
+    ],
+    "arte": null,
+    "look": null,
+    "escolha": "acesso",
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 8,
+    "tipo": "wildcards",
+    "rotulo": "10 Prey Wildcards",
+    "curto": "10 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 9,
+    "tipo": "xpboost",
+    "rotulo": "+50% de experiência por 1h",
+    "curto": "+50% exp · 1h",
+    "explica": "Aumenta em 50% toda a experiência que você ganhar, durante o tempo que durar. Soma com o premium e com os outros bônus.",
+    "itemId": null,
+    "itens": null,
+    "arte": "xp-boost",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 10,
+    "tipo": "wildcards",
+    "rotulo": "12 Prey Wildcards",
+    "curto": "12 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 11,
+    "tipo": "item",
+    "rotulo": "Uma Stamina Extension (20h)",
+    "curto": "Stamina Extension",
+    "explica": "Devolve 20 horas de stamina de uma vez. A stamina é o que mantém a experiência cheia na caçada — sem ela o ganho cai.",
+    "itemId": 36725,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 12,
+    "tipo": "item",
+    "rotulo": "1 Ravox Tier UP",
+    "curto": "1 Ravox Tier UP",
+    "explica": "Sobe um tier de uma peça que você está VESTINDO, e com o tier vem o efeito dela. Cada degrau pede tantas pedras quanto o tier de destino, mais ouro.",
+    "itemId": 50051,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 13,
+    "tipo": "wildcards",
+    "rotulo": "15 Prey Wildcards",
+    "curto": "15 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 14,
+    "tipo": "xpboost",
+    "rotulo": "+50% de experiência por 1h",
+    "curto": "+50% exp · 1h",
+    "explica": "Aumenta em 50% toda a experiência que você ganhar, durante o tempo que durar. Soma com o premium e com os outros bônus.",
+    "itemId": null,
+    "itens": null,
+    "arte": "xp-boost",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 15,
+    "tipo": "escolha",
+    "rotulo": "Uma Boosted Exercise, a sua escolha",
+    "curto": "Boosted Exercise",
+    "explica": "Arma de treino com 64.400 cargas: ela sobe a perícia sozinha, batendo no boneco da cidade, mesmo com o jogo fechado. Você escolhe qual — e a escolha não tem volta.",
+    "itemId": 55717,
+    "itens": [
+     55717,
+     55715,
+     55719,
+     55714
+    ],
+    "arte": null,
+    "look": null,
+    "escolha": "exercicio",
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 16,
+    "tipo": "outfit",
+    "rotulo": "Outfit Feral Trapper, com os dois addons",
+    "curto": "Feral Trapper",
+    "explica": "A aparência completa, com os dois addons. Sai uma vez só: quem já tem recebe o prêmio de reserva deste dia.",
+    "itemId": null,
+    "itens": null,
+    "arte": null,
+    "look": 1907,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 17,
+    "tipo": "wildcards",
+    "rotulo": "18 Prey Wildcards",
+    "curto": "18 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 18,
+    "tipo": "item",
+    "rotulo": "1 Summon Upgrade Store",
+    "curto": "Summon Upgrade",
+    "explica": "Sobe um nível do seu Summon, até o 100. Cada nível deixa o bicho mais forte na caçada.",
+    "itemId": 55779,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 19,
+    "tipo": "wildcards",
+    "rotulo": "22 Prey Wildcards",
+    "curto": "22 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 20,
+    "tipo": "xpboost",
+    "rotulo": "+50% de experiência por 2h",
+    "curto": "+50% exp · 2h",
+    "explica": "Aumenta em 50% toda a experiência que você ganhar, durante o tempo que durar. Soma com o premium e com os outros bônus.",
+    "itemId": null,
+    "itens": null,
+    "arte": "xp-boost",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 21,
+    "tipo": "wildcards",
+    "rotulo": "25 Prey Wildcards",
+    "curto": "25 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 22,
+    "tipo": "item",
+    "rotulo": "1 Ravox Tier UP",
+    "curto": "1 Ravox Tier UP",
+    "explica": "Sobe um tier de uma peça que você está VESTINDO, e com o tier vem o efeito dela. Cada degrau pede tantas pedras quanto o tier de destino, mais ouro.",
+    "itemId": 50051,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 23,
+    "tipo": "escolha",
+    "rotulo": "Instance Hunts ou Divine Hunts, a sua escolha",
+    "curto": "Instance ou Divine",
+    "explica": "O pergaminho que abre as hunts fechadas. Escolha com cuidado: cada uma pede um level mínimo e premium ativo, e o que você escolher é o que fica.",
+    "itemId": 22771,
+    "itens": [
+     22771,
+     55335
+    ],
+    "arte": null,
+    "look": null,
+    "escolha": "acesso",
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 24,
+    "tipo": "item",
+    "rotulo": "2 Ravox Tier UP",
+    "curto": "2 Ravox Tier UP",
+    "explica": "Sobe um tier de uma peça que você está VESTINDO, e com o tier vem o efeito dela. Cada degrau pede tantas pedras quanto o tier de destino, mais ouro.",
+    "itemId": 50051,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 25,
+    "tipo": "escolha",
+    "rotulo": "Uma Boosted Exercise, a sua escolha",
+    "curto": "Boosted Exercise",
+    "explica": "Arma de treino com 64.400 cargas: ela sobe a perícia sozinha, batendo no boneco da cidade, mesmo com o jogo fechado. Você escolhe qual — e a escolha não tem volta.",
+    "itemId": 55717,
+    "itens": [
+     55717,
+     55715,
+     55719,
+     55714
+    ],
+    "arte": null,
+    "look": null,
+    "escolha": "exercicio",
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 26,
+    "tipo": "wildcards",
+    "rotulo": "35 Prey Wildcards",
+    "curto": "35 Prey Wildcards",
+    "explica": "Troca o bônus de um slot de prey, ou escolhe a criatura da lista inteira em vez do sorteio.",
+    "itemId": null,
+    "itens": null,
+    "arte": "wildcard",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 27,
+    "tipo": "xpboost",
+    "rotulo": "+50% de experiência por 2h",
+    "curto": "+50% exp · 2h",
+    "explica": "Aumenta em 50% toda a experiência que você ganhar, durante o tempo que durar. Soma com o premium e com os outros bônus.",
+    "itemId": null,
+    "itens": null,
+    "arte": "xp-boost",
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 28,
+    "tipo": "item",
+    "rotulo": "2 Summon Upgrade Store",
+    "curto": "2 Summon Upgrade",
+    "explica": "Sobe um nível do seu Summon, até o 100. Cada nível deixa o bicho mais forte na caçada.",
+    "itemId": 55779,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 29,
+    "tipo": "item",
+    "rotulo": "Duas Stamina Extensions (40h)",
+    "curto": "2 Stamina Extension",
+    "explica": "Devolve 20 horas de stamina de uma vez. A stamina é o que mantém a experiência cheia na caçada — sem ela o ganho cai.",
+    "itemId": 36725,
+    "itens": null,
+    "arte": null,
+    "look": null,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   },
+   {
+    "dia": 30,
+    "tipo": "montaria",
+    "rotulo": "Montaria Battlefrazzle",
+    "curto": "Battlefrazzle",
+    "explica": "Uma montaria — ela anda com você na cidade e na caçada. Sai uma vez só: quem já tem recebe o prêmio de reserva deste dia.",
+    "itemId": null,
+    "itens": null,
+    "arte": null,
+    "look": 1882,
+    "escolha": null,
+    "pego": false,
+    "aVez": false
+   }
+  ]
+ },
+ "exercicio": null,
+ "exercicios": [],
+ "exercicioFalta": null,
+ "efeitos": {
+  "exp": null,
+  "exerciseSpeed": null,
+  "caixas": 0,
+  "buffPower": [
+   {
+    "id": "poder",
+    "item": 55711,
+    "nome": "Buff Power",
+    "resumo": "+3000 HP, +3000 Mana, +15% de dano crítico, +10% de life leech e +10% de mana leech",
+    "cor": "vermelho",
+    "custo": {
+     "moeda": "ouro",
+     "quanto": 30000000
+    },
+    "restante": 0,
+    "teto": 36000000,
+    "tem": false
+   },
+   {
+    "id": "exp",
+    "item": 55651,
+    "nome": "Buff Power Exp",
+    "resumo": "+50% de experiência",
+    "cor": "verde",
+    "custo": {
+     "moeda": "ouro",
+     "quanto": 50000000
+    },
+    "restante": 0,
+    "teto": 36000000,
+    "tem": false
+   },
+   {
+    "id": "loot",
+    "item": 55853,
+    "nome": "Buff Power Loot",
+    "resumo": "+50% de loot, em caverna e em boss",
+    "cor": "dourado",
+    "custo": {
+     "moeda": "coins",
+     "quanto": 10
+    },
+    "restante": 0,
+    "teto": 36000000,
+    "tem": false
+   }
+  ]
+ },
+ "instance": null,
+ "divina": null,
+ "treinoStamina": {
+  "restante": 43200000,
+  "teto": 43200000,
+  "fracao": 1,
+  "baixa": false,
+  "vazia": false
+ },
+ "bossCooldownsAte": {
+  "the-horned-fox": 0,
+  "necropharus": 0,
+  "urmahlullu-the-immaculate": 0,
+  "demodras": 0,
+  "ahau": 0,
+  "alptramun": 0,
+  "anomaly": 0,
+  "arbaziloth": 0,
+  "ascending-ferumbras": 0,
+  "bakragore": 0,
+  "brain-head": 0,
+  "brokul": 0,
+  "chagorz": 0,
+  "count-vlarkorth": 0,
+  "custodian": 0,
+  "dragonking-zyrtarch": 0,
+  "duke-krule": 0,
+  "earl-osam": 0,
+  "eradicator": 0,
+  "essence-of-malice": 0,
+  "faceless-bane": 0,
+  "ferumbras-mortal-shell": 0,
+  "foreshock": 0,
+  "gaffir": 0,
+  "ghulosh": 0,
+  "gorzindel": 0,
+  "goshnar-s-greed": 0,
+  "goshnar-s-megalomania-purple": 0,
+  "grand-master-oberon": 0,
+  "guard-captain-quaid": 0,
+  "ichgahal": 0,
+  "irgix-the-flimsy": 0,
+  "izcandar-the-banished": 0,
+  "jaul": 0,
+  "king-zelos": 0,
+  "lady-tenebris": 0,
+  "lloyd": 0,
+  "lokathmor": 0,
+  "lord-azaram": 0,
+  "magma-bubble": 0,
+  "malofur-mangrinder": 0,
+  "maxxenius": 0,
+  "mazoran": 0,
+  "mazzinor": 0,
+  "megasylvan-yselda": 0,
+  "melting-frozen-horror": 0,
+  "mitmah-vanguard": 0,
+  "murcion": 0,
+  "obujos": 0,
+  "outburst": 0,
+  "plagirath": 0,
+  "plagueroot": 0,
+  "ragiaz": 0,
+  "ratmiral-blackwhiskers": 0,
+  "ravenous-hunger": 0,
+  "razzagorn": 0,
+  "rupture": 0,
+  "scarlett-etzel": 0,
+  "shulgrax": 0,
+  "sir-baeloc": 0,
+  "sugar-daddy": 0,
+  "tanjis": 0,
+  "tarbaz": 0,
+  "tentugly-s-head": 0,
+  "the-brainstealer": 0,
+  "the-dread-maiden": 0,
+  "the-enraged-thorn-knight": 0,
+  "the-false-god": 0,
+  "the-fear-feaster": 0,
+  "the-last-lore-keeper": 0,
+  "the-lord-of-the-lice": 0,
+  "the-nightmare-beast": 0,
+  "the-pale-worm": 0,
+  "the-percht-queen": 0,
+  "the-sandking": 0,
+  "the-scourge-of-oblivion": 0,
+  "the-shatterer": 0,
+  "the-time-guardian": 0,
+  "the-unwelcome": 0,
+  "timira-the-many-headed": 0,
+  "unaz-the-mean": 0,
+  "vemiath": 0,
+  "vok-the-freakish": 0,
+  "world-devourer": 0,
+  "zamulosh": 0,
+  "the-primal-menace": 0,
+  "thor": 0
+ },
+ "autoBoss": {
+  "ligado": false,
+  "bosses": [],
+  "nomes": [],
+  "feitos": [],
+  "usados": 0,
+  "teto": 15,
+  "semLimite": false,
+  "espera": 0,
+  "esperaTotal": 21600000,
+  "passe": false,
+  "passeAte": 0,
+  "pausa": 8000,
+  "listas": [],
+  "listasMax": 5,
+  "convidadoPor": null,
+  "presosPelaParty": {}
+ },
+ "summon": {
+  "nivel": 0,
+  "teto": 100,
+  "familiar": {
+   "key": "knight-familiar",
+   "nome": "Knight familiar",
+   "look": 991,
+   "magia": "spell-summon-knight-familiar",
+   "nomeDeFabrica": "Knight familiar",
+   "lookDeFabrica": 991
+  },
+  "bonusDasSkins": {
+   "tenho": 0,
+   "vestida": null,
+   "nomeDaVestida": null,
+   "daVestida": null,
+   "exp": 0,
+   "loot": 0,
+   "dano": 0,
+   "daColecao": {
+    "exp": 0,
+    "loot": 0
+   }
+  },
+  "catalogoDeSkins": [
+   {
+    "look": 2122,
+    "nome": "Torturer",
+    "aplicada": {
+     "tipo": "dano",
+     "valor": 10
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 2017,
+    "nome": "Ceifador",
+    "aplicada": {
+     "tipo": "dano",
+     "valor": 10
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 1873,
+    "nome": "Elemental de Sangue",
+    "aplicada": {
+     "tipo": "dano",
+     "valor": 10
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 1910,
+    "nome": "Anjo Divine",
+    "aplicada": {
+     "tipo": "exp",
+     "valor": 5
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 1872,
+    "nome": "Elemental Sagrado",
+    "aplicada": {
+     "tipo": "exp",
+     "valor": 5
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 1882,
+    "nome": "Elemental de Energia",
+    "aplicada": {
+     "tipo": "exp",
+     "valor": 5
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 2123,
+    "nome": "Espantalho Abóbora",
+    "aplicada": {
+     "tipo": "loot",
+     "valor": 5
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 1870,
+    "nome": "Elemental de Gelo",
+    "aplicada": {
+     "tipo": "loot",
+     "valor": 5
+    },
+    "tenho": false,
+    "vestida": false
+   },
+   {
+    "look": 1871,
+    "nome": "Elemental de Terra",
+    "aplicada": {
+     "tipo": "loot",
+     "valor": 5
+    },
+    "tenho": false,
+    "vestida": false
+   }
+  ],
+  "nome": null,
+  "skin": null,
+  "skins": [],
+  "fracao": 0.25,
+  "fracaoMaxima": 0.5,
+  "recarga": 1020000,
+  "duracao": 450000,
+  "presenca": 0.4411764705882353,
+  "perto": 3,
+  "alcance": 3,
+  "dropado": {
+   "item": 55637,
+   "precisa": 100,
+   "teto": 20,
+   "chance": 0.7
+  },
+  "loja": {
+   "item": 55779,
+   "precisa": 1,
+   "teto": 100
+  }
+ },
+ "joias": {
+  "neck": [],
+  "ring": []
+ },
+ "escudoDoAnel": false,
+ "bossTasks": [
+  {
+   "id": "task-minotauros",
+   "name": "Minotauros",
+   "blurb": "Minotaur, Minotaur Guard e Minotaur Mage contam.",
+   "kills": 0,
+   "alvo": 2000,
+   "feito": false,
+   "matou": false,
+   "boss": "the-horned-fox",
+   "bossName": "the Horned Fox",
+   "bossLook": 202,
+   "bossColors": {
+    "type": 202,
+    "head": 0,
+    "body": 0,
+    "legs": 0,
+    "feet": 0,
+    "addons": 0,
+    "mount": 0
+   },
+   "alvos": [
+    {
+     "key": "minotaur",
+     "name": "Minotaur",
+     "look": 25,
+     "colors": {
+      "type": 25,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     }
+    },
+    {
+     "key": "minotaur-guard",
+     "name": "Minotaur Guard",
+     "look": 29,
+     "colors": {
+      "type": 29,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     }
+    },
+    {
+     "key": "minotaur-mage",
+     "name": "Minotaur Mage",
+     "look": 23,
+     "colors": {
+      "type": 23,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     }
+    }
+   ],
+   "tokens": 2,
+   "recompensa": "Libera a luta contra the Horned Fox"
+  },
+  {
+   "id": "task-dragon-lords",
+   "name": "Dragon Lords",
+   "blurb": "Só o Dragon Lord — hatchling e as variantes não contam.",
+   "kills": 0,
+   "alvo": 3000,
+   "feito": false,
+   "matou": false,
+   "boss": "demodras",
+   "bossName": "Demodras",
+   "bossLook": 204,
+   "bossColors": {
+    "type": 204,
+    "head": 0,
+    "body": 0,
+    "legs": 0,
+    "feet": 0,
+    "addons": 0,
+    "mount": 0
+   },
+   "alvos": [
+    {
+     "key": "dragon-lord",
+     "name": "Dragon Lord",
+     "look": 39,
+     "colors": {
+      "type": 39,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     }
+    }
+   ],
+   "tokens": 3,
+   "recompensa": "Libera a luta contra Demodras"
+  },
+  {
+   "id": "task-necromancers",
+   "name": "Necromancers",
+   "blurb": "Só o Necromancer — o Servant não conta.",
+   "kills": 0,
+   "alvo": 2000,
+   "feito": false,
+   "matou": false,
+   "boss": "necropharus",
+   "bossName": "Necropharus",
+   "bossLook": 209,
+   "bossColors": {
+    "type": 209,
+    "head": 0,
+    "body": 0,
+    "legs": 0,
+    "feet": 0,
+    "addons": 0,
+    "mount": 0
+   },
+   "alvos": [
+    {
+     "key": "necromancer",
+     "name": "Necromancer",
+     "look": 9,
+     "colors": {
+      "type": 9,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     }
+    }
+   ],
+   "tokens": 2,
+   "recompensa": "Libera a luta contra Necropharus"
+  }
+ ],
+ "mountTasks": [
+  {
+   "id": "mt-stampor",
+   "name": "Stampor",
+   "feito": false,
+   "tokens": 2,
+   "mountLook": 378,
+   "alvos": [
+    {
+     "key": "dragon",
+     "name": "Dragon",
+     "look": 34,
+     "colors": {
+      "type": 34,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 2250
+    }
+   ]
+  },
+  {
+   "id": "mt-shadow-draptor",
+   "name": "Shadow Draptor",
+   "feito": false,
+   "tokens": 4,
+   "mountLook": 427,
+   "alvos": [
+    {
+     "key": "hellspawn",
+     "name": "Hellspawn",
+     "look": 322,
+     "colors": {
+      "type": 322,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 4500
+    }
+   ]
+  },
+  {
+   "id": "mt-rapid-boar",
+   "name": "Rapid Boar",
+   "feito": false,
+   "tokens": 6,
+   "mountLook": 377,
+   "alvos": [
+    {
+     "key": "dark-torturer",
+     "name": "Dark Torturer",
+     "look": 234,
+     "colors": {
+      "type": 234,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    }
+   ]
+  },
+  {
+   "id": "mt-crystal-wolf",
+   "name": "Crystal Wolf",
+   "feito": false,
+   "tokens": 6,
+   "mountLook": 390,
+   "alvos": [
+    {
+     "key": "medusa",
+     "name": "Medusa",
+     "look": 330,
+     "colors": {
+      "type": 330,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6750
+    }
+   ]
+  },
+  {
+   "id": "mt-crimson-ray",
+   "name": "Crimson Ray",
+   "feito": false,
+   "tokens": 6,
+   "mountLook": 521,
+   "alvos": [
+    {
+     "key": "dawnfire-asura",
+     "name": "Dawnfire Asura",
+     "look": 150,
+     "colors": {
+      "type": 150,
+      "head": 114,
+      "body": 94,
+      "legs": 78,
+      "feet": 79,
+      "addons": 1,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    }
+   ]
+  },
+  {
+   "id": "mt-the-hellgrip",
+   "name": "The Hellgrip",
+   "feito": false,
+   "tokens": 4,
+   "mountLook": 559,
+   "alvos": [
+    {
+     "key": "grim-reaper",
+     "name": "Grim Reaper",
+     "look": 300,
+     "colors": {
+      "type": 300,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 4500
+    }
+   ]
+  },
+  {
+   "id": "mt-dusk-pryer",
+   "name": "Dusk Pryer",
+   "feito": false,
+   "tokens": 6,
+   "mountLook": 1285,
+   "alvos": [
+    {
+     "key": "defiler",
+     "name": "Defiler",
+     "look": 238,
+     "colors": {
+      "type": 238,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    }
+   ]
+  },
+  {
+   "id": "mt-obstinate-ox",
+   "name": "Obstinate Ox",
+   "feito": false,
+   "tokens": 6,
+   "mountLook": 1674,
+   "alvos": [
+    {
+     "key": "juggernaut",
+     "name": "Juggernaut",
+     "look": 244,
+     "colors": {
+      "type": 244,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    }
+   ]
+  },
+  {
+   "id": "mt-gloomwurm",
+   "name": "Gloomwurm",
+   "feito": false,
+   "tokens": 24,
+   "mountLook": 1448,
+   "alvos": [
+    {
+     "key": "knight-s-apparition",
+     "name": "Knight's Apparition",
+     "look": 131,
+     "colors": {
+      "type": 131,
+      "head": 19,
+      "body": 76,
+      "legs": 74,
+      "feet": 114,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    },
+    {
+     "key": "druid-s-apparition",
+     "name": "Druid's Apparition",
+     "look": 148,
+     "colors": {
+      "type": 148,
+      "head": 114,
+      "body": 48,
+      "legs": 114,
+      "feet": 95,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    },
+    {
+     "key": "sorcerer-s-apparition",
+     "name": "Sorcerer's Apparition",
+     "look": 138,
+     "colors": {
+      "type": 138,
+      "head": 95,
+      "body": 114,
+      "legs": 52,
+      "feet": 76,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    },
+    {
+     "key": "paladin-s-apparition",
+     "name": "Paladin's Apparition",
+     "look": 129,
+     "colors": {
+      "type": 129,
+      "head": 57,
+      "body": 42,
+      "legs": 114,
+      "feet": 114,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    }
+   ]
+  },
+  {
+   "id": "mt-voracious-hyaena",
+   "name": "Voracious Hyaena",
+   "feito": false,
+   "tokens": 6,
+   "mountLook": 1333,
+   "alvos": [
+    {
+     "key": "sphinx",
+     "name": "Sphinx",
+     "look": 1188,
+     "colors": {
+      "type": 1188,
+      "head": 0,
+      "body": 39,
+      "legs": 0,
+      "feet": 3,
+      "addons": 1,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    }
+   ]
+  },
+  {
+   "id": "mt-night-locust",
+   "name": "Night Locust",
+   "feito": false,
+   "tokens": 12,
+   "mountLook": 1833,
+   "alvos": [
+    {
+     "key": "kollos",
+     "name": "Kollos",
+     "look": 458,
+     "colors": {
+      "type": 458,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    },
+    {
+     "key": "seacrest-serpent",
+     "name": "Seacrest Serpent",
+     "look": 675,
+     "colors": {
+      "type": 675,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 6000
+    }
+   ]
+  },
+  {
+   "id": "mt-corpsefire-skull",
+   "name": "Corpsefire Skull",
+   "feito": false,
+   "tokens": 15,
+   "mountLook": 1687,
+   "alvos": [
+    {
+     "key": "instance-kollos",
+     "name": "Instance Kollos",
+     "look": 458,
+     "colors": {
+      "type": 458,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "kills": 0,
+     "alvo": 15000
+    }
+   ]
+  }
+ ],
+ "outfit": {
+  "type": 131,
+  "head": 78,
+  "body": 88,
+  "legs": 58,
+  "feet": 76,
+  "addons": 0,
+  "mount": 0
+ },
+ "marca": null,
+ "equipment": {
+  "head": {
+   "id": 3354,
+   "count": 1
+  },
+  "neck": {
+   "id": 3572,
+   "count": 1
+  },
+  "body": {
+   "id": 3359,
+   "count": 1
+  },
+  "legs": {
+   "id": 3372,
+   "count": 1
+  },
+  "feet": {
+   "id": 3552,
+   "count": 1
+  },
+  "ring": null,
+  "weapon": {
+   "id": 7773,
+   "count": 1
+  },
+  "shield": {
+   "id": 3425,
+   "count": 1
+  },
+  "ammo": null,
+  "backpack": {
+   "id": 2854,
+   "count": 1
+  }
+ },
+ "desgaste": {},
+ "tiers": {},
+ "tierMax": 10,
+ "proximoTier": {
+  "3354": {
+   "tier": 1,
+   "cores": 1,
+   "ouro": 10000000
+  },
+  "3359": {
+   "tier": 1,
+   "cores": 1,
+   "ouro": 10000000
+  },
+  "3552": {
+   "tier": 1,
+   "cores": 1,
+   "ouro": 10000000
+  },
+  "7773": {
+   "tier": 1,
+   "cores": 1,
+   "ouro": 10000000
+  }
+ },
+ "party": null,
+ "lobby": null,
+ "autoPronto": false,
+ "convitePartyDe": null,
+ "pedidoDeEntrada": null,
+ "inventory": [
+  {
+   "id": 3327,
+   "count": 1
+  },
+  {
+   "id": 7774,
+   "count": 1
+  }
+ ],
+ "pouch": [],
+ "pouchSlots": 1000,
+ "bossPouch": [],
+ "bossPouchSlots": 1000,
+ "storeInbox": [],
+ "storeInboxSlots": 2000,
+ "vendaEmSegundos": 120,
+ "vendaFaltaSegundos": null,
+ "partySlots": 2,
+ "actionPresets": [],
+ "pouchValue": {
+  "gold": 0,
+  "sold": 0,
+  "lines": [],
+  "kept": []
+ },
+ "itemRules": {
+  "noLoot": [],
+  "noSell": [],
+  "soAfixo": []
+ },
+ "lootFiltro": {
+  "sempreSalvar": true,
+  "paraTodos": false
+ },
+ "municao": null,
+ "ammoPending": false,
+ "ammoChoices": [],
+ "quiverChoices": [],
+ "aljavaGuardada": [],
+ "ammoCost": 0,
+ "imbuements": {},
+ "arvorePontos": {
+  "total": 0,
+  "usados": 0,
+  "livres": 0
+ },
+ "arvoreBonus": {},
+ "imbuementsPorItem": {},
+ "proficiency": {
+  "itemId": 7773,
+  "itemName": "steel axe",
+  "equipped": true,
+  "name": "Generic 1H Axe Class 1",
+  "level": 0,
+  "max": 7,
+  "experience": 0,
+  "current": 0,
+  "next": 1250,
+  "percent": 0,
+  "levels": [
+   {
+    "level": 1,
+    "unlocked": false,
+    "chosen": null,
+    "perks": [
+     {
+      "slot": 0,
+      "code": 2,
+      "type": "weaponShieldMod",
+      "skill": null,
+      "augment": null,
+      "spellId": null,
+      "value": 1,
+      "icon": {
+       "sheet": "icons-0",
+       "x": 128,
+       "y": 0
+      }
+     }
+    ]
+   },
+   {
+    "level": 2,
+    "unlocked": false,
+    "chosen": null,
+    "perks": [
+     {
+      "slot": 0,
+      "code": 25,
+      "type": "skillAsDamageAutoAttack",
+      "skill": "axe",
+      "augment": null,
+      "spellId": null,
+      "value": 0.04,
+      "icon": {
+       "sheet": "icons-4",
+       "x": 0,
+       "y": 0
+      }
+     }
+    ]
+   },
+   {
+    "level": 3,
+    "unlocked": false,
+    "chosen": null,
+    "perks": [
+     {
+      "slot": 0,
+      "code": 11,
+      "type": "critChanceAutoAttack",
+      "skill": null,
+      "augment": null,
+      "spellId": null,
+      "value": 0.01,
+      "icon": {
+       "sheet": "icons-0",
+       "x": 384,
+       "y": 0
+      }
+     },
+     {
+      "slot": 1,
+      "code": 21,
+      "type": "lifeOnKill",
+      "skill": null,
+      "augment": null,
+      "spellId": null,
+      "value": 5,
+      "icon": {
+       "sheet": "icons-0",
+       "x": 896,
+       "y": 0
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "charmPoints": 0,
+ "charmNext": 100,
+ "imbuementSlots": {
+  "head": 0,
+  "neck": 0,
+  "body": 0,
+  "legs": 0,
+  "feet": 1,
+  "ring": 0,
+  "weapon": 0,
+  "shield": 0,
+  "ammo": 0,
+  "backpack": 1
+ },
+ "imbuementTipos": {
+  "head": [],
+  "neck": null,
+  "body": [],
+  "legs": [],
+  "feet": [
+   10,
+   19
+  ],
+  "ring": null,
+  "weapon": [],
+  "shield": [],
+  "ammo": null,
+  "backpack": [
+   17
+  ]
+ },
+ "blessings": [],
+ "huntLaps": {},
+ "favoritas": [],
+ "promotion": {
+  "name": "Elite Knight",
+  "from": "Knight",
+  "level": 20,
+  "cost": 20000,
+  "done": false,
+  "available": false,
+  "missing": 12,
+  "hp": 1.5,
+  "mana": 1
+ },
+ "mounts": [],
+ "outfitsOwned": [],
+ "quests": {
+  "board": [],
+  "active": [],
+  "done": 0,
+  "rerollAt": 72000000
+ },
+ "entregas": [
+  {
+   "id": "citizen-addon-1",
+   "tipo": "outfit",
+   "nome": "Citizen",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 136,
+   "itens": [
+    {
+     "id": 5878,
+     "name": "minotaur leather",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Minotaur",
+      "Minotaur Archer",
+      "Minotaur Guard"
+     ],
+     "deLook": 25,
+     "deColors": {
+      "type": 25,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "citizen-addon-2",
+   "tipo": "outfit",
+   "nome": "Citizen",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 136,
+   "itens": [
+    {
+     "id": 5890,
+     "name": "chicken feather",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Amazon",
+      "Valkyrie",
+      "Witch"
+     ],
+     "deLook": 137,
+     "deColors": {
+      "type": 137,
+      "head": 113,
+      "body": 120,
+      "legs": 95,
+      "feet": 115,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5902,
+     "name": "honeycomb",
+     "count": 25,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 25,
+     "de": [
+      "Wasp",
+      "Werebear"
+     ],
+     "deLook": 44,
+     "deColors": {
+      "type": 44,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3374,
+     "name": "legion helmet",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Minotaur Guard"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "hunter-addon-1",
+   "tipo": "outfit",
+   "nome": "Hunter",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 137,
+   "itens": [
+    {
+     "id": 5876,
+     "name": "lizard leather",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Abyss Cavebear",
+      "Imperial High Guard",
+      "Imperial Legionnaire"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5948,
+     "name": "red dragon leather",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Demodras",
+      "Dragon Lord"
+     ],
+     "deLook": 204,
+     "deColors": {
+      "type": 204,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5891,
+     "name": "enchanted chicken wing",
+     "count": 5,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 5,
+     "de": [
+      "The Last Lore Keeper"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5887,
+     "name": "piece of royal steel",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Plaguesmith",
+      "The Enraged Thorn Knight",
+      "The False God"
+     ],
+     "deLook": 247,
+     "deColors": {
+      "type": 247,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5889,
+     "name": "piece of draconian steel",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Duke Krule",
+      "Earl Osam",
+      "Plaguesmith"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5888,
+     "name": "piece of hell steel",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Lloyd",
+      "Lord Azaram",
+      "Plaguesmith"
+     ],
+     "deLook": 940,
+     "deColors": {
+      "type": 940,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "hunter-addon-2",
+   "tipo": "outfit",
+   "nome": "Hunter",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 137,
+   "itens": [
+    {
+     "id": 5875,
+     "name": "sniper gloves",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "The Enraged Thorn Knight"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "knight-addon-1",
+   "tipo": "outfit",
+   "nome": "Knight",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 139,
+   "itens": [
+    {
+     "id": 5880,
+     "name": "iron ore",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Cliff Strider",
+      "Drillworm",
+      "Enslaved Dwarf"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5892,
+     "name": "huge chunk of crude iron",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Alptramun",
+      "Izcandar the Banished",
+      "Lord Azaram"
+     ],
+     "deLook": 1143,
+     "deColors": {
+      "type": 1143,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "knight-addon-2",
+   "tipo": "outfit",
+   "nome": "Knight",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 139,
+   "itens": [
+    {
+     "id": 5893,
+     "name": "perfect behemoth fang",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Behemoth"
+     ],
+     "deLook": 55,
+     "deColors": {
+      "type": 55,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5924,
+     "name": "damaged steel helmet",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Renegade Knight",
+      "Vicious Squire"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5885,
+     "name": "flask of warrior's sweat",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Burning Gladiator",
+      "Hero"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5887,
+     "name": "piece of royal steel",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Plaguesmith",
+      "The Enraged Thorn Knight",
+      "The False God"
+     ],
+     "deLook": 247,
+     "deColors": {
+      "type": 247,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "mage-addon-1",
+   "tipo": "outfit",
+   "nome": "Mage",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 138,
+   "itens": [
+    {
+     "id": 3074,
+     "name": "wand of vortex",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Blood Priest",
+      "Necromancer"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3075,
+     "name": "wand of dragonbreath",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Crazed Summer Vanguard",
+      "Insane Siren"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3072,
+     "name": "wand of decay",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Meandering Mushroom",
+      "Priestess of the Wild Sun"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3073,
+     "name": "wand of cosmic energy",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Arachnophobica",
+      "Burster Spectre",
+      "Energy Elemental"
+     ],
+     "deLook": 1135,
+     "deColors": {
+      "type": 1135,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3071,
+     "name": "wand of inferno",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Arbaziloth",
+      "Dawnfire Asura",
+      "Draken Spellweaver"
+     ],
+     "deLook": 1798,
+     "deColors": {
+      "type": 1798,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3066,
+     "name": "snakebite rod",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Black Sphinx Acolyte",
+      "Cobra Vizier",
+      "Faceless Bane"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3070,
+     "name": "moonlight rod",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Crazed Winter Rearguard",
+      "Darkness Zombie",
+      "Faceless Bane"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3069,
+     "name": "necrotic rod",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Faceless Bane",
+      "Midnight Asura",
+      "Omnivora"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3065,
+     "name": "terra rod",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Bloated Man-Maggot",
+      "Cobra Vizier",
+      "Devourer"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3067,
+     "name": "hailstorm rod",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Blightwalker",
+      "Burster Spectre",
+      "Crazed Winter Rearguard"
+     ],
+     "deLook": 246,
+     "deColors": {
+      "type": 246,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5904,
+     "name": "magic sulphur",
+     "count": 10,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 10,
+     "de": [
+      "Alptramun",
+      "Cliff Strider",
+      "Count Vlarkorth"
+     ],
+     "deLook": 1143,
+     "deColors": {
+      "type": 1143,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3077,
+     "name": "ankh",
+     "count": 20,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 20,
+     "de": [
+      "Instance Kollos",
+      "Werelioness"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5809,
+     "name": "soul stone",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Alptramun",
+      "Izcandar the Banished",
+      "Malofur Mangrinder"
+     ],
+     "deLook": 1143,
+     "deColors": {
+      "type": 1143,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "mage-addon-2",
+   "tipo": "outfit",
+   "nome": "Mage",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 138,
+   "itens": [
+    {
+     "id": 5903,
+     "name": "Ferumbras' hat",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Ferumbras Mortal Shell"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "barbarian-addon-1",
+   "tipo": "outfit",
+   "nome": "Barbarian",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 147,
+   "itens": [
+    {
+     "id": 5880,
+     "name": "iron ore",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Cliff Strider",
+      "Drillworm",
+      "Enslaved Dwarf"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5892,
+     "name": "huge chunk of crude iron",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Alptramun",
+      "Izcandar the Banished",
+      "Lord Azaram"
+     ],
+     "deLook": 1143,
+     "deColors": {
+      "type": 1143,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5893,
+     "name": "perfect behemoth fang",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Behemoth"
+     ],
+     "deLook": 55,
+     "deColors": {
+      "type": 55,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5876,
+     "name": "lizard leather",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Abyss Cavebear",
+      "Imperial High Guard",
+      "Imperial Legionnaire"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "barbarian-addon-2",
+   "tipo": "outfit",
+   "nome": "Barbarian",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 147,
+   "itens": [
+    {
+     "id": 5884,
+     "name": "spirit container",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Souleater",
+      "The Enraged Thorn Knight"
+     ],
+     "deLook": 355,
+     "deColors": {
+      "type": 355,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5885,
+     "name": "flask of warrior's sweat",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Burning Gladiator",
+      "Hero"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5910,
+     "name": "green piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Hellhound"
+     ],
+     "deLook": 240,
+     "deColors": {
+      "type": 240,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5911,
+     "name": "red piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Blood Priest",
+      "Dawnfire Asura",
+      "Fury"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5886,
+     "name": "spool of yarn",
+     "count": 10,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 10,
+     "de": [
+      "Arachnophobica",
+      "Giant Spider"
+     ],
+     "deLook": 1135,
+     "deColors": {
+      "type": 1135,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "druid-addon-1",
+   "tipo": "outfit",
+   "nome": "Druid",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 148,
+   "itens": [
+    {
+     "id": 5896,
+     "name": "bear paw",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Werebear"
+     ],
+     "deLook": 720,
+     "deColors": {
+      "type": 720,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5897,
+     "name": "wolf paw",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Fox",
+      "Werefox"
+     ],
+     "deLook": 1029,
+     "deColors": {
+      "type": 1029,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "druid-addon-2",
+   "tipo": "outfit",
+   "nome": "Druid",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 148,
+   "itens": [
+    {
+     "id": 5906,
+     "name": "demon dust",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Demon Outcast"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "nobleman-addon-1",
+   "tipo": "outfit",
+   "nome": "Nobleman",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 132,
+   "itens": [],
+   "ouro": 150000,
+   "temOuro": 500,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": true,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "nobleman-addon-2",
+   "tipo": "outfit",
+   "nome": "Nobleman",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 132,
+   "itens": [],
+   "ouro": 150000,
+   "temOuro": 500,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": true,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "oriental-addon-1",
+   "tipo": "outfit",
+   "nome": "Oriental",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 150,
+   "itens": [
+    {
+     "id": 5945,
+     "name": "coral comb",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Medusa"
+     ],
+     "deLook": 330,
+     "deColors": {
+      "type": 330,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "oriental-addon-2",
+   "tipo": "outfit",
+   "nome": "Oriental",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 150,
+   "itens": [
+    {
+     "id": 5883,
+     "name": "ape fur",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Vulcongra"
+     ],
+     "deLook": 509,
+     "deColors": {
+      "type": 509,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5895,
+     "name": "fish fin",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Deathling Scout",
+      "Deathling Spellsinger",
+      "Frazzlemaw"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5891,
+     "name": "enchanted chicken wing",
+     "count": 2,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 2,
+     "de": [
+      "The Last Lore Keeper"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5912,
+     "name": "blue piece of cloth",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Draken Spellweaver",
+      "Frost Flower Asura"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "warrior-addon-1",
+   "tipo": "outfit",
+   "nome": "Warrior",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 142,
+   "itens": [
+    {
+     "id": 5925,
+     "name": "hardened bone",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Bonebeast",
+      "Frazzlemaw",
+      "Guzzlemaw"
+     ],
+     "deLook": 101,
+     "deColors": {
+      "type": 101,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5899,
+     "name": "turtle shell",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Ancient Scarab",
+      "Scarab"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5884,
+     "name": "spirit container",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Souleater",
+      "The Enraged Thorn Knight"
+     ],
+     "deLook": 355,
+     "deColors": {
+      "type": 355,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5919,
+     "name": "dragon claw",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Demodras"
+     ],
+     "deLook": 204,
+     "deColors": {
+      "type": 204,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "warrior-addon-2",
+   "tipo": "outfit",
+   "nome": "Warrior",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 142,
+   "itens": [
+    {
+     "id": 5880,
+     "name": "iron ore",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Cliff Strider",
+      "Drillworm",
+      "Enslaved Dwarf"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5887,
+     "name": "piece of royal steel",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Plaguesmith",
+      "The Enraged Thorn Knight",
+      "The False God"
+     ],
+     "deLook": 247,
+     "deColors": {
+      "type": 247,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "wizard-addon-1",
+   "tipo": "outfit",
+   "nome": "Wizard",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 149,
+   "itens": [
+    {
+     "id": 5922,
+     "name": "holy orchid",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Insane Siren"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "wizard-addon-2",
+   "tipo": "outfit",
+   "nome": "Wizard",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 149,
+   "itens": [
+    {
+     "id": 3436,
+     "name": "medusa shield",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Hydra",
+      "Medusa",
+      "The Enraged Thorn Knight"
+     ],
+     "deLook": 121,
+     "deColors": {
+      "type": 121,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3386,
+     "name": "dragon scale mail",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Demodras",
+      "Dragon Lord",
+      "Frost Dragon"
+     ],
+     "deLook": 204,
+     "deColors": {
+      "type": 204,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3382,
+     "name": "crown legs",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Hero",
+      "Renegade Knight",
+      "Vile Grandmaster"
+     ],
+     "deLook": 73,
+     "deColors": {
+      "type": 73,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3006,
+     "name": "ring of the sky",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Alptramun",
+      "Draken Spellweaver",
+      "Draken Warmaster"
+     ],
+     "deLook": 1143,
+     "deColors": {
+      "type": 1143,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "assassin-addon-1",
+   "tipo": "outfit",
+   "nome": "Assassin",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 156,
+   "itens": [
+    {
+     "id": 5912,
+     "name": "blue piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Draken Spellweaver",
+      "Frost Flower Asura"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5910,
+     "name": "green piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Hellhound"
+     ],
+     "deLook": 240,
+     "deColors": {
+      "type": 240,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5911,
+     "name": "red piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Blood Priest",
+      "Dawnfire Asura",
+      "Fury"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5913,
+     "name": "brown piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Choking Fear"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5914,
+     "name": "yellow piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Choking Fear",
+      "Hellhound",
+      "Lava Golem"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5909,
+     "name": "white piece of cloth",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Blood Priest",
+      "Lava Golem",
+      "Lloyd"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5886,
+     "name": "spool of yarn",
+     "count": 10,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 10,
+     "de": [
+      "Arachnophobica",
+      "Giant Spider"
+     ],
+     "deLook": 1135,
+     "deColors": {
+      "type": 1135,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "assassin-addon-2",
+   "tipo": "outfit",
+   "nome": "Assassin",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 156,
+   "itens": [
+    {
+     "id": 5804,
+     "name": "nose ring",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "The Horned Fox"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5930,
+     "name": "behemoth claw",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Behemoth"
+     ],
+     "deLook": 55,
+     "deColors": {
+      "type": 55,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "beggar-addon-1",
+   "tipo": "outfit",
+   "nome": "Beggar",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 157,
+   "itens": [
+    {
+     "id": 5878,
+     "name": "minotaur leather",
+     "count": 50,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 50,
+     "de": [
+      "Minotaur",
+      "Minotaur Archer",
+      "Minotaur Guard"
+     ],
+     "deLook": 25,
+     "deColors": {
+      "type": 25,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5921,
+     "name": "heaven blossom",
+     "count": 30,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 30,
+     "de": [
+      "Crazed Summer Rearguard"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5913,
+     "name": "brown piece of cloth",
+     "count": 20,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 20,
+     "de": [
+      "Choking Fear"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5894,
+     "name": "bat wing",
+     "count": 10,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 10,
+     "de": [
+      "Blood Priest",
+      "Hibernal Moth"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5883,
+     "name": "ape fur",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Vulcongra"
+     ],
+     "deLook": 509,
+     "deColors": {
+      "type": 509,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "beggar-addon-2",
+   "tipo": "outfit",
+   "nome": "Beggar",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 157,
+   "itens": [
+    {
+     "id": 6107,
+     "name": "staff",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Cult Believer"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "pirate-addon-1",
+   "tipo": "outfit",
+   "nome": "Pirate",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 155,
+   "itens": [
+    {
+     "id": 6098,
+     "name": "eye patch",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Glooth Bandit",
+      "Glooth Brigand"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 6126,
+     "name": "peg leg",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Glooth Bandit",
+      "Glooth Brigand"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 6097,
+     "name": "hook",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Glooth Bandit",
+      "Glooth Brigand"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "pirate-addon-2",
+   "tipo": "outfit",
+   "nome": "Pirate",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 155,
+   "itens": [
+    {
+     "id": 6101,
+     "name": "Ron the Ripper's sabre",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Ratmiral Blackwhiskers"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 6102,
+     "name": "Deadeye Devious' eye patch",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Ratmiral Blackwhiskers"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 6100,
+     "name": "Lethal Lissy's shirt",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Ratmiral Blackwhiskers"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 6099,
+     "name": "Brutus Bloodbeard's hat",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Ratmiral Blackwhiskers"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "shaman-addon-1",
+   "tipo": "outfit",
+   "nome": "Shaman",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 158,
+   "itens": [
+    {
+     "id": 3348,
+     "name": "banana staff",
+     "count": 5,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 5,
+     "de": [
+      "Vulcongra"
+     ],
+     "deLook": 509,
+     "deColors": {
+      "type": 509,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 3403,
+     "name": "tribal mask",
+     "count": 5,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 5,
+     "de": [
+      "Frost Flower Asura",
+      "Midnight Asura",
+      "True Frost Flower Asura"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "shaman-addon-2",
+   "tipo": "outfit",
+   "nome": "Shaman",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 158,
+   "itens": [
+    {
+     "id": 5014,
+     "name": "mandrake",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "The Enraged Thorn Knight"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 3002,
+     "name": "voodoo doll",
+     "count": 5,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 5,
+     "de": [
+      "Werehyaena Shaman"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "norseman-addon-1",
+   "tipo": "outfit",
+   "nome": "Norseman",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 251,
+   "itens": [
+    {
+     "id": 7290,
+     "name": "shard",
+     "count": 5,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 5,
+     "de": [
+      "Energyzed Elemental",
+      "Energyzed Robot",
+      "Frost Dragon"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "norseman-addon-2",
+   "tipo": "outfit",
+   "nome": "Norseman",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 251,
+   "itens": [
+    {
+     "id": 7290,
+     "name": "shard",
+     "count": 10,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 10,
+     "de": [
+      "Energyzed Elemental",
+      "Energyzed Robot",
+      "Frost Dragon"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "summoner-addon-1",
+   "tipo": "outfit",
+   "nome": "Summoner",
+   "premio": "addon 1",
+   "addon": 1,
+   "look": 141,
+   "itens": [
+    {
+     "id": 5878,
+     "name": "minotaur leather",
+     "count": 100,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 100,
+     "de": [
+      "Minotaur",
+      "Minotaur Archer",
+      "Minotaur Guard"
+     ],
+     "deLook": 25,
+     "deColors": {
+      "type": 25,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "summoner-addon-2",
+   "tipo": "outfit",
+   "nome": "Summoner",
+   "premio": "addon 2",
+   "addon": 2,
+   "look": 141,
+   "itens": [
+    {
+     "id": 5894,
+     "name": "bat wing",
+     "count": 70,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 70,
+     "de": [
+      "Blood Priest",
+      "Hibernal Moth"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5911,
+     "name": "red piece of cloth",
+     "count": 20,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 20,
+     "de": [
+      "Blood Priest",
+      "Dawnfire Asura",
+      "Fury"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5883,
+     "name": "ape fur",
+     "count": 40,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 40,
+     "de": [
+      "Vulcongra"
+     ],
+     "deLook": 509,
+     "deColors": {
+      "type": 509,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5922,
+     "name": "holy orchid",
+     "count": 35,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 35,
+     "de": [
+      "Insane Siren"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5886,
+     "name": "spool of yarn",
+     "count": 10,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 10,
+     "de": [
+      "Arachnophobica",
+      "Giant Spider"
+     ],
+     "deLook": 1135,
+     "deColors": {
+      "type": 1135,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5881,
+     "name": "lizard scale",
+     "count": 60,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 60,
+     "de": [
+      "Abyss Cavebear",
+      "Imperial High Guard",
+      "Imperial Legionnaire"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5882,
+     "name": "red dragon scale",
+     "count": 40,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 40,
+     "de": [
+      "Dragon Lord"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    },
+    {
+     "id": 5904,
+     "name": "magic sulphur",
+     "count": 15,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 15,
+     "de": [
+      "Alptramun",
+      "Cliff Strider",
+      "Count Vlarkorth"
+     ],
+     "deLook": 1143,
+     "deColors": {
+      "type": 1143,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    },
+    {
+     "id": 5905,
+     "name": "vampire dust",
+     "count": 30,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 30,
+     "de": [
+      "Blood Priest",
+      "Lich"
+     ],
+     "deLook": 0,
+     "deColors": null,
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  },
+  {
+   "id": "mount-undead-cavebear",
+   "tipo": "mount",
+   "nome": "Undead Cavebear",
+   "premio": "montaria",
+   "addon": 0,
+   "look": 379,
+   "itens": [
+    {
+     "id": 12304,
+     "name": "maxilla maximus",
+     "count": 1,
+     "tem": 0,
+     "entregue": 0,
+     "falta": 1,
+     "de": [
+      "Lich"
+     ],
+     "deLook": 99,
+     "deColors": {
+      "type": 99,
+      "head": 0,
+      "body": 0,
+      "legs": 0,
+      "feet": 0,
+      "addons": 0,
+      "mount": 0
+     },
+     "semFonte": false
+    }
+   ],
+   "ouro": 0,
+   "temOuro": 0,
+   "ouroEntregue": 0,
+   "pronta": false,
+   "podeAdiantar": false,
+   "adiantada": false,
+   "feita": false,
+   "indisponivel": false
+  }
+ ],
+ "arena": {
+  "best": 0,
+  "cooldownAte": 0
+ },
+ "premiumAte": 0,
+ "actions": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "hotkeys": [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "0",
+  "-",
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+ ],
+ "bestiary": {},
+ "totals": {
+  "kills": 0,
+  "exp": 0,
+  "gold": 0,
+  "deaths": 0,
+  "time": 0
+ },
+ "progress": {
+  "current": 0,
+  "needed": 2200,
+  "percent": 0,
+  "toNext": 2200
+ },
+ "skills": {
+  "fist": {
+   "value": 10,
+   "percent": 0
+  },
+  "club": {
+   "value": 10,
+   "percent": 0
+  },
+  "sword": {
+   "value": 10,
+   "percent": 0
+  },
+  "axe": {
+   "value": 10,
+   "percent": 0
+  },
+  "distance": {
+   "value": 10,
+   "percent": 0
+  },
+  "shielding": {
+   "value": 10,
+   "percent": 0
+  },
+  "fishing": {
+   "value": 10,
+   "percent": 0
+  }
+ },
+ "magic": {
+  "value": 0,
+  "percent": 0
+ },
+ "weight": 367,
+ "derived": {
+  "maxHp": 255,
+  "maxMana": 70,
+  "capacity": 470,
+  "speed": 234,
+  "armor": 18,
+  "defense": 31,
+  "damage": {
+   "min": 1,
+   "max": 26
+  },
+  "skillName": "axe",
+  "skillValue": 10,
+  "skillBonus": {},
+  "protection": {
+   "physical": 0,
+   "fire": 0,
+   "ice": 0,
+   "earth": 0,
+   "energy": 0,
+   "death": 0,
+   "holy": 0
+  },
+  "element": null,
+  "elementFactor": 0,
+  "danoPorElemento": {},
+  "attackRange": 1,
+  "critChance": 0.03,
+  "critMultiplier": 1.6,
+  "blockChance": 0.42,
+  "lifeLeech": 0,
+  "manaLeech": 0,
+  "expBonus": 48,
+  "skinsDoSummon": {
+   "tenho": 0,
+   "vestida": null,
+   "nomeDaVestida": null,
+   "daVestida": null,
+   "exp": 0,
+   "loot": 0,
+   "dano": 0,
+   "daColecao": {
+    "exp": 0,
+    "loot": 0
+   }
+  },
+  "hpRegen": 6,
+  "manaRegen": 6,
+  "regenFlat": {
+   "hp": 0,
+   "mana": 0
+  },
+  "regen": {
+   "hp": 1,
+   "mana": 1
+  },
+  "vocationName": "Knight",
+  "promoted": false,
+  "collection": {
+   "pieces": 0,
+   "critChance": 0
+  }
+ }
+}

@@ -1,0 +1,243 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ravox Idle — o RPG que continua jogando sem você</title>
+<meta name="description" content="Monte a caçada, ajuste a barra e deixe rodar. Quando bater vontade, você assume o boneco — sozinho ou com os amigos. Roda no navegador.">
+
+<!-- O mesmo ícone da aba do jogo: quem tem as duas abertas reconhece as duas. -->
+<link rel="icon" type="image/png" sizes="32x32" href="/client/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/client/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/client/favicon-180.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/client/site/site.css">
+
+<!-- Grupos de WhatsApp e Discord colam o link no chat: sem isto o cartão sai
+     como uma linha de texto sem graça. -->
+<meta property="og:title" content="Ravox Idle">
+<meta property="og:description" content="O RPG que continua jogando sem você. Direto do navegador.">
+<meta property="og:image" content="/client/favicon-192.png">
+<meta property="og:type" content="website">
+
+<!--
+  A faixa de obra, no alto de tudo.
+  ---------------------------------
+  Ela nao fecha: o servidor esta em teste e quem chega tem de saber disso o
+  tempo todo, e nao so' no primeiro segundo. Um aviso que se fecha e' um aviso
+  que ninguem leu.
+-->
+<div class="faixa-teste">
+  <span data-t="faixa.teste">Servidor de teste · em desenvolvimento — vai haver bugs</span>
+</div>
+
+<header class="topo">
+  <div class="topo-esq">
+    <a class="marca" href="/">
+      <img src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+    </a>
+    <!-- Quantos estão jogando, colado na logo: era a linha de cima do antigo
+         "O servidor agora", que deu lugar ao top 5. -->
+    <a class="topo-online" href="/online" title="Ver quem está online" data-t-title="placar.verOnline">
+      <i class="ponto"></i><b id="online">—</b> <span data-t="topo.online">online</span>
+    </a>
+  </div>
+  <nav>
+    <a href="#ranking" data-t="menu.ranking">Ranking</a>
+    <a href="/online" data-t="menu.online">Online</a>
+    <a href="#como" data-t="menu.como">Como funciona</a>
+    <a href="/streamers" data-t="menu.streamers">Seja streamer</a>
+
+    <span class="menu-sep"></span>
+
+    <a class="social discord" href="https://discord.gg/7w8j9DuZe" target="_blank" rel="noopener"
+       title="Discord do Ravox Idle" data-t-title="menu.discord" aria-label="Discord"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18.3 18.3 0 0 1 3 1.4 15 15 0 0 0-12.4 0 18.3 18.3 0 0 1 3-1.4L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 .1 13.4.4 17.8A19.9 19.9 0 0 0 6.4 21l.4-.6a13 13 0 0 1-2-1 8 8 0 0 0 .5-.4 14.2 14.2 0 0 0 13.4 0 8 8 0 0 0 .5.4 13 13 0 0 1-2 1l.4.6a19.9 19.9 0 0 0 6-3.2c.4-5-.4-9.4-3.3-13.4ZM8.3 15.4c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Z"/></svg></a>
+    <a class="social whatsapp" href="https://chat.whatsapp.com/D4B0n1pW3ef5kLLceSTGgh?s=cl&amp;p=a&amp;ilr=4" target="_blank" rel="noopener"
+       title="Grupo do WhatsApp do Ravox Idle"
+       data-t-title="menu.whatsapp" aria-label="WhatsApp"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.6-6.1c-.3-.1-1.6-.8-1.8-.9-.2-.1-.4-.1-.6.1l-.8 1c-.2.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4 0-.5.2-.7l.4-.5c.1-.2.2-.3.3-.5v-.5l-.9-2c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.2 5.3 5.3 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c2.2.9 2.2.6 2.6.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-.9.2-1l-.4-.3Z"/></svg></a>
+
+    <a class="botao-entrar" href="/jogar" data-t="menu.entrar">Entrar</a>
+  </nav>
+</header>
+
+<!--
+  A capa, em DUAS colunas.
+  ------------------------
+  À esquerda a conversa, à direita o top 5 de level. O "tem gente jogando?",
+  que era o placar daqui, mora agora no alto, ao lado da logo.
+
+  O fundo é um arquivo só, trocável sem mexer em código: basta pôr
+  `client/site/capa.webp`. Enquanto ele não existir, o degradê segura a tela
+  sozinho — a página nunca fica quebrada esperando arte.
+-->
+<section class="capa">
+  <div class="capa-fundo"></div>
+
+  <div class="capa-grade">
+    <div class="capa-fala">
+      <!-- A logo no lugar do nome escrito: e' a marca do jogo, e a mesma que
+           esta na barra de cima do cliente. O `h1` continua existindo para
+           quem le a pagina sem ver (busca, leitor de tela). -->
+      <h1 class="marca-grande">
+        <img src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+      </h1>
+      <p class="linha-forte" data-t="capa.linha">O RPG que continua jogando sem você.</p>
+      <p class="chamada" data-t="capa.chamada">
+        Escolha a caverna, monte a barra de magias e deixe rodar — o personagem
+        caça, junta loot e sobe de level com a aba fechada. Quando bater vontade
+        de jogar no braço, você toma o controle do boneco e chama os amigos.
+      </p>
+
+      <div class="acoes">
+        <a class="botao-entrar grande" href="/jogar" data-t="capa.entrar">Entrar no jogo</a>
+        <a class="botao-conta" href="/jogar#criar" data-t="capa.criar">Criar conta grátis</a>
+      </div>
+
+      <ul class="promessas">
+        <li data-t="capa.promessa1">Roda no navegador — nada para baixar</li>
+        <li data-t="capa.promessa2">Continua caçando com a aba fechada</li>
+        <li data-t="capa.promessa3">Caça em grupo, mercado e ranking</li>
+      </ul>
+    </div>
+
+    <!-- O top 5 de level no lugar do antigo "O servidor agora", com o boneco
+         como ele anda no mapa. O módulo é separado (`top5.mjs`) porque precisa
+         do atlas de outfits, que é pesado. A moldura é a da Ravox Store
+         (prastore.png), com o título na faixa de cima. -->
+    <!-- A coluna da direita inteira: o top 5 e, embaixo dele, os dois cartazes
+         de experiencia. Eles precisam ser IRMAOS dentro de uma celula so da
+         grade — soltos no `.capa-grade`, que tem duas colunas, viravam uma
+         terceira celula e caiam embaixo do texto da esquerda. -->
+    <div class="capa-direita">
+    <aside class="top5">
+      <h2><img src="/client/assets/icons/ranking.png" alt=""> <span id="top5-titulo">Top 5 level</span></h2>
+      <ol class="top5-lista" id="top5">
+        <li class="vazio" data-t="drops.carregando">carregando...</li>
+      </ol>
+      <!-- A categoria do top 5: level, magic e as skills. Nascem pelo top5.mjs. -->
+      <div class="top5-abas" id="top5-abas" role="tablist"></div>
+    </aside>
+
+    <!-- ---- O cartaz de MOVIMENTO, embaixo do top 5 ----
+         O top 5 de level responde "quem e o mais forte", e a resposta dele e a
+         mesma ha semanas. Este responde "quem esta jogando AGORA", em duas
+         faixas dentro da mesma moldura: o que mais subiu hoje, e quem esta
+         ganhando mais por hora neste momento. Fica FORA da moldura do top 5,
+         embaixo dela, porque e' outra pergunta — enfia-lo la dentro faria
+         parecer mais uma aba do mesmo placar. Nasce pelo `top5.mjs`, que ja le
+         o /api/status. -->
+    <div class="top-exp" id="top-exp"></div>
+    </div>
+  </div>
+</section>
+
+<main>
+  <!-- ---- A faixa de ultimos drops ----
+       Ela fica logo abaixo dos dois cartoes da capa, no espaco que sobrava
+       entre "Caca em grupo, mercado e ranking" e o ranking. E a primeira coisa
+       que se ve depois da promessa do jogo, e responde a pergunta seguinte:
+       "tem coisa boa caindo la?".
+
+       O modulo dela e' separado (`drops.mjs`) porque precisa do atlas de
+       sprites do jogo, que e' pesado — e o ranking nao pode esperar por ele. -->
+  <section id="drops" class="bloco bloco-drops">
+    <div class="bloco-cabeca">
+      <h2 data-t="drops.titulo">Últimos drops</h2>
+      <p class="legenda" data-t="drops.legenda">
+        O que de mais raro caiu no servidor: peça lendária ou mítica de BOSS com
+        duas estrelas ou mais, qualquer item que rolou três estrelas douradas, e
+        as bags — de boss ou de bicho comum. Passe o mouse para ver os atributos.
+      </p>
+    </div>
+    <div class="drops-faixa" id="drops-faixa">
+      <p class="vazio" data-t="drops.carregando">carregando...</p>
+    </div>
+  </section>
+
+  <!-- ---- A faixa das bags abertas ----
+       A de cima mostra a bag CAINDO; esta mostra o que saiu de dentro dela, que
+       e a outra metade da historia e a que decide se valeu a pena. Mesmo modulo
+       e mesmos cards: o que muda e a legenda de cada um e o selo da bag no
+       canto da figura. -->
+  <section id="bags" class="bloco bloco-drops bloco-bags">
+    <div class="bloco-cabeca">
+      <h2 data-t="bags.titulo">Últimas bags abertas</h2>
+      <p class="legenda" data-t="bags.legenda">
+        O que saiu das Bag You Desire, Covet, Primal e Ravox abertas agora há
+        pouco — uma peça sorteada por bag.
+      </p>
+    </div>
+    <div class="drops-faixa" id="bags-faixa">
+      <p class="vazio" data-t="drops.carregando">carregando...</p>
+    </div>
+  </section>
+
+  <section id="ranking" class="bloco">
+    <div class="bloco-cabeca">
+      <h2 data-t="ranking.titulo">Ranking</h2>
+      <p class="legenda" data-t="ranking.legenda">Os vinte primeiros de cada categoria. O ponto aceso é quem está jogando agora.</p>
+    </div>
+    <!-- As abas nascem vazias: quais categorias existem é o servidor que diz,
+         e escrevê-las aqui faria a página oferecer uma aba que ele recusa. -->
+    <div class="abas" id="abas-ranking"></div>
+    <div class="tabela-caixa">
+      <table class="tabela">
+        <thead>
+          <tr><th class="posicao">#</th><th data-t="ranking.personagem">Personagem</th><th data-t="ranking.vocacao">Vocação</th><th class="num" data-t="ranking.level">Level</th><th class="num" id="titulo-valor">Experiência</th></tr>
+        </thead>
+        <tbody id="lista-ranking">
+          <tr><td colspan="5" class="vazio">carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="como" class="bloco">
+    <div class="bloco-cabeca">
+      <h2 data-t="como.titulo">Como funciona</h2>
+      <p class="legenda" data-t="como.legenda">Três passos, e o resto é você decidir até onde quer ir.</p>
+    </div>
+    <ol class="passos">
+      <li>
+        <b data-t="como.passo1">Crie o personagem</b>
+        <p data-t="como.passo1txt">
+          Knight, Paladin, Druid, Sorcerer ou Monk. Conta por e-mail ou pelo
+          Google, e você já entra jogando.
+        </p>
+      </li>
+      <li>
+        <b data-t="como.passo2">Mande caçar</b>
+        <p data-t="como.passo2txt">
+          Escolha a caverna, a estratégia e o que gastar de suprimento. Ele sai
+          andando, batendo e recolhendo — inclusive com a aba fechada.
+        </p>
+      </li>
+      <li>
+        <b data-t="como.passo3">Assuma quando quiser</b>
+        <p data-t="como.passo3txt">
+          Na Caça Online você anda, mira as runas e solta as magias. Chame os
+          amigos: cada um leva a própria barra.
+        </p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="bloco fecho">
+    <h2 data-t="fecho.titulo">A caverna está aberta</h2>
+    <p class="legenda" data-t="fecho.legenda">Leva quinze segundos para criar a conta. Depois é só deixar rodar.</p>
+    <a class="botao-entrar grande" href="/jogar#criar" data-t="fecho.botao">Começar agora</a>
+  </section>
+</main>
+
+<footer>
+  <span>Ravox Idle</span>
+  <span class="separador">·</span>
+  <a href="/jogar" data-t="rodape.entrar">Entrar</a>
+  <span class="separador">·</span>
+  <a href="#ranking" data-t="rodape.ranking">Ranking</a>
+</footer>
+
+<script type="module" src="/client/site/site.mjs"></script>
+<script type="module" src="/client/site/drops.mjs"></script>
+<script type="module" src="/client/site/top5.mjs"></script>

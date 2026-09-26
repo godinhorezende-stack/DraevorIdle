@@ -1,0 +1,809 @@
+{
+ "_fonte": "nossas (tools/gerar-novidades.mjs) + histórico do original (api-mapeada\\captura-guilda-arena-0926\\welcome-zoros.json)",
+ "versao": "2026-09-26-guildas-arena-e-mercado",
+ "titulo": "O que mudou nesta versão",
+ "em": "26 de setembro — guildas com brasão, arena de fila e a aba Mercado",
+ "itens": [
+  "A JANELA DE GUILDAS FOI REFEITA: Minha guilda, Baú, Servidor (com pódio) e Pedidos, o card de cada membro com o equipamento, e o menu de Opções do líder.",
+  "O BRASÃO É SEU: forma, símbolo, iniciais, cores e efeitos. Fundar paga só os efeitos pagos; trocar depois custa 50 Ravox Coins, e um efeito comprado nunca se paga de novo.",
+  "NO BAÚ DA GUILDA, UM CLIQUE GUARDA: com o baú aberto, clicar numa peça da mochila já leva ela para lá — e vai a peça CLICADA, mesmo com duas iguais de afixos diferentes.",
+  "A ARENA X1 VIROU FILA: \"Alistar-se ao lobby\" põe o seu card para os outros; \"Enfrentar\" abre a sala na hora, e os dois recebem o aviso para abrir o lobby.",
+  "NO DUELO, OS DOIS SE ACHAM: ir atrás do adversário segue o caminho da caverna (antes travava na primeira parede, com a sala inteira entre os dois).",
+  "A MOEDA DA ARENA ANDA: +1 para quem vence, −1 para quem perde. A tela de fim mostra pontos, moedas e patente de antes e depois, e quem perde acorda no templo.",
+  "OS BICHOS DA ARENA BATIAM DEMAIS: a Livraria de Fogo e o Skeletinho usavam uma conta genérica (um Burning Book tirava 9 mil num golpe). Agora batem o que batem no Tibia — e mais 10 bichos de hunt e 3 bosses que tinham o dano mínimo trocado também foram acertados.",
+  "ABA MERCADO NO CHAT: compra e venda para o servidor inteiro, uma mensagem a cada 30 segundos — e todo anúncio novo do balcão do Mercado aparece nela sozinho."
+ ],
+ "anteriores": [
+  {
+   "em": "25 de setembro — o Avatar passou a respeitar a espera",
+   "itens": [
+    "O AVATAR NÃO DESLIGAVA. Report de um jogador, e ele tinha razão: a espera de 15 minutos morava na CAÇADA, e trocar de caverna zerava ela — bastava trocar de hunt (ou deixar a rotação automática trocar sozinha) para o Avatar voltar na hora, e quem farmava ficava de crítico garantido sem parar. Agora os dois relógios são do PERSONAGEM e correm em tempo real: atravessam a troca de caverna, a reconexão e o dia seguinte, como na base do servidor.",
+    "E A TRANSFORMAÇÃO ATRAVESSA A TROCA junto: trocar de caverna no meio dos 40 segundos não apaga mais o seu Avatar. Perder a transformação numa espera de quinze minutos seria trocar um defeito por outro.",
+    "O SLOT DO AVATAR MOSTRA O RELÓGIO CERTO. Ele ficava aceso e pronto com a espera escondida atrás; agora conta o que falta — primeiro os 40 segundos de pé, depois a espera para o próximo — como já fazia o slot do familiar. E o Momentum da roda não encurta mais essa espera.",
+    "O AVATAR UPGRADE SUBIU EM SILÊNCIO: usar o pergaminho não anuncia mais nada no chat global. São cinquenta níveis por pessoa, e um pacote de vinte e cinco enchia o canal sozinho.",
+    "A TRANSCENDÊNCIA DEIXAVA DE SAIR depois de uma caçada longa. Os relógios dela contavam o tempo da sessão, mas eram lembrados entre uma caverna e outra: quem caçou duas horas ficava sem transcender na caverna seguinte, sem nada dizer por quê. Corrigido.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "25 de setembro — o tier na perna, o Avatar e o vínculo das armas de monge",
+   "itens": [
+    "AS PERNAS PASSARAM A ACEITAR TIER, e o que elas dão é TRANSCENDÊNCIA: lutando, de dois em dois segundos o jogo sorteia — e quando sai, por 7 segundos você VIRA O AVATAR DA SUA VOCAÇÃO, com crítico garantido em tudo (golpe, magia e runa), +15% de dano crítico e 15% a menos de dano recebido. A chance vai de 0,62% no tier 1 a 10,40% no tier 10, e a bota com tier ainda aumenta ela.",
+    "AS MAGIAS DE AVATAR PASSARAM A FUNCIONAR — uma por vocação (uteta res eq, sac, ven, dru e tio). Elas gastavam mana, acendiam o relógio e não faziam nada; agora são 40 segundos com os MESMOS bônus da transcendência, e com o boneco do avatar. Quem já está transcendendo não ganha duas vezes: os dois não empilham.",
+    "E CHEGOU O AVATAR UPGRADE SCROLL, que sobe um nível permanente (até 50) e encurta a espera entre um Avatar e o próximo: 15 minutos no nível 0 e 2 minutos no 50. Ele CAI DE QUALQUER BOSS (3% por morte) e está na Ravox Store, na aba Melhorias, ao lado do Summon Upgrade e com os mesmos pacotes e descontos.",
+    "AS ARMAS DE PUNHO DO MONGE GANHARAM O ELEMENTAL BOND. A arma na mão decide de que elemento saem as suas magias de punho — a lion claws faz sair energia, a sanguine claws terra, as katars Ravox sagrado —, com a sprite da cor certa. O balão da arma diz qual é o vínculo dela.",
+    "O TIER UP FUNCIONA DIRETO DA MOCHILA: não precisa mais vestir a peça para subir o tier dela. Com duas cópias iguais, sobe a que VOCÊ clicou. E o ouro do TIER e do CRAFT agora sai do bolso E DO BANCO, somados — antes só contava o que estava carregando, e quem tinha o dinheiro guardado via \"falta ouro\" com o banco cheio. O aviso diz quanto saiu de cada lugar.",
+    "A JANELA DE IMBUIR FOI REFEITA: contornos no padrão do jogo, um botão de aplicar de verdade (com confirmação e com o motivo escrito dentro dele quando não dá), cada material dizendo quanto você TEM, a duração do imbuement na descrição, os três encaixes com o tempo que resta em cor de aviso, e o ouro contando bolso e banco, que é de onde o servidor cobra.",
+    "A LOJA DE BOSS TOKEN FOI REPAGINADA: abas por categoria, o seu saldo fixo no alto, cards do mesmo tamanho com o preço no botão, as oito armas de treino num card só, e os conjuntos de roupa com o boneco VESTIDO — que gira quando você passa o mouse. Os preços mudaram: Wildcards por 25, os passes por 150, as armas de treino por 50 e os outfits por 500.",
+    "A CIDADE FICOU MAIS RÁPIDA. Com muita gente na tela o jogo jogava fora TODOS os bonecos guardados e redesenhava cada um do zero, sem parar — medido, 27 quadros por segundo com 80 pessoas. Agora ele descarta só o mais antigo e guarda até 85 bonecos vestidos: é a mesma cidade, sem o tranco.",
+    "O CARD DO MEMBRO DA GUILDA ganhou a mesma grade de equipamento do card do site — cada peça no lugar certo, com a borda da raridade, o selo de tier e as estrelas do afixo.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "24 de setembro — os brasões, o baú da guilda e o lobby da arena",
+   "itens": [
+    "CADA GUILDA GANHOU UM BRASÃO DE VERDADE, desenhado por quem manda nela: forma, símbolo, cores, contorno, as letras e a fonte do nome — tudo escolhido numa tela com prévia, em Social → Guildas. O primeiro é de graça, na fundação; trocar depois custa 50 Ravox Coins.",
+    "E ELE APARECE ONDE A GUILDA APARECE: na lista do servidor, na ficha da guilda, no menu de quem você clica pela cidade ou pelo chat — com o cargo da pessoa junto — e também no SITE, no Top 5, no ranking, em quem está online e na ficha do personagem. O nome da guilda sai na fonte que o líder escolheu, em todos esses lugares.",
+    "A LISTA DO SERVIDOR GANHOU PÓDIO: as três primeiras aparecem em destaque, com brasão, pontos, membros e líder, e dá para pedir entrada dali mesmo. A ordem é por PONTOS, depois nível da guilda, depois número de membros e, por último, a mais antiga primeiro — a mesma conta no jogo e no site, e ela está escrita no \"?\" da janela.",
+    "O SITE GANHOU UMA PÁGINA DE GUILDAS, com a tabela do servidor e a ficha de cada uma: o brasão grande, o recado, o nível, os membros e quem lidera.",
+    "O BAÚ DA GUILDA FICOU COMO O DEPÓSITO. Arraste a peça da janela da sua mochila para dentro dele — ou, com a aba do Baú aberta, clique nela por lá. Ele sempre pergunta QUANTO você quer guardar, e a confirmação agora tem um \"não perguntar novamente\" que você pode desfazer quando quiser. Passando o mouse na aba do Baú, o balão mostra o que tem lá dentro antes de abrir.",
+    "E ELE GUARDA A PEÇA QUE VOCÊ ESCOLHEU. Com duas cópias do mesmo item na mochila e afixos diferentes, ia sempre a primeira da lista — agora vai a que você clicou ou arrastou. As peças do baú também ganharam o balão inteiro da mochila: tier, afixos, imbuements e raridade.",
+    "TUDO O QUE ACONTECE NA GUILDA FICA REGISTRADO, num botão ao lado do \"?\" com três abas: as CONTRIBUIÇÕES, com o placar de quem mais deu ouro; as mudanças de MEMBRO — quem entrou, saiu, foi promovido, rebaixado ou expulso; e as movimentações do BAÚ, em verde o que entrou e em vermelho o que saiu, com o item que se mexeu do lado.",
+    "O LOBBY DA ARENA X1 VIROU FILA. Clique em \"Alistar-se ao lobby\" e o seu card fica lá: qualquer um que abrir o lobby pode ENFRENTAR você na hora, sem convite e sem ninguém esperando aceitar. Sair da fila tira o seu card. Personagens da mesma conta, ou de dois jogos abertos no mesmo endereço de internet, continuam sem poder duelar entre si.",
+    "O UTAMO VITA (MAGIC SHIELD) VOLTOU A FUNCIONAR. Ele gastava mana, acendia o relógio e não fazia absolutamente nada. Agora ele manda o dano para a sua MANA até gastar a poça — 300 + 7,6 × o seu level + 7 × o seu magic level, no máximo a sua mana cheia —, e dura 3 minutos. O exana vita continua sendo quem tira o escudo antes da hora.",
+    "E o recado da guilda, quando é comprido, agora se lê inteiro ao passar o mouse — em vez de ficar cortado.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "23 de setembro — a Arena x1 e as Guildas",
+   "itens": [
+    "A ARENA X1 ABRIU. Desafie alguém para um duelo pelo ícone novo da barra de cima: vocês dois lutam com a MESMA força, seja qual for o level, e quem morrer primeiro perde. Ninguém perde experiência nem item, e você volta com a vida e a mana com que entrou.",
+    "CADA VITÓRIA VALE UM PONTO NA SEMANA E SOBE A SUA PATENTE — Bronze, Prata, Ouro, Platina, Diamante, Mestre e Lenda. Cada derrota tira um ponto, então a patente também DESCE: o elo passou a ser uma coisa que se defende. O último degrau não tem teto, e é o que separa dois Lendas na tabela.",
+    "O RANKING ZERA TODA SEXTA ÀS 18H e todo mundo volta ao Bronze com zero. Quem estiver no topo naquela semana leva bônus nas caçadas NORMAIS, fora da arena: o 1º ganha +8% de experiência e +8% de loot, o 2º +5% de cada e o 3º +3%. O bônus é de quem está no topo AGORA — ele muda durante a semana e aparece na régua da sua barra de experiência, junto dos outros.",
+    "CADA DUELO CUSTA UM TICKET. Você recebe 5 por dia e acumula até 10, e o contador fica no canto de cima da janela da arena. Quem está sem ticket não aparece na lista de quem dá para desafiar — e personagens da mesma conta, ou de dois jogos abertos no mesmo endereço de internet, não podem duelar entre si.",
+    "AS GUILDAS CHEGARAM, em Social → Guildas. Fundar pede level 500 e premium ativo; ENTRAR numa que já existe não pede nada disso — dá para pedir para entrar pela tabela do servidor, e o líder ou um vice aceita. São três postos: líder, vice-líder e membro.",
+    "A GUILDA COMEÇA COM 10 VAGAS e cresce por vaquinha: QUALQUER membro contribui com ouro, e quando a barra enche o nível sobe sozinho e abrem mais 10 vagas, até 100. O primeiro degrau custa 1kkk e cada um seguinte custa o dobro. O ouro dado não volta — ele não é um cofre, é uma vaquinha.",
+    "E CADA GUILDA GANHOU UM BAÚ COMUNITÁRIO de 25 vagas (até 100, a 50 Ravox Coins por lote de 25). ATENÇÃO: tudo o que entrar nele pode ser retirado por QUALQUER membro da guilda, e quem tirar não precisa devolver. Não guarde o que você não quer dividir.",
+    "PASSE O MOUSE NUM MEMBRO DA SUA GUILDA e o balão mostra o que ele está usando e onde ele está caçando agora. E ao clicar em alguém pela cidade ou pelo chat, a guilda da pessoa e o brasão dela aparecem na ficha.",
+    "OS BICHOS NÃO ATRAVESSAM MAIS MAGIC WALL NEM WILD GROWTH. Eles passavam por dentro das duas como se não existissem — agora respeitam a parede como os jogadores respeitam, e só passam quando ela sai.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "22 de setembro — os Boss Diários, a barra de cima e o depósito",
+   "itens": [
+    "O BOSS DIÁRIO NASCE SOZINHO, TODA NOITE ÀS 20H, na área de Boss Diários — e agora é a semana inteira: segunda o Ferumbras, terça o Ghazbaran, quarta o Morgaroth, quinta o Apocalypse, sexta o Orshabaal, sábado o Zamulosh e domingo o Gaz’haragoth. Ninguém precisa soltar nada à mão, e quando ele aparece o servidor inteiro é avisado.",
+    "E O BOSS SE ANUNCIA NA TELA, NÃO NO CHAT: um cartaz no alto com o desenho dele e um botão que mostra o LOOT ao passar o mouse. Ele fica um minuto, ou some na hora se você fechar no X. Dentro da sala de Boss Diários dá para ver a vida dos bosses que estão lá.",
+    "A SALA DE BOSS ACEITA ATÉ CINCO PESSOAS, E CADA UMA TEM O SEU BAÚ. O sorteio do loot corre uma vez por pessoa, como na hunt: quem estava vivo e dentro quando o boss caiu recebe a sacola dele. Quem morreu ou saiu antes não leva nada, e o item ÚNICO continua caindo para uma pessoa só.",
+    "O BOSS DA ARENA NÃO PARA MAIS DE ATACAR. Sair da sala de Boss Diários e voltar rápido deixava o boss de braços cruzados — e o ataque automático falhava junto, sem erro nenhum na tela. Quem entrou depois também passa a ser alvo dele.",
+    "OS BOSSES QUE SÓ EXISTEM INVOCADOS AGORA TÊM 1.500.000 DE VIDA — são 291, e o único lugar em que você encontra qualquer um deles é a área de Boss Diários. Os 87 que têm sala própria em Aventuras → Bosses continuam exatamente como estavam.",
+    "A BARRA DE CIMA FOI REAGRUPADA. Eram vinte e um ícones em fileira; agora são seis portas — Depósito, Sistemas, Hunts, Personagem, Tarefas e Social — e o que estava solto mora dentro delas. Passe o MOUSE numa porta e a gaveta abre sozinha, sem clique. A fileira é centrada no seu personagem, o Mercado ficou à esquerda do Depósito, e Cidade, Opções e Sair no canto da direita.",
+    "PASSE O MOUSE EM PREY, GEMAS, CHARMS, PROFICIÊNCIA OU IMBUEMENTS e o balão mostra o que você tem ATIVO agora — a criatura da prey e quanto falta, os bônus das gemas, os charms comprados, o que está imbuído e quanto tempo resta. Sem abrir nada, como já era na Árvore.",
+    "O BANCO ABRE CLICANDO NO SEU OURO, lá em cima: o ícone dele saiu da barra, porque o número já era o banco — ele sempre somou bolso e conta. E apareceu um \"+\" dourado em cima das suas Ravox Coins, que abre a compra de coins de qualquer lugar do jogo.",
+    "O DEPÓSITO VIROU QUATRO JANELAS COM PORTA PRÓPRIA: Baú, Baú de Boss, Baú da Conta e Chegadas. Eram quatro abas dentro de uma janela só, e as três especiais viviam perdidas no meio de dezesseis caixas numeradas iguais. Baú e Baú de Boss agora mostram as caixas à esquerda e o conteúdo da escolhida à direita — trocar de caixa muda meia tela, e não a tela.",
+    "CLIQUE NUMA SACOLA DE BOSS E ELA ABRE, em vez de despejar na hora. Com trinta sacolas iguais, errar o alvo esvaziava a errada e não havia como desfazer. Quem despeja agora é o botão COLETAR, que fica do lado do que ele vai levar. O botão direito continua valendo.",
+    "CHARMS E IMBUEMENTS EM PORTUGUÊS: os 25 charms com apelido e explicação, e as 72 descrições de imbuement, grau por grau. A tela de charms foi refeita — a grade de todos à esquerda e a ficha do escolhido à direita, com tier, custo e a escolha de criatura dentro dela.",
+    "A TELA DE IMBUEMENTS FICOU COMO A OFICINA DO JOGO: escolha a peça, escolha o encantamento pela setinha e o grau pela outra, e a receita mostra quanto você TEM de cada reagente ao lado de quanto precisa. As peças que não aceitam imbuement não aparecem mais na fileira. Nada mudou no que cada imbuement faz, no que ele custa nem em quanto tempo dura.",
+    "TAREFAS SE DIVIDIU: Level Reward, Recompensa Diária e Outfits ganharam janela própria, e a de Tasks ficou com Tasks e Tasks de Montarias — eram cinco abas empilhadas numa janela só. E o aviso de recompensa saiu do meio da tela: a faixa que ficava acima da barra de ações tapava o chão justamente onde se clica para andar, e era preciso MINIMIZAR um aviso para jogar. Agora o baú da diária aparece na barra de cima, à direita de Social, e só quando há o dia para pegar.",
+    "O CHAT GLOBAL SÓ ANUNCIA O FERUMBRAS’ HAT. Todo drop único virava recado para o servidor inteiro, e o canal andava rápido demais. A tela de vitória do boss diário também encurtou para dois terços do tempo.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "21 de setembro, à noite — uma task para cada bicho",
+   "itens": [
+    "CADA BICHO DO JOGO VIROU UMA TASK. São 313, e elas contam o que você já matou desde sempre — quem tem 40 mil trolls já começa com etapas fechadas. A escada é 2.000 → 10.000 → 25.000 → 50.000 → 100.000 mortes, pagando 1, 4, 7, 11 e 20 Task Token, e a task encerra no último degrau.",
+    "BOSS CONTA SEPARADO: de 10 em 10 mortes até 100, 1 Task Token por etapa. Eles estavam na lista pedindo 2.000 mortes, o que com 12 horas de cooldown dava mil dias. Orshabaal, Morgaroth, Ferumbras e Ghazbaran entraram como task de evento.",
+    "PEGAR O PRÊMIO AGORA PÁRA A TASK: clique em Aceitar para a próxima etapa começar a contar, e o que morrer com ela parada não conta. As tasks mais perto de fechar sobem para o topo da lista, e o filtro ganhou uma ficha de Bosses e um \"?\" que explica as regras.",
+    "AUTO TASK SEM LIMITE, na Ravox Store, ao lado do Auto Boss: 7 dias por 200 Ravox Coins e 14 dias por 350. Com ele a etapa fecha, o Task Token cai sozinho na mochila e a próxima já começa a contar — nenhuma morte cai no vazio. Vale em todos os personagens da conta.",
+    "OS ADDONS DA ABA OUTFITS AGORA PEDEM O QUE O TIBIA PEDE, item por item e quantidade por quantidade: 16 roupas, 32 addons, com o Summoner incluído. E os 23 itens que não caíam de bicho nenhum — chicken feather, peg leg, coral comb, ape fur — ganharam de quem cair, em hunts que você alcança.",
+    "DÁ PARA ENTREGAR AOS POUCOS. O addon 1 do Mage pede treze itens de treze bichos: agora cada clique deixa no balcão o que você já tem, e a peça sai quando a conta fechar. O ouro do Nobleman entra do mesmo jeito.",
+    "O ANDAR DE CIMA DOS MAPAS ESTAVA UMA CASA FORA DO LUGAR. Subir uma escada movia a cidade inteira debaixo dos pés, e a Medusa Tower e a Draken Walls apareciam tortas. As escadas de descer também: elas mostravam a casa errada por dentro do buraco.",
+    "O FILTRO DAS TASKS ACEITA A PALAVRA INTEIRA. Ele perdia o foco a cada letra, e era preciso clicar de novo para digitar a segunda.",
+    "O MODAL DE OUTFITS FOI ARRUMADO: os cards não se esticam mais até a altura do vizinho (havia até 472 pixels de vazio dentro da moldura), os itens cabem três por fileira sem cortar o número, e a caixa de confirmar não passa mais da tela — o botão Confirmar estava branco e sem estilo.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "21 de setembro, à tarde — Recompensa Diária de 30 dias",
+   "itens": [
+    "CHEGOU A RECOMPENSA DIÁRIA, um ciclo de 30 dias. Entre todo dia e pegue o prêmio do dia: prey wildcards, XP boost de 50%, pedras Ravox Tier UP, Stamina Extension, Summon Upgrade, exercise weapons e os pergaminhos de Instance e Divine Hunts. Ela fica em Tarefas, ao lado do Level Reward, e o baú aparece embaixo da tela quando há prêmio esperando.",
+    "O DIA 16 DÁ O OUTFIT FERAL TRAPPER COM OS DOIS ADDONS, E O DIA 30, A MONTARIA BATTLEFRAZZLE. Os dois são uma vez só: quem já tiver a roupa ou a montaria recebe pedras Ravox Tier UP no lugar (1 no dia 16 e 3 no dia 30), e é assim também nos ciclos seguintes.",
+    "FALTAR UM DIA ZERA A SEQUÊNCIA e você volta ao dia 1 — a tela avisa antes de você coletar, para não ser surpresa. O dia vira à MEIA-NOITE, e não no server save das 10 da manhã.",
+    "O QUE VEM DA RECOMPENSA DIÁRIA É FIXO NO PERSONAGEM: Instance Hunts, Divine Hunts Scroll, Boosted Exercise e Ravox Tier UP pegos ali não vão para o chão, nem para o mercado, nem para a troca, nem para a caixa compartilhada. As cópias COMPRADAS na loja continuam livres, e o balão do item diz qual é qual — elas não se misturam na mochila.",
+    "O RING OF GREEN PLASMA DA LOJA ESTAVA ERRADO. A prateleira vendia a forma VESTIDA do anel, que não tem tempo de duração e é de outra raridade — era daí que vinha o brilho diferente e a duração que não aparecia. Agora ela vende a forma certa. Os outros cinco anéis de plasma já estavam corretos.",
+    "OS FRAGMENTOS DA MOCHILA AGORA CONTAM NO FRAGMENT WORKSHOP. Lesser e Greater fragment comprados da Zuma ficavam na mochila sem servir para nada, porque a oficina só via os que já estavam no seu contador. Agora ela soma os dois.",
+    "A RAVOX TIER UP DESTRAVOU NO DP. Clicar nela no Store Inbox abria a mira de usar em vez de mandá-la para a mochila, e ela não saía de lá de jeito nenhum.",
+    "O LEVEL REWARD PAROU DE ESCREVER \"faltam -885\" nos prêmios. E o que você já pegou agora aparece apagado, com um certo e o selo \"pego\", como na recompensa diária.",
+    "AS ABAS DE TAREFAS ACENDEM quando há prêmio esperando, então dá para ver de fora sem abrir cada uma.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "21 de setembro — Server Save diário, às 10 da manhã",
+   "itens": [
+    "O SERVIDOR PASSA A REINICIAR TODO DIA ÀS 10 DA MANHÃ, como no Tibia. Ele avisa na tela 15, 10, 5, 4, 3, 2 e 1 minuto antes, salva todo mundo e volta em alguns segundos.",
+    "VOCÊ NÃO PERDE NADA. Antes de sair, o servidor grava todos os personagens e as parties — e quem estava caçando volta caçando, na mesma hunt, sozinho ou em grupo.",
+    "POR QUE ISSO É BOM PARA VOCÊ: um servidor que fica semanas de pé vai ficando pesado, e é isso que deixa o boneco andando de um em um passo. O reinício diário é o que mantém o jogo leve — e ele limpa o entulho de item largado no chão da cidade, que também pesa na tela de quem passa por lá.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "18 de setembro — mais FPS na cidade, forja com risco e loja arrumada",
+   "itens": [
+    "MAIS FPS NA CIDADE. Cada fileira do mapa passou a ser desenhada uma vez e depois copiada, e o telhado inteiro virou uma imagem só. Nas medições, o desenho caiu de 1.140 para 150 comandos por quadro nas ruas com telhado — é onde mais travava, e a diferença aparece principalmente em máquina fraca.",
+    "A PRAÇA GASTA MENOS INTERNET. A lista de quem está na cidade passou a viajar só com o que mudou (a posição e o rumo), em vez de mandar o nome, a roupa e o level de todo mundo oito vezes por segundo: 3,8 KB no lugar de 34,5 KB.",
+    "TODOS OS BOSSES DA ABA TÊM NO MÁXIMO 50.000 DE VIDA. Sessenta e sete deles baixaram — o Thor saiu de 3.500.000. E o card do boss passou a mostrar a vida DE VERDADE: ele mostrava o número antigo quando a vida era ajustada.",
+    "A FORJA DE OURO AGORA PODE FALHAR, como no servidor original: 50% de chance, ou 65% pagando o reforço. Falhando, a peça cai um tier e o ouro é gasto igual — no tier 0 não há tier a perder, e só o ouro se vai. A pedra Ravox Tier UP continua subindo SEMPRE, sem risco nenhum.",
+    "OS PASSES DE HUNT AVISAM ANTES. Instance Hunts e Divine Hunts Scroll dizem em destaque o que exigem (level 800+ e 1000+, e premium ativo) na loja, no balão do item e ao usar — e usar sem cumprir não gasta mais o pergaminho: o servidor recusa e ele volta para a mochila.",
+    "AUTO BOSS COM DOIS PRAZOS, num card só: 7 dias por 290 e 14 dias por 500 Ravox Coins.",
+    "O LEVEL DAS DIVINE HUNTS estava escrito errado em três lugares (800 e 1200). O certo é 1000, e 1300 nas cinco novas.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "17 de setembro, à noite — menos travadinha, menos lag e menos internet",
+   "itens": [
+    "ACABARAM AS TRAVADINHAS DO PLACAR. A conta do \"EXP de hoje\" do site parava o servidor inteiro por um instante a cada vez que alguém abria a capa ou o top 5 — e com o servidor parado, todo mundo sentia. Agora ela é feita na memória, e não no banco.",
+    "O TIQUE DAS CAÇADAS FICOU MAIS RÁPIDO DE NOVO. A escolha de onde a magia e a runa pegam mais monstros deixou de comparar texto, e várias contas que se repetiam a cada quadro (a prévia da bolsa, o peso, os bônus da árvore, as consultas ao banco) passaram a ser feitas uma vez só. Menos trabalho por tique é menos lag para quem está caçando.",
+    "MENOS DA METADE DA INTERNET. O jogo passou a mandar só o pedaço que mudou dentro de cada informação — a vida de UM membro da party em vez da party inteira, um contador do bestiário em vez do bestiário todo, uma venda em vez da lista do analisador —, as criaturas paradas viajam só com o número delas e os quadros vão comprimidos. Quem joga no 4G sente a diferença.",
+    "A TELA PAROU DE SE REFAZER À TOA. A mochila só é redesenhada quando muda de verdade, e o analisador uma vez por segundo em vez de oito — mais quadros por segundo, principalmente em máquina fraca e no celular.",
+    "Recarregue a página para pegar a versão nova."
+   ]
+  },
+  {
+   "em": "17 de setembro, à tarde — Gem Atelier, servidor mais leve e filtro de raridade",
+   "itens": [
+    "GEM ATELIER E FRAGMENT WORKSHOP. O sistema de gemas do Tibia chegou, com as regras e os números da base. Monstros fortes e bosses largam Lesser, Regular e Greater gems; no novo botão 'Gem Atelier' você revela a gema da sua vocação (125 mil, 1kk ou 6kk) e ela sorteia o domínio e os modificadores: resistências, vida, mana, capacidade, esquiva, roubo, dano crítico e bônus de magias específicas.",
+    "AS GEMAS ACENDEM COM A ÁRVORE. Cada domínio (verde, vermelho, azul e roxo) aceita uma gema, e os vessels dele enchem com a árvore de habilidades: a árvore inteira no verde e cada via nos outros três. 1 vessel acende o primeiro modificador, 2 o segundo e 3 o supremo da Greater gem.",
+    "FRAGMENT WORKSHOP. Destrua gemas reveladas ou triture as fechadas (de qualquer vocação) para ganhar Lesser e Greater fragments, e use-os com ouro para subir o grau dos modificadores até o IV. O grau vale para toda gema que tiver aquele modificador.",
+    "FILTRO DE RARIDADE E ESTRELA AGORA SE SOMAM. Com as duas regras ligadas, a peça só é guardada se passar nas duas: com 'Épico para cima' e 'Só a dourada', um item comum dourado vai para o NPC. Com uma regra só ligada, ela decide sozinha, como antes.",
+    "O SERVIDOR FICOU BEM MAIS LEVE. A venda automática parou de rodar em todo tique quando a bolsa está cheia de coisa que não se vende, e várias contas repetidas saíram do caminho da caçada. Nas medições, o tique das caçadas ficou mais que duas vezes mais rápido — menos lag e menos travadas para todo mundo.",
+    "MENOS INTERNET GASTA. O jogo parou de mandar dado repetido: o analisador só manda o que mudou, os relógios do imbuement e dos buffs viajam no passo em que aparecem na tela, e aba minimizada não recebe mais efeitos que não vai desenhar. Recarregue a página para pegar a versão nova.",
+    "A MEMÓRIA DO SERVIDOR CAIU PELA METADE. Os mapas das caçadas ficam guardados comprimidos, e o mapa que chega à sua tela é exatamente o mesmo de antes."
+   ]
+  },
+  {
+   "em": "17 de setembro — fatal, loot de boss no chat, aba Combate e filtro por raridade",
+   "itens": [
+    "A ANIMAÇÃO DO FATAL APARECE. O fatal (Onslaught do tier da arma) sempre deu os 60% de dano a mais, mas a animação dele nunca subia no monstro. Agora o 'FATAL!' aparece no golpe, na magia e na runa — e quando fatal e crítico saem juntos, aparece o do fatal, como no Tibia.",
+    "BOTA COM TIER AUMENTA A CHANCE DO FATAL. Como no servidor original: a Amplification da bota multiplica a chance de fatal da arma. Arma tier 10 com bota tier 10 vai de 9% para 14% de chance.",
+    "AS ANIMAÇÕES TOCAM NO RITMO CERTO. Cada quadro de um efeito tem o tempo dele, e o jogo dividia tudo em partes iguais. O 'FATAL!' e o 'CRIT!' agora dão aquele estalo rápido e ficam na tela, em vez de só aparecer — e isso vale para todos os efeitos.",
+    "LOOT DE BOSS APARECE NO CHAT DE LOOT. Antes, quando o boss morria, a linha do loot dele se perdia junto com a saída da sala. Agora ela chega para todo mundo que estava lá dentro.",
+    "LOOT EM PARTY NÃO POLUI MAIS O CHAT. A linha mostra só o que caiu para VOCÊ. O loot dos outros fica nos botõezinhos 'ver loot de Fulano' no fim da linha: passe o mouse para ver (no celular, toque).",
+    "ABA COMBATE COM [FATAL] E [CRÍTICO]. O golpe crítico sai marcado em vermelho e o fatal em roxo, na frente da linha. E a aba ganhou filtros: Tudo, Aplicados, Recebidos, Magias, Crít./Fatal, Curas e Mortes.",
+    "FILTRO DE LOOT: GUARDAR POR RARIDADE. Ao lado da regra da estrela, escolha uma raridade (incomum, raro, épico, lendário ou mítico): os itens dela para cima são guardados da venda automática, com estrela ou sem. As duas regras somam.",
+    "FILTRO DE LOOT MAIS ENXUTO. A janela começa direto nas regras, e o botão 'Apenas o que NPC compra' foi para o cabeçalho da lista de loot — agora com cara de botão.",
+    "O JOGO PESA MENOS COM O BONECO PARADO. A tela só é redesenhada quando alguma coisa muda. Parado na cidade, o computador ou o celular trabalha bem menos, e nada muda no que você vê."
+   ]
+  },
+  {
+   "em": "16 de setembro, à noite — itens no chão, chat de loot e celular",
+   "itens": [
+    "AGORA DÁ PARA JOGAR ITEM LONGE, ATÉ A BEIRA DA TELA. Antes só dava para largar na casa do lado. Agora você arrasta a peça para qualquer casa que esteja aparecendo — mas PEGAR continua sendo de pertinho, encostado nela, como no Tibia.",
+    "E O ITEM NÃO ATRAVESSA PAREDE. Não dá para jogar dentro da pedra nem por cima de um muro para o outro lado. Em cima de móvel dá: a caixa do locker, a mesa e o balcão aceitam item, porque ali só não dá para pisar.",
+    "A CASA DO CHÃO MOSTRA TUDO O QUE ESTÁ NELA. Jogou uma armor e depois um machado? Aparecem os dois, o machado por cima. Antes só a peça de cima era desenhada e o resto virava um número no balão.",
+    "BROWSE FIELD: ABRA A CASA DO CHÃO COMO SE FOSSE UMA BOLSA. Clique com o direito numa casa com mais de uma peça e escolha 'Ver o chão'. Abre uma janelinha com tudo o que está ali, em quadradinhos: clique para pegar, ou arraste direto para a mochila, para um slot, ou para outra casa do mapa. Serve para tirar a peça que ficou embaixo sem mexer nas de cima.",
+    "O CHAT DE LOOT MOSTRA A RARIDADE. Cada peça sai na cor dela, e a linha inteira ganha uma marca na margem quando caiu algo de raro para cima. Dá para correr o canal com o olho e ver onde parar, em vez de ler bloco de texto.",
+    "FILTRO DE LOOT GUARDA SOZINHO, CAÇADA POR CAÇADA. Duas marcações novas no alto da janela, ao lado do X. 'Salvar sempre' deixa o filtro de cada hunt do jeito que você largou, e ele volta sozinho quando você entra ali de novo. 'Toda a conta' faz o mesmo filtro valer para todos os seus personagens, sem remontar em cada um.",
+    "O CELULAR FICOU MUITO MAIS LEVE. Vinte e quatro animações ficavam rodando o tempo todo e a interface reescrevia a tela mil vezes por segundo com o boneco parado. O jogo passou a nascer no modo leve no telefone (dá para ligar tudo de volta em Ajustes → Gráficos), e os nomes dos bichos são desenhados uma vez e copiados. Medido num aparelho comum, o travamento com o personagem parado praticamente sumiu.",
+    "NO CELULAR DEITADO, OS PAINÉIS VÃO PARA AS BORDAS. Chat de um lado, mochila do outro, e o mapa inteiro no meio — as duas abrem ao mesmo tempo. Em pé continua a gaveta de baixo, uma por vez.",
+    "ARRASTAR DO CHÃO PARA A MOCHILA VOLTOU A FUNCIONAR NO TOQUE. No telefone, o caminho de volta simplesmente não existia: dava para jogar no chão e não dava para trazer arrastando.",
+    "O PONTEIRO DIZ O QUE DÁ PARA FAZER. Mão aberta em cima do que pode ser arrastado, e a cruz de mover enquanto a peça está no ar."
+   ]
+  },
+  {
+   "em": "16 de setembro — poção de mana, balcão da Zuma, mercado e site",
+   "itens": [
+    "POÇÃO DE MANA VOLTA A BEBER NA FAIXA QUE VOCÊ CONFIGUROU. Report de quem morreu por causa disso: com uma poção em 70% de mana e outra em 50%, o boneco só começava a beber por volta dos 20%. A poção cedia a vez para a runa — o que é certo — e não voltava enquanto a mana continuava caindo. Agora, se a mana cair depois que ela cedeu, ela bebe na hora. Isso vale para a Ultimate Spirit Potion (que cura vida e mana) e para as poções de mana puras.",
+    "RUNA VOLTA A REVEZAR COM AS OUTRAS DA BARRA. Duas ações no mesmo tempo de recarga podiam deixar uma delas sempre em segundo lugar, e ela nunca disparava. Agora quem esperou mais passa na frente.",
+    "LOJA DA ZUMA: ESCOLHE O ITEM, ARRASTA A QUANTIDADE E COMPRA COM UM CLIQUE. Os itens aparecem dois por linha e não têm mais um botão cada um: você clica no item, a barra de baixo mostra quanto custa e com quanto você fica, e o botão é um só. Comprar e vender são abas separadas, cada uma com a sua escolha. A loja também passou a enxergar o OURO DO BANCO, e não só o da mão. E a Zuma vende o Divine Hunts Scroll por 180kk.",
+    "FILTRO DE LOOT ABRE NO PRIMEIRO CLIQUE. Report: durante a caçada era preciso clicar várias vezes no botão do filtro para a janela abrir. Agora abre de primeira, com a mochila atualizando por baixo.",
+    "NO CELULAR, SEGURAR O DEDO É O BOTÃO DIREITO. Report do Garibas: segurar o dedo em cima de um item não abria o menu. Agora, meio segundo parado abre o mesmo menu do clique direito do computador.",
+    "MERCADO: COLUNA DE LEVEL, E ORDENAR CLICANDO NO TÍTULO. Cada anúncio mostra o level que a peça pede, em vermelho quando é acima do seu. Clicar em Item, Level, Slot ou Preço ordena a lista inteira por aquela coluna, e clicar de novo inverte.",
+    "SITE: TOP EXP HOJE E TOP EXP/H, EMBAIXO DO TOP 5. Dois placares novos: quem mais ganhou experiência desde a meia-noite (com quantos levels subiu hoje) e quem está ganhando mais por hora neste momento, com o boneco, o nome e o level. Passando o mouse aparece o set da pessoa, como no Top 5.",
+    "SITE: A FAIXA DE ÚLTIMOS DROPS MUDOU DE REGRA. Item raro agora só entra quando sai de um BOSS; de bicho comum, entra qualquer peça com três estrelas douradas. As bags (Ravox Bag, Bag You Covet, Bag You Desire, Primal Bag) continuam aparecendo de qualquer bicho.",
+    "O BANQUEIRO E A ZUMA DE ROUPA NOVA. O NPC Naji agora se chama Banker e usa o outfit dourado completo; a Zuma ganhou os addons do dela.",
+    "ÁUDIO DO CHAT DIZ POR QUE NÃO TOCOU. Quando o navegador recusa tocar um áudio recebido, o botão passa a explicar o motivo em vez de ficar mudo."
+   ]
+  },
+  {
+   "em": "15 de setembro, à noite — troca de Tibia/Rubini Coins, chat e site",
+   "itens": [
+    "TROCAR TIBIA COINS E RUBINI COINS POR RAVOX COINS. Na Ravox Store, em Obter Coins, tem a opção nova de troca. Escolha o servidor (Tibia Global ou Rubinot) e a quantidade: no Global, cada 250 Tibia Coins valem 500 Ravox Coins; no Rubinot, cada 250 Rubini Coins valem 200 Ravox Coins, de 250 até 25.000. A tela diz para qual personagem enviar os coins, com botão de copiar o nome. Depois de enviar, marque a confirmação e o pedido abre no seu WhatsApp já preenchido: mande junto o print do histórico da store, que a entrega fica mais rápida. Os Ravox Coins caem na conta em até 24 horas.",
+    "CHAT: ABA DUPLICADA NO PRIVADO CORRIGIDA. Mandar privado escrevendo o nome com letra minúscula abria uma aba com o nome digitado e outra com o nome certo. Agora é uma aba só.",
+    "CHAT: BOLINHA DE ONLINE NO PRIVADO. A aba de cada conversa privada tem uma bolinha antes do nome: verde quando a pessoa está com o jogo aberto, vermelha quando está offline ou com a aba fechada.",
+    "CHAT: AVISO QUANDO A MENSAGEM NÃO CHEGA. Mandar privado (texto ou áudio) para quem está offline ou com a aba fechada agora avisa dentro da própria conversa que a mensagem não foi entregue. Antes ela sumia sem aviso.",
+    "CHAT LIMPO AO TROCAR DE PERSONAGEM. Entrar com outro personagem começa com o chat vazio, sem as conversas do personagem anterior. Se a conexão só cair e voltar no mesmo personagem, nada é apagado.",
+    "ITEM COM AFIXOS NÃO PERDE MAIS OS AFIXOS NO CHÃO NEM NA TROCA. Jogar no chão uma peça com afixos, tier ou imbuement e pegar de volta apagava os afixos. Na troca entre jogadores, duas peças iguais com afixos diferentes chegavam com os afixos trocados. Agora cada peça mantém os seus.",
+    "SITE: TOP 5 NA PÁGINA INICIAL. No lugar de \"O servidor agora\" entrou o Top 5 do servidor, com o boneco de cada um (roupa, addons e montaria). Dá para trocar entre Level, Magic e as skills pelos ícones de baixo, e passando o mouse aparece o inventário e as skills da pessoa. O número de jogadores online agora fica no alto, ao lado da logo.",
+    "SITE: FICHA DO PERSONAGEM MAIS COMPLETA. Os ícones das skills e do Ravox Stats são os mesmos da ficha do jogo, o Balance (gold no banco) aparece embaixo de Account Status, e o inventário mostra a raridade, o tier e as estrelas dos afixos, com o balão do item igual ao do jogo. O ícone ao lado de Inventory mostra a soma de todos os afixos e os bônus de tier da forja. Outfits agora conta só os outfits com os dois addons."
+   ]
+  },
+  {
+   "em": "15 de setembro, à tarde — Store Inbox, Auto Boss da conta e diagonais",
+   "itens": [
+    "STORE INBOX: AS COMPRAS DA RAVOX STORE TÊM UM LUGAR SÓ DELAS. Tudo o que você compra na Store agora chega na Store Inbox, e não mais na mochila. Ela fica na mochila, ao lado da Boss Pouch, e na própria Store, ao lado de Histórico. Cabem 2000 itens, com páginas, e não dá para colocar nada dentro dela. Clique num item para levá-lo para a mochila. Os itens usáveis (poções, scrolls, bags, Buff Power...) podem ser usados direto de lá, com o botão direito. Se a Store Inbox estiver cheia ou você estiver sem cap, a compra vai para a caixa Chegadas do depósito.",
+    "AUTO BOSS 7 DIAS AGORA VALE PARA A CONTA INTEIRA E SEM LIMITE DE BOSSES. Comprou em um personagem, fica ativo em todos os personagens da conta, e a Store de todos mostra que já está ativo. Com o passe não tem mais o limite de 15 bosses: pode colocar quantos quiser, desde que tenha o level, o cooldown livre e o acesso de cada um. Em party, o boss que alguém ainda tem em cooldown aparece apagado no fim da lista, dizendo quem está em cooldown. Quem não tem o passe continua nas levas normais.",
+    "CAÇA ONLINE E BOSS DIÁRIOS: ATAQUE AUTOMÁTICO E BARRA AUTOMÁTICA. Os três botões de hoje de manhã viraram dois, ao lado do \"Salvar HK\": ⚔ ataque automático (escolhe o alvo pela regra de Alvo e dá o ataque básico) e a barra automática (solta sozinha as magias, runas, curas e poções da sua barra, com as condições que você configurou). Também dá para ligar e desligar em Opções. A escolha fica salva no personagem e vale na Caça Online e na Boss Diários. Com o controle na mão, a barra de baixo mostra só o Alvo — Distância e Lurar somem, porque quem anda é você.",
+    "ANDAR NA DIAGONAL COM Q, E, Z E C. Na cidade e na Caça Online: Q anda para cima e esquerda, E para cima e direita, Z para baixo e esquerda e C para baixo e direita. Se você usa uma dessas teclas para uma magia, na Caça Online a magia continua valendo.",
+    "BOSS DIÁRIOS: NÃO DÁ MAIS PARA ATACAR DE DENTRO DA ZONA SEGURA. O boss já não entrava na área segura, mas quem estava dentro dela conseguia atacar de lá. Agora ela funciona como uma PZ: nem ataque, nem magia de ataque, nem summon.",
+    "ANÉIS E ITENS DE CARGA NÃO REINICIAM MAIS O TEMPO AO TIRAR E COLOCAR. Tirar e vestir de novo um item que gasta por carga voltava o tempo dele para o começo. Agora ele continua de onde parou. Os itens que não gastam carga continuam como sempre.",
+    "BUFF POWER EXP NÃO APARECE MAIS DUPLICADO. Report do Appa. Na janela Buffs e Boosts ele aparecia uma vez como Buff Power e outra como bônus de experiência. Agora aparece uma vez só.",
+    "INTERFACE MAIS BONITA E MAIS FÁCIL. A Boss Pouch e a Store Inbox ganharam desenho novo, lado a lado na mochila. O rodapé da Store ganhou botões novos (Transferir, Histórico e Store Inbox). O botão ao lado da stamina agora manda a ficha do personagem para o canto de cima com um clique (e traz de volta), e a barra de habilidades minimizada vira só uma setinha no centro. Os seletores de Alvo, Distância e Lurar abrem uma lista mais bonita, e passando o mouse em cima eles explicam o que fazem."
+   ]
+  },
+  {
+   "em": "15 de setembro, de manhã — áudio no chat e Stripe",
+   "itens": [
+    "ÁUDIO NO CHAT. No Global e nas conversas privadas agora tem o botão 🎤 ao lado dos emotes: clique para gravar, clique de novo (■) para enviar, ou no ✕ para cancelar. O áudio pode ter até 30 segundos e aparece no chat com o botão ▶ para ouvir. Ele fica disponível por 5 minutos e depois some. No privado, só você e a pessoa da conversa conseguem ouvir. É um áudio a cada 10 segundos, e quem está mutado não pode mandar. Na primeira vez o navegador pede permissão para usar o microfone.",
+    "DOAR DE FORA DO BRASIL: STRIPE - INTERNACIONAL. Na Ravox Store, ao comprar coins, além de Pix e Cartão de crédito agora tem a opção Stripe - Internacional, para quem não tem Pix nem cartão brasileiro: cartão internacional, Apple Pay ou Google Pay. O valor é cobrado em reais e o seu banco converte na fatura. As coins entram na conta sozinhas assim que o pagamento é confirmado."
+   ]
+  },
+  {
+   "em": "14 de setembro, à noite — a party volta depois do reinício e senha para conta da Google",
+   "itens": [
+    "NOVOS LEVELS DAS HUNTS DE FIM DE JOGO. Instance Kollos agora pede level 800. As hunts da Divine Island (Divine Archangel, Energyzed Robot, Obscure Predador, Obscure Reaper, Primal Ordeal e Sanguine Elemental) pedem level 1000. As hunts Elite das Terras do Norte (Abyss Demon, Burning Demon, Glacial Demon, Imperial High Guard e Plague Demon) pedem level 1300. Vale para a caça automática e para a Caça Online.",
+    "A PARTY VOLTA DEPOIS DO REINÍCIO DO SERVIDOR. Pedido do Garibas. As caçadas já continuavam depois de uma atualização do jogo, mas a party se desfazia e cada um voltava caçando sozinho. Agora a party volta com o mesmo líder, e quem caçava junto volta para a mesma caçada, com o que já tinha rendido. Quem não voltar ao jogo em 10 minutos sai da party, como sempre.",
+    "O BONECO NÃO ANDA MAIS DE 1 EM 1 SQM COM O SERVIDOR CHEIO. Report do Garibas. Com muita gente caçando, o servidor atrasava e o personagem dava um passo, esperava, dava outro. Agora quem está com o jogo aberto é atendido primeiro, e as caçadas de aba fechada rodam logo depois — rendendo exatamente o mesmo, só alguns instantes mais tarde. A busca de caminho dos bichos também ficou mais leve.",
+    "PARTY SEM BICHO NA TELA ANDA JUNTA, SEM PARADINHAS. Na rota sem bicho, o líder parava a cada poucos passos para esperar quem seguia, e o grupo andava num anda-e-para. Quem segue agora começa a andar antes de ficar longe demais, e o líder não precisa mais frear. Ninguém atravessa parede nem pula casa: é o mesmo passo de sempre, só que na hora certa.",
+    "FILTRO DE LOOT: UM ITEM FICA NUMA LISTA SÓ. Marcar \"não vender\" num item que estava em \"não coletar\" (ou o contrário) deixava ele nas duas. Agora marcar a outra lista troca de lista, e clicar de novo na mesma desmarca — no clique e no arrasto.",
+    "BANCO: O NOME E O VALOR NÃO SOMEM MAIS ENQUANTO VOCÊ DIGITA. Report do Garibas. Caçando, cada moeda de loot ou venda automática refazia a janela do banco e apagava o nome e a quantidade da transferência. Agora o que você digitou fica, e só os saldos se atualizam.",
+    "CONTA CRIADA PELA GOOGLE PODE TER SENHA. Quem criou a conta com o botão da Google só conseguia entrar pela Google. Agora a tela de personagens mostra \"Criou a conta com a Google?\" com o botão \"Criar senha\": digite a senha duas vezes, confirme entrando na Google, e a partir daí você entra também com o seu e-mail e essa senha — em qualquer computador, sem precisar da Google.",
+    "O SLOT DE PARTY EXPLICA PARA QUE SERVE. Na Ravox Store ele agora é o primeiro da aba Melhorias e diz em destaque: é ele que deixa jogar com MAIS DE 2 CHARS DA MESMA CONTA ao mesmo tempo, e comprar em um char vale para todos os chars da conta. Em vermelho, o outro lado da regra: numa party com contas diferentes, cada conta precisa comprar os seus slots."
+   ]
+  },
+  {
+   "em": "14 de setembro, à noite — menos travadas com o servidor cheio",
+   "itens": [
+    "CAÇADA OFFLINE NÃO PARA MAIS QUANDO O SERVIDOR REINICIA. Quem estava caçando com a aba fechada ficava parado depois de uma atualização do jogo até entrar de novo — e ao entrar o servidor tentava recuperar esse tempo de uma vez, travando o jogo de todo mundo por quase 2 segundos a cada entrada. Agora, assim que o servidor volta, as caçadas continuam sozinhas de onde estavam, e entrar no char não trava mais ninguém.",
+    "MENOS TRANCOS A CADA 10 SEGUNDOS. O servidor gravava de novo, um por um, todos os personagens caçando offline a cada 10 segundos — além do salvamento geral que já guardava todo mundo junto. Essa gravação repetida saiu, e com ela um tranco que todo mundo sentia no ping.",
+    "MAIS FÔLEGO DE MEMÓRIA PARA O SERVIDOR. Com o servidor cheio, a memória chegava perto do limite, e perto do limite ele para mais vezes para arrumar a casa — cada parada é um engasgo no jogo. O limite foi aumentado."
+   ]
+  },
+  {
+   "em": "14 de setembro, à tarde — os chars da sua conta sem precisar entrar neles",
+   "itens": [
+    "CONVIDAR E CHAMAR OS SEUS CHARS SEM ENTRAR NELES. Pedido do Garibas. Na tela \"Trocar de personagem\", cada char da sua conta ganhou três botões no canto do card: \"+ Party\" convida para a sua party e ele já entra, \"➜ Hunt\" leva ele para a caçada em que você está. Tudo sem abrir o outro char. Valem as regras de sempre: level, premium, cooldown e task de boss, e o limite de 2 chars da conta caçando — a menos que a conta tenha slot de party.",
+    "⚙ CONFIG: CONFIGURE OUTRO CHAR DA CONTA PELA TELA DE TROCAR. Alvo, distância, lurar até e voltar; as opções de party (seguir líder em qualquer ocasião, permitir entrar na caçada, aceitar boss automaticamente, quem vai na frente, andar atrás de quem e a quantos sqm); e a barra de ações inteira, com o mesmo editor de magias da sua barra — condições, prioridade e cura. Arraste um slot para outro para trocar a ordem, e clique com o botão direito para tirar. As mudanças valem na hora, mesmo com ele caçando.",
+    "SEGUIR O LÍDER TAMBÉM NO BOSS. Com \"seguir líder em qualquer ocasião\" marcado, quando o líder entra num boss você vai junto — e paga o seu cooldown como em qualquer entrada. Quem estiver com o boss em cooldown, sem a task ou sem o level fica na cidade, e o líder é avisado do motivo.",
+    "SLOT DE PARTY DA CONTA VALE NA HORA PARA TODOS OS CHARS. Comprar o slot em um char e logo depois convidar um terceiro char da mesma conta dava \"só entra em party de até 2\": o jogo lia o char que comprou pela versão salva, de antes da compra. Agora vale na hora. Lembrando a regra: dentro da mesma conta, um slot comprado vale para todos os chars; entre contas diferentes, cada conta precisa ter o seu.",
+    "A TELA DE TROCAR DE PERSONAGEM NÃO RECARREGA MAIS O SEU CHAR. Às vezes, com ela aberta (por exemplo para configurar outro char), o jogo reentrava sozinho no char em que você já estava e abria um \"Progresso enquanto você esteve fora\" de um minuto. Isso acabou — o resumo continua aparecendo quando você volta de verdade."
+   ]
+  },
+  {
+   "em": "14 de setembro — seguir o líder da party e a leva de reports",
+   "itens": [
+    "NOVA OPÇÃO NA PARTY: SEGUIR LÍDER EM QUALQUER OCASIÃO. Pedido do Garibas. Marque no modal de party, ao lado de \"Permitir entrar na caçada\": quando o líder entra numa hunt, boss ou instance, troca de hunt, volta para a cidade ou morre, você vai junto — mesmo com a sua aba fechada, sem precisar abrir o char para aceitar. Nenhuma regra é pulada: quem não tiver o level, o premium, a task ou estiver com o boss em cooldown fica na cidade, e o líder é avisado de quem não foi e por quê. O limite de 2 personagens da mesma conta caçando continua valendo, a menos que a conta tenha slot de party.",
+    "MARCAR \"NÃO VENDER\" NÃO ABRE MAIS A BAG. Report do Appa. Clicar com o botão direito numa bag (ravox, covet, desire...) no filtro de loot marcava \"não vender\" e, junto, ABRIA uma bag que estivesse na bolsa ou na mochila — só os itens de dentro iam para a BP. Valia para qualquer item usável, como poções. Agora o botão direito no filtro só muda a regra.",
+    "TROCAR A MUNIÇÃO PELO CELULAR. Report do ThorTormento. A munição do paladin só abria com o botão direito na aljava, que não existe no celular. Agora a tela da aljava tem o botão \"Trocar munição\".",
+    "CONVITE DE PARTY NÃO FICA MAIS PRESO. Report do Appa. Convidar um char que estava com a aba fechada deixava um convite que ninguém via, e por dois minutos dava \"já existe um convite aberto\". Agora convidar de novo substitui o convite antigo, o convite aparece quando você entra no char convidado, e trocar de personagem não deixa mais o cartão do char anterior na tela.",
+    "O JOGO AVISA QUANDO O PERSONAGEM MORRE CAÇANDO OFFLINE. Report do Hotfriend. O aviso da morte era aberto e logo coberto pela janela de stamina recuperada, e o jogador achava o char parado na cidade sem saber por quê. Agora ao entrar aparece \"Seu personagem morreu caçando offline em [hunt] e voltou para a cidade\", o resto das janelas espera o OK, e a mensagem fica escrita no chat.",
+    "MAGMA BUBBLE, BAKRAGORE E CHAGORZ: A PARTY ENTRA PERTO DO BOSS. A entrada ficava longe demais — mais longe do que o boss enxerga —, e na Caça Online ninguém andava e o boss não vinha: a luta nunca começava. Agora o time entra a 5 casas do boss.",
+    "TROCAR DE HUNT COM O GRUPO RESPEITA O BOSS. Quando o líder trocava de hunt para uma sala de boss com o grupo dentro, quem estava com aquele boss em cooldown, ou sem a task, ia junto mesmo assim. Agora fica na cidade com o motivo, e quem entra paga o cooldown como em qualquer entrada.",
+    "DUAS CONTAS EM DUAS ABAS NÃO SE MISTURAM MAIS. Logado numa conta, entrar noutra conta em outra aba fazia a primeira aba mostrar os personagens da segunda ao sair do personagem. Agora cada aba guarda a sua conta."
+   ]
+  },
+  {
+   "em": "13 de setembro, à noite — o ping que subia para 300, 700 e até 2 mil ms",
+   "itens": [
+    "O PING NÃO DISPARA MAIS QUANDO O SERVIDOR ENCHE. Com muita gente caçando, o servidor processava todo mundo de uma vez só, e enquanto isso não ouvia ninguém: o ping batia 300, 700, às vezes mais de 2 segundos, e o clique demorava a responder. Agora ele processa aos poucos e responde a todos no meio do caminho. Num teste com 400 caçadas ao mesmo tempo, o ping ficou abaixo de 30 ms.",
+    "WAND E ROD BATEM COM O ELEMENTO DELAS. O golpe de uma hailstorm rod, de uma terra rod ou de qualquer varinha saía como FÍSICO: número vermelho, efeito de sangue, a armadura do bicho descontando e a resistência dele ao elemento ignorada. Agora o golpe inteiro é do elemento da varinha — número e efeito do gelo, do fogo, da terra... —, a armadura não desconta nada e vale a fraqueza ou a resistência do bicho àquele elemento. Espadas, machados e armas repartidas (como a icy spike sword) continuam iguais.",
+    "NOVA OPÇÃO NO EXANA VITA: SÓ TIRAR O ESCUDO SE O UTAMO VITA JÁ PUDER VOLTAR. Pedido do Garibas. Um slot de exana vita não sabia da recarga do utamo vita e derrubava o escudo logo depois de posto — e aí eram 14 segundos sem poder religar. Marque a opção na configuração do exana vita e ele espera o utamo vita estar pronto.",
+    "O PERSONAGEM NÃO DÁ MAIS DOIS PASSOS DE UMA VEZ. Na primeira versão deste conserto, com o servidor cheio, a tela passava a receber quatro atualizações por segundo em vez de oito — e o boneco andava um passo e meio, travava e pulava dois, com a magia saindo à frente dele. Isso foi desfeito: a tela volta a receber as oito sempre, e o ping continua baixo."
+   ]
+  },
+  {
+   "em": "13 de setembro, à noite — o jogo mais leve e o arraste do mouse refeito",
+   "itens": [
+    "O JOGO ABRE MUITO MAIS LEVE. Entrar num personagem baixava uns 18 MB — a lista de bosses, o bestiário e os itens chegavam três vezes, e sem compressão. Agora chegam uma vez só e comprimidos: menos de 1 MB. Quem tem internet fraca ou joga pelo celular sente na hora.",
+    "MENOS TRAVADAS NO SERVIDOR. Algumas coisas faziam o servidor inteiro parar por um instante a cada vez que alguém entrava no jogo, abria o ranking ou a página de quem está online — e com muita gente entrando, esses instantes se somavam no lag de todo mundo. Elas foram refeitas para não parar mais nada.",
+    "ABA ESCONDIDA GASTA MENOS. Com o jogo minimizado ou atrás de outra aba, o servidor passa a mandar uma atualização por segundo em vez de oito — ninguém está olhando. A caçada continua no mesmo ritmo, e os avisos chegam na hora. Ao voltar para a aba, tudo se atualiza de uma vez.",
+    "ARRASTAR ITEM COM O MOUSE FOI REFEITO. O conserto anterior não bastou: às vezes o item ainda ficava grudado no cursor e os cliques paravam até atualizar a página. O motivo era o arraste do próprio navegador, que em alguns momentos não termina nunca. Agora o arraste é do jogo — o item segue o mouse e cai onde você soltar, na mochila, no depósito, no equipamento, nas bolsas, na barra e no chão, sem travar nada."
+   ]
+  },
+  {
+   "em": "13 de setembro — premium de 7 e 15 dias, arrastar itens, bosses andando e exp por dano",
+   "itens": [
+    "PREMIUM DE 7 E DE 15 DIAS NA RAVOX STORE. Report do Sabido: \"colocar premium de 7/15 dias\". Para quem quer provar o premium sem comprar um mês: 7 dias por 70 coins e 15 dias por 135 coins, abrindo a prateleira antes do de 30 e do de 90. Os dias se somam ao premium que você já tiver.",
+    "ARRASTAR ITEM NÃO TRAVA MAIS O MOUSE. Report do Sabido: às vezes o item ficava grudado no cursor no meio do arraste. A mochila e as bolsas se redesenhavam debaixo do seu dedo enquanto o loot chegava, e o arraste perdia o lugar de soltar. Agora elas esperam você soltar o item, e se atualizam logo em seguida.",
+    "OS BOSSES QUE FICAVAM PARADOS AGORA ANDAM. O Ascending Ferumbras e o Magma Bubble ficavam plantados no meio da sala, dando um passo a cada muitos segundos. O Ascending Ferumbras agora anda na velocidade do Ferumbras Mortal Shell, e o Magma Bubble, a Megasylvan Yselda, a The Percht Queen, o Brain Head e o Tentugly's Head andam em ritmo normal.",
+    "SEM A PARTILHA DE EXPERIÊNCIA, CADA UM LEVA A EXP DO DANO QUE CAUSOU, igual ao Tibia. Quem bateu 70% do bicho leva 70% da experiência; quem não bateu, não leva. Com a partilha ligada, ou caçando sozinho, nada muda."
+   ]
+  },
+  {
+   "em": "12 de setembro, madrugada — as magias de ataque na ordem da barra",
+   "itens": [
+    "AS MAGIAS DE ATAQUE VOLTARAM A RESPEITAR A ORDEM DA SUA BARRA. Report do O O: \"continua não respeitando a ordem das magias de ataque (...) utilizando exori frigo antes mesmo de usar magia de área\". Cercado por bichos, a magia de alvo único furava a fila e saía na frente de uma magia de área pronta que estava antes dela. Agora vale a ordem da barra: sai a primeira magia que estiver fora da recarga e passar nas condições do slot — mana, alvo, quantidade de criaturas e o resto. A única que ainda pode passar na frente é uma magia de recarga longa que ficou tempo demais sem sair, para ela não ficar sem vez atrás de uma strike."
+   ]
+  },
+  {
+   "em": "12 de setembro, tarde da noite — a árvore refeita, os medalhões, o histórico da loja e deixar caçando offline",
+   "itens": [
+    "A ÁRVORE DE HABILIDADES FOI REFEITA, E A SUA VOLTOU ZERADA COM TODOS OS PONTOS DE VOLTA — de graça, só desta vez. Estava forte demais. Agora cada vocação ganha o que combina com ela: druid gelo, terra e cura; sorcerer fogo e energia; paladin físico e holy; knight e monk vida, regeneração e menos dano recebido; os magos mana máxima e regeneração de mana. Tudo com teto: 25 de skill, 20 de magic level, 20% de dano, 25% de vida e mana. A árvore só fica completa no level 3000.",
+    "ROUBO DE VIDA E DE MANA PARA TODAS AS VOCAÇÕES, sobre todo o dano que você causa. Magos até 10% de mana e 5% de vida; knight até 10% de vida e 5% de mana; paladin e monk até 7% de cada. E ainda: crítico, dano crítico, penetração, absorção, tempo entre golpes e 10% a menos de mana nas magias.",
+    "CADA MEDALHÃO TEM UMA HABILIDADE PRÓPRIA — são quinze, cinco por vocação. Você escolhe UMA a cada 700 levels (até três), e só quando o medalhão estiver completo. As que ainda não dá para escolher aparecem apagadas, dizendo o que falta. Escolher é de graça; tirar custa 20 mil de gold por level.",
+    "ZERAR A ÁRVORE AGORA CUSTA 100 MIL DE GOLD POR LEVEL. Para quem troca de montagem com frequência há duas vagas de montagem guardada: guardar é de graça, e trocar entre as guardadas custa 70% menos que zerar.",
+    "O \"TRAÇAR SOZINHO\" MOSTRA COMO A ÁRVORE FICARIA antes de você clicar: passe o mouse no card e aparece o quadro com os bônus e os ícones. O placar também diz em que level a árvore fecha.",
+    "A BOLSA DE LOOT GANHOU O BOTÃO VENDER, ao lado do Limpar, igual ao da mochila — você escolhe as peças e o NPC paga o preço cheio. E a venda automática agora só roda dentro de hunt ou sala de boss: na cidade, o seu loot fica esperando por você.",
+    "A RAVOX STORE TEM HISTÓRICO. Report da Frida: \"era bom ter como ver o histórico de compras da store\". O botão fica ao lado do Transferir, e mostra numa lista só as coins que você comprou, o que gastou na loja (com o desenho do item) e as transferências enviadas e recebidas — com a data, o personagem e o valor. As transferências são registradas a partir de hoje.",
+    "NOVO BOTÃO \"DEIXAR CAÇANDO OFFLINE\", laranja, na caixa de sair. Ele volta para a lista de personagens e o personagem continua o que estava fazendo — caça automática, boss, auto boss ou exercise —, sem precisar fechar a aba. Na cidade, na Caça Online e no pátio ele fica apagado, porque ali não há o que continuar.",
+    "A JANELA \"TREINO ENCERRADO\" PAROU DE APARECER DO NADA no meio do exercise. Toda vez que a conexão piscava ou o jogo recarregava sozinho, ela abria e zerava a contagem do treino. Agora o resumo só aparece quando você volta depois de ficar fora de verdade."
+   ]
+  },
+  {
+   "em": "12 de setembro, à noite — a condição de parada de cada um, reorganizar itens e apagar personagem pela Google",
+   "itens": [
+    "CADA PERSONAGEM TEM AS CONDIÇÕES DE PARADA DELE, E AGORA ELAS VALEM NA PARTY. Report do dono: \"quando deixa todos os char da pt offline, eles saem da pt\". A caçada continuava de pé, mas ninguém parava nunca: o \"parar em\" era só de quem ABRIA a caçada, e quem entrava a convite não tinha condição nenhuma — enquanto o \"parar com 100 de cap\" do líder media o cap do líder. Agora o que você marcar fica guardado no SEU personagem e vale em qualquer entrada: sozinho, pelo lobby, ou a reboque de quem levou o time. E para só quem bateu o limite; os outros seguem caçando.",
+    "O \"PARAR EM\" APARECEU NO LOBBY DA PARTY, fechadinho, do mesmo jeito que já era na tela de hunts. Quem entra pelo lobby nunca passava pela tela em que se marca cap, ouro, stamina e mortes — era ali que a marcação se perdia. Abra antes de dar pronto e a sua vale para esta caçada.",
+    "ARRASTAR UM ITEM EM CIMA DE OUTRO TROCA OS DOIS DE LUGAR. Vale na mochila, no depósito, na Boss Pouch e na bolsa de loot — é o gesto do client, e até aqui ele não fazia nada. Em cima de uma pilha IGUAL continua juntando as duas; no vazio, continua abrindo a régua de separar; e com shift, continua sendo separar.",
+    "E UM BOTÃO ⇅ ORGANIZA O LUGAR INTEIRO POR NOME. Na mochila e na Boss Pouch ele fica no alto da janela, colado na engrenagem; no depósito é um por caixa, inclusive nas Chegadas e na Compartilhada. Ele só muda a ordem: não junta pilhas, não vende e não joga nada fora.",
+    "QUEM ENTRA PELA GOOGLE JÁ PODE APAGAR UM PERSONAGEM. A lista passada dizia que ainda não dava, e o motivo era simples: a confirmação pedia a senha da conta, e essa conta não tem senha nenhuma aqui. Agora ela pede entrar com a Google de novo, na própria caixa — a janela de escolher a conta aparece, e escolher já apaga. O resto é igual: o nome digitado antes, só aquele personagem some, e quem ainda tem anúncio no mercado continua tendo de cancelar primeiro.",
+    "E SE A SUA CONTA TEM AS DUAS COISAS, ELA PERGUNTA PELA QUE VOCÊ USA. Quem criou a conta com e-mail e senha e ligou a Google depois via a caixa pedir justamente a senha que não usa há meses. Agora ela pergunta pela porta por onde você entrou — e a outra fica a um clique, no link embaixo.",
+    "E ENTRAR COM A GOOGLE NÃO APAGA NADA SOZINHO. Escolher a conta na janelinha prova quem você é; não diz que você quer apagar. Depois dela vem uma última tela dizendo o nome do personagem e o que some junto — level, itens e depósito —, com Cancelar do lado. São dois gestos dos dois lados, como sempre foi com a senha."
+   ]
+  },
+  {
+   "em": "12 de setembro — as salas de boss no lugar certo, a árvore no celular e excluir personagem",
+   "itens": [
+    "QUATRO SALAS DE BOSS ESTAVAM NO LUGAR ERRADO, E AGORA NÃO ESTÃO. Sir Baeloc, The Time Guardian, The Last Lore Keeper e Thor: o pedaço de mapa que abria era outro canto do mundo, e no Sir Baeloc o boss nascia num corredor fechado, sem saída para a arena — dava para entrar na sala e não encontrar com quem lutar. As quatro foram recortadas de novo em volta da sala de verdade, com o boss e a entrada nos lugares certos.",
+    "NA ÁRVORE DE HABILIDADES PELO CELULAR, O BOTÃO APLICAR VOLTOU A APARECER. Report do ThorTormento: \"na versão mobile não tá aparecendo a opção de aplicar\". O botão existia, mas ficava empilhado abaixo da árvore, fora da moldura e sem rolagem que chegasse nele — não havia gesto nenhum que o alcançasse. Agora ele é a primeira coisa da tela, junto com os pontos à espera.",
+    "O NÚMERO DA PILHA NÃO FICA MAIS ATRÁS DO ITEM. Nos quadros com a raridade marcada na quina, o desenho do item subia por cima da contagem e comia o topo dos algarismos. A contagem agora passa por cima, como o selo de tier e as estrelas de afixo já passavam.",
+    "DÁ PARA EXCLUIR UM PERSONAGEM, sem precisar falar com ninguém. O botão vermelho fica na lista de personagens, ao lado de \"Sair da conta\". Ele pede o nome do personagem digitado, confirma, e depois pede a SENHA DA CONTA — são duas portas porque isto não tem volta. Só o personagem escolhido some; os outros da conta ficam exatamente como estavam, com item, level e depósito.",
+    "E ELE RECUSA APAGAR QUEM AINDA TEM ANÚNCIO NO MERCADO. O item de um anúncio mora fora do personagem, e apagar o dono deixaria a peça num anúncio sem ninguém para cancelar nem para receber. Cancele os anúncios e o botão libera. Conta que entra pela Google não tem senha própria e, por isso, ainda não pode apagar por aqui."
+   ]
+  },
+  {
+   "em": "11 de setembro, à noite — a bolsa, o lobby e vinte e seis bosses novos",
+   "itens": [
+    "A BOSS POUCH ABRE COMO UMA MOCHILA DE VERDADE, e não mais como uma janelinha de marcar e vender. Clique no quadradinho dela: a bolsa abre numa janela sua, com a grade de peças, o \"Vender\" e o \"Limpar\" em cima — a mesma lógica da mochila. As peças saem de lá com um clique ou arrastando, e do mercado e da forja em diante o caminho é o de sempre.",
+    "E O DESENHO DELA É O DA GOLD POUCH, que era o pedido. Ela não estava no atlas do jogo (não cai de bicho, não se veste, não tem preço de NPC) e por isso a bolsa usava um saco dourado parecido. Agora é ela mesma.",
+    "AS CINCO HUNTS NOVAS FORAM PARA A PRATELEIRA DAS DIVINE. Abyss Demon, Imperial High Guard, Burning Demon, Glacial Demon e Plague Demon entraram como hunts normais e agora estão onde deviam: na aba Especial, bloco Divine Hunts, atrás do mesmo pergaminho de 24 horas. Level 1200 — as seis de sempre continuam em 800.",
+    "E DÁ PARA GUARDAR NO DEPÓSITO DIRETO DA BOLSA DE LOOT. Com uma caixa aberta, o clique na peça manda ela para lá, sem passar pela mochila — que é justamente o que enche quando você mais precisa do depósito. O mercado e a forja já enxergavam a bolsa; agora o depósito também, e sempre a peça que você apontou.",
+    "AO ENTRAR NUMA HUNT OU NUM BOSS, VOCÊ ESCOLHE QUEM VAI. A party inteira vem marcada, como antes, e agora dá para desmarcar quem fica — ou apertar \"Entrar sozinho\", ao lado. Quem ficou de fora continua na party: só esta caçada é sua. Ninguém precisa mais desfazer o time para caçar sozinho.",
+    "E NINGUÉM MAIS ENTRA NUM BOSS QUE JÁ COMEÇOU. A regra existia para o convite e faltava nas outras duas portas — o \"pedir para entrar\" e o \"entrar na caçada\" da party. Com a chave de entrada liberada, dava para cair numa luta pela metade e levar o baú por ter clicado num botão. Agora o primeiro ponto de dano fecha a sala para quem está de fora.",
+    "E DÁ PARA ANUNCIAR NO MERCADO DIRETO DA BOSS POUCH. A bolsa entrou na lista de \"o que você quer anunciar?\", ao lado da mochila e da bolsa de loot — antes, pôr uma peça de boss à venda era tirar da bolsa, passar pela mochila de vinte vagas e só então abrir o mercado.",
+    "O LOBBY DA PARTY PASSOU A DIZER QUEM É CADA UM: o boneco com os addons, a vocação com o ícone dela e o level, no card de cada pessoa. Era a última tela antes de uma sala que cobra doze horas de espera, e nela só estava escrito o nome.",
+    "E DÁ PARA ARRUMAR A FILA ANTES DE ENTRAR. As mesmas caixas do painel de Amigos — quem vai na frente, atrás de quem você anda e a que distância — agora ficam dentro do lobby. Antes elas só existiam DEPOIS de a caçada abrir, quando o time já tinha gastado a entrada. A janela da party continua igual: isto é um atalho, e não uma mudança de lugar.",
+    "QUARENTA E TRES SALAS DE BOSS NOVAS. A aba Bosses foi de 44 para 87. Entraram o Rotten Blood inteiro (Bakragore, Ichgahal, Murcion, Chagorz e Vemiath), a corte de Zelos (Count Vlarkorth, Lord Azaram, Earl Osam, Duke Krule, King Zelos e Sir Baeloc), o Soul War (Goshnar's Greed, Goshnar's Megalomania, The Dread Maiden, The Unwelcome, The Fear Feaster e The Pale Worm), o Forgotten Knowledge (Lloyd, The Last Lore Keeper, The Time Guardian), a Cobra Bastion (Scarlett Etzel, Custodian, Gaffir, Guard Captain Quaid), os tres do Ferumbras Ascension (Unaz The Mean, Irgix The Flimsy, Vok The Freakish) e mais The Brainstealer, The Nightmare Beast, Ratmiral Blackwhiskers, Urmahlullu, Mitmah Vanguard, Ahau, Megasylvan Yselda, Ascending Ferumbras, The Lord of the Lice, The Scourge of Oblivion, Arbaziloth, Sugar Daddy, Magma Bubble, Timira the Many-Headed e Grand Master Oberon.",
+    "E O THOR, QUE E OUTRO PATAMAR: level 1500 para entrar e vinte e quatro horas de espera, contra as doze das outras salas. Tres milhoes e meio de vida, e o card dele fica no fim da lista de Bosses, que e onde ele pertence.",
+    "A ESPERA DOS BOSSES GANHOU JANELA PRÓPRIA, a Boss Cooldown. Ela saiu do Analisador de hunt — onde era um bloco dobrado no fim de uma janela que fala da caçada em curso — e virou uma lista sua: o desenho do boss, o nome e quanto falta para a sala reabrir, de quem volta primeiro para quem volta por último. Abre nas Opções, em \"Relógios na tela\".",
+    "O DEPÓSITO NÃO DEIXA MAIS FANTASMA. Tirar uma peça da caixa e vê-la continuar desenhada lá até você mexer de novo era um atraso de até um segundo entre o que o servidor já tinha feito e o que a tela mostrava. Guardar e tirar agora aparecem no mesmo instante do clique.",
+    "E O LOBBY ACOMPANHA QUEM O LÍDER PÕE NA FRENTE. A troca chegava ao servidor e não mudava a tela de ninguém: o time continuava vendo a formação anterior, e quem saía da ponta ficava sem as caixas de \"andar atrás de\" que acabara de ganhar. Agora a janela se refaz junto."
+   ]
+  },
+  {
+   "em": "11 de setembro — a Boss Pouch, as hunts novas e a party",
+   "itens": [
+    "A BOSS POUCH CHEGOU, E TODO O BAÚ DE BOSS CAI NELA. Dentro da mochila tem agora uma bolsa fixa de MIL vagas. \"Pegar tudo\", \"Levar tudo\" e clicar num item da recompensa passam a entregar lá dentro, e não na mochila — que tem vinte vagas e enche na primeira sacola. Ela é sua: não sai, não pode ser retirada, e continua com tudo mesmo se você trocar de mochila. O que não couber (por peso ou por vaga) fica no baú esperando, como sempre ficou.",
+    "E ELA VENDE E LIMPA COMO A MOCHILA. Abra pelo quadradinho dela, marque o que quiser e escolha: vender para o NPC ou jogar fora. Tem \"marcar tudo\" e \"marcar só o que o NPC compra\", e as duas ações perguntam antes, listando o que sai. O que tem tier, imbuement ou estrela nasce fora da marcação e só sai se você clicar nele — como em todas as telas de venda do jogo.",
+    "AS SEIS DIVINE HUNTS CAÍRAM PARA LEVEL 800 E TÊM O DOBRO DE BICHO. Eram level 1000 e 400 criaturas vivas por andar; agora são 800 de exigência e 800 de criatura. As gêmeas de Caça Online mudaram junto.",
+    "E CINCO HUNTS NOVAS DE LEVEL 1200 ENTRARAM NO JOGO: Abyss Demon, Imperial High Guard, Burning Demon, Glacial Demon e Plague Demon. Cada uma com a gêmea de Caça Online, e com as criaturas, os desenhos e o loot importados junto — dezessete bichos que o jogo não conhecia.",
+    "AS MAGIAS E AS RUNAS VOLTARAM A CRITAR. Report do Garibas: \"com mais de 100% de chance de crítico, só tá critando com danos da rod; as runas e magias não estão critando 100%\". A chance de crítico que você comprou na árvore, nos afixos e na coleção não entrava na magia — só no golpe de arma. Agora entra, e o número sobe marcado como crítico, com o anel, igual ao do golpe.",
+    "NA PARTY, CADA UM VÊ O RELÓGIO DA PRÓPRIA MAGIA. O cronômetro das magias de suporte e de velocidade mostrava o do LÍDER para todo mundo: quem lançasse a própria haste via o tempo de outra pessoa correndo. Agora é o seu.",
+    "E DÁ PARA DEIXAR A SUA CAÇADA ABERTA PARA A PARTY. Na janela da party, ao lado de \"Ver as habilidades do grupo\", tem agora \"Permitir entrar na caçada\". Com ela marcada, quem está na sua party entra direto, sem pedir e sem você ter de aceitar — e já passa a dividir a experiência.",
+    "E O CARD DA PARTY DIZ ONDE CADA UM ESTÁ CAÇANDO. Embaixo da barra de experiência aparece a hunt em que a pessoa está, e um botão para entrar nela — direto, se ela deixou a entrada liberada; pedindo, se não deixou."
+   ]
+  },
+  {
+   "em": "11 de setembro, madrugada — só o que muda atravessa o fio",
+   "itens": [
+    "O JOGO PAROU DE MANDAR PARA O SEU NAVEGADOR O QUE NÃO MUDOU. Continuação da dica do Druid: \"se tá mandando coisa repetida em todas mensagens, não deveria — aí vc vai estar gastando dado e processamento pra responder algo que tá do mesmo jeito\". Parado na cidade, cada atualização era de 292 bytes; agora são 21. Caçando, o que atravessa a rede caiu pela metade — e em quase dois terços das atualizações o seu personagem não manda nada, porque não tinha nada a dizer.",
+    "OS PRAZOS PASSARAM A VIAJAR UMA VEZ SÓ. A mesma dica, na letra: \"não precisa mandar quanto tempo falta pra expirar; manda 1 vez o dia e hora que expira, aí fica armazenado e pronto\". O prazo das sacolas de boss, a espera de cada boss, o relógio da prey, o do premium, o das Instance e os doze relógios da barra de magias eram contagens regressivas — e uma contagem regressiva muda a cada milissegundo. Cada uma delas arrastava a lista inteira pela rede oito vezes por segundo: o baú com os itens de todos os bosses do dia, as três listas de nove criaturas da prey, a espera de todos os bosses do jogo. Agora o servidor manda a HORA, e quem faz a conta é a sua tela.",
+    "E AS CRIATURAS PARARAM DE SE APRESENTAR A CADA PASSO. Cada bicho na tela mandava, oito vezes por segundo, o nome dele, o desenho dele, as cores, a velocidade do passo e a vida cheia — junto com a posição. Medido: 78% do peso de uma criatura no fio era essa apresentação, repetida por ela ter andado uma casa. Agora ela vai uma vez; depois disso viaja só onde o bicho está e quanto de vida tem. O que o jogo manda numa caçada caiu de 4,6 para 1,4 KB/s.",
+    "A BARRA DE MAGIAS E O PREY FICARAM COM O MESMO NÚMERO NA TELA, SEM CUSTAR NADA. Os relógios continuam andando do mesmo jeito e com a mesma precisão — o leque de recarga é pintado a 60 quadros por segundo como sempre foi. O que mudou é que ele não depende mais de o servidor repetir o número oito vezes por segundo.",
+    "QUEM ESTÁ NA CIDADE PAROU DE RECEBER A CAÇADA QUE NÃO ESTÁ FAZENDO. E quem está caçando parou de receber a cidade. Eram dois campos vazios em cada uma das oito atualizações por segundo, a sessão inteira, para os dois lados.",
+    "E O MODO LEVE PASSOU A ECONOMIZAR BANDA DE VERDADE. Ele já cortava metade das mensagens; medido agora, na mesma caçada, ele gasta 1,9 KB/s contra 6,9 do normal. Quem joga em máquina fraca ou em internet contada ganha as duas coisas de uma vez."
+   ]
+  },
+  {
+   "em": "11 de setembro, à noite — o fio mais fino e os reports",
+   "itens": [
+    "A CIDADE PAROU DE MANDAR A MESMA COISA OITO VEZES POR SEGUNDO. Dica do Druid: \"tenta mandar APENAS as atualizações, pra não repetir dados sem alteração... tá mandando toda a lista em todos os json\". Parado na praça, o jogo baixava 27,3 KB/s — 96 MB por hora e por aba —, e quase tudo era a mesma lista de NPCs e bonecos de treino, de novo e de novo. Agora são 1,7 KB/s: dezesseis vezes menos. E a cada 30 segundos vai um quadro inteiro, de propósito, para nada poder ficar dessincronizado.",
+    "E DÁ PARA VENDER AS SACOLAS DE BOSS SEM PASSAR PELA MOCHILA. No depósito, na aba de Recompensa de Boss, ao lado de \"Pegar tudo\" tem agora \"Vender ao NPC\": ele mostra tudo o que está nas sacolas, quanto cada peça rende e o total, e vende de uma vez. Quem faz todos os bosses do dia voltava com trinta sacolas e não tinha mochila para elas — o jeito era pegar, vender, pegar, vender.",
+    "AS JANELAS PARARAM DE SE REDESENHAR SOZINHAS. Report do Garibas: \"deixo na hunt, vou escolher perk da proficiência da arma, fica difícil, pq a tela fica re-renderizando o tempo todo\". Proficiência, Mercado, Loja, Árvore e Aparência eram refeitas do zero meia vez por segundo enquanto você caçava — cada moeda de loot bastava. Agora cada janela só se refaz quando o que ELA mostra muda; a barra de experiência da proficiência continua subindo no lugar, sem levar a tela junto.",
+    "AS MAGIAS VOLTARAM A SEGUIR A ORDEM DA SUA BARRA. Report do Garibas: com tudo passando no filtro, quem decidia era a recarga mais longa — e a magia do fim da fila saía com a tela cheia de bicho. Agora manda a posição na barra, e só fura a fila quem foi passado para trás por mais de uma recarga inteira (era isso que impedia a onda de oito segundos de nunca sair).",
+    "A SPIRITUAL OUTBURST DO MONK VOLTOU A SER A MAGIA MAIS FORTE DELE. Report do Adrieel: ela saía de energy fixo e dava o MESMO dano com qualquer arma — 205~251 com uma de 47 de ataque e com uma de 80. Agora sai no elemento da arma, como os socos, cresce com o equipamento e bate a segunda corrente um segundo e meio depois, como no global. A Chained Penance tinha o mesmo defeito de dano e foi junto.",
+    "O MERCADO PASSOU A CONTAR O SEU OURO DO BANCO. Ele era a única loja do jogo que só olhava o que estava na mão: quem tinha cinquenta milhões guardados levava \"faltam 25kk\" na cara. Vale para comprar, para vender, para anunciar e para o câmbio de Ravox Coins — e o número no alto da tela já vem somado.",
+    "O RELÓGIO DA VENDA DO LOOT PASSOU A SER O SEU. Report do painel: \"vendeu faltando 90s e ao chegar a 0 não vendeu\". Quem caçava em grupo via o relógio DO LÍDER enquanto a bolsa se esvaziava na hora dele — dois relógios diferentes no mesmo mostrador. Agora cada um vê o seu, e ele já aparece certo no primeiro quadro da caçada.",
+    "E DÁ PARA PEDIR PARA ENTRAR NA HUNT DE QUEM JÁ ESTÁ NELA. Na janela da party, o card de quem está caçando ganhou \"Entrar na hunt\". Quem abriu a caçada recebe o pedido e decide — é o \"Chamar\" ao contrário. Antes só dava para esperar que o outro lembrasse de te chamar."
+   ]
+  },
+  {
+   "em": "11 de setembro — o celular",
+   "itens": [
+    "O JOGO FICOU JOGÁVEL NO CELULAR. A barra de habilidades voltou a ser uma fileira única no rodapé, como no computador: deitado, os vinte e dois quadrados numa linha só; em pé, duas fileiras de onze. Antes ela era uma coluna no canto que tapava um terço da tela.",
+    "E TOCAR NUM QUADRADO USA A MAGIA. No computador quem dispara é a tecla, e no telefone não existe tecla nenhuma — tocar abria a janela de montar o slot. Dava para montar a barra e nunca para usá-la.",
+    "TEM UM ANALÓGICO NO CANTO DE BAIXO PARA ANDAR, na cidade e na Caça Online, com o verde do jogo. E na Caça Online, tocar num bicho ATACA — antes o toque só andava até ele, e não havia botão direito para atacar.",
+    "CADA ÍCONE DA BARRA PODE IR PARA ONDE VOCÊ QUISER. O cadeado à direita da fileira destranca, você arrasta o que usa para perto do polegar, e tranca de novo. O arranjo fica guardado, e é um para a tela em pé e outro para a deitada — o mesmo desenho nas duas ficaria esticado.",
+    "ALVO, DISTÂNCIA E LURAR ATÉ VIRARAM TRÊS ÍCONES no canto esquerdo, e o Sair da hunt ficou pequeno ao lado da barra. Eles moravam numa gaveta que ocupava metade da tela.",
+    "AS JANELAS ABREM DO TAMANHO DO TELEFONE. Loja, banco, forja, cyclopedia, árvore de talentos: as treze telas cabem em pé e deitado, sem rolagem lateral e sem texto por cima de texto. A da loja estava com o saldo, o Transferir e o Obter Coins no mesmo lugar.",
+    "A ENTRADA E A LISTA DE PERSONAGENS CABEM NA TELA, sem rolar, nas duas orientações.",
+    "E A FAIXA DE 'EM DESENVOLVIMENTO' AFINOU para uma linha, os ícones da barra de cima também, e a de recompensas para pegar virou um selo miúdo no rodapé — ela era um cartaz no meio do mapa."
+   ]
+  },
+  {
+   "em": "10 de setembro, à noite — o chat privado e a banda",
+   "itens": [
+    "O CHAT NÃO APAGA MAIS O QUE VOCÊ ESTÁ DIGITANDO. Report do Garibas: \"se eu tô digitando e você me manda mensagem, ele apaga tudo que eu digitei\". Cada mensagem privada remontava a janela inteira do chat — as duzentas linhas, as abas e o campo de texto vazio no lugar do seu. Agora a linha nova só entra na conversa; e quando a janela precisa mesmo ser redesenhada, o que você escreveu, o cursor e o foco voltam para onde estavam.",
+    "E A CONVERSA PRIVADA FICOU IGUAL AO GLOBAL: ícone da vocação, nome e level em toda linha, dos dois lados. Você vê o level de quem falou com você, e a pessoa vê o seu. O nome é clicável como no Global — abre a ficha, com convidar, party e trocar.",
+    "O × DE FECHAR A CONVERSA PERDEU O QUADRADO LARANJA atrás dele, e a bolinha de mensagem nova passou a ser verde, a cor do resto do jogo.",
+    "O JOGO GASTA MENOS INTERNET DE NOVO, E BEM MENOS: DE 68 MB POR HORA PARA 14 A 23. De manhã foi o seu personagem que parou de viajar inteiro oito vezes por segundo; agora foi A CAÇADA. Ela era 87% do que sobrou — a lista de bichos ia inteira mesmo com ninguém andando, e vinte e cinco campos que não mudam uma única vez em dez minutos (o nome da caverna, a hora em que ela começou, o alcance da sua arma) iam oito vezes por segundo, a caçada toda.",
+    "ISSO É MENOS TRABALHO PARA O SEU NAVEGADOR TAMBÉM. Cada mensagem que chega é lida e desmontada pelo computador de quem está jogando; um terço do texto de antes é um terço desse trabalho, oito vezes por segundo, hora após hora.",
+    "E NADA DISSO CUSTA NADA DO OUTRO LADO: medido com sessenta pessoas caçando ao mesmo tempo, o servidor gasta a mesma CPU de antes.",
+    "CONSERTADO: O RETRATO DA CAÇADA ERA MONTADO UMA VEZ POR ABA ABERTA, e não uma vez por pessoa. Quem joga com duas abas pagava duas vezes pela mesma conta, incluindo o cálculo do alcance da arma."
+   ]
+  },
+  {
+   "em": "10 de setembro, de manhã — a banda, os gráficos e o backup",
+   "itens": [
+    "O JOGO PASSOU A GASTAR DEZ VEZES MENOS INTERNET. Três reports do mesmo dia diziam a mesma coisa por caminhos diferentes — \"está sobrecarregando o navegador\", \"consumindo muita internet do cliente\" e \"puxando muita banda e deixando o pc lento\". Medido no fio: o servidor mandava 225 KB por segundo, ou 792 MB POR HORA E POR ABA, e 89% disso era o seu personagem inteiro repetido oito vezes por segundo. Agora cada campo viaja só quando muda: 80 MB por hora. O maior quadro caiu de 28,7 KB para 6,2 KB.",
+    "E O PAINEL DE PREY ERA O ÚNICO QUE VIAJAVA EM TODOS OS QUADROS, porque levava a conta regressiva em milissegundos numa tela que mostra horas e minutos. Arredondada ao segundo, ela sumiu de sete em cada oito quadros.",
+    "AJUSTES DA TELA AGORA TEM ABAS: INTERFACE, GRÁFICOS, JANELAS E JOGO. Eram nove seções numa rolagem só, e quem procurava uma opção específica lia título por título até achar — ou nunca descobria que ela existia.",
+    "E A ABA GRÁFICOS É NOVA, com uma chave para cada coisa que pesa na tela: efeitos de magia, projéteis, brilhos e halos, animações da interface, números de dano e o ritmo das atualizações do servidor. Quem só quer resolver aperta \"Deixar leve\" e apaga as quatro de enfeite de uma vez. Nenhuma delas corta quadros: o jogo fica mais leve sem ficar travado.",
+    "SÓ AS ANIMAÇÕES DA INTERFACE SÃO 48 QUE NUNCA PARAM, e 36 delas repintam a tela a cada quadro — o ícone que pulsa, a moldura que gira, o botão que acende. Isso é custo parado, esteja você caçando ou parado na cidade, e é o que mais alivia num PC fraco.",
+    "E DÁ PARA LIMITAR OS QUADROS, de \"sem limite\" até 144, 60, 30 ou 20 por segundo. Sem limite é o normal e é o que sempre foi: o jogo desenha tão rápido quanto o seu monitor atualiza.",
+    "CONTADOR DE FPS E PING NO CANTO, em Gráficos. Duas chaves separadas — dá para ligar só um dos dois. FPS baixo com ping bom é a sua máquina; ping alto com FPS bom é a sua internet, e antes não havia como saber qual dos dois era. Com o ping apagado o jogo não manda nenhuma mensagem a mais.",
+    "AS ENGRENAGENS DO ANEL E DO AMULETO SAÍRAM DE CIMA DAS ESTRELAS DE AFIXO. Elas ficavam no canto superior direito do quadradinho, exatamente onde as estrelas aparecem — um anel com afixo tinha a marcação escondida atrás do botão. Foram para o meio da borda esquerda.",
+    "E O SERVIDOR PASSOU A GUARDAR UMA CÓPIA DO BANCO DE HORA EM HORA, num arquivo só e numa pasta fora de tudo que um deploy toca. Vinte e quatro cópias de histórico, tiradas num processo à parte para não roubar um instante sequer de quem está caçando."
+   ]
+  },
+  {
+   "em": "9 de setembro, à noite — as hunts vip e o task token",
+   "itens": [
+    "HUNTS VIP: UMA ABA NOVA AO LADO DAS CAVERNAS NORMAIS, COM TRINTA E SEIS HUNTS. Ela é de quem tem premium — sem pergaminho e sem relógio de 24 horas: enquanto o premium correr, todas estão abertas. Vão do level 8 (Rotworm) ao 1300, cada uma com as duas versões, a automática e a da Caça Online.",
+    "DOZE DELAS SÃO BICHO QUE ESTE JOGO NUNCA TEVE: Abyssal Dragon, Darkness Dragon, Darkness Serpent, Darkness Zombie, Divine Angel, Duke Bloodthorne, Energyzed Elemental, Glacial Horse, Kingsguard, Revitalized Demon, Revitalized Juggernaut e Warpride Lion. São as doze mais duras da lista — todas level 1300 —, e o dano delas foi baixado em 20% do que a ficha manda. O loot é o da base, inteiro.",
+    "TASK TOKEN: TODA TASK PASSOU A PAGAR UMA MOEDA NOVA. Um token por mil mortes que a task pede — a de 2.000 paga 2, a de 3.000 paga 3, e o baú do Gloomwurm paga 24. Vale para as tasks de boss e para as de montaria, cai sozinho junto com o aviso de task fechada, e cada card agora diz de antemão quanto vai pagar. A Loja de Task Token abre na janela de Tarefas, ao lado do X — ainda sem nada à venda.",
+    "DOZE TASKS DE MONTARIA, na aba Montarias, ao lado da entrega do Maximila Maximus. Cada uma pede um bicho (ou quatro, no caso do Gloomwurm) e entrega a montaria sozinha quando a conta fecha — sem botão de resgate para esquecer de apertar.",
+    "CONSERTADO: O FUNDO PRETO NAS HUNTS DE VÁRIOS ANDARES. A tela desenhava um número fixo de andares abaixo do seu; o servidor da base desenha até o mar, na superfície, e dois andares abaixo no subterrâneo. Agora é a mesma regra — e junto com ela saíram os buracos pretos da Walking Pillar, que eram casas cujo chão é um sprite sem um pixel sequer.",
+    "CONSERTADO: A ESSÊNCIA MANDADA NO CHAT CHEGAVA SEMPRE DOURADA. A vermelha vale mais do que o topo da régua, e o link do chat aparava tudo no topo — as quatro estrelas saíam iguais. Agora ela chega com o nome, a cor e as estrelas que realmente tem.",
+    "A JADED ROOTS SUBIU PARA LEVEL 1200, e a aba Arena saiu da lista de Aventuras."
+   ]
+  },
+  {
+   "em": "9 de setembro — a cura e as onze hunts",
+   "itens": [
+    "CONSERTADO (report do dono): FECHADO POR BICHO, O PERSONAGEM SÓ CURAVA E NÃO ATACAVA. Cura e ataque sempre tiveram relógios separados, como na base — o que ligava um ao outro eram a MANA e o relógio de item. A cura mora nos slots de cima da barra, e ser tentada primeiro em todo tique quer dizer GASTAR primeiro: medido com o mago cercado por 24 bichos, a Energy Wave respondia \"falta mana\" em 271 tiques e a runa achava o relógio de item ocupado em 2.201. Agora a cura que ia SOBRAR — quando falta menos vida do que ela cura — cede a vez para o ataque que está pronto naquele instante.",
+    "E CURA QUE VAI SER INTEIRA APROVEITADA NÃO CEDE NADA. Com a vida de verdade baixa, ela passa na frente de tudo como sempre passou — o conserto é mudo fora da situação do report, que é o único jeito de não trocar um defeito por um personagem que morre esperando a vez.",
+    "E A POÇÃO DE VIDA CEDE A JANELA PARA A RUNA PELA MESMA MEDIDA. Poção e runa dividem o relógio de item de um segundo (é da base: `it.isRune() || it.type == ITEM_TYPE_POTION`), e a poção bebia a cada segundo. Com a vida em 95% um supreme joga fora mais da metade do frasco, e adiar esse gole um segundo não custa nada: medido, a runa saiu 42 vezes onde antes saía zero. Com a vida baixa a poção continua com a prioridade absoluta que sempre teve.",
+    "ONZE HUNTS NOVAS, com a rota já desenhada: Spike -8, Abandoned Sewers, Werelions -1, Zaoan Draken Walls, Winter Dream Court, Summer Court, Netherworld, Deathlings, Flimsy Lost Souls Venore, Jaded Roots e a Golems Catacombs refeita. Todas com as duas versões — a automática e a da Caça Online — e todas com o elenco e o peso tirados dos ninhos do mapa deste servidor, andar por andar.",
+    "A ASURA PALACE VIROU A ASURA MIRROR. Mesma vaga na lista, rota nova de dois andares e level 400 no lugar de 250 — quem estava caçando lá continua lá, no percurso novo.",
+    "E A GOLEMS CATACOMBS RENASCEU COM O DOBRO DE BICHO. Ela tinha sido importada antes do conserto da densidade e vinha com metade da leva prometida, e sem carimbo de andar: o mapa dela agora nasce dos 166 ninhos de verdade que existem ali.",
+    "AS POSTURAS ELEMENTAIS PASSARAM A TER DESENHO PRÓPRIO. Com uteta mort, uteta vis ou uteta flam a magia muda de elemento — e até agora o desenho caía no respingo genérico daquele elemento, igual para toda magia. A folha de efeitos do client 15.25 foi esticada e cada magia convertida saiu com o efeito dela: a Great Fire Wave com uteta mort agora desenha o efeito 331, e não o borrão de morte que todas usavam."
+   ]
+  },
+  {
+   "em": "8 de setembro, à noite",
+   "itens": [
+    "CONSERTADO (report do sabido sorc): AS DUAS ULTIMATES APARECIAM PRONTAS AO MESMO TEMPO, E SÓ UMA SAÍA. Hell's Core e Rage of the Skies dividem um segundo relógio de 40 segundos — é da base, e quer dizer que só UMA das duas sai por janela. O jogo já respeitava isso; a BARRA é que não: ela contava só os 4 segundos do grupo de ataque, zerava, e passava os 36 restantes dizendo que a outra estava pronta. Agora o slot mostra os 40 segundos de verdade. As duas continuam se revezando, como sempre estiveram.",
+    "CONSERTADO (report do Biquera): A POÇÃO DE MANA BEBIA METADE DO QUE DEVIA COM UMA RUNA NA BARRA. Poção e runa dividem o relógio de item de um segundo, e a poção cedia a vez para a runa mesmo com a mana no fim — medido: 59 goles por minuto sem runa na barra contra 29,6 com runa, o mago inteiro a 3% de mana. Agora ela só cede enquanto você AINDA CONSEGUE PAGAR o que montou na barra. Sem mana para lançar, a poção passa na frente: 58,2 goles por minuto, quase o mesmo de quem não tem runa nenhuma.",
+    "MAIS ITENS DEIXARAM DE ACEITAR IMBUEMENT, IGUAL À BASE. A regra anterior só olhava QUE TIPO cabia em cada peça; faltava a pergunta anterior — a peça aceita encaixe? A fire sword não aceita, nem a família fiery/icy, nem outras 913 peças que aqui aceitavam por padrão. QUEM JÁ TEM UM IMBUEMENT NUMA PEÇA DESSAS NÃO PERDE NADA: a trava vale para novas aplicações, e o que já está posto continua correndo até vencer.",
+    "O BOTÃO LIMPAR DA MOCHILA AGORA COMEÇA VAZIO. Antes ele nascia com TUDO marcado para ser destruído e clicar SALVAVA a peça — abrir por curiosidade e apertar o botão vermelho apagava a mochila. Agora nada vem marcado: você clica no que quer jogar fora. Quem limpa sucata em massa tem o botão \"Marcar tudo\", e ele não leva junto o que tem estrela, tier ou imbuement.",
+    "E AS DUAS TELAS — LIMPAR E VENDER — AGORA SEMPRE PERGUNTAM ANTES, LISTANDO O QUE SAI. Peça por peça, com o que cada uma carrega e por quanto sai. Antes a caixa só aparecia quando havia peça cara na seleção, e um número sozinho (\"14 itens em 6 quadradinhos\") não dá para conferir.",
+    "A ALJAVA GANHOU UM BOLSO PARA AS RAVOX. As Ravox Paladin Over Arrow e Ravox Paladin Bolt são as únicas munições que não se repõem — elas não são gastas, só precisam existir —, e até agora ficavam soltas na mochila, no caminho do \"vender tudo\" e do \"limpar\". Guardadas na aljava, elas continuam contando como munição e nenhuma das duas telas as alcança. O peso é o mesmo, e dá para tirar de volta quando quiser."
+   ]
+  },
+  {
+   "em": "8 de setembro, mais tarde — os dois danos",
+   "itens": [
+    "AS ARMAS ELEMENTAIS PASSARAM A REPARTIR O GOLPE, COMO NA BASE — E ISSO TIRA DANO DE QUEM TINHA. Uma arma com elemento não é uma arma comum com um extra: o ataque dela já vem dividido no próprio catálogo. A icy spike sword é 20 de ataque + 4 de gelo, contra os 24 da spike sword comum — 20 + 4 = 24, e não 24 + 4. Aqui o jogo rolava DUAS vezes e somava, o que fazia essa arma bater como se tivesse 44 de ataque. Agora ela rola uma vez com o total e reparte o resultado, exatamente como o servidor faz.",
+    "E CADA METADE RESPONDE PELA RESISTÊNCIA DELA, que é o motivo de existir arma elemental: contra o bicho que apara físico, a fatia de gelo passa inteira.",
+    "E AS MAGIAS DE KNIGHT PASSARAM A CARREGAR O ELEMENTO DA ARMA — inclusive o efeito. Com um souleater (10 de ataque contra 47 de gelo), 82% do exori sai como GELO, com o desenho de gelo em cima do bicho, e não o respingo de sangue do golpe físico. Vale só para as magias que pedem arma: a varinha de gelo de um mago continua sem pintar a Death Strike, porque na base ela usa outra fórmula, que nem olha para a arma.",
+    "E OS DOIS DANOS SOBEM SEPARADOS NA TELA, cada um com o efeito dele. Report do Dracoins: \"converteu TODO o dano em gelo, não sai físico + gelo\" — e, logo depois, \"a fire sword deveria bater físico + fogo\". As duas queixas eram o mesmo defeito, lido dos dois lados: o golpe já vinha repartido, mas subia como UM número de uma cor só. Agora saem dois números empilhados e dois efeitos no bicho, como no client do Tibia.",
+    "E ARMA QUE JÁ TEM ELEMENTO PRÓPRIO DEIXOU DE ACEITAR IMBUEMENT DE ELEMENTO, como na base. A shiny blade aceita; a souleater e a soulbiter não — elas já são quase todas de gelo e de morte. São 525 itens que não aceitam contra 168 que aceitam, e até agora o jogo liberava os 693. Quem já tem um imbuement desses numa peça assim não perde nada: a trava é para novas aplicações.",
+    "CONSERTADO (report do MonkAdrieel, no mesmo dia): O MAGIC LEVEL DO MONK ESTAVA AO CONTRÁRIO. Ele avisou que \"o ML do monk é pouco mais rápido que o do RP\", e ele estava certo — o multiplicador do Monk na base é 1.3 contra o 1.4 do paladino, e menor quer dizer mais rápido. A mudança de ontem tratou o monk como se fosse um knight e o deixou mais LENTO que o paladino. Voltou ao que a base diz.",
+    "E O MAGIC LEVEL DO KNIGHT FICOU COM A CURVA DA BASE DO PRIMEIRO NÍVEL. O dono achou o furo: com exercise de magic level, um knight ia de ML 1 a ML 15 em NOVE SEGUNDOS — a parte suave da curva era tão barata que o freio nunca chegava a morder. Agora o mesmo exercise sem parar leva 3 minutos até o ML 10, 12,8 HORAS até o 15 e quase 5 dias até o 17. Continua valendo: ninguém perde o magic level que já tem."
+   ]
+  },
+  {
+   "em": "8 de setembro — a base manda",
+   "itens": [
+    "CONSERTADO NA ROSHAMUUL: O RESPAWN QUE NÃO PARAVA. O mapa dela nunca teve os pontos de nascimento do servidor importados — então o jogo espalhava bicho por área e, pior, devolvia o que você matava numa casa livre PERTO DE VOCÊ. Era uma esteira sem fim. Agora ela tem os 92 ninhos do mapa de verdade, cada bicho volta À CASA DELE quando o relógio bate, e o andar sustenta 88 em vez de 117. O elenco também ficou o do mapa: entraram Retching Horror, Choking Fear e Shock Head.",
+    "CONSERTADO: OS AUGMENTS MOSTRAVAM (E DAVAM) CEM VEZES MENOS. A Sanguine Greaves dizia \"+0,08% critical extra damage\" onde a base diz 8%. A conta da tela estava certa; a FONTE é que estava errada — o catálogo vinha de uma cópia antiga do servidor. Todos os 235 augments foram relidos da base certa, e vieram 14 novos de \"critical hit chance\" que simplesmente não existiam aqui.",
+    "E AGORA TODO AUGMENT VALE. Os de crítico e de roubo de vida/mana apareciam em cinza porque magia neste servidor não critava. Agora crita: a peça que diz \"a sua Divine Caldera crita\" faz a SUA Divine Caldera critar, magia por magia, do lado do Onslaught. Nenhuma linha do balão fica apagada.",
+    "CONSERTADO (report do Reign): AS MAGIAS DO KNIGHT NÃO SAÍAM NO ELEMENTO DA ARMA. Com a arma imbuída, a magia continuava batendo físico puro. Na base o imbuement DIVIDE o golpe — a fatia dele (10%, 25% ou 50%) vira o elemento e o resto segue físico —, e isso vale para magia e runa, não só para o golpe. Agora vale aqui também, e cada metade responde pela resistência dela: contra o bicho que apara físico, a parte elemental passa.",
+    "O MAGIC LEVEL DE KNIGHT E DE MONK FICOU DIFÍCIL, COMO NA BASE. Estavam chegando a ML 50 e 57 sem esforço, e magic level não é a profissão deles — do mesmo jeito que um mago demora para subir axe. A partir do ML 10 (knight) e do ML 12 (monk) a curva passa a ser a do servidor: ML 15 sai de 65 mil para 4,6 milhões de mana, ML 20 vira 1,1 bilhão. QUEM JÁ TEM NÃO PERDE NADA — muda o preço do próximo nível, nunca o que já foi conquistado.",
+    "OS COOLDOWNS DAS MAGIAS FORAM CONFERIDOS CONTRA A OUTRA BASE, e treze mudaram. Divine Caldera e Strong Ice Wave passaram de 4 para 8 segundos; Strong Ethereal Spear, de 8 para 14; Mass Spirit Mend caiu de 12 para 8. Os cinco Avatares NÃO foram tocados de propósito: lá eles declaram 2 segundos, mas quem manda no relógio deles é o próprio script, e copiar o número declarado poria Avatar permanente no ar.",
+    "O DEPÓSITO FECHADO VOLTOU A DEIXAR VESTIR. Depois de abrir o depósito uma vez na sessão, todo clique na mochila guardava em vez de equipar — até você abrir outro painel por acaso. Era a janela fechada que continuava respondendo \"tem uma caixa aberta\".",
+    "E A CAIXA COMPARTILHADA SAIU DO CAMINHO DO SERVIDOR. Ela era relida do banco oito vezes por segundo para cada pessoa no ar — e o custo CRESCIA conforme você a enchia. Não muda nada na tela; muda que a caixa cheia deixou de pesar no tique de todo mundo."
+   ]
+  },
+  {
+   "em": "7 de setembro, à noite — a caixa da conta e a troca",
+   "itens": [
+    "CONSERTADO, E ERA O MAIS GRAVE DE TODOS: DAVA PARA ENTRAR NUM PERSONAGEM JÁ CRIADO SEM A CONTA DELE. Está fechado — daqui em diante todo personagem que já existe exige a conta dona para logar, sem exceção. Ninguém perdeu nada e não é preciso fazer nada: entre como sempre entrou. Se você repete a senha de outro lugar, hoje é um bom dia para trocar.",
+    "NOVO: A CAIXA COMPARTILHADA DA CONTA. Uma caixa só, a MESMA em todos os seus personagens: guarde com um, entre com outro e pegue. Sem os dois online, sem troca, sem personagem-mula. Ela vem com 20 vagas e vai até 100, comprando de 20 em 20 por 25 Ravox Coins na loja — e a vaga é da CONTA, vale em todos os seus personagens de uma vez.",
+    "MAS ITEM PRESO AO PERSONAGEM NÃO ENTRA NELA — nem no mercado, nem na troca. As armas de treino que saem das recompensas de nível são de quem as ganhou, e agora as quatro portas recusam do mesmo jeito, dizendo por quê. Antes elas atravessavam para outro personagem.",
+    "CONSERTADO, E ESTE CUSTAVA OURO DE VERDADE: O OURO DA TROCA QUE ÀS VEZES NÃO IA. Você digitava o valor, ele não chegava na mesa do outro — e dava para confirmar assim mesmo. Era a janela sendo redesenhada por cima do que você tinha acabado de digitar. Agora o campo fica parado, o número aparece com os pontos de milhar e com o ícone da moeda, e há + e − para somar de mil em mil (ou de milhão em milhão, conforme o tamanho do que já está na mesa).",
+    "A TROCA PASSOU DE 8 PARA 20 TIPOS DE ITEM POR PESSOA. Passar um set inteiro eram três trocas seguidas, cada uma exigindo os dois parados e online. E o botão \"Tudo\" do ouro SAIU: era o único clique da janela que, dado sem querer, punha a bolsa inteira na mesa.",
+    "AGORA DÁ PARA GUARDAR CLICANDO, COM O DEPÓSITO ABERTO. Clicar numa peça da mochila — inclusive nas equipáveis — manda ela para a caixa aberta em vez de vestir, e clicar numa peça que está NO CORPO também guarda. Isso nunca funcionou: o clique numa espada vestia a espada, e a única forma de guardar era arrastar uma por uma.",
+    "O DEPÓSITO VIROU UM QUADRADO, E A PAREDE FOI ORGANIZADA. Os slots de cada caixa eram uma fileira única atravessando a tela; agora são dez por linha, centralizados. Em cima ficam as três especiais — Recompensa de Boss, Compartilhada e Chegadas —, e embaixo as caixas numeradas. O baú de boss deixou de ficar solto por cima de tudo e virou uma caixa como as outras.",
+    "COMPRAR VAGA AGORA PEDE CONFIRMAÇÃO. São 25 Ravox Coins, e o botão ficava a um clique de distância de gastar.",
+    "O PERK DE PROFICIÊNCIA ESCOLHIDO AGORA FICA MARCADO. Dava para abrir a tela e não saber qual dos dois você tinha pegado — nada indicava. Agora o escolhido tem selo e o outro fica apagado.",
+    "CONSERTADO NA CULTS CARLIN (report 2): O COMPANHEIRO FICAVA PARA TRÁS EM DUPLA. O corredor de duas casas de largura fica tapado quando uma criatura para no meio dele, e quem seguia o líder desistia do caminho em vez de passar por cima. Agora ele passa, como já passava noutras situações."
+   ]
+  },
+  {
+   "em": "7 de setembro — augments, banco e a parede",
+   "itens": [
+    "CONSERTADO, E ERA O PIOR DE TODOS: O PERSONAGEM QUE FICAVA PRESO DENTRO DA PEDRA. Quando alguém do grupo pegava uma escada, o corpo do líder ficava invisível para o resgate — e se a casa dele virasse rocha no andar novo, ele parava ali para sempre. Não era lentidão nem travamento passageiro: o boneco não andava mais, e só relogar tirava. Agora quem sobe leva o grupo junto e o resgate enxerga todo mundo.",
+    "NOVO, E ESTAVA FALTANDO DESDE SEMPRE: OS AUGMENTS. Muitos itens BUFAM UMA MAGIA ESPECÍFICA — a Ravox Paladin Bow dá +10% de dano base no Divine Caldera, e há peças que cortam segundos do tempo de recarga de uma magia sua. São 235 augments espalhados por 154 itens, e eles já estavam nos dados; o jogo simplesmente os jogava fora na importação. Agora eles VALEM e aparecem no balão do item.",
+    "ATENÇÃO AO BALÃO: nem todo augment funciona ainda. Os de dano base e os de recarga estão valendo; os de crítico e de roubo de vida/mana aparecem em cinza, porque o jogo ainda não os aplica. Está escrito no próprio item para ninguém comprar uma peça pelo que ela ainda não faz.",
+    "O OURO DO BANCO AGORA PAGA TUDO. Poção, munição, runa, forja, craft, imbuement e compra de NPC passaram a somar o que está no banco com o que você carrega. Quem tinha milhões guardados e pouco no bolso parava de beber poção no meio da caçada sem entender por quê — o número grande estava na outra janela. O bolso sai primeiro, de propósito: a morte cobra do que está CARREGADO e não toca no banco.",
+    "A FORJA E O CRAFT PASSARAM A ENXERGAR O DEPÓSITO E A BOLSA DE LOOT. A peça que acabou de cair na loot pouch já serve para forjar sem você mover nada, e o que está guardado nas caixas conta igual. Cada peça na lista diz onde ela está — no corpo, na mochila, na bolsa de loot ou no depósito.",
+    "CONSERTADO: DEZ JOIAS NÃO DAVAM NADA AO SEREM VESTIDAS. As \"charged\" e \"enchanted\" — quatro delas saem de primal bag — viram outro item no corpo, e o jogo estava lendo os atributos da forma guardada, que é vazia. Quem usava uma estava com o slot ocupado por nada. O balão agora mostra o que a peça vira e os atributos que ela realmente dá.",
+    "O BICHO DO CHARM NÃO É MAIS ESCOLHIDO NUMA LISTA QUE FECHA SOZINHA. Era uma lista do sistema operacional, e qualquer coisa acontecendo na caçada a fechava antes de o dedo chegar no nome — report do DeividFpp. Agora a escolha acontece dentro da própria janela, com campo de busca, o que também resolve procurar um nome entre mais de mil criaturas.",
+    "A BARRA DO BOSS PAROU DE MOSTRAR O NOME E O RETRATO ERRADOS PARA QUEM ENTROU DE CONVIDADO. Ela guardava o primeiro boss desenhado e não trocava ao mudar de sala."
+   ]
+  },
+  {
+   "em": "6 de setembro — craft, party e o travamento",
+   "itens": [
+    "CONSERTADO, E ERA O TRAVAMENTO DA CAÇADA: O GRUPO INTEIRO PARAVA QUANDO A TELA FICAVA SEM BICHO. Era um impasse entre duas regras certas — o líder segura a rota enquanto alguém está atrasado, e quem não acha caminho de volta fica onde está. Como o líder não andava, o caminho do outro nunca aparecia, e os dois ficavam plantados até nascer uma criatura ao lado. Agora a espera do líder só vale enquanto o atrasado está CHEGANDO MAIS PERTO: parou de encurtar, o líder anda um pouco — que é justamente o que destrava o companheiro — e volta a esperar.",
+    "OS SLOTS DE PARTY AGORA SE COMPRAM DE UMA VEZ, COM DESCONTO. Dois slots saem por 900 em vez de 1000 (10% off) e os três por 1125 em vez de 1500 (25% off) — e como o slot é da CONTA, os três de uma vez dão a party de cinco em todos os seus personagens. O card só oferece o que ainda cabe: quem já tem dois vê só a compra de um.",
+    "O ANALISADOR DE HUNT GANHOU O DANO DO SEU FAMILIAR. Uma caixa nova diz quanto ele bateu, QUE FATIA DO TOTAL isso é, o dano por hora, quantos acertos e a média por acerto — que é o número para comparar com o seu próprio golpe. O familiar sempre entrou no \"Dano causado\"; o que não dava para saber era quanto daquilo era dele, e é essa a conta que diz se o próximo Summon Upgrade compensa. Em grupo sai a quebra por pessoa, porque cada um tem o seu.",
+    "CONSERTADO: O BOTÃO \"ZERAR ANALISADOR\" QUE SÓ PEGAVA NA TERCEIRA VEZ. Não era o botão — era o painel inteiro sendo redesenhado quatro vezes por segundo enquanto você caça. O navegador só reconhece o clique quando o apertar e o soltar caem no mesmo elemento, e um redesenho no meio dos cem milissegundos do clique comia o clique. Agora o botão é criado uma vez e fica parado.",
+    "NOVO: A FORJA VIROU TRÊS ABAS — CRAFT, TIER E AFIXOS. A de CRAFT abre primeiro e mostra os dois sets lado a lado, o Craftado e o Craftado V2, montados como um corpo vestido: elmo, armadura, arma, botas, cada peça no lugar em que ela se usa. Escolha a vocação na tira de cima e passe o mouse por qualquer peça para ver os atributos dela JÁ COM o que ela vai herdar, comparados com o que você está usando.",
+    "E O CRAFT HERDA TIER, IMBUEMENTS E AFIXOS DA PEÇA-BASE. Craftar a Crafted Ravox Paladin Bow com a sua Ravox Paladin Bow tier 7 e dois imbuements entrega a peça nova tier 7 e com os dois imbuements. CUIDADO: a peça-base é CONSUMIDA junto com o resto da receita, e o craft escolhe sempre a de maior tier que você tiver.",
+    "AS RECEITAS DO V2 AINDA NÃO FECHAM, e é de propósito estar dito aqui: todas elas pedem itens que existem no servidor de onde as receitas vieram e ainda não existem neste (Divine Scroll, Online Coin, Task Token e mais cinco). Eles aparecem RISCADOS na lista de material, e o botão fica travado. As 59 receitas do Craftado estão inteiras.",
+    "O SLOT DE PARTY AGORA É DA CONTA, E NÃO DO PERSONAGEM. Um personagem seu com os slots comprados levanta TODOS os outros: dá para logar em cinco e caçar em cinco sem comprar de novo em cada um. Entre contas diferentes nada muda — todo mundo continua precisando ter comprado. Quem já tinha comprado em dois personagens não perde nada: vale o maior dos dois, para a conta toda.",
+    "CONSERTADO, E CUSTAVA METADE DAS ONDAS: O CHAR QUE SEGUE VIRAVA SEM ANDAR. Ele escolhia a casa de onde a onda pegaria mais bicho, calculava o caminho, dava o passo — e o passo era desfeito no mesmo instante. O que sobrava era o boneco girando no lugar e soltando o vis hur onde estava. Ele nunca chegou a uma dessas casas, nenhuma vez. Medido depois do conserto: 28% mais criaturas por onda.",
+    "CONSERTADO (report do PaladinRamonzera): A POÇÃO DE MANA FALHAVA EM SILÊNCIO. A ultimate mana potion é de sorcerer e druida, e um paladino com ela no slot não bebia nada — sem erro, sem aviso, sem nada no tooltip. Agora o slot diz \"não é da sua vocação\". A poção de mana do paladino e do monk é a SPIRIT, que cura e devolve mana ao mesmo tempo, e por curar ela também cabe num slot de vida.",
+    "AS ARMAS RAVOX OVER PASSARAM A DIZER QUE BATEM EM ÁREA. O balão delas agora mostra quantas casas o golpe pega e de onde a área nasce — em volta de VOCÊ no machado, espada, maça e punho; em volta do ALVO na varinha e no bastão. As V2 pegam 25 casas contra as 9 das normais. Antes, uma Over e uma Ravox comum eram indistinguíveis no balão.",
+    "A BARRA DE VIDA DO BOSS GANHOU O RETRATO DELE E AS RESISTÊNCIAS. Os elementos que ele resiste aparecem em vermelho e os que doem nele em verde, com o ícone de cada um — a caveira da morte, a chama do fogo — e já com o corte que o jogo aplica em sala de boss, e não o número cru. Dá para trocar de magia olhando a barra.",
+    "QUEM ESTÁ CALADO PASSOU A SABER QUE ESTÁ. Tentar falar com um mute em cima devolve o aviso no próprio canal do chat, com quanto tempo falta e o motivo, em vez de a mensagem simplesmente sumir. E a equipe ganhou o menu de castigo no clique direito e uma página de Castigos no painel, com o que está em pé e o histórico de cada um."
+   ]
+  },
+  {
+   "em": "6 de setembro — escudo de mana e skins do familiar",
+   "itens": [
+    "NOVO: O MAGIC SHIELD FUNCIONA, E O ENERGY RING TAMBÉM. Com o utamo vita de pé — ou com um energy ring no dedo — o golpe que ia na sua vida passa a sair da MANA, como na base. A barra de mana fica brilhando enquanto a proteção está ativa, para você ver de relance que ela está lá.",
+    "E O SLOT DA MAGIA GANHOU UM \"TIRAR QUANDO\" PRÓPRIO: você diz com quanta vida ligar o escudo e com quanta mana desligá-lo, em duas faixas separadas. Quando ele sai por essa regra, o exana vita aparece na tela como se você o tivesse lançado — o escudo não some mais em silêncio.",
+    "AS DUAS POSTURAS DE BRIGA ESTAVAM SEM EFEITO. Blood Rage (utito tempo) e Sharpshooter (utori con) ficavam ligadas e não davam nada: agora o Blood Rage soma 25% de perícia corpo a corpo e zera a sua defesa, e o Sharpshooter soma 32% de distância e corta a cura que você recebe pela metade. Elas ficam até você trocar, e não pedem condição nenhuma para ligar.",
+    "NOVO: ABA EXTRAS NA LOJA. Dê um NOME ao seu familiar (150 Ravox Coins) e troque a APARÊNCIA dele por uma de nove skins (200 cada) — Torturer, Ceifador, Espantalho Abóbora, Anjo Divine e os cinco elementais. Quem tem mais de uma troca entre elas de graça, e há um botão para levar as que faltam com 25% de desconto.",
+    "E CADA SKIN PAGA, NÃO É SÓ DESENHO. Cada uma que você TEM vale +0,5% de experiência e +0,5% de loot, somando; a que estiver VESTIDA soma o bônus grande dela — +5% de experiência, +5% de loot ou +10% de dano, conforme a skin. Tudo aparece na régua da barra de experiência e na ficha.",
+    "O SUMMON UPGRADE DROPPED AGORA CAI A 70% DE QUALQUER BOSS, contra os 15% de antes. Um nível do Summon sai a cada três dias e meio para quem roda a rotação inteira, em vez de dezesseis.",
+    "A MAGIA DE SUMMON GANHOU FICHA. Abrindo o slot dela você vê o boneco do seu familiar, o nível com barra, quanto ele bate hoje e quanto baterá no 100, os dois caminhos para subir, as nove skins com o bônus de cada uma — e dois botões que levam direto à prateleira certa da loja. O nível ao lado dele no mapa virou uma plaquinha, verde, amarela ou vermelha conforme a faixa.",
+    "CONSERTADO, E CUSTOU COINS A QUEM JÁ PAGOU: QUEM COMPROU TODOS OS OUTFITS DE UMA VEZ FICOU SEM OS ADDONS. O botão do lote entregava a roupa e não os dois addons — as caixinhas ficavam trancadas. Está corrigido, e os addons de quem comprou assim são devolvidos sozinhos na primeira entrada.",
+    "A LOJA PAROU DE MOSTRAR OS OUTFITS EM DOBRO: só aparece o desenho do sexo do seu personagem, em vez dos dois com o mesmo nome e o mesmo preço. A loja de Boss Token, que entregava o desenho do sexo TROCADO nos três conjuntos dela, foi corrigida junto. E o crítico da coleção passou a contar APARÊNCIAS: os dois desenhos do Assassin valem uma peça, e o teto voltou a ser o mesmo para todo mundo.",
+    "CONSERTADO: O DEPÓSITO TIRAVA A PEÇA ERRADA. Com duas iguais guardadas, sacar uma trazia sempre a primeira da lista — e quem tinha uma com estrelas e outra sem recebia a errada. Agora sai exatamente a que você clicou. E os textos que sobem na tela foram separados: dano e experiência numa coluna, as palavras das magias num bloco de até três linhas que some de vez."
+   ]
+  },
+  {
+   "em": "5 de setembro — joias, familiares e relógios",
+   "itens": [
+    "NOVO: O AMULETO E O ANEL TROCAM SOZINHOS. Apareceu uma engrenagem no canto de cima dos dois slots do inventário: clique nela e escreva as suas regras — \"stone skin amulet quando a VIDA estiver entre 0 e 30\", \"might ring de 31 a 100\", \"desequipar\". São até oito linhas por slot, lidas de cima para baixo, e vale a PRIMEIRA que bater. Cada linha olha vida OU mana, nunca as duas.",
+    "E A TROCA NÃO TEM ESPERA NENHUMA. A peça entra no mesmo instante em que a vida cruza o limite — inclusive no meio de poção e de runa, que usam um relógio que a troca de item não divide. Funciona caçando, parado na cidade ou dentro de sala de boss.",
+    "CONSERTADO, E CUSTAVA MUITO DANO: O FAMILIAR SÓ ATACAVA PARA O PALADIN. Knight, druid, sorcerer e monk invocavam o bicho, ele ficava em pé do lado e batia ZERO — quem não era paladin estava caçando sem metade do que pagou. Agora ele bate desde o primeiro nível de upgrade.",
+    "E O SUMMON BATIA MUITO ABAIXO DO QUE DEVIA. A resistência do bicho estava sendo cobrada DUAS VEZES no golpe dele: um sorcerer level 1000 via o familiar tirar 15 de dano. Agora ele acompanha o dono de verdade — e bate em ÁREA, com o alcance e o efeito de cada vocação, como na base — morte e gelo no do knight, sagrado e fogo no do paladin, pedra e terremoto no do druid, energia no do sorcerer, e o pulso do monk.",
+    "CONSERTADO: AS MAGIAS DE VELOCIDADE NÃO DAVAM VELOCIDADE. Utani hur, utani gran hur, utamo tempo san e utani tempo hur estavam sem efeito nenhum; agora aplicam o mesmo cálculo da base, e a velocidade a mais aparece na ficha do personagem enquanto durar.",
+    "AS MAGIAS DE TEMPO GANHARAM RELÓGIO NA TELA — E SE RENOVAM SOZINHAS. Um card flutuante logo acima da barra de ações mostra a sprite de cada magia de duração com o tempo pequeno dentro dela. Na caçada automática, utani hur, o summon e as outras voltam a ser lançadas assim que a duração e o cooldown fecham.",
+    "CONSERTADO: 53 ARMAS E ESCUDOS NÃO PODIAM SER EQUIPADOS. O AXE SOULEATER era um deles, e junto vinham o conjunto \"of destruction\" inteiro, avenger, calamity, epiphany, hammer of prophecy, stomper e os arcos de quest. Todos diziam que o item não era equipável; agora entram no corpo com a skill certa.",
+    "MONK: DUAS MAGIAS ESTAVAM ERRADAS. O CHAINED PENANCE saía como energia e batia uma fração do flurry of blows — é físico, como o flurry, e agora bate como ele. E o SWEEPING TAKEDOWN só acertava o anel de fora: as oito casas coladas no personagem ficavam de fora da área, e agora entram.",
+    "NA LOJA: O TIER UP CAIU PELA METADE, de 100 para 50 Ravox Coins por degrau, com os mesmos descontos por quantidade. A quantidade escolhida (5x, 10x…) parou de voltar sozinha para 1x a cada ação durante a caçada automática. E os dois SUMMON UPGRADE passaram a dizer o que fazem — a chance do dropado cair de boss desceu de 35% para 15%.",
+    "THE PRIMAL MENACE AGORA PEDE LEVEL 1000, e a espera dele subiu para 72 horas."
+   ]
+  },
+  {
+   "em": "5 de setembro — a barra de ações",
+   "itens": [
+    "A BARRA DE AÇÕES DOBROU E FICOU SEPARADA POR OFÍCIO: 22 slots, 11 em cima e 11 embaixo. Em cima ficam vida, mana, velocidade e suporte, cada grupo no seu lugar; embaixo, os onze de ataque e runa. A barra inteira ficou mais compacta, os controles de alvo, distância e lure saíram do meio do caminho, e o botão de Hunts subiu para o canto. Os slots novos entram sem tecla — ponha a sua e clique em Salvar hk.",
+    "CONSERTADO: O MAGE PARAVA DE SOLTAR RUNA. Com uma magia de ataque e uma runa na barra, a magia ficava com TODAS as janelas e a runa não saía nunca; e a poção tomava para si o relógio que a runa também usa. Agora as duas se revezam e a poção de mana cede a vez — a de vida não cede, porque curar vem antes de atacar.",
+    "CONSERTADO: BOSS EM PARTY PRENDIA QUEM FOI CONVIDADO. Quando o boss caía, só o líder saía da sala: o convidado ficava com a tela parada, o corpo do líder plantado lá dentro, e só se soltava apertando STOP. Agora os dois saem juntos, cada um com a tela de vitória dele — que passou a mostrar o SEU loot, e não o do grupo inteiro somado.",
+    "AUTO BOSS EM PARTY: A LEVA AGORA É DE CADA UM. Quem vai de carona na rotação de outra pessoa gasta a leva DELE, contando de onde tinha parado — antes só quem ligava a rotação gastava, e o resto do time entrava de graça. Fechadas as 15, ele fica de fora das próximas salas até a espera passar; a rotação segue sem ele.",
+    "E A FAIXA DO AUTO BOSS APARECE PARA QUEM FOI LEVADO. Ela diz de quem é a rotação, quantas entradas da SUA leva já foram, e tem um botão para sair da party na hora — antes o convidado era levado de sala em sala sem nada na tela dizendo por quem, nem como sair."
+   ]
+  },
+  {
+   "em": "4 de setembro — os Buff Power",
+   "itens": [
+    "NOVO: OS TRÊS BUFF POWER. Itens que ficam na SUA MOCHILA PARA SEMPRE e que você clica para ligar uma hora de bônus — o que se gasta a cada clique é o preço, e não o item. O BUFF POWER dá +3000 HP, +3000 Mana, +15% de dano crítico, +10% de life leech e +10% de mana leech por 30kk. O BUFF POWER EXP dá +50% de experiência por 50kk. O BUFF POWER LOOT dá +50% de loot, em caverna e em boss, por 10 Ravox Coins.",
+    "ATENÇÃO — COMPRAR NÃO É USAR. Os 200 Ravox Coins da loja compram o ITEM, que é seu para sempre; cada hora de bônus se paga à parte, no clique. O ouro sai do bolso e, no que faltar, do banco. Clicar abre uma janela dizendo o que vai ser cobrado, com Cancelar do lado.",
+    "E O TEMPO ACUMULA ATÉ DEZ HORAS. Cada clique soma mais uma hora à que está de pé; no teto, o clique é RECUSADO ANTES de cobrar — ninguém paga por minuto nenhum. Quem enche as dez horas é anunciado no Global.",
+    "ONDE ELES APARECEM: aba nova BUFF POWER na Ravox Store (200 coins cada, ou os três por 500), o balão do item dizendo o que faz e quanto custa a hora, o de experiência somando na barra de experiência junto com as Exp Potions, e os três na ficha do personagem com a sprite e o relógio de cada um.",
+    "NOVA FAIXA DE RELÓGIOS NO ALTO DA TELA, com o tempo do que estiver correndo: Buff Power, boosts de experiência e os passes de Instance e Divine Hunts. Ela se ARRASTA, deita ou fica em pé, tem três tamanhos, e cada grupo se liga e desliga em Opções → Relógios na tela.",
+    "E QUEM PREFERIR JANELA TEM A JANELA: em Opções → Relógios na tela dá para trocar a faixa pela BUFFS E BOOSTS, uma linha por coisa correndo, que se move e redimensiona como o Analisador. É uma OU a outra, nunca as duas.",
+    "O HULKING PREHEMOTH E O GORE HORN PASSARAM A LARGAR PRIMAL BAG, na mesma chance do Instance Kollos (0,120% com a rate) — e a RAVOX BAG SET junto, na mesma raridade das outras Divine. A Primal Ordeal era a única das seis cavernas Divine que não largava bag nenhuma.",
+    "CONSERTADO: A BARRA DE EXPERIÊNCIA NÃO MOSTRAVA O BUFF POWER EXP. Ele já contava na experiência paga desde o primeiro minuto — a tela é que lia uma conta diferente da que paga, e não citava a fonte."
+   ]
+  },
+  {
+   "em": "4 de setembro — as Divine Hunts",
+   "itens": [
+    "NOVO: DIVINE HUNTS — SEIS CAVERNAS DE LEVEL 1000. A aba Especial Hunts virou DUAS seções, com um botão para cada: Instance Hunts, a de sempre, e Divine Hunts, nova. Entra-se nela como no Instance Kollos — premium mais o item de acesso —, e o item é o DIVINE HUNTS SCROLL, que vale 24 horas. Lá dentro moram o Divine Archangel, o Obscure Predador, o Obscure Reaper, o Sanguine Elemental, o Energyzed Robot e a caverna do Primal Ordeal, todas com rota pronta para a caçada automática.",
+    "E O TEMPO DOS DOIS PASSES AGORA ACUMULA. Usar dois pergaminhos dá 48 horas, três dão 72 — antes o segundo jogava o primeiro fora, e quem usasse dois seguidos perdia um. Vale para o Instance Hunts também. Cada botão da aba mostra quanto ainda sobra do SEU passe, sem precisar entrar para ver.",
+    "O DIVINE HUNTS SCROLL ESTÁ À VENDA NOS DOIS LUGARES em que o do Instance está: na Ravox Store e na loja de BOSS TOKEN, pelo mesmo preço dele nos dois. E os três passes — Instance, Divine e o Auto Boss sem espera — subiram para o alto da prateleira de Serviços, logo depois dos premium.",
+    "É DE LÁ QUE SAEM AS ARMAS E OS SETS RAVOX. A RAVOX BAG (as armas) continua caindo só dentro do Instance Kollos, e a RAVOX BAG SET (os sets) cai nas seis cavernas Divine, com a mesma raridade dela: 0,0025%. As Bag You Desire e Bag You Covet caem nos bichos novos a 0,0202%.",
+    "PASSAR O MOUSE NUMA BAG AGORA MOSTRA O QUE PODE VIR DENTRO. Desire, Covet, Primal, Ravox Bag e Ravox Bag Set: o balão lista as peças, no jogo e também no cartão da loja. Dava para comprar o acesso sem nunca saber o que se estava caçando.",
+    "A ALJAVA LEMBRA A FLECHA QUE VOCÊ ESCOLHEU. Tirar o arco e pôr de volta não desmancha mais a escolha — e se aquela munição acabar, ela cede a vez para a que você tem, sem travar o tiro.",
+    "A ABA DE BLESSINGS PASSOU A DIZER O OURO QUE A MORTE LEVARIA, além da experiência. São 20% do que você estiver CARREGANDO, com bênção ou sem — as bênçãos seguram experiência e não seguram ouro. O que está no banco não é tocado.",
+    "CONSERTADO, E CUSTAVA COIN: DUAS TELAS ANUNCIAVAM PREÇO VELHO. A aba de blessings dizia que o pacote das sete custava 180 Ravox Coins (custa 10) e a tela do boneco de treino dizia que o Scroll Speed Exercise custava 100 (custa 25). Os dois números estavam escritos à mão e não acompanharam a queda de preços; agora saem da loja.",
+    "CONSERTADO: A BOLSA DE LOOT NÃO MOSTRAVA OS DROPS DENTRO DAS HUNTS NOVAS. O filtro abria com as quatro caixas vazias, e quem quisesse escolher o que juntar não tinha o que marcar.",
+    "NO SITE: os últimos drops agora dizem DE QUE BICHO a peça caiu, embaixo do nome de quem a pegou."
+   ]
+  },
+  {
+   "em": "4 de setembro — a flecha e a parede dos bosses",
+   "itens": [
+    "A RAVOX PALADIN OVER ARROW VIROU O QUE ELA DEVIA SER: acerta em ÁREA — as mesmas 21 casas da diamond arrow, o losango inteiro em volta de onde ela cai — e bate como dano HOLY, com o efeito sagrado pintando a área. A área já existia no papel e o dano nunca tinha sido holy: ela batia físico, o que contra morto-vivo é a diferença entre o dobro e a metade. O cartão da munição diz as duas coisas agora.",
+    "A RESISTÊNCIA ELEMENTAL DOS BOSSES DE SALA CAIU PARA UM TETO DE 20% (era 80%). Trinta das quarenta e quatro salas tinham um boss segurando mais do que isso, e vinte deles seguravam 80% ou mais — o Dragonking Zyrtarch é 100% nos dez elementos. Contra esses, o seu golpe passou a valer QUATRO VEZES mais. A dificuldade do boss agora é a vida dele e o que ele bate, e não uma parede contra a arma que você escolheu. Bicho de caçada comum não mudou: o teto deles continua 80%."
+   ]
+  },
+  {
+   "em": "4 de setembro — Ravox Coins no mercado e a tabela de preços",
+   "itens": [
+    "NOVO: DÁ PARA COMPRAR E VENDER ITENS POR RAVOX COINS. O mercado ganhou uma chave de moeda em cima do balcão: anuncie em OURO ou em COINS, na venda e também em PROCURADOS — a ordem de compra existe agora para as duas moedas, com o valor retido até alguém vender. A taxa é de 10% em coins e sai de quem RECEBE, no fechamento: anunciar não custa nada.",
+    "E O HISTÓRICO DIZ EM QUE MOEDA CADA NEGÓCIO FOI PAGO, com a figura da Ravox Coin na linha, e mostra o que entrou DE VERDADE — ele dizia \"+10\" onde o vendedor recebeu 9. O resumo do topo virou dois pares: ouro de um lado, coins do outro.",
+    "NOVA CAIXA NO DEPÓSITO: CHEGADAS. O que você compra na loja ou no mercado, o que vem pelo correio e o prêmio de bag que não cabe na mochila iam para a BOLSA DE LOOT — que é a fila da venda automática, e vendia sozinha o que você tinha acabado de comprar. Agora vão para a caixa Chegadas, que ninguém enche à mão e de onde nada sai sem você mandar.",
+    "CONSERTADO: OS FILTROS DO MERCADO RESETANDO SOZINHOS. Cada coisa que o personagem fazia caçando redesenhava a tela e jogava fora o que você tinha escolhido — e o que estava digitando. Agora eles ficam de pé, e ficam GUARDADOS de uma visita para a outra.",
+    "CONSERTADO: O PERSONAGEM PLANTADO NA SALA DE BOSS. Com \"distância do alvo\" ligada, quando o único passo para trás era o teleporte de saída ele parava de vez — a proteção de não sair sozinho recusava aquela casa e nenhuma outra ganhava do ficar parado. Medido nas 40 salas, em três distâncias cada: os casos de travar caíram de 72 para 10, e ninguém pisa no teleporte.",
+    "A RAVOX BOLT PASSOU A BATER MAIS QUE A SPECTRAL: 83 de ataque, cinco a mais — como devia ser desde que ela existe.",
+    "AS BAGS MUDARAM DE CHANCE OUTRA VEZ: no INSTANCE KOLLOS a Bag You Desire e a Primal Bag caem a 0,040% e a RAVOX BAG a 0,0025% (ela só cai lá dentro); na caverna aberta, Dark Thais inclusive, a Desire voltou ao número antigo mais 15%.",
+    "A LOJA FICOU MUITO MAIS BARATA: slot de party 500, terceiro slot de prey 300 (era 900), 5 Prey Wildcards por 10 (eram 100), 25 por 30 (eram 450), pacote de blessings 10 (eram 180), Scroll Speed Exercise 25, Exp Potion de 50% por 10, a de 75% por 15, XP Boost de 1 hora por 8 e Stamina Extension por 10.",
+    "TIER UP E FORJA COM PREÇO NOVO — E ELE SOBE EM ALGUNS DEGRAUS. Subir tier com a PEDRA cobra agora 10kk FIXOS em qualquer degrau (era 3kk vezes o tier: ficou mais caro do 1 ao 3 e mais barato do 4 em diante), e quem manda no custo passam a ser as pedras. A FORJA, que é o caminho só de ouro, passou a cobrar exatamente o que a Exaltation Forge do servidor cobra: 8kk no primeiro degrau, 20 no segundo, 40, 65, 100, 250, 750kk... até 15 bilhões no décimo.",
+    "NO SITE: os ÚLTIMOS DROPS ficaram mais seletivos — só peça LENDÁRIA OU MÍTICA que tenha saído com DUAS ESTRELAS OU MAIS, de qualquer cor, e as bags, que continuam aparecendo sempre. E tem barra nova: ÚLTIMAS BAGS ABERTAS, com o que saiu das Desire, Covet, Primal e Ravox abertas há pouco, e de quem as abriu."
+   ]
+  },
+  {
+   "em": "4 de setembro — a coleira e o passo de volta",
+   "itens": [
+    "CONSERTADO: O COMPANHEIRO QUE DAVA A VOLTA NA CAVERNA. Com quem ele segue emparedado ou boxado por criaturas, o caminho curto some — e o passo de volta era a única busca do turno sem trava nenhuma: ele achava um contorno de duzentas casas e saía andando para o outro lado da hunt \"indo até o líder\". Chegava às vezes, depois de atravessar meia caverna sozinho, puxando o que estava no caminho e perdendo o rumo.",
+    "AGORA ELE NÃO PISA EM CASA MAIS LONGE DE QUEM SEGUE DO QUE JÁ ESTÁ. Sem caminho por perto, ele espera ali mesmo em vez de sair procurando um. Medido numa caçada em grupo de vários minutos: o pior afastamento caiu de 27 para 10 casas, e a distância média de 4,8 para 4,2. Contornar pedra continua funcionando — andar de lado não é se afastar.",
+    "E COM ISSO ACABA O CABO DE GUERRA ENTRE \"SEGUIR A X SQM\" E \"DISTÂNCIA DO ALVO\". A perseguição e o recuo já andavam de coleira; o passo de volta, não. Era ele que jogava o companheiro para fora do grupo quando o da frente travava.",
+    "NOVO: \"VOLTAR A LURAR EM X\". Ao lado do seletor de quantos monstros juntar, agora tem o segundo número: com quantos ele larga a briga e volta a juntar. Lure 8 com \"voltar em 4\" quer dizer juntar oito, brigar até sobrarem quatro, e sair juntando de novo até oito. Esse número existia desde sempre — era um terço da meta, fixo e escondido; agora ele é seu, e o \"auto\" mostra qual está valendo."
+   ]
+  },
+  {
+   "em": "4 de setembro — exeta res, exura sio e a morte do líder",
+   "itens": [
+    "NOVO: EXETA RES, O DESAFIO DO KNIGHT. Ela chama para cima de você os bichos que estão batendo nos outros — quatro casas em volta, por dez segundos. Quem não couber ao seu redor volta a atacar quem estava atacando: o desafio não promete mais bicho do que cabe no mapa. O Chivalrous Challenge (exeta amp res, level 150) alcança sete casas e até seis criaturas.",
+    "E ELA TEM QUANDO DISPARAR, e não só a recarga: escolha tirar bicho de QUALQUER UM DA PARTY ou de UMA PESSOA PELO NOME, com um mínimo de bichos em cima dela, e uma espera própria (\"no máximo uma vez a cada X segundos\"). Sem escolher nada, ela sai sempre que houver bicho no alcance. Cabe no slot de suporte e também nos de ataque.",
+    "A EXURA SIO AGORA PERGUNTA A PARTIR DE QUANTA VIDA CURAR. Antes ela saía com o companheiro em 99% — 120 de mana por um arranhão, a cada dois segundos. Escolha a porcentagem, e escolha entre curar UMA PESSOA PELO NOME ou QUALQUER UM DA PARTY (ela pega o mais ferido). Quem já tinha a magia na barra não vê nada mudar até mexer no número.",
+    "CONSERTADO, E ERA GRAVE: QUANDO O LÍDER DA CAÇADA MORRIA, QUEM FICOU CONGELAVA. A caverna parava para os outros — monstro sem andar, relógio sem correr, tela viva e jogo morto —, e nem o F5 resolvia: só o STOP. Agora a caçada passa para o próximo da party (o segundo a entrar, que é quem vinha atrás), com o corpo, a rota e os relógios dele. Se ele também morrer, passa adiante; sozinho, o último assume a rota e continua.",
+    "CONSERTADO: O SÓSIA PARADO NO TEMPLO. Quem entrava numa caçada pelo LOBBY — ou era levado pela troca de hunt e pela sequência de bosses — continuava desenhado na cidade, parado, enquanto caçava. Não era cópia nenhuma: era o corpo que nunca tinha saído da praça, e o líder que morria ia encontrá-lo lá.",
+    "CONSERTADO: O COMPANHEIRO QUE TRAVA QUANDO O LÍDER TOMA TRAP. Sem caminho até quem ele segue, ele terminava o turno sem passo nenhum e ficava plantado; e quando o líder mexia uma casa, ele afastava e travava de novo, alternados. Agora ele percebe que não dá para chegar e volta a jogar — briga com o que estiver por perto, que é o que abre o trap — sem sair andando a caverna sozinho.",
+    "E O ALVO INALCANÇÁVEL DEIXOU DE PRENDER O PERSONAGEM PARA SEMPRE. A lista de \"não dá para chegar nesse\" só se limpava depois de andar vinte casas, e quem estava travado era justamente quem não andava: o nó se fechava em si mesmo. Agora ela também vence por tempo, oito segundos.",
+    "A AUTO-VENDA NA CIDADE PASSOU A RESPEITAR O QUE VOCÊ COMPROU. Fora da caçada ela esvaziava a bolsa a cada 30 segundos cravados, para todo mundo: quem não comprou nada vendia rápido demais (a promessa são 120s) e quem comprou as cinco melhorias esperava mais do que devia. Agora é o seu tempo, dentro e fora da caçada — e o relógio da bolsa aparece na cidade também.",
+    "AS BAGS MUDARAM DE CHANCE DE NOVO, agora nos números que o dono escreveu: no INSTANCE KOLLOS a Bag You Desire e a Primal Bag caem a 0,050%, e na caverna aberta (Dark Thais inclusive) a Bag You Desire cai a 0,035%. A Ravox Bag continua onde estava, e a primal bag do The Primal Menace também: ela é o prêmio daquela sala."
+   ]
+  },
+  {
+   "em": "4 de setembro — sprites, loja e os ultimos drops",
+   "itens": [
+    "CONSERTADO: SPRITE INVISÍVEL OU TROCADA AO MUDAR DE ABA OU RECONECTAR. A tabela que traduz o mapa viaja uma vez só, e o servidor a marcava como entregue ANTES de mandar — se aquele envio se perdia (aba trocada, reconexão, rede engasgada), ele nunca mais mandava e a tela ficava com casa vazia, sprite de outro item ou personagem invisível até você trocar de caçada. Agora ele só marca depois de a mensagem sair, e a tela pede de volta sozinha quando falta.",
+    "CONSERTADO: OS ÍCONES DAS MAGIAS ESTAVAM ERRADOS DE NOVO. A tabela de ícones pedia até a coluna 240 e a folha de desenhos tem 187 — o que passava do fim virava desenho vazio ou de outra magia. A correção já existia no código e não tinha subido junto com os dados; subiu agora.",
+    "E O BOSS TOKEN PASSOU A CAIR DE VERDADE. Ele foi publicado ontem sem o catálogo de itens junto, então o servidor não conhecia o item e a linha de drop era descartada em silêncio: a loja existia e a moeda não caía. Agora cai, 50% em todo boss.",
+    "A LOJA GANHOU ÍCONE EM CADA PRATELEIRA, e os desenhos dos produtos ficaram do mesmo tamanho — as poções, os pergaminhos e os pacotes apareciam miúdos ao lado dos ícones desenhados à mão.",
+    "AS BAGS DE RECOMPENSA MUDARAM DE RITMO. A Bag You Desire caía a 8% em toda caverna que a largasse — um número de outra época. Agora as três (Desire, Covet e Primal) caem no mesmo passo, umas 3 por dia com a rate atual, e a Ravox Bag continua sozinha no topo com 1 a 2 por dia. A primal bag do The Primal Menace não mudou: ela é o prêmio daquela sala.",
+    "E NO INSTANCE KOLLOS AS BAGS VOLTARAM A CAIR. Havia uma correção antiga no painel segurando a Ravox Bag em uma a cada quatro dias e as outras em uma por dia; ela foi tirada e as bags passaram a valer o que o jogo diz. Os outros dez ajustes daquele bicho ficaram como estavam.",
+    "AGORA DÁ PARA CHAMAR QUEM JÁ ESTÁ CAÇANDO. O convite da party só saía para quem estava parado; quem tinha entrado sozinho ficava inalcançável até parar por conta própria. O convite passa a sair, e quem decide é ele — o cartão avisa que aceitar encerra a caçada atual, e o extrato dela é entregue normalmente.",
+    "E DENTRO DA SALA DE BOSS TAMBÉM DÁ PARA CHAMAR — enquanto a luta não tiver começado. Quem chegar depois passa pela mesma porta de todo mundo (level, task e a espera de 12 horas). Assim que o boss levar o primeiro dano, o convite fecha: ninguém entra no meio da briga para levar um baú.",
+    "CONSERTADO: O COMPANHEIRO QUE TREMIA NO LUGAR. Com o \"seguir a 1 sqm\" marcado, a conta que decide quem manda no passo — voltar para o líder ou manter distância do bicho — trocava de dono a cada tique, e o boneco ia para um lado e para o outro sem sair do lugar. Vale para todas as distâncias; só a de 1 estava quebrada.",
+    "NO SITE, A BARRA DE ÚLTIMOS DROPS FICOU MAIS SELETIVA: agora só entra item LENDÁRIO OU MÍTICO que caia abaixo de 2%, as bags de recompensa e as peças com duas estrelas douradas ou mais. Decoração de mapa não entra. E o balão mostra a ficha inteira da peça e DE QUAL BICHO ela caiu."
+   ]
+  },
+  {
+   "em": "4 de setembro — party, Boss Token e o site",
+   "itens": [
+    "CONSERTADO, E ERA O PIOR BUG DO SERVIDOR: LOOT SUMINDO EM SILÊNCIO. O chat anunciava \"Loot: Bag You Desire\" e a peça não aparecia em lugar nenhum. A bolsa de loot tem 1.000 linhas, e itens sem valor que não empilham (blue ectoplasm e outros 63) iam entupindo uma linha por peça até enchê-la — um jogador estava com 912 linhas de ectoplasma. Com a bolsa cheia, TODO item novo era recusado e desaparecia. Agora esse lixo fica no chão, o drop só é anunciado depois de guardado, e quando a bolsa lota ele vai para a mochila.",
+    "NOVO: BOTÃO VENDER NA MOCHILA, ao lado do Limpar. Abre a lista do que o NPC compra, COM O PREÇO EMBAIXO DE CADA ITEM e um marcar tudo. Peça com IMBUEMENT, TIER ou ESTRELA vem desmarcada e apagada — dá para marcar, mas aí ele pergunta de novo e lista peça por peça o que cada uma carrega. O Limpar ganhou a mesma segunda pergunta.",
+    "NOVO: SALA DE BOSS EM ATÉ CINCO, E CADA UM SAI COM O BAÚ DELE. Monte a party, escolha a sala e o time entra junto pelo LOBBY: cada um dá \"pronto\" e o líder começa. Ninguém entra enquanto alguém estiver barrado — e a tela diz de quem é o problema e por quê (\"volta em 340 min\"). O cooldown de 12 horas conta para os cinco, na entrada.",
+    "E O AUTO BOSS TAMBÉM VAI EM PARTY. Monte a sequência, chame o time pelo lobby e ela roda para todos: a rotação só entra nos bosses em que TODOS estiverem sem espera, e pula os demais em vez de parar. Da mesma conta continuam cabendo dois, a menos que você tenha o slot de party.",
+    "REGRA NOVA DO LOOT DE BOSS: só recebe quem estava lá e VIVO na hora em que ele caiu. Morreu na luta ou saiu pelo teleporte antes do fim, não leva nada.",
+    "NOVO: BOSS TOKEN, 50% DE CHANCE EM TODOS OS BOSSES — e a chance não anda com a rate de loot, é metade das mortes de verdade. Gaste na LOJA DE BOSS TOKEN, no canto de ações da aba Bosses: 5 Prey Wildcards por 2, Instance Hunts de 24h por 25, as Lasting Exercise por 10, e Golden, Royal Costume e Dragon Slayer COM OS DOIS ADDONS por 250 cada.",
+    "OS TRÊS OUTFITS ESPECIAIS PASSARAM PARA 500 RAVOX COINS na loja (estavam 75), e o \"comprar todos os outfits\" foi corrigido junto: ele prometia um preço e cobrava outro, porque multiplicava a quantidade pelo valor do outfit comum.",
+    "A TELA DO EXERCISE DIZ QUANTO TEMPO FALTA PARA ACABAR TUDO — e conta as outras armas do mesmo tipo quando você marca \"continuar com a próxima\". O Scroll Speed Exercise já entra na conta.",
+    "CONSERTADO: IMBUEMENT GASTANDO COM A PEÇA DESEQUIPADA. O relógio das 20 horas corria mesmo com a peça guardada na mochila.",
+    "O \"PARAR EM\" SUBIU PARA O TOPO, ao lado do voltar, fechadinho: ele mostra o que está ligado (\"Cap 100 · Gold 5.000\") e abre no clique. E os botões LIMPAR e VENDER pararam de quebrar e de trocar de lado quando a mochila fica estreita.",
+    "CONSERTADO: OS EMOTES DO CHAT APARECIAM PELA METADE, dependendo do tamanho da janela. Agora a gaveta encosta na borda e rola por dentro.",
+    "NO SITE: UMA BARRA DE ÚLTIMOS DROPS na página inicial, com o que de mais raro caiu (lendário, mítico e qualquer peça com estrela dourada), quem pegou, quando e os atributos ao passar o mouse. E a lista de QUEM ESTÁ ONLINE ficou precisa — diz treinando no pátio, treinando com exercise, numa sala de boss — e dá para ordenar clicando em qualquer coluna."
+   ]
+  },
+  {
+   "em": "3 de setembro — a segunda leva",
+   "itens": [
+    "ATENÇÃO, MUDOU DE NOVO: O TREINO NO BONECO (PÁTIO) VOLTOU A PARAR QUANDO VOCÊ FECHA A ABA. Só o de EXERCISE WEAPON continua com a aba fechada — ali o limite são as cargas que você comprou, e elas acabam. O pátio não gasta nada, e rodando sozinho ele seria perícia infinita em troca de fechar o navegador. O resumo do que subiu continua esperando você na entrada seguinte.",
+    "E O PÁTIO NÃO MEXE MAIS NA STAMINA: nem gasta, nem enche. Ele enchia — um minuto de stamina a cada trinta segundos de treino —, e isso fazia dele o melhor lugar do jogo para descansar, o que ele não é.",
+    "CONSERTADO, E ESTAVA ASSIM DESDE SEMPRE: O LOOT DE BOSS NUNCA VINHA COM ESTRELA. Todo o resto do jogo sorteava afixo no loot; a sacola do baú de recompensa era a única que passava por cima do sorteio. Agora a peça que cai de boss rola atributo extra como qualquer outra — mesma chance, mesma conta.",
+    "CONSERTADO: O PERSONAGEM CORRIA PARA O TELEPORTE DE SAÍDA NO MEIO DA LUTA. Quem lutava com uma distância do alvo marcada via o boneco recuar do boss, pisar no teleporte e sair da sala sozinho — com o cooldown de 12 horas já gasto. O passo automático não pisa mais nele; clicar nele continua sendo o jeito de sair.",
+    "A TELA DE VITÓRIA MOSTRA O LOOT INTEIRO. Ela mostrava doze itens e um \"+6\" no canto, e o que ficava escondido tinha a mesma chance de ser a arma ou seis pedaços de couro. Agora sai tudo, e a faixa fica mais tempo na tela quando cai muita coisa.",
+    "AUTO BOSS ATIVO APARECE NO ALTO DA TELA, com quantos da leva já foram e quais vêm a seguir — e o botão de DESATIVAR ao lado. Se você estiver dentro de uma sala, ele pergunta antes e avisa que a luta atual acaba ali (e que o cooldown daquele boss já foi cobrado).",
+    "NA HORA DE MONTAR A LISTA, BOSS EM COOLDOWN VAI PARA O FIM, APAGADO, e não dá mais para marcá-lo.",
+    "E POR ISSO A LISTA AGORA SE GUARDA: dê um nome à sequência e ela volta inteira num clique, com os bosses presos e tudo — a rotação pula sozinha o que ainda estiver em cooldown. Cabem cinco. Tem também SÓ OS FAVORITOS e TODOS OS LIVRES, para montar sem clicar em quinze cards.",
+    "DURANTE A ESPERA DE 6 HORAS, A ABA DE BOSSES MOSTRA O PASSE DA LOJA com um botão que leva direto a ele — e diz, antes da compra, que ele tira só a espera entre levas: o cooldown de 12 horas de cada boss continua valendo.",
+    "CONSERTADO: OS DESENHOS QUE FALTAVAM NA LOJA. As duas Exp Potions, o Scroll Speed Exercise, a Stamina Extension, os dois Pacotes, a Boosted Exercise Box e o Ravox Tier UP apareciam como quadrado vazio. E a tela do Exercise passou a explicar o Scroll Speed Exercise ao lado do aviso das armas de treino, com um botão só para a loja."
+   ]
+  },
+  {
+   "em": "3 de setembro — os reports",
+   "itens": [
+    "O TREINO NÃO PARA MAIS QUANDO VOCÊ FECHA A ABA. Nem o do boneco (pátio), nem o de exercise weapon. Os dois eram encerrados — o de exercise na hora, o do pátio dez minutos depois — e você voltava sem saber que tinha parado. Agora eles continuam, como a caçada sempre continuou.",
+    "A ARMA DE TREINO QUE ACABA PUXA A PRÓXIMA DO MESMO TIPO. Bow acaba, entra outro bow — exercise, lasting, durable ou boosted, tanto faz. Wand puxa wand. É uma MARCA na tela do Exercise e ela vem desligada: ligada, o jogo gasta as cargas seguintes sem perguntar de novo. Ele começa pelas armas já começadas e depois pela mais barata, para guardar a Boosted.",
+    "AUTO BOSS: escolha até 15 bosses e o personagem entra em um depois do outro sozinho. A faixa fica no alto da aba Bosses. Ele pula os que estiverem em cooldown, respeita a ordem que você marcou, e a Caça Automática luta por você.",
+    "A CADA 15 BOSSES O AUTO BOSS ESPERA 6 HORAS. A conta é por ENTRADA, então parar no meio não devolve as que você já gastou — e voltar continua de onde parou. Morrer para a rotação: catorze salas seguidas com o equipamento errado sairiam caras demais.",
+    "NA LOJA: AUTO BOSS SEM ESPERA, 7 dias por 150 Ravox Coins. Ele tira a espera de 6 horas ENTRE AS LEVAS, e só ela — o cooldown de 12 horas de cada boss continua valendo igual para todo mundo, com passe ou sem.",
+    "BOTÃO MOVER TUDO NO DEPÓSITO. Abra uma caixa e a mochila inteira vai para dentro dela de uma vez. Ele diz antes quantos cabem, guarda o que couber e conta quantos ficaram se a caixa encher — nada some por falta de espaço.",
+    "CONSERTADO: no mercado não dava para saber qual cópia você ia anunciar. Duas peças iguais com estrelas diferentes viravam um botão só, sem estrela nenhuma escrita, e o jogo levava a primeira que achasse — dava para anunciar a limpa e ver a ★★★ sair da mochila. Agora cada peça com estrela tem a linha dela, com as estrelas na tela.",
+    "O RESUMO DO TREINO CONTINUA ESPERANDO VOCÊ. Fechou a aba treinando e voltou depois: o quanto subiu e as cargas gastas aparecem na entrada seguinte, como já era.",
+    "SAIR DO BONECO CONTINUA PARANDO O TREINO DE EXERCISE, e entrar numa caçada também. O que deixou de parar foi só fechar a aba.",
+    "APERTAR PARAR DESLIGA O AUTO BOSS JUNTO. Sem isso o botão pararia a sala e a rotação poria a seguinte oito segundos depois, e ele pareceria quebrado."
+   ]
+  },
+  {
+   "em": "2 de setembro — as salas de boss",
+   "itens": [
+    "41 SALAS DE BOSS NOVAS, NA ABA BOSSES. São as salas do servidor, recortadas do mapa: você entra na sala de verdade, com as paredes, o piso e o boss no lugar dele. Level 250. ESTA PARTE É NOVA E PODE TER BUG — se algo parecer errado (nascer no lugar errado, parede que não devia, boss que não aparece), REPORTE pelo botão vermelho no alto da tela. É assim que a gente conserta.",
+    "A ESPERA DO BOSS COMEÇA QUANDO VOCÊ ENTRA, mesmo que ele não caia. Entrar é a tentativa, e é a tentativa que conta — morrer não devolve a vez. Confira o equipamento antes.",
+    "VOCÊ TEM 25 MINUTOS DENTRO DA SALA, nos dois modos. Passou, você volta ao templo.",
+    "PARA SAIR ANTES, PISE NO TELEPORTE DA SALA. Ele está no chão, do lado de dentro — pisou, você volta ao templo. A espera continua valendo.",
+    "BOSS AGORA TEM OS DOIS MODOS: Caça Automática (ele mira e bate sozinho) e Caça Online (você anda, mira e dispara, com os 15% a mais de experiência e de loot). Antes só existia o modo no braço.",
+    "BICHO IMUNE NÃO EXISTE MAIS. Havia boss que não tomava dano NENHUM — o Dragonking Zyrtarch é imune aos dez elementos no servidor, e aqui isso era uma parede, não uma luta. Agora a resistência tem teto: imune virou \"quase imune\", e o golpe entra.",
+    "A PROFICIÊNCIA DA ARMA VOLTOU A SUBIR. A tabela de experiência dela estava VAZIA desde que o sistema entrou: nenhuma arma passava do primeiro degrau, em nenhuma vocação. Quem já vinha batendo vai subir vários níveis de uma vez ao entrar.",
+    "A DEATH ECHO GANHOU A SEGUNDA ONDA que faltava — a mesma área é atingida de novo um segundo depois, por metade do dano —, e as três posturas agora TROCAM O ELEMENTO dela, como no servidor.",
+    "A QUIVER NÃO SOME MAIS ao trocar de arco ou besta. Ela era destruída em silêncio na troca, e a conta de itens fechava dos dois lados. E a barra de carga de anel e amuleto ficou FININHA e passou a andar em tempo real, na barra e no número.",
+    "CONSERTADO: a busca do bestiário perdia o cursor a cada letra; a tela de limpar a mochila juntava peças diferentes numa célula só, sem os atributos de cada uma; a página de filtro de loot transbordava na hora de escolher a caçada; e a Percht Queen e o Brain Head lutavam invisíveis."
+   ]
+  },
+  {
+   "em": "2 de setembro — o onslaught e o chat",
+   "itens": [
+    "O ONSLAUGHT DA ARMA AGORA VALE PARA MAGIA E RUNA. Ele só estava valendo no golpe básico — para um mago, a menor parte do que ele causa. Uma wand no tier 10 dá 9% de chance de o golpe sair 60% mais forte, e a partir de agora isso acontece em toda magia e toda runa que você solta. O número sai MAIOR na tela quando acontece, como no crítico.",
+    "MUNIÇÃO, RUNA E POTION QUE CAEM AGORA VENDEM. Eram 69 itens com preço de compra e nenhum de venda: uma pilha de 200 bolts caída de um arqueiro não valia nada em lugar nenhum e só ocupava espaço. Agora elas vendem pelo MESMO preço que você paga para comprá-las — no balcão, na venda rápida e no auto-vender.",
+    "A BOLSA DE LOOT NÃO RECEBE MAIS NADA DA MÃO. Ela se esvazia sozinha na venda rápida durante a caçada — uma peça arrastada da mochila para lá estava a um tique de ser vendida sem você pedir. Só o loot entra; o caminho de volta continua igual.",
+    "O FILTRO DE LOOT AGORA PERGUNTA QUANTAS ESTRELAS. Cor e quantidade são duas coisas diferentes: uma peça dourada de UM atributo e uma de três atributos medianos não são a mesma peça. Dá para pedir \"da roxa para cima E pelo menos duas estrelas\".",
+    "ENTER ABRE O CHAT, ENTER MANDA. Sem tirar a mão do teclado e sem procurar a caixa com o mouse. Depois de mandar, o teclado volta para o jogo — o WASD continua andando. Escape larga a caixa. E a gaveta de emotes cresceu para 72.",
+    "AO EQUIPAR UM ARCO OU BESTA, O JOGO MOSTRA AS QUIVERS QUE VOCÊ TEM. E não dá mais para equipar uma quiver por cima de outra — era isso que apagava os tiers do arco e sumia com a quiver. Se isso aconteceu com você, o arco volta ao normal sozinho ao entrar.",
+    "O INSTANCE HUNTS SÓ LIGA COM PREMIUM. Antes o pergaminho era gasto na hora e as 24 horas começavam a correr mesmo sem premium — quando você comprasse o premium, o acesso já teria vencido. Agora ele é RECUSADO e volta para a mochila, e a loja avisa antes de cobrar.",
+    "RESPOSTA A REPORT CHEGA COMO UM AVISO NO ALTO DA TELA, e não mais como uma janela que abre sozinha. Quem estava caçando não perde o controle no meio de uma luta — você lê quando quiser, e fecha no ×.",
+    "A RAVOX BAG E A BAG YOU DESIRE DO INSTANCE KOLLOS FORAM REAJUSTADAS: 0,003% e 0,015% por morte, contra os números de antes. Elas voltaram a ser troféu.",
+    "CONSERTADO: vender uma peça da mochila vendia TODAS as cópias iguais dela; a janela de depósito não se movia; a comparação de equipamento escondia o tier; o ícone de party do sorcerer era o do druida; e a mochila às vezes não abria."
+   ]
+  },
+  {
+   "em": "2 de setembro — as cargas",
+   "itens": [
+    "ANEL E AMULETO COM CARGA AGORA GASTAM DE VERDADE. O might ring dava 20% de proteção contra tudo para sempre; agora ele tem as 20 cargas do servidor, perde uma a cada golpe que a proteção apara, e some quando acabam. Uma BARRINHA no pé do ícone mostra quanto resta — verde, âmbar no último terço, vermelha e piscando no fim.",
+    "E OS ANÉIS QUE NÃO DAVAM NADA PASSARAM A DAR. Sword, axe e club ring (+4 na skill), os anéis e colares de plasma, dwarven, time, life, ring of healing, soft boots, void boots, tiara of power e mais vinte peças: no servidor elas viram OUTRO item ao serem vestidas, e era esse outro que tinha o bônus. O jogo importava só a metade sem nada. Elas duram um tempo de USO — o relógio só corre com a peça no corpo.",
+    "LENDÁRIO E MÍTICO AGORA SAEM ESTRELADOS COM FREQUÊNCIA: 40% e 50%, contra 4% e 2% de antes. A peça que mais custa para conseguir era a que menos tinha chance de vir com atributo, e isso se inverteu. As três estrelas também ficaram um pouco mais fáceis (o ★★★ subiu de 4% para 7%).",
+    "QUALQUER PEÇA PODE ROLAR QUALQUER ATRIBUTO — e 30% das rolagens saem ERRADAS de propósito. Uma armadura de mago pode vir com skill de knight, uma espada com capacidade de mochila, uma varinha com ataque físico. A estrela deixou de ser garantia: sete em cada dez atributos servem para a peça, e três não.",
+    "A BAG YOU DESIRE CAI A 8% E A RAVOX BAG A 2%, contra 0,015% e 0,003% de antes. Elas deixaram de ser troféu de mês e viraram parte da caçada.",
+    "AS ESTRELAS APARECEM NO ANÚNCIO DA BAG e dentro da sacola de boss. Abrir uma Ravox Bag e tirar uma ★★★ agora mostra as estrelas no Global, e o baú de recompensa parou de apagar o atributo das peças que guarda — era o último lugar em que a estrela se perdia.",
+    "O FILTRO DE LOOT GANHOU UMA TERCEIRA LISTA: em QUE itens a regra da estrela vale. Antes \"roxa para cima\" segurava a roxa de qualquer coisa, hand axe incluída. Agora dá para marcar só as peças que interessam — e deixar a lista vazia continua valendo para todas, como sempre foi.",
+    "BOTÃO LIMPAR NA MOCHILA, igual ao da bolsa de loot: escolhe o que vai fora e joga o resto. O que tem estrela, tier ou imbuement já vem guardado, e ele pergunta DUAS vezes antes de destruir.",
+    "CONSERTADO: o baú de recompensa entregava as peças de boss sem tier, sem imbuement e sem afixo — tudo se perdia no caminho entre o boss e a mochila."
+   ]
+  },
+  {
+   "em": "2 de setembro — os afixos",
+   "itens": [
+    "AS PEÇAS AGORA CAEM COM ATRIBUTOS EXTRAS. Uma spear pode vir com life leech, uma armadura com resistência a fogo, uma mochila com mais capacidade. A peça ganha ESTRELAS no canto do ícone — uma por atributo — e o balão lista o que ela tem a mais.",
+    "A COR DA ESTRELA DIZ O QUANTO AQUELE ATRIBUTO ROLOU BEM. Azul é o terço de baixo do que ele pode dar, roxa o meio, DOURADA o terço de cima. Cada estrela tem a cor do atributo dela, então uma ★★★ pode sair azul, roxa e dourada de uma vez — e uma ★ dourada vale mais que uma ★★★ azul.",
+    "TODA CAÇADA PODE SOLTAR O NÍVEL MÁXIMO. Antes hunt de level baixo só dava atributo fraco, por mais sorte que se tivesse. Agora o T3 sai em qualquer lugar — raro lá embaixo (2%) e comum no fim de jogo (35%), mas nunca impossível.",
+    "ANEL, AMULETO, TRINKET, ESCUDO E MOCHILA também recebem atributos, cada um com a lista que faz sentido para ele — mochila dá capacidade, não armadura.",
+    "AS BAGS SORTEIAM ATRIBUTO NA ABERTURA: Ravox Bag, Bag You Desire, Bag You Covet, Primal Bag e Ravox Bag Set. Quanto melhor a bag, mais forte o atributo pode vir.",
+    "O LOOT FILTER GANHOU UMA ESCOLHA: até onde a estrela salva a peça da venda automática. Vender todas, guardar qualquer estrelada, só da roxa para cima, ou só as douradas. Está no filtro da bolsa e na hora de escolher a caçada. (Tier e imbuement continuam nunca sendo vendidos.)",
+    "NO MERCADO E NO CHAT a peça aparece com as estrelas e os atributos dela. Anunciar uma spear ★★★ deixou de parecer o anúncio de uma spear qualquer, e mandar a peça no chat mostra o que ela tem.",
+    "CONSERTADO: clicar para equipar uma peça e vestir OUTRA cópia igual. A mochila mexe sozinha quando cai loot, e o jogo estava usando a posição da célula — agora ele confere que é mesmo a peça que você apontou.",
+    "CONSERTADO: os nomes flutuantes deixando rastro na beira direita da tela para quem joga com o navegador reduzido (Ctrl+−). A camada de texto não estava sendo apagada inteira.",
+    "CONSERTADO: item que não empilha não pergunta mais \"quantos?\" ao ser arrastado — vai o que está debaixo da mão, e só ele."
+   ]
+  },
+  {
+   "em": "1 de setembro",
+   "itens": [
+    "A FORJA. Botão novo lá em cima, ao lado do Prey: sobe o tier de uma peça pagando SÓ OURO, sem precisar de Ravox Tier UP — 15kk por degrau, vezes o tier de destino. E passa o tier de uma peça para outra, como no servidor: a peça que doa é consumida e a que recebe fica um tier abaixo. Os dois botões perguntam antes, mostram com quanto de ouro você fica, e a peça sai do fogo com efeito.",
+    "A CIDADE FOI REDESENHADA, e agora tem NOVE ANDARES em vez de um. Rampa e buraco trocam de andar quando você pisa; escada de mão sobe com um clique — o boneco anda até o lado dela e sobe sozinho.",
+    "DOIS NPCs NA CIDADE. O NAJI abre o banco num clique. A ZUMA MAGEHIDE tem loja com duas abas, Comprar e Vender: anéis, amuletos, as armas de exercise, potions e as três sacolas de boss que ela compra de volta. Todo negócio pergunta quantos e mostra quanto você tem e com quanto vai ficar.",
+    "STAMINA EXTENSION POR OURO: 75kk na Zuma, as mesmas vinte horas da loja de coins. Quem tem dinheiro e não tem coin agora tem por onde.",
+    "TRÊS BONECOS DE TREINO fixos na cidade, à direita do templo, e o LIMITE DE GENTE POR BONECO ACABOU — ninguém mais ouve \"não há casa livre\". Clique num boneco e escolhe a arma na hora.",
+    "O SKILL TRAINER abre o treino offline num clique, e a ÁRVORE ENORME abre a árvore de habilidade. Os dois com o nome escrito por cima, para você saber o que são antes de clicar.",
+    "ITEM NO CHÃO PASSOU A FUNCIONAR DE VERDADE. Arrastar uma peça da mochila para o chão, arrastar de volta, arrastar de uma casa para outra. E arrastar uma pilha em cima de outra igual JUNTA as duas — antes ela só perguntava quantos separar.",
+    "LOOT DE PARTY COMO NO TIBIA: o item é sorteado PARA CADA UM, com a sua própria chance e o seu próprio bônus de prey. Só o ouro é dividido na hora. Antes vocês revezavam, e cada um levava metade. E o loot filter finalmente aparece para quem entrou pela party.",
+    "ANDAR ATRÁS DE ALGUÉM: na party, escolha atrás de quem o seu personagem anda e a party vira uma fila em vez de um bolo.",
+    "CONDIÇÃO POR NOME DE CRIATURA em qualquer magia ou runa — \"só solta se o alvo for Dragon Lord\", ou \"nunca solta em Rat\". A tela de configurar ação ganhou ícones de vida, mana e distância. BLESS AGORA PODE SER PAGA COM O DINHEIRO DO BANCO. E nenhum ícone da barra de cima sai mais da tela, em monitor nenhum."
+   ]
+  }
+ ]
+}

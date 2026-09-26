@@ -1,0 +1,576 @@
+// O combate da caçada: golpe do personagem (arma, wand, tiro, elemento), golpe dos bichos, mortes, loot e level.
+// Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
+import { ITEM_CATALOG } from '../../nucleo/dados.mjs';
+import * as R from '../../nucleo/regras.mjs';
+import { VALOR_DA_MOEDA, pesoDoInventario } from '../inventario.mjs';
+import * as Acoes from '../acoes.mjs';
+import * as Treino from '../treino.mjs';
+import * as Bolsa from '../bolsa.mjs';
+import * as Ficha from '../ficha.mjs';
+import * as Bau from '../bau.mjs';
+import * as Boosts from '../boosts.mjs';
+import * as BuffPower from '../buffpower.mjs';
+import * as Tiers from '../tiers.mjs';
+import * as Afixos from '../afixos.mjs';
+import * as Prey from '../prey.mjs';
+import * as Arvore from '../arvore.mjs';
+import * as Bosses from '../bosses.mjs';
+import * as Poderes from '../poderes.mjs';
+import * as Gemas from '../gemas.mjs';
+import * as Charms from '../charms.mjs';
+import * as Proficiencia from '../proficiencia.mjs';
+import * as Tarefas from '../tarefas.mjs';
+import * as Arena from '../arena.mjs';
+import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
+import { distancia } from './caminho.mjs';
+import { tirarMonstro, salaDe } from './sala.mjs';
+import { alvoAtual } from './alvo.mjs';
+
+/** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
+export function processarMortes(estado, personagem, eventos) {
+  const hunt = estado.hunt;
+  if (!hunt) return;
+  for (const m of [...hunt.monstros]) {
+    if (m.dummy) {
+      m.hp = m.maxHp; // o boneco do pátio não morre
+      continue;
+    }
+    if (m.hp > 0) continue;
+    matarMonstro(estado, hunt, personagem, m, eventos);
+  }
+}
+
+/** Soma real do `armor` de cada peça vestida (ver `item-catalog.json` — o `defense` do escudo é outra conta, ainda não ligada). */
+export function armorDoPersonagem(estado) {
+  let total = 0;
+  for (const peca of Object.values(estado.equipment ?? {})) {
+    if (peca) total += ITEM_CATALOG[peca.id]?.armor ?? 0;
+  }
+  return total;
+}
+
+export function armaDoPersonagem(estado) {
+  const id = estado.equipment?.weapon?.id;
+  return id ? ITEM_CATALOG[id] : null;
+}
+
+/*
+ * ---- Nem toda arma bate corpo a corpo ----
+ *
+ * "criei um druid e n ta dando atk magico, cada classe tem um dano
+ * especifico" — e tinha razão: o golpe básico sempre usava `R.golpeDoJogador`
+ * (a fórmula de arma FÍSICA), mesmo pro sorcerer/druid, cuja arma inicial é
+ * um wand/rod (`item-catalog.json`: `wand:{min,max,element,mana}`, SEM
+ * `attack` nenhum) — o golpe saía sempre no piso mínimo, porque `attack: 0`.
+ * O spear inicial do paladin tem o mesmo problema pela metade: tem `attack`
+ * (então não saía zerado), mas é arma de distância (`range:3`) e o round só
+ * golpeava com o bicho adjacente, obrigando o paladino a andar pro corpo a
+ * corpo em vez de atirar de longe.
+ */
+export function categoriaDaArma(arma) {
+  if (arma?.wand) return 'magica';
+  if (arma?.skill === 'distance') return 'distancia';
+  return 'melee';
+}
+
+export function alcanceDaArma(arma, estado = null) {
+  // + o "alcance" da proficiência (arco, besta, wand), com a arma na mão.
+  return categoriaDaArma(arma) === 'melee' ? 1 : (arma?.range ?? 3) + (estado ? Proficiencia.bonus(estado).alcance : 0);
+}
+
+/*
+ * O `shoot` do item é o NOME real do projétil (`items.xml` do OTServ) — o
+ * atlas capturado (`missile-sprites.json`) é indexado pelo id numérico
+ * (`CONST_ANI_*`). A tabela inteira do OTServ, conferida contra os
+ * `projetil` REAIS do `action-catalog.json` capturado (ethereal spear 28,
+ * sudden death 32, explosion 41, earth 30, smallholy 38...) — do 1 ao 42.
+ */
+export const ID_DO_TIRO = {
+  spear: 1, bolt: 2, arrow: 3, fire: 4, energy: 5, poisonarrow: 6, burstarrow: 7,
+  throwingstar: 8, throwingknife: 9, smallstone: 10, death: 11, largerock: 12,
+  snowball: 13, powerbolt: 14, poison: 15, infernalbolt: 16, huntingspear: 17,
+  enchantedspear: 18, redstar: 19, greenstar: 20, royalspear: 21, sniperarrow: 22,
+  onyxarrow: 23, piercingbolt: 24, whirlwindsword: 25, whirlwindaxe: 26,
+  whirlwindclub: 27, etherealspear: 28, ice: 29, earth: 30, holy: 31,
+  suddendeath: 32, flasharrow: 33, flammingarrow: 34, shiverarrow: 35,
+  energyball: 36, smallice: 37, smallholy: 38, smallearth: 39, eartharrow: 40,
+  explosion: 41, cake: 42,
+};
+// Do 43 em diante a numeração muda entre versões do OTServ e o atlas só tem
+// 56 — em vez de chutar, essas munições novas (tarsal, vortex, prismatic,
+// diamond, spectral, leaf/royal star...) usam o projétil do TIPO delas.
+export const TIRO_DO_TIPO = { arrow: 3, bolt: 2, star: 8, spear: 1 };
+
+/** O projétil do golpe: arco/besta atiram a munição do slot `ammo`; o resto, o próprio `shoot`. */
+export function tiroDaArma(estado, arma) {
+  const municao = arma?.ammo ? ITEM_CATALOG[estado.equipment?.ammo?.id] : null;
+  const nome = (municao?.ammo === arma?.ammo ? municao?.shoot : null) ?? arma?.shoot ?? '';
+  const tipo = arma?.ammo ?? (/star$/.test(nome) ? 'star' : /spear$/.test(nome) ? 'spear' : /bolt$/.test(nome) ? 'bolt' : 'arrow');
+  return ID_DO_TIRO[nome] ?? TIRO_DO_TIPO[tipo];
+}
+
+/*
+ * O efeito de IMPACTO de cada elemento — os `efeito` REAIS das magias de alvo
+ * único do `action-catalog.json` capturado (Energy/Flame/Ice/Terra/Death
+ * Strike, Divine Missile). Antes a wand/rod usava sempre o 13, que é o brilho
+ * azul de cura: o golpe da rod parecia o monstro se curando.
+ */
+export const EFEITO_DO_ELEMENTO = { energy: 38, fire: 37, ice: 44, earth: 47, death: 18, holy: 40, physical: 1 };
+
+/** Golpe de wand/rod: dano REAL do próprio item (`wand.min/max`), sem fórmula — não precisa de magic level pra isso. */
+export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
+  const custo = arma.wand.mana ?? 0;
+  if ((estado.mana ?? 0) < custo) return false; // sem mana: fica sem golpe este round, não cai pro físico (simplificação, ver comentário do arquivo)
+  estado.mana -= custo;
+  Treino.gastarMana(estado, custo);
+  const { min, max, element } = arma.wand;
+  eventos.push({ t: 'shot', id: ID_DO_TIRO[arma.shoot] ?? 5, x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
+  eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[element] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
+  // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
+  const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
+  // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento; + "% da perícia como dano" (proficiência).
+  const base = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + (ficha.danoDoElemento?.[element] ?? 0) / 100);
+  const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
+  alvo.hp -= golpe;
+  eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
+  Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
+  Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem?.nome, hunt.pos);
+  Charms.aoAcertar(estado, hunt, alvo, eventos);
+  return true;
+}
+
+/**
+ * Um round de combate corpo a corpo — chamado a cada `R.PASSO_MS`, igual ao
+ * passo. Golpe do jogador usa a fórmula real (`R.golpeDoJogador`); o troco do
+ * bicho usa a aproximação documentada em `R.ataqueDoMonstro`/`R.danoRecebido`.
+ * Devolve os eventos reais que o cliente sabe desenhar (mesmo formato
+ * capturado ao vivo — ver `api-mapeada/captura-combate-real.json`).
+ */
+/*
+ * Quantas moedas caem. O bestiary real só tem a CHANCE de cada item, não a
+ * quantidade. Calibrado no dado real que temos: 7.618 Trolls mortos pelo Zotod
+ * renderam 147.036 de ouro (19,3 por Troll, que dá 20 de exp), com drops
+ * vistos de 6, 12 e 24. Aproximação: média = a exp do bicho, sorteada de 1 a
+ * 2x — não é a tabela real, que o servidor original nunca manda.
+ */
+/**
+ * Level pela fórmula real (`levelFromExp`, formulas.mjs). Subindo, a vida e a
+ * mana máximas crescem pela fórmula da vocação e o que já tinha sobe junto
+ * (como no Tibia: o level novo não cura, soma a diferença).
+ */
+/**
+ * O inverso do `subirDeLevel`, para a morte (`Morte.morrer`): a experiência
+ * caiu abaixo do level, e vida/mana máximas voltam às do level novo (com os
+ * bônus de afixos, árvore e gemas refeitos por cima). A vida atual é tratada por
+ * quem chamou — a morte devolve o personagem na cidade de vida cheia.
+ */
+export function descerDeLevel(estado) {
+  const novo = Math.max(1, R.levelFromExp(estado.xp ?? 0));
+  if (!(novo < (estado.level ?? 0))) return;
+  refazerMaximos(estado, novo);
+  estado.hp = Math.min(estado.hp ?? 0, estado.maxHp);
+  estado.mana = Math.min(estado.mana ?? 0, estado.maxMana);
+}
+
+/**
+ * Vida/mana máximas do level `novo`: a base + os 3000 do Buff Power, e os
+ * bônus de afixos, árvore e gemas refeitos por cima. Os três marcadores
+ * (`afixoMax`, `arvoreMax`, `gemasMax`) são zerados antes: sem isso o
+ * `sincronizarMaximos` de cada um achava que o bônus ainda estava no máximo
+ * (que acabou de ser refeito) e não punha de novo — a vida das gemas sumia a
+ * cada level up.
+ */
+/** Põe o personagem num level (a Arena x1 nivela os dois lados), com vida e mana máximas refeitas. */
+export const definirLevel = (estado, novo) => refazerMaximos(estado, novo);
+
+function refazerMaximos(estado, novo) {
+  const { maxHp, maxMana } = R.statsBase(estado.vocation, novo);
+  estado.level = novo;
+  estado.maxHp = maxHp + BuffPower.bonusDeVida(estado);
+  estado.maxMana = maxMana + BuffPower.bonusDeVida(estado);
+  estado.afixoMax = { hp: 0, mana: 0 };
+  Afixos.sincronizarMaximos(estado);
+  estado.arvoreMax = { hp: 0, mana: 0 };
+  Arvore.recalcularVida(estado);
+  estado.gemasMax = { hp: 0, mana: 0 };
+  Gemas.sincronizarMaximos(estado);
+}
+
+export function subirDeLevel(estado) {
+  const novo = R.levelFromExp(estado.xp ?? 0);
+  if (!(novo > (estado.level ?? 0))) return;
+  const { maxHp, maxMana } = R.statsBase(estado.vocation, novo);
+  // O level novo soma na vida/mana ATUAL só o que a BASE cresceu. (Antes a conta
+  // era "base nova − máximo antigo", e o máximo antigo inclui afixos, árvore e
+  // gemas: a cada level a vida atual CAÍA o tamanho desses bônus.)
+  const antes = R.statsBase(estado.vocation, estado.level ?? novo);
+  estado.hp = (estado.hp ?? 0) + (maxHp - antes.maxHp);
+  estado.mana = (estado.mana ?? 0) + (maxMana - antes.maxMana);
+  refazerMaximos(estado, novo);
+}
+
+export function quantasMoedas(bicho, id) {
+  if (id !== 3031) return 1;
+  const media = Math.max(1, bicho.exp ?? 10);
+  return 1 + Math.floor(Math.random() * (2 * media - 1));
+}
+
+/*
+ * ---- Boss derrotado ----
+ *
+ * Como no original: o loot vai para uma SACOLA no Baú de Boss (não para a
+ * bolsa de loot, que se vende sozinha), a recarga do boss começa
+ * (`cooldownHours` do catálogo real) e sai a faixa de vitória (`victory`, com
+ * `boss`, `exp` e `loot`). Alguns segundos depois ele volta para a cidade.
+ */
+export function vitoriaNoBoss(estado, hunt, alvo) {
+  const itens = [];
+  for (const drop of [...alvo.loot, ...Gemas.DROP.boss]) {
+    if (Math.random() >= drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100)) continue; // Buff Power Loot +50% e o afixo "Loot"
+    const af = Afixos.rolarDrop(drop.id, { boss: true });
+    itens.push({ id: drop.id, count: VALOR_DA_MOEDA[drop.id] ? quantasMoedas(alvo, drop.id) : 1, ...(af?.length ? { af } : {}) });
+  }
+  Bau.novaSacola(estado, alvo.name, itens);
+  // O cooldown já começou na ENTRADA (`Bosses.marcarEntrada`); aqui o de task fecha.
+  Bosses.marcarVitoria(estado, hunt.bossId);
+  hunt.vitoria = { boss: alvo.name, exp: alvo.exp, loot: Object.fromEntries(itens.map((i) => [i.id, i.count])) };
+  tirarMonstro(hunt, alvo);
+  if (hunt.alvo === alvo.uid) hunt.alvo = null;
+  hunt.fimEm = (hunt.clock ?? 0) + 5000;
+}
+
+export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
+  // Na Arena x1 ninguém ganha exp nem loot dos bichos: eles só atrapalham.
+  if (hunt.pvp) {
+    eventos.push({ t: 'kill', name: alvo.name, exp: 0, quem: personagem?.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
+    if (alvo.spawn) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
+    tirarMonstro(hunt, alvo);
+    return;
+  }
+  // A exp de verdade: a do bicho x (bônus de level + boosts + premium). Ver `Boosts.expDoBicho`.
+  // Shared Experience (party na mesma caçada, ver `party.mjs`): a exp do bicho,
+  // com o bônus das vocações, dividida em partes iguais; cada um recebe a parte
+  // dele com os PRÓPRIOS bônus (level, boosts, stamina).
+  const part = hunt.partilha;
+  let exp;
+  if (part?.ativa && part.membros.length > 1) {
+    const parte = (alvo.exp * (alvo.exp >= 20 ? part.bonus : 1)) / part.membros.length;
+    for (const m of part.membros) {
+      if (m.estado === estado || !m.estado?.hunt) continue;
+      const deles = Math.round(Boosts.expDoBicho(m.estado, parte) * Prey.fatorDeExp(m.estado, alvo.key));
+      m.estado.xp = (m.estado.xp ?? 0) + deles;
+      const s2 = m.estado.hunt.sessao;
+      if (s2) {
+        s2.exp += deles;
+        s2.expPorNome[m.nome] = (s2.expPorNome[m.nome] ?? 0) + deles;
+      }
+      Ficha.totais(m.estado).exp += deles;
+      subirDeLevel(m.estado);
+    }
+    exp = Boosts.expDoBicho(estado, parte);
+  } else {
+    exp = Boosts.expDoBicho(estado, alvo.exp);
+  }
+  // Prey de experiência: só contra a criatura do slot (ver `Prey.fatorDeExp`).
+  // + o bônus do pódio da Arena x1 da semana (1º +8%, 2º +5%, 3º +3%).
+  const podio = Arena.bonusDoPodio(personagem?.nome ?? '');
+  exp = Math.round(exp * Prey.fatorDeExp(estado, alvo.key) * (1 + podio.exp / 100));
+  alvo.exp = exp;
+  eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
+  estado.xp = (estado.xp ?? 0) + exp;
+  const sessao = hunt.sessao;
+  if (sessao) {
+    sessao.exp += exp;
+    sessao.kills += 1;
+  }
+  const totais = Ficha.totais(estado);
+  totais.kills += 1;
+  totais.exp += exp;
+  subirDeLevel(estado);
+  // O bestiary (e os pontos de charm quando fecha) e o Carnage.
+  Charms.contarMorte(estado, alvo.key, eventos);
+  if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Charms.contarMorte(m.estado, alvo.key, null);
+  // As tasks — Boss Task, de bicho e de montaria — DEPOIS do bestiary, que é de onde elas contam.
+  Bosses.contarMorte(estado, alvo.key);
+  Tarefas.contarMorte(estado, alvo.key);
+  if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Tarefas.contarMorte(m.estado, alvo.key);
+  Charms.aoMatar(estado, hunt, alvo, eventos);
+  // A proficiência: XP para a arma da mão (e para a de cada um da party) e vida/mana por morte.
+  Proficiencia.ganharXp(estado, alvo.key);
+  if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Proficiencia.ganharXp(m.estado, alvo.key);
+  const prof = Proficiencia.bonus(estado);
+  Proficiencia.curar(estado, prof.vidaNaMorte, prof.manaNaMorte, eventos, personagem?.nome, hunt.pos);
+  if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
+  if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo);
+  if (sessao) sessao.byMonster[alvo.name] = (sessao.byMonster[alvo.name] ?? 0) + 1;
+  if (sessao) sessao.expPorNome[personagem.nome] = (sessao.expPorNome[personagem.nome] ?? 0) + alvo.exp;
+  /*
+   * ---- O loot cai na BOLSA, como no original ----
+   *
+   * Moeda vai direto para o bolso (o `session.loot` real conta o 3031 como
+   * ouro). O resto entra na Bolsa de Loot (`Bolsa.porNaBolsa`, 1000 vagas),
+   * que a auto-venda esvazia (ver `autoVenda`). O que o filtro recusa
+   * (`itemRules.noLoot`) fica no chão como "Ignorado"; bolsa cheia, como
+   * "Ficou no chão" (`perdido`, o nome real da sessão capturada).
+   */
+  const caiu = [];
+  const conta = (grupo, id, n) => {
+    if (sessao) sessao.itens[grupo][id] = (sessao.itens[grupo][id] ?? 0) + n;
+  };
+  for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
+    const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100);
+    if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot" e a prey de loot
+    if (VALOR_DA_MOEDA[drop.id]) {
+      const n = quantasMoedas(alvo, drop.id);
+      // Moeda do loot cai no BANCO, não no bolso — medido no original: cada
+      // loot de moeda sobe `bank` no valor exato (36 platinum → +3.600), e o
+      // `gold` carregado só sobe com a venda automática.
+      estado.bank = (estado.bank ?? 0) + n * VALOR_DA_MOEDA[drop.id];
+      caiu.push({ id: drop.id, count: n });
+      if (sessao) sessao.gold += n * VALOR_DA_MOEDA[drop.id];
+      Ficha.totais(estado).gold += n * VALOR_DA_MOEDA[drop.id];
+      conta('loot', drop.id, n);
+      continue;
+    }
+    if (Bolsa.ignora(estado, drop.id)) {
+      conta('ignorado', drop.id, 1);
+      continue;
+    }
+    const semCap = pesoDoInventario(estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(estado);
+    if (semCap || !Bolsa.porNaBolsa(estado, drop.id, 1, Afixos.rolarDrop(drop.id))) {
+      conta('perdido', drop.id, 1);
+      continue;
+    }
+    caiu.push({ id: drop.id, count: 1 });
+    conta('loot', drop.id, 1);
+  }
+  // Mesmo evento do original (`{t:'loot', name, items:[{id,count}]}`, capturado
+  // ao vivo): é ele que escreve "Loot of a Troll: ..." no chat.
+  if (caiu.length) eventos.push({ t: 'loot', name: alvo.name, items: caiu });
+  // Sede de sangue (knight) e Fonte eterna (sorcerer).
+  Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
+  tirarMonstro(hunt, alvo);
+  if (hunt.alvo === alvo.uid) hunt.alvo = null;
+}
+
+/** O troco de UM bicho — chamado pra todo monstro adjacente, não só o alvo (ver `round`). */
+export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
+  Treino.treinar(estado, 'shielding');
+  const ficha = Ficha.combate(estado);
+  // Bloqueio: a chance da ficha (`blockChance`, fórmula real do client) apara o
+  // golpe inteiro — o `block` que o original manda, visto ao vivo.
+  if (Math.random() < ficha.blockChance) {
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
+    Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
+    return;
+  }
+  // Esquiva das gemas (supremo "Esquiva"): o golpe inteiro não pega.
+  if (ficha.esquiva && Math.random() < ficha.esquiva) {
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', esquiva: true });
+    return;
+  }
+  // Dodge (charm): desvia do golpe inteiro.
+  if (Charms.desviou(estado, hunt, personagem, bicho, eventos)) return;
+  // Ruse (tier da armadura): desvia do golpe inteiro.
+  if (Tiers.rolar(estado, 'body')) {
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', ruse: true });
+    Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome);
+    return;
+  }
+  // O melee do monster.lua (`Poderes`); bicho sem arquivo, a regra de sempre.
+  // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
+  const bruto = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * (bicho.forca ?? 1);
+  // Golpe corpo a corpo é físico: a proteção física do equipamento corta em %.
+  const protegido = Math.round(bruto * (1 - Math.min(100, ficha.protection.physical ?? 0) / 100));
+  // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
+  // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
+  let final = Math.round(R.danoRecebido(protegido, armorDoPersonagem(estado)) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
+  if (final > 0 && Acoes.temBuff(hunt, 'shield') && (estado.mana ?? 0) > 0) {
+    const daMana = Math.min(estado.mana, final);
+    estado.mana -= daMana;
+    final -= daMana;
+    eventos.push({ t: 'dmg', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, v: daMana, foe: false, de: bicho.name, golpe: 'corpo a corpo', color: '#4fc3ff' });
+  }
+  // Absorção e "Dano recebido" da árvore, Última muralha, o escudo da Fonte
+  // viva e o Não cai nunca (ver `Arvore.danoRecebido`).
+  final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome);
+  if (final > 0) {
+    estado.hp = Math.max(0, estado.hp - final);
+    // O sangue no boneco — sem isto o golpe só existia no número que sobe,
+    // nunca na tela (mesmo id real do OTServ que `round()` usa no bicho).
+    eventos.push({ t: 'fx', id: 1, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+    eventos.push({
+      t: 'dmg',
+      uid: 'player',
+      quem: personagem.nome,
+      x: hunt.pos.x,
+      y: hunt.pos.y,
+      v: final,
+      foe: false,
+      de: bicho.name,
+      golpe: 'corpo a corpo',
+      color: '#ff0000',
+    });
+    // Parry e Numb (charms defensivos).
+    Charms.depoisDeApanhar(estado, hunt, bicho, final, eventos);
+  } else {
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
+  }
+}
+
+/*
+ * ---- Não é só o alvo que bate — é todo bicho do lado ----
+ *
+ * "os mob tbm atacam igual o oficial" — um Troll que a Caça Automática NÃO
+ * escolheu como alvo mas que ficou adjacente (perseguindo, ver
+ * `moverMonstros`) bate igual: no jogo de verdade, ficar rodeado por três
+ * bichos dói o triplo, e não fingir isso tornava perseguição inofensiva.
+ * O jogador só bate de volta no ALVO (é assim que "corpo a corpo" escolhe
+ * quem golpear); os outros adjacentes só recebem o troco.
+ */
+/*
+ * ---- O ritmo do combate ----
+ *
+ * Medido no original (Biro, paladino level 8, na troll-cave, 2026-09-24): o
+ * ataque básico sai a cada ~2s (golpes em 6205, 8260, 14583, 16720, 18863,
+ * 21972ms do relógio da caçada — o 2s do Tibia), e a barra de magias tenta uma
+ * por segundo. Aqui o golpe saía a cada 250ms (o passo), e o troco de cada
+ * bicho também — 8x rápido demais dos dois lados.
+ */
+export const ATAQUE_MS = 2000;
+export const ATAQUE_DO_MONSTRO_MS = 2000;
+/** Até onde um bicho lança magia: a tela do Tibia (7 casas para o lado). */
+export const ALCANCE_DAS_MAGIAS = 7;
+
+/** Cada bicho colado bate no seu próprio ritmo, pelo relógio da caçada (vale na caçada offline também). */
+export function golpesDosMonstros(estado, hunt, personagem) {
+  const eventos = [];
+  // Arena x1: durante a largada ninguém luta, nem os bichos (`Arena.antesDoTique`).
+  if (hunt.largadaAte && Date.now() < hunt.largadaAte) return eventos;
+  const agora = hunt.clock ?? 0;
+  // As magias (área, feixe e no alvo) de boss e de bicho: não pedem estar
+  // colado, só estar na tela (`ALCANCE_DAS_MAGIAS`).
+  let ficha = null;
+  let escudo = false;
+  for (const bicho of hunt.monstros) {
+    if (bicho.dummy || bicho.hp <= 0 || !Poderes.temPoderes(bicho) || distancia(hunt.pos, bicho) > ALCANCE_DAS_MAGIAS) continue;
+    if (!ficha) {
+      ficha = Ficha.combate(estado);
+      escudo = Acoes.temBuff(hunt, 'shield');
+    }
+    Poderes.lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, escudo);
+  }
+  for (const bicho of hunt.monstros) {
+    if (bicho.dummy || bicho.hp <= 0 || distancia(hunt.pos, bicho) > 1 || Poderes.semCorpoACorpo(bicho)) continue;
+    if (estado.hp <= 0) break;
+    if (!R.jaPode(agora, bicho.proximoGolpe)) continue;
+    bicho.proximoGolpe = agora + ATAQUE_DO_MONSTRO_MS;
+    contraAtaque(estado, hunt, personagem, bicho, eventos);
+  }
+  return eventos;
+}
+
+/*
+ * ---- A parte ELEMENTAL do golpe da arma ----
+ *
+ * Arma com `element` (Crafted V2: holy 65; soulcutter: death 45) bate DUAS
+ * vezes no mesmo golpe no original: o físico (ataque da arma) e o elemento (o
+ * `value` dele pela MESMA fórmula) — capturado ao vivo, knight level 400 de
+ * soulcutter no boneco: 16 em cinza (#999999) e 73 em death (#990000) juntos
+ * (`api-mapeada/treino-online-msgs.json`). Aqui só o físico existia, e a arma
+ * V2 batia quase igual a um steel axe. O elemento passa pela resistência do
+ * bicho (a do bestiário, com o teto do boss) e pela mesma rolagem de crítico.
+ */
+// As reais capturadas: death na soulcutter (#990000) e fire na sanguine blade do Zoros (#ff9900,
+// 2026-09-25 — a magia de fogo é #ff9000); os outros, a cor do elemento.
+export const COR_DO_GOLPE_ELEMENTAL = { death: '#990000', fire: '#ff9900' };
+export const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
+
+export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) {
+  const el = arma?.element;
+  if (!el?.value) return null;
+  const tipo = ELEMENTO_DO_CATALOGO[el.type] ?? el.type;
+  const bruto = R.golpeDoJogador({ attack: el.value }, ficha.skillValue, estado.level) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
+  const resistencia = BESTIARY[alvo.key]?.elements?.[tipo] ?? 0;
+  const base = R.applyElement(bruto, hunt.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, resistencia) : resistencia);
+  const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
+  alvo.hp -= dano;
+  return { v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
+}
+
+/** A parte do golpe que o imbuement de dano elemental converteu: passa pela resistência do bicho (teto do boss). */
+export function elementalDoImbuement(hunt, alvo, tipo, parte) {
+  const resistencia = BESTIARY[alvo.key]?.elements?.[tipo] ?? 0;
+  const v = R.applyElement(parte, hunt.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, resistencia) : resistencia);
+  alvo.hp -= v;
+  return { v, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
+}
+
+export function round(estado, personagem) {
+  const hunt = estado.hunt;
+  const eventos = [];
+  // No duelo, mirando o adversário: o golpe básico é dele (`Arena.antesDoTique`).
+  if (hunt.alvoPvp) return { eventos, bateu: false };
+  const alvo = alvoAtual(hunt);
+  let bateu = false;
+
+  // Lurando (juntando a leva, ver `atualizarLure`) ele não bate: bater
+  // matava os bichos que estava puxando e a leva nunca chegava na meta. O
+  // perigo de apanhar sem revidar fica com `atualizarLure`, que manda brigar
+  // quando a vida cai abaixo de `VIDA_PARA_DESISTIR_DO_LURE`.
+  const arma = armaDoPersonagem(estado);
+  if (!hunt.lurando && alvo && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
+    bateu = true;
+    if (categoriaDaArma(arma) === 'magica') {
+      golpeDaWand(estado, hunt, alvo, arma, eventos, personagem);
+    } else {
+      // A perícia REAL da arma (sword/axe/club/distance; sem arma, fist) —
+      // o golpe treina ela e o dano usa o valor dela.
+      // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
+      const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
+      const pericia = ficha.skillName;
+      // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
+      // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
+      const fisico = 1 + (ficha.danoDoElemento?.physical ?? 0) / 100;
+      const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, (R.golpeDoJogador({ ...arma, attack: ficha.ataque }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico, alvo, eventos, ficha);
+      Treino.treinar(estado, pericia);
+      // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).
+      const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
+      const golpe = bruto - convertido;
+      alvo.hp -= golpe;
+      const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
+      const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido) : null;
+      // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
+      const extra = Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
+      Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
+      // Vida/mana por acerto (proficiência).
+      Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem.nome, hunt.pos);
+      // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
+      // alvo antes do dano, igual ao original — antes só a wand mandava `shot`.
+      if (categoriaDaArma(arma) === 'distancia') {
+        eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
+      }
+      eventos.push({ t: 'fx', id: 1, uid: alvo.uid, x: alvo.x, y: alvo.y });
+      // Com parte elemental, o físico sai CINZA e o elemento na cor dele — os dois
+      // números do mesmo golpe, como no original.
+      eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental || doImbuement ? '#999999' : '#ff0000' });
+      if (elemental) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: elemental.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental.cor });
+      if (doImbuement) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: doImbuement.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: doImbuement.cor });
+      // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
+      Charms.aoAcertar(estado, hunt, alvo, eventos);
+    }
+    // Momentum (tier do elmo): a cada golpe, chance de tirar 2s de todas as recargas.
+    if (Tiers.rolar(estado, 'head')) {
+      for (const cd of Object.values(hunt.cooldowns ?? {})) if (cd?.ate) cd.ate = Math.max(hunt.clock ?? 0, cd.ate - 2000);
+    }
+    if (alvo.dummy) {
+      alvo.hp = alvo.maxHp; // o boneco não morre
+      Treino.treinar(estado, 'shielding'); // no pátio o escudo sobe junto (a faixa do HUD)
+    }
+    else if (alvo.hp <= 0) matarMonstro(estado, hunt, personagem, alvo, eventos);
+    // Quem caiu com o dano extra da árvore (Chuva de flechas, Flecha que atravessa).
+    processarMortes(estado, personagem, eventos);
+  }
+  return { eventos, bateu };
+}

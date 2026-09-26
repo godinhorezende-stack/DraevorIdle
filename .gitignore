@@ -1,0 +1,20 @@
+# Dependências (npm install recria)
+node_modules/
+
+# Banco do jogo: contas, personagens e senhas dos jogadores — nunca vai para o git
+server/dados/
+
+# Cópias de segurança feitas antes de cada mudança grande (ficam só na máquina)
+_versao-anterior-*/
+
+# Cache local do graphify (caminhos desta máquina; recriado com /graphify)
+graphify-out/
+
+# Lixo do Windows / Git Bash
+bash.exe.stackdump
+*.log
+
+# Qualquer banco SQLite solto
+*.db
+*.db-wal
+*.db-shm
