@@ -17,7 +17,7 @@
 // apontando para o destino — nenhuma tabela é redeclarada aqui. Depois, para
 // cada tabela (na ordem que respeita as referências entre elas — conta antes
 // de personagem, por exemplo), lê todas as linhas do SQLite de origem e
-// insere no Postgres pelo mesmo `nucleo/db.mjs` (`?` → `$1, $2...`
+// insere no Postgres pelo mesmo `game/database/db.mjs` (`?` → `$1, $2...`
 // automático). `ON CONFLICT DO NOTHING` faz rodar de novo (mesmo destino,
 // mesma origem) não duplicar nada — mas NÃO é um merge: para uma migração de
 // verdade, rode contra um Postgres vazio.
@@ -41,7 +41,7 @@ if (!existsSync(origem)) {
 }
 
 // Precisa vir ANTES de importar qualquer módulo do jogo: é na primeira
-// importação de `nucleo/banco.mjs` (deste processo) que `DATABASE_URL` é lido
+// importação de `game/database/banco.mjs` (deste processo) que `DATABASE_URL` é lido
 // e o schema Postgres é criado.
 console.log(`origem (SQLite):  ${origem}`);
 console.log(`destino (Postgres): ${destino.replace(/:[^:@]+@/, ':***@')}`);
@@ -51,11 +51,11 @@ const sqlite = new DatabaseSync(origem, { readOnly: true });
 // Só a criação do schema — cada import roda seu bloco `CREATE TABLE IF NOT
 // EXISTS` contra o destino, na primeira vez que `banco.mjs` é aberto.
 const { banco } = await import('./banco.mjs');
-await import('../../server/sistemas/amigos.mjs');
-await import('../../server/sistemas/arena.mjs');
-await import('../../server/sistemas/drops-do-site.mjs');
-await import('../../server/sistemas/guildas.mjs');
-await import('../../server/sistemas/mercado.mjs');
+await import('../systems/amigos.mjs');
+await import('../systems/arena.mjs');
+await import('../systems/drops-do-site.mjs');
+await import('../systems/guildas.mjs');
+await import('../systems/mercado.mjs');
 
 if (banco.dialeto !== 'postgres') {
   console.error('DATABASE_URL não resultou em modo Postgres — nada a migrar (ver db.mjs).');

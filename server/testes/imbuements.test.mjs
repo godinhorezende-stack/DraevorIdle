@@ -4,10 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as Imbuements from '../sistemas/imbuements.mjs';
-import * as Ficha from '../sistemas/ficha.mjs';
-import * as Afixos from '../sistemas/afixos.mjs';
-import { elementalDoImbuement } from '../sistemas/hunt/combate.mjs';
+import * as Imbuements from '../../game/systems/imbuements.mjs';
+import * as Ficha from '../../game/systems/ficha.mjs';
+import * as Afixos from '../../game/systems/afixos.mjs';
+import { elementalDoImbuement } from '../../game/systems/hunt/combate.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const ler = (p) => JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8')).character;
@@ -84,7 +84,7 @@ test('os efeitos entram na ficha: crítico, leech, proteção, perícia e capaci
   e.equipment.body = { id: e.equipment.body.id, count: 1, imbu: [{ id: 'featherweight-3', left: 1000 }, { id: 'lich-shroud-3', left: 1000 }] };
   assert.equal(Afixos.capacidade(e), cap * 1.15);
   // A ficha guardada é da peça de ANTES (ver "Uma ficha por tique" em
-  // sistemas/ficha.mjs) — quem troca o equipamento no meio do teste precisa
+  // game/systems/ficha.mjs) — quem troca o equipamento no meio do teste precisa
   // avisar, do jeito que a sessão avisa a cada tique/comando.
   Ficha.invalidar(e);
   assert.equal(Ficha.combate(e).protection.death - Ficha.combate(semNada).protection.death, 10);

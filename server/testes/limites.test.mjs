@@ -1,4 +1,4 @@
-// O limite de ritmo de uma conexão (nucleo/limites.mjs): o cliente de verdade
+// O limite de ritmo de uma conexão (game/websocket/limites.mjs): o cliente de verdade
 // nunca é cortado; uma enxurrada é, e insistindo a conexão cai.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

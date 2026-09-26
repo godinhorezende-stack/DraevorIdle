@@ -1,4 +1,4 @@
-// Fase 6: `nucleo/db.mjs` — a mesma API (get/all/run/exec/transacao) nos dois
+// Fase 6: `game/database/db.mjs` — a mesma API (get/all/run/exec/transacao) nos dois
 // bancos. O de Postgres só roda se houver `DATABASE_URL_TESTE` no ambiente
 // (não trava o `npm test` de quem não tem Postgres rodando — ver README de
 // deploy); o de SQLite roda sempre, num arquivo temporário próprio.

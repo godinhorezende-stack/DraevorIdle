@@ -4,10 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as Gemas from '../sistemas/gemas.mjs';
-import * as Ficha from '../sistemas/ficha.mjs';
-import * as Bolsa from '../sistemas/bolsa.mjs';
-import { CATALOGO } from '../nucleo/dados.mjs';
+import * as Gemas from '../../game/systems/gemas.mjs';
+import * as Ficha from '../../game/systems/ficha.mjs';
+import * as Bolsa from '../../game/systems/bolsa.mjs';
+import { CATALOGO } from '../../game/systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const CAP = new URL('../../api-mapeada/captura-gemas-0925/', import.meta.url);
@@ -169,8 +169,8 @@ test('a venda automática não vende gema', () => {
 });
 
 test('a vida das gemas acesas sobrevive ao level up', async () => {
-  const { subirDeLevel } = await import('../sistemas/cacadas.mjs');
-  const R = await import('../nucleo/regras.mjs');
+  const { subirDeLevel } = await import('../../game/systems/cacadas.mjs');
+  const R = await import('../../game/systems/regras.mjs');
   const { e, gema } = comGema('lesser');
   gema.dominio = 'azul';
   gema.mods = [{ tipo: 'basico', id: 38 }]; // +150 vida (knight, grau I)

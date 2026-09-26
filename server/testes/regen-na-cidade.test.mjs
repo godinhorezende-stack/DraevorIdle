@@ -6,9 +6,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Sessao } from '../../game/websocket/sessao.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Stamina from '../sistemas/stamina.mjs';
-import * as R from '../nucleo/regras.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Stamina from '../../game/systems/stamina.mjs';
+import * as R from '../../game/systems/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 /** Uma sessão na cidade (sem hunt), com hp/mana/stamina longe do teto para o regen ter o que fazer. */

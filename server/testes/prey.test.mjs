@@ -4,11 +4,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { CATALOGO } from '../nucleo/dados.mjs';
-import * as Prey from '../sistemas/prey.mjs';
-import * as Loja from '../sistemas/loja.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Ficha from '../sistemas/ficha.mjs';
+import { CATALOGO } from '../../game/systems/dados.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
+import * as Loja from '../../game/systems/loja.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Ficha from '../../game/systems/ficha.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada');

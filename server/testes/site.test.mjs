@@ -5,12 +5,12 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as B from '../../game/database/banco.mjs';
-import * as Site from '../sistemas/site.mjs';
-import * as DropsDoSite from '../sistemas/drops-do-site.mjs';
-import * as Guildas from '../sistemas/guildas.mjs';
-import * as Ranking from '../sistemas/ranking.mjs';
+import * as Site from '../../game/systems/site.mjs';
+import * as DropsDoSite from '../../game/systems/drops-do-site.mjs';
+import * as Guildas from '../../game/systems/guildas.mjs';
+import * as Ranking from '../../game/systems/ranking.mjs';
 import { personagemDeTeste } from './apoio.mjs';
-import { ITEM_CATALOG } from '../nucleo/dados.mjs';
+import { ITEM_CATALOG } from '../../game/systems/dados.mjs';
 
 const ler = (n) => JSON.parse(readFileSync(new URL(`../../api-mapeada/captura-site-0926/${n}`, import.meta.url), 'utf8'));
 const chaves = (o) => Object.keys(o).sort();

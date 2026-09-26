@@ -7,7 +7,7 @@
 
 /*
  * O maior que o jogo manda de verdade é o áudio do chat: até 800 KB de base64
- * (`MAX_AUDIO_BYTES`, em sistemas/chat.mjs). 1 MB cobre ele com folga.
+ * (`MAX_AUDIO_BYTES`, em game/systems/chat.mjs). 1 MB cobre ele com folga.
  */
 export const TAMANHO_MAXIMO = 1024 * 1024;
 

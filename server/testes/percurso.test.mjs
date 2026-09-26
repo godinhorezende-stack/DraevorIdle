@@ -3,8 +3,8 @@
 // conta em `huntLaps`. Antes ele ficava parado esperando os bichos renascerem.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as R from '../nucleo/regras.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as R from '../../game/systems/regras.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const HUNT = 'werelions-1';

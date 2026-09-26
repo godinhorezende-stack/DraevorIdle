@@ -1,10 +1,10 @@
 // Um personagem de verdade para os testes — o mesmo molde de
 // `estadoInicialPersonagem` (sessao.mjs), sem abrir o banco.
-import * as R from '../nucleo/regras.mjs';
-import * as Inventario from '../sistemas/inventario.mjs';
-import * as Recompensas from '../sistemas/recompensas.mjs';
-import * as Loja from '../sistemas/loja.mjs';
-import { CHARACTER_TEMPLATE } from '../nucleo/dados.mjs';
+import * as R from '../../game/systems/regras.mjs';
+import * as Inventario from '../../game/systems/inventario.mjs';
+import * as Recompensas from '../../game/systems/recompensas.mjs';
+import * as Loja from '../../game/systems/loja.mjs';
+import { CHARACTER_TEMPLATE } from '../../game/systems/dados.mjs';
 
 export function personagemDeTeste({ vocacao = 'knight', level = R.NIVEL_INICIAL } = {}) {
   const { maxHp, maxMana } = R.statsBase(vocacao, level);

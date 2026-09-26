@@ -5,10 +5,10 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import * as B from '../../game/database/banco.mjs';
-import * as Arena from '../sistemas/arena.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
+import * as Arena from '../../game/systems/arena.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
 import { personagemDeTeste } from './apoio.mjs';
-import * as R from '../nucleo/regras.mjs';
+import * as R from '../../game/systems/regras.mjs';
 
 const NOMES = ['Arenatesteum', 'Arenatestedois', 'Arenatestetres'];
 after(() => {

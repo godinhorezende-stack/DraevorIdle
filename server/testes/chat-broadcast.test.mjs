@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { vivas } from '../../game/websocket/sessao.mjs';
-import * as Chat from '../sistemas/chat.mjs';
+import * as Chat from '../../game/systems/chat.mjs';
 
 function sessaoFake(nome, pos = { x: 100, y: 100, z: 7 }) {
   const recebidos = [];

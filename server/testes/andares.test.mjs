@@ -4,8 +4,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Prey from '../sistemas/prey.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const PASTA = new URL('../../assets_raw/gamedata/hunts/', import.meta.url);

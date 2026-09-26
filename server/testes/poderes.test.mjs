@@ -5,8 +5,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Prey from '../sistemas/prey.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const RESUMO = JSON.parse(readFileSync(new URL('../../api-mapeada/captura-bosses-0924/resumo-bosses.json', import.meta.url), 'utf8'));
@@ -121,7 +121,7 @@ test('bichos da hunt (Winter Dream Court): as magias com o nome, a cor e o efeit
 });
 
 test('melee dos bichos é o do arquivo (Crazed Winter Rearguard: até 400, não 2.616)', async () => {
-  const Poderes = await import('../sistemas/poderes.mjs');
+  const Poderes = await import('../../game/systems/poderes.mjs');
   let max = 0;
   for (let i = 0; i < 2000; i++) max = Math.max(max, Poderes.golpeCorpoACorpo({ key: 'crazed-winter-rearguard' }));
   assert.ok(max <= 400 && max > 300, `máximo ${max}`);

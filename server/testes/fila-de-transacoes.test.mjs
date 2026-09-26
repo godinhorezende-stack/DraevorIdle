@@ -1,4 +1,4 @@
-// Fase 6: a fila global de transações (`emTransacao`, nucleo/sessao.mjs) tem
+// Fase 6: a fila global de transações (`emTransacao`, game/websocket/sessao.mjs) tem
 // de impedir que DUAS transações — de sessões diferentes — rodem ao mesmo
 // tempo. Antes do banco virar assíncrono isso vinha de graça (nada mais roda
 // no meio de um trecho síncrono); agora precisa de uma fila de verdade.

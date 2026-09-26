@@ -22,7 +22,7 @@
 //
 // ---- Transação de verdade, com o banco assíncrono ----
 //
-// `emTransacao` (nucleo/sessao.mjs) garantia a atomicidade do mercado, banco,
+// `emTransacao` (game/websocket/sessao.mjs) garantia a atomicidade do mercado, banco,
 // guilda e loja fazendo BEGIN → o comando INTEIRO síncrono → COMMIT: em JS
 // síncrono, nada mais roda no meio, então a exclusão mútua vinha de graça.
 // Com o banco assíncrono isso quebra — um `await` no meio abre uma janela

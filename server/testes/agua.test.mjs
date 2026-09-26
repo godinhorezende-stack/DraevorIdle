@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { ITEM_CATALOG, CATALOGO } from '../nucleo/dados.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
+import { ITEM_CATALOG, CATALOGO } from '../../game/systems/dados.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw', 'gamedata', 'hunts');

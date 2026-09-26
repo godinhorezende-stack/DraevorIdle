@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import * as Arvore from '../sistemas/arvore.mjs';
-import * as Ficha from '../sistemas/ficha.mjs';
+import * as Arvore from '../../game/systems/arvore.mjs';
+import * as Ficha from '../../game/systems/ficha.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada', 'servidor');

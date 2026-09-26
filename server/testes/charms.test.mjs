@@ -4,10 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as Charms from '../sistemas/charms.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Prey from '../sistemas/prey.mjs';
-import { CATALOGO } from '../nucleo/dados.mjs';
+import * as Charms from '../../game/systems/charms.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
+import { CATALOGO } from '../../game/systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const CAP = new URL('../../api-mapeada/captura-charms-0925/', import.meta.url);

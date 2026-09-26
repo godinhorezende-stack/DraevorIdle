@@ -5,11 +5,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import * as Forja from '../sistemas/forja.mjs';
-import * as Afixos from '../sistemas/afixos.mjs';
-import * as Craft from '../sistemas/craft.mjs';
-import * as Desmanche from '../sistemas/desmanche.mjs';
-import { contarGuardadas } from '../sistemas/inventario.mjs';
+import * as Forja from '../../game/systems/forja.mjs';
+import * as Afixos from '../../game/systems/afixos.mjs';
+import * as Craft from '../../game/systems/craft.mjs';
+import * as Desmanche from '../../game/systems/desmanche.mjs';
+import { contarGuardadas } from '../../game/systems/inventario.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada', 'servidor');

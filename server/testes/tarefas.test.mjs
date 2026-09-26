@@ -4,10 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as Tarefas from '../sistemas/tarefas.mjs';
-import * as Entregas from '../sistemas/entregas.mjs';
-import * as Aparencia from '../sistemas/aparencia.mjs';
-import * as Promocao from '../sistemas/promocao.mjs';
+import * as Tarefas from '../../game/systems/tarefas.mjs';
+import * as Entregas from '../../game/systems/entregas.mjs';
+import * as Aparencia from '../../game/systems/aparencia.mjs';
+import * as Promocao from '../../game/systems/promocao.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const CAP = new URL('../../api-mapeada/captura-tarefas-0926/', import.meta.url);
@@ -149,7 +149,7 @@ test('sessão: as entregas só vão quando mudam, e vão depois de entregar', as
 });
 
 test('Boss Tasks: as mortes são as do bestiary (Minotauros 465, como no original)', async () => {
-  const Bosses = await import('../sistemas/bosses.mjs');
+  const Bosses = await import('../../game/systems/bosses.mjs');
   const e = personagemDeTeste({ level: W.level });
   e.bestiary = { ...W.bestiary };
   assert.deepEqual(Bosses.tasks(e), W.bossTasks);

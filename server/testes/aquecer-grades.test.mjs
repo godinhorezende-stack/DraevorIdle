@@ -5,8 +5,8 @@
 // pontos de nascimento — até 350ms medidos numa hunt real).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { aquecerGrades, gradeDaHunt, gradesCacheadas, huntsJogaveis } from '../sistemas/hunt/terreno.mjs';
-import { CATALOGO } from '../nucleo/dados.mjs';
+import { aquecerGrades, gradeDaHunt, gradesCacheadas, huntsJogaveis } from '../../game/systems/hunt/terreno.mjs';
+import { CATALOGO } from '../../game/systems/dados.mjs';
 
 test('aquece a grade de toda hunt jogável (terreno real), sem lançar', () => {
   const antes = gradesCacheadas.size;

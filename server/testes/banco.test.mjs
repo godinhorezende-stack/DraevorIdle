@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import * as Banqueiro from '../sistemas/banqueiro.mjs';
+import * as Banqueiro from '../../game/systems/banqueiro.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada', 'servidor');

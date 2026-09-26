@@ -3,8 +3,8 @@
 // Zoros (`captura-monstros-0924`): uma magia por segundo; Fierce Berserk 6 s → ~3 s.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Acoes from '../sistemas/acoes.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Acoes from '../../game/systems/acoes.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 function naHuntComBarra(ids) {

@@ -5,8 +5,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Sessao } from '../../game/websocket/sessao.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Prey from '../sistemas/prey.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
 import * as Quadro from '../../game/websocket/quadro.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 

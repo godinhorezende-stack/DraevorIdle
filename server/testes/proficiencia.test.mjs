@@ -4,10 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as Proficiencia from '../sistemas/proficiencia.mjs';
-import * as Ficha from '../sistemas/ficha.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Prey from '../sistemas/prey.mjs';
+import * as Proficiencia from '../../game/systems/proficiencia.mjs';
+import * as Ficha from '../../game/systems/ficha.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const ler = (p) => JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8'));

@@ -1,6 +1,6 @@
 // Persistência: contas, sessões, personagens, baú/melhorias da conta.
 // Fase 6: banco assíncrono, SQLite (padrão) ou PostgreSQL (`DATABASE_URL`) —
-// ver `nucleo/db.mjs` para a interface e o porquê de cada escolha.
+// ver `game/database/db.mjs` para a interface e o porquê de cada escolha.
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID, scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
@@ -24,7 +24,7 @@ if (banco.dialeto === 'sqlite') {
   await banco.exec(`
     PRAGMA journal_mode = WAL;
     -- Há mais de uma conexão no mesmo arquivo: a thread do jogo e a da
-    -- simulação offline (nucleo/simulacao-offline.mjs), que anota drops. Sem
+    -- simulação offline (game/systems/simulacao-offline.mjs), que anota drops. Sem
     -- isto, uma escrita que encontrasse a outra no meio falhava na hora com
     -- "database is locked" em vez de esperar os poucos milissegundos dela.
     PRAGMA busy_timeout = 5000;
@@ -115,7 +115,7 @@ if (banco.dialeto === 'sqlite') {
   `);
 }
 
-/** A transação de verdade (ver `nucleo/db.mjs`) — usada pela fila global em `nucleo/sessao.mjs`. */
+/** A transação de verdade (ver `game/database/db.mjs`) — usada pela fila global em `game/websocket/sessao.mjs`. */
 export const transacao = (fn) => banco.transacao(fn);
 
 // ------------------------------------------------------------------ senhas

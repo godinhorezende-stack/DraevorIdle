@@ -5,7 +5,7 @@
 // tique, porque o `.some()` original também lia posições já atualizadas.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { moverMonstros, ALCANCE_DE_PERCEPCAO } from '../sistemas/hunt/monstros.mjs';
+import { moverMonstros, ALCANCE_DE_PERCEPCAO } from '../../game/systems/hunt/monstros.mjs';
 
 // Um corredor reto: y=5, x de 0 a 10 — cada casa andável, sem obstáculo.
 // (o jogador precisa caber DENTRO da caixa minX..maxX: fora dela o BFS

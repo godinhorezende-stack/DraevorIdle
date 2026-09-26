@@ -3,8 +3,8 @@
 // limite de profundidade, alvo, e casas ocupadas por bichos.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CATALOGO } from '../nucleo/dados.mjs';
-import { bfsDistancias, bfsDistanciasAntiga, gradeDaHunt, VIZINHANCA_4, VIZINHANCA_8 } from '../sistemas/cacadas.mjs';
+import { CATALOGO } from '../../game/systems/dados.mjs';
+import { bfsDistancias, bfsDistanciasAntiga, gradeDaHunt, VIZINHANCA_4, VIZINHANCA_8 } from '../../game/systems/cacadas.mjs';
 
 let semente = 12345;
 const acaso = () => ((semente = (semente * 1103515245 + 12345) >>> 0) / 2 ** 32);

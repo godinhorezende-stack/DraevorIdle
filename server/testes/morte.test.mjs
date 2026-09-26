@@ -4,10 +4,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import * as Morte from '../sistemas/morte.mjs';
-import * as Promocao from '../sistemas/promocao.mjs';
-import * as R from '../nucleo/regras.mjs';
-import { descerDeLevel } from '../sistemas/hunt/combate.mjs';
+import * as Morte from '../../game/systems/morte.mjs';
+import * as Promocao from '../../game/systems/promocao.mjs';
+import * as R from '../../game/systems/regras.mjs';
+import { descerDeLevel } from '../../game/systems/hunt/combate.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const ler = (p) => JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8'));

@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Sessao } from '../../game/websocket/sessao.mjs';
-import * as R from '../nucleo/regras.mjs';
+import * as R from '../../game/systems/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 function andar(intervalos) {

@@ -2,8 +2,8 @@
 // para ele, e cada carga é um golpe na tela com o efeito da arma.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as Exercicio from '../sistemas/exercicio.mjs';
-import { CITY_META } from '../nucleo/dados.mjs';
+import * as Exercicio from '../../game/systems/exercicio.mjs';
+import { CITY_META } from '../../game/systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const BONECOS = CITY_META.objetos.filter((o) => o.acao === 'exercise');

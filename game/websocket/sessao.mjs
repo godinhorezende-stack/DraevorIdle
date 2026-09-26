@@ -9,55 +9,55 @@
 //                         largar | destroy | pegar | mounts | outfit | mount |
 //                         delta | jaTenhoCatalogo | oculta
 import * as B from '../../game/database/banco.mjs';
-import * as R from '../../server/nucleo/regras.mjs';
-import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado } from '../../server/nucleo/dados.mjs';
-import * as Inventario from '../../server/sistemas/inventario.mjs';
-import * as Recompensas from '../../server/sistemas/recompensas.mjs';
-import * as Aparencia from '../../server/sistemas/aparencia.mjs';
-import * as Loja from '../../server/sistemas/loja.mjs';
-import * as Cacadas from '../../server/sistemas/cacadas.mjs';
-import * as Acoes from '../../server/sistemas/acoes.mjs';
-import * as Treino from '../../server/sistemas/treino.mjs';
-import * as Bolsa from '../../server/sistemas/bolsa.mjs';
-import * as Ficha from '../../server/sistemas/ficha.mjs';
-import * as Deposito from '../../server/sistemas/deposito.mjs';
-import * as Bau from '../../server/sistemas/bau.mjs';
-import * as Mercado from '../../server/sistemas/mercado.mjs';
-import * as Boosts from '../../server/sistemas/boosts.mjs';
-import * as Stamina from '../../server/sistemas/stamina.mjs';
-import * as Exercicio from '../../server/sistemas/exercicio.mjs';
-import * as Treinos from '../../server/sistemas/treinos.mjs';
-import * as Premium from '../../server/sistemas/premium.mjs';
-import * as BuffPower from '../../server/sistemas/buffpower.mjs';
-import * as Tiers from '../../server/sistemas/tiers.mjs';
-import * as Summon from '../../server/sistemas/summon.mjs';
-import * as Bosses from '../../server/sistemas/bosses.mjs';
-import * as Party from '../../server/sistemas/party.mjs';
+import * as R from '../systems/regras.mjs';
+import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado } from '../systems/dados.mjs';
+import * as Inventario from '../systems/inventario.mjs';
+import * as Recompensas from '../systems/recompensas.mjs';
+import * as Aparencia from '../systems/aparencia.mjs';
+import * as Loja from '../systems/loja.mjs';
+import * as Cacadas from '../systems/cacadas.mjs';
+import * as Acoes from '../systems/acoes.mjs';
+import * as Treino from '../systems/treino.mjs';
+import * as Bolsa from '../systems/bolsa.mjs';
+import * as Ficha from '../systems/ficha.mjs';
+import * as Deposito from '../systems/deposito.mjs';
+import * as Bau from '../systems/bau.mjs';
+import * as Mercado from '../systems/mercado.mjs';
+import * as Boosts from '../systems/boosts.mjs';
+import * as Stamina from '../systems/stamina.mjs';
+import * as Exercicio from '../systems/exercicio.mjs';
+import * as Treinos from '../systems/treinos.mjs';
+import * as Premium from '../systems/premium.mjs';
+import * as BuffPower from '../systems/buffpower.mjs';
+import * as Tiers from '../systems/tiers.mjs';
+import * as Summon from '../systems/summon.mjs';
+import * as Bosses from '../systems/bosses.mjs';
+import * as Party from '../systems/party.mjs';
 import * as Quadro from './quadro.mjs';
-import * as Gemas from '../../server/sistemas/gemas.mjs';
-import * as Charms from '../../server/sistemas/charms.mjs';
-import * as Proficiencia from '../../server/sistemas/proficiencia.mjs';
-import * as Imbuements from '../../server/sistemas/imbuements.mjs';
-import * as Morte from '../../server/sistemas/morte.mjs';
-import * as Promocao from '../../server/sistemas/promocao.mjs';
-import * as Tarefas from '../../server/sistemas/tarefas.mjs';
-import * as Entregas from '../../server/sistemas/entregas.mjs';
-import * as Amigos from '../../server/sistemas/amigos.mjs';
-import * as Chat from '../../server/sistemas/chat.mjs';
-import * as Novidades from '../../server/sistemas/novidades.mjs';
-import * as Ranking from '../../server/sistemas/ranking.mjs';
-import * as Guildas from '../../server/sistemas/guildas.mjs';
-import * as Arena from '../../server/sistemas/arena.mjs';
-import { descerDeLevel } from '../../server/sistemas/hunt/combate.mjs';
+import * as Gemas from '../systems/gemas.mjs';
+import * as Charms from '../systems/charms.mjs';
+import * as Proficiencia from '../systems/proficiencia.mjs';
+import * as Imbuements from '../systems/imbuements.mjs';
+import * as Morte from '../systems/morte.mjs';
+import * as Promocao from '../systems/promocao.mjs';
+import * as Tarefas from '../systems/tarefas.mjs';
+import * as Entregas from '../systems/entregas.mjs';
+import * as Amigos from '../systems/amigos.mjs';
+import * as Chat from '../systems/chat.mjs';
+import * as Novidades from '../systems/novidades.mjs';
+import * as Ranking from '../systems/ranking.mjs';
+import * as Guildas from '../systems/guildas.mjs';
+import * as Arena from '../systems/arena.mjs';
+import { descerDeLevel } from '../systems/hunt/combate.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
-import * as Forja from '../../server/sistemas/forja.mjs';
-import * as Afixos from '../../server/sistemas/afixos.mjs';
-import * as Prey from '../../server/sistemas/prey.mjs';
-import * as Arvore from '../../server/sistemas/arvore.mjs';
-import * as Banqueiro from '../../server/sistemas/banqueiro.mjs';
-import * as Craft from '../../server/sistemas/craft.mjs';
-import * as Desmanche from '../../server/sistemas/desmanche.mjs';
-import * as SimulacaoOffline from '../../server/nucleo/simulacao-offline.mjs';
+import * as Forja from '../systems/forja.mjs';
+import * as Afixos from '../systems/afixos.mjs';
+import * as Prey from '../systems/prey.mjs';
+import * as Arvore from '../systems/arvore.mjs';
+import * as Banqueiro from '../systems/banqueiro.mjs';
+import * as Craft from '../systems/craft.mjs';
+import * as Desmanche from '../systems/desmanche.mjs';
+import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -260,13 +260,13 @@ function characterParaCliente(personagem, estado) {
     gold: estado.gold ?? 0,
     bank: estado.bank ?? 0,
     coins: estado.coins ?? 0,
-    // O bestiary (mortes por criatura) e os pontos de charm — ver `sistemas/charms.mjs`.
+    // O bestiary (mortes por criatura) e os pontos de charm — ver `game/systems/charms.mjs`.
     ...Charms.paraCliente(estado),
-    // A proficiência da arma na mão (null sem arma com proficiência) — ver `sistemas/proficiencia.mjs`.
+    // A proficiência da arma na mão (null sem arma com proficiência) — ver `game/systems/proficiencia.mjs`.
     proficiency: Proficiencia.vistaDaMao(estado),
-    // Os imbuements vestidos e os encaixes de cada peça — ver `sistemas/imbuements.mjs`.
+    // Os imbuements vestidos e os encaixes de cada peça — ver `game/systems/imbuements.mjs`.
     ...Imbuements.paraCliente(estado),
-    // A promoção de verdade (o molde trazia a do personagem capturado) — ver `sistemas/promocao.mjs`.
+    // A promoção de verdade (o molde trazia a do personagem capturado) — ver `game/systems/promocao.mjs`.
     promotion: Promocao.paraCliente(estado),
     // As entregas de outfit/montaria e as tasks de montaria — de cada personagem
     // (o molde trazia as do capturado para todo mundo). Ver `entregas.mjs`/`tarefas.mjs`.
@@ -277,7 +277,7 @@ function characterParaCliente(personagem, estado) {
     huntLaps: estado.huntLaps ?? {},
     arvorePontos: Arvore.pontos(estado),
     arvoreBonus: Arvore.bonus(estado),
-    // Stamina de verdade: gasta caçando, volta na cidade (ver sistemas/stamina.mjs).
+    // Stamina de verdade: gasta caçando, volta na cidade (ver game/systems/stamina.mjs).
     ...Stamina.paraCliente(estado),
     ...Exercicio.paraCliente(estado),
     treinoStamina: Treinos.tanqueParaCliente(estado),
@@ -312,13 +312,13 @@ function characterParaCliente(personagem, estado) {
     diario: Recompensas.diarioParaCliente(estado.diario ?? CHARACTER_TEMPLATE.diario),
     // Mesma razão das três de cima: mutáveis por personagem, vêm da Ravox Store.
     preyThirdSlot: estado.preyThirdSlot ?? false,
-    // Os três slots de prey e o preço da lista nova (200 x level) — ver `sistemas/prey.mjs`.
+    // Os três slots de prey e o preço da lista nova (200 x level) — ver `game/systems/prey.mjs`.
     ...Prey.paraCliente(estado),
     blessings: estado.blessings ?? [],
     ...Premium.paraCliente(estado), // premiumAte + os acessos `instance`/`divina`
     ...Tiers.paraCliente(estado), // tiers, tierMax, proximoTier
     summon: Summon.paraCliente(estado),
-    // Auto Boss e Boss Tasks são do personagem (ver `sistemas/bosses.mjs`); o
+    // Auto Boss e Boss Tasks são do personagem (ver `game/systems/bosses.mjs`); o
     // molde trazia o progresso do personagem capturado para todo mundo.
     autoBoss: Bosses.autoParaCliente(estado),
     bossTasks: Bosses.tasks(estado),
@@ -326,12 +326,12 @@ function characterParaCliente(personagem, estado) {
     efeitos: {
       ...CHARACTER_TEMPLATE.efeitos,
       // Os boosts de exp ligados (XP Boost da loja, Exp Potions) — a janelinha
-      // com o relógio no alto e a linha na ficha. Ver `sistemas/boosts.mjs`.
+      // com o relógio no alto e a linha na ficha. Ver `game/systems/boosts.mjs`.
       exp: Boosts.paraCliente(estado),
       // O Scroll Speed Exercise guardado: com saldo, a faixa do treino mostra
       // "Scroll Speed x2" com o tempo em vez da oferta (hud.mjs, `efeitos.exerciseSpeed`).
       exerciseSpeed: (estado.scrollExercise ?? 0) > 0 ? { fator: 2, restante: estado.scrollExercise } : null,
-      // Os três Buff Power com o relógio de cada um (ver `sistemas/buffpower.mjs`).
+      // Os três Buff Power com o relógio de cada um (ver `game/systems/buffpower.mjs`).
       buffPower: BuffPower.paraCliente(estado),
     },
   };
@@ -374,7 +374,7 @@ export class Sessao {
   }
 
   /**
-   * Roda uma função de `sistemas/*` (que devolve `{ok, erro}` e nunca fala
+   * Roda uma função de `game/systems/*` (que devolve `{ok, erro}` e nunca fala
    * com a rede) e traduz o resultado: erro vira aviso na tela, sucesso vira
    * `state` atualizado. Toda ação de jogo que só muda `estado` passa por
    * aqui — é o único lugar que sabe que `erro`/`mandarEstado` existem.
@@ -410,7 +410,7 @@ export class Sessao {
     if (r.renomeou) this.enviar({ t: 'taskToken', loja: TASK_TOKEN_REAL.loja });
   }
 
-  /** `send({t:'training', action, mode, itemId})` — por enquanto o Exercise (ver sistemas/exercicio.mjs). */
+  /** `send({t:'training', action, mode, itemId})` — por enquanto o Exercise (ver game/systems/exercicio.mjs). */
   /**
    * `send({t:'arvore', action?})` — como o original: erro vira `{t:'error'}`;
    * todo o resto responde com a vista inteira (`{t:'arvore', view, emCacada}`),
@@ -532,7 +532,7 @@ export class Sessao {
     this.enviar({ t: 'npcFala', id: npc.id, nome: npc.name, tipo: 'banco', fala: Banqueiro.FALA_DO_BANQUEIRO, catalogo: null, gold: this.estado.gold ?? 0 });
   }
 
-  /** `send({t:'market', action?})` — o balcão de itens (ver `sistemas/mercado.mjs`). */
+  /** `send({t:'market', action?})` — o balcão de itens (ver `game/systems/mercado.mjs`). */
   async despacharMercado(m) {
     const p = this.personagem;
     if (!p) return;
@@ -739,7 +739,7 @@ export class Sessao {
     // Sem resposta, o número mostrava há quanto tempo o ping saiu — só subia.
     if (m.t === 'ping') return this.enviar({ t: 'pong', at: m.at });
     // A ficha de combate (Ficha.combate) fica guardada entre uma invalidação e
-    // outra (ver o comentário em sistemas/ficha.mjs); um comando pode equipar,
+    // outra (ver o comentário em game/systems/ficha.mjs); um comando pode equipar,
     // forjar ou imbuir SEM passar por `aplicar()` (forja e craft respondem
     // direto), então a invalidação mora aqui, antes do `switch`, e não lá.
     Ficha.invalidar(this.estado);
@@ -879,8 +879,8 @@ export class Sessao {
         if (r.ok) this.enviar(Morte.vista(this.estado));
         return this.aplicar(r);
       }
-      // Amigos (lista, pedir, aceitar, recusar, tirar) e o perfil de alguém — ver `sistemas/amigos.mjs`.
-      // O chat (Local, Global, Privado, áudio) e a presença — ver `sistemas/chat.mjs`.
+      // Amigos (lista, pedir, aceitar, recusar, tirar) e o perfil de alguém — ver `game/systems/amigos.mjs`.
+      // O chat (Local, Global, Privado, áudio) e a presença — ver `game/systems/chat.mjs`.
       case 'chat': {
         const erro = Chat.falar(this, m);
         return erro ? this.erro(erro) : undefined;
@@ -893,10 +893,10 @@ export class Sessao {
         return this.enviar(Chat.ouvirAudio(m.id));
       case 'presenca':
         return this.enviar(Chat.presenca(m.nomes));
-      // Highscores: o top 25 da categoria — ver `sistemas/ranking.mjs`.
+      // Highscores: o top 25 da categoria — ver `game/systems/ranking.mjs`.
       case 'ranking':
         return Ranking.topo(m.category).then((ranking) => this.enviar({ t: 'ranking', ranking }));
-      // A guilda: sem `action`, a vista; com, a ação e a vista nova — ver `sistemas/guildas.mjs`.
+      // A guilda: sem `action`, a vista; com, a ação e a vista nova — ver `game/systems/guildas.mjs`.
       // A Arena x1: sem `action`, o lobby; com, a ação (a vista nova vai para quem foi tocado).
       case 'arena':
         return this.despacharArena(m);
@@ -1617,7 +1617,7 @@ export class Sessao {
     // comando, talvez do tique anterior) — pode ter vencido um buff/gema
     // temporária desde então. Sem isto, quem fica tiques parado sem mandar
     // nada (a caçada automática é assim) veria o crítico/dano de um Buff Power
-    // que já acabou até o próximo comando chegar. Ver sistemas/ficha.mjs.
+    // que já acabou até o próximo comando chegar. Ver game/systems/ficha.mjs.
     Ficha.invalidar(this.estado);
     // Fogo e esquece, de propósito: o tique não pode esperar a gravação (rede,
     // no Postgres) — o erro só é logado; a próxima passagem por aqui tenta de novo.

@@ -4,8 +4,8 @@
 // único jeito de os números saírem diferentes seja o bônus.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as Prey from '../sistemas/prey.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const HORA = 3_600_000;

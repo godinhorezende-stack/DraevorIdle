@@ -3,9 +3,9 @@
 // (`Cacadas.huntAoCarregar`) — inclusive bicho com campo mexido e boneco sem `key`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as R from '../nucleo/regras.mjs';
-import { criarMonstro } from '../sistemas/hunt/monstros.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as R from '../../game/systems/regras.mjs';
+import { criarMonstro } from '../../game/systems/hunt/monstros.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 /** O que o banco guarda e o que volta dele, pelo mesmo caminho da sessão. */

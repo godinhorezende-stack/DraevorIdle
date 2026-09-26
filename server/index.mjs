@@ -5,13 +5,13 @@ import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../game/websocket/sessao.mjs';
-import * as Mapas from './sistemas/mapas.mjs';
+import * as Mapas from '../game/systems/mapas.mjs';
 import * as Estaticos from './nucleo/estaticos.mjs';
-import * as Site from './sistemas/site.mjs';
-import * as DropsDoSite from './sistemas/drops-do-site.mjs';
-import * as Guildas from './sistemas/guildas.mjs';
+import * as Site from '../game/systems/site.mjs';
+import * as DropsDoSite from '../game/systems/drops-do-site.mjs';
+import * as Guildas from '../game/systems/guildas.mjs';
 import * as Limites from '../game/websocket/limites.mjs';
-import { aquecerGrades } from './sistemas/cacadas.mjs';
+import { aquecerGrades } from '../game/systems/cacadas.mjs';
 
 Site.ligar(vivas);
 
@@ -119,7 +119,7 @@ async function atender(req, res) {
    * ---- As APIs públicas do site (capa, /online, /personagem, /guildas) ----
    *
    * Só leitura, sem conta: é o que ravoxidle.com.br responde para quem ainda
-   * nem entrou no jogo. Ver `sistemas/site.mjs` e `sistemas/drops-do-site.mjs`.
+   * nem entrou no jogo. Ver `game/systems/site.mjs` e `game/systems/drops-do-site.mjs`.
    */
   if (req.method === 'GET' && caminho.startsWith('/api/')) {
     const q = url.searchParams;
@@ -151,7 +151,7 @@ const wss = new WebSocketServer({
   server: http,
   path: '/ws',
   perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 6 }, concurrencyLimit: 10 },
-  // Mensagem maior que isto fecha a conexão antes do `JSON.parse` (ver `nucleo/limites.mjs`).
+  // Mensagem maior que isto fecha a conexão antes do `JSON.parse` (ver `game/websocket/limites.mjs`).
   maxPayload: Limites.TAMANHO_MAXIMO,
 });
 // Mesma razão do `ws.on('error', ...)` de cada conexão: sem isto, um erro do

@@ -1,4 +1,4 @@
-// A caçada offline simulada numa thread à parte (nucleo/simulacao-offline.mjs):
+// A caçada offline simulada numa thread à parte (game/systems/simulacao-offline.mjs):
 // o resultado é o de sempre, a thread do jogo NÃO para enquanto ela roda, e
 // sair (ou entrar pela outra aba) no meio descarta a simulação sem perder nem
 // duplicar nada.
@@ -6,8 +6,8 @@ import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import * as B from '../../game/database/banco.mjs';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as SimulacaoOffline from '../nucleo/simulacao-offline.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as SimulacaoOffline from '../../game/systems/simulacao-offline.mjs';
 import { Sessao, vivas } from '../../game/websocket/sessao.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 

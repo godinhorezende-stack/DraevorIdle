@@ -1,10 +1,10 @@
 // Bosses: Boss Tasks, a espera que começa na entrada, os 25 minutos, o Auto
-// Boss e a loja de Boss Token — as regras do original (ver `sistemas/bosses.mjs`).
+// Boss e a loja de Boss Token — as regras do original (ver `game/systems/bosses.mjs`).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as Cacadas from '../sistemas/cacadas.mjs';
-import * as Bosses from '../sistemas/bosses.mjs';
-import * as Prey from '../sistemas/prey.mjs';
+import * as Cacadas from '../../game/systems/cacadas.mjs';
+import * as Bosses from '../../game/systems/bosses.mjs';
+import * as Prey from '../../game/systems/prey.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const HORA = 3_600_000;
