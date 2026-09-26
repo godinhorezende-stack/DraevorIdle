@@ -1,5 +1,5 @@
 // Gera `<nome>.png.webp` ao lado de cada PNG do jogo (o PNG original fica).
-// O servidor (server/nucleo/estaticos.mjs) manda o WebP no lugar do PNG para
+// O servidor (game/backend/estaticos.mjs) manda o WebP no lugar do PNG para
 // o navegador que aceita WebP — o cliente continua pedindo `.png`.
 //
 // - Sprites, mapas, arte: WebP SEM PERDA, conferido pixel a pixel (alfa igual e
@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 // WebP que não serve (maior, ou diferente) não conseguia ser apagado (EBUSY).
 sharp.cache(false);
 
-const RAIZ = fileURLToPath(new URL('../../assets_raw/', import.meta.url));
+const RAIZ = fileURLToPath(new URL('../../game/frontend/', import.meta.url));
 const PASTAS = process.argv.slice(2).length ? process.argv.slice(2) : ['client/assets', 'gamedata/sprites'];
 const ICONE_MAX = 256;
 const PARALELO = 4;

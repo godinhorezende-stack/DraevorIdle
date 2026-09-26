@@ -1,7 +1,7 @@
 // Heap do servidor depois de um GC forçado (servidor iniciado com --inspect=127.0.0.1:9229).
 // Rodar antes/depois de tools/carga.mjs várias vezes: se sobe a cada rodada, é vazamento.
 // Uso: node tools/perf/memoria.mjs [rótulo]
-import WebSocket from '../../server/node_modules/ws/wrapper.mjs';
+import WebSocket from '../../node_modules/ws/wrapper.mjs';
 const [alvo] = await (await fetch('http://127.0.0.1:9229/json')).json();
 const ws = new WebSocket(alvo.webSocketDebuggerUrl);
 await new Promise((r) => ws.on('open', r));

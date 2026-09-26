@@ -1,5 +1,5 @@
 // Microbenchmark de moverMonstros: quantos bichos cabem por tique antes da
-// grade de ocupação (server/sistemas/hunt/monstros.mjs) valer a pena.
+// grade de ocupação (game/systems/hunt/monstros.mjs) valer a pena.
 //
 // Isolado de propósito — o teste de carga real (tools/carga.mjs) tem ruído
 // demais (rede, banco, outras sessões) para comparar duas versões da mesma
@@ -8,9 +8,9 @@
 // no laço de movimento, e não exercita o `livre`).
 //
 // Uso: node tools/bench-mover-monstros.mjs [huntId=werelions-1] [N=500]
-import { moverMonstros } from '../server/sistemas/hunt/monstros.mjs';
-import { CATALOGO } from '../server/nucleo/dados.mjs';
-import { gradeDaHunt } from '../server/sistemas/hunt/terreno.mjs';
+import { moverMonstros } from '../game/systems/hunt/monstros.mjs';
+import { CATALOGO } from '../game/systems/dados.mjs';
+import { gradeDaHunt } from '../game/systems/hunt/terreno.mjs';
 
 const huntId = process.argv[2] ?? 'werelions-1';
 const N = Number(process.argv[3] ?? 500);

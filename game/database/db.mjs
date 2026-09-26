@@ -2,7 +2,7 @@
 //
 // Dois bancos possíveis, escolhidos por `DATABASE_URL`:
 // - Sem ela (padrão — dev e os testes): SQLite, `node:sqlite`, nativo, nada
-//   para instalar. O arquivo mora em `server/dados/jogo.db`.
+//   para instalar. O arquivo mora em `game/database/dados/jogo.db`.
 // - Com ela (`DATABASE_URL=postgres://usuario:senha@host:5432/jogo`):
 //   PostgreSQL, via `pg` — o banco de produção, pensado para várias conexões
 //   ao mesmo tempo (o jogo e a simulação offline, e no futuro mais de um

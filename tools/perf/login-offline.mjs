@@ -1,10 +1,10 @@
 // Mede quanto a volta de um personagem com 2h de caçada offline trava o servidor
 // para OS OUTROS jogadores (pior ping de uma segunda conexão durante o `play`).
 // Uso: [HORAS=2] node tools/perf/login-offline.mjs <token de preparar-personagem.mjs>   (HORAS=0: login sem caçada offline)
-import WebSocket from '../../server/node_modules/ws/wrapper.mjs';
+import WebSocket from '../../node_modules/ws/wrapper.mjs';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
-const db = new DatabaseSync(fileURLToPath(new URL('../../server/dados/jogo.db', import.meta.url)));
+const db = new DatabaseSync(fileURLToPath(new URL('../../game/database/dados/jogo.db', import.meta.url)));
 const row = db.prepare("select id, estado from personagens where nome = 'Perfteste'").get();
 const e = JSON.parse(row.estado);
 if (!e.hunt) { console.log('sem hunt'); process.exit(); }

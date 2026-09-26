@@ -1,11 +1,16 @@
 # Deploy — VPS com Docker
 
 Guia de ponta a ponta para colocar o jogo no ar num VPS: Docker Compose
-(`docker-compose.yml`), migração do banco (`server/scripts/migrar-sqlite-para-postgres.mjs`)
-e os scripts de `scripts/`. Tudo aqui foi testado neste repositório contra um
-Postgres real e um nginx real, dentro de containers — nenhuma parte foi
-testada contra um VPS/domínio de verdade ainda (ver `docs/auditoria-performance.md`,
-"Trilha de infraestrutura").
+(`game/docker/docker-compose.yml`), migração do banco
+(`game/database/migrar-sqlite-para-postgres.mjs`) e os scripts de `scripts/`.
+Tudo aqui foi testado neste repositório contra um Postgres real e um nginx
+real, dentro de containers — nenhuma parte foi testada contra um VPS/domínio
+de verdade ainda (ver `docs/auditoria-performance.md`, "Trilha de
+infraestrutura").
+
+Os comandos `docker compose` abaixo assumem que você está dentro de
+`game/docker/` (é onde moram os `docker-compose*.yml` e o `.env`) — os
+scripts de `scripts/` (deploy, backup) já fazem isso sozinhos.
 
 ## 1. O que o VPS precisa ter
 
@@ -19,7 +24,7 @@ testada contra um VPS/domínio de verdade ainda (ver `docs/auditoria-performance
 
 ```bash
 git clone <url-do-repo> draevoridle
-cd draevoridle
+cd draevoridle/game/docker
 cp .env.example .env
 # editar .env: POSTGRES_PASSWORD (obrigatório), DOMINIO/EMAIL_CERTBOT se for usar TLS
 docker compose up -d --build
@@ -43,13 +48,14 @@ seção 3.
 
 O `docker-compose.yml` cria o schema do Postgres vazio na primeira subida
 (o mesmo código que cria as tabelas em modo SQLite, só que apontando pro
-Postgres — ver `server/nucleo/banco.mjs` e cada `sistemas/*.mjs`). Para copiar
-contas/personagens/guildas/etc. de um `jogo.db` existente:
+Postgres — ver `game/database/banco.mjs` e cada `game/systems/*.mjs`). Para
+copiar contas/personagens/guildas/etc. de um `jogo.db` existente (rode a
+partir da raiz do repo, não de dentro de `game/docker/`):
 
 ```bash
 # Com a stack já no ar (o Postgres precisa estar de pé e acessível):
 DATABASE_URL="postgres://jogo:SENHA@localhost:5432/jogo" \
-  node server/scripts/migrar-sqlite-para-postgres.mjs /caminho/para/jogo.db
+  node game/database/migrar-sqlite-para-postgres.mjs /caminho/para/jogo.db
 ```
 
 Rodar de novo não duplica linha (`ON CONFLICT DO NOTHING`) — mas não é um
@@ -69,7 +75,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml \
   run --rm certbot certonly --webroot -w /var/www/certbot \
   -d "$DOMINIO" --email "$EMAIL_CERTBOT" --agree-tos --no-eff-email
 
-# 2. Editar docker/nginx/conf.d/default.conf:
+# 2. Editar game/docker/nginx/conf.d/default.conf:
 #    - trocar SEU_DOMINIO pelo domínio de verdade (duas linhas de ssl_certificate*)
 #    - descomentar o bloco inteiro do server{} de :443
 #    - no server{} de :80, trocar `include game.conf.inc` por
@@ -83,7 +89,7 @@ compose — um container `certbot` ficando no ar 90 dias só de plantão não
 compensa. No `crontab -e` do VPS:
 
 ```cron
-0 3 * * 1 cd /caminho/para/draevoridle && docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm certbot renew --quiet && docker compose restart nginx
+0 3 * * 1 cd /caminho/para/draevoridle/game/docker && docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm certbot renew --quiet && docker compose restart nginx
 ```
 
 ## 5. Deploy de uma atualização (via Git)
@@ -100,10 +106,11 @@ termina depois de confirmar `/saude` respondendo. Se `/saude` não responder em
 ~1 minuto, ele sai com erro (`docker compose logs game` para investigar) —
 não fica um deploy "pela metade" sem avisar.
 
-`assets_raw/` e `api-mapeada/` são montados como volume a partir do checkout
-(não entram na imagem Docker) — um `git pull` já atualiza os dois sem rebuild;
-só código de `server/` pede rebuild da imagem (o que `deploy.sh` sempre faz,
-com `--build`, mesmo que às vezes seja um no-op pelo cache do Docker).
+`game/frontend/`, `game/gamedata/` e `api-mapeada/` são montados como volume
+a partir do checkout (não entram na imagem Docker) — um `git pull` já
+atualiza os três sem rebuild; só o código (`game/{backend,engine,database,
+websocket,systems,admin}/`) pede rebuild da imagem (o que `deploy.sh` sempre
+faz, com `--build`, mesmo que às vezes seja um no-op pelo cache do Docker).
 
 ## 6. Staging e produção no mesmo host
 
@@ -134,12 +141,13 @@ Agendar diário no VPS (`crontab -e`):
 0 4 * * * cd /caminho/para/draevoridle && scripts/backup-postgres.sh >> /var/log/draevoridle-backup.log 2>&1
 ```
 
-Os arquivos ficam em `backups/` (fora do git — `.gitignore`), comprimidos
-(`pg_dump` + gzip). **Restauração testada** (ver `scripts/backup-postgres.sh`,
-comentário do topo):
+Os arquivos ficam em `backups/` (na raiz do repo, fora do git —
+`.gitignore`), comprimidos (`pg_dump` + gzip). **Restauração testada** (ver
+`scripts/backup-postgres.sh`, comentário do topo; rode de dentro de
+`game/docker/`):
 
 ```bash
-gunzip -c backups/jogo-AAAAMMDD-HHMMSS.sql.gz | \
+gunzip -c ../../backups/jogo-AAAAMMDD-HHMMSS.sql.gz | \
   docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 ```
 
@@ -155,7 +163,7 @@ docker compose logs --tail 200 nginx
 docker compose logs --tail 200 postgres
 
 docker compose restart game            # só o jogo (grava todo mundo antes de sair, ver Dockerfile)
-docker compose restart nginx           # depois de mexer em docker/nginx/conf.d/
+docker compose restart nginx           # depois de mexer em game/docker/nginx/conf.d/
 docker compose down && docker compose up -d --build   # derruba tudo e sobe de novo
 ```
 

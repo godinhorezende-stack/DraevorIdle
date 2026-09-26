@@ -1,4 +1,4 @@
-// Gera assets_raw/gamedata/tarefas.json — as definições FIXAS das tarefas, tiradas
+// Gera game/gamedata/tarefas.json — as definições FIXAS das tarefas, tiradas
 // do original (Zoros, 2026-09-26, api-mapeada/captura-tarefas-0926/):
 // - tasks de bicho: a lista de 322 (chave, level, boss, semSala), as escadas e as faixas;
 // - tasks de montaria: alvo por criatura, Task Token e a montaria;
@@ -30,9 +30,9 @@ const saida = {
     itens: itens.map(({ tem, entregue, falta, ...i }) => i),
   })),
 };
-writeFileSync(new URL('assets_raw/gamedata/tarefas.json', raiz), JSON.stringify(saida));
+writeFileSync(new URL('game/gamedata/tarefas.json', raiz), JSON.stringify(saida));
 
 // O calendário da Recompensa Diária (os 30 dias do original; `pego`/`aVez` são do personagem).
 const diario = w.diario.dias.map(({ pego, aVez, ...d }) => d);
-writeFileSync(new URL('assets_raw/gamedata/diario.json', raiz), JSON.stringify({ fonte: saida.fonte, dias: diario }));
+writeFileSync(new URL('game/gamedata/diario.json', raiz), JSON.stringify({ fonte: saida.fonte, dias: diario }));
 console.log('bichos', saida.bichos.length, 'mountTasks', saida.mountTasks.length, 'entregas', saida.entregas.length);

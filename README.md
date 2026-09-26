@@ -15,10 +15,10 @@ reescrever mais um sistema no chute.
 
 | pasta | o que é | origem |
 |---|---|---|
-| `assets_raw/client/src/` | 18 módulos do cliente (`main.mjs`, `panels.mjs`, `inventory.mjs`, ...) | **baixado**, não-minificado |
-| `assets_raw/packages/shared/src/` | 9 módulos compartilhados (fórmulas, cor de outfit, prazos...) | **baixado**, não-minificado |
-| `assets_raw/client/assets/` | ícones e arte de UI (37 arquivos) | **baixado** |
-| `assets_raw/gamedata/` | índices (`outfits.json`, `item-sprites.json`, `effect-sprites.json`, `missile-sprites.json`) + atlas de sprite | **baixado** |
+| `game/frontend/client/src/` | 18 módulos do cliente (`main.mjs`, `panels.mjs`, `inventory.mjs`, ...) | **baixado**, não-minificado |
+| `game/engine/` | 9 módulos compartilhados (fórmulas, cor de outfit, prazos...) | **baixado**, não-minificado |
+| `game/frontend/client/assets/` | ícones e arte de UI (37 arquivos) | **baixado** |
+| `game/gamedata/` | índices (`outfits.json`, `item-sprites.json`, `effect-sprites.json`, `missile-sprites.json`) + atlas de sprite | **baixado** |
 | `api-mapeada/protocolo.md` | comandos/eventos do WebSocket, lidos do cliente | escrito a partir da leitura do código |
 | `api-mapeada/checklist-modulos.md` | os 21 ícones da barra + ~13 sistemas extras, um a um: o que cada um abre, quais comandos usa, e o estado real testado ao vivo | escrito e testado nesta revisão |
 | `tools/` | os dois crawlers usados na recuperação | escrito do zero |
@@ -53,16 +53,16 @@ eles só existem do lado do servidor:
 
 | arquivo | o que é | tamanho |
 |---|---|---|
-| `assets_raw/gamedata/city-map.json` | **o mapa real da cidade**: 187×108 tiles, 9 andares, paleta+pilhas+colisão | 3,7 MB |
-| `assets_raw/gamedata/sprites/city.png` | o atlas real da cidade (o `map.atlas` do arquivo acima) | 9,5 MB |
-| `assets_raw/gamedata/city-meta.json` / `api-mapeada/city-meta.json` | NPCs reais (Banker, Zuma Magehide), bonecos de treino, itens largados no spawn, posição de nascimento real (`x:99,y:65,z:7`) | 15 KB |
-| `assets_raw/gamedata/item-catalog.json` | **catálogo real de 6.178 itens** — nome, peso, raridade, chance de drop, tipo | 1,3 MB |
-| `assets_raw/gamedata/equipamento-por-vocacao.json` / `api-mapeada/equipamento-real-por-vocacao.json` | o equipamento real com que cada uma das 5 vocações nasce (peça por peça) | — |
+| `game/gamedata/city-map.json` | **o mapa real da cidade**: 187×108 tiles, 9 andares, paleta+pilhas+colisão | 3,7 MB |
+| `game/gamedata/sprites/city.png` | o atlas real da cidade (o `map.atlas` do arquivo acima) | 9,5 MB |
+| `game/gamedata/city-meta.json` / `api-mapeada/city-meta.json` | NPCs reais (Banker, Zuma Magehide), bonecos de treino, itens largados no spawn, posição de nascimento real (`x:99,y:65,z:7`) | 15 KB |
+| `game/gamedata/item-catalog.json` | **catálogo real de 6.178 itens** — nome, peso, raridade, chance de drop, tipo | 1,3 MB |
+| `game/gamedata/equipamento-por-vocacao.json` / `api-mapeada/equipamento-real-por-vocacao.json` | o equipamento real com que cada uma das 5 vocações nasce (peça por peça) | — |
 | `api-mapeada/character-real-example.json` | um personagem real completo (96 campos) — a referência para todo campo que faltar | 88 KB |
 | `api-mapeada/welcome-extras.json` | ranking real (top 25) e o changelog (`novidades`) do momento da captura | — |
 
 Isto **substitui** a praça-placeholder e o `statsBase` chutado das revisões anteriores.
-`packages/shared/src/formulas.mjs` (já extraído do cliente, sem precisar de captura ao
+`game/engine/formulas.mjs` (já extraído do cliente, sem precisar de captura ao
 vivo) tem as fórmulas exatas de vida/mana/velocidade/capacidade por level — testadas
 contra os 5 personagens reais capturados e conferem em TODOS: knight 255 HP / 70 mana no
 level 8, paladin 220/140, druid e sorcerer 185/245, monk 241/105. Zero chute nessas
@@ -87,15 +87,17 @@ personagem pessoal do dono.
 - Autenticação real (hash de senha, 2FA, OAuth Google), envio de e-mail, qualquer
   integração de pagamento
 
-## O núcleo do servidor (`server/`)
+## O núcleo do servidor (`game/`)
 
 Escrito do zero, mesmo esqueleto do `pokeidle-restore/server/`: `node:sqlite` nativo
-(Node 22+), `ws` para o WebSocket, um gateway HTTP que serve `assets_raw/` como cliente.
+(Node 22+), `ws` para o WebSocket, um gateway HTTP que serve `game/frontend/` como
+cliente. Reorganizado em `game/{backend,engine,database,websocket,systems,admin,
+frontend,gamedata,docker}` — ver `docs/refatoracao-estrutura.md` para o porquê de
+cada pasta e o mapeamento completo.
 
 ```bash
-cd server
 npm install
-node index.mjs   # -> http://localhost:8080/jogar
+npm run dev   # node game/backend/index.mjs -> http://localhost:8080/jogar
 ```
 
 Banco: SQLite por padrão (nada para instalar); com `DATABASE_URL=postgres://...`
@@ -105,13 +107,13 @@ no ambiente, o mesmo servidor fala com PostgreSQL — ver `docs/auditoria-perfor
 
 | arquivo | o que faz |
 |---|---|
-| `server/index.mjs` | gateway: serve o cliente por HTTP, abre o WebSocket em `/ws` |
-| `server/nucleo/banco.mjs` | contas (scrypt), sessões, personagens — SQLite ou Postgres, por `DATABASE_URL` |
-| `server/nucleo/regras.mjs` | constantes — looks por vocação, level inicial 8, fórmulas REAIS de vida/mana/velocidade/capacidade (importadas de `packages/shared/src/formulas.mjs`) |
-| `server/nucleo/dados.mjs` | carrega os arquivos capturados (mapa, catálogo, molde de personagem, equipamento) — só leitura de disco, nenhuma regra |
-| `server/nucleo/sessao.mjs` | camada de REDE só: uma conexão = uma `Sessao`, despacha comando→método, traduz resultado de `sistemas/*` em mensagem WebSocket |
-| `server/sistemas/inventario.mjs` | domínio do inventário: equipar de início, peso, destruir, largar/pegar do chão (chão compartilhado, semeado com os itens reais do spawn) |
-| `server/sistemas/recompensas.mjs` | domínio das recompensas: presente de level (arma de treino/set/montaria/outfit) e calendário diário, com cooldown real |
+| `game/backend/index.mjs` | gateway: serve o cliente por HTTP, abre o WebSocket em `/ws` |
+| `game/database/banco.mjs` | contas (scrypt), sessões, personagens — SQLite ou Postgres, por `DATABASE_URL` |
+| `game/systems/regras.mjs` | constantes — looks por vocação, level inicial 8, fórmulas REAIS de vida/mana/velocidade/capacidade (importadas de `game/engine/formulas.mjs`) |
+| `game/systems/dados.mjs` | carrega os arquivos capturados (mapa, catálogo, molde de personagem, equipamento) — só leitura de disco, nenhuma regra |
+| `game/websocket/sessao.mjs` | camada de REDE só: uma conexão = uma `Sessao`, despacha comando→método, traduz resultado de `game/systems/*` em mensagem WebSocket |
+| `game/systems/inventario.mjs` | domínio do inventário: equipar de início, peso, destruir, largar/pegar do chão (chão compartilhado, semeado com os itens reais do spawn) |
+| `game/systems/recompensas.mjs` | domínio das recompensas: presente de level (arma de treino/set/montaria/outfit) e calendário diário, com cooldown real |
 
 **Funciona hoje**: `register`/`login`/`resume` por e-mail+senha, lista e criação de
 personagem (as 5 vocações, com o outfit, o HP/mana, a capacidade e o **equipamento
@@ -145,7 +147,7 @@ Depósito abrem **sem erro nenhum no console**, com dado real ou estado vazio co
 
 **Ações de item também funcionam de ponta a ponta**: largar no chão, destruir na
 lixeira e pegar do chão (`largar`/`destroy`/`pegar`) — o chão é compartilhado (um `Map`
-em `sistemas/inventario.mjs`), semeado no boot com os itens reais que estavam largados
+em `game/systems/inventario.mjs`), semeado no boot com os itens reais que estavam largados
 no spawn quando a cidade foi capturada. Presente de level e recompensa diária também
 (`presente`/`marco`/`diario`/`diarioEscolher`), com cooldown real de 20h entre coletas
 — não existia nenhum, e dava para coletar a recompensa diária infinitas vezes (achado
@@ -202,6 +204,6 @@ mesmo padrão: achar QUEM pede aquele nome no cliente e de onde ele tira o `id`.
 ## Nota
 
 Este jogo usa sprites extraídos do client do Tibia (ver comentário no topo de
-`assets_raw/client/src/sprites.mjs`) — a arte original é IP da CipSoft, independente de
+`game/frontend/client/src/sprites.mjs`) — a arte original é IP da CipSoft, independente de
 quem opere o site. Isso vale para publicação, não para este backup local de um projeto
 próprio.

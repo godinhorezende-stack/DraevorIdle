@@ -1,7 +1,7 @@
 // Grava um perfil de CPU do servidor rodando (iniciado com `node --inspect=127.0.0.1:9229 index.mjs`)
 // durante `segundos`, e mostra as funções que mais gastam.
 // Uso: node tools/perfil-servidor.mjs [segundos=15] [arquivo.cpuprofile]
-import WebSocket from '../server/node_modules/ws/wrapper.mjs';
+import WebSocket from '../node_modules/ws/wrapper.mjs';
 import { writeFileSync } from 'node:fs';
 
 const SEGUNDOS = Number(process.argv[2] ?? 15);

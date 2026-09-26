@@ -1,4 +1,4 @@
-// Gera assets_raw/gamedata/proficiencia.json — os dados da Proficiência de arma.
+// Gera game/gamedata/proficiencia.json — os dados da Proficiência de arma.
 //
 // Fontes:
 // - api-mapeada/servidor/proficiency.json: a lista das 678 armas e a view de
@@ -85,5 +85,5 @@ const saida = {
   armas,
   grupos,
 };
-writeFileSync(new URL('assets_raw/gamedata/proficiencia.json', raiz), JSON.stringify(saida));
+writeFileSync(new URL('game/gamedata/proficiencia.json', raiz), JSON.stringify(saida));
 console.log('armas', Object.keys(armas).length, 'grupos', Object.keys(grupos).length, 'bosses com raridade', Object.keys(raridade).length);

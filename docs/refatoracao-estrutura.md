@@ -8,6 +8,13 @@ repositório em `game/backend`, `game/frontend`, `game/engine`,
 Nada foi movido ainda. Este documento é o mapa + a proposta pedidos antes de
 qualquer `git mv`.
 
+**Status: as 11 etapas da §6 foram concluídas** (um commit por etapa, `npm
+test` verde depois de cada uma — ver o histórico do git a partir do commit
+"docs: mapa de dependências..."). Todo o código do jogo mora em `game/*`;
+`server/` e `assets_raw/` não existem mais. `docs/deploy.md`, `README.md` e
+os scripts em `scripts/`/`tools/` já refletem os caminhos novos. O que ficou
+de fora de propósito está listado na §7.
+
 ---
 
 ## 1. Inventário atual

@@ -1,4 +1,4 @@
-// Gera `assets_raw/gamedata/boss-poderes.json` e `monstro-poderes.json`: os
+// Gera `game/gamedata/boss-poderes.json` e `monstro-poderes.json`: os
 // ataques e as curas de cada boss e de cada bicho das hunts, lidos do `monster.lua` do Canary (opentibiabr/canary, o datapack que o
 // servidor original usa — ver `api-mapeada/canary/boss-luas.json` para o
 // caminho de cada arquivo).
@@ -148,8 +148,8 @@ return saida;
 
 const FONTE = 'opentibiabr/canary monster.lua (ver tools/gerar-poderes-dos-bosses.mjs)';
 const bosses = gerar(new URL('api-mapeada/canary/luas/', RAIZ));
-writeFileSync(new URL('assets_raw/gamedata/boss-poderes.json', RAIZ), JSON.stringify({ _fonte: FONTE, bosses }, null, 1));
+writeFileSync(new URL('game/gamedata/boss-poderes.json', RAIZ), JSON.stringify({ _fonte: FONTE, bosses }, null, 1));
 // Os bichos das hunts (`api-mapeada/canary/monstro-luas.json` diz de onde veio cada um).
 const monstros = gerar(new URL('api-mapeada/canary/luas-monstros/', RAIZ));
-writeFileSync(new URL('assets_raw/gamedata/monstro-poderes.json', RAIZ), JSON.stringify({ _fonte: FONTE, monstros }, null, 1));
+writeFileSync(new URL('game/gamedata/monstro-poderes.json', RAIZ), JSON.stringify({ _fonte: FONTE, monstros }, null, 1));
 console.log(Object.keys(bosses).length, 'bosses,', Object.keys(monstros).length, 'monstros; ignorados (magias com script próprio, condições, velocidade):', ignorados);

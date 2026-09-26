@@ -8,7 +8,7 @@
 //
 // Uso (com o servidor rodando em :8080):
 //   node tools/carga.mjs [N=20] [segundos=20] [modo=cacada|cidade]
-import WebSocket from '../server/node_modules/ws/wrapper.mjs';
+import WebSocket from '../node_modules/ws/wrapper.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 
@@ -16,7 +16,7 @@ const N = Number(process.argv[2] ?? 20);
 const SEGUNDOS = Number(process.argv[3] ?? 20);
 const MODO = process.argv[4] ?? 'cacada';
 const URL_WS = process.env.URL_WS ?? 'ws://localhost:8080/ws';
-const DB = fileURLToPath(new URL('../server/dados/jogo.db', import.meta.url));
+const DB = fileURLToPath(new URL('../game/database/dados/jogo.db', import.meta.url));
 const HUNTS = ['werelions-1', 'roshamuul-cave', 'golems-catacombs', 'deeper-banuta-8', 'spike-8', 'winter-dream-court', 'asura-palace', 'zaoan-draken-walls'];
 const SENHA = 'carga-teste-123';
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));

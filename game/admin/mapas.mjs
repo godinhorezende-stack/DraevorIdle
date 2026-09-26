@@ -1,5 +1,5 @@
 // Mapas customizados feitos no /editor. Funções puras — quem fala HTTP é
-// `server/index.mjs`; este arquivo não conhece requisição nem resposta.
+// `game/backend/index.mjs`; este arquivo não conhece requisição nem resposta.
 //
 // Mesmo FORMATO que uma hunt real capturada usa
 // (`game/gamedata/hunts/<id>-map.json`) — `cacadas.mjs::mapaRealCapturado`
