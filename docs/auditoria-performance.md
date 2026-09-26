@@ -676,6 +676,31 @@ Custo novo: 2 threads de simulação (RSS total do processo ~270 MB; use
 4. Cidade: regeneração a 1 Hz; `guia/partilha` sem `defineProperty` por tique.
 - **Saída:** 200 caçando com CPU < 45%, ping p99 < 60 ms, intervalo p99 < 280 ms (`tools/carga.mjs 200 40`).
 
+#### Resultado da Fase 3 (feita em 2026-09-26)
+
+| Item | Commit | Medido |
+|---|---|---|
+| 3.1 `Ficha.combate` guardada por tique/comando (`WeakMap` + `invalidar()`) | `12dd27e` | 200 caçando: `combate` caiu de 1,86s para 0,83s de tempo próprio num perfil de 20s; deixou de aparecer 5-8x por tique no perfil |
+| 3.2 `moverMonstros` com grade de ocupação (`Map`, não `.some()`) | `18d0ff6` | isolado (`tools/bench-mover-monstros.mjs`, o teste de carga real tem ruído demais): com **poucos** bichos perto o ganho é pequeno ou até levemente negativo (custo fixo da grade); a partir de ~500-1000 bichos perseguindo na mesma área ela vence, e a distância cresce — 2.000 bichos: 189ms→85-95ms/200 tiques (~2x) |
+| 3.3 Regeneração/stamina da cidade a 1 Hz | `115e59c` | `regenerar` caiu de 453ms para 115ms num perfil de 20s (~4x, o esperado) |
+| 3.4 Relógio em 5 fatias de 50ms | `1090805` | sinal real mas ruidoso — ver a nota no commit; o p99 de ping continua dominado pela praça O(N²) (fase 4), não por isto |
+
+**A meta não foi batida:** CPU real (medida via `/proc/<pid>/stat`, sem
+profiler — o `--inspect` usado nas fases anteriores deste documento infla
+E ATÉ SUBESTIMA de formas inconsistentes; esta é a medida confiável) com
+200 jogadores caçando ficou em **70-72%**, não abaixo de 45%. Intervalo
+p99 ficou perto da meta (274-289ms, contra 280ms). Ping p99 variou muito
+entre rodadas (62-362ms) — sinal de que **outros custos não tocados nesta
+fase** (o próprio `bfsDistancias`, ainda a maior função isolada no perfil;
+os checks O(N) de party/arena; a serialização do delta) dominam o
+resultado agregado tanto quanto os quatro itens corrigidos aqui. Os quatro
+ganhos acima são reais e verificados **isoladamente** (cada um com
+medição própria, antes/depois, no código exato que mudou); a meta de CPU
+agregada da fase era otimista demais dado o que ainda falta (fase 4 em
+diante). Ajustada para o que os dados sustentam: **cada item economiza o
+que diz economizar; a soma dos quatro não é, sozinha, suficiente para
+tirar a praça e o BFS do caminho**.
+
 ### Fase 4 — WebSocket / interesse
 1. Grade espacial da praça; índice sala → membros da party.
 2. Personagem por seções "sujas" em vez de montar tudo a cada 1 s.
