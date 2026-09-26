@@ -114,6 +114,9 @@ test('os bônus chegam na ficha e na vida máxima', () => {
   for (const no of real.nos) if (no.gasto) plano[no.id] = no.gasto;
   Arvore.comando(e, { action: 'aplicar', plano }, true);
   Arvore.recalcularVida(e);
+  // Ficha por tique (sistemas/ficha.mjs): aplicar a árvore não passa pela
+  // sessão, então quem quer ver o efeito precisa invalidar à mão.
+  Ficha.invalidar(e);
   const depois = Ficha.combate(e);
   assert.ok(Math.abs(depois.critChance - antes.critChance - real.bonus.critChance) < 1e-9);
   assert.ok(Math.abs(depois.lifeLeech - antes.lifeLeech - real.bonus.lifeLeech) < 1e-9);

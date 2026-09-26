@@ -83,6 +83,10 @@ test('os efeitos entram na ficha: crítico, leech, proteção, perícia e capaci
   const cap = Afixos.capacidade(semNada);
   e.equipment.body = { id: e.equipment.body.id, count: 1, imbu: [{ id: 'featherweight-3', left: 1000 }, { id: 'lich-shroud-3', left: 1000 }] };
   assert.equal(Afixos.capacidade(e), cap * 1.15);
+  // A ficha guardada é da peça de ANTES (ver "Uma ficha por tique" em
+  // sistemas/ficha.mjs) — quem troca o equipamento no meio do teste precisa
+  // avisar, do jeito que a sessão avisa a cada tique/comando.
+  Ficha.invalidar(e);
   assert.equal(Ficha.combate(e).protection.death - Ficha.combate(semNada).protection.death, 10);
 });
 

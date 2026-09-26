@@ -65,6 +65,9 @@ test('perk: só em nível liberado, e entra na ficha com a arma na mão', () => 
   assert.ok(Proficiencia.comando(e, { action: 'perk', itemId: 43864, level: 1, slot: 0 }).ok); // +1 sword
   assert.ok(Proficiencia.comando(e, { action: 'perk', itemId: 43864, level: 2, slot: 2 }).ok); // +3% life leech
   assert.equal(Proficiencia.vistaDaMao(e).levels[1].chosen, 2);
+  // Ficha por tique (sistemas/ficha.mjs): escolher o perk não passa pela
+  // sessão, então quem quer ver o efeito precisa invalidar à mão.
+  Ficha.invalidar(e);
   const depois = Ficha.combate(e);
   assert.equal(depois.skillValue, antes.skillValue + 1);
   assert.ok(Math.abs(depois.lifeLeech - antes.lifeLeech - 0.03) < 1e-9);

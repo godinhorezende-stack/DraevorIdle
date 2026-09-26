@@ -96,6 +96,9 @@ test('os efeitos acesos entram na ficha (resistência e vida máxima)', () => {
   const antes = { hp: e.maxHp, fogo: Ficha.combate(e).protection.fire };
   Gemas.comando(e, { action: 'encaixar', id: gema.id });
   assert.equal(e.maxHp, antes.hp + 150);
+  // Ficha por tique (sistemas/ficha.mjs): encaixar a gema não passa pela
+  // sessão, então quem quer ver o efeito precisa invalidar à mão.
+  Ficha.invalidar(e);
   assert.equal(Ficha.combate(e).protection.fire, antes.fogo + 1);
   Gemas.comando(e, { action: 'encaixar', id: gema.id });
   assert.equal(e.maxHp, antes.hp);

@@ -658,6 +658,11 @@ export class Sessao {
     // O medidor de ping do client (`medidor.mjs`): `{t:'ping', at}` → `{t:'pong', at}`.
     // Sem resposta, o número mostrava há quanto tempo o ping saiu — só subia.
     if (m.t === 'ping') return this.enviar({ t: 'pong', at: m.at });
+    // A ficha de combate (Ficha.combate) fica guardada entre uma invalidação e
+    // outra (ver o comentário em sistemas/ficha.mjs); um comando pode equipar,
+    // forjar ou imbuir SEM passar por `aplicar()` (forja e craft respondem
+    // direto), então a invalidação mora aqui, antes do `switch`, e não lá.
+    Ficha.invalidar(this.estado);
     // Entrando no personagem (simulação offline rodando): comando de jogo ainda
     // não tem personagem para agir. Sair, trocar de conta e o handshake passam.
     if (this.carregando && !PASSAM_CARREGANDO.has(m.t)) return;
@@ -1544,6 +1549,12 @@ export class Sessao {
    */
   tique() {
     if (!this.personagem) return;
+    // Um tique novo: a ficha de combate guardada é de antes dele (talvez de um
+    // comando, talvez do tique anterior) — pode ter vencido um buff/gema
+    // temporária desde então. Sem isto, quem fica tiques parado sem mandar
+    // nada (a caçada automática é assim) veria o crítico/dano de um Buff Power
+    // que já acabou até o próximo comando chegar. Ver sistemas/ficha.mjs.
+    Ficha.invalidar(this.estado);
     if (Date.now() - (this.gravadoEm ?? Date.now()) >= AUTOSAVE_MS) this.gravarAgora();
     this.gravadoEm ??= Date.now();
     if (this.estado.hunt) {

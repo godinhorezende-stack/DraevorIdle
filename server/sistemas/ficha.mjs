@@ -51,8 +51,42 @@ export function periciaDaArma(item) {
   return item?.skill ?? 'fist';
 }
 
-/** Os números de combate do personagem agora. */
+/*
+ * ---- Uma ficha por tique, não uma por chamada ----
+ *
+ * `combate(estado)` é pura (só lê `estado` e o catálogo), mas cara: soma
+ * peças, afixos, gemas, proficiência, imbuements, árvore. Medido num tique
+ * de verdade (200 jogadores caçando, `tools/perfil-servidor.mjs`), ela é
+ * chamada de 5 a 8 vezes NO MESMO TIQUE do mesmo personagem — regenerar, cada
+ * golpe recebido, o golpe dado, `characterParaCliente` (2x) — sempre com o
+ * mesmo equipamento, porque nada troca de arma no meio de um tique. Isso
+ * sozinho era 14% do tempo do tique (docs/auditoria-performance.md).
+ *
+ * O cache é por OBJETO `estado` (`WeakMap`, some sozinho se o personagem sair
+ * e a sessão for coletada) e vale até a próxima invalidação — `invalidar()`,
+ * chamada pela sessão UMA vez no início de cada `tique()` e de cada
+ * `despachar()` (nucleo/sessao.mjs). Isso cobre os dois jeitos de o
+ * equipamento mudar: o relógio (regeneração, buff que expira) e um comando do
+ * jogador (equipar, forjar, imbuir — inclusive os que respondem direto, sem
+ * passar por `aplicar()`). Entre uma invalidação e a outra é tudo o MESMO
+ * tique ou o MESMO comando — síncrono, sem nada mudando o equipamento no meio.
+ */
+const CACHE = new WeakMap();
+
+/** Esquece a ficha guardada (a sessão chama no início de cada tique/comando). */
+export function invalidar(estado) {
+  if (estado) CACHE.delete(estado);
+}
+
 export function combate(estado) {
+  const guardada = CACHE.get(estado);
+  if (guardada) return guardada;
+  const valor = calcularCombate(estado);
+  CACHE.set(estado, valor);
+  return valor;
+}
+
+function calcularCombate(estado) {
   const itens = pecas(estado);
   const soma = (f) => itens.reduce((a, it) => a + (Number(f(it)) || 0), 0);
   const w = arma(estado);
