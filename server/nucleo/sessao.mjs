@@ -1599,8 +1599,35 @@ export class Sessao {
       this.avisoPendente = this.estado.avisoDaHunt;
       delete this.estado.avisoDaHunt;
     }
-    Cacadas.regenerar(this.estado, agora - (this.ultimaRegen ?? agora));
-    Stamina.recuperar(this.estado, agora - (this.ultimaRegen ?? agora));
+    /*
+     * ---- Regeneração e stamina: uma vez por segundo, não quatro ----
+     *
+     * As duas são só matemática proporcional ao tempo (`ms/1000 * taxa`, com
+     * o resto fracionário guardado — `regenResto`, em `Cacadas.regenerar` —
+     * para não perder nada arredondando): chamar com 1000ms de uma vez dá
+     * exatamente o mesmo resultado que chamar 4 vezes com 250ms. Na cidade
+     * (sem golpe, sem bicho) é praticamente todo o custo do tique de quem só
+     * está parado ali — medido, tools/carga.mjs 200 "na cidade": CPU 35%->29%
+     * só com o cache da ficha (ver Ficha.combate), e regenerar ainda pesava
+     * tanto quanto ele no perfil.
+     *
+     * `ultimaRegen` seguiu por tique, sem represar: `processarMovimento` (uma
+     * casa por PASSO_MS, bem menor que 1s) e `Exercicio.tique` (o efeito de
+     * CADA golpe no boneco, que ficaria represado e apareceria tudo de golpe
+     * no cliente se esperasse 1s) precisam do intervalo de verdade.
+     */
+    const desdeARegen = agora - (this.regenadoEm ?? agora);
+    // `??=` FORA do `if`: sem isto, antes do 1º segundo `regenadoEm` continua
+    // undefined, o `?? agora` do próximo tique cai de novo em "agora" (o
+    // `agora` DAQUELE tique, sempre mais novo) e a conta nunca sai de zero —
+    // o regen represava para sempre, e é exatamente o bug que o teste
+    // "não regenera antes de 1s, regenera ao completar" pegou.
+    this.regenadoEm ??= agora;
+    if (desdeARegen >= 1000) {
+      Cacadas.regenerar(this.estado, desdeARegen);
+      Stamina.recuperar(this.estado, desdeARegen);
+      this.regenadoEm = agora;
+    }
     // Os golpes no boneco (o efeito de cada carga gasta) vão junto com o estado.
     const golpes = [];
     const doTreino = Exercicio.tique(this.estado, agora - (this.ultimaRegen ?? agora), golpes);
