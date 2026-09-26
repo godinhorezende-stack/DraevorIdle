@@ -1,0 +1,28 @@
+# Aplicado sozinho pelo `docker compose up` sempre que existir (é o padrão do
+# Compose) — pensado para rodar a stack inteira numa máquina de
+# desenvolvimento, não para produção. Em staging/produção, suba explicitando
+# os arquivos (ver docs/deploy.md):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  game:
+    environment:
+      NODE_ENV: development
+    # Código do jogo montado do host: editar em server/ e reiniciar só este
+    # serviço (`docker compose restart game`) já reflete, sem rebuild. O
+    # volume nomeado por baixo é o node_modules — SEPARADO do host (que pode
+    # nem ter os pacotes instalados) — mas fica vazio na 1ª vez que o volume é
+    # criado; por isso o `command` roda `npm ci` antes de subir, toda vez (é
+    # rápido quando já está instalado: o cache do npm persiste no volume).
+    volumes:
+      - ./server:/app/server
+      - node_modules_do_jogo:/app/server/node_modules
+    user: root
+    command: ["sh", "-c", "cd /app/server && npm ci --omit=dev && exec node index.mjs"]
+
+  postgres:
+    # Só em dev: dá pra abrir um `psql`/DBeaver direto da máquina.
+    ports:
+      - "5432:5432"
+
+volumes:
+  node_modules_do_jogo:

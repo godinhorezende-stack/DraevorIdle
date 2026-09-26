@@ -1,0 +1,17 @@
+# O build context é a raiz do repo (docker-compose.yml usa `context: .`),
+# mas a imagem só precisa de `server/` (ver docker/Dockerfile) — sem isto, TODA
+# build reenvia o `.git` (~800 MB) e o `assets_raw`/`api-mapeada` (~950 MB
+# juntos) pro daemon, mesmo eles nunca sendo copiados pra imagem.
+.git/
+assets_raw/
+api-mapeada/
+docs/
+tools/
+manifest*.json
+node_modules/
+server/dados/
+server/node_modules/
+*.db
+*.db-wal
+*.db-shm
+*.log
