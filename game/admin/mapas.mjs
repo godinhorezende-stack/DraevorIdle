@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { CITY_MAP, CATALOGO } from './dados.mjs';
+import { CITY_MAP, CATALOGO } from '../systems/dados.mjs';
 
 const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw', 'gamedata', 'hunts');
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;

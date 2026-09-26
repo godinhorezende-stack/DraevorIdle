@@ -5,7 +5,7 @@ import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../game/websocket/sessao.mjs';
-import * as Mapas from '../game/systems/mapas.mjs';
+import * as Mapas from '../game/admin/mapas.mjs';
 import * as Estaticos from './nucleo/estaticos.mjs';
 import * as Site from '../game/systems/site.mjs';
 import * as DropsDoSite from '../game/systems/drops-do-site.mjs';
