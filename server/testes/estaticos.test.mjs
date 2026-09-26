@@ -7,7 +7,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import * as Estaticos from '../nucleo/estaticos.mjs';
+import * as Estaticos from '../../game/backend/estaticos.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw');
 const servidor = createServer((req, res) => {

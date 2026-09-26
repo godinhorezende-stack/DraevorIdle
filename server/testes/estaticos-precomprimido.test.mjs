@@ -9,7 +9,7 @@ import { mkdtempSync, writeFileSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { brotliCompressSync, brotliDecompressSync, gzipSync, gunzipSync } from 'node:zlib';
-import * as Estaticos from '../nucleo/estaticos.mjs';
+import * as Estaticos from '../../game/backend/estaticos.mjs';
 
 const dir = mkdtempSync(join(tmpdir(), 'estaticos-'));
 const servidor = createServer((req, res) => {
