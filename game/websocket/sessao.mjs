@@ -59,7 +59,7 @@ import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { readFileSync } from 'node:fs';
-const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/task-token-real.json', import.meta.url), 'utf8'));
+const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
 Inventario.semearChao(CITY_META.chao);
 

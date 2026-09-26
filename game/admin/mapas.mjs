@@ -2,7 +2,7 @@
 // `server/index.mjs`; este arquivo não conhece requisição nem resposta.
 //
 // Mesmo FORMATO que uma hunt real capturada usa
-// (`assets_raw/gamedata/hunts/<id>-map.json`) — `cacadas.mjs::mapaRealCapturado`
+// (`game/gamedata/hunts/<id>-map.json`) — `cacadas.mjs::mapaRealCapturado`
 // já sabe carregar esse arquivo, então salvar aqui já deixa a hunt jogável
 // na hora, sem tocar em mais nada. `posicoes` (spawn de monstro) mora no
 // próprio arquivo — sem entrada no `catalog.hunts` real, não tem outro
@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { CITY_MAP, CATALOGO } from '../systems/dados.mjs';
 
-const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw', 'gamedata', 'hunts');
+const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
 
 const caminhoDe = (id) => join(RAIZ_HUNTS, `${id}-map.json`);

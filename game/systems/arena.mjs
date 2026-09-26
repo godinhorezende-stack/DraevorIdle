@@ -42,8 +42,8 @@ import * as Ficha from './ficha.mjs';
 import { armaDoPersonagem, alcanceDaArma, categoriaDaArma, armorDoPersonagem, definirLevel, ATAQUE_MS } from './hunt/combate.mjs';
 import { distancia } from './hunt/caminho.mjs';
 
-const ARENAS = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/arenas.json', import.meta.url), 'utf8')).arenas;
-const PATENTES = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/patentes-arena.json', import.meta.url), 'utf8')).patentes;
+const ARENAS = JSON.parse(readFileSync(new URL('../gamedata/arenas.json', import.meta.url), 'utf8')).arenas;
+const PATENTES = JSON.parse(readFileSync(new URL('../gamedata/patentes-arena.json', import.meta.url), 'utf8')).patentes;
 const SEMANA_MS = 7 * 864e5;
 /** Uma sexta-feira às 18h de Brasília (21h UTC) — daqui se contam as semanas. */
 const SEXTA_18H = Date.UTC(2026, 8, 25, 21, 0, 0);

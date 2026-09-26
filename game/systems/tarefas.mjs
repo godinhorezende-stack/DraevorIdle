@@ -21,7 +21,7 @@ import { readFileSync } from 'node:fs';
 import { MONTARIAS_REAIS } from './dados.mjs';
 import { darItem, contarGuardadas } from './inventario.mjs';
 
-const DADOS = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/tarefas.json', import.meta.url), 'utf8'));
+const DADOS = JSON.parse(readFileSync(new URL('../gamedata/tarefas.json', import.meta.url), 'utf8'));
 export const TASK_TOKEN = 55729;
 const POR_CHAVE = new Map(DADOS.bichos.map((b) => [b.key, b]));
 

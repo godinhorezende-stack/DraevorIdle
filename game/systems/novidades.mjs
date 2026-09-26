@@ -5,7 +5,7 @@
 // recarregar quando ela muda — reiniciar o servidor sem mudança não incomoda ninguém.
 import { readFileSync } from 'node:fs';
 
-const { _fonte, ...NOVIDADES } = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/novidades.json', import.meta.url), 'utf8'));
+const { _fonte, ...NOVIDADES } = JSON.parse(readFileSync(new URL('../gamedata/novidades.json', import.meta.url), 'utf8'));
 
 export const VERSAO = NOVIDADES.versao ?? null;
 export const novidades = () => NOVIDADES;

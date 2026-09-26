@@ -29,7 +29,7 @@ import { readFileSync } from 'node:fs';
 import { contarGuardadas, tirarGuardadas } from './inventario.mjs';
 import * as Arvore from './arvore.mjs';
 
-const DADOS = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/gemas.json', import.meta.url), 'utf8'));
+const DADOS = JSON.parse(readFileSync(new URL('../gamedata/gemas.json', import.meta.url), 'utf8'));
 const QUALIDADES = ['lesser', 'regular', 'greater'];
 const GRAUS = ['I', 'II', 'III', 'IV'];
 const NOME_DA_VOCACAO = { knight: 'Knight', paladin: 'Paladin', sorcerer: 'Sorcerer', druid: 'Druid', monk: 'Monk' };

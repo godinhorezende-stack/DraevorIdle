@@ -20,7 +20,7 @@ import * as Bau from './bau.mjs';
 
 export const TEMPO_NA_SALA_MS = 25 * 60_000;
 
-const TASK_TOKEN = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/task-token-real.json', import.meta.url), 'utf8')).loja.token;
+const TASK_TOKEN = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8')).loja.token;
 const LOJA_REAL = JSON.parse(readFileSync(new URL('../../api-mapeada/servidor/bossToken.json', import.meta.url), 'utf8')).loja;
 const BOSS_TOKEN = LOJA_REAL.token;
 const MOLDE_DO_AUTO = CHARACTER_TEMPLATE.autoBoss;

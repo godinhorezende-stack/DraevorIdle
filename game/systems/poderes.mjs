@@ -26,7 +26,7 @@ import * as Arvore from './arvore.mjs';
 import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
 
-const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../../assets_raw/gamedata/${arquivo}`, import.meta.url), 'utf8'));
+const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
 
 const NOME_DO_ELEMENTO = {

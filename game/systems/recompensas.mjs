@@ -16,7 +16,7 @@ import * as Boosts from './boosts.mjs';
  * o que vai para o cliente e o que se entrega vêm daqui; do personagem saem só
  * `pego` e `aVez`.
  */
-const CALENDARIO = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/diario.json', import.meta.url), 'utf8')).dias;
+const CALENDARIO = JSON.parse(readFileSync(new URL('../gamedata/diario.json', import.meta.url), 'utf8')).dias;
 const DIA = new Map(CALENDARIO.map((d) => [d.dia, d]));
 const QUANTIDADE_POR_EXTENSO = { uma: 1, um: 1, duas: 2, dois: 2, tres: 3, três: 3 };
 

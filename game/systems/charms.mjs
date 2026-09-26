@@ -32,7 +32,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGO } from './dados.mjs';
 import * as R from './regras.mjs';
 
-const DADOS = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/charms.json', import.meta.url), 'utf8'));
+const DADOS = JSON.parse(readFileSync(new URL('../gamedata/charms.json', import.meta.url), 'utf8'));
 export const CHARMS = DADOS.charms;
 const POR_ID = new Map(CHARMS.map((c) => [c.id, c]));
 const BESTIARY = CATALOGO.bestiary;

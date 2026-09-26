@@ -17,11 +17,11 @@ import { percursoDoMapa, percursoPelosBichos, percursoPelosSpawns } from './rota
  * original — atlas PRÓPRIO da hunt (`hunts/<id>.png`, baixado à parte),
  * `stacks`/`blocked` reais tile a tile, e até `route` (o caminho que a
  * Caça Automática seguia de verdade naquela hunt). Guardado em
- * `assets_raw/gamedata/hunts/<id>-map.json` + a imagem em
- * `assets_raw/gamedata/sprites/hunts/<id>.png`. Sem esse arquivo pra uma
+ * `game/gamedata/hunts/<id>-map.json` + a imagem em
+ * `game/gamedata/sprites/hunts/<id>.png`. Sem esse arquivo pra uma
  * hunt, cai no placeholder (polígono + atlas da cidade) mais abaixo.
  */
-export const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'assets_raw', 'gamedata', 'hunts');
+export const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'gamedata', 'hunts');
 export const mapasReaisCacheados = new Map();
 
 /*

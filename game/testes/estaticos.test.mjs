@@ -9,10 +9,17 @@ import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import * as Estaticos from '../backend/estaticos.mjs';
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw');
+// game/frontend (client/, HTML) e game/gamedata (JSON de conteúdo + sprites)
+// são duas pastas separadas desde a refatoração pra `game/*` — o servidor de
+// verdade (game/backend/index.mjs) roteia `/gamedata/...` pra uma e o resto
+// pra outra; este teste imita o mesmo roteamento, só que sem `/packages/shared`
+// (Estaticos.servir não sabe nada disso, é genérico).
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'frontend');
+const RAIZ_GAMEDATA = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 const servidor = createServer((req, res) => {
   const caminho = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  Estaticos.servir(req, res, join(RAIZ, caminho)).then((ok) => ok || (res.writeHead(404), res.end()));
+  const alvo = caminho.startsWith('/gamedata/') ? join(RAIZ_GAMEDATA, caminho.slice('/gamedata/'.length)) : join(RAIZ, caminho);
+  Estaticos.servir(req, res, alvo).then((ok) => ok || (res.writeHead(404), res.end()));
 });
 await new Promise((r) => servidor.listen(0, r));
 after(() => servidor.close());
@@ -58,7 +65,7 @@ test('com ?v= na URL: um ano e immutable', async () => {
 });
 
 test('imagem grande de hunt vai inteira, sem compressão (já é PNG)', async () => {
-  const dir = join(RAIZ, 'gamedata/sprites/hunts');
+  const dir = join(RAIZ_GAMEDATA, 'sprites/hunts');
   const grande = readdirSync(dir).map((f) => ({ f, n: statSync(join(dir, f)).size })).sort((a, b) => b.n - a.n)[0];
   const r = await pedir(`/gamedata/sprites/hunts/${grande.f}`, { 'accept-encoding': 'br' });
   assert.equal(r.status, 200);

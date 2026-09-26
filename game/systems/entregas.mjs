@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs';
 import { MONTARIAS_REAIS } from './dados.mjs';
 import { tirarGuardadas } from './inventario.mjs';
 
-const ENTREGAS = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/tarefas.json', import.meta.url), 'utf8')).entregas;
+const ENTREGAS = JSON.parse(readFileSync(new URL('../gamedata/tarefas.json', import.meta.url), 'utf8')).entregas;
 const POR_ID = new Map(ENTREGAS.map((e) => [e.id, e]));
 const ID_DA_MONTARIA = new Map(MONTARIAS_REAIS.mounts.map((m) => [m.look, m.id]));
 

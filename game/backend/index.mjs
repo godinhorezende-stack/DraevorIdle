@@ -15,7 +15,10 @@ import { aquecerGrades } from '../systems/cacadas.mjs';
 
 Site.ligar(vivas);
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw');
+// O cliente extraído (HTML + `client/`) — mesma sub-estrutura de sempre
+// (`/client/...`, `/jogar.html`, etc.), só que a raiz física virou
+// `game/frontend` em vez de `assets_raw` (docs/refatoracao-estrutura.md).
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'frontend');
 // O cliente (extraído, sem bundler) pede estes arquivos por URL absoluta
 // (`/packages/shared/src/formulas.mjs`, etc.) — igual ao servidor de
 // verdade, que também os lê. Desde a refatoração pra `game/*`
@@ -23,6 +26,11 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_r
 // não mais em `assets_raw/packages/shared/src/`; a URL fica a MESMA (o
 // cliente extraído não muda) — só o caminho físico por trás dela.
 const RAIZ_ENGINE = join(dirname(fileURLToPath(import.meta.url)), '..', 'engine');
+// Idem para `/gamedata/...` (JSON de conteúdo + sprites que o cliente busca
+// por URL): a pasta virou `game/gamedata`, separada do frontend — não é
+// código de cliente, é conteúdo que o SERVIDOR também lê (ver
+// `game/systems/dados.mjs` etc.), só que por acaso também serve de estático.
+const RAIZ_GAMEDATA = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 const PORTA = Number(process.env.PORTA ?? 8080);
 
 // Rotas sem extensão que o cliente pede como página (`/jogar`, etc.).
@@ -37,12 +45,18 @@ const PAGINAS = {
 };
 
 const PREFIXO_ENGINE = '/packages/shared/src/';
+const PREFIXO_GAMEDATA = '/gamedata/';
 
-/** Arquivo estático de dentro de `assets_raw` (cache e compressão: ver `estaticos.mjs`). */
+/** Arquivo estático — cache e compressão: ver `estaticos.mjs`. */
 async function servirArquivo(req, res, caminho) {
   if (caminho.startsWith(PREFIXO_ENGINE)) {
     const alvo = normalize(join(RAIZ_ENGINE, caminho.slice(PREFIXO_ENGINE.length)));
     if (!alvo.startsWith(RAIZ_ENGINE)) return false;
+    return Estaticos.servir(req, res, alvo);
+  }
+  if (caminho.startsWith(PREFIXO_GAMEDATA)) {
+    const alvo = normalize(join(RAIZ_GAMEDATA, caminho.slice(PREFIXO_GAMEDATA.length)));
+    if (!alvo.startsWith(RAIZ_GAMEDATA)) return false;
     return Estaticos.servir(req, res, alvo);
   }
   const alvo = normalize(join(RAIZ, caminho));

@@ -8,8 +8,8 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
-const PASTA = new URL('../../assets_raw/gamedata/hunts/', import.meta.url);
-const CATALOGO = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/catalog-real.json', import.meta.url), 'utf8'));
+const PASTA = new URL('../gamedata/hunts/', import.meta.url);
+const CATALOGO = JSON.parse(readFileSync(new URL('../gamedata/catalog-real.json', import.meta.url), 'utf8'));
 
 function naHunt(huntId, mode = 'auto') {
   const e = personagemDeTeste({ level: 3000 });

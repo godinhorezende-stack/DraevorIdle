@@ -8,7 +8,7 @@ import { ITEM_CATALOG, CATALOGO } from '../systems/dados.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw', 'gamedata', 'hunts');
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
 // Só as hunts: as salas de boss ficam como o original (a da Magma Bubble é
 // chão de lava, e é nele que se entra — ver `mapaRealCapturado`).
 const SALAS_DE_BOSS = new Set(CATALOGO.bosses.map((b) => b.id));

@@ -1,6 +1,6 @@
 // Ravox Store. Só as prateleiras com preço REAL capturado (`CATALOGO.storePrices`,
 // e os 200/500 coins do Buff Power, citados no próprio comentário do dono em
-// `assets_raw/client/src/panels.mjs:10103`) — nada de item/montaria/outfit/pacote
+// `game/frontend/client/src/panels.mjs:10103`) — nada de item/montaria/outfit/pacote
 // inventado. As prateleiras sem preço real ficam de propósito como `[]`: o
 // cliente já sabe desenhar "Nada por aqui ainda." para uma lista vazia.
 import * as Premium from './premium.mjs';

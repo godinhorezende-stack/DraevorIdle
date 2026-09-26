@@ -198,7 +198,7 @@ export function simularAusencia(estado, personagem, agora = Date.now()) {
 /**
  * `send({t:'startHunt', huntId})` — `huntId` normalmente é uma das 48 hunts
  * reais do `catalog.hunts`, mas também aceita um mapa feito no `/editor`
- * (`assets_raw/gamedata/hunts/<id>-map.json` sem entrada nenhuma no
+ * (`game/gamedata/hunts/<id>-map.json` sem entrada nenhuma no
  * catálogo — só o arquivo). Um mapa assim guarda os próprios `posicoes`
  * (spawn de monstro) dentro dele mesmo, porque não tem catálogo pra ler.
  */

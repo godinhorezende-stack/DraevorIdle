@@ -28,7 +28,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as R from './regras.mjs';
 
-const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw', 'gamedata', 'arvore');
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'arvore');
 const CATALOGOS = {};
 for (const voc of ['knight', 'paladin', 'sorcerer', 'druid', 'monk']) {
   const arq = join(RAIZ, `${voc}.json`);

@@ -24,7 +24,7 @@ import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';
 
 export const MAX_DE_AMIGOS = 100;
-const PATENTES = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/patentes-arena.json', import.meta.url), 'utf8')).patentes;
+const PATENTES = JSON.parse(readFileSync(new URL('../gamedata/patentes-arena.json', import.meta.url), 'utf8')).patentes;
 
 await banco.exec(`
   CREATE TABLE IF NOT EXISTS amizades (

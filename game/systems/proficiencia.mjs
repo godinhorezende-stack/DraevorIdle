@@ -29,7 +29,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGO } from './dados.mjs';
 import * as Treino from './treino.mjs';
 
-const DADOS = JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/proficiencia.json', import.meta.url), 'utf8'));
+const DADOS = JSON.parse(readFileSync(new URL('../gamedata/proficiencia.json', import.meta.url), 'utf8'));
 const BESTIARY = CATALOGO.bestiary;
 /** O `max` da view: sempre 7 no original (as estrelas da tela). */
 const MAX_DA_VIEW = 7;

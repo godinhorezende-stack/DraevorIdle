@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const RAIZ_DADOS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets_raw', 'gamedata');
+const RAIZ_DADOS = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 const carregar = (arquivo) => JSON.parse(readFileSync(join(RAIZ_DADOS, arquivo), 'utf8'));
 
 /*
@@ -94,7 +94,7 @@ export const CATALOGO = {
   emailLigado: false,
   // O drop do Gem Atelier (`catalog.gemas` do original, 2026-09-25) — a ficha
   // do item diz "cai de qualquer criatura com N de exp" com isto.
-  gemas: CATALOGO_REAL.gemas ?? JSON.parse(readFileSync(new URL('../../assets_raw/gamedata/gemas.json', import.meta.url), 'utf8')).drop,
+  gemas: CATALOGO_REAL.gemas ?? JSON.parse(readFileSync(new URL('../gamedata/gemas.json', import.meta.url), 'utf8')).drop,
 };
 
 /** Índice do tile em `CITY_MAP.blocked` (a mesma ordem de `map.ground`: y*width+x). */
