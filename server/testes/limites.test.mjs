@@ -2,7 +2,7 @@
 // nunca é cortado; uma enxurrada é, e insistindo a conexão cai.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Ritmo, POR_SEGUNDO, RAJADA, TOLERANCIA } from '../nucleo/limites.mjs';
+import { Ritmo, POR_SEGUNDO, RAJADA, TOLERANCIA } from '../../game/websocket/limites.mjs';
 
 test('o ritmo do cliente de verdade (rumo a cada 100 ms + ping por segundo) passa inteiro por 10 minutos', () => {
   const r = new Ritmo(0);

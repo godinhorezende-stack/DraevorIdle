@@ -3,7 +3,7 @@
 // (`R.jaPode`), segurando a tecla por 4 s saíam 8 passos em vez de 16.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Sessao } from '../nucleo/sessao.mjs';
+import { Sessao } from '../../game/websocket/sessao.mjs';
 import * as R from '../nucleo/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 

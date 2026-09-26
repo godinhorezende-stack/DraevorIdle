@@ -10,7 +10,7 @@
 // sobrepõem: o resultado é sempre a soma dos dois incrementos.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Sessao } from '../nucleo/sessao.mjs';
+import { Sessao } from '../../game/websocket/sessao.mjs';
 
 function sessaoDeTeste() {
   const s = new Sessao({ readyState: 1, send() {} });

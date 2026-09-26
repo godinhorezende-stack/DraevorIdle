@@ -8,7 +8,7 @@ import { randomUUID } from 'node:crypto';
 import * as B from '../../game/database/banco.mjs';
 import * as Cacadas from '../sistemas/cacadas.mjs';
 import * as SimulacaoOffline from '../nucleo/simulacao-offline.mjs';
-import { Sessao, vivas } from '../nucleo/sessao.mjs';
+import { Sessao, vivas } from '../../game/websocket/sessao.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 after(() => SimulacaoOffline.encerrar());

@@ -128,7 +128,7 @@ test('promoção no derived: o nome novo, promoted e a regeneração do original
 });
 
 test('sessão: as entregas só vão quando mudam, e vão depois de entregar', async () => {
-  const { Sessao } = await import('../nucleo/sessao.mjs');
+  const { Sessao } = await import('../../game/websocket/sessao.mjs');
   const enviados = [];
   const s = new Sessao({ readyState: 1, bufferedAmount: 0, send: (d) => enviados.push(JSON.parse(d)) });
   s.personagem = { id: 'x', nome: 'Entregador' };

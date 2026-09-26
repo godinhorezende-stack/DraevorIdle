@@ -4,9 +4,9 @@
 // ninguém de fora dela. `invalidarIndice` tem de refletir posição nova.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { vivas } from '../nucleo/sessao.mjs';
+import { vivas } from '../../game/websocket/sessao.mjs';
 import * as Chat from '../sistemas/chat.mjs';
-import { JANELA } from '../nucleo/quadro.mjs';
+import { JANELA } from '../../game/websocket/quadro.mjs';
 
 function sessaoFake(nome, pos) {
   const s = { personagem: { nome }, estado: { pos: { z: 7, dir: 2, ...pos }, outfit: {}, level: 1 } };

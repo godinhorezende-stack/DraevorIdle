@@ -65,7 +65,7 @@ export function periciaDaArma(item) {
  * O cache é por OBJETO `estado` (`WeakMap`, some sozinho se o personagem sair
  * e a sessão for coletada) e vale até a próxima invalidação — `invalidar()`,
  * chamada pela sessão UMA vez no início de cada `tique()` e de cada
- * `despachar()` (nucleo/sessao.mjs). Isso cobre os dois jeitos de o
+ * `despachar()` (game/websocket/sessao.mjs). Isso cobre os dois jeitos de o
  * equipamento mudar: o relógio (regeneração, buff que expira) e um comando do
  * jogador (equipar, forjar, imbuir — inclusive os que respondem direto, sem
  * passar por `aplicar()`). Entre uma invalidação e a outra é tudo o MESMO

@@ -3,7 +3,7 @@
 // ficariam desbalanceadas, e uma delas custaria mais que as outras.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Sessao, FATIAS } from '../nucleo/sessao.mjs';
+import { Sessao, FATIAS } from '../../game/websocket/sessao.mjs';
 
 const socket = () => ({ readyState: 1, send() {} });
 

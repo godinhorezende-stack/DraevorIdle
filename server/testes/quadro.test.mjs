@@ -4,10 +4,10 @@
 // de ver EXATAMENTE os bichos da tela do quadro inteiro, a cada quadro.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Sessao } from '../nucleo/sessao.mjs';
+import { Sessao } from '../../game/websocket/sessao.mjs';
 import * as Cacadas from '../sistemas/cacadas.mjs';
 import * as Prey from '../sistemas/prey.mjs';
-import * as Quadro from '../nucleo/quadro.mjs';
+import * as Quadro from '../../game/websocket/quadro.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 /** O cliente, reduzido ao que junta a caçada — a mesma conta de main.mjs. */

@@ -4,7 +4,7 @@
 // continuar sendo exatamente o mesmo de antes (mesma fala, mesmo formato).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { vivas } from '../nucleo/sessao.mjs';
+import { vivas } from '../../game/websocket/sessao.mjs';
 import * as Chat from '../sistemas/chat.mjs';
 
 function sessaoFake(nome, pos = { x: 100, y: 100, z: 7 }) {

@@ -4,13 +4,13 @@ import { createServer } from 'node:http';
 import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
-import { Sessao, vivas, ligarRelogio } from './nucleo/sessao.mjs';
+import { Sessao, vivas, ligarRelogio } from '../game/websocket/sessao.mjs';
 import * as Mapas from './sistemas/mapas.mjs';
 import * as Estaticos from './nucleo/estaticos.mjs';
 import * as Site from './sistemas/site.mjs';
 import * as DropsDoSite from './sistemas/drops-do-site.mjs';
 import * as Guildas from './sistemas/guildas.mjs';
-import * as Limites from './nucleo/limites.mjs';
+import * as Limites from '../game/websocket/limites.mjs';
 import { aquecerGrades } from './sistemas/cacadas.mjs';
 
 Site.ligar(vivas);

@@ -5,7 +5,7 @@
 // cada golpe no boneco não pode ficar represado 1s).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { Sessao } from '../nucleo/sessao.mjs';
+import { Sessao } from '../../game/websocket/sessao.mjs';
 import * as Cacadas from '../sistemas/cacadas.mjs';
 import * as Stamina from '../sistemas/stamina.mjs';
 import * as R from '../nucleo/regras.mjs';

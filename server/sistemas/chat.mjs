@@ -22,7 +22,7 @@
 // NOVO (não existe no original): o canal Mercado — compra e venda para todo o
 // servidor, uma fala a cada `INTERVALO_DO_MERCADO_MS` por personagem (como o
 // Trade do Tibia), e cada anúncio novo do balcão sai nele (`anunciarOferta`).
-import { naTela, JANELA } from '../nucleo/quadro.mjs';
+import { naTela, JANELA } from '../../game/websocket/quadro.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Guildas from './guildas.mjs';
 

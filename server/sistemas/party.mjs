@@ -386,7 +386,7 @@ export function extrasDoRetrato(s) {
         return { uid: `${f.uid}:${nomeDe(o)}`, x: f.x, y: f.y, dir: f.dir, look: f.look, name: f.name, nivel: f.nivel, moveMs: 250 };
       }),
   };
-  // Sempre presente (null sem party): o quadro em delta (`nucleo/quadro.mjs`)
+  // Sempre presente (null sem party): o quadro em delta (`game/websocket/quadro.mjs`)
   // só manda chave que MUDOU — uma chave que some nunca chegaria ao client, e
   // ele seguiria mostrando a partilha de antes de sair da party.
   extras.party = null;
