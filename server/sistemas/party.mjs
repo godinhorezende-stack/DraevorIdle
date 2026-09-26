@@ -54,7 +54,7 @@ const minhaParty = (s) => parties.get(partyDe.get(nomeDe(s))) ?? null;
 const atualizar = (party) => {
   for (const nome of party?.membros ?? []) {
     mandarJa(sessaoDe(nome));
-    Amigos.avisar(nome);
+    Amigos.avisar(nome).catch((e) => console.error('amigos avisar', e.message));
   }
 };
 /** Manda o estado JÁ com o personagem inteiro: a party é campo dele, e sem isto ela chegava até 1 s depois. */
@@ -158,7 +158,7 @@ function desfazer(p) {
   parties.delete(p.id);
   for (const n of p.membros) {
     mandarJa(sessaoDe(n));
-    Amigos.avisar(n);
+    Amigos.avisar(n).catch((e) => console.error('amigos avisar', e.message));
   }
 }
 

@@ -903,9 +903,9 @@ export class Sessao {
       case 'guilda':
         return this.despacharGuilda(m);
       case 'friends':
-        return this.enviar(Amigos.comando(this.personagem.nome, m));
+        return Amigos.comando(this.personagem.nome, m).then((r) => this.enviar(r));
       case 'perfil':
-        return this.enviar(Amigos.perfil(m.name));
+        return Amigos.perfil(m.name).then((r) => this.enviar(r));
       case 'tasksDeBicho': {
         const r = Tarefas.comando(this.estado, m);
         if (!r.ok) return this.erro(r.erro);
@@ -1315,8 +1315,8 @@ export class Sessao {
     });
     // A lista de amigos logo depois do welcome, como o original; e os amigos
     // online veem a bolinha dele acender.
-    this.enviar(Amigos.lista(personagem.nome));
-    Amigos.mudouPresenca(personagem.nome);
+    this.enviar(await Amigos.lista(personagem.nome));
+    Amigos.mudouPresenca(personagem.nome).catch((e) => console.error('amigos mudouPresenca', e.message));
   }
 
   /*
@@ -1361,7 +1361,7 @@ export class Sessao {
     B.gravarEstadoPersonagem(this.personagem.id, estadoPersistido).catch((e) => console.error('gravar ao sair', this.personagem?.nome, '->', e.message));
     if (vivas.get(this.personagem.nome) === this) vivas.delete(this.personagem.nome);
     // Os amigos online veem a bolinha apagar.
-    Amigos.mudouPresenca(this.personagem.nome);
+    Amigos.mudouPresenca(this.personagem.nome).catch((e) => console.error('amigos mudouPresenca', e.message));
     this.personagem = null;
     this.estado = null;
   }

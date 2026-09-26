@@ -22,41 +22,41 @@ after(() => {
   B.db.prepare('DELETE FROM contas WHERE id = ?').run(CONTA);
 });
 
-test('lista vazia: igual à do original', () => {
+test('lista vazia: igual à do original', async () => {
   const { t, amigos, pedidos, enviados, max, notice } = ler('friends-list.json');
-  assert.deepEqual(Amigos.lista(NOMES[0]), { t, amigos, pedidos, enviados, max, notice });
+  assert.deepEqual(await Amigos.lista(NOMES[0]), { t, amigos, pedidos, enviados, max, notice });
 });
 
-test('pedir, aceitar, tirar — e os erros', () => {
+test('pedir, aceitar, tirar — e os erros', async () => {
   const [um, dois] = NOMES;
-  let r = Amigos.comando(um, { action: 'add', name: dois.toLowerCase() });
+  let r = await Amigos.comando(um, { action: 'add', name: dois.toLowerCase() });
   assert.deepEqual(r.enviados.map((p) => p.name), [dois]);
-  assert.deepEqual(Amigos.lista(dois).pedidos.map((p) => p.name), [um]);
-  assert.match(Amigos.comando(um, { action: 'add', name: dois }).message, /já pediu/);
-  assert.match(Amigos.comando(um, { action: 'add', name: um }).message, /si mesmo/);
-  assert.match(Amigos.comando(um, { action: 'add', name: 'Ninguemaqui' }).message, /não existe ninguém chamado/);
-  r = Amigos.comando(dois, { action: 'accept', name: um });
+  assert.deepEqual((await Amigos.lista(dois)).pedidos.map((p) => p.name), [um]);
+  assert.match((await Amigos.comando(um, { action: 'add', name: dois })).message, /já pediu/);
+  assert.match((await Amigos.comando(um, { action: 'add', name: um })).message, /si mesmo/);
+  assert.match((await Amigos.comando(um, { action: 'add', name: 'Ninguemaqui' })).message, /não existe ninguém chamado/);
+  r = await Amigos.comando(dois, { action: 'accept', name: um });
   assert.deepEqual(r.amigos, [{ name: um, online: false, vocation: 'knight', vocationName: 'Knight', level: 50, hunt: null }]);
-  assert.deepEqual(Amigos.lista(um).amigos.map((p) => p.name), [dois]);
-  r = Amigos.comando(um, { action: 'remove', name: dois });
-  assert.deepEqual([r.amigos, Amigos.lista(dois).amigos], [[], []]);
+  assert.deepEqual((await Amigos.lista(um)).amigos.map((p) => p.name), [dois]);
+  r = await Amigos.comando(um, { action: 'remove', name: dois });
+  assert.deepEqual([r.amigos, (await Amigos.lista(dois)).amigos], [[], []]);
 });
 
-test('pedir a quem já te pediu vira amizade; recusar apaga o pedido', () => {
+test('pedir a quem já te pediu vira amizade; recusar apaga o pedido', async () => {
   const [um, dois] = NOMES;
-  Amigos.comando(um, { action: 'add', name: dois });
-  assert.equal(Amigos.comando(dois, { action: 'add', name: um }).amigos.length, 1);
-  Amigos.comando(um, { action: 'remove', name: dois });
-  Amigos.comando(um, { action: 'add', name: dois });
-  Amigos.comando(dois, { action: 'decline', name: um });
-  assert.deepEqual([Amigos.lista(um).enviados, Amigos.lista(dois).pedidos], [[], []]);
+  await Amigos.comando(um, { action: 'add', name: dois });
+  assert.equal((await Amigos.comando(dois, { action: 'add', name: um })).amigos.length, 1);
+  await Amigos.comando(um, { action: 'remove', name: dois });
+  await Amigos.comando(um, { action: 'add', name: dois });
+  await Amigos.comando(dois, { action: 'decline', name: um });
+  assert.deepEqual([(await Amigos.lista(um)).enviados, (await Amigos.lista(dois)).pedidos], [[], []]);
 });
 
-test('perfil: os campos do original (Biro, offline: sem hunt, Bronze, sem guilda)', () => {
+test('perfil: os campos do original (Biro, offline: sem hunt, Bronze, sem guilda)', async () => {
   const original = ler('perfil-Biro.json').perfil;
-  const nosso = Amigos.perfil(NOMES[1]).perfil;
+  const nosso = (await Amigos.perfil(NOMES[1])).perfil;
   assert.deepEqual(Object.keys(nosso).sort(), Object.keys(original).sort());
   assert.deepEqual(nosso.patente, original.patente);
   assert.deepEqual([nosso.online, nosso.cacando, nosso.hunt, nosso.guilda], [false, false, null, null]);
-  assert.equal(Amigos.perfil('Ninguemaqui').message, 'não existe ninguém chamado Ninguemaqui');
+  assert.equal((await Amigos.perfil('Ninguemaqui')).message, 'não existe ninguém chamado Ninguemaqui');
 });
