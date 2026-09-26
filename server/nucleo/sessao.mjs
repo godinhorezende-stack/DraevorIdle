@@ -504,6 +504,14 @@ export class Sessao {
     return this.aplicar(await Banqueiro.comando(this.estado, m, this.personagem, (nome) => this.destinoDaTransferencia(nome)));
   }
 
+  /** `send({t:'guilda', action?, ...})` — sem `action`, só a vista; com ela, o comando e a vista atualizada. */
+  async despacharGuilda(m) {
+    if (!m.action) return this.enviar(await Guildas.vista(this.personagem.nome));
+    const r = await Guildas.comando(this, m);
+    this.enviar(await Guildas.vista(this.personagem.nome, r.ok ? null : r.erro));
+    return this.aplicar(r.ok ? r : { ok: true });
+  }
+
   /**
    * `falarComNpc` — o clique direito no NPC da praça. O Banker responde como o
    * original (`npcFala` com `tipo:'banco'`, capturado em
@@ -888,12 +896,8 @@ export class Sessao {
         if (erro) this.enviar(Arena.vista(this, erro));
         return this.aplicar({ ok: true });
       }
-      case 'guilda': {
-        if (!m.action) return this.enviar(Guildas.vista(this.personagem.nome));
-        const r = Guildas.comando(this, m);
-        this.enviar(Guildas.vista(this.personagem.nome, r.ok ? null : r.erro));
-        return this.aplicar(r.ok ? r : { ok: true });
-      }
+      case 'guilda':
+        return this.despacharGuilda(m);
       case 'friends':
         return this.enviar(Amigos.comando(this.personagem.nome, m));
       case 'perfil':

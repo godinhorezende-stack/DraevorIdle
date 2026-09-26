@@ -83,12 +83,12 @@ test('/api/drops: só o raro entra, no formato do original', () => {
   assert.equal(DropsDoSite.valeAnotar(Number(Object.keys(ITEM_CATALOG).find((k) => ITEM_CATALOG[k].rarity === 'épico' && !DropsDoSite.ehBag(Number(k)))), null), false);
 });
 
-test('/api/guilda e /api/guildas: o formato do original', () => {
-  const lista = Guildas.listaDoSite();
+test('/api/guilda e /api/guildas: o formato do original', async () => {
+  const lista = await Guildas.listaDoSite();
   if (lista.length) assert.deepEqual(chaves(lista[0]), chaves(ler('guildas.json').guildas[0]));
-  assert.equal(Guildas.fichaDoSite('Nao Existe Essa').ok, false);
+  assert.equal((await Guildas.fichaDoSite('Nao Existe Essa')).ok, false);
   if (lista.length) {
-    const g = Guildas.fichaDoSite(lista[0].nome).guilda;
+    const g = (await Guildas.fichaDoSite(lista[0].nome)).guilda;
     const o = ler('guilda-taka.json').guilda;
     assert.deepEqual(chaves(g), chaves(o));
     assert.deepEqual(chaves(g.membros[0]), chaves(o.membros[0]));
