@@ -14,16 +14,17 @@
 set -euo pipefail
 
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DOCKER_DIR="$RAIZ/game/docker"
 cd "$RAIZ"
 
 AMBIENTE="${AMBIENTE:-staging}"
-ARQUIVOS_COMPOSE=(-f docker-compose.yml)
+ARQUIVOS_COMPOSE=(-f "$DOCKER_DIR/docker-compose.yml")
 if [ "$AMBIENTE" = "producao" ]; then
-  ARQUIVOS_COMPOSE+=(-f docker-compose.prod.yml)
+  ARQUIVOS_COMPOSE+=(-f "$DOCKER_DIR/docker-compose.prod.yml")
 fi
 
-if [ ! -f .env ]; then
-  echo "Faltou .env (copie de .env.example e ajuste POSTGRES_PASSWORD etc.) — abortando." >&2
+if [ ! -f "$DOCKER_DIR/.env" ]; then
+  echo "Faltou game/docker/.env (copie de game/docker/.env.example e ajuste POSTGRES_PASSWORD etc.) — abortando." >&2
   exit 1
 fi
 

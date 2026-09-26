@@ -7,17 +7,23 @@ services:
   game:
     environment:
       NODE_ENV: development
-    # Código do jogo montado do host: editar em server/ e reiniciar só este
-    # serviço (`docker compose restart game`) já reflete, sem rebuild. O
-    # volume nomeado por baixo é o node_modules — SEPARADO do host (que pode
-    # nem ter os pacotes instalados) — mas fica vazio na 1ª vez que o volume é
+    # Código do jogo montado do host: editar em game/{backend,engine,
+    # database,websocket,systems,admin}/ e reiniciar só este serviço
+    # (`docker compose restart game`) já reflete, sem rebuild. O volume
+    # nomeado por baixo é o node_modules — SEPARADO do host (que pode nem ter
+    # os pacotes instalados) — mas fica vazio na 1ª vez que o volume é
     # criado; por isso o `command` roda `npm ci` antes de subir, toda vez (é
     # rápido quando já está instalado: o cache do npm persiste no volume).
     volumes:
-      - ./server:/app/server
-      - node_modules_do_jogo:/app/server/node_modules
+      - ../backend:/app/game/backend
+      - ../engine:/app/game/engine
+      - ../database:/app/game/database
+      - ../websocket:/app/game/websocket
+      - ../systems:/app/game/systems
+      - ../admin:/app/game/admin
+      - node_modules_do_jogo:/app/node_modules
     user: root
-    command: ["sh", "-c", "cd /app/server && npm ci --omit=dev && exec node index.mjs"]
+    command: ["sh", "-c", "cd /app && npm ci --omit=dev && exec node game/backend/index.mjs"]
 
   postgres:
     # Só em dev: dá pra abrir um `psql`/DBeaver direto da máquina.

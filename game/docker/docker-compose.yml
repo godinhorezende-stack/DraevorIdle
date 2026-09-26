@@ -5,33 +5,38 @@
 # (presença, pub/sub, rate limit compartilhado). Até lá, subir Redis seria
 # manter um serviço em produção sem nada consumindo.
 #
-# Uso:
+# Uso (de dentro de game/docker/):
 #   cp .env.example .env && editar
 #   docker compose up -d --build
 #   docker compose --profile scale up -d        # só quando precisar do redis
+name: draevoridle
 services:
   game:
     build:
-      context: .
-      dockerfile: docker/Dockerfile
+      # Contexto na raiz do repo (dois níveis acima de game/docker/): é onde
+      # moram o package.json e os game/* de código — ver o Dockerfile.
+      context: ../..
+      dockerfile: game/docker/Dockerfile
     image: draevoridle-game
     restart: unless-stopped
     environment:
       PORTA: ${PORTA:-8080}
       DATABASE_URL: ${DATABASE_URL}
     volumes:
-      # Somente leitura: o jogo só lê estes dois (client extraído + JSON do
-      # servidor original) — um `git pull` no host já atualiza sem rebuild.
-      - ./assets_raw:/app/assets_raw:ro
-      - ./api-mapeada:/app/api-mapeada:ro
+      # Somente leitura: o jogo só lê estes três (client extraído, o
+      # conteúdo/sprites e o JSON do servidor original) — um `git pull` no
+      # host já atualiza sem rebuild.
+      - ../frontend:/app/game/frontend:ro
+      - ../gamedata:/app/game/gamedata:ro
+      - ../../api-mapeada:/app/api-mapeada:ro
       # Só é usado se DATABASE_URL vier vazio (cai para SQLite) — mantido por
       # segurança num ambiente de teste sem Postgres configurado ainda.
-      - dados_sqlite:/app/server/dados
+      - dados_sqlite:/app/game/database/dados
     depends_on:
       postgres:
         condition: service_healthy
-    # Tempo para o handler de SIGTERM (server/index.mjs) gravar todo mundo
-    # que está online antes do container ser morto de vez.
+    # Tempo para o handler de SIGTERM (game/backend/index.mjs) gravar todo
+    # mundo que está online antes do container ser morto de vez.
     stop_grace_period: 30s
 
   postgres:
@@ -56,9 +61,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./docker/nginx/certbot/www:/var/www/certbot:ro
-      - ./docker/nginx/certbot/conf:/etc/letsencrypt:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certbot/www:/var/www/certbot:ro
+      - ./nginx/certbot/conf:/etc/letsencrypt:ro
     depends_on:
       - game
 

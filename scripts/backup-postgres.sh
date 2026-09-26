@@ -9,22 +9,24 @@
 #   scripts/backup-postgres.sh              # backup + rotação (30 dias)
 #   RETENCAO_DIAS=7 scripts/backup-postgres.sh
 #
-# Restaurar (teste isto de verdade antes de precisar de verdade):
-#   gunzip -c backups/jogo-AAAAMMDD-HHMMSS.sql.gz | \
+# Restaurar (teste isto de verdade antes de precisar de verdade, de dentro
+# de game/docker/):
+#   gunzip -c ../../backups/jogo-AAAAMMDD-HHMMSS.sql.gz | \
 #     docker compose exec -T postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 set -euo pipefail
 
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$RAIZ"
+DOCKER_DIR="$RAIZ/game/docker"
 
-if [ ! -f .env ]; then
-  echo "Faltou .env — sem POSTGRES_USER/POSTGRES_DB não dá pra saber o que copiar." >&2
+if [ ! -f "$DOCKER_DIR/.env" ]; then
+  echo "Faltou game/docker/.env — sem POSTGRES_USER/POSTGRES_DB não dá pra saber o que copiar." >&2
   exit 1
 fi
 set -a
 # shellcheck source=/dev/null
-source .env
+source "$DOCKER_DIR/.env"
 set +a
+cd "$DOCKER_DIR"
 
 RETENCAO_DIAS="${RETENCAO_DIAS:-30}"
 PASTA_BACKUPS="$RAIZ/backups"
