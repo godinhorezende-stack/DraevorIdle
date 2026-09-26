@@ -80,6 +80,13 @@ já foi feito — os gargalos que sobraram são **estruturais**.
 
 Custo por jogador caçando: **~0,84 ms de CPU por tique** (3,3 ms por segundo).
 
+> **Correção (medida depois, na Fase 1):** as linhas de 50 e 200 jogadores
+> acima foram medidas com o servidor em `--inspect` e o profiler ligado, o que
+> infla o ping. Sem profiler, o mesmo código de antes deu, em 3 rodadas de 200
+> jogadores caçando: ping p50 51–131 ms, p99 113–351 ms, intervalo p90
+> 286–292 ms. A variação entre rodadas é grande: compare sempre várias rodadas
+> nas mesmas condições.
+
 ---
 
 ## 2. FASE 1 — Mapa da arquitetura real
@@ -628,6 +635,33 @@ reescrever outra.
 4. Cache das melhorias da conta na sessão (tira SQL do tique).
 5. Mercado e transferência do banco em transação única, gravando as duas pontas na hora.
 - **Saída:** login com 12h offline não passa de 50 ms de ping para os outros; estado gravado < 30 KB; mensagem acima do `maxPayload` é recusada sem travar.
+
+#### Resultado da Fase 1 (feita em 2026-09-26)
+
+| Item | Commit | Medido depois |
+|---|---|---|
+| 1.1 `maxPayload` 1 MB, 40 msgs/s (rajada 120), `pedirMapa` ≤ 1 a cada 2 s | `d1e0d35` | 5 MB → conexão fechada (1009); enxurrada → fechada (1008); jogador normal intacto |
+| 1.2 Melhorias da conta em memória | `4c33698` | 0 consultas SQL por jogador por segundo (eram 1) |
+| 1.3 Bichos gravados sem cópia do bestiário (+ `uid` acima dos carregados) | `a2dd224` | estado gravado **148–719 KB → 32–95 KB** (~7x); a caçada volta idêntica (testes) |
+| 1.4 Simulação offline em `worker_threads` | `563cc10` | pior ping de outro jogador numa volta de 2 h: **1.506–2.279 ms → 77–130 ms** (os ~75 ms que sobram são os de qualquer login, o `welcome` de 4 MB: Fase 4) |
+| 1.5 Economia em transação com as duas pontas | `7771174` | teste lê o banco logo depois de anunciar/comprar, sem autosave; falha sem a mudança |
+
+200 jogadores caçando, 3 rodadas, sem profiler, mesma máquina:
+
+| | Antes | Depois da Fase 1 |
+|---|---|---|
+| ping p50 | 51–131 ms | 40–68 ms |
+| ping p99 | 113–351 ms | 100–120 ms |
+| intervalo entre `state` p90 | 286–292 ms | 271–275 ms |
+| CPU (com profiler) | 77% | 71% (autosave saiu do topo do perfil) |
+
+A meta "estado < 30 KB" não foi atingida: o que sobra (32–95 KB) é dado
+dinâmico de verdade dos bichos (posição, vida, ponto de nascimento). Ir além
+pede não gravar os bichos e recriar a caçada ao voltar, o que muda o jogo
+(um boss pela metade voltaria cheio) — fica para decidir depois. O regime
+estável melhorou pouco, como esperado: o custo do tique contínuo é a Fase 3.
+Custo novo: 2 threads de simulação (RSS total do processo ~270 MB; use
+`SIMULADORES_OFFLINE=1` num VPS pequeno).
 
 ### Fase 2 — Frontend
 1. Teto de DPR 2 no overlay (`map.mjs`).
