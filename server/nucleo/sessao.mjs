@@ -86,6 +86,15 @@ const AUTOSAVE_MS = 30_000;
 const CAMPOS_MEMORIZADOS = new Set(['entregas']);
 const QUADROS_POR_PERSONAGEM = 4;
 const INTERVALO_DO_PEDIDO_DE_MAPA = 2000;
+/*
+ * Comandos que mexem ao mesmo tempo no personagem (em memória) e em algo
+ * gravado na hora no banco — oferta do mercado, baú da conta, baú e ouro da
+ * guilda, transferência do banco, melhorias da conta. Rodam dentro de
+ * `emTransacao`. `LEITURAS` são as ações desses comandos que só olham.
+ */
+const COMANDOS_DE_ECONOMIA = new Set(['market', 'coinMarket', 'bank', 'guilda', 'depot', 'store']);
+const COMANDOS_DE_CAIXA = new Set(['split', 'juntar', 'trocar', 'organizar']);
+const LEITURAS = new Set(['offers', 'historico']);
 const PASSAM_CARREGANDO = new Set(['release', 'logout', 'login', 'resume', 'register', 'delta', 'jaTenhoCatalogo', 'oculta']);
 const CAMPOS_DE_TODO_QUADRO = ['hp', 'mana'];
 
@@ -432,6 +441,8 @@ export class Sessao {
     for (const s of vivas.values()) {
       if (s.personagem?.id === personagemId && s.estado) {
         setTimeout(() => s.mandarEstado(), 0);
+        // Numa transação (`emTransacao`), o outro também é gravado antes do COMMIT.
+        this.tocadas?.add(s);
         return s.estado;
       }
     }
@@ -599,10 +610,47 @@ export class Sessao {
     try {
       // Login, cadastro e exclusão esperam o scrypt (assíncrono): o erro deles
       // chega pela promessa, não pelo `catch` daqui.
-      const r = this.despachar(m);
+      const r = this.precisaDeTransacao(m) ? this.emTransacao(() => this.despachar(m)) : this.despachar(m);
       if (r && typeof r.catch === 'function') r.catch((e) => console.error('sessao', m?.t, '->', e.message));
     } catch (e) {
       console.error('sessao', m?.t, '->', e.message);
+    }
+  }
+
+  /*
+   * ---- Economia: as duas pontas gravadas juntas ----
+   *
+   * O personagem vivo só ia para o banco no autosave (até 30 s depois), mas a
+   * outra ponta destes comandos era gravada na hora: a oferta do mercado, o baú
+   * da conta, o baú da guilda, o destinatário de uma transferência. Se o
+   * processo caísse no meio, o item guardado no baú voltava para a mochila E
+   * ficava no baú; a oferta comprada sumia com o ouro do comprador intacto.
+   *
+   * Aqui o comando roda numa transação do SQLite e, antes do COMMIT, grava o
+   * personagem de quem mandou e o de todo outro jogador ONLINE que ele tocou
+   * (o vendedor que recebeu o ouro — ver `estadoAoVivo`). Ou tudo fica no
+   * banco, ou nada fica.
+   */
+  precisaDeTransacao(m) {
+    if (!this.personagem || this.carregando) return false;
+    if (COMANDOS_DE_CAIXA.has(m?.t)) return true;
+    return COMANDOS_DE_ECONOMIA.has(m?.t) && !!m.action && !LEITURAS.has(m.action);
+  }
+
+  emTransacao(fn) {
+    if (this.tocadas) return fn(); // já dentro de uma
+    const tocadas = (this.tocadas = new Set([this]));
+    B.db.exec('BEGIN IMMEDIATE');
+    try {
+      const r = fn();
+      for (const s of tocadas) s.gravarAgora();
+      B.db.exec('COMMIT');
+      return r;
+    } catch (e) {
+      B.db.exec('ROLLBACK');
+      throw e;
+    } finally {
+      this.tocadas = null;
     }
   }
 
