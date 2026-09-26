@@ -41,7 +41,7 @@ import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/l
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros } from './hunt/combate.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
-export { nomeDaHunt, huntsJogaveis, gradeDaHunt } from './hunt/terreno.mjs';
+export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
 export { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
 export { bfsDistanciasAntiga, bfsDistancias, VIZINHANCA_4, VIZINHANCA_8 } from './hunt/caminho.mjs';
 export { relatorio } from './hunt/relatorio.mjs';

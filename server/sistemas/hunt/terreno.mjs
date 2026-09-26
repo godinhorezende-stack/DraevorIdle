@@ -288,6 +288,38 @@ export function gradeDaHunt(hunt) {
 }
 
 /*
+ * ---- Fase 5.2: a grade de cada hunt, no BOOT — não no 1º jogador ----
+ *
+ * `gradeDaHunt` é cacheada, mas só depois de computada, e cada hunt paga a
+ * conta na primeira vez que ALGUÉM entra nela: o polígono rasterizado tile a
+ * tile, a rota (`percursoDoMapa`/`percursoPelosBichos`) e a busca de encaixe
+ * dos pontos de nascimento (`pontosNoMapa`, até 81×81 deslocamentos) por
+ * cima do mapa capturado. Medido (todas as hunts jogáveis, a frio): a
+ * maioria fica em 10-100ms, mas as piores (Spike-8, Prison 2, Roshamuul
+ * Cave) passam de 130-350ms — síncrono, dentro do `tique()` de quem entrou,
+ * travando o event loop e com ele TODO MUNDO online naquele instante, não só
+ * quem entrou. `aquecerGrades`, chamada no boot (`index.mjs`, antes de abrir
+ * o WebSocket — ninguém conectado ainda para travar), paga essa conta uma
+ * vez só, fora do caminho de qualquer jogador de verdade.
+ */
+export function aquecerGrades() {
+  const alvos = [{ id: 'treino' }, ...CATALOGO.hunts, ...HUNTS_PREMIUM, ...CATALOGO.bosses];
+  let ok = 0;
+  for (const hunt of alvos) {
+    try {
+      gradeDaHunt(hunt);
+      ok++;
+    } catch (e) {
+      // Uma hunt com dado incompleto (mapa em falta, catálogo malformado) não
+      // pode derrubar o boot inteiro — ela só volta a tentar quando alguém
+      // entrar nela de verdade (o comportamento de sempre, sem o aquecimento).
+      console.error('aquecerGrades', hunt.id, '->', e.message);
+    }
+  }
+  return ok;
+}
+
+/*
  * ---- A sala das hunts premium ----
  *
  * As Hunts Vip, a Instance e as Divine chegam no catálogo real SEM terreno

@@ -11,6 +11,7 @@ import * as Site from './sistemas/site.mjs';
 import * as DropsDoSite from './sistemas/drops-do-site.mjs';
 import * as Guildas from './sistemas/guildas.mjs';
 import * as Limites from './nucleo/limites.mjs';
+import { aquecerGrades } from './sistemas/cacadas.mjs';
 
 Site.ligar(vivas);
 
@@ -178,6 +179,19 @@ http.on('error', (e) => {
 });
 
 ligarRelogio();
+
+/*
+ * ---- As grades de hunt, aquecidas ANTES de abrir a porta ----
+ *
+ * `aquecerGrades` (Fase 5.2) chama `gradeDaHunt` de toda hunt jogável agora,
+ * com o event loop livre e ninguém conectado para sentir a pausa — em vez de
+ * deixar a conta (até 350ms, síncrono) cair em cima de quem por acaso for o
+ * primeiro a entrar numa hunt cara depois do boot, travando o tique de todo
+ * mundo online naquele instante.
+ */
+const t0 = performance.now();
+const quantas = aquecerGrades();
+console.log(`  grades de hunt aquecidas: ${quantas} em ${(performance.now() - t0).toFixed(0)}ms`);
 
 http.listen(PORTA, () => {
   console.log(`\n  Ravox Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
