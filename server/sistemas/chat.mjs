@@ -22,7 +22,7 @@
 // NOVO (não existe no original): o canal Mercado — compra e venda para todo o
 // servidor, uma fala a cada `INTERVALO_DO_MERCADO_MS` por personagem (como o
 // Trade do Tibia), e cada anúncio novo do balcão sai nele (`anunciarOferta`).
-import { naTela } from '../nucleo/quadro.mjs';
+import { naTela, JANELA } from '../nucleo/quadro.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Guildas from './guildas.mjs';
 
@@ -61,23 +61,48 @@ export function brasoesDaPraca(jogadores) {
   return r;
 }
 
-/** Os outros jogadores na tela da praça, no formato do original (até 25, os mais perto). */
-export function jogadoresNaPraca(eu) {
-  if (!naPraca(eu)) return [];
-  const p = eu.estado.pos;
-  const lista = [];
+/*
+ * ---- O índice espacial da praça (Fase 4.1) ----
+ *
+ * `jogadoresNaPraca` varria TODO mundo online para achar quem está perto de
+ * UM jogador — com N pessoas na praça isso é O(N) por jogador chamado, e
+ * como todo mundo na praça chama a cada tique, O(N²) no tique inteiro (200 na
+ * praça: medido, tools/carga.mjs 200 40 cidade, 81% de CPU — pior que
+ * caçando).
+ *
+ * Duas coisas caras aconteciam de novo para CADA jogador que perguntava:
+ * (1) a varredura de todo mundo, e (2) montar o "cartão" (nome, aparência,
+ * cores, guilda — a mesma consulta `Guildas.guildaDe` de novo) de cada
+ * vizinho, mesmo que dois jogadores vizinhos vejam exatamente os MESMOS
+ * cartões. Agora os dois viram trabalho de uma vez por PASSO do relógio, não
+ * por jogador: o índice guarda o cartão JÁ PRONTO de cada um (montado uma
+ * única vez), numa grade de células maiores que a tela (`JANELA`, 13×8) — a
+ * vizinhança de 1 célula ao redor SEMPRE cobre tudo que cabe na tela, então
+ * nenhum vizinho de verdade fica de fora. `invalidarIndice` (chamado em
+ * `rodarRelogio`, uma vez por passo de 50ms) é o único jeito da posição/
+ * aparência de alguém aparecer atualizada — dentro do mesmo passo, o cartão
+ * fica congelado (mesma folga que `Ficha.combate` aceita, Fase 3.1).
+ */
+const TAM_DA_CELULA = Math.ceil(Math.max(JANELA.x, JANELA.y)) + 2;
+let indice = null;
+
+function garantirIndice() {
+  if (indice) return indice;
+  indice = new Map();
   for (const s of vivas.values()) {
-    if (s === eu || !naPraca(s) || !perto(eu, s)) continue;
+    if (!naPraca(s)) continue;
     const e = s.estado;
+    const p = e.pos;
     const o = e.outfit ?? {};
-    lista.push({
+    const guilda = Guildas.guildaDe(nomeDe(s));
+    const cartao = {
       uid: `p:${nomeDe(s)}`,
       name: nomeDe(s),
       arenaPontos: e.arenaPontos ?? 0,
-      x: e.pos.x,
-      y: e.pos.y,
-      z: e.pos.z ?? 7,
-      dir: e.pos.dir ?? 2,
+      x: p.x,
+      y: p.y,
+      z: p.z ?? 7,
+      dir: p.dir ?? 2,
       look: o.type ?? 0,
       colors: { type: o.type ?? 0, head: o.head ?? 0, body: o.body ?? 0, legs: o.legs ?? 0, feet: o.feet ?? 0, addons: o.addons ?? 0, mount: o.mount ?? 0 },
       mount: o.mount ?? 0,
@@ -86,14 +111,45 @@ export function jogadoresNaPraca(eu) {
       marca: null,
       moveMs: e.moveMs ?? 250,
       // Quem é de guilda leva o nome dela; o brasão vai uma vez em `brasoes` (ver `brasoesDaPraca`).
-      ...(Guildas.guildaDe(nomeDe(s)) ? { guilda: Guildas.guildaDe(nomeDe(s)).nome } : {}),
-      _d: Math.max(Math.abs(e.pos.x - p.x), Math.abs(e.pos.y - p.y)),
-    });
+      ...(guilda ? { guilda: guilda.nome } : {}),
+    };
+    const chave = `${Math.floor(p.x / TAM_DA_CELULA)},${Math.floor(p.y / TAM_DA_CELULA)},${p.z ?? 7}`;
+    let lista = indice.get(chave);
+    if (!lista) indice.set(chave, (lista = []));
+    lista.push({ s, cartao });
   }
-  return lista
+  return indice;
+}
+
+/** Um passo do relógio novo: a posição/aparência de todo mundo pode ter mudado desde o índice de antes. */
+export function invalidarIndice() {
+  indice = null;
+}
+
+/** Os outros jogadores na tela da praça, no formato do original (até 25, os mais perto). */
+export function jogadoresNaPraca(eu) {
+  if (!naPraca(eu)) return [];
+  const p = eu.estado.pos;
+  const z = p.z ?? 7;
+  const idx = garantirIndice();
+  const cx = Math.floor(p.x / TAM_DA_CELULA);
+  const cy = Math.floor(p.y / TAM_DA_CELULA);
+  const candidatos = [];
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      const vizinhos = idx.get(`${cx + dx},${cy + dy},${z}`);
+      if (!vizinhos) continue;
+      for (const { s, cartao } of vizinhos) {
+        // O `z` já veio igual pela chave da célula — só falta a tela (`naTela`, a mesma conta do `perto`).
+        if (s === eu || !naTela(p, cartao)) continue;
+        candidatos.push({ cartao, _d: Math.max(Math.abs(cartao.x - p.x), Math.abs(cartao.y - p.y)) });
+      }
+    }
+  }
+  return candidatos
     .sort((a, b) => a._d - b._d)
     .slice(0, NA_PRACA)
-    .map(({ _d, ...j }) => j);
+    .map(({ cartao }) => cartao);
 }
 
 function fala(s, extras) {
@@ -103,23 +159,27 @@ function fala(s, extras) {
 /** Manda a fala para quem deve ouvir; devolve o erro (ou null). */
 function espalhar(s, channel, to, conteudo) {
   if (channel === 'global') {
-    const msg = fala(s, { channel: 'global', ...conteudo });
-    for (const outro of vivas.values()) if (outro.personagem) outro.enviar(msg);
+    // Mesma fala para todo mundo online: um `JSON.stringify` só, não um por
+    // destinatário (200 gente no Global eram 200 stringifies do mesmo objeto).
+    const texto = JSON.stringify(fala(s, { channel: 'global', ...conteudo }));
+    for (const outro of vivas.values()) if (outro.personagem) outro.enviarPronto(texto);
     return null;
   }
   if (channel === 'mercado') {
-    const msg = fala(s, { channel: 'mercado', ...conteudo });
-    for (const outro of vivas.values()) if (outro.personagem) outro.enviar(msg);
+    const texto = JSON.stringify(fala(s, { channel: 'mercado', ...conteudo }));
+    for (const outro of vivas.values()) if (outro.personagem) outro.enviarPronto(texto);
     return null;
   }
   if (channel === 'local') {
-    const msg = fala(s, { channel: 'local', ...conteudo });
+    const texto = JSON.stringify(fala(s, { channel: 'local', ...conteudo }));
     const pos = s.estado.hunt ? s.estado.hunt.pos : s.estado.pos;
-    const balao = conteudo.text ? { t: 'events', events: [{ t: 'say', quem: nomeDe(s), text: conteudo.text, x: pos.x, y: pos.y, color: COR_DA_FALA }] } : null;
+    const balaoTexto = conteudo.text
+      ? JSON.stringify({ t: 'events', events: [{ t: 'say', quem: nomeDe(s), text: conteudo.text, x: pos.x, y: pos.y, color: COR_DA_FALA }] })
+      : null;
     for (const outro of vivas.values()) {
       if (!outro.personagem || (outro !== s && !perto(s, outro))) continue;
-      outro.enviar(msg);
-      if (balao) outro.enviar(balao);
+      outro.enviarPronto(texto);
+      if (balaoTexto) outro.enviarPronto(balaoTexto);
     }
     return null;
   }

@@ -109,6 +109,17 @@ const enviar = (ws, msg) => {
   ws.send(grande ? jsonComGrandes(msg) : JSON.stringify(msg));
 };
 
+/*
+ * Mesma mensagem para várias sessões (chat Global/Mercado/Local) — quem chama
+ * já sabe que não é `hello`/`welcome`/mapa (nunca é: chat não carrega nenhum
+ * dos dois), então o texto pode virar UMA vez e ir pronto para cada um, em vez
+ * de `JSON.stringify` repetido por destinatário (Fase 4.3 — 200 na praça
+ * falando no Global eram 200 stringifies do mesmo objeto).
+ */
+const enviarPronto = (ws, texto) => {
+  if (ws.readyState === 1) ws.send(texto);
+};
+
 const DOMINIO_EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 function cartaoDaConta(personagens) {
@@ -344,6 +355,11 @@ export class Sessao {
 
   enviar(msg) {
     enviar(this.ws, msg);
+  }
+
+  /** Um texto já serializado (ver `enviarPronto`) — para broadcast, não mensagem individual. */
+  enviarPronto(texto) {
+    enviarPronto(this.ws, texto);
   }
 
   erroDeAuth(mensagem) {
@@ -1718,6 +1734,10 @@ let relogioLigado = false;
 let fatiaAtual = 0;
 
 function rodarRelogio() {
+  // O índice espacial da praça (Chat.jogadoresNaPraca, Fase 4.1) é bom para
+  // este passo inteiro: refazê-lo aqui, uma vez, é MUITO mais barato que
+  // deixar cada sessão tocada reconstruir a varredura de todo mundo sozinha.
+  Chat.invalidarIndice();
   for (const s of sessoesPorFatia[fatiaAtual]) {
     try {
       s.tique();
