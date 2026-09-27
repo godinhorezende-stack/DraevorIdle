@@ -121,3 +121,16 @@ test('loja de Boss Token: cobra o item, entrega; outfit uma vez só', () => {
   e.inventory.push({ id: 55287, count: 400 });
   assert.match(Bosses.comprar(e, { id: 'bt-outfit-golden' }).erro, /já tem/);
 });
+
+test('loja de Boss Token: sem o nome antigo, e o preço das Lasting Exercise é o da Store', async () => {
+  const { STORE_REAL } = await import('../systems/dados.mjs');
+  const loja = Bosses.lojaParaCliente(novo()).loja;
+  assert.doesNotMatch(JSON.stringify(loja), /Ravox/i);
+  const exercicios = loja.ofertas.filter((o) => o.grupo === 'exercise');
+  assert.ok(exercicios.length > 0);
+  for (const o of exercicios) {
+    const naStore = STORE_REAL.exercises.find((e) => e.itemId === o.itemId);
+    if (!naStore) continue;
+    assert.match(o.blurb, new RegExp(`na Store ela custa ${naStore.coins} coins`));
+  }
+});

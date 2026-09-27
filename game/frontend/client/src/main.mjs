@@ -8,6 +8,7 @@ import {
 } from './windows.mjs';
 import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
 import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from './hud.mjs';
+import { ARTES } from './artes.mjs';
 import {
   initInventory,
   esquecerOsDesenhos,
@@ -6978,7 +6979,7 @@ function mostrarViagem({ hunt, motivo }) {
    */
   const arte = $('viagem-arte');
   const nome = motivo === 'partida' ? 'partida' : 'rota';
-  if (artesQuebradas.has(nome)) {
+  if (artesQuebradas.has(nome) || !ARTES.ui.has(`viagem-${nome}`)) {
     arte.hidden = true;
   } else {
     arte.hidden = false;
@@ -7228,6 +7229,40 @@ function sairDoAutoBossConvidado() {
   });
 }
 
+/*
+ * ---- As janelas de itens só se desenham ABERTAS ----
+ *
+ * Medido na auditoria do celular: caçando, a bolsa muda a cada loot, e as
+ * cinco janelas de itens eram refeitas juntas — mesmo fechadas. Eram ~400
+ * elementos em janelas escondidas e cinco mutações de DOM por segundo que
+ * ninguém via; no telefone, onde só cabe uma gaveta aberta por vez, é quase
+ * tudo desperdício.
+ *
+ * A regra é a mesma do analisador: fechada não desenha, só anota que ficou
+ * para trás; o `quandoAbrir` desenha na hora em que ela abre, então ela nunca
+ * aparece velha.
+ */
+const JANELAS_DA_BOLSA = {
+  loot: renderPouch,
+  inventory: renderInventory,
+  container: renderContainer,
+  bossPouch: renderBossPouch,
+  storeInbox: renderStoreInbox,
+};
+const bolsaAtrasada = new Set();
+function desenharSeAberta(id) {
+  if (isVisible(id)) {
+    bolsaAtrasada.delete(id);
+    JANELAS_DA_BOLSA[id]();
+    return;
+  }
+  if (bolsaAtrasada.has(id)) return;
+  bolsaAtrasada.add(id);
+  quandoAbrir(id, () => {
+    if (bolsaAtrasada.delete(id)) JANELAS_DA_BOLSA[id]();
+  });
+}
+
 function renderAll() {
   const character = state.character;
   if (!character) return;
@@ -7404,11 +7439,7 @@ function renderAll() {
   if (!lastBagKey || bagKey.some((parte, i) => parte !== lastBagKey[i])) {
     lastBagKey = bagKey;
     ultimoRelogioDaVenda = character.vendaFaltaSegundos;
-    renderPouch();
-    renderInventory();
-    renderContainer();
-    renderBossPouch();
-    renderStoreInbox();
+    for (const id of Object.keys(JANELAS_DA_BOLSA)) desenharSeAberta(id);
   }
 
   /*
@@ -7423,7 +7454,7 @@ function renderAll() {
    */
   else if (character.vendaFaltaSegundos !== ultimoRelogioDaVenda) {
     ultimoRelogioDaVenda = character.vendaFaltaSegundos;
-    renderPouch();
+    desenharSeAberta('loot');
   }
 
   /*
@@ -8186,7 +8217,9 @@ function renderBuffsJanela() {
    * coisa. É o mesmo arranjo da janela Boss Cooldown, logo abaixo.
    */
   if (!isVisible('buffs')) {
-    body.dataset.assinatura = '';
+    // Só apaga se houver o que apagar: reescrever o atributo com o mesmo valor
+    // ainda é uma escrita no DOM — quatro por segundo, com a janela fechada.
+    if (body.dataset.assinatura) body.dataset.assinatura = '';
     return;
   }
   const linhas = linhasDeEfeito(state.character);

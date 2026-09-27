@@ -2407,6 +2407,16 @@ body.barra-enxuta #market-button .label { display: none; }
   /* A grade de quatro colunas não cabe: duas, e os cards continuam legíveis. */
   .store-grid, .train-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .store-layout { grid-template-columns: 1fr !important; display: block !important; }
+  /*
+   * Empilhada (seções em cima, prateleira embaixo), a camada da grade que
+   * fazia a prateleira rolar por dentro deixa de valer: `.store-layout` era
+   * espremida até a altura que sobrava, o conteúdo vazava para fora dela e o
+   * rodapé do saldo, que vem DEPOIS, ficava por cima da lista e da busca.
+   * Aqui quem rola é a camada inteira, e o rodapé fica preso embaixo.
+   */
+  .modal-box.store .store-layout { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .modal-box.store .store-shelf { overflow: visible; max-height: none; }
+  .modal-box.store .store-footer { flex: none; }
   .store-sections { display: flex; overflow-x: auto; gap: 4px; margin-bottom: 8px; }
   .store-sections button { flex: none; white-space: nowrap; }
 }
@@ -18160,6 +18170,22 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
      * o que ele está fazendo.
      */
     #gate .character-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /*
+     * Em 640×360 a lista ficava com ZERO de altura: a moldura come 48px em
+     * cima e 48px embaixo, e o logo, o título, os avisos da conta e os botões
+     * levavam o resto. A lista é a única peça que encolhe — e encolheu até
+     * sumir, com o personagem lá dentro, sem como tocar nele.
+     *
+     * A moldura afina, e a lista nunca fica menor que um cartão: se faltar
+     * altura, quem rola é a caixa inteira, não o personagem que some.
+     */
+    .gate-box.ui-frame { border-width: 16px; }
+    #gate .character-list { min-height: 56px; }
+    #gate-error-2:empty, #gate-error:empty { min-height: 0; }
+  }
+  /* Deitado num telefone baixo (≤ 400px) o logo não cabe junto com a lista. */
+  @media (max-height: 400px) {
+    #gate .gate-box.escolhendo .logo { display: none; }
   }
   /* O aviso de palco vazio também: ele fica no lugar do boneco. */
   #stage-empty { bottom: auto !important; top: 40%; padding: 10px 16px; }
@@ -20877,9 +20903,12 @@ body.topbar-recolhida .gaveta-da-barra { display: none; }
 /*
  * ---- Os encaixes ----
  *
- * O quadrado vazio é a arte do próprio cliente (`encaixe-vazio.png`), que é o
- * que o dono mandou usar: quem já jogou reconhece o desenho antes de ler o
- * rótulo. O cheio põe o ícone do encantamento por cima do mesmo fundo.
+ * O quadrado vazio era para ser a arte do próprio cliente (`encaixe-vazio.png`
+ * e `encaixe-cheio.png` em `assets/imbuing/`), mas os dois arquivos nunca
+ * entraram no repositório: cada abertura da tela levava dois 404. Até a arte
+ * chegar, o encaixe é desenhado aqui — o poço escuro com a borda de pedra —
+ * e o cheio acende a borda. Quando os PNG existirem, basta voltar o
+ * `background: url(...)` nas duas regras.
  */
 .imbue-encaixes { display: flex; flex-wrap: wrap; gap: 8px; }
 .imbue-encaixe {
@@ -20889,11 +20918,13 @@ body.topbar-recolhida .gaveta-da-barra { display: none; }
 }
 .imbue-encaixe-quadro {
   display: grid; place-items: center; width: 46px; height: 46px;
-  background: url(/client/assets/imbuing/encaixe-vazio.png) center/contain no-repeat;
+  background: radial-gradient(circle at 50% 45%, #1a2224 0 55%, #0a0e0f 100%);
+  border: 2px solid #3a4446; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #000, inset 0 2px 6px #000c;
   image-rendering: pixelated;
 }
 .imbue-encaixe.cheio .imbue-encaixe-quadro {
-  background-image: url(/client/assets/imbuing/encaixe-cheio.png);
+  border-color: var(--copper, #b8864b);
 }
 .imbue-encaixe-quadro canvas { image-rendering: pixelated; }
 .imbue-encaixe b { font-size: 10.5px; font-weight: 600; line-height: 1.2; }
