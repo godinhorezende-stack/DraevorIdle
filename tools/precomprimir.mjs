@@ -16,7 +16,7 @@
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { brotliCompressSync, gzipSync, constants } from 'node:zlib';
+import { brotliCompressSync, brotliDecompressSync, gzipSync, gunzipSync, constants } from 'node:zlib';
 
 const RAIZ_FRONTEND = fileURLToPath(new URL('../game/frontend', import.meta.url));
 const RAIZ_GAMEDATA = fileURLToPath(new URL('../game/gamedata', import.meta.url));
@@ -46,6 +46,25 @@ function* arquivos(dir, recursivo) {
   }
 }
 
+/*
+ * ---- Desatualizado é CONTEÚDO diferente, não só data mais velha ----
+ *
+ * Só a data não basta: num `git clone` (e em todo deploy) os arquivos ganham a
+ * hora do checkout, e um `.br` velho passa por novo. Foi assim que 31 pares
+ * ficaram com o conteúdo de antes do rebrand — o `item-sprites.json.br` ainda
+ * apontava para `ravoxb7e57432-0.png`, que não existe mais (404 no client) —
+ * sem nenhuma rodada deste script perceber. Agora ele descomprime o pronto e
+ * compara com a fonte; descomprimir é barato perto de comprimir.
+ */
+function desatualizado(pronto, st, corpo, abrir) {
+  try {
+    if (statSync(pronto).mtimeMs < st.mtimeMs) return true;
+    return !abrir(readFileSync(pronto)).equals(corpo);
+  } catch {
+    return true;
+  }
+}
+
 let feitos = 0;
 let pulados = 0;
 for (const { dir, recursivo } of ALVOS) {
@@ -59,12 +78,10 @@ for (const { dir, recursivo } of ALVOS) {
     if (st.size < MINIMO) continue;
     const brAlvo = `${alvo}.br`;
     const gzAlvo = `${alvo}.gz`;
-    let brStale = true;
-    let gzStale = true;
-    try { brStale = statSync(brAlvo).mtimeMs < st.mtimeMs; } catch {}
-    try { gzStale = statSync(gzAlvo).mtimeMs < st.mtimeMs; } catch {}
-    if (!brStale && !gzStale) { pulados++; continue; }
     const corpo = readFileSync(alvo);
+    const brStale = desatualizado(brAlvo, st, corpo, brotliDecompressSync);
+    const gzStale = desatualizado(gzAlvo, st, corpo, gunzipSync);
+    if (!brStale && !gzStale) { pulados++; continue; }
     if (brStale) writeFileSync(brAlvo, brotliCompressSync(corpo, { params: { [constants.BROTLI_PARAM_QUALITY]: 11, [constants.BROTLI_PARAM_SIZE_HINT]: corpo.length } }));
     if (gzStale) writeFileSync(gzAlvo, gzipSync(corpo, { level: 9 }));
     feitos++;
