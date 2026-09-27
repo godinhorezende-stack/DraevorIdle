@@ -1,6 +1,6 @@
 // O combate da caçada: golpe do personagem (arma, wand, tiro, elemento), golpe dos bichos, mortes, loot e level.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
-import { ITEM_CATALOG } from '../dados.mjs';
+import { ITEM_CATALOG, CATALOGO } from '../dados.mjs';
 import * as R from '../regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario } from '../inventario.mjs';
 import * as Acoes from '../acoes.mjs';
@@ -246,6 +246,22 @@ export function vitoriaNoBoss(estado, hunt, alvo) {
 // calculado uma vez por tique em `sessao.mjs` e chega pronto até aqui.
 const SEM_PODIO = { exp: 0, loot: 0, lugar: 0 };
 
+/*
+ * ---- O bônus da Caça Online ----
+ *
+ * "Por jogar no braço, a caçada paga 15% a mais de experiência" — a placa da
+ * Caça Online (panels.mjs) anuncia `catalog.bonusOnline` (15, capturado do
+ * original), mas nenhuma linha do servidor o cobrava: a exp online saía igual
+ * à automática. É um fator sobre a exp JÁ calculada (level, boosts, premium,
+ * stamina, prey, pódio), para ela ser exatamente "15% a mais" do que a mesma
+ * morte pagaria na Caça Automática. Só vale com `hunt.modo === 'online'`: a
+ * caçada offline (`simularAusencia`) roda com o modo trocado para 'auto', e
+ * na party cada membro usa o modo da PRÓPRIA caçada (como os outros bônus).
+ */
+export function fatorDaCacaOnline(hunt) {
+  return hunt?.modo === 'online' ? 1 + (CATALOGO.bonusOnline ?? 0) / 100 : 1;
+}
+
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Na Arena x1 ninguém ganha exp nem loot dos bichos: eles só atrapalham.
   if (hunt.pvp) {
@@ -264,7 +280,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     const parte = (alvo.exp * (alvo.exp >= 20 ? part.bonus : 1)) / part.membros.length;
     for (const m of part.membros) {
       if (m.estado === estado || !m.estado?.hunt) continue;
-      const deles = Math.round(Boosts.expDoBicho(m.estado, parte) * Prey.fatorDeExp(m.estado, alvo.key));
+      const deles = Math.round(Boosts.expDoBicho(m.estado, parte) * Prey.fatorDeExp(m.estado, alvo.key) * fatorDaCacaOnline(m.estado.hunt));
       m.estado.xp = (m.estado.xp ?? 0) + deles;
       const s2 = m.estado.hunt.sessao;
       if (s2) {
@@ -279,9 +295,10 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     exp = Boosts.expDoBicho(estado, alvo.exp);
   }
   // Prey de experiência: só contra a criatura do slot (ver `Prey.fatorDeExp`).
-  // + o bônus do pódio da Arena x1 da semana (1º +8%, 2º +5%, 3º +3%).
+  // + o bônus do pódio da Arena x1 da semana (1º +8%, 2º +5%, 3º +3%)
+  // + o da Caça Online (`fatorDaCacaOnline`).
   const podio = hunt.podio ?? SEM_PODIO;
-  exp = Math.round(exp * Prey.fatorDeExp(estado, alvo.key) * (1 + podio.exp / 100));
+  exp = Math.round(exp * Prey.fatorDeExp(estado, alvo.key) * (1 + podio.exp / 100) * fatorDaCacaOnline(hunt));
   alvo.exp = exp;
   eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
   estado.xp = (estado.xp ?? 0) + exp;
