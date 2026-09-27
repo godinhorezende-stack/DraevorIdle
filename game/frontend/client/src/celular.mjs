@@ -198,6 +198,44 @@ function abrirMais() {
 }
 
 /*
+ * ---- O Herói: tudo o que faz o personagem crescer, num lugar ----
+ *
+ * Ficha e Aparência em cima, e embaixo os sistemas de evolução (Prey, Forja,
+ * Árvore, Gemas, Charms, Proficiência, Imbuements) — a mesma gaveta
+ * "Sistemas" da barra de cima, com os mesmos botões e alertas.
+ */
+function abrirHeroi() {
+  const personagem = api.state().character;
+  abrirFolha({
+    id: 'heroi',
+    titulo: personagem ? `${personagem.name} · level ${personagem.level}` : 'Herói',
+    classe: 'folha-mais',
+    montar: (corpo) => {
+      const secao = (titulo, entradas) => {
+        const bloco = el('section', 'cel-mais-secao');
+        bloco.append(el('h3', null, titulo));
+        const grade = el('div', 'cel-mais-grade');
+        for (const entrada of entradas) {
+          const botao = api.ferramentaLigada({ ...entrada, curto: entrada.label });
+          botao.classList.add('cel-mais-item');
+          botao.addEventListener('click', () => {
+            if (folhaAberta() === 'heroi') fecharFolha();
+          });
+          grade.append(botao);
+        }
+        bloco.append(grade);
+        corpo.append(bloco);
+      };
+      secao('Personagem', [
+        { id: 'heroi-ficha', label: 'Ficha', icone: 'character', abre: () => api.abrirFicha(), tip: 'Atributos, equipamento e perícias.' },
+        { id: 'heroi-aparencia', label: 'Aparência', icone: 'mounts', abre: () => api.abrirAparencia(), tip: 'Outfit, cores, addons e montaria.' },
+      ]);
+      secao('Evolução', api.sistemas());
+    },
+  });
+}
+
+/*
  * ---- A faixa do chat ----
  *
  * Uma linha: a última mensagem da aba aberta. Tocar abre o chat inteiro (a
@@ -224,7 +262,7 @@ function montar() {
   const centro = botaoDaNav('cacar', 'Caçar', 'hunts', tocarNoCentro);
   centro.classList.add('cel-nav-centro');
   nav.append(
-    botaoDaNav('heroi', 'Herói', 'character', () => api.abrirHeroi()),
+    botaoDaNav('heroi', 'Herói', 'character', abrirHeroi),
     botaoDaNav('mochila', 'Mochila', 'inventory', tocarNaMochila),
     centro,
     botaoDaNav('loja', 'Loja', 'store', () => api.abrirLoja()),
@@ -246,7 +284,7 @@ function montar() {
   nivel.id = 'cel-nivel';
   nivel.type = 'button';
   nivel.setAttribute('aria-label', 'Abrir o Herói');
-  nivel.onclick = () => api.abrirHeroi();
+  nivel.onclick = () => api.abrirFicha();
 
   const paginas = el('div', 'cel-paginas');
   paginas.id = 'cel-paginas';

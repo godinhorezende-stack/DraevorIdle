@@ -26765,3 +26765,113 @@ html[data-perfil="retrato"] body.com-modal .cel-chat,
 html[data-perfil="retrato"] body.com-modal .cel-paginas,
 html[data-perfil="retrato"] body.com-modal #actionbar,
 html[data-perfil="retrato"] body.com-modal .cel-abas-mochila { visibility: hidden; }
+
+/* ---- Lista → detalhe no telefone (lista-detalhe.mjs) ---- */
+html[data-perfil="retrato"] .lista-detalhe,
+html[data-perfil="deitado"] .lista-detalhe {
+  display: block !important; grid-template-columns: none !important;
+}
+html[data-perfil="retrato"] .lista-detalhe > *,
+html[data-perfil="deitado"] .lista-detalhe > * { width: auto !important; max-width: 100% !important; min-width: 0 !important; }
+.lista-detalhe.mostrando-detalhe > :not(.detalhe-da-lista),
+.lista-detalhe:not(.mostrando-detalhe) > .detalhe-da-lista { display: none !important; }
+.detalhe-voltar {
+  display: inline-flex; align-items: center; min-height: 40px; margin: 0 0 10px; padding: 0 14px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 20px;
+  color: var(--text); font: 600 13px/1 system-ui, "Segoe UI", Roboto, sans-serif;
+}
+.prof-mais {
+  display: block; width: 100%; min-height: 44px; margin: 8px 0;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--text);
+}
+
+/* ---- Aparência no telefone: uma coluna, paleta com casas de dedo ---- */
+/* Eram duas colunas (250px + 78px): a lista de outfits ficou com 78px ("MON
+   TARI AS") e a paleta de 19×7 com casas de 11px. Aqui: prévia e escolhas em
+   cima, a paleta rolando de lado com casas de 30px (a ordem dos tons é a
+   mesma), e os outfits embaixo, em grade de 3. */
+html[data-perfil="retrato"] .outfit-picker,
+html[data-perfil="deitado"] .outfit-picker { grid-template-columns: minmax(0, 1fr) !important; gap: 14px; }
+html[data-perfil="retrato"] .outfit-side,
+html[data-perfil="deitado"] .outfit-side { grid-template-columns: minmax(0, 1fr) !important; width: auto !important; }
+html[data-perfil="retrato"] .color-grid,
+html[data-perfil="deitado"] .color-grid {
+  grid-template-columns: repeat(19, 30px) !important; grid-auto-rows: 30px; gap: 3px;
+  overflow-x: auto; padding: 3px 3px 8px; scrollbar-width: thin;
+}
+html[data-perfil="retrato"] .color-grid button,
+html[data-perfil="deitado"] .color-grid button { width: 30px; height: 30px; border-radius: 4px; }
+html[data-perfil="retrato"] .outfit-picker .tabs button,
+html[data-perfil="deitado"] .outfit-picker .tabs button { word-break: normal; overflow-wrap: normal; white-space: nowrap; }
+html[data-perfil="retrato"] .outfit-list,
+html[data-perfil="deitado"] .outfit-list { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+html[data-perfil="deitado"] .outfit-list { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)) !important; }
+/* A linha inteira de "Addon 1 / Addon 2 / Montaria" é o alvo, não só a caixinha. */
+html[data-perfil="retrato"] .outfit-mark input,
+html[data-perfil="deitado"] .outfit-mark input { width: 22px; height: 22px; }
+
+/* ---- Forja no telefone ---- */
+/* As casas do craft encolhiam como item flex (a pilha de variantes chegou a
+   13px, com o "13" partido em "1/3"): mantêm o tamanho, e a linha quebra. */
+html[data-perfil="retrato"] .craft-linha,
+html[data-perfil="deitado"] .craft-linha { flex-wrap: wrap; }
+html[data-perfil="retrato"] .craft-casa,
+html[data-perfil="deitado"] .craft-casa { flex: none; }
+/* O nome da vocação inteiro ("Knig/ht"): ícone em cima, nome embaixo, sem quebrar. */
+html[data-perfil="retrato"] .craft-voc-nome,
+html[data-perfil="deitado"] .craft-voc-nome { flex-direction: column; gap: 2px; }
+html[data-perfil="retrato"] .craft-voc b,
+html[data-perfil="deitado"] .craft-voc b { white-space: nowrap; font-size: 11px; letter-spacing: 0; }
+html[data-perfil="retrato"] .craft-vocs,
+html[data-perfil="deitado"] .craft-vocs { gap: 4px; }
+html[data-perfil="retrato"] .craft-voc { padding: 0 2px 6px; }
+/* O balão nunca mais largo que a tela do telefone. */
+html[data-perfil="retrato"] body > .tooltip,
+html[data-perfil="deitado"] body > .tooltip { max-width: calc(100vw - 16px) !important; }
+
+/* ---- Árvore no telefone: Aplicar/Cancelar num rodapé que não some ---- */
+html[data-perfil="retrato"] .arvore-acoes,
+html[data-perfil="deitado"] .arvore-acoes {
+  position: fixed; z-index: 75;
+  left: 12px; right: 12px; bottom: calc(var(--seguro-baixo) + 10px);
+  display: flex !important; flex-direction: row !important; gap: 8px; margin: 0 !important;
+  padding: 8px; border-radius: 12px;
+  background: #0b1012f2; border: 1px solid var(--line); box-shadow: 0 -6px 20px #000a;
+}
+html[data-perfil="deitado"] .arvore-acoes { left: auto; width: min(360px, 60vw); right: calc(var(--seguro-dir) + 12px); }
+html[data-perfil="retrato"] .arvore-acoes > button,
+html[data-perfil="deitado"] .arvore-acoes > button { flex: 1; min-height: 44px; margin: 0 !important; }
+html[data-perfil="retrato"] .modal-box:has(.arvore-acoes) #modal-body,
+html[data-perfil="deitado"] .modal-box:has(.arvore-acoes) #modal-body { padding-bottom: 80px; }
+
+/* ---- Gem Atelier no telefone: filtros em cima, o detalhe, depois a grade ---- */
+html[data-perfil="retrato"] .gemas-atelier-direita,
+html[data-perfil="deitado"] .gemas-atelier-direita { display: flex !important; flex-direction: column; gap: 8px; }
+html[data-perfil="retrato"] .gemas-atelier-direita > .gemas-filtro,
+html[data-perfil="deitado"] .gemas-atelier-direita > .gemas-filtro { order: 1; }
+html[data-perfil="retrato"] .gemas-atelier-direita > .gemas-detalhe,
+html[data-perfil="deitado"] .gemas-atelier-direita > .gemas-detalhe { order: 2; scroll-margin-top: 8px; }
+html[data-perfil="retrato"] .gemas-atelier-direita > .gemas-grade,
+html[data-perfil="deitado"] .gemas-atelier-direita > .gemas-grade { order: 3; }
+/* Sem gema escolhida (nenhuma revelada ainda) o painel vazio não ocupa lugar. */
+html[data-perfil="retrato"] .gemas-detalhe:not(:has(.gemas-detalhe-corpo)),
+html[data-perfil="deitado"] .gemas-detalhe:not(:has(.gemas-detalhe-corpo)) { display: none; }
+
+/* ---- Prey no telefone: um slot por vez, deslizando de lado ---- */
+/* Empilhados, os três somavam ~1.400px: o terceiro slot estava a duas telas
+   de distância. Aqui cada slot tem a largura da tela e o dedo passa de um
+   para o outro (o cabeçalho de cada um diz qual é). */
+html[data-perfil="retrato"] .prey-grid,
+html[data-perfil="deitado"] .prey-grid {
+  display: flex !important; gap: 10px;
+  overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+  padding-bottom: 6px; scrollbar-width: thin;
+}
+html[data-perfil="retrato"] .prey-grid > .prey-slot,
+html[data-perfil="deitado"] .prey-grid > .prey-slot { flex: 0 0 calc(100% - 24px); scroll-snap-align: start; min-width: 0; }
+html[data-perfil="deitado"] .prey-grid > .prey-slot { flex-basis: min(360px, 70%); }
+/* As caixinhas de opção: a linha inteira é o alvo. */
+html[data-perfil="retrato"] #modal label:has(> input[type="checkbox"]),
+html[data-perfil="deitado"] #modal label:has(> input[type="checkbox"]) { min-height: 40px; display: flex; align-items: center; gap: 8px; }
+html[data-perfil="retrato"] #modal label > input[type="checkbox"],
+html[data-perfil="deitado"] #modal label > input[type="checkbox"] { width: 20px; height: 20px; flex: none; }

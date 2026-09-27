@@ -9,7 +9,7 @@ import {
 import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
 import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from './hud.mjs';
 import { ARTES } from './artes.mjs';
-import { abrirNaPilha, fechouNaPilha } from './pilha.mjs';
+import { abrirNaPilha, fechouNaPilha, fechouNaPilhaTudoQue } from './pilha.mjs';
 import { ligarPerfil } from './perfil.mjs';
 import { initCelular, atualizarCelular, analogicoLigado } from './celular.mjs';
 import {
@@ -2628,7 +2628,9 @@ function buildWindows() {
       { id: 'trocar', label: 'Trocar personagem', icone: 'logout', abre: () => confirmarSaida(),
         tip: 'Trocar de personagem ou sair da conta.' },
     ],
-    abrirHeroi: () => openCharacter(),
+    abrirFicha: () => openCharacter('sheet'),
+    abrirAparencia: () => openCharacter('look'),
+    sistemas: () => SISTEMAS,
     janelaAberta: (id) => isVisible(id),
     abrirJanela: (id) => setVisible(id, true, { gravar: false }),
     fecharJanela: (id) => esconderSemGravar(id),
@@ -9470,6 +9472,8 @@ function openModal(title, build, onClose, variant) {
   panelCtx.redrawKey = null;
   panelCtx.aoVivo = null;
   onModalClose = onClose ?? null;
+  // Trocou de tela: os "detalhes" da anterior saem da pilha do voltar.
+  fechouNaPilhaTudoQue('detalhe:');
   // A loja ganha a moldura dourada; o resto usa a padrão.
   document.querySelector('.modal-box').className = variant ? `modal-box ${variant}` : 'modal-box';
   /*
@@ -9493,7 +9497,8 @@ function openModal(title, build, onClose, variant) {
 }
 
 function closeModal() {
-  fechouNaPilha('modal');
+  // O modal leva junto os "detalhes" abertos dentro dele (lista-detalhe.mjs).
+  fechouNaPilhaTudoQue('detalhe:', 'modal');
   $('modal').hidden = true;
   document.body.classList.remove('com-modal');
   panelCtx.redraw = null;

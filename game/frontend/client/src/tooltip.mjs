@@ -1,6 +1,7 @@
 // Tooltip de item: nome, o que ele faz e os atributos, como no client.
 // O level e o premium que os pergaminhos de acesso pedem. Ver
 // `packages/shared/src/portas-de-acesso.mjs`.
+import { ehTelefone } from './perfil.mjs';
 import { portaDoItemDeAcesso } from '/packages/shared/src/portas-de-acesso.mjs';
 import { itemCanvas, outfitCanvas, drawItem, drawEffect, drawMissile, effectDuration } from './sprites.mjs';
 
@@ -2671,6 +2672,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
 
 /** Encosta o tooltip no elemento sem sair da janela. */
 function place(holder) {
+  /*
+   * No telefone o par (o balão e o do que está vestido, lado a lado) é mais
+   * largo que a tela: fica só o principal, dentro das bordas. A comparação
+   * continua no computador, onde cabe.
+   */
+  if (ehTelefone() && nodeVs) nodeVs.hidden = true;
   const anchor = holder.getBoundingClientRect();
   const box = node.getBoundingClientRect();
 
@@ -2685,7 +2692,8 @@ function place(holder) {
 
   const esquerdaDoPar = Math.max(8, Math.min(anchor.left - larguraVs, window.innerWidth - largura - 8));
   const acima = anchor.top - box.height - 8;
-  const topo = acima > 8 ? acima : anchor.bottom + 8;
+  // Sem espaço em cima nem embaixo (balão alto, tela baixa): o mais alto que couber.
+  const topo = acima > 8 ? acima : Math.max(8, Math.min(anchor.bottom + 8, window.innerHeight - box.height - 8));
 
   node.style.left = `${esquerdaDoPar + larguraVs}px`;
   node.style.top = `${topo}px`;

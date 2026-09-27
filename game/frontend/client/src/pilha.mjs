@@ -33,17 +33,32 @@ export function abrirNaPilha(id, fechar) {
   }
 }
 
-/** `id` foi fechado pela própria tela: tira da pilha e consome a entrada do histórico. */
-export function fechouNaPilha(id) {
-  const i = pilha.findIndex((e) => e.id === id);
-  if (i < 0) return;
-  pilha.splice(i, 1);
+/*
+ * Tira as entradas e consome o mesmo tanto do histórico numa travessia só
+ * (`history.go(-n)` gera UM `popstate`): várias chamadas a `back()` seguidas
+ * podem ser juntadas pelo navegador, e a conta de ignorar se perderia.
+ */
+function tirar(quais) {
+  const antes = pilha.length;
+  for (let i = pilha.length - 1; i >= 0; i--) if (quais(pilha[i])) pilha.splice(i, 1);
+  const n = antes - pilha.length;
+  if (!n) return;
   popsAIgnorar++;
   try {
-    history.back();
+    history.go(-n);
   } catch {
     popsAIgnorar--;
   }
+}
+
+/** `id` foi fechado pela própria tela: tira da pilha e consome a entrada do histórico. */
+export function fechouNaPilha(id) {
+  tirar((e) => e.id === id);
+}
+
+/** Fechou junto tudo o que começa com algum dos `prefixos` (o modal e os detalhes dentro dele). */
+export function fechouNaPilhaTudoQue(...prefixos) {
+  tirar((e) => prefixos.some((p) => e.id.startsWith(p)));
 }
 
 export const tamanhoDaPilha = () => pilha.length;

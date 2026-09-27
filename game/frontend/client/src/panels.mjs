@@ -1,5 +1,7 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
+import { listaDetalhe } from './lista-detalhe.mjs';
+import { ehTelefone } from './perfil.mjs';
 import { arteTeimosa, fundoTeimoso } from './arte-teimosa.mjs';
 import { itemCanvas, outfitCanvas, outfitInfo, drawEffect, effectDuration, effectInfo } from './sprites.mjs';
 // O item e o level das duas portas de acesso, os mesmos que o servidor cobra.
@@ -9023,7 +9025,15 @@ function renderProficiency(body) {
   });
 
   const grid = el('div', 'prof-weapons');
-  for (const entry of weapons) {
+  /*
+   * No telefone a grade vem em páginas: eram as 678 armas desenhadas de uma
+   * vez (1.434 elementos, cada uma com o seu canvas), e só umas vinte cabem na
+   * tela. "Mostrar mais" acrescenta a próxima página. No computador segue
+   * inteira, como era.
+   */
+  const PAGINA_DE_ARMAS = 60;
+  const limite = ehTelefone() ? (ctx.tabs.profLimite ?? PAGINA_DE_ARMAS) : Infinity;
+  for (const entry of weapons.slice(0, limite)) {
     const cell = el('button', `prof-weapon${entry.equipped ? ' equipped' : ''}${entry.owned ? ' owned' : ''}`);
     cell.setAttribute('aria-selected', String(view?.itemId === entry.itemId));
     cell.append(itemCanvas(entry.itemId, 32));
@@ -9033,20 +9043,48 @@ function renderProficiency(body) {
       entry.itemId,
       `Grupo: ${entry.proficiency} — nível ${entry.level}${entry.owned ? '' : ' · você não tem esta arma'}`
     );
-    cell.onclick = () => send({ t: 'proficiency', itemId: entry.itemId });
+    cell.onclick = () => {
+      // Escolheu: no telefone a ficha da arma volta a ocupar a tela.
+      ctx.tabs.profNaLista = false;
+      send({ t: 'proficiency', itemId: entry.itemId });
+    };
     grid.append(cell);
   }
   if (!weapons.length) grid.append(el('p', 'empty', 'nenhuma arma com esse filtro'));
   left.append(grid);
+  if (weapons.length > limite) {
+    const mais = el('button', 'prof-mais', `Mostrar mais (${weapons.length - limite} restantes)`);
+    mais.type = 'button';
+    mais.onclick = () => {
+      ctx.tabs.profLimite = limite + PAGINA_DE_ARMAS;
+      ctx.redraw();
+    };
+    left.append(mais);
+  }
   left.append(el('em', 'prof-count', `${weapons.length} de ${list.length} armas`));
   layout.append(left);
 
   // ---- coluna da direita: a ficha da arma ----
   const right = el('div', 'prof-tree');
+  /*
+   * No telefone: a ficha da arma (a equipada, de saída) ocupa a tela, e
+   * "← Armas" mostra a grade para trocar (lista-detalhe.mjs).
+   */
+  const mostrarAMetade = () =>
+    listaDetalhe(layout, right, {
+      id: 'proficiencia',
+      rotulo: '← Armas',
+      escolhido: !!view && !ctx.tabs.profNaLista,
+      voltar: () => {
+        ctx.tabs.profNaLista = true;
+        ctx.redraw();
+      },
+    });
   if (!view) {
     right.append(el('p', 'empty', 'Escolha uma arma à esquerda, ou equipe uma que tenha proficiência.'));
     layout.append(right);
     body.append(layout);
+    mostrarAMetade();
     return;
   }
 
@@ -9164,6 +9202,7 @@ function renderProficiency(body) {
   right.append(tree);
   layout.append(right);
   body.append(layout);
+  mostrarAMetade();
 }
 
 // ---------- charms do bestiary ----------
@@ -10566,6 +10605,8 @@ function renderLojaDaArena(body, view) {
 export function openCharms() {
   ctx.send({ t: 'charms' });
   ctx.tabs.charmKind ??= 'offensive';
+  // No telefone a tela abre na grade (a ficha é a segunda tela).
+  ctx.tabs.charmNaFicha = false;
   ctx.openModal('Charms', (body) => {
     const draw = () => {
       body.innerHTML = '';
@@ -10757,6 +10798,7 @@ function renderCharms(body) {
   body.append(
     tabBar({ offensive: 'Ofensivos', defensive: 'Defensivos' }, kind, (next) => {
       ctx.tabs.charmKind = next;
+      ctx.tabs.charmNaFicha = false;
       /*
        * A criatura aberta fecha junto com a aba.
        *
@@ -10811,6 +10853,8 @@ function renderCharms(body) {
       ctx.tabs.charmSel = charm.id;
       // Trocar de charm fecha a busca de criatura do anterior.
       if (ctx.tabs.charmAberto !== charm.id) ctx.tabs.charmAberto = null;
+      // No telefone, tocar mostra a ficha dele (lista-detalhe.mjs).
+      ctx.tabs.charmNaFicha = true;
       ctx.redraw();
     };
     grade.append(tile);
@@ -10899,6 +10943,16 @@ function renderCharms(body) {
   }
   tela.append(ficha);
   body.append(tela);
+  // No telefone: a grade, ou a ficha do charm tocado — não os dois empilhados.
+  listaDetalhe(tela, ficha, {
+    id: 'charms',
+    rotulo: '← Charms',
+    escolhido: !!selecionado && !!ctx.tabs.charmNaFicha,
+    voltar: () => {
+      ctx.tabs.charmNaFicha = false;
+      ctx.redraw();
+    },
+  });
 
   /*
    * ---- O saldo, no rodapé ----
@@ -17827,6 +17881,7 @@ function renderCicloItens(body) {
         ctx.tabs.cicloItem = item.id;
         desenharLista();
         desenharFicha();
+        mostrarAMetade();
       };
       lista.append(linha);
     }
@@ -17902,10 +17957,23 @@ function renderCicloItens(body) {
     ctx.tabs.cicloBusca = busca.value;
     desenharLista();
   };
+  // No telefone: a lista, ou só a ficha do item escolhido (lista-detalhe.mjs).
+  const mostrarAMetade = () =>
+    listaDetalhe(layout, ficha, {
+      id: 'ciclo-itens',
+      escolhido: !!(ctx.tabs.cicloItem && state.items[ctx.tabs.cicloItem]),
+      voltar: () => {
+        ctx.tabs.cicloItem = null;
+        desenharLista();
+        desenharFicha();
+        mostrarAMetade();
+      },
+    });
   desenharLista();
   desenharFicha();
   layout.append(lista, ficha);
   body.append(layout);
+  mostrarAMetade();
 }
 
 /*
@@ -18124,7 +18192,17 @@ function renderBestiary(body) {
     layout.append(list);
 
     // ---- detalhe ----
-    layout.append(bestiaryDetail(catalog, kills));
+    const detalhe = bestiaryDetail(catalog, kills);
+    layout.append(detalhe);
+    // No telefone: a lista, ou só o detalhe da escolhida (lista-detalhe.mjs).
+    listaDetalhe(layout, detalhe, {
+      id: 'bestiary',
+      escolhido: !!(ctx.tabs.bestiaryPick && catalog[ctx.tabs.bestiaryPick]),
+      voltar: () => {
+        ctx.tabs.bestiaryPick = null;
+        pintar();
+      },
+    });
   }
 
   pintar();
