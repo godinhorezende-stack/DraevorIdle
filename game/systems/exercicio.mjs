@@ -6,7 +6,7 @@
 // acabar, o relatório `treinoReport {ganho, gastos, segundos, exercise}`.
 //
 // Os dados de cada arma (perícia, cargas, bônus 1,3 das Boosted) são os da
-// Ravox Store real. O ritmo é o do texto do client: um golpe (uma carga) a
+// Store real. O ritmo é o do texto do client: um golpe (uma carga) a
 // cada 0,4s, ou 0,2s com o Scroll Speed Exercise. Cada golpe é uma tentativa na
 // perícia da arma (x bônus); nas de magia (rod/wand), mana gasta para o magic
 // level — a quantidade por carga é uma aproximação (o servidor original não

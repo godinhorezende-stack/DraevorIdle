@@ -223,7 +223,7 @@ function cedoNoMercado(s) {
 /** Um anúncio novo do balcão vira uma fala de quem anunciou na aba Mercado (sem gastar o intervalo dele). */
 export function anunciarOferta(s, { kind, count, nome, preco, moeda }) {
   const verbo = kind === 'buy' ? 'Compro' : 'Vendo';
-  const valor = `${Number(preco).toLocaleString('pt-BR')} ${moeda === 'coin' ? 'Ravox Coins' : 'gold'}`;
+  const valor = `${Number(preco).toLocaleString('pt-BR')} ${moeda === 'coin' ? 'Draevor Coins' : 'gold'}`;
   espalhar(s, 'mercado', null, { text: `${verbo} ${count}x ${nome} por ${valor} cada — no balcão do Mercado.` });
 }
 

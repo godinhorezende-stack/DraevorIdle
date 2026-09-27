@@ -16,12 +16,12 @@
 // - Membro: nome, cargo, posto, entrouEm, level, vocation, outfit, online,
 //   veste (o equipamento), onde {cacando, lugar}, expTotal.
 // - Diário: contribuicoes, membros, bau, placar (total por pessoa).
-// - Baú comunitário: 100 vagas no máximo, compra de 25 vagas por 50 Ravox Coins,
+// - Baú comunitário: 100 vagas no máximo, compra de 25 vagas por 50 Draevor Coins,
 //   o aviso de que qualquer membro retira.
 //
 // - Brasão (cliente de 26/09 à tarde): o catálogo, os preços e as regras moram em
 //   `packages/shared/src/brasao-de-guilda.mjs`, o MESMO arquivo que o cliente lê.
-//   Fundar paga só os efeitos pagos; trocar custa CUSTO_DE_TROCAR (50) Ravox Coins
+//   Fundar paga só os efeitos pagos; trocar custa CUSTO_DE_TROCAR (50) Draevor Coins
 //   + os efeitos ainda não destravados (`brasaoEfeitos`), e só o líder troca.
 //   Nome e ordem da tabela também são do shared (nome-de-guilda, ordem-das-guildas).
 //
@@ -35,6 +35,7 @@
 // por causa disto — ela lê de um cache em memória e nunca do banco direto
 // (ver o comentário ali).
 import { banco } from '../database/banco.mjs';
+import * as Cache from '../database/redis.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Premium from './premium.mjs';
@@ -226,15 +227,26 @@ const efeitosDa = (g) => JSON.parse(g.efeitos || '[]');
  * comando que mude alguém de guilda chama `esquecer()` primeiro, então o
  * pior caso é: um jogador muda de guilda, e a tela mostra a guilda antiga
  * por até um passo do relógio antes de esquecer e buscar de novo.
+ *
+ * Redis (opcional) entra como camada de baixo da busca em segundo plano: um
+ * processo que acabou de subir (ou outro processo, quando existir mais de
+ * um) acha a guilda pronta ali em vez de bater no Postgres de novo. TTL de 5
+ * min é rede de segurança; `esquecer()` já limpa a chave na hora.
  */
 const lembradas = new Map();
-const esquecer = () => lembradas.clear();
+const PREFIXO_REDIS = 'guildaDe:';
+const TTL_GUILDA_DE_S = 300;
+
+function esquecer() {
+  lembradas.clear();
+  Cache.invalidarPrefixo(PREFIXO_REDIS).catch((e) => console.error('esquecer guildaDe (redis)', e.message));
+}
 
 /** A guilda de alguém, para o perfil e o ranking: {id, nome, cargo, posto, brasao} (null sem guilda, ou ainda buscando). */
 export function guildaDe(nome) {
   if (lembradas.has(nome)) return lembradas.get(nome);
   lembradas.set(nome, null); // evita disparar uma busca por chamada enquanto a 1ª ainda não voltou
-  buscarGuildaDe(nome)
+  Cache.obterOuCalcular(PREFIXO_REDIS + nome, TTL_GUILDA_DE_S, () => buscarGuildaDe(nome))
     .then((r) => lembradas.set(nome, r))
     .catch((e) => console.error('guildaDe', nome, '->', e.message));
   return null;
@@ -406,7 +418,7 @@ export async function comando(s, m) {
       if (await Q.guildaPorNome.get(chaveDoNome(nome))) return erro('Já existe uma guilda com esse nome.');
       const brasao = normalizarBrasao(m.brasao ?? brasaoPadrao(nome), nome);
       const preco = precoDoBrasao(brasao, { jaExiste: false });
-      if ((s.estado.coins ?? 0) < preco.coins) return erro(`Faltam ${(preco.coins - (s.estado.coins ?? 0)).toLocaleString('pt-BR')} Ravox Coins.`);
+      if ((s.estado.coins ?? 0) < preco.coins) return erro(`Faltam ${(preco.coins - (s.estado.coins ?? 0)).toLocaleString('pt-BR')} Draevor Coins.`);
       s.estado.coins = (s.estado.coins ?? 0) - preco.coins;
       const criada = await Q.fundar.run(nome, eu, JSON.stringify(brasao), JSON.stringify(efeitosUsados(brasao)), Date.now());
       const id = Number(criada.lastInsertRowid);
@@ -540,13 +552,13 @@ export async function comando(s, m) {
       if (mesmoBrasao(brasao, brasaoDa(g))) return erro('O brasão está igual ao que a guilda já tem.');
       const destravados = efeitosDa(g);
       const preco = precoDoBrasao(brasao, { jaExiste: true, destravados });
-      if ((s.estado.coins ?? 0) < preco.coins) return erro(`Faltam ${(preco.coins - (s.estado.coins ?? 0)).toLocaleString('pt-BR')} Ravox Coins.`);
+      if ((s.estado.coins ?? 0) < preco.coins) return erro(`Faltam ${(preco.coins - (s.estado.coins ?? 0)).toLocaleString('pt-BR')} Draevor Coins.`);
       s.estado.coins = (s.estado.coins ?? 0) - preco.coins;
       const efeitos = [...new Set([...destravados, ...efeitosUsados(brasao)])];
       await Q.brasao.run(JSON.stringify(brasao), JSON.stringify(efeitos), g.id);
       await anotar(g.id, 'membros', 'brasao', eu, '', preco.coins);
       await avisarGuilda(g.id);
-      return { ok: true, notice: `O brasão da guilda foi trocado (${preco.coins} Ravox Coins).` };
+      return { ok: true, notice: `O brasão da guilda foi trocado (${preco.coins} Draevor Coins).` };
     }
     case 'recado': {
       if (!g || !mando) return erro('Só o líder e os vices escrevem o recado.');
@@ -623,7 +635,7 @@ export async function comando(s, m) {
     case 'bauVagas': {
       if (!g) return erro('Você não está numa guilda.');
       if (g.bau_teto >= BAU.vagasNoMaximo) return erro('O baú já está no máximo.');
-      if ((s.estado.coins ?? 0) < BAU.coinsPorCompra) return erro(`Custa ${BAU.coinsPorCompra} Ravox Coins.`);
+      if ((s.estado.coins ?? 0) < BAU.coinsPorCompra) return erro(`Custa ${BAU.coinsPorCompra} Draevor Coins.`);
       s.estado.coins -= BAU.coinsPorCompra;
       await Q.bauTeto.run(Math.min(BAU.vagasNoMaximo, g.bau_teto + BAU.vagasPorCompra), g.id);
       await avisarGuilda(g.id);

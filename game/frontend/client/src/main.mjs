@@ -167,7 +167,7 @@ boot('preparando a interface', 0.8, 'molduras e cenário');
 await Promise.all([
   esperarImagem('/client/assets/ui/gate-bg.webp'),
   esperarImagem('/client/assets/ui/panel-frame.webp'),
-  esperarImagem('/client/assets/ui/ravox-logo.webp'),
+  esperarImagem('/client/assets/ui/draevor-logo.webp'),
   document.fonts?.ready ?? Promise.resolve(),
 ]);
 
@@ -732,7 +732,7 @@ function handle(message) {
       }
       if (message.mail?.coins) {
         const quem = message.mail.from?.length ? ` de ${[...new Set(message.mail.from)].join(', ')}` : '';
-        notice(`Você recebeu ${message.mail.coins.toLocaleString('pt-BR')} Ravox Coins${quem}.`);
+        notice(`Você recebeu ${message.mail.coins.toLocaleString('pt-BR')} Draevor Coins${quem}.`);
       }
       /*
        * A ordem importa: o pendente é o que explica por que o personagem está
@@ -974,7 +974,7 @@ function handle(message) {
     case 'store':
       state.store = message.store;
       panelCtx.redraw?.();
-      /* O `+` da barra pediu o catálogo para poder abrir. Ver `pedirRavoxCoins`. */
+      /* O `+` da barra pediu o catálogo para poder abrir. Ver `pedirDraevorCoins`. */
       if (esperandoAsCoins) {
         esperandoAsCoins = false;
         abrirObterCoins();
@@ -1218,7 +1218,7 @@ function handle(message) {
       state.marketHistorico = message.dados;
       redesenharPreservando();
       break;
-    // O câmbio de Ravox Coins: as duas colunas de ordens, e as minhas.
+    // O câmbio de Draevor Coins: as duas colunas de ordens, e as minhas.
     case 'coinMarket':
       state.coinMarket = message.dados;
       if (message.notice) notice(message.notice);
@@ -3037,7 +3037,7 @@ const ARENA = {
 
 const CIDADE = {
   id: 'city', label: 'Voltar para a cidade', curto: 'Cidade', acao: () => send({ t: 'stopHunt' }),
-  tip: 'Encerra a caçada e traz o personagem de volta para Ravox.',
+  tip: 'Encerra a caçada e traz o personagem de volta para Draevor.',
   ativo: () => !!state.hunt,
 };
 
@@ -3433,7 +3433,7 @@ function toolButton({ id, label, tip, curto, corpo, icone, reserva, semBalao = f
  */
 let esperandoAsCoins = false;
 
-function pedirRavoxCoins() {
+function pedirDraevorCoins() {
   if (state.store) return void abrirObterCoins();
   esperandoAsCoins = true;
   send({ t: 'store' });
@@ -3616,7 +3616,7 @@ function buildTopbar() {
    * "o de mercado a esquerda do deposito."
    *
    * Ele era vizinho da fileira e nao filho dela — placa propria, colada na
-   * Ravox Store. Com a fileira centrada no boneco, sobrou um vao entre os dois:
+   * Store. Com a fileira centrada no boneco, sobrou um vao entre os dois:
    * o Mercado ficava sozinho la atras e o Deposito comecava a meia tela de
    * distancia.
    *
@@ -4064,14 +4064,14 @@ function acertarLargada(falta) {
         largadaNumero = conta;
         numero.textContent = String(conta);
         /*
-         * A animação é reiniciada à força: trocar só o texto não repete o
-         * `@keyframes`, e o número cresceria uma vez e ficaria parado. Ler o
-         * `offsetWidth` no meio é o que obriga o navegador a aplicar a remoção
-         * antes de pôr a classe de volta.
+         * A animação é reiniciada: trocar só o texto não repete o
+         * `@keyframes`, e o número cresceria uma vez e ficaria parado. Adiar
+         * o `add` para o próximo quadro (em vez de ler `offsetWidth` só para
+         * obrigar a remoção a valer na hora) reinicia igual, sem forçar um
+         * reflow síncrono no meio de um tique.
          */
         numero.classList.remove('bate');
-        void numero.offsetWidth;
-        numero.classList.add('bate');
+        requestAnimationFrame(() => numero.classList.add('bate'));
       }
     } else if (restante > -LARGADA_FRASE_MS) {
       if (largadaNumero !== 0) {
@@ -4080,8 +4080,7 @@ function acertarLargada(falta) {
         caixa.classList.add('vai');
         numero.textContent = 'Derrote-o!';
         numero.classList.remove('bate');
-        void numero.offsetWidth;
-        numero.classList.add('bate');
+        requestAnimationFrame(() => numero.classList.add('bate'));
       }
     } else {
       esconderLargada();
@@ -4786,7 +4785,7 @@ function mostrarAtualizacao() {
    */
   const painel = el('div', 'atualizar-painel ui-frame ui-frame--miudo');
   const dentro = el('div', 'atualizar-dentro');
-  dentro.append(el('h2', null, 'Versão nova do Ravox'));
+  dentro.append(el('h2', null, 'Versão nova do Draevor'));
   dentro.append(
     el(
       'p',
@@ -5026,14 +5025,14 @@ function mostrarMorte(message) {
       if (!caixa.isConnected) return;
       const falta = Math.max(0, Math.ceil((fim - Date.now()) / 1000));
       destino.textContent = falta
-        ? `Você acordou no templo de Ravox. Voltando para ${message.hunt ?? 'a caçada'} em ${falta}s...`
+        ? `Você acordou no templo de Draevor. Voltando para ${message.hunt ?? 'a caçada'} em ${falta}s...`
         : `Voltando para ${message.hunt ?? 'a caçada'}...`;
       if (!falta) return void setTimeout(() => caixa.remove(), 600);
       setTimeout(contar, 250);
     };
     contar();
   } else {
-    destino.textContent = 'Você acordou no templo de Ravox. A caçada foi encerrada.';
+    destino.textContent = 'Você acordou no templo de Draevor. A caçada foi encerrada.';
   }
 }
 
@@ -6225,7 +6224,7 @@ mapView.onTileRight = (x, y, evento) => {
     return openMenu(evento, [
       {
         cabeca: npc.name,
-        sub: npc.tipo === 'banco' ? 'banqueiro de Ravox' : 'mercadora',
+        sub: npc.tipo === 'banco' ? 'banqueiro de Draevor' : 'mercadora',
         arte: outfitCanvas(npc.colors ?? { type: npc.look }, 32),
       },
       { divider: true },
@@ -6767,9 +6766,9 @@ window.__abrir = {
    * redesenhos sem abrir o navegador à mão.
    */
   proficiencia: () => openProficiency(),
-  // A Ravox Store, para a sonda conferir a coluna das prateleiras e o desenho
-  // de cada produto. Ver `sonda-loja-ravox`.
-  ravoxStore: (secao = null) => {
+  // A Store, para a sonda conferir a coluna das prateleiras e o desenho
+  // de cada produto. Ver `sonda-loja-draevor`.
+  draevorStore: (secao = null) => {
     openStore();
     if (secao) panelCtx.tabs.storeSection = secao;
     renderAll();
@@ -7234,9 +7233,13 @@ function renderAll() {
   const total = Math.round(character.gold) + banco;
   const antes = Number(ouro.dataset.value ?? total);
   if (total > antes) {
+    // Reinicia a animação mesmo em ganhos seguidos — sem um reflow forçado
+    // (`offsetWidth`) no meio: o navegador já aplica a remoção da classe
+    // antes do próximo quadro, então adiar o `add` para lá (em vez de ler
+    // uma medida só para obrigar isso a acontecer na hora) tem o mesmo
+    // efeito sem travar a thread principal lendo layout.
     ouro.classList.remove('gained');
-    void ouro.offsetWidth; // reinicia a animação mesmo em ganhos seguidos
-    ouro.classList.add('gained');
+    requestAnimationFrame(() => ouro.classList.add('gained'));
   }
   ouro.dataset.value = String(total);
   ouro.textContent = total.toLocaleString('pt-BR');
@@ -7274,13 +7277,13 @@ function renderAll() {
   );
   $('char-coins').textContent = (character.coins ?? 0).toLocaleString('pt-BR');
   /*
-   * ---- O `+` das Ravox Coins ----
+   * ---- O `+` das Draevor Coins ----
    *
-   * "em cima da quantidade de ravox coins que tenho coloca um botão + que ao
+   * "em cima da quantidade de draevor coins que tenho coloca um botão + que ao
    *  clicar abre a tela de donate."
    *
    * O caminho até ali eram três cliques — abrir a loja, achar o rodapé, achar
-   * "Obter Ravox Coins" —, e é o caminho que o jogo mais quer que seja curto.
+   * "Obter Draevor Coins" —, e é o caminho que o jogo mais quer que seja curto.
    * O `+` colado no saldo é o gesto de qualquer jogo com moeda paga.
    *
    * Pendurado uma vez só, pelo mesmo motivo do ícone do banco acima.
@@ -7306,12 +7309,12 @@ function renderAll() {
   if (!bolsoDeCoins.querySelector('.carteira-mais')) {
     const mais = el('button', 'carteira-mais', '+');
     mais.type = 'button';
-    mais.setAttribute('aria-label', 'Obter Ravox Coins');
-    tipTexto(mais, 'Comprar Ravox Coins — Pix, cartão ou internacional.');
+    mais.setAttribute('aria-label', 'Obter Draevor Coins');
+    tipTexto(mais, 'Comprar Draevor Coins — Pix, cartão ou internacional.');
     mais.onclick = (evento) => {
       // Sem isto o clique sobe para a carteira e o balão dela responde junto.
       evento.stopPropagation();
-      pedirRavoxCoins();
+      pedirDraevorCoins();
     };
     bolsoDeCoins.append(mais);
   }
@@ -8512,8 +8515,8 @@ function renderAnalyzer() {
     .sort((a, b) => b[1] - a[1]);
 
   const caixa = el('details', 'loot-tally');
-  caixa.open = localStorage.getItem('ravox:loot-tally') !== '0';
-  caixa.ontoggle = () => localStorage.setItem('ravox:loot-tally', caixa.open ? '1' : '0');
+  caixa.open = localStorage.getItem('draevor:loot-tally') !== '0';
+  caixa.ontoggle = () => localStorage.setItem('draevor:loot-tally', caixa.open ? '1' : '0');
   caixa.append(el('summary', null, `Loot da sessão (${loot.length})`));
 
   if (loot.length) {
@@ -8556,8 +8559,8 @@ function renderAnalyzer() {
   };
 
   const gastoBox = el('details', 'loot-tally');
-  gastoBox.open = localStorage.getItem('ravox:gastos') !== '0';
-  gastoBox.ontoggle = () => localStorage.setItem('ravox:gastos', gastoBox.open ? '1' : '0');
+  gastoBox.open = localStorage.getItem('draevor:gastos') !== '0';
+  gastoBox.ontoggle = () => localStorage.setItem('draevor:gastos', gastoBox.open ? '1' : '0');
   /*
    * O total vem com a MOEDA, e não com um "g" colado no número.
    *
@@ -8608,8 +8611,8 @@ function renderAnalyzer() {
   const porElemento = session?.porElemento ?? { causado: {}, recebido: {} };
 
   const danoBox = el('details', 'loot-tally');
-  danoBox.open = localStorage.getItem('ravox:dano-elem') === '1';
-  danoBox.ontoggle = () => localStorage.setItem('ravox:dano-elem', danoBox.open ? '1' : '0');
+  danoBox.open = localStorage.getItem('draevor:dano-elem') === '1';
+  danoBox.ontoggle = () => localStorage.setItem('draevor:dano-elem', danoBox.open ? '1' : '0');
   danoBox.append(el('summary', null, 'Dano por elemento'));
 
   const lado = (titulo, dados, cor) => {
@@ -8671,8 +8674,8 @@ function renderAnalyzer() {
     const acertos = session?.acertosDoFamiliar ?? 0;
 
     const famBox = el('details', 'loot-tally');
-    famBox.open = localStorage.getItem('ravox:dano-familiar') === '1';
-    famBox.ontoggle = () => localStorage.setItem('ravox:dano-familiar', famBox.open ? '1' : '0');
+    famBox.open = localStorage.getItem('draevor:dano-familiar') === '1';
+    famBox.ontoggle = () => localStorage.setItem('draevor:dano-familiar', famBox.open ? '1' : '0');
     // O nome do familiar DELE no título: quem pôs nome ou skin reconhece o seu.
     const quem = summon?.familiar?.nome ?? 'familiar';
     famBox.append(el('summary', null, `Dano do ${quem} — ${fatia}% do total`));
@@ -9104,7 +9107,7 @@ function mostrarPagamento({ url, coins, pedido, metodo, centavos }) {
   const corpo = el('div', 'coins-body');
   box.append(corpo);
 
-  corpo.append(el('p', 'donate-intro', `${(coins ?? 0).toLocaleString('pt-BR')} Ravox Coins${valor ? ` — ${valor}` : ''}`));
+  corpo.append(el('p', 'donate-intro', `${(coins ?? 0).toLocaleString('pt-BR')} Draevor Coins${valor ? ` — ${valor}` : ''}`));
 
   /*
    * ---- Este código NÃO é um Pix, e a tela precisa dizer isso ----
@@ -9188,7 +9191,7 @@ function mostrarPagamento({ url, coins, pedido, metodo, centavos }) {
     el(
       'small',
       'donate-rodape',
-      'As Ravox Coins entram na sua conta sozinhas assim que o pagamento for confirmado — normalmente em segundos. Pode fechar esta janela e continuar jogando.'
+      'As Draevor Coins entram na sua conta sozinhas assim que o pagamento for confirmado — normalmente em segundos. Pode fechar esta janela e continuar jogando.'
     )
   );
   if (pedido) corpo.append(el('small', 'donate-rodape', `Pedido ${pedido}`));
@@ -9228,7 +9231,7 @@ function avisarRespostaDeReport(respostas) {
 
   const pilha = $('recados');
   for (const resposta of lista) {
-    logAviso(`Ravox respondeu o seu report: ${resposta.texto}`);
+    logAviso(`Draevor respondeu o seu report: ${resposta.texto}`);
 
     const balao = el('div', 'recado');
     const abrir = () => {
@@ -9281,8 +9284,8 @@ function abrirRespostaDeReport(respostas) {
   openModal(lista.length > 1 ? 'Respostas ao seu report' : 'Resposta ao seu report', (body) => {
     body.append(
       el('p', 'gate-note', lista.length > 1
-        ? 'O Ravox respondeu aos reports que você mandou.'
-        : 'O Ravox respondeu ao report que você mandou.')
+        ? 'O Draevor respondeu aos reports que você mandou.'
+        : 'O Draevor respondeu ao report que você mandou.')
     );
     for (const resposta of lista) {
       /*
@@ -9307,7 +9310,7 @@ function abrirRespostaDeReport(respostas) {
       const caixa = el('div', 'report-resposta');
       const quando = resposta.em ? new Date(resposta.em) : null;
       caixa.append(
-        el('b', null, resposta.autor || 'Ravox'),
+        el('b', null, resposta.autor || 'Draevor'),
         quando ? el('em', null, quando.toLocaleString('pt-BR')) : null,
         el('p', null, resposta.texto)
       );
@@ -9426,7 +9429,7 @@ function closeModal() {
  * título faz o depósito voltar onde o jogador o deixou e o resto continuar no
  * meio. Dois cliques no cabeçalho devolvem a caixa ao centro.
  */
-const CHAVE_DOS_MODAIS = 'ravox:modal-pos';
+const CHAVE_DOS_MODAIS = 'draevor:modal-pos';
 
 const posDosModais = (() => {
   try {

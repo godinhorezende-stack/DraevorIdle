@@ -43,7 +43,7 @@ for (const [width, height, rotulo, dpr] of CENARIOS) {
   const p = await ctx.newPage();
   const erros = [];
   p.on('pageerror', (e) => erros.push(e.message));
-  await p.addInitScript(([t, n]) => { localStorage.setItem('ravox:token', t); localStorage.setItem('ravox:character', n); }, [TOKEN, NOME]);
+  await p.addInitScript(([t, n]) => { localStorage.setItem('draevor:token', t); localStorage.setItem('draevor:character', n); }, [TOKEN, NOME]);
   await p.goto('http://localhost:8080/jogar');
   await p.waitForTimeout(4500);
   await p.getByText(NOME, { exact: true }).first().click().catch(() => {}); // entra no personagem se caiu na lista

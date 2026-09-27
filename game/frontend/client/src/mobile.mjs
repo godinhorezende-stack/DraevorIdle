@@ -221,7 +221,7 @@ let painelDeAjustes = null;
  * slots assim que a fileira nasce de novo — sem ele, arrumar a tela duraria até
  * o primeiro level.
  */
-const CHAVE_DOS_LUGARES = 'ravox:slots-soltos';
+const CHAVE_DOS_LUGARES = 'draevor:slots-soltos';
 
 /*
  * ---- Um arranjo POR ORIENTAÇÃO ----
@@ -296,7 +296,7 @@ function gravarLugares() {
  * lugares dos slots — e "devolver as habilidades ao arranjo de fábrica" não
  * deve mexer em onde a pessoa pôs o controle.
  */
-const CHAVE_DO_ANALOGICO = 'ravox:analogico-lugar';
+const CHAVE_DO_ANALOGICO = 'draevor:analogico-lugar';
 
 function lerControles() {
   const vazio = { retrato: null, deitado: null };

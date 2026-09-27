@@ -30,5 +30,12 @@ services:
     ports:
       - "5432:5432"
 
+  # Só em dev: dá pra abrir um `redis-cli`/RedisInsight direto da máquina, e
+  # rodar `game/testes/redis.test.mjs` (REDIS_URL_TESTE) fora do container.
+  # Continua atrás do profile "scale" (`docker compose --profile scale up`).
+  redis:
+    ports:
+      - "6379:6379"
+
 volumes:
   node_modules_do_jogo:

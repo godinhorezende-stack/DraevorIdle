@@ -110,7 +110,7 @@ const WALK_GRACE = 125;
  * Cores de vida do client do usuário, em degraus e não em gradiente — é o que
  * dá a leitura instantânea do Tibia.
  *
- * Copiadas de `modules/game_interface/gameinterface.lua` do Ravox OTClient:
+ * Copiadas de `modules/game_interface/gameinterface.lua` do Draevor OTClient:
  *
  *     if healthPercent > 94 then "#00C000FF"
  *     elseif healthPercent > 59 then "#60c060FF"
@@ -2471,8 +2471,30 @@ export class MapView {
    * no meio de um pixel físico numa tela com escala 1,25 ou 1,5.
    */
   nitido(valor) {
-    const ratio = window.devicePixelRatio || 1;
+    const ratio = this.overlayRatio();
     return Math.round(valor * ratio) / ratio;
+  }
+
+  /*
+   * ---- Teto de DPR só no overlay ----
+   *
+   * O overlay (nomes/texto) é redesenhado INTEIRO todo quadro — em DPR 3 num
+   * celular isso mede 23 FPS e até 40 "long tasks" em 20s (o pior, 187ms); em
+   * DPR 2, 36 FPS e 1 long task (medido com `tools/perf/perfil-cliente.mjs`).
+   * O canvas PRINCIPAL do jogo não usa `devicePixelRatio` (pixel art em
+   * resolução fixa, ampliada por CSS) — só este overlay lê o ratio do
+   * dispositivo, e por isso só ele precisa de teto. Texto em DPR 2 numa tela
+   * DPR 3 continua nítido a olho (é justamente o que os números acima
+   * sustentam) — por isso o teto, e não simplesmente baixar para 1.
+   *
+   * Um helper só, chamado em TODO lugar que hoje lê `window.devicePixelRatio`
+   * para o overlay (`resizeOverlay`, aqui, e as duas chamadas de
+   * `placaDoNome`/`placaDeTexto`) — um teto pela metade (só aqui, por
+   * exemplo) desalinharia o `setTransform` do canvas com o ratio guardado na
+   * CHAVE do cache das placas de texto, e o texto saía borrado ou cortado.
+   */
+  overlayRatio() {
+    return Math.min(window.devicePixelRatio || 1, 2);
   }
 
   /*
@@ -2503,7 +2525,7 @@ export class MapView {
   }
 
   resizeOverlay() {
-    const ratio = window.devicePixelRatio || 1;
+    const ratio = this.overlayRatio();
     this.overlay.width = Math.ceil(window.innerWidth * ratio);
     this.overlay.height = Math.ceil(window.innerHeight * ratio);
     this.overlay.style.width = `${window.innerWidth}px`;
@@ -2829,7 +2851,7 @@ export class MapView {
      * onde estava. E ele passa pelo `nitido` pelo mesmo motivo de sempre —
      * copiar uma imagem para meio pixel a borra igual.
      */
-    const placa = placaDoNome(entity.name, color, window.devicePixelRatio || 1);
+    const placa = placaDoNome(entity.name, color, this.overlayRatio());
     ctx.drawImage(
       placa.lona,
       this.nitido(meio - placa.largura / 2),
@@ -3019,7 +3041,7 @@ export class MapView {
         screen.y - progress * SUBIDA_DO_NUMERO * this.zoom - (text.degrau ?? 0) * ALTURA_DA_LINHA;
       ctx.globalAlpha = Math.max(0, 1 - progress ** 2);
       // Pintado uma vez e colado (ver `placaDeTexto`): sem trocar a fonte do mapa.
-      const placa = placaDeTexto(String(text.text), text.color, text.size, window.devicePixelRatio || 1);
+      const placa = placaDeTexto(String(text.text), text.color, text.size, this.overlayRatio());
       ctx.drawImage(placa.lona, screen.x - placa.largura / 2, y - placa.base, placa.largura, placa.altura);
     }
 
@@ -3065,7 +3087,7 @@ export class MapView {
          * dispara muita magia junta — que e' de novo o que acontecia antes.
          */
         const y = screen.y + ONDE_A_FALA_NASCE - (fala.linhas.length - 1 - i) * ALTURA_DA_LINHA;
-        const placa = placaDeTexto(String(linha.text), linha.color, 12, window.devicePixelRatio || 1);
+        const placa = placaDeTexto(String(linha.text), linha.color, 12, this.overlayRatio());
         ctx.drawImage(placa.lona, screen.x - placa.largura / 2, y - placa.base, placa.largura, placa.altura);
       }
     }

@@ -15,7 +15,7 @@
  * O idioma escolhido fica no `localStorage`. Na primeira visita, quem chega com
  * o navegador em português vê português; todo o resto do mundo vê inglês.
  */
-const CHAVE = 'ravox:idioma';
+const CHAVE = 'draevor:idioma';
 
 export const DICIONARIO = {
   en: {
@@ -27,7 +27,7 @@ export const DICIONARIO = {
     'menu.como': 'How it works',
     'menu.entrar': 'Play',
     'menu.discord': 'Discord',
-    'menu.whatsapp': 'Ravox Idle WhatsApp group',
+    'menu.whatsapp': 'Draevor Idle WhatsApp group',
     'menu.idioma': 'Language',
 
     // ---- capa ----
@@ -63,11 +63,11 @@ export const DICIONARIO = {
     'ranking.carregando': 'loading...',
 
     // ---- donate ----
-    'doar.titulo': 'Ravox Coins',
+    'doar.titulo': 'Draevor Coins',
     'doar.legenda':
       'Pix or credit card, through InfinitePay. Coins land in your account automatically once the payment clears — usually in seconds.',
     'doar.nota': 'Sign in with your game account and pay right here. The coins land in your account automatically.',
-    'doar.coins': 'Ravox Coins',
+    'doar.coins': 'Draevor Coins',
     'doar.botao': 'Donate',
     'doar.entrar': 'Sign in with your game account. Same account, same password.',
     'doar.botaoEntrar': 'Sign in',
@@ -90,9 +90,9 @@ export const DICIONARIO = {
     'doar.copiar': 'Copy link',
     'doar.copiado': 'copied!',
     'doar.automatico':
-      'The Ravox Coins land in your account automatically once the payment clears — usually in seconds.',
+      'The Draevor Coins land in your account automatically once the payment clears — usually in seconds.',
     'doar.pedido': 'Order',
-    'doar.titulo2': 'Ravox Coins',
+    'doar.titulo2': 'Draevor Coins',
 
     // ---- como funciona ----
     'como.titulo': 'How it works',
@@ -122,7 +122,7 @@ export const DICIONARIO = {
     'drops.extras': 'Extra attributes',
     'drops.agora': 'now',
     'bags.titulo': 'Latest bags opened',
-    'bags.legenda': 'What came out of the Bag You Desire, Covet, Primal and Ravox bags opened a moment ago — one piece per bag.',
+    'bags.legenda': 'What came out of the Bag You Desire, Covet, Primal and Draevor bags opened a moment ago — one piece per bag.',
     'bags.vazio': 'no bag opened yet — the bar fills itself as soon as one is',
     'drops.daBag': 'Came out of',
     'drops.entre': 'Draw',
@@ -191,7 +191,7 @@ export function escolherIdioma(lingua) {
   aplicarIdioma();
   // A página avisa quem desenha conteúdo vindo do servidor (ranking, lista de
   // online): esses textos não estão no HTML e precisam ser refeitos.
-  window.dispatchEvent(new CustomEvent('ravox:idioma', { detail: lingua }));
+  window.dispatchEvent(new CustomEvent('draevor:idioma', { detail: lingua }));
 }
 
 /**

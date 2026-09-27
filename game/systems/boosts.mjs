@@ -1,4 +1,4 @@
-// Boosts de experiência — o "XP Boost — 1 hora" da Ravox Store e as Exp
+// Boosts de experiência — o "XP Boost — 1 hora" da Store e as Exp
 // Potions (50% e 75%) — no formato que o client lê (`character.efeitos.exp.fontes`:
 // `[{fonte, percent, restante}]`, a janelinha com o relógio no topo e a linha na
 // ficha). `fonte` é o id que o client conhece: 'loja', 'pocao-50', 'pocao-75'.

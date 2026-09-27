@@ -110,7 +110,7 @@ function projetar(estado, base, fator) {
     itens: { loot: {}, vendido: {}, gastos: {}, ignorado: {}, perdido: {} },
   };
   estado.xp = (estado.xp ?? 0) + extra.exp;
-  estado.bank = (estado.bank ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o banco
+  estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
   for (const [id, n] of Object.entries(base.itens.loot)) {
     const qtd = Math.round(n * fator);

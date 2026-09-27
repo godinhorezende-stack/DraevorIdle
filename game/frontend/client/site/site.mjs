@@ -209,12 +209,12 @@ async function atualizar() {
  * O idioma primeiro, e a engrenagem no menu.
  *
  * `aplicarIdioma` antes do primeiro `atualizar` para a pagina nao piscar em
- * portugues para quem escolheu ingles; e o `ravox:idioma` refaz o que veio do
+ * portugues para quem escolheu ingles; e o `draevor:idioma` refaz o que veio do
  * servidor, que nao esta no HTML e o dicionario nao alcanca sozinho.
  */
 aplicarIdioma();
 montarSeletor(document.querySelector('.topo nav'));
-window.addEventListener('ravox:idioma', () => {
+window.addEventListener('draevor:idioma', () => {
   const abas = $('abas-ranking');
   abas.dataset.pronto = '';
   atualizar();

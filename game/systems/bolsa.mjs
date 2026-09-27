@@ -16,7 +16,7 @@ import { darItem, guardarMoeda } from './inventario.mjs';
 
 export const VAGAS_DA_BOLSA = 1000;
 export const VENDA_A_CADA_S = 120;
-/** "Diminuir o tempo da auto-venda" (Ravox Store): -20s por compra, até 5 (120s -> 20s). */
+/** "Diminuir o tempo da auto-venda" (Store): -20s por compra, até 5 (120s -> 20s). */
 export const VENDA_RAPIDA_MAX = 5;
 export const vendasRapidas = (estado) => Math.min(VENDA_RAPIDA_MAX, estado.compras?.['venda-rapida'] ?? 0);
 export const esperaDaVenda = (estado) => VENDA_A_CADA_S - 20 * vendasRapidas(estado);

@@ -20,6 +20,11 @@ FROM node:22-slim
 RUN useradd --system --create-home --shell /usr/sbin/nologin jogo
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+# Em produção ninguém lê isto (o CMD só chama `node` direto) — mas o
+# `docker-compose.override.yml` de dev monta o código por cima e roda `npm
+# ci` DENTRO do container pra popular o volume nomeado do node_modules; sem
+# o manifesto aqui, esse `npm ci` não tem com o que trabalhar.
+COPY package.json package-lock.json ./
 # Só o código — nunca conteúdo (frontend/gamedata, ver acima) nem testes.
 COPY game/backend ./game/backend
 COPY game/engine ./game/engine

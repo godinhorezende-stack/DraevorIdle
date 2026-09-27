@@ -42,7 +42,7 @@ const DESENHO_EMPRESTADO = {
   55592: 2856, // Pacote Treinador v2   -> present
   55595: 2478, // Boosted Exercise Box  -> treasure chest
   36725: 9660, // Stamina Extension     -> mystical hourglass
-  50051: 3036, // Ravox Tier UP         -> violet gem
+  50051: 3036, // Draevor Tier UP         -> violet gem
 };
 
 export async function loadSpriteData() {

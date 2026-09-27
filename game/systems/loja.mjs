@@ -1,4 +1,4 @@
-// Ravox Store. Só as prateleiras com preço REAL capturado (`CATALOGO.storePrices`,
+// Store. Só as prateleiras com preço REAL capturado (`CATALOGO.storePrices`,
 // e os 200/500 coins do Buff Power, citados no próprio comentário do dono em
 // `game/frontend/client/src/panels.mjs:10103`) — nada de item/montaria/outfit/pacote
 // inventado. As prateleiras sem preço real ficam de propósito como `[]`: o
@@ -10,7 +10,7 @@ import { ITEM_CATALOG } from './dados.mjs';
 /*
  * ---- O que se compra vai para a STORE INBOX ----
  *
- * Como no original: item comprado na Ravox Store não cai na mochila, cai na
+ * Como no original: item comprado na Store não cai na mochila, cai na
  * Store Inbox (`character.storeInbox`, 2000 vagas, sem peso) — de lá o jogador
  * arrasta para a mochila (`send({t:'storeInbox', mover})`, ver `moverDaInbox`).
  */
@@ -50,8 +50,8 @@ const IDS_DAS_BLESSINGS = CATALOGO.blessings.map((b) => b.id);
 
 /** Os 3 itens reais do Buff Power, do `character-template.json` (`efeitos.buffPower`). */
 const ITENS_DO_BUFF_POWER = CHARACTER_TEMPLATE.efeitos.buffPower; // [{id,item,nome,custo,...}]
-const PRECO_BUFF_POWER_UNIDADE = 200; // "200 Ravox Coins cada" — panels.mjs:10103
-const PRECO_BUFF_POWER_TRIO = 500; // "ou os 3 por 500 Ravox Coins" — panels.mjs:10103
+const PRECO_BUFF_POWER_UNIDADE = 200; // "200 Draevor Coins cada" — panels.mjs:10103
+const PRECO_BUFF_POWER_TRIO = 500; // "ou os 3 por 500 Draevor Coins" — panels.mjs:10103
 
 const cartaoDePremium = (dias) => ({
   id: `premium-${dias}`,
@@ -229,7 +229,7 @@ export function comprar(estado, { id }, conta = null) {
   }
   const preco = precoDoId(id);
   if (preco == null) return { ok: false, erro: 'Este produto ainda não está disponível.' };
-  if ((estado.coins ?? 0) < preco) return { ok: false, erro: 'Você não tem Ravox Coins suficientes.' };
+  if ((estado.coins ?? 0) < preco) return { ok: false, erro: 'Você não tem Draevor Coins suficientes.' };
   const entrada = ENTRADA_POR_ID.get(id);
   if (entrada?.prateleira === 'mounts' && (estado.lojaMontarias ?? []).includes(entrada.mountId)) return { ok: false, erro: 'Você já tem essa montaria.' };
   if (entrada?.prateleira === 'outfits' && (estado.lojaOutfits ?? []).includes(entrada.look)) return { ok: false, erro: 'Você já tem esse outfit.' };

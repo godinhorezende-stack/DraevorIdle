@@ -56,6 +56,14 @@ location / {
   proxy_set_header X-Real-IP $remote_addr;
   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
   proxy_set_header X-Forwarded-Proto $scheme;
-  limit_req zone=http_por_ip burst=40 nodelay;
+  # burst alto de propósito: este cliente é ~90+ requests separados por
+  # carregamento frio (módulos ES não empacotados, sem bundler) — tudo isso
+  # chega em paralelo em poucos ms. `nodelay` serve esse burst inteiro na
+  # hora (sem isso, o nginx enfileiraria e atrasaria cada request extra em
+  # vez de 503ar, o que também travaria a página, só que mais devagar). O
+  # limite de VELOCIDADE sustentada continua 20r/s — isto só alarga a
+  # tolerância para o pico de UM carregamento de página, não para abuso
+  # contínuo.
+  limit_req zone=http_por_ip burst=200 nodelay;
   limit_conn conexoes_por_ip 20;
 }

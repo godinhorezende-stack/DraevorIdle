@@ -9,7 +9,7 @@
 // - bag: o mesmo, com {bag, bagNome, entre} no lugar de onde/boss/bicho/chance.
 // - Entra na lista (o texto da própria capa, e tudo na captura bate): peça
 //   lendária ou mítica de BOSS com duas estrelas ou mais, qualquer item com três
-//   estrelas douradas, e as bags (Bag You Desire/Covet, Primal, Ravox Bag/Set —
+//   estrelas douradas, e as bags (Bag You Desire/Covet, Primal, Draevor Bag/Set —
 //   os itens "usáveis" com "bag" no nome). Épico comum de hunt NÃO entra.
 //
 // ESTIMADO: `estrelas` = quantos afixos a peça tem e `forca` = a cor do melhor

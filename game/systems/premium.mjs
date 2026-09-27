@@ -1,5 +1,5 @@
 // Premium e as hunts que ele abre — as regras do original, como o client e a
-// Ravox Store real descrevem:
+// Store real descrevem:
 //
 // - Premium ("Uma semana de premium: 10% de experiência e as hunts premium",
 //   o texto da loja): +10% de exp (`Boosts.expDoBicho`, a linha "Premium" da
@@ -78,7 +78,7 @@ export function podeEntrar(estado, hunt) {
   if (!tranca) return { ok: true };
   const falta = [];
   if (!ativo(estado)) falta.push('premium ativo');
-  if (tranca !== 'vip' && !acessoView(estado, tranca)) falta.push(`o acesso das ${PORTAS_DE_ACESSO[tranca].nome} (o pergaminho, na Ravox Store)`);
+  if (tranca !== 'vip' && !acessoView(estado, tranca)) falta.push(`o acesso das ${PORTAS_DE_ACESSO[tranca].nome} (o pergaminho, na Store)`);
   if ((estado.level ?? 0) < (hunt.level ?? 0)) falta.push(`level ${hunt.level}`);
   if (!falta.length) return { ok: true };
   return { ok: false, erro: `${hunt.name ?? 'Esta hunt'} pede ${falta.join(', ')}.` };

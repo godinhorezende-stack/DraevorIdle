@@ -222,7 +222,7 @@ const quantas = aquecerGrades();
 console.log(`  grades de hunt aquecidas: ${quantas} em ${(performance.now() - t0).toFixed(0)}ms`);
 
 http.listen(PORTA, () => {
-  console.log(`\n  Ravox Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
+  console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
 });
 
 // Desligando o servidor (Ctrl+C): grava todo mundo que está online antes de sair.

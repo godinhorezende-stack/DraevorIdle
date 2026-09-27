@@ -48,6 +48,7 @@ import * as Novidades from '../systems/novidades.mjs';
 import * as Ranking from '../systems/ranking.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Arena from '../systems/arena.mjs';
+import * as SimuladorTique from '../systems/simulador-tique.mjs';
 import { descerDeLevel } from '../systems/hunt/combate.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
 import * as Forja from '../systems/forja.mjs';
@@ -310,7 +311,7 @@ function characterParaCliente(personagem, estado) {
     actionPresets: estado.actionPresets ?? [],
     settings: { ...CHARACTER_TEMPLATE.settings, ...(estado.settings ?? {}) },
     diario: Recompensas.diarioParaCliente(estado.diario ?? CHARACTER_TEMPLATE.diario),
-    // Mesma razão das três de cima: mutáveis por personagem, vêm da Ravox Store.
+    // Mesma razão das três de cima: mutáveis por personagem, vêm da Store.
     preyThirdSlot: estado.preyThirdSlot ?? false,
     // Os três slots de prey e o preço da lista nova (200 x level) — ver `game/systems/prey.mjs`.
     ...Prey.paraCliente(estado),
@@ -499,6 +500,11 @@ export class Sessao {
     return { id: linha.id, nome: linha.nome, estado, gravar: () => B.regravarEstadoPersonagem(linha.id, estado) };
   }
 
+  /** `send({t:'party', action, ...})` — `comandoDaCaca` pode ter que tirar o anfitrião de um worker de simulação (Fase 5) antes de juntar a sala. */
+  async despacharParty(m) {
+    return this.aplicar(await Party.comandoDaCaca(this, m));
+  }
+
   /** `send({t:'bank', action, ...})` — depósito/saque são síncronos; transferência lê o destinatário do banco. */
   async despacharBank(m) {
     return this.aplicar(await Banqueiro.comando(this.estado, m, this.personagem, (nome) => this.destinoDaTransferencia(nome)));
@@ -553,7 +559,7 @@ export class Sessao {
     }
   }
 
-  /** `send({t:'coinMarket', action?, pagina})` — o balcão de Ravox Coins. */
+  /** `send({t:'coinMarket', action?, pagina})` — o balcão de Draevor Coins. */
   async despacharCoins(m) {
     const p = this.personagem;
     if (!p) return;
@@ -613,6 +619,25 @@ export class Sessao {
       this.mandarEstado();
     }
     this.enviar({ t: 'store', store: Loja.catalogoDaLoja(this.estado, daConta) });
+  }
+
+  /**
+   * `send({t:'entrarNaArena'})` — pisou na placa "Boss Diarios" da praça
+   * (`city-meta.json`, `acao:'boss-diarios'`). O sistema de boss É o de hunt
+   * (mesmo `Cacadas.entrar`, mesma sala/cooldown/level) — só decide QUAL boss
+   * pela escala do dia (`Bosses.bossDeHoje`) em vez de deixar a pessoa escolher.
+   */
+  entrarNaArena() {
+    if (this.estado.exercicio?.treinando) {
+      const r = Exercicio.parar(this.estado);
+      if (r.relatorio) this.enviar(r.relatorio);
+    }
+    const hoje = Bosses.bossDeHoje();
+    if (!hoje.boss) {
+      return this.erro(`Hoje (${hoje.dia}) é dia de ${hoje.nome} na área de Boss Diários, mas esse boss ainda não foi capturado do original.`);
+    }
+    Party.antesDeSairDaCacada(this);
+    return this.aplicar(Cacadas.entrar(this.estado, { huntId: hoje.boss.id, mode: 'online', strategy: this.estado.settings?.strategy }));
   }
 
   /**
@@ -763,6 +788,8 @@ export class Sessao {
         return this.entrarNoPersonagem(m);
       case 'release':
         return this.soltarPersonagem();
+      case 'deixarOffline':
+        return this.deixarOffline();
       case 'walk':
         return this.andar(m);
       case 'virar':
@@ -856,7 +883,7 @@ export class Sessao {
       case 'grupo':
         return this.aplicar(Party.comandoDoGrupo(this, m));
       case 'party':
-        return this.aplicar(Party.comandoDaCaca(this, m));
+        return this.despacharParty(m);
       case 'bank':
         return this.despacharBank(m);
       case 'falarComNpc':
@@ -1002,6 +1029,8 @@ export class Sessao {
         Party.antesDeSairDaCacada(this);
         return this.aplicar(Cacadas.entrar(this.estado, m));
       }
+      case 'entrarNaArena':
+        return this.entrarNaArena();
       case 'stopHunt': {
         if (this.estado?.hunt?.huntId === 'treino') return this.despacharTreino({ action: 'stop' });
         // "Caçada encerrada": o relatório da sessão, antes de a hunt sumir.
@@ -1177,7 +1206,7 @@ export class Sessao {
     const jogando = (s) => s.personagem?.nome ?? s.carregando?.nome;
     const daConta = [...vivas.values(), ...carregandoAgora.values()].filter((s) => s !== this && s.conta?.id === this.conta.id && jogando(s) && jogando(s) !== personagem.nome);
     if (daConta.length >= limite) {
-      return this.erroDeAuth(`Sua conta já está com ${daConta.length} personagens jogando — o limite é ${limite}. Mais: "Slot de party", na Ravox Store.`);
+      return this.erroDeAuth(`Sua conta já está com ${daConta.length} personagens jogando — o limite é ${limite}. Mais: "Slot de party", na Store.`);
     }
     // O mesmo personagem aberto (ou ainda carregando) em outra aba: esta ganha.
     const carregandoLa = carregandoAgora.get(personagem.nome);
@@ -1201,7 +1230,7 @@ export class Sessao {
     // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
     // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
     if (!estado.diario) Object.assign(estado, Recompensas.estadoInicial());
-    // Mesma migração, agora para os campos que a Ravox Store passou a usar.
+    // Mesma migração, agora para os campos que a Store passou a usar.
     if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
     // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
     // ganha a exp base do level que já tem, somada ao que caçou.
@@ -1359,12 +1388,50 @@ export class Sessao {
     // `bauDaConta` é da conta (tabela própria), não do personagem.
     const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
     if (estadoPersistido.hunt) estadoPersistido.hunt = Cacadas.huntParaGravar(estadoPersistido.hunt);
-    B.gravarEstadoPersonagem(this.personagem.id, estadoPersistido).catch((e) => console.error('gravar ao sair', this.personagem?.nome, '->', e.message));
+    // Devolvida (não `await`ada aqui): quem só quer sair rápido (fechar aba,
+    // trocar de personagem) ignora o retorno e segue — mesmo fogo-e-esquece
+    // de sempre. Quem precisa saber que o disco já tem o dado novo antes de
+    // reler (`deixarOffline`, abaixo) pode dar `await` nela.
+    const gravando = B.gravarEstadoPersonagem(this.personagem.id, estadoPersistido).catch((e) =>
+      console.error('gravar ao sair', this.personagem?.nome, '->', e.message),
+    );
     if (vivas.get(this.personagem.nome) === this) vivas.delete(this.personagem.nome);
     // Os amigos online veem a bolinha apagar.
     Amigos.mudouPresenca(this.personagem.nome).catch((e) => console.error('amigos mudouPresenca', e.message));
     this.personagem = null;
     this.estado = null;
+    return gravando;
+  }
+
+  /** O mesmo que o cliente confere antes de acender o botão — ver `porQueNaoDaParaDeixarOffline` em main.mjs. */
+  motivoParaNaoDeixarOffline() {
+    const hunt = this.estado.hunt;
+    if (hunt) {
+      if (hunt.huntId === 'treino') return 'o pátio de treino para quando você sai; use o exercise.';
+      if (hunt.manual) return 'na Caça Online o personagem só anda com você na tela.';
+      return null;
+    }
+    if (this.estado.exercicio?.treinando) return null;
+    return 'na cidade não há nada para continuar.';
+  }
+
+  /**
+   * `send({t:'deixarOffline'})` — o botão "Deixar caçando offline": o mesmo
+   * que fechar a aba, só que sem precisar fechar. Sem handler nenhum, o
+   * cliente mandava o comando e nunca ouvia `released` de volta — o botão
+   * fechava o modal e não acontecia mais nada.
+   */
+  async deixarOffline() {
+    if (!this.estado) return this.erro('Nenhum personagem em jogo.');
+    const motivo = this.motivoParaNaoDeixarOffline();
+    if (motivo) return this.erro(`Não dá para deixar offline: ${motivo}`);
+    // Espera o disco ter o `hunt` novo ANTES de reler a lista — senão
+    // `mandarConta` (que lê `personagens` do banco) tinha chance de pegar o
+    // personagem ainda "parado", e o cartão na lista não mostrava "Caçando
+    // offline em X" até a próxima vez que a conta fosse recarregada.
+    await this.soltarPersonagem();
+    this.enviar({ t: 'released' });
+    await this.mandarConta(null);
   }
 
   // -------------------------------------------------------------- mundo
@@ -1611,7 +1678,7 @@ export class Sessao {
    * processo Node inteiro e desconecta todo mundo online, não só quem
    * estava na hunt quebrada. Erro aqui só tira ESSE personagem da hunt.
    */
-  tique() {
+  async tique() {
     if (!this.personagem) return;
     // Um tique novo: a ficha de combate guardada é de antes dele (talvez de um
     // comando, talvez do tique anterior) — pode ter vencido um buff/gema
@@ -1629,11 +1696,51 @@ export class Sessao {
         const h = this.estado.hunt;
         Object.defineProperty(h, 'guia', { value: Party.guia(this), enumerable: false, writable: true, configurable: true });
         Object.defineProperty(h, 'partilha', { value: Party.partilha(this), enumerable: false, writable: true, configurable: true });
+        // Bônus de pódio da Arena (mesmo padrão de guia/partilha): calculado aqui,
+        // uma vez por tique, para `matarMonstro` (game/systems/hunt/combate.mjs) não
+        // precisar importar `arena.mjs` (sessão, vivas, banco) — isso é o que deixa a
+        // simulação da hunt pura o bastante para rodar num worker_thread (Fase 5).
+        Object.defineProperty(h, 'podio', { value: Arena.bonusDoPodio(this.personagem.nome), enumerable: false, writable: true, configurable: true });
         if (h.isBoss) this.ultimoBoss = h.bossId;
         // Arena x1: a largada, o degrau dos bichos e o golpe no adversário.
         Arena.antesDoTique(this);
         if (!this.estado.hunt) return this.mandarEstado();
-        const eventos = Cacadas.tique(this.estado, this.personagem);
+        // Fase 5: hunt SOLO (sem grupo, sem arena) pode rodar num worker —
+        // decidido de novo a cada tique, porque quem entra/sai de grupo muda
+        // isso na hora. `h.partilha.membros.length > 1` é o mesmo sinal que
+        // `matarMonstro` já usa para saber se `hunt.monstros` é a MESMA
+        // referência de outro jogador (ver o comentário no topo de
+        // `game/systems/simulador-tique.mjs`) — level/distância só desligam o
+        // bônus de exp (`partilha.ativa`), não a partilha do array, por isso o
+        // teste é no tamanho de `membros`, não em `ativa`.
+        //
+        // Janela conhecida, não fechada: se alguém entra na sala bem no
+        // instante em que ESTE tique já está em voo dentro do worker, a
+        // resposta troca `this.estado` (e a referência de `hunt.monstros`)
+        // por uma nova depois que a sala já capturou a antiga — poucos
+        // milissegundos de janela, e o próximo tique já volta a rodar aqui
+        // (elegibilidade é recalculada sempre), então não se acumula; só pode
+        // deixar os bichos daquela sala visivelmente errados até alguém sair
+        // e entrar de novo. Fechar isso de vez pede o dono da sala nunca ir
+        // para worker enquanto ainda pode ser convidado — fora do escopo
+        // desta fase (ver o plano, "fora do escopo").
+        const eSolo = !h.pvp && !(h.partilha && h.partilha.membros.length > 1);
+        const agoraDoTique = Date.now();
+        let eventos;
+        if (SimuladorTique.ligado && eSolo) {
+          // `hunt.guia`/`hunt.partilha`/`hunt.podio` são não-enumeráveis (de
+          // propósito: não vão para o banco) — `postMessage` faz clone
+          // estruturado, que só leva propriedade ENUMERÁVEL. `guia`/`partilha`
+          // não fazem falta do outro lado (`eSolo` já garante ninguém junto;
+          // ausentes, o código de combate toma o mesmo caminho de "sozinho"
+          // que tomaria com eles presentes e vazios). `podio` é diferente —
+          // vale mesmo sozinho (bônus semanal da Arena) — por isso vai à parte.
+          const r = await SimuladorTique.tique(this.estado, this.personagem, agoraDoTique, h.podio);
+          this.estado = r.estado;
+          eventos = r.eventos;
+        } else {
+          eventos = Cacadas.tique(this.estado, this.personagem, agoraDoTique);
+        }
         if (this.estado.avisoDaHunt) {
           this.avisoPendente = this.estado.avisoDaHunt;
           delete this.estado.avisoDaHunt;
@@ -1789,11 +1896,11 @@ function rodarRelogio() {
   // deixar cada sessão tocada reconstruir a varredura de todo mundo sozinha.
   Chat.invalidarIndice();
   for (const s of sessoesPorFatia[fatiaAtual]) {
-    try {
-      s.tique();
-    } catch (e) {
-      console.error('tique', s.personagem?.nome, '->', e.message);
-    }
+    // `tique()` é async agora (Fase 5: pode esperar um worker de simulação) —
+    // `try/catch` em volta de uma chamada async NUNCA pega o erro (vira
+    // sempre rejeição da Promise, mesmo o que estoura antes do 1º `await`),
+    // daí o `.catch()` na Promise em vez de `try/catch` ao redor da chamada.
+    s.tique().catch((e) => console.error('tique', s.personagem?.nome, '->', e.message));
   }
   fatiaAtual = (fatiaAtual + 1) % FATIAS;
   const agora = performance.now();

@@ -217,7 +217,7 @@ function equipamento(e) {
   return saida;
 }
 
-function ravox(e) {
+function draevor(e) {
   const f = seguro(() => Summon.familiarDe(e), {});
   const col = seguro(() => Aparencia.colecao(e), {});
   const ficha = seguro(() => Ficha.combate(e), {});
@@ -294,7 +294,7 @@ export async function personagem(nome, agora = Date.now()) {
       banco: e.bank ?? 0,
       itens,
       catalogo: { afixos: CATALOGO.afixos, efeitosDeTier: CATALOGO.efeitosDeTier, imbuements: CATALOGO.imbuements },
-      ravox: ravox(e),
+      draevor: draevor(e),
     },
   };
 }

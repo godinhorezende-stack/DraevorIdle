@@ -1,5 +1,5 @@
 /*
- * A porta da rua do Ravox Idle.
+ * A porta da rua do Draevor Idle.
  *
  * Ela e' separada do `client/style.css` de proposito: o jogo carrega atlas de
  * sprite, fontes e trinta modulos antes de desenhar o primeiro pixel, e quem
@@ -364,12 +364,12 @@ a { color: inherit; text-decoration: none; }
 /* ---------- o top 5 de level, na coluna da direita da capa ---------- */
 
 /*
- * A moldura da Ravox Store (`prastore.png`, a mesma do `.modal-box.store` do
+ * A moldura da Store (`prastore.png`, a mesma do `.modal-box.store` do
  * jogo): 9 fatias, com a faixa de título embutida na fatia de cima — o `h2`
  * sobe para dentro dela, como o header do modal.
  */
 /*
- * O top 5 com a moldura da Ravox Store (título na faixa de cima) e o balão do
+ * O top 5 com a moldura da Store (título na faixa de cima) e o balão do
  * inventário com a do antigo "O servidor agora" (panel-frame).
  *//*
  * ---- Os dois cartazes de experiência, embaixo do top 5 ----
@@ -382,7 +382,7 @@ a { color: inherit; text-decoration: none; }
  * equipamento da pessoa quando coloca o mouse ali em top 5 level".
  *
  * Ela é a segunda moldura do site, e é por isso que ela serve: a do top 5 é a
- * da Ravox Store, e usá-la aqui fazia a coluna virar três placares iguais
+ * da Store, e usá-la aqui fazia a coluna virar três placares iguais
  * empilhados. Esta diz "é sobre uma pessoa", que é exatamente o que os dois
  * cartazes são.
  *

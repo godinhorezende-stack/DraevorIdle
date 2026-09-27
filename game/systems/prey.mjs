@@ -75,7 +75,7 @@ function abrirSlot(estado, slot, agora) {
 /*
  * Cria os slots de quem ainda não tem (todo personagem de antes deste sistema,
  * e todo personagem novo na primeira leitura) e abre o terceiro quando a
- * Ravox Store liberou (`preyThirdSlot`, ver `loja.mjs`). Os dois primeiros são
+ * Store liberou (`preyThirdSlot`, ver `loja.mjs`). Os dois primeiros são
  * livres de nascença, como no personagem real capturado.
  */
 export function garantir(estado, agora = Date.now()) {
@@ -100,7 +100,7 @@ export function paraCliente(estado) {
 function slotAberto(estado, indice) {
   const slot = garantir(estado)[Number(indice)];
   if (!slot) return { erro: 'Slot de prey inexistente.' };
-  if (slot.state === 'locked') return { erro: 'Esse slot está bloqueado — ele é liberado na Ravox Store.' };
+  if (slot.state === 'locked') return { erro: 'Esse slot está bloqueado — ele é liberado na Store.' };
   return { slot };
 }
 

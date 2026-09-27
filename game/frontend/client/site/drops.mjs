@@ -408,6 +408,6 @@ loadSpriteData()
     document.getElementById('bags')?.remove();
   });
 
-window.addEventListener('ravox:idioma', atualizar);
+window.addEventListener('draevor:idioma', atualizar);
 window.addEventListener('scroll', esconderBalao, { passive: true });
 setInterval(atualizar, 30_000);

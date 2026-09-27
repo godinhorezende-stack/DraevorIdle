@@ -15,12 +15,12 @@ const nomeDaVocacao = (vocation) => vocation.charAt(0).toUpperCase() + vocation.
  *
  * Sem loja implementada ainda, o único outfit que existe de verdade é o da
  * vocação — é o que `estadoInicialPersonagem` já veste. Nenhuma montaria:
- * elas só vêm de compra na Ravox Store, que este servidor ainda não tem.
+ * elas só vêm de compra na Store, que este servidor ainda não tem.
  */
 /*
  * As montarias e outfits REAIS (`MONTARIAS_REAIS`, capturado): os outfits
  * básicos de cada sexo vêm liberados de graça (os `owned` da captura — Citizen,
- * Hunter, Mage, Knight...); o resto se libera comprando na Ravox Store
+ * Hunter, Mage, Knight...); o resto se libera comprando na Store
  * (`estado.lojaOutfits`/`lojaMontarias`, ver `loja.mjs`).
  */
 const OUTFITS_GRATIS = new Set(MONTARIAS_REAIS.outfits.filter((o) => o.owned).map((o) => o.look));
@@ -52,7 +52,7 @@ export function temOutfit(estado, look) {
   return OUTFITS_GRATIS.has(look) || look === estado.outfit?.type || (estado.lojaOutfits ?? []).includes(look);
 }
 
-/** Da Ravox Store, da task de montaria (`Tarefas`) ou da entrega (`Entregas`). */
+/** Da Store, da task de montaria (`Tarefas`) ou da entrega (`Entregas`). */
 export function temMontaria(estado, id) {
   return (estado.lojaMontarias ?? []).includes(id) || Tarefas.montariaGanha(estado, id) || Entregas.montariaEntregue(estado, id);
 }

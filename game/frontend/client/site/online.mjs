@@ -256,7 +256,7 @@ ligarCabecalho();
  * a setinha que mora dentro do cabeçalho. Remontá-la é uma linha; descobrir por
  * que a seta some ao trocar para inglês custaria bem mais.
  */
-window.addEventListener('ravox:idioma', () => {
+window.addEventListener('draevor:idioma', () => {
   ligarCabecalho();
   atualizar();
 });

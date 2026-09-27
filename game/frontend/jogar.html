@@ -9,7 +9,7 @@
 <!-- Instalado na tela inicial do Android, abre sem a barra do navegador. -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0d1214">
-<title>Ravox Idle</title>
+<title>Draevor Idle</title>
 <!-- O icone da aba, nos tamanhos que o navegador pede. O desenho grande
      (client/assets/ui/idlefavicon.png, 1024x1024 e 1,5 MB) NAO entra aqui: ele
      e a fonte, e `npm run favicon` corta estes tres a partir dele. Apontar
@@ -26,7 +26,7 @@
 <!-- Pré-carrega os fundos da porta de entrada: sem isso a tela pisca em preto. -->
 <link rel="preload" as="image" href="/client/assets/ui/gate-bg.webp">
 <link rel="preload" as="image" href="/client/assets/ui/panel-frame.webp">
-<link rel="preload" as="image" href="/client/assets/ui/ravox-logo.webp">
+<link rel="preload" as="image" href="/client/assets/ui/draevor-logo.webp">
 <link rel="preload" as="image" href="/client/assets/ui/gate-vocations.webp">
 
 <!-- ---------- a tela de carregamento ----------
@@ -35,7 +35,7 @@
      jogo numa conexão lenta via, até aqui, uma tela preta sem explicação. -->
 <div id="boot">
   <div class="boot-caixa">
-    <img class="boot-logo" src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+    <img class="boot-logo" src="/client/assets/ui/draevor-logo.webp" alt="Draevor Idle">
     <div class="boot-barra"><i id="boot-progresso"></i></div>
     <span id="boot-passo">acordando o servidor…</span>
     <small id="boot-detalhe"></small>
@@ -67,7 +67,7 @@
      nos primeiros segundos, que é quando o jogador mexe em tudo. -->
 <div id="entrada" hidden>
   <div class="boot-caixa">
-    <img class="boot-logo" src="/client/assets/ui/ravox-logo.webp" alt="">
+    <img class="boot-logo" src="/client/assets/ui/draevor-logo.webp" alt="">
     <b id="entrada-nome"></b>
     <div class="boot-barra"><i id="entrada-progresso"></i></div>
     <span id="entrada-passo"></span>
@@ -85,7 +85,7 @@
   <a id="gate-voltar" href="/">&#8592; Voltar ao site</a>
   <div class="gate-box ui-frame">
    <div class="gate-inner">
-    <img class="logo" src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+    <img class="logo" src="/client/assets/ui/draevor-logo.webp" alt="Draevor Idle">
 
     <section id="pane-auth">
       <div class="gate-tabs">
@@ -618,20 +618,20 @@
        o servidor mandar o aviso vazio, como a faixa. -->
   <div id="cartaz-beta" hidden>
     <button id="cartaz-beta-fechar" type="button" title="Minimizar — o aviso vira a faixa fina lá em cima">—</button>
-    <b>Ravox Idle está em BETA</b>
+    <b>Draevor Idle está em BETA</b>
     <p>Em desenvolvimento: haverá diversos bugs até ficar pronto.</p>
     <button id="cartaz-beta-report" type="button">Achou um bug? Conte pra gente</button>
   </div>
 
   <header id="topbar">
-    <img class="brand" src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle">
+    <img class="brand" src="/client/assets/ui/draevor-logo.webp" alt="Draevor Idle">
 
     <!-- Só as duas moedas. Capacidade fica no inventário, wildcards no prey e o
          bônus de exp na ficha: repetir aqui em cima só enchia a barra. -->
     <div class="wallets">
       <!-- O número é bolso + banco: o tooltip abre as duas partes. -->
       <div class="wallet"><span id="coin-gold" class="coin-icon"></span><b id="char-gold">0</b></div>
-      <div class="wallet" title="Ravox Coins"><img class="coin-icon" src="/client/assets/ui/coin-store.png" alt=""><b id="char-coins">0</b></div>
+      <div class="wallet" title="Draevor Coins"><img class="coin-icon" src="/client/assets/ui/coin-store.png" alt=""><b id="char-coins">0</b></div>
     </div>
 
     <!-- Só o número. A palavra "online" ocupava a largura de dois ícones da
@@ -640,11 +640,11 @@
 
     <!-- A loja tem placa própria: ela vende, e botão de ícone se perde no meio
          das ferramentas. -->
-    <button id="store-button" title="Ravox Store">
-      <img src="/client/assets/ui/store-button.webp" alt="Ravox Store">
+    <button id="store-button" title="Store">
+      <img src="/client/assets/ui/store-button.webp" alt="Store">
     </button>
 
-    <!-- O mercado saiu de dentro da loja: um vende por Ravox Coins e é da casa,
+    <!-- O mercado saiu de dentro da loja: um vende por Draevor Coins e é da casa,
          o outro é entre jogadores e paga em ouro. Placa própria, ao lado. -->
     <button id="market-button" title="Mercado">
       <img src="/client/assets/icons/market.png" alt="Mercado">
@@ -800,7 +800,7 @@
   -->
 
   <div id="stage-empty">
-    <h3>Você está em Ravox</h3>
+    <h3>Você está em Draevor</h3>
     <p>Ande com WASD ou clique no chão. Quando quiser, escolha uma hunt.</p>
     <button data-window="hunts">Escolher hunt</button>
   </div>

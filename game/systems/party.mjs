@@ -89,7 +89,7 @@ export function comandoDoGrupo(s, m) {
       if (party && party.lider !== eu) return { ok: false, erro: 'Só o líder da party convida.' };
       const p = party ?? criar(eu);
       const teto = maximo([...p.membros, nomeDe(alvo)]);
-      if (p.membros.length >= teto) return { ok: false, erro: `A party está cheia (${teto} lugares). Mais lugares: "Slot de party", na Ravox Store — cada conta precisa ter os seus.` };
+      if (p.membros.length >= teto) return { ok: false, erro: `A party está cheia (${teto} lugares). Mais lugares: "Slot de party", na Store — cada conta precisa ter os seus.` };
       p.convites.set(nomeDe(alvo), Date.now() + CONVITE_MS);
       alvo.enviar({ t: 'grupoConvite', from: eu, expiraEm: Date.now() + CONVITE_MS });
       return { ok: true, notice: `Convite de party enviado para ${nomeDe(alvo)}.` };

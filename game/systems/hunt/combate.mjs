@@ -22,7 +22,6 @@ import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
 import * as Tarefas from '../tarefas.mjs';
-import * as Arena from '../arena.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
@@ -241,6 +240,12 @@ export function vitoriaNoBoss(estado, hunt, alvo) {
   hunt.fimEm = (hunt.clock ?? 0) + 5000;
 }
 
+// Sem bônus de pódio: mesmo formato de `arena.mjs::SEM_BONUS`, duplicado aqui
+// de propósito — este módulo não pode importar `arena.mjs` (sessão, `vivas`,
+// banco), é o que permite rodar num worker_thread (Fase 5). `hunt.podio` é
+// calculado uma vez por tique em `sessao.mjs` e chega pronto até aqui.
+const SEM_PODIO = { exp: 0, loot: 0, lugar: 0 };
+
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Na Arena x1 ninguém ganha exp nem loot dos bichos: eles só atrapalham.
   if (hunt.pvp) {
@@ -275,7 +280,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   }
   // Prey de experiência: só contra a criatura do slot (ver `Prey.fatorDeExp`).
   // + o bônus do pódio da Arena x1 da semana (1º +8%, 2º +5%, 3º +3%).
-  const podio = Arena.bonusDoPodio(personagem?.nome ?? '');
+  const podio = hunt.podio ?? SEM_PODIO;
   exp = Math.round(exp * Prey.fatorDeExp(estado, alvo.key) * (1 + podio.exp / 100));
   alvo.exp = exp;
   eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
@@ -324,10 +329,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot" e a prey de loot
     if (VALOR_DA_MOEDA[drop.id]) {
       const n = quantasMoedas(alvo, drop.id);
-      // Moeda do loot cai no BANCO, não no bolso — medido no original: cada
-      // loot de moeda sobe `bank` no valor exato (36 platinum → +3.600), e o
-      // `gold` carregado só sobe com a venda automática.
-      estado.bank = (estado.bank ?? 0) + n * VALOR_DA_MOEDA[drop.id];
+      // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
+      // caçando — só vai para o banco quando o jogador deposita de propósito
+      // no Banqueiro. (Uma versão anterior mandava direto para `bank`, a
+      // partir de uma medição do original que o dono do projeto confirmou
+      // estar errada.)
+      estado.gold = (estado.gold ?? 0) + n * VALOR_DA_MOEDA[drop.id];
       caiu.push({ id: drop.id, count: n });
       if (sessao) sessao.gold += n * VALOR_DA_MOEDA[drop.id];
       Ficha.totais(estado).gold += n * VALOR_DA_MOEDA[drop.id];

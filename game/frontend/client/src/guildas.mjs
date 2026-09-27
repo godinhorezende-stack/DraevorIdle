@@ -1798,7 +1798,7 @@ function criadorDeBrasao(inicial, opcoes = {}) {
       b,
       (jaTem
         ? `${efeito.nome} — a sua guilda já tem este efeito`
-        : `${efeito.nome} — efeito exclusivo, ${efeito.coins} Ravox Coins (uma vez só)`) +
+        : `${efeito.nome} — efeito exclusivo, ${efeito.coins} Draevor Coins (uma vez só)`) +
         (efeito.duasCores ? `${SALTO}Tem duas cores: escolha na engrenagem.` : ''),
     );
     b.onclick = () => {
@@ -2309,7 +2309,7 @@ function criadorDeBrasao(inicial, opcoes = {}) {
       : !nomeServe
         ? 'escolha um nome livre para a guilda'
         : falta > 0
-          ? `faltam ${falta.toLocaleString('pt-BR')} Ravox Coins`
+          ? `faltam ${falta.toLocaleString('pt-BR')} Draevor Coins`
           : null;
 
     botaoConfirmar.disabled = !!motivo;
@@ -2321,7 +2321,7 @@ function criadorDeBrasao(inicial, opcoes = {}) {
       motivo
         ? `Não dá ainda: ${motivo}.`
         : preco.coins
-          ? `Custa ${preco.coins} Ravox Coins. Quem cobra é o servidor, na mesma resposta em que cria.`
+          ? `Custa ${preco.coins} Draevor Coins. Quem cobra é o servidor, na mesma resposta em que cria.`
           : 'Sem custo nenhum.',
     );
   }
@@ -2395,14 +2395,14 @@ function abrirTrocaDeBrasao(g) {
     trocar.textContent = igual
       ? 'Nada mudou'
       : preco.coins
-        ? `Trocar por ${preco.coins} Ravox Coins`
+        ? `Trocar por ${preco.coins} Draevor Coins`
         : 'Trocar';
     tipTexto(
       trocar,
       igual
         ? 'O brasão está igual ao que a guilda já tem.'
         : falta > 0
-          ? `Faltam ${falta.toLocaleString('pt-BR')} Ravox Coins.`
+          ? `Faltam ${falta.toLocaleString('pt-BR')} Draevor Coins.`
           : `A troca custa ${CUSTO_DE_TROCAR}${preco.coins > CUSTO_DE_TROCAR ? ', mais o efeito de cor escolhido' : ''}.`,
     );
   };
@@ -2423,7 +2423,7 @@ function abrirTrocaDeBrasao(g) {
      * ---- TROCAR O BRASAO E' UMA COMPRA, E AGORA PARECE UMA ----
      *
      * "quando eu for trocar o brasão tem que ter confirmação antes, saldo atual e
-     *  etc, igual da Ravox Store."
+     *  etc, igual da Store."
      *
      * Antes o clique mandava direto: o rótulo dizia o preço e era só. Quem tinha
      * 200 coins e gastava 150 descobria o saldo novo no HUD, depois.
@@ -2880,7 +2880,7 @@ function desenharPaginas(pagina, { temGuilda, naCaixa }) {
       `A guilda começa com ${regras.vagasDeFabrica ?? 10} vagas de membro. Qualquer membro pode contribuir com ouro para melhorá-la: cada nível abre mais ${regras.vagasPorNivel ?? 10} vagas, até ${regras.vagasNoMaximo ?? 100}.`,
       `O primeiro nível custa ${(regras.ouroDoPrimeiroDegrau ?? 1_000_000_000).toLocaleString('pt-BR')} de ouro, e cada degrau seguinte custa o dobro. O nível sobe sozinho quando a vaquinha enche, e o ouro dado não volta.`,
       '',
-      `O baú comunitário começa com ${bau?.vagasNoMaximo ? bau.teto : 25} vagas e vai até ${bau?.vagasNoMaximo ?? 100}, a ${bau?.coinsPorCompra ?? 50} Ravox Coins por lote de ${bau?.vagasPorCompra ?? 25}.`,
+      `O baú comunitário começa com ${bau?.vagasNoMaximo ? bau.teto : 25} vagas e vai até ${bau?.vagasNoMaximo ?? 100}, a ${bau?.coinsPorCompra ?? 50} Draevor Coins por lote de ${bau?.vagasPorCompra ?? 25}.`,
       'ATENÇÃO: tudo o que entra no baú pode ser retirado por qualquer membro da guilda.',
       /*
        * "atualiza o interrogaçao la' de guilds com as novas informaçoes."
@@ -3088,8 +3088,8 @@ function renderCriar(body, view) {
       /* =====================================================================
        * ---- COM COIN NO MEIO, A CAIXA E' A DA LOJA ----
        *
-       * "faça isso em todas as compras por Ravox Coins da aba de guilds, pra
-       *  ficar igual à compra da Ravox Store."
+       * "faça isso em todas as compras por Draevor Coins da aba de guilds, pra
+       *  ficar igual à compra da Store."
        *
        * Ela mostra preço, saldo ATUAL e saldo DEPOIS — e esses dois últimos são
        * metade da decisão de quem vai gastar 175 coins num efeito.
@@ -3424,7 +3424,7 @@ function menuDaGuilda(g, { souLider }) {
     if (souLider) {
       item(
         'Mudar o brasão',
-        `Forma, símbolo, cores e iniciais. Trocar custa ${CUSTO_DE_TROCAR} Ravox Coins — e os efeitos exclusivos se pagam uma vez só.`,
+        `Forma, símbolo, cores e iniciais. Trocar custa ${CUSTO_DE_TROCAR} Draevor Coins — e os efeitos exclusivos se pagam uma vez só.`,
         () => abrirTrocaDeBrasao(g),
       );
       item('Passar a liderança', 'Escolha para quem. Você vira vice na mesma hora.', () => caixaDePassarLideranca(g));
@@ -4338,7 +4338,7 @@ function renderBau(body, view) {
     tipTexto(
       comprar,
       [
-        `Mais ${bau.vagasPorCompra} vagas por ${bau.coinsPorCompra} Ravox Coins`,
+        `Mais ${bau.vagasPorCompra} vagas por ${bau.coinsPorCompra} Draevor Coins`,
         `O baú vai até ${bau.vagasNoMaximo} vagas.`,
         'As vagas são da GUILDA e ficam com ela — quem paga não as leva embora ao sair.',
       ].join(SALTO),
@@ -4541,7 +4541,7 @@ function renderBau(body, view) {
  * O `try` existe porque `localStorage` estoura em aba anonima e com dados de site
  * bloqueados. Sem ele, a janela do bau inteira morreria por causa de uma preferencia.
  * ========================================================================= */
-const CHAVE_DO_ACORDO = 'ravox:bau-sem-perguntar';
+const CHAVE_DO_ACORDO = 'draevor:bau-sem-perguntar';
 const bauSemPerguntar = () => {
   try {
     return localStorage.getItem(CHAVE_DO_ACORDO) === '1';

@@ -3,8 +3,8 @@
  *
  * "eu queria que o brasao das guilds seja mais customizado por quem esta
  *  criando (...) alguns efeitos de cor no brasao quero que seja exclusivo por
- *  ravox coins (...) e depois de ja criada a guilda, se a pessoa quiser mudar o
- *  brasao, seja 50 ravox coins."
+ *  draevor coins (...) e depois de ja criada a guilda, se a pessoa quiser mudar o
+ *  brasao, seja 50 draevor coins."
  *
  * ---- POR QUE ESTE ARQUIVO E' COMPARTILHADO ----
  *
@@ -121,7 +121,7 @@ export const SIMBOLOS = [
 /* =========================================================================
  * AS CORES, E OS EFEITOS QUE CUSTAM COIN
  *
- * "alguns efeitos de cor no brasao quero que seja exclusivo por ravox coins."
+ * "alguns efeitos de cor no brasao quero que seja exclusivo por draevor coins."
  *
  * ---- O CORTE ENTRE O QUE E' DE GRACA E O QUE SE PAGA ----
  *

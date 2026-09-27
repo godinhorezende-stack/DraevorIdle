@@ -1,4 +1,4 @@
-// Mercado — o balcão de itens (`market`) e o de Ravox Coins (`coinMarket`),
+// Mercado — o balcão de itens (`market`) e o de Draevor Coins (`coinMarket`),
 // nos formatos que o client original lê (capturados ao vivo em
 // api-mapeada/servidor/market-browse.json e coinMarket.json):
 //
@@ -108,7 +108,7 @@ export async function receberCreditos(estado, personagemId) {
     itens += lista.length;
   }
   await banco.prepare('DELETE FROM creditos WHERE personagem = ?').run(personagemId);
-  const partes = [gold && `${gold.toLocaleString('pt-BR')} gold`, coins && `${coins} Ravox Coins`, itens && `${itens} item(ns)`].filter(Boolean);
+  const partes = [gold && `${gold.toLocaleString('pt-BR')} gold`, coins && `${coins} Draevor Coins`, itens && `${itens} item(ns)`].filter(Boolean);
   return `Mercado: você recebeu ${partes.join(', ')} enquanto estava fora.`;
 }
 
@@ -206,7 +206,7 @@ export async function anunciar(estado, personagem, { kind, id, count, price, pec
     }
     estado.inventory = inv.filter((p) => (p.count ?? 1) > 0);
   } else if (!pagar(estado, preco * n, moeda)) {
-    return { ok: false, erro: moeda === 'coin' ? 'Ravox Coins insuficientes.' : 'Ouro insuficiente.' };
+    return { ok: false, erro: moeda === 'coin' ? 'Draevor Coins insuficientes.' : 'Ouro insuficiente.' };
   }
   await banco.prepare('INSERT INTO mercado_ofertas (personagem, vendedor, kind, item, count, price, moeda, peca, criada) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
     .run(personagem.id, personagem.nome, kind, id, n, preco, moeda, pecaGuardada ? JSON.stringify(pecaGuardada) : null, Date.now());
@@ -224,7 +224,7 @@ export async function aceitar(estado, personagem, { offerId, count }, aoVivo) {
   const peca = o.peca ? JSON.parse(o.peca) : null;
   if (o.kind === 'sell') {
     // Eu compro: pago, recebo o item; o vendedor recebe o dinheiro.
-    if (!pagar(estado, valor, o.moeda)) return { ok: false, erro: o.moeda === 'coin' ? 'Ravox Coins insuficientes.' : 'Ouro insuficiente.' };
+    if (!pagar(estado, valor, o.moeda)) return { ok: false, erro: o.moeda === 'coin' ? 'Draevor Coins insuficientes.' : 'Ouro insuficiente.' };
     entregar(estado, { itens: [{ id: o.item, count: n, peca }] });
     await creditar(o.personagem, o.moeda === 'coin' ? { coins: valor } : { gold: valor }, aoVivo);
     await historico(personagem.id, { lado: 'compra', item: o.item, count: n, price: o.price, moeda: o.moeda, outro: o.vendedor });
@@ -249,7 +249,7 @@ export async function aceitar(estado, personagem, { offerId, count }, aoVivo) {
   }
   if (n >= o.count) await banco.prepare('DELETE FROM mercado_ofertas WHERE id = ?').run(o.id);
   else await banco.prepare('UPDATE mercado_ofertas SET count = count - ? WHERE id = ?').run(n, o.id);
-  return { ok: true, notice: `Negócio fechado: ${n}x ${nome} por ${valor.toLocaleString('pt-BR')} ${o.moeda === 'coin' ? 'Ravox Coins' : 'gold'}.` };
+  return { ok: true, notice: `Negócio fechado: ${n}x ${nome} por ${valor.toLocaleString('pt-BR')} ${o.moeda === 'coin' ? 'Draevor Coins' : 'gold'}.` };
 }
 
 /** `market cancel {offerId}` — o que estava em custódia volta. */
@@ -301,7 +301,7 @@ export async function ordemDeCoins(estado, personagem, { kind, amount, price }) 
   const n = inteiro(amount);
   const preco = inteiro(price);
   const ok = kind === 'sell' ? pagar(estado, n, 'coin') : pagar(estado, n * preco, 'gold');
-  if (!ok) return { ok: false, erro: kind === 'sell' ? 'Ravox Coins insuficientes.' : 'Ouro insuficiente.' };
+  if (!ok) return { ok: false, erro: kind === 'sell' ? 'Draevor Coins insuficientes.' : 'Ouro insuficiente.' };
   await banco.prepare('INSERT INTO coin_ordens (personagem, nome, kind, amount, price, criada) VALUES (?, ?, ?, ?, ?, ?)').run(personagem.id, personagem.nome, kind, n, preco, Date.now());
   return { ok: true, notice: 'Ordem criada.' };
 }
@@ -321,14 +321,14 @@ export async function aceitarCoins(estado, personagem, { orderId, amount }, aoVi
     await banco.prepare('INSERT INTO coin_historico (buyer, seller, amount, price, at) VALUES (?, ?, ?, ?, ?)').run(personagem.nome, o.nome, n, o.price, Date.now());
   } else {
     // Alguém compra coins: eu entrego as coins, recebo o ouro reservado.
-    if (!pagar(estado, n, 'coin')) return { ok: false, erro: 'Ravox Coins insuficientes.' };
+    if (!pagar(estado, n, 'coin')) return { ok: false, erro: 'Draevor Coins insuficientes.' };
     estado.gold = (estado.gold ?? 0) + valor;
     await creditar(o.personagem, { coins: n }, aoVivo);
     await banco.prepare('INSERT INTO coin_historico (buyer, seller, amount, price, at) VALUES (?, ?, ?, ?, ?)').run(o.nome, personagem.nome, n, o.price, Date.now());
   }
   if (n >= o.amount) await banco.prepare('DELETE FROM coin_ordens WHERE id = ?').run(o.id);
   else await banco.prepare('UPDATE coin_ordens SET amount = amount - ? WHERE id = ?').run(n, o.id);
-  return { ok: true, notice: `Negócio fechado: ${n} Ravox Coins.` };
+  return { ok: true, notice: `Negócio fechado: ${n} Draevor Coins.` };
 }
 
 /** `coinMarket cancel {orderId}` — devolve o reservado. */

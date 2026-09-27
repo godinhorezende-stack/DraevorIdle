@@ -1,5 +1,5 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
-// montarias, loja de Ravox Coins, mercado, NPC e banco.
+// montarias, loja de Draevor Coins, mercado, NPC e banco.
 import { arteTeimosa, fundoTeimoso } from './arte-teimosa.mjs';
 import { itemCanvas, outfitCanvas, outfitInfo, drawEffect, effectDuration, effectInfo } from './sprites.mjs';
 // O item e o level das duas portas de acesso, os mesmos que o servidor cobra.
@@ -115,7 +115,7 @@ export function initPanels(context) {
  *
  * Vale para os Buff Power e só para eles, porque só eles cobram: uma poção
  * gasta a si mesma e o clique é a decisão inteira. Estes gastam trinta ou
- * cinquenta milhões de ouro — ou dez Ravox Coins — POR CLIQUE, e o item
+ * cinquenta milhões de ouro — ou dez Draevor Coins — POR CLIQUE, e o item
  * continua na mochila parecendo intacto. Sem esta caixa, dois cliques sem
  * querer custam 60kk e não deixam rastro na tela.
  *
@@ -198,7 +198,7 @@ function pedirUso(id, onde) {
     cost: quanto,
     balance: saldo,
     currency: emCoin ? 'coin-store' : 'coin-gold',
-    unit: emCoin ? 'Ravox Coins' : 'de ouro (bolso + banco)',
+    unit: emCoin ? 'Draevor Coins' : 'de ouro (bolso + banco)',
     preview: itemCanvas(linha.item, 48),
     note: nota,
     onConfirm: () => ctx.send({ t: 'usar', id, onde }),
@@ -371,8 +371,8 @@ const PORTAS_ESPECIAIS = [
      * ---- O que se vai buscar lá dentro ----
      *
      * "no mesmo cardzinho que mostra acesso liberado coloque escrito: aqui
-     *  dropa o item essencial e único para pegar Armas Ravox, e aí a sprite da
-     *  Ravox Bag, e ao passar o mouse mostra o que pode vir."
+     *  dropa o item essencial e único para pegar Armas Draevor, e aí a sprite da
+     *  Draevor Bag, e ao passar o mouse mostra o que pode vir."
      *
      * É a razão de a prateleira existir, e ela não estava escrita em lugar
      * nenhum: quem abria a aba via duas cavernas caras e nenhum motivo para
@@ -380,7 +380,7 @@ const PORTAS_ESPECIAIS = [
      * `tipFor` de qualquer item da tela.
      */
     bag: 55216,
-    premio: 'Aqui dropa o item essencial e único para pegar as Armas Ravox',
+    premio: 'Aqui dropa o item essencial e único para pegar as Armas Draevor',
   },
   {
     id: 'divina',
@@ -392,7 +392,7 @@ const PORTAS_ESPECIAIS = [
     legenda: 'Level 1000 (1300 nas cinco novas). O pergaminho vale 24 horas, e usar outro soma mais 24.',
     /* A mesma frase, e a bag do SET: é o que sai daqui e não sai de lá. */
     bag: 55517,
-    premio: 'Aqui dropa o item essencial e único para pegar os Sets Ravox',
+    premio: 'Aqui dropa o item essencial e único para pegar os Sets Draevor',
   },
 ];
 
@@ -958,7 +958,7 @@ function barraDeFiltro(aoMudar) {
  * ativo. A frase de cada um responde a pergunta daquele estado, e não a média
  * das quatro.
  */
-/** Abre a Ravox Store em Serviços, onde mora o passe do Auto Boss. */
+/** Abre a Store em Serviços, onde mora o passe do Auto Boss. */
 function irParaOPasseNaLoja() {
   openStore();
   ctx.tabs.storeSection = 'services';
@@ -1039,9 +1039,9 @@ function faixaDoAutoBoss(lista) {
     /*
      * O preço vem da LOJA, e não escrito aqui.
      *
-     * Estava escrito: "Por 150 Ravox Coins...". O passe mudou de preço e esta
+     * Estava escrito: "Por 150 Draevor Coins...". O passe mudou de preço e esta
      * frase continuaria anunciando o antigo, num lugar em que ninguém iria
-     * procurar — e a pessoa clicaria em "Ver na Ravox Store" para encontrar
+     * procurar — e a pessoa clicaria em "Ver na Store" para encontrar
      * outro número. Uma promessa de preço tem de sair do mesmo lugar que cobra.
      *
      * Quando a loja ainda não chegou nesta aba, a frase sai SEM número em vez
@@ -1051,7 +1051,7 @@ function faixaDoAutoBoss(lista) {
     const precos = passes
       .slice()
       .sort((um, outro) => (um.days ?? 0) - (outro.days ?? 0))
-      .map((s) => `${s.days} dias por ${money(s.coins)} Ravox Coins`)
+      .map((s) => `${s.days} dias por ${money(s.coins)} Draevor Coins`)
       .join(', ou ');
     oferta.append(
       el(
@@ -1062,7 +1062,7 @@ function faixaDoAutoBoss(lista) {
           'coloque quantos bosses quiser na lista. O cooldown de cada boss continua valendo — o passe não o encurta.',
       ),
     );
-    const verNaLoja = el('button', 'primary', 'Ver na Ravox Store');
+    const verNaLoja = el('button', 'primary', 'Ver na Store');
     verNaLoja.onclick = irParaOPasseNaLoja;
     oferta.append(verNaLoja);
     caixa.append(oferta);
@@ -3273,7 +3273,7 @@ function montarEscolha(body, hunt, list) {
    * O outro modo: jogar a hunt no braço.
    *
    * Mesmo mapa, mesmos monstros, mesma conta de loot e experiência — só sem a
-   * rota e sem a mira automáticas. É o Tibia dentro do Ravox Idle.
+   * rota e sem a mira automáticas. É o Tibia dentro do Draevor Idle.
    */
   const online = el('button', 'run-mode manual', 'Caça Online');
   /*
@@ -4056,7 +4056,7 @@ export function openLobby() {
  * Contar `inventory` aqui daria um numero que discorda do que a compra vai
  * cobrar assim que a venda automatica mexer na bolsa. O servidor manda `saldo`
  * junto da vitrine, e e' ele que aparece — mesma regra do preco de lote da
- * Ravox Store: a tela nunca calcula o que a compra vai cobrar.
+ * Store: a tela nunca calcula o que a compra vai cobrar.
  */
 /*
  * ---- A Loja de Task Token ----
@@ -4236,7 +4236,7 @@ function cartaoDeBossToken(oferta, loja, desenhar, unidade = 'Boss Token', canal
     tipTexto(comprar, `Faltam ${oferta.tokens - loja.saldo} ${unidade}.`);
   }
   /*
-   * A mesma caixa da Ravox Store, com a moeda trocada. Ela mostra saldo antes e
+   * A mesma caixa da Store, com a moeda trocada. Ela mostra saldo antes e
    * depois — e e' isso que faz um preco de 250 parecer o que ele e': meio ano
    * de bosses, e nao um numero na tela.
    */
@@ -4485,7 +4485,7 @@ function escolherExercise(body, { semVoltar = false } = {}) {
    * ---- Os dois preços saem da LOJA, e não daqui ----
    *
    * "na aba de boneco de treino está informando que o Scroll Speed Exercise é
-   *  100 Ravox Coins, quando na verdade agora é 25."
+   *  100 Draevor Coins, quando na verdade agora é 25."
    *
    * Os dois cartazes tinham o número escrito à mão. A régua de preços caiu, o
    * pergaminho foi de 100 para 25, e esta tela continuou anunciando o preço
@@ -4503,14 +4503,14 @@ function escolherExercise(body, { semVoltar = false } = {}) {
    */
   const armasNaLoja = (ctx.state.store?.exercises ?? []).map((arma) => arma.coins).filter(Number.isFinite);
   const faixaDasArmas = armasNaLoja.length
-    ? `Da mais barata à melhor: ${Math.min(...armasNaLoja)} a ${Math.max(...armasNaLoja)} Ravox Coins.`
+    ? `Da mais barata à melhor: ${Math.min(...armasNaLoja)} a ${Math.max(...armasNaLoja)} Draevor Coins.`
     : '';
   const pergaminhoNaLoja =
     (ctx.state.store?.boosts ?? []).find((boost) => boost.itemId === ITEM_DO_PERGAMINHO) ?? null;
 
   const armas = el('div', 'exercise-loja-cartaz');
   armas.append(
-    el('b', null, 'As armas de treino estão na Ravox Store'),
+    el('b', null, 'As armas de treino estão na Store'),
     el(
       'em',
       null,
@@ -4532,7 +4532,7 @@ function escolherExercise(body, { semVoltar = false } = {}) {
   const horasDoPergaminho = pergaminhoNaLoja?.duracao ? Math.round(pergaminhoNaLoja.duracao / 3600000) : null;
   const ofertaDoPergaminho =
     horasDoPergaminho && pergaminhoNaLoja?.coins != null
-      ? `São ${horasDoPergaminho} horas de treino dobrado por ${pergaminhoNaLoja.coins} Ravox Coins, e o`
+      ? `São ${horasDoPergaminho} horas de treino dobrado por ${pergaminhoNaLoja.coins} Draevor Coins, e o`
       : 'O';
   pergaminho.append(
     el(
@@ -4766,7 +4766,7 @@ function renderPrey(body) {
       const vazio = el('div', 'prey-empty');
       vazio.append(uiIcon('prey-inactive'));
       vazio.append(el('b', null, 'Slot bloqueado'));
-      vazio.append(el('em', null, 'Liberado de vez na loja de Ravox Coins.'));
+      vazio.append(el('em', null, 'Liberado de vez na loja de Draevor Coins.'));
       const buy = el('button', 'prey-unlock', 'Liberar slot');
       // Liberar o terceiro slot é permanente e custa quase mil coins; um clique
       // sem volta na tela da prey não pode ser o suficiente.
@@ -5404,7 +5404,7 @@ export function openBlessings() {
   /*
    * E a LOJA, para saber quanto custa o pacote.
    *
-   * O rodapé desta tela manda para a Ravox Store, e mandar com o preço errado
+   * O rodapé desta tela manda para a Store, e mandar com o preço errado
    * é pior do que mandar sem preço nenhum. O pedido vai UMA vez, na abertura —
    * como em `openStore` —, e não a cada redesenho: a tela se redesenha a cada
    * empurrão de estado, e um pedido por redesenho viraria enxurrada.
@@ -5576,14 +5576,14 @@ function renderBlessings(body) {
      * ---- O preço sai da LOJA, e não daqui ----
      *
      * "arruma pra mostrar o valor certo do pacote de blessings: está mostrando
-     *  180 Ravox Coins mas na verdade é 10."
+     *  180 Draevor Coins mas na verdade é 10."
      *
      * O número estava escrito à mão neste arquivo. Quando a régua de preços
      * caiu — o pacote foi de 180 para 10 —, a loja mudou e esta tela continuou
      * anunciando o preço velho, dezoito vezes maior. Ninguém tinha como saber:
      * um número escrito no client não quebra nada e não avisa nada, só mente.
      *
-     * Agora ele vem de `state.store`, a mesma lista que a Ravox Store desenha.
+     * Agora ele vem de `state.store`, a mesma lista que a Store desenha.
      * O dono muda `coins` em `store.mjs` e as duas telas acompanham.
      *
      * Enquanto a loja não chegou (o pedido de `openBlessings` está a caminho),
@@ -5593,16 +5593,16 @@ function renderBlessings(body) {
     const custo = ctx.state.store?.services?.find((servico) => servico.id === PACOTE_DE_BLESSINGS)?.coins ?? null;
     const naLoja = el('button', 'bless-loja');
     // A moeda de verdade, e não uma ficha com o número solto: é a mesma arte da
-    // Ravox Store, e é o que diz que este botão cobra em coin e não em ouro.
+    // Store, e é o que diz que este botão cobra em coin e não em ouro.
     const preco = el('span', 'bless-loja-moeda');
     preco.append(uiIcon('coin-store'));
     if (custo !== null) preco.append(el('b', null, String(custo)));
     naLoja.append(preco);
-    naLoja.append(el('span', null, 'Pacote na Ravox Store'));
+    naLoja.append(el('span', null, 'Pacote na Store'));
     tipTexto(
       naLoja,
       custo !== null
-        ? `aplica as sete bênçãos de uma vez, por ${custo} Ravox Coins`
+        ? `aplica as sete bênçãos de uma vez, por ${custo} Draevor Coins`
         : 'aplica as sete bênçãos de uma vez, pagas em coins'
     );
     naLoja.onclick = () => openStore();
@@ -5902,7 +5902,7 @@ function faixaDoAutoTask(ficha) {
   const acoes = el('div', 'confirm-actions auto-boss-acoes');
   if (ativo) {
     /* Quem já tem não precisa de anúncio; precisa do caminho para renovar. */
-    const renovar = el('button', 'auto-boss-atalho', '\u2726 Renovar na Ravox Store');
+    const renovar = el('button', 'auto-boss-atalho', '\u2726 Renovar na Store');
     renovar.onclick = irParaOPasseNaLoja;
     acoes.append(renovar);
   } else {
@@ -5916,9 +5916,9 @@ function faixaDoAutoTask(ficha) {
     const comprar = el(
       'button',
       'primary auto-task-comprar',
-      menor ? `\u2726 Comprar Auto Task \u2014 a partir de ${money(menor.coins)} Ravox Coins` : '\u2726 Comprar Auto Task na Store',
+      menor ? `\u2726 Comprar Auto Task \u2014 a partir de ${money(menor.coins)} Draevor Coins` : '\u2726 Comprar Auto Task na Store',
     );
-    tipTexto(comprar, 'Abre a Ravox Store em Servi\u00e7os, onde ficam os dois prazos.');
+    tipTexto(comprar, 'Abre a Store em Servi\u00e7os, onde ficam os dois prazos.');
     comprar.onclick = irParaOPasseNaLoja;
     acoes.append(comprar);
   }
@@ -8781,7 +8781,7 @@ export function renderAppearance(body) {
       };
       grid.append(button);
     }
-    if (!owned.length) grid.append(el('p', 'empty', 'Nenhuma montaria ainda — a Ravox Store tem as outras.'));
+    if (!owned.length) grid.append(el('p', 'empty', 'Nenhuma montaria ainda — a Store tem as outras.'));
   } else {
     const seen = new Set();
     for (const entry of state.mounts.outfits) {
@@ -8812,7 +8812,7 @@ export function renderAppearance(body) {
       };
       grid.append(button);
     }
-    if (!seen.size) grid.append(el('p', 'empty', 'Nenhum outfit liberado — a Ravox Store tem os outros.'));
+    if (!seen.size) grid.append(el('p', 'empty', 'Nenhum outfit liberado — a Store tem os outros.'));
   }
   right.append(grid);
   wrap.append(right);
@@ -10922,10 +10922,10 @@ function renderCharms(body) {
   );
   body.append(rodape);
 }
-// ---------- loja de Ravox Coins + mercado ----------
+// ---------- loja de Draevor Coins + mercado ----------
 
 /*
- * As seções da Ravox Store. Antes montarias e outfits eram abas irmãs da loja,
+ * As seções da Store. Antes montarias e outfits eram abas irmãs da loja,
  * o que dava a entender que eram outra coisa — são prateleiras da mesma loja.
  * Agora a loja tem uma coluna de seções à esquerda e a prateleira à direita.
  */
@@ -10985,7 +10985,7 @@ const ARTE_DA_PRATELEIRA = {
 /*
  * Mexer no SALDO não é uma prateleira.
  *
- * "Ravox Coins" e "Transferir" eram seções como "Montarias" ou "Melhorias", e
+ * "Draevor Coins" e "Transferir" eram seções como "Montarias" ou "Melhorias", e
  * não são a mesma coisa: as prateleiras gastam o saldo, estas duas mexem nele —
  * uma enche, a outra manda embora. Quem chegava na loja sem saldo precisava
  * adivinhar que a resposta estava numa aba no meio da lista.
@@ -10998,13 +10998,13 @@ const ARTE_DA_PRATELEIRA = {
 /*
  * A loja e o mercado se separaram.
  *
- * Eram duas abas do mesmo modal, e não são a mesma coisa: uma vende por Ravox
+ * Eram duas abas do mesmo modal, e não são a mesma coisa: uma vende por Draevor
  * Coins e é da casa, o outro é entre jogadores e paga em ouro. Cada um tem a
  * sua placa na barra de cima agora.
  */
 export function openStore() {
   ctx.send({ t: 'store' });
-  ctx.openModal('Ravox Store', (body) => {
+  ctx.openModal('Store', (body) => {
     const draw = () => {
       body.innerHTML = '';
       renderStore(body);
@@ -11142,7 +11142,7 @@ export function openMarket() {
  * ali não se compra nada: o item já é seu e o que se paga é a hora. "Confirmar
  * compra" naquela tela faria a pessoa procurar o que ela acabou de comprar.
  */
-export function confirmPurchase({ title, cost, balance, currency = 'coin-store', unit = 'Ravox Coins', preview, exigencia, note, marcar, cabecalho = 'Confirmar compra', onConfirm }) {
+export function confirmPurchase({ title, cost, balance, currency = 'coin-store', unit = 'Draevor Coins', preview, exigencia, note, marcar, cabecalho = 'Confirmar compra', onConfirm }) {
   const back = el('div', 'confirm-back');
   const box = el('div', 'confirm-box');
 
@@ -11237,7 +11237,7 @@ export function confirmPurchase({ title, cost, balance, currency = 'coin-store',
   confirm.focus();
 }
 
-/** Montarias e outfits à venda por Ravox Coins. */
+/** Montarias e outfits à venda por Draevor Coins. */
 function renderStoreList(body, kind) {
   const { state, send } = ctx;
   const store = state.store;
@@ -11258,7 +11258,7 @@ function renderStoreList(body, kind) {
     const tudo = el('button', 'store-lote');
     tudo.append(
       el('b', null, kind === 'mounts' ? `Comprar as ${lote.faltam} montarias que faltam` : `Comprar os ${lote.faltam} outfits que faltam`),
-      el('span', null, `${lote.coins.toLocaleString('pt-BR')} Ravox Coins`)
+      el('span', null, `${lote.coins.toLocaleString('pt-BR')} Draevor Coins`)
     );
     /*
      * O preço cheio riscado ao lado do com desconto.
@@ -11280,14 +11280,14 @@ function renderStoreList(body, kind) {
     const podePagar = (store.coins ?? 0) >= lote.coins;
     if (!podePagar) {
       tudo.classList.add('curto');
-      tipTexto(tudo, `Faltam ${(lote.coins - (store.coins ?? 0)).toLocaleString('pt-BR')} Ravox Coins.`);
+      tipTexto(tudo, `Faltam ${(lote.coins - (store.coins ?? 0)).toLocaleString('pt-BR')} Draevor Coins.`);
     }
     /*
      * O botão do lote falava no canal errado.
      *
      * Ele mandava `{ t: 'buy' }`, que é a loja de OURO do NPC: lá o servidor
      * faz `shopIndex.get(Number(id))`, e "todas-montarias" vira NaN — o clique
-     * respondia "item não está à venda" e nada acontecia. A Ravox Store é
+     * respondia "item não está à venda" e nada acontecia. A Store é
      * `{ t: 'store', action: 'buy' }`, o mesmo canal de todos os outros botões
      * desta tela. E, como qualquer compra da loja, ela agora pergunta antes.
      */
@@ -11596,7 +11596,7 @@ function storeFooter(store) {
   const esquerda = el('div', 'store-footer-esq');
 
   const saldo = el('div', 'store-footer-saldo');
-  saldo.append(uiIcon('coin-store'), el('b', null, money(store.coins)), el('span', null, 'Ravox Coins'));
+  saldo.append(uiIcon('coin-store'), el('b', null, money(store.coins)), el('span', null, 'Draevor Coins'));
   esquerda.append(saldo);
 
   // Os três botões do rodapé com ícone (pedido do dono, 15/09). Ver `.store-botao-icone`.
@@ -11646,7 +11646,7 @@ function storeFooter(store) {
   const naInbox = (ctx.state.character?.storeInbox ?? []).length;
   const inbox = comIcone(el('button', 'store-transferir store-inbox-botao'), itemCanvas(55368, 32), 'Store Inbox');
   if (naInbox) inbox.append(el('b', 'store-inbox-conta', String(naInbox)));
-  tipTexto(inbox, 'Tudo o que você compra na Ravox Store chega aqui. De lá as compras saem para a mochila.');
+  tipTexto(inbox, 'Tudo o que você compra na Store chega aqui. De lá as compras saem para a mochila.');
   // A loja é um modal e tampa as janelas: fecha e abre a inbox por cima do jogo.
   inbox.onclick = () => {
     ctx.closeModal?.();
@@ -11656,7 +11656,7 @@ function storeFooter(store) {
   rodape.append(esquerda);
 
   const obter = el('button', 'store-obter');
-  obter.append(uiIcon('coin-store'), el('span', null, 'Obter Ravox Coins'));
+  obter.append(uiIcon('coin-store'), el('span', null, 'Obter Draevor Coins'));
   if (!store.donate) {
     obter.disabled = true;
     tipTexto(obter, 'A recarga ainda não está ligada neste servidor.');
@@ -11760,7 +11760,7 @@ export function abrirHistoricoDaLoja() {
         [TIPO_DO_HISTORICO[linha.tipo] ?? linha.tipo, linha.personagem].filter(Boolean).join(' · ')));
       l.append(meio);
       l.append(el('span', 'historico-quando', quando(linha.em)));
-      // O valor com a moedinha da Ravox Coin do lado, pequena.
+      // O valor com a moedinha da Draevor Coin do lado, pequena.
       const valor = el('b', 'historico-valor', `${linha.coins >= 0 ? '+' : '−'}${money(Math.abs(linha.coins))}`);
       valor.append(uiIcon('coin-store'));
       l.append(valor);
@@ -11781,7 +11781,7 @@ export function abrirHistoricoDaLoja() {
 
 /** Transferir coins, agora numa janela por cima da loja. */
 export function abrirTransferir() {
-  const { corpo } = janelaDoSaldo('Transferir Ravox Coins', 'transferencia');
+  const { corpo } = janelaDoSaldo('Transferir Draevor Coins', 'transferencia');
   renderTransfer(corpo);
 }
 
@@ -12095,7 +12095,7 @@ function renderBoosts(body) {
  * ---- A prateleira Buff Power ----
  *
  * "coloca na store uma nova aba chamada Buff Power e coloca esses itens, 200
- *  Ravox Coins cada, ou os 3 por 500 Ravox Coins."
+ *  Draevor Coins cada, ou os 3 por 500 Draevor Coins."
  *
  * Ela é irmã de Boosts e fica ao lado dela de propósito: as duas vendem TEMPO.
  * A diferença é o que a pessoa leva para casa — em Boosts o item some quando é
@@ -12135,7 +12135,7 @@ function renderBuffPower(body) {
       null,
       'O que você leva aqui é o ITEM, e ele NUNCA some: fica na mochila para sempre. ' +
         'Para ligar uma hora do bônus, clique nele na mochila — e é esse clique que cobra ' +
-        '(ouro nos dois primeiros, Ravox Coins no de loot). O preço de cada hora está escrito em cada card.',
+        '(ouro nos dois primeiros, Draevor Coins no de loot). O preço de cada hora está escrito em cada card.',
     ),
   );
   aviso.append(el('em', null, 'Usar de novo soma mais uma hora, até dez acumuladas.'));
@@ -12552,7 +12552,7 @@ function renderItens(body) {
   /*
    * Com o filtro em "Tudo", as peças da casa vêm na frente.
    *
-   * `destaque` vem do servidor (0 para as Ravox, 1 para o resto) porque ordem de
+   * `destaque` vem do servidor (0 para as Draevor, 1 para o resto) porque ordem de
    * vitrine é decisão de loja. Dentro de uma gaveta a ordem fica como está: ali
    * a comparação é entre iguais, e reordenar esconderia a diferença de preço.
    *
@@ -12772,7 +12772,7 @@ function renderExtras(body) {
     const tudo = el('button', 'store-lote');
     tudo.append(
       el('b', null, `Comprar as ${lote.faltam} skin(s) que faltam`),
-      el('span', null, `${money(lote.coins)} Ravox Coins`),
+      el('span', null, `${money(lote.coins)} Draevor Coins`),
     );
     if (lote.desconto && lote.cheio > lote.coins) {
       tudo.append(
@@ -12786,7 +12786,7 @@ function renderExtras(body) {
     const podePagar = (store.coins ?? 0) >= lote.coins;
     if (!podePagar) {
       tudo.classList.add('curto');
-      tipTexto(tudo, `Faltam ${money(lote.coins - (store.coins ?? 0))} Ravox Coins.`);
+      tipTexto(tudo, `Faltam ${money(lote.coins - (store.coins ?? 0))} Draevor Coins.`);
     }
     tudo.onclick = () =>
       confirmPurchase({
@@ -13127,7 +13127,7 @@ function cartaoDeQuantidade(entry) {
      *
      * Este card chamava a caixa com os nomes errados, e como ela le' os campos
      * por desestruturacao nada quebrava: a confirmacao de uma compra de mil
-     * coins saia com o titulo vazio e "Preco - 0 Ravox Coins". O clique
+     * coins saia com o titulo vazio e "Preco - 0 Draevor Coins". O clique
      * cobrava certo — quem confere e' o servidor —, mas a ultima tela antes de
      * gastar mostrava outro numero.
      */
@@ -13192,7 +13192,7 @@ function cartaoDeMelhoria(entry) {
 }
 
 /*
- * ---- Transferir Ravox Coins ----
+ * ---- Transferir Draevor Coins ----
  *
  * Os coins são da CONTA, não do personagem: quem recebe é a conta de quem for
  * nomeado, então tanto faz qual personagem dela você escreve. Mandar para a
@@ -13356,13 +13356,13 @@ const reais = (centavos) =>
  * ---- As moedas desenhadas (troca de Tibia Coins / Rubini Coins) ----
  *
  * O dono: "aonde estiver falando tibia coin coloque a Tibia_Coin.gif, e rubini
- * coin a rubinicoin.png", e a Ravox Coin com a moeda da loja. `comMoedas` corta
+ * coin a rubinicoin.png", e a Draevor Coin com a moeda da loja. `comMoedas` corta
  * o texto nos nomes das três e põe o desenho na frente de cada um.
  */
 const ICONE_DA_MOEDA = {
   'Tibia Coins': '/client/assets/ui/tibia-coin.gif',
   'Rubini Coins': '/client/assets/ui/rubini-coin.png',
-  'Ravox Coins': '/client/assets/ui/coin-store.png',
+  'Draevor Coins': '/client/assets/ui/coin-store.png',
 };
 function iconeDaMoeda(nome) {
   const img = document.createElement('img');
@@ -13379,7 +13379,7 @@ function comMoedas(tag, classe, texto) {
 }
 function preencherComMoedas(caixa, texto) {
   caixa.replaceChildren();
-  for (const parte of String(texto).split(/(Tibia Coins|Rubini Coins|Ravox Coins)/)) {
+  for (const parte of String(texto).split(/(Tibia Coins|Rubini Coins|Draevor Coins)/)) {
     if (!parte) continue;
     if (ICONE_DA_MOEDA[parte]) {
       const junto = el('span', 'troca-tc-com-moeda');
@@ -13388,7 +13388,7 @@ function preencherComMoedas(caixa, texto) {
     } else caixa.append(document.createTextNode(parte));
   }
 }
-/** As moedas de fora ⇄ a Ravox Coin, com a setinha de ida e volta do Transferir. */
+/** As moedas de fora ⇄ a Draevor Coin, com a setinha de ida e volta do Transferir. */
 function moedasTrocando(de) {
   const caixa = el('span', 'troca-tc-trocando');
   for (const nome of de) caixa.append(iconeDaMoeda(nome));
@@ -13398,7 +13398,7 @@ function moedasTrocando(de) {
   svg.innerHTML =
     '<path d="M4 8h14M14 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
     '<path d="M20 16H6M10 12l-4 4 4 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
-  caixa.append(svg, iconeDaMoeda('Ravox Coins'));
+  caixa.append(svg, iconeDaMoeda('Draevor Coins'));
   return caixa;
 }
 
@@ -13407,7 +13407,7 @@ export function abrirObterCoins() {
   const store = state.store;
   if (!store) return;
 
-  const { corpo, fechar } = janelaDoSaldo('Obter Ravox Coins');
+  const { corpo, fechar } = janelaDoSaldo('Obter Draevor Coins');
 
   const total = (pack) => pack.coins + (pack.bonus ?? 0);
   /* O multiplicador DESTE pacote: a excecao dele, ou o geral. */
@@ -13450,7 +13450,7 @@ export function abrirObterCoins() {
 
     if (emPromocao()) {
       const faixa = el('div', 'promo-faixa');
-      faixa.append(el('b', null, 'PROMOÇÃO DE RAVOX COINS'));
+      faixa.append(el('b', null, 'PROMOÇÃO DE DRAEVOR COINS'));
       faixa.append(el('span', null, 'coins multiplicadas por tempo limitado'));
 
       const ate = store.promocao?.ate ?? 0;
@@ -13515,8 +13515,8 @@ export function abrirObterCoins() {
       const texto = el('span', 'troca-tc-entrada-texto');
       texto.append(
         // Aqui só o desenho da esquerda leva moedas: no texto elas enchiam o cartão (pedido do dono).
-        el('b', null, 'Trocar Tibia Coins ou Rubini Coins por Ravox Coins'),
-        el('em', null, 'Tibia Global: 250 TC = 500 Ravox Coins · Rubinot: 250 RC = 200 Ravox Coins')
+        el('b', null, 'Trocar Tibia Coins ou Rubini Coins por Draevor Coins'),
+        el('em', null, 'Tibia Global: 250 TC = 500 Draevor Coins · Rubinot: 250 RC = 200 Draevor Coins')
       );
       troca.append(moedasTrocando(['Tibia Coins', 'Rubini Coins']), texto, el('span', 'troca-tc-entrada-seta', '›'));
       troca.onclick = passoTroca;
@@ -13552,7 +13552,7 @@ export function abrirObterCoins() {
       comMoedas(
         'p',
         'coins-lead',
-        'Troque coins de outro servidor por Ravox Coins. A entrega é feita à mão pelo dono, depois de conferir o envio.'
+        'Troque coins de outro servidor por Draevor Coins. A entrega é feita à mão pelo dono, depois de conferir o envio.'
       )
     );
 
@@ -13577,7 +13577,7 @@ export function abrirObterCoins() {
     const ladoEnvia = el('div', 'troca-tc-lado');
     ladoEnvia.append(el('span', null, 'Você envia'), envia);
     const ladoRecebe = el('div', 'troca-tc-lado troca-tc-lado-recebe');
-    ladoRecebe.append(el('span', null, 'Você recebe no Ravox Idle'), recebe);
+    ladoRecebe.append(el('span', null, 'Você recebe no Draevor Idle'), recebe);
     // No meio, a mesma setinha verde de ida e volta do Transferir.
     const meio = el('span', 'troca-tc-igual');
     const setas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -13607,7 +13607,7 @@ export function abrirObterCoins() {
       return { caixa, input };
     };
     const origem = campo('', '', 'ex.: Nome Do Seu Char');
-    const destino = campo('Nome do char que RECEBE os Ravox Coins aqui', state.character?.name ?? '', 'nome do char no Ravox Idle');
+    const destino = campo('Nome do char que RECEBE os Draevor Coins aqui', state.character?.name ?? '', 'nome do char no Draevor Idle');
     const nomes = el('div', 'troca-tc-nomes');
     nomes.append(origem.caixa, destino.caixa);
     corpo.append(grupoDoPasso('4. Os nomes dos chars', nomes));
@@ -13691,7 +13691,7 @@ export function abrirObterCoins() {
         const b = el('button', `troca-tc-servidor${s.id === servidor.id ? ' escolhido' : ''}`);
         const nomeDoServidor = el('b', 'troca-tc-servidor-nome');
         nomeDoServidor.append(moedasTrocando([s.moeda]), document.createTextNode(s.nome));
-        b.append(nomeDoServidor, comMoedas('em', null, `${n(s.manda)} ${s.moeda} = ${n(s.recebe)} Ravox Coins`));
+        b.append(nomeDoServidor, comMoedas('em', null, `${n(s.manda)} ${s.moeda} = ${n(s.recebe)} Draevor Coins`));
         b.onclick = () => {
           if (servidor.id !== s.id) desmarcar();
           servidor = s;
@@ -13700,7 +13700,7 @@ export function abrirObterCoins() {
         escolhas.append(b);
       }
       preencherComMoedas(envia, `${n(quantidade)} ${servidor.moeda}`);
-      preencherComMoedas(recebe, `${n(coinsDe(quantidade))} Ravox Coins`);
+      preencherComMoedas(recebe, `${n(coinsDe(quantidade))} Draevor Coins`);
       // Fração de 0 a 1: o CSS acha o centro da bolinha com ela (ver `.troca-tc-barra`).
       barra.style.setProperty('--p', String((quantidade - regra.minimo) / (regra.maximo - regra.minimo)));
 
@@ -13714,7 +13714,7 @@ export function abrirObterCoins() {
 
       avisos.innerHTML = '';
       for (const texto of [
-        `A entrega dos Ravox Coins pode demorar até ${regra.prazo}.`,
+        `A entrega dos Draevor Coins pode demorar até ${regra.prazo}.`,
         `Depois de confirmar, envie no WhatsApp ${regra.whatsapp} o print do histórico da store do ${servidor.nome} mostrando o envio para ${servidor.char}. Com o print enviado, a entrega dos coins fica mais rápida.`,
       ]) avisos.append(comMoedas('li', null, texto));
       preencherComMoedas(textoConfirmo, `Confirmo que enviei os ${n(quantidade)} ${servidor.moeda} para o char ${servidor.char} no ${servidor.nome}.`);
@@ -13740,7 +13740,7 @@ export function abrirObterCoins() {
         erro.hidden = false;
       };
       if (!origem.input.value.trim()) return falha(`Escreva o nome do char que enviou as ${servidor.moeda}.`);
-      if (!destino.input.value.trim()) return falha('Escreva o nome do char que recebe os Ravox Coins.');
+      if (!destino.input.value.trim()) return falha('Escreva o nome do char que recebe os Draevor Coins.');
       if (!confirmo.checked) return falha(`Marque que você já enviou as ${servidor.moeda} para ${servidor.char}.`);
       confirmar.disabled = true;
       confirmar.textContent = 'Enviando…';
@@ -13772,7 +13772,7 @@ export function abrirObterCoins() {
     const topo = el('div', 'troca-tc-feita');
     topo.append(
       el('b', null, `Pedido #${troca.id} registrado`),
-      comMoedas('span', null, `${n(troca.quantidade)} ${troca.moeda} (${troca.servidorNome}) → ${n(troca.coins)} Ravox Coins para ${troca.charDestino}`)
+      comMoedas('span', null, `${n(troca.quantidade)} ${troca.moeda} (${troca.servidorNome}) → ${n(troca.coins)} Draevor Coins para ${troca.charDestino}`)
     );
     corpo.append(topo);
 
@@ -13805,7 +13805,7 @@ export function abrirObterCoins() {
   const passoPagamento = (pack) => {
     corpo.innerHTML = '';
     corpo.append(
-      el('p', 'coins-lead', `${money(totalPromo(pack))} Ravox Coins — escolha a forma de pagamento.`)
+      el('p', 'coins-lead', `${money(totalPromo(pack))} Draevor Coins — escolha a forma de pagamento.`)
     );
 
     const escolha = (rotulo, detalhe, centavos, metodo, classe) => {
@@ -14108,7 +14108,7 @@ function confirmarNegocio({
 
 const ABAS_DO_BALCAO = {
   ofertas: 'Ofertas',
-  coins: 'Ravox Coins',
+  coins: 'Draevor Coins',
   minhas: 'Minhas ofertas',
   historico: 'Histórico',
 };
@@ -14201,7 +14201,7 @@ const LADOS_DO_BALCAO = { sell: 'À venda', buy: 'Procurados' };
 /*
  * ---- E em que MOEDA o anúncio está ----
  *
- * O dono: "tem que ter a opção de comprar ou vender itens por ravox coins
+ * O dono: "tem que ter a opção de comprar ou vender itens por draevor coins
  * também, mas não sei se seria junto com as ofertas de item ou separado".
  *
  * Ficou junto — mesma aba, mesma busca, mesmas peneiras — com um seletor de
@@ -14215,7 +14215,7 @@ const LADOS_DO_BALCAO = { sell: 'À venda', buy: 'Procurados' };
  */
 const MOEDAS_DO_BALCAO = {
   gold: { nome: 'Ouro', figura: () => itemCanvas(3043, 16, 1), unidade: 'gold', curto: 'g' },
-  coin: { nome: 'Ravox Coins', figura: () => uiIcon('coin-store'), unidade: 'Ravox Coins', curto: ' coins' },
+  coin: { nome: 'Draevor Coins', figura: () => uiIcon('coin-store'), unidade: 'Draevor Coins', curto: ' coins' },
 };
 
 /** A moeda que a vitrine está mostrando agora. */
@@ -14275,7 +14275,7 @@ const ESSENCIAS_DO_BALCAO = {
   nao: 'sem essências',
 };
 
-const CHAVE_DOS_FILTROS = 'ravox:mercado:filtros';
+const CHAVE_DOS_FILTROS = 'draevor:mercado:filtros';
 const FILTROS_GUARDADOS = () => ({
   marketSlot: SLOTS_DO_BALCAO,
   marketVocacao: VOCACOES_DO_BALCAO,
@@ -14399,7 +14399,7 @@ function renderMarket(body) {
    * O canto do cabeçalho é limpo em TODO desenho, e não só ao abrir.
    *
    * A peneira mora lá (ver `corpoDasOfertas`), e ela é só da aba de ofertas:
-   * sem esta limpeza, trocar para Ravox Coins deixaria os filtros do balcão
+   * sem esta limpeza, trocar para Draevor Coins deixaria os filtros do balcão
    * pendurados no topo, mexendo numa lista que não está mais na tela.
    */
   const cantoDoTopo = ctx.acoesDoModal?.() ?? null;
@@ -14452,7 +14452,7 @@ function cabecaDoBalcao() {
    *
    * O ouro é a pilha de 100 crystal coins do próprio client (item 3043), a
    * mesma que a barra do topo usa — ver `renderGoldIcon` no main.mjs. A coin é
-   * a arte da loja (`coin-store`), a mesma da Ravox Store. Repetir a figura que
+   * a arte da loja (`coin-store`), a mesma da Store. Repetir a figura que
    * o jogador já conhece vale mais do que qualquer ícone novo.
    */
   const moeda = (classe, figura, valor, titulo) => {
@@ -14465,7 +14465,7 @@ function cabecaDoBalcao() {
   saldos.append(
     moeda('ouro', itemCanvas(3043, 18, 1), state.market?.gold ?? ouroDoJogador(state), 'seu ouro')
   );
-  saldos.append(moeda('coin', uiIcon('coin-store'), state.character?.coins ?? 0, 'suas Ravox Coins'));
+  saldos.append(moeda('coin', uiIcon('coin-store'), state.character?.coins ?? 0, 'suas Draevor Coins'));
 
   /*
    * Anunciar fica no ALTO, ao lado do saldo, e não no meio da lista.
@@ -14547,7 +14547,7 @@ function ladosDoBalcao() {
 }
 
 /*
- * A prateleira: ouro ou Ravox Coins.
+ * A prateleira: ouro ou Draevor Coins.
  *
  * Menor que os dois lados de propósito — ela não muda o que a lista SIGNIFICA,
  * muda em que moeda os preços estão. Fica logo abaixo deles porque é a segunda
@@ -14566,7 +14566,7 @@ function moedasDoBalcao() {
     tipTexto(
       botao,
       id === 'coin'
-        ? 'Anúncios pagos em Ravox Coins. A coin é da conta, e não do personagem.'
+        ? 'Anúncios pagos em Draevor Coins. A coin é da conta, e não do personagem.'
         : 'Anúncios pagos em ouro, o mercado de sempre.'
     );
     botao.onclick = () => {
@@ -14856,7 +14856,7 @@ function corpoDasOfertas(body, cantoDoTopo = null) {
      */
     const preco = el('div', 'balcao-preco');
     // A figura da moeda DO ANÚNCIO: uma crystal coin (e não a pilha — `count`
-    // acima de 1 trocaria o sprite, ver `viewOf`) ou a Ravox Coin da loja.
+    // acima de 1 trocaria o sprite, ver `viewOf`) ou a Draevor Coin da loja.
     preco.append(precoComMoeda(oferta.price, oferta.moeda ?? 'gold'));
     if (oferta.count > 1) preco.append(el('em', null, `${money(oferta.total)} o lote`));
     linha.append(preco);
@@ -14950,7 +14950,7 @@ function corpoDasOfertas(body, cantoDoTopo = null) {
   }
 
   if (!(dados.offers ?? []).length) {
-    const emQue = moedaDoBalcao() === 'coin' ? ' em Ravox Coins' : ' em ouro';
+    const emQue = moedaDoBalcao() === 'coin' ? ' em Draevor Coins' : ' em ouro';
     tabela.append(
       el(
         'p',
@@ -15166,7 +15166,7 @@ function paginador(pagina, paginas, total, unidade, ir) {
   return barra;
 }
 
-// -------------------------------------------------------------- ravox coins
+// -------------------------------------------------------------- draevor coins
 
 /*
  * ---- O câmbio ----
@@ -15192,7 +15192,7 @@ function corpoDasCoins(body) {
     el(
       'p',
       null,
-      'Ravox Coins são da CONTA e o ouro é do PERSONAGEM. O que você anunciar fica retido até alguém aceitar ' +
+      'Draevor Coins são da CONTA e o ouro é do PERSONAGEM. O que você anunciar fica retido até alguém aceitar ' +
         'ou até você cancelar — nada é cobrado duas vezes. Ordens abertas valem 30 dias.'
     )
   );
@@ -15255,9 +15255,9 @@ function corpoDasCoins(body) {
       } else {
         acao.onclick = () =>
           confirmarNegocio({
-            titulo: kind === 'buy' ? 'Vender Ravox Coins' : 'Comprar Ravox Coins',
+            titulo: kind === 'buy' ? 'Vender Draevor Coins' : 'Comprar Draevor Coins',
             arteDaMoeda: 'coin-store',
-            nome: 'Ravox Coins',
+            nome: 'Draevor Coins',
             disponivel: linha.amount,
             unitario: linha.price,
             /*
@@ -15303,7 +15303,7 @@ function criarOrdemDeCoin(kind) {
 
   const back = el('div', 'confirm-back');
   const box = el('div', 'confirm-box');
-  box.append(el('h3', null, vendendo ? 'Vender Ravox Coins' : 'Comprar Ravox Coins'));
+  box.append(el('h3', null, vendendo ? 'Vender Draevor Coins' : 'Comprar Draevor Coins'));
   box.append(
     el(
       'p',
@@ -15387,7 +15387,7 @@ function corpoDoHistorico(body) {
    * ---- O somatório é POR MOEDA ----
    *
    * Ele era um só, e somava tudo o que passou pelo balcão. Desde que um item
-   * pode ser pago em Ravox Coins isso virou uma conta sem sentido: dez coins
+   * pode ser pago em Draevor Coins isso virou uma conta sem sentido: dez coins
    * entravam na mesma pilha de trezentos gold. Agora são dois pares, e o par
    * das coins só aparece para quem negociou em coin — quem nunca fez isso não
    * ganha dois números vazios na tela.
@@ -15425,9 +15425,9 @@ function corpoDoHistorico(body) {
     /*
      * A moeda da NEGOCIAÇÃO, e não o `g` de sempre.
      *
-     * O dono: "o histórico no market tem que mostrar se foi gold ou ravox coins
-     * que o item foi comprado ou vendido, com a sprite do ravox coins se for
-     * ravox coins". Sem isso, um item vendido por 10 coins aparecia como "10g"
+     * O dono: "o histórico no market tem que mostrar se foi gold ou draevor coins
+     * que o item foi comprado ou vendido, com a sprite do draevor coins se for
+     * draevor coins". Sem isso, um item vendido por 10 coins aparecia como "10g"
      * — e um extrato que mente sobre a moeda é pior do que não ter extrato.
      *
      * A linha do CÂMBIO fica em ouro: lá a mercadoria é a coin, e o preço
@@ -15542,7 +15542,7 @@ function corpoDasMinhas(body) {
   for (const ordem of minhasCoins) {
     const linha = el('div', 'balcao-linha minha');
     const nome = el('div', 'balcao-item');
-    nome.append(el('b', null, 'Ravox Coins'));
+    nome.append(el('b', null, 'Draevor Coins'));
     linha.append(nome);
     linha.append(el('span', 'balcao-slot', ordem.kind === 'sell' ? 'vendendo' : 'comprando'));
     linha.append(el('span', 'balcao-coin-qtd', `${money(ordem.amount)}`));
@@ -15562,7 +15562,7 @@ function corpoDasMinhas(body) {
     el(
       'p',
       'shop-note',
-      'Em ouro a taxa é de 2% do total (mínimo 20 gold), paga por quem anuncia. Em Ravox Coins ela é de 10%, ' +
+      'Em ouro a taxa é de 2% do total (mínimo 20 gold), paga por quem anuncia. Em Draevor Coins ela é de 10%, ' +
         'descontada de quem RECEBE as coins na hora do negócio — anunciar não custa nada. ' +
         'O que você vende sai da mochila na hora; o pagamento chega para a outra pessoa no próximo login dela. ' +
         'Uma oferta dura 7 dias — vencida, a peça (ou o dinheiro) volta pelo correio.'
@@ -15866,7 +15866,7 @@ function criarOferta(id, kind, peca = null) {
   const vendendo = kind === 'sell';
   /*
    * A moeda começa na prateleira que a pessoa está olhando — quem está na aba
-   * de Ravox Coins provavelmente quer anunciar em coin —, mas ela é uma escolha
+   * de Draevor Coins provavelmente quer anunciar em coin —, mas ela é uma escolha
    * do anúncio e não do filtro: dá para trocar aqui dentro. Ver
    * `MOEDAS_DO_BALCAO`.
    */
@@ -15940,7 +15940,7 @@ function criarOferta(id, kind, peca = null) {
       moedaDoAnuncio = qual;
       for (const [outro, botao] of fichas) botao.classList.toggle('on', outro === qual);
       // O preço de balcão do item é em OURO: trocar para coin deixando 12.000
-      // no campo seria oferecer doze mil Ravox Coins.
+      // no campo seria oferecer doze mil Draevor Coins.
       preco?.por(qual === 'coin' ? 1 : state.items[id]?.sell || 1);
       recalcular();
     };
@@ -17031,10 +17031,10 @@ function renderLocker(body) {
    * ---- E a compartilhada vende as vagas que faltam ----
    *
    * O dono: "poder comprar mais slots pra ela (máximo 100), cada compra viria 20
-   * espaços e seria 25 Ravox Coins".
+   * espaços e seria 25 Draevor Coins".
    *
    * O botão mora DENTRO da caixa, e não só na loja: é aqui que a pessoa descobre
-   * que o espaço acabou, e mandá-la procurar a prateleira certa da Ravox Store
+   * que o espaço acabou, e mandá-la procurar a prateleira certa da Store
    * para resolver o que ela está olhando é uma volta que ninguém precisa dar.
    * Ele leva para a loja, que é quem cobra.
    */
@@ -17044,7 +17044,7 @@ function renderLocker(body) {
       const comprar = el(
         'button',
         'primary',
-        `Comprar +${caixa.vagasPorCompra} vagas · ${caixa.coinsPorCompra} Ravox Coins`
+        `Comprar +${caixa.vagasPorCompra} vagas · ${caixa.coinsPorCompra} Draevor Coins`
       );
       /*
        * ---- E ela PERGUNTA antes de cobrar ----
@@ -17054,7 +17054,7 @@ function renderLocker(body) {
        *
        * Ele está certo, e o motivo é onde o botão mora: ele fica encostado na
        * grade da caixa, no meio de um gesto repetitivo — clicar, arrastar, clicar
-       * — e um clique perdido ali gastava Ravox Coins sem uma palavra. É a única
+       * — e um clique perdido ali gastava Draevor Coins sem uma palavra. É a única
        * coisa nesta janela que custa dinheiro de verdade.
        *
        * A caixa diz o preço E o que ele compra: "25 coins" sozinho não deixa
@@ -17064,7 +17064,7 @@ function renderLocker(body) {
         confirmarDeNovo({
           titulo: 'Comprar vagas?',
           texto:
-            `+${caixa.vagasPorCompra} vagas na caixa compartilhada por ${caixa.coinsPorCompra} Ravox Coins. ` +
+            `+${caixa.vagasPorCompra} vagas na caixa compartilhada por ${caixa.coinsPorCompra} Draevor Coins. ` +
             `Ela fica com ${Math.min(caixa.vagasNoMaximo, caixa.teto + caixa.vagasPorCompra)} de ${caixa.vagasNoMaximo}, ` +
             'e as vagas valem para todos os personagens da conta.',
           botao: `Comprar por ${caixa.coinsPorCompra} coins`,
@@ -17141,7 +17141,7 @@ function dentroDaSacola(sacola) {
      * mostrar o que não existia. Agora existe, e ela mostra.
      *
      * É a decisão de 'levo isto agora ou deixo para depois' com a mochila
-     * quase cheia: sem a estrela, uma Ravox Knight Axe ★★★ e uma limpa são o
+     * quase cheia: sem a estrela, uma Draevor Knight Axe ★★★ e uma limpa são o
      * mesmo quadradinho.
      */
     const estrelasDaPeca = estrelasDosAfixos(entry.af);
@@ -18356,7 +18356,7 @@ O seu dano deste tipo sobe ${quanto}% — sai x${fator}.`
  * jogo: vale para todos os personagens da conta e não custa uma ida ao
  * servidor. Ler dentro de um `try` porque em aba anônima o acesso pode estourar.
  */
-const CHAVE_DO_RESUMO = 'ravox:morte-resumo';
+const CHAVE_DO_RESUMO = 'draevor:morte-resumo';
 
 export function resumoDaMorteLigado() {
   try {
@@ -18389,7 +18389,7 @@ export function ligarResumoDaMorte(ligado) {
  * Ligado por padrão: quem não sabe que a opção existe tem de continuar vendo o
  * aviso, que é para o que ele serve.
  */
-const CHAVE_DO_CARTAZ_DE_BOSS = 'ravox:cartaz-de-boss';
+const CHAVE_DO_CARTAZ_DE_BOSS = 'draevor:cartaz-de-boss';
 
 export function cartazDeBossLigado() {
   try {
@@ -18424,7 +18424,7 @@ export function ligarCartazDeBoss(ligado) {
  * — e quem joga em dois computadores costuma querer ajustes diferentes em cada
  * um, porque o monitor é outro.
  */
-const CHAVE_DA_RARIDADE = 'ravox:raridade';
+const CHAVE_DA_RARIDADE = 'draevor:raridade';
 const ESTILOS_DA_RARIDADE = ['sopro', 'anel', 'quina', 'nenhum'];
 
 export function estiloDaRaridade() {
@@ -21823,7 +21823,7 @@ function renderForjaTier(body) {
   const bolsa = el('div', 'forja-bolsa');
   bolsa.append(itemCanvas(3031, 18), el('b', null, `${money(view.gold)}`), el('em', null, 'no bolso'));
   bolsa.append(
-    el('em', 'forja-dica-rodape', `A Ravox Tier UP continua sendo o caminho barato. O teto é o tier ${view.tierMax}.`)
+    el('em', 'forja-dica-rodape', `A Draevor Tier UP continua sendo o caminho barato. O teto é o tier ${view.tierMax}.`)
   );
   body.append(bolsa);
 }
@@ -22262,7 +22262,7 @@ function renderForjaSubir(body, view, send) {
    * chances, e ver os dois lado a lado é o que permite decidir. Uma caixinha
    * esconderia metade da oferta atrás de um clique.
    *
-   * A pedra `Ravox Tier UP` continua sem falhar — outro caminho, outro produto.
+   * A pedra `Draevor Tier UP` continua sem falhar — outro caminho, outro produto.
    */
   const botoes = el('div', 'forja-tentativas');
   const tentativa = (custo, rotulo, reforcada) => {
@@ -22310,8 +22310,8 @@ function renderForjaSubir(body, view, send) {
       'p',
       'forja-aviso',
       escolhida.tier > 0
-        ? `A forja pode falhar. Falhando, ${escolhida.nome} cai para o tier ${escolhida.tier - 1} e o ouro é gasto igual. A pedra Ravox Tier UP nunca falha.`
-        : 'A forja pode falhar. No tier 0 não há tier a perder: falhando, só o ouro é gasto. A pedra Ravox Tier UP nunca falha.',
+        ? `A forja pode falhar. Falhando, ${escolhida.nome} cai para o tier ${escolhida.tier - 1} e o ouro é gasto igual. A pedra Draevor Tier UP nunca falha.`
+        : 'A forja pode falhar. No tier 0 não há tier a perder: falhando, só o ouro é gasto. A pedra Draevor Tier UP nunca falha.',
     ),
   });
 }
@@ -22534,8 +22534,8 @@ function renderForjaAfixos(body) {
    * ---- A BOLSA vai para cima, e com os ícones ----
    *
    * "na página de afixos, onde está ouro tem que ter o ícone do ouro, e onde
-   * está Ravox Coins tem que ter o Ravox Coins; deixa a página melhor." E, no
-   * mesmo fôlego: "está informando que eu tenho 0 Ravox Coins mesmo eu tendo
+   * está Draevor Coins tem que ter o Draevor Coins; deixa a página melhor." E, no
+   * mesmo fôlego: "está informando que eu tenho 0 Draevor Coins mesmo eu tendo
    * coins" — que era outro defeito, do servidor, e já foi.
    *
    * Ela subiu do rodapé para cá porque o preço é a primeira pergunta desta tela,
@@ -22549,7 +22549,7 @@ function renderForjaAfixos(body) {
   const bolsa = el('div', 'afixo-bolsa');
   for (const [classe, figura, valor, nome] of [
     ['ouro', () => itemCanvas(3031, 18), view.gold, 'no bolso'],
-    ['coin', () => uiIcon('coin-store'), view.coins ?? 0, 'Ravox Coins'],
+    ['coin', () => uiIcon('coin-store'), view.coins ?? 0, 'Draevor Coins'],
   ]) {
     const caixa = el('div', `afixo-bolsa-item ${classe}`);
     caixa.append(figura(), el('b', null, money(valor)), el('em', null, nome));
@@ -22850,7 +22850,7 @@ function moedaDaForja(custo, view) {
   const tira = el('div', 'afixo-moedas');
   for (const [id, rotulo, valor, saldo, figura] of [
     ['gold', 'de ouro', custo.ouro, view.gold, () => itemCanvas(3031, 16)],
-    ['coin', 'Ravox Coins', custo.coins, view.coins ?? 0, () => uiIcon('coin-store')],
+    ['coin', 'Draevor Coins', custo.coins, view.coins ?? 0, () => uiIcon('coin-store')],
   ]) {
     const da = saldo >= valor;
     const botao = el('button', `afixo-moeda${ctx.tabs.afixoMoeda === id ? ' on' : ''}${da ? '' : ' falta'}`);
@@ -22871,7 +22871,7 @@ function moedaDaForja(custo, view) {
 const moedaEscolhida = () => (ctx.tabs.afixoMoeda === 'coin' ? 'coin' : 'gold');
 const valorNaMoeda = (custo) => (moedaEscolhida() === 'coin' ? custo.coins : custo.ouro);
 const saldoNaMoeda = (view) => (moedaEscolhida() === 'coin' ? view.coins ?? 0 : view.gold);
-const nomeDaMoeda = () => (moedaEscolhida() === 'coin' ? 'Ravox Coins' : 'de ouro');
+const nomeDaMoeda = () => (moedaEscolhida() === 'coin' ? 'Draevor Coins' : 'de ouro');
 const figuraDaMoeda = () => (moedaEscolhida() === 'coin' ? uiIcon('coin-store') : itemCanvas(3031, 20));
 
 /** A linha de preço do rodapé, com o ícone da moeda escolhida. */
@@ -23726,7 +23726,7 @@ function renderAfixoUpgrade(body, view, send) {
  *
  * Irmã do `confirmarForja` e separada dele por uma razão só: aquela conta em
  * ouro e escreve "de ouro" em três lugares, e metade destas operações é paga em
- * Ravox Coin. Passar a unidade por parâmetro naquela mudaria o texto de uma tela
+ * Draevor Coin. Passar a unidade por parâmetro naquela mudaria o texto de uma tela
  * que já está no ar por causa de outra.
  */
 function confirmarForjaDeAfixo({ id, peca = null, arte = null, titulo, frases, custo, saldo, unidade, acao, aoConfirmar }) {
@@ -23904,7 +23904,7 @@ function renderForjaCraft(body) {
    */
   const sets = el('div', 'craft-sets');
   for (const [geracao, rotulo, dica] of [
-    ['craftado', 'Craftado', 'O primeiro degrau: cada peça sai da peça Ravox da mesma vocação.'],
+    ['craftado', 'Craftado', 'O primeiro degrau: cada peça sai da peça Draevor da mesma vocação.'],
     ['v2', 'Craftado V2', 'O segundo degrau: cada V2 exige o Craftado correspondente e herda os extras dele.'],
   ]) {
     const receitas = geracao === 'v2' ? view.v2 : view.craftado;

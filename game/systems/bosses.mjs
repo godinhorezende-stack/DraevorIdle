@@ -27,6 +27,37 @@ const MOLDE_DO_AUTO = CHARACTER_TEMPLATE.autoBoss;
 
 const acharBoss = (id) => CATALOGO.bosses.find((b) => b.id === id) ?? null;
 
+// ---- Boss Diários (a área da praça, `acao: 'boss-diarios'` em city-meta.json) ----
+
+/*
+ * A escala real (`gamedata/novidades.json`, "22 de setembro — os Boss
+ * Diários"): segunda Ferumbras, terça Ghazbaran, quarta Morgaroth, quinta
+ * Apocalypse, sexta Orshabaal, sábado Zamulosh, domingo Gaz'haragoth — um
+ * boss achado às 20h, a semana inteira. `Date#getDay()`: 0 = domingo.
+ *
+ * Dos sete, só o Zamulosh foi capturado com ficha própria (sala, posição,
+ * hp, exp — ver `catalog-real.json`). Os outros seis nunca foram vistos ao
+ * vivo nesta restauração: entrar force chutar hp/sala/loot de um boss que
+ * ninguém capturou, o que este projeto nunca faz (ver README). Por isso a
+ * escala fica documentada e pronta, mas só entra de verdade quem cair num
+ * dia com boss real — o resto avisa exatamente isso, em vez de inventar.
+ */
+const ESCALA_SEMANAL = [
+  { dia: 'domingo', nome: "Gaz'haragoth", id: 'gazharagoth' },
+  { dia: 'segunda', nome: 'Ferumbras', id: 'ferumbras' },
+  { dia: 'terça', nome: 'Ghazbaran', id: 'ghazbaran' },
+  { dia: 'quarta', nome: 'Morgaroth', id: 'morgaroth' },
+  { dia: 'quinta', nome: 'Apocalypse', id: 'apocalypse' },
+  { dia: 'sexta', nome: 'Orshabaal', id: 'orshabaal' },
+  { dia: 'sábado', nome: 'Zamulosh', id: 'zamulosh' },
+];
+
+/** O boss de hoje na escala, e se ele já foi capturado (`boss` só existe quando dá para entrar). */
+export function bossDeHoje(agora = Date.now()) {
+  const item = ESCALA_SEMANAL[new Date(agora).getDay()];
+  return { ...item, boss: acharBoss(item.id) };
+}
+
 // ---- Boss Tasks ----
 
 /*

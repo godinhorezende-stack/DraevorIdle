@@ -30,7 +30,7 @@ function garantir(estado) {
   return estado.tarefas;
 }
 
-/** O passe Auto Task (Ravox Store, `loja.mjs`): `{ativo, ate}`, como a ficha do original. */
+/** O passe Auto Task (Store, `loja.mjs`): `{ativo, ate}`, como a ficha do original. */
 export function autoTask(estado, agora = Date.now()) {
   const p = estado.autoTask;
   const ativo = !!(p?.passe && p.passeAte > agora);

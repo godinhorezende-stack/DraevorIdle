@@ -6,7 +6,7 @@
 //   `forja` → `{pecas, tierMax, ouroDaForja, gold, forjou?}`
 //   `forjaSubir {lugar, reforcada}` — chance 50% (reforçada 65%, +50% de ouro).
 //     "Se FALHAR, ela CAI para o tier N−1 e o ouro é gasto do mesmo jeito" (no
-//     tier 0, só o ouro). A pedra Ravox Tier Up (`tiers.mjs`) nunca falha.
+//     tier 0, só o ouro). A pedra Draevor Tier Up (`tiers.mjs`) nunca falha.
 //   `forjaTransferir {de, para}` — a doadora é DESTRUÍDA e a outra fica com o
 //     tier dela menos um (a regra do Tibia), pagando o ouro do degrau.
 // AFIXOS
@@ -14,7 +14,7 @@
 //   rerroll · transferir (mesmo slot e raridade) · retirar (vira essência) ·
 //   inserir (essência do mesmo slot e raridade; a vermelha entra em qualquer)
 //   · fundir (3 essências douradas → 1 vermelha, 130% da régua). Cada ação
-//   paga em ouro OU em Ravox Coins (`moeda`), e tem a prévia (`forjaAfixoPrevia*`).
+//   paga em ouro OU em Draevor Coins (`moeda`), e tem a prévia (`forjaAfixoPrevia*`).
 import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
 import * as A from './afixos.mjs';
 
@@ -66,7 +66,7 @@ function destruir(estado, lugar) {
 const saldoDeOuro = (estado) => (estado.gold ?? 0) + (estado.bank ?? 0);
 function pagar(estado, custo, moeda) {
   if (moeda === 'coin') {
-    if ((estado.coins ?? 0) < custo.coins) return `Faltam ${custo.coins - (estado.coins ?? 0)} Ravox Coins.`;
+    if ((estado.coins ?? 0) < custo.coins) return `Faltam ${custo.coins - (estado.coins ?? 0)} Draevor Coins.`;
     estado.coins -= custo.coins;
     return null;
   }

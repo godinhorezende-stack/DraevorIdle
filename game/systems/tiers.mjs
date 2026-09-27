@@ -1,4 +1,4 @@
-// Tier das peças — a subida com a pedra da Ravox Store e os efeitos de cada
+// Tier das peças — a subida com a pedra da Store e os efeitos de cada
 // slot, no formato do personagem real capturado (`tiers`, `tierMax`,
 // `proximoTier`) e da tela da mochila (`confirmarTier`, inventory.mjs):
 //

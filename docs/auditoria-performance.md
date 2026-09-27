@@ -1,4 +1,4 @@
-# Auditoria de performance e arquitetura — Ravox Idle (restaurado)
+# Auditoria de performance e arquitetura — Draevor Idle (restaurado)
 
 Data: 2026-09-26. Só diagnóstico e plano: **nenhum arquivo do jogo foi alterado**.
 Os scripts de medição usados estão em `tools/perf/` (mais `tools/carga.mjs` e
@@ -679,6 +679,21 @@ Custo novo: 2 threads de simulação (RSS total do processo ~270 MB; use
 3. `renderAll` → renderização por painel onde o perfil mostrar custo (começar por HUD e barra de ações).
 - **Saída:** celular emulado DPR 3 ≥ 35 FPS e < 5 long tasks em 20 s; desktop sem regressão (`tools/perf/perfil-cliente.mjs`).
 
+#### Resultado da Fase 2 — item 1 (feito em 2026-09-27)
+
+`tools/perf/perfil-cliente.mjs` (Playwright) não estava instalado nesta
+máquina para medir FPS/long-tasks de ponta a ponta desta vez — a verificação
+foi funcional em vez de estatística: um `overlayRatio()` único (`map.mjs`)
+substituiu as 5 leituras cruas de `window.devicePixelRatio` (`resizeOverlay`,
+`nitido`, e as 2 chamadas de `placaDoNome`/`placaDeTexto`), e ao vivo (com
+`devicePixelRatio` sobrescrito para 3 no navegador embutido, via
+`Object.defineProperty` + `dispatchEvent(new Event('resize'))`) o overlay
+redimensionou para `innerWidth × 2`/`innerHeight × 2` (681×697 → 1362×1394),
+não `× 3` (2043×2091) — confirma o teto batendo, sem erro de console. Os
+números de FPS/long-tasks já medidos antes (DPR3: 23 FPS/40 long tasks → DPR2:
+36 FPS/1 long task) continuam sendo a referência; falta remedir com o
+Playwright instalado para confirmar o ganho numérico de ponta a ponta.
+
 ### Fase 3 — Game loop
 1. Tique em fatias (5 × 50 ms).
 2. `Ficha.combate` memorizada por tique.
@@ -773,6 +788,48 @@ troca ponta a ponta.
 2. Grades de hunt compactas, pré-processadas no build e carregadas no boot.
 3. Estáticos pré-comprimidos no build (sem Brotli síncrono em runtime).
 - **Saída:** 1.000 bots caçando num VPS de 4 vCPU com intervalo p99 < 300 ms e ping p99 < 100 ms.
+
+#### Resultado da Fase 5 — item 1 (feito em 2026-09-27, **item 2/3 não feitos**)
+
+Implementado só o item 1, e só para hunts **solo** (sem grupo, sem arena — ver
+o porquê no plano da sessão, `hunt.monstros`/`hunt.partilha.membros` são
+objeto COMPARTILHADO por referência entre sessões em grupo, incompatível com
+"cada tique pode rodar num worker diferente" sem redesenhar isso antes).
+
+| Item | Arquivo | Medido |
+|---|---|---|
+| Pool de workers por tique (stateless, mesmo padrão de `simulacao-offline.mjs`) | `game/systems/simulador-tique.mjs`, `simulador-tique-worker.mjs` | Determinismo provado (`simulador-tique.test.mjs`): mesmo `estado`+`agora`+dado fixo → resultado byte-a-byte igual ao tique direto, 20 tiques seguidos |
+| `hunt/combate.mjs::matarMonstro` parou de importar `arena.mjs` (bônus de pódio agora chega pronto em `hunt.podio`, calculado 1x por tique em `sessao.mjs`, mesmo padrão de `hunt.guia`/`hunt.partilha`) | `game/systems/hunt/combate.mjs`, `game/websocket/sessao.mjs` | Comportamento idêntico antes/depois (`podio-combate.test.mjs`) — e é o que deixa a simulação pura o bastante pra atravessar `postMessage` |
+| Elegibilidade recalculada a cada tique (`!hunt.pvp && hunt.partilha.membros.length <= 1`), desligado por padrão (`SIMULADORES_TIQUE=0`) | `game/websocket/sessao.mjs::tique` | 240 testes da suíte inteira verdes com a env var OFF (comportamento de hoje intocado) |
+
+**Carga real (`tools/carga.mjs 30 20 cacada`, 30 bots solo, local) — resultado
+NEGATIVO, documentado em vez de escondido:**
+
+| | Baseline (`SIMULADORES_TIQUE` desligado) | `SIMULADORES_TIQUE=2` | `SIMULADORES_TIQUE=4` |
+|---|---|---|---|
+| ping p50 / p99 / máx | 11 / 174 / 260 ms | 39 / 1037 / 1085 ms | 57 / 2189 / 2499 ms |
+| intervalo p50 / p99 / máx | 250 / 336 / 377 ms | 249 / 915 / 1075 ms | 247 / 827 / 928 ms |
+
+**Ligar os workers PIOROU a latência, e piorou MAIS com 4 threads do que com
+2** — o oposto do esperado, e o oposto do que aconteceria se fosse só "pool
+pequeno demais para a carga" (aí mais threads ajudaria). Não investigado a
+fundo ainda (precisa de profiler, não só `tools/carga.mjs`): suspeita
+principal é o custo do clone estruturado do `estado` inteiro (32-95 KB) a
+cada tique — 30 jogadores × 4 tiques/s × ~2 clones (ida e volta) é uma
+serialização e tanto pela `postMessage`, e cada worker extra soma outra
+thread de CPU competindo pelos mesmos núcleos sem ganho correspondente. A
+correção provável (não feita) é o desenho original do item 1 do plano da
+auditoria: posse persistente por sessão, mandando só `{sessionId, agora}` a
+cada tique em vez do estado inteiro — descartado nesta rodada por criar um
+risco de correção diferente (referência de `hunt.monstros` ficando órfã ao
+entrar em grupo, documentado no código) que não deu tempo de fechar direito.
+
+**Recomendação: manter `SIMULADORES_TIQUE=0` (desligado) até uma sessão
+dedicada de profiling explicar o motivo real do aumento de latência — a
+infraestrutura está correta (determinismo provado, bônus de pódio provado,
+recuperação de worker morto provada) mas **não é**, hoje, uma melhoria de
+performance de verdade. Itens 2 e 3 do plano original (grades pré-processadas,
+estáticos pré-comprimidos) não foram tocados.**
 
 ### Fase 6 — Banco / cache (PostgreSQL)
 1. ✅ Camada de repositórios (tirar SQL dos 9 módulos), primeiro sobre o SQLite atual, com API assíncrona — `nucleo/db.mjs`, `nucleo/banco.mjs` e os 9 módulos (guildas, mercado, arena, amigos, drops-do-site, ranking, site + banco/sessão) todos convertidos.

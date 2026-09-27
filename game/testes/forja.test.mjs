@@ -10,10 +10,10 @@ import * as Afixos from '../systems/afixos.mjs';
 import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
 import { contarGuardadas } from '../systems/inventario.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, comMarcaNova } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada', 'servidor');
-const capturado = (arquivo) => JSON.parse(readFileSync(join(API, arquivo), 'utf8'));
+const capturado = (arquivo) => comMarcaNova(JSON.parse(readFileSync(join(API, arquivo), 'utf8')));
 const semT = ({ t, ...resto }) => resto;
 
 function vazio(extra = {}) {
@@ -88,7 +88,7 @@ test('reroll mantendo o afixo SEMPRE sobe o número, mesmo numa régua curta (pe
 
 // ---- Craft: fazer de verdade ----
 
-const RAVOX_AXE = 55178;
+const DRAEVOR_AXE = 55178;
 const CRAFTED_AXE = 55197;
 
 function comTudoParaOCraftedAxe(extraDaBase = {}) {
@@ -96,7 +96,7 @@ function comTudoParaOCraftedAxe(extraDaBase = {}) {
   const receita = Craft.view(e, { vocacao: 'knight' }).craftado.find((r) => r.id === CRAFTED_AXE);
   for (const m of receita.materiais) {
     if (m.dinheiro) continue;
-    if (m.id === RAVOX_AXE) e.equipment.weapon = { id: RAVOX_AXE, count: 1, ...extraDaBase };
+    if (m.id === DRAEVOR_AXE) e.equipment.weapon = { id: DRAEVOR_AXE, count: 1, ...extraDaBase };
     else e.inventory.push({ id: m.id, count: m.precisa });
   }
   // Uma sobra que não pode sumir: o craft só tira o que a receita pede.
@@ -109,12 +109,12 @@ test('craft: com tudo em mãos, a peça sai HERDANDO tier, imbuements e afixos, 
   const { e } = comTudoParaOCraftedAxe({ tier: 4, imbu: [{ id: 1 }], af });
   const antes = Craft.view(e, { vocacao: 'knight' }).craftado.find((r) => r.id === CRAFTED_AXE);
   assert.equal(antes.pronto, true);
-  assert.deepEqual(antes.herda, { id: RAVOX_AXE, nome: 'Ravox Knight Axe', tem: 1, tier: 4, imbuements: 1, afixos: 1, extras: { tier: 4, imbu: [{ id: 1 }], af } });
+  assert.deepEqual(antes.herda, { id: DRAEVOR_AXE, nome: 'Draevor Knight Axe', tem: 1, tier: 4, imbuements: 1, afixos: 1, extras: { tier: 4, imbu: [{ id: 1 }], af } });
 
   const r = Craft.craftar(e, { vocacao: 'knight', geracao: 'craftado', id: CRAFTED_AXE });
   assert.ok(r.ok, r.erro);
   assert.deepEqual(e.equipment.weapon, { id: CRAFTED_AXE, count: 1, tier: 4, imbu: [{ id: 1 }], af });
-  assert.deepEqual(r.craftou, { id: CRAFTED_AXE, nome: 'Crafted Ravox Knight Axe', base: 'Ravox Knight Axe', herdou: { tier: 4, imbu: [{ id: 1 }], af } });
+  assert.deepEqual(r.craftou, { id: CRAFTED_AXE, nome: 'Crafted Draevor Knight Axe', base: 'Draevor Knight Axe', herdou: { tier: 4, imbu: [{ id: 1 }], af } });
   // 200 milhões: 150 do bolso, 50 do banco.
   assert.deepEqual([e.gold, e.bank], [0, 50_000_000]);
   // Os materiais sumiram; a sobra de gold token ficou.

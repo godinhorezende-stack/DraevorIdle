@@ -52,7 +52,7 @@ export const ACTION_CATALOG = carregar('action-catalog.json').catalog;
  */
 export const ACTION_CATALOG_ALTO = carregar('action-catalog-lvl343.json').catalog;
 /*
- * A Ravox Store REAL (`send({t:'store'})` no site original, 2026-09-23): as
+ * A Store REAL (`send({t:'store'})` no site original, 2026-09-23): as
  * 11 prateleiras inteiras — pacotes de coins, serviços, exercises, boosts,
  * itens, buff power, upgrades, extras, 242 montarias e 115 outfits, com preço.
  * Capturada num personagem que não tinha comprado nada, então serve de base

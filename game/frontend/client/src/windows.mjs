@@ -1,10 +1,10 @@
 // Janelas flutuantes: arrastar pelo título, redimensionar pelo canto,
 // e posição/tamanho guardados por jogador no navegador.
 
-const STORE_KEY = 'ravox:windows';
+const STORE_KEY = 'draevor:windows';
 // O arranjo que o jogador guardou como o dele. É o que o botão de reorganizar
 // devolve; sem nada guardado, ele cai no arranjo de fábrica.
-const PRESET_KEY = 'ravox:windows-preset';
+const PRESET_KEY = 'draevor:windows-preset';
 
 /*
  * Versão do arranjo de fábrica.
@@ -16,7 +16,7 @@ const PRESET_KEY = 'ravox:windows-preset';
  * dali manda de novo.
  */
 const LAYOUT_VERSION = 11;
-const VERSION_KEY = 'ravox:windows-version';
+const VERSION_KEY = 'draevor:windows-version';
 
 const layout = (() => {
   try {
