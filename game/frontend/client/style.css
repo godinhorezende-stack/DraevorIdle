@@ -26996,3 +26996,7 @@ html[data-perfil="retrato"] .filter-layout,
 html[data-perfil="deitado"] .filter-layout { grid-template-columns: minmax(0, 1fr) !important; }
 html[data-perfil="retrato"] .filter-layout :is(h3, h4, b),
 html[data-perfil="deitado"] .filter-layout :is(h3, h4, b) { word-break: normal; overflow-wrap: normal; }
+/* A lista de itens da Cyclopedia (até 300 linhas) e a do Bestiary (até 200):
+   o mesmo "só desenha o que está à vista" das listas de hunts e tasks. */
+html[data-perfil="retrato"] :is(.ciclo-item, .bestiary-card),
+html[data-perfil="deitado"] :is(.ciclo-item, .bestiary-card) { content-visibility: auto; contain-intrinsic-size: auto 60px; }
