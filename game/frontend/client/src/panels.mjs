@@ -19118,6 +19118,17 @@ function abaDeJogo(body, draw) {
  * Aventuras e Tarefas: quem entrou para mexer nos gráficos volta nos gráficos.
  */
 export function openBarSettings() {
+  /*
+   * Nenhuma das 4 abas tem arte própria (`aba-interface.png` etc. nunca
+   * foram desenhados — ver o comentário de `semDesenhoNenhum` em hud.mjs) —
+   * sem isto, `artOrUiIcon` pedia `icons/aba-<id>.png` e `ui/aba-<id>.png`
+   * para as quatro, 404 nos dois, uma vez por sessão (mesmo desvio que o
+   * Highscores já usa para as perícias, ver o comentário em `tabBar`). O
+   * botão que abre esta janela já é a engrenagem (`options.png`) — reusar o
+   * mesmo desenho nas 4 abas é consistente: é tudo a MESMA engrenagem, só
+   * aberta em página diferente.
+   */
+  const icones = { interface: 'options', graficos: 'options', janelas: 'options', jogo: 'options' };
   tabbedModal('Ajustes da tela', ABAS_DOS_AJUSTES, 'ajustes', (body, aba, draw) => {
     /*
      * O `?? abaDeInterface` não é decoração: `ctx.tabs.ajustes` vem do estado
@@ -19131,7 +19142,7 @@ export function openBarSettings() {
       jogo: abaDeJogo,
     }[aba] ?? abaDeInterface;
     desenhar(body, draw);
-  });
+  }, undefined, { icones });
 }
 
 

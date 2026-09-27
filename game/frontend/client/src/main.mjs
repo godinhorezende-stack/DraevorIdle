@@ -292,6 +292,15 @@ function avisoDeConexao(caiu) {
 
 function connect() {
   /*
+   * Chamar `connect()` com um socket já aberto (ou abrindo) trocaria
+   * `socket` por um novo objeto e abandonaria o antigo — que continua vivo,
+   * com os próprios listeners de `close` ainda pendurados, e pode disparar
+   * outra reconexão por conta própria mais tarde (duas cadeias de
+   * reconexão brigando). Isso passou a importar quando `pageshow` (bfcache,
+   * abaixo) ganhou um segundo caminho para chamar `connect()`.
+   */
+  if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
+  /*
    * `wss://` quando a página é https, `ws://` quando não é.
    *
    * Estava cravado em `ws://`, e isso quebra o jogo inteiro no dia em que ele
@@ -1590,6 +1599,29 @@ document.addEventListener('visibilitychange', () => {
   // Ver `RITMO_OCULTO_MS`, no servidor.
   if (escondida !== abaEscondida) send({ t: 'oculta', on: escondida });
   abaEscondida = escondida;
+});
+
+/*
+ * ---- Voltando do bfcache (botão voltar/avançar do navegador) ----
+ *
+ * O navegador pode congelar a aba inteira (JS parado, WebSocket fechado por
+ * ele) para trocar de página na hora ao voltar — o "Page entered
+ * Back-Forward Cache" do console. Sem isto, nada aqui percebia a volta: o
+ * `visibilitychange` só cuida de aba ESCONDIDA/visível (a aba continua
+ * "viva" o tempo todo nesse caso), não de ter sido CONGELADA e
+ * DESCONGELADA — e um `socket` de antes de congelar, já fechado pelo
+ * navegador, ficava paralisado ali sem ninguém religar (nenhum evento
+ * `close` chega a rodar enquanto a aba está congelada; só o navegador o
+ * entrega depois, e não em todo navegador/situação).
+ *
+ * `event.persisted` é justamente "isto voltou do congelamento, não é o
+ * primeiro carregamento" — só então vale a pena conferir o socket.
+ * `connect()` já não faz nada se ele seguir aberto (ver o guarda lá em
+ * cima), então isto nunca cria uma segunda conexão por cima de uma boa.
+ */
+window.addEventListener('pageshow', (event) => {
+  if (!event.persisted) return;
+  if (!socket || socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING) connect();
 });
 
 /* Quando a tela pediu o mapa pela última vez. Ver `applyState`. */
@@ -5534,7 +5566,7 @@ document.addEventListener('keydown', (event) => {
    * frase —, e sair aqui faria os atalhos morrerem justamente na situação mais
    * comum, que é a caixa do chat aberta esperando a próxima frase.
    */
-  if (event.ctrlKey && !event.altKey) {
+  if (event.ctrlKey && !event.altKey && typeof event.key === 'string') {
     const tecla = event.key.toLowerCase();
 
     /*
@@ -5604,6 +5636,9 @@ document.addEventListener('keydown', (event) => {
   }
 
   if (escrevendo) return;
+  // Mesmo motivo do `keyup` (ver o comentário lá): um evento sem `key` de
+  // verdade não é uma tecla apertada, e não há nada aqui para tratar.
+  if (typeof event.key !== 'string') return;
 
   /*
    * ---- Enter abre a caixa de falar ----
@@ -5700,6 +5735,22 @@ const pararDeAndar = () => {
   else if (!state.hunt) send({ t: 'walk', dx: 0, dy: 0 });
 };
 document.addEventListener('keyup', (event) => {
+  /*
+   * `event.key` pode chegar `undefined` num `keyup` que não é um dedo de
+   * verdade soltando uma tecla — gerenciador de senha preenchendo o login
+   * sozinho, ou certos teclados/IME de celular mandam um evento sintético
+   * sem `key`. Sem este `typeof`, `.toLowerCase()` estourava
+   * "Cannot read properties of undefined" bem na tela de login, porque este
+   * listener é global (`document`) e não tem como saber de antemão que o
+   * evento não é de teclado de verdade.
+   *
+   * De propósito NÃO tem a mesma trava de "está digitando" que o `keydown`
+   * tem: uma tecla de movimento pressionada ANTES de focar o chat (`held`
+   * já com ela) precisa continuar sendo solta certo mesmo com o chat focado
+   * — senão o personagem ficava andando sozinho depois de quem clicou no
+   * chat sem soltar a tecla primeiro.
+   */
+  if (typeof event.key !== 'string') return;
   if (!held.delete(event.key.toLowerCase())) return;
   // Soltou UMA de duas teclas: o rumo mudou (a diagonal virou reta) e o
   // servidor precisa saber agora, pelo mesmo motivo do `keydown`.

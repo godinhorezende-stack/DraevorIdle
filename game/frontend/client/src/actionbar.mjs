@@ -339,6 +339,11 @@ export function capturarTecla(event) {
   // Modificador sozinho não é tecla: quem segura Shift para chegar no "%" não
   // quis atribuir o Shift.
   if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(event.key)) return true;
+  // `event.key` pode chegar `undefined` num evento que não é um dedo de
+  // verdade (gerenciador de senha, IME de celular — ver o mesmo comentário
+  // no listener de `keyup` em main.mjs); sem tecla de verdade não há o que
+  // atribuir, mas o slot continua esperando (não cancela a escolha).
+  if (typeof event.key !== 'string') return true;
 
   esperandoTecla = null;
   redesenharBarra();
