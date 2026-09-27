@@ -66,7 +66,7 @@ export function analogicoLigado() {
     return false;
   }
 }
-function ligarAnalogico(ligado) {
+export function ligarAnalogico(ligado) {
   try {
     localStorage.setItem(CHAVE_DO_ANALOGICO, ligado ? '1' : '0');
   } catch {

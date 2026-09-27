@@ -2,6 +2,7 @@
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
 import { listaDetalhe } from './lista-detalhe.mjs';
 import { ehTelefone } from './perfil.mjs';
+import { analogicoLigado, ligarAnalogico } from './celular.mjs';
 import { arteTeimosa, fundoTeimoso } from './arte-teimosa.mjs';
 import { itemCanvas, outfitCanvas, outfitInfo, drawEffect, effectDuration, effectInfo } from './sprites.mjs';
 // O item e o level das duas portas de acesso, os mesmos que o servidor cobra.
@@ -18662,6 +18663,26 @@ function pecasDosAjustes(body, draw) {
 function abaDeInterface(body, draw) {
   const { secao, linha, fichaEm } = pecasDosAjustes(body, draw);
 
+  /*
+   * ---- No telefone: o que é do telefone, e nada do que não é ----
+   *
+   * O analógico (desligado de saída: tocar no mapa já anda) mora aqui e no
+   * "Mais". A "Ficha do personagem" (canto ou barra de baixo) não existe no
+   * telefone — o status é a faixa de cima — então a seção nem aparece.
+   */
+  if (ehTelefone()) {
+    const ligado = analogicoLigado();
+    const trocar = el('button', ligado ? 'primary' : 'ghost', ligado ? 'Ligado' : 'Desligado');
+    trocar.onclick = () => {
+      ligarAnalogico(!ligado);
+      draw();
+    };
+    secao(
+      'Celular',
+      linha('Analógico', 'Um controle de andar em cima do mapa. Sem ele, tocar no chão já leva o personagem até lá.', trocar)
+    );
+  }
+
   // ---- onde a ficha do personagem fica ----
   const encaixada = ajustesDaBarra.fichaEncaixada?.() ?? false;
   const trocarFicha = el(
@@ -18673,7 +18694,7 @@ function abaDeInterface(body, draw) {
     ajustesDaBarra.encaixarFicha?.(!encaixada);
     draw();
   };
-  secao(
+  if (!ehTelefone()) secao(
     'Ficha do personagem',
     linha(
       encaixada ? 'Encaixada na barra de baixo' : 'No canto superior esquerdo',
@@ -19210,7 +19231,12 @@ function abaDeJogo(body, draw) {
  * Aventuras e Tarefas: quem entrou para mexer nos gráficos volta nos gráficos.
  */
 export function openBarSettings() {
-  tabbedModal('Ajustes da tela', ABAS_DOS_AJUSTES, 'ajustes', (body, aba, draw) => {
+  // No telefone não há janelas para arrumar: cada tela abre por cima do jogo.
+  const abas = ehTelefone()
+    ? Object.fromEntries(Object.entries(ABAS_DOS_AJUSTES).filter(([id]) => id !== 'janelas'))
+    : ABAS_DOS_AJUSTES;
+  if (ehTelefone() && ctx.tabs.ajustes === 'janelas') ctx.tabs.ajustes = null;
+  tabbedModal('Ajustes da tela', abas, 'ajustes', (body, aba, draw) => {
     /*
      * O `?? abaDeInterface` não é decoração: `ctx.tabs.ajustes` vem do estado
      * guardado, e uma aba renomeada aqui deixaria a janela em branco para quem

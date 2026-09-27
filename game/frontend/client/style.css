@@ -26875,3 +26875,124 @@ html[data-perfil="retrato"] #modal label:has(> input[type="checkbox"]),
 html[data-perfil="deitado"] #modal label:has(> input[type="checkbox"]) { min-height: 40px; display: flex; align-items: center; gap: 8px; }
 html[data-perfil="retrato"] #modal label > input[type="checkbox"],
 html[data-perfil="deitado"] #modal label > input[type="checkbox"] { width: 20px; height: 20px; flex: none; }
+
+/* ---- Recompensa diária no telefone: um calendário que se lê ---- */
+/* O calendário do computador é uma arte com a grade por cima, tudo medido em
+   `cqw` da moldura: num telefone o prêmio saía com ~3,5px. Aqui a moldura
+   vira uma coluna normal — título, calendário de 5 colunas com cada dia
+   legível, e o COLETAR largo embaixo. */
+html[data-perfil="retrato"] .diario-moldura,
+html[data-perfil="deitado"] .diario-moldura {
+  aspect-ratio: auto !important; height: auto !important;
+  display: flex !important; flex-direction: column; gap: 10px;
+  padding: 12px !important; background-size: cover !important; background-position: top center !important;
+}
+html[data-perfil="retrato"] .diario-moldura::after,
+html[data-perfil="deitado"] .diario-moldura::after,
+html[data-perfil="retrato"] .diario-olhos,
+html[data-perfil="deitado"] .diario-olhos { display: none !important; }
+html[data-perfil="retrato"] .diario-moldura > .diario-titulo,
+html[data-perfil="deitado"] .diario-moldura > .diario-titulo,
+html[data-perfil="retrato"] .diario-moldura > .diario-selo,
+html[data-perfil="deitado"] .diario-moldura > .diario-selo,
+html[data-perfil="retrato"] .diario-moldura > .diario-grade,
+html[data-perfil="deitado"] .diario-moldura > .diario-grade,
+html[data-perfil="retrato"] .diario-moldura > .diario-pegar,
+html[data-perfil="deitado"] .diario-moldura > .diario-pegar {
+  position: static !important; inset: auto !important; transform: none !important;
+  width: auto !important; margin: 0 !important;
+}
+html[data-perfil="retrato"] .diario-titulo *,
+html[data-perfil="deitado"] .diario-titulo * { font-size: 14px !important; }
+html[data-perfil="retrato"] .diario-titulo :is(p, span, em, small),
+html[data-perfil="deitado"] .diario-titulo :is(p, span, em, small) { font-size: 12px !important; }
+html[data-perfil="retrato"] .diario-selo,
+html[data-perfil="deitado"] .diario-selo { display: none !important; }
+html[data-perfil="retrato"] .diario-grade,
+html[data-perfil="deitado"] .diario-grade {
+  display: grid !important; gap: 6px !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important; grid-template-rows: none !important;
+}
+html[data-perfil="deitado"] .diario-grade { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)) !important; }
+html[data-perfil="retrato"] .diario-dia,
+html[data-perfil="deitado"] .diario-dia { min-height: 88px; padding: 18px 3px 6px !important; gap: 4px !important; border-radius: 8px !important; }
+html[data-perfil="retrato"] .diario-dia .numero,
+html[data-perfil="deitado"] .diario-dia .numero { font-size: 11px !important; top: 4px !important; left: 6px !important; }
+html[data-perfil="retrato"] .diario-dia .premio,
+html[data-perfil="deitado"] .diario-dia .premio {
+  font-size: 10.5px !important; line-height: 1.2 !important; letter-spacing: 0 !important; text-transform: none !important;
+}
+html[data-perfil="retrato"] .diario-dia .simbolo,
+html[data-perfil="deitado"] .diario-dia .simbolo { font-size: 22px !important; }
+html[data-perfil="retrato"] .diario-dia :is(canvas, .diario-arte),
+html[data-perfil="deitado"] .diario-dia :is(canvas, .diario-arte) { width: 34px !important; height: 34px !important; }
+html[data-perfil="retrato"] .diario-varios :is(canvas, .diario-arte),
+html[data-perfil="deitado"] .diario-varios :is(canvas, .diario-arte) { width: 24px !important; height: 24px !important; }
+html[data-perfil="retrato"] .diario-pegar,
+html[data-perfil="deitado"] .diario-pegar { min-height: 48px; font-size: 15px !important; }
+
+/* ---- Arena x1 no telefone ---- */
+/* O cabeçalho tinha Loja, Ranking, Histórico e "?" com texto: não cabia, e o
+   "Loja" começava 40px fora da tela. Aqui eles ficam só com o desenho (o nome
+   continua no botão para leitor de tela e no balão), e o ✕ ganha folga. */
+html[data-perfil="retrato"] .modal-box.arena > header #modal-acoes,
+html[data-perfil="deitado"] .modal-box.arena > header #modal-acoes {
+  flex: 1 1 0 !important; min-width: 0 !important; justify-content: flex-end; gap: 6px !important;
+  overflow-x: auto; scrollbar-width: none; margin-right: 8px !important;
+}
+html[data-perfil="retrato"] .modal-box.arena .arena-acao,
+html[data-perfil="deitado"] .modal-box.arena .arena-acao {
+  flex: none; font-size: 0 !important; gap: 0 !important; min-width: 44px; min-height: 40px; padding: 0 8px !important;
+  justify-content: center;
+}
+html[data-perfil="retrato"] .modal-box.arena .arena-acao :is(img, canvas, svg),
+html[data-perfil="deitado"] .modal-box.arena .arena-acao :is(img, canvas, svg) { width: 26px !important; height: 26px !important; margin: 0 !important; }
+html[data-perfil="retrato"] .modal-box.arena .arena-acao.so-icone,
+html[data-perfil="deitado"] .modal-box.arena .arena-acao.so-icone { font-size: 16px !important; }
+/* A tira das arenas rola de lado: a borda esmaecida diz que há mais. */
+html[data-perfil="retrato"] .arena-lobby-tira,
+html[data-perfil="deitado"] .arena-lobby-tira {
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+  scrollbar-width: none;
+}
+/* O ✕ dos modais: 24px era pouco para o dedo. */
+html[data-perfil="retrato"] #modal-close,
+html[data-perfil="deitado"] #modal-close { min-width: 40px; min-height: 40px; display: grid; place-items: center; }
+
+/* ---- Listas longas no telefone: cartões mais baixos, e só se desenha o que está à vista ---- */
+/* Hunts (~50 cartões, 9.400px), boss tasks (24) e outfits de tarefa (16):
+   `content-visibility: auto` deixa o navegador pular o desenho dos cartões
+   fora da tela — o efeito de uma lista virtualizada, sem mexer em quem monta
+   a lista. A altura intrínseca guarda o lugar para a rolagem não pular. */
+html[data-perfil="retrato"] :is(.hunt-card, .bosstask-card, .entrega-card),
+html[data-perfil="deitado"] :is(.hunt-card, .bosstask-card, .entrega-card) {
+  content-visibility: auto; contain-intrinsic-size: auto 140px;
+}
+html[data-perfil="retrato"] .hunt-card,
+html[data-perfil="deitado"] .hunt-card { border-width: 12px 10px 12px !important; gap: 3px !important; }
+html[data-perfil="retrato"] .hunt-card canvas,
+html[data-perfil="deitado"] .hunt-card canvas { max-width: 40px !important; max-height: 40px !important; }
+html[data-perfil="retrato"] .hunt-card h3,
+html[data-perfil="deitado"] .hunt-card h3 { font-size: 14px !important; margin: 2px 0 !important; }
+html[data-perfil="retrato"] :is(.bosstask-card, .entrega-card),
+html[data-perfil="deitado"] :is(.bosstask-card, .entrega-card) { border-width: 12px 10px !important; }
+
+/* ---- Cabeçalho dos modais no telefone: formulário desce para a linha de baixo ---- */
+/* O Filtro de loot ("Salvar sempre / Toda a conta") e o Mercado (a busca)
+   põem campos no cabeçalho: o título virava "Filtro de l…". No telefone o
+   que é campo vai para uma linha própria embaixo do título; botões de ícone
+   (Arena, Store) continuam ao lado do ✕. */
+html[data-perfil="retrato"] .modal-box > header,
+html[data-perfil="deitado"] .modal-box > header { flex-wrap: wrap; row-gap: 4px; }
+html[data-perfil="retrato"] #modal-acoes:has(input, select, .filtro-marca),
+html[data-perfil="deitado"] #modal-acoes:has(input, select, .filtro-marca) {
+  order: 3; flex: 1 0 100% !important; margin: 0 !important; justify-content: flex-start; flex-wrap: wrap; gap: 6px 14px;
+}
+html[data-perfil="retrato"] #modal-acoes :is(input[type="search"], input[type="text"]),
+html[data-perfil="deitado"] #modal-acoes :is(input[type="search"], input[type="text"]) { flex: 1; min-width: 0; min-height: 38px; }
+/* O Filtro de loot: as colunas (Loot desta caçada · Não vender · Não coletar) empilham. */
+html[data-perfil="retrato"] .filter-layout,
+html[data-perfil="deitado"] .filter-layout { grid-template-columns: minmax(0, 1fr) !important; }
+html[data-perfil="retrato"] .filter-layout :is(h3, h4, b),
+html[data-perfil="deitado"] .filter-layout :is(h3, h4, b) { word-break: normal; overflow-wrap: normal; }
