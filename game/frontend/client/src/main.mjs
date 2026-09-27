@@ -2,7 +2,7 @@ import './so-quando-muda.mjs';
 import { loadSpriteData, loadEffectData, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
 import { MapView } from './map.mjs';
 import {
-  createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir,
+  createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir, esconderSemGravar,
   // O browse field troca o título a cada casa que abre: "Chão em 100, 65".
   setTitle,
 } from './windows.mjs';
@@ -11,6 +11,7 @@ import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from 
 import { ARTES } from './artes.mjs';
 import { abrirNaPilha, fechouNaPilha } from './pilha.mjs';
 import { ligarPerfil } from './perfil.mjs';
+import { initCelular, atualizarCelular, analogicoLigado } from './celular.mjs';
 import {
   initInventory,
   esquecerOsDesenhos,
@@ -2603,6 +2604,40 @@ function buildWindows() {
   initActionBar(panelCtx);
   renderChat();
   buildTopbar();
+  /*
+   * A tela de jogo do telefone (celular.mjs). Ela não tem ação própria: cada
+   * botão chama a mesma função do botão do computador, e o "Mais" monta a
+   * barra de cima com o mesmo `ferramentaLigada`.
+   */
+  initCelular({
+    state: () => state,
+    ferramentaLigada,
+    grupos: () => BARRA.filter(Boolean),
+    extras: () => [
+      ARENA,
+      { id: 'market', label: 'Mercado', icone: 'market', abre: () => openMarket(),
+        tip: 'Comprar e vender com outros jogadores.' },
+      !$('hud-promotion')?.hidden && { id: 'promotion', label: 'Promotion', icone: 'character', abre: () => openPromotion(),
+        tip: $('hud-promotion-text')?.textContent ?? 'A promoção de vocação.' },
+      novidadesDaVez?.itens?.length && { id: 'novidades', label: 'Novidades', icone: 'diario', abre: () => abrirNovidades(),
+        tip: 'O que mudou nesta versão.' },
+      { id: 'options', label: 'Opções', icone: 'options', abre: () => openBarSettings(),
+        tip: 'Ajustes da interface, da barra de atalhos e dos gráficos.' },
+      { id: 'reportar', label: 'Reportar bug', icone: 'quests', abre: () => openReport('bug'),
+        tip: 'Achou um bug? Conte pra gente.' },
+      { id: 'trocar', label: 'Trocar personagem', icone: 'logout', abre: () => confirmarSaida(),
+        tip: 'Trocar de personagem ou sair da conta.' },
+    ],
+    abrirHeroi: () => openCharacter(),
+    abrirMochila: () => (isVisible('container') ? setVisible('container', false) : setVisible('container', true)),
+    abrirLoja: () => openStore(),
+    abrirHunts: () => openHunts(),
+    pararCaca: () => send({ t: 'stopHunt' }),
+    abrirChat: () => setVisible('chat', true),
+    esconderJanela: (id) => esconderSemGravar(id),
+    temAlerta: () => !faixaDeNovidades?.hidden || botoesEmAlerta.some(({ alerta }) => !!alerta()),
+    acertarAnalogico: () => acertarOAnalogico?.(),
+  });
 
   for (const id of ['loot', 'chat', 'analyzer', 'inventory']) {
     document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', String(isVisible(id)));
@@ -5793,7 +5828,7 @@ acertarOAnalogico = initMobile({
    * Andar só existe na cidade e na Caça Online. Na automática quem escolhe o
    * rumo é a rota, e um controle que não move nada faz o jogo parecer travado.
    */
-  podeAndar: () => !!state.character && (!state.hunt || !!state.hunt.manual),
+  podeAndar: () => !!state.character && (!state.hunt || !!state.hunt.manual) && analogicoLigado(),
 });
 
 /*
@@ -7393,6 +7428,7 @@ function renderAll() {
   renderBuffsJanela();
   renderBossCdJanela();
   renderRunControls();
+  atualizarCelular();
 
   // Inventário, bolsa e mochila só são redesenhados quando mudam de verdade.
   // Reconstruir o DOM quatro vezes por segundo trocava o elemento no meio do

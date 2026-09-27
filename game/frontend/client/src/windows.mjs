@@ -724,6 +724,20 @@ export function setVisible(id, visible) {
   document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', String(visible));
 }
 
+/**
+ * Esconde sem gravar no arranjo: é o telefone decidindo pela tela pequena
+ * (ver "E ela NÃO é gravada", acima). No computador a janela continua aberta
+ * como a pessoa deixou.
+ */
+export function esconderSemGravar(id) {
+  const entry = registry.get(id);
+  if (!entry || entry.node.hidden) return;
+  entry.node.hidden = true;
+  marcarGavetaAberta();
+  fechouNaPilha(`janela:${id}`);
+  document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', 'false');
+}
+
 export function toggleWindow(id) {
   const entry = registry.get(id);
   if (entry) setVisible(id, entry.node.hidden);

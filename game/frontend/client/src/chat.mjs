@@ -567,8 +567,17 @@ function agora() {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+/*
+ * Quem mais quer saber da mensagem que chegou: a faixa do chat do celular
+ * (celular.mjs) mostra a última da aba aberta sem ter o chat aberto.
+ */
+const ouvintesDoChat = new Set();
+export const aoChegarNoChat = (fn) => ouvintesDoChat.add(fn);
+export const abaDoChat = () => active;
+
 function push(channel, node) {
   node.prepend(el('span', 'hora', agora()));
+  for (const ouvir of ouvintesDoChat) ouvir(channel, node);
   // A hora de chegada, para o modo flutuante apagar as falas velhas.
   node.dataset.chegou = String(Date.now());
   const lista = logs[channel];
