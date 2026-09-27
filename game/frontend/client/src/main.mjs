@@ -11,7 +11,7 @@ import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from 
 import { ARTES } from './artes.mjs';
 import { abrirNaPilha, fechouNaPilha, fechouNaPilhaTudoQue } from './pilha.mjs';
 import { ligarPerfil, ehTelefone } from './perfil.mjs';
-import { initCelular, atualizarCelular, analogicoLigado } from './celular.mjs';
+import { initCelular, atualizarCelular, analogicoLigado, ligarFonteMinima } from './celular.mjs';
 import {
   initInventory,
   esquecerOsDesenhos,
@@ -5811,6 +5811,8 @@ setInterval(mandarRumo, 100);
 const TECLAS_DO_RUMO = ['w', 'a', 's', 'd'];
 // O perfil (retrato, deitado, tablet, desktop) antes de tudo que depende dele.
 ligarPerfil();
+// O piso de 12px vale desde o portão (a lista de personagens também).
+ligarFonteMinima();
 acertarOAnalogico = initMobile({
   apontar(dx, dy) {
     for (const tecla of TECLAS_DO_RUMO) held.delete(tecla);

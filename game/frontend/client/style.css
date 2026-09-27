@@ -26917,10 +26917,10 @@ html[data-perfil="deitado"] .diario-grade { grid-template-columns: repeat(auto-f
 html[data-perfil="retrato"] .diario-dia,
 html[data-perfil="deitado"] .diario-dia { min-height: 88px; padding: 18px 3px 6px !important; gap: 4px !important; border-radius: 8px !important; }
 html[data-perfil="retrato"] .diario-dia .numero,
-html[data-perfil="deitado"] .diario-dia .numero { font-size: 11px !important; top: 4px !important; left: 6px !important; }
+html[data-perfil="deitado"] .diario-dia .numero { font-size: 12px !important; top: 4px !important; left: 6px !important; }
 html[data-perfil="retrato"] .diario-dia .premio,
 html[data-perfil="deitado"] .diario-dia .premio {
-  font-size: 10.5px !important; line-height: 1.2 !important; letter-spacing: 0 !important; text-transform: none !important;
+  font-size: 12px !important; line-height: 1.2 !important; letter-spacing: 0 !important; text-transform: none !important;
 }
 html[data-perfil="retrato"] .diario-dia .simbolo,
 html[data-perfil="deitado"] .diario-dia .simbolo { font-size: 22px !important; }
@@ -27059,3 +27059,30 @@ html[data-perfil="retrato"] #modal .tabs > button *,
 html[data-perfil="deitado"] #modal .tabs > button *,
 html[data-perfil="retrato"] #modal .tabs > button,
 html[data-perfil="deitado"] #modal .tabs > button { overflow-wrap: normal !important; word-break: keep-all !important; letter-spacing: .02em; }
+
+/* ---- O piso de 12px também no que é fixo da tela ---- */
+/* O status: os números da vida e da mana e as barras finas. */
+html[data-perfil="retrato"] #hud .hud-bar { font-size: 12px !important; }
+html[data-perfil="retrato"] #hud .bar-slot:nth-child(n + 3) .hud-bar { height: 15px !important; font-size: 12px !important; }
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(-n + 2) .hud-bar { height: 16px !important; font-size: 12px !important; }
+/* O nível já está no selo da casca: o do retrato sai. */
+html[data-perfil="retrato"] #hud .hud-level,
+html[data-perfil="deitado"] #hud .hud-level { display: none !important; }
+html[data-perfil="retrato"] .cel-nivel,
+html[data-perfil="deitado"] .cel-nivel { font-size: 12px !important; height: 18px !important; line-height: 16px !important; }
+.cel-nav-botao, .cel-nav-centro .cel-nav-rotulo { font-size: 12px; }
+html[data-perfil="deitado"] .cel-nav-botao { font-size: 12px; letter-spacing: -.01em; }
+/* A faixa do treino e os contadores das gavetas ("0 / 1000", "Cap ..."). */
+html[data-perfil="retrato"] #treino-faixa :is(span, b, em, button),
+html[data-perfil="deitado"] #treino-faixa :is(span, b, em, button),
+html[data-perfil="retrato"] .window :is(.bag-count, .hud-bar, .hud-bar span),
+html[data-perfil="deitado"] .window :is(.bag-count, .hud-bar, .hud-bar span) { font-size: 12px !important; }
+/* A Guilda em tela cheia: o cabeçalho (que senta 40px acima, na moldura)
+   entra no fluxo — senão Servidor/Pedidos ficavam 12px acima da tela. */
+html[data-perfil="retrato"] .modal-box.guilda > header,
+html[data-perfil="deitado"] .modal-box.guilda > header {
+  position: static !important; top: auto !important; transform: none !important; margin: 0 0 6px !important;
+}
+/* O número dentro da barra tem tamanho próprio (10px): é ele que sobe. */
+html[data-perfil="retrato"] #hud .hud-bar span,
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(-n + 2) .hud-bar span { font-size: 12px !important; }

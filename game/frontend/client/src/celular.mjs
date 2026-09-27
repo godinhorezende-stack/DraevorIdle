@@ -518,8 +518,8 @@ function montarAbas() {
  * tem o próprio tamanho do telefone (status, navegação, atalhos).
  */
 const PISO_DA_FONTE = 12;
-const ONDE_VALE = '#modal, .window, .folha-fundo, #context-menu, body > .tooltip';
-const FICA_COMO_ESTA = '.slot, .cell, .craft-casa, .prof-weapon, .hud-bar, #hotbar, .cel-nav, [class*="badge"], .bag-count';
+const ONDE_VALE = '#modal, .window, .folha-fundo, #context-menu, body > .tooltip, #gate';
+const FICA_COMO_ESTA = '.slot, .cell, .craft-casa, .prof-weapon, #hud .hud-bar, #hotbar, .cel-nav, [class*="badge"]';
 const SO_NUMERO = /^[\d.,+×x%:\-/ ]{1,5}$/;
 
 function subirFontes(raiz) {
@@ -545,7 +545,11 @@ function subirFontes(raiz) {
   }
 }
 
-function ligarFonteMinima() {
+/** Liga uma vez só; o main chama junto com o perfil, antes do portão. */
+let fonteLigada = false;
+export function ligarFonteMinima() {
+  if (fonteLigada) return;
+  fonteLigada = true;
   const pendentes = new Set();
   let agendado = false;
   const processar = () => {
