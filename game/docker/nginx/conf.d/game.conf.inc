@@ -8,7 +8,16 @@ location /api/mapas {
   # Editor de mapas/painel admin — mesmo processo do jogo (sem segunda
   # instância), mas nunca exposto ao público: só quem chega via túnel SSH
   # (`ssh -L 8080:127.0.0.1:80 usuario@vps`, depois acessar
-  # http://localhost:8080/api/mapas/... local) aparece como 127.0.0.1 aqui.
+  # http://localhost:8080/api/mapas/... local).
+  #
+  # Não basta `allow 127.0.0.1`: uma conexão do próprio host para uma porta
+  # PUBLICADA do Docker (é exatamente o que o túnel SSH faz) sofre NAT
+  # hairpin — o nginx enxerga o cliente como o gateway da bridge do Docker
+  # (172.17-31.x.1), não como 127.0.0.1. Esse bloco inteiro (172.16.0.0/12)
+  # é só endereço interno de bridge do Docker: nunca chega roteado da
+  # internet, e um atacante remoto não completa handshake TCP forjando esse
+  # source — não dá pra receber o SYN-ACK de volta.
+  allow 172.16.0.0/12;
   allow 127.0.0.1;
   allow ::1;
   deny all;
