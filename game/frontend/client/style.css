@@ -2407,6 +2407,16 @@ body.barra-enxuta #market-button .label { display: none; }
   /* A grade de quatro colunas não cabe: duas, e os cards continuam legíveis. */
   .store-grid, .train-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .store-layout { grid-template-columns: 1fr !important; display: block !important; }
+  /*
+   * Empilhada (seções em cima, prateleira embaixo), a camada da grade que
+   * fazia a prateleira rolar por dentro deixa de valer: `.store-layout` era
+   * espremida até a altura que sobrava, o conteúdo vazava para fora dela e o
+   * rodapé do saldo, que vem DEPOIS, ficava por cima da lista e da busca.
+   * Aqui quem rola é a camada inteira, e o rodapé fica preso embaixo.
+   */
+  .modal-box.store .store-layout { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .modal-box.store .store-shelf { overflow: visible; max-height: none; }
+  .modal-box.store .store-footer { flex: none; }
   .store-sections { display: flex; overflow-x: auto; gap: 4px; margin-bottom: 8px; }
   .store-sections button { flex: none; white-space: nowrap; }
 }
@@ -18160,6 +18170,22 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
      * o que ele está fazendo.
      */
     #gate .character-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /*
+     * Em 640×360 a lista ficava com ZERO de altura: a moldura come 48px em
+     * cima e 48px embaixo, e o logo, o título, os avisos da conta e os botões
+     * levavam o resto. A lista é a única peça que encolhe — e encolheu até
+     * sumir, com o personagem lá dentro, sem como tocar nele.
+     *
+     * A moldura afina, e a lista nunca fica menor que um cartão: se faltar
+     * altura, quem rola é a caixa inteira, não o personagem que some.
+     */
+    .gate-box.ui-frame { border-width: 16px; }
+    #gate .character-list { min-height: 56px; }
+    #gate-error-2:empty, #gate-error:empty { min-height: 0; }
+  }
+  /* Deitado num telefone baixo (≤ 400px) o logo não cabe junto com a lista. */
+  @media (max-height: 400px) {
+    #gate .gate-box.escolhendo .logo { display: none; }
   }
   /* O aviso de palco vazio também: ele fica no lugar do boneco. */
   #stage-empty { bottom: auto !important; top: 40%; padding: 10px 16px; }
@@ -20877,9 +20903,12 @@ body.topbar-recolhida .gaveta-da-barra { display: none; }
 /*
  * ---- Os encaixes ----
  *
- * O quadrado vazio é a arte do próprio cliente (`encaixe-vazio.png`), que é o
- * que o dono mandou usar: quem já jogou reconhece o desenho antes de ler o
- * rótulo. O cheio põe o ícone do encantamento por cima do mesmo fundo.
+ * O quadrado vazio era para ser a arte do próprio cliente (`encaixe-vazio.png`
+ * e `encaixe-cheio.png` em `assets/imbuing/`), mas os dois arquivos nunca
+ * entraram no repositório: cada abertura da tela levava dois 404. Até a arte
+ * chegar, o encaixe é desenhado aqui — o poço escuro com a borda de pedra —
+ * e o cheio acende a borda. Quando os PNG existirem, basta voltar o
+ * `background: url(...)` nas duas regras.
  */
 .imbue-encaixes { display: flex; flex-wrap: wrap; gap: 8px; }
 .imbue-encaixe {
@@ -20889,11 +20918,13 @@ body.topbar-recolhida .gaveta-da-barra { display: none; }
 }
 .imbue-encaixe-quadro {
   display: grid; place-items: center; width: 46px; height: 46px;
-  background: url(/client/assets/imbuing/encaixe-vazio.png) center/contain no-repeat;
+  background: radial-gradient(circle at 50% 45%, #1a2224 0 55%, #0a0e0f 100%);
+  border: 2px solid #3a4446; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #000, inset 0 2px 6px #000c;
   image-rendering: pixelated;
 }
 .imbue-encaixe.cheio .imbue-encaixe-quadro {
-  background-image: url(/client/assets/imbuing/encaixe-cheio.png);
+  border-color: var(--copper, #b8864b);
 }
 .imbue-encaixe-quadro canvas { image-rendering: pixelated; }
 .imbue-encaixe b { font-size: 10.5px; font-weight: 600; line-height: 1.2; }
@@ -26184,3 +26215,788 @@ body.sem-foco *::before,
 body.sem-foco *::after {
   animation-play-state: paused !important;
 }
+
+/* ================================================================
+ * A CASCA DO CELULAR (perfil.mjs, pilha.mjs, folha.mjs, celular.mjs)
+ *
+ * Tudo aqui se pendura em `html[data-perfil="retrato"|"deitado"]`: os dois
+ * perfis de TELEFONE. Tablet e computador não passam por nenhuma destas
+ * regras — o arranjo deles é o de antes.
+ *
+ * As quatro bordas seguras (entalhe, cantos arredondados, barra de gestos)
+ * viram variáveis uma vez só, e cada peça da casca soma a sua.
+ * ================================================================ */
+:root {
+  --seguro-topo: env(safe-area-inset-top, 0px);
+  --seguro-baixo: env(safe-area-inset-bottom, 0px);
+  --seguro-esq: env(safe-area-inset-left, 0px);
+  --seguro-dir: env(safe-area-inset-right, 0px);
+}
+
+/* ---- A folha (folha.mjs) ---- */
+.folha-fundo {
+  position: fixed; inset: 0; z-index: 70;
+  background: #0008;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.folha-fundo[hidden] { display: none; }
+.folha {
+  width: 100%; max-width: 640px; max-height: 85dvh;
+  display: flex; flex-direction: column;
+  background: var(--panel-solid);
+  border: 1px solid var(--line); border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 30px #000a;
+  padding-bottom: var(--seguro-baixo);
+  transition: transform .18s ease-out;
+  animation: folha-sobe .18s ease-out;
+}
+@keyframes folha-sobe { from { transform: translateY(40px); opacity: .4; } }
+.folha-alca { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 8px auto 2px; flex: none; }
+.folha-topo {
+  display: flex; align-items: center; gap: 8px; flex: none;
+  padding: 2px 8px 8px 16px; border-bottom: 1px solid var(--line-soft);
+  touch-action: none;
+}
+.folha-titulo {
+  flex: 1; margin: 0; min-width: 0;
+  font-family: var(--font-heading); font-size: 15px; letter-spacing: .06em; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.folha-fechar {
+  width: 44px; height: 44px; flex: none;
+  background: none; border: 0; color: var(--muted); font-size: 20px;
+}
+.folha-corpo {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 16px;
+}
+/* Deitado ela entra pelo lado direito, na altura inteira. */
+html[data-perfil="deitado"] .folha-fundo { justify-content: flex-end; align-items: stretch; }
+html[data-perfil="deitado"] .folha {
+  width: min(420px, 55vw); max-height: none; height: 100%;
+  border-radius: 14px 0 0 14px; border: 1px solid var(--line); border-right: 0;
+  padding: var(--seguro-topo) var(--seguro-dir) var(--seguro-baixo) 0;
+  animation-name: folha-entra;
+}
+@keyframes folha-entra { from { transform: translateX(40px); opacity: .4; } }
+html[data-perfil="deitado"] .folha-alca { display: none; }
+html[data-perfil="deitado"] .folha-topo { padding-top: 8px; touch-action: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .folha { animation: none; transition: none; }
+}
+
+/* ---- A tela de jogo do telefone (celular.mjs) ---- */
+/* Fora dos dois perfis de telefone nada da casca aparece. */
+.cel-nav, .cel-chat, .cel-carteira, .cel-nivel, .cel-paginas { display: none; }
+
+html[data-perfil="retrato"],
+html[data-perfil="deitado"] {
+  --cel-nav: 56px;
+  --cel-status: 48px;
+  --cel-chat: 30px;
+  --cel-slot: 46px;
+  --cel-atalhos: calc(var(--cel-slot) + 10px);
+  --cel-pontos: 8px;
+}
+html[data-perfil="deitado"] {
+  --cel-status: 34px;
+  --cel-slot: 40px;
+  --cel-atalhos: calc(var(--cel-slot) + 8px);
+  --cel-trilho: calc(60px + var(--seguro-esq));
+  --cel-painel: min(330px, 42vw);
+}
+
+/* O que a casca substitui some; o nó continua lá para o computador. */
+html[data-perfil="retrato"] #topbar,
+html[data-perfil="deitado"] #topbar,
+html[data-perfil="retrato"] #hud-promotion,
+html[data-perfil="deitado"] #hud-promotion,
+html[data-perfil="retrato"] #cartaz-beta,
+html[data-perfil="deitado"] #cartaz-beta,
+html[data-perfil="retrato"] #aviso-dev,
+html[data-perfil="deitado"] #aviso-dev,
+html[data-perfil="retrato"] #stage-empty,
+html[data-perfil="deitado"] #stage-empty,
+html[data-perfil="retrato"] #actionbar .bar-controls,
+html[data-perfil="deitado"] #actionbar .bar-controls,
+html[data-perfil="retrato"] #hud .hud-top button,
+html[data-perfil="deitado"] #hud .hud-top button,
+html[data-perfil="retrato"] #hud .hud-id,
+html[data-perfil="deitado"] #hud .hud-id,
+html[data-perfil="retrato"] .gaveta-da-barra,
+html[data-perfil="deitado"] .gaveta-da-barra,
+/* A faixa de Novidades vira o ponto do "Mais" (e a entrada Novidades lá dentro). */
+html[data-perfil="retrato"] #faixa-novidades,
+html[data-perfil="deitado"] #faixa-novidades,
+/* Os slots não soltam mais pelo mapa: a fileira paginada é o arranjo. */
+html[data-perfil="retrato"] #travas-da-caca,
+html[data-perfil="deitado"] #travas-da-caca { display: none !important; }
+
+/* ---- A navegação: rodapé em pé, trilho deitado ---- */
+html[data-perfil="retrato"] .cel-nav,
+html[data-perfil="deitado"] .cel-nav {
+  display: grid; position: fixed; z-index: 45;
+  background: linear-gradient(180deg, #121a1df2, #0b1012fa);
+  border-color: var(--line); border-style: solid; border-width: 0;
+}
+html[data-perfil="retrato"] .cel-nav {
+  left: 0; right: 0; bottom: 0;
+  height: calc(var(--cel-nav) + var(--seguro-baixo));
+  padding: 0 var(--seguro-dir) var(--seguro-baixo) var(--seguro-esq);
+  grid-template-columns: repeat(5, 1fr);
+  border-top-width: 1px;
+}
+html[data-perfil="deitado"] .cel-nav {
+  top: 0; bottom: 0; left: 0;
+  width: var(--cel-trilho);
+  padding: var(--seguro-topo) 0 var(--seguro-baixo) var(--seguro-esq);
+  grid-template-rows: repeat(5, minmax(0, 1fr));
+  border-right-width: 1px;
+}
+.cel-nav-botao {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-width: 0; min-height: 44px; padding: 4px 2px;
+  background: none; border: 0; color: var(--muted);
+  font: 600 11.5px/1.1 system-ui, "Segoe UI", Roboto, sans-serif; letter-spacing: .01em;
+  position: relative;
+}
+.cel-nav-botao .cel-ico { width: 26px; height: 26px; object-fit: contain; image-rendering: auto; }
+.cel-nav-botao:active { color: var(--text); background: #ffffff0d; }
+.cel-nav-rotulo { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cel-nav-botao.alerta::after {
+  content: ''; position: absolute; top: 7px; right: calc(50% - 18px);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--copper); box-shadow: 0 0 0 2px #0b1012;
+}
+/* O do meio é o que mais se aperta: maior, e com a cor do momento. */
+.cel-nav-centro {
+  margin: 4px; border-radius: 12px;
+  color: #1a1206; background: linear-gradient(180deg, #e0a85a, #b87a33);
+  box-shadow: inset 0 1px 0 #ffffff55, 0 2px 8px #0008;
+}
+.cel-nav-centro .cel-ico { width: 28px; height: 28px; }
+.cel-nav-centro[data-momento="caca"], .cel-nav-centro[data-momento="treino"] {
+  color: #fff; background: linear-gradient(180deg, #b64a42, #8a302b);
+}
+.cel-nav-centro.confirmando { background: linear-gradient(180deg, #e2574d, #b3342d); outline: 2px solid #ffd2cc; }
+.cel-nav-centro:active { filter: brightness(1.1); color: inherit; }
+html[data-perfil="deitado"] .cel-nav-centro { margin: 3px 4px; }
+html[data-perfil="deitado"] .cel-nav-botao { font-size: 9.5px; }
+
+/* ---- O status: o HUD de sempre, numa faixa ---- */
+html[data-perfil="retrato"] #hud,
+html[data-perfil="deitado"] #hud {
+  position: fixed !important;
+  top: var(--seguro-topo) !important; bottom: auto !important;
+  left: calc(var(--seguro-esq) + 4px) !important; right: auto !important;
+  transform: none !important;
+  width: calc(100vw - var(--seguro-esq) - var(--seguro-dir) - 150px) !important;
+  max-width: none !important; min-width: 0 !important;
+  height: var(--cel-status) !important; min-height: 0 !important;
+  margin: 0 !important; padding: 4px 0 4px 44px !important;
+  display: flex !important; align-items: center; gap: 6px;
+  background: none !important; border: 0 !important; box-shadow: none !important;
+  border-image: none !important;
+  z-index: 44;
+}
+html[data-perfil="deitado"] #hud {
+  left: var(--cel-trilho) !important;
+  width: calc(100vw - var(--cel-trilho) - var(--seguro-dir) - 200px) !important;
+  padding-left: 36px !important;
+}
+html[data-perfil="retrato"] #hud .hud-top,
+html[data-perfil="deitado"] #hud .hud-top {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  margin: 0; padding: 0; border: 0; background: none; width: auto; height: auto;
+}
+html[data-perfil="retrato"] #hud-portrait,
+html[data-perfil="deitado"] #hud-portrait {
+  width: 40px !important; height: 40px !important; display: block; overflow: hidden;
+}
+html[data-perfil="deitado"] #hud-portrait { width: 32px !important; height: 32px !important; }
+html[data-perfil="retrato"] #hud-portrait canvas,
+html[data-perfil="retrato"] #hud-portrait img,
+html[data-perfil="deitado"] #hud-portrait canvas,
+html[data-perfil="deitado"] #hud-portrait img { width: 100% !important; height: 100% !important; }
+html[data-perfil="retrato"] #hud-body,
+html[data-perfil="deitado"] #hud-body {
+  display: block !important; flex: 1; min-width: 0; margin: 0; padding: 0; height: auto !important;
+}
+html[data-perfil="retrato"] #hud #hud-bars,
+html[data-perfil="deitado"] #hud #hud-bars {
+  display: grid !important; grid-template-columns: 1fr 1fr; gap: 3px 4px; margin: 0; padding: 0;
+}
+html[data-perfil="retrato"] #hud .bar-slot,
+html[data-perfil="deitado"] #hud .bar-slot { margin: 0; min-width: 0; }
+html[data-perfil="retrato"] #hud .hud-bar,
+html[data-perfil="deitado"] #hud .hud-bar {
+  height: 18px !important; min-height: 0 !important; margin: 0 !important; font-size: 11px !important;
+}
+html[data-perfil="deitado"] #hud .hud-bar { height: 13px !important; font-size: 9.5px !important; }
+html[data-perfil="retrato"] #hud .hud-bar .bar-icon,
+html[data-perfil="deitado"] #hud .hud-bar .bar-icon { display: none !important; }
+/* Experiência e stamina: as duas numa linha fina embaixo, sem texto por cima. */
+html[data-perfil="retrato"] #hud .bar-slot:nth-child(n + 3),
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) { grid-row: 2; }
+html[data-perfil="retrato"] #hud .bar-slot:nth-child(n + 3) .hud-bar,
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) .hud-bar { height: 12px !important; font-size: 9px !important; }
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) .hud-bar { height: 8px !important; font-size: 0 !important; }
+html[data-perfil="deitado"] #hud #hud-bars { grid-template-columns: 2fr 2fr 1fr 1fr; }
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) { grid-row: auto; align-self: center; }
+/* Tudo o mais que o card do HUD trazia (buffs, selos) mora no Herói. */
+html[data-perfil="retrato"] #hud-body > :not(#hud-bars),
+html[data-perfil="deitado"] #hud-body > :not(#hud-bars) { display: none !important; }
+
+.cel-nivel {
+  position: fixed; z-index: 46;
+  min-width: 22px; height: 16px; padding: 0 4px;
+  border-radius: 8px; border: 1px solid #0b1012;
+  background: var(--exp); color: #1a1206;
+  font: 700 10px/14px var(--font-numero);
+}
+html[data-perfil="retrato"] .cel-nivel { display: block; left: calc(var(--seguro-esq) + 4px); top: calc(var(--seguro-topo) + 34px); }
+html[data-perfil="deitado"] .cel-nivel { display: block; left: var(--cel-trilho); top: calc(var(--seguro-topo) + 22px); height: 13px; font-size: 9px; line-height: 11px; }
+
+/* As carteiras, no canto do status. */
+html[data-perfil="retrato"] .cel-carteira,
+html[data-perfil="deitado"] .cel-carteira {
+  display: flex; align-items: center; justify-content: flex-end;
+  position: fixed; z-index: 44;
+  top: var(--seguro-topo); right: calc(var(--seguro-dir) + 4px);
+  height: var(--cel-status); max-width: 146px;
+}
+.cel-carteira .wallets { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin: 0; }
+html[data-perfil="deitado"] .cel-carteira .wallets { flex-direction: row; gap: 8px; }
+.cel-carteira .wallet { font-size: 12px; min-height: 0; padding: 0 2px; gap: 4px; display: flex; align-items: center; }
+.cel-carteira .wallet .coin-icon { width: 16px; height: 16px; }
+.cel-carteira .carteira-mais { min-width: 24px; min-height: 22px; }
+/* Um véu atrás do status, para as barras não se perderem no chão do mapa. */
+html[data-perfil="retrato"] #game::before,
+html[data-perfil="deitado"] #game::before {
+  content: ''; position: fixed; z-index: 43; pointer-events: none;
+  left: 0; right: 0; top: 0;
+  height: calc(var(--seguro-topo) + var(--cel-status) + 10px);
+  background: linear-gradient(180deg, #080c0ee6 70%, #080c0e00);
+}
+
+/* ---- Os atalhos: uma fileira que vira páginas ---- */
+html[data-perfil="retrato"] #actionbar,
+html[data-perfil="deitado"] #actionbar {
+  position: fixed !important;
+  top: auto !important; transform: none !important;
+  left: var(--seguro-esq) !important; right: var(--seguro-dir) !important;
+  width: auto !important; max-width: none !important; max-height: none !important;
+  height: auto !important; min-height: 0 !important;
+  margin: 0 !important; padding: 4px 6px 0 !important;
+  background: #0b1012d9 !important; border: 0 !important; border-image: none !important; box-shadow: none !important;
+  overflow: visible !important;
+  z-index: 42;
+}
+html[data-perfil="retrato"] #actionbar {
+  bottom: calc(var(--cel-nav) + var(--cel-chat) + var(--seguro-baixo)) !important;
+  padding-bottom: var(--cel-pontos) !important;
+}
+html[data-perfil="deitado"] #actionbar {
+  /* Dez slots de no máximo 56px, centrados no espaço do mapa. */
+  left: max(var(--cel-trilho), calc((100vw + var(--cel-trilho)) / 2 - 320px)) !important;
+  right: max(var(--seguro-dir), calc((100vw - var(--cel-trilho)) / 2 - 320px)) !important;
+  bottom: var(--seguro-baixo) !important;
+  padding-bottom: 4px !important;
+  background: linear-gradient(0deg, #0b1012e6, #0b101200) !important;
+}
+html[data-perfil="retrato"] #actionbar > :not(.hotbar-stack):not(.bar-row),
+html[data-perfil="deitado"] #actionbar > :not(.hotbar-stack):not(.bar-row) { display: none !important; }
+html[data-perfil="retrato"] #actionbar .bar-row,
+html[data-perfil="deitado"] #actionbar .bar-row,
+html[data-perfil="retrato"] #actionbar .hotbar-stack,
+html[data-perfil="deitado"] #actionbar .hotbar-stack {
+  width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important;
+}
+html[data-perfil="retrato"] #actionbar .bar-row > :not(.hotbar-stack):not(#hotbar),
+html[data-perfil="deitado"] #actionbar .bar-row > :not(.hotbar-stack):not(#hotbar),
+html[data-perfil="retrato"] #actionbar .hotbar-stack > :not(#hotbar),
+html[data-perfil="deitado"] #actionbar .hotbar-stack > :not(#hotbar) { display: none !important; }
+html[data-perfil="retrato"] #hotbar,
+html[data-perfil="deitado"] #hotbar {
+  --por-pagina: 7;
+  display: grid !important;
+  grid-template-columns: none !important;
+  grid-template-rows: var(--cel-slot) !important;
+  grid-auto-rows: var(--cel-slot) !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: calc((100% - (var(--por-pagina) - 1) * 6px) / var(--por-pagina)) !important;
+  column-gap: 6px !important; row-gap: 0 !important;
+  width: 100% !important; height: var(--cel-slot) !important;
+  overflow-x: auto !important; overflow-y: hidden !important;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* Centrado, o que sobra vazaria para a ESQUERDA, onde a rolagem não chega. */
+  justify-content: start !important; justify-items: stretch !important;
+}
+html[data-perfil="deitado"] #hotbar { --por-pagina: 10; }
+html[data-perfil="retrato"] #hotbar::-webkit-scrollbar,
+html[data-perfil="deitado"] #hotbar::-webkit-scrollbar { display: none; }
+html[data-perfil="retrato"] #hotbar .slot,
+html[data-perfil="deitado"] #hotbar .slot {
+  position: relative !important; left: auto !important; top: auto !important;
+  width: auto !important; height: var(--cel-slot) !important; margin: 0 !important;
+}
+html[data-perfil="retrato"] #hotbar .slot:nth-child(7n + 1) { scroll-snap-align: start; }
+html[data-perfil="deitado"] #hotbar .slot:nth-child(10n + 1) { scroll-snap-align: start; }
+@media (max-width: 370px) {
+  html[data-perfil="retrato"] #hotbar { --por-pagina: 6; }
+  html[data-perfil="retrato"] #hotbar .slot:nth-child(7n + 1) { scroll-snap-align: none; }
+  html[data-perfil="retrato"] #hotbar .slot:nth-child(6n + 1) { scroll-snap-align: start; }
+}
+html[data-perfil="retrato"] .cel-paginas {
+  display: flex; justify-content: center; gap: 5px;
+  position: fixed; z-index: 43; left: 0; right: 0;
+  bottom: calc(var(--cel-nav) + var(--cel-chat) + var(--seguro-baixo) + 1px);
+  height: 6px; pointer-events: none;
+}
+.cel-paginas[hidden] { display: none !important; }
+.cel-paginas i { width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
+.cel-paginas i.atual { background: var(--accent); }
+
+/* ---- O chat numa linha ---- */
+html[data-perfil="retrato"] .cel-chat {
+  display: flex; align-items: center; gap: 6px;
+  position: fixed; z-index: 44;
+  left: 0; right: 0; bottom: calc(var(--cel-nav) + var(--seguro-baixo));
+  height: var(--cel-chat); padding: 0 calc(10px + var(--seguro-dir)) 0 calc(10px + var(--seguro-esq));
+  background: #0e1517f2; border: 0; border-top: 1px solid var(--line-soft);
+  color: var(--text); font-size: 12px; text-align: left;
+}
+.cel-chat .cel-ico { width: 16px; height: 16px; flex: none; opacity: .8; }
+.cel-chat-texto { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Deitado ele é só o balão, no canto de cima à direita, embaixo das carteiras. */
+html[data-perfil="deitado"] .cel-chat {
+  display: grid; place-items: center;
+  position: fixed; z-index: 44;
+  right: calc(var(--seguro-dir) + 6px); top: calc(var(--seguro-topo) + var(--cel-status) + 6px);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #0e1517e6; border: 1px solid var(--line);
+}
+html[data-perfil="deitado"] .cel-chat .cel-ico { width: 22px; height: 22px; }
+html[data-perfil="deitado"] .cel-chat-texto { display: none; }
+
+/* ---- As gavetas: entre o status e a pilha de baixo, ou no lado direito ---- */
+html[data-perfil="retrato"] {
+  --gaveta-chao: calc(var(--cel-nav) + var(--cel-chat) + var(--cel-atalhos) + var(--cel-pontos) + var(--seguro-baixo) + 4px);
+}
+html[data-perfil="retrato"] .window {
+  bottom: var(--gaveta-chao) !important;
+  max-height: calc(100dvh - var(--gaveta-chao) - var(--cel-status) - var(--seguro-topo) - 8px) !important;
+  z-index: 47 !important;
+}
+html[data-perfil="deitado"] .window,
+html[data-perfil="deitado"] .window[data-lado="esq"],
+html[data-perfil="deitado"] .window[data-lado="dir"] {
+  left: auto !important; right: var(--seguro-dir) !important;
+  top: calc(var(--seguro-topo) + var(--cel-status) + 4px) !important; bottom: var(--seguro-baixo) !important;
+  width: var(--cel-painel) !important; height: auto !important; max-height: none !important;
+  z-index: 47 !important;
+}
+/* Os ajustes da caça (alvo, distância, lurar) na borda direita do mapa. */
+html[data-perfil="retrato"] .ajustes-da-caca,
+html[data-perfil="retrato"] #ajustes-da-caca {
+  left: auto !important; right: calc(8px + var(--seguro-dir)) !important;
+}
+
+/* ---- O que a casca deixa por cima do mapa ---- */
+html[data-perfil="retrato"] #treino-faixa,
+html[data-perfil="retrato"] #efeitos-faixa,
+html[data-perfil="retrato"] #pilulas-de-efeito {
+  top: calc(var(--seguro-topo) + var(--cel-status) + 4px) !important;
+}
+html[data-perfil="retrato"] #analogico {
+  bottom: calc(var(--gaveta-chao) + 12px) !important;
+}
+html[data-perfil="deitado"] #analogico {
+  left: calc(var(--cel-trilho) + 12px) !important;
+  bottom: calc(var(--cel-atalhos) + 12px + var(--seguro-baixo)) !important;
+}
+/* O "ç" de Caçar ficava cortado pelo `overflow: hidden` do rótulo. */
+.cel-nav-rotulo { line-height: 1.3; padding-bottom: 1px; }
+/* Deitado, experiência e stamina são só as barras finas: o número fica no balão. */
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) .hud-bar span { display: none !important; }
+/* ---- O "Mais": a barra de cima, em grade ---- */
+.cel-mais-secao + .cel-mais-secao { margin-top: 14px; }
+.cel-mais-secao h3 {
+  margin: 0 0 8px; font: 600 11px/1.2 var(--font-heading);
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.cel-mais-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+.folha .cel-mais-item {
+  display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  width: auto !important; min-width: 0 !important; min-height: 74px; height: auto !important;
+  margin: 0 !important; padding: 8px 4px !important;
+  background: var(--panel-2) !important; border: 1px solid var(--line-soft) !important; border-radius: 10px !important;
+  box-shadow: none !important; border-image: none !important;
+  color: var(--text) !important; font: 500 11.5px/1.2 system-ui, "Segoe UI", Roboto, sans-serif !important;
+  text-align: center; position: relative;
+}
+.folha .cel-mais-item img, .folha .cel-mais-item canvas, .folha .cel-mais-item .icon, .folha .cel-mais-item .ui-icon {
+  width: 32px !important; height: 32px !important; max-width: 32px !important; object-fit: contain;
+  position: static !important; margin: 0 !important; transform: none !important;
+}
+.folha .cel-mais-item .label, .folha .cel-mais-item span {
+  position: static !important; display: block !important; font-size: 11.5px !important;
+  max-width: 100%; white-space: normal; overflow-wrap: anywhere; color: inherit !important;
+  opacity: 1 !important; transform: none !important;
+}
+.folha .cel-mais-item:disabled { opacity: .45; }
+.folha .cel-mais-item.alerta::after {
+  content: ''; position: absolute; top: 6px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--copper);
+}
+.folha .cel-mais-item:active { background: #ffffff14 !important; }
+.cel-mais-opcao { display: flex; align-items: center; gap: 10px; margin-top: 16px; min-height: 44px; color: var(--text); font-size: 13px; }
+.cel-mais-opcao input { width: 22px; height: 22px; flex: none; }
+/* O botão do meio: ícone menor para o rótulo caber com o "ç". */
+.cel-nav-centro .cel-ico { width: 24px; height: 24px; }
+.cel-nav-centro { padding-top: 2px; padding-bottom: 2px; gap: 1px; }
+
+/* Deitado, com o painel lateral aberto o mapa encolhe: a fileira de atalhos
+   e o balão do chat não ficam por baixo dele. */
+html[data-perfil="deitado"] body.com-gaveta #actionbar {
+  left: var(--cel-trilho) !important;
+  right: calc(var(--cel-painel) + var(--seguro-dir) + 4px) !important;
+}
+html[data-perfil="deitado"] body.com-gaveta .cel-chat { display: none; }
+html[data-perfil="deitado"] body.com-gaveta #hotbar { --por-pagina: 6; }
+html[data-perfil="deitado"] body.com-gaveta #hotbar .slot:nth-child(10n + 1) { scroll-snap-align: none; }
+html[data-perfil="deitado"] body.com-gaveta #hotbar .slot:nth-child(6n + 1) { scroll-snap-align: start; }
+/* "Parar treino" em duas linhas, em vez de "Parar tr…". */
+.cel-nav-centro .cel-nav-rotulo { white-space: normal; text-align: center; line-height: 1.05; font-size: 11px; }
+.cel-nav-centro[data-momento="treino"] .cel-ico { width: 20px; height: 20px; }
+html[data-perfil="retrato"] .cel-nav-centro[data-momento="treino"] .cel-ico { display: none; }
+
+/* ---- O menu do item (e de gente) no telefone em pé: folha embaixo ---- */
+html[data-perfil="retrato"] #context-menu {
+  left: 8px !important; right: 8px !important; top: auto !important;
+  bottom: calc(var(--seguro-baixo) + 8px) !important;
+  min-width: 0; max-width: none; max-height: 70dvh; overflow-y: auto;
+  border-radius: 14px; padding: 6px;
+  z-index: 85;
+}
+html[data-perfil="retrato"] #context-menu button,
+html[data-perfil="deitado"] #context-menu button {
+  min-height: 44px; font-size: 14px; text-align: left;
+}
+html[data-perfil="deitado"] #context-menu { max-height: calc(100dvh - 16px); overflow-y: auto; }
+
+/* ---- As abas da Mochila (celular.mjs) ---- */
+.cel-abas-mochila { display: none; }
+html[data-perfil="retrato"] .cel-abas-mochila:not([hidden]),
+html[data-perfil="deitado"] .cel-abas-mochila:not([hidden]) {
+  display: flex; gap: 4px; position: fixed; z-index: 48;
+  overflow-x: auto; scrollbar-width: none;
+  padding: 4px;
+  background: #0b1012f2; border: 1px solid var(--line); border-radius: 12px 12px 0 0; border-bottom: 0;
+}
+html[data-perfil="retrato"] .cel-abas-mochila { left: 6px; right: 6px; }
+html[data-perfil="deitado"] .cel-abas-mochila {
+  right: var(--seguro-dir); width: var(--cel-painel);
+  top: calc(var(--seguro-topo) + var(--cel-status) + 4px);
+}
+/* Deitado a faixa ocupa o topo do painel, e a janela desce o tanto dela. */
+html[data-perfil="deitado"] body.com-abas-mochila .window {
+  top: calc(var(--seguro-topo) + var(--cel-status) + 4px + 46px) !important;
+}
+.cel-abas-mochila::-webkit-scrollbar { display: none; }
+.cel-abas-mochila button {
+  flex: 1 0 auto; min-height: 38px; padding: 0 10px;
+  background: none; border: 1px solid transparent; border-radius: 8px;
+  color: var(--muted); font: 600 12px/1 system-ui, "Segoe UI", Roboto, sans-serif; white-space: nowrap;
+}
+.cel-abas-mochila button[aria-selected="true"] {
+  color: var(--text); background: var(--panel-2); border-color: var(--accent-dim);
+}
+.cel-nav-botao.ativo { color: var(--text); }
+.cel-nav-botao.ativo::before {
+  content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 2px; background: var(--accent);
+}
+html[data-perfil="deitado"] .cel-nav-botao.ativo::before { top: 30%; bottom: 30%; left: 0; right: auto; width: 2px; height: auto; }
+/* Quantos itens esperam na bolsa de loot. */
+.cel-nav-botao[data-conta]::after {
+  content: attr(data-conta); position: absolute; top: 4px; left: calc(50% + 6px);
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--accent-dim); color: #fff; font: 700 10px/16px system-ui, sans-serif; text-align: center;
+}
+
+/* ---- Store no telefone: seções em chips, produtos em grade ---- */
+html[data-perfil="retrato"] .modal-box.store .store-sections,
+html[data-perfil="deitado"] .modal-box.store .store-sections {
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+  grid-template-columns: none !important;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  gap: 6px; margin: 0 0 8px; padding: 2px 0 6px;
+  position: sticky; top: 0; z-index: 2; background: var(--panel-solid);
+}
+html[data-perfil="retrato"] .modal-box.store .store-sections::-webkit-scrollbar,
+html[data-perfil="deitado"] .modal-box.store .store-sections::-webkit-scrollbar { display: none; }
+html[data-perfil="retrato"] .modal-box.store .store-sections button,
+html[data-perfil="deitado"] .modal-box.store .store-sections button {
+  flex: none !important; width: auto !important; min-height: 40px !important; height: auto !important;
+  padding: 0 12px 0 8px !important; gap: 6px !important; border-radius: 20px !important;
+  font-size: 13px !important; white-space: nowrap;
+}
+html[data-perfil="retrato"] .modal-box.store .store-sections button img,
+html[data-perfil="deitado"] .modal-box.store .store-sections button img,
+html[data-perfil="retrato"] .modal-box.store .store-sections button canvas,
+html[data-perfil="deitado"] .modal-box.store .store-sections button canvas { width: 24px !important; height: 24px !important; }
+
+/* ---- Depósito no telefone: a grade da caixa cabe na largura ---- */
+/* Eram 10 colunas fixas de 44px (404px) dentro de 322px: as três últimas
+   ficavam fora do painel. Aqui são quantas couberem, com 40px no mínimo. */
+html[data-perfil="retrato"] .locker-grade.caixa-quadrada,
+html[data-perfil="deitado"] .locker-grade.caixa-quadrada {
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)) !important;
+  width: 100% !important; max-width: 100% !important;
+}
+html[data-perfil="retrato"] .locker-grade.caixa-quadrada > *,
+html[data-perfil="deitado"] .locker-grade.caixa-quadrada > * { width: auto !important; aspect-ratio: 1; height: auto !important; }
+/* Com uma tela cheia (modal) por cima, a pilha de baixo não aparece cortada atrás dela. */
+html[data-perfil="retrato"] body.com-modal .cel-nav,
+html[data-perfil="retrato"] body.com-modal .cel-chat,
+html[data-perfil="retrato"] body.com-modal .cel-paginas,
+html[data-perfil="retrato"] body.com-modal #actionbar,
+html[data-perfil="retrato"] body.com-modal .cel-abas-mochila { visibility: hidden; }
+
+/* ---- Lista → detalhe no telefone (lista-detalhe.mjs) ---- */
+html[data-perfil="retrato"] .lista-detalhe,
+html[data-perfil="deitado"] .lista-detalhe {
+  display: block !important; grid-template-columns: none !important;
+}
+html[data-perfil="retrato"] .lista-detalhe > *,
+html[data-perfil="deitado"] .lista-detalhe > * { width: auto !important; max-width: 100% !important; min-width: 0 !important; }
+.lista-detalhe.mostrando-detalhe > :not(.detalhe-da-lista),
+.lista-detalhe:not(.mostrando-detalhe) > .detalhe-da-lista { display: none !important; }
+.detalhe-voltar {
+  display: inline-flex; align-items: center; min-height: 40px; margin: 0 0 10px; padding: 0 14px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 20px;
+  color: var(--text); font: 600 13px/1 system-ui, "Segoe UI", Roboto, sans-serif;
+}
+.prof-mais {
+  display: block; width: 100%; min-height: 44px; margin: 8px 0;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--text);
+}
+
+/* ---- Aparência no telefone: uma coluna, paleta com casas de dedo ---- */
+/* Eram duas colunas (250px + 78px): a lista de outfits ficou com 78px ("MON
+   TARI AS") e a paleta de 19×7 com casas de 11px. Aqui: prévia e escolhas em
+   cima, a paleta rolando de lado com casas de 30px (a ordem dos tons é a
+   mesma), e os outfits embaixo, em grade de 3. */
+html[data-perfil="retrato"] .outfit-picker,
+html[data-perfil="deitado"] .outfit-picker { grid-template-columns: minmax(0, 1fr) !important; gap: 14px; }
+html[data-perfil="retrato"] .outfit-side,
+html[data-perfil="deitado"] .outfit-side { grid-template-columns: minmax(0, 1fr) !important; width: auto !important; }
+html[data-perfil="retrato"] .color-grid,
+html[data-perfil="deitado"] .color-grid {
+  grid-template-columns: repeat(19, 30px) !important; grid-auto-rows: 30px; gap: 3px;
+  overflow-x: auto; padding: 3px 3px 8px; scrollbar-width: thin;
+}
+html[data-perfil="retrato"] .color-grid button,
+html[data-perfil="deitado"] .color-grid button { width: 30px; height: 30px; border-radius: 4px; }
+html[data-perfil="retrato"] .outfit-picker .tabs button,
+html[data-perfil="deitado"] .outfit-picker .tabs button { word-break: normal; overflow-wrap: normal; white-space: nowrap; }
+html[data-perfil="retrato"] .outfit-list,
+html[data-perfil="deitado"] .outfit-list { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+html[data-perfil="deitado"] .outfit-list { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)) !important; }
+/* A linha inteira de "Addon 1 / Addon 2 / Montaria" é o alvo, não só a caixinha. */
+html[data-perfil="retrato"] .outfit-mark input,
+html[data-perfil="deitado"] .outfit-mark input { width: 22px; height: 22px; }
+
+/* ---- Forja no telefone ---- */
+/* As casas do craft encolhiam como item flex (a pilha de variantes chegou a
+   13px, com o "13" partido em "1/3"): mantêm o tamanho, e a linha quebra. */
+html[data-perfil="retrato"] .craft-linha,
+html[data-perfil="deitado"] .craft-linha { flex-wrap: wrap; }
+html[data-perfil="retrato"] .craft-casa,
+html[data-perfil="deitado"] .craft-casa { flex: none; }
+/* O nome da vocação inteiro ("Knig/ht"): ícone em cima, nome embaixo, sem quebrar. */
+html[data-perfil="retrato"] .craft-voc-nome,
+html[data-perfil="deitado"] .craft-voc-nome { flex-direction: column; gap: 2px; }
+html[data-perfil="retrato"] .craft-voc b,
+html[data-perfil="deitado"] .craft-voc b { white-space: nowrap; font-size: 11px; letter-spacing: 0; }
+html[data-perfil="retrato"] .craft-vocs,
+html[data-perfil="deitado"] .craft-vocs { gap: 4px; }
+html[data-perfil="retrato"] .craft-voc { padding: 0 2px 6px; }
+/* O balão nunca mais largo que a tela do telefone. */
+html[data-perfil="retrato"] body > .tooltip,
+html[data-perfil="deitado"] body > .tooltip { max-width: calc(100vw - 16px) !important; }
+
+/* ---- Árvore no telefone: Aplicar/Cancelar num rodapé que não some ---- */
+html[data-perfil="retrato"] .arvore-acoes,
+html[data-perfil="deitado"] .arvore-acoes {
+  position: fixed; z-index: 75;
+  left: 12px; right: 12px; bottom: calc(var(--seguro-baixo) + 10px);
+  display: flex !important; flex-direction: row !important; gap: 8px; margin: 0 !important;
+  padding: 8px; border-radius: 12px;
+  background: #0b1012f2; border: 1px solid var(--line); box-shadow: 0 -6px 20px #000a;
+}
+html[data-perfil="deitado"] .arvore-acoes { left: auto; width: min(360px, 60vw); right: calc(var(--seguro-dir) + 12px); }
+html[data-perfil="retrato"] .arvore-acoes > button,
+html[data-perfil="deitado"] .arvore-acoes > button { flex: 1; min-height: 44px; margin: 0 !important; }
+html[data-perfil="retrato"] .modal-box:has(.arvore-acoes) #modal-body,
+html[data-perfil="deitado"] .modal-box:has(.arvore-acoes) #modal-body { padding-bottom: 80px; }
+
+/* ---- Gem Atelier no telefone: filtros em cima, o detalhe, depois a grade ---- */
+html[data-perfil="retrato"] .gemas-atelier-direita,
+html[data-perfil="deitado"] .gemas-atelier-direita { display: flex !important; flex-direction: column; gap: 8px; }
+html[data-perfil="retrato"] .gemas-atelier-direita > .gemas-filtro,
+html[data-perfil="deitado"] .gemas-atelier-direita > .gemas-filtro { order: 1; }
+html[data-perfil="retrato"] .gemas-atelier-direita > .gemas-detalhe,
+html[data-perfil="deitado"] .gemas-atelier-direita > .gemas-detalhe { order: 2; scroll-margin-top: 8px; }
+html[data-perfil="retrato"] .gemas-atelier-direita > .gemas-grade,
+html[data-perfil="deitado"] .gemas-atelier-direita > .gemas-grade { order: 3; }
+/* Sem gema escolhida (nenhuma revelada ainda) o painel vazio não ocupa lugar. */
+html[data-perfil="retrato"] .gemas-detalhe:not(:has(.gemas-detalhe-corpo)),
+html[data-perfil="deitado"] .gemas-detalhe:not(:has(.gemas-detalhe-corpo)) { display: none; }
+
+/* ---- Prey no telefone: um slot por vez, deslizando de lado ---- */
+/* Empilhados, os três somavam ~1.400px: o terceiro slot estava a duas telas
+   de distância. Aqui cada slot tem a largura da tela e o dedo passa de um
+   para o outro (o cabeçalho de cada um diz qual é). */
+html[data-perfil="retrato"] .prey-grid,
+html[data-perfil="deitado"] .prey-grid {
+  display: flex !important; gap: 10px;
+  overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+  padding-bottom: 6px; scrollbar-width: thin;
+}
+html[data-perfil="retrato"] .prey-grid > .prey-slot,
+html[data-perfil="deitado"] .prey-grid > .prey-slot { flex: 0 0 calc(100% - 24px); scroll-snap-align: start; min-width: 0; }
+html[data-perfil="deitado"] .prey-grid > .prey-slot { flex-basis: min(360px, 70%); }
+/* As caixinhas de opção: a linha inteira é o alvo. */
+html[data-perfil="retrato"] #modal label:has(> input[type="checkbox"]),
+html[data-perfil="deitado"] #modal label:has(> input[type="checkbox"]) { min-height: 40px; display: flex; align-items: center; gap: 8px; }
+html[data-perfil="retrato"] #modal label > input[type="checkbox"],
+html[data-perfil="deitado"] #modal label > input[type="checkbox"] { width: 20px; height: 20px; flex: none; }
+
+/* ---- Recompensa diária no telefone: um calendário que se lê ---- */
+/* O calendário do computador é uma arte com a grade por cima, tudo medido em
+   `cqw` da moldura: num telefone o prêmio saía com ~3,5px. Aqui a moldura
+   vira uma coluna normal — título, calendário de 5 colunas com cada dia
+   legível, e o COLETAR largo embaixo. */
+html[data-perfil="retrato"] .diario-moldura,
+html[data-perfil="deitado"] .diario-moldura {
+  aspect-ratio: auto !important; height: auto !important;
+  display: flex !important; flex-direction: column; gap: 10px;
+  padding: 12px !important; background-size: cover !important; background-position: top center !important;
+}
+html[data-perfil="retrato"] .diario-moldura::after,
+html[data-perfil="deitado"] .diario-moldura::after,
+html[data-perfil="retrato"] .diario-olhos,
+html[data-perfil="deitado"] .diario-olhos { display: none !important; }
+html[data-perfil="retrato"] .diario-moldura > .diario-titulo,
+html[data-perfil="deitado"] .diario-moldura > .diario-titulo,
+html[data-perfil="retrato"] .diario-moldura > .diario-selo,
+html[data-perfil="deitado"] .diario-moldura > .diario-selo,
+html[data-perfil="retrato"] .diario-moldura > .diario-grade,
+html[data-perfil="deitado"] .diario-moldura > .diario-grade,
+html[data-perfil="retrato"] .diario-moldura > .diario-pegar,
+html[data-perfil="deitado"] .diario-moldura > .diario-pegar {
+  position: static !important; inset: auto !important; transform: none !important;
+  width: auto !important; margin: 0 !important;
+}
+html[data-perfil="retrato"] .diario-titulo *,
+html[data-perfil="deitado"] .diario-titulo * { font-size: 14px !important; }
+html[data-perfil="retrato"] .diario-titulo :is(p, span, em, small),
+html[data-perfil="deitado"] .diario-titulo :is(p, span, em, small) { font-size: 12px !important; }
+html[data-perfil="retrato"] .diario-selo,
+html[data-perfil="deitado"] .diario-selo { display: none !important; }
+html[data-perfil="retrato"] .diario-grade,
+html[data-perfil="deitado"] .diario-grade {
+  display: grid !important; gap: 6px !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important; grid-template-rows: none !important;
+}
+html[data-perfil="deitado"] .diario-grade { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)) !important; }
+html[data-perfil="retrato"] .diario-dia,
+html[data-perfil="deitado"] .diario-dia { min-height: 88px; padding: 18px 3px 6px !important; gap: 4px !important; border-radius: 8px !important; }
+html[data-perfil="retrato"] .diario-dia .numero,
+html[data-perfil="deitado"] .diario-dia .numero { font-size: 11px !important; top: 4px !important; left: 6px !important; }
+html[data-perfil="retrato"] .diario-dia .premio,
+html[data-perfil="deitado"] .diario-dia .premio {
+  font-size: 10.5px !important; line-height: 1.2 !important; letter-spacing: 0 !important; text-transform: none !important;
+}
+html[data-perfil="retrato"] .diario-dia .simbolo,
+html[data-perfil="deitado"] .diario-dia .simbolo { font-size: 22px !important; }
+html[data-perfil="retrato"] .diario-dia :is(canvas, .diario-arte),
+html[data-perfil="deitado"] .diario-dia :is(canvas, .diario-arte) { width: 34px !important; height: 34px !important; }
+html[data-perfil="retrato"] .diario-varios :is(canvas, .diario-arte),
+html[data-perfil="deitado"] .diario-varios :is(canvas, .diario-arte) { width: 24px !important; height: 24px !important; }
+html[data-perfil="retrato"] .diario-pegar,
+html[data-perfil="deitado"] .diario-pegar { min-height: 48px; font-size: 15px !important; }
+
+/* ---- Arena x1 no telefone ---- */
+/* O cabeçalho tinha Loja, Ranking, Histórico e "?" com texto: não cabia, e o
+   "Loja" começava 40px fora da tela. Aqui eles ficam só com o desenho (o nome
+   continua no botão para leitor de tela e no balão), e o ✕ ganha folga. */
+html[data-perfil="retrato"] .modal-box.arena > header #modal-acoes,
+html[data-perfil="deitado"] .modal-box.arena > header #modal-acoes {
+  flex: 1 1 0 !important; min-width: 0 !important; justify-content: flex-end; gap: 6px !important;
+  overflow-x: auto; scrollbar-width: none; margin-right: 8px !important;
+}
+html[data-perfil="retrato"] .modal-box.arena .arena-acao,
+html[data-perfil="deitado"] .modal-box.arena .arena-acao {
+  flex: none; font-size: 0 !important; gap: 0 !important; min-width: 44px; min-height: 40px; padding: 0 8px !important;
+  justify-content: center;
+}
+html[data-perfil="retrato"] .modal-box.arena .arena-acao :is(img, canvas, svg),
+html[data-perfil="deitado"] .modal-box.arena .arena-acao :is(img, canvas, svg) { width: 26px !important; height: 26px !important; margin: 0 !important; }
+html[data-perfil="retrato"] .modal-box.arena .arena-acao.so-icone,
+html[data-perfil="deitado"] .modal-box.arena .arena-acao.so-icone { font-size: 16px !important; }
+/* A tira das arenas rola de lado: a borda esmaecida diz que há mais. */
+html[data-perfil="retrato"] .arena-lobby-tira,
+html[data-perfil="deitado"] .arena-lobby-tira {
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, #000 88%, transparent);
+  scrollbar-width: none;
+}
+/* O ✕ dos modais: 24px era pouco para o dedo. */
+html[data-perfil="retrato"] #modal-close,
+html[data-perfil="deitado"] #modal-close { min-width: 40px; min-height: 40px; display: grid; place-items: center; }
+
+/* ---- Listas longas no telefone: cartões mais baixos, e só se desenha o que está à vista ---- */
+/* Hunts (~50 cartões, 9.400px), boss tasks (24) e outfits de tarefa (16):
+   `content-visibility: auto` deixa o navegador pular o desenho dos cartões
+   fora da tela — o efeito de uma lista virtualizada, sem mexer em quem monta
+   a lista. A altura intrínseca guarda o lugar para a rolagem não pular. */
+html[data-perfil="retrato"] :is(.hunt-card, .bosstask-card, .entrega-card),
+html[data-perfil="deitado"] :is(.hunt-card, .bosstask-card, .entrega-card) {
+  content-visibility: auto; contain-intrinsic-size: auto 140px;
+}
+html[data-perfil="retrato"] .hunt-card,
+html[data-perfil="deitado"] .hunt-card { border-width: 12px 10px 12px !important; gap: 3px !important; }
+html[data-perfil="retrato"] .hunt-card canvas,
+html[data-perfil="deitado"] .hunt-card canvas { max-width: 40px !important; max-height: 40px !important; }
+html[data-perfil="retrato"] .hunt-card h3,
+html[data-perfil="deitado"] .hunt-card h3 { font-size: 14px !important; margin: 2px 0 !important; }
+html[data-perfil="retrato"] :is(.bosstask-card, .entrega-card),
+html[data-perfil="deitado"] :is(.bosstask-card, .entrega-card) { border-width: 12px 10px !important; }
+
+/* ---- Cabeçalho dos modais no telefone: formulário desce para a linha de baixo ---- */
+/* O Filtro de loot ("Salvar sempre / Toda a conta") e o Mercado (a busca)
+   põem campos no cabeçalho: o título virava "Filtro de l…". No telefone o
+   que é campo vai para uma linha própria embaixo do título; botões de ícone
+   (Arena, Store) continuam ao lado do ✕. */
+html[data-perfil="retrato"] .modal-box > header,
+html[data-perfil="deitado"] .modal-box > header { flex-wrap: wrap; row-gap: 4px; }
+html[data-perfil="retrato"] #modal-acoes:has(input, select, .filtro-marca),
+html[data-perfil="deitado"] #modal-acoes:has(input, select, .filtro-marca) {
+  order: 3; flex: 1 0 100% !important; margin: 0 !important; justify-content: flex-start; flex-wrap: wrap; gap: 6px 14px;
+}
+html[data-perfil="retrato"] #modal-acoes :is(input[type="search"], input[type="text"]),
+html[data-perfil="deitado"] #modal-acoes :is(input[type="search"], input[type="text"]) { flex: 1; min-width: 0; min-height: 38px; }
+/* O Filtro de loot: as colunas (Loot desta caçada · Não vender · Não coletar) empilham. */
+html[data-perfil="retrato"] .filter-layout,
+html[data-perfil="deitado"] .filter-layout { grid-template-columns: minmax(0, 1fr) !important; }
+html[data-perfil="retrato"] .filter-layout :is(h3, h4, b),
+html[data-perfil="deitado"] .filter-layout :is(h3, h4, b) { word-break: normal; overflow-wrap: normal; }
+/* A lista de itens da Cyclopedia (até 300 linhas) e a do Bestiary (até 200):
+   o mesmo "só desenha o que está à vista" das listas de hunts e tasks. */
+html[data-perfil="retrato"] :is(.ciclo-item, .bestiary-card),
+html[data-perfil="deitado"] :is(.ciclo-item, .bestiary-card) { content-visibility: auto; contain-intrinsic-size: auto 60px; }

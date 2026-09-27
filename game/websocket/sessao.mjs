@@ -10,11 +10,13 @@
 //                         delta | jaTenhoCatalogo | oculta
 import * as B from '../../game/database/banco.mjs';
 import * as R from '../systems/regras.mjs';
-import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado } from '../systems/dados.mjs';
+import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado, gradeDaCidade } from '../systems/dados.mjs';
+import { proximoPassoAte, temCaminho } from '../systems/hunt/caminho.mjs';
 import * as Inventario from '../systems/inventario.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as Aparencia from '../systems/aparencia.mjs';
 import * as Loja from '../systems/loja.mjs';
+import * as HistoricoDaLoja from '../systems/historico-da-loja.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import * as Treino from '../systems/treino.mjs';
@@ -449,19 +451,33 @@ export class Sessao {
     if (m.action) this.aplicar(r);
   }
 
-  despacharTreino(m) {
+  async despacharTreino(m) {
     if (m.action === 'stop') {
-      const r = Exercicio.parar(this.estado);
+      // O pátio (treino online) e o Exercise têm cada um o seu fim; "Você não
+      // está treinando." só quando NENHUM dos dois está ligado.
+      const r = this.estado.hunt?.huntId === 'treino' ? Cacadas.sairDoPatio(this.estado) : Exercicio.parar(this.estado);
       if (r.relatorio) this.enviar(r.relatorio);
-      return this.aplicar(r);
+      if (!r.ok) return this.aplicar(r);
+      this.estado.rumo = null;
+      this.characterSujo = true;
+      // A posição nova (a da cidade) vai para o banco agora, e o cliente recebe
+      // o quadro INTEIRO — com o mapa da cidade, se ele voltou do pátio.
+      if (r.notice) this.avisoPendente = r.notice;
+      this.mandarEstado(true);
+      return this.gravarAgora().catch((e) => console.error('gravar ao parar o treino', e.message));
     }
-    if (m.action === 'start' && m.mode === 'exercise') return this.aplicar(Exercicio.comecar(this.estado, m));
-    if (m.action === 'start' && m.mode === 'online') {
-      if (this.estado.exercicio?.treinando) {
+    if ((m.action === 'start' && m.mode === 'exercise') || (m.action === 'start' && m.mode === 'online')) {
+      if (m.mode === 'online' && this.estado.exercicio?.treinando) {
         const r = Exercicio.parar(this.estado);
         if (r.relatorio) this.enviar(r.relatorio);
       }
-      return this.aplicar(Cacadas.entrarNoPatio(this.estado));
+      // O servidor põe o personagem no posto (1 SQM do boneco), grava a posição
+      // e só então o treino começa a valer — com o movimento já bloqueado.
+      const r = m.mode === 'exercise' ? Exercicio.comecar(this.estado, m) : Cacadas.entrarNoPatio(this.estado);
+      if (!r.ok) return this.aplicar(r);
+      this.estado.rumo = null;
+      this.aplicar(r);
+      return this.gravarAgora().catch((e) => console.error('gravar ao começar o treino', e.message));
     }
     if (m.action === 'start' && m.mode === 'offline') {
       // "Ao confirmar, você sai deste personagem e volta para a lista."
@@ -573,6 +589,11 @@ export class Sessao {
     if (r) this.aplicar({ ok: true });
   }
 
+  /** Um comando que não muda nada visível na hora: só o erro volta (o passo aparece no próximo quadro). */
+  aplicarSoErro(resultado) {
+    if (resultado && !resultado.ok) return this.erro(resultado.erro);
+  }
+
   aplicar(resultado) {
     if (!resultado.ok) return this.erro(resultado.erro);
     if (resultado.notice) this.avisoPendente = resultado.notice;
@@ -598,11 +619,13 @@ export class Sessao {
    * pelo canal de sempre, e a prateleira volta do mesmo jeito que estava.
    */
   async despacharLoja(m) {
+    const coinsAntes = this.estado.coins ?? 0;
     if (m.action === 'buy' && m.id === 'cofre-vagas') {
       // Vagas do Baú da Conta: a caixa é da conta, gravada na tabela própria.
       const daConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
       const r = Deposito.comprarVagas(this.estado, daConta);
       if (r.ok) await B.gravarBauDaConta(this.conta.id, daConta);
+      if (r.ok) await this.anotarCompraNaLoja(m.id, coinsAntes);
       this.estado.bauDaConta = daConta;
       this.aplicar(r.ok ? { ...r, notice: `Caixa compartilhada: ${daConta.teto} vagas.` } : r);
       // A prateleira volta com o "Agora X → Y" novo.
@@ -615,10 +638,45 @@ export class Sessao {
       const resultado = Loja.comprar(this.estado, m, daConta);
       if (!resultado.ok) return this.erro(resultado.erro);
       if (resultado.conta) await B.gravarMelhoriasDaConta(this.conta.id, daConta);
+      await this.anotarCompraNaLoja(m.id, coinsAntes);
       if (resultado.notice) this.avisoPendente = resultado.notice;
       this.mandarEstado();
     }
     this.enviar({ t: 'store', store: Loja.catalogoDaLoja(this.estado, daConta) });
+  }
+
+  /**
+   * A compra vai para o Histórico da loja (`historico-da-loja.mjs`) com o que
+   * de fato saiu do saldo — a diferença das coins, e não o preço de tabela.
+   * Roda dentro da transação da compra (`store` com `action` é comando de
+   * economia): se a gravação falhar, a compra inteira volta (ROLLBACK).
+   */
+  async anotarCompraNaLoja(id, coinsAntes) {
+    const coins = coinsAntes - (this.estado.coins ?? 0);
+    if (!(coins > 0)) return;
+    await HistoricoDaLoja.registrarCompra({
+      conta: this.conta.id,
+      personagem: this.personagem.id,
+      nome: this.personagem.nome,
+      produto: String(id),
+      ...Loja.descricaoDaCompra(String(id)),
+      coins,
+    });
+  }
+
+  /**
+   * `send({t:'historicoDaLoja'})` → `{t:'historicoDaLoja', linhas}` — as últimas
+   * compras da conta, a mais recente primeiro. Se o banco falhar, a resposta
+   * vai assim mesmo, com `erro`: a janela não pode ficar presa em "Carregando".
+   */
+  async mandarHistoricoDaLoja() {
+    if (!this.conta || !this.personagem) return;
+    try {
+      this.enviar({ t: 'historicoDaLoja', linhas: await HistoricoDaLoja.ultimas(this.conta.id) });
+    } catch (e) {
+      console.error('historicoDaLoja ->', e.message);
+      this.enviar({ t: 'historicoDaLoja', linhas: [], erro: 'Não deu para carregar o histórico agora. Tente de novo em instantes.' });
+    }
   }
 
   /**
@@ -792,6 +850,10 @@ export class Sessao {
         return this.deixarOffline();
       case 'walk':
         return this.andar(m);
+      case 'walkTo':
+        return this.andarAte(m);
+      case 'huntWalkTo':
+        return this.aplicarSoErro(Cacadas.andarAte(this.estado, m));
       case 'virar':
         return this.virar(m);
       case 'pedirMapa': {
@@ -1020,6 +1082,8 @@ export class Sessao {
         return this.aplicar(Aparencia.equiparMontaria(this.estado, m));
       case 'store':
         return this.despacharLoja(m);
+      case 'historicoDaLoja':
+        return this.mandarHistoricoDaLoja();
       case 'startHunt': {
         // Treinando no boneco? Para o treino (com o relatório) antes de sair caçando.
         if (this.estado.exercicio?.treinando) {
@@ -1043,6 +1107,7 @@ export class Sessao {
       case 'huntTarget':
         return this.aplicar(Cacadas.definirAlvo(this.estado, m));
       case 'huntWalk':
+        // Recusado no pátio (`Cacadas.andar`); sem aviso, porque a tecla presa repete isto a cada 100ms.
         return void Cacadas.andar(this.estado, m);
       case 'huntEscada':
         return this.aplicar(Cacadas.usarEscada(this.estado, m));
@@ -1361,7 +1426,7 @@ export class Sessao {
    */
   async gravarAgora() {
     if (!this.personagem || !this.estado) return;
-    const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
+    const { rumo, rumoValidoAte, proximoPassoEm, destino, bauDaConta, ...estadoPersistido } = this.estado;
     const copia = estadoPersistido.hunt ? { ...estadoPersistido, hunt: { ...Cacadas.huntParaGravar(estadoPersistido.hunt), offlineDesde: Date.now() } } : estadoPersistido;
     // ANTES do `await`: sem isto, o autosave do próximo tique (250ms depois)
     // veria `gravadoEm` ainda velho enquanto esta gravação está em voo (rede,
@@ -1386,7 +1451,7 @@ export class Sessao {
     // Numa hunt, ela segue "offline": grava de quando, e a volta simula o resto.
     if (this.estado.hunt) this.estado.hunt.offlineDesde = Date.now();
     // `bauDaConta` é da conta (tabela própria), não do personagem.
-    const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
+    const { rumo, rumoValidoAte, proximoPassoEm, destino, bauDaConta, ...estadoPersistido } = this.estado;
     if (estadoPersistido.hunt) estadoPersistido.hunt = Cacadas.huntParaGravar(estadoPersistido.hunt);
     // Devolvida (não `await`ada aqui): quem só quer sair rápido (fechar aba,
     // trocar de personagem) ignora o retorno e segue — mesmo fogo-e-esquece
@@ -1446,12 +1511,51 @@ export class Sessao {
    */
   andar({ dx, dy }) {
     if (!this.estado) return;
+    // Treinando (pátio ou Exercise), o servidor recusa o passo: o personagem fica no posto.
+    if (Treinos.emTreino(this.estado)) {
+      this.estado.rumo = null;
+      this.estado.destino = null;
+      return;
+    }
     if (!dx && !dy) {
       this.estado.rumo = null;
       return;
     }
+    // A tecla manda mais que o clique: apertou uma direção, larga o destino.
+    this.estado.destino = null;
     this.estado.rumo = { dx: Math.sign(dx), dy: Math.sign(dy) };
     this.estado.rumoValidoAte = Date.now() + 500;
+  }
+
+  /*
+   * ---- `send({t:'walkTo', x, y})` — clique ou toque no mapa da cidade ----
+   *
+   * O client mandava (clique esquerdo, toque, "Ir até lá") e o servidor não
+   * tinha handler: caía no `default` silencioso e o personagem nunca saía do
+   * lugar. Aqui só se VALIDA e guarda o destino (`estado.destino`); quem anda é
+   * o mesmo `processarMovimento` do teclado — uma casa por `PASSO_MS`, a mesma
+   * colisão —, pedindo o passo à busca da caçada (`proximoPassoAte`) sobre a
+   * grade da cidade. Um clique novo troca o destino; uma tecla o larga.
+   */
+  andarAte({ x, y }) {
+    if (!this.estado || this.estado.hunt) return;
+    const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
+    if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return;
+    if (Treinos.emTreino(this.estado)) {
+      this.estado.destino = null;
+      return this.erro('Treinando: você fica ao lado do boneco até parar o treino.');
+    }
+    const pos = this.estado.pos;
+    if (destino.x === pos.x && destino.y === pos.y) {
+      this.estado.destino = null;
+      return;
+    }
+    if (bloqueado(destino.x, destino.y) || !temCaminho(gradeDaCidade(), pos, destino)) {
+      this.estado.destino = null;
+      return this.erro('Não dá para chegar lá.');
+    }
+    this.estado.rumo = null;
+    this.estado.destino = destino;
   }
 
   /*
@@ -1470,16 +1574,32 @@ export class Sessao {
   /** Avança um passo, se houver rumo válido e o passo anterior já tiver acabado. */
   processarMovimento() {
     const estado = this.estado;
-    if (!estado?.rumo) return;
-    const agora = Date.now();
-    if (agora > (estado.rumoValidoAte ?? 0)) {
+    if (!estado?.rumo && !estado?.destino) return;
+    // Nenhum rumo (ou destino de clique) antigo sobrevive ao começo do treino.
+    if (Treinos.emTreino(estado)) {
       estado.rumo = null;
+      estado.destino = null;
       return;
     }
+    const agora = Date.now();
+    if (estado.rumo && agora > (estado.rumoValidoAte ?? 0)) estado.rumo = null;
+    if (!estado.rumo && !estado.destino) return;
     if (!R.jaPode(agora, estado.proximoPassoEm)) return;
 
-    const { dx, dy } = estado.rumo;
     const pos = estado.pos;
+    let dx;
+    let dy;
+    if (estado.rumo) ({ dx, dy } = estado.rumo);
+    else {
+      // O destino do clique/toque: o próximo passo pela busca de sempre, recalculado a cada passo.
+      const passo = proximoPassoAte(gradeDaCidade(), pos, estado.destino);
+      if (!passo) {
+        estado.destino = null;
+        return;
+      }
+      dx = passo.x - pos.x;
+      dy = passo.y - pos.y;
+    }
     if (dy < 0) pos.dir = 0;
     else if (dy > 0) pos.dir = 2;
     else if (dx > 0) pos.dir = 1;
@@ -1493,6 +1613,8 @@ export class Sessao {
       pos.x = destino.x;
       pos.y = destino.y;
     }
+    // Chegou onde clicou.
+    if (estado.destino && pos.x === estado.destino.x && pos.y === estado.destino.y) estado.destino = null;
     estado.proximoPassoEm = agora + R.PASSO_MS;
   }
 
@@ -1691,6 +1813,8 @@ export class Sessao {
     if (Date.now() - (this.gravadoEm ?? Date.now()) >= AUTOSAVE_MS) this.gravarAgora().catch((e) => console.error('autosave', this.personagem?.nome, '->', e.message));
     this.gravadoEm ??= Date.now();
     if (this.estado.hunt) {
+      // O destino de um clique na cidade não sobrevive a entrar numa caçada.
+      this.estado.destino = null;
       try {
         // Party: quem seguir e a partilha da exp (não-enumeráveis — não vão para o banco).
         const h = this.estado.hunt;
@@ -1807,12 +1931,10 @@ export class Sessao {
     if (doTreino) this.enviar(doTreino);
     this.ultimaRegen = agora;
     this.processarMovimento();
-    // Saiu andando de perto do boneco: o treino para, com o relatório.
-    if (this.estado.exercicio?.treinando && !Exercicio.noBoneco(this.estado)) {
-      const r = Exercicio.parar(this.estado);
-      if (r.relatorio) this.enviar(r.relatorio);
-      this.avisoPendente = 'Você se afastou do boneco: o treino parou.';
-    }
+    // Treinando no Exercise, a posição é a do posto (movimento é recusado em
+    // `andar`); a distância NÃO encerra mais o treino — isto só garante a
+    // integridade, devolvendo ao posto se algo o tirou de lá.
+    Exercicio.manterNoPosto(this.estado);
     this.mandarEstado(false, golpes);
   }
 

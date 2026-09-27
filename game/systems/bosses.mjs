@@ -14,14 +14,30 @@
 // - A espera de um boss começa quando se ENTRA, mesmo que ele não caia; 25
 //   minutos na sala nos dois modos.
 import { readFileSync } from 'node:fs';
-import { CATALOGO, CHARACTER_TEMPLATE } from './dados.mjs';
+import { CATALOGO, CHARACTER_TEMPLATE, STORE_REAL } from './dados.mjs';
 import { darItem } from './inventario.mjs';
 import * as Bau from './bau.mjs';
 
 export const TEMPO_NA_SALA_MS = 25 * 60_000;
 
 const TASK_TOKEN = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8')).loja.token;
-const LOJA_REAL = JSON.parse(readFileSync(new URL('../../api-mapeada/servidor/bossToken.json', import.meta.url), 'utf8')).loja;
+const CAPTURADA = JSON.parse(readFileSync(new URL('../../api-mapeada/servidor/bossToken.json', import.meta.url), 'utf8')).loja;
+/*
+ * A frase das Lasting Exercise veio da captura do servidor original: "14.400
+ * cargas — na Ravox Store ela custa 50 coins." O nome é o de antes do rebrand
+ * e o preço, escrito à mão, envelhece sozinho quando a Store muda. A frase é
+ * montada aqui com as cargas e o preço da MESMA entrada da Store que vende a
+ * arma; o que não tiver par na Store fica como veio, só com o nome trocado.
+ */
+const EXERCISE_NA_STORE = new Map((STORE_REAL.exercises ?? []).map((e) => [e.itemId, e]));
+export function textoDaOferta(oferta) {
+  const naStore = oferta.grupo === 'exercise' ? EXERCISE_NA_STORE.get(oferta.itemId) : null;
+  if (naStore?.cargas && naStore.coins != null) {
+    return `${naStore.cargas.toLocaleString('pt-BR')} cargas — na Store ela custa ${naStore.coins} coins.`;
+  }
+  return typeof oferta.blurb === 'string' ? oferta.blurb.replace(/Ravox/g, 'Draevor') : oferta.blurb;
+}
+const LOJA_REAL = { ...CAPTURADA, ofertas: CAPTURADA.ofertas.map((o) => ({ ...o, blurb: textoDaOferta(o) })) };
 const BOSS_TOKEN = LOJA_REAL.token;
 const MOLDE_DO_AUTO = CHARACTER_TEMPLATE.autoBoss;
 

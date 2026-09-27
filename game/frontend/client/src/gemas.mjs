@@ -15,6 +15,7 @@
  * Toda regra mora no servidor (`server/src/gemas.mjs`): a tela só mostra a view
  * e manda o pedido. É o mesmo arranjo da árvore.
  */
+import { ehTelefone } from './perfil.mjs';
 import { itemCanvas } from './sprites.mjs';
 import { artOrUiIcon } from './hud.mjs';
 import { spellIcon } from './actionbar.mjs';
@@ -553,6 +554,10 @@ function celulaDaGema(gema, view) {
       else selecionadas.add(gema.id);
     } else gemaEscolhida = gema.id;
     ctx.redraw?.();
+    // No telefone o detalhe fica ACIMA da grade: tocar numa gema leva até ele.
+    if (!escolhendo && ehTelefone()) {
+      requestAnimationFrame(() => document.querySelector('#modal .gemas-detalhe')?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
+    }
   };
   return celula;
 }

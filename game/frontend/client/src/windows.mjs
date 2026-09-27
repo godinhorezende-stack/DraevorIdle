@@ -1,3 +1,4 @@
+import { abrirNaPilha, fechouNaPilha } from './pilha.mjs';
 // Janelas flutuantes: arrastar pelo título, redimensionar pelo canto,
 // e posição/tamanho guardados por jogador no navegador.
 
@@ -668,7 +669,11 @@ const emColunas = () => {
 };
 
 /** Que espaço esta janela ocupa: um dos lados, deitado; o rodapé, em pé. */
-const faixaDa = (no) => (emColunas() ? no?.dataset.lado ?? 'dir' : 'rodape');
+const faixaDa = (no) => {
+  // No telefone deitado da casca nova (celular.mjs) todas dividem o painel da direita.
+  if (globalThis.document?.documentElement.dataset.perfil === 'deitado') return 'painel';
+  return emColunas() ? no?.dataset.lado ?? 'dir' : 'rodape';
+};
 
 /** Esconde as outras gavetas DA MESMA FAIXA, sem tocar no arranjo guardado. */
 function soUmaGaveta(id) {
@@ -677,6 +682,7 @@ function soUmaGaveta(id) {
     if (outro === id || entry.node.hidden) continue;
     if (faixaDa(entry.node) !== minha) continue;
     entry.node.hidden = true;
+    fechouNaPilha(`janela:${outro}`);
     document.querySelector(`[data-toggle="${outro}"]`)?.setAttribute('aria-selected', 'false');
   }
 }
@@ -695,7 +701,7 @@ function marcarGavetaAberta() {
   corpo.classList.toggle('com-gaveta', [...registry.values()].some((e) => !e.node.hidden));
 }
 
-export function setVisible(id, visible) {
+export function setVisible(id, visible, { gravar = true } = {}) {
   const entry = registry.get(id);
   if (!entry) return;
   const estavaFechada = entry.node.hidden;
@@ -710,11 +716,33 @@ export function setVisible(id, visible) {
     // Só na TRANSIÇÃO: `setVisible(id, true)` numa janela já aberta (o
     // `bringToFront` de um clique, por exemplo) não é motivo para redesenhar.
     if (estavaFechada) aoAbrirJanela.get(id)?.();
+    // A gaveta no telefone é uma tela por cima do jogo: o voltar a fecha.
+    if (estavaFechada && emGaveta()) abrirNaPilha(`janela:${id}`, () => setVisible(id, false, { gravar: false }));
   }
-  if (!visible) marcarGavetaAberta();
-  layout[id] = { ...layout[id], hidden: !visible };
-  save();
+  if (!visible) {
+    marcarGavetaAberta();
+    fechouNaPilha(`janela:${id}`);
+  }
+  // `gravar: false` é o telefone abrindo uma aba: o arranjo do computador fica como está.
+  if (gravar) {
+    layout[id] = { ...layout[id], hidden: !visible };
+    save();
+  }
   document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', String(visible));
+}
+
+/**
+ * Esconde sem gravar no arranjo: é o telefone decidindo pela tela pequena
+ * (ver "E ela NÃO é gravada", acima). No computador a janela continua aberta
+ * como a pessoa deixou.
+ */
+export function esconderSemGravar(id) {
+  const entry = registry.get(id);
+  if (!entry || entry.node.hidden) return;
+  entry.node.hidden = true;
+  marcarGavetaAberta();
+  fechouNaPilha(`janela:${id}`);
+  document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', 'false');
 }
 
 export function toggleWindow(id) {

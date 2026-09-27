@@ -85,6 +85,7 @@ const TABELAS = [
   { nome: 'coin_ordens', serial: true },
   { nome: 'coin_historico', serial: true },
   { nome: 'creditos', serial: true },
+  { nome: 'loja_historico', serial: true },
 ];
 
 /** As colunas de verdade da tabela, lidas do SQLite de origem — nunca digitadas à mão aqui. */

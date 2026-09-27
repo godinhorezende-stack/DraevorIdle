@@ -6,6 +6,7 @@ import { tipPanel, tipTexto, tipFor } from './tooltip.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { healthColor } from './map.mjs';
 import { ehCelular } from './mobile.mjs';
+import { ARTES } from './artes.mjs';
 
 const $ = (id) => document.getElementById(id);
 
@@ -32,9 +33,18 @@ const el = (tag, className, text) => {
 
 const icon = (name, alt = '') => {
   const img = document.createElement('img');
+  img.alt = alt;
+  /*
+   * Nome sem arte (o `prey-defense`, por exemplo): o `<img>` vazio e sem
+   * `src`, como o `artOrUiIcon` faz — quem chamou tem o que anexar, e a rede
+   * não leva um 404. Ver `tools/indice-de-artes.mjs`.
+   */
+  if (!ARTES.ui.has(name)) {
+    img.className = 'ui-icon vazio';
+    return img;
+  }
   img.className = 'ui-icon';
   img.src = `/client/assets/ui/${name}.png`;
-  img.alt = alt;
   img.onerror = () => img.remove();
   return img;
 };
@@ -75,6 +85,14 @@ const semDesenhoNenhum = new Set();
 export function artOrUiIcon(name, alt = '') {
   const img = document.createElement('img');
   img.alt = alt;
+
+  /*
+   * O índice das pastas (`artes.mjs`) responde de antemão onde está a arte —
+   * ou que ela não existe — e as duas buscas abaixo, com o 404 de cada uma,
+   * ficam só de rede de segurança para um nome que o índice não conhece.
+   */
+  if (!ARTES.icons.has(name) && !ARTES.ui.has(name)) semDesenhoNenhum.add(name);
+  else if (!ARTES.icons.has(name)) semDesenhoNovo.add(name);
 
   const cair = () => {
     semDesenhoNovo.add(name);

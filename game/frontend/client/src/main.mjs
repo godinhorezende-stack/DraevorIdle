@@ -2,12 +2,16 @@ import './so-quando-muda.mjs';
 import { loadSpriteData, loadEffectData, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
 import { MapView } from './map.mjs';
 import {
-  createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir,
+  createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir, esconderSemGravar,
   // O browse field troca o título a cada casa que abre: "Chão em 100, 65".
   setTitle,
 } from './windows.mjs';
 import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
 import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from './hud.mjs';
+import { ARTES } from './artes.mjs';
+import { abrirNaPilha, fechouNaPilha, fechouNaPilhaTudoQue } from './pilha.mjs';
+import { ligarPerfil } from './perfil.mjs';
+import { initCelular, atualizarCelular, analogicoLigado } from './celular.mjs';
 import {
   initInventory,
   esquecerOsDesenhos,
@@ -244,7 +248,21 @@ window.__map = mapView;
 
 // ---------- conexão ----------
 
-const send = (message) => socket?.readyState === 1 && socket.send(JSON.stringify(message));
+/*
+ * ---- Treinando, o client nem pede para andar ----
+ *
+ * No pátio (treino online) e no Exercise o personagem fica no posto que o
+ * SERVIDOR escolheu, a 1 SQM do boneco, e o servidor recusa todo movimento
+ * (`Treinos.emTreino`). Isto aqui é só o espelho visual: teclado, WASD, setas,
+ * clique, "Ir até lá" e o analógico do celular passam todos por `send`, então
+ * um filtro só cobre todos. O "soltei a tecla" (`dx:0, dy:0`) passa.
+ */
+const COMANDOS_DE_ANDAR = new Set(['walk', 'walkTo', 'huntWalk', 'huntWalkTo', 'huntEscada']);
+const treinandoAgora = () => state?.hunt?.huntId === 'treino' || !!state?.character?.exercicio?.treinando;
+const send = (message) => {
+  if (COMANDOS_DE_ANDAR.has(message?.t) && (message.dx || message.dy || message.x != null) && treinandoAgora()) return false;
+  return socket?.readyState === 1 && socket.send(JSON.stringify(message));
+};
 // Gancho de inspeção para as ferramentas de screenshot.
 window.__send = send;
 
@@ -974,6 +992,7 @@ function handle(message) {
     case 'store':
       state.store = message.store;
       panelCtx.redraw?.();
+      panelCtx.recarregarHistoricoDaLoja?.();
       /* O `+` da barra pediu o catálogo para poder abrir. Ver `pedirDraevorCoins`. */
       if (esperandoAsCoins) {
         esperandoAsCoins = false;
@@ -2585,6 +2604,44 @@ function buildWindows() {
   initActionBar(panelCtx);
   renderChat();
   buildTopbar();
+  /*
+   * A tela de jogo do telefone (celular.mjs). Ela não tem ação própria: cada
+   * botão chama a mesma função do botão do computador, e o "Mais" monta a
+   * barra de cima com o mesmo `ferramentaLigada`.
+   */
+  initCelular({
+    state: () => state,
+    ferramentaLigada,
+    grupos: () => BARRA.filter(Boolean),
+    extras: () => [
+      ARENA,
+      { id: 'market', label: 'Mercado', icone: 'market', abre: () => openMarket(),
+        tip: 'Comprar e vender com outros jogadores.' },
+      !$('hud-promotion')?.hidden && { id: 'promotion', label: 'Promotion', icone: 'character', abre: () => openPromotion(),
+        tip: $('hud-promotion-text')?.textContent ?? 'A promoção de vocação.' },
+      novidadesDaVez?.itens?.length && { id: 'novidades', label: 'Novidades', icone: 'diario', abre: () => abrirNovidades(),
+        tip: 'O que mudou nesta versão.' },
+      { id: 'options', label: 'Opções', icone: 'options', abre: () => openBarSettings(),
+        tip: 'Ajustes da interface, da barra de atalhos e dos gráficos.' },
+      { id: 'reportar', label: 'Reportar bug', icone: 'quests', abre: () => openReport('bug'),
+        tip: 'Achou um bug? Conte pra gente.' },
+      { id: 'trocar', label: 'Trocar personagem', icone: 'logout', abre: () => confirmarSaida(),
+        tip: 'Trocar de personagem ou sair da conta.' },
+    ],
+    abrirFicha: () => openCharacter('sheet'),
+    abrirAparencia: () => openCharacter('look'),
+    sistemas: () => SISTEMAS,
+    janelaAberta: (id) => isVisible(id),
+    abrirJanela: (id) => setVisible(id, true, { gravar: false }),
+    fecharJanela: (id) => esconderSemGravar(id),
+    abrirLoja: () => openStore(),
+    abrirHunts: () => openHunts(),
+    pararCaca: () => send({ t: 'stopHunt' }),
+    abrirChat: () => setVisible('chat', true, { gravar: false }),
+    esconderJanela: (id) => esconderSemGravar(id),
+    temAlerta: () => !faixaDeNovidades?.hidden || botoesEmAlerta.some(({ alerta }) => !!alerta()),
+    acertarAnalogico: () => acertarOAnalogico?.(),
+  });
 
   for (const id of ['loot', 'chat', 'analyzer', 'inventory']) {
     document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', String(isVisible(id)));
@@ -5751,6 +5808,8 @@ setInterval(mandarRumo, 100);
  * sempre — e a segunda envelheceria calada, porque ninguém testa no celular.
  */
 const TECLAS_DO_RUMO = ['w', 'a', 's', 'd'];
+// O perfil (retrato, deitado, tablet, desktop) antes de tudo que depende dele.
+ligarPerfil();
 acertarOAnalogico = initMobile({
   apontar(dx, dy) {
     for (const tecla of TECLAS_DO_RUMO) held.delete(tecla);
@@ -5773,7 +5832,7 @@ acertarOAnalogico = initMobile({
    * Andar só existe na cidade e na Caça Online. Na automática quem escolhe o
    * rumo é a rota, e um controle que não move nada faz o jogo parecer travado.
    */
-  podeAndar: () => !!state.character && (!state.hunt || !!state.hunt.manual),
+  podeAndar: () => !!state.character && (!state.hunt || !!state.hunt.manual) && analogicoLigado(),
 });
 
 /*
@@ -6963,7 +7022,7 @@ function mostrarViagem({ hunt, motivo }) {
    */
   const arte = $('viagem-arte');
   const nome = motivo === 'partida' ? 'partida' : 'rota';
-  if (artesQuebradas.has(nome)) {
+  if (artesQuebradas.has(nome) || !ARTES.ui.has(`viagem-${nome}`)) {
     arte.hidden = true;
   } else {
     arte.hidden = false;
@@ -7213,6 +7272,40 @@ function sairDoAutoBossConvidado() {
   });
 }
 
+/*
+ * ---- As janelas de itens só se desenham ABERTAS ----
+ *
+ * Medido na auditoria do celular: caçando, a bolsa muda a cada loot, e as
+ * cinco janelas de itens eram refeitas juntas — mesmo fechadas. Eram ~400
+ * elementos em janelas escondidas e cinco mutações de DOM por segundo que
+ * ninguém via; no telefone, onde só cabe uma gaveta aberta por vez, é quase
+ * tudo desperdício.
+ *
+ * A regra é a mesma do analisador: fechada não desenha, só anota que ficou
+ * para trás; o `quandoAbrir` desenha na hora em que ela abre, então ela nunca
+ * aparece velha.
+ */
+const JANELAS_DA_BOLSA = {
+  loot: renderPouch,
+  inventory: renderInventory,
+  container: renderContainer,
+  bossPouch: renderBossPouch,
+  storeInbox: renderStoreInbox,
+};
+const bolsaAtrasada = new Set();
+function desenharSeAberta(id) {
+  if (isVisible(id)) {
+    bolsaAtrasada.delete(id);
+    JANELAS_DA_BOLSA[id]();
+    return;
+  }
+  if (bolsaAtrasada.has(id)) return;
+  bolsaAtrasada.add(id);
+  quandoAbrir(id, () => {
+    if (bolsaAtrasada.delete(id)) JANELAS_DA_BOLSA[id]();
+  });
+}
+
 function renderAll() {
   const character = state.character;
   if (!character) return;
@@ -7339,6 +7432,7 @@ function renderAll() {
   renderBuffsJanela();
   renderBossCdJanela();
   renderRunControls();
+  atualizarCelular();
 
   // Inventário, bolsa e mochila só são redesenhados quando mudam de verdade.
   // Reconstruir o DOM quatro vezes por segundo trocava o elemento no meio do
@@ -7389,11 +7483,7 @@ function renderAll() {
   if (!lastBagKey || bagKey.some((parte, i) => parte !== lastBagKey[i])) {
     lastBagKey = bagKey;
     ultimoRelogioDaVenda = character.vendaFaltaSegundos;
-    renderPouch();
-    renderInventory();
-    renderContainer();
-    renderBossPouch();
-    renderStoreInbox();
+    for (const id of Object.keys(JANELAS_DA_BOLSA)) desenharSeAberta(id);
   }
 
   /*
@@ -7408,7 +7498,7 @@ function renderAll() {
    */
   else if (character.vendaFaltaSegundos !== ultimoRelogioDaVenda) {
     ultimoRelogioDaVenda = character.vendaFaltaSegundos;
-    renderPouch();
+    desenharSeAberta('loot');
   }
 
   /*
@@ -8171,7 +8261,9 @@ function renderBuffsJanela() {
    * coisa. É o mesmo arranjo da janela Boss Cooldown, logo abaixo.
    */
   if (!isVisible('buffs')) {
-    body.dataset.assinatura = '';
+    // Só apaga se houver o que apagar: reescrever o atributo com o mesmo valor
+    // ainda é uma escrita no DOM — quatro por segundo, com a janela fechada.
+    if (body.dataset.assinatura) body.dataset.assinatura = '';
     return;
   }
   const linhas = linhasDeEfeito(state.character);
@@ -9380,6 +9472,8 @@ function openModal(title, build, onClose, variant) {
   panelCtx.redrawKey = null;
   panelCtx.aoVivo = null;
   onModalClose = onClose ?? null;
+  // Trocou de tela: os "detalhes" da anterior saem da pilha do voltar.
+  fechouNaPilhaTudoQue('detalhe:');
   // A loja ganha a moldura dourada; o resto usa a padrão.
   document.querySelector('.modal-box').className = variant ? `modal-box ${variant}` : 'modal-box';
   /*
@@ -9398,9 +9492,13 @@ function openModal(title, build, onClose, variant) {
   // OLHANDO', no style.css). Classe no body, e não `:has()`: medido, o `:has` no
   // body fazia CADA recálculo de estilo reavaliar a página inteira (24 ms -> 10 ms).
   document.body.classList.add('com-modal');
+  // No telefone, o voltar fecha o modal em vez de sair do jogo (pilha.mjs).
+  abrirNaPilha('modal', closeModal);
 }
 
 function closeModal() {
+  // O modal leva junto os "detalhes" abertos dentro dele (lista-detalhe.mjs).
+  fechouNaPilhaTudoQue('detalhe:', 'modal');
   $('modal').hidden = true;
   document.body.classList.remove('com-modal');
   panelCtx.redraw = null;

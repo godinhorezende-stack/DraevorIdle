@@ -1,5 +1,8 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
+import { listaDetalhe } from './lista-detalhe.mjs';
+import { ehTelefone } from './perfil.mjs';
+import { analogicoLigado, ligarAnalogico } from './celular.mjs';
 import { arteTeimosa, fundoTeimoso } from './arte-teimosa.mjs';
 import { itemCanvas, outfitCanvas, outfitInfo, drawEffect, effectDuration, effectInfo } from './sprites.mjs';
 // O item e o level das duas portas de acesso, os mesmos que o servidor cobra.
@@ -9023,7 +9026,15 @@ function renderProficiency(body) {
   });
 
   const grid = el('div', 'prof-weapons');
-  for (const entry of weapons) {
+  /*
+   * No telefone a grade vem em páginas: eram as 678 armas desenhadas de uma
+   * vez (1.434 elementos, cada uma com o seu canvas), e só umas vinte cabem na
+   * tela. "Mostrar mais" acrescenta a próxima página. No computador segue
+   * inteira, como era.
+   */
+  const PAGINA_DE_ARMAS = 60;
+  const limite = ehTelefone() ? (ctx.tabs.profLimite ?? PAGINA_DE_ARMAS) : Infinity;
+  for (const entry of weapons.slice(0, limite)) {
     const cell = el('button', `prof-weapon${entry.equipped ? ' equipped' : ''}${entry.owned ? ' owned' : ''}`);
     cell.setAttribute('aria-selected', String(view?.itemId === entry.itemId));
     cell.append(itemCanvas(entry.itemId, 32));
@@ -9033,20 +9044,48 @@ function renderProficiency(body) {
       entry.itemId,
       `Grupo: ${entry.proficiency} — nível ${entry.level}${entry.owned ? '' : ' · você não tem esta arma'}`
     );
-    cell.onclick = () => send({ t: 'proficiency', itemId: entry.itemId });
+    cell.onclick = () => {
+      // Escolheu: no telefone a ficha da arma volta a ocupar a tela.
+      ctx.tabs.profNaLista = false;
+      send({ t: 'proficiency', itemId: entry.itemId });
+    };
     grid.append(cell);
   }
   if (!weapons.length) grid.append(el('p', 'empty', 'nenhuma arma com esse filtro'));
   left.append(grid);
+  if (weapons.length > limite) {
+    const mais = el('button', 'prof-mais', `Mostrar mais (${weapons.length - limite} restantes)`);
+    mais.type = 'button';
+    mais.onclick = () => {
+      ctx.tabs.profLimite = limite + PAGINA_DE_ARMAS;
+      ctx.redraw();
+    };
+    left.append(mais);
+  }
   left.append(el('em', 'prof-count', `${weapons.length} de ${list.length} armas`));
   layout.append(left);
 
   // ---- coluna da direita: a ficha da arma ----
   const right = el('div', 'prof-tree');
+  /*
+   * No telefone: a ficha da arma (a equipada, de saída) ocupa a tela, e
+   * "← Armas" mostra a grade para trocar (lista-detalhe.mjs).
+   */
+  const mostrarAMetade = () =>
+    listaDetalhe(layout, right, {
+      id: 'proficiencia',
+      rotulo: '← Armas',
+      escolhido: !!view && !ctx.tabs.profNaLista,
+      voltar: () => {
+        ctx.tabs.profNaLista = true;
+        ctx.redraw();
+      },
+    });
   if (!view) {
     right.append(el('p', 'empty', 'Escolha uma arma à esquerda, ou equipe uma que tenha proficiência.'));
     layout.append(right);
     body.append(layout);
+    mostrarAMetade();
     return;
   }
 
@@ -9164,6 +9203,7 @@ function renderProficiency(body) {
   right.append(tree);
   layout.append(right);
   body.append(layout);
+  mostrarAMetade();
 }
 
 // ---------- charms do bestiary ----------
@@ -10566,6 +10606,8 @@ function renderLojaDaArena(body, view) {
 export function openCharms() {
   ctx.send({ t: 'charms' });
   ctx.tabs.charmKind ??= 'offensive';
+  // No telefone a tela abre na grade (a ficha é a segunda tela).
+  ctx.tabs.charmNaFicha = false;
   ctx.openModal('Charms', (body) => {
     const draw = () => {
       body.innerHTML = '';
@@ -10757,6 +10799,7 @@ function renderCharms(body) {
   body.append(
     tabBar({ offensive: 'Ofensivos', defensive: 'Defensivos' }, kind, (next) => {
       ctx.tabs.charmKind = next;
+      ctx.tabs.charmNaFicha = false;
       /*
        * A criatura aberta fecha junto com a aba.
        *
@@ -10811,6 +10854,8 @@ function renderCharms(body) {
       ctx.tabs.charmSel = charm.id;
       // Trocar de charm fecha a busca de criatura do anterior.
       if (ctx.tabs.charmAberto !== charm.id) ctx.tabs.charmAberto = null;
+      // No telefone, tocar mostra a ficha dele (lista-detalhe.mjs).
+      ctx.tabs.charmNaFicha = true;
       ctx.redraw();
     };
     grade.append(tile);
@@ -10899,6 +10944,16 @@ function renderCharms(body) {
   }
   tela.append(ficha);
   body.append(tela);
+  // No telefone: a grade, ou a ficha do charm tocado — não os dois empilhados.
+  listaDetalhe(tela, ficha, {
+    id: 'charms',
+    rotulo: '← Charms',
+    escolhido: !!selecionado && !!ctx.tabs.charmNaFicha,
+    voltar: () => {
+      ctx.tabs.charmNaFicha = false;
+      ctx.redraw();
+    },
+  });
 
   /*
    * ---- O saldo, no rodapé ----
@@ -11737,6 +11792,7 @@ function imagemDoHistorico(linha) {
 export function abrirHistoricoDaLoja() {
   const { corpo, fechar } = janelaDoSaldo('Histórico da loja', 'historico-loja');
   let linhas = null;
+  let erro = null;
 
   const quando = (ms) =>
     new Date(ms).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -11744,10 +11800,13 @@ export function abrirHistoricoDaLoja() {
   const desenhar = () => {
     if (!corpo.isConnected) {
       ctx.aoHistoricoDaLoja = null;
+      ctx.recarregarHistoricoDaLoja = null;
       return;
     }
     corpo.innerHTML = '';
     if (!linhas) return void corpo.append(el('p', 'gate-note', 'Carregando o histórico...'));
+    // O servidor não conseguiu ler: dizer isso, e não "nenhuma compra".
+    if (erro) return void corpo.append(el('p', 'gate-note', erro));
 
     const lista = el('div', 'historico-lista rolagem');
     if (!linhas.length) lista.append(el('p', 'empty', 'Nada por aqui ainda: nenhuma compra, recarga ou transferência.'));
@@ -11772,7 +11831,17 @@ export function abrirHistoricoDaLoja() {
 
   ctx.aoHistoricoDaLoja = (mensagem) => {
     linhas = mensagem.linhas ?? [];
+    erro = mensagem.erro ?? null;
     desenhar();
+  };
+  /*
+   * A prateleira voltou (`store`, depois de uma compra) com a janela aberta:
+   * pede as linhas de novo, para a compra nova aparecer sem fechar e abrir.
+   * Fechada, não pede nada.
+   */
+  ctx.recarregarHistoricoDaLoja = () => {
+    if (corpo.isConnected) ctx.send({ t: 'historicoDaLoja' });
+    else ctx.recarregarHistoricoDaLoja = null;
   };
   desenhar();
   ctx.send({ t: 'historicoDaLoja' });
@@ -17813,6 +17882,7 @@ function renderCicloItens(body) {
         ctx.tabs.cicloItem = item.id;
         desenharLista();
         desenharFicha();
+        mostrarAMetade();
       };
       lista.append(linha);
     }
@@ -17888,10 +17958,23 @@ function renderCicloItens(body) {
     ctx.tabs.cicloBusca = busca.value;
     desenharLista();
   };
+  // No telefone: a lista, ou só a ficha do item escolhido (lista-detalhe.mjs).
+  const mostrarAMetade = () =>
+    listaDetalhe(layout, ficha, {
+      id: 'ciclo-itens',
+      escolhido: !!(ctx.tabs.cicloItem && state.items[ctx.tabs.cicloItem]),
+      voltar: () => {
+        ctx.tabs.cicloItem = null;
+        desenharLista();
+        desenharFicha();
+        mostrarAMetade();
+      },
+    });
   desenharLista();
   desenharFicha();
   layout.append(lista, ficha);
   body.append(layout);
+  mostrarAMetade();
 }
 
 /*
@@ -18110,7 +18193,17 @@ function renderBestiary(body) {
     layout.append(list);
 
     // ---- detalhe ----
-    layout.append(bestiaryDetail(catalog, kills));
+    const detalhe = bestiaryDetail(catalog, kills);
+    layout.append(detalhe);
+    // No telefone: a lista, ou só o detalhe da escolhida (lista-detalhe.mjs).
+    listaDetalhe(layout, detalhe, {
+      id: 'bestiary',
+      escolhido: !!(ctx.tabs.bestiaryPick && catalog[ctx.tabs.bestiaryPick]),
+      voltar: () => {
+        ctx.tabs.bestiaryPick = null;
+        pintar();
+      },
+    });
   }
 
   pintar();
@@ -18570,6 +18663,26 @@ function pecasDosAjustes(body, draw) {
 function abaDeInterface(body, draw) {
   const { secao, linha, fichaEm } = pecasDosAjustes(body, draw);
 
+  /*
+   * ---- No telefone: o que é do telefone, e nada do que não é ----
+   *
+   * O analógico (desligado de saída: tocar no mapa já anda) mora aqui e no
+   * "Mais". A "Ficha do personagem" (canto ou barra de baixo) não existe no
+   * telefone — o status é a faixa de cima — então a seção nem aparece.
+   */
+  if (ehTelefone()) {
+    const ligado = analogicoLigado();
+    const trocar = el('button', ligado ? 'primary' : 'ghost', ligado ? 'Ligado' : 'Desligado');
+    trocar.onclick = () => {
+      ligarAnalogico(!ligado);
+      draw();
+    };
+    secao(
+      'Celular',
+      linha('Analógico', 'Um controle de andar em cima do mapa. Sem ele, tocar no chão já leva o personagem até lá.', trocar)
+    );
+  }
+
   // ---- onde a ficha do personagem fica ----
   const encaixada = ajustesDaBarra.fichaEncaixada?.() ?? false;
   const trocarFicha = el(
@@ -18581,7 +18694,7 @@ function abaDeInterface(body, draw) {
     ajustesDaBarra.encaixarFicha?.(!encaixada);
     draw();
   };
-  secao(
+  if (!ehTelefone()) secao(
     'Ficha do personagem',
     linha(
       encaixada ? 'Encaixada na barra de baixo' : 'No canto superior esquerdo',
@@ -19118,7 +19231,12 @@ function abaDeJogo(body, draw) {
  * Aventuras e Tarefas: quem entrou para mexer nos gráficos volta nos gráficos.
  */
 export function openBarSettings() {
-  tabbedModal('Ajustes da tela', ABAS_DOS_AJUSTES, 'ajustes', (body, aba, draw) => {
+  // No telefone não há janelas para arrumar: cada tela abre por cima do jogo.
+  const abas = ehTelefone()
+    ? Object.fromEntries(Object.entries(ABAS_DOS_AJUSTES).filter(([id]) => id !== 'janelas'))
+    : ABAS_DOS_AJUSTES;
+  if (ehTelefone() && ctx.tabs.ajustes === 'janelas') ctx.tabs.ajustes = null;
+  tabbedModal('Ajustes da tela', abas, 'ajustes', (body, aba, draw) => {
     /*
      * O `?? abaDeInterface` não é decoração: `ctx.tabs.ajustes` vem do estado
      * guardado, e uma aba renomeada aqui deixaria a janela em branco para quem

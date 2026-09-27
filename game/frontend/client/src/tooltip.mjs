@@ -1,6 +1,7 @@
 // Tooltip de item: nome, o que ele faz e os atributos, como no client.
 // O level e o premium que os pergaminhos de acesso pedem. Ver
 // `packages/shared/src/portas-de-acesso.mjs`.
+import { ehTelefone } from './perfil.mjs';
 import { portaDoItemDeAcesso } from '/packages/shared/src/portas-de-acesso.mjs';
 import { itemCanvas, outfitCanvas, drawItem, drawEffect, drawMissile, effectDuration } from './sprites.mjs';
 
@@ -111,17 +112,90 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
     const comTitulo = event.target.closest('[title]');
     if (comTitulo) recolherTitulo(comTitulo);
 
+    /*
+     * O dedo não "passa por cima": ele só encosta. No toque o navegador manda
+     * um `pointerover` a cada batida, e o balão abria em TODO toque — num
+     * botão, num slot, na barra — e ficava preso na tela, porque o
+     * `pointerout` que o fecharia não vem até o próximo toque em outro lugar.
+     * No toque, quem abre o balão é segurar parado (ver `ligarBalaoNoToque`).
+     */
+    if (event.pointerType === 'touch') return;
+
     const holder = event.target.closest(SELETOR);
     if (!holder) return hide();
-    if (holder.dataset.tipPanel) showPanel(holder);
-    else if (holder.dataset.tipAction) showAction(holder);
-    else if (holder.dataset.tip) show(holder);
-    else showTexto(holder);
+    mostrarBalao(holder);
   });
   document.addEventListener('pointerout', (event) => {
+    if (event.pointerType === 'touch') return;
     if (!event.relatedTarget || !event.relatedTarget.closest?.(SELETOR)) hide();
   });
   window.addEventListener('scroll', hide, true);
+  ligarBalaoNoToque();
+}
+
+function mostrarBalao(holder) {
+  if (holder.dataset.tipPanel) showPanel(holder);
+  else if (holder.dataset.tipAction) showAction(holder);
+  else if (holder.dataset.tip) show(holder);
+  else showTexto(holder);
+}
+
+/*
+ * ---- O balão no TOQUE: segurar parado ----
+ *
+ * Um toque rápido é um clique e nada mais — nada de balão. Segurar o dedo
+ * parado em cima de algo que tem balão mostra o balão ainda com o dedo
+ * encostado, e ele fica na tela depois de soltar, para dar tempo de ler; o
+ * próximo toque (em qualquer lugar) ou uma rolagem o fecha.
+ *
+ * Isto só OLHA o dedo: não cancela nada. O toque longo continua valendo como
+ * botão direito ao soltar (`mobile.mjs`), e o arrasto continua sendo do
+ * navegador — se o dedo andar, o balão desiste.
+ */
+const BALAO_NO_TOQUE_MS = 450;
+const TREMOR_DO_BALAO = 12;
+
+function ligarBalaoNoToque() {
+  let espera = null;
+  const desistir = () => {
+    if (!espera) return;
+    clearTimeout(espera.timer);
+    espera = null;
+  };
+  document.addEventListener(
+    'pointerdown',
+    (evento) => {
+      if (evento.pointerType !== 'touch') return;
+      hide();
+      desistir();
+      if (!evento.isPrimary) return;
+      const comTitulo = evento.target.closest?.('[title]');
+      if (comTitulo) recolherTitulo(comTitulo);
+      const holder = evento.target.closest?.(SELETOR);
+      if (!holder) return;
+      espera = {
+        id: evento.pointerId,
+        x: evento.clientX,
+        y: evento.clientY,
+        timer: setTimeout(() => {
+          espera = null;
+          if (holder.isConnected) mostrarBalao(holder);
+        }, BALAO_NO_TOQUE_MS),
+      };
+    },
+    true
+  );
+  document.addEventListener(
+    'pointermove',
+    (evento) => {
+      if (!espera || evento.pointerId !== espera.id) return;
+      if (Math.abs(evento.clientX - espera.x) > TREMOR_DO_BALAO || Math.abs(evento.clientY - espera.y) > TREMOR_DO_BALAO) desistir();
+    },
+    true
+  );
+  for (const nome of ['pointerup', 'pointercancel']) {
+    document.addEventListener(nome, (evento) => { if (espera && evento.pointerId === espera.id) desistir(); }, true);
+  }
 }
 
 const SELETOR = '[data-tip], [data-tip-action], [data-tip-panel], [data-tip-texto]';
@@ -1331,6 +1405,16 @@ function palcoDaMagia(
   const quadro = (agora) => {
     // O painel foi refeito ou fechado: o laco morre com ele.
     if (!canvas.isConnected) return;
+    /*
+     * Na página mas sem aparecer (balão escondido, janela fechada com
+     * `hidden`): não há o que desenhar. Sem esta espera o laço seguia a 60
+     * quadros por segundo desenhando para ninguém. Olha de novo a cada meio
+     * segundo — reabrir a janela retoma a animação sozinho.
+     */
+    if (canvas.getClientRects().length === 0) {
+      setTimeout(() => requestAnimationFrame(quadro), 500);
+      return;
+    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -2588,6 +2672,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
 
 /** Encosta o tooltip no elemento sem sair da janela. */
 function place(holder) {
+  /*
+   * No telefone o par (o balão e o do que está vestido, lado a lado) é mais
+   * largo que a tela: fica só o principal, dentro das bordas. A comparação
+   * continua no computador, onde cabe.
+   */
+  if (ehTelefone() && nodeVs) nodeVs.hidden = true;
   const anchor = holder.getBoundingClientRect();
   const box = node.getBoundingClientRect();
 
@@ -2602,7 +2692,8 @@ function place(holder) {
 
   const esquerdaDoPar = Math.max(8, Math.min(anchor.left - larguraVs, window.innerWidth - largura - 8));
   const acima = anchor.top - box.height - 8;
-  const topo = acima > 8 ? acima : anchor.bottom + 8;
+  // Sem espaço em cima nem embaixo (balão alto, tela baixa): o mais alto que couber.
+  const topo = acima > 8 ? acima : Math.max(8, Math.min(anchor.bottom + 8, window.innerHeight - box.height - 8));
 
   node.style.left = `${esquerdaDoPar + larguraVs}px`;
   node.style.top = `${topo}px`;
