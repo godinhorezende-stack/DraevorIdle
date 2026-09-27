@@ -124,8 +124,12 @@ test('worker que morre: a chamada em andamento rejeita, mas o pool continua func
   // Sem acesso direto ao worker que pegou esta chamada (o pool não expõe
   // isso, de propósito) — encerrar todas as threads simula a pior queda: TODO
   // o pool cai no meio de um tique.
+  // O `rejects` se pendura na promessa ANTES de encerrar: `encerrar()` rejeita
+  // as chamadas em andamento na hora, e sem ninguém ouvindo isso vira
+  // unhandledRejection enquanto o terminate() ainda está rodando.
+  const rejeitou = assert.rejects(promessa, /pool encerrado|a thread saiu/);
   await Simulador.encerrar();
-  await assert.rejects(() => promessa);
+  await rejeitou;
   // O pool se recria sozinho na próxima chamada (mesmo padrão de `escolher()`/`nova()`).
   const r = await Simulador.tique(estado, PERSONAGEM, Date.now() + 500);
   assert.ok(r.estado);
