@@ -26673,3 +26673,95 @@ html[data-perfil="deitado"] body.com-gaveta #hotbar .slot:nth-child(6n + 1) { sc
 .cel-nav-centro .cel-nav-rotulo { white-space: normal; text-align: center; line-height: 1.05; font-size: 11px; }
 .cel-nav-centro[data-momento="treino"] .cel-ico { width: 20px; height: 20px; }
 html[data-perfil="retrato"] .cel-nav-centro[data-momento="treino"] .cel-ico { display: none; }
+
+/* ---- O menu do item (e de gente) no telefone em pé: folha embaixo ---- */
+html[data-perfil="retrato"] #context-menu {
+  left: 8px !important; right: 8px !important; top: auto !important;
+  bottom: calc(var(--seguro-baixo) + 8px) !important;
+  min-width: 0; max-width: none; max-height: 70dvh; overflow-y: auto;
+  border-radius: 14px; padding: 6px;
+  z-index: 85;
+}
+html[data-perfil="retrato"] #context-menu button,
+html[data-perfil="deitado"] #context-menu button {
+  min-height: 44px; font-size: 14px; text-align: left;
+}
+html[data-perfil="deitado"] #context-menu { max-height: calc(100dvh - 16px); overflow-y: auto; }
+
+/* ---- As abas da Mochila (celular.mjs) ---- */
+.cel-abas-mochila { display: none; }
+html[data-perfil="retrato"] .cel-abas-mochila:not([hidden]),
+html[data-perfil="deitado"] .cel-abas-mochila:not([hidden]) {
+  display: flex; gap: 4px; position: fixed; z-index: 48;
+  overflow-x: auto; scrollbar-width: none;
+  padding: 4px;
+  background: #0b1012f2; border: 1px solid var(--line); border-radius: 12px 12px 0 0; border-bottom: 0;
+}
+html[data-perfil="retrato"] .cel-abas-mochila { left: 6px; right: 6px; }
+html[data-perfil="deitado"] .cel-abas-mochila {
+  right: var(--seguro-dir); width: var(--cel-painel);
+  top: calc(var(--seguro-topo) + var(--cel-status) + 4px);
+}
+/* Deitado a faixa ocupa o topo do painel, e a janela desce o tanto dela. */
+html[data-perfil="deitado"] body.com-abas-mochila .window {
+  top: calc(var(--seguro-topo) + var(--cel-status) + 4px + 46px) !important;
+}
+.cel-abas-mochila::-webkit-scrollbar { display: none; }
+.cel-abas-mochila button {
+  flex: 1 0 auto; min-height: 38px; padding: 0 10px;
+  background: none; border: 1px solid transparent; border-radius: 8px;
+  color: var(--muted); font: 600 12px/1 system-ui, "Segoe UI", Roboto, sans-serif; white-space: nowrap;
+}
+.cel-abas-mochila button[aria-selected="true"] {
+  color: var(--text); background: var(--panel-2); border-color: var(--accent-dim);
+}
+.cel-nav-botao.ativo { color: var(--text); }
+.cel-nav-botao.ativo::before {
+  content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 2px; background: var(--accent);
+}
+html[data-perfil="deitado"] .cel-nav-botao.ativo::before { top: 30%; bottom: 30%; left: 0; right: auto; width: 2px; height: auto; }
+/* Quantos itens esperam na bolsa de loot. */
+.cel-nav-botao[data-conta]::after {
+  content: attr(data-conta); position: absolute; top: 4px; left: calc(50% + 6px);
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--accent-dim); color: #fff; font: 700 10px/16px system-ui, sans-serif; text-align: center;
+}
+
+/* ---- Store no telefone: seções em chips, produtos em grade ---- */
+html[data-perfil="retrato"] .modal-box.store .store-sections,
+html[data-perfil="deitado"] .modal-box.store .store-sections {
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+  grid-template-columns: none !important;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  gap: 6px; margin: 0 0 8px; padding: 2px 0 6px;
+  position: sticky; top: 0; z-index: 2; background: var(--panel-solid);
+}
+html[data-perfil="retrato"] .modal-box.store .store-sections::-webkit-scrollbar,
+html[data-perfil="deitado"] .modal-box.store .store-sections::-webkit-scrollbar { display: none; }
+html[data-perfil="retrato"] .modal-box.store .store-sections button,
+html[data-perfil="deitado"] .modal-box.store .store-sections button {
+  flex: none !important; width: auto !important; min-height: 40px !important; height: auto !important;
+  padding: 0 12px 0 8px !important; gap: 6px !important; border-radius: 20px !important;
+  font-size: 13px !important; white-space: nowrap;
+}
+html[data-perfil="retrato"] .modal-box.store .store-sections button img,
+html[data-perfil="deitado"] .modal-box.store .store-sections button img,
+html[data-perfil="retrato"] .modal-box.store .store-sections button canvas,
+html[data-perfil="deitado"] .modal-box.store .store-sections button canvas { width: 24px !important; height: 24px !important; }
+
+/* ---- Depósito no telefone: a grade da caixa cabe na largura ---- */
+/* Eram 10 colunas fixas de 44px (404px) dentro de 322px: as três últimas
+   ficavam fora do painel. Aqui são quantas couberem, com 40px no mínimo. */
+html[data-perfil="retrato"] .locker-grade.caixa-quadrada,
+html[data-perfil="deitado"] .locker-grade.caixa-quadrada {
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)) !important;
+  width: 100% !important; max-width: 100% !important;
+}
+html[data-perfil="retrato"] .locker-grade.caixa-quadrada > *,
+html[data-perfil="deitado"] .locker-grade.caixa-quadrada > * { width: auto !important; aspect-ratio: 1; height: auto !important; }
+/* Com uma tela cheia (modal) por cima, a pilha de baixo não aparece cortada atrás dela. */
+html[data-perfil="retrato"] body.com-modal .cel-nav,
+html[data-perfil="retrato"] body.com-modal .cel-chat,
+html[data-perfil="retrato"] body.com-modal .cel-paginas,
+html[data-perfil="retrato"] body.com-modal #actionbar,
+html[data-perfil="retrato"] body.com-modal .cel-abas-mochila { visibility: hidden; }

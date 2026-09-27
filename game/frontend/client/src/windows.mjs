@@ -669,7 +669,11 @@ const emColunas = () => {
 };
 
 /** Que espaço esta janela ocupa: um dos lados, deitado; o rodapé, em pé. */
-const faixaDa = (no) => (emColunas() ? no?.dataset.lado ?? 'dir' : 'rodape');
+const faixaDa = (no) => {
+  // No telefone deitado da casca nova (celular.mjs) todas dividem o painel da direita.
+  if (globalThis.document?.documentElement.dataset.perfil === 'deitado') return 'painel';
+  return emColunas() ? no?.dataset.lado ?? 'dir' : 'rodape';
+};
 
 /** Esconde as outras gavetas DA MESMA FAIXA, sem tocar no arranjo guardado. */
 function soUmaGaveta(id) {
@@ -697,7 +701,7 @@ function marcarGavetaAberta() {
   corpo.classList.toggle('com-gaveta', [...registry.values()].some((e) => !e.node.hidden));
 }
 
-export function setVisible(id, visible) {
+export function setVisible(id, visible, { gravar = true } = {}) {
   const entry = registry.get(id);
   if (!entry) return;
   const estavaFechada = entry.node.hidden;
@@ -713,14 +717,17 @@ export function setVisible(id, visible) {
     // `bringToFront` de um clique, por exemplo) não é motivo para redesenhar.
     if (estavaFechada) aoAbrirJanela.get(id)?.();
     // A gaveta no telefone é uma tela por cima do jogo: o voltar a fecha.
-    if (estavaFechada && emGaveta()) abrirNaPilha(`janela:${id}`, () => setVisible(id, false));
+    if (estavaFechada && emGaveta()) abrirNaPilha(`janela:${id}`, () => setVisible(id, false, { gravar: false }));
   }
   if (!visible) {
     marcarGavetaAberta();
     fechouNaPilha(`janela:${id}`);
   }
-  layout[id] = { ...layout[id], hidden: !visible };
-  save();
+  // `gravar: false` é o telefone abrindo uma aba: o arranjo do computador fica como está.
+  if (gravar) {
+    layout[id] = { ...layout[id], hidden: !visible };
+    save();
+  }
   document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', String(visible));
 }
 

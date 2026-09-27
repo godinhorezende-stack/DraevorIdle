@@ -225,7 +225,7 @@ function montar() {
   centro.classList.add('cel-nav-centro');
   nav.append(
     botaoDaNav('heroi', 'Herói', 'character', () => api.abrirHeroi()),
-    botaoDaNav('mochila', 'Mochila', 'inventory', () => api.abrirMochila()),
+    botaoDaNav('mochila', 'Mochila', 'inventory', tocarNaMochila),
     centro,
     botaoDaNav('loja', 'Loja', 'store', () => api.abrirLoja()),
     botaoDaNav('mais', 'Mais', 'options', abrirMais)
@@ -317,6 +317,141 @@ function mapaLivreNaEntrada() {
   }
 }
 
+/*
+ * ---- Tocar num item abre o menu dele ----
+ *
+ * No computador o clique esquerdo num item faz a ação mais comum e o menu
+ * completo fica no Ctrl + botão direito. No dedo não há Ctrl, e o clique
+ * esquerdo às cegas (equipou? moveu? usou?) é o que a auditoria apontou como
+ * o toque que "faz coisa sem perguntar".
+ *
+ * No telefone, tocar num item das janelas de itens abre o MESMO menu do
+ * Ctrl + direito (`itemMenu`, em inventory.mjs): Usar, Equipar, Desequipar,
+ * Mover, Guardar no depósito, Não coletar, Não vender... Nada é reescrito
+ * aqui — o toque só pede o menu à célula, pelo mesmo `contextmenu` com Ctrl
+ * que o mouse mandaria. A pressão longa continua sendo o atalho do direito
+ * (mobile.mjs) e arrastar continua arrastando.
+ */
+const JANELAS_DE_ITENS = new Set(['inventory', 'container', 'loot', 'bossPouch', 'storeInbox', 'browse']);
+function ligarMenuDoItem() {
+  document.addEventListener(
+    'click',
+    (evento) => {
+      // O clique que vem atrás de uma pressão longa já foi engolido (mobile.mjs).
+      if (!ehTelefone() || evento.defaultPrevented || evento.shiftKey) return;
+      const celula = evento.target.closest?.('.slot[data-tip], .cell[data-tip]');
+      if (!celula || typeof celula.oncontextmenu !== 'function') return;
+      if (!JANELAS_DE_ITENS.has(celula.closest('.window')?.dataset.windowId)) return;
+      evento.preventDefault();
+      evento.stopPropagation();
+      const caixa = celula.getBoundingClientRect();
+      celula.dispatchEvent(
+        new MouseEvent('contextmenu', {
+          bubbles: true,
+          cancelable: true,
+          ctrlKey: true,
+          button: 2,
+          clientX: caixa.left + caixa.width / 2,
+          clientY: caixa.top + caixa.height / 2,
+        })
+      );
+    },
+    true
+  );
+}
+
+/*
+ * ---- A Mochila: cinco janelas, uma seção ----
+ *
+ * Equipamento, mochila, bolsa de loot, Boss Pouch e Store Inbox eram cinco
+ * janelas com cinco botões espalhados pela barra de cima. No telefone elas
+ * viram abas de uma seção só: a faixa de abas fica presa em cima da gaveta
+ * enquanto qualquer uma das cinco estiver aberta, e cada aba abre a MESMA
+ * janela de sempre (com o mesmo desenho, arrasto e menus).
+ */
+const ABAS_DA_MOCHILA = [
+  ['inventory', 'Equipado'],
+  ['container', 'Mochila'],
+  ['loot', 'Loot'],
+  ['bossPouch', 'Boss Pouch'],
+  ['storeInbox', 'Store Inbox'],
+];
+const CHAVE_DA_ABA = 'draevor:aba-mochila';
+const abaGuardada = () => {
+  try {
+    const id = localStorage.getItem(CHAVE_DA_ABA);
+    return ABAS_DA_MOCHILA.some(([aba]) => aba === id) ? id : 'container';
+  } catch {
+    return 'container';
+  }
+};
+const abaAberta = () => ABAS_DA_MOCHILA.map(([id]) => id).find((id) => api.janelaAberta(id)) ?? null;
+
+function abrirAbaDaMochila(id) {
+  try {
+    localStorage.setItem(CHAVE_DA_ABA, id);
+  } catch {
+    /* sem armazenamento: só não lembra a aba */
+  }
+  for (const [outra] of ABAS_DA_MOCHILA) if (outra !== id) api.esconderJanela(outra);
+  api.abrirJanela(id);
+  pintarAbas();
+}
+
+/** O botão Mochila da navegação: abre a última aba usada, ou fecha a seção. */
+function tocarNaMochila() {
+  const aberta = abaAberta();
+  if (aberta) {
+    api.fecharJanela(aberta);
+    pintarAbas();
+    return;
+  }
+  abrirAbaDaMochila(abaGuardada());
+}
+
+function pintarAbas() {
+  if (!nos) return;
+  const aberta = ehTelefone() ? abaAberta() : null;
+  nos.abas.hidden = !aberta;
+  document.body.classList.toggle('com-abas-mochila', !!aberta);
+  nos.nav.querySelector('[data-cel="mochila"]')?.classList.toggle('ativo', !!aberta);
+  for (const botao of nos.abas.children) {
+    botao.setAttribute('aria-selected', String(botao.dataset.aba === aberta));
+  }
+  if (!aberta) return;
+  // Em pé a faixa vai logo acima da gaveta, que cresce de baixo para cima.
+  if (perfil() === 'retrato') {
+    const janela = document.querySelector(`.window[data-window-id="${aberta}"]`);
+    const topo = janela?.getBoundingClientRect().top ?? 0;
+    nos.abas.style.bottom = `${Math.max(0, Math.round(innerHeight - topo))}px`;
+  } else {
+    nos.abas.style.bottom = '';
+  }
+}
+
+function montarAbas() {
+  const abas = el('div', 'cel-abas-mochila');
+  abas.id = 'cel-abas-mochila';
+  abas.setAttribute('role', 'tablist');
+  abas.hidden = true;
+  for (const [id, rotulo] of ABAS_DA_MOCHILA) {
+    const botao = el('button', null, rotulo);
+    botao.type = 'button';
+    botao.dataset.aba = id;
+    botao.setAttribute('role', 'tab');
+    botao.onclick = () => abrirAbaDaMochila(id);
+    abas.append(botao);
+  }
+  document.getElementById('game').append(abas);
+  nos.abas = abas;
+  // Qualquer janela que abre ou fecha (pelo ✕, pelo voltar, pelo menu) repinta.
+  const olho = new MutationObserver(() => requestAnimationFrame(pintarAbas));
+  for (const janela of document.querySelectorAll('.window')) {
+    olho.observe(janela, { attributes: true, attributeFilter: ['hidden', 'style', 'class'] });
+  }
+  window.addEventListener('resize', () => requestAnimationFrame(pintarAbas));
+}
+
 export function initCelular(ferramentas) {
   api = ferramentas;
   // Trocar de personagem refaz o jogo, não a casca: ela é montada uma vez.
@@ -325,6 +460,8 @@ export function initCelular(ferramentas) {
     return atualizarCelular();
   }
   montar();
+  montarAbas();
+  ligarMenuDoItem();
   ligarFaixaDoChat();
   acomodarCarteira();
   ligarPaginas();
@@ -346,6 +483,14 @@ export function atualizarCelular() {
   if (personagem) {
     const texto = String(personagem.level ?? '');
     if (nos.nivel.textContent !== texto) nos.nivel.textContent = texto;
+  }
+  // Quantos itens esperam na bolsa de loot: o contador da Mochila.
+  const naBolsa = personagem?.pouch?.length ?? 0;
+  const mochila = nos.nav.querySelector('[data-cel="mochila"]');
+  const conta = naBolsa > 0 ? String(naBolsa > 999 ? '999+' : naBolsa) : '';
+  if (mochila.dataset.conta !== conta) {
+    if (conta) mochila.dataset.conta = conta;
+    else delete mochila.dataset.conta;
   }
   const alerta = api.temAlerta?.() ?? false;
   nos.nav.querySelector('[data-cel="mais"]').classList.toggle('alerta', alerta);
