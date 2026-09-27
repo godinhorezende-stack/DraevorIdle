@@ -36,6 +36,7 @@ import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, 
 import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/relatorio.mjs';
 import { salaDe, ligarAoDono } from './hunt/sala.mjs';
 import { alvoAtual, esperaOAlvoChegar, voltariaAtras, PERSEGUICAO_MAXIMA_MS } from './hunt/alvo.mjs';
+import { passoComProgresso, faltaAte, aindaTravado } from './hunt/progresso.mjs';
 import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros } from './hunt/combate.mjs';
@@ -556,13 +557,27 @@ function autoDisparo(estado, hunt, personagem) {
  * Roda o passo (movimento) e o golpe (combate) da hunt — chamado a cada
  * tique de rede (100ms), igual ao `processarMovimento` da cidade.
  */
-/** A casa vizinha andável e livre que mais afasta do alvo (e dos outros bichos). */
+/*
+ * A casa vizinha andável e livre que mais afasta do alvo (e dos outros bichos).
+ *
+ * ---- Recuar é AFASTAR do alvo, não andar de lado ----
+ *
+ * A nota do vizinho era a distância ao alvo + 0,1 x a distância ao bicho mais
+ * perto, e a da casa atual só a distância — sem os 0,1. Então todo passo de
+ * lado, que não afasta nada, "ganhava" (2,2 > 2): encostado numa parede, o
+ * personagem com Distância > 0 andava de lado, o bicho acompanhava, e ele
+ * voltava — 31,25 ↔ 32,25 para sempre (ahau, e 24 outros mapas). Agora só
+ * vale o vizinho que fica MAIS LONGE do alvo; os 0,1 só desempatam entre eles.
+ * Sem nenhum, não há recuo: ele fica e bate de onde está.
+ */
 function passoDeRecuo(grade, hunt, alvo) {
   let melhor = null;
-  let melhorNota = distancia(hunt.pos, alvo);
+  const agora = distancia(hunt.pos, alvo);
+  let melhorNota = -Infinity;
   for (const [dx, dy] of VIZINHANCA_8) {
     const viz = { x: hunt.pos.x + dx, y: hunt.pos.y + dy };
     if (!grade.andavel.has(`${viz.x},${viz.y}`)) continue;
+    if (distancia(viz, alvo) <= agora) continue;
     // Diagonal só se nenhum passo reto já afasta (ver `VIZINHANCA_4`).
     if (dx && dy && melhor && (melhor.x === hunt.pos.x || melhor.y === hunt.pos.y)) continue;
     if (hunt.monstros.some((m) => m.hp > 0 && m.x === viz.x && m.y === viz.y)) continue;
@@ -776,6 +791,9 @@ export function tique(estado, personagem, agora = Date.now()) {
       const alcance = alcanceDaArma(armaDoPersonagem(estado), estado);
       const querDistancia = hunt.lurando ? alcance : Math.max(1, Math.min(hunt.distancia || 1, alcance));
       const d = alvo ? distancia(hunt.pos, alvo) : 0;
+      // Chegou onde queria do alvo (ou ficou sem alvo): o que o vigia de
+      // progresso lembrava daquela perseguição não vale mais (ver `progresso.mjs`).
+      if (hunt.progresso && (!alvo || faltaAte(hunt.pos, alvo, querDistancia, hunt.distancia > 0) === 0)) hunt.progresso = null;
       // Saiu do laço para brigar: na volta, retoma pelo waypoint mais perto (`passoNoPercurso`).
       if (alvo && hunt.percurso) hunt.percurso.desviou = true;
       // Quanto tempo ele já corre atrás DESTE bicho sem chegar (ver `alvoAtual`).
@@ -793,21 +811,34 @@ export function tique(estado, personagem, agora = Date.now()) {
         destino = null;
       } else if (alvo && d > querDistancia) {
         const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-        destino = proximoPassoAte(grade, hunt.pos, alvo, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
-        const espera = !hunt.lurando && voltariaAtras(hunt, alvo, destino);
+        const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
+        // Parado sem caminho/saída e nada mudou: nem refaz a busca (ver `aindaTravado`).
+        const travado = !hunt.lurando && aindaTravado(hunt, alvo);
+        destino = travado ? null : proximoPassoAte(grade, hunt.pos, alvo, ocupado, casasDeBicho);
+        const espera = !travado && !hunt.lurando && voltariaAtras(hunt, alvo, destino);
         if (espera) destino = null;
+        // Sem ciclo: o passo que só repete casas sem chegar mais perto vira desvio ou parada (ver `progresso.mjs`).
+        const semCiclo = !travado && !hunt.lurando && !espera ? passoComProgresso(hunt, grade, alvo, destino, { quer: querDistancia, kite: hunt.distancia > 0, ocupado, bloqueado: casasDeBicho }) : destino;
+        const cicloParado = travado || (!!destino && !semCiclo);
+        destino = semCiclo;
         // Travado indo puxar um bicho (sem passo livre): tenta outro por 10s.
         // Com percurso vale também fora do lure — um bicho à vista do outro
         // lado de uma parede prendia o personagem parado para sempre (medido:
         // 48s num White Lion a 8 casas, em Werelions -1). Ele desiste do bicho
         // e segue o laço, que cedo ou tarde passa pelo lado de lá.
-        if (!destino && !espera && (hunt.lurando || hunt.percurso)) {
+        if (!destino && !espera && !cicloParado && (hunt.lurando || hunt.percurso)) {
           alvo.semCaminhoAte = (hunt.clock ?? 0) + 10_000;
           if (hunt.alvo === alvo.uid) hunt.alvo = null;
           if (!hunt.lurando && grade.percurso) destino = passoNoPercurso(estado, hunt, grade, casasDeBicho);
         }
       } else if (alvo && !hunt.lurando && hunt.distancia > 0 && d < querDistancia) {
-        destino = passoDeRecuo(grade, hunt, alvo);
+        const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
+        destino = passoComProgresso(hunt, grade, alvo, passoDeRecuo(grade, hunt, alvo), {
+          quer: querDistancia,
+          kite: true,
+          ocupado: (c) => casasDeBicho.has(`${c.x},${c.y}`),
+          bloqueado: casasDeBicho,
+        });
       } else if (!alvo && hunt.percurso && grade.percurso) {
         // Ninguém à vista: segue o laço da hunt (ver `percursoDoMapa`).
         const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
