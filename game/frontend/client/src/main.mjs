@@ -244,7 +244,21 @@ window.__map = mapView;
 
 // ---------- conexão ----------
 
-const send = (message) => socket?.readyState === 1 && socket.send(JSON.stringify(message));
+/*
+ * ---- Treinando, o client nem pede para andar ----
+ *
+ * No pátio (treino online) e no Exercise o personagem fica no posto que o
+ * SERVIDOR escolheu, a 1 SQM do boneco, e o servidor recusa todo movimento
+ * (`Treinos.emTreino`). Isto aqui é só o espelho visual: teclado, WASD, setas,
+ * clique, "Ir até lá" e o analógico do celular passam todos por `send`, então
+ * um filtro só cobre todos. O "soltei a tecla" (`dx:0, dy:0`) passa.
+ */
+const COMANDOS_DE_ANDAR = new Set(['walk', 'walkTo', 'huntWalk', 'huntWalkTo', 'huntEscada']);
+const treinandoAgora = () => state?.hunt?.huntId === 'treino' || !!state?.character?.exercicio?.treinando;
+const send = (message) => {
+  if (COMANDOS_DE_ANDAR.has(message?.t) && (message.dx || message.dy || message.x != null) && treinandoAgora()) return false;
+  return socket?.readyState === 1 && socket.send(JSON.stringify(message));
+};
 // Gancho de inspeção para as ferramentas de screenshot.
 window.__send = send;
 

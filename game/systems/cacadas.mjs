@@ -234,11 +234,15 @@ export function entrarNoPatio(estado) {
     uid: 800000 + i, key: null, name: b.nome ?? 'Target Dummy', look: b.look ?? 0, x: b.x, y: b.y, dir: 2,
     hp: 1_000_000, maxHp: 1_000_000, armor: 0, exp: 0, loot: [], dummy: true,
   }));
-  const inicio = casaAndavelMaisProxima(grade, Treinos.PARTIDA_DO_PATIO.x, Treinos.PARTIDA_DO_PATIO.y);
+  // O posto: a casa a 1 SQM do boneco, escolhida UMA vez (ver `Treinos.postoNoPatio`).
+  const posto = Treinos.postoNoPatio(grade.andavel, bonecos);
+  if (!posto) return { ok: false, erro: 'Não há lugar livre ao lado do boneco agora.' };
+  const alvo = monstros.find((m) => Math.max(Math.abs(m.x - posto.x), Math.abs(m.y - posto.y)) === 1) ?? monstros[0];
   const settings = estado.settings ?? {};
+  estado.rumo = null;
   estado.hunt = {
-    huntId: 'treino', modo: 'auto', z: grade.z, pos: { x: inicio.x, y: inicio.y, dir: 1 },
-    monstros, alvo: monstros[0].uid, strategy: 'nearest', distancia: Math.max(0, Math.min(6, Number(settings.distance) || 0)),
+    huntId: 'treino', modo: 'auto', z: grade.z, pos: { x: posto.x, y: posto.y, dir: direcaoPara(posto, alvo) }, posto: { x: posto.x, y: posto.y },
+    monstros, alvo: alvo.uid, strategy: 'nearest', distancia: Math.max(0, Math.min(6, Number(settings.distance) || 0)),
     rumo: null, rumoValidoAte: 0, proximoPassoEm: 0, proximoGolpeEm: 0, eventos: [], mapaEnviado: false,
     clock: 0, ultimoTique: Date.now(), cooldowns: {}, assistencia: true, autoBarra: true,
     levaAlvo: 0, lureVolta: 0, leva: 0, lurando: false, respawns: [], isBoss: false, bossId: null,
@@ -518,6 +522,33 @@ export function sair(estado) {
   return { ok: true };
 }
 
+/** Para que lado olhar, de `de` para `para` (0 norte, 1 leste, 2 sul, 3 oeste). */
+function direcaoPara(de, para) {
+  const dx = para.x - de.x;
+  const dy = para.y - de.y;
+  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 1 : 3;
+  return dy > 0 ? 2 : 0;
+}
+
+/*
+ * ---- Encerrar o treino online (o pátio) ----
+ *
+ * O "parar" do pátio (`training stop` e `stopHunt`) caía em `Exercicio.parar`,
+ * que só conhece o Exercise: respondia "Você não está treinando." com o
+ * personagem DENTRO do pátio, e não havia saída — `relatorioDoPatio` existia e
+ * ninguém chamava. Aqui: o relatório, a hunt some (ele volta para a casa da
+ * cidade de onde saiu, que nunca mudou — a lógica de sempre da volta de uma
+ * caçada) e o movimento fica livre de novo, porque `Treinos.emTreino` deixa de
+ * valer.
+ */
+export function sairDoPatio(estado) {
+  if (estado.hunt?.huntId !== 'treino') return { ok: false, erro: 'Você não está treinando.' };
+  const relatorio = Treinos.relatorioDoPatio(estado);
+  estado.hunt = null;
+  estado.rumo = null;
+  return { ok: true, relatorio };
+}
+
 /** `send({t:'huntTarget', uid})` — `uid:null` cancela o alvo. */
 export function definirAlvo(estado, { uid }) {
   if (!estado.hunt) return { ok: false, erro: 'Você não está numa hunt.' };
@@ -743,7 +774,25 @@ export function tique(estado, personagem, agora = Date.now()) {
     hunt.percurso.passo = waypointMaisPerto(grade.percurso, hunt.pos, 0, grade.percurso.length, hunt.z);
   }
 
-  if (R.jaPode(agora, hunt.proximoPassoEm)) {
+  /*
+   * ---- No pátio, nenhum passo ----
+   *
+   * O pátio rodava o passo da Caça Automática: com "Distância" > 0 o kite
+   * levava o personagem a 3 SQM do boneco (18,12 → 18,14), e o `huntWalk` do
+   * teclado/analógico andava. Treinando, ele fica no posto escolhido na entrada
+   * (`hunt.posto`): sem rumo manual, sem perseguição, sem recuo, sem rota. Se
+   * por algum caminho a posição divergir do posto (uma caçada gravada antes
+   * disto), o servidor a devolve ao posto — sem recalcular nada.
+   */
+  if (hunt.huntId === 'treino') {
+    hunt.rumo = null;
+    // Pátio gravado antes de existir o posto: escolhe uma vez e guarda.
+    hunt.posto ??= Treinos.postoNoPatio(grade.andavel);
+    if (hunt.posto && (hunt.pos.x !== hunt.posto.x || hunt.pos.y !== hunt.posto.y)) {
+      hunt.pos.x = hunt.posto.x;
+      hunt.pos.y = hunt.posto.y;
+    }
+  } else if (R.jaPode(agora, hunt.proximoPassoEm)) {
     let destino = null;
     if (hunt.rumo && agora <= (hunt.rumoValidoAte ?? 0)) {
       // Caça Online: passo manual (`huntWalk`), sem ajuda de caminho — é o jogador apontando.
@@ -964,6 +1013,11 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
 /** `send({t:'huntWalk', dx, dy})` — mesmo modelo de rumo do `andar` da cidade. */
 export function andar(estado, { dx, dy }) {
   if (!estado.hunt) return;
+  // No pátio o personagem fica no posto: movimento pedido é recusado.
+  if (estado.hunt.huntId === 'treino') {
+    estado.hunt.rumo = null;
+    return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
+  }
   if (!dx && !dy) {
     estado.hunt.rumo = null;
     return;
@@ -983,6 +1037,7 @@ export function andar(estado, { dx, dy }) {
 export function usarEscada(estado, { x, y }) {
   const hunt = estado.hunt;
   if (!hunt) return { ok: false, erro: 'Você não está numa hunt.' };
+  if (hunt.huntId === 'treino') return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
   const base = gradeDaHunt(huntOuMapaCustom(hunt.huntId));
   const mapa = base.mapa;
   const tipo = Number(mapa?.floors?.[hunt.z]?.escada?.[y * mapa.width + x] ?? 0);

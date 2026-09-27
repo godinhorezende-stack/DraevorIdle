@@ -41,6 +41,44 @@ export function bonecos() {
   ];
 }
 
+/*
+ * ---- O posto do treino: uma casa a 1 SQM do boneco, e dali ele não sai ----
+ *
+ * "Ao iniciar o treino online, o servidor posiciona o personagem numa posição
+ * válida a exatamente 1 SQM do boneco, e ele fica FIXO nela." Válida é uma casa
+ * andável do mapa da sala, que não é a de um boneco, colada (Chebyshev 1) em
+ * algum boneco. Entre elas vale a de sempre (`PARTIDA_DO_PATIO`, entre os dois
+ * bonecos — na sala real é a ÚNICA assim); senão, a mais perto dela, e no
+ * empate a primeira em ordem de linha/coluna, para dar sempre a mesma.
+ * Calculado UMA vez, na entrada (`hunt.posto`) — nunca a cada tique.
+ */
+export function postoNoPatio(andavel, lista = bonecos()) {
+  const eBoneco = (x, y) => lista.some((b) => b.x === x && b.y === y);
+  const validas = [];
+  for (const b of lista) {
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const x = b.x + dx;
+        const y = b.y + dy;
+        if ((dx || dy) && andavel.has(`${x},${y}`) && !eBoneco(x, y) && !validas.some((c) => c.x === x && c.y === y)) validas.push({ x, y });
+      }
+    }
+  }
+  const longe = (c) => Math.max(Math.abs(c.x - PARTIDA_DO_PATIO.x), Math.abs(c.y - PARTIDA_DO_PATIO.y));
+  validas.sort((a, b) => longe(a) - longe(b) || a.y - b.y || a.x - b.x);
+  return validas[0] ?? null;
+}
+
+/**
+ * Treinando online agora? O pátio (a hunt 'treino') ou o Exercise ligado.
+ * É a verdade do SERVIDOR: enquanto isto for `true`, nenhum comando de
+ * movimento mexe no personagem (`walk`, `huntWalk`, `huntEscada`) e nenhum
+ * passo automático roda — ver `sessao.mjs` e `Cacadas.tique`.
+ */
+export function emTreino(estado) {
+  return estado?.hunt?.huntId === 'treino' || !!estado?.exercicio?.treinando;
+}
+
 // ---------------------------------------------------- stamina de treino
 
 export function tanque(estado) {

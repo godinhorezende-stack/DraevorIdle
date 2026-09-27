@@ -29,8 +29,13 @@ import * as Treino from './treino.mjs';
  * (as dos lados primeiro, para ele ficar de frente) e cada carga gasta é um
  * golpe na tela, com o efeito da arma — o do script de exercise do servidor
  * base (canary): arco atira flecha, rod o gelo pequeno, wand o fogo; as de
- * corpo a corpo acertam o boneco, o escudo bloqueia. Afastar-se do boneco
- * para o treino (ver `sessao.mjs`).
+ * corpo a corpo acertam o boneco, o escudo bloqueia.
+ *
+ * Treinando, ele fica FIXO nessa casa (`exercicio.posto`): o servidor recusa
+ * todo movimento (ver `Treinos.emTreino` e `sessao.mjs`). Antes ele podia sair
+ * andando e o treino parava por "afastou-se mais de 1 SQM" — agora o treino só
+ * acaba pelo botão de parar, pelas cargas no fim ou por outra ação do jogo que
+ * já o encerrava (entrar numa caçada, na arena).
  */
 const BONECOS = (CITY_META.objetos ?? []).filter((o) => o.acao === 'exercise');
 const EFEITO_DO_GOLPE = { melee: 10, shielding: 4 }; // CONST_ME_HITAREA, CONST_ME_BLOCKHIT
@@ -71,7 +76,7 @@ function golpeNaTela(estado, arma, eventos) {
   eventos.push({ t: 'fx', id: EFEITO_DO_GOLPE[tipo] ?? EFEITO_DO_GOLPE.melee, uid: boneco.uid, x: boneco.x, y: boneco.y });
 }
 
-/** Ainda está colado no boneco em que começou? (Andou para longe: o treino para.) */
+/** Ainda está colado no boneco em que começou? (A integridade do posto — não é mais o que encerra o treino.) */
 export function noBoneco(estado) {
   const b = estado.exercicio?.boneco;
   if (!b) return true;
@@ -125,8 +130,23 @@ export function comecar(estado, { itemId }) {
     estado.rumo = null;
   }
   const boneco = lugar ? { uid: lugar.boneco.uid, x: lugar.boneco.x, y: lugar.boneco.y } : null;
-  estado.exercicio = { itemId: id, treinando: true, desde: Date.now(), acumulado: 0, gastas: {}, antes, boneco };
+  const posto = lugar ? { x: lugar.casa.x, y: lugar.casa.y } : null;
+  estado.exercicio = { itemId: id, treinando: true, desde: Date.now(), acumulado: 0, gastas: {}, antes, boneco, posto };
   return { ok: true };
+}
+
+/**
+ * Treinando, a posição é a do posto, e só: se por qualquer caminho ela
+ * divergir (um estado gravado antes do posto existir não tem posto e fica
+ * como está), o servidor a devolve. Não recalcula nada — compara e copia.
+ */
+export function manterNoPosto(estado) {
+  const ex = estado.exercicio;
+  if (!ex?.treinando || !ex.posto || !estado.pos) return false;
+  if (estado.pos.x === ex.posto.x && estado.pos.y === ex.posto.y && (estado.pos.z ?? R.POSICAO_INICIAL.z) === R.POSICAO_INICIAL.z) return false;
+  estado.pos = { ...estado.pos, x: ex.posto.x, y: ex.posto.y, z: R.POSICAO_INICIAL.z };
+  estado.rumo = null;
+  return true;
 }
 
 /** `send({t:'training', action:'stop'})` — para e devolve o relatório. */

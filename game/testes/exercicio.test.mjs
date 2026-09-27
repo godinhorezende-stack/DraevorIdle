@@ -45,9 +45,19 @@ test('cada carga é um golpe na tela, com o efeito da arma', () => {
   assert.equal(golpes(44065).eventos.find((x) => x.t === 'fx')?.id, 4, 'escudo: bloqueio');
 });
 
-test('afastar-se do boneco tira o personagem do treino (noBoneco)', () => {
+// Antes: "afastar-se do boneco tira o personagem do treino". Agora a distância
+// não encerra o treino — o personagem nem consegue se afastar (o servidor
+// recusa o movimento, ver `treino-posto.test.mjs`). `noBoneco` segue dizendo se
+// ele está colado; `manterNoPosto` o devolve ao posto se algo o tirou de lá.
+test('fora do posto (noBoneco falso): volta ao posto e continua treinando', () => {
   const e = treinandoCom(28552);
   assert.equal(Exercicio.noBoneco(e), true);
+  const posto = { ...e.exercicio.posto };
   e.pos.x += 3;
   assert.equal(Exercicio.noBoneco(e), false);
+  assert.equal(Exercicio.manterNoPosto(e), true);
+  assert.deepEqual({ x: e.pos.x, y: e.pos.y }, posto);
+  assert.equal(Exercicio.noBoneco(e), true);
+  assert.equal(e.exercicio.treinando, true);
+  assert.equal(Exercicio.manterNoPosto(e), false, 'já no posto: nada a fazer');
 });

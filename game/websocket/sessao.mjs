@@ -450,19 +450,33 @@ export class Sessao {
     if (m.action) this.aplicar(r);
   }
 
-  despacharTreino(m) {
+  async despacharTreino(m) {
     if (m.action === 'stop') {
-      const r = Exercicio.parar(this.estado);
+      // O pátio (treino online) e o Exercise têm cada um o seu fim; "Você não
+      // está treinando." só quando NENHUM dos dois está ligado.
+      const r = this.estado.hunt?.huntId === 'treino' ? Cacadas.sairDoPatio(this.estado) : Exercicio.parar(this.estado);
       if (r.relatorio) this.enviar(r.relatorio);
-      return this.aplicar(r);
+      if (!r.ok) return this.aplicar(r);
+      this.estado.rumo = null;
+      this.characterSujo = true;
+      // A posição nova (a da cidade) vai para o banco agora, e o cliente recebe
+      // o quadro INTEIRO — com o mapa da cidade, se ele voltou do pátio.
+      if (r.notice) this.avisoPendente = r.notice;
+      this.mandarEstado(true);
+      return this.gravarAgora().catch((e) => console.error('gravar ao parar o treino', e.message));
     }
-    if (m.action === 'start' && m.mode === 'exercise') return this.aplicar(Exercicio.comecar(this.estado, m));
-    if (m.action === 'start' && m.mode === 'online') {
-      if (this.estado.exercicio?.treinando) {
+    if ((m.action === 'start' && m.mode === 'exercise') || (m.action === 'start' && m.mode === 'online')) {
+      if (m.mode === 'online' && this.estado.exercicio?.treinando) {
         const r = Exercicio.parar(this.estado);
         if (r.relatorio) this.enviar(r.relatorio);
       }
-      return this.aplicar(Cacadas.entrarNoPatio(this.estado));
+      // O servidor põe o personagem no posto (1 SQM do boneco), grava a posição
+      // e só então o treino começa a valer — com o movimento já bloqueado.
+      const r = m.mode === 'exercise' ? Exercicio.comecar(this.estado, m) : Cacadas.entrarNoPatio(this.estado);
+      if (!r.ok) return this.aplicar(r);
+      this.estado.rumo = null;
+      this.aplicar(r);
+      return this.gravarAgora().catch((e) => console.error('gravar ao começar o treino', e.message));
     }
     if (m.action === 'start' && m.mode === 'offline') {
       // "Ao confirmar, você sai deste personagem e volta para a lista."
@@ -1083,6 +1097,7 @@ export class Sessao {
       case 'huntTarget':
         return this.aplicar(Cacadas.definirAlvo(this.estado, m));
       case 'huntWalk':
+        // Recusado no pátio (`Cacadas.andar`); sem aviso, porque a tecla presa repete isto a cada 100ms.
         return void Cacadas.andar(this.estado, m);
       case 'huntEscada':
         return this.aplicar(Cacadas.usarEscada(this.estado, m));
@@ -1486,6 +1501,11 @@ export class Sessao {
    */
   andar({ dx, dy }) {
     if (!this.estado) return;
+    // Treinando (pátio ou Exercise), o servidor recusa o passo: o personagem fica no posto.
+    if (Treinos.emTreino(this.estado)) {
+      this.estado.rumo = null;
+      return;
+    }
     if (!dx && !dy) {
       this.estado.rumo = null;
       return;
@@ -1511,6 +1531,11 @@ export class Sessao {
   processarMovimento() {
     const estado = this.estado;
     if (!estado?.rumo) return;
+    // Nenhum rumo antigo sobrevive ao começo do treino.
+    if (Treinos.emTreino(estado)) {
+      estado.rumo = null;
+      return;
+    }
     const agora = Date.now();
     if (agora > (estado.rumoValidoAte ?? 0)) {
       estado.rumo = null;
@@ -1847,12 +1872,10 @@ export class Sessao {
     if (doTreino) this.enviar(doTreino);
     this.ultimaRegen = agora;
     this.processarMovimento();
-    // Saiu andando de perto do boneco: o treino para, com o relatório.
-    if (this.estado.exercicio?.treinando && !Exercicio.noBoneco(this.estado)) {
-      const r = Exercicio.parar(this.estado);
-      if (r.relatorio) this.enviar(r.relatorio);
-      this.avisoPendente = 'Você se afastou do boneco: o treino parou.';
-    }
+    // Treinando no Exercise, a posição é a do posto (movimento é recusado em
+    // `andar`); a distância NÃO encerra mais o treino — isto só garante a
+    // integridade, devolvendo ao posto se algo o tirou de lá.
+    Exercicio.manterNoPosto(this.estado);
     this.mandarEstado(false, golpes);
   }
 
