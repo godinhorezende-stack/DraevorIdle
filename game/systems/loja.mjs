@@ -247,6 +247,20 @@ export function comprar(estado, { id }, conta = null) {
   return { ok: true };
 }
 
+/**
+ * O que a linha do Histórico da loja (`historicoDaLoja`, ver
+ * `historico-da-loja.mjs`) mostra de uma compra: o nome do produto e a figura
+ * — a mesma arte/sprite/aparência do cartão na prateleira (`imagemDoHistorico`
+ * no client lê `imagem.art`, `imagem.itemId` ou `imagem.look`).
+ */
+export function descricaoDaCompra(id) {
+  const e = ENTRADA_POR_ID.get(id);
+  const nome = e?.name ?? (id === 'cofre-vagas' ? 'Vagas no Baú da Conta' : id);
+  const titulo = e?.amount > 1 ? `${e.amount}x ${nome}` : nome;
+  const imagem = e?.art ? { art: e.art } : e?.itemId ? { itemId: e.itemId } : e?.look ? { look: e.look } : null;
+  return { titulo, imagem };
+}
+
 function precoDoId(id) {
   const real = ENTRADA_POR_ID.get(id)?.coins;
   if (real != null) return real;

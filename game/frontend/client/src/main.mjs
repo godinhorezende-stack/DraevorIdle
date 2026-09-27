@@ -974,6 +974,7 @@ function handle(message) {
     case 'store':
       state.store = message.store;
       panelCtx.redraw?.();
+      panelCtx.recarregarHistoricoDaLoja?.();
       /* O `+` da barra pediu o catálogo para poder abrir. Ver `pedirDraevorCoins`. */
       if (esperandoAsCoins) {
         esperandoAsCoins = false;

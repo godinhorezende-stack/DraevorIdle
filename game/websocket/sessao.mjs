@@ -15,6 +15,7 @@ import * as Inventario from '../systems/inventario.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as Aparencia from '../systems/aparencia.mjs';
 import * as Loja from '../systems/loja.mjs';
+import * as HistoricoDaLoja from '../systems/historico-da-loja.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import * as Treino from '../systems/treino.mjs';
@@ -598,11 +599,13 @@ export class Sessao {
    * pelo canal de sempre, e a prateleira volta do mesmo jeito que estava.
    */
   async despacharLoja(m) {
+    const coinsAntes = this.estado.coins ?? 0;
     if (m.action === 'buy' && m.id === 'cofre-vagas') {
       // Vagas do Baú da Conta: a caixa é da conta, gravada na tabela própria.
       const daConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
       const r = Deposito.comprarVagas(this.estado, daConta);
       if (r.ok) await B.gravarBauDaConta(this.conta.id, daConta);
+      if (r.ok) await this.anotarCompraNaLoja(m.id, coinsAntes);
       this.estado.bauDaConta = daConta;
       this.aplicar(r.ok ? { ...r, notice: `Caixa compartilhada: ${daConta.teto} vagas.` } : r);
       // A prateleira volta com o "Agora X → Y" novo.
@@ -615,10 +618,45 @@ export class Sessao {
       const resultado = Loja.comprar(this.estado, m, daConta);
       if (!resultado.ok) return this.erro(resultado.erro);
       if (resultado.conta) await B.gravarMelhoriasDaConta(this.conta.id, daConta);
+      await this.anotarCompraNaLoja(m.id, coinsAntes);
       if (resultado.notice) this.avisoPendente = resultado.notice;
       this.mandarEstado();
     }
     this.enviar({ t: 'store', store: Loja.catalogoDaLoja(this.estado, daConta) });
+  }
+
+  /**
+   * A compra vai para o Histórico da loja (`historico-da-loja.mjs`) com o que
+   * de fato saiu do saldo — a diferença das coins, e não o preço de tabela.
+   * Roda dentro da transação da compra (`store` com `action` é comando de
+   * economia): se a gravação falhar, a compra inteira volta (ROLLBACK).
+   */
+  async anotarCompraNaLoja(id, coinsAntes) {
+    const coins = coinsAntes - (this.estado.coins ?? 0);
+    if (!(coins > 0)) return;
+    await HistoricoDaLoja.registrarCompra({
+      conta: this.conta.id,
+      personagem: this.personagem.id,
+      nome: this.personagem.nome,
+      produto: String(id),
+      ...Loja.descricaoDaCompra(String(id)),
+      coins,
+    });
+  }
+
+  /**
+   * `send({t:'historicoDaLoja'})` → `{t:'historicoDaLoja', linhas}` — as últimas
+   * compras da conta, a mais recente primeiro. Se o banco falhar, a resposta
+   * vai assim mesmo, com `erro`: a janela não pode ficar presa em "Carregando".
+   */
+  async mandarHistoricoDaLoja() {
+    if (!this.conta || !this.personagem) return;
+    try {
+      this.enviar({ t: 'historicoDaLoja', linhas: await HistoricoDaLoja.ultimas(this.conta.id) });
+    } catch (e) {
+      console.error('historicoDaLoja ->', e.message);
+      this.enviar({ t: 'historicoDaLoja', linhas: [], erro: 'Não deu para carregar o histórico agora. Tente de novo em instantes.' });
+    }
   }
 
   /**
@@ -1020,6 +1058,8 @@ export class Sessao {
         return this.aplicar(Aparencia.equiparMontaria(this.estado, m));
       case 'store':
         return this.despacharLoja(m);
+      case 'historicoDaLoja':
+        return this.mandarHistoricoDaLoja();
       case 'startHunt': {
         // Treinando no boneco? Para o treino (com o relatório) antes de sair caçando.
         if (this.estado.exercicio?.treinando) {

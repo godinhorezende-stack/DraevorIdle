@@ -11737,6 +11737,7 @@ function imagemDoHistorico(linha) {
 export function abrirHistoricoDaLoja() {
   const { corpo, fechar } = janelaDoSaldo('Histórico da loja', 'historico-loja');
   let linhas = null;
+  let erro = null;
 
   const quando = (ms) =>
     new Date(ms).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -11744,10 +11745,13 @@ export function abrirHistoricoDaLoja() {
   const desenhar = () => {
     if (!corpo.isConnected) {
       ctx.aoHistoricoDaLoja = null;
+      ctx.recarregarHistoricoDaLoja = null;
       return;
     }
     corpo.innerHTML = '';
     if (!linhas) return void corpo.append(el('p', 'gate-note', 'Carregando o histórico...'));
+    // O servidor não conseguiu ler: dizer isso, e não "nenhuma compra".
+    if (erro) return void corpo.append(el('p', 'gate-note', erro));
 
     const lista = el('div', 'historico-lista rolagem');
     if (!linhas.length) lista.append(el('p', 'empty', 'Nada por aqui ainda: nenhuma compra, recarga ou transferência.'));
@@ -11772,7 +11776,17 @@ export function abrirHistoricoDaLoja() {
 
   ctx.aoHistoricoDaLoja = (mensagem) => {
     linhas = mensagem.linhas ?? [];
+    erro = mensagem.erro ?? null;
     desenhar();
+  };
+  /*
+   * A prateleira voltou (`store`, depois de uma compra) com a janela aberta:
+   * pede as linhas de novo, para a compra nova aparecer sem fechar e abrir.
+   * Fechada, não pede nada.
+   */
+  ctx.recarregarHistoricoDaLoja = () => {
+    if (corpo.isConnected) ctx.send({ t: 'historicoDaLoja' });
+    else ctx.recarregarHistoricoDaLoja = null;
   };
   desenhar();
   ctx.send({ t: 'historicoDaLoja' });
