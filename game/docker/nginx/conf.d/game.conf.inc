@@ -4,6 +4,24 @@
 # glob quebraria o nginx inteiro na subida.
 client_max_body_size 1m;
 
+location /api/mapas {
+  # Editor de mapas/painel admin — mesmo processo do jogo (sem segunda
+  # instância), mas nunca exposto ao público: só quem chega via túnel SSH
+  # (`ssh -L 8080:127.0.0.1:80 usuario@vps`, depois acessar
+  # http://localhost:8080/api/mapas/... local) aparece como 127.0.0.1 aqui.
+  allow 127.0.0.1;
+  allow ::1;
+  deny all;
+
+  proxy_pass http://game;
+  proxy_http_version 1.1;
+  proxy_set_header Connection "";
+  proxy_set_header Host $host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+}
+
 location /ws {
   proxy_pass http://game;
   proxy_http_version 1.1;
