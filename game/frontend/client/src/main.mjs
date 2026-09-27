@@ -10,7 +10,7 @@ import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
 import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from './hud.mjs';
 import { ARTES } from './artes.mjs';
 import { abrirNaPilha, fechouNaPilha, fechouNaPilhaTudoQue } from './pilha.mjs';
-import { ligarPerfil } from './perfil.mjs';
+import { ligarPerfil, ehTelefone } from './perfil.mjs';
 import { initCelular, atualizarCelular, analogicoLigado } from './celular.mjs';
 import {
   initInventory,
@@ -2629,6 +2629,7 @@ function buildWindows() {
         tip: 'Trocar de personagem ou sair da conta.' },
     ],
     abrirFicha: () => openCharacter('sheet'),
+    abrirParty: () => openParty(),
     abrirAparencia: () => openCharacter('look'),
     sistemas: () => SISTEMAS,
     janelaAberta: (id) => isVisible(id),
@@ -6572,7 +6573,8 @@ function cuidarDaJanelaDaParty() {
     partyVistaComo = marca;
     // A party mudou (entrou, saiu, alguém entrou): a janela volta a valer.
     partyFechadaPeloJogador = false;
-    if (party) setVisible('party', true);
+    // No telefone a Party é o modal (celular.mjs): a gaveta não abre sozinha por cima do mapa.
+    if (party && !ehTelefone()) setVisible('party', true);
   }
   if (!isVisible('party')) {
     if (party) partyFechadaPeloJogador = true;
