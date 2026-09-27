@@ -10,7 +10,8 @@
 //                         delta | jaTenhoCatalogo | oculta
 import * as B from '../../game/database/banco.mjs';
 import * as R from '../systems/regras.mjs';
-import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado } from '../systems/dados.mjs';
+import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado, gradeDaCidade } from '../systems/dados.mjs';
+import { proximoPassoAte, temCaminho } from '../systems/hunt/caminho.mjs';
 import * as Inventario from '../systems/inventario.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as Aparencia from '../systems/aparencia.mjs';
@@ -588,6 +589,11 @@ export class Sessao {
     if (r) this.aplicar({ ok: true });
   }
 
+  /** Um comando que não muda nada visível na hora: só o erro volta (o passo aparece no próximo quadro). */
+  aplicarSoErro(resultado) {
+    if (resultado && !resultado.ok) return this.erro(resultado.erro);
+  }
+
   aplicar(resultado) {
     if (!resultado.ok) return this.erro(resultado.erro);
     if (resultado.notice) this.avisoPendente = resultado.notice;
@@ -844,6 +850,10 @@ export class Sessao {
         return this.deixarOffline();
       case 'walk':
         return this.andar(m);
+      case 'walkTo':
+        return this.andarAte(m);
+      case 'huntWalkTo':
+        return this.aplicarSoErro(Cacadas.andarAte(this.estado, m));
       case 'virar':
         return this.virar(m);
       case 'pedirMapa': {
@@ -1416,7 +1426,7 @@ export class Sessao {
    */
   async gravarAgora() {
     if (!this.personagem || !this.estado) return;
-    const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
+    const { rumo, rumoValidoAte, proximoPassoEm, destino, bauDaConta, ...estadoPersistido } = this.estado;
     const copia = estadoPersistido.hunt ? { ...estadoPersistido, hunt: { ...Cacadas.huntParaGravar(estadoPersistido.hunt), offlineDesde: Date.now() } } : estadoPersistido;
     // ANTES do `await`: sem isto, o autosave do próximo tique (250ms depois)
     // veria `gravadoEm` ainda velho enquanto esta gravação está em voo (rede,
@@ -1441,7 +1451,7 @@ export class Sessao {
     // Numa hunt, ela segue "offline": grava de quando, e a volta simula o resto.
     if (this.estado.hunt) this.estado.hunt.offlineDesde = Date.now();
     // `bauDaConta` é da conta (tabela própria), não do personagem.
-    const { rumo, rumoValidoAte, proximoPassoEm, bauDaConta, ...estadoPersistido } = this.estado;
+    const { rumo, rumoValidoAte, proximoPassoEm, destino, bauDaConta, ...estadoPersistido } = this.estado;
     if (estadoPersistido.hunt) estadoPersistido.hunt = Cacadas.huntParaGravar(estadoPersistido.hunt);
     // Devolvida (não `await`ada aqui): quem só quer sair rápido (fechar aba,
     // trocar de personagem) ignora o retorno e segue — mesmo fogo-e-esquece
@@ -1504,14 +1514,48 @@ export class Sessao {
     // Treinando (pátio ou Exercise), o servidor recusa o passo: o personagem fica no posto.
     if (Treinos.emTreino(this.estado)) {
       this.estado.rumo = null;
+      this.estado.destino = null;
       return;
     }
     if (!dx && !dy) {
       this.estado.rumo = null;
       return;
     }
+    // A tecla manda mais que o clique: apertou uma direção, larga o destino.
+    this.estado.destino = null;
     this.estado.rumo = { dx: Math.sign(dx), dy: Math.sign(dy) };
     this.estado.rumoValidoAte = Date.now() + 500;
+  }
+
+  /*
+   * ---- `send({t:'walkTo', x, y})` — clique ou toque no mapa da cidade ----
+   *
+   * O client mandava (clique esquerdo, toque, "Ir até lá") e o servidor não
+   * tinha handler: caía no `default` silencioso e o personagem nunca saía do
+   * lugar. Aqui só se VALIDA e guarda o destino (`estado.destino`); quem anda é
+   * o mesmo `processarMovimento` do teclado — uma casa por `PASSO_MS`, a mesma
+   * colisão —, pedindo o passo à busca da caçada (`proximoPassoAte`) sobre a
+   * grade da cidade. Um clique novo troca o destino; uma tecla o larga.
+   */
+  andarAte({ x, y }) {
+    if (!this.estado || this.estado.hunt) return;
+    const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
+    if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return;
+    if (Treinos.emTreino(this.estado)) {
+      this.estado.destino = null;
+      return this.erro('Treinando: você fica ao lado do boneco até parar o treino.');
+    }
+    const pos = this.estado.pos;
+    if (destino.x === pos.x && destino.y === pos.y) {
+      this.estado.destino = null;
+      return;
+    }
+    if (bloqueado(destino.x, destino.y) || !temCaminho(gradeDaCidade(), pos, destino)) {
+      this.estado.destino = null;
+      return this.erro('Não dá para chegar lá.');
+    }
+    this.estado.rumo = null;
+    this.estado.destino = destino;
   }
 
   /*
@@ -1530,21 +1574,32 @@ export class Sessao {
   /** Avança um passo, se houver rumo válido e o passo anterior já tiver acabado. */
   processarMovimento() {
     const estado = this.estado;
-    if (!estado?.rumo) return;
-    // Nenhum rumo antigo sobrevive ao começo do treino.
+    if (!estado?.rumo && !estado?.destino) return;
+    // Nenhum rumo (ou destino de clique) antigo sobrevive ao começo do treino.
     if (Treinos.emTreino(estado)) {
       estado.rumo = null;
+      estado.destino = null;
       return;
     }
     const agora = Date.now();
-    if (agora > (estado.rumoValidoAte ?? 0)) {
-      estado.rumo = null;
-      return;
-    }
+    if (estado.rumo && agora > (estado.rumoValidoAte ?? 0)) estado.rumo = null;
+    if (!estado.rumo && !estado.destino) return;
     if (!R.jaPode(agora, estado.proximoPassoEm)) return;
 
-    const { dx, dy } = estado.rumo;
     const pos = estado.pos;
+    let dx;
+    let dy;
+    if (estado.rumo) ({ dx, dy } = estado.rumo);
+    else {
+      // O destino do clique/toque: o próximo passo pela busca de sempre, recalculado a cada passo.
+      const passo = proximoPassoAte(gradeDaCidade(), pos, estado.destino);
+      if (!passo) {
+        estado.destino = null;
+        return;
+      }
+      dx = passo.x - pos.x;
+      dy = passo.y - pos.y;
+    }
     if (dy < 0) pos.dir = 0;
     else if (dy > 0) pos.dir = 2;
     else if (dx > 0) pos.dir = 1;
@@ -1558,6 +1613,8 @@ export class Sessao {
       pos.x = destino.x;
       pos.y = destino.y;
     }
+    // Chegou onde clicou.
+    if (estado.destino && pos.x === estado.destino.x && pos.y === estado.destino.y) estado.destino = null;
     estado.proximoPassoEm = agora + R.PASSO_MS;
   }
 
@@ -1756,6 +1813,8 @@ export class Sessao {
     if (Date.now() - (this.gravadoEm ?? Date.now()) >= AUTOSAVE_MS) this.gravarAgora().catch((e) => console.error('autosave', this.personagem?.nome, '->', e.message));
     this.gravadoEm ??= Date.now();
     if (this.estado.hunt) {
+      // O destino de um clique na cidade não sobrevive a entrar numa caçada.
+      this.estado.destino = null;
       try {
         // Party: quem seguir e a partilha da exp (não-enumeráveis — não vão para o banco).
         const h = this.estado.hunt;

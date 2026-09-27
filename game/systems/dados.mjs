@@ -102,3 +102,18 @@ export const bloqueado = (x, y) => {
   if (x < 0 || y < 0 || x >= CITY_MAP.width || y >= CITY_MAP.height) return true;
   return !!CITY_MAP.blocked[y * CITY_MAP.width + x];
 };
+
+/*
+ * A cidade no formato de grade que o pathfinding da hunt usa (`caminho.mjs`:
+ * `{minX, maxX, minY, maxY, andavel}`) — o MESMO `bloqueado` de cima, para o
+ * clique no mapa (`walkTo`) andar pela mesma busca que a caçada já usa, e não
+ * por uma segunda. Montada uma vez só (187x108, ~11 mil casas andáveis).
+ */
+let gradeDaCidadeGuardada = null;
+export function gradeDaCidade() {
+  if (gradeDaCidadeGuardada) return gradeDaCidadeGuardada;
+  const andavel = new Set();
+  for (let y = 0; y < CITY_MAP.height; y++) for (let x = 0; x < CITY_MAP.width; x++) if (!bloqueado(x, y)) andavel.add(`${x},${y}`);
+  gradeDaCidadeGuardada = { minX: 0, maxX: CITY_MAP.width - 1, minY: 0, maxY: CITY_MAP.height - 1, andavel };
+  return gradeDaCidadeGuardada;
+}

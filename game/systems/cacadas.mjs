@@ -32,7 +32,7 @@ import * as Bosses from './bosses.mjs';
 import { SPAWNS_CAPTURADOS, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt } from './hunt/terreno.mjs';
 import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
-import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia } from './hunt/caminho.mjs';
+import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho } from './hunt/caminho.mjs';
 import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/relatorio.mjs';
 import { salaDe, ligarAoDono } from './hunt/sala.mjs';
 import { alvoAtual, esperaOAlvoChegar, voltariaAtras, PERSEGUICAO_MAXIMA_MS } from './hunt/alvo.mjs';
@@ -166,6 +166,7 @@ export function simularAusencia(estado, personagem, agora = Date.now()) {
   hunt.ultimoTique = desde;
   hunt.proximoPassoEm = hunt.proximoGolpeEm = hunt.proximoPassoMonstroEm = 0;
   hunt.rumo = null;
+  hunt.destino = null;
   // A caçada automática corre sozinha; na online, fora da tela, também — é
   // o que o original faz ("Caçando offline").
   const modo = hunt.modo;
@@ -794,9 +795,12 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
   } else if (R.jaPode(agora, hunt.proximoPassoEm)) {
     let destino = null;
-    if (hunt.rumo && agora <= (hunt.rumoValidoAte ?? 0)) {
-      // Caça Online: passo manual (`huntWalk`), sem ajuda de caminho — é o jogador apontando.
-      const { dx, dy } = hunt.rumo;
+    // Caça Online: o passo na mão — a tecla (`huntWalk`, o rumo) ou, sem tecla,
+    // o próximo passo até onde o jogador clicou/tocou (`huntWalkTo`, ver `andarAte`).
+    const manual = hunt.rumo && agora <= (hunt.rumoValidoAte ?? 0) ? hunt.rumo : passoDoClique(hunt, grade);
+    if (manual) {
+      // Daqui em diante, o mesmo passo para os dois: bicho na casa, escada, parede.
+      const { dx, dy } = manual;
       if (dy < 0) hunt.pos.dir = 0;
       else if (dy > 0) hunt.pos.dir = 2;
       else if (dx > 0) hunt.pos.dir = 1;
@@ -921,6 +925,8 @@ export function tique(estado, personagem, agora = Date.now()) {
       hunt.pos.x = destino.x;
       hunt.pos.y = destino.y;
     }
+    // Chegou onde clicou/tocou.
+    if (hunt.destino && hunt.pos.x === hunt.destino.x && hunt.pos.y === hunt.destino.y) hunt.destino = null;
     hunt.proximoPassoEm = agora + R.PASSO_MS;
   }
   // Subiu ou desceu neste passo: o resto do tique já é no andar novo.
@@ -1016,14 +1022,74 @@ export function andar(estado, { dx, dy }) {
   // No pátio o personagem fica no posto: movimento pedido é recusado.
   if (estado.hunt.huntId === 'treino') {
     estado.hunt.rumo = null;
+    estado.hunt.destino = null;
     return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
   }
+  // A tecla manda mais que o clique: apertou uma direção, larga o destino.
+  if (dx || dy) estado.hunt.destino = null;
   if (!dx && !dy) {
     estado.hunt.rumo = null;
     return;
   }
   estado.hunt.rumo = { dx: Math.sign(dx), dy: Math.sign(dy) };
   estado.hunt.rumoValidoAte = Date.now() + 500;
+}
+
+/*
+ * ---- `send({t:'huntWalkTo', x, y})` — clique ou toque no mapa da Caça Online ----
+ *
+ * O client mandava (clique esquerdo no desktop, toque no chão no celular, "Ir
+ * até lá" no menu) e não havia handler: o clique não andava. Aqui só se VALIDA
+ * e guarda o destino (`hunt.destino`); quem anda é o `tique`, pelo mesmo passo
+ * manual do `huntWalk` — um passo por `PASSO_MS`, o próximo sempre pedido à
+ * busca de sempre (`proximoPassoAte`, ver `passoDoClique`), contornando parede
+ * e bicho. Vale a casa andável ou uma escada/rampa (pisar nela muda de andar,
+ * como no teclado). Só na Caça Online: na Automática quem anda é a rota.
+ */
+export function andarAte(estado, { x, y }) {
+  const hunt = estado?.hunt;
+  if (!hunt) return { ok: true };
+  const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
+  if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return { ok: true };
+  if (hunt.huntId === 'treino') {
+    hunt.destino = null;
+    return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
+  }
+  if (hunt.modo !== 'online') return { ok: false, erro: 'Na Caça Automática quem anda é a rota.' };
+  if (destino.x === hunt.pos.x && destino.y === hunt.pos.y) {
+    hunt.destino = null;
+    return { ok: true };
+  }
+  const grade = andarDaGrade(gradeDaHunt(huntOuMapaCustom(hunt.huntId)), hunt.z);
+  const escada = grade.mapa?.floors && destinoDaMudanca(grade.mapa, hunt.z, destino.x, destino.y);
+  if ((!grade.andavel.has(`${destino.x},${destino.y}`) && !escada) || !temCaminho(grade, hunt.pos, destino)) {
+    hunt.destino = null;
+    return { ok: false, erro: 'Não dá para chegar lá.' };
+  }
+  hunt.rumo = null;
+  hunt.destino = { ...destino, z: hunt.z };
+  return { ok: true };
+}
+
+/**
+ * O passo `{dx, dy}` rumo ao destino do clique (ou `null`, e o destino some:
+ * chegou, mudou de andar, o caminho fechou). Recalculado a cada passo porque
+ * os bichos andam — o mesmo `proximoPassoAte`, contornando os vivos.
+ */
+function passoDoClique(hunt, grade) {
+  const d = hunt.destino;
+  if (!d) return null;
+  if (hunt.modo !== 'online' || d.z !== hunt.z || (d.x === hunt.pos.x && d.y === hunt.pos.y)) {
+    hunt.destino = null;
+    return null;
+  }
+  const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
+  const passo = proximoPassoAte(grade, hunt.pos, d, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
+  if (!passo) {
+    hunt.destino = null;
+    return null;
+  }
+  return { dx: passo.x - hunt.pos.x, dy: passo.y - hunt.pos.y };
 }
 
 /*

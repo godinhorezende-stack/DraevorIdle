@@ -207,3 +207,20 @@ export function casaLivrePerto(grade, p, ocupada) {
 
 /** Distância de Chebyshev — a mesma regra de alcance do resto do jogo (ver `inventario.mjs`). */
 export const distancia = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
+/*
+ * ---- Andar até onde se clicou/tocou ----
+ *
+ * O clique (desktop) e o toque (celular) no mapa viram o mesmo pedido — `walkTo`
+ * na cidade, `huntWalkTo` na Caça Online — e os dois andam pela MESMA busca de
+ * sempre: um passo por vez, `proximoPassoAte` recalculado a cada passo (os bichos
+ * andam, a casa livre de agora pode não ser a de daqui a pouco), no ritmo do
+ * passo do servidor. Aqui fica só a validação do pedido: a casa tem caminho a
+ * partir de onde ele está, em até `CAMINHO_MAXIMO` passos? (Uma busca só, na
+ * hora do clique, e não a cada tique.)
+ */
+export const CAMINHO_MAXIMO = 128;
+export function temCaminho(grade, origem, destino, limite = CAMINHO_MAXIMO) {
+  if (origem.x === destino.x && origem.y === destino.y) return true;
+  return bfsDistancias(grade, destino, limite, origem).em(origem.x, origem.y) != null;
+}
