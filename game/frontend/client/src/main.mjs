@@ -9,6 +9,8 @@ import {
 import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
 import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from './hud.mjs';
 import { ARTES } from './artes.mjs';
+import { abrirNaPilha, fechouNaPilha } from './pilha.mjs';
+import { ligarPerfil } from './perfil.mjs';
 import {
   initInventory,
   esquecerOsDesenhos,
@@ -5767,6 +5769,8 @@ setInterval(mandarRumo, 100);
  * sempre — e a segunda envelheceria calada, porque ninguém testa no celular.
  */
 const TECLAS_DO_RUMO = ['w', 'a', 's', 'd'];
+// O perfil (retrato, deitado, tablet, desktop) antes de tudo que depende dele.
+ligarPerfil();
 acertarOAnalogico = initMobile({
   apontar(dx, dy) {
     for (const tecla of TECLAS_DO_RUMO) held.delete(tecla);
@@ -9446,9 +9450,12 @@ function openModal(title, build, onClose, variant) {
   // OLHANDO', no style.css). Classe no body, e não `:has()`: medido, o `:has` no
   // body fazia CADA recálculo de estilo reavaliar a página inteira (24 ms -> 10 ms).
   document.body.classList.add('com-modal');
+  // No telefone, o voltar fecha o modal em vez de sair do jogo (pilha.mjs).
+  abrirNaPilha('modal', closeModal);
 }
 
 function closeModal() {
+  fechouNaPilha('modal');
   $('modal').hidden = true;
   document.body.classList.remove('com-modal');
   panelCtx.redraw = null;

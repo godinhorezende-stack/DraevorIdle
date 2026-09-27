@@ -1,3 +1,4 @@
+import { abrirNaPilha, fechouNaPilha } from './pilha.mjs';
 // Janelas flutuantes: arrastar pelo título, redimensionar pelo canto,
 // e posição/tamanho guardados por jogador no navegador.
 
@@ -677,6 +678,7 @@ function soUmaGaveta(id) {
     if (outro === id || entry.node.hidden) continue;
     if (faixaDa(entry.node) !== minha) continue;
     entry.node.hidden = true;
+    fechouNaPilha(`janela:${outro}`);
     document.querySelector(`[data-toggle="${outro}"]`)?.setAttribute('aria-selected', 'false');
   }
 }
@@ -710,8 +712,13 @@ export function setVisible(id, visible) {
     // Só na TRANSIÇÃO: `setVisible(id, true)` numa janela já aberta (o
     // `bringToFront` de um clique, por exemplo) não é motivo para redesenhar.
     if (estavaFechada) aoAbrirJanela.get(id)?.();
+    // A gaveta no telefone é uma tela por cima do jogo: o voltar a fecha.
+    if (estavaFechada && emGaveta()) abrirNaPilha(`janela:${id}`, () => setVisible(id, false));
   }
-  if (!visible) marcarGavetaAberta();
+  if (!visible) {
+    marcarGavetaAberta();
+    fechouNaPilha(`janela:${id}`);
+  }
   layout[id] = { ...layout[id], hidden: !visible };
   save();
   document.querySelector(`[data-toggle="${id}"]`)?.setAttribute('aria-selected', String(visible));

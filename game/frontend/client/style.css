@@ -26215,3 +26215,74 @@ body.sem-foco *::before,
 body.sem-foco *::after {
   animation-play-state: paused !important;
 }
+
+/* ================================================================
+ * A CASCA DO CELULAR (perfil.mjs, pilha.mjs, folha.mjs, celular.mjs)
+ *
+ * Tudo aqui se pendura em `html[data-perfil="retrato"|"deitado"]`: os dois
+ * perfis de TELEFONE. Tablet e computador não passam por nenhuma destas
+ * regras — o arranjo deles é o de antes.
+ *
+ * As quatro bordas seguras (entalhe, cantos arredondados, barra de gestos)
+ * viram variáveis uma vez só, e cada peça da casca soma a sua.
+ * ================================================================ */
+:root {
+  --seguro-topo: env(safe-area-inset-top, 0px);
+  --seguro-baixo: env(safe-area-inset-bottom, 0px);
+  --seguro-esq: env(safe-area-inset-left, 0px);
+  --seguro-dir: env(safe-area-inset-right, 0px);
+}
+
+/* ---- A folha (folha.mjs) ---- */
+.folha-fundo {
+  position: fixed; inset: 0; z-index: 70;
+  background: #0008;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.folha-fundo[hidden] { display: none; }
+.folha {
+  width: 100%; max-width: 640px; max-height: 85dvh;
+  display: flex; flex-direction: column;
+  background: var(--panel-solid);
+  border: 1px solid var(--line); border-bottom: 0;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 30px #000a;
+  padding-bottom: var(--seguro-baixo);
+  transition: transform .18s ease-out;
+  animation: folha-sobe .18s ease-out;
+}
+@keyframes folha-sobe { from { transform: translateY(40px); opacity: .4; } }
+.folha-alca { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 8px auto 2px; flex: none; }
+.folha-topo {
+  display: flex; align-items: center; gap: 8px; flex: none;
+  padding: 2px 8px 8px 16px; border-bottom: 1px solid var(--line-soft);
+  touch-action: none;
+}
+.folha-titulo {
+  flex: 1; margin: 0; min-width: 0;
+  font-family: var(--font-heading); font-size: 15px; letter-spacing: .06em; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.folha-fechar {
+  width: 44px; height: 44px; flex: none;
+  background: none; border: 0; color: var(--muted); font-size: 20px;
+}
+.folha-corpo {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px 16px;
+}
+/* Deitado ela entra pelo lado direito, na altura inteira. */
+html[data-perfil="deitado"] .folha-fundo { justify-content: flex-end; align-items: stretch; }
+html[data-perfil="deitado"] .folha {
+  width: min(420px, 55vw); max-height: none; height: 100%;
+  border-radius: 14px 0 0 14px; border: 1px solid var(--line); border-right: 0;
+  padding: var(--seguro-topo) var(--seguro-dir) var(--seguro-baixo) 0;
+  animation-name: folha-entra;
+}
+@keyframes folha-entra { from { transform: translateX(40px); opacity: .4; } }
+html[data-perfil="deitado"] .folha-alca { display: none; }
+html[data-perfil="deitado"] .folha-topo { padding-top: 8px; touch-action: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .folha { animation: none; transition: none; }
+}
