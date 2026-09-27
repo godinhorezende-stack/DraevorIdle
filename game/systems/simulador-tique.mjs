@@ -35,12 +35,12 @@ function nova() {
     worker: new Worker(new URL('./simulador-tique-worker.mjs', import.meta.url), { workerData: { faixaDeUid: (threads.length + 1) * FAIXA_DE_UID } }),
     pendentes: new Map(),
   };
-  const falharTudo = (erro) => {
+  const falharTudo = (t.falharTudo = (erro) => {
     for (const p of t.pendentes.values()) p.reject(erro);
     t.pendentes.clear();
     const i = threads.indexOf(t);
     if (i >= 0) threads.splice(i, 1);
-  };
+  });
   t.worker.on('message', ({ id, ok, estado, eventos, erro }) => {
     const p = t.pendentes.get(id);
     if (!p) return;
@@ -84,7 +84,16 @@ export function tique(estado, personagem, agora, podio) {
   });
 }
 
-/** Fecha as threads (os testes chamam no fim). */
+/**
+ * Fecha as threads (os testes chamam no fim). Rejeita na hora, ANTES de
+ * terminar, toda chamada em andamento — não dá para contar só com o 'exit' do
+ * worker: se a thread é terminada ainda subindo, ou já está unref'd, a
+ * promessa pode ficar pendente com o event loop vazio (o node:test cancela o
+ * teste com "Promise resolution is still pending").
+ */
 export async function encerrar() {
-  await Promise.all(threads.splice(0).map((t) => t.worker.terminate()));
+  const fechando = threads.splice(0);
+  const erro = new Error('simulador de tique: pool encerrado');
+  for (const t of fechando) t.falharTudo(erro);
+  await Promise.all(fechando.map((t) => t.worker.terminate()));
 }
