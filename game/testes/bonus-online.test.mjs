@@ -189,3 +189,86 @@ test('H/I. persistência e o que vai ao cliente: a exp com bônus é gravada e �
   assert.ok(estadoEnviado, 'nenhum estado enviado');
   assert.equal(estadoEnviado.character.exp, s.estado.xp, 'o cliente recebe a mesma exp');
 });
+
+// ---------------------------------------------------------------- loot
+//
+// O mesmo `bonusOnline`, no loot: "15% a mais de chance em cada linha do loot"
+// (o balão da Caça Online). O sorteio é fixo (`Math.random`) para provar a
+// fronteira: 0,55 perde uma linha de 50% na automática e ganha na online
+// (50% x 1,15 = 57,5%); 0,58 perde nas duas.
+
+/**
+ * Fixa o sorteio SÓ dentro de `matarMonstro` (o loot); o resto do jogo (nascer,
+ * andar, a simulação offline) segue com o aleatório de verdade — um
+ * `Math.random` constante em tudo prende laços que sorteiam até dar certo.
+ */
+const aleatorio = Math.random;
+function sorteioDoLoot(t, valor) {
+  t.mock.method(Math, 'random', () => (new Error().stack.includes('matarMonstro') ? valor : aleatorio()));
+}
+
+/** Um bicho com UMA linha de loot (rope, 50%). */
+const comUmaLinha = (hunt) => bicho(hunt, 10, { loot: [{ id: 3003, name: 'rope', chance: 0.5 }] });
+const ropes = (e) => (e.pouch ?? []).filter((p) => p.id === 3003).reduce((a, p) => a + (p.count ?? 1), 0);
+
+test('loot: a Caça Online dá 15% mais CHANCE em cada linha; a automática não', (t) => {
+  for (const [sorteio, esperado] of [
+    [0.55, { online: 1, auto: 0 }],
+    [0.58, { online: 0, auto: 0 }],
+    [0.4, { online: 1, auto: 1 }],
+  ]) {
+    sorteioDoLoot(t, sorteio);
+    for (const modo of ['online', 'auto']) {
+      const e = cacando(modo);
+      const alvo = comUmaLinha(e.hunt);
+      e.hunt.monstros.push(alvo);
+      const antes = ropes(e);
+      matarMonstro(e, e.hunt, PERSONAGEM, alvo, []);
+      assert.equal(ropes(e) - antes, esperado[modo], `sorteio ${sorteio}, ${modo}`);
+    }
+    t.mock.restoreAll();
+  }
+});
+
+test('loot: a quantidade de moedas não muda — o bônus é só na chance', (t) => {
+  sorteioDoLoot(t, 0.3);
+  const ouro = {};
+  for (const modo of ['online', 'auto']) {
+    const e = cacando(modo);
+    const alvo = bicho(e.hunt, 100, { loot: [{ id: 3031, name: 'gold coin', chance: 1 }] });
+    e.hunt.monstros.push(alvo);
+    const antes = e.gold;
+    matarMonstro(e, e.hunt, PERSONAGEM, alvo, []);
+    ouro[modo] = e.gold - antes;
+  }
+  assert.ok(ouro.auto > 0);
+  assert.equal(ouro.online, ouro.auto);
+});
+
+test('loot na sala do boss (vitória): online 15% mais chance, automática não', (t) => {
+  sorteioDoLoot(t, 0.55);
+  const sacola = {};
+  for (const modo of ['online', 'auto']) {
+    const e = cacando(modo);
+    e.hunt.isBoss = true;
+    const alvo = comUmaLinha(e.hunt);
+    e.hunt.monstros.push(alvo);
+    matarMonstro(e, e.hunt, PERSONAGEM, alvo, []);
+    sacola[modo] = (e.rewards ?? []).flatMap((s) => s.itens).filter((i) => i.id === 3003).length;
+  }
+  assert.deepEqual(sacola, { online: 1, auto: 0 });
+});
+
+test('loot OFFLINE de quem saiu da Caça Online: sem o bônus', (t) => {
+  sorteioDoLoot(t, 0.55);
+  const e = cacando('online');
+  e.hp = e.maxHp = 1e12;
+  const agora = Date.now();
+  e.hunt.ultimoTique = agora - 60_000;
+  e.hunt.offlineDesde = agora - 60_000;
+  for (let i = 0; i < 3; i++) e.hunt.monstros.push({ ...comUmaLinha(e.hunt), x: e.hunt.pos.x + (i - 1), y: e.hunt.pos.y + 1 });
+  const antes = ropes(e);
+  const r = Cacadas.simularAusencia(e, PERSONAGEM, agora);
+  assert.ok(r && e.hunt.sessao.kills >= 1, 'nada morreu na simulação');
+  assert.equal(ropes(e) - antes, 0, 'offline a chance é a da automática (50% < 0,55)');
+});

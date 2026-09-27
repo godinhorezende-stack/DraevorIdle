@@ -212,7 +212,7 @@ export function subirDeLevel(estado) {
 
 export function quantasMoedas(bicho, id) {
   if (id !== 3031) return 1;
-  const media = Math.max(1, bicho.exp ?? 10);
+  const media = Math.max(1, bicho.expDasMoedas ?? bicho.exp ?? 10);
   return 1 + Math.floor(Math.random() * (2 * media - 1));
 }
 
@@ -227,7 +227,8 @@ export function quantasMoedas(bicho, id) {
 export function vitoriaNoBoss(estado, hunt, alvo) {
   const itens = [];
   for (const drop of [...alvo.loot, ...Gemas.DROP.boss]) {
-    if (Math.random() >= drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100)) continue; // Buff Power Loot +50% e o afixo "Loot"
+    // Buff Power Loot +50%, o afixo "Loot" e a Caça Online ("15% mais chance de loot" na sala do boss).
+    if (Math.random() >= drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt)) continue;
     const af = Afixos.rolarDrop(drop.id, { boss: true });
     itens.push({ id: drop.id, count: VALOR_DA_MOEDA[drop.id] ? quantasMoedas(alvo, drop.id) : 1, ...(af?.length ? { af } : {}) });
   }
@@ -249,14 +250,20 @@ const SEM_PODIO = { exp: 0, loot: 0, lugar: 0 };
 /*
  * ---- O bônus da Caça Online ----
  *
- * "Por jogar no braço, a caçada paga 15% a mais de experiência" — a placa da
- * Caça Online (panels.mjs) anuncia `catalog.bonusOnline` (15, capturado do
- * original), mas nenhuma linha do servidor o cobrava: a exp online saía igual
- * à automática. É um fator sobre a exp JÁ calculada (level, boosts, premium,
+ * "Por jogar no braço, a caçada paga 15% a mais de experiência e 15% a mais de
+ * chance em cada linha do loot" — a placa da Caça Online (panels.mjs) anuncia
+ * `catalog.bonusOnline` (15, capturado do original), mas nenhuma linha do
+ * servidor o cobrava: exp e loot online saíam iguais aos da automática.
+ *
+ * Na exp, é um fator sobre a exp JÁ calculada (level, boosts, premium,
  * stamina, prey, pódio), para ela ser exatamente "15% a mais" do que a mesma
- * morte pagaria na Caça Automática. Só vale com `hunt.modo === 'online'`: a
- * caçada offline (`simularAusencia`) roda com o modo trocado para 'auto', e
- * na party cada membro usa o modo da PRÓPRIA caçada (como os outros bônus).
+ * morte pagaria na Caça Automática. No loot, multiplica a CHANCE de cada
+ * linha, como os outros bônus de loot (Buff Power, afixo, prey, pódio) — "no
+ * modo online é 15% mais chance de loot", pedido do dono para a sala de boss.
+ *
+ * Só vale com `hunt.modo === 'online'`: a caçada offline (`simularAusencia`)
+ * roda com o modo trocado para 'auto', e na party cada membro usa o modo da
+ * PRÓPRIA caçada (como os outros bônus).
  */
 export function fatorDaCacaOnline(hunt) {
   return hunt?.modo === 'online' ? 1 + (CATALOGO.bonusOnline ?? 0) / 100 : 1;
@@ -298,7 +305,11 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // + o bônus do pódio da Arena x1 da semana (1º +8%, 2º +5%, 3º +3%)
   // + o da Caça Online (`fatorDaCacaOnline`).
   const podio = hunt.podio ?? SEM_PODIO;
-  exp = Math.round(exp * Prey.fatorDeExp(estado, alvo.key) * (1 + podio.exp / 100) * fatorDaCacaOnline(hunt));
+  const semOnline = exp * Prey.fatorDeExp(estado, alvo.key) * (1 + podio.exp / 100);
+  exp = Math.round(semOnline * fatorDaCacaOnline(hunt));
+  // As moedas (`quantasMoedas`) sorteiam em volta desta exp — a de antes do
+  // bônus online, que é de CHANCE no loot e não de quantidade de ouro.
+  alvo.expDasMoedas = Math.round(semOnline);
   alvo.exp = exp;
   eventos.push({ t: 'kill', name: alvo.name, exp, quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
   estado.xp = (estado.xp ?? 0) + exp;
@@ -342,8 +353,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (sessao) sessao.itens[grupo][id] = (sessao.itens[grupo][id] ?? 0) + n;
   };
   for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
-    const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100);
-    if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot" e a prey de loot
+    const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt);
+    if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
     if (VALOR_DA_MOEDA[drop.id]) {
       const n = quantasMoedas(alvo, drop.id);
       // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
