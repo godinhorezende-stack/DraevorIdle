@@ -8,9 +8,9 @@ import * as Proficiencia from '../systems/proficiencia.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comMarcaNova } from './apoio.mjs';
 
-const ler = (p) => JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8'));
+const ler = (p) => comMarcaNova(JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8')));
 const ZOTOD = ler('servidor/proficiency.json');
 const ZOROS = ler('captura-charms-0925/welcome-zoros.json').character;
 

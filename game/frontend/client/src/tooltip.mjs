@@ -236,7 +236,7 @@ export function tipFor(element, id, extra, slot = null, peca = null) {
  * que não cai de ninguém. Aqui só traduzimos o nome em classe de CSS. As cores
  * são as nossas: cinza para o comum, o teal do tema para o incomum, azul para o
  * raro, violeta para o épico, o cobre do tema para o lendário e o vermelho das
- * peças Ravox para o mítico.
+ * peças Draevor para o mítico.
  */
 const TIER_KEYS = {
   comum: 'comum',
@@ -1811,7 +1811,7 @@ export function numerosDoItem(meta) {
     por(`prot:${elemento}`, `proteção contra ${nome}`, valor, `el-${elemento}`, '%');
   }
   // A regeneração fixa da peça (`healthgain`/`managain` do items.xml). É o que
-  // as peças Ravox anunciam na descrição, e sem esta linha a comparação entre
+  // as peças Draevor anunciam na descrição, e sem esta linha a comparação entre
   // um anel comum e o anel bis não mostrava a metade que importa.
   por('regenHp', 'vida por segundo', meta.regen?.hp ?? 0, 'heal');
   por('regenMana', 'mana por segundo', meta.regen?.mana ?? 0, 'mana');
@@ -2123,7 +2123,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     tier.name,
     TYPE_NAMES[meta.type] ?? meta.type,
     meta.twoHanded ? 'duas mãos' : null,
-    // A Ravox Over não se distingue da Ravox normal por nenhum número: a
+    // A Draevor Over não se distingue da Draevor normal por nenhum número: a
     // diferença é o golpe pegar em área. Ver a linha inteira logo abaixo.
     meta.area ? 'bate em área' : null,
     // Na linha do TIPO porque é o que a pessoa procura de relance quando compara
@@ -2168,8 +2168,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * O dono: "quando clicar em um item over pra ver a receita, tem que informar que
    * bate em área".
    *
-   * É a primeira linha porque é a única coisa que separa uma Ravox Over de uma
-   * Ravox comum: os números de ataque, defesa e perícia são parecidos, e quem
+   * É a primeira linha porque é a única coisa que separa uma Draevor Over de uma
+   * Draevor comum: os números de ataque, defesa e perícia são parecidos, e quem
    * compara as duas no balão não tem como adivinhar que uma acerta vinte e cinco
    * casas. Vindo depois do ataque, ela era lida como um detalhe do ataque.
    *
@@ -2485,7 +2485,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   /*
    * ---- O que pode sair desta bag ----
    *
-   * "ao passar o mouse das bags — seja desire, covet, primal, ravox ou ravox
+   * "ao passar o mouse das bags — seja desire, covet, primal, draevor ou draevor
    *  bag set — tem que mostrar no modal 'itens que podem vir'."
    *
    * A lista é a MESMA que o servidor sorteia (`SACOS_DE_PREMIO`, mandada no
@@ -2528,7 +2528,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
         'b',
         null,
         doBuff.custo?.moeda === 'coins'
-          ? `${doBuff.custo.quanto} Ravox Coins`
+          ? `${doBuff.custo.quanto} Draevor Coins`
           : `${(doBuff.custo?.quanto ?? 0).toLocaleString('pt-BR')} de ouro`
       )
     );

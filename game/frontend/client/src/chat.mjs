@@ -93,7 +93,7 @@ export const CHANNELS = [
  * passou. O `+` da barra de título liga e desliga, e a escolha fica guardada
  * no navegador — ninguém quer remarcar isso toda vez que entra.
  */
-const ABAS_ABERTAS = 'ravox:chat-abas';
+const ABAS_ABERTAS = 'draevor:chat-abas';
 
 /*
  * Quem chega encontra o Combate ABERTO, e o Loot fechado.
@@ -263,7 +263,7 @@ function limparChat() {
   comQuem = null;
   if (ehConversa(active)) {
     active = 'global';
-    localStorage.setItem('ravox:chat', active);
+    localStorage.setItem('draevor:chat', active);
   }
   if (built) render();
 }
@@ -292,7 +292,7 @@ function fecharConversa(id) {
   delete unread[id];
   if (active === id) {
     active = 'global';
-    localStorage.setItem('ravox:chat', active);
+    localStorage.setItem('draevor:chat', active);
   }
 }
 
@@ -310,7 +310,7 @@ export function abrirConversa(nome) {
   if (!id) return;
   comQuem = nomeDaConversa(id);
   active = id;
-  localStorage.setItem('ravox:chat', active);
+  localStorage.setItem('draevor:chat', active);
   if (built) render();
   // A bolinha da aba nova não espera os 15s da próxima rodada.
   perguntarPresenca();
@@ -319,7 +319,7 @@ export function abrirConversa(nome) {
 const logs = Object.fromEntries(CHANNELS.map((channel) => [channel.id, []]));
 const unread = Object.fromEntries(CHANNELS.map((channel) => [channel.id, 0]));
 
-let active = localStorage.getItem('ravox:chat') ?? 'global';
+let active = localStorage.getItem('draevor:chat') ?? 'global';
 let send = null;
 let built = false;
 
@@ -528,7 +528,7 @@ export function focarChat() {
   if (!inputEl?.isConnected) {
     if (canais().find((canal) => canal.id === active)?.writable === false) {
       active = 'global';
-      localStorage.setItem('ravox:chat', active);
+      localStorage.setItem('draevor:chat', active);
     }
     render();
   }
@@ -1138,7 +1138,7 @@ const SUBABAS_DO_COMBATE = [
   { id: 'cura', nome: 'Curas' },
   { id: 'morte', nome: 'Mortes' },
 ];
-const CHAVE_DA_SUBABA = 'ravox:chat-combate-filtro';
+const CHAVE_DA_SUBABA = 'draevor:chat-combate-filtro';
 let subabaDoCombate = (() => {
   try {
     const salva = localStorage.getItem(CHAVE_DA_SUBABA);
@@ -1280,7 +1280,7 @@ export function logLootComItens(partes, kind = 'drop', marca = null) {
  *
  * A escolha é deste navegador (localStorage), como o arranjo das janelas.
  */
-const CHAVE_DO_FLUTUANTE = 'ravox:chat-flutuante';
+const CHAVE_DO_FLUTUANTE = 'draevor:chat-flutuante';
 const SOME_EM_MS = 12_000;
 const lerFlutuante = () => {
   try { return localStorage.getItem(CHAVE_DO_FLUTUANTE) === '1'; } catch { return false; }
@@ -1562,7 +1562,7 @@ export function render() {
       active = channel.id;
       unread[channel.id] = 0;
       if (ehConversa(active)) comQuem = nomeDaConversa(active);
-      localStorage.setItem('ravox:chat', active);
+      localStorage.setItem('draevor:chat', active);
       render();
     };
     // A conversa fecha no proprio X — canal fixo nao fecha.
@@ -1652,7 +1652,7 @@ export function render() {
       active = proxima.id;
       unread[active] = 0;
       if (ehConversa(active)) comQuem = nomeDaConversa(active);
-      localStorage.setItem('ravox:chat', active);
+      localStorage.setItem('draevor:chat', active);
       render();
       inputEl?.focus();
     });

@@ -21,7 +21,7 @@ const DIA = new Map(CALENDARIO.map((d) => [d.dia, d]));
 const QUANTIDADE_POR_EXTENSO = { uma: 1, um: 1, duas: 2, dois: 2, tres: 3, três: 3 };
 
 /**
- * A quantidade é a PRIMEIRA palavra: "2 Ravox Tier UP" → 2, "Duas Stamina
+ * A quantidade é a PRIMEIRA palavra: "2 Draevor Tier UP" → 2, "Duas Stamina
  * Extensions (40h)" → 2 (o 40 é das horas, não das peças), "Uma ..." → 1.
  */
 function quantidadeDoRotulo(rotulo) {
@@ -78,11 +78,11 @@ function concederRecompensaDoDia(estado, doPersonagem) {
       estado.wildcards = (estado.wildcards ?? 0) + quantidade;
       return;
     }
-    // "2 Ravox Tier UP", "Duas Stamina Extensions": a quantidade do rótulo.
+    // "2 Draevor Tier UP", "Duas Stamina Extensions": a quantidade do rótulo.
     case 'item':
       if (dia.itemId) darItem(estado, dia.itemId, quantidadeDoRotulo(dia.rotulo));
       return;
-    // O XP Boost de sempre (a mesma fonte da Ravox Store: soma no que já corre).
+    // O XP Boost de sempre (a mesma fonte da Store: soma no que já corre).
     case 'xpboost': {
       const { percent, ms } = boostDoRotulo(dia.rotulo);
       Boosts.adicionar(estado, 'loja', percent, ms);

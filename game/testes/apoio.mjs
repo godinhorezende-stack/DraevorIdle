@@ -36,3 +36,19 @@ export function personagemDeTeste({ vocacao = 'knight', level = R.NIVEL_INICIAL 
 }
 
 export const PERSONAGEM = { id: 0, nome: 'Teste Automatizado' };
+
+/*
+ * As fichas capturadas em `api-mapeada/` são do servidor original (Ravox
+ * Idle) e ficam como estavam — é o registro histórico da captura. O jogo
+ * virou Draevor Idle, então os testes de fidelidade ("é igual à ficha real")
+ * comparam contra essa ficha JÁ com o nome trocado, e não contra o nome
+ * antigo. Troca chave e valor, recursivo, sem mexer no arquivo no disco.
+ */
+export function comMarcaNova(valor) {
+  if (typeof valor === 'string') return valor.replace(/RAVOX/g, 'DRAEVOR').replace(/Ravox/g, 'Draevor').replace(/ravox/g, 'draevor');
+  if (Array.isArray(valor)) return valor.map(comMarcaNova);
+  if (valor && typeof valor === 'object') {
+    return Object.fromEntries(Object.entries(valor).map(([k, v]) => [comMarcaNova(k), comMarcaNova(v)]));
+  }
+  return valor;
+}

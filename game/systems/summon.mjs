@@ -1,5 +1,5 @@
 // Summon (familiar) — os números e o formato do personagem real capturado
-// (`character.summon`) e das regras que o client e a Ravox Store escrevem:
+// (`character.summon`) e das regras que o client e a Store escrevem:
 //
 // - "O familiar já bate 25% do seu golpe no nível 0. Cada nível soma +0,25%
 //   (até 50% no nível 100) e encurta a espera para invocá-lo de novo: 17 min no

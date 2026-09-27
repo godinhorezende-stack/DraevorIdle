@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "ravox",
+      "name": "draevor",
       "runtimeExecutable": "node",
       "runtimeArgs": ["game/backend/index.mjs"],
       "port": 8080

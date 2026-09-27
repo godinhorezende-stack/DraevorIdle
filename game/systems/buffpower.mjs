@@ -1,9 +1,9 @@
-// Buff Power — os três itens da Ravox Store, com as regras que a loja, o balão
+// Buff Power — os três itens da Store, com as regras que a loja, o balão
 // e a ficha do client descrevem (`efeitos.buffPower`, character-template.json):
 //
 // - Comprar é o ITEM (vai para a Store Inbox) e ele NUNCA some. Ligar é clicar
 //   nele na mochila: cada clique cobra o preço da hora (`custo`: ouro — bolso
-//   primeiro, banco no que faltar — ou Ravox Coins) e soma 1 hora, até o
+//   primeiro, banco no que faltar — ou Draevor Coins) e soma 1 hora, até o
 //   `teto` de 10 horas acumuladas.
 // - Buff Power: +3000 HP, +3000 Mana, +15% de dano crítico, +10% de life leech
 //   e +10% de mana leech (`Ficha.combate`).
@@ -35,7 +35,7 @@ export const ativo = (estado, id) => restante(estado, id) > 0;
 function pagar(estado, custo) {
   const quanto = custo?.quanto ?? 0;
   if (custo?.moeda === 'coins') {
-    if ((estado.coins ?? 0) < quanto) return `Faltam ${(quanto - (estado.coins ?? 0)).toLocaleString('pt-BR')} Ravox Coins.`;
+    if ((estado.coins ?? 0) < quanto) return `Faltam ${(quanto - (estado.coins ?? 0)).toLocaleString('pt-BR')} Draevor Coins.`;
     estado.coins -= quanto;
     return null;
   }

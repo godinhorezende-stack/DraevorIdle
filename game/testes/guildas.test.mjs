@@ -72,7 +72,7 @@ test('trocar o brasão: só o líder, 50 coins + efeito novo, o destravado não 
   assert.equal(antes - lider.estado.coins, CUSTO_DE_TROCAR);
 
   const pobre = { ...lider, estado: { ...lider.estado, coins: 10 } };
-  assert.match((await Guildas.comando(pobre, { action: 'brasao', brasao: { ...agora, simbolo: null } })).erro, /Faltam 40 Ravox Coins/);
+  assert.match((await Guildas.comando(pobre, { action: 'brasao', brasao: { ...agora, simbolo: null } })).erro, /Faltam 40 Draevor Coins/);
 });
 
 test('baú: guarda a peça apontada (alvo), não a primeira de mesmo id', async () => {

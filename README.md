@@ -1,4 +1,4 @@
-# Ravox Idle — restauração
+# Draevor Idle — restauração
 
 Recuperação do jogo depois da perda de acesso administrativo à VPS que o hospedava.
 
@@ -33,7 +33,7 @@ produção). Nada dele foi reescrito.
   `tools/baixar2.py` reproduz o mesmo conjunto)
 - **1.306 outfits/criaturas** com atlas de sprite completo (`gamedata/sprites/outfits/`)
 - **4.343 itens** com sprite, em 10 páginas de atlas (`items32-`, `items64-`,
-  `ravox32-`, `tier32-`, `boost32-`, `extra32-/64-`, `pouches32-`)
+  `draevor32-`, `tier32-`, `boost32-`, `extra32-/64-`, `pouches32-`)
 - **232 efeitos** e **56 projéteis**, com todas as páginas de atlas
 - **O protocolo do WebSocket**: 121 comandos cliente→servidor e 66 eventos
   servidor→cliente, com onde cada um é montado/tratado no cliente — ver

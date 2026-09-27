@@ -7,7 +7,7 @@
 // Aqui cada um vira texto UMA vez; a mensagem é montada em volta dele.
 
 const grandes = new Map(); // objeto → o texto dele (feito na primeira vez que precisa)
-const MARCA = '__RAVOX_PEDACO_GRANDE_';
+const MARCA = '__DRAEVOR_PEDACO_GRANDE_';
 
 /** Registra objetos fixos que podem ir inteiros numa mensagem. */
 export function registrarGrandes(...objetos) {

@@ -171,7 +171,7 @@ async function pintar() {
  *
  * ---- Por que eles são "flutuantes", e fora da moldura ----
  *
- * Porque são outro placar. Postos dentro da moldura da Ravox Store, ao lado das
+ * Porque são outro placar. Postos dentro da moldura da Store, ao lado das
  * abas de level/magic/axe, pareceriam mais duas categorias do mesmo top 5 — e
  * não são: um mede acúmulo, os outros dois medem movimento.
  *

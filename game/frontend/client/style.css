@@ -840,7 +840,7 @@ html, body {
  *
  * Quatro cores para quatro réguas, e nenhuma delas por acaso:
  *
- *   vermelha  as cargas da arma de exercise, que ACABAM e custam Ravox Coins
+ *   vermelha  as cargas da arma de exercise, que ACABAM e custam Draevor Coins
  *   dourada   a experiencia, a mesma cor da barra de exp do HUD
  *   verde     as 42h de stamina, idem
  *   teal      as 12h do treino offline, a cor do tanque em panels.mjs
@@ -2042,7 +2042,7 @@ body.topbar-recolhida #topbar-min { transform: rotate(180deg); }
  * separadores de grupo continuam existindo, só que agora como um respiro a
  * mais, e não como o único respiro.
  *
- * A placa da Ravox Store fica fora disto: ela é do bloco da esquerda.
+ * A placa da Store fica fora disto: ela é do bloco da esquerda.
  */
 .tools {
   margin-left: 4px; display: flex; gap: 3px; align-items: flex-start;
@@ -2192,7 +2192,7 @@ body.barra-enxuta #market-button .label { display: none; }
 /*
  * Ponto para gastar: o facho dourado dá voltas em torno do ícone.
  *
- * É o mesmo anel da placa da Ravox Store, e pela mesma razão: um halo que pulsa
+ * É o mesmo anel da placa da Store, e pela mesma razão: um halo que pulsa
  * some contra um fundo qualquer, enquanto uma luz que anda o olho pega mesmo de
  * canto. Aqui ele contorna o quadrado do botão — o gradiente cônico é recortado
  * em anel pela máscara, e o ângulo é animado por `@property`, sem o qual o
@@ -2449,7 +2449,7 @@ body.barra-enxuta #market-button .label { display: none; }
  *
  * ---- E por que ele deixou de ser um numero cravado ----
  *
- * "coloca o ping e fps um pouco pra baixo, porque ta atras do aviso de Ravox
+ * "coloca o ping e fps um pouco pra baixo, porque ta atras do aviso de Draevor
  *  Idle."
  *
  * A faixa de obra ocupa de 62 a 86, e o contador nascia em 72 — no meio dela.
@@ -2504,6 +2504,18 @@ body {
 #hud-promotion:hover { background: linear-gradient(180deg, #7d5c1a, #46330d); border-color: #ffe08a; }
 #hud-promotion b { font-family: var(--font-title); font-size: 15px; letter-spacing: .08em; color: #ffe9b0; }
 #hud-promotion em { font-style: normal; font-size: 10px; color: #e6cf9a; }
+
+/*
+ * No celular `placePromotion` (hud.mjs) trava a largura em 150px em vez de
+ * copiar a da ficha (que ali é quase a tela inteira) — a posição (embaixo da
+ * ficha) é a mesma conta do desktop, então nunca cobre a ficha; só o texto
+ * precisa encolher para caber nessa largura menor.
+ */
+@media (max-width: 820px), (max-height: 540px) and (pointer: coarse) {
+  #hud-promotion { padding: 6px 8px; gap: 1px; }
+  #hud-promotion b { font-size: 11px; letter-spacing: .02em; }
+  #hud-promotion em { font-size: 9px; line-height: 1.25; white-space: normal; }
+}
 @keyframes promotion-glow {
   0%, 100% { box-shadow: 0 0 8px #d9ae4a44, inset 0 0 10px #ffd98022; border-color: #c79a3c; }
   50% { box-shadow: 0 0 22px #ffd98099, inset 0 0 16px #ffd98055; border-color: #ffe6a3; }
@@ -4716,7 +4728,7 @@ body {
  * A QUARTA, que só a fusão fabrica.
  *
  * "faz a essência vermelha, por exemplo, que seria a essência mítica." O
- * vermelho é o mesmo das peças Ravox (a variável --tier do mítico), e é de propósito: é a
+ * vermelho é o mesmo das peças Draevor (a variável --tier do mítico), e é de propósito: é a
  * cor que este jogo já usa para dizer "acima do topo". As outras três descrevem
  * onde o afixo caiu na régua; esta descreve um afixo que passou dela.
  */
@@ -5423,7 +5435,7 @@ input.search:focus { outline: none; border-color: var(--accent-dim); }
 
 /*
  * A oferta do passe, so durante a espera. Dourada como o resto do que se compra
- * com Ravox Coins — a caixa em volta e' verde, e a diferenca de cor e' o que
+ * com Draevor Coins — a caixa em volta e' verde, e a diferenca de cor e' o que
  * diz "isto aqui custa dinheiro" antes de alguem ler.
  */
 .auto-boss-oferta {
@@ -6129,7 +6141,7 @@ body.mirando-tier .cell[data-item]:hover, body.mirando-tier .slot[data-item]:hov
  *
  * Ela tem moldura, e as outras marcas do jogo não têm. O motivo é o que ela
  * faz: é a única caixinha que autoriza o servidor a GASTAR o que foi comprado
- * com Ravox Coins sem perguntar mais nada. Uma linha de rodapé cinza, do
+ * com Draevor Coins sem perguntar mais nada. Uma linha de rodapé cinza, do
  * tamanho de "ver as habilidades do grupo", seria fácil demais de marcar sem
  * ler — e não há como devolver uma carga.
  */
@@ -7245,7 +7257,7 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
 .tier-epico { --tier: #b184e8; }
 .tier-lendario { --tier: #e0a84a; }
 /*
- * Mítico: as peças Ravox, o degrau acima de lendário.
+ * Mítico: as peças Draevor, o degrau acima de lendário.
  *
  * Vermelho a pedido do dono, e um vermelho MAIS QUENTE que o `--danger`
  * (#d0574f) de propósito: aquele é a cor de "deu errado", e aparece em aviso
@@ -7423,7 +7435,7 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
 /*
  * ---- O BOLSO DA ALJAVA ----
  *
- * A munição Ravox posta a salvo da venda e da limpeza. Fica embaixo da grade
+ * A munição Draevor posta a salvo da venda e da limpeza. Fica embaixo da grade
  * porque responde a outra pergunta: a grade é "qual flecha eu uso", esta é
  * "onde as minhas flechas moram".
  *
@@ -7620,7 +7632,7 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
   background: #2a11119c; color: #ff8a7a; font-size: 11px;
 }
 
-/* ---------- Ravox Store em seções ---------- */
+/* ---------- Store em seções ---------- */
 
 /* A loja virou prateleira: seções à esquerda, produtos à direita. Antes
    montarias e outfits eram abas irmãs da loja, o que dava a entender que eram
@@ -7721,7 +7733,7 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
 .bagline span.full { color: var(--danger); }
 
 
-/* ---------- placa da Ravox Store na topbar ---------- */
+/* ---------- placa da Store na topbar ---------- */
 
 /* A loja vende: ela ganha placa, não um ícone perdido no meio das
    ferramentas. Fica depois de quem está online, com folga à esquerda. */
@@ -8385,7 +8397,7 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
 .troca-tc-com-moeda { white-space: nowrap; }
 .troca-tc-com-moeda .troca-tc-moeda { display: inline-block; vertical-align: middle; margin: -3px 3px 0 0; }
 /*
- * Só tamanhos exatos, senão borra: a do Tibia e a do Ravox nascem com 32px e
+ * Só tamanhos exatos, senão borra: a do Tibia e a do Draevor nascem com 32px e
  * vão a 16 ou 24 (redução lisa); a do Rubini nasce com 12px e fica em 12
  * (centrada numa caixa de 16) ou dobra para 24 com pixel duro.
  */
@@ -9227,7 +9239,7 @@ input, textarea {
 /*
  * "Enfrentar o boss" é o botão mais importante do jogo inteiro: dele sai uma
  * luta com cooldown de horas. Ele ganha a placa dourada com o facho correndo
- * pela borda — o mesmo `@property --store-angle` da Ravox Store, porque uma luz
+ * pela borda — o mesmo `@property --store-angle` da Store, porque uma luz
  * que ANDA o olho pega mesmo de canto, e um brilho parado sumia contra a
  * moldura da janela.
  */
@@ -9452,7 +9464,7 @@ input, textarea {
  * sobrava meia janela vazia embaixo. Numa hunt de setenta drops isso e' rolar
  * vinte fileiras dentro de um postigo de tres, com o vazio logo abaixo olhando.
  *
- * O encadeamento e' o mesmo que a Ravox Store ja' usa (`.modal-box.store`): o
+ * O encadeamento e' o mesmo que a Store ja' usa (`.modal-box.store`): o
  * corpo do modal vira coluna flexivel, a previa toma a sobra dele, as duas
  * colunas tomam a sobra da previa, e a grade toma a sobra da coluna dela. O
  * rodape com os dois modos continua colado no pe, porque e' irmao da previa e
@@ -12301,7 +12313,7 @@ body.mirando #map { cursor: crosshair; }
  *
  *   BASIC     a moldura do INVENTARIO (`padrao.png`, a mesma de `.window`) —
  *             a de janela, sobria, a que ele ve o tempo todo. E' o grau comum.
- *   INTRICATE a moldura da RAVOX STORE (`prastore.png`, a de `.modal-box.store`)
+ *   INTRICATE a moldura da STORE (`prastore.png`, a de `.modal-box.store`)
  *             — a da vitrine, um degrau acima da de janela.
  *   POWERFUL  a moldura dos BOSSES (`panel-frame.webp`, a de `.hunt-card.boss`
  *             e a da tela de login) — a dourada, reservada para o que e' raro.
@@ -12341,7 +12353,7 @@ body.mirando #map { cursor: crosshair; }
   border-image-source: url(/client/assets/ui/padrao.png);
   border-image-slice: 150 110 130 110 fill;
 }
-/* Intricate: a moldura da vitrine, a que se ve ao abrir a Ravox Store. */
+/* Intricate: a moldura da vitrine, a que se ve ao abrir a Store. */
 .imbue-grau.grau-2,
 .imbue-ativo.grau-2 {
   border-width: 26px 17px 19px 17px;
@@ -14040,7 +14052,7 @@ body.mirando #map { cursor: crosshair; }
 .balcao-paginas button:disabled { opacity: 0.35; cursor: not-allowed; }
 .balcao-conta { font-family: var(--font-numero); font-size: 12px; color: var(--muted); }
 
-/* ------------------------------------------------------------ ravox coins */
+/* ------------------------------------------------------------ draevor coins */
 .balcao-cambio-nota {
   padding: 9px 12px;
   border: 1px solid var(--line-soft);
@@ -14845,7 +14857,7 @@ input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
    paragrafos sem dono. */
 /* ---- A lista de premios de uma bag, dentro do balao ----
    Duas colunas de 18px + nome. O balao tem 300px de largura util, entao cada
-   coluna fica com ~140 — o suficiente para "Ravox Sorcerer Backpack" caber em
+   coluna fica com ~140 — o suficiente para "Draevor Sorcerer Backpack" caber em
    duas linhas sem estourar. */
 .tip-saco { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
 .tip-saco-titulo { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
@@ -15100,9 +15112,9 @@ input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
   transition: width 1s linear;
 }
 
-/* A munição Ravox: posse, e não gasto. A cor é a do mítico — ela é uma peça
-   Ravox como as armas, e a mesma cor no card e no balão diz isso sem palavra. */
-.ammo-ravox { color: #f2503f; font-size: 11px; }
+/* A munição Draevor: posse, e não gasto. A cor é a do mítico — ela é uma peça
+   Draevor como as armas, e a mesma cor no card e no balão diz isso sem palavra. */
+.ammo-draevor { color: #f2503f; font-size: 11px; }
 
 /* O reagente que falta: a mesma cor do impedimento, para o olho achar a linha
    travada sem ler os três chips. */
@@ -16216,7 +16228,7 @@ body.com-novidades #recados { top: calc(var(--altura-da-topbar) + var(--altura-d
 
 /* ---------- a Loja de Boss Token ----------
  *
- * Mesma linguagem da Ravox Store — cards em grade, arte em cima, preço no
+ * Mesma linguagem da Store — cards em grade, arte em cima, preço no
  * botão — com a moeda trocada. O dourado é o `--exp`, que o jogo já usa para o
  * que vale dinheiro; aqui o "dinheiro" é um item que cai de boss.
  */
@@ -16511,7 +16523,7 @@ body.com-novidades #recados { top: calc(var(--altura-da-topbar) + var(--altura-d
 .deposito-vagas em { color: var(--muted); font-size: 12px; font-style: normal; }
 
 /*
- * ---- A prateleira do balcão: ouro ou Ravox Coins ----
+ * ---- A prateleira do balcão: ouro ou Draevor Coins ----
  *
  * Fica logo abaixo dos dois lados ("À venda" / "Procurados") e é menor que
  * eles de propósito: o lado muda o que a lista significa, a moeda muda só em
@@ -17191,8 +17203,8 @@ button.afixo-linha:hover { border-color: var(--accent-dim, var(--accent)); borde
 /*
  * ---- A BOLSA da página de afixos ----
  *
- * "onde está ouro tem que ter o ícone do ouro, e onde está Ravox Coins tem que
- * ter o Ravox Coins."
+ * "onde está ouro tem que ter o ícone do ouro, e onde está Draevor Coins tem que
+ * ter o Draevor Coins."
  *
  * Duas caixas lado a lado, no topo, cada uma com o ícone de sempre. Ela subiu do
  * rodapé porque nesta tela o saldo é a primeira pergunta, e não a última.
@@ -17630,7 +17642,7 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
   /* ---- 6. O aviso de beta cabe em duas linhas em vez de ser cortado ---- */
   /*
    * Ele era uma fita de 24px com `white-space: nowrap` e reticências: numa tela
-   * de 390 a frase virava "RAVOX IDLE EM DESENVOLVIMENTO — PODE HAVER BUC". O
+   * de 390 a frase virava "DRAEVOR IDLE EM DESENVOLVIMENTO — PODE HAVER BUC". O
    * recado é curto e importa inteiro, então aqui ele quebra.
    *
    * A altura passa a ser automática, e o `--altura-do-aviso` (que empurra o HUD
@@ -17639,7 +17651,7 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
    */
   body.com-aviso { --altura-do-aviso: 38px; }
   /*
-   * "afina bem a linha de Ravox Idle em desenvolvimento."
+   * "afina bem a linha de Draevor Idle em desenvolvimento."
    *
    * Ela quebra em duas linhas para o texto não ser cortado, e duas linhas de
    * 10px com folga custavam 38px de altura — perto de um vigésimo da tela para
@@ -18249,7 +18261,7 @@ body.com-medidor #hud { top: calc(var(--topo-do-hud) + var(--altura-do-medidor))
    * telas de 980px caberem em 360 — mas numa fileira `flex` com
    * `space-between`, autorizar todo mundo a encolher abaixo do conteúdo faz o
    * texto de cada um transbordar da própria caixa e cair POR CIMA do vizinho.
-   * O saldo, o "Transferir" e o "Obter Ravox Coins" viraram três textos no
+   * O saldo, o "Transferir" e o "Obter Draevor Coins" viraram três textos no
    * mesmo lugar.
    *
    * A regra não pode sair (sem ela, quatro telas voltam a furar a moldura), e o
@@ -20965,7 +20977,7 @@ body.topbar-recolhida .gaveta-da-barra { display: none; }
 /*
  * ---- A fileira centrada entre a loja e o Opções ----
  *
- * "esses ícones têm que centralizar no meio entre opções e ravox store."
+ * "esses ícones têm que centralizar no meio entre opções e store."
  *
  * `justify-content: center` não bastava: o canto da direita usa
  * `margin-left: auto`, e uma margem automática ENGOLE toda a sobra antes de o
@@ -21274,7 +21286,7 @@ body.topbar-recolhida .gaveta-da-barra { display: none; }
 /*
  * ---- O Mercado agora é FILHO da fileira ----
  *
- * Ele era vizinho dela, com placa própria colada na Ravox Store; com a fileira
+ * Ele era vizinho dela, com placa própria colada na Store; com a fileira
  * centrada no boneco isso deixava um vão de meia tela entre ele e o Depósito.
  * Dentro dela, ele passa a obedecer a largura medida como qualquer outro botão
  * — sem isto ele ficaria 56px fixos no meio de vizinhos de 52 ou menos, e a

@@ -167,11 +167,56 @@ docker compose restart nginx           # depois de mexer em game/docker/nginx/co
 docker compose down && docker compose up -d --build   # derruba tudo e sobe de novo
 ```
 
-## 9. O que este repositório NÃO cobre ainda
+## 9a. Redis (opcional — cache entre processos)
 
-- Redis: existe no compose (`docker compose --profile scale up -d redis`) mas
-  nenhum código do jogo fala com ele — só entra quando o jogo virar mais de
-  um processo (ver `docs/auditoria-performance.md`, Fase 6/trilha de infra).
+```bash
+docker compose --profile scale up -d        # sobe também o redis
+```
+
+Sem isto (perfil desligado, padrão), o jogo roda exatamente como sempre —
+`REDIS_URL` vazia vira cache só em memória, por processo (ver
+`game/database/redis.mjs`). Com o perfil ligado E `REDIS_URL` no `.env`
+(`REDIS_URL=redis://redis:6379`, já no `.env.example`), o jogo usa o Redis
+para cachear leituras caras entre processos (melhorias da conta, guilda de
+cada nome — ver `docs/auditoria-performance.md`, seção Redis). Ranking/
+presença/pub-sub entre processos **continuam não usando Redis** — só
+passam a fazer sentido de verdade a partir de 2+ processos de jogo.
+
+## 9b. Atenção ao reiniciar só o `game` (nginx guarda o IP antigo)
+
+O `upstream game { server game:8080; }` do nginx resolve o nome uma vez, na
+subida do nginx — reiniciar só o container do jogo (`docker compose restart
+game`, ou uma recriação por rebuild) pode deixar o nginx apontando para o IP
+antigo até ELE TAMBÉM ser reiniciado (`docker compose restart nginx`),
+derrubando o site inteiro com 502 até alguém perceber. Descoberto rodando a
+stack de verdade nesta máquina (não afeta quem só sobe tudo junto do zero).
+`scripts/deploy.sh` sobe TODOS os serviços juntos (`up -d --build`), o que
+evita isto na maioria dos casos — mas um `docker compose restart game`
+manual, isolado, é a armadilha. Correção de verdade (não feita ainda):
+trocar o `upstream` estático por `resolver 127.0.0.11 valid=10s;` +
+`proxy_pass` com variável, para o nginx re-resolver o IP sozinho.
+
+## 9c. `limit_req` do nginx baixo demais para o carregamento frio do cliente
+
+O cliente não tem bundler (ES modules soltos, ~40+ arquivos `.mjs`/`.json`/
+imagens só na tela de personagens/login) — um carregamento frio real dispara
+todos esses requests em paralelo, quase no mesmo milissegundo. O
+`game.conf.inc` tinha `limit_req zone=http_por_ip burst=40 nodelay;` na
+`location /`: qualquer request além do 40º de um mesmo IP num carregamento
+frio levava 503 IMEDIATO (por causa do `nodelay`) — sempre nos MESMOS
+arquivos (a ordem de import de `main.mjs` é determinística), o que parecia
+"ícone quebrado aleatório" no mobile mas também acontecia (com menos
+frequência de ser notado) no desktop. Reproduzido e confirmado via
+`read_network_requests` do navegador embutido: `gamedata/missile-
+sprites.json`, `client/src/traduz.mjs` e `packages/shared/src/formulas.mjs`
+voltando 503 toda vez. Corrigido subindo o burst para `burst=200` (mantendo
+`rate=20r/s` e `nodelay` — o objetivo é servir o pico de UM carregamento de
+página na hora, não afrouxar o limite de abuso sustentado). Confirmado com
+dois carregamentos frios completos (desktop e mobile 375×812), zero 503 em
+~74–106 requests cada.
+
+## 9d. O que este repositório NÃO cobre ainda
+
 - Métricas de verdade em `/saude` (duração do tique, atraso do event loop,
   heap) — hoje é só `{ok, online}`.
 - Firewall (`ufw`/`iptables`)/fail2ban no próprio VPS — fora do escopo do

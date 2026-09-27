@@ -214,7 +214,7 @@ export function renderSheet(body, { state, send, closeModal }) {
      * São duas contas diferentes e a ficha mostrava só a primeira. A natural é
      * uma fração da vida máxima (e a promoção a multiplica); a das peças é um
      * número fixo por segundo que vem do `healthgain` do items.xml — é o que o
-     * Ravox Ring, o Amuleto e a Backpack anunciam como "regenera mana e vida
+     * Draevor Ring, o Amuleto e a Backpack anunciam como "regenera mana e vida
      * 30", e o que fazia o jogador olhar a ficha e achar que não estava valendo.
      *
      * O número grande é o total, porque é o que ele sente; a linha de baixo

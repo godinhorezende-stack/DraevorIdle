@@ -297,7 +297,7 @@ async function abrir() {
 
   lista.hidden = true;
   ficha.hidden = false;
-  document.title = `${nome} — Ravox Idle`;
+  document.title = `${nome} — Draevor Idle`;
   try {
     const r = await fetch(`/api/guilda?nome=${encodeURIComponent(nome)}`, { cache: 'no-store' });
     const d = await r.json();

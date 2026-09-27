@@ -1,8 +1,8 @@
 <!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Personagem — Ravox Idle</title>
-<meta name="description" content="Ficha dos personagens do Ravox Idle: level, perícias, equipamento e o progresso nos sistemas do Ravox.">
+<title>Personagem — Draevor Idle</title>
+<meta name="description" content="Ficha dos personagens do Draevor Idle: level, perícias, equipamento e o progresso nos sistemas do Draevor.">
 
 <link rel="icon" type="image/png" sizes="32x32" href="/client/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/client/favicon-192.png">
@@ -163,7 +163,7 @@
                   letter-spacing: .1em; text-transform: uppercase; color: var(--apagado); }
   .pericia b { display: block; font-size: 15px; color: #eef3f2; font-variant-numeric: tabular-nums; }
 
-  /* ---- Ravox Stats ---- */
+  /* ---- Draevor Stats ---- */
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--linha-suave);
            border: 1px solid var(--linha-suave); border-radius: 5px; overflow: hidden; }
   /* Sobrou um sozinho na última linha: ele ocupa a linha, sem o buraco do lado. */
@@ -238,7 +238,7 @@
 </style>
 
 <header class="topo">
-  <a class="marca" href="/"><img src="/client/assets/ui/ravox-logo.webp" alt="Ravox Idle"></a>
+  <a class="marca" href="/"><img src="/client/assets/ui/draevor-logo.webp" alt="Draevor Idle"></a>
   <nav>
     <a href="/#ranking" data-t="menu.ranking">Ranking</a>
     <a href="/online" data-t="menu.online">Online</a>
@@ -248,9 +248,9 @@
     <span class="menu-sep"></span>
 
     <a class="social discord" href="https://discord.gg/7w8j9DuZe" target="_blank" rel="noopener"
-       title="Discord do Ravox Idle" aria-label="Discord"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18.3 18.3 0 0 1 3 1.4 15 15 0 0 0-12.4 0 18.3 18.3 0 0 1 3-1.4L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 .1 13.4.4 17.8A19.9 19.9 0 0 0 6.4 21l.4-.6a13 13 0 0 1-2-1 8 8 0 0 0 .5-.4 14.2 14.2 0 0 0 13.4 0 8 8 0 0 0 .5.4 13 13 0 0 1-2 1l.4.6a19.9 19.9 0 0 0 6-3.2c.4-5-.4-9.4-3.3-13.4ZM8.3 15.4c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Z"/></svg></a>
+       title="Discord do Draevor Idle" aria-label="Discord"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.2.4a18.3 18.3 0 0 1 3 1.4 15 15 0 0 0-12.4 0 18.3 18.3 0 0 1 3-1.4L8.6 3a19.8 19.8 0 0 0-4.9 1.4C.6 9 .1 13.4.4 17.8A19.9 19.9 0 0 0 6.4 21l.4-.6a13 13 0 0 1-2-1 8 8 0 0 0 .5-.4 14.2 14.2 0 0 0 13.4 0 8 8 0 0 0 .5.4 13 13 0 0 1-2 1l.4.6a19.9 19.9 0 0 0 6-3.2c.4-5-.4-9.4-3.3-13.4ZM8.3 15.4c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.1-1.1-2.1-2.4 0-1.3.9-2.4 2.1-2.4s2.2 1.1 2.2 2.4c0 1.3-1 2.4-2.2 2.4Z"/></svg></a>
     <a class="social whatsapp" href="https://chat.whatsapp.com/D4B0n1pW3ef5kLLceSTGgh?s=cl&amp;p=a&amp;ilr=4" target="_blank" rel="noopener"
-       title="Grupo do WhatsApp do Ravox Idle" aria-label="WhatsApp"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.200l-.3-.2-3 .8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.6-6.1c-.3-.1-1.6-.8-1.800-.9-.2-.1-.4-.1-.6.1l-.8 1c-.2.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4 0-.5.2-.7l.4-.5c.1-.2.2-.3.3-.5v-.5l-.9-2c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.2 5.3 5.3 0 0 0 1.100 2.8 12 12 0 0 0 4.600 4c2.2.9 2.2.6 2.6.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-.9.2-1l-.4-.3Z"/></svg></a>
+       title="Grupo do WhatsApp do Draevor Idle" aria-label="WhatsApp"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.200l-.3-.2-3 .8.8-3-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.6-6.1c-.3-.1-1.6-.8-1.800-.9-.2-.1-.4-.1-.6.1l-.8 1c-.2.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4 0-.5.2-.7l.4-.5c.1-.2.2-.3.3-.5v-.5l-.9-2c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.2 5.3 5.3 0 0 0 1.100 2.8 12 12 0 0 0 4.600 4c2.2.9 2.2.6 2.6.5a2.6 2.6 0 0 0 1.7-1.2c.2-.5.2-.9.2-1l-.4-.3Z"/></svg></a>
 
     <a class="botao-entrar" href="/jogar" data-t="menu.entrar">Entrar</a>
   </nav>
@@ -309,7 +309,7 @@
 </div>
 
 <footer>
-  <span>Ravox Idle</span>
+  <span>Draevor Idle</span>
   <span class="separador">·</span>
   <a href="/jogar">Entrar</a>
   <span class="separador">·</span>
@@ -378,7 +378,7 @@ function stat(rotulo, valor, cor, arte) {
 }
 
 function desenhar(p) {
-  const r = p.ravox;
+  const r = p.draevor;
   const status = p.jogando
     ? `<span class="ok">Online</span>${p.atividade ? ` — ${ONDE[p.atividade.onde] ?? 'Conectado'}${p.atividade.lugar ? ` (${esc(p.atividade.lugar)})` : ''}` : ''}`
     : '<span class="cinza">Offline</span>';
@@ -395,7 +395,7 @@ function desenhar(p) {
         ${linha('Vocation', esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao))}
         ${p.guilda?.nome ? linha('Guild', `<span id="ficha-guilda"></span>`) : ''}
         ${linha('Level', n(p.level))}
-        ${linha('World', 'Ravox')}
+        ${linha('World', 'Draevor')}
         ${linha('Status', status)}
         ${linha('Last Login', p.jogando ? 'agora' : quando(p.visto))}
         ${linha('Account Status', conta)}
@@ -442,7 +442,7 @@ function desenhar(p) {
     </section>
 
     <section class="tb">
-      <h2>Ravox Stats</h2>
+      <h2>Draevor Stats</h2>
       <div class="tb-corpo">
         <div class="stats">
           ${stat('Summon Lv', `${n(r.summonNivel)}<small class="cinza"> / ${n(r.summonTeto)}</small>`, 'c-verde', 'aba-especiais')}
@@ -558,7 +558,7 @@ async function desenharSprites(p) {
     if (p.outfit?.type) $('retrato')?.append(outfitCanvas(p.outfit.type, p.outfit, 80));
   } catch { /* outfit desconhecido: fica sem boneco */ }
   try {
-    if (p.ravox.summonLook) $('summon')?.append(outfitCanvas(p.ravox.summonLook, {}, 56));
+    if (p.draevor.summonLook) $('summon')?.append(outfitCanvas(p.draevor.summonLook, {}, 56));
   } catch { /* idem */ }
 
   for (const lugar of document.querySelectorAll('.stat-item[data-item]')) {
@@ -723,7 +723,7 @@ async function buscar(nome) {
     guardarRecente(d.personagem);
     // O endereço acompanha a busca: assim o link pode ser mandado no Discord.
     history.replaceState(null, '', `/personagem?nome=${encodeURIComponent(d.personagem.nome)}`);
-    document.title = `${d.personagem.nome} — Ravox Idle`;
+    document.title = `${d.personagem.nome} — Draevor Idle`;
   } catch {
     $('ficha').innerHTML = '<p class="pj-aviso">não deu para buscar agora</p>';
   }
@@ -745,7 +745,7 @@ document.addEventListener('click', (e) => {
 });
 
 // "Vistos por último" é só deste navegador.
-const CHAVE_RECENTES = 'ravox:personagens-vistos';
+const CHAVE_RECENTES = 'draevor:personagens-vistos';
 function lerRecentes() {
   try { return JSON.parse(localStorage.getItem(CHAVE_RECENTES) ?? '[]'); } catch { return []; }
 }

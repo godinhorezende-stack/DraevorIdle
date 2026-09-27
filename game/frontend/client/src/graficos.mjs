@@ -47,7 +47,7 @@
  * PC de casa sem efeito nenhum, e sem ninguém entender por quê.
  */
 
-const CHAVE = 'ravox:graficos';
+const CHAVE = 'draevor:graficos';
 
 /*
  * ---- As chaves ----

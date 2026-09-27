@@ -5,6 +5,7 @@ import { outfitCanvas, itemCanvas } from './sprites.mjs';
 import { tipPanel, tipTexto, tipFor } from './tooltip.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { healthColor } from './map.mjs';
+import { ehCelular } from './mobile.mjs';
 
 const $ = (id) => document.getElementById(id);
 
@@ -200,7 +201,7 @@ export const MODOS_DE_EFEITO = [
   { id: 'pilulas', nome: 'Na tela', dica: 'Pílulas pequenas no alto, que se arrastam.' },
   { id: 'janela', nome: 'Em janela', dica: 'A janela Buffs e Boosts, linha por linha.' },
 ];
-const CHAVE_DO_MODO = 'ravox:efeitos-modo';
+const CHAVE_DO_MODO = 'draevor:efeitos-modo';
 export const modoDosEfeitos = () => (localStorage.getItem(CHAVE_DO_MODO) === 'janela' ? 'janela' : 'pilulas');
 export function trocarModoDosEfeitos(modo) {
   localStorage.setItem(CHAVE_DO_MODO, modo === 'janela' ? 'janela' : 'pilulas');
@@ -208,9 +209,9 @@ export function trocarModoDosEfeitos(modo) {
   if (hudCtx?.state?.character) renderPilulasDeEfeito(hudCtx.state.character);
 }
 
-const CHAVE_DO_ARRANJO = 'ravox:pilulas-arranjo';
-const CHAVE_DO_TAMANHO = 'ravox:pilulas-tamanho';
-const CHAVE_DA_POSICAO = 'ravox:pilulas-pos';
+const CHAVE_DO_ARRANJO = 'draevor:pilulas-arranjo';
+const CHAVE_DO_TAMANHO = 'draevor:pilulas-tamanho';
+const CHAVE_DA_POSICAO = 'draevor:pilulas-pos';
 
 export const TAMANHOS_DA_PILULA = [
   { id: 'P', nome: 'Pequeno' },
@@ -344,7 +345,7 @@ function ligarArrastoDasPilulas() {
   faixa.addEventListener('pointercancel', soltar);
 }
 
-const chaveDoGrupo = (id) => `ravox:efeito-na-tela:${id}`;
+const chaveDoGrupo = (id) => `draevor:efeito-na-tela:${id}`;
 export const efeitoNaTela = (id) => localStorage.getItem(chaveDoGrupo(id)) !== '0';
 export function mostrarEfeitoNaTela(id, mostrar) {
   localStorage.setItem(chaveDoGrupo(id), mostrar ? '1' : '0');
@@ -392,9 +393,9 @@ export function initHud(ctx) {
     hud.classList.toggle('minimized');
     minimize.textContent = hud.classList.contains('minimized') ? '▢' : '—';
     tipTexto(minimize, hud.classList.contains('minimized') ? 'Restaurar a ficha.' : 'Encolher a ficha.');
-    localStorage.setItem('ravox:hud-min', hud.classList.contains('minimized') ? '1' : '');
+    localStorage.setItem('draevor:hud-min', hud.classList.contains('minimized') ? '1' : '');
   };
-  if (localStorage.getItem('ravox:hud-min')) minimize.click();
+  if (localStorage.getItem('draevor:hud-min')) minimize.click();
 
   /*
    * O card pode descer para a barra de baixo.
@@ -437,7 +438,7 @@ export function initHud(ctx) {
     hud.classList.toggle('docked', docked);
     // Recolhido lá embaixo, o cabeçalho do card fica só com o retrato e o nome.
     dockButton.hidden = docked;
-    localStorage.setItem('ravox:hud-dock', docked ? '1' : '');
+    localStorage.setItem('draevor:hud-dock', docked ? '1' : '');
     // A promoção mora colada embaixo do card: some o card, ela muda de lugar.
     if (ultimoPersonagem) placePromotion(ultimoPersonagem);
   };
@@ -453,7 +454,7 @@ export function initHud(ctx) {
   // Sempre, e não só quando está encaixada: é esta chamada que escreve o texto
   // do item do menu, e sem ela ele nascia dizendo "devolver" com a ficha já no
   // canto — oferecendo o que acabou de ser feito.
-  setDocked(!!localStorage.getItem('ravox:hud-dock'));
+  setDocked(!!localStorage.getItem('draevor:hud-dock'));
 
   /*
    * A barra de ações se recolhe para baixo.
@@ -474,11 +475,11 @@ export function initHud(ctx) {
     barra.classList.toggle('minimizada', recolhida);
     minimizar.textContent = recolhida ? '▲' : '▼';
     minimizar.title = recolhida ? 'mostrar a barra' : 'minimizar a barra';
-    localStorage.setItem('ravox:bar-min', recolhida ? '1' : '');
+    localStorage.setItem('draevor:bar-min', recolhida ? '1' : '');
   };
 
   minimizar.onclick = () => setMinimizada(!barra.classList.contains('minimizada'));
-  setMinimizada(!!localStorage.getItem('ravox:bar-min'));
+  setMinimizada(!!localStorage.getItem('draevor:bar-min'));
   ajustesDaBarra.minimizar = setMinimizada;
   ajustesDaBarra.minimizada = () => barra.classList.contains('minimizada');
 
@@ -498,10 +499,10 @@ export function initHud(ctx) {
     const recolherTopo = (recolhida) => {
       document.body.classList.toggle('topbar-recolhida', recolhida);
       topo.title = recolhida ? 'Mostrar a barra de cima' : 'Recolher a barra de cima';
-      localStorage.setItem('ravox:topbar-min', recolhida ? '1' : '');
+      localStorage.setItem('draevor:topbar-min', recolhida ? '1' : '');
     };
     topo.onclick = () => recolherTopo(!document.body.classList.contains('topbar-recolhida'));
-    recolherTopo(!!localStorage.getItem('ravox:topbar-min'));
+    recolherTopo(!!localStorage.getItem('draevor:topbar-min'));
   }
 
   /*
@@ -543,7 +544,12 @@ export function initHud(ctx) {
 
 /**
  * O card fica colado embaixo da ficha, acompanhando a altura dela — a ficha
- * encolhe quando minimizada e o card sobe junto.
+ * encolhe quando minimizada e o card sobe junto. Ficar sempre ABAIXO da ficha
+ * (nunca ao lado) é o que garante nunca cobrir a ficha em nenhum tamanho de
+ * tela. No celular a ficha já toma quase a largura inteira — copiar a LARGURA
+ * dela também faria o card dominar boa parte da tela de jogo logo abaixo, daí
+ * a largura pequena e fixa só no celular (`ehCelular()`, mesma leitura de
+ * `--e-celular` de `mobile.mjs`); a posição continua a mesma conta nos dois.
  */
 function placePromotion(character) {
   const card = $('hud-promotion');
@@ -563,9 +569,10 @@ function placePromotion(character) {
    */
   const hud = $('hud').getBoundingClientRect();
   const vazio = hud.width === 0;
+  const celular = ehCelular();
   card.style.top = `${Math.round(vazio ? 72 : hud.bottom + 8)}px`;
   card.style.left = `${Math.round(vazio ? 12 : hud.left)}px`;
-  card.style.width = `${Math.round(vazio ? 340 : hud.width)}px`;
+  card.style.width = celular ? '150px' : `${Math.round(vazio ? 340 : hud.width)}px`;
 }
 
 /**
@@ -663,7 +670,7 @@ function painelPremium(character) {
       el('p', 'tip-bless-foot', `Termina em ${fim.toLocaleDateString('pt-BR')}.`)
     );
   } else {
-    caixa.append(el('p', 'tip-bless-foot', 'Premium se compra na Ravox Store, por coins.'));
+    caixa.append(el('p', 'tip-bless-foot', 'Premium se compra na Store, por coins.'));
   }
   return caixa;
 }
@@ -2168,7 +2175,7 @@ function painelDeRecuperacao(character, qual) {
    * E as peças, uma a uma.
    *
    * A soma já apareceu lá em cima; o que esta lista acrescenta é o NOME —
-   * "Ravox Ring +5" é o que permite decidir se vale trocar o anel. Sem ela o
+   * "Draevor Ring +5" é o que permite decidir se vale trocar o anel. Sem ela o
    * balão diria "+9 do equipamento" e deixaria a pergunta seguinte sem resposta.
    */
   const catalogo = hudCtx?.state?.items ?? {};

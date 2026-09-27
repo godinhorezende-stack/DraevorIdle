@@ -61,7 +61,7 @@
  *
  * O alcance de dois andares está conferido na fonte, no crystalserver, e o
  * caminho está escrito acima. A regra da cobertura NÃO está: ela mora no
- * client (`MapView::calcFirstVisibleFloor`), e o código do Ravox OTC não viaja
+ * client (`MapView::calcFirstVisibleFloor`), e o código do Draevor OTC não viaja
  * com este projeto — só os dados dele (`assets-client/1524`). O que está aqui
  * reproduz o comportamento dele: dentro de caverna não se vê o nível de cima,
  * e por um buraco no teto se vê. Quem tiver o código do client à mão, confira

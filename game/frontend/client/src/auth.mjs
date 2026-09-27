@@ -65,8 +65,8 @@ const el = (tag, className, text) => {
   return node;
 };
 
-const TOKEN_KEY = 'ravox:token';
-const LAST_CHARACTER = 'ravox:character';
+const TOKEN_KEY = 'draevor:token';
+const LAST_CHARACTER = 'draevor:character';
 
 /*
  * ---- Entrar é uma coisa; VOLTAR é outra ----
@@ -323,7 +323,7 @@ const NOME_DO_ELEMENTO = {
  * recarrega a página volta ao mesmo personagem, cujo carimbo parou junto com a
  * aba.
  */
-const CHAVE_VISTO = (nome) => `ravox:visto:${String(nome ?? '').toLowerCase()}`;
+const CHAVE_VISTO = (nome) => `draevor:visto:${String(nome ?? '').toLowerCase()}`;
 
 /*
  * "há 3h", "há 2 dias" — para o card do personagem parado.
@@ -348,7 +348,7 @@ export function ultimoVisto(nome) {
     // Quem já jogava antes desta mudança tem só o carimbo antigo, global. Ele
     // serve de ponto de partida uma vez, e depois cada personagem passa a ter o
     // seu.
-    return Number(localStorage.getItem('ravox:visto')) || 0;
+    return Number(localStorage.getItem('draevor:visto')) || 0;
   } catch {
     return 0;
   }
@@ -904,7 +904,7 @@ export function createGate({ send, onPlay }) {
    * servidor, que confere a senha ou o token da Google de verdade. Um valor
    * errado aqui mostra a pergunta errada, e nada além disso.
    */
-  const ENTRADA_KEY = 'ravox:entrou-por';
+  const ENTRADA_KEY = 'draevor:entrou-por';
   const lembrarEntrada = (porta) => {
     try {
       localStorage.setItem(ENTRADA_KEY, porta);

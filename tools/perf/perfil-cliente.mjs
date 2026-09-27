@@ -11,7 +11,7 @@ const ctx = await b.newContext(mobile ? { viewport: { width: 412, height: 915 },
 const p = await ctx.newPage();
 const erros = []; p.on('pageerror', (e) => erros.push(e.message));
 await p.addInitScript(([t, n]) => {
-  localStorage.setItem('ravox:token', t); localStorage.setItem('ravox:character', n);
+  localStorage.setItem('draevor:token', t); localStorage.setItem('draevor:character', n);
   window.__rafs = 0; const loop = () => { window.__rafs++; requestAnimationFrame(loop); }; requestAnimationFrame(loop);
   window.__long = []; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__long.push(e.duration); }).observe({ entryTypes: ['longtask'] }); } catch {}
   // conta drawImage no canvas

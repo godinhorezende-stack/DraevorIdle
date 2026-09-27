@@ -9,10 +9,10 @@ import * as Prey from '../systems/prey.mjs';
 import * as Loja from '../systems/loja.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Ficha from '../systems/ficha.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comMarcaNova } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada');
-const capturado = (arquivo) => JSON.parse(readFileSync(join(API, arquivo), 'utf8'));
+const capturado = (arquivo) => comMarcaNova(JSON.parse(readFileSync(join(API, arquivo), 'utf8')));
 const HORA = 3_600_000;
 
 function novo(opcoes) {
@@ -215,7 +215,7 @@ test('"Renovar sozinho" mantém a presa e sorteia bônus novo por 1 wildcard', (
   assert.equal(e.wildcards, 4);
 });
 
-test('o terceiro slot abre ao comprar na Ravox Store', () => {
+test('o terceiro slot abre ao comprar na Store', () => {
   const e = novo();
   e.coins = 1000;
   assert.ok(Loja.comprar(e, { id: 'prey-slot' }).ok);

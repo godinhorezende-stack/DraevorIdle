@@ -7,10 +7,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as Arvore from '../systems/arvore.mjs';
 import * as Ficha from '../systems/ficha.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, comMarcaNova } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada', 'servidor');
-const capturado = (arquivo) => JSON.parse(readFileSync(join(API, arquivo), 'utf8')).view;
+const capturado = (arquivo) => comMarcaNova(JSON.parse(readFileSync(join(API, arquivo), 'utf8')).view);
 
 /** O Zoros (knight 407) da captura, com a árvore dele aplicada. */
 function zoros() {

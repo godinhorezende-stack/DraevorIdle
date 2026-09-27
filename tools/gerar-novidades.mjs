@@ -18,7 +18,7 @@ const NOSSAS_NOVIDADES = [
     em: '26 de setembro — guildas com brasão, arena de fila e a aba Mercado',
     itens: [
       'A JANELA DE GUILDAS FOI REFEITA: Minha guilda, Baú, Servidor (com pódio) e Pedidos, o card de cada membro com o equipamento, e o menu de Opções do líder.',
-      'O BRASÃO É SEU: forma, símbolo, iniciais, cores e efeitos. Fundar paga só os efeitos pagos; trocar depois custa 50 Ravox Coins, e um efeito comprado nunca se paga de novo.',
+      'O BRASÃO É SEU: forma, símbolo, iniciais, cores e efeitos. Fundar paga só os efeitos pagos; trocar depois custa 50 Draevor Coins, e um efeito comprado nunca se paga de novo.',
       'NO BAÚ DA GUILDA, UM CLIQUE GUARDA: com o baú aberto, clicar numa peça da mochila já leva ela para lá — e vai a peça CLICADA, mesmo com duas iguais de afixos diferentes.',
       'A ARENA X1 VIROU FILA: "Alistar-se ao lobby" põe o seu card para os outros; "Enfrentar" abre a sala na hora, e os dois recebem o aviso para abrir o lobby.',
       'NO DUELO, OS DOIS SE ACHAM: ir atrás do adversário segue o caminho da caverna (antes travava na primeira parede, com a sala inteira entre os dois).',

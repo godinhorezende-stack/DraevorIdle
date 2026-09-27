@@ -170,13 +170,13 @@ export function comando(estado, m, contaCaixa = null) {
 
 /**
  * `store buy 'cofre-vagas'` — mais vagas na Compartilhada: +`vagasPorCompra`
- * por `coinsPorCompra` Ravox Coins, até `vagasNoMaximo` (os números do molde real).
+ * por `coinsPorCompra` Draevor Coins, até `vagasNoMaximo` (os números do molde real).
  */
 export function comprarVagas(estado, caixaConta) {
   const max = MOLDE_DA_CONTA.vagasNoMaximo ?? 100;
   const preco = MOLDE_DA_CONTA.coinsPorCompra ?? 25;
   if (caixaConta.teto >= max) return { ok: false, erro: 'O baú da conta já está no máximo de vagas.' };
-  if ((estado.coins ?? 0) < preco) return { ok: false, erro: 'Você não tem Ravox Coins suficientes.' };
+  if ((estado.coins ?? 0) < preco) return { ok: false, erro: 'Você não tem Draevor Coins suficientes.' };
   estado.coins -= preco;
   caixaConta.teto = Math.min(max, caixaConta.teto + (MOLDE_DA_CONTA.vagasPorCompra ?? 20));
   caixaConta.podeComprarVagas = caixaConta.teto < max;

@@ -30,7 +30,7 @@
 export const FRACAO_DO_OURO_NA_MORTE = 0.2;
 
 /** O Banker, como o servidor original responde ao `falarComNpc` (capturado em `api-mapeada/servidor/npc-naji.json`). */
-export const FALA_DO_BANQUEIRO = 'Bem-vindo ao banco de Ravox. Deposite antes de sair para caçar.';
+export const FALA_DO_BANQUEIRO = 'Bem-vindo ao banco de Draevor. Deposite antes de sair para caçar.';
 
 const INVALIDO = { ok: true, notice: 'valor inválido' };
 const aviso = (notice) => ({ ok: true, notice });

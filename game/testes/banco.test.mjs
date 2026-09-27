@@ -5,10 +5,10 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as Banqueiro from '../systems/banqueiro.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, comMarcaNova } from './apoio.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada', 'servidor');
-const capturado = (arquivo) => JSON.parse(readFileSync(join(API, arquivo), 'utf8'));
+const capturado = (arquivo) => comMarcaNova(JSON.parse(readFileSync(join(API, arquivo), 'utf8')));
 
 function comOuro(gold, bank = 0) {
   return Object.assign(personagemDeTeste(), { gold, bank });

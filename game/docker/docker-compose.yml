@@ -22,6 +22,10 @@ services:
     environment:
       PORTA: ${PORTA:-8080}
       DATABASE_URL: ${DATABASE_URL}
+      # Vazia por padrão: sem o profile "scale" (que sobe o redis) isto fica
+      # em branco e o jogo roda sem cache nenhum, como sempre — ver
+      # game/database/redis.mjs.
+      REDIS_URL: ${REDIS_URL:-}
     volumes:
       # Somente leitura: o jogo só lê estes três (client extraído, o
       # conteúdo/sprites e o JSON do servidor original) — um `git pull` no

@@ -9,10 +9,10 @@ import * as Site from '../systems/site.mjs';
 import * as DropsDoSite from '../systems/drops-do-site.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Ranking from '../systems/ranking.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, comMarcaNova } from './apoio.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 
-const ler = (n) => JSON.parse(readFileSync(new URL(`../../api-mapeada/captura-site-0926/${n}`, import.meta.url), 'utf8'));
+const ler = (n) => comMarcaNova(JSON.parse(readFileSync(new URL(`../../api-mapeada/captura-site-0926/${n}`, import.meta.url), 'utf8')));
 const chaves = (o) => Object.keys(o).sort();
 const NOME = 'Sitetesteum';
 
@@ -55,7 +55,7 @@ test('/api/personagem: a ficha inteira e o "não existe"', async () => {
   const original = ler('personagem-zoros.json');
   assert.equal(nosso.ok, true);
   assert.deepEqual(chaves(nosso.personagem), chaves(original.personagem));
-  assert.deepEqual(chaves(nosso.personagem.ravox), chaves(original.personagem.ravox));
+  assert.deepEqual(chaves(nosso.personagem.draevor), chaves(original.personagem.draevor));
   assert.deepEqual(chaves(nosso.personagem.catalogo), chaves(original.personagem.catalogo));
   assert.deepEqual(chaves(nosso.personagem.equipamento), chaves(original.personagem.equipamento));
   assert.equal(nosso.personagem.jogando, true);

@@ -16,6 +16,7 @@
 //
 // ESTIMADO: o desempate (valor, depois level, depois nome).
 import { banco } from '../database/banco.mjs';
+import * as Cache from '../database/redis.mjs';
 import { CATALOGO } from './dados.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';
@@ -76,17 +77,20 @@ const guildaDoRanking = (nome) => {
 
 const roupa = (o = {}) => ({ type: o.type ?? 0, head: o.head ?? 0, body: o.body ?? 0, legs: o.legs ?? 0, feet: o.feet ?? 0, addons: o.addons ?? 0, mount: o.mount ?? 0 });
 
-const guardados = new Map(); // categoria -> { ate, lista }
+const guardados = new Map(); // categoria -> { ate, base }
+const CHAVE_RANKING = (cat) => `ranking:${cat}`;
 
-/** O top 25 de uma categoria, no formato do original. */
-export async function topo(cat) {
-  if (!CATEGORIAS.includes(cat)) cat = 'exp';
-  const agora = Date.now();
-  const guardado = guardados.get(cat);
-  if (guardado && guardado.ate > agora) return guardado.lista;
-  const porNome = new Map();
+/*
+ * Só a parte CARA (a consulta no Postgres/SQLite, sem índice — ver
+ * docs/auditoria-performance.md) é o que vale cachear. Quem está online
+ * entra DEPOIS, sempre ao vivo, direto de `vivas` (estado deste processo) —
+ * nunca do cache: guardar isso no Redis faria outro processo, ou uma leitura
+ * 14s depois, mostrar "online"/valor de gente que já saiu ou mudou.
+ */
+async function baseDoRanking(cat) {
+  const base = [];
   for (const r of await consulta(cat).all()) {
-    porNome.set(r.nome, {
+    base.push({
       name: r.nome,
       vocation: r.vocacao,
       vocationName: Promocao.nomeDaClasse({ vocation: r.vocacao, promovido: !!r.promovido }),
@@ -97,6 +101,26 @@ export async function topo(cat) {
       guilda: guildaDoRanking(r.nome),
     });
   }
+  return base;
+}
+
+/** O top 25 de uma categoria, no formato do original. */
+export async function topo(cat) {
+  if (!CATEGORIAS.includes(cat)) cat = 'exp';
+  const agora = Date.now();
+  const guardado = guardados.get(cat);
+  let base;
+  if (guardado && guardado.ate > agora) {
+    base = guardado.base;
+  } else {
+    // L1 (Map deste processo) já evita recalcular a cada 15s; L2 (Redis,
+    // opcional) evita a MESMA consulta cara logo depois de um reinício, ou
+    // num segundo processo — mesmo TTL dos dois, pra não abrir uma janela de
+    // atraso maior do que a que já existe hoje.
+    base = await Cache.obterOuCalcular(CHAVE_RANKING(cat), GUARDA_MS / 1000, () => baseDoRanking(cat));
+    guardados.set(cat, { ate: agora + GUARDA_MS, base });
+  }
+  const porNome = new Map(base.map((linha) => [linha.name, linha]));
   // Quem está online entra com o valor de agora (o banco é gravado de tempos em tempos).
   for (const s of vivas.values()) {
     const e = s.estado;
@@ -112,9 +136,7 @@ export async function topo(cat) {
       guilda: guildaDoRanking(s.personagem.nome),
     });
   }
-  const lista = [...porNome.values()]
+  return [...porNome.values()]
     .sort((a, b) => b.value - a.value || b.level - a.level || a.name.localeCompare(b.name))
     .slice(0, TAMANHO);
-  guardados.set(cat, { ate: agora + GUARDA_MS, lista });
-  return lista;
 }

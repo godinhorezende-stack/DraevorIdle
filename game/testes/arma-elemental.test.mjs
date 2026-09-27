@@ -39,7 +39,7 @@ test('soulcutter (físico 7 + death 45): dois números no mesmo golpe, cinza e #
   assert.ok(death.v > fisico.v, `físico ${fisico.v}, death ${death.v}`);
 });
 
-test('Crafted Ravox Knight Axe V2 (18 + holy 65): a parte holy entra', () => {
+test('Crafted Draevor Knight Axe V2 (18 + holy 65): a parte holy entra', () => {
   const golpes = primeiroGolpe(55860);
   assert.equal(golpes.length, 2);
   assert.equal(golpes[1].color, '#ffe066');

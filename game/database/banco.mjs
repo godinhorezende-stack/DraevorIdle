@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { randomUUID, scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import * as Db from './db.mjs';
+import * as Cache from './redis.mjs';
 
 const RAIZ = dirname(fileURLToPath(import.meta.url));
 
@@ -219,25 +220,35 @@ export function gravarBauDaConta(contaId, caixa) {
 }
 
 // ------------------------------------------------------ melhorias da conta
-// O que a Ravox Store vende para a CONTA (o slot de party: "comprou em um char,
+// O que a Store vende para a CONTA (o slot de party: "comprou em um char,
 // vale para todos os chars da conta").
 
 /*
  * Lidas toda hora: o tamanho da party (`Party.limiteDeChars`) vai no
  * personagem a cada segundo, de cada jogador — era uma consulta SQL por
  * jogador por segundo, dentro do tique. Só esta função e a de baixo escrevem
- * na tabela, então o texto guardado aqui nunca fica velho (com mais de um
- * processo escrevendo, isto vira cache invalidado por aviso — ver
- * docs/auditoria-performance.md). Guarda o TEXTO e devolve um objeto novo a
- * cada leitura: quem lê pode mexer no objeto (a Loja mexe antes de gravar)
- * sem sujar o que está guardado.
+ * na tabela, então o Map local nunca fica velho DENTRO deste processo.
+ *
+ * Camada de baixo (Redis, opcional — `game/database/redis.mjs`): sem ela,
+ * nada muda. Com ela, um processo que acabou de subir não bate frio no
+ * Postgres para toda conta que já foi lida por OUTRO processo (ou por este
+ * mesmo, antes de reiniciar) — e é o primeiro passo para quando houver mais
+ * de um processo de jogo de verdade (aí sim o Redis passa a ser necessário,
+ * não só útil). TTL de 5 min é rede de segurança; quem grava já invalida na
+ * hora (`gravarMelhoriasDaConta`, abaixo).
  */
 const melhoriasGuardadas = new Map(); // conta -> texto JSON
+const CHAVE_MELHORIAS = (contaId) => `melhoriasDaConta:${contaId}`;
+const TTL_MELHORIAS_S = 300;
 
 export async function lerMelhoriasDaConta(contaId) {
   let texto = melhoriasGuardadas.get(contaId);
   if (texto === undefined) {
-    texto = (await banco.prepare('SELECT dados FROM melhorias_da_conta WHERE conta = ?').get(contaId))?.dados ?? '{}';
+    const dados = await Cache.obterOuCalcular(CHAVE_MELHORIAS(contaId), TTL_MELHORIAS_S, async () => {
+      const linha = await banco.prepare('SELECT dados FROM melhorias_da_conta WHERE conta = ?').get(contaId);
+      return linha ? JSON.parse(linha.dados) : {};
+    });
+    texto = JSON.stringify(dados);
     melhoriasGuardadas.set(contaId, texto);
   }
   return JSON.parse(texto);
@@ -263,4 +274,5 @@ export async function gravarMelhoriasDaConta(contaId, dados) {
     texto,
   );
   melhoriasGuardadas.set(contaId, texto);
+  await Cache.atualizar(CHAVE_MELHORIAS(contaId), dados, TTL_MELHORIAS_S);
 }

@@ -262,7 +262,7 @@ const TIPO_CURTO = {
   feet: 'botas', neck: 'amuleto', ring: 'anel', ammo: 'munição', backpack: 'mochila',
 };
 
-/** A pedra do Tier Up — a `Ravox Tier UP` do servidor, o mesmo id do `tiers.mjs`. */
+/** A pedra do Tier Up — a `Draevor Tier UP` do servidor, o mesmo id do `tiers.mjs`. */
 const ITEM_TIER_UP = 50051;
 
 /*
@@ -1022,8 +1022,8 @@ function quantosTenho(id, from, { soLivres = false } = {}) {
  * Fica no navegador porque é preferência, e não progresso: quem entra de outra
  * máquina começa com a pergunta ligada, que é o lado seguro do engano.
  */
-const SKIP_DESTROY_ASK = 'ravox:destroy-noask';
-const DESTROY_SEM_PERGUNTA = 'ravox:destroy-noask-itens';
+const SKIP_DESTROY_ASK = 'draevor:destroy-noask';
+const DESTROY_SEM_PERGUNTA = 'draevor:destroy-noask-itens';
 
 /** Os ids que já dispensam a confirmação. */
 function semPerguntaDeDestruir() {
@@ -1739,7 +1739,7 @@ export function atualizarDesgaste() {
  * A ESSÊNCIA de afixo é a única peça do jogo em que isso não vale. Todas
  * compartilham um id (ver `ID_DA_ESSENCIA`), então no catálogo todas são
  * "comum" — e a qualidade que importa é a da peça de onde o afixo foi tirado,
- * que viaja na instância. Sem esta exceção, a essência de uma Ravox Knight Legs
+ * que viaja na instância. Sem esta exceção, a essência de uma Draevor Knight Legs
  * mítica ficava com o mesmo quadradinho apagado de um hand axe.
  *
  * O dono: "quando eu tirar o afixo de um item mítico, a essência tem que ficar
@@ -1876,7 +1876,7 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
       /*
        * ---- A mira do Tier Up só vale a partir da MOCHILA ----
        *
-       * Report: "não consigo tirar o Ravox Tier Up do DP. Ao clicar, ele não
+       * Report: "não consigo tirar o Draevor Tier Up do DP. Ao clicar, ele não
        * vai pra bag, abre uma cruz como se fosse pra usar".
        *
        * Este ouvinte era por ITEM, e não por LUGAR: ele engolia o clique em
@@ -2049,7 +2049,7 @@ export function renderInventory() {
        * ---- A ALJAVA é o que se clica para escolher a flecha ----
        *
        * Era o slot de munição, e ele deixou de ser dela: agora é um slot de
-       * acessório como os outros (é onde o Ravox Trinket vai), e a flecha
+       * acessório como os outros (é onde o Draevor Trinket vai), e a flecha
        * passou a pertencer à aljava — que é onde ela sempre esteve na ficção.
        *
        * A aljava aparece no slot de escudo quando o arco está na mão, e é uma
@@ -2072,7 +2072,7 @@ export function renderInventory() {
          *
          * Ele não fazia nada, porque "tirar" não era resposta possível numa
          * peça fixa. Desde que a aljava passou a ser uma escolha — são onze, e
-         * a Ravox dá +7 de magic — há o que responder ali: qual delas.
+         * a Draevor dá +7 de magic — há o que responder ali: qual delas.
          *
          * Fica o par que o resto da tela já ensina: o esquerdo mexe na PEÇA
          * (qual aljava), o direito abre o que ela CONTÉM (qual flecha).
@@ -2264,13 +2264,13 @@ export function renderInventory() {
 
 
 /*
- * É munição Ravox? A mesma regra do servidor (`ehMunicaoDeMochila`), pelo nome.
+ * É munição Draevor? A mesma regra do servidor (`ehMunicaoDeMochila`), pelo nome.
  *
  * Repetida aqui de propósito: a tela precisa dela para escrever a linha certa
  * mesmo quando a lista de escolhas não está carregada — e quem DECIDE se o tiro
  * sai continua sendo o servidor, que confere a mochila de verdade.
  */
-const ehMunicaoRavox = (meta) => !!meta?.ammo && /ravox/i.test(meta.name ?? '');
+const ehMunicaoDraevor = (meta) => !!meta?.ammo && /draevor/i.test(meta.name ?? '');
 
 /** Escolha da munição do arco ou da besta: infinita, cobrada em gold por tiro. */
 /**
@@ -2319,10 +2319,10 @@ function tipMunicao(character) {
   };
   if (meta.attack) linha('Ataque da flecha', '+' + meta.attack, 'atk');
   /*
-   * A Ravox não tem preço, tem estoque. Mostrar "0g" e logo abaixo "dá para
+   * A Draevor não tem preço, tem estoque. Mostrar "0g" e logo abaixo "dá para
    * infinitos tiros" seria a leitura errada: ela acaba, só que em peças.
    */
-  const daMochila = ehMunicaoRavox(meta);
+  const daMochila = ehMunicaoDraevor(meta);
   if (daMochila) linha('Custo por tiro', 'não gasta ouro', null);
   else linha('Custo por tiro', (character.ammoCost ?? 0).toLocaleString('pt-BR') + 'g', 'ouro');
   /*
@@ -2622,7 +2622,7 @@ function openAmmoPicker() {
         'shop-note',
         `A munição não acaba — cada tiro desconta o preço de NPC do seu gold. ` +
           `Hoje sai por ${(character.ammoCost ?? 0).toLocaleString('pt-BR')}g por disparo. ` +
-          `As Ravox são a exceção: não custam ouro, e só atiram enquanto houver uma na mochila.`
+          `As Draevor são a exceção: não custam ouro, e só atiram enquanto houver uma na mochila.`
       )
     );
 
@@ -2668,7 +2668,7 @@ function openAmmoPicker() {
       /*
        * A munição que troca o TIPO do golpe diz isso em uma linha.
        *
-       * A Ravox Paladin Over Arrow bate holy: contra um morto-vivo ela vale o
+       * A Draevor Paladin Over Arrow bate holy: contra um morto-vivo ela vale o
        * dobro do que a conta do cartão sugere, e contra um bicho resistente a
        * holy vale menos. É informação de decisão, e não havia como chegar a ela
        * olhando a tela.
@@ -2684,7 +2684,7 @@ function openAmmoPicker() {
       /*
        * A linha de baixo do card muda com a ESPÉCIE de munição.
        *
-       * As de balcão não acabam e cobram por tiro; as Ravox não cobram nada e
+       * As de balcão não acabam e cobram por tiro; as Draevor não cobram nada e
        * valem enquanto houver peça na mochila. Escrever "0g por tiro" nas
        * segundas seria verdade e mentira ao mesmo tempo: elas de fato não
        * custam ouro, mas custam a peça, e é isso que a pessoa precisa saber.
@@ -2698,7 +2698,7 @@ function openAmmoPicker() {
             : `${entry.attack} de ataque · ${entry.cost.toLocaleString('pt-BR')}g por tiro`,
         ),
       );
-      if (entry.daMochila) card.append(el('em', 'ammo-ravox', 'não gasta ouro — sai da mochila'));
+      if (entry.daMochila) card.append(el('em', 'ammo-draevor', 'não gasta ouro — sai da mochila'));
       if (entry.area) card.append(el('em', 'ammo-area', 'acerta em área'));
       if (entry.blocked) card.append(el('em', 'ammo-block', entry.blocked));
       tipFor(card, entry.id);
@@ -2721,28 +2721,28 @@ function openAmmoPicker() {
     /*
      * ---- O BOLSO DA ALJAVA ----
      *
-     * "faz ser possível guardar as arrow ravox e as bolt ravox dentro da quiver
+     * "faz ser possível guardar as arrow draevor e as bolt draevor dentro da quiver
      * e lá ficar seguro sem poder vender ou ser excluída acidentalmente".
      *
-     * A Ravox não se gasta: quem tem uma tem para sempre, até o dia em que ela
+     * A Draevor não se gasta: quem tem uma tem para sempre, até o dia em que ela
      * sai junto num "vender tudo" ou num "limpar" — e ela não se repõe
      * caçando. O que está aqui não está na mochila nem na bolsa, e é por isso
      * que nenhuma das duas telas o alcança.
      *
      * A seção fica embaixo da grade porque ela responde a outra pergunta: a
      * grade é "qual flecha eu uso", esta é "onde as minhas flechas moram".
-     * Ela some quando não há nenhuma Ravox em lugar nenhum — sem elas não há o
+     * Ela some quando não há nenhuma Draevor em lugar nenhum — sem elas não há o
      * que guardar, e uma caixa vazia só ocuparia a tela.
      */
     const daAljava = character.aljavaGuardada ?? [];
     /*
-     * As Ravox soltas na mochila. Sai de `ammoChoices`, que já sabe quais são
+     * As Draevor soltas na mochila. Sai de `ammoChoices`, que já sabe quais são
      * as que vêm da mochila (`daMochila`) — repetir a régua do nome aqui daria
      * duas, e a que divergisse seria justamente a da tela.
      */
-    const ravoxSoltas = (character.ammoChoices ?? []).filter((entry) => entry.daMochila && (entry.soltas ?? 0) > 0);
+    const draevorSoltas = (character.ammoChoices ?? []).filter((entry) => entry.daMochila && (entry.soltas ?? 0) > 0);
     const guardaveis = new Map();
-    for (const entry of ravoxSoltas) guardaveis.set(entry.id, entry);
+    for (const entry of draevorSoltas) guardaveis.set(entry.id, entry);
 
     if (daAljava.length || guardaveis.size) {
       const caixa = el('div', 'aljava-bolso');
@@ -2797,11 +2797,11 @@ function openAmmoPicker() {
  *
  * A aljava era peça fixa: o arco entrava na mão e uma `quiver` crua nascia no
  * slot de escudo, sem que ninguém escolhesse nada. Enquanto só existia UMA
- * aljava, isso era o certo. Hoje são onze, e elas não valem o mesmo — a Ravox
+ * aljava, isso era o certo. Hoje são onze, e elas não valem o mesmo — a Draevor
  * Paladin dá +3 de magic, a Crafted V2 dá +7 e resistência a dreno —, e a
  * escolha entre elas é uma decisão de equipamento como qualquer outra.
  *
- * Uma linha por PEÇA (é o que o servidor manda em `quiverChoices`): duas Ravox,
+ * Uma linha por PEÇA (é o que o servidor manda em `quiverChoices`): duas Draevor,
  * uma tier 3 e uma crua, são duas escolhas diferentes e por isso são dois
  * cartões, cada um com o selo do tier e as estrelas dos afixos por cima do
  * desenho — as mesmas marcas da mochila, para não haver um segundo alfabeto.
@@ -3120,7 +3120,7 @@ export function renderPouch() {
     mais,
     noMaximo
       ? 'A auto-venda já está no tempo mínimo.'
-      : 'Comprar "Diminuir o tempo da auto-venda" na Ravox Store: −20s por compra, até 20s.'
+      : 'Comprar "Diminuir o tempo da auto-venda" na Store: −20s por compra, até 20s.'
   );
   mais.onclick = () => ctx.abrirLojaEm?.('upgrades');
 
@@ -3645,7 +3645,7 @@ export function renderStoreInbox() {
     titulo.append(el('span', null, 'Store Inbox'), contador);
     tipTexto(
       titulo,
-      'Tudo o que você compra na Ravox Store chega aqui, e não na mochila.\n' +
+      'Tudo o que você compra na Store chega aqui, e não na mochila.\n' +
         'Nada pode ser colocado dentro dela. Sem cap ou sem vaga, a compra vai para a caixa Chegadas do depósito.'
     );
     head.append(titulo);
@@ -3687,7 +3687,7 @@ export function renderStoreInbox() {
       })
     );
   }
-  if (!inbox.length) grid.append(el('p', 'empty', 'A Store Inbox está vazia — o que você comprar na Ravox Store chega aqui.'));
+  if (!inbox.length) grid.append(el('p', 'empty', 'A Store Inbox está vazia — o que você comprar na Store chega aqui.'));
 
   paginas.replaceChildren();
   if (total > 1) {
@@ -3754,7 +3754,7 @@ function celulaDaStoreInbox(character) {
   tipTexto(
     cell,
     `Store Inbox — ${inbox.length} de ${slots} vagas.\n` +
-      'Tudo o que você compra na Ravox Store chega aqui.\n' +
+      'Tudo o que você compra na Store chega aqui.\n' +
       'Clique para abrir: de lá as compras saem para a mochila.\n' +
       'Itens usáveis também se usam direto de lá (botão direito → Usar).'
   );
