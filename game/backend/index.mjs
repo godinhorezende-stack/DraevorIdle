@@ -1,0 +1,234 @@
+// Gateway: serve o cliente extraído por HTTP e roda o jogo por WebSocket em `/ws`
+// — os dois mesmos caminhos que `ravoxidle.com.br` servia (ver api-mapeada/protocolo.md).
+import { createServer } from 'node:http';
+import { join, dirname, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { WebSocketServer } from 'ws';
+import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
+import * as Mapas from '../admin/mapas.mjs';
+import * as Estaticos from './estaticos.mjs';
+import * as Site from '../systems/site.mjs';
+import * as DropsDoSite from '../systems/drops-do-site.mjs';
+import * as Guildas from '../systems/guildas.mjs';
+import * as Limites from '../websocket/limites.mjs';
+import { aquecerGrades } from '../systems/cacadas.mjs';
+
+Site.ligar(vivas);
+
+// O cliente extraído (HTML + `client/`) — mesma sub-estrutura de sempre
+// (`/client/...`, `/jogar.html`, etc.), só que a raiz física virou
+// `game/frontend` em vez de `assets_raw` (docs/refatoracao-estrutura.md).
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'frontend');
+// O cliente (extraído, sem bundler) pede estes arquivos por URL absoluta
+// (`/packages/shared/src/formulas.mjs`, etc.) — igual ao servidor de
+// verdade, que também os lê. Desde a refatoração pra `game/*`
+// (docs/refatoracao-estrutura.md) o arquivo físico mora em `game/engine/`,
+// não mais em `assets_raw/packages/shared/src/`; a URL fica a MESMA (o
+// cliente extraído não muda) — só o caminho físico por trás dela.
+const RAIZ_ENGINE = join(dirname(fileURLToPath(import.meta.url)), '..', 'engine');
+// Idem para `/gamedata/...` (JSON de conteúdo + sprites que o cliente busca
+// por URL): a pasta virou `game/gamedata`, separada do frontend — não é
+// código de cliente, é conteúdo que o SERVIDOR também lê (ver
+// `game/systems/dados.mjs` etc.), só que por acaso também serve de estático.
+const RAIZ_GAMEDATA = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
+const PORTA = Number(process.env.PORTA ?? 8080);
+
+// Rotas sem extensão que o cliente pede como página (`/jogar`, etc.).
+const PAGINAS = {
+  '/': '/index.html',
+  '/jogar': '/jogar.html',
+  '/online': '/online.html',
+  '/streamers': '/streamers.html',
+  '/guildas': '/guildas.html',
+  '/personagem': '/personagem.html',
+  '/editor': '/editor.html',
+};
+
+const PREFIXO_ENGINE = '/packages/shared/src/';
+const PREFIXO_GAMEDATA = '/gamedata/';
+
+/** Arquivo estático — cache e compressão: ver `estaticos.mjs`. */
+async function servirArquivo(req, res, caminho) {
+  if (caminho.startsWith(PREFIXO_ENGINE)) {
+    const alvo = normalize(join(RAIZ_ENGINE, caminho.slice(PREFIXO_ENGINE.length)));
+    if (!alvo.startsWith(RAIZ_ENGINE)) return false;
+    return Estaticos.servir(req, res, alvo);
+  }
+  if (caminho.startsWith(PREFIXO_GAMEDATA)) {
+    const alvo = normalize(join(RAIZ_GAMEDATA, caminho.slice(PREFIXO_GAMEDATA.length)));
+    if (!alvo.startsWith(RAIZ_GAMEDATA)) return false;
+    return Estaticos.servir(req, res, alvo);
+  }
+  const alvo = normalize(join(RAIZ, caminho));
+  if (!alvo.startsWith(RAIZ)) return false;
+  return Estaticos.servir(req, res, alvo);
+}
+
+const http = createServer((req, res) => {
+  atender(req, res).catch((e) => {
+    console.error('http', req.method, req.url, '->', e.message);
+    if (!res.headersSent) {
+      res.writeHead(500);
+      res.end('erro interno');
+    }
+  });
+});
+
+/** Corpo de um POST, já parseado — só usado pelas rotas de `/api/mapas`. */
+function corpoJson(req) {
+  return new Promise((resolve, reject) => {
+    let dados = '';
+    req.on('data', (pedaco) => (dados += pedaco));
+    req.on('end', () => {
+      try {
+        resolve(dados ? JSON.parse(dados) : null);
+      } catch {
+        reject(new Error('JSON inválido no corpo'));
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function json(res, status, corpo) {
+  const texto = JSON.stringify(corpo);
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(texto) });
+  res.end(texto);
+}
+
+async function atender(req, res) {
+  const url = new URL(req.url, 'http://x');
+  const caminho = decodeURIComponent(url.pathname.split('?')[0]);
+
+  if (caminho === '/saude') {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    return res.end(JSON.stringify({ ok: true, online: vivas.size }));
+  }
+
+  /*
+   * ---- A única rota HTTP com verbo além de GET estático ----
+   *
+   * Tudo mais neste servidor é arquivo estático + `/ws` — o editor de
+   * mapas (`/editor`) é a primeira coisa que precisa de um POST de
+   * verdade. Sem framework: três `if` bastam pro tamanho disto.
+   */
+  if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
+    return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR });
+  }
+  if (caminho === '/api/mapas' && req.method === 'GET') {
+    return json(res, 200, { ids: Mapas.listar() });
+  }
+  if (caminho === '/api/mapas' && req.method === 'POST') {
+    const dados = await corpoJson(req).catch((e) => ({ __erro: e.message }));
+    if (dados?.__erro) return json(res, 400, { ok: false, erro: dados.__erro });
+    return json(res, 200, Mapas.salvar(dados));
+  }
+  if (caminho.startsWith('/api/mapas/') && req.method === 'GET') {
+    const id = caminho.slice('/api/mapas/'.length);
+    const mapa = Mapas.carregar(id);
+    return mapa ? json(res, 200, mapa) : json(res, 404, { ok: false, erro: 'Mapa não encontrado.' });
+  }
+
+  /*
+   * ---- As APIs públicas do site (capa, /online, /personagem, /guildas) ----
+   *
+   * Só leitura, sem conta: é o que ravoxidle.com.br responde para quem ainda
+   * nem entrou no jogo. Ver `game/systems/site.mjs` e `game/systems/drops-do-site.mjs`.
+   */
+  if (req.method === 'GET' && caminho.startsWith('/api/')) {
+    const q = url.searchParams;
+    if (caminho === '/api/status') return json(res, 200, await Site.status(q.get('ranking') ?? 'level'));
+    if (caminho === '/api/online') return json(res, 200, Site.jogadoresOnline());
+    if (caminho === '/api/drops') return json(res, 200, await DropsDoSite.vista());
+    if (caminho === '/api/personagem') return json(res, 200, await Site.personagem(q.get('nome')));
+    if (caminho === '/api/guildas') return json(res, 200, { guildas: await Guildas.listaDoSite() });
+    if (caminho === '/api/guilda') return json(res, 200, await Guildas.fichaDoSite(q.get('nome')));
+  }
+
+  const alvo = PAGINAS[caminho] ?? caminho;
+  if (await servirArquivo(req, res, alvo)) return;
+
+  res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+  res.end('404');
+}
+
+// ------------------------------------------------------------- WebSocket
+
+/*
+ * Compressão por mensagem (permessage-deflate, que todo navegador negocia
+ * sozinho): o jogo fala JSON, que encolhe muito — o `welcome` (mapa da cidade
+ * + itens) e os quadros da caçada. Mensagem pequena (< 512 B) vai crua: comprimir
+ * custaria mais do que economiza. O contexto fica entre mensagens (padrão do
+ * `ws`): quadros parecidos em seguida comprimem ainda mais.
+ */
+const wss = new WebSocketServer({
+  server: http,
+  path: '/ws',
+  perMessageDeflate: { threshold: 512, zlibDeflateOptions: { level: 6 }, concurrencyLimit: 10 },
+  // Mensagem maior que isto fecha a conexão antes do `JSON.parse` (ver `game/websocket/limites.mjs`).
+  maxPayload: Limites.TAMANHO_MAXIMO,
+});
+// Mesma razão do `ws.on('error', ...)` de cada conexão: sem isto, um erro do
+// SERVIDOR de WebSocket (porta ocupada, etc.) também derruba o processo.
+wss.on('error', (e) => console.error('wss', e.message));
+
+wss.on('connection', (ws) => {
+  const s = new Sessao(ws);
+  s.ola();
+  const ritmo = new Limites.Ritmo();
+
+  ws.on('message', (raw) => {
+    // Acima do ritmo, a mensagem nem é lida; insistindo, a conexão cai
+    // (1008 = violação de política). O cliente de verdade nunca chega perto.
+    if (!ritmo.aceitar()) {
+      if (ritmo.abusou) ws.close(1008, 'mensagens demais');
+      return;
+    }
+    let m;
+    try {
+      m = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    s.receber(m);
+  });
+
+  ws.on('close', () => s.desconectar());
+  // Sem isto, uma queda seca (rede caiu, browser fechado à força) que emita
+  // 'error' antes do 'close' derruba o processo INTEIRO — o Node trata um
+  // evento 'error' sem listener como exceção não tratada — e leva todo mundo
+  // que estava online junto por causa de uma conexão só.
+  ws.on('error', () => s.desconectar());
+});
+
+http.on('error', (e) => {
+  console.error('http', e.message);
+  if (e.code === 'EADDRINUSE') process.exit(1); // este sim é fatal: nada escuta a porta
+});
+
+ligarRelogio();
+
+/*
+ * ---- As grades de hunt, aquecidas ANTES de abrir a porta ----
+ *
+ * `aquecerGrades` (Fase 5.2) chama `gradeDaHunt` de toda hunt jogável agora,
+ * com o event loop livre e ninguém conectado para sentir a pausa — em vez de
+ * deixar a conta (até 350ms, síncrono) cair em cima de quem por acaso for o
+ * primeiro a entrar numa hunt cara depois do boot, travando o tique de todo
+ * mundo online naquele instante.
+ */
+const t0 = performance.now();
+const quantas = aquecerGrades();
+console.log(`  grades de hunt aquecidas: ${quantas} em ${(performance.now() - t0).toFixed(0)}ms`);
+
+http.listen(PORTA, () => {
+  console.log(`\n  Ravox Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
+});
+
+// Desligando o servidor (Ctrl+C): grava todo mundo que está online antes de sair.
+for (const sinal of ['SIGINT', 'SIGTERM', 'SIGBREAK']) {
+  process.on(sinal, () => {
+    for (const s of vivas.values()) s.soltarPersonagem?.();
+    process.exit(0);
+  });
+}

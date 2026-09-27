@@ -1,0 +1,14 @@
+{
+  "name": "ravox-idle-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node game/backend/index.mjs",
+    "test": "node --test \"game/testes/*.test.mjs\""
+  },
+  "dependencies": {
+    "pg": "^8.23.0",
+    "ws": "^8.18.0"
+  }
+}

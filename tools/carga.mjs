@@ -1,18 +1,22 @@
-// Teste de carga: N jogadores caçando ao mesmo tempo no servidor local.
-// Cria N contas de teste (carga-N@teste.local), sobe cada personagem para o
-// level 600 com vida infinita, põe todos caçando em hunts diferentes e mede,
-// do lado do cliente, o intervalo entre `state` (o ritmo do jogo — o alvo é
-// 250ms) e o ping (atraso do servidor para responder). No fim apaga tudo.
+// Teste de carga: N jogadores ao mesmo tempo no servidor local, caçando (modo
+// padrão) ou parados na praça (`cidade`, Fase 4: mede o custo de
+// `jogadoresNaPraca`/`chat` com muita gente no mesmo lugar). Cria N contas de
+// teste (carga-N@teste.local), sobe cada personagem para o level 600 com vida
+// infinita e mede, do lado do cliente, o intervalo entre `state` (o ritmo do
+// jogo — o alvo é 250ms) e o ping (atraso do servidor para responder). No fim
+// apaga tudo.
 //
-// Uso (com o servidor rodando em :8080): node tools/carga.mjs [N=20] [segundos=20]
-import WebSocket from '../server/node_modules/ws/wrapper.mjs';
+// Uso (com o servidor rodando em :8080):
+//   node tools/carga.mjs [N=20] [segundos=20] [modo=cacada|cidade]
+import WebSocket from '../node_modules/ws/wrapper.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
 
 const N = Number(process.argv[2] ?? 20);
 const SEGUNDOS = Number(process.argv[3] ?? 20);
+const MODO = process.argv[4] ?? 'cacada';
 const URL_WS = process.env.URL_WS ?? 'ws://localhost:8080/ws';
-const DB = fileURLToPath(new URL('../server/dados/jogo.db', import.meta.url));
+const DB = fileURLToPath(new URL('../game/database/dados/jogo.db', import.meta.url));
 const HUNTS = ['werelions-1', 'roshamuul-cave', 'golems-catacombs', 'deeper-banuta-8', 'spike-8', 'winter-dream-court', 'asura-palace', 'zaoan-draken-walls'];
 const SENHA = 'carga-teste-123';
 const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -77,7 +81,21 @@ for (let i = 0; i < N; i++) {
   r = ws.esperar('welcome', 'authError');
   ws.s({ t: 'play', name: nome(i) });
   await r;
-  ws.s({ t: 'startHunt', huntId: HUNTS[i % HUNTS.length], strategy: 'nearest', mode: 'single', ids: null, limites: [] });
+  if (MODO === 'cidade') {
+    // Fica na praça, perto de todo mundo (o caso caro de `jogadoresNaPraca`:
+    // até 25 outros na tela, todos disputando a mesma vizinhança) — anda de
+    // vez em quando, como jogador de verdade parado esperando (não todo
+    // mundo dançando em sincronia a cada 600ms: cada um no seu próprio
+    // intervalo, a maioria dos "passos" na verdade parando). Um em cada 10
+    // fala no Global de vez em quando, para pesar também o `chat` (item 4.3).
+    ws.andarEm = setInterval(() => {
+      const anda = Math.random() < 0.35;
+      ws.s({ t: 'walk', dx: anda ? Math.round(Math.random() * 2) - 1 : 0, dy: anda ? Math.round(Math.random() * 2) - 1 : 0 });
+    }, 2000 + Math.random() * 2000);
+    if (i % 10 === 0) ws.falarEm = setInterval(() => ws.s({ t: 'chat', channel: 'global', text: `oi de ${nome(i)}` }), 2000);
+  } else {
+    ws.s({ t: 'startHunt', huntId: HUNTS[i % HUNTS.length], strategy: 'nearest', mode: 'single', ids: null, limites: [] });
+  }
   jogadores.push(ws);
 }
 await dormir(3000);
@@ -87,6 +105,7 @@ const fio0 = bytesNoFio();
 const pinga = setInterval(() => { for (const j of jogadores) j.s({ t: 'ping', at: performance.now() }); }, 500);
 await dormir(SEGUNDOS * 1000);
 clearInterval(pinga);
+for (const j of jogadores) { clearInterval(j.andarEm); clearInterval(j.falarEm); }
 const fio = bytesNoFio() - fio0;
 
 const est = (l) => {
@@ -94,7 +113,7 @@ const est = (l) => {
   const p = (x) => o[Math.floor(x * (o.length - 1))]?.toFixed(0);
   return `p50 ${p(0.5)}  p90 ${p(0.9)}  p99 ${p(0.99)}  máx ${o.at(-1)?.toFixed(0)}`;
 };
-console.log(`${N} jogadores caçando por ${SEGUNDOS}s:`);
+console.log(`${N} jogadores (${MODO}) por ${SEGUNDOS}s:`);
 console.log(`  intervalo entre states (ms, alvo 250): ${est(jogadores.flatMap((j) => j.intervalos))}`);
 console.log(`  ping (ms):                             ${est(jogadores.flatMap((j) => j.pings))}`);
 console.log(`  tráfego no fio: ${(fio / 1024 / SEGUNDOS / N).toFixed(2)} KB/s por jogador`);
@@ -104,7 +123,7 @@ try {
 } catch {}
 
 // 3. Limpeza.
-for (const j of jogadores) j.s({ t: 'stopHunt' });
+if (MODO !== 'cidade') for (const j of jogadores) j.s({ t: 'stopHunt' });
 await dormir(800);
 for (const j of jogadores) j.close();
 await dormir(1500);

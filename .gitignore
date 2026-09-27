@@ -3,6 +3,7 @@ node_modules/
 
 # Banco do jogo: contas, personagens e senhas dos jogadores — nunca vai para o git
 server/dados/
+game/database/dados/
 
 # Cópias de segurança feitas antes de cada mudança grande (ficam só na máquina)
 _versao-anterior-*/
@@ -18,3 +19,9 @@ bash.exe.stackdump
 *.db
 *.db-wal
 *.db-shm
+
+# Backups do Postgres (scripts/backup-postgres.sh) — ficam só no VPS
+backups/
+
+# .env de verdade (senhas de banco) — só o .env.example vai pro git
+.env

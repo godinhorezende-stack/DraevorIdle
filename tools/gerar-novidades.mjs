@@ -1,4 +1,4 @@
-// Gera `assets_raw/gamedata/novidades.json` — a faixa "O que mudou nesta versão"
+// Gera `game/gamedata/novidades.json` — a faixa "O que mudou nesta versão"
 // do cliente (`pintarNovidades`/`abrirNovidades` em main.mjs), no formato do
 // `welcome.novidades` do original: {versao, titulo, em, itens, anteriores}.
 //
@@ -59,5 +59,5 @@ const saida = {
   itens: atual.itens,
   anteriores: [...nossasAntigas.map(({ em, itens }) => ({ em, itens })), ...doOriginal],
 };
-writeFileSync(join(RAIZ, 'assets_raw/gamedata/novidades.json'), JSON.stringify(saida, null, 1));
+writeFileSync(join(RAIZ, 'game/gamedata/novidades.json'), JSON.stringify(saida, null, 1));
 console.log(`novidades.json: versão ${saida.versao}, ${saida.itens.length} itens, ${saida.anteriores.length} anteriores (original: ${fonte})`);

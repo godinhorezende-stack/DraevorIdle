@@ -1,0 +1,52 @@
+# Overrides de produção — SEMPRE explícito, nunca aplicado sozinho (só
+# docker-compose.override.yml tem esse privilégio, e é o de dev). Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  game:
+    environment:
+      NODE_ENV: production
+    # Um `node` sozinho não devia comer mais que isto com o jogo de hoje
+    # (medido em docs/auditoria-performance.md); é um teto contra vazamento
+    # de memória travar o HOST, não um número ajustado por carga real ainda —
+    # revise depois do primeiro pico de gente online.
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  postgres:
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  nginx:
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Emitir/renovar o certificado — não fica no ar: roda, termina, some.
+  #   docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+  #     run --rm certbot certonly --webroot -w /var/www/certbot \
+  #     -d ${DOMINIO} --email ${EMAIL_CERTBOT} --agree-tos --no-eff-email
+  # Renovação: mesmo comando trocando `certonly ...` por `renew --quiet`,
+  # agendado no HOST (cron/systemd timer, ver docs/deploy.md) — não dentro do
+  # compose, para não manter um container rodando só de plantão por 90 dias.
+  certbot:
+    image: certbot/certbot:latest
+    profiles: ["tls"]
+    volumes:
+      - ./nginx/certbot/www:/var/www/certbot
+      - ./nginx/certbot/conf:/etc/letsencrypt

@@ -1,4 +1,4 @@
-// Gera `assets_raw/gamedata/gemas.json` a partir do que o original mandou
+// Gera `game/gamedata/gemas.json` a partir do que o original mandou
 // (Zoros e os outros personagens da conta, 2026-09-25,
 // `api-mapeada/captura-gemas-0925/`): as views do Gem Atelier das 5 vocações e
 // o `catalog.gemas` (o drop).
@@ -74,5 +74,5 @@ const saida = {
   supremos: Object.fromEntries(Object.entries(VIEWS).map(([voc, v]) => [voc, v.oficina.supremos.map(modDe)])),
   drop: catalogo.gemas,
 };
-writeFileSync(new URL('assets_raw/gamedata/gemas.json', RAIZ), JSON.stringify(saida, null, 1));
+writeFileSync(new URL('game/gamedata/gemas.json', RAIZ), JSON.stringify(saida, null, 1));
 console.log(`gemas.json: ${saida.basicos.knight.length} básicos por vocação, supremos ${Object.entries(saida.supremos).map(([k, s]) => `${k} ${s.length}`).join(', ')}, level ${saida.levelMinimo}`);

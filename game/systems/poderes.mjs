@@ -1,0 +1,173 @@
+// Os poderes dos bosses e dos bichos das hunts: melee e magias de
+// `gamedata/boss-poderes.json` e `monstro-poderes.json` (os ataques do
+// monster.lua do Canary, o datapack do original — ver
+// `tools/gerar-poderes-dos-bosses.mjs`).
+//
+// Nas hunts (Winter Dream Court, 2026-09-24, `api-mapeada/captura-monstros-0924/`,
+// 1.160 golpes): os mesmos golpes do arquivo, com os mesmos efeitos (gelo em
+// área → fx 42, gelo em feixe → 53, sagrado em área → 50, energia em feixe →
+// 38); metade dos golpes até 79% do máximo, 97% até 1,11x. Os 2% raros de até
+// ~2x não têm explicação ainda e não estão aqui.
+//
+// O que o original manda, capturado ao vivo em 22 salas (Zoros, 2026-09-24,
+// `api-mapeada/captura-bosses-0924/`):
+// - `{t:'dmg', uid:'player', de:<boss>, golpe:'de morte em área', color:'#990000'}`
+//   — o golpe é "de <elemento> em <forma>" (área = raio, feixe = linha, sem
+//   forma = a magia no alvo); cada elemento com a sua cor.
+// - Cada golpe cai na faixa min..max do arquivo, depois da proteção do
+//   personagem (Gaffir: terra em área 614 de 500..620; Goshnar's Greed: morte
+//   em área 1.706..1.907 de 1.500..2.000).
+// - A área se desenha como um `fx` do efeito em CADA casa dela (Essence of
+//   Malice: 69 `fx` 18 num raio 4).
+// - O melee dos bosses é o do arquivo (Essence of Malice: 1..488 de 0..603) —
+//   não o `ataqueDoMonstro` genérico, que dava 25 mil num boss de 50 mil de vida.
+import { readFileSync } from 'node:fs';
+import * as Arvore from './arvore.mjs';
+import * as Prey from './prey.mjs';
+import * as Charms from './charms.mjs';
+
+const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
+const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
+
+const NOME_DO_ELEMENTO = {
+  physical: 'físico', fire: 'de fogo', ice: 'de gelo', earth: 'de terra', energy: 'de energia',
+  death: 'de morte', holy: 'sagrado', lifedrain: 'de dreno de vida', manadrain: 'de dreno de mana', drown: 'de afogamento',
+};
+// As capturadas (gelo: Winter Dream Court; o dreno de mana sai VERMELHO, Enfeebled
+// Silencer na Feyrist Nightmare); afogamento nunca apareceu (cor do Tibia).
+const COR_DO_ELEMENTO = {
+  physical: '#ff0000', fire: '#ff9900', earth: '#00ff00', energy: '#cc33cc', death: '#990000', holy: '#ffff00',
+  lifedrain: '#ff0000', ice: '#99ffff', manadrain: '#ff0000', drown: '#00ccff',
+};
+const FORMA = { area: ' em área', feixe: ' em feixe', alvo: '' };
+const EFEITO_PADRAO = { physical: 35, fire: 7, ice: 42, earth: 21, energy: 38, death: 18, holy: 50, lifedrain: 14, manadrain: 13, drown: 26 };
+const MAXIMO_DE_EFEITOS = 90;
+/** O sangue no jogador a cada golpe que passa (o original manda `fx` 1 junto de todo dano). */
+const EFEITO_DO_SANGUE = 1;
+
+/** O nome do golpe como o original escreve: o físico no alvo é "à distância" (Ghastly Dragon). */
+function nomeDoGolpe(a) {
+  if (a.elemento === 'physical' && a.forma === 'alvo') return 'à distância';
+  return `${NOME_DO_ELEMENTO[a.elemento] ?? a.elemento}${FORMA[a.forma]}`;
+}
+
+const sortear = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+const distancia = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
+export const temPoderes = (bicho) => !!PODERES[bicho?.key];
+
+/** Boss cujo arquivo não tem melee (Brain Head, Malofur, The Nightmare Beast): só magia. */
+export const semCorpoACorpo = (bicho) => !!PODERES[bicho?.key] && !PODERES[bicho.key].ataques.some((a) => a.tipo === 'melee');
+
+/** O melee do arquivo; `null` = bicho sem poderes (usa a regra de sempre); 0 = boss sem melee. */
+export function golpeCorpoACorpo(bicho) {
+  const p = PODERES[bicho?.key];
+  if (!p) return null;
+  const m = p.ataques.find((a) => a.tipo === 'melee');
+  if (!m || Math.random() * 100 >= m.chance) return 0;
+  return sortear(m.min, m.max);
+}
+
+/** As casas que a magia pega (para acertar o jogador e para desenhar o efeito). */
+function casasDa(a, bicho, alvo) {
+  const casas = [];
+  if (a.forma === 'area') {
+    const c = a.noAlvo ? alvo : bicho;
+    for (let dy = -a.raio; dy <= a.raio; dy++) {
+      for (let dx = -a.raio; dx <= a.raio; dx++) if (dx * dx + dy * dy <= a.raio * a.raio + a.raio) casas.push({ x: c.x + dx, y: c.y + dy });
+    }
+  } else if (a.forma === 'feixe') {
+    // Sai para o lado em que o jogador está (o boss vira para ele), e abre em
+    // leque quando tem `espalha` (as ondas).
+    const dx = alvo.x - bicho.x;
+    const dy = alvo.y - bicho.y;
+    const [ux, uy] = Math.abs(dx) >= Math.abs(dy) ? [Math.sign(dx) || 1, 0] : [0, Math.sign(dy) || 1];
+    for (let passo = 1; passo <= a.comprimento; passo++) {
+      const largura = a.espalha ? Math.floor((passo - 1) / 2) : 0;
+      for (let l = -largura; l <= largura; l++) casas.push({ x: bicho.x + ux * passo + uy * l, y: bicho.y + uy * passo + ux * l });
+    }
+  } else {
+    casas.push({ x: alvo.x, y: alvo.y });
+  }
+  return casas;
+}
+
+function alcanca(a, bicho, alvo) {
+  const d = distancia(bicho, alvo);
+  if (a.forma === 'alvo' || (a.forma === 'area' && a.noAlvo)) return d <= (a.alcance || 7);
+  return casasDa(a, bicho, alvo).some((c) => c.x === alvo.x && c.y === alvo.y);
+}
+
+/**
+ * A cada tique da sala: cada magia do boss no seu intervalo, com a sua chance.
+ * `ficha` é a `Ficha.combate` do personagem (proteção por elemento). Devolve o
+ * dano total causado (para quem quiser saber).
+ */
+export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo) {
+  const p = PODERES[bicho.key];
+  if (!p || bicho.hp <= 0 || estado.hp <= 0) return 0;
+  bicho.proximoPoder ??= {};
+  let total = 0;
+  const alvo = hunt.pos;
+  p.ataques.forEach((a, i) => {
+    if (a.tipo !== 'magia' || agora < (bicho.proximoPoder[i] ?? 0)) return;
+    bicho.proximoPoder[i] = agora + a.intervalo;
+    if (Math.random() * 100 >= a.chance || !alcanca(a, bicho, alvo)) return;
+    // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
+    const esquivou = ficha.esquiva && Math.random() < ficha.esquiva;
+    // Dodge (charm) também: sai o `block` dele e o golpe não pega.
+    const doCharm = !esquivou && Charms.desviou(estado, hunt, personagem, bicho, eventos);
+
+    const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
+    if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
+    for (const c of casasDa(a, bicho, alvo).slice(0, MAXIMO_DE_EFEITOS)) eventos.push({ t: 'fx', id: efeito, x: c.x, y: c.y });
+
+    if (doCharm) return;
+    if (esquivou) {
+      eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true });
+      return;
+    }
+    const prot = Math.min(100, ficha.protection?.[a.elemento] ?? 0);
+    // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
+    let dano = Math.round(sortear(a.min, a.max) * (bicho.forca ?? 1) * (1 - prot / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+    const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
+    // Void Inversion (charm): o dreno de mana vira ganho de mana.
+    if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {
+      const ganho = Math.min(dano, Math.max(0, (estado.maxMana ?? 0) - (estado.mana ?? 0)));
+      estado.mana = (estado.mana ?? 0) + ganho;
+      if (ganho > 0) eventos.push({ t: 'heal', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, v: ganho, color: '#4fc3ff' });
+      return;
+    }
+    if (a.elemento === 'manadrain') {
+      const tira = Math.min(estado.mana ?? 0, dano);
+      estado.mana = (estado.mana ?? 0) - tira;
+      if (tira > 0) eventos.push({ t: 'dmg', ...base, v: tira, color: COR_DO_ELEMENTO.manadrain });
+      return;
+    }
+    if (dano > 0 && temEscudo && (estado.mana ?? 0) > 0) {
+      const daMana = Math.min(estado.mana, dano);
+      estado.mana -= daMana;
+      dano -= daMana;
+      eventos.push({ t: 'dmg', ...base, v: daMana, color: '#4fc3ff' });
+    }
+    dano = Arvore.danoRecebido(estado, dano, eventos, alvo, personagem.nome);
+    if (dano <= 0) return;
+    estado.hp = Math.max(0, estado.hp - dano);
+    eventos.push({ t: 'fx', id: EFEITO_DO_SANGUE, uid: 'player', x: alvo.x, y: alvo.y });
+    if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
+    eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO[a.elemento] ?? '#ff0000' });
+    total += dano;
+    // Parry e Numb (charms defensivos).
+    Charms.depoisDeApanhar(estado, hunt, bicho, dano, eventos);
+  });
+  // As curas do boss (`monster.defenses` do arquivo).
+  p.curas.forEach((c, i) => {
+    const chave = `cura${i}`;
+    if (agora < (bicho.proximoPoder[chave] ?? 0) || bicho.hp >= bicho.maxHp) return;
+    bicho.proximoPoder[chave] = agora + c.intervalo;
+    if (Math.random() * 100 >= c.chance) return;
+    bicho.hp = Math.min(bicho.maxHp, bicho.hp + sortear(c.min, c.max));
+    eventos.push({ t: 'fx', id: c.efeito ?? 15, uid: bicho.uid, x: bicho.x, y: bicho.y });
+  });
+  return total;
+}

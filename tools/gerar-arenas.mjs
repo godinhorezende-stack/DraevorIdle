@@ -1,5 +1,5 @@
-// Gera as salas da Arena x1: `assets_raw/gamedata/hunts/<arena>-map.json` e
-// `assets_raw/gamedata/arenas.json`.
+// Gera as salas da Arena x1: `game/gamedata/hunts/<arena>-map.json` e
+// `game/gamedata/arenas.json`.
 //
 // Do original (`api-mapeada/captura-guilda-arena-0926/arena-zoros.json`): as
 // arenas (id, nome, level, blurb) e os bichos de cada uma, com a quantidade.
@@ -25,7 +25,7 @@ const BASE = {
 };
 
 const arenas = ler('api-mapeada/captura-guilda-arena-0926/arena-zoros.json').view.arenas;
-const { gradeDaHunt, huntOuMapaCustom } = await import(new URL('server/sistemas/hunt/terreno.mjs', raiz));
+const { gradeDaHunt, huntOuMapaCustom } = await import(new URL('game/systems/hunt/terreno.mjs', raiz));
 
 // Sorteio com semente: o mesmo mapa a cada geração.
 let semente = 20260926;
@@ -35,11 +35,11 @@ const saida = [];
 for (const a of arenas) {
   const base = BASE[a.id];
   if (!base) throw new Error(`sem sala base para ${a.id}`);
-  const mapa = ler(`assets_raw/gamedata/hunts/${base}-map.json`);
+  const mapa = ler(`game/gamedata/hunts/${base}-map.json`);
   delete mapa.route;
   mapa.custom = true;
   mapa.posicoes = [];
-  const arquivo = new URL(`assets_raw/gamedata/hunts/${a.id}-map.json`, raiz);
+  const arquivo = new URL(`game/gamedata/hunts/${a.id}-map.json`, raiz);
   writeFileSync(arquivo, JSON.stringify(mapa));
 
   // As casas andáveis de verdade (a grade do servidor: parede e líquido de fora).
@@ -78,4 +78,4 @@ for (const a of arenas) {
   saida.push({ ...a, base, lados, z: mapa.z ?? 7 });
   console.log(a.id, '← sala', base, '| casas', casas.length, '| bichos', mapa.posicoes.length, '| lados', JSON.stringify(lados));
 }
-writeFileSync(new URL('assets_raw/gamedata/arenas.json', raiz), JSON.stringify({ fonte: 'original (arena-zoros.json); mapa: sala real do mesmo tema até o mapa da arena ser capturado', arenas: saida }));
+writeFileSync(new URL('game/gamedata/arenas.json', raiz), JSON.stringify({ fonte: 'original (arena-zoros.json); mapa: sala real do mesmo tema até o mapa da arena ser capturado', arenas: saida }));

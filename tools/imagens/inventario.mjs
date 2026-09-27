@@ -1,5 +1,5 @@
 // Lista os PNG de uma pasta (os maiores primeiro) com as dimensões.
-// Uso: node tools/imagens/inventario.mjs assets_raw/client/assets [quantos]
+// Uso: node tools/imagens/inventario.mjs game/frontend/client/assets [quantos]
 import sharp from 'sharp';
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
