@@ -1399,7 +1399,16 @@ export class Sessao {
       versao: Novidades.VERSAO,
       novidades: Novidades.novidades(),
       character: completo,
-      city: snapshotDaPraca(this.estado, true, this),
+      /*
+       * ---- Caçando, a cidade vai SEM o mapa ----
+       * O mapa da cidade são 2,7 MB de JSON, e o cliente, com ele na mão,
+       * desenhava a cidade no primeiro quadro — o que pedia o `city.png`
+       * (3,8 MB, 64 MB decodificado) para uma tela que o jogador nem vê: o
+       * primeiro `state` troca para a hunt logo depois. Sem o mapa, o cliente
+       * pede quando voltar para a cidade (`pedirMapa`, main.mjs), que é o mesmo
+       * caminho de quando uma hunt termina — o `state` de saída já vem sem ele.
+       */
+      city: snapshotDaPraca(this.estado, !this.estado.hunt, this),
       // O catálogo real (nome/peso/raridade de 6178 itens) — mandado uma vez
       // por entrada, exatamente como o `welcome` de verdade faz. Sem isto o
       // cliente sabe DESENHAR cada item (os atlas já vieram no passo 1/2 da
