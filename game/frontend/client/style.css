@@ -26448,13 +26448,13 @@ html[data-perfil="deitado"] #hud .hud-bar {
 html[data-perfil="deitado"] #hud .hud-bar { height: 13px !important; font-size: 9.5px !important; }
 html[data-perfil="retrato"] #hud .hud-bar .bar-icon,
 html[data-perfil="deitado"] #hud .hud-bar .bar-icon { display: none !important; }
-/* Experiência e stamina: as duas numa linha fina embaixo, sem texto por cima. */
+/* Experiência e stamina: em pé, numa linha embaixo; deitado, ao lado da vida e da mana, do mesmo tamanho. */
 html[data-perfil="retrato"] #hud .bar-slot:nth-child(n + 3),
 html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) { grid-row: 2; }
 html[data-perfil="retrato"] #hud .bar-slot:nth-child(n + 3) .hud-bar,
 html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) .hud-bar { height: 12px !important; font-size: 9px !important; }
-html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) .hud-bar { height: 8px !important; font-size: 0 !important; }
-html[data-perfil="deitado"] #hud #hud-bars { grid-template-columns: 2fr 2fr 1fr 1fr; }
+html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) .hud-bar { height: 16px !important; font-size: 12px !important; }
+html[data-perfil="deitado"] #hud #hud-bars { grid-template-columns: 1.8fr 1.8fr 1.1fr 1.1fr; }
 html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) { grid-row: auto; align-self: center; }
 /* Tudo o mais que o card do HUD trazia (buffs, selos) mora no Herói. */
 html[data-perfil="retrato"] #hud-body > :not(#hud-bars),
@@ -26690,8 +26690,8 @@ html[data-perfil="deitado"] #analogico {
 }
 /* O "ç" de Caçar ficava cortado pelo `overflow: hidden` do rótulo. */
 .cel-nav-rotulo { line-height: 1.3; padding-bottom: 1px; }
-/* Deitado, experiência e stamina são só as barras finas: o número fica no balão. */
-html[data-perfil="deitado"] #hud .bar-slot:nth-child(n + 3) .hud-bar span { display: none !important; }
+/* Deitado, experiência e stamina mostram o número como a vida e a mana (antes
+   eram só barras finas, com o número escondido no balão). */
 /* ---- O "Mais": a barra de cima, em grade ---- */
 .cel-mais-secao + .cel-mais-secao { margin-top: 14px; }
 .cel-mais-secao h3 {
@@ -27150,7 +27150,10 @@ html[data-perfil="deitado"] #modal .tabs > button { overflow-wrap: normal !impor
 /* O status: os números da vida e da mana e as barras finas. */
 html[data-perfil="retrato"] #hud .hud-bar { font-size: 12px !important; }
 html[data-perfil="retrato"] #hud .bar-slot:nth-child(n + 3) .hud-bar { height: 15px !important; font-size: 12px !important; }
-html[data-perfil="deitado"] #hud .bar-slot:nth-child(-n + 2) .hud-bar { height: 16px !important; font-size: 12px !important; }
+/* Deitado, experiência e stamina com o MESMO tamanho e o número da vida e da
+   mana: eram filetes de 8px sem texto ("não fica bom para ler igual dos
+   outros"). Cabe — a fileira do status tem a largura toda, ver as colunas. */
+html[data-perfil="deitado"] #hud .bar-slot .hud-bar { height: 16px !important; font-size: 12px !important; }
 /* O nível já está no selo da casca: o do retrato sai. */
 html[data-perfil="retrato"] #hud .hud-level,
 html[data-perfil="deitado"] #hud .hud-level { display: none !important; }
@@ -27171,4 +27174,4 @@ html[data-perfil="deitado"] .modal-box.guilda > header {
 }
 /* O número dentro da barra tem tamanho próprio (10px): é ele que sobe. */
 html[data-perfil="retrato"] #hud .hud-bar span,
-html[data-perfil="deitado"] #hud .bar-slot:nth-child(-n + 2) .hud-bar span { font-size: 12px !important; }
+html[data-perfil="deitado"] #hud .bar-slot .hud-bar span { font-size: 12px !important; }
