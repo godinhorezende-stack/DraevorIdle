@@ -82,6 +82,10 @@ export function catalogo(estado) {
   const comBloqueio = (entry) => ({
     ...entry,
     ...(entry.damage ? { damage: { ...entry.damage, ...danoNoLevel(entry, estado.level) } } : {}),
+    // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
+    // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
+    ...(entry.cooldown ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
+    ...(entry.groupCooldown ? { groupCooldown: recargaDe(entry, entry.groupCooldown) } : {}),
     blocked: bloqueio(entry, estado),
   });
   return {
