@@ -26707,16 +26707,21 @@ html[data-perfil="deitado"] .cel-abas-mochila:not([hidden]) {
   display: flex; gap: 4px; position: fixed; z-index: 48;
   overflow-x: auto; scrollbar-width: none;
   padding: 4px;
-  background: #0b1012f2; border: 1px solid var(--line); border-radius: 12px 12px 0 0; border-bottom: 0;
+  /* Opaco: a 95% (`#0b1012f2`) os nomes verde-neon dos bichos passando por
+     baixo ainda apareciam através das abas. */
+  background: #0b1012; border: 1px solid var(--line); border-radius: 12px 12px 0 0; border-bottom: 0;
 }
 html[data-perfil="retrato"] .cel-abas-mochila { left: 6px; right: 6px; }
 html[data-perfil="deitado"] .cel-abas-mochila {
   right: var(--seguro-dir); width: var(--cel-painel);
   top: calc(var(--seguro-topo) + var(--cel-status) + 4px);
 }
-/* Deitado a faixa ocupa o topo do painel, e a janela desce o tanto dela. */
+/* Deitado a faixa ocupa o topo do painel, e a janela desce o tanto dela —
+   MENOS a margem transparente do alto da moldura (~9px com a borda de 30px, ver
+   `pintarAbas` em celular.mjs): com os 46px inteiros sobrava uma fresta entre a
+   faixa e o ornamento, e por ela passavam o mapa e os nomes dos bichos. */
 html[data-perfil="deitado"] body.com-abas-mochila .window {
-  top: calc(var(--seguro-topo) + var(--cel-status) + 4px + 46px) !important;
+  top: calc(var(--seguro-topo) + var(--cel-status) + 4px + 36px) !important;
 }
 .cel-abas-mochila::-webkit-scrollbar { display: none; }
 .cel-abas-mochila button {

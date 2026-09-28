@@ -472,8 +472,19 @@ function pintarAbas() {
   // Em pé a faixa vai logo acima da gaveta, que cresce de baixo para cima.
   if (perfil() === 'retrato') {
     const janela = document.querySelector(`.window[data-window-id="${aberta}"]`);
-    const topo = janela?.getBoundingClientRect().top ?? 0;
-    nos.abas.style.bottom = `${Math.max(0, Math.round(innerHeight - topo))}px`;
+    /*
+     * ---- Encostar no ORNAMENTO, não na caixa ----
+     *
+     * A moldura (`padrao.png`) é transparente nos 45 primeiros dos 150px da fatia
+     * de cima (ver `MOLDURA_VAZIA`, em windows.mjs): com a borda de 32px, ~10px
+     * no alto da janela não pintam nada. A faixa parava no topo da CAIXA, e por
+     * essa fresta aparecia o mapa — os nomes dos bichos passando entre as abas e
+     * a Mochila. Agora ela desce até onde o ornamento começa — e 1px além,
+     * porque a primeira linha do ornamento sai meio transparente na escala.
+     */
+    const vazio = janela ? parseFloat(getComputedStyle(janela).borderTopWidth) * (45 / 150) + 1 || 0 : 0;
+    const topo = (janela?.getBoundingClientRect().top ?? 0) + vazio;
+    nos.abas.style.bottom = `${Math.max(0, Math.floor(innerHeight - topo))}px`;
   } else {
     nos.abas.style.bottom = '';
   }
