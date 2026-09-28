@@ -10,8 +10,8 @@ import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
 import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from './hud.mjs';
 import { ARTES } from './artes.mjs';
 import { abrirNaPilha, fechouNaPilha, fechouNaPilhaTudoQue } from './pilha.mjs';
-import { ligarPerfil } from './perfil.mjs';
-import { initCelular, atualizarCelular, analogicoLigado } from './celular.mjs';
+import { ligarPerfil, ehTelefone } from './perfil.mjs';
+import { initCelular, atualizarCelular, analogicoLigado, ligarFonteMinima } from './celular.mjs';
 import {
   initInventory,
   esquecerOsDesenhos,
@@ -2629,6 +2629,7 @@ function buildWindows() {
         tip: 'Trocar de personagem ou sair da conta.' },
     ],
     abrirFicha: () => openCharacter('sheet'),
+    abrirParty: () => openParty(),
     abrirAparencia: () => openCharacter('look'),
     sistemas: () => SISTEMAS,
     janelaAberta: (id) => isVisible(id),
@@ -5810,6 +5811,8 @@ setInterval(mandarRumo, 100);
 const TECLAS_DO_RUMO = ['w', 'a', 's', 'd'];
 // O perfil (retrato, deitado, tablet, desktop) antes de tudo que depende dele.
 ligarPerfil();
+// O piso de 12px vale desde o portão (a lista de personagens também).
+ligarFonteMinima();
 acertarOAnalogico = initMobile({
   apontar(dx, dy) {
     for (const tecla of TECLAS_DO_RUMO) held.delete(tecla);
@@ -6572,7 +6575,8 @@ function cuidarDaJanelaDaParty() {
     partyVistaComo = marca;
     // A party mudou (entrou, saiu, alguém entrou): a janela volta a valer.
     partyFechadaPeloJogador = false;
-    if (party) setVisible('party', true);
+    // No telefone a Party é o modal (celular.mjs): a gaveta não abre sozinha por cima do mapa.
+    if (party && !ehTelefone()) setVisible('party', true);
   }
   if (!isVisible('party')) {
     if (party) partyFechadaPeloJogador = true;

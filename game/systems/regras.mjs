@@ -83,6 +83,18 @@ export const jaPode = (agora, quando) => agora + FOLGA_DO_TIQUE >= (quando ?? 0)
 export const PASSO_MS = 250;
 
 /*
+ * ---- O intervalo do COMBO: entre duas magias de ataque, no mínimo isto ----
+ *
+ * É o tempo mínimo entre a execução REAL de uma skill da fileira de ataque e a
+ * execução real da seguinte — medido no relógio da caçada, pelo instante em que
+ * `Acoes.disparar` de fato lançou a anterior (não pela tentativa: uma skill
+ * recusada por recarga, mana ou alvo não conta). NÃO é recarga: a recarga
+ * individual de cada skill e a do grupo de ataque continuam valendo por cima
+ * deste piso (ver `disparar`). Mudar a cadência mínima do combo é mudar só isto.
+ */
+export const COMBO_SKILL_INTERVAL_MS = 500;
+
+/*
  * O intervalo mínimo entre duas coletas da recompensa diária. 20h, e não
  * exatamente 24h — é a folga clássica do "server save" do Tibia: quem joga
  * um pouco mais tarde ou mais cedo todo dia não perde o dia por sincronizar

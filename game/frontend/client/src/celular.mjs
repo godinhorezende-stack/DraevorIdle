@@ -148,6 +148,18 @@ function botaoDaNav(id, rotulo, arte, aoTocar) {
 }
 
 /*
+ * ---- Uma tela só para a Party ----
+ *
+ * No computador a Party tem a janela (o time ao vivo, ao lado do mapa) e o
+ * modal (convidar pelo nome, liderança, tirar alguém, o estado da partilha).
+ * No telefone as janelas viram gavetas por cima do mapa, e ter as duas era a
+ * mesma coisa em dois lugares: a entrada Party abre o modal, que é o completo
+ * — o mesmo que o "Ver a party" dos Amigos já abria.
+ */
+const noTelefone = (entrada) =>
+  entrada.id === 'party' && api.abrirParty ? { ...entrada, janela: undefined, abre: api.abrirParty } : entrada;
+
+/*
  * ---- O "Mais": a barra de cima inteira, em grade ----
  *
  * Os grupos da barra viram seções com título; cada entrada é o botão da
@@ -169,7 +181,7 @@ function abrirMais() {
         const grade = el('div', 'cel-mais-grade');
         for (const entrada of itens) {
           // O nome inteiro: o `curto` ("Profic.") só existe para caber na barra de cima.
-          const botao = api.ferramentaLigada({ ...entrada, curto: entrada.label });
+          const botao = api.ferramentaLigada(noTelefone({ ...entrada, curto: entrada.label }));
           botao.classList.add('cel-mais-item');
           botao.addEventListener('click', () => {
             if (folhaAberta() === 'mais') fecharFolha();
@@ -490,6 +502,90 @@ function montarAbas() {
   window.addEventListener('resize', () => requestAnimationFrame(pintarAbas));
 }
 
+/*
+ * ---- O piso de 12px ----
+ *
+ * A auditoria mediu telas com 80% a 97% do texto abaixo de 12px (Outfits,
+ * Tasks, Forja, Charms): cada uma com dezenas de regras de 9, 10 e 11px
+ * pensadas para a tela grande. Acertar regra por regra deixaria de fora a
+ * tela que ninguém lembrasse, e a próxima que nascesse.
+ *
+ * No telefone, todo texto que aparece dentro de uma tela por cima do jogo
+ * (modal, gaveta, folha, menu, balão) e ficou abaixo de 12px sobe para 12px.
+ * Só o que NASCE: um observador olha os nós que entram e, uma vez por
+ * quadro, mede só esses. Ficam de fora os selos de contagem ("13", "x85")
+ * dentro de slots e células, que são desenho num espaço fixo, e o que já
+ * tem o próprio tamanho do telefone (status, navegação, atalhos).
+ */
+const PISO_DA_FONTE = 12;
+const ONDE_VALE = '#modal, .window, .folha-fundo, #context-menu, body > .tooltip, #gate';
+const FICA_COMO_ESTA = '.slot, .cell, .craft-casa, .prof-weapon, #hud .hud-bar, #hotbar, .cel-nav, [class*="badge"]';
+const SO_NUMERO = /^[\d.,+×x%:\-/ ]{1,5}$/;
+
+function subirFontes(raiz) {
+  if (!raiz.isConnected) return;
+  const passos = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
+  const vistos = new Set();
+  while (passos.nextNode()) {
+    const texto = passos.currentNode.nodeValue.trim();
+    const dono = passos.currentNode.parentElement;
+    if (!texto || !dono || vistos.has(dono)) continue;
+    vistos.add(dono);
+    if (dono.dataset.fonteMinima || dono.closest(FICA_COMO_ESTA)) continue;
+    // Um número num selo (o círculo do nível da peça, o "x85" no canto) é
+    // desenho sobreposto num espaço fixo: fica. Um número na linha (preço,
+    // "0/15") sobe como o resto.
+    if (SO_NUMERO.test(texto) && getComputedStyle(dono).position === 'absolute') continue;
+    const tamanho = parseFloat(getComputedStyle(dono).fontSize);
+    // 0 é texto escondido de propósito (botão só com ícone): fica como está.
+    if (tamanho > 0 && tamanho < PISO_DA_FONTE) {
+      dono.style.fontSize = `${PISO_DA_FONTE}px`;
+      dono.dataset.fonteMinima = '1';
+    }
+  }
+}
+
+/** Liga uma vez só; o main chama junto com o perfil, antes do portão. */
+let fonteLigada = false;
+export function ligarFonteMinima() {
+  if (fonteLigada) return;
+  fonteLigada = true;
+  const pendentes = new Set();
+  let agendado = false;
+  const processar = () => {
+    agendado = false;
+    if (ehTelefone()) for (const raiz of pendentes) subirFontes(raiz);
+    pendentes.clear();
+  };
+  const anotar = (no) => {
+    const el = no.nodeType === 1 ? no : no.parentElement;
+    if (!el || !el.closest?.(ONDE_VALE)) return;
+    pendentes.add(el);
+    if (!agendado) {
+      agendado = true;
+      requestAnimationFrame(processar);
+    }
+  };
+  new MutationObserver((registros) => {
+    if (!ehTelefone()) return;
+    for (const r of registros) for (const no of r.addedNodes) anotar(no);
+  }).observe(document.body, { childList: true, subtree: true });
+  // Mudou de perfil: no telefone, passa em tudo o que já está aberto; fora
+  // dele, desfaz o que tinha subido.
+  const revisar = () => {
+    if (ehTelefone()) {
+      for (const raiz of document.querySelectorAll(ONDE_VALE)) anotar(raiz);
+    } else {
+      for (const el of document.querySelectorAll('[data-fonte-minima]')) {
+        el.style.fontSize = '';
+        delete el.dataset.fonteMinima;
+      }
+    }
+  };
+  window.addEventListener('draevor:perfil', revisar);
+  revisar();
+}
+
 export function initCelular(ferramentas) {
   api = ferramentas;
   // Trocar de personagem refaz o jogo, não a casca: ela é montada uma vez.
@@ -499,6 +595,7 @@ export function initCelular(ferramentas) {
   }
   montar();
   montarAbas();
+  ligarFonteMinima();
   ligarMenuDoItem();
   ligarFaixaDoChat();
   acomodarCarteira();
