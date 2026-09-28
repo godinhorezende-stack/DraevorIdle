@@ -686,9 +686,13 @@ function montarHotbar(bar, actions, total) {
      * Montar continua possível, e num gesto que ninguém faz sem querer: com o
      * cadeado ABERTO, que é o modo de arrumar a barra, o toque volta a abrir o
      * editor.
+     *
+     * E também fora da hunt ou num slot vazio: aí não há o que disparar (o
+     * servidor só respondia "Você não está numa hunt."), e o toque que sobra
+     * é o de montar a barra.
      */
     slot.onclick = () => {
-      if (ehCelular() && !document.body.classList.contains('slots-livres')) {
+      if (ehCelular() && !document.body.classList.contains('slots-livres') && action && ctx.state?.hunt) {
         ctx.dispararSlot?.(index);
         return;
       }
