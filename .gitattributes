@@ -1,1 +1,8 @@
+# Texto sempre LF no disco, inclusive no Windows com `core.autocrlf=true`.
+# O servidor manda os bytes do disco: com CRLF no checkout, os `.br`/`.gz`
+# pré-comprimidos e os arquivos gerados (client/src/artes.mjs) nunca batiam
+# com a fonte, e um `.sh` com CRLF quebra no bash do VPS. No índice já é
+# tudo LF — isto só muda o que sai no checkout.
+* text=auto eol=lf
+
 graphify-out/graph.json merge=graphify

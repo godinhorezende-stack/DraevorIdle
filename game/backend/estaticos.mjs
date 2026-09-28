@@ -24,11 +24,15 @@
 //   só era memorizado (1x por processo), não de graça: um arquivo de 1 MB
 //   comprimindo na 1ª visita depois de um deploy trava o event loop bem na
 //   hora em que todo mundo está reconectando. Sem o par (arquivo novo, editado
-//   à mão em dev), cai para o síncrono de sempre — nunca quebra.
+//   à mão em dev), cai para o síncrono de sempre — nunca quebra. O par só é
+//   usado se descomprimir EXATAMENTE para a fonte (ver `preComprimido`).
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname } from 'node:path';
-import { brotliCompressSync, gzipSync, constants } from 'node:zlib';
+import { brotliCompressSync, brotliDecompress, gzipSync, gunzip, constants } from 'node:zlib';
+import { promisify } from 'node:util';
+
+const ABRIR = { br: promisify(brotliDecompress), gz: promisify(gunzip) };
 
 export const TIPOS = {
   '.html': 'text/html; charset=utf-8',
@@ -58,12 +62,20 @@ async function webpNoLugar(req, alvo, st) {
   }
 }
 
-/** O `.br`/`.gz` pronto do build (`tools/precomprimir.mjs`) ao lado de `alvo`, se existir e não for mais velho que ele. */
-async function preComprimido(alvo, st, sufixo) {
+/**
+ * O `.br`/`.gz` pronto do build (`tools/precomprimir.mjs`) ao lado de `alvo`,
+ * se existir e descomprimir EXATAMENTE para `corpo`.
+ *
+ * Só a data não bastava: num `git checkout` todo arquivo ganha a mesma hora,
+ * e um par velho passava por novo — foi ao ar um `panels.mjs.br` de antes da
+ * última edição do `panels.mjs` (e, no Windows com `core.autocrlf`, a fonte é
+ * CRLF e o par LF: nunca batiam). Descomprimir é barato perto de comprimir e
+ * roda 1x por arquivo por processo (quem chama memoriza), assíncrono.
+ */
+async function preComprimido(alvo, corpo, sufixo) {
   try {
-    const pronto = `${alvo}.${sufixo}`;
-    const stp = await stat(pronto);
-    return stp.mtimeMs >= st.mtimeMs ? await readFile(pronto) : null;
+    const pronto = await readFile(`${alvo}.${sufixo}`);
+    return (await ABRIR[sufixo](pronto)).equals(corpo) ? pronto : null;
   } catch {
     return null;
   }
@@ -136,10 +148,10 @@ export async function servir(req, res, alvo) {
   let corpo = arq.corpo;
   const cod = TEXTO.has(ext) && corpo.length > 1024 ? codificacao(req) : null;
   if (cod === 'br') {
-    arq.br ??= (await preComprimido(alvo, st, 'br')) ?? brotliCompressSync(arq.corpo, { params: { [constants.BROTLI_PARAM_QUALITY]: 9, [constants.BROTLI_PARAM_SIZE_HINT]: arq.corpo.length } });
+    arq.br ??= (await preComprimido(alvo, arq.corpo, 'br')) ?? brotliCompressSync(arq.corpo, { params: { [constants.BROTLI_PARAM_QUALITY]: 9, [constants.BROTLI_PARAM_SIZE_HINT]: arq.corpo.length } });
     corpo = arq.br;
   } else if (cod === 'gzip') {
-    arq.gz ??= (await preComprimido(alvo, st, 'gz')) ?? gzipSync(arq.corpo, { level: 9 });
+    arq.gz ??= (await preComprimido(alvo, arq.corpo, 'gz')) ?? gzipSync(arq.corpo, { level: 9 });
     corpo = arq.gz;
   }
   if (cod) cabecalho['content-encoding'] = cod;

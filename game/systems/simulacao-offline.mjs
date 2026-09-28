@@ -66,7 +66,18 @@ export function simular(estado, personagem, agora = Date.now()) {
   });
 }
 
-/** Fecha as threads (os testes chamam no fim). */
+/**
+ * Fecha as threads (os testes chamam no fim). Toda chamada pendente rejeita
+ * aqui, na hora — a mesma corrida de `simulador-tique.mjs::encerrar` (resposta
+ * antes do `exit` + `unref()` com o `terminate()` pendente).
+ */
 export async function encerrar() {
-  await Promise.all(threads.splice(0).map((t) => t.worker.terminate()));
+  const fechando = threads.splice(0);
+  const erro = new Error('simulação offline: pool encerrado');
+  for (const t of fechando) {
+    for (const p of t.pendentes.values()) p.reject(erro);
+    t.pendentes.clear();
+    t.worker.ref(); // segura o event loop até a thread sair de verdade
+  }
+  await Promise.all(fechando.map((t) => t.worker.terminate()));
 }
