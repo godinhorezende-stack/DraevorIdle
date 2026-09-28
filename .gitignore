@@ -25,3 +25,12 @@ backups/
 
 # .env de verdade (senhas de banco) — só o .env.example vai pro git
 .env
+
+# Estáticos pré-comprimidos (`<arquivo>.br`/`.gz`): saída do build, gerada no
+# deploy por `node tools/precomprimir.mjs` (scripts/deploy.sh). Versionados,
+# apodreciam — a fonte mudava e o par ficava para trás (e, no Windows com
+# `core.autocrlf`, a fonte é CRLF e o par LF: nunca batiam).
+game/frontend/client/**/*.br
+game/frontend/client/**/*.gz
+game/gamedata/*.br
+game/gamedata/*.gz

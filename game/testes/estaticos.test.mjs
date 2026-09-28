@@ -37,17 +37,19 @@ function pedir(caminho, cabecalhos = {}) {
 }
 
 test('JS em Brotli (ou gzip) e o conteúdo volta idêntico', async () => {
+  // `.equals`, não `deepEqual`: num erro, o diff de dois Buffers de 1 MB
+  // estoura a memória (RangeError) em vez de dizer o que houve.
   const original = readFileSync(join(RAIZ, 'client/src/panels.mjs'));
   const br = await pedir('/client/src/panels.mjs', { 'accept-encoding': 'gzip, deflate, br' });
   assert.equal(br.h['content-encoding'], 'br');
   assert.ok(br.corpo.length < original.length / 3, `${br.corpo.length} de ${original.length}`);
-  assert.deepEqual(brotliDecompressSync(br.corpo), original);
+  assert.ok(brotliDecompressSync(br.corpo).equals(original), 'o Brotli não volta idêntico à fonte');
   const gz = await pedir('/client/src/panels.mjs', { 'accept-encoding': 'gzip' });
   assert.equal(gz.h['content-encoding'], 'gzip');
-  assert.deepEqual(gunzipSync(gz.corpo), original);
+  assert.ok(gunzipSync(gz.corpo).equals(original), 'o gzip não volta idêntico à fonte');
   const cru = await pedir('/client/src/panels.mjs');
   assert.equal(cru.h['content-encoding'], undefined);
-  assert.deepEqual(cru.corpo, original);
+  assert.ok(cru.corpo.equals(original), 'o cru não é a fonte');
 });
 
 test('ETag: a segunda visita recebe 304 sem corpo', async () => {

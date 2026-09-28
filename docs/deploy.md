@@ -28,6 +28,7 @@ cd draevoridle/game/docker
 cp .env.example .env
 # editar .env: POSTGRES_PASSWORD (obrigatório), DOMINIO/EMAIL_CERTBOT se for usar TLS
 docker compose up -d --build
+cd ../.. && node tools/precomprimir.mjs   # opcional: .br/.gz dos estáticos (o deploy.sh faz isto sempre)
 ```
 
 Isso sobe `postgres` (schema criado sozinho, pelos módulos do jogo — nada de
@@ -101,7 +102,11 @@ AMBIENTE=producao scripts/deploy.sh  # produção: usa também docker-compose.pr
 
 O script: `git fetch` + `git checkout` + `git merge --ff-only` (nunca reescreve
 histórico nem descarta mudança local — se o merge não for fast-forward, ele
-para e avisa em vez de forçar), depois `docker compose up -d --build` e só
+para e avisa em vez de forçar), `node tools/precomprimir.mjs` + `--verificar`
+(gera os `.br`/`.gz` dos estáticos, que NÃO vão pro git, e confere cada um
+contra a fonte; usa o node do host, ou `node:22-slim` via Docker se não houver
+node >= 18 — se falhar, o deploy **aborta antes de mexer nos containers**),
+depois `docker compose up -d --build` e só
 termina depois de confirmar `/saude` respondendo. Se `/saude` não responder em
 ~1 minuto, ele sai com erro (`docker compose logs game` para investigar) —
 não fica um deploy "pela metade" sem avisar.

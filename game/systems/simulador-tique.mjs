@@ -84,7 +84,22 @@ export function tique(estado, personagem, agora, podio) {
   });
 }
 
-/** Fecha as threads (os testes chamam no fim). */
+/**
+ * Fecha as threads (os testes chamam no fim). Toda chamada ainda pendente
+ * REJEITA aqui mesmo, na hora — não espera o `exit` do worker. Esperar dava
+ * corrida: se a resposta do tique chegasse antes do `exit`, a chamada
+ * resolvia depois do pool fechado, e o `unref()` do handler de mensagem
+ * soltava o worker com o `terminate()` ainda pendente — o event loop podia
+ * esvaziar antes do `exit` e a promessa de `encerrar()` nunca terminava.
+ * Resposta que chegar depois disto não acha mais a chamada e é descartada.
+ */
 export async function encerrar() {
-  await Promise.all(threads.splice(0).map((t) => t.worker.terminate()));
+  const fechando = threads.splice(0);
+  const erro = new Error('simulador de tique: pool encerrado');
+  for (const t of fechando) {
+    for (const p of t.pendentes.values()) p.reject(erro);
+    t.pendentes.clear();
+    t.worker.ref(); // segura o event loop até a thread sair de verdade
+  }
+  await Promise.all(fechando.map((t) => t.worker.terminate()));
 }
