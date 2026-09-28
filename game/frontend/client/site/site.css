@@ -198,9 +198,6 @@ a { color: inherit; text-decoration: none; }
   padding: calc(62px + var(--altura-da-faixa)) 26px 22px; overflow: hidden;
 }
 
-/* O fundo e' UM arquivo, e a pagina funciona sem ele: enquanto
-   `client/site/capa.webp` nao existir, o navegador ignora a imagem que falta e
-   o degrade sozinho segura a tela. */
 /*
  * O MESMO fundo da tela de entrada do jogo.
  *
@@ -208,9 +205,8 @@ a { color: inherit; text-decoration: none; }
  * lugares diferentes. Sao o mesmo lugar: quem clica em "Entrar" tem de sentir
  * que atravessou uma porta, e nao que trocou de site.
  *
- * `client/site/capa.webp` continua valendo — se existir, entra por cima e vira
- * a capa. Sem ele, a arte da entrada segura a tela, que e' arte de verdade e
- * nao um degrade.
+ * A arte da entrada segura a tela, que e' arte de verdade e nao um degrade
+ * (a camada opcional `client/site/capa.webp` saiu — ver `.capa-fundo`).
  */
 /*
  * O MESMO fundo da tela de entrada do jogo, e ele nao rola com a pagina.
@@ -223,18 +219,18 @@ a { color: inherit; text-decoration: none; }
  * O brilho verde que havia aqui saiu: ele existia para a capa nao ficar vazia
  * enquanto nao houvesse arte. Agora ha' arte, e o halo so' lavava a cor dela.
  *
- * `client/site/capa.webp` continua valendo — se existir, entra por cima e vira
- * a capa.
+ * A camada de `client/site/capa.webp` por cima saiu: o arquivo nunca existiu, e
+ * cada visita à capa pedia ele e levava 404 (51 em 48 h no log de produção).
+ * Quando houver uma capa própria, é voltar a pô-la como PRIMEIRA camada de
+ * `background-image` (e repetir `center`/`cover`/`no-repeat`/`fixed` para ela).
  */
 .capa-fundo {
   position: absolute; inset: 0; z-index: 0;
-  background-image:
-    url('/client/site/capa.webp'),
-    url('/client/assets/ui/gate-bg.webp');
-  background-position: center, center;
-  background-size: cover, cover;
-  background-repeat: no-repeat, no-repeat;
-  background-attachment: fixed, fixed;
+  background-image: url('/client/assets/ui/gate-bg.webp');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   background-color: #080e0e;
 }
 /*
