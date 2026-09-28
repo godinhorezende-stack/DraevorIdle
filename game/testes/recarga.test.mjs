@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
+import { ACTION_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 function naHuntComBarra(ids) {
@@ -37,4 +38,17 @@ test('runa de ataque divide a recarga do grupo com as magias (não sai junto)', 
   assert.equal(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, false, 'no mesmo instante, a runa espera');
   h.clock += 1000;
   assert.ok(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, 'depois do grupo, a runa sai');
+});
+
+test('o catálogo mandado ao cliente mostra a recarga que o servidor aplica', () => {
+  const e = personagemDeTeste({ vocacao: 'paladin', level: 8 });
+  const cat = Acoes.catalogo(e);
+  const lesser = cat.spells.find((s) => s.id === 'spell-lesser-ethereal-spear');
+  assert.equal(lesser.cooldown, 1000, 'tooltip dizia 2 s; sai a cada 1 s');
+  assert.equal(lesser.groupCooldown, 1000);
+  const fierce = cat.spells.find((s) => s.id === 'spell-fierce-berserk');
+  assert.equal(fierce.cooldown, 3000);
+  // Cura não é ataque: continua a do catálogo.
+  const cura = cat.spells.find((s) => s.id === 'spell-light-healing');
+  assert.equal(cura.cooldown, ACTION_CATALOG.spells.find((s) => s.id === cura.id).cooldown);
 });
