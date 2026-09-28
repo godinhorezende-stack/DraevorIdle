@@ -28,7 +28,8 @@
 //   usado se descomprimir EXATAMENTE para a fonte (ver `preComprimido`).
 import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
-import { extname } from 'node:path';
+import { extname, dirname, join, normalize, sep } from 'node:path';
+import { createHash } from 'node:crypto';
 import { brotliCompressSync, brotliDecompress, gzipSync, gunzip, constants } from 'node:zlib';
 import { promisify } from 'node:util';
 
@@ -99,6 +100,67 @@ async function emMemoria(alvo, st, etag) {
   return novo;
 }
 
+/*
+ * ---- O `?v=` do HTML é o hash do arquivo, calculado aqui ----
+ *
+ * `style.css?v=` e `main.mjs?v=` vão com um ano de `immutable`: a URL É a
+ * versão. Ela era escrita à mão no `jogar.html`, e o `main.mjs` mudou em dez
+ * commits depois do último `?v=arena0926a` sem ninguém trocar a letra — quem
+ * abriu o jogo depois de 26/09 ficou com um `main.mjs` velho (do cache, para
+ * sempre) conversando com os outros módulos novos (que são `no-cache`). Os 404
+ * de nomes de ícone antigos em produção vinham exatamente desses navegadores.
+ *
+ * Agora o valor escrito no HTML não importa: ao servir uma página, todo
+ * `"/client/...?v=QUALQUER"` vira `?v=<10 hex do sha1 do conteúdo>`. Mudou o
+ * arquivo, mudou a URL — sem passo de deploy nem edição no checkout. E a ETag
+ * da página é o hash da página JÁ REESCRITA: sem isso, um `main.mjs` novo com o
+ * `jogar.html` intocado responderia 304 e o navegador seguiria com o HTML (e a
+ * URL) de antes.
+ */
+const DO_CLIENTE_VERSIONADO = /(["'])(\/client\/[^"'?#]+)\?v=[^"'#]*\1/g;
+/** caminho da página → { chave, corpo, etag, br, gz } (enquanto nada mudar). */
+const paginas = new Map();
+
+/** Hash curto do conteúdo de `arquivo` (memorizado por tamanho + data). */
+const hashes = new Map();
+async function hashDe(arquivo) {
+  const st = await stat(arquivo);
+  const chave = `${st.size}-${st.mtimeMs}`;
+  const guardado = hashes.get(arquivo);
+  if (guardado?.chave === chave) return { hash: guardado.hash, chave };
+  const hash = createHash('sha1').update(await readFile(arquivo)).digest('hex').slice(0, 10);
+  hashes.set(arquivo, { chave, hash });
+  return { hash, chave };
+}
+
+/** A página `alvo` com cada `/client/...?v=` trocado pelo hash do arquivo. */
+async function paginaVersionada(alvo, st) {
+  const raiz = dirname(alvo);
+  const fonte = await readFile(alvo, 'utf8');
+  const refs = [...new Set([...fonte.matchAll(DO_CLIENTE_VERSIONADO)].map((m) => m[2]))];
+  const versoes = {};
+  const partes = [`${st.size}-${st.mtimeMs}`];
+  for (const url of refs) {
+    const arquivo = normalize(join(raiz, url));
+    if (!arquivo.startsWith(raiz + sep)) continue;
+    try {
+      const { hash, chave } = await hashDe(arquivo);
+      versoes[url] = hash;
+      partes.push(`${url}:${chave}`);
+    } catch {
+      // Arquivo que não existe: fica o `?v=` escrito (e o 404 aparece nele, não aqui).
+    }
+  }
+  const chave = partes.join('|');
+  const guardada = paginas.get(alvo);
+  if (guardada?.chave === chave) return guardada;
+  const texto = fonte.replace(DO_CLIENTE_VERSIONADO, (tudo, aspas, url) => (versoes[url] ? `${aspas}${url}?v=${versoes[url]}${aspas}` : tudo));
+  const corpo = Buffer.from(texto);
+  const nova = { chave, corpo, etag: `W/"p-${createHash('sha1').update(corpo).digest('hex').slice(0, 16)}"` };
+  paginas.set(alvo, nova);
+  return nova;
+}
+
 /**
  * Responde `req` com o arquivo `alvo` (já validado como dentro da raiz).
  * Devolve false quando não é um arquivo (para o 404 de quem chamou).
@@ -120,7 +182,8 @@ export async function servir(req, res, alvo) {
     st = webp.st;
     tipo = 'image/webp';
   }
-  const etag = etagDe(st);
+  const pagina = ext === '.html' ? await paginaVersionada(alvo, st) : null;
+  const etag = pagina?.etag ?? etagDe(st);
   const versionado = /[?&]v=/.test(req.url);
   const cabecalho = {
     'content-type': tipo,
@@ -137,21 +200,21 @@ export async function servir(req, res, alvo) {
     return true;
   }
 
-  if (st.size > MAXIMO_EM_MEMORIA) {
+  if (!pagina && st.size > MAXIMO_EM_MEMORIA) {
     res.writeHead(200, { ...cabecalho, 'content-length': st.size });
     if (req.method === 'HEAD') return res.end(), true;
     createReadStream(alvo).pipe(res);
     return true;
   }
 
-  const arq = await emMemoria(alvo, st, etag);
+  const arq = pagina ?? (await emMemoria(alvo, st, etag));
   let corpo = arq.corpo;
   const cod = TEXTO.has(ext) && corpo.length > 1024 ? codificacao(req) : null;
   if (cod === 'br') {
-    arq.br ??= (await preComprimido(alvo, arq.corpo, 'br')) ?? brotliCompressSync(arq.corpo, { params: { [constants.BROTLI_PARAM_QUALITY]: 9, [constants.BROTLI_PARAM_SIZE_HINT]: arq.corpo.length } });
+    arq.br ??= (pagina ? null : await preComprimido(alvo, arq.corpo, 'br')) ?? brotliCompressSync(arq.corpo, { params: { [constants.BROTLI_PARAM_QUALITY]: 9, [constants.BROTLI_PARAM_SIZE_HINT]: arq.corpo.length } });
     corpo = arq.br;
   } else if (cod === 'gzip') {
-    arq.gz ??= (await preComprimido(alvo, arq.corpo, 'gz')) ?? gzipSync(arq.corpo, { level: 9 });
+    arq.gz ??= (pagina ? null : await preComprimido(alvo, arq.corpo, 'gz')) ?? gzipSync(arq.corpo, { level: 9 });
     corpo = arq.gz;
   }
   if (cod) cabecalho['content-encoding'] = cod;

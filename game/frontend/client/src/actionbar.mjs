@@ -698,8 +698,20 @@ function montarHotbar(bar, actions, total) {
       }
       openEditor(index);
     };
+    /*
+     * ---- Clique direito remove; no telefone, o toque longo ABRE O EDITOR ----
+     *
+     * O toque longo do celular chega aqui como este mesmo `contextmenu` (ver o
+     * toque longo em mobile.mjs), e removia a magia na hora, sem perguntar: na
+     * caçada, segurar um slot meio segundo a mais do que um toque apagava a
+     * magia sem ninguém perceber — só se notava quando ela parava de sair. No
+     * telefone o gesto passa a abrir o editor (que tem o Remover, com a magia à
+     * vista), e dá ao toque longo uma função com o cadeado fechado, quando o
+     * toque curto usa a habilidade. No computador o clique direito segue igual.
+     */
     slot.oncontextmenu = (event) => {
       event.preventDefault();
+      if (ehCelular()) return void openEditor(index);
       if (action) ctx.send({ t: 'actions', action: 'set', slot: index, value: null });
     };
 

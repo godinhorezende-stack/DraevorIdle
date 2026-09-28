@@ -62,33 +62,56 @@ function vista(estado, e, noBolso = contagem(estado)) {
     return { ...i, tem, entregue, falta: feita ? 0 : i.count - entregue - tem };
   });
   const ouroEntregue = feita ? e.ouro : balcao.ouro ?? 0;
-  const temOuro = Math.min(e.ouro - ouroEntregue, estado.gold ?? 0);
-  const pronta = !feita && itens.every((i) => i.falta === 0) && ouroEntregue + temOuro >= e.ouro;
-  const podeAdiantar = !feita && (itens.some((i) => i.tem > 0) || temOuro > 0);
+  const itensProntos = itens.every((i) => i.falta === 0);
+  const temAlgumItem = itens.some((i) => i.tem > 0);
+  const { temOuro, pronta, podeAdiantar } = comOuroDoBolso({ ouro: e.ouro, ouroEntregue, feita, itensProntos, temAlgumItem }, estado.gold ?? 0);
   const adiantada = !feita && (Object.keys(balcao).length > 0);
-  return { ...e, itens, ouro: e.ouro, temOuro, ouroEntregue, pronta, podeAdiantar, adiantada, feita, indisponivel: false };
+  return { ...e, itens, ouro: e.ouro, temOuro, ouroEntregue, pronta, podeAdiantar, adiantada, feita, indisponivel: false, itensProntos, temAlgumItem };
+}
+
+/**
+ * As três coisas da entrega que dependem do OURO NO BOLSO. A mesma conta mora
+ * no cliente (`comOuroDoBolso`, panels.mjs) — ver `paraCliente`.
+ */
+export function comOuroDoBolso({ ouro, ouroEntregue, feita, itensProntos, temAlgumItem }, gold) {
+  const temOuro = Math.max(0, Math.min(ouro - ouroEntregue, gold));
+  return {
+    temOuro,
+    pronta: !feita && itensProntos && ouroEntregue + temOuro >= ouro,
+    podeAdiantar: !feita && (temAlgumItem || temOuro > 0),
+  };
 }
 
 /*
  * ---- Só remonta quando muda o que ela usa ----
  *
  * As 33 entregas são ~26 KB e o personagem é montado uma vez por segundo por
- * jogador. Elas só dependem de três coisas: o ouro (até o maior pedido — acima
- * disso, tanto faz), quanto há de cada item PEDIDO e o progresso das entregas.
- * Com a mesma chave, devolve o MESMO objeto; a sessão (`mandarEstado`) nem
- * compara objeto repetido (ver "O mesmo objeto de antes").
+ * jogador. Elas só dependem de quanto há de cada item PEDIDO e do progresso
+ * das entregas. Com a mesma chave, devolve o MESMO objeto; a sessão
+ * (`mandarEstado`) nem compara objeto repetido (ver "O mesmo objeto de antes").
+ *
+ * ---- E o ouro NÃO entra ----
+ *
+ * Entrava (até o maior pedido, 150.000): abaixo disso, que é quase todo mundo,
+ * cada moeda de loot e cada poção comprada mudava `temOuro` e as 33 entregas
+ * (26 KB) iam de novo — medido numa caçada: 260 de 267 KB do personagem em
+ * 15 s eram só isto. Agora `temOuro`/`pronta`/`podeAdiantar` saem do envio e o
+ * cliente os calcula com o `gold` que ele já tem (`comOuroDoBolso`, a mesma
+ * conta). O `entregar` daqui continua usando a `vista` inteira, com o ouro.
  */
 const ITENS_PEDIDOS = [...new Set(ENTREGAS.flatMap((e) => e.itens.map((i) => i.id)))];
-const MAIOR_OURO = Math.max(...ENTREGAS.map((e) => e.ouro));
 const memoria = new WeakMap();
 
-/** `character.entregas`, no formato do original. */
+/** `character.entregas`, no formato do original — sem os campos que dependem do ouro. */
 export function paraCliente(estado) {
   const noBolso = contagem(estado);
-  const chave = `${Math.min(estado.gold ?? 0, MAIOR_OURO)}|${ITENS_PEDIDOS.map((id) => noBolso.get(id) ?? 0).join(',')}|${JSON.stringify(estado.entregas ?? null)}`;
+  const chave = `${ITENS_PEDIDOS.map((id) => noBolso.get(id) ?? 0).join(',')}|${JSON.stringify(estado.entregas ?? null)}`;
   const guardada = memoria.get(estado);
   if (guardada?.chave === chave) return guardada.lista;
-  const lista = ENTREGAS.map((e) => vista(estado, e, noBolso));
+  const lista = ENTREGAS.map((e) => {
+    const { temOuro, pronta, podeAdiantar, ...semOuro } = vista(estado, e, noBolso);
+    return semOuro;
+  });
   memoria.set(estado, { chave, lista });
   return lista;
 }
