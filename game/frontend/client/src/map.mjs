@@ -1492,6 +1492,160 @@ export class MapView {
     if (complete) this.groundKey = key;
   }
 
+  /**
+   * O fundo (os andares de baixo vistos pelos buracos, o véu, as escadas) pintado
+   * direto em `this.ctx`. Era o corpo do `drawMapa`; saiu para cá sem mudar uma
+   * linha, e é o que `desenharFundoGuardado` chama por baixo, com o pincel trocado.
+   */
+  pintarFundo(map, atlas, cell, time, stacks, z, camadas) {
+    const ctx = this.ctx;
+    /*
+     * As casas que deixam ver o andar de baixo, além das vazias.
+     *
+     * Ver `buracosDoAndar`: a escada de descida e o buraco no chão têm um
+     * item em cima, e a máscara "só onde o chão daqui não existe" os tratava
+     * como chão fechado. O resultado era um quadrado PRETO no meio da sala,
+     * exatamente onde o Tibia mostra o andar de baixo pelo buraco.
+     */
+    const { comuns, escadas } = this.buracosDoAndar(map, z);
+    for (let profundidade = camadas.length - 1; profundidade >= 0; profundidade--) {
+      /*
+       * ---- O andar de baixo entra DESLOCADO, e essa era a metade que faltava ----
+       *
+       * A conta do Tibia é uma só (`offset = z - nz`, do
+       * `GetMapDescription`): o andar de cima é lido em `x+1, y+1` e o de
+       * baixo em `x-1, y-1`. O de cima já fazia a sua parte; este aqui
+       * passava `0`, e o `andar-visivel.mjs` tinha a dívida anotada há
+       * tempos — "pela conta do offset elas deveriam entrar uma casa para
+       * baixo e para a direita".
+       *
+       * O sintoma é exatamente o que o dono descreveu na cidade: "o subsolo
+       * ta ok, o andar principal ta ok, mas quando sobe 1 andar ele esta
+       * descentralizado — o andar de cima teria que ser 1 sqm pra cima e um
+       * pra esquerda". As duas contas discordavam em UMA casa, e dava para
+       * ver de qual lado:
+       *
+       *   de pé no z7, o telhado do z6 aparecia em `x+1, y+1`  (certo)
+       *   de pé no z6, o chão do z7 aparecia em `x, y`         (uma casa fora)
+       *
+       * Subir uma escada movia a cidade inteira uma casa debaixo dos pés.
+       * Com o deslocamento aqui, as duas vistas passam a contar a mesma
+       * coisa — e o telhado fica onde a parede que o sustenta está.
+       */
+      this.desenharCamada(camadas[profundidade], map, atlas, cell, time, stacks, -(profundidade + 1), comuns);
+    }
+    /*
+     * O véu que escurece o que está lá embaixo. Ele vem AQUI, e o que for
+     * desenhado depois dele não é escurecido — ver a casa de descer, logo
+     * abaixo.
+     */
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    /*
+     * ---- E a CASA DE DESCER, numa passada própria, depois do véu ----
+     *
+     * Ela é a escada, o alçapão, a escotilha de clicar. A sprite dela não
+     * tapa o tile inteiro (`tapa` é falso, medido pixel a pixel no export):
+     * tem madeira em volta e o miolo vazado. Pelo vazado se vê o degrau de
+     * chegada — é assim na base do dono, e foi a foto que ele mandou como o
+     * certo.
+     *
+     * Duas coisas a separam da passada de cima, e as duas vieram de ver
+     * errado na tela:
+     *
+     *   SEM DESLOCAMENTO. A perspectiva do Tibia vale para o chão visto de
+     *   longe; a escada é a casa para onde se DESCE, e o que tem de aparecer
+     *   nela é o que está exatamente embaixo. Com o deslocamento, a escada da
+     *   Draken Walls mostrava o mar que fica uma casa a noroeste.
+     *
+     *   DEPOIS DO VÉU. O véu existe para afundar o andar de baixo visto pelos
+     *   buracos do chão. O degrau ao pé da escada não está longe — está um
+     *   passo abaixo —, e escurecê-lo dava o "tá com sombra" que o dono viu:
+     *   um quadrado quase preto onde a base mostra madeira.
+     *
+     * (Foi tentado também não desenhar nada atrás dela. Ficou certo onde a
+     * sprite tapa o tile, e preto nas 543 casas do jogo em que ela não tapa —
+     * o dono viu na hunt dos minotauros.)
+     */
+    if (escadas.size) {
+      for (let profundidade = camadas.length - 1; profundidade >= 0; profundidade--) {
+        this.desenharCamada(camadas[profundidade], map, atlas, cell, time, stacks, 0, escadas, null, escadas);
+      }
+    }
+  }
+
+  /*
+   * ---- O fundo, pintado UMA vez e copiado ----
+   *
+   * Medido (auditoria 2026-09-28, werelions-1, desktop sem limite de CPU):
+   * 15.880 dos 23.755 `drawImage` por segundo — 67% de todo o desenho — eram
+   * esta passada, casa a casa, a cada quadro: o andar de baixo não tem o cache
+   * de linha do andar atual (`podeUsarTira` é falso com deslocamento/buracos), e
+   * no z11 da werelions 69% das casas contam como buraco. E nada nele depende de
+   * criatura: é chão parado, que só muda quando a câmera sai dele, o andar muda
+   * ou um sprite animado troca de quadro.
+   *
+   * Então é o mesmo esquema do `drawTeto`: a pintura inteira (camadas, véu e
+   * escadas, na mesma ordem) vai para uma lona com folga em volta da tela, e a
+   * lona é copiada enquanto cobrir a tela e o sprite animado mais apressado dela
+   * não trocar de quadro. UMA lona, e não uma por camada como no teto: o véu
+   * escurece o conjunto, e a ordem só é exata copiando o conjunto.
+   *
+   * Pixel a pixel igual: `source-over` é associativo — pintar A, depois o véu,
+   * depois B numa lona transparente e copiar a lona dá o mesmo que pintar os
+   * três direto (o véu sobre casa vazia vira preto a 45%, que é o que ele faria
+   * sobre o fundo escuro). `semCacheDoFundo = true` volta ao desenho direto.
+   */
+  desenharFundoGuardado(map, atlas, cell, time, stacks, z, camadas) {
+    const chave = `${map.atlas ?? ''}|${z}`;
+    const g = this.fundoGuardado?.chave === chave && this.fundoGuardado.map === map && this.fundoGuardado.stacks === stacks ? this.fundoGuardado : null;
+    const cabeDentro = g &&
+      this.camera.x >= g.origemX && this.camera.y >= g.origemY &&
+      this.camera.x + this.canvas.width <= g.origemX + g.lona.width &&
+      this.camera.y + this.canvas.height <= g.origemY + g.lona.height;
+    if (g && cabeDentro && time < g.valeAte) {
+      this.ctx.drawImage(g.lona, g.origemX - this.camera.x, g.origemY - this.camera.y);
+      const resto = g.valeAte === Infinity ? Infinity : g.valeAte - time;
+      if (resto < this.trocaDeAnimacao) this.trocaDeAnimacao = resto;
+      return;
+    }
+    // Folga como a do teto: venceu por animação, a folga encolhe (área a mais é
+    // paga a cada vencimento); parado, folga larga para andar sem refazer.
+    const folga = (g && g.resto !== Infinity ? FOLGA_CURTA_DO_TETO : FOLGA_LARGA_DO_TETO) * TILE;
+    const largura = this.canvas.width + folga * 2;
+    const altura = this.canvas.height + folga * 2;
+    const origemX = Math.floor(this.camera.x / TILE) * TILE - folga;
+    const origemY = Math.floor(this.camera.y / TILE) * TILE - folga;
+    const lona = this.fundoGuardado?.lona ?? document.createElement('canvas');
+    if (lona.width !== largura || lona.height !== altura) {
+      lona.width = largura;
+      lona.height = altura;
+    }
+    const pincel = lona.getContext('2d');
+    pincel.imageSmoothingEnabled = false;
+    pincel.clearRect(0, 0, largura, altura);
+    const ctxAntes = this.ctx;
+    const cameraAntes = this.camera;
+    const canvasAntes = this.canvas;
+    const trocaAntes = this.trocaDeAnimacao;
+    this.trocaDeAnimacao = Infinity;
+    try {
+      this.ctx = pincel;
+      this.camera = { x: origemX, y: origemY };
+      this.canvas = lona;
+      this.pintarFundo(map, atlas, cell, time, stacks, z, camadas);
+    } finally {
+      this.ctx = ctxAntes;
+      this.camera = cameraAntes;
+      this.canvas = canvasAntes;
+    }
+    const resto = this.trocaDeAnimacao;
+    this.trocaDeAnimacao = Math.min(trocaAntes, resto);
+    this.fundoGuardado = { chave, map, stacks, lona, origemX, origemY, resto, valeAte: resto === Infinity ? Infinity : time + resto };
+    this.ctx.drawImage(lona, origemX - this.camera.x, origemY - this.camera.y);
+  }
+
   /*
    * ---- O mapa desenhado casa a casa, na ordem do client ----
    *
@@ -1571,80 +1725,9 @@ export class MapView {
      */
     const camadas = this.camadasDeFundo(map, z);
     if (camadas.length) {
-      /*
-       * As casas que deixam ver o andar de baixo, além das vazias.
-       *
-       * Ver `buracosDoAndar`: a escada de descida e o buraco no chão têm um
-       * item em cima, e a máscara "só onde o chão daqui não existe" os tratava
-       * como chão fechado. O resultado era um quadrado PRETO no meio da sala,
-       * exatamente onde o Tibia mostra o andar de baixo pelo buraco.
-       */
-      const { comuns, escadas } = this.buracosDoAndar(map, z);
-      for (let profundidade = camadas.length - 1; profundidade >= 0; profundidade--) {
-        /*
-         * ---- O andar de baixo entra DESLOCADO, e essa era a metade que faltava ----
-         *
-         * A conta do Tibia é uma só (`offset = z - nz`, do
-         * `GetMapDescription`): o andar de cima é lido em `x+1, y+1` e o de
-         * baixo em `x-1, y-1`. O de cima já fazia a sua parte; este aqui
-         * passava `0`, e o `andar-visivel.mjs` tinha a dívida anotada há
-         * tempos — "pela conta do offset elas deveriam entrar uma casa para
-         * baixo e para a direita".
-         *
-         * O sintoma é exatamente o que o dono descreveu na cidade: "o subsolo
-         * ta ok, o andar principal ta ok, mas quando sobe 1 andar ele esta
-         * descentralizado — o andar de cima teria que ser 1 sqm pra cima e um
-         * pra esquerda". As duas contas discordavam em UMA casa, e dava para
-         * ver de qual lado:
-         *
-         *   de pé no z7, o telhado do z6 aparecia em `x+1, y+1`  (certo)
-         *   de pé no z6, o chão do z7 aparecia em `x, y`         (uma casa fora)
-         *
-         * Subir uma escada movia a cidade inteira uma casa debaixo dos pés.
-         * Com o deslocamento aqui, as duas vistas passam a contar a mesma
-         * coisa — e o telhado fica onde a parede que o sustenta está.
-         */
-        this.desenharCamada(camadas[profundidade], map, atlas, cell, time, stacks, -(profundidade + 1), comuns);
-      }
-      /*
-       * O véu que escurece o que está lá embaixo. Ele vem AQUI, e o que for
-       * desenhado depois dele não é escurecido — ver a casa de descer, logo
-       * abaixo.
-       */
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-      /*
-       * ---- E a CASA DE DESCER, numa passada própria, depois do véu ----
-       *
-       * Ela é a escada, o alçapão, a escotilha de clicar. A sprite dela não
-       * tapa o tile inteiro (`tapa` é falso, medido pixel a pixel no export):
-       * tem madeira em volta e o miolo vazado. Pelo vazado se vê o degrau de
-       * chegada — é assim na base do dono, e foi a foto que ele mandou como o
-       * certo.
-       *
-       * Duas coisas a separam da passada de cima, e as duas vieram de ver
-       * errado na tela:
-       *
-       *   SEM DESLOCAMENTO. A perspectiva do Tibia vale para o chão visto de
-       *   longe; a escada é a casa para onde se DESCE, e o que tem de aparecer
-       *   nela é o que está exatamente embaixo. Com o deslocamento, a escada da
-       *   Draken Walls mostrava o mar que fica uma casa a noroeste.
-       *
-       *   DEPOIS DO VÉU. O véu existe para afundar o andar de baixo visto pelos
-       *   buracos do chão. O degrau ao pé da escada não está longe — está um
-       *   passo abaixo —, e escurecê-lo dava o "tá com sombra" que o dono viu:
-       *   um quadrado quase preto onde a base mostra madeira.
-       *
-       * (Foi tentado também não desenhar nada atrás dela. Ficou certo onde a
-       * sprite tapa o tile, e preto nas 543 casas do jogo em que ela não tapa —
-       * o dono viu na hunt dos minotauros.)
-       */
-      if (escadas.size) {
-        for (let profundidade = camadas.length - 1; profundidade >= 0; profundidade--) {
-          this.desenharCamada(camadas[profundidade], map, atlas, cell, time, stacks, 0, escadas, null, escadas);
-        }
-      }
+      // Ver `desenharFundoGuardado`: a mesma pintura, feita uma vez e copiada.
+      if (this.semCacheDoFundo) this.pintarFundo(map, atlas, cell, time, stacks, z, camadas);
+      else this.desenharFundoGuardado(map, atlas, cell, time, stacks, z, camadas);
     }
 
     /*
