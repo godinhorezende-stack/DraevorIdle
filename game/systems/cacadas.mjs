@@ -12,6 +12,7 @@ import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario, removerItem } from './inventario.mjs';
 import * as Acoes from './acoes.mjs';
+import * as Combo from './combo.mjs';
 import * as Treino from './treino.mjs';
 import * as Bolsa from './bolsa.mjs';
 import * as Ficha from './ficha.mjs';
@@ -572,15 +573,19 @@ function autoDisparo(estado, hunt, personagem) {
   const eventos = [];
   const alvo = alvoAtual(hunt);
   const acoes = estado.actions ?? [];
+  // Sustento (vida, mana, velocidade, suporte): em ordem de prioridade, todo
+  // tique — é ele que salva o personagem, e o primeiro slot de vida manda.
   for (let slot = 0; slot < acoes.length; slot++) {
     if (estado.hp <= 0) break;
+    if (Acoes.PAPEL_DO_SLOT[slot] === 'attack') continue;
     const action = acoes[slot];
     if (!action?.id || action.enabled === false) continue;
-    if (hunt.lurando && Acoes.PAPEL_DO_SLOT[slot] === 'attack') continue;
     if (!Acoes.condicoesDoSlotBatem(action, estado, alvo)) continue;
     const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
     if (resultado.ok) eventos.push(...resultado.eventos);
   }
+  // Ataque: os 11 slots da fileira em RODÍZIO (ver combo.mjs), não sempre do primeiro.
+  if (estado.hp > 0) eventos.push(...Combo.tiqueDoCombo(estado, hunt, personagem, alvo));
   processarMortes(estado, personagem, eventos);
   return eventos;
 }

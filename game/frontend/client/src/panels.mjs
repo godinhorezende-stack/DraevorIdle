@@ -1,6 +1,7 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
 import { listaDetalhe } from './lista-detalhe.mjs';
+import { montarAosPoucos } from './aos-poucos.mjs';
 import { ehTelefone } from './perfil.mjs';
 import { analogicoLigado, ligarAnalogico } from './celular.mjs';
 import { arteTeimosa, fundoTeimoso } from './arte-teimosa.mjs';
@@ -1805,11 +1806,13 @@ function huntCards(body, list, isBoss) {
           continue;
         }
         const dentro = el('div', 'hunt-grid');
-        dentro.append(...secao.bosses.map(cartao));
+        montarAosPoucos(dentro, secao.bosses, cartao, { lote: 12 });
         grid.append(dentro);
       }
     } else {
-      grid.replaceChildren(...escolhidas.map(cartao));
+      // No telefone os cartões vêm aos poucos, conforme a rolagem (aos-poucos.mjs).
+      grid.replaceChildren();
+      montarAosPoucos(grid, escolhidas, cartao, { lote: 12 });
     }
     if (!escolhidas.length) {
       recado.textContent = 'Nada com esse filtro — apague a busca ou desmarque "no meu level".';
@@ -17870,7 +17873,8 @@ function renderCicloItens(body) {
     );
     const achados = cabem.sort((a, b) => a.name.localeCompare(b.name)).slice(0, 300);
 
-    for (const item of achados) {
+    // No telefone a lista vem aos poucos, conforme a rolagem (aos-poucos.mjs).
+    montarAosPoucos(lista, achados, (item) => {
       const linha = el('button', `ciclo-item${ctx.tabs.cicloItem === item.id ? ' escolhido' : ''}`);
       linha.append(itemCanvas(item.id, 28));
       const texto = el('div', 'ciclo-item-texto');
@@ -17884,8 +17888,8 @@ function renderCicloItens(body) {
         desenharFicha();
         mostrarAMetade();
       };
-      lista.append(linha);
-    }
+      return linha;
+    });
     if (!achados.length) lista.append(el('p', 'empty', 'Nada com esse nome por aqui.'));
     else if (cabem.length > achados.length) {
       // Dizer quantos ficaram de fora é o que faz o jogador entender que a
@@ -18164,7 +18168,8 @@ function renderBestiary(body) {
       .sort((a, b) => (kills[b[0]] ?? 0) - (kills[a[0]] ?? 0) || a[1].name.localeCompare(b[1].name))
       .slice(0, 200);
 
-    for (const [key, entry] of entries) {
+    // No telefone a lista vem aos poucos, conforme a rolagem (aos-poucos.mjs).
+    montarAosPoucos(list, entries, ([key, entry]) => {
       const done = kills[key] ?? 0;
       const step = bestiaryStep(done, entry.toKill);
       const card = el('button', `bestiary-card${step ? '' : ' locked'}`);
@@ -18187,8 +18192,8 @@ function renderBestiary(body) {
         ctx.tabs.bestiaryPick = key;
         pintar();
       };
-      list.append(card);
-    }
+      return card;
+    });
     if (!entries.length) list.append(el('p', 'empty', 'nada com esse filtro'));
     layout.append(list);
 
