@@ -26525,10 +26525,68 @@ html[data-perfil="retrato"] #actionbar .hotbar-stack,
 html[data-perfil="deitado"] #actionbar .hotbar-stack {
   width: 100% !important; margin: 0 !important; padding: 0 !important; display: block !important;
 }
-html[data-perfil="retrato"] #actionbar .bar-row > :not(.hotbar-stack):not(#hotbar),
-html[data-perfil="deitado"] #actionbar .bar-row > :not(.hotbar-stack):not(#hotbar),
+html[data-perfil="retrato"] #actionbar .bar-row > :not(.hotbar-stack):not(#hotbar):not(.controls),
+html[data-perfil="deitado"] #actionbar .bar-row > :not(.hotbar-stack):not(#hotbar):not(.controls),
 html[data-perfil="retrato"] #actionbar .hotbar-stack > :not(#hotbar),
 html[data-perfil="deitado"] #actionbar .hotbar-stack > :not(#hotbar) { display: none !important; }
+/*
+ * ---- Alvo, Distância, Lurar até e Voltar, no telefone ----
+ *
+ * "para selecionar alvo, distância e lure e voltar no mobile não tá aparecendo".
+ * A regra acima escondia TUDO da fileira da barra que não fosse slot — e os
+ * quatro seletores da caçada moram nela (`.controls`). No computador eles ficam
+ * ao lado dos slots; no telefone não havia outro lugar para eles.
+ *
+ * Voltam como uma fileira compacta EM CIMA dos slots, com os mesmos `<select>`
+ * (o toque abre o seletor nativo do aparelho) — a mesma lógica, o mesmo envio
+ * ao servidor, nada copiado. O "Voltar" continua aparecendo só com o lure ligado
+ * (o `hidden` que o main.mjs põe nele é respeitado: aqui nenhum `select` ganha
+ * `display`). Na Caça Online e na Boss (`body.manual`) sobra só o Alvo, como no
+ * computador. A palavra curta (`.ctl-curto`) é arrumação do computador.
+ */
+html[data-perfil="retrato"] #actionbar .bar-row > .controls,
+html[data-perfil="deitado"] #actionbar .bar-row > .controls {
+  display: flex !important; gap: 4px; margin: 0 0 4px !important; padding: 0 2px !important;
+  align-items: stretch; width: auto !important;
+}
+html[data-perfil="retrato"] #actionbar .controls-row,
+html[data-perfil="deitado"] #actionbar .controls-row { display: contents !important; }
+html[data-perfil="retrato"] #actionbar .controls label,
+html[data-perfil="deitado"] #actionbar .controls label {
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 1px;
+  grid-column: auto !important; margin: 0; padding: 0;
+}
+html[data-perfil="retrato"] #actionbar .controls .rotulo,
+html[data-perfil="deitado"] #actionbar .controls .rotulo {
+  font-size: 11px; line-height: 13px; color: var(--muted); letter-spacing: .02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  /* Deitado, o rótulo fica em cima do chão do mapa (claro em muita hunt). */
+  text-shadow: 0 1px 2px #000, 0 0 4px #000;
+}
+html[data-perfil="retrato"] #actionbar .controls .rotulo::before,
+html[data-perfil="deitado"] #actionbar .controls .rotulo::before { display: none; }
+html[data-perfil="retrato"] #actionbar .controls select,
+html[data-perfil="deitado"] #actionbar .controls select {
+  width: 100%; min-width: 0; min-height: 30px; margin: 0; padding: 2px 4px;
+  /* A fonte de texto, e não a de título (Cinzel): nas quatro caixas lado a lado
+     a Cinzel cortava "3 monstros" em "3 MO…". */
+  font: 12px/1.2 "Segoe UI", system-ui, sans-serif; letter-spacing: 0; text-transform: none;
+  color: #e7efef; background: #0b1012e6;
+  border: 1px solid var(--line); border-radius: 6px;
+}
+html[data-perfil="retrato"] #actionbar .controls .lure-dupla,
+html[data-perfil="deitado"] #actionbar .controls .lure-dupla { display: flex; gap: 3px; align-items: center; min-width: 0; }
+html[data-perfil="retrato"] #actionbar .controls .lure-dupla select,
+html[data-perfil="deitado"] #actionbar .controls .lure-dupla select { flex: 1 1 0; }
+/* Em pé, com o lure LIGADO, "Lurar até" + "Voltar" são dois seletores num terço
+   da largura ("3 mo…", "volta…"): o par desce para uma linha inteira só dele.
+   Desligado (o caso comum), a fileira continua uma linha só. */
+html[data-perfil="retrato"] #actionbar .bar-row > .controls { flex-wrap: wrap; row-gap: 3px; }
+html[data-perfil="retrato"] #actionbar .controls label:has(#lure-volta:not([hidden])) { flex-basis: 100%; }
+html[data-perfil="retrato"] #actionbar .controls .ctl-curto,
+html[data-perfil="deitado"] #actionbar .controls .ctl-curto { display: none !important; }
+html[data-perfil="retrato"] body.manual #actionbar .controls label:not(:has(#strategy)),
+html[data-perfil="deitado"] body.manual #actionbar .controls label:not(:has(#strategy)) { display: none !important; }
 html[data-perfil="retrato"] #hotbar,
 html[data-perfil="deitado"] #hotbar {
   --por-pagina: 7;
