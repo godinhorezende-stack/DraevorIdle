@@ -47,8 +47,27 @@ test('as tasks de montaria: iguais às do welcome (as mortes do bestiary)', () =
   assert.deepEqual(Tarefas.mountTasks(zoros()), W.mountTasks);
 });
 
+/*
+ * As entregas como a TELA as vê: o servidor não manda mais o que depende do ouro
+ * (`temOuro`/`pronta`/`podeAdiantar`) e o cliente completa com a mesma conta
+ * (`comOuroDoBolso`). É isso que tem de bater com o `welcome` do original.
+ */
+const naTela = (e) =>
+  Entregas.paraCliente(e).map((x) => {
+    const { itensProntos, temAlgumItem, ...resto } = { ...x, ...Entregas.comOuroDoBolso(x, e.gold ?? 0) };
+    return resto;
+  });
+
 test('as 33 entregas: iguais às do welcome (Nobleman pronta com o ouro do bolso)', () => {
-  assert.deepEqual(Entregas.paraCliente(zoros()), W.entregas);
+  assert.deepEqual(naTela(zoros()), W.entregas);
+});
+
+test('entregas: o ouro no bolso mudando não remonta nem reenvia as 33 (o MESMO objeto)', () => {
+  const e = zoros();
+  const antes = Entregas.paraCliente(e);
+  e.gold -= 1234;
+  assert.equal(Entregas.paraCliente(e), antes, 'mesma referência: a sessão nem compara');
+  assert.ok(antes.every((x) => !('temOuro' in x) && !('pronta' in x) && !('podeAdiantar' in x)));
 });
 
 test('pegar paga os tokens e PARA a task; aceitar volta a contar; parada não conta', () => {
@@ -98,7 +117,7 @@ test('entrega: adianta o que tem, fecha quando completa e dá o addon nos dois s
   e.gold = 0;
   e.pouch = [];
   e.inventory = [{ id: 5878, count: 40 }]; // minotaur leather (pede 100)
-  const citizen1 = () => Entregas.paraCliente(e).find((x) => x.id === 'citizen-addon-1');
+  const citizen1 = () => naTela(e).find((x) => x.id === 'citizen-addon-1');
   assert.deepEqual([citizen1().pronta, citizen1().podeAdiantar, citizen1().itens[0].tem], [false, true, 40]);
   assert.ok(Entregas.entregar(e, { id: 'citizen-addon-1' }).ok);
   assert.deepEqual([citizen1().adiantada, citizen1().itens[0].entregue, citizen1().itens[0].falta], [true, 40, 60]);

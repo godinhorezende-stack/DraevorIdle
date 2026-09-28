@@ -6678,9 +6678,29 @@ function cardDeBossTask(task) {
  * você tem e de quem cai. O boneco grande da esquerda mostra o que você JÁ
  * conquistou; os pequenos, o que cada passo acrescenta.
  */
+/*
+ * ---- O que depende do ouro no bolso, calculado aqui ----
+ *
+ * `temOuro`, `pronta` e `podeAdiantar` mudam a cada moeda, e o servidor
+ * reenviava as 33 entregas (26 KB) por isso — 97% do tráfego do personagem numa
+ * caçada. Agora ele manda só `itensProntos`/`temAlgumItem`, e a conta (a MESMA
+ * de `comOuroDoBolso`, em game/systems/entregas.mjs) é feita com o `gold` que o
+ * cliente já tem. Entrega que já vem com `pronta` (servidor antigo) passa como veio.
+ */
+function comOuroDoBolso(entrega, gold) {
+  if ('pronta' in entrega) return entrega;
+  const temOuro = Math.max(0, Math.min(entrega.ouro - entrega.ouroEntregue, gold));
+  return {
+    ...entrega,
+    temOuro,
+    pronta: !entrega.feita && entrega.itensProntos && entrega.ouroEntregue + temOuro >= entrega.ouro,
+    podeAdiantar: !entrega.feita && (entrega.temAlgumItem || temOuro > 0),
+  };
+}
+
 function renderEntregas(body, tipo) {
   const { state, send } = ctx;
-  const todas = state.character.entregas ?? [];
+  const todas = (state.character.entregas ?? []).map((entrega) => comOuroDoBolso(entrega, state.character.gold ?? 0));
   const lista = todas.filter((entrega) => entrega.tipo === tipo);
 
   /*
