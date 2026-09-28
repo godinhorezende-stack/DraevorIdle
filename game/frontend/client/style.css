@@ -6371,6 +6371,18 @@ body.mirando-tier .cell[data-item]:hover, body.mirando-tier .slot[data-item]:hov
   display: grid; gap: 5px; align-content: start;
   max-height: min(60vh, 560px); overflow-y: auto; padding-right: 4px;
 }
+/*
+ * No celular, uma coluna só: a lista de 264px fixos deixava ~40px para o
+ * detalhe num telefone de 360px, e o texto quebrava letra por letra
+ * ("P R I O R I D A D E", o botão Remover em pé). Lista em cima, mais baixa
+ * para o detalhe aparecer sem rolar muito; o detalhe embaixo, sem rolagem
+ * própria — quem rola é o `#modal-body`, um dedo só para a caixa inteira.
+ */
+@media (max-width: 720px) {
+  .action-editor { grid-template-columns: minmax(0, 1fr); }
+  .action-list { max-height: 34vh; }
+  .action-detail { max-height: none; overflow-y: visible; }
+}
 /* Os títulos do detalhe eram tão altos quanto os do modal e comiam três linhas
    de altura útil cada um. */
 .action-detail h3 { margin: 6px 0 0; font-size: 12px; }
