@@ -65,5 +65,14 @@ location / {
   # tolerância para o pico de UM carregamento de página, não para abuso
   # contínuo.
   limit_req zone=http_por_ip burst=200 nodelay;
-  limit_conn conexoes_por_ip 20;
+  # Em HTTP/2 (o `:443` desta stack) o `limit_conn` conta cada REQUEST em
+  # andamento, não cada conexão TCP: o Chrome abre o carregamento frio numa
+  # conexão só, com dezenas de streams em paralelo, e os arquivos grandes
+  # (city.png 9,5 MB, city-map.json 3,7 MB) seguram os seus abertos por
+  # segundos. Com 20, o 21º em diante voltava 503 ("limiting connections by
+  # zone conexoes_por_ip", visto em produção 2026-09-28) e a página ficava
+  # presa em "acordando o servidor…". 128 = o `http2_max_concurrent_streams`
+  # padrão do nginx: um navegador sozinho nunca passa disso, e o abuso
+  # sustentado continua barrado pelo `limit_req` acima. O `/ws` segue com 20.
+  limit_conn conexoes_por_ip 128;
 }
