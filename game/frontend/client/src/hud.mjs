@@ -6,6 +6,7 @@ import { tipPanel, tipTexto, tipFor } from './tooltip.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { healthColor } from './map.mjs';
 import { ehCelular } from './mobile.mjs';
+import { ehTelefone } from './perfil.mjs';
 import { ARTES } from './artes.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -450,16 +451,32 @@ export function initHud(ctx) {
      * sumiam junto com o card encaixado, no segundo ficavam presos ao recorte
      * do rodape.
      */
-    if (docked) barsDock.append($('hud-bars'));
-    else $('hud-body').append($('hud-bars'));
-    barsDock.hidden = !docked;
     hud.classList.toggle('docked', docked);
+    posicionarReguas();
     // Recolhido lá embaixo, o cabeçalho do card fica só com o retrato e o nome.
     dockButton.hidden = docked;
     localStorage.setItem('draevor:hud-dock', docked ? '1' : '');
     // A promoção mora colada embaixo do card: some o card, ela muda de lugar.
     if (ultimoPersonagem) placePromotion(ultimoPersonagem);
   };
+
+  /*
+   * ---- No telefone, as réguas ficam SEMPRE no topo ----
+   *
+   * O encaixe é uma preferência do computador, guardada no navegador. No
+   * telefone a casca força o `#hud` visível (a faixa de status, com retrato e
+   * nível) — e as réguas, levadas para o rodapé, iam para um `#hud-bars-dock`
+   * que ali não aparece: sobrava o retrato ao lado de uma faixa vazia, sem vida
+   * nem mana. A preferência fica guardada (volta a valer no computador); só a
+   * casa das réguas segue o perfil, e é refeita quando ele muda (girar a tela).
+   */
+  function posicionarReguas() {
+    const embaixo = hud.classList.contains('docked') && !ehTelefone();
+    if (embaixo) barsDock.append($('hud-bars'));
+    else $('hud-body').append($('hud-bars'));
+    barsDock.hidden = !embaixo;
+  }
+  window.addEventListener('draevor:perfil', posicionarReguas);
 
   dockButton.onclick = () => setDocked(true);
   /*
