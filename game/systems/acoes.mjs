@@ -284,6 +284,52 @@ function ordemDosLados(pos, alvo) {
   return [primeiro, ...[0, 1, 2, 3].filter((d) => d !== primeiro)];
 }
 
+/*
+ * ---- A poção, pela barra OU pela mochila: as mesmas regras ----
+ *
+ * A barra (`disparar`) sempre conferiu level e vocação, a recarga e se a
+ * poção não seria jogada fora. O uso pela mochila (botão direito / toque longo,
+ * `Inventario.usar`) tinha uma cópia própria que só olhava a vocação: um
+ * knight level 100 bebia a supreme health potion (level 200), a mesma poção
+ * saía duas vezes no mesmo instante (somando com a da barra, na caçada) e era
+ * gasta com a vida cheia. Agora a mochila passa por aqui, com as funções que a
+ * barra já usa.
+ *
+ * Recarga: 1 s da própria poção e 1 s para TODAS as poções (vida e mana não
+ * saem no mesmo instante, como no Tibia) — os valores que `disparar` já
+ * aplicava. Ela mora no relógio da caçada; fora dela não há recarga (a barra
+ * também só funciona caçando).
+ */
+export const RECARGA_DA_POCAO_MS = 1000;
+const GRUPO_DAS_POCOES = 'grupo:item';
+
+/** Dá para beber `entry` (uma poção do catálogo) agora? `{ok}` ou `{ok:false, erro, motivo}`. */
+export function podeBeberPocao(estado, entry) {
+  const motivo = bloqueio(entry, estado);
+  if (motivo) return { ok: false, erro: `Não dá: ${motivo}.`, motivo: 'BLOQUEADA' };
+  const hunt = estado.hunt;
+  if (hunt) {
+    const agora = hunt.clock ?? 0;
+    for (const chave of [entry.id, GRUPO_DAS_POCOES]) {
+      const cd = hunt.cooldowns?.[chave];
+      if (cd && !R.jaPode(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: chave === entry.id ? 'COOLDOWN' : 'COOLDOWN_DO_GRUPO', faltaMs: cd.ate - agora };
+    }
+  }
+  if (!precisaDeCura(entry, estado)) return { ok: false, erro: 'Não precisa agora.', motivo: 'NAO_PRECISA' };
+  return { ok: true };
+}
+
+/** Bebeu: liga a recarga da poção e a de todas as poções (só na caçada). */
+export function marcarRecargaDaPocao(estado, entry) {
+  const hunt = estado.hunt;
+  if (!hunt) return;
+  const agora = hunt.clock ?? 0;
+  const cds = (hunt.cooldowns ??= {});
+  const propria = recargaDe(entry, entry.cooldown ?? RECARGA_DA_POCAO_MS);
+  cds[entry.id] = { ate: agora + propria, total: propria };
+  cds[GRUPO_DAS_POCOES] = { ate: agora + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
+}
+
 /**
  * Dispara UM slot — do loop automático (`cacadas.mjs::tique`) ou de um
  * `huntAction` manual. `alvo`/`hunt` vêm de quem chamou (evita import
@@ -509,7 +555,7 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
     const doGrupo = recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0));
     cds[grupoQueConta] = { ate: agora + doGrupo, total: doGrupo };
   }
-  if (entry.kind === 'item') cds[grupo] = { ate: agora + 1000, total: 1000 };
+  if (entry.kind === 'item') cds[grupo] = { ate: agora + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
   // A execução REAL de uma skill de ataque: é daqui que o intervalo do combo conta.
   if (deAtaque) hunt.ultimoAtaqueEm = agora;
   return { ok: true, eventos };

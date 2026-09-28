@@ -735,6 +735,10 @@ export class Sessao {
   dispararAcaoManual({ slot }) {
     const resultado = Cacadas.disparoManual(this.estado, this.personagem, slot);
     if (!resultado.ok) return this.erro(resultado.erro);
+    // Ação do jogador, como em `aplicar`: o personagem vai inteiro já neste
+    // quadro — senão a cura aparecia na hora e a poção só saía da mochila da
+    // tela no quadro inteiro seguinte, até 1 s depois.
+    this.characterSujo = true;
     this.mandarEstado(false, resultado.eventos);
   }
 

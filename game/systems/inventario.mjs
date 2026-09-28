@@ -6,6 +6,7 @@ import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
 import * as R from './regras.mjs';
+import * as Acoes from './acoes.mjs';
 // Inventário e o chão da praça: equipar de início, peso carregado, destruir,
 // largar e pegar item do chão. Funções puras sobre `estado` — quem manda a
 // resposta pro cliente é `sessao.mjs`; este arquivo não conhece WebSocket.
@@ -429,14 +430,17 @@ export function usar(estado, { id, onde }) {
   }
   const pocao = ACTION_CATALOG.items.find((e) => e.itemId === id);
   if (!pocao) return { ok: false, erro: 'Não dá para usar isso.' };
-  if (pocao.vocations?.length && !pocao.vocations.includes(estado.vocation)) return { ok: false, erro: 'Sua vocação não usa isso.' };
   const itens = lista(estado, onde);
   const i = acharPilha(itens, id, null);
   if (i < 0) return { ok: false, erro: 'Você não tem isso.' };
+  // As mesmas regras da barra: level e vocação, recarga e "não jogar fora" (ver `Acoes.podeBeberPocao`).
+  const pode = Acoes.podeBeberPocao(estado, pocao);
+  if (!pode.ok) return pode;
   if (--itens[i].count <= 0) itens.splice(i, 1);
   const sorteio = (faixa) => faixa[0] + Math.floor(Math.random() * (faixa[1] - faixa[0] + 1));
   if (pocao.heal) estado.hp = Math.min(estado.maxHp, (estado.hp ?? 0) + sorteio(pocao.heal));
   if (pocao.mana) estado.mana = Math.min(estado.maxMana, (estado.mana ?? 0) + sorteio(pocao.mana));
+  Acoes.marcarRecargaDaPocao(estado, pocao);
   return { ok: true };
 }
 
