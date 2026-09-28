@@ -2617,6 +2617,14 @@ function buildWindows() {
       ARENA,
       { id: 'market', label: 'Mercado', icone: 'market', abre: () => openMarket(),
         tip: 'Comprar e vender com outros jogadores.' },
+      /*
+       * O banco aqui, só no telefone. No computador ele abre pelo número do ouro
+       * na barra de cima (o dono tirou o ícone de lá de propósito — ver `openBank`
+       * na barra); no telefone o número vai para o canto do status e ninguém
+       * adivinha que ele é um botão. Esta lista (`extras`) só existe no "Mais".
+       */
+      { id: 'banco', label: 'Banco', icone: 'banco', abre: () => openBank(),
+        tip: 'Depositar, sacar e transferir ouro.' },
       !$('hud-promotion')?.hidden && { id: 'promotion', label: 'Promotion', icone: 'character', abre: () => openPromotion(),
         tip: $('hud-promotion-text')?.textContent ?? 'A promoção de vocação.' },
       novidadesDaVez?.itens?.length && { id: 'novidades', label: 'Novidades', icone: 'diario', abre: () => abrirNovidades(),
