@@ -27026,6 +27026,17 @@ html[data-perfil="deitado"] .cel-carteira .carteira-mais {
   position: static !important; inset: auto !important; transform: none !important; margin-left: 2px;
   min-width: 26px; min-height: 26px;
 }
+/*
+ * Sem a área de toque a mais do "+" (o `::after` de 14px para cima, lá no bloco
+ * de toque): ela contava com "nada em cima" do "+", que é a barra de cima do
+ * tablet. No telefone as carteiras vão EMPILHADAS no canto do status — em cima
+ * do "+" está o número do ouro, e o toque nele caía no "+" em vez de abrir o
+ * banco. Aqui o "+" já tem 26px de alvo próprio.
+ */
+html[data-perfil="retrato"] .cel-carteira .carteira-mais::after,
+html[data-perfil="deitado"] .cel-carteira .carteira-mais::after {
+  content: none;
+}
 /* A Recompensa diária deitada é mais alta que a tela: o corpo rola, e o
    COLETAR deixa de ficar 180px abaixo da borda. */
 html[data-perfil="retrato"] .modal-box.diario #modal-body,
