@@ -1,14 +1,15 @@
 // Fase 5.3: `servir` tem de preferir o `.br`/`.gz` pronto do build
 // (`tools/precomprimir.mjs`) em vez de comprimir na hora — e cair para o
-// síncrono de sempre quando o par não existe ou está desatualizado (fonte
-// editada depois do último build), sem nunca servir bytes errados.
+// síncrono de sempre quando o par não existe ou não descomprime para a fonte
+// (editada depois do último build, CRLF x LF, data enganosa de checkout), sem
+// nunca servir bytes errados.
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer, request } from 'node:http';
 import { mkdtempSync, writeFileSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { brotliCompressSync, brotliDecompressSync, gzipSync, gunzipSync } from 'node:zlib';
+import { brotliCompressSync, brotliDecompressSync, gzipSync, gunzipSync, constants } from 'node:zlib';
 import * as Estaticos from '../backend/estaticos.mjs';
 
 const dir = mkdtempSync(join(tmpdir(), 'estaticos-'));
@@ -34,46 +35,76 @@ function pedir(caminho, cabecalhos = {}) {
 // Um conteúdo grande o bastante para passar do limiar de 1024 bytes.
 const conteudo = `/* teste de precompressão */\n`.repeat(100);
 
-test('com .br/.gz ao lado (mais novos que a fonte): serve o PRONTO, não recomprime na hora', async () => {
-  const arquivo = join(dir, 'a.js');
-  writeFileSync(arquivo, conteudo);
-  // Um `.br` deliberadamente DIFERENTE do que `brotliCompressSync(conteudo)`
-  // geraria — só assim dá para provar que veio do arquivo pronto, e não de
-  // uma compressão feita na hora que por acaso bateu.
-  const brFalso = brotliCompressSync(`${conteudo}// marca-do-pronto`);
-  writeFileSync(`${arquivo}.br`, brFalso);
-  const gzFalso = gzipSync(`${conteudo}// marca-do-pronto`);
-  writeFileSync(`${arquivo}.gz`, gzFalso);
+const FORMATOS = {
+  br: { cabecalho: 'br', abrir: brotliDecompressSync, comprimir: (c) => brotliCompressSync(c) },
+  gz: { cabecalho: 'gzip', abrir: gunzipSync, comprimir: (c) => gzipSync(c) },
+};
 
-  const br = await pedir('/a.js', { 'accept-encoding': 'br' });
-  assert.equal(br.h['content-encoding'], 'br');
-  assert.deepEqual(br.corpo, brFalso);
-  assert.match(brotliDecompressSync(br.corpo).toString(), /marca-do-pronto/);
+/** Pede `caminho` em `formato` e exige que o corpo DESCOMPRIMIDO seja exatamente `esperado`. */
+async function confere(caminho, formato, esperado) {
+  const { cabecalho, abrir } = FORMATOS[formato];
+  const r = await pedir(caminho, { 'accept-encoding': cabecalho });
+  assert.equal(r.status, 200);
+  assert.equal(r.h['content-encoding'], cabecalho);
+  assert.ok(abrir(r.corpo).equals(Buffer.from(esperado)), `${caminho} em ${formato} não volta idêntico à fonte`);
+  return r.corpo;
+}
 
-  const gz = await pedir('/a.js', { 'accept-encoding': 'gzip' });
-  assert.equal(gz.h['content-encoding'], 'gzip');
-  assert.deepEqual(gz.corpo, gzFalso);
-  assert.match(gunzipSync(gz.corpo).toString(), /marca-do-pronto/);
-});
+let n = 0;
+/** Uma fonte nova (nome único: `servir` memoriza por caminho) com, opcionalmente, um `.br`/`.gz` ao lado. */
+function fonte(pares = {}) {
+  const nome = `f${++n}.js`;
+  writeFileSync(join(dir, nome), conteudo);
+  for (const [sufixo, bytes] of Object.entries(pares)) writeFileSync(join(dir, `${nome}.${sufixo}`), bytes);
+  return { nome, caminho: `/${nome}`, arquivo: join(dir, nome) };
+}
 
-test('sem .br/.gz ao lado: cai para a compressão síncrona de sempre, com o conteúdo certo', async () => {
-  const arquivo = join(dir, 'b.js');
-  writeFileSync(arquivo, conteudo);
-  const br = await pedir('/b.js', { 'accept-encoding': 'br' });
-  assert.equal(br.h['content-encoding'], 'br');
-  assert.equal(brotliDecompressSync(br.corpo).toString(), conteudo);
-});
+for (const formato of ['br', 'gz']) {
+  const { comprimir } = FORMATOS[formato];
 
-test('.br desatualizado (fonte editada DEPOIS do build): ignora o pronto velho, recomprime a fonte nova', async () => {
-  const arquivo = join(dir, 'c.js');
-  writeFileSync(arquivo, 'conteudo velho '.repeat(100));
-  const brVelho = brotliCompressSync('conteudo velho '.repeat(100));
-  writeFileSync(`${arquivo}.br`, brVelho);
-  // O `.br` fica mais VELHO que a fonte: editou o `.js` depois do build.
-  const antigo = new Date(Date.now() - 60_000);
-  utimesSync(`${arquivo}.br`, antigo, antigo);
-  writeFileSync(arquivo, conteudo); // fonte nova, sem novo build
+  test(`${formato} correto ao lado: serve o PRONTO (e ele descomprime para a fonte)`, async () => {
+    // Mesmo conteúdo, compressão DIFERENTE da que `servir` faria na hora
+    // (Brotli 9 / gzip 9): bytes diferentes é só como se prova que veio do
+    // arquivo pronto — o que vale é o conteúdo descomprimido, conferido também.
+    const pronto = formato === 'br'
+      ? brotliCompressSync(conteudo, { params: { [constants.BROTLI_PARAM_QUALITY]: 0 } })
+      : gzipSync(conteudo, { level: 1, strategy: constants.Z_HUFFMAN_ONLY });
+    const f = fonte({ [formato]: pronto });
+    const corpo = await confere(f.caminho, formato, conteudo);
+    assert.ok(corpo.equals(pronto), 'devia servir os bytes do arquivo pronto');
+  });
 
-  const br = await pedir('/c.js', { 'accept-encoding': 'br' });
-  assert.equal(brotliDecompressSync(br.corpo).toString(), conteudo, 'devia ignorar o .br velho e comprimir a fonte nova');
-});
+  test(`${formato} de OUTRO conteúdo com data mais nova (como num git checkout): ignora, comprime a fonte`, async () => {
+    const f = fonte({ [formato]: comprimir(`${conteudo}// velho`) });
+    const futuro = new Date(Date.now() + 60_000);
+    utimesSync(`${f.arquivo}.${formato}`, futuro, futuro);
+    await confere(f.caminho, formato, conteudo);
+  });
+
+  test(`${formato} desatualizado (fonte editada depois do build): ignora, comprime a fonte nova`, async () => {
+    const f = fonte({ [formato]: comprimir(`${conteudo}// velho`) });
+    const antigo = new Date(Date.now() - 60_000);
+    utimesSync(`${f.arquivo}.${formato}`, antigo, antigo);
+    await confere(f.caminho, formato, conteudo);
+  });
+
+  test(`${formato} corrompido: ignora, comprime a fonte`, async () => {
+    await confere(fonte({ [formato]: 'isto não é um arquivo comprimido' }).caminho, formato, conteudo);
+  });
+
+  test(`${formato} cortado no meio: ignora, comprime a fonte`, async () => {
+    await confere(fonte({ [formato]: comprimir(conteudo).subarray(0, 20) }).caminho, formato, conteudo);
+  });
+
+  test(`sem ${formato} ao lado: comprime na hora, com o conteúdo certo`, async () => {
+    await confere(fonte().caminho, formato, conteudo);
+  });
+
+  test(`${formato}: fonte editada com o servidor NO AR — nunca entrega o conteúdo antigo`, async () => {
+    const f = fonte({ [formato]: comprimir(conteudo) });
+    await confere(f.caminho, formato, conteudo);
+    const novo = `${conteudo}// versão 2\n`;
+    writeFileSync(f.arquivo, novo); // o par ao lado ficou velho; ninguém rodou o precomprimir
+    await confere(f.caminho, formato, novo);
+  });
+}

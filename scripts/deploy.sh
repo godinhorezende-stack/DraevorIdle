@@ -36,6 +36,36 @@ git checkout "$BRANCH"
 # descarta trabalho não commitado nem reescreve histórico sozinho aqui.
 git merge --ff-only "origin/$BRANCH"
 
+# Os `.br`/`.gz` dos estáticos não vão pro git (.gitignore): são saída de
+# build, gerados aqui, no checkout que o compose monta como volume
+# (read-only) no container — a fonte de verdade é o arquivo versionado. Só
+# refaz o que mudou. Caminho normal: o node do próprio host (Ubuntu). Sem
+# node no host (ou velho demais), a mesma imagem base do jogo, via Docker.
+#
+# Obrigatório: se gerar ou conferir falhar, o deploy PARA aqui, antes de
+# mexer nos containers — o jogo no ar continua o de antes, inteiro.
+NODE_MINIMO=18
+precomprimir() {
+  if command -v node >/dev/null 2>&1 \
+    && [ "$(node -p 'process.versions.node.split(".")[0]')" -ge "$NODE_MINIMO" ]; then
+    echo "    (node $(node --version) do host)"
+    node tools/precomprimir.mjs "$@"
+  else
+    echo "    (sem node >= $NODE_MINIMO no host: node:22-slim via Docker)"
+    docker run --rm --user "$(id -u):$(id -g)" -v "$RAIZ:/repo" -w /repo node:22-slim node tools/precomprimir.mjs "$@"
+  fi
+}
+echo "==> pré-comprimindo os estáticos"
+if ! precomprimir; then
+  echo "ERRO: tools/precomprimir.mjs falhou — deploy abortado, containers intocados." >&2
+  exit 1
+fi
+echo "==> conferindo os .br/.gz contra as fontes"
+if ! precomprimir --verificar; then
+  echo "ERRO: há .br/.gz diferentes da fonte — deploy abortado, containers intocados." >&2
+  exit 1
+fi
+
 echo "==> ambiente: $AMBIENTE (${ARQUIVOS_COMPOSE[*]})"
 echo "==> docker compose up -d --build"
 docker compose "${ARQUIVOS_COMPOSE[@]}" up -d --build
