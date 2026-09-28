@@ -293,21 +293,33 @@ function ordemDosLados(pos, alvo) {
  */
 export function disparar(estado, hunt, personagem, slot, alvo) {
   const action = estado.actions?.[slot];
-  if (!action?.id) return { ok: false, erro: 'Esse slot está vazio.' };
-  if (action.enabled === false) return { ok: false, erro: 'Esse slot está desligado.' };
+  if (!action?.id) return { ok: false, erro: 'Esse slot está vazio.', motivo: 'VAZIO' };
+  if (action.enabled === false) return { ok: false, erro: 'Esse slot está desligado.', motivo: 'DESLIGADA' };
   const entry = POR_ID.get(action.id);
-  if (!entry) return { ok: false, erro: 'Ação desconhecida.' };
+  if (!entry) return { ok: false, erro: 'Ação desconhecida.', motivo: 'DESCONHECIDA' };
   // Defesa em profundidade: `definir()` já recusa vocação/level errados ao
   // configurar o slot, mas um arranjo salvo (`actionPresets`) antes de um
   // level up, por exemplo, não passa por ali de novo.
-  if (bloqueio(entry, estado)) return { ok: false, erro: 'Você não pode mais usar isso.' };
+  if (bloqueio(entry, estado)) return { ok: false, erro: 'Você não pode mais usar isso.', motivo: 'BLOQUEADA' };
 
   const agora = hunt.clock ?? 0;
   const cds = (hunt.cooldowns ??= {});
   const cd = cds[action.id];
+  /*
+   * ---- O intervalo do combo (R.COMBO_SKILL_INTERVAL_MS) ----
+   *
+   * Entre a execução REAL da última skill de ataque e esta, no mínimo o
+   * intervalo do combo — pelo instante gravado lá embaixo, quando a anterior
+   * de fato saiu. Vale para o combo automático e para o clique/tecla, que
+   * passam os dois por aqui. Sem folga de tique: é um mínimo, não uma recarga.
+   */
+  const deAtaque = entry.papeis?.[0] === 'attack';
+  if (deAtaque && hunt.ultimoAtaqueEm != null && agora - hunt.ultimoAtaqueEm < R.COMBO_SKILL_INTERVAL_MS) {
+    return { ok: false, erro: 'Aguarde o intervalo entre magias.', motivo: 'INTERVALO_DO_COMBO', faltaMs: R.COMBO_SKILL_INTERVAL_MS - (agora - hunt.ultimoAtaqueEm) };
+  }
   // `R.jaPode` (meio tique de folga): com tique de 249ms, `agora < ate` fazia
   // uma recarga de 2s esperar 9 tiques (2,24s) em vez de 8.
-  if (cd && !R.jaPode(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.' };
+  if (cd && !R.jaPode(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
   const grupo = `grupo:${entry.group ?? entry.kind}`;
   // Magias: recarga do grupo (attack/healing/support). Poções: uma recarga só
   // para todas, como no Tibia (vida e mana não saem no mesmo instante). Runa
@@ -317,10 +329,12 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
   // original para conferir — é a regra do Tibia). Runa de cura continua livre.
   const grupoDeAtaque = entry.kind === 'rune' && entry.papeis?.[0] === 'attack' ? 'grupo:attack' : null;
   const grupoQueConta = grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
-  if (grupoQueConta && cds[grupoQueConta] && !R.jaPode(agora, cds[grupoQueConta].ate)) return { ok: false, erro: 'Ainda recarregando.' };
+  if (grupoQueConta && cds[grupoQueConta] && !R.jaPode(agora, cds[grupoQueConta].ate)) {
+    return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN_DO_GRUPO', faltaMs: cds[grupoQueConta].ate - agora };
+  }
   // "Custo de mana das magias" da árvore (−1,8% = mais barata).
   const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round((entry.mana ?? 0) * (1 + (Ficha.combate(estado).custoDeMana ?? 0))));
-  if (custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.' };
+  if (custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
 
   const papel = entry.papeis[0];
   const ataque = papel === 'attack';
@@ -346,13 +360,13 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
   if (ataque) {
     const centradoNoAlvo = entry.miraNoChao || entry.alvoNoCentro;
     if (!entry.forma) {
-      if (!alvo) return { ok: false, erro: 'Sem alvo.' };
+      if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...).
-      if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || 1)) return { ok: false, erro: 'Alvo fora de alcance.' };
+      if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || 1)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       atingidos = [alvo];
     } else if (centradoNoAlvo) {
-      if (!alvo) return { ok: false, erro: 'Sem alvo.' };
-      if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Alvo fora de alcance.' };
+      if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
+      if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       casas = casasDaForma(entry, alvo.x, alvo.y);
     } else {
       const lados = direcional(entry) ? ordemDosLados(hunt.pos, alvo) : [null];
@@ -366,26 +380,26 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
       virarPara = melhor.dir;
     }
     if (casas) atingidos = vivos.filter((b) => casas.some((c) => c.x === b.x && c.y === b.y));
-    if (atingidos.length < Math.max(1, Number(action.minTargets) || 1)) return { ok: false, erro: 'Nenhum bicho na área.' };
+    if (atingidos.length < Math.max(1, Number(action.minTargets) || 1)) return { ok: false, erro: 'Nenhum bicho na área.', motivo: 'SEM_BICHO_NA_AREA' };
   } else if (!entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
     // Suporte/velocidade (haste, buffs): só com bicho por perto, senão era mana jogada fora sem parar.
-    return { ok: false, erro: 'Nenhum bicho por perto.' };
+    return { ok: false, erro: 'Nenhum bicho por perto.', motivo: 'SEM_BICHO_POR_PERTO' };
   }
   // Suporte: não relança enquanto o efeito dele ainda está ligado.
   const buff = BUFFS[entry.id];
-  if (buff && !R.jaPode(agora, hunt.buffs?.[entry.id]?.ate)) return { ok: false, erro: 'Ainda está ativo.' };
-  if (entry.id === 'spell-cancel-magic-shield' && !temBuff(hunt, 'shield')) return { ok: false, erro: 'Sem escudo para cancelar.' };
+  if (buff && !R.jaPode(agora, hunt.buffs?.[entry.id]?.ate)) return { ok: false, erro: 'Ainda está ativo.', motivo: 'EFEITO_ATIVO' };
+  if (entry.id === 'spell-cancel-magic-shield' && !temBuff(hunt, 'shield')) return { ok: false, erro: 'Sem escudo para cancelar.', motivo: 'SEM_ESCUDO' };
   // Magia de familiar: só sem um em campo e fora da recarga dele (ver `summon.mjs`).
   if (entry.summon) {
     const pode = Summon.podeInvocar(estado, hunt, hunt.ultimoTique ?? Date.now());
-    if (!pode.ok) return pode;
+    if (!pode.ok) return { motivo: 'FAMILIAR', ...pode };
   }
-  if (!condicoesDoSlotBatem(action, estado, alvo)) return { ok: false, erro: 'Condição não bate.' };
+  if (!condicoesDoSlotBatem(action, estado, alvo)) return { ok: false, erro: 'Condição não bate.', motivo: 'CONDICAO' };
   // Cura sem condição configurada não é desperdiçada: só sai se faltar pelo
   // menos a cura MÍNIMA dela (o slot novo nasce com `conditions: []` no client,
   // e sem isto a poção de vida saía a cada recarga com a vida cheia).
   if (!ataque && !(action.conditions ?? []).length && !precisaDeCura(entry, estado)) {
-    return { ok: false, erro: 'Não precisa agora.' };
+    return { ok: false, erro: 'Não precisa agora.', motivo: 'NAO_PRECISA' };
   }
 
   /*
@@ -401,7 +415,7 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
     const preco = entry.cost ?? ITEM_CATALOG[entry.itemId]?.buy ?? 0;
     const daMochila = removerItem(estado, entry.itemId, 1);
     if (!daMochila) {
-      if (!preco || (estado.gold ?? 0) < preco) return { ok: false, erro: `Sem ${entry.name} e sem ouro para comprar.` };
+      if (!preco || (estado.gold ?? 0) < preco) return { ok: false, erro: `Sem ${entry.name} e sem ouro para comprar.`, motivo: 'SEM_SUPRIMENTO' };
       estado.gold -= preco;
     }
     // Conta no relatório da caçada (grupo "Gasto" e a linha "Suprimentos").
@@ -496,5 +510,7 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
     cds[grupoQueConta] = { ate: agora + doGrupo, total: doGrupo };
   }
   if (entry.kind === 'item') cds[grupo] = { ate: agora + 1000, total: 1000 };
+  // A execução REAL de uma skill de ataque: é daqui que o intervalo do combo conta.
+  if (deAtaque) hunt.ultimoAtaqueEm = agora;
   return { ok: true, eventos };
 }
