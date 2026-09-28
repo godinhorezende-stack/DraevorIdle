@@ -33,7 +33,7 @@ import * as Bosses from './bosses.mjs';
 import { SPAWNS_CAPTURADOS, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt } from './hunt/terreno.mjs';
 import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
-import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho } from './hunt/caminho.mjs';
+import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho, bfsDistancias } from './hunt/caminho.mjs';
 import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/relatorio.mjs';
 import { salaDe, ligarAoDono } from './hunt/sala.mjs';
 import { alvoAtual, esperaOAlvoChegar, voltariaAtras, PERSEGUICAO_MAXIMA_MS } from './hunt/alvo.mjs';
@@ -628,6 +628,93 @@ function passoDeRecuo(grade, hunt, alvo) {
 }
 
 /*
+ * ---- Sem vizinha que afaste: deslizar pela parede até uma que afaste ----
+ *
+ * "quando chega na parede ele para, mesmo tendo espaço para movimentar
+ * diagonal e sair". O `passoDeRecuo` olha UMA casa: encostado numa parede, a
+ * saída é ir de lado ou na diagonal ao longo dela, e esse primeiro passo ainda
+ * não afasta — então não havia recuo e ele ficava parado apanhando.
+ *
+ * Aqui a procura vai até `RAIO_DO_RECUO` casas (BFS, contornando os bichos): a
+ * casa alcançável MAIS LONGE do alvo do que ele está agora. Ele se COMPROMETE
+ * com ela (`hunt.recuo`) e vai até lá sem reavaliar a direção — cada passo sem
+ * nunca chegar mais perto do alvo.
+ *
+ * ---- E o vaivém que o `passoDeRecuo` corrigiu não volta ----
+ *
+ * Com o bicho acompanhando de lado (ahau, e o teste H), deslizar não afasta
+ * nada. Por isso o deslize é UMA tentativa: chegou e a distância não aumentou,
+ * ele fica e bate (`FOLGA_DO_RECUO_MS` sem tentar de novo), e as casas daquele
+ * deslize ficam vetadas por `CASAS_RUINS_MS` — o próximo não volta por elas. É o
+ * compromisso que corta o ciclo, e não o `passoComProgresso` (que, vendo a volta
+ * como ciclo, mandava desviar — e o desvio era deslizar de novo).
+ */
+const RAIO_DO_RECUO = 5;
+const FOLGA_DO_RECUO_MS = 4000;
+const CASAS_RUINS_MS = 30_000;
+const MAXIMO_DE_RUINS = 24;
+function recuoPlanejado(grade, hunt, alvo) {
+  const agora = hunt.clock ?? 0;
+  const d = distancia(hunt.pos, alvo);
+  const vivos = hunt.monstros.filter((m) => m.hp > 0);
+  const casasDeBicho = new Set(vivos.map((m) => `${m.x},${m.y}`));
+  const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
+  const r = (hunt.recuo ??= { ruins: {} });
+  for (const [k, ate] of Object.entries(r.ruins)) if (ate <= agora) delete r.ruins[k];
+
+  // Um deslize em andamento: segue até o destino, sem reavaliar a direção.
+  if (r.destino && r.uid === alvo.uid) {
+    const chegou = hunt.pos.x === r.destino.x && hunt.pos.y === r.destino.y;
+    const passo = chegou ? null : proximoPassoAte(grade, hunt.pos, r.destino, ocupado, casasDeBicho);
+    // Um deslize só anda para a frente: repassar por uma casa dele (o bicho
+    // fechando o caminho até o destino, e o passo indo e vindo) ou passar do
+    // raio é tentativa que não deu — acaba aqui, como se tivesse chegado.
+    const repassa = passo && r.caminho.includes(`${passo.x},${passo.y}`);
+    if (passo && !repassa && r.caminho.length <= RAIO_DO_RECUO + 2 && distancia(passo, alvo) >= d) {
+      r.caminho.push(`${hunt.pos.x},${hunt.pos.y}`);
+      return passo;
+    }
+    // Acabou (chegou, ou o caminho fechou/aproximaria): afastou de verdade?
+    const deuCerto = d > r.dAntes;
+    if (!deuCerto) {
+      r.paradoAte = agora + FOLGA_DO_RECUO_MS;
+      for (const k of [...r.caminho, `${r.destino.x},${r.destino.y}`, `${hunt.pos.x},${hunt.pos.y}`]) r.ruins[k] = agora + CASAS_RUINS_MS;
+      const k = Object.keys(r.ruins);
+      if (k.length > MAXIMO_DE_RUINS) for (const velha of k.sort((a, b) => r.ruins[a] - r.ruins[b]).slice(0, k.length - MAXIMO_DE_RUINS)) delete r.ruins[velha];
+    }
+    r.destino = null;
+    r.caminho = [];
+    if (!deuCerto) return null;
+  }
+  if ((r.paradoAte ?? 0) > agora) return null;
+
+  const aPe = bfsDistancias(grade, hunt.pos, RAIO_DO_RECUO, null, VIZINHANCA_8, casasDeBicho);
+  const candidatas = [];
+  for (let dy = -RAIO_DO_RECUO; dy <= RAIO_DO_RECUO; dy++) {
+    for (let dx = -RAIO_DO_RECUO; dx <= RAIO_DO_RECUO; dx++) {
+      if (!dx && !dy) continue;
+      const c = { x: hunt.pos.x + dx, y: hunt.pos.y + dy };
+      const passos = aPe.em(c.x, c.y);
+      if (passos == null || passos === 0) continue;
+      if (r.ruins[`${c.x},${c.y}`]) continue;
+      const longe = distancia(c, alvo);
+      if (longe <= d) continue;
+      // Longe do alvo primeiro; depois perto (menos passos); depois longe dos outros bichos.
+      const outros = Math.min(RAIO_DO_RECUO * 2, ...vivos.filter((m) => m !== alvo).map((m) => distancia(c, m)));
+      candidatas.push({ c, nota: longe * 100 - passos * 10 + outros });
+    }
+  }
+  candidatas.sort((a, b) => b.nota - a.nota);
+  for (const { c } of candidatas.slice(0, 8)) {
+    const passo = proximoPassoAte(grade, hunt.pos, c, ocupado, casasDeBicho);
+    if (!passo || distancia(passo, alvo) < d || r.ruins[`${passo.x},${passo.y}`]) continue;
+    Object.assign(r, { uid: alvo.uid, destino: c, dAntes: d, caminho: [`${hunt.pos.x},${hunt.pos.y}`] });
+    return passo;
+  }
+  return null;
+}
+
+/*
  * Regeneração natural — a MESMA conta que a ficha do client mostra
  * (`sheet.mjs`: vida `maxHp*0.004*regen.hp`/s, mana `maxMana*0.006*regen.mana`/s,
  * `regen` = 1 sem promoção). Sem ela o personagem só perdia vida: qualquer
@@ -891,7 +978,10 @@ export function tique(estado, personagem, agora = Date.now()) {
         }
       } else if (alvo && !hunt.lurando && hunt.distancia > 0 && d < querDistancia) {
         const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-        destino = passoComProgresso(hunt, grade, alvo, passoDeRecuo(grade, hunt, alvo), {
+        const recuo = passoDeRecuo(grade, hunt, alvo);
+        // Sem vizinha que afaste: o deslize planejado (com compromisso próprio, fora do vigia).
+        if (!recuo) destino = recuoPlanejado(grade, hunt, alvo);
+        else destino = passoComProgresso(hunt, grade, alvo, recuo, {
           quer: querDistancia,
           kite: true,
           ocupado: (c) => casasDeBicho.has(`${c.x},${c.y}`),
@@ -900,7 +990,16 @@ export function tique(estado, personagem, agora = Date.now()) {
       } else if (!alvo && hunt.percurso && grade.percurso) {
         // Ninguém à vista: segue o laço da hunt (ver `percursoDoMapa`).
         const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-        destino = passoNoPercurso(estado, hunt, grade, casasDeBicho);
+        const colado = hunt.monstros.some((b) => b.hp > 0 && b.perseguindo && distancia(b, hunt.pos) <= 2);
+        /*
+         * ---- Com espaço, ele PASSA pela leva ----
+         * "se tiver espaço para lure ele passa pelos mobs". Com a leva colada, o
+         * passo da rota tenta antes um caminho que não volte pela casa de onde
+         * ele veio — contornando os bichos pelo lado ou na diagonal. Só sem
+         * nenhum é que o passo desfaz o anterior, e aí a regra abaixo encerra a
+         * juntada como antes.
+         */
+        destino = passoNoPercurso(estado, hunt, grade, casasDeBicho, hunt.lurando && colado ? hunt.casaAnterior : null);
         /*
          * Lurando num corredor, a leva que vem atrás fecha a passagem: o passo
          * da rota contorna o bicho, o bicho acompanha, e os dois espelhavam
@@ -911,7 +1010,6 @@ export function tique(estado, personagem, agora = Date.now()) {
         // Voltar pelo mesmo caminho num beco sem saída é normal: só conta com
         // um bicho da leva colado nele (a até 2 casas).
         const antes = hunt.casaAnterior;
-        const colado = hunt.monstros.some((b) => b.hp > 0 && b.perseguindo && distancia(b, hunt.pos) <= 2);
         if (hunt.lurando && colado && destino && antes && destino.x === antes.x && destino.y === antes.y) {
           hunt.lurando = false;
           hunt.casaAnterior = null;

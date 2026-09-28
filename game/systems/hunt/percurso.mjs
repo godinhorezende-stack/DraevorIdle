@@ -68,7 +68,7 @@ export function completarVolta(estado, hunt, passos) {
  * Waypoint sem caminho agora (um bicho parado em cima, um pedaço do andar
  * separado): pula para o seguinte.
  */
-export function passoNoPercurso(estado, hunt, grade, casasDeBicho) {
+export function passoNoPercurso(estado, hunt, grade, casasDeBicho, evitar = null) {
   const pontos = grade.percurso;
   const p = hunt.percurso;
   const n = pontos.length;
@@ -108,7 +108,20 @@ export function passoNoPercurso(estado, hunt, grade, casasDeBicho) {
     meta = escada;
   }
   const ocupada = (c) => casasDeBicho.has(`${c.x},${c.y}`);
-  const destino = proximoPassoAte(grade, hunt.pos, meta, ocupada, casasDeBicho);
+  /*
+   * `evitar` (a casa de onde ele acabou de sair, com a leva colada — ver o laço
+   * em `tique`): primeiro um caminho que NÃO volte por ela, contornando os
+   * bichos (reto, depois na diagonal). Só sem nenhum vale o de sempre — e aí
+   * quem chama encerra a juntada. Tudo numa chamada só: o `avancar()` logo
+   * abaixo não pode rodar duas vezes por uma tentativa que não deu.
+   */
+  let destino = null;
+  if (evitar) {
+    const k = `${evitar.x},${evitar.y}`;
+    const semVoltar = new Set(casasDeBicho).add(k);
+    destino = proximoPassoAte(grade, hunt.pos, meta, (c) => ocupada(c) || `${c.x},${c.y}` === k, semVoltar);
+  }
+  destino ??= proximoPassoAte(grade, hunt.pos, meta, ocupada, casasDeBicho);
   if (destino) p.andou = (p.andou ?? 0) + 1;
   else avancar();
   return destino;
