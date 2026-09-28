@@ -792,7 +792,8 @@ function itemMenu(event, id, { from, pilha = null, alvo = null }) {
      * sozinha na venda rápida, e o que fosse posto ali estaria a um tique de
      * ser vendido. Ver `movePouch`, no servidor, que é quem recusa de verdade.
      */
-    from === 'pouch' ? { label: 'Mover para a mochila', action: () => send({ t: 'pouch', id, count: 9999, to: 'bag' }) } : null,
+    // Com `pilha`/`alvo`: a peça estrelada tocada vai INTEIRA (ver `moverBolsa`).
+    from === 'pouch' ? { label: 'Mover para a mochila', action: () => send({ t: 'pouch', id, count: 9999, to: 'bag', pilha, alvo }) } : null,
     /*
      * ---- Guardar no depósito, direto ----
      *
