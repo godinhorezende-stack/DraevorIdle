@@ -167,13 +167,32 @@ export function presetDeLoot(estado, { preset, ids }) {
 }
 
 /** `send({t:'pouch', id, count, to:'bag'|'pouch', pilha})` — mover entre a bolsa e a mochila. */
-export function moverBolsa(estado, { id, count = 1, to, pilha }) {
+export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   garantir(estado);
   id = Number(id);
   const de = to === 'bag' ? estado.pouch : (estado.inventory ??= []);
+  if (!Number.isInteger(pilha) && Number.isInteger(alvo?.indice)) pilha = alvo.indice;
+  const especial = (p) => !!(p?.af?.length || p?.tier || p?.imbu?.length);
+  /*
+   * ---- Sem dizer QUAL peça, a especial não pode virar cópia limpa ----
+   *
+   * "no mobile se eu ir na bolsa de loot e marcar para jogar para mochila ele
+   *  duplica e não vai com as estrelas do atributo extra".
+   *
+   * O menu do celular (e o arrasto) mandava só o `id`, sem `pilha`. Aí o
+   * `disponivel` contava a peça estrelada, a `ordem` (só peças simples) não
+   * tirava nada dela, e o `darItem` criava uma cópia LIMPA na mochila: a
+   * estrelada ficava na bolsa e aparecia outra sem estrela. Agora, sem peça
+   * simples desse id, a especial vai INTEIRA; e só se entrega o que saiu.
+   */
+  const temSimples = de.some((p) => p.id === id && !especial(p));
+  if (!(Number.isInteger(pilha) && de[pilha]?.id === id) && !temSimples) {
+    const i = de.findIndex((p) => p.id === id && especial(p));
+    if (i >= 0) pilha = i;
+  }
   // Peça com estrela/tier/imbuement passa INTEIRA (o quadrado dela), sem
   // virar uma cópia limpa pelo empilhamento.
-  const alvoEspecial = Number.isInteger(pilha) && de[pilha]?.id === id && (de[pilha].af?.length || de[pilha].tier || de[pilha].imbu?.length);
+  const alvoEspecial = Number.isInteger(pilha) && de[pilha]?.id === id && especial(de[pilha]);
   if (alvoEspecial) {
     const [peca] = de.splice(pilha, 1);
     if (to === 'bag') (estado.inventory ??= []).push(peca);
@@ -184,12 +203,14 @@ export function moverBolsa(estado, { id, count = 1, to, pilha }) {
     }
     return { ok: true };
   }
-  const disponivel = de.filter((p) => p.id === id).reduce((a, p) => a + p.count, 0);
+  // Só as peças SIMPLES entram na conta: é só delas que o laço abaixo tira, e
+  // contar a especial aqui entregava na mochila uma cópia que não saiu da bolsa.
+  const disponivel = de.filter((p) => p.id === id && !especial(p)).reduce((a, p) => a + p.count, 0);
   let falta = Math.min(Math.max(1, Number(count) || 1), disponivel);
   if (!falta) return { ok: false, erro: 'Esse item não está aí.' };
   const total = falta;
   // A pilha apontada primeiro, depois as outras do mesmo item.
-  const ordem = [...de.keys()].filter((i) => de[i].id === id && !de[i].af?.length && !de[i].tier && !de[i].imbu?.length);
+  const ordem = [...de.keys()].filter((i) => de[i].id === id && !especial(de[i]));
   if (Number.isInteger(pilha) && de[pilha]?.id === id) ordem.unshift(...ordem.splice(ordem.indexOf(pilha), 1));
   for (const i of ordem) {
     const tirar = Math.min(de[i].count, falta);
