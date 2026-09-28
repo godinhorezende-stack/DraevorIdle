@@ -7071,8 +7071,18 @@ const ENTRADA_TETO = 15000;
 function pecasDaEntrada() {
   const pecas = [];
 
-  const mapa = mapView?.snapshot?.map;
-  if (mapa?.atlas) pecas.push({ passo: 'carregando o mapa', src: `/gamedata/sprites/${mapa.atlas}.png` });
+  /*
+   * ---- O mapa que VAI aparecer, e não o que estava na tela no `welcome` ----
+   *
+   * O `welcome` traz a cidade; quem entra caçando só recebe a hunt no primeiro
+   * `state`, um instante depois (e o mapa dela quando o `pedirMapa` volta).
+   * Esta peça lia o mapa na hora do `welcome` — a cidade — e fazia a entrada
+   * esperar os 3,8 MB do `city.png` para uma tela que o jogador nem via. Agora
+   * o `src` é perguntado a cada volta da espera: vale o mapa que estiver na
+   * tela quando ele tiver atlas. Caçando, o servidor já manda a cidade sem mapa
+   * (ver o `welcome`, sessao.mjs), então a peça espera o atlas da hunt.
+   */
+  pecas.push({ passo: 'carregando o mapa', src: () => atlasNaTela(), opcional: true });
 
   /*
    * `items32-0.png` é a folha principal: é dela que saem os ícones da mochila,
@@ -7098,6 +7108,19 @@ function pecasDaEntrada() {
   return pecas;
 }
 
+/** O atlas do mapa na tela agora, ou `null` se ele ainda não chegou (ou não tem). */
+function atlasNaTela() {
+  const mapa = mapView?.snapshot?.map;
+  return mapa?.atlas ? `/gamedata/sprites/${mapa.atlas}.png` : null;
+}
+
+/*
+ * Quanto a peça `opcional` (o mapa) espera por um mapa com atlas. Passou disto
+ * sem nenhum, a entrada segue: há mapa sem atlas próprio, e o `ENTRADA_TETO`
+ * seria tempo demais de tela parada por uma coisa que não vai chegar.
+ */
+const ESPERA_PELO_MAPA = 4000;
+
 async function entrarNoPersonagem(message) {
   const tela = $('entrada');
   if (!tela) return;
@@ -7113,7 +7136,8 @@ async function entrarNoPersonagem(message) {
   const fim = Date.now() + ENTRADA_TETO;
 
   for (let i = 0; i < pecas.length; i++) {
-    const { passo, src } = pecas[i];
+    const { passo, opcional } = pecas[i];
+    const qual = () => (typeof pecas[i].src === 'function' ? pecas[i].src() : pecas[i].src);
     $('entrada-passo').textContent = passo;
     $('entrada-detalhe').textContent = `${i + 1} de ${pecas.length}`;
     $('entrada-progresso').style.width = `${Math.round((i / pecas.length) * 100)}%`;
@@ -7125,14 +7149,26 @@ async function entrarNoPersonagem(message) {
      * servidor) não pode prender o jogador numa tela de carregamento eterna: é
      * melhor entrar com o desenho faltando e ver o jogo do que não entrar.
      */
-    while (!imagemPronta(src) && Date.now() < fim) {
+    const desistirSemMapa = Date.now() + ESPERA_PELO_MAPA;
+    for (;;) {
+      const src = qual();
+      if (src ? imagemPronta(src) : opcional && Date.now() >= desistirSemMapa) break;
+      if (Date.now() >= fim) break;
       await new Promise((resolve) => setTimeout(resolve, 120));
     }
   }
 
-  // O resto das folhas de item vai sem espera: entram no cache enquanto se joga.
-  for (const src of ['/gamedata/sprites/items/items32-1.png', '/gamedata/sprites/items/items32-2.png', '/gamedata/sprites/items/items64-0.png']) {
-    imagemPronta(src);
+  /*
+   * O resto das folhas de item vai sem espera: entram no cache enquanto se joga.
+   * No TELEFONE, não: são ~2,5 MB de download e, desenhadas, 48 MB de bitmap
+   * (três folhas de 2048²) para ícones que talvez nem apareçam na sessão. Lá
+   * cada folha chega quando o primeiro item dela for desenhado — `image()` já
+   * busca sob demanda.
+   */
+  if (!ehTelefone()) {
+    for (const src of ['/gamedata/sprites/items/items32-1.png', '/gamedata/sprites/items/items32-2.png', '/gamedata/sprites/items/items64-0.png']) {
+      imagemPronta(src);
+    }
   }
 
   $('entrada-passo').textContent = 'pronto';
