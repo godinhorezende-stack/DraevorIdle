@@ -1495,7 +1495,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     // golpes" (árvore) mexe no próprio intervalo: −3% é 3% mais curto.
     if (golpe.bateu) {
       const f = Ficha.combate(estado);
-      hunt.proximoGolpeEm = agora + (ATAQUE_MS * Math.max(0.2, 1 + (f.intervaloDeAtaque ?? 0))) / (1 + (f.velocidadeDeAtaque ?? 0) / 100);
+      hunt.proximoGolpeEm = agora + f.intervaloDoGolpeMs;
     }
   }
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));

@@ -39,6 +39,8 @@ const PERICIAS_DA_ARVORE = {
   'skill:shielding': ['shielding'],
 };
 
+/** O intervalo entre golpes da arma, sem bônus: o 2s do Tibia (a caçada, a barra de magias e o troco dos bichos seguem esse relógio). */
+export const INTERVALO_BASE_DO_GOLPE_MS = 2000;
 const CRITICO_BASE = 0.03; // o 3% do molde real
 const MULTIPLICADOR_CRITICO_BASE = 1.6; // "+60% de dano", idem
 const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
@@ -206,6 +208,9 @@ function calcularCombate(estado) {
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     velocidadeDeAtaque: af.atk_speed ?? 0,
+    // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
+    // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
+    intervaloDoGolpeMs: Math.round((INTERVALO_BASE_DO_GOLPE_MS * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + (af.atk_speed ?? 0) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     danoDoElemento: Object.fromEntries(
       ELEMENTOS.map((el) => [el, (af[`${el}_dmg`] ?? 0) + (arv[`elemento:${el}`] ?? 0) * 100]),
