@@ -341,6 +341,29 @@ function devolverPeca(estado, peca) {
   else darItem(estado, peca.id, peca.count ?? 1);
 }
 
+/*
+ * ---- Duas mãos ----
+ * O dono: "armas de 2 mãos têm que tirar o shield". Arma de duas mãos não
+ * divide o corpo com escudo (nem spellbook): vestir uma tira o outro, que
+ * volta para a mochila — nos dois sentidos. A aljava fica: ela vai no slot do
+ * escudo, mas é o que o arco/besta (de duas mãos) usa.
+ */
+export const ocupaAMaoDoEscudo = (meta) => !!meta && meta.slot === 'shield' && !meta.quiver;
+export const deDuasMaos = (meta) => !!meta?.twoHanded;
+
+/**
+ * Personagem que ficou com arma de duas mãos E escudo (antes desta regra): o
+ * escudo volta para a mochila. Roda na entrada. `true` se mexeu.
+ */
+export function corrigirDuasMaos(estado) {
+  const eq = estado.equipment ?? {};
+  if (!deDuasMaos(ITEM_CATALOG[eq.weapon?.id]) || !ocupaAMaoDoEscudo(ITEM_CATALOG[eq.shield?.id])) return false;
+  devolverPeca(estado, eq.shield);
+  eq.shield = null;
+  Afixos.sincronizarMaximos(estado);
+  return true;
+}
+
 export function equipar(estado, { id, pilha, slot }) {
   id = Number(id);
   const meta = ITEM_CATALOG[id];
@@ -360,6 +383,17 @@ export function equipar(estado, { id, pilha, slot }) {
   const antes = eq[destino];
   eq[destino] = { ...pilhaAtual, id, count: leva };
   if (antes) devolverPeca(estado, antes);
+  // Duas mãos: a arma de duas mãos tira o escudo; o escudo tira a arma de duas mãos.
+  let saiu = null;
+  if (destino === 'weapon' && deDuasMaos(meta) && ocupaAMaoDoEscudo(ITEM_CATALOG[eq.shield?.id])) saiu = 'shield';
+  else if (destino === 'shield' && ocupaAMaoDoEscudo(meta) && deDuasMaos(ITEM_CATALOG[eq.weapon?.id])) saiu = 'weapon';
+  if (saiu) {
+    const nome = ITEM_CATALOG[eq[saiu].id]?.name ?? 'a peça';
+    devolverPeca(estado, eq[saiu]);
+    eq[saiu] = null;
+    Afixos.sincronizarMaximos(estado);
+    return { ok: true, notice: `Duas mãos: ${nome} voltou para a mochila.` };
+  }
   Afixos.sincronizarMaximos(estado);
   return { ok: true };
 }

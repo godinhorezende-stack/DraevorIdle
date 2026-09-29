@@ -25,6 +25,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import * as Ficha from '../ficha.mjs';
 import * as Afixos from '../afixos.mjs';
 import { ATRIBUTOS } from './config.mjs';
+import { ocupaAMaoDoEscudo } from '../inventario.mjs';
 
 const CAMPOS = JSON.parse(readFileSync(new URL('../../gamedata/itens/campos.json', import.meta.url), 'utf8'));
 
@@ -127,8 +128,9 @@ export function comparar(estado, peca) {
   const limpa = { id: meta.id, count: 1, ...(Array.isArray(peca.af) ? { af: peca.af.filter((a) => ATRIBUTOS[a?.id]).map((a) => ({ id: a.id, nivel: a.nivel, value: Number(a.value) || 0 })) } : {}), ...(peca.tier ? { tier: Math.max(0, Math.floor(Number(peca.tier) || 0)) } : {}) };
 
   const equipamento = { ...(estado.equipment ?? {}), [slot]: limpa };
-  // Arma de duas mãos tira o escudo: é uma peça inteira saindo, e a ficha tem de ver isso.
-  if (slot === 'weapon' && meta.twoHanded) equipamento.shield = null;
+  // Arma de duas mãos tira o escudo (não a aljava): é uma peça inteira saindo, e a ficha tem de ver isso.
+  const escudoSai = slot === 'weapon' && meta.twoHanded && ocupaAMaoDoEscudo(ITEM_CATALOG[estado.equipment?.shield?.id]);
+  if (escudoSai) equipamento.shield = null;
   const antes = retrato(estado);
   const depois = retrato({ ...estado, equipment: equipamento });
   // Só os campos da ficha com nome no registro — os internos (proficiência por
@@ -142,7 +144,7 @@ export function comparar(estado, peca) {
     ok: true,
     slot,
     contra: vestida ? { id: vestida.id, nome: ITEM_CATALOG[vestida.id]?.name ?? String(vestida.id) } : null,
-    tiraOEscudo: slot === 'weapon' && !!meta.twoHanded && !!estado.equipment?.shield,
+    tiraOEscudo: escudoSai,
     atributos: atributos.filter((l) => l.delta !== 0),
     personagem: personagem.filter((l) => l.delta !== 0),
   };

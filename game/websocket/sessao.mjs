@@ -1535,6 +1535,8 @@ export class Sessao {
     // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
     Gemas.sincronizarMaximos(estado);
     Inventario.moedasParaOBolso(estado);
+    // Arma de duas mãos com escudo vestido (de antes da regra): o escudo volta para a mochila.
+    Inventario.corrigirDuasMaos(estado);
     // Treino offline / Exercise que ficou rodando com o jogador fora.
     const treinoPendente = Treinos.voltaDoTreino(estado, personagem.visto_em);
     // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
