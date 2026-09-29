@@ -166,9 +166,9 @@ test('a força dos bichos: a mesma Troll Cave é fraca no Fácil e muito forte n
   assert.ok(f.hp < m.hp && m.hp < d.hp, `vida: ${f.hp} < ${m.hp} < ${d.hp}`);
   assert.ok(f.exp < m.exp && m.exp < d.exp);
   assert.ok(f.forca < m.forca && m.forca < d.forca);
-  // E a Walking Pillar do Fácil (alvo 100) fica mais FRACA que a original (1200).
+  // E a Warzone 2 do Fácil (alvo 92) fica mais FRACA que a original (550).
   const e = personagemDeTeste({ level: 2000 });
-  assert.equal(Cacadas.entrar(e, { huntId: 'walking-pillar', mode: 'auto', dificuldade: 'facil' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: 'warzone-2', mode: 'auto', dificuldade: 'facil' }).ok, true);
   assert.ok(e.hunt.escala.vida < 1 && e.hunt.escala.dano < 1);
 });
 
@@ -268,7 +268,7 @@ test('"Ficar na fase" (padrão) fica em loop; "Avançar sozinho" vai para a pró
   assert.equal(snap.fimDoAto, false);
 });
 
-test('"Seguir" no fim do ato não entra no boss; e pula a hunt quebrada', () => {
+test('"Seguir" no fim do ato não entra no boss; e pula a hunt quebrada/travada', () => {
   const e = novo(20);
   e.settings = { aoCompletarFase: 'seguir' };
   completar(e, 'facil', 0, 11);
@@ -280,6 +280,24 @@ test('"Seguir" no fim do ato não entra no boss; e pula a hunt quebrada', () => 
     const g = novo(20);
     for (let a = 1; a < F[quebrada].ato; a++) { completar(g, 'facil', (a - 1) * 12, a * 12); Campanha.venceuBoss(g, 'facil', a); }
     completar(g, 'facil', (F[quebrada].ato - 1) * 12, quebrada + 1);
-    assert.equal(Campanha.proximaParaSeguir(g, 'facil', F[quebrada - 1].huntId).huntId, F[quebrada + 1].huntId);
+    // A próxima é a primeira do ato que NÃO é travada; se o resto do ato inteiro é travado, fica onde está.
+    const seguinte = F.slice(quebrada + 1).find((f) => f.ato === F[quebrada].ato && !f.pular);
+    const vem = Campanha.proximaParaSeguir(g, 'facil', F[quebrada - 1].huntId);
+    assert.equal(vem?.huntId ?? null, seguinte?.huntId ?? null);
+  }
+});
+
+test('fase travada (pular): ninguém entra — nem pelo servidor —, e ela conta como completa', () => {
+  const travadas = ['dark-thais', 'infernatil-seal', 'jaded-roots', 'walking-pillar'];
+  for (const id of travadas) {
+    assert.equal(F.find((f) => f.huntId === id).pular, true, id);
+    const e = novo(2000);
+    for (const dif of ['facil']) {
+      assert.equal(Campanha.faseLiberada(e, dif, id), false, `${id}: não liberada`);
+      assert.equal(Campanha.faseCompleta(e, dif, id), true, `${id}: conta como completa`);
+    }
+    const r = Cacadas.entrar(personagemDeTeste({ level: 2000 }), { huntId: id, mode: 'auto', dificuldade: 'facil' });
+    assert.equal(r.ok, false, `${id}: o servidor recusa a entrada`);
+    assert.match(r.erro, /travada/, `${id}: o motivo diz que está travada`);
   }
 });
