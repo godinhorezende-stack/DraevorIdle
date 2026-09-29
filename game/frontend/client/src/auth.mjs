@@ -286,7 +286,7 @@ const NOME_DA_PERICIA = {
   melee: 'Melee fighting\nPunho, clava, espada e machado: uma perícia só. Esta vocação sobe rápido nela.',
   distance: 'Distance fighting\nArco, besta e spear. Esta vocação sobe rápido nela.',
   magic: 'Magic level\nO poder das magias. Esta vocação sobe rápido nele.',
-  shielding: 'Shielding\nDefesa com escudo.',
+  shielding: 'Shielding\nAumenta o bloqueio do escudo.',
 };
 
 const NOME_DO_ELEMENTO = {

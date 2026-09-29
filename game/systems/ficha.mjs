@@ -167,8 +167,6 @@ function calcularCombate(estado) {
     ataque,
     ataqueMin,
     ataqueMax,
-    // A faixa de defesa do escudo (`[piso, teto]`, ou null sem escudo): é ela que sustenta o bloqueio.
-    defesaEscudo: escudo ? faixaDoCampo(estado.equipment?.shield, 'defense') : null,
     defense,
     damage,
     skillName: pericia,
@@ -177,7 +175,11 @@ function calcularCombate(estado) {
     critChance: CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance,
     critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100 + prof.critDano + imb.critDano,
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
-    blockChance: R.blockChance(shielding, escudo ? escudo.defense + prof.defesa : null),
+    // O bloqueio vem do escudo MAIS a defesa da arma (metade + o extra dela, como sempre), com a
+    // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
+    // Sem escudo, 0% — a defesa da arma sozinha não bloqueia.
+    ...bloqueioDaFicha(estado, escudo, w, prof, shielding),
+    ...faixaDeArmadura(estado, af),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
@@ -258,6 +260,37 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught };
+}
+
+/** A defesa que sustenta o bloqueio, em faixa: o escudo + metade da defesa da arma + o extra dela (+ perks). */
+function bloqueioDaFicha(estado, escudo, w, prof, shielding) {
+  const [eMin, eMax] = escudo ? faixaDoCampo(estado.equipment?.shield, 'defense') : [0, 0];
+  const [aMin, aMax] = faixaDoCampo(estado.equipment?.weapon, 'defense');
+  const extra = (w?.extraDefense ?? 0) + (prof?.defesa ?? 0);
+  const defMin = eMin + Math.floor(aMin / 2) + extra;
+  const defMax = eMax + Math.floor(aMax / 2) + extra;
+  const com = (d) => R.blockChance(shielding, escudo ? d : null);
+  return {
+    blockChance: com(Math.round((defMin + defMax) / 2)),
+    blockChanceMin: com(defMin),
+    blockChanceMax: com(defMax),
+    defesaBloqueioMin: escudo ? defMin : 0,
+    defesaBloqueioMax: escudo ? defMax : 0,
+  };
+}
+
+/** A armadura em faixa: a soma dos pisos e dos tetos das peças vestidas (+ a armadura plana dos afixos). */
+function faixaDeArmadura(estado, af) {
+  let armorMin = 0;
+  let armorMax = 0;
+  for (const p of Object.values(estado.equipment ?? {})) {
+    if (!p) continue;
+    const [a, b] = faixaDoCampo(p, 'armor');
+    armorMin += a;
+    armorMax += b;
+  }
+  const plana = af?.armor_flat ?? 0;
+  return { armorMin: armorMin + plana, armorMax: armorMax + plana };
 }
 
 /** O ataque DESTE golpe: sorteado entre o piso e o teto da arma (a média, `ficha.ataque`, é o que a ficha mostra). */

@@ -72,3 +72,25 @@ test('ficha: o golpe sorteia entre o piso e o teto da arma; a ficha mostra a mé
   }
   assert.ok(vistos.size > 5, 'oscila de golpe em golpe');
 });
+
+test('ficha: bloqueio e armadura em faixa; a defesa da arma entra no bloqueio; sem escudo é 0%', () => {
+  const escudo = Object.values(ITEM_CATALOG).find((i) => i.slot === 'shield' && i.defense >= 10);
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.equipment.shield = { id: escudo.id, count: 1, base: { defense: [escudo.defense, escudo.defense + 10] } };
+  Ficha.invalidar(e);
+  const f = Ficha.combate(e);
+  assert.ok(f.blockChanceMin < f.blockChanceMax, 'faixa de bloqueio');
+  assert.ok(f.blockChance >= f.blockChanceMin && f.blockChance <= f.blockChanceMax);
+  assert.ok(f.armorMin <= f.armor && f.armor <= f.armorMax, 'faixa de armadura');
+
+  e.equipment.weapon = { id: arma.id, count: 1, base: { defense: [40, 60] } };
+  Ficha.invalidar(e);
+  const comArma = Ficha.combate(e);
+  assert.ok(comArma.blockChanceMax >= f.blockChanceMax, 'defesa da arma soma no bloqueio');
+
+  e.equipment.shield = null;
+  Ficha.invalidar(e);
+  const semEscudo = Ficha.combate(e);
+  assert.equal(semEscudo.blockChance, 0);
+  assert.equal(semEscudo.blockChanceMax, 0);
+});

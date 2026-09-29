@@ -170,6 +170,12 @@ const formatTime = (ms) => {
     .join(':');
 };
 
+/** "min – max" quando a faixa tem largura; o valor só quando não tem (peça sem faixa, ou sem nada vestido). */
+function faixa(min, max, media, formatar = (v) => v) {
+  if (min == null || max == null || min === max) return formatar(media);
+  return `${formatar(min)} – ${formatar(max)}`;
+}
+
 export function renderSheet(body, { state, send, closeModal }) {
   const character = state.character;
   const derived = character.derived;
@@ -474,27 +480,8 @@ export function renderSheet(body, { state, send, closeModal }) {
   body.append(titulo('Detalhes de combate', 'ficha-combate'));
   const combat = el('div', 'stat-grid');
   combat.append(
-    statCard('Armadura', derived.armor, 'armadura equipada', null, 'ficha-armadura'),
-    // O ataque da arma é uma FAIXA (piso e teto sorteados no drop): cada golpe sorteia entre os dois.
-    ...(derived.ataque > 0
-      ? [
-          statCard(
-            'Ataque da arma',
-            derived.ataqueMin !== derived.ataqueMax ? `${derived.ataqueMin} – ${derived.ataqueMax}` : derived.ataque,
-            derived.ataqueMin !== derived.ataqueMax ? `sorteado a cada golpe · média ${derived.ataque}` : 'da arma equipada',
-            null,
-            'ficha-dano'
-          ),
-        ]
-      : []),
-    // Só o escudo bloqueia (a defesa da arma não entra): a faixa dele é a base do Bloqueio.
-    statCard(
-      'Defesa do escudo',
-      derived.defesaEscudo ? (derived.defesaEscudo[0] !== derived.defesaEscudo[1] ? `${derived.defesaEscudo[0]} – ${derived.defesaEscudo[1]}` : derived.defesaEscudo[0]) : 0,
-      derived.defesaEscudo ? 'base do bloqueio (usa a média)' : 'sem escudo: bloqueio 0%',
-      null,
-      'ficha-defesa'
-    ),
+    // Armadura, bloqueio e dano são FAIXAS: a das peças (sorteada no drop), e cada golpe sorteia dentro dela.
+    statCard('Armadura', faixa(derived.armorMin, derived.armorMax, derived.armor), 'armadura equipada', null, 'ficha-armadura'),
     statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
     /*
      * O elemental é uma FATIA do golpe, e não um golpe à parte.
@@ -537,7 +524,7 @@ export function renderSheet(body, { state, send, closeModal }) {
         ]
       : []),
     statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano`, null, 'ficha-critico'),
-    statCard('Bloqueio', `${(derived.blockChance * 100).toFixed(0)}%`, 'apara golpe físico (escudo)', null, 'ficha-bloqueio'),
+    statCard('Bloqueio', faixa(derived.blockChanceMin, derived.blockChanceMax, derived.blockChance, (v) => `${(v * 100).toFixed(0)}%`), 'apara golpe físico (escudo e arma)', null, 'ficha-bloqueio'),
     statCard('Life leech', `${(derived.lifeLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-life-leech'),
     statCard('Mana leech', `${(derived.manaLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-mana-leech'),
     statCard('Alcance', derived.attackRange > 1 ? `${derived.attackRange} sqm` : 'corpo a corpo', null, null, 'ficha-alcance'),

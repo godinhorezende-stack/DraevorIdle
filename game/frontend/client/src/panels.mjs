@@ -8846,8 +8846,8 @@ export function renderAppearance(body) {
 // Os nomes dos perks são os do proficiencies_definitions.hpp do servidor.
 const PERK_LABEL = {
   attackDamage: 'Dano de ataque',
-  defense: 'Defesa',
-  weaponShieldMod: 'Defesa da arma',
+  defense: 'Bloqueio',
+  weaponShieldMod: 'Bloqueio da arma',
   skillBonus: 'Perícia',
   specialMagicLevel: 'Magic level especial',
   spellAugment: 'Augment de magia',

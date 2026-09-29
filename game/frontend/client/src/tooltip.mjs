@@ -1916,8 +1916,8 @@ export function numerosDoItem(meta) {
   };
 
   por('attack', 'ataque', meta.attack, 'atk');
-  // No escudo o número é o BLOQUEIO (a chance de aparar vem só dele — ver `blockChance`).
-  por('defense', meta.slot === 'shield' ? 'bloqueio' : 'defesa', meta.defense, 'def');
+  // O número de defesa (escudo OU arma) é o BLOQUEIO (a chance de aparar vem só dele — ver `blockChance`).
+  por('defense', 'bloqueio', meta.defense, 'def');
   por('armor', 'armadura', meta.armor, 'def');
   por('range', 'alcance', meta.range, 'plain', ' sqm');
   por('speed', 'velocidade', meta.speed, 'speed');
@@ -2406,7 +2406,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     }
   }
   if (meta.attack) add(`${numeroOuFaixa(meta, 'attack')} de ataque`, 'atk');
-  if (meta.defense) add(`${numeroOuFaixa(meta, 'defense')} de ${meta.slot === 'shield' ? 'bloqueio' : 'defesa'}${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
+  if (meta.defense) add(`${numeroOuFaixa(meta, 'defense')} de bloqueio${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
   if (meta.armor) add(`${numeroOuFaixa(meta, 'armor')} de armadura`, 'def');
   if (meta.range) add(`Alcance de ${meta.range} sqm`, 'plain');
   if (meta.speed) add(`${sinal(meta.speed)} de velocidade`, 'speed');

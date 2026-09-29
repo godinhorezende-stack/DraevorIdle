@@ -2,7 +2,7 @@
   "_nota": "Registro dos NOMES dos campos que a comparacao de itens mostra (systems/itens/comparar.mjs). Os atributos da peca (af) tiram o nome de atributos.json - um atributo novo la aparece sozinho. Aqui ficam os campos do ITEM-BASE (catalogo) e os da FICHA do personagem (Ficha.combate). Campo que nao estiver aqui aparece pela chave, em vez de sumir. `*` casa qualquer subchave (protection.fire, skillBonus.sword...). `escala` multiplica o valor para a tela (critChance 0.03 -> 3%). `sufixo`: unidade.",
   "item": {
     "attack": { "nome": "Ataque" },
-    "defense": { "nome": "Defesa" },
+    "defense": { "nome": "Bloqueio" },
     "armor": { "nome": "Armadura" },
     "range": { "nome": "Alcance", "sufixo": " sqm" },
     "speed": { "nome": "Velocidade" },
@@ -22,7 +22,7 @@
     "capacidade": { "nome": "Capacidade" },
     "armor": { "nome": "Armadura" },
     "ataque": { "nome": "Ataque" },
-    "defense": { "nome": "Defesa" },
+    "defense": { "nome": "Bloqueio" },
     "damage.min": { "nome": "Dano mínimo" },
     "damage.max": { "nome": "Dano máximo" },
     "skillValue": { "nome": "Perícia da arma" },

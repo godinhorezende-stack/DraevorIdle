@@ -498,7 +498,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const ficha = Ficha.combate(estado);
   // Bloqueio: a chance da ficha (`blockChance`, fórmula real do client) apara o
   // golpe inteiro — o `block` que o original manda, visto ao vivo.
-  if (Math.random() < ficha.blockChance) {
+  // A chance sorteia entre o pior e o melhor bloqueio da faixa das peças (escudo e arma) a cada golpe.
+  const chanceDeBloquear = (ficha.blockChanceMin ?? ficha.blockChance) + Math.random() * ((ficha.blockChanceMax ?? ficha.blockChance) - (ficha.blockChanceMin ?? ficha.blockChance));
+  if (Math.random() < chanceDeBloquear) {
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
     return;
