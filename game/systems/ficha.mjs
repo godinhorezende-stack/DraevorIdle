@@ -121,8 +121,16 @@ function calcularCombate(estado) {
   for (const [chave, pericias] of Object.entries(PERICIAS_DA_ARVORE)) {
     for (const p of pericias) if (arv[chave]) bonusDePericia[p] = (bonusDePericia[p] ?? 0) + arv[chave];
   }
+  /*
+   * A munição do tipo da arma (flecha no arco, bolt na besta): o ataque dela
+   * SOMA ao da arma, como no Tibia — o arco e a besta não têm ataque próprio no
+   * catálogo, e o golpe saía com ataque zero (decisão do dono, 29/09). A flecha
+   * elemental traz o elemento dela (abaixo, `element`).
+   */
+  const municao = w?.ammo ? ITEM_CATALOG[estado.equipment?.ammo?.id] : null;
+  const daMunicao = municao?.ammo === w?.ammo ? municao : null;
   // "Ataque" (+N no ataque da arma) e "Ataque da arma" (+% dele).
-  const ataque = Math.round(((w?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
+  const ataque = Math.round(((w?.attack ?? 0) + (daMunicao?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   const damage = w?.wand
@@ -164,7 +172,7 @@ function calcularCombate(estado) {
     // Imbuement de dano elemental na arma: {tipo, pct} — X% do golpe físico vira o elemento.
     imbuElemental: imb.elemental,
     protection,
-    element: w?.element ?? (w?.wand ? { type: w.wand.element, value: 0 } : null),
+    element: w?.element ?? daMunicao?.element ?? (w?.wand ? { type: w.wand.element, value: 0 } : null),
     attackRange: alcance,
     regenFlat: { hp: soma((it) => it.regen?.hp) + (af.hp_regen ?? 0), mana: soma((it) => it.regen?.mana) },
     speed: R.baseSpeed(estado.level ?? 1) + soma((it) => it.speed) + (af.speed ?? 0) + imb.velocidade,

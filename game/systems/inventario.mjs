@@ -375,8 +375,8 @@ export function equipar(estado, { id, pilha, slot }) {
   const i = acharPilha(itens, id, Number(pilha));
   if (i < 0) return { ok: false, erro: 'Essa peça não está na mochila.' };
   const pilhaAtual = itens[i];
-  // Munição equipa a pilha inteira; o resto, uma unidade.
-  const leva = destino === 'ammo' ? pilhaAtual.count : 1;
+  // Pilha (item que empilha) equipa inteira; peça, uma unidade (munição não empilha mais).
+  const leva = meta.stackable ? pilhaAtual.count : 1;
   pilhaAtual.count -= leva;
   if (pilhaAtual.count <= 0) itens.splice(i, 1);
   const eq = (estado.equipment ??= {});

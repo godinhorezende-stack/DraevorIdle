@@ -1537,6 +1537,9 @@ export class Sessao {
     Inventario.moedasParaOBolso(estado);
     // Arma de duas mãos com escudo vestido (de antes da regra): o escudo volta para a mochila.
     Inventario.corrigirDuasMaos(estado);
+    // Munição/arremessável em pilha (de antes de deixarem de empilhar): uma peça, o resto vendido.
+    const desempilhada = Bolsa.desempilharMunicao(estado);
+    if (desempilhada.pecas) estado.avisoDaHunt = `Munição e armas de arremesso não empilham mais: ficou uma de cada pilha, e ${desempilhada.pecas.toLocaleString('pt-BR')} a mais viraram ${desempilhada.ouro.toLocaleString('pt-BR')} de ouro.`;
     // Treino offline / Exercise que ficou rodando com o jogador fora.
     const treinoPendente = Treinos.voltaDoTreino(estado, personagem.visto_em);
     // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
