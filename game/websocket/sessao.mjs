@@ -333,7 +333,7 @@ function characterParaCliente(personagem, estado) {
     // no `estado` gravado; sem o fallback, `diarioParaCliente` quebraria em
     // `estado.diario.ultimoColetadoEm` de um `diario` que é `undefined`.
     wildcards: estado.wildcards ?? CHARACTER_TEMPLATE.wildcards,
-    presentes: estado.presentes ?? CHARACTER_TEMPLATE.presentes,
+    presentes: Recompensas.presentesParaCliente(estado),
     // Idem: a barra de ações é mutável por personagem (ver `acoes.mjs`) e
     // ficava para trás no molde — todo personagem via sempre os 22 slots
     // vazios do `character-template.json`, nunca o que de fato configurou.

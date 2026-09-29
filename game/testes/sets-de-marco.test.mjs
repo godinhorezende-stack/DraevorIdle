@@ -91,3 +91,46 @@ test('marco já pego não é reescrito', () => {
   Recompensas.marcosDaVocacao(e);
   assert.equal(JSON.stringify(marco.itens), antes);
 });
+
+// ---- a fila de recompensas de level: só a primeira que falta abre, quando o level chega ----
+const degrau = (e, level) => e.presentes.degraus.find((d) => d.level === level);
+const marco = (e, level) => e.presentes.marcos.find((m) => m.level === level);
+
+test('level 50, arma de treino 8-50 já pegas: o BAÚ do 50 abre (antes ficava "pegue o anterior primeiro" para sempre)', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
+  for (const l of [8, 20, 30, 40, 50]) degrau(e, l).pego = true;
+  Recompensas.abrirProximas(e);
+  assert.equal(marco(e, 50).aberto, true, 'o baú do 50 abre');
+  assert.equal(marco(e, 100).aberto, false, 'o do 100: nem chegou no level');
+  assert.equal(e.presentes.marcosAbertos, 1);
+  assert.equal(e.presentes.pendentes, 0);
+});
+
+test('a arma de treino do 50 vem ANTES do baú do 50; pegar a arma abre o baú', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
+  for (const l of [8, 20, 30, 40]) degrau(e, l).pego = true;
+  Recompensas.abrirProximas(e);
+  assert.equal(degrau(e, 50).aberto, true);
+  assert.equal(marco(e, 50).aberto, false, 'o baú espera a arma do mesmo level');
+  Recompensas.coletarPresente(e, { itemId: e.presentes.escolhas[0].itemId });
+  assert.equal(degrau(e, 50).pego, true);
+  assert.equal(marco(e, 50).aberto, true, 'pegou a arma: o baú abre');
+});
+
+test('só a PRIMEIRA que falta abre: level alto, nada pego — só a arma do 8', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 500 });
+  Recompensas.abrirProximas(e);
+  assert.equal(degrau(e, 8).aberto, true);
+  for (const outra of [degrau(e, 20), marco(e, 50), marco(e, 100), marco(e, 120)]) assert.equal(outra.aberto, false);
+});
+
+test('pegar o baú abre a próxima da fila (o do 100) quando o level chega', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  for (const l of [8, 20, 30, 40, 50]) degrau(e, l).pego = true;
+  e.gold = 200_000;
+  Recompensas.abrirProximas(e);
+  assert.equal(Recompensas.coletarMarco(e, { level: 50 }).ok, true);
+  assert.equal(marco(e, 50).pego, true);
+  assert.equal(marco(e, 100).aberto, true);
+  assert.equal(e.presentes.marcosAbertos, 1);
+});

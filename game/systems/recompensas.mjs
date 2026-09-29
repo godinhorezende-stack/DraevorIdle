@@ -187,6 +187,46 @@ function abrirBau(estado, marco) {
   return peca;
 }
 
+/*
+ * ---- Quem está ABERTO na tela de Recompensas de nível ----
+ *
+ * As recompensas de level formam UMA fila, por level (e, no mesmo level, a arma de treino antes do
+ * baú/marco). Só a PRIMEIRA que ainda não foi pega pode abrir, e só quando o level chega nela — as
+ * de trás mostram "pegue o anterior primeiro". Antes só o degrau da arma de treino abria (e só na
+ * hora de pegar o de trás): o baú/montaria/outfit NUNCA abriam ("to lv 50 e o baú não abriu, diz
+ * para pegar o anterior"), e um degrau só abria se o level já alcançasse no momento do anterior.
+ * Agora a abertura é recalculada sempre que o estado vai para o cliente e a cada coleta.
+ */
+function filaDeRecompensas(presentes) {
+  const item = (recompensa, tipo) => ({ recompensa, tipo });
+  return [...(presentes.degraus ?? []).map((d) => item(d, 'degrau')), ...(presentes.marcos ?? []).map((m) => item(m, 'marco'))].sort(
+    (a, b) => a.recompensa.level - b.recompensa.level || (a.tipo === 'degrau' ? -1 : 1) - (b.tipo === 'degrau' ? -1 : 1)
+  );
+}
+
+export function abrirProximas(estado) {
+  const presentes = estado?.presentes;
+  if (!presentes) return;
+  const fila = filaDeRecompensas(presentes);
+  const primeira = fila.find((x) => !x.recompensa.pego);
+  const level = estado.level ?? 1;
+  let degrausAbertos = 0;
+  let marcosAbertos = 0;
+  for (const x of fila) {
+    const abre = x === primeira && level >= x.recompensa.level;
+    if (!x.recompensa.pego) x.recompensa.aberto = abre;
+    if (abre) x.tipo === 'degrau' ? degrausAbertos++ : marcosAbertos++;
+  }
+  presentes.pendentes = degrausAbertos;
+  presentes.marcosAbertos = marcosAbertos;
+}
+
+/** Os presentes como vão para o cliente: com as aberturas em dia (ver `abrirProximas`). */
+export function presentesParaCliente(estado) {
+  abrirProximas(estado);
+  return estado.presentes ?? CHARACTER_TEMPLATE.presentes;
+}
+
 /** `send({t:'marco', level})` — um marco de EQUIPAMENTO (baú/outfit/montaria). */
 export function coletarMarco(estado, { level }) {
   const presentes = estado?.presentes;
@@ -204,11 +244,7 @@ export function coletarMarco(estado, { level }) {
   else for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
   marco.pego = true;
   marco.aberto = false;
-  // `marcosAbertos` conta quantos estão DISPONÍVEIS agora, não quantos já
-  // foram pegos — pegar diminui a fila, não aumenta (ver `pintarPresente`
-  // no cliente: `emAberto = pendentes + marcosAbertos` decide se a faixa do
-  // "Recompensa do level" aparece).
-  presentes.marcosAbertos = Math.max(0, (presentes.marcosAbertos ?? 0) - 1);
+  abrirProximas(estado); // a próxima da fila abre, se o level já chega
   if (!peca) return { ok: true };
   const raridade = peca.raridade ?? 'comum';
   return {
@@ -221,6 +257,7 @@ export function coletarMarco(estado, { level }) {
 /** `send({t:'presente', itemId})` — o degrau de ARMA DE TREINO (o jogador escolhe a arma). */
 export function coletarPresente(estado, { itemId }) {
   const presentes = estado?.presentes;
+  abrirProximas(estado); // a abertura pode estar atrasada (o level subiu depois do último envio)
   const degrau = presentes?.degraus?.find((d) => d.aberto && !d.pego);
   if (!degrau) return { ok: false, erro: 'Nenhum presente disponível.' };
   if ((estado.gold ?? 0) < degrau.custo) return { ok: false, erro: 'Ouro insuficiente.' };
@@ -230,15 +267,6 @@ export function coletarPresente(estado, { itemId }) {
   degrau.pego = true;
   degrau.aberto = false;
   presentes.pegos = (presentes.pegos ?? 0) + 1;
-  // `pendentes` é quem manda o botão "Presente do level N" aparecer ou não
-  // (ver `pintarPresente` no cliente) — sem decrementar, o botão continua
-  // achando que ainda há presente para pegar mesmo depois de pego.
-  presentes.pendentes = Math.max(0, (presentes.pendentes ?? 0) - 1);
-  // O próximo degrau (na ordem da lista) abre se o level já alcança ele.
-  const proximo = presentes.degraus.find((d) => !d.pego && !d.aberto);
-  if (proximo && estado.level >= proximo.level) {
-    proximo.aberto = true;
-    presentes.pendentes += 1;
-  }
+  abrirProximas(estado); // o próximo da fila (degrau OU marco) abre, se o level já chega
   return { ok: true };
 }
