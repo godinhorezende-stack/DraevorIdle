@@ -1,5 +1,5 @@
 {
- "_nota": "O pool de atributos de cada tipo de equipamento (os grupos naturais que o jogo já usava, agora em dados). Na arma, 'skill_da_arma' vira a perícia DELA (axe -> skill_axe; wand/rod -> skill_magic). Mochila não recebe atributo no drop.",
+ "_nota": "O pool de atributos de cada tipo de equipamento (os grupos naturais que o jogo já usava, agora em dados). Na arma, 'skill_da_arma' vira a perícia DELA (axe -> skill_axe; wand/rod -> skill_magic). Mochila não recebe atributo no drop. Munição (flecha/bolt): os ofensivos de distância, com Distance Fighting fixa (ela não é arma, não tem 'skill_da_arma').",
  "pools": {
   "weapon": [
    "atk_flat",
@@ -217,6 +217,25 @@
    "skill_magic",
    "skill_shielding"
   ],
-  "backpack": []
+  "backpack": [],
+  "ammo": [
+   "atk_flat",
+   "weapon_atk_pct",
+   "crit_chance",
+   "crit_dmg",
+   "onslaught",
+   "atk_speed",
+   "life_leech",
+   "mana_leech",
+   "fire_dmg",
+   "energy_dmg",
+   "earth_dmg",
+   "ice_dmg",
+   "death_dmg",
+   "holy_dmg",
+   "skill_distance",
+   "exp_bonus",
+   "loot_bonus"
+  ]
  }
 }

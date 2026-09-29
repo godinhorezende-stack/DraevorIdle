@@ -31,6 +31,33 @@ export function garantir(estado) {
 }
 
 const precoDeVenda = (id) => Math.floor((ITEM_CATALOG[id]?.sell ?? 0) * TAXA_DA_VENDA);
+/*
+ * ---- Munição e arremessável deixaram de empilhar (29/09) ----
+ * O dono: flecha, bolt, spear, throwing star... não empilham e vêm com
+ * raridade. A pilha de antes (200 arrows) viraria 200 peças soltas — e a
+ * munição não é gasta no tiro, então as unidades a mais não servem para nada.
+ * Na entrada, cada pilha dessas vira UMA peça e o resto é vendido pelo preço
+ * da venda automática. Devolve `{ pecas, ouro }` (o que foi vendido).
+ */
+export function desempilharMunicao(estado) {
+  let pecas = 0;
+  let ouro = 0;
+  const caixas = [estado.inventory, estado.pouch, ...(estado.deposito ?? []).map((c) => c.itens), Object.values(estado.equipment ?? {})];
+  for (const lista of caixas) {
+    for (const p of lista ?? []) {
+      const meta = ITEM_CATALOG[p?.id];
+      if (!meta || meta.stackable || (p.count ?? 1) <= 1) continue;
+      if (meta.slot !== 'ammo' && !(meta.slot === 'weapon' && meta.skill === 'distance')) continue;
+      const sobra = p.count - 1;
+      p.count = 1;
+      pecas += sobra;
+      ouro += sobra * precoDeVenda(p.id);
+    }
+  }
+  if (ouro) estado.gold = (estado.gold ?? 0) + ouro;
+  return { pecas, ouro };
+}
+
 // Gema do Gem Atelier nunca vai na venda automática ("é gema do Gem Atelier", no original).
 const vende = (estado, id) => precoDeVenda(id) > 0 && !estado.itemRules.noSell.includes(id) && !Gemas.ehGema(id);
 

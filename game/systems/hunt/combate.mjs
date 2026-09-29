@@ -626,7 +626,8 @@ export const COR_DO_GOLPE_ELEMENTAL = { death: '#990000', fire: '#ff9900' };
 export const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 
 export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) {
-  const el = arma?.element;
+  // O elemento da arma — ou, no arco/besta, o da munição (`Ficha.combate().element`).
+  const el = arma?.element ?? (ficha.element?.value ? ficha.element : null);
   if (!el?.value) return null;
   const tipo = ELEMENTO_DO_CATALOGO[el.type] ?? el.type;
   const bruto = R.golpeDoJogador({ attack: el.value }, ficha.skillValue, estado.level) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
