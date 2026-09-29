@@ -56,15 +56,22 @@ function escolher() {
  * no banco: passe por `Cacadas.huntAoCarregar`), e `ausencia` é o mesmo que
  * `Cacadas.simularAusencia` devolveria.
  */
-export function simular(estado, personagem, agora = Date.now()) {
+export function simular(estado, personagem, agora = Date.now(), modo = 'login') {
   const t = escolher();
   const id = proximoId++;
   return new Promise((resolve, reject) => {
     t.pendentes.set(id, { resolve, reject });
     t.worker.ref();
-    t.worker.postMessage({ id, estado, personagem, agora });
+    t.worker.postMessage({ id, estado, personagem, agora, modo });
   });
 }
+
+/**
+ * O avanço em segundo plano (`Cacadas.consolidarAusencia`), na mesma thread à
+ * parte: `{estado, ausencia}` com `ausencia = {avancou, morreu}` (ou `null`).
+ * Ver `consolidacao-offline.mjs`.
+ */
+export const consolidar = (estado, personagem, agora = Date.now()) => simular(estado, personagem, agora, 'consolidar');
 
 /**
  * Fecha as threads (os testes chamam no fim). Toda chamada pendente rejeita

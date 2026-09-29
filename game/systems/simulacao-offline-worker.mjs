@@ -8,10 +8,12 @@
 import { parentPort } from 'node:worker_threads';
 import * as Cacadas from './cacadas.mjs';
 
-parentPort.on('message', ({ id, estado, personagem, agora }) => {
+parentPort.on('message', ({ id, estado, personagem, agora, modo }) => {
   try {
     Cacadas.huntAoCarregar(estado.hunt);
-    const ausencia = Cacadas.simularAusencia(estado, personagem, agora);
+    // `consolidar`: o avanço em segundo plano (ver `consolidacao-offline.mjs`);
+    // o personagem continua ausente. O padrão é o login de sempre.
+    const ausencia = modo === 'consolidar' ? Cacadas.consolidarAusencia(estado, personagem, agora) : Cacadas.simularAusencia(estado, personagem, agora);
     if (estado.hunt) estado.hunt = Cacadas.huntParaGravar(estado.hunt);
     parentPort.postMessage({ id, ok: true, estado, ausencia });
   } catch (e) {

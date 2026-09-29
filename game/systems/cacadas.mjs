@@ -147,54 +147,127 @@ function projetar(estado, base, fator) {
   return extra;
 }
 
-/** Se a volta tem caçada offline para simular (o mesmo corte de `simularAusencia`: 5 s ou mais fora). */
+/**
+ * Se a volta tem caçada offline para simular (5 s ou mais fora) — ou uma
+ * ausência já consolidada em segundo plano, cujo relatório ainda tem de ser
+ * entregue e somado ao Analisador (ver `avancarAusencia`).
+ */
 export function temAusenciaParaSimular(estado, agora = Date.now()) {
-  const desde = estado?.hunt?.offlineDesde;
-  return !!desde && Math.min(agora, desde + AUSENCIA_MAXIMA_MS) - desde >= 5000;
+  const hunt = estado?.hunt;
+  const desde = hunt?.offlineDesde;
+  if (!desde) return false;
+  if (hunt.ausencia) return true;
+  return Math.min(agora, desde + AUSENCIA_MAXIMA_MS) - desde >= 5000;
 }
 
-export function simularAusencia(estado, personagem, agora = Date.now()) {
+/*
+ * ---- A ausência em PEDAÇOS: consolidada em segundo plano, fechada no login ----
+ *
+ * "quero o ranking atualizando direto" — com o progresso offline calculado só
+ * na volta, quem caçava de aba fechada não subia no ranking do dia até logar.
+ * Agora o servidor avança a ausência de tempos em tempos (`consolidarAusencia`,
+ * ver `consolidacao-offline.mjs`), grava o personagem ainda ausente, e o login
+ * (`simularAusencia`) só termina o que falta e entrega o relatório inteiro.
+ *
+ * A conta é a MESMA de antes, só espalhada no tempo:
+ *   - os primeiros `SIMULACAO_MAXIMA_MS` a partir da saída são simulados tique a
+ *     tique (podem ser em mais de um pedaço — o tique continua de onde parou);
+ *   - o que passa disso é projetado no ritmo que esses 30 min mediram
+ *     (`ausencia.base`, uma cópia do que a parte simulada rendeu) — linear, então
+ *     projetar em pedaços soma o mesmo que projetar de uma vez;
+ *   - o teto de `AUSENCIA_MAXIMA_MS` conta da saída de verdade (`ausencia.inicio`);
+ *   - morreu na parte simulada: nada mais avança; o login aplica a morte.
+ * `hunt.ausencia` guarda o fio entre os pedaços: `principal` (o Analisador de
+ * antes de sair), `fora` (o que a ausência rendeu até aqui — o relatório), `base`.
+ * Sem pedaço nenhum no meio, o login faz exatamente o que fazia.
+ */
+function avancarAusencia(estado, personagem, agora, final) {
   const hunt = estado.hunt;
   if (!hunt?.offlineDesde) return null;
   const desde = hunt.offlineDesde;
-  delete hunt.offlineDesde;
-  const ate = Math.min(agora, desde + AUSENCIA_MAXIMA_MS);
-  if (ate - desde < 5000) return null;
+  if (!hunt.ausencia) {
+    const ate0 = Math.min(agora, desde + AUSENCIA_MAXIMA_MS);
+    if (ate0 - desde < 5000) {
+      if (final) delete hunt.offlineDesde;
+      return null;
+    }
+    const principal = hunt.sessao ?? novaSessao(estado, huntOuMapaCustom(hunt.huntId).name ?? hunt.huntId, hunt.modo, desde);
+    hunt.ausencia = {
+      inicio: desde, principal, fora: novaSessao(estado, principal.hunts[0], hunt.modo, desde),
+      base: null, morreu: false, morreuEm: null, projetadoAte: null,
+    };
+    hunt.ultimoTique = desde;
+    hunt.proximoPassoEm = hunt.proximoGolpeEm = hunt.proximoPassoMonstroEm = 0;
+    hunt.rumo = null;
+    hunt.destino = null;
+  }
+  const a = hunt.ausencia;
+  const ate = Math.min(agora, a.inicio + AUSENCIA_MAXIMA_MS);
+  const fimDaSimulacao = a.inicio + SIMULACAO_MAXIMA_MS;
+  let avancou = false;
 
-  const principal = hunt.sessao ?? novaSessao(estado, huntOuMapaCustom(hunt.huntId).name ?? hunt.huntId, hunt.modo, desde);
-  const fora = novaSessao(estado, principal.hunts[0], hunt.modo, desde);
-  hunt.sessao = fora;
-  hunt.ultimoTique = desde;
-  hunt.proximoPassoEm = hunt.proximoGolpeEm = hunt.proximoPassoMonstroEm = 0;
-  hunt.rumo = null;
-  hunt.destino = null;
-  // A caçada automática corre sozinha; na online, fora da tela, também — é
-  // o que o original faz ("Caçando offline").
-  const modo = hunt.modo;
-  hunt.modo = 'auto';
-
-  let morreu = false;
-  let t = desde;
-  const fimDaSimulacao = Math.min(ate, desde + SIMULACAO_MAXIMA_MS);
-  for (; t <= fimDaSimulacao; t += R.PASSO_MS) {
-    tique(estado, personagem, t);
-    if (estado.hp <= 0) {
-      morreu = true;
-      break;
+  // 1. A parte simulada, tique a tique, continuando de onde o pedaço anterior parou.
+  if (!a.base && !a.morreu && hunt.offlineDesde <= Math.min(ate, fimDaSimulacao)) {
+    hunt.sessao = a.fora;
+    // A caçada automática corre sozinha; na online, fora da tela, também — é
+    // o que o original faz ("Caçando offline").
+    const modo = hunt.modo;
+    hunt.modo = 'auto';
+    const fim = Math.min(ate, fimDaSimulacao);
+    let t = hunt.offlineDesde;
+    for (; t <= fim; t += R.PASSO_MS) {
+      tique(estado, personagem, t);
+      if (estado.hp <= 0) {
+        a.morreu = true;
+        a.morreuEm = t;
+        break;
+      }
+    }
+    hunt.modo = modo;
+    hunt.offlineDesde = a.morreu ? a.morreuEm : t;
+    avancou = true;
+    // Os 30 min inteiros simulados: o ritmo deles é a base da projeção.
+    if (!a.morreu && fim >= fimDaSimulacao) {
+      a.base = JSON.parse(JSON.stringify(a.fora));
+      a.projetadoAte = fimDaSimulacao;
     }
   }
-  hunt.modo = modo;
-  if (!morreu && ate > fimDaSimulacao) {
-    const extra = projetar(estado, fora, (ate - fimDaSimulacao) / (fimDaSimulacao - desde));
-    somarSessao(fora, extra);
-    t = ate;
+
+  // 2. A projeção, do ponto em que a anterior parou até agora.
+  if (a.base && !a.morreu && ate > a.projetadoAte) {
+    const extra = projetar(estado, a.base, (ate - a.projetadoAte) / SIMULACAO_MAXIMA_MS);
+    somarSessao(a.fora, extra);
+    a.projetadoAte = ate;
+    hunt.offlineDesde = ate;
+    avancou = true;
   }
-  const report = relatorio(estado, fora, Math.min(t, ate));
-  somarSessao(principal, fora);
-  hunt.sessao = principal;
-  hunt.ultimoTique = agora;
   hunt.eventos = [];
-  return { report, morreu };
+  hunt.sessao = a.principal;
+
+  if (!final) return { avancou, morreu: a.morreu };
+
+  // O login: fecha a ausência inteira e entrega o relatório desde a saída.
+  const fim = a.morreu ? a.morreuEm : ate;
+  const report = relatorio(estado, a.fora, fim);
+  somarSessao(a.principal, a.fora);
+  hunt.sessao = a.principal;
+  hunt.ultimoTique = agora;
+  delete hunt.offlineDesde;
+  delete hunt.ausencia;
+  return { report, morreu: a.morreu };
+}
+
+/** Na volta (login): termina a ausência e devolve `{report, morreu}` — ou `null`, sem ausência. */
+export function simularAusencia(estado, personagem, agora = Date.now()) {
+  return avancarAusencia(estado, personagem, agora, true);
+}
+
+/**
+ * Em segundo plano (`consolidacao-offline.mjs`): avança a ausência até `agora`
+ * e deixa o personagem ausente. `{avancou, morreu}` — ou `null`, sem ausência.
+ */
+export function consolidarAusencia(estado, personagem, agora = Date.now()) {
+  return avancarAusencia(estado, personagem, agora, false);
 }
 
 
