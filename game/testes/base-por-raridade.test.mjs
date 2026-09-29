@@ -220,3 +220,20 @@ test('ficha: a faixa da munição soma ao arco (que não tem ataque próprio)', 
   assert.equal(f.ataqueMax, 20);
   assert.equal(f.ataque, 15);
 });
+
+test('bolsa de loot: a peça que cai leva a faixa (`base`) para a bolsa, com ou sem atributo', async () => {
+  const Bolsa = await import('../systems/bolsa.mjs');
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.pouch = [];
+  // Sem atributo (Comum) — antes virava {id, count} pelado e perdia a faixa.
+  const comum = gerarItem({ itemId: arma.id, raridade: 'comum', rng: () => 0.3 });
+  assert.ok(comum.base?.attack, 'o gerador dá a faixa');
+  assert.equal(Bolsa.porNaBolsa(e, arma.id, 1, comum), 1);
+  assert.deepEqual(e.pouch[0].base, comum.base);
+  assert.equal(e.pouch[0].raridade, 'comum');
+  // Com atributo (Raro).
+  const raro = gerarItem({ itemId: arma.id, raridade: 'raro', rng: () => 0.6 });
+  Bolsa.porNaBolsa(e, arma.id, 1, raro);
+  assert.deepEqual(e.pouch[1].base, raro.base);
+  assert.deepEqual(e.pouch[1].af, raro.af);
+});
