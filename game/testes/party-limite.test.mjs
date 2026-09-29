@@ -121,18 +121,76 @@ test('a party fica no tamanho da conta com MENOS slots', async () => {
   grupo(pobre.s, 'sair');
 });
 
-test('partilha desliga fora da faixa de level (o menor abaixo de 2/3 do maior)', async () => {
-  const alto = await jogador(0, 1, 90);
-  const baixo = await jogador(1, 1, 40);
+test('diferença de level: até 10 entra na party; 11 não', async () => {
+  const a = await jogador(0, 1, 60);
+  const dez = await jogador(1, 1, 50);
+  const onze = await jogador(2, 1, 71);
+  const r = grupo(a.s, 'convidar', onze.nome);
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /no máximo 10: .* é level 71 e .* é level 60/);
+  assert.equal(Party.camposDoPersonagem(a.s).party, null, 'recusado não deixa party de um só');
+  assert.equal(grupo(a.s, 'convidar', dez.nome).ok, true);
+  assert.equal(grupo(dez.s, 'aceitar').ok, true);
+  grupo(dez.s, 'sair');
+});
+
+test('subiu de level na caçada e passou de 10: continua na party, mas a partilha desliga', async () => {
+  const alto = await jogador(0, 1, 60);
+  const baixo = await jogador(1, 1, 55);
   grupo(alto.s, 'convidar', baixo.nome);
   grupo(baixo.s, 'aceitar');
   assert.equal(Cacadas.entrar(alto.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
   caca(alto.s, 'invite', baixo.nome);
   assert.equal(caca(baixo.s, 'accept').ok, true);
+  assert.equal(Party.partilha(alto.s).ativa, true);
+  alto.s.estado.level = 66;
   const p = Party.partilha(alto.s);
   assert.equal(p.ativa, false);
   assert.equal(p.motivo, 'level');
+  assert.deepEqual(p.faixa, { min: 56, max: 65 });
   grupo(baixo.s, 'sair');
+});
+
+test('hunt não liberada (level da hunt): nem o chamado, nem o pedido, nem a entrada', async () => {
+  const host = await jogador(0, 1, 45);
+  const novato = await jogador(1, 1, 36);
+  grupo(host.s, 'convidar', novato.nome);
+  assert.equal(grupo(novato.s, 'aceitar').ok, true);
+  // Port Hope pede level 40.
+  const huntId = 'port-hope-corym-dungeons';
+  assert.equal(Cacadas.levelDaHunt(huntId), 40);
+  assert.equal(Cacadas.entrar(host.s.estado, { huntId, mode: 'auto' }).ok, true);
+  const chamado = caca(host.s, 'invite', novato.nome);
+  assert.equal(chamado.ok, false);
+  assert.match(chamado.erro, /ainda não liberou .*pede level 40.* é level 36/);
+  const pedido = caca(novato.s, 'pedir', host.nome);
+  assert.equal(pedido.ok, false);
+  assert.match(pedido.erro, /ainda não liberou/);
+  assert.equal(novato.s.estado.hunt ?? null, null, 'e ele não entrou');
+  // Subiu para 40: agora pode.
+  novato.s.estado.level = 40;
+  assert.equal(caca(host.s, 'invite', novato.nome).ok, true);
+  assert.equal(caca(novato.s, 'accept').ok, true);
+  assert.equal(Cacadas.salaDe(novato.s.estado.hunt), Cacadas.salaDe(host.s.estado.hunt));
+  grupo(novato.s, 'sair');
+});
+
+test('aceitou o chamado caçando em outro lugar: o extrato da caçada de antes aparece para ele', async () => {
+  const host = await jogador(0, 1, 60);
+  const outro = await jogador(1, 1, 60);
+  grupo(host.s, 'convidar', outro.nome);
+  grupo(outro.s, 'aceitar');
+  assert.equal(Cacadas.entrar(outro.s.estado, { huntId: 'amazon-camp', mode: 'auto' }).ok, true);
+  for (let i = 0; i < 4; i++) await outro.s.tique();
+  assert.equal(Cacadas.entrar(host.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
+  const antes = outro.avisos.filter((m) => m.t === 'runReport').length;
+  caca(host.s, 'invite', outro.nome);
+  assert.equal(caca(outro.s, 'accept').ok, true);
+  const extratos = outro.avisos.filter((m) => m.t === 'runReport');
+  assert.equal(extratos.length, antes + 1, 'um extrato');
+  assert.match(extratos.at(-1).motivo, /Você saiu de Amazon Camp para entrar na caçada de/);
+  assert.ok(extratos.at(-1).report);
+  grupo(outro.s, 'sair');
 });
 
 // ---------------------------------------------------- a divisão do LOOT na party

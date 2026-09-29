@@ -619,6 +619,15 @@ export function disparoManual(estado, personagem, slot) {
 }
 
 /** Entra na caçada de outro membro da party: os MESMOS bichos, posição própria. */
+/** O level de uma hunt (o do catálogo: Troll Cave 8, Port Hope 40...); 0 se ela não tem. */
+export const levelDaHunt = (huntId) => huntOuMapaCustom(huntId)?.level ?? 0;
+
+/** Vip/Instance/Divine: `estado` tem premium, o acesso e o level da porta desta sala? (`{ok}` ou `{ok:false, erro}`) */
+export function podeEntrarNaSala(estado, sala) {
+  const dados = huntOuMapaCustom(sala.huntId);
+  return Premium.trancaDaHunt(dados) ? Premium.podeEntrar(estado, dados) : { ok: true };
+}
+
 export function entrarNaSala(estado, sala) {
   const dados = huntOuMapaCustom(sala.huntId);
   const tranca = Premium.trancaDaHunt(dados);

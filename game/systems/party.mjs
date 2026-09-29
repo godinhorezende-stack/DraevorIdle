@@ -16,8 +16,11 @@
 // - "Quem vai na frente" (`frente`, escolhido por quem manda na fila, o líder)
 //   puxa; os outros seguem a ponta ou quem escolheram ("Andar atrás de"), a
 //   `coleira` sqm (1, 2, 3, 5, 7, 9, 12; padrão 5).
+// - Level: ninguém mais de `DIFERENCA_DE_LEVEL` (10) longe de ninguém — para
+//   entrar na party e na caçada de alguém. E a caçada precisa estar LIBERADA
+//   para quem entra (o level dela; nas Vip/Instance/Divine, premium e acesso).
 // - Shared Experience: ativa com 2+ na mesma caçada, todos dentro da faixa de
-//   level (o menor ≥ 2/3 do maior) e perto (30 sqm). A exp do bicho é dividida
+//   level (os mesmos 10) e perto (30 sqm). A exp do bicho é dividida
 //   em partes iguais, com o bônus por vocações diferentes — "Mesma vocação +20%
 //   · duas +35% · três +70% · quatro ou mais +100%. Vale para criaturas de 20
 //   de experiência para cima." O loot, na partilha: o ouro em partes iguais e
@@ -35,6 +38,14 @@ const CONVITE_MS = 60_000;
 const COLEIRAS = [1, 2, 3, 5, 7, 9, 12];
 const LONGE = 30;
 const BONUS_POR_VOCACOES = [1, 1.2, 1.35, 1.7, 2];
+/*
+ * A diferença de level na party: ninguém mais de 10 levels longe de ninguém
+ * (pedido do dono, "um limite de lv, exemplo 10 leveis"). Vale para entrar na
+ * party, para entrar na caçada de alguém e para a partilha — quem passar disso
+ * subindo de level na caçada continua na party, mas a partilha desliga até
+ * todos voltarem a caber.
+ */
+export const DIFERENCA_DE_LEVEL = 10;
 
 let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
 export const ligar = (mapa) => void (vivas = mapa);
@@ -77,6 +88,16 @@ function maximo(nomes) {
   return 2 + Math.min(...[...contas].map(slotsDaConta), 3);
 }
 
+/** `null` se todos os nomes cabem na diferença de level; senão, a frase de quem não cabe. */
+function foraDaFaixa(nomes) {
+  const niveis = nomes.map((n) => ({ n, lv: sessaoDe(n)?.estado?.level ?? 1 }));
+  if (niveis.length < 2) return null;
+  const alto = niveis.reduce((a, b) => (b.lv > a.lv ? b : a));
+  const baixo = niveis.reduce((a, b) => (b.lv < a.lv ? b : a));
+  if (alto.lv - baixo.lv <= DIFERENCA_DE_LEVEL) return null;
+  return `A diferença de level na party é de no máximo ${DIFERENCA_DE_LEVEL}: ${alto.n} é level ${alto.lv} e ${baixo.n} é level ${baixo.lv}.`;
+}
+
 // ------------------------------------------------------------------ grupo
 
 export function comandoDoGrupo(s, m) {
@@ -89,6 +110,9 @@ export function comandoDoGrupo(s, m) {
       if (alvo === s) return { ok: false, erro: 'Você não pode se convidar.' };
       if (partyDe.has(nomeDe(alvo))) return { ok: false, erro: `${nomeDe(alvo)} já está numa party.` };
       if (party && party.lider !== eu) return { ok: false, erro: 'Só o líder da party convida.' };
+      // A faixa de level ANTES de criar a party: recusado, não sobra uma party de um só.
+      const longe = foraDaFaixa([...(party?.membros ?? [eu]), nomeDe(alvo)]);
+      if (longe) return { ok: false, erro: longe };
       const p = party ?? criar(eu);
       const teto = maximo([...p.membros, nomeDe(alvo)]);
       if (p.membros.length >= teto) return { ok: false, erro: `A party está cheia (${teto} lugares). Mais lugares: "Slot de party", na Store — cada conta precisa ter os seus.` };
@@ -102,6 +126,9 @@ export function comandoDoGrupo(s, m) {
       if (!p) return { ok: false, erro: 'O convite expirou.' };
       p.convites.delete(eu);
       if (p.membros.length >= maximo([...p.membros, eu])) return { ok: false, erro: 'A party encheu antes de você aceitar.' };
+      // Alguém subiu de level entre o convite e o aceite.
+      const longe = foraDaFaixa([...p.membros, eu]);
+      if (longe) return { ok: false, erro: longe };
       p.membros.push(eu);
       partyDe.set(eu, p.id);
       for (const n of p.membros) if (n !== eu) avisar(sessaoDe(n), `${eu} entrou na party.`);
@@ -213,14 +240,53 @@ export function antesDeSairDaCacada(s) {
   for (const o of convidados) avisar(o, `${nomeDe(s)} saiu da caçada — ${nomeDe(novo)} segue puxando.`);
 }
 
+/**
+ * Pode `convidado` entrar na sala de caçada `sala`? `null` = pode; senão, a
+ * frase do porquê. Conferido no chamado, no pedido e de novo na entrada (o
+ * level muda no meio): a hunt precisa estar LIBERADA para ele — o level dela,
+ * e, nas Vip/Instance/Divine, premium e o acesso — e ele precisa caber na
+ * faixa de level de quem já está lá.
+ */
+function motivoParaNaoEntrar(convidado, sala) {
+  if (!sala) return 'Essa pessoa não está caçando.';
+  if (sala.isBoss || sala.huntId === 'treino') return 'Nessa caçada não dá para entrar.';
+  const nome = nomeDe(convidado);
+  const lv = convidado.estado?.level ?? 1;
+  const precisa = Cacadas.levelDaHunt(sala.huntId);
+  if (lv < precisa) return `${nome} ainda não liberou ${Cacadas.nomeDaHunt(sala.huntId)}: ela pede level ${precisa}, e ${nome} é level ${lv}.`;
+  const naSala = [...vivas.values()].filter((o) => o !== convidado && o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala).map(nomeDe);
+  return foraDaFaixa([...naSala, nome]);
+}
+
 function juntar(convidado, anfitriao) {
   const sala = Cacadas.salaDe(anfitriao.estado?.hunt);
   if (!sala) return { ok: false, erro: `${nomeDe(anfitriao)} não está caçando.` };
-  if (sala.isBoss || sala.huntId === 'treino') return { ok: false, erro: 'Nessa caçada não dá para entrar.' };
+  const motivo = motivoParaNaoEntrar(convidado, sala);
+  if (motivo) return { ok: false, erro: motivo };
   const naSala = [...vivas.values()].filter((o) => o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala).length;
   const p = minhaParty(convidado);
   if (naSala >= maximo(p?.membros ?? [])) return { ok: false, erro: 'A caçada já está com a party inteira.' };
+  // Vip/Instance/Divine: premium, o acesso e o level da porta ANTES de largar a caçada de agora.
+  const tranca = Cacadas.podeEntrarNaSala(convidado.estado, sala);
+  if (!tranca.ok) return tranca;
   if (convidado.estado.hunt) {
+    /*
+     * A caçada de antes acaba aqui: o extrato dela vai para ele, como no
+     * "Parar". Sem isto o que ela rendeu sumia sem ninguém ver. (Sem aba — um
+     * char da conta trazido pela troca de personagem —, quem chamou recebe; ver
+     * `chamarOutro`, em sessao.mjs.)
+     */
+    const h = convidado.estado.hunt;
+    if (h.huntId !== 'treino' && Cacadas.salaDe(h) !== sala) {
+      const report = Cacadas.relatorio(convidado.estado);
+      if (report) {
+        convidado.enviar({
+          t: 'runReport',
+          report,
+          motivo: `Você saiu de ${Cacadas.nomeDaHunt(h.huntId)} para entrar na caçada de ${nomeDe(anfitriao)}.`,
+        });
+      }
+    }
     antesDeSairDaCacada(convidado);
     convidado.estado.hunt = null;
   }
@@ -242,6 +308,11 @@ export function comandoDaCaca(s, m) {
       if (!doMeuGrupo(outro)) return { ok: false, erro: `Chame ${nomeDe(outro)} para a party primeiro (Party → Convidar).` };
       if (!s.estado.hunt) return { ok: false, erro: 'Comece uma caçada para chamar alguém.' };
       const sala = Cacadas.salaDe(s.estado.hunt);
+      // Já no chamado: quem chama sabe na hora que o outro não pode vir.
+      const motivo = motivoParaNaoEntrar(outro, sala);
+      if (motivo) return { ok: false, erro: motivo };
+      const tranca = Cacadas.podeEntrarNaSala(outro.estado, sala);
+      if (!tranca.ok) return { ok: false, erro: `${nomeDe(outro)}: ${tranca.erro}` };
       convitesDeCaca.set(nomeDe(outro), { de: eu, expira: Date.now() + CONVITE_MS });
       outro.enviar({ t: 'partyInvite', from: eu, hunt: Cacadas.nomeDaHunt(sala.huntId), faixa: faixa([s, outro]), expiraEm: Date.now() + CONVITE_MS });
       return { ok: true, notice: `Chamado enviado para ${nomeDe(outro)}.` };
@@ -263,6 +334,11 @@ export function comandoDaCaca(s, m) {
     case 'pedir': {
       if (!doMeuGrupo(outro)) return { ok: false, erro: 'Essa pessoa não está na sua party.' };
       if (!outro.estado?.hunt) return { ok: false, erro: `${nomeDe(outro)} não está caçando.` };
+      const sala = Cacadas.salaDe(outro.estado.hunt);
+      const motivo = motivoParaNaoEntrar(s, sala);
+      if (motivo) return { ok: false, erro: motivo };
+      const tranca = Cacadas.podeEntrarNaSala(s.estado, sala);
+      if (!tranca.ok) return tranca;
       pedidos.set(nomeDe(outro), { de: eu, expira: Date.now() + CONVITE_MS });
       outro.enviar({ t: 'pedidoDeEntrada', from: eu, level: s.estado.level, vocation: s.estado.vocation, hunt: Cacadas.nomeDaHunt(outro.estado.hunt.huntId), expiraEm: Date.now() + CONVITE_MS });
       outro.mandarEstado();
@@ -325,10 +401,10 @@ function naMesmaSala(s) {
   return [...vivas.values()].filter((o) => o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala);
 }
 
+/** A faixa de level em que todos cabem: ninguém mais de `DIFERENCA_DE_LEVEL` longe de ninguém. */
 function faixa(sessoes) {
   const niveis = sessoes.map((o) => o.estado?.level ?? 1);
-  const max = Math.max(...niveis);
-  return { min: Math.ceil((max * 2) / 3), max: Math.floor((Math.min(...niveis) * 3) / 2) };
+  return { min: Math.max(1, Math.max(...niveis) - DIFERENCA_DE_LEVEL), max: Math.min(...niveis) + DIFERENCA_DE_LEVEL };
 }
 
 /** A partilha agora: `{ativa, motivo, bonus, vocacoes, faixa, membros:[estado]}`. */
@@ -337,8 +413,9 @@ export function partilha(s) {
   const f = juntos.length ? faixa(juntos) : null;
   const base = { membros: juntos.map((o) => ({ estado: o.estado, nome: nomeDe(o) })), faixa: f, vocacoes: new Set(juntos.map((o) => o.estado.vocation)).size };
   if (juntos.length < 2) return { ...base, ativa: false, motivo: 'sozinho', bonus: 1 };
+  // Alguém subiu de level na caçada e passou da diferença: a partilha desliga até ele voltar a caber.
   const niveis = juntos.map((o) => o.estado.level ?? 1);
-  if (Math.min(...niveis) < Math.ceil((Math.max(...niveis) * 2) / 3)) return { ...base, ativa: false, motivo: 'level', bonus: 1 };
+  if (Math.max(...niveis) - Math.min(...niveis) > DIFERENCA_DE_LEVEL) return { ...base, ativa: false, motivo: 'level', bonus: 1 };
   const eu = s.estado.hunt.pos;
   if (juntos.some((o) => Math.max(Math.abs(o.estado.hunt.pos.x - eu.x), Math.abs(o.estado.hunt.pos.y - eu.y)) > LONGE)) {
     return { ...base, ativa: false, motivo: 'longe', bonus: 1 };

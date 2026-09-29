@@ -1306,9 +1306,8 @@ export class Sessao {
       notice = r.notice?.startsWith('Você entrou') ? `${linha.nome} entrou na sua caçada.` : r.notice ?? notice;
       if (extrato?.report && !jaMandouOExtrato) {
         const msg = { t: 'runReport', report: extrato.report, titulo: `Extrato de ${linha.nome}`, motivo: `${linha.nome} saiu de ${extrato.onde} para vir para a sua caçada. Isto é o que aquela caçada rendeu.` };
+        // (Com aba aberta nele, quem está lá recebe o dele pela entrada — ver `juntar`, em party.mjs.)
         this.enviar(msg);
-        // Com aba aberta nele, quem está lá também vê.
-        if (!outro.semAba) outro.enviar(msg);
       }
     }
     outro.characterSujo = true;
