@@ -144,7 +144,11 @@ function calcularCombate(estado) {
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   const damage = w?.wand
     ? { min: w.wand.min, max: w.wand.max }
-    : R.attackDamage({ attack: ataque, skill: valorDaPericia, level: estado.level ?? 1 });
+    : {
+        // A faixa da arma inteira: o menor golpe com o piso dela, o maior com o teto.
+        min: R.attackDamage({ attack: ataqueMin, skill: valorDaPericia, level: estado.level ?? 1 }).min,
+        max: R.attackDamage({ attack: ataqueMax, skill: valorDaPericia, level: estado.level ?? 1 }).max,
+      };
   const protection = Object.fromEntries(ELEMENTOS.map((e) => [e, 0]));
   for (const it of itens) {
     for (const [k, v] of Object.entries(it.protection ?? {})) {
@@ -163,6 +167,8 @@ function calcularCombate(estado) {
     ataque,
     ataqueMin,
     ataqueMax,
+    // A faixa de defesa do escudo (`[piso, teto]`, ou null sem escudo): é ela que sustenta o bloqueio.
+    defesaEscudo: escudo ? faixaDoCampo(estado.equipment?.shield, 'defense') : null,
     defense,
     damage,
     skillName: pericia,

@@ -475,7 +475,26 @@ export function renderSheet(body, { state, send, closeModal }) {
   const combat = el('div', 'stat-grid');
   combat.append(
     statCard('Armadura', derived.armor, 'armadura equipada', null, 'ficha-armadura'),
-    statCard('Defesa', derived.defense, 'escudo e arma', null, 'ficha-defesa'),
+    // O ataque da arma é uma FAIXA (piso e teto sorteados no drop): cada golpe sorteia entre os dois.
+    ...(derived.ataque > 0
+      ? [
+          statCard(
+            'Ataque da arma',
+            derived.ataqueMin !== derived.ataqueMax ? `${derived.ataqueMin} – ${derived.ataqueMax}` : derived.ataque,
+            derived.ataqueMin !== derived.ataqueMax ? `sorteado a cada golpe · média ${derived.ataque}` : 'da arma equipada',
+            null,
+            'ficha-dano'
+          ),
+        ]
+      : []),
+    // Só o escudo bloqueia (a defesa da arma não entra): a faixa dele é a base do Bloqueio.
+    statCard(
+      'Defesa do escudo',
+      derived.defesaEscudo ? (derived.defesaEscudo[0] !== derived.defesaEscudo[1] ? `${derived.defesaEscudo[0]} – ${derived.defesaEscudo[1]}` : derived.defesaEscudo[0]) : 0,
+      derived.defesaEscudo ? 'base do bloqueio (usa a média)' : 'sem escudo: bloqueio 0%',
+      null,
+      'ficha-defesa'
+    ),
     statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
     /*
      * O elemental é uma FATIA do golpe, e não um golpe à parte.
