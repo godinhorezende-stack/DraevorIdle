@@ -148,12 +148,36 @@ export function escolherDiario(estado, { escolha }) {
   return { ok: true };
 }
 
+/*
+ * ---- O set de marco é da VOCAÇÃO ----
+ *
+ * Os marcos saíam do molde (`character-template.json`), que é o de um knight:
+ * um druid que pegava o "Set intermediário" recebia knight legs, heroic axe e
+ * vampire shield. No original cada vocação tem o seu (`gamedata/sets-de-marco.json`,
+ * lido do servidor original). Os marcos AINDA NÃO PEGOS passam a ter os itens
+ * da vocação do personagem; o que já foi pego fica como está.
+ */
+const SETS_DE_MARCO = JSON.parse(readFileSync(new URL('../gamedata/sets-de-marco.json', import.meta.url), 'utf8')).vocacoes;
+
+export function marcosDaVocacao(estado) {
+  const sets = SETS_DE_MARCO[estado?.vocation];
+  if (!sets) return;
+  for (const marco of estado.presentes?.marcos ?? []) {
+    const itens = marco.tipo === 'set' && !marco.pego ? sets[String(marco.level)] : null;
+    if (itens) marco.itens = itens.map(([itemId, name]) => ({ itemId, name, count: 1 }));
+  }
+}
+
 /** `send({t:'marco', level})` — um marco de EQUIPAMENTO (set/outfit/montaria). */
 export function coletarMarco(estado, { level }) {
   const presentes = estado?.presentes;
   const marco = presentes?.marcos?.find((m) => m.level === level);
   if (!marco || marco.pego) return { ok: false, erro: 'Recompensa não encontrada.' };
+  // O marco é do LEVEL: antes só o ouro era conferido, e um level 8 com 100 mil
+  // pegava o Set completo do level 100.
+  if ((estado.level ?? 1) < marco.level) return { ok: false, erro: `Esta recompensa abre no level ${marco.level}.` };
   if ((estado.gold ?? 0) < marco.custo) return { ok: false, erro: 'Ouro insuficiente.' };
+  marcosDaVocacao(estado);
 
   estado.gold -= marco.custo;
   for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);

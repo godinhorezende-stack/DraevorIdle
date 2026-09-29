@@ -1502,6 +1502,8 @@ export class Sessao {
     // não têm `wildcards`/`presentes`/`diario` no `estado` gravado — sem
     // isto, COLETAR (não só exibir) quebraria em silêncio para eles.
     if (!estado.diario) Object.assign(estado, Recompensas.estadoInicial());
+    // Os sets de marco da VOCAÇÃO dele (os ainda não pegos vinham com os itens de knight).
+    Recompensas.marcosDaVocacao(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.
     if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
     // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
