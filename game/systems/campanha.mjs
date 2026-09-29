@@ -68,8 +68,19 @@ export function faseLiberada(estado, dif, huntId) {
   if (f.indice === 0) return true;
   // A primeira fase de um ato pede o boss do ato anterior.
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return false;
-  const exigida = faseExigida(f);
-  return !exigida || faseCompleta(estado, dif, exigida.huntId);
+  return !primeiraIncompleta(estado, dif, f);
+}
+
+/**
+ * A primeira fase do ATO, antes desta, que ainda não está completa (a travada conta como completa) — ou
+ * `null`. A liberação olha a CADEIA inteira, e não só a fase de trás: com a party, uma fase pode ficar
+ * "completa" (a limpeza conta para todos da sala) sem a anterior estar — e olhando só a de trás, essa
+ * marca abria a seguinte, que abria a seguinte... (uma fase aberta no meio do ato, com a 6 por fazer).
+ */
+export function primeiraIncompleta(estado, dif, f) {
+  const inicio = f.indice - (f.indice % FASES_POR_ATO);
+  for (let k = inicio; k < f.indice; k++) if (!faseCompleta(estado, dif, FASES[k].huntId)) return FASES[k];
+  return null;
 }
 
 /**
@@ -100,7 +111,7 @@ export function motivoParaNaoEntrar(estado, dif, huntId) {
   if (f.pular) return `${f.nome} está travada (em obras) e não abre por enquanto.`;
   if (faseLiberada(estado, dif, huntId)) return null;
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return `Derrote o boss do Ato ${f.ato - 1} (${bossDoAto(f.ato - 1)?.nome}) no ${nomeDif} para abrir o Ato ${f.ato}.`;
-  return `Complete a fase anterior (${(faseExigida(f) ?? FASES[f.indice - 1]).nome}) no ${nomeDif} para abrir esta.`;
+  return `Complete a fase anterior (${(primeiraIncompleta(estado, dif, f) ?? FASES[f.indice - 1]).nome}) no ${nomeDif} para abrir esta.`;
 }
 
 /*

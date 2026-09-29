@@ -343,5 +343,24 @@ test('a fase depois de uma travada NÃO abre de graça: exige a última fase de 
   for (let a = 1; a < seguinte.ato; a++) { completar(g, 'facil', (a - 1) * 12, a * 12); Campanha.venceuBoss(g, 'facil', a); }
   completar(g, 'facil', (seguinte.ato - 1) * 12, dark);
   assert.equal(Campanha.faseLiberada(g, 'facil', seguinte.huntId), true);
-  assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', seguinte.huntId), /Warzone 2/);
+  // Sem nada feito, a primeira do ato que falta é a que o aviso pede.
+  const primeiraDoAto = F.find((f) => f.ato === seguinte.ato && !f.pular);
+  assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', seguinte.huntId), new RegExp(primeiraDoAto.nome));
+});
+
+test('fase "completa" por carona (party) sem a anterior NÃO abre as seguintes: a liberação olha a cadeia inteira do ato', () => {
+  const e = novo(2000);
+  completar(e, 'facil', 0, 5); // fases 1-5 completas
+  // A 7 e a 8 saem "completas" (limpeza dividida na party) — a 6 continua por fazer.
+  Campanha.limpou(e, { campanha: { huntId: F[6].huntId, dificuldade: 'facil', ato: 1 } });
+  Campanha.limpou(e, { campanha: { huntId: F[7].huntId, dificuldade: 'facil', ato: 1 } });
+  assert.equal(Campanha.faseCompleta(e, 'facil', F[6].huntId), true);
+  assert.equal(Campanha.faseLiberada(e, 'facil', F[5].huntId), true, 'a 6 está aberta');
+  assert.equal(Campanha.faseLiberada(e, 'facil', F[6].huntId), false, 'a 7 fica fechada');
+  assert.equal(Campanha.faseLiberada(e, 'facil', F[7].huntId), false, 'a 8 fica fechada');
+  assert.equal(Campanha.faseLiberada(e, 'facil', F[8].huntId), false, 'e a 9 também');
+  assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', F[8].huntId), new RegExp(F[5].nome));
+  // Fez a 6: tudo abre de uma vez (as duas por carona já contam).
+  Campanha.limpou(e, { campanha: { huntId: F[5].huntId, dificuldade: 'facil', ato: 1 } });
+  assert.equal(Campanha.faseLiberada(e, 'facil', F[8].huntId), true);
 });
