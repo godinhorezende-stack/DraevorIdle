@@ -304,8 +304,8 @@
    {
     "level": 50,
     "custo": 50000,
-    "tipo": "set",
-    "titulo": "Set intermediário",
+    "tipo": "bau",
+    "titulo": "Baú de itens (nível 50)",
     "itens": [
      {
       "itemId": 21170,
@@ -360,8 +360,8 @@
    {
     "level": 100,
     "custo": 100000,
-    "tipo": "set",
-    "titulo": "Set completo",
+    "tipo": "bau",
+    "titulo": "Baú de itens (nível 100)",
     "itens": [
      {
       "itemId": 16109,

@@ -7471,9 +7471,10 @@ export function openVenderMochila(lugar = 'bag') {
         return;
       }
 
-      // O que "marcar tudo" pega: o limpo. O que tem aviso fica de fora dele de
-      // propósito — ver a nota da célula, logo abaixo.
-      const podem = previa.linhas.filter((linha) => !linha.motivo && !linha.aviso);
+      // O que "marcar tudo" pega: TUDO o que o NPC compra, com ou sem atributo/raridade (decisão do
+      // dono, 29/09: nada trava por causa da raridade). A peça com tier, imbuement ou estrela entra
+      // na seleção, e a proteção que sobra é a confirmação da venda, que a LISTA em vermelho.
+      const podem = previa.linhas.filter((linha) => !linha.motivo);
       const comAviso = previa.linhas.filter((linha) => !linha.motivo && linha.aviso);
       const recusadas = previa.linhas.filter((linha) => linha.motivo);
 
@@ -7536,12 +7537,11 @@ export function openVenderMochila(lugar = 'bag') {
          */
         if (linha.aviso) {
           caixa.classList.add('com-aviso');
-          if (!marcada) cell.classList.add('venda-travada');
           tipTexto(
             cell,
             marcada
               ? `VAI SER VENDIDA mesmo tendo ${linha.aviso}. A tela vai perguntar de novo antes.`
-              : `Esta peça ${linha.aviso}. Ela fica de fora do "marcar tudo" — clique para vender assim mesmo.`
+              : `Esta peça tem ${linha.aviso}. O "marcar tudo" a marca, e a tela pergunta de novo antes de vender.`
           );
         }
 
@@ -7565,7 +7565,7 @@ export function openVenderMochila(lugar = 'bag') {
             'em',
             'filter-legend',
             `${comAviso.length} ${comAviso.length === 1 ? 'peça tem' : 'peças têm'} tier, imbuement ou estrela. ` +
-              'Elas ficam de fora do "marcar tudo" e só saem se você clicar em cada uma — e aí a tela pergunta de novo.'
+              'O "marcar tudo" as marca também — e, se saírem, a tela pergunta de novo antes de vender.'
           )
         );
       }
@@ -7601,10 +7601,8 @@ export function openVenderMochila(lugar = 'bag') {
        * cliques para fazer o que a bolsa faz sozinha.
        */
       /*
-       * "Marcar tudo" pega o LIMPO, e só ele. A conta olha quantas das
-       * `podem` estão marcadas, e não o tamanho da seleção inteira: com uma peça
-       * cara marcada à mão, os dois números nunca mais bateriam e o botão
-       * ficaria preso em "Marcar tudo" para sempre.
+       * "Marcar tudo" pega TUDO o que o NPC compra (inclusive peça com atributo). A conta olha
+       * quantas das `podem` estão marcadas, e não o tamanho da seleção inteira.
        */
       const limpasMarcadas = podem.filter((linha) => marcadas.has(linha.i)).length;
       const todasLimpas = podem.length > 0 && limpasMarcadas === podem.length;
@@ -19974,7 +19972,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
       resumo: degrau.boosted ? 'à sua escolha — rende o dobro por carga' : 'à sua escolha, cheia de cargas',
       itens: [],
     })),
-    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: null })),
+    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: marco.tipo === 'bau' ? 'abre 1 item aleatório — com raridade' : null })),
   ].sort((a, b) => a.level - b.level);
 
   /* `null` = a grade; um número = a escolha da arma daquele degrau. */
@@ -20119,6 +20117,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
     const sobra = meuOuro - custo;
 
     area.append(el('p', 'shop-note', `Marco do level ${cartao.level} — ${cartao.titulo}.`));
+    if (cartao.tipo === 'bau') area.append(el('p', 'relatorio-motivo', 'Abre UM item, sorteado entre os mostrados — com raridade, faixa de valores e atributos como num drop.'));
 
     if (cartao.itens?.length) {
       const grade = el('div', 'recompensa-arte confirmar-itens');
