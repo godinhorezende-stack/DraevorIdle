@@ -132,6 +132,8 @@ export function contarKills(estado, hunt, n = 1) {
   p.kills[f.huntId] = (p.kills[f.huntId] ?? 0) + n;
   if (p.kills[f.huntId] < f.kills[c.dificuldade]) return null;
   p.completas.push(f.huntId);
+  // "Seguir" (ver `proximaParaSeguir`): a sessão troca de fase no próximo tique.
+  estado.faseCompletada = { huntId: f.huntId, dificuldade: c.dificuldade };
   const nomeDif = CAMPANHA.dificuldades[c.dificuldade].nome;
   const proxima = FASES[f.indice + 1];
   const aviso =
@@ -140,6 +142,25 @@ export function contarKills(estado, hunt, n = 1) {
       : `Fase completa: ${f.nome} (${nomeDif})! O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado.`;
   estado.avisoDaHunt = aviso;
   return aviso;
+}
+
+/** O que fazer ao completar uma fase: `'repetir'` (fica em loop nela, o padrão) ou `'seguir'`. */
+export const AO_COMPLETAR = ['repetir', 'seguir'];
+export const aoCompletar = (estado) => (AO_COMPLETAR.includes(estado.settings?.aoCompletarFase) ? estado.settings.aoCompletarFase : 'repetir');
+
+/**
+ * A fase seguinte para quem escolheu "Seguir": a próxima do MESMO ato que não
+ * se pula e já está liberada. No fim do ato não segue: o boss é uma luta, não
+ * uma fase — o aviso da tela diz que ele abriu. `null` = fica onde está.
+ */
+export function proximaParaSeguir(estado, dif, huntId) {
+  const f = faseDe(huntId);
+  if (!f) return null;
+  for (let i = f.indice + 1; i < FASES.length && FASES[i].ato === f.ato; i++) {
+    if (FASES[i].pular) continue;
+    return faseLiberada(estado, dif, FASES[i].huntId) ? FASES[i] : null;
+  }
+  return null;
 }
 
 /** O boss do ato caiu: a primeira vitória libera o ato seguinte (ou a dificuldade seguinte). */
@@ -162,6 +183,7 @@ export function venceuBoss(estado, dif, ato) {
 /** A campanha para a tela: por dificuldade, as fases (com progresso) e os bosses. */
 export function paraCliente(estado) {
   return {
+    aoCompletar: aoCompletar(estado),
     dificuldades: DIFICULDADES.map((dif) => {
       const p = progresso(estado, dif);
       return {
@@ -203,7 +225,7 @@ export function faseAtual(estado, hunt) {
   if (!f) return null;
   const p = progresso(estado, c.dificuldade);
   return {
-    tipo: 'fase', ato: f.ato, numero: f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
+    tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
     kills: Math.min(p.kills[f.huntId] ?? 0, f.kills[c.dificuldade]), precisa: f.kills[c.dificuldade], completa: faseCompleta(estado, c.dificuldade, f.huntId),
   };
 }

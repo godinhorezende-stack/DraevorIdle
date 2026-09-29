@@ -574,6 +574,27 @@ function campanhaCards(body) {
   }
   body.append(barra);
 
+  // ---- ao completar a fase: repetir (loop) ou seguir ----
+  const modo = el('div', 'campanha-modo');
+  modo.append(el('span', null, 'Ao completar a fase:'));
+  const opcoes = el('div', 'campanha-modo-opcoes');
+  for (const [valor, rotulo, dica] of [
+    ['repetir', '🔁 Repetir', 'Fica em loop na mesma fase depois de completar (bom para farmar).'],
+    ['seguir', '⏭ Seguir', 'Vai sozinho para a próxima fase do ato quando completar. No fim do ato para: o boss é você quem chama.'],
+  ]) {
+    const botao = el('button', campanha.aoCompletar === valor ? 'active' : null, rotulo);
+    botao.type = 'button';
+    tipTexto(botao, dica);
+    botao.onclick = () => {
+      campanha.aoCompletar = valor;
+      send({ t: 'aoCompletarFase', value: valor });
+      ctx.redraw();
+    };
+    opcoes.append(botao);
+  }
+  modo.append(opcoes);
+  body.append(modo);
+
   const porId = new Map((state.catalog.hunts ?? []).map((h) => [h.id, h]));
   const bossPorId = new Map((state.catalog.bosses ?? []).map((b) => [b.id, b]));
   const catalog = state.catalog.bestiary;

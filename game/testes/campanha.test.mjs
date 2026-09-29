@@ -192,3 +192,42 @@ test('caçada de antes da campanha: fase liberada vira a fase; fechada termina c
   assert.equal(Cacadas.adotarNaCampanha(g), null);
   assert.equal(JSON.stringify(g.hunt.campanha), antes);
 });
+
+test('ao completar a fase: "Repetir" (padrão) fica em loop; "Seguir" vai para a próxima do ato', () => {
+  const e = novo(20);
+  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  assert.equal(Campanha.aoCompletar(e), 'repetir');
+  Campanha.contarKills(e, e.hunt, F[0].kills.facil);
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'repetir: fica');
+  assert.equal(e.faseCompletada, undefined, 'a marca é consumida');
+
+  const s = novo(20);
+  assert.equal(Cacadas.definirAoCompletarFase(s, { value: 'seguir' }).ok, true);
+  assert.equal(Cacadas.definirAoCompletarFase(s, { value: 'x' }).ok, false);
+  assert.equal(Cacadas.entrar(s, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  assert.equal(Cacadas.snapshotDaHunt(s).fase.aoCompletar, 'seguir');
+  Campanha.contarKills(s, s.hunt, F[0].kills.facil);
+  assert.deepEqual(Cacadas.faseParaSeguir(s), { huntId: F[1].huntId, dificuldade: 'facil', nome: F[1].nome });
+
+  // Voltar a uma fase JÁ feita para farmar não empurra adiante (só no momento em que completa).
+  Cacadas.sair(s);
+  assert.equal(Cacadas.entrar(s, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  Campanha.contarKills(s, s.hunt, 10);
+  assert.equal(Cacadas.faseParaSeguir(s), null);
+});
+
+test('"Seguir" no fim do ato não entra no boss; e pula a hunt quebrada', () => {
+  const e = novo(20);
+  e.settings = { aoCompletarFase: 'seguir' };
+  completar(e, 'facil', 0, 11);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', F[10].huntId).huntId, F[11].huntId);
+  completar(e, 'facil', 11, 12);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', F[11].huntId), null, 'depois da 12ª vem o boss: fica');
+  const quebrada = F.findIndex((f) => f.pular);
+  if (quebrada > 0 && F[quebrada + 1]?.ato === F[quebrada - 1].ato) {
+    const g = novo(20);
+    for (let a = 1; a < F[quebrada].ato; a++) { completar(g, 'facil', (a - 1) * 12, a * 12); Campanha.venceuBoss(g, 'facil', a); }
+    completar(g, 'facil', (F[quebrada].ato - 1) * 12, quebrada + 1);
+    assert.equal(Campanha.proximaParaSeguir(g, 'facil', F[quebrada - 1].huntId).huntId, F[quebrada + 1].huntId);
+  }
+});

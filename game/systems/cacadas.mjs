@@ -618,6 +618,30 @@ export function definirDistancia(estado, { value }) {
   return { ok: true };
 }
 
+/** `send({t:'aoCompletarFase', value: 'repetir'|'seguir'})` — o que fazer quando a fase da campanha completa. */
+export function definirAoCompletarFase(estado, { value }) {
+  if (!Campanha.AO_COMPLETAR.includes(value)) return { ok: false, erro: 'Opção inválida.' };
+  (estado.settings ??= {}).aoCompletarFase = value;
+  return { ok: true };
+}
+
+/**
+ * A fase acabou de completar e ele escolheu "Seguir": para onde ir (`{huntId,
+ * dificuldade, nome}`), ou `null`. Consome a marca `faseCompletada` (posta por
+ * `Campanha.contarKills`, online ou na caçada offline). Só quem caça a PRÓPRIA
+ * sala segue: o convidado da party fica com o anfitrião, e quem o segue vem junto.
+ */
+export function faseParaSeguir(estado) {
+  const feita = estado.faseCompletada;
+  if (!feita) return null;
+  delete estado.faseCompletada;
+  const hunt = estado.hunt;
+  if (Campanha.aoCompletar(estado) !== 'seguir' || !hunt || salaDe(hunt) !== hunt) return null;
+  if (hunt.campanha?.huntId !== feita.huntId || hunt.campanha.dificuldade !== feita.dificuldade) return null;
+  const proxima = Campanha.proximaParaSeguir(estado, feita.dificuldade, feita.huntId);
+  return proxima ? { huntId: proxima.huntId, dificuldade: feita.dificuldade, nome: proxima.nome } : null;
+}
+
 /** `send({t:'lure', value})`/`{value:null, volta}` — grava a preferência e, se a hunt já estiver aberta, aplica na hora. */
 export function definirLure(estado, { value, volta }) {
   const settings = (estado.settings ??= {});

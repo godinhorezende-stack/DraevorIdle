@@ -97,6 +97,7 @@ const SEM_ABA_CARENCIA_MS = 10_000;
 const CONFIG_DE_OUTRO = {
   strategy: (e, m) => Cacadas.definirEstrategia(e, m),
   distance: (e, m) => Cacadas.definirDistancia(e, m),
+  aoCompletarFase: (e, m) => Cacadas.definirAoCompletarFase(e, m),
   lure: (e, m) => Cacadas.definirLure(e, m),
   settings: (e, m) => Bolsa.definirSettings(e, m),
   huntAssist: (e, m) => Cacadas.definirAssistencia(e, m),
@@ -1163,6 +1164,13 @@ export class Sessao {
         return this.aplicar(Cacadas.definirEstrategia(this.estado, m));
       case 'distance':
         return this.aplicar(Cacadas.definirDistancia(this.estado, m));
+      case 'aoCompletarFase': {
+        const r = Cacadas.definirAoCompletarFase(this.estado, m);
+        this.aplicar(r);
+        // O painel da campanha mostra a escolha: vai a campanha de novo.
+        if (r.ok) this.enviar({ t: 'campanha', campanha: Campanha.paraCliente(this.estado) });
+        return;
+      }
       case 'actions':
         return this.despacharAcoes(m);
       case 'actionPreset':
@@ -1565,6 +1573,21 @@ export class Sessao {
         return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora), treinoPendente);
       },
     );
+  }
+
+  /** "Seguir" da campanha (ver `Cacadas.faseParaSeguir`): entra na próxima fase e traz quem segue o líder. */
+  seguirParaAProximaFase() {
+    const proxima = Cacadas.faseParaSeguir(this.estado);
+    if (!proxima) return;
+    const h = this.estado.hunt;
+    Party.antesDeSairDaCacada(this);
+    const r = Cacadas.entrar(this.estado, { huntId: proxima.huntId, mode: h.modo, strategy: h.strategy, dificuldade: proxima.dificuldade });
+    if (!r.ok) {
+      this.avisoPendente = r.erro;
+      return;
+    }
+    this.avisoPendente = [this.avisoPendente, `Seguindo para a próxima fase: ${proxima.nome}.`].filter(Boolean).join(' ');
+    Party.seguirOLider(this);
   }
 
   pararDeCarregar() {
@@ -2108,6 +2131,8 @@ export class Sessao {
           this.avisoPendente = this.estado.avisoDaHunt;
           delete this.estado.avisoDaHunt;
         }
+        // A fase completou com "Seguir" marcado: a próxima fase, no mesmo modo.
+        if (this.estado.hp > 0) this.seguirParaAProximaFase();
         // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
         // Cair no duelo não é morte: é derrota, sem perder nada (ver `Arena.caiu`).
         if (this.estado.hp <= 0 && !Arena.caiu(this)) this.enviar({ t: 'death', ...this.morrerNaHunt() });

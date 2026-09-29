@@ -604,6 +604,19 @@ $('cartaz-beta-fechar')?.addEventListener('click', () => {
  */
 $('treino-faixa-parar')?.addEventListener('click', () => send({ t: 'training', action: 'stop' }));
 
+/*
+ * O botão da barra da fase: alterna "Repetir" (loop na fase) e "Seguir" (vai
+ * para a próxima ao completar). A barra se redesenha com a resposta do
+ * servidor; o texto troca na hora para o toque não parecer perdido.
+ */
+$('fase-modo')?.addEventListener('click', (evento) => {
+  const botao = evento.currentTarget;
+  const novo = botao.dataset.modo === 'seguir' ? 'repetir' : 'seguir';
+  botao.dataset.modo = novo;
+  botao.textContent = novo === 'seguir' ? '⏭ Seguir' : '🔁 Repetir';
+  send({ t: 'aoCompletarFase', value: novo });
+});
+
 
 /*
  * ---- A faixa sai da TELA, e a diária vai para a barra de cima ----
