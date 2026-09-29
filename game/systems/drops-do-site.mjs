@@ -22,7 +22,7 @@ import { banco } from '../database/banco.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import * as Afixos from './afixos.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
-import { raridadeDaPeca } from './itens/item.mjs';
+import { raridadeDaPeca, metaDaPeca } from './itens/item.mjs';
 
 const GUARDA = 30;
 const DE_BOSS = new Set(['lendário', 'mítico']);
@@ -71,7 +71,8 @@ function afixosDoSite(af) {
 
 /** Os campos da peça que o balão do site mostra, tirados do catálogo. */
 function fichaDaPeca(id, count, peca = {}) {
-  const it = ITEM_CATALOG[id] ?? {};
+  // Com a faixa que a peça sorteou no drop (`peca.base`): o site mostra a média e, se houver, a faixa.
+  const it = metaDaPeca({ ...peca, id }) ?? {};
   const af = peca.af ?? [];
   return {
     id,
@@ -87,6 +88,7 @@ function fichaDaPeca(id, count, peca = {}) {
     slot: it.slot ?? null,
     tipo: it.type ?? null,
     atk: it.attack ?? 0,
+    ...(peca.base?.attack ? { atkFaixa: peca.base.attack } : {}),
     def: it.defense ?? 0,
     defExtra: it.extraDefense ?? 0,
     armor: it.armor ?? 0,

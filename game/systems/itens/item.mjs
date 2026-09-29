@@ -13,7 +13,7 @@
 // (0 Comum, 1 Incomum, 2 Raro, 3 Épico). Nada é apagado; é idempotente.
 import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS } from './config.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
-import { valorNaFaixa, arredondar } from './gerar.mjs';
+import { valorNaFaixa, arredondar, CAMPOS_DA_BASE } from './gerar.mjs';
 
 const ID_DA_ESSENCIA = 900001;
 const FAIXAS_ANTIGAS = [[0, 20], [20, 40], [40, 60], [60, 85], [85, 100]];
@@ -23,12 +23,58 @@ const RARIDADE_PELA_QUANTIDADE = ['comum', 'incomum', 'raro', 'épico', 'lendár
 export function camposDaPeca(p) {
   if (!p) return {};
   return {
+    ...(p.base ? { base: p.base } : {}),
     ...(p.tier ? { tier: p.tier } : {}),
     ...(p.imbu?.length ? { imbu: p.imbu } : {}),
     ...(p.af?.length ? { af: p.af } : {}),
     ...(p.raridade ? { raridade: p.raridade } : {}),
     ...(p.efeito ? { efeito: p.efeito } : {}),
   };
+}
+
+/** Um campo do `base` como `[piso, teto]` (aceita o número solto das peças de antes da faixa); `null` se inválido. */
+function faixaValida(v) {
+  const [a, b] = Array.isArray(v) ? v : [v, v];
+  const piso = Math.floor(Number(a));
+  const teto = Math.floor(Number(b));
+  // [0, 0] é válido: a peça só-mágica tem a armadura física ZERADA (e não o valor do catálogo).
+  const zeroDeVerdade = Array.isArray(v) && piso === 0 && teto === 0;
+  return (piso > 0 && teto > 0) || zeroDeVerdade ? [piso, Math.max(piso, teto)] : null;
+}
+
+/** O `base` de uma peça só com os campos e faixas válidos (vem do cliente em `comparar`, e do save). */
+export function baseValida(base) {
+  const saida = {};
+  for (const campo of CAMPOS_DA_BASE) {
+    const faixa = faixaValida(base?.[campo]);
+    if (faixa) saida[campo] = faixa;
+  }
+  return saida;
+}
+
+/** `[piso, teto]` de um campo da peça: o sorteado no drop, ou o valor cheio do catálogo (faixa de largura zero). */
+export function faixaDoCampo(p, campo) {
+  const sorteada = faixaValida(p?.base?.[campo]);
+  if (sorteada) return sorteada;
+  const v = Math.floor(Number(ITEM_CATALOG[p?.id]?.[campo]));
+  return v > 0 ? [v, v] : [0, 0];
+}
+
+/**
+ * O item do catálogo COM os números desta peça: em cada campo sorteado no drop,
+ * a MÉDIA da faixa (é o que a ficha mostra e o que defesa e armadura usam; o
+ * ataque de cada golpe sorteia a faixa inteira). Peça sem `base` (kit inicial,
+ * loja, drop de antes) segue com o valor cheio do catálogo.
+ */
+export function metaDaPeca(p) {
+  const meta = ITEM_CATALOG[p?.id];
+  if (!meta || !p?.base) return meta;
+  const medias = {};
+  for (const campo of Object.keys(baseValida(p.base))) {
+    const [piso, teto] = faixaDoCampo(p, campo);
+    medias[campo] = Math.round((piso + teto) / 2);
+  }
+  return { ...meta, ...medias };
 }
 
 /** Converte UM atributo antigo (sem `nivel`); devolve `true` se mudou. */

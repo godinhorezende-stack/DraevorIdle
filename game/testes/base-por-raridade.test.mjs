@@ -1,0 +1,187 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
+import { rolarBase, gerarItem } from '../systems/itens/gerar.mjs';
+import { metaDaPeca, faixaDoCampo, baseValida } from '../systems/itens/item.mjs';
+import * as Ficha from '../systems/ficha.mjs';
+import * as C from '../systems/itens/config.mjs';
+import { personagemDeTeste } from './apoio.mjs';
+
+const arma = Object.values(ITEM_CATALOG).find((i) => i.slot === 'weapon' && !i.stackable && i.attack >= 10 && !i.wand);
+
+test('a configuração é contínua: o maior piso possível é o menor teto possível, e o Comum nunca passa de 100%', () => {
+  for (const r of C.RARIDADES.ordem) {
+    const { piso, teto } = C.RARIDADES.raridades[r].base;
+    assert.equal(piso[1], teto[0], `${r}: maior piso = menor teto`);
+    assert.ok(piso[0] <= piso[1] && teto[0] <= teto[1], r);
+  }
+  assert.ok(C.RARIDADES.raridades.comum.base.teto[1] <= 1);
+});
+
+test('rolarBase: piso e teto dentro das faixas da raridade, e o teto NUNCA menor que o piso', () => {
+  for (const r of C.RARIDADES.ordem) {
+    const { piso, teto } = C.RARIDADES.raridades[r].base;
+    for (let i = 0; i < 2000; i++) {
+      const [p, t] = rolarBase(arma.id, r).attack;
+      assert.ok(t >= p, `${r}: teto ${t} < piso ${p}`);
+      assert.ok(p >= Math.max(1, Math.round(arma.attack * piso[0])) && p <= Math.round(arma.attack * piso[1]), `${r}: piso ${p}`);
+      assert.ok(t <= Math.round(arma.attack * teto[1]), `${r}: teto ${t}`);
+    }
+  }
+});
+
+test('Comum nunca passa do valor do catálogo', () => {
+  for (let i = 0; i < 2000; i++) assert.ok(rolarBase(arma.id, 'comum').attack[1] <= arma.attack);
+});
+
+test('raridade maior sobe o piso e o teto (as médias crescem)', () => {
+  const media = (r) => {
+    let soma = 0;
+    for (let i = 0; i < 3000; i++) { const [p, t] = rolarBase(arma.id, r).attack; soma += (p + t) / 2; }
+    return soma / 3000;
+  };
+  const medias = C.RARIDADES.ordem.map(media);
+  for (let i = 1; i < medias.length; i++) assert.ok(medias[i] > medias[i - 1], `${C.RARIDADES.ordem[i]} > ${C.RARIDADES.ordem[i - 1]}`);
+});
+
+test('gerarItem grava a faixa na peça; metaDaPeca usa a média; sem base, o valor cheio', () => {
+  const peca = gerarItem({ itemId: arma.id, raridade: 'épico', rng: () => 0 });
+  const [p, t] = peca.base.attack;
+  assert.equal(p, Math.round(arma.attack * 0.85));
+  assert.equal(metaDaPeca(peca).attack, Math.round((p + t) / 2));
+  assert.deepEqual(faixaDoCampo({ id: arma.id }, 'attack'), [arma.attack, arma.attack]);
+  assert.equal(metaDaPeca({ id: arma.id, count: 1 }).attack, arma.attack);
+});
+
+test('baseValida aceita o número solto (peça antiga) e corrige teto < piso', () => {
+  assert.deepEqual(baseValida({ attack: 21 }), { attack: [21, 21] });
+  assert.deepEqual(baseValida({ attack: [20, 10], defense: 'x' }), { attack: [20, 20] });
+});
+
+test('ficha: o golpe sorteia entre o piso e o teto da arma; a ficha mostra a média', () => {
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.equipment.weapon = { id: arma.id, count: 1, base: { attack: [10, 30] } };
+  Ficha.invalidar(e);
+  const f = Ficha.combate(e);
+  assert.ok(f.ataqueMin < f.ataqueMax && f.ataque >= f.ataqueMin && f.ataque <= f.ataqueMax);
+  const vistos = new Set();
+  for (let i = 0; i < 400; i++) {
+    const a = Ficha.ataqueDoGolpe(f);
+    assert.ok(a >= f.ataqueMin && a <= f.ataqueMax);
+    vistos.add(a);
+  }
+  assert.ok(vistos.size > 5, 'oscila de golpe em golpe');
+});
+
+test('ficha: bloqueio e armadura em faixa; a defesa da arma entra no bloqueio, com ou sem escudo', () => {
+  const escudo = Object.values(ITEM_CATALOG).find((i) => i.slot === 'shield' && i.defense >= 10);
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.equipment.shield = { id: escudo.id, count: 1, base: { defense: [escudo.defense, escudo.defense + 10] } };
+  Ficha.invalidar(e);
+  const f = Ficha.combate(e);
+  assert.ok(f.blockChanceMin < f.blockChanceMax, 'faixa de bloqueio');
+  assert.ok(f.blockChance >= f.blockChanceMin && f.blockChance <= f.blockChanceMax);
+  assert.ok(f.armorMin <= f.armor && f.armor <= f.armorMax, 'faixa de armadura');
+
+  e.equipment.weapon = { id: arma.id, count: 1, base: { defense: [40, 60] } };
+  Ficha.invalidar(e);
+  const comArma = Ficha.combate(e);
+  assert.ok(comArma.blockChanceMax >= f.blockChanceMax, 'defesa da arma soma no bloqueio');
+
+  // Sem escudo, a defesa da arma sozinha já bloqueia; tirando a defesa dela, o bloqueio cai.
+  e.equipment.shield = null;
+  Ficha.invalidar(e);
+  const semEscudo = Ficha.combate(e);
+  assert.ok(semEscudo.blockChance > 0, 'arma com defesa bloqueia sem escudo');
+  e.equipment.weapon = { id: arma.id, count: 1, base: { defense: [0, 0] } };
+  Ficha.invalidar(e);
+  assert.ok(Ficha.combate(e).blockChance < semEscudo.blockChance, 'sem defesa na arma o bloqueio some (fica só o extra dela, se houver)');
+});
+
+const armadura = Object.values(ITEM_CATALOG).find((i) => i.armor >= 10 && i.slot && !i.stackable);
+
+test('armadura: Comum e Incomum vêm com UM tipo só; Raro+ pode vir com os dois; só-mágica zera a física', () => {
+  const ve = (r) => {
+    const c = { fisica: 0, magica: 0, ambas: 0 };
+    for (let i = 0; i < 4000; i++) {
+      const b = rolarBase(armadura.id, r);
+      const f = b.armor[1] > 0;
+      const m = !!b.marmor;
+      c[f && m ? 'ambas' : m ? 'magica' : 'fisica']++;
+      if (m) assert.ok(b.marmor[0] >= 1 && b.marmor[1] >= b.marmor[0]);
+      if (!m) assert.ok(b.armor[0] >= 1);
+    }
+    return c;
+  };
+  for (const r of ['comum', 'incomum']) {
+    const c = ve(r);
+    assert.equal(c.ambas, 0, `${r} nunca com as duas`);
+    assert.ok(c.fisica > 0 && c.magica > 0, `${r}: os dois tipos aparecem`);
+  }
+  assert.ok(ve('raro').ambas > 0);
+  const mitico = ve('mítico');
+  assert.equal(mitico.ambas, 4000, 'Mítico sempre com as duas');
+});
+
+test('ficha: armadura mágica soma das peças; peça só-mágica não tem armadura física', () => {
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.equipment[armadura.slot] = { id: armadura.id, count: 1, base: { armor: [0, 0], marmor: [10, 14] } };
+  Ficha.invalidar(e);
+  const f = Ficha.combate(e);
+  assert.equal(f.armorMagicMin, 10);
+  assert.equal(f.armorMagicMax, 14);
+  assert.equal(f.armorMagic, 12);
+  const sem = personagemDeTeste({ vocacao: 'knight' });
+  sem.equipment[armadura.slot] = { id: armadura.id, count: 1 };
+  Ficha.invalidar(sem);
+  assert.equal(Ficha.combate(sem).armorMagic, 0, 'peça sem faixa: só física');
+  assert.ok(f.armor < Ficha.combate(sem).armor, 'só-mágica tira a armadura física da peça');
+});
+
+test('anel e amuleto também sorteiam armadura física/mágica (valor pelo nível quando o catálogo não tem)', () => {
+  const joia = Object.values(ITEM_CATALOG).find((i) => (i.slot === 'neck' || i.slot === 'ring') && !i.stackable && !i.armor && i.minLevel >= 24);
+  assert.ok(joia, 'há joia sem armadura no catálogo');
+  const esperado = Math.max(2, Math.round(joia.minLevel / 12));
+  const b = rolarBase(joia.id, 'mítico');
+  assert.ok(b.armor[1] > 0 && b.marmor, 'Mítico: as duas');
+  assert.ok(b.armor[1] <= Math.round(esperado * 1.6) && b.marmor[1] <= Math.round(esperado * 1.6));
+  const gerada = gerarItem({ itemId: joia.id, raridade: 'comum', rng: () => 0.5 });
+  assert.ok(gerada.base?.armor || gerada.base?.marmor, 'a peça carrega a armadura sorteada');
+});
+
+test('joia: pode vir sem nada, só armadura, só ataque ou os dois; Comum/Incomum nunca com armadura E ataque', () => {
+  const joia = Object.values(ITEM_CATALOG).find((i) => i.slot === 'neck' && !i.stackable && !i.armor && i.minLevel >= 24);
+  const ve = (r) => {
+    const c = { nada: 0, armadura: 0, ataque: 0, ambos: 0 };
+    for (let i = 0; i < 4000; i++) {
+      const b = rolarBase(joia.id, r);
+      const arm = (b.armor?.[1] ?? 0) > 0 || !!b.marmor;
+      const atk = !!b.attack;
+      c[arm && atk ? 'ambos' : arm ? 'armadura' : atk ? 'ataque' : 'nada']++;
+    }
+    return c;
+  };
+  for (const r of ['comum', 'incomum']) {
+    const c = ve(r);
+    assert.equal(c.ambos, 0, `${r}: nunca os dois`);
+    assert.ok(c.nada > 0 && c.armadura > 0 && c.ataque > 0, `${r}: os três resultados aparecem`);
+  }
+  assert.ok(ve('raro').ambos > 0);
+  const m = ve('mítico');
+  assert.equal(m.nada, 0, 'Mítico nunca vem sem nada');
+});
+
+test('ficha: o ataque do anel/amuleto soma ao da arma, em faixa', () => {
+  const anel = Object.values(ITEM_CATALOG).find((i) => i.slot === 'ring' && !i.stackable);
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.equipment.weapon = { id: arma.id, count: 1 };
+  e.equipment.ring = null;
+  Ficha.invalidar(e);
+  const sem = Ficha.combate(e);
+  e.equipment.ring = { id: anel.id, count: 1, base: { attack: [8, 12] } };
+  Ficha.invalidar(e);
+  const com = Ficha.combate(e);
+  assert.equal(com.ataqueMin, sem.ataqueMin + 8);
+  assert.equal(com.ataqueMax, sem.ataqueMax + 12);
+  assert.ok(com.ataque > sem.ataque);
+});

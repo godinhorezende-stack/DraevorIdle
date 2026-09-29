@@ -69,6 +69,70 @@ export function nivelDoValor(id, valor) {
   return nivel;
 }
 
+/** Os números do item-base que cada peça sorteia na faixa da raridade (ver `rolarBase`). */
+export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor', 'marmor'];
+
+/** Slots de joia: anel e amuleto quase nunca têm armadura no catálogo, mas também sorteiam a armadura física/mágica. */
+export const SLOTS_DE_JOIA = new Set(['ring', 'neck']);
+
+/** O valor-base de armadura da peça: o do catálogo, ou — anel/amuleto sem ele — `nível mínimo / 12` (mínimo 2). */
+export function armaduraBase(meta) {
+  const doCatalogo = Number(meta?.armor);
+  if (doCatalogo > 0) return doCatalogo;
+  return SLOTS_DE_JOIA.has(meta?.slot) ? Math.max(2, Math.round((meta.minLevel ?? 1) / 12)) : 0;
+}
+
+/** O valor-base de ataque de um anel/amuleto (o catálogo não tem): `nível mínimo / 6`, mínimo 2. */
+export const ataqueBaseDaJoia = (meta) => Math.max(2, Math.round((meta?.minLevel ?? 1) / 6));
+
+/** Peça com as duas armaduras: cada tipo fica com esta fração do valor sorteado. */
+export const FATOR_DAS_DUAS = 0.75;
+
+/**
+ * A FAIXA desta peça: para cada número do catálogo (ataque, defesa, armadura),
+ * `[piso, teto]` em inteiros. O piso sai da faixa `piso` da raridade e o teto
+ * da faixa `teto` (`raridades.json`, `base`, em % do valor do catálogo) — e o
+ * maior piso possível é o menor teto possível, então o teto NUNCA fica abaixo
+ * do piso. Ataque 20: Comum 2–16 / 16–20 (nunca passa de 20), Épico 17–22 /
+ * 22–27. Cada golpe sorteia dentro da faixa (`ataqueDoGolpe`, em ficha.mjs).
+ * Devolve `{}` se o item não tem nenhum desses números.
+ */
+export function rolarBase(itemId, raridade, rng = Math.random) {
+  const meta = ITEM_CATALOG[itemId];
+  const faixa = C.RARIDADES.raridades[raridade]?.base ?? { piso: [1, 1], teto: [1, 1] };
+  const sortear = ([lo, hi]) => lo + rng() * (hi - lo);
+  const base = {};
+  // Anel/amuleto: a peça pode vir sem nada, só com armadura, só com ataque ou com os dois (`joia` da raridade).
+  const joia = SLOTS_DE_JOIA.has(meta?.slot);
+  const conteudo = joia ? sortearChave(C.RARIDADES.raridades[raridade]?.joia ?? { armadura: 1 }, rng) : null;
+  const querArmadura = !joia || conteudo === 'armadura' || conteudo === 'ambos';
+  const querAtaque = joia && (conteudo === 'ataque' || conteudo === 'ambos');
+  for (const campo of ['attack', 'defense', 'armor']) {
+    const valor = campo === 'armor' ? (querArmadura ? armaduraBase(meta) : 0) : joia ? (campo === 'attack' && querAtaque ? ataqueBaseDaJoia(meta) : 0) : Number(meta?.[campo]);
+    if (!(valor > 0)) continue;
+    const piso = Math.max(1, Math.round(valor * sortear(faixa.piso)));
+    const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
+    base[campo] = [piso, teto];
+  }
+  // A armadura do catálogo vira física, mágica ou as duas (Comum e Incomum: uma só) — `raridades.json`, `armadura`.
+  // Joia que veio sem armadura mas TEM no catálogo: zera (senão a peça voltaria ao valor cheio dele).
+  if (joia && !querArmadura && Number(meta?.armor) > 0) base.armor = [0, 0];
+  if (base.armor?.[1] > 0) {
+    const pesos = C.RARIDADES.raridades[raridade]?.armadura;
+    const tipo = pesos ? sortearChave(pesos, rng) : 'fisica';
+    const [piso, teto] = base.armor;
+    const fatia = (f) => [Math.max(1, Math.round(piso * f)), Math.max(1, Math.round(teto * f))];
+    if (tipo === 'magica') {
+      base.marmor = base.armor;
+      base.armor = [0, 0];
+    } else if (tipo === 'ambas') {
+      base.armor = fatia(FATOR_DAS_DUAS);
+      base.marmor = fatia(FATOR_DAS_DUAS);
+    }
+  }
+  return base;
+}
+
 /** O ato e a dificuldade de onde o drop saiu (o boss usa a dificuldade de cima). */
 export function origemDoDrop(ctx = {}) {
   const ato = String(ctx.ato ?? C.atoDoLevel(ctx.level));
@@ -109,6 +173,8 @@ export function gerarItem(ctx) {
   const tipo = def.efeito;
   const efeito = tipo && C.EFEITOS[tipo] ? { tipo, id: sortearChave(Object.fromEntries(Object.keys(C.EFEITOS[tipo]).map((k) => [k, 1])), rng) } : null;
 
-  if (!af.length && !efeito && raridade === 'comum') return simples;
-  return { ...simples, raridade, af, ...(efeito ? { efeito } : {}) };
+  const base = rolarBase(ctx.itemId, raridade, rng);
+  const temBase = Object.keys(base).length > 0;
+  if (!af.length && !efeito && raridade === 'comum' && !temBase) return simples;
+  return { ...simples, raridade, ...(temBase ? { base } : {}), af, ...(efeito ? { efeito } : {}) };
 }

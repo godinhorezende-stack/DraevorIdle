@@ -25,6 +25,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import * as Ficha from '../ficha.mjs';
 import * as Afixos from '../afixos.mjs';
 import { ATRIBUTOS } from './config.mjs';
+import { metaDaPeca, baseValida } from './item.mjs';
 import { ocupaAMaoDoEscudo } from '../inventario.mjs';
 
 const CAMPOS = JSON.parse(readFileSync(new URL('../../gamedata/itens/campos.json', import.meta.url), 'utf8'));
@@ -67,7 +68,7 @@ function doItemBase(meta) {
 
 /** Todos os atributos de uma peça, numa chave por linha: item-base + `af` + tier. */
 export function atributosDaPeca(peca) {
-  const meta = ITEM_CATALOG[peca?.id];
+  const meta = metaDaPeca(peca);
   const saida = meta ? doItemBase(meta) : new Map();
   for (const a of peca?.af ?? []) {
     const ficha = ATRIBUTOS[a.id];
@@ -125,7 +126,7 @@ export function comparar(estado, peca) {
   const slot = meta.slot;
   if (slot === 'backpack') return { ok: false, erro: 'Mochila não se compara.' };
   const vestida = estado.equipment?.[slot] ?? null;
-  const limpa = { id: meta.id, count: 1, ...(Array.isArray(peca.af) ? { af: peca.af.filter((a) => ATRIBUTOS[a?.id]).map((a) => ({ id: a.id, nivel: a.nivel, value: Number(a.value) || 0 })) } : {}), ...(peca.tier ? { tier: Math.max(0, Math.floor(Number(peca.tier) || 0)) } : {}) };
+  const limpa = { id: meta.id, count: 1, ...(peca.base ? { base: baseValida(peca.base) } : {}), ...(Array.isArray(peca.af) ? { af: peca.af.filter((a) => ATRIBUTOS[a?.id]).map((a) => ({ id: a.id, nivel: a.nivel, value: Number(a.value) || 0 })) } : {}), ...(peca.tier ? { tier: Math.max(0, Math.floor(Number(peca.tier) || 0)) } : {}) };
 
   const equipamento = { ...(estado.equipment ?? {}), [slot]: limpa };
   // Arma de duas mãos tira o escudo (não a aljava): é uma peça inteira saindo, e a ficha tem de ver isso.

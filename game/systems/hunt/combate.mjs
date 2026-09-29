@@ -7,6 +7,7 @@ import * as Acoes from '../acoes.mjs';
 import * as Treino from '../treino.mjs';
 import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
+import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Boosts from '../boosts.mjs';
 import * as BuffPower from '../buffpower.mjs';
@@ -59,8 +60,8 @@ export function armorDoPersonagem(estado) {
 export const bonusDeMagicLevel = (ficha) => ficha?.skillBonus?.magic ?? 0;
 
 export function armaDoPersonagem(estado) {
-  const id = estado.equipment?.weapon?.id;
-  return id ? ITEM_CATALOG[id] : null;
+  // Com o ataque que a peça sorteou no drop (`p.base`), não o valor cheio do catálogo.
+  return metaDaPeca(estado.equipment?.weapon) ?? null;
 }
 
 /*
@@ -497,7 +498,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   const ficha = Ficha.combate(estado);
   // Bloqueio: a chance da ficha (`blockChance`, fórmula real do client) apara o
   // golpe inteiro — o `block` que o original manda, visto ao vivo.
-  if (Math.random() < ficha.blockChance) {
+  // A chance sorteia entre o pior e o melhor bloqueio da faixa das peças (escudo e arma) a cada golpe.
+  const chanceDeBloquear = (ficha.blockChanceMin ?? ficha.blockChance) + Math.random() * ((ficha.blockChanceMax ?? ficha.blockChance) - (ficha.blockChanceMin ?? ficha.blockChance));
+  if (Math.random() < chanceDeBloquear) {
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
     return;
@@ -697,7 +700,7 @@ export function round(estado, personagem) {
       // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
       const fisico = 1 + (ficha.danoDoElemento?.physical ?? 0) / 100;
       // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
-      const semResistencia = (R.golpeDoJogador({ ...arma, attack: ficha.ataque }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
+      const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
       const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia), alvo, eventos, ficha);
       Treino.treinar(estado, pericia);
       // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).

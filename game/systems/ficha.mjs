@@ -23,6 +23,8 @@ import * as Imbuements from './imbuements.mjs';
 import * as Aparencia from './aparencia.mjs';
 // Os efeitos especiais (Lendário) e supremos (Mítico) das peças vestidas.
 import * as EfeitosDeItem from './itens/efeitos.mjs';
+import { metaDaPeca, faixaDoCampo } from './itens/item.mjs';
+import { SLOTS_DE_JOIA } from './itens/gerar.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -43,8 +45,9 @@ const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'
 // O catálogo chama a terra de `poison` em parte dos itens (o nome do OTServ).
 const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 
-const pecas = (estado) => Object.values(estado.equipment ?? {}).filter(Boolean).map((p) => ITEM_CATALOG[p.id]).filter(Boolean);
-const arma = (estado) => ITEM_CATALOG[estado.equipment?.weapon?.id] ?? null;
+// `metaDaPeca`: o catálogo com o ataque/defesa/armadura que a peça sorteou no drop.
+const pecas = (estado) => Object.values(estado.equipment ?? {}).filter(Boolean).map((p) => metaDaPeca(p)).filter(Boolean);
+const arma = (estado) => metaDaPeca(estado.equipment?.weapon) ?? null;
 
 /** A perícia que a arma usa (sem arma, punho — que também é melee). */
 export function periciaDaArma(item) {
@@ -93,7 +96,7 @@ function calcularCombate(estado) {
   const itens = pecas(estado);
   const soma = (f) => itens.reduce((a, it) => a + (Number(f(it)) || 0), 0);
   const w = arma(estado);
-  const escudo = ITEM_CATALOG[estado.equipment?.shield?.id];
+  const escudo = metaDaPeca(estado.equipment?.shield);
   const armor = soma((it) => it.armor);
   // Escudo inteiro + METADE da defesa da arma (+ o extra dela): é a conta que
   // bate com o personagem real capturado — dwarven shield 26 + steel axe 10/2
@@ -132,12 +135,25 @@ function calcularCombate(estado) {
   const municao = w?.ammo ? ITEM_CATALOG[estado.equipment?.ammo?.id] : null;
   const daMunicao = municao?.ammo === w?.ammo ? municao : null;
   // "Ataque" (+N no ataque da arma) e "Ataque da arma" (+% dele).
-  const ataque = Math.round(((w?.attack ?? 0) + (daMunicao?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
+  // O ataque de anel e amuleto (`base.attack` sorteado no drop) soma ao da arma, também em faixa.
+  const joias = Object.entries(estado.equipment ?? {}).filter(([slot, p]) => p && SLOTS_DE_JOIA.has(slot));
+  const [jMin, jMax] = joias.reduce(([a, b], [, p]) => { const [x, y] = faixaDoCampo(p, 'attack'); return [a + x, b + y]; }, [0, 0]);
+  const calcAtaque = (a) => Math.round(((a ?? 0) + (daMunicao?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
+  // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
+  const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
+  const temAtaque = !!w?.attack || jMax > 0;
+  const ataque = calcAtaque((w?.attack ?? 0) + Math.round((jMin + jMax) / 2));
+  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin) : ataque;
+  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax) : ataque;
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   const damage = w?.wand
     ? { min: w.wand.min, max: w.wand.max }
-    : R.attackDamage({ attack: ataque, skill: valorDaPericia, level: estado.level ?? 1 });
+    : {
+        // A faixa da arma inteira: o menor golpe com o piso dela, o maior com o teto.
+        min: R.attackDamage({ attack: ataqueMin, skill: valorDaPericia, level: estado.level ?? 1 }).min,
+        max: R.attackDamage({ attack: ataqueMax, skill: valorDaPericia, level: estado.level ?? 1 }).max,
+      };
   const protection = Object.fromEntries(ELEMENTOS.map((e) => [e, 0]));
   for (const it of itens) {
     for (const [k, v] of Object.entries(it.protection ?? {})) {
@@ -154,6 +170,8 @@ function calcularCombate(estado) {
   return {
     armor: armor + (af.armor_flat ?? 0),
     ataque,
+    ataqueMin,
+    ataqueMax,
     defense,
     damage,
     skillName: pericia,
@@ -162,7 +180,11 @@ function calcularCombate(estado) {
     critChance: CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance,
     critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100 + prof.critDano + imb.critDano,
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
-    blockChance: R.blockChance(shielding, escudo ? escudo.defense + prof.defesa : null),
+    // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
+    // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
+    // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
+    ...bloqueioDaFicha(estado, escudo, w, prof, shielding),
+    ...faixaDeArmadura(estado, af),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
@@ -243,6 +265,54 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught };
+}
+
+/** A defesa que sustenta o bloqueio, em faixa: o escudo + metade da defesa da arma + o extra dela (+ perks). */
+function bloqueioDaFicha(estado, escudo, w, prof, shielding) {
+  const [eMin, eMax] = escudo ? faixaDoCampo(estado.equipment?.shield, 'defense') : [0, 0];
+  const [aMin, aMax] = faixaDoCampo(estado.equipment?.weapon, 'defense');
+  const extra = (w?.extraDefense ?? 0) + (prof?.defesa ?? 0);
+  const defMin = eMin + Math.floor(aMin / 2) + extra;
+  const defMax = eMax + Math.floor(aMax / 2) + extra;
+  // A defesa da arma bloqueia mesmo SEM escudo (só que 0 de defesa = 0% de bloqueio).
+  const com = (d) => R.blockChance(shielding, d);
+  return {
+    blockChance: com(Math.round((defMin + defMax) / 2)),
+    blockChanceMin: com(defMin),
+    blockChanceMax: com(defMax),
+    defesaBloqueioMin: defMin,
+    defesaBloqueioMax: defMax,
+  };
+}
+
+/** As armaduras em faixa: a soma dos pisos e dos tetos das peças vestidas (+ a armadura plana dos afixos, que é física). */
+function faixaDeArmadura(estado, af) {
+  const soma = { armor: [0, 0], marmor: [0, 0] };
+  for (const p of Object.values(estado.equipment ?? {})) {
+    if (!p) continue;
+    for (const campo of ['armor', 'marmor']) {
+      const [a, b] = faixaDoCampo(p, campo);
+      soma[campo][0] += a;
+      soma[campo][1] += b;
+    }
+  }
+  const plana = af?.armor_flat ?? 0;
+  const mediaMagica = Math.round((soma.marmor[0] + soma.marmor[1]) / 2);
+  return {
+    armorMin: soma.armor[0] + plana,
+    armorMax: soma.armor[1] + plana,
+    // Armadura MÁGICA: corta o dano de magia e de ataque elemental dos monstros (só a física corta o golpe físico).
+    armorMagic: mediaMagica,
+    armorMagicMin: soma.marmor[0],
+    armorMagicMax: soma.marmor[1],
+  };
+}
+
+/** O ataque DESTE golpe: sorteado entre o piso e o teto da arma (a média, `ficha.ataque`, é o que a ficha mostra). */
+export function ataqueDoGolpe(ficha, rng = Math.random) {
+  const lo = ficha.ataqueMin ?? ficha.ataque;
+  const hi = ficha.ataqueMax ?? ficha.ataque;
+  return lo + Math.floor(rng() * (hi - lo + 1));
 }
 
 /** A ficha do GOLPE BÁSICO (arma ou wand): + crítico de auto-ataque da proficiência. */
