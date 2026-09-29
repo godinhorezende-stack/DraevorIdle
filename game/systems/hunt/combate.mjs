@@ -26,6 +26,7 @@ import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
 import * as Tarefas from '../tarefas.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
+import { resistido } from './resistencia.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
@@ -45,13 +46,17 @@ export function processarMortes(estado, personagem, eventos) {
 }
 
 /** Soma real do `armor` de cada peça vestida (ver `item-catalog.json` — o `defense` do escudo é outra conta, ainda não ligada). */
+/*
+ * A armadura que corta o golpe do bicho: a da FICHA — a das peças (catálogo)
+ * + o atributo "Armadura" (`armor_flat`). Antes somava só o catálogo e o
+ * atributo aparecia na ficha sem cortar nada (auditoria dos atributos, 29/09).
+ */
 export function armorDoPersonagem(estado) {
-  let total = 0;
-  for (const peca of Object.values(estado.equipment ?? {})) {
-    if (peca) total += ITEM_CATALOG[peca.id]?.armor ?? 0;
-  }
-  return total;
+  return Ficha.combate(estado).armor ?? 0;
 }
+
+/** O ML de BÔNUS (itens, proficiência, imbuement): +1% de dano/cura por ponto em magia, runa e wand (decisão do dono). */
+export const bonusDeMagicLevel = (ficha) => ficha?.skillBonus?.magic ?? 0;
 
 export function armaDoPersonagem(estado) {
   const id = estado.equipment?.weapon?.id;
@@ -132,8 +137,11 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
   eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[element] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
   // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
   const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
-  // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento; + "% da perícia como dano" (proficiência).
-  const base = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + (ficha.danoDoElemento?.[element] ?? 0) / 100);
+  // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
+  // (+1%/ponto); + "% da perícia como dano" (proficiência); e a resistência do
+  // bicho àquele elemento (`resistido`).
+  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha)) / 100);
+  const base = resistido(hunt, alvo, element, bruto);
   const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
@@ -622,19 +630,43 @@ export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) 
   if (!el?.value) return null;
   const tipo = ELEMENTO_DO_CATALOGO[el.type] ?? el.type;
   const bruto = R.golpeDoJogador({ attack: el.value }, ficha.skillValue, estado.level) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
-  const resistencia = BESTIARY[alvo.key]?.elements?.[tipo] ?? 0;
-  const base = R.applyElement(bruto, hunt.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, resistencia) : resistencia);
+  const base = resistido(hunt, alvo, tipo, bruto);
   const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
   alvo.hp -= dano;
   return { v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
 }
 
-/** A parte do golpe que o imbuement de dano elemental converteu: passa pela resistência do bicho (teto do boss). */
-export function elementalDoImbuement(hunt, alvo, tipo, parte) {
-  const resistencia = BESTIARY[alvo.key]?.elements?.[tipo] ?? 0;
-  const v = R.applyElement(parte, hunt.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, resistencia) : resistencia);
+/**
+ * A parte do golpe que o imbuement de dano elemental converteu: com o "Dano de
+ * <elemento>" do personagem (antes não entrava — auditoria, 29/09) e a
+ * resistência do bicho (teto do boss).
+ */
+export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
+  const v = Math.round(resistido(hunt, alvo, tipo, parte * (1 + (ficha?.danoDoElemento?.[tipo] ?? 0) / 100)));
   alvo.hp -= v;
   return { v, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
+}
+
+/**
+ * O "Dano de <elemento> %" dos atributos no golpe da ARMA: X% do físico (antes
+ * da resistência física) sai em cada elemento que o personagem tem, pela
+ * resistência do bicho àquele elemento e com a mesma rolagem de crítico. Antes
+ * o atributo só aumentava ataques que JÁ eram daquele elemento — num knight,
+ * "+20% Dano de Fogo" não fazia nada (auditoria, 29/09). O físico fica de fora:
+ * "Dano físico" já multiplica o próprio golpe.
+ */
+export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem) {
+  const saida = [];
+  for (const [tipo, pct] of Object.entries(ficha.danoDoElemento ?? {})) {
+    if (tipo === 'physical' || !(pct > 0)) continue;
+    const base = resistido(hunt, alvo, tipo, (fisico * pct) / 100);
+    if (base <= 0) continue;
+    const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
+    if (dano <= 0) continue;
+    alvo.hp -= dano;
+    saida.push({ tipo, v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+  }
+  return saida;
 }
 
 export function round(estado, personagem) {
@@ -663,17 +695,22 @@ export function round(estado, personagem) {
       // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
       // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
       const fisico = 1 + (ficha.danoDoElemento?.physical ?? 0) / 100;
-      const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, (R.golpeDoJogador({ ...arma, attack: ficha.ataque }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico, alvo, eventos, ficha);
+      // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
+      const semResistencia = (R.golpeDoJogador({ ...arma, attack: ficha.ataque }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
+      const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia), alvo, eventos, ficha);
       Treino.treinar(estado, pericia);
       // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).
       const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
       const golpe = bruto - convertido;
       alvo.hp -= golpe;
       const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
-      const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido) : null;
+      const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
+      // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
+      // físico, X% dele em cada elemento (decisão do dono), na mesma rolagem.
+      const dosAtributos = elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught });
       // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
       const extra = Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
-      Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
+      Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
       // Vida/mana por acerto (proficiência).
       Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem.nome, hunt.pos);
       // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
@@ -687,6 +724,7 @@ export function round(estado, personagem) {
       eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental || doImbuement ? '#999999' : '#ff0000' });
       if (elemental) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: elemental.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental.cor });
       if (doImbuement) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: doImbuement.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: doImbuement.cor });
+      for (const d of dosAtributos) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
       // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
       Charms.aoAcertar(estado, hunt, alvo, eventos);
     }
