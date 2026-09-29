@@ -161,7 +161,8 @@ function calcularCombate(estado) {
     skillBonus: bonusDePericia,
     critChance: CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance,
     critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100 + prof.critDano + imb.critDano,
-    blockChance: R.blockChance(shielding, defense),
+    // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
+    blockChance: R.blockChance(shielding, escudo ? escudo.defense + prof.defesa : null),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.

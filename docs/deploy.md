@@ -100,7 +100,7 @@ scripts/deploy.sh                    # staging (isolado, 127.0.0.1:8081): puxa a
 AMBIENTE=producao scripts/deploy.sh  # produção: usa também docker-compose.prod.yml
 ```
 
-O script: `git fetch` + `git checkout` + `git merge --ff-only` (nunca reescreve
+O script: (em produção, faz **backup do banco antes de tudo** e aborta se ele falhar) `git fetch` + `git checkout` + `git merge --ff-only` (nunca reescreve
 histórico nem descarta mudança local — se o merge não for fast-forward, ele
 para e avisa em vez de forçar), `node tools/precomprimir.mjs` + `--verificar`
 (gera os `.br`/`.gz` dos estáticos, que NÃO vão pro git, e confere cada um

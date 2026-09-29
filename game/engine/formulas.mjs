@@ -387,11 +387,21 @@ export function armorReduction(armor, roll) {
 }
 
 /**
- * Chance de aparar o golpe. É a defesa que sustenta uma hunt longa: sem ela o
- * personagem vira dependente de potion e a hunt fica no prejuízo.
+ * Chance de aparar o golpe CORPO A CORPO (físico — magia e dano elemental não
+ * passam por aqui, só pela proteção elemental). Vem do slot do ESCUDO: a
+ * defesa dele dá a base (até 12,5%, num escudo de 50) e a perícia shielding a
+ * AMPLIFICA (até +300%, do nível 10 ao 140). Sem escudo equipado quem chama
+ * passa `null` e é 0% — a perícia sozinha não bloqueia nada.
+ * Teto de 50%: só com o melhor escudo (defesa 50) e shielding 140 (~120
+ * milhões de golpes recebidos para um knight; as outras vocações nem chegam
+ * perto) — na prática o teto é uma meta de fim de jogo, não uma expectativa.
+ * Ex.: escudo +14 e shielding 20 -> ~4%; escudo 50 e shielding 100 -> ~38%.
  */
-export function blockChance(shielding, defense) {
-  return Math.min(0.6, (shielding * 0.5 + defense * 1.6) / 130);
+export function blockChance(shielding, shieldDefense) {
+  if (shieldDefense == null) return 0;
+  const base = (Math.max(0, shieldDefense) / 50) * 0.125;
+  const pericia = Math.min(1, Math.max(0, shielding - 10) / 130);
+  return Math.min(0.5, base * (1 + 3 * pericia));
 }
 
 /*

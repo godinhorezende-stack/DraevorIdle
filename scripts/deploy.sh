@@ -81,6 +81,22 @@ if ! precomprimir --verificar; then
   exit 1
 fi
 
+# Backup do banco ANTES de mexer nos containers (só produção: o banco de
+# staging é descartável). Se o backup falhar, o deploy PARA — melhor não
+# atualizar do que atualizar sem rede de segurança. Primeiro deploy (Postgres
+# ainda não existe): não há o que copiar, segue.
+if [ "$AMBIENTE" = "producao" ]; then
+  if docker compose "${ARQUIVOS_COMPOSE[@]}" ps --status running --services 2>/dev/null | grep -qx postgres; then
+    echo "==> backup do banco antes do deploy"
+    if ! "$RAIZ/scripts/backup-postgres.sh"; then
+      echo "ERRO: o backup do banco falhou — deploy abortado, containers intocados." >&2
+      exit 1
+    fi
+  else
+    echo "==> sem Postgres rodando (primeiro deploy?) — pulando o backup"
+  fi
+fi
+
 echo "==> ambiente: $AMBIENTE (${ARQUIVOS_COMPOSE[*]})"
 echo "==> docker compose up -d --build"
 docker compose "${ARQUIVOS_COMPOSE[@]}" up -d --build
