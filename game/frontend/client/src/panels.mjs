@@ -2664,12 +2664,27 @@ function ligarRegrasDoItem(cell, id, { titulo = '', aoMudar = null } = {}) {
  * "roxa ou melhor" vai guardar. Ver `estrelasDosAfixos`.
  */
 const LINHAS_DO_AFIXO = [
-  { valor: 0, estrelas: 0, rotulo: 'Vender todas', dica: 'a estrela não segura nada — vende como qualquer loot' },
-  /* O rótulo não repete a estrela: o ícone ao lado já é ela. */
-  { valor: 1, estrelas: 1, rotulo: 'Guardar qualquer', dica: 'toda peça com estrela fica (é o padrão)' },
-  { valor: 2, estrelas: 2, rotulo: 'Roxa para cima', dica: 'vende as azuis, guarda as roxas e as douradas' },
-  { valor: 3, estrelas: 3, rotulo: 'Só a dourada', dica: 'guarda apenas as rolagens do terço de cima' },
+  { valor: 0, rotulo: 'Não olhar', dica: 'o atributo não segura nada — só a raridade (se ligada) decide' },
+  { valor: 1, rotulo: 'Qualquer nível', dica: 'guarda a peça com atributo de qualquer nível (é o padrão)' },
+  { valor: 2, rotulo: 'N2 para cima', dica: 'guarda atributo de nível 2, 3, 4 ou 5' },
+  { valor: 3, rotulo: 'N3 para cima', dica: 'guarda atributo de nível 3, 4 ou 5' },
+  { valor: 4, rotulo: 'N4 para cima', dica: 'guarda atributo de nível 4 ou 5' },
+  { valor: 5, rotulo: 'Só N5', dica: 'guarda apenas atributo de nível 5 (o topo)' },
 ];
+
+/*
+ * ---- O sistema de itens trocou a pergunta ----
+ * O atributo tem NÍVEL (N1–N5, cada um com a cor da estrela dele) e a peça
+ * até seis atributos. A fileira de cima é o nível mínimo; a de baixo, quantos
+ * atributos desse nível ou mais. Quem gravou a regra de antes (a cor em três
+ * degraus) é traduzido como no servidor: ver `regraDoAtributo`, afixos.mjs.
+ */
+function regraDoAtributo(s = {}) {
+  const nivel = s.guardarNivel != null ? Number(s.guardarNivel) : ({ 0: 0, 1: 1, 2: 3, 3: 5 }[Number(s.guardarAfixo ?? 1)] ?? 1);
+  const quantos = s.guardarQuantos != null ? Number(s.guardarQuantos) : Math.max(1, Number(s.guardarEstrelas ?? 0));
+  return { nivel: Math.max(0, Math.min(5, nivel || 0)), quantos: Math.max(1, Math.min(6, quantos || 1)) };
+}
+const nomeDoNivel = (nivel) => (nivel === 1 ? 'de qualquer nível' : nivel === 5 ? 'N5' : `N${nivel} ou mais`);
 
 /*
  * ---- E a segunda pergunta: QUANTAS ----
@@ -2687,35 +2702,38 @@ const LINHAS_DO_AFIXO = [
  * como contagem, que é o que ela é.
  */
 const QUANTAS_ESTRELAS = [
-  { valor: 0, estrelas: 0, rotulo: 'Tanto faz', dica: 'não olha a quantidade — só a cor escolhida acima' },
-  { valor: 1, estrelas: 1, rotulo: 'Uma ou mais', dica: 'qualquer peça com afixo passa pela contagem' },
-  { valor: 2, estrelas: 2, rotulo: 'Duas ou mais', dica: 'guarda só peça com dois ou três afixos' },
-  { valor: 3, estrelas: 3, rotulo: 'Só as de três', dica: 'guarda apenas a peça com os três afixos' },
+  { valor: 1, rotulo: '1+', dica: 'basta um atributo desse nível (é o padrão)' },
+  { valor: 2, rotulo: '2+', dica: 'dois atributos desse nível ou mais' },
+  { valor: 3, rotulo: '3+', dica: 'três atributos desse nível ou mais' },
+  { valor: 4, rotulo: '4+', dica: 'quatro ou mais — só épico para cima chega lá' },
+  { valor: 5, rotulo: '5+', dica: 'cinco ou mais — lendário ou mítico' },
+  { valor: 6, rotulo: '6', dica: 'os seis — só o mítico cheio' },
 ];
 
 function escolhaDeQuantasEstrelas() {
   const { state, send } = ctx;
-  const atual = Number(state.character?.settings?.guardarEstrelas ?? 0);
+  const atual = regraDoAtributo(state.character?.settings).quantos;
 
   const caixa = el('div', 'filtro-afixo-quantas');
-  caixa.append(el('b', null, 'E com quantas estrelas, no mínimo'));
+  caixa.append(el('b', null, 'Quantos atributos desse nível, no mínimo'));
 
   const linha = el('div', 'filtro-afixo-opcoes');
   for (const opcao of QUANTAS_ESTRELAS) {
     const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
     botao.type = 'button';
-    if (opcao.estrelas) {
+    {
+      // Estrelas CINZAS: aqui é contagem, não nível.
       const selo = el('i', 'item-estrelas contagem');
-      for (let i = 0; i < opcao.estrelas; i++) selo.append(el('b', 'estrela', '★'));
+      for (let i = 0; i < opcao.valor; i++) selo.append(el('b', 'estrela', '★'));
       botao.append(selo);
     }
     botao.append(el('span', null, opcao.rotulo));
     botao.title = opcao.dica;
     botao.onclick = () => {
-      send({ t: 'settings', guardarEstrelas: opcao.valor });
+      send({ t: 'settings', guardarQuantos: opcao.valor });
       // Pinta na hora, como a fileira de cima: esperar a volta do servidor faz
       // o clique parecer perdido.
-      state.character.settings = { ...(state.character.settings ?? {}), guardarEstrelas: opcao.valor };
+      state.character.settings = { ...(state.character.settings ?? {}), guardarQuantos: opcao.valor };
       ctx.redraw?.();
     };
     linha.append(botao);
@@ -2750,29 +2768,10 @@ function escolhaDeQuantasEstrelas() {
  * a regra ser legível sem abrir nada.
  */
 function fraseDaRegraDoAfixo() {
-  const settings = ctx.state.character?.settings ?? {};
-  const cor = Number(settings.guardarAfixo ?? 1);
-  const quantas = Number(settings.guardarEstrelas ?? 0);
-  if (!cor) return 'Nada é guardado pela estrela: peça com afixo é vendida como qualquer outra.';
-
-  /*
-   * ---- Duas armadilhas na frase, e as duas são de leitura ----
-   *
-   * A COR é um piso, e a frase diz isso com todas as letras ("ou dourada").
-   * Escrita como "a peça roxa", ela seria lida como cor exata e faria parecer
-   * que a dourada escapa — o contrário do que acontece.
-   *
-   * E, com a cor em "qualquer" e uma contagem escolhida, dizer "qualquer peça
-   * com estrela com as três estrelas" repetiria a palavra estrela duas vezes
-   * na mesma frase. Quem carrega a estrela ali é a contagem; à cor cabe só
-   * dizer "qualquer".
-   */
-  const semCor = quantas > 0 ? 'qualquer peça' : 'qualquer peça com estrela';
-  const daCor =
-    { 1: semCor, 2: 'a peça roxa ou dourada', 3: 'só a peça dourada' }[cor] ?? semCor;
-  const daContagem =
-    { 0: '', 1: ' com uma estrela ou mais', 2: ' com duas estrelas ou mais', 3: ' com as três estrelas' }[quantas] ?? '';
-  return `Guarda ${daCor}${daContagem}.`;
+  const { nivel, quantos } = regraDoAtributo(ctx.state.character?.settings);
+  if (!nivel) return 'O atributo não segura nada: só a raridade (se ligada) decide o que fica.';
+  const daContagem = quantos === 1 ? 'um atributo' : `${quantos} atributos`;
+  return `Guarda a peça com pelo menos ${daContagem} ${nomeDoNivel(nivel)}.`;
 }
 
 /*
@@ -2849,12 +2848,14 @@ function escolhaDeRaridade() {
    * (ver `presoNaBolsa`, no store.mjs) — e a frase diz exatamente isso, com o
    * degrau da estrela que está marcado ao lado.
    */
-  const estrela = Number(state.character?.settings?.guardarAfixo ?? 1);
-  const daEstrela = { 1: 'com qualquer estrela', 2: 'com estrela roxa ou dourada', 3: 'com estrela dourada' }[estrela];
+  const regraDoAtr = regraDoAtributo(state.character?.settings);
+  const daEstrela = regraDoAtr.nivel
+    ? `com ${regraDoAtr.quantos === 1 ? 'um atributo' : `${regraDoAtr.quantos} atributos`} ${nomeDoNivel(regraDoAtr.nivel)}`
+    : '';
   let frase;
   if (!atual) frase = 'Escolha uma raridade: os itens dela para cima serão guardados.';
-  else if (daEstrela) frase = `Só itens ${lista} ${daEstrela} serão guardados — as duas regras valem juntas. O resto vai para o NPC.`;
-  else frase = `Itens ${lista} serão guardados, com estrela ou sem.`;
+  else if (daEstrela) frase = `Só itens ${lista} ${daEstrela} serão guardados — as regras valem juntas. O resto vai para o NPC.`;
+  else frase = `Itens ${lista} serão guardados, com atributo ou sem.`;
   caixa.append(el('em', 'filter-legend', frase));
 
   const linha = el('div', 'filtro-afixo-opcoes');
@@ -2889,31 +2890,30 @@ function regrasDaVendaAutomatica() {
 
 function escolhaDeAfixo({ recolhido = false } = {}) {
   const { state, send } = ctx;
-  const atual = Number(state.character?.settings?.guardarAfixo ?? 1);
+  const atual = regraDoAtributo(state.character?.settings).nivel;
 
   const caixa = el('div', 'filtro-afixo');
-  caixa.append(el('b', null, 'Peças com afixo na venda automática'));
+  caixa.append(el('b', null, 'Nível do atributo na venda automática'));
   caixa.append(
-    el('em', 'filter-legend', 'Tier e imbuement nunca são vendidos — isto vale só para a estrela do afixo.')
+    el('em', 'filter-legend', 'Tier, imbuement e essência nunca são vendidos. O nível é o da estrela do atributo (N1–N5).')
   );
 
   const linha = el('div', 'filtro-afixo-opcoes');
   for (const opcao of LINHAS_DO_AFIXO) {
     const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
     botao.type = 'button';
-    if (opcao.estrelas) {
-      // A estrela sai na cor do degrau que ela representa, como no item.
-      const selo = el('i', `item-estrelas q${opcao.estrelas}`);
-      // `estrela` é o que dá à cor a especificidade certa. Ver `seloDeEstrelas`.
-      for (let i = 0; i < opcao.estrelas; i++) selo.append(el('b', `estrela q${opcao.estrelas}`, '★'));
+    if (opcao.valor) {
+      // Uma estrela na cor do nível, como no item (N1 cinza ... N5 dourada).
+      const selo = el('i', 'item-estrelas');
+      selo.append(el('b', `estrela n${opcao.valor}`, '★'));
       botao.append(selo);
     }
     botao.append(el('span', null, opcao.rotulo));
     botao.title = opcao.dica;
     botao.onclick = () => {
-      send({ t: 'settings', guardarAfixo: opcao.valor });
+      send({ t: 'settings', guardarNivel: opcao.valor });
       // Pinta na hora: esperar a volta do servidor faz o clique parecer perdido.
-      state.character.settings = { ...(state.character.settings ?? {}), guardarAfixo: opcao.valor };
+      state.character.settings = { ...(state.character.settings ?? {}), guardarNivel: opcao.valor };
       ctx.redraw?.();
     };
     linha.append(botao);
@@ -2944,7 +2944,7 @@ function escolhaDeAfixo({ recolhido = false } = {}) {
       el(
         'em',
         null,
-        'As duas fileiras valem juntas: a cor é o piso ("roxa para cima" também guarda a dourada) e a contagem é quantos afixos a peça tem.'
+        'As fileiras valem juntas: o nível é o piso ("N3 para cima" também guarda N4 e N5) e a contagem é quantos atributos desse nível a peça tem. Com a raridade ligada, a peça precisa passar nas duas.'
       )
     );
   }
@@ -2968,7 +2968,7 @@ function escolhaDeAfixo({ recolhido = false } = {}) {
         'em',
         'filter-legend',
         marcados.length
-          ? `Vale só em ${marcados.length} ${marcados.length === 1 ? 'item escolhido' : 'itens escolhidos'} — nos outros, a estrela não segura nada.`
+          ? `Vale só em ${marcados.length} ${marcados.length === 1 ? 'item escolhido' : 'itens escolhidos'} — nos outros, o atributo não segura nada.`
           : 'Vale em qualquer peça. Dá para escolher só algumas.'
       )
     );

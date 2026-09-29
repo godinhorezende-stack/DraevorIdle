@@ -187,31 +187,44 @@ export function corDaPeca(p) {
 }
 
 /**
- * A venda automática GUARDA esta peça? As regras da tela do filtro de loot:
- * tier e imbuement nunca vendem; `guardarAfixo` (0 nada, 1 qualquer estrela,
- * 2 roxa para cima, 3 só dourada) com `guardarEstrelas` (quantas no mínimo) e
- * `itemRules.soAfixo` (só nestes itens); `guardarRaridade` (0 não olha, 1
- * incomum para cima ... 5 só mítico).
+ * O filtro de loot pelo ATRIBUTO, no sistema de itens: `{nivel, quantos}` =
+ * guardar a peça com pelo menos `quantos` atributos de nível `nivel` ou mais
+ * (`nivel` 0 = o atributo não segura nada). Quem gravou as regras de antes (a
+ * cor da estrela em 3 degraus e a contagem até 3) é traduzido: "qualquer"
+ * vira N1+, "roxa para cima" N3+, "só a dourada" N5.
+ */
+export function regraDoAtributo(s = {}) {
+  const nivel = s.guardarNivel != null ? Number(s.guardarNivel) : ({ 0: 0, 1: 1, 2: 3, 3: 5 }[Number(s.guardarAfixo ?? 1)] ?? 1);
+  const quantos = s.guardarQuantos != null ? Number(s.guardarQuantos) : Math.max(1, Number(s.guardarEstrelas ?? 0));
+  return { nivel: Math.max(0, Math.min(5, nivel || 0)), quantos: Math.max(1, Math.min(6, quantos || 1)) };
+}
+
+/**
+ * A venda automática GUARDA esta peça? Tier, imbuement e essência nunca
+ * vendem. Fora isso, as regras LIGADAS do filtro valem JUNTAS (a peça passa em
+ * todas): `guardarRaridade` (0 não olha, 1 incomum para cima ... 5 só mítico)
+ * e o atributo (`regraDoAtributo`, com `itemRules.soAfixo` = só nestes itens).
+ * Nenhuma ligada: vende.
  */
 export function guarda(estado, p) {
   if (p.tier || p.imbu?.length) return true;
   if (p.id === ID_DA_ESSENCIA) return true;
   const s = estado.settings ?? {};
   const pisoRaridade = Number(s.guardarRaridade ?? 0);
+  const { nivel, quantos } = regraDoAtributo(s);
+  if (!pisoRaridade && !nivel) return false;
   if (pisoRaridade > 0) {
     // A raridade do DROP (sistema de itens); a do catálogo só para peça antiga.
     const r = RARIDADES.indexOf(p.raridade ?? ITEM_CATALOG[p.id]?.rarity ?? 'comum');
-    if (r >= pisoRaridade) return true;
+    if (r < pisoRaridade) return false;
   }
-  if (!p.af?.length) return false;
-  const cor = Number(s.guardarAfixo ?? 1);
-  if (!cor) return false;
-  const soEm = estado.itemRules?.soAfixo ?? [];
-  if (soEm.length && !soEm.includes(p.id)) return false;
-  const quantas = Number(s.guardarEstrelas ?? 0);
-  if (quantas && p.af.length < quantas) return false;
-  const q = corDaPeca(p);
-  return cor === 1 ? q >= 1 : cor === 2 ? q >= 2 : q >= 3;
+  if (nivel > 0) {
+    const soEm = estado.itemRules?.soAfixo ?? [];
+    if (soEm.length && !soEm.includes(p.id)) return false;
+    const bons = (p.af ?? []).filter((a) => corDoAtributo(a) === 4 || nivelDe(a) >= nivel).length;
+    if (bons < quantos) return false;
+  }
+  return true;
 }
 
 // ------------------------------------------- vida/mana máxima e capacidade
