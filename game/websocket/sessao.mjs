@@ -70,6 +70,12 @@ Inventario.semearChao(CITY_META.chao);
 export const vivas = new Map();
 /** Quem está entrando num personagem e esperando a simulação offline (por nome do personagem). */
 const carregandoAgora = new Map();
+/**
+ * O personagem está no jogo — conectado, ou entrando (a simulação da volta
+ * rodando)? A consolidação em segundo plano (`consolidacao-offline.mjs`) não
+ * mexe em quem está: o estado dele é o da sessão, não o do banco.
+ */
+export const estaNoJogo = (nome) => !!vivas.get(nome)?.personagem || carregandoAgora.has(nome);
 /** A fila global de transações (Fase 6) — ver `emTransacao`. */
 let filaDeTransacoes = Promise.resolve();
 Party.ligar(vivas);

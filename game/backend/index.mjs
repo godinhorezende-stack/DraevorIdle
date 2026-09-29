@@ -12,8 +12,12 @@ import * as DropsDoSite from '../systems/drops-do-site.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Limites from '../websocket/limites.mjs';
 import { aquecerGrades } from '../systems/cacadas.mjs';
+import * as ConsolidacaoOffline from '../systems/consolidacao-offline.mjs';
 
 Site.ligar(vivas);
+// Quem caça de aba fechada sobe no ranking do dia sem esperar logar
+// (ver `consolidacao-offline.mjs`).
+ConsolidacaoOffline.ligar();
 
 // O cliente extraído (HTML + `client/`) — mesma sub-estrutura de sempre
 // (`/client/...`, `/jogar.html`, etc.), só que a raiz física virou
