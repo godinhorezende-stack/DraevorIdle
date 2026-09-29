@@ -126,3 +126,24 @@ test('melee dos bichos é o do arquivo (Crazed Winter Rearguard: até 400, não 
   for (let i = 0; i < 2000; i++) max = Math.max(max, Poderes.golpeCorpoACorpo({ key: 'crazed-winter-rearguard' }));
   assert.ok(max <= 400 && max > 300, `máximo ${max}`);
 });
+
+test('bicho novo não solta todas as magias no primeiro tique: o relógio de cada uma começa sorteado', async () => {
+  const Poderes = await import('../systems/poderes.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const e = personagemDeTeste({ level: 300 });
+  assert.ok(Cacadas.entrar(e, { huntId: 'werehyaenna-north', mode: 'auto', dificuldade: 'medio' }).ok);
+  e.hp = e.maxHp = 1e9;
+  const agora = 1_000_000;
+  const aleatorio = Math.random;
+  Math.random = () => 0.5; // metade do intervalo; e 0.5*100 passaria nas chances <= 50
+  try {
+    for (const b of e.hunt.monstros) {
+      const colado = { ...b, x: e.hunt.pos.x + 1, y: e.hunt.pos.y, proximoPoder: undefined };
+      const eventos = [];
+      assert.equal(Poderes.lancar(e, e.hunt, PERSONAGEM, colado, eventos, agora, Ficha.combate(e), false), 0, `${b.name} bateu na entrada`);
+      for (const v of Object.values(colado.proximoPoder)) assert.ok(v > agora && v < agora + 2000, `relógio ${v - agora} ms`);
+    }
+  } finally {
+    Math.random = aleatorio;
+  }
+});

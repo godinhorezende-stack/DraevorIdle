@@ -106,7 +106,14 @@ function alcanca(a, bicho, alvo) {
 export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo) {
   const p = PODERES[bicho.key];
   if (!p || bicho.hp <= 0 || estado.hp <= 0) return 0;
-  bicho.proximoPoder ??= {};
+  // Primeira vez que este bicho (recém-criado ou renascido) lança: cada magia
+  // começa num ponto sorteado do intervalo dela. Com o relógio zerado, todos os
+  // bichos ao alcance soltavam tudo JUNTOS no primeiro tique — ~2.000 de dano
+  // em 0,25 s na entrada da Werehyaenna North (Médio), o mago morria sem agir.
+  if (!bicho.proximoPoder) {
+    bicho.proximoPoder = {};
+    p.ataques.forEach((a, i) => { if (a.tipo === 'magia') bicho.proximoPoder[i] = agora + Math.random() * a.intervalo; });
+  }
   let total = 0;
   const alvo = hunt.pos;
   p.ataques.forEach((a, i) => {
