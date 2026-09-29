@@ -1581,12 +1581,14 @@ export class Sessao {
   async concluirEntrada(personagem, estado, ausencia, treinoPendente) {
     this.personagem = personagem;
     this.estado = estado;
+    // Caçada de antes da campanha: vira a fase (barra e progresso), ou termina se a fase está fechada.
+    const daCampanha = Cacadas.adotarNaCampanha(this.estado);
     this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
     // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
     const doMercado = await Mercado.receberCreditos(this.estado, personagem.id);
     // Personagem que já estava acima da capacidade (loot de antes da regra):
     // o excesso vai para o depósito, com aviso no primeiro `state`.
-    this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado;
+    this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado ?? daCampanha;
     vivas.set(personagem.nome, this);
 
     // "Progresso enquanto você esteve fora" — `andamento`, no client.

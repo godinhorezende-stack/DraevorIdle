@@ -167,3 +167,28 @@ test('nenhuma magia de bicho sai a cada tique (Werehyaenna North vinha com inter
     }
   }
 });
+
+test('caçada de antes da campanha: fase liberada vira a fase; fechada termina com aviso', () => {
+  // Liberada (Troll Cave, fase 1): ganha a fase, a força dela e a barra.
+  const e = novo(20);
+  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  delete e.hunt.campanha;
+  delete e.hunt.escala;
+  assert.equal(Cacadas.adotarNaCampanha(e), null);
+  assert.deepEqual(e.hunt.campanha, { huntId: F[0].huntId, dificuldade: 'facil', ato: 1 });
+  assert.ok(e.hunt.escala);
+  assert.equal(Cacadas.snapshotDaHunt(e).fase.nome, 'Troll Cave');
+  // Fechada (fase 6 sem progresso): a caçada termina e o aviso explica.
+  const f = personagemDeTeste({ level: 200 });
+  assert.equal(Cacadas.entrar(f, { huntId: F[5].huntId, mode: 'auto' }).ok, true);
+  delete f.hunt.campanha;
+  f.campanha = {};
+  assert.match(Cacadas.adotarNaCampanha(f), /A campanha chegou.*Complete a fase anterior/);
+  assert.equal(f.hunt, null);
+  // Caçada da campanha, ou que não é fase: não mexe.
+  const g = novo(20);
+  assert.equal(Cacadas.entrar(g, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  const antes = JSON.stringify(g.hunt.campanha);
+  assert.equal(Cacadas.adotarNaCampanha(g), null);
+  assert.equal(JSON.stringify(g.hunt.campanha), antes);
+});

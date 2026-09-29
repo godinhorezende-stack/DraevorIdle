@@ -723,6 +723,29 @@ export function progressoDoLevel(estado) {
   return Math.max(0, Math.min(1, ((estado.xp ?? 0) - de) / Math.max(1, ate - de)));
 }
 
+/**
+ * Caçada gravada ANTES da campanha (sem `hunt.campanha`) numa hunt que é fase:
+ * sem isto a barra da fase não aparecia e as mortes não contavam. Fase já
+ * liberada no Fácil → vira a fase (a força dela nos bichos de agora e nos que
+ * renascem); fechada → a caçada termina, porque todos começam da fase 1.
+ * Roda na entrada, depois da caçada offline. Devolve o aviso para a tela, ou null.
+ */
+export function adotarNaCampanha(estado) {
+  const hunt = estado.hunt;
+  const fase = hunt && !hunt.campanha ? Campanha.faseDe(hunt.huntId) : null;
+  if (!fase) return null;
+  const dif = Campanha.DIFICULDADES[0];
+  if (!Campanha.faseLiberada(estado, dif, hunt.huntId)) {
+    const motivo = Campanha.motivoParaNaoEntrar(estado, dif, hunt.huntId);
+    sair(estado);
+    return `A campanha chegou: as hunts agora abrem fase a fase. ${motivo}`;
+  }
+  hunt.campanha = { huntId: hunt.huntId, dificuldade: dif, ato: fase.ato };
+  hunt.escala = Campanha.escalaDaFase(hunt.huntId, dif);
+  for (const m of [...(hunt.monstros ?? []), ...Object.values(hunt.outrosAndares ?? {}).flat()]) Campanha.aplicarEscala(m, hunt.escala);
+  return null;
+}
+
 /** `send({t:'stopHunt'})` */
 export function sair(estado) {
   estado.hunt = null;

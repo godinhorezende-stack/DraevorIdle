@@ -27315,3 +27315,17 @@ html[data-perfil="deitado"] #hud .bar-slot .hud-bar span { font-size: 12px !impo
 .hunt-card.completa .fase-trilho i { background: linear-gradient(90deg, #8a6a20, #e0a84a); }
 .hunt-card.completa .fase-progresso span { color: #e0a84a; }
 .hunt-card.campanha-boss p { font-size: 11.5px; }
+
+/*
+ * ---- Uma cor por NÍVEL do atributo ----
+ * "as estrelas do nivel do atributo tem que ser uma de cada cor" (o dono). A
+ * classe `n1`–`n6` vem de `classeDaEstrela` (tooltip.mjs): N1 cinza, N2 verde,
+ * N3 azul, N4 roxa, N5 dourada, 6 = acima do teto (a essência vermelha). O `q`
+ * continua valendo para os filtros de venda e a cor da célula.
+ */
+b.estrela.n1, .tip-afixo-tier.n1 { --estrela: #a7b0ba; }
+b.estrela.n2, .tip-afixo-tier.n2 { --estrela: #5fc46a; }
+b.estrela.n3, .tip-afixo-tier.n3 { --estrela: #57a6e8; }
+b.estrela.n4, .tip-afixo-tier.n4 { --estrela: #b184e8; }
+b.estrela.n5, .tip-afixo-tier.n5 { --estrela: #e0a84a; }
+b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }
