@@ -7295,6 +7295,9 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
  */
 .element span { flex: 1; color: var(--muted); white-space: nowrap; }
 .element b { font-weight: 600; margin-left: auto; white-space: nowrap; }
+/* A nota do Ataque elemental ("arma", "imbuement N%"): linha própria embaixo, nada espremido. */
+.element:has(.element-nota) { flex-wrap: wrap; row-gap: 2px; }
+.element .element-nota { flex-basis: 100%; font-style: normal; font-size: 10.5px; color: var(--accent); padding-left: 22px; }
 
 .vocation-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
 .vocation-grid button { padding: 12px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); cursor: pointer; }

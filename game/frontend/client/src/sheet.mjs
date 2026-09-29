@@ -592,6 +592,37 @@ export function renderSheet(body, { state, send, closeModal }) {
   }
   body.append(elements);
 
+  /*
+   * ---- Ataque elemental ----
+   * O dono: "no balance da ficha por que não aparece ataque elemental? igual
+   * fica a proteção elemental". O "Dano de <elemento> %" dos atributos e da
+   * árvore (`derived.danoDoElemento`, a mesma ficha que o combate usa): +X% nas
+   * magias/runas/wand daquele elemento e, no golpe da arma, X% dele saindo
+   * naquele elemento. "arma" marca o elemento da própria arma/wand, e o
+   * imbuement de dano elemental aparece no elemento dele.
+   */
+  body.append(titulo('Ataque elemental', 'ficha-elemental'));
+  const ataques = el('div', 'element-grid');
+  const daArma = derived.element?.type === 'poison' ? 'earth' : derived.element?.type;
+  const doImbuement = derived.imbuElemental;
+  for (const [name, key] of ELEMENTS) {
+    const value = derived.danoDoElemento?.[key] ?? 0;
+    const chip = el('div', 'element');
+    const total = el('b', null, `${value > 0 ? '+' : ''}${porcento(value)}%`);
+    if (value) total.style.color = 'var(--accent)';
+    chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
+    const notas = [];
+    if (daArma === key) notas.push('arma');
+    if (doImbuement?.tipo === key) notas.push(`imbuement ${porcento(doImbuement.pct)}%`);
+    if (notas.length) chip.append(el('em', 'element-nota', notas.join(' · ')));
+    chip.title =
+      key === 'physical'
+        ? `Dano físico: +${porcento(value)}% no golpe da arma.`
+        : `Dano de ${name.toLowerCase()}: +${porcento(value)}% nas magias, runas e wand de ${name.toLowerCase()}, e ${porcento(value)}% do golpe da arma sai em ${name.toLowerCase()}.`;
+    ataques.append(chip);
+  }
+  body.append(ataques);
+
   // ---------- imbuements ativos ----------
   const imbued = Object.entries(character.imbuements ?? {}).flatMap(([slot, list]) =>
     (list ?? []).map((entry) => ({ slot, ...entry }))
