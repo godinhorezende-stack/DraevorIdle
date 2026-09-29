@@ -145,9 +145,8 @@ test('caçada offline projetada: as mortes contam para a fase, e fica em loop me
   e.hunt.offlineDesde = Date.now() - 3 * 3_600_000;
   Cacadas.simularAusencia(e, PERSONAGEM, Date.now());
   assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), true, `kills: ${JSON.stringify(e.campanha.facil.kills)}`);
-  // Offline sempre na mesma hunt: nem na volta ele troca de fase.
+  // Offline sempre na mesma hunt: a projeção não troca de fase (o Avançar é só no tique online).
   assert.equal(e.hunt.huntId, F[0].huntId);
-  assert.equal(Cacadas.faseParaSeguir(e), null);
 });
 
 test('a tela: a campanha inteira por dificuldade e a fase atual no quadro da caçada', () => {
@@ -197,27 +196,22 @@ test('caçada de antes da campanha: fase liberada vira a fase; fechada termina c
   assert.equal(JSON.stringify(g.hunt.campanha), antes);
 });
 
-test('ao completar a fase: "Repetir" (padrão) fica em loop; "Seguir" vai para a próxima do ato', () => {
+test('"Ficar na fase" (padrão) fica em loop; "Avançar sozinho" vai para a próxima com a fase completa', () => {
   const e = novo(20);
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
   assert.equal(Campanha.aoCompletar(e), 'repetir');
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'incompleta: fica');
   Campanha.contarKills(e, e.hunt, F[0].kills.facil);
-  assert.equal(Cacadas.faseParaSeguir(e), null, 'repetir: fica');
-  assert.equal(e.faseCompletada, undefined, 'a marca é consumida');
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'repetir: fica em loop');
+  assert.match(Cacadas.snapshotDaHunt(e).fase.aoCompletar, /repetir/);
 
-  const s = novo(20);
-  assert.equal(Cacadas.definirAoCompletarFase(s, { value: 'seguir' }).ok, true);
-  assert.equal(Cacadas.definirAoCompletarFase(s, { value: 'x' }).ok, false);
-  assert.equal(Cacadas.entrar(s, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
-  assert.equal(Cacadas.snapshotDaHunt(s).fase.aoCompletar, 'seguir');
-  Campanha.contarKills(s, s.hunt, F[0].kills.facil);
-  assert.deepEqual(Cacadas.faseParaSeguir(s), { huntId: F[1].huntId, dificuldade: 'facil', nome: F[1].nome });
-
-  // Voltar a uma fase JÁ feita para farmar não empurra adiante (só no momento em que completa).
-  Cacadas.sair(s);
-  assert.equal(Cacadas.entrar(s, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
-  Campanha.contarKills(s, s.hunt, 10);
-  assert.equal(Cacadas.faseParaSeguir(s), null);
+  // Já numa fase COMPLETA, ligar o "Avançar" leva para a próxima na hora.
+  assert.equal(Cacadas.definirAoCompletarFase(e, { value: 'seguir' }).ok, true);
+  assert.equal(Cacadas.definirAoCompletarFase(e, { value: 'x' }).ok, false);
+  assert.deepEqual(Cacadas.faseParaSeguir(e), { huntId: F[1].huntId, dificuldade: 'facil', nome: F[1].nome });
+  const snap = Cacadas.snapshotDaHunt(e).fase;
+  assert.equal(snap.aoCompletar, 'seguir');
+  assert.equal(snap.fimDoAto, false);
 });
 
 test('"Seguir" no fim do ato não entra no boss; e pula a hunt quebrada', () => {

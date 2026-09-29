@@ -121,9 +121,8 @@ function projetar(estado, base, fator, multExp = 1) {
   estado.xp = (estado.xp ?? 0) + extra.exp;
   // As mortes projetadas contam para a fase da campanha (decisão do dono: offline conta).
   Campanha.contarKills(estado, estado.hunt, extra.kills);
-  // Offline fica SEMPRE em loop na mesma hunt (decisão do dono): o "Seguir" é
-  // só jogando online — nem na volta a fase completada offline troca de hunt.
-  delete estado.faseCompletada;
+  // Offline fica SEMPRE em loop na mesma hunt (decisão do dono): o "Seguir" só
+  // é checado no tique ONLINE (`faseParaSeguir`, na sessão).
   estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
   for (const [id, n] of Object.entries(base.itens.loot)) {
@@ -629,21 +628,20 @@ export function definirAoCompletarFase(estado, { value }) {
 }
 
 /**
- * A fase acabou de completar e ele escolheu "Seguir": para onde ir (`{huntId,
- * dificuldade, nome}`), ou `null`. Consome a marca `faseCompletada` (posta por
- * `Campanha.contarKills`; a caçada offline não marca: offline fica sempre em
- * loop). Só quem caça a PRÓPRIA
- * sala segue: o convidado da party fica com o anfitrião, e quem o segue vem junto.
+ * "Seguir" ligado e a fase ATUAL completa: para onde ir (`{huntId, dificuldade,
+ * nome}`), ou `null`. Sem marca de "acabou de completar": ligar o Seguir numa
+ * fase já feita também avança (o dono: "se eu clico o seguir ela não vai para
+ * a próxima mesmo completa"). Para farmar uma fase completa, é o "Repetir".
+ * Só a sessão ONLINE chama (offline fica sempre em loop), e só quem caça a
+ * PRÓPRIA sala segue: o convidado da party fica com o anfitrião.
  */
 export function faseParaSeguir(estado) {
-  const feita = estado.faseCompletada;
-  if (!feita) return null;
-  delete estado.faseCompletada;
   const hunt = estado.hunt;
-  if (Campanha.aoCompletar(estado) !== 'seguir' || !hunt || salaDe(hunt) !== hunt) return null;
-  if (hunt.campanha?.huntId !== feita.huntId || hunt.campanha.dificuldade !== feita.dificuldade) return null;
-  const proxima = Campanha.proximaParaSeguir(estado, feita.dificuldade, feita.huntId);
-  return proxima ? { huntId: proxima.huntId, dificuldade: feita.dificuldade, nome: proxima.nome } : null;
+  const c = hunt?.campanha;
+  if (!c || c.bossDoAto || Campanha.aoCompletar(estado) !== 'seguir' || salaDe(hunt) !== hunt) return null;
+  if (!Campanha.faseCompleta(estado, c.dificuldade, c.huntId)) return null;
+  const proxima = Campanha.proximaParaSeguir(estado, c.dificuldade, c.huntId);
+  return proxima ? { huntId: proxima.huntId, dificuldade: c.dificuldade, nome: proxima.nome } : null;
 }
 
 /** `send({t:'lure', value})`/`{value:null, volta}` — grava a preferência e, se a hunt já estiver aberta, aplica na hora. */

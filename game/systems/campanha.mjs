@@ -132,8 +132,6 @@ export function contarKills(estado, hunt, n = 1) {
   p.kills[f.huntId] = (p.kills[f.huntId] ?? 0) + n;
   if (p.kills[f.huntId] < f.kills[c.dificuldade]) return null;
   p.completas.push(f.huntId);
-  // "Seguir" (ver `proximaParaSeguir`): a sessão troca de fase no próximo tique.
-  estado.faseCompletada = { huntId: f.huntId, dificuldade: c.dificuldade };
   const nomeDif = CAMPANHA.dificuldades[c.dificuldade].nome;
   const proxima = FASES[f.indice + 1];
   const aviso =
@@ -224,8 +222,11 @@ export function faseAtual(estado, hunt) {
   const f = faseDe(c.huntId);
   if (!f) return null;
   const p = progresso(estado, c.dificuldade);
+  const completa = faseCompleta(estado, c.dificuldade, f.huntId);
   return {
     tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
-    kills: Math.min(p.kills[f.huntId] ?? 0, f.kills[c.dificuldade]), precisa: f.kills[c.dificuldade], completa: faseCompleta(estado, c.dificuldade, f.huntId),
+    kills: Math.min(p.kills[f.huntId] ?? 0, f.kills[c.dificuldade]), precisa: f.kills[c.dificuldade], completa,
+    // Completa e sem próxima para seguir: fim do ato (o boss é o jogador quem chama).
+    fimDoAto: completa && !proximaParaSeguir(estado, c.dificuldade, f.huntId),
   };
 }

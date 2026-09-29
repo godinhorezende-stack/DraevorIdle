@@ -1453,8 +1453,10 @@ body.com-aviso { --altura-do-aviso: 24px; }
 #fase-modo[data-modo="seguir"] { border-color: var(--accent); color: var(--accent); background: #2a7d6e33; }
 @media (max-width: 560px) {
   /* No celular o dedo precisa de alvo: ~28px de altura; o título encolhe. */
-  #fase-modo { padding: 7px 10px; font-size: 11px; }
-  #barra-da-fase .fase-topo { gap: 6px; }
+  #fase-modo { padding: 7px 10px; font-size: 11px; margin-left: auto; }
+  /* Título numa linha; a contagem e o botão na de baixo — nada espremido. */
+  #barra-da-fase .fase-topo { gap: 4px 8px; flex-wrap: wrap; }
+  #barra-da-fase #fase-titulo { flex-basis: 100%; }
 }
 @media (pointer: coarse) { #fase-modo { min-height: 28px; } }
 
