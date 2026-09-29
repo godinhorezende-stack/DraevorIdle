@@ -96,7 +96,7 @@ compensa. No `crontab -e` do VPS:
 ## 5. Deploy de uma atualização (via Git)
 
 ```bash
-scripts/deploy.sh                    # staging: puxa a branch e sobe de novo (rebuild só do que mudou)
+scripts/deploy.sh                    # staging (isolado, 127.0.0.1:8081): puxa a branch e sobe de novo
 AMBIENTE=producao scripts/deploy.sh  # produção: usa também docker-compose.prod.yml
 ```
 
@@ -119,19 +119,27 @@ faz, com `--build`, mesmo que às vezes seja um no-op pelo cache do Docker).
 
 ## 6. Staging e produção no mesmo host
 
-`docker-compose.yml` é a base dos dois; `docker-compose.prod.yml` só some em
-cima quando `AMBIENTE=producao` (limites de memória, rotação de log, o
-serviço `certbot`). Rodar staging E produção ao mesmo tempo no MESMO host
-não funciona só trocando o arquivo — as duas tentariam ouvir a mesma porta 80.
-Duas opções (nenhuma testada neste repo — decida com o time antes de contar
-com isto):
+`docker-compose.yml` é a base; `docker-compose.prod.yml` (produção) e
+`docker-compose.staging.yml` (staging) só somam por cima. Staging roda como
+projeto Compose separado (`-p staging`): containers, rede e **volumes
+próprios — o banco de staging é outro, nunca o da produção** — e o nginx só
+escuta em `127.0.0.1:8081` (sem 443, sem domínio), então convive com a
+produção nas portas 80/443. Testado: os dois de pé juntos, `/saude` ok nos dois.
 
-- Dois checkouts do repo, dois `.env` (`POSTGRES_DB` diferente em cada),
-  `docker compose -p staging ...` / `docker compose -p producao ...` (nomes
-  de projeto diferentes isolam volumes/redes) e portas de nginx diferentes
-  num deles (staging, por exemplo, só em `127.0.0.1:8080`/`8443`, sem
-  domínio público).
-- Dois VPS separados — staging não compete por porta/CPU com produção.
+```bash
+cd caminho/do/checkout          # pode ser uma worktree ou outro clone
+cp game/docker/.env.example game/docker/.env   # POSTGRES_PASSWORD de staging
+scripts/deploy.sh                # AMBIENTE=staging é o padrão
+```
+
+Ver de fora do VPS (túnel SSH): `ssh -L 8081:127.0.0.1:8081 usuario@vps` e abrir
+`http://localhost:8081/jogar`. Trocar a porta: `PORTA_STAGING=8082 scripts/deploy.sh`.
+Derrubar e apagar o banco de staging: `docker compose -p staging -f
+docker-compose.yml -f docker-compose.staging.yml down -v` (o `-p staging`
+garante que a produção não é tocada).
+
+Fluxo: branch/worktree -> `scripts/deploy.sh` (staging) -> testar -> merge na
+`main` -> `AMBIENTE=producao scripts/deploy.sh` no checkout de produção.
 
 ## 7. Backup
 

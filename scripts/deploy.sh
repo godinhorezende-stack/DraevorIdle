@@ -5,11 +5,12 @@
 # `git pull`/`docker compose`.
 #
 # Uso:
-#   scripts/deploy.sh                 # staging: docker-compose.yml sozinho
-#   AMBIENTE=producao scripts/deploy.sh   # produção: + docker-compose.prod.yml
+#   scripts/deploy.sh                 # staging: projeto `staging`, nginx só em 127.0.0.1:8081
+#   AMBIENTE=producao scripts/deploy.sh   # produção: + docker-compose.prod.yml (portas 80/443)
 #
 # Variáveis (todas opcionais, com padrão sensato):
 #   AMBIENTE   staging (padrão) | producao
+#   PORTA_STAGING  porta local do nginx de staging (padrão 8081)
 #   BRANCH     branch a puxar (padrão: a que já está com checkout feito)
 set -euo pipefail
 
@@ -19,9 +20,23 @@ cd "$RAIZ"
 
 AMBIENTE="${AMBIENTE:-staging}"
 ARQUIVOS_COMPOSE=(-f "$DOCKER_DIR/docker-compose.yml")
-if [ "$AMBIENTE" = "producao" ]; then
-  ARQUIVOS_COMPOSE+=(-f "$DOCKER_DIR/docker-compose.prod.yml")
-fi
+case "$AMBIENTE" in
+  producao)
+    ARQUIVOS_COMPOSE+=(-f "$DOCKER_DIR/docker-compose.prod.yml")
+    URL_SAUDE="http://localhost/saude"
+    ;;
+  staging)
+    # Projeto próprio: volumes/redes/containers separados da produção, então
+    # roda no mesmo host sem tocar nela (banco incluso). Só em 127.0.0.1.
+    export PORTA_STAGING="${PORTA_STAGING:-8081}"
+    ARQUIVOS_COMPOSE=(-p staging "${ARQUIVOS_COMPOSE[@]}" -f "$DOCKER_DIR/docker-compose.staging.yml")
+    URL_SAUDE="http://127.0.0.1:$PORTA_STAGING/saude"
+    ;;
+  *)
+    echo "AMBIENTE inválido: '$AMBIENTE' (use staging ou producao)." >&2
+    exit 1
+    ;;
+esac
 
 if [ ! -f "$DOCKER_DIR/.env" ]; then
   echo "Faltou game/docker/.env (copie de game/docker/.env.example e ajuste POSTGRES_PASSWORD etc.) — abortando." >&2
@@ -74,7 +89,7 @@ echo "==> esperando o /saude responder..."
 por_at_e=30
 ok=""
 for _ in $(seq 1 "$por_at_e"); do
-  if curl -fsS http://localhost/saude >/dev/null 2>&1; then
+  if curl -fsS "$URL_SAUDE" >/dev/null 2>&1; then
     ok=1
     break
   fi
@@ -86,5 +101,5 @@ if [ -z "$ok" ]; then
   exit 1
 fi
 
-echo "==> OK — $(curl -fsS http://localhost/saude)"
+echo "==> OK — $(curl -fsS "$URL_SAUDE")"
 docker compose "${ARQUIVOS_COMPOSE[@]}" ps

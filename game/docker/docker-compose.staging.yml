@@ -1,0 +1,17 @@
+# Overrides de staging — SEMPRE explícito (só o docker-compose.override.yml, o
+# de dev, é aplicado sozinho). Feito para rodar NO MESMO HOST da produção sem
+# colidir com ela: projeto Compose `staging` (volumes/redes/containers
+# próprios — banco separado da produção), nginx só em 127.0.0.1:8081 (sem
+# 443, sem domínio público). Acesso de fora do VPS: túnel SSH
+#   ssh -L 8081:127.0.0.1:8081 usuario@vps   ->   http://localhost:8081/jogar
+# Uso (o scripts/deploy.sh já faz isto com AMBIENTE=staging):
+#   docker compose -p staging -f docker-compose.yml -f docker-compose.staging.yml up -d --build
+services:
+  nginx:
+    # `!override`: sem isto o Compose SOMA as portas do base (80/443) às
+    # daqui em vez de trocá-las — e a produção já ocupa essas duas.
+    ports: !override
+      - "127.0.0.1:${PORTA_STAGING:-8081}:80"
+  game:
+    environment:
+      NODE_ENV: production
