@@ -269,6 +269,38 @@ export function fatorDaCacaOnline(hunt) {
   return hunt?.modo === 'online' ? 1 + (CATALOGO.bonusOnline ?? 0) / 100 : 1;
 }
 
+/*
+ * ---- O loot na PARTY: ouro dividido, itens em rodízio ----
+ *
+ * Medido (4 contas, 30 min em Troll Cave): com "o loot fica com quem matou", o
+ * knight — que bate de perto e dá mais golpes finais — levava ~60% do ouro e
+ * dos itens, e o paladin ~7%, com a MESMA exp para os quatro. O dono escolheu:
+ * ouro igual para todos e itens em rodízio.
+ *
+ * Vale para quem está na PARTILHA (mesma sala, faixa de level, perto — as
+ * mesmas regras da exp). O ouro de cada bicho vai em partes iguais (o resto
+ * da divisão fica com quem matou). Cada item que cai vai para o próximo da
+ * fila da sala; quem não pode levar (filtro do loot dele, sem capacidade,
+ * bolsa cheia) passa a vez para o seguinte. A CHANCE do drop continua sendo a
+ * de quem matou (Buff Power, afixo, prey, pódio).
+ */
+const vezDoLoot = new WeakMap(); // sala -> índice do próximo da fila
+// O "Loot of a ..." de um item que foi para outro da party: entra no chat DELE no próximo tique (ver `tirarEventosDaParty`).
+const eventosDaParty = new WeakMap(); // estado -> [evento]
+export function tirarEventosDaParty(estado) {
+  const lista = eventosDaParty.get(estado);
+  if (!lista) return null;
+  eventosDaParty.delete(estado);
+  return lista;
+}
+
+function darOuro(estado, valor) {
+  if (!valor) return;
+  estado.gold = (estado.gold ?? 0) + valor;
+  if (estado.hunt?.sessao) estado.hunt.sessao.gold += valor;
+  Ficha.totais(estado).gold += valor;
+}
+
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Na Arena x1 ninguém ganha exp nem loot dos bichos: eles só atrapalham.
   if (hunt.pvp) {
@@ -327,6 +359,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Charms.contarMorte(m.estado, alvo.key, null);
   // As tasks — Boss Task, de bicho e de montaria — DEPOIS do bestiary, que é de onde elas contam.
   Bosses.contarMorte(estado, alvo.key);
+  // A Boss Task conta para a party toda, como a task de bicho (pedido do dono).
+  if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Bosses.contarMorte(m.estado, alvo.key);
   Tarefas.contarMorte(estado, alvo.key);
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Tarefas.contarMorte(m.estado, alvo.key);
   Charms.aoMatar(estado, hunt, alvo, eventos);
@@ -349,9 +383,13 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
    * "Ficou no chão" (`perdido`, o nome real da sessão capturada).
    */
   const caiu = [];
-  const conta = (grupo, id, n) => {
-    if (sessao) sessao.itens[grupo][id] = (sessao.itens[grupo][id] ?? 0) + n;
+  const conta = (grupo, id, n, ses = sessao) => {
+    if (ses) ses.itens[grupo][id] = (ses.itens[grupo][id] ?? 0) + n;
   };
+  // Quem divide o loot deste bicho (null: sozinho, ou fora da partilha).
+  const juntos = part?.ativa && part.membros.length > 1 ? part.membros.filter((m) => m.estado === estado || m.estado?.hunt) : null;
+  const sala = juntos ? salaDe(hunt) : null;
+  const deOutros = new Map(); // estado -> itens que foram para ele
   for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt);
     if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
@@ -362,28 +400,54 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       // no Banqueiro. (Uma versão anterior mandava direto para `bank`, a
       // partir de uma medição do original que o dono do projeto confirmou
       // estar errada.)
-      estado.gold = (estado.gold ?? 0) + n * VALOR_DA_MOEDA[drop.id];
+      const total = n * VALOR_DA_MOEDA[drop.id];
       caiu.push({ id: drop.id, count: n });
-      if (sessao) sessao.gold += n * VALOR_DA_MOEDA[drop.id];
-      Ficha.totais(estado).gold += n * VALOR_DA_MOEDA[drop.id];
       conta('loot', drop.id, n);
+      if (!juntos) {
+        darOuro(estado, total);
+        continue;
+      }
+      // Party: partes iguais; o resto da divisão fica com quem matou.
+      const parte = Math.floor(total / juntos.length);
+      for (const m of juntos) darOuro(m.estado, parte + (m.estado === estado ? total - parte * juntos.length : 0));
       continue;
     }
-    if (Bolsa.ignora(estado, drop.id)) {
-      conta('ignorado', drop.id, 1);
-      continue;
-    }
-    const semCap = pesoDoInventario(estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(estado);
     const af = Afixos.rolarDrop(drop.id);
-    if (semCap || !Bolsa.porNaBolsa(estado, drop.id, 1, af)) {
-      conta('perdido', drop.id, 1);
+    // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
+    const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;
+    const fila = juntos ? juntos.map((_, k) => juntos[(vez + k) % juntos.length]) : [{ estado, nome: personagem?.nome }];
+    let dono = null;
+    let ignorado = true;
+    for (const [k, m] of fila.entries()) {
+      if (Bolsa.ignora(m.estado, drop.id)) continue;
+      ignorado = false;
+      const semCap = pesoDoInventario(m.estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(m.estado);
+      if (semCap || !Bolsa.porNaBolsa(m.estado, drop.id, 1, af)) continue;
+      dono = m;
+      if (juntos) vezDoLoot.set(sala, (vez + k + 1) % juntos.length);
+      break;
+    }
+    if (!dono) {
+      conta(ignorado ? 'ignorado' : 'perdido', drop.id, 1);
       continue;
     }
-    caiu.push({ id: drop.id, count: 1 });
-    conta('loot', drop.id, 1);
+    if (dono.estado === estado) {
+      caiu.push({ id: drop.id, count: 1 });
+      conta('loot', drop.id, 1);
+    } else {
+      conta('loot', drop.id, 1, dono.estado.hunt?.sessao);
+      const lista = deOutros.get(dono.estado) ?? [];
+      lista.push({ id: drop.id, count: 1 });
+      deOutros.set(dono.estado, lista);
+    }
     // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
     // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
-    DropsDoSite.anotarDrop({ quem: personagem?.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af }).catch((e) => console.error('drops-do-site', e.message));
+    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af }).catch((e) => console.error('drops-do-site', e.message));
+  }
+  for (const [outro, items] of deOutros) {
+    const lista = eventosDaParty.get(outro) ?? [];
+    lista.push({ t: 'loot', name: alvo.name, items });
+    eventosDaParty.set(outro, lista);
   }
   // Mesmo evento do original (`{t:'loot', name, items:[{id,count}]}`, capturado
   // ao vivo): é ele que escreve "Loot of a Troll: ..." no chat.

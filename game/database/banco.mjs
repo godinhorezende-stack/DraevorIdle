@@ -254,7 +254,19 @@ export const regravarEstadoPersonagem = (id, estado) =>
     JSON.stringify(estado), ...colunasDaCacaOffline(estado), id,
   );
 
-export const excluirPersonagem = (id) => banco.prepare('DELETE FROM personagens WHERE id = ?').run(id);
+/**
+ * Regrava SÓ se o estado no banco ainda é `antes` (o texto lido): a rodada da
+ * caçada offline pode ter gravado no meio, e passar por cima desfaria o que ela
+ * avançou. Devolve `true` se gravou.
+ */
+export async function regravarSeNaoMudou(id, estado, antes) {
+  const r = await banco
+    .prepare('UPDATE personagens SET estado = ?, caca_offline_desde = ?, caca_offline_ate = ? WHERE id = ? AND estado = ?')
+    .run(JSON.stringify(estado), ...colunasDaCacaOffline(estado), id, antes);
+  return !!r.changes;
+}
+
+export const excluirPersonagem =(id) => banco.prepare('DELETE FROM personagens WHERE id = ?').run(id);
 
 // ------------------------------------------------------------ baú da conta
 

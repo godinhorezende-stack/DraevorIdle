@@ -799,7 +799,7 @@ function handle(message) {
       mostrarPerfil(message.perfil);
       break;
     case 'runReport':
-      showRunReport(message.report, message.motivo);
+      showRunReport(message.report, message.motivo, message.titulo);
       break;
     /*
      * A resposta do dono a um report que ESTE jogador escreveu.
@@ -5112,19 +5112,18 @@ function mostrarMorte(message) {
 /*
  * ---- Este botão dizia o contrário do que faz ----
  *
- * O texto era "a caçada em andamento é encerrada". Ela não é: o `release` do
- * servidor só solta o SOCKET (ver `detach`, em index.mjs) — a sessão da caçada
- * fica de pé e o personagem continua matando com a aba fechada. É a promessa do
- * idle, e é o que o `LIMITE_POR_CONTA` já permitia sem ninguém saber: DOIS
- * personagens da mesma conta podem caçar ao mesmo tempo.
+ * O texto era "a caçada em andamento é encerrada". Ela não é: trocar solta o
+ * personagem como quem fecha a aba (`soltarPersonagem`, no servidor), e a
+ * caçada ou o exercise seguem OFFLINE — a volta consolida o que rendeu. É a
+ * promessa do idle.
  *
  * O dono pediu "um botão de trocar de personagem sem tirar esse de caçar", e a
  * resposta é que ele já existia e estava escondido atrás de um aviso que
  * assustava. Agora a caixa diz o que acontece de verdade, e o botão tem o nome
  * do que faz.
  *
- * O terceiro personagem é que encerra o mais antigo — está dito aqui porque é
- * a única parte que surpreende.
+ * Dois da conta NO MUNDO ao mesmo tempo só com + Party / ➜ Hunt: o outro vem
+ * sem aba e fica enquanto estiver na party (ver `contaChar`, no servidor).
  */
 function confirmarSaida() {
   openModal('Trocar de personagem', (body) => {
@@ -5194,7 +5193,7 @@ function confirmarSaida() {
         const chamar = pilula('➜', 'Hunt');
         chamar.disabled = !state.hunt;
         chamar.title = state.hunt
-          ? `Leva ${personagem.name} para a sua caçada agora. Se ele estiver caçando em outro lugar, aquela caçada acaba com o extrato.`
+          ? `Leva ${personagem.name} para a sua caçada agora. Se ele estiver caçando em outro lugar, aquela caçada acaba e o extrato dela aparece aqui para você.`
           : 'Entre numa caçada para chamar alguém para ela.';
         chamar.onclick = () => send({ t: 'contaChar', name: personagem.name, op: 'hunt' });
         const configurar = pilula('⚙', 'Config');
@@ -5248,9 +5247,10 @@ function confirmarSaida() {
       el(
         'p',
         'sheet-nota',
-        'Clicar num personagem entra nele, e este aqui CONTINUA de onde parou — caçando, treinando ou ' +
-          'na cidade. Dois da mesma conta ficam no mundo ao mesmo tempo; ao entrar num terceiro, o mais ' +
-          'antigo volta para o templo.'
+        'Clicar num personagem entra nele, e este aqui CONTINUA de onde parou: caçando ou treinando, segue ' +
+          'offline, como se você fechasse a aba; na cidade, fica parado. + PARTY e ➜ HUNT trazem o outro para ' +
+          'o mundo junto com você (sem aba) enquanto ele estiver na sua party — até 2 chars da conta ao mesmo ' +
+          'tempo, ou mais com "Slot de party".'
       ),
       el('p', 'sheet-nota', 'DEIXAR CAÇANDO OFFLINE: volta para a lista e o personagem continua a caça automática, o boss ou o exercise, como se você fechasse a aba.'),
       el('p', 'sheet-nota', 'SAIR DO PERSONAGEM: encerra a caçada agora, mostra o extrato e manda o personagem para o templo.')
@@ -10008,9 +10008,10 @@ function mostrarGanhoDoTreino(ganho, contexto = null) {
   });
 }
 
-function showRunReport(report, motivo = null) {
+// `titulo`: o extrato de OUTRO char da conta (o ➜ Hunt da troca de personagem encerrou a caçada dele).
+function showRunReport(report, motivo = null, titulo = null) {
   if (!report) return;
-  openModal(report.mode === 'cycle' ? 'Ciclo encerrado' : 'Caçada encerrada', (body) => {
+  openModal(titulo ?? (report.mode === 'cycle' ? 'Ciclo encerrado' : 'Caçada encerrada'), (body) => {
     if (motivo) body.append(el('p', 'relatorio-motivo', motivo));
     corpoDoRelatorio(body, report);
   });

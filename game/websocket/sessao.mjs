@@ -52,7 +52,7 @@ import * as Ranking from '../systems/ranking.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Arena from '../systems/arena.mjs';
 import * as SimuladorTique from '../systems/simulador-tique.mjs';
-import { descerDeLevel } from '../systems/hunt/combate.mjs';
+import { descerDeLevel, tirarEventosDaParty } from '../systems/hunt/combate.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
 import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
@@ -86,6 +86,23 @@ Ranking.ligar(vivas);
 Guildas.ligar(vivas);
 Arena.ligar(vivas);
 const AUTOSAVE_MS = 30_000;
+// Um "socket" que nunca está aberto: o char da conta trazido para o mundo sem aba (ver `contaChar`).
+const SEM_ABA = { readyState: 3, bufferedAmount: 0, send() {} };
+// O tempo para o char trazido sem aba entrar na party antes de o tique conferir se ele ainda tem motivo para ficar.
+const SEM_ABA_CARENCIA_MS = 10_000;
+// O que a ⚙ Config da troca de personagem pode mudar num char da conta.
+const CONFIG_DE_OUTRO = {
+  strategy: (e, m) => Cacadas.definirEstrategia(e, m),
+  distance: (e, m) => Cacadas.definirDistancia(e, m),
+  lure: (e, m) => Cacadas.definirLure(e, m),
+  settings: (e, m) => Bolsa.definirSettings(e, m),
+  huntAssist: (e, m) => Cacadas.definirAssistencia(e, m),
+  actions: (e, m) =>
+    m.action === 'set' ? Acoes.definir(e, m) :
+    m.action === 'key' ? Acoes.trocarTecla(e, m) :
+    m.action === 'swap' ? Acoes.trocar(e, m) :
+    { ok: false, erro: 'Ação de barra desconhecida.' },
+};
 /*
  * O personagem INTEIRO (~60 KB: inventário, bolsa, ficha, tarefas...) era
  * montado e comparado chave a chave em todo quadro — 4 vezes por segundo por
@@ -859,6 +876,8 @@ export class Sessao {
         return this.soltarPersonagem();
       case 'deixarOffline':
         return this.deixarOffline();
+      case 'contaChar':
+        return this.contaChar(m);
       case 'walk':
         return this.andar(m);
       case 'walkTo':
@@ -1159,6 +1178,174 @@ export class Sessao {
     }
   }
 
+  // ------------------------------------------ os outros chars da conta
+
+  /*
+   * ---- "+ Party", "➜ Hunt" e "⚙ Config" na troca de personagem ----
+   *
+   * `send({t:'contaChar', name, op})` — o cliente mandava isto desde a
+   * restauração, e o servidor não tinha o comando: os três botões não faziam
+   * nada, em silêncio. `op`:
+   *
+   * - `dados`: a configuração do outro char (`contaCharDados`).
+   * - `cmd`: muda alvo, distância, lure, ajustes, a barra de ações ou a
+   *   formação da party dele (`cmd` é o mesmo comando da barra do rodapé).
+   *   Com ele no mundo, vale na hora; caçando offline, vai direto para o banco.
+   * - `party`: põe ele na sua party, sem convite — é a mesma pessoa dos dois lados.
+   * - `hunt`: põe na party (se preciso) e leva para a sua caçada.
+   *
+   * Party e caçada em grupo são de quem está NO MUNDO. O char que está caçando
+   * offline é trazido de volta "sem aba" (`trazerParaOMundo`): a ausência dele
+   * é consolidada como num login, e ele caça junto ao vivo. Sem aba ele só
+   * fica enquanto estiver numa party — saiu dela (ou a party acabou), sai do
+   * mundo como quem fecha a aba, e a caçada segue offline (ver `tique`).
+   */
+  async contaChar(m) {
+    if (!this.conta || !this.personagem) return;
+    const linha = await B.personagemPorNome(String(m.name ?? '').trim());
+    if (!linha || linha.conta !== this.conta.id) return this.erro('Esse personagem não é desta conta.');
+    if (linha.nome === this.personagem.nome) return this.erro('Esse é o personagem em que você está.');
+    if (carregandoAgora.has(linha.nome)) return this.erro(`${linha.nome} está entrando agora — tente de novo em instantes.`);
+    const vivo = vivas.get(linha.nome)?.personagem ? vivas.get(linha.nome) : null;
+    switch (m.op) {
+      case 'dados':
+        return this.mandarDadosDoOutro(linha, vivo);
+      case 'cmd':
+        return this.configurarOutro(linha, vivo, m.cmd);
+      case 'party':
+      case 'hunt':
+        return this.chamarOutro(linha, vivo, m.op);
+      default:
+        return this.erro('Ação desconhecida.');
+    }
+  }
+
+  /** `contaCharDados`: o personagem (ajustes, barra, party) e o catálogo de ações dele. */
+  mandarDadosDoOutro(linha, vivo) {
+    const estado = vivo ? vivo.estado : JSON.parse(linha.estado);
+    const character = { ...characterParaCliente(linha, estado), ...(vivo ? Party.camposDoPersonagem(vivo) : { party: null }) };
+    // A formação (quem vai na frente, seguir quem) só existe caçando em grupo.
+    const grupo = vivo?.estado?.hunt ? Party.extrasDoRetrato(vivo).party : null;
+    this.enviar({ t: 'contaCharDados', name: linha.nome, character, catalog: Acoes.catalogo(estado), grupo });
+  }
+
+  async configurarOutro(linha, vivo, cmd) {
+    const t = cmd?.t;
+    // `{t:'actions'}` sem ação é o editor pedindo o catálogo: vai junto dos dados.
+    if (t === 'actions' && !cmd.action) return this.mandarDadosDoOutro(linha, vivo);
+    const partyDele = t === 'party' && ['frente', 'seguirQuem', 'coleira'].includes(cmd.action);
+    if (!CONFIG_DE_OUTRO[t] && !partyDele) return this.erro('Isso não dá para mudar daqui.');
+    if (vivo) {
+      const r = partyDele ? Party.comandoDaCaca(vivo, cmd) : CONFIG_DE_OUTRO[t](vivo.estado, cmd);
+      if (!r.ok) this.erro(r.erro);
+      else {
+        vivo.characterSujo = true;
+        vivo.mandarEstado();
+      }
+      return this.mandarDadosDoOutro(linha, vivo);
+    }
+    if (partyDele) return this.erro(`${linha.nome} não está caçando em grupo.`);
+    // Fora do mundo: lê, muda e regrava — só se ninguém gravou no meio (a rodada
+    // da caçada offline); se gravou, relê e tenta de novo.
+    let atual = linha;
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+      const estado = JSON.parse(atual.estado);
+      const r = CONFIG_DE_OUTRO[t](estado, cmd);
+      if (!r.ok) {
+        this.erro(r.erro);
+        return this.mandarDadosDoOutro(atual, null);
+      }
+      if (await B.regravarSeNaoMudou(atual.id, estado, atual.estado)) {
+        return this.mandarDadosDoOutro({ ...atual, estado: JSON.stringify(estado) }, null);
+      }
+      atual = await B.personagemPorNome(linha.nome);
+      // Entrou no jogo no meio: a mudança vai pela sessão dele.
+      const agoraVivo = vivas.get(linha.nome);
+      if (agoraVivo?.personagem) return this.configurarOutro(atual, agoraVivo, cmd);
+      if (!atual) return this.erro('Esse personagem não existe mais.');
+    }
+    return this.erro(`${linha.nome} está sendo atualizado agora — tente de novo em instantes.`);
+  }
+
+  async chamarOutro(linha, vivo, op) {
+    if (op === 'hunt' && !this.estado.hunt) return this.erro('Entre numa caçada para chamar alguém para ela.');
+    let outro = vivo;
+    let jaMandouOExtrato = false;
+    if (!outro) {
+      const r = await this.trazerParaOMundo(linha);
+      if (!r.ok) return this.erro(r.erro);
+      outro = r.sessao;
+      // O que ele rendeu caçando offline até agora (ou como morreu), para quem chamou.
+      if (r.andamento) {
+        this.enviar({ t: 'runReport', report: r.andamento, titulo: `${linha.nome}: enquanto esteve fora`, motivo: r.andamento.motivo ?? null });
+        // A caçada dele de agora começou nesta entrada: o extrato dela seria de
+        // segundos — e a janela dele cobriria esta, que é a que conta.
+        jaMandouOExtrato = true;
+      }
+      // Enquanto ele entrava, esta sessão pode ter saído do personagem.
+      if (!this.personagem) return outro.desconectar();
+    }
+    const desistir = (erro) => {
+      // Veio só para isto e não deu: volta para onde estava (offline).
+      if (outro.semAba && !Party.naParty(outro)) outro.desconectar();
+      return this.erro(erro);
+    };
+    const party = Party.juntarDaConta(this, outro);
+    if (!party.ok) return desistir(party.erro);
+    let notice = party.notice ?? `${linha.nome} já está na sua party.`;
+    if (op === 'hunt') {
+      /*
+       * Ele estava caçando em OUTRO lugar: aquela caçada acaba aqui. O extrato
+       * dela é tirado antes (depois, a hunt já é a sua) e vai para quem chamou
+       * — sem aba, não teria ninguém para ver o que ela rendeu.
+       */
+      const deOutraCacada = outro.estado.hunt && outro.estado.hunt.huntId !== 'treino' && Cacadas.salaDe(outro.estado.hunt) !== Cacadas.salaDe(this.estado.hunt);
+      const extrato = deOutraCacada ? { report: Cacadas.relatorio(outro.estado), onde: Cacadas.nomeDaHunt(outro.estado.hunt.huntId) } : null;
+      const r = Party.chamarDaConta(this, outro);
+      if (!r.ok) return desistir(r.erro);
+      notice = r.notice?.startsWith('Você entrou') ? `${linha.nome} entrou na sua caçada.` : r.notice ?? notice;
+      if (extrato?.report && !jaMandouOExtrato) {
+        const msg = { t: 'runReport', report: extrato.report, titulo: `Extrato de ${linha.nome}`, motivo: `${linha.nome} saiu de ${extrato.onde} para vir para a sua caçada. Isto é o que aquela caçada rendeu.` };
+        // (Com aba aberta nele, quem está lá recebe o dele pela entrada — ver `juntar`, em party.mjs.)
+        this.enviar(msg);
+      }
+    }
+    outro.characterSujo = true;
+    outro.mandarEstado();
+    return this.aplicar({ ok: true, notice });
+  }
+
+  /**
+   * Põe um char da conta no mundo SEM aba: a mesma entrada de um login (a
+   * ausência offline é consolidada, a morte offline acontece, o teto de chars
+   * da conta vale), numa sessão cujo "socket" nunca está aberto.
+   */
+  async trazerParaOMundo(linha) {
+    const sessao = new Sessao(SEM_ABA);
+    sessao.conta = this.conta;
+    sessao.semAba = { desde: Date.now(), dono: this.personagem.nome };
+    let motivo = null;
+    let andamento = null;
+    sessao.erroDeAuth = (mensagem) => void (motivo = mensagem);
+    // O "enquanto você esteve fora" vai no `welcome` — que, sem aba, ninguém lê.
+    // Ele é guardado aqui e entregue a quem chamou (ver `chamarOutro`).
+    sessao.enviar = (msg) => {
+      if (msg?.t === 'welcome') andamento = msg.andamento ?? null;
+    };
+    try {
+      await sessao.entrarNoPersonagem({ name: linha.nome });
+    } catch (e) {
+      motivo = e.message;
+    } finally {
+      delete sessao.enviar;
+    }
+    if (!sessao.personagem) {
+      sessao.desconectar();
+      return { ok: false, erro: motivo ?? `Não deu para trazer ${linha.nome} agora.` };
+    }
+    return { ok: true, sessao, andamento };
+  }
+
   // ------------------------------------------------------------------ auth
 
   async registrar({ email, password, confirm }) {
@@ -1348,7 +1535,8 @@ export class Sessao {
         // Trocou de conta no meio (login em outra): este personagem não é mais dela.
         if (this.conta?.id !== personagem.conta) return;
         Cacadas.huntAoCarregar(simulado.hunt);
-        this.concluirEntrada(personagem, simulado, ausencia, treinoPendente);
+        // Devolvida: quem espera a entrada (ver `trazerParaOMundo`) espera ela INTEIRA.
+        return this.concluirEntrada(personagem, simulado, ausencia, treinoPendente);
       },
       (e) => {
         if (this.carregando !== pedido) return;
@@ -1356,7 +1544,7 @@ export class Sessao {
         console.error('simulação offline ->', e.message);
         this.pararDeCarregar();
         if (this.conta?.id !== personagem.conta) return;
-        this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora), treinoPendente);
+        return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora), treinoPendente);
       },
     );
   }
@@ -1486,6 +1674,8 @@ export class Sessao {
     Amigos.mudouPresenca(this.personagem.nome).catch((e) => console.error('amigos mudouPresenca', e.message));
     this.personagem = null;
     this.estado = null;
+    // Sem aba, ninguém vai chamar `desconectar`: sai do relógio aqui.
+    if (this.semAba) sessoesNoRelogio.delete(this);
     return gravando;
   }
 
@@ -1644,6 +1834,8 @@ export class Sessao {
     const viagem = this.estado?.hunt?.viagem ?? null;
     if (viagem) delete this.estado.hunt.viagem;
     if (!this.personagem) return;
+    // Sem aba, não há quem desenhe: montar o quadro seria trabalho para ninguém.
+    if (this.semAba) return;
     const naHunt = !!this.estado.hunt;
     /*
      * ---- Só o que MUDOU ----
@@ -1823,6 +2015,9 @@ export class Sessao {
    */
   async tique() {
     if (!this.personagem) return;
+    // O char trazido sem aba (ver `contaChar`) só fica no mundo enquanto está
+    // numa party; fora dela, sai como quem fecha a aba (a caçada segue offline).
+    if (this.semAba && !Party.naParty(this) && Date.now() - this.semAba.desde > SEM_ABA_CARENCIA_MS) return this.desconectar();
     // Um tique novo: a ficha de combate guardada é de antes dele (talvez de um
     // comando, talvez do tique anterior) — pode ter vencido um buff/gema
     // temporária desde então. Sem isto, quem fica tiques parado sem mandar
@@ -1886,6 +2081,9 @@ export class Sessao {
         } else {
           eventos = Cacadas.tique(this.estado, this.personagem, agoraDoTique);
         }
+        // Itens que o rodízio da party deu a ESTE char nos golpes dos outros: o "Loot of a ..." no chat dele.
+        const daParty = tirarEventosDaParty(this.estado);
+        if (daParty) eventos = [...(eventos ?? []), ...daParty];
         if (this.estado.avisoDaHunt) {
           this.avisoPendente = this.estado.avisoDaHunt;
           delete this.estado.avisoDaHunt;

@@ -13,7 +13,7 @@
 //
 // ESTIMADO: a exp de hoje conta a partir da primeira vez que o personagem é
 // visto no dia (Brasília) — online, a cada `AMOSTRA_MS`; a da última hora vem de
-// amostras em memória, só de quem está online (some ao reiniciar o servidor).
+// amostras em memória, de quem está online ou caçando offline (some ao reiniciar o servidor).
 // `donate: false` e `googleClientId: null`: pagamento e login do Google não
 // existem neste servidor, e a capa esconde o que depende deles.
 import { banco } from '../database/banco.mjs';
@@ -78,6 +78,21 @@ export function amostrar(agora = Date.now()) {
     while (lista.length && lista[0][0] < agora - HORA_MS - AMOSTRA_MS) lista.shift();
     amostras.set(nome, lista);
   }
+  /*
+   * E quem caça de aba fechada: a exp dele no banco anda a cada rodada da
+   * consolidação (ver `consolidacao-offline.mjs`), e o Top Exp/h mede isso.
+   * Sem eles a lista ficava VAZIA sempre que ninguém estava conectado — que,
+   * num jogo idle, é boa parte do dia. O nome é o mesmo nos dois lados, então
+   * quem loga ou sai no meio da hora segue com a mesma fileira de amostras.
+   */
+  for (const a of Ausentes.agora(agora)) {
+    if (vistos.has(a.nome)) continue;
+    vistos.add(a.nome);
+    const lista = amostras.get(a.nome) ?? [];
+    lista.push([agora, a.xp]);
+    while (lista.length && lista[0][0] < agora - HORA_MS - AMOSTRA_MS) lista.shift();
+    amostras.set(a.nome, lista);
+  }
   for (const nome of amostras.keys()) if (!vistos.has(nome)) amostras.delete(nome);
 }
 
@@ -129,6 +144,13 @@ function expHora(agora) {
     if (!hist.length) continue;
     const ganho = (s.estado.xp ?? 0) - hist[0][1];
     if (ganho > 0) lista.push({ name: nome, vocation: s.estado.vocation, level: s.estado.level, value: ganho, online: true, outfit: roupa(s.estado.outfit), guilda: guildaDe(nome) });
+  }
+  // Quem caça de aba fechada, pela exp que o banco tem dele agora (ver `amostrar`).
+  for (const a of Ausentes.agora(agora)) {
+    const hist = (amostras.get(a.nome) ?? []).filter(([t]) => t >= agora - HORA_MS);
+    if (!hist.length) continue;
+    const ganho = a.xp - hist[0][1];
+    if (ganho > 0) lista.push({ name: a.nome, vocation: a.vocacao, level: a.level, value: ganho, online: false, outfit: roupa(a.outfit ?? {}), guilda: guildaDe(a.nome), cacandoOffline: true });
   }
   return lista.sort((a, b) => b.value - a.value).slice(0, TOPO_EXP);
 }

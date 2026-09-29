@@ -409,6 +409,15 @@ export function entrar(estado, { huntId, mode, strategy }) {
     const pode = Premium.podeEntrar(estado, hunt);
     if (!pode.ok) return pode;
   }
+  /*
+   * Hunt normal: só com o level dela (pedido do dono — "hunt normais também só
+   * se a pessoa tiver lv"). Antes o level era só referência e um level 20 abria
+   * Port Hope (40). As Vip/Instance/Divine já conferem o delas em `podeEntrar`,
+   * e os bosses logo abaixo. Quem já está caçando não é tirado: isto é a porta.
+   */
+  if (hunt && !boss && !tranca && (estado.level ?? 0) < (hunt.level ?? 0)) {
+    return { ok: false, erro: `${hunt.name ?? 'Esta hunt'} pede level ${hunt.level}, e você é level ${estado.level ?? 0}.` };
+  }
   if (hunt && !boss && !tranca && !mapaRealCapturado(hunt.id) && !temTerrenoReal(hunt)) {
     return { ok: false, erro: 'Esta hunt ainda não tem terreno capturado.' };
   }
@@ -619,6 +628,15 @@ export function disparoManual(estado, personagem, slot) {
 }
 
 /** Entra na caçada de outro membro da party: os MESMOS bichos, posição própria. */
+/** O level de uma hunt (o do catálogo: Troll Cave 8, Port Hope 40...); 0 se ela não tem. */
+export const levelDaHunt = (huntId) => huntOuMapaCustom(huntId)?.level ?? 0;
+
+/** Vip/Instance/Divine: `estado` tem premium, o acesso e o level da porta desta sala? (`{ok}` ou `{ok:false, erro}`) */
+export function podeEntrarNaSala(estado, sala) {
+  const dados = huntOuMapaCustom(sala.huntId);
+  return Premium.trancaDaHunt(dados) ? Premium.podeEntrar(estado, dados) : { ok: true };
+}
+
 export function entrarNaSala(estado, sala) {
   const dados = huntOuMapaCustom(sala.huntId);
   const tranca = Premium.trancaDaHunt(dados);

@@ -22,12 +22,14 @@ const consulta = banco.prepare(
   banco.dialeto === 'postgres'
     ? `SELECT nome, vocacao, caca_offline_ate AS ate,
          (estado::jsonb #>> '{level}')::int AS level,
+         (estado::jsonb #>> '{xp}')::numeric AS xp,
          estado::jsonb ->> 'outfit' AS outfit,
          estado::jsonb #>> '{hunt,huntId}' AS hunt
        FROM personagens WHERE caca_offline_ate > ?
        ORDER BY caca_offline_ate DESC LIMIT ${TETO_DA_LISTA}`
     : `SELECT nome, vocacao, caca_offline_ate AS ate,
          json_extract(estado, '$.level') AS level,
+         json_extract(estado, '$.xp') AS xp,
          json_extract(estado, '$.outfit') AS outfit,
          json_extract(estado, '$.hunt.huntId') AS hunt
        FROM personagens WHERE caca_offline_ate > ?
@@ -49,7 +51,7 @@ export async function atualizar(agora = Date.now()) {
       } catch {
         outfit = null;
       }
-      return { nome: r.nome, vocacao: r.vocacao, level: Number(r.level) || 1, outfit, huntId: r.hunt ?? null, ate: Number(r.ate) };
+      return { nome: r.nome, vocacao: r.vocacao, level: Number(r.level) || 1, xp: Number(r.xp) || 0, outfit, huntId: r.hunt ?? null, ate: Number(r.ate) };
     });
   } catch (e) {
     console.error('ausentes ->', e.message);
