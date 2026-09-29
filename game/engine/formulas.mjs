@@ -387,11 +387,17 @@ export function armorReduction(armor, roll) {
 }
 
 /**
- * Chance de aparar o golpe. É a defesa que sustenta uma hunt longa: sem ela o
- * personagem vira dependente de potion e a hunt fica no prejuízo.
+ * Chance de aparar o golpe CORPO A CORPO (físico — magia e dano elemental não
+ * passam por aqui, só pela proteção elemental). Vem do slot do ESCUDO: a
+ * defesa dele mais a perícia shielding acima do valor inicial (10, que não dá
+ * nada de graça). Sem escudo equipado quem chama passa `null` e é 0%.
+ * Teto de 50%, só no fim da linha (escudo de 50 de defesa + shielding ~130).
+ * Ex.: escudo +14 e shielding 20 -> ~9%.
  */
-export function blockChance(shielding, defense) {
-  return Math.min(0.6, (shielding * 0.5 + defense * 1.6) / 130);
+export function blockChance(shielding, shieldDefense) {
+  if (shieldDefense == null) return 0;
+  const pontos = Math.max(0, shieldDefense) + Math.max(0, shielding - 10) * 0.5;
+  return Math.min(0.5, pontos / 220);
 }
 
 /*

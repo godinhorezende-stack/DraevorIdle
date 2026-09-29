@@ -518,7 +518,7 @@ export function renderSheet(body, { state, send, closeModal }) {
         ]
       : []),
     statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano`, null, 'ficha-critico'),
-    statCard('Bloqueio', `${(derived.blockChance * 100).toFixed(0)}%`, 'apara o golpe', null, 'ficha-bloqueio'),
+    statCard('Bloqueio', `${(derived.blockChance * 100).toFixed(0)}%`, 'apara golpe físico (escudo)', null, 'ficha-bloqueio'),
     statCard('Life leech', `${(derived.lifeLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-life-leech'),
     statCard('Mana leech', `${(derived.manaLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-mana-leech'),
     statCard('Alcance', derived.attackRange > 1 ? `${derived.attackRange} sqm` : 'corpo a corpo', null, null, 'ficha-alcance'),
