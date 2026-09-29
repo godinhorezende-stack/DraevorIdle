@@ -20,6 +20,7 @@
 // knights), então magia de mago em mago sai subestimada. Magias de suporte/
 // velocidade gastam mana, cooldown e mostram o efeito, mas ainda não aplicam
 // buff nenhum, e `overTime` (dano contínuo) não é aplicado.
+import { resistido } from './hunt/resistencia.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -509,7 +510,9 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
       const bruta = sortear(hp[0], hp[1]) + (entry.kind === 'spell' ? Proficiencia.daPericia(estado, Proficiencia.bonus(estado).periciaNaCura) : 0);
       // + "cura de <magia>" das gemas (supremo).
       const daGema = Ficha.combate(estado).magiasDasGemas?.[action.id]?.cura ?? 0;
-      const cura = entry.kind === 'item' ? bruta : Arvore.aoCurarComMagia(estado, Math.round(bruta * (1 + ((Ficha.combate(estado).curaDeMagia ?? 0) + daGema) / 100)));
+      // + o ML de bônus (+1%/ponto) na magia/runa de cura.
+      const fichaDaCura = Ficha.combate(estado);
+      const cura = entry.kind === 'item' ? bruta : Arvore.aoCurarComMagia(estado, Math.round(bruta * (1 + ((fichaDaCura.curaDeMagia ?? 0) + daGema + (fichaDaCura.skillBonus?.magic ?? 0)) / 100)));
       estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + cura);
       eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: cura, color: '#00ff66' });
     }
@@ -537,9 +540,12 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
     const danos = [];
     for (const bicho of atingidos) {
       // Cada alvo rola o crítico dele; o leech sai uma vez, do dano somado.
-      // "Dano de magia" e "Dano de <elemento>" (afixos e árvore), na magia/runa daquele elemento.
-      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0)) / 100;
-      const { dano, crit, onslaught } = Ficha.rolarCritico(estado, (sortear(min, max) + daPericia) * mult, bicho, eventos, ficha);
+      // "Dano de magia" e "Dano de <elemento>" (afixos e árvore), na magia/runa
+      // daquele elemento, + o ML de bônus (+1%/ponto; o dano do catálogo já é o
+      // do ML treinado); e a resistência do bicho ao elemento dela.
+      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + (ficha.skillBonus?.magic ?? 0)) / 100;
+      const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult);
+      const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;
       total += dano;
       danos.push({ bicho, dano });
