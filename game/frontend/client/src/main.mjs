@@ -7,7 +7,7 @@ import {
   setTitle,
 } from './windows.mjs';
 import { createGate, marcarVisto, cartaoDePersonagem } from './auth.mjs';
-import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos } from './hud.mjs';
+import { initHud, renderHud, artOrUiIcon, linhasDeEfeito, modoDosEfeitos, pintarBotaoDaFase } from './hud.mjs';
 import { ARTES } from './artes.mjs';
 import { abrirNaPilha, fechouNaPilha, fechouNaPilhaTudoQue } from './pilha.mjs';
 import { ligarPerfil, ehTelefone } from './perfil.mjs';
@@ -612,8 +612,7 @@ $('treino-faixa-parar')?.addEventListener('click', () => send({ t: 'training', a
 $('fase-modo')?.addEventListener('click', (evento) => {
   const botao = evento.currentTarget;
   const novo = botao.dataset.modo === 'seguir' ? 'repetir' : 'seguir';
-  botao.dataset.modo = novo;
-  botao.textContent = novo === 'seguir' ? '⏭ Avançar sozinho' : '🔁 Ficar na fase';
+  pintarBotaoDaFase(botao, novo);
   send({ t: 'aoCompletarFase', value: novo });
 });
 

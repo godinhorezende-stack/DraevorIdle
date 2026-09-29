@@ -1420,45 +1420,55 @@ body.com-aviso { --altura-do-aviso: 24px; }
  * de cima aparecem e somem, e um numero cravado no css estaria errado metade do
  * tempo. O valor daqui e so o comeco, para o primeiro quadro nao nascer torto.
  */
-/* ---- A barra da fase da campanha (ver `barraDaFase`, hud.mjs) ---- */
+/* ---- A barra da fase da campanha (ver `barraDaFase`, hud.mjs) ----
+ * Em grade, para nada disputar a mesma linha: em cima o título (corta com
+ * "…" se faltar espaço) e a contagem; embaixo o trilho; o botão "Ficar na
+ * fase / Avançar sozinho" à direita, nas duas linhas. Antes os três dividiam
+ * uma linha só e o botão vazava pela borda. */
 #barra-da-fase {
   position: fixed; z-index: 27;
   top: calc(var(--altura-da-topbar) + var(--altura-do-aviso, 0px) + 6px);
   left: 50%; transform: translateX(-50%);
-  width: min(460px, 86vw); padding: 5px 12px 7px;
-  display: grid; gap: 4px;
+  box-sizing: border-box; width: min(560px, calc(100vw - 24px)); padding: 6px 8px 7px 12px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "titulo conta modo" "trilho trilho modo";
+  column-gap: 10px; row-gap: 5px; align-items: center;
   background: linear-gradient(180deg, #0f1a18ee, #0a1110ee);
   border: 1px solid #2d5a52; border-radius: 10px;
   box-shadow: 0 6px 18px #000a; pointer-events: none;
 }
-#barra-da-fase .fase-topo { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-#barra-da-fase b { font-family: var(--font-heading); font-size: 11.5px; letter-spacing: .04em; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#barra-da-fase #fase-conta { font-size: 11.5px; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
-#barra-da-fase .fase-trilho { height: 5px; border-radius: 999px; background: #ffffff14; overflow: hidden; }
+#barra-da-fase[hidden] { display: none; }
+#fase-titulo {
+  grid-area: titulo; min-width: 0;
+  font-family: var(--font-heading); font-size: 11.5px; letter-spacing: .04em; color: var(--accent);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#fase-conta { grid-area: conta; font-size: 11.5px; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+#barra-da-fase .fase-trilho { grid-area: trilho; height: 5px; border-radius: 999px; background: #ffffff14; overflow: hidden; }
 #barra-da-fase .fase-trilho i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); transition: width .3s linear; }
 #barra-da-fase.completa { border-color: #b08a3a; }
-#barra-da-fase.completa b, #barra-da-fase.completa #fase-conta { color: #e0a84a; }
+#barra-da-fase.completa #fase-titulo, #barra-da-fase.completa #fase-conta { color: #e0a84a; }
 #barra-da-fase.completa .fase-trilho i { background: linear-gradient(90deg, #8a6a20, #e0a84a); }
-@media (max-width: 560px) { #barra-da-fase { width: calc(100vw - 24px); } #barra-da-fase b { font-size: 10.5px; } }
-/* O botão "Repetir / Seguir" da barra: a barra não recebe toque, o botão sim. */
-#barra-da-fase .fase-topo { align-items: center; }
-#barra-da-fase #fase-titulo { flex: 1; min-width: 0; }
+
+/* O botão: a barra não recebe toque, ele sim. Texto longo no desktop, curto no celular. */
 #fase-modo {
-  pointer-events: auto; flex: none; cursor: pointer;
-  font: inherit; font-size: 10.5px; line-height: 1; white-space: nowrap;
-  padding: 4px 8px; border-radius: 999px;
+  grid-area: modo; pointer-events: auto; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  font: inherit; font-size: 11px; line-height: 1; white-space: nowrap;
+  padding: 6px 10px; border-radius: 8px;
   border: 1px solid #2d5a52; background: #ffffff0d; color: var(--text);
 }
 #fase-modo:hover { border-color: var(--accent); }
 #fase-modo[data-modo="seguir"] { border-color: var(--accent); color: var(--accent); background: #2a7d6e33; }
+#fase-modo .modo-curto { display: none; }
 @media (max-width: 560px) {
-  /* No celular o dedo precisa de alvo: ~28px de altura; o título encolhe. */
-  #fase-modo { padding: 7px 10px; font-size: 11px; margin-left: auto; }
-  /* Título numa linha; a contagem e o botão na de baixo — nada espremido. */
-  #barra-da-fase .fase-topo { gap: 4px 8px; flex-wrap: wrap; }
-  #barra-da-fase #fase-titulo { flex-basis: 100%; }
+  #barra-da-fase { column-gap: 8px; padding: 6px 6px 7px 10px; }
+  #fase-titulo, #fase-conta { font-size: 10.5px; }
+  #fase-modo { font-size: 11px; padding: 8px 9px; }
+  #fase-modo .modo-longo { display: none; }
+  #fase-modo .modo-curto { display: inline; }
 }
-@media (pointer: coarse) { #fase-modo { min-height: 28px; } }
+@media (pointer: coarse) { #fase-modo { min-height: 32px; } }
 
 /* O seletor do painel da campanha: rótulo e as duas opções, quebra no celular. */
 .campanha-modo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 4px; font-size: 12.5px; color: var(--muted, #9fb3ae); }

@@ -4,7 +4,7 @@
   "facil": {
    "nome": "Fácil",
    "faixa": [
-    1,
+    8,
     100
    ],
    "killsMult": 1
@@ -40,7 +40,7 @@
    "ato": 1,
    "levelOriginal": 8,
    "nivel": {
-    "facil": 1,
+    "facil": 8,
     "medio": 101,
     "dificil": 601
    },
@@ -56,7 +56,7 @@
    "ato": 1,
    "levelOriginal": 12,
    "nivel": {
-    "facil": 3,
+    "facil": 10,
     "medio": 112,
     "dificil": 633
    },
@@ -72,7 +72,7 @@
    "ato": 1,
    "levelOriginal": 15,
    "nivel": {
-    "facil": 5,
+    "facil": 12,
     "medio": 124,
     "dificil": 664
    },
@@ -88,7 +88,7 @@
    "ato": 1,
    "levelOriginal": 40,
    "nivel": {
-    "facil": 8,
+    "facil": 15,
     "medio": 135,
     "dificil": 696
    },
@@ -104,7 +104,7 @@
    "ato": 1,
    "levelOriginal": 45,
    "nivel": {
-    "facil": 10,
+    "facil": 16,
     "medio": 146,
     "dificil": 728
    },
@@ -120,7 +120,7 @@
    "ato": 1,
    "levelOriginal": 50,
    "nivel": {
-    "facil": 12,
+    "facil": 18,
     "medio": 157,
     "dificil": 760
    },
@@ -136,7 +136,7 @@
    "ato": 1,
    "levelOriginal": 50,
    "nivel": {
-    "facil": 14,
+    "facil": 20,
     "medio": 169,
     "dificil": 791
    },
@@ -152,7 +152,7 @@
    "ato": 1,
    "levelOriginal": 60,
    "nivel": {
-    "facil": 16,
+    "facil": 22,
     "medio": 180,
     "dificil": 823
    },
@@ -168,7 +168,7 @@
    "ato": 1,
    "levelOriginal": 80,
    "nivel": {
-    "facil": 18,
+    "facil": 24,
     "medio": 191,
     "dificil": 855
    },
@@ -184,7 +184,7 @@
    "ato": 1,
    "levelOriginal": 100,
    "nivel": {
-    "facil": 21,
+    "facil": 27,
     "medio": 202,
     "dificil": 887
    },
@@ -200,7 +200,7 @@
    "ato": 1,
    "levelOriginal": 100,
    "nivel": {
-    "facil": 23,
+    "facil": 28,
     "medio": 214,
     "dificil": 918
    },
@@ -216,7 +216,7 @@
    "ato": 1,
    "levelOriginal": 100,
    "nivel": {
-    "facil": 25,
+    "facil": 30,
     "medio": 225,
     "dificil": 950
    },
@@ -232,7 +232,7 @@
    "ato": 2,
    "levelOriginal": 120,
    "nivel": {
-    "facil": 26,
+    "facil": 31,
     "medio": 226,
     "dificil": 951
    },
@@ -248,7 +248,7 @@
    "ato": 2,
    "levelOriginal": 140,
    "nivel": {
-    "facil": 28,
+    "facil": 33,
     "medio": 237,
     "dificil": 983
    },
@@ -264,7 +264,7 @@
    "ato": 2,
    "levelOriginal": 150,
    "nivel": {
-    "facil": 30,
+    "facil": 35,
     "medio": 249,
     "dificil": 1014
    },
@@ -280,7 +280,7 @@
    "ato": 2,
    "levelOriginal": 150,
    "nivel": {
-    "facil": 33,
+    "facil": 38,
     "medio": 260,
     "dificil": 1046
    },
@@ -296,7 +296,7 @@
    "ato": 2,
    "levelOriginal": 150,
    "nivel": {
-    "facil": 35,
+    "facil": 40,
     "medio": 271,
     "dificil": 1078
    },
@@ -312,7 +312,7 @@
    "ato": 2,
    "levelOriginal": 150,
    "nivel": {
-    "facil": 37,
+    "facil": 41,
     "medio": 282,
     "dificil": 1110
    },
@@ -328,7 +328,7 @@
    "ato": 2,
    "levelOriginal": 180,
    "nivel": {
-    "facil": 39,
+    "facil": 43,
     "medio": 294,
     "dificil": 1141
    },
@@ -344,7 +344,7 @@
    "ato": 2,
    "levelOriginal": 200,
    "nivel": {
-    "facil": 41,
+    "facil": 45,
     "medio": 305,
     "dificil": 1173
    },
@@ -360,7 +360,7 @@
    "ato": 2,
    "levelOriginal": 200,
    "nivel": {
-    "facil": 43,
+    "facil": 47,
     "medio": 316,
     "dificil": 1205
    },
@@ -376,7 +376,7 @@
    "ato": 2,
    "levelOriginal": 250,
    "nivel": {
-    "facil": 46,
+    "facil": 50,
     "medio": 327,
     "dificil": 1237
    },
@@ -392,7 +392,7 @@
    "ato": 2,
    "levelOriginal": 250,
    "nivel": {
-    "facil": 48,
+    "facil": 52,
     "medio": 339,
     "dificil": 1268
    },
@@ -408,7 +408,7 @@
    "ato": 2,
    "levelOriginal": 250,
    "nivel": {
-    "facil": 50,
+    "facil": 54,
     "medio": 350,
     "dificil": 1300
    },
@@ -424,7 +424,7 @@
    "ato": 3,
    "levelOriginal": 250,
    "nivel": {
-    "facil": 51,
+    "facil": 54,
     "medio": 351,
     "dificil": 1301
    },
@@ -440,7 +440,7 @@
    "ato": 3,
    "levelOriginal": 250,
    "nivel": {
-    "facil": 53,
+    "facil": 56,
     "medio": 362,
     "dificil": 1333
    },
@@ -456,7 +456,7 @@
    "ato": 3,
    "levelOriginal": 300,
    "nivel": {
-    "facil": 55,
+    "facil": 58,
     "medio": 374,
     "dificil": 1364
    },
@@ -472,7 +472,7 @@
    "ato": 3,
    "levelOriginal": 300,
    "nivel": {
-    "facil": 58,
+    "facil": 61,
     "medio": 385,
     "dificil": 1396
    },
@@ -488,7 +488,7 @@
    "ato": 3,
    "levelOriginal": 350,
    "nivel": {
-    "facil": 60,
+    "facil": 63,
     "medio": 396,
     "dificil": 1428
    },
@@ -504,7 +504,7 @@
    "ato": 3,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 62,
+    "facil": 65,
     "medio": 407,
     "dificil": 1460
    },
@@ -520,7 +520,7 @@
    "ato": 3,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 64,
+    "facil": 67,
     "medio": 419,
     "dificil": 1491
    },
@@ -536,7 +536,7 @@
    "ato": 3,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 66,
+    "facil": 68,
     "medio": 430,
     "dificil": 1523
    },
@@ -552,7 +552,7 @@
    "ato": 3,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 68,
+    "facil": 70,
     "medio": 441,
     "dificil": 1555
    },
@@ -568,7 +568,7 @@
    "ato": 3,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 71,
+    "facil": 73,
     "medio": 452,
     "dificil": 1587
    },
@@ -584,7 +584,7 @@
    "ato": 3,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 73,
+    "facil": 75,
     "medio": 464,
     "dificil": 1618
    },
@@ -600,7 +600,7 @@
    "ato": 3,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 75,
+    "facil": 77,
     "medio": 475,
     "dificil": 1650
    },
@@ -616,7 +616,7 @@
    "ato": 4,
    "levelOriginal": 400,
    "nivel": {
-    "facil": 76,
+    "facil": 78,
     "medio": 476,
     "dificil": 1651
    },
@@ -632,7 +632,7 @@
    "ato": 4,
    "levelOriginal": 450,
    "nivel": {
-    "facil": 78,
+    "facil": 80,
     "medio": 487,
     "dificil": 1683
    },
@@ -648,7 +648,7 @@
    "ato": 4,
    "levelOriginal": 450,
    "nivel": {
-    "facil": 80,
+    "facil": 81,
     "medio": 499,
     "dificil": 1714
    },
@@ -664,7 +664,7 @@
    "ato": 4,
    "levelOriginal": 550,
    "nivel": {
-    "facil": 83,
+    "facil": 84,
     "medio": 510,
     "dificil": 1746
    },
@@ -680,7 +680,7 @@
    "ato": 4,
    "levelOriginal": 550,
    "nivel": {
-    "facil": 85,
+    "facil": 86,
     "medio": 521,
     "dificil": 1778
    },
@@ -696,7 +696,7 @@
    "ato": 4,
    "levelOriginal": 550,
    "nivel": {
-    "facil": 87,
+    "facil": 88,
     "medio": 532,
     "dificil": 1810
    },
@@ -712,7 +712,7 @@
    "ato": 4,
    "levelOriginal": 550,
    "nivel": {
-    "facil": 89,
+    "facil": 90,
     "medio": 544,
     "dificil": 1841
    },
@@ -728,7 +728,7 @@
    "ato": 4,
    "levelOriginal": 550,
    "nivel": {
-    "facil": 91,
+    "facil": 92,
     "medio": 555,
     "dificil": 1873
    },
@@ -813,7 +813,7 @@
    "nome": "Urmahlullu the Immaculate",
    "levelOriginal": 100,
    "nivel": {
-    "facil": 25,
+    "facil": 30,
     "medio": 225,
     "dificil": 950
    }
@@ -823,7 +823,7 @@
    "nome": "Ascending Ferumbras",
    "levelOriginal": 250,
    "nivel": {
-    "facil": 50,
+    "facil": 54,
     "medio": 350,
     "dificil": 1300
    }
@@ -833,7 +833,7 @@
    "nome": "Bakragore",
    "levelOriginal": 250,
    "nivel": {
-    "facil": 75,
+    "facil": 77,
     "medio": 475,
     "dificil": 1650
    }
