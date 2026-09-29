@@ -548,9 +548,7 @@
     "facil": 98,
     "medio": 589,
     "dificil": 1968
-   },
-   "pular": true,
-   "_pular": "hunt sem bichos/terreno hoje: conta como completa sozinha"
+   }
   },
   {
    "huntId": "walking-pillar",

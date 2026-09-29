@@ -622,7 +622,7 @@ function campanhaCards(body) {
           'span',
           null,
           f.pular
-            ? 'pulada (em obras)'
+            ? '🔒 travada (em obras)'
             : f.completa
               ? `completa ✓${f.limpezas > 1 ? ` · ${f.limpezas} limpezas` : ''}`
               : f.liberada

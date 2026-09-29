@@ -82,7 +82,8 @@ test('promoção: level 20, 20.000 gold, uma vez; acelera a regeneração', () =
   assert.equal(Promocao.paraCliente(e).available, true);
   assert.ok(Promocao.promover(e).ok);
   assert.equal(e.gold, 30000);
-  assert.deepEqual(Promocao.paraCliente(e), ler('captura-charms-0925/welcome-zoros.json').character.promotion);
-  assert.deepEqual(Promocao.fatorDeRegeneracao(e), { hp: 1.5, mana: 1 });
+  // Igual à captura do servidor original, menos a mana: a decisão do dono (29/09) é +50% de vida E de mana.
+  assert.deepEqual(Promocao.paraCliente(e), { ...ler('captura-charms-0925/welcome-zoros.json').character.promotion, mana: 1.5 });
+  assert.deepEqual(Promocao.fatorDeRegeneracao(e), { hp: 1.5, mana: 1.5 });
   assert.match(Promocao.promover(e).erro, /já foi/);
 });
