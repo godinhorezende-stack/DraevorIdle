@@ -4,6 +4,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
+import * as Instancia from '../systems/hunt/instancia.mjs';
+import { spawnsDaHunt } from '../systems/hunt/terreno.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
@@ -36,17 +38,17 @@ test('escadas: a regra leva para onde a rota gravada do original chegou, em toda
   assert.ok(conferidas >= 70, `só ${conferidas} trocas conferidas`);
 });
 
-test('Amazon Camp: cada bicho nasce no andar dele, e só os do andar atual vão para o cliente', () => {
+test('Amazon Camp: cada bicho da instância nasce numa casa alcançável do andar dele, e só os do andar atual vão para o cliente', () => {
   const e = naHunt('amazon-camp');
-  const noCatalogo = CATALOGO.hunts.find((h) => h.id === 'amazon-camp').posicoes;
-  const doAndar = (z) => new Set(noCatalogo.filter((p) => p.z === z).map((p) => `${p.x},${p.y}`));
+  const grade = Cacadas.gradeDaHunt(CATALOGO.hunts.find((h) => h.id === 'amazon-camp'));
+  const alcancaveis = Instancia.casasAlcancaveis(grade);
   assert.equal(e.hunt.z, 7);
-  const aqui = doAndar(7);
-  assert.ok(e.hunt.monstros.every((m) => aqui.has(`${m.spawn.x},${m.spawn.y}`) && m.spawn.z === 7), 'no andar 7, só bicho do 7');
+  assert.ok(e.hunt.monstros.every((m) => alcancaveis.get(7).has(`${m.x},${m.y}`)), 'no andar 7, só casa alcançável do 7');
   for (const [z, lista] of Object.entries(e.hunt.outrosAndares)) {
-    assert.ok(lista.every((m) => m.spawn.z === Number(z)), `andar ${z}`);
+    assert.ok(lista.every((m) => alcancaveis.get(Number(z))?.has(`${m.x},${m.y}`)), `andar ${z}`);
   }
-  assert.ok(Object.keys(e.hunt.outrosAndares).length >= 4, 'os bichos de cima e de baixo esperam no andar deles');
+  // Andar com área alcançável pequena pode sair sem bicho no sorteio: pelo menos 2 além do da entrada.
+  assert.ok(Object.values(e.hunt.outrosAndares).filter((l) => l.length).length >= 2, 'os bichos de cima e de baixo esperam no andar deles');
   const snap = Cacadas.snapshotDaHunt(e, true);
   assert.equal(snap.z, 7);
   assert.equal(snap.monsters.length, e.hunt.monstros.length);
@@ -56,6 +58,8 @@ test('Caça Automática sobe e desce e passa por todos os andares com bicho, e d
   // O percurso passa pelos pontos de nascimento (`percursoPelosBichos`): com os 86
   // bichos da Dark Pyramid em 7 andares, uma volta leva uns 8 minutos.
   const e = naHunt('dark-pyramid');
+  // A mecânica do LAÇO, sem a instância (que trocaria o laço por "ir atrás do que sobrou").
+  delete e.hunt.instancia;
   const andares = new Set([e.hunt.z]);
   let t = Date.now();
   e.hunt.ultimoTique = t;
@@ -91,28 +95,25 @@ test('huntEscada: a escada de mão sobe, só de perto', () => {
   assert.ok(Math.max(Math.abs(e.hunt.pos.x - 89), Math.abs(e.hunt.pos.y - 72)) <= 1);
 });
 
-test('quantidade como no original: `density` bichos por ponto (Winter Dream Court, andar 7)', () => {
-  // O Zoros viu 8 Thanatursus no andar 7 (4 pontos, densidade 2) e o andar
-  // chegou a 93 bichos ao mesmo tempo (`captura-monstros-0924`).
+test('quantidade: a do mapa — a soma das `quantidade` dos spawns (Winter Dream Court: 107 pontos × 2)', () => {
   const e = naHunt('winter-dream-court');
-  const ursos = e.hunt.monstros.filter((m) => m.key === 'thanatursus').length;
-  assert.equal(ursos, 8);
-  assert.ok(e.hunt.monstros.length >= 85, `só ${e.hunt.monstros.length} no andar 7`);
-  // Hunt de densidade 1 fica com um por ponto.
-  assert.equal(naHunt('mother-of-scarabs-lair').hunt.monstros.length, 20);
+  const spawns = spawnsDaHunt('winter-dream-court');
+  assert.equal(spawns.length, 107);
+  assert.equal(spawns.reduce((n, s) => n + s.quantidade, 0), 214);
+  const todos = [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()];
+  assert.equal(e.hunt.instancia.objetivos.total, todos.length);
+  assert.ok(todos.length >= 200, `só ${todos.length} dos 214 nasceram`);
 });
 
-test('Winter Dream Court: todos os bichos existem, e o percurso passa onde eles nascem em cada andar', () => {
-  // "ele nunca anda o mapa todo ... na escada na parte de baixo ele vai e já
-  // volta pra cima e parece não tem nenhum mob". Os pontos do catálogo estão
-  // deslocados (+16, +2) em relação ao mapa: metade caía em rocha e sumia.
+test('Winter Dream Court: os bichos da instância ficam nos andares por onde a rota passa, e as criaturas são as do mapa', () => {
   const e = naHunt('winter-dream-court');
-  const todos = [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()];
-  assert.equal(todos.length, 214, '107 pontos, densidade 2');
+  const todos = [...e.hunt.monstros.map((m) => ({ z: e.hunt.z, m })), ...Object.entries(e.hunt.outrosAndares).flatMap(([z, l]) => l.map((m) => ({ z: Number(z), m })))];
   const grade = Cacadas.gradeDaHunt(CATALOGO.hunts.find((h) => h.id === 'winter-dream-court'));
-  for (const z of [5, 6, 7, 8]) {
-    const doAndar = todos.filter((m) => m.spawn.z === z);
-    const perto = doAndar.filter((m) => grade.percurso.some((p) => p.z === z && Math.max(Math.abs(p.x - m.spawn.x), Math.abs(p.y - m.spawn.y)) <= 5));
-    assert.ok(perto.length >= doAndar.length * 0.9, `andar ${z}: ${perto.length}/${doAndar.length} bichos perto do percurso`);
+  const andaresDaRota = new Set(Instancia.andaresDaRota(grade));
+  const doMapa = new Set(CATALOGO.hunts.find((h) => h.id === 'winter-dream-court').posicoes.map((p) => p.key));
+  for (const { z, m } of todos) {
+    assert.ok(andaresDaRota.has(z), `andar ${z} fora da rota`);
+    assert.ok(doMapa.has(m.key), `${m.key} não é deste mapa`);
   }
+  assert.ok(new Set(todos.map((t) => t.z)).size >= 3, 'espalhados pelos andares');
 });

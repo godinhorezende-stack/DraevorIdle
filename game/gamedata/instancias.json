@@ -1,0 +1,4 @@
+{
+  "_nota": "A instancia de hunt (systems/hunt/instancia.mjs): cada entrada cria uma nova, com os bichos nos SPAWNS DO MAPA (bloco `spawns` do arquivo do mapa, ver systems/mapa/spawns.mjs); sem respawn; a hunt fica CLEAR em 100% de limpeza. `pausaDoClearMs`: quanto tempo o 'Hunt Clear!' fica na tela antes da instancia seguinte.",
+  "pausaDoClearMs": 3000
+}

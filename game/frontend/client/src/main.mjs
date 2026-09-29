@@ -69,7 +69,7 @@ import {
 } from './panels.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { renderSheet as renderSheetInto } from './sheet.mjs';
-import { initTooltip, tipFor, tipPanel, tipTexto } from './tooltip.mjs';
+import { initTooltip, tipFor, tipPanel, tipTexto, ligarComparacao, receberComparacao } from './tooltip.mjs';
 // O QR do pagamento, desenhado aqui dentro: ver `packages/shared/src/qrcode.mjs`.
 import { qrcode } from '/packages/shared/src/qrcode.mjs';
 import { initArvore, openArvore, resumoDaArvoreParaBalao } from './arvore.mjs';
@@ -280,6 +280,8 @@ window.__send = send;
  * jogo continua existindo e é ela que passa o personagem e o catálogo.
  */
 initTooltip(() => state.items, () => state.character, () => state.catalog);
+// A comparação de itens do balão pede ao servidor (ver `comparacaoComOEquipado`).
+ligarComparacao(send);
 
 const gate = createGate({ send, onPlay: () => buildWindows() });
 
@@ -1330,6 +1332,9 @@ function handle(message) {
       chegaramDadosDoOutro(message);
       break;
     // A campanha inteira (as dificuldades, as 48 fases e os bosses): a lista de hunts pede ao abrir.
+    case 'comparacao':
+      receberComparacao(message);
+      break;
     case 'campanha':
       state.campanha = message.campanha;
       panelCtx.redraw?.();

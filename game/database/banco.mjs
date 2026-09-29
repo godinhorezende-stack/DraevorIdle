@@ -25,12 +25,15 @@ export const db = banco.dialeto === 'sqlite' ? banco.bruto : undefined;
 
 if (banco.dialeto === 'sqlite') {
   await banco.exec(`
-    PRAGMA journal_mode = WAL;
     -- Há mais de uma conexão no mesmo arquivo: a thread do jogo e a da
     -- simulação offline (game/systems/simulacao-offline.mjs), que anota drops. Sem
     -- isto, uma escrita que encontrasse a outra no meio falhava na hora com
     -- "database is locked" em vez de esperar os poucos milissegundos dela.
+    -- ANTES do WAL: ligar o WAL pede a trava do arquivo, e nos testes (um
+    -- processo por arquivo, todos abrindo este banco juntos) quem chegava com
+    -- ele ocupado falhava na hora, sem esperar.
     PRAGMA busy_timeout = 5000;
+    PRAGMA journal_mode = WAL;
 
     CREATE TABLE IF NOT EXISTS contas (
       id        TEXT PRIMARY KEY,

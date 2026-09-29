@@ -65,6 +65,7 @@ import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
 import * as ItensDoJogo from '../systems/itens/item.mjs';
 import * as Campanha from '../systems/campanha.mjs';
+import * as Comparar from '../systems/itens/comparar.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -1164,6 +1165,12 @@ export class Sessao {
         return this.aplicar(Cacadas.definirEstrategia(this.estado, m));
       case 'distance':
         return this.aplicar(Cacadas.definirDistancia(this.estado, m));
+      case 'compararPeca': {
+        // A comparação do balão (ver `systems/itens/comparar.mjs`): por TODOS os
+        // atributos e pelo impacto na ficha. Só leitura — nada do estado muda.
+        const r = Comparar.comparar(this.estado, m.peca);
+        return this.enviar({ t: 'comparacao', chave: String(m.chave ?? '').slice(0, 2000), ...r });
+      }
       case 'aoCompletarFase': {
         const r = Cacadas.definirAoCompletarFase(this.estado, m);
         this.aplicar(r);

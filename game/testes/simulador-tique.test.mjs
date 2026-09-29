@@ -40,6 +40,10 @@ test('ticar no worker dá o MESMO resultado que ticar direto (mesmo estado, mesm
   const original = Math.random;
   try {
     const base = personagemPronto({ level: 400 });
+    // O worker não vê o `Math.random` fixo daqui: nestes 20 tiques não pode
+    // haver luta (dano e loot são sorteados). A instância é densa perto da
+    // entrada, então os bichos a menos de 15 casas saem.
+    base.hunt.monstros = base.hunt.monstros.filter((m) => Math.max(Math.abs(m.x - base.hunt.pos.x), Math.abs(m.y - base.hunt.pos.y)) > 15);
     const semente = clonar(base); // ponto de partida idêntico para as duas simulações
 
     // Mesma linha do tempo para as duas simulações — senão o tempo real que o

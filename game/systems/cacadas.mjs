@@ -30,7 +30,7 @@ import * as Promocao from './promocao.mjs';
 import * as Arena from './arena.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Bosses from './bosses.mjs';
-import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt } from './hunt/terreno.mjs';
+import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt } from './hunt/terreno.mjs';
 import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
 import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho, bfsDistancias } from './hunt/caminho.mjs';
@@ -45,6 +45,7 @@ import { aliadosPorCasa } from './hunt/aliados.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
+import * as Instancia from './hunt/instancia.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -119,10 +120,9 @@ function projetar(estado, base, fator, multExp = 1) {
     itens: { loot: {}, vendido: {}, gastos: {}, ignorado: {}, perdido: {} },
   };
   estado.xp = (estado.xp ?? 0) + extra.exp;
-  // As mortes projetadas contam para a fase da campanha (decisão do dono: offline conta).
-  Campanha.contarKills(estado, estado.hunt, extra.kills);
-  // Offline fica SEMPRE em loop na mesma hunt (decisão do dono): o "Seguir" só
-  // é checado no tique ONLINE (`faseParaSeguir`, na sessão).
+  // As mortes projetadas limpam a instância (e as seguintes, em loop na mesma
+  // hunt — offline nunca troca de fase: o "Avançar" só vale online).
+  projetarNaInstancia(estado, extra.kills);
   estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
   for (const [id, n] of Object.entries(base.itens.loot)) {
@@ -414,6 +414,107 @@ export function entrarNoPatio(estado) {
   return { ok: true };
 }
 
+/** Mapa de editor fora da campanha (sem instância): os spawns dele viram um ponto por bicho, com a 1ª criatura. */
+const pontosDosSpawns = (spawns) =>
+  (spawns ?? []).flatMap((sp) => Array.from({ length: sp.quantidade }, () => ({ key: sp.criaturas[0].key, x: sp.x, y: sp.y, z: sp.z })));
+
+/*
+ * Com percurso, nasce no primeiro waypoint DELE: o `route[0]` original pode
+ * cair num pedaço do andar sem ligação com o laço (Feru Way), e aí nenhum
+ * waypoint tinha caminho — ele ficava parado no lugar.
+ */
+function inicioDaCacada(grade, posicoes, boss) {
+  const mediaX = Math.round(posicoes.reduce((s, p) => s + p.x, 0) / Math.max(1, posicoes.length));
+  const mediaY = Math.round(posicoes.reduce((s, p) => s + p.y, 0) / Math.max(1, posicoes.length));
+  return boss
+    ? casaAndavelMaisProxima(grade, boss.partida?.x ?? 1, boss.partida?.y ?? 1)
+    : grade.percurso
+      ? grade.percurso[0]
+      : grade.inicioReal && grade.andavel.has(`${grade.inicioReal.x},${grade.inicioReal.y}`)
+        ? grade.inicioReal
+        : casaAndavelMaisProxima(grade, mediaX, mediaY);
+}
+
+/**
+ * Os bichos de uma caçada nova: onde ele nasce, os do andar da entrada, os dos
+ * outros andares e — numa hunt da campanha — a INSTÂNCIA (ver
+ * `hunt/instancia.mjs`). Usado por `entrar` e por `novaInstancia`.
+ */
+function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
+  const grade = gradeDaHunt(hunt ?? { id: huntId });
+  const posicoes = boss ? posicaoDoBoss(boss, grade) : hunt?.posicoes?.length ? pontosNoMapa(hunt, grade.mapa?.floors ? grade.mapa : null) : spawnsCapturados(huntId) ?? grade.posicoes ?? mapaCustom?.posicoes ?? pontosDosSpawns(spawnsDaHunt(huntId));
+  /*
+   * ---- Quantos bichos: `density` por ponto de spawn, como no original ----
+   *
+   * "a quantidade de mobs tem que ser igual do oficial — na dream court a
+   * oficial tem muito mais". O catálogo dá um ponto por bicho (`spawnPorAndar`
+   * soma o mesmo número que `posicoes` no andar) e a hunt tem `density` (1 ou
+   * 2). No original, cada ponto vira `density` bichos: no andar 7 da Winter
+   * Dream Court são 4 pontos de Thanatursus, e o Zoros viu exatamente 8; o
+   * andar chegou a 93 bichos ao mesmo tempo, onde aqui havia 46. E o bicho não
+   * nasce em cima do ponto: dos 106 vistos, 30 no ponto exato e 63 a até 3
+   * casas dele. O extra nasce na casa livre mais perto do ponto (até
+   * `RAIO_DO_SPAWN`), e renasce ali.
+   *
+   * Antes, ponto repetido virava um só e ponto na água só ia para a margem a
+   * até 3 casas — um andar perdia bichos que o original tem. Agora os dois vão
+   * para a casa livre mais perto. Sala de boss e as salas geradas (Vip) já
+   * contam do jeito delas: densidade 1 aqui.
+   */
+  // A força dos bichos na campanha: a da fase (ou do boss do ato) naquela dificuldade.
+  const deCatalogo = !boss && !tranca && (hunt?.posicoes?.length || SPAWNS_CAPTURADOS[huntId]);
+  const densidade = deCatalogo ? Math.max(1, Math.round(hunt?.density ?? 1)) : 1;
+  /*
+   * Cada bicho no ANDAR dele (`p.z`). Antes todos caíam no andar da entrada
+   * — o que estava numa casa andável dele ficava, com a valquíria do andar 3
+   * aparecendo no meio das amazonas do 7. Andar por onde a rota não passa
+   * fica de fora: no original ninguém chega lá.
+   */
+  const andarDe = (p) => p.z ?? grade.z;
+  const andaresDaRota = new Set([grade.z, ...(grade.percurso ?? []).map((p) => p.z ?? grade.z)]);
+  const inicio = inicioDaCacada(grade, posicoes, boss);
+  /*
+   * ---- Hunt da campanha: uma INSTÂNCIA, nos spawns do MAPA ----
+   * Os bichos nascem nos pontos que o mapa define (`spawnsDaHunt`, ver
+   * `mapa/spawns.mjs`), sem respawn; CLEAR em 100% (ver `hunt/instancia.mjs`).
+   * Boss, Vip/Instance/Divine e mapa gerado seguem do jeito deles.
+   */
+  const spawnsDoMapa = fase ? spawnsDaHunt(huntId) : null;
+  const comInstancia = !!spawnsDoMapa?.length;
+  const instanciaId = comInstancia ? Instancia.gerarId() : null;
+  // Uma criatura por casa (por andar).
+  const casasDeSpawn = new Set();
+  const todos = comInstancia
+    ? Instancia.comporBichos({ grade, spawns: spawnsDoMapa, dadosDaHunt: hunt, inicio, escala, aplicarEscala: Campanha.aplicarEscala, instanciaId })
+    : [];
+  for (const p of comInstancia ? [] : posicoes) {
+    const z = andarDe(p);
+    if (!andaresDaRota.has(z)) continue;
+    const g = andarDaGrade(grade, z);
+    for (let k = 0; k < densidade; k++) {
+      const casa = casaLivrePerto(g, p, (c) => casasDeSpawn.has(`${c.x},${c.y},${z}`));
+      if (!casa) break;
+      casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
+      const m = Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
+      if (m) todos.push({ z, m });
+    }
+  }
+
+  const andarInicial = inicio.z ?? grade.z;
+  const monstros = todos.filter(({ z }) => z === andarInicial).map(({ m }) => m);
+  const outrosAndares = {};
+  for (const { z, m } of todos) if (z !== andarInicial) (outrosAndares[z] ??= []).push(m);
+  // O personagem nasce numa casa livre: o bicho que estaria em cima dele sai da hunt.
+  for (let i = monstros.length - 1; i >= 0; i--) if (monstros[i].x === inicio.x && monstros[i].y === inicio.y) monstros.splice(i, 1);
+  // A instância: o total dos objetivos de limpeza é o que de fato nasceu.
+  let instancia = null;
+  if (comInstancia) {
+    instancia = Instancia.novoRegistro(huntId, instanciaId);
+    for (const m of [...monstros, ...Object.values(outrosAndares).flat()]) instancia.objetivos.total += m.objetivo ?? 1;
+  }
+  return { grade, inicio, andarInicial, monstros, outrosAndares, instancia };
+}
+
 export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false }) {
   const boss = CATALOGO.bosses.find((b) => b.id === huntId) ?? null;
   // A campanha (ver `systems/campanha.mjs`): a fase desta hunt, ou o boss de fim de ato.
@@ -462,72 +563,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     }
   }
 
-  const grade = gradeDaHunt(hunt ?? { id: huntId });
-  const posicoes = boss ? posicaoDoBoss(boss, grade) : hunt?.posicoes?.length ? pontosNoMapa(hunt, grade.mapa?.floors ? grade.mapa : null) : spawnsCapturados(huntId) ?? grade.posicoes ?? mapaCustom?.posicoes ?? [];
-  /*
-   * ---- Quantos bichos: `density` por ponto de spawn, como no original ----
-   *
-   * "a quantidade de mobs tem que ser igual do oficial — na dream court a
-   * oficial tem muito mais". O catálogo dá um ponto por bicho (`spawnPorAndar`
-   * soma o mesmo número que `posicoes` no andar) e a hunt tem `density` (1 ou
-   * 2). No original, cada ponto vira `density` bichos: no andar 7 da Winter
-   * Dream Court são 4 pontos de Thanatursus, e o Zoros viu exatamente 8; o
-   * andar chegou a 93 bichos ao mesmo tempo, onde aqui havia 46. E o bicho não
-   * nasce em cima do ponto: dos 106 vistos, 30 no ponto exato e 63 a até 3
-   * casas dele. O extra nasce na casa livre mais perto do ponto (até
-   * `RAIO_DO_SPAWN`), e renasce ali.
-   *
-   * Antes, ponto repetido virava um só e ponto na água só ia para a margem a
-   * até 3 casas — um andar perdia bichos que o original tem. Agora os dois vão
-   * para a casa livre mais perto. Sala de boss e as salas geradas (Vip) já
-   * contam do jeito delas: densidade 1 aqui.
-   */
-  // A força dos bichos na campanha: a da fase (ou do boss do ato) naquela dificuldade.
   const escala = fase ? Campanha.escalaDaFase(huntId, dif) : atoDoBoss != null ? Campanha.escalaDoBoss(atoDoBoss, dif) : null;
-  const deCatalogo = !boss && !tranca && (hunt?.posicoes?.length || SPAWNS_CAPTURADOS[huntId]);
-  const densidade = deCatalogo ? Math.max(1, Math.round(hunt?.density ?? 1)) : 1;
-  /*
-   * Cada bicho no ANDAR dele (`p.z`). Antes todos caíam no andar da entrada
-   * — o que estava numa casa andável dele ficava, com a valquíria do andar 3
-   * aparecendo no meio das amazonas do 7. Andar por onde a rota não passa
-   * fica de fora: no original ninguém chega lá.
-   */
-  const andarDe = (p) => p.z ?? grade.z;
-  const andaresDaRota = new Set([grade.z, ...(grade.percurso ?? []).map((p) => p.z ?? grade.z)]);
-  // Uma criatura por casa (por andar).
-  const casasDeSpawn = new Set();
-  const todos = [];
-  for (const p of posicoes) {
-    const z = andarDe(p);
-    if (!andaresDaRota.has(z)) continue;
-    const g = andarDaGrade(grade, z);
-    for (let k = 0; k < densidade; k++) {
-      const casa = casaLivrePerto(g, p, (c) => casasDeSpawn.has(`${c.x},${c.y},${z}`));
-      if (!casa) break;
-      casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
-      const m = Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
-      if (m) todos.push({ z, m });
-    }
-  }
-
-  const mediaX = Math.round(posicoes.reduce((s, p) => s + p.x, 0) / posicoes.length);
-  const mediaY = Math.round(posicoes.reduce((s, p) => s + p.y, 0) / posicoes.length);
-  // Com percurso, nasce no primeiro waypoint DELE: o `route[0]` original pode
-  // cair num pedaço do andar sem ligação com o laço (Feru Way), e aí nenhum
-  // waypoint tinha caminho — ele ficava parado no lugar.
-  const inicio = boss
-    ? casaAndavelMaisProxima(grade, boss.partida?.x ?? 1, boss.partida?.y ?? 1)
-    : grade.percurso
-      ? grade.percurso[0]
-      : grade.inicioReal && grade.andavel.has(`${grade.inicioReal.x},${grade.inicioReal.y}`)
-        ? grade.inicioReal
-        : casaAndavelMaisProxima(grade, mediaX, mediaY);
-  const andarInicial = inicio.z ?? grade.z;
-  const monstros = todos.filter(({ z }) => z === andarInicial).map(({ m }) => m);
-  const outrosAndares = {};
-  for (const { z, m } of todos) if (z !== andarInicial) (outrosAndares[z] ??= []).push(m);
-  // O personagem nasce numa casa livre: o bicho que estaria em cima dele sai da hunt.
-  for (let i = monstros.length - 1; i >= 0; i--) if (monstros[i].x === inicio.x && monstros[i].y === inicio.y) monstros.splice(i, 1);
+  const { grade, inicio, andarInicial, monstros, outrosAndares, instancia } = povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala });
 
   // Lure e assistência começam do que o personagem já tinha configurado fora
   // da hunt (`estado.settings`, ver `Cacadas.definirLure`/`definirAssistencia`)
@@ -584,6 +621,9 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     // escala dos bichos que renascem e o ato/dificuldade do loot saem daqui.
     campanha: fase ? { huntId, dificuldade: dif, ato: fase.ato } : atoDoBoss != null ? { bossDoAto: atoDoBoss, dificuldade: dif, ato: atoDoBoss } : null,
     escala,
+    // A instância desta entrada (hunt da campanha): os bichos não renascem, e
+    // ela fica CLEAR quando não sobra nenhum (ver `hunt/instancia.mjs`).
+    instancia,
     // "Você tem 25 minutos lá dentro, nos dois modos" (no relógio da caçada).
     fimDaSala: boss ? Bosses.TEMPO_NA_SALA_MS : null,
     tranca,
@@ -749,27 +789,102 @@ export function progressoDoLevel(estado) {
   return Math.max(0, Math.min(1, ((estado.xp ?? 0) - de) / Math.max(1, ate - de)));
 }
 
+/*
+ * A caçada offline PROJETADA (o que passa do trecho simulado tique a tique):
+ * `kills` mortes tiram bichos da instância ao acaso; cada vez que ela zera, é
+ * uma limpeza (conta na campanha) e começa outra do mesmo tamanho. As
+ * limpezas do meio são só conta — montar dezenas de instâncias que ninguém vê
+ * custaria segundos; só a última é montada de verdade.
+ */
+function projetarNaInstancia(estado, kills) {
+  const hunt = estado.hunt;
+  if (!hunt?.instancia || !(kills > 0)) return;
+  const restam = Instancia.pendentes(hunt);
+  if (hunt.instancia.status === 'ativa' && kills < restam) {
+    Instancia.tirarAoAcaso(hunt, kills);
+    return;
+  }
+  const total = Math.max(1, hunt.instancia.objetivos.total);
+  let sobra = kills - (hunt.instancia.status === 'ativa' ? restam : 0);
+  let limpezas = hunt.instancia.status === 'ativa' ? 1 : 0;
+  limpezas += Math.floor(sobra / total);
+  sobra %= total;
+  for (let i = 0; i < limpezas; i++) Campanha.limpou(estado, hunt);
+  novaInstancia(estado);
+  Instancia.tirarAoAcaso(hunt, sobra);
+}
+
+/*
+ * A instância foi limpa: a limpeza conta na campanha de quem é da sala — o
+ * dono e os convidados da party que estão nela (decisão do dono: conta para
+ * todos). O aviso "Hunt Clear!" sai na tela de cada um (`avisoDaHunt`).
+ */
+function aoLimparAInstancia(estado, hunt) {
+  Campanha.limpou(estado, hunt);
+  for (const m of hunt.partilha?.membros ?? []) {
+    const h = m.estado?.hunt;
+    if (m.estado !== estado && h && salaDe(h) === hunt) Campanha.limpou(m.estado, h);
+  }
+}
+
 /**
- * Caçada gravada ANTES da campanha (sem `hunt.campanha`) numa hunt que é fase:
- * sem isto a barra da fase não aparecia e as mortes não contavam. Fase já
- * liberada no Fácil → vira a fase (a força dela nos bichos de agora e nos que
- * renascem); fechada → a caçada termina, porque todos começam da fase 1.
- * Roda na entrada, depois da caçada offline. Devolve o aviso para a tela, ou null.
+ * Uma instância NOVA da mesma hunt, do zero: bichos sorteados de novo, o
+ * personagem de volta à entrada, o resto da caçada (sessão, relógio, recargas,
+ * ajustes) segue. Os bichos trocam NO LUGAR (`splice`): os convidados da party
+ * apontam para o mesmo array. Só o dono da sala. `false` se não há instância.
+ */
+export function novaInstancia(estado) {
+  const hunt = estado.hunt;
+  if (!hunt?.instancia || hunt.anfitriao) return false;
+  const dados = acharHunt(hunt.huntId);
+  const fase = Campanha.faseDe(hunt.huntId);
+  const novo = povoar({ huntId: hunt.huntId, hunt: dados, boss: null, tranca: null, fase, mapaCustom: null, escala: hunt.escala });
+  if (!novo.instancia) return false;
+  hunt.monstros.splice(0, hunt.monstros.length, ...novo.monstros);
+  hunt.outrosAndares = novo.outrosAndares;
+  hunt.respawns = [];
+  hunt.z = novo.andarInicial;
+  hunt.pos = { x: novo.inicio.x, y: novo.inicio.y, dir: 2 };
+  hunt.percurso = novo.grade.percurso ? { passo: waypointMaisPerto(novo.grade.percurso, novo.inicio, 0, novo.grade.percurso.length, novo.andarInicial) } : null;
+  hunt.alvo = null;
+  hunt.alvoTravado = null;
+  hunt.alvoDaLimpeza = null;
+  hunt.perseguicao = null;
+  hunt.progresso = null;
+  hunt.rumo = null;
+  hunt.leva = 0;
+  hunt.lurando = (hunt.levaAlvo ?? 0) > 0;
+  if (hunt.summon) {
+    hunt.summon.x = novo.inicio.x;
+    hunt.summon.y = novo.inicio.y;
+  }
+  hunt.instancia = novo.instancia;
+  return true;
+}
+
+/**
+ * Caçada gravada ANTES da instância numa hunt que é fase — sem `hunt.campanha`
+ * (de antes da campanha) ou sem `hunt.instancia` (de antes das instâncias):
+ * sem isto ela seguiria com respawn e nunca completaria a fase. Fase liberada
+ * → entra de novo nela, já como instância (mesma dificuldade, mesmo modo);
+ * fechada → a caçada termina (todos começam da fase 1). Roda na entrada,
+ * depois da caçada offline. Devolve o aviso para a tela, ou null.
  */
 export function adotarNaCampanha(estado) {
   const hunt = estado.hunt;
-  const fase = hunt && !hunt.campanha ? Campanha.faseDe(hunt.huntId) : null;
+  if (!hunt || hunt.instancia || hunt.campanha?.bossDoAto) return null;
+  const fase = Campanha.faseDe(hunt.huntId);
   if (!fase) return null;
-  const dif = Campanha.DIFICULDADES[0];
+  const dif = Campanha.DIFICULDADES.includes(hunt.campanha?.dificuldade) ? hunt.campanha.dificuldade : Campanha.DIFICULDADES[0];
   if (!Campanha.faseLiberada(estado, dif, hunt.huntId)) {
     const motivo = Campanha.motivoParaNaoEntrar(estado, dif, hunt.huntId);
     sair(estado);
     return `A campanha chegou: as hunts agora abrem fase a fase. ${motivo}`;
   }
-  hunt.campanha = { huntId: hunt.huntId, dificuldade: dif, ato: fase.ato };
-  hunt.escala = Campanha.escalaDaFase(hunt.huntId, dif);
-  for (const m of [...(hunt.monstros ?? []), ...Object.values(hunt.outrosAndares ?? {}).flat()]) Campanha.aplicarEscala(m, hunt.escala);
-  return null;
+  const r = entrar(estado, { huntId: hunt.huntId, mode: hunt.modo === 'online' ? 'online' : 'auto', strategy: hunt.strategy, dificuldade: dif });
+  if (r.ok) return null;
+  sair(estado);
+  return r.erro;
 }
 
 /** `send({t:'stopHunt'})` */
@@ -1087,6 +1202,13 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (donoDaSala) {
     atualizarLure(hunt, estado);
     renascer(hunt);
+    // A instância: zerou → CLEAR (para todos da sala); passada a pausa do
+    // "Hunt Clear!", uma instância NOVA da mesma hunt (ver `hunt/instancia.mjs`).
+    // Online com "Avançar sozinho", a sessão troca de fase antes da pausa acabar.
+    if (hunt.instancia) {
+      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0)) aoLimparAInstancia(estado, hunt);
+      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0)) novaInstancia(estado);
+    }
   } else {
     hunt.lurando = false;
   }
@@ -1179,6 +1301,20 @@ export function tique(estado, personagem, agora = Date.now()) {
       // atrás dele" (o balão do Lurar até, no client do original). Sem alvo,
       // o passo cai no laço, logo abaixo.
       const segueARota = hunt.lurando && hunt.percurso && grade.percurso;
+      /*
+       * ---- Instância: vai atrás do que SOBROU ----
+       * Sem respawn, o laço da rota (feito para um mapa que se enche de novo)
+       * deixava bicho longe da rota vivo para sempre. Nada à vista: o alvo vira
+       * o bicho da instância mais perto A PÉ neste andar; não havendo nenhum
+       * alcançável aqui, segue o laço, que leva aos outros andares.
+       */
+      if (!hunt.lurando && hunt.alvo == null && Instancia.daSala(hunt)?.status === 'ativa' && !alvoAtual(hunt)) {
+        const resto = Instancia.bichoMaisPerto(hunt, grade);
+        if (resto) {
+          hunt.alvo = resto.uid;
+          hunt.alvoDaLimpeza = resto.uid;
+        }
+      }
       const alvo = segueARota ? null : hunt.lurando ? proximoMonstroForaDeAlcance(hunt) : alvoAtual(hunt);
       // Wand/rod e arma de distância param no alcance delas, não colados no
       // bicho (ver `categoriaDaArma`) — lurando, o alvo já está sempre bem
@@ -1203,6 +1339,7 @@ export function tique(estado, personagem, agora = Date.now()) {
       if (alvo && d > querDistancia && cansou) {
         alvo.semCaminhoAte = (hunt.clock ?? 0) + 10_000;
         hunt.alvoTravado = null;
+        if (hunt.alvo === hunt.alvoDaLimpeza) hunt.alvo = null;
         hunt.perseguicao = null;
         const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
         if (grade.percurso) destino = passoNoPercurso(estado, hunt, grade, casasDeBicho);
@@ -1570,6 +1707,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     isBoss: !!hunt.isBoss,
     // A fase da campanha e o progresso nela (a barra "312 / 500" da tela).
     fase: Campanha.faseAtual(estado, hunt),
+    // A instância (quantos bichos, quantos restam, CLEAR): a barra da fase.
+    instancia: Instancia.paraCliente(hunt),
     // A barra do boss no alto da tela (`barraDoBoss`, hud.mjs) — o formato real.
     boss: hunt.isBoss ? barraDoBoss(hunt) : null,
     strategy: hunt.strategy ?? 'nearest',

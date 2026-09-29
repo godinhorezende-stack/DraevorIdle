@@ -1954,64 +1954,95 @@ function diferenca(valor) {
   return `${arredondado > 0 ? '+' : '−'}${texto}`;
 }
 
+/*
+ * ---- A COMPARAÇÃO vem do SERVIDOR ----
+ *
+ * O dono: "considerar todos os atributos do item, usando o mesmo sistema de
+ * atributos do personagem, e funcionar para atributos futuros". A conta de
+ * antes (`numerosDoItem`) só via o catálogo: duas espadas iguais, uma N1 e
+ * outra N5, davam "os mesmos números". Agora o servidor veste a peça numa
+ * cópia do personagem e recalcula a ficha pelo mesmo `Ficha.combate` do
+ * combate (ver `systems/itens/comparar.mjs`), e devolve duas listas: a
+ * diferença atributo a atributo e o impacto no personagem — com os nomes dos
+ * registros, sem campo nenhum escrito aqui.
+ *
+ * O balão desenha na hora com "comparando..." e pede; a resposta preenche o
+ * bloco que ainda estiver aberto (`data-comparacao`) e fica guardada um
+ * pouco, para passar o mouse de novo não pedir outra vez.
+ */
+const comparacoes = new Map(); // chave -> { em, r }
+const pedidas = new Map(); // chave -> quando pediu
+const VALIDADE_DA_COMPARACAO_MS = 30_000;
+let enviarComparacao = null;
+
+/** Liga o balão ao `send` do jogo (main.mjs). */
+export function ligarComparacao(enviar) {
+  enviarComparacao = enviar;
+}
+
+const pecaParaComparar = (id, peca) => ({ id, ...(peca?.af?.length ? { af: peca.af.map((a) => ({ id: a.id, nivel: a.nivel, value: a.value })) } : {}), ...(peca?.tier ? { tier: peca.tier } : {}) });
+const chaveDaComparacao = (nova, vestida) =>
+  JSON.stringify([nova.id, nova.af ?? [], nova.tier ?? 0, vestida?.id ?? 0, vestida?.af ?? [], vestida?.tier ?? 0]);
+
+/** A resposta do servidor (`{t:'comparacao', chave, ...}`): guarda e preenche o balão aberto. */
+export function receberComparacao(m) {
+  pedidas.delete(m.chave);
+  comparacoes.set(m.chave, { em: Date.now(), r: m });
+  for (const bloco of document.querySelectorAll('.tip-vs[data-comparacao]')) {
+    if (bloco.dataset.comparacao === m.chave) preencherComparacao(bloco, m);
+  }
+}
+
+function preencherComparacao(bloco, r) {
+  bloco.textContent = '';
+  if (!r.ok) {
+    bloco.append(el('div', 'vs-igual', r.erro ?? 'sem comparação'));
+    return;
+  }
+  bloco.append(el('div', 'vs-titulo', r.contra ? `Comparado com ${titleCase(r.contra.nome)}` : `Você não usa nada em ${SLOT_NAMES[r.slot] ?? r.slot}`));
+  const secao = (titulo, linhas, limite) => {
+    if (!linhas.length) return;
+    bloco.append(el('div', 'vs-secao', titulo));
+    for (const linha of linhas.slice(0, limite)) {
+      const row = el('div', linha.delta > 0 ? 'vs-melhor' : 'vs-pior');
+      row.append(el('span', null, linha.nome), el('b', null, `${diferenca(linha.delta)}${linha.sufixo}`));
+      bloco.append(row);
+    }
+    if (linhas.length > limite) bloco.append(el('div', 'vs-igual', `+${linhas.length - limite} outras diferenças`));
+  };
+  // Os atributos TODOS (é a pergunta); o impacto, os maiores.
+  secao('Atributos', r.atributos, 30);
+  secao('No personagem', r.personagem, 8);
+  if (!r.atributos.length && !r.personagem.length) bloco.append(el('div', 'vs-igual', 'os mesmos números'));
+  if (r.tiraOEscudo) bloco.append(el('div', 'vs-aviso', 'usa as duas mãos — o escudo sai'));
+}
+
 /**
  * O bloco de comparação, ou `null` quando não há com o que comparar.
  *
  * `slot` vem preenchido quando a peça JÁ está vestida — e aí não há comparação
  * a fazer, ela é o que está vestido.
  */
-function comparacaoComOEquipado(meta, slot) {
-  if (slot || !meta.slot) return null;
+function comparacaoComOEquipado(meta, slot, peca = null) {
+  if (slot || !meta.slot || meta.stackable || meta.slot === 'backpack') return null;
   const personagem = getPersonagem();
   if (!personagem?.equipment) return null;
-
-  const vestido = personagem.equipment[meta.slot];
-  const outro = vestido ? getItems()[vestido.id] : null;
+  const vestida = personagem.equipment[meta.slot] ?? null;
+  const nova = pecaParaComparar(meta.id, peca);
+  // Ela mesma: a peça vestida, olhada de dentro do inventário.
+  if (vestida && vestida.id === meta.id && chaveDaComparacao(nova, vestida) === chaveDaComparacao(pecaParaComparar(vestida.id, vestida), vestida) && peca === vestida) return null;
+  const chave = chaveDaComparacao(nova, vestida ? pecaParaComparar(vestida.id, vestida) : null);
   const bloco = el('div', 'tip-vs');
-
-  if (!outro) {
-    bloco.append(el('div', 'vs-titulo', `Você não usa nada em ${SLOT_NAMES[meta.slot] ?? meta.slot}`));
+  bloco.dataset.comparacao = chave;
+  const guardada = comparacoes.get(chave);
+  if (guardada && Date.now() - guardada.em < VALIDADE_DA_COMPARACAO_MS) {
+    preencherComparacao(bloco, guardada.r);
     return bloco;
   }
-  // Ele mesmo: a peça vestida, olhada de dentro do inventário.
-  if (outro === meta) return null;
-
-  const meus = numerosDoItem(meta);
-  const dele = numerosDoItem(outro);
-  const linhas = [];
-  for (const chave of new Set([...meus.keys(), ...dele.keys()])) {
-    const novo = meus.get(chave);
-    const velho = dele.get(chave);
-    const delta = (novo?.valor ?? 0) - (velho?.valor ?? 0);
-    if (!delta) continue;
-    linhas.push({ rotulo: (novo ?? velho).rotulo, sufixo: (novo ?? velho).sufixo, delta });
-  }
-
-  bloco.append(el('div', 'vs-titulo', `Comparado com ${titleCase(outro.name)}`));
-  if (!linhas.length) {
-    bloco.append(el('div', 'vs-igual', 'os mesmos números'));
-    return bloco;
-  }
-
-  // O maior ganho e a maior perda primeiro: é o que decide a troca.
-  linhas.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-  for (const linha of linhas.slice(0, 8)) {
-    const row = el('div', linha.delta > 0 ? 'vs-melhor' : 'vs-pior');
-    row.append(el('span', null, linha.rotulo), el('b', null, `${diferenca(linha.delta)}${linha.sufixo}`));
-    bloco.append(row);
-  }
-
-  /*
-   * A arma de duas mãos tira o escudo, e isso não é um número: é uma peça
-   * inteira saindo. Sem esta linha o balão diria "+40 de ataque" sobre uma
-   * troca que também custa toda a defesa do escudo.
-   */
-  if (meta.twoHanded && meta.slot === 'weapon') {
-    const escudo = personagem.equipment.shield;
-    const fichaDoEscudo = escudo ? getItems()[escudo.id] : null;
-    if (fichaDoEscudo) {
-      bloco.append(el('div', 'vs-aviso', `usa as duas mãos — ${titleCase(fichaDoEscudo.name)} sai`));
-    }
+  bloco.append(el('div', 'vs-igual', 'comparando com o que você veste...'));
+  if (enviarComparacao && Date.now() - (pedidas.get(chave) ?? 0) > 3000) {
+    pedidas.set(chave, Date.now());
+    enviarComparacao({ t: 'compararPeca', chave, peca: nova });
   }
   return bloco;
 }
@@ -2625,7 +2656,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (regras.children.length) node.append(regras);
 
   // ---- e o que ele muda em relação ao que você já usa ----
-  const contra = comparacaoComOEquipado(meta, slot);
+  const contra = comparacaoComOEquipado(meta, slot, peca);
   if (contra) node.append(contra);
 
   /*

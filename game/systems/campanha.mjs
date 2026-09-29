@@ -3,10 +3,11 @@
 // Exile. Configuração em `gamedata/campanha.json`.
 //
 // Regras (decididas com o dono, uma a uma):
-//   - completar uma fase = matar `kills[dificuldade]` bichos NELA; libera a seguinte;
+//   - completar uma fase = LIMPAR uma instância dela (todos os bichos mortos,
+//     sem respawn — ver `hunt/instancia.mjs`); libera a seguinte;
 //   - para entrar, só o PROGRESSO conta (não o level do personagem);
-//   - as mortes da caçada offline contam; o personagem não troca de fase sozinho;
-//   - na party, qualquer um entra, e cada morte conta para todos da sala;
+//   - a limpeza na caçada offline conta; offline ele fica sempre na mesma hunt;
+//   - na party, qualquer um entra, e a limpeza conta para todos da sala;
 //   - fim de cada ato: um boss, que abre com as 12 fases completas; a PRIMEIRA
 //     vitória (sem task nem recarga) libera o ato seguinte — e a do Ato 4, a
 //     dificuldade seguinte;
@@ -14,8 +15,9 @@
 //   - os bichos de cada fase são escalados do level original da hunt para o
 //     level alvo da fase naquela dificuldade (`escalaDaFase`).
 //
-// O progresso fica no personagem: `estado.campanha[dificuldade] = { kills:
-// {huntId: n}, completas: [huntId], bosses: [ato] }`.
+// O progresso fica no personagem: `estado.campanha[dificuldade] = { limpezas:
+// {huntId: n}, completas: [huntId], bosses: [ato] }` (`kills` é do sistema de
+// antes, por contagem de mortes: fica gravado, ninguém mais lê).
 import { readFileSync } from 'node:fs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
@@ -35,7 +37,7 @@ const ehDificuldade = (d) => DIFICULDADES.includes(d);
 function progresso(estado, dif) {
   estado.campanha ??= {};
   const p = (estado.campanha[dif] ??= {});
-  p.kills ??= {};
+  p.limpezas ??= {};
   p.completas ??= [];
   p.bosses ??= [];
   return p;
@@ -119,25 +121,29 @@ export function aplicarEscala(m, esc) {
 }
 
 /**
- * Uma morte na fase conta para o progresso (de quem matou e de cada um da
- * sala — ver `matarMonstro`). Devolve o aviso quando a fase fecha.
+ * A instância da fase foi LIMPA (todos os bichos mortos): conta a limpeza e,
+ * na primeira, completa a fase e libera a seguinte. Vale para quem estava na
+ * sala (ver `hunt/instancia.mjs`). Devolve o aviso "Hunt Clear!" da tela.
  */
-export function contarKills(estado, hunt, n = 1) {
+export function limpou(estado, hunt) {
   const c = hunt?.campanha;
-  if (!c || !n) return null;
+  if (!c || c.bossDoAto) return null;
   const f = faseDe(c.huntId);
   if (!f || f.pular) return null;
   const p = progresso(estado, c.dificuldade);
-  if (p.completas.includes(f.huntId)) return null;
-  p.kills[f.huntId] = (p.kills[f.huntId] ?? 0) + n;
-  if (p.kills[f.huntId] < f.kills[c.dificuldade]) return null;
-  p.completas.push(f.huntId);
+  p.limpezas[f.huntId] = (p.limpezas[f.huntId] ?? 0) + 1;
   const nomeDif = CAMPANHA.dificuldades[c.dificuldade].nome;
-  const proxima = FASES[f.indice + 1];
-  const aviso =
-    proxima && proxima.ato === f.ato
-      ? `Fase completa: ${f.nome} (${nomeDif})! Liberou ${proxima.nome}.`
-      : `Fase completa: ${f.nome} (${nomeDif})! O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado.`;
+  let aviso;
+  if (p.completas.includes(f.huntId)) {
+    aviso = `Hunt Clear! ${f.nome} (${nomeDif}) limpa.`;
+  } else {
+    p.completas.push(f.huntId);
+    const proxima = FASES[f.indice + 1];
+    aviso =
+      proxima && proxima.ato === f.ato
+        ? `Hunt Clear! Fase completa: ${f.nome} (${nomeDif}). Liberou ${proxima.nome}.`
+        : `Hunt Clear! Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado.`;
+  }
   estado.avisoDaHunt = aviso;
   return aviso;
 }
@@ -194,8 +200,7 @@ export function paraCliente(estado) {
           nome: f.nome,
           ato: f.ato,
           nivel: f.nivel[dif],
-          kills: Math.min(p.kills[f.huntId] ?? 0, f.kills[dif]),
-          precisa: f.kills[dif],
+          limpezas: p.limpezas[f.huntId] ?? 0,
           completa: faseCompleta(estado, dif, f.huntId),
           liberada: faseLiberada(estado, dif, f.huntId),
           ...(f.pular ? { pular: true } : {}),
@@ -225,7 +230,7 @@ export function faseAtual(estado, hunt) {
   const completa = faseCompleta(estado, c.dificuldade, f.huntId);
   return {
     tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
-    kills: Math.min(p.kills[f.huntId] ?? 0, f.kills[c.dificuldade]), precisa: f.kills[c.dificuldade], completa,
+    limpezas: p.limpezas[f.huntId] ?? 0, completa,
     // Completa e sem próxima para seguir: fim do ato (o boss é o jogador quem chama).
     fimDoAto: completa && !proximaParaSeguir(estado, c.dificuldade, f.huntId),
   };

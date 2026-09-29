@@ -16,6 +16,8 @@ function naHuntVazia() {
   assert.equal(r.ok, true, r.erro);
   e.hunt.monstros = [];
   e.hunt.respawns = [];
+  // Mapa esvaziado à mão: sem a instância, senão ele contaria como limpo e renovaria (ver hunt/instancia.mjs).
+  delete e.hunt.instancia;
   return e;
 }
 

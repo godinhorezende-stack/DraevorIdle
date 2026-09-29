@@ -380,9 +380,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Bosses.contarMorte(m.estado, alvo.key);
   Tarefas.contarMorte(estado, alvo.key);
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Tarefas.contarMorte(m.estado, alvo.key);
-  // A fase da campanha: a morte conta para quem matou e para TODOS da party na sala (decisão do dono).
-  Campanha.contarKills(estado, hunt);
-  for (const m of part?.membros ?? []) if (m.estado !== estado && m.estado?.hunt) Campanha.contarKills(m.estado, m.estado.hunt);
+  // A fase da campanha não conta mortes: ela completa quando a INSTÂNCIA é
+  // limpa (ver `hunt/instancia.mjs` e `tique`, em cacadas.mjs).
   Charms.aoMatar(estado, hunt, alvo, eventos);
   // A proficiência: XP para a arma da mão (e para a de cada um da party) e vida/mana por morte.
   Proficiencia.ganharXp(estado, alvo.key);

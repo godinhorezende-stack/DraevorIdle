@@ -2359,10 +2359,22 @@ function barraDaFase(hunt) {
   caixa.hidden = false;
   caixa.classList.toggle('completa', !!f.completa);
   $('fase-titulo').textContent = `Ato ${f.ato} · Fase ${f.numero} · ${f.nome} · ${f.nomeDaDificuldade}`;
-  // Completa: o que vem depois, conforme o botão ("em loop", "avançando", ou o boss no fim do ato).
-  const depois = f.aoCompletar !== 'seguir' ? 'em loop' : f.fimDoAto ? 'boss liberado' : 'avançando...';
-  $('fase-conta').textContent = f.completa ? `completa ✓ · ${depois}` : `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')}`;
-  $('fase-cheio').style.width = `${Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
+  /*
+   * A LIMPEZA DO MAPA: quanto da instância já foi limpo, em % (sem respawn —
+   * ver `hunt/instancia.mjs`). Em 100%, o "Hunt Clear!" e o que vem depois,
+   * conforme o botão: outra instância, a próxima fase, ou o boss.
+   */
+  const inst = hunt.instancia;
+  const pct = inst ? inst.percentual : f.completa ? 100 : 0;
+  const depois = f.aoCompletar !== 'seguir' || !f.completa ? 'nova instância...' : f.fimDoAto ? 'boss liberado' : 'próxima fase...';
+  $('fase-conta').textContent = !inst
+    ? (f.completa ? 'completa ✓' : '')
+    : inst.status === 'limpa'
+      ? `Hunt Clear! · ${depois}`
+      : `${pct}% limpo${f.completa ? ' ✓' : ''}`;
+  $('fase-conta').title = inst ? `${inst.concluidos} de ${inst.total} objetivos de limpeza` : '';
+  caixa.classList.toggle('limpa', inst?.status === 'limpa');
+  $('fase-cheio').style.width = `${pct}%`;
   // "Repetir" / "Seguir" ao completar (o clique está em main.mjs).
   const modo = $('fase-modo');
   if (modo && modo.dataset.modo !== f.aoCompletar) pintarBotaoDaFase(modo, f.aoCompletar ?? 'repetir');

@@ -1,5 +1,6 @@
 // O terreno da hunt: mapa capturado, pontos de nascimento no referencial do mapa, a grade andável.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
+import { spawnsDoMapa } from '../mapa/spawns.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -230,6 +231,20 @@ export const huntOuMapaCustom = (huntId) =>
 export const nomeDaHunt = (huntId) => huntOuMapaCustom(huntId).name ?? huntId;
 
 /** `true` só para as hunts com polígono de chão real (ver comentário do arquivo). */
+/**
+ * Os spawns da hunt, lidos da DEFINIÇÃO DO MAPA (ver `mapa/spawns.mjs`): o
+ * bloco `spawns` do arquivo `<id>-map.json`; nas hunts sem arquivo de mapa
+ * (terreno pelo contorno do catálogo), o `spawns` do registro dela no
+ * catálogo; mapa de editor antigo, as `posicoes`. `null`: o mapa não define.
+ */
+export function spawnsDaHunt(huntId) {
+  const doArquivo = spawnsDoMapa(mapaRealCapturado(huntId));
+  if (doArquivo?.length) return doArquivo;
+  const hunt = acharHunt(huntId);
+  if (Array.isArray(hunt?.spawns)) return spawnsDoMapa({ spawns: hunt.spawns, z: hunt.origin?.z ?? 7 });
+  return null;
+}
+
 export function temTerrenoReal(hunt) {
   return Object.values(hunt.limite?.andares ?? {}).some((poligono) => poligono.length >= 6);
 }

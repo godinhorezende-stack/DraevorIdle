@@ -614,11 +614,21 @@ function campanhaCards(body) {
       const progresso = el('div', 'fase-progresso');
       const trilho = el('div', 'fase-trilho');
       const cheio = el('i');
-      cheio.style.width = `${f.completa ? 100 : Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
+      cheio.style.width = `${f.completa ? 100 : 0}%`;
       trilho.append(cheio);
       progresso.append(
         trilho,
-        el('span', null, f.pular ? 'pulada (em obras)' : f.completa ? 'completa ✓' : f.liberada ? `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')} bichos` : '🔒 complete a fase anterior')
+        el(
+          'span',
+          null,
+          f.pular
+            ? 'pulada (em obras)'
+            : f.completa
+              ? `completa ✓${f.limpezas > 1 ? ` · ${f.limpezas} limpezas` : ''}`
+              : f.liberada
+                ? 'limpe a hunt inteira para completar'
+                : '🔒 complete a fase anterior'
+        )
       );
       card.append(progresso);
       if (f.liberada && hunt && !f.pular) {
