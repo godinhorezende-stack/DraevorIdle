@@ -15,7 +15,10 @@
    "atributos": {
     "0": 100
    },
-   "efeito": null
+   "efeito": null,
+   "base": {
+    "min": 0.7
+   }
   },
   "incomum": {
    "nome": "Incomum",
@@ -24,7 +27,10 @@
     "1": 50,
     "2": 50
    },
-   "efeito": null
+   "efeito": null,
+   "base": {
+    "min": 0.76
+   }
   },
   "raro": {
    "nome": "Raro",
@@ -33,7 +39,10 @@
     "2": 50,
     "3": 50
    },
-   "efeito": null
+   "efeito": null,
+   "base": {
+    "min": 0.82
+   }
   },
   "épico": {
    "nome": "Épico",
@@ -42,7 +51,10 @@
     "3": 50,
     "4": 50
    },
-   "efeito": null
+   "efeito": null,
+   "base": {
+    "min": 0.88
+   }
   },
   "lendário": {
    "nome": "Lendário",
@@ -51,7 +63,10 @@
     "4": 50,
     "5": 50
    },
-   "efeito": "lendario"
+   "efeito": "lendario",
+   "base": {
+    "min": 0.94
+   }
   },
   "mítico": {
    "nome": "Mítico",
@@ -60,7 +75,10 @@
     "5": 50,
     "6": 50
    },
-   "efeito": "mitico"
+   "efeito": "mitico",
+   "base": {
+    "min": 1.0
+   }
   }
  },
  "_atoPorLevel": "O ato do drop sai do level da hunt enquanto os atos não existem no jogo. A dificuldade é a padrão para todas (até existir o sistema de dificuldades).",
@@ -192,5 +210,6 @@
     "mítico": 1
    }
   }
- }
+ },
+ "_nota_base": "Faixa do valor-base da peça (ataque, defesa e armadura do catálogo): o drop sorteia entre `min` × valor e o valor cheio do catálogo. Raridade maior = piso maior; Mítico sempre vem no máximo. Ex.: ataque 10 Comum = 7–10, Épico = 9–10."
 }

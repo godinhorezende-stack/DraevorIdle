@@ -23,6 +23,7 @@ import * as Imbuements from './imbuements.mjs';
 import * as Aparencia from './aparencia.mjs';
 // Os efeitos especiais (Lendário) e supremos (Mítico) das peças vestidas.
 import * as EfeitosDeItem from './itens/efeitos.mjs';
+import { metaDaPeca } from './itens/item.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -43,8 +44,9 @@ const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'
 // O catálogo chama a terra de `poison` em parte dos itens (o nome do OTServ).
 const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 
-const pecas = (estado) => Object.values(estado.equipment ?? {}).filter(Boolean).map((p) => ITEM_CATALOG[p.id]).filter(Boolean);
-const arma = (estado) => ITEM_CATALOG[estado.equipment?.weapon?.id] ?? null;
+// `metaDaPeca`: o catálogo com o ataque/defesa/armadura que a peça sorteou no drop.
+const pecas = (estado) => Object.values(estado.equipment ?? {}).filter(Boolean).map((p) => metaDaPeca(p)).filter(Boolean);
+const arma = (estado) => metaDaPeca(estado.equipment?.weapon) ?? null;
 
 /** A perícia que a arma usa (sem arma, punho — que também é melee). */
 export function periciaDaArma(item) {
@@ -93,7 +95,7 @@ function calcularCombate(estado) {
   const itens = pecas(estado);
   const soma = (f) => itens.reduce((a, it) => a + (Number(f(it)) || 0), 0);
   const w = arma(estado);
-  const escudo = ITEM_CATALOG[estado.equipment?.shield?.id];
+  const escudo = metaDaPeca(estado.equipment?.shield);
   const armor = soma((it) => it.armor);
   // Escudo inteiro + METADE da defesa da arma (+ o extra dela): é a conta que
   // bate com o personagem real capturado — dwarven shield 26 + steel axe 10/2

@@ -13,7 +13,7 @@
 // (0 Comum, 1 Incomum, 2 Raro, 3 Épico). Nada é apagado; é idempotente.
 import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS } from './config.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
-import { valorNaFaixa, arredondar } from './gerar.mjs';
+import { valorNaFaixa, arredondar, CAMPOS_DA_BASE } from './gerar.mjs';
 
 const ID_DA_ESSENCIA = 900001;
 const FAIXAS_ANTIGAS = [[0, 20], [20, 40], [40, 60], [60, 85], [85, 100]];
@@ -23,12 +23,34 @@ const RARIDADE_PELA_QUANTIDADE = ['comum', 'incomum', 'raro', 'épico', 'lendár
 export function camposDaPeca(p) {
   if (!p) return {};
   return {
+    ...(p.base ? { base: p.base } : {}),
     ...(p.tier ? { tier: p.tier } : {}),
     ...(p.imbu?.length ? { imbu: p.imbu } : {}),
     ...(p.af?.length ? { af: p.af } : {}),
     ...(p.raridade ? { raridade: p.raridade } : {}),
     ...(p.efeito ? { efeito: p.efeito } : {}),
   };
+}
+
+/** O `base` de uma peça só com os campos e números válidos (vem do cliente em `comparar`, e do save). */
+export function baseValida(base) {
+  const saida = {};
+  for (const campo of CAMPOS_DA_BASE) {
+    const v = Math.floor(Number(base?.[campo]));
+    if (v > 0) saida[campo] = v;
+  }
+  return saida;
+}
+
+/**
+ * O item do catálogo COM os números que esta peça sorteou no drop (`p.base`):
+ * é o que a ficha lê para ataque, defesa e armadura. Peça sem `base` (kit
+ * inicial, loja, drop de antes) segue com o valor cheio do catálogo.
+ */
+export function metaDaPeca(p) {
+  const meta = ITEM_CATALOG[p?.id];
+  if (!meta || !p?.base) return meta;
+  return { ...meta, ...baseValida(p.base) };
 }
 
 /** Converte UM atributo antigo (sem `nivel`); devolve `true` se mudou. */

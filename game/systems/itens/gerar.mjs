@@ -69,6 +69,28 @@ export function nivelDoValor(id, valor) {
   return nivel;
 }
 
+/** Os números do item-base que cada peça sorteia na faixa da raridade (ver `rolarBase`). */
+export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor'];
+
+/**
+ * O valor-base desta peça: para cada número do catálogo (ataque, defesa,
+ * armadura), um inteiro entre `min` × valor e o valor cheio — o `min` é da
+ * raridade (`raridades.json`, `base.min`). Ataque 10 vira 7–10 no Comum e 9–10
+ * no Épico; o Mítico sempre vem no máximo. Devolve `{}` se o item não tem nenhum.
+ */
+export function rolarBase(itemId, raridade, rng = Math.random) {
+  const meta = ITEM_CATALOG[itemId];
+  const minimo = C.RARIDADES.raridades[raridade]?.base?.min ?? 1;
+  const base = {};
+  for (const campo of CAMPOS_DA_BASE) {
+    const teto = Number(meta?.[campo]);
+    if (!(teto > 0)) continue;
+    const piso = Math.max(1, Math.round(teto * minimo));
+    base[campo] = piso + Math.floor(rng() * (teto - piso + 1));
+  }
+  return base;
+}
+
 /** O ato e a dificuldade de onde o drop saiu (o boss usa a dificuldade de cima). */
 export function origemDoDrop(ctx = {}) {
   const ato = String(ctx.ato ?? C.atoDoLevel(ctx.level));
@@ -109,6 +131,8 @@ export function gerarItem(ctx) {
   const tipo = def.efeito;
   const efeito = tipo && C.EFEITOS[tipo] ? { tipo, id: sortearChave(Object.fromEntries(Object.keys(C.EFEITOS[tipo]).map((k) => [k, 1])), rng) } : null;
 
-  if (!af.length && !efeito && raridade === 'comum') return simples;
-  return { ...simples, raridade, af, ...(efeito ? { efeito } : {}) };
+  const base = rolarBase(ctx.itemId, raridade, rng);
+  const temBase = Object.keys(base).length > 0;
+  if (!af.length && !efeito && raridade === 'comum' && !temBase) return simples;
+  return { ...simples, raridade, ...(temBase ? { base } : {}), af, ...(efeito ? { efeito } : {}) };
 }

@@ -2185,8 +2185,16 @@ const ARTE_DO_SLOT_DA_ESSENCIA = {
   shield: 'left-hand', ring: 'finger', legs: 'legs', ammo: 'ammo', feet: 'feet',
 };
 
+/** O item do catálogo com o ataque/defesa/armadura que ESTA peça sorteou no drop (`peca.base`). */
+const comBaseDaPeca = (meta, peca) => {
+  if (!meta || !peca?.base) return meta;
+  const base = {};
+  for (const campo of ['attack', 'defense', 'armor']) if (Number(peca.base[campo]) > 0) base[campo] = Math.floor(Number(peca.base[campo]));
+  return { ...meta, ...base };
+};
+
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
-  const meta = getItems()[id];
+  const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;
 
   const partes = [];

@@ -7,6 +7,7 @@ import * as Acoes from '../acoes.mjs';
 import * as Treino from '../treino.mjs';
 import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
+import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Boosts from '../boosts.mjs';
 import * as BuffPower from '../buffpower.mjs';
@@ -59,8 +60,8 @@ export function armorDoPersonagem(estado) {
 export const bonusDeMagicLevel = (ficha) => ficha?.skillBonus?.magic ?? 0;
 
 export function armaDoPersonagem(estado) {
-  const id = estado.equipment?.weapon?.id;
-  return id ? ITEM_CATALOG[id] : null;
+  // Com o ataque que a peça sorteou no drop (`p.base`), não o valor cheio do catálogo.
+  return metaDaPeca(estado.equipment?.weapon) ?? null;
 }
 
 /*
