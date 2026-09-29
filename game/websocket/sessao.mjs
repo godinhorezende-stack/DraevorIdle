@@ -2132,7 +2132,9 @@ export class Sessao {
           delete this.estado.avisoDaHunt;
         }
         // A fase completou com "Seguir" marcado: a próxima fase, no mesmo modo.
-        if (this.estado.hp > 0) this.seguirParaAProximaFase();
+        // Só com a aba aberta: o char trazido sem aba (party) é offline, fica em loop.
+        if (this.semAba) delete this.estado.faseCompletada;
+        else if (this.estado.hp > 0) this.seguirParaAProximaFase();
         // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
         // Cair no duelo não é morte: é derrota, sem perder nada (ver `Arena.caiu`).
         if (this.estado.hp <= 0 && !Arena.caiu(this)) this.enviar({ t: 'death', ...this.morrerNaHunt() });

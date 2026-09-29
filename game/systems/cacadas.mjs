@@ -121,6 +121,9 @@ function projetar(estado, base, fator, multExp = 1) {
   estado.xp = (estado.xp ?? 0) + extra.exp;
   // As mortes projetadas contam para a fase da campanha (decisão do dono: offline conta).
   Campanha.contarKills(estado, estado.hunt, extra.kills);
+  // Offline fica SEMPRE em loop na mesma hunt (decisão do dono): o "Seguir" é
+  // só jogando online — nem na volta a fase completada offline troca de hunt.
+  delete estado.faseCompletada;
   estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
   for (const [id, n] of Object.entries(base.itens.loot)) {
@@ -628,7 +631,8 @@ export function definirAoCompletarFase(estado, { value }) {
 /**
  * A fase acabou de completar e ele escolheu "Seguir": para onde ir (`{huntId,
  * dificuldade, nome}`), ou `null`. Consome a marca `faseCompletada` (posta por
- * `Campanha.contarKills`, online ou na caçada offline). Só quem caça a PRÓPRIA
+ * `Campanha.contarKills`; a caçada offline não marca: offline fica sempre em
+ * loop). Só quem caça a PRÓPRIA
  * sala segue: o convidado da party fica com o anfitrião, e quem o segue vem junto.
  */
 export function faseParaSeguir(estado) {

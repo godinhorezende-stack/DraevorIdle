@@ -579,8 +579,8 @@ function campanhaCards(body) {
   modo.append(el('span', null, 'Ao completar a fase:'));
   const opcoes = el('div', 'campanha-modo-opcoes');
   for (const [valor, rotulo, dica] of [
-    ['repetir', '🔁 Repetir', 'Fica em loop na mesma fase depois de completar (bom para farmar).'],
-    ['seguir', '⏭ Seguir', 'Vai sozinho para a próxima fase do ato quando completar. No fim do ato para: o boss é você quem chama.'],
+    ['repetir', '🔁 Repetir', 'Fica em loop na mesma fase depois de completar (bom para farmar). Offline é sempre assim.'],
+    ['seguir', '⏭ Seguir', 'Jogando online, vai sozinho para a próxima fase do ato quando completar. No fim do ato para: o boss é você quem chama. Offline fica sempre em loop na mesma hunt.'],
   ]) {
     const botao = el('button', campanha.aoCompletar === valor ? 'active' : null, rotulo);
     botao.type = 'button';

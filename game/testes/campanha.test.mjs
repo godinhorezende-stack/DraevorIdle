@@ -137,13 +137,17 @@ test('o loot da fase usa o ato e a dificuldade dela', () => {
   assert.deepEqual(contextoDoDrop(e.hunt), { ato: 3, dificuldade: 'dificil' });
 });
 
-test('caçada offline projetada: as mortes contam para a fase', () => {
+test('caçada offline projetada: as mortes contam para a fase, e fica em loop mesmo com "Seguir"', () => {
   const e = novo(60);
+  e.settings = { aoCompletarFase: 'seguir' };
   e.stamina = 2520;
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
   e.hunt.offlineDesde = Date.now() - 3 * 3_600_000;
   Cacadas.simularAusencia(e, PERSONAGEM, Date.now());
   assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), true, `kills: ${JSON.stringify(e.campanha.facil.kills)}`);
+  // Offline sempre na mesma hunt: nem na volta ele troca de fase.
+  assert.equal(e.hunt.huntId, F[0].huntId);
+  assert.equal(Cacadas.faseParaSeguir(e), null);
 });
 
 test('a tela: a campanha inteira por dificuldade e a fase atual no quadro da caçada', () => {
