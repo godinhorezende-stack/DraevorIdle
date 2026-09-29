@@ -52,6 +52,23 @@ export const ACTION_CATALOG = carregar('action-catalog.json').catalog;
  */
 export const ACTION_CATALOG_ALTO = carregar('action-catalog-lvl343.json').catalog;
 /*
+ * ---- Poção de vida e de mana custa o DOBRO (decisão do dono, 29/09) ----
+ *
+ * A poção é comprada na hora de usar (o `cost` da entrada da barra, e o `buy` do item de
+ * fallback). Os dois dobram aqui, uma vez, na carga: o preço de VENDA (`sell`) continua o
+ * capturado. Só vida e mana — spirit e o resto seguem como estão.
+ */
+export const MULTIPLICADOR_DO_PRECO_DA_POCAO = 2;
+const ehPocaoDeVidaOuMana = (nome) => /\b(health|mana) potion\b/i.test(nome ?? '');
+for (const item of Object.values(ITEM_CATALOG)) {
+  if (ehPocaoDeVidaOuMana(item?.name) && item.buy) item.buy *= MULTIPLICADOR_DO_PRECO_DA_POCAO;
+}
+for (const catalogo of [ACTION_CATALOG, ACTION_CATALOG_ALTO]) {
+  for (const entrada of catalogo.items ?? []) {
+    if (ehPocaoDeVidaOuMana(entrada?.name) && entrada.cost) entrada.cost *= MULTIPLICADOR_DO_PRECO_DA_POCAO;
+  }
+}
+/*
  * A Store REAL (`send({t:'store'})` no site original, 2026-09-23): as
  * 11 prateleiras inteiras — pacotes de coins, serviços, exercises, boosts,
  * itens, buff power, upgrades, extras, 242 montarias e 115 outfits, com preço.
