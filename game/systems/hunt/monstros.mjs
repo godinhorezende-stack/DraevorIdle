@@ -143,9 +143,14 @@ export function trocarDeAndar(hunt, destino) {
  * caçada offline de horas não teria o que caçar. O tempo real de respawn o
  * servidor original nunca manda; o que dá para medir é o ritmo: o Zotod matava
  * ~11 Trolls por minuto numa hunt de 26 spawns, então cada um volta em no
- * máximo ~2 min. 60s é uma aproximação dentro disso.
+ * máximo ~2 min. 60s era uma aproximação dentro disso.
+ *
+ * 30s (pedido do dono, 29/09, junto do balanceamento do 1–100): na simulação de
+ * progressão, as hunts com poucos bichos (Feyrist Nightmare, Mother of Scarabs)
+ * batiam no teto do respawn — o personagem matava 70–80% do máximo que 60s
+ * permitia e ficava esperando bicho renascer.
  */
-export const RESPAWN_MS = 60_000;
+export const RESPAWN_MS = 30_000;
 
 export function renascer(hunt) {
   const fila = hunt.respawns ?? [];

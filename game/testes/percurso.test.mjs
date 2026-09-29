@@ -75,13 +75,14 @@ test('caçando de verdade (bichos de um golpe): nunca fica parado sem brigar, e 
   let parado = 0;
   let maior = 0;
   let ultimo = '';
+  let kills = 0;
   // 15 minutos: com a densidade do original (2 bichos por ponto, ~296 no andar)
   // ele mata ~28 por minuto, um golpe a cada 2s, e a volta leva uns 12 minutos.
   for (let i = 0; i < 4 * 900; i++) {
     agora += R.PASSO_MS;
     e.hp = e.maxHp;
     for (const m of e.hunt.monstros) if (m.hp > 1) m.hp = 1;
-    Cacadas.tique(e, PERSONAGEM, agora);
+    for (const ev of Cacadas.tique(e, PERSONAGEM, agora) ?? []) if (ev.t === 'kill') kills++;
     const pos = `${e.hunt.pos.x},${e.hunt.pos.y}`;
     const alvo = Cacadas.alvoAtual(e.hunt);
     const brigando = alvo && Math.max(Math.abs(alvo.x - e.hunt.pos.x), Math.abs(alvo.y - e.hunt.pos.y)) <= 1;
@@ -92,8 +93,15 @@ test('caçando de verdade (bichos de um golpe): nunca fica parado sem brigar, e 
   assert.ok(maior * R.PASSO_MS <= 2000, `ficou ${(maior * R.PASSO_MS) / 1000}s parado sem brigar`);
   // O percurso passa pelos 148 pontos de nascimento (296 bichos, `percursoPelosBichos`):
   // a volta inteira leva ~27 min matando o que renasce no caminho. Em 15, mais da metade.
+  /*
+   * Ou anda o percurso, ou está SEMPRE brigando. Com o respawn de 30s (era 60s),
+   * numa hunt cheia assim o que renasce perto nunca acaba: ele fica matando na
+   * primeira área (~28 por minuto) em vez de dar a volta — não é travar, é não
+   * ter motivo para sair. O que este teste proíbe é o personagem PARADO.
+   */
   const run = Cacadas.runParaCliente(e);
-  assert.ok((e.huntLaps?.[HUNT] ?? 0) >= 1 || run.passo >= run.passos / 2, `andou pouco em 15 minutos: ${JSON.stringify(run)}`);
+  const andou = (e.huntLaps?.[HUNT] ?? 0) >= 1 || run.passo >= run.passos / 2;
+  assert.ok(andou || kills >= 20 * 15, `andou pouco em 15 minutos e matou só ${kills}: ${JSON.stringify(run)}`);
 });
 
 test('hunt Vip (sala sem mapa capturado): também tem laço, pelos pontos de nascimento', () => {

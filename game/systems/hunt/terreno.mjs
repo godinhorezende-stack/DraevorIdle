@@ -32,6 +32,77 @@ export const mapasReaisCacheados = new Map();
 export const CAMINHO_SPAWNS = join(RAIZ_HUNTS, '..', 'hunts-spawns-capturados.json');
 export const SPAWNS_CAPTURADOS = existsSync(CAMINHO_SPAWNS) ? JSON.parse(readFileSync(CAMINHO_SPAWNS, 'utf8')).hunts : {};
 
+/*
+ * ---- Reforço de spawn: as hunts capturadas só com o que estava NA TELA ----
+ *
+ * Os spawns de `SPAWNS_CAPTURADOS` são o primeiro `state.hunt.monsters` que o
+ * original mandou ao entrar — só os bichos à vista da entrada, não o mapa
+ * inteiro. Medido (29/09): Port Hope com 14 bichos em 2.497 casas, Putrid
+ * Mummies com 5 em 2.788, Edron Were com 10 em 3.137, Oramond Hydras com 5 em
+ * 3.597 — o personagem andava mais do que matava. As hunts bem servidas da
+ * mesma faixa têm de 2,5 a 4,5 bichos a cada 100 casas.
+ *
+ * Aqui o número é o ALVO de bichos a cada 100 casas alcançáveis a partir da
+ * entrada. Os pontos capturados ficam; os novos se espalham pelo mapa (a 3+
+ * casas uns dos outros e a 6+ da entrada), com a MESMA mistura de bichos da
+ * captura. A semente é o id: a hunt sai sempre igual — online, offline e no
+ * worker da simulação.
+ */
+export const REFORCO_DE_SPAWN = {
+  'port-hope-corym-dungeons': 2.5,
+  'putrid-mummies': 2.5,
+  'edron-were-mobs': 2.5,
+  'oramond-hydras': 1.5,
+};
+const spawnsReforcados = new Map();
+
+/** Os spawns de uma hunt capturada — com o reforço, quando ela tem (ver `REFORCO_DE_SPAWN`). */
+export function spawnsCapturados(huntId) {
+  const base = SPAWNS_CAPTURADOS[huntId];
+  const alvo = REFORCO_DE_SPAWN[huntId];
+  if (!base?.length || !alvo) return base;
+  if (spawnsReforcados.has(huntId)) return spawnsReforcados.get(huntId);
+  const real = mapaRealCapturado(huntId);
+  if (!real) return base;
+  const z = real.z;
+  const andavel = andavelDoAndar(real, z);
+  const noAndar = base.filter((p) => (p.z ?? z) === z);
+  const inicio = real.route?.[0] && (real.route[0].z ?? z) === z ? real.route[0] : noAndar[0] ?? base[0];
+
+  // Só casas aonde se chega andando da entrada (ilha fechada no mapa não conta).
+  const alcancaveis = [];
+  const vistas = new Set([`${inicio.x},${inicio.y}`]);
+  const fila = [inicio];
+  while (fila.length) {
+    const c = fila.shift();
+    alcancaveis.push(c);
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const k = `${c.x + dx},${c.y + dy}`;
+        if ((dx || dy) && !vistas.has(k) && andavel.has(k)) {
+          vistas.add(k);
+          fila.push({ x: c.x + dx, y: c.y + dy });
+        }
+      }
+    }
+  }
+
+  let semente = [...huntId].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 11);
+  const acaso = () => (semente = (semente * 1664525 + 1013904223) >>> 0) / 2 ** 32;
+  const chaves = base.map((p) => p.key); // a mistura da captura, no peso em que apareceu
+  const quantos = Math.round((alcancaveis.length * alvo) / 100) - base.length;
+  const perto = (a, b, n) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) < n;
+  const pontos = [...base];
+  const candidatas = alcancaveis.filter((c) => !perto(c, inicio, 6));
+  for (let tentativa = 0; pontos.length - base.length < quantos && candidatas.length && tentativa < quantos * 40; tentativa++) {
+    const c = candidatas.splice(Math.floor(acaso() * candidatas.length), 1)[0];
+    if (pontos.some((p) => (p.z ?? z) === z && perto(p, c, 3))) continue;
+    pontos.push({ key: chaves[Math.floor(acaso() * chaves.length)], x: c.x, y: c.y, z });
+  }
+  spawnsReforcados.set(huntId, pontos);
+  return pontos;
+}
+
 export function mapaRealCapturado(huntId) {
   if (mapasReaisCacheados.has(huntId)) return mapasReaisCacheados.get(huntId);
   const caminho = join(RAIZ_HUNTS, `${huntId}-map.json`);
@@ -222,7 +293,7 @@ export function gradeDaHunt(hunt) {
     // Hunt normal: o percurso passa pelos bichos (ver `percursoPelosBichos`);
     // sem pontos de nascimento, a rota gravada.
     const ehBoss = hunt.boss || CATALOGO.bosses.some((b) => b.id === hunt.id);
-    const pontos = ehBoss ? null : hunt.posicoes?.length ? pontosNoMapa(hunt, real) : SPAWNS_CAPTURADOS[hunt.id];
+    const pontos = ehBoss ? null : hunt.posicoes?.length ? pontosNoMapa(hunt, real) : spawnsCapturados(hunt.id);
     const pelaRota = percursoDoMapa(real, andavel);
     const pelosBichos = pontos ? percursoPelosBichos(real, pontos, pelaRota?.[0] ?? real.route?.[0] ?? { x: 0, y: 0, z: real.z }) : null;
     const grade = {

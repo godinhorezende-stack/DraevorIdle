@@ -1,0 +1,25 @@
+{
+  "_fonte": "Os presentes de marco de level (tipo 'set') de cada vocação, lidos do welcome.character.presentes.marcos do servidor original (ravoxidle.com.br, 29/09/2026): knight e paladin das capturas em api-mapeada/ (treino-online-full.json, captura-chat-ranking-0926/welcome-biro-cidade.json); sorcerer, druid e monk entrando nos personagens de level 8 da conta.",
+  "vocacoes": {
+    "knight": {
+      "50": [[21170, "gearwheel chain"], [3392, "royal helmet"], [10384, "Zaoan armor"], [3371, "knight legs"], [3079, "boots of haste"], [7383, "relic sword"], [7389, "heroic axe"], [14250, "deepling squelcher"], [3434, "vampire shield"]],
+      "100": [[16109, "prismatic helmet"], [11686, "royal draken mail"], [13999, "ornate legs"], [3079, "boots of haste"], [16175, "shiny blade"], [16161, "crystalline axe"], [16162, "mycological mace"], [3414, "mastermind shield"]]
+    },
+    "paladin": {
+      "50": [[21170, "gearwheel chain"], [10385, "Zaoan helmet"], [8063, "paladin armor"], [10387, "Zaoan legs"], [3079, "boots of haste"], [8027, "composite hornbow"], [8021, "modified crossbow"]],
+      "100": [[11689, "elite draken helmet"], [8060, "master archer's armor"], [16111, "prismatic legs"], [3079, "boots of haste"], [22867, "rift crossbow"], [22866, "rift bow"]]
+    },
+    "sorcerer": {
+      "50": [[21170, "gearwheel chain"], [9103, "batwing hat"], [8043, "focus cape"], [645, "blue legs"], [3079, "boots of haste"], [8094, "wand of voodoo"], [8074, "spellbook of mind control"]],
+      "100": [[8864, "yalahari mask"], [11687, "royal scale robe"], [16106, "gill legs"], [3079, "boots of haste"], [25700, "dream blossom staff"], [25699, "wooden spellbook"]]
+    },
+    "druid": {
+      "50": [[21170, "gearwheel chain"], [9103, "batwing hat"], [8043, "focus cape"], [645, "blue legs"], [3079, "boots of haste"], [8082, "underworld rod"], [8074, "spellbook of mind control"]],
+      "100": [[8864, "yalahari mask"], [11687, "royal scale robe"], [16106, "gill legs"], [3079, "boots of haste"], [25700, "dream blossom staff"], [25699, "wooden spellbook"]]
+    },
+    "monk": {
+      "50": [[21170, "gearwheel chain"], [3392, "royal helmet"], [50259, "zaoan monk robe"], [10387, "Zaoan legs"], [3079, "boots of haste"], [50273, "nunchaku of enlightenment"]],
+      "100": [[50183, "sai"], [50274, "coned hat of enlightenment"], [50261, "merudri nanbando"], [50187, "legs of wisdom"], [3079, "boots of haste"]]
+    }
+  }
+}
