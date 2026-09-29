@@ -288,7 +288,7 @@ test('"Seguir" no fim do ato não entra no boss; e pula a hunt quebrada/travada'
 });
 
 test('fase travada (pular): ninguém entra — nem pelo servidor —, e ela conta como completa', () => {
-  const travadas = ['dark-thais', 'infernatil-seal', 'jaded-roots', 'walking-pillar'];
+  const travadas = ['dark-thais'];
   for (const id of travadas) {
     assert.equal(F.find((f) => f.huntId === id).pular, true, id);
     const e = novo(2000);
@@ -300,4 +300,48 @@ test('fase travada (pular): ninguém entra — nem pelo servidor —, e ela cont
     assert.equal(r.ok, false, `${id}: o servidor recusa a entrada`);
     assert.match(r.erro, /travada/, `${id}: o motivo diz que está travada`);
   }
+});
+
+test('Infernatil Seal, Jaded Roots e Walking Pillar têm mapa (replicado de outro) e abrem com os bichos DELAS', async () => {
+  const { REPLICAS } = await import('../../tools/replicar-mapa-com-mobs.mjs');
+  const { CATALOGO } = await import('../systems/dados.mjs');
+  for (const [id, doador] of Object.entries(REPLICAS)) {
+    assert.ok(!F.find((f) => f.huntId === id).pular, `${id} não está mais travada`);
+    const e = personagemDeTeste({ level: 2000 });
+    const r = Cacadas.entrar(e, { huntId: id, mode: 'auto', dificuldade: 'facil' });
+    assert.equal(r.ok, true, `${id}: ${r.erro ?? 'entra'}`);
+    const dela = new Set(CATALOGO.hunts.find((h) => h.id === id).creatures.map((c) => c.key));
+    assert.ok(e.hunt.monstros.length > 0, `${id}: tem bichos`);
+    for (const m of e.hunt.monstros) assert.ok(dela.has(m.key), `${id}: ${m.key} é da hunt (e não do doador ${doador})`);
+  }
+});
+
+test('replicar(): o terreno do doador, os spawns (posição/quantidade) dele, e SÓ as criaturas do alvo', async () => {
+  const { replicar } = await import('../../tools/replicar-mapa-com-mobs.mjs');
+  const { readFileSync } = await import('node:fs');
+  const { CATALOGO } = await import('../systems/dados.mjs');
+  const doador = JSON.parse(readFileSync(new URL('../gamedata/hunts/feru-way-map.json', import.meta.url), 'utf8'));
+  const mapa = replicar('infernatil-seal', 'feru-way');
+  assert.deepEqual(mapa.blocked, doador.blocked, 'o terreno é o do doador');
+  assert.equal(mapa.spawns.length, doador.spawns.length);
+  const dela = new Set(CATALOGO.hunts.find((h) => h.id === 'infernatil-seal').creatures.map((c) => c.key));
+  mapa.spawns.forEach((s, i) => {
+    assert.deepEqual([s.x, s.y, s.z, s.raio, s.quantidade], [doador.spawns[i].x, doador.spawns[i].y, doador.spawns[i].z, doador.spawns[i].raio, doador.spawns[i].quantidade]);
+    assert.ok(dela.has(s.criaturas[0].key));
+  });
+  assert.equal(new Set(mapa.spawns.map((s) => s.criaturas[0].key)).size, dela.size, 'todas as criaturas aparecem');
+});
+
+test('a fase depois de uma travada NÃO abre de graça: exige a última fase de verdade antes dela', () => {
+  const dark = F.findIndex((f) => f.huntId === 'dark-thais');
+  const seguinte = F[dark + 1]; // Infernatil Seal
+  const e = novo(2000);
+  assert.equal(Campanha.faseLiberada(e, 'facil', seguinte.huntId), false, 'sem progresso nenhum: fechada');
+  assert.equal(Campanha.faseExigida(Campanha.faseDe(seguinte.huntId)).huntId, F[dark - 1].huntId, 'exige a Warzone 2, e não a travada');
+  // Completa o jogo até a Warzone 2 (com os bosses dos atos de trás): abre.
+  const g = novo(2000);
+  for (let a = 1; a < seguinte.ato; a++) { completar(g, 'facil', (a - 1) * 12, a * 12); Campanha.venceuBoss(g, 'facil', a); }
+  completar(g, 'facil', (seguinte.ato - 1) * 12, dark);
+  assert.equal(Campanha.faseLiberada(g, 'facil', seguinte.huntId), true);
+  assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', seguinte.huntId), /Warzone 2/);
 });

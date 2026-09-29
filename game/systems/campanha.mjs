@@ -68,7 +68,20 @@ export function faseLiberada(estado, dif, huntId) {
   if (f.indice === 0) return true;
   // A primeira fase de um ato pede o boss do ato anterior.
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return false;
-  return faseCompleta(estado, dif, FASES[f.indice - 1].huntId);
+  const exigida = faseExigida(f);
+  return !exigida || faseCompleta(estado, dif, exigida.huntId);
+}
+
+/**
+ * A fase que precisa estar completa para abrir esta: a anterior — mas a travada (`pular`) conta como
+ * completa SOZINHA, então ela não pode ser o elo: com ela como exigência, quem nunca jogou o ato
+ * entrava direto na fase depois dela (foi assim que a Infernatil Seal abria no começo). Anda para
+ * trás até a primeira que não é travada. `null` = nada antes dela no ato.
+ */
+export function faseExigida(f) {
+  let k = f.indice - 1;
+  while (k >= 0 && FASES[k].ato === f.ato && FASES[k].pular) k--;
+  return k >= 0 && FASES[k].ato === f.ato ? FASES[k] : null;
 }
 
 /** O boss do ato está aberto? (as 12 fases dele completas, na dificuldade) */
@@ -87,7 +100,7 @@ export function motivoParaNaoEntrar(estado, dif, huntId) {
   if (f.pular) return `${f.nome} está travada (em obras) e não abre por enquanto.`;
   if (faseLiberada(estado, dif, huntId)) return null;
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return `Derrote o boss do Ato ${f.ato - 1} (${bossDoAto(f.ato - 1)?.nome}) no ${nomeDif} para abrir o Ato ${f.ato}.`;
-  return `Complete a fase anterior (${FASES[f.indice - 1].nome}) no ${nomeDif} para abrir esta.`;
+  return `Complete a fase anterior (${(faseExigida(f) ?? FASES[f.indice - 1]).nome}) no ${nomeDif} para abrir esta.`;
 }
 
 /*

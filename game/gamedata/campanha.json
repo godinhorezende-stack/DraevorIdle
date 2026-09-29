@@ -537,9 +537,7 @@
     "facil": 96,
     "medio": 577,
     "dificil": 1937
-   },
-   "pular": true,
-   "_pular": "TRAVADA (decisão do dono, 29/09): não dá para entrar, e conta como completa sozinha para não prender o boss do ato"
+   }
   },
   {
    "huntId": "jaded-roots",
@@ -550,9 +548,7 @@
     "facil": 98,
     "medio": 589,
     "dificil": 1968
-   },
-   "pular": true,
-   "_pular": "hunt sem bichos/terreno hoje: conta como completa sozinha"
+   }
   },
   {
    "huntId": "walking-pillar",
@@ -563,9 +559,7 @@
     "facil": 100,
     "medio": 600,
     "dificil": 2000
-   },
-   "pular": true,
-   "_pular": "TRAVADA (decisão do dono, 29/09): não dá para entrar, e conta como completa sozinha para não prender o boss do ato"
+   }
   }
  ],
  "bosses": {
