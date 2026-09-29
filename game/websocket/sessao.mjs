@@ -1121,7 +1121,11 @@ export class Sessao {
           if (r.relatorio) this.enviar(r.relatorio);
         }
         Party.antesDeSairDaCacada(this);
-        return this.aplicar(Cacadas.entrar(this.estado, m));
+        const entrou = Cacadas.entrar(this.estado, m);
+        this.aplicar(entrou);
+        // Líder de party: quem marcou "Seguir líder" vem junto.
+        if (entrou.ok) Party.seguirOLider(this);
+        return;
       }
       case 'entrarNaArena':
         return this.entrarNaArena();
@@ -1129,6 +1133,8 @@ export class Sessao {
         if (this.estado?.hunt?.huntId === 'treino') return this.despacharTreino({ action: 'stop' });
         // "Caçada encerrada": o relatório da sessão, antes de a hunt sumir.
         const report = this.estado?.hunt ? Cacadas.relatorio(this.estado) : null;
+        // Quem segue o líder volta junto (antes de ele sair: é pela sala dele que se acha quem estava junto).
+        Party.voltarComOLider(this, 'voltou para a cidade');
         Party.antesDeSairDaCacada(this);
         const resultado = this.aplicar(Cacadas.sair(this.estado));
         if (report) this.enviar({ t: 'runReport', report });
@@ -2165,6 +2171,7 @@ export class Sessao {
    * nosso não pode custar nada. Devolve os campos do `death`.
    */
   morrerNaHunt({ real = true } = {}) {
+    if (real) Party.voltarComOLider(this, 'morreu');
     Party.antesDeSairDaCacada(this);
     // "Morrer para a rotação" do Auto Boss.
     if (real) Bosses.pararPorMorte(this.estado);

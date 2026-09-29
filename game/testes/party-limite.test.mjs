@@ -292,3 +292,98 @@ test('party: a exp continua igual para todos, e a Boss Task conta para todos', a
   const ganhos = js.map((j, i) => j.s.estado.xp - xp[i]);
   assert.ok(Math.max(...ganhos) - Math.min(...ganhos) <= 5, `exp igual: ${ganhos}`);
 });
+
+// ------------------------------------------ as opções da ⚙ Config / janela de party
+
+/** Monta a party: o primeiro é o líder. */
+function partyDe(lider, ...outros) {
+  for (const o of outros) {
+    assert.equal(grupo(lider.s, 'convidar', o.nome).ok, true);
+    assert.equal(grupo(o.s, 'aceitar').ok, true);
+  }
+}
+
+test('"Permitir entrar na caçada": marcado, a party entra direto; sem marcar, só pedindo', async () => {
+  const host = await jogador(0, 1, 60);
+  const outro = await jogador(1, 1, 60);
+  partyDe(host, outro);
+  assert.equal(Cacadas.entrar(host.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
+  const semMarca = caca(outro.s, 'entrar', host.nome);
+  assert.equal(semMarca.ok, false);
+  assert.match(semMarca.erro, /não liberou a entrada direta/);
+  const cartao = () => Party.camposDoPersonagem(outro.s).party.membros.find((m) => m.name === host.nome);
+  assert.equal(cartao().podeEntrarDireto, false);
+
+  host.s.estado.settings.entrarSemConvite = true;
+  assert.equal(cartao().podeEntrarDireto, true, 'a janela mostra "Entrar na caçada"');
+  assert.equal(caca(outro.s, 'entrar', host.nome).ok, true);
+  assert.equal(Cacadas.salaDe(outro.s.estado.hunt), Cacadas.salaDe(host.s.estado.hunt));
+  grupo(outro.s, 'sair');
+});
+
+test('"Permitir entrar na caçada" não fura as portas: hunt não liberada continua fechada', async () => {
+  const host = await jogador(0, 1, 45);
+  const novato = await jogador(1, 1, 38);
+  partyDe(host, novato);
+  host.s.estado.settings.entrarSemConvite = true;
+  assert.equal(Cacadas.entrar(host.s.estado, { huntId: 'port-hope-corym-dungeons', mode: 'auto' }).ok, true);
+  const cartao = Party.camposDoPersonagem(novato.s).party.membros.find((m) => m.name === host.nome);
+  assert.equal(cartao.podeEntrarDireto, false, 'nem oferece o botão');
+  const r = caca(novato.s, 'entrar', host.nome);
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /ainda não liberou/);
+  grupo(novato.s, 'sair');
+});
+
+test('"Seguir líder": vai junto na caçada, na troca de hunt, na volta para a cidade e na morte', async () => {
+  const lider = await jogador(0, 3, 60);
+  const segue = await jogador(1, 3, 60);
+  const naoSegue = await jogador(2, 3, 60);
+  partyDe(lider, segue, naoSegue);
+  segue.s.estado.settings.seguirLider = true;
+
+  // Entrou numa caçada: quem segue vem; quem não marcou, não.
+  lider.s.despachar({ t: 'startHunt', huntId: 'troll-cave', mode: 'auto' });
+  assert.equal(lider.s.estado.hunt?.huntId, 'troll-cave');
+  assert.equal(Cacadas.salaDe(segue.s.estado.hunt), Cacadas.salaDe(lider.s.estado.hunt), 'seguiu');
+  assert.equal(naoSegue.s.estado.hunt ?? null, null, 'quem não marcou fica');
+  for (let i = 0; i < 4; i++) for (const j of [lider, segue]) await j.s.tique();
+
+  // Trocou de hunt: vai junto, com o extrato da de antes.
+  const extratos = () => segue.avisos.filter((m) => m.t === 'runReport').length;
+  const antes = extratos();
+  lider.s.despachar({ t: 'startHunt', huntId: 'amazon-camp', mode: 'auto' });
+  assert.equal(lider.s.estado.hunt?.huntId, 'amazon-camp');
+  assert.equal(segue.s.estado.hunt?.huntId, 'amazon-camp');
+  assert.equal(Cacadas.salaDe(segue.s.estado.hunt), Cacadas.salaDe(lider.s.estado.hunt));
+  assert.equal(extratos(), antes + 1, 'o extrato da Troll Cave');
+
+  // Voltou para a cidade: volta junto, com o extrato.
+  lider.s.despachar({ t: 'stopHunt' });
+  assert.equal(lider.s.estado.hunt ?? null, null);
+  assert.equal(segue.s.estado.hunt ?? null, null, 'voltou junto');
+  assert.match(segue.avisos.filter((m) => m.t === 'runReport').at(-1).motivo, /voltou para a cidade — você voltou junto/);
+
+  // Morreu: volta junto.
+  lider.s.despachar({ t: 'startHunt', huntId: 'troll-cave', mode: 'auto' });
+  assert.ok(segue.s.estado.hunt);
+  lider.s.morrerNaHunt();
+  assert.equal(segue.s.estado.hunt ?? null, null, 'voltou junto com a morte do líder');
+  assert.match(segue.avisos.filter((m) => m.t === 'runReport').at(-1).motivo, /morreu — você voltou junto/);
+  grupo(segue.s, 'sair');
+  grupo(naoSegue.s, 'sair');
+});
+
+test('"Seguir líder" respeita a hunt liberada: quem não pode fica, e os dois sabem por quê', async () => {
+  const lider = await jogador(0, 1, 45);
+  const segue = await jogador(1, 1, 38);
+  partyDe(lider, segue);
+  segue.s.estado.settings.seguirLider = true;
+  lider.s.despachar({ t: 'startHunt', huntId: 'port-hope-corym-dungeons', mode: 'auto' });
+  assert.equal(lider.s.estado.hunt?.huntId, 'port-hope-corym-dungeons');
+  assert.equal(segue.s.estado.hunt ?? null, null, 'ficou');
+  const recebidos = (j) => j.avisos.map((m) => JSON.stringify(m)).join('\n');
+  assert.match(recebidos(segue), /Não deu para seguir .*ainda não liberou/);
+  assert.match(recebidos(lider), /não pôde vir: .*ainda não liberou/);
+  grupo(segue.s, 'sair');
+});
