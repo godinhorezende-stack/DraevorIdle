@@ -127,8 +127,10 @@ test('A. espaço livre: vai direto até o bicho, sem repassar por casa nenhuma',
 
 // ------------------------------------------------------------------ B
 
-test('B. contra a parede, kite: não anda de lado sem se afastar — fica e bate', () => {
+test('B. contra a parede, kite, bicho acompanhando de lado: desliza UMA vez e para — sem vaivém, batendo', () => {
   // O ahau real (31,25 ↔ 32,25): parede atrás, bicho a 2 casas, "Distância 4".
+  // Deslizar pela parede é tentado (pode haver saída adiante), mas com o bicho
+  // espelhando não afasta: ele para no fim do deslize e não volta por ele.
   const { e, alvo } = naGrade([
     '.........',
     '....M....',
@@ -140,8 +142,25 @@ test('B. contra a parede, kite: não anda de lado sem se afastar — fica e bate
     // O bicho espelha o personagem, na mesma coluna, duas casas acima.
     alvo.x = e.hunt.pos.x;
   });
-  assert.equal(new Set(casas).size, 1, `andou: ${passos(casas).join(' → ')}`);
-  assert.ok(e.hunt.sessao.damageDealt > 0, 'parado, ele tinha de estar batendo');
+  assert.equal(retornos(casas), 0, `voltou: ${passos(casas).join(' → ')}`);
+  assert.ok(passos(casas).length <= 6, `deslizou demais: ${passos(casas).join(' → ')}`);
+  assert.ok(e.hunt.sessao.damageDealt > 0, 'ele tinha de estar batendo');
+});
+
+test('B3. parede atrás, mas saída de lado e na diagonal: o kite desliza por ela e se afasta', () => {
+  // "quando chega na parede ele para, mesmo tendo espaço para movimentar
+  // diagonal e sair". Nenhuma vizinha afasta de cara; a saída é a abertura à direita.
+  const { e, alvo } = naGrade([
+    '..........',
+    '...M......',
+    '...P......',
+    '#####.....',
+    '#####.....',
+    '#####.....',
+  ], { vocacao: 'sorcerer', distancia: 3 });
+  const casas = rodar(e, 24);
+  assert.ok(cheb(e.hunt.pos, alvo) >= 3, `ficou a ${cheb(e.hunt.pos, alvo)}: ${passos(casas).join(' → ')}`);
+  assert.equal(retornos(casas), 0, passos(casas).join(' → '));
 });
 
 test('B2. contra a parede com espaço de verdade para trás: o kite continua recuando', () => {
@@ -158,13 +177,25 @@ test('B2. contra a parede com espaço de verdade para trás: o kite continua rec
 
 // ------------------------------------------------------------------ C
 
-test('C. no canto, kite: sem para onde recuar, fica parado', () => {
+test('C. no canto, kite, com espaço ao longo da parede: desliza e se afasta, sem voltar', () => {
   const { e, alvo } = naGrade([
     '#######',
     '#P....#',
     '#.M...#',
     '#.....#',
     '#######',
+  ], { vocacao: 'sorcerer', distancia: 4 });
+  const casas = rodar(e, 30);
+  assert.ok(cheb(e.hunt.pos, alvo) >= 3, `ficou a ${cheb(e.hunt.pos, alvo)}: ${passos(casas).join(' → ')}`);
+  assert.equal(retornos(casas), 0, passos(casas).join(' → '));
+});
+
+test('C3. no canto sem saída de verdade (só a casa do bicho em volta): fica parado', () => {
+  const { e, alvo } = naGrade([
+    '####',
+    '#P.#',
+    '#.M#',
+    '####',
   ], { vocacao: 'sorcerer', distancia: 4 });
   const casas = rodar(e, 30);
   assert.equal(new Set(casas).size, 1, `andou: ${passos(casas).join(' → ')}`);
@@ -451,4 +482,29 @@ test('mapas reais que dançavam (ahau, burster-spectres): o kite não repassa em
 test('o grid injetado é o que o tique usa (sanidade dos cenários)', () => {
   const g = desenho(['P.M']);
   assert.equal(gradeDaHunt(huntOuMapaCustom(g.id)), g.grade);
+});
+
+test('lurando, com espaço: passa pela leva em vez de encerrar a juntada', () => {
+  // "se tiver espaço para lure ele passa pelos mobs". Ele veio da esquerda
+  // (casa anterior 4,1), a rota o manda de volta para lá, e um bicho da leva
+  // está colado. O passo reto desfaria o anterior — antes, isso encerrava o
+  // lure na hora. Com o corredor de três, há o caminho por cima ou por baixo.
+  const { e } = naGrade([
+    '....................',
+    '.....Pm............M',
+    '....................',
+  ], { vocacao: 'knight', percurso: { passo: 0, pontos: [{ x: 0, y: 1 }, { x: 19, y: 1 }] } });
+  e.settings.lure = 5;
+  e.hunt.levaAlvo = 5;
+  e.hunt.lurando = true;
+  e.hunt.casaAnterior = { x: 4, y: 1 };
+  for (const m of e.hunt.monstros) m.perseguindo = m.name === 'Outro';
+  rodar(e, 1);
+  assert.equal(e.hunt.lurando, true, 'encerrou o lure');
+  assert.notDeepEqual({ x: e.hunt.pos.x, y: e.hunt.pos.y }, { x: 5, y: 1 }, 'ficou parado');
+  assert.notDeepEqual({ x: e.hunt.pos.x, y: e.hunt.pos.y }, { x: 4, y: 1 }, 'voltou pela casa de onde veio');
+  // E segue: em poucos passos está à esquerda de onde começou, ainda lurando.
+  rodar(e, 4);
+  assert.ok(e.hunt.pos.x < 5, `não avançou na rota: ${e.hunt.pos.x},${e.hunt.pos.y}`);
+  assert.equal(e.hunt.lurando, true, 'encerrou o lure depois');
 });

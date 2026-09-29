@@ -626,7 +626,7 @@ function desenharAjustesDaCaca() {
   travas.id = 'travas-da-caca';
 
   const marcar = () => {
-    for (const botao of caixa.children) {
+    for (const botao of caixa.querySelectorAll('[data-ajuste]')) {
       botao.setAttribute('aria-pressed', String(document.body.dataset.ajuste === botao.dataset.ajuste));
     }
   };
@@ -648,6 +648,44 @@ function desenharAjustesDaCaca() {
     });
     caixa.append(botao);
   }
+
+  /*
+   * ---- No telefone: UM botão, que recolhe e mostra a fileira ----
+   * "no deitado e em pé use isso [❖] para minimizar e maximizar esse negócio de
+   * alvo, distância e lure". No telefone os seletores ficam numa fileira em
+   * cima dos slots (ver o bloco de celular no style.css); os três ícones acima,
+   * que abriam um de cada vez, viram este só. Recolhida, a fileira some e o mapa
+   * ganha a altura dela; a escolha fica guardada no aparelho. O CSS mostra este
+   * botão só nos perfis de telefone e os três só fora deles.
+   */
+  const CHAVE_RECOLHIDOS = 'draevor:ajustes-recolhidos';
+  const recolher = document.createElement('button');
+  recolher.type = 'button';
+  recolher.dataset.recolher = '1';
+  recolher.textContent = '❖';
+  const pintarRecolher = () => {
+    const recolhidos = document.body.classList.contains('ajustes-recolhidos');
+    recolher.title = recolhidos ? 'Mostrar Alvo, Distância e Lurar até' : 'Esconder Alvo, Distância e Lurar até';
+    recolher.setAttribute('aria-label', recolher.title);
+    recolher.setAttribute('aria-pressed', String(!recolhidos));
+  };
+  try {
+    document.body.classList.toggle('ajustes-recolhidos', localStorage.getItem(CHAVE_RECOLHIDOS) === '1');
+  } catch {
+    /* sem armazenamento: começa aberta */
+  }
+  pintarRecolher();
+  recolher.addEventListener('click', (evento) => {
+    evento.stopPropagation();
+    const recolhidos = document.body.classList.toggle('ajustes-recolhidos');
+    try {
+      localStorage.setItem(CHAVE_RECOLHIDOS, recolhidos ? '1' : '');
+    } catch {
+      /* sem armazenamento: só não lembra */
+    }
+    pintarRecolher();
+  });
+  caixa.append(recolher);
 
   /*
    * ---- O cadeado, e o "voltar ao lugar" que só aparece destrancado ----

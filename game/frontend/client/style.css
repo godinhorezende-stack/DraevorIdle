@@ -26585,6 +26585,35 @@ html[data-perfil="retrato"] #actionbar .bar-row > .controls { flex-wrap: wrap; r
 html[data-perfil="retrato"] #actionbar .controls label:has(#lure-volta:not([hidden])) { flex-basis: 100%; }
 html[data-perfil="retrato"] #actionbar .controls .ctl-curto,
 html[data-perfil="deitado"] #actionbar .controls .ctl-curto { display: none !important; }
+/*
+ * ---- O ❖ recolhe e mostra a fileira (em pé e deitado) ----
+ * Os três ícones (◎ ↔ ❖, `#ajustes-da-caca` em mobile.mjs) abriam estes mesmos
+ * seletores um de cada vez; com a fileira acima dos slots, no telefone viram UM
+ * botão que recolhe e mostra a fileira (`body.ajustes-recolhidos`, guardado no
+ * aparelho). Fora do telefone (tablet), os três de antes seguem iguais.
+ */
+#ajustes-da-caca [data-recolher] { display: none; }
+html[data-perfil="retrato"] #ajustes-da-caca [data-ajuste],
+html[data-perfil="deitado"] #ajustes-da-caca [data-ajuste] { display: none !important; }
+/* Num quadrado escuro, como o ícone pedido: o glifo claro solto sumia na areia. */
+html[data-perfil="retrato"] #ajustes-da-caca [data-recolher],
+html[data-perfil="deitado"] #ajustes-da-caca [data-recolher] {
+  display: inline-flex !important; align-items: center; justify-content: center;
+  width: 30px !important; height: 30px !important; padding: 0 !important;
+  font-size: 17px !important; line-height: 1; color: #e7efef !important;
+  background: #0b1012e6 !important; border: 1px solid var(--line) !important; border-radius: 6px !important;
+  text-shadow: none !important;
+}
+/* Aberta: o ❖ aceso (a cor de destaque); recolhida, claro. */
+html[data-perfil="retrato"] #ajustes-da-caca [data-recolher][aria-pressed="true"],
+html[data-perfil="deitado"] #ajustes-da-caca [data-recolher][aria-pressed="true"] {
+  color: var(--accent) !important; border-color: var(--accent-dim, var(--line)) !important;
+}
+/* Deitado, a quina esquerda é do trilho de navegação: o ❖ ficava debaixo dele
+   (o toque caía no ícone do menu). Vai para logo depois do trilho. */
+html[data-perfil="deitado"] #ajustes-da-caca { left: calc(var(--cel-trilho) + 6px) !important; right: auto !important; }
+html[data-perfil="retrato"] body.ajustes-recolhidos #actionbar .bar-row > .controls,
+html[data-perfil="deitado"] body.ajustes-recolhidos #actionbar .bar-row > .controls { display: none !important; }
 html[data-perfil="retrato"] body.manual #actionbar .controls label:not(:has(#strategy)),
 html[data-perfil="deitado"] body.manual #actionbar .controls label:not(:has(#strategy)) { display: none !important; }
 html[data-perfil="retrato"] #hotbar,
