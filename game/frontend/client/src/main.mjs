@@ -677,6 +677,8 @@ function handle(message) {
       pongChegou(message.at);
       break;
     case 'hello':
+      // A versão do jogo já na conexão: depois de um deploy, a aba sabe na hora.
+      conferirVersao(message.versao);
       state.catalog = message.catalog;
       pintarAvisoDeObra();
       gate.start(state.catalog);
@@ -4820,13 +4822,31 @@ function fotoDaMorte() {
  * OBRIGAR, e continuar jogando numa aba velha é justamente o que produz o bug
  * que ninguém consegue reproduzir. O botão faz a única coisa que resolve.
  */
+/*
+ * ---- A versão agora é AUTOMÁTICA ----
+ *
+ * Ela era a `versao` do `novidades.json`, trocada à mão, e ninguém trocava: de
+ * 26/09 em diante nenhum deploy avisou ninguém. Agora é a impressão digital do
+ * código do cliente (`versao-do-cliente.mjs`, no servidor), e chega já no
+ * `hello` — a aba que se reconecta depois de um deploy fica sabendo antes mesmo
+ * de escolher personagem. Deploy só de servidor não muda a versão.
+ *
+ * "O que mudou" só aparece se a lista de novidades for NOVA (outra `versao` que
+ * a da primeira que esta aba viu): mostrar a lista de antes como se fosse desta
+ * atualização seria contar novidade velha.
+ */
 let versaoDoJogo = null;
 let novidadesDaVez = null;
+let novidadesQueEstaAbaViu = null;
 
 function conferirVersao(versao, novidades) {
   // A lista chega em todo `welcome`; a que vale é sempre a última que chegou,
   // porque é a da versão que está no ar agora.
-  if (novidades) novidadesDaVez = novidades;
+  if (novidades) {
+    novidadesQueEstaAbaViu ??= novidades.versao ?? null;
+    novidadesDaVez = novidades;
+    pintarNovidadesDaAtualizacao();
+  }
   if (!versao) return;
   if (versaoDoJogo == null) {
     versaoDoJogo = versao;
@@ -4834,6 +4854,50 @@ function conferirVersao(versao, novidades) {
   }
   if (versao === versaoDoJogo) return;
   mostrarAtualizacao();
+}
+
+/** A lista "o que mudou" dentro da janela — refeita se as novidades chegarem depois dela (o `welcome` vem depois do `hello`). */
+function pintarNovidadesDaAtualizacao() {
+  const lugar = document.getElementById('atualizar-novidades');
+  if (!lugar) return;
+  const novidades = novidadesDaVez;
+  const nova = !!novidades?.itens?.length && (novidades.versao ?? null) !== novidadesQueEstaAbaViu;
+  lugar.replaceChildren();
+  lugar.hidden = false;
+  if (!nova) {
+    lugar.className = 'atualizar-novidades atualizar-generico';
+    lugar.append(el('span', null, 'Melhorias e correções no jogo.'));
+    return;
+  }
+  lugar.className = 'atualizar-novidades';
+  lugar.append(el('b', null, novidades.titulo ?? 'O que mudou nesta versão'));
+  const lista = document.createElement('ul');
+  for (const item of novidades.itens) lista.append(el('li', null, item));
+  lugar.append(lista);
+}
+
+/*
+ * ---- Recarregar sozinho em 15 s — menos quando a pessoa está no controle ----
+ *
+ * Na caçada automática, na cidade ou treinando, recarregar é inofensivo (a
+ * caçada roda no servidor) e quem está com a aba no fundo atualiza sem precisar
+ * voltar. Na Caça Online (a pessoa está andando e mirando) e numa sala de boss,
+ * um recarregamento no meio da ação seria um susto: ali a contagem PAUSA, e só o
+ * botão atualiza. Saindo de lá, ela recomeça.
+ */
+const SEGUNDOS_PARA_ATUALIZAR = 15;
+const atualizarPodeSerSozinho = () => !(state.hunt?.manual || state.hunt?.isBoss);
+
+function recarregarJogo() {
+  /*
+   * `reload()` sozinho pode devolver a mesma cópia do cache. O parâmetro na
+   * URL muda o endereço e obriga a busca — e some da barra na navegação
+   * seguinte, porque o `replace` não deixa histórico. Os módulos do jogo têm a
+   * versão no endereço (`?v=`, ver estaticos.mjs): nada de limpar cache.
+   */
+  const url = new URL(window.location.href);
+  url.searchParams.set('v', String(Date.now()));
+  window.location.replace(url.toString());
 }
 
 function mostrarAtualizacao() {
@@ -4851,54 +4915,78 @@ function mostrarAtualizacao() {
    */
   const painel = el('div', 'atualizar-painel ui-frame ui-frame--miudo');
   const dentro = el('div', 'atualizar-dentro');
-  dentro.append(el('h2', null, 'Versão nova do Draevor'));
+  caixa.setAttribute('role', 'alertdialog');
+  caixa.setAttribute('aria-modal', 'true');
+  caixa.setAttribute('aria-labelledby', 'atualizar-titulo');
+  const selo = el('div', 'atualizar-selo', '⟳');
+  selo.setAttribute('aria-hidden', 'true');
+  const titulo = el('h2', null, 'Nova versão disponível');
+  titulo.id = 'atualizar-titulo';
+  dentro.append(selo, titulo);
   dentro.append(
     el(
       'p',
       null,
-      'O jogo foi atualizado enquanto você estava aqui. Esta aba ainda está rodando a versão antiga — ' +
-        'recarregue para continuar sem erro.'
+      'O Draevor foi atualizado. Esta aba ainda está com a versão anterior — atualize para continuar sem erros.'
     )
   );
   /*
-   * O que mudou, quando o servidor manda a lista.
-   *
-   * Ela vem de `novidades.mjs`, e não daqui: esta aba está rodando o cliente
-   * ANTIGO, então uma lista escrita no cliente seria a da versão passada — a que
-   * o jogador já conhece.
+   * O que mudou, quando o servidor manda a lista NOVA (ver
+   * `pintarNovidadesDaAtualizacao`). Ela vem de `novidades.mjs`, e não daqui:
+   * esta aba está rodando o cliente ANTIGO, então uma lista escrita no cliente
+   * seria a da versão passada — a que o jogador já conhece.
    */
-  const novidades = novidadesDaVez;
-  if (novidades?.itens?.length) {
-    const caixa = el('div', 'atualizar-novidades');
-    caixa.append(el('b', null, novidades.titulo ?? 'O que mudou nesta versão'));
-    const lista = document.createElement('ul');
-    for (const item of novidades.itens) lista.append(el('li', null, item));
-    caixa.append(lista);
-    dentro.append(caixa);
-  }
+  const novidades = el('div', 'atualizar-novidades');
+  novidades.id = 'atualizar-novidades';
+  dentro.append(novidades);
 
   dentro.append(
-    el('p', 'atualizar-nota', 'Seu personagem não é afetado: ele está salvo no servidor e a caçada continua.')
+    el('p', 'atualizar-nota', 'Seu personagem está salvo no servidor e a caçada continua durante a atualização.')
   );
 
   const botao = el('button', 'recompensa-pegar', 'Atualizar agora');
-  botao.onclick = () => {
+  const contagem = el('p', 'atualizar-contagem');
+  contagem.setAttribute('aria-live', 'polite');
+  const trilho = el('div', 'atualizar-trilho');
+  const cheio = el('i');
+  trilho.append(cheio);
+  let atualizando = false;
+  const atualizar = () => {
+    if (atualizando) return;
+    atualizando = true;
     botao.disabled = true;
     botao.textContent = 'Atualizando...';
-    /*
-     * `reload()` sozinho pode devolver a mesma cópia do cache. O parâmetro na
-     * URL muda o endereço e obriga a busca — e some da barra na navegação
-     * seguinte, porque o `replace` não deixa histórico.
-     */
-    const url = new URL(window.location.href);
-    url.searchParams.set('v', String(Date.now()));
-    window.location.replace(url.toString());
+    contagem.textContent = '';
+    recarregarJogo();
   };
-  dentro.append(botao);
+  botao.onclick = atualizar;
+  dentro.append(botao, trilho, contagem);
 
   painel.append(dentro);
   caixa.append(painel);
   document.body.append(caixa);
+  pintarNovidadesDaAtualizacao();
+  botao.focus({ preventScroll: true });
+
+  // A contagem: anda de 250 em 250 ms, pausa na Caça Online / sala de boss.
+  let falta = SEGUNDOS_PARA_ATUALIZAR * 1000;
+  const relogio = setInterval(() => {
+    if (!caixa.isConnected || atualizando) return clearInterval(relogio);
+    if (!atualizarPodeSerSozinho()) {
+      caixa.classList.add('pausado');
+      contagem.textContent = 'Você está no controle agora — atualize quando puder.';
+      return;
+    }
+    caixa.classList.remove('pausado');
+    falta -= 250;
+    cheio.style.width = `${Math.max(0, (falta / (SEGUNDOS_PARA_ATUALIZAR * 1000)) * 100)}%`;
+    const s = Math.ceil(falta / 1000);
+    contagem.textContent = `Atualizando automaticamente em ${s} s`;
+    if (falta <= 0) {
+      clearInterval(relogio);
+      atualizar();
+    }
+  }, 250);
 }
 
 function mostrarMorte(message) {

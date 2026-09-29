@@ -290,10 +290,16 @@ function juntar(convidado, anfitriao) {
     antesDeSairDaCacada(convidado);
     convidado.estado.hunt = null;
   }
-  const r = Cacadas.entrarNaSala(convidado.estado, sala);
+  // Onde cada um da sala está: quem entra cai numa casa livre (a colisão da caçada em grupo).
+  const gente = [...vivas.values()]
+    .filter((o) => o !== convidado && o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala)
+    .map((o) => ({ ...o.estado.hunt.pos, z: o.estado.hunt.z }));
+  const r = Cacadas.entrarNaSala(convidado.estado, sala, gente);
   if (!r.ok) return r;
   for (const o of vivas.values()) if (o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala && o !== convidado) avisar(o, `${nomeDe(convidado)} entrou na caçada.`);
   atualizar(minhaParty(convidado));
+  // O líder entrou na caçada de alguém: quem segue o líder vem também.
+  if (minhaParty(convidado)?.lider === nomeDe(convidado)) seguirOLider(convidado);
   return { ok: true, notice: `Você entrou na caçada de ${nomeDe(anfitriao)} (${Cacadas.nomeDaHunt(sala.huntId)}).` };
 }
 
@@ -362,8 +368,13 @@ export function comandoDaCaca(s, m) {
       s.mandarEstado();
       return { ok: true };
     }
-    case 'entrar':
-      return { ok: false, erro: 'Peça para entrar — a entrada direta não está liberada.' };
+    case 'entrar': {
+      // "Permitir entrar na caçada": quem marcou deixa a party entrar direto, sem pedir.
+      if (!doMeuGrupo(outro)) return { ok: false, erro: 'Essa pessoa não está na sua party.' };
+      if (!outro.estado?.hunt) return { ok: false, erro: `${nomeDe(outro)} não está caçando.` };
+      if (outro.estado.settings?.entrarSemConvite !== true) return { ok: false, erro: `${nomeDe(outro)} não liberou a entrada direta — peça para entrar.` };
+      return juntar(s, outro);
+    }
     case 'sair':
       return comandoDoGrupo(s, { action: 'sair' });
     case 'frente': {
@@ -544,7 +555,8 @@ export function camposDoPersonagem(s) {
         naMinhaCacada: naMinha && nome !== eu,
         cacandoPorFora: cacando && !naMinha,
         podeChamar: !!o && nome !== eu && !!minhaSala && !naMinha,
-        podeEntrarDireto: false,
+        // Ele deixou a porta aberta ("Permitir entrar na caçada") e eu posso entrar lá.
+        podeEntrarDireto: !!o && nome !== eu && cacando && !naMinha && e.settings?.entrarSemConvite === true && !motivoParaNaoEntrar(s, sala),
         podePedirEntrada: !!o && nome !== eu && cacando && !naMinha,
       };
     }),
@@ -578,4 +590,62 @@ export function chamarDaConta(dono, outro) {
   const sala = Cacadas.salaDe(dono.estado.hunt);
   if (outro.estado?.hunt && Cacadas.salaDe(outro.estado.hunt) === sala) return { ok: true, notice: `${nomeDe(outro)} já está na sua caçada.` };
   return juntar(outro, dono);
+}
+
+// -------------------------------------------- "Seguir líder em qualquer ocasião"
+
+/*
+ * A marca `settings.seguirLider` (⚙ Config da troca de personagem, e a janela de
+ * party de quem não é o líder): o membro vai junto quando o líder ENTRA numa
+ * caçada (ou troca de hunt, ou entra na caçada de alguém), e volta junto quando
+ * ele VOLTA PARA A CIDADE ou MORRE — mesmo sem aba aberta. As portas valem: a
+ * hunt liberada, os 10 levels, premium/acesso, o teto da sala (ver `juntar`).
+ * Quem não pode seguir fica onde está e recebe o porquê (e o líder também).
+ *
+ * Sala de boss em grupo não existe: boss o líder faz sozinho, e ninguém segue.
+ */
+const seguidores = (lider) => {
+  const p = minhaParty(lider);
+  if (!p || p.lider !== nomeDe(lider)) return [];
+  return p.membros
+    .filter((n) => n !== p.lider)
+    .map(sessaoDe)
+    .filter((o) => o?.estado && o.estado.settings?.seguirLider === true);
+};
+
+/** O líder acabou de entrar numa caçada: quem segue, vai junto. */
+export function seguirOLider(lider) {
+  const sala = lider.estado?.hunt ? Cacadas.salaDe(lider.estado.hunt) : null;
+  if (!sala || sala.isBoss || sala.huntId === 'treino') return;
+  for (const o of seguidores(lider)) {
+    if (o.estado.hunt && Cacadas.salaDe(o.estado.hunt) === sala) continue;
+    // Treinando no boneco (exercise): o treino é dele, e seguir o interromperia sem ele pedir.
+    if (o.estado.exercicio?.treinando) continue;
+    const r = juntar(o, lider);
+    if (r.ok) avisar(o, `Seguindo ${nomeDe(lider)}: ${Cacadas.nomeDaHunt(sala.huntId)}.`);
+    else {
+      avisar(o, `Não deu para seguir ${nomeDe(lider)}: ${r.erro}`);
+      avisar(lider, `${nomeDe(o)} não pôde vir: ${r.erro}`);
+    }
+    mandarJa(o);
+  }
+}
+
+/**
+ * O líder vai sair da caçada (voltou para a cidade, ou morreu): quem segue e
+ * está na MESMA sala volta junto, com o extrato — chamado ANTES de ele sair.
+ */
+export function voltarComOLider(lider, motivo) {
+  const sala = lider.estado?.hunt ? Cacadas.salaDe(lider.estado.hunt) : null;
+  if (!sala) return;
+  for (const o of seguidores(lider)) {
+    if (!o.estado.hunt || Cacadas.salaDe(o.estado.hunt) !== sala) continue;
+    const report = Cacadas.relatorio(o.estado);
+    // Se a sala é DELE (o líder entrou na dele), quem fica assume antes de ele sair.
+    antesDeSairDaCacada(o);
+    o.estado.hunt = null;
+    if (report) o.enviar({ t: 'runReport', report, motivo: `${nomeDe(lider)} ${motivo} — você voltou junto (Seguir líder).` });
+    avisar(o, `Você voltou para a cidade com ${nomeDe(lider)}.`);
+    mandarJa(o);
+  }
 }

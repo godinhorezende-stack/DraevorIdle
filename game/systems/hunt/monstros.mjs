@@ -1,6 +1,7 @@
 // Os bichos: nascer, renascer, andar atrás do jogador, trocar de andar.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
 import { CATALOGO } from '../dados.mjs';
+import { aliadosPorCasa } from './aliados.mjs';
 import * as R from '../regras.mjs';
 import { huntOuMapaCustom } from './terreno.mjs';
 import { VIZINHANCA_8, VIZINHANCA_4, bfsDistancias, distancia } from './caminho.mjs';
@@ -160,8 +161,8 @@ export function renascer(hunt) {
       if (novo) ((hunt.outrosAndares ??= {})[r.z] ??= []).push(novo);
       return false;
     }
-    // Não nasce em cima do personagem nem de outro bicho — tenta de novo depois.
-    const ocupado = (hunt.pos.x === r.x && hunt.pos.y === r.y) || hunt.monstros.some((m) => m.x === r.x && m.y === r.y);
+    // Não nasce em cima do personagem (nem de outro da party) nem de outro bicho — tenta de novo depois.
+    const ocupado = (hunt.pos.x === r.x && hunt.pos.y === r.y) || aliadosPorCasa(hunt).has(`${r.x},${r.y}`) || hunt.monstros.some((m) => m.x === r.x && m.y === r.y);
     if (ocupado) return true;
     const novo = criarMonstro(r, dados);
     if (novo) hunt.monstros.push(novo);
@@ -233,8 +234,11 @@ export function moverMonstros(hunt, grade, agora) {
    */
   const ocupada = perseguindo ? new Map() : null;
   if (ocupada) for (const m of hunt.monstros) if (m.hp > 0) ocupada.set(`${m.x},${m.y}`, m);
+  // Os outros jogadores da sala (caçada em grupo): bicho também não pisa neles.
+  const aliados = perseguindo ? aliadosPorCasa(hunt) : null;
   const livre = (m, viz) => {
     if (viz.x === hunt.pos.x && viz.y === hunt.pos.y) return false; // não pisa no jogador
+    if (aliados.has(`${viz.x},${viz.y}`)) return false;
     const outro = ocupada.get(`${viz.x},${viz.y}`);
     return !outro || outro === m;
   };

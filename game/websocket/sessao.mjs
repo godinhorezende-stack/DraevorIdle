@@ -62,6 +62,7 @@ import * as Banqueiro from '../systems/banqueiro.mjs';
 import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
+import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -769,7 +770,9 @@ export class Sessao {
   // ------------------------------------------------------------- handshake
 
   ola() {
-    this.enviar({ t: 'hello', catalog: CATALOGO });
+    // A versão do jogo já na conexão: depois de um deploy, a aba aberta se reconecta
+    // e fica sabendo aqui, antes de escolher personagem (ver `versao-do-cliente.mjs`).
+    this.enviar({ t: 'hello', catalog: CATALOGO, versao: VERSAO_DO_CLIENTE });
   }
 
   // -------------------------------------------------------------- receber
@@ -1121,7 +1124,11 @@ export class Sessao {
           if (r.relatorio) this.enviar(r.relatorio);
         }
         Party.antesDeSairDaCacada(this);
-        return this.aplicar(Cacadas.entrar(this.estado, m));
+        const entrou = Cacadas.entrar(this.estado, m);
+        this.aplicar(entrou);
+        // Líder de party: quem marcou "Seguir líder" vem junto.
+        if (entrou.ok) Party.seguirOLider(this);
+        return;
       }
       case 'entrarNaArena':
         return this.entrarNaArena();
@@ -1129,6 +1136,8 @@ export class Sessao {
         if (this.estado?.hunt?.huntId === 'treino') return this.despacharTreino({ action: 'stop' });
         // "Caçada encerrada": o relatório da sessão, antes de a hunt sumir.
         const report = this.estado?.hunt ? Cacadas.relatorio(this.estado) : null;
+        // Quem segue o líder volta junto (antes de ele sair: é pela sala dele que se acha quem estava junto).
+        Party.voltarComOLider(this, 'voltou para a cidade');
         Party.antesDeSairDaCacada(this);
         const resultado = this.aplicar(Cacadas.sair(this.estado));
         if (report) this.enviar({ t: 'runReport', report });
@@ -1591,7 +1600,7 @@ export class Sessao {
     const rankingDeExp = await Ranking.topo('exp');
     this.enviar({
       t: 'welcome',
-      versao: Novidades.VERSAO,
+      versao: VERSAO_DO_CLIENTE,
       novidades: Novidades.novidades(),
       character: completo,
       /*
@@ -2165,6 +2174,7 @@ export class Sessao {
    * nosso não pode custar nada. Devolve os campos do `death`.
    */
   morrerNaHunt({ real = true } = {}) {
+    if (real) Party.voltarComOLider(this, 'morreu');
     Party.antesDeSairDaCacada(this);
     // "Morrer para a rotação" do Auto Boss.
     if (real) Bosses.pararPorMorte(this.estado);
