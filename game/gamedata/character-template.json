@@ -4564,19 +4564,7 @@
   "toNext": 2200
  },
  "skills": {
-  "fist": {
-   "value": 10,
-   "percent": 0
-  },
-  "club": {
-   "value": 10,
-   "percent": 0
-  },
-  "sword": {
-   "value": 10,
-   "percent": 0
-  },
-  "axe": {
+  "melee": {
    "value": 10,
    "percent": 0
   },

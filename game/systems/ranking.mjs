@@ -2,8 +2,8 @@
 // `openRanking`), e o de experiência também dentro do welcome.
 //
 // Do original (Zoros, 2026-09-26, `api-mapeada/captura-chat-ranking-0926/`):
-// - Top 25 por categoria: exp, level, magic e cada perícia do catálogo (fist,
-//   club, sword, axe, distance, shielding, fishing).
+// - Top 25 por categoria: exp, level, magic e cada perícia do catálogo
+//   (melee, distance, shielding, fishing — o melee reúne fist, club, sword e axe).
 // - `value`: a experiência, o level, o magic level ou o nível da perícia.
 // - Cada linha: name, vocation, level, value, online, outfit (com addons e
 //   montaria) e guilda (aqui sempre null: não há guildas locais).
@@ -18,6 +18,7 @@
 import { banco } from '../database/banco.mjs';
 import * as Cache from '../database/redis.mjs';
 import { CATALOGO } from './dados.mjs';
+import * as Treino from './treino.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';
 
@@ -37,8 +38,21 @@ function valorAoVivo(estado, cat) {
   if (cat === 'exp') return estado.xp ?? 0;
   if (cat === 'level') return estado.level ?? 1;
   if (cat === 'magic') return estado.magic?.value ?? 0;
-  return estado.skills?.[cat]?.value ?? PERICIA_INICIAL;
+  return Treino.valor(estado, cat);
 }
+
+/*
+ * O melee é UMA perícia, mas o personagem salvo antes da fusão ainda guarda as
+ * quatro (fist/club/sword/axe) até entrar de novo (`Treino.garantir` migra na
+ * entrada). Até lá o ranking lê a melhor das cinco — a mesma regra da migração.
+ */
+const LEGADAS_DO_MELEE = ['melee', 'fist', 'club', 'sword', 'axe'];
+const valorSqlite = (cat) => (cat === 'melee'
+  ? `max(${LEGADAS_DO_MELEE.map((k) => `coalesce(json_extract(estado, '$.skills.${k}.value'), ${PERICIA_INICIAL})`).join(', ')})`
+  : `coalesce(json_extract(estado, '${caminho(cat)}'), ${padrao(cat)})`);
+const valorPg = (cat) => (cat === 'melee'
+  ? `greatest(${LEGADAS_DO_MELEE.map((k) => `coalesce((estado::jsonb #>> '{skills,${k},value}')::numeric, ${PERICIA_INICIAL})`).join(', ')})`
+  : `coalesce((estado::jsonb #>> '${caminhoPg(cat)}')::numeric, ${padrao(cat)})`);
 
 /** O mesmo caminho JSON, em Postgres: `estado::jsonb #>> '{a,b}'` (texto) em vez de `json_extract`. */
 const caminhoPg = (cat) => (cat === 'exp' ? '{xp}' : cat === 'level' ? '{level}' : cat === 'magic' ? '{magic,value}' : `{skills,${cat},value}`);
@@ -49,7 +63,7 @@ function consulta(cat) {
     const sql =
       banco.dialeto === 'postgres'
         ? `SELECT nome, vocacao,
-             coalesce((estado::jsonb #>> '${caminhoPg(cat)}')::numeric, ${padrao(cat)}) AS valor,
+             ${valorPg(cat)} AS valor,
              (estado::jsonb #>> '{level}')::int AS level,
              (estado::jsonb #>> '{promovido}')::boolean AS promovido,
              estado::jsonb ->> 'outfit' AS outfit
@@ -57,7 +71,7 @@ function consulta(cat) {
        ORDER BY valor DESC, level DESC, nome
        LIMIT ${TAMANHO}`
         : `SELECT nome, vocacao,
-             coalesce(json_extract(estado, '${caminho(cat)}'), ${padrao(cat)}) AS valor,
+             ${valorSqlite(cat)} AS valor,
              json_extract(estado, '$.level') AS level,
              json_extract(estado, '$.promovido') AS promovido,
              json_extract(estado, '$.outfit') AS outfit

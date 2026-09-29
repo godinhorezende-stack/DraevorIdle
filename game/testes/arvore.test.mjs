@@ -120,7 +120,7 @@ test('os bônus chegam na ficha e na vida máxima', () => {
   const depois = Ficha.combate(e);
   assert.ok(Math.abs(depois.critChance - antes.critChance - real.bonus.critChance) < 1e-9);
   assert.ok(Math.abs(depois.lifeLeech - antes.lifeLeech - real.bonus.lifeLeech) < 1e-9);
-  assert.equal(depois.skillBonus.axe - (antes.skillBonus.axe ?? 0), real.bonus['skill:melee']);
+  assert.equal(depois.skillBonus.melee - (antes.skillBonus.melee ?? 0), real.bonus['skill:melee']);
   assert.equal(e.maxHp - vida, Math.round(vida * real.bonus.maxHp));
 });
 

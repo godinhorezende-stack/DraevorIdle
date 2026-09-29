@@ -12418,12 +12418,13 @@ export function openCaixaBoosted(escolhas) {
 
 /** O nome da perícia como o jogador a conhece. */
 const PERICIA_EM_PT = {
-  sword: 'sword fighting',
-  axe: 'axe fighting',
-  club: 'club fighting',
+  melee: 'melee fighting',
+  sword: 'melee fighting',
+  axe: 'melee fighting',
+  club: 'melee fighting',
   distance: 'distance fighting',
   shielding: 'shielding',
-  fist: 'fist fighting',
+  fist: 'melee fighting',
   magic: 'magic level',
 };
 

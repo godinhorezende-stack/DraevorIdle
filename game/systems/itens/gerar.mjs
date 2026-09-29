@@ -15,6 +15,7 @@
 // não existe: quando existir, entra no contexto como variável própria.
 import { ITEM_CATALOG } from '../dados.mjs';
 import * as C from './config.mjs';
+import * as Treino from '../treino.mjs';
 
 /** Slots que recebem atributo no drop (a mochila não). */
 export const SLOTS_COM_ATRIBUTO = new Set(Object.entries(C.POOLS).filter(([, p]) => p.length).map(([s]) => s));
@@ -28,7 +29,7 @@ export function aceitaAtributos(id) {
 /** O pool DESTE item: o do slot, com a perícia da própria arma no lugar de `skill_da_arma`. */
 export function poolDe(itemId) {
   const meta = ITEM_CATALOG[itemId];
-  const pericia = meta?.wand ? 'magic' : meta?.skill;
+  const pericia = meta?.wand ? 'magic' : Treino.canonica(meta?.skill);
   const lista = (C.POOLS[meta?.slot] ?? []).flatMap((id) => (id === 'skill_da_arma' ? (C.ATRIBUTOS[`skill_${pericia}`] ? [`skill_${pericia}`] : []) : [id]));
   return [...new Set(lista)];
 }

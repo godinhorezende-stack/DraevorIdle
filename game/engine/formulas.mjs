@@ -1,7 +1,7 @@
 // Progressão, atributos derivados e combate. Compartilhado entre servidor e cliente
 // (o cliente usa só para exibir previsões; quem decide é sempre o servidor).
 
-export const SKILLS = ['fist', 'club', 'sword', 'axe', 'distance', 'shielding', 'fishing'];
+export const SKILLS = ['melee', 'distance', 'shielding', 'fishing'];
 
 /** Level e preço da promoção, como no NPC do servidor. */
 export const SEXES = ['male', 'female'];
@@ -119,10 +119,7 @@ export const VOCATIONS = {
 };
 
 const SKILL_GROUP = {
-  fist: 'melee',
-  club: 'melee',
-  sword: 'melee',
-  axe: 'melee',
+  melee: 'melee',
   distance: 'distance',
   shielding: 'shielding',
   fishing: 'fishing',

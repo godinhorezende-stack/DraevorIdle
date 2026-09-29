@@ -807,6 +807,32 @@
     ]
    }
   },
+  "skill_melee": {
+   "nome": "Melee Fighting",
+   "tipo": "flat",
+   "niveis": {
+    "1": [
+     1,
+     1
+    ],
+    "2": [
+     1,
+     2
+    ],
+    "3": [
+     2,
+     3
+    ],
+    "4": [
+     3,
+     5
+    ],
+    "5": [
+     5,
+     6
+    ]
+   }
+  },
   "skill_fist": {
    "nome": "Fist Fighting",
    "tipo": "flat",

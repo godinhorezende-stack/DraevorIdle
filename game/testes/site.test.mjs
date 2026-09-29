@@ -27,7 +27,8 @@ test('/api/status: as chaves e as linhas do original', async () => {
   const nosso = await Site.status('magic');
   const original = ler('status-magic.json');
   assert.deepEqual(chaves(nosso), chaves(original));
-  assert.deepEqual(nosso.categorias, original.categorias);
+  // Diverge do original de propósito: aqui o melee é UMA perícia (fist, club, sword e axe juntas).
+  assert.deepEqual(nosso.categorias, ['exp', 'level', 'magic', 'melee', 'distance', 'shielding', 'fishing']);
   const linha = nosso.highscore.find((l) => l.name === NOME);
   assert.ok(linha, 'quem está online entra no ranking com o valor ao vivo');
   assert.deepEqual(chaves(linha), chaves(original.highscore[0]));

@@ -22,6 +22,7 @@
 // no Tibia); os reagentes saem da mochila e da bolsa, as peças limpas primeiro.
 // "Paralysis Removal" não faz nada (o jogo não paralisa o jogador).
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
+import * as Treino from './treino.mjs';
 import { contarGuardadas, tirarGuardadas } from './inventario.mjs';
 
 export const CATALOGO_DE_IMBUEMENTS = CATALOGO.imbuements ?? [];
@@ -120,7 +121,7 @@ export function bonus(estado) {
       } else if (e.type === 'skill' && e.value === 'lifeleech') b.lifeLeech += (e.bonus ?? 0) / 10000;
       else if (e.type === 'skill' && e.value === 'manaleech') b.manaLeech += (e.bonus ?? 0) / 10000;
       else if (e.type === 'skill') {
-        const p = PERICIA[e.value] ?? e.value;
+        const p = Treino.canonica(PERICIA[e.value] ?? e.value);
         b.pericias[p] = (b.pericias[p] ?? 0) + (e.bonus ?? 0);
       } else if (e.type === 'reduction') b.protecao[e.combat] = (b.protecao[e.combat] ?? 0) + (e.amount ?? 0);
       else if (e.type === 'speed') b.velocidade += e.amount ?? 0;

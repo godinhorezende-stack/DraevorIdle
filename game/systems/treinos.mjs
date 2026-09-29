@@ -103,7 +103,8 @@ export function tanqueParaCliente(estado) {
 export function comecarOffline(estado, { skill }) {
   if (estado.hunt) return { ok: false, erro: 'Saia da caçada para treinar offline.' };
   if (tanque(estado) <= 0) return { ok: false, erro: 'Sua stamina de treino acabou — caçar devolve.' };
-  const validas = ['fist', 'club', 'sword', 'axe', 'distance', 'magic'];
+  const validas = ['melee', 'distance', 'magic'];
+  skill = Treino.canonica(skill);
   if (!validas.includes(skill)) return { ok: false, erro: 'Escolha uma perícia.' };
   if (estado.exercicio?.treinando) estado.exercicio.treinando = false;
   estado.training = { mode: 'offline', skill, desde: Date.now() };

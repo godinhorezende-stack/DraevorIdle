@@ -161,7 +161,7 @@ const VOCATION_INFO = {
      * de sword, club e axe"): três ícones dizem isso numa linha, e a frase que
      * sobra fica com o que só se diz em palavras.
      */
-    skills: ['sword', 'axe', 'club'],
+    skills: ['melee'],
     efeito: 35, // CONST_ME_GROUNDSHAKER — o baque de quem bate de perto
     elementos: ['physical'],
     blurb: 'Mestre do combate corpo a corpo, e extremamente resistente.',
@@ -193,7 +193,8 @@ const VOCATION_INFO = {
   monk: {
     name: 'Monk',
     looks: { male: 1824, female: 1825 },
-    skills: ['fist'],
+    skills: ['melee'],
+    icone: 'fist', // o melee do monk é o punho: o ícone dele não é o da espada
     efeito: 10, // CONST_ME_HITAREA — o golpe seco, sem elemento
     elementos: ['physical'],
     blurb: 'Mestre da luta de punhos e da arte da cura.',
@@ -282,11 +283,8 @@ function tocarEfeito(tela, id) {
 }
 
 const NOME_DA_PERICIA = {
-  sword: 'Sword fighting\nEspada. Esta vocação sobe rápido nela.',
-  axe: 'Axe fighting\nMachado. Esta vocação sobe rápido nela.',
-  club: 'Club fighting\nClava. Esta vocação sobe rápido nela.',
+  melee: 'Melee fighting\nPunho, clava, espada e machado: uma perícia só. Esta vocação sobe rápido nela.',
   distance: 'Distance fighting\nArco, besta e spear. Esta vocação sobe rápido nela.',
-  fist: 'Fist fighting\nPunhos, sem arma. Esta vocação sobe rápido nela.',
   magic: 'Magic level\nO poder das magias. Esta vocação sobe rápido nele.',
   shielding: 'Shielding\nDefesa com escudo.',
 };
@@ -401,7 +399,7 @@ export function cartaoDePersonagem(character, { atual = false, comBarra = false 
   const ficha = VOCATION_INFO[character.vocation];
   const linha = el('span');
   if (ficha?.skills?.[0]) {
-    const icone = artOrUiIcon(`sk-${ficha.skills[0]}`, '');
+    const icone = artOrUiIcon(`sk-${ficha.icone ?? ficha.skills[0]}`, '');
     icone.classList.add('vocacao-ico');
     linha.append(icone);
   }

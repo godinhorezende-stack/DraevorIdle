@@ -18,7 +18,7 @@ const SLOT_NAMES = {
 };
 
 const SKILL_NAMES = {
-  fist: 'punho', club: 'clava', sword: 'espada', axe: 'machado',
+  melee: 'melee', fist: 'punho', club: 'clava', sword: 'espada', axe: 'machado',
   distance: 'distância', shielding: 'escudo', magic: 'magic level',
 };
 
