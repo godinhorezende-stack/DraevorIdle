@@ -2185,12 +2185,31 @@ const ARTE_DO_SLOT_DA_ESSENCIA = {
   shield: 'left-hand', ring: 'finger', legs: 'legs', ammo: 'ammo', feet: 'feet',
 };
 
-/** O item do catálogo com o ataque/defesa/armadura que ESTA peça sorteou no drop (`peca.base`). */
+/**
+ * O item do catálogo com a FAIXA que ESTA peça sorteou no drop (`peca.base`:
+ * `[piso, teto]` de ataque, defesa e armadura). O campo vira a média (é o que a
+ * ficha e a comparação usam) e `faixas` guarda o piso e o teto para o balão.
+ */
 const comBaseDaPeca = (meta, peca) => {
   if (!meta || !peca?.base) return meta;
-  const base = {};
-  for (const campo of ['attack', 'defense', 'armor']) if (Number(peca.base[campo]) > 0) base[campo] = Math.floor(Number(peca.base[campo]));
-  return { ...meta, ...base };
+  const saida = { ...meta, faixas: {} };
+  for (const campo of ['attack', 'defense', 'armor']) {
+    const bruto = peca.base[campo];
+    const [a, b] = Array.isArray(bruto) ? bruto : [bruto, bruto];
+    const piso = Math.floor(Number(a));
+    const teto = Math.floor(Number(b));
+    if (!(piso > 0 && teto > 0)) continue;
+    saida[campo] = Math.round((piso + Math.max(piso, teto)) / 2);
+    saida.faixas[campo] = [piso, Math.max(piso, teto)];
+  }
+  return saida;
+};
+
+/** "+20–25" quando a peça tem faixa; "+20" quando é um valor só. */
+const numeroOuFaixa = (meta, campo) => {
+  const sinal = (v) => (v > 0 ? `+${v}` : String(v));
+  const f = meta.faixas?.[campo];
+  return f && f[0] !== f[1] ? `${sinal(f[0])}–${f[1]}` : sinal(meta[campo]);
 };
 
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
@@ -2386,9 +2405,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
       linha.title = 'ainda não aplicado aqui — magia neste servidor não crita nem suga vida/mana';
     }
   }
-  if (meta.attack) add(`${sinal(meta.attack)} de ataque`, 'atk');
-  if (meta.defense) add(`${sinal(meta.defense)} de ${meta.slot === 'shield' ? 'bloqueio' : 'defesa'}${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
-  if (meta.armor) add(`${sinal(meta.armor)} de armadura`, 'def');
+  if (meta.attack) add(`${numeroOuFaixa(meta, 'attack')} de ataque`, 'atk');
+  if (meta.defense) add(`${numeroOuFaixa(meta, 'defense')} de ${meta.slot === 'shield' ? 'bloqueio' : 'defesa'}${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
+  if (meta.armor) add(`${numeroOuFaixa(meta, 'armor')} de armadura`, 'def');
   if (meta.range) add(`Alcance de ${meta.range} sqm`, 'plain');
   if (meta.speed) add(`${sinal(meta.speed)} de velocidade`, 'speed');
   // Elemento é um segundo golpe, não uma fatia do primeiro: o servidor roda a

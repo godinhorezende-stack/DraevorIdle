@@ -32,25 +32,47 @@ export function camposDaPeca(p) {
   };
 }
 
-/** O `base` de uma peça só com os campos e números válidos (vem do cliente em `comparar`, e do save). */
+/** Um campo do `base` como `[piso, teto]` (aceita o número solto das peças de antes da faixa); `null` se inválido. */
+function faixaValida(v) {
+  const [a, b] = Array.isArray(v) ? v : [v, v];
+  const piso = Math.floor(Number(a));
+  const teto = Math.floor(Number(b));
+  return piso > 0 && teto > 0 ? [piso, Math.max(piso, teto)] : null;
+}
+
+/** O `base` de uma peça só com os campos e faixas válidos (vem do cliente em `comparar`, e do save). */
 export function baseValida(base) {
   const saida = {};
   for (const campo of CAMPOS_DA_BASE) {
-    const v = Math.floor(Number(base?.[campo]));
-    if (v > 0) saida[campo] = v;
+    const faixa = faixaValida(base?.[campo]);
+    if (faixa) saida[campo] = faixa;
   }
   return saida;
 }
 
+/** `[piso, teto]` de um campo da peça: o sorteado no drop, ou o valor cheio do catálogo (faixa de largura zero). */
+export function faixaDoCampo(p, campo) {
+  const sorteada = faixaValida(p?.base?.[campo]);
+  if (sorteada) return sorteada;
+  const v = Math.floor(Number(ITEM_CATALOG[p?.id]?.[campo]));
+  return v > 0 ? [v, v] : [0, 0];
+}
+
 /**
- * O item do catálogo COM os números que esta peça sorteou no drop (`p.base`):
- * é o que a ficha lê para ataque, defesa e armadura. Peça sem `base` (kit
- * inicial, loja, drop de antes) segue com o valor cheio do catálogo.
+ * O item do catálogo COM os números desta peça: em cada campo sorteado no drop,
+ * a MÉDIA da faixa (é o que a ficha mostra e o que defesa e armadura usam; o
+ * ataque de cada golpe sorteia a faixa inteira). Peça sem `base` (kit inicial,
+ * loja, drop de antes) segue com o valor cheio do catálogo.
  */
 export function metaDaPeca(p) {
   const meta = ITEM_CATALOG[p?.id];
   if (!meta || !p?.base) return meta;
-  return { ...meta, ...baseValida(p.base) };
+  const medias = {};
+  for (const campo of Object.keys(baseValida(p.base))) {
+    const [piso, teto] = faixaDoCampo(p, campo);
+    medias[campo] = Math.round((piso + teto) / 2);
+  }
+  return { ...meta, ...medias };
 }
 
 /** Converte UM atributo antigo (sem `nivel`); devolve `true` se mudou. */

@@ -73,22 +73,25 @@ export function nivelDoValor(id, valor) {
 export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor'];
 
 /**
- * O valor-base desta peça: para cada número do catálogo (ataque, defesa,
- * armadura), um inteiro entre `min` e `max` (em % do valor do catálogo — é da
- * raridade, `raridades.json`, `base`). A faixa passa de 100% para os dois lados:
- * ataque 20 sai 18–22 no Comum, 20–24 no Raro e 24–28 no Mítico. Devolve `{}`
- * se o item não tem nenhum desses números.
+ * A FAIXA desta peça: para cada número do catálogo (ataque, defesa, armadura),
+ * `[piso, teto]` em inteiros. O piso sai da faixa `piso` da raridade e o teto
+ * da faixa `teto` (`raridades.json`, `base`, em % do valor do catálogo) — e o
+ * maior piso possível é o menor teto possível, então o teto NUNCA fica abaixo
+ * do piso. Ataque 20: Comum 2–16 / 16–20 (nunca passa de 20), Épico 17–22 /
+ * 22–27. Cada golpe sorteia dentro da faixa (`ataqueDoGolpe`, em ficha.mjs).
+ * Devolve `{}` se o item não tem nenhum desses números.
  */
 export function rolarBase(itemId, raridade, rng = Math.random) {
   const meta = ITEM_CATALOG[itemId];
-  const faixa = C.RARIDADES.raridades[raridade]?.base ?? { min: 1, max: 1 };
+  const faixa = C.RARIDADES.raridades[raridade]?.base ?? { piso: [1, 1], teto: [1, 1] };
+  const sortear = ([lo, hi]) => lo + rng() * (hi - lo);
   const base = {};
   for (const campo of CAMPOS_DA_BASE) {
     const valor = Number(meta?.[campo]);
     if (!(valor > 0)) continue;
-    const piso = Math.max(1, Math.round(valor * faixa.min));
-    const topo = Math.max(piso, Math.round(valor * faixa.max));
-    base[campo] = piso + Math.floor(rng() * (topo - piso + 1));
+    const piso = Math.max(1, Math.round(valor * sortear(faixa.piso)));
+    const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
+    base[campo] = [piso, teto];
   }
   return base;
 }

@@ -698,7 +698,7 @@ export function round(estado, personagem) {
       // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
       const fisico = 1 + (ficha.danoDoElemento?.physical ?? 0) / 100;
       // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
-      const semResistencia = (R.golpeDoJogador({ ...arma, attack: ficha.ataque }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
+      const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
       const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia), alvo, eventos, ficha);
       Treino.treinar(estado, pericia);
       // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).

@@ -23,7 +23,7 @@ import * as Imbuements from './imbuements.mjs';
 import * as Aparencia from './aparencia.mjs';
 // Os efeitos especiais (Lendário) e supremos (Mítico) das peças vestidas.
 import * as EfeitosDeItem from './itens/efeitos.mjs';
-import { metaDaPeca } from './itens/item.mjs';
+import { metaDaPeca, faixaDoCampo } from './itens/item.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -134,7 +134,12 @@ function calcularCombate(estado) {
   const municao = w?.ammo ? ITEM_CATALOG[estado.equipment?.ammo?.id] : null;
   const daMunicao = municao?.ammo === w?.ammo ? municao : null;
   // "Ataque" (+N no ataque da arma) e "Ataque da arma" (+% dele).
-  const ataque = Math.round(((w?.attack ?? 0) + (daMunicao?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
+  const calcAtaque = (a) => Math.round(((a ?? 0) + (daMunicao?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
+  const ataque = calcAtaque(w?.attack);
+  // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
+  const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
+  const ataqueMin = w?.attack ? calcAtaque(faixaMin) : ataque;
+  const ataqueMax = w?.attack ? calcAtaque(faixaMax) : ataque;
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   const damage = w?.wand
@@ -156,6 +161,8 @@ function calcularCombate(estado) {
   return {
     armor: armor + (af.armor_flat ?? 0),
     ataque,
+    ataqueMin,
+    ataqueMax,
     defense,
     damage,
     skillName: pericia,
@@ -245,6 +252,13 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught };
+}
+
+/** O ataque DESTE golpe: sorteado entre o piso e o teto da arma (a média, `ficha.ataque`, é o que a ficha mostra). */
+export function ataqueDoGolpe(ficha, rng = Math.random) {
+  const lo = ficha.ataqueMin ?? ficha.ataque;
+  const hi = ficha.ataqueMax ?? ficha.ataque;
+  return lo + Math.floor(rng() * (hi - lo + 1));
 }
 
 /** A ficha do GOLPE BÁSICO (arma ou wand): + crítico de auto-ataque da proficiência. */
