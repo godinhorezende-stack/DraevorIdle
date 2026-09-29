@@ -98,6 +98,9 @@ const TIRO_DO_ELEMENTO = {
 const maxDoMelee = (a) => (a.maxDamage != null ? Math.abs(a.maxDamage) : Math.ceil(a.skill * (a.attack * 0.05) + a.attack * 0.5));
 
 const ignorados = {};
+// Algumas criaturas da fonte trazem o intervalo em SEGUNDOS (`interval = 2`, as
+// Werehyaenas): lido como ms, a magia saía a cada tique — 8x o dano.
+const intervaloEmMs = (i) => (i == null ? 2000 : i < 100 ? i * 1000 : i);
 function gerar(DIR) {
 const saida = {};
 for (const arquivo of readdirSync(DIR)) {
@@ -106,14 +109,14 @@ for (const arquivo of readdirSync(DIR)) {
   const ataques = [];
   for (const a of entradas(bloco(txt, 'attacks'))) {
     if (a.name === 'melee') {
-      ataques.push({ tipo: 'melee', min: Math.abs(a.minDamage ?? 0), max: maxDoMelee(a), intervalo: a.interval ?? 2000, chance: a.chance ?? 100 });
+      ataques.push({ tipo: 'melee', min: Math.abs(a.minDamage ?? 0), max: maxDoMelee(a), intervalo: intervaloEmMs(a.interval), chance: a.chance ?? 100 });
     } else if (a.name === 'combat' && ELEMENTO[a.type] && a.maxDamage) {
       ataques.push({
         tipo: 'magia',
         elemento: ELEMENTO[a.type],
         min: Math.abs(a.minDamage),
         max: Math.abs(a.maxDamage),
-        intervalo: a.interval ?? 2000,
+        intervalo: intervaloEmMs(a.interval),
         chance: a.chance ?? 100,
         forma: a.radius ? 'area' : a.length ? 'feixe' : 'alvo',
         raio: a.radius ?? 0,
@@ -131,7 +134,7 @@ for (const arquivo of readdirSync(DIR)) {
       const forma = formaPeloNome(a.name);
       ataques.push({
         tipo: 'magia', estimado: true, nome: a.name, elemento, min: Math.abs(a.minDamage ?? 0), max: Math.abs(a.maxDamage),
-        intervalo: a.interval ?? 2000, chance: a.chance ?? 100, ...forma, alcance: a.range ?? 7,
+        intervalo: intervaloEmMs(a.interval), chance: a.chance ?? 100, ...forma, alcance: a.range ?? 7,
         efeito: EFEITO_DO_ELEMENTO[elemento], tiro: forma.forma === 'alvo' ? TIRO_DO_ELEMENTO[elemento] ?? null : null,
       });
     } else {
@@ -140,7 +143,7 @@ for (const arquivo of readdirSync(DIR)) {
   }
   const curas = entradas(bloco(txt, 'defenses'))
     .filter((d) => d.name === 'combat' && d.type === 'COMBAT_HEALING' && d.maxDamage)
-    .map((d) => ({ min: d.minDamage, max: d.maxDamage, intervalo: d.interval ?? 2000, chance: d.chance ?? 100, efeito: EFEITO[d.effect] ?? null }));
+    .map((d) => ({ min: d.minDamage, max: d.maxDamage, intervalo: intervaloEmMs(d.interval), chance: d.chance ?? 100, efeito: EFEITO[d.effect] ?? null }));
   saida[id] = { ataques, curas };
 }
 return saida;

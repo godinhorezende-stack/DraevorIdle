@@ -157,3 +157,13 @@ test('a tela: a campanha inteira por dificuldade e a fase atual no quadro da caÃ
   assert.equal(snap.fase.nome, 'Troll Cave');
   assert.equal(snap.fase.precisa, F[0].kills.facil);
 });
+
+test('nenhuma magia de bicho sai a cada tique (Werehyaenna North vinha com intervalo 2 = segundos)', async () => {
+  const { readFileSync } = await import('node:fs');
+  for (const [arq, chave] of [['monstro-poderes.json', 'monstros'], ['boss-poderes.json', 'bosses']]) {
+    const dados = JSON.parse(readFileSync(new URL(`../gamedata/${arq}`, import.meta.url), 'utf8'))[chave];
+    for (const [id, m] of Object.entries(dados)) {
+      for (const a of [...(m.ataques ?? []), ...(m.curas ?? [])]) assert.ok(a.intervalo >= 500, `${arq}: ${id} com intervalo ${a.intervalo} ms`);
+    }
+  }
+});
