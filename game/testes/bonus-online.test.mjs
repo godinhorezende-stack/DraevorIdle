@@ -28,6 +28,8 @@ function cacando(modo, level = 600) {
   assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: modo, strategy: 'nearest' }).ok, true);
   e.hunt.monstros = [];
   e.hunt.respawns = [];
+  // Mapa esvaziado à mão: sem a instância, senão ele contaria como limpo e renovaria (ver hunt/instancia.mjs).
+  delete e.hunt.instancia;
   return e;
 }
 
@@ -174,6 +176,7 @@ test('H/I. persistência e o que vai ao cliente: a exp com bônus é gravada e �
   await s.receber({ t: 'startHunt', huntId: 'troll-cave', mode: 'online' });
   assert.equal(s.estado.hunt?.modo, 'online');
   s.estado.hunt.monstros = [];
+  delete s.estado.hunt.instancia;
   const alvo = bicho(s.estado.hunt, 500);
   s.estado.hunt.monstros.push(alvo);
   const antes = s.estado.xp;

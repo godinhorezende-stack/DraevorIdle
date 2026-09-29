@@ -1449,6 +1449,9 @@ body.com-aviso { --altura-do-aviso: 24px; }
 #barra-da-fase.completa { border-color: #b08a3a; }
 #barra-da-fase.completa #fase-titulo, #barra-da-fase.completa #fase-conta { color: #e0a84a; }
 #barra-da-fase.completa .fase-trilho i { background: linear-gradient(90deg, #8a6a20, #e0a84a); }
+/* 100% — "Hunt Clear!": a barra acende até a instância seguinte (ver `barraDaFase`). */
+#barra-da-fase.limpa { border-color: #e0a84a; box-shadow: 0 0 14px #e0a84a55, 0 6px 18px #000a; }
+#barra-da-fase.limpa #fase-conta { color: #ffd479; font-weight: 700; }
 
 /* O botão: a barra não recebe toque, ele sim. Texto longo no desktop, curto no celular. */
 #fase-modo {
@@ -11214,6 +11217,7 @@ body.mirando #map { cursor: crosshair; }
 .tip-vs .vs-titulo { color: var(--muted); font-weight: 500; margin-bottom: 2px; }
 .tip-vs .vs-igual { color: var(--muted); }
 .tip-vs .vs-aviso { color: #e0a84a; margin-top: 3px; }
+.tip-vs .vs-secao { color: var(--muted); font-size: 0.85em; letter-spacing: .05em; text-transform: uppercase; margin: 5px 0 1px; opacity: .8; }
 .tip-vs div.vs-melhor,
 .tip-vs div.vs-pior { display: flex; justify-content: space-between; gap: 16px; }
 .tip-vs div.vs-melhor span,

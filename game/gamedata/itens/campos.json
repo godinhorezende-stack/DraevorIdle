@@ -1,0 +1,52 @@
+{
+  "_nota": "Registro dos NOMES dos campos que a comparacao de itens mostra (systems/itens/comparar.mjs). Os atributos da peca (af) tiram o nome de atributos.json - um atributo novo la aparece sozinho. Aqui ficam os campos do ITEM-BASE (catalogo) e os da FICHA do personagem (Ficha.combate). Campo que nao estiver aqui aparece pela chave, em vez de sumir. `*` casa qualquer subchave (protection.fire, skillBonus.sword...). `escala` multiplica o valor para a tela (critChance 0.03 -> 3%). `sufixo`: unidade.",
+  "item": {
+    "attack": { "nome": "Ataque" },
+    "defense": { "nome": "Defesa" },
+    "armor": { "nome": "Armadura" },
+    "range": { "nome": "Alcance", "sufixo": " sqm" },
+    "speed": { "nome": "Velocidade" },
+    "element.value": { "nome": "Dano elemental" },
+    "critChance": { "nome": "Chance de crítico", "escala": 0.01, "sufixo": "%" },
+    "critDamage": { "nome": "Dano crítico", "escala": 0.01, "sufixo": "%" },
+    "lifeLeech": { "nome": "Life leech", "escala": 0.01, "sufixo": "%" },
+    "manaLeech": { "nome": "Mana leech", "escala": 0.01, "sufixo": "%" },
+    "regen.hp": { "nome": "Vida por segundo" },
+    "regen.mana": { "nome": "Mana por segundo" },
+    "protection.*": { "nome": "Proteção {sub}", "sufixo": "%" },
+    "skillBonus.*": { "nome": "Perícia {sub}" }
+  },
+  "ficha": {
+    "vidaMaxima": { "nome": "Vida máxima" },
+    "manaMaxima": { "nome": "Mana máxima" },
+    "capacidade": { "nome": "Capacidade" },
+    "armor": { "nome": "Armadura" },
+    "ataque": { "nome": "Ataque" },
+    "defense": { "nome": "Defesa" },
+    "damage.min": { "nome": "Dano mínimo" },
+    "damage.max": { "nome": "Dano máximo" },
+    "skillValue": { "nome": "Perícia da arma" },
+    "critChance": { "nome": "Chance de crítico", "escala": 100, "sufixo": "%" },
+    "critMultiplier": { "nome": "Dano crítico", "escala": 100, "sufixo": "%" },
+    "blockChance": { "nome": "Chance de bloqueio", "escala": 100, "sufixo": "%" },
+    "lifeLeech": { "nome": "Life leech", "escala": 100, "sufixo": "%" },
+    "manaLeech": { "nome": "Mana leech", "escala": 100, "sufixo": "%" },
+    "esquiva": { "nome": "Esquiva", "escala": 100, "sufixo": "%" },
+    "protection.*": { "nome": "Proteção {sub}", "sufixo": "%" },
+    "attackRange": { "nome": "Alcance", "sufixo": " sqm" },
+    "regenFlat.hp": { "nome": "Vida por segundo" },
+    "regenFlat.mana": { "nome": "Mana por segundo" },
+    "speed": { "nome": "Velocidade" },
+    "velocidadeDeAtaque": { "nome": "Velocidade de ataque", "sufixo": "%" },
+    "danoDoElemento.*": { "nome": "Dano de {sub}", "sufixo": "%" },
+    "danoDeMagia": { "nome": "Dano de magia", "sufixo": "%" },
+    "curaDeMagia": { "nome": "Cura de magia", "sufixo": "%" },
+    "onslaughtExtra": { "nome": "Onslaught", "sufixo": "%" },
+    "penetracao": { "nome": "Penetração" },
+    "danoRecebidoDasGemas": { "nome": "Dano recebido", "escala": -100, "sufixo": "%" }
+  },
+  "subchaves": {
+    "physical": "físico", "fire": "fogo", "ice": "gelo", "earth": "terra", "energy": "energia", "death": "morte", "holy": "sagrado",
+    "sword": "espada", "axe": "machado", "club": "clava", "distance": "distância", "magic": "magia", "shielding": "escudo", "fist": "punho"
+  }
+}

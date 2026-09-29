@@ -215,6 +215,8 @@ function naCacaOnline(modo = 'online') {
   assert.equal(Cacadas.entrar(s.estado, { huntId: 'troll-cave', mode: modo }).ok, true);
   s.estado.hunt.monstros = [];
   s.estado.hunt.respawns = [];
+  // Mapa esvaziado à mão: sem a instância, senão ele contaria como limpo e renovaria (ver hunt/instancia.mjs).
+  delete s.estado.hunt.instancia;
   s.estado.hunt.assistencia = false;
   const grade = gradeDaHunt({ id: 'troll-cave' });
   return { s, enviados, grade };

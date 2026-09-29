@@ -86,10 +86,6 @@ const money = (value) => Number(value ?? 0).toLocaleString('pt-BR');
  */
 const ouroDoJogador = (state) => (state?.character?.gold ?? 0) + (state?.character?.bank ?? 0);
 
-// Os mesmos limites do server/src/rotation.mjs.
-const CYCLE_MIN = 1;
-const CYCLE_MAX = 5;
-
 const formatLeft = (ms) => {
   const minutes = Math.ceil(ms / 60000);
   if (minutes >= 1440) return `${Math.floor(minutes / 1440)}d ${Math.floor((minutes % 1440) / 60)}h`;
@@ -618,11 +614,21 @@ function campanhaCards(body) {
       const progresso = el('div', 'fase-progresso');
       const trilho = el('div', 'fase-trilho');
       const cheio = el('i');
-      cheio.style.width = `${f.completa ? 100 : Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
+      cheio.style.width = `${f.completa ? 100 : 0}%`;
       trilho.append(cheio);
       progresso.append(
         trilho,
-        el('span', null, f.pular ? 'pulada (em obras)' : f.completa ? 'completa ✓' : f.liberada ? `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')} bichos` : '🔒 complete a fase anterior')
+        el(
+          'span',
+          null,
+          f.pular
+            ? 'pulada (em obras)'
+            : f.completa
+              ? `completa ✓${f.limpezas > 1 ? ` · ${f.limpezas} limpezas` : ''}`
+              : f.liberada
+                ? 'limpe a hunt inteira para completar'
+                : '🔒 complete a fase anterior'
+        )
       );
       card.append(progresso);
       if (f.liberada && hunt && !f.pular) {
@@ -3393,15 +3399,14 @@ function montarEscolha(body, hunt, list) {
 
   const ciclo = el('button', 'run-mode cycle', 'Caça Automática');
   /*
-   * A troca acontece quando o percurso da hunt acaba, e não por relógio.
-   *
-   * O teto de tempo continua existindo lá dentro, para as hunts de mapa gerado
-   * que não têm percurso para acabar — mas ele saiu daqui: era a metade da
-   * frase, dizia respeito a um caso que quase nunca acontece, e a única coisa
-   * que o jogador precisa decidir nesta tela é se marca uma hunt ou várias.
+   * Direto na hunt clicada. A tela de rota (marcar até 5 hunts) saiu — o
+   * dono: "clico em caça automática e abre isso, sendo que não aparece nem a
+   * hunt que cliquei; quero tirar isso". Ela listava as hunts pelo LEVEL, e
+   * na campanha elas abrem pelo progresso; e o "Avançar sozinho" da barra da
+   * fase já faz o papel de seguir de uma hunt para a outra.
    */
-  ciclo.append(el('em', null, 'uma hunt repete; várias viram uma rota'));
-  ciclo.onclick = () => configurarCiclo(hunt, list);
+  ciclo.append(el('em', null, 'ele anda, mira e bate sozinho'));
+  ciclo.onclick = () => startRun(hunt, 'single');
 
   /*
    * O outro modo: jogar a hunt no braço.
@@ -3565,143 +3570,6 @@ function askBoss(hunt) {
   });
 }
 
-/*
- * A segunda tela: quantas hunts entram na roda e quais são.
- *
- * Ela nasceu de uma fileira de números com a lista de caves logo abaixo, na
- * mesma tela da escolha de modo. Quem só queria caçar ali via um ajuste que não
- * ia usar, e a lista mudava sozinha embaixo do dedo. Aqui a tela é só sobre
- * isso, e tem os dois caminhos de saída: confirmar ou voltar.
- */
-function configurarCiclo(hunt, list) {
-  const { state } = ctx;
-
-  /*
-   * A roda é montada na mão, card por card.
-   *
-   * Havia duas formas de montar: "esta hunt e as N seguintes" e "por faixa de
-   * level". A primeira decidia por você quais entravam; a segunda remontava a
-   * lista sozinha a cada troca conforme o personagem subia — as hunts da roda
-   * mudavam no meio da caçada sem ninguém pedir. As duas saíram: aqui aparecem
-   * todas as hunts que o level abre e você marca as que quer, na ordem que
-   * quiser, de duas a cinco.
-   */
-  const abertas = list.filter((entry) => state.character.level >= entry.level && !entry.boss);
-  // A hunt em que ele clicou já entra marcada: foi de onde ele veio.
-  const escolhidos = abertas.some((entry) => entry.id === hunt.id) ? [hunt.id] : [];
-
-  ctx.openModal('Caça Automática', (body) => {
-    const desenhar = () => {
-      body.innerHTML = '';
-      montarCiclo(body);
-    };
-    ctx.redraw = desenhar;
-    desenhar();
-  });
-
-  function montarCiclo(body) {
-    body.append(
-      el(
-        'p',
-        'shop-note',
-        `Marque UMA para o personagem ficar repetindo aquela hunt, ou até ${CYCLE_MAX} para montar uma rota entre elas na ordem que você escolher. Ele percorre cada uma até o fim do caminho e passa para a próxima.`
-      )
-    );
-
-    // ---- a grade de cards ----
-    const grade = el('div', 'ciclo-grade');
-    for (const entry of abertas) {
-      const posicao = escolhidos.indexOf(entry.id);
-      const marcado = posicao >= 0;
-      const cheio = escolhidos.length >= CYCLE_MAX;
-
-      const card = el('button', `ciclo-card${marcado ? ' escolhido' : ''}`);
-      card.disabled = !marcado && cheio;
-      // O número diz a ORDEM, não só que está marcado: a roda é percorrida
-      // nessa sequência, e sem o número dois cards marcados são iguais.
-      if (marcado) card.append(el('i', 'ciclo-ordem', String(posicao + 1)));
-
-      const bichos = el('div', 'ciclo-bichos');
-      for (const creature of (entry.creatures ?? []).slice(0, 3)) {
-        bichos.append(figuraDaCriatura(creature, state.catalog.bestiary, 30));
-      }
-      card.append(bichos);
-      card.append(el('b', null, entry.name));
-
-      const voltas = state.character.huntLaps?.[entry.id] ?? 0;
-      card.append(el('span', null, `level ${entry.level}${voltas ? ` · ${voltas}x` : ''}`));
-
-      card.onclick = () => {
-        const onde = escolhidos.indexOf(entry.id);
-        if (onde >= 0) escolhidos.splice(onde, 1);
-        else if (escolhidos.length < CYCLE_MAX) escolhidos.push(entry.id);
-        ctx.redraw();
-      };
-      grade.append(card);
-    }
-    if (!abertas.length) grade.append(el('p', 'empty', 'Nenhuma hunt liberada para o seu level ainda.'));
-    body.append(grade);
-
-    // ---- a ordem que vai sair ----
-    const escolhidas = escolhidos.map((id) => abertas.find((entry) => entry.id === id)).filter(Boolean);
-    const roda = el('div', 'run-preview');
-    for (const [passo, entry] of escolhidas.entries()) {
-      roda.append(el('span', passo === 0 ? 'first' : null, `${entry.name} (${entry.level})`));
-    }
-    if (!escolhidas.length) roda.append(el('em', 'words', 'nenhuma hunt marcada'));
-    body.append(roda);
-
-    /*
-     * O loot da roda inteira, e não o da primeira hunt.
-     *
-     * Um ciclo roda sozinho por horas passando por lugares que o jogador nem
-     * abriu ainda. Marcar o que não coletar e o que não vender aqui, com a
-     * lista somada de tudo que pode cair nas hunts escolhidas, é o único
-     * momento em que dá para fazer isso antes de a caçada começar — e a lista
-     * muda junto quando ele marca ou desmarca um card.
-     */
-    const criaturas = new Map();
-    for (const entry of escolhidas) {
-      for (const creature of entry.creatures ?? []) {
-        if (!criaturas.has(creature.key)) criaturas.set(creature.key, creature);
-      }
-    }
-    if (criaturas.size) {
-      const nomes = escolhidas.length === 1 ? escolhidas[0].name : `${escolhidas.length} hunts`;
-      body.append(blocoDeDrops([...criaturas.values()], `Tudo que cai em ${nomes}`));
-    }
-
-    const rodape = el('div', 'modal-rodape');
-
-    /*
-     * O preset do NPC NÃO se repete aqui.
-     *
-     * Ele existia duas vezes na mesma tela: uma dentro do `blocoDeDrops` logo
-     * acima — que já é montado com as criaturas de todas as hunts marcadas — e
-     * outra no rodapé, montando o mesmo conjunto de ids por outro caminho. Dois
-     * botões idênticos a dois palmos de distância, com o mesmo efeito. Ficou o
-     * que está junto da grade de itens, que é onde a marcação acontece.
-     */
-
-    const acoes = el('div', 'confirm-actions');
-    const voltar = el('button', 'ghost', 'Voltar');
-    voltar.onclick = () => askRunMode(hunt, list);
-    const confirmar = el(
-      'button',
-      'primary',
-      escolhidas.length === 1 ? `Caçar em ${escolhidas[0].name}` : `Começar a rota (${escolhidas.length})`
-    );
-    confirmar.disabled = escolhidas.length < CYCLE_MIN;
-    if (confirmar.disabled) confirmar.title = 'marque pelo menos uma hunt';
-    confirmar.onclick = () => {
-      // A primeira marcada é onde a caçada começa — é a ordem que ele montou.
-      startRun(escolhidas[0], 'cycle', escolhidos);
-    };
-    acoes.append(voltar, confirmar);
-    rodape.append(acoes);
-    body.append(rodape);
-  }
-}
 
 /*
  * ---- A tela de treino ----

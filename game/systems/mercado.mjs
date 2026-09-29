@@ -18,7 +18,7 @@ import { banco } from '../database/banco.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import { darItem, cabeNoPeso } from './inventario.mjs';
 import * as Deposito from './deposito.mjs';
-import { converterTudo, camposDaPeca } from './itens/item.mjs';
+import { converterTudo, camposDaPeca, raridadeDaPeca } from './itens/item.mjs';
 
 /** A peça de uma oferta, com as de antes do sistema de itens já convertidas. */
 const pecaDa = (o) => {
@@ -130,7 +130,7 @@ const anuncio = (o, personagemId) => {
     id: o.id, item: o.item, name: meta.name ?? `item ${o.item}`, count: o.count, price: o.price,
     total: o.price * o.count, moeda: o.moeda, kind: o.kind, seller: o.vendedor,
     // A raridade do DROP (sistema de itens); a do catálogo só para peça sem ela.
-    minha: o.personagem === personagemId, slot: meta.slot ?? null, rarity: peca.raridade ?? meta.rarity ?? null,
+    minha: o.personagem === personagemId, slot: meta.slot ?? null, rarity: raridadeDaPeca(peca),
     minLevel: meta.minLevel ?? 0, ...camposDaPeca(peca),
   };
 };

@@ -380,9 +380,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Bosses.contarMorte(m.estado, alvo.key);
   Tarefas.contarMorte(estado, alvo.key);
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Tarefas.contarMorte(m.estado, alvo.key);
-  // A fase da campanha: a morte conta para quem matou e para TODOS da party na sala (decisão do dono).
-  Campanha.contarKills(estado, hunt);
-  for (const m of part?.membros ?? []) if (m.estado !== estado && m.estado?.hunt) Campanha.contarKills(m.estado, m.estado.hunt);
+  // A fase da campanha não conta mortes: ela completa quando a INSTÂNCIA é
+  // limpa (ver `hunt/instancia.mjs` e `tique`, em cacadas.mjs).
   Charms.aoMatar(estado, hunt, alvo, eventos);
   // A proficiência: XP para a arma da mão (e para a de cada um da party) e vida/mana por morte.
   Proficiencia.ganharXp(estado, alvo.key);
@@ -455,13 +454,15 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       conta(ignorado ? 'ignorado' : 'perdido', drop.id, 1);
       continue;
     }
+    // A raridade do drop vai no evento: é ela que pinta o nome em "Loot of a ...".
+    const noChat = { id: drop.id, count: 1, ...(peca.raridade ? { raridade: peca.raridade } : {}) };
     if (dono.estado === estado) {
-      caiu.push({ id: drop.id, count: 1 });
+      caiu.push(noChat);
       conta('loot', drop.id, 1);
     } else {
       conta('loot', drop.id, 1, dono.estado.hunt?.sessao);
       const lista = deOutros.get(dono.estado) ?? [];
-      lista.push({ id: drop.id, count: 1 });
+      lista.push(noChat);
       deOutros.set(dono.estado, lista);
     }
     // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e

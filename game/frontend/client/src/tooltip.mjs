@@ -347,7 +347,17 @@ function textoDoEfeitoDaPeca(peca) {
   return { tipo: e.tipo, nome: ficha.nome, texto: String(ficha.texto ?? '').replace(/\{(\w+)\}/g, (_, k) => String(ficha[k] ?? '')) };
 }
 
-export const classeDaRaridade = (meta, peca = null) => `tier-${tierOf(peca?.raridade ? { rarity: peca.raridade } : meta ?? {}).key}`;
+/*
+ * A raridade de uma peça. Equipável (que não empilha): SÓ a do drop
+ * (`peca.raridade`); sem ela — kit inicial, loja, peça antiga — é comum. O
+ * dono: "dos itens equipáveis tire a raridade dos itens, o que define é o
+ * drop". Comida, material e o resto seguem o catálogo. Igual a
+ * `raridadeDaPeca`, em systems/itens/item.mjs.
+ */
+export const ehEquipavel = (meta) => !!meta?.slot && !meta.stackable;
+export const raridadeDaPeca = (meta, peca = null) => peca?.raridade ?? (ehEquipavel(meta) ? 'comum' : meta?.rarity ?? 'comum');
+
+export const classeDaRaridade = (meta, peca = null) => `tier-${tierOf({ rarity: raridadeDaPeca(meta, peca) }).key}`;
 
 /*
  * ---- A cor da estrela diz o quanto o afixo é FORTE ----
@@ -573,7 +583,7 @@ export function seloDeEstrelas(classeBase, estrelas) {
 const MARCA_DE_ITEM = /\[\[item:(\d{1,7})(?::(\d{1,2}))?(?::([a-z0-9~,-]{0,90}))?(?::([a-z0-9_~,.-]{1,160}))?(?::([a-z]{1,12}))?\]\]/g;
 
 /** A marca que representa esta peça numa frase — com o tier, quando ela tem. */
-export const marcaDeItem = (id, tier = 0, imbu = null, af = null, afixoDe = null) => {
+export const marcaDeItem = (id, tier = 0, imbu = null, af = null, afixoDe = null, raridade = null) => {
   const grau = Math.floor(Number(tier) || 0);
   const vivos = (imbu ?? []).filter((x) => (x?.left ?? 0) > 0 && x?.id);
   const postos = (Array.isArray(af) ? af : []).filter((p) => p?.id && Number.isFinite(Number(p.value)));
@@ -615,10 +625,16 @@ export const marcaDeItem = (id, tier = 0, imbu = null, af = null, afixoDe = null
    * O slot só entra quando há afixo — ele existe para nomear a ESSÊNCIA, e uma
    * essência sem afixo não existe. Assim nenhuma peça normal engorda a marca.
    */
-  const slot = String(afixoDe ?? '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 12);
+  /*
+   * Peça normal (não essência) usa o mesmo campo para a RARIDADE do drop, sem
+   * acento (a marca só aceita a–z): equipável sem ela sairia comum no chat.
+   */
+  const slot = String(afixoDe ?? SEM_ACENTO[raridade] ?? '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 12);
   if (slot && postos.length) partes.push(slot);
   return `[[${partes.join(':')}]]`;
 };
+const SEM_ACENTO = { comum: 'comum', incomum: 'incomum', raro: 'raro', 'épico': 'epico', 'lendário': 'lendario', 'mítico': 'mitico' };
+const COM_ACENTO = Object.fromEntries(Object.entries(SEM_ACENTO).map(([k, v]) => [v, k]));
 
 /*
  * Os afixos de uma marca, de volta ao formato da mochila — e SÓ os legítimos.
@@ -743,7 +759,9 @@ export function textoComItens(texto) {
      * outras essências continuam com a cor do catálogo — elas são o que o
      * catálogo diz que são.
      */
-    const cor = classeDaRaridade(essencia && ehVermelha(essencia) ? { rarity: 'mítico' } : meta);
+    // Peça normal: o quinto campo é a raridade do drop (ver `marcaDeItem`).
+    const doDrop = essencia ? null : { raridade: COM_ACENTO[afixoDe] ?? null };
+    const cor = classeDaRaridade(essencia && ehVermelha(essencia) ? { rarity: 'mítico' } : meta, doDrop);
 
     const marca = el('span', `item-no-chat ${cor}`, nome);
     // Curto: numa linha de conversa "T7" diz o mesmo que "tier 7" e não empurra
@@ -783,7 +801,7 @@ export function textoComItens(texto) {
      * balão dizendo "sem slot de origem", enquanto a linha ao lado já diria
      * "essência vermelha · arma". Duas frases sobre a mesma peça, discordando.
      */
-    const peca = tier > 0 || imbu.length || af.length ? { tier, imbu, af, afixoDe } : null;
+    const peca = tier > 0 || imbu.length || af.length ? { tier, imbu, af, afixoDe, ...(doDrop?.raridade ? { raridade: doDrop.raridade } : {}) } : null;
     tipFor(marca, Number(achado[1]), null, null, peca);
     frag.append(marca);
     fim = achado.index + achado[0].length;
@@ -1936,64 +1954,95 @@ function diferenca(valor) {
   return `${arredondado > 0 ? '+' : '−'}${texto}`;
 }
 
+/*
+ * ---- A COMPARAÇÃO vem do SERVIDOR ----
+ *
+ * O dono: "considerar todos os atributos do item, usando o mesmo sistema de
+ * atributos do personagem, e funcionar para atributos futuros". A conta de
+ * antes (`numerosDoItem`) só via o catálogo: duas espadas iguais, uma N1 e
+ * outra N5, davam "os mesmos números". Agora o servidor veste a peça numa
+ * cópia do personagem e recalcula a ficha pelo mesmo `Ficha.combate` do
+ * combate (ver `systems/itens/comparar.mjs`), e devolve duas listas: a
+ * diferença atributo a atributo e o impacto no personagem — com os nomes dos
+ * registros, sem campo nenhum escrito aqui.
+ *
+ * O balão desenha na hora com "comparando..." e pede; a resposta preenche o
+ * bloco que ainda estiver aberto (`data-comparacao`) e fica guardada um
+ * pouco, para passar o mouse de novo não pedir outra vez.
+ */
+const comparacoes = new Map(); // chave -> { em, r }
+const pedidas = new Map(); // chave -> quando pediu
+const VALIDADE_DA_COMPARACAO_MS = 30_000;
+let enviarComparacao = null;
+
+/** Liga o balão ao `send` do jogo (main.mjs). */
+export function ligarComparacao(enviar) {
+  enviarComparacao = enviar;
+}
+
+const pecaParaComparar = (id, peca) => ({ id, ...(peca?.af?.length ? { af: peca.af.map((a) => ({ id: a.id, nivel: a.nivel, value: a.value })) } : {}), ...(peca?.tier ? { tier: peca.tier } : {}) });
+const chaveDaComparacao = (nova, vestida) =>
+  JSON.stringify([nova.id, nova.af ?? [], nova.tier ?? 0, vestida?.id ?? 0, vestida?.af ?? [], vestida?.tier ?? 0]);
+
+/** A resposta do servidor (`{t:'comparacao', chave, ...}`): guarda e preenche o balão aberto. */
+export function receberComparacao(m) {
+  pedidas.delete(m.chave);
+  comparacoes.set(m.chave, { em: Date.now(), r: m });
+  for (const bloco of document.querySelectorAll('.tip-vs[data-comparacao]')) {
+    if (bloco.dataset.comparacao === m.chave) preencherComparacao(bloco, m);
+  }
+}
+
+function preencherComparacao(bloco, r) {
+  bloco.textContent = '';
+  if (!r.ok) {
+    bloco.append(el('div', 'vs-igual', r.erro ?? 'sem comparação'));
+    return;
+  }
+  bloco.append(el('div', 'vs-titulo', r.contra ? `Comparado com ${titleCase(r.contra.nome)}` : `Você não usa nada em ${SLOT_NAMES[r.slot] ?? r.slot}`));
+  const secao = (titulo, linhas, limite) => {
+    if (!linhas.length) return;
+    bloco.append(el('div', 'vs-secao', titulo));
+    for (const linha of linhas.slice(0, limite)) {
+      const row = el('div', linha.delta > 0 ? 'vs-melhor' : 'vs-pior');
+      row.append(el('span', null, linha.nome), el('b', null, `${diferenca(linha.delta)}${linha.sufixo}`));
+      bloco.append(row);
+    }
+    if (linhas.length > limite) bloco.append(el('div', 'vs-igual', `+${linhas.length - limite} outras diferenças`));
+  };
+  // Os atributos TODOS (é a pergunta); o impacto, os maiores.
+  secao('Atributos', r.atributos, 30);
+  secao('No personagem', r.personagem, 8);
+  if (!r.atributos.length && !r.personagem.length) bloco.append(el('div', 'vs-igual', 'os mesmos números'));
+  if (r.tiraOEscudo) bloco.append(el('div', 'vs-aviso', 'usa as duas mãos — o escudo sai'));
+}
+
 /**
  * O bloco de comparação, ou `null` quando não há com o que comparar.
  *
  * `slot` vem preenchido quando a peça JÁ está vestida — e aí não há comparação
  * a fazer, ela é o que está vestido.
  */
-function comparacaoComOEquipado(meta, slot) {
-  if (slot || !meta.slot) return null;
+function comparacaoComOEquipado(meta, slot, peca = null) {
+  if (slot || !meta.slot || meta.stackable || meta.slot === 'backpack') return null;
   const personagem = getPersonagem();
   if (!personagem?.equipment) return null;
-
-  const vestido = personagem.equipment[meta.slot];
-  const outro = vestido ? getItems()[vestido.id] : null;
+  const vestida = personagem.equipment[meta.slot] ?? null;
+  const nova = pecaParaComparar(meta.id, peca);
+  // Ela mesma: a peça vestida, olhada de dentro do inventário.
+  if (vestida && vestida.id === meta.id && chaveDaComparacao(nova, vestida) === chaveDaComparacao(pecaParaComparar(vestida.id, vestida), vestida) && peca === vestida) return null;
+  const chave = chaveDaComparacao(nova, vestida ? pecaParaComparar(vestida.id, vestida) : null);
   const bloco = el('div', 'tip-vs');
-
-  if (!outro) {
-    bloco.append(el('div', 'vs-titulo', `Você não usa nada em ${SLOT_NAMES[meta.slot] ?? meta.slot}`));
+  bloco.dataset.comparacao = chave;
+  const guardada = comparacoes.get(chave);
+  if (guardada && Date.now() - guardada.em < VALIDADE_DA_COMPARACAO_MS) {
+    preencherComparacao(bloco, guardada.r);
     return bloco;
   }
-  // Ele mesmo: a peça vestida, olhada de dentro do inventário.
-  if (outro === meta) return null;
-
-  const meus = numerosDoItem(meta);
-  const dele = numerosDoItem(outro);
-  const linhas = [];
-  for (const chave of new Set([...meus.keys(), ...dele.keys()])) {
-    const novo = meus.get(chave);
-    const velho = dele.get(chave);
-    const delta = (novo?.valor ?? 0) - (velho?.valor ?? 0);
-    if (!delta) continue;
-    linhas.push({ rotulo: (novo ?? velho).rotulo, sufixo: (novo ?? velho).sufixo, delta });
-  }
-
-  bloco.append(el('div', 'vs-titulo', `Comparado com ${titleCase(outro.name)}`));
-  if (!linhas.length) {
-    bloco.append(el('div', 'vs-igual', 'os mesmos números'));
-    return bloco;
-  }
-
-  // O maior ganho e a maior perda primeiro: é o que decide a troca.
-  linhas.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-  for (const linha of linhas.slice(0, 8)) {
-    const row = el('div', linha.delta > 0 ? 'vs-melhor' : 'vs-pior');
-    row.append(el('span', null, linha.rotulo), el('b', null, `${diferenca(linha.delta)}${linha.sufixo}`));
-    bloco.append(row);
-  }
-
-  /*
-   * A arma de duas mãos tira o escudo, e isso não é um número: é uma peça
-   * inteira saindo. Sem esta linha o balão diria "+40 de ataque" sobre uma
-   * troca que também custa toda a defesa do escudo.
-   */
-  if (meta.twoHanded && meta.slot === 'weapon') {
-    const escudo = personagem.equipment.shield;
-    const fichaDoEscudo = escudo ? getItems()[escudo.id] : null;
-    if (fichaDoEscudo) {
-      bloco.append(el('div', 'vs-aviso', `usa as duas mãos — ${titleCase(fichaDoEscudo.name)} sai`));
-    }
+  bloco.append(el('div', 'vs-igual', 'comparando com o que você veste...'));
+  if (enviarComparacao && Date.now() - (pedidas.get(chave) ?? 0) > 3000) {
+    pedidas.set(chave, Date.now());
+    enviarComparacao({ t: 'compararPeca', chave, peca: nova });
   }
   return bloco;
 }
@@ -2167,8 +2216,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     ? ehVermelha(peca)
       ? 'mítico'
       : peca?.raridade ?? peca?.essenciaDe ?? 'comum'
-    : // A raridade do DROP (sistema de itens); a do catálogo só para peça sem ela.
-      peca?.raridade ?? meta.rarity;
+    : // A raridade do DROP; equipável sem ela é comum (ver `raridadeDaPeca`).
+      raridadeDaPeca(meta, peca);
   const tier = tierOf({ rarity: raridadeDoBalao });
   const classe = `tier-${tier.key}`;
 
@@ -2607,7 +2656,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (regras.children.length) node.append(regras);
 
   // ---- e o que ele muda em relação ao que você já usa ----
-  const contra = comparacaoComOEquipado(meta, slot);
+  const contra = comparacaoComOEquipado(meta, slot, peca);
   if (contra) node.append(contra);
 
   /*

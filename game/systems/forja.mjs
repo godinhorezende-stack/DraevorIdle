@@ -17,6 +17,7 @@
 //   paga em ouro OU em Draevor Coins (`moeda`), e tem a prévia (`forjaAfixoPrevia*`).
 import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
 import * as A from './afixos.mjs';
+import { raridadeDaPeca } from './itens/item.mjs';
 
 const OURO_DA_FORJA = [null, 8e6, 20e6, 40e6, 65e6, 100e6, 250e6, 750e6, 2.5e9, 8e9, 15e9];
 const TIER_MAX = 10;
@@ -148,7 +149,7 @@ export function transferirTier(estado, { de, para }) {
  * manda em tudo, forja também"); peça antiga, sem ela, cai na do catálogo.
  * O limite de atributos também é o da raridade (Comum 1 ... Mítico 6).
  */
-const raridadeDe = (peca) => peca?.raridade ?? ITEM_CATALOG[peca?.id]?.rarity ?? 'comum';
+const raridadeDe = (peca) => raridadeDaPeca(peca);
 const vagasDe = (peca) => Math.max(0, A.maxAtributos(raridadeDe(peca)) - (peca?.af?.length ?? 0));
 const slotDe = (id) => ITEM_CATALOG[id]?.slot;
 

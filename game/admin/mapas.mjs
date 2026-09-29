@@ -4,13 +4,15 @@
 // Mesmo FORMATO que uma hunt real capturada usa
 // (`game/gamedata/hunts/<id>-map.json`) — `cacadas.mjs::mapaRealCapturado`
 // já sabe carregar esse arquivo, então salvar aqui já deixa a hunt jogável
-// na hora, sem tocar em mais nada. `posicoes` (spawn de monstro) mora no
-// próprio arquivo — sem entrada no `catalog.hunts` real, não tem outro
-// lugar pra guardar isso.
+// na hora, sem tocar em mais nada. Os SPAWNS moram no próprio arquivo, no
+// bloco `spawns` (formato e validação em `systems/mapa/spawns.mjs` — o mesmo
+// que o jogo lê para montar a instância). O editor antigo ainda manda
+// `posicoes` (um bicho por ponto): viram spawns de quantidade 1.
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { CITY_MAP, CATALOGO } from '../systems/dados.mjs';
+import { validar, normalizar } from '../systems/mapa/spawns.mjs';
 
 const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
@@ -36,14 +38,8 @@ function erroDeValidacao(dados) {
   const n = dados.width * dados.height;
   if (!Array.isArray(dados.blocked) || dados.blocked.length !== n) return 'Grade de bloqueio não bate com o tamanho.';
   if (!Array.isArray(dados.stacks) || dados.stacks.length !== n) return 'Grade de chão não bate com o tamanho.';
-  const spawns = dados.posicoes ?? [];
-  if (!spawns.length) return 'Marque ao menos um spawn de monstro real antes de salvar.';
-  for (const s of spawns) {
-    if (!CATALOGO.bestiary[s.key]) return `"${s.key}" não é um monstro do bestiary real.`;
-    if (!Number.isInteger(s.x) || !Number.isInteger(s.y)) return 'Spawn com posição inválida.';
-    if (s.x < 0 || s.y < 0 || s.x >= dados.width || s.y >= dados.height) return 'Spawn fora da grade.';
-  }
-  return null;
+  const erros = validar(spawnsDoPedido(dados), { largura: dados.width, altura: dados.height });
+  return erros[0] ?? null;
 }
 
 /**
@@ -72,10 +68,16 @@ export function salvar(dados) {
     opaque: dados.blocked,
     avoid: dados.blocked,
     custom: true,
-    posicoes: dados.posicoes,
+    spawns: spawnsDoPedido(dados).map((s, i) => normalizar(s, 7, i)),
   };
   writeFileSync(caminhoDe(dados.id), JSON.stringify(completo), 'utf8');
   return { ok: true };
+}
+
+/** Os spawns do pedido: `spawns` (formato do mapa) ou, do editor antigo, `posicoes` (um bicho por ponto). */
+function spawnsDoPedido(dados) {
+  if (Array.isArray(dados.spawns)) return dados.spawns;
+  return (dados.posicoes ?? []).map((p, i) => ({ id: `s${i + 1}`, x: p.x, y: p.y, raio: 0, quantidade: 1, criaturas: [{ key: p.key, peso: 1 }] }));
 }
 
 /** Índices de paleta reais e seguros pro editor oferecer — ver `cacadas.mjs` linhas 42-67. */

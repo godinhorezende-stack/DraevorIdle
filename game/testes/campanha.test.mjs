@@ -1,25 +1,27 @@
 // A campanha (systems/campanha.mjs): 48 fases em 4 atos, jogadas em Fácil ->
-// Médio -> Difícil; completar = matar X bichos na fase; boss no fim de cada
-// ato; a força dos bichos escala para a faixa de level da dificuldade.
+// Médio -> Difícil; completar = LIMPAR uma instância da fase (sem respawn —
+// ver hunt/instancia.mjs); boss no fim de cada ato; a força dos bichos escala
+// para a faixa de level da dificuldade.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Campanha from '../systems/campanha.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
+import { spawnsDaHunt } from '../systems/hunt/terreno.mjs';
 import { contextoDoDrop } from '../systems/hunt/combate.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 
 const F = Campanha.FASES;
 const novo = (level = 8) => personagemDeTeste({ level, campanha: {} });
-/** Completa as fases [de, ate) numa dificuldade, pela contagem de mortes. */
+/** Completa as fases [de, ate) numa dificuldade: uma limpeza de instância em cada. */
 function completar(e, dif, de, ate) {
   for (let i = de; i < ate; i++) {
     const f = F[i];
     if (f.pular) continue;
-    Campanha.contarKills(e, { campanha: { huntId: f.huntId, dificuldade: dif, ato: f.ato } }, f.kills[dif]);
+    Campanha.limpou(e, { campanha: { huntId: f.huntId, dificuldade: dif, ato: f.ato } });
   }
 }
 
-test('configuração: 48 fases, 4 atos de 12, X cresce e o level alvo sobe dentro de cada faixa', () => {
+test('configuração: 48 fases, 4 atos de 12, e o level alvo sobe dentro de cada faixa', () => {
   assert.equal(F.length, 48);
   assert.equal(Campanha.ATOS, 4);
   for (let i = 0; i < 48; i++) assert.equal(F[i].ato, Math.floor(i / 12) + 1);
@@ -29,10 +31,8 @@ test('configuração: 48 fases, 4 atos de 12, X cresce e o level alvo sobe dentr
     assert.equal(F[47].nivel[dif], hi);
     for (let i = 1; i < 48; i++) {
       assert.ok(F[i].nivel[dif] >= F[i - 1].nivel[dif], `${dif}: fase ${i + 1} não desce de level`);
-      assert.ok(F[i].kills[dif] >= F[i - 1].kills[dif], `${dif}: fase ${i + 1} não pede menos`);
     }
   }
-  assert.ok(F[0].kills.medio === F[0].kills.facil * 2 && F[0].kills.dificil === F[0].kills.facil * 3);
 });
 
 test('começa na fase 1 do Fácil: só ela abre; Médio e Difícil fechados', () => {
@@ -47,20 +47,76 @@ test('começa na fase 1 do Fácil: só ela abre; Médio e Difícil fechados', ()
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
 });
 
-test('matar X na fase completa ela e libera a seguinte (com o aviso na tela)', () => {
+test('limpar a instância completa a fase e libera a seguinte (com o "Hunt Clear!" na tela)', () => {
   const e = novo();
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
-  const x = F[0].kills.facil;
-  Campanha.contarKills(e, e.hunt, x - 1);
+  assert.ok(e.hunt.instancia && e.hunt.instancia.status === 'ativa');
   assert.equal(Campanha.faseLiberada(e, 'facil', F[1].huntId), false);
-  assert.equal(Campanha.faseAtual(e, e.hunt).kills, x - 1);
-  const aviso = Campanha.contarKills(e, e.hunt, 1);
-  assert.match(aviso, /Fase completa: Troll Cave \(Fácil\)! Liberou Amazon Camp/);
+  // Todos menos um mortos: ainda não.
+  const vivos = () => [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()];
+  for (const m of vivos().slice(1)) m.hp = 0;
+  Cacadas.tique(e, PERSONAGEM, Date.now() + 250);
+  assert.equal(e.hunt.instancia.status, 'ativa');
+  assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), false);
+  // O último: CLEAR, fase completa, a seguinte liberada.
+  for (const m of vivos()) m.hp = 0;
+  Cacadas.tique(e, PERSONAGEM, Date.now() + 500);
+  assert.equal(e.hunt.instancia.status, 'limpa');
+  assert.match(e.avisoDaHunt, /Hunt Clear! Fase completa: Troll Cave \(Fácil\). Liberou Amazon Camp/);
   assert.equal(Campanha.faseLiberada(e, 'facil', F[1].huntId), true);
   assert.equal(Campanha.faseAtual(e, e.hunt).completa, true);
-  // Depois de completa, não conta mais (e não passa do X).
-  Campanha.contarKills(e, e.hunt, 50);
-  assert.equal(Campanha.faseAtual(e, e.hunt).kills, x);
+});
+
+test('sem respawn; depois da pausa do "Hunt Clear!", uma instância NOVA (outro id, bichos sorteados de novo)', () => {
+  const e = novo();
+  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  const primeira = e.hunt.instancia;
+  const uidsAntes = new Set(e.hunt.monstros.map((m) => m.uid));
+  // Matar um não agenda respawn.
+  e.hunt.monstros[0].hp = 0;
+  let t = Date.now();
+  e.hunt.ultimoTique = t;
+  Cacadas.tique(e, PERSONAGEM, (t += 250));
+  assert.equal(e.hunt.respawns.length, 0, 'nada na fila de respawn');
+  for (const m of [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()]) m.hp = 0;
+  Cacadas.tique(e, PERSONAGEM, (t += 250));
+  assert.equal(e.hunt.instancia.status, 'limpa');
+  for (let i = 0; i < 16; i++) Cacadas.tique(e, PERSONAGEM, (t += 250));
+  const segunda = e.hunt.instancia;
+  assert.notEqual(segunda.id, primeira.id);
+  assert.equal(segunda.status, 'ativa');
+  assert.ok(e.hunt.monstros.every((m) => !uidsAntes.has(m.uid)), 'bichos novos');
+  // Repetir limpo conta a limpeza, sem "completar" de novo.
+  for (const m of [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()]) m.hp = 0;
+  Cacadas.tique(e, PERSONAGEM, (t += 250));
+  assert.match(e.avisoDaHunt, /Hunt Clear! Troll Cave \(Fácil\) limpa/);
+  assert.equal(e.campanha.facil.limpezas[F[0].huntId], 2);
+});
+
+test('a instância nasce dos SPAWNS DO MAPA, igual em toda dificuldade, e o progresso é o % limpo', () => {
+  const tam = (dif) => {
+    const e = personagemDeTeste({ level: 2000 });
+    assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', dificuldade: dif }).ok, true);
+    return e;
+  };
+  const e = tam('facil');
+  const spawns = spawnsDaHunt('troll-cave');
+  const doMapa = spawns.reduce((n, s) => n + s.quantidade, 0);
+  assert.equal(e.hunt.instancia.objetivos.total, doMapa, 'um objetivo por bicho que o mapa define');
+  assert.equal(tam('dificil').hunt.instancia.objetivos.total, doMapa);
+  // Cada bicho está no raio do spawn dele e leva o id da instância.
+  const porId = new Map(spawns.map((s) => [s.id, s]));
+  for (const m of [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()]) {
+    const s = porId.get(m.spawnId);
+    assert.ok(s, 'bicho sem spawn do mapa');
+    assert.ok(Math.max(Math.abs(m.x - s.x), Math.abs(m.y - s.y)) <= s.raio, `${m.name} fora do raio do ${s.id}`);
+    assert.ok(s.criaturas.some((c) => c.key === m.key));
+    assert.equal(m.instancia, e.hunt.instancia.id);
+  }
+  // Metade morta = 50%.
+  const todos = [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()];
+  for (const m of todos.slice(0, doMapa / 2)) m.hp = 0;
+  assert.equal(Cacadas.snapshotDaHunt(e).instancia.percentual, 50);
 });
 
 test('fim do ato: o boss abre com as 12 fases; a 1ª vitória libera o ato seguinte', () => {
@@ -116,20 +172,6 @@ test('a força dos bichos: a mesma Troll Cave é fraca no Fácil e muito forte n
   assert.ok(e.hunt.escala.vida < 1 && e.hunt.escala.dano < 1);
 });
 
-test('bicho que renasce volta com a força da fase', () => {
-  const e = personagemDeTeste({ level: 2000 });
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', dificuldade: 'dificil' }).ok, true);
-  const m = e.hunt.monstros[0];
-  const vida = m.maxHp;
-  const [x, y] = [m.x, m.y];
-  e.hunt.monstros.splice(0, 1);
-  e.hunt.respawns = [{ ...m.spawn, x, y, volta: 0 }];
-  e.hunt.pos = { x: x + 5, y: y + 5, dir: 2 };
-  Cacadas.tique(e, PERSONAGEM, Date.now() + 250);
-  const volta = e.hunt.monstros.find((b) => b.x === x && b.y === y);
-  assert.ok(volta, 'renasceu');
-  assert.equal(volta.maxHp, vida);
-});
 
 test('o loot da fase usa o ato e a dificuldade dela', () => {
   const e = personagemDeTeste({ level: 2000 });
@@ -137,14 +179,14 @@ test('o loot da fase usa o ato e a dificuldade dela', () => {
   assert.deepEqual(contextoDoDrop(e.hunt), { ato: 3, dificuldade: 'dificil' });
 });
 
-test('caçada offline projetada: as mortes contam para a fase, e fica em loop mesmo com "Seguir"', () => {
+test('caçada offline: limpa a instância (conta para a fase) e fica em loop mesmo com "Seguir"', () => {
   const e = novo(60);
   e.settings = { aoCompletarFase: 'seguir' };
   e.stamina = 2520;
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
   e.hunt.offlineDesde = Date.now() - 3 * 3_600_000;
   Cacadas.simularAusencia(e, PERSONAGEM, Date.now());
-  assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), true, `kills: ${JSON.stringify(e.campanha.facil.kills)}`);
+  assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), true, `limpezas: ${JSON.stringify(e.campanha.facil.limpezas)}`);
   // Offline sempre na mesma hunt: a projeção não troca de fase (o Avançar é só no tique online).
   assert.equal(e.hunt.huntId, F[0].huntId);
 });
@@ -158,7 +200,8 @@ test('a tela: a campanha inteira por dificuldade e a fase atual no quadro da ca�
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
   const snap = Cacadas.snapshotDaHunt(e);
   assert.equal(snap.fase.nome, 'Troll Cave');
-  assert.equal(snap.fase.precisa, F[0].kills.facil);
+  assert.equal(snap.instancia.total, e.hunt.instancia.objetivos.total);
+  assert.equal(snap.instancia.percentual, 0);
 });
 
 test('nenhuma magia de bicho sai a cada tique (Werehyaenna North vinha com intervalo 2 = segundos)', async () => {
@@ -171,37 +214,48 @@ test('nenhuma magia de bicho sai a cada tique (Werehyaenna North vinha com inter
   }
 });
 
-test('caçada de antes da campanha: fase liberada vira a fase; fechada termina com aviso', () => {
-  // Liberada (Troll Cave, fase 1): ganha a fase, a força dela e a barra.
+test('caçada de antes da instância: fase liberada entra de novo como instância; fechada termina com aviso', () => {
+  // De antes da campanha (sem `campanha` nem `instancia`), fase liberada: vira a fase, já como instância.
   const e = novo(20);
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
   delete e.hunt.campanha;
   delete e.hunt.escala;
+  delete e.hunt.instancia;
   assert.equal(Cacadas.adotarNaCampanha(e), null);
   assert.deepEqual(e.hunt.campanha, { huntId: F[0].huntId, dificuldade: 'facil', ato: 1 });
   assert.ok(e.hunt.escala);
+  assert.equal(e.hunt.instancia?.status, 'ativa');
   assert.equal(Cacadas.snapshotDaHunt(e).fase.nome, 'Troll Cave');
+  // De depois da campanha e antes das instâncias (tem `campanha`, não tem `instancia`): mesma dificuldade.
+  const m = personagemDeTeste({ level: 2000 });
+  assert.equal(Cacadas.entrar(m, { huntId: F[3].huntId, mode: 'auto', dificuldade: 'medio' }).ok, true);
+  delete m.hunt.instancia;
+  assert.equal(Cacadas.adotarNaCampanha(m), null);
+  assert.equal(m.hunt.campanha.dificuldade, 'medio');
+  assert.equal(m.hunt.instancia?.status, 'ativa');
   // Fechada (fase 6 sem progresso): a caçada termina e o aviso explica.
   const f = personagemDeTeste({ level: 200 });
   assert.equal(Cacadas.entrar(f, { huntId: F[5].huntId, mode: 'auto' }).ok, true);
   delete f.hunt.campanha;
+  delete f.hunt.instancia;
   f.campanha = {};
   assert.match(Cacadas.adotarNaCampanha(f), /A campanha chegou.*Complete a fase anterior/);
   assert.equal(f.hunt, null);
-  // Caçada da campanha, ou que não é fase: não mexe.
+  // Já é instância: não mexe.
   const g = novo(20);
   assert.equal(Cacadas.entrar(g, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
-  const antes = JSON.stringify(g.hunt.campanha);
+  const antes = g.hunt.instancia.id;
   assert.equal(Cacadas.adotarNaCampanha(g), null);
-  assert.equal(JSON.stringify(g.hunt.campanha), antes);
+  assert.equal(g.hunt.instancia.id, antes);
 });
+
 
 test('"Ficar na fase" (padrão) fica em loop; "Avançar sozinho" vai para a próxima com a fase completa', () => {
   const e = novo(20);
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
   assert.equal(Campanha.aoCompletar(e), 'repetir');
   assert.equal(Cacadas.faseParaSeguir(e), null, 'incompleta: fica');
-  Campanha.contarKills(e, e.hunt, F[0].kills.facil);
+  Campanha.limpou(e, e.hunt);
   assert.equal(Cacadas.faseParaSeguir(e), null, 'repetir: fica em loop');
   assert.match(Cacadas.snapshotDaHunt(e).fase.aoCompletar, /repetir/);
 
