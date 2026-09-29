@@ -576,7 +576,7 @@ function campanhaCards(body) {
   const opcoes = el('div', 'campanha-modo-opcoes');
   for (const [valor, rotulo, dica] of [
     ['repetir', '🔁 Ficar na fase', 'Continua em loop na mesma fase, mesmo completa (bom para farmar). Offline é sempre assim.'],
-    ['seguir', '⏭ Avançar sozinho', 'Jogando online, com a fase completa vai para a próxima do ato — na hora, se você já está numa fase completa. No fim do ato para: o boss é você quem chama. Offline fica sempre em loop.'],
+    ['seguir', '⏭ Avançar sozinho', 'Jogando online, com a fase completa vai para a próxima do ato — na hora, se você já está numa fase completa. Na party, quem também marcou "Avançar sozinho" vai junto com você. No fim do ato para: o boss é você quem chama. Offline fica sempre em loop.'],
   ]) {
     const botao = el('button', campanha.aoCompletar === valor ? 'active' : null, rotulo);
     botao.type = 'button';

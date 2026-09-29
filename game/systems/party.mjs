@@ -630,6 +630,43 @@ export function seguirOLider(lider) {
   }
 }
 
+/*
+ * ---- "Avançar sozinho" em grupo ----
+ *
+ * O dono (29/09): "na party, se eu tiver avançar sozinho e ele também, a gente segue junto para a
+ * próxima hunt". Quem completa a fase e tem o "Avançar sozinho" (`settings.aoCompletarFase ===
+ * 'seguir'`) vai para a próxima; os da party que estão NA MESMA sala e também marcaram "Avançar
+ * sozinho" vão junto. Quem deixou em "Ficar na fase" fica onde está. As portas valem como sempre
+ * (`juntar`): a fase liberada para ELE, o teto da sala... — quem não pode ir recebe o porquê.
+ *
+ * `quemAvancaJunto` roda ANTES de o dono sair da fase (a saída passa a sala para quem fica e muda
+ * quem está nela); `avancarJunto` roda depois de ele entrar na próxima.
+ */
+export function quemAvancaJunto(dono) {
+  const p = minhaParty(dono);
+  const sala = dono.estado?.hunt ? Cacadas.salaDe(dono.estado.hunt) : null;
+  if (!p || !sala || sala.isBoss) return [];
+  return p.membros
+    .filter((n) => n !== nomeDe(dono))
+    .map(sessaoDe)
+    .filter((o) => o?.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala && o.estado.settings?.aoCompletarFase === 'seguir');
+}
+
+export function avancarJunto(dono, membros) {
+  const sala = dono.estado?.hunt ? Cacadas.salaDe(dono.estado.hunt) : null;
+  if (!sala) return;
+  for (const o of membros) {
+    if (o.estado.hunt && Cacadas.salaDe(o.estado.hunt) === sala) continue; // já veio (Seguir líder)
+    const r = juntar(o, dono);
+    if (r.ok) avisar(o, `Avançando com ${nomeDe(dono)}: ${Cacadas.nomeDaHunt(sala.huntId)}.`);
+    else {
+      avisar(o, `Não deu para avançar com ${nomeDe(dono)}: ${r.erro}`);
+      avisar(dono, `${nomeDe(o)} não pôde avançar: ${r.erro}`);
+    }
+    mandarJa(o);
+  }
+}
+
 /**
  * O líder vai sair da caçada (voltou para a cidade, ou morreu): quem segue e
  * está na MESMA sala volta junto, com o extrato — chamado ANTES de ele sair.
