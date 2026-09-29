@@ -605,9 +605,19 @@ function placePromotion(character) {
   const hud = $('hud').getBoundingClientRect();
   const vazio = hud.width === 0;
   const celular = ehCelular();
-  card.style.top = `${Math.round(vazio ? 72 : hud.bottom + 8)}px`;
+  /*
+   * Nunca por baixo da barra de cima e da faixa "em desenvolvimento" (z-index maior que o do card):
+   * com o card do personagem descido, o `72` fixo caía atrás da faixa — que no celular quebra em
+   * duas linhas — e o título "Promotion" ficava cortado.
+   */
+  const estilo = getComputedStyle(document.documentElement);
+  const topbar = parseFloat(estilo.getPropertyValue('--altura-da-topbar')) || 0;
+  const faixa = document.getElementById('aviso-dev');
+  const aviso = faixa && !faixa.hidden ? faixa.getBoundingClientRect().bottom : 0;
+  const piso = Math.max(topbar, aviso) + 10;
+  card.style.top = `${Math.round(Math.max(vazio ? 72 : hud.bottom + 8, piso))}px`;
   card.style.left = `${Math.round(vazio ? 12 : hud.left)}px`;
-  card.style.width = celular ? '150px' : `${Math.round(vazio ? 340 : hud.width)}px`;
+  card.style.width = celular ? 'min(240px, calc(100vw - 24px))' : `${Math.round(vazio ? 340 : hud.width)}px`;
 }
 
 /**

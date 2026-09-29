@@ -17,12 +17,15 @@ const VOCACOES = Object.fromEntries((CATALOGO.vocations ?? []).map((v) => [v.id,
 export const LEVEL_DA_PROMOCAO = 20;
 export const CUSTO_DA_PROMOCAO = 20000;
 
+// Toda promoção regenera +50% de vida E +50% de mana (decisão do dono, 29/09: o original variava por
+// vocação — knight só vida, mago só mana —, e o card mostrava "mana +0%"). O `hp`/`mana` é o fator.
+const REGENERACAO_DA_PROMOCAO = 1.5;
 const PROMOCOES = {
-  knight: { name: 'Elite Knight', from: 'Knight', hp: 1.5, mana: 1 },
-  paladin: { name: 'Royal Paladin', from: 'Paladin', hp: 1.333, mana: 1.333 },
-  sorcerer: { name: 'Master Sorcerer', from: 'Sorcerer', hp: 1, mana: 1.5 },
-  druid: { name: 'Elder Druid', from: 'Druid', hp: 1, mana: 1.5 },
-  monk: { name: 'Exalted Monk', from: 'Monk', hp: 1.4, mana: 1.333 },
+  knight: { name: 'Elite Knight', from: 'Knight', hp: REGENERACAO_DA_PROMOCAO, mana: REGENERACAO_DA_PROMOCAO },
+  paladin: { name: 'Royal Paladin', from: 'Paladin', hp: REGENERACAO_DA_PROMOCAO, mana: REGENERACAO_DA_PROMOCAO },
+  sorcerer: { name: 'Master Sorcerer', from: 'Sorcerer', hp: REGENERACAO_DA_PROMOCAO, mana: REGENERACAO_DA_PROMOCAO },
+  druid: { name: 'Elder Druid', from: 'Druid', hp: REGENERACAO_DA_PROMOCAO, mana: REGENERACAO_DA_PROMOCAO },
+  monk: { name: 'Exalted Monk', from: 'Monk', hp: REGENERACAO_DA_PROMOCAO, mana: REGENERACAO_DA_PROMOCAO },
 };
 
 export const promovido = (estado) => !!estado.promovido;

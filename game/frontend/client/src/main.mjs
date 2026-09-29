@@ -8996,18 +8996,23 @@ function openPromotion() {
       return node;
     };
 
-    modal.append(
-      el('p', 'shop-note', `Você deixa de ser ${promotion.from} e passa a ser ${promotion.name}.`),
-      el(
-        'p',
-        null,
-        'A promoção acelera a regeneração, na mesma proporção do servidor: ' +
-          `vida +${Math.round((promotion.hp - 1) * 100)}% e mana +${Math.round((promotion.mana - 1) * 100)}%.`
-      )
-    );
+    // "Knight → Elite Knight" em destaque, e o que ganha em linhas grandes (não num parágrafo cinza).
+    const deParaAte = el('div', 'promotion-deparas');
+    deParaAte.append(el('span', 'de', promotion.from), el('span', 'seta', '→'), el('span', null, promotion.name));
+    modal.append(deParaAte);
+
+    const ganhos = el('ul', 'promotion-ganhos');
+    const linhaDeGanho = (rotulo, valor) => {
+      const li = el('li');
+      li.append(el('span', null, rotulo), el('b', null, valor));
+      ganhos.append(li);
+    };
+    linhaDeGanho('Regeneração de vida', `+${Math.round((promotion.hp - 1) * 100)}%`);
+    linhaDeGanho('Regeneração de mana', `+${Math.round((promotion.mana - 1) * 100)}%`);
+    modal.append(ganhos);
 
     const table = document.createElement('table');
-    table.className = 'list';
+    table.className = 'list promotion-tabela';
     for (const [label, value] of [
       ['Custo', `${promotion.cost.toLocaleString('pt-BR')} gold`],
       ['Saldo atual', `${gold.toLocaleString('pt-BR')} gold`],
