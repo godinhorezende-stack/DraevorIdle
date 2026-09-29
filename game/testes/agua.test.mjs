@@ -21,7 +21,8 @@ function casaLiquida(mapa, x, y) {
   return LIQUIDO.test(ITEM_CATALOG[chao]?.name ?? '');
 }
 
-function entrarEPegarMapa(huntId, estado = personagemDeTeste({ level: 400 })) {
+// Level acima de toda hunt (a mais alta pede 1200): o teste é do mapa, não da porta de level.
+function entrarEPegarMapa(huntId, estado = personagemDeTeste({ level: 1300 })) {
   const r = Cacadas.entrar(estado, { huntId, mode: 'auto' });
   assert.ok(r.ok, `${huntId}: ${r.erro}`);
   return { estado, mapa: Cacadas.snapshotDaHunt(estado, true).map };
