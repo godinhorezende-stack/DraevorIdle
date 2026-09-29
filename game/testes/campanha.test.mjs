@@ -137,13 +137,17 @@ test('o loot da fase usa o ato e a dificuldade dela', () => {
   assert.deepEqual(contextoDoDrop(e.hunt), { ato: 3, dificuldade: 'dificil' });
 });
 
-test('caçada offline projetada: as mortes contam para a fase', () => {
+test('caçada offline projetada: as mortes contam para a fase, e fica em loop mesmo com "Seguir"', () => {
   const e = novo(60);
+  e.settings = { aoCompletarFase: 'seguir' };
   e.stamina = 2520;
   assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
   e.hunt.offlineDesde = Date.now() - 3 * 3_600_000;
   Cacadas.simularAusencia(e, PERSONAGEM, Date.now());
   assert.equal(Campanha.faseCompleta(e, 'facil', F[0].huntId), true, `kills: ${JSON.stringify(e.campanha.facil.kills)}`);
+  // Offline sempre na mesma hunt: nem na volta ele troca de fase.
+  assert.equal(e.hunt.huntId, F[0].huntId);
+  assert.equal(Cacadas.faseParaSeguir(e), null);
 });
 
 test('a tela: a campanha inteira por dificuldade e a fase atual no quadro da caçada', () => {
@@ -165,5 +169,69 @@ test('nenhuma magia de bicho sai a cada tique (Werehyaenna North vinha com inter
     for (const [id, m] of Object.entries(dados)) {
       for (const a of [...(m.ataques ?? []), ...(m.curas ?? [])]) assert.ok(a.intervalo >= 500, `${arq}: ${id} com intervalo ${a.intervalo} ms`);
     }
+  }
+});
+
+test('caçada de antes da campanha: fase liberada vira a fase; fechada termina com aviso', () => {
+  // Liberada (Troll Cave, fase 1): ganha a fase, a força dela e a barra.
+  const e = novo(20);
+  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  delete e.hunt.campanha;
+  delete e.hunt.escala;
+  assert.equal(Cacadas.adotarNaCampanha(e), null);
+  assert.deepEqual(e.hunt.campanha, { huntId: F[0].huntId, dificuldade: 'facil', ato: 1 });
+  assert.ok(e.hunt.escala);
+  assert.equal(Cacadas.snapshotDaHunt(e).fase.nome, 'Troll Cave');
+  // Fechada (fase 6 sem progresso): a caçada termina e o aviso explica.
+  const f = personagemDeTeste({ level: 200 });
+  assert.equal(Cacadas.entrar(f, { huntId: F[5].huntId, mode: 'auto' }).ok, true);
+  delete f.hunt.campanha;
+  f.campanha = {};
+  assert.match(Cacadas.adotarNaCampanha(f), /A campanha chegou.*Complete a fase anterior/);
+  assert.equal(f.hunt, null);
+  // Caçada da campanha, ou que não é fase: não mexe.
+  const g = novo(20);
+  assert.equal(Cacadas.entrar(g, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  const antes = JSON.stringify(g.hunt.campanha);
+  assert.equal(Cacadas.adotarNaCampanha(g), null);
+  assert.equal(JSON.stringify(g.hunt.campanha), antes);
+});
+
+test('ao completar a fase: "Repetir" (padrão) fica em loop; "Seguir" vai para a próxima do ato', () => {
+  const e = novo(20);
+  assert.equal(Cacadas.entrar(e, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  assert.equal(Campanha.aoCompletar(e), 'repetir');
+  Campanha.contarKills(e, e.hunt, F[0].kills.facil);
+  assert.equal(Cacadas.faseParaSeguir(e), null, 'repetir: fica');
+  assert.equal(e.faseCompletada, undefined, 'a marca é consumida');
+
+  const s = novo(20);
+  assert.equal(Cacadas.definirAoCompletarFase(s, { value: 'seguir' }).ok, true);
+  assert.equal(Cacadas.definirAoCompletarFase(s, { value: 'x' }).ok, false);
+  assert.equal(Cacadas.entrar(s, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  assert.equal(Cacadas.snapshotDaHunt(s).fase.aoCompletar, 'seguir');
+  Campanha.contarKills(s, s.hunt, F[0].kills.facil);
+  assert.deepEqual(Cacadas.faseParaSeguir(s), { huntId: F[1].huntId, dificuldade: 'facil', nome: F[1].nome });
+
+  // Voltar a uma fase JÁ feita para farmar não empurra adiante (só no momento em que completa).
+  Cacadas.sair(s);
+  assert.equal(Cacadas.entrar(s, { huntId: F[0].huntId, mode: 'auto' }).ok, true);
+  Campanha.contarKills(s, s.hunt, 10);
+  assert.equal(Cacadas.faseParaSeguir(s), null);
+});
+
+test('"Seguir" no fim do ato não entra no boss; e pula a hunt quebrada', () => {
+  const e = novo(20);
+  e.settings = { aoCompletarFase: 'seguir' };
+  completar(e, 'facil', 0, 11);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', F[10].huntId).huntId, F[11].huntId);
+  completar(e, 'facil', 11, 12);
+  assert.equal(Campanha.proximaParaSeguir(e, 'facil', F[11].huntId), null, 'depois da 12ª vem o boss: fica');
+  const quebrada = F.findIndex((f) => f.pular);
+  if (quebrada > 0 && F[quebrada + 1]?.ato === F[quebrada - 1].ato) {
+    const g = novo(20);
+    for (let a = 1; a < F[quebrada].ato; a++) { completar(g, 'facil', (a - 1) * 12, a * 12); Campanha.venceuBoss(g, 'facil', a); }
+    completar(g, 'facil', (F[quebrada].ato - 1) * 12, quebrada + 1);
+    assert.equal(Campanha.proximaParaSeguir(g, 'facil', F[quebrada - 1].huntId).huntId, F[quebrada + 1].huntId);
   }
 });

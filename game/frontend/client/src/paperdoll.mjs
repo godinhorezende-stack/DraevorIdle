@@ -90,6 +90,12 @@ const ESTILO = `
 .pd-estrelas .q2 { color: #b184e8; }
 .pd-estrelas .q3 { color: #e0a84a; }
 .pd-estrelas .q4 { color: #ff5a52; }
+.pd-estrelas .n1 { color: #a7b0ba; }
+.pd-estrelas .n2 { color: #5fc46a; }
+.pd-estrelas .n3 { color: #57a6e8; }
+.pd-estrelas .n4 { color: #b184e8; }
+.pd-estrelas .n5 { color: #e0a84a; }
+.pd-estrelas .n6 { color: #ff5a52; }
 `;
 
 /** Põe a folha no documento, uma vez. Ver a nota do cabeçalho. */
@@ -170,7 +176,8 @@ export function gradeDeEquipamento(pecaDoSlot, { tamanho = 32, comSprites = true
       selo.className = 'pd-estrelas';
       for (const q of estrelas) {
         const estrela = doc.createElement('b');
-        estrela.className = `q${q}`;
+        // Um número (o degrau) ou `{q, n}` (o degrau e a cor do nível).
+        estrela.className = typeof q === 'object' ? `q${q.q}${q.n ? ` n${q.n}` : ''}` : `q${q}`;
         estrela.textContent = '★';
         selo.append(estrela);
       }

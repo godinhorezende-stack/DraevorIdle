@@ -438,12 +438,19 @@ export function estrelasDosAfixos(af) {
      */
     const nivel = Number(posto?.nivel) || null;
     const q = fracao > 1 ? 4 : nivel ? (nivel >= 5 ? 3 : nivel >= 3 ? 2 : 1) : fracao >= 2 / 3 ? 3 : fracao >= 1 / 3 ? 2 : 1;
-    return { ...posto, fracao: nivel && fracao <= 1 ? (nivel - 1) / 4 + fracao / 100 : fracao, q };
+    // `n`: a cor de CADA nível (N1 cinza, N2 verde, N3 azul, N4 roxa, N5 dourada;
+    // 6 = acima do teto, a essência vermelha). `q` fica para os filtros de venda
+    // e a cor da célula, que contam em três degraus.
+    const n = q === 4 ? 6 : nivel ?? (q === 3 ? 5 : q === 2 ? 3 : 1);
+    return { ...posto, fracao: nivel && fracao <= 1 ? (nivel - 1) / 4 + fracao / 100 : fracao, q, n };
   });
   return postos.sort((a, b) => b.fracao - a.fracao);
 }
 
 /** O degrau do MELHOR afixo da peça — é o que pinta a célula inteira. */
+/** A classe de uma estrela: o degrau (`q`) e a cor do nível (`n`). */
+export const classeDaEstrela = (posto) => `estrela q${posto.q}${posto.n ? ` n${posto.n}` : ''}`;
+
 export const forcaDosAfixos = (af) => estrelasDosAfixos(af)[0]?.q ?? 1;
 
 /*
@@ -469,7 +476,7 @@ export const forcaDosAfixos = (af) => estrelasDosAfixos(af)[0]?.q ?? 1;
  */
 export function seloDeEstrelas(classeBase, estrelas) {
   const selo = el('i', `${classeBase} q${estrelas[0]?.q ?? 1}`);
-  for (const estrela of estrelas) selo.append(el('b', `estrela q${estrela.q}`, '★'));
+  for (const estrela of estrelas) selo.append(el('b', classeDaEstrela(estrela), '★'));
   return selo;
 }
 
@@ -2412,7 +2419,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
        * O tier continua junto porque é o que diz de que fonte a peça veio, e o
        * percentual porque é literalmente a régua que escolheu a cor.
        */
-      const selo = el('i', `tip-afixo-tier q${posto.q}`);
+      const selo = el('i', `tip-afixo-tier q${posto.q} n${posto.n}`);
       // "Nível do Atributo" (1–5) — nunca "Tier", que é o da forja.
       const nivelDoPosto = Number(posto.nivel ?? posto.tier) || 1;
       selo.append(el('b', 'estrela', '★'), el('span', null, ` Nível ${nivelDoPosto}`));

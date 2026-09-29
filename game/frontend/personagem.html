@@ -255,6 +255,9 @@
   .afx-chip .estrela { font-weight: 400; color: var(--estrela); }
   .afx-chip .q1 { --estrela: #57a6e8; } .afx-chip .q2 { --estrela: #b184e8; }
   .afx-chip .q3 { --estrela: #e0a84a; text-shadow: 0 0 5px #e0a84a; } .afx-chip .q4 { --estrela: #ff5a52; text-shadow: 0 0 6px #ff5a52; }
+  /* Uma cor por nível do atributo (ver `classeDaEstrela`, tooltip.mjs). */
+  b.estrela.n1 { --estrela: #a7b0ba; } b.estrela.n2 { --estrela: #5fc46a; } b.estrela.n3 { --estrela: #57a6e8; }
+  b.estrela.n4 { --estrela: #b184e8; } b.estrela.n5 { --estrela: #e0a84a; } b.estrela.n6 { --estrela: #ff5a52; }
 
   .summon { display: flex; align-items: center; gap: 14px; justify-content: center; margin-top: 12px; }
   .summon canvas { image-rendering: pixelated; }
@@ -718,7 +721,7 @@ function painelDosAfixos(p) {
       const chip = document.createElement('span');
       chip.className = 'afx-chip';
       try { chip.append(itemCanvas(peca.id, 16)); } catch { /* sem sprite */ }
-      chip.insertAdjacentHTML('beforeend', `<b class="estrela q${posto.q}">★</b><em>${valorDoAfixo(ficha, posto.value)}</em>`);
+      chip.insertAdjacentHTML('beforeend', `<b class="estrela q${posto.q} n${posto.n}">★</b><em>${valorDoAfixo(ficha, posto.value)}</em>`);
       partes.append(chip);
     }
     linha.append(partes);

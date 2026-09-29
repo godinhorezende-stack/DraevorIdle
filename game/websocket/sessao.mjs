@@ -97,6 +97,7 @@ const SEM_ABA_CARENCIA_MS = 10_000;
 const CONFIG_DE_OUTRO = {
   strategy: (e, m) => Cacadas.definirEstrategia(e, m),
   distance: (e, m) => Cacadas.definirDistancia(e, m),
+  aoCompletarFase: (e, m) => Cacadas.definirAoCompletarFase(e, m),
   lure: (e, m) => Cacadas.definirLure(e, m),
   settings: (e, m) => Bolsa.definirSettings(e, m),
   huntAssist: (e, m) => Cacadas.definirAssistencia(e, m),
@@ -1163,6 +1164,13 @@ export class Sessao {
         return this.aplicar(Cacadas.definirEstrategia(this.estado, m));
       case 'distance':
         return this.aplicar(Cacadas.definirDistancia(this.estado, m));
+      case 'aoCompletarFase': {
+        const r = Cacadas.definirAoCompletarFase(this.estado, m);
+        this.aplicar(r);
+        // O painel da campanha mostra a escolha: vai a campanha de novo.
+        if (r.ok) this.enviar({ t: 'campanha', campanha: Campanha.paraCliente(this.estado) });
+        return;
+      }
       case 'actions':
         return this.despacharAcoes(m);
       case 'actionPreset':
@@ -1567,6 +1575,21 @@ export class Sessao {
     );
   }
 
+  /** "Seguir" da campanha (ver `Cacadas.faseParaSeguir`): entra na próxima fase e traz quem segue o líder. */
+  seguirParaAProximaFase() {
+    const proxima = Cacadas.faseParaSeguir(this.estado);
+    if (!proxima) return;
+    const h = this.estado.hunt;
+    Party.antesDeSairDaCacada(this);
+    const r = Cacadas.entrar(this.estado, { huntId: proxima.huntId, mode: h.modo, strategy: h.strategy, dificuldade: proxima.dificuldade });
+    if (!r.ok) {
+      this.avisoPendente = r.erro;
+      return;
+    }
+    this.avisoPendente = [this.avisoPendente, `Seguindo para a próxima fase: ${proxima.nome}.`].filter(Boolean).join(' ');
+    Party.seguirOLider(this);
+  }
+
   pararDeCarregar() {
     if (this.carregando && carregandoAgora.get(this.carregando.nome) === this) carregandoAgora.delete(this.carregando.nome);
     this.carregando = null;
@@ -1581,12 +1604,14 @@ export class Sessao {
   async concluirEntrada(personagem, estado, ausencia, treinoPendente) {
     this.personagem = personagem;
     this.estado = estado;
+    // Caçada de antes da campanha: vira a fase (barra e progresso), ou termina se a fase está fechada.
+    const daCampanha = Cacadas.adotarNaCampanha(this.estado);
     this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
     // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
     const doMercado = await Mercado.receberCreditos(this.estado, personagem.id);
     // Personagem que já estava acima da capacidade (loot de antes da regra):
     // o excesso vai para o depósito, com aviso no primeiro `state`.
-    this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado;
+    this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado ?? daCampanha;
     vivas.set(personagem.nome, this);
 
     // "Progresso enquanto você esteve fora" — `andamento`, no client.
@@ -2106,6 +2131,10 @@ export class Sessao {
           this.avisoPendente = this.estado.avisoDaHunt;
           delete this.estado.avisoDaHunt;
         }
+        // A fase completou com "Seguir" marcado: a próxima fase, no mesmo modo.
+        // Só com a aba aberta: o char trazido sem aba (party) é offline, fica em loop.
+        if (this.semAba) delete this.estado.faseCompletada;
+        else if (this.estado.hp > 0) this.seguirParaAProximaFase();
         // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
         // Cair no duelo não é morte: é derrota, sem perder nada (ver `Arena.caiu`).
         if (this.estado.hp <= 0 && !Arena.caiu(this)) this.enviar({ t: 'death', ...this.morrerNaHunt() });

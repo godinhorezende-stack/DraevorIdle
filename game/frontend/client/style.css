@@ -1440,6 +1440,38 @@ body.com-aviso { --altura-do-aviso: 24px; }
 #barra-da-fase.completa b, #barra-da-fase.completa #fase-conta { color: #e0a84a; }
 #barra-da-fase.completa .fase-trilho i { background: linear-gradient(90deg, #8a6a20, #e0a84a); }
 @media (max-width: 560px) { #barra-da-fase { width: calc(100vw - 24px); } #barra-da-fase b { font-size: 10.5px; } }
+/* O botão "Repetir / Seguir" da barra: a barra não recebe toque, o botão sim. */
+#barra-da-fase .fase-topo { align-items: center; }
+#barra-da-fase #fase-titulo { flex: 1; min-width: 0; }
+#fase-modo {
+  pointer-events: auto; flex: none; cursor: pointer;
+  font: inherit; font-size: 10.5px; line-height: 1; white-space: nowrap;
+  padding: 4px 8px; border-radius: 999px;
+  border: 1px solid #2d5a52; background: #ffffff0d; color: var(--text);
+}
+#fase-modo:hover { border-color: var(--accent); }
+#fase-modo[data-modo="seguir"] { border-color: var(--accent); color: var(--accent); background: #2a7d6e33; }
+@media (max-width: 560px) {
+  /* No celular o dedo precisa de alvo: ~28px de altura; o título encolhe. */
+  #fase-modo { padding: 7px 10px; font-size: 11px; }
+  #barra-da-fase .fase-topo { gap: 6px; }
+}
+@media (pointer: coarse) { #fase-modo { min-height: 28px; } }
+
+/* O seletor do painel da campanha: rótulo e as duas opções, quebra no celular. */
+.campanha-modo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 10px 0 4px; font-size: 12.5px; color: var(--muted, #9fb3ae); }
+.campanha-modo-opcoes { display: inline-flex; border: 1px solid #2d5a52; border-radius: 10px; overflow: hidden; }
+.campanha-modo-opcoes button {
+  font: inherit; font-size: 12.5px; cursor: pointer; padding: 7px 14px; min-height: 34px;
+  border: 0; background: transparent; color: var(--text);
+}
+.campanha-modo-opcoes button + button { border-left: 1px solid #2d5a52; }
+.campanha-modo-opcoes button.active { background: var(--accent-dim); color: #eafffb; }
+@media (max-width: 560px) {
+  .campanha-modo { flex-direction: column; align-items: stretch; }
+  .campanha-modo-opcoes { display: flex; }
+  .campanha-modo-opcoes button { flex: 1; min-height: 40px; }
+}
 
 #barra-do-boss {
   position: fixed; z-index: 28;
@@ -27315,3 +27347,17 @@ html[data-perfil="deitado"] #hud .bar-slot .hud-bar span { font-size: 12px !impo
 .hunt-card.completa .fase-trilho i { background: linear-gradient(90deg, #8a6a20, #e0a84a); }
 .hunt-card.completa .fase-progresso span { color: #e0a84a; }
 .hunt-card.campanha-boss p { font-size: 11.5px; }
+
+/*
+ * ---- Uma cor por NÍVEL do atributo ----
+ * "as estrelas do nivel do atributo tem que ser uma de cada cor" (o dono). A
+ * classe `n1`–`n6` vem de `classeDaEstrela` (tooltip.mjs): N1 cinza, N2 verde,
+ * N3 azul, N4 roxa, N5 dourada, 6 = acima do teto (a essência vermelha). O `q`
+ * continua valendo para os filtros de venda e a cor da célula.
+ */
+b.estrela.n1, .tip-afixo-tier.n1 { --estrela: #a7b0ba; }
+b.estrela.n2, .tip-afixo-tier.n2 { --estrela: #5fc46a; }
+b.estrela.n3, .tip-afixo-tier.n3 { --estrela: #57a6e8; }
+b.estrela.n4, .tip-afixo-tier.n4 { --estrela: #b184e8; }
+b.estrela.n5, .tip-afixo-tier.n5 { --estrela: #e0a84a; }
+b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }

@@ -2352,6 +2352,12 @@ function barraDaFase(hunt) {
   $('fase-titulo').textContent = `Ato ${f.ato} · Fase ${f.numero} · ${f.nome} · ${f.nomeDaDificuldade}`;
   $('fase-conta').textContent = f.completa ? 'completa ✓' : `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')}`;
   $('fase-cheio').style.width = `${Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
+  // "Repetir" / "Seguir" ao completar (o clique está em main.mjs).
+  const modo = $('fase-modo');
+  if (modo && modo.dataset.modo !== f.aoCompletar) {
+    modo.dataset.modo = f.aoCompletar ?? 'repetir';
+    modo.textContent = modo.dataset.modo === 'seguir' ? '⏭ Seguir' : '🔁 Repetir';
+  }
 }
 
 export function renderHud(character, catalog, party = null, escudoDeMana = false, hunt = null) {

@@ -41,7 +41,7 @@ import { artOrUiIcon } from './hud.mjs';
  * acabariam discordando sobre qual é a do monge.
  */
 import { PERICIA_DA_VOCACAO, NOME_DA_VOCACAO, confirmPurchase } from './panels.mjs';
-import { tipTexto, tipPanel, esconderBalao, estrelasDosAfixos } from './tooltip.mjs';
+import { tipTexto, tipPanel, esconderBalao, estrelasDosAfixos, classeDaEstrela } from './tooltip.mjs';
 import { arteTeimosa } from './arte-teimosa.mjs';
 import { fecharAoClicarFora, atalhosDaCaixa } from './windows.mjs';
 /* =========================================================================
@@ -3719,7 +3719,7 @@ function balaoDoMembro(membro) {
          */
         titulo: `${nome}${peca.tier ? ` +${peca.tier}` : ''} — ${NOME_DO_SLOT[peca.slot] ?? peca.slot}`,
         raridade: ctx.state.items?.[peca.id]?.rarity,
-        estrelas: estrelasDosAfixos(peca.af).map((posto) => posto.q),
+        estrelas: estrelasDosAfixos(peca.af).map(({ q, n }) => ({ q, n })),
       };
     }),
   );
@@ -3866,7 +3866,7 @@ function resumoDoConjunto(veste) {
       } catch {
         /* sem sprite: a estrela e o valor bastam */
       }
-      chip.append(el('b', `estrela q${posto.q}`, '★'), el('em', null, valorDoAfixo(ficha, posto.value)));
+      chip.append(el('b', classeDaEstrela(posto), '★'), el('em', null, valorDoAfixo(ficha, posto.value)));
       chips.append(chip);
     }
     linha.append(chips);

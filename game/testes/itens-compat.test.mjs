@@ -103,7 +103,9 @@ test('caçada offline projetada: as peças saem COM atributos (antes saíam crua
   const pecas = (e.pouch ?? []).filter((p) => ITEM_CATALOG[p.id]?.slot && !ITEM_CATALOG[p.id]?.stackable);
   const comAtributo = pecas.filter((p) => p.af?.length);
   assert.ok(pecas.length > 0, 'caiu equipamento');
-  assert.ok(comAtributo.length > pecas.length * 0.3, `${comAtributo.length} de ${pecas.length} com atributo`);
+  // No Ato 1 Fácil ~72% dos drops são comuns, e comum nunca tem atributo.
+  assert.ok(comAtributo.length > 0, `${comAtributo.length} de ${pecas.length} com atributo`);
+  for (const p of pecas) if (p.raridade === 'comum') assert.equal(p.af, undefined, 'comum sem atributo');
   for (const p of comAtributo) {
     assert.ok(p.raridade, 'com raridade');
     for (const a of p.af) assert.ok(a.nivel >= 1 && a.nivel <= 5);

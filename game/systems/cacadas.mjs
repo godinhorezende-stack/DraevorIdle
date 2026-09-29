@@ -121,6 +121,9 @@ function projetar(estado, base, fator, multExp = 1) {
   estado.xp = (estado.xp ?? 0) + extra.exp;
   // As mortes projetadas contam para a fase da campanha (decisão do dono: offline conta).
   Campanha.contarKills(estado, estado.hunt, extra.kills);
+  // Offline fica SEMPRE em loop na mesma hunt (decisão do dono): o "Seguir" é
+  // só jogando online — nem na volta a fase completada offline troca de hunt.
+  delete estado.faseCompletada;
   estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
   for (const [id, n] of Object.entries(base.itens.loot)) {
@@ -618,6 +621,31 @@ export function definirDistancia(estado, { value }) {
   return { ok: true };
 }
 
+/** `send({t:'aoCompletarFase', value: 'repetir'|'seguir'})` — o que fazer quando a fase da campanha completa. */
+export function definirAoCompletarFase(estado, { value }) {
+  if (!Campanha.AO_COMPLETAR.includes(value)) return { ok: false, erro: 'Opção inválida.' };
+  (estado.settings ??= {}).aoCompletarFase = value;
+  return { ok: true };
+}
+
+/**
+ * A fase acabou de completar e ele escolheu "Seguir": para onde ir (`{huntId,
+ * dificuldade, nome}`), ou `null`. Consome a marca `faseCompletada` (posta por
+ * `Campanha.contarKills`; a caçada offline não marca: offline fica sempre em
+ * loop). Só quem caça a PRÓPRIA
+ * sala segue: o convidado da party fica com o anfitrião, e quem o segue vem junto.
+ */
+export function faseParaSeguir(estado) {
+  const feita = estado.faseCompletada;
+  if (!feita) return null;
+  delete estado.faseCompletada;
+  const hunt = estado.hunt;
+  if (Campanha.aoCompletar(estado) !== 'seguir' || !hunt || salaDe(hunt) !== hunt) return null;
+  if (hunt.campanha?.huntId !== feita.huntId || hunt.campanha.dificuldade !== feita.dificuldade) return null;
+  const proxima = Campanha.proximaParaSeguir(estado, feita.dificuldade, feita.huntId);
+  return proxima ? { huntId: proxima.huntId, dificuldade: feita.dificuldade, nome: proxima.nome } : null;
+}
+
 /** `send({t:'lure', value})`/`{value:null, volta}` — grava a preferência e, se a hunt já estiver aberta, aplica na hora. */
 export function definirLure(estado, { value, volta }) {
   const settings = (estado.settings ??= {});
@@ -721,6 +749,29 @@ export function progressoDoLevel(estado) {
   const de = R.expForLevel(lv);
   const ate = R.expForLevel(lv + 1);
   return Math.max(0, Math.min(1, ((estado.xp ?? 0) - de) / Math.max(1, ate - de)));
+}
+
+/**
+ * Caçada gravada ANTES da campanha (sem `hunt.campanha`) numa hunt que é fase:
+ * sem isto a barra da fase não aparecia e as mortes não contavam. Fase já
+ * liberada no Fácil → vira a fase (a força dela nos bichos de agora e nos que
+ * renascem); fechada → a caçada termina, porque todos começam da fase 1.
+ * Roda na entrada, depois da caçada offline. Devolve o aviso para a tela, ou null.
+ */
+export function adotarNaCampanha(estado) {
+  const hunt = estado.hunt;
+  const fase = hunt && !hunt.campanha ? Campanha.faseDe(hunt.huntId) : null;
+  if (!fase) return null;
+  const dif = Campanha.DIFICULDADES[0];
+  if (!Campanha.faseLiberada(estado, dif, hunt.huntId)) {
+    const motivo = Campanha.motivoParaNaoEntrar(estado, dif, hunt.huntId);
+    sair(estado);
+    return `A campanha chegou: as hunts agora abrem fase a fase. ${motivo}`;
+  }
+  hunt.campanha = { huntId: hunt.huntId, dificuldade: dif, ato: fase.ato };
+  hunt.escala = Campanha.escalaDaFase(hunt.huntId, dif);
+  for (const m of [...(hunt.monstros ?? []), ...Object.values(hunt.outrosAndares ?? {}).flat()]) Campanha.aplicarEscala(m, hunt.escala);
+  return null;
 }
 
 /** `send({t:'stopHunt'})` */
