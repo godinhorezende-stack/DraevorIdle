@@ -13,8 +13,11 @@ import * as Guildas from '../systems/guildas.mjs';
 import * as Limites from '../websocket/limites.mjs';
 import { aquecerGrades } from '../systems/cacadas.mjs';
 import * as ConsolidacaoOffline from '../systems/consolidacao-offline.mjs';
+import * as Ausentes from '../systems/ausentes.mjs';
 
 Site.ligar(vivas);
+// Quem caça de aba fechada entra no número de online (ver `ausentes.mjs`).
+Ausentes.ligar(vivas);
 // Quem caça de aba fechada sobe no ranking do dia sem esperar logar
 // (ver `consolidacao-offline.mjs`).
 ConsolidacaoOffline.ligar();

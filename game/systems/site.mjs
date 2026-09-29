@@ -28,6 +28,7 @@ import * as Charms from './charms.mjs';
 import * as Aparencia from './aparencia.mjs';
 import * as Ficha from './ficha.mjs';
 import { nomeDaHunt } from './hunt/terreno.mjs';
+import * as Ausentes from './ausentes.mjs';
 
 const TOPO = 20;
 const TOPO_EXP = 5;
@@ -147,8 +148,11 @@ export async function status(categoria = 'level', agora = Date.now()) {
   if (g && g.ate > agora) return g.corpo;
   const t = await totais.get();
   const vivosNoTopo = Math.max(0, ...online().map((s) => s.estado.level ?? 1));
+  // Online = conectados + quem está caçando de aba fechada (ver `ausentes.mjs`).
+  // Só o número: as chaves do `/api/status` são as do original (site.test.mjs);
+  // quem é quem aparece na página /online, com o selo "caçando offline".
   const corpo = {
-    online: online().length,
+    online: online().length + Ausentes.contagem(agora),
     personagens: t.n,
     maiorLevel: Math.max(t.maior ?? 1, vivosNoTopo),
     categoria,
@@ -185,7 +189,14 @@ export function jogadoresOnline() {
       return { name: s.personagem.nome, level: e.level ?? 1, vocation: e.vocation, outfit: roupa(e.outfit), guilda: guildaDe(s.personagem.nome), onde: a.onde, hunt: a.lugar };
     })
     .sort((a, b) => b.level - a.level || a.name.localeCompare(b.name));
-  return { jogadores };
+  // Quem caça de aba fechada vem depois dos conectados, com o selo próprio ("offline").
+  const offline = Ausentes.agora()
+    .map((a) => ({
+      name: a.nome, level: a.level, vocation: a.vocacao, outfit: roupa(a.outfit ?? {}), guilda: guildaDe(a.nome),
+      onde: 'offline', hunt: a.huntId === 'treino' ? 'Pátio de treino' : a.huntId ? nomeDaHunt(a.huntId) : null,
+    }))
+    .sort((a, b) => b.level - a.level || a.name.localeCompare(b.name));
+  return { jogadores: [...jogadores, ...offline] };
 }
 
 // ------------------------------------------------------------ /api/personagem

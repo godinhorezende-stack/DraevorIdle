@@ -5,8 +5,10 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID, scrypt, randomBytes, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
+import { isMainThread } from 'node:worker_threads';
 import * as Db from './db.mjs';
 import * as Cache from './redis.mjs';
+import { colunasDaCacaOffline } from './caca-offline.mjs';
 
 const RAIZ = dirname(fileURLToPath(import.meta.url));
 
@@ -116,6 +118,52 @@ if (banco.dialeto === 'sqlite') {
   `);
 }
 
+/*
+ * ---- As colunas-índice da caçada offline (ver `caca-offline.mjs`) ----
+ *
+ * Nascem em banco que já existe (`ADD COLUMN`), sem mexer em nada do que há.
+ * A thread da simulação offline também abre o banco e passa por aqui ao mesmo
+ * tempo que a do jogo: a coluna que a outra acabou de criar não é erro.
+ */
+const jaExiste = (e) => /duplicate column|already exists/i.test(e?.message ?? '');
+for (const coluna of ['caca_offline_desde', 'caca_offline_ate']) {
+  try {
+    if (banco.dialeto === 'sqlite') {
+      const tem = banco.bruto.prepare('PRAGMA table_info(personagens)').all().some((c) => c.name === coluna);
+      if (!tem) await banco.exec(`ALTER TABLE personagens ADD COLUMN ${coluna} INTEGER`);
+    } else {
+      await banco.exec(`ALTER TABLE personagens ADD COLUMN IF NOT EXISTS ${coluna} BIGINT`);
+    }
+  } catch (e) {
+    if (!jaExiste(e)) throw e;
+  }
+}
+for (const [indice, coluna] of [['personagens_caca_offline_desde', 'caca_offline_desde'], ['personagens_caca_offline_ate', 'caca_offline_ate']]) {
+  try {
+    await banco.exec(`CREATE INDEX IF NOT EXISTS ${indice} ON personagens(${coluna})`);
+  } catch (e) {
+    if (!jaExiste(e)) throw e;
+  }
+}
+
+/*
+ * Quem já estava ausente quando as colunas nasceram: preenchidas UMA vez, a
+ * partir do JSON (só a thread do jogo; e só se o estado não mudou no meio).
+ * Depois disso toda gravação já leva as colunas, e a consulta volta vazia.
+ */
+if (isMainThread) {
+  const semColuna = await banco.prepare(
+    banco.dialeto === 'postgres'
+      ? `SELECT id, estado FROM personagens WHERE caca_offline_desde IS NULL AND (estado::jsonb #>> '{hunt,offlineDesde}') IS NOT NULL`
+      : `SELECT id, estado FROM personagens WHERE caca_offline_desde IS NULL AND json_extract(estado, '$.hunt.offlineDesde') IS NOT NULL`,
+  ).all();
+  const preencher = banco.prepare('UPDATE personagens SET caca_offline_desde = ?, caca_offline_ate = ? WHERE id = ? AND estado = ?');
+  for (const r of semColuna) {
+    const [desde, ate] = colunasDaCacaOffline(JSON.parse(r.estado));
+    await preencher.run(desde, ate, r.id, r.estado);
+  }
+}
+
 /** A transação de verdade (ver `game/database/db.mjs`) — usada pela fila global em `game/websocket/sessao.mjs`. */
 export const transacao = (fn) => banco.transacao(fn);
 
@@ -188,20 +236,23 @@ export const personagemPorNome = (nome) =>
 export async function criarPersonagem({ conta, nome, vocacao, sexo, estadoInicial }) {
   const id = randomUUID();
   await banco.prepare(
-    `INSERT INTO personagens (id, conta, nome, vocacao, sexo, criado_em, estado)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, conta, nome, vocacao, sexo, Date.now(), JSON.stringify(estadoInicial));
+    `INSERT INTO personagens (id, conta, nome, vocacao, sexo, criado_em, estado, caca_offline_desde, caca_offline_ate)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, conta, nome, vocacao, sexo, Date.now(), JSON.stringify(estadoInicial), ...colunasDaCacaOffline(estadoInicial));
   return { id, conta, nome, vocacao, sexo, estado: estadoInicial };
 }
 
+// Toda gravação de estado leva as colunas da caçada offline junto (ver `caca-offline.mjs`).
 export const gravarEstadoPersonagem = (id, estado) =>
-  banco.prepare('UPDATE personagens SET estado = ?, visto_em = ? WHERE id = ?').run(
-    JSON.stringify(estado), Date.now(), id,
+  banco.prepare('UPDATE personagens SET estado = ?, visto_em = ?, caca_offline_desde = ?, caca_offline_ate = ? WHERE id = ?').run(
+    JSON.stringify(estado), Date.now(), ...colunasDaCacaOffline(estado), id,
   );
 
 /** Regrava o estado de um personagem que NÃO está no jogo (ex.: recebeu uma transferência), sem mudar o `visto_em`. */
 export const regravarEstadoPersonagem = (id, estado) =>
-  banco.prepare('UPDATE personagens SET estado = ? WHERE id = ?').run(JSON.stringify(estado), id);
+  banco.prepare('UPDATE personagens SET estado = ?, caca_offline_desde = ?, caca_offline_ate = ? WHERE id = ?').run(
+    JSON.stringify(estado), ...colunasDaCacaOffline(estado), id,
+  );
 
 export const excluirPersonagem = (id) => banco.prepare('DELETE FROM personagens WHERE id = ?').run(id);
 
