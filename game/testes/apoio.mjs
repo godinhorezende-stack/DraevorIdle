@@ -5,8 +5,19 @@ import * as Inventario from '../systems/inventario.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as Loja from '../systems/loja.mjs';
 import { CHARACTER_TEMPLATE } from '../systems/dados.mjs';
+import * as Campanha from '../systems/campanha.mjs';
 
-export function personagemDeTeste({ vocacao = 'knight', level = R.NIVEL_INICIAL } = {}) {
+/*
+ * A campanha INTEIRA liberada (as 48 fases e os 4 bosses nas três dificuldades):
+ * os testes que entram numa hunt qualquer são de antes da campanha, e testam
+ * outra coisa. Os testes da campanha montam o progresso deles (`campanha: {}`).
+ */
+export function campanhaCompleta() {
+  const tudo = { kills: {}, completas: Campanha.FASES.map((f) => f.huntId), bosses: [1, 2, 3, 4] };
+  return Object.fromEntries(Campanha.DIFICULDADES.map((d) => [d, structuredClone(tudo)]));
+}
+
+export function personagemDeTeste({ vocacao = 'knight', level = R.NIVEL_INICIAL, campanha = campanhaCompleta() } = {}) {
   const { maxHp, maxMana } = R.statsBase(vocacao, level);
   return {
     level,
@@ -32,6 +43,7 @@ export function personagemDeTeste({ vocacao = 'knight', level = R.NIVEL_INICIAL 
     settings: { ...CHARACTER_TEMPLATE.settings },
     ...Recompensas.estadoInicial(),
     ...Loja.estadoInicial(),
+    campanha,
   };
 }
 

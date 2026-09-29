@@ -1538,6 +1538,13 @@ function empilharNoTopo() {
     const acima = fundoDe('cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'treino-faixa', 'barra-do-boss');
     daArena.style.top = acima ? `${acima + 8}px` : '';
   }
+
+  // A barra da fase da campanha, na mesma fila (nunca junto da do boss).
+  const daFase = $('barra-da-fase');
+  if (daFase && !daFase.hidden) {
+    const acima = fundoDe('cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'treino-faixa');
+    daFase.style.top = acima ? `${acima + 6}px` : '';
+  }
 }
 
 /*
@@ -2325,8 +2332,31 @@ function painelStamina(character, grau, enchendo) {
  * boss. Entra como parametro e nao como import para o hud nao passar a conhecer
  * o estado global — ele desenha o que recebe.
  */
+/*
+ * ---- A barra da FASE da campanha ----
+ * "a fase vai ter um número x de mobs e vai aparecer na tela e se ele completar
+ * ele desbloqueia o seguinte" (o dono). Uma faixa estreita no alto: o ato, a
+ * fase, a dificuldade e quantos faltam. Na sala do boss do ato, a barra do boss
+ * já ocupa o lugar.
+ */
+function barraDaFase(hunt) {
+  const caixa = $('barra-da-fase');
+  if (!caixa) return;
+  const f = hunt?.fase;
+  if (!f || f.tipo !== 'fase') {
+    caixa.hidden = true;
+    return;
+  }
+  caixa.hidden = false;
+  caixa.classList.toggle('completa', !!f.completa);
+  $('fase-titulo').textContent = `Ato ${f.ato} · Fase ${f.numero} · ${f.nome} · ${f.nomeDaDificuldade}`;
+  $('fase-conta').textContent = f.completa ? 'completa ✓' : `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')}`;
+  $('fase-cheio').style.width = `${Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
+}
+
 export function renderHud(character, catalog, party = null, escudoDeMana = false, hunt = null) {
   barraDoBoss(hunt);
+  barraDaFase(hunt);
   barrasDaArena(hunt, catalog);
   const { derived, progress } = character;
 

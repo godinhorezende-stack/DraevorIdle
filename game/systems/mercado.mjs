@@ -18,6 +18,15 @@ import { banco } from '../database/banco.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import { darItem, cabeNoPeso } from './inventario.mjs';
 import * as Deposito from './deposito.mjs';
+import { converterTudo, camposDaPeca } from './itens/item.mjs';
+
+/** A peça de uma oferta, com as de antes do sistema de itens já convertidas. */
+const pecaDa = (o) => {
+  if (!o.peca) return null;
+  const peca = JSON.parse(o.peca);
+  converterTudo(peca);
+  return peca;
+};
 
 const idAuto = banco.dialeto === 'postgres' ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
 const inteiroGrande = banco.dialeto === 'postgres' ? 'BIGINT' : 'INTEGER';
@@ -83,7 +92,7 @@ function entregar(estado, { gold = 0, coins = 0, itens = [] }) {
   estado.coins = (estado.coins ?? 0) + coins;
   const chegadas = Deposito.garantir(estado).find((c) => c.chegadas);
   for (const it of itens) {
-    const especial = it.peca && (it.peca.af?.length || it.peca.tier || it.peca.imbu?.length);
+    const especial = it.peca && (it.peca.af?.length || it.peca.tier || it.peca.imbu?.length || it.peca.efeito);
     if (cabeNoPeso(estado, it.id, it.count)) {
       if (especial) (estado.inventory ??= []).push({ ...it.peca, id: it.id, count: it.count });
       else darItem(estado, it.id, it.count);
@@ -116,12 +125,13 @@ export async function receberCreditos(estado, personagemId) {
 
 const anuncio = (o, personagemId) => {
   const meta = ITEM_CATALOG[o.item] ?? {};
-  const peca = o.peca ? JSON.parse(o.peca) : {};
+  const peca = pecaDa(o) ?? {};
   return {
     id: o.id, item: o.item, name: meta.name ?? `item ${o.item}`, count: o.count, price: o.price,
     total: o.price * o.count, moeda: o.moeda, kind: o.kind, seller: o.vendedor,
-    minha: o.personagem === personagemId, slot: meta.slot ?? null, rarity: meta.rarity ?? null,
-    minLevel: meta.minLevel ?? 0, ...(peca.af ? { af: peca.af } : {}), ...(peca.tier ? { tier: peca.tier } : {}),
+    // A raridade do DROP (sistema de itens); a do catálogo só para peça sem ela.
+    minha: o.personagem === personagemId, slot: meta.slot ?? null, rarity: peca.raridade ?? meta.rarity ?? null,
+    minLevel: meta.minLevel ?? 0, ...camposDaPeca(peca),
   };
 };
 
@@ -221,7 +231,7 @@ export async function aceitar(estado, personagem, { offerId, count }, aoVivo) {
   const n = Math.min(o.count, inteiro(count));
   const valor = o.price * n;
   const nome = ITEM_CATALOG[o.item]?.name ?? `item ${o.item}`;
-  const peca = o.peca ? JSON.parse(o.peca) : null;
+  const peca = pecaDa(o);
   if (o.kind === 'sell') {
     // Eu compro: pago, recebo o item; o vendedor recebe o dinheiro.
     if (!pagar(estado, valor, o.moeda)) return { ok: false, erro: o.moeda === 'coin' ? 'Draevor Coins insuficientes.' : 'Ouro insuficiente.' };
@@ -257,7 +267,7 @@ export async function cancelar(estado, personagem, { offerId }) {
   const o = await banco.prepare('SELECT * FROM mercado_ofertas WHERE id = ? AND personagem = ?').get(Number(offerId), personagem.id);
   if (!o) return { ok: false, erro: 'Esse anúncio não existe mais.' };
   await banco.prepare('DELETE FROM mercado_ofertas WHERE id = ?').run(o.id);
-  if (o.kind === 'sell') entregar(estado, { itens: [{ id: o.item, count: o.count, peca: o.peca ? JSON.parse(o.peca) : null }] });
+  if (o.kind === 'sell') entregar(estado, { itens: [{ id: o.item, count: o.count, peca: pecaDa(o) }] });
   else entregar(estado, o.moeda === 'coin' ? { coins: o.price * o.count } : { gold: o.price * o.count });
   return { ok: true, notice: 'Anúncio cancelado.' };
 }

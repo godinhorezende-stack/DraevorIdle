@@ -151,27 +151,21 @@ test('subiu de level na caçada e passou de 10: continua na party, mas a partilh
   grupo(baixo.s, 'sair');
 });
 
-test('hunt não liberada (level da hunt): nem o chamado, nem o pedido, nem a entrada', async () => {
+test('campanha na party: quem não liberou a fase entra mesmo assim (o amigo carrega), e a morte conta para todos', async () => {
   const host = await jogador(0, 1, 45);
-  const novato = await jogador(1, 1, 36);
+  const novato = await jogador(1, 1, 38);
+  novato.s.estado.campanha = {}; // começando a campanha: só a fase 1 do Fácil
   grupo(host.s, 'convidar', novato.nome);
   assert.equal(grupo(novato.s, 'aceitar').ok, true);
-  // Port Hope pede level 40.
   const huntId = 'port-hope-corym-dungeons';
-  assert.equal(Cacadas.levelDaHunt(huntId), 40);
   assert.equal(Cacadas.entrar(host.s.estado, { huntId, mode: 'auto' }).ok, true);
-  const chamado = caca(host.s, 'invite', novato.nome);
-  assert.equal(chamado.ok, false);
-  assert.match(chamado.erro, /ainda não liberou .*pede level 40.* é level 36/);
-  const pedido = caca(novato.s, 'pedir', host.nome);
-  assert.equal(pedido.ok, false);
-  assert.match(pedido.erro, /ainda não liberou/);
-  assert.equal(novato.s.estado.hunt ?? null, null, 'e ele não entrou');
-  // Subiu para 40: agora pode.
-  novato.s.estado.level = 40;
+  // Sozinho ele não entraria:
+  assert.match(Cacadas.entrar(structuredClone(novato.s.estado), { huntId, mode: 'auto' }).erro, /Complete a fase anterior/);
+  // Na party, entra (chamado e pedido).
   assert.equal(caca(host.s, 'invite', novato.nome).ok, true);
   assert.equal(caca(novato.s, 'accept').ok, true);
   assert.equal(Cacadas.salaDe(novato.s.estado.hunt), Cacadas.salaDe(host.s.estado.hunt));
+  assert.deepEqual(novato.s.estado.hunt.campanha, host.s.estado.hunt.campanha, 'caça a mesma fase');
   grupo(novato.s, 'sair');
 });
 
@@ -207,7 +201,8 @@ async function quatroCacando() {
     grupo(lider.s, 'convidar', o.nome);
     grupo(o.s, 'aceitar');
   }
-  assert.equal(Cacadas.entrar(lider.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
+  // No Médio (level alvo 101): no Fácil a Troll Cave é a fase 1 e quase não dá ouro para dividir.
+  assert.equal(Cacadas.entrar(lider.s.estado, { huntId: 'troll-cave', mode: 'auto', dificuldade: 'medio' }).ok, true);
   for (const o of outros) {
     caca(lider.s, 'invite', o.nome);
     assert.equal(caca(o.s, 'accept').ok, true);
@@ -321,17 +316,16 @@ test('"Permitir entrar na caçada": marcado, a party entra direto; sem marcar, s
   grupo(outro.s, 'sair');
 });
 
-test('"Permitir entrar na caçada" não fura as portas: hunt não liberada continua fechada', async () => {
+test('"Permitir entrar na caçada" vale mesmo para quem ainda não liberou a fase', async () => {
   const host = await jogador(0, 1, 45);
   const novato = await jogador(1, 1, 38);
+  novato.s.estado.campanha = {};
   partyDe(host, novato);
   host.s.estado.settings.entrarSemConvite = true;
   assert.equal(Cacadas.entrar(host.s.estado, { huntId: 'port-hope-corym-dungeons', mode: 'auto' }).ok, true);
   const cartao = Party.camposDoPersonagem(novato.s).party.membros.find((m) => m.name === host.nome);
-  assert.equal(cartao.podeEntrarDireto, false, 'nem oferece o botão');
-  const r = caca(novato.s, 'entrar', host.nome);
-  assert.equal(r.ok, false);
-  assert.match(r.erro, /ainda não liberou/);
+  assert.equal(cartao.podeEntrarDireto, true, 'o botão aparece');
+  assert.equal(caca(novato.s, 'entrar', host.nome).ok, true);
   grupo(novato.s, 'sair');
 });
 
@@ -374,21 +368,17 @@ test('"Seguir líder": vai junto na caçada, na troca de hunt, na volta para a c
   grupo(naoSegue.s, 'sair');
 });
 
-test('"Seguir líder" respeita a hunt liberada: quem não pode fica, e os dois sabem por quê', async () => {
+test('"Seguir líder" leva junto quem ainda não liberou a fase (na party, o líder carrega)', async () => {
   const lider = await jogador(0, 1, 45);
   const segue = await jogador(1, 1, 38);
+  segue.s.estado.campanha = {};
   partyDe(lider, segue);
   segue.s.estado.settings.seguirLider = true;
   lider.s.despachar({ t: 'startHunt', huntId: 'port-hope-corym-dungeons', mode: 'auto' });
   assert.equal(lider.s.estado.hunt?.huntId, 'port-hope-corym-dungeons');
-  assert.equal(segue.s.estado.hunt ?? null, null, 'ficou');
-  const recebidos = (j) => j.avisos.map((m) => JSON.stringify(m)).join('\n');
-  assert.match(recebidos(segue), /Não deu para seguir .*ainda não liberou/);
-  assert.match(recebidos(lider), /não pôde vir: .*ainda não liberou/);
+  assert.equal(segue.s.estado.hunt?.huntId, 'port-hope-corym-dungeons', 'seguiu');
   grupo(segue.s, 'sair');
 });
-
-// ------------------------------------------------------- colisão entre jogadores
 
 test('colisão: cinco na mesma caçada nunca dividem casa (nem com bicho), e ninguém fica travado', async () => {
   const js = [];

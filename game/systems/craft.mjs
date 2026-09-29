@@ -16,6 +16,7 @@
 //    de novo com `craftou: {id, nome, base, herdou:{tier, imbu, af}}` — o cartaz.
 import { RECEITAS_DO_CRAFT, ITEM_CATALOG } from './dados.mjs';
 import { contarGuardadas, tirarGuardadas, temExtras } from './inventario.mjs';
+import { camposDaPeca } from './itens/item.mjs';
 
 const VOCACOES = Object.keys(RECEITAS_DO_CRAFT);
 
@@ -44,7 +45,8 @@ function melhorBase(estado, id) {
   return copias(estado, id).sort((a, b) => valor(b.peca) - valor(a.peca))[0] ?? null;
 }
 
-const extrasDe = (p) => (temExtras(p) ? { ...(p.tier ? { tier: p.tier } : {}), ...(p.imbu?.length ? { imbu: p.imbu } : {}), ...(p.af?.length ? { af: p.af } : {}) } : null);
+// A peça nova herda tudo que é da instância: tier, imbuements, atributos, raridade e efeito.
+const extrasDe = (p) => (temExtras(p) ? camposDaPeca(p) : null);
 
 function quantasTem(estado, material, baseId) {
   if (material.dinheiro) return saldoDeOuro(estado);

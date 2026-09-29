@@ -511,7 +511,8 @@ function enfeitarPeca(celula, slot, peca, p) {
   const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
   const meta = p.itens?.[peca.id];
   if (meta) {
-    const classe = classeDaRaridade(meta);
+    // A raridade do drop (sistema de itens), senão a do catálogo.
+    const classe = classeDaRaridade(meta, inteira);
     celula.classList.add(classe);
     if (classe !== 'tier-comum') celula.classList.add('raridade');
   }

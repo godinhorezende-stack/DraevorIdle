@@ -1420,6 +1420,27 @@ body.com-aviso { --altura-do-aviso: 24px; }
  * de cima aparecem e somem, e um numero cravado no css estaria errado metade do
  * tempo. O valor daqui e so o comeco, para o primeiro quadro nao nascer torto.
  */
+/* ---- A barra da fase da campanha (ver `barraDaFase`, hud.mjs) ---- */
+#barra-da-fase {
+  position: fixed; z-index: 27;
+  top: calc(var(--altura-da-topbar) + var(--altura-do-aviso, 0px) + 6px);
+  left: 50%; transform: translateX(-50%);
+  width: min(460px, 86vw); padding: 5px 12px 7px;
+  display: grid; gap: 4px;
+  background: linear-gradient(180deg, #0f1a18ee, #0a1110ee);
+  border: 1px solid #2d5a52; border-radius: 10px;
+  box-shadow: 0 6px 18px #000a; pointer-events: none;
+}
+#barra-da-fase .fase-topo { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+#barra-da-fase b { font-family: var(--font-heading); font-size: 11.5px; letter-spacing: .04em; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#barra-da-fase #fase-conta { font-size: 11.5px; color: var(--text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+#barra-da-fase .fase-trilho { height: 5px; border-radius: 999px; background: #ffffff14; overflow: hidden; }
+#barra-da-fase .fase-trilho i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); transition: width .3s linear; }
+#barra-da-fase.completa { border-color: #b08a3a; }
+#barra-da-fase.completa b, #barra-da-fase.completa #fase-conta { color: #e0a84a; }
+#barra-da-fase.completa .fase-trilho i { background: linear-gradient(90deg, #8a6a20, #e0a84a); }
+@media (max-width: 560px) { #barra-da-fase { width: calc(100vw - 24px); } #barra-da-fase b { font-size: 10.5px; } }
+
 #barra-do-boss {
   position: fixed; z-index: 28;
   top: calc(var(--altura-da-topbar) + var(--altura-do-aviso, 0px) + 8px);
@@ -4820,6 +4841,26 @@ body {
   display: flex; justify-content: space-between; gap: 10px;
   font-size: 12px; color: #a9d6ee;
 }
+/* O Item Level, embaixo do tipo da peça: apagado — é informação, não destaque. */
+.tip-id em.item-level { display: block; font-size: 10.5px; color: var(--muted); letter-spacing: .02em; }
+/*
+ * ---- ✨ O efeito Lendário / Supremo ----
+ * Bloco próprio, na cor da raridade que o dá (cobre do lendário, vermelho do
+ * mítico): um efeito muda uma regra do jogo, e não pode ser lido como mais
+ * uma linha de atributo.
+ */
+.tip-efeito {
+  margin-top: 6px; padding: 6px 8px; border-radius: 4px;
+  border: 1px solid var(--efeito-cor, #e0a84a); background: color-mix(in srgb, var(--efeito-cor, #e0a84a) 12%, transparent);
+  display: grid; gap: 2px; font-size: 12px; color: var(--text);
+}
+.tip-efeito-lendario { --efeito-cor: #e0a84a; }
+.tip-efeito-mitico { --efeito-cor: #f2503f; }
+.tip-efeito-titulo {
+  font-family: var(--font-heading); font-size: 10.5px; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--efeito-cor);
+}
+.tip-efeito b { color: var(--efeito-cor); font-size: 12.5px; }
 /*
  * O selo da linha: a estrela na cor do afixo, e ao lado dela o tier e o quanto
  * ele rolou da faixa. A estrela é o que amarra a linha à do canto do ícone; o
@@ -27263,3 +27304,14 @@ html[data-perfil="deitado"] .modal-box.guilda > header {
 /* O número dentro da barra tem tamanho próprio (10px): é ele que sobe. */
 html[data-perfil="retrato"] #hud .hud-bar span,
 html[data-perfil="deitado"] #hud .bar-slot .hud-bar span { font-size: 12px !important; }
+
+/* ---- A campanha na aba Normal Hunts (ver `campanhaCards`, panels.mjs) ---- */
+.campanha-dificuldades button { display: grid; gap: 1px; justify-items: center; }
+.campanha-dificuldades button span { font-size: 10px; color: var(--muted); }
+.campanha-ato { margin-top: 14px !important; }
+.hunt-card .fase-progresso { display: grid; gap: 3px; margin-top: 4px; font-size: 11px; color: var(--muted); }
+.hunt-card .fase-trilho { height: 5px; border-radius: 999px; background: #ffffff14; overflow: hidden; }
+.hunt-card .fase-trilho i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); }
+.hunt-card.completa .fase-trilho i { background: linear-gradient(90deg, #8a6a20, #e0a84a); }
+.hunt-card.completa .fase-progresso span { color: #e0a84a; }
+.hunt-card.campanha-boss p { font-size: 11.5px; }

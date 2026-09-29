@@ -581,6 +581,12 @@
        O retrato à esquerda, o nome e as resistências no meio, e o trilho
        embaixo. Ver `barraDoBoss`, em hud.mjs: o retrato é montado uma vez por
        luta e os números são reescritos oito vezes por segundo. -->
+  <!-- ---------- A barra da fase da campanha ----------
+       "Ato 1 · Fase 3 · Amazon Camp · Fácil — 312 / 500". Ver `barraDaFase`, em hud.mjs. -->
+  <div id="barra-da-fase" hidden>
+    <div class="fase-topo"><b id="fase-titulo"></b><span id="fase-conta"></span></div>
+    <div class="fase-trilho"><i id="fase-cheio"></i></div>
+  </div>
   <div id="barra-do-boss" hidden>
     <div class="boss-cara" id="boss-cara"></div>
     <div class="boss-corpo">

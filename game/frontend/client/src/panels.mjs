@@ -441,7 +441,8 @@ export function openHunts() {
    * verdade chegar, ela reaproveita a progressão em vez de recomeçar do zero.
    */
   tabbedModal('Aventuras', { hunts: 'Normal Hunts', vips: 'Hunts Vip', especiais: 'Especial Hunts', bosses: 'Bosses', training: 'Treino' }, 'hunts', (body, tab) => {
-    if (tab === 'hunts') huntCards(body, ctx.state.catalog.hunts, false);
+    // As hunts normais são a CAMPANHA: 4 atos, 3 dificuldades, fases que se liberam (ver `campanhaCards`).
+    if (tab === 'hunts') campanhaCards(body);
     /*
      * ---- A aba das Hunts Vip ----
      *
@@ -533,6 +534,110 @@ export function openHunts() {
  * que `especial-portas` acrescenta é o miolo — as duas figuras e a segunda
  * linha.
  */
+/*
+ * ---- A CAMPANHA na aba "Normal Hunts" ----
+ *
+ * "4 atos e dentro deles fácil, médio, difícil igual Path of Exile" — as 48
+ * hunts normais em 4 atos de 12 fases, jogadas em Fácil, depois Médio, depois
+ * Difícil. Cada fase pede X bichos (a barra do card); completou, abre a
+ * próxima; o boss fecha o ato. Quem decide o que abre é o servidor
+ * (`systems/campanha.mjs`): a tela pede a campanha (`{t:'campanha'}`) e
+ * desenha o que chegou.
+ */
+function campanhaCards(body) {
+  const { state, send } = ctx;
+  // Pede de novo ao abrir (o progresso anda caçando) — com folga, para o
+  // redesenho que a resposta provoca não virar um pedido em laço.
+  if (!state.campanha || Date.now() - (ctx.tabs.campanhaPedidaEm ?? 0) > 5000) {
+    ctx.tabs.campanhaPedidaEm = Date.now();
+    send({ t: 'campanha' });
+  }
+  const campanha = state.campanha;
+  if (!campanha) return void body.append(el('p', 'empty', 'carregando a campanha...'));
+
+  const escolhida = campanha.dificuldades.find((d) => d.id === ctx.tabs.dificuldade && d.liberada) ?? campanha.dificuldades.findLast((d) => d.liberada);
+  ctx.tabs.dificuldade = escolhida.id;
+
+  // ---- as três dificuldades ----
+  const barra = el('div', 'tabs campanha-dificuldades');
+  for (const d of campanha.dificuldades) {
+    const botao = el('button', d.id === escolhida.id ? 'active' : null);
+    botao.type = 'button';
+    botao.append(el('b', null, d.liberada ? d.nome : `🔒 ${d.nome}`), el('span', null, `level ${d.faixa[0]}–${d.faixa[1]}`));
+    botao.disabled = !d.liberada;
+    tipTexto(botao, d.liberada ? `Campanha no ${d.nome}` : `O ${d.nome} abre depois de vencer o boss do Ato 4 na dificuldade anterior.`);
+    botao.onclick = () => {
+      ctx.tabs.dificuldade = d.id;
+      ctx.redraw();
+    };
+    barra.append(botao);
+  }
+  body.append(barra);
+
+  const porId = new Map((state.catalog.hunts ?? []).map((h) => [h.id, h]));
+  const bossPorId = new Map((state.catalog.bosses ?? []).map((b) => [b.id, b]));
+  const catalog = state.catalog.bestiary;
+
+  for (let ato = 1; ato <= 4; ato++) {
+    const fases = escolhida.fases.filter((f) => f.ato === ato);
+    const feitas = fases.filter((f) => f.completa).length;
+    body.append(el('h4', 'store-degrau campanha-ato', `Ato ${ato} · level ${fases[0]?.nivel}–${fases.at(-1)?.nivel} · ${feitas}/${fases.length} fases`));
+    const grade = el('div', 'hunt-grid');
+    const listaDoAto = fases.map((f) => porId.get(f.huntId)).filter(Boolean);
+    fases.forEach((f, i) => {
+      const hunt = porId.get(f.huntId);
+      const card = el('div', `hunt-card campanha-fase${f.liberada ? '' : ' locked'}${f.completa ? ' completa' : ''}`);
+      card.append(el('h3', null, f.nome));
+      if (hunt?.creatures?.length) {
+        const bichos = el('div', 'hunt-card-bichos');
+        for (const creature of hunt.creatures.slice(0, 4)) bichos.append(figuraDaCriatura(creature, catalog, 40));
+        card.append(bichos);
+      }
+      card.append(el('span', 'lv', `Fase ${(ato - 1) * 12 + i + 1} · level ~${f.nivel}`));
+      const progresso = el('div', 'fase-progresso');
+      const trilho = el('div', 'fase-trilho');
+      const cheio = el('i');
+      cheio.style.width = `${f.completa ? 100 : Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
+      trilho.append(cheio);
+      progresso.append(
+        trilho,
+        el('span', null, f.pular ? 'pulada (em obras)' : f.completa ? 'completa ✓' : f.liberada ? `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')} bichos` : '🔒 complete a fase anterior')
+      );
+      card.append(progresso);
+      if (f.liberada && hunt && !f.pular) {
+        card.onclick = () => {
+          rolagemDaLista.hunts = document.getElementById('modal-body')?.scrollTop ?? 0;
+          askRunMode(hunt, listaDoAto);
+        };
+      }
+      grade.append(card);
+    });
+
+    // ---- o boss que fecha o ato ----
+    const b = escolhida.bosses.find((x) => x.ato === ato);
+    if (b) {
+      const dados = bossPorId.get(b.bossId);
+      const card = el('div', `hunt-card boss campanha-boss${b.liberado ? '' : ' locked'}${b.vencido ? ' completa' : ''}`);
+      card.append(el('h3', null, `Boss do Ato ${ato}: ${b.nome}`));
+      if (dados?.creatures?.length) {
+        const bichos = el('div', 'hunt-card-bichos');
+        bichos.append(figuraDaCriatura(dados.creatures[0], catalog, 52));
+        card.append(bichos);
+      }
+      card.append(el('span', 'lv', `level ~${b.nivel}`));
+      card.append(el('p', null, b.vencido ? 'Vencido ✓ — pode enfrentar de novo (com a recarga dele).' : b.liberado ? (ato < 4 ? `Vença para liberar o Ato ${ato + 1}.` : 'Vença para liberar a próxima dificuldade.') : '🔒 Complete as 12 fases do ato.'));
+      if (b.liberado) {
+        card.onclick = () => {
+          send({ t: 'startHunt', huntId: b.bossId, mode: 'auto', dificuldade: escolhida.id, campanha: true, strategy: document.getElementById('strategy')?.value });
+          ctx.closeModal();
+        };
+      }
+      grade.append(card);
+    }
+    body.append(grade);
+  }
+}
+
 function botoesDasPortas(escolhida, aoTrocar) {
   const barra = el('div', 'tabs especial-portas');
   for (const porta of PORTAS_ESPECIAIS) {
@@ -2403,6 +2508,8 @@ function startRun(hunt, mode, ids = null) {
   ctx.send({
     t: 'startHunt',
     huntId: hunt.id,
+    // A dificuldade escolhida na aba da campanha (as hunts normais são fases dela).
+    dificuldade: ctx.tabs.dificuldade ?? 'facil',
     strategy: document.getElementById('strategy').value,
     mode,
     // A roda inteira, na ordem em que o jogador marcou os cards. Sem `ids` o

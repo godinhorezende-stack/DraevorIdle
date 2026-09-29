@@ -42,7 +42,9 @@ import { AUSENCIA_MAXIMA_MS } from '../database/caca-offline.mjs';
 import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop } from './hunt/combate.mjs';
+import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
+import * as Campanha from './campanha.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -117,6 +119,8 @@ function projetar(estado, base, fator, multExp = 1) {
     itens: { loot: {}, vendido: {}, gastos: {}, ignorado: {}, perdido: {} },
   };
   estado.xp = (estado.xp ?? 0) + extra.exp;
+  // As mortes projetadas contam para a fase da campanha (decisão do dono: offline conta).
+  Campanha.contarKills(estado, estado.hunt, extra.kills);
   estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
   for (const [id, n] of Object.entries(base.itens.loot)) {
@@ -128,7 +132,16 @@ function projetar(estado, base, fator, multExp = 1) {
     const peso = ITEM_CATALOG[id]?.weight ?? 0;
     const livre = Afixos.capacidade(estado) - pesoDoInventario(estado);
     const cabe = peso > 0 ? Math.max(0, Math.min(qtd, Math.floor(livre / peso))) : qtd;
-    const entrou = cabe ? Bolsa.porNaBolsa(estado, Number(id), cabe) : 0;
+    /*
+     * A peça que aceita atributo sai do gerador de itens, uma a uma — igual à
+     * caçada online. Antes a projeção punha a peça CRUA na bolsa: quem caçava
+     * 12 h offline só ganhava atributo no loot da primeira meia hora.
+     */
+    let entrou = 0;
+    if (cabe && aceitaAtributos(Number(id))) {
+      const origem = contextoDoDrop(estado.hunt);
+      for (let k = 0; k < cabe; k++) entrou += Bolsa.porNaBolsa(estado, Number(id), 1, gerarItem({ itemId: Number(id), ...origem }));
+    } else if (cabe) entrou = Bolsa.porNaBolsa(estado, Number(id), cabe);
     if (qtd - entrou > 0) extra.itens.perdido[id] = (extra.itens.perdido[id] ?? 0) + (qtd - entrou);
     extra.itens.loot[id] = entrou;
   }
@@ -399,8 +412,13 @@ export function entrarNoPatio(estado) {
   return { ok: true };
 }
 
-export function entrar(estado, { huntId, mode, strategy }) {
+export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false }) {
   const boss = CATALOGO.bosses.find((b) => b.id === huntId) ?? null;
+  // A campanha (ver `systems/campanha.mjs`): a fase desta hunt, ou o boss de fim de ato.
+  const dif = Campanha.DIFICULDADES.includes(dificuldade) ? dificuldade : Campanha.DIFICULDADES[0];
+  const fase = boss ? null : Campanha.faseDe(huntId);
+  const atoDoBoss = boss && pelaCampanha ? Campanha.atoDoBoss(boss.id) : null;
+  const primeiraDoAto = atoDoBoss != null && !Campanha.bossVencido(estado, dif, atoDoBoss);
   const hunt = acharHunt(huntId) ?? boss;
   const mapaCustom = hunt ? null : mapaRealCapturado(huntId);
   if (!hunt && !mapaCustom) return { ok: false, erro: 'Esta hunt não existe.' };
@@ -411,22 +429,29 @@ export function entrar(estado, { huntId, mode, strategy }) {
     if (!pode.ok) return pode;
   }
   /*
-   * Hunt normal: só com o level dela (pedido do dono — "hunt normais também só
-   * se a pessoa tiver lv"). Antes o level era só referência e um level 20 abria
-   * Port Hope (40). As Vip/Instance/Divine já conferem o delas em `podeEntrar`,
-   * e os bosses logo abaixo. Quem já está caçando não é tirado: isto é a porta.
+   * Hunt normal = FASE da campanha: entra quem a liberou naquela dificuldade
+   * ("só o progresso", decisão do dono — o level do personagem não conta).
+   * Isto substitui a trava de level que as hunts normais tinham. As
+   * Vip/Instance/Divine seguem com a delas (`podeEntrar`), e os bosses abaixo.
    */
-  if (hunt && !boss && !tranca && (estado.level ?? 0) < (hunt.level ?? 0)) {
-    return { ok: false, erro: `${hunt.name ?? 'Esta hunt'} pede level ${hunt.level}, e você é level ${estado.level ?? 0}.` };
+  if (fase) {
+    const motivo = Campanha.motivoParaNaoEntrar(estado, dif, huntId);
+    if (motivo) return { ok: false, erro: motivo };
+  }
+  if (atoDoBoss != null && !Campanha.bossLiberado(estado, dif, atoDoBoss)) {
+    return { ok: false, erro: `Complete as 12 fases do Ato ${atoDoBoss} no ${Campanha.CAMPANHA.dificuldades[dif].nome} para enfrentar ${boss.name}.` };
   }
   if (hunt && !boss && !tranca && !mapaRealCapturado(hunt.id) && !temTerrenoReal(hunt)) {
     return { ok: false, erro: 'Esta hunt ainda não tem terreno capturado.' };
   }
-  if (boss) {
+  // O boss de fim de ato pela campanha: a PRIMEIRA vez sem level, task nem
+  // recarga; depois da vitória, repetir segue a recarga dele (sem level/task:
+  // a força é a da dificuldade).
+  if (boss && !primeiraDoAto) {
     // Level e a recarga real de cada boss (`cooldownHours`, `bossCooldownsAte`).
-    if ((estado.level ?? 0) < (boss.level ?? 0)) return { ok: false, erro: `Precisa de level ${boss.level}.` };
+    if (atoDoBoss == null && (estado.level ?? 0) < (boss.level ?? 0)) return { ok: false, erro: `Precisa de level ${boss.level}.` };
     // Boss de task: abre com a task feita e sai uma vez por personagem (`bosses.mjs`).
-    const recusa = Bosses.recusaDaTask(estado, boss.id);
+    const recusa = atoDoBoss == null ? Bosses.recusaDaTask(estado, boss.id) : null;
     if (recusa) return { ok: false, erro: recusa };
     const volta = Bau.garantir(estado).bossCooldownsAte[boss.id] ?? 0;
     if (volta > Date.now()) {
@@ -455,6 +480,8 @@ export function entrar(estado, { huntId, mode, strategy }) {
    * para a casa livre mais perto. Sala de boss e as salas geradas (Vip) já
    * contam do jeito delas: densidade 1 aqui.
    */
+  // A força dos bichos na campanha: a da fase (ou do boss do ato) naquela dificuldade.
+  const escala = fase ? Campanha.escalaDaFase(huntId, dif) : atoDoBoss != null ? Campanha.escalaDoBoss(atoDoBoss, dif) : null;
   const deCatalogo = !boss && !tranca && (hunt?.posicoes?.length || SPAWNS_CAPTURADOS[huntId]);
   const densidade = deCatalogo ? Math.max(1, Math.round(hunt?.density ?? 1)) : 1;
   /*
@@ -476,7 +503,7 @@ export function entrar(estado, { huntId, mode, strategy }) {
       const casa = casaLivrePerto(g, p, (c) => casasDeSpawn.has(`${c.x},${c.y},${z}`));
       if (!casa) break;
       casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
-      const m = criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt);
+      const m = Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
       if (m) todos.push({ z, m });
     }
   }
@@ -551,6 +578,10 @@ export function entrar(estado, { huntId, mode, strategy }) {
     respawns: [],
     isBoss: !!boss,
     bossId: boss?.id ?? null,
+    // A campanha: a fase (ou o boss do ato) e a dificuldade — o progresso, a
+    // escala dos bichos que renascem e o ato/dificuldade do loot saem daqui.
+    campanha: fase ? { huntId, dificuldade: dif, ato: fase.ato } : atoDoBoss != null ? { bossDoAto: atoDoBoss, dificuldade: dif, ato: atoDoBoss } : null,
+    escala,
     // "Você tem 25 minutos lá dentro, nos dois modos" (no relógio da caçada).
     fimDaSala: boss ? Bosses.TEMPO_NA_SALA_MS : null,
     tranca,
@@ -560,8 +591,8 @@ export function entrar(estado, { huntId, mode, strategy }) {
     // `state` da hunt nova — a sessão manda uma vez e apaga.
     viagem: { hunt: hunt?.name ?? huntId, motivo: 'partida' },
   };
-  // "A espera começa quando você ENTRA — mesmo que ele não caia."
-  if (boss) Bosses.marcarEntrada(estado, boss.id);
+  // "A espera começa quando você ENTRA — mesmo que ele não caia." (Menos a primeira do boss de ato.)
+  if (boss && !primeiraDoAto) Bosses.marcarEntrada(estado, boss.id);
   return { ok: true };
 }
 
@@ -675,6 +706,8 @@ export function entrarNaSala(estado, sala, gente = []) {
     clock: sala.clock ?? 0, ultimoTique: Date.now(), cooldowns: {},
     assistencia: settings.assistencia !== false, autoBarra: settings.autoBarra ?? settings.assistencia !== false,
     levaAlvo: 0, lureVolta: 0, leva: 0, lurando: false, isBoss: false, bossId: null, tranca,
+    // A fase da campanha e a escala dos bichos são da SALA: quem entra caça a mesma fase.
+    campanha: sala.campanha ?? null, escala: sala.escala ?? null,
     startedAt: Date.now(), sessao: novaSessao(estado, dados.name ?? sala.huntId, 'auto'),
     viagem: { hunt: dados.name ?? sala.huntId, motivo: 'partida' },
   };
@@ -1486,6 +1519,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // que a barra lê para os seletores "Alvo", "Distância" e "Lurar até".
     huntId: hunt.huntId,
     isBoss: !!hunt.isBoss,
+    // A fase da campanha e o progresso nela (a barra "312 / 500" da tela).
+    fase: Campanha.faseAtual(estado, hunt),
     // A barra do boss no alto da tela (`barraDoBoss`, hud.mjs) — o formato real.
     boss: hunt.isBoss ? barraDoBoss(hunt) : null,
     strategy: hunt.strategy ?? 'nearest',

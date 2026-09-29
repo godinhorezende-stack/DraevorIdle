@@ -44,9 +44,30 @@ test('TIER: a ficha é idêntica à real (139 peças, com a bolsa de loot)', () 
   assert.deepEqual(semT(Forja.viewDoTier(e)), tier);
 });
 
+/*
+ * O sistema de itens (29/09) trocou DE PROPÓSITO a régua de cada atributo (o
+ * teto dobrou, pedido do dono), os nomes ("Ataque" -> "ATK") e o "tier" do
+ * atributo virou "nível" (1–5). O que continua tendo de ser igual ao original:
+ * as peças, os slots, os custos, quantos atributos, quais, com que valor e se
+ * é "torto" — os campos que dependem da régua saem da comparação.
+ */
+const DA_REGUA = ['min', 'max', 'pct', 'nome', 'texto', 'tier', 'nivel'];
+// E o limite de atributos, que passou a ser o da raridade (Comum 1 ... Mítico 6).
+const DO_LIMITE = ['vagas', 'maxAfixos'];
+function semRegua(o) {
+  if (Array.isArray(o)) return o.map(semRegua);
+  if (!o || typeof o !== 'object') return o;
+  const ehAfixo = 'valor' in o && 'id' in o && typeof o.id === 'string';
+  return Object.fromEntries(
+    Object.entries(o)
+      .filter(([k]) => !(ehAfixo && DA_REGUA.includes(k)) && !DO_LIMITE.includes(k))
+      .map(([k, v]) => [k, semRegua(v)]),
+  );
+}
+
 test('AFIXOS: a ficha é idêntica à real (145 peças, mochila incluída, "torto" por perícia da arma)', () => {
   const { e, afixos } = oDaCaptura();
-  assert.deepEqual(semT(Forja.viewDosAfixos(e)), afixos);
+  assert.deepEqual(semRegua(semT(Forja.viewDosAfixos(e))), semRegua(afixos));
 });
 
 test('CRAFT: as fichas das 5 vocações são idênticas às reais (Craftado e V2)', () => {
@@ -81,9 +102,10 @@ test('reroll mantendo o afixo SEMPRE sobe o número, mesmo numa régua curta (pe
       if (novo.id === af[indice].id) assert.ok(novo.value > af[indice].value, `${novo.id}: ${af[indice].value} → ${novo.value}`);
     }
   }
-  // No topo ele não passa do máximo da régua.
-  const topo = Afixos.rerrolar('weapon', [{ id: 'skill_axe', tier: 3, value: 3 }], 0, 3268);
-  if (topo.id === 'skill_axe') assert.equal(topo.value, 3);
+  // No topo ele não passa do máximo da régua (a do sistema de itens: o fim do Nível 5).
+  const max = Afixos.FICHAS.skill_axe.max;
+  const topo = Afixos.rerrolar('weapon', [{ id: 'skill_axe', nivel: 5, value: max }], 0, 3268);
+  if (topo.id === 'skill_axe') assert.equal(topo.value, max);
 });
 
 // ---- Craft: fazer de verdade ----

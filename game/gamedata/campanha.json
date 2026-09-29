@@ -1,0 +1,852 @@
+{
+ "_nota": "A campanha: as 48 hunts normais em 4 atos (12 fases cada), jogadas em Fácil, depois Médio, depois Difícil (como o Normal/Cruel/Merciless do Path of Exile). Completar uma fase = matar kills[dificuldade] bichos nela; libera a seguinte. Fim de cada ato: um boss (a 1a vitória, sem task nem recarga, libera o ato seguinte; depois da vitória do Ato 4 abre a dificuldade seguinte). nivel[dificuldade] = o level ALVO da fase (cada ato é um quarto da faixa da dificuldade, as 12 fases em escada): os bichos são escalados do level original para ele (ver escala). Tudo editável.",
+ "dificuldades": {
+  "facil": {
+   "nome": "Fácil",
+   "faixa": [
+    1,
+    100
+   ],
+   "killsMult": 1
+  },
+  "medio": {
+   "nome": "Médio",
+   "faixa": [
+    101,
+    600
+   ],
+   "killsMult": 2
+  },
+  "dificil": {
+   "nome": "Difícil",
+   "faixa": [
+    601,
+    2000
+   ],
+   "killsMult": 3
+  }
+ },
+ "_escala": "Os bichos de uma fase são multiplicados por (nivel alvo / level original) elevado a estes expoentes: vida, dano (golpe e magia) e exp. Um troll (level 8) no Difícil (level 601) fica ~ (601/8)^1,2 = 178x mais vivo. Números iniciais, para balancear com a simulação.",
+ "escala": {
+  "vida": 1.2,
+  "dano": 1,
+  "exp": 1.2,
+  "minimo": 0.02
+ },
+ "fases": [
+  {
+   "huntId": "troll-cave",
+   "nome": "Troll Cave",
+   "ato": 1,
+   "levelOriginal": 8,
+   "nivel": {
+    "facil": 1,
+    "medio": 101,
+    "dificil": 601
+   },
+   "kills": {
+    "facil": 50,
+    "medio": 100,
+    "dificil": 150
+   }
+  },
+  {
+   "huntId": "amazon-camp",
+   "nome": "Amazon Camp",
+   "ato": 1,
+   "levelOriginal": 12,
+   "nivel": {
+    "facil": 3,
+    "medio": 112,
+    "dificil": 633
+   },
+   "kills": {
+    "facil": 50,
+    "medio": 100,
+    "dificil": 150
+   }
+  },
+  {
+   "huntId": "dark-pyramid",
+   "nome": "Dark Pyramid",
+   "ato": 1,
+   "levelOriginal": 15,
+   "nivel": {
+    "facil": 5,
+    "medio": 124,
+    "dificil": 664
+   },
+   "kills": {
+    "facil": 60,
+    "medio": 120,
+    "dificil": 180
+   }
+  },
+  {
+   "huntId": "port-hope-corym-dungeons",
+   "nome": "Port Hope Corym Dungeons",
+   "ato": 1,
+   "levelOriginal": 40,
+   "nivel": {
+    "facil": 8,
+    "medio": 135,
+    "dificil": 696
+   },
+   "kills": {
+    "facil": 60,
+    "medio": 120,
+    "dificil": 180
+   }
+  },
+  {
+   "huntId": "mistrock-cyclops",
+   "nome": "Mistrock Cyclops",
+   "ato": 1,
+   "levelOriginal": 45,
+   "nivel": {
+    "facil": 10,
+    "medio": 146,
+    "dificil": 728
+   },
+   "kills": {
+    "facil": 60,
+    "medio": 120,
+    "dificil": 180
+   }
+  },
+  {
+   "huntId": "hive-surface",
+   "nome": "Hive Surface",
+   "ato": 1,
+   "levelOriginal": 50,
+   "nivel": {
+    "facil": 12,
+    "medio": 157,
+    "dificil": 760
+   },
+   "kills": {
+    "facil": 70,
+    "medio": 140,
+    "dificil": 210
+   }
+  },
+  {
+   "huntId": "mother-of-scarabs-lair",
+   "nome": "Mother of Scarabs Lair",
+   "ato": 1,
+   "levelOriginal": 50,
+   "nivel": {
+    "facil": 14,
+    "medio": 169,
+    "dificil": 791
+   },
+   "kills": {
+    "facil": 70,
+    "medio": 140,
+    "dificil": 210
+   }
+  },
+  {
+   "huntId": "cults-carlin",
+   "nome": "Cults Carlin",
+   "ato": 1,
+   "levelOriginal": 60,
+   "nivel": {
+    "facil": 16,
+    "medio": 180,
+    "dificil": 823
+   },
+   "kills": {
+    "facil": 80,
+    "medio": 160,
+    "dificil": 240
+   }
+  },
+  {
+   "huntId": "drefia-wyrm-caves",
+   "nome": "Drefia Wyrm Caves",
+   "ato": 1,
+   "levelOriginal": 80,
+   "nivel": {
+    "facil": 18,
+    "medio": 191,
+    "dificil": 855
+   },
+   "kills": {
+    "facil": 80,
+    "medio": 160,
+    "dificil": 240
+   }
+  },
+  {
+   "huntId": "edron-were-mobs",
+   "nome": "Edron Were Mobs",
+   "ato": 1,
+   "levelOriginal": 100,
+   "nivel": {
+    "facil": 21,
+    "medio": 202,
+    "dificil": 887
+   },
+   "kills": {
+    "facil": 90,
+    "medio": 180,
+    "dificil": 270
+   }
+  },
+  {
+   "huntId": "old-fortress-hero-cave",
+   "nome": "Old Fortress - Hero Cave",
+   "ato": 1,
+   "levelOriginal": 100,
+   "nivel": {
+    "facil": 23,
+    "medio": 214,
+    "dificil": 918
+   },
+   "kills": {
+    "facil": 90,
+    "medio": 180,
+    "dificil": 270
+   }
+  },
+  {
+   "huntId": "putrid-mummies",
+   "nome": "Putrid Mummies",
+   "ato": 1,
+   "levelOriginal": 100,
+   "nivel": {
+    "facil": 25,
+    "medio": 225,
+    "dificil": 950
+   },
+   "kills": {
+    "facil": 100,
+    "medio": 200,
+    "dificil": 300
+   }
+  },
+  {
+   "huntId": "black-serpent-dungeon",
+   "nome": "Black Serpent Dungeon",
+   "ato": 2,
+   "levelOriginal": 120,
+   "nivel": {
+    "facil": 26,
+    "medio": 226,
+    "dificil": 951
+   },
+   "kills": {
+    "facil": 110,
+    "medio": 220,
+    "dificil": 330
+   }
+  },
+  {
+   "huntId": "ghastly-dragon-lair",
+   "nome": "Ghastly Dragon Lair",
+   "ato": 2,
+   "levelOriginal": 140,
+   "nivel": {
+    "facil": 28,
+    "medio": 237,
+    "dificil": 983
+   },
+   "kills": {
+    "facil": 110,
+    "medio": 220,
+    "dificil": 330
+   }
+  },
+  {
+   "huntId": "feyrist-nightmare",
+   "nome": "Feyrist Nightmare",
+   "ato": 2,
+   "levelOriginal": 150,
+   "nivel": {
+    "facil": 30,
+    "medio": 249,
+    "dificil": 1014
+   },
+   "kills": {
+    "facil": 120,
+    "medio": 240,
+    "dificil": 360
+   }
+  },
+  {
+   "huntId": "medusa-cave",
+   "nome": "Medusa Cave",
+   "ato": 2,
+   "levelOriginal": 150,
+   "nivel": {
+    "facil": 33,
+    "medio": 260,
+    "dificil": 1046
+   },
+   "kills": {
+    "facil": 130,
+    "medio": 260,
+    "dificil": 390
+   }
+  },
+  {
+   "huntId": "oramond-hydras",
+   "nome": "Oramond Hydras",
+   "ato": 2,
+   "levelOriginal": 150,
+   "nivel": {
+    "facil": 35,
+    "medio": 271,
+    "dificil": 1078
+   },
+   "kills": {
+    "facil": 140,
+    "medio": 280,
+    "dificil": 420
+   }
+  },
+  {
+   "huntId": "werehyaenna-north",
+   "nome": "Werehyaenna North",
+   "ato": 2,
+   "levelOriginal": 150,
+   "nivel": {
+    "facil": 37,
+    "medio": 282,
+    "dificil": 1110
+   },
+   "kills": {
+    "facil": 150,
+    "medio": 300,
+    "dificil": 450
+   }
+  },
+  {
+   "huntId": "haunted-temple",
+   "nome": "Haunted Temple",
+   "ato": 2,
+   "levelOriginal": 180,
+   "nivel": {
+    "facil": 39,
+    "medio": 294,
+    "dificil": 1141
+   },
+   "kills": {
+    "facil": 160,
+    "medio": 320,
+    "dificil": 480
+   }
+  },
+  {
+   "huntId": "glooth-bandits-east",
+   "nome": "Glooth Bandits East",
+   "ato": 2,
+   "levelOriginal": 200,
+   "nivel": {
+    "facil": 41,
+    "medio": 305,
+    "dificil": 1173
+   },
+   "kills": {
+    "facil": 170,
+    "medio": 340,
+    "dificil": 510
+   }
+  },
+  {
+   "huntId": "zaoan-draken-walls",
+   "nome": "Zaoan Draken Walls",
+   "ato": 2,
+   "levelOriginal": 200,
+   "nivel": {
+    "facil": 43,
+    "medio": 316,
+    "dificil": 1205
+   },
+   "kills": {
+    "facil": 180,
+    "medio": 360,
+    "dificil": 540
+   }
+  },
+  {
+   "huntId": "deeper-banuta-8",
+   "nome": "Deeper Banuta -8",
+   "ato": 2,
+   "levelOriginal": 250,
+   "nivel": {
+    "facil": 46,
+    "medio": 327,
+    "dificil": 1237
+   },
+   "kills": {
+    "facil": 190,
+    "medio": 380,
+    "dificil": 570
+   }
+  },
+  {
+   "huntId": "golems-catacombs",
+   "nome": "Golems Catacombs",
+   "ato": 2,
+   "levelOriginal": 250,
+   "nivel": {
+    "facil": 48,
+    "medio": 339,
+    "dificil": 1268
+   },
+   "kills": {
+    "facil": 200,
+    "medio": 400,
+    "dificil": 600
+   }
+  },
+  {
+   "huntId": "medusa-tower",
+   "nome": "Medusa Tower",
+   "ato": 2,
+   "levelOriginal": 250,
+   "nivel": {
+    "facil": 50,
+    "medio": 350,
+    "dificil": 1300
+   },
+   "kills": {
+    "facil": 220,
+    "medio": 440,
+    "dificil": 660
+   }
+  },
+  {
+   "huntId": "wild-life-raid-oramond",
+   "nome": "Wild Life Raid - Oramond",
+   "ato": 3,
+   "levelOriginal": 250,
+   "nivel": {
+    "facil": 51,
+    "medio": 351,
+    "dificil": 1301
+   },
+   "kills": {
+    "facil": 230,
+    "medio": 460,
+    "dificil": 690
+   }
+  },
+  {
+   "huntId": "winter-dream-court",
+   "nome": "Winter Dream Court",
+   "ato": 3,
+   "levelOriginal": 250,
+   "nivel": {
+    "facil": 53,
+    "medio": 362,
+    "dificil": 1333
+   },
+   "kills": {
+    "facil": 250,
+    "medio": 500,
+    "dificil": 750
+   }
+  },
+  {
+   "huntId": "burster-spectres",
+   "nome": "Burster Spectres",
+   "ato": 3,
+   "levelOriginal": 300,
+   "nivel": {
+    "facil": 55,
+    "medio": 374,
+    "dificil": 1364
+   },
+   "kills": {
+    "facil": 260,
+    "medio": 520,
+    "dificil": 780
+   }
+  },
+  {
+   "huntId": "roshamuul-cave",
+   "nome": "ROSHAMUUL CAVE",
+   "ato": 3,
+   "levelOriginal": 300,
+   "nivel": {
+    "facil": 58,
+    "medio": 385,
+    "dificil": 1396
+   },
+   "kills": {
+    "facil": 280,
+    "medio": 560,
+    "dificil": 840
+   }
+  },
+  {
+   "huntId": "werelions-1",
+   "nome": "Werelions -1",
+   "ato": 3,
+   "levelOriginal": 350,
+   "nivel": {
+    "facil": 60,
+    "medio": 396,
+    "dificil": 1428
+   },
+   "kills": {
+    "facil": 300,
+    "medio": 600,
+    "dificil": 900
+   }
+  },
+  {
+   "huntId": "abandoned-sewers",
+   "nome": "Abandoned Sewers",
+   "ato": 3,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 62,
+    "medio": 407,
+    "dificil": 1460
+   },
+   "kills": {
+    "facil": 320,
+    "medio": 640,
+    "dificil": 960
+   }
+  },
+  {
+   "huntId": "asura-palace",
+   "nome": "Asura Mirror",
+   "ato": 3,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 64,
+    "medio": 419,
+    "dificil": 1491
+   },
+   "kills": {
+    "facil": 340,
+    "medio": 680,
+    "dificil": 1020
+   }
+  },
+  {
+   "huntId": "deathlings",
+   "nome": "Deathlings",
+   "ato": 3,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 66,
+    "medio": 430,
+    "dificil": 1523
+   },
+   "kills": {
+    "facil": 360,
+    "medio": 720,
+    "dificil": 1080
+   }
+  },
+  {
+   "huntId": "falcons",
+   "nome": "Falcons",
+   "ato": 3,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 68,
+    "medio": 441,
+    "dificil": 1555
+   },
+   "kills": {
+    "facil": 380,
+    "medio": 760,
+    "dificil": 1140
+   }
+  },
+  {
+   "huntId": "netherworld",
+   "nome": "Netherworld",
+   "ato": 3,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 71,
+    "medio": 452,
+    "dificil": 1587
+   },
+   "kills": {
+    "facil": 410,
+    "medio": 820,
+    "dificil": 1230
+   }
+  },
+  {
+   "huntId": "poi-dt-seal",
+   "nome": "POI DT Seal",
+   "ato": 3,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 73,
+    "medio": 464,
+    "dificil": 1618
+   },
+   "kills": {
+    "facil": 440,
+    "medio": 880,
+    "dificil": 1320
+   }
+  },
+  {
+   "huntId": "spike-8",
+   "nome": "Spike -8",
+   "ato": 3,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 75,
+    "medio": 475,
+    "dificil": 1650
+   },
+   "kills": {
+    "facil": 470,
+    "medio": 940,
+    "dificil": 1410
+   }
+  },
+  {
+   "huntId": "summer-court",
+   "nome": "Summer Court",
+   "ato": 4,
+   "levelOriginal": 400,
+   "nivel": {
+    "facil": 76,
+    "medio": 476,
+    "dificil": 1651
+   },
+   "kills": {
+    "facil": 500,
+    "medio": 1000,
+    "dificil": 1500
+   }
+  },
+  {
+   "huntId": "prison-2",
+   "nome": "Prison -2",
+   "ato": 4,
+   "levelOriginal": 450,
+   "nivel": {
+    "facil": 78,
+    "medio": 487,
+    "dificil": 1683
+   },
+   "kills": {
+    "facil": 530,
+    "medio": 1060,
+    "dificil": 1590
+   }
+  },
+  {
+   "huntId": "sphinx-issavi",
+   "nome": "Sphinx Issavi",
+   "ato": 4,
+   "levelOriginal": 450,
+   "nivel": {
+    "facil": 80,
+    "medio": 499,
+    "dificil": 1714
+   },
+   "kills": {
+    "facil": 560,
+    "medio": 1120,
+    "dificil": 1680
+   }
+  },
+  {
+   "huntId": "cobra-bastion-1",
+   "nome": "Cobra Bastion -1",
+   "ato": 4,
+   "levelOriginal": 550,
+   "nivel": {
+    "facil": 83,
+    "medio": 510,
+    "dificil": 1746
+   },
+   "kills": {
+    "facil": 600,
+    "medio": 1200,
+    "dificil": 1800
+   }
+  },
+  {
+   "huntId": "dt-seal-inq",
+   "nome": "DT Seal INQ",
+   "ato": 4,
+   "levelOriginal": 550,
+   "nivel": {
+    "facil": 85,
+    "medio": 521,
+    "dificil": 1778
+   },
+   "kills": {
+    "facil": 640,
+    "medio": 1280,
+    "dificil": 1920
+   }
+  },
+  {
+   "huntId": "feru-way",
+   "nome": "Feru Way",
+   "ato": 4,
+   "levelOriginal": 550,
+   "nivel": {
+    "facil": 87,
+    "medio": 532,
+    "dificil": 1810
+   },
+   "kills": {
+    "facil": 680,
+    "medio": 1360,
+    "dificil": 2040
+   }
+  },
+  {
+   "huntId": "flimsy-lost-souls-venore",
+   "nome": "Flimsy Lost Souls Venore",
+   "ato": 4,
+   "levelOriginal": 550,
+   "nivel": {
+    "facil": 89,
+    "medio": 544,
+    "dificil": 1841
+   },
+   "kills": {
+    "facil": 730,
+    "medio": 1460,
+    "dificil": 2190
+   }
+  },
+  {
+   "huntId": "warzone-2",
+   "nome": "Warzone 2",
+   "ato": 4,
+   "levelOriginal": 550,
+   "nivel": {
+    "facil": 91,
+    "medio": 555,
+    "dificil": 1873
+   },
+   "kills": {
+    "facil": 770,
+    "medio": 1540,
+    "dificil": 2310
+   }
+  },
+  {
+   "huntId": "dark-thais",
+   "nome": "Dark Thais",
+   "ato": 4,
+   "levelOriginal": 800,
+   "nivel": {
+    "facil": 93,
+    "medio": 566,
+    "dificil": 1905
+   },
+   "kills": {
+    "facil": 830,
+    "medio": 1660,
+    "dificil": 2490
+   },
+   "pular": true,
+   "_pular": "hunt sem bichos/terreno hoje: conta como completa sozinha"
+  },
+  {
+   "huntId": "infernatil-seal",
+   "nome": "Infernatil Seal",
+   "ato": 4,
+   "levelOriginal": 950,
+   "nivel": {
+    "facil": 96,
+    "medio": 577,
+    "dificil": 1937
+   },
+   "kills": {
+    "facil": 880,
+    "medio": 1760,
+    "dificil": 2640
+   }
+  },
+  {
+   "huntId": "jaded-roots",
+   "nome": "Jaded Roots",
+   "ato": 4,
+   "levelOriginal": 1200,
+   "nivel": {
+    "facil": 98,
+    "medio": 589,
+    "dificil": 1968
+   },
+   "kills": {
+    "facil": 940,
+    "medio": 1880,
+    "dificil": 2820
+   },
+   "pular": true,
+   "_pular": "hunt sem bichos/terreno hoje: conta como completa sozinha"
+  },
+  {
+   "huntId": "walking-pillar",
+   "nome": "Walking Pillar",
+   "ato": 4,
+   "levelOriginal": 1200,
+   "nivel": {
+    "facil": 100,
+    "medio": 600,
+    "dificil": 2000
+   },
+   "kills": {
+    "facil": 1000,
+    "medio": 2000,
+    "dificil": 3000
+   }
+  }
+ ],
+ "bosses": {
+  "1": {
+   "bossId": "urmahlullu-the-immaculate",
+   "nome": "Urmahlullu the Immaculate",
+   "levelOriginal": 100,
+   "nivel": {
+    "facil": 25,
+    "medio": 225,
+    "dificil": 950
+   }
+  },
+  "2": {
+   "bossId": "ascending-ferumbras",
+   "nome": "Ascending Ferumbras",
+   "levelOriginal": 250,
+   "nivel": {
+    "facil": 50,
+    "medio": 350,
+    "dificil": 1300
+   }
+  },
+  "3": {
+   "bossId": "bakragore",
+   "nome": "Bakragore",
+   "levelOriginal": 250,
+   "nivel": {
+    "facil": 75,
+    "medio": 475,
+    "dificil": 1650
+   }
+  },
+  "4": {
+   "bossId": "the-primal-menace",
+   "nome": "The Primal Menace",
+   "levelOriginal": 1000,
+   "nivel": {
+    "facil": 100,
+    "medio": 600,
+    "dificil": 2000
+   }
+  }
+ }
+}

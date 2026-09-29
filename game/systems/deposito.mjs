@@ -4,6 +4,7 @@
 // recompensa que não coube ("O que não coube foi para o DEPÓSITO... Nada se
 // perdeu", `marcoNoDeposito` no client).
 import * as Afixos from './afixos.mjs';
+import { converterTudo } from './itens/item.mjs';
 import * as R from './regras.mjs';
 import { ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
 import { pesoDoInventario, cabeNoPeso, guardarMoeda } from './inventario.mjs';
@@ -50,6 +51,8 @@ export function caixaDaConta(guardada) {
   caixa.teto ??= MOLDE_DA_CONTA.teto;
   caixa.podeComprarVagas = caixa.teto < (MOLDE_DA_CONTA.vagasNoMaximo ?? 100);
   caixa.itens ??= [];
+  // As peças de antes do sistema de itens, convertidas ao ler (ver `systems/itens/item.mjs`).
+  converterTudo(caixa.itens);
   caixa.tipos = caixa.itens.length;
   return caixa;
 }

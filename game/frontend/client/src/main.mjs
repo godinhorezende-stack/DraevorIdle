@@ -1317,6 +1317,11 @@ function handle(message) {
     case 'contaCharDados':
       chegaramDadosDoOutro(message);
       break;
+    // A campanha inteira (as dificuldades, as 48 fases e os bosses): a lista de hunts pede ao abrir.
+    case 'campanha':
+      state.campanha = message.campanha;
+      panelCtx.redraw?.();
+      break;
     case 'actionCatalog':
       setActionCatalog(message.catalog);
       // A Cyclopedia lê o mesmo catálogo: uma fonte só para a barra e para a
@@ -9192,7 +9197,7 @@ function mostrarCartazDoBoss({ key, nome, texto } = {}) {
    * aparece e' o suficiente e nao custa nada.
    */
   let acima = 0;
-  for (const id of ['cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'faixa-serversave', 'treino-faixa', 'barra-do-boss', 'barras-da-arena']) {
+  for (const id of ['cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'faixa-serversave', 'treino-faixa', 'barra-do-boss', 'barras-da-arena', 'barra-da-fase']) {
     const no = $(id);
     if (!no || no.hidden) continue;
     const r = no.getBoundingClientRect();

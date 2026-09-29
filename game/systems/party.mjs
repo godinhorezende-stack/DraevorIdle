@@ -251,9 +251,8 @@ function motivoParaNaoEntrar(convidado, sala) {
   if (!sala) return 'Essa pessoa não está caçando.';
   if (sala.isBoss || sala.huntId === 'treino') return 'Nessa caçada não dá para entrar.';
   const nome = nomeDe(convidado);
-  const lv = convidado.estado?.level ?? 1;
-  const precisa = Cacadas.levelDaHunt(sala.huntId);
-  if (lv < precisa) return `${nome} ainda não liberou ${Cacadas.nomeDaHunt(sala.huntId)}: ela pede level ${precisa}, e ${nome} é level ${lv}.`;
+  // A fase da campanha NÃO é conferida aqui: na party, qualquer um entra na
+  // caçada do outro (decisão do dono — um amigo pode "carregar" o outro).
   const naSala = [...vivas.values()].filter((o) => o !== convidado && o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala).map(nomeDe);
   return foraDaFaixa([...naSala, nome]);
 }

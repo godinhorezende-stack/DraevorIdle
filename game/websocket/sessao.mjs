@@ -63,6 +63,8 @@ import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
+import * as ItensDoJogo from '../systems/itens/item.mjs';
+import * as Campanha from '../systems/campanha.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -881,6 +883,9 @@ export class Sessao {
         return this.deixarOffline();
       case 'contaChar':
         return this.contaChar(m);
+      // A campanha inteira (as dificuldades, as 48 fases com o progresso e os bosses dos atos): a lista de hunts pede ao abrir.
+      case 'campanha':
+        return this.enviar({ t: 'campanha', campanha: Campanha.paraCliente(this.estado) });
       case 'walk':
         return this.andar(m);
       case 'walkTo':
@@ -1504,6 +1509,8 @@ export class Sessao {
     if (!estado.diario) Object.assign(estado, Recompensas.estadoInicial());
     // Os sets de marco da VOCAÇÃO dele (os ainda não pegos vinham com os itens de knight).
     Recompensas.marcosDaVocacao(estado);
+    // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
+    if (ItensDoJogo.converterPersonagem(estado)) Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.
     if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
     // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)

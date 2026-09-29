@@ -1,0 +1,36 @@
+{
+ "_nota": "Efeitos ESPECIAIS (Lendário) e SUPREMOS (Mítico): separados dos atributos. Cada efeito tem um id que o código conhece (systems/itens/efeitos.mjs) e os parâmetros aqui. Vários equipados com o MESMO efeito não acumulam (vale o maior).",
+ "lendario": {
+  "desespero": {
+   "nome": "Fúria do Desespero",
+   "texto": "+{bonus}% de dano enquanto a vida estiver abaixo de {vida}%.",
+   "bonus": 30,
+   "vida": 40
+  },
+  "sede-de-sangue": {
+   "nome": "Sede de Sangue",
+   "texto": "Cada criatura derrotada cura {cura}% da vida máxima.",
+   "cura": 4
+  },
+  "pele-de-pedra": {
+   "nome": "Pele de Pedra",
+   "texto": "−{reducao}% de todo dano recebido.",
+   "reducao": 12
+  }
+ },
+ "mitico": {
+  "carrasco": {
+   "nome": "Carrasco",
+   "texto": "+{bonus}% de dano contra criaturas com menos de {vida}% da vida (não vale contra boss).",
+   "bonus": 100,
+   "vida": 25
+  },
+  "colheita-de-almas": {
+   "nome": "Colheita de Almas",
+   "texto": "Cada criatura derrotada dá +{porKill}% de dano por {segundos} s, acumulando até {max} vezes.",
+   "porKill": 2,
+   "segundos": 15,
+   "max": 25
+  }
+ }
+}

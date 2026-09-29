@@ -1793,7 +1793,8 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
    * ver `.cell.essencia-vermelha`, no CSS.
    */
   const vermelha = ehEssencia(entry) && ehVermelha(entry);
-  vestirRaridade(cell, meta, ehEssencia(entry) ? (vermelha ? 'mítico' : entry.raridade ?? 'comum') : null);
+  // Essência: a raridade da peça de onde saiu; peça: a raridade do DROP (sistema de itens), senão a do catálogo.
+  vestirRaridade(cell, meta, ehEssencia(entry) ? (vermelha ? 'mítico' : entry.raridade ?? 'comum') : entry.raridade ?? null);
   if (vermelha) cell.classList.add('essencia-vermelha');
   /*
    * ---- Qual PILHA esta célula é ----
@@ -1997,7 +1998,7 @@ export function renderInventory() {
 
     if (equipped) {
       cell.dataset.item = equipped.id;
-      vestirRaridade(cell, state.items[equipped.id]);
+      vestirRaridade(cell, state.items[equipped.id], equipped.raridade ?? null);
       // O slot vai junto: e' por ele que o balao acha os imbuements da peca.
       tipFor(cell, equipped.id, null, slot, equipped);
       cell.append(itemCanvas(equipped.id, 32, equipped.count));

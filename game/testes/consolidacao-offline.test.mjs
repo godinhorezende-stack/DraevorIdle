@@ -106,7 +106,8 @@ test('pedaços DENTRO dos 30 min simulados: o tique continua de onde parou, e o 
 test('morreu num pedaço: não avança mais, e o login aplica a morte', () => {
   const T0 = Date.UTC(2026, 8, 29, 3, 0, 0);
   const e = personagemDeTeste({ vocacao: 'knight', level: 8 });
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest' }).ok, true);
+  // No Médio: no Fácil a Troll Cave é a fase 1 (level alvo 1) e o troll não tira nem 1 de vida.
+  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest', dificuldade: 'medio' }).ok, true);
   e.hunt.offlineDesde = T0;
   e.hp = 1;
   e.maxHp = 1;

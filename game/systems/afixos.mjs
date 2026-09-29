@@ -1,22 +1,26 @@
-// Afixos ("Atributos extras", as estrelas da peça) — o sorteio no drop, a soma
-// do que está vestido e a regra de guardar na venda automática.
+// Afixos ("Atributos" da peça) — a soma do que está vestido, a régua, a cor, a
+// forja (rerrolar) e a regra de guardar na venda automática.
 //
-// Formato na peça (o do original, capturado em `forjaAfixos`):
-// `af: [{id, tier, value, rr?}]` — `id` do `catalog.afixos` (38 no total, com
-// `min`/`max` da régua), `value` já no número final ("+3.1%"), `rr` quantas
-// vezes aquele posto foi rerrolado. A essência (item 900001) leva um afixo só
-// e `afixoDe` (o slot de onde saiu), `raridade` e `mitica` (a vermelha).
+// Formato na peça: `af: [{id, nivel, value, rr?}]` — `id` do `catalog.afixos`
+// (38 no total), `nivel` o "Nível do Atributo" (1–5), `value` já no número final
+// ("+3.1%"), `rr` quantas vezes aquele posto foi rerrolado. Peça de antes do
+// sistema de itens tinha `tier` (1–3) no lugar do nível: `nivelDe` resolve as
+// duas, e a entrada no personagem converte (ver `systems/itens/item.mjs`). A
+// essência (item 900001) leva um afixo só e `afixoDe` (o slot de onde saiu),
+// `raridade` e `mitica` (a vermelha).
 //
-// O sorteio saiu dos 137 drops reais capturados (conta Zotod, caça normal):
-//   quantos afixos: 1 → 73%, 2 → 24%, 3 → 3%
-//   tier de cada afixo: T1 90% (régua 0–26%), T2 8% (22–59%), T3 2% (95–100%)
-//   "torto" (não é do grupo natural do slot, "não é desta peça"): 31%
-// O boss rola na fonte de cima: um degrau de tier a mais (a captura só tem
-// drop de caverna; o original diz só que "o tier diz de que fonte a peça veio").
+// O SORTEIO não mora mais aqui: raridade, quantidade, quais atributos, nível e
+// valor saem do gerador central (`systems/itens/gerar.mjs`), com as tabelas em
+// `gamedata/itens/*.json`. Antes era fixo em código, medido nos drops reais do
+// original (1 afixo 73% / 2 24% / 3 3%; T1 90% / T2 8% / T3 2%; 31% "tortos").
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
 import * as Gemas from './gemas.mjs';
 import * as Imbuements from './imbuements.mjs';
+// O sistema de itens (raridade, níveis 1–5, faixas por nível, pools): a régua
+// de cada atributo passa a ser a dele — ver `systems/itens/config.mjs`.
+import * as ItensConfig from './itens/config.mjs';
+import * as Gerar from './itens/gerar.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -74,27 +78,7 @@ export const valorNaRegua = (id, pct) => {
   return arredonda(f, f.min + (Math.max(0, pct) / 100) * (f.max - f.min));
 };
 
-/** Os afixos que ainda não estão na peça, do grupo natural (ou torto). */
-function escolherId(slot, jaTem, torto, itemId) {
-  const nativos = nativosDe(slot, itemId).filter((id) => FICHAS[id]);
-  const pool = torto ? Object.keys(FICHAS).filter((id) => !nativos.includes(id)) : nativos;
-  return sorteio(pool.filter((id) => !jaTem.includes(id))) ?? sorteio(nativos.filter((id) => !jaTem.includes(id)));
-}
-
 const ehTorto = (slot, id, itemId) => !nativosDe(slot, itemId).includes(id);
-
-/** Um afixo novo (T1/T2/T3 pela fonte). `degrau` 0 = caverna, 1 = boss. */
-function novoAfixo(slot, jaTem, degrau = 0, itemId = null) {
-  const torto = Math.random() < 0.31;
-  const id = escolherId(slot, jaTem, torto, itemId);
-  if (!id) return null;
-  const r = Math.random();
-  let tier = r < 0.9 ? 1 : r < 0.983 ? 2 : 3;
-  tier = Math.min(3, tier + degrau);
-  // A régua de cada tier, do dado real (T1 cai mais embaixo, T3 no topo).
-  const pct = tier === 1 ? 26 * Math.random() ** 1.3 : tier === 2 ? 22 + 37 * Math.random() : 95 + 5 * Math.random();
-  return { id, tier, value: valorNaRegua(id, pct) };
-}
 
 /** A peça aceita afixo? (equipável, não empilha, de um slot com afixo) */
 export function aceitaAfixo(id) {
@@ -102,28 +86,44 @@ export function aceitaAfixo(id) {
   return !!meta && !meta.stackable && SLOTS_COM_AFIXO.has(meta.slot);
 }
 
-/** Os afixos de um drop: `null` se a peça não aceita. */
-export function rolarDrop(id, { boss = false } = {}) {
-  if (!aceitaAfixo(id)) return null;
-  const slot = ITEM_CATALOG[id].slot;
-  if (slot === 'backpack') return null; // mochila com afixo só pela forja (ver `NATIVOS`)
-  const r = Math.random();
-  const quantos = boss ? (r < 0.5 ? 1 : r < 0.85 ? 2 : 3) : r < 0.73 ? 1 : r < 0.97 ? 2 : 3;
-  const af = [];
-  for (let i = 0; i < quantos; i++) {
-    const a = novoAfixo(slot, af.map((x) => x.id), boss ? 1 : 0, id);
-    if (a) af.push(a);
-  }
-  return af;
+/**
+ * Os atributos de um drop — só a PONTE para o gerador central
+ * (`systems/itens/gerar.mjs`), para não existir um segundo sorteio. O combate
+ * já chama o gerador direto; isto fica para quem ainda pede só os `af`.
+ */
+export function rolarDrop(id, { boss = false, level = 1 } = {}) {
+  if (!Gerar.aceitaAtributos(id)) return null; // mochila: só pela forja
+  return Gerar.gerarItem({ itemId: id, level, boss }).af ?? [];
 }
 
-/** Rerroll: outro sorteio SEMPRE acima do pct atual (no topo: outro afixo, em 100%). */
+/** O NÍVEL (1–5) de um atributo: o gravado, ou (peça antiga) o da faixa onde o valor cai. */
+export const nivelDe = (a) => a?.nivel ?? Gerar.nivelDoValor(a?.id, Number(a?.value) || 0);
+
+/**
+ * A cor de um atributo pelo nível: 1 azul (N1–N2), 2 roxa (N3–N4), 3 dourada
+ * (N5), 4 vermelha (acima do teto do N5 — a essência vermelha da fusão).
+ */
+export function corDoAtributo(a) {
+  const f = FICHAS[a?.id];
+  if (f && Number(a.value) > f.max + 1e-9) return 4;
+  const n = nivelDe(a);
+  return n >= 5 ? 3 : n >= 3 ? 2 : 1;
+}
+
+/** Quantos atributos uma peça desta raridade pode ter (o topo da faixa da raridade). */
+export function maxAtributos(raridade) {
+  const q = ItensConfig.RARIDADES.raridades[raridade]?.atributos;
+  return q ? Math.max(...Object.keys(q).map(Number)) : MAX_AFIXOS;
+}
+
+/** Rerroll: outro sorteio SEMPRE acima do pct atual (no topo: outro afixo, em 100%). Só do pool do equipamento. */
 export function rerrolar(slot, af, indice, itemId = null) {
   const atual = af[indice];
   const pctAtual = Math.min(100, pctDe(atual));
   const outros = af.filter((_, i) => i !== indice).map((a) => a.id);
-  const torto = Math.random() < 0.31;
-  let id = Math.random() < 0.5 && pctAtual < 100 ? atual.id : escolherId(slot, [...outros, ...(pctAtual >= 100 ? [atual.id] : [])], torto, itemId);
+  const pool = (itemId ? Gerar.poolDe(itemId) : nativosDe(slot, itemId)).filter((id) => FICHAS[id]);
+  const livres = pool.filter((id) => !outros.includes(id) && !(pctAtual >= 100 && id === atual.id));
+  let id = Math.random() < 0.5 && pctAtual < 100 ? atual.id : sorteio(livres);
   id ??= atual.id;
   const pctSorteado = pctAtual >= 100 ? 100 : pctAtual + 1 + Math.random() * (100 - pctAtual - 1);
   let value = valorNaRegua(id, pctSorteado);
@@ -137,9 +137,7 @@ export function rerrolar(slot, af, indice, itemId = null) {
   if (id === atual.id && pctAtual < 100 && f && value <= atual.value) {
     value = Math.min(f.max, arredonda(f, atual.value + (f.tipo === 'flat' ? 1 : 0.1)));
   }
-  const pct = pctDe({ id, value });
-  const tier = pct >= 95 ? 3 : pct >= 34 ? 2 : 1;
-  return { id, tier, value, rr: (atual.rr ?? 0) + 1 };
+  return { id, nivel: Gerar.nivelDoValor(id, value), value, rr: (atual.rr ?? 0) + 1 };
 }
 
 // ------------------------------------------------------- o que está vestido
@@ -167,7 +165,9 @@ export function viewDoAfixo(a, slot, itemId = null) {
     nome: f.nome,
     tipo: f.tipo,
     valor: a.value,
-    tier: a.tier ?? 1,
+    // "Nível do Atributo" (1–5). `tier` fica igual, para a tela de antes da atualização.
+    nivel: nivelDe(a),
+    tier: nivelDe(a),
     pct: pctDe(a),
     min: f.min,
     max: f.max,
@@ -182,10 +182,7 @@ export function viewDoAfixo(a, slot, itemId = null) {
 /** A cor da peça: a do melhor afixo (1 azul, 2 roxa, 3 dourada, 4 vermelha). */
 export function corDaPeca(p) {
   let q = 0;
-  for (const a of p.af ?? []) {
-    const pct = pctDe(a);
-    q = Math.max(q, pct > 100 ? 4 : pct >= 67 ? 3 : pct >= 34 ? 2 : 1);
-  }
+  for (const a of p.af ?? []) q = Math.max(q, corDoAtributo(a));
   return q;
 }
 
@@ -202,7 +199,8 @@ export function guarda(estado, p) {
   const s = estado.settings ?? {};
   const pisoRaridade = Number(s.guardarRaridade ?? 0);
   if (pisoRaridade > 0) {
-    const r = RARIDADES.indexOf(ITEM_CATALOG[p.id]?.rarity ?? 'comum');
+    // A raridade do DROP (sistema de itens); a do catálogo só para peça antiga.
+    const r = RARIDADES.indexOf(p.raridade ?? ITEM_CATALOG[p.id]?.rarity ?? 'comum');
     if (r >= pisoRaridade) return true;
   }
   if (!p.af?.length) return false;
