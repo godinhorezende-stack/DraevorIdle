@@ -62,6 +62,7 @@ import * as Banqueiro from '../systems/banqueiro.mjs';
 import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
+import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -769,7 +770,9 @@ export class Sessao {
   // ------------------------------------------------------------- handshake
 
   ola() {
-    this.enviar({ t: 'hello', catalog: CATALOGO });
+    // A versão do jogo já na conexão: depois de um deploy, a aba aberta se reconecta
+    // e fica sabendo aqui, antes de escolher personagem (ver `versao-do-cliente.mjs`).
+    this.enviar({ t: 'hello', catalog: CATALOGO, versao: VERSAO_DO_CLIENTE });
   }
 
   // -------------------------------------------------------------- receber
@@ -1597,7 +1600,7 @@ export class Sessao {
     const rankingDeExp = await Ranking.topo('exp');
     this.enviar({
       t: 'welcome',
-      versao: Novidades.VERSAO,
+      versao: VERSAO_DO_CLIENTE,
       novidades: Novidades.novidades(),
       character: completo,
       /*

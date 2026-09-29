@@ -13857,6 +13857,65 @@ body.mirando #map { cursor: crosshair; }
 .atualizar-novidades ul { margin: 0; padding-left: 16px; }
 .atualizar-novidades li { font-size: 11.5px; line-height: 1.5; margin-bottom: 5px; color: var(--text); }
 .atualizar-novidades li::marker { color: var(--accent-dim); }
+/* Sem lista nova: uma linha só, centrada, no lugar da caixa de itens. */
+.atualizar-novidades.atualizar-generico {
+  text-align: center; padding: 8px 12px; font-size: 12px; color: var(--text);
+}
+
+/* O selo redondo do topo: diz "atualização" antes de qualquer palavra. */
+.atualizar-selo {
+  justify-self: center; display: grid; place-items: center;
+  width: 44px; height: 44px; border-radius: 50%;
+  font-size: 24px; line-height: 1; color: var(--accent);
+  background: radial-gradient(circle, rgba(63, 191, 168, .22), rgba(63, 191, 168, .04) 70%);
+  border: 1px solid var(--accent-dim);
+  box-shadow: 0 0 18px rgba(63, 191, 168, .25);
+  animation: atualizar-gira 2.4s linear infinite;
+}
+@keyframes atualizar-gira { to { transform: rotate(360deg); } }
+
+/* A contagem: uma barra fina que esvazia, e a frase embaixo. */
+.atualizar-trilho {
+  height: 4px; margin: 2px 12px 0; border-radius: 999px; overflow: hidden;
+  background: rgba(255, 255, 255, .08);
+}
+.atualizar-trilho i {
+  display: block; height: 100%; width: 100%;
+  background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+  transition: width .25s linear;
+}
+.atualizar-dentro p.atualizar-contagem {
+  min-height: 1.4em; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+/* Pausada (Caça Online, sala de boss): a barra para e fica cinza. */
+.atualizar.pausado .atualizar-trilho i { background: var(--muted); opacity: .5; }
+.atualizar.pausado .atualizar-selo { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .atualizar-selo { animation: none; }
+  .atualizar-trilho i { transition: none; }
+}
+
+/* ---- Celular ----
+   Em pé: a caixa ocupa a largura (com respiro), o botão fica largo para o dedo.
+   Deitado: pouca altura — a lista de novidades encolhe e o miolo rola por dentro,
+   para o botão nunca sair da tela. */
+@media (max-width: 560px) {
+  .atualizar { padding: 12px; }
+  .atualizar-painel { width: 100%; max-width: 100%; }
+  .atualizar-dentro { padding: 16px 14px 14px; gap: 10px; }
+  .atualizar-dentro h2 { font-size: 18px; }
+  .atualizar-dentro button { width: 100%; min-width: 0; min-height: 44px; }
+  .atualizar-novidades { max-height: 34vh; }
+}
+@media (max-height: 480px) {
+  .atualizar { padding: 8px; }
+  .atualizar-painel { max-height: calc(100vh - 16px); }
+  .atualizar-dentro { max-height: calc(100vh - 16px); overflow-y: auto; gap: 8px; padding: 12px 14px; }
+  .atualizar-selo { width: 32px; height: 32px; font-size: 18px; }
+  .atualizar-dentro h2 { font-size: 16px; }
+  .atualizar-novidades { max-height: 26vh; }
+}
 
 /* ======================================================= O BALCÃO (mercado) */
 /*
