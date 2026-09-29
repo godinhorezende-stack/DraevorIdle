@@ -185,3 +185,26 @@ test('ficha: o ataque do anel/amuleto soma ao da arma, em faixa', () => {
   assert.equal(com.ataqueMax, sem.ataqueMax + 12);
   assert.ok(com.ataque > sem.ataque);
 });
+
+test('migração: peça antiga sorteia a faixa pela raridade que já tem; estável nas leituras; munição não tem faixa', async () => {
+  const Item = await import('../systems/itens/item.mjs');
+  const antiga = () => ({ id: arma.id, count: 1, raridade: 'épico', af: [] });
+  const a = antiga();
+  assert.equal(Item.sortearFaixa(a), true);
+  const { piso, teto } = C.RARIDADES.raridades['épico'].base;
+  const [p, t] = a.base.attack;
+  assert.ok(p >= Math.round(arma.attack * piso[0]) && t <= Math.round(arma.attack * teto[1]) && t >= p);
+  assert.equal(Item.sortearFaixa(a), false, 'idempotente: já tem faixa');
+  // Sorteio repetível (baú/mercado/depósito lidos de novo): a mesma peça leva a mesma faixa.
+  const x = antiga();
+  const y = antiga();
+  Item.sortearFaixa(x);
+  Item.sortearFaixa(y);
+  assert.deepEqual(x.base, y.base);
+  // Munição: sem faixa, e a que já saiu com uma perde.
+  const municao = Object.values(ITEM_CATALOG).find((i) => i.slot === 'ammo');
+  const m = { id: municao.id, count: 1, base: { attack: [1, 2] } };
+  assert.equal(Item.sortearFaixa(m), true);
+  assert.equal(m.base, undefined);
+  assert.deepEqual(rolarBase(municao.id, 'raro'), {});
+});

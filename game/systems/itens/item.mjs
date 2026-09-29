@@ -13,7 +13,7 @@
 // (0 Comum, 1 Incomum, 2 Raro, 3 Épico). Nada é apagado; é idempotente.
 import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS } from './config.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
-import { valorNaFaixa, arredondar, CAMPOS_DA_BASE } from './gerar.mjs';
+import { valorNaFaixa, arredondar, CAMPOS_DA_BASE, rolarBase, aceitaAtributos } from './gerar.mjs';
 
 const ID_DA_ESSENCIA = 900001;
 const FAIXAS_ANTIGAS = [[0, 20], [20, 40], [40, 60], [60, 85], [85, 100]];
@@ -68,7 +68,7 @@ export function faixaDoCampo(p, campo) {
  */
 export function metaDaPeca(p) {
   const meta = ITEM_CATALOG[p?.id];
-  if (!meta || !p?.base) return meta;
+  if (!meta || !p?.base || meta.slot === 'ammo') return meta;
   const medias = {};
   for (const campo of Object.keys(baseValida(p.base))) {
     const [piso, teto] = faixaDoCampo(p, campo);
@@ -111,13 +111,48 @@ export function converterPeca(p) {
   return mudou;
 }
 
+/** Um sorteio repetível (mulberry32) a partir de um texto: a mesma peça lida duas vezes leva a mesma faixa. */
+function sorteioDe(texto) {
+  let h = 1779033703 ^ texto.length;
+  for (let i = 0; i < texto.length; i++) h = Math.imul(h ^ texto.charCodeAt(i), 3432918353), (h = (h << 13) | (h >>> 19));
+  let a = h >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * A peça de ANTES das faixas (sem `base`) sorteia a dela agora, com a raridade
+ * que já tem (Comum se não tiver). Devolve `true` se mudou. `rng` nulo = sorteio
+ * repetível da própria peça: a leitura de um baú, do mercado ou do depósito não
+ * pode dar uma faixa diferente a cada vez que a peça é vista. Munição não tem
+ * faixa (e a que já saiu com uma, perde).
+ */
+export function sortearFaixa(p, rng = null) {
+  const meta = ITEM_CATALOG[p?.id];
+  if (meta?.slot === 'ammo') {
+    if (!p.base) return false;
+    delete p.base;
+    return true;
+  }
+  if (p.base || !aceitaAtributos(p.id)) return false;
+  const raridade = raridadeDaPeca(p);
+  p.base = rolarBase(p.id, raridade, rng ?? sorteioDe(`${p.id}|${raridade}|${p.tier ?? 0}|${JSON.stringify(p.af ?? [])}`));
+  return true;
+}
+
 /**
  * Converte toda peça dentro de `raiz` (o estado do personagem, o baú da conta,
  * uma oferta do mercado...), onde quer que ela esteja: equipamento, mochila,
  * bolsa de loot, depósito, sacolas do boss. Anda pelo objeto procurando o
- * formato de peça (`id` numérico + `af` em lista). Devolve quantas mudaram.
+ * formato de peça (`id` numérico + `count`, ou + `af` em lista): converte os
+ * atributos antigos e sorteia a faixa que faltar. Devolve quantas mudaram.
  */
-export function converterTudo(raiz) {
+export function converterTudo(raiz, rng = null) {
   let n = 0;
   const visitar = (o) => {
     if (!o || typeof o !== 'object') return;
@@ -125,8 +160,9 @@ export function converterTudo(raiz) {
       for (const x of o) visitar(x);
       return;
     }
-    if (typeof o.id === 'number' && Array.isArray(o.af)) {
+    if (typeof o.id === 'number' && (Array.isArray(o.af) || typeof o.count === 'number')) {
       if (converterPeca(o)) n++;
+      if (sortearFaixa(o, rng)) n++;
       return;
     }
     for (const [k, v] of Object.entries(o)) {
@@ -140,12 +176,13 @@ export function converterTudo(raiz) {
 }
 
 /** A versão do formato de item do personagem: quem já está nela não precisa ser varrido de novo. */
-export const VERSAO_DOS_ITENS = 1;
+export const VERSAO_DOS_ITENS = 2; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura)
 
 /** Converte o personagem (uma vez — marca `versaoDosItens`). Devolve quantas peças mudaram. */
 export function converterPersonagem(estado) {
   if (!estado || estado.versaoDosItens === VERSAO_DOS_ITENS) return 0;
-  const n = converterTudo(estado);
+  // Sorteio de verdade (uma vez só, e fica gravado no personagem).
+  const n = converterTudo(estado, Math.random);
   estado.versaoDosItens = VERSAO_DOS_ITENS;
   return n;
 }

@@ -70,7 +70,9 @@ test('o personagem inteiro: equipamento, mochila, bolsa e depósito — uma vez 
   e.pouch = [{ id: 3004, count: 1, af: [antiga('crit_chance', 60), antiga('crit_dmg', 60)] }];
   e.deposito = [{ indice: 0, itens: [{ id: 3004, count: 1, af: [antiga('speed', 90)] }] }];
   e.hunt = { monstros: [{ id: 1, af: [] }] };
-  assert.equal(Item.converterPersonagem(e), 4);
+  // As 4 peças com atributo antigo + toda peça equipável que ainda não tinha faixa (kit incluído).
+  assert.ok(Item.converterPersonagem(e) >= 4);
+  for (const peca of Object.values(e.equipment)) if (peca && ITEM_CATALOG[peca.id]?.slot !== 'backpack') assert.ok(peca.base, `peça ${peca.id} sorteou a faixa`);
   assert.equal(e.versaoDosItens, Item.VERSAO_DOS_ITENS);
   assert.equal(e.equipment.ring.af[0].nivel, 5);
   assert.equal(e.pouch[0].raridade, 'raro');
