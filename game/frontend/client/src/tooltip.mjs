@@ -337,7 +337,17 @@ const tierOf = (meta) => {
  *
  * Recebe a ficha (`state.items[id]`) e devolve a classe; sem ficha, o comum.
  */
-export const classeDaRaridade = (meta) => `tier-${tierOf(meta ?? {}).key}`;
+/** O efeito da peça ({tipo, nome, texto}): pronto nela, ou montado com o catálogo. */
+function textoDoEfeitoDaPeca(peca) {
+  const e = peca?.efeito;
+  if (!e) return null;
+  if (e.texto) return e;
+  const ficha = getCatalogo()?.efeitosDeItem?.[e.tipo]?.[e.id];
+  if (!ficha) return { tipo: e.tipo, nome: e.id, texto: '' };
+  return { tipo: e.tipo, nome: ficha.nome, texto: String(ficha.texto ?? '').replace(/\{(\w+)\}/g, (_, k) => String(ficha[k] ?? '')) };
+}
+
+export const classeDaRaridade = (meta, peca = null) => `tier-${tierOf(peca?.raridade ? { rarity: peca.raridade } : meta ?? {}).key}`;
 
 /*
  * ---- A cor da estrela diz o quanto o afixo é FORTE ----
@@ -420,8 +430,15 @@ export function estrelasDosAfixos(af) {
      * exatamente uma coisa, e não é preciso ler número nenhum para saber qual.
      */
     fracao = Math.max(0, fracao);
-    const q = fracao > 1 ? 4 : fracao >= 2 / 3 ? 3 : fracao >= 1 / 3 ? 2 : 1;
-    return { ...posto, fracao, q };
+    /*
+     * ---- Com o sistema de itens, a cor é a do NÍVEL do atributo ----
+     * N1–N2 azul, N3–N4 roxa, N5 dourada; acima do teto do N5 (a essência
+     * vermelha da fusão) vermelha. Peça sem `nivel` (catálogo velho) cai na
+     * régua, como antes.
+     */
+    const nivel = Number(posto?.nivel) || null;
+    const q = fracao > 1 ? 4 : nivel ? (nivel >= 5 ? 3 : nivel >= 3 ? 2 : 1) : fracao >= 2 / 3 ? 3 : fracao >= 1 / 3 ? 2 : 1;
+    return { ...posto, fracao: nivel && fracao <= 1 ? (nivel - 1) / 4 + fracao / 100 : fracao, q };
   });
   return postos.sort((a, b) => b.fracao - a.fracao);
 }
@@ -573,11 +590,12 @@ export const marcaDeItem = (id, tier = 0, imbu = null, af = null, afixoDe = null
   if (postos.length) {
     partes.push(
       postos
-        // Três é o teto de afixos de uma peça, como os três encaixes acima.
-        .slice(0, 3)
+        // Seis é o teto de atributos de uma peça (a Mítica, no sistema de itens).
+        .slice(0, 6)
         .map((p) => {
           const id = String(p.id).toLowerCase().replace(/[^a-z0-9_]/g, '');
-          const grauDoAfixo = Math.min(3, Math.max(1, Math.floor(Number(p.tier) || 1)));
+          // O "Nível do Atributo" (1–5); peça antiga manda o tier (1–3) no mesmo lugar.
+          const grauDoAfixo = Math.min(5, Math.max(1, Math.floor(Number(p.nivel ?? p.tier) || 1)));
           // Uma casa decimal é o que o jogo escreve; mais do que isso é ruído
           // e engorda a marca sem mudar nada do que se lê.
           const valor = Math.round(Number(p.value) * 10) / 10;
@@ -616,7 +634,7 @@ function afixosDaMarca(bruto) {
     vistos.add(id);
     saida.push({
       id,
-      tier: Math.min(3, Math.max(1, Math.floor(Number(tier) || 1))),
+      nivel: Math.min(5, Math.max(1, Math.floor(Number(tier) || 1))),
       /*
        * ---- O grampo fecha no TETO, e não no topo da sorte ----
        *
@@ -632,7 +650,7 @@ function afixosDaMarca(bruto) {
        */
       value: Math.min(ficha.teto ?? ficha.max, Math.max(ficha.min, numero)),
     });
-    if (saida.length >= 3) break; // o mesmo teto do `marcaDeItem`
+    if (saida.length >= 6) break; // o mesmo teto do `marcaDeItem`
   }
   return saida;
 }
@@ -2142,8 +2160,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     ? ehVermelha(peca)
       ? 'mítico'
       : peca?.raridade ?? peca?.essenciaDe ?? 'comum'
-    : meta.rarity;
-  const tier = tierOf(essencia ? { rarity: raridadeDoBalao } : meta);
+    : // A raridade do DROP (sistema de itens); a do catálogo só para peça sem ela.
+      peca?.raridade ?? meta.rarity;
+  const tier = tierOf({ rarity: raridadeDoBalao });
   const classe = `tier-${tier.key}`;
 
   // ---- cabeçalho: nome à esquerda, sprite grande à direita ----
@@ -2222,6 +2241,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * onde ela pode entrar, então é ela que a linha tem de dizer.
    */
   identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
+  // O Item Level (o level do item-base): diferente do level do personagem e do nível dos atributos.
+  if (!essencia && meta.slot) identidade.append(el('em', 'item-level', `Item Level ${meta.minLevel ?? 1}`));
   head.append(identidade, el('div', 'tip-art', null));
   /*
    * E o DESENHO: a silhueta do slot, a mesma que a casa vazia da ficha mostra.
@@ -2374,7 +2395,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    */
   if (afixosDaPeca.length) {
     const extras = el('div', 'tip-afixos');
-    extras.append(el('div', 'tip-afixos-titulo', essencia ? 'O afixo guardado' : 'Atributos extras'));
+    extras.append(el('div', 'tip-afixos-titulo', essencia ? 'O atributo guardado' : 'Atributos'));
     for (const posto of afixosDaPeca) {
       const ficha = getCatalogo()?.afixos?.[posto.id];
       const valor = ficha?.tipo === 'flat'
@@ -2392,7 +2413,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
        * percentual porque é literalmente a régua que escolheu a cor.
        */
       const selo = el('i', `tip-afixo-tier q${posto.q}`);
-      selo.append(el('b', 'estrela', '★'), el('span', null, ` T${posto.tier} · ${Math.round(posto.fracao * 100)}%`));
+      // "Nível do Atributo" (1–5) — nunca "Tier", que é o da forja.
+      const nivelDoPosto = Number(posto.nivel ?? posto.tier) || 1;
+      selo.append(el('b', 'estrela', '★'), el('span', null, ` Nível ${nivelDoPosto}`));
       linha.append(el('span', null, `${valor} ${ficha?.nome ?? posto.id}`), selo);
       extras.append(linha);
     }
@@ -2414,6 +2437,20 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
       extras.append(el('div', 'tip-afixo-origem', 'entra em qualquer qualidade deste slot'));
     }
     node.append(extras);
+  }
+
+  /*
+   * ---- ✨ O efeito Lendário / Supremo ----
+   * Separado dos atributos: um atributo soma um número; o efeito muda uma regra.
+   * O texto vem da peça (o site manda pronto) ou do catálogo do servidor
+   * (`efeitosDeItem`, no hello), com os números da configuração.
+   */
+  const efeitoDaPeca = textoDoEfeitoDaPeca(peca);
+  if (efeitoDaPeca) {
+    const bloco = el('div', `tip-efeito tip-efeito-${efeitoDaPeca.tipo}`);
+    bloco.append(el('div', 'tip-efeito-titulo', efeitoDaPeca.tipo === 'mitico' ? '✨ Efeito Supremo' : '✨ Efeito Lendário'));
+    bloco.append(el('b', null, efeitoDaPeca.nome), el('div', null, efeitoDaPeca.texto));
+    node.append(bloco);
   }
 
   // ---- quem pode usar, e onde ----

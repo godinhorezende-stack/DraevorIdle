@@ -34,14 +34,20 @@ const precoDeVenda = (id) => Math.floor((ITEM_CATALOG[id]?.sell ?? 0) * TAXA_DA_
 // Gema do Gem Atelier nunca vai na venda automática ("é gema do Gem Atelier", no original).
 const vende = (estado, id) => precoDeVenda(id) > 0 && !estado.itemRules.noSell.includes(id) && !Gemas.ehGema(id);
 
-/** Põe `count` de `id` na bolsa (empilhando). Devolve quantos couberam. */
-export function porNaBolsa(estado, id, count = 1, af = null) {
+/**
+ * Põe `count` de `id` na bolsa (empilhando). Devolve quantos couberam.
+ * `peca`: a lista de atributos (`af`, o formato de antes) ou a peça inteira que
+ * o gerador de itens devolve (`{ af, raridade, efeito }`).
+ */
+export function porNaBolsa(estado, id, count = 1, peca = null) {
   garantir(estado);
   if (guardarMoeda(estado, id, count)) return count;
-  // Peça que caiu com afixo: um quadrado só dela, com as estrelas.
-  if (af?.length) {
+  const af = Array.isArray(peca) ? peca : peca?.af;
+  const efeito = Array.isArray(peca) ? null : peca?.efeito;
+  // Peça que caiu com atributo (ou efeito): um quadrado só dela.
+  if (af?.length || efeito) {
     if (estado.pouch.length >= VAGAS_DA_BOLSA) return 0;
-    estado.pouch.push({ id, count: 1, af });
+    estado.pouch.push({ id, count: 1, af: af ?? [], ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(efeito ? { efeito } : {}) });
     return 1;
   }
   const bolsa = estado.pouch;

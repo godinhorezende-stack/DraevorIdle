@@ -29,6 +29,8 @@ import * as Aparencia from './aparencia.mjs';
 import * as Ficha from './ficha.mjs';
 import { nomeDaHunt } from './hunt/terreno.mjs';
 import * as Ausentes from './ausentes.mjs';
+import * as ItensDoJogo from './itens/item.mjs';
+import * as EfeitosDeItem from './itens/efeitos.mjs';
 
 const TOPO = 20;
 const TOPO_EXP = 5;
@@ -252,9 +254,18 @@ function equipamento(e) {
       saida[slot] = null;
       continue;
     }
+    /*
+     * Uma CÓPIA convertida para o sistema de itens (quem não entrou no jogo desde
+     * a atualização ainda está no formato antigo no banco — ver itens/item.mjs),
+     * com o texto do efeito pronto: o catálogo desta página tem as chaves do
+     * original, e o balão lê o efeito da própria peça.
+     */
+    const peca = structuredClone({ ...p, count: p.count ?? 1 });
+    ItensDoJogo.converterPeca(peca);
+    if (peca.efeito) peca.efeito = { ...peca.efeito, ...EfeitosDeItem.textoDoEfeito(peca.efeito) };
     saida[slot] = {
       id: p.id, count: p.count ?? 1, nome: ITEM_CATALOG[p.id]?.name ?? `item ${p.id}`,
-      tier: p.tier ?? 0, imbuements: p.imbu?.length ?? 0, afixos: p.af?.length ?? 0, peca: { ...p, count: p.count ?? 1 },
+      tier: p.tier ?? 0, imbuements: p.imbu?.length ?? 0, afixos: p.af?.length ?? 0, peca,
     };
   }
   return saida;

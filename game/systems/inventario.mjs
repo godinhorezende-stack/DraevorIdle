@@ -134,7 +134,7 @@ export function removerItem(estado, id, count) {
 // ---- Material de craft/desmanche: mochila E bolsa de loot ----
 
 /** A peça carrega algo que se perderia (tier, afixo, imbuement)? */
-export const temExtras = (p) => !!(p?.tier || p?.af?.length || p?.imbu?.length);
+export const temExtras = (p) => !!(p?.tier || p?.af?.length || p?.imbu?.length || p?.efeito);
 
 const GUARDADAS = ['inventory', 'pouch'];
 
@@ -337,7 +337,7 @@ function acharPilha(itens, id, pilha) {
 /** `send({t:'equip', id, pilha, slot?})` — o que estava no slot volta para a mochila. */
 /** Devolve uma peça do corpo para a mochila SEM perder o que é dela (tier, imbuement, afixo). */
 function devolverPeca(estado, peca) {
-  if (peca.tier || peca.imbu?.length || peca.af?.length) (estado.inventory ??= []).push({ ...peca, count: peca.count ?? 1 });
+  if (temExtras(peca)) (estado.inventory ??= []).push({ ...peca, count: peca.count ?? 1 });
   else darItem(estado, peca.id, peca.count ?? 1);
 }
 

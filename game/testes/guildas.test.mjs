@@ -76,11 +76,12 @@ test('trocar o brasão: só o líder, 50 coins + efeito novo, o destravado não 
 });
 
 test('baú: guarda a peça apontada (alvo), não a primeira de mesmo id', async () => {
-  const af = [{ id: 'crit_dmg', tier: 2, value: 6.2 }];
-  lider.estado.inventory = [{ id: 3280, count: 1 }, { id: 3280, count: 1, af }];
+  // Peça no formato do sistema de itens (nível + raridade): o baú guarda como está.
+  const af = [{ id: 'crit_dmg', nivel: 2, value: 3.1 }];
+  lider.estado.inventory = [{ id: 3280, count: 1 }, { id: 3280, count: 1, raridade: 'incomum', af }];
   assert.equal((await Guildas.comando(lider, { action: 'bauGuardar', id: 3280, count: 1, alvo: { indice: 1, tier: 0, af } })).ok, true);
   assert.deepEqual(lider.estado.inventory, [{ id: 3280, count: 1 }]);
-  assert.deepEqual((await Guildas.vista(NOMES[0])).view.bau.itens, [{ id: 3280, af, count: 1 }]);
+  assert.deepEqual((await Guildas.vista(NOMES[0])).view.bau.itens, [{ id: 3280, raridade: 'incomum', af, count: 1 }]);
   // índice velho (a mochila mudou): acha pela peça
   lider.estado.inventory = [{ id: 1, count: 1 }, { id: 3280, count: 1, tier: 3 }, { id: 3280, count: 1 }];
   assert.equal((await Guildas.comando(lider, { action: 'bauGuardar', id: 3280, count: 1, alvo: { indice: 0, tier: 3, af: null } })).ok, true);

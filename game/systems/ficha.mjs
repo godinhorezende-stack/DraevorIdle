@@ -21,6 +21,8 @@ import * as Charms from './charms.mjs';
 import * as Proficiencia from './proficiencia.mjs';
 import * as Imbuements from './imbuements.mjs';
 import * as Aparencia from './aparencia.mjs';
+// Os efeitos especiais (Lendário) e supremos (Mítico) das peças vestidas.
+import * as EfeitosDeItem from './itens/efeitos.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade: "Skill corpo a corpo" vale
@@ -154,7 +156,8 @@ function calcularCombate(estado) {
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
     esquiva: gem.esquiva / 100,
-    danoRecebidoDasGemas: gem.mitigacao / 100,
+    // A mitigação das gemas e a dos efeitos de item (Pele de Pedra) multiplicam: 1 − (1 − a)(1 − b).
+    danoRecebidoDasGemas: 1 - (1 - gem.mitigacao / 100) * (1 - EfeitosDeItem.reducaoDeDano(estado)),
     magiasDasGemas: gem.magias,
     // O resto dos perks da proficiência (golpe básico, runas, boss, classe, vida/mana, perícia como dano).
     proficiencia: prof,
@@ -225,7 +228,8 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
   const daArvore = (1 + (ficha.danoDaArvore ?? 0)) * Arvore.fatorDasHabilidades(estado, alvo);
-  const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore);
+  // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
+  const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught };
 }

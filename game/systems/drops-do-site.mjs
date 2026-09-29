@@ -21,6 +21,7 @@
 import { banco } from '../database/banco.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import * as Afixos from './afixos.mjs';
+import * as EfeitosDeItem from './itens/efeitos.mjs';
 
 const GUARDA = 30;
 const DE_BOSS = new Set(['lendário', 'mítico']);
@@ -53,11 +54,8 @@ const Q = {
   aparar: banco.prepare('DELETE FROM site_drops WHERE tipo = ? AND id NOT IN (SELECT id FROM site_drops WHERE tipo = ? ORDER BY em DESC, id DESC LIMIT ?)'),
 };
 
-/** A cor de um afixo, na régua: 1 azul, 2 roxa, 3 dourada, 4 vermelha (acima do topo). */
-const corDoAfixo = (a) => {
-  const pct = Afixos.pctDe(a);
-  return pct > 100 ? 4 : pct >= 67 ? 3 : pct >= 34 ? 2 : 1;
-};
+/** A cor de um atributo pelo NÍVEL: 1 azul, 2 roxa, 3 dourada, 4 vermelha (acima do topo) — ver `Afixos.corDoAtributo`. */
+const corDoAfixo = (a) => Afixos.corDoAtributo(a);
 
 const numeroBr = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
@@ -65,7 +63,8 @@ const numeroBr = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigit
 function afixosDoSite(af) {
   return (af ?? []).map((a) => {
     const f = Afixos.FICHAS[a.id] ?? { nome: a.id, tipo: 'pct' };
-    return { texto: `+${numeroBr(a.value)}${f.tipo === 'pct' ? '%' : ''} ${f.nome}`, tier: a.tier ?? 1, pct: Afixos.pctDe(a), q: corDoAfixo(a) };
+    const nivel = Afixos.nivelDe(a);
+    return { texto: `+${numeroBr(a.value)}${f.tipo === 'pct' ? '%' : ''} ${f.nome}`, nivel, tier: nivel, pct: Afixos.pctDe(a), q: corDoAfixo(a) };
   });
 }
 
@@ -77,7 +76,10 @@ function fichaDaPeca(id, count, peca = {}) {
     id,
     nome: it.name ?? `item ${id}`,
     count,
-    raridade: it.rarity ?? 'comum',
+    // A raridade do DROP (o sistema de itens); a do catálogo só para peça antiga.
+    raridade: peca.raridade ?? it.rarity ?? 'comum',
+    // Só quando tem (Lendário/Mítico): as outras linhas seguem no formato do original.
+    ...(peca.efeito ? { efeito: EfeitosDeItem.textoDoEfeito(peca.efeito) } : {}),
     estrelas: af.length,
     forca: af.length ? Afixos.corDaPeca({ af }) : 0,
     tier: peca.tier ?? 0,
@@ -97,12 +99,11 @@ function fichaDaPeca(id, count, peca = {}) {
   };
 }
 
-/** Vale a capa? Bag; três estrelas douradas; ou lendária/mítica de boss com 2+ estrelas. */
-export function valeAnotar(id, af, { boss = false } = {}) {
+/** Vale a capa? Bag; item Lendário ou Mítico (do drop); ou 2+ atributos de Nível 5. */
+export function valeAnotar(id, af, { raridade = null } = {}) {
   if (ehBag(id)) return true;
-  const estrelas = af?.length ?? 0;
-  if (estrelas >= 3 && af.every((a) => corDoAfixo(a) >= 3)) return true;
-  return boss && estrelas >= 2 && DE_BOSS.has(ITEM_CATALOG[id]?.rarity);
+  if (DE_BOSS.has(raridade)) return true;
+  return (af ?? []).filter((a) => Afixos.nivelDe(a) >= 5).length >= 2;
 }
 
 async function guardar(tipo, dados) {
@@ -116,17 +117,17 @@ async function guardar(tipo, dados) {
  * fogo e esquece de propósito, é só um log para a capa do site, não pode
  * atrasar o golpe que acabou de matar o bicho.
  */
-export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0 }) {
-  if (emTeste() || !valeAnotar(id, af, { boss })) return;
-  const { afixos, ...resto } = fichaDaPeca(id, count, { af, tier });
+export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0, raridade = null, efeito = null }) {
+  if (emTeste() || !valeAnotar(id, af, { raridade })) return;
+  const { afixos, ...resto } = fichaDaPeca(id, count, { af, tier, raridade, efeito });
   await guardar('drop', { ...resto, quem, em: Date.now(), onde, boss, bicho, chance: ITEM_CATALOG[id]?.dropChance ?? null, afixos });
 }
 
 /** O que saiu de uma bag aberta (`bag` = o id da bag, `entre` = de quantas opções). */
-export async function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0 }) {
+export async function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0, raridade = null, efeito = null }) {
   // O que sai de uma bag vai sempre (a lista é "uma peça sorteada por bag").
   if (emTeste()) return;
-  await guardar('bag', { ...fichaDaPeca(id, count, { af, tier }), quem, em: Date.now(), bag, bagNome: ITEM_CATALOG[bag]?.name ?? null, entre });
+  await guardar('bag', { ...fichaDaPeca(id, count, { af, tier, raridade, efeito }), quem, em: Date.now(), bag, bagNome: ITEM_CATALOG[bag]?.name ?? null, entre });
 }
 
 /** `GET /api/drops`. */

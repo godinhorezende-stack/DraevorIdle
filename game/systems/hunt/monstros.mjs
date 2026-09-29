@@ -2,6 +2,7 @@
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
 import { CATALOGO } from '../dados.mjs';
 import { aliadosPorCasa } from './aliados.mjs';
+import { aplicarEscala } from '../campanha.mjs';
 import * as R from '../regras.mjs';
 import { huntOuMapaCustom } from './terreno.mjs';
 import { VIZINHANCA_8, VIZINHANCA_4, bfsDistancias, distancia } from './caminho.mjs';
@@ -162,14 +163,15 @@ export function renascer(hunt) {
     if ((hunt.clock ?? 0) < r.volta) return true;
     // Bicho de outro andar renasce lá, esperando o personagem (ver `trocarDeAndar`).
     if (r.z != null && hunt.z != null && r.z !== hunt.z) {
-      const novo = criarMonstro(r, dados);
+      const novo = aplicarEscala(criarMonstro(r, dados), hunt.escala);
       if (novo) ((hunt.outrosAndares ??= {})[r.z] ??= []).push(novo);
       return false;
     }
     // Não nasce em cima do personagem (nem de outro da party) nem de outro bicho — tenta de novo depois.
     const ocupado = (hunt.pos.x === r.x && hunt.pos.y === r.y) || aliadosPorCasa(hunt).has(`${r.x},${r.y}`) || hunt.monstros.some((m) => m.x === r.x && m.y === r.y);
     if (ocupado) return true;
-    const novo = criarMonstro(r, dados);
+    // Na campanha, o bicho renasce com a força da fase (ver `systems/campanha.mjs`).
+    const novo = aplicarEscala(criarMonstro(r, dados), hunt.escala);
     if (novo) hunt.monstros.push(novo);
     return false;
   });

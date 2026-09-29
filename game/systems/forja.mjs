@@ -143,7 +143,13 @@ export function transferirTier(estado, { de, para }) {
 
 // ================================================================ AFIXOS
 
-const raridadeDe = (id) => ITEM_CATALOG[id]?.rarity ?? 'comum';
+/*
+ * A raridade da PEÇA: a do drop (sistema de itens, decisão do dono: "drop
+ * manda em tudo, forja também"); peça antiga, sem ela, cai na do catálogo.
+ * O limite de atributos também é o da raridade (Comum 1 ... Mítico 6).
+ */
+const raridadeDe = (peca) => peca?.raridade ?? ITEM_CATALOG[peca?.id]?.rarity ?? 'comum';
+const vagasDe = (peca) => Math.max(0, A.maxAtributos(raridadeDe(peca)) - (peca?.af?.length ?? 0));
 const slotDe = (id) => ITEM_CATALOG[id]?.slot;
 
 function viewDaPeca({ lugar, peca }) {
@@ -151,9 +157,9 @@ function viewDaPeca({ lugar, peca }) {
   const af = peca.af ?? [];
   return {
     lugar, vestida: lugar.onde === 'equip', ondeNome: ondeNome(lugar), id: peca.id, nome: ITEM_CATALOG[peca.id]?.name, slot,
-    rarity: raridadeDe(peca.id),
+    rarity: raridadeDe(peca),
     afixos: af.map((a) => ({ ...A.viewDoAfixo(a, slot, peca.id), proximoReroll: { ...proximoReroll(a), vezes: a.rr ?? 0 } })),
-    vagas: A.MAX_AFIXOS - af.length,
+    vagas: vagasDe(peca),
     peca,
   };
 }
@@ -171,7 +177,7 @@ export function viewDosAfixos(estado, fez = null) {
     t: 'forjaAfixos',
     pecas: todas.filter(({ peca }) => A.aceitaAfixo(peca.id)).map(viewDaPeca),
     essencias: todas.filter(({ lugar, peca }) => lugar.onde === 'bag' && peca.id === A.ID_DA_ESSENCIA && peca.af?.length).map(viewDaEssencia),
-    maxAfixos: A.MAX_AFIXOS,
+    maxAfixos: A.maxAtributos('mítico'),
     custos: CUSTOS,
     gold: saldoDeOuro(estado),
     coins: estado.coins ?? 0,
@@ -180,7 +186,7 @@ export function viewDosAfixos(estado, fez = null) {
 }
 
 function essencia(peca, a, { mitica = false } = {}) {
-  return { id: A.ID_DA_ESSENCIA, count: 1, af: [{ ...a }], afixoDe: slotDe(peca?.id) ?? peca?.afixoDe ?? null, ...(mitica ? { mitica: true } : { raridade: raridadeDe(peca.id) }) };
+  return { id: A.ID_DA_ESSENCIA, count: 1, af: [{ ...a }], afixoDe: slotDe(peca?.id) ?? peca?.afixoDe ?? null, ...(mitica ? { mitica: true } : { raridade: raridadeDe(peca) }) };
 }
 
 // ---- rerroll
@@ -204,10 +210,10 @@ function previaDaTransferencia(estado, { de, para, indices }) {
   const recebe = acharPeca(estado, para);
   const base = { de, para, indices: [...(indices ?? [])].sort((x, y) => x - y) };
   if (!doadora?.af?.length || !recebe || mesmoLugar(de, para)) return { ...base, ok: false, reason: 'Escolha duas peças diferentes.' };
-  if (slotDe(doadora.id) !== slotDe(recebe.id) || raridadeDe(doadora.id) !== raridadeDe(recebe.id)) return { ...base, ok: false, reason: 'Só entre peças do MESMO slot e da MESMA raridade.' };
+  if (slotDe(doadora.id) !== slotDe(recebe.id) || raridadeDe(doadora) !== raridadeDe(recebe)) return { ...base, ok: false, reason: 'Só entre peças do MESMO slot e da MESMA raridade.' };
   const levados = base.indices.map((i) => doadora.af[i]).filter(Boolean);
   if (!levados.length) return { ...base, ok: false, reason: 'Marque pelo menos um afixo.' };
-  const vagas = A.MAX_AFIXOS - (recebe.af?.length ?? 0);
+  const vagas = vagasDe(recebe);
   if (levados.length > vagas) return { ...base, ok: false, reason: `${ITEM_CATALOG[recebe.id]?.name} só tem ${vagas} vaga(s).` };
   const repetido = levados.find((a) => (recebe.af ?? []).some((b) => b.id === a.id));
   if (repetido) return { ...base, ok: false, reason: `${ITEM_CATALOG[recebe.id]?.name} já tem ${A.FICHAS[repetido.id]?.nome}.` };
@@ -216,7 +222,7 @@ function previaDaTransferencia(estado, { de, para, indices }) {
     ...base, ok: true,
     levados: levados.map((a) => A.viewDoAfixo(a, slot, recebe.id)),
     depois: [...(recebe.af ?? []), ...levados].map((a) => A.viewDoAfixo(a, slot, recebe.id)),
-    custo: vezes(CUSTOS.transferencia[raridadeDe(recebe.id)] ?? CUSTOS.transferencia.comum, levados.length),
+    custo: vezes(CUSTOS.transferencia[raridadeDe(recebe)] ?? CUSTOS.transferencia.comum, levados.length),
   };
 }
 
@@ -244,7 +250,7 @@ function previaDoRetirar(estado, { lugar, indices }) {
   const tirados = base.indices.map((i) => peca.af[i]).filter(Boolean);
   if (!tirados.length || tirados.length > 3) return { ...base, ok: false, reason: 'Marque de 1 a 3 afixos.' };
   const slot = slotDe(peca.id);
-  const por = CUSTOS.retirar[raridadeDe(peca.id)] ?? CUSTOS.retirar.comum;
+  const por = CUSTOS.retirar[raridadeDe(peca)] ?? CUSTOS.retirar.comum;
   return {
     ...base, ok: true,
     tirados: tirados.map((a) => ({ ficha: A.viewDoAfixo(a, slot, peca.id) })),
@@ -264,10 +270,10 @@ export function retirar(estado, m) {
   const tirados = p.indices.map((i) => peca.af[i]);
   peca.af = peca.af.filter((_, i) => !p.indices.includes(i));
   if (!peca.af.length) delete peca.af;
-  for (const a of tirados) (estado.inventory ??= []).push(essencia(peca, { id: a.id, tier: a.tier, value: a.value }));
+  for (const a of tirados) (estado.inventory ??= []).push(essencia(peca, { id: a.id, nivel: A.nivelDe(a), value: a.value }));
   return {
     fez: {
-      tipo: 'retirar', id: peca.id, nome: ITEM_CATALOG[peca.id]?.name, slot: slotDe(peca.id), raridade: raridadeDe(peca.id),
+      tipo: 'retirar', id: peca.id, nome: ITEM_CATALOG[peca.id]?.name, slot: slotDe(peca.id), raridade: raridadeDe(peca),
       tirados: tirados.map((a) => A.viewDoAfixo(a, null)), ficaram: (peca.af ?? []).map((a) => A.viewDoAfixo(a, null)),
     },
   };
@@ -281,12 +287,12 @@ function previaDoInserir(estado, { lugar, essencias }) {
   if (!peca || !A.aceitaAfixo(peca.id)) return { ...base, ok: false, reason: 'Essa peça não aceita afixo.' };
   const ess = base.essencias.map((l) => acharPeca(estado, l));
   if (!ess.length || ess.length > 3 || ess.some((e) => e?.id !== A.ID_DA_ESSENCIA)) return { ...base, ok: false, reason: 'Escolha de 1 a 3 essências.' };
-  const vagas = A.MAX_AFIXOS - (peca.af?.length ?? 0);
+  const vagas = vagasDe(peca);
   if (ess.length > vagas) return { ...base, ok: false, reason: `Só ${vagas} vaga(s) nesta peça.` };
   const slot = slotDe(peca.id);
   for (const e of ess) {
     if (e.afixoDe && e.afixoDe !== slot) return { ...base, ok: false, reason: `Essa essência é de ${NOME_DO_SLOT[e.afixoDe] ?? e.afixoDe} — só entra no mesmo slot.` };
-    if (!e.mitica && e.raridade && e.raridade !== raridadeDe(peca.id)) return { ...base, ok: false, reason: `Essa essência é ${e.raridade} — só entra numa peça ${e.raridade} (a vermelha entra em qualquer).` };
+    if (!e.mitica && e.raridade && e.raridade !== raridadeDe(peca)) return { ...base, ok: false, reason: `Essa essência é ${e.raridade} — só entra numa peça ${e.raridade} (a vermelha entra em qualquer).` };
   }
   const ids = [...(peca.af ?? []).map((a) => a.id), ...ess.map((e) => e.af[0].id)];
   if (new Set(ids).size < ids.length) return { ...base, ok: false, reason: 'A peça ficaria com o mesmo afixo duas vezes.' };
@@ -294,7 +300,7 @@ function previaDoInserir(estado, { lugar, essencias }) {
     ...base, ok: true,
     entrando: ess.map((e) => ({ ficha: A.viewDoAfixo(e.af[0], slot, peca.id) })),
     depois: [...(peca.af ?? []), ...ess.map((e) => e.af[0])].map((a) => A.viewDoAfixo(a, slot, peca.id)),
-    custo: vezes(CUSTOS.inserir[raridadeDe(peca.id)] ?? CUSTOS.inserir.comum, ess.length),
+    custo: vezes(CUSTOS.inserir[raridadeDe(peca)] ?? CUSTOS.inserir.comum, ess.length),
   };
 }
 
@@ -319,14 +325,15 @@ function previaDaFusao(estado, { essencias }) {
   const base = { essencias: essencias ?? [] };
   const ess = base.essencias.map((l) => acharPeca(estado, l));
   if (ess.length !== CUSTOS.quantasFundem || ess.some((e) => e?.id !== A.ID_DA_ESSENCIA)) return { ...base, ok: false, reason: 'A fusão pede 3 essências.' };
-  if (ess.some((e) => e.mitica || A.pctDe(e.af[0]) < 100)) return { ...base, ok: false, reason: 'Só essência DOURADA (100% da régua) entra na fusão.' };
+  // Dourada = Nível 5 (o sistema de itens); antes era "100% da régua".
+  if (ess.some((e) => e.mitica || A.nivelDe(e.af[0]) < 5)) return { ...base, ok: false, reason: 'Só essência DOURADA (Nível 5) entra na fusão.' };
   const slot = ess[0].afixoDe;
   if (ess.some((e) => e.afixoDe !== slot)) return { ...base, ok: false, reason: 'As três precisam ser do mesmo slot.' };
   // O afixo que sai: o que mais aparece entre as três (empate: a primeira).
   const conta = {};
   for (const e of ess) conta[e.af[0].id] = (conta[e.af[0].id] ?? 0) + 1;
   const id = Object.entries(conta).sort((a, b) => b[1] - a[1])[0][0];
-  const vermelha = { id, tier: 4, value: A.valorNaRegua(id, A.FRACAO_DA_MITICA * 100) };
+  const vermelha = { id, nivel: 5, value: A.valorNaRegua(id, A.FRACAO_DA_MITICA * 100) };
   return { ...base, ok: true, slot, raridade: 'mítico', ficha: A.viewDoAfixo(vermelha, null), afixo: vermelha, custo: CUSTOS.fusaoTotal };
 }
 

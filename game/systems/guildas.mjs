@@ -37,6 +37,7 @@
 import { banco } from '../database/banco.mjs';
 import * as Cache from '../database/redis.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
+import { converterTudo, camposDaPeca } from './itens/item.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Premium from './premium.mjs';
 import { normalizarBrasao, brasaoPadrao, precoDoBrasao, efeitosUsados, mesmoBrasao } from '../engine/brasao-de-guilda.mjs';
@@ -210,6 +211,12 @@ const vagasDo = (nivel) => Math.min(REGRAS.vagasNoMaximo, REGRAS.vagasDeFabrica 
 /** O brasão guardado, passado pelo normalizador do shared (o que o cliente desenha). */
 const brasaoDa = (g) => (g.brasao ? normalizarBrasao(JSON.parse(g.brasao), g.nome) : brasaoPadrao(g.nome));
 const efeitosDa = (g) => JSON.parse(g.efeitos || '[]');
+/** Os itens do baú da guilda, com as peças de antes do sistema de itens já convertidas (ver `systems/itens/item.mjs`). */
+const itensDoBau = (g) => {
+  const itens = JSON.parse(g.bau);
+  converterTudo(itens);
+  return itens;
+};
 
 /*
  * ---- A guilda de cada nome, para quem não pode esperar o banco ----
@@ -290,7 +297,7 @@ async function membroParaVista(m) {
     online: !!q?.online,
     veste: Object.entries(e.equipment ?? {})
       .filter(([, p]) => p?.id)
-      .map(([slot, p]) => ({ slot, id: p.id, ...(p.tier ? { tier: p.tier } : {}), ...(p.af?.length ? { af: p.af } : {}), ...(p.imbu?.length ? { imbu: p.imbu } : {}) })),
+      .map(([slot, p]) => ({ slot, id: p.id, ...camposDaPeca(p) })),
     onde: q?.online && e.hunt ? { cacando: true, lugar: Cacadas.nomeDaHunt(e.hunt.huntId) } : { cacando: false, lugar: q?.online ? 'na cidade' : 'offline' },
     expTotal: e.xp ?? 0,
   };
@@ -299,7 +306,7 @@ async function membroParaVista(m) {
 const linhaDoDiario = (r) => ({ tipo: r.tipo, quem: r.quem, alvo: r.alvo, quanto: r.quanto, extra: r.extra, em: r.em });
 
 function bauDa(g) {
-  const itens = JSON.parse(g.bau);
+  const itens = itensDoBau(g);
   return {
     nome: 'Baú comunitário',
     tipos: itens.length,
@@ -538,7 +545,7 @@ export async function comando(s, m) {
     case 'desfazer': {
       if (!g || meu.cargo !== LIDER) return erro('Só o líder desfaz a guilda.');
       if ((await Q.membros.all(g.id)).length > 1) return erro('Tire os outros membros antes de desfazer a guilda.');
-      if (JSON.parse(g.bau).length) return erro('Esvazie o baú antes de desfazer a guilda.');
+      if (itensDoBau(g).length) return erro('Esvazie o baú antes de desfazer a guilda.');
       await Q.sairTodos.run(g.id);
       await Q.tirarConvitesDaGuilda.run(g.id);
       await Q.tirarPedidosDaGuilda.run(g.id);
@@ -588,7 +595,7 @@ export async function comando(s, m) {
       if (!g) return erro('Você não está numa guilda.');
       const id = Number(m.id);
       const count = Math.max(1, Math.floor(Number(m.count) || 1));
-      const itens = JSON.parse(g.bau);
+      const itens = itensDoBau(g);
       const empilha = ITEM_CATALOG[id]?.stackable;
       const ondeEmpilhar = empilha ? itens.find((p) => p.id === id && !p.af && !p.tier && !p.imbu) : null;
       if (!ondeEmpilhar && itens.length >= g.bau_teto) return erro('O baú está cheio.');
@@ -610,7 +617,7 @@ export async function comando(s, m) {
     }
     case 'bauTirar': {
       if (!g) return erro('Você não está numa guilda.');
-      const itens = JSON.parse(g.bau);
+      const itens = itensDoBau(g);
       const pos = Number.isInteger(m.pos) && itens[m.pos]?.id === Number(m.id) ? m.pos : itens.findIndex((p) => p.id === Number(m.id));
       if (pos < 0) return erro('Isso não está mais no baú.');
       const peca = itens[pos];
@@ -627,7 +634,7 @@ export async function comando(s, m) {
     }
     case 'bauOrganizar': {
       if (!g) return erro('Você não está numa guilda.');
-      const itens = JSON.parse(g.bau).sort((a, b) => (ITEM_CATALOG[a.id]?.name ?? '').localeCompare(ITEM_CATALOG[b.id]?.name ?? '') || a.id - b.id);
+      const itens = itensDoBau(g).sort((a, b) => (ITEM_CATALOG[a.id]?.name ?? '').localeCompare(ITEM_CATALOG[b.id]?.name ?? '') || a.id - b.id);
       await Q.bau.run(JSON.stringify(itens), g.id);
       await avisarGuilda(g.id);
       return { ok: true };

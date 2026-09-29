@@ -13,7 +13,10 @@ import * as BuffPower from '../buffpower.mjs';
 import * as Tiers from '../tiers.mjs';
 import * as Afixos from '../afixos.mjs';
 import * as DropsDoSite from '../drops-do-site.mjs';
-import { nomeDaHunt } from './terreno.mjs';
+import { nomeDaHunt, huntOuMapaCustom } from './terreno.mjs';
+import { gerarItem } from '../itens/gerar.mjs';
+import * as EfeitosDeItem from '../itens/efeitos.mjs';
+import * as Campanha from '../campanha.mjs';
 import * as Prey from '../prey.mjs';
 import * as Arvore from '../arvore.mjs';
 import * as Bosses from '../bosses.mjs';
@@ -224,15 +227,29 @@ export function quantasMoedas(bicho, id) {
  * (`cooldownHours` do catálogo real) e sai a faixa de vitória (`victory`, com
  * `boss`, `exp` e `loot`). Alguns segundos depois ele volta para a cidade.
  */
+/**
+ * De onde o drop saiu, para o gerador de itens: na campanha, o ATO e a
+ * DIFICULDADE da fase (ou do boss do ato); fora dela (VIP, boss avulso), o
+ * level — o ato sai dele e a dificuldade é a padrão (`systems/itens/config.mjs`).
+ */
+export function contextoDoDrop(hunt) {
+  if (hunt?.campanha) return { ato: hunt.campanha.ato, dificuldade: hunt.campanha.dificuldade };
+  if (hunt?.isBoss) return { level: CATALOGO.bosses.find((b) => b.id === hunt.bossId)?.level ?? 1 };
+  return { level: huntOuMapaCustom(hunt?.huntId)?.level ?? 1 };
+}
+
 export function vitoriaNoBoss(estado, hunt, alvo) {
   const itens = [];
   for (const drop of [...alvo.loot, ...Gemas.DROP.boss]) {
     // Buff Power Loot +50%, o afixo "Loot" e a Caça Online ("15% mais chance de loot" na sala do boss).
     if (Math.random() >= drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt)) continue;
-    const af = Afixos.rolarDrop(drop.id, { boss: true });
-    itens.push({ id: drop.id, count: VALOR_DA_MOEDA[drop.id] ? quantasMoedas(alvo, drop.id) : 1, ...(af?.length ? { af } : {}) });
+    // O item inteiro (raridade, atributos, efeito) sai do gerador central.
+    if (VALOR_DA_MOEDA[drop.id]) itens.push({ id: drop.id, count: quantasMoedas(alvo, drop.id) });
+    else itens.push(gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true }));
   }
   Bau.novaSacola(estado, alvo.name, itens);
+  // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.
+  if (hunt.campanha?.bossDoAto) Campanha.venceuBoss(estado, hunt.campanha.dificuldade, hunt.campanha.bossDoAto);
   // O cooldown já começou na ENTRADA (`Bosses.marcarEntrada`); aqui o de task fecha.
   Bosses.marcarVitoria(estado, hunt.bossId);
   hunt.vitoria = { boss: alvo.name, exp: alvo.exp, loot: Object.fromEntries(itens.map((i) => [i.id, i.count])) };
@@ -363,12 +380,17 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Bosses.contarMorte(m.estado, alvo.key);
   Tarefas.contarMorte(estado, alvo.key);
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Tarefas.contarMorte(m.estado, alvo.key);
+  // A fase da campanha: a morte conta para quem matou e para TODOS da party na sala (decisão do dono).
+  Campanha.contarKills(estado, hunt);
+  for (const m of part?.membros ?? []) if (m.estado !== estado && m.estado?.hunt) Campanha.contarKills(m.estado, m.estado.hunt);
   Charms.aoMatar(estado, hunt, alvo, eventos);
   // A proficiência: XP para a arma da mão (e para a de cada um da party) e vida/mana por morte.
   Proficiencia.ganharXp(estado, alvo.key);
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Proficiencia.ganharXp(m.estado, alvo.key);
   const prof = Proficiencia.bonus(estado);
   Proficiencia.curar(estado, prof.vidaNaMorte, prof.manaNaMorte, eventos, personagem?.nome, hunt.pos);
+  // Os efeitos de item que reagem a uma morte (Sede de Sangue, Colheita de Almas).
+  EfeitosDeItem.aoMatar(estado, hunt, alvo, eventos, personagem?.nome);
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
   if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo);
   if (sessao) sessao.byMonster[alvo.name] = (sessao.byMonster[alvo.name] ?? 0) + 1;
@@ -412,7 +434,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       for (const m of juntos) darOuro(m.estado, parte + (m.estado === estado ? total - parte * juntos.length : 0));
       continue;
     }
-    const af = Afixos.rolarDrop(drop.id);
+    // O item inteiro (raridade, atributos, efeito) sai do gerador central.
+    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt) });
+    const af = peca.af ?? null;
     // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
     const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;
     const fila = juntos ? juntos.map((_, k) => juntos[(vez + k) % juntos.length]) : [{ estado, nome: personagem?.nome }];
@@ -422,7 +446,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       if (Bolsa.ignora(m.estado, drop.id)) continue;
       ignorado = false;
       const semCap = pesoDoInventario(m.estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(m.estado);
-      if (semCap || !Bolsa.porNaBolsa(m.estado, drop.id, 1, af)) continue;
+      if (semCap || !Bolsa.porNaBolsa(m.estado, drop.id, 1, peca)) continue;
       dono = m;
       if (juntos) vezDoLoot.set(sala, (vez + k + 1) % juntos.length);
       break;
@@ -442,7 +466,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     }
     // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
     // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
-    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af }).catch((e) => console.error('drops-do-site', e.message));
+    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito }).catch((e) => console.error('drops-do-site', e.message));
   }
   for (const [outro, items] of deOutros) {
     const lista = eventosDaParty.get(outro) ?? [];
