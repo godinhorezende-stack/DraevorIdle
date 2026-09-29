@@ -52,7 +52,7 @@ import * as Ranking from '../systems/ranking.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Arena from '../systems/arena.mjs';
 import * as SimuladorTique from '../systems/simulador-tique.mjs';
-import { descerDeLevel } from '../systems/hunt/combate.mjs';
+import { descerDeLevel, tirarEventosDaParty } from '../systems/hunt/combate.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
 import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
@@ -2082,6 +2082,9 @@ export class Sessao {
         } else {
           eventos = Cacadas.tique(this.estado, this.personagem, agoraDoTique);
         }
+        // Itens que o rodízio da party deu a ESTE char nos golpes dos outros: o "Loot of a ..." no chat dele.
+        const daParty = tirarEventosDaParty(this.estado);
+        if (daParty) eventos = [...(eventos ?? []), ...daParty];
         if (this.estado.avisoDaHunt) {
           this.avisoPendente = this.estado.avisoDaHunt;
           delete this.estado.avisoDaHunt;

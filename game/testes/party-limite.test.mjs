@@ -134,3 +134,103 @@ test('partilha desliga fora da faixa de level (o menor abaixo de 2/3 do maior)',
   assert.equal(p.motivo, 'level');
   grupo(baixo.s, 'sair');
 });
+
+// ---------------------------------------------------- a divisão do LOOT na party
+
+import * as Combate from '../systems/hunt/combate.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
+
+/** Quatro contas na mesma caçada, com a partilha como o tique calcula. */
+async function quatroCacando() {
+  const js = [];
+  for (let i = 0; i < 4; i++) js.push(await jogador(i, 3));
+  const [lider, ...outros] = js;
+  for (const o of outros) {
+    grupo(lider.s, 'convidar', o.nome);
+    grupo(o.s, 'aceitar');
+  }
+  assert.equal(Cacadas.entrar(lider.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
+  for (const o of outros) {
+    caca(lider.s, 'invite', o.nome);
+    assert.equal(caca(o.s, 'accept').ok, true);
+  }
+  const partilhar = () => {
+    for (const j of js) Object.defineProperty(j.s.estado.hunt, 'partilha', { value: Party.partilha(j.s), configurable: true, writable: true });
+  };
+  partilhar();
+  assert.equal(Party.partilha(lider.s).ativa, true);
+  return { js, lider, partilhar };
+}
+
+/** Mata um bicho da sala com o loot trocado por `loot` (chance 1 = cai sempre). */
+function matar(quem, loot, key) {
+  const hunt = quem.s.estado.hunt;
+  const alvo = hunt.monstros.find((m) => m.hp > 0) ?? hunt.monstros[0];
+  alvo.loot = loot;
+  if (key) alvo.key = key;
+  const eventos = [];
+  Combate.matarMonstro(quem.s.estado, hunt, quem.s.personagem, alvo, eventos);
+  return eventos;
+}
+
+const leve = Object.entries(ITEM_CATALOG)
+  .filter(([id, it]) => (it.weight ?? 0) > 0 && (it.weight ?? 0) <= 100 && ![3031, 3035, 3043].includes(Number(id)) && it.pickupable !== false)
+  .map(([id]) => Number(id))
+  .slice(0, 50);
+
+test('party: o OURO de cada bicho vai em partes iguais para os quatro (o resto, para quem matou)', async () => {
+  const { js, lider } = await quatroCacando();
+  const antes = js.map((j) => j.s.estado.gold);
+  for (let i = 0; i < 20; i++) matar(i % 3 === 0 ? js[1] : lider, [{ id: 3031, chance: 1 }]);
+  const ganho = js.map((j, i) => j.s.estado.gold - antes[i]);
+  assert.ok(Math.min(...ganho) > 0, `todos ganharam: ${ganho}`);
+  // O resto de cada divisão é de 0 a 3 moedas: 20 bichos, no máximo 60 de diferença.
+  assert.ok(Math.max(...ganho) - Math.min(...ganho) <= 60, `quase igual: ${ganho}`);
+  // E o relatório de cada um conta o ouro dele.
+  for (const [i, j] of js.entries()) assert.equal(j.s.estado.hunt.sessao.gold >= ganho[i], true);
+});
+
+test('party: os ITENS vão em rodízio — cada um leva a sua vez, e o chat de quem recebeu mostra', async () => {
+  const { js, lider } = await quatroCacando();
+  const itensDe = (j) => Object.entries(j.s.estado.hunt.sessao.itens.loot).filter(([id]) => leve.includes(Number(id))).reduce((a, [, n]) => a + n, 0);
+  const antes = js.map(itensDe);
+  // Só o líder mata (o pior caso de antes: quem mata levava tudo).
+  for (let i = 0; i < 10; i++) matar(lider, leve.slice(0, 4).map((id) => ({ id, chance: 1 })));
+  const recebidos = js.map((j, i) => itensDe(j) - antes[i]);
+  assert.equal(recebidos.reduce((a, b) => a + b, 0), 40, `todos os 40 itens foram para alguém: ${recebidos}`);
+  assert.deepEqual(recebidos, [10, 10, 10, 10], 'dez para cada um');
+  // "Loot of a ...": quem recebeu vê no chat dele (no próximo tique).
+  for (const j of js.slice(1)) {
+    const ev = Combate.tirarEventosDaParty(j.s.estado);
+    assert.ok(ev?.length, `${j.nome} viu o loot`);
+    assert.equal(ev.flatMap((e) => e.items).length, 10);
+  }
+  assert.equal(Combate.tirarEventosDaParty(lider.s.estado), null, 'o líder viu o dele no próprio golpe');
+});
+
+test('party: quem não pode levar (filtro do loot) passa a vez — o item não se perde', async () => {
+  const { js, lider } = await quatroCacando();
+  const item = leve[0];
+  // O paladin (js[1]) não quer este item.
+  js[1].s.estado.itemRules ??= {};
+  (js[1].s.estado.itemRules.noLoot ??= []).push(item);
+  const conta = (j) => j.s.estado.hunt.sessao.itens.loot[item] ?? 0;
+  const antes = js.map(conta);
+  for (let i = 0; i < 12; i++) matar(lider, [{ id: item, chance: 1 }]);
+  const recebidos = js.map((j, i) => conta(j) - antes[i]);
+  assert.equal(recebidos[1], 0, 'o que recusa não leva');
+  assert.equal(recebidos.reduce((a, b) => a + b, 0), 12, `nada ficou no chão: ${recebidos}`);
+  assert.deepEqual(recebidos.filter((_, i) => i !== 1), [4, 4, 4]);
+});
+
+test('party: a exp continua igual para todos, e a Boss Task conta para todos', async () => {
+  const { js, lider } = await quatroCacando();
+  const task = (j) => j.s.estado.bossTasks?.find((t) => t.alvos?.some((a) => a.key === 'minotaur'));
+  assert.ok(task(lider), 'a ficha tem a Boss Task de minotauro');
+  const xp = js.map((j) => j.s.estado.xp);
+  const kills = js.map((j) => task(j).kills);
+  for (let i = 0; i < 5; i++) matar(lider, [], 'minotaur');
+  for (const [i, j] of js.entries()) assert.ok(task(j).kills >= kills[i] + 5, `${j.nome}: Boss Task andou`);
+  const ganhos = js.map((j, i) => j.s.estado.xp - xp[i]);
+  assert.ok(Math.max(...ganhos) - Math.min(...ganhos) <= 5, `exp igual: ${ganhos}`);
+});

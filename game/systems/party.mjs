@@ -20,7 +20,9 @@
 //   level (o menor ≥ 2/3 do maior) e perto (30 sqm). A exp do bicho é dividida
 //   em partes iguais, com o bônus por vocações diferentes — "Mesma vocação +20%
 //   · duas +35% · três +70% · quatro ou mais +100%. Vale para criaturas de 20
-//   de experiência para cima." O loot fica com quem matou.
+//   de experiência para cima." O loot, na partilha: o ouro em partes iguais e
+//   os itens em rodízio (ver `matarMonstro`, em hunt/combate.mjs); a Boss Task
+//   conta para todos, como a task de bicho.
 //
 // O grupo vive na memória do servidor ("a party dura entre uma caçada e
 // outra"); reiniciar o servidor desfaz as parties.
