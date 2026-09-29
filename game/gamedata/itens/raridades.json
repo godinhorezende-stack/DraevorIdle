@@ -13,8 +13,7 @@
    "nome": "Comum",
    "icone": "⚪",
    "atributos": {
-    "0": 50,
-    "1": 50
+    "0": 100
    },
    "efeito": null
   },

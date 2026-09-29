@@ -41,7 +41,8 @@ test('ATK e ATK% são atributos diferentes, cada um com a sua escala', () => {
 });
 
 test('cada raridade sai com a quantidade certa de atributos, e só Lendário/Mítico têm efeito', () => {
-  const faixa = { comum: [0, 1], incomum: [1, 2], raro: [2, 3], 'épico': [3, 4], 'lendário': [4, 5], 'mítico': [5, 6] };
+  // Comum nunca tem atributo (decisão do dono).
+  const faixa = { comum: [0, 0], incomum: [1, 2], raro: [2, 3], 'épico': [3, 4], 'lendário': [4, 5], 'mítico': [5, 6] };
   const rng = semente(1);
   for (const [r, [lo, hi]] of Object.entries(faixa)) {
     const vistos = new Set();
@@ -54,7 +55,7 @@ test('cada raridade sai com a quantidade certa de atributos, e só Lendário/Mí
       else if (r === 'mítico') assert.equal(p.efeito?.tipo, 'mitico');
       else assert.equal(p.efeito, undefined);
     }
-    assert.deepEqual([...vistos].sort(), [lo, hi], `${r}: as duas quantidades aparecem`);
+    assert.deepEqual([...vistos].sort(), [...new Set([lo, hi])], `${r}: as quantidades da faixa aparecem`);
   }
 });
 
@@ -92,7 +93,7 @@ test('item que não aceita atributo sai simples; Comum sem atributo também', ()
     const p = G.gerarItem({ itemId: ANEL, level: 50, raridade: 'comum', rng });
     if (!p.af) { simples++; assert.deepEqual(p, { id: ANEL, count: 1 }); }
   }
-  assert.ok(simples > 150 && simples < 350, `metade das comuns sem atributo: ${simples}`);
+  assert.equal(simples, 500, 'nenhuma comum com atributo');
 });
 
 test('ato não bloqueia raridade: Mítico pode sair no Ato 1, e o boss usa a dificuldade de cima', () => {
