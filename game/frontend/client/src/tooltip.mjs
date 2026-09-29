@@ -2192,7 +2192,7 @@ const ARTE_DO_SLOT_DA_ESSENCIA = {
  * ficha e a comparação usam) e `faixas` guarda o piso e o teto para o balão.
  */
 const comBaseDaPeca = (meta, peca) => {
-  if (!meta || !peca?.base) return meta;
+  if (!meta || !peca?.base || meta.slot === 'ammo') return meta;
   const saida = { ...meta, faixas: {} };
   for (const campo of ['attack', 'defense', 'armor', 'marmor']) {
     const bruto = peca.base[campo];
