@@ -556,7 +556,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     // Parry e Numb (charms defensivos).
     Charms.depoisDeApanhar(estado, hunt, bicho, final, eventos);
   } else {
-    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
+    // A armadura (e a proteção) engoliu o golpe INTEIRO: não é bloqueio — o escudo não fez nada —,
+    // então o texto é outro (`absorvido`), e a chance de bloqueio da ficha não parece maior do que é.
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', absorvido: true });
   }
 }
 
@@ -657,16 +659,18 @@ export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
  * resistência do bicho àquele elemento e com a mesma rolagem de crítico. Antes
  * o atributo só aumentava ataques que JÁ eram daquele elemento — num knight,
  * "+20% Dano de Fogo" não fazia nada (auditoria, 29/09). O físico fica de fora:
- * "Dano físico" já multiplica o próprio golpe.
+ * "Dano físico" já multiplica o próprio golpe. Cada elemento leva no mínimo 1 de dano
+ * e o efeito visual dele no bicho (`round`).
  */
 export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem) {
   const saida = [];
   for (const [tipo, pct] of Object.entries(ficha.danoDoElemento ?? {})) {
     if (tipo === 'physical' || !(pct > 0)) continue;
-    const base = resistido(hunt, alvo, tipo, (fisico * pct) / 100);
-    if (base <= 0) continue;
-    const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
-    if (dano <= 0) continue;
+    // Nunca menos que 1: 2,2% de um golpe de 10 dá 0,22 — e o elemento tem de aparecer batendo 1
+    // (a resistência do bicho tem teto de 80%, então ninguém é imune). Vale antes e depois do crítico.
+    const base = Math.max(1, resistido(hunt, alvo, tipo, (fisico * pct) / 100));
+    const { dano: rolado } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
+    const dano = Math.max(1, rolado);
     alvo.hp -= dano;
     saida.push({ tipo, v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
   }
@@ -725,10 +729,14 @@ export function round(estado, personagem) {
       eventos.push({ t: 'fx', id: 1, uid: alvo.uid, x: alvo.x, y: alvo.y });
       // Com parte elemental, o físico sai CINZA e o elemento na cor dele — os dois
       // números do mesmo golpe, como no original.
-      eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental || doImbuement ? '#999999' : '#ff0000' });
+      eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental || doImbuement || dosAtributos.length ? '#999999' : '#ff0000' });
       if (elemental) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: elemental.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental.cor });
       if (doImbuement) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: doImbuement.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: doImbuement.cor });
-      for (const d of dosAtributos) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
+      for (const d of dosAtributos) {
+        // O efeito do elemento no bicho (chama, gelo, raio...) junto do número colorido.
+        eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[d.tipo] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
+        eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
+      }
       // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
       Charms.aoAcertar(estado, hunt, alvo, eventos);
     }

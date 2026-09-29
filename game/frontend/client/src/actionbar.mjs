@@ -179,6 +179,18 @@ export function initActionBar(context) {
   ctx.send({ t: 'actions' });
 }
 
+/**
+ * Trocou de personagem: o catálogo (magias da vocação e do level, e o `blocked` de cada uma) é DO
+ * personagem que saiu — sem pedir de novo, o editor da barra oferecia as magias da classe antiga
+ * até recarregar a página. Zera e pede o do novo; a resposta chega em `actionCatalog`.
+ */
+export function reiniciarCatalogoDeAcoes() {
+  if (deOutro) return; // editando a barra de OUTRO char: o catálogo próprio volta quando fechar
+  catalog = null;
+  editing = null;
+  ctx?.send({ t: 'actions' });
+}
+
 export function setActionCatalog(next) {
   // Com o editor aberto para OUTRO char, o catálogo que chega é o deste: guarda
   // de lado e devolve quando o editor fechar. Ver `editarBarraDeOutro`.

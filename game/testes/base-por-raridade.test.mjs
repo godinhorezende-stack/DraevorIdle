@@ -142,10 +142,18 @@ test('anel e amuleto também sorteiam armadura física/mágica (valor pelo níve
   const joia = Object.values(ITEM_CATALOG).find((i) => (i.slot === 'neck' || i.slot === 'ring') && !i.stackable && !i.armor && i.minLevel >= 24);
   assert.ok(joia, 'há joia sem armadura no catálogo');
   const esperado = Math.max(2, Math.round(joia.minLevel / 12));
-  const b = rolarBase(joia.id, 'mítico');
-  assert.ok(b.armor[1] > 0 && b.marmor, 'Mítico: as duas');
-  assert.ok(b.armor[1] <= Math.round(esperado * 1.6) && b.marmor[1] <= Math.round(esperado * 1.6));
-  const gerada = gerarItem({ itemId: joia.id, raridade: 'comum', rng: () => 0.5 });
+  // O Mítico traz armadura em 90% dos sorteios (10% só ataque): confere os limites de todos os que trazem, e que aparecem.
+  let comArmadura = 0;
+  for (let i = 0; i < 300; i++) {
+    const b = rolarBase(joia.id, 'mítico');
+    if (!b.marmor) continue;
+    comArmadura++;
+    assert.ok(b.armor[1] > 0 && b.marmor, 'Mítico com armadura: as duas');
+    assert.ok(b.armor[1] <= Math.round(esperado * 1.6) && b.marmor[1] <= Math.round(esperado * 1.6));
+  }
+  assert.ok(comArmadura > 150, 'a maioria dos Míticos traz armadura');
+  // rng fixo 0,2: cai em "armadura" no Comum (nada 50% | armadura 30% | ataque 20%)? não — 0,2 cai em "nada"; 0,6 cai em armadura.
+  const gerada = gerarItem({ itemId: joia.id, raridade: 'comum', rng: () => 0.6 });
   assert.ok(gerada.base?.armor || gerada.base?.marmor, 'a peça carrega a armadura sorteada');
 });
 

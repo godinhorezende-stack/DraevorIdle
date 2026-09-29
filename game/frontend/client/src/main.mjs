@@ -48,6 +48,7 @@ import {
   initActionBar,
   renderActionBar,
   setActionCatalog,
+  reiniciarCatalogoDeAcoes,
   capturarTecla,
   catalogoDeAcoesPronto,
   spellIcon,
@@ -733,6 +734,9 @@ function handle(message) {
       // Outro personagem que o de antes: o chat começa limpo. Ver `chatDoPersonagem`.
       chatDoPersonagem(message.character?.name);
       resetCharacterState();
+      // As magias do editor da barra são da classe do personagem que saiu: pede as do novo.
+      state.actionCatalog = null;
+      reiniciarCatalogoDeAcoes();
       // Sem catálogo ou itens no quadro, valem os que já chegaram nesta conexão.
       if (message.catalog) state.catalog = message.catalog;
       pintarAvisoDeObra();
