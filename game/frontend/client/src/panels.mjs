@@ -18656,45 +18656,18 @@ export function ligarCartazDeBoss(ligado) {
 /*
  * ---- Como a raridade aparece no ícone ----
  *
- * Três desenhos para a mesma informação, e a escolha é de quem joga: o sopro de
- * luz na borda (o padrão), o anel aceso por dentro da moldura e a quina acesa
- * na diagonal — mais o "nenhum", para quem achar tudo isso poluição. As regras
- * moram no `style.css`; aqui só se decide qual delas vale.
- *
- * Quem carrega a escolha é um atributo no `<html>`, e não uma classe por célula:
- * o CSS troca tudo de uma vez, sem redesenhar mochila, bolsa, depósito nem
- * corpo. Ver "E as outras duas leituras da mesma coisa" no `style.css`.
- *
- * Fica no `localStorage`, como o resumo da morte logo acima: é preferência de
- * TELA, não de personagem. Não vale uma ida ao servidor nem uma coluna no banco
- * — e quem joga em dois computadores costuma querer ajustes diferentes em cada
- * um, porque o monitor é outro.
+ * O dono: "sempre deixar nos itens anel na moldura". Havia quatro desenhos para
+ * escolher nas configurações (sopro, anel, quina, nenhum); agora é o ANEL para
+ * todos, em todo item — o comum também, em cinza. As regras moram no
+ * `style.css`, escolhidas pelo atributo `data-raridade` do `<html>`.
  */
-const CHAVE_DA_RARIDADE = 'draevor:raridade';
-const ESTILOS_DA_RARIDADE = ['sopro', 'anel', 'quina', 'nenhum'];
-
 export function estiloDaRaridade() {
-  try {
-    const guardado = localStorage.getItem(CHAVE_DA_RARIDADE);
-    return ESTILOS_DA_RARIDADE.includes(guardado) ? guardado : 'sopro';
-  } catch {
-    return 'sopro';
-  }
+  return 'anel';
 }
 
-/** Põe a escolha no `<html>`. Chamada na entrada, antes de a mochila existir. */
+/** Põe o estilo no `<html>`. Chamada na entrada, antes de a mochila existir. */
 export function aplicarEstiloDaRaridade() {
   document.documentElement.dataset.raridade = estiloDaRaridade();
-}
-
-export function escolherEstiloDaRaridade(estilo) {
-  if (!ESTILOS_DA_RARIDADE.includes(estilo)) return;
-  try {
-    localStorage.setItem(CHAVE_DA_RARIDADE, estilo);
-  } catch {
-    /* aba anônima: a preferência vale só para esta sessão */
-  }
-  document.documentElement.dataset.raridade = estilo;
 }
 
 /** A tela cheia de verdade, a do navegador. `null` quando ele não deixa. */
@@ -19005,35 +18978,7 @@ function abaDeInterface(body, draw) {
     )
   );
 
-  /*
-   * ---- Como a raridade aparece ----
-   *
-   * Três botões e não um interruptor: são três desenhos diferentes, não um
-   * "ligado/desligado", e o jogador precisa ver os três nomes para saber que
-   * existe escolha. O aceso é o que está valendo.
-   */
-  const RARIDADES = {
-    sopro: ['Sopro de luz', 'A luz vaza da borda da caixa para o fundo, sem desenhar linha nenhuma.'],
-    anel: ['Anel na moldura', 'Um contorno aceso por dentro da moldura. É o mais fácil de achar numa mochila cheia.'],
-    quina: ['Quina acesa', 'A luz entra por um canto só, na diagonal, como se algo iluminasse a peça de lado.'],
-    nenhum: ['Desligado', 'Nenhuma marcação: a raridade volta a aparecer só no balão, ao passar o mouse.'],
-  };
-  const estiloAtual = estiloDaRaridade();
-  const botoesDaRaridade = el('div', 'ajustes-botoes');
-  for (const chave of ['sopro', 'anel', 'quina', 'nenhum']) {
-    const botao = el('button', chave === estiloAtual ? 'primary' : 'ghost', RARIDADES[chave][0]);
-    botao.title = RARIDADES[chave][1];
-    botao.onclick = () => {
-      escolherEstiloDaRaridade(chave);
-      draw();
-    };
-    botoesDaRaridade.append(botao);
-  }
-  secao(
-    'Raridade dos itens',
-    el('p', 'gate-note', `${RARIDADES[estiloAtual][1]} Vale na mochila, na bolsa, no depósito e no corpo — o item comum nunca é marcado.`),
-    botoesDaRaridade
-  );
+  // A raridade dos itens não tem mais escolha: o anel na moldura vale para todos (ver `estiloDaRaridade`).
 }
 
 /*
