@@ -136,6 +136,9 @@ test('+ Party num char caçando OFFLINE: ele volta ao mundo sem aba, entra na pa
   assert.ok(sem.estado.xp > xpAntes, 'a ausência offline foi consolidada ao entrar');
   assert.ok(sem.estado.hunt, 'e segue caçando onde estava');
   assert.equal(sem.estado.hunt.offlineDesde, undefined, 'agora ao vivo');
+  const fora = a.ultima('runReport');
+  assert.equal(fora?.titulo, `${outro}: enquanto esteve fora`, 'o que ele rendeu offline vem para quem chamou');
+  assert.ok(fora.report);
   assert.match(a.recebidas.filter((m) => m.t === 'state').map((m) => JSON.stringify(m)).join(''), /entrou na sua party/);
 
   // Ele tica sem erro (e não manda quadro para ninguém).
@@ -228,5 +231,58 @@ test('com Slots: a conta leva até cinco chars para a mesma party', async () => 
   const aba2 = await aba(c, outros[0]).catch((e) => e);
   assert.ok(!(aba2 instanceof Error), String(aba2?.message));
   assert.equal(vivas.get(outros[0]), aba2.s, 'agora é a aba quem está nele');
+  Party.comandoDoGrupo(a.s, { action: 'sair' });
+});
+
+test('➜ Hunt num char que caçava em OUTRO lugar: a caçada dele acaba e o extrato vem para quem chamou', async () => {
+  const c = await conta();
+  const eu = await char(c);
+  const outro = await char(c, {
+    vocacao: 'druid',
+    estado: (e) => {
+      assert.equal(Cacadas.entrar(e, { huntId: 'amazon-camp', mode: 'auto' }).ok, true);
+      // Saiu há pouco (sem tempo de morrer offline sem nenhuma magia na barra).
+      e.hunt.offlineDesde = Date.now() - 5_000;
+    },
+  });
+  const a = await aba(c, eu);
+  assert.equal(Cacadas.entrar(a.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
+  // Primeiro na party: ele volta ao mundo ainda na caçada dele.
+  await a.s.contaChar({ name: outro, op: 'party' });
+  const sem = vivas.get(outro);
+  assert.equal(sem.estado.hunt?.huntId, 'amazon-camp', 'caçando no lugar dele');
+  for (let i = 0; i < 8; i++) await sem.tique();
+  await a.s.contaChar({ name: outro, op: 'hunt' });
+  assert.equal(Cacadas.salaDe(sem.estado.hunt), Cacadas.salaDe(a.s.estado.hunt), 'veio para a minha');
+  const extrato = a.ultima('runReport');
+  assert.ok(extrato, 'o extrato chegou para quem chamou');
+  assert.equal(extrato.titulo, `Extrato de ${outro}`);
+  assert.match(extrato.motivo, /saiu de .+ para vir para a sua caçada/);
+  assert.ok(extrato.report, 'com o relatório da caçada que acabou');
+
+  // Chamar de novo quem já está na minha caçada não gera extrato nenhum.
+  const antes = a.recebidas.filter((m) => m.t === 'runReport').length;
+  await a.s.contaChar({ name: outro, op: 'hunt' });
+  assert.equal(a.recebidas.filter((m) => m.t === 'runReport').length, antes);
+  Party.comandoDoGrupo(a.s, { action: 'sair' });
+});
+
+test('➜ Hunt direto num char caçando offline: UMA janela só, a do que ele rendeu fora', async () => {
+  const c = await conta();
+  const eu = await char(c);
+  const outro = await char(c, {
+    vocacao: 'paladin',
+    estado: (e) => {
+      assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
+      e.hunt.offlineDesde = Date.now() - 20 * 60_000;
+    },
+  });
+  const a = await aba(c, eu);
+  assert.equal(Cacadas.entrar(a.s.estado, { huntId: 'amazon-camp', mode: 'auto' }).ok, true);
+  await a.s.contaChar({ name: outro, op: 'hunt' });
+  const janelas = a.recebidas.filter((m) => m.t === 'runReport');
+  assert.equal(janelas.length, 1);
+  assert.equal(janelas[0].titulo, `${outro}: enquanto esteve fora`);
+  assert.equal(Cacadas.salaDe(vivas.get(outro).estado.hunt), Cacadas.salaDe(a.s.estado.hunt));
   Party.comandoDoGrupo(a.s, { action: 'sair' });
 });

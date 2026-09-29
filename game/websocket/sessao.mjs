@@ -1270,10 +1270,18 @@ export class Sessao {
   async chamarOutro(linha, vivo, op) {
     if (op === 'hunt' && !this.estado.hunt) return this.erro('Entre numa caçada para chamar alguém para ela.');
     let outro = vivo;
+    let jaMandouOExtrato = false;
     if (!outro) {
       const r = await this.trazerParaOMundo(linha);
       if (!r.ok) return this.erro(r.erro);
       outro = r.sessao;
+      // O que ele rendeu caçando offline até agora (ou como morreu), para quem chamou.
+      if (r.andamento) {
+        this.enviar({ t: 'runReport', report: r.andamento, titulo: `${linha.nome}: enquanto esteve fora`, motivo: r.andamento.motivo ?? null });
+        // A caçada dele de agora começou nesta entrada: o extrato dela seria de
+        // segundos — e a janela dele cobriria esta, que é a que conta.
+        jaMandouOExtrato = true;
+      }
       // Enquanto ele entrava, esta sessão pode ter saído do personagem.
       if (!this.personagem) return outro.desconectar();
     }
@@ -1286,9 +1294,22 @@ export class Sessao {
     if (!party.ok) return desistir(party.erro);
     let notice = party.notice ?? `${linha.nome} já está na sua party.`;
     if (op === 'hunt') {
+      /*
+       * Ele estava caçando em OUTRO lugar: aquela caçada acaba aqui. O extrato
+       * dela é tirado antes (depois, a hunt já é a sua) e vai para quem chamou
+       * — sem aba, não teria ninguém para ver o que ela rendeu.
+       */
+      const deOutraCacada = outro.estado.hunt && outro.estado.hunt.huntId !== 'treino' && Cacadas.salaDe(outro.estado.hunt) !== Cacadas.salaDe(this.estado.hunt);
+      const extrato = deOutraCacada ? { report: Cacadas.relatorio(outro.estado), onde: Cacadas.nomeDaHunt(outro.estado.hunt.huntId) } : null;
       const r = Party.chamarDaConta(this, outro);
       if (!r.ok) return desistir(r.erro);
       notice = r.notice?.startsWith('Você entrou') ? `${linha.nome} entrou na sua caçada.` : r.notice ?? notice;
+      if (extrato?.report && !jaMandouOExtrato) {
+        const msg = { t: 'runReport', report: extrato.report, titulo: `Extrato de ${linha.nome}`, motivo: `${linha.nome} saiu de ${extrato.onde} para vir para a sua caçada. Isto é o que aquela caçada rendeu.` };
+        this.enviar(msg);
+        // Com aba aberta nele, quem está lá também vê.
+        if (!outro.semAba) outro.enviar(msg);
+      }
     }
     outro.characterSujo = true;
     outro.mandarEstado();
@@ -1305,17 +1326,25 @@ export class Sessao {
     sessao.conta = this.conta;
     sessao.semAba = { desde: Date.now(), dono: this.personagem.nome };
     let motivo = null;
+    let andamento = null;
     sessao.erroDeAuth = (mensagem) => void (motivo = mensagem);
+    // O "enquanto você esteve fora" vai no `welcome` — que, sem aba, ninguém lê.
+    // Ele é guardado aqui e entregue a quem chamou (ver `chamarOutro`).
+    sessao.enviar = (msg) => {
+      if (msg?.t === 'welcome') andamento = msg.andamento ?? null;
+    };
     try {
       await sessao.entrarNoPersonagem({ name: linha.nome });
     } catch (e) {
       motivo = e.message;
+    } finally {
+      delete sessao.enviar;
     }
     if (!sessao.personagem) {
       sessao.desconectar();
       return { ok: false, erro: motivo ?? `Não deu para trazer ${linha.nome} agora.` };
     }
-    return { ok: true, sessao };
+    return { ok: true, sessao, andamento };
   }
 
   // ------------------------------------------------------------------ auth
