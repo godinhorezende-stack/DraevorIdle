@@ -1956,7 +1956,7 @@ export function feedEvents(events, items, eu = null) {
             if (i) saida.push(', ');
             if (entry.count > 1) saida.push(`${entry.count} `);
             const meta = items[entry.id];
-            saida.push(el('span', classeDaRaridade(meta), meta?.name ?? `item ${entry.id}`));
+            saida.push(el('span', classeDaRaridade(meta, entry), meta?.name ?? `item ${entry.id}`));
           });
           return saida;
         };

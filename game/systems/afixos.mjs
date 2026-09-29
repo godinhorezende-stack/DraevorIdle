@@ -21,6 +21,7 @@ import * as Imbuements from './imbuements.mjs';
 // de cada atributo passa a ser a dele — ver `systems/itens/config.mjs`.
 import * as ItensConfig from './itens/config.mjs';
 import * as Gerar from './itens/gerar.mjs';
+import { raridadeDaPeca } from './itens/item.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -215,7 +216,7 @@ export function guarda(estado, p) {
   if (!pisoRaridade && !nivel) return false;
   if (pisoRaridade > 0) {
     // A raridade do DROP (sistema de itens); a do catálogo só para peça antiga.
-    const r = RARIDADES.indexOf(p.raridade ?? ITEM_CATALOG[p.id]?.rarity ?? 'comum');
+    const r = RARIDADES.indexOf(raridadeDaPeca(p));
     if (r < pisoRaridade) return false;
   }
   if (nivel > 0) {

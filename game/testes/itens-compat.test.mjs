@@ -111,3 +111,13 @@ test('caçada offline projetada: as peças saem COM atributos (antes saíam crua
     for (const a of p.af) assert.ok(a.nivel >= 1 && a.nivel <= 5);
   }
 });
+
+test('equipável: a raridade é SÓ a do drop; sem ela (kit, loja) é comum; o resto segue o catálogo', async () => {
+  const { raridadeDaPeca } = await import('../systems/itens/item.mjs');
+  const equipavelRaro = Object.values(ITEM_CATALOG).find((i) => i.slot && !i.stackable && i.rarity && i.rarity !== 'comum');
+  const naoEquipavel = Object.values(ITEM_CATALOG).find((i) => !i.slot && i.rarity && i.rarity !== 'comum');
+  assert.ok(equipavelRaro && naoEquipavel);
+  assert.equal(raridadeDaPeca({ id: equipavelRaro.id, count: 1 }), 'comum', `${equipavelRaro.name} (${equipavelRaro.rarity} no catálogo) sem drop`);
+  assert.equal(raridadeDaPeca({ id: equipavelRaro.id, count: 1, raridade: 'lendário' }), 'lendário');
+  assert.equal(raridadeDaPeca({ id: naoEquipavel.id, count: 1 }), naoEquipavel.rarity);
+});

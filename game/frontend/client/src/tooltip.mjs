@@ -347,7 +347,17 @@ function textoDoEfeitoDaPeca(peca) {
   return { tipo: e.tipo, nome: ficha.nome, texto: String(ficha.texto ?? '').replace(/\{(\w+)\}/g, (_, k) => String(ficha[k] ?? '')) };
 }
 
-export const classeDaRaridade = (meta, peca = null) => `tier-${tierOf(peca?.raridade ? { rarity: peca.raridade } : meta ?? {}).key}`;
+/*
+ * A raridade de uma peça. Equipável (que não empilha): SÓ a do drop
+ * (`peca.raridade`); sem ela — kit inicial, loja, peça antiga — é comum. O
+ * dono: "dos itens equipáveis tire a raridade dos itens, o que define é o
+ * drop". Comida, material e o resto seguem o catálogo. Igual a
+ * `raridadeDaPeca`, em systems/itens/item.mjs.
+ */
+export const ehEquipavel = (meta) => !!meta?.slot && !meta.stackable;
+export const raridadeDaPeca = (meta, peca = null) => peca?.raridade ?? (ehEquipavel(meta) ? 'comum' : meta?.rarity ?? 'comum');
+
+export const classeDaRaridade = (meta, peca = null) => `tier-${tierOf({ rarity: raridadeDaPeca(meta, peca) }).key}`;
 
 /*
  * ---- A cor da estrela diz o quanto o afixo é FORTE ----
@@ -573,7 +583,7 @@ export function seloDeEstrelas(classeBase, estrelas) {
 const MARCA_DE_ITEM = /\[\[item:(\d{1,7})(?::(\d{1,2}))?(?::([a-z0-9~,-]{0,90}))?(?::([a-z0-9_~,.-]{1,160}))?(?::([a-z]{1,12}))?\]\]/g;
 
 /** A marca que representa esta peça numa frase — com o tier, quando ela tem. */
-export const marcaDeItem = (id, tier = 0, imbu = null, af = null, afixoDe = null) => {
+export const marcaDeItem = (id, tier = 0, imbu = null, af = null, afixoDe = null, raridade = null) => {
   const grau = Math.floor(Number(tier) || 0);
   const vivos = (imbu ?? []).filter((x) => (x?.left ?? 0) > 0 && x?.id);
   const postos = (Array.isArray(af) ? af : []).filter((p) => p?.id && Number.isFinite(Number(p.value)));
@@ -615,10 +625,16 @@ export const marcaDeItem = (id, tier = 0, imbu = null, af = null, afixoDe = null
    * O slot só entra quando há afixo — ele existe para nomear a ESSÊNCIA, e uma
    * essência sem afixo não existe. Assim nenhuma peça normal engorda a marca.
    */
-  const slot = String(afixoDe ?? '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 12);
+  /*
+   * Peça normal (não essência) usa o mesmo campo para a RARIDADE do drop, sem
+   * acento (a marca só aceita a–z): equipável sem ela sairia comum no chat.
+   */
+  const slot = String(afixoDe ?? SEM_ACENTO[raridade] ?? '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 12);
   if (slot && postos.length) partes.push(slot);
   return `[[${partes.join(':')}]]`;
 };
+const SEM_ACENTO = { comum: 'comum', incomum: 'incomum', raro: 'raro', 'épico': 'epico', 'lendário': 'lendario', 'mítico': 'mitico' };
+const COM_ACENTO = Object.fromEntries(Object.entries(SEM_ACENTO).map(([k, v]) => [v, k]));
 
 /*
  * Os afixos de uma marca, de volta ao formato da mochila — e SÓ os legítimos.
@@ -743,7 +759,9 @@ export function textoComItens(texto) {
      * outras essências continuam com a cor do catálogo — elas são o que o
      * catálogo diz que são.
      */
-    const cor = classeDaRaridade(essencia && ehVermelha(essencia) ? { rarity: 'mítico' } : meta);
+    // Peça normal: o quinto campo é a raridade do drop (ver `marcaDeItem`).
+    const doDrop = essencia ? null : { raridade: COM_ACENTO[afixoDe] ?? null };
+    const cor = classeDaRaridade(essencia && ehVermelha(essencia) ? { rarity: 'mítico' } : meta, doDrop);
 
     const marca = el('span', `item-no-chat ${cor}`, nome);
     // Curto: numa linha de conversa "T7" diz o mesmo que "tier 7" e não empurra
@@ -783,7 +801,7 @@ export function textoComItens(texto) {
      * balão dizendo "sem slot de origem", enquanto a linha ao lado já diria
      * "essência vermelha · arma". Duas frases sobre a mesma peça, discordando.
      */
-    const peca = tier > 0 || imbu.length || af.length ? { tier, imbu, af, afixoDe } : null;
+    const peca = tier > 0 || imbu.length || af.length ? { tier, imbu, af, afixoDe, ...(doDrop?.raridade ? { raridade: doDrop.raridade } : {}) } : null;
     tipFor(marca, Number(achado[1]), null, null, peca);
     frag.append(marca);
     fim = achado.index + achado[0].length;
@@ -2167,8 +2185,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     ? ehVermelha(peca)
       ? 'mítico'
       : peca?.raridade ?? peca?.essenciaDe ?? 'comum'
-    : // A raridade do DROP (sistema de itens); a do catálogo só para peça sem ela.
-      peca?.raridade ?? meta.rarity;
+    : // A raridade do DROP; equipável sem ela é comum (ver `raridadeDaPeca`).
+      raridadeDaPeca(meta, peca);
   const tier = tierOf({ rarity: raridadeDoBalao });
   const classe = `tier-${tier.key}`;
 

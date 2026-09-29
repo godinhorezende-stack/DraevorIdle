@@ -12,6 +12,7 @@
 // faixa nova do nível. A peça sem raridade ganha a da quantidade de atributos
 // (0 Comum, 1 Incomum, 2 Raro, 3 Épico). Nada é apagado; é idempotente.
 import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS } from './config.mjs';
+import { ITEM_CATALOG } from '../dados.mjs';
 import { valorNaFaixa, arredondar } from './gerar.mjs';
 
 const ID_DA_ESSENCIA = 900001;
@@ -101,4 +102,19 @@ export function converterPersonagem(estado) {
   const n = converterTudo(estado);
   estado.versaoDosItens = VERSAO_DOS_ITENS;
   return n;
+}
+
+/** Equipável que não empilha: é a peça que ganha raridade (e atributos) no drop. */
+export const ehEquipavel = (meta) => !!meta?.slot && !meta.stackable;
+
+/**
+ * A raridade de uma peça. Equipável: SÓ a do drop (`p.raridade`); sem ela
+ * (kit inicial, loja, peça antiga) é comum — o dono: "dos itens equipáveis
+ * tire a raridade dos itens, o que define é o drop". O resto (comida,
+ * material) segue a do catálogo.
+ */
+export function raridadeDaPeca(p) {
+  if (p?.raridade) return p.raridade;
+  const meta = ITEM_CATALOG[p?.id];
+  return ehEquipavel(meta) ? 'comum' : meta?.rarity ?? 'comum';
 }

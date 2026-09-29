@@ -455,13 +455,15 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       conta(ignorado ? 'ignorado' : 'perdido', drop.id, 1);
       continue;
     }
+    // A raridade do drop vai no evento: é ela que pinta o nome em "Loot of a ...".
+    const noChat = { id: drop.id, count: 1, ...(peca.raridade ? { raridade: peca.raridade } : {}) };
     if (dono.estado === estado) {
-      caiu.push({ id: drop.id, count: 1 });
+      caiu.push(noChat);
       conta('loot', drop.id, 1);
     } else {
       conta('loot', drop.id, 1, dono.estado.hunt?.sessao);
       const lista = deOutros.get(dono.estado) ?? [];
-      lista.push({ id: drop.id, count: 1 });
+      lista.push(noChat);
       deOutros.set(dono.estado, lista);
     }
     // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e

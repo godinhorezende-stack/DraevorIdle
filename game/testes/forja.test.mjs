@@ -53,7 +53,9 @@ test('TIER: a ficha é idêntica à real (139 peças, com a bolsa de loot)', () 
  */
 const DA_REGUA = ['min', 'max', 'pct', 'nome', 'texto', 'tier', 'nivel'];
 // E o limite de atributos, que passou a ser o da raridade (Comum 1 ... Mítico 6).
-const DO_LIMITE = ['vagas', 'maxAfixos'];
+// E a raridade: equipável sem drop é comum agora (o dono: "o que define é o
+// drop"), e a captura trazia a do catálogo — ver `raridadeDaPeca`.
+const DO_LIMITE = ['vagas', 'maxAfixos', 'rarity'];
 function semRegua(o) {
   if (Array.isArray(o)) return o.map(semRegua);
   if (!o || typeof o !== 'object') return o;

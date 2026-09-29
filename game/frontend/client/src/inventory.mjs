@@ -8,7 +8,7 @@ import { seloPremium, seloBlessings } from './hud.mjs';
 import {
   windowBody, setVisible, toggleWindow, fecharAoClicarFora, atalhosDaCaixa, botaoNoCabecalho,
 } from './windows.mjs';
-import { tipFor, tipTexto, tipPanel, previaDaMagia, classeDaRaridade, estrelasDosAfixos, seloDeEstrelas, marcaDeItem, numerosDoItem as ganhosDoItem, ehEssencia, ehVermelha } from './tooltip.mjs';
+import { tipFor, tipTexto, tipPanel, previaDaMagia, classeDaRaridade, raridadeDaPeca, estrelasDosAfixos, seloDeEstrelas, marcaDeItem, numerosDoItem as ganhosDoItem, ehEssencia, ehVermelha } from './tooltip.mjs';
 import { chatEscrevendo, inserirNoChat } from './chat.mjs';
 
 const el = (tag, className, text) => {
@@ -567,8 +567,8 @@ function escolherPecaParaTier() {
  * Então o direito faz uma coisa só: o que a peça faz. Não fazendo nada, não
  * acontece nada, e quem quer a lista segura o Ctrl.
  */
-function acaoDoDireito(event, id, { from, pilha = null, alvo = null }) {
-  if (event.ctrlKey) return itemMenu(event, id, { from, pilha, alvo });
+function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null }) {
+  if (event.ctrlKey) return itemMenu(event, id, { from, pilha, alvo, peca });
   // O menu do navegador não aparece em cima da mochila em nenhum caso.
   event.preventDefault();
   const meta = ctx.state.items[id];
@@ -625,12 +625,12 @@ let mandadoParaOChat = 0;
  * só, e de que slot o afixo saiu é o que separa "essência vermelha · arma" de
  * "essência vermelha · bota". Ver a nota do quinto campo, em tooltip.mjs.
  */
-function levarParaOChat(event, id, tier = 0, imbu = null, af = null, afixoDe = null) {
+function levarParaOChat(event, id, tier = 0, imbu = null, af = null, afixoDe = null, raridade = null) {
   if (event.button !== 0 || !event.shiftKey) return false;
   if (!chatEscrevendo()) return false;
   event.preventDefault();
   event.stopPropagation();
-  if (inserirNoChat(marcaDeItem(id, tier, imbu, af, afixoDe))) mandadoParaOChat = Date.now();
+  if (inserirNoChat(marcaDeItem(id, tier, imbu, af, afixoDe, raridade))) mandadoParaOChat = Date.now();
   return true;
 }
 
@@ -643,7 +643,7 @@ const doChat = () => Date.now() - mandadoParaOChat < 400;
  * ali: aqui dentro eram nomes livres, e "Equipar" pelo menu estourava com
  * ReferenceError em vez de equipar. Ver `alvoDaPeca`.
  */
-function itemMenu(event, id, { from, pilha = null, alvo = null }) {
+function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null }) {
   const { state, send } = ctx;
   const meta = state.items[id];
   /*
@@ -701,12 +701,12 @@ function itemMenu(event, id, { from, pilha = null, alvo = null }) {
     // De quem é este menu: o desenho, o nome e o tipo da peça.
     {
       cabeca: meta?.name ?? `item ${id}`,
-      sub: [meta?.rarity, TIPO_CURTO[meta?.slot] ?? meta?.type, from === 'equipment' ? 'vestido' : null]
+      sub: [raridadeDaPeca(meta, peca), TIPO_CURTO[meta?.slot] ?? meta?.type, from === 'equipment' ? 'vestido' : null]
         .filter(Boolean)
         .join(' · '),
       // A mesma cor do balão: dourado no lendário, violeta no épico, e assim
       // por diante. A palavra vai junto no `sub` — cor sozinha não é rótulo.
-      classe: classeDaRaridade(meta),
+      classe: classeDaRaridade(meta, peca),
       arte: itemCanvas(id, 28),
     },
     { divider: true },
@@ -1845,10 +1845,10 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
   selarDesgaste(cell, desgasteDaPeca(entry));
 
   makeDraggable(cell, entry.id, from, entry.count ?? 1, pilha, entry);
-  cell.oncontextmenu = (event) => acaoDoDireito(event, entry.id, { from, pilha, alvo: alvoDaPeca(entry, pilha) });
+  cell.oncontextmenu = (event) => acaoDoDireito(event, entry.id, { from, pilha, alvo: alvoDaPeca(entry, pilha), peca: entry });
   cell.addEventListener(
     'mousedown',
-    (event) => levarParaOChat(event, entry.id, entry.tier, entry.imbu, entry.af, entry.afixoDe),
+    (event) => levarParaOChat(event, entry.id, entry.tier, entry.imbu, entry.af, entry.afixoDe, entry.raridade),
     true
   );
 
@@ -2025,7 +2025,7 @@ export function renderInventory() {
       makeDraggable(cell, equipped.id, 'equipment');
       cell.addEventListener(
         'mousedown',
-        (event) => levarParaOChat(event, equipped.id, equipped.tier, equipped.imbu, equipped.af, equipped.afixoDe),
+        (event) => levarParaOChat(event, equipped.id, equipped.tier, equipped.imbu, equipped.af, equipped.afixoDe, equipped.raridade),
         true
       );
 
@@ -2046,7 +2046,7 @@ export function renderInventory() {
           event.preventDefault();
           return void openAmmoPicker();
         }
-        acaoDoDireito(event, equipped.id, { from: 'equipment' });
+        acaoDoDireito(event, equipped.id, { from: 'equipment', peca: equipped });
       };
       /*
        * ---- A ALJAVA é o que se clica para escolher a flecha ----

@@ -22,6 +22,7 @@ import { banco } from '../database/banco.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import * as Afixos from './afixos.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
+import { raridadeDaPeca } from './itens/item.mjs';
 
 const GUARDA = 30;
 const DE_BOSS = new Set(['lendário', 'mítico']);
@@ -77,7 +78,7 @@ function fichaDaPeca(id, count, peca = {}) {
     nome: it.name ?? `item ${id}`,
     count,
     // A raridade do DROP (o sistema de itens); a do catálogo só para peça antiga.
-    raridade: peca.raridade ?? it.rarity ?? 'comum',
+    raridade: raridadeDaPeca(peca),
     // Só quando tem (Lendário/Mítico): as outras linhas seguem no formato do original.
     ...(peca.efeito ? { efeito: EfeitosDeItem.textoDoEfeito(peca.efeito) } : {}),
     estrelas: af.length,
