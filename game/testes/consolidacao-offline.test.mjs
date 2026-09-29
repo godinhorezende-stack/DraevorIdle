@@ -283,3 +283,20 @@ test('online: quem caça de aba fechada conta; quem está conectado não conta d
   vivas.set(nome, { personagem: { nome } });
   assert.equal(Ausentes.contagem(), antes - 1, 'conectado: sai da conta dos ausentes (já conta como conectado)');
 });
+
+import * as Site from '../systems/site.mjs';
+
+test('site: quem caça offline sai como "caçando offline" na ficha e com o ponto amarelo no ranking', async (t) => {
+  const { p, nome } = await ausenteNoBanco(1);
+  t.after(() => B.excluirPersonagem(p.id));
+  Ausentes.ligar(vivas);
+  await Ausentes.atualizar(Date.now());
+  const ficha = (await Site.personagem(nome)).personagem;
+  assert.equal(ficha.jogando, false);
+  assert.equal(ficha.atividade.onde, 'cacando-offline');
+  assert.ok(ficha.atividade.lugar, 'com o nome da hunt');
+  assert.equal(typeof ficha.criadoEm, 'number', 'número (o Postgres devolve BIGINT como texto)');
+  const corpo = await Site.status('level', Date.now() + 60_000);
+  const linha = corpo.highscore.find((l) => l.name === nome);
+  if (linha) assert.equal(linha.cacandoOffline, true);
+});

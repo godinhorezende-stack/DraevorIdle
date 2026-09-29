@@ -72,3 +72,9 @@ export function agora(momento = Date.now()) {
 
 /** Quantos estão caçando offline agora. */
 export const contagem = (momento = Date.now()) => agora(momento).length;
+
+/** A caçada offline de alguém, se ele estiver caçando de aba fechada agora (senão `null`). */
+export function cacando(nome, momento = Date.now()) {
+  const alvo = String(nome ?? '').toLowerCase();
+  return agora(momento).find((a) => a.nome.toLowerCase() === alvo) ?? null;
+}

@@ -31,6 +31,13 @@ import { linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
 const $ = (id) => document.getElementById(id);
 const numero = (valor) => Number(valor ?? 0).toLocaleString('pt-BR');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+// O ponto antes do nome: verde conectado, amarelo caçando de aba fechada, apagado offline.
+const pontoDe = (e) =>
+  e.online
+    ? '<i class="ponto" title="online agora"></i>'
+    : e.cacandoOffline
+      ? '<i class="ponto ausente" title="caçando offline"></i>'
+      : '<i class="ponto off" title="offline"></i>';
 
 const VOCACOES = { knight: 'Knight', paladin: 'Paladin', druid: 'Druid', sorcerer: 'Sorcerer', monk: 'Monk', none: 'Sem vocação' };
 // O ícone da vocação é o da perícia dela, como no card da party (panels.mjs).
@@ -67,7 +74,7 @@ function linha(entrada, posicao, rotulo) {
     <span class="top5-pos">${posicao}</span>
     <a class="top5-retrato" href="${link}" aria-hidden="true" tabindex="-1"></a>
     <div class="top5-info">
-      <a class="top5-nome" href="${link}"><i class="ponto${entrada.online ? '' : ' off'}" title="${entrada.online ? 'online agora' : 'offline'}"></i><span class="top5-nome-txt">${esc(entrada.name)}</span></a>
+      <a class="top5-nome" href="${link}">${pontoDe(entrada)}<span class="top5-nome-txt">${esc(entrada.name)}</span></a>
       <span class="top5-voc">${icone ? `<img src="/client/assets/icons/${icone}.png" alt="">` : ''}${embaixo}</span>
     </div>
     <div class="top5-level"><small>${esc(rotulo)}</small><b>${numero(categoria === 'level' ? entrada.level : entrada.value)}</b></div>`;
@@ -300,7 +307,7 @@ function pintarTopExp(dados) {
     corpo.innerHTML = `
       <a class="top-exp-retrato" href="${link}" aria-hidden="true" tabindex="-1"></a>
       <div class="top-exp-quem">
-        <a class="top-exp-nome" href="${link}"><i class="ponto${dono.online ? '' : ' off'}" title="${dono.online ? 'online agora' : 'offline'}"></i><span class="top-exp-nome-txt">${esc(dono.name)}</span></a>
+        <a class="top-exp-nome" href="${link}">${pontoDe(dono)}<span class="top-exp-nome-txt">${esc(dono.name)}</span></a>
         <span class="top-exp-voc">${icone ? `<img src="/client/assets/icons/${icone}.png" alt="">` : ''}${esc(VOCACOES[dono.vocation] ?? dono.vocation ?? '—')} · lv ${numero(dono.level)}${selo(dono.levels)}</span>
       </div>
       <div class="top-exp-valor">
@@ -468,7 +475,11 @@ async function mostrarInventario(li, entrada) {
         <b>${esc(p.nome)}</b>
         <span class="top5-pop-voc">${esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao ?? '')}</span>
         <span>Level <em>${numero(p.level)}</em></span>
-        <span class="${p.jogando ? 'on' : 'off'}"><i class="ponto${p.jogando ? '' : ' off'}"></i>${p.jogando ? 'online agora' : 'offline'}</span>
+        ${p.jogando
+          ? '<span class="on"><i class="ponto"></i>online agora</span>'
+          : p.atividade?.onde === 'cacando-offline'
+            ? '<span class="ausente"><i class="ponto ausente"></i>caçando offline</span>'
+            : '<span class="off"><i class="ponto off"></i>offline</span>'}
       </div>
     </div>
     <div class="top5-pop-titulo">Inventory</div>

@@ -161,8 +161,8 @@ export async function status(categoria = 'level', agora = Date.now()) {
     googleClientId: null,
     packs: [],
     hunts: CATALOGO.hunts?.length ?? 0,
-    highscore: (await Ranking.topo(categoria)).slice(0, TOPO).map(({ vocationName: _v, ...linha }) => linha),
-    expHoje: await expHoje(agora),
+    highscore: (await Ranking.topo(categoria)).slice(0, TOPO).map(({ vocationName: _v, ...linha }) => linha).map(marcarAusente(agora)),
+    expHoje: (await expHoje(agora)).map(marcarAusente(agora)),
     expHora: expHora(agora),
   };
   guardados.set(categoria, { ate: agora + GUARDA_MS, corpo });
@@ -170,6 +170,16 @@ export async function status(categoria = 'level', agora = Date.now()) {
 }
 
 // ------------------------------------------------------------ /api/online
+
+const lugarDoAusente = (a) => (a.huntId === 'treino' ? 'Pátio de treino' : a.huntId ? nomeDaHunt(a.huntId) : null);
+
+/*
+ * Quem caça de aba fechada ganha `cacandoOffline: true` na linha do ranking (o
+ * ponto AMARELO na capa). A chave só aparece nele: as linhas dos outros seguem
+ * com as chaves do original (site.test.mjs).
+ */
+const marcarAusente = (agora) => (linha) =>
+  !linha.online && Ausentes.cacando(linha.name, agora) ? { ...linha, cacandoOffline: true } : linha;
 
 /** Onde a pessoa está, nas palavras da página /online. */
 function atividade(e) {
@@ -193,7 +203,7 @@ export function jogadoresOnline() {
   const offline = Ausentes.agora()
     .map((a) => ({
       name: a.nome, level: a.level, vocation: a.vocacao, outfit: roupa(a.outfit ?? {}), guilda: guildaDe(a.nome),
-      onde: 'offline', hunt: a.huntId === 'treino' ? 'Pátio de treino' : a.huntId ? nomeDaHunt(a.huntId) : null,
+      onde: 'offline', hunt: lugarDoAusente(a),
     }))
     .sort((a, b) => b.level - a.level || a.name.localeCompare(b.name));
   return { jogadores: [...jogadores, ...offline] };
@@ -276,7 +286,9 @@ export async function personagem(nome, agora = Date.now()) {
   const eq = equipamento(e);
   const itens = {};
   for (const p of Object.values(eq)) if (p) itens[p.id] = ITEM_CATALOG[p.id];
-  const a = vivo ? atividade(e) : { onde: 'offline', lugar: null };
+  // De aba fechada mas caçando: "Caçando offline", com a hunt (ver `ausentes.mjs`).
+  const ausente = vivo ? null : Ausentes.cacando(nomeCerto, agora);
+  const a = vivo ? atividade(e) : ausente ? { onde: 'cacando-offline', lugar: lugarDoAusente(ausente) } : { onde: 'offline', lugar: null };
   return {
     ok: true,
     personagem: {
@@ -300,8 +312,9 @@ export async function personagem(nome, agora = Date.now()) {
       skills: Object.fromEntries(Object.entries(e.skills ?? {}).map(([k, v]) => [k, v?.value ?? v])),
       outfit: roupa(e.outfit),
       equipamento: eq,
-      criadoEm: r?.criado_em ?? null,
-      visto: vivo ? agora : r?.visto_em ?? null,
+      // Postgres devolve BIGINT como texto; sem o Number a ficha mostrava "Invalid Date".
+      criadoEm: r?.criado_em != null ? Number(r.criado_em) : null,
+      visto: vivo ? agora : r?.visto_em != null ? Number(r.visto_em) : null,
       banco: e.bank ?? 0,
       itens,
       catalogo: { afixos: CATALOGO.afixos, efeitosDeTier: CATALOGO.efeitosDeTier, imbuements: CATALOGO.imbuements },
