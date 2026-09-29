@@ -581,7 +581,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
  * por segundo. Aqui o golpe saía a cada 250ms (o passo), e o troco de cada
  * bicho também — 8x rápido demais dos dois lados.
  */
-export const ATAQUE_MS = 2000;
+export const ATAQUE_MS = Ficha.INTERVALO_BASE_DO_GOLPE_MS;
 export const ATAQUE_DO_MONSTRO_MS = 2000;
 /** Até onde um bicho lança magia: a tela do Tibia (7 casas para o lado). */
 export const ALCANCE_DAS_MAGIAS = 7;
