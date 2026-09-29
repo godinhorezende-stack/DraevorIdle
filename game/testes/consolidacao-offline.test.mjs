@@ -300,3 +300,24 @@ test('site: quem caça offline sai como "caçando offline" na ficha e com o pont
   const linha = corpo.highscore.find((l) => l.name === nome);
   if (linha) assert.equal(linha.cacandoOffline, true);
 });
+
+test('Top Exp/h: quem caça de aba fechada entra, pela exp que a consolidação grava', async (t) => {
+  const { p, nome } = await ausenteNoBanco(1);
+  t.after(() => B.excluirPersonagem(p.id));
+  Ausentes.ligar(vivas);
+  const t0 = Date.now();
+  await Ausentes.atualizar(t0);
+  Site.amostrar(t0);
+  // A rodada da consolidação avança a exp dele no banco...
+  const linha = await B.banco.prepare('SELECT estado FROM personagens WHERE id = ?').get(p.id);
+  const e = JSON.parse(linha.estado);
+  e.xp += 123_456;
+  await B.regravarEstadoPersonagem(p.id, e);
+  await Ausentes.atualizar(t0 + 60_000);
+  // ...e o Top Exp/h mede o ganho, com o ponto amarelo.
+  const corpo = await Site.status('magic', t0 + 120_000);
+  const hora = corpo.expHora.find((l) => l.name === nome);
+  assert.ok(hora, 'entra no Top Exp/h mesmo sem ninguém conectado');
+  assert.equal(hora.value, 123_456);
+  assert.equal(hora.cacandoOffline, true);
+});
