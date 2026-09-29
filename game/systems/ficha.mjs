@@ -24,6 +24,7 @@ import * as Aparencia from './aparencia.mjs';
 // Os efeitos especiais (Lendário) e supremos (Mítico) das peças vestidas.
 import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { metaDaPeca, faixaDoCampo } from './itens/item.mjs';
+import { SLOTS_DE_JOIA } from './itens/gerar.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -134,12 +135,16 @@ function calcularCombate(estado) {
   const municao = w?.ammo ? ITEM_CATALOG[estado.equipment?.ammo?.id] : null;
   const daMunicao = municao?.ammo === w?.ammo ? municao : null;
   // "Ataque" (+N no ataque da arma) e "Ataque da arma" (+% dele).
+  // O ataque de anel e amuleto (`base.attack` sorteado no drop) soma ao da arma, também em faixa.
+  const joias = Object.entries(estado.equipment ?? {}).filter(([slot, p]) => p && SLOTS_DE_JOIA.has(slot));
+  const [jMin, jMax] = joias.reduce(([a, b], [, p]) => { const [x, y] = faixaDoCampo(p, 'attack'); return [a + x, b + y]; }, [0, 0]);
   const calcAtaque = (a) => Math.round(((a ?? 0) + (daMunicao?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
-  const ataque = calcAtaque(w?.attack);
   // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
   const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
-  const ataqueMin = w?.attack ? calcAtaque(faixaMin) : ataque;
-  const ataqueMax = w?.attack ? calcAtaque(faixaMax) : ataque;
+  const temAtaque = !!w?.attack || jMax > 0;
+  const ataque = calcAtaque((w?.attack ?? 0) + Math.round((jMin + jMax) / 2));
+  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin) : ataque;
+  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax) : ataque;
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   const damage = w?.wand

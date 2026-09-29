@@ -148,3 +148,40 @@ test('anel e amuleto também sorteiam armadura física/mágica (valor pelo níve
   const gerada = gerarItem({ itemId: joia.id, raridade: 'comum', rng: () => 0.5 });
   assert.ok(gerada.base?.armor || gerada.base?.marmor, 'a peça carrega a armadura sorteada');
 });
+
+test('joia: pode vir sem nada, só armadura, só ataque ou os dois; Comum/Incomum nunca com armadura E ataque', () => {
+  const joia = Object.values(ITEM_CATALOG).find((i) => i.slot === 'neck' && !i.stackable && !i.armor && i.minLevel >= 24);
+  const ve = (r) => {
+    const c = { nada: 0, armadura: 0, ataque: 0, ambos: 0 };
+    for (let i = 0; i < 4000; i++) {
+      const b = rolarBase(joia.id, r);
+      const arm = (b.armor?.[1] ?? 0) > 0 || !!b.marmor;
+      const atk = !!b.attack;
+      c[arm && atk ? 'ambos' : arm ? 'armadura' : atk ? 'ataque' : 'nada']++;
+    }
+    return c;
+  };
+  for (const r of ['comum', 'incomum']) {
+    const c = ve(r);
+    assert.equal(c.ambos, 0, `${r}: nunca os dois`);
+    assert.ok(c.nada > 0 && c.armadura > 0 && c.ataque > 0, `${r}: os três resultados aparecem`);
+  }
+  assert.ok(ve('raro').ambos > 0);
+  const m = ve('mítico');
+  assert.equal(m.nada, 0, 'Mítico nunca vem sem nada');
+});
+
+test('ficha: o ataque do anel/amuleto soma ao da arma, em faixa', () => {
+  const anel = Object.values(ITEM_CATALOG).find((i) => i.slot === 'ring' && !i.stackable);
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.equipment.weapon = { id: arma.id, count: 1 };
+  e.equipment.ring = null;
+  Ficha.invalidar(e);
+  const sem = Ficha.combate(e);
+  e.equipment.ring = { id: anel.id, count: 1, base: { attack: [8, 12] } };
+  Ficha.invalidar(e);
+  const com = Ficha.combate(e);
+  assert.equal(com.ataqueMin, sem.ataqueMin + 8);
+  assert.equal(com.ataqueMax, sem.ataqueMax + 12);
+  assert.ok(com.ataque > sem.ataque);
+});

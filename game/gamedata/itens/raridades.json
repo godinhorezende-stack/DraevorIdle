@@ -30,6 +30,12 @@
     "fisica": 70,
     "magica": 30,
     "ambas": 0
+   },
+   "joia": {
+    "nada": 50,
+    "armadura": 30,
+    "ataque": 20,
+    "ambos": 0
    }
   },
   "incomum": {
@@ -54,6 +60,12 @@
     "fisica": 60,
     "magica": 40,
     "ambas": 0
+   },
+   "joia": {
+    "nada": 40,
+    "armadura": 35,
+    "ataque": 25,
+    "ambos": 0
    }
   },
   "raro": {
@@ -78,6 +90,12 @@
     "fisica": 35,
     "magica": 25,
     "ambas": 40
+   },
+   "joia": {
+    "nada": 25,
+    "armadura": 30,
+    "ataque": 25,
+    "ambos": 20
    }
   },
   "épico": {
@@ -102,6 +120,12 @@
     "fisica": 22,
     "magica": 18,
     "ambas": 60
+   },
+   "joia": {
+    "nada": 15,
+    "armadura": 28,
+    "ataque": 22,
+    "ambos": 35
    }
   },
   "lendário": {
@@ -126,6 +150,12 @@
     "fisica": 10,
     "magica": 10,
     "ambas": 80
+   },
+   "joia": {
+    "nada": 8,
+    "armadura": 22,
+    "ataque": 20,
+    "ambos": 50
    }
   },
   "mítico": {
@@ -150,6 +180,12 @@
     "fisica": 0,
     "magica": 0,
     "ambas": 100
+   },
+   "joia": {
+    "nada": 0,
+    "armadura": 10,
+    "ataque": 10,
+    "ambos": 80
    }
   }
  },
@@ -284,5 +320,6 @@
   }
  },
  "_nota_base": "Faixa de ataque/defesa/armadura da peça, em % do valor do catálogo. No drop sorteia-se o PISO em `piso` e o TETO em `teto`; o maior piso possível é o menor teto possível, então o teto nunca fica abaixo do piso. A peça guarda [piso, teto] e o ataque de cada golpe sorteia entre os dois. Comum nunca passa de 100%. Ex. ataque 20: Comum 2–16 / 16–20, Épico 17–22 / 22–27.",
- "_nota_armadura": "Que armadura a peça sorteia no drop (só as que têm armadura no catálogo), em %: só física, só mágica ou as duas. Comum e Incomum nunca vêm com as duas. Com as duas, cada tipo recebe `FATOR_DAS_DUAS` (75%) do valor sorteado."
+ "_nota_armadura": "Que armadura a peça sorteia no drop (só as que têm armadura no catálogo), em %: só física, só mágica ou as duas. Comum e Incomum nunca vêm com as duas. Com as duas, cada tipo recebe `FATOR_DAS_DUAS` (75%) do valor sorteado.",
+ "_nota_joia": "Anel e amuleto: o que a peça traz de base, em %: nada, só armadura (física/mágica, ver `armadura`), só ataque ou armadura + ataque. Comum e Incomum nunca vêm com os dois."
 }

@@ -82,6 +82,9 @@ export function armaduraBase(meta) {
   return SLOTS_DE_JOIA.has(meta?.slot) ? Math.max(2, Math.round((meta.minLevel ?? 1) / 12)) : 0;
 }
 
+/** O valor-base de ataque de um anel/amuleto (o catálogo não tem): `nível mínimo / 6`, mínimo 2. */
+export const ataqueBaseDaJoia = (meta) => Math.max(2, Math.round((meta?.minLevel ?? 1) / 6));
+
 /** Peça com as duas armaduras: cada tipo fica com esta fração do valor sorteado. */
 export const FATOR_DAS_DUAS = 0.75;
 
@@ -99,15 +102,22 @@ export function rolarBase(itemId, raridade, rng = Math.random) {
   const faixa = C.RARIDADES.raridades[raridade]?.base ?? { piso: [1, 1], teto: [1, 1] };
   const sortear = ([lo, hi]) => lo + rng() * (hi - lo);
   const base = {};
+  // Anel/amuleto: a peça pode vir sem nada, só com armadura, só com ataque ou com os dois (`joia` da raridade).
+  const joia = SLOTS_DE_JOIA.has(meta?.slot);
+  const conteudo = joia ? sortearChave(C.RARIDADES.raridades[raridade]?.joia ?? { armadura: 1 }, rng) : null;
+  const querArmadura = !joia || conteudo === 'armadura' || conteudo === 'ambos';
+  const querAtaque = joia && (conteudo === 'ataque' || conteudo === 'ambos');
   for (const campo of ['attack', 'defense', 'armor']) {
-    const valor = campo === 'armor' ? armaduraBase(meta) : Number(meta?.[campo]);
+    const valor = campo === 'armor' ? (querArmadura ? armaduraBase(meta) : 0) : joia ? (campo === 'attack' && querAtaque ? ataqueBaseDaJoia(meta) : 0) : Number(meta?.[campo]);
     if (!(valor > 0)) continue;
     const piso = Math.max(1, Math.round(valor * sortear(faixa.piso)));
     const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
     base[campo] = [piso, teto];
   }
   // A armadura do catálogo vira física, mágica ou as duas (Comum e Incomum: uma só) — `raridades.json`, `armadura`.
-  if (base.armor) {
+  // Joia que veio sem armadura mas TEM no catálogo: zera (senão a peça voltaria ao valor cheio dele).
+  if (joia && !querArmadura && Number(meta?.armor) > 0) base.armor = [0, 0];
+  if (base.armor?.[1] > 0) {
     const pesos = C.RARIDADES.raridades[raridade]?.armadura;
     const tipo = pesos ? sortearChave(pesos, rng) : 'fisica';
     const [piso, teto] = base.armor;
