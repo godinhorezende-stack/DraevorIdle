@@ -25,6 +25,11 @@
      0.8,
      1.0
     ]
+   },
+   "armadura": {
+    "fisica": 70,
+    "magica": 30,
+    "ambas": 0
    }
   },
   "incomum": {
@@ -44,6 +49,11 @@
      0.9,
      1.15
     ]
+   },
+   "armadura": {
+    "fisica": 60,
+    "magica": 40,
+    "ambas": 0
    }
   },
   "raro": {
@@ -63,6 +73,11 @@
      1.0,
      1.25
     ]
+   },
+   "armadura": {
+    "fisica": 35,
+    "magica": 25,
+    "ambas": 40
    }
   },
   "épico": {
@@ -82,6 +97,11 @@
      1.1,
      1.35
     ]
+   },
+   "armadura": {
+    "fisica": 22,
+    "magica": 18,
+    "ambas": 60
    }
   },
   "lendário": {
@@ -101,6 +121,11 @@
      1.25,
      1.45
     ]
+   },
+   "armadura": {
+    "fisica": 10,
+    "magica": 10,
+    "ambas": 80
    }
   },
   "mítico": {
@@ -120,6 +145,11 @@
      1.35,
      1.6
     ]
+   },
+   "armadura": {
+    "fisica": 0,
+    "magica": 0,
+    "ambas": 100
    }
   }
  },
@@ -253,5 +283,6 @@
    }
   }
  },
- "_nota_base": "Faixa de ataque/defesa/armadura da peça, em % do valor do catálogo. No drop sorteia-se o PISO em `piso` e o TETO em `teto`; o maior piso possível é o menor teto possível, então o teto nunca fica abaixo do piso. A peça guarda [piso, teto] e o ataque de cada golpe sorteia entre os dois. Comum nunca passa de 100%. Ex. ataque 20: Comum 2–16 / 16–20, Épico 17–22 / 22–27."
+ "_nota_base": "Faixa de ataque/defesa/armadura da peça, em % do valor do catálogo. No drop sorteia-se o PISO em `piso` e o TETO em `teto`; o maior piso possível é o menor teto possível, então o teto nunca fica abaixo do piso. A peça guarda [piso, teto] e o ataque de cada golpe sorteia entre os dois. Comum nunca passa de 100%. Ex. ataque 20: Comum 2–16 / 16–20, Épico 17–22 / 22–27.",
+ "_nota_armadura": "Que armadura a peça sorteia no drop (só as que têm armadura no catálogo), em %: só física, só mágica ou as duas. Comum e Incomum nunca vêm com as duas. Com as duas, cada tipo recebe `FATOR_DAS_DUAS` (75%) do valor sorteado."
 }

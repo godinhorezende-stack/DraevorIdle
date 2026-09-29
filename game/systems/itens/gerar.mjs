@@ -70,7 +70,10 @@ export function nivelDoValor(id, valor) {
 }
 
 /** Os números do item-base que cada peça sorteia na faixa da raridade (ver `rolarBase`). */
-export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor'];
+export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor', 'marmor'];
+
+/** Peça com as duas armaduras: cada tipo fica com esta fração do valor sorteado. */
+export const FATOR_DAS_DUAS = 0.75;
 
 /**
  * A FAIXA desta peça: para cada número do catálogo (ataque, defesa, armadura),
@@ -86,12 +89,26 @@ export function rolarBase(itemId, raridade, rng = Math.random) {
   const faixa = C.RARIDADES.raridades[raridade]?.base ?? { piso: [1, 1], teto: [1, 1] };
   const sortear = ([lo, hi]) => lo + rng() * (hi - lo);
   const base = {};
-  for (const campo of CAMPOS_DA_BASE) {
+  for (const campo of ['attack', 'defense', 'armor']) {
     const valor = Number(meta?.[campo]);
     if (!(valor > 0)) continue;
     const piso = Math.max(1, Math.round(valor * sortear(faixa.piso)));
     const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
     base[campo] = [piso, teto];
+  }
+  // A armadura do catálogo vira física, mágica ou as duas (Comum e Incomum: uma só) — `raridades.json`, `armadura`.
+  if (base.armor) {
+    const pesos = C.RARIDADES.raridades[raridade]?.armadura;
+    const tipo = pesos ? sortearChave(pesos, rng) : 'fisica';
+    const [piso, teto] = base.armor;
+    const fatia = (f) => [Math.max(1, Math.round(piso * f)), Math.max(1, Math.round(teto * f))];
+    if (tipo === 'magica') {
+      base.marmor = base.armor;
+      base.armor = [0, 0];
+    } else if (tipo === 'ambas') {
+      base.armor = fatia(FATOR_DAS_DUAS);
+      base.marmor = fatia(FATOR_DAS_DUAS);
+    }
   }
   return base;
 }

@@ -73,7 +73,7 @@ test('ficha: o golpe sorteia entre o piso e o teto da arma; a ficha mostra a mé
   assert.ok(vistos.size > 5, 'oscila de golpe em golpe');
 });
 
-test('ficha: bloqueio e armadura em faixa; a defesa da arma entra no bloqueio; sem escudo é 0%', () => {
+test('ficha: bloqueio e armadura em faixa; a defesa da arma entra no bloqueio, com ou sem escudo', () => {
   const escudo = Object.values(ITEM_CATALOG).find((i) => i.slot === 'shield' && i.defense >= 10);
   const e = personagemDeTeste({ vocacao: 'knight' });
   e.equipment.shield = { id: escudo.id, count: 1, base: { defense: [escudo.defense, escudo.defense + 10] } };
@@ -88,9 +88,52 @@ test('ficha: bloqueio e armadura em faixa; a defesa da arma entra no bloqueio; s
   const comArma = Ficha.combate(e);
   assert.ok(comArma.blockChanceMax >= f.blockChanceMax, 'defesa da arma soma no bloqueio');
 
+  // Sem escudo, a defesa da arma sozinha já bloqueia; tirando a defesa dela, o bloqueio cai.
   e.equipment.shield = null;
   Ficha.invalidar(e);
   const semEscudo = Ficha.combate(e);
-  assert.equal(semEscudo.blockChance, 0);
-  assert.equal(semEscudo.blockChanceMax, 0);
+  assert.ok(semEscudo.blockChance > 0, 'arma com defesa bloqueia sem escudo');
+  e.equipment.weapon = { id: arma.id, count: 1, base: { defense: [0, 0] } };
+  Ficha.invalidar(e);
+  assert.ok(Ficha.combate(e).blockChance < semEscudo.blockChance, 'sem defesa na arma o bloqueio some (fica só o extra dela, se houver)');
+});
+
+const armadura = Object.values(ITEM_CATALOG).find((i) => i.armor >= 10 && i.slot && !i.stackable);
+
+test('armadura: Comum e Incomum vêm com UM tipo só; Raro+ pode vir com os dois; só-mágica zera a física', () => {
+  const ve = (r) => {
+    const c = { fisica: 0, magica: 0, ambas: 0 };
+    for (let i = 0; i < 4000; i++) {
+      const b = rolarBase(armadura.id, r);
+      const f = b.armor[1] > 0;
+      const m = !!b.marmor;
+      c[f && m ? 'ambas' : m ? 'magica' : 'fisica']++;
+      if (m) assert.ok(b.marmor[0] >= 1 && b.marmor[1] >= b.marmor[0]);
+      if (!m) assert.ok(b.armor[0] >= 1);
+    }
+    return c;
+  };
+  for (const r of ['comum', 'incomum']) {
+    const c = ve(r);
+    assert.equal(c.ambas, 0, `${r} nunca com as duas`);
+    assert.ok(c.fisica > 0 && c.magica > 0, `${r}: os dois tipos aparecem`);
+  }
+  assert.ok(ve('raro').ambas > 0);
+  const mitico = ve('mítico');
+  assert.equal(mitico.ambas, 4000, 'Mítico sempre com as duas');
+});
+
+test('ficha: armadura mágica soma das peças; peça só-mágica não tem armadura física', () => {
+  const e = personagemDeTeste({ vocacao: 'knight' });
+  e.equipment[armadura.slot] = { id: armadura.id, count: 1, base: { armor: [0, 0], marmor: [10, 14] } };
+  Ficha.invalidar(e);
+  const f = Ficha.combate(e);
+  assert.equal(f.armorMagicMin, 10);
+  assert.equal(f.armorMagicMax, 14);
+  assert.equal(f.armorMagic, 12);
+  const sem = personagemDeTeste({ vocacao: 'knight' });
+  sem.equipment[armadura.slot] = { id: armadura.id, count: 1 };
+  Ficha.invalidar(sem);
+  assert.equal(Ficha.combate(sem).armorMagic, 0, 'peça sem faixa: só física');
+  assert.ok(f.armor < Ficha.combate(sem).armor, 'só-mágica tira a armadura física da peça');
 });

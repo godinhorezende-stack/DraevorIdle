@@ -175,9 +175,9 @@ function calcularCombate(estado) {
     critChance: CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance,
     critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100 + prof.critDano + imb.critDano,
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
-    // O bloqueio vem do escudo MAIS a defesa da arma (metade + o extra dela, como sempre), com a
+    // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
-    // Sem escudo, 0% — a defesa da arma sozinha não bloqueia.
+    // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
     ...bloqueioDaFicha(estado, escudo, w, prof, shielding),
     ...faixaDeArmadura(estado, af),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
@@ -269,28 +269,38 @@ function bloqueioDaFicha(estado, escudo, w, prof, shielding) {
   const extra = (w?.extraDefense ?? 0) + (prof?.defesa ?? 0);
   const defMin = eMin + Math.floor(aMin / 2) + extra;
   const defMax = eMax + Math.floor(aMax / 2) + extra;
-  const com = (d) => R.blockChance(shielding, escudo ? d : null);
+  // A defesa da arma bloqueia mesmo SEM escudo (só que 0 de defesa = 0% de bloqueio).
+  const com = (d) => R.blockChance(shielding, d);
   return {
     blockChance: com(Math.round((defMin + defMax) / 2)),
     blockChanceMin: com(defMin),
     blockChanceMax: com(defMax),
-    defesaBloqueioMin: escudo ? defMin : 0,
-    defesaBloqueioMax: escudo ? defMax : 0,
+    defesaBloqueioMin: defMin,
+    defesaBloqueioMax: defMax,
   };
 }
 
-/** A armadura em faixa: a soma dos pisos e dos tetos das peças vestidas (+ a armadura plana dos afixos). */
+/** As armaduras em faixa: a soma dos pisos e dos tetos das peças vestidas (+ a armadura plana dos afixos, que é física). */
 function faixaDeArmadura(estado, af) {
-  let armorMin = 0;
-  let armorMax = 0;
+  const soma = { armor: [0, 0], marmor: [0, 0] };
   for (const p of Object.values(estado.equipment ?? {})) {
     if (!p) continue;
-    const [a, b] = faixaDoCampo(p, 'armor');
-    armorMin += a;
-    armorMax += b;
+    for (const campo of ['armor', 'marmor']) {
+      const [a, b] = faixaDoCampo(p, campo);
+      soma[campo][0] += a;
+      soma[campo][1] += b;
+    }
   }
   const plana = af?.armor_flat ?? 0;
-  return { armorMin: armorMin + plana, armorMax: armorMax + plana };
+  const mediaMagica = Math.round((soma.marmor[0] + soma.marmor[1]) / 2);
+  return {
+    armorMin: soma.armor[0] + plana,
+    armorMax: soma.armor[1] + plana,
+    // Armadura MÁGICA: corta o dano de magia e de ataque elemental dos monstros (só a física corta o golpe físico).
+    armorMagic: mediaMagica,
+    armorMagicMin: soma.marmor[0],
+    armorMagicMax: soma.marmor[1],
+  };
 }
 
 /** O ataque DESTE golpe: sorteado entre o piso e o teto da arma (a média, `ficha.ataque`, é o que a ficha mostra). */

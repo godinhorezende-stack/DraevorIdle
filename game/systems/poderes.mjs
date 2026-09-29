@@ -25,6 +25,7 @@ import { readFileSync } from 'node:fs';
 import * as Arvore from './arvore.mjs';
 import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
+import * as R from './regras.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -136,7 +137,10 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     }
     const prot = Math.min(100, ficha.protection?.[a.elemento] ?? 0);
     // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
-    let dano = Math.round(sortear(a.min, a.max) * (bicho.forca ?? 1) * (1 - prot / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+    // A armadura MÁGICA corta o golpe depois da proteção em % (a mesma conta da física: 60% a 120% dela), e não o dreno de mana.
+    const bruto = sortear(a.min, a.max) * (bicho.forca ?? 1) * (1 - prot / 100);
+    const cortado = a.elemento === 'manadrain' ? bruto : Math.max(0, bruto - R.armorReduction(ficha.armorMagic ?? 0, Math.random()));
+    let dano = Math.round(cortado * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
     const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
     // Void Inversion (charm): o dreno de mana vira ganho de mana.
     if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {

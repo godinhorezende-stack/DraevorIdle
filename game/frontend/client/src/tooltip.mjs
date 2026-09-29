@@ -1918,7 +1918,8 @@ export function numerosDoItem(meta) {
   por('attack', 'ataque', meta.attack, 'atk');
   // O número de defesa (escudo OU arma) é o BLOQUEIO (a chance de aparar vem só dele — ver `blockChance`).
   por('defense', 'bloqueio', meta.defense, 'def');
-  por('armor', 'armadura', meta.armor, 'def');
+  por('armor', 'armadura física', meta.armor, 'def');
+  por('marmor', 'armadura mágica', meta.marmor, 'def');
   por('range', 'alcance', meta.range, 'plain', ' sqm');
   por('speed', 'velocidade', meta.speed, 'speed');
   if (meta.element) {
@@ -2193,12 +2194,13 @@ const ARTE_DO_SLOT_DA_ESSENCIA = {
 const comBaseDaPeca = (meta, peca) => {
   if (!meta || !peca?.base) return meta;
   const saida = { ...meta, faixas: {} };
-  for (const campo of ['attack', 'defense', 'armor']) {
+  for (const campo of ['attack', 'defense', 'armor', 'marmor']) {
     const bruto = peca.base[campo];
     const [a, b] = Array.isArray(bruto) ? bruto : [bruto, bruto];
     const piso = Math.floor(Number(a));
     const teto = Math.floor(Number(b));
-    if (!(piso > 0 && teto > 0)) continue;
+    // [0, 0] vale: a peça só-mágica tem a armadura física zerada.
+    if (!((piso > 0 && teto > 0) || (Array.isArray(bruto) && piso === 0 && teto === 0))) continue;
     saida[campo] = Math.round((piso + Math.max(piso, teto)) / 2);
     saida.faixas[campo] = [piso, Math.max(piso, teto)];
   }
@@ -2407,7 +2409,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
   if (meta.attack) add(`${numeroOuFaixa(meta, 'attack')} de ataque`, 'atk');
   if (meta.defense) add(`${numeroOuFaixa(meta, 'defense')} de bloqueio${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
-  if (meta.armor) add(`${numeroOuFaixa(meta, 'armor')} de armadura`, 'def');
+  if (meta.armor) add(`${numeroOuFaixa(meta, 'armor')} de armadura física`, 'def');
+  if (meta.marmor) add(`${numeroOuFaixa(meta, 'marmor')} de armadura mágica`, 'def');
   if (meta.range) add(`Alcance de ${meta.range} sqm`, 'plain');
   if (meta.speed) add(`${sinal(meta.speed)} de velocidade`, 'speed');
   // Elemento é um segundo golpe, não uma fatia do primeiro: o servidor roda a

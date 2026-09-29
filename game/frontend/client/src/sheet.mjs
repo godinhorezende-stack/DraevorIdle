@@ -481,7 +481,8 @@ export function renderSheet(body, { state, send, closeModal }) {
   const combat = el('div', 'stat-grid');
   combat.append(
     // Armadura, bloqueio e dano são FAIXAS: a das peças (sorteada no drop), e cada golpe sorteia dentro dela.
-    statCard('Armadura', faixa(derived.armorMin, derived.armorMax, derived.armor), 'armadura equipada', null, 'ficha-armadura'),
+    statCard('Armadura física', faixa(derived.armorMin, derived.armorMax, derived.armor), 'corta o golpe físico', null, 'ficha-armadura'),
+    statCard('Armadura mágica', faixa(derived.armorMagicMin, derived.armorMagicMax, derived.armorMagic ?? 0), 'corta magia e ataque elemental', null, 'ficha-armadura'),
     statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
     /*
      * O elemental é uma FATIA do golpe, e não um golpe à parte.

@@ -37,7 +37,9 @@ function faixaValida(v) {
   const [a, b] = Array.isArray(v) ? v : [v, v];
   const piso = Math.floor(Number(a));
   const teto = Math.floor(Number(b));
-  return piso > 0 && teto > 0 ? [piso, Math.max(piso, teto)] : null;
+  // [0, 0] é válido: a peça só-mágica tem a armadura física ZERADA (e não o valor do catálogo).
+  const zeroDeVerdade = Array.isArray(v) && piso === 0 && teto === 0;
+  return (piso > 0 && teto > 0) || zeroDeVerdade ? [piso, Math.max(piso, teto)] : null;
 }
 
 /** O `base` de uma peça só com os campos e faixas válidos (vem do cliente em `comparar`, e do save). */
