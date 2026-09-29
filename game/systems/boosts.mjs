@@ -43,9 +43,28 @@ export function consumir(estado, ms) {
 export function expDoBicho(estado, base) {
   const boosts = garantir(estado).reduce((a, b) => a + b.percent, 0) + (BuffPower.fonteDeExp(estado)?.percent ?? 0) + Afixos.de(estado, 'exp_bonus');
   const premium = (estado.premiumAte ?? 0) > Date.now() ? 10 : 0;
-  // A stamina não soma: MULTIPLICA o resultado (x1,5 / x1 / x0,5).
-  return Math.round(base * (1 + (R.levelBonus(estado.level ?? 1) + boosts + premium) / 100) * Stamina.fatorDeExp(estado));
+  // A stamina não soma: MULTIPLICA o resultado (x1,5 / x1 / x0,5). O estágio também.
+  return Math.round(base * (1 + (R.levelBonus(estado.level ?? 1) + boosts + premium) / 100) * Stamina.fatorDeExp(estado) * estagioDeExp(estado.level));
 }
+
+/*
+ * ---- Estágios de exp: o 1–100 mais rápido ----
+ *
+ * Medido (29/09, simulação de todas as hunts): do level 8 ao 100 são 15,7
+ * milhões de exp, 12,4 milhões só entre o 60 e o 100 — e as hunts dessa faixa
+ * rendiam 20–40 mil exp/h. O dono: "a ideia é que 1–100 fique mais rápido".
+ *
+ * É o "stage" dos servidores de Tibia: um multiplicador por faixa de level,
+ * sobre a exp JÁ calculada (bônus de level, boosts, premium, stamina). Vale em
+ * todo lugar que a exp passa por aqui — caçada online, offline (a simulação e
+ * a projeção usam o mesmo combate) e a parte de cada um na party, cada um com o
+ * estágio do PRÓPRIO level. A faixa é inclusiva: level 50 ainda é x3.
+ */
+export const ESTAGIOS_DE_EXP = [
+  { ate: 50, fator: 3 },
+  { ate: 100, fator: 2 },
+];
+export const estagioDeExp = (level) => ESTAGIOS_DE_EXP.find((e) => (level ?? 1) <= e.ate)?.fator ?? 1;
 
 export function paraCliente(estado) {
   const buff = BuffPower.fonteDeExp(estado); // o Buff Power Exp é a fonte 'buff-power'
