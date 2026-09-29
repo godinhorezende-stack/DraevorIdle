@@ -99,8 +99,6 @@ export const FATOR_DAS_DUAS = 0.75;
  */
 export function rolarBase(itemId, raridade, rng = Math.random) {
   const meta = ITEM_CATALOG[itemId];
-  // Munição não tem faixa: o ataque dela soma ao da arma direto do catálogo (ver `ficha.mjs`).
-  if (meta?.slot === 'ammo') return {};
   const faixa = C.RARIDADES.raridades[raridade]?.base ?? { piso: [1, 1], teto: [1, 1] };
   const sortear = ([lo, hi]) => lo + rng() * (hi - lo);
   const base = {};

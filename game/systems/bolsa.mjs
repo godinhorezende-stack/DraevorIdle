@@ -71,10 +71,13 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
   if (guardarMoeda(estado, id, count)) return count;
   const af = Array.isArray(peca) ? peca : peca?.af;
   const efeito = Array.isArray(peca) ? null : peca?.efeito;
-  // Peça que caiu com atributo (ou efeito): um quadrado só dela.
-  if (af?.length || efeito) {
+  // A faixa de ataque/defesa/armadura que a peça sorteou no drop (`base`): sem levar junto, a peça
+  // chegava na bolsa com o valor cheio do catálogo e sem "min – max".
+  const base = Array.isArray(peca) ? null : peca?.base;
+  // Peça que caiu com atributo, efeito ou faixa: um quadrado só dela.
+  if (af?.length || efeito || base) {
     if (estado.pouch.length >= VAGAS_DA_BOLSA) return 0;
-    estado.pouch.push({ id, count: 1, af: af ?? [], ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(efeito ? { efeito } : {}) });
+    estado.pouch.push({ id, count: 1, ...(af?.length || efeito ? { af: af ?? [] } : {}), ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(base ? { base } : {}), ...(efeito ? { efeito } : {}) });
     return 1;
   }
   const bolsa = estado.pouch;

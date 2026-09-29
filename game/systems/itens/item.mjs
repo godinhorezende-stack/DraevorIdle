@@ -68,7 +68,7 @@ export function faixaDoCampo(p, campo) {
  */
 export function metaDaPeca(p) {
   const meta = ITEM_CATALOG[p?.id];
-  if (!meta || !p?.base || meta.slot === 'ammo') return meta;
+  if (!meta || !p?.base) return meta;
   const medias = {};
   for (const campo of Object.keys(baseValida(p.base))) {
     const [piso, teto] = faixaDoCampo(p, campo);
@@ -129,16 +129,10 @@ function sorteioDe(texto) {
  * A peça de ANTES das faixas (sem `base`) sorteia a dela agora, com a raridade
  * que já tem (Comum se não tiver). Devolve `true` se mudou. `rng` nulo = sorteio
  * repetível da própria peça: a leitura de um baú, do mercado ou do depósito não
- * pode dar uma faixa diferente a cada vez que a peça é vista. Munição não tem
- * faixa (e a que já saiu com uma, perde).
+ * pode dar uma faixa diferente a cada vez que a peça é vista. A munição também
+ * sorteia (o ataque dela soma ao da arma, em faixa).
  */
 export function sortearFaixa(p, rng = null) {
-  const meta = ITEM_CATALOG[p?.id];
-  if (meta?.slot === 'ammo') {
-    if (!p.base) return false;
-    delete p.base;
-    return true;
-  }
   if (p.base || !aceitaAtributos(p.id)) return false;
   const raridade = raridadeDaPeca(p);
   p.base = rolarBase(p.id, raridade, rng ?? sorteioDe(`${p.id}|${raridade}|${p.tier ?? 0}|${JSON.stringify(p.af ?? [])}`));
@@ -176,7 +170,7 @@ export function converterTudo(raiz, rng = null) {
 }
 
 /** A versão do formato de item do personagem: quem já está nela não precisa ser varrido de novo. */
-export const VERSAO_DOS_ITENS = 2; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura)
+export const VERSAO_DOS_ITENS = 3; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura); 3: a munição também (a 2 a tirou)
 
 /** Converte o personagem (uma vez — marca `versaoDosItens`). Devolve quantas peças mudaram. */
 export function converterPersonagem(estado) {

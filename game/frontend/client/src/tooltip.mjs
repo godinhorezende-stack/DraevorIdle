@@ -18,7 +18,8 @@ const SLOT_NAMES = {
 };
 
 const SKILL_NAMES = {
-  melee: 'melee', fist: 'punho', club: 'clava', sword: 'espada', axe: 'machado',
+  // Tudo que é corpo a corpo (espada, machado, clava, punho) é UMA perícia, e o nome dela é "Skill Melee".
+  melee: 'Skill Melee', fist: 'Skill Melee', club: 'Skill Melee', sword: 'Skill Melee', axe: 'Skill Melee',
   distance: 'distância', shielding: 'escudo', magic: 'magic level',
 };
 
@@ -2192,7 +2193,7 @@ const ARTE_DO_SLOT_DA_ESSENCIA = {
  * ficha e a comparação usam) e `faixas` guarda o piso e o teto para o balão.
  */
 const comBaseDaPeca = (meta, peca) => {
-  if (!meta || !peca?.base || meta.slot === 'ammo') return meta;
+  if (!meta || !peca?.base) return meta;
   const saida = { ...meta, faixas: {} };
   for (const campo of ['attack', 'defense', 'armor', 'marmor']) {
     const bruto = peca.base[campo];

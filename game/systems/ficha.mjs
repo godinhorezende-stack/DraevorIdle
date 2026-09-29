@@ -132,19 +132,21 @@ function calcularCombate(estado) {
    * catálogo, e o golpe saía com ataque zero (decisão do dono, 29/09). A flecha
    * elemental traz o elemento dela (abaixo, `element`).
    */
-  const municao = w?.ammo ? ITEM_CATALOG[estado.equipment?.ammo?.id] : null;
+  const municao = w?.ammo ? metaDaPeca(estado.equipment?.ammo) : null;
   const daMunicao = municao?.ammo === w?.ammo ? municao : null;
   // "Ataque" (+N no ataque da arma) e "Ataque da arma" (+% dele).
   // O ataque de anel e amuleto (`base.attack` sorteado no drop) soma ao da arma, também em faixa.
   const joias = Object.entries(estado.equipment ?? {}).filter(([slot, p]) => p && SLOTS_DE_JOIA.has(slot));
   const [jMin, jMax] = joias.reduce(([a, b], [, p]) => { const [x, y] = faixaDoCampo(p, 'attack'); return [a + x, b + y]; }, [0, 0]);
-  const calcAtaque = (a) => Math.round(((a ?? 0) + (daMunicao?.attack ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
+  const calcAtaque = (a) => Math.round(((a ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
   // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
   const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
-  const temAtaque = !!w?.attack || jMax > 0;
-  const ataque = calcAtaque((w?.attack ?? 0) + Math.round((jMin + jMax) / 2));
-  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin) : ataque;
-  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax) : ataque;
+  // A munição do tipo da arma (flecha no arco) soma o ataque dela, também em faixa.
+  const [mMin, mMax] = daMunicao ? faixaDoCampo(estado.equipment?.ammo, 'attack') : [0, 0];
+  const temAtaque = !!w?.attack || jMax > 0 || mMax > 0;
+  const ataque = calcAtaque((w?.attack ?? 0) + Math.round((jMin + jMax) / 2) + (daMunicao?.attack ?? 0));
+  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin + mMin) : ataque;
+  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax + mMax) : ataque;
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   const damage = w?.wand
