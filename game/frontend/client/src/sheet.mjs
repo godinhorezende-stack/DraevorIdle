@@ -49,8 +49,7 @@ const ELEMENTS = [
 ];
 
 const SKILL_LABEL = {
-  fist: 'punho', club: 'clava', sword: 'espada', axe: 'machado',
-  distance: 'distância', shielding: 'escudo', fishing: 'pesca', magic: 'magic level',
+  melee: 'melee', distance: 'distância', shielding: 'escudo', fishing: 'pesca', magic: 'magic level',
 };
 
 /*

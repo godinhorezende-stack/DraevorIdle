@@ -179,6 +179,8 @@ const SONDAS = {
     }
     return n;
   }, 100, 'mais'],
+  skill_melee: ['knight', null, cacada(), golpes, 30, 'mais'],
+  // Os quatro antigos não dropam mais, mas peça velha com eles soma no melee.
   skill_axe: ['knight', null, cacada(), golpes, 30, 'mais'],
   skill_sword: ['knight', 'sword', cacada(), golpes, 30, 'mais'],
   skill_club: ['knight', 'mace', cacada(), golpes, 30, 'mais'],

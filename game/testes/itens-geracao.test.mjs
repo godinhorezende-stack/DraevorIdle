@@ -77,7 +77,8 @@ test('atributos: do pool do equipamento, sem repetir, com valor dentro da faixa 
     }
   }
   // Na arma, só a perícia DELA.
-  assert.ok(G.poolDe(ESPADA).includes('skill_sword'));
+  assert.ok(G.poolDe(ESPADA).includes('skill_melee'));
+  assert.ok(!G.poolDe(ESPADA).includes('skill_sword'));
   assert.ok(!G.poolDe(ESPADA).includes('skill_axe'));
   // Bota tem movimento; arma não.
   assert.ok(G.poolDe(BOTA).includes('speed'));

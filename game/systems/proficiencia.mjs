@@ -219,7 +219,8 @@ export function bonus(estado) {
 export function daPericia(estado, porPericia, bonusDePericia = {}) {
   let total = 0;
   for (const [pericia, fracao] of Object.entries(porPericia)) {
-    total += Math.ceil((Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0)) * fracao);
+    const p = Treino.canonica(pericia);
+    total += Math.ceil((Treino.valor(estado, p) + (bonusDePericia[p] ?? 0)) * fracao);
   }
   return total;
 }

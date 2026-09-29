@@ -232,7 +232,7 @@ export function paraCliente(estado) {
   const cargasTipo = doTipo.reduce((a, p) => a + cargasDe(p), 0);
   return {
     exercicio: ex && arma
-      ? { itemId: ex.itemId, arte: ex.itemId, name: arma.name, skill: arma.skill, cargas: arma.cargas, restantes: peca ? cargasDe(peca) : 0, segundos: Math.round((peca ? cargasDe(peca) : 0) * passo), treinando: !!ex.treinando }
+      ? { itemId: ex.itemId, arte: ex.itemId, name: arma.name, skill: Treino.canonica(arma.skill), cargas: arma.cargas, restantes: peca ? cargasDe(peca) : 0, segundos: Math.round((peca ? cargasDe(peca) : 0) * passo), treinando: !!ex.treinando }
       : null,
     exercicios: lista(estado),
     exercicioFalta: ex && arma

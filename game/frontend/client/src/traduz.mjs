@@ -216,6 +216,7 @@ const ELEMENTO = {
 const elemento = (tipo) => ELEMENTO[String(tipo).toLowerCase()] ?? `de ${tipo}`;
 
 const PERICIA = {
+  'melee fighting': 'melee',
   'axe fighting': 'machado',
   'club fighting': 'porrete',
   'sword fighting': 'espada',

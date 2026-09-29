@@ -49,10 +49,7 @@ const ICONE_DA_VOCACAO = {
 const CATEGORIAS = [
   ['level', 'Level', 'ficha-level'],
   ['magic', 'Magic', 'sk-magic'],
-  ['fist', 'Fist', 'sk-fist'],
-  ['club', 'Club', 'sk-club'],
-  ['sword', 'Sword', 'sk-sword'],
-  ['axe', 'Axe', 'sk-axe'],
+  ['melee', 'Melee', 'sk-melee'],
   ['distance', 'Distance', 'sk-distance'],
   ['shielding', 'Shielding', 'sk-shielding'],
   ['fishing', 'Fishing', 'sk-fishing'],
@@ -381,16 +378,15 @@ function pintarTopExp(dados) {
 // As perícias embaixo do inventário, na ordem e com os ícones da ficha (personagem.html).
 // A da categoria aberta no top 5 fica acesa.
 const PERICIAS = [
-  ['magic', 'ML'], ['fist', 'Fist'], ['club', 'Club'], ['sword', 'Sword'],
-  ['axe', 'Axe'], ['distance', 'Dist'], ['shielding', 'Def'], ['fishing', 'Fish'],
+  ['magic', 'ML'], ['melee', 'Melee'], ['distance', 'Dist'], ['shielding', 'Def'], ['fishing', 'Fish'],
 ];
 // Só as que importam para cada vocação (pedido do dono). Sem vocação: todas menos fishing.
 const PERICIAS_DA_VOCACAO = {
-  knight: ['axe', 'club', 'sword', 'magic', 'shielding'],
+  knight: ['melee', 'magic', 'shielding'],
   paladin: ['distance', 'magic', 'shielding'],
   sorcerer: ['magic', 'shielding'],
   druid: ['magic', 'shielding'],
-  monk: ['fist', 'magic', 'shielding'],
+  monk: ['melee', 'magic', 'shielding'],
 };
 const periciasDa = (vocacao) => {
   const ordem = PERICIAS_DA_VOCACAO[vocacao] ?? PERICIAS.map(([chave]) => chave).filter((chave) => chave !== 'fishing');

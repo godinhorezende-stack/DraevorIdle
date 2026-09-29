@@ -153,9 +153,9 @@ const ROTULOS = {
   'elemento:ice': ['Dano de gelo', 'pct', 'el-ice'],
   'elemento:holy': ['Dano sagrado', 'pct', 'el-holy'],
   'elemento:death': ['Dano de morte', 'pct', 'el-death'],
-  'skill:melee': ['Skill corpo a corpo', 'cru', 'sk-sword'],
+  'skill:melee': ['Skill corpo a corpo', 'cru', 'sk-melee'],
   'skill:distance': ['Skill de distância', 'cru', 'sk-distance'],
-  'skill:fist': ['Skill de punho', 'cru', 'sk-fist'],
+  'skill:fist': ['Skill de punho (soma no melee)', 'cru', 'sk-fist'],
   'skill:magic': ['Magic level', 'cru', 'sk-magic'],
   'skill:shielding': ['Shielding', 'cru', 'sk-shielding'],
 };

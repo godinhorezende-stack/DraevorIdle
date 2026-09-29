@@ -772,8 +772,7 @@ function painelBlessings(character, catalog) {
  * cliques de distância.
  */
 const ROTULO_SKILL = {
-  fist: 'punho', club: 'clava', sword: 'espada', axe: 'machado',
-  distance: 'distância', shielding: 'escudo', fishing: 'pesca', magic: 'magic level',
+  melee: 'melee', distance: 'distância', shielding: 'escudo', fishing: 'pesca', magic: 'magic level',
 };
 
 function painelExperiencia(character, catalog, party = null) {
@@ -1056,10 +1055,7 @@ function setBar(id, value, max, label) {
  * um enfeite.
  */
 const NOME_DA_PERICIA = {
-  fist: 'fist fighting',
-  club: 'club fighting',
-  sword: 'sword fighting',
-  axe: 'axe fighting',
+  melee: 'melee fighting',
   distance: 'distance fighting',
   shielding: 'shielding',
   magic: 'magic level',

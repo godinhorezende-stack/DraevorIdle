@@ -25,13 +25,14 @@ import * as Aparencia from './aparencia.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
 
 /*
- * Os `skill:*` da árvore em perícias de verdade: "Skill corpo a corpo" vale
- * para as três armas de mão (sword, axe, club), como no Tibia.
+ * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
+ * (punho, clava, espada e machado), então "Skill corpo a corpo" e "Skill de
+ * punho" da árvore somam na mesma.
  */
 const PERICIAS_DA_ARVORE = {
-  'skill:melee': ['sword', 'axe', 'club'],
+  'skill:melee': ['melee'],
   'skill:distance': ['distance'],
-  'skill:fist': ['fist'],
+  'skill:fist': ['melee'],
   'skill:magic': ['magic'],
   'skill:shielding': ['shielding'],
 };
@@ -45,12 +46,12 @@ const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 const pecas = (estado) => Object.values(estado.equipment ?? {}).filter(Boolean).map((p) => ITEM_CATALOG[p.id]).filter(Boolean);
 const arma = (estado) => ITEM_CATALOG[estado.equipment?.weapon?.id] ?? null;
 
-/** A perícia que a arma usa (sem arma, fist). */
+/** A perícia que a arma usa (sem arma, punho — que também é melee). */
 export function periciaDaArma(item) {
   // Wand e rod treinam o MAGIC LEVEL (cada tiro gasta mana) — antes caíam em
   // 'fist', e o sorcerer/druid via "fist" no pátio, no treino offline e na ficha.
   if (item?.wand || item?.skill === 'magic') return 'magic';
-  return item?.skill ?? 'fist';
+  return Treino.canonica(item?.skill ?? 'fist');
 }
 
 /*
@@ -103,9 +104,10 @@ function calcularCombate(estado) {
   // Os atributos extras (afixos) das peças vestidas — ver `afixos.mjs`.
   const af = Afixos.soma(estado);
   const bonusDePericia = {};
-  for (const it of itens) for (const [k, v] of Object.entries(it.skillBonus ?? {})) bonusDePericia[k] = (bonusDePericia[k] ?? 0) + v;
+  const somaPericia = (k, v) => { const p = Treino.canonica(k); bonusDePericia[p] = (bonusDePericia[p] ?? 0) + v; };
+  for (const it of itens) for (const [k, v] of Object.entries(it.skillBonus ?? {})) somaPericia(k, v);
   for (const [k, v] of Object.entries(af)) {
-    if (k.startsWith('skill_')) bonusDePericia[k.slice(6)] = (bonusDePericia[k.slice(6)] ?? 0) + v;
+    if (k.startsWith('skill_')) somaPericia(k.slice(6), v);
   }
   // A árvore de habilidades (ver `game/systems/arvore.mjs`): o `bonus` que o
   // original manda, em fração (0,05 = 5%), com as perícias já inteiras.
@@ -114,12 +116,12 @@ function calcularCombate(estado) {
   const gem = Gemas.bonus(estado);
   // Os perks escolhidos da proficiência da arma na mão (ver `game/systems/proficiencia.mjs`).
   const prof = Proficiencia.bonus(estado);
-  for (const [p, v] of Object.entries(prof.pericias)) bonusDePericia[p] = (bonusDePericia[p] ?? 0) + v;
+  for (const [p, v] of Object.entries(prof.pericias)) somaPericia(p, v);
   // Os imbuements das peças vestidas (ver `game/systems/imbuements.mjs`).
   const imb = Imbuements.bonus(estado);
-  for (const [p, v] of Object.entries(imb.pericias)) bonusDePericia[p] = (bonusDePericia[p] ?? 0) + v;
+  for (const [p, v] of Object.entries(imb.pericias)) somaPericia(p, v);
   for (const [chave, pericias] of Object.entries(PERICIAS_DA_ARVORE)) {
-    for (const p of pericias) if (arv[chave]) bonusDePericia[p] = (bonusDePericia[p] ?? 0) + arv[chave];
+    for (const p of pericias) if (arv[chave]) somaPericia(p, arv[chave]);
   }
   /*
    * A munição do tipo da arma (flecha no arco, bolt na besta): o ataque dela

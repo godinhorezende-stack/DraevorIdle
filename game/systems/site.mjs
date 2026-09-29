@@ -17,6 +17,7 @@
 // `donate: false` e `googleClientId: null`: pagamento e login do Google não
 // existem neste servidor, e a capa esconde o que depende deles.
 import { banco } from '../database/banco.mjs';
+import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
 import * as Ranking from './ranking.mjs';
@@ -342,7 +343,7 @@ export async function personagem(nome, agora = Date.now()) {
       atividade: a,
       hp: e.hp, maxHp: e.maxHp, mana: e.mana, maxMana: e.maxMana,
       magic: e.magic?.value ?? 0,
-      skills: Object.fromEntries(Object.entries(e.skills ?? {}).map(([k, v]) => [k, v?.value ?? v])),
+      skills: Object.fromEntries(Object.entries((Treino.garantir(e), e.skills)).map(([k, v]) => [k, v?.value ?? v])),
       outfit: roupa(e.outfit),
       equipamento: eq,
       // Postgres devolve BIGINT como texto; sem o Number a ficha mostrava "Invalid Date".

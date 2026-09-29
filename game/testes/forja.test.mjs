@@ -90,7 +90,7 @@ test('sorteio de afixo numa arma: a única perícia natural é a dela', () => {
   for (let i = 0; i < 3000; i++) {
     for (const a of Afixos.rolarDrop(HAND_AXE)) {
       const v = Afixos.viewDoAfixo(a, 'weapon', HAND_AXE);
-      if (a.id.startsWith('skill_')) assert.equal(v.torto, a.id !== 'skill_axe', a.id);
+      if (a.id.startsWith('skill_')) assert.equal(v.torto, a.id !== 'skill_melee', a.id);
     }
   }
   assert.equal(Afixos.rolarDrop(2854), null, 'mochila não cai com afixo');

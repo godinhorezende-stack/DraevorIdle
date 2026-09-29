@@ -1,5 +1,5 @@
 {
- "_nota": "O pool de atributos de cada tipo de equipamento (os grupos naturais que o jogo já usava, agora em dados). Na arma, 'skill_da_arma' vira a perícia DELA (axe -> skill_axe; wand/rod -> skill_magic). Mochila não recebe atributo no drop. Munição (flecha/bolt): os ofensivos de distância, com Distance Fighting fixa (ela não é arma, não tem 'skill_da_arma').",
+ "_nota": "O pool de atributos de cada tipo de equipamento (os grupos naturais que o jogo já usava, agora em dados). Na arma, 'skill_da_arma' vira a perícia DELA (axe, sword, club, fist -> skill_melee; wand/rod -> skill_magic). Mochila não recebe atributo no drop. Munição (flecha/bolt): os ofensivos de distância, com Distance Fighting fixa (ela não é arma, não tem 'skill_da_arma').",
  "pools": {
   "weapon": [
    "atk_flat",
@@ -36,10 +36,7 @@
    "spell_heal",
    "weapon_atk_pct",
    "loot_bonus",
-   "skill_fist",
-   "skill_club",
-   "skill_sword",
-   "skill_axe",
+   "skill_melee",
    "skill_distance",
    "skill_magic",
    "skill_shielding"
@@ -59,10 +56,7 @@
    "spell_heal",
    "weapon_atk_pct",
    "loot_bonus",
-   "skill_fist",
-   "skill_club",
-   "skill_sword",
-   "skill_axe",
+   "skill_melee",
    "skill_distance",
    "skill_magic",
    "skill_shielding"
@@ -82,10 +76,7 @@
    "spell_heal",
    "weapon_atk_pct",
    "loot_bonus",
-   "skill_fist",
-   "skill_club",
-   "skill_sword",
-   "skill_axe",
+   "skill_melee",
    "skill_distance",
    "skill_magic",
    "skill_shielding"
@@ -106,10 +97,7 @@
    "weapon_atk_pct",
    "loot_bonus",
    "speed",
-   "skill_fist",
-   "skill_club",
-   "skill_sword",
-   "skill_axe",
+   "skill_melee",
    "skill_distance",
    "skill_magic",
    "skill_shielding"
@@ -129,10 +117,7 @@
    "spell_heal",
    "weapon_atk_pct",
    "loot_bonus",
-   "skill_fist",
-   "skill_club",
-   "skill_sword",
-   "skill_axe",
+   "skill_melee",
    "skill_distance",
    "skill_magic",
    "skill_shielding"
@@ -169,10 +154,7 @@
    "weapon_atk_pct",
    "exp_bonus",
    "loot_bonus",
-   "skill_fist",
-   "skill_club",
-   "skill_sword",
-   "skill_axe",
+   "skill_melee",
    "skill_distance",
    "skill_magic",
    "skill_shielding"
@@ -209,10 +191,7 @@
    "weapon_atk_pct",
    "exp_bonus",
    "loot_bonus",
-   "skill_fist",
-   "skill_club",
-   "skill_sword",
-   "skill_axe",
+   "skill_melee",
    "skill_distance",
    "skill_magic",
    "skill_shielding"

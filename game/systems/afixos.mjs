@@ -15,6 +15,7 @@
 // original (1 afixo 73% / 2 24% / 3 3%; T1 90% / T2 8% / T3 2%; 31% "tortos").
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
+import * as Treino from './treino.mjs';
 import * as Gemas from './gemas.mjs';
 import * as Imbuements from './imbuements.mjs';
 // O sistema de itens (raridade, níveis 1–5, faixas por nível, pools): a régua
@@ -30,7 +31,8 @@ export const FRACAO_DA_MITICA = 1.3;
 export const RARIDADES = ['comum', 'incomum', 'raro', 'épico', 'lendário', 'mítico'];
 
 const ELEMENTOS = ['fire', 'energy', 'earth', 'ice', 'death', 'holy'];
-const SKILLS = ['skill_fist', 'skill_club', 'skill_sword', 'skill_axe', 'skill_distance', 'skill_magic', 'skill_shielding'];
+// Os quatro `skill_fist/club/sword/axe` só existem em peça salva antes da fusão em melee (não dropam mais).
+const SKILLS = ['skill_melee', 'skill_fist', 'skill_club', 'skill_sword', 'skill_axe', 'skill_distance', 'skill_magic', 'skill_shielding'];
 const OFENSIVOS = ['atk_flat', 'crit_chance', 'crit_dmg', 'life_leech', 'mana_leech', 'atk_speed', ...ELEMENTOS.map((e) => `${e}_dmg`), 'onslaught', 'weapon_atk_pct', 'exp_bonus', 'loot_bonus', 'protect_all'];
 const DEFENSIVOS = ['armor_flat', 'hp_max', 'mana_max', 'phys_res', ...ELEMENTOS.filter((e) => e !== 'holy').map((e) => `${e}_res`), 'hp_regen', 'spell_dmg', 'spell_heal', 'weapon_atk_pct', 'loot_bonus'];
 // O grupo natural de cada slot — o que a captura mostra SEM a marca "torto".
@@ -60,8 +62,10 @@ const SLOTS_COM_AFIXO = new Set(Object.keys(NATIVOS));
 function nativosDe(slot, itemId) {
   if (slot !== 'weapon') return NATIVOS[slot] ?? Object.keys(FICHAS);
   const meta = ITEM_CATALOG[itemId];
-  const pericia = meta?.wand ? 'magic' : meta?.skill;
-  return pericia ? [...OFENSIVOS, `skill_${pericia}`] : NATIVOS.weapon;
+  const pericia = meta?.wand ? 'magic' : Treino.canonica(meta?.skill);
+  // O nome antigo (skill_axe...) segue natural na arma do próprio tipo: peça
+  // salva antes da fusão em melee não vira "torto" de repente.
+  return pericia ? [...OFENSIVOS, `skill_${pericia}`, `skill_${meta?.skill}`] : NATIVOS.weapon;
 }
 
 const sorteio = (lista) => lista[Math.floor(Math.random() * lista.length)];
