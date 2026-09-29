@@ -18,7 +18,8 @@ const SLOT_NAMES = {
 };
 
 const SKILL_NAMES = {
-  melee: 'melee', fist: 'punho', club: 'clava', sword: 'espada', axe: 'machado',
+  // Tudo que é corpo a corpo (espada, machado, clava, punho) é UMA perícia, e o nome dela é "Skill Melee".
+  melee: 'Skill Melee', fist: 'Skill Melee', club: 'Skill Melee', sword: 'Skill Melee', axe: 'Skill Melee',
   distance: 'distância', shielding: 'escudo', magic: 'magic level',
 };
 

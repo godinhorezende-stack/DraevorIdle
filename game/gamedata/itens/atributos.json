@@ -808,7 +808,7 @@
    }
   },
   "skill_melee": {
-   "nome": "Melee Fighting",
+   "nome": "Skill Melee",
    "tipo": "flat",
    "niveis": {
     "1": [
@@ -834,7 +834,7 @@
    }
   },
   "skill_fist": {
-   "nome": "Fist Fighting",
+   "nome": "Skill Melee",
    "tipo": "flat",
    "niveis": {
     "1": [
@@ -860,7 +860,7 @@
    }
   },
   "skill_club": {
-   "nome": "Club Fighting",
+   "nome": "Skill Melee",
    "tipo": "flat",
    "niveis": {
     "1": [
@@ -886,7 +886,7 @@
    }
   },
   "skill_sword": {
-   "nome": "Sword Fighting",
+   "nome": "Skill Melee",
    "tipo": "flat",
    "niveis": {
     "1": [
@@ -912,7 +912,7 @@
    }
   },
   "skill_axe": {
-   "nome": "Axe Fighting",
+   "nome": "Skill Melee",
    "tipo": "flat",
    "niveis": {
     "1": [
