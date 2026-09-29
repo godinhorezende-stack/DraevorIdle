@@ -2339,6 +2339,15 @@ function painelStamina(character, grau, enchendo) {
  * fase, a dificuldade e quantos faltam. Na sala do boss do ato, a barra do boss
  * já ocupa o lugar.
  */
+/** O botão da barra da fase: ícone e texto (longo no desktop, curto no celular — o CSS escolhe). */
+export function pintarBotaoDaFase(botao, modo) {
+  const seguir = modo === 'seguir';
+  botao.dataset.modo = seguir ? 'seguir' : 'repetir';
+  botao.querySelector('.modo-icone').textContent = seguir ? '⏭' : '🔁';
+  botao.querySelector('.modo-longo').textContent = seguir ? 'Avançar sozinho' : 'Ficar na fase';
+  botao.querySelector('.modo-curto').textContent = seguir ? 'Avançar' : 'Ficar';
+}
+
 function barraDaFase(hunt) {
   const caixa = $('barra-da-fase');
   if (!caixa) return;
@@ -2356,10 +2365,7 @@ function barraDaFase(hunt) {
   $('fase-cheio').style.width = `${Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
   // "Repetir" / "Seguir" ao completar (o clique está em main.mjs).
   const modo = $('fase-modo');
-  if (modo && modo.dataset.modo !== f.aoCompletar) {
-    modo.dataset.modo = f.aoCompletar ?? 'repetir';
-    modo.textContent = modo.dataset.modo === 'seguir' ? '⏭ Avançar sozinho' : '🔁 Ficar na fase';
-  }
+  if (modo && modo.dataset.modo !== f.aoCompletar) pintarBotaoDaFase(modo, f.aoCompletar ?? 'repetir');
 }
 
 export function renderHud(character, catalog, party = null, escudoDeMana = false, hunt = null) {
