@@ -74,19 +74,21 @@ export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor'];
 
 /**
  * O valor-base desta peça: para cada número do catálogo (ataque, defesa,
- * armadura), um inteiro entre `min` × valor e o valor cheio — o `min` é da
- * raridade (`raridades.json`, `base.min`). Ataque 10 vira 7–10 no Comum e 9–10
- * no Épico; o Mítico sempre vem no máximo. Devolve `{}` se o item não tem nenhum.
+ * armadura), um inteiro entre `min` e `max` (em % do valor do catálogo — é da
+ * raridade, `raridades.json`, `base`). A faixa passa de 100% para os dois lados:
+ * ataque 20 sai 18–22 no Comum, 20–24 no Raro e 24–28 no Mítico. Devolve `{}`
+ * se o item não tem nenhum desses números.
  */
 export function rolarBase(itemId, raridade, rng = Math.random) {
   const meta = ITEM_CATALOG[itemId];
-  const minimo = C.RARIDADES.raridades[raridade]?.base?.min ?? 1;
+  const faixa = C.RARIDADES.raridades[raridade]?.base ?? { min: 1, max: 1 };
   const base = {};
   for (const campo of CAMPOS_DA_BASE) {
-    const teto = Number(meta?.[campo]);
-    if (!(teto > 0)) continue;
-    const piso = Math.max(1, Math.round(teto * minimo));
-    base[campo] = piso + Math.floor(rng() * (teto - piso + 1));
+    const valor = Number(meta?.[campo]);
+    if (!(valor > 0)) continue;
+    const piso = Math.max(1, Math.round(valor * faixa.min));
+    const topo = Math.max(piso, Math.round(valor * faixa.max));
+    base[campo] = piso + Math.floor(rng() * (topo - piso + 1));
   }
   return base;
 }
