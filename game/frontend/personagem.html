@@ -137,6 +137,31 @@
                 color: #ffd24a; text-shadow: 0 0 2px #000, 0 0 2px #000; }
   .slot.vazio-slot { opacity: .5; }
   .slot.raridade { border-color: var(--tier); box-shadow: inset 0 0 10px color-mix(in srgb, var(--tier) 35%, transparent); }
+  .ausente { color: var(--ausente); }
+
+  /*
+   * ---- A raridade, o selo de tier e as ESTRELAS dos afixos ----
+   *
+   * As regras moram na folha do jogo (client/style.css), que esta página não
+   * carrega (são 17 mil linhas para uma grade de 12 casas). Sem elas as
+   * estrelas saíam como texto solto de 16px no meio da casa, empurrando o
+   * desenho do item para fora, todas da mesma cor, e a borda da raridade não
+   * tinha cor nenhuma. Aqui vai só o que a grade usa — com as MESMAS cores do
+   * jogo, para a peça parecer a mesma nos dois lugares.
+   */
+  .tier-comum { --tier: #8fa3a1; } .tier-incomum { --tier: #37c2a0; } .tier-raro { --tier: #57a6e8; }
+  .tier-epico { --tier: #b184e8; } .tier-lendario { --tier: #e0a84a; } .tier-mitico { --tier: #f2503f; }
+  .slot .selo-tier-arte { position: absolute; top: 1px; left: 1px; z-index: 4; width: 9px; height: 8px;
+                          pointer-events: none; image-rendering: pixelated; }
+  .slot .selo-afixo { position: absolute; top: 1px; right: 2px; z-index: 3; display: inline-flex; align-items: baseline;
+                      font-style: normal; font-size: 10px; letter-spacing: -1px; line-height: 1;
+                      text-shadow: 0 0 3px #000, 0 1px 2px #000; pointer-events: none; }
+  .selo-afixo b.estrela { display: inline; position: static; font-size: inherit; font-weight: 400;
+                          color: var(--estrela, #57a6e8); }
+  .selo-afixo .q1 { --estrela: #57a6e8; } .selo-afixo .q2 { --estrela: #b184e8; }
+  .selo-afixo .q3 { --estrela: #e0a84a; } .selo-afixo .q4 { --estrela: #ff5a52; }
+  .selo-afixo b.estrela.q3 { text-shadow: 0 0 5px var(--estrela), 0 0 3px #000, 0 1px 2px #000; }
+  .selo-afixo b.estrela.q4 { text-shadow: 0 0 6px var(--estrela), 0 0 3px #000, 0 1px 2px #000; }
 
   .barra { display: grid; grid-template-columns: 72px 1fr; align-items: center; gap: 10px;
            font-family: var(--cabeca); font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
@@ -378,9 +403,13 @@ function stat(rotulo, valor, cor, arte) {
 
 function desenhar(p) {
   const r = p.draevor;
+  const lugar = p.atividade?.lugar ? ` (${esc(p.atividade.lugar)})` : '';
   const status = p.jogando
-    ? `<span class="ok">Online</span>${p.atividade ? ` — ${ONDE[p.atividade.onde] ?? 'Conectado'}${p.atividade.lugar ? ` (${esc(p.atividade.lugar)})` : ''}` : ''}`
-    : '<span class="cinza">Offline</span>';
+    ? `<span class="ok">Online</span>${p.atividade ? ` — ${ONDE[p.atividade.onde] ?? 'Conectado'}${lugar}` : ''}`
+    // De aba fechada, mas o personagem segue caçando sozinho (a caçada offline).
+    : p.atividade?.onde === 'cacando-offline'
+      ? `<span class="ausente"><i class="ponto ausente"></i>Caçando Offline</span>${lugar}`
+      : '<span class="cinza">Offline</span>';
   const conta = p.premium
     ? `<span class="ok">Premium</span> até ${quando(p.premiumAte)}`
     : 'Free Account';
@@ -815,7 +844,7 @@ async function pintarOnline() {
         try { li.append(outfitCanvas(j.outfit.type, j.outfit, 32)); } catch { /* sem boneco */ }
       }
       li.insertAdjacentHTML('beforeend', `<div class="info"><a href="${linkDe(j.name)}" data-nome="${esc(j.name)}">${esc(j.name)}</a>
-        <small>${esc(vocacaoCurta(j.vocation))} · lv ${n(j.level)}</small></div>`);
+        <small>${esc(vocacaoCurta(j.vocation))} · lv ${n(j.level)}${j.onde === 'offline' ? ' · <span class="ausente">💤 offline</span>' : ''}</small></div>`);
       /* E a guilda embaixo da vocação, como na lista de cima e no /online. */
       const daGuilda = linhaDaGuilda(j.guilda);
       if (daGuilda) li.querySelector('.info')?.append(daGuilda);

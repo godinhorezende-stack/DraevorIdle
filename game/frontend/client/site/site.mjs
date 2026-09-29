@@ -145,8 +145,9 @@ function pintarRanking(lista, categoria) {
     const nome = document.createElement('td');
     nome.className = 'nome';
     const ponto = document.createElement('i');
-    ponto.className = `ponto${entrada.online ? '' : ' off'}`;
-    ponto.title = entrada.online ? 'online agora' : 'offline';
+    // Verde: conectado. Amarelo: caçando de aba fechada. Apagado: offline.
+    ponto.className = `ponto${entrada.online ? '' : entrada.cacandoOffline ? ' ausente' : ' off'}`;
+    ponto.title = entrada.online ? 'online agora' : entrada.cacandoOffline ? 'caçando offline' : 'offline';
     const link = document.createElement('a');
     link.className = 'link-personagem';
     link.href = `/personagem?nome=${encodeURIComponent(entrada.name)}`;
