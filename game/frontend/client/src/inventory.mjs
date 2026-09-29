@@ -1754,7 +1754,8 @@ export function atualizarDesgaste() {
 function vestirRaridade(cell, meta, daPeca = null) {
   const classe = daPeca ? `tier-${TIER_DA_PECA[daPeca] ?? 'comum'}` : classeDaRaridade(meta);
   cell.classList.add(classe);
-  if (classe !== 'tier-comum') cell.classList.add('raridade');
+  // Toda peça ganha o anel da raridade, o comum também (cinza) — o dono: "sempre deixar nos itens anel na moldura".
+  cell.classList.add('raridade');
 }
 
 /* O acento sai: classe de CSS com acento é pedir problema — `épico` vira `epico`. */

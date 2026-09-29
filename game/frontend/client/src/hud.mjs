@@ -2350,13 +2350,15 @@ function barraDaFase(hunt) {
   caixa.hidden = false;
   caixa.classList.toggle('completa', !!f.completa);
   $('fase-titulo').textContent = `Ato ${f.ato} · Fase ${f.numero} · ${f.nome} · ${f.nomeDaDificuldade}`;
-  $('fase-conta').textContent = f.completa ? 'completa ✓' : `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')}`;
+  // Completa: o que vem depois, conforme o botão ("em loop", "avançando", ou o boss no fim do ato).
+  const depois = f.aoCompletar !== 'seguir' ? 'em loop' : f.fimDoAto ? 'boss liberado' : 'avançando...';
+  $('fase-conta').textContent = f.completa ? `completa ✓ · ${depois}` : `${f.kills.toLocaleString('pt-BR')} / ${f.precisa.toLocaleString('pt-BR')}`;
   $('fase-cheio').style.width = `${Math.min(100, (100 * f.kills) / Math.max(1, f.precisa))}%`;
   // "Repetir" / "Seguir" ao completar (o clique está em main.mjs).
   const modo = $('fase-modo');
   if (modo && modo.dataset.modo !== f.aoCompletar) {
     modo.dataset.modo = f.aoCompletar ?? 'repetir';
-    modo.textContent = modo.dataset.modo === 'seguir' ? '⏭ Seguir' : '🔁 Repetir';
+    modo.textContent = modo.dataset.modo === 'seguir' ? '⏭ Avançar sozinho' : '🔁 Ficar na fase';
   }
 }
 
