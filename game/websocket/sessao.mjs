@@ -1592,6 +1592,8 @@ export class Sessao {
     const proxima = Cacadas.faseParaSeguir(this.estado);
     if (!proxima) return;
     const h = this.estado.hunt;
+    // Quem da party também marcou "Avançar sozinho" e está nesta sala vai junto (antes de a sala mudar de mão).
+    const juntos = Party.quemAvancaJunto(this);
     Party.antesDeSairDaCacada(this);
     const r = Cacadas.entrar(this.estado, { huntId: proxima.huntId, mode: h.modo, strategy: h.strategy, dificuldade: proxima.dificuldade });
     if (!r.ok) {
@@ -1600,6 +1602,7 @@ export class Sessao {
     }
     this.avisoPendente = [this.avisoPendente, `Seguindo para a próxima fase: ${proxima.nome}.`].filter(Boolean).join(' ');
     Party.seguirOLider(this);
+    Party.avancarJunto(this, juntos);
   }
 
   pararDeCarregar() {
