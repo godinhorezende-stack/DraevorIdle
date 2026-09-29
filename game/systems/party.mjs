@@ -290,7 +290,11 @@ function juntar(convidado, anfitriao) {
     antesDeSairDaCacada(convidado);
     convidado.estado.hunt = null;
   }
-  const r = Cacadas.entrarNaSala(convidado.estado, sala);
+  // Onde cada um da sala está: quem entra cai numa casa livre (a colisão da caçada em grupo).
+  const gente = [...vivas.values()]
+    .filter((o) => o !== convidado && o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala)
+    .map((o) => ({ ...o.estado.hunt.pos, z: o.estado.hunt.z }));
+  const r = Cacadas.entrarNaSala(convidado.estado, sala, gente);
   if (!r.ok) return r;
   for (const o of vivas.values()) if (o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala && o !== convidado) avisar(o, `${nomeDe(convidado)} entrou na caçada.`);
   atualizar(minhaParty(convidado));

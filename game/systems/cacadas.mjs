@@ -41,6 +41,7 @@ import { passoComProgresso, faltaAte, aindaTravado } from './hunt/progresso.mjs'
 import { AUSENCIA_MAXIMA_MS } from '../database/caca-offline.mjs';
 import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
+import { aliadosPorCasa } from './hunt/aliados.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros } from './hunt/combate.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
@@ -637,7 +638,12 @@ export function podeEntrarNaSala(estado, sala) {
   return Premium.trancaDaHunt(dados) ? Premium.podeEntrar(estado, dados) : { ok: true };
 }
 
-export function entrarNaSala(estado, sala) {
+// Parado atrás do mesmo jogador da party por este tempo, os dois trocam de lugar (ver a colisão, em `tique`).
+const TROCA_COM_ALIADO_MS = 1500;
+const barradosPorAliado = new WeakMap(); // hunt -> { aliado, desde }
+
+/** `gente`: as casas de quem já está na sala (a party manda — a sala não guarda a lista dos convidados). */
+export function entrarNaSala(estado, sala, gente = []) {
   const dados = huntOuMapaCustom(sala.huntId);
   const tranca = Premium.trancaDaHunt(dados);
   if (tranca) {
@@ -645,7 +651,11 @@ export function entrarNaSala(estado, sala) {
     if (!pode.ok) return pode;
   }
   const grade = andarDaGrade(gradeDaHunt(dados), sala.z);
+  // Livre de bicho E de gente: o dono da sala e quem já entrou (a colisão da caçada em grupo).
   const ocupadas = new Set(sala.monstros.map((m) => `${m.x},${m.y}`));
+  ocupadas.add(`${sala.pos.x},${sala.pos.y}`);
+  for (const casa of aliadosPorCasa(sala).keys()) ocupadas.add(casa);
+  for (const p of gente) if ((p.z ?? sala.z) === sala.z) ocupadas.add(`${p.x},${p.y}`);
   let inicio = null;
   for (const [dx, dy] of [[-1, 0], [1, 0], [0, 1], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1], [-2, 0], [2, 0], [0, 2], [0, -2]]) {
     const c = { x: sala.pos.x + dx, y: sala.pos.y + dy };
@@ -654,7 +664,7 @@ export function entrarNaSala(estado, sala) {
       break;
     }
   }
-  inicio ??= casaAndavelMaisProxima(grade, sala.pos.x, sala.pos.y);
+  inicio ??= casaLivrePerto(grade, sala.pos, (c) => ocupadas.has(`${c.x},${c.y}`)) ?? casaAndavelMaisProxima(grade, sala.pos.x, sala.pos.y);
   const settings = estado.settings ?? {};
   estado.hunt = {
     huntId: sala.huntId, modo: 'auto', z: sala.z, pos: { x: inicio.x, y: inicio.y, dir: 2 },
@@ -1182,6 +1192,32 @@ export function tique(estado, personagem, agora = Date.now()) {
         const dx = Math.sign(destino.x - hunt.pos.x);
         const dy = Math.sign(destino.y - hunt.pos.y);
         hunt.pos.dir = dy < 0 ? 0 : dy > 0 ? 2 : dx > 0 ? 1 : 3;
+      }
+    }
+    /*
+     * ---- Colisão entre os jogadores da caçada em grupo ----
+     *
+     * "Nunca podem andar em cima do outro, tem que ter colisão." O passo que
+     * cairia na casa de outro da sala ESPERA. Parado atrás do mesmo aliado por
+     * `TROCA_COM_ALIADO_MS` (corredor de uma casa, um indo e outro vindo; ou o
+     * líder voltando pela fila que o segue), os dois trocam de lugar — como no
+     * Tibia. Sem a troca, o líder e quem o segue se travariam para sempre: quem
+     * segue fica parado dentro da coleira, e o líder não passa por ele.
+     */
+    if (destino) {
+      const aliado = aliadosPorCasa(hunt).get(`${destino.x},${destino.y}`);
+      if (!aliado) barradosPorAliado.delete(hunt);
+      else {
+        const antes = barradosPorAliado.get(hunt);
+        const desde = antes?.aliado === aliado ? antes.desde : agora;
+        if (agora - desde < TROCA_COM_ALIADO_MS) {
+          barradosPorAliado.set(hunt, { aliado, desde });
+          destino = null;
+        } else {
+          barradosPorAliado.delete(hunt);
+          aliado.pos.x = hunt.pos.x;
+          aliado.pos.y = hunt.pos.y;
+        }
       }
     }
     if (destino) {

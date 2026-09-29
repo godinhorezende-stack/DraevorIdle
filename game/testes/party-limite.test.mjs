@@ -387,3 +387,103 @@ test('"Seguir líder" respeita a hunt liberada: quem não pode fica, e os dois s
   assert.match(recebidos(lider), /não pôde vir: .*ainda não liberou/);
   grupo(segue.s, 'sair');
 });
+
+// ------------------------------------------------------- colisão entre jogadores
+
+test('colisão: cinco na mesma caçada nunca dividem casa (nem com bicho), e ninguém fica travado', async () => {
+  const js = [];
+  for (let i = 0; i < 5; i++) js.push(await jogador(i, 3));
+  const [lider, ...outros] = js;
+  partyDe(lider, ...outros);
+  for (const o of outros) o.s.estado.settings.seguirLider = true;
+  lider.s.despachar({ t: 'startHunt', huntId: 'troll-cave', mode: 'auto' });
+  for (const o of outros) assert.ok(o.s.estado.hunt, `${o.nome} veio`);
+
+  const casa = (j) => `${j.s.estado.hunt.z ?? 0}:${j.s.estado.hunt.pos.x},${j.s.estado.hunt.pos.y}`;
+  const conferir = (quando) => {
+    const vistas = new Map();
+    for (const j of js) {
+      const k = casa(j);
+      assert.ok(!vistas.has(k), `${quando}: ${j.nome} e ${vistas.get(k)} na mesma casa ${k}`);
+      vistas.set(k, j.nome);
+    }
+    for (const m of lider.s.estado.hunt.monstros) {
+      if (m.hp <= 0) continue;
+      const k = `${m.z ?? lider.s.estado.hunt.z ?? 0}:${m.x},${m.y}`;
+      assert.ok(!vistas.has(k), `${quando}: um ${m.name} em cima de ${vistas.get(k)}`);
+    }
+  };
+  conferir('na entrada');
+
+  const real = Date.now;
+  let agora = real();
+  Date.now = () => agora;
+  const andou = new Map(js.map((j) => [j.nome, 0]));
+  try {
+    for (let t = 0; t < 4 * 60 * 5; t++) { // 5 minutos
+      agora += 250;
+      for (const j of js) {
+        const antes = casa(j);
+        await j.s.tique();
+        if (!j.s.estado.hunt) continue;
+        if (casa(j) !== antes) andou.set(j.nome, andou.get(j.nome) + 1);
+      }
+      conferir(`tique ${t}`);
+    }
+  } finally {
+    Date.now = real;
+  }
+  for (const j of js) assert.ok(andou.get(j.nome) > 5, `${j.nome} andou (${andou.get(j.nome)} passos) — não ficou travado`);
+  for (const o of outros) grupo(o.s, 'sair');
+});
+
+test('colisão: barrado pelo mesmo aliado, espera — e depois de 1,5 s os dois trocam de lugar', async () => {
+  const a = await jogador(0, 1, 60);
+  const b = await jogador(1, 1, 60);
+  partyDe(a, b);
+  assert.equal(Cacadas.entrar(a.s.estado, { huntId: 'troll-cave', mode: 'online' }).ok, true);
+  caca(a.s, 'invite', b.nome);
+  assert.equal(caca(b.s, 'accept').ok, true);
+  const ha = a.s.estado.hunt;
+  const hb = b.s.estado.hunt;
+  ha.monstros.splice(0); // sem bichos: só os dois
+  ha.respawns?.splice(0);
+  hb.modo = 'online'; // parado (Caça Online sem tecla)
+  hb.manual = true;
+  // B na casa andável ao lado de A.
+  const grade = Cacadas.andarDaGrade(Cacadas.gradeDaHunt({ id: 'troll-cave' }), ha.z);
+  const livre = (x, y) => grade.andavel.has(`${x},${y}`);
+  const lado = [[1, 0], [-1, 0], [0, 1], [0, -1]].find(([dx, dy]) => livre(ha.pos.x + dx, ha.pos.y + dy));
+  assert.ok(lado, 'uma casa livre ao lado');
+  hb.pos.x = ha.pos.x + lado[0];
+  hb.pos.y = ha.pos.y + lado[1];
+  const deA = { x: ha.pos.x, y: ha.pos.y };
+  const deB = { x: hb.pos.x, y: hb.pos.y };
+
+  const real = Date.now;
+  let agora = real();
+  Date.now = () => agora;
+  try {
+    // Menos de 1,5 s andando contra B: não passa, e ninguém fica em cima de ninguém.
+    for (let i = 0; i < 4; i++) {
+      agora += 250;
+      Cacadas.andar(a.s.estado, { dx: lado[0], dy: lado[1] });
+      await a.s.tique();
+      await b.s.tique();
+      assert.deepEqual({ x: ha.pos.x, y: ha.pos.y }, deA, 'A espera');
+      assert.deepEqual({ x: hb.pos.x, y: hb.pos.y }, deB);
+    }
+    // Insistindo: passados 1,5 s, trocam de lugar.
+    for (let i = 0; i < 6 && ha.pos.x === deA.x && ha.pos.y === deA.y; i++) {
+      agora += 250;
+      Cacadas.andar(a.s.estado, { dx: lado[0], dy: lado[1] });
+      await a.s.tique();
+      await b.s.tique();
+    }
+  } finally {
+    Date.now = real;
+  }
+  assert.deepEqual({ x: ha.pos.x, y: ha.pos.y }, deB, 'A foi para a casa de B');
+  assert.deepEqual({ x: hb.pos.x, y: hb.pos.y }, deA, 'e B para a de A');
+  grupo(b.s, 'sair');
+});
