@@ -137,3 +137,14 @@ test('ficha: armadura mágica soma das peças; peça só-mágica não tem armadu
   assert.equal(Ficha.combate(sem).armorMagic, 0, 'peça sem faixa: só física');
   assert.ok(f.armor < Ficha.combate(sem).armor, 'só-mágica tira a armadura física da peça');
 });
+
+test('anel e amuleto também sorteiam armadura física/mágica (valor pelo nível quando o catálogo não tem)', () => {
+  const joia = Object.values(ITEM_CATALOG).find((i) => (i.slot === 'neck' || i.slot === 'ring') && !i.stackable && !i.armor && i.minLevel >= 24);
+  assert.ok(joia, 'há joia sem armadura no catálogo');
+  const esperado = Math.max(2, Math.round(joia.minLevel / 12));
+  const b = rolarBase(joia.id, 'mítico');
+  assert.ok(b.armor[1] > 0 && b.marmor, 'Mítico: as duas');
+  assert.ok(b.armor[1] <= Math.round(esperado * 1.6) && b.marmor[1] <= Math.round(esperado * 1.6));
+  const gerada = gerarItem({ itemId: joia.id, raridade: 'comum', rng: () => 0.5 });
+  assert.ok(gerada.base?.armor || gerada.base?.marmor, 'a peça carrega a armadura sorteada');
+});

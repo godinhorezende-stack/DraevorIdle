@@ -92,7 +92,8 @@ test('item que não aceita atributo sai simples; Comum sem atributo também', ()
   let simples = 0;
   for (let i = 0; i < 500; i++) {
     const p = G.gerarItem({ itemId: ANEL, level: 50, raridade: 'comum', rng });
-    if (!p.af) { simples++; assert.deepEqual(p, { id: ANEL, count: 1 }); }
+    // Anel Comum não tem atributo (`af`); carrega só a armadura sorteada (`base`) — e o efeito nunca.
+    if (!p.af?.length) { simples++; assert.equal(p.efeito, undefined); assert.equal(p.raridade, 'comum'); }
   }
   assert.equal(simples, 500, 'nenhuma comum com atributo');
 });

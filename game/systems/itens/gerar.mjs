@@ -72,6 +72,16 @@ export function nivelDoValor(id, valor) {
 /** Os números do item-base que cada peça sorteia na faixa da raridade (ver `rolarBase`). */
 export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor', 'marmor'];
 
+/** Slots de joia: anel e amuleto quase nunca têm armadura no catálogo, mas também sorteiam a armadura física/mágica. */
+export const SLOTS_DE_JOIA = new Set(['ring', 'neck']);
+
+/** O valor-base de armadura da peça: o do catálogo, ou — anel/amuleto sem ele — `nível mínimo / 12` (mínimo 2). */
+export function armaduraBase(meta) {
+  const doCatalogo = Number(meta?.armor);
+  if (doCatalogo > 0) return doCatalogo;
+  return SLOTS_DE_JOIA.has(meta?.slot) ? Math.max(2, Math.round((meta.minLevel ?? 1) / 12)) : 0;
+}
+
 /** Peça com as duas armaduras: cada tipo fica com esta fração do valor sorteado. */
 export const FATOR_DAS_DUAS = 0.75;
 
@@ -90,7 +100,7 @@ export function rolarBase(itemId, raridade, rng = Math.random) {
   const sortear = ([lo, hi]) => lo + rng() * (hi - lo);
   const base = {};
   for (const campo of ['attack', 'defense', 'armor']) {
-    const valor = Number(meta?.[campo]);
+    const valor = campo === 'armor' ? armaduraBase(meta) : Number(meta?.[campo]);
     if (!(valor > 0)) continue;
     const piso = Math.max(1, Math.round(valor * sortear(faixa.piso)));
     const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
