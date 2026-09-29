@@ -547,6 +547,17 @@ const FAIXAS_DO_SUMMON = [
 ];
 const corDoNivelDoSummon = (nivel) => (FAIXAS_DO_SUMMON.find(([teto]) => nivel <= teto) ?? FAIXAS_DO_SUMMON[2])[1];
 
+/**
+ * O que o `block` do servidor quer dizer: só o BLOQUEIO de verdade (chance da ficha, do escudo e da arma)
+ * escreve "bloqueou". Esquiva (gema), Dodge (charm) e Ruse (tier) são "esquivou"; a armadura que engole
+ * o golpe inteiro é "absorveu" — antes tudo saía "bloqueou" e parecia que o bloqueio era bem maior que a ficha.
+ */
+function textoDoBloqueio(event) {
+  if (event.absorvido) return 'absorveu';
+  if (event.esquiva || event.ruse || event.charm) return 'esquivou';
+  return 'bloqueou';
+}
+
 export class MapView {
   constructor(canvas) {
     this.canvas = canvas;
@@ -1343,7 +1354,7 @@ export class MapView {
           this.falas.push({ uid: deQuemFala, x: event.x, y: event.y, linhas: [linha] });
         }
       } else if (event.t === 'block') {
-        this.texts.push({ uid: deQuem(event), x: event.x, y: event.y, text: 'bloqueou', color: event.color ?? '#999999', size: 12, born: now, life: 700, drift: 0, degrau: degrauDoNumero(deQuem(event)) });
+        this.texts.push({ uid: deQuem(event), x: event.x, y: event.y, text: textoDoBloqueio(event), color: event.color ?? '#999999', size: 12, born: now, life: 700, drift: 0, degrau: degrauDoNumero(deQuem(event)) });
       } else if (event.t === 'fx') {
         this.effects.push({ id: event.id, uid: event.uid, x: event.x, y: event.y, born: now, life: effectDuration(event.id) || 600 });
       } else if (event.t === 'shot') {

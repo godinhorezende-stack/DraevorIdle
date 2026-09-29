@@ -556,7 +556,9 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     // Parry e Numb (charms defensivos).
     Charms.depoisDeApanhar(estado, hunt, bicho, final, eventos);
   } else {
-    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
+    // A armadura (e a proteção) engoliu o golpe INTEIRO: não é bloqueio — o escudo não fez nada —,
+    // então o texto é outro (`absorvido`), e a chance de bloqueio da ficha não parece maior do que é.
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', absorvido: true });
   }
 }
 
