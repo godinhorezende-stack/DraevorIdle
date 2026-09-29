@@ -38,6 +38,7 @@ import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/re
 import { salaDe, ligarAoDono } from './hunt/sala.mjs';
 import { alvoAtual, esperaOAlvoChegar, voltariaAtras, PERSEGUICAO_MAXIMA_MS } from './hunt/alvo.mjs';
 import { passoComProgresso, faltaAte, aindaTravado } from './hunt/progresso.mjs';
+import { AUSENCIA_MAXIMA_MS } from '../database/caca-offline.mjs';
 import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros } from './hunt/combate.mjs';
@@ -100,13 +101,16 @@ export function huntAoCarregar(hunt) {
  * (exp, mortes, ouro, loot e poções por minuto) e aplicado de verdade no
  * personagem. Teto total de `AUSENCIA_MAXIMA_MS`.
  */
-const AUSENCIA_MAXIMA_MS = 12 * 3_600_000;
 const SIMULACAO_MAXIMA_MS = 30 * 60_000;
 
-/** Aplica `fator` vezes o que a sessão `base` rendeu, sem simular (ver acima). */
-function projetar(estado, base, fator) {
+/**
+ * Aplica `fator` vezes o que a sessão `base` rendeu, sem simular (ver acima).
+ * `multExp` corrige só a exp: a stamina mudou de faixa desde a parte simulada
+ * (39 h com premium x1,5; 14 h ou menos x0,5 — ver `Stamina.fatorDeExp`).
+ */
+function projetar(estado, base, fator, multExp = 1) {
   const extra = {
-    exp: Math.round(base.exp * fator), kills: Math.round(base.kills * fator),
+    exp: Math.round(base.exp * fator * multExp), kills: Math.round(base.kills * fator),
     gold: Math.round(base.gold * fator), lootValue: Math.round(base.lootValue * fator),
     supplies: Math.round(base.supplies * fator), damageDealt: Math.round((base.damageDealt ?? 0) * fator),
     itens: { loot: {}, vendido: {}, gastos: {}, ignorado: {}, perdido: {} },
@@ -222,39 +226,106 @@ function avancarAusencia(estado, personagem, agora, final) {
         a.morreuEm = t;
         break;
       }
+      // A stamina acabou: a caçada offline para aqui (o tique já a gastou).
+      if (Stamina.garantir(estado) <= 0) {
+        a.semStamina = true;
+        a.parouEm = t;
+        break;
+      }
     }
     hunt.modo = modo;
-    hunt.offlineDesde = a.morreu ? a.morreuEm : t;
+    hunt.offlineDesde = a.morreu ? a.morreuEm : a.semStamina ? a.parouEm : t;
     avancou = true;
-    // Os 30 min inteiros simulados: o ritmo deles é a base da projeção.
-    if (!a.morreu && fim >= fimDaSimulacao) {
+    // Os 30 min inteiros simulados: o ritmo deles é a base da projeção — e o
+    // fator de exp da stamina com que ele foi medido.
+    if (!a.morreu && !a.semStamina && fim >= fimDaSimulacao) {
       a.base = JSON.parse(JSON.stringify(a.fora));
+      a.fatorBase = Stamina.fatorDeExp(estado);
       a.projetadoAte = fimDaSimulacao;
     }
   }
 
-  // 2. A projeção, do ponto em que a anterior parou até agora.
-  if (a.base && !a.morreu && ate > a.projetadoAte) {
-    const extra = projetar(estado, a.base, (ate - a.projetadoAte) / SIMULACAO_MAXIMA_MS);
-    somarSessao(a.fora, extra);
-    a.projetadoAte = ate;
-    hunt.offlineDesde = ate;
+  /*
+   * 2. A projeção, do ponto em que a anterior parou até agora — em TRECHOS
+   * entre as faixas da stamina (39 h, 14 h, 0). Cada trecho faz o que o tique
+   * faria no mesmo tempo: gasta stamina, soma o tempo caçando e os totais da
+   * ficha, consome prey/boosts/imbuements (`passarOTempoOffline`), e a exp segue
+   * o fator da faixa em que ele está (relativo ao da parte simulada). A stamina
+   * zerou: a caçada offline acaba ali — "se acabar a stamina, desloga".
+   * Os trechos não dependem de onde os pedaços da consolidação caem: em pedaços
+   * ou de uma vez, as fronteiras são as mesmas.
+   */
+  if (a.base && !a.morreu && !a.semStamina && ate > a.projetadoAte) {
+    const fatorBase = a.fatorBase ?? Stamina.fatorDeExp(estado);
+    let de = a.projetadoAte;
+    for (let volta = 0; de < ate && volta < 8; volta++) {
+      const s = Stamina.garantir(estado);
+      if (s <= 0) {
+        a.semStamina = true;
+        a.parouEm = de;
+        break;
+      }
+      const fronteira = [2340, 840, 0].find((f) => f < s) ?? 0;
+      const fim = Math.min(ate, de + (s - fronteira) * 60_000);
+      const ms = fim - de;
+      const extra = projetar(estado, a.base, ms / SIMULACAO_MAXIMA_MS, Stamina.fatorDeExp(estado) / fatorBase);
+      somarSessao(a.fora, extra);
+      passarOTempoOffline(estado, hunt, ms, extra);
+      // Chegou na fronteira: sem o resto de ponto flutuante, que faria um trecho de 0 ms.
+      if (fim < ate) estado.stamina = fronteira;
+      de = fim;
+    }
+    if (!a.semStamina && Stamina.garantir(estado) <= 0) {
+      a.semStamina = true;
+      a.parouEm = de;
+    }
+    a.projetadoAte = de;
+    hunt.offlineDesde = de;
     avancou = true;
   }
   hunt.eventos = [];
   hunt.sessao = a.principal;
 
-  if (!final) return { avancou, morreu: a.morreu };
+  if (!final) return { avancou, morreu: a.morreu, semStamina: !!a.semStamina };
 
   // O login: fecha a ausência inteira e entrega o relatório desde a saída.
-  const fim = a.morreu ? a.morreuEm : ate;
+  const fim = a.morreu ? a.morreuEm : a.semStamina ? a.parouEm : ate;
   const report = relatorio(estado, a.fora, fim);
   somarSessao(a.principal, a.fora);
   hunt.sessao = a.principal;
   hunt.ultimoTique = agora;
   delete hunt.offlineDesde;
   delete hunt.ausencia;
-  return { report, morreu: a.morreu };
+  if (a.semStamina && !a.morreu) {
+    // Sem stamina a caçada acabou lá atrás: ele volta para a cidade.
+    report.motivo = 'A stamina acabou e a caçada offline parou: o personagem voltou para a cidade.';
+    estado.hunt = null;
+  }
+  return { report, morreu: a.morreu, semStamina: !!a.semStamina };
+}
+
+/**
+ * O que o tique faz com o tempo que passa, para um trecho PROJETADO (ver
+ * `tique`: stamina, tempo caçando, prey, boosts, imbuements...) — sem isto a
+ * caçada offline, depois dos 30 min simulados, não gastava stamina nem contava
+ * no "tempo caçando", e o prey/imbuement dela era de graça.
+ */
+function passarOTempoOffline(estado, hunt, ms, extra) {
+  if (!(ms > 0)) return;
+  Stamina.gastar(estado, ms);
+  const totais = Ficha.totais(estado);
+  totais.time += ms / 1000;
+  totais.kills += extra.kills ?? 0;
+  totais.exp += extra.exp ?? 0;
+  if (hunt.huntId === 'treino') {
+    Treino.gastarMana(estado, (Treino.manaDoPatioPorSegundo(estado) * ms) / 1000);
+    return;
+  }
+  Boosts.consumir(estado, ms);
+  BuffPower.consumir(estado, ms);
+  Prey.consumir(estado, ms);
+  Imbuements.consumir(estado, ms);
+  Treinos.encherTanque(estado, ms);
 }
 
 /** Na volta (login): termina a ausência e devolve `{report, morreu}` — ou `null`, sem ausência. */

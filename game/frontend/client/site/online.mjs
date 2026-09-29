@@ -56,6 +56,8 @@ const ONDE = {
   treinando: { chave: 'online.treinando', rotulo: 'Treinando', classe: 'treino' },
   cidade: { chave: 'online.cidade', rotulo: 'Na cidade', classe: 'cidade' },
   parado: { chave: 'online.parado', rotulo: 'Conectado', classe: 'parado' },
+  // De aba fechada: o personagem segue caçando sozinho (ver `ausentes.mjs`, servidor).
+  offline: { chave: 'online.offline', rotulo: '💤 Caçando offline', classe: 'offline' },
 };
 
 let desenhistaPronto = false;

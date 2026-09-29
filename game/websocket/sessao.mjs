@@ -45,6 +45,7 @@ import * as Promocao from '../systems/promocao.mjs';
 import * as Tarefas from '../systems/tarefas.mjs';
 import * as Entregas from '../systems/entregas.mjs';
 import * as Amigos from '../systems/amigos.mjs';
+import * as Ausentes from '../systems/ausentes.mjs';
 import * as Chat from '../systems/chat.mjs';
 import * as Novidades from '../systems/novidades.mjs';
 import * as Ranking from '../systems/ranking.mjs';
@@ -1423,7 +1424,8 @@ export class Sessao {
       ...(itensNesteWelcome ? { items: ITEM_CATALOG } : {}),
       // O top 25 de experiência, como no welcome do original.
       ranking: rankingDeExp,
-      online: vivas.size,
+      // Conectados + quem caça de aba fechada (ver `ausentes.mjs`).
+      online: vivas.size + Ausentes.contagem(),
       ...(andamento ? { andamento } : {}),
       ...(treinoPendente ? { treinoPendente } : {}),
     });

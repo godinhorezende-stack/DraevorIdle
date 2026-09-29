@@ -20,7 +20,9 @@
 // simulação offline (`simulacao-offline.mjs`), uma vez por ausência; os pedaços
 // seguintes só projetam (milissegundos).
 import { banco } from '../database/banco.mjs';
+import { colunasDaCacaOffline } from '../database/caca-offline.mjs';
 import * as SimulacaoOffline from './simulacao-offline.mjs';
+import * as Ausentes from './ausentes.mjs';
 import { marcarDia } from './site.mjs';
 import { estaNoJogo } from '../websocket/sessao.mjs';
 
@@ -31,22 +33,24 @@ export const MINIMO_FORA_MS = 10 * 60_000;
 /** Quantos personagens por rodada, no máximo (os mais antigos primeiro). */
 export const POR_RODADA = 40;
 
+/*
+ * Pelas colunas-índice (`caca-offline.mjs`), não pelo JSON: só quem ainda TEM o
+ * que avançar (`ate > desde`). Quem acabou — morreu, a stamina zerou, bateu o
+ * teto de 12 h — sai da fila sozinho; antes ficava no topo dela para sempre
+ * (os "mais antigos"), e 40 desses travavam a rodada de todo mundo.
+ */
 const consultaDosAusentes = banco.prepare(
-  banco.dialeto === 'postgres'
-    ? `SELECT id, conta, nome, vocacao, estado FROM personagens
-        WHERE (estado::jsonb #>> '{hunt,offlineDesde}') IS NOT NULL
-          AND (estado::jsonb #>> '{hunt,offlineDesde}')::bigint <= ?
-        ORDER BY (estado::jsonb #>> '{hunt,offlineDesde}')::bigint
-        LIMIT ?`
-    : `SELECT id, conta, nome, vocacao, estado FROM personagens
-        WHERE json_extract(estado, '$.hunt.offlineDesde') IS NOT NULL
-          AND json_extract(estado, '$.hunt.offlineDesde') <= ?
-        ORDER BY json_extract(estado, '$.hunt.offlineDesde')
-        LIMIT ?`,
+  `SELECT id, conta, nome, vocacao, estado FROM personagens
+    WHERE caca_offline_desde IS NOT NULL AND caca_offline_desde <= ?
+      AND caca_offline_ate IS NOT NULL AND caca_offline_ate > caca_offline_desde
+    ORDER BY caca_offline_desde
+    LIMIT ?`,
 );
 
-// Só grava se o estado no banco ainda for EXATAMENTE o que foi lido.
-const gravarSeNinguemMexeu = banco.prepare('UPDATE personagens SET estado = ? WHERE id = ? AND estado = ?');
+// Só grava se o estado no banco ainda for EXATAMENTE o que foi lido (e as colunas vão junto).
+const gravarSeNinguemMexeu = banco.prepare(
+  'UPDATE personagens SET estado = ?, caca_offline_desde = ?, caca_offline_ate = ? WHERE id = ? AND estado = ?',
+);
 
 /**
  * Avança a ausência de UM personagem (a linha como veio do banco) e regrava.
@@ -63,7 +67,7 @@ export async function consolidarUm(linha, agora = Date.now()) {
   if (!ausencia?.avancou) return 'nada';
   // Entrou no jogo enquanto a thread trabalhava: a sessão manda.
   if (estaNoJogo(linha.nome)) return 'no-jogo';
-  const r = await gravarSeNinguemMexeu.run(JSON.stringify(novo), linha.id, linha.estado);
+  const r = await gravarSeNinguemMexeu.run(JSON.stringify(novo), ...colunasDaCacaOffline(novo), linha.id, linha.estado);
   return r.changes ? 'gravado' : 'mudou';
 }
 
@@ -79,6 +83,8 @@ export async function rodada(agora = Date.now()) {
       console.error('consolidação offline', linha.nome, '->', e.message);
     }
   }
+  // Quem acabou (stamina, teto) sai do número de online já nesta rodada.
+  await Ausentes.atualizar(agora);
   return contagem;
 }
 

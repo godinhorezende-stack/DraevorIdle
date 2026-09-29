@@ -878,6 +878,8 @@ main { max-width: 1140px; margin: 0 auto; padding: 0 26px; }
 .selo.online { color: var(--verde); border-color: var(--verde-fundo); background: #12251f; }
 .selo.cidade { color: var(--cobre); border-color: #6b4a22; background: #221a10; }
 .selo.parado { color: var(--apagado); border-color: var(--linha); background: var(--painel); }
+/* Caçando de aba fechada: o personagem joga, a pessoa não está no teclado. */
+.selo.offline { color: #a9a3c9; border-color: #3a3654; background: #16141f; }
 /* Os tres estados que o "o que esta fazendo" ganhou: sala de boss e as duas
    caras do treino (patio e exercise). Boss em vermelho porque e o unico com
    relogio correndo do lado de fora; treino em azul, que ja e a cor de pericia

@@ -141,6 +141,7 @@ export const DICIONARIO = {
     'online.treinando': 'Training',
     'online.cidade': 'In town',
     'online.parado': 'Connected',
+    'online.offline': '💤 Hunting offline',
 
     // ---- categorias do ranking ----
     'cat.exp': 'Experience',

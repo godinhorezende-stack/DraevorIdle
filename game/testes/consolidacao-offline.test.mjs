@@ -167,3 +167,119 @@ test('consolidarUm: quem está no jogo não é mexido', async (t) => {
   const igual = (await B.banco.prepare('SELECT estado FROM personagens WHERE id = ?').get(p.id)).estado;
   assert.equal(igual, linha.estado);
 });
+
+// ------------------------------------------------------------ colunas-índice, stamina, tempo, online
+
+import { colunasDaCacaOffline, AUSENCIA_MAXIMA_MS } from '../database/caca-offline.mjs';
+import * as Ficha from '../systems/ficha.mjs';
+import * as Ausentes from '../systems/ausentes.mjs';
+
+test('colunas: fora de caçada nada; caçando, até o que vier antes — 12 h ou o fim da stamina; acabou, sem "até"', () => {
+  assert.deepEqual(colunasDaCacaOffline({ hunt: null }), [null, null]);
+  const T0 = 1_000_000_000_000;
+  const cheia = { stamina: 2520, hunt: { offlineDesde: T0 } };
+  assert.deepEqual(colunasDaCacaOffline(cheia), [T0, T0 + AUSENCIA_MAXIMA_MS]);
+  const pouca = { stamina: 90, hunt: { offlineDesde: T0 } };
+  assert.deepEqual(colunasDaCacaOffline(pouca), [T0, T0 + 90 * MIN]);
+  // O teto conta da SAÍDA (ausencia.inicio), não do último pedaço.
+  const noMeio = { stamina: 2520, hunt: { offlineDesde: T0 + 5 * HORA, ausencia: { inicio: T0 } } };
+  assert.deepEqual(colunasDaCacaOffline(noMeio), [T0 + 5 * HORA, T0 + AUSENCIA_MAXIMA_MS]);
+  assert.deepEqual(colunasDaCacaOffline({ stamina: 100, hunt: { offlineDesde: T0, ausencia: { inicio: T0, morreu: true } } }), [T0, null]);
+  assert.deepEqual(colunasDaCacaOffline({ stamina: 0, hunt: { offlineDesde: T0, ausencia: { inicio: T0, semStamina: true } } }), [T0, null]);
+});
+
+test('o tempo caçando offline CONTA inteiro (não só os 30 min simulados), e a stamina gasta junto', () => {
+  const T0 = Date.UTC(2026, 8, 29, 3);
+  const e = cacandoOffline(T0);
+  e.stamina = 2520;
+  const tempoAntes = Ficha.totais(e).time;
+  Cacadas.simularAusencia(e, PERSONAGEM, T0 + 3 * HORA);
+  const contou = Ficha.totais(e).time - tempoAntes;
+  assert.ok(Math.abs(contou - 3 * 3600) <= 60, `tempo caçando: ${Math.round(contou)} s de ${3 * 3600}`);
+  assert.ok(Math.abs(e.stamina - (2520 - 180)) <= 1, `stamina: ${e.stamina} (esperado ~${2520 - 180})`);
+});
+
+test('acabou a stamina: a caçada offline para ali, e no login ele está na cidade', () => {
+  const T0 = Date.UTC(2026, 8, 29, 3);
+  const e = cacandoOffline(T0);
+  e.stamina = 60; // uma hora
+  const tempoAntes = Ficha.totais(e).time;
+  const r = Cacadas.consolidarAusencia(e, PERSONAGEM, T0 + 2 * HORA);
+  assert.equal(r.semStamina, true, 'a consolidação vê que acabou');
+  assert.equal(colunasDaCacaOffline(e)[1], null, 'e ele sai da fila e do número de online');
+  const xpParado = e.xp;
+  assert.equal(Cacadas.consolidarAusencia(e, PERSONAGEM, T0 + 4 * HORA).avancou, false, 'nada mais avança');
+  assert.equal(e.xp, xpParado);
+  const volta = Cacadas.simularAusencia(e, PERSONAGEM, T0 + 5 * HORA);
+  assert.equal(volta.semStamina, true);
+  assert.equal(e.hunt, null, 'voltou para a cidade');
+  assert.match(volta.report.motivo, /stamina acabou/);
+  assert.ok(e.stamina <= 0.01, `stamina: ${e.stamina}`);
+  const contou = Ficha.totais(e).time - tempoAntes;
+  assert.ok(Math.abs(contou - 3600) <= 60, `caçou ${Math.round(contou)} s — deveria ser a hora de stamina`);
+});
+
+test('stamina caindo abaixo de 14 h: a exp projetada daí em diante vale metade', () => {
+  const T0 = Date.UTC(2026, 8, 29, 3);
+  const cheia = comSemente(23, () => {
+    const e = cacandoOffline(T0);
+    e.stamina = 2000;
+    const x0 = e.xp;
+    Cacadas.simularAusencia(e, PERSONAGEM, T0 + 3 * HORA);
+    return e.xp - x0;
+  });
+  const cansada = comSemente(23, () => {
+    const e = cacandoOffline(T0);
+    e.stamina = 900; // 15 h: cruza as 14 h (840) uma hora depois de sair
+    const x0 = e.xp;
+    Cacadas.simularAusencia(e, PERSONAGEM, T0 + 3 * HORA);
+    return e.xp - x0;
+  });
+  // Mesma parte simulada (fator 1 nas duas); projeção: cheia 2,5 h x1; cansada 0,5 h x1 + 2 h x0,5.
+  // Em unidades de 30 min: cheia 1 + 5 = 6; cansada 1 + 1 + 4 x 0,5 = 4.
+  const razao = cansada / cheia;
+  assert.ok(Math.abs(razao - 4 / 6) <= 0.02, `razão ${razao.toFixed(3)} (esperado ~0,667): ${cansada} × ${cheia}`);
+});
+
+test('banco: toda gravação leva as colunas; a rodada ignora quem já acabou', async (t) => {
+  const vivo = await ausenteNoBanco(2);
+  const c = await B.criarConta({ email: `acabou-${randomUUID()}@teste.local`, senha: 'senha-123' });
+  const acabou = cacandoOffline(Date.now() - 3 * HORA);
+  acabou.stamina = 0;
+  acabou.hunt.ausencia = { inicio: acabou.hunt.offlineDesde, semStamina: true, parouEm: acabou.hunt.offlineDesde };
+  const pAcabou = await B.criarPersonagem({ conta: c.id, nome: `Fim${randomUUID().replace(/[^a-z]/g, '').slice(0, 8)}`, vocacao: 'knight', sexo: 'male', estadoInicial: { ...acabou, hunt: Cacadas.huntParaGravar(acabou.hunt) } });
+  t.after(async () => {
+    await B.excluirPersonagem(vivo.p.id);
+    await B.excluirPersonagem(pAcabou.id);
+  });
+  const colunas = (id) => B.banco.prepare('SELECT caca_offline_desde AS desde, caca_offline_ate AS ate, estado FROM personagens WHERE id = ?').get(id);
+  const doVivo = await colunas(vivo.p.id);
+  assert.ok(doVivo.desde > 0 && doVivo.ate > doVivo.desde, 'criar grava as colunas');
+  const doFim = await colunas(pAcabou.id);
+  assert.equal(doFim.ate, null, 'quem acabou fica sem "até"');
+  await Consolidacao.rodada(Date.now());
+  assert.equal((await colunas(pAcabou.id)).estado, doFim.estado, 'a rodada não mexeu em quem acabou');
+  const depois = await colunas(vivo.p.id);
+  assert.ok(depois.desde > doVivo.desde, 'a rodada avançou o ausente e as colunas andaram junto');
+  // Fora de caçada (voltou para a cidade): as colunas zeram na gravação.
+  const naCidade = JSON.parse(depois.estado);
+  naCidade.hunt = null;
+  await B.gravarEstadoPersonagem(vivo.p.id, naCidade);
+  const zerado = await colunas(vivo.p.id);
+  assert.equal(zerado.desde, null);
+  assert.equal(zerado.ate, null);
+});
+
+test('online: quem caça de aba fechada conta; quem está conectado não conta duas vezes', async (t) => {
+  const { p, nome } = await ausenteNoBanco(1);
+  t.after(() => {
+    vivas.delete(nome);
+    return B.excluirPersonagem(p.id);
+  });
+  Ausentes.ligar(vivas);
+  await Ausentes.atualizar(Date.now());
+  assert.ok(Ausentes.agora().some((a) => a.nome === nome), 'ausente caçando entra na lista');
+  const antes = Ausentes.contagem();
+  vivas.set(nome, { personagem: { nome } });
+  assert.equal(Ausentes.contagem(), antes - 1, 'conectado: sai da conta dos ausentes (já conta como conectado)');
+});
