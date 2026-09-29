@@ -1,5 +1,5 @@
-// Os sets de marco (level 50 "Set intermediário", 100 "Set completo") são da
-// VOCAÇÃO — antes todo mundo recebia os de knight — e só abrem no level deles.
+// Os marcos de level 50 e 100 são BAÚS de item (antes: "Set intermediário" e "Set completo") e
+// são da VOCAÇÃO — antes todo mundo recebia os de knight — e só abrem no level deles.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Recompensas from '../systems/recompensas.mjs';
@@ -9,30 +9,69 @@ import { personagemDeTeste } from './apoio.mjs';
 const ARMA = { knight: 'heroic axe', paladin: 'composite hornbow', sorcerer: 'wand of voodoo', druid: 'underworld rod', monk: 'nunchaku of enlightenment' };
 const nomesNaMochila = (e) => (e.inventory ?? []).map((p) => ITEM_CATALOG[p.id]?.name);
 
-test('cada vocação vê e recebe o set dela', () => {
+test('os marcos 50 e 100 são BAÚS de item; cada vocação vê e sorteia entre os itens dela', () => {
   for (const [voc, arma] of Object.entries(ARMA)) {
     const e = personagemDeTeste({ vocacao: voc, level: 60 });
     Recompensas.marcosDaVocacao(e);
     const marco = e.presentes.marcos.find((m) => m.level === 50);
-    assert.ok(marco.itens.some((i) => i.name === arma), `${voc}: o set mostra ${arma}`);
+    assert.equal(marco.tipo, 'bau');
+    assert.equal(marco.titulo, 'Baú de itens (nível 50)');
+    assert.equal(e.presentes.marcos.find((m) => m.level === 100).titulo, 'Baú de itens (nível 100)');
+    assert.ok(marco.itens.some((i) => i.name === arma), `${voc}: o baú pode dar ${arma}`);
     for (const i of marco.itens) {
       const vocs = ITEM_CATALOG[i.itemId].vocations;
       assert.ok(!vocs || vocs.includes(voc), `${voc}: ${i.name} é de ${vocs}`);
     }
     e.gold = 50_000;
-    assert.equal(Recompensas.coletarMarco(e, { level: 50 }).ok, true);
-    assert.ok(nomesNaMochila(e).includes(arma), `${voc} recebeu ${arma}`);
+    const r = Recompensas.coletarMarco(e, { level: 50 });
+    assert.equal(r.ok, true);
     assert.equal(e.gold, 0);
+    // UM item só, um dos possíveis, e o aviso diz qual e a raridade.
+    const recebidos = (e.inventory ?? []).filter((p) => marco.itens.some((i) => i.itemId === p.id));
+    assert.equal(recebidos.length, 1, `${voc}: um item só`);
+    assert.match(r.notice, /O baú abriu: .+ \(.+\)\./);
+    assert.equal(marco.pego, true);
   }
 });
 
-test('druid não recebe mais itens de knight (o molde era o de knight)', () => {
-  const e = personagemDeTeste({ vocacao: 'druid', level: 100 });
-  e.gold = 100_000;
-  assert.equal(Recompensas.coletarMarco(e, { level: 100 }).ok, true);
-  const nomes = nomesNaMochila(e);
-  assert.ok(nomes.includes('dream blossom staff'));
-  for (const deKnight of ['ornate legs', 'mastermind shield', 'crystalline axe', 'royal draken mail']) assert.ok(!nomes.includes(deKnight), deKnight);
+test('o item do baú sai do gerador: raridade e faixa de valores como num drop', () => {
+  let comFaixa = 0;
+  const raridades = new Set();
+  for (let i = 0; i < 200; i++) {
+    const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+    e.gold = 100_000;
+    Recompensas.coletarMarco(e, { level: 100 });
+    const peca = e.inventory.find((p) => ITEM_CATALOG[p.id]?.slot && !ITEM_CATALOG[p.id]?.stackable && p.base);
+    if (peca) { comFaixa++; if (peca.raridade) raridades.add(peca.raridade); }
+  }
+  assert.ok(comFaixa > 100, `${comFaixa} de 200 com faixa`);
+  assert.ok(raridades.size >= 2, `raridades diferentes: ${[...raridades]}`);
+});
+
+test('druid não recebe itens de knight do baú', () => {
+  const deKnight = ['ornate legs', 'mastermind shield', 'crystalline axe', 'royal draken mail'];
+  for (let i = 0; i < 60; i++) {
+    const e = personagemDeTeste({ vocacao: 'druid', level: 100 });
+    e.gold = 100_000;
+    assert.equal(Recompensas.coletarMarco(e, { level: 100 }).ok, true);
+    for (const nome of nomesNaMochila(e)) assert.ok(!deKnight.includes(nome), nome);
+  }
+});
+
+test('set antigo AINDA NÃO PEGO vira baú; o já pego fica como set', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
+  const m50 = e.presentes.marcos.find((m) => m.level === 50);
+  const m100 = e.presentes.marcos.find((m) => m.level === 100);
+  m50.tipo = 'set';
+  m50.titulo = 'Set intermediário';
+  m100.tipo = 'set';
+  m100.titulo = 'Set completo';
+  m100.pego = true;
+  Recompensas.marcosDaVocacao(e);
+  assert.equal(m50.tipo, 'bau');
+  assert.equal(m50.titulo, 'Baú de itens (nível 50)');
+  assert.equal(m100.tipo, 'set');
+  assert.equal(m100.titulo, 'Set completo');
 });
 
 test('o marco só abre no level dele (antes bastava ter o ouro)', () => {

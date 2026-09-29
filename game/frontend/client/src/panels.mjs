@@ -19974,7 +19974,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
       resumo: degrau.boosted ? 'à sua escolha — rende o dobro por carga' : 'à sua escolha, cheia de cargas',
       itens: [],
     })),
-    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: null })),
+    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: marco.tipo === 'bau' ? 'abre 1 item aleatório — com raridade' : null })),
   ].sort((a, b) => a.level - b.level);
 
   /* `null` = a grade; um número = a escolha da arma daquele degrau. */
@@ -20119,6 +20119,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
     const sobra = meuOuro - custo;
 
     area.append(el('p', 'shop-note', `Marco do level ${cartao.level} — ${cartao.titulo}.`));
+    if (cartao.tipo === 'bau') area.append(el('p', 'relatorio-motivo', 'Abre UM item, sorteado entre os mostrados — com raridade, faixa de valores e atributos como num drop.'));
 
     if (cartao.itens?.length) {
       const grade = el('div', 'recompensa-arte confirmar-itens');

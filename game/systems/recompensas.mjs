@@ -1,9 +1,11 @@
 // Presente de level e recompensa diária. Funções puras sobre `estado` — quem
 // manda a resposta pro cliente é `sessao.mjs`.
 import { readFileSync } from 'node:fs';
-import { CHARACTER_TEMPLATE, MONTARIAS_REAIS } from './dados.mjs';
+import { CHARACTER_TEMPLATE, MONTARIAS_REAIS, ITEM_CATALOG } from './dados.mjs';
 import { INTERVALO_DIARIO_MS } from './regras.mjs';
 import { darItem } from './inventario.mjs';
+import { gerarItem } from './itens/gerar.mjs';
+import { nomeDaRaridade } from './itens/config.mjs';
 import * as Boosts from './boosts.mjs';
 
 /*
@@ -149,26 +151,43 @@ export function escolherDiario(estado, { escolha }) {
 }
 
 /*
- * ---- O set de marco é da VOCAÇÃO ----
+ * ---- O BAÚ de marco é da VOCAÇÃO ----
  *
- * Os marcos saíam do molde (`character-template.json`), que é o de um knight:
- * um druid que pegava o "Set intermediário" recebia knight legs, heroic axe e
- * vampire shield. No original cada vocação tem o seu (`gamedata/sets-de-marco.json`,
- * lido do servidor original). Os marcos AINDA NÃO PEGOS passam a ter os itens
- * da vocação do personagem; o que já foi pego fica como está.
+ * Os marcos 50 e 100 eram sets fechados ("Set intermediário", "Set completo"). Agora são
+ * BAÚS DE ITENS: o baú abre e sai UM item sorteado entre os do nível — a lista da vocação
+ * (`gamedata/sets-de-marco.json`, lida do servidor original: o que o set dava, cada peça é
+ * uma possibilidade) — e ele nasce pelo gerador central, com raridade, faixa de valores,
+ * atributos e efeito como qualquer drop. Os marcos AINDA NÃO PEGOS viram baú (e ganham a
+ * lista da vocação do personagem); o set que já foi pego fica como está.
  */
 const SETS_DE_MARCO = JSON.parse(readFileSync(new URL('../gamedata/sets-de-marco.json', import.meta.url), 'utf8')).vocacoes;
+const TITULO_DO_BAU = { 50: 'Baú de itens (nível 50)', 100: 'Baú de itens (nível 100)' };
 
 export function marcosDaVocacao(estado) {
   const sets = SETS_DE_MARCO[estado?.vocation];
-  if (!sets) return;
   for (const marco of estado.presentes?.marcos ?? []) {
-    const itens = marco.tipo === 'set' && !marco.pego ? sets[String(marco.level)] : null;
+    if (marco.pego) continue;
+    // O set antigo, ainda não pego, vira baú (personagens salvos antes desta mudança).
+    if (marco.tipo === 'set' && TITULO_DO_BAU[marco.level]) {
+      marco.tipo = 'bau';
+      marco.titulo = TITULO_DO_BAU[marco.level];
+    }
+    const itens = marco.tipo === 'bau' && sets ? sets[String(marco.level)] : null;
     if (itens) marco.itens = itens.map(([itemId, name]) => ({ itemId, name, count: 1 }));
   }
 }
 
-/** `send({t:'marco', level})` — um marco de EQUIPAMENTO (set/outfit/montaria). */
+/** Abre o baú: um item do nível, sorteado, pronto pelo gerador (raridade, faixa, atributos). Devolve a peça. */
+function abrirBau(estado, marco) {
+  const possiveis = marco.itens ?? [];
+  if (!possiveis.length) return null;
+  const escolhido = possiveis[Math.floor(Math.random() * possiveis.length)];
+  const peca = gerarItem({ itemId: escolhido.itemId, level: marco.level });
+  (estado.inventory ??= []).push(peca);
+  return peca;
+}
+
+/** `send({t:'marco', level})` — um marco de EQUIPAMENTO (baú/outfit/montaria). */
 export function coletarMarco(estado, { level }) {
   const presentes = estado?.presentes;
   const marco = presentes?.marcos?.find((m) => m.level === level);
@@ -180,7 +199,9 @@ export function coletarMarco(estado, { level }) {
   marcosDaVocacao(estado);
 
   estado.gold -= marco.custo;
-  for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
+  let peca = null;
+  if (marco.tipo === 'bau') peca = abrirBau(estado, marco);
+  else for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
   marco.pego = true;
   marco.aberto = false;
   // `marcosAbertos` conta quantos estão DISPONÍVEIS agora, não quantos já
@@ -188,7 +209,13 @@ export function coletarMarco(estado, { level }) {
   // no cliente: `emAberto = pendentes + marcosAbertos` decide se a faixa do
   // "Recompensa do level" aparece).
   presentes.marcosAbertos = Math.max(0, (presentes.marcosAbertos ?? 0) - 1);
-  return { ok: true };
+  if (!peca) return { ok: true };
+  const raridade = peca.raridade ?? 'comum';
+  return {
+    ok: true,
+    item: { id: peca.id, raridade },
+    notice: `O baú abriu: ${ITEM_CATALOG[peca.id]?.name ?? `item ${peca.id}`} (${nomeDaRaridade(raridade)}).`,
+  };
 }
 
 /** `send({t:'presente', itemId})` — o degrau de ARMA DE TREINO (o jogador escolhe a arma). */
