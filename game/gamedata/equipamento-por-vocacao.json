@@ -1,11 +1,11 @@
 {
-  "_nota": "Capturado ao vivo do ravoxidle.com.br criando um personagem de cada vocacao (nivel 8, recem-criado) e lendo o welcome.character.equipment/inventory real. Ver conversa de 2026-09-22.",
+  "_nota": "Capturado ao vivo do ravoxidle.com.br criando um personagem de cada vocacao (nivel 8, recem-criado) e lendo o welcome.character.equipment/inventory real. Ver conversa de 2026-09-22. Em 2026-09-29 (decisao do dono) o kit de knight/paladin/monk ficou mais fraco para a campanha dar dano no comeco: studded helmet, leather armor, leather legs, wooden shield; knight com hatchet, mace e sword. Magos iguais.",
   "knight": {
-    "equipment": {"head":3354,"neck":3572,"body":3359,"legs":3372,"feet":3552,"weapon":7773,"shield":3425,"backpack":2854},
-    "inventory": [3327,7774]
+    "equipment": {"head":3376,"neck":3572,"body":3361,"legs":3559,"feet":3552,"weapon":3276,"shield":3412,"backpack":2854},
+    "inventory": [3286,3264]
   },
   "paladin": {
-    "equipment": {"head":3374,"neck":3572,"body":3571,"legs":8095,"feet":3552,"weapon":3277,"shield":3425,"backpack":2854},
+    "equipment": {"head":3376,"neck":3572,"body":3361,"legs":3559,"feet":3552,"weapon":3277,"shield":3412,"backpack":2854},
     "inventory": [3349,3350]
   },
   "druid": {
@@ -17,7 +17,7 @@
     "inventory": []
   },
   "monk": {
-    "equipment": {"head":3354,"neck":3572,"body":3359,"legs":3372,"feet":3552,"weapon":50171,"shield":null,"backpack":2854},
-    "inventory": [3425]
+    "equipment": {"head":3376,"neck":3572,"body":3361,"legs":3559,"feet":3552,"weapon":50171,"shield":null,"backpack":2854},
+    "inventory": [3412]
   }
 }
