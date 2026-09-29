@@ -472,3 +472,31 @@ export function camposDoPersonagem(s) {
   };
   return campos;
 }
+
+// ------------------------------------- os chars da MESMA conta (troca de personagem)
+
+/** Está numa party agora? (o char sem aba — ver `Sessao.contaChar` — sai do mundo quando deixa de estar). */
+export const naParty = (s) => !!minhaParty(s);
+
+/**
+ * "+ Party" na troca de personagem: põe `outro` (da MESMA conta, já no mundo)
+ * na party de `dono`, sem convite para aceitar — é a mesma pessoa dos dois
+ * lados. As regras são as do convite normal: só o líder chama, e o teto da party.
+ */
+export function juntarDaConta(dono, outro) {
+  const p = minhaParty(dono);
+  if (p && p.membros.includes(nomeDe(outro))) return { ok: true, jaEstava: true };
+  const convite = comandoDoGrupo(dono, { action: 'convidar', name: nomeDe(outro) });
+  if (!convite.ok) return convite;
+  const aceite = comandoDoGrupo(outro, { action: 'aceitar' });
+  if (!aceite.ok) return aceite;
+  return { ok: true, notice: `${nomeDe(outro)} entrou na sua party.` };
+}
+
+/** "➜ Hunt": leva `outro` (já na party) para a caçada de `dono`, sem ele precisar aceitar. */
+export function chamarDaConta(dono, outro) {
+  if (!dono.estado?.hunt) return { ok: false, erro: 'Entre numa caçada para chamar alguém para ela.' };
+  const sala = Cacadas.salaDe(dono.estado.hunt);
+  if (outro.estado?.hunt && Cacadas.salaDe(outro.estado.hunt) === sala) return { ok: true, notice: `${nomeDe(outro)} já está na sua caçada.` };
+  return juntar(outro, dono);
+}
