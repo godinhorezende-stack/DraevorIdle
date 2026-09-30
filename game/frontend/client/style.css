@@ -27535,8 +27535,8 @@ b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }
 .tip-item .tip-efeito b { font-weight: 500; font-size: 14px; color: var(--efeito-cor); }
 .tip-item .tip-efeito div { color: var(--efeito-cor); }
 
-/* Requisitos: "Level mínimo 50" — rótulo cinza, valor branco, centralizado. */
-.tip-item .tip-rules { font-size: 12.5px; gap: 1px; }
+/* Requisitos: "Level mínimo 50" — rótulo cinza, valor branco; lado a lado, quebrando (o balão fica mais baixo). */
+.tip-item .tip-rules { font-size: 12.5px; display: flex; flex-wrap: wrap; justify-content: center; gap: 1px 12px; }
 .tip-item .tip-rules div { justify-content: center; gap: 5px; color: var(--prop); }
 .tip-item .tip-rules div b { color: #c8c8c8; font-weight: 500; }
 
@@ -27547,3 +27547,16 @@ b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }
 
 /* O balão do que está vestido, ao lado: o mesmo desenho. */
 .tooltip.vs.tip-item .vs-selo { font-family: var(--font-item); }
+
+/* Mais alto que a tela (ver `place`, tooltip.mjs): duas colunas quando há largura... */
+.tooltip.tip-item.duas-colunas {
+  column-count: 2; column-gap: 0; column-rule: 1px solid var(--sep);
+  width: min(740px, calc(100vw - 16px)); max-width: min(740px, calc(100vw - 16px)) !important;
+}
+.tooltip.tip-item.duas-colunas > * { break-inside: avoid; }
+.tooltip.tip-item.duas-colunas > .tip-head { column-span: all; }
+/* ...e, se nem assim couber, rola por dentro (o dedo pega o balão para rolar). */
+.tooltip.tip-item.rolavel {
+  max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain;
+  pointer-events: auto; scrollbar-width: thin;
+}
