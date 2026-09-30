@@ -15,11 +15,11 @@
 // quantidade do atributo). Puro: quem lê/grava a conta e avisa as sessões é a sessão.
 import * as Bolsa from './bolsa.mjs';
 
-export const CHAVES_DE_GUARDAR = ['guardarRaridade', 'guardarNivel', 'guardarQuantos', 'guardarAfixo', 'guardarEstrelas', 'guardarSockets', 'guardarLigados'];
+export const CHAVES_DE_GUARDAR = ['guardarRaridade', 'guardarNivel', 'guardarQuantos', 'guardarAfixo', 'guardarEstrelas', 'guardarSockets', 'guardarLigados', 'guardarAtributos', 'guardarNivelMinimo'];
 const LISTAS = ['noLoot', 'noSell', 'soAfixo'];
 
 /** Este pedido do cliente muda o filtro? (listas por item ou as regras de guardar) */
-export const mudaOFiltro = (m) => m?.t === 'itemRule' || m?.t === 'lootPreset' || (m?.t === 'settings' && Object.keys(m).some((k) => CHAVES_DE_GUARDAR.includes(k)));
+export const mudaOFiltro = (m) => m?.t === 'itemRule' || m?.t === 'lootPreset' || m?.t === 'lootRegras' || (m?.t === 'settings' && Object.keys(m).some((k) => CHAVES_DE_GUARDAR.includes(k)));
 
 /** O filtro deste personagem, copiado (o que vai para a conta). */
 export function copia(estado) {
@@ -27,6 +27,7 @@ export function copia(estado) {
   return {
     itemRules: Object.fromEntries(LISTAS.map((k) => [k, [...(estado.itemRules[k] ?? [])]])),
     guardar: Object.fromEntries(CHAVES_DE_GUARDAR.filter((k) => estado.settings?.[k] != null).map((k) => [k, estado.settings[k]])),
+    regras: structuredClone(estado.lootRegras ?? []),
   };
 }
 
@@ -38,5 +39,6 @@ export function aplicar(estado, filtro) {
     if (filtro?.guardar?.[k] != null) estado.settings[k] = filtro.guardar[k];
     else delete estado.settings[k];
   }
+  if (Array.isArray(filtro?.regras)) estado.lootRegras = structuredClone(filtro.regras);
   estado.lootFiltro.paraTodos = true;
 }

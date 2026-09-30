@@ -124,7 +124,9 @@ test('"Afixo só nestes": fora da lista o atributo não conta — a raridade lig
   const rara = { id: OUTRO, count: 1, raridade: 'raro', af: [{ id: 'crit_chance', nivel: 1, value: 1 }] };
   const e = quem({ guardarRaridade: 2, guardarNivel: 3 }, { noLoot: [], noSell: [], soAfixo: [HAND_AXE] });
   assert.equal(Afixos.guarda(e, rara), true, 'rara fora da lista: guardada pela raridade (antes era vendida)');
-  assert.equal(Afixos.guarda(e, { ...rara, id: HAND_AXE }), false, 'na lista: precisa do atributo N3+ também');
+  // Na lista, o atributo N1 não passa em "N3+", mas a raridade (OU) segura.
+  assert.equal(Afixos.guarda(e, { ...rara, id: HAND_AXE }), true, 'na lista: raridade OU atributo');
+  assert.equal(Afixos.guarda(quem({ guardarNivel: 3 }, { noLoot: [], noSell: [], soAfixo: [HAND_AXE] }), { ...rara, id: HAND_AXE }), false, 'sem raridade ligada, o N1 não segura');
   // Sem raridade ligada, fora da lista nada segura.
   assert.equal(Afixos.guarda(quem({ guardarNivel: 3 }, { noLoot: [], noSell: [], soAfixo: [HAND_AXE] }), rara), false);
 });

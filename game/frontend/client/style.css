@@ -10142,6 +10142,34 @@ input, textarea {
 .filtro-venda-regras > .filtro-raridade { border-left: 1px solid var(--line); padding-left: 16px; }
 .filtro-sockets { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 6px; }
 .filtro-sockets-rotulo { font-size: 12px; color: var(--muted); min-width: 4.5em; align-self: center; }
+/* Atributos do item: as duas fileiras (quantidade e nível mínimo), com o rótulo ao lado. */
+.filtro-atributos-fileira { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; }
+.filtro-atributos-fileira .filtro-sockets-rotulo { min-width: 6.5em; }
+/* Regras específicas: uma linha por regra (raridade E atributos E nível → ação). */
+.filtro-venda { display: grid; gap: 12px; }
+.filtro-regras-especificas { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.filtro-regra-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.filtro-regra-linha select { max-width: 100%; background: var(--panel-solid); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 4px 6px; font-size: 12px; }
+.filtro-regra-n { font-family: var(--font-numero); color: var(--muted); min-width: 1.4em; }
+.filtro-regra-linha .step { width: 26px; height: 26px; padding: 0; background: var(--panel-solid); border: 1px solid var(--line); border-radius: 5px; color: var(--text); cursor: pointer; }
+.filtro-regra-linha .step:disabled { opacity: .35; cursor: default; }
+.filtro-regra-linha .step.danger:hover { border-color: var(--danger); color: #ffd9d6; }
+.filtro-regra-e { font-size: 11px; color: var(--muted); }
+.filtro-regra-nova { justify-self: start; }
+/* Como o filtro decide + a prévia com a configuração de agora. */
+.filtro-como-decide { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.filtro-como-decide > summary { cursor: pointer; font-size: 12px; color: #7fb8d8; }
+.filtro-ordem { margin: 8px 0 4px; padding-left: 20px; font-size: 12px; color: var(--text); }
+.filtro-previa { display: grid; gap: 2px; margin-top: 8px; font-size: 12px; }
+.filtro-previa-linha { display: grid; grid-template-columns: minmax(0, 1.4fr) 6.5em minmax(0, 1fr); gap: 8px; padding: 3px 6px; border-radius: 4px; background: #0f1518; }
+.filtro-previa-linha i { color: var(--muted); font-style: normal; }
+.filtro-previa-linha.acao-vender b { color: #e3ae48; }
+.filtro-previa-linha.acao-naoVender b { color: #6fdc8c; }
+.filtro-previa-linha.acao-naoColetar b { color: #ff8a80; }
+@media (max-width: 760px) {
+  .filtro-previa-linha { grid-template-columns: minmax(0, 1fr) auto; }
+  .filtro-previa-linha i { grid-column: 1 / -1; }
+}
 @media (max-width: 760px) {
   .filtro-venda-regras { grid-template-columns: minmax(0, 1fr); }
   .filtro-venda-regras > .filtro-raridade { border-left: 0; padding-left: 0; }
@@ -10149,7 +10177,7 @@ input, textarea {
 /* O rótulo do botão sai na cor da raridade dele, e o aceso ganha a borda dela. */
 .filtro-afixo-opcao.com-raridade > span { color: var(--tier); }
 .filtro-afixo-opcao.com-raridade.ativo { border-color: var(--tier); box-shadow: inset 0 0 0 1px var(--tier); }
-.filtro-afixo > b, .filtro-sockets > b {
+.filtro-afixo > b, .filtro-sockets > b, .filtro-regras-especificas > b {
   font-family: var(--font-heading); font-size: 11px; letter-spacing: .06em;
   text-transform: uppercase; color: #7fb8d8;
 }

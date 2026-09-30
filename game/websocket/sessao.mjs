@@ -1233,6 +1233,8 @@ export class Sessao {
         return this.despacharFiltro(m, Bolsa.presetDeLoot(this.estado, m));
       case 'lootFiltro':
         return this.despacharFiltro(m, Bolsa.definirLootFiltro(this.estado, m));
+      case 'lootRegras':
+        return this.despacharFiltro(m, Bolsa.definirRegrasDeLoot(this.estado, m));
       case 'settings':
         return this.despacharFiltro(m, Bolsa.definirSettings(this.estado, m));
       case 'resetAnalyzer':

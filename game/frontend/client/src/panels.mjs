@@ -2669,14 +2669,6 @@ function ligarRegrasDoItem(cell, id, { titulo = '', aoMudar = null } = {}) {
  * legível sem explicação: quem viu uma estrela roxa numa peça sabe o que
  * "roxa ou melhor" vai guardar. Ver `estrelasDosAfixos`.
  */
-const LINHAS_DO_AFIXO = [
-  { valor: 0, rotulo: 'Não olhar', dica: 'o atributo não segura nada — só a raridade (se ligada) decide' },
-  { valor: 1, rotulo: 'Qualquer nível', dica: 'guarda a peça com atributo de qualquer nível (é o padrão)' },
-  { valor: 2, rotulo: 'N2 para cima', dica: 'guarda atributo de nível 2, 3, 4 ou 5' },
-  { valor: 3, rotulo: 'N3 para cima', dica: 'guarda atributo de nível 3, 4 ou 5' },
-  { valor: 4, rotulo: 'N4 para cima', dica: 'guarda atributo de nível 4 ou 5' },
-  { valor: 5, rotulo: 'Só N5', dica: 'guarda apenas atributo de nível 5 (o topo)' },
-];
 
 /*
  * ---- O sistema de itens trocou a pergunta ----
@@ -2693,91 +2685,49 @@ function regraDoAtributo(s = {}) {
 const nomeDoNivel = (nivel) => (nivel === 1 ? 'de qualquer nível' : nivel === 5 ? 'N5' : `N${nivel} ou mais`);
 
 /*
- * ---- E a segunda pergunta: QUANTAS ----
- *
- * "tem que ter opção pra escolher quantas estrelas, porque tem item que vem com
- * 1 e item que vem com 3."
- *
- * A fileira de cima é a COR (o quanto a melhor linha rolou); esta é a
- * QUANTIDADE (quantas linhas a peça tem). São duas medidas que a tela desenha
- * do mesmo jeito e que não querem dizer a mesma coisa — ver `minimoDeEstrelas`,
- * no servidor.
- *
- * As estrelas daqui saem CINZAS de propósito. Coloridas, as duas fileiras
- * ficariam idênticas e a segunda pareceria repetir a primeira; sem cor, ela lê
- * como contagem, que é o que ela é.
+ * ---- ATRIBUTOS DO ITEM (pedido do dono, 30/09) ----
+ * Duas perguntas: QUANTOS atributos a peça tem (os reais, depois do drop) e o
+ * NÍVEL MÍNIMO (pelo menos um atributo desse nível). Vale com OU junto da
+ * raridade e dos sockets: a peça comum com atributo fica mesmo com a raridade
+ * ligada em "raro para cima". O servidor decide (`Afixos.decisaoDoLoot`); aqui
+ * é a mesma tradução das chaves (`Afixos.regraDeAtributos`).
  */
-const QUANTAS_ESTRELAS = [
-  { valor: 1, rotulo: '1+', dica: 'basta um atributo desse nível (é o padrão)' },
-  { valor: 2, rotulo: '2+', dica: 'dois atributos desse nível ou mais' },
-  { valor: 3, rotulo: '3+', dica: 'três atributos desse nível ou mais' },
-  { valor: 4, rotulo: '4+', dica: 'quatro ou mais — só épico para cima chega lá' },
-  { valor: 5, rotulo: '5+', dica: 'cinco ou mais — lendário ou mítico' },
-  { valor: 6, rotulo: '6', dica: 'os seis — só o mítico cheio' },
+function regraDeAtributos(s = {}) {
+  if (s.guardarAtributos != null || s.guardarNivelMinimo != null) {
+    const quantos = Math.max(0, Math.min(6, Math.round(Number(s.guardarAtributos ?? 1)) || 0));
+    const nivel = Math.max(1, Math.min(5, Math.round(Number(s.guardarNivelMinimo ?? 1)) || 1));
+    return { quantos, nivel };
+  }
+  const antiga = regraDoAtributo(s);
+  return antiga.nivel ? { quantos: antiga.quantos, nivel: antiga.nivel } : { quantos: 0, nivel: 1 };
+}
+const LINHAS_DA_QUANTIDADE = [
+  { valor: 0, rotulo: 'Não considerar', dica: 'os atributos não seguram nada — só a raridade e os sockets (se ligados) decidem' },
+  { valor: 1, rotulo: 'Qualquer atributo', dica: 'guarda a peça com 1 atributo ou mais (é o padrão)' },
+  { valor: 2, rotulo: '2+ atributos', dica: 'guarda a peça com 2 atributos ou mais' },
+  { valor: 3, rotulo: '3+ atributos', dica: 'guarda a peça com 3 atributos ou mais' },
+  { valor: 4, rotulo: '4+ atributos', dica: 'guarda a peça com 4 atributos ou mais' },
+];
+const LINHAS_DO_NIVEL_MINIMO = [
+  { valor: 1, rotulo: 'Qualquer', dica: 'qualquer nível serve' },
+  { valor: 2, rotulo: 'N2', dica: 'pelo menos um atributo N2 ou mais' },
+  { valor: 3, rotulo: 'N3', dica: 'pelo menos um atributo N3 ou mais' },
+  { valor: 4, rotulo: 'N4', dica: 'pelo menos um atributo N4 ou mais' },
+  { valor: 5, rotulo: 'N5', dica: 'pelo menos um atributo N5' },
 ];
 
-function escolhaDeQuantasEstrelas() {
-  const { state, send } = ctx;
-  const atual = regraDoAtributo(state.character?.settings).quantos;
-
-  const caixa = el('div', 'filtro-afixo-quantas');
-  caixa.append(el('b', null, 'Quantos atributos desse nível, no mínimo'));
-
-  const linha = el('div', 'filtro-afixo-opcoes');
-  for (const opcao of QUANTAS_ESTRELAS) {
-    const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
-    botao.type = 'button';
-    {
-      // Estrelas CINZAS: aqui é contagem, não nível.
-      const selo = el('i', 'item-estrelas contagem');
-      for (let i = 0; i < opcao.valor; i++) selo.append(el('b', 'estrela', '★'));
-      botao.append(selo);
-    }
-    botao.append(el('span', null, opcao.rotulo));
-    botao.title = opcao.dica;
-    botao.onclick = () => {
-      send({ t: 'settings', guardarQuantos: opcao.valor });
-      // Pinta na hora, como a fileira de cima: esperar a volta do servidor faz
-      // o clique parecer perdido.
-      state.character.settings = { ...(state.character.settings ?? {}), guardarQuantos: opcao.valor };
-      ctx.redraw?.();
-    };
-    linha.append(botao);
-  }
-  caixa.append(linha);
-  caixa.append(el('em', 'filter-legend', QUANTAS_ESTRELAS.find((o) => o.valor === atual)?.dica ?? ''));
-  return caixa;
-}
-
 /*
- * ---- A regra das duas fileiras, dita numa frase só ----
- *
- * O dono: "nos loot filter já tem a opção de pegar por estrelas e pegar por
- * raridade de estrela, mas tem que ter a opção também de tipo pegar só 3
- * estrelas dourada, ou só 2 estrela dourada pra cima, ou só 3 estrela azul."
- *
- * As três coisas que ele pede o filtro JÁ FAZ — cada uma é um par das duas
- * fileiras (ver `protegidoPorAfixo`, no afixos.mjs, onde as duas valem com E):
- *
- *   só 3 estrelas douradas   =  "Só a dourada"     + "Só as de três"
- *   2 douradas para cima     =  "Só a dourada"     + "Duas ou mais"
- *   3 estrelas azuis         =  "Guardar qualquer" + "Só as de três"
- *
- * Que ele tenha pedido como coisa nova é o defeito, e o defeito é da tela: são
- * duas fileiras de botões, uma embaixo da outra, cada uma com a legenda dela, e
- * nada em lugar nenhum dizia que elas se MULTIPLICAM. Duas respostas certas
- * lado a lado sem a conta entre elas não formam a pergunta que a pessoa tem na
- * cabeça, que é uma só: "o que exatamente eu vou guardar?".
- *
- * Esta frase é essa conta. Ela aparece no pé do bloco, em cima do que a pessoa
- * acabou de clicar, e é a mesma que o resumo da gaveta recolhida mostra — para
- * a regra ser legível sem abrir nada.
+ * ---- A regra de atributos, dita numa frase só ----
+ * Aparece no pé do bloco e no resumo da gaveta recolhida: "o que exatamente eu
+ * vou guardar?" sem abrir nada. Desde 30/09 a quantidade é de atributos REAIS
+ * da peça e o nível é "pelo menos um desse nível"; vale com OU junto da
+ * raridade e dos sockets (ver `Afixos.decisaoDoLoot`).
  */
 function fraseDaRegraDoAfixo() {
-  const { nivel, quantos } = regraDoAtributo(ctx.state.character?.settings);
-  if (!nivel) return 'O atributo não segura nada: só a raridade (se ligada) decide o que fica.';
-  const daContagem = quantos === 1 ? 'um atributo' : `${quantos} atributos`;
-  return `Guarda a peça com pelo menos ${daContagem} ${nomeDoNivel(nivel)}.`;
+  const { quantos, nivel } = regraDeAtributos(ctx.state.character?.settings);
+  if (!quantos) return 'Os atributos não seguram nada: só a raridade e os sockets (se ligados) decidem o que fica.';
+  const daContagem = quantos === 1 ? 'pelo menos um atributo' : `${quantos} atributos ou mais`;
+  return `Guarda a peça com ${daContagem}${nivel > 1 ? `, sendo um deles ${nomeDoNivel(nivel)}` : ''} — de qualquer raridade.`;
 }
 
 /*
@@ -2803,7 +2753,8 @@ function resumoDaVendaAutomatica() {
   const onde = marcados ? ` Só em ${marcados} ${marcados === 1 ? 'item' : 'itens'}.` : '';
   const raridade = fraseDaRaridade();
   const sockets = fraseDosSockets();
-  return `Venda automática: ${fraseDaRegraDoAfixo()}${onde}${raridade ? ` E ${raridade}.` : ''}${sockets ? ` Sockets: ${sockets}.` : ''}`;
+  const especificas = (ctx.state.character?.lootRegras ?? []).filter((r) => r.ativa !== false).length;
+  return `Venda automática: ${fraseDaRegraDoAfixo()}${onde}${raridade ? ` OU ${raridade}.` : ''}${sockets ? ` OU sockets: ${sockets}.` : ''}${especificas ? ` E ${especificas} regra${especificas === 1 ? '' : 's'} específica${especificas === 1 ? '' : 's'} antes.` : ''}`;
 }
 
 /*
@@ -2855,14 +2806,9 @@ function escolhaDeRaridade() {
    * (ver `presoNaBolsa`, no store.mjs) — e a frase diz exatamente isso, com o
    * degrau da estrela que está marcado ao lado.
    */
-  const regraDoAtr = regraDoAtributo(state.character?.settings);
-  const daEstrela = regraDoAtr.nivel
-    ? `com ${regraDoAtr.quantos === 1 ? 'um atributo' : `${regraDoAtr.quantos} atributos`} ${nomeDoNivel(regraDoAtr.nivel)}`
-    : '';
   let frase;
-  if (!atual) frase = 'Escolha uma raridade: os itens dela para cima serão guardados.';
-  else if (daEstrela) frase = `Só itens ${lista} ${daEstrela} serão guardados — as regras valem juntas. O resto vai para o NPC.`;
-  else frase = `Itens ${lista} serão guardados, com atributo ou sem.`;
+  if (!atual) frase = 'Escolha uma raridade: os itens dela para cima serão guardados, com atributo ou sem.';
+  else frase = `Itens ${lista} são guardados, com atributo ou sem. Vale com OU junto dos atributos: uma peça de raridade mais baixa ainda fica se passar na regra de atributos.`;
   caixa.append(el('em', 'filter-legend', frase));
 
   const linha = el('div', 'filtro-afixo-opcoes');
@@ -2890,12 +2836,152 @@ function escolhaDeRaridade() {
  * (ver `.filtro-venda-regras`).
  */
 function regrasDaVendaAutomatica() {
+  const tudo = el('div', 'filtro-venda');
   const lado = el('div', 'filtro-venda-regras');
   // Os sockets moram na coluna da raridade: são as duas regras "da peça", e o grid fica em duas colunas.
   const raridade = escolhaDeRaridade();
   raridade.append(escolhaDeSockets());
   lado.append(escolhaDeAfixo(), raridade);
-  return lado;
+  tudo.append(lado, escolhaDeRegrasEspecificas(), comoOFiltroDecide());
+  return tudo;
+}
+
+/*
+ * ---- REGRAS ESPECÍFICAS (pedido do dono, 30/09) ----
+ * "Comum E 1+ atributo E um N3+ → não vender", "Raro+ OU 2+ atributos OU N4+":
+ * cada linha é um E (raridade + quantidade + nível) com uma ação; entre as
+ * linhas, a PRIMEIRA que bate decide. Elas vêm ANTES das seções de cima.
+ * Só olham equipamento. O servidor limpa e decide (`Bolsa.definirRegrasDeLoot`).
+ */
+const RARIDADES_DA_REGRA = ['comum', 'incomum', 'raro', 'épico', 'lendário', 'mítico'];
+/*
+ * O RASCUNHO das regras enquanto a pessoa mexe: a resposta do servidor a uma
+ * mudança pode chegar DEPOIS da seguinte, e redesenhar com ela voltava o campo
+ * ao valor antigo — que a próxima mudança gravava por cima (medido no teste da
+ * tela: "Sem atributo" virava "1+"). Por 2 s depois de cada mudança vale o
+ * rascunho; depois, o que o servidor confirmou.
+ */
+let rascunhoDasRegras = null;
+function escolhaDeRegrasEspecificas() {
+  const { state, send } = ctx;
+  const regras = rascunhoDasRegras && Date.now() < rascunhoDasRegras.ate ? rascunhoDasRegras.lista : structuredClone(state.character?.lootRegras ?? []);
+  // `estrutural`: criar, apagar ou mudar a ordem redesenha; mudar um campo não (o select já mostra).
+  const gravar = (estrutural = false) => {
+    rascunhoDasRegras = { lista: regras, ate: Date.now() + 2000 };
+    send({ t: 'lootRegras', regras });
+    state.character.lootRegras = structuredClone(regras);
+    if (estrutural) ctx.redraw?.();
+  };
+  const caixa = el('div', 'filtro-regras-especificas');
+  caixa.append(el('b', null, 'Regras específicas'));
+  caixa.append(el('em', 'filter-legend', 'Cada linha junta raridade E atributos E nível. A primeira linha que bate decide, antes das seções de cima. Só olham equipamento.'));
+  const select = (opcoes, valor, aoMudar, rotulo) => {
+    const s2 = document.createElement('select');
+    s2.setAttribute('aria-label', rotulo);
+    for (const [v, texto] of opcoes) {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = texto;
+      s2.append(o);
+    }
+    s2.value = valor;
+    s2.onchange = () => aoMudar(s2.value);
+    return s2;
+  };
+  const opcoesDeRaridade = [['', 'Qualquer raridade'], ...RARIDADES_DA_REGRA.flatMap((r) => [[r, `Só ${r}`], ...(r !== 'mítico' ? [[`${r}+`, `${r[0].toUpperCase()}${r.slice(1)} ou acima`]] : [])])];
+  regras.forEach((r, i) => {
+    const linha = el('div', 'filtro-regra-linha');
+    linha.dataset.indice = String(i);
+    linha.append(el('span', 'filtro-regra-n', `${i + 1}.`));
+    linha.append(
+      select(opcoesDeRaridade, r.raridade ? `${r.raridade}${r.acima ? '+' : ''}` : '', (v) => {
+        r.raridade = v ? v.replace('+', '') : null;
+        r.acima = v.endsWith('+');
+        gravar();
+      }, 'Raridade'),
+      el('span', 'filtro-regra-e', 'E'),
+      select([['', 'Qualquer quantidade'], ['0', 'Sem atributo'], ['1', '1+ atributo'], ['2', '2+ atributos'], ['3', '3+ atributos'], ['4', '4+ atributos'], ['5', '5+ atributos'], ['6', '6 atributos']], r.quantos == null ? '' : String(r.quantos), (v) => {
+        r.quantos = v === '' ? null : Number(v);
+        gravar();
+      }, 'Atributos'),
+      el('span', 'filtro-regra-e', 'E'),
+      select([['1', 'Qualquer nível'], ['2', 'um N2+'], ['3', 'um N3+'], ['4', 'um N4+'], ['5', 'um N5']], String(r.nivel ?? 1), (v) => {
+        r.nivel = Number(v);
+        gravar();
+      }, 'Nível mínimo'),
+      el('span', 'filtro-regra-e', '→'),
+      select([['naoVender', 'Não vender'], ['naoColetar', 'Não coletar']], r.acao ?? 'naoVender', (v) => {
+        r.acao = v;
+        gravar();
+      }, 'Ação')
+    );
+    const liga = document.createElement('input');
+    liga.type = 'checkbox';
+    liga.checked = r.ativa !== false;
+    liga.title = 'Ligada';
+    liga.onchange = () => {
+      r.ativa = liga.checked;
+      gravar();
+    };
+    const subir = el('button', 'ghost step', '↑');
+    subir.title = 'Subir (a de cima decide primeiro)';
+    subir.disabled = i === 0;
+    subir.onclick = () => {
+      [regras[i - 1], regras[i]] = [regras[i], regras[i - 1]];
+      gravar(true);
+    };
+    const tirar = el('button', 'danger step', '✕');
+    tirar.title = 'Apagar a regra';
+    tirar.onclick = () => {
+      regras.splice(i, 1);
+      gravar(true);
+    };
+    linha.append(liga, subir, tirar);
+    caixa.append(linha);
+  });
+  if (!regras.length) caixa.append(el('p', 'empty', 'Nenhuma regra específica. As seções de cima decidem sozinhas.'));
+  const nova = el('button', 'ghost filtro-regra-nova', '+ Nova regra');
+  nova.disabled = regras.length >= 12;
+  nova.onclick = () => {
+    regras.push({ raridade: 'comum', acima: false, quantos: 1, nivel: 1, acao: 'naoVender', ativa: true });
+    gravar(true);
+  };
+  caixa.append(nova);
+  return caixa;
+}
+
+/** A ordem da decisão e a prévia "com a sua configuração" (a mesma função da venda, no servidor). */
+function comoOFiltroDecide() {
+  const caixa = el('details', 'filtro-como-decide');
+  caixa.open = !!ctx.tabs.comoDecideAberto;
+  caixa.ontoggle = () => (ctx.tabs.comoDecideAberto = caixa.open);
+  const resumo = document.createElement('summary');
+  resumo.textContent = 'Como o filtro decide (e o que acontece com a sua configuração)';
+  caixa.append(resumo);
+  const ordem = el('ol', 'filtro-ordem');
+  for (const passo of [
+    'Não coletar (a lista) — fica no chão',
+    'Não vender (a lista) — fica na bolsa',
+    'Tier, imbuement, essência ou gema encaixada — fica',
+    'Regras específicas — a primeira que bate decide',
+    'Atributos do item (respeitando "Afixo só nestes")',
+    'Sockets',
+    'Raridade',
+    'Nenhuma segurou — vende',
+  ]) ordem.append(el('li', null, passo));
+  caixa.append(ordem, el('em', 'filter-legend', 'Os passos 5, 6 e 7 valem com OU: basta um segurar. Uma regra de cima nunca é desfeita por uma de baixo.'));
+  const previa = ctx.state.character?.filtroPrevia ?? [];
+  if (previa.length) {
+    const tabela = el('div', 'filtro-previa');
+    const NOMES = { vender: 'vende', naoVender: 'não vende', naoColetar: 'não coleta' };
+    for (const l of previa) {
+      const linha = el('div', `filtro-previa-linha acao-${l.acao}`);
+      linha.append(el('span', null, l.rotulo), el('b', null, NOMES[l.acao] ?? l.acao), el('i', null, l.motivo));
+      tabela.append(linha);
+    }
+    caixa.append(tabela);
+  }
+  return caixa;
 }
 
 /*
@@ -2965,77 +3051,55 @@ function escolhaDeSockets() {
 
 function escolhaDeAfixo({ recolhido = false } = {}) {
   const { state, send } = ctx;
-  const atual = regraDoAtributo(state.character?.settings).nivel;
+  const { quantos, nivel } = regraDeAtributos(state.character?.settings);
+  const gravar = (chave, valor) => {
+    send({ t: 'settings', [chave]: valor });
+    // Pinta na hora: esperar a volta do servidor faz o clique parecer perdido.
+    state.character.settings = { ...(state.character.settings ?? {}), [chave]: valor };
+    // A regra nova grava as DUAS chaves: sem a outra, o servidor cairia na tradução das de antes.
+    if (state.character.settings.guardarAtributos == null) state.character.settings.guardarAtributos = quantos;
+    if (state.character.settings.guardarNivelMinimo == null) state.character.settings.guardarNivelMinimo = nivel;
+    ctx.redraw?.();
+  };
+  const fileira = (titulo, linhas, atual, chave, outra) => {
+    const bloco = el('div', 'filtro-atributos-fileira');
+    bloco.append(el('span', 'filtro-sockets-rotulo', titulo));
+    const linha = el('div', 'filtro-afixo-opcoes');
+    for (const opcao of linhas) {
+      const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
+      botao.type = 'button';
+      botao.dataset.regra = chave;
+      botao.dataset.valor = String(opcao.valor);
+      if (chave === 'guardarNivelMinimo' && opcao.valor > 1) {
+        // Uma estrela na cor do nível, como no item (N1 cinza ... N5 dourada).
+        const selo = el('i', 'item-estrelas');
+        selo.append(el('b', `estrela n${opcao.valor}`, '★'));
+        botao.append(selo);
+      }
+      botao.append(el('span', null, opcao.rotulo));
+      botao.title = opcao.dica;
+      botao.onclick = () => {
+        // Gravar uma fileira grava a outra junto (a regra nova é o par).
+        send({ t: 'settings', [outra.chave]: outra.valor });
+        gravar(chave, opcao.valor);
+      };
+      linha.append(botao);
+    }
+    bloco.append(linha);
+    return bloco;
+  };
 
   const caixa = el('div', 'filtro-afixo');
-  caixa.append(el('b', null, 'Nível do atributo na venda automática'));
-  caixa.append(
-    el('em', 'filter-legend', 'Tier, imbuement e essência nunca são vendidos. O nível é o da estrela do atributo (N1–N5).')
-  );
-
-  const linha = el('div', 'filtro-afixo-opcoes');
-  for (const opcao of LINHAS_DO_AFIXO) {
-    const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
-    botao.type = 'button';
-    if (opcao.valor) {
-      // Uma estrela na cor do nível, como no item (N1 cinza ... N5 dourada).
-      const selo = el('i', 'item-estrelas');
-      selo.append(el('b', `estrela n${opcao.valor}`, '★'));
-      botao.append(selo);
-    }
-    botao.append(el('span', null, opcao.rotulo));
-    botao.title = opcao.dica;
-    botao.onclick = () => {
-      send({ t: 'settings', guardarNivel: opcao.valor });
-      // Pinta na hora: esperar a volta do servidor faz o clique parecer perdido.
-      state.character.settings = { ...(state.character.settings ?? {}), guardarNivel: opcao.valor };
-      ctx.redraw?.();
-    };
-    linha.append(botao);
-  }
-  caixa.append(linha);
-  caixa.append(el('em', 'filter-legend', LINHAS_DO_AFIXO.find((o) => o.valor === atual)?.dica ?? ''));
-  /*
-   * A contagem só faz pergunta quando a regra da cor está ligada: com "Vender
-   * todas" não há nada a restringir, e a segunda fileira seria sobre nada.
-   */
-  if (atual > 0) caixa.append(escolhaDeQuantasEstrelas());
-
-  /*
-   * ---- E a conta ENTRE as duas fileiras ----
-   *
-   * Ver `fraseDaRegraDoAfixo`. Ela fecha em uma linha o que as duas fileiras
-   * decidiram juntas, e é o que faltava: as escolhas estavam à vista, o
-   * resultado delas não. É esta linha que responde "e se eu quiser só as
-   * douradas de três estrelas?" sem precisar perguntar.
-   *
-   * Ela fica DEPOIS das duas fileiras porque é a conclusão delas, e muda no
-   * mesmo clique — as duas fileiras já redesenham a tela ao serem clicadas.
-   */
+  caixa.append(el('b', null, 'Atributos do item'));
+  caixa.append(el('em', 'filter-legend', 'Itens com atributos podem ser preservados mesmo quando possuem raridade baixa. Conta os atributos REAIS da peça. Tier, imbuement, essência e gema encaixada nunca são vendidos.'));
+  caixa.append(fileira('Quantidade', LINHAS_DA_QUANTIDADE, quantos, 'guardarAtributos', { chave: 'guardarNivelMinimo', valor: nivel }));
+  if (quantos > 0) caixa.append(fileira('Nível mínimo', LINHAS_DO_NIVEL_MINIMO, nivel, 'guardarNivelMinimo', { chave: 'guardarAtributos', valor: quantos }));
   const regra = el('div', 'filtro-afixo-regra');
   regra.append(el('b', null, fraseDaRegraDoAfixo()));
-  if (atual > 0) {
-    regra.append(
-      el(
-        'em',
-        null,
-        'As fileiras valem juntas: o nível é o piso ("N3 para cima" também guarda N4 e N5) e a contagem é quantos atributos desse nível a peça tem. Com a raridade ligada, a peça precisa passar nas duas.'
-      )
-    );
-  }
+  if (quantos > 0) regra.append(el('em', null, 'Vale com OU junto da raridade e dos sockets: basta passar em uma delas para a peça ficar.'));
   caixa.append(regra);
 
-  /*
-   * ---- E em QUE itens essa linha vale ----
-   *
-   * A escolha de cima é o QUANTO ("roxa para cima"); esta frase é o ONDE. Sem
-   * ela a lista "Afixo só nestes", lá na coluna da direita, seria uma terceira
-   * caixa sem explicação ao lado de duas que todo mundo já conhece.
-   *
-   * Só aparece quando a linha está ligada: com "Vender todas" não há regra
-   * nenhuma para restringir, e a frase seria sobre nada.
-   */
-  if (atual > 0) {
+  if (quantos > 0) {
     const marcados = ctx.state.character?.itemRules?.soAfixo ?? [];
     const onde = el('div', 'filtro-afixo-onde');
     onde.append(
@@ -3043,28 +3107,15 @@ function escolhaDeAfixo({ recolhido = false } = {}) {
         'em',
         'filter-legend',
         marcados.length
-          ? `Vale só em ${marcados.length} ${marcados.length === 1 ? 'item escolhido' : 'itens escolhidos'} — nos outros, o atributo não segura nada.`
+          ? `Vale só em ${marcados.length} ${marcados.length === 1 ? 'item escolhido' : 'itens escolhidos'} — nos outros, os atributos não contam (a raridade e os sockets decidem).`
           : 'Vale em qualquer peça. Dá para escolher só algumas.'
       )
     );
-
-    /*
-     * O botão abre a MESMA busca das outras duas listas.
-     *
-     * Ele existe porque `escolhaDeAfixo` aparece em dois lugares — o filtro da
-     * bolsa e a prévia da hunt —, e a coluna com as três listas só existe no
-     * primeiro. Sem ele, metade das telas mostraria a regra e não daria como
-     * mexer nela, que é o pedido literal: "tanto na bolsa quanto no filtro da
-     * caçada".
-     */
     const escolher = el('button', 'ghost filtro-afixo-escolher', marcados.length ? `Escolher itens (${marcados.length})` : 'Escolher itens...');
     escolher.type = 'button';
-    escolher.title = 'Marca em que peças a linha da estrela vale. Nenhuma marcada = vale em todas.';
+    escolher.title = 'Marca em que peças a regra de atributos vale. Nenhuma marcada = vale em todas.';
     escolher.onclick = () => openItemPicker('soAfixo', 'Afixo só nestes itens');
     onde.append(escolher);
-
-    // A lista escolhida, ali mesmo: clicar tira. Sem ela o botão seria um
-    // caminho de mão única — dá para marcar e não dá para ver o que marcou.
     if (marcados.length) {
       const grade = el('div', 'filter-grid');
       for (const id of marcados) {
@@ -3087,8 +3138,10 @@ function escolhaDeAfixo({ recolhido = false } = {}) {
   };
   const resumo = document.createElement('summary');
   resumo.textContent = resumoDaVendaAutomatica();
-  resumo.title = 'A regra da estrela e da raridade na venda automática. Clique para mexer.';
-  gaveta.append(resumo, caixa, escolhaDeRaridade());
+  resumo.title = 'As regras de atributos, raridade e sockets na venda automática. Clique para mexer.';
+  const raridade = escolhaDeRaridade();
+  raridade.append(escolhaDeSockets());
+  gaveta.append(resumo, caixa, raridade);
   return gaveta;
 }
 

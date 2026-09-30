@@ -193,31 +193,155 @@ export function regraDoAtributo(s = {}) {
  * e o atributo (`regraDoAtributo`, com `itemRules.soAfixo` = só nestes itens).
  * Nenhuma ligada: vende.
  */
-export function guarda(estado, p) {
-  if (p.tier || p.imbu?.length) return true;
-  if (p.id === ID_DA_ESSENCIA) return true;
-  // Peça com GEMA encaixada nunca vai para o NPC (a gema iria junto).
-  if (p.soquetes?.gemas?.some(Boolean)) return true;
-  const s = estado.settings ?? {};
-  // SOCKETS (regra que vale SOZINHA): a peça com pelo menos N sockets abertos, ou com um grupo de
-  // N ligados, fica — mesmo sem passar na raridade e no atributo (uma 4-ligada vale por si).
-  if (guardaPelosSockets(s, p)) return true;
-  const pisoRaridade = Number(s.guardarRaridade ?? 0);
-  const { nivel, quantos } = regraDoAtributo(s);
-  // "Afixo só nestes": fora da lista o atributo não entra na conta (a raridade, se ligada, decide sozinha).
-  const soEm = estado.itemRules?.soAfixo ?? [];
-  const olhaAtributo = nivel > 0 && (!soEm.length || soEm.includes(p.id));
-  if (!pisoRaridade && !olhaAtributo) return false;
-  if (pisoRaridade > 0) {
-    // A raridade do DROP (sistema de itens); a do catálogo só para peça antiga.
-    const r = RARIDADES.indexOf(raridadeDaPeca(p));
-    if (r < pisoRaridade) return false;
+/*
+ * ---- O FILTRO DE LOOT: uma decisão só, na ordem do dono (30/09) ----
+ *
+ *   1. NÃO COLETAR (lista por item)         → fica no chão
+ *   2. NÃO VENDER (lista por item)          → fica na bolsa
+ *   3. valor próprio: tier, imbuement, essência, gema encaixada → fica
+ *   4. REGRAS ESPECÍFICAS (`estado.lootRegras`, na ordem da lista: a PRIMEIRA
+ *      que bate decide — "não vender" ou "não coletar")
+ *   5. ATRIBUTOS DO ITEM (quantidade + nível mínimo; "Afixo só nestes" limita onde vale)
+ *   6. SOCKETS (abertos / ligados)
+ *   7. RARIDADE
+ *   8. padrão: vende
+ * 5, 6 e 7 valem com OU: a peça comum com atributo bom fica mesmo com a
+ * raridade ligada em "raro para cima" — a raridade não decide sozinha quando
+ * há regra de atributo. Uma regra de cima nunca é desfeita por uma de baixo.
+ *
+ * Os atributos são os REAIS da peça depois do drop (`p.af`), conferidos contra
+ * o catálogo de atributos: id desconhecido, valor 0, nulo ou inválido não conta.
+ * Genérico: um atributo novo no catálogo entra sozinho.
+ */
+export const ACOES_DO_FILTRO = ['naoVender', 'naoColetar'];
+
+/** Os atributos que valem de verdade nesta peça. */
+export function atributosReais(p) {
+  return (Array.isArray(p?.af) ? p.af : []).filter((a) => {
+    if (!a || !FICHAS[a.id]) return false;
+    const v = Number(a.value);
+    return Number.isFinite(v) && v !== 0;
+  });
+}
+
+/** O nível (1–5) de um atributo; acima do teto (a cor "mítica") conta como 5. */
+export const nivelDoAtributo = (a) => (corDoAtributo(a) === 4 ? 5 : Math.max(1, Math.min(5, nivelDe(a) || 1)));
+
+/**
+ * A regra da seção "Atributos do item": `{ quantos, nivel }` — `quantos` 0 = não
+ * considerar; `nivel` 1 = qualquer, 2..5 = pelo menos UM atributo desse nível.
+ * Sem as chaves novas, traduz as de antes (`guardarNivel`/`guardarQuantos`).
+ */
+export function regraDeAtributos(s = {}) {
+  if (s.guardarAtributos != null || s.guardarNivelMinimo != null) {
+    const quantos = Math.max(0, Math.min(6, Math.round(Number(s.guardarAtributos ?? 1)) || 0));
+    const nivel = Math.max(1, Math.min(5, Math.round(Number(s.guardarNivelMinimo ?? 1)) || 1));
+    return { quantos, nivel };
   }
-  if (olhaAtributo) {
-    const bons = (p.af ?? []).filter((a) => corDoAtributo(a) === 4 || nivelDe(a) >= nivel).length;
-    if (bons < quantos) return false;
+  const antiga = regraDoAtributo(s);
+  return antiga.nivel ? { quantos: antiga.quantos, nivel: antiga.nivel } : { quantos: 0, nivel: 1 };
+}
+
+/** A peça passa em "pelo menos `quantos` atributos e (se `nivel` > 1) um deles N`nivel`+"? */
+export function passaAtributos(p, { quantos = 0, nivel = 1 } = {}) {
+  const reais = atributosReais(p);
+  if (reais.length < quantos) return false;
+  return nivel <= 1 || reais.some((a) => nivelDoAtributo(a) >= nivel);
+}
+
+const indiceDaRaridade = (p) => RARIDADES.indexOf(raridadeDaPeca(p));
+
+/**
+ * Uma regra específica bate nesta peça? `{ raridade, acima, quantos, nivel, acao }`:
+ * `raridade` null = qualquer; `acima` = "ou acima"; `quantos` null = qualquer
+ * quantidade, 0 = SEM atributo, n = n ou mais; `nivel` 1 = qualquer.
+ * Só vale para peça que aceita atributo (equipamento) — poção e produto de bicho não.
+ */
+export function regraBate(r, p) {
+  if (!aceitaAfixo(p?.id)) return false;
+  if (r.raridade) {
+    const alvo = RARIDADES.indexOf(r.raridade);
+    const tem = indiceDaRaridade(p);
+    if (r.acima ? tem < alvo : tem !== alvo) return false;
   }
+  const reais = atributosReais(p);
+  if (r.quantos === 0) {
+    if (reais.length) return false;
+  } else if (r.quantos != null && reais.length < r.quantos) return false;
+  if ((r.nivel ?? 1) > 1 && !reais.some((a) => nivelDoAtributo(a) >= r.nivel)) return false;
   return true;
+}
+
+/** Uma regra específica, limpa (o que o cliente manda). `null` se não serve. */
+export function sanearRegraDeLoot(r) {
+  if (!r || typeof r !== 'object') return null;
+  const raridade = RARIDADES.includes(r.raridade) ? r.raridade : null;
+  const quantos = r.quantos == null || r.quantos === '' ? null : Math.max(0, Math.min(6, Math.round(Number(r.quantos)) || 0));
+  return {
+    raridade,
+    acima: !!raridade && r.acima === true,
+    quantos,
+    nivel: Math.max(1, Math.min(5, Math.round(Number(r.nivel ?? 1)) || 1)),
+    acao: ACOES_DO_FILTRO.includes(r.acao) ? r.acao : 'naoVender',
+    ativa: r.ativa !== false,
+  };
+}
+
+/**
+ * A decisão do filtro para esta peça: `{ acao: 'naoColetar'|'naoVender'|'vender', motivo }`.
+ * `motivo` diz QUAL regra decidiu (a tela mostra).
+ */
+export function decisaoDoLoot(estado, p) {
+  const rules = estado?.itemRules ?? {};
+  const s = estado?.settings ?? {};
+  const id = Number(p?.id);
+  if ((rules.noLoot ?? []).includes(id)) return { acao: 'naoColetar', motivo: 'lista "Não coletar"' };
+  if ((rules.noSell ?? []).includes(id)) return { acao: 'naoVender', motivo: 'lista "Não vender"' };
+  if (p?.tier || p?.imbu?.length) return { acao: 'naoVender', motivo: 'tier ou imbuement' };
+  if (id === ID_DA_ESSENCIA) return { acao: 'naoVender', motivo: 'essência' };
+  // Peça com GEMA encaixada nunca vai para o NPC (a gema iria junto).
+  if (p?.soquetes?.gemas?.some(Boolean)) return { acao: 'naoVender', motivo: 'gema encaixada' };
+  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false);
+  for (const [i, r] of regras.entries()) {
+    if (regraBate(r, p)) return { acao: r.acao === 'naoColetar' ? 'naoColetar' : 'naoVender', motivo: `regra específica ${i + 1}` };
+  }
+  // "Afixo só nestes": fora da lista a seção de atributos não entra na conta.
+  const soEm = rules.soAfixo ?? [];
+  const atr = regraDeAtributos(s);
+  if (atr.quantos > 0 && (!soEm.length || soEm.includes(id)) && passaAtributos(p, atr)) return { acao: 'naoVender', motivo: 'atributos do item' };
+  // SOCKETS: a peça com os sockets pedidos fica (uma 4-ligada vale por si).
+  if (guardaPelosSockets(s, p)) return { acao: 'naoVender', motivo: 'sockets' };
+  const piso = Number(s.guardarRaridade ?? 0);
+  if (piso > 0 && indiceDaRaridade(p) >= piso) return { acao: 'naoVender', motivo: 'raridade' };
+  return { acao: 'vender', motivo: 'nenhuma regra segura' };
+}
+
+/** A venda automática guarda esta peça? (tudo que não é "vender") */
+export const guarda = (estado, p) => decisaoDoLoot(estado, p).acao !== 'vender';
+
+/*
+ * A PRÉVIA do filtro (a tela mostra "com a sua configuração, isto acontece"):
+ * a decisão para peças de exemplo, pela MESMA função da venda.
+ */
+const EXEMPLOS_DO_FILTRO = [
+  { rotulo: 'Comum, 0 atributos', raridade: 'comum', niveis: [] },
+  { rotulo: 'Comum, 1 atributo N1', raridade: 'comum', niveis: [1] },
+  { rotulo: 'Comum, 2 atributos N3', raridade: 'comum', niveis: [3, 3] },
+  { rotulo: 'Incomum, 0 atributos', raridade: 'incomum', niveis: [] },
+  { rotulo: 'Incomum, 1 atributo N1', raridade: 'incomum', niveis: [1] },
+  { rotulo: 'Raro, 0 atributos', raridade: 'raro', niveis: [] },
+  { rotulo: 'Raro, 3 atributos N2', raridade: 'raro', niveis: [2, 2, 2] },
+  { rotulo: 'Épico, 1 atributo N4', raridade: 'épico', niveis: [4] },
+  { rotulo: 'Mítico, 6 atributos N5', raridade: 'mítico', niveis: [5, 5, 5, 5, 5, 5] },
+];
+let pecaDeExemplo = null;
+export function previaDoFiltro(estado) {
+  pecaDeExemplo ??= Number(Object.keys(ITEM_CATALOG).find((id) => aceitaAfixo(Number(id)) && ITEM_CATALOG[id].slot === 'body'));
+  const ids = Object.keys(FICHAS);
+  return EXEMPLOS_DO_FILTRO.map((x) => {
+    const p = { id: pecaDeExemplo, count: 1, raridade: x.raridade, af: x.niveis.map((nivel, i) => ({ id: ids[i % ids.length], nivel, value: 1 })) };
+    return { rotulo: x.rotulo, ...decisaoDoLoot({ ...estado, itemRules: { ...(estado.itemRules ?? {}), noLoot: [], noSell: [] } }, p) };
+  });
 }
 
 /** Os sockets da peça: quantos abertos e o maior grupo ligado. */

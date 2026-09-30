@@ -27,6 +27,8 @@ export function garantir(estado) {
   estado.itemRules ??= { noLoot: [], noSell: [], soAfixo: [] };
   for (const k of ['noLoot', 'noSell', 'soAfixo']) estado.itemRules[k] ??= [];
   estado.lootFiltro ??= { sempreSalvar: true, paraTodos: false };
+  // As REGRAS ESPECÍFICAS do filtro (a primeira que bate decide — ver `Afixos.decisaoDoLoot`).
+  estado.lootRegras ??= [];
   estado.settings ??= {};
 }
 
@@ -104,10 +106,25 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
   return count - falta;
 }
 
-/** O filtro de loot recusa este item? (`noLoot`) */
-export function ignora(estado, id) {
+/**
+ * O filtro de loot deixa este drop no chão? A lista "Não coletar" e, com a peça
+ * sorteada (`peca`: raridade e atributos), as regras específicas de "não coletar"
+ * — a mesma decisão da venda (`Afixos.decisaoDoLoot`).
+ */
+export function ignora(estado, id, peca = null) {
   garantir(estado);
-  return estado.itemRules.noLoot.includes(id);
+  if (estado.itemRules.noLoot.includes(Number(id))) return true;
+  if (!peca || !estado.lootRegras.length) return false;
+  return Afixos.decisaoDoLoot(estado, { ...peca, id: Number(id) }).acao === 'naoColetar';
+}
+
+/** `send({t:'lootRegras', regras:[...]})` — as regras específicas do filtro, na ordem (até 12). */
+export const MAXIMO_DE_REGRAS_DE_LOOT = 12;
+export function definirRegrasDeLoot(estado, { regras }) {
+  garantir(estado);
+  if (!Array.isArray(regras)) return { ok: false, erro: 'Regras inválidas.' };
+  estado.lootRegras = regras.slice(0, MAXIMO_DE_REGRAS_DE_LOOT).map(Afixos.sanearRegraDeLoot).filter(Boolean);
+  return { ok: true };
 }
 
 /** `pouchValue` real: quanto a bolsa vale na próxima venda, linha a linha. */
@@ -295,6 +312,9 @@ export function paraCliente(estado, faltaParaVender = null) {
     pouchValue: valorDaBolsa(estado),
     itemRules: estado.itemRules,
     lootFiltro: estado.lootFiltro,
+    lootRegras: estado.lootRegras,
+    // "Com a sua configuração, isto acontece": a decisão para peças de exemplo (a mesma função da venda).
+    filtroPrevia: Afixos.previaDoFiltro(estado),
   };
 }
 
