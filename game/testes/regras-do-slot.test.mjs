@@ -285,3 +285,59 @@ test('exana vita com "só se o utamo vita já puder voltar"', () => {
   h.cooldowns = {};
   assert.equal(Acoes.disparar(e, h, PERSONAGEM, exana, null).ok, true);
 });
+
+// ---------- todas as combinações de Vida/Mana e o resto da tela ----------
+
+test('Vida/Mana: as 16 combinações (você/alvo × vida/mana × ≤/≥ × %/número)', () => {
+  const e = montar('sorcerer', [FLAME]);
+  const m = bicho(e, 2, 0, { hp: 400, maxHp: 1000, mana: 300, maxMana: 1000 });
+  e.hp = 4000; // 40%
+  e.mana = 3000; // 30%
+  const atual = { self: { hp: [4000, 40], mana: [3000, 30] }, target: { hp: [400, 40], mana: [300, 30] } };
+  for (const who of ['self', 'target'])
+    for (const stat of ['hp', 'mana'])
+      for (const percent of [true, false]) {
+        const [n, pct] = atual[who][stat];
+        if (who === 'target' && stat === 'mana') continue; // bicho real não tem mana: teste abaixo
+        const v = percent ? pct : n;
+        for (const [op, abaixo, igual, acima] of [['lte', false, true, true], ['gte', true, true, false]]) {
+          const bate = (value) => Acoes.condicoesDoSlotBatem({ conditions: [{ kind: 'stat', who, stat, op, value, percent }] }, e, m, e.hunt);
+          const nome = `${who} ${stat} ${op} ${percent ? '%' : 'nº'}`;
+          assert.equal(bate(v - 1), abaixo, `${nome} com valor abaixo`);
+          assert.equal(bate(v), igual, `${nome} no valor`);
+          assert.equal(bate(v + 1), acima, `${nome} com valor acima`);
+        }
+      }
+});
+
+test('várias condições: TODAS precisam bater', () => {
+  const e = montar('sorcerer', [FLAME]);
+  const m = bicho(e, 2, 0);
+  const c = [{ kind: 'boss', op: 'nao' }, { kind: 'perto', op: 'gte', value: 1 }, { kind: 'nome', op: 'igual', names: [m.name] }];
+  assert.equal(Acoes.condicoesDoSlotBatem({ conditions: c }, e, m, e.hunt), true);
+  e.hunt.isBoss = true;
+  assert.equal(Acoes.condicoesDoSlotBatem({ conditions: c }, e, m, e.hunt), false);
+});
+
+test('o resto da tela: prioridade (trocar), tecla, limpar o slot, conjuntos salvos', () => {
+  const e = montar('sorcerer', [FLAME, WAVE]);
+  const a = por(e, FLAME, { minMana: 20 });
+  const b = por(e, WAVE);
+  assert.equal(Acoes.trocarTecla(e, { slot: a, key: 'F1' }).ok, true);
+  assert.equal(e.hotkeys[a], 'f1');
+  assert.equal(Acoes.trocar(e, { from: a, to: b }).ok, true);
+  assert.equal(e.actions[b].id, FLAME);
+  assert.equal(e.actions[b].minMana, 20, 'a configuração vai junto');
+  assert.equal(e.hotkeys[b], 'f1', 'a tecla vai junto');
+  assert.equal(Acoes.salvarPreset(e, { name: 'caça' }).ok, true);
+  assert.equal(Acoes.definir(e, { slot: b, value: null }).ok, true);
+  assert.equal(e.actions[b], null);
+  assert.equal(Acoes.aplicarPreset(e, { name: 'caça' }).ok, true);
+  assert.equal(e.actions[b].minMana, 20, 'o conjunto devolve a configuração');
+});
+
+test('Alvo · Mana: bicho não tem mana, então a condição não bate (nem "≤")', () => {
+  const e = montar('sorcerer', [FLAME]);
+  const m = bicho(e, 2, 0);
+  for (const op of ['lte', 'gte']) assert.equal(Acoes.condicoesDoSlotBatem({ conditions: [{ kind: 'stat', who: 'target', stat: 'mana', op, value: 50, percent: true }] }, e, m, e.hunt), false);
+});

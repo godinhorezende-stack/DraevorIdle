@@ -449,6 +449,8 @@ function condicaoBate(condition, estado, alvo, hunt) {
   }
   const sujeito = condition.who === 'target' ? alvo : estado;
   if (!sujeito) return false;
+  // Bicho não tem mana: "Alvo · Mana" não bate (antes: "≤ X" batia sempre, com a mana lida como 0).
+  if (condition.stat === 'mana' && !(sujeito.maxMana > 0)) return false;
   const atual = condition.stat === 'mana' ? sujeito.mana : sujeito.hp;
   const maximo = condition.stat === 'mana' ? sujeito.maxMana : sujeito.maxHp;
   const valor = condition.percent ? (100 * (atual ?? 0)) / Math.max(1, maximo ?? 1) : (atual ?? 0);

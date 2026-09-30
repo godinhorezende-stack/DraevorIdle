@@ -2652,6 +2652,8 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
   row.append(
     select({ self: 'Você', target: 'Alvo' }, condition.who, (value) => {
       condition.who = value;
+      // Bicho não tem mana: o alvo só tem Vida.
+      if (value === 'target') condition.stat = 'hp';
       renderEditor();
     })
   );
@@ -2662,7 +2664,7 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
   const selo = icone(condition.stat === 'mana' ? 'mana' : 'vida', condition.stat === 'mana' ? 'mana' : 'vida');
   row.append(selo);
   row.append(
-    select({ hp: 'Vida', mana: 'Mana' }, condition.stat, (value) => {
+    select(condition.who === 'target' ? { hp: 'Vida' } : { hp: 'Vida', mana: 'Mana' }, condition.stat, (value) => {
       condition.stat = value;
       renderEditor();
     })
