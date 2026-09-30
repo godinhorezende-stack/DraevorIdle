@@ -4,8 +4,8 @@
   "_pontos": "Pontos de passiva = ⌊(level − levelInicial) / levelsPorPonto⌋ — a conta da árvore antiga (level 8 → 0, 10 → 1, 300 → 146).",
   "pontos": { "levelInicial": 8, "levelsPorPonto": 2 },
 
-  "_custo": "Pontos que cada TIPO de nó custa (o nó pode sobrescrever com `custo`). O início da classe é de graça e já vem alocado.",
-  "custo": { "small": 2, "notable": 4, "keystone": 8, "start": 0 },
+  "_custo": "Pontos que cada TIPO de nó custa (o nó pode sobrescrever com `custo`). O início da classe é de graça e já vem alocado. 4/8/16 (decisão do dono, 30/09): a árvore inteira custa ~1.540 pontos — enche perto do level 3000, como a antiga, e o começo não dispara.",
+  "custo": { "small": 4, "notable": 8, "keystone": 16, "start": 0 },
 
   "_respec": "Tirar um nó: ouroPorNoPorLevel × level do personagem (bolso primeiro, depois o banco). Full respec = a soma dos nós tirados. Só fora da caçada. `respecsGratis`: quantos respecs completos sem custo cada personagem tem (a migração dá 1).",
   "respec": { "ouroPorNoPorLevel": 2000, "soForaDaCacada": true },

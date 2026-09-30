@@ -15,10 +15,10 @@
   "_clusters": "`perto`: clusters vizinhos ligados pelas pontas (dá para andar pela borda sem voltar ao anel). `dominio`: defesa | dano | sustento (os vessels do Gem Atelier). `pequenos`: os efeitos dos 10 nós pequenos, em ciclo. `notaveis`: os 2 do fim de cada ramo. `keystone`: opcional, atrás do 1º notável.",
   "clusters": [
     { "id": "armour", "nome": "Armour", "angulo": -106, "raio": 1500, "dominio": "defesa", "tags": ["armour", "defesa"], "perto": ["life", "melee"],
-      "pequenos": [[{ "stat": "armour", "pct": 3 }], [{ "stat": "armour", "pct": 3 }], [{ "add": "skill_shielding", "valor": 1 }]],
+      "pequenos": [[{ "stat": "armour", "pct": 3 }], [{ "stat": "armour", "pct": 3 }], [{ "add": "skill_shielding", "valor": 2 }]],
       "notaveis": [
         { "nome": "Pele de Ferro", "efeitos": [{ "stat": "armour", "pct": 10 }, { "legado": "absorb", "valor": 0.02 }] },
-        { "nome": "Muralha", "efeitos": [{ "add": "block", "valor": 3 }, { "add": "skill_shielding", "valor": 2 }] }
+        { "nome": "Muralha", "efeitos": [{ "add": "block", "valor": 3 }, { "add": "skill_shielding", "valor": 6 }] }
       ],
       "keystone": { "nome": "Última Muralha", "descricao": "Com menos de 30% de vida, você recebe 15% menos dano.", "keystone": { "regra": "habilidade", "id": "ultimaMuralha" } } },
 
@@ -26,46 +26,46 @@
       "pequenos": [[{ "stat": "life", "pct": 3 }], [{ "stat": "life", "pct": 3 }], [{ "add": "life_regen_pct", "valor": 3 }]],
       "notaveis": [
         { "nome": "Coração Forte", "efeitos": [{ "stat": "life", "pct": 8 }, { "add": "life_regen_pct", "valor": 5 }] },
-        { "nome": "Sangue Grosso", "efeitos": [{ "stat": "life", "pct": 6 }, { "legado": "absorb", "valor": 0.02 }] }
+        { "nome": "Sangue Grosso", "efeitos": [{ "stat": "life", "pct": 6 }, { "legado": "absorb", "valor": 0.02 }, { "add": "skill_shielding", "valor": 4 }] }
       ],
       "keystone": { "nome": "Não Cai Nunca", "descricao": "Um golpe que mataria deixa você vivo, com 10% da vida. Uma vez a cada 120 segundos.", "keystone": { "regra": "habilidade", "id": "naoCaiNunca" } } },
 
     { "id": "attack_speed", "nome": "Attack Speed", "angulo": -90, "raio": 2350, "dominio": "dano", "tags": ["attack", "speed"], "perto": ["life", "armour"],
-      "pequenos": [[{ "stat": "attackSpeed", "pct": 2 }], [{ "stat": "attackSpeed", "pct": 2 }], [{ "dano": 2, "tag": "melee" }]],
+      "pequenos": [[{ "stat": "attackSpeed", "pct": 2 }], [{ "stat": "attackSpeed", "pct": 2 }], [{ "add": "skill_melee", "valor": 2 }]],
       "notaveis": [
         { "nome": "Martial Training", "efeitos": [{ "dano": 10, "tag": "melee" }, { "stat": "attackSpeed", "pct": 5 }] },
-        { "nome": "Golpes Rápidos", "efeitos": [{ "stat": "attackSpeed", "pct": 6 }, { "add": "dex", "valor": 10 }] }
+        { "nome": "Golpes Rápidos", "efeitos": [{ "stat": "attackSpeed", "pct": 6 }, { "add": "skill_melee", "valor": 4 }] }
       ],
       "keystone": { "nome": "Mil Mãos", "descricao": "Cada golpe corpo a corpo tem 15% de chance de acertar duas vezes; a segunda com metade do dano.", "keystone": { "regra": "habilidade", "id": "milMaos" } } },
 
     { "id": "physical", "nome": "Physical", "angulo": -54, "raio": 1500, "dominio": "dano", "tags": ["physical"], "perto": ["life", "ranged"],
       "pequenos": [[{ "dano": 3, "tag": "physical" }], [{ "dano": 3, "tag": "physical" }], [{ "add": "str", "valor": 5 }]],
       "notaveis": [
-        { "nome": "Força Bruta", "efeitos": [{ "dano": 10, "tag": "physical" }, { "legado": "armorPenetration", "valor": 0.05 }] },
+        { "nome": "Força Bruta", "efeitos": [{ "dano": 10, "tag": "physical" }, { "legado": "armorPenetration", "valor": 0.05 }, { "add": "skill_melee", "valor": 3 }] },
         { "nome": "Golpe Certeiro", "efeitos": [{ "dano": 6, "tag": "physical" }, { "add": "crit_dmg", "valor": 8 }] }
       ],
       "keystone": { "nome": "Vazio Pleno", "descricao": "Com a vida acima de 90%, você bate 5% mais forte.", "keystone": { "regra": "habilidade", "id": "vazioPleno" } } },
 
     { "id": "ranged", "nome": "Ranged", "angulo": -32, "raio": 1500, "dominio": "dano", "tags": ["ranged", "projectile"], "perto": ["physical", "accuracy"],
-      "pequenos": [[{ "dano": 3, "tag": "ranged" }], [{ "dano": 3, "tag": "projectile" }], [{ "add": "skill_distance", "valor": 1 }]],
+      "pequenos": [[{ "dano": 3, "tag": "ranged" }], [{ "dano": 3, "tag": "projectile" }], [{ "add": "skill_distance", "valor": 2 }]],
       "notaveis": [
-        { "nome": "Olho de Falcão", "efeitos": [{ "dano": 10, "tag": "ranged" }, { "add": "skill_distance", "valor": 2 }] },
+        { "nome": "Olho de Falcão", "efeitos": [{ "dano": 10, "tag": "ranged" }, { "add": "skill_distance", "valor": 6 }] },
         { "nome": "Flecha que Atravessa", "efeitos": [{ "dano": 6, "tag": "projectile" }, { "legado": "flechaAtravessa", "valor": 0.1 }] }
       ],
       "keystone": { "nome": "Chuva de Flechas", "descricao": "A cada 6 tiros da arma, o próximo acerta também os bichos em volta do alvo, com 50% do dano.", "keystone": { "regra": "habilidade", "id": "chuvaDeFlechas" } } },
 
     { "id": "accuracy", "nome": "Accuracy", "angulo": -4, "raio": 1500, "dominio": "dano", "tags": ["accuracy"], "perto": ["ranged", "holy", "critical"],
-      "pequenos": [[{ "stat": "accuracy", "pct": 4 }], [{ "add": "dex", "valor": 5 }], [{ "stat": "accuracy", "pct": 4 }]],
+      "pequenos": [[{ "stat": "accuracy", "pct": 4 }], [{ "add": "skill_distance", "valor": 2 }], [{ "stat": "accuracy", "pct": 4 }]],
       "notaveis": [
         { "nome": "Mira Perfeita", "efeitos": [{ "stat": "accuracy", "pct": 12 }, { "add": "crit_chance", "valor": 1 }] },
-        { "nome": "Paciência do Caçador", "efeitos": [{ "dano": 6, "tag": "ranged" }, { "add": "dmg_vs_boss", "valor": 6 }] }
+        { "nome": "Paciência do Caçador", "efeitos": [{ "dano": 6, "tag": "ranged" }, { "add": "dmg_vs_boss", "valor": 6 }, { "add": "skill_distance", "valor": 4 }] }
       ],
       "keystone": { "nome": "Arqueiro Arcano", "descricao": "Parte da INT vira dano à distância: cada 10 de INT dá +1% de dano em skill/golpe Ranged.", "keystone": { "regra": "atributoParaTag", "atributo": "int", "tag": "ranged", "porPonto": 0.1 } } },
 
     { "id": "critical", "nome": "Critical", "angulo": -18, "raio": 2350, "dominio": "dano", "tags": ["critical"], "perto": ["accuracy", "physical"],
       "pequenos": [[{ "add": "crit_chance", "valor": 0.5 }], [{ "add": "crit_dmg", "valor": 3 }], [{ "add": "crit_chance", "valor": 0.5 }]],
       "notaveis": [
-        { "nome": "Ponto Fraco", "efeitos": [{ "add": "crit_chance", "valor": 2 }, { "add": "crit_dmg", "valor": 8 }] },
+        { "nome": "Ponto Fraco", "efeitos": [{ "add": "crit_chance", "valor": 2 }, { "add": "crit_dmg", "valor": 8 }, { "add": "skill_distance", "valor": 3 }] },
         { "nome": "Execução", "efeitos": [{ "add": "crit_dmg", "valor": 12 }] }
       ],
       "keystone": { "nome": "Julgamento", "descricao": "O crítico ignora a resistência elemental do bicho.", "keystone": { "regra": "habilidade", "id": "julgamento" } } },
@@ -81,7 +81,7 @@
     { "id": "ice", "nome": "Ice", "angulo": 40, "raio": 1500, "dominio": "dano", "tags": ["ice", "spell"], "perto": ["holy", "healing"],
       "pequenos": [[{ "dano": 3, "tag": "ice" }], [{ "dano": 3, "tag": "ice" }], [{ "add": "int", "valor": 5 }]],
       "notaveis": [
-        { "nome": "Coração de Gelo", "efeitos": [{ "dano": 12, "tag": "ice" }] },
+        { "nome": "Coração de Gelo", "efeitos": [{ "dano": 12, "tag": "ice" }, { "add": "skill_magic", "valor": 2 }] },
         { "nome": "Frio Cortante", "efeitos": [{ "dano": 6, "tag": "ice" }, { "add": "crit_chance", "valor": 1 }] }
       ],
       "keystone": { "nome": "Inverno Sem Fim", "descricao": "Magia de gelo deixa o bicho recebendo 10% mais dano de todos, por 4 segundos.", "keystone": { "regra": "habilidade", "id": "invernoSemFim" } } },
@@ -97,23 +97,23 @@
     { "id": "earth", "nome": "Earth", "angulo": 68, "raio": 1500, "dominio": "dano", "tags": ["earth", "spell"], "perto": ["healing", "spell"],
       "pequenos": [[{ "dano": 3, "tag": "earth" }], [{ "dano": 3, "tag": "earth" }], [{ "add": "int", "valor": 5 }]],
       "notaveis": [
-        { "nome": "Força da Terra", "efeitos": [{ "dano": 12, "tag": "earth" }] },
+        { "nome": "Força da Terra", "efeitos": [{ "dano": 12, "tag": "earth" }, { "add": "skill_magic", "valor": 2 }] },
         { "nome": "Raízes Profundas", "efeitos": [{ "dano": 6, "tag": "earth" }, { "stat": "life", "pct": 4 }] }
       ],
       "keystone": { "nome": "Raiz Venenosa", "descricao": "Magia de terra tem 25% de chance de envenenar o bicho com 30% do dano, ao longo de 5 segundos.", "keystone": { "regra": "habilidade", "id": "raizVenenosa" } } },
 
     { "id": "spell", "nome": "Spell", "angulo": 90, "raio": 1500, "dominio": "dano", "tags": ["spell"], "perto": ["earth", "fire", "cast_speed"],
-      "pequenos": [[{ "dano": 3, "tag": "spell" }], [{ "add": "skill_magic", "valor": 1 }], [{ "dano": 3, "tag": "spell" }]],
+      "pequenos": [[{ "dano": 3, "tag": "spell" }], [{ "add": "skill_magic", "valor": 2 }], [{ "dano": 3, "tag": "spell" }]],
       "notaveis": [
         { "nome": "Arcane Mind", "efeitos": [{ "add": "mana", "valor": 150 }, { "dano": 10, "tag": "spell" }] },
-        { "nome": "Erudito", "efeitos": [{ "add": "skill_magic", "valor": 2 }, { "dano": 6, "tag": "area" }] }
+        { "nome": "Erudito", "efeitos": [{ "add": "skill_magic", "valor": 6 }, { "dano": 6, "tag": "area" }] }
       ],
       "keystone": { "nome": "Avatar do Fogo", "descricao": "50% do dano físico do golpe da arma sai como fogo.", "keystone": { "regra": "conversao", "de": "physical", "para": "fire", "pct": 50 } } },
 
     { "id": "cast_speed", "nome": "Cast Speed", "angulo": 90, "raio": 2350, "dominio": "dano", "tags": ["spell", "speed"], "perto": ["spell"],
-      "pequenos": [[{ "stat": "castSpeed", "pct": 2 }], [{ "add": "cooldown_recovery", "valor": 2 }], [{ "stat": "castSpeed", "pct": 2 }]],
+      "pequenos": [[{ "stat": "castSpeed", "pct": 2 }], [{ "add": "skill_magic", "valor": 2 }], [{ "stat": "castSpeed", "pct": 2 }]],
       "notaveis": [
-        { "nome": "Palavras Rápidas", "efeitos": [{ "stat": "castSpeed", "pct": 6 }, { "add": "cooldown_recovery", "valor": 4 }] },
+        { "nome": "Palavras Rápidas", "efeitos": [{ "stat": "castSpeed", "pct": 6 }, { "add": "cooldown_recovery", "valor": 6 }] },
         { "nome": "Economia Arcana", "efeitos": [{ "add": "skill_cost", "valor": 6 }, { "stat": "castSpeed", "pct": 3 }] }
       ] },
 
@@ -121,7 +121,7 @@
       "pequenos": [[{ "dano": 3, "tag": "fire" }], [{ "dano": 3, "tag": "fire" }], [{ "stat": "castSpeed", "pct": 1 }]],
       "notaveis": [
         { "nome": "Fire Adept", "efeitos": [{ "dano": 15, "tag": "fire" }, { "stat": "castSpeed", "pct": 5 }] },
-        { "nome": "Chama Viva", "efeitos": [{ "dano": 8, "tag": "fire" }, { "dano": 4, "tag": "area" }] }
+        { "nome": "Chama Viva", "efeitos": [{ "dano": 8, "tag": "fire" }, { "dano": 4, "tag": "area" }, { "add": "skill_magic", "valor": 2 }] }
       ],
       "keystone": { "nome": "Cataclismo", "descricao": "Cada magia de fogo tem 25% de chance de acertar de novo, com metade do dano.", "keystone": { "regra": "habilidade", "id": "cataclismo" } } },
 
@@ -172,9 +172,9 @@
       "keystone": { "nome": "Vento que Volta", "descricao": "Cada golpe bloqueado ou esquivado devolve 2% da sua mana máxima.", "keystone": { "regra": "habilidade", "id": "ventoQueVolta" } } },
 
     { "id": "melee", "nome": "Melee", "angulo": 234, "raio": 1500, "dominio": "dano", "tags": ["melee"], "perto": ["evasion", "armour"],
-      "pequenos": [[{ "dano": 3, "tag": "melee" }], [{ "add": "skill_melee", "valor": 1 }], [{ "dano": 3, "tag": "melee" }]],
+      "pequenos": [[{ "dano": 3, "tag": "melee" }], [{ "add": "skill_melee", "valor": 2 }], [{ "dano": 3, "tag": "melee" }]],
       "notaveis": [
-        { "nome": "Mestre de Armas", "efeitos": [{ "dano": 8, "tag": "melee" }, { "add": "skill_melee", "valor": 2 }] },
+        { "nome": "Mestre de Armas", "efeitos": [{ "dano": 8, "tag": "melee" }, { "add": "skill_melee", "valor": 6 }] },
         { "nome": "Fúria", "efeitos": [{ "legado": "attackDamage", "valor": 0.04 }, { "stat": "attackSpeed", "pct": 3 }] }
       ],
       "keystone": { "nome": "Sede de Sangue", "descricao": "Cada bicho que você mata dá +5% de dano por 6 segundos, acumulando até 3 vezes.", "keystone": { "regra": "habilidade", "id": "sedeDeSangue" } } }

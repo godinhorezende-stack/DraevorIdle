@@ -1178,7 +1178,7 @@
    "efeitos": [
     {
      "add": "skill_shielding",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -1254,7 +1254,7 @@
    "efeitos": [
     {
      "add": "skill_shielding",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -1330,7 +1330,7 @@
    "efeitos": [
     {
      "add": "skill_shielding",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -1390,7 +1390,7 @@
     },
     {
      "add": "skill_shielding",
-     "valor": 2
+     "valor": 6
     }
    ],
    "tags": [
@@ -1702,6 +1702,10 @@
     {
      "legado": "absorb",
      "valor": 0.02
+    },
+    {
+     "add": "skill_shielding",
+     "valor": 4
     }
    ],
    "tags": [
@@ -1800,8 +1804,8 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 2,
-     "tag": "melee"
+     "add": "skill_melee",
+     "valor": 2
     }
    ],
    "tags": [
@@ -1876,8 +1880,8 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 2,
-     "tag": "melee"
+     "add": "skill_melee",
+     "valor": 2
     }
    ],
    "tags": [
@@ -1951,8 +1955,8 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 2,
-     "tag": "melee"
+     "add": "skill_melee",
+     "valor": 2
     }
    ],
    "tags": [
@@ -2009,8 +2013,8 @@
      "pct": 6
     },
     {
-     "add": "dex",
-     "valor": 10
+     "add": "skill_melee",
+     "valor": 4
     }
    ],
    "tags": [
@@ -2285,6 +2289,10 @@
     {
      "legado": "armorPenetration",
      "valor": 0.05
+    },
+    {
+     "add": "skill_melee",
+     "valor": 3
     }
    ],
    "tags": [
@@ -2409,7 +2417,7 @@
    "efeitos": [
     {
      "add": "skill_distance",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -2485,7 +2493,7 @@
    "efeitos": [
     {
      "add": "skill_distance",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -2561,7 +2569,7 @@
    "efeitos": [
     {
      "add": "skill_distance",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -2591,7 +2599,7 @@
     },
     {
      "add": "skill_distance",
-     "valor": 2
+     "valor": 6
     }
    ],
    "tags": [
@@ -2692,8 +2700,8 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "add": "dex",
-     "valor": 5
+     "add": "skill_distance",
+     "valor": 2
     }
    ],
    "tags": [
@@ -2765,8 +2773,8 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "add": "dex",
-     "valor": 5
+     "add": "skill_distance",
+     "valor": 2
     }
    ],
    "tags": [
@@ -2839,8 +2847,8 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "add": "dex",
-     "valor": 5
+     "add": "skill_distance",
+     "valor": 2
     }
    ],
    "tags": [
@@ -2922,6 +2930,10 @@
     {
      "add": "dmg_vs_boss",
      "valor": 6
+    },
+    {
+     "add": "skill_distance",
+     "valor": 4
     }
    ],
    "tags": [
@@ -3193,6 +3205,10 @@
     {
      "add": "crit_dmg",
      "valor": 8
+    },
+    {
+     "add": "skill_distance",
+     "valor": 3
     }
    ],
    "tags": [
@@ -3787,6 +3803,10 @@
     {
      "dano": 12,
      "tag": "ice"
+    },
+    {
+     "add": "skill_magic",
+     "valor": 2
     }
    ],
    "tags": [
@@ -4386,6 +4406,10 @@
     {
      "dano": 12,
      "tag": "earth"
+    },
+    {
+     "add": "skill_magic",
+     "valor": 2
     }
    ],
    "tags": [
@@ -4488,7 +4512,7 @@
    "efeitos": [
     {
      "add": "skill_magic",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -4561,7 +4585,7 @@
    "efeitos": [
     {
      "add": "skill_magic",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -4635,7 +4659,7 @@
    "efeitos": [
     {
      "add": "skill_magic",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -4712,7 +4736,7 @@
    "efeitos": [
     {
      "add": "skill_magic",
-     "valor": 2
+     "valor": 6
     },
     {
      "dano": 6,
@@ -4789,7 +4813,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "add": "cooldown_recovery",
+     "add": "skill_magic",
      "valor": 2
     }
    ],
@@ -4865,7 +4889,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "add": "cooldown_recovery",
+     "add": "skill_magic",
      "valor": 2
     }
    ],
@@ -4940,7 +4964,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "add": "cooldown_recovery",
+     "add": "skill_magic",
      "valor": 2
     }
    ],
@@ -4995,7 +5019,7 @@
     },
     {
      "add": "cooldown_recovery",
-     "valor": 4
+     "valor": 6
     }
    ],
    "tags": [
@@ -5309,6 +5333,10 @@
     {
      "dano": 4,
      "tag": "area"
+    },
+    {
+     "add": "skill_magic",
+     "valor": 2
     }
    ],
    "tags": [
@@ -7145,7 +7173,7 @@
    "efeitos": [
     {
      "add": "skill_melee",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -7218,7 +7246,7 @@
    "efeitos": [
     {
      "add": "skill_melee",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -7291,7 +7319,7 @@
    "efeitos": [
     {
      "add": "skill_melee",
-     "valor": 1
+     "valor": 2
     }
    ],
    "tags": [
@@ -7344,7 +7372,7 @@
     },
     {
      "add": "skill_melee",
-     "valor": 2
+     "valor": 6
     }
    ],
    "tags": [
