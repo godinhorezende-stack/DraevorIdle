@@ -71,6 +71,7 @@ import * as Defesa from '../systems/personagem/defesa.mjs';
 import * as Anuncios from '../systems/anuncios.mjs';
 import * as Presentes from '../systems/presentes.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
+import * as RegrasDeUso from '../systems/skills/regras-de-uso.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -353,6 +354,8 @@ function characterParaCliente(personagem, estado) {
     // ficava para trás no molde — todo personagem via sempre os 22 slots
     // vazios do `character-template.json`, nunca o que de fato configurou.
     actions: estado.actions ?? CHARACTER_TEMPLATE.actions,
+    // As regras de uso automático por tag (etapa 5): a tela lista e edita.
+    regrasDeUso: estado.regrasDeUso ?? [],
     hotkeys: estado.hotkeys ?? CHARACTER_TEMPLATE.hotkeys,
     actionPresets: estado.actionPresets ?? [],
     settings: { ...CHARACTER_TEMPLATE.settings, ...(estado.settings ?? {}) },
@@ -1052,6 +1055,10 @@ export class Sessao {
         return this.falarComNpc(m);
       case 'npcComprar':
         return this.comprarNoNpc(m);
+      // `send({t:'regrasDeUso', regras:[...]})` — as regras de uso automático por tag (limpas no servidor).
+      case 'regrasDeUso':
+        this.estado.regrasDeUso = RegrasDeUso.sanear(m.regras);
+        return this.aplicar({ ok: true, notice: `${this.estado.regrasDeUso.length} regra(s) de uso salvas.` });
       case 'prey':
         return this.aplicar(Prey.comando(this.estado, m));
       case 'arvore':

@@ -30,6 +30,7 @@
 // arquivo só decide a ORDEM em que os slots são tentados.
 import * as Acoes from './acoes.mjs';
 import * as R from './regras.mjs';
+import * as RegrasDeUso from './skills/regras-de-uso.mjs';
 
 /** Os índices da barra que são da fileira de ataque, em ordem (11..21). */
 export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === 'attack' ? i : -1)).filter((i) => i >= 0);
@@ -83,8 +84,21 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
   // A mesma trava de sempre: juntando bichos, a fileira de ataque espera.
   if (hunt.lurando) return [];
 
-  for (let passo = 0; passo < total; passo++) {
-    const posicao = (inicio + passo) % total;
+  // A ordem da volta: o rodízio a partir do cursor — e, com REGRAS DE USO ativas
+  // (`regras-de-uso.mjs`), só as skills que elas deixam, as preferidas primeiro.
+  const regras = RegrasDeUso.ativas(estado, hunt, alvo);
+  let ordem = Array.from({ length: total }, (_, passo) => (inicio + passo) % total);
+  if (regras.length) {
+    ordem = ordem
+      .filter((posicao) => {
+        const id = acoes[SLOTS_DO_COMBO[posicao]]?.id;
+        return !id || RegrasDeUso.permitida(id, regras, { ataque: true });
+      })
+      .map((posicao, i) => ({ posicao, i, peso: RegrasDeUso.peso(acoes[SLOTS_DO_COMBO[posicao]]?.id, regras) }))
+      .sort((a, b) => b.peso - a.peso || a.i - b.i)
+      .map((x) => x.posicao);
+  }
+  for (const posicao of ordem) {
     const slot = SLOTS_DO_COMBO[posicao];
     const action = acoes[slot];
     // Vazio ou desligado: não há o que tentar (e nem o que registrar a cada tique).

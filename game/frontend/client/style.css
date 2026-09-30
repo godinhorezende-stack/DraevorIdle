@@ -27523,3 +27523,11 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .soquetes-previa .vale { color: #5fcf7f; }
 .soquetes-previa .nao-vale { color: #f07b6f; }
 .loja-npc .loja-categoria { grid-column: 1 / -1; margin: 10px 0 2px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #1ba29b; border-bottom: 1px solid #1ba29b44; padding-bottom: 2px; }
+
+/* ---- Regras de uso automático (regras-de-uso.mjs) ---- */
+.regras-lista { display: grid; gap: 6px; margin: 8px 0; }
+.regra-linha { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid #3a3326; border-radius: 4px; background: #0f1418; }
+.regra-linha .regra-numero { width: 60px; }
+.regras-prontas { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+.regra-linha select, .regra-linha input { background: #0b0f12; color: #e6e1d6; border: 1px solid #3a3326; border-radius: 3px; padding: 3px 6px; }
+.regras-atalho { margin: 6px 0; font-size: 12px; }
