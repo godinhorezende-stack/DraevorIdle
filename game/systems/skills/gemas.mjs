@@ -14,8 +14,9 @@
 //
 // Quem valida é o servidor: encaixar/tirar, a XP, o nível, o efeito na skill.
 import { readFileSync } from 'node:fs';
-import { ITEM_CATALOG, ACTION_CATALOG, ACTION_CATALOG_ALTO } from '../dados.mjs';
+import { ITEM_CATALOG, ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS } from '../dados.mjs';
 import * as Tags from './tags.mjs';
+import * as R from '../regras.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
@@ -87,6 +88,38 @@ export function bonusDoTreino(estado, def, ficha = null) {
   return ((estado.magic?.value ?? 0) + (bonus.magic ?? 0)) * D.porMagicLevel;
 }
 
+/*
+ * A CURA da gema. A efetividade de cura é a proporção entre o que esta gema
+ * curava e o que a `referencia` curava, no mesmo level (`cura.levelDaMedida`),
+ * pela curva do catálogo (a mesma reta de `danoNoLevel`, em acoes.mjs).
+ */
+const ALTO = new Map([...ACTION_CATALOG_ALTO.spells, ...ACTION_CATALOG_ALTO.runes].map((x) => [x.id, x]));
+function mediaNoLevel(e, level) {
+  const baixo = e?.damage;
+  if (!baixo) return 0;
+  const alto = ALTO.get(e.id)?.damage;
+  if (!alto) return (baixo.min + baixo.max) / 2;
+  const [l1, l2] = LEVELS_DAS_CAPTURAS;
+  const reta = (a, b) => Math.max(1, a + ((b - a) * (level - l1)) / (l2 - l1));
+  return (reta(baixo.min, alto.min) + reta(baixo.max, alto.max)) / 2;
+}
+export function efetividadeDeCuraPadrao(e) {
+  const C = CONFIG.cura;
+  const ref = ACOES.get(C.referencia);
+  return Math.round((mediaNoLevel(e, C.levelDaMedida) / Math.max(1, mediaNoLevel(ref, C.levelDaMedida))) * 1000) / 1000;
+}
+
+/** A cura BASE de uma gema de cura no `nivel` dela: `{ min, max }` — sem level do personagem nem da magia. */
+export function curaDaGema(def, nivel, raridade = 'comum') {
+  const C = CONFIG.cura;
+  const n = Math.max(1, nivel);
+  const bn = C.base * C.crescimento ** (n - 1);
+  const mult = CONFIG.raridades.multiplicador[raridade] ?? 1;
+  const v = (C.base + (bn - C.base) * mult) * (def?.efetividadeDeCura ?? 1);
+  const min = Math.max(1, Math.round(v * (1 - C.variacao)));
+  return { min, max: Math.max(min, Math.round(v * (1 + C.variacao))) };
+}
+
 const elementoDaSprite = (e) => (e?.heals ? 'healing' : e?.element === 'poison' ? 'earth' : e?.element);
 for (const [chave, itemId] of Object.entries(IDS)) {
   if (chave.startsWith('support:')) {
@@ -114,6 +147,7 @@ for (const [chave, itemId] of Object.entries(IDS)) {
     // O balanceamento do dano da skill (× no dano; `skills.json`).
     fatorDeDano: exc.fatorDeDano ?? 1,
     efetividade: exc.efetividade ?? efetividadePadrao(e),
+    ...(e.heals ? { efetividadeDeCura: exc.efetividadeDeCura ?? efetividadeDeCuraPadrao(e) } : {}),
   });
   ITEM_DA_ACAO.set(chave, itemId);
 }
@@ -136,7 +170,7 @@ for (const def of DEFS.values()) {
     spriteDe: CONFIG.sprites[def.tipo === 'support' ? 'support' : elementoDaSprite(e)] ?? CONFIG.sprites.outro,
     gemaDef: def.tipo === 'support'
       ? { tipo: 'support', id: def.id, nome: def.nome, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {}, mult: CONFIG.raridades.multiplicador }
-      : { tipo: 'ativa', acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador, levelsPorNivel: CONFIG.niveis.levelsPorNivel, ...(e?.damage && !e.heals ? { dano: Array.from({ length: 30 }, (_, i) => { const d = danoDaGema(def, i + 1); return [d.min, d.max]; }) } : {}) },
+      : { tipo: 'ativa', acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador, levelsPorNivel: CONFIG.niveis.levelsPorNivel, nivelMaximo: CONFIG.niveis.maximo, ...(e?.damage && !e.heals ? { dano: Array.from({ length: 30 }, (_, i) => { const d = danoDaGema(def, i + 1); return [d.min, d.max]; }) } : {}), ...(e?.heals ? { cura: Array.from({ length: 30 }, (_, i) => { const d = curaDaGema(def, i + 1); return [d.min, d.max]; }) } : {}) },
     sell: 0,
   };
 }
@@ -163,14 +197,14 @@ export const ehGema = (id) => DEFS.has(Number(id));
 // ---------------------------------------------------------------- níveis e XP
 
 const N = CONFIG.niveis;
-/**
- * A XP para sair do nível `nivel` (sem teto): fácil até `faceis`, depois cada
- * nível pede `crescimento` × o anterior.
- */
+/** A XP para sair do nível `nivel`: pelas faixas de `config.niveis` (fácil, normal, difícil). */
 export function xpParaSubir(nivel) {
   const n = Math.max(1, Math.floor(nivel));
-  const facil = Math.min(n, N.faceis) - 1;
-  return Math.round(N.xpBase * N.crescimentoFacil ** facil * N.crescimento ** Math.max(0, n - N.faceis));
+  const levelDe = (k) => 1 + (k - 1) * N.levelsPorNivel;
+  // A exp que o personagem ganha do level do nível n ao do n+1, × a parte da faixa (fácil, normal, difícil).
+  const doPersonagem = R.expForLevel(levelDe(n + 1)) - R.expForLevel(levelDe(n));
+  const faixa = N.faixas.find((f) => n < f.ate) ?? N.faixas.at(-1);
+  return Math.max(1, Math.round(doPersonagem * faixa.parteDaExpDoPersonagem));
 }
 /** O level do personagem que o nível `nivel` da gema pede. */
 export const levelNecessario = (def, nivel) => (def?.levelMinimo ?? 1) + (Math.max(1, nivel) - 1) * N.levelsPorNivel;
@@ -319,12 +353,10 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   if (!a) return null;
   const e = { nivel: a.nivel, danoPct: 0, curaPct: 0, castTimePct: 0, custoPct: 0, recargaPct: 0, critChance: 0, critDano: 0, alvosExtras: 0, danoDosExtrasPct: 0, supports: [] };
   // A raridade multiplica o bônus por nível da ativa e o efeito inteiro da support.
-  // O DANO sobe pela tabela da gema (`danoDaGema`); a CURA ainda pela progressão por nível.
-  const acima = (a.nivel - 1) * multiplicadorDaRaridade(a.raridade);
-  e.curaPct += (a.def.progressao?.cura ?? 0) * acima;
+  // O dano e a cura sobem pela tabela da gema (`danoDaGema`, `curaDaGema`), não por % de nível.
   // A qualidade: +danoPorPonto% por 1% (separada do nível e da raridade).
   if (a.def.progressao?.dano) e.danoPct += a.qualidade * Q.danoPorPonto;
-  if (a.def.progressao?.cura) e.curaPct += a.qualidade * Q.danoPorPonto;
+  if (a.def.efetividadeDeCura) e.curaPct += a.qualidade * Q.danoPorPonto;
   e.raridade = a.raridade;
   e.qualidade = a.qualidade;
   e.fatorDeDano = a.def.fatorDeDano ?? 1;

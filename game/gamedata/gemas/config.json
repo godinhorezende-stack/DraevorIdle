@@ -18,15 +18,18 @@
   },
 
   "niveis": {
-    "_nota": "Nível da gema (modelo Path of Exile, decisão do dono 30/09): começa SEMPRE no 1 e sobe por XP até `maximo` (20). Acima disso, só com bônus de item/modificador (+N ao nível das gemas encaixadas: 21+, sem teto). A XP para sair do nível N: `xpBase × crescimentoFacil^(N−1)` até o nível `faceis` ('até 5 fica fácil'); dali em diante cada nível pede `crescimento` × o anterior. A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Subir para o nível N pede o personagem no level `levelMinimoDaSkill + (N−1) × levelsPorNivel` (a XP continua guardada até lá).",
-    "maximo": 20,
-    "faceis": 5,
-    "xpBase": 400,
-    "crescimentoFacil": 1.2,
-    "crescimento": 1.3,
+    "_nota": "Nível da gema (decisão do dono, 30/09): começa SEMPRE no 1 e sobe por XP até `maximo` (30); acima disso, só com o add '+N ao nível das gemas encaixadas' das peças. A XP para sair do nível N é uma fração da exp que o PERSONAGEM ganha nos `levelsPorNivel` levels que aquele nível pede (do level de N ao level de N+1): `parteDaExpDoPersonagem` da faixa — 1–10 fácil (a gema sobe antes de o level liberar), 10–20 normal (no ritmo do personagem), 20–30 difícil (bem mais lento). A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Subir para o nível N pede o personagem no level `1 + (N−1) × levelsPorNivel` (as skills não têm mais level próprio).",
+    "maximo": 30,
+    "faixas": [
+      { "nome": "fácil", "ate": 10, "parteDaExpDoPersonagem": 0.3 },
+      { "nome": "normal", "ate": 20, "parteDaExpDoPersonagem": 1 },
+      { "nome": "difícil", "ate": 30, "parteDaExpDoPersonagem": 3 }
+    ],
     "parteDaExp": 1,
     "levelsPorNivel": 8
   },
+
+
 
 
   "dano": {
@@ -41,6 +44,15 @@
     "areaGrande": 0.65,
     "cadeia": 0.85,
     "runa": 0.8
+  },
+
+  "cura": {
+    "_nota": "A CURA também vem da GEMA (decisão do dono, 30/09), não do level. Tabela por nível: `base × crescimento^(N−1)` (a raridade multiplica só o que cresce acima do nível 1), × a EFETIVIDADE DE CURA da gema, ±`variacao`. A efetividade é quanto a gema curava em relação à `referencia` (Intense Healing) no mesmo level (`levelDaMedida`) antes da mudança — mantém o papel de cada uma (Magic Patch barata e fraca, Salvation cara e forte). Pode ser trocada por gema em skills.json (`efetividadeDeCura`). A tabela segue a Intense Healing: nível 1 ≈ a dela no level 1–9, nível 20 ≈ a dela no level 153. O personagem entra em %: magic level (`dano.porMagicLevel`), afixo Cura de magia, árvore.",
+    "base": 26,
+    "crescimento": 1.0804,
+    "variacao": 0.2,
+    "referencia": "spell-intense-healing",
+    "levelDaMedida": 153
   },
 
   "qualidade": {

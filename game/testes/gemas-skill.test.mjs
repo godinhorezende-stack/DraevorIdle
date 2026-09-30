@@ -202,11 +202,11 @@ test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes;
   e.level = 200;
   G.ganharXp(e, 1);
   assert.ok(g.nivel > G.nivelPermitido(def, 30), 'o personagem subiu: a gema também');
-  // Por XP, para no 20 (modelo Path of Exile); acima, só bônus de item.
+  // Por XP, para no 30 (decisão do dono); acima, só bônus de item.
   e.level = 5000;
   for (let i = 0; i < 40; i++) G.ganharXp(e, 1e15);
   assert.equal(g.nivel, G.CONFIG.niveis.maximo);
-  assert.equal(G.CONFIG.niveis.maximo, 20);
+  assert.equal(G.CONFIG.niveis.maximo, 30);
 });
 
 test('o nível da gema aumenta o dano da skill (a tabela por nível da gema, não o level)', () => {
@@ -441,15 +441,17 @@ test('gema que cai de bicho: nível 1 e raridade sorteada pelos pesos (a loja n�
   assert.ok(cont.comum > cont.incomum && cont.incomum > cont.raro && cont.raro > (cont['épico'] ?? 0));
 });
 
-test('curva de XP: fácil até o nível 5, depois cada nível pede mais', () => {
+test('curva de XP: 1–10 fácil, 10–20 normal, 20–30 difícil (fração da exp do personagem no mesmo trecho)', async () => {
+  const R = await import('../systems/regras.mjs');
   const N = G.CONFIG.niveis;
-  assert.equal(G.xpParaSubir(1), N.xpBase);
-  const passo = (n) => G.xpParaSubir(n + 1) / G.xpParaSubir(n);
-  assert.ok(Math.abs(passo(2) - N.crescimentoFacil) < 0.01, 'até o 5: o passo fácil');
-  assert.ok(Math.abs(passo(8) - N.crescimento) < 0.01, 'do 5 em diante: o passo difícil');
-  assert.ok(passo(8) > passo(2), 'depois do 5 fica mais difícil');
-  assert.ok(G.xpParaSubir(100) > G.xpParaSubir(99));
-  assert.ok(Number.isFinite(G.xpParaSubir(500)));
+  const trecho = (n) => R.expForLevel(1 + n * N.levelsPorNivel) - R.expForLevel(1 + (n - 1) * N.levelsPorNivel);
+  const parte = (n) => G.xpParaSubir(n) / trecho(n);
+  const [facil, normal, dificil] = N.faixas.map((f) => f.parteDaExpDoPersonagem);
+  assert.ok(Math.abs(parte(3) - facil) < 0.001, '1–10: fácil');
+  assert.ok(Math.abs(parte(14) - normal) < 0.001, '10–20: normal');
+  assert.ok(Math.abs(parte(25) - dificil) < 0.001, '20–30: difícil');
+  assert.ok(facil < normal && normal < dificil);
+  assert.ok(G.xpParaSubir(29) > G.xpParaSubir(28));
 });
 
 // ---------------------------------------------------------------- modelo Path of Exile: 20 + qualidade + nível de item
@@ -476,18 +478,18 @@ test('Lapidadora: sobe a qualidade (até 20%) da gema na mochila ou no socket, e
   assert.match(G.lapidar(e, { de: 0 }).erro, /não tem Lapidadora/);
 });
 
-test('nível 21+: o add "+N ao nível das gemas" da peça soma no nível de todas as gemas dela', () => {
+test('nível 31+: o add "+N ao nível das gemas" da peça soma no nível de todas as gemas dela', () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 5000 });
-  const peca = vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 20), gemaNv(SUPPORT('greater-damage'), 20)] });
+  const peca = vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 30), gemaNv(SUPPORT('greater-damage'), 30)] });
   peca.af = [{ id: 'gem_level', nivel: 3, value: 2 }];
   Ficha.invalidar(e);
   const a = G.skillsAtivas(e).get(FLAME);
-  assert.equal(a.nivel, 22);
-  assert.equal(a.nivelBase, 20);
-  assert.equal(a.supports[0].nivel, 22);
-  // Por XP a gema continua parada no 20.
+  assert.equal(a.nivel, 32);
+  assert.equal(a.nivelBase, 30);
+  assert.equal(a.supports[0].nivel, 32);
+  // Por XP a gema continua parada no 30.
   G.ganharXp(e, 1e15);
-  assert.equal(peca.soquetes.gemas[0].nivel, 20);
+  assert.equal(peca.soquetes.gemas[0].nivel, 30);
 });
 
 test('o add de nível das gemas sai pela raridade da peça (+1; épica e acima +2) e só em peça com socket', async () => {

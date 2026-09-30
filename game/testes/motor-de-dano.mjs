@@ -139,6 +139,67 @@ export function medirGema(acao, opcoes = {}) {
   });
 }
 
+/**
+ * Mede uma gema de CURA: a vida que ela devolve por uso (o personagem com a vida
+ * lá embaixo a cada uso). Mesmas opções de `medirGema`.
+ */
+export function medirCura(acao, opcoes = {}) {
+  const def = Gemas.DEFS.get(Gemas.ITEM_DA_ACAO.get(acao));
+  if (!def) throw new Error(`não há gema para "${acao}"`);
+  const { nivel = 1, raridade = 'comum', qualidade = 0, usos = 60, semente = 1 } = opcoes;
+  const classe = opcoes.classe ?? def.classeRecomendada?.find((c) => VOCACOES.includes(c)) ?? 'druid';
+  const level = Math.max(1, opcoes.level ?? Gemas.levelNecessario(def, nivel));
+  return comSemente(semente, () => {
+    const e = personagemDeTeste({ vocacao: classe, level });
+    Treino.garantir(e);
+    if (opcoes.magicLevel != null) e.magic.value = opcoes.magicLevel;
+    Afixos.sincronizarMaximos(e);
+    const arma = (e.equipment.weapon ??= { id: 3074, count: 1 });
+    const max = Math.max(1, Gemas.maximoDeSockets({ slot: 'weapon' }));
+    arma.soquetes = { abertos: max, links: Array(max - 1).fill(false), gemas: [{ ...Gemas.novaGema(def.itemId, raridade, qualidade), nivel }, ...Array(max - 1).fill(null)] };
+    Ficha.invalidar(e);
+    if (!Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok) throw new Error('não entrou na caçada de teste');
+    const h = e.hunt;
+    delete h.instancia;
+    h.respawns = [];
+    h.monstros = [];
+    e.actions = Array(Acoes.SLOTS).fill(null);
+    const slot = Acoes.PAPEL_DO_SLOT.indexOf('hp');
+    const r = Acoes.definir(e, { slot, value: { id: acao } });
+    if (!r.ok) return { erro: r.erro };
+    e.maxHp = 1e12;
+    e.maxMana = e.mana = 1e12;
+    const porUso = [];
+    let erro = null;
+    for (let i = 0; i < usos; i++) {
+      h.cooldowns = {};
+      delete h.ultimoAtaqueEm;
+      delete h.conjurando;
+      e.hp = 1;
+      e.mana = e.maxMana;
+      let d = Acoes.disparar(e, h, PERSONAGEM, slot, null);
+      if (d?.conjurando && h.conjurando) {
+        h.conjurando.fim = 0;
+        d = Acoes.concluirConjuracao(e, h, PERSONAGEM);
+      }
+      if (d?.ok === false) {
+        erro = d.motivo ?? d.erro;
+        continue;
+      }
+      if (e.hp > 1) porUso.push(e.hp - 1);
+    }
+    if (!porUso.length) return { erro: erro ?? 'sem cura' };
+    return { media: Math.round(porUso.reduce((a, b) => a + b, 0) / porUso.length), minimo: Math.min(...porUso), maximo: Math.max(...porUso), usos: porUso.length };
+  });
+}
+
+/** Todas as gemas de CURA medidas com as mesmas `opcoes`. */
+export function medirTodasAsCuras(opcoes = {}) {
+  return [...Gemas.DEFS.values()]
+    .filter((d) => d.tipo === 'ativa' && funcaoDaGema(d) === 'cura')
+    .map((d) => ({ ...fichaDaGema(d), efetividadeDeCura: d.efetividadeDeCura, ...medirCura(d.acao, opcoes) }));
+}
+
 /** A ficha de uma gema ativa para a tabela (sem medir). */
 export function fichaDaGema(def) {
   const x = entrada(def.acao) ?? {};

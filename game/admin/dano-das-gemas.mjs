@@ -8,8 +8,9 @@
 //   node game/admin/dano-das-gemas.mjs --classe knight         # força a classe
 //   node game/admin/dano-das-gemas.mjs --raridade mítico --qualidade 20
 //   node game/admin/dano-das-gemas.mjs --gema spell-flame-strike
+//   node game/admin/dano-das-gemas.mjs --cura                  # as gemas de CURA (vida por uso)
 //   node game/admin/dano-das-gemas.mjs --json > dano.json      # para comparar antes/depois
-import { contarGemas, medirTodas, medirGema, fichaDaGema } from '../testes/motor-de-dano.mjs';
+import { contarGemas, medirTodas, medirGema, fichaDaGema, medirTodasAsCuras, medirCura } from '../testes/motor-de-dano.mjs';
 import * as Gemas from '../systems/skills/gemas.mjs';
 
 const arg = (nome) => {
@@ -28,7 +29,9 @@ const opcoes = {
 };
 
 const so = arg('gema');
-const linhas = so ? [{ ...fichaDaGema(Gemas.DEFS.get(Gemas.ITEM_DA_ACAO.get(so))), ...medirGema(so, opcoes) }] : medirTodas(opcoes);
+const curas = process.argv.includes('--cura');
+const medir = curas ? medirCura : medirGema;
+const linhas = so ? [{ ...fichaDaGema(Gemas.DEFS.get(Gemas.ITEM_DA_ACAO.get(so))), ...medir(so, opcoes) }] : curas ? medirTodasAsCuras(opcoes) : medirTodas(opcoes);
 const conta = contarGemas();
 
 if (process.argv.includes('--json')) {
@@ -36,9 +39,9 @@ if (process.argv.includes('--json')) {
 } else {
   console.log(`Gemas: ${conta.total} no total — ${conta.ativas} ativas (${conta.porTipo.magia} magias, ${conta.porTipo.runa} runas) e ${conta.supports} supports.`);
   console.log(`Ativas por função: ${conta.porFuncao.ataque} de ataque, ${conta.porFuncao.cura} de cura, ${conta.porFuncao.suporte} de suporte/buff.`);
-  console.log(`Medida: gema nível ${opcoes.nivel}, ${opcoes.raridade}, ${opcoes.qualidade}% de qualidade; personagem ${opcoes.level ? `level ${opcoes.level}` : 'no level que o nível da gema pede'}${opcoes.classe ? `, ${opcoes.classe}` : ', classe recomendada'}; alvo sem resistência. Dano POR ALVO, por uso.\n`);
+  console.log(`Medida: gema nível ${opcoes.nivel}, ${opcoes.raridade}, ${opcoes.qualidade}% de qualidade; personagem ${opcoes.level ? `level ${opcoes.level}` : 'no level que o nível da gema pede'}${opcoes.classe ? `, ${opcoes.classe}` : ', classe recomendada'}; ${curas ? 'CURA por uso (vida devolvida).' : 'alvo sem resistência. Dano POR ALVO, por uso.'}\n`);
   const col = (s, n, dir = false) => (dir ? String(s).padStart(n) : String(s).padEnd(n));
-  console.log([col('Gema', 28), col('Tipo', 6), col('Elemento', 9), col('Classe', 18), col('Lv', 4, true), col('Mana', 5, true), col('Recarga', 8, true), col('Alcance', 11), col('Alvos', 5, true), col('Dano', 8, true), col('Mín–Máx', 14, true)].join(' '));
+  console.log([col('Gema', 28), col('Tipo', 6), col('Elemento', 9), col('Classe', 18), col('Lv', 4, true), col('Mana', 5, true), col('Recarga', 8, true), col('Alcance', 11), col('Alvos', 5, true), col(curas ? 'Cura' : 'Dano', 8, true), col('Mín–Máx', 14, true)].join(' '));
   for (const l of linhas.sort((a, b) => a.levelMinimo - b.levelMinimo || a.nome.localeCompare(b.nome))) {
     console.log(
       [
