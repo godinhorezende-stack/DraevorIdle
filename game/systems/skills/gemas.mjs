@@ -61,13 +61,29 @@ export function bonusDoTreino(estado, def, ficha = null) {
   return ((estado.magic?.value ?? 0) + (bonus.magic ?? 0)) * D.porMagicLevel;
 }
 
+/*
+ * ---- As CATEGORIAS de gema (como no Path of Exile; decisão do dono, 30/09) ----
+ *  - ataque:  gema de skill que causa dano;
+ *  - cura:    gema de skill que cura;
+ *  - reforco: gema de skill que não bate nem cura — buffs, posturas, auras,
+ *             escudo, velocidade, familiar, runas de campo;
+ *  - suporte: não dá skill: modifica a gema de skill LIGADA a ela.
+ */
+export const CATEGORIAS = {
+  ataque: 'Gema de Ataque',
+  cura: 'Gema de Cura',
+  reforco: 'Gema de Reforço',
+  suporte: 'Gema de Suporte',
+};
+const categoriaDaAcao = (e) => (e?.heals ? 'cura' : e?.damage ? 'ataque' : 'reforco');
+
 const elementoDaSprite = (e) => (e?.heals ? 'healing' : e?.element === 'poison' ? 'earth' : e?.element);
 for (const [chave, itemId] of Object.entries(IDS)) {
   if (chave.startsWith('support:')) {
     const id = chave.slice(8);
     const s = SUPPORTS[id];
     if (!s) continue;
-    DEFS.set(itemId, { itemId, tipo: 'support', id, nome: s.nome, levelMinimo: s.levelMinimo ?? 1, suporte: s });
+    DEFS.set(itemId, { itemId, tipo: 'support', categoria: 'suporte', id, nome: s.nome, levelMinimo: s.levelMinimo ?? 1, suporte: s });
     continue;
   }
   const e = ACOES.get(chave);
@@ -76,6 +92,7 @@ for (const [chave, itemId] of Object.entries(IDS)) {
   DEFS.set(itemId, {
     itemId,
     tipo: 'ativa',
+    categoria: categoriaDaAcao(e),
     id: chave,
     acao: chave,
     nome: e.name,
@@ -110,8 +127,8 @@ for (const def of DEFS.values()) {
     hasSprite: true,
     spriteDe: CONFIG.sprites[def.tipo === 'support' ? 'support' : elementoDaSprite(e)] ?? CONFIG.sprites.outro,
     gemaDef: def.tipo === 'support'
-      ? { tipo: 'support', id: def.id, nome: def.nome, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {}, mult: CONFIG.raridades.multiplicador }
-      : { tipo: 'ativa', acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador, nivelMaximo: CONFIG.niveis.maximo },
+      ? { tipo: 'support', categoria: 'suporte', id: def.id, nome: def.nome, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {}, mult: CONFIG.raridades.multiplicador }
+      : { tipo: 'ativa', categoria: def.categoria, acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador, nivelMaximo: CONFIG.niveis.maximo },
     sell: 0,
   };
 }
@@ -509,12 +526,16 @@ export const RARIDADES_DA_LOJA = CONFIG.loja.raridades ?? ['comum'];
  */
 export function catalogoDaLoja(estado) {
   const tenho = (id, r) => (estado.inventory ?? []).filter((p) => Number(p.id) === id && raridadeDaGema(p.raridade) === r).length;
-  const defs = [...DEFS.values()].sort((a, b) => (a.tipo === b.tipo ? a.nome.localeCompare(b.nome) : a.tipo === 'ativa' ? -1 : 1));
+  // Pela categoria (Ataque, Cura, Reforço, Suporte), e dentro dela pelo level da magia e o nome.
+  const ordem = Object.keys(CATEGORIAS);
+  const defs = [...DEFS.values()].sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
   return defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,
       chave: `${def.itemId}:${r}`,
       raridade: r,
+      categoria: def.categoria,
+      categoriaNome: CATEGORIAS[def.categoria],
       nome: `Gema: ${def.nome} (${r})${def.tipo === 'support' ? ' · support' : ''}`,
       buy: precoNaLoja(def, r),
       tenho: tenho(def.itemId, r),

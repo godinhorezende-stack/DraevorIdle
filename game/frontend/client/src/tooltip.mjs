@@ -42,6 +42,16 @@ let getItems = () => ({});
 let nodeVs = null;
 let getPersonagem = () => null;
 let getCatalogo = () => null;
+// O catálogo de AÇÕES (magias e runas, com o dano de agora): o balão da gema mostra o que a skill dela faz.
+let getCatalogoDeAcoes = () => null;
+export const usarCatalogoDeAcoes = (fn) => (getCatalogoDeAcoes = fn);
+const NOME_DA_CATEGORIA = { ataque: 'Gema de Ataque', cura: 'Gema de Cura', reforco: 'Gema de Reforço', suporte: 'Gema de Suporte' };
+const AJUDA_DA_CATEGORIA = {
+  ataque: 'Dá uma skill que causa dano.',
+  cura: 'Dá uma skill que cura.',
+  reforco: 'Dá uma skill de reforço: buff, postura, aura, escudo, velocidade ou familiar.',
+  suporte: 'Não dá skill: fortalece a gema de skill LIGADA a ela.',
+};
 
 /*
  * "7h09" / "4min" / "45s" — o tempo de uso que resta numa peça.
@@ -2401,7 +2411,9 @@ function blocoDaGema(def, gema, raridade = 'comum') {
   const nivel = gema?.nivel ?? 1;
   const qualidade = gema?.qualidade ?? 0;
   const mult = def.mult?.[raridade] ?? 1;
-  bloco.append(el('div', 'tip-gema-tipo', def.tipo === 'support' ? 'Gema de Support' : 'Gema de Skill'));
+  const categoria = def.categoria ?? (def.tipo === 'support' ? 'suporte' : 'ataque');
+  bloco.append(el('div', 'tip-gema-tipo', NOME_DA_CATEGORIA[categoria] ?? 'Gema'));
+  bloco.append(el('div', 'tip-gema-ajuda', AJUDA_DA_CATEGORIA[categoria] ?? ''));
   // Modelo Path of Exile: nível até 20 por XP (21+ só com o add da peça) e qualidade separada, até 20%.
   bloco.append(el('div', null, `Nível ${nivel} / ${def.nivelMaximo ?? 30}${gema?.xp ? ` · ${Math.floor(gema.xp).toLocaleString('pt-BR')} XP` : ''}`));
   bloco.append(el('div', null, `Qualidade: +${qualidade}%`));
@@ -2416,6 +2428,22 @@ function blocoDaGema(def, gema, raridade = 'comum') {
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
   } else {
     if (def.tags?.length) bloco.append(el('div', 'tip-gema-tags', def.tags.join(', ')));
+    // ---- O que a skill FAZ, com os números do seu personagem (o catálogo de ações do servidor) ----
+    const cat = getCatalogoDeAcoes();
+    const x = [...(cat?.spells ?? []), ...(cat?.runes ?? [])].find((a) => a.id === def.acao);
+    if (x) {
+      const faz = el('div', 'tip-gema-faz');
+      const linha = (t, c = null) => faz.append(el('div', c, t));
+      if (x.overTime && x.damage) linha(`${x.damage.min.toLocaleString('pt-BR')} de dano ao longo de ${x.overTime.rounds} rodadas`, 'tip-gema-numero');
+      else if (x.damage) linha(`${x.heals ? 'Cura' : 'Dano'} de ${x.damage.min.toLocaleString('pt-BR')} a ${x.damage.max.toLocaleString('pt-BR')}${x.element && !x.heals ? ` (${x.element})` : ''} — com o seu personagem`, 'tip-gema-numero');
+      if (x.postura) linha(x.postura);
+      if (x.desafio) linha(x.desafio);
+      const alvo = x.forma?.length ? `área de ${x.forma.length} casas` : x.cadeia ? `salta em até ${x.cadeia.targets} criaturas` : x.range ? `alcance ${x.range} sqm` : null;
+      const custo = [typeof x.mana === 'number' && x.mana ? `${x.mana} de mana` : null, x.cooldown ? `recarga ${(x.cooldown / 1000).toLocaleString('pt-BR')} s` : null, alvo].filter(Boolean).join(' · ');
+      if (custo) linha(custo);
+      if (x.levelDaMagia) linha(`Level da magia: ${x.levelDaMagia} (o dano cresce com o seu level e o seu magic level/skill)`, 'tip-gema-ajuda');
+      bloco.append(faz);
+    }
     // O dano/cura base é o da magia (level + magic level, ou melee nas físicas); a gema soma o bônus dela.
     const porNivel = def.progressao?.dano ?? def.progressao?.cura ?? 0;
     const bonus = porNivel * (nivel - 1) * mult + (porNivel ? qualidade : 0);

@@ -27522,3 +27522,4 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .soquetes-previa i { font-style: normal; opacity: .85; }
 .soquetes-previa .vale { color: #5fcf7f; }
 .soquetes-previa .nao-vale { color: #f07b6f; }
+.loja-npc .loja-categoria { grid-column: 1 / -1; margin: 10px 0 2px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #1ba29b; border-bottom: 1px solid #1ba29b44; padding-bottom: 2px; }

@@ -200,3 +200,5 @@
 :is(.tooltip, .gema-no-editor) .tip-gema-xp { height: 4px; background: #222; border-radius: 2px; margin: 3px auto; max-width: 180px; overflow: hidden; }
 :is(.tooltip, .gema-no-editor) .tip-gema-xp i { display: block; height: 100%; background: #1ba29b; }
 .gema-no-editor { margin-top: 8px; padding: 6px 8px; border: 1px solid #1ba29b55; border-radius: 4px; background: #0b1214; }
+:is(.tooltip, .gema-no-editor) .tip-gema-faz { margin: 4px 0; padding: 3px 0; border-top: 1px solid #ffffff14; border-bottom: 1px solid #ffffff14; }
+:is(.tooltip, .gema-no-editor) .tip-gema-numero { color: #e8c66a; font-weight: 600; }

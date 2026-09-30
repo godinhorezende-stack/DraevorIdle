@@ -24593,10 +24593,18 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
   if (!existe(ctx.tabs[chave])) ctx.tabs[chave] = chaveDa(linhas[0]);
 
   const lista = el('div', 'loja-npc');
+  let categoriaAnterior = null;
   for (const linha of linhas) {
+    // As categorias (a loja de gemas: Ataque, Cura, Reforço, Suporte — como no Path of Exile).
+    if (linha.categoriaNome && linha.categoria !== categoriaAnterior) {
+      categoriaAnterior = linha.categoria;
+      lista.append(el('h4', 'loja-categoria', `${linha.categoriaNome} · ${linhas.filter((l) => l.categoria === linha.categoria).length}`));
+    }
     const preco = comprando ? linha.buy : linha.sell;
     const card = el('button', 'loja-linha');
     card.type = 'button';
+    // O balão do item (a gema: o que faz, com os números do seu personagem), como em qualquer lista de itens.
+    tipFor(card, linha.id, null, null, { id: linha.id, count: 1, ...(linha.raridade ? { raridade: linha.raridade } : {}), ...(linha.categoria ? { gema: { nivel: 1, xp: 0, qualidade: 0 } } : {}) });
     if (chaveDa(linha) === ctx.tabs[chave]) card.classList.add('escolhida');
     if (linha.raridade) card.classList.add(classeDaRaridade(null, { raridade: linha.raridade }));
     card.append(itemCanvas(linha.id, 32));
