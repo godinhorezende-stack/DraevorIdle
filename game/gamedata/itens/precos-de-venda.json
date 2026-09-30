@@ -1,0 +1,15 @@
+{
+  "_nota": "PREÇO DE VENDA AO NPC para os itens que o catálogo não tem (`sell` ausente ou 0) — decisão do dono, 30/09: 387 equipamentos que caem dos bichos (o set lion L220–270, crystalline sword...) e itens como grapes nunca eram vendidos e lotavam a bolsa. Aplicado UMA vez ao carregar o catálogo (systems/itens/preco-de-venda.mjs): o item ganha `sell` e `sellCalculado: true`, e todo o jogo (venda automática, manual, baú, mercado, balão) lê o mesmo número. Item com `sell` do catálogo não muda. A raridade NÃO muda o preço (decisão do dono).",
+
+  "_fracaoDoPrecoDeCompra": "Tem preço de compra (`buy`): vende por esta fração dele — 0,25 é a razão mediana entre `sell` e `buy` dos equipamentos que têm os dois.",
+  "fracaoDoPrecoDeCompra": 0.25,
+
+  "_curva": "Equipamento sem `buy` e sem `sell`: a MEDIANA do `sell` dos equipamentos que têm preço, com level mínimo a até `janelaDeLevel` do dele (sem nenhum na janela, os mais próximos). Sem level mínimo: `semLevel`.",
+  "janelaDeLevel": 15,
+  "semLevel": 50,
+
+  "_nunca": "Nunca ganham preço (moedas, fichas, bolsas e itens de quest não se vendem ao NPC): nomes com estas palavras.",
+  "nunca": ["coin", "token", "bag you", "bag set", "scroll", "conjurer stone", "summon upgrade"],
+  "_tiposNunca": "Tipos do catálogo (`type`) que nunca ganham preço: item de quest e de domar montaria.",
+  "tiposNunca": ["quest items", "taming items"]
+}

@@ -65,6 +65,51 @@ const efeitoDaChave = (chave, v) => {
   const [tipo, k] = chave.split(':');
   return tipo === 'tag' ? { tag: k, dano: v } : tipo === 'stat' ? { stat: k, pct: v } : tipo === 'add' ? { add: k, valor: v } : { legado: k, valor: v };
 };
+
+/*
+ * ---- O TOTAL DA ÁRVORE (pedido do dono, 30/09) ----
+ * "na árvore poderia ter a bonificação do total ganhado só com a árvore": a
+ * soma dos nós alocados, agrupada, sempre à vista — e, com um nó escolhido, o
+ * que ela vira ("Fire +41% → +56%"). É a soma dos efeitos dos próprios nós (a
+ * mesma que o servidor faz em `Passivas.efeitos`); o total do personagem
+ * (classe + itens + árvore) continua na ficha.
+ */
+function somaDosNos(a, ids) {
+  const soma = new Map();
+  const keystones = [];
+  for (const id of ids) {
+    const n = a.porId.get(id);
+    if (!n) continue;
+    if (n.tipo === 'keystone') keystones.push(n);
+    for (const ef of n.efeitos) {
+      const [k, val] = chaveDoEfeito(ef);
+      if (k) soma.set(k, (soma.get(k) ?? 0) + val);
+    }
+  }
+  return { soma, keystones };
+}
+const GRUPOS_DO_TOTAL = ['Dano', 'Defesa', 'Velocidade e precisão', 'Atributos', 'Perícias', 'Sustento'];
+function grupoDaChave(chave) {
+  const [tipo, k] = chave.split(':');
+  if (tipo === 'tag') return 'Dano';
+  if (tipo === 'stat') return ['armour', 'life', 'evasion'].includes(k) ? 'Defesa' : k === 'healing' ? 'Sustento' : 'Velocidade e precisão';
+  if (tipo === 'legado') return k === 'absorb' ? 'Defesa' : 'Dano';
+  if (['str', 'dex', 'int'].includes(k)) return 'Atributos';
+  if (k.startsWith('skill_') && k !== 'skill_cost') return 'Perícias';
+  if (['crit_chance', 'crit_dmg', 'dmg_vs_boss'].includes(k)) return 'Dano';
+  if (['life', 'energy_shield', 'es_pct', 'block', 'avoid_damage'].includes(k)) return 'Defesa';
+  if (['cooldown_recovery', 'skill_cost', 'move_speed'].includes(k)) return 'Velocidade e precisão';
+  return 'Sustento';
+}
+/** `[rótulo, valor]` de uma chave somada — "Dano Fire", "+41%". */
+function rotuloEValor(chave, v) {
+  const [tipo, k] = chave.split(':');
+  if (tipo === 'tag') return [`Dano ${TAGS[k] ?? k}`, `+${num(v)}%`];
+  if (tipo === 'stat') return [STATS[k] ?? k, `+${num(v)}%`];
+  if (tipo === 'legado') return [LEGADO[k] ?? k, `+${num(v * 100)}%`];
+  const [rotulo, suf] = ADDS[k] ?? [k, ''];
+  return [rotulo, `+${num(v)}${suf}`];
+}
 const semAcento = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 // ------------------------------------------------------------ a árvore local
@@ -104,6 +149,27 @@ function caminhoAte(id) {
     }
   }
   return null;
+}
+
+/**
+ * Os nós alocados que FICAM sem `id` — tirando também os que perderiam o caminho
+ * até o início (a mesma regra do servidor: `Passivas.ilhadosSemEles`).
+ */
+function ficamSem(id) {
+  const a = arvore();
+  const v = vista();
+  const resto = new Set((v?.alocados ?? []).filter((x) => x !== id));
+  const ligados = new Set([v?.inicio]);
+  const fila = [v?.inicio];
+  while (fila.length) {
+    for (const c of a.porId.get(fila.pop())?.conexoes ?? []) {
+      if (resto.has(c) && !ligados.has(c)) {
+        ligados.add(c);
+        fila.push(c);
+      }
+    }
+  }
+  return [...resto].filter((x) => ligados.has(x));
 }
 
 /** O estado de um nó para a tela: alocado | disponivel | caminho | bloqueado. */
@@ -576,6 +642,65 @@ function montar(body) {
     ctx.send({ t: 'passivas', action: 'alocar', ids: caminho });
   }
 
+  /**
+   * O quadro "Total da árvore": os bônus somados, por grupo. `depois` (ids): a
+   * lista com a mudança em vista — cada linha mostra "agora → depois", e a que
+   * nasce ou some também. `rotuloDoDepois` diz que mudança é essa.
+   */
+  function quadroDoTotal(depois = null, rotuloDoDepois = '') {
+    const a = arvore();
+    const v = vista();
+    const agora = somaDosNos(a, v.alocados);
+    const futuro = depois ? somaDosNos(a, depois) : null;
+    const caixa = el('div', 'pas-total');
+    const cab = el('div', 'pas-total-cab');
+    cab.append(el('b', null, 'Total da árvore'), el('span', null, `${Math.max(0, v.alocados.length - 1)} nós · ${v.pontos?.usados ?? 0} pontos`));
+    caixa.append(cab);
+    if (futuro) caixa.append(el('em', 'pas-total-previa', rotuloDoDepois));
+    const chaves = [...new Set([...agora.soma.keys(), ...(futuro?.soma.keys() ?? [])])];
+    if (!chaves.length && !agora.keystones.length && !futuro?.keystones.length) {
+      caixa.append(el('p', 'pas-vazio', 'Nenhum nó alocado ainda. Clique num nó ligado ao seu início (a estrela) para começar.'));
+      return caixa;
+    }
+    for (const grupo of GRUPOS_DO_TOTAL) {
+      const doGrupo = chaves.filter((k) => grupoDaChave(k) === grupo);
+      if (!doGrupo.length) continue;
+      const bloco = el('div', 'pas-total-grupo');
+      bloco.append(el('h4', null, grupo));
+      for (const k of doGrupo) {
+        const antes = agora.soma.get(k) ?? 0;
+        const [rotulo, valorAgora] = rotuloEValor(k, antes);
+        const linha = el('div', 'pas-total-linha');
+        linha.append(el('span', null, rotulo), el('b', antes ? null : 'zero', antes ? valorAgora : '—'));
+        if (futuro) {
+          const depoisV = futuro.soma.get(k) ?? 0;
+          if (Math.abs(depoisV - antes) > 1e-9) {
+            linha.classList.add(depoisV > antes ? 'sobe' : 'cai');
+            linha.append(el('i', null, `→ ${depoisV ? rotuloEValor(k, depoisV)[1] : '—'}`));
+          }
+        }
+        bloco.append(linha);
+      }
+      caixa.append(bloco);
+    }
+    const nomes = new Set(agora.keystones.map((k) => k.id));
+    const todosKeystones = [...agora.keystones, ...(futuro?.keystones ?? []).filter((k) => !nomes.has(k.id))];
+    if (todosKeystones.length) {
+      const bloco = el('div', 'pas-total-grupo');
+      bloco.append(el('h4', null, 'Keystones'));
+      const noFuturo = new Set((futuro?.keystones ?? []).map((k) => k.id));
+      for (const k of todosKeystones) {
+        const d = el('div', 'pas-keystone');
+        if (futuro && !nomes.has(k.id)) d.classList.add('sobe');
+        if (futuro && nomes.has(k.id) && !noFuturo.has(k.id)) d.classList.add('cai');
+        d.append(el('b', null, k.nome), el('p', null, k.descricao ?? ''));
+        bloco.append(d);
+      }
+      caixa.append(bloco);
+    }
+    return caixa;
+  }
+
   function desenharInfo() {
     info.textContent = '';
     const v = vista();
@@ -606,6 +731,8 @@ function montar(body) {
       linha.append(sim, nao);
       caixa.append(linha);
       info.append(caixa);
+      const sai = new Set(t.plano.tirar);
+      info.append(quadroDoTotal(v.alocados.filter((id) => !sai.has(id)), `Sem ${n === 1 ? 'esse nó' : `esses ${n} nós`}:`));
       return;
     }
     if (selecionado) {
@@ -632,30 +759,18 @@ function montar(body) {
         linha.prepend(botao);
       }
       info.append(linha);
+      if (estado === 'alocado' && n.tipo !== 'start') {
+        const ficam = ficamSem(n.id);
+        const junto = v.alocados.length - 1 - ficam.length;
+        info.append(quadroDoTotal(ficam, junto > 0 ? `Sem este nó e os ${junto} que dependem dele:` : 'Sem este nó:'));
+      } else if (n.tipo !== 'start') {
+        const caminho = caminhoAte(n.id) ?? [];
+        info.append(caminho.length ? quadroDoTotal([...v.alocados, ...caminho], caminho.length > 1 ? `Com o caminho (${caminho.length} nós):` : 'Com este nó:') : quadroDoTotal());
+      } else info.append(quadroDoTotal());
       return;
     }
-    // Nada selecionado: o que a árvore está dando.
-    info.append(el('h3', null, 'O que a árvore dá'));
-    const soma = new Map();
-    const keystones = [];
-    for (const id of v.alocados) {
-      const n = a.porId.get(id);
-      if (!n) continue;
-      if (n.tipo === 'keystone') keystones.push(n);
-      for (const ef of n.efeitos) {
-        const [k, val] = chaveDoEfeito(ef);
-        if (k) soma.set(k, (soma.get(k) ?? 0) + val);
-      }
-    }
-    if (!soma.size && !keystones.length) info.append(el('p', 'pas-vazio', 'Nenhum nó alocado ainda. Clique num nó ligado ao seu início (a estrela) para começar.'));
-    const ul = el('ul', 'pas-efeitos');
-    for (const [k, val] of soma) ul.append(el('li', null, textoDoEfeito(efeitoDaChave(k, val))));
-    info.append(ul);
-    for (const k of keystones) {
-      const d = el('div', 'pas-keystone');
-      d.append(el('b', null, k.nome), el('p', null, k.descricao ?? ''));
-      info.append(d);
-    }
+    // Nada selecionado: o total do que a árvore está dando.
+    info.append(quadroDoTotal());
   }
 
   // A árvore já veio antes (outra abertura nesta sessão): desenha já.
