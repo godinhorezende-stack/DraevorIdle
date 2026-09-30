@@ -20,6 +20,8 @@
 // knights), então magia de mago em mago sai subestimada. Magias de suporte/
 // velocidade gastam mana, cooldown e mostram o efeito, mas ainda não aplicam
 // buff nenhum, e `overTime` (dano contínuo) não é aplicado.
+import * as Gemas from './skills/gemas.mjs';
+import * as Tags from './skills/tags.mjs';
 import { resistido } from './hunt/resistencia.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
@@ -65,24 +67,80 @@ export const COR_DO_ELEMENTO = {
   energy: '#c832ff', earth: '#7a5c2e', holy: '#ffe066',
 };
 
-const doTodos = (entry) => !entry.vocations?.length;
-
-/** Por que ESTE personagem não pode usar a entrada — o mesmo texto do original, ou null. */
+/*
+ * Por que ESTE personagem não pode usar a entrada, ou null.
+ *
+ * Nada bloqueia por classe (modelo Path of Exile, decisão do dono): a vocação
+ * do catálogo virou a CLASSE RECOMENDADA (`Tags.classeRecomendada`). Ficam o
+ * level e o magic level — o magic level baixo de um knight já é o limite
+ * natural das magias fortes de sorcerer.
+ */
 function bloqueio(entry, estado) {
-  if (!doTodos(entry) && !entry.vocations.includes(estado.vocation)) {
-    return entry.kind === 'item' ? `é de ${entry.vocations.join(', ')}` : 'outra vocação';
-  }
+  // Magia e runa vêm da GEMA encaixada numa peça vestida (modelo Path of Exile): sem ela, sem skill.
+  if (Gemas.ehSkillDeGema(entry) && !Gemas.temSkill(estado, entry.id)) return 'sem a gema';
+  // A skill de gema não tem level nem magic level próprios (decisão do dono): quem pede level é o NÍVEL da gema.
+  if (Gemas.ehSkillDeGema(entry)) return null;
   if ((entry.level ?? 0) > (estado.level ?? 0)) return `requer level ${entry.level}`;
   const ml = estado.magic?.value ?? 0;
   if ((entry.magicLevel ?? 0) > ml) return `requer magic level ${entry.magicLevel}`;
   return null;
 }
 
+/**
+ * ---- O fim da CONJURAÇÃO (chamado a cada tique da caçada) ----
+ * Chegou a hora: a skill sai (o `disparar` de novo, com `concluir`, revalidando
+ * alvo, alcance, mana). Antes disso, cancela se o alvo morreu/sumiu, se o slot
+ * mudou ou se o personagem caiu. Devolve os eventos.
+ */
+export function concluirConjuracao(estado, hunt, personagem) {
+  const c = hunt?.conjurando;
+  if (!c) return [];
+  const alvo = c.alvo != null ? hunt.monstros.find((b) => b.uid === c.alvo && b.hp > 0) ?? null : null;
+  const cancelar = (motivo) => {
+    hunt.conjurando = null;
+    return [{ t: 'castCancel', uid: 'player', quem: personagem?.nome, motivo }];
+  };
+  if ((estado.hp ?? 0) <= 0) return cancelar('morreu');
+  if (estado.actions?.[c.slot]?.id !== c.id) return cancelar('a barra mudou');
+  if (c.alvo != null && !alvo) return cancelar('o alvo sumiu');
+  if (!R.jaPode(hunt.clock ?? 0, c.fim)) return [];
+  const r = disparar(estado, hunt, personagem, c.slot, alvo, { concluir: true });
+  hunt.conjurando = null;
+  if (!r.ok) return cancelar(r.erro ?? 'não saiu');
+  return [{ t: 'castFim', uid: 'player', quem: personagem?.nome }, ...(r.eventos ?? [])];
+}
+
 /** `send({t:'actions'})` — o catálogo inteiro, como o original: cada entrada com seu `blocked`. */
 export function catalogo(estado) {
+  const ficha = Ficha.combate(estado);
+  const ativas = Gemas.skillsAtivas(estado);
+  // A gema da skill (nível, XP, supports ligadas, o efeito somado e o tempo de conjuração) — o balão mostra.
+  const daGema = (entry) => {
+    const a = ativas.get(entry.id);
+    if (!a) return null;
+    return {
+      itemId: a.itemId,
+      nivel: a.nivel,
+      xp: a.xp,
+      xpProximo: a.nivel >= Gemas.CONFIG.niveis.maximo ? 0 : Gemas.xpParaSubir(a.nivel),
+      raridade: a.raridade,
+      multiplicador: Gemas.multiplicadorDaRaridade(a.raridade),
+      supports: a.supports.map((sp) => ({ nome: sp.def.nome, nivel: sp.nivel })),
+      efeito: Gemas.efeitoNaSkill(estado, entry.id, ativas),
+      castTime: Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed, ativas),
+    };
+  };
   const comBloqueio = (entry) => ({
     ...entry,
+    ...(Gemas.ehSkillDeGema(entry) ? { gema: daGema(entry) } : {}),
+    // As tags (o que as especializações leem), a classe recomendada (não é trava) e a
+    // afinidade DESTE personagem nesta skill — a mesma conta do `disparar` (`Ficha.afinidadePara`).
+    tags: Tags.tagsDaAcao(entry),
+    classeRecomendada: Tags.classeRecomendada(entry),
+    afinidade: Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)),
     ...(entry.damage ? { damage: { ...entry.damage, ...danoNoLevel(entry, estado.level) } } : {}),
+    // Skill de gema: sem level nem magic level exigidos (qualquer um usa qualquer gema). `levelDaMagia`: o de antes, só informativo.
+    ...(Gemas.ehSkillDeGema(entry) ? { level: 1, magicLevel: 0, levelDaMagia: entry.level ?? 1 } : {}),
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
     // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
     ...(entry.cooldown ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
@@ -169,12 +227,32 @@ export function apagarPreset(estado, { name }) {
   return { ok: true };
 }
 
-/** Uma condição do slot bate com o estado atual? `kind:'stat'` (vida/mana) ou `kind:'nome'` (criatura). */
-function condicaoBate(condition, estado, alvo) {
+/** O raio de "bichos por perto" — o mesmo das magias de suporte (`SEM_BICHO_POR_PERTO`). */
+export const RAIO_DE_PERTO = 8;
+
+/**
+ * Uma condição do slot bate com o estado atual?
+ *  - `kind:'stat'` (vida/mana, sua ou do alvo);
+ *  - `kind:'nome'` (o nome da criatura mirada);
+ *  - `kind:'perto'` (quantas criaturas vivas estão a até `RAIO_DE_PERTO` sqm — "inimigos ≥ 3 → área");
+ *  - `kind:'boss'` (a hunt é a sala de um boss: `op:'sim'|'nao'`).
+ * As duas últimas olham a hunt; sem ela (fora de caçada) não batem.
+ */
+function condicaoBate(condition, estado, alvo, hunt) {
   if (condition.kind === 'nome') {
     if (!alvo) return false;
     const bate = (condition.names ?? []).includes(alvo.name);
     return condition.op === 'diferente' ? !bate : bate;
+  }
+  if (condition.kind === 'perto') {
+    if (!hunt?.pos) return false;
+    const n = (hunt.monstros ?? []).filter((b) => b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= RAIO_DE_PERTO).length;
+    const valor = Number(condition.value) || 0;
+    return condition.op === 'lte' ? n <= valor : n >= valor;
+  }
+  if (condition.kind === 'boss') {
+    if (!hunt) return false;
+    return condition.op === 'nao' ? !hunt.isBoss : !!hunt.isBoss;
   }
   const sujeito = condition.who === 'target' ? alvo : estado;
   if (!sujeito) return false;
@@ -184,8 +262,8 @@ function condicaoBate(condition, estado, alvo) {
   return condition.op === 'lte' ? valor <= condition.value : valor >= condition.value;
 }
 
-export function condicoesDoSlotBatem(action, estado, alvo) {
-  return (action.conditions ?? []).every((c) => condicaoBate(c, estado, alvo));
+export function condicoesDoSlotBatem(action, estado, alvo, hunt = null) {
+  return (action.conditions ?? []).every((c) => condicaoBate(c, estado, alvo, hunt));
 }
 
 /** Falta vida/mana suficiente para esta cura não ser jogada fora? */
@@ -342,7 +420,9 @@ export function marcarRecargaDaPocao(estado, entry) {
  * Devolve `{ok, erro?}` e, em caso de sucesso, `eventos` (mesmo formato de
  * `round()`) e `alvo` (se o golpe foi nele — quem chamou decide matar ou não).
  */
-export function disparar(estado, hunt, personagem, slot, alvo) {
+export function disparar(estado, hunt, personagem, slot, alvo, { concluir = false } = {}) {
+  // Conjurando outra skill: nada mais sai até ela terminar (ou cancelar) — ver `concluirConjuracao`.
+  if (hunt.conjurando && !concluir) return { ok: false, erro: 'Conjurando.', motivo: 'CONJURANDO' };
   const action = estado.actions?.[slot];
   if (!action?.id) return { ok: false, erro: 'Esse slot está vazio.', motivo: 'VAZIO' };
   if (action.enabled === false) return { ok: false, erro: 'Esse slot está desligado.', motivo: 'DESLIGADA' };
@@ -383,8 +463,10 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
   if (grupoQueConta && cds[grupoQueConta] && !R.jaPode(agora, cds[grupoQueConta].ate)) {
     return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN_DO_GRUPO', faltaMs: cds[grupoQueConta].ate - agora };
   }
-  // "Custo de mana das magias" da árvore (−1,8% = mais barata).
-  const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round((entry.mana ?? 0) * (1 + (Ficha.combate(estado).custoDeMana ?? 0))));
+  // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
+  const efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
+  const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round((entry.mana ?? 0) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
   if (custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
 
   const papel = entry.papeis[0];
@@ -445,12 +527,26 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
     const pode = Summon.podeInvocar(estado, hunt, hunt.ultimoTique ?? Date.now());
     if (!pode.ok) return { motivo: 'FAMILIAR', ...pode };
   }
-  if (!condicoesDoSlotBatem(action, estado, alvo)) return { ok: false, erro: 'Condição não bate.', motivo: 'CONDICAO' };
+  if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return { ok: false, erro: 'Condição não bate.', motivo: 'CONDICAO' };
   // Cura sem condição configurada não é desperdiçada: só sai se faltar pelo
   // menos a cura MÍNIMA dela (o slot novo nasce com `conditions: []` no client,
   // e sem isto a poção de vida saía a cada recarga com a vida cheia).
   if (!ataque && !(action.conditions ?? []).length && !precisaDeCura(entry, estado)) {
     return { ok: false, erro: 'Não precisa agora.', motivo: 'NAO_PRECISA' };
+  }
+
+  /*
+   * ---- CONJURAÇÃO (Cast Time da gema, decisão do dono: conjuração de verdade) ----
+   * Tudo validado: a skill começa a conjurar e só sai no fim (`concluirConjuracao`,
+   * no tique), revalidando alvo, alcance e mana. Nada é gasto ainda; durante a
+   * conjuração o personagem não bate, não anda e não lança outra coisa.
+   */
+  if (!concluir && Gemas.ehSkillDeGema(entry)) {
+    const castMs = Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed);
+    if (castMs > 0) {
+      hunt.conjurando = { slot, id: entry.id, alvo: alvo?.uid ?? null, inicio: agora, fim: agora + castMs };
+      return { ok: true, conjurando: true, eventos: [{ t: 'cast', uid: 'player', quem: personagem?.nome, skill: entry.name, ms: castMs }] };
+    }
   }
 
   /*
@@ -462,7 +558,8 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
    * de usar. Aqui: se tiver na mochila, usa a da mochila (de graça); senão,
    * paga o `cost` do bolso; sem ouro, não sai.
    */
-  if (entry.kind === 'item' || entry.kind === 'rune') {
+  // (A runa virou gema — decisão do dono: não gasta mais item nem ouro; só a poção.)
+  if (entry.kind === 'item') {
     const preco = entry.cost ?? ITEM_CATALOG[entry.itemId]?.buy ?? 0;
     const daMochila = removerItem(estado, entry.itemId, 1);
     if (!daMochila) {
@@ -499,6 +596,8 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
 
   if (!ataque) {
     // Cura: poção usa `heal`/`mana` ([min,max]); magia/runa de cura usa `damage`.
+    // A cura base é a da magia, pelo level do personagem; o magic level entra em % (abaixo).
+    const defDaCura = entry.heals ? Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id)) : null;
     const cura = entry.heals && entry.kind !== 'item' ? danoNoLevel(entry, estado.level) : null;
     const hp = entry.kind === 'item' ? entry.heal : cura ? [cura.min, cura.max] : null;
     const mp = entry.kind === 'item' ? entry.mana : null;
@@ -512,7 +611,10 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
       const daGema = Ficha.combate(estado).magiasDasGemas?.[action.id]?.cura ?? 0;
       // + o ML de bônus (+1%/ponto) na magia/runa de cura.
       const fichaDaCura = Ficha.combate(estado);
-      const cura = entry.kind === 'item' ? bruta : Arvore.aoCurarComMagia(estado, Math.round(bruta * (1 + ((fichaDaCura.curaDeMagia ?? 0) + daGema + (fichaDaCura.skillBonus?.magic ?? 0)) / 100)));
+      // + o nível da gema e o Potent Healing (`efeitoDaGema.curaPct`).
+      // Gema: o magic level (treinado + bônus) entra em % (`Gemas.bonusDoTreino`), no lugar só do ML de bônus.
+      const doTreino = defDaCura ? Gemas.bonusDoTreino(estado, defDaCura, fichaDaCura) : fichaDaCura.skillBonus?.magic ?? 0;
+      const cura = entry.kind === 'item' ? bruta : Arvore.aoCurarComMagia(estado, Math.round(bruta * (1 + ((fichaDaCura.curaDeMagia ?? 0) + daGema + doTreino + (efeitoDaGema?.curaPct ?? 0)) / 100)));
       estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + cura);
       eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: cura, color: '#00ff66' });
     }
@@ -527,6 +629,9 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
     const cor = COR_DO_ELEMENTO[entry.element] ?? COR_DO_ELEMENTO.physical;
     if (casas && entry.efeito) for (const c of casas) eventos.push({ t: 'fx', id: entry.efeito, x: c.x, y: c.y });
     else if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
+    // O dano BASE é o da magia, pelo level do personagem; o treino (ML, ou melee/distance nas físicas)
+    // entra em %, e o nível da gema, a raridade e a qualidade são bônus a mais (`efeitoDaGema.danoPct`).
+    const defDaGema = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
     const { min, max } = danoNoLevel(entry, estado.level);
     const fichaBase = Ficha.combate(estado);
     // Gemas: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
@@ -536,6 +641,11 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
     const prof = fichaBase.proficiencia;
     if (entry.kind === 'rune' && (prof.critChanceRunas || prof.critDanoRunas)) ficha = { ...ficha, critChance: ficha.critChance + prof.critChanceRunas, critMultiplier: ficha.critMultiplier + prof.critDanoRunas };
     const daPericia = entry.kind === 'spell' ? Proficiencia.daPericia(estado, prof.periciaNaMagia, fichaBase.skillBonus) : 0;
+    const doTreino = defDaGema ? Gemas.bonusDoTreino(estado, defDaGema, fichaBase) : fichaBase.skillBonus?.magic ?? 0;
+    // A gema: o crítico das supports soma na chance/dano; o nível e as supports multiplicam o dano.
+    if (efeitoDaGema?.critChance || efeitoDaGema?.critDano) ficha = { ...ficha, critChance: ficha.critChance + (efeitoDaGema.critChance ?? 0) / 100, critMultiplier: ficha.critMultiplier + (efeitoDaGema.critDano ?? 0) / 100 };
+    // O bônus da gema (nível, qualidade, supports) × o balanceamento da skill (`fatorDeDano`).
+    const fatorDaGema = (1 + (efeitoDaGema?.danoPct ?? 0) / 100) * (efeitoDaGema?.fatorDeDano ?? 1);
     let total = 0;
     const danos = [];
     for (const bicho of atingidos) {
@@ -543,13 +653,34 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
       // "Dano de magia" e "Dano de <elemento>" (afixos e árvore), na magia/runa
       // daquele elemento, + o ML de bônus (+1%/ponto; o dano do catálogo já é o
       // do ML treinado); e a resistência do bicho ao elemento dela.
-      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + (ficha.skillBonus?.magic ?? 0)) / 100;
-      const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult);
+      // + a afinidade da classe para esta skill (Fire, Spell, Melee... — pelas tags dela, `Ficha.afinidadePara`).
+      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + doTreino + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
+      const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult * fatorDaGema);
       const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;
       total += dano;
       danos.push({ bicho, dano });
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor });
+    }
+    /*
+     * ---- Multiple Projectiles (support): outros bichos ao alcance levam o projétil também ----
+     * Só na skill de alvo único; cada extra leva `danoDosExtrasPct`% do dano de um acerto normal.
+     */
+    if (efeitoDaGema?.alvosExtras > 0 && !casas && alvo) {
+      const extras = vivos
+        .filter((b) => b !== alvo && b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= (entry.range || ALCANCE_PADRAO))
+        .sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))
+        .slice(0, efeitoDaGema.alvosExtras);
+      for (const bicho of extras) {
+        const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + doTreino + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
+        const base = resistido(hunt, bicho, entry.element ?? 'physical', ((sortear(min, max) + daPericia) * mult * fatorDaGema * (efeitoDaGema.danoDosExtrasPct ?? 0)) / 100);
+        const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
+        bicho.hp -= dano;
+        total += dano;
+        danos.push({ bicho, dano });
+        if (entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x, y, tx: bicho.x, ty: bicho.y });
+        eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor });
+      }
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
@@ -559,7 +690,8 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
   // Gemas: "-Ns recarga de <magia>" (supremo), sem passar de zero.
   // "Cooldown Recovery" (add): a recarga própria anda mais rápido.
   const fichaDaRecarga = Ficha.combate(estado);
-  const recarga = Math.max(0, Math.round((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)));
+  // + o Cooldown Recovery da gema (support).
+  const recarga = Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
   cds[action.id] = { ate: agora + recarga, total: recarga };
   // O familiar: o slot mostra a espera dele (17 min no nível 0, 2 min no 100).
   if (entry.summon) cds[action.id] = { ate: agora + Summon.recarga(estado), total: Summon.recarga(estado) };

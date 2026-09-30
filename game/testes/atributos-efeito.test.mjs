@@ -16,7 +16,8 @@ import { ATRIBUTOS } from '../systems/itens/config.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { matarMonstro, round, contraAtaque } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome)?.id);
@@ -81,11 +82,29 @@ const curaDosGolpes = (cor) => (e) => {
   }
   return c;
 };
+/** A magia com a gema encaixada NO ANEL (a peça da sonda): o +N ao nível das gemas vale por peça. */
+function magiaNoAnel(id) {
+  return (e) => {
+    e.actions = Array(Acoes.SLOTS).fill(null);
+    const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+    e.equipment.ring.soquetes = { abertos: 1, links: [], gemas: [GemasDeSkill.novaGema(GemasDeSkill.ITEM_DA_ACAO.get(id))] };
+    Ficha.invalidar(e);
+    assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
+    for (let i = 0; i < 60; i++) {
+      e.hunt.cooldowns = {};
+      e.mana = e.maxMana;
+      Acoes.disparar(e, e.hunt, PERSONAGEM, slot, e.hunt.monstros[0]);
+    }
+    return 1e12 - e.hunt.monstros[0].hp;
+  };
+}
 function magia(id) {
   return (e) => {
     e.actions = Array(Acoes.SLOTS).fill(null);
     const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
-    assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
+    comSkills(e, [id]);
+    comSkills(e, [id]);
+  assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
     for (let i = 0; i < 60; i++) {
       e.hunt.cooldowns = {};
       e.mana = e.maxMana;
@@ -111,6 +130,7 @@ const recebido = (e) => {
 const recargaDaMagia = (id, qual) => (e) => {
   e.actions = Array(Acoes.SLOTS).fill(null);
   const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  comSkills(e, [id]);
   assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
   e.hunt.cooldowns = {};
   e.mana = e.maxMana;
@@ -122,6 +142,7 @@ const recargaDaMagia = (id, qual) => (e) => {
 const manaGasta = (id) => (e) => {
   e.actions = Array(Acoes.SLOTS).fill(null);
   const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  comSkills(e, [id]);
   assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
   let gasto = 0;
   for (let i = 0; i < 30; i++) {
@@ -192,6 +213,8 @@ const SONDAS = {
   cast_speed: ['sorcerer', null, cacada(), recargaDaMagia('spell-energy-strike', 'grupo'), 50, 'menos'],
   cooldown_recovery: ['sorcerer', null, cacada(), recargaDaMagia('spell-energy-strike', 'propria'), 50, 'menos'],
   skill_cost: ['sorcerer', null, cacada(), manaGasta('spell-energy-strike'), 30, 'menos'],
+  // +N ao nível das gemas encaixadas NA PEÇA: a gema do anel sobe de nível, e o dano da skill junto.
+  gem_level: ['sorcerer', null, cacada(), magiaNoAnel('spell-energy-strike'), 2, 'mais'],
   // Os elementais: no golpe da arma de um knight (que não tem nada daquele elemento).
   fire_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   energy_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
@@ -277,5 +300,9 @@ test('resistência do bicho vale na magia (troll resiste 20% a energia) e o elem
     return magia('spell-terra-strike')(e);
   });
   // Mesmo dano de catálogo (strike de 1º círculo), resistências opostas: energia +20, terra −10.
-  assert.ok(terra > energia, `terra ${terra} deveria passar energia ${energia} no troll`);
+  // (Descontado o balanceamento de cada gema — `fatorDeDano`, skills.json.)
+  const fator = (id) => GemasDeSkill.DEFS.get(GemasDeSkill.ITEM_DA_ACAO.get(id)).fatorDeDano;
+  const terraPura = terra / fator('spell-terra-strike');
+  const energiaPura = energia / fator('spell-energy-strike');
+  assert.ok(terraPura > energiaPura, `terra ${terraPura} deveria passar energia ${energiaPura} no troll`);
 });

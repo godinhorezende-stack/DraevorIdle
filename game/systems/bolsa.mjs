@@ -74,10 +74,13 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
   // A faixa de ataque/defesa/armadura que a peça sorteou no drop (`base`): sem levar junto, a peça
   // chegava na bolsa com o valor cheio do catálogo e sem "min – max".
   const base = Array.isArray(peca) ? null : peca?.base;
-  // Peça que caiu com atributo, efeito ou faixa: um quadrado só dela.
-  if (af?.length || efeito || base) {
+  // Os sockets sorteados no drop e a instância de uma gema (nível, XP).
+  const soquetes = Array.isArray(peca) ? null : peca?.soquetes;
+  const gema = Array.isArray(peca) ? null : peca?.gema;
+  // Peça que caiu com atributo, efeito, faixa, sockets ou é uma gema: um quadrado só dela.
+  if (af?.length || efeito || base || soquetes || gema) {
     if (estado.pouch.length >= VAGAS_DA_BOLSA) return 0;
-    estado.pouch.push({ id, count: 1, ...(af?.length || efeito ? { af: af ?? [] } : {}), ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(peca?.ilvl ? { ilvl: peca.ilvl } : {}), ...(base ? { base } : {}), ...(efeito ? { efeito } : {}) });
+    estado.pouch.push({ id, count: 1, ...(af?.length || efeito ? { af: af ?? [] } : {}), ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(peca?.ilvl ? { ilvl: peca.ilvl } : {}), ...(base ? { base } : {}), ...(efeito ? { efeito } : {}), ...(soquetes ? { soquetes } : {}), ...(gema ? { gema } : {}) });
     return 1;
   }
   const bolsa = estado.pouch;

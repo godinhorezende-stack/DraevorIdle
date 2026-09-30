@@ -233,12 +233,43 @@ function protecaoElemental(derived) {
  * naquele elemento. "arma" marca o elemento da própria arma/wand, e o
  * imbuement de dano elemental aparece no elemento dele.
  */
+/*
+ * ---- De onde vem cada número ----
+ * O dono: "mostrar a origem do bônus — Fire Damage: Base 100%, Equipment +25%,
+ * Specialization +15%, Total 140%". As parcelas vêm prontas do servidor
+ * (`derived.origens`, as MESMAS que a conta soma); aqui só o texto do balão.
+ */
+function textoDaOrigem(derived, chave, total, sufixo = '%') {
+  const partes = derived.origens?.[chave];
+  if (!partes?.length) return null;
+  const linhas = partes.map((p) => `${p.fonte}: ${p.valor > 0 ? '+' : ''}${porcento(p.valor)}${p.pct ? '%' : sufixo}`);
+  return `De onde vem:\n${linhas.join('\n')}\nTotal: ${total}`;
+}
+function comOrigem(card, derived, chave, total, sufixo = '%') {
+  const texto = textoDaOrigem(derived, chave, total, sufixo);
+  if (texto) card.title = texto;
+  return card;
+}
+
+const NOME_DA_TAG = {
+  physical: 'físico', fire: 'de fogo', ice: 'de gelo', earth: 'de terra', energy: 'de energia', death: 'de morte', holy: 'sagrado',
+  melee: 'corpo a corpo', ranged: 'à distância', spell: 'de magias e runas',
+};
+const NOME_DO_STAT = {
+  armour: 'Armour', life: 'Life máxima', accuracy: 'Accuracy', evasion: 'Evasion', attackSpeed: 'Attack Speed',
+  castSpeed: 'Cast Speed', moveSpeed: 'Movement Speed', healing: 'de cura',
+};
+/** "+15% de dano de fogo" — o texto de um efeito de especialização. */
+const textoDoEfeito = (ef) =>
+  ef.tag ? `+${ef.dano}% de dano ${NOME_DA_TAG[ef.tag] ?? ef.tag}` : ef.stat === 'healing' ? `+${ef.pct}% de cura` : `+${ef.pct}% ${NOME_DO_STAT[ef.stat] ?? ef.stat}`;
+
 function ataqueElemental(derived) {
   const ataques = el('div', 'element-grid');
   const daArma = derived.element?.type === 'poison' ? 'earth' : derived.element?.type;
   const doImbuement = derived.imbuElemental;
   for (const [name, key] of ELEMENTS) {
-    const value = derived.danoDoElemento?.[key] ?? 0;
+    // O dano do elemento (itens, árvore, STR no físico) + a afinidade da classe nele.
+    const value = (derived.danoDoElemento?.[key] ?? 0) + (derived.afinidades?.[key] ?? 0);
     const chip = el('div', 'element');
     const total = el('b', null, `${value > 0 ? '+' : ''}${porcento(value)}%`);
     if (value) total.style.color = 'var(--accent)';
@@ -247,10 +278,24 @@ function ataqueElemental(derived) {
     if (daArma === key) notas.push('arma');
     if (doImbuement?.tipo === key) notas.push(`imbuement ${porcento(doImbuement.pct)}%`);
     if (notas.length) chip.append(el('em', 'element-nota', notas.join(' · ')));
-    chip.title =
+    const uso =
       key === 'physical'
-        ? `Dano físico: +${porcento(value)}% no golpe da arma (STR e Physical Damage).`
-        : `Dano de ${name.toLowerCase()}: +${porcento(value)}% nas magias, runas e wand de ${name.toLowerCase()}, e ${porcento(value)}% do golpe da arma sai em ${name.toLowerCase()}.`;
+        ? `Dano físico: +${porcento(value)}% no golpe da arma e nas skills físicas.`
+        : `Dano de ${name.toLowerCase()}: +${porcento(value)}% nas skills e na wand de ${name.toLowerCase()}.`;
+    chip.title = [uso, textoDaOrigem(derived, `dano.${key}`, `+${porcento(value)}%`)].filter(Boolean).join('\n\n');
+    ataques.append(chip);
+  }
+  // E por TIPO: corpo a corpo, à distância e magias/runas (a afinidade da classe; o INT nas magias).
+  for (const [name, key, icone, valor] of [
+    ['Melee', 'melee', 'sk-melee', derived.afinidades?.melee ?? 0],
+    ['Ranged', 'ranged', 'sk-distance', derived.afinidades?.ranged ?? 0],
+    ['Spell', 'spell', 'sk-magic', (derived.afinidades?.spell ?? 0) + (derived.danoDeMagia ?? 0)],
+  ]) {
+    const chip = el('div', 'element');
+    const total = el('b', null, `${valor > 0 ? '+' : ''}${porcento(valor)}%`);
+    if (valor) total.style.color = 'var(--accent)';
+    chip.append(artOrUiIcon(icone, name), el('span', null, name), total);
+    chip.title = textoDaOrigem(derived, `dano.${key}`, `+${porcento(valor)}%`) ?? `Nenhum bônus de dano ${NOME_DA_TAG[key]} ainda.`;
     ataques.append(chip);
   }
   return ataques;
@@ -515,6 +560,24 @@ export function renderSheet(body, { state, send, closeModal }) {
   };
   const chances = derived.chancesNoLevel ?? {};
 
+  /*
+   * ---- A CLASSE e as especializações naturais ----
+   * "Classe ≠ restrição; classe = especialização natural" (o dono). Qualquer
+   * classe usa qualquer skill e equipamento (com os requisitos de atributo); as
+   * especializações dão afinidade quando a skill/golpe tem a tag delas.
+   */
+  const classe = derived.classe;
+  if (classe?.especializacoes?.length) {
+    secao(body, 'classe', `Classe: ${classe.nome}`, 'ficha-skills', [
+      el('p', 'sheet-nota', 'Especializações naturais — bônus quando você usa aquele tipo de dano, arma ou mecânica. Não bloqueiam nada: qualquer classe usa qualquer skill e equipamento.'),
+      grade(...classe.especializacoes.map((e) => {
+        const card = statCard(e.nome, (e.efeitos ?? []).map(textoDoEfeito).join(' · '), null, null, 'ficha-skills');
+        card.classList.add('especializacao');
+        return card;
+      })),
+    ]);
+  }
+
   secao(body, 'atributos', 'Atributos', 'ficha-skills', [
     grade(
       statCard('STR', at.str, `${origem('str')} · +${Math.round(ef.vida ?? 0)} vida, ${pct(ef.danoFisicoPct ?? 0)} dano físico`, null, 'ficha-dano'),
@@ -567,16 +630,16 @@ export function renderSheet(body, { state, send, closeModal }) {
       statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
       statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano`, null, 'ficha-critico'),
       // O intervalo entre golpes que a caçada usa de verdade (base 2 s, encurtado pela velocidade de ataque e pelo "Tempo entre golpes").
-      statCard(
+      comOrigem(statCard(
         'Velocidade de ataque',
         `${(derived.intervaloDoGolpeMs / 1000).toFixed(2).replace('.', ',')} s`,
         `${(1000 / derived.intervaloDoGolpeMs).toFixed(2).replace('.', ',')} golpes por segundo${derived.velocidadeDeAtaque ? ` · ${pct(derived.velocidadeDeAtaque)}` : ''}`,
         null,
         'ficha-dano'
-      ),
-      statCard('Accuracy', (derived.accuracy ?? 0).toLocaleString('pt-BR'), chances.acerto != null ? `${Math.round(chances.acerto * 100)}% de acerto num bicho do seu level` : null, null, 'ficha-alcance'),
+      ), derived, 'velocidadeDeAtaque', pct(derived.velocidadeDeAtaque ?? 0)),
+      comOrigem(statCard('Accuracy', (derived.accuracy ?? 0).toLocaleString('pt-BR'), chances.acerto != null ? `${Math.round(chances.acerto * 100)}% de acerto num bicho do seu level` : null, null, 'ficha-alcance'), derived, 'accuracy', (derived.accuracy ?? 0).toLocaleString('pt-BR'), ''),
       ...soSeTem(derived.danoDeMagia, () => statCard('Dano mágico', pct(derived.danoDeMagia), 'magias, runas e wand', null, 'ficha-dano-elemental')),
-      ...soSeTem(derived.castSpeed, () => statCard('Cast Speed', pct(derived.castSpeed), 'intervalo entre magias mais curto', null, 'ficha-velocidade')),
+      ...soSeTem(derived.castSpeed, () => comOrigem(statCard('Cast Speed', pct(derived.castSpeed), 'intervalo entre magias mais curto', null, 'ficha-velocidade'), derived, 'castSpeed', pct(derived.castSpeed))),
       ...soSeTem(derived.recuperacaoDeRecarga, () => statCard('Cooldown Recovery', pct(derived.recuperacaoDeRecarga), 'recarga das magias mais rápida', null, 'ficha-velocidade')),
       ...soSeTem(derived.custoDeMana < 0, () => statCard('Custo de magias', `${porcento(derived.custoDeMana * 100)}%`, 'mana gasta por magia', null, 'ficha-regen-mana')),
       statCard('Life leech', `${(derived.lifeLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-life-leech'),
@@ -599,8 +662,8 @@ export function renderSheet(body, { state, send, closeModal }) {
 
   secao(body, 'defensivo', 'Defensivo', 'ficha-armadura', [
     grade(
-      statCard('Armour', (derived.armor ?? 0).toLocaleString('pt-BR'), 'corta o golpe físico', null, 'ficha-armadura'),
-      statCard('Evasion', (derived.evasion ?? 0).toLocaleString('pt-BR'), chances.esquiva != null ? `${Math.round(chances.esquiva * 100)}% de esquiva do golpe de um bicho do seu level` : null, null, 'ficha-bloqueio'),
+      comOrigem(statCard('Armour', (derived.armor ?? 0).toLocaleString('pt-BR'), 'corta o golpe físico', null, 'ficha-armadura'), derived, 'armour', (derived.armor ?? 0).toLocaleString('pt-BR'), ''),
+      comOrigem(statCard('Evasion', (derived.evasion ?? 0).toLocaleString('pt-BR'), chances.esquiva != null ? `${Math.round(chances.esquiva * 100)}% de esquiva do golpe de um bicho do seu level` : null, null, 'ficha-bloqueio'), derived, 'evasion', (derived.evasion ?? 0).toLocaleString('pt-BR'), ''),
       statCard('Bloqueio', faixa(derived.blockChanceMin, derived.blockChanceMax, derived.blockChance, (v) => `${(v * 100).toFixed(0)}%`), 'apara o golpe (escudo e arma)', null, 'ficha-bloqueio'),
       ...soSeTem(derived.danoRecebidoDasGemas > 0, () => statCard('Redução de dano', `${porcento(derived.danoRecebidoDasGemas * 100)}%`, 'de todo dano recebido', null, 'ficha-armadura')),
       ...soSeTem(derived.evitarDano, () => statCard('Evitar dano', `${porcento(derived.evitarDano * 100)}%`, 'chance de ignorar um golpe ou magia', null, 'ficha-bloqueio')),

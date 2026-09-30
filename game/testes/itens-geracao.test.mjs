@@ -27,6 +27,7 @@ const ANEL = idPorNome('might ring');
 test('configuração: validada, e as faixas T1 < T2 < T3 < T4 < T5 (T1 o mais fraco)', () => {
   assert.deepEqual(C.validar(), []);
   for (const [id, a] of Object.entries(C.ATRIBUTOS)) {
+    if (a.valorPorRaridade) continue; // o valor é da raridade da peça, não do tier (o +N ao nível das gemas)
     const medias = [1, 2, 3, 4, 5].map((n) => (a.niveis[n][0] + a.niveis[n][1]) / 2);
     for (let i = 1; i < 5; i++) assert.ok(medias[i] > medias[i - 1], `${id}: T${i + 1} > T${i}`);
   }
@@ -42,6 +43,8 @@ const MODIFICADORES = [
   'armor_flat', 'armour_pct', 'evasion', 'evasion_pct', 'energy_shield', 'es_pct', 'block',
   'phys_res', 'fire_res', 'earth_res', 'energy_res', 'ice_res', 'holy_res', 'death_res',
   'move_speed', 'exp_bonus', 'gold_find', 'loot_bonus',
+  // +N ao nível das gemas encaixadas (modelo Path of Exile, o dono 30/09).
+  'gem_level',
   'dmg_vs_boss', 'dmg_vs_elite', 'dmg_vs_monsters', 'dmg_reduction', 'cooldown_recovery', 'skill_cost', 'avoid_damage',
 ];
 
@@ -102,6 +105,12 @@ test('adds: do pool do TIPO do item, sem repetir, tier liberado pelo Item Level,
           assert.ok(pool.has(a.id), `${a.id} fora do pool`);
           assert.ok(liberados.includes(a.nivel), `T${a.nivel} com Item Level ${itemLevel}`);
           assert.ok(C.ATRIBUTOS[a.id].nivelMinimo <= itemLevel, `${a.id} abaixo do nível mínimo`);
+          // Add de valor pela RARIDADE (o +N ao nível das gemas): o valor é o da tabela, não da faixa do tier.
+          const fixo = C.ATRIBUTOS[a.id].valorPorRaridade?.[p.raridade];
+          if (fixo != null) {
+            assert.equal(a.value, fixo);
+            continue;
+          }
           const [lo, hi] = C.ATRIBUTOS[a.id].niveis[a.nivel];
           assert.ok(a.value >= lo && a.value <= hi, `${a.id} T${a.nivel} = ${a.value} fora de [${lo}, ${hi}]`);
         }

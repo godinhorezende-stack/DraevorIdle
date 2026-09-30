@@ -27476,3 +27476,26 @@ html[data-perfil="retrato"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) + 36px); width: min(420px, calc(100vw - 16px)); }
 /* A linha do Global: o ✦ na cor de destaque. */
 .drop-raro { color: #c8b98a; }
+/* As especializações da classe na ficha: o efeito é uma frase, não um número grande. */
+.stat-card.especializacao b { font-size: 13px; font-weight: 500; line-height: 1.35; }
+
+/* ---- Sockets de gema da peça vestida (soquetes.mjs) ---- */
+.soquetes-fila { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0; margin: 10px 0; }
+.soquete-casa { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 2px solid #6b5a3a; background: #0d0d0d; display: inline-flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+.soquete-casa.trancado { opacity: .5; border-style: dashed; cursor: not-allowed; }
+.soquete-casa.escolhido { border-color: #e8c66a; box-shadow: 0 0 8px #e8c66a88; }
+.soquete-nivel { position: absolute; right: -2px; bottom: -2px; font-size: 10px; font-style: normal; background: #222; border: 1px solid #555; border-radius: 6px; padding: 0 3px; color: #ddd; }
+.soquete-elo { width: 16px; text-align: center; color: #444; }
+.soquete-elo.ligado { color: #d8b56a; font-weight: 700; }
+.soquetes-gemas { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; max-height: 45vh; overflow-y: auto; }
+.soquetes-gema { display: flex; align-items: center; gap: 8px; text-align: left; padding: 4px 8px; }
+.soquetes-gema b { display: block; }
+.soquetes-gema em { font-size: 11px; opacity: .75; }
+
+/* ---- Barra de conjuração (conjuracao.mjs) ---- */
+#barra-de-conjuracao { position: fixed; left: 50%; bottom: calc(118px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(260px, 70vw); height: 16px; background: #0b0b0bcc; border: 1px solid #6b5a3a; border-radius: 3px; z-index: 40; pointer-events: none; overflow: hidden; }
+#barra-de-conjuracao .conj-enche { height: 100%; width: 0; background: linear-gradient(90deg, #7a5a1c, #e8c66a); }
+#barra-de-conjuracao .conj-nome { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; text-shadow: 0 1px 2px #000; }
+#barra-de-conjuracao.cancelada .conj-enche { background: #9a2a2a; }
+#barra-de-conjuracao.concluida .conj-enche { width: 100% !important; }
+.soquetes-acoes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }

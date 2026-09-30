@@ -1,0 +1,87 @@
+{
+  "_nota": "GEMAS DE SKILL, SUPPORTS e SOCKETS (pedido do dono, 30/09) — o modelo Path of Exile: a skill vem da gema encaixada num socket de uma peça VESTIDA; supports ligados (links) à gema ativa a modificam. Lido por systems/skills/gemas.mjs. As \"gemas\" do Gem Atelier (gemas.mjs) são outra coisa (passivas do Tibia). Números iniciais.",
+
+  "sockets": {
+    "_nota": "Máximo por slot (o dono: 19 no total; Legs no lugar de Gloves). Ammo e backpack não têm.",
+    "maximo": { "weapon": 4, "head": 2, "body": 4, "shield": 3, "legs": 2, "feet": 2, "ring": 1, "neck": 1 },
+    "_drop": "Peça nova: quantos sockets vêm ABERTOS sai de `abertos` (peso por quantidade, na raridade da peça; nunca passa do máximo do slot); cada par de sockets vizinhos abertos é ligado com `chanceDeLink` da raridade. Sockets e links não contam como mod.",
+    "drop": {
+      "comum":    { "abertos": { "0": 60, "1": 30, "2": 10 },                 "chanceDeLink": 0.3 },
+      "incomum":  { "abertos": { "0": 40, "1": 35, "2": 20, "3": 5 },         "chanceDeLink": 0.4 },
+      "raro":     { "abertos": { "0": 25, "1": 35, "2": 25, "3": 12, "4": 3 }, "chanceDeLink": 0.5 },
+      "épico":    { "abertos": { "0": 15, "1": 30, "2": 30, "3": 18, "4": 7 }, "chanceDeLink": 0.6 },
+      "lendário": { "abertos": { "0": 10, "1": 25, "2": 30, "3": 23, "4": 12 }, "chanceDeLink": 0.7 },
+      "mítico":   { "abertos": { "1": 20, "2": 30, "3": 30, "4": 20 },          "chanceDeLink": 0.8 }
+    },
+    "_desbloqueio": "Preparado para o desbloqueio pago (futuro): `custoDoDesbloqueio` fica aqui quando existir; o item nunca é destruído.",
+    "custoDoDesbloqueio": null
+  },
+
+  "niveis": {
+    "_nota": "Nível da gema (decisão do dono, 30/09): começa SEMPRE no 1 e sobe por XP até `maximo` (30); acima disso, só com o add '+N ao nível das gemas encaixadas' das peças. A XP para sair do nível N é uma fração da exp que o PERSONAGEM ganha nos `levelsPorNivel` levels que aquele nível pede (do level de N ao level de N+1): `parteDaExpDoPersonagem` da faixa — 1–10 fácil (a gema sobe antes de o level liberar), 10–20 normal (no ritmo do personagem), 20–30 difícil (bem mais lento). A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Não há trava de level (decisão do dono): `levelsPorNivel` só dimensiona a XP (o trecho de levels do personagem que mede cada nível).",
+    "maximo": 30,
+    "faixas": [
+      { "nome": "fácil", "ate": 10, "parteDaExpDoPersonagem": 0.3 },
+      { "nome": "normal", "ate": 20, "parteDaExpDoPersonagem": 1 },
+      { "nome": "difícil", "ate": 30, "parteDaExpDoPersonagem": 3 }
+    ],
+    "parteDaExp": 1,
+    "levelsPorNivel": 8
+  },
+
+
+
+
+  "dano": {
+    "_nota": "O DANO e a CURA base são os da MAGIA, pelo level do personagem (a curva do catálogo) — decisão do dono, 30/09. O treino entra em %: magic level × `porMagicLevel` nas mágicas e curas; nas magias de dano físico, skill × `porSkill`: melee de perto, distance de longe (tag `ranged`). O NÍVEL da gema é um bônus a mais (`progressaoPadrao`, × a raridade), e a qualidade outro.",
+    "porMagicLevel": 0.5,
+    "porSkill": 0.5
+  },
+
+  "qualidade": {
+    "_nota": "Qualidade da gema (modelo Path of Exile, decisão do dono 30/09): 0% a `maximo`, separada do nível. Ativa: +`danoPorPonto`% de dano (e de cura) por 1% de qualidade. Support: o efeito dela × (1 + qualidade × `efeitoPorPonto`/100). A gema que cai de bicho vem com `noDrop` (sorteio uniforme); a da loja, com 0%. A LAPIDADORA (moeda nova) soma `lapidadora.ganho` (sorteio) até o máximo; cai de bicho com `chancePorAto`.",
+    "maximo": 20,
+    "danoPorPonto": 1,
+    "efeitoPorPonto": 1,
+    "noDrop": [0, 10],
+    "lapidadora": { "itemId": 912001, "nome": "lapidadora", "sprite": 36835, "ganho": [1, 5], "chancePorAto": { "1": 0.001, "2": 0.0015, "3": 0.002, "4": 0.0025 } }
+  },
+
+  "raridades": {
+    "_nota": "Raridade da gema (decisão do dono: MULTIPLICA o bônus). `multiplicador` vale sobre o bônus por nível da ativa (dano/cura) e sobre o efeito inteiro da support. `pesoNoDrop`: a chance relativa de cada raridade na gema que cai de bicho. A loja vende só as de `loja.raridades`.",
+    "ordem": ["comum", "incomum", "raro", "épico", "lendário", "mítico"],
+    "multiplicador": { "comum": 1, "incomum": 1.15, "raro": 1.3, "épico": 1.5, "lendário": 1.75, "mítico": 2 },
+    "pesoNoDrop": { "comum": 60, "incomum": 25, "raro": 10, "épico": 4, "lendário": 0.9, "mítico": 0.1 }
+  },
+
+
+  "_progressao": "O que cada nível da gema ATIVA dá, se a gema não tiver a dela em skills.json: `dano` (+% do dano da skill por nível acima do 1), `cura` (idem na cura). Nem toda gema sobe tudo.",
+  "progressaoPadrao": { "dano": 3, "cura": 3 },
+
+  "_castTime": "Tempo de conjuração padrão (ms) por tipo — a skill só sai depois dele (barra de conjuração); cancela se o alvo morrer ou sair do alcance. Cast Speed (stat) e Faster Casting encurtam. Por gema em skills.json.",
+  "castTimePadrao": { "ataque": 400, "runa": 300, "cura": 0, "suporte": 0 },
+
+  "drop": {
+    "_nota": "Chance, por bicho morto, de cair uma gema (ativa ou support); cresce com o ato. A gema (qualquer uma — sem trava de level) cai no nível 1, com a raridade sorteada por `raridades.pesoNoDrop`. `parteSupport` = fração dos drops que são supports.",
+    "chancePorAto": { "1": 0.002, "2": 0.003, "3": 0.004, "4": 0.005 },
+    "parteSupport": 0.3
+  },
+
+  "loja": {
+    "_nota": "O NPC vende a gema de cada skill (e de cada support) no nível 1, por gold: `precoBase + precoPorLevel × level mínimo da skill`.",
+    "precoBase": 500,
+    "precoPorLevel": 60,
+    "precoDoSupport": 25000,
+    "_npc": "O NPC que vende as gemas (decisão do dono: a Zuma Magehide, na praça). `porVez`: o máximo de gemas numa compra.",
+    "npc": "zuma",
+    "_raridades": "A loja vende TODAS as gemas, só na raridade COMUM (decisão do dono, 30/09 — o jogo está em beta); as outras raridades caem de bicho. `precoPorRaridade` fica para quando vender outras.",
+    "raridades": ["comum"],
+    "precoPorRaridade": { "comum": 1, "incomum": 3 },
+    "porVez": 20
+  },
+
+  "sprites": {
+    "_nota": "A figura da gema no inventário: a pedra GRANDE de cada elemento (id de um item que já tem sprite; as 'small' ficavam um ponto no socket).",
+    "fire": 3039, "ice": 3041, "energy": 3036, "earth": 3038, "holy": 3037, "death": 9615, "physical": 32769, "healing": 3061, "outro": 7290, "support": 31354
+  }
+}

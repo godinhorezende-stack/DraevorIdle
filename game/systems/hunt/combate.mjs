@@ -33,6 +33,8 @@ import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
 import * as Defesa from '../personagem/defesa.mjs';
 import * as Anuncios from '../anuncios.mjs';
+import * as Tags from '../skills/tags.mjs';
+import * as GemasDeSkill from '../skills/gemas.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -148,7 +150,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
   // (+1%/ponto) e o dano mágico do INT; + "% da perícia como dano" (proficiência); e a resistência do
   // bicho àquele elemento (`resistido`).
-  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0)) / 100);
+  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
   const base = resistido(hunt, alvo, element, bruto);
   const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
@@ -369,6 +371,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       }
       Ficha.totais(m.estado).exp += deles;
       subirDeLevel(m.estado);
+      // As gemas de skill encaixadas nas peças vestidas ganham a mesma exp.
+      GemasDeSkill.ganharXp(m.estado, deles);
     }
     exp = Boosts.expDoBicho(estado, parte);
   } else {
@@ -395,6 +399,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   totais.kills += 1;
   totais.exp += exp;
   subirDeLevel(estado);
+  // As gemas de skill encaixadas nas peças vestidas ganham a mesma exp (e avisam quando sobem).
+  for (const g of GemasDeSkill.ganharXp(estado, exp)) eventos.push({ t: 'gemaSubiu', quem: personagem?.nome, nome: g.nome, nivel: g.nivel });
   // O bestiary (e os pontos de charm quando fecha) e o Carnage.
   Charms.contarMorte(estado, alvo.key, eventos);
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Charms.contarMorte(m.estado, alvo.key, null);
@@ -435,6 +441,28 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   const juntos = part?.ativa && part.membros.length > 1 ? part.membros.filter((m) => m.estado === estado || m.estado?.hunt) : null;
   const sala = juntos ? salaDe(hunt) : null;
   const deOutros = new Map(); // estado -> itens que foram para ele
+  /*
+   * ---- A GEMA DE SKILL que cai (chance do ato; ver `skills/gemas.mjs#sortearDrop`) ----
+   * Vai para a bolsa de quem matou, como item (nível 1). Os bônus de loot aumentam a chance.
+   */
+  const gemaQueCai = GemasDeSkill.sortearDrop({
+    ato: Number(contextoDoDrop(hunt).ato) || 1,
+    levelDaFase: hunt.escala?.nivel ?? estado.level ?? 1,
+    fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
+  });
+  if (gemaQueCai && Bolsa.porNaBolsa(estado, gemaQueCai.id, 1, gemaQueCai)) {
+    caiu.push({ id: gemaQueCai.id, count: 1 });
+    conta('loot', gemaQueCai.id, 1);
+  }
+  // A LAPIDADORA (a moeda que sobe a qualidade da gema): mesma regra de chance.
+  const lapidadora = GemasDeSkill.sortearLapidadora({
+    ato: Number(contextoDoDrop(hunt).ato) || 1,
+    fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
+  });
+  if (lapidadora && Bolsa.porNaBolsa(estado, lapidadora.id, 1)) {
+    caiu.push({ id: lapidadora.id, count: 1 });
+    conta('loot', lapidadora.id, 1);
+  }
   for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt);
     if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
@@ -733,7 +761,8 @@ export function round(estado, personagem) {
       }
       // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
       // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
-      const fisico = 1 + (ficha.danoDoElemento?.physical ?? 0) / 100;
+      // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
+      const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe(categoriaDaArma(arma))).pct) / 100;
       // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
       const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
       const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia), alvo, eventos, ficha);

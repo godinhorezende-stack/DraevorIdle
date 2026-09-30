@@ -1947,6 +1947,9 @@ export function feedEvents(events, items, eu = null) {
     } else if (event.t === 'say') {
       // A fala do combate é a palavra da magia que acabou de sair.
       logCombat(event.text, 'say', 'magia');
+    } else if (event.t === 'gemaSubiu') {
+      // A gema de skill subiu de nível (ela ganha XP junto com o personagem).
+      logCombat(`${!eu || event.quem === eu ? 'Sua gema' : `A gema de ${event.quem}`} ${event.nome} subiu para o nível ${event.nivel}.`, 'level');
     } else if (event.t === 'loot') {
       /*
        * A linha do canal de loot é a do servidor: o que caiu de cada bicho.

@@ -70,6 +70,7 @@ import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
 import * as Anuncios from '../systems/anuncios.mjs';
 import * as Presentes from '../systems/presentes.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -591,8 +592,30 @@ export class Sessao {
   falarComNpc({ id }) {
     const npc = CITY_META.npcs.find((n) => n.id === id);
     if (!npc) return this.erro('Ninguém para conversar aqui.');
+    // A Zuma Magehide vende as GEMAS DE SKILL (decisão do dono) — o balcão de NPC do cliente.
+    if (npc.id === GemasDeSkill.CONFIG.loja.npc) return this.mandarLojaDeGemas(npc);
     if (npc.tipo !== 'banco') return this.erro(`${npc.name} ainda não atende neste servidor.`);
     this.enviar({ t: 'npcFala', id: npc.id, nome: npc.name, tipo: 'banco', fala: Banqueiro.FALA_DO_BANQUEIRO, catalogo: null, gold: this.estado.gold ?? 0 });
+  }
+
+  /** A loja de gemas (`npcFala`, `tipo: 'loja'`), no formato do balcão de NPC do cliente. */
+  mandarLojaDeGemas(npc = CITY_META.npcs.find((n) => n.id === GemasDeSkill.CONFIG.loja.npc)) {
+    this.enviar({
+      t: 'npcFala',
+      id: npc.id,
+      nome: npc.name,
+      tipo: 'loja',
+      fala: 'Gemas de skill: a skill é da gema encaixada num socket do que você veste. Supports ligadas a ela a fortalecem.',
+      catalogo: GemasDeSkill.catalogoDaLoja(this.estado),
+      gold: (this.estado.gold ?? 0) + (this.estado.bank ?? 0),
+    });
+  }
+
+  /** `send({t:'npcComprar', id, count})` — comprar no balcão do NPC (a Zuma: gemas). */
+  comprarNoNpc(m) {
+    const r = GemasDeSkill.comprarNaLoja(this.estado, m);
+    this.aplicar(r);
+    if (r.ok) this.mandarLojaDeGemas();
   }
 
   /** `send({t:'market', action?})` — o balcão de itens (ver `game/systems/mercado.mjs`). */
@@ -644,6 +667,18 @@ export class Sessao {
     if (excesso) this.avisoPendente = excesso;
     this.characterSujo = true;
     this.mandarEstado();
+  }
+
+  /**
+   * `aplicar` + o catálogo de ações de novo: vestir/tirar peça e encaixar/tirar
+   * gema mudam as skills disponíveis (a Action Bar só mostra as gemas encaixadas).
+   */
+  aplicarComSkills(resultado) {
+    this.aplicar(resultado);
+    if (resultado?.ok) {
+      Ficha.invalidar(this.estado);
+      this.enviar({ t: 'actionCatalog', catalog: Acoes.catalogo(this.estado) });
+    }
   }
 
   /** `send({t:'mounts'})` — consulta pura, não muda `estado`: manda direto, sem passar por `aplicar`. */
@@ -931,9 +966,17 @@ export class Sessao {
       case 'clearBackpack':
         return this.aplicar(Inventario.limparMochila(this.estado, m));
       case 'equip':
-        return this.aplicar(Inventario.equipar(this.estado, m));
+        return this.aplicarComSkills(Inventario.equipar(this.estado, m));
       case 'unequip':
-        return this.aplicar(Inventario.desequipar(this.estado, m));
+        return this.aplicarComSkills(Inventario.desequipar(this.estado, m));
+      // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
+      case 'gema':
+        return this.aplicarComSkills(
+          m.action === 'encaixar' ? GemasDeSkill.encaixar(this.estado, m) :
+          m.action === 'tirar' ? GemasDeSkill.tirar(this.estado, m) :
+          m.action === 'lapidar' ? GemasDeSkill.lapidar(this.estado, m) :
+          { ok: false, erro: 'Ação de gema desconhecida.' }
+        );
       // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,
       // retirar, inserir, fundir) — cada resposta é o retrato inteiro de novo.
       case 'forja':
@@ -1002,6 +1045,8 @@ export class Sessao {
         return this.despacharBank(m);
       case 'falarComNpc':
         return this.falarComNpc(m);
+      case 'npcComprar':
+        return this.comprarNoNpc(m);
       case 'prey':
         return this.aplicar(Prey.comando(this.estado, m));
       case 'arvore':

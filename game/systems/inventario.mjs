@@ -5,6 +5,8 @@ import * as Premium from './premium.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
+import * as Atributos from './personagem/atributos.mjs';
+import * as Requisitos from './personagem/requisitos.mjs';
 import * as R from './regras.mjs';
 import * as Acoes from './acoes.mjs';
 // Inventário e o chão da praça: equipar de início, peso carregado, destruir,
@@ -134,7 +136,10 @@ export function removerItem(estado, id, count) {
 // ---- Material de craft/desmanche: mochila E bolsa de loot ----
 
 /** A peça carrega algo que se perderia (tier, afixo, imbuement)? */
-export const temExtras = (p) => !!(p?.tier || p?.af?.length || p?.imbu?.length || p?.efeito);
+// A peça é ÚNICA (não vira item comum empilhado): tier, adds, imbuements, poder, a base sorteada no drop,
+// os sockets (com gemas) e a instância de uma gema. Sem a base/sockets aqui, tirar a peça do corpo a
+// devolvia como item de catálogo e perdia o sorteio (e as gemas encaixadas).
+export const temExtras = (p) => !!(p?.tier || p?.af?.length || p?.imbu?.length || p?.efeito || p?.base || p?.soquetes || p?.gema);
 
 const GUARDADAS = ['inventory', 'pouch'];
 
@@ -369,7 +374,10 @@ export function equipar(estado, { id, pilha, slot }) {
   const meta = ITEM_CATALOG[id];
   const destino = slot ?? meta?.slot;
   if (!meta || !destino) return { ok: false, erro: 'Isso não se equipa.' };
-  if (meta.vocations?.length && !meta.vocations.includes(estado.vocation)) return { ok: false, erro: 'Sua vocação não usa isso.' };
+  // Modelo Path of Exile (decisão do dono): nenhuma peça é "só de uma classe" — ela pede STR/DEX/INT
+  // (ver `personagem/requisitos.mjs`); a vocação da peça é só a classe recomendada.
+  const faltaAtributo = Requisitos.falta(meta, Atributos.principais(estado, Afixos.soma(estado)));
+  if (faltaAtributo) return { ok: false, erro: faltaAtributo };
   if ((meta.minLevel ?? 0) > (estado.level ?? 0)) return { ok: false, erro: `Precisa do level ${meta.minLevel}.` };
   const itens = lista(estado, 'bag');
   const i = acharPilha(itens, id, Number(pilha));

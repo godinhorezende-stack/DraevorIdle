@@ -1,0 +1,12 @@
+{
+  "_nota": "SUPPORT GEMS: modificam a gema ATIVA ligada a elas (mesmo grupo de sockets ligados). Compatibilidade pelas tags da skill: `requer` (todas), `algum` (pelo menos uma), `exclui` (nenhuma). `efeito` no nível 1 e `porNivel` a cada nível acima. Chaves de efeito: danoPct, curaPct, castTimePct (−20 = 20% mais rápido), custoPct (−20 = 20% mais barata), recargaPct, critChance (pontos %), critDano (pontos %), alvosExtras (projéteis extras: outros bichos ao alcance), danoDosExtrasPct.",
+  "supports": {
+    "greater-damage":        { "nome": "Greater Damage",        "algum": ["physical", "fire", "earth", "energy", "ice", "holy", "death"], "exclui": ["healing"], "efeito": { "danoPct": 25 }, "porNivel": { "danoPct": 1 } },
+    "faster-casting":        { "nome": "Faster Casting",        "requer": ["spell"], "efeito": { "castTimePct": -20 }, "porNivel": { "castTimePct": -0.5 } },
+    "multiple-projectiles":  { "nome": "Multiple Projectiles",  "requer": ["projectile"], "efeito": { "alvosExtras": 2, "danoDosExtrasPct": 60 }, "porNivel": { "danoDosExtrasPct": 1 } },
+    "increased-critical":    { "nome": "Increased Critical Strikes", "algum": ["physical", "fire", "earth", "energy", "ice", "holy", "death"], "efeito": { "critChance": 5, "critDano": 20 }, "porNivel": { "critChance": 0.2 } },
+    "mana-efficiency":       { "nome": "Mana Efficiency",       "requer": ["spell"], "efeito": { "custoPct": -20 }, "porNivel": { "custoPct": -0.5 } },
+    "cooldown-recovery":     { "nome": "Cooldown Recovery",     "efeito": { "recargaPct": -15 }, "porNivel": { "recargaPct": -0.5 } },
+    "potent-healing":        { "nome": "Potent Healing",        "requer": ["healing"], "efeito": { "curaPct": 25 }, "porNivel": { "curaPct": 1 } }
+  }
+}

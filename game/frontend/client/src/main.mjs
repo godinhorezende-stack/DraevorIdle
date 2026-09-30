@@ -1,6 +1,7 @@
 import './so-quando-muda.mjs';
 import { anunciarDrop } from './anuncio-drop.mjs';
-import { loadSpriteData, loadEffectData, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
+import { acompanharConjuracao } from './conjuracao.mjs';
+import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
 import { MapView } from './map.mjs';
 import {
   createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir, esconderSemGravar,
@@ -742,7 +743,10 @@ function handle(message) {
       // Sem catálogo ou itens no quadro, valem os que já chegaram nesta conexão.
       if (message.catalog) state.catalog = message.catalog;
       pintarAvisoDeObra();
-      if (message.items) state.items = message.items;
+      if (message.items) {
+        state.items = message.items;
+        emprestarDoCatalogo(message.items);
+      }
       state.ranking = message.ranking ?? [];
       state.online = message.online;
       gate.enterGame();
@@ -2090,6 +2094,7 @@ function applyState(message) {
     // Efeito de tela com a aba no fundo é desenho para ninguém.
     if (!abaEscondida) mapView.addEvents(message.events);
     feedEvents(message.events, state.items, state.character?.name);
+    acompanharConjuracao(message.events, state.character?.name);
 
     // Falta de capacidade: a bolsa pulsa em vermelho e o aviso sobe na tela.
     // Sem isso, o loot sumindo parece defeito da venda automática.

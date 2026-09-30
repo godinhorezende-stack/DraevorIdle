@@ -968,7 +968,7 @@ function autoDisparo(estado, hunt, personagem) {
     if (Acoes.PAPEL_DO_SLOT[slot] === 'attack') continue;
     const action = acoes[slot];
     if (!action?.id || action.enabled === false) continue;
-    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo)) continue;
+    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) continue;
     const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
     if (resultado.ok) eventos.push(...resultado.eventos);
   }
@@ -1282,7 +1282,8 @@ export function tique(estado, personagem, agora = Date.now()) {
       hunt.pos.x = hunt.posto.x;
       hunt.pos.y = hunt.posto.y;
     }
-  } else if (R.jaPode(agora, hunt.proximoPassoEm)) {
+  } else if (!hunt.conjurando && R.jaPode(agora, hunt.proximoPassoEm)) {
+    // (Conjurando uma skill — o Cast Time da gema — o personagem não anda.)
     /*
      * ---- Movimento: quantos passos neste tique ----
      * O tique é do tamanho de um passo (`PASSO_MS`), então andar mais rápido
@@ -1488,8 +1489,11 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (donoDaSala) moverMonstros(hunt, grade, agora);
 
   let eventos = [];
+  // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
+  eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
   const assiste = hunt.modo !== 'online' || hunt.assistencia !== false;
-  if (assiste && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
+  // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
+  if (assiste && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
     const golpe = round(estado, personagem);
     eventos = golpe.eventos;
     // Só conta o intervalo se de fato bateu: sem alvo ao alcance, o golpe sai

@@ -10,6 +10,7 @@ import * as Inventario from '../systems/inventario.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
+import * as Especializacoes from '../systems/personagem/especializacoes.mjs';
 import { converterTudo, converterPersonagem, VERSAO_DOS_ITENS } from '../systems/itens/item.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
@@ -75,7 +76,9 @@ test('STR dá Life e dano físico; DEX Accuracy, Evasion e Attack Speed; INT Man
   const f = comAnel(e, [{ id: 'str', nivel: 5, value: 40 }, { id: 'dex', nivel: 5, value: 40 }, { id: 'int', nivel: 5, value: 40 }]);
   const E = C.efeitos;
   assert.equal(f.atributos.str - antes.atributos.str, 40);
-  assert.equal(e.maxHp - vidaAntes, 40 * E.STR_LIFE_PER_POINT);
+  // (o knight tem a especialização Life: +X% também sobre a vida que o STR dá)
+  const lifePct = Especializacoes.efeitos(e).stats.life ?? 0;
+  assert.ok(Math.abs(e.maxHp - vidaAntes - 40 * E.STR_LIFE_PER_POINT * (1 + lifePct / 100)) <= 1);
   assert.equal(e.maxMana - manaAntes, 40 * E.INT_MANA_PER_POINT);
   assert.ok(Math.abs(f.danoDoElemento.physical - antes.danoDoElemento.physical - 40 * E.STR_PHYSICAL_DAMAGE_PER_POINT) < 1e-9);
   assert.equal(f.accuracy - antes.accuracy, 40 * E.DEX_ACCURACY_PER_POINT);
@@ -208,7 +211,8 @@ test('vestir e tirar passam pela MESMA ficha: o que entra, sai (vida máxima inc
   Ficha.invalidar(e);
   const vestido = Ficha.combate(e);
   assert.equal(vestido.atributos.str, antes.atributos.str + 8);
-  assert.equal(e.maxHp, antes.vida + 50 + 8 * C.efeitos.STR_LIFE_PER_POINT);
+  const lifePct = Especializacoes.efeitos(e).stats.life ?? 0;
+  assert.ok(Math.abs(e.maxHp - antes.vida - (50 + 8 * C.efeitos.STR_LIFE_PER_POINT) * (1 + lifePct / 100)) <= 1);
   Inventario.desequipar(e, { slot: 'ring' });
   Ficha.invalidar(e);
   assert.equal(Ficha.combate(e).atributos.str, antes.atributos.str);

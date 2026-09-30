@@ -276,6 +276,8 @@ export const entradaDaAcao = (id) => findEntry(id) ?? null;
 /** Uma linha curta dizendo o que as condições do slot exigem. */
 function resumoDasCondicoes(conditions) {
   const partes = conditions.map((condition) => {
+    if (condition.kind === 'boss') return condition.op === 'nao' ? 'fora de boss' : 'só em boss';
+    if (condition.kind === 'perto') return `bichos ${condition.op === 'lte' ? '≤' : '≥'} ${condition.value ?? 1}`;
     if (condition.kind !== 'nome') {
       const quem = condition.who === 'target' ? 'alvo' : 'você';
       const sinal = condition.op === 'gte' ? '≥' : '≤';
@@ -1486,7 +1488,8 @@ export function renderEditor() {
   };
 
   const vocationSelect = document.createElement('select');
-  for (const [id, label] of Object.entries({ '': 'Todas as vocações', ...VOCATION_NAMES })) {
+  // Nada é "só de uma classe" (modelo Path of Exile): o filtro mostra as RECOMENDADAS para a classe.
+  for (const [id, label] of Object.entries({ '': 'Todas as classes', ...Object.fromEntries(Object.entries(VOCATION_NAMES).map(([k, v]) => [k, `Recomendadas: ${v}`])) })) {
     const option = document.createElement('option');
     option.value = id;
     option.textContent = label;
@@ -1648,7 +1651,9 @@ export function renderEditor() {
       lines.push([onde, 'area']);
     }
     if (entry.range) lines.push([`Alcance de ${entry.range} sqm.`, 'plain']);
-    if (entry.vocations?.length) lines.push([`Vocações: ${entry.vocations.join(', ')}.`, 'plain']);
+    if (entry.vocations?.length) lines.push([`Classe recomendada: ${entry.vocations.join(', ')} (qualquer classe pode usar).`, 'plain']);
+    if (entry.tags?.length) lines.push([`Tags: ${entry.tags.join(', ')}.`, 'plain']);
+    if (entry.afinidade?.pct) lines.push([`Sua afinidade de classe: +${entry.afinidade.pct}% (${entry.afinidade.fontes.map((f) => `${f.especializacao} +${f.pct}%`).join(', ')}).`, 'crit']);
     if (entry.level) {
       lines.push([`Requer level ${entry.level}${entry.magicLevel ? ` e magic level ${entry.magicLevel}` : ''}.`, 'plain']);
     }
@@ -2022,7 +2027,7 @@ export function renderEditor() {
     el(
       'p',
       'shop-note',
-      'Vida/Mana olha um número seu ou do alvo. Bichos por perto conta as criaturas em volta. Criatura olha o NOME de quem está mirado: ' +
+      'Vida/Mana olha um número seu ou do alvo. Bichos por perto conta as criaturas em volta (ex.: pelo menos 3 → magia de área). Boss só deixa sair na sala de um boss. Criatura olha o NOME de quem está mirado: ' +
         '“é uma de” só deixa sair nas criaturas da lista, “não é nenhuma de” deixa sair em todas menos nelas.'
     )
   );
@@ -2489,13 +2494,15 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
    */
   const tipo = () =>
     select(
-      { stat: 'Vida/Mana', nome: 'Criatura', perto: 'Bichos por perto' },
+      { stat: 'Vida/Mana', nome: 'Criatura', perto: 'Bichos por perto', boss: 'Boss' },
       condition.kind ?? 'stat',
       (value) => {
         condition.kind = value;
         if (value === 'nome') {
           condition.op = 'igual';
           condition.names ??= [];
+        } else if (value === 'boss') {
+          condition.op = 'sim';
         } else if (value === 'perto') {
           /*
            * "Pelo menos 1" é o que quase todo mundo quer da primeira vez: ela
@@ -2556,6 +2563,20 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
       renderEditor();
     };
     row.append(menos, quantos, mais, el('span', 'condition-unidade', 'criaturas'), fora);
+    return row;
+  }
+
+  // "Boss": só na sala de um boss (ou fora dela) — a skill guardada para o chefe.
+  if (condition.kind === 'boss') {
+    const row = el('div', 'condition');
+    row.append(tipo());
+    row.append(select({ sim: 'é a sala de um boss', nao: 'não é boss' }, condition.op === 'nao' ? 'nao' : 'sim', (value) => (condition.op = value)));
+    const fora = el('button', 'danger step', '✕');
+    fora.onclick = () => {
+      lista.splice(index, 1);
+      renderEditor();
+    };
+    row.append(fora);
     return row;
   }
 

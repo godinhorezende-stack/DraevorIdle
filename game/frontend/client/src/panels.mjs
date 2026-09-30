@@ -31,7 +31,7 @@ import { savePreset, resetLayout, clearPreset, fecharAoClicarFora, atalhosDaCaix
 import {
   itemCell, aceitarSoltura, quantosMover, trocarArrastando, pedirParaOrganizar,
 } from './inventory.mjs';
-import { tipFor, tipTexto, tipForAction, tipPanel, fichaDeItem, restanteDoImbuement, estrelasDosAfixos, seloDeEstrelas, classeDaRaridade } from './tooltip.mjs';
+import { tipFor, tipTexto, tipForAction, tipPanel, fichaDeItem, restanteDoImbuement, estrelasDosAfixos, seloDeEstrelas, classeDaRaridade, faltaRequisito } from './tooltip.mjs';
 import { lootComGemas as lootDoBicho } from './loot-do-bicho.mjs';
 // O balão dos bônus das gemas, que a pílula do HUD já usa — ver `resumoDasGemasParaBalao`.
 import { balaoDosBonusDasGemas } from './gemas.mjs';
@@ -12704,9 +12704,10 @@ function cartaoDeItem(entry) {
    */
   const personagem = state.character;
   const faltaLevel = entry.minLevel > (personagem?.level ?? 0);
-  const outraVocacao = entry.vocations?.length && !entry.vocations.includes(personagem?.vocation);
+  // Modelo Path of Exile: não é mais "de outra vocação" — é o requisito de atributo (STR/DEX/INT) que falta.
+  const outraVocacao = faltaRequisito(state.items?.[entry.id] ?? entry, personagem);
   const regra = el('span', `item-card-regra${faltaLevel || outraVocacao ? ' nao-serve' : ''}`);
-  regra.append(el('i', 'item-card-voc', (entry.vocations ?? []).join(', ') || 'qualquer vocação'));
+  regra.append(el('i', 'item-card-voc', (entry.vocations ?? []).join(', ') || 'qualquer classe'));
   if (entry.minLevel) regra.append(el('i', null, `level ${entry.minLevel}`));
   if (entry.twoHanded) regra.append(el('i', null, 'duas mãos'));
   card.append(regra);
@@ -12772,7 +12773,7 @@ function cartaoDeItem(entry) {
         ? `Atenção: você ${oQueFalta}, então NÃO vai conseguir usar este item agora. ` +
           'Ele fica guardado na mochila até lá — nada se perde, e o relógio de 24 horas só começa quando você usar.'
         : outraVocacao
-          ? `Esta peça é de ${(entry.vocations ?? []).join(', ')} — o seu personagem não vai conseguir equipá-la.`
+          ? `${outraVocacao} — o seu personagem ainda não consegue equipá-la (dá para subir o atributo com itens).`
           : faltaLevel
             ? `Pede level ${entry.minLevel}; você está no ${personagem?.level ?? 0}. Ela fica na mochila até lá.`
             : null,
@@ -24586,15 +24587,18 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
    * morreria a cada clique no botão.
    */
   const chave = comprando ? 'lojaItemComprar' : 'lojaItemVender';
-  const existe = (id) => linhas.some((linha) => linha.id === id);
-  if (!existe(ctx.tabs[chave])) ctx.tabs[chave] = linhas[0].id;
+  // `chave`: quando o mesmo item aparece em mais de uma linha (a gema em cada raridade, na Zuma).
+  const chaveDa = (linha) => linha.chave ?? linha.id;
+  const existe = (k) => linhas.some((linha) => chaveDa(linha) === k);
+  if (!existe(ctx.tabs[chave])) ctx.tabs[chave] = chaveDa(linhas[0]);
 
   const lista = el('div', 'loja-npc');
   for (const linha of linhas) {
     const preco = comprando ? linha.buy : linha.sell;
     const card = el('button', 'loja-linha');
     card.type = 'button';
-    if (linha.id === ctx.tabs[chave]) card.classList.add('escolhida');
+    if (chaveDa(linha) === ctx.tabs[chave]) card.classList.add('escolhida');
+    if (linha.raridade) card.classList.add(classeDaRaridade(null, { raridade: linha.raridade }));
     card.append(itemCanvas(linha.id, 32));
 
     const texto = el('div', 'loja-texto');
@@ -24610,14 +24614,14 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
     card.append(texto);
 
     card.onclick = () => {
-      ctx.tabs[chave] = linha.id;
+      ctx.tabs[chave] = chaveDa(linha);
       ctx.redraw();
     };
     lista.append(card);
   }
   body.append(lista);
 
-  body.append(balcaoDaLoja({ linha: linhas.find((l) => l.id === ctx.tabs[chave]), lado, loja }));
+  body.append(balcaoDaLoja({ linha: linhas.find((l) => chaveDa(l) === ctx.tabs[chave]), lado, loja }));
 }
 
 /*
@@ -24725,7 +24729,7 @@ function balcaoDaLoja({ linha, lado, loja }) {
   }
   confirmar.onclick = () => {
     const quantos = quantia.ler();
-    ctx.send({ t: comprando ? 'npcComprar' : 'npcVender', id: linha.id, count: quantos });
+    ctx.send({ t: comprando ? 'npcComprar' : 'npcVender', id: linha.id, count: quantos, ...(linha.raridade ? { raridade: linha.raridade } : {}) });
   };
   const acoes = el('div', 'loja-balcao-acoes');
   acoes.append(confirmar);

@@ -35,7 +35,8 @@ import * as R from './regras.mjs';
 export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === 'attack' ? i : -1)).filter((i) => i >= 0);
 
 // Bloqueios da fileira inteira: esperar, sem pular a vez do slot.
-const DA_FILEIRA = new Set(['INTERVALO_DO_COMBO', 'COOLDOWN_DO_GRUPO']);
+// (CONJURANDO: a skill da vez está sendo conjurada — a fileira espera ela terminar.)
+const DA_FILEIRA = new Set(['INTERVALO_DO_COMBO', 'COOLDOWN_DO_GRUPO', 'CONJURANDO']);
 
 /*
  * ---- O log do combo ----
@@ -89,7 +90,7 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
     // Vazio ou desligado: não há o que tentar (e nem o que registrar a cada tique).
     if (!action?.id || action.enabled === false) continue;
     const linha = { slot: posicao + 1, indice: slot, skill: action.id, parede, relogio, desdeUltimaMs: desde() };
-    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo)) {
+    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) {
       registrar({ ...linha, resultado: 'IGNORADA', motivo: 'CONDICAO' });
       continue;
     }

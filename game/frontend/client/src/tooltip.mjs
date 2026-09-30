@@ -1051,7 +1051,11 @@ export function fichaDeAcao(entry, icone = null, extra = null) {
   }
   if (entry.level) regra('Level mínimo', String(entry.level));
   if (entry.magicLevel) regra('Magic level', String(entry.magicLevel));
-  if (entry.vocations?.length) regra('Vocações', entry.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', '));
+  // A classe recomendada (não é trava: qualquer classe usa — modelo Path of Exile) e as tags da skill.
+  if (entry.vocations?.length) regra('Classe recomendada', entry.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', '));
+  if (entry.tags?.length) regra('Tags', entry.tags.join(' · '));
+  // A afinidade da classe DESTE personagem nesta skill (a mesma conta do servidor: `Ficha.afinidadePara`).
+  if (entry.afinidade?.pct) regra('Sua afinidade', `+${entry.afinidade.pct}% (${entry.afinidade.fontes.map((f) => `${f.especializacao} +${f.pct}%`).join(', ')})`, 'crit');
   if (regras.children.length) node.append(regras);
 
   if (entry.blocked) node.append(el('div', 'tip-blocked', entry.blocked));
@@ -2322,6 +2326,87 @@ const numeroOuFaixa = (meta, campo) => {
   return f && f[0] !== f[1] ? `${sinal(f[0])}–${f[1]}` : sinal(meta[campo]);
 };
 
+const NOME_DO_ATRIBUTO = { str: 'STR', dex: 'DEX', int: 'INT' };
+
+/**
+ * Este personagem cumpre o requisito de atributo da peça? Devolve o texto do que
+ * falta, ou null. O requisito vem pronto do servidor (`meta.requisito`, ver
+ * `personagem/requisitos.mjs`); aqui só a comparação: basta UM dos atributos.
+ */
+export function faltaRequisito(meta, personagem) {
+  const req = meta?.requisito;
+  const atributos = personagem?.derived?.atributos;
+  if (!req || !atributos) return null;
+  if (req.atributos.some((a) => (atributos[a] ?? 0) >= req.valor)) return null;
+  return `Requer ${req.atributos.map((a) => `${req.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou ')}`;
+}
+
+const NOME_DO_EFEITO_DA_SUPPORT = {
+  danoPct: 'dano',
+  curaPct: 'cura',
+  castTimePct: 'tempo de conjuração',
+  custoPct: 'custo de mana',
+  recargaPct: 'recarga',
+  critChance: 'chance de crítico',
+  critDano: 'dano crítico',
+  alvosExtras: 'projéteis extras',
+  danoDosExtrasPct: 'dano dos projéteis extras',
+};
+const numeroDoEfeito = (chave, v) => (chave === 'alvosExtras' ? `+${v}` : `${v > 0 ? '+' : ''}${v}%`);
+
+/** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
+function blocoDaGema(def, gema, raridade = 'comum') {
+  const bloco = el('div', 'tip-gema');
+  const nivel = gema?.nivel ?? 1;
+  const qualidade = gema?.qualidade ?? 0;
+  const mult = def.mult?.[raridade] ?? 1;
+  bloco.append(el('div', 'tip-gema-tipo', def.tipo === 'support' ? 'Gema de Support' : 'Gema de Skill'));
+  // Modelo Path of Exile: nível até 20 por XP (21+ só com o add da peça) e qualidade separada, até 20%.
+  bloco.append(el('div', null, `Nível ${nivel} / ${def.nivelMaximo ?? 30}${gema?.xp ? ` · ${Math.floor(gema.xp).toLocaleString('pt-BR')} XP` : ''}`));
+  bloco.append(el('div', null, `Qualidade: +${qualidade}%`));
+  if (mult !== 1) bloco.append(el('div', 'tip-gema-efeito', `Raridade ${raridade}: bônus ×${mult.toLocaleString('pt-BR')}`));
+  if (def.tipo === 'support') {
+    const reqs = [...(def.requer ?? []), ...(def.algum?.length ? [def.algum.join(' ou ')] : [])];
+    if (reqs.length) bloco.append(el('div', 'tip-gema-tags', `Suporta: ${reqs.join(', ')}`));
+    for (const [chave, v] of Object.entries(def.efeito ?? {})) {
+      const total = (v + (def.porNivel?.[chave] ?? 0) * (nivel - 1)) * mult * (1 + qualidade / 100);
+      bloco.append(el('div', 'tip-gema-efeito', `${numeroDoEfeito(chave, Math.round(total * 100) / 100)} ${NOME_DO_EFEITO_DA_SUPPORT[chave] ?? chave}`));
+    }
+    bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
+  } else {
+    if (def.tags?.length) bloco.append(el('div', 'tip-gema-tags', def.tags.join(', ')));
+    // O dano/cura base é o da magia (level + magic level, ou melee nas físicas); a gema soma o bônus dela.
+    const porNivel = def.progressao?.dano ?? def.progressao?.cura ?? 0;
+    const bonus = porNivel * (nivel - 1) * mult + (porNivel ? qualidade : 0);
+    if (bonus) bloco.append(el('div', 'tip-gema-efeito', `+${Math.round(bonus * 10) / 10}% de ${def.progressao?.dano ? 'dano' : 'cura'} (nível${mult !== 1 ? ', raridade' : ''}${qualidade ? ' e qualidade' : ''})`));
+    if (def.castTime) bloco.append(el('div', null, `Conjuração: ${(def.castTime / 1000).toLocaleString('pt-BR')} s`));
+    bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
+  }
+  return bloco;
+}
+
+/** Os sockets da peça: `[💎]─[🔹]─[ ] [🔒]` — ligados por traço, trancados com cadeado. */
+function blocoDosSoquetes(sq) {
+  const bloco = el('div', 'tip-soquetes');
+  const max = sq.gemas?.length ?? 0;
+  const itens = getItems();
+  const fila = el('div', 'tip-soquetes-fila');
+  const nomes = [];
+  for (let i = 0; i < max; i++) {
+    const g = sq.gemas[i];
+    const def = g ? itens[g.id]?.gemaDef : null;
+    const cls = i >= (sq.abertos ?? 0) ? 'trancado' : !g ? 'vazio' : def?.tipo === 'support' ? 'support' : 'ativa';
+    const casa = el('span', `soquete ${cls}`, cls === 'trancado' ? '🔒' : cls === 'vazio' ? '' : cls === 'support' ? '🔹' : '💎');
+    if (g) casa.title = `${def?.nome ?? g.id} (nível ${g.nivel})`;
+    fila.append(casa);
+    if (i < max - 1) fila.append(el('span', `soquete-link${sq.links?.[i] ? ' ligado' : ''}`, sq.links?.[i] ? '─' : ' '));
+    if (g) nomes.push(`${def?.nome ?? g.id} ${g.nivel}`);
+  }
+  bloco.append(el('div', 'tip-soquetes-titulo', `Sockets ${sq.abertos ?? 0}/${max}`), fila);
+  if (nomes.length) bloco.append(el('div', 'tip-soquetes-gemas', nomes.join(' · ')));
+  return bloco;
+}
+
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;
@@ -2675,6 +2760,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     node.append(bloco);
   }
 
+  // ---- a GEMA de skill: nível, XP, tags e o que faz ----
+  if (meta.gemaDef) node.append(blocoDaGema(meta.gemaDef, peca?.gema, raridadeDaPeca(meta, peca)));
+
+  // ---- sockets e links (não são afixos: não contam no limite de modificadores) ----
+  if (peca?.soquetes) node.append(blocoDosSoquetes(peca.soquetes));
+
   // ---- quem pode usar, e onde ----
   const regras = el('div', 'tip-rules');
   const regra = (label, value, className) => {
@@ -2684,7 +2775,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     regras.append(row);
   };
   regra('Level mínimo', meta.minLevel ? String(meta.minLevel) : null);
-  regra('Vocações', meta.vocations?.length ? meta.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', ') : null);
+  regra('Classe recomendada', meta.vocations?.length ? meta.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', ') : null);
+  // O requisito de atributo (modelo Path of Exile): em vermelho se o personagem não cumpre.
+  if (meta.requisito) {
+    const falta = faltaRequisito(meta, getPersonagem());
+    regra('Requer', meta.requisito.atributos.map((a) => `${meta.requisito.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou '), falta ? 'tip-falta' : null);
+  }
   regra('Slot', SLOT_NAMES[meta.slot] ?? null);
   /*
    * ---- "Fixo ao personagem" ----

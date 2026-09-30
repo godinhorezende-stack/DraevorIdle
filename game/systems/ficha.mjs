@@ -26,6 +26,7 @@ import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { metaDaPeca, faixaDoCampo } from './itens/item.mjs';
 import { SLOTS_DE_JOIA } from './itens/gerar.mjs';
 import * as Atributos from './personagem/atributos.mjs';
+import * as Especializacoes from './personagem/especializacoes.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -116,6 +117,15 @@ function calcularCombate(estado) {
    */
   const principais = Atributos.principais(estado, af);
   const doAtributo = Atributos.efeitos(principais);
+  /*
+   * ---- A CLASSE e as especializações naturais ----
+   * `gamedata/classes.json` (ver `personagem/especializacoes.mjs`): afinidades
+   * de dano por TAG (`afinidades`, lidas por quem calcula cada golpe/skill com
+   * `afinidadePara`) e de stat (Armour, Life, Accuracy, Evasion, Attack/Cast
+   * Speed, Movement, Healing), somadas abaixo no número que o combate já lê.
+   */
+  const esp = Especializacoes.efeitos(estado);
+  const espStat = (k) => esp.stats[k] ?? 0;
   const bonusDePericia = {};
   const somaPericia = (k, v) => { const p = Treino.canonica(k); bonusDePericia[p] = (bonusDePericia[p] ?? 0) + v; };
   for (const it of itens) for (const [k, v] of Object.entries(it.skillBonus ?? {})) somaPericia(k, v);
@@ -179,12 +189,22 @@ function calcularCombate(estado) {
   }
   defense += prof.defesa;
   const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) + prof.alcance : 1;
-  const defesas = defesasDaFicha(estado, af, doAtributo);
+  const defesas = defesasDaFicha(estado, af, doAtributo, espStat);
   return {
     // STR/DEX/INT (total, e o que veio da vocação+level — a ficha mostra os dois).
     atributos: { str: principais.str, dex: principais.dex, int: principais.int, daVocacao: principais.daVocacao },
     // O que STR/DEX/INT estão dando agora (vida, dano físico %, precisão, evasão, velocidade %, mana, dano mágico %).
     efeitosDosAtributos: doAtributo,
+    // A classe e as especializações naturais (a ficha mostra) e as afinidades de dano por tag (o combate lê).
+    classe: {
+      id: Especializacoes.classeDe(estado),
+      nome: Especializacoes.CONFIG.classes[Especializacoes.classeDe(estado)]?.nome ?? '',
+      especializacoes: Especializacoes.especializacoesDe(estado).map((e) => ({ id: e.id, nome: e.nome, efeitos: e.efeitos })),
+    },
+    afinidades: esp.dano,
+    fontesDasAfinidades: esp.fontes,
+    // De onde vem cada parte dos números (a ficha mostra ao passar o mouse): ver `origensDaFicha`.
+    origens: origensDaFicha({ estado, af, arv, doAtributo, esp, principais }),
     armor: defesas.armour,
     ataque,
     ataqueMin,
@@ -201,12 +221,12 @@ function calcularCombate(estado) {
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
     // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
     ...bloqueioDaFicha(estado, escudo, w, prof, shielding, af),
-    ...faixaDeArmadura(estado, af),
+    ...faixaDeArmadura(estado, af, espStat('armour')),
     // As defesas novas: Evasion (esquiva do golpe do bicho) e Energy Shield (barra antes da vida).
     evasion: defesas.evasion,
     energyShield: defesas.energyShield,
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
-    accuracy: Math.round(Atributos.precisaoBase(estado.level) + doAtributo.precisao + (af.accuracy ?? 0)),
+    accuracy: Math.round((Atributos.precisaoBase(estado.level) + doAtributo.precisao + (af.accuracy ?? 0)) * (1 + espStat('accuracy') / 100)),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
@@ -225,14 +245,14 @@ function calcularCombate(estado) {
     attackRange: alcance,
     regenFlat: { hp: soma((it) => it.regen?.hp) + (af.life_regen ?? 0), mana: soma((it) => it.regen?.mana) + (af.mana_regen ?? 0) },
     // Movement Speed %: sobre a velocidade base do level (+ o speed fixo das botas e do imbuement).
-    speed: Math.round(R.baseSpeed(estado.level ?? 1) * (1 + (af.move_speed ?? 0) / 100) + soma((it) => it.speed) + imb.velocidade),
+    speed: Math.round(R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed) + imb.velocidade),
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
-    velocidadeDeAtaque: (af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct,
+    velocidadeDeAtaque: (af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed'),
     // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
-    intervaloDoGolpeMs: Math.round((INTERVALO_BASE_DO_GOLPE_MS * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct) / 100)),
+    intervaloDoGolpeMs: Math.round((INTERVALO_BASE_DO_GOLPE_MS * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries(
@@ -240,9 +260,9 @@ function calcularCombate(estado) {
     ),
     // Magic Damage (magias, runas, wand): o que a INT dá.
     danoDeMagia: doAtributo.danoMagicoPct,
-    curaDeMagia: (arv.cura ?? 0) * 100,
+    curaDeMagia: (arv.cura ?? 0) * 100 + espStat('healing'),
     // Cast Speed (intervalo global entre magias), Cooldown Recovery (recarga de cada magia), Skill Cost Reduction.
-    castSpeed: af.cast_speed ?? 0,
+    castSpeed: (af.cast_speed ?? 0) + espStat('castSpeed'),
     recuperacaoDeRecarga: af.cooldown_recovery ?? 0,
     // Damage vs Boss / vs Elite / vs Monsters (não-boss), em %.
     danoContra: { boss: af.dmg_vs_boss ?? 0, elite: af.dmg_vs_elite ?? 0, monstros: af.dmg_vs_monsters ?? 0 },
@@ -264,18 +284,81 @@ function calcularCombate(estado) {
 }
 
 /*
+ * ---- De onde vem cada número (a ficha mostra ao passar o mouse) ----
+ * O dono: "mostrar a origem do bônus — Fire Damage: Base 100%, Equipment +25%,
+ * Specialization +15%, Total 140%". São as MESMAS parcelas que a conta acima
+ * soma (nada é recalculado para a tela): `{ chave: [{ fonte, valor, pct? }] }`
+ * — `pct: true` quando a parcela é um "+X%" sobre as outras (Armour, Evasion,
+ * Accuracy). Parcela zero não entra.
+ */
+function origensDaFicha({ estado, af, arv, doAtributo, esp, principais }) {
+  const o = {};
+  const por = (chave, fonte, valor, extra = {}) => {
+    if (!valor) return;
+    (o[chave] ??= []).push({ fonte, valor: Math.round(valor * 100) / 100, ...extra });
+  };
+  const daEspecializacao = (chave, tag) => {
+    for (const f of esp.fontes[tag] ?? []) por(chave, `Especialização: ${f.especializacao}`, f.pct);
+  };
+  // Dano por tag: os elementos (itens, árvore, STR no físico, especialização) e Melee/Ranged/Spell.
+  for (const el of ELEMENTOS) {
+    const k = `dano.${el}`;
+    por(k, 'Equipamento', af[el === 'physical' ? 'phys_dmg' : `${el}_dmg`] ?? 0);
+    por(k, 'Árvore', (arv[`elemento:${el}`] ?? 0) * 100);
+    if (el === 'physical') por(k, `STR (${principais.str})`, doAtributo.danoFisicoPct);
+    daEspecializacao(k, el);
+  }
+  daEspecializacao('dano.melee', 'melee');
+  daEspecializacao('dano.ranged', 'ranged');
+  por('dano.spell', `INT (${principais.int})`, doAtributo.danoMagicoPct);
+  daEspecializacao('dano.spell', 'spell');
+  // Velocidades e cura.
+  por('velocidadeDeAtaque', 'Equipamento', af.atk_speed ?? 0);
+  por('velocidadeDeAtaque', `DEX (${principais.dex})`, doAtributo.velocidadeDeAtaquePct);
+  daEspecializacao('velocidadeDeAtaque', 'attackSpeed');
+  por('castSpeed', 'Equipamento', af.cast_speed ?? 0);
+  daEspecializacao('castSpeed', 'castSpeed');
+  por('curaDeMagia', 'Árvore', (arv.cura ?? 0) * 100);
+  daEspecializacao('curaDeMagia', 'healing');
+  por('speed', 'Equipamento', af.move_speed ?? 0, { pct: true });
+  daEspecializacao('speed', 'moveSpeed');
+  // Defesas: o valor das fontes, e os "+X%" por cima.
+  por('accuracy', `Base do level ${estado.level ?? 1}`, Atributos.precisaoBase(estado.level));
+  por('accuracy', `DEX (${principais.dex})`, doAtributo.precisao);
+  por('accuracy', 'Equipamento', af.accuracy ?? 0);
+  for (const f of esp.fontes.accuracy ?? []) por('accuracy', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
+  por('evasion', `DEX (${principais.dex})`, doAtributo.evasao);
+  por('evasion', 'Equipamento', af.evasion ?? 0);
+  por('evasion', 'Equipamento', af.evasion_pct ?? 0, { pct: true });
+  for (const f of esp.fontes.evasion ?? []) por('evasion', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
+  por('armour', 'Equipamento', af.armor_flat ?? 0);
+  por('armour', 'Equipamento', af.armour_pct ?? 0, { pct: true });
+  for (const f of esp.fontes.armour ?? []) por('armour', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
+  for (const f of esp.fontes.life ?? []) por('vida', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
+  return o;
+}
+
+/**
+ * A afinidade de dano (%) que vale para uma skill/golpe com estas `tags` — a
+ * das especializações da classe. O combate soma no mesmo "+X%" do dano do
+ * elemento e do dano mágico (uma soma só, como o dono pediu: base + equipamento
+ * + especialização). `{ pct, fontes }`.
+ */
+export const afinidadePara = (ficha, tags) => Especializacoes.afinidade(ficha?.afinidades, tags, ficha?.fontesDasAfinidades);
+
+/*
  * As defesas da ficha: Armour (a soma das bases + o add fixo, × o add %),
  * Evasion (bases + add + DEX, × o add %) e Energy Shield (bases + add, × o add
  * %). As bases são a média da faixa de cada peça vestida.
  */
-function defesasDaFicha(estado, af, doAtributo) {
+function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
   const somaDoCampo = (campo) => Object.values(estado.equipment ?? {}).reduce((n, p) => {
     if (!p) return n;
     const [a, b] = faixaDoCampo(p, campo);
     return n + (a + b) / 2;
   }, 0);
-  const armour = (somaDoCampo('armor') + (af.armor_flat ?? 0)) * (1 + (af.armour_pct ?? 0) / 100);
-  const evasion = (somaDoCampo('evasion') + (af.evasion ?? 0) + doAtributo.evasao) * (1 + (af.evasion_pct ?? 0) / 100);
+  const armour = (somaDoCampo('armor') + (af.armor_flat ?? 0)) * (1 + ((af.armour_pct ?? 0) + espStat('armour')) / 100);
+  const evasion = (somaDoCampo('evasion') + (af.evasion ?? 0) + doAtributo.evasao) * (1 + ((af.evasion_pct ?? 0) + espStat('evasion')) / 100);
   const energyShield = (somaDoCampo('es') + (af.energy_shield ?? 0)) * (1 + (af.es_pct ?? 0) / 100);
   return { armour: Math.round(armour), evasion: Math.round(evasion), energyShield: Math.round(energyShield) };
 }
@@ -359,7 +442,7 @@ function bloqueioDaFicha(estado, escudo, w, prof, shielding, af = {}) {
 }
 
 /** As armaduras em faixa: a soma dos pisos e dos tetos das peças vestidas (+ a armadura plana dos afixos, que é física). */
-function faixaDeArmadura(estado, af) {
+function faixaDeArmadura(estado, af, pctDaEspecializacao = 0) {
   const soma = { armor: [0, 0] };
   for (const p of Object.values(estado.equipment ?? {})) {
     if (!p) continue;
@@ -370,7 +453,7 @@ function faixaDeArmadura(estado, af) {
     }
   }
   const plana = af?.armor_flat ?? 0;
-  const pct = 1 + (af?.armour_pct ?? 0) / 100;
+  const pct = 1 + ((af?.armour_pct ?? 0) + pctDaEspecializacao) / 100;
   return {
     armorMin: Math.round((soma.armor[0] + plana) * pct),
     armorMax: Math.round((soma.armor[1] + plana) * pct),

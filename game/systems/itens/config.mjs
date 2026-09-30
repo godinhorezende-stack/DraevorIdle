@@ -54,6 +54,11 @@ export function validar() {
     if (!['flat', 'pct'].includes(a.tipo)) erros.push(`atributos: ${id} com tipo "${a.tipo}"`);
     if (!(a.peso > 0)) erros.push(`atributos: ${id} sem peso`);
     let antes = null;
+    // Add de valor pela RARIDADE da peça (`valorPorRaridade`): as faixas por tier só informam.
+    if (a.valorPorRaridade) {
+      for (const [r, v] of Object.entries(a.valorPorRaridade)) if (!ORDEM.includes(r) || !(v > 0)) erros.push(`atributos: ${id} valorPorRaridade ${r} inválido`);
+      continue;
+    }
     for (let n = 1; n <= NIVEL_MAXIMO; n++) {
       const f = a.niveis[String(n)];
       if (!f || !(f[0] <= f[1])) erros.push(`atributos: ${id} N${n} faixa inválida`);

@@ -23,6 +23,8 @@ import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS, LEGADO } from './config.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
 import { valorNaFaixa, arredondar, CAMPOS_DA_BASE, rolarBase, aceitaAtributos, SLOTS_DE_JOIA, FATOR_DAS_DUAS } from './gerar.mjs';
 import * as Atributos from '../personagem/atributos.mjs';
+import { requisitoDe } from '../personagem/requisitos.mjs';
+import * as Gemas from '../skills/gemas.mjs';
 
 const ID_DA_ESSENCIA = 900001;
 const FAIXAS_ANTIGAS = [[0, 20], [20, 40], [40, 60], [60, 85], [85, 100]];
@@ -39,6 +41,9 @@ export function camposDaPeca(p) {
     ...(p.raridade ? { raridade: p.raridade } : {}),
     ...(p.ilvl ? { ilvl: p.ilvl } : {}),
     ...(p.efeito ? { efeito: p.efeito } : {}),
+    // Os sockets (com as gemas encaixadas) e a instância de uma gema solta: vão junto com a peça.
+    ...(p.soquetes ? { soquetes: p.soquetes } : {}),
+    ...(p.gema ? { gema: p.gema } : {}),
   };
 }
 
@@ -274,7 +279,7 @@ export function sortearFaixa(p, rng = null) {
  * formato de peça (`id` numérico + `count`, ou + `af` em lista): converte os
  * atributos antigos e sorteia a faixa que faltar. Devolve quantas mudaram.
  */
-export function converterTudo(raiz, rng = null) {
+export function converterTudo(raiz, rng = null, { abrirSoquetes = false } = {}) {
   let n = 0;
   const visitar = (o) => {
     if (!o || typeof o !== 'object') return;
@@ -287,6 +292,15 @@ export function converterTudo(raiz, rng = null) {
       mudou = renomearAdds(o) || mudou;
       mudou = sortearFaixa(o, rng) || mudou;
       mudou = converterBase(o) || mudou;
+      // v5: a peça que já existia ganha TODOS os sockets do slot, abertos e ligados (decisão do dono) —
+      // só na migração do personagem: peça sem sockets de outro caminho fica com 0.
+      if (abrirSoquetes && !o.soquetes && ITEM_CATALOG[o.id]?.slot && !ITEM_CATALOG[o.id]?.stackable) {
+        const s = Gemas.soquetesAbertos(ITEM_CATALOG[o.id]);
+        if (s) {
+          o.soquetes = s;
+          mudou = true;
+        }
+      }
       if (mudou) n++;
       return;
     }
@@ -301,13 +315,16 @@ export function converterTudo(raiz, rng = null) {
 }
 
 /** A versão do formato de item do personagem: quem já está nela não precisa ser varrido de novo. */
-export const VERSAO_DOS_ITENS = 4; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura); 3: a munição também (a 2 a tirou); 4: reestruturação (adds novos, Evasion/Energy Shield, Item Level)
+export const VERSAO_DOS_ITENS = 5; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura); 3: a munição também (a 2 a tirou); 4: reestruturação (adds novos, Evasion/Energy Shield, Item Level); 5: sockets e gemas de skill
 
 /** Converte o personagem (uma vez — marca `versaoDosItens`). Devolve quantas peças mudaram. */
 export function converterPersonagem(estado) {
   if (!estado || estado.versaoDosItens === VERSAO_DOS_ITENS) return 0;
   // Sorteio de verdade (uma vez só, e fica gravado no personagem).
-  const n = converterTudo(estado, Math.random);
+  const antes = estado.versaoDosItens ?? 0;
+  let n = converterTudo(estado, Math.random, { abrirSoquetes: antes < 5 });
+  // v5: as magias/runas da barra viram gemas encaixadas (ver `skills/gemas.mjs`).
+  if (antes < 5) n += Gemas.migrarPersonagem(estado);
   estado.versaoDosItens = VERSAO_DOS_ITENS;
   return n;
 }
@@ -336,4 +353,7 @@ export function raridadeDaPeca(p) {
 for (const meta of Object.values(ITEM_CATALOG)) {
   const d = defesaDoCatalogo(meta);
   if (d.evasion || d.es) meta.defesaPadrao = d;
+  // O requisito de atributo (modelo Path of Exile): o balão mostra, e o equipar confere (`personagem/requisitos.mjs`).
+  const req = requisitoDe(meta);
+  if (req) meta.requisito = req;
 }
