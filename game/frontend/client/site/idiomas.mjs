@@ -116,7 +116,7 @@ export const DICIONARIO = {
 
     // ---- quem está online ----
     'drops.titulo': 'Latest drops',
-    'drops.legenda': 'The rarest things that dropped on the server: legendary or mythic BOSS drops with two stars or more, anything that rolled three golden stars, and the bags — from bosses or ordinary creatures. Hover to see its stats.',
+    'drops.legenda': 'The rarest things that dropped on the server: every epic, legendary or mythic piece, anything that rolled two T5 modifiers, and the bags — from bosses or ordinary creatures. Hover to see its stats.',
     'drops.carregando': 'loading...',
     'drops.vazio': 'nothing has dropped yet — the bar fills itself as soon as something does',
     'drops.extras': 'Extra attributes',

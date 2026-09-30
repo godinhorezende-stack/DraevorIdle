@@ -25,7 +25,7 @@
 .tip-item.tier-lendario { --tier: #e0a84a; }
 .tip-item.tier-mitico { --tier: #f2503f; }
 .tip-item .tip-id b, .tip-item .tip-id em { display: block; }
-.tip-item em { font-style: normal; }
+.tip-item em, .tip-item i { font-style: normal; }
 .tip-item .tip-rules div, .tip-item .tip-prices div { display: flex; }
 .tip-item .tip-stats, .tip-item .tip-afixos, .tip-item .tip-efeito, .tip-item .tip-prices { display: grid; }
 .tip-item .tip-afixo { display: flex; align-items: baseline; }

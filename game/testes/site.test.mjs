@@ -90,7 +90,11 @@ test('/api/drops: só o raro entra, no formato do original', async () => {
   assert.equal(meus[0].chance, 0.01);
   // Com três afixos dourados, até um comum entra (como o stone skin amulet capturado).
   assert.equal(DropsDoSite.valeAnotar(3081, [{ id: 'armor_flat', tier: 3, value: 99 }, { id: 'ice_res', tier: 3, value: 99 }, { id: 'fire_res', tier: 3, value: 99 }]), true);
-  // Épico de hunt comum (sem ser bag) não entra — era o que enchia a lista.
+  // A raridade que conta é a do DROP: Épico para cima entra (o mesmo corte do anúncio para todos); Raro não.
+  const ESPADA = Number(Object.keys(ITEM_CATALOG).find((k) => ITEM_CATALOG[k].name === 'fire sword'));
+  for (const raridade of ['épico', 'lendário', 'mítico']) assert.equal(DropsDoSite.valeAnotar(ESPADA, [], { raridade }), true, raridade);
+  for (const raridade of ['comum', 'incomum', 'raro']) assert.equal(DropsDoSite.valeAnotar(ESPADA, [], { raridade }), false, raridade);
+  // A raridade do catálogo sozinha (sem a do drop) não entra — era o que enchia a lista.
   assert.equal(DropsDoSite.valeAnotar(Number(Object.keys(ITEM_CATALOG).find((k) => ITEM_CATALOG[k].rarity === 'épico' && !DropsDoSite.ehBag(Number(k)))), null), false);
 });
 

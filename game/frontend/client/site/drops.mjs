@@ -293,11 +293,37 @@ function montarBalao(drop) {
  * Drop antigo (de antes, sem `peca`) segue no balão de antes até sair da faixa.
  */
 function balaoDoJogo(drop) {
-  if (!drop.peca) return null;
-  const ficha = fichaDeItem(drop.id, null, null, drop.peca);
+  /*
+   * Drop de ANTES da peça inteira (caiu antes de 30/09): o balão do jogo com o
+   * catálogo da peça e a raridade do drop, e os atributos dele — que vieram já
+   * escritos pelo servidor — no bloco de Modificadores, no mesmo desenho.
+   */
+  const antigo = !drop.peca;
+  const peca = drop.peca ?? { id: drop.id, count: drop.count ?? 1, ...(drop.raridade ? { raridade: drop.raridade } : {}), ...(drop.tier ? { tier: drop.tier } : {}) };
+  const ficha = fichaDeItem(drop.id, null, null, peca);
   if (!ficha) return null;
   const node = el('div', `tooltip ${ficha.classe}`);
   node.append(...ficha.partes);
+  if (antigo && drop.afixos?.length) {
+    const extras = el('div', 'tip-afixos');
+    extras.append(el('div', 'tip-afixos-titulo', t('drops.modificadores', 'Modificadores')));
+    for (const posto of drop.afixos) {
+      const linha = el('div', 'tip-afixo');
+      const selo = el('i', `tip-afixo-tier q${posto.q ?? 1}`);
+      selo.append(el('b', 'estrela', '★'), el('span', null, ` T${posto.tier ?? posto.nivel ?? 1}`));
+      linha.append(el('span', null, posto.texto), selo);
+      extras.append(linha);
+    }
+    // Logo depois da base/implícitos (antes do poder e dos requisitos), como no jogo.
+    const depoisDe = node.querySelector('.tip-stats') ?? node.querySelector('.tip-head');
+    depoisDe.after(extras);
+  }
+  // As estrelas no nome, como na faixa (o balão do jogo as tira dos adds, que o drop antigo não tem).
+  if (antigo && drop.estrelas && !node.querySelector('.tip-id .item-estrelas')) {
+    const selo = el('i', 'item-estrelas');
+    for (let i = 0; i < drop.estrelas; i++) selo.append(el('b', `estrela q${drop.afixos?.[i]?.q ?? drop.forca ?? 1}`, '★'));
+    node.querySelector('.tip-id b')?.after(selo);
+  }
   const origem = el('div', 'tip-origem');
   const linha = (rotulo, valor, classe) => {
     if (!valor) return;
