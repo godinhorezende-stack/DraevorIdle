@@ -300,5 +300,9 @@ test('resistência do bicho vale na magia (troll resiste 20% a energia) e o elem
     return magia('spell-terra-strike')(e);
   });
   // Mesmo dano de catálogo (strike de 1º círculo), resistências opostas: energia +20, terra −10.
-  assert.ok(terra > energia, `terra ${terra} deveria passar energia ${energia} no troll`);
+  // (Descontado o balanceamento de cada gema — `fatorDeDano`, skills.json.)
+  const fator = (id) => GemasDeSkill.DEFS.get(GemasDeSkill.ITEM_DA_ACAO.get(id)).fatorDeDano;
+  const terraPura = terra / fator('spell-terra-strike');
+  const energiaPura = energia / fator('spell-energy-strike');
+  assert.ok(terraPura > energiaPura, `terra ${terraPura} deveria passar energia ${energiaPura} no troll`);
 });
