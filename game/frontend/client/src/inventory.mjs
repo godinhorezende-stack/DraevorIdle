@@ -1,6 +1,7 @@
 // Inventário: slots de equipamento com os PNGs do client, arrastar e soltar
 // para equipar, menu de contexto por item e a loot pouch com venda rápida.
 import { itemCanvas, itemSprite } from './sprites.mjs';
+import { abrirSoquetes, temSoquetes } from './soquetes.mjs';
 // O desenho da bolsa numa definição só, com a reserva. Ver o módulo.
 import { ITEM_DA_BOSS_POUCH, ITEM_DA_BOSS_POUCH_RESERVA, ITEM_DA_STORE_INBOX } from '/packages/shared/src/boss-pouch.mjs';
 import { pedirQuantidade, controleDeQuantidade } from './social.mjs';
@@ -771,6 +772,10 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null }) {
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }
       : null,
     from === 'equipment' ? { label: 'Desequipar', action: () => send({ t: 'unequip', slot: meta.slot }) } : null,
+    // Os sockets da peça vestida: encaixar/tirar gemas de skill (ver soquetes.mjs).
+    from === 'equipment' && temSoquetes(peca)
+      ? { label: `Sockets (${peca.soquetes.gemas.filter(Boolean).length}/${peca.soquetes.gemas.length} gemas)`, action: () => abrirSoquetes(ctx, meta.slot) }
+      : null,
     /*
      * ---- Subir o tier ----
      *

@@ -221,6 +221,17 @@ export const imagemPronta = (src) => image(src).ready;
 export const outfitInfo = (look) => outfitMeta[look];
 export const itemSprite = (id) => itemSprites[id];
 
+/**
+ * Os itens do catálogo que pedem a figura de OUTRO (`spriteDe` — as gemas de
+ * skill usam a pedra do elemento). Mesmo empréstimo do `DESENHO_EMPRESTADO`,
+ * só que vindo do servidor, no `welcome`.
+ */
+export function emprestarDoCatalogo(catalogo) {
+  for (const [id, meta] of Object.entries(catalogo ?? {})) {
+    if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
+  }
+}
+
 // ---------- itens ----------
 
 /**

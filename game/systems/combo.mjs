@@ -90,7 +90,7 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
     // Vazio ou desligado: não há o que tentar (e nem o que registrar a cada tique).
     if (!action?.id || action.enabled === false) continue;
     const linha = { slot: posicao + 1, indice: slot, skill: action.id, parede, relogio, desdeUltimaMs: desde() };
-    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo)) {
+    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) {
       registrar({ ...linha, resultado: 'IGNORADA', motivo: 'CONDICAO' });
       continue;
     }

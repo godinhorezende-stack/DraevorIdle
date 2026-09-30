@@ -345,3 +345,54 @@ test('drop de gema: sai no nível 1, entre as skills do level da fase; parte sã
   assert.ok(ativas > 0 && supports > 0);
   assert.equal(G.sortearDrop({ ato: 1 }, () => 0.99), null, 'a chance é baixa');
 });
+
+// ---------------------------------------------------------------- loja da Zuma Magehide
+
+test('loja da Zuma: lista gemas ativas (preço pelo level) e supports (preço fixo)', () => {
+  const e = personagemDeTeste({ level: 50 });
+  const lista = G.catalogoDaLoja(e);
+  const flame = lista.find((l) => l.id === GEMA(FLAME));
+  const def = G.DEFS.get(GEMA(FLAME));
+  assert.equal(flame.buy, G.CONFIG.loja.precoBase + G.CONFIG.loja.precoPorLevel * def.levelMinimo);
+  assert.equal(lista.find((l) => l.id === SUPPORT('greater-damage')).buy, G.CONFIG.loja.precoDoSupport);
+  assert.equal(G.CONFIG.loja.npc, 'zuma');
+});
+
+test('loja da Zuma: compra paga do bolso e depois do banco; gema nível 1 na mochila', () => {
+  const e = personagemDeTeste({ level: 50 });
+  const preco = G.precoNaLoja(G.DEFS.get(GEMA(FLAME)));
+  e.gold = preco;
+  e.bank = preco;
+  e.inventory = [];
+  const r = G.comprarNaLoja(e, { id: GEMA(FLAME), count: 2 });
+  assert.equal(r.ok, true);
+  assert.equal(e.gold, 0);
+  assert.equal(e.bank, 0);
+  assert.equal(e.inventory.filter((p) => p.id === GEMA(FLAME) && p.gema?.nivel === 1).length, 2);
+  assert.equal(G.comprarNaLoja(e, { id: GEMA(FLAME) }).ok, false, 'sem ouro');
+  assert.equal(G.comprarNaLoja(e, { id: 3031 }).ok, false, 'não é gema');
+});
+
+// ---------------------------------------------------------------- uso automático por tags
+
+test('condição "bichos por perto": inimigos ≥ 3 libera a área; menos, não', () => {
+  const e = personagemDeTeste({ level: 50 });
+  const bicho = (x) => ({ hp: 10, x, y: 0 });
+  const hunt = { pos: { x: 0, y: 0 }, monstros: [bicho(1), bicho(2), bicho(30)] };
+  const acao = { conditions: [{ kind: 'perto', op: 'gte', value: 3 }] };
+  assert.equal(Acoes.condicoesDoSlotBatem(acao, e, null, hunt), false, 'só 2 no raio');
+  hunt.monstros.push(bicho(3));
+  assert.equal(Acoes.condicoesDoSlotBatem(acao, e, null, hunt), true);
+  hunt.monstros[0].hp = 0;
+  assert.equal(Acoes.condicoesDoSlotBatem(acao, e, null, hunt), false, 'morto não conta');
+  assert.equal(Acoes.condicoesDoSlotBatem(acao, e, null, null), false, 'sem hunt não bate');
+});
+
+test('condição "boss": só na sala do boss (ou só fora dela)', () => {
+  const e = personagemDeTeste({ level: 50 });
+  const so = { conditions: [{ kind: 'boss', op: 'sim' }] };
+  const fora = { conditions: [{ kind: 'boss', op: 'nao' }] };
+  assert.equal(Acoes.condicoesDoSlotBatem(so, e, null, { isBoss: true }), true);
+  assert.equal(Acoes.condicoesDoSlotBatem(so, e, null, { isBoss: false }), false);
+  assert.equal(Acoes.condicoesDoSlotBatem(fora, e, null, { isBoss: false }), true);
+});

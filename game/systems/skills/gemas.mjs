@@ -388,3 +388,33 @@ export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1 } = {}
   const def = lista[Math.floor(rng() * lista.length)];
   return def ? { id: def.itemId, count: 1, gema: { nivel: 1, xp: 0 } } : null;
 }
+
+// ---------------------------------------------------------------- loja (Zuma Magehide)
+
+/** O preço de uma gema na loja: ativa pelo level mínimo da skill; support, o preço fixo. */
+export const precoNaLoja = (def) => (def.tipo === 'support' ? CONFIG.loja.precoDoSupport : CONFIG.loja.precoBase + CONFIG.loja.precoPorLevel * (def.levelMinimo ?? 1));
+
+/**
+ * A lista da loja (o formato do balcão de NPC do cliente — `npcFala`, `tipo: 'loja'`):
+ * a gema de cada skill (pelo level) e os supports, no nível 1.
+ */
+export function catalogoDaLoja(estado) {
+  const tenho = (id) => (estado.inventory ?? []).filter((p) => Number(p.id) === id).length;
+  return [...DEFS.values()]
+    .sort((a, b) => (a.tipo === b.tipo ? a.levelMinimo - b.levelMinimo || a.nome.localeCompare(b.nome) : a.tipo === 'ativa' ? -1 : 1))
+    .map((def) => ({ id: def.itemId, nome: `Gema: ${def.nome}${def.tipo === 'support' ? ' (support)' : ` · lv ${def.levelMinimo}`}`, buy: precoNaLoja(def), tenho: tenho(def.itemId) }));
+}
+
+/** Comprar `count` gemas (nível 1) na loja: paga do bolso e depois do banco; vão para a mochila. */
+export function comprarNaLoja(estado, { id, count = 1 }) {
+  const def = DEFS.get(Number(id));
+  if (!def) return { ok: false, erro: 'Ela não vende isso.' };
+  const n = Math.max(1, Math.min(CONFIG.loja.porVez ?? 20, Math.floor(Number(count) || 1)));
+  const total = precoNaLoja(def) * n;
+  if ((estado.gold ?? 0) + (estado.bank ?? 0) < total) return { ok: false, erro: 'Ouro insuficiente (bolso + banco).' };
+  const doBolso = Math.min(estado.gold ?? 0, total);
+  estado.gold = (estado.gold ?? 0) - doBolso;
+  estado.bank = (estado.bank ?? 0) - (total - doBolso);
+  for (let i = 0; i < n; i++) (estado.inventory ??= []).push(itemDaGema(novaGema(def.itemId)));
+  return { ok: true, notice: `Você comprou ${n}× gema de ${def.nome}.` };
+}

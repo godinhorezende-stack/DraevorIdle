@@ -968,7 +968,7 @@ function autoDisparo(estado, hunt, personagem) {
     if (Acoes.PAPEL_DO_SLOT[slot] === 'attack') continue;
     const action = acoes[slot];
     if (!action?.id || action.enabled === false) continue;
-    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo)) continue;
+    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) continue;
     const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
     if (resultado.ok) eventos.push(...resultado.eventos);
   }

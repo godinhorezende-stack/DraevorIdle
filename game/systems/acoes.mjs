@@ -221,12 +221,32 @@ export function apagarPreset(estado, { name }) {
   return { ok: true };
 }
 
-/** Uma condição do slot bate com o estado atual? `kind:'stat'` (vida/mana) ou `kind:'nome'` (criatura). */
-function condicaoBate(condition, estado, alvo) {
+/** O raio de "bichos por perto" — o mesmo das magias de suporte (`SEM_BICHO_POR_PERTO`). */
+export const RAIO_DE_PERTO = 8;
+
+/**
+ * Uma condição do slot bate com o estado atual?
+ *  - `kind:'stat'` (vida/mana, sua ou do alvo);
+ *  - `kind:'nome'` (o nome da criatura mirada);
+ *  - `kind:'perto'` (quantas criaturas vivas estão a até `RAIO_DE_PERTO` sqm — "inimigos ≥ 3 → área");
+ *  - `kind:'boss'` (a hunt é a sala de um boss: `op:'sim'|'nao'`).
+ * As duas últimas olham a hunt; sem ela (fora de caçada) não batem.
+ */
+function condicaoBate(condition, estado, alvo, hunt) {
   if (condition.kind === 'nome') {
     if (!alvo) return false;
     const bate = (condition.names ?? []).includes(alvo.name);
     return condition.op === 'diferente' ? !bate : bate;
+  }
+  if (condition.kind === 'perto') {
+    if (!hunt?.pos) return false;
+    const n = (hunt.monstros ?? []).filter((b) => b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= RAIO_DE_PERTO).length;
+    const valor = Number(condition.value) || 0;
+    return condition.op === 'lte' ? n <= valor : n >= valor;
+  }
+  if (condition.kind === 'boss') {
+    if (!hunt) return false;
+    return condition.op === 'nao' ? !hunt.isBoss : !!hunt.isBoss;
   }
   const sujeito = condition.who === 'target' ? alvo : estado;
   if (!sujeito) return false;
@@ -236,8 +256,8 @@ function condicaoBate(condition, estado, alvo) {
   return condition.op === 'lte' ? valor <= condition.value : valor >= condition.value;
 }
 
-export function condicoesDoSlotBatem(action, estado, alvo) {
-  return (action.conditions ?? []).every((c) => condicaoBate(c, estado, alvo));
+export function condicoesDoSlotBatem(action, estado, alvo, hunt = null) {
+  return (action.conditions ?? []).every((c) => condicaoBate(c, estado, alvo, hunt));
 }
 
 /** Falta vida/mana suficiente para esta cura não ser jogada fora? */
@@ -501,7 +521,7 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const pode = Summon.podeInvocar(estado, hunt, hunt.ultimoTique ?? Date.now());
     if (!pode.ok) return { motivo: 'FAMILIAR', ...pode };
   }
-  if (!condicoesDoSlotBatem(action, estado, alvo)) return { ok: false, erro: 'Condição não bate.', motivo: 'CONDICAO' };
+  if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return { ok: false, erro: 'Condição não bate.', motivo: 'CONDICAO' };
   // Cura sem condição configurada não é desperdiçada: só sai se faltar pelo
   // menos a cura MÍNIMA dela (o slot novo nasce com `conditions: []` no client,
   // e sem isto a poção de vida saía a cada recarga com a vida cheia).

@@ -42,11 +42,14 @@
     "_nota": "O NPC vende a gema de cada skill (e de cada support) no nível 1, por gold: `precoBase + precoPorLevel × level mínimo da skill`.",
     "precoBase": 500,
     "precoPorLevel": 60,
-    "precoDoSupport": 25000
+    "precoDoSupport": 25000,
+    "_npc": "O NPC que vende as gemas (decisão do dono: a Zuma Magehide, na praça). `porVez`: o máximo de gemas numa compra.",
+    "npc": "zuma",
+    "porVez": 20
   },
 
   "sprites": {
-    "_nota": "A figura da gema no inventário: a pedra de cada elemento (id de um item que já tem sprite).",
-    "fire": 3030, "ice": 3029, "energy": 3033, "earth": 3032, "holy": 3028, "death": 22193, "physical": 9057, "healing": 3026, "outro": 3027, "support": 3036
+    "_nota": "A figura da gema no inventário: a pedra GRANDE de cada elemento (id de um item que já tem sprite; as 'small' ficavam um ponto no socket).",
+    "fire": 3039, "ice": 3041, "energy": 3036, "earth": 3038, "holy": 3037, "death": 9615, "physical": 32769, "healing": 3061, "outro": 7290, "support": 31354
   }
 }

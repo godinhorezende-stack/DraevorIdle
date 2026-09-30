@@ -592,8 +592,30 @@ export class Sessao {
   falarComNpc({ id }) {
     const npc = CITY_META.npcs.find((n) => n.id === id);
     if (!npc) return this.erro('Ninguém para conversar aqui.');
+    // A Zuma Magehide vende as GEMAS DE SKILL (decisão do dono) — o balcão de NPC do cliente.
+    if (npc.id === GemasDeSkill.CONFIG.loja.npc) return this.mandarLojaDeGemas(npc);
     if (npc.tipo !== 'banco') return this.erro(`${npc.name} ainda não atende neste servidor.`);
     this.enviar({ t: 'npcFala', id: npc.id, nome: npc.name, tipo: 'banco', fala: Banqueiro.FALA_DO_BANQUEIRO, catalogo: null, gold: this.estado.gold ?? 0 });
+  }
+
+  /** A loja de gemas (`npcFala`, `tipo: 'loja'`), no formato do balcão de NPC do cliente. */
+  mandarLojaDeGemas(npc = CITY_META.npcs.find((n) => n.id === GemasDeSkill.CONFIG.loja.npc)) {
+    this.enviar({
+      t: 'npcFala',
+      id: npc.id,
+      nome: npc.name,
+      tipo: 'loja',
+      fala: 'Gemas de skill: a skill é da gema encaixada num socket do que você veste. Supports ligadas a ela a fortalecem.',
+      catalogo: GemasDeSkill.catalogoDaLoja(this.estado),
+      gold: (this.estado.gold ?? 0) + (this.estado.bank ?? 0),
+    });
+  }
+
+  /** `send({t:'npcComprar', id, count})` — comprar no balcão do NPC (a Zuma: gemas). */
+  comprarNoNpc(m) {
+    const r = GemasDeSkill.comprarNaLoja(this.estado, m);
+    this.aplicar(r);
+    if (r.ok) this.mandarLojaDeGemas();
   }
 
   /** `send({t:'market', action?})` — o balcão de itens (ver `game/systems/mercado.mjs`). */
@@ -1022,6 +1044,8 @@ export class Sessao {
         return this.despacharBank(m);
       case 'falarComNpc':
         return this.falarComNpc(m);
+      case 'npcComprar':
+        return this.comprarNoNpc(m);
       case 'prey':
         return this.aplicar(Prey.comando(this.estado, m));
       case 'arvore':

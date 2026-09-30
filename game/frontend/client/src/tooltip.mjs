@@ -2341,6 +2341,64 @@ export function faltaRequisito(meta, personagem) {
   return `Requer ${req.atributos.map((a) => `${req.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou ')}`;
 }
 
+const NOME_DO_EFEITO_DA_SUPPORT = {
+  danoPct: 'dano',
+  curaPct: 'cura',
+  castTimePct: 'tempo de conjuração',
+  custoPct: 'custo de mana',
+  recargaPct: 'recarga',
+  critChance: 'chance de crítico',
+  critDano: 'dano crítico',
+  alvosExtras: 'projéteis extras',
+  danoDosExtrasPct: 'dano dos projéteis extras',
+};
+const numeroDoEfeito = (chave, v) => (chave === 'alvosExtras' ? `+${v}` : `${v > 0 ? '+' : ''}${v}%`);
+
+/** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
+function blocoDaGema(def, gema) {
+  const bloco = el('div', 'tip-gema');
+  const nivel = gema?.nivel ?? 1;
+  bloco.append(el('div', 'tip-gema-tipo', def.tipo === 'support' ? 'Gema de Support' : 'Gema de Skill'));
+  bloco.append(el('div', null, `Nível ${nivel} / 30${gema?.xp ? ` · ${Math.floor(gema.xp).toLocaleString('pt-BR')} XP` : ''}`));
+  if (def.tipo === 'support') {
+    const reqs = [...(def.requer ?? []), ...(def.algum?.length ? [def.algum.join(' ou ')] : [])];
+    if (reqs.length) bloco.append(el('div', 'tip-gema-tags', `Suporta: ${reqs.join(', ')}`));
+    for (const [chave, v] of Object.entries(def.efeito ?? {})) {
+      const total = v + (def.porNivel?.[chave] ?? 0) * (nivel - 1);
+      bloco.append(el('div', 'tip-gema-efeito', `${numeroDoEfeito(chave, Math.round(total * 100) / 100)} ${NOME_DO_EFEITO_DA_SUPPORT[chave] ?? chave}`));
+    }
+    bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
+  } else {
+    if (def.tags?.length) bloco.append(el('div', 'tip-gema-tags', def.tags.join(', ')));
+    if (def.castTime) bloco.append(el('div', null, `Conjuração: ${(def.castTime / 1000).toLocaleString('pt-BR')} s`));
+    if (def.levelMinimo) bloco.append(el('div', null, `Level do personagem: ${def.levelMinimo}+`));
+    bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
+  }
+  return bloco;
+}
+
+/** Os sockets da peça: `[💎]─[🔹]─[ ] [🔒]` — ligados por traço, trancados com cadeado. */
+function blocoDosSoquetes(sq) {
+  const bloco = el('div', 'tip-soquetes');
+  const max = sq.gemas?.length ?? 0;
+  const itens = getItems();
+  const fila = el('div', 'tip-soquetes-fila');
+  const nomes = [];
+  for (let i = 0; i < max; i++) {
+    const g = sq.gemas[i];
+    const def = g ? itens[g.id]?.gemaDef : null;
+    const cls = i >= (sq.abertos ?? 0) ? 'trancado' : !g ? 'vazio' : def?.tipo === 'support' ? 'support' : 'ativa';
+    const casa = el('span', `soquete ${cls}`, cls === 'trancado' ? '🔒' : cls === 'vazio' ? '' : cls === 'support' ? '🔹' : '💎');
+    if (g) casa.title = `${def?.nome ?? g.id} (nível ${g.nivel})`;
+    fila.append(casa);
+    if (i < max - 1) fila.append(el('span', `soquete-link${sq.links?.[i] ? ' ligado' : ''}`, sq.links?.[i] ? '─' : ' '));
+    if (g) nomes.push(`${def?.nome ?? g.id} ${g.nivel}`);
+  }
+  bloco.append(el('div', 'tip-soquetes-titulo', `Sockets ${sq.abertos ?? 0}/${max}`), fila);
+  if (nomes.length) bloco.append(el('div', 'tip-soquetes-gemas', nomes.join(' · ')));
+  return bloco;
+}
+
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;
@@ -2693,6 +2751,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     bloco.append(el('b', null, efeitoDaPeca.nome), el('div', null, efeitoDaPeca.texto));
     node.append(bloco);
   }
+
+  // ---- a GEMA de skill: nível, XP, tags e o que faz ----
+  if (meta.gemaDef) node.append(blocoDaGema(meta.gemaDef, peca?.gema));
+
+  // ---- sockets e links (não são afixos: não contam no limite de modificadores) ----
+  if (peca?.soquetes) node.append(blocoDosSoquetes(peca.soquetes));
 
   // ---- quem pode usar, e onde ----
   const regras = el('div', 'tip-rules');
