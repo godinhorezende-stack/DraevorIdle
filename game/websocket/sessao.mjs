@@ -70,6 +70,7 @@ import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
 import * as Anuncios from '../systems/anuncios.mjs';
 import * as Presentes from '../systems/presentes.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -646,6 +647,18 @@ export class Sessao {
     this.mandarEstado();
   }
 
+  /**
+   * `aplicar` + o catálogo de ações de novo: vestir/tirar peça e encaixar/tirar
+   * gema mudam as skills disponíveis (a Action Bar só mostra as gemas encaixadas).
+   */
+  aplicarComSkills(resultado) {
+    this.aplicar(resultado);
+    if (resultado?.ok) {
+      Ficha.invalidar(this.estado);
+      this.enviar({ t: 'actionCatalog', catalog: Acoes.catalogo(this.estado) });
+    }
+  }
+
   /** `send({t:'mounts'})` — consulta pura, não muda `estado`: manda direto, sem passar por `aplicar`. */
   mandarMontarias() {
     const { outfits, mounts } = Aparencia.montariasEOutfits(this.estado);
@@ -931,9 +944,16 @@ export class Sessao {
       case 'clearBackpack':
         return this.aplicar(Inventario.limparMochila(this.estado, m));
       case 'equip':
-        return this.aplicar(Inventario.equipar(this.estado, m));
+        return this.aplicarComSkills(Inventario.equipar(this.estado, m));
       case 'unequip':
-        return this.aplicar(Inventario.desequipar(this.estado, m));
+        return this.aplicarComSkills(Inventario.desequipar(this.estado, m));
+      // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
+      case 'gema':
+        return this.aplicarComSkills(
+          m.action === 'encaixar' ? GemasDeSkill.encaixar(this.estado, m) :
+          m.action === 'tirar' ? GemasDeSkill.tirar(this.estado, m) :
+          { ok: false, erro: 'Ação de gema desconhecida.' }
+        );
       // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,
       // retirar, inserir, fundir) — cada resposta é o retrato inteiro de novo.
       case 'forja':

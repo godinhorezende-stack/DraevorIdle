@@ -8,7 +8,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import * as Combo from '../systems/combo.mjs';
 import * as R from '../systems/regras.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
 
 // Onze magias de ataque DIFERENTES do sorcerer, todas de alvo único.
 // Recarga do catálogo: 7 de 2 s, 3 de 8 s e 1 de 30 s (o efetivo é a metade).
@@ -20,6 +20,8 @@ const ONZE = [
 
 function montar(magias, { distancia = 1, mana = 1e9 } = {}) {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 600 });
+  // As skills vêm das gemas encaixadas (modelo Path of Exile).
+  comSkills(e, magias.filter(Boolean));
   magias.forEach((id, i) => {
     if (!id) return;
     const r = Acoes.definir(e, { slot: Combo.SLOTS_DO_COMBO[i], value: { id } });

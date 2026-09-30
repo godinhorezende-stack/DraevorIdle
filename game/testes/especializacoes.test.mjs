@@ -14,7 +14,7 @@ import * as Tags from '../systems/skills/tags.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { round } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const skill = (id) => [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes].find((x) => x.id === id);
@@ -69,7 +69,7 @@ function personagem(voc, { arma = null, anel = null } = {}) {
 /** O dano de 40 lançamentos de uma skill (a conta do combate: `Acoes.disparar`). */
 function danoDaSkill(voc, id, opcoes) {
   return comSemente(() => {
-    const e = personagem(voc, opcoes);
+    const e = comSkills(personagem(voc, opcoes), [id]);
     e.actions = Array(Acoes.SLOTS).fill(null);
     const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
     const r = Acoes.definir(e, { slot, value: { id } });
@@ -117,7 +117,7 @@ test('2. Sorcerer usando Fire (Flame Strike): +Fire +Spell', () => {
 });
 
 test('3. Knight usando Fire (Flame Strike): pode (não bloqueia), mas sem afinidade natural', () => {
-  const e = personagem('knight');
+  const e = comSkills(personagem('knight'), ['spell-flame-strike']);
   const entrada = Acoes.catalogo(e).spells.find((x) => x.id === 'spell-flame-strike');
   assert.equal(entrada.blocked, null, 'nada bloqueia por classe');
   assert.deepEqual(entrada.classeRecomendada.sort(), ['druid', 'sorcerer']);
@@ -137,7 +137,7 @@ test('4. Paladin usando skill ranged (Ethereal Spear e o arco): +Physical +Range
 });
 
 test('5. Paladin usando Fire (Flame Strike e Fireball rune): pode, sem afinidade natural', () => {
-  const e = personagem('paladin');
+  const e = comSkills(personagem('paladin'), ['spell-flame-strike', 'rune-fireball-rune']);
   const c = Acoes.catalogo(e);
   for (const id of ['spell-flame-strike', 'rune-fireball-rune']) {
     const x = [...c.spells, ...c.runes].find((y) => y.id === id);

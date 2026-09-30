@@ -1,0 +1,52 @@
+{
+  "_nota": "GEMAS DE SKILL, SUPPORTS e SOCKETS (pedido do dono, 30/09) — o modelo Path of Exile: a skill vem da gema encaixada num socket de uma peça VESTIDA; supports ligados (links) à gema ativa a modificam. Lido por systems/skills/gemas.mjs. As \"gemas\" do Gem Atelier (gemas.mjs) são outra coisa (passivas do Tibia). Números iniciais.",
+
+  "sockets": {
+    "_nota": "Máximo por slot (o dono: 19 no total; Legs no lugar de Gloves). Ammo e backpack não têm.",
+    "maximo": { "weapon": 4, "head": 2, "body": 4, "shield": 3, "legs": 2, "feet": 2, "ring": 1, "neck": 1 },
+    "_drop": "Peça nova: quantos sockets vêm ABERTOS sai de `abertos` (peso por quantidade, na raridade da peça; nunca passa do máximo do slot); cada par de sockets vizinhos abertos é ligado com `chanceDeLink` da raridade. Sockets e links não contam como mod.",
+    "drop": {
+      "comum":    { "abertos": { "0": 60, "1": 30, "2": 10 },                 "chanceDeLink": 0.3 },
+      "incomum":  { "abertos": { "0": 40, "1": 35, "2": 20, "3": 5 },         "chanceDeLink": 0.4 },
+      "raro":     { "abertos": { "0": 25, "1": 35, "2": 25, "3": 12, "4": 3 }, "chanceDeLink": 0.5 },
+      "épico":    { "abertos": { "0": 15, "1": 30, "2": 30, "3": 18, "4": 7 }, "chanceDeLink": 0.6 },
+      "lendário": { "abertos": { "0": 10, "1": 25, "2": 30, "3": 23, "4": 12 }, "chanceDeLink": 0.7 },
+      "mítico":   { "abertos": { "1": 20, "2": 30, "3": 30, "4": 20 },          "chanceDeLink": 0.8 }
+    },
+    "_desbloqueio": "Preparado para o desbloqueio pago (futuro): `custoDoDesbloqueio` fica aqui quando existir; o item nunca é destruído.",
+    "custoDoDesbloqueio": null
+  },
+
+  "niveis": {
+    "_nota": "Nível da gema: 1 a `maximo`. A XP de cada nível: `xpBase × crescimento^(nível−1)`. A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Subir para o nível N pede o personagem no level `levelDoPersonagem(N) = levelMinimoDaSkill + (N−1) × levelsPorNivel` (a XP continua guardada até lá).",
+    "maximo": 30,
+    "xpBase": 400,
+    "crescimento": 1.35,
+    "parteDaExp": 1,
+    "levelsPorNivel": 8
+  },
+
+  "_progressao": "O que cada nível da gema ATIVA dá, se a gema não tiver a dela em skills.json: `dano` (+% do dano da skill por nível acima do 1), `cura` (idem na cura). Nem toda gema sobe tudo.",
+  "progressaoPadrao": { "dano": 3, "cura": 3 },
+
+  "_castTime": "Tempo de conjuração padrão (ms) por tipo — a skill só sai depois dele (barra de conjuração); cancela se o alvo morrer ou sair do alcance. Cast Speed (stat) e Faster Casting encurtam. Por gema em skills.json.",
+  "castTimePadrao": { "ataque": 400, "runa": 300, "cura": 0, "suporte": 0 },
+
+  "drop": {
+    "_nota": "Chance, por bicho morto, de cair uma gema (ativa ou support); cresce com o ato. A gema cai no nível 1. `parteSupport` = fração dos drops que são supports.",
+    "chancePorAto": { "1": 0.002, "2": 0.003, "3": 0.004, "4": 0.005 },
+    "parteSupport": 0.3
+  },
+
+  "loja": {
+    "_nota": "O NPC vende a gema de cada skill (e de cada support) no nível 1, por gold: `precoBase + precoPorLevel × level mínimo da skill`.",
+    "precoBase": 500,
+    "precoPorLevel": 60,
+    "precoDoSupport": 25000
+  },
+
+  "sprites": {
+    "_nota": "A figura da gema no inventário: a pedra de cada elemento (id de um item que já tem sprite).",
+    "fire": 3030, "ice": 3029, "energy": 3033, "earth": 3032, "holy": 3028, "death": 22193, "physical": 9057, "healing": 3026, "outro": 3027, "support": 3036
+  }
+}

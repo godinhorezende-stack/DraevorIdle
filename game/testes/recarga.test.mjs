@@ -6,11 +6,12 @@ import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import { ACTION_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
 
 function naHuntComBarra(ids) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 3000 });
   e.magic = { value: 10 }; // a Fireball Rune pede magic level
+  comSkills(e, ids); // as skills vêm das gemas encaixadas
   ids.forEach((id, k) => assert.ok(Acoes.definir(e, { slot: 11 + k, value: { id } }).ok, id));
   assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
   const h = e.hunt;

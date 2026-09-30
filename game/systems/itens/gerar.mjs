@@ -16,6 +16,7 @@
 import { ITEM_CATALOG } from '../dados.mjs';
 import * as C from './config.mjs';
 import * as Atributos from '../personagem/atributos.mjs';
+import * as Gemas from '../skills/gemas.mjs';
 
 /**
  * O TIPO do item, que escolhe o pool de adds (`pools.json`): arma corpo a
@@ -260,6 +261,8 @@ export function gerarItem(ctx) {
   const efeito = tipo && C.EFEITOS[tipo] && rng() < chance ? { tipo, id: sortearChave(Object.fromEntries(Object.keys(C.EFEITOS[tipo]).filter((k) => !k.startsWith('_')).map((k) => [k, 1])), rng) } : null;
 
   const temBase = Object.keys(base).length > 0;
-  if (!af.length && !efeito && raridade === 'comum' && !temBase) return simples;
-  return { ...simples, raridade, ilvl: itemLevel, ...(temBase ? { base } : {}), af, ...(efeito ? { efeito } : {}) };
+  // Os sockets (e links) da peça: sorteados pela raridade, até o máximo do slot — não contam como mod.
+  const soquetes = Gemas.sortearSoquetes(meta, raridade, rng);
+  if (!af.length && !efeito && raridade === 'comum' && !temBase && !soquetes?.abertos) return simples;
+  return { ...simples, raridade, ilvl: itemLevel, ...(temBase ? { base } : {}), af, ...(efeito ? { efeito } : {}), ...(soquetes ? { soquetes } : {}) };
 }

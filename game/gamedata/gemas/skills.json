@@ -1,0 +1,8 @@
+{
+  "_nota": "EXCEÇÕES por gema ativa (a gema de cada magia/runa sai sozinha do catálogo de ações). Por id da ação: `castTime` (ms), `progressao` (o que cada nível dá: {dano, cura} em % por nível — substitui a padrão; `{}` = só o nível, sem bônus), `levelMinimo` (se diferente do da skill).",
+  "gemas": {
+    "spell-magic-shield": { "castTime": 0, "progressao": {} },
+    "spell-haste": { "castTime": 0, "progressao": {} },
+    "spell-strong-haste": { "castTime": 0, "progressao": {} }
+  }
+}

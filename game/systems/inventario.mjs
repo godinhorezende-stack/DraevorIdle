@@ -136,7 +136,10 @@ export function removerItem(estado, id, count) {
 // ---- Material de craft/desmanche: mochila E bolsa de loot ----
 
 /** A peça carrega algo que se perderia (tier, afixo, imbuement)? */
-export const temExtras = (p) => !!(p?.tier || p?.af?.length || p?.imbu?.length || p?.efeito);
+// A peça é ÚNICA (não vira item comum empilhado): tier, adds, imbuements, poder, a base sorteada no drop,
+// os sockets (com gemas) e a instância de uma gema. Sem a base/sockets aqui, tirar a peça do corpo a
+// devolvia como item de catálogo e perdia o sorteio (e as gemas encaixadas).
+export const temExtras = (p) => !!(p?.tier || p?.af?.length || p?.imbu?.length || p?.efeito || p?.base || p?.soquetes || p?.gema);
 
 const GUARDADAS = ['inventory', 'pouch'];
 

@@ -3,6 +3,8 @@
 import * as R from '../systems/regras.mjs';
 import * as Inventario from '../systems/inventario.mjs';
 import * as Afixos from '../systems/afixos.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as Loja from '../systems/loja.mjs';
 import { CHARACTER_TEMPLATE } from '../systems/dados.mjs';
@@ -69,4 +71,37 @@ export function comMarcaNova(valor) {
     return Object.fromEntries(Object.entries(valor).map(([k, v]) => [comMarcaNova(k), comMarcaNova(v)]));
   }
   return valor;
+}
+
+
+/*
+ * ---- As skills pelas GEMAS (modelo Path of Exile) ----
+ * Sem a gema encaixada numa peça vestida, a magia/runa não existe para o
+ * personagem. Os testes que usam skills encaixam as gemas delas aqui, como o
+ * jogador faria: cada slot de socket ganha uma peça (a que já estiver vestida
+ * fica) com os sockets todos abertos e SEM links (nenhuma support por acaso), e
+ * as gemas entram na ordem. `conjuracao: false` (o padrão) zera o Cast Time
+ * dessas gemas NESTE processo de teste — para os testes que não são sobre a
+ * conjuração continuarem medindo o que medem.
+ */
+const PECA_PARA_O_SLOT = {};
+for (const slot of Object.keys(GemasDeSkill.CONFIG.sockets.maximo)) {
+  PECA_PARA_O_SLOT[slot] = Object.values(ITEM_CATALOG).find((i) => i.slot === slot && !i.stackable && !i.vocations?.length && !(i.minLevel > 1) && !i.twoHanded)?.id;
+}
+export function comSkills(e, ids, { nivel = 1, conjuracao = false } = {}) {
+  const itens = ids.map((id) => GemasDeSkill.ITEM_DA_ACAO.get(id));
+  if (itens.some((x) => !x)) throw new Error(`skill sem gema: ${ids.filter((id) => !GemasDeSkill.ITEM_DA_ACAO.has(id)).join(', ')}`);
+  if (!conjuracao) for (const it of itens) GemasDeSkill.DEFS.get(it).castTime = 0;
+  let k = 0;
+  for (const slot of ['weapon', 'body', 'shield', 'head', 'legs', 'feet', 'ring', 'neck']) {
+    if (k >= itens.length) break;
+    if (slot === 'shield' && ITEM_CATALOG[e.equipment?.weapon?.id]?.twoHanded) continue;
+    e.equipment[slot] ??= { id: PECA_PARA_O_SLOT[slot], count: 1 };
+    const max = GemasDeSkill.maximoDeSockets(ITEM_CATALOG[e.equipment[slot].id]);
+    const gemas = Array(max).fill(null);
+    for (let i = 0; i < max && k < itens.length; i++) gemas[i] = GemasDeSkill.novaGema(itens[k++], nivel);
+    e.equipment[slot] = { ...e.equipment[slot], soquetes: { abertos: max, links: Array(max - 1).fill(false), gemas } };
+  }
+  if (k < itens.length) throw new Error(`mais skills (${itens.length}) do que sockets`);
+  return e;
 }

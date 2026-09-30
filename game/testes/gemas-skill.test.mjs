@@ -1,0 +1,347 @@
+// GEMAS DE SKILL, SUPPORTS e SOCKETS (systems/skills/gemas.mjs): a skill vem da gema encaixada numa
+// peça vestida; as supports ligadas a modificam; XP e nível próprios; conjuração de verdade; migração.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import * as Cacadas from '../systems/cacadas.mjs';
+import * as Acoes from '../systems/acoes.mjs';
+import * as Afixos from '../systems/afixos.mjs';
+import * as Ficha from '../systems/ficha.mjs';
+import * as Treino from '../systems/treino.mjs';
+import * as Inventario from '../systems/inventario.mjs';
+import * as G from '../systems/skills/gemas.mjs';
+import { converterPersonagem, converterTudo } from '../systems/itens/item.mjs';
+import { gerarItem } from '../systems/itens/gerar.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
+import { criarMonstro } from '../systems/hunt/monstros.mjs';
+import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+
+const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
+const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
+const SUPPORT = (id) => [...G.DEFS.values()].find((d) => d.tipo === 'support' && d.id === id).itemId;
+const FLAME = 'spell-flame-strike';
+
+/** Uma peça no slot com sockets (abertos, links) e as gemas. */
+function vestir(e, slot, nome, { abertos, links = [], gemas = [] } = {}) {
+  const id = idDe(nome);
+  const max = G.maximoDeSockets(ITEM_CATALOG[id]);
+  e.equipment[slot] = { id, count: 1, soquetes: { abertos: abertos ?? max, links: Array.from({ length: max - 1 }, (_, i) => !!links[i]), gemas: Array.from({ length: max }, (_, i) => gemas[i] ?? null) } };
+  Ficha.invalidar(e);
+  return e.equipment[slot];
+}
+function naCacada(e) {
+  Treino.garantir(e);
+  e.magic.value = 60;
+  e.maxMana = e.mana = 1e9;
+  Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' });
+  const h = e.hunt;
+  delete h.instancia;
+  h.respawns = [];
+  h.outrosAndares = {};
+  const m = criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null);
+  m.hp = m.maxHp = 1e12;
+  delete m.spawn;
+  h.monstros.splice(0, h.monstros.length, m);
+  h.alvo = m.uid;
+  return m;
+}
+function comSemente(fn) {
+  const original = Math.random;
+  let s = 11;
+  Math.random = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  try {
+    return fn();
+  } finally {
+    Math.random = original;
+  }
+}
+/** O dano de 30 lançamentos da Flame Strike com o arranjo de sockets `montar(e)` (conjuração zerada: mede só o dano). */
+function danoDaFlame(montar) {
+  G.DEFS.get(GEMA(FLAME)).castTime = 0;
+  return comSemente(() => {
+    const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+    montar(e);
+    const bicho = naCacada(e);
+    e.actions = Array(Acoes.SLOTS).fill(null);
+    const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+    assert.ok(Acoes.definir(e, { slot, value: { id: FLAME } }).ok);
+    for (let i = 0; i < 30; i++) {
+      e.hunt.cooldowns = {};
+      e.hunt.ultimoAtaqueEm = null;
+      Acoes.disparar(e, e.hunt, PERSONAGEM, slot, bicho);
+    }
+    return 1e12 - bicho.hp;
+  });
+}
+
+// ---------------------------------------------------------------- sockets por slot (14–22)
+
+test('14–22. máximo de sockets por slot: Weapon 4, Head 2, Body 4, Shield 3, Legs 2 (no lugar de Gloves), Boots 2, Ring 1, Amulet 1 — 19 no total', () => {
+  const porSlot = { weapon: 4, head: 2, body: 4, shield: 3, legs: 2, feet: 2, ring: 1, neck: 1 };
+  for (const [slot, n] of Object.entries(porSlot)) {
+    const meta = Object.values(ITEM_CATALOG).find((i) => i.slot === slot && !i.stackable);
+    assert.equal(G.maximoDeSockets(meta), n, slot);
+  }
+  assert.equal(Object.values(G.CONFIG.sockets.maximo).reduce((a, b) => a + b, 0), 19);
+  assert.equal(G.maximoDeSockets(Object.values(ITEM_CATALOG).find((i) => i.slot === 'ammo')), 0, 'munição não tem');
+  assert.equal(G.maximoDeSockets(Object.values(ITEM_CATALOG).find((i) => i.slot === 'backpack')), 0, 'mochila não tem');
+  // Um anel só (não existe Ring 1 / Ring 2).
+  assert.ok(!Object.keys(G.CONFIG.sockets.maximo).some((k) => /ring\d/.test(k)));
+});
+
+test('drop: os sockets abertos saem sorteados (nunca acima do máximo do slot) e não contam como mod', () => {
+  const ESPADA = idDe('fire sword');
+  let algum = false;
+  for (let i = 0; i < 300; i++) {
+    const p = gerarItem({ itemId: ESPADA, itemLevel: 700, raridade: 'raro' });
+    if (!p.soquetes) continue;
+    algum ||= p.soquetes.abertos > 0;
+    assert.ok(p.soquetes.abertos <= 4);
+    assert.ok(p.af.length >= 2 && p.af.length <= 3, 'raro continua com 2–3 mods');
+  }
+  assert.ok(algum);
+});
+
+// ---------------------------------------------------------------- sem gema, sem skill (26, 28)
+
+test('sem a gema a skill não existe (Action Bar); encaixada, existe; tirada, some de novo', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  const ver = () => Acoes.catalogo(e).spells.find((x) => x.id === FLAME).blocked;
+  assert.equal(ver(), 'sem a gema');
+  vestir(e, 'weapon', 'wand of vortex', { abertos: 1 });
+  e.inventory.push(G.itemDaGema(G.novaGema(GEMA(FLAME), 3)));
+  assert.equal(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon', indice: 0 }).ok, true);
+  assert.equal(ver(), null);
+  assert.equal(Acoes.catalogo(e).spells.find((x) => x.id === FLAME).gema.nivel, 3);
+  // 28. tirada do socket: deixa de valer, e a gema volta para a mochila com o nível dela.
+  assert.equal(G.tirar(e, { slot: 'weapon', indice: 0 }).ok, true);
+  assert.equal(ver(), 'sem a gema');
+  assert.deepEqual(e.inventory.at(-1), { id: GEMA(FLAME), count: 1, gema: { nivel: 3, xp: 0 } });
+});
+
+test('10–11. socket aberto aceita; socket bloqueado recusa encaixar', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { abertos: 2 });
+  e.inventory.push(G.itemDaGema(G.novaGema(GEMA(FLAME))));
+  const k = e.inventory.length - 1;
+  assert.match(G.encaixar(e, { de: k, slot: 'weapon', indice: 2 }).erro, /bloqueado/);
+  assert.match(G.encaixar(e, { de: k, slot: 'weapon', indice: 9 }).erro, /inexistente/);
+  assert.equal(G.encaixar(e, { de: k, slot: 'weapon', indice: 1 }).ok, true);
+  assert.equal(e.equipment.weapon.soquetes.gemas[1].id, GEMA(FLAME));
+  // Encaixar em socket ocupado troca: a que estava volta para a mochila.
+  e.inventory.push(G.itemDaGema(G.novaGema(GEMA('spell-energy-strike'))));
+  assert.equal(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon', indice: 1 }).ok, true);
+  assert.equal(e.inventory.at(-1).id, GEMA(FLAME));
+  e.inventory.push({ id: idDe('fire sword'), count: 1 });
+  assert.match(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon', indice: 0 }).erro, /não é uma gema/);
+});
+
+// ---------------------------------------------------------------- links e supports (12, 13, 29)
+
+test('12–13. support LIGADA à gema ativa modifica a skill; a mesma support sem link, não', () => {
+  const GD = SUPPORT('greater-damage');
+  const sem = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] }));
+  const ligada = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GD)] }));
+  const solta = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { links: [false], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GD)] }));
+  assert.ok(Math.abs(ligada / sem - 1.25) < 0.03, `ligada ${sem} → ${ligada}`);
+  assert.equal(solta, sem, 'sem link a support não faz nada');
+  // Numa OUTRA peça também não (link é dentro da peça).
+  const outraPeca = danoDaFlame((e) => {
+    vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
+    vestir(e, 'ring', 'might ring', { gemas: [G.novaGema(GD)] });
+  });
+  assert.equal(outraPeca, sem);
+});
+
+test('29. support removida deixa de modificar; compatibilidade por tags (Multiple Projectiles só em Projectile)', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { links: [true, true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(SUPPORT('greater-damage')), G.novaGema(SUPPORT('multiple-projectiles'))] });
+  assert.deepEqual(G.efeitoNaSkill(e, FLAME).supports, ['Greater Damage', 'Multiple Projectiles']);
+  G.tirar(e, { slot: 'weapon', indice: 1 });
+  assert.deepEqual(G.efeitoNaSkill(e, FLAME).supports, ['Multiple Projectiles']);
+  assert.equal(G.efeitoNaSkill(e, FLAME).danoPct, 0);
+  // Brutal Strike (corpo a corpo, sem Projectile): Multiple Projectiles ligada não vale.
+  const k = personagemDeTeste({ vocacao: 'knight', level: 200 });
+  vestir(k, 'weapon', 'fire sword', { links: [true], gemas: [G.novaGema(GEMA('spell-brutal-strike')), G.novaGema(SUPPORT('multiple-projectiles'))] });
+  assert.deepEqual(G.efeitoNaSkill(k, 'spell-brutal-strike').supports, []);
+});
+
+test('Multiple Projectiles: os bichos ao alcance levam o projétil também', () => {
+  G.DEFS.get(GEMA(FLAME)).castTime = 0;
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(SUPPORT('multiple-projectiles'))] });
+  const alvo = naCacada(e);
+  const outros = [2, 3].map((dx) => Object.assign(criarMonstro({ key: 'troll', x: e.hunt.pos.x + dx, y: e.hunt.pos.y }, null), { hp: 1e9, maxHp: 1e9 }));
+  e.hunt.monstros.push(...outros);
+  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  assert.ok(Acoes.definir(e, { slot, value: { id: FLAME } }).ok);
+  const r = Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo);
+  assert.ok(r.ok);
+  assert.ok(outros.every((b) => b.hp < 1e9), 'os dois extras apanharam');
+});
+
+// ---------------------------------------------------------------- XP e nível (8, 9)
+
+test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes; sobe de nível, com teto no level do personagem', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 30 });
+  const def = G.DEFS.get(GEMA(FLAME));
+  const peca = vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
+  const naMochila = G.itemDaGema(G.novaGema(GEMA('spell-energy-strike')));
+  e.inventory.push(naMochila);
+  const subiram = G.ganharXp(e, G.xpParaSubir(1) + 10);
+  assert.deepEqual(subiram, [{ nome: 'Flame Strike', nivel: 2 }]);
+  assert.equal(peca.soquetes.gemas[0].xp, 10);
+  assert.equal(naMochila.gema.xp, 0, 'gema fora de socket não ganha XP');
+  // O level 30 deixa até o nível `nivelPermitido`; a XP para no que falta para o próximo.
+  G.ganharXp(e, 1e9);
+  const g = peca.soquetes.gemas[0];
+  assert.equal(g.nivel, G.nivelPermitido(def, 30));
+  assert.equal(g.xp, G.xpParaSubir(g.nivel), 'guardada até o personagem subir');
+  e.level = 200;
+  G.ganharXp(e, 1);
+  assert.ok(g.nivel > G.nivelPermitido(def, 30), 'o personagem subiu: a gema também');
+  // Nunca passa do máximo.
+  e.level = 5000;
+  for (let i = 0; i < 40; i++) G.ganharXp(e, 1e12);
+  assert.equal(g.nivel, G.CONFIG.niveis.maximo);
+});
+
+test('o nível da gema aumenta o dano da skill (a progressão dela)', () => {
+  const n1 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME), 1)] }));
+  const n11 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME), 11)] }));
+  const esperado = 1 + (G.DEFS.get(GEMA(FLAME)).progressao.dano * 10) / 100;
+  assert.ok(Math.abs(n11 / n1 - esperado) < 0.03, `${n1} → ${n11} (×${esperado})`);
+});
+
+test('a XP das gemas vem da morte de verdade (matarMonstro)', async () => {
+  const { matarMonstro } = await import('../systems/hunt/combate.mjs');
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  const peca = vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
+  naCacada(e);
+  const m = criarMonstro({ key: 'troll', x: 1, y: 1 }, null);
+  e.hunt.monstros.push(m);
+  matarMonstro(e, e.hunt, PERSONAGEM, m, []);
+  assert.ok(peca.soquetes.gemas[0].xp > 0 || peca.soquetes.gemas[0].nivel > 1);
+});
+
+// ---------------------------------------------------------------- vestir / tirar a peça (27)
+
+test('27. tirar a peça tira as skills das gemas dela; vestir de novo, voltam (as gemas vão junto com a peça)', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'ring', 'might ring', { gemas: [G.novaGema(GEMA(FLAME), 4)] });
+  assert.ok(G.temSkill(e, FLAME));
+  assert.notEqual(Inventario.desequipar(e, { slot: 'ring' }).ok, false);
+  assert.ok(!G.temSkill(e, FLAME));
+  const naMochila = e.inventory.find((p) => p.id === idDe('might ring'));
+  assert.equal(naMochila.soquetes.gemas[0].nivel, 4, 'a gema continua na peça');
+  assert.notEqual(Inventario.equipar(e, { id: idDe('might ring') }).ok, false);
+  assert.ok(G.temSkill(e, FLAME));
+});
+
+// ---------------------------------------------------------------- conjuração
+
+test('conjuração de verdade: a skill só sai no fim do Cast Time; durante ela nada mais sai; cancela se o alvo morre', () => {
+  const def = G.DEFS.get(GEMA(FLAME));
+  def.castTime = 800;
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GEMA('spell-energy-strike'))] });
+  const alvo = naCacada(e);
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  const [s1, s2] = [11, 12];
+  assert.ok(Acoes.definir(e, { slot: s1, value: { id: FLAME } }).ok);
+  assert.ok(Acoes.definir(e, { slot: s2, value: { id: 'spell-energy-strike' } }).ok);
+  const h = e.hunt;
+  h.clock = 10_000;
+  const r = Acoes.disparar(e, h, PERSONAGEM, s1, alvo);
+  assert.ok(r.ok && r.conjurando);
+  assert.equal(r.eventos[0].t, 'cast');
+  const ms = r.eventos[0].ms;
+  assert.ok(ms > 0 && ms <= 800);
+  assert.equal(alvo.hp, alvo.maxHp, 'ainda não saiu');
+  assert.equal(Acoes.disparar(e, h, PERSONAGEM, s2, alvo).motivo, 'CONJURANDO', 'outra skill espera');
+  // (o relógio tem meio tique de folga — `R.jaPode` —, por isso a margem de 200 ms)
+  h.clock += ms - 200;
+  assert.deepEqual(Acoes.concluirConjuracao(e, h, PERSONAGEM), [], 'ainda conjurando');
+  h.clock += 200;
+  const fim = Acoes.concluirConjuracao(e, h, PERSONAGEM);
+  assert.equal(fim[0].t, 'castFim');
+  assert.ok(alvo.hp < alvo.maxHp, 'saiu no fim');
+  assert.equal(h.conjurando, null);
+  // Cancela: o alvo morre no meio.
+  h.cooldowns = {};
+  h.ultimoAtaqueEm = null;
+  h.clock += 5000;
+  assert.ok(Acoes.disparar(e, h, PERSONAGEM, s1, alvo).conjurando);
+  alvo.hp = 0;
+  assert.equal(Acoes.concluirConjuracao(e, h, PERSONAGEM)[0].t, 'castCancel');
+  // Faster Casting + Cast Speed encurtam.
+  const sem = G.tempoDeConjuracao(e, FLAME, 0);
+  vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(SUPPORT('faster-casting'))] });
+  assert.equal(G.tempoDeConjuracao(e, FLAME, 0), Math.round(sem * 0.8));
+  assert.equal(G.tempoDeConjuracao(e, FLAME, 25), Math.round((sem * 0.8) / 1.25));
+});
+
+test('runa virou gema: não gasta mais item nem ouro', () => {
+  const RUNA = 'rune-fireball-rune';
+  G.DEFS.get(GEMA(RUNA)).castTime = 0;
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(RUNA))] });
+  const alvo = naCacada(e);
+  e.gold = 0;
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  assert.ok(Acoes.definir(e, { slot, value: { id: RUNA } }).ok);
+  assert.equal(Acoes.disparar(e, e.hunt, PERSONAGEM, slot, alvo).ok, true);
+  assert.ok(alvo.hp < alvo.maxHp);
+  assert.equal(e.gold, 0);
+});
+
+// ---------------------------------------------------------------- migração v5
+
+test('migração v5: peças que existiam ganham todos os sockets abertos e ligados; as magias/runas da barra viram gemas encaixadas', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 120 });
+  for (const p of Object.values(e.equipment)) if (p) delete p.soquetes;
+  e.versaoDosItens = 4;
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  e.actions[11] = { id: FLAME };
+  e.actions[12] = { id: 'spell-energy-strike' };
+  e.actions[13] = { id: 'rune-fireball-rune' };
+  const pocao = Acoes.catalogo(e).items[0];
+  e.actions[0] = { id: pocao.id };
+  e.inventory.push({ id: idDe('fire sword'), count: 1 });
+  converterPersonagem(e);
+  const arma = e.equipment.weapon;
+  const max = G.maximoDeSockets(ITEM_CATALOG[arma.id]);
+  assert.equal(arma.soquetes.abertos, max);
+  assert.ok(arma.soquetes.links.every(Boolean));
+  assert.ok(e.inventory.find((p) => p.id === idDe('fire sword')).soquetes, 'a da mochila também');
+  for (const id of [FLAME, 'spell-energy-strike', 'rune-fireball-rune']) {
+    assert.ok(G.temSkill(e, id), `${id} encaixada`);
+    assert.equal(G.skillsAtivas(e).get(id).nivel, G.nivelPermitido(G.DEFS.get(GEMA(id)), 120));
+  }
+  assert.ok(!G.ITEM_DA_ACAO.has(pocao.id), 'poção não vira gema');
+  // Uma vez só.
+  assert.equal(converterPersonagem(e), 0);
+  // Peça sem sockets vinda de outro caminho (loja, mercado) não ganha: só a migração do personagem abre.
+  const solta = { id: idDe('fire sword'), count: 1 };
+  converterTudo({ x: [solta] });
+  assert.equal(solta.soquetes, undefined);
+});
+
+test('drop de gema: sai no nível 1, entre as skills do level da fase; parte são supports', () => {
+  let ativas = 0;
+  let supports = 0;
+  for (let i = 0; i < 4000; i++) {
+    const g = G.sortearDrop({ ato: 4, levelDaFase: 50, fatorDeChance: 100 });
+    if (!g) continue;
+    const def = G.DEFS.get(g.id);
+    assert.equal(g.gema.nivel, 1);
+    if (def.tipo === 'support') supports++;
+    else {
+      ativas++;
+      assert.ok(def.levelMinimo <= 50);
+    }
+  }
+  assert.ok(ativas > 0 && supports > 0);
+  assert.equal(G.sortearDrop({ ato: 1 }, () => 0.99), null, 'a chance é baixa');
+});

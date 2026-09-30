@@ -75,7 +75,8 @@ test('⚙ Config de um char FORA do mundo: os dados chegam e a mudança vai para
   // Uma magia e um slot que a barra dele aceita (cada slot tem o seu papel: ataque, cura...).
   const { magia, slot } = (() => {
     const copia = personagemDeTeste({ vocacao: 'druid', level: 60 });
-    for (const m of [...dados.catalog.spells, ...(dados.catalog.runes ?? [])]) {
+    // (magia/runa só com a gema encaixada — o personagem novo não tem nenhuma; a poção é item e cabe)
+    for (const m of [...dados.catalog.spells, ...(dados.catalog.runes ?? []), ...(dados.catalog.items ?? [])]) {
       for (let slot = 0; slot < 22; slot++) if (Acoes.definir(copia, { slot, value: { id: m.id } }).ok) return { magia: m, slot };
     }
     return {};

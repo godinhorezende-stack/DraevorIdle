@@ -16,7 +16,7 @@ import { ATRIBUTOS } from '../systems/itens/config.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { matarMonstro, round, contraAtaque } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome)?.id);
@@ -85,7 +85,9 @@ function magia(id) {
   return (e) => {
     e.actions = Array(Acoes.SLOTS).fill(null);
     const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
-    assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
+    comSkills(e, [id]);
+    comSkills(e, [id]);
+  assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
     for (let i = 0; i < 60; i++) {
       e.hunt.cooldowns = {};
       e.mana = e.maxMana;
@@ -111,6 +113,7 @@ const recebido = (e) => {
 const recargaDaMagia = (id, qual) => (e) => {
   e.actions = Array(Acoes.SLOTS).fill(null);
   const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  comSkills(e, [id]);
   assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
   e.hunt.cooldowns = {};
   e.mana = e.maxMana;
@@ -122,6 +125,7 @@ const recargaDaMagia = (id, qual) => (e) => {
 const manaGasta = (id) => (e) => {
   e.actions = Array(Acoes.SLOTS).fill(null);
   const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  comSkills(e, [id]);
   assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
   let gasto = 0;
   for (let i = 0; i < 30; i++) {

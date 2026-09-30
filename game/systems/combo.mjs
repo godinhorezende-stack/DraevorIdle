@@ -35,7 +35,8 @@ import * as R from './regras.mjs';
 export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === 'attack' ? i : -1)).filter((i) => i >= 0);
 
 // Bloqueios da fileira inteira: esperar, sem pular a vez do slot.
-const DA_FILEIRA = new Set(['INTERVALO_DO_COMBO', 'COOLDOWN_DO_GRUPO']);
+// (CONJURANDO: a skill da vez está sendo conjurada — a fileira espera ela terminar.)
+const DA_FILEIRA = new Set(['INTERVALO_DO_COMBO', 'COOLDOWN_DO_GRUPO', 'CONJURANDO']);
 
 /*
  * ---- O log do combo ----
