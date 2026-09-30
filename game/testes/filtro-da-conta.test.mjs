@@ -88,3 +88,57 @@ test('"Toda a conta": só as mudanças de filtro se espalham (não qualquer sett
   assert.equal(FiltroDaConta.mudaOFiltro({ t: 'settings', autoSellPouch: false }), false);
   assert.equal(FiltroDaConta.mudaOFiltro({ t: 'settings', novidadesLidas: 3 }), false);
 });
+
+// ---------- sockets, "Afixo só nestes" e gema encaixada ----------
+import * as Afixos from '../systems/afixos.mjs';
+const comSockets = (abertos, links, extra = {}) => ({ id: HAND_AXE, count: 1, raridade: 'comum', soquetes: { abertos, links, gemas: Array(4).fill(null) }, ...extra });
+const quem = (settings, itemRules) => ({ ...personagemDeTeste(), settings, ...(itemRules ? { itemRules } : {}) });
+
+test('sockets: "Abertos N+" e "Ligados N+" guardam a peça SOZINHOS (mesmo comum e sem atributo)', () => {
+  const quatroLigados = comSockets(4, [true, true, true]);
+  const doisPares = comSockets(4, [true, false, true]);
+  const umSo = comSockets(1, [false, false, false]);
+  assert.equal(Afixos.guarda(quem({ guardarNivel: 0 }), quatroLigados), false, 'sem regra de socket: vende');
+  assert.equal(Afixos.guarda(quem({ guardarSockets: 4 }), doisPares), true, '4 abertos');
+  assert.equal(Afixos.guarda(quem({ guardarSockets: 2 }), umSo), false, 'só 1 aberto');
+  assert.equal(Afixos.guarda(quem({ guardarLigados: 3 }), doisPares), false, 'maior grupo ligado é 2');
+  assert.equal(Afixos.guarda(quem({ guardarLigados: 4 }), quatroLigados), true, '4 ligados');
+  // Vale sozinha: com raridade "épico para cima" ligada, a comum de 4 ligados fica pelos sockets.
+  assert.equal(Afixos.guarda(quem({ guardarRaridade: 3, guardarLigados: 4 }), quatroLigados), true);
+  assert.deepEqual(Afixos.socketsDaPeca(doisPares), { abertos: 4, ligados: 2 });
+  assert.deepEqual(Afixos.socketsDaPeca({ id: 1 }), { abertos: 0, ligados: 0 });
+});
+
+test('venda da bolsa com sockets: a de 4 sockets fica, a sem socket vai', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  Bolsa.garantir(e);
+  e.settings = { guardarSockets: 4, guardarNivel: 0 };
+  e.pouch = [comSockets(4, [false, false, false]), { id: HAND_AXE, count: 1, raridade: 'comum' }];
+  Bolsa.venderBolsa(e);
+  assert.equal(e.pouch.length, 1);
+  assert.equal(e.pouch[0].soquetes.abertos, 4);
+});
+
+test('"Afixo só nestes": fora da lista o atributo não conta — a raridade ligada decide sozinha', () => {
+  const OUTRO = 3355;
+  const rara = { id: OUTRO, count: 1, raridade: 'raro', af: [{ id: 'crit_chance', nivel: 1, value: 1 }] };
+  const e = quem({ guardarRaridade: 2, guardarNivel: 3 }, { noLoot: [], noSell: [], soAfixo: [HAND_AXE] });
+  assert.equal(Afixos.guarda(e, rara), true, 'rara fora da lista: guardada pela raridade (antes era vendida)');
+  assert.equal(Afixos.guarda(e, { ...rara, id: HAND_AXE }), false, 'na lista: precisa do atributo N3+ também');
+  // Sem raridade ligada, fora da lista nada segura.
+  assert.equal(Afixos.guarda(quem({ guardarNivel: 3 }, { noLoot: [], noSell: [], soAfixo: [HAND_AXE] }), rara), false);
+});
+
+test('peça com gema encaixada nunca é vendida pela venda automática, e a manual pede confirmação', () => {
+  const comGema = comSockets(2, [true, false, false]);
+  comGema.soquetes.gemas[0] = { id: 1, nivel: 3 };
+  assert.equal(Afixos.guarda(quem({ guardarNivel: 0 }), comGema), true);
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  Bolsa.garantir(e);
+  e.inventory = [comGema];
+  const ouro = e.gold ?? 0;
+  const r = Bolsa.vendaDaMochila(e, { lugar: 'bag', vender: [{ i: 0, id: HAND_AXE }] });
+  assert.equal(e.inventory.length, 1, 'sem "mesmo assim", não vende');
+  assert.equal(e.gold ?? 0, ouro);
+  assert.equal(r.previa.linhas[0].aviso, 'tem gema encaixada');
+});

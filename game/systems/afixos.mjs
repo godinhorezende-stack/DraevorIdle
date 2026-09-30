@@ -25,6 +25,7 @@ import * as Imbuements from './imbuements.mjs';
 import * as ItensConfig from './itens/config.mjs';
 import * as Gerar from './itens/gerar.mjs';
 import { raridadeDaPeca } from './itens/item.mjs';
+import { gruposLigados } from '../engine/sockets-de-gema.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -195,22 +196,44 @@ export function regraDoAtributo(s = {}) {
 export function guarda(estado, p) {
   if (p.tier || p.imbu?.length) return true;
   if (p.id === ID_DA_ESSENCIA) return true;
+  // Peça com GEMA encaixada nunca vai para o NPC (a gema iria junto).
+  if (p.soquetes?.gemas?.some(Boolean)) return true;
   const s = estado.settings ?? {};
+  // SOCKETS (regra que vale SOZINHA): a peça com pelo menos N sockets abertos, ou com um grupo de
+  // N ligados, fica — mesmo sem passar na raridade e no atributo (uma 4-ligada vale por si).
+  if (guardaPelosSockets(s, p)) return true;
   const pisoRaridade = Number(s.guardarRaridade ?? 0);
   const { nivel, quantos } = regraDoAtributo(s);
-  if (!pisoRaridade && !nivel) return false;
+  // "Afixo só nestes": fora da lista o atributo não entra na conta (a raridade, se ligada, decide sozinha).
+  const soEm = estado.itemRules?.soAfixo ?? [];
+  const olhaAtributo = nivel > 0 && (!soEm.length || soEm.includes(p.id));
+  if (!pisoRaridade && !olhaAtributo) return false;
   if (pisoRaridade > 0) {
     // A raridade do DROP (sistema de itens); a do catálogo só para peça antiga.
     const r = RARIDADES.indexOf(raridadeDaPeca(p));
     if (r < pisoRaridade) return false;
   }
-  if (nivel > 0) {
-    const soEm = estado.itemRules?.soAfixo ?? [];
-    if (soEm.length && !soEm.includes(p.id)) return false;
+  if (olhaAtributo) {
     const bons = (p.af ?? []).filter((a) => corDoAtributo(a) === 4 || nivelDe(a) >= nivel).length;
     if (bons < quantos) return false;
   }
   return true;
+}
+
+/** Os sockets da peça: quantos abertos e o maior grupo ligado. */
+export function socketsDaPeca(p) {
+  const so = p?.soquetes;
+  if (!so?.abertos) return { abertos: 0, ligados: 0 };
+  return { abertos: so.abertos, ligados: Math.max(0, ...gruposLigados(so).map((g) => g.length)) };
+}
+
+/** A regra de sockets da venda automática (`guardarSockets`: abertos, `guardarLigados`: o maior grupo ligado). */
+export function guardaPelosSockets(s, p) {
+  const minAbertos = Number(s?.guardarSockets ?? 0);
+  const minLigados = Number(s?.guardarLigados ?? 0);
+  if (!minAbertos && !minLigados) return false;
+  const { abertos, ligados } = socketsDaPeca(p);
+  return (minAbertos > 0 && abertos >= minAbertos) || (minLigados > 1 && ligados >= minLigados);
 }
 
 // ------------------------------------------- vida/mana máxima e capacidade

@@ -15,7 +15,7 @@
 // quantidade do atributo). Puro: quem lê/grava a conta e avisa as sessões é a sessão.
 import * as Bolsa from './bolsa.mjs';
 
-export const CHAVES_DE_GUARDAR = ['guardarRaridade', 'guardarNivel', 'guardarQuantos', 'guardarAfixo', 'guardarEstrelas'];
+export const CHAVES_DE_GUARDAR = ['guardarRaridade', 'guardarNivel', 'guardarQuantos', 'guardarAfixo', 'guardarEstrelas', 'guardarSockets', 'guardarLigados'];
 const LISTAS = ['noLoot', 'noSell', 'soAfixo'];
 
 /** Este pedido do cliente muda o filtro? (listas por item ou as regras de guardar) */

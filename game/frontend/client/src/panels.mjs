@@ -2802,7 +2802,8 @@ function resumoDaVendaAutomatica() {
   const marcados = (ctx.state.character?.itemRules?.soAfixo ?? []).length;
   const onde = marcados ? ` Só em ${marcados} ${marcados === 1 ? 'item' : 'itens'}.` : '';
   const raridade = fraseDaRaridade();
-  return `Venda automática: ${fraseDaRegraDoAfixo()}${onde}${raridade ? ` E ${raridade}.` : ''}`;
+  const sockets = fraseDosSockets();
+  return `Venda automática: ${fraseDaRegraDoAfixo()}${onde}${raridade ? ` E ${raridade}.` : ''}${sockets ? ` Sockets: ${sockets}.` : ''}`;
 }
 
 /*
@@ -2890,8 +2891,76 @@ function escolhaDeRaridade() {
  */
 function regrasDaVendaAutomatica() {
   const lado = el('div', 'filtro-venda-regras');
-  lado.append(escolhaDeAfixo(), escolhaDeRaridade());
+  // Os sockets moram na coluna da raridade: são as duas regras "da peça", e o grid fica em duas colunas.
+  const raridade = escolhaDeRaridade();
+  raridade.append(escolhaDeSockets());
+  lado.append(escolhaDeAfixo(), raridade);
   return lado;
+}
+
+/*
+ * ---- SOCKETS na venda automática ----
+ *
+ * O dono: "coloque o socket". A regra vale SOZINHA — a peça com os sockets
+ * pedidos fica mesmo sem passar na raridade e no atributo: uma peça comum de
+ * 4 sockets ligados vale pelos sockets (é assim no Path of Exile). Duas
+ * fileiras: quantos ABERTOS e o maior grupo LIGADO. O servidor decide
+ * (`Afixos.guardaPelosSockets`).
+ */
+const LINHAS_DE_SOCKETS = [
+  { valor: 0, rotulo: 'Não olhar', dica: 'os sockets não seguram nada (é o padrão)' },
+  { valor: 1, rotulo: '1+', dica: 'guarda a peça com pelo menos 1 socket aberto' },
+  { valor: 2, rotulo: '2+', dica: 'guarda a peça com 2 sockets abertos ou mais' },
+  { valor: 3, rotulo: '3+', dica: 'guarda a peça com 3 sockets abertos ou mais' },
+  { valor: 4, rotulo: '4', dica: 'guarda só a peça com 4 sockets abertos (o máximo)' },
+];
+const LINHAS_DE_LIGADOS = [
+  { valor: 0, rotulo: 'Não olhar', dica: 'os links não seguram nada (é o padrão)' },
+  { valor: 2, rotulo: '2 ligados+', dica: 'guarda a peça com um grupo de 2 sockets ligados ou mais' },
+  { valor: 3, rotulo: '3 ligados+', dica: 'guarda a peça com um grupo de 3 ligados ou mais' },
+  { valor: 4, rotulo: '4 ligados', dica: 'guarda só a peça com os 4 sockets ligados' },
+];
+
+function fraseDosSockets() {
+  const s = ctx.state.character?.settings ?? {};
+  const abertos = Number(s.guardarSockets ?? 0);
+  const ligados = Number(s.guardarLigados ?? 0);
+  const partes = [];
+  if (abertos) partes.push(abertos === 4 ? '4 sockets abertos' : `${abertos}+ socket${abertos === 1 ? '' : 's'} aberto${abertos === 1 ? '' : 's'}`);
+  if (ligados) partes.push(ligados === 4 ? '4 sockets ligados' : `${ligados}+ sockets ligados`);
+  return partes.length ? `guarda a peça com ${partes.join(' ou ')}, mesmo sem passar nas outras regras` : '';
+}
+
+function escolhaDeSockets() {
+  const { state, send } = ctx;
+  const caixa = el('div', 'filtro-sockets');
+  caixa.append(el('b', null, 'Sockets na venda automática'));
+  caixa.append(el('em', 'filter-legend', fraseDosSockets() ? `Vale sozinha: ${fraseDosSockets()}.` : 'Vale sozinha: a peça com os sockets escolhidos fica, mesmo sem passar na raridade e no atributo.'));
+  for (const [chave, titulo, linhas] of [
+    ['guardarSockets', 'Abertos', LINHAS_DE_SOCKETS],
+    ['guardarLigados', 'Ligados', LINHAS_DE_LIGADOS],
+  ]) {
+    const atual = Number(state.character?.settings?.[chave] ?? 0);
+    const linha = el('div', 'filtro-afixo-opcoes');
+    linha.append(el('span', 'filtro-sockets-rotulo', titulo));
+    for (const opcao of linhas) {
+      const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
+      botao.type = 'button';
+      botao.dataset.regra = chave;
+      botao.dataset.valor = String(opcao.valor);
+      botao.append(el('span', null, opcao.rotulo));
+      botao.title = opcao.dica;
+      botao.onclick = () => {
+        send({ t: 'settings', [chave]: opcao.valor });
+        // Pinta na hora, como as outras fileiras.
+        state.character.settings = { ...(state.character.settings ?? {}), [chave]: opcao.valor };
+        ctx.redraw?.();
+      };
+      linha.append(botao);
+    }
+    caixa.append(linha);
+  }
+  return caixa;
 }
 
 function escolhaDeAfixo({ recolhido = false } = {}) {

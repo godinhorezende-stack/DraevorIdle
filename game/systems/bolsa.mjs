@@ -314,7 +314,8 @@ export function vendaDaMochila(estado, { lugar = 'bag', vender } = {}) {
     for (const v of vender) {
       const p = itens[v?.i];
       if (!p || p.id !== v.id || !precoDeVenda(p.id)) continue;
-      const valiosa = p.af?.length || p.tier || p.imbu?.length;
+      // Com gema encaixada também pede confirmação (a gema iria junto para o NPC).
+      const valiosa = p.af?.length || p.tier || p.imbu?.length || p.soquetes?.gemas?.some(Boolean);
       if (valiosa && !v.mesmoAssim) continue;
       ouro += precoDeVenda(p.id) * p.count;
       indices.add(v.i);
@@ -324,11 +325,11 @@ export function vendaDaMochila(estado, { lugar = 'bag', vender } = {}) {
   }
   const linhas = itens.map((p, i) => {
     const unidade = precoDeVenda(p.id);
-    const valiosa = p.af?.length || p.tier || p.imbu?.length;
+    const valiosa = p.af?.length || p.tier || p.imbu?.length || p.soquetes?.gemas?.some(Boolean);
     return {
       ...p, i, unidade, total: unidade * p.count,
       ...(unidade ? {} : { motivo: 'o NPC não compra' }),
-      ...(valiosa ? { aviso: 'estrela, tier ou imbuement' } : {}),
+      ...(valiosa ? { aviso: p.soquetes?.gemas?.some(Boolean) ? 'tem gema encaixada' : 'estrela, tier ou imbuement' } : {}),
     };
   });
   return {
