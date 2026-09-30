@@ -599,7 +599,7 @@ export function renderSheet(body, { state, send, closeModal }) {
 
   secao(body, 'defensivo', 'Defensivo', 'ficha-armadura', [
     grade(
-      statCard('Armour', faixa(derived.armorMin, derived.armorMax, derived.armor), 'corta o golpe físico', null, 'ficha-armadura'),
+      statCard('Armour', (derived.armor ?? 0).toLocaleString('pt-BR'), 'corta o golpe físico', null, 'ficha-armadura'),
       statCard('Evasion', (derived.evasion ?? 0).toLocaleString('pt-BR'), chances.esquiva != null ? `${Math.round(chances.esquiva * 100)}% de esquiva do golpe de um bicho do seu level` : null, null, 'ficha-bloqueio'),
       statCard('Bloqueio', faixa(derived.blockChanceMin, derived.blockChanceMax, derived.blockChance, (v) => `${(v * 100).toFixed(0)}%`), 'apara o golpe (escudo e arma)', null, 'ficha-bloqueio'),
       ...soSeTem(derived.danoRecebidoDasGemas > 0, () => statCard('Redução de dano', `${porcento(derived.danoRecebidoDasGemas * 100)}%`, 'de todo dano recebido', null, 'ficha-armadura')),
