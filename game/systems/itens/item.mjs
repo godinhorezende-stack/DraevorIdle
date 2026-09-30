@@ -23,6 +23,7 @@ import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS, LEGADO } from './config.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
 import { valorNaFaixa, arredondar, CAMPOS_DA_BASE, rolarBase, aceitaAtributos, SLOTS_DE_JOIA, FATOR_DAS_DUAS } from './gerar.mjs';
 import * as Atributos from '../personagem/atributos.mjs';
+import { requisitoDe } from '../personagem/requisitos.mjs';
 
 const ID_DA_ESSENCIA = 900001;
 const FAIXAS_ANTIGAS = [[0, 20], [20, 40], [40, 60], [60, 85], [85, 100]];
@@ -336,4 +337,7 @@ export function raridadeDaPeca(p) {
 for (const meta of Object.values(ITEM_CATALOG)) {
   const d = defesaDoCatalogo(meta);
   if (d.evasion || d.es) meta.defesaPadrao = d;
+  // O requisito de atributo (modelo Path of Exile): o balão mostra, e o equipar confere (`personagem/requisitos.mjs`).
+  const req = requisitoDe(meta);
+  if (req) meta.requisito = req;
 }

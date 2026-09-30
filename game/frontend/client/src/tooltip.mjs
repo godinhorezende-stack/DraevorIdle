@@ -1051,7 +1051,11 @@ export function fichaDeAcao(entry, icone = null, extra = null) {
   }
   if (entry.level) regra('Level mínimo', String(entry.level));
   if (entry.magicLevel) regra('Magic level', String(entry.magicLevel));
-  if (entry.vocations?.length) regra('Vocações', entry.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', '));
+  // A classe recomendada (não é trava: qualquer classe usa — modelo Path of Exile) e as tags da skill.
+  if (entry.vocations?.length) regra('Classe recomendada', entry.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', '));
+  if (entry.tags?.length) regra('Tags', entry.tags.join(' · '));
+  // A afinidade da classe DESTE personagem nesta skill (a mesma conta do servidor: `Ficha.afinidadePara`).
+  if (entry.afinidade?.pct) regra('Sua afinidade', `+${entry.afinidade.pct}% (${entry.afinidade.fontes.map((f) => `${f.especializacao} +${f.pct}%`).join(', ')})`, 'crit');
   if (regras.children.length) node.append(regras);
 
   if (entry.blocked) node.append(el('div', 'tip-blocked', entry.blocked));
@@ -2322,6 +2326,21 @@ const numeroOuFaixa = (meta, campo) => {
   return f && f[0] !== f[1] ? `${sinal(f[0])}–${f[1]}` : sinal(meta[campo]);
 };
 
+const NOME_DO_ATRIBUTO = { str: 'STR', dex: 'DEX', int: 'INT' };
+
+/**
+ * Este personagem cumpre o requisito de atributo da peça? Devolve o texto do que
+ * falta, ou null. O requisito vem pronto do servidor (`meta.requisito`, ver
+ * `personagem/requisitos.mjs`); aqui só a comparação: basta UM dos atributos.
+ */
+export function faltaRequisito(meta, personagem) {
+  const req = meta?.requisito;
+  const atributos = personagem?.derived?.atributos;
+  if (!req || !atributos) return null;
+  if (req.atributos.some((a) => (atributos[a] ?? 0) >= req.valor)) return null;
+  return `Requer ${req.atributos.map((a) => `${req.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou ')}`;
+}
+
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;
@@ -2684,7 +2703,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     regras.append(row);
   };
   regra('Level mínimo', meta.minLevel ? String(meta.minLevel) : null);
-  regra('Vocações', meta.vocations?.length ? meta.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', ') : null);
+  regra('Classe recomendada', meta.vocations?.length ? meta.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', ') : null);
+  // O requisito de atributo (modelo Path of Exile): em vermelho se o personagem não cumpre.
+  if (meta.requisito) {
+    const falta = faltaRequisito(meta, getPersonagem());
+    regra('Requer', meta.requisito.atributos.map((a) => `${meta.requisito.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou '), falta ? 'tip-falta' : null);
+  }
   regra('Slot', SLOT_NAMES[meta.slot] ?? null);
   /*
    * ---- "Fixo ao personagem" ----

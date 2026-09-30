@@ -1486,7 +1486,8 @@ export function renderEditor() {
   };
 
   const vocationSelect = document.createElement('select');
-  for (const [id, label] of Object.entries({ '': 'Todas as vocações', ...VOCATION_NAMES })) {
+  // Nada é "só de uma classe" (modelo Path of Exile): o filtro mostra as RECOMENDADAS para a classe.
+  for (const [id, label] of Object.entries({ '': 'Todas as classes', ...Object.fromEntries(Object.entries(VOCATION_NAMES).map(([k, v]) => [k, `Recomendadas: ${v}`])) })) {
     const option = document.createElement('option');
     option.value = id;
     option.textContent = label;
@@ -1648,7 +1649,9 @@ export function renderEditor() {
       lines.push([onde, 'area']);
     }
     if (entry.range) lines.push([`Alcance de ${entry.range} sqm.`, 'plain']);
-    if (entry.vocations?.length) lines.push([`Vocações: ${entry.vocations.join(', ')}.`, 'plain']);
+    if (entry.vocations?.length) lines.push([`Classe recomendada: ${entry.vocations.join(', ')} (qualquer classe pode usar).`, 'plain']);
+    if (entry.tags?.length) lines.push([`Tags: ${entry.tags.join(', ')}.`, 'plain']);
+    if (entry.afinidade?.pct) lines.push([`Sua afinidade de classe: +${entry.afinidade.pct}% (${entry.afinidade.fontes.map((f) => `${f.especializacao} +${f.pct}%`).join(', ')}).`, 'crit']);
     if (entry.level) {
       lines.push([`Requer level ${entry.level}${entry.magicLevel ? ` e magic level ${entry.magicLevel}` : ''}.`, 'plain']);
     }

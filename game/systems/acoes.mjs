@@ -20,6 +20,7 @@
 // knights), então magia de mago em mago sai subestimada. Magias de suporte/
 // velocidade gastam mana, cooldown e mostram o efeito, mas ainda não aplicam
 // buff nenhum, e `overTime` (dano contínuo) não é aplicado.
+import * as Tags from './skills/tags.mjs';
 import { resistido } from './hunt/resistencia.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
@@ -65,13 +66,15 @@ export const COR_DO_ELEMENTO = {
   energy: '#c832ff', earth: '#7a5c2e', holy: '#ffe066',
 };
 
-const doTodos = (entry) => !entry.vocations?.length;
-
-/** Por que ESTE personagem não pode usar a entrada — o mesmo texto do original, ou null. */
+/*
+ * Por que ESTE personagem não pode usar a entrada, ou null.
+ *
+ * Nada bloqueia por classe (modelo Path of Exile, decisão do dono): a vocação
+ * do catálogo virou a CLASSE RECOMENDADA (`Tags.classeRecomendada`). Ficam o
+ * level e o magic level — o magic level baixo de um knight já é o limite
+ * natural das magias fortes de sorcerer.
+ */
 function bloqueio(entry, estado) {
-  if (!doTodos(entry) && !entry.vocations.includes(estado.vocation)) {
-    return entry.kind === 'item' ? `é de ${entry.vocations.join(', ')}` : 'outra vocação';
-  }
   if ((entry.level ?? 0) > (estado.level ?? 0)) return `requer level ${entry.level}`;
   const ml = estado.magic?.value ?? 0;
   if ((entry.magicLevel ?? 0) > ml) return `requer magic level ${entry.magicLevel}`;
@@ -80,8 +83,14 @@ function bloqueio(entry, estado) {
 
 /** `send({t:'actions'})` — o catálogo inteiro, como o original: cada entrada com seu `blocked`. */
 export function catalogo(estado) {
+  const ficha = Ficha.combate(estado);
   const comBloqueio = (entry) => ({
     ...entry,
+    // As tags (o que as especializações leem), a classe recomendada (não é trava) e a
+    // afinidade DESTE personagem nesta skill — a mesma conta do `disparar` (`Ficha.afinidadePara`).
+    tags: Tags.tagsDaAcao(entry),
+    classeRecomendada: Tags.classeRecomendada(entry),
+    afinidade: Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)),
     ...(entry.damage ? { damage: { ...entry.damage, ...danoNoLevel(entry, estado.level) } } : {}),
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
     // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
@@ -543,7 +552,8 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
       // "Dano de magia" e "Dano de <elemento>" (afixos e árvore), na magia/runa
       // daquele elemento, + o ML de bônus (+1%/ponto; o dano do catálogo já é o
       // do ML treinado); e a resistência do bicho ao elemento dela.
-      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + (ficha.skillBonus?.magic ?? 0)) / 100;
+      // + a afinidade da classe para esta skill (Fire, Spell, Melee... — pelas tags dela, `Ficha.afinidadePara`).
+      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + (ficha.skillBonus?.magic ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
       const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult);
       const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;

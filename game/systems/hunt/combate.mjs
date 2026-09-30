@@ -33,6 +33,7 @@ import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
 import * as Defesa from '../personagem/defesa.mjs';
 import * as Anuncios from '../anuncios.mjs';
+import * as Tags from '../skills/tags.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -148,7 +149,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
   // (+1%/ponto) e o dano mágico do INT; + "% da perícia como dano" (proficiência); e a resistência do
   // bicho àquele elemento (`resistido`).
-  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0)) / 100);
+  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
   const base = resistido(hunt, alvo, element, bruto);
   const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
@@ -733,7 +734,8 @@ export function round(estado, personagem) {
       }
       // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
       // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
-      const fisico = 1 + (ficha.danoDoElemento?.physical ?? 0) / 100;
+      // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
+      const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe(categoriaDaArma(arma))).pct) / 100;
       // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
       const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
       const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia), alvo, eventos, ficha);

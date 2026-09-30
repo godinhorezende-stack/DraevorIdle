@@ -1,0 +1,4 @@
+{
+  "_nota": "Exceções às TAGS automáticas das skills (systems/skills/tags.mjs tira as tags do catálogo: kind, element, area/forma, projétil, cura, papéis). Por id: `mais` acrescenta, `menos` tira. Tags conhecidas: attack, spell, rune, item, physical, fire, earth, energy, ice, holy, death, healing, melee, ranged, projectile, area, single, wave, line, chain, buff, mobility, summon.",
+  "excecoes": {}
+}

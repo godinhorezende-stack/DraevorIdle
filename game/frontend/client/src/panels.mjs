@@ -31,7 +31,7 @@ import { savePreset, resetLayout, clearPreset, fecharAoClicarFora, atalhosDaCaix
 import {
   itemCell, aceitarSoltura, quantosMover, trocarArrastando, pedirParaOrganizar,
 } from './inventory.mjs';
-import { tipFor, tipTexto, tipForAction, tipPanel, fichaDeItem, restanteDoImbuement, estrelasDosAfixos, seloDeEstrelas, classeDaRaridade } from './tooltip.mjs';
+import { tipFor, tipTexto, tipForAction, tipPanel, fichaDeItem, restanteDoImbuement, estrelasDosAfixos, seloDeEstrelas, classeDaRaridade, faltaRequisito } from './tooltip.mjs';
 import { lootComGemas as lootDoBicho } from './loot-do-bicho.mjs';
 // O balão dos bônus das gemas, que a pílula do HUD já usa — ver `resumoDasGemasParaBalao`.
 import { balaoDosBonusDasGemas } from './gemas.mjs';
@@ -12704,9 +12704,10 @@ function cartaoDeItem(entry) {
    */
   const personagem = state.character;
   const faltaLevel = entry.minLevel > (personagem?.level ?? 0);
-  const outraVocacao = entry.vocations?.length && !entry.vocations.includes(personagem?.vocation);
+  // Modelo Path of Exile: não é mais "de outra vocação" — é o requisito de atributo (STR/DEX/INT) que falta.
+  const outraVocacao = faltaRequisito(state.items?.[entry.id] ?? entry, personagem);
   const regra = el('span', `item-card-regra${faltaLevel || outraVocacao ? ' nao-serve' : ''}`);
-  regra.append(el('i', 'item-card-voc', (entry.vocations ?? []).join(', ') || 'qualquer vocação'));
+  regra.append(el('i', 'item-card-voc', (entry.vocations ?? []).join(', ') || 'qualquer classe'));
   if (entry.minLevel) regra.append(el('i', null, `level ${entry.minLevel}`));
   if (entry.twoHanded) regra.append(el('i', null, 'duas mãos'));
   card.append(regra);
@@ -12772,7 +12773,7 @@ function cartaoDeItem(entry) {
         ? `Atenção: você ${oQueFalta}, então NÃO vai conseguir usar este item agora. ` +
           'Ele fica guardado na mochila até lá — nada se perde, e o relógio de 24 horas só começa quando você usar.'
         : outraVocacao
-          ? `Esta peça é de ${(entry.vocations ?? []).join(', ')} — o seu personagem não vai conseguir equipá-la.`
+          ? `${outraVocacao} — o seu personagem ainda não consegue equipá-la (dá para subir o atributo com itens).`
           : faltaLevel
             ? `Pede level ${entry.minLevel}; você está no ${personagem?.level ?? 0}. Ela fica na mochila até lá.`
             : null,

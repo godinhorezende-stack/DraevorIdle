@@ -27476,3 +27476,5 @@ html[data-perfil="retrato"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) + 36px); width: min(420px, calc(100vw - 16px)); }
 /* A linha do Global: o ✦ na cor de destaque. */
 .drop-raro { color: #c8b98a; }
+/* As especializações da classe na ficha: o efeito é uma frase, não um número grande. */
+.stat-card.especializacao b { font-size: 13px; font-weight: 500; line-height: 1.35; }

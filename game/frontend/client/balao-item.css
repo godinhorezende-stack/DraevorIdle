@@ -178,3 +178,6 @@
   max-height: calc(100dvh - 16px); overflow-y: auto; overscroll-behavior: contain;
   pointer-events: auto; scrollbar-width: thin;
 }
+
+/* O requisito de atributo que o personagem não cumpre (modelo Path of Exile): em vermelho. */
+.tip-item .tip-rules div.tip-falta, .tip-item .tip-rules div.tip-falta b, .tip-rules div.tip-falta b { color: #ff5a4a; }

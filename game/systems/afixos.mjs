@@ -14,6 +14,7 @@
 // `gamedata/itens/*.json`. Antes era fixo em código, medido nos drops reais do
 // original (1 afixo 73% / 2 24% / 3 3%; T1 90% / T2 8% / T3 2%; 31% "tortos").
 import * as Atributos from './personagem/atributos.mjs';
+import * as Especializacoes from './personagem/especializacoes.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
 import * as Gemas from './gemas.mjs';
@@ -222,7 +223,10 @@ export function sincronizarMaximos(estado) {
   const t = soma(estado);
   // +Life / +Mana dos adds, e o que STR (Life) e INT (Mana) dão — ver `personagem/atributos.mjs`.
   const doAtributo = Atributos.efeitos(Atributos.principais(estado, t));
-  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida), mana: Math.round((t.mana ?? 0) + doAtributo.mana) };
+  // + a Life % da especialização da classe (Knight: Life), sobre a vida do level + a dos adds e do STR.
+  const lifePct = Especializacoes.efeitos(estado).stats.life ?? 0;
+  const vidaSemPct = R.statsBase(estado.vocation, estado.level ?? 1).maxHp + (t.life ?? 0) + doAtributo.vida;
+  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana) };
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };
   if (quer.hp === tem.hp && quer.mana === tem.mana) return;
   estado.maxHp = (estado.maxHp ?? 0) + quer.hp - tem.hp;

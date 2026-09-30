@@ -17,6 +17,9 @@
 import { RECEITAS_DO_CRAFT, ITEM_CATALOG } from './dados.mjs';
 import { contarGuardadas, tirarGuardadas, temExtras } from './inventario.mjs';
 import { camposDaPeca } from './itens/item.mjs';
+import * as Afixos from './afixos.mjs';
+import * as Atributos from './personagem/atributos.mjs';
+import * as Requisitos from './personagem/requisitos.mjs';
 
 const VOCACOES = Object.keys(RECEITAS_DO_CRAFT);
 
@@ -114,7 +117,7 @@ export function craftar(estado, { vocacao, geracao, id }) {
   // Vestida só se ela PODE ser vestida: o V2 pede level 2500, e craftar com o
   // Craftado no corpo não pode vestir uma peça que o personagem não usa.
   const meta = ITEM_CATALOG[r.id];
-  const vestivel = (meta?.minLevel ?? 0) <= (estado.level ?? 0) && (!meta?.vocations?.length || meta.vocations.includes(estado.vocation));
+  const vestivel = (meta?.minLevel ?? 0) <= (estado.level ?? 0) && !Requisitos.falta(meta, Atributos.principais(estado, Afixos.soma(estado)));
   if (base?.onde === 'equip' && vestivel) estado.equipment[base.slot] = nova;
   else if (base?.onde === 'equip') {
     estado.equipment[base.slot] = null;

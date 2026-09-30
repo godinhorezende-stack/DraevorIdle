@@ -1,0 +1,37 @@
+{
+  "_nota": "CLASSES e ESPECIALIZAÇÕES NATURAIS (pedido do dono, 30/09). Classe ≠ restrição: classe = especialização natural. Cada classe tem especializações que dão AFINIDADES — bônus quando o personagem usa aquele tipo de dano, arma, skill ou mecânica — e não bloqueiam nada. Lido por systems/personagem/especializacoes.mjs; aplicado pela ficha (Ficha.combate), a mesma conta do combate, da ficha, do balão e da comparação. Números iniciais (ponto de partida para balancear). A classe vem da vocação (a promoção é a mesma classe).",
+
+  "classes": {
+    "knight":   { "nome": "Knight",   "especializacoes": ["physical", "armour", "life", "melee"] },
+    "paladin":  { "nome": "Paladin",  "especializacoes": ["physical", "holy", "ranged", "accuracy"] },
+    "sorcerer": { "nome": "Sorcerer", "especializacoes": ["fire", "energy", "death", "spell"] },
+    "druid":    { "nome": "Druid",    "especializacoes": ["ice", "earth", "holy", "healing"] },
+    "monk":     { "nome": "Monk",     "especializacoes": ["physical", "energy", "melee", "mobility"] },
+    "none":     { "nome": "Sem classe", "especializacoes": [] }
+  },
+
+  "_especializacoes": "Cada especialização: `nome`, `efeitos` (lista). Efeito de DANO: `{ \"dano\": pct, \"tag\": \"fire\" }` — vale para toda skill/golpe com aquela tag (ver systems/skills/tags.mjs). Efeito de STAT: `{ \"stat\": chave, \"pct\": n }` — chaves: armour, life, accuracy, evasion, attackSpeed, castSpeed, moveSpeed, healing.",
+  "especializacoes": {
+    "physical": { "nome": "Physical", "efeitos": [{ "dano": 15, "tag": "physical" }] },
+    "fire":     { "nome": "Fire",     "efeitos": [{ "dano": 15, "tag": "fire" }] },
+    "energy":   { "nome": "Energy",   "efeitos": [{ "dano": 15, "tag": "energy" }] },
+    "death":    { "nome": "Death",    "efeitos": [{ "dano": 15, "tag": "death" }] },
+    "ice":      { "nome": "Ice",      "efeitos": [{ "dano": 15, "tag": "ice" }] },
+    "earth":    { "nome": "Earth",    "efeitos": [{ "dano": 15, "tag": "earth" }] },
+    "holy":     { "nome": "Holy",     "efeitos": [{ "dano": 15, "tag": "holy" }] },
+    "armour":   { "nome": "Armour",   "efeitos": [{ "stat": "armour", "pct": 20 }] },
+    "life":     { "nome": "Life",     "efeitos": [{ "stat": "life", "pct": 15 }] },
+    "melee":    { "nome": "Melee",    "efeitos": [{ "dano": 10, "tag": "melee" }] },
+    "ranged":   { "nome": "Ranged",   "efeitos": [{ "dano": 15, "tag": "ranged" }] },
+    "accuracy": { "nome": "Accuracy", "efeitos": [{ "stat": "accuracy", "pct": 20 }] },
+    "spell":    { "nome": "Spell",    "efeitos": [{ "dano": 15, "tag": "spell" }, { "stat": "castSpeed", "pct": 5 }] },
+    "healing":  { "nome": "Healing",  "efeitos": [{ "stat": "healing", "pct": 20 }] },
+    "mobility": { "nome": "Mobility", "efeitos": [{ "stat": "evasion", "pct": 10 }, { "stat": "attackSpeed", "pct": 5 }, { "stat": "moveSpeed", "pct": 10 }] }
+  },
+
+  "_requisitos": "Modelo Path of Exile (decisão do dono): nada bloqueia por classe; o EQUIPAMENTO pede atributo. Os atributos pedidos saem das classes recomendadas da peça (as vocações do catálogo) — basta ter UM deles —, e o valor é `porLevelMinimo × level mínimo da peça` (arredondado para cima). Peça de todas as vocações não pede atributo. Magias e runas mantêm level e magic level. Peça já equipada que não cumpre continua valendo (o requisito é conferido ao equipar).",
+  "requisitos": {
+    "porLevelMinimo": 0.3,
+    "atributoDaClasse": { "knight": ["str"], "paladin": ["dex"], "sorcerer": ["int"], "druid": ["int"], "monk": ["str", "dex"] }
+  }
+}
