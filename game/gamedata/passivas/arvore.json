@@ -1,0 +1,8831 @@
+{
+ "_nota": "GERADO por tools/gerar-arvore-passiva.mjs a partir de clusters.json — não edite à mão (edite clusters.json e gere de novo). Lido por game/systems/passivas/arvore.mjs.",
+ "versao": 1,
+ "inicios": {
+  "knight": "inicio_knight",
+  "paladin": "inicio_paladin",
+  "druid": "inicio_druid",
+  "sorcerer": "inicio_sorcerer",
+  "monk": "inicio_monk"
+ },
+ "clusters": [
+  {
+   "id": "armour",
+   "nome": "Armour",
+   "dominio": "defesa",
+   "x": -532,
+   "y": -1855
+  },
+  {
+   "id": "life",
+   "nome": "Life",
+   "dominio": "defesa",
+   "x": 532,
+   "y": -1855
+  },
+  {
+   "id": "attack_speed",
+   "nome": "Attack Speed",
+   "dominio": "dano",
+   "x": 0,
+   "y": -2780
+  },
+  {
+   "id": "physical",
+   "nome": "Physical",
+   "dominio": "dano",
+   "x": 1134,
+   "y": -1561
+  },
+  {
+   "id": "ranged",
+   "nome": "Ranged",
+   "dominio": "dano",
+   "x": 1637,
+   "y": -1023
+  },
+  {
+   "id": "accuracy",
+   "nome": "Accuracy",
+   "dominio": "dano",
+   "x": 1925,
+   "y": -135
+  },
+  {
+   "id": "critical",
+   "nome": "Critical",
+   "dominio": "dano",
+   "x": 2644,
+   "y": -859
+  },
+  {
+   "id": "holy",
+   "nome": "Holy",
+   "dominio": "dano",
+   "x": 1836,
+   "y": 596
+  },
+  {
+   "id": "ice",
+   "nome": "Ice",
+   "dominio": "dano",
+   "x": 1478,
+   "y": 1241
+  },
+  {
+   "id": "healing",
+   "nome": "Healing",
+   "dominio": "sustento",
+   "x": 1634,
+   "y": 2249
+  },
+  {
+   "id": "earth",
+   "nome": "Earth",
+   "dominio": "dano",
+   "x": 723,
+   "y": 1789
+  },
+  {
+   "id": "spell",
+   "nome": "Spell",
+   "dominio": "dano",
+   "x": 0,
+   "y": 1930
+  },
+  {
+   "id": "cast_speed",
+   "nome": "Cast Speed",
+   "dominio": "dano",
+   "x": 0,
+   "y": 2780
+  },
+  {
+   "id": "fire",
+   "nome": "Fire",
+   "dominio": "dano",
+   "x": -723,
+   "y": 1789
+  },
+  {
+   "id": "energy_shield",
+   "nome": "Energy Shield",
+   "dominio": "defesa",
+   "x": -1634,
+   "y": 2249
+  },
+  {
+   "id": "death",
+   "nome": "Death",
+   "dominio": "dano",
+   "x": -1478,
+   "y": 1241
+  },
+  {
+   "id": "energy",
+   "nome": "Energy",
+   "dominio": "dano",
+   "x": -1836,
+   "y": 596
+  },
+  {
+   "id": "mana",
+   "nome": "Mana",
+   "dominio": "sustento",
+   "x": -2644,
+   "y": -859
+  },
+  {
+   "id": "mobility",
+   "nome": "Mobility",
+   "dominio": "sustento",
+   "x": -1925,
+   "y": -135
+  },
+  {
+   "id": "evasion",
+   "nome": "Evasion",
+   "dominio": "defesa",
+   "x": -1637,
+   "y": -1023
+  },
+  {
+   "id": "melee",
+   "nome": "Melee",
+   "dominio": "dano",
+   "x": -1134,
+   "y": -1561
+  }
+ ],
+ "nos": [
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_0",
+   "nome": "STR",
+   "tipo": "small",
+   "x": 0,
+   "y": -620,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_1",
+    "anel_39",
+    "inicio_knight"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_1",
+   "nome": "STR",
+   "tipo": "small",
+   "x": 97,
+   "y": -612,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_0",
+    "anel_2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_2",
+   "nome": "STR",
+   "tipo": "small",
+   "x": 192,
+   "y": -590,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_1",
+    "anel_3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_3",
+   "nome": "STR",
+   "tipo": "small",
+   "x": 281,
+   "y": -552,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_2",
+    "anel_4"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_4",
+   "nome": "STR",
+   "tipo": "small",
+   "x": 364,
+   "y": -502,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_3",
+    "anel_5"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_5",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 438,
+   "y": -438,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_4",
+    "anel_6"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_6",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 502,
+   "y": -364,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_5",
+    "anel_7"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_7",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 552,
+   "y": -281,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_6",
+    "anel_8"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_8",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 590,
+   "y": -192,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_7",
+    "anel_9",
+    "inicio_paladin"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_9",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 612,
+   "y": -97,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_10",
+    "anel_8"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_10",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 620,
+   "y": 0,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_11",
+    "anel_9"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_11",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 612,
+   "y": 97,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_10",
+    "anel_12"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_12",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": 590,
+   "y": 192,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_11",
+    "anel_13"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_13",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 552,
+   "y": 281,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_12",
+    "anel_14"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_14",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 502,
+   "y": 364,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_13",
+    "anel_15"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_15",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 438,
+   "y": 438,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_14",
+    "anel_16"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_16",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 364,
+   "y": 502,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_15",
+    "anel_17",
+    "inicio_druid"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_17",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 281,
+   "y": 552,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_16",
+    "anel_18"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_18",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 192,
+   "y": 590,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_17",
+    "anel_19"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_19",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 97,
+   "y": 612,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_18",
+    "anel_20"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_20",
+   "nome": "INT",
+   "tipo": "small",
+   "x": 0,
+   "y": 620,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_19",
+    "anel_21"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_21",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -97,
+   "y": 612,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_20",
+    "anel_22"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_22",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -192,
+   "y": 590,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_21",
+    "anel_23"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_23",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -281,
+   "y": 552,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_22",
+    "anel_24"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_24",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -364,
+   "y": 502,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_23",
+    "anel_25",
+    "inicio_sorcerer"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_25",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -438,
+   "y": 438,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_24",
+    "anel_26"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_26",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -502,
+   "y": 364,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_25",
+    "anel_27"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_27",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -552,
+   "y": 281,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_26",
+    "anel_28"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "int"
+   ],
+   "id": "anel_28",
+   "nome": "INT",
+   "tipo": "small",
+   "x": -590,
+   "y": 192,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_27",
+    "anel_29"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_29",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": -612,
+   "y": 97,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_28",
+    "anel_30"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_30",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": -620,
+   "y": 0,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_29",
+    "anel_31"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_31",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": -612,
+   "y": -97,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_30",
+    "anel_32"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_32",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": -590,
+   "y": -192,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_31",
+    "anel_33",
+    "inicio_monk"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_33",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": -552,
+   "y": -281,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_32",
+    "anel_34"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_34",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": -502,
+   "y": -364,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_33",
+    "anel_35"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "dex"
+   ],
+   "id": "anel_35",
+   "nome": "DEX",
+   "tipo": "small",
+   "x": -438,
+   "y": -438,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_34",
+    "anel_36"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_36",
+   "nome": "STR",
+   "tipo": "small",
+   "x": -364,
+   "y": -502,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_35",
+    "anel_37"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_37",
+   "nome": "STR",
+   "tipo": "small",
+   "x": -281,
+   "y": -552,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_36",
+    "anel_38"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_38",
+   "nome": "STR",
+   "tipo": "small",
+   "x": -192,
+   "y": -590,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_37",
+    "anel_39"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "atributo",
+    "str"
+   ],
+   "id": "anel_39",
+   "nome": "STR",
+   "tipo": "small",
+   "x": -97,
+   "y": -612,
+   "cluster": "anel",
+   "dominio": null,
+   "conexoes": [
+    "anel_0",
+    "anel_38"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "armour",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_e",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -413,
+   "y": -1442,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_s1",
+    "inicio_knight"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "armour",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_s1",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -443,
+   "y": -1548,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_e",
+    "armour_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_shielding",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_s2",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -474,
+   "y": -1653,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_a1",
+    "armour_b1",
+    "armour_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "armour",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_a1",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -600,
+   "y": -1732,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_a2",
+    "armour_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "armour",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_a2",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -678,
+   "y": -1824,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_a1",
+    "armour_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_shielding",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_a3",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -731,
+   "y": -1933,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_a2",
+    "armour_na",
+    "melee_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "armour",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_b1",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -408,
+   "y": -1787,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_b2",
+    "armour_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "armour",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_b2",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -390,
+   "y": -1906,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_b1",
+    "armour_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_shielding",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_b3",
+   "nome": "Armour",
+   "tipo": "small",
+   "x": -404,
+   "y": -2027,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_b2",
+    "armour_nb",
+    "attack_speed_e",
+    "life_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "armour",
+     "pct": 10
+    },
+    {
+     "legado": "absorb",
+     "valor": 0.02
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_na",
+   "nome": "Pele de Ferro",
+   "tipo": "notable",
+   "x": -776,
+   "y": -2056,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_a3",
+    "armour_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "block",
+     "valor": 3
+    },
+    {
+     "add": "skill_shielding",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "armour",
+    "defesa"
+   ],
+   "id": "armour_nb",
+   "nome": "Muralha",
+   "tipo": "notable",
+   "x": -430,
+   "y": -2155,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "conexoes": [
+    "armour_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "armour",
+    "defesa",
+    "keystone"
+   ],
+   "id": "armour_k",
+   "nome": "Última Muralha",
+   "descricao": "Com menos de 30% de vida, você recebe 15% menos dano.",
+   "tipo": "keystone",
+   "x": -852,
+   "y": -2211,
+   "cluster": "armour",
+   "dominio": "defesa",
+   "icone": "armour",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "ultimaMuralha"
+   },
+   "conexoes": [
+    "armour_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_e",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 413,
+   "y": -1442,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "inicio_knight",
+    "life_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_s1",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 443,
+   "y": -1548,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_e",
+    "life_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "life_regen_pct",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_s2",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 474,
+   "y": -1653,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_a1",
+    "life_b1",
+    "life_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_a1",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 408,
+   "y": -1787,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_a2",
+    "life_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_a2",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 390,
+   "y": -1906,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_a1",
+    "life_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "life_regen_pct",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_a3",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 404,
+   "y": -2027,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "armour_b3",
+    "attack_speed_e",
+    "life_a2",
+    "life_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_b1",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 600,
+   "y": -1732,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_b2",
+    "life_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_b2",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 678,
+   "y": -1824,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_b1",
+    "life_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "life_regen_pct",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_b3",
+   "nome": "Life",
+   "tipo": "small",
+   "x": 731,
+   "y": -1933,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_b2",
+    "life_nb",
+    "physical_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 8
+    },
+    {
+     "add": "life_regen_pct",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_na",
+   "nome": "Coração Forte",
+   "tipo": "notable",
+   "x": 430,
+   "y": -2155,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_a3",
+    "life_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "life",
+     "pct": 6
+    },
+    {
+     "legado": "absorb",
+     "valor": 0.02
+    },
+    {
+     "add": "skill_shielding",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "life",
+    "defesa"
+   ],
+   "id": "life_nb",
+   "nome": "Sangue Grosso",
+   "tipo": "notable",
+   "x": 776,
+   "y": -2056,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "conexoes": [
+    "life_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "life",
+    "defesa",
+    "keystone"
+   ],
+   "id": "life_k",
+   "nome": "Não Cai Nunca",
+   "descricao": "Um golpe que mataria deixa você vivo, com 10% da vida. Uma vez a cada 120 segundos.",
+   "tipo": "keystone",
+   "x": 448,
+   "y": -2327,
+   "cluster": "life",
+   "dominio": "defesa",
+   "icone": "life",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "naoCaiNunca"
+   },
+   "conexoes": [
+    "life_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_e",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": 0,
+   "y": -2350,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "armour_b3",
+    "attack_speed_s1",
+    "life_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_s1",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": 0,
+   "y": -2460,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_e",
+    "attack_speed_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_melee",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_s2",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": 0,
+   "y": -2570,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_a1",
+    "attack_speed_b1",
+    "attack_speed_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_a1",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": -100,
+   "y": -2680,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_a2",
+    "attack_speed_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_a2",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": -150,
+   "y": -2790,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_a1",
+    "attack_speed_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_melee",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_a3",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": -170,
+   "y": -2910,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_a2",
+    "attack_speed_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_b1",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": 100,
+   "y": -2680,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_b2",
+    "attack_speed_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_b2",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": 150,
+   "y": -2790,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_b1",
+    "attack_speed_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_melee",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_b3",
+   "nome": "Attack Speed",
+   "tipo": "small",
+   "x": 170,
+   "y": -2910,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_b2",
+    "attack_speed_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 10,
+     "tag": "melee"
+    },
+    {
+     "stat": "attackSpeed",
+     "pct": 5
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_na",
+   "nome": "Martial Training",
+   "tipo": "notable",
+   "x": -180,
+   "y": -3040,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_a3",
+    "attack_speed_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 6
+    },
+    {
+     "add": "skill_melee",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "attack",
+    "speed"
+   ],
+   "id": "attack_speed_nb",
+   "nome": "Golpes Rápidos",
+   "tipo": "notable",
+   "x": 180,
+   "y": -3040,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "conexoes": [
+    "attack_speed_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "attack",
+    "speed",
+    "keystone"
+   ],
+   "id": "attack_speed_k",
+   "nome": "Mil Mãos",
+   "descricao": "Cada golpe corpo a corpo tem 15% de chance de acertar duas vezes; a segunda com metade do dano.",
+   "tipo": "keystone",
+   "x": -210,
+   "y": -3210,
+   "cluster": "attack_speed",
+   "dominio": "dano",
+   "icone": "attack_speed",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "milMaos"
+   },
+   "conexoes": [
+    "attack_speed_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "physical"
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_e",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 882,
+   "y": -1214,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "inicio_knight",
+    "inicio_paladin",
+    "physical_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "physical"
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_s1",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 947,
+   "y": -1303,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_e",
+    "physical_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_s2",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 1011,
+   "y": -1392,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_a1",
+    "physical_b1",
+    "physical_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "physical"
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_a1",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 995,
+   "y": -1540,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_a2",
+    "physical_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "physical"
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_a2",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 1019,
+   "y": -1658,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_a1",
+    "physical_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_a3",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 1074,
+   "y": -1767,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "life_b3",
+    "physical_a2",
+    "physical_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "physical"
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_b1",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 1157,
+   "y": -1422,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_b2",
+    "physical_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "physical"
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_b2",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 1262,
+   "y": -1482,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_b1",
+    "physical_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "str",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_b3",
+   "nome": "Physical",
+   "tipo": "small",
+   "x": 1349,
+   "y": -1567,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "critical_e",
+    "physical_b2",
+    "physical_nb",
+    "ranged_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 10,
+     "tag": "physical"
+    },
+    {
+     "legado": "armorPenetration",
+     "valor": 0.05
+    },
+    {
+     "add": "skill_melee",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_na",
+   "nome": "Força Bruta",
+   "tipo": "notable",
+   "x": 1142,
+   "y": -1878,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_a3",
+    "physical_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 6,
+     "tag": "physical"
+    },
+    {
+     "add": "crit_dmg",
+     "valor": 8
+    }
+   ],
+   "tags": [
+    "physical"
+   ],
+   "id": "physical_nb",
+   "nome": "Golpe Certeiro",
+   "tipo": "notable",
+   "x": 1433,
+   "y": -1666,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "conexoes": [
+    "physical_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "physical",
+    "keystone"
+   ],
+   "id": "physical_k",
+   "nome": "Vazio Pleno",
+   "descricao": "Com a vida acima de 90%, você bate 5% mais forte.",
+   "tipo": "keystone",
+   "x": 1218,
+   "y": -2033,
+   "cluster": "physical",
+   "dominio": "dano",
+   "icone": "physical",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "vazioPleno"
+   },
+   "conexoes": [
+    "physical_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ranged"
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_e",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1272,
+   "y": -795,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "inicio_paladin",
+    "ranged_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "projectile"
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_s1",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1365,
+   "y": -853,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_e",
+    "ranged_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_distance",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_s2",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1459,
+   "y": -912,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_a1",
+    "ranged_b1",
+    "ranged_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ranged"
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_a1",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1499,
+   "y": -1055,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_a2",
+    "ranged_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "projectile"
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_a2",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1566,
+   "y": -1155,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_a1",
+    "ranged_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_distance",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_a3",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1657,
+   "y": -1236,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "physical_b3",
+    "ranged_a2",
+    "ranged_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ranged"
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_b1",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1605,
+   "y": -885,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_b2",
+    "ranged_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "projectile"
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_b2",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1725,
+   "y": -901,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_b1",
+    "ranged_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_distance",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_b3",
+   "nome": "Ranged",
+   "tipo": "small",
+   "x": 1837,
+   "y": -948,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "accuracy_a3",
+    "ranged_b2",
+    "ranged_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 10,
+     "tag": "ranged"
+    },
+    {
+     "add": "skill_distance",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_na",
+   "nome": "Olho de Falcão",
+   "tipo": "notable",
+   "x": 1762,
+   "y": -1313,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_a3",
+    "ranged_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 6,
+     "tag": "projectile"
+    },
+    {
+     "legado": "flechaAtravessa",
+     "valor": 0.1
+    }
+   ],
+   "tags": [
+    "ranged",
+    "projectile"
+   ],
+   "id": "ranged_nb",
+   "nome": "Flecha que Atravessa",
+   "tipo": "notable",
+   "x": 1953,
+   "y": -1008,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "conexoes": [
+    "ranged_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "ranged",
+    "projectile",
+    "keystone"
+   ],
+   "id": "ranged_k",
+   "nome": "Chuva de Flechas",
+   "descricao": "A cada 6 tiros da arma, o próximo acerta também os bichos em volta do alvo, com 50% do dano.",
+   "tipo": "keystone",
+   "x": 1890,
+   "y": -1429,
+   "cluster": "ranged",
+   "dominio": "dano",
+   "icone": "ranged",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "chuvaDeFlechas"
+   },
+   "conexoes": [
+    "ranged_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "accuracy",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_e",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 1496,
+   "y": -105,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_s1",
+    "inicio_paladin"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_distance",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_s1",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 1606,
+   "y": -113,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_e",
+    "accuracy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "accuracy",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_s2",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 1715,
+   "y": -120,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_a1",
+    "accuracy_b1",
+    "accuracy_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "accuracy",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_a1",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 1818,
+   "y": -228,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_a2",
+    "accuracy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_distance",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_a2",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 1924,
+   "y": -285,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_a1",
+    "accuracy_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "accuracy",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_a3",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 2043,
+   "y": -314,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_a2",
+    "accuracy_na",
+    "critical_e",
+    "ranged_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "accuracy",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_b1",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 1832,
+   "y": -28,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_b2",
+    "accuracy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_distance",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_b2",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 1945,
+   "y": 14,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_b1",
+    "accuracy_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "accuracy",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_b3",
+   "nome": "Accuracy",
+   "tipo": "small",
+   "x": 2066,
+   "y": 26,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_b2",
+    "accuracy_nb",
+    "holy_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "accuracy",
+     "pct": 12
+    },
+    {
+     "add": "crit_chance",
+     "valor": 1
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_na",
+   "nome": "Mira Perfeita",
+   "tipo": "notable",
+   "x": 2172,
+   "y": -333,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_a3",
+    "accuracy_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 6,
+     "tag": "ranged"
+    },
+    {
+     "add": "dmg_vs_boss",
+     "valor": 6
+    },
+    {
+     "add": "skill_distance",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "accuracy"
+   ],
+   "id": "accuracy_nb",
+   "nome": "Paciência do Caçador",
+   "tipo": "notable",
+   "x": 2197,
+   "y": 26,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "conexoes": [
+    "accuracy_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "accuracy",
+    "keystone"
+   ],
+   "id": "accuracy_k",
+   "nome": "Arqueiro Arcano",
+   "descricao": "Parte da INT vira dano à distância: cada 10 de INT dá +1% de dano em skill/golpe Ranged.",
+   "tipo": "keystone",
+   "x": 2339,
+   "y": -374,
+   "cluster": "accuracy",
+   "dominio": "dano",
+   "icone": "accuracy",
+   "keystone": {
+    "regra": "atributoParaTag",
+    "atributo": "int",
+    "tag": "ranged",
+    "porPonto": 0.1
+   },
+   "conexoes": [
+    "accuracy_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_e",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2235,
+   "y": -726,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "accuracy_a3",
+    "critical_s1",
+    "physical_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_dmg",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_s1",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2340,
+   "y": -760,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_e",
+    "critical_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_s2",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2444,
+   "y": -794,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_a1",
+    "critical_b1",
+    "critical_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_a1",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2518,
+   "y": -923,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_a2",
+    "critical_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_dmg",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_a2",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2607,
+   "y": -1005,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_a1",
+    "critical_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_a3",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2715,
+   "y": -1061,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_a2",
+    "critical_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_b1",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2580,
+   "y": -733,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_b2",
+    "critical_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_dmg",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_b2",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2700,
+   "y": -719,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_b1",
+    "critical_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_b3",
+   "nome": "Critical",
+   "tipo": "small",
+   "x": 2820,
+   "y": -737,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_b2",
+    "critical_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 2
+    },
+    {
+     "add": "crit_dmg",
+     "valor": 8
+    },
+    {
+     "add": "skill_distance",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_na",
+   "nome": "Ponto Fraco",
+   "tipo": "notable",
+   "x": 2836,
+   "y": -1110,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_a3",
+    "critical_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_dmg",
+     "valor": 12
+    }
+   ],
+   "tags": [
+    "critical"
+   ],
+   "id": "critical_nb",
+   "nome": "Execução",
+   "tipo": "notable",
+   "x": 2947,
+   "y": -768,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "conexoes": [
+    "critical_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "critical",
+    "keystone"
+   ],
+   "id": "critical_k",
+   "nome": "Julgamento",
+   "descricao": "O crítico ignora a resistência elemental do bicho.",
+   "tipo": "keystone",
+   "x": 2988,
+   "y": -1191,
+   "cluster": "critical",
+   "dominio": "dano",
+   "icone": "critical",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "julgamento"
+   },
+   "conexoes": [
+    "critical_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "holy"
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_e",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1427,
+   "y": 464,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_s1",
+    "inicio_druid",
+    "inicio_paladin"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "holy"
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_s1",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1532,
+   "y": 498,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_e",
+    "holy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_s2",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1636,
+   "y": 532,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_a1",
+    "holy_b1",
+    "holy_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "holy"
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_a1",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1772,
+   "y": 471,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_a2",
+    "holy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "holy"
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_a2",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1892,
+   "y": 457,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_a1",
+    "holy_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_a3",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 2012,
+   "y": 475,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "accuracy_b3",
+    "holy_a2",
+    "holy_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "holy"
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_b1",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1710,
+   "y": 661,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_b2",
+    "holy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "holy"
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_b2",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1799,
+   "y": 743,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_b1",
+    "holy_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_b3",
+   "nome": "Holy",
+   "tipo": "small",
+   "x": 1907,
+   "y": 799,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_b2",
+    "holy_nb",
+    "ice_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 12,
+     "tag": "holy"
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_na",
+   "nome": "Luz Divina",
+   "tipo": "notable",
+   "x": 2139,
+   "y": 506,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_a3",
+    "holy_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 8
+    },
+    {
+     "stat": "life",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "holy"
+   ],
+   "id": "holy_nb",
+   "nome": "Bênção",
+   "tipo": "notable",
+   "x": 2028,
+   "y": 848,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "conexoes": [
+    "holy_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "holy",
+    "keystone"
+   ],
+   "id": "holy_k",
+   "nome": "Graça",
+   "descricao": "Com menos de 50% de vida, suas curas saem 10% maiores.",
+   "tipo": "keystone",
+   "x": 2310,
+   "y": 530,
+   "cluster": "holy",
+   "dominio": "dano",
+   "icone": "holy",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "graca"
+   },
+   "conexoes": [
+    "holy_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ice"
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_e",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1149,
+   "y": 964,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_s1",
+    "inicio_druid"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ice"
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_s1",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1233,
+   "y": 1035,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_e",
+    "ice_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_s2",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1318,
+   "y": 1105,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_a1",
+    "ice_b1",
+    "ice_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ice"
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_a1",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1466,
+   "y": 1100,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_a2",
+    "ice_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ice"
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_a2",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1582,
+   "y": 1132,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_a1",
+    "ice_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_a3",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1687,
+   "y": 1194,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "holy_b3",
+    "ice_a2",
+    "ice_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ice"
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_b1",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1338,
+   "y": 1253,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_b2",
+    "ice_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "ice"
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_b2",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1390,
+   "y": 1362,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_b1",
+    "ice_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_b3",
+   "nome": "Ice",
+   "tipo": "small",
+   "x": 1469,
+   "y": 1454,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "healing_e",
+    "ice_b2",
+    "ice_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 12,
+     "tag": "ice"
+    },
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_na",
+   "nome": "Coração de Gelo",
+   "tipo": "notable",
+   "x": 1793,
+   "y": 1270,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_a3",
+    "ice_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 6,
+     "tag": "ice"
+    },
+    {
+     "add": "crit_chance",
+     "valor": 1
+    }
+   ],
+   "tags": [
+    "ice",
+    "spell"
+   ],
+   "id": "ice_nb",
+   "nome": "Frio Cortante",
+   "tipo": "notable",
+   "x": 1562,
+   "y": 1545,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "conexoes": [
+    "ice_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "ice",
+    "spell",
+    "keystone"
+   ],
+   "id": "ice_k",
+   "nome": "Inverno Sem Fim",
+   "descricao": "Magia de gelo deixa o bicho recebendo 10% mais dano de todos, por 4 segundos.",
+   "tipo": "keystone",
+   "x": 1943,
+   "y": 1356,
+   "cluster": "ice",
+   "dominio": "dano",
+   "icone": "ice",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "invernoSemFim"
+   },
+   "conexoes": [
+    "ice_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_e",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1381,
+   "y": 1901,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "earth_a3",
+    "healing_s1",
+    "ice_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_s1",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1446,
+   "y": 1990,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_e",
+    "healing_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_regen_pct",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_s2",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1510,
+   "y": 2079,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_a1",
+    "healing_b1",
+    "healing_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_a1",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1656,
+   "y": 2109,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_a2",
+    "healing_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_a2",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1761,
+   "y": 2169,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_a1",
+    "healing_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_regen_pct",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_a3",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1848,
+   "y": 2254,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_a2",
+    "healing_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_b1",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1494,
+   "y": 2227,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_b2",
+    "healing_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_b2",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1518,
+   "y": 2345,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_b1",
+    "healing_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_regen_pct",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_b3",
+   "nome": "Healing",
+   "tipo": "small",
+   "x": 1573,
+   "y": 2454,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_b2",
+    "healing_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 12
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_na",
+   "nome": "Mãos que Curam",
+   "tipo": "notable",
+   "x": 1932,
+   "y": 2353,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_a3",
+    "healing_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "healing",
+     "pct": 6
+    },
+    {
+     "add": "mana_regen_pct",
+     "valor": 8
+    }
+   ],
+   "tags": [
+    "healing"
+   ],
+   "id": "healing_nb",
+   "nome": "Fonte Serena",
+   "tipo": "notable",
+   "x": 1641,
+   "y": 2565,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "conexoes": [
+    "healing_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "healing",
+    "keystone"
+   ],
+   "id": "healing_k",
+   "nome": "Fonte Viva",
+   "descricao": "Suas magias de cura também põem um escudo de mana por 3 segundos, de 15% do que curaram.",
+   "tipo": "keystone",
+   "x": 2056,
+   "y": 2473,
+   "cluster": "healing",
+   "dominio": "sustento",
+   "icone": "healing",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "fonteViva"
+   },
+   "conexoes": [
+    "healing_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "earth"
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_e",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 562,
+   "y": 1391,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_s1",
+    "inicio_druid"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "earth"
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_s1",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 603,
+   "y": 1493,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_e",
+    "earth_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_s2",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 644,
+   "y": 1595,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_a1",
+    "earth_b1",
+    "earth_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "earth"
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_a1",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 778,
+   "y": 1660,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_a2",
+    "earth_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "earth"
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_a2",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 866,
+   "y": 1743,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_a1",
+    "earth_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_a3",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 929,
+   "y": 1847,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_a2",
+    "earth_na",
+    "healing_e"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "earth"
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_b1",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 593,
+   "y": 1734,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_b2",
+    "earth_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "earth"
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_b2",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 588,
+   "y": 1855,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_b1",
+    "earth_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "int",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_b3",
+   "nome": "Earth",
+   "tipo": "small",
+   "x": 614,
+   "y": 1974,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_b2",
+    "earth_nb",
+    "spell_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 12,
+     "tag": "earth"
+    },
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_na",
+   "nome": "Força da Terra",
+   "tipo": "notable",
+   "x": 987,
+   "y": 1963,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_a3",
+    "earth_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 6,
+     "tag": "earth"
+    },
+    {
+     "stat": "life",
+     "pct": 4
+    }
+   ],
+   "tags": [
+    "earth",
+    "spell"
+   ],
+   "id": "earth_nb",
+   "nome": "Raízes Profundas",
+   "tipo": "notable",
+   "x": 654,
+   "y": 2098,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "conexoes": [
+    "earth_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "earth",
+    "spell",
+    "keystone"
+   ],
+   "id": "earth_k",
+   "nome": "Raiz Venenosa",
+   "descricao": "Magia de terra tem 25% de chance de envenenar o bicho com 30% do dano, ao longo de 5 segundos.",
+   "tipo": "keystone",
+   "x": 1079,
+   "y": 2110,
+   "cluster": "earth",
+   "dominio": "dano",
+   "icone": "earth",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "raizVenenosa"
+   },
+   "conexoes": [
+    "earth_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 2,
+     "tag": "spell"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_e",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": 0,
+   "y": 1500,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "inicio_druid",
+    "inicio_sorcerer",
+    "spell_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_s1",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": 0,
+   "y": 1610,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_e",
+    "spell_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 2,
+     "tag": "spell"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_s2",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": 0,
+   "y": 1720,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_a1",
+    "spell_b1",
+    "spell_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 2,
+     "tag": "spell"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_a1",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": 100,
+   "y": 1830,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_a2",
+    "spell_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_a2",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": 150,
+   "y": 1940,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_a1",
+    "spell_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 2,
+     "tag": "spell"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_a3",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": 170,
+   "y": 2060,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "cast_speed_e",
+    "earth_b3",
+    "spell_a2",
+    "spell_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 2,
+     "tag": "spell"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_b1",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": -100,
+   "y": 1830,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_b2",
+    "spell_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_b2",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": -150,
+   "y": 1940,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_b1",
+    "spell_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 2,
+     "tag": "spell"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_b3",
+   "nome": "Spell",
+   "tipo": "small",
+   "x": -170,
+   "y": 2060,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "fire_a3",
+    "spell_b2",
+    "spell_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 150
+    },
+    {
+     "dano": 7,
+     "tag": "spell"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_na",
+   "nome": "Arcane Mind",
+   "tipo": "notable",
+   "x": 180,
+   "y": 2190,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_a3",
+    "spell_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_magic",
+     "valor": 6
+    },
+    {
+     "dano": 3,
+     "tag": "area"
+    }
+   ],
+   "tags": [
+    "spell"
+   ],
+   "id": "spell_nb",
+   "nome": "Erudito",
+   "tipo": "notable",
+   "x": -180,
+   "y": 2190,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "conexoes": [
+    "spell_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "spell",
+    "keystone"
+   ],
+   "id": "spell_k",
+   "nome": "Avatar do Fogo",
+   "descricao": "50% do dano físico do golpe da arma sai como fogo.",
+   "tipo": "keystone",
+   "x": 210,
+   "y": 2360,
+   "cluster": "spell",
+   "dominio": "dano",
+   "icone": "spell",
+   "keystone": {
+    "regra": "conversao",
+    "de": "physical",
+    "para": "fire",
+    "pct": 50
+   },
+   "conexoes": [
+    "spell_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_e",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": 0,
+   "y": 2350,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_s1",
+    "spell_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_s1",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": 0,
+   "y": 2460,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_e",
+    "cast_speed_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_s2",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": 0,
+   "y": 2570,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_a1",
+    "cast_speed_b1",
+    "cast_speed_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_a1",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": 100,
+   "y": 2680,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_a2",
+    "cast_speed_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_a2",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": 150,
+   "y": 2790,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_a1",
+    "cast_speed_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_a3",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": 170,
+   "y": 2910,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_a2",
+    "cast_speed_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_b1",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": -100,
+   "y": 2680,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_b2",
+    "cast_speed_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_b2",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": -150,
+   "y": 2790,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_b1",
+    "cast_speed_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_b3",
+   "nome": "Cast Speed",
+   "tipo": "small",
+   "x": -170,
+   "y": 2910,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_b2",
+    "cast_speed_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 6
+    },
+    {
+     "add": "cooldown_recovery",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_na",
+   "nome": "Palavras Rápidas",
+   "tipo": "notable",
+   "x": 180,
+   "y": 3040,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_cost",
+     "valor": 6
+    },
+    {
+     "stat": "castSpeed",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "spell",
+    "speed"
+   ],
+   "id": "cast_speed_nb",
+   "nome": "Economia Arcana",
+   "tipo": "notable",
+   "x": -180,
+   "y": 3040,
+   "cluster": "cast_speed",
+   "dominio": "dano",
+   "icone": "cast_speed",
+   "conexoes": [
+    "cast_speed_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "fire"
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_e",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -562,
+   "y": 1391,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_s1",
+    "inicio_sorcerer"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "fire"
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_s1",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -603,
+   "y": 1493,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_e",
+    "fire_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 1
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_s2",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -644,
+   "y": 1595,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_a1",
+    "fire_b1",
+    "fire_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "fire"
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_a1",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -593,
+   "y": 1734,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_a2",
+    "fire_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "fire"
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_a2",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -588,
+   "y": 1855,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_a1",
+    "fire_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 1
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_a3",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -614,
+   "y": 1974,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_a2",
+    "fire_na",
+    "spell_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "fire"
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_b1",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -778,
+   "y": 1660,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_b2",
+    "fire_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "fire"
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_b2",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -866,
+   "y": 1743,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_b1",
+    "fire_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "castSpeed",
+     "pct": 1
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_b3",
+   "nome": "Fire",
+   "tipo": "small",
+   "x": -929,
+   "y": 1847,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "energy_shield_e",
+    "fire_b2",
+    "fire_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 15,
+     "tag": "fire"
+    },
+    {
+     "stat": "castSpeed",
+     "pct": 5
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_na",
+   "nome": "Fire Adept",
+   "tipo": "notable",
+   "x": -654,
+   "y": 2098,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_a3",
+    "fire_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 8,
+     "tag": "fire"
+    },
+    {
+     "dano": 4,
+     "tag": "area"
+    },
+    {
+     "add": "skill_magic",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "fire",
+    "spell"
+   ],
+   "id": "fire_nb",
+   "nome": "Chama Viva",
+   "tipo": "notable",
+   "x": -987,
+   "y": 1963,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "conexoes": [
+    "fire_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "fire",
+    "spell",
+    "keystone"
+   ],
+   "id": "fire_k",
+   "nome": "Cataclismo",
+   "descricao": "Cada magia de fogo tem 25% de chance de acertar de novo, com metade do dano.",
+   "tipo": "keystone",
+   "x": -689,
+   "y": 2267,
+   "cluster": "fire",
+   "dominio": "dano",
+   "icone": "fire",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "cataclismo"
+   },
+   "conexoes": [
+    "fire_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "es_pct",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_e",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1381,
+   "y": 1901,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "death_a3",
+    "energy_shield_s1",
+    "fire_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "energy_shield",
+     "valor": 20
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_s1",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1446,
+   "y": 1990,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_e",
+    "energy_shield_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 40
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_s2",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1510,
+   "y": 2079,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_a1",
+    "energy_shield_b1",
+    "energy_shield_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "es_pct",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_a1",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1494,
+   "y": 2227,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_a2",
+    "energy_shield_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "energy_shield",
+     "valor": 20
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_a2",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1518,
+   "y": 2345,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_a1",
+    "energy_shield_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 40
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_a3",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1573,
+   "y": 2454,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_a2",
+    "energy_shield_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "es_pct",
+     "valor": 3
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_b1",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1656,
+   "y": 2109,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_b2",
+    "energy_shield_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "energy_shield",
+     "valor": 20
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_b2",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1761,
+   "y": 2169,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_b1",
+    "energy_shield_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 40
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_b3",
+   "nome": "Energy Shield",
+   "tipo": "small",
+   "x": -1848,
+   "y": 2254,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_b2",
+    "energy_shield_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "es_pct",
+     "valor": 10
+    },
+    {
+     "add": "energy_shield",
+     "valor": 60
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_na",
+   "nome": "Barreira Arcana",
+   "tipo": "notable",
+   "x": -1641,
+   "y": 2565,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "es_pct",
+     "valor": 6
+    },
+    {
+     "legado": "absorb",
+     "valor": 0.02
+    }
+   ],
+   "tags": [
+    "energy_shield",
+    "defesa"
+   ],
+   "id": "energy_shield_nb",
+   "nome": "Mente Blindada",
+   "tipo": "notable",
+   "x": -1932,
+   "y": 2353,
+   "cluster": "energy_shield",
+   "dominio": "defesa",
+   "icone": "energy_shield",
+   "conexoes": [
+    "energy_shield_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "death"
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_e",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1149,
+   "y": 964,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_s1",
+    "inicio_sorcerer"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "death"
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_s1",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1233,
+   "y": 1035,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_e",
+    "death_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "life_leech",
+     "valor": 0.3
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_s2",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1318,
+   "y": 1105,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_a1",
+    "death_b1",
+    "death_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "death"
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_a1",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1338,
+   "y": 1253,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_a2",
+    "death_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "death"
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_a2",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1390,
+   "y": 1362,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_a1",
+    "death_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "life_leech",
+     "valor": 0.3
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_a3",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1469,
+   "y": 1454,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_a2",
+    "death_na",
+    "energy_shield_e"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "death"
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_b1",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1466,
+   "y": 1100,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_b2",
+    "death_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "death"
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_b2",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1582,
+   "y": 1132,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_b1",
+    "death_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "life_leech",
+     "valor": 0.3
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_b3",
+   "nome": "Death",
+   "tipo": "small",
+   "x": -1687,
+   "y": 1194,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_b2",
+    "death_nb",
+    "energy_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 12,
+     "tag": "death"
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_na",
+   "nome": "Toque da Morte",
+   "tipo": "notable",
+   "x": -1562,
+   "y": 1545,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_a3",
+    "death_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 6,
+     "tag": "death"
+    },
+    {
+     "add": "life_leech",
+     "valor": 1
+    }
+   ],
+   "tags": [
+    "death",
+    "spell"
+   ],
+   "id": "death_nb",
+   "nome": "Colheita",
+   "tipo": "notable",
+   "x": -1793,
+   "y": 1270,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "conexoes": [
+    "death_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "death",
+    "spell",
+    "keystone"
+   ],
+   "id": "death_k",
+   "nome": "Guerreiro de Sangue",
+   "descricao": "Seu Life Leech é 50% mais eficiente.",
+   "tipo": "keystone",
+   "x": -1673,
+   "y": 1678,
+   "cluster": "death",
+   "dominio": "dano",
+   "icone": "death",
+   "keystone": {
+    "regra": "multiplicarStat",
+    "stat": "lifeLeech",
+    "fator": 1.5
+   },
+   "conexoes": [
+    "death_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "energy"
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_e",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1427,
+   "y": 464,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_s1",
+    "inicio_monk",
+    "inicio_sorcerer"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "energy"
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_s1",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1532,
+   "y": 498,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_e",
+    "energy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_s2",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1636,
+   "y": 532,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_a1",
+    "energy_b1",
+    "energy_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "energy"
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_a1",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1710,
+   "y": 661,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_a2",
+    "energy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "energy"
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_a2",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1799,
+   "y": 743,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_a1",
+    "energy_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_a3",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1907,
+   "y": 799,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "death_b3",
+    "energy_a2",
+    "energy_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "energy"
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_b1",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1772,
+   "y": 471,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_b2",
+    "energy_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "energy"
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_b2",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -1892,
+   "y": 457,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_b1",
+    "energy_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "crit_chance",
+     "valor": 0.5
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_b3",
+   "nome": "Energy",
+   "tipo": "small",
+   "x": -2012,
+   "y": 475,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_b2",
+    "energy_nb",
+    "mana_e",
+    "mobility_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 12,
+     "tag": "energy"
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_na",
+   "nome": "Tempestade",
+   "tipo": "notable",
+   "x": -2028,
+   "y": 848,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_a3",
+    "energy_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 6,
+     "tag": "energy"
+    },
+    {
+     "stat": "attackSpeed",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "energy"
+   ],
+   "id": "energy_nb",
+   "nome": "Faísca",
+   "tipo": "notable",
+   "x": -2139,
+   "y": 506,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "conexoes": [
+    "energy_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "energy",
+    "keystone"
+   ],
+   "id": "energy_k",
+   "nome": "Arco Voltaico",
+   "descricao": "Magia de energia tem 25% de chance de pular para outro bicho próximo, com metade do dano.",
+   "tipo": "keystone",
+   "x": -2180,
+   "y": 929,
+   "cluster": "energy",
+   "dominio": "dano",
+   "icone": "energy",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "arcoVoltaico"
+   },
+   "conexoes": [
+    "energy_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 60
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_e",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2235,
+   "y": -726,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "energy_b3",
+    "evasion_a3",
+    "mana_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_regen_pct",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_s1",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2340,
+   "y": -760,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_e",
+    "mana_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_leech",
+     "valor": 0.3
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_s2",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2444,
+   "y": -794,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_a1",
+    "mana_b1",
+    "mana_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 60
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_a1",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2580,
+   "y": -733,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_a2",
+    "mana_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_regen_pct",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_a2",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2700,
+   "y": -719,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_a1",
+    "mana_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_leech",
+     "valor": 0.3
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_a3",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2820,
+   "y": -737,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_a2",
+    "mana_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 60
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_b1",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2518,
+   "y": -923,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_b2",
+    "mana_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_regen_pct",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_b2",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2607,
+   "y": -1005,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_b1",
+    "mana_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_leech",
+     "valor": 0.3
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_b3",
+   "nome": "Mana",
+   "tipo": "small",
+   "x": -2715,
+   "y": -1061,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_b2",
+    "mana_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana",
+     "valor": 250
+    },
+    {
+     "add": "mana_regen_pct",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_na",
+   "nome": "Poço Fundo",
+   "tipo": "notable",
+   "x": -2947,
+   "y": -768,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_a3",
+    "mana_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "mana_leech",
+     "valor": 1
+    },
+    {
+     "add": "skill_cost",
+     "valor": 4
+    }
+   ],
+   "tags": [
+    "mana"
+   ],
+   "id": "mana_nb",
+   "nome": "Sede Arcana",
+   "tipo": "notable",
+   "x": -2836,
+   "y": -1110,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "conexoes": [
+    "mana_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "mana",
+    "keystone"
+   ],
+   "id": "mana_k",
+   "nome": "Fonte Eterna",
+   "descricao": "Cada bicho que você mata devolve 1% da sua mana máxima.",
+   "tipo": "keystone",
+   "x": -3118,
+   "y": -792,
+   "cluster": "mana",
+   "dominio": "sustento",
+   "icone": "mana",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "fonteEterna"
+   },
+   "conexoes": [
+    "mana_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "moveSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_e",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -1496,
+   "y": -105,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "inicio_monk",
+    "mobility_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_s1",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -1606,
+   "y": -113,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_e",
+    "mobility_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 1
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_s2",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -1715,
+   "y": -120,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_a1",
+    "mobility_b1",
+    "mobility_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "moveSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_a1",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -1832,
+   "y": -28,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_a2",
+    "mobility_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_a2",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -1945,
+   "y": 14,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_a1",
+    "mobility_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 1
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_a3",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -2066,
+   "y": 26,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "energy_b3",
+    "mobility_a2",
+    "mobility_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "moveSpeed",
+     "pct": 2
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_b1",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -1818,
+   "y": -228,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_b2",
+    "mobility_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_b2",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -1924,
+   "y": -285,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_b1",
+    "mobility_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 1
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_b3",
+   "nome": "Mobility",
+   "tipo": "small",
+   "x": -2043,
+   "y": -314,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "evasion_a3",
+    "mobility_b2",
+    "mobility_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "moveSpeed",
+     "pct": 6
+    },
+    {
+     "stat": "evasion",
+     "pct": 6
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_na",
+   "nome": "Pés Leves",
+   "tipo": "notable",
+   "x": -2197,
+   "y": 26,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "attackSpeed",
+     "pct": 4
+    },
+    {
+     "add": "dex",
+     "valor": 10
+    }
+   ],
+   "tags": [
+    "mobility"
+   ],
+   "id": "mobility_nb",
+   "nome": "Fluxo",
+   "tipo": "notable",
+   "x": -2172,
+   "y": -333,
+   "cluster": "mobility",
+   "dominio": "sustento",
+   "icone": "mobility",
+   "conexoes": [
+    "mobility_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_e",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1272,
+   "y": -795,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_s1",
+    "inicio_monk"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_s1",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1365,
+   "y": -853,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_e",
+    "evasion_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_s2",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1459,
+   "y": -912,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_a1",
+    "evasion_b1",
+    "evasion_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_a1",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1605,
+   "y": -885,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_a2",
+    "evasion_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_a2",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1725,
+   "y": -901,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_a1",
+    "evasion_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_a3",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1837,
+   "y": -948,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_a2",
+    "evasion_na",
+    "mana_e",
+    "mobility_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_b1",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1499,
+   "y": -1055,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_b2",
+    "evasion_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_b2",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1566,
+   "y": -1155,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_b1",
+    "evasion_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "dex",
+     "valor": 5
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_b3",
+   "nome": "Evasion",
+   "tipo": "small",
+   "x": -1657,
+   "y": -1236,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_b2",
+    "evasion_nb",
+    "melee_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 12
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_na",
+   "nome": "Sombra",
+   "tipo": "notable",
+   "x": -1953,
+   "y": -1008,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_a3",
+    "evasion_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "stat": "evasion",
+     "pct": 6
+    },
+    {
+     "add": "avoid_damage",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "evasion",
+    "defesa"
+   ],
+   "id": "evasion_nb",
+   "nome": "Reflexo",
+   "tipo": "notable",
+   "x": -1762,
+   "y": -1313,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "conexoes": [
+    "evasion_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "evasion",
+    "defesa",
+    "keystone"
+   ],
+   "id": "evasion_k",
+   "nome": "Vento que Volta",
+   "descricao": "Cada golpe bloqueado ou esquivado devolve 2% da sua mana máxima.",
+   "tipo": "keystone",
+   "x": -2113,
+   "y": -1073,
+   "cluster": "evasion",
+   "dominio": "defesa",
+   "icone": "evasion",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "ventoQueVolta"
+   },
+   "conexoes": [
+    "evasion_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "melee"
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_e",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -882,
+   "y": -1214,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "inicio_knight",
+    "inicio_monk",
+    "melee_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_melee",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_s1",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -947,
+   "y": -1303,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_e",
+    "melee_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "melee"
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_s2",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -1011,
+   "y": -1392,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_a1",
+    "melee_b1",
+    "melee_s1"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "melee"
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_a1",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -1157,
+   "y": -1422,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_a2",
+    "melee_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_melee",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_a2",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -1262,
+   "y": -1482,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_a1",
+    "melee_a3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "melee"
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_a3",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -1349,
+   "y": -1567,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "evasion_b3",
+    "melee_a2",
+    "melee_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "melee"
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_b1",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -995,
+   "y": -1540,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_b2",
+    "melee_s2"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "add": "skill_melee",
+     "valor": 2
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_b2",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -1019,
+   "y": -1658,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_b1",
+    "melee_b3"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 3,
+     "tag": "melee"
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_b3",
+   "nome": "Melee",
+   "tipo": "small",
+   "x": -1074,
+   "y": -1767,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "armour_a3",
+    "melee_b2",
+    "melee_nb"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "dano": 8,
+     "tag": "melee"
+    },
+    {
+     "add": "skill_melee",
+     "valor": 6
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_na",
+   "nome": "Mestre de Armas",
+   "tipo": "notable",
+   "x": -1433,
+   "y": -1666,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_a3",
+    "melee_k"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [
+    {
+     "legado": "attackDamage",
+     "valor": 0.04
+    },
+    {
+     "stat": "attackSpeed",
+     "pct": 3
+    }
+   ],
+   "tags": [
+    "melee"
+   ],
+   "id": "melee_nb",
+   "nome": "Fúria",
+   "tipo": "notable",
+   "x": -1142,
+   "y": -1878,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "conexoes": [
+    "melee_b3"
+   ]
+  },
+  {
+   "levelMinimo": 60,
+   "efeitos": [],
+   "tags": [
+    "melee",
+    "keystone"
+   ],
+   "id": "melee_k",
+   "nome": "Sede de Sangue",
+   "descricao": "Cada bicho que você mata dá +5% de dano por 6 segundos, acumulando até 3 vezes.",
+   "tipo": "keystone",
+   "x": -1557,
+   "y": -1786,
+   "cluster": "melee",
+   "dominio": "dano",
+   "icone": "melee",
+   "keystone": {
+    "regra": "habilidade",
+    "id": "sedeDeSangue"
+   },
+   "conexoes": [
+    "melee_na"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [],
+   "tags": [
+    "inicio",
+    "knight"
+   ],
+   "id": "inicio_knight",
+   "nome": "Início do Knight",
+   "tipo": "start",
+   "x": 0,
+   "y": -1000,
+   "cluster": "inicio",
+   "dominio": null,
+   "classe": "knight",
+   "conexoes": [
+    "anel_0",
+    "armour_e",
+    "life_e",
+    "melee_e",
+    "physical_e"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [],
+   "tags": [
+    "inicio",
+    "paladin"
+   ],
+   "id": "inicio_paladin",
+   "nome": "Início do Paladin",
+   "tipo": "start",
+   "x": 951,
+   "y": -309,
+   "cluster": "inicio",
+   "dominio": null,
+   "classe": "paladin",
+   "conexoes": [
+    "accuracy_e",
+    "anel_8",
+    "holy_e",
+    "physical_e",
+    "ranged_e"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [],
+   "tags": [
+    "inicio",
+    "druid"
+   ],
+   "id": "inicio_druid",
+   "nome": "Início do Druid",
+   "tipo": "start",
+   "x": 588,
+   "y": 809,
+   "cluster": "inicio",
+   "dominio": null,
+   "classe": "druid",
+   "conexoes": [
+    "anel_16",
+    "earth_e",
+    "holy_e",
+    "ice_e",
+    "spell_e"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [],
+   "tags": [
+    "inicio",
+    "sorcerer"
+   ],
+   "id": "inicio_sorcerer",
+   "nome": "Início do Sorcerer",
+   "tipo": "start",
+   "x": -588,
+   "y": 809,
+   "cluster": "inicio",
+   "dominio": null,
+   "classe": "sorcerer",
+   "conexoes": [
+    "anel_24",
+    "death_e",
+    "energy_e",
+    "fire_e",
+    "spell_e"
+   ]
+  },
+  {
+   "levelMinimo": 0,
+   "efeitos": [],
+   "tags": [
+    "inicio",
+    "monk"
+   ],
+   "id": "inicio_monk",
+   "nome": "Início do Monk",
+   "tipo": "start",
+   "x": -951,
+   "y": -309,
+   "cluster": "inicio",
+   "dominio": null,
+   "classe": "monk",
+   "conexoes": [
+    "anel_32",
+    "energy_e",
+    "evasion_e",
+    "melee_e",
+    "mobility_e"
+   ]
+  }
+ ],
+ "conexoes": [
+  [
+   "accuracy_a1",
+   "accuracy_a2"
+  ],
+  [
+   "accuracy_a1",
+   "accuracy_s2"
+  ],
+  [
+   "accuracy_a2",
+   "accuracy_a3"
+  ],
+  [
+   "accuracy_a3",
+   "accuracy_na"
+  ],
+  [
+   "accuracy_a3",
+   "critical_e"
+  ],
+  [
+   "accuracy_a3",
+   "ranged_b3"
+  ],
+  [
+   "accuracy_b1",
+   "accuracy_b2"
+  ],
+  [
+   "accuracy_b1",
+   "accuracy_s2"
+  ],
+  [
+   "accuracy_b2",
+   "accuracy_b3"
+  ],
+  [
+   "accuracy_b3",
+   "accuracy_nb"
+  ],
+  [
+   "accuracy_b3",
+   "holy_a3"
+  ],
+  [
+   "accuracy_e",
+   "accuracy_s1"
+  ],
+  [
+   "accuracy_e",
+   "inicio_paladin"
+  ],
+  [
+   "accuracy_k",
+   "accuracy_na"
+  ],
+  [
+   "accuracy_s1",
+   "accuracy_s2"
+  ],
+  [
+   "anel_0",
+   "anel_1"
+  ],
+  [
+   "anel_0",
+   "anel_39"
+  ],
+  [
+   "anel_0",
+   "inicio_knight"
+  ],
+  [
+   "anel_10",
+   "anel_11"
+  ],
+  [
+   "anel_10",
+   "anel_9"
+  ],
+  [
+   "anel_11",
+   "anel_12"
+  ],
+  [
+   "anel_12",
+   "anel_13"
+  ],
+  [
+   "anel_13",
+   "anel_14"
+  ],
+  [
+   "anel_14",
+   "anel_15"
+  ],
+  [
+   "anel_15",
+   "anel_16"
+  ],
+  [
+   "anel_16",
+   "anel_17"
+  ],
+  [
+   "anel_16",
+   "inicio_druid"
+  ],
+  [
+   "anel_17",
+   "anel_18"
+  ],
+  [
+   "anel_18",
+   "anel_19"
+  ],
+  [
+   "anel_19",
+   "anel_20"
+  ],
+  [
+   "anel_1",
+   "anel_2"
+  ],
+  [
+   "anel_20",
+   "anel_21"
+  ],
+  [
+   "anel_21",
+   "anel_22"
+  ],
+  [
+   "anel_22",
+   "anel_23"
+  ],
+  [
+   "anel_23",
+   "anel_24"
+  ],
+  [
+   "anel_24",
+   "anel_25"
+  ],
+  [
+   "anel_24",
+   "inicio_sorcerer"
+  ],
+  [
+   "anel_25",
+   "anel_26"
+  ],
+  [
+   "anel_26",
+   "anel_27"
+  ],
+  [
+   "anel_27",
+   "anel_28"
+  ],
+  [
+   "anel_28",
+   "anel_29"
+  ],
+  [
+   "anel_29",
+   "anel_30"
+  ],
+  [
+   "anel_2",
+   "anel_3"
+  ],
+  [
+   "anel_30",
+   "anel_31"
+  ],
+  [
+   "anel_31",
+   "anel_32"
+  ],
+  [
+   "anel_32",
+   "anel_33"
+  ],
+  [
+   "anel_32",
+   "inicio_monk"
+  ],
+  [
+   "anel_33",
+   "anel_34"
+  ],
+  [
+   "anel_34",
+   "anel_35"
+  ],
+  [
+   "anel_35",
+   "anel_36"
+  ],
+  [
+   "anel_36",
+   "anel_37"
+  ],
+  [
+   "anel_37",
+   "anel_38"
+  ],
+  [
+   "anel_38",
+   "anel_39"
+  ],
+  [
+   "anel_3",
+   "anel_4"
+  ],
+  [
+   "anel_4",
+   "anel_5"
+  ],
+  [
+   "anel_5",
+   "anel_6"
+  ],
+  [
+   "anel_6",
+   "anel_7"
+  ],
+  [
+   "anel_7",
+   "anel_8"
+  ],
+  [
+   "anel_8",
+   "anel_9"
+  ],
+  [
+   "anel_8",
+   "inicio_paladin"
+  ],
+  [
+   "armour_a1",
+   "armour_a2"
+  ],
+  [
+   "armour_a1",
+   "armour_s2"
+  ],
+  [
+   "armour_a2",
+   "armour_a3"
+  ],
+  [
+   "armour_a3",
+   "armour_na"
+  ],
+  [
+   "armour_a3",
+   "melee_b3"
+  ],
+  [
+   "armour_b1",
+   "armour_b2"
+  ],
+  [
+   "armour_b1",
+   "armour_s2"
+  ],
+  [
+   "armour_b2",
+   "armour_b3"
+  ],
+  [
+   "armour_b3",
+   "armour_nb"
+  ],
+  [
+   "armour_b3",
+   "attack_speed_e"
+  ],
+  [
+   "armour_b3",
+   "life_a3"
+  ],
+  [
+   "armour_e",
+   "armour_s1"
+  ],
+  [
+   "armour_e",
+   "inicio_knight"
+  ],
+  [
+   "armour_k",
+   "armour_na"
+  ],
+  [
+   "armour_s1",
+   "armour_s2"
+  ],
+  [
+   "attack_speed_a1",
+   "attack_speed_a2"
+  ],
+  [
+   "attack_speed_a1",
+   "attack_speed_s2"
+  ],
+  [
+   "attack_speed_a2",
+   "attack_speed_a3"
+  ],
+  [
+   "attack_speed_a3",
+   "attack_speed_na"
+  ],
+  [
+   "attack_speed_b1",
+   "attack_speed_b2"
+  ],
+  [
+   "attack_speed_b1",
+   "attack_speed_s2"
+  ],
+  [
+   "attack_speed_b2",
+   "attack_speed_b3"
+  ],
+  [
+   "attack_speed_b3",
+   "attack_speed_nb"
+  ],
+  [
+   "attack_speed_e",
+   "attack_speed_s1"
+  ],
+  [
+   "attack_speed_e",
+   "life_a3"
+  ],
+  [
+   "attack_speed_k",
+   "attack_speed_na"
+  ],
+  [
+   "attack_speed_s1",
+   "attack_speed_s2"
+  ],
+  [
+   "cast_speed_a1",
+   "cast_speed_a2"
+  ],
+  [
+   "cast_speed_a1",
+   "cast_speed_s2"
+  ],
+  [
+   "cast_speed_a2",
+   "cast_speed_a3"
+  ],
+  [
+   "cast_speed_a3",
+   "cast_speed_na"
+  ],
+  [
+   "cast_speed_b1",
+   "cast_speed_b2"
+  ],
+  [
+   "cast_speed_b1",
+   "cast_speed_s2"
+  ],
+  [
+   "cast_speed_b2",
+   "cast_speed_b3"
+  ],
+  [
+   "cast_speed_b3",
+   "cast_speed_nb"
+  ],
+  [
+   "cast_speed_e",
+   "cast_speed_s1"
+  ],
+  [
+   "cast_speed_e",
+   "spell_a3"
+  ],
+  [
+   "cast_speed_s1",
+   "cast_speed_s2"
+  ],
+  [
+   "critical_a1",
+   "critical_a2"
+  ],
+  [
+   "critical_a1",
+   "critical_s2"
+  ],
+  [
+   "critical_a2",
+   "critical_a3"
+  ],
+  [
+   "critical_a3",
+   "critical_na"
+  ],
+  [
+   "critical_b1",
+   "critical_b2"
+  ],
+  [
+   "critical_b1",
+   "critical_s2"
+  ],
+  [
+   "critical_b2",
+   "critical_b3"
+  ],
+  [
+   "critical_b3",
+   "critical_nb"
+  ],
+  [
+   "critical_e",
+   "critical_s1"
+  ],
+  [
+   "critical_e",
+   "physical_b3"
+  ],
+  [
+   "critical_k",
+   "critical_na"
+  ],
+  [
+   "critical_s1",
+   "critical_s2"
+  ],
+  [
+   "death_a1",
+   "death_a2"
+  ],
+  [
+   "death_a1",
+   "death_s2"
+  ],
+  [
+   "death_a2",
+   "death_a3"
+  ],
+  [
+   "death_a3",
+   "death_na"
+  ],
+  [
+   "death_a3",
+   "energy_shield_e"
+  ],
+  [
+   "death_b1",
+   "death_b2"
+  ],
+  [
+   "death_b1",
+   "death_s2"
+  ],
+  [
+   "death_b2",
+   "death_b3"
+  ],
+  [
+   "death_b3",
+   "death_nb"
+  ],
+  [
+   "death_b3",
+   "energy_a3"
+  ],
+  [
+   "death_e",
+   "death_s1"
+  ],
+  [
+   "death_e",
+   "inicio_sorcerer"
+  ],
+  [
+   "death_k",
+   "death_na"
+  ],
+  [
+   "death_s1",
+   "death_s2"
+  ],
+  [
+   "earth_a1",
+   "earth_a2"
+  ],
+  [
+   "earth_a1",
+   "earth_s2"
+  ],
+  [
+   "earth_a2",
+   "earth_a3"
+  ],
+  [
+   "earth_a3",
+   "earth_na"
+  ],
+  [
+   "earth_a3",
+   "healing_e"
+  ],
+  [
+   "earth_b1",
+   "earth_b2"
+  ],
+  [
+   "earth_b1",
+   "earth_s2"
+  ],
+  [
+   "earth_b2",
+   "earth_b3"
+  ],
+  [
+   "earth_b3",
+   "earth_nb"
+  ],
+  [
+   "earth_b3",
+   "spell_a3"
+  ],
+  [
+   "earth_e",
+   "earth_s1"
+  ],
+  [
+   "earth_e",
+   "inicio_druid"
+  ],
+  [
+   "earth_k",
+   "earth_na"
+  ],
+  [
+   "earth_s1",
+   "earth_s2"
+  ],
+  [
+   "energy_a1",
+   "energy_a2"
+  ],
+  [
+   "energy_a1",
+   "energy_s2"
+  ],
+  [
+   "energy_a2",
+   "energy_a3"
+  ],
+  [
+   "energy_a3",
+   "energy_na"
+  ],
+  [
+   "energy_b1",
+   "energy_b2"
+  ],
+  [
+   "energy_b1",
+   "energy_s2"
+  ],
+  [
+   "energy_b2",
+   "energy_b3"
+  ],
+  [
+   "energy_b3",
+   "energy_nb"
+  ],
+  [
+   "energy_b3",
+   "mana_e"
+  ],
+  [
+   "energy_b3",
+   "mobility_a3"
+  ],
+  [
+   "energy_e",
+   "energy_s1"
+  ],
+  [
+   "energy_e",
+   "inicio_monk"
+  ],
+  [
+   "energy_e",
+   "inicio_sorcerer"
+  ],
+  [
+   "energy_k",
+   "energy_na"
+  ],
+  [
+   "energy_s1",
+   "energy_s2"
+  ],
+  [
+   "energy_shield_a1",
+   "energy_shield_a2"
+  ],
+  [
+   "energy_shield_a1",
+   "energy_shield_s2"
+  ],
+  [
+   "energy_shield_a2",
+   "energy_shield_a3"
+  ],
+  [
+   "energy_shield_a3",
+   "energy_shield_na"
+  ],
+  [
+   "energy_shield_b1",
+   "energy_shield_b2"
+  ],
+  [
+   "energy_shield_b1",
+   "energy_shield_s2"
+  ],
+  [
+   "energy_shield_b2",
+   "energy_shield_b3"
+  ],
+  [
+   "energy_shield_b3",
+   "energy_shield_nb"
+  ],
+  [
+   "energy_shield_e",
+   "energy_shield_s1"
+  ],
+  [
+   "energy_shield_e",
+   "fire_b3"
+  ],
+  [
+   "energy_shield_s1",
+   "energy_shield_s2"
+  ],
+  [
+   "evasion_a1",
+   "evasion_a2"
+  ],
+  [
+   "evasion_a1",
+   "evasion_s2"
+  ],
+  [
+   "evasion_a2",
+   "evasion_a3"
+  ],
+  [
+   "evasion_a3",
+   "evasion_na"
+  ],
+  [
+   "evasion_a3",
+   "mana_e"
+  ],
+  [
+   "evasion_a3",
+   "mobility_b3"
+  ],
+  [
+   "evasion_b1",
+   "evasion_b2"
+  ],
+  [
+   "evasion_b1",
+   "evasion_s2"
+  ],
+  [
+   "evasion_b2",
+   "evasion_b3"
+  ],
+  [
+   "evasion_b3",
+   "evasion_nb"
+  ],
+  [
+   "evasion_b3",
+   "melee_a3"
+  ],
+  [
+   "evasion_e",
+   "evasion_s1"
+  ],
+  [
+   "evasion_e",
+   "inicio_monk"
+  ],
+  [
+   "evasion_k",
+   "evasion_na"
+  ],
+  [
+   "evasion_s1",
+   "evasion_s2"
+  ],
+  [
+   "fire_a1",
+   "fire_a2"
+  ],
+  [
+   "fire_a1",
+   "fire_s2"
+  ],
+  [
+   "fire_a2",
+   "fire_a3"
+  ],
+  [
+   "fire_a3",
+   "fire_na"
+  ],
+  [
+   "fire_a3",
+   "spell_b3"
+  ],
+  [
+   "fire_b1",
+   "fire_b2"
+  ],
+  [
+   "fire_b1",
+   "fire_s2"
+  ],
+  [
+   "fire_b2",
+   "fire_b3"
+  ],
+  [
+   "fire_b3",
+   "fire_nb"
+  ],
+  [
+   "fire_e",
+   "fire_s1"
+  ],
+  [
+   "fire_e",
+   "inicio_sorcerer"
+  ],
+  [
+   "fire_k",
+   "fire_na"
+  ],
+  [
+   "fire_s1",
+   "fire_s2"
+  ],
+  [
+   "healing_a1",
+   "healing_a2"
+  ],
+  [
+   "healing_a1",
+   "healing_s2"
+  ],
+  [
+   "healing_a2",
+   "healing_a3"
+  ],
+  [
+   "healing_a3",
+   "healing_na"
+  ],
+  [
+   "healing_b1",
+   "healing_b2"
+  ],
+  [
+   "healing_b1",
+   "healing_s2"
+  ],
+  [
+   "healing_b2",
+   "healing_b3"
+  ],
+  [
+   "healing_b3",
+   "healing_nb"
+  ],
+  [
+   "healing_e",
+   "healing_s1"
+  ],
+  [
+   "healing_e",
+   "ice_b3"
+  ],
+  [
+   "healing_k",
+   "healing_na"
+  ],
+  [
+   "healing_s1",
+   "healing_s2"
+  ],
+  [
+   "holy_a1",
+   "holy_a2"
+  ],
+  [
+   "holy_a1",
+   "holy_s2"
+  ],
+  [
+   "holy_a2",
+   "holy_a3"
+  ],
+  [
+   "holy_a3",
+   "holy_na"
+  ],
+  [
+   "holy_b1",
+   "holy_b2"
+  ],
+  [
+   "holy_b1",
+   "holy_s2"
+  ],
+  [
+   "holy_b2",
+   "holy_b3"
+  ],
+  [
+   "holy_b3",
+   "holy_nb"
+  ],
+  [
+   "holy_b3",
+   "ice_a3"
+  ],
+  [
+   "holy_e",
+   "holy_s1"
+  ],
+  [
+   "holy_e",
+   "inicio_druid"
+  ],
+  [
+   "holy_e",
+   "inicio_paladin"
+  ],
+  [
+   "holy_k",
+   "holy_na"
+  ],
+  [
+   "holy_s1",
+   "holy_s2"
+  ],
+  [
+   "ice_a1",
+   "ice_a2"
+  ],
+  [
+   "ice_a1",
+   "ice_s2"
+  ],
+  [
+   "ice_a2",
+   "ice_a3"
+  ],
+  [
+   "ice_a3",
+   "ice_na"
+  ],
+  [
+   "ice_b1",
+   "ice_b2"
+  ],
+  [
+   "ice_b1",
+   "ice_s2"
+  ],
+  [
+   "ice_b2",
+   "ice_b3"
+  ],
+  [
+   "ice_b3",
+   "ice_nb"
+  ],
+  [
+   "ice_e",
+   "ice_s1"
+  ],
+  [
+   "ice_e",
+   "inicio_druid"
+  ],
+  [
+   "ice_k",
+   "ice_na"
+  ],
+  [
+   "ice_s1",
+   "ice_s2"
+  ],
+  [
+   "inicio_druid",
+   "spell_e"
+  ],
+  [
+   "inicio_knight",
+   "life_e"
+  ],
+  [
+   "inicio_knight",
+   "melee_e"
+  ],
+  [
+   "inicio_knight",
+   "physical_e"
+  ],
+  [
+   "inicio_monk",
+   "melee_e"
+  ],
+  [
+   "inicio_monk",
+   "mobility_e"
+  ],
+  [
+   "inicio_paladin",
+   "physical_e"
+  ],
+  [
+   "inicio_paladin",
+   "ranged_e"
+  ],
+  [
+   "inicio_sorcerer",
+   "spell_e"
+  ],
+  [
+   "life_a1",
+   "life_a2"
+  ],
+  [
+   "life_a1",
+   "life_s2"
+  ],
+  [
+   "life_a2",
+   "life_a3"
+  ],
+  [
+   "life_a3",
+   "life_na"
+  ],
+  [
+   "life_b1",
+   "life_b2"
+  ],
+  [
+   "life_b1",
+   "life_s2"
+  ],
+  [
+   "life_b2",
+   "life_b3"
+  ],
+  [
+   "life_b3",
+   "life_nb"
+  ],
+  [
+   "life_b3",
+   "physical_a3"
+  ],
+  [
+   "life_e",
+   "life_s1"
+  ],
+  [
+   "life_k",
+   "life_na"
+  ],
+  [
+   "life_s1",
+   "life_s2"
+  ],
+  [
+   "mana_a1",
+   "mana_a2"
+  ],
+  [
+   "mana_a1",
+   "mana_s2"
+  ],
+  [
+   "mana_a2",
+   "mana_a3"
+  ],
+  [
+   "mana_a3",
+   "mana_na"
+  ],
+  [
+   "mana_b1",
+   "mana_b2"
+  ],
+  [
+   "mana_b1",
+   "mana_s2"
+  ],
+  [
+   "mana_b2",
+   "mana_b3"
+  ],
+  [
+   "mana_b3",
+   "mana_nb"
+  ],
+  [
+   "mana_e",
+   "mana_s1"
+  ],
+  [
+   "mana_k",
+   "mana_na"
+  ],
+  [
+   "mana_s1",
+   "mana_s2"
+  ],
+  [
+   "melee_a1",
+   "melee_a2"
+  ],
+  [
+   "melee_a1",
+   "melee_s2"
+  ],
+  [
+   "melee_a2",
+   "melee_a3"
+  ],
+  [
+   "melee_a3",
+   "melee_na"
+  ],
+  [
+   "melee_b1",
+   "melee_b2"
+  ],
+  [
+   "melee_b1",
+   "melee_s2"
+  ],
+  [
+   "melee_b2",
+   "melee_b3"
+  ],
+  [
+   "melee_b3",
+   "melee_nb"
+  ],
+  [
+   "melee_e",
+   "melee_s1"
+  ],
+  [
+   "melee_k",
+   "melee_na"
+  ],
+  [
+   "melee_s1",
+   "melee_s2"
+  ],
+  [
+   "mobility_a1",
+   "mobility_a2"
+  ],
+  [
+   "mobility_a1",
+   "mobility_s2"
+  ],
+  [
+   "mobility_a2",
+   "mobility_a3"
+  ],
+  [
+   "mobility_a3",
+   "mobility_na"
+  ],
+  [
+   "mobility_b1",
+   "mobility_b2"
+  ],
+  [
+   "mobility_b1",
+   "mobility_s2"
+  ],
+  [
+   "mobility_b2",
+   "mobility_b3"
+  ],
+  [
+   "mobility_b3",
+   "mobility_nb"
+  ],
+  [
+   "mobility_e",
+   "mobility_s1"
+  ],
+  [
+   "mobility_s1",
+   "mobility_s2"
+  ],
+  [
+   "physical_a1",
+   "physical_a2"
+  ],
+  [
+   "physical_a1",
+   "physical_s2"
+  ],
+  [
+   "physical_a2",
+   "physical_a3"
+  ],
+  [
+   "physical_a3",
+   "physical_na"
+  ],
+  [
+   "physical_b1",
+   "physical_b2"
+  ],
+  [
+   "physical_b1",
+   "physical_s2"
+  ],
+  [
+   "physical_b2",
+   "physical_b3"
+  ],
+  [
+   "physical_b3",
+   "physical_nb"
+  ],
+  [
+   "physical_b3",
+   "ranged_a3"
+  ],
+  [
+   "physical_e",
+   "physical_s1"
+  ],
+  [
+   "physical_k",
+   "physical_na"
+  ],
+  [
+   "physical_s1",
+   "physical_s2"
+  ],
+  [
+   "ranged_a1",
+   "ranged_a2"
+  ],
+  [
+   "ranged_a1",
+   "ranged_s2"
+  ],
+  [
+   "ranged_a2",
+   "ranged_a3"
+  ],
+  [
+   "ranged_a3",
+   "ranged_na"
+  ],
+  [
+   "ranged_b1",
+   "ranged_b2"
+  ],
+  [
+   "ranged_b1",
+   "ranged_s2"
+  ],
+  [
+   "ranged_b2",
+   "ranged_b3"
+  ],
+  [
+   "ranged_b3",
+   "ranged_nb"
+  ],
+  [
+   "ranged_e",
+   "ranged_s1"
+  ],
+  [
+   "ranged_k",
+   "ranged_na"
+  ],
+  [
+   "ranged_s1",
+   "ranged_s2"
+  ],
+  [
+   "spell_a1",
+   "spell_a2"
+  ],
+  [
+   "spell_a1",
+   "spell_s2"
+  ],
+  [
+   "spell_a2",
+   "spell_a3"
+  ],
+  [
+   "spell_a3",
+   "spell_na"
+  ],
+  [
+   "spell_b1",
+   "spell_b2"
+  ],
+  [
+   "spell_b1",
+   "spell_s2"
+  ],
+  [
+   "spell_b2",
+   "spell_b3"
+  ],
+  [
+   "spell_b3",
+   "spell_nb"
+  ],
+  [
+   "spell_e",
+   "spell_s1"
+  ],
+  [
+   "spell_k",
+   "spell_na"
+  ],
+  [
+   "spell_s1",
+   "spell_s2"
+  ]
+ ]
+}

@@ -1,0 +1,18 @@
+{
+  "_nota": "A ÁRVORE DE PASSIVAS única (etapa 7, 30/09). As REGRAS moram aqui; os NÓS e as CONEXÕES em arvore.json (gerado por tools/gerar-arvore-passiva.mjs a partir de clusters.json). Lido por systems/passivas/arvore.mjs. Decisões do dono: substitui a árvore antiga por vocação (reset grátis na migração); pontos com a conta de antes; cada nó é alocado uma vez só; respec barato, por nó.",
+
+  "_pontos": "Pontos de passiva = ⌊(level − levelInicial) / levelsPorPonto⌋ — a conta da árvore antiga (level 8 → 0, 10 → 1, 300 → 146).",
+  "pontos": { "levelInicial": 8, "levelsPorPonto": 2 },
+
+  "_custo": "Pontos que cada TIPO de nó custa (o nó pode sobrescrever com `custo`). O início da classe é de graça e já vem alocado. 4/8/16 (decisão do dono, 30/09): a árvore inteira custa ~1.540 pontos — enche perto do level 3000, como a antiga, e o começo não dispara.",
+  "custo": { "small": 4, "notable": 8, "keystone": 16, "start": 0 },
+
+  "_respec": "Tirar um nó: ouroPorNoPorLevel × level do personagem (bolso primeiro, depois o banco). Full respec = a soma dos nós tirados. Só fora da caçada. `respecsGratis`: quantos respecs completos sem custo cada personagem tem (a migração dá 1).",
+  "respec": { "ouroPorNoPorLevel": 2000, "soForaDaCacada": true },
+
+  "_vessels": "Os vessels do Gem Atelier (gemas.mjs) liam a fração da árvore antiga por via. Agora: nós alocados de cada domínio ÷ esta referência (1 = cheio). `verde` conta a árvore toda.",
+  "vessels": { "verde": 120, "vermelho": 40, "roxo": 40, "azul": 40 },
+
+  "_limites": "Travas de sanidade do motor (a árvore gerada é validada contra elas).",
+  "limites": { "maxNos": 5000 }
+}

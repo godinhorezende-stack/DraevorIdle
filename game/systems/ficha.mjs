@@ -27,6 +27,8 @@ import { metaDaPeca, faixaDoCampo } from './itens/item.mjs';
 import { SLOTS_DE_JOIA } from './itens/gerar.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import * as Especializacoes from './personagem/especializacoes.mjs';
+import * as Passivas from './passivas/arvore.mjs';
+import * as Keystones from './passivas/keystones.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -134,7 +136,11 @@ function calcularCombate(estado) {
   }
   // A árvore de habilidades (ver `game/systems/arvore.mjs`): o `bonus` que o
   // original manda, em fração (0,05 = 5%), com as perícias já inteiras.
-  const arv = Arvore.bonus(estado);
+  // + a ÁRVORE DE PASSIVAS: as chaves da árvore antiga que não têm add de item (absorção,
+  // penetração, "todo dano", flecha que atravessa) vêm dos nós dela, em fração, no mesmo lugar.
+  const arv = { ...Arvore.bonus(estado) };
+  const passivas = Passivas.efeitos(estado);
+  for (const [k, v] of Object.entries(passivas.legado)) arv[k] = (arv[k] ?? 0) + v;
   // As gemas encaixadas e acesas (ver `game/systems/gemas.mjs`), em % e pontos.
   const gem = Gemas.bonus(estado);
   // Os perks escolhidos da proficiência da arma na mão (ver `game/systems/proficiencia.mjs`).
@@ -190,7 +196,7 @@ function calcularCombate(estado) {
   defense += prof.defesa;
   const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) + prof.alcance : 1;
   const defesas = defesasDaFicha(estado, af, doAtributo, espStat);
-  return {
+  const ficha = {
     // STR/DEX/INT (total, e o que veio da vocação+level — a ficha mostra os dois).
     atributos: { str: principais.str, dex: principais.dex, int: principais.int, daVocacao: principais.daVocacao },
     // O que STR/DEX/INT estão dando agora (vida, dano físico %, precisão, evasão, velocidade %, mana, dano mágico %).
@@ -280,7 +286,11 @@ function calcularCombate(estado) {
     regenDaArvore: { hp: (arv.regenHp ?? 0) + (af.life_regen_pct ?? 0) / 100, mana: (arv.regenMana ?? 0) + (af.mana_regen_pct ?? 0) / 100 },
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao: arv.armorPenetration ?? 0,
+    // Os nós da árvore de passivas alocados (a ficha mostra quantos e quais keystones).
+    passivas: { keystones: passivas.keystones.map((k) => k.nome) },
   };
+  // Os KEYSTONES da árvore que mudam a regra (INT → Ranged, Life Leech ×1,5, físico → fogo), por cima da ficha pronta.
+  return Keystones.aplicarNaFicha(ficha, passivas.keystones, principais);
 }
 
 /*

@@ -27,6 +27,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as R from './regras.mjs';
+import * as Passivas from './passivas/arvore.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'arvore');
 const CATALOGOS = {};
@@ -216,7 +217,8 @@ export function vista(estado) {
 // elemental aos bichos, então não há o que ignorar. Idem a "Penetração de
 // armadura" dos nós: a armadura do bicho não corta o golpe do jogador aqui.
 
-const tem = (estado, id) => habilidadesAtivas(estado).has(id);
+// Vale a habilidade escolhida na árvore antiga OU o keystone alocado na árvore de passivas (`passivas/`).
+const tem = (estado, id) => Passivas.efeitos(estado).habilidades.has(id) || habilidadesAtivas(estado).has(id);
 const relogio = (estado) => estado.hunt?.clock ?? 0;
 const sorte = (p) => Math.random() < p;
 
@@ -255,7 +257,7 @@ export function depoisDoGolpe(estado, hunt, alvo, golpe, categoria, eventos) {
   if (categoria === 'corpo' && tem(estado, 'milMaos') && sorte(0.15)) extra += ferir(alvo, golpe * 0.5, eventos, '#ff0000', 'Mil mãos');
   if (categoria === 'distancia') {
     // Flecha que atravessa: a chance da árvore de pegar também quem está atrás do alvo.
-    const chance = bonus(estado).flechaAtravessa ?? 0;
+    const chance = (bonus(estado).flechaAtravessa ?? 0) + (Passivas.efeitos(estado).legado.flechaAtravessa ?? 0);
     if (chance && sorte(chance)) {
       const dx = Math.sign(alvo.x - hunt.pos.x);
       const dy = Math.sign(alvo.y - hunt.pos.y);
@@ -489,6 +491,9 @@ export function apagarMontagem(estado, { vaga }) {
 /** `{t:'arvore', action?}` — sem ação (ou ação desconhecida), só a vista. */
 export function comando(estado, m, emCacada) {
   if (!catalogoDe(estado)) return erro('sua vocação ainda não tem árvore');
+  // Migrado para a árvore de passivas única (`passivas/`): esta só mostra, não compra mais nada
+  // (senão os pontos contariam duas vezes — um conjunto aqui e outro lá).
+  if (estado.passivas?.migrado && m.action) return erro('a árvore de habilidades mudou — use a nova Árvore de Passivas');
   switch (m.action) {
     case 'aplicar': return aplicar(estado, m, emCacada);
     case 'zerar': return zerar(estado, emCacada);
