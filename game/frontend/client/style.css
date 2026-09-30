@@ -27613,6 +27613,23 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .pas-preco { color: #e3ae48; }
 .pas-vazio { color: var(--muted); }
 .pas-dica { margin: 0; font-size: 11px; color: var(--muted); }
+/* O TOTAL DA ÁRVORE: a soma dos nós alocados, por grupo, e "agora → depois" com um nó escolhido. */
+.pas-total { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.pas-info > .pas-total:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.pas-total-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.pas-total-cab b { font-family: var(--font-heading); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #7fb8d8; }
+.pas-total-cab span { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pas-total-previa { font-size: 12px; color: var(--accent); font-style: normal; }
+.pas-total-grupo { display: grid; gap: 2px; }
+.pas-total-grupo h4 { margin: 2px 0; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.pas-total-linha { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: baseline; font-size: 12px; padding: 1px 0; }
+.pas-total-linha b { color: #9fd8c8; font-variant-numeric: tabular-nums; }
+.pas-total-linha b.zero { color: var(--muted); font-weight: 400; }
+.pas-total-linha i { font-style: normal; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pas-total-linha.sobe i { color: #6fdc8c; }
+.pas-total-linha.cai i { color: #ff8a80; }
+.pas-keystone.sobe { border-left-color: #6fdc8c; }
+.pas-keystone.cai { border-left-color: #ff8a80; opacity: .7; }
 @media (max-width: 760px) {
   .pas-corpo { grid-template-columns: minmax(0, 1fr); }
   .pas-mapa { height: 52vh; }
