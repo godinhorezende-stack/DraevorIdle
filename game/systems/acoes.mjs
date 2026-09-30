@@ -109,6 +109,31 @@ export function curaMostrada(estado, entry, efeitoDaGema = Gemas.ehSkillDeGema(e
   return { min: Math.round((c.min + c.pericia) * c.mult), max: Math.round((c.max + c.pericia) * c.mult) };
 }
 
+/**
+ * Os alvos de uma magia de CADEIA: começa no `alvo` e salta, a cada vez, para o bicho
+ * vivo ainda não atingido mais perto do ÚLTIMO atingido, a até `distance` sqm, até
+ * `targets` alvos (o alvo conta). Sem ninguém ao alcance do salto, a cadeia para.
+ */
+function saltosDaCadeia(alvo, vivos, { targets = 1, distance = 1 } = {}) {
+  const atingidos = [alvo];
+  const livres = vivos.filter((b) => b !== alvo);
+  while (atingidos.length < targets && livres.length) {
+    const ultimo = atingidos.at(-1);
+    let k = -1;
+    let perto = Infinity;
+    livres.forEach((b, i) => {
+      const d = distanciaChebyshev(ultimo, b);
+      if (d <= distance && d < perto) {
+        perto = d;
+        k = i;
+      }
+    });
+    if (k < 0) break;
+    atingidos.push(livres.splice(k, 1)[0]);
+  }
+  return atingidos;
+}
+
 // Alcance de runa/magia sem `range` próprio (runas vêm com 7 do original).
 const ALCANCE_PADRAO = 7;
 const distanciaChebyshev = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
@@ -593,6 +618,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       // Sem `range` próprio é golpe de corpo a corpo (Brutal Strike, Tiger Clash...).
       if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || 1)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
       atingidos = [alvo];
+      // CADEIA (tag `chain`: Forked Thorns, Forked Glacier, Chained Penance...): do alvo, salta para o
+      // bicho vivo mais perto a até `cadeia.distance` sqm do último atingido, até `cadeia.targets` alvos.
+      if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, entry.cadeia);
     } else if (centradoNoAlvo) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
@@ -715,6 +743,15 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const cor = COR_DO_ELEMENTO[entry.element] ?? COR_DO_ELEMENTO.physical;
     if (casas && entry.efeito) for (const c of casas) eventos.push({ t: 'fx', id: entry.efeito, x: c.x, y: c.y });
     else if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
+    // A cadeia: o salto de um bicho para o outro (o projétil, se a magia tem) e o efeito em cada um.
+    if (entry.cadeia) {
+      for (let i = 1; i < atingidos.length; i++) {
+        const de = atingidos[i - 1];
+        const para = atingidos[i];
+        if (entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: de.x, y: de.y, tx: para.x, ty: para.y });
+        if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: para.uid, x: para.x, y: para.y });
+      }
+    }
     // A conta do dano, a MESMA do balão (`contaDoDano`): base pelo level + treino em % + gema + afixos.
     const { min, max, daPericia, mult, fatorDaGema, ficha } = contaDoDano(estado, entry, efeitoDaGema);
     let total = 0;
@@ -738,7 +775,8 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
      */
     if (efeitoDaGema?.alvosExtras > 0 && !casas && alvo) {
       const extras = vivos
-        .filter((b) => b !== alvo && b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= (entry.range || ALCANCE_PADRAO))
+        // Não repete quem já levou o golpe (o alvo e, na cadeia, cada salto).
+        .filter((b) => !atingidos.includes(b) && b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= (entry.range || ALCANCE_PADRAO))
         .sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))
         .slice(0, efeitoDaGema.alvosExtras);
       for (const bicho of extras) {

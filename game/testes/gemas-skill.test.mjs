@@ -650,3 +650,34 @@ test('Fundidora: sorteia de novo os links da peça vestida pela chance da rarida
   assert.equal(e.inventory.length, 0, 'gasta');
   assert.match(G.fundir(e, { slot: 'weapon' }).erro, /não tem Fundidora/);
 });
+
+test('cadeia (Forked Glacier): salta de bicho em bicho a até a distância do salto, até o número de alvos; cada um leva o golpe', () => {
+  const e = personagemDeTeste({ vocacao: 'druid', level: 200 });
+  Treino.garantir(e);
+  e.maxMana = e.mana = 1e9;
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA('spell-forked-glacier'))] });
+  naCacada(e);
+  const h = e.hunt;
+  h.monstros = [];
+  // Uma fila de bichos a 2 sqm um do outro (dentro do salto de 5) e um longe demais (a 20 do último).
+  const fila = [1, 3, 5, 7, 9, 11, 13, 15, 17].map((dx) => Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + dx, y: h.pos.y }, null), { hp: 1e9, maxHp: 1e9 }));
+  const longe = Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + 40, y: h.pos.y }, null), { hp: 1e9, maxHp: 1e9 });
+  h.monstros.push(...fila, longe);
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  assert.equal(Acoes.definir(e, { slot, value: { id: 'spell-forked-glacier' } }).ok, true);
+  const r = Acoes.disparar(e, h, PERSONAGEM, slot, fila[0]);
+  if (r.conjurando) { h.conjurando.fim = 0; Acoes.concluirConjuracao(e, h, PERSONAGEM); }
+  const atingidos = h.monstros.filter((b) => b.hp < 1e9);
+  assert.equal(atingidos.length, 7, 'targets: 7');
+  assert.ok(!atingidos.includes(longe));
+  // Sem ninguém ao alcance do salto, a cadeia para.
+  for (const b of h.monstros) b.hp = 1e9;
+  h.cooldowns = {};
+  delete h.ultimoAtaqueEm;
+  delete h.conjurando;
+  h.monstros = [fila[0], longe];
+  const r2 = Acoes.disparar(e, h, PERSONAGEM, slot, fila[0]);
+  if (r2.conjurando) { h.conjurando.fim = 0; Acoes.concluirConjuracao(e, h, PERSONAGEM); }
+  assert.equal(h.monstros.filter((b) => b.hp < 1e9).length, 1);
+});
