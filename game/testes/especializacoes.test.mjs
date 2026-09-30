@@ -231,3 +231,45 @@ test('requisito de atributo (modelo Path of Exile): peça de mago pede INT; o kn
   // Peça de todas as vocações não pede nada.
   assert.equal(ITEM_CATALOG[idDe('might ring')].requisito, undefined);
 });
+
+test('etapa 6: cada bônus de STAT das especializações (os valores do prompt) chega na ficha — com vs sem a especialização', () => {
+  // [classe, o que ler na ficha, quanto deve subir (%) — os números de gamedata/classes.json]
+  const casos = [
+    ['knight', (f) => f.armor, 20, 'Armour +20%'],
+    ['paladin', (f) => f.accuracy, 20, 'Accuracy +20%'],
+    ['monk', (f) => f.velocidadeDeAtaque, null, 'Mobility: +5% de velocidade de ataque'],
+    ['monk', (f) => f.speed, null, 'Mobility: +10% de movimento'],
+    ['sorcerer', (f) => f.castSpeed, null, 'Spell: +5% de conjuração'],
+    ['druid', (f) => f.curaDeMagia, null, 'Healing: +20% de cura'],
+  ];
+  for (const [voc, ler, pct, nome] of casos) {
+    const ficha = (sem) => {
+      const e = personagemDeTeste({ vocacao: voc, level: 300 });
+      Treino.garantir(e);
+      Afixos.sincronizarMaximos(e);
+      Ficha.invalidar(e);
+      return sem ? semEspecializacao(voc, () => (Ficha.invalidar(e), Ficha.combate(e))) : Ficha.combate(e);
+    };
+    const com = ler(ficha(false));
+    const sem = ler(ficha(true));
+    assert.ok(com > sem, `${nome}: ${sem} → ${com}`);
+    // A proporção exata só com base grande (o arredondamento pesa na armadura baixa do equipamento inicial).
+    if (pct != null && sem >= 50) assert.ok(Math.abs(com / sem - (1 + pct / 100)) < 0.02, `${nome}: ×${(com / sem).toFixed(3)}`);
+  }
+  // Life +15% (Knight): a vida máxima com a especialização.
+  const vida = (sem) => {
+    const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
+    Treino.garantir(e);
+    const f = () => (Afixos.sincronizarMaximos(e), e.maxHp);
+    return sem ? semEspecializacao('knight', f) : f();
+  };
+  assert.ok(vida(false) > vida(true), `Life: ${vida(true)} → ${vida(false)}`);
+  // Mobility também dá Evasion (+10%).
+  const evasao = (sem) => {
+    const e = personagemDeTeste({ vocacao: 'monk', level: 300 });
+    Treino.garantir(e);
+    Ficha.invalidar(e);
+    return sem ? semEspecializacao('monk', () => (Ficha.invalidar(e), Ficha.combate(e).evasion)) : Ficha.combate(e).evasion;
+  };
+  assert.ok(evasao(false) >= evasao(true));
+});
