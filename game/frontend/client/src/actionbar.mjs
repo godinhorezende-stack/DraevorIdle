@@ -275,19 +275,30 @@ const findEntry = (id) =>
 export const entradaDaAcao = (id) => findEntry(id) ?? null;
 
 /** Uma linha curta dizendo o que as condições do slot exigem. */
+const SINAIS = { lt: '<', lte: '≤', eq: '=', gte: '≥', gt: '>' };
+/** "≤ 30%", "entre 30 e 70%" — o comparador e o(s) número(s) de uma condição. */
+function comparacao(condition, padrao, unidade = '') {
+  const op = condition.op ?? padrao;
+  if (op === 'entre') return `entre ${condition.value ?? 0} e ${condition.value2 ?? condition.value ?? 0}${unidade}`;
+  return `${SINAIS[op] ?? '≤'} ${condition.value ?? 0}${unidade}`;
+}
+
+/** Uma linha curta dizendo o que as condições do slot exigem. */
 function resumoDasCondicoes(conditions) {
   const partes = conditions.map((condition) => {
-    if (condition.kind === 'boss') return condition.op === 'nao' ? 'fora de boss' : 'só em boss';
-    if (condition.kind === 'perto') return `bichos ${condition.op === 'lte' ? '≤' : '≥'} ${condition.value ?? 1}`;
-    if (condition.kind !== 'nome') {
+    let t;
+    if (condition.kind === 'boss') t = condition.op === 'nao' ? 'fora de boss' : 'em boss';
+    else if (condition.kind === 'perto') t = `bichos ${comparacao(condition, 'gte')}`;
+    else if (condition.kind !== 'nome') {
       const quem = condition.who === 'target' ? 'alvo' : 'você';
-      const sinal = condition.op === 'gte' ? '≥' : '≤';
-      return `${quem} ${condition.stat === 'mana' ? 'mana' : 'vida'} ${sinal} ${condition.value}${condition.percent ? '%' : ''}`;
+      t = `${quem} ${condition.stat === 'mana' ? 'mana' : 'vida'} ${comparacao(condition, 'lte', condition.percent ? '%' : '')}`;
+    } else if (!condition.names?.length) t = 'criatura (sem nomes)';
+    else {
+      const lista = condition.names.slice(0, 2).join(', ');
+      const mais = condition.names.length > 2 ? ` +${condition.names.length - 2}` : '';
+      t = `criatura ${condition.op === 'diferente' ? '≠' : '='} ${lista}${mais}`;
     }
-    if (!condition.names?.length) return 'criatura (sem nomes)';
-    const lista = condition.names.slice(0, 2).join(', ');
-    const mais = condition.names.length > 2 ? ` +${condition.names.length - 2}` : '';
-    return `criatura ${condition.op === 'diferente' ? '≠' : '='} ${lista}${mais}`;
+    return condition.nao ? `NÃO com ${t}` : t;
   });
   return `só dispara com: ${partes.join(' e ')}`;
 }
@@ -799,7 +810,7 @@ function motivos(action, index, cooldown) {
      * precisa lembrar quando a magia não sai.
      */
     action.conditions?.length ? resumoDasCondicoes(action.conditions) : null,
-    action.enabled === false ? 'slot desligado' : cooldown?.reason ? `parado: ${cooldown.reason}` : null,
+    action.enabled === false ? 'slot desligado' : ctx.state.hunt?.parados?.[index] ? `parado: ${ctx.state.hunt.parados[index].texto}` : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -938,6 +949,7 @@ function pintarCooldowns() {
 
 function atualizarCooldowns(bar, actions) {
   const cooldowns = ctx.state.hunt?.cooldowns ?? {};
+  pintarCondicoesAgora();
   const agora = performance.now();
   relogiosDeCooldown.clear();
 
@@ -950,6 +962,9 @@ function atualizarCooldowns(bar, actions) {
     // Só quando muda: roda a cada quadro, e escrever o mesmo texto ainda é uma mutação.
     const extra = motivos(action, index, cooldown);
     if (slot.dataset.tipExtra !== extra) slot.dataset.tipExtra = extra;
+    // A bolinha vermelha: este slot está sendo segurado por uma regra (o motivo está no balão).
+    const parado = !!ctx.state.hunt?.parados?.[index] && action.enabled !== false;
+    if (slot.classList.contains('parado') !== parado) slot.classList.toggle('parado', parado);
     if (!slot.querySelector('.cooldown')) continue;
 
     /*
@@ -2078,8 +2093,8 @@ export function renderEditor() {
       'p',
       'shop-note',
       isAttack
-        ? 'Opcional para ataque. A ação só sai quando TODAS as condições estiverem batendo.'
-        : 'A ação só sai quando TODAS as condições estiverem batendo.'
+        ? 'Opcional para ataque. A ação só sai quando TODAS as condições estiverem batendo. Cada linha começa com “Usar quando” (só sai com ela batendo) ou “Não usar quando” (não sai enquanto ela bater). O ✔/✖ embaixo de cada uma mostra se ela está batendo agora.'
+        : 'A ação só sai quando TODAS as condições estiverem batendo. Cada linha começa com “Usar quando” (só sai com ela batendo) ou “Não usar quando” (não sai enquanto ela bater). O ✔/✖ embaixo de cada uma mostra se ela está batendo agora.'
     )
   );
   detail.append(
@@ -2532,7 +2547,81 @@ const ehMagiaDeEscudo = (entry) => (entry?.words ?? '').toLowerCase() === 'utamo
 /** A magia que TIRA o escudo. A mesma lista do servidor: `PALAVRAS_QUE_TIRAM`, em escudo.mjs. */
 const ehMagiaDeTirarEscudo = (entry) => (entry?.words ?? '').toLowerCase() === 'exana vita';
 
+/*
+ * ---- O ✔/✖ de cada condição, AO VIVO ----
+ * O servidor manda a cada estado da caçada o resultado de cada condição salva
+ * (`hunt.condicoesAgora`). Só vale para a condição como está SALVA: mexeu e não
+ * salvou, a linha pede para salvar em vez de mostrar um resultado que não é dela.
+ */
+const chaveDaCondicao = (c) => JSON.stringify(Object.keys(c ?? {}).sort().map((k) => [k, c[k]]));
+function pintarCondicoesAgora() {
+  if (!editing) return;
+  const salva = ctx.state.character?.actions?.[editing.slot];
+  const agora = ctx.state.hunt?.condicoesAgora?.[editing.slot];
+  for (const marca of document.querySelectorAll('.cond-agora')) {
+    const nome = marca.dataset.lista;
+    const i = Number(marca.dataset.i);
+    const rascunho = editing.draft?.[nome]?.[i];
+    let texto = '';
+    let classe = '';
+    if (!ctx.state.hunt) texto = 'fora da caçada';
+    else if (!salva || chaveDaCondicao(salva[nome]?.[i]) !== chaveDaCondicao(rascunho)) texto = 'salve para ver';
+    else if (agora?.[nome]?.[i] === true) [texto, classe] = ['✔ batendo agora', 'sim'];
+    else if (agora?.[nome]?.[i] === false) [texto, classe] = ['✖ não bate agora', 'nao'];
+    if (marca.textContent !== texto) marca.textContent = texto;
+    if (marca.dataset.estado !== classe) marca.dataset.estado = classe;
+  }
+}
+
 function conditionRow(condition, index, lista = editing.draft.conditions) {
+  const row = conditionRowSemSentido(condition, index, lista);
+  // "Usar quando" / "Não usar quando": o mesmo teste, ao contrário (`nao: true`).
+  const sentido = document.createElement('select');
+  for (const [id, label] of [['usar', 'Usar quando'], ['nao', 'Não usar quando']]) {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = label;
+    sentido.append(option);
+  }
+  sentido.value = condition.nao ? 'nao' : 'usar';
+  sentido.className = 'sentido';
+  sentido.onchange = () => {
+    if (sentido.value === 'nao') condition.nao = true;
+    else delete condition.nao;
+    pintarCondicoesAgora();
+  };
+  row.prepend(sentido);
+  const marca = el('span', 'cond-agora');
+  marca.dataset.lista = lista === editing.draft.tirarQuando ? 'tirarQuando' : 'conditions';
+  marca.dataset.i = String(index);
+  row.append(marca);
+  queueMicrotask(pintarCondicoesAgora);
+  return row;
+}
+
+/** O seletor de comparador e, no "entre", o segundo número. `opcoes`: rótulos por comparador. */
+function comparadorDaLinha(condition, opcoes, padrao, select) {
+  return select(opcoes, condition.op ?? padrao, (value) => {
+    condition.op = value;
+    if (value === 'entre') condition.value2 ??= condition.value ?? 0;
+    else delete condition.value2;
+    renderEditor();
+  });
+}
+function segundoNumero(condition, max) {
+  const caixa = document.createElement('input');
+  caixa.type = 'number';
+  caixa.min = '0';
+  if (max != null) caixa.max = String(max);
+  caixa.value = String(condition.value2 ?? condition.value ?? 0);
+  caixa.oninput = () => {
+    const n = Number(caixa.value) || 0;
+    condition.value2 = max != null ? Math.min(max, Math.max(0, Math.round(n))) : Math.max(0, n);
+  };
+  return caixa;
+}
+
+function conditionRowSemSentido(condition, index, lista = editing.draft.conditions) {
   const select = (options, value, onChange) => {
     const node = document.createElement('select');
     for (const [id, label] of Object.entries(options)) {
@@ -2592,11 +2681,7 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
   if ((condition.kind ?? 'stat') === 'perto') {
     const row = el('div', 'condition');
     row.append(tipo());
-    row.append(
-      select({ gte: 'pelo menos', lte: 'no máximo' }, condition.op === 'lte' ? 'lte' : 'gte', (value) => {
-        condition.op = value;
-      })
-    );
+    row.append(comparadorDaLinha(condition, { gte: 'pelo menos', gt: 'mais que', eq: 'exatamente', lte: 'no máximo', lt: 'menos que', entre: 'entre' }, 'gte', select));
     const quantos = document.createElement('input');
     quantos.type = 'number';
     quantos.min = '0';
@@ -2622,7 +2707,9 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
       lista.splice(index, 1);
       renderEditor();
     };
-    row.append(menos, quantos, mais, el('span', 'condition-unidade', 'criaturas'), fora);
+    row.append(menos, quantos, mais);
+    if (condition.op === 'entre') row.append(el('span', 'condition-unidade', 'e'), segundoNumero(condition, 25));
+    row.append(el('span', 'condition-unidade', 'criaturas'), fora);
     return row;
   }
 
@@ -2670,9 +2757,7 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
     })
   );
   row.append(
-    select({ lte: 'menor ou igual a', gte: 'maior ou igual a' }, condition.op, (value) => {
-      condition.op = value;
-    })
+    comparadorDaLinha(condition, { lt: 'menor que', lte: 'menor ou igual a', eq: 'igual a', gte: 'maior ou igual a', gt: 'maior que', entre: 'entre' }, 'lte', select)
   );
 
   const minus = el('button', 'step', '−');
@@ -2704,6 +2789,8 @@ function conditionRow(condition, index, lista = editing.draft.conditions) {
     renderEditor();
   };
 
-  row.append(minus, value, plus, percent, drop);
+  row.append(minus, value, plus);
+  if (condition.op === 'entre') row.append(el('span', 'condition-unidade', 'e'), segundoNumero(condition, condition.percent ? 100 : null));
+  row.append(percent, drop);
   return row;
 }

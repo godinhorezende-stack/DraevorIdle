@@ -341,3 +341,70 @@ test('Alvo · Mana: bicho não tem mana, então a condição não bate (nem "≤
   const m = bicho(e, 2, 0);
   for (const op of ['lte', 'gte']) assert.equal(Acoes.condicoesDoSlotBatem({ conditions: [{ kind: 'stat', who: 'target', stat: 'mana', op, value: 50, percent: true }] }, e, m, e.hunt), false);
 });
+
+// ---------- "Não usar quando", comparadores novos e o motivo na tela ----------
+
+test('"Não usar quando": a condição ao contrário — "Não usar quando Você · Mana ≤ 20%"', () => {
+  const e = montar('sorcerer', [FLAME]);
+  const m = bicho(e, 2, 0);
+  const s = por(e, FLAME, { conditions: [{ nao: true, kind: 'stat', who: 'self', stat: 'mana', op: 'lte', value: 20, percent: true }] });
+  assert.equal(e.actions[s].conditions[0].nao, true, 'guardado');
+  e.mana = 1500;
+  assert.equal(tentar(e, s, m).motivo, 'CONDICAO', 'mana 15%: não usa');
+  e.mana = 5000;
+  assert.equal(tentar(e, s, m).ok, true, 'mana 50%: usa');
+  // Vale para qualquer tipo: "Não usar quando Criatura é uma de troll".
+  const c = { nao: true, kind: 'nome', op: 'igual', names: [m.name] };
+  assert.equal(Acoes.condicoesDoSlotBatem({ conditions: [c] }, e, m, e.hunt), false);
+});
+
+test('comparadores: menor que, igual a, maior que e ENTRE (vida/mana e bichos por perto)', () => {
+  const e = montar('sorcerer', [FLAME]);
+  const m = bicho(e, 2, 0);
+  e.hp = 5000; // 50%
+  const vida = (op, value, value2) => Acoes.condicoesDoSlotBatem({ conditions: [Acoes.sanearCondicao({ kind: 'stat', who: 'self', stat: 'hp', op, value, value2, percent: true })] }, e, m, e.hunt);
+  assert.equal(vida('lt', 50), false);
+  assert.equal(vida('lt', 51), true);
+  assert.equal(vida('eq', 50), true);
+  assert.equal(vida('eq', 49), false);
+  assert.equal(vida('gt', 50), false);
+  assert.equal(vida('gt', 49), true);
+  assert.equal(vida('entre', 30, 70), true);
+  assert.equal(vida('entre', 70, 30), true, 'em qualquer ordem');
+  assert.equal(vida('entre', 51, 70), false);
+  e.hp = 5004; // 50,04% conta como 50%
+  assert.equal(vida('eq', 50), true);
+  bicho(e, 3, 0);
+  bicho(e, 0, 3);
+  const perto = (op, value, value2) => Acoes.condicoesDoSlotBatem({ conditions: [Acoes.sanearCondicao({ kind: 'perto', op, value, value2 })] }, e, m, e.hunt);
+  assert.equal(perto('eq', 3), true);
+  assert.equal(perto('gt', 3), false);
+  assert.equal(perto('lt', 4), true);
+  assert.equal(perto('entre', 2, 4), true);
+  assert.equal(perto('entre', 4, 9), false);
+  assert.equal(Acoes.sanearCondicao({ kind: 'stat', op: 'xyz', value: 1 }).op, 'lte', 'comparador inválido vira o padrão');
+  assert.equal(Acoes.sanearCondicao({ kind: 'stat', op: 'lte', value: 1, value2: 9 }).value2, undefined, 'value2 só no "entre"');
+});
+
+test('o motivo de o slot não sair vai para a tela (qual condição), e some quando ele sai', () => {
+  const e = montar('sorcerer', [FLAME]);
+  const m = bicho(e, 2, 0);
+  const s = por(e, FLAME, { conditions: [{ kind: 'boss', op: 'nao' }, { kind: 'stat', who: 'target', stat: 'hp', op: 'lte', value: 30, percent: true }] });
+  e.hunt.alvo = m.uid;
+  tentar(e, s, m);
+  let p = Acoes.paradosParaCliente(e.hunt)[s];
+  assert.equal(p.motivo, 'CONDICAO');
+  assert.match(p.texto, /condição 2/);
+  assert.deepEqual(Acoes.condicoesParaCliente(e, e.hunt, m)[s].conditions, [true, false], 'o ✔/✖ de cada uma');
+  por(e, FLAME, { minMana: 90, conditions: [] });
+  e.mana = 1000;
+  tentar(e, s, m);
+  assert.equal(Acoes.paradosParaCliente(e.hunt)[s].motivo, 'MANA_MINIMA');
+  e.mana = e.maxMana;
+  assert.equal(tentar(e, s, m).ok, true);
+  assert.equal(Acoes.paradosParaCliente(e.hunt)[s], undefined, 'saiu: o motivo some');
+  // Recarga não é "parado" (o leque do slot já mostra).
+  const h = e.hunt;
+  Acoes.disparar(e, h, PERSONAGEM, s, m);
+  assert.equal(Acoes.paradosParaCliente(h)[s], undefined);
+});

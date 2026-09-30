@@ -972,7 +972,10 @@ function autoDisparo(estado, hunt, personagem) {
     if (Acoes.PAPEL_DO_SLOT[slot] === 'attack') continue;
     const action = acoes[slot];
     if (!action?.id || action.enabled === false) continue;
-    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) continue;
+    if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) {
+      Acoes.marcarParado(hunt, slot, Acoes.falhaDaCondicao(action, estado, alvo, hunt));
+      continue;
+    }
     // As regras de uso (`bloquear` vale também para buff e suporte; cura e poção nunca são barradas).
     if (!RegrasDeUso.permitida(action.id, RegrasDeUso.ativas(estado, hunt, alvo), { ataque: false })) continue;
     const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
@@ -1772,6 +1775,9 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     session: sessaoParaCliente(hunt.sessao),
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
     buffs: Acoes.buffsAtivos(hunt),
+    // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
+    parados: Acoes.paradosParaCliente(hunt),
+    condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),
   };
 }
 

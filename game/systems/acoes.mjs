@@ -283,20 +283,33 @@ export const MAXIMO_DE_CONDICOES = 8;
  * grava, com os números como número e dentro da faixa. `null` se não é uma condição.
  */
 export function sanearCondicao(c) {
+  const r = sanearCondicaoSemSentido(c);
+  // "Usar quando" (padrão) ou "Não usar quando" (`nao: true`).
+  if (r && c.nao === true) r.nao = true;
+  return r;
+}
+function sanearCondicaoSemSentido(c) {
   if (!c || typeof c !== 'object') return null;
   const kind = c.kind ?? 'stat';
+  const op = (padrao) => (COMPARADORES.includes(c.op) ? c.op : padrao);
   if (kind === 'boss') return { kind, op: c.op === 'nao' ? 'nao' : 'sim' };
-  if (kind === 'perto') return { kind, op: c.op === 'lte' ? 'lte' : 'gte', value: faixa(c.value, 0, 25, 1) };
+  if (kind === 'perto') {
+    const r = { kind, op: op('gte'), value: faixa(c.value, 0, 25, 1) };
+    if (r.op === 'entre') r.value2 = faixa(c.value2, 0, 25, r.value);
+    return r;
+  }
   if (kind === 'nome') return { kind, op: c.op === 'diferente' ? 'diferente' : 'igual', names: (Array.isArray(c.names) ? c.names : []).map((n) => texto(n, 40)).filter(Boolean).slice(0, 20) };
   if (kind !== 'stat') return null;
-  return {
+  const r = {
     kind,
     who: c.who === 'target' ? 'target' : 'self',
     stat: c.stat === 'mana' ? 'mana' : 'hp',
-    op: c.op === 'gte' ? 'gte' : 'lte',
+    op: op('lte'),
     value: Math.max(0, Number(c.value) || 0),
     percent: c.percent === true,
   };
+  if (r.op === 'entre') r.value2 = Math.max(0, Number(c.value2 ?? c.value) || 0);
+  return r;
 }
 const condicoes = (lista) => (Array.isArray(lista) ? lista : []).map(sanearCondicao).filter(Boolean).slice(0, MAXIMO_DE_CONDICOES);
 
@@ -431,6 +444,23 @@ export const RAIO_DA_FAIXA = 4;
  * As duas últimas olham a hunt; sem ela (fora de caçada) não batem.
  */
 function condicaoBate(condition, estado, alvo, hunt) {
+  const bate = condicaoBateCrua(condition, estado, alvo, hunt);
+  // "Não usar quando": a mesma condição, ao contrário.
+  return condition.nao ? !bate : bate;
+}
+
+/** Os comparadores da tela: <, ≤, =, ≥, > e "entre" (`value`..`value2`, em qualquer ordem). */
+export const COMPARADORES = ['lt', 'lte', 'eq', 'gte', 'gt', 'entre'];
+function compara(op, v, a, b) {
+  if (op === 'lt') return v < a;
+  if (op === 'eq') return v === a;
+  if (op === 'gte') return v >= a;
+  if (op === 'gt') return v > a;
+  if (op === 'entre') return v >= Math.min(a, b ?? a) && v <= Math.max(a, b ?? a);
+  return v <= a;
+}
+
+function condicaoBateCrua(condition, estado, alvo, hunt) {
   if (condition.kind === 'nome') {
     if (!alvo) return false;
     const nome = String(alvo.name ?? '').toLowerCase();
@@ -440,8 +470,7 @@ function condicaoBate(condition, estado, alvo, hunt) {
   if (condition.kind === 'perto') {
     if (!hunt?.pos) return false;
     const n = (hunt.monstros ?? []).filter((b) => b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= RAIO_DE_PERTO).length;
-    const valor = Number(condition.value) || 0;
-    return condition.op === 'lte' ? n <= valor : n >= valor;
+    return compara(condition.op ?? 'gte', n, Number(condition.value) || 0, Number(condition.value2) || 0);
   }
   if (condition.kind === 'boss') {
     if (!hunt) return false;
@@ -453,9 +482,13 @@ function condicaoBate(condition, estado, alvo, hunt) {
   if (condition.stat === 'mana' && !(sujeito.maxMana > 0)) return false;
   const atual = condition.stat === 'mana' ? sujeito.mana : sujeito.hp;
   const maximo = condition.stat === 'mana' ? sujeito.maxMana : sujeito.maxHp;
-  const valor = condition.percent ? (100 * (atual ?? 0)) / Math.max(1, maximo ?? 1) : (atual ?? 0);
-  return condition.op === 'lte' ? valor <= condition.value : valor >= condition.value;
+  // Em %, o número inteiro (é o que a tela mostra): "igual a 50%" bate de 49,5% a 50,49%.
+  const valor = condition.percent ? Math.round((100 * (atual ?? 0)) / Math.max(1, maximo ?? 1)) : (atual ?? 0);
+  return compara(condition.op ?? 'lte', valor, Number(condition.value) || 0, Number(condition.value2) || 0);
 }
+
+/** Cada condição da lista, agora: `[true, false, ...]` (o ✔/✖ do editor e do balão do slot). */
+export const condicoesAgora = (lista, estado, alvo, hunt) => (lista ?? []).map((c) => condicaoBate(c, estado, alvo, hunt));
 
 export function condicoesDoSlotBatem(action, estado, alvo, hunt = null) {
   return (action.conditions ?? []).every((c) => condicaoBate(c, estado, alvo, hunt));
@@ -598,7 +631,47 @@ export function marcarRecargaDaPocao(estado, entry) {
  * Devolve `{ok, erro?}` e, em caso de sucesso, `eventos` (mesmo formato de
  * `round()`) e `alvo` (se o golpe foi nele — quem chamou decide matar ou não).
  */
-export function disparar(estado, hunt, personagem, slot, alvo, { concluir = false } = {}) {
+export function disparar(estado, hunt, personagem, slot, alvo, opcoes) {
+  const r = dispararSemMarcar(estado, hunt, personagem, slot, alvo, opcoes);
+  marcarParado(hunt, slot, r);
+  return r;
+}
+
+/*
+ * ---- POR QUE o slot não saiu (o "parado: ..." do balão) ----
+ * Relato: o jogador não tinha como saber qual regra segurava a magia. Cada
+ * tentativa que falha grava o motivo em `hunt.parados[slot]` (vai para a tela
+ * pela `visaoDaHunt`); a que sai apaga. Recarga, intervalo do combo e
+ * conjuração não contam: o leque do slot já mostra isso.
+ */
+const MOTIVOS_DE_RELOGIO = new Set(['COOLDOWN', 'COOLDOWN_DO_GRUPO', 'INTERVALO_DO_COMBO', 'CONJURANDO', 'VAZIO']);
+export function marcarParado(hunt, slot, resultado) {
+  if (!hunt) return;
+  const p = (hunt.parados ??= {});
+  if (resultado?.ok || MOTIVOS_DE_RELOGIO.has(resultado?.motivo)) delete p[slot];
+  else p[slot] = { motivo: resultado?.motivo ?? null, texto: resultado?.erro ?? '', em: hunt.clock ?? 0 };
+}
+/** O resultado de "condição não bate", dizendo QUAL (a 1ª que não bate, contando de 1). */
+export function falhaDaCondicao(action, estado, alvo, hunt) {
+  const i = condicoesAgora(action.conditions, estado, alvo, hunt).indexOf(false);
+  return { ok: false, erro: `A condição ${i + 1} não bate.`, motivo: 'CONDICAO', condicao: i };
+}
+/** Os motivos de agora para a tela (só os recentes: um motivo velho não segura nada). */
+export function paradosParaCliente(hunt) {
+  const agora = hunt.clock ?? 0;
+  return Object.fromEntries(Object.entries(hunt.parados ?? {}).filter(([, p]) => agora - (p.em ?? 0) <= 3000).map(([slot, p]) => [slot, { motivo: p.motivo, texto: p.texto }]));
+}
+/** O ✔/✖ de cada condição de cada slot, agora (`{slot: {conditions, tirarQuando}}`). */
+export function condicoesParaCliente(estado, hunt, alvo) {
+  const r = {};
+  (estado.actions ?? []).forEach((a, slot) => {
+    if (!a?.conditions?.length && !a?.tirarQuando?.length) return;
+    r[slot] = { conditions: condicoesAgora(a.conditions, estado, alvo, hunt), tirarQuando: condicoesAgora(a.tirarQuando, estado, alvo, hunt) };
+  });
+  return r;
+}
+
+function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false } = {}) {
   // Conjurando outra skill: nada mais sai até ela terminar (ou cancelar) — ver `concluirConjuracao`.
   if (hunt.conjurando && !concluir) return { ok: false, erro: 'Conjurando.', motivo: 'CONJURANDO' };
   const action = estado.actions?.[slot];
@@ -751,7 +824,7 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const quemPoe = Object.keys(BUFFS).filter((id) => BUFFS[id]?.tipo === cancela);
     if (quemPoe.some((id) => cds[id] && !R.jaPode(agora, cds[id].ate))) return { ok: false, erro: 'O escudo ainda não pode voltar.', motivo: 'ESCUDO_RECARREGANDO' };
   }
-  if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return { ok: false, erro: 'Condição não bate.', motivo: 'CONDICAO' };
+  if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return falhaDaCondicao(action, estado, alvo, hunt);
   // Cura sem condição configurada não é desperdiçada: só sai se faltar pelo
   // menos a cura MÍNIMA dela (o slot novo nasce com `conditions: []` no client,
   // e sem isto a poção de vida saía a cada recarga com a vida cheia).

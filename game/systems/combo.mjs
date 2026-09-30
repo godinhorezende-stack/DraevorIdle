@@ -105,6 +105,7 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
     if (!action?.id || action.enabled === false) continue;
     const linha = { slot: posicao + 1, indice: slot, skill: action.id, parede, relogio, desdeUltimaMs: desde() };
     if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) {
+      Acoes.marcarParado(hunt, slot, Acoes.falhaDaCondicao(action, estado, alvo, hunt));
       registrar({ ...linha, resultado: 'IGNORADA', motivo: 'CONDICAO' });
       continue;
     }
