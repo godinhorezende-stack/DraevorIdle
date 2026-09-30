@@ -485,7 +485,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     }
     // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
     // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
-    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito }).catch((e) => console.error('drops-do-site', e.message));
+    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito, peca }).catch((e) => console.error('drops-do-site', e.message));
   }
   for (const [outro, items] of deOutros) {
     const lista = eventosDaParty.get(outro) ?? [];

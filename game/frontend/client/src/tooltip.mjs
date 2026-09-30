@@ -61,6 +61,17 @@ function tempoCurto(segundos) {
   return `${total}s`;
 }
 
+/*
+ * Só os DADOS do balão, sem o balão flutuante nem os ouvintes da página: para
+ * quem desenha a ficha (`fichaDeItem`) no próprio layout — os Últimos drops da
+ * capa do site. `initTooltip` liga tudo; esta, só o catálogo/personagem.
+ */
+export function usarDados(itens, personagem = null, catalogo = null) {
+  getItems = () => itens ?? {};
+  getPersonagem = () => personagem;
+  getCatalogo = () => catalogo;
+}
+
 export function initTooltip(itemsAccessor, personagemAccessor = () => null, catalogoAccessor = () => null) {
   getItems = itemsAccessor;
   getPersonagem = personagemAccessor;
