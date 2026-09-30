@@ -12,9 +12,14 @@ import { CATALOGO } from '../dados.mjs';
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../../gamedata/itens/${arquivo}`, import.meta.url), 'utf8'));
 
 export const RARIDADES = ler('raridades.json');
-export const NIVEIS = ler('niveis.json');
-export const ATRIBUTOS = ler('atributos.json').atributos;
+const ARQUIVO_DE_ATRIBUTOS = ler('atributos.json');
+/** Os adds que caem (ModifierDefinition): nome, tipo, categoria, peso e a faixa de cada tier (T1 fraco … T5 forte). */
+export const ATRIBUTOS = ARQUIVO_DE_ATRIBUTOS.atributos;
+/** Os adds de antes da reestruturação (29/09): não caem mais; só a migração v4 lê. */
+export const LEGADO = ARQUIVO_DE_ATRIBUTOS.legado ?? {};
 export const POOLS = ler('pools.json').pools;
+/** Os tiers pelo Item Level, o peso de cada tier e o viés da raridade (`tiers.json`). */
+export const TIERS = ler('tiers.json');
 export const EFEITOS = ler('efeitos.json');
 
 export const ORDEM = RARIDADES.ordem;
@@ -39,17 +44,15 @@ export function validar() {
     if (!q) erros.push(`raridades: ${r} sem quantidade de atributos`);
     else if (!perto100(soma(Object.values(q)))) erros.push(`raridades: quantidade de atributos de ${r} soma ${soma(Object.values(q))}`);
   }
-  for (const [ato, porDif] of Object.entries(NIVEIS.chances)) {
-    for (const d of DIFICULDADES) {
-      for (const r of ORDEM) {
-        const t = porDif[d]?.[r];
-        if (!t || t.length !== NIVEL_MAXIMO) erros.push(`niveis: falta Ato ${ato} ${d} ${r}`);
-        else if (!perto100(soma(t))) erros.push(`niveis: Ato ${ato} ${d} ${r} soma ${soma(t)}`);
-      }
-    }
+  for (const faixa of TIERS.itemLevel ?? []) {
+    if (!faixa.tiers?.length || faixa.tiers.some((t) => !(t >= 1 && t <= NIVEL_MAXIMO))) erros.push(`tiers: faixa até ${faixa.ate} com tiers inválidos`);
   }
+  if (TIERS.itemLevel?.at(-1)?.ate != null) erros.push('tiers: a última faixa de Item Level tem de ser a aberta (ate: null)');
+  for (let n = 1; n <= NIVEL_MAXIMO; n++) if (!(TIERS.peso?.[String(n)] > 0)) erros.push(`tiers: T${n} sem peso`);
+  for (const r of ORDEM) if (!(TIERS.viesDaRaridade?.[r] > 0)) erros.push(`tiers: ${r} sem viés`);
   for (const [id, a] of Object.entries(ATRIBUTOS)) {
-    if (!CATALOGO.afixos?.[id]) erros.push(`atributos: ${id} não é um atributo que o combate conhece`);
+    if (!['flat', 'pct'].includes(a.tipo)) erros.push(`atributos: ${id} com tipo "${a.tipo}"`);
+    if (!(a.peso > 0)) erros.push(`atributos: ${id} sem peso`);
     let antes = null;
     for (let n = 1; n <= NIVEL_MAXIMO; n++) {
       const f = a.niveis[String(n)];
@@ -59,7 +62,7 @@ export function validar() {
     }
   }
   for (const [slot, pool] of Object.entries(POOLS)) {
-    for (const id of pool) if (id !== 'skill_da_arma' && !ATRIBUTOS[id]) erros.push(`pools: ${slot} tem ${id}, que não existe`);
+    for (const id of pool) if (!ATRIBUTOS[id]) erros.push(`pools: ${slot} tem ${id}, que não existe`);
   }
   return erros;
 }
@@ -81,8 +84,12 @@ if (erros.length) throw new Error(`Configuração de itens inválida:\n - ${erro
  */
 export const REGUA_ANTIGA = Object.fromEntries(Object.entries(CATALOGO.afixos ?? {}).map(([id, f]) => [id, { min: f.antigoMin ?? f.min, max: f.antigoMax ?? f.max }]));
 
+CATALOGO.afixos ??= {};
 for (const [id, a] of Object.entries(ATRIBUTOS)) {
-  const ficha = CATALOGO.afixos[id];
+  // Add novo (STR, DEX, INT, Life...) ainda não tem ficha no catálogo do cliente: nasce aqui.
+  const ficha = (CATALOGO.afixos[id] ??= { id, tipo: a.tipo });
+  ficha.tipo = a.tipo;
+  ficha.categoria = a.categoria;
   ficha.antigoMin ??= ficha.min;
   ficha.antigoMax ??= ficha.max;
   const min = a.niveis['1'][0];
@@ -91,7 +98,28 @@ for (const [id, a] of Object.entries(ATRIBUTOS)) {
 }
 
 // Os efeitos (nome, texto e números) vão no catálogo do `hello`: o balão do item monta o texto com eles.
-CATALOGO.efeitosDeItem = { lendario: EFEITOS.lendario, mitico: EFEITOS.mitico };
+// Achatados (condição + efeito): o texto de cada poder usa os números no primeiro nível ({danoPct}, {vidaAbaixo}...).
+const achatar = (grupo) => Object.fromEntries(Object.entries(grupo ?? {}).filter(([k]) => !k.startsWith('_')).map(([id, d]) => [id, { ...d, ...(d.condicao ?? {}), ...(d.efeito ?? {}), ...(d.efeito?.acumuloAoMatar ?? {}) }]));
+CATALOGO.efeitosDeItem = { lendario: achatar(EFEITOS.lendario), mitico: achatar(EFEITOS.mitico) };
+
+/** Os tiers que o Item Level libera (`tiers.json`, `itemLevel`). */
+export function tiersLiberados(itemLevel) {
+  const il = Math.max(1, itemLevel ?? 1);
+  return (TIERS.itemLevel.find((f) => f.ate == null || il <= f.ate) ?? TIERS.itemLevel.at(-1)).tiers;
+}
+
+/**
+ * Sorteia o TIER de um add: entre os liberados pelo Item Level, pelo peso de
+ * cada tier × viés^(tier−1) — o viés da raridade (× o do amuleto, se for).
+ */
+export function sortearTier(itemLevel, raridade, rng = Math.random, { amuleto = false } = {}) {
+  const vies = (TIERS.viesDaRaridade[raridade] ?? 1) * (amuleto ? TIERS.viesDoAmuleto ?? 1 : 1);
+  const tiers = tiersLiberados(itemLevel);
+  const pesos = tiers.map((t) => TIERS.peso[String(t)] * vies ** (t - 1));
+  let r = rng() * pesos.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < tiers.length; i++) if ((r -= pesos[i]) < 0) return tiers[i];
+  return tiers.at(-1);
+}
 
 /** O ato do drop (enquanto os atos não existem, sai do level da hunt). */
 export function atoDoLevel(level) {

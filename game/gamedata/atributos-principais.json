@@ -1,0 +1,64 @@
+{
+  "_nota": "Os 3 atributos principais do personagem (STR, DEX, INT) e os números das defesas/precisão. TODO número de balanceamento dessas mecânicas mora aqui (systems/personagem/atributos.mjs lê; ninguém mais tem esses valores no código). Decisões do dono (29/09): STR/DEX/INT vêm da base da vocação + pontos automáticos por level + itens; STR → Life e Physical Damage; DEX → Accuracy, Evasion e Attack Speed; INT → Mana e Magic Damage (magias, runas, wand). Valores iniciais propostos a partir da escala atual (vida 200–30.000, level 8–2000) — para ajustar.",
+
+  "porVocacao": {
+    "knight":   { "base": { "str": 20, "dex": 10, "int": 5 },  "porLevel": { "str": 0.30, "dex": 0.10, "int": 0.02 } },
+    "paladin":  { "base": { "str": 12, "dex": 20, "int": 8 },  "porLevel": { "str": 0.15, "dex": 0.30, "int": 0.05 } },
+    "sorcerer": { "base": { "str": 5,  "dex": 8,  "int": 20 }, "porLevel": { "str": 0.02, "dex": 0.05, "int": 0.30 } },
+    "druid":    { "base": { "str": 5,  "dex": 8,  "int": 20 }, "porLevel": { "str": 0.02, "dex": 0.05, "int": 0.30 } },
+    "monk":     { "base": { "str": 16, "dex": 16, "int": 6 },  "porLevel": { "str": 0.22, "dex": 0.20, "int": 0.03 } },
+    "none":     { "base": { "str": 10, "dex": 10, "int": 10 }, "porLevel": { "str": 0.10, "dex": 0.10, "int": 0.10 } }
+  },
+
+  "efeitos": {
+    "STR_LIFE_PER_POINT": 5,
+    "STR_PHYSICAL_DAMAGE_PER_POINT": 0.05,
+    "DEX_ACCURACY_PER_POINT": 2,
+    "DEX_EVASION_PER_POINT": 2,
+    "DEX_ATTACK_SPEED_PER_POINT": 0.02,
+    "INT_MANA_PER_POINT": 5,
+    "INT_MAGIC_DAMAGE_PER_POINT": 0.05
+  },
+  "_efeitos": "STR_PHYSICAL_DAMAGE_PER_POINT, DEX_ATTACK_SPEED_PER_POINT e INT_MAGIC_DAMAGE_PER_POINT em % por ponto (0,05 = +0,05%). LIFE/MANA em pontos de vida/mana por ponto. ACCURACY/EVASION em pontos de rating.",
+
+  "precisao": {
+    "_nota": "Accuracy do jogador contra a Evasão do bicho (golpe da arma e wand; magia sempre acerta). Chance de acerto = FATOR × acc / (acc + evasaoDoBicho), entre MIN e MAX. Com os valores abaixo, um personagem no level do bicho acerta ~95%.",
+    "BASE": 20,
+    "POR_LEVEL": 6,
+    "EVASAO_DO_BICHO_BASE": 10,
+    "EVASAO_DO_BICHO_POR_LEVEL": 2,
+    "FATOR": 1.25,
+    "MIN": 0.5,
+    "MAX": 1
+  },
+
+  "evasao": {
+    "_nota": "Evasion do jogador contra a precisão do bicho: chance de esquivar o GOLPE corpo a corpo = ev / (ev + precisaoDoBicho), até MAX. Magia do bicho não é esquivável (é o Energy Shield e a resistência que cuidam dela).",
+    "PRECISAO_DO_BICHO_BASE": 10,
+    "PRECISAO_DO_BICHO_POR_LEVEL": 4,
+    "MAX": 0.5
+  },
+
+  "energyShield": {
+    "_nota": "Barra que absorve o dano ANTES da vida (golpe e magia). Recarrega sozinha depois de ATRASO_MS sem levar dano, RECARGA_POR_SEGUNDO da barra cheia por segundo.",
+    "ATRASO_MS": 3000,
+    "RECARGA_POR_SEGUNDO": 0.2
+  },
+
+  "bloqueio": {
+    "_nota": "Teto da chance de bloqueio (escudo/arma + adds de Block Chance).",
+    "MAX": 0.75
+  },
+
+  "bases": {
+    "_nota": "O valor que cada tipo de base tira da armadura do catálogo. Armour = a armadura do Tibia (a mesma fórmula de redução de sempre). Evasion e Energy Shield crescem com o Item Level da peça: valor = armadura × (A + itemLevel × B). Base híbrida: cada tipo fica com FATOR_HIBRIDA do seu valor.",
+    "EVASAO_A": 5,
+    "EVASAO_B": 0.1,
+    "ENERGY_SHIELD_A": 2,
+    "ENERGY_SHIELD_B": 0.05,
+    "FATOR_HIBRIDA": 0.75,
+    "PESO_PESADA": 90,
+    "PESO_LEVE": 40
+  },
+  "_bases": "Tipo da base pela vocação da peça (decisão do dono): só knight → Armour; só paladin → Evasion; só sorcerer/druid → Energy Shield; só monk → Armour+Evasion; duas vocações → a híbrida delas; de todas: peso ≥ PESO_PESADA → Armour, ≤ PESO_LEVE → Evasion, entre os dois → Armour+Evasion (peso do catálogo em oz)."
+}

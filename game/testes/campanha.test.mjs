@@ -173,10 +173,11 @@ test('a força dos bichos: a mesma Troll Cave é fraca no Fácil e muito forte n
 });
 
 
-test('o loot da fase usa o ato e a dificuldade dela', () => {
+test('o loot da fase usa o ato e a dificuldade dela, e o Item Level é o level alvo da fase', () => {
   const e = personagemDeTeste({ level: 2000 });
   assert.equal(Cacadas.entrar(e, { huntId: F[30].huntId, mode: 'auto', dificuldade: 'dificil' }).ok, true);
-  assert.deepEqual(contextoDoDrop(e.hunt), { ato: 3, dificuldade: 'dificil' });
+  assert.deepEqual(contextoDoDrop(e.hunt), { ato: 3, dificuldade: 'dificil', itemLevel: e.hunt.escala.nivel });
+  assert.equal(e.hunt.escala.nivel, F[30].nivel.dificil);
 });
 
 test('caçada offline: limpa a instância (conta para a fase) e fica em loop mesmo com "Seguir"', () => {

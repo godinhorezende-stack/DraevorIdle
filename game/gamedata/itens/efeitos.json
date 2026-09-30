@@ -1,36 +1,46 @@
 {
- "_nota": "Efeitos ESPECIAIS (Lendário) e SUPREMOS (Mítico): separados dos atributos. Cada efeito tem um id que o código conhece (systems/itens/efeitos.mjs) e os parâmetros aqui. Vários equipados com o MESMO efeito não acumulam (vale o maior).",
+ "_nota": "Os PODERES Legendary (lendario) e Mythic (mitico): separados dos adds. Cada poder é DADO, não código: `condicao` (quando vale) + `efeito` (o que faz), lidos pelo motor genérico em systems/itens/efeitos.mjs — poder novo é uma entrada aqui, sem mexer no combate. Condições: vidaAbaixo (% da vida do jogador), alvoVidaAbaixo (% da vida do alvo), naoBoss, soBoss. Efeitos: danoPct (+% do dano causado), reducaoPct (−% do dano recebido), curaAoMatarPct / manaAoMatarPct (% da vida/mana máxima por criatura derrotada), acumuloAoMatar {porKill (+% de dano), segundos, max}. `texto` usa os números do efeito ({danoPct}...) e da condição ({vidaAbaixo}...). Vários equipados com o MESMO poder não somam (vale um). O Lendário tem CHANCE de vir com poder (raridades.json, chanceDoEfeito); o Mítico sempre vem.",
  "lendario": {
   "desespero": {
    "nome": "Fúria do Desespero",
-   "texto": "+{bonus}% de dano enquanto a vida estiver abaixo de {vida}%.",
-   "bonus": 30,
-   "vida": 40
+   "texto": "+{danoPct}% de dano enquanto a vida estiver abaixo de {vidaAbaixo}%.",
+   "condicao": { "vidaAbaixo": 40 },
+   "efeito": { "danoPct": 30 }
+  },
+  "furia-do-sangue": {
+   "nome": "Fúria do Sangue",
+   "texto": "Enquanto a vida estiver abaixo de {vidaAbaixo}%: +{danoPct}% de dano.",
+   "condicao": { "vidaAbaixo": 30 },
+   "efeito": { "danoPct": 20 }
   },
   "sede-de-sangue": {
    "nome": "Sede de Sangue",
-   "texto": "Cada criatura derrotada cura {cura}% da vida máxima.",
-   "cura": 4
+   "texto": "Cada criatura derrotada cura {curaAoMatarPct}% da vida máxima.",
+   "efeito": { "curaAoMatarPct": 4 }
   },
   "pele-de-pedra": {
    "nome": "Pele de Pedra",
-   "texto": "−{reducao}% de todo dano recebido.",
-   "reducao": 12
+   "texto": "−{reducaoPct}% de todo dano recebido.",
+   "efeito": { "reducaoPct": 12 }
   }
  },
  "mitico": {
   "carrasco": {
    "nome": "Carrasco",
-   "texto": "+{bonus}% de dano contra criaturas com menos de {vida}% da vida (não vale contra boss).",
-   "bonus": 100,
-   "vida": 25
+   "texto": "+{danoPct}% de dano contra criaturas com menos de {alvoVidaAbaixo}% da vida (não vale contra boss).",
+   "condicao": { "alvoVidaAbaixo": 25, "naoBoss": true },
+   "efeito": { "danoPct": 100 }
   },
   "colheita-de-almas": {
    "nome": "Colheita de Almas",
    "texto": "Cada criatura derrotada dá +{porKill}% de dano por {segundos} s, acumulando até {max} vezes.",
-   "porKill": 2,
-   "segundos": 15,
-   "max": 25
+   "efeito": { "acumuloAoMatar": { "porKill": 2, "segundos": 15, "max": 25 } }
+  },
+  "coracao-do-tita": {
+   "nome": "Coração do Titã",
+   "texto": "Enquanto a vida estiver abaixo de {vidaAbaixo}%: recebe {reducaoPct}% menos dano.",
+   "condicao": { "vidaAbaixo": 30 },
+   "efeito": { "reducaoPct": 20 }
   }
  }
 }

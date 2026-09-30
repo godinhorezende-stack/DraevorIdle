@@ -102,64 +102,134 @@ const recebido = (e) => {
     e.hp = e.maxHp;
     const ev = [];
     contraAtaque(e, e.hunt, PERSONAGEM, m, ev);
-    for (const x of ev) if (x.t === 'dmg' && !x.foe) d += x.v;
+    // O que o Energy Shield engoliu (`es`) não chegou na vida.
+    for (const x of ev) if (x.t === 'dmg' && !x.foe && !x.es) d += x.v;
   }
   return d;
+};
+/** As recargas que UMA magia deixa: a própria (`propria`) ou as do grupo/intervalo (o resto). */
+const recargaDaMagia = (id, qual) => (e) => {
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
+  e.hunt.cooldowns = {};
+  e.mana = e.maxMana;
+  Acoes.disparar(e, e.hunt, PERSONAGEM, slot, e.hunt.monstros[0]);
+  const cds = Object.entries(e.hunt.cooldowns);
+  return cds.filter(([k]) => (qual === 'propria' ? k === id : k !== id)).reduce((n, [, c]) => n + (c?.total ?? 0), 0);
+};
+/** A mana gasta em 30 magias. */
+const manaGasta = (id) => (e) => {
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+  assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
+  let gasto = 0;
+  for (let i = 0; i < 30; i++) {
+    e.hunt.cooldowns = {};
+    e.hunt.ultimoAtaqueEm = null;
+    e.mana = e.maxMana;
+    Acoes.disparar(e, e.hunt, PERSONAGEM, slot, e.hunt.monstros[0]);
+    gasto += e.maxMana - e.mana;
+  }
+  return gasto;
+};
+/** Vida/mana que 10 s de regeneração devolvem (`Cacadas.regenerar`, o mesmo do tique). */
+const regenerado = (campo) => (e) => {
+  e.maxHp = e.maxMana = 1e6;
+  e.hp = e.mana = 1;
+  Ficha.invalidar(e);
+  Cacadas.regenerar(e, 10_000);
+  return e[campo] - 1;
+};
+const matando = (medir) => (e) => {
+  let n = 0;
+  for (let i = 0; i < 300; i++) {
+    const m = criarMonstro({ key: 'troll', x: 1, y: 1 }, null);
+    e.hunt.monstros.push(m);
+    const ev = [];
+    const antes = e.gold ?? 0;
+    matarMonstro(e, e.hunt, PERSONAGEM, m, ev);
+    n += medir(e, ev, antes);
+    e.pouch = [];
+  }
+  return n;
+};
+/** Um bicho de level alto (fase de Item Level 2000): o golpe erra sem Accuracy. */
+const bichoForte = (forca = 1) => (e) => {
+  naCacada(e, 'troll', forca);
+  e.hunt.escala = { nivel: 2000, vida: 1, dano: 1, exp: 1 };
+};
+const comPeca = (slot, nome, base) => (e) => {
+  naCacada(e, 'troll', 30);
+  e.equipment[slot] = { id: idDe(nome), count: 1, base };
+  Afixos.sincronizarMaximos(e);
+  Ficha.invalidar(e);
 };
 
 /*
  * id → [vocação, arma, montar(e), medir(e), valor, 'mais' | 'menos'].
  * `montar` prepara a caçada; `medir` devolve o número que o atributo tem de mexer.
+ * Um por modificador de gamedata/itens/atributos.json (a lista do dono, 29/09).
  */
 const cacada = (key, forca) => (e) => naCacada(e, key, forca);
+const sobre = (fn) => (e) => fn(Ficha.combate(e));
 const SONDAS = {
+  // Os 3 principais: STR (Life e dano físico), DEX (Accuracy, Evasion, Attack Speed), INT (Mana e dano mágico).
+  str: ['knight', null, cacada(), golpes, 500, 'mais'],
+  // (bicho de level alto: contra o troll, o DEX da vocação já bate no teto da esquiva)
+  dex: ['knight', null, bichoForte(30), recebido, 5000, 'menos'],
+  int: ['sorcerer', null, cacada(), magia('spell-energy-strike'), 500, 'mais'],
+  // Ofensivos.
   atk_flat: ['knight', null, cacada(), golpes, 50, 'mais'],
-  weapon_atk_pct: ['knight', null, cacada(), golpes, 50, 'mais'],
+  phys_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   crit_chance: ['knight', null, cacada(), golpes, 50, 'mais'],
   crit_dmg: ['knight', null, cacada(), golpes, 200, 'mais'],
-  onslaught: ['knight', null, cacada(), golpes, 50, 'mais'],
+  accuracy: ['knight', null, bichoForte(), golpes, 50000, 'mais'],
   life_leech: ['knight', null, cacada(), curaDosGolpes(null), 50, 'mais'],
   mana_leech: ['knight', null, cacada(), curaDosGolpes('#4fc3ff'), 50, 'mais'],
   // A velocidade de ataque encurta o intervalo do golpe básico (a ficha é o que o tique lê).
-  atk_speed: ['knight', null, () => {}, (e) => Ficha.combate(e).velocidadeDeAtaque, 50, 'mais'],
-  // Os elementais: na magia do elemento E no golpe da arma de um knight (que não tem nada daquele elemento).
+  atk_speed: ['knight', null, () => {}, sobre((f) => -f.intervaloDoGolpeMs), 50, 'mais'],
+  cast_speed: ['sorcerer', null, cacada(), recargaDaMagia('spell-energy-strike', 'grupo'), 50, 'menos'],
+  cooldown_recovery: ['sorcerer', null, cacada(), recargaDaMagia('spell-energy-strike', 'propria'), 50, 'menos'],
+  skill_cost: ['sorcerer', null, cacada(), manaGasta('spell-energy-strike'), 30, 'menos'],
+  // Os elementais: no golpe da arma de um knight (que não tem nada daquele elemento).
   fire_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   energy_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   earth_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   ice_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   death_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   holy_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
-  spell_dmg: ['sorcerer', null, cacada(), magia('spell-energy-strike'), 50, 'mais'],
-  skill_magic: ['sorcerer', null, cacada(), magia('spell-energy-strike'), 30, 'mais'],
-  spell_heal: ['druid', null, cacada(), (e) => {
-    e.actions = Array(Acoes.SLOTS).fill(null);
-    const slot = Acoes.PAPEL_DO_SLOT.indexOf('hp');
-    Acoes.definir(e, { slot, value: { id: 'spell-intense-healing' } });
-    let c = 0;
-    for (let i = 0; i < 30; i++) {
-      e.hunt.cooldowns = {};
-      e.hp = 1;
-      e.maxHp = 1e6;
-      Acoes.disparar(e, e.hunt, PERSONAGEM, slot, null);
-      c += e.hp - 1;
-    }
-    return c;
-  }, 50, 'mais'],
+  // Contra quem: boss (sala do boss), elite (quando existir) e qualquer criatura.
+  dmg_vs_boss: ['knight', null, (e) => { naCacada(e); e.hunt.isBoss = true; }, golpes, 50, 'mais'],
+  dmg_vs_elite: ['knight', null, (e) => { naCacada(e).elite = true; }, golpes, 50, 'mais'],
+  dmg_vs_monsters: ['knight', null, cacada(), golpes, 50, 'mais'],
+  // Recursos.
+  life: ['knight', null, () => {}, (e) => e.maxHp, 500, 'mais'],
+  mana: ['knight', null, () => {}, (e) => e.maxMana, 500, 'mais'],
+  life_regen: ['knight', null, () => {}, regenerado('hp'), 50, 'mais'],
+  mana_regen: ['knight', null, () => {}, regenerado('mana'), 50, 'mais'],
+  life_regen_pct: ['knight', null, () => {}, regenerado('hp'), 50, 'mais'],
+  mana_regen_pct: ['knight', null, () => {}, regenerado('mana'), 50, 'mais'],
+  // Defensivos: o golpe do bicho de verdade (`contraAtaque`).
   armor_flat: ['knight', null, cacada('troll', 30), recebido, 50, 'menos'],
+  armour_pct: ['knight', null, cacada('troll', 30), recebido, 50, 'menos'],
+  evasion: ['knight', null, bichoForte(30), recebido, 5000, 'menos'],
+  evasion_pct: ['knight', null, bichoForte(30), recebido, 3000, 'menos'],
+  energy_shield: ['sorcerer', null, cacada('troll', 30), recebido, 1e6, 'menos'],
+  es_pct: ['sorcerer', null, comPeca('body', 'terra mantle', { armor: [0, 0], es: [100, 100] }), recebido, 100, 'menos'],
+  block: ['knight', null, () => {}, sobre((f) => f.blockChance), 30, 'mais'],
+  dmg_reduction: ['knight', null, cacada('troll', 30), recebido, 30, 'menos'],
+  avoid_damage: ['knight', null, cacada('troll', 30), recebido, 30, 'menos'],
   phys_res: ['knight', null, cacada('troll', 30), recebido, 50, 'menos'],
-  protect_all: ['knight', null, cacada('troll', 30), recebido, 50, 'menos'],
-  skill_shielding: ['knight', null, () => {}, (e) => Ficha.combate(e).blockChance, 30, 'mais'],
   // As resistências elementais: a proteção da ficha, que `Poderes.lancar` usa (medido na auditoria).
-  fire_res: ['knight', null, () => {}, (e) => Ficha.combate(e).protection.fire, 50, 'mais'],
-  energy_res: ['knight', null, () => {}, (e) => Ficha.combate(e).protection.energy, 50, 'mais'],
-  earth_res: ['knight', null, () => {}, (e) => Ficha.combate(e).protection.earth, 50, 'mais'],
-  ice_res: ['knight', null, () => {}, (e) => Ficha.combate(e).protection.ice, 50, 'mais'],
-  death_res: ['knight', null, () => {}, (e) => Ficha.combate(e).protection.death, 50, 'mais'],
-  hp_max: ['knight', null, () => {}, (e) => e.maxHp, 50, 'mais'],
-  mana_max: ['knight', null, () => {}, (e) => e.maxMana, 50, 'mais'],
-  hp_regen: ['knight', null, () => {}, (e) => Ficha.combate(e).regenFlat.hp, 50, 'mais'],
-  capacity: ['knight', null, () => {}, (e) => Afixos.capacidade(e), 50, 'mais'],
-  speed: ['knight', null, () => {}, (e) => Cacadas.razaoDeVelocidade(e), 200, 'mais'],
+  fire_res: ['knight', null, () => {}, sobre((f) => f.protection.fire), 50, 'mais'],
+  energy_res: ['knight', null, () => {}, sobre((f) => f.protection.energy), 50, 'mais'],
+  earth_res: ['knight', null, () => {}, sobre((f) => f.protection.earth), 50, 'mais'],
+  ice_res: ['knight', null, () => {}, sobre((f) => f.protection.ice), 50, 'mais'],
+  holy_res: ['knight', null, () => {}, sobre((f) => f.protection.holy), 50, 'mais'],
+  death_res: ['knight', null, () => {}, sobre((f) => f.protection.death), 50, 'mais'],
+  // Utilidade.
+  move_speed: ['knight', null, () => {}, (e) => Cacadas.razaoDeVelocidade(e), 50, 'mais'],
   exp_bonus: ['knight', null, cacada(), (e) => {
     const m = criarMonstro({ key: 'troll', x: 1, y: 1 }, null);
     e.hunt.monstros.push(m);
@@ -167,28 +237,12 @@ const SONDAS = {
     matarMonstro(e, e.hunt, PERSONAGEM, m, []);
     return e.xp - antes;
   }, 50, 'mais'],
-  loot_bonus: ['knight', null, cacada(), (e) => {
-    let n = 0;
-    for (let i = 0; i < 300; i++) {
-      const m = criarMonstro({ key: 'troll', x: 1, y: 1 }, null);
-      e.hunt.monstros.push(m);
-      const ev = [];
-      matarMonstro(e, e.hunt, PERSONAGEM, m, ev);
-      for (const x of ev) if (x.t === 'loot') n += x.items.reduce((a, it) => a + it.count, 0);
-      e.pouch = [];
-    }
-    return n;
-  }, 100, 'mais'],
-  skill_melee: ['knight', null, cacada(), golpes, 30, 'mais'],
-  // Os quatro antigos não dropam mais, mas peça velha com eles soma no melee.
-  skill_axe: ['knight', null, cacada(), golpes, 30, 'mais'],
-  skill_sword: ['knight', 'sword', cacada(), golpes, 30, 'mais'],
-  skill_club: ['knight', 'mace', cacada(), golpes, 30, 'mais'],
-  skill_fist: ['monk', null, cacada(), golpes, 30, 'mais'],
-  skill_distance: ['paladin', null, cacada(), golpes, 30, 'mais'],
+  loot_bonus: ['knight', null, cacada(), matando((e, ev) => ev.filter((x) => x.t === 'loot').reduce((n, x) => n + x.items.reduce((a, it) => a + it.count, 0), 0)), 100, 'mais'],
+  gold_find: ['knight', null, cacada(), matando((e, ev, antes) => (e.gold ?? 0) - antes), 100, 'mais'],
 };
 
 test('todo atributo que pode dropar tem uma sonda de efeito aqui (atributo novo sem caminho verificado falha)', () => {
+  // Mesmo o que ainda não dropa (Damage vs Elite) tem o caminho verificado.
   const sem = Object.keys(ATRIBUTOS).filter((id) => !SONDAS[id]);
   assert.deepEqual(sem, [], `atributos sem sonda de efeito: ${sem.join(', ')}`);
 });

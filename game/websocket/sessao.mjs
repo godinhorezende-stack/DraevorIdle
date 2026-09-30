@@ -66,6 +66,8 @@ import { VERSAO_DO_CLIENTE } from '../systems/versao-do-cliente.mjs';
 import * as ItensDoJogo from '../systems/itens/item.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
+import * as Atributos from '../systems/personagem/atributos.mjs';
+import * as Defesa from '../systems/personagem/defesa.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -287,7 +289,14 @@ function characterParaCliente(personagem, estado) {
       collection: Aparencia.colecao(estado),
       // Quantos sqm a arma alcança — o seletor "Distância" marca "máx N" acima disso.
       attackRange: Cacadas.alcanceDaArma(Cacadas.armaDoPersonagem(estado)),
+      // Accuracy e Evasion viram chance contra um bicho do MESMO level (a ficha mostra o que elas valem).
+      chancesNoLevel: {
+        acerto: Atributos.chanceDeAcerto(Ficha.combate(estado).accuracy, estado.level ?? 1),
+        esquiva: Atributos.chanceDeEsquiva(Ficha.combate(estado).evasion, estado.level ?? 1),
+      },
     },
+    // O Energy Shield ATUAL (o máximo é `derived.energyShield`).
+    es: Defesa.esAtual(estado, Ficha.combate(estado)),
     marca: null,
     gold: estado.gold ?? 0,
     bank: estado.bank ?? 0,
@@ -1525,7 +1534,9 @@ export class Sessao {
     // Os sets de marco da VOCAÇÃO dele (os ainda não pegos vinham com os itens de knight).
     Recompensas.marcosDaVocacao(estado);
     // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
-    if (ItensDoJogo.converterPersonagem(estado)) Afixos.sincronizarMaximos(estado);
+    ItensDoJogo.converterPersonagem(estado);
+    // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
+    Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.
     if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
     // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
@@ -2234,6 +2245,7 @@ export class Sessao {
     if (real) Ficha.totais(this.estado).deaths += 1;
     this.estado.hunt = null;
     this.estado.hp = this.estado.maxHp;
+    this.estado.es = null; // Energy Shield cheio de novo
     this.estado.pos = { ...R.POSICAO_INICIAL };
     return morte;
   }

@@ -25,6 +25,7 @@ import * as Aparencia from './aparencia.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { metaDaPeca, faixaDoCampo } from './itens/item.mjs';
 import { SLOTS_DE_JOIA } from './itens/gerar.mjs';
+import * as Atributos from './personagem/atributos.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -99,15 +100,22 @@ function calcularCombate(estado) {
   const soma = (f) => itens.reduce((a, it) => a + (Number(f(it)) || 0), 0);
   const w = arma(estado);
   const escudo = metaDaPeca(estado.equipment?.shield);
-  const armor = soma((it) => it.armor);
   // Escudo inteiro + METADE da defesa da arma (+ o extra dela): é a conta que
   // bate com o personagem real capturado — dwarven shield 26 + steel axe 10/2
   // = 31, e com ele o bloqueio de 42% da ficha real.
   let defense = (escudo?.defense ?? 0) + Math.floor((w?.defense ?? 0) / 2) + (w?.extraDefense ?? 0);
   const pericia = periciaDaArma(w);
   const buff = BuffPower.bonusDeCombate(estado);
-  // Os atributos extras (afixos) das peças vestidas — ver `afixos.mjs`.
+  // Os adds das peças vestidas — ver `afixos.mjs`.
   const af = Afixos.soma(estado);
+  /*
+   * ---- STR, DEX, INT ----
+   * Base da vocação + pontos por level + os adds (`personagem/atributos.mjs`);
+   * os efeitos (Life/Mana nos máximos, % de dano físico e mágico, Accuracy,
+   * Evasion, Attack Speed) entram abaixo, cada um no número que o combate lê.
+   */
+  const principais = Atributos.principais(estado, af);
+  const doAtributo = Atributos.efeitos(principais);
   const bonusDePericia = {};
   const somaPericia = (k, v) => { const p = Treino.canonica(k); bonusDePericia[p] = (bonusDePericia[p] ?? 0) + v; };
   for (const it of itens) for (const [k, v] of Object.entries(it.skillBonus ?? {})) somaPericia(k, v);
@@ -140,7 +148,7 @@ function calcularCombate(estado) {
   // O ataque de anel e amuleto (`base.attack` sorteado no drop) soma ao da arma, também em faixa.
   const joias = Object.entries(estado.equipment ?? {}).filter(([slot, p]) => p && SLOTS_DE_JOIA.has(slot));
   const [jMin, jMax] = joias.reduce(([a, b], [, p]) => { const [x, y] = faixaDoCampo(p, 'attack'); return [a + x, b + y]; }, [0, 0]);
-  const calcAtaque = (a) => Math.round(((a ?? 0) + (af.atk_flat ?? 0) + prof.ataque) * (1 + (af.weapon_atk_pct ?? 0) / 100));
+  const calcAtaque = (a) => Math.round((a ?? 0) + (af.atk_flat ?? 0) + prof.ataque);
   // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
   const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
   // A munição do tipo da arma (flecha no arco) soma o ataque dela, também em faixa.
@@ -165,14 +173,19 @@ function calcularCombate(estado) {
       if (el in protection) protection[el] += v;
     }
   }
-  // Resistências dos afixos (e "Proteção contra tudo" em todas).
+  // As resistências dos adds (uma por tipo de dano, holy incluso), das gemas e dos imbuements.
   for (const el of ELEMENTOS) {
-    protection[el] += (af[el === 'physical' ? 'phys_res' : `${el}_res`] ?? 0) + (af.protect_all ?? 0) + (gem.resistencia[el] ?? 0) + (imb.protecao[el] ?? 0);
+    protection[el] += (af[el === 'physical' ? 'phys_res' : `${el}_res`] ?? 0) + (gem.resistencia[el] ?? 0) + (imb.protecao[el] ?? 0);
   }
   defense += prof.defesa;
   const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) + prof.alcance : 1;
+  const defesas = defesasDaFicha(estado, af, doAtributo);
   return {
-    armor: armor + (af.armor_flat ?? 0),
+    // STR/DEX/INT (total, e o que veio da vocação+level — a ficha mostra os dois).
+    atributos: { str: principais.str, dex: principais.dex, int: principais.int, daVocacao: principais.daVocacao },
+    // O que STR/DEX/INT estão dando agora (vida, dano físico %, precisão, evasão, velocidade %, mana, dano mágico %).
+    efeitosDosAtributos: doAtributo,
+    armor: defesas.armour,
     ataque,
     ataqueMin,
     ataqueMax,
@@ -187,14 +200,21 @@ function calcularCombate(estado) {
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
     // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
-    ...bloqueioDaFicha(estado, escudo, w, prof, shielding),
+    ...bloqueioDaFicha(estado, escudo, w, prof, shielding, af),
     ...faixaDeArmadura(estado, af),
+    // As defesas novas: Evasion (esquiva do golpe do bicho) e Energy Shield (barra antes da vida).
+    evasion: defesas.evasion,
+    energyShield: defesas.energyShield,
+    // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
+    accuracy: Math.round(Atributos.precisaoBase(estado.level) + doAtributo.precisao + (af.accuracy ?? 0)),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
     esquiva: gem.esquiva / 100,
-    // A mitigação das gemas e a dos efeitos de item (Pele de Pedra) multiplicam: 1 − (1 − a)(1 − b).
-    danoRecebidoDasGemas: 1 - (1 - gem.mitigacao / 100) * (1 - EfeitosDeItem.reducaoDeDano(estado)),
+    // A mitigação das gemas, a dos poderes (Pele de Pedra, Coração do Titã) e o add Damage Reduction multiplicam: 1 − (1 − a)(1 − b)(1 − c).
+    danoRecebidoDasGemas: 1 - (1 - gem.mitigacao / 100) * (1 - EfeitosDeItem.reducaoDeDano(estado)) * (1 - (af.dmg_reduction ?? 0) / 100),
+    // Chance to Avoid Damage: chance de ignorar um golpe OU magia inteiro (a Evasion só pega o golpe).
+    evitarDano: (af.avoid_damage ?? 0) / 100,
     magiasDasGemas: gem.magias,
     // O resto dos perks da proficiência (golpe básico, runas, boss, classe, vida/mana, perícia como dano).
     proficiencia: prof,
@@ -203,32 +223,61 @@ function calcularCombate(estado) {
     protection,
     element: w?.element ?? daMunicao?.element ?? (w?.wand ? { type: w.wand.element, value: 0 } : null),
     attackRange: alcance,
-    regenFlat: { hp: soma((it) => it.regen?.hp) + (af.hp_regen ?? 0), mana: soma((it) => it.regen?.mana) },
-    speed: R.baseSpeed(estado.level ?? 1) + soma((it) => it.speed) + (af.speed ?? 0) + imb.velocidade,
+    regenFlat: { hp: soma((it) => it.regen?.hp) + (af.life_regen ?? 0), mana: soma((it) => it.regen?.mana) + (af.mana_regen ?? 0) },
+    // Movement Speed %: sobre a velocidade base do level (+ o speed fixo das botas e do imbuement).
+    speed: Math.round(R.baseSpeed(estado.level ?? 1) * (1 + (af.move_speed ?? 0) / 100) + soma((it) => it.speed) + imb.velocidade),
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
-    velocidadeDeAtaque: af.atk_speed ?? 0,
+    // % de Attack Speed: o add + o que a DEX dá.
+    velocidadeDeAtaque: (af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct,
     // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
-    intervaloDoGolpeMs: Math.round((INTERVALO_BASE_DO_GOLPE_MS * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + (af.atk_speed ?? 0) / 100)),
+    intervaloDoGolpeMs: Math.round((INTERVALO_BASE_DO_GOLPE_MS * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
+    // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries(
-      ELEMENTOS.map((el) => [el, (af[`${el}_dmg`] ?? 0) + (arv[`elemento:${el}`] ?? 0) * 100]),
+      ELEMENTOS.map((el) => [el, (af[el === 'physical' ? 'phys_dmg' : `${el}_dmg`] ?? 0) + (arv[`elemento:${el}`] ?? 0) * 100 + (el === 'physical' ? doAtributo.danoFisicoPct : 0)]),
     ),
-    danoDeMagia: af.spell_dmg ?? 0,
-    curaDeMagia: (af.spell_heal ?? 0) + (arv.cura ?? 0) * 100,
+    // Magic Damage (magias, runas, wand): o que a INT dá.
+    danoDeMagia: doAtributo.danoMagicoPct,
+    curaDeMagia: (arv.cura ?? 0) * 100,
+    // Cast Speed (intervalo global entre magias), Cooldown Recovery (recarga de cada magia), Skill Cost Reduction.
+    castSpeed: af.cast_speed ?? 0,
+    recuperacaoDeRecarga: af.cooldown_recovery ?? 0,
+    // Damage vs Boss / vs Elite / vs Monsters (não-boss), em %.
+    danoContra: { boss: af.dmg_vs_boss ?? 0, elite: af.dmg_vs_elite ?? 0, monstros: af.dmg_vs_monsters ?? 0 },
+    // Utilidade: Gold Find, Loot Rate e Experience (%).
+    goldFind: af.gold_find ?? 0,
+    lootRate: af.loot_bonus ?? 0,
+    experiencia: af.exp_bonus ?? 0,
     // O resto da árvore, em fração, para quem usa (`cacadas.mjs`, `acoes.mjs`):
     danoDaArvore: arv.attackDamage ?? 0, // "Dano": todo dano causado
     intervaloDeAtaque: arv.attackInterval ?? 0, // "Tempo entre golpes" (negativo = mais rápido)
-    custoDeMana: arv.custoDeMana ?? 0, // "Custo de mana das magias"
+    custoDeMana: (arv.custoDeMana ?? 0) - (af.skill_cost ?? 0) / 100, // "Custo de mana das magias" (árvore) − Skill Cost Reduction
     absorcao: arv.absorb ?? 0, // "Absorção": corta o dano recebido
     danoRecebidoExtra: arv.danoRecebido ?? 0, // "Dano recebido": o preço de algumas vias
-    regenDaArvore: { hp: arv.regenHp ?? 0, mana: arv.regenMana ?? 0 }, // "% a mais de regeneração"
+    // "% a mais de regeneração": a árvore + o add Life/Mana Regeneration %.
+    regenDaArvore: { hp: (arv.regenHp ?? 0) + (af.life_regen_pct ?? 0) / 100, mana: (arv.regenMana ?? 0) + (af.mana_regen_pct ?? 0) / 100 },
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao: arv.armorPenetration ?? 0,
-    onslaughtExtra: af.onslaught ?? 0,
-    capacidadeExtra: af.capacity ?? 0,
   };
+}
+
+/*
+ * As defesas da ficha: Armour (a soma das bases + o add fixo, × o add %),
+ * Evasion (bases + add + DEX, × o add %) e Energy Shield (bases + add, × o add
+ * %). As bases são a média da faixa de cada peça vestida.
+ */
+function defesasDaFicha(estado, af, doAtributo) {
+  const somaDoCampo = (campo) => Object.values(estado.equipment ?? {}).reduce((n, p) => {
+    if (!p) return n;
+    const [a, b] = faixaDoCampo(p, campo);
+    return n + (a + b) / 2;
+  }, 0);
+  const armour = (somaDoCampo('armor') + (af.armor_flat ?? 0)) * (1 + (af.armour_pct ?? 0) / 100);
+  const evasion = (somaDoCampo('evasion') + (af.evasion ?? 0) + doAtributo.evasao) * (1 + (af.evasion_pct ?? 0) / 100);
+  const energyShield = (somaDoCampo('es') + (af.energy_shield ?? 0)) * (1 + (af.es_pct ?? 0) / 100);
+  return { armour: Math.round(armour), evasion: Math.round(evasion), energyShield: Math.round(energyShield) };
 }
 
 /** Os totais da vida do personagem (monstros, ouro, mortes, tempo caçando). */
@@ -263,26 +312,43 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // Low Blow e Savage Blow (charms): mais chance e mais dano crítico na criatura apontada.
   const doCharm = Charms.criticoExtra(estado, alvo?.key);
   const crit = mesmaRolagem ? mesmaRolagem.crit : Math.random() < ficha.critChance + doCharm.chance / 100;
-  const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon') || Math.random() * 100 < (ficha.onslaughtExtra ?? 0);
+  const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
   const daArvore = (1 + (ficha.danoDaArvore ?? 0)) * Arvore.fatorDasHabilidades(estado, alvo);
   // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
-  const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo));
+  const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught };
 }
 
+/**
+ * Os adds "Damage vs Boss / Elite / Monsters" (%): contra o boss (a sala do
+ * boss), contra elite (`alvo.elite`, quando existir) e contra qualquer
+ * criatura (não vale no PvP — alvo sem `key`).
+ */
+export function fatorContraOAlvo(estado, alvo, ficha) {
+  const d = ficha.danoContra;
+  if (!d || !alvo?.key) return 1;
+  let pct = d.monstros ?? 0;
+  if (estado.hunt?.isBoss) pct += d.boss ?? 0;
+  if (alvo.elite) pct += d.elite ?? 0;
+  return 1 + pct / 100;
+}
+
 /** A defesa que sustenta o bloqueio, em faixa: o escudo + metade da defesa da arma + o extra dela (+ perks). */
-function bloqueioDaFicha(estado, escudo, w, prof, shielding) {
+function bloqueioDaFicha(estado, escudo, w, prof, shielding, af = {}) {
   const [eMin, eMax] = escudo ? faixaDoCampo(estado.equipment?.shield, 'defense') : [0, 0];
   const [aMin, aMax] = faixaDoCampo(estado.equipment?.weapon, 'defense');
   const extra = (w?.extraDefense ?? 0) + (prof?.defesa ?? 0);
   const defMin = eMin + Math.floor(aMin / 2) + extra;
   const defMax = eMax + Math.floor(aMax / 2) + extra;
   // A defesa da arma bloqueia mesmo SEM escudo (só que 0 de defesa = 0% de bloqueio).
-  const com = (d) => R.blockChance(shielding, d);
+  // + o add Block Chance (em %), com o teto da configuração.
+  const extra2 = (af.block ?? 0) / 100;
+  const teto = Atributos.CONFIG.bloqueio.MAX;
+  const com = (d) => Math.min(teto, R.blockChance(shielding, d) + (d > 0 || extra2 > 0 ? extra2 : 0));
   return {
     blockChance: com(Math.round((defMin + defMax) / 2)),
     blockChanceMin: com(defMin),
@@ -294,24 +360,20 @@ function bloqueioDaFicha(estado, escudo, w, prof, shielding) {
 
 /** As armaduras em faixa: a soma dos pisos e dos tetos das peças vestidas (+ a armadura plana dos afixos, que é física). */
 function faixaDeArmadura(estado, af) {
-  const soma = { armor: [0, 0], marmor: [0, 0] };
+  const soma = { armor: [0, 0] };
   for (const p of Object.values(estado.equipment ?? {})) {
     if (!p) continue;
-    for (const campo of ['armor', 'marmor']) {
+    for (const campo of ['armor']) {
       const [a, b] = faixaDoCampo(p, campo);
       soma[campo][0] += a;
       soma[campo][1] += b;
     }
   }
   const plana = af?.armor_flat ?? 0;
-  const mediaMagica = Math.round((soma.marmor[0] + soma.marmor[1]) / 2);
+  const pct = 1 + (af?.armour_pct ?? 0) / 100;
   return {
-    armorMin: soma.armor[0] + plana,
-    armorMax: soma.armor[1] + plana,
-    // Armadura MÁGICA: corta o dano de magia e de ataque elemental dos monstros (só a física corta o golpe físico).
-    armorMagic: mediaMagica,
-    armorMagicMin: soma.marmor[0],
-    armorMagicMax: soma.marmor[1],
+    armorMin: Math.round((soma.armor[0] + plana) * pct),
+    armorMax: Math.round((soma.armor[1] + plana) * pct),
   };
 }
 

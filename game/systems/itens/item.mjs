@@ -11,9 +11,18 @@
 // vermelha) N5 acima do teto — e o valor vai para a MESMA posição dentro da
 // faixa nova do nível. A peça sem raridade ganha a da quantidade de atributos
 // (0 Comum, 1 Incomum, 2 Raro, 3 Épico). Nada é apagado; é idempotente.
-import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS } from './config.mjs';
+//
+// A MIGRAÇÃO v4 (reestruturação de itens, 29/09 — decisão do dono: "converter
+// e tirar os extras"): os adds que saíram do jogo viram o add novo mais
+// próximo NO MESMO TIER e na mesma posição dentro da faixa (Skill Melee T3 no
+// meio → STR T3 no meio); dois que viram o mesmo add ficam num só (o de tier
+// mais alto). A armadura mágica (`marmor`) e a armadura das peças que agora
+// são de Evasion/Energy Shield viram a base nova pela vocação da peça, com a
+// mesma qualidade de sorteio; a peça ganha o Item Level (o nível mínimo dela).
+import { REGUA_ANTIGA, NIVEL_MAXIMO, ATRIBUTOS, LEGADO } from './config.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
-import { valorNaFaixa, arredondar, CAMPOS_DA_BASE, rolarBase, aceitaAtributos } from './gerar.mjs';
+import { valorNaFaixa, arredondar, CAMPOS_DA_BASE, rolarBase, aceitaAtributos, SLOTS_DE_JOIA, FATOR_DAS_DUAS } from './gerar.mjs';
+import * as Atributos from '../personagem/atributos.mjs';
 
 const ID_DA_ESSENCIA = 900001;
 const FAIXAS_ANTIGAS = [[0, 20], [20, 40], [40, 60], [60, 85], [85, 100]];
@@ -28,6 +37,7 @@ export function camposDaPeca(p) {
     ...(p.imbu?.length ? { imbu: p.imbu } : {}),
     ...(p.af?.length ? { af: p.af } : {}),
     ...(p.raridade ? { raridade: p.raridade } : {}),
+    ...(p.ilvl ? { ilvl: p.ilvl } : {}),
     ...(p.efeito ? { efeito: p.efeito } : {}),
   };
 }
@@ -56,8 +66,25 @@ export function baseValida(base) {
 export function faixaDoCampo(p, campo) {
   const sorteada = faixaValida(p?.base?.[campo]);
   if (sorteada) return sorteada;
-  const v = Math.floor(Number(ITEM_CATALOG[p?.id]?.[campo]));
+  const meta = ITEM_CATALOG[p?.id];
+  // Sem faixa sorteada, a defesa segue o TIPO da base da peça (Armour, Evasion,
+  // Energy Shield — `Atributos.tiposDaBase`), com o valor cheio do catálogo.
+  if (DEFESAS.has(campo)) {
+    const v = defesaDoCatalogo(meta)[campo] ?? 0;
+    return v > 0 ? [v, v] : [0, 0];
+  }
+  const v = Math.floor(Number(meta?.[campo]));
   return v > 0 ? [v, v] : [0, 0];
+}
+
+const DEFESAS = new Set(['armor', 'evasion', 'es']);
+/** A defesa de uma peça do catálogo sem sorteio: a armadura dele no tipo da base (joia: Armour). */
+function defesaDoCatalogo(meta) {
+  const armadura = Math.floor(Number(meta?.armor));
+  if (!(armadura > 0)) return {};
+  if (SLOTS_DE_JOIA.has(meta.slot) || !aceitaAtributos(meta.id)) return { armor: armadura };
+  const v = Atributos.valoresDaBase(Atributos.tiposDaBase(meta), armadura, meta.minLevel ?? 1);
+  return { armor: Math.round(v.armour ?? 0), evasion: Math.round(v.evasion ?? 0), es: Math.round(v.es ?? 0) };
 }
 
 /**
@@ -78,25 +105,126 @@ export function metaDaPeca(p) {
 }
 
 /** Converte UM atributo antigo (sem `nivel`); devolve `true` se mudou. */
+/** As faixas por tier de um add: o de hoje ou (id que saiu do jogo) o de antes (`legado`). */
+const niveisDe = (id) => ATRIBUTOS[id]?.niveis ?? LEGADO[id]?.niveis;
+const tipoDe = (id) => ATRIBUTOS[id]?.tipo ?? LEGADO[id]?.tipo;
+const arredondarComo = (id, v) => (tipoDe(id) === 'flat' ? Math.round(v) : Math.round(v * 100) / 100);
+
 export function converterAtributo(a) {
-  if (!a || a.nivel != null || !ATRIBUTOS[a.id]) return false;
+  const niveis = a && niveisDe(a.id);
+  if (!niveis || a.nivel != null) return false;
   const r = REGUA_ANTIGA[a.id];
   const pct = r && r.max > r.min ? ((Number(a.value) - r.min) / (r.max - r.min)) * 100 : 0;
   if (pct > 100) {
     // A essência vermelha: acima do topo — segue acima do topo na régua nova.
-    const [, hi] = ATRIBUTOS[a.id].niveis[String(NIVEL_MAXIMO)];
-    const [n1] = ATRIBUTOS[a.id].niveis['1'];
-    a.value = arredondar(a.id, n1 + (pct / 100) * (hi - n1));
+    const [, hi] = niveis[String(NIVEL_MAXIMO)];
+    const [n1] = niveis['1'];
+    a.value = arredondarComo(a.id, n1 + (pct / 100) * (hi - n1));
     a.nivel = NIVEL_MAXIMO;
   } else {
     // A borda de cima é do nível de baixo: 0–20% N1, (20–40%] N2, ... (85–100%] N5.
     const nivel = FAIXAS_ANTIGAS.findIndex(([, hi]) => pct <= hi + 1e-9) + 1 || FAIXAS_ANTIGAS.length;
     const [lo, hi] = FAIXAS_ANTIGAS[nivel - 1];
+    const [tlo, thi] = niveis[String(nivel)];
     a.nivel = nivel;
-    a.value = valorNaFaixa(a.id, nivel, (Math.max(0, pct) - lo) / (hi - lo));
+    a.value = ATRIBUTOS[a.id] ? valorNaFaixa(a.id, nivel, (Math.max(0, pct) - lo) / (hi - lo)) : arredondarComo(a.id, tlo + ((Math.max(0, pct) - lo) / (hi - lo)) * (thi - tlo));
   }
   delete a.tier;
   return true;
+}
+
+/**
+ * O add novo de cada add que saiu do jogo (v4) — o mais próximo do que ele fazia.
+ * Perícias viram o atributo principal que as sustenta; Vida/Mana %, Life/Mana;
+ * Onslaught (golpe mais forte), Critical Damage; capacidade, STR (carga).
+ */
+export const ADD_NOVO_DO_ANTIGO = {
+  skill_melee: 'str', skill_fist: 'str', skill_club: 'str', skill_sword: 'str', skill_axe: 'str',
+  skill_distance: 'dex', skill_magic: 'int', skill_shielding: 'block',
+  hp_max: 'life', mana_max: 'mana', hp_regen: 'life_regen', speed: 'move_speed',
+  protect_all: 'phys_res', weapon_atk_pct: 'phys_dmg', onslaught: 'crit_dmg',
+  spell_heal: 'int', spell_dmg: 'int', capacity: 'str',
+};
+
+/**
+ * Troca os adds que saíram do jogo pelo novo (mesmo tier, mesma posição na
+ * faixa; acima do teto do T5 — essência vermelha — segue acima). Dois no mesmo
+ * add: fica o de tier mais alto (empate: o maior valor). Devolve `true` se mudou.
+ */
+export function renomearAdds(p) {
+  if (!p?.af?.length) return false;
+  let mudou = false;
+  const saida = [];
+  for (const a of p.af) {
+    const novo = !ATRIBUTOS[a.id] && ADD_NOVO_DO_ANTIGO[a.id];
+    if (novo && ATRIBUTOS[novo]) {
+      const velhos = niveisDe(a.id);
+      const nivel = Math.min(NIVEL_MAXIMO, Math.max(1, a.nivel ?? 1));
+      const [lo, hi] = velhos?.[String(nivel)] ?? [0, 1];
+      const pos = hi > lo ? (Number(a.value) - lo) / (hi - lo) : 1;
+      const [nlo, nhi] = ATRIBUTOS[novo].niveis[String(nivel)];
+      const valor = pos > 1 && nivel === NIVEL_MAXIMO ? arredondar(novo, nlo + pos * (nhi - nlo)) : valorNaFaixa(novo, nivel, pos);
+      Object.assign(a, { id: novo, nivel, value: valor });
+      mudou = true;
+    }
+    const igual = saida.findIndex((b) => b.id === a.id);
+    if (igual < 0) saida.push(a);
+    else {
+      const b = saida[igual];
+      if ((a.nivel ?? 0) > (b.nivel ?? 0) || ((a.nivel ?? 0) === (b.nivel ?? 0) && Number(a.value) > Number(b.value))) saida[igual] = a;
+      mudou = true;
+    }
+  }
+  if (mudou) p.af = saida;
+  return mudou;
+}
+
+/**
+ * A base de defesa de antes (v4): Armour/armadura mágica viram o tipo da base
+ * pela vocação da peça (`Atributos.tiposDaBase`), com a MESMA qualidade de
+ * sorteio (a faixa sorteada da armadura; as duas juntas valiam 75% cada). E o
+ * Item Level que a peça não tinha: o nível mínimo dela. Devolve `true` se mudou.
+ */
+export function converterBase(p) {
+  const meta = ITEM_CATALOG[p?.id];
+  if (!meta || !aceitaAtributos(p.id)) return false;
+  let mudou = false;
+  if (!p.ilvl) {
+    p.ilvl = Math.max(1, meta.minLevel ?? 1);
+    mudou = true;
+  }
+  const b = p.base;
+  if (!b || (b.evasion ?? b.es) != null) {
+    if (b?.marmor) {
+      delete b.marmor;
+      mudou = true;
+    }
+    return mudou;
+  }
+  const fisica = faixaValida(b.armor);
+  const magica = faixaValida(b.marmor);
+  const tem = (f) => f && f[1] > 0;
+  if (!tem(fisica) && !tem(magica)) {
+    const tinha = 'marmor' in b;
+    delete b.marmor;
+    return mudou || tinha;
+  }
+  const antes = JSON.stringify(b);
+  const f = tem(fisica) && tem(magica) ? 1 / FATOR_DAS_DUAS : 1;
+  const [piso, teto] = (tem(fisica) ? fisica : magica).map((v) => v * f);
+  delete b.marmor;
+  if (SLOTS_DE_JOIA.has(meta.slot)) {
+    b.armor = [Math.max(1, Math.round(piso)), Math.max(1, Math.round(teto))];
+    return mudou || JSON.stringify(b) !== antes;
+  }
+  const tipos = Atributos.tiposDaBase(meta);
+  const dePiso = Atributos.valoresDaBase(tipos, piso, p.ilvl);
+  const deTeto = Atributos.valoresDaBase(tipos, teto, p.ilvl);
+  const faixa = (k) => [Math.max(1, Math.round(dePiso[k])), Math.max(1, Math.round(deTeto[k]))];
+  b.armor = dePiso.armour != null ? faixa('armour') : [0, 0];
+  if (dePiso.evasion != null) b.evasion = faixa('evasion');
+  if (dePiso.es != null) b.es = faixa('es');
+  return mudou || JSON.stringify(b) !== antes;
 }
 
 /** Converte UMA peça (atributos + raridade); devolve `true` se mudou. */
@@ -135,7 +263,7 @@ function sorteioDe(texto) {
 export function sortearFaixa(p, rng = null) {
   if (p.base || !aceitaAtributos(p.id)) return false;
   const raridade = raridadeDaPeca(p);
-  p.base = rolarBase(p.id, raridade, rng ?? sorteioDe(`${p.id}|${raridade}|${p.tier ?? 0}|${JSON.stringify(p.af ?? [])}`));
+  p.base = rolarBase(p.id, raridade, rng ?? sorteioDe(`${p.id}|${raridade}|${p.tier ?? 0}|${JSON.stringify(p.af ?? [])}`), p.ilvl ?? null);
   return true;
 }
 
@@ -155,8 +283,11 @@ export function converterTudo(raiz, rng = null) {
       return;
     }
     if (typeof o.id === 'number' && (Array.isArray(o.af) || typeof o.count === 'number')) {
-      if (converterPeca(o)) n++;
-      if (sortearFaixa(o, rng)) n++;
+      let mudou = converterPeca(o);
+      mudou = renomearAdds(o) || mudou;
+      mudou = sortearFaixa(o, rng) || mudou;
+      mudou = converterBase(o) || mudou;
+      if (mudou) n++;
       return;
     }
     for (const [k, v] of Object.entries(o)) {
@@ -170,7 +301,7 @@ export function converterTudo(raiz, rng = null) {
 }
 
 /** A versão do formato de item do personagem: quem já está nela não precisa ser varrido de novo. */
-export const VERSAO_DOS_ITENS = 3; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura); 3: a munição também (a 2 a tirou)
+export const VERSAO_DOS_ITENS = 4; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura); 3: a munição também (a 2 a tirou); 4: reestruturação (adds novos, Evasion/Energy Shield, Item Level)
 
 /** Converte o personagem (uma vez — marca `versaoDosItens`). Devolve quantas peças mudaram. */
 export function converterPersonagem(estado) {
@@ -194,4 +325,15 @@ export function raridadeDaPeca(p) {
   if (p?.raridade) return p.raridade;
   const meta = ITEM_CATALOG[p?.id];
   return ehEquipavel(meta) ? 'comum' : meta?.rarity ?? 'comum';
+}
+
+/*
+ * O catálogo que vai para o cliente leva a defesa PADRÃO das peças que não
+ * são só-Armour (`defesaPadrao`: {armor, evasion, es}) — o balão de uma peça
+ * sem faixa sorteada (kit inicial, loja) mostra a mesma defesa que a ficha usa
+ * (`faixaDoCampo`), e não a armadura crua do catálogo.
+ */
+for (const meta of Object.values(ITEM_CATALOG)) {
+  const d = defesaDoCatalogo(meta);
+  if (d.evasion || d.es) meta.defesaPadrao = d;
 }

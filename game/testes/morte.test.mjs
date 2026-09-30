@@ -8,6 +8,7 @@ import * as Morte from '../systems/morte.mjs';
 import * as Promocao from '../systems/promocao.mjs';
 import * as R from '../systems/regras.mjs';
 import { descerDeLevel } from '../systems/hunt/combate.mjs';
+import * as Afixos from '../systems/afixos.mjs';
 import { personagemDeTeste } from './apoio.mjs';
 
 const ler = (p) => JSON.parse(readFileSync(new URL(`../../api-mapeada/${p}`, import.meta.url), 'utf8'));
@@ -18,6 +19,8 @@ function personagem(level, { promovido = false, gold = 0 } = {}) {
   e.gold = gold;
   e.blessings = [];
   if (promovido) e.promovido = true;
+  // Como ao entrar no jogo: a vida do STR (e os adds) já no máximo.
+  Afixos.sincronizarMaximos(e);
   return e;
 }
 

@@ -39,6 +39,7 @@ import { banco } from '../database/banco.mjs';
 import * as R from './regras.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Ficha from './ficha.mjs';
+import * as Defesa from './personagem/defesa.mjs';
 import { armaDoPersonagem, alcanceDaArma, categoriaDaArma, armorDoPersonagem, definirLevel, ATAQUE_MS } from './hunt/combate.mjs';
 import { distancia } from './hunt/caminho.mjs';
 
@@ -483,6 +484,7 @@ function nivelarParaODuelo(estado, level) {
   definirLevel(estado, level);
   estado.hp = estado.maxHp;
   estado.mana = estado.maxMana;
+  estado.es = null; // Energy Shield cheio (`Defesa.esAtual`)
 }
 
 /** Devolve o level, a vida e o lugar de antes do duelo. */
@@ -605,7 +607,8 @@ function golpeNoAdversario(s, outro, arma, id) {
   const eventos = [];
   const { dano: bruto, crit } = Ficha.rolarCritico(s.estado, base, { key: null, uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y }, eventos, ficha);
   const protegido = Math.round(bruto * (1 - Math.min(100, fo.protection?.[elemento] ?? 0) / 100));
-  const dano = Math.max(0, elemento === 'physical' ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido);
+  // O Energy Shield do adversário absorve antes da vida.
+  const dano = Defesa.absorver(outro.estado, fo, Math.max(0, elemento === 'physical' ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido));
   outro.estado.hp = Math.max(0, outro.estado.hp - dano);
   const cor = elemento === 'physical' ? '#ff0000' : undefined;
   // Quem bateu vê o número em cima do adversário; quem apanhou, em cima de si.

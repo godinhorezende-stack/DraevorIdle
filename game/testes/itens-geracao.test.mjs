@@ -1,6 +1,8 @@
-// O gerador de itens (systems/itens): raridade por ato e dificuldade,
-// quantidade e pool de atributos, níveis 1–5, valores nas faixas, efeitos de
-// Lendário e Mítico — e a distribuição estatística bate com a configuração.
+// O gerador de itens (systems/itens): raridade por ato e dificuldade, Item
+// Level, quantidade de adds pela raridade, pool pelo TIPO do item (com peso,
+// nível mínimo, raridades permitidas e defesa pela base), tiers T1–T5 pelo
+// Item Level, valores nas faixas, poderes Lendário/Mítico — e a distribuição
+// estatística bate com a configuração.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as C from '../systems/itens/config.mjs';
@@ -22,67 +24,121 @@ const ESPADA = idPorNome('fire sword');
 const BOTA = idPorNome('boots of haste');
 const ANEL = idPorNome('might ring');
 
-test('configuração: todas as tabelas somam 100 e as faixas N1 < N2 < N3 < N4 < N5', () => {
+test('configuração: validada, e as faixas T1 < T2 < T3 < T4 < T5 (T1 o mais fraco)', () => {
   assert.deepEqual(C.validar(), []);
   for (const [id, a] of Object.entries(C.ATRIBUTOS)) {
     const medias = [1, 2, 3, 4, 5].map((n) => (a.niveis[n][0] + a.niveis[n][1]) / 2);
-    for (let i = 1; i < 5; i++) assert.ok(medias[i] > medias[i - 1], `${id}: N${i + 1} > N${i}`);
+    for (let i = 1; i < 5; i++) assert.ok(medias[i] > medias[i - 1], `${id}: T${i + 1} > T${i}`);
   }
   // A correção do Ato 3 Médio (a tabela original somava 99,15).
   assert.equal(C.RARIDADES.chances['3'].medio['lendário'], 2.85);
 });
 
-test('ATK e ATK% são atributos diferentes, cada um com a sua escala', () => {
-  assert.deepEqual(C.ATRIBUTOS.atk_flat.niveis['1'], [2, 3]);
-  assert.deepEqual(C.ATRIBUTOS.atk_flat.niveis['5'], [16, 20]);
+// A lista de modificadores confirmada pelo dono (29/09).
+const MODIFICADORES = [
+  'str', 'dex', 'int', 'atk_flat', 'phys_dmg', 'fire_dmg', 'earth_dmg', 'energy_dmg', 'ice_dmg', 'holy_dmg', 'death_dmg',
+  'atk_speed', 'cast_speed', 'crit_chance', 'crit_dmg', 'accuracy',
+  'life', 'mana', 'life_regen', 'mana_regen', 'life_regen_pct', 'mana_regen_pct', 'life_leech', 'mana_leech',
+  'armor_flat', 'armour_pct', 'evasion', 'evasion_pct', 'energy_shield', 'es_pct', 'block',
+  'phys_res', 'fire_res', 'earth_res', 'energy_res', 'ice_res', 'holy_res', 'death_res',
+  'move_speed', 'exp_bonus', 'gold_find', 'loot_bonus',
+  'dmg_vs_boss', 'dmg_vs_elite', 'dmg_vs_monsters', 'dmg_reduction', 'cooldown_recovery', 'skill_cost', 'avoid_damage',
+];
+
+test('modificadores: exatamente a lista do dono, cada um com peso, faixa por tier, nível mínimo e raridades', () => {
+  assert.deepEqual(Object.keys(C.ATRIBUTOS).sort(), [...MODIFICADORES].sort());
+  for (const [id, a] of Object.entries(C.ATRIBUTOS)) {
+    assert.ok(a.peso > 0, `${id}: peso`);
+    assert.ok(['flat', 'pct'].includes(a.tipo), `${id}: tipo`);
+    assert.ok(a.nivelMinimo >= 1, `${id}: nível mínimo`);
+    assert.ok(a.raridades?.length && a.raridades.every((r) => C.ORDEM.includes(r)), `${id}: raridades`);
+    assert.ok(Object.values(C.POOLS).some((l) => l.includes(id)), `${id}: em algum pool (tipos de item permitidos)`);
+  }
+  // Sem "Magic Resistance" nem dano elemental genérico.
+  assert.ok(!Object.keys(C.ATRIBUTOS).some((id) => /magic_res|elemental/.test(id)));
+  // Os que saíram do jogo ficam só no `legado` (para a migração das peças antigas).
+  for (const velho of ['skill_melee', 'hp_max', 'onslaught', 'protect_all', 'capacity', 'spell_dmg']) {
+    assert.equal(C.ATRIBUTOS[velho], undefined);
+    assert.ok(C.LEGADO[velho]);
+  }
   assert.equal(C.ATRIBUTOS.atk_flat.tipo, 'flat');
-  assert.equal(C.ATRIBUTOS.weapon_atk_pct.tipo, 'pct');
-  assert.notDeepEqual(C.ATRIBUTOS.weapon_atk_pct.niveis, C.ATRIBUTOS.atk_flat.niveis);
+  assert.equal(C.ATRIBUTOS.phys_dmg.tipo, 'pct');
 });
 
-test('cada raridade sai com a quantidade certa de atributos, e só Lendário/Mítico têm efeito', () => {
+test('cada raridade sai com a quantidade certa de adds; Lendário às vezes com poder, Mítico sempre', () => {
   // Comum nunca tem atributo (decisão do dono).
   const faixa = { comum: [0, 0], incomum: [1, 2], raro: [2, 3], 'épico': [3, 4], 'lendário': [4, 5], 'mítico': [5, 6] };
   const rng = semente(1);
   for (const [r, [lo, hi]] of Object.entries(faixa)) {
     const vistos = new Set();
+    let comPoder = 0;
     for (let i = 0; i < 400; i++) {
-      const p = G.gerarItem({ itemId: ANEL, level: 500, raridade: r, rng });
+      const p = G.gerarItem({ itemId: ANEL, itemLevel: 1500, raridade: r, rng });
       const n = p.af?.length ?? 0;
       vistos.add(n);
       assert.ok(n >= lo && n <= hi, `${r}: ${n} atributos`);
-      if (r === 'lendário') assert.equal(p.efeito?.tipo, 'lendario');
+      if (p.efeito) comPoder++;
+      if (r === 'lendário' && p.efeito) assert.equal(p.efeito.tipo, 'lendario');
       else if (r === 'mítico') assert.equal(p.efeito?.tipo, 'mitico');
-      else assert.equal(p.efeito, undefined);
+      else if (r !== 'lendário') assert.equal(p.efeito, undefined);
     }
     assert.deepEqual([...vistos].sort(), [...new Set([lo, hi])], `${r}: as quantidades da faixa aparecem`);
+    if (r === 'lendário') dentroDaMargem(comPoder, 400, C.RARIDADES.raridades['lendário'].chanceDoEfeito * 100, 'lendário com poder');
   }
 });
 
-test('atributos: do pool do equipamento, sem repetir, com valor dentro da faixa do nível', () => {
+test('adds: do pool do TIPO do item, sem repetir, tier liberado pelo Item Level, valor dentro da faixa do tier', () => {
   const rng = semente(2);
   for (const itemId of [ESPADA, BOTA, ANEL]) {
     const pool = new Set(G.poolDe(itemId));
-    for (let i = 0; i < 2000; i++) {
-      const p = G.gerarItem({ itemId, level: 1500, raridade: 'mítico', rng });
-      const ids = p.af.map((a) => a.id);
-      assert.equal(new Set(ids).size, ids.length, 'sem atributo repetido');
-      for (const a of p.af) {
-        assert.ok(pool.has(a.id), `${a.id} fora do pool`);
-        assert.ok(a.nivel >= 1 && a.nivel <= 5);
-        const [lo, hi] = C.ATRIBUTOS[a.id].niveis[a.nivel];
-        assert.ok(a.value >= lo && a.value <= hi, `${a.id} N${a.nivel} = ${a.value} fora de [${lo}, ${hi}]`);
-        assert.equal(G.nivelDoValor(a.id, a.value) >= a.nivel - 0, true);
+    for (const itemLevel of [50, 400, 1500]) {
+      const liberados = C.tiersLiberados(itemLevel);
+      for (let i = 0; i < 700; i++) {
+        const p = G.gerarItem({ itemId, itemLevel, raridade: 'mítico', rng });
+        assert.equal(p.ilvl, itemLevel);
+        const ids = p.af.map((a) => a.id);
+        assert.equal(new Set(ids).size, ids.length, 'sem add repetido');
+        for (const a of p.af) {
+          assert.ok(pool.has(a.id), `${a.id} fora do pool`);
+          assert.ok(liberados.includes(a.nivel), `T${a.nivel} com Item Level ${itemLevel}`);
+          assert.ok(C.ATRIBUTOS[a.id].nivelMinimo <= itemLevel, `${a.id} abaixo do nível mínimo`);
+          const [lo, hi] = C.ATRIBUTOS[a.id].niveis[a.nivel];
+          assert.ok(a.value >= lo && a.value <= hi, `${a.id} T${a.nivel} = ${a.value} fora de [${lo}, ${hi}]`);
+        }
       }
     }
   }
-  // Na arma, só a perícia DELA.
-  assert.ok(G.poolDe(ESPADA).includes('skill_melee'));
-  assert.ok(!G.poolDe(ESPADA).includes('skill_sword'));
-  assert.ok(!G.poolDe(ESPADA).includes('skill_axe'));
-  // Bota tem movimento; arma não.
-  assert.ok(G.poolDe(BOTA).includes('speed'));
-  assert.ok(!G.poolDe(ESPADA).includes('speed'));
+  // Tipos: arma melee tem STR e dano; bota tem Movement Speed; arma não.
+  assert.ok(G.poolDe(ESPADA).includes('str') && G.poolDe(ESPADA).includes('phys_dmg'));
+  assert.ok(G.poolDe(BOTA).includes('move_speed'));
+  assert.ok(!G.poolDe(ESPADA).includes('move_speed'));
+});
+
+test('filtros do pool: raridade permitida, nível mínimo, "não dropa" (Elite) e defesa só com a base dela', () => {
+  const ctx = (o) => G.poolDe(ANEL, { itemLevel: 1500, raridade: 'mítico', base: {}, ...o });
+  assert.ok(!ctx({ raridade: 'incomum' }).includes('dmg_vs_boss'), 'avançado: Raro+');
+  assert.ok(ctx({ raridade: 'raro' }).includes('dmg_vs_boss'));
+  assert.ok(!ctx({ itemLevel: 100 }).includes('dmg_vs_boss'), 'avançado: Item Level 101+');
+  assert.ok(!ctx({}).includes('dmg_vs_elite'), 'Damage vs Elite definido, mas não dropa enquanto não existir Elite');
+  // Peça de Armour não rola Evasion/ES; a de ES não rola Armour.
+  const PEITO = Number(Object.values(ITEM_CATALOG).find((i) => i.slot === 'body' && i.armor > 0).id);
+  const deArmour = G.poolDe(PEITO, { itemLevel: 500, raridade: 'raro', base: { armor: [10, 12] } });
+  assert.ok(deArmour.includes('armor_flat') && !deArmour.includes('evasion') && !deArmour.includes('energy_shield'));
+  const deEs = G.poolDe(PEITO, { itemLevel: 500, raridade: 'raro', base: { armor: [0, 0], es: [50, 60] } });
+  assert.ok(deEs.includes('energy_shield') && deEs.includes('es_pct') && !deEs.includes('armor_flat'));
+  // Anel/amuleto: livres.
+  assert.ok(ctx({}).includes('evasion') && ctx({}).includes('energy_shield'));
+});
+
+test('Item Level: o da fase onde caiu (boss +10%); sem ele, o level do contexto ou o nível mínimo do item', () => {
+  assert.equal(G.itemLevelDoDrop({ itemId: ESPADA, itemLevel: 300 }), 300);
+  assert.equal(G.itemLevelDoDrop({ itemId: ESPADA, itemLevel: 300, boss: true }), 330);
+  assert.equal(G.itemLevelDoDrop({ itemId: ESPADA, level: 120 }), 120);
+  assert.equal(G.itemLevelDoDrop({ itemId: ESPADA }), ITEM_CATALOG[ESPADA].minLevel);
+  assert.deepEqual(C.tiersLiberados(50), [1, 2]);
+  assert.deepEqual(C.tiersLiberados(600), [1, 2, 3]);
+  assert.deepEqual(C.tiersLiberados(1000), [1, 2, 3, 4]);
+  assert.deepEqual(C.tiersLiberados(2000), [1, 2, 3, 4, 5]);
 });
 
 test('item que não aceita atributo sai simples; Comum sem atributo também', () => {
@@ -92,14 +148,12 @@ test('item que não aceita atributo sai simples; Comum sem atributo também', ()
   let simples = 0;
   for (let i = 0; i < 500; i++) {
     const p = G.gerarItem({ itemId: ANEL, level: 50, raridade: 'comum', rng });
-    // Anel Comum não tem atributo (`af`); pode vir sem nada (simples) ou com a base sorteada (armadura/ataque) — e o efeito nunca.
     if (!p.af?.length) { simples++; assert.equal(p.efeito, undefined); assert.ok(p.raridade === undefined || p.raridade === 'comum'); }
   }
   assert.equal(simples, 500, 'nenhuma comum com atributo');
 });
 
 test('ato não bloqueia raridade: Mítico pode sair no Ato 1, e o boss usa a dificuldade de cima', () => {
-  // Um sorteio que cai no fim da tabela = a última raridade (mítico).
   const quaseUm = () => 0.9999999;
   assert.equal(G.gerarItem({ itemId: ANEL, level: 8, rng: quaseUm }).raridade, 'mítico');
   assert.deepEqual(G.origemDoDrop({ level: 50 }), { ato: '1', dificuldade: 'facil' });
@@ -123,15 +177,28 @@ function dentroDaMargem(obs, n, pct, nome) {
   assert.ok(Math.abs(obs - n * p) <= 5 * sd + 1, `${nome}: ${obs} de ${n} (esperado ${(n * p).toFixed(1)})`);
 }
 
-test('estatística: raridade (Ato 4 Difícil) e níveis (Ato 1 Fácil, Raro) batem com a tabela', () => {
+test('estatística: raridade (Ato 4 Difícil), tiers (peso × viés da raridade) e adds (peso) batem com a configuração', () => {
   const rng = semente(7);
   const N = 200_000;
   const cont = Object.fromEntries(C.ORDEM.map((r) => [r, 0]));
   for (let i = 0; i < N; i++) cont[G.sortearChave(C.RARIDADES.chances['4'].dificil, rng)]++;
   for (const r of C.ORDEM) dentroDaMargem(cont[r], N, C.RARIDADES.chances['4'].dificil[r], `A4D ${r}`);
 
-  const tabela = C.NIVEIS.chances['1'].facil.raro;
-  const niveis = [0, 0, 0, 0, 0];
-  for (let i = 0; i < N; i++) niveis[G.sortearNivel(tabela, rng) - 1]++;
-  niveis.forEach((obs, i) => dentroDaMargem(obs, N, tabela[i], `A1F raro N${i + 1}`));
+  // Tiers com Item Level 2000 (todos liberados), Raro.
+  const vies = C.TIERS.viesDaRaridade.raro;
+  const pesos = [1, 2, 3, 4, 5].map((t) => C.TIERS.peso[t] * vies ** (t - 1));
+  const soma = pesos.reduce((a, b) => a + b, 0);
+  const tiers = [0, 0, 0, 0, 0];
+  for (let i = 0; i < N; i++) tiers[C.sortearTier(2000, 'raro', rng) - 1]++;
+  tiers.forEach((obs, i) => dentroDaMargem(obs, N, (pesos[i] / soma) * 100, `raro T${i + 1}`));
+  // Raridade mais alta puxa o tier para cima.
+  const media = (r) => { let t = 0; for (let i = 0; i < 20_000; i++) t += C.sortearTier(2000, r, rng); return t / 20_000; };
+  assert.ok(media('mítico') > media('incomum'));
+
+  // Um add só, sorteado pelo peso.
+  const pool = G.poolDe(ANEL);
+  const pesoTotal = pool.reduce((a, id) => a + C.ATRIBUTOS[id].peso, 0);
+  const vistos = {};
+  for (let i = 0; i < N; i++) { const [id] = G.sortearAdds(pool, 1, rng); vistos[id] = (vistos[id] ?? 0) + 1; }
+  for (const id of pool) dentroDaMargem(vistos[id] ?? 0, N, (C.ATRIBUTOS[id].peso / pesoTotal) * 100, `add ${id}`);
 });

@@ -42,6 +42,7 @@ import { AUSENCIA_MAXIMA_MS } from '../database/caca-offline.mjs';
 import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
+import * as Defesa from './personagem/defesa.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
@@ -1126,6 +1127,8 @@ export function regenerar(estado, ms) {
   r.mana -= mana;
   estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + hp);
   estado.mana = Math.min(estado.maxMana ?? estado.mana, (estado.mana ?? 0) + mana);
+  // O Energy Shield volta sozinho depois de um tempo sem apanhar (`Defesa.recarregar`).
+  Defesa.recarregar(estado, ficha, ms);
 }
 
 const ELEMENTO_DA_COR = Object.fromEntries(Object.entries(Acoes.COR_DO_ELEMENTO).map(([el, cor]) => [cor, el]));

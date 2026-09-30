@@ -131,6 +131,12 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
     if (!event.relatedTarget || !event.relatedTarget.closest?.(SELETOR)) hide();
   });
   window.addEventListener('scroll', hide, true);
+  // "Mostrar todos os atributos" da comparação: Shift com o balão de item aberto.
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Shift' || event.repeat || node.hidden) return;
+    if (!node.querySelector('.tip-vs')) return;
+    alternarTodos();
+  });
   ligarBalaoNoToque();
 }
 
@@ -167,6 +173,12 @@ function ligarBalaoNoToque() {
     'pointerdown',
     (evento) => {
       if (evento.pointerType !== 'touch') return;
+      // O "Mostrar todos" dentro do balão aberto: alterna e o balão fica.
+      if (evento.target.closest?.('.tooltip .vs-todos')) {
+        evento.preventDefault();
+        alternarTodos();
+        return;
+      }
       hide();
       desistir();
       if (!evento.isPrimary) return;
@@ -1000,6 +1012,7 @@ export function fichaDeAcao(entry, icone = null, extra = null) {
 }
 
 function show(holder) {
+  holderAberto = holder;
   const id = Number(holder.dataset.tip);
   const slot = holder.dataset.tipSlot ?? null;
   const ficha = fichaDeItem(id, holder.dataset.tipExtra, slot, holder.__peca ?? null);
@@ -1919,8 +1932,9 @@ export function numerosDoItem(meta) {
   por('attack', 'ataque', meta.attack, 'atk');
   // O número de defesa (escudo OU arma) é o BLOQUEIO (a chance de aparar vem só dele — ver `blockChance`).
   por('defense', 'bloqueio', meta.defense, 'def');
-  por('armor', 'armadura física', meta.armor, 'def');
-  por('marmor', 'armadura mágica', meta.marmor, 'def');
+  por('armor', 'Armour', meta.armor, 'def');
+  por('evasion', 'Evasion', meta.evasion, 'def');
+  por('es', 'Energy Shield', meta.es, 'mana');
   por('range', 'alcance', meta.range, 'plain', ' sqm');
   por('speed', 'velocidade', meta.speed, 'speed');
   if (meta.element) {
@@ -1938,7 +1952,7 @@ export function numerosDoItem(meta) {
   por('manaLeech', 'mana leech', meta.manaLeech ? meta.manaLeech / 100 : 0, 'mana', '%');
   for (const [elemento, valor] of Object.entries(meta.protection ?? {})) {
     const nome = ELEMENT_NAMES[elemento] ?? elemento;
-    por(`prot:${elemento}`, `proteção contra ${nome}`, valor, `el-${elemento}`, '%');
+    por(`prot:${elemento}`, `resistência a ${nome}`, valor, `el-${elemento}`, '%');
   }
   // A regeneração fixa da peça (`healthgain`/`managain` do items.xml). É o que
   // as peças Draevor anunciam na descrição, e sem esta linha a comparação entre
@@ -1983,9 +1997,23 @@ export function ligarComparacao(enviar) {
   enviarComparacao = enviar;
 }
 
-const pecaParaComparar = (id, peca) => ({ id, ...(peca?.af?.length ? { af: peca.af.map((a) => ({ id: a.id, nivel: a.nivel, value: a.value })) } : {}), ...(peca?.tier ? { tier: peca.tier } : {}) });
+// A peça inteira que importa para a conta: a base sorteada (dano, Armour, Evasion, ES), os adds e o tier.
+const pecaParaComparar = (id, peca) => ({ id, ...(peca?.base ? { base: peca.base } : {}), ...(peca?.af?.length ? { af: peca.af.map((a) => ({ id: a.id, nivel: a.nivel, value: a.value })) } : {}), ...(peca?.tier ? { tier: peca.tier } : {}) });
 const chaveDaComparacao = (nova, vestida) =>
-  JSON.stringify([nova.id, nova.af ?? [], nova.tier ?? 0, vestida?.id ?? 0, vestida?.af ?? [], vestida?.tier ?? 0]);
+  JSON.stringify([nova.id, nova.base ?? null, nova.af ?? [], nova.tier ?? 0, vestida?.id ?? 0, vestida?.base ?? null, vestida?.af ?? [], vestida?.tier ?? 0]);
+
+/*
+ * "Mostrar todos os atributos": a comparação mostra só o que MUDA; ligado, a
+ * ficha inteira (atual → novo). O balão some ao tirar o mouse, então no
+ * computador quem alterna é o Shift (com o balão aberto); no celular, tocar na
+ * linha "Mostrar todos" dentro do balão.
+ */
+let mostrarTodos = false;
+let holderAberto = null;
+function alternarTodos() {
+  mostrarTodos = !mostrarTodos;
+  if (holderAberto?.isConnected && node && !node.hidden) show(holderAberto);
+}
 
 /** A resposta do servidor (`{t:'comparacao', chave, ...}`): guarda e preenche o balão aberto. */
 export function receberComparacao(m) {
@@ -2002,22 +2030,39 @@ function preencherComparacao(bloco, r) {
     bloco.append(el('div', 'vs-igual', r.erro ?? 'sem comparação'));
     return;
   }
-  bloco.append(el('div', 'vs-titulo', r.contra ? `Comparado com ${titleCase(r.contra.nome)}` : `Você não usa nada em ${SLOT_NAMES[r.slot] ?? r.slot}`));
-  const secao = (titulo, linhas, limite) => {
-    if (!linhas.length) return;
-    bloco.append(el('div', 'vs-secao', titulo));
-    for (const linha of linhas.slice(0, limite)) {
-      const row = el('div', linha.delta > 0 ? 'vs-melhor' : 'vs-pior');
-      row.append(el('span', null, linha.nome), el('b', null, `${diferenca(linha.delta)}${linha.sufixo}`));
+  bloco.append(el('div', 'vs-cabeca', 'Ao equipar'));
+  bloco.append(el('div', 'vs-titulo', r.contra ? `no lugar de ${titleCase(r.contra.nome)}` : `${SLOT_NAMES[r.slot] ?? r.slot} vazio`));
+  const numero = (v, sufixo) => `${String(Number(v.toFixed(2))).replace('.', ',')}${sufixo}`;
+  // Atual → novo → diferença, agrupado pelas seções da ficha (Atributos, Recursos, Ofensivo...).
+  const lista = mostrarTodos ? r.todos ?? r.personagem : r.personagem;
+  let secaoAtual = null;
+  for (const linha of lista) {
+    if (linha.secao && linha.secao !== secaoAtual) {
+      secaoAtual = linha.secao;
+      bloco.append(el('div', 'vs-secao', secaoAtual));
+    }
+    const row = el('div', `vs-linha ${linha.delta > 0 ? 'vs-melhor' : linha.delta < 0 ? 'vs-pior' : 'vs-mesmo'}`);
+    row.append(
+      el('span', 'vs-nome', linha.nome),
+      el('em', 'vs-de', `${numero(linha.de, linha.sufixo)} → ${numero(linha.para, linha.sufixo)}`),
+      el('b', null, linha.delta ? `${diferenca(linha.delta)}${linha.sufixo}` : '='),
+    );
+    bloco.append(row);
+  }
+  if (!r.personagem.length) bloco.append(el('div', 'vs-igual', 'nada muda no personagem'));
+  if (r.tiraOEscudo) bloco.append(el('div', 'vs-aviso', 'usa as duas mãos — o escudo sai'));
+  // A diferença peça a peça (base e adds) vem junto quando pede tudo.
+  if (mostrarTodos && r.atributos?.length) {
+    bloco.append(el('div', 'vs-secao', 'Diferença entre as peças'));
+    for (const linha of r.atributos) {
+      const row = el('div', `vs-linha ${linha.delta > 0 ? 'vs-melhor' : 'vs-pior'}`);
+      row.append(el('span', 'vs-nome', linha.nome), el('em', 'vs-de', ''), el('b', null, `${diferenca(linha.delta)}${linha.sufixo}`));
       bloco.append(row);
     }
-    if (linhas.length > limite) bloco.append(el('div', 'vs-igual', `+${linhas.length - limite} outras diferenças`));
-  };
-  // Os atributos TODOS (é a pergunta); o impacto, os maiores.
-  secao('Atributos', r.atributos, 30);
-  secao('No personagem', r.personagem, 8);
-  if (!r.atributos.length && !r.personagem.length) bloco.append(el('div', 'vs-igual', 'os mesmos números'));
-  if (r.tiraOEscudo) bloco.append(el('div', 'vs-aviso', 'usa as duas mãos — o escudo sai'));
+  }
+  const todos = el('div', 'vs-todos', mostrarTodos ? 'Mostrar só o que muda' : 'Mostrar todos os atributos');
+  todos.append(el('kbd', null, ehTelefone() ? 'toque' : 'Shift'));
+  bloco.append(todos);
 }
 
 /**
@@ -2193,14 +2238,16 @@ const ARTE_DO_SLOT_DA_ESSENCIA = {
  * ficha e a comparação usam) e `faixas` guarda o piso e o teto para o balão.
  */
 const comBaseDaPeca = (meta, peca) => {
+  // Sem faixa sorteada: a defesa padrão do tipo da base (Evasion/Energy Shield), que o servidor anota no catálogo.
+  if (meta?.defesaPadrao && !peca?.base) return { ...meta, ...meta.defesaPadrao };
   if (!meta || !peca?.base) return meta;
   const saida = { ...meta, faixas: {} };
-  for (const campo of ['attack', 'defense', 'armor', 'marmor']) {
+  for (const campo of ['attack', 'defense', 'armor', 'evasion', 'es']) {
     const bruto = peca.base[campo];
     const [a, b] = Array.isArray(bruto) ? bruto : [bruto, bruto];
     const piso = Math.floor(Number(a));
     const teto = Math.floor(Number(b));
-    // [0, 0] vale: a peça só-mágica tem a armadura física zerada.
+    // [0, 0] vale: a peça de Energy Shield/Evasion tem o Armour zerado.
     if (!((piso > 0 && teto > 0) || (Array.isArray(bruto) && piso === 0 && teto === 0))) continue;
     saida[campo] = Math.round((piso + Math.max(piso, teto)) / 2);
     saida.faixas[campo] = [piso, Math.max(piso, teto)];
@@ -2328,8 +2375,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * onde ela pode entrar, então é ela que a linha tem de dizer.
    */
   identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
-  // O Item Level (o level do item-base): diferente do level do personagem e do nível dos atributos.
-  if (!essencia && meta.slot) identidade.append(el('em', 'item-level', `Item Level ${meta.minLevel ?? 1}`));
+  // O Item Level: o da fase onde a peça caiu (libera os tiers dos adds); peça sem drop, o level do item-base.
+  if (!essencia && meta.slot) identidade.append(el('em', 'item-level', `Item Level ${peca?.ilvl ?? meta.minLevel ?? 1}`));
   head.append(identidade, el('div', 'tip-art', null));
   /*
    * E o DESENHO: a silhueta do slot, a mesma que a casa vazia da ficha mostra.
@@ -2408,10 +2455,21 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
       linha.title = 'ainda não aplicado aqui — magia neste servidor não crita nem suga vida/mana';
     }
   }
-  if (meta.attack) add(`${numeroOuFaixa(meta, 'attack')} de ataque`, 'atk');
+  /*
+   * ---- BASE e IMPLÍCITOS ----
+   * A reestruturação (29/09): o balão diz o que é do item-base — o dano (a
+   * faixa sorteada no drop), o bloqueio e a defesa pelo TIPO da base (Armour,
+   * Evasion, Energy Shield ou híbrida) — separado dos implícitos (o que o
+   * catálogo dá a toda cópia: perícia, crítico, resistência...), e os dois
+   * separados dos adds desta cópia (Modificadores, abaixo).
+   */
+  const temBase = meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
+  if (temBase) add('Base', 'tip-sec');
+  if (meta.attack) add(`${numeroOuFaixa(meta, 'attack')} de dano`, 'atk');
   if (meta.defense) add(`${numeroOuFaixa(meta, 'defense')} de bloqueio${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
-  if (meta.armor) add(`${numeroOuFaixa(meta, 'armor')} de armadura física`, 'def');
-  if (meta.marmor) add(`${numeroOuFaixa(meta, 'marmor')} de armadura mágica`, 'def');
+  if (meta.armor) add(`${numeroOuFaixa(meta, 'armor')} de Armour`, 'def');
+  if (meta.evasion) add(`${numeroOuFaixa(meta, 'evasion')} de Evasion`, 'def');
+  if (meta.es) add(`${numeroOuFaixa(meta, 'es')} de Energy Shield`, 'mana');
   if (meta.range) add(`Alcance de ${meta.range} sqm`, 'plain');
   if (meta.speed) add(`${sinal(meta.speed)} de velocidade`, 'speed');
   // Elemento é um segundo golpe, não uma fatia do primeiro: o servidor roda a
@@ -2422,6 +2480,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (meta.wand?.element) {
     add(`Converte o golpe em ${ELEMENT_NAMES[meta.wand.element] ?? meta.wand.element}`, `el-${meta.wand.element}`);
   }
+  const temImplicito = Object.keys(meta.skillBonus ?? {}).length || meta.critChance || meta.critDamage || meta.lifeLeech || meta.manaLeech || Object.keys(meta.protection ?? {}).length || meta.regen?.hp || meta.regen?.mana;
+  if (temImplicito) add('Implícitos', 'tip-sec');
   for (const [skill, value] of Object.entries(meta.skillBonus ?? {})) {
     add(`${sinal(value)} de ${SKILL_NAMES[skill] ?? skill}`, 'skill');
   }
@@ -2430,7 +2490,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (meta.lifeLeech) add(`${sinal(Number((meta.lifeLeech / 100).toFixed(1)))}% de life leech`, 'leech');
   if (meta.manaLeech) add(`${sinal(Number((meta.manaLeech / 100).toFixed(1)))}% de mana leech`, 'mana');
   for (const [element, value] of Object.entries(meta.protection ?? {})) {
-    add(`${sinal(value)}% contra ${ELEMENT_NAMES[element] ?? element}`, `el-${element}`);
+    add(`${sinal(value)}% de resistência a ${ELEMENT_NAMES[element] ?? element}`, `el-${element}`);
   }
   if (meta.regen?.hp) add(`+${meta.regen.hp} de vida por segundo`, 'heal');
   if (meta.regen?.mana) add(`+${meta.regen.mana} de mana por segundo`, 'mana');
@@ -2483,7 +2543,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    */
   if (afixosDaPeca.length) {
     const extras = el('div', 'tip-afixos');
-    extras.append(el('div', 'tip-afixos-titulo', essencia ? 'O atributo guardado' : 'Atributos'));
+    extras.append(el('div', 'tip-afixos-titulo', essencia ? 'O atributo guardado' : 'Modificadores'));
     for (const posto of afixosDaPeca) {
       const ficha = getCatalogo()?.afixos?.[posto.id];
       const valor = ficha?.tipo === 'flat'
@@ -2501,9 +2561,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
        * percentual porque é literalmente a régua que escolheu a cor.
        */
       const selo = el('i', `tip-afixo-tier q${posto.q} n${posto.n}`);
-      // "Nível do Atributo" (1–5) — nunca "Tier", que é o da forja.
+      // O TIER do add: T1 (o mais fraco) a T5 (o mais forte) — liberado pelo Item Level.
       const nivelDoPosto = Number(posto.nivel ?? posto.tier) || 1;
-      selo.append(el('b', 'estrela', '★'), el('span', null, ` Nível ${nivelDoPosto}`));
+      selo.append(el('b', 'estrela', '★'), el('span', null, ` T${nivelDoPosto}`));
       linha.append(el('span', null, `${valor} ${ficha?.nome ?? posto.id}`), selo);
       extras.append(linha);
     }
@@ -2536,7 +2596,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   const efeitoDaPeca = textoDoEfeitoDaPeca(peca);
   if (efeitoDaPeca) {
     const bloco = el('div', `tip-efeito tip-efeito-${efeitoDaPeca.tipo}`);
-    bloco.append(el('div', 'tip-efeito-titulo', efeitoDaPeca.tipo === 'mitico' ? '✨ Efeito Supremo' : '✨ Efeito Lendário'));
+    bloco.append(el('div', 'tip-efeito-titulo', efeitoDaPeca.tipo === 'mitico' ? '✨ Poder Mítico' : '✨ Poder Lendário'));
     bloco.append(el('b', null, efeitoDaPeca.nome), el('div', null, efeitoDaPeca.texto));
     node.append(bloco);
   }

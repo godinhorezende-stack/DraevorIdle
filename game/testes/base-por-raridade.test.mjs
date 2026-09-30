@@ -5,7 +5,10 @@ import { rolarBase, gerarItem } from '../systems/itens/gerar.mjs';
 import { metaDaPeca, faixaDoCampo, baseValida } from '../systems/itens/item.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import * as C from '../systems/itens/config.mjs';
+import * as Atributos from '../systems/personagem/atributos.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+
+const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
 const arma = Object.values(ITEM_CATALOG).find((i) => i.slot === 'weapon' && !i.stackable && i.attack >= 10 && !i.wand);
 
@@ -100,61 +103,73 @@ test('ficha: bloqueio e armadura em faixa; a defesa da arma entra no bloqueio, c
 
 const armadura = Object.values(ITEM_CATALOG).find((i) => i.armor >= 10 && i.slot && !i.stackable);
 
-test('armadura: Comum e Incomum vêm com UM tipo só; Raro+ pode vir com os dois; só-mágica zera a física', () => {
-  const ve = (r) => {
-    const c = { fisica: 0, magica: 0, ambas: 0 };
-    for (let i = 0; i < 4000; i++) {
-      const b = rolarBase(armadura.id, r);
-      const f = b.armor[1] > 0;
-      const m = !!b.marmor;
-      c[f && m ? 'ambas' : m ? 'magica' : 'fisica']++;
-      if (m) assert.ok(b.marmor[0] >= 1 && b.marmor[1] >= b.marmor[0]);
-      if (!m) assert.ok(b.armor[0] >= 1);
+test('base de defesa pela vocação da peça: knight Armour, paladin Evasion, mago Energy Shield, monk/duas vocações híbrida', () => {
+  const acha = (vs) => Object.values(ITEM_CATALOG).find((i) => i.slot === 'body' && i.armor >= 5 && !i.stackable && JSON.stringify([...(i.vocations ?? [])].sort()) === JSON.stringify([...vs].sort()));
+  const casos = [
+    [['knight'], ['armor']],
+    [['paladin'], ['evasion']],
+    [['sorcerer', 'druid'], ['es']],
+  ];
+  for (const [vs, campos] of casos) {
+    const item = acha(vs);
+    if (!item) continue;
+    for (let i = 0; i < 200; i++) {
+      const b = rolarBase(item.id, 'raro', Math.random, 500);
+      for (const c of ['armor', 'evasion', 'es']) {
+        const tem = (b[c]?.[1] ?? 0) > 0;
+        assert.equal(tem, campos.includes(c), `${item.name} (${vs}): ${c}`);
+      }
+      assert.equal(b.marmor, undefined, 'a armadura mágica não existe mais');
     }
-    return c;
-  };
-  for (const r of ['comum', 'incomum']) {
-    const c = ve(r);
-    assert.equal(c.ambas, 0, `${r} nunca com as duas`);
-    assert.ok(c.fisica > 0 && c.magica > 0, `${r}: os dois tipos aparecem`);
   }
-  assert.ok(ve('raro').ambas > 0);
-  const mitico = ve('mítico');
-  assert.equal(mitico.ambas, 4000, 'Mítico sempre com as duas');
+  // Pela regra pura: vocações e peso.
+  assert.deepEqual(Atributos.tiposDaBase({ vocations: ['monk'] }), ['armour', 'evasion']);
+  assert.deepEqual(Atributos.tiposDaBase({ vocations: ['knight', 'paladin'] }), ['armour', 'evasion']);
+  assert.deepEqual(Atributos.tiposDaBase({ vocations: ['knight', 'sorcerer'] }), ['armour', 'es']);
+  assert.deepEqual(Atributos.tiposDaBase({ weight: 120 }), ['armour']);
+  assert.deepEqual(Atributos.tiposDaBase({ weight: 30 }), ['evasion']);
+  assert.deepEqual(Atributos.tiposDaBase({ weight: 60 }), ['armour', 'evasion']);
+  // Evasion e ES crescem com o Item Level; a híbrida fica com 75% de cada.
+  const baixo = Atributos.valoresDaBase(['es'], 10, 50).es;
+  const alto = Atributos.valoresDaBase(['es'], 10, 1500).es;
+  assert.ok(alto > baixo);
+  assert.equal(Atributos.valoresDaBase(['armour', 'evasion'], 10, 100).armour, 7.5);
 });
 
-test('ficha: armadura mágica soma das peças; peça só-mágica não tem armadura física', () => {
-  const e = personagemDeTeste({ vocacao: 'knight' });
-  e.equipment[armadura.slot] = { id: armadura.id, count: 1, base: { armor: [0, 0], marmor: [10, 14] } };
+test('ficha: Armour, Evasion e Energy Shield somam das peças (base + adds + %); peça de ES não tem Armour', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer' });
+  // O slot vazio antes (o manto do kit inicial já dá Energy Shield pelo tipo da base).
+  e.equipment[armadura.slot] = null;
+  Ficha.invalidar(e);
+  const semPeca = Ficha.combate(e);
+  e.equipment[armadura.slot] = { id: armadura.id, count: 1, base: { armor: [0, 0], es: [100, 140] } };
   Ficha.invalidar(e);
   const f = Ficha.combate(e);
-  assert.equal(f.armorMagicMin, 10);
-  assert.equal(f.armorMagicMax, 14);
-  assert.equal(f.armorMagic, 12);
-  const sem = personagemDeTeste({ vocacao: 'knight' });
-  sem.equipment[armadura.slot] = { id: armadura.id, count: 1 };
-  Ficha.invalidar(sem);
-  assert.equal(Ficha.combate(sem).armorMagic, 0, 'peça sem faixa: só física');
-  assert.ok(f.armor < Ficha.combate(sem).armor, 'só-mágica tira a armadura física da peça');
+  assert.equal(f.energyShield - semPeca.energyShield, 120);
+  e.equipment.ring = { id: ANEL, count: 1, af: [{ id: 'energy_shield', nivel: 1, value: 30 }, { id: 'es_pct', nivel: 1, value: 10 }, { id: 'evasion', nivel: 1, value: 40 }] };
+  Ficha.invalidar(e);
+  const g = Ficha.combate(e);
+  assert.equal(g.energyShield, Math.round((f.energyShield + 30) * 1.1));
+  assert.ok(g.evasion > f.evasion);
+  assert.equal(f.armor, semPeca.armor, 'peça de ES não soma Armour');
 });
 
-test('anel e amuleto também sorteiam armadura física/mágica (valor pelo nível quando o catálogo não tem)', () => {
+test('anel e amuleto sorteiam Armour (valor pelo nível quando o catálogo não tem)', () => {
   const joia = Object.values(ITEM_CATALOG).find((i) => (i.slot === 'neck' || i.slot === 'ring') && !i.stackable && !i.armor && i.minLevel >= 24);
   assert.ok(joia, 'há joia sem armadura no catálogo');
   const esperado = Math.max(2, Math.round(joia.minLevel / 12));
-  // O Mítico traz armadura em 90% dos sorteios (10% só ataque): confere os limites de todos os que trazem, e que aparecem.
   let comArmadura = 0;
   for (let i = 0; i < 300; i++) {
     const b = rolarBase(joia.id, 'mítico');
-    if (!b.marmor) continue;
+    assert.equal(b.marmor, undefined);
+    assert.equal(b.es, undefined);
+    if (!(b.armor?.[1] > 0)) continue;
     comArmadura++;
-    assert.ok(b.armor[1] > 0 && b.marmor, 'Mítico com armadura: as duas');
-    assert.ok(b.armor[1] <= Math.round(esperado * 1.6) && b.marmor[1] <= Math.round(esperado * 1.6));
+    assert.ok(b.armor[1] <= Math.round(esperado * 1.6));
   }
   assert.ok(comArmadura > 150, 'a maioria dos Míticos traz armadura');
-  // rng fixo 0,2: cai em "armadura" no Comum (nada 50% | armadura 30% | ataque 20%)? não — 0,2 cai em "nada"; 0,6 cai em armadura.
   const gerada = gerarItem({ itemId: joia.id, raridade: 'comum', rng: () => 0.6 });
-  assert.ok(gerada.base?.armor || gerada.base?.marmor, 'a peça carrega a armadura sorteada');
+  assert.ok(gerada.base?.armor, 'a peça carrega a armadura sorteada');
 });
 
 test('joia: pode vir sem nada, só armadura, só ataque ou os dois; Comum/Incomum nunca com armadura E ataque', () => {
@@ -163,7 +178,7 @@ test('joia: pode vir sem nada, só armadura, só ataque ou os dois; Comum/Incomu
     const c = { nada: 0, armadura: 0, ataque: 0, ambos: 0 };
     for (let i = 0; i < 4000; i++) {
       const b = rolarBase(joia.id, r);
-      const arm = (b.armor?.[1] ?? 0) > 0 || !!b.marmor;
+      const arm = (b.armor?.[1] ?? 0) > 0;
       const atk = !!b.attack;
       c[arm && atk ? 'ambos' : arm ? 'armadura' : atk ? 'ataque' : 'nada']++;
     }

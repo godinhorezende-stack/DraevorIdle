@@ -86,7 +86,7 @@ test('arremessável (spear) é de duas mãos: tira o escudo; e não empilha', ()
 test('munição e arremessável aceitam raridade e atributos (a munição com o pool dela)', () => {
   for (const it of [ARROW, BOLT, SPEAR]) assert.equal(Gerar.aceitaAtributos(it.id), true, it.name);
   const pool = Gerar.poolDe(ARROW.id);
-  assert.ok(pool.includes('skill_distance') && pool.includes('fire_dmg'));
+  assert.ok(pool.includes('dex') && pool.includes('fire_dmg'));
   let comAtributo = 0;
   for (let i = 0; i < 400; i++) if (Gerar.gerarItem({ itemId: ARROW.id, ato: 3, dificuldade: 'medio' }).af?.length) comAtributo++;
   assert.ok(comAtributo > 0);

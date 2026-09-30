@@ -31,6 +31,7 @@ import { resistido } from './resistencia.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
+import * as Defesa from '../personagem/defesa.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -138,10 +139,15 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
   eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[element] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
   // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
   const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
+  // Accuracy: o tiro pode errar (a mana já foi gasta, como um golpe no ar).
+  if (Defesa.errou(ficha, hunt, alvo)) {
+    eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
+    return true;
+  }
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
-  // (+1%/ponto); + "% da perícia como dano" (proficiência); e a resistência do
+  // (+1%/ponto) e o dano mágico do INT; + "% da perícia como dano" (proficiência); e a resistência do
   // bicho àquele elemento (`resistido`).
-  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha)) / 100);
+  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0)) / 100);
   const base = resistido(hunt, alvo, element, bruto);
   const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
@@ -222,10 +228,12 @@ export function subirDeLevel(estado) {
   refazerMaximos(estado, novo);
 }
 
-export function quantasMoedas(bicho, id) {
+export function quantasMoedas(bicho, id, estado = null) {
   if (id !== 3031) return 1;
   const media = Math.max(1, bicho.expDasMoedas ?? bicho.exp ?? 10);
-  return 1 + Math.floor(Math.random() * (2 * media - 1));
+  // "Gold Find" (add): mais moedas no mesmo drop.
+  const achado = 1 + (estado ? Ficha.combate(estado).goldFind ?? 0 : 0) / 100;
+  return Math.max(1, Math.round((1 + Math.floor(Math.random() * (2 * media - 1))) * achado));
 }
 
 /*
@@ -242,7 +250,8 @@ export function quantasMoedas(bicho, id) {
  * level — o ato sai dele e a dificuldade é a padrão (`systems/itens/config.mjs`).
  */
 export function contextoDoDrop(hunt) {
-  if (hunt?.campanha) return { ato: hunt.campanha.ato, dificuldade: hunt.campanha.dificuldade };
+  // Item Level = o level da fase onde caiu (decisão do dono; o boss soma o bônus no gerador).
+  if (hunt?.campanha) return { ato: hunt.campanha.ato, dificuldade: hunt.campanha.dificuldade, ...(hunt.escala?.nivel ? { itemLevel: hunt.escala.nivel } : {}) };
   if (hunt?.isBoss) return { level: CATALOGO.bosses.find((b) => b.id === hunt.bossId)?.level ?? 1 };
   return { level: huntOuMapaCustom(hunt?.huntId)?.level ?? 1 };
 }
@@ -253,7 +262,7 @@ export function vitoriaNoBoss(estado, hunt, alvo) {
     // Buff Power Loot +50%, o afixo "Loot" e a Caça Online ("15% mais chance de loot" na sala do boss).
     if (Math.random() >= drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt)) continue;
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
-    if (VALOR_DA_MOEDA[drop.id]) itens.push({ id: drop.id, count: quantasMoedas(alvo, drop.id) });
+    if (VALOR_DA_MOEDA[drop.id]) itens.push({ id: drop.id, count: quantasMoedas(alvo, drop.id, estado) });
     else itens.push(gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true }));
   }
   Bau.novaSacola(estado, alvo.name, itens);
@@ -424,7 +433,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt);
     if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
     if (VALOR_DA_MOEDA[drop.id]) {
-      const n = quantasMoedas(alvo, drop.id);
+      const n = quantasMoedas(alvo, drop.id, estado);
       // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
       // caçando — só vai para o banco quando o jogador deposita de propósito
       // no Banqueiro. (Uma versão anterior mandava direto para `bank`, a
@@ -510,6 +519,11 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', esquiva: true });
     return;
   }
+  // Evasion (DEX, bases de Evasion e adds) e "Chance to Avoid Damage": o golpe inteiro não pega.
+  if (Defesa.esquivou(ficha, hunt, bicho) || Defesa.evitou(ficha)) {
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', esquiva: true });
+    return;
+  }
   // Dodge (charm): desvia do golpe inteiro.
   if (Charms.desviou(estado, hunt, personagem, bicho, eventos)) return;
   // Ruse (tier da armadura): desvia do golpe inteiro.
@@ -526,6 +540,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   let final = Math.round(R.danoRecebido(protegido, armorDoPersonagem(estado)) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  // Energy Shield: absorve antes do magic shield e da vida.
+  final = Defesa.absorver(estado, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
   if (final > 0 && Acoes.temBuff(hunt, 'shield') && (estado.mana ?? 0) > 0) {
     const daMana = Math.min(estado.mana, final);
@@ -700,6 +716,13 @@ export function round(estado, personagem) {
       // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
       const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
       const pericia = ficha.skillName;
+      // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
+      if (Defesa.errou(ficha, hunt, alvo)) {
+        Treino.treinar(estado, pericia);
+        if (categoriaDaArma(arma) === 'distancia') eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
+        eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
+        return { eventos, bateu };
+      }
       // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
       // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
       const fisico = 1 + (ficha.danoDoElemento?.physical ?? 0) / 100;

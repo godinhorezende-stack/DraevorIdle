@@ -36,11 +36,11 @@ test('Carrasco: +100% contra criatura abaixo de 25% da vida — nunca em boss', 
 test('Colheita de Almas: cada kill soma, até o teto, e passa com o tempo', () => {
   const e = com(['mitico', 'colheita-de-almas']);
   e.hunt = { pos: { x: 0, y: 0 } };
-  const p = EFEITOS.mitico['colheita-de-almas'];
+  const p = EFEITOS.mitico['colheita-de-almas'].efeito.acumuloAoMatar;
   for (let i = 0; i < p.max + 10; i++) Efeitos.aoMatar(e, e.hunt, {}, [], 'X');
-  assert.equal(e.hunt.almas.n, p.max);
+  assert.equal(e.hunt.acumulos['colheita-de-almas'].n, p.max);
   assert.ok(Math.abs(Efeitos.fatorDeDano(e, {}) - (1 + (p.max * p.porKill) / 100)) < 1e-9);
-  e.hunt.almas.ate = Date.now() - 1;
+  e.hunt.acumulos['colheita-de-almas'].ate = Date.now() - 1;
   assert.equal(Efeitos.fatorDeDano(e, {}), 1, 'acabou o tempo');
 });
 
