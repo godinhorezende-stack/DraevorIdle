@@ -23,9 +23,11 @@ import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
 import * as Afixos from './afixos.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { raridadeDaPeca, metaDaPeca, camposDaPeca } from './itens/item.mjs';
+import { RARIDADES_ANUNCIADAS } from './anuncios.mjs';
 
 const GUARDA = 30;
-const DE_BOSS = new Set(['lendário', 'mítico']);
+// Épico para cima, como o anúncio para o servidor inteiro (a mesma lista: os dois nunca divergem).
+const DE_BOSS = RARIDADES_ANUNCIADAS;
 /** As bags do jogo: usáveis, com "bag" no nome (34109, 39546, 43895, 55216, 55517). */
 export const ehBag = (id) => !!ITEM_CATALOG[id]?.usavel && /\bbag\b/i.test(ITEM_CATALOG[id]?.name ?? '');
 
@@ -102,7 +104,7 @@ function fichaDaPeca(id, count, peca = {}) {
   };
 }
 
-/** Vale a capa? Bag; item Lendário ou Mítico (do drop); ou 2+ atributos de Nível 5. */
+/** Vale a capa? Bag; item Épico, Lendário ou Mítico (a raridade do drop); ou 2+ atributos T5. */
 export function valeAnotar(id, af, { raridade = null } = {}) {
   if (ehBag(id)) return true;
   if (DE_BOSS.has(raridade)) return true;
