@@ -27433,3 +27433,46 @@ b.estrela.n5, .tip-afixo-tier.n5 { --estrela: #e0a84a; }
 b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }
 
 /* O balão de item à Path of Exile mora em `client/balao-item.css` — a mesma folha no jogo e no site. */
+
+/* ---- O anúncio de drop raro, fora do chat (anuncio-drop.mjs) ----
+   Uma faixa de cada vez, no alto e no meio da tela, abaixo do menu e das
+   barras: a figura, quem dropou e de que bicho, e o nome da peça na cor da
+   raridade (com o balão do jogo). O mesmo ar do balão de item (Path of Exile). */
+.anuncios-drop {
+  position: fixed; z-index: 85; left: 50%; transform: translateX(-50%);
+  top: 118px; width: min(440px, calc(100vw - 16px));
+  display: grid; pointer-events: none;
+}
+.anuncio-drop {
+  --cor: #b184e8;
+  pointer-events: auto; cursor: pointer;
+  display: flex; align-items: center; gap: 12px; padding: 8px 14px 8px 10px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cor) 20%, #050505) 0%, #050505 85%);
+  border: 1px solid color-mix(in srgb, var(--cor) 70%, #000);
+  box-shadow: 0 8px 26px #000c, inset 0 1px 0 color-mix(in srgb, var(--cor) 45%, transparent);
+  font-family: var(--font-item, Georgia, serif);
+  animation: anuncio-entra .35s ease-out;
+  transition: opacity .25s, transform .25s;
+}
+.anuncio-drop.raridade-epico { --cor: #b184e8; }
+.anuncio-drop.raridade-lendario { --cor: #e0a84a; }
+.anuncio-drop.raridade-mitico { --cor: #f2503f; }
+.anuncio-drop.saindo { opacity: 0; transform: translateY(-8px); }
+.anuncio-figura {
+  flex: none; width: 40px; height: 40px; display: grid; place-items: center;
+  background: radial-gradient(ellipse at center, color-mix(in srgb, var(--cor) 28%, #0b0b0b) 0%, #0b0b0b 72%);
+  border: 1px solid color-mix(in srgb, var(--cor) 45%, #000);
+}
+.anuncio-figura canvas { image-rendering: pixelated; }
+.anuncio-texto { min-width: 0; display: grid; gap: 1px; text-align: left; }
+.anuncio-quem { font-size: 13px; color: #9a9a9a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.anuncio-quem b { color: #e8e8e8; font-weight: 500; }
+.anuncio-item { font-size: 16px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.anuncio-item .item-no-chat { font-family: var(--font-item, Georgia, serif); }
+@keyframes anuncio-entra { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .anuncio-drop { animation: none; transition: none; } }
+/* No telefone, logo abaixo da barra de status (em pé) ou das barras de vida/mana (deitado). */
+html[data-perfil="retrato"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) + 52px); }
+html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) + 36px); width: min(420px, calc(100vw - 16px)); }
+/* A linha do Global: o ✦ na cor de destaque. */
+.drop-raro { color: #c8b98a; }

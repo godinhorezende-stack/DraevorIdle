@@ -133,6 +133,9 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
      * No toque, quem abre o balão é segurar parado (ver `ligarBalaoNoToque`).
      */
     if (event.pointerType === 'touch') return;
+    // O ponteiro em cima do PRÓPRIO balão (o alto, que rola e aceita o ponteiro) não o fecha:
+    // ele abria debaixo do dedo/mouse, recebia o "entrou" e se fechava na hora.
+    if (event.target.closest?.('.tooltip')) return;
 
     const holder = event.target.closest(SELETOR);
     if (!holder) return hide();
@@ -140,11 +143,23 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
   });
   document.addEventListener('pointerout', (event) => {
     if (event.pointerType === 'touch') return;
+    if (event.relatedTarget?.closest?.('.tooltip.rolavel')) return; // foi para o balão alto, para rolar
     if (!event.relatedTarget || !event.relatedTarget.closest?.(SELETOR)) hide();
   });
-  // Rolar a PÁGINA fecha o balão; rolar o próprio balão (o alto demais, no celular) não.
+  /*
+   * Rolar fecha o balão só quando a rolagem MOVE a peça de onde ele saiu (a
+   * página, ou a lista onde ela está). Rolar o próprio balão (o alto, no
+   * celular) não fecha — e uma rolagem alheia também não: a barra de chat do
+   * celular rola sozinha a cada linha nova, e fechava o balão que a pessoa
+   * estava segurando o dedo para abrir.
+   */
   window.addEventListener('scroll', (event) => {
-    if (event.target instanceof Element && event.target.closest('.tooltip')) return;
+    const alvo = event.target;
+    if (alvo instanceof Element) {
+      if (alvo.closest('.tooltip')) return;
+      const aberto = holderAberto ?? holderPosicionado;
+      if (aberto && !alvo.contains(aberto)) return;
+    }
     hide();
   }, true);
   // "Mostrar todos os atributos" da comparação: Shift com o balão de item aberto.
@@ -707,6 +722,22 @@ function afixosDaMarca(bruto) {
     if (saida.length >= 6) break; // o mesmo teto do `marcaDeItem`
   }
   return saida;
+}
+
+/**
+ * O NOME de uma peça inteira (`{id, raridade, ilvl, base, af, efeito, tier}`)
+ * como o chat escreve um item: na cor da raridade, com o tier e as estrelas, e
+ * o balão completo do jogo (base, Item Level, modificadores, poder). É o que o
+ * anúncio de drop raro usa — a marca `[[item:...]]` do texto não leva a base
+ * sorteada nem o poder.
+ */
+export function nomeDaPeca(peca, nome = null) {
+  const meta = getItems?.()?.[peca?.id];
+  const marca = el('span', `item-no-chat ${classeDaRaridade(meta, peca)}`, titleCase(nome ?? meta?.name ?? `item ${peca?.id}`));
+  if (peca?.tier > 0) marca.append(el('i', 'item-tier', `T${peca.tier}`));
+  if (peca?.af?.length) marca.append(seloDeEstrelas('item-estrelas', estrelasDosAfixos(peca.af)));
+  if (meta) tipFor(marca, peca.id, null, null, peca);
+  return marca;
 }
 
 /**
