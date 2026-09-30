@@ -3565,6 +3565,8 @@ body {
 .hotbar .slot.off > canvas,
 .hotbar .slot.off > .spell-icon,
 .hotbar .slot.off > .rune-mark { opacity: .45; }
+/* Segurado por uma regra do slot (o motivo está no balão: "parado: ..."). */
+.hotbar .slot.parado::after { content: ''; position: absolute; top: 3px; left: 3px; width: 7px; height: 7px; border-radius: 50%; background: #ff5b4f; box-shadow: 0 0 0 1px #0008; pointer-events: none; z-index: 2; }
 /* Casa com o `SLOT_ICON` do actionbar.mjs — ver a nota lá sobre a folga. */
 .hotbar .slot canvas { width: 34px; height: 34px; image-rendering: pixelated; }
 .hotbar .slot .plus { font-size: 17px; color: #33403f; }
@@ -6537,6 +6539,10 @@ body.mirando-tier .cell[data-item]:hover, body.mirando-tier .slot[data-item]:hov
  * empurrariam o botão de apagar para fora da caixa.
  */
 .condition .rotulo { font-size: 12px; color: var(--muted); }
+.condition .sentido { font-weight: 600; }
+.condition .cond-agora { flex: 1 1 100%; font-size: 11px; color: var(--muted); }
+.condition .cond-agora[data-estado="sim"] { color: #6fdc8c; }
+.condition .cond-agora[data-estado="nao"] { color: #ff8a80; }
 .condition.nome input[type="text"] { flex: 1 1 120px; min-width: 90px; }
 .condition .fichas { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: 4px; }
 .condition .fichas .vazio { font-size: 11px; color: var(--muted); font-style: italic; }

@@ -267,16 +267,81 @@ export function definir(estado, { slot, value }) {
   if (!entry.papeis.includes(PAPEL_DO_SLOT[slot])) return { ok: false, erro: `Esse slot só aceita ${PAPEIS[PAPEL_DO_SLOT[slot]].nome}.` };
   const motivo = bloqueio(entry, estado);
   if (motivo) return { ok: false, erro: `Não dá: ${motivo}.` };
-  (estado.actions ??= Array(SLOTS).fill(null))[slot] = {
-    id: entry.id,
-    kind: entry.kind,
-    enabled: value.enabled !== false,
-    minMana: Math.max(0, Number(value.minMana) || 0),
-    minTargets: Math.max(1, Number(value.minTargets) || 1),
-    maxTargets: Math.max(0, Number(value.maxTargets) || 0),
-    conditions: Array.isArray(value.conditions) ? value.conditions : [],
-  };
+  (estado.actions ??= Array(SLOTS).fill(null))[slot] = { id: entry.id, kind: entry.kind, ...configDoSlot(value) };
   return { ok: true };
+}
+
+const faixa = (v, min, max, padrao) => {
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : padrao;
+};
+const texto = (v, max = 32) => String(v ?? '').trim().slice(0, max);
+export const MAXIMO_DE_CONDICOES = 8;
+
+/**
+ * Uma condição do slot (e das regras de uso), limpa: o mesmo formato que a tela
+ * grava, com os números como número e dentro da faixa. `null` se não é uma condição.
+ */
+export function sanearCondicao(c) {
+  const r = sanearCondicaoSemSentido(c);
+  // "Usar quando" (padrão) ou "Não usar quando" (`nao: true`).
+  if (r && c.nao === true) r.nao = true;
+  return r;
+}
+function sanearCondicaoSemSentido(c) {
+  if (!c || typeof c !== 'object') return null;
+  const kind = c.kind ?? 'stat';
+  const op = (padrao) => (COMPARADORES.includes(c.op) ? c.op : padrao);
+  if (kind === 'boss') return { kind, op: c.op === 'nao' ? 'nao' : 'sim' };
+  if (kind === 'perto') {
+    const r = { kind, op: op('gte'), value: faixa(c.value, 0, 25, 1) };
+    if (r.op === 'entre') r.value2 = faixa(c.value2, 0, 25, r.value);
+    return r;
+  }
+  if (kind === 'nome') return { kind, op: c.op === 'diferente' ? 'diferente' : 'igual', names: (Array.isArray(c.names) ? c.names : []).map((n) => texto(n, 40)).filter(Boolean).slice(0, 20) };
+  if (kind !== 'stat') return null;
+  const r = {
+    kind,
+    who: c.who === 'target' ? 'target' : 'self',
+    stat: c.stat === 'mana' ? 'mana' : 'hp',
+    op: op('lte'),
+    value: Math.max(0, Number(c.value) || 0),
+    percent: c.percent === true,
+  };
+  if (r.op === 'entre') r.value2 = Math.max(0, Number(c.value2 ?? c.value) || 0);
+  return r;
+}
+const condicoes = (lista) => (Array.isArray(lista) ? lista : []).map(sanearCondicao).filter(Boolean).slice(0, MAXIMO_DE_CONDICOES);
+
+/**
+ * TUDO o que o "Configurar ação" grava no slot, limpo — cada campo da tela vale
+ * no servidor (relato de jogador, 30/09: os de curar amigo, desafio, familiar e
+ * escudo eram jogados fora aqui, e a mana mínima e o máximo de criaturas eram
+ * gravados mas ninguém lia). Campo desconhecido não entra.
+ */
+function configDoSlot(v) {
+  return {
+    enabled: v.enabled !== false,
+    minMana: faixa(v.minMana, 0, 100, 0),
+    minTargets: faixa(v.minTargets, 1, MAX_ALVOS_DO_SLOT, 1),
+    maxTargets: faixa(v.maxTargets, 0, MAX_ALVOS_DO_SLOT, 0),
+    conditions: condicoes(v.conditions),
+    // Curar amigo (exura sio e as runas de cura em outro): quem, e a partir de quanto de vida dele.
+    curarQuem: ['eu', 'ferido', 'nome'].includes(v.curarQuem) ? v.curarQuem : 'eu',
+    curarNome: texto(v.curarNome),
+    curarAte: faixa(v.curarAte, 1, 100, 100),
+    // Desafio (exeta res): por quem chamar, com quantos bichos em cima dele, e de quanto em quanto.
+    desafiarQuem: ['perto', 'qualquer', 'nome'].includes(v.desafiarQuem) ? v.desafiarQuem : 'perto',
+    desafiarNome: texto(v.desafiarNome),
+    desafiarMinimo: faixa(v.desafiarMinimo, 1, 12, 1),
+    desafiarCada: faixa(v.desafiarCada, 0, 600, 0),
+    // As distâncias do familiar (lidas em `Summon.invocar`).
+    summonPerto: faixa(v.summonPerto, 1, 5, 3),
+    summonAlcance: faixa(v.summonAlcance, 1, 7, 3),
+    // Utamo vita: quando o escudo sai sozinho (`tirarEscudoSePreciso`). Exana vita: só com o utamo pronto.
+    tirarQuando: condicoes(v.tirarQuando),
+    soComUtamoPronto: v.soComUtamoPronto === true,
+  };
 }
 
 /**
@@ -365,6 +430,10 @@ export function apagarPreset(estado, { name }) {
 
 /** O raio de "bichos por perto" — o mesmo das magias de suporte (`SEM_BICHO_POR_PERTO`). */
 export const RAIO_DE_PERTO = 8;
+/** O teto do "Mínimo/Máximo de criaturas" do slot (o `MAX_ALVOS` da tela). */
+export const MAX_ALVOS_DO_SLOT = 25;
+/** Na magia de ALVO ÚNICO, a faixa de criaturas conta quem está a até isto (a nota da tela: "a até 4 sqm"). */
+export const RAIO_DA_FAIXA = 4;
 
 /**
  * Uma condição do slot bate com o estado atual?
@@ -375,16 +444,33 @@ export const RAIO_DE_PERTO = 8;
  * As duas últimas olham a hunt; sem ela (fora de caçada) não batem.
  */
 function condicaoBate(condition, estado, alvo, hunt) {
+  const bate = condicaoBateCrua(condition, estado, alvo, hunt);
+  // "Não usar quando": a mesma condição, ao contrário.
+  return condition.nao ? !bate : bate;
+}
+
+/** Os comparadores da tela: <, ≤, =, ≥, > e "entre" (`value`..`value2`, em qualquer ordem). */
+export const COMPARADORES = ['lt', 'lte', 'eq', 'gte', 'gt', 'entre'];
+function compara(op, v, a, b) {
+  if (op === 'lt') return v < a;
+  if (op === 'eq') return v === a;
+  if (op === 'gte') return v >= a;
+  if (op === 'gt') return v > a;
+  if (op === 'entre') return v >= Math.min(a, b ?? a) && v <= Math.max(a, b ?? a);
+  return v <= a;
+}
+
+function condicaoBateCrua(condition, estado, alvo, hunt) {
   if (condition.kind === 'nome') {
     if (!alvo) return false;
-    const bate = (condition.names ?? []).includes(alvo.name);
+    const nome = String(alvo.name ?? '').toLowerCase();
+    const bate = (condition.names ?? []).some((n) => String(n).toLowerCase() === nome);
     return condition.op === 'diferente' ? !bate : bate;
   }
   if (condition.kind === 'perto') {
     if (!hunt?.pos) return false;
     const n = (hunt.monstros ?? []).filter((b) => b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= RAIO_DE_PERTO).length;
-    const valor = Number(condition.value) || 0;
-    return condition.op === 'lte' ? n <= valor : n >= valor;
+    return compara(condition.op ?? 'gte', n, Number(condition.value) || 0, Number(condition.value2) || 0);
   }
   if (condition.kind === 'boss') {
     if (!hunt) return false;
@@ -392,20 +478,26 @@ function condicaoBate(condition, estado, alvo, hunt) {
   }
   const sujeito = condition.who === 'target' ? alvo : estado;
   if (!sujeito) return false;
+  // Bicho não tem mana: "Alvo · Mana" não bate (antes: "≤ X" batia sempre, com a mana lida como 0).
+  if (condition.stat === 'mana' && !(sujeito.maxMana > 0)) return false;
   const atual = condition.stat === 'mana' ? sujeito.mana : sujeito.hp;
   const maximo = condition.stat === 'mana' ? sujeito.maxMana : sujeito.maxHp;
-  const valor = condition.percent ? (100 * (atual ?? 0)) / Math.max(1, maximo ?? 1) : (atual ?? 0);
-  return condition.op === 'lte' ? valor <= condition.value : valor >= condition.value;
+  // Em %, o número inteiro (é o que a tela mostra): "igual a 50%" bate de 49,5% a 50,49%.
+  const valor = condition.percent ? Math.round((100 * (atual ?? 0)) / Math.max(1, maximo ?? 1)) : (atual ?? 0);
+  return compara(condition.op ?? 'lte', valor, Number(condition.value) || 0, Number(condition.value2) || 0);
 }
+
+/** Cada condição da lista, agora: `[true, false, ...]` (o ✔/✖ do editor e do balão do slot). */
+export const condicoesAgora = (lista, estado, alvo, hunt) => (lista ?? []).map((c) => condicaoBate(c, estado, alvo, hunt));
 
 export function condicoesDoSlotBatem(action, estado, alvo, hunt = null) {
   return (action.conditions ?? []).every((c) => condicaoBate(c, estado, alvo, hunt));
 }
 
 /** Falta vida/mana suficiente para esta cura não ser jogada fora? */
-function precisaDeCura(entry, estado) {
-  const faltaHp = (estado.maxHp ?? 0) - (estado.hp ?? 0);
-  const faltaMana = (estado.maxMana ?? 0) - (estado.mana ?? 0);
+function precisaDeCura(entry, estado, quem = estado) {
+  const faltaHp = (quem.maxHp ?? 0) - (quem.hp ?? 0);
+  const faltaMana = (quem.maxMana ?? 0) - (quem.mana ?? 0);
   const hp = entry.kind === 'item' ? entry.heal : entry.heals ? [danoNoLevel(entry, estado.level).min] : null;
   const mana = entry.kind === 'item' ? entry.mana : null;
   if (hp && faltaHp >= hp[0]) return true;
@@ -539,7 +631,47 @@ export function marcarRecargaDaPocao(estado, entry) {
  * Devolve `{ok, erro?}` e, em caso de sucesso, `eventos` (mesmo formato de
  * `round()`) e `alvo` (se o golpe foi nele — quem chamou decide matar ou não).
  */
-export function disparar(estado, hunt, personagem, slot, alvo, { concluir = false } = {}) {
+export function disparar(estado, hunt, personagem, slot, alvo, opcoes) {
+  const r = dispararSemMarcar(estado, hunt, personagem, slot, alvo, opcoes);
+  marcarParado(hunt, slot, r);
+  return r;
+}
+
+/*
+ * ---- POR QUE o slot não saiu (o "parado: ..." do balão) ----
+ * Relato: o jogador não tinha como saber qual regra segurava a magia. Cada
+ * tentativa que falha grava o motivo em `hunt.parados[slot]` (vai para a tela
+ * pela `visaoDaHunt`); a que sai apaga. Recarga, intervalo do combo e
+ * conjuração não contam: o leque do slot já mostra isso.
+ */
+const MOTIVOS_DE_RELOGIO = new Set(['COOLDOWN', 'COOLDOWN_DO_GRUPO', 'INTERVALO_DO_COMBO', 'CONJURANDO', 'VAZIO']);
+export function marcarParado(hunt, slot, resultado) {
+  if (!hunt) return;
+  const p = (hunt.parados ??= {});
+  if (resultado?.ok || MOTIVOS_DE_RELOGIO.has(resultado?.motivo)) delete p[slot];
+  else p[slot] = { motivo: resultado?.motivo ?? null, texto: resultado?.erro ?? '', em: hunt.clock ?? 0 };
+}
+/** O resultado de "condição não bate", dizendo QUAL (a 1ª que não bate, contando de 1). */
+export function falhaDaCondicao(action, estado, alvo, hunt) {
+  const i = condicoesAgora(action.conditions, estado, alvo, hunt).indexOf(false);
+  return { ok: false, erro: `A condição ${i + 1} não bate.`, motivo: 'CONDICAO', condicao: i };
+}
+/** Os motivos de agora para a tela (só os recentes: um motivo velho não segura nada). */
+export function paradosParaCliente(hunt) {
+  const agora = hunt.clock ?? 0;
+  return Object.fromEntries(Object.entries(hunt.parados ?? {}).filter(([, p]) => agora - (p.em ?? 0) <= 3000).map(([slot, p]) => [slot, { motivo: p.motivo, texto: p.texto }]));
+}
+/** O ✔/✖ de cada condição de cada slot, agora (`{slot: {conditions, tirarQuando}}`). */
+export function condicoesParaCliente(estado, hunt, alvo) {
+  const r = {};
+  (estado.actions ?? []).forEach((a, slot) => {
+    if (!a?.conditions?.length && !a?.tirarQuando?.length) return;
+    r[slot] = { conditions: condicoesAgora(a.conditions, estado, alvo, hunt), tirarQuando: condicoesAgora(a.tirarQuando, estado, alvo, hunt) };
+  });
+  return r;
+}
+
+function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false } = {}) {
   // Conjurando outra skill: nada mais sai até ela terminar (ou cancelar) — ver `concluirConjuracao`.
   if (hunt.conjurando && !concluir) return { ok: false, erro: 'Conjurando.', motivo: 'CONJURANDO' };
   const action = estado.actions?.[slot];
@@ -590,6 +722,10 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
   const pagaComVida = !!efeitoDaGema?.custoEmVida && custoDeMana > 0;
   if (pagaComVida && (estado.hp ?? 0) <= custoDeMana) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };
   if (!pagaComVida && custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
+  // "Mana mínima (%)" do slot: abaixo dela a skill espera (guarda a mana para a cura).
+  if (action.minMana > 0 && entry.kind !== 'item' && (100 * (estado.mana ?? 0)) / Math.max(1, estado.maxMana ?? 1) < action.minMana) {
+    return { ok: false, erro: 'Abaixo da mana mínima do slot.', motivo: 'MANA_MINIMA' };
+  }
 
   const papel = entry.papeis[0];
   const ataque = papel === 'attack';
@@ -640,7 +776,19 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     // Area of Effect / Concentrated Effect (supports): a área cresce ou encolhe `areaExtra` casas.
     if (casas && efeitoDaGema?.areaExtra) casas = Secundarios.mudarArea(casas, Math.round(efeitoDaGema.areaExtra));
     if (casas) atingidos = vivos.filter((b) => casas.some((c) => c.x === b.x && c.y === b.y));
-    if (atingidos.length < Math.max(1, Number(action.minTargets) || 1)) return { ok: false, erro: 'Nenhum bicho na área.', motivo: 'SEM_BICHO_NA_AREA' };
+  }
+  /*
+   * ---- A faixa de criaturas do slot ("Mínimo" e "Máximo de criaturas") ----
+   * Na magia de área conta quem a área PEGA; na de alvo único (e na cadeia), quem
+   * está a até `RAIO_DA_FAIXA` sqm — o que a tela diz. Máximo 0 = sem teto.
+   */
+  if (ataque) {
+    // (O próprio alvo sempre conta: a magia de 7 sqm no bicho a 6 não some da faixa.)
+    const n = casas ? atingidos.length : new Set([...atingidos, ...vivos.filter((b) => distanciaChebyshev(hunt.pos, b) <= RAIO_DA_FAIXA)]).size;
+    if (n < Math.max(1, Number(action.minTargets) || 1)) {
+      return casas ? { ok: false, erro: 'Nenhum bicho na área.', motivo: 'SEM_BICHO_NA_AREA' } : { ok: false, erro: 'Poucas criaturas para o mínimo do slot.', motivo: 'POUCAS_CRIATURAS' };
+    }
+    if (action.maxTargets > 0 && n > action.maxTargets) return { ok: false, erro: 'Criaturas demais para o máximo do slot.', motivo: 'CRIATURAS_DEMAIS' };
   } else if (!entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
     // Suporte/velocidade (haste, buffs): só com bicho por perto, senão era mana jogada fora sem parar.
     return { ok: false, erro: 'Nenhum bicho por perto.', motivo: 'SEM_BICHO_POR_PERTO' };
@@ -656,11 +804,31 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const pode = Summon.podeInvocar(estado, hunt, hunt.ultimoTique ?? Date.now());
     if (!pode.ok) return { motivo: 'FAMILIAR', ...pode };
   }
-  if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return { ok: false, erro: 'Condição não bate.', motivo: 'CONDICAO' };
+  // Curar amigo (exura sio, runas de cura em outro): em QUEM a cura cai — "Curar" do slot.
+  let curado = { estado, nome: null };
+  if (entry.curaOutro && (action.curarQuem ?? 'eu') !== 'eu') {
+    curado = quemCurar(estado, hunt, action);
+    if (!curado) return { ok: false, erro: 'Ninguém para curar.', motivo: 'NINGUEM_PARA_CURAR' };
+  }
+  // Desafio (exeta res): "Quando chamar" e "No máximo uma vez a cada (s)".
+  if (entry.desafio) {
+    const d = podeDesafiar(estado, hunt, action, agora);
+    if (!d.ok) return d;
+  }
+  // Utamo vita com "Tirar o escudo quando" batendo: não põe de volta o que o tique acabou de tirar.
+  if (buff?.tipo === 'shield' && action.tirarQuando?.length && condicoesDoSlotBatem({ conditions: action.tirarQuando }, estado, alvo, hunt)) {
+    return { ok: false, erro: 'A regra de tirar o escudo está batendo.', motivo: 'TIRAR_ESCUDO' };
+  }
+  // Exana vita com "Só tirar se o utamo vita já puder voltar": espera a recarga de quem põe o escudo.
+  if (cancela && action.soComUtamoPronto) {
+    const quemPoe = Object.keys(BUFFS).filter((id) => BUFFS[id]?.tipo === cancela);
+    if (quemPoe.some((id) => cds[id] && !R.jaPode(agora, cds[id].ate))) return { ok: false, erro: 'O escudo ainda não pode voltar.', motivo: 'ESCUDO_RECARREGANDO' };
+  }
+  if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return falhaDaCondicao(action, estado, alvo, hunt);
   // Cura sem condição configurada não é desperdiçada: só sai se faltar pelo
   // menos a cura MÍNIMA dela (o slot novo nasce com `conditions: []` no client,
   // e sem isto a poção de vida saía a cada recarga com a vida cheia).
-  if (!ataque && !(action.conditions ?? []).length && !precisaDeCura(entry, estado)) {
+  if (!ataque && !(action.conditions ?? []).length && !precisaDeCura(entry, estado, curado.estado)) {
     return { ok: false, erro: 'Não precisa agora.', motivo: 'NAO_PRECISA' };
   }
 
@@ -743,8 +911,10 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       const curaBruta = entry.kind === 'item' ? sortear(hp[0], hp[1]) : Arvore.aoCurarComMagia(estado, Math.round((sortear(hp[0], hp[1]) + conta.pericia) * conta.mult));
       // "Toda cura que você recebe vale X% a mais" (Shared Conservation).
       const cura = Math.round(curaBruta * (1 + Reforcos.bonus(hunt, 'curaRecebida') / 100));
-      estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + cura);
-      eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: cura, color: '#00ff66' });
+      const quem = curado.estado;
+      quem.hp = Math.min(quem.maxHp ?? quem.hp, (quem.hp ?? 0) + cura);
+      if (quem === estado) eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: cura, color: '#00ff66' });
+      else eventos.push({ t: 'heal', uid: `aliado:${curado.nome}`, quem: curado.nome, x: quem.hunt?.pos?.x ?? x, y: quem.hunt?.pos?.y ?? y, v: cura, color: '#00ff66' });
     }
     if (mp) {
       const cura = sortear(mp[0], mp[1]);
@@ -844,5 +1014,62 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
   if (entry.kind === 'item') cds[grupo] = { ate: agora + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
   // A execução REAL de uma skill de ataque: é daqui que o intervalo do combo conta.
   if (deAtaque) hunt.ultimoAtaqueEm = agora;
+  if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;
   return { ok: true, eventos };
+}
+
+const fracaoDeVida = (e) => (e?.hp ?? 0) / Math.max(1, e?.maxHp ?? 1);
+/** Os da caçada em grupo (`hunt.partilha.membros`, vivo) — sozinho, só eu. */
+const membrosDaSala = (estado, hunt) => hunt?.partilha?.membros?.length ? hunt.partilha.membros : [{ estado, nome: estado.name ?? null }];
+
+/**
+ * Em quem a cura do slot cai: "o mais ferido" (a menor fração de vida da sala,
+ * você incluído) ou "pelo nome" — sempre só com a vida em até `curarAte`%.
+ * `null` se ninguém está na faixa (ou o nome não está na caçada).
+ */
+function quemCurar(estado, hunt, action) {
+  const ate = (action.curarAte ?? 100) / 100;
+  let lista = membrosDaSala(estado, hunt).filter((m) => m.estado && (m.estado.hp ?? 0) > 0 && fracaoDeVida(m.estado) <= ate && fracaoDeVida(m.estado) < 1);
+  if (action.curarQuem === 'nome') {
+    const nome = String(action.curarNome ?? '').trim().toLowerCase();
+    lista = lista.filter((m) => String(m.nome ?? m.estado.name ?? '').toLowerCase() === nome);
+  }
+  if (!lista.length) return null;
+  return lista.reduce((a, b) => (fracaoDeVida(b.estado) < fracaoDeVida(a.estado) ? b : a));
+}
+
+/**
+ * O "Quando chamar" do desafio: sempre que houver bicho no alcance (padrão), ou
+ * só quando alguém da party — ou um nome — tiver pelo menos `desafiarMinimo`
+ * bichos colados nele (é para tirar bicho dos outros). E "No máximo uma vez a
+ * cada N s", além da recarga da magia.
+ */
+function podeDesafiar(estado, hunt, action, agora) {
+  const cada = (action.desafiarCada ?? 0) * 1000;
+  const ultimo = hunt.desafiosEm?.[action.id];
+  if (cada > 0 && ultimo != null && agora - ultimo < cada) return { ok: false, erro: 'Esperando o intervalo do desafio.', motivo: 'DESAFIO_ESPERA' };
+  const quem = action.desafiarQuem ?? 'perto';
+  if (quem === 'perto') return { ok: true };
+  const nome = String(action.desafiarNome ?? '').trim().toLowerCase();
+  const outros = membrosDaSala(estado, hunt).filter((m) => m.estado !== estado && m.estado?.hunt?.pos && (quem !== 'nome' || String(m.nome ?? '').toLowerCase() === nome));
+  const minimo = Math.max(1, action.desafiarMinimo ?? 1);
+  const vivos = (hunt.monstros ?? []).filter((b) => b.hp > 0 && !b.dummy);
+  const apanhando = outros.some((m) => vivos.filter((b) => distanciaChebyshev(m.estado.hunt.pos, b) <= 1).length >= minimo);
+  return apanhando ? { ok: true } : { ok: false, erro: 'Ninguém apanhando.', motivo: 'NINGUEM_APANHANDO' };
+}
+
+/**
+ * "Tirar o escudo quando" (no slot do utamo vita): com o escudo de pé e as
+ * condições dessa lista batendo, o exana vita sai sozinho — o escudo cai e o
+ * dano volta para a vida. Chamado a cada tique da caçada (`cacadas.autoDisparo`).
+ */
+export function tirarEscudoSePreciso(estado, hunt, personagem, alvo) {
+  if (!temBuff(hunt, 'shield')) return [];
+  const regra = (estado.actions ?? []).find(
+    (a) => a?.tirarQuando?.length && a.enabled !== false && BUFFS[a.id]?.tipo === 'shield' && condicoesDoSlotBatem({ conditions: a.tirarQuando }, estado, alvo, hunt)
+  );
+  if (!regra) return [];
+  for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === 'shield') delete hunt.buffs[id];
+  const quemTira = POR_ID.get(Object.keys(Reforcos.CANCELA).find((id) => Reforcos.CANCELA[id] === 'shield'));
+  return [{ t: 'say', uid: 'player', quem: personagem?.nome, text: quemTira?.words ?? 'exana vita', x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' }];
 }
