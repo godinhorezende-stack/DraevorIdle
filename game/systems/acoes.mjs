@@ -130,11 +130,6 @@ export function catalogo(estado) {
       castTime: Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed, ativas),
     };
   };
-  const danoBaseDaGema = (entry) => {
-    const a = ativas.get(entry.id);
-    const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
-    return (entry.heals ? Gemas.curaDaGema : Gemas.danoDaGema)(def, a?.nivel ?? 1, a?.raridade);
-  };
   const comBloqueio = (entry) => ({
     ...entry,
     ...(Gemas.ehSkillDeGema(entry) ? { gema: daGema(entry) } : {}),
@@ -144,9 +139,8 @@ export function catalogo(estado) {
     classeRecomendada: Tags.classeRecomendada(entry),
     afinidade: Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)),
     ...(entry.damage ? { damage: { ...entry.damage, ...danoNoLevel(entry, estado.level) } } : {}),
-    // Skill de gema: sem level nem magic level próprios, e o dano base é o da GEMA (no nível dela; sem a gema, o do nível 1).
-    ...(Gemas.ehSkillDeGema(entry) ? { level: 1, magicLevel: 0 } : {}),
-    ...(Gemas.ehSkillDeGema(entry) && entry.damage ? { damage: { ...entry.damage, ...danoBaseDaGema(entry) } } : {}),
+    // Skill de gema: sem level nem magic level exigidos (qualquer um usa qualquer gema). `levelDaMagia`: o de antes, só informativo.
+    ...(Gemas.ehSkillDeGema(entry) ? { level: 1, magicLevel: 0, levelDaMagia: entry.level ?? 1 } : {}),
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
     // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
     ...(entry.cooldown ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
@@ -272,18 +266,11 @@ export function condicoesDoSlotBatem(action, estado, alvo, hunt = null) {
   return (action.conditions ?? []).every((c) => condicaoBate(c, estado, alvo, hunt));
 }
 
-/** A menor cura desta skill agora (gema: a tabela no nível dela; senão, pelo level). */
-function curaMinima(entry, estado) {
-  const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
-  const a = def && Gemas.skillsAtivas(estado).get(entry.id);
-  return a ? Gemas.curaDaGema(def, a.nivel, a.raridade).min : danoNoLevel(entry, estado.level).min;
-}
-
 /** Falta vida/mana suficiente para esta cura não ser jogada fora? */
 function precisaDeCura(entry, estado) {
   const faltaHp = (estado.maxHp ?? 0) - (estado.hp ?? 0);
   const faltaMana = (estado.maxMana ?? 0) - (estado.mana ?? 0);
-  const hp = entry.kind === 'item' ? entry.heal : entry.heals ? [curaMinima(entry, estado)] : null;
+  const hp = entry.kind === 'item' ? entry.heal : entry.heals ? [danoNoLevel(entry, estado.level).min] : null;
   const mana = entry.kind === 'item' ? entry.mana : null;
   if (hp && faltaHp >= hp[0]) return true;
   if (mana && faltaMana >= mana[0]) return true;
@@ -609,9 +596,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
 
   if (!ataque) {
     // Cura: poção usa `heal`/`mana` ([min,max]); magia/runa de cura usa `damage`.
-    // Cura de gema: a tabela da GEMA (`Gemas.curaDaGema`), não o level.
+    // A cura base é a da magia, pelo level do personagem; o magic level entra em % (abaixo).
     const defDaCura = entry.heals ? Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id)) : null;
-    const cura = entry.heals && entry.kind !== 'item' ? (defDaCura && efeitoDaGema ? Gemas.curaDaGema(defDaCura, efeitoDaGema.nivel, efeitoDaGema.raridade) : danoNoLevel(entry, estado.level)) : null;
+    const cura = entry.heals && entry.kind !== 'item' ? danoNoLevel(entry, estado.level) : null;
     const hp = entry.kind === 'item' ? entry.heal : cura ? [cura.min, cura.max] : null;
     const mp = entry.kind === 'item' ? entry.mana : null;
     if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x, y });
@@ -619,13 +606,13 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       // "Cura de magia" (afixo) e "Força de cura" (árvore) nas magias de cura
       // (poção não) — e as habilidades Graça e Fonte viva.
       // + "% da perícia como cura" da proficiência, nas magias de cura.
-      const bruta = sortear(hp[0], hp[1]) + (entry.kind === 'spell' && !defDaCura ? Proficiencia.daPericia(estado, Proficiencia.bonus(estado).periciaNaCura) : 0);
+      const bruta = sortear(hp[0], hp[1]) + (entry.kind === 'spell' ? Proficiencia.daPericia(estado, Proficiencia.bonus(estado).periciaNaCura) : 0);
       // + "cura de <magia>" das gemas (supremo).
       const daGema = Ficha.combate(estado).magiasDasGemas?.[action.id]?.cura ?? 0;
       // + o ML de bônus (+1%/ponto) na magia/runa de cura.
       const fichaDaCura = Ficha.combate(estado);
       // + o nível da gema e o Potent Healing (`efeitoDaGema.curaPct`).
-      // Gema: o magic level entra em % (`Gemas.bonusDoTreino`), no lugar do ML de bônus.
+      // Gema: o magic level (treinado + bônus) entra em % (`Gemas.bonusDoTreino`), no lugar só do ML de bônus.
       const doTreino = defDaCura ? Gemas.bonusDoTreino(estado, defDaCura, fichaDaCura) : fichaDaCura.skillBonus?.magic ?? 0;
       const cura = entry.kind === 'item' ? bruta : Arvore.aoCurarComMagia(estado, Math.round(bruta * (1 + ((fichaDaCura.curaDeMagia ?? 0) + daGema + doTreino + (efeitoDaGema?.curaPct ?? 0)) / 100)));
       estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + cura);
@@ -642,9 +629,10 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const cor = COR_DO_ELEMENTO[entry.element] ?? COR_DO_ELEMENTO.physical;
     if (casas && entry.efeito) for (const c of casas) eventos.push({ t: 'fx', id: entry.efeito, x: c.x, y: c.y });
     else if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
-    // O dano BASE vem da GEMA (tabela por nível × efetividade — `Gemas.danoDaGema`), não do level.
+    // O dano BASE é o da magia, pelo level do personagem; o treino (ML, ou melee/distance nas físicas)
+    // entra em %, e o nível da gema, a raridade e a qualidade são bônus a mais (`efeitoDaGema.danoPct`).
     const defDaGema = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
-    const { min, max } = defDaGema && efeitoDaGema ? Gemas.danoDaGema(defDaGema, efeitoDaGema.nivel, efeitoDaGema.raridade) : danoNoLevel(entry, estado.level);
+    const { min, max } = danoNoLevel(entry, estado.level);
     const fichaBase = Ficha.combate(estado);
     // Gemas: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
     const daGema = fichaBase.magiasDasGemas?.[action.id];
@@ -652,8 +640,7 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     // Runa: + crítico de runa da proficiência. Magia: + "% da perícia como dano".
     const prof = fichaBase.proficiencia;
     if (entry.kind === 'rune' && (prof.critChanceRunas || prof.critDanoRunas)) ficha = { ...ficha, critChance: ficha.critChance + prof.critChanceRunas, critMultiplier: ficha.critMultiplier + prof.critDanoRunas };
-    // Skill de gema: o magic level (mágica) ou o skill de arma (física) entram em % (`config.dano`), não somando dano fixo.
-    const daPericia = defDaGema ? 0 : entry.kind === 'spell' ? Proficiencia.daPericia(estado, prof.periciaNaMagia, fichaBase.skillBonus) : 0;
+    const daPericia = entry.kind === 'spell' ? Proficiencia.daPericia(estado, prof.periciaNaMagia, fichaBase.skillBonus) : 0;
     const doTreino = defDaGema ? Gemas.bonusDoTreino(estado, defDaGema, fichaBase) : fichaBase.skillBonus?.magic ?? 0;
     // A gema: o crítico das supports soma na chance/dano; o nível e as supports multiplicam o dano.
     if (efeitoDaGema?.critChance || efeitoDaGema?.critDano) ficha = { ...ficha, critChance: ficha.critChance + (efeitoDaGema.critChance ?? 0) / 100, critMultiplier: ficha.critMultiplier + (efeitoDaGema.critDano ?? 0) / 100 };

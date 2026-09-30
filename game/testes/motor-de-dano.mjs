@@ -56,7 +56,7 @@ function comSemente(semente, fn) {
 /**
  * Mede uma gema ativa de ATAQUE. Opções:
  *  - `nivel` da gema (1), `raridade` ('comum'), `qualidade` (0);
- *  - `classe` (a recomendada da gema; runa sem classe: sorcerer), `level` do personagem (o que o nível da gema pede);
+ *  - `classe` (a recomendada da gema; runa sem classe: sorcerer), `level` do personagem (o da magia no catálogo);
  *  - `magicLevel` / `skill` (por cima do que o personagem de teste tem; o mínimo da runa é garantido);
  *  - `usos` (60), `semente` (1).
  * Devolve `{ media, minimo, maximo, alvos, usos }`: o dano POR ALVO por uso (média dos alvos atingidos)
@@ -68,8 +68,8 @@ export function medirGema(acao, opcoes = {}) {
   const x = entrada(acao);
   const { nivel = 1, raridade = 'comum', qualidade = 0, usos = 60, semente = 1 } = opcoes;
   const classe = opcoes.classe ?? def.classeRecomendada?.find((c) => VOCACOES.includes(c)) ?? 'sorcerer';
-  // O level que o NÍVEL da gema pede (as skills não têm level próprio).
-  const level = Math.max(1, opcoes.level ?? Gemas.levelNecessario(def, nivel));
+  // Padrão: o personagem no level da magia no catálogo (a curva de dano é pelo level).
+  const level = Math.max(1, opcoes.level ?? def.levelDaMagia);
   return comSemente(semente, () => {
     const e = personagemDeTeste({ vocacao: classe, level });
     Treino.garantir(e); // magic level e skills (a runa pede magic level)
@@ -148,7 +148,7 @@ export function medirCura(acao, opcoes = {}) {
   if (!def) throw new Error(`não há gema para "${acao}"`);
   const { nivel = 1, raridade = 'comum', qualidade = 0, usos = 60, semente = 1 } = opcoes;
   const classe = opcoes.classe ?? def.classeRecomendada?.find((c) => VOCACOES.includes(c)) ?? 'druid';
-  const level = Math.max(1, opcoes.level ?? Gemas.levelNecessario(def, nivel));
+  const level = Math.max(1, opcoes.level ?? def.levelDaMagia);
   return comSemente(semente, () => {
     const e = personagemDeTeste({ vocacao: classe, level });
     Treino.garantir(e);
@@ -212,7 +212,7 @@ export function fichaDaGema(def) {
     elemento: x.element ?? 'physical',
     tags: def.tags,
     classe: def.classeRecomendada ?? [],
-    levelMinimo: def.levelMinimo,
+    levelMinimo: def.levelDaMagia,
     magicLevel: x.magicLevel ?? 0,
     mana: x.mana ?? 0,
     recargaMs: x.cooldown ?? 0,

@@ -39,14 +39,12 @@ test('o boneco não tem resistência: mesmo personagem, magias de elementos dife
   assert.ok(Math.abs(energia - terra) / Math.max(energia, terra) < 0.15, `${energia} × ${terra}`);
 });
 
-test('cura: toda gema de cura cura no nível 1; o nível 20 cura mais; vem da tabela da gema (não do level)', () => {
+test('cura: toda gema de cura cura no nível 1; o nível 20 cura mais; o level do personagem também escala', () => {
   const sem = medirTodasAsCuras({ usos: 5 }).filter((l) => !(l.media > 0)).map((l) => `${l.acao}: ${l.erro ?? l.media}`);
   assert.deepEqual(sem, []);
-  const n1 = medirCura('spell-intense-healing', { usos: 20, magicLevel: 0 });
-  const n20 = medirCura('spell-intense-healing', { usos: 20, nivel: 20, magicLevel: 0 });
-  assert.ok(n20.media > n1.media * 3, `${n1.media} → ${n20.media}`);
-  // Mesmo nível de gema, level do personagem diferente: a mesma cura (sem magic level).
-  const baixo = medirCura('spell-intense-healing', { usos: 20, nivel: 5, level: 40, magicLevel: 0 });
-  const alto = medirCura('spell-intense-healing', { usos: 20, nivel: 5, level: 400, magicLevel: 0 });
-  assert.ok(Math.abs(baixo.media - alto.media) / alto.media < 0.1, `${baixo.media} × ${alto.media}`);
+  const n1 = medirCura('spell-intense-healing', { usos: 20, level: 100, magicLevel: 0 });
+  const n20 = medirCura('spell-intense-healing', { usos: 20, level: 100, nivel: 20, magicLevel: 0 });
+  assert.ok(n20.media > n1.media * 1.3, `${n1.media} → ${n20.media}`);
+  const alto = medirCura('spell-intense-healing', { usos: 20, level: 400, magicLevel: 0 });
+  assert.ok(alto.media > n1.media * 1.3, `level 100 ${n1.media} → level 400 ${alto.media}`);
 });

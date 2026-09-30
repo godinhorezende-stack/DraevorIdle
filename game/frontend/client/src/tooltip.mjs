@@ -2375,14 +2375,11 @@ function blocoDaGema(def, gema, raridade = 'comum') {
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
   } else {
     if (def.tags?.length) bloco.append(el('div', 'tip-gema-tags', def.tags.join(', ')));
-    // O dano vem da tabela da gema (servidor: `danoDaGema`), no nível e na raridade DESTA gema.
-    const d = def.dano?.[Math.min(nivel, def.dano.length) - 1];
-    if (d) bloco.append(el('div', 'tip-gema-efeito', `Dano base: ${d[0].toLocaleString('pt-BR')}–${d[1].toLocaleString('pt-BR')}${mult !== 1 ? ` (comum; ${raridade} ×${mult.toLocaleString('pt-BR')} no que cresce)` : ''}`));
-    const c = def.cura?.[Math.min(nivel, def.cura.length) - 1];
-    if (c) bloco.append(el('div', 'tip-gema-efeito', `Cura base: ${c[0].toLocaleString('pt-BR')}–${c[1].toLocaleString('pt-BR')}${mult !== 1 ? ` (comum; ${raridade} ×${mult.toLocaleString('pt-BR')} no que cresce)` : ''}`));
-    if (qualidade) bloco.append(el('div', 'tip-gema-efeito', `+${qualidade}% de dano (qualidade)`));
+    // O dano/cura base é o da magia (level + magic level, ou melee nas físicas); a gema soma o bônus dela.
+    const porNivel = def.progressao?.dano ?? def.progressao?.cura ?? 0;
+    const bonus = porNivel * (nivel - 1) * mult + (porNivel ? qualidade : 0);
+    if (bonus) bloco.append(el('div', 'tip-gema-efeito', `+${Math.round(bonus * 10) / 10}% de ${def.progressao?.dano ? 'dano' : 'cura'} (nível${mult !== 1 ? ', raridade' : ''}${qualidade ? ' e qualidade' : ''})`));
     if (def.castTime) bloco.append(el('div', null, `Conjuração: ${(def.castTime / 1000).toLocaleString('pt-BR')} s`));
-    bloco.append(el('div', null, `Nível ${nivel} pede level ${1 + (nivel - 1) * (def.levelsPorNivel ?? 8)}`));
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
   }
   return bloco;

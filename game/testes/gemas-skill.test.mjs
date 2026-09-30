@@ -13,7 +13,7 @@ import { converterPersonagem, converterTudo } from '../systems/itens/item.mjs';
 import { gerarItem } from '../systems/itens/gerar.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
@@ -184,9 +184,8 @@ test('Multiple Projectiles: os bichos ao alcance levam o projétil também', () 
 
 // ---------------------------------------------------------------- XP e nível (8, 9)
 
-test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes; sobe de nível, com teto no level do personagem', () => {
+test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes; sobe sem trava de level, até o 30', () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 30 });
-  const def = G.DEFS.get(GEMA(FLAME));
   const peca = vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
   const naMochila = G.itemDaGema(G.novaGema(GEMA('spell-energy-strike')));
   e.inventory.push(naMochila);
@@ -194,25 +193,18 @@ test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes;
   assert.deepEqual(subiram, [{ nome: 'Flame Strike', nivel: 2 }]);
   assert.equal(peca.soquetes.gemas[0].xp, 10);
   assert.equal(naMochila.gema.xp, 0, 'gema fora de socket não ganha XP');
-  // O level 30 deixa até o nível `nivelPermitido`; a XP para no que falta para o próximo.
-  G.ganharXp(e, 1e9);
+  // Sem trava de level (decisão do dono): um personagem level 30 leva a gema até o 30 com XP de sobra.
   const g = peca.soquetes.gemas[0];
-  assert.equal(g.nivel, G.nivelPermitido(def, 30));
-  assert.equal(g.xp, G.xpParaSubir(g.nivel), 'guardada até o personagem subir');
-  e.level = 200;
-  G.ganharXp(e, 1);
-  assert.ok(g.nivel > G.nivelPermitido(def, 30), 'o personagem subiu: a gema também');
-  // Por XP, para no 30 (decisão do dono); acima, só bônus de item.
-  e.level = 5000;
   for (let i = 0; i < 40; i++) G.ganharXp(e, 1e15);
   assert.equal(g.nivel, G.CONFIG.niveis.maximo);
   assert.equal(G.CONFIG.niveis.maximo, 30);
+  assert.equal(g.xp, 0);
 });
 
-test('o nível da gema aumenta o dano da skill (a tabela por nível da gema, não o level)', () => {
+test('o nível da gema é um bônus a mais no dano da skill (a progressão dela)', () => {
   const n1 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 1)] }));
   const n11 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 11)] }));
-  const esperado = G.CONFIG.dano.crescimento ** 10;
+  const esperado = 1 + (G.DEFS.get(GEMA(FLAME)).progressao.dano * 10) / 100;
   assert.ok(Math.abs(n11 / n1 / esperado - 1) < 0.03, `${n1} → ${n11} (×${esperado})`);
 });
 
@@ -351,16 +343,15 @@ test('drop de gema: sai no nível 1, entre as skills do level da fase; parte sã
 
 // ---------------------------------------------------------------- loja da Zuma Magehide
 
-test('loja da Zuma: lista gemas ativas (preço pelo level) e supports (preço fixo)', () => {
+test('loja da Zuma: vende todas as gemas, só comuns (preço pelo level da magia) e supports (preço fixo)', () => {
   const e = personagemDeTeste({ level: 50 });
   const lista = G.catalogoDaLoja(e);
   const flame = lista.find((l) => l.chave === `${GEMA(FLAME)}:comum`);
   const def = G.DEFS.get(GEMA(FLAME));
-  assert.equal(flame.buy, G.CONFIG.loja.precoBase + G.CONFIG.loja.precoPorLevel * def.levelMinimo);
+  assert.equal(flame.buy, G.CONFIG.loja.precoBase + G.CONFIG.loja.precoPorLevel * def.levelDaMagia);
   assert.equal(lista.find((l) => l.chave === `${SUPPORT('greater-damage')}:comum`).buy, G.CONFIG.loja.precoDoSupport);
-  // Só comum e incomum (decisão do dono); a incomum custa mais.
-  assert.deepEqual([...new Set(lista.map((l) => l.raridade))], ['comum', 'incomum']);
-  assert.equal(lista.find((l) => l.chave === `${GEMA(FLAME)}:incomum`).buy, flame.buy * G.CONFIG.loja.precoPorRaridade.incomum);
+  assert.deepEqual([...new Set(lista.map((l) => l.raridade))], ['comum']);
+  assert.equal(lista.length, G.DEFS.size, 'todas as gemas');
   assert.equal(G.CONFIG.loja.npc, 'zuma');
 });
 
@@ -378,9 +369,9 @@ test('loja da Zuma: compra paga do bolso e depois do banco; gema nível 1 na moc
   assert.equal(G.comprarNaLoja(e, { id: GEMA(FLAME) }).ok, false, 'sem ouro');
   assert.equal(G.comprarNaLoja(e, { id: 3031 }).ok, false, 'não é gema');
   e.gold = 1e9;
-  assert.match(G.comprarNaLoja(e, { id: GEMA(FLAME), raridade: 'raro' }).erro, /comuns e incomuns/);
-  assert.equal(G.comprarNaLoja(e, { id: GEMA(FLAME), raridade: 'incomum' }).ok, true);
-  assert.equal(e.inventory.at(-1).raridade, 'incomum');
+  assert.match(G.comprarNaLoja(e, { id: GEMA(FLAME), raridade: 'incomum' }).erro, /só vende gemas comuns/);
+  assert.equal(G.comprarNaLoja(e, { id: GEMA(FLAME) }).ok, true);
+  assert.equal(e.inventory.at(-1).raridade, 'comum');
   assert.equal(e.inventory.at(-1).gema.nivel, 1);
 });
 
@@ -410,20 +401,20 @@ test('condição "boss": só na sala do boss (ou só fora dela)', () => {
 
 // ---------------------------------------------------------------- raridade e nível sem teto
 
-test('raridade da gema multiplica o crescimento do dano (acima do nível 1) e o efeito da support', () => {
-  const def = G.DEFS.get(GEMA(FLAME));
-  const media = (n, r) => { const d = G.danoDaGema(def, n, r); return (d.min + d.max) / 2; };
-  const D = G.CONFIG.dano;
-  const b1 = D.base * def.efetividade, b11 = D.base * D.crescimento ** 10 * def.efetividade;
-  assert.ok(Math.abs(media(11, 'comum') - b11) <= 1);
-  assert.ok(Math.abs(media(11, 'mítico') - (b1 + (b11 - b1) * 2)) <= 1);
-  // No nível 1 a raridade não muda nada ainda (só multiplica o que cresce acima dele).
-  assert.deepEqual(G.danoDaGema(def, 1, 'mítico'), G.danoDaGema(def, 1, 'comum'));
-  // A support: o efeito inteiro × a raridade.
+test('raridade da gema multiplica o bônus por nível da ativa e o efeito da support', () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  const bonus = (rAtiva, rSupport) => {
+    vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 11, rAtiva), gemaNv(SUPPORT('greater-damage'), 1, rSupport)] });
+    return G.efeitoNaSkill(e, FLAME).danoPct;
+  };
+  const prog = G.DEFS.get(GEMA(FLAME)).progressao.dano;
   const gd = G.DEFS.get(SUPPORT('greater-damage')).suporte.efeito.danoPct;
-  vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 11), gemaNv(SUPPORT('greater-damage'), 1, 'raro')] });
-  assert.equal(G.efeitoNaSkill(e, FLAME).danoPct, gd * 1.3);
+  assert.equal(bonus('comum', 'comum'), prog * 10 + gd);
+  assert.equal(bonus('mítico', 'comum'), prog * 10 * 2 + gd);
+  assert.equal(bonus('comum', 'raro'), prog * 10 + gd * 1.3);
+  // No nível 1 a ativa não tem bônus de nível: a raridade dela não muda nada ainda.
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 1, 'mítico')] });
+  assert.equal(G.efeitoNaSkill(e, FLAME).danoPct, 0);
 });
 
 test('gema que cai de bicho: nível 1 e raridade sorteada pelos pesos (a loja não passa da incomum)', () => {
@@ -507,15 +498,25 @@ test('o add de nível das gemas sai pela raridade da peça (+1; épica e acima +
   assert.deepEqual(visto, { raro: 1, 'épico': 2 });
 });
 
-test('dano da gema: tabela × efetividade (recarga, área, runa) × `fatorDeDano`; sem level de skill', () => {
+test('sem trava: qualquer personagem usa qualquer gema; o dano base escala pelo level e pelo ML (melee nas físicas)', () => {
   const def = G.DEFS.get(GEMA(FLAME));
-  assert.equal(def.levelMinimo, 1, 'a skill não tem level próprio');
-  assert.equal(G.levelNecessario(def, 20), 1 + 19 * G.CONFIG.niveis.levelsPorNivel);
-  const x = { ...def, fatorDeDano: 2 };
-  const um = G.danoDaGema(def, 20), dois = G.danoDaGema(x, 20);
-  assert.ok(Math.abs(dois.max / um.max - 2) < 0.03);
-  // Recarga longa rende mais por uso (√recarga); runa rende 0,8; área rende menos por alvo.
-  const ef = (id) => G.DEFS.get(GEMA(id)).efetividade;
-  assert.ok(ef('spell-ultimate-flame-strike') > ef(FLAME));
-  assert.ok(ef('rune-great-fireball-rune') < ef('rune-sudden-death-rune'));
+  assert.equal(def.levelMinimo, 1, 'a gema não pede level');
+  // Um personagem level 1 usa a Executioner's Throw (level 300 no catálogo) — nada bloqueia.
+  const novo = comSkills(personagemDeTeste({ vocacao: 'druid', level: 1 }), ['spell-executioner-s-throw']);
+  assert.equal(Acoes.catalogo(novo).spells.find((x) => x.id === 'spell-executioner-s-throw').blocked, null);
+  // O mesmo nível de gema: o personagem de level mais alto bate mais (a curva da magia pelo level).
+  const baixo = danoDaFlame((e) => { e.level = 50; vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] }); });
+  const alto = danoDaFlame((e) => { e.level = 300; vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] }); });
+  assert.ok(alto > baixo * 1.2, `${baixo} → ${alto}`);
+  // O treino: ML nas mágicas; nas físicas, distance de longe e melee de perto.
+  const e = personagemDeTeste({ vocacao: 'paladin', level: 100 });
+  Treino.garantir(e);
+  e.skills.melee.value = 100;
+  e.skills.distance.value = 10;
+  e.magic.value = 10;
+  const lanca = G.DEFS.get(GEMA('spell-ethereal-spear'));
+  assert.ok(lanca.tags.includes('ranged'));
+  assert.equal(G.bonusDoTreino(e, lanca), 10 * G.CONFIG.dano.porSkill, 'física de longe: distance');
+  assert.equal(G.bonusDoTreino(e, G.DEFS.get(GEMA('spell-brutal-strike'))), 100 * G.CONFIG.dano.porSkill, 'física de perto: melee');
+  assert.equal(G.bonusDoTreino(e, def), 10 * G.CONFIG.dano.porMagicLevel, 'mágica: magic level');
 });
