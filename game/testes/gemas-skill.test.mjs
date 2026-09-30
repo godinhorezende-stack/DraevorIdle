@@ -189,7 +189,7 @@ test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes;
   const peca = vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
   const naMochila = G.itemDaGema(G.novaGema(GEMA('spell-energy-strike')));
   e.inventory.push(naMochila);
-  const subiram = G.ganharXp(e, G.xpParaSubir(1) + 10);
+  const subiram = G.ganharXp(e, G.xpParaSubir(1, e.level) + 10);
   assert.deepEqual(subiram, [{ nome: 'Flame Strike', nivel: 2 }]);
   assert.equal(peca.soquetes.gemas[0].xp, 10);
   assert.equal(naMochila.gema.xp, 0, 'gema fora de socket não ganha XP');
@@ -432,19 +432,6 @@ test('gema que cai de bicho: nível 1 e raridade sorteada pelos pesos (a loja n�
   assert.ok(cont.comum > cont.incomum && cont.incomum > cont.raro && cont.raro > (cont['épico'] ?? 0));
 });
 
-test('curva de XP: 1–10 fácil, 10–20 normal, 20–30 difícil (fração da exp do personagem no mesmo trecho)', async () => {
-  const R = await import('../systems/regras.mjs');
-  const N = G.CONFIG.niveis;
-  const trecho = (n) => R.expForLevel(1 + n * N.levelsPorNivel) - R.expForLevel(1 + (n - 1) * N.levelsPorNivel);
-  const parte = (n) => G.xpParaSubir(n) / trecho(n);
-  const [facil, normal, dificil] = N.faixas.map((f) => f.parteDaExpDoPersonagem);
-  assert.ok(Math.abs(parte(3) - facil) < 0.001, '1–10: fácil');
-  assert.ok(Math.abs(parte(14) - normal) < 0.001, '10–20: normal');
-  assert.ok(Math.abs(parte(25) - dificil) < 0.001, '20–30: difícil');
-  assert.ok(facil < normal && normal < dificil);
-  assert.ok(G.xpParaSubir(29) > G.xpParaSubir(28));
-});
-
 // ---------------------------------------------------------------- modelo Path of Exile: 20 + qualidade + nível de item
 
 test('qualidade: +1% de dano por 1% na ativa; a support rende × (1 + qualidade%)', () => {
@@ -605,4 +592,61 @@ test('categorias das gemas (como no Path of Exile): Ataque, Cura, Reforço, Supo
   const ordem = [...new Set(lista.map((l) => l.categoria))];
   assert.deepEqual(ordem, ['ataque', 'cura', 'reforco', 'suporte']);
   assert.equal(lista.find((l) => l.categoria === 'suporte').categoriaNome, 'Gema de Suporte');
+});
+
+// ---------------------------------------------------------------- gemas iniciais, barra guardada, XP pelo level, Fundidora
+
+test('personagem novo: gemas iniciais da classe (ataque + cura), encaixadas, uma vez só', () => {
+  const e = personagemDeTeste({ vocacao: 'druid', level: 8 });
+  for (const p of Object.values(e.equipment)) if (p) delete p.soquetes;
+  e.versaoDosItens = 4;
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  converterPersonagem(e); // o login: as peças ganham sockets
+  e.gemasIniciais = true;
+  assert.equal(G.darGemasIniciais(e), 2);
+  assert.ok(G.temSkill(e, 'spell-terra-strike'));
+  assert.ok(G.temSkill(e, 'spell-light-healing'));
+  assert.equal(G.darGemasIniciais(e), 0, 'uma vez só');
+  Acoes.sincronizarBarraComGemas(e);
+  assert.ok(e.actions.some((a) => a?.id === 'spell-terra-strike'));
+  for (const v of ['knight', 'paladin', 'sorcerer', 'monk']) for (const a of G.CONFIG.iniciais[v]) assert.ok(G.ITEM_DA_ACAO.has(a), a);
+});
+
+test('barra: a configuração do slot fica guardada quando a gema sai, e volta igual (mesmo slot) quando ela volta', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
+  const slot = Acoes.PAPEL_DO_SLOT.lastIndexOf('attack');
+  assert.equal(Acoes.definir(e, { slot, value: { id: FLAME, minMana: 55, conditions: [{ kind: 'boss', op: 'sim' }] } }).ok, true);
+  const arma = e.equipment.weapon;
+  Inventario.desequipar(e, { slot: 'weapon' });
+  Acoes.sincronizarBarraComGemas(e);
+  assert.equal(e.actions[slot], null);
+  assert.equal(e.barraGuardada[FLAME].slot, slot);
+  e.equipment.weapon = arma; // vestiu de novo
+  Acoes.sincronizarBarraComGemas(e);
+  assert.equal(e.actions[slot]?.id, FLAME, 'voltou para o mesmo slot');
+  assert.equal(e.actions[slot].minMana, 55);
+  assert.deepEqual(e.actions[slot].conditions, [{ kind: 'boss', op: 'sim' }]);
+  assert.equal(e.barraGuardada[FLAME], undefined);
+});
+
+test('XP da gema pelo level ATUAL do personagem: o mesmo nível pede a mesma fração de UM level dele', async () => {
+  const R = await import('../systems/regras.mjs');
+  const umLevel = (L) => R.expForLevel(L + 1) - R.expForLevel(L);
+  for (const L of [50, 500]) {
+    assert.ok(Math.abs(G.xpParaSubir(3, L) / umLevel(L) - G.CONFIG.niveis.faixas[0].parteDaExpDoPersonagem) < 0.001);
+    assert.ok(Math.abs(G.xpParaSubir(25, L) / umLevel(L) - G.CONFIG.niveis.faixas[2].parteDaExpDoPersonagem) < 0.001);
+  }
+  assert.ok(G.xpParaSubir(3, 500) > G.xpParaSubir(3, 50), 'level alto pede mais XP (ganha mais por morte)');
+});
+
+test('Fundidora: sorteia de novo os links da peça vestida pela chance da raridade dela, e é gasta', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  const peca = vestir(e, 'weapon', 'wand of vortex', { links: [false, false, false] });
+  e.inventory = [{ id: G.FUNDIDORA, count: 1 }];
+  assert.equal(G.fundir(e, { slot: 'weapon' }, () => 0).ok, true);
+  assert.deepEqual(peca.soquetes.links, [true, true, true]);
+  assert.equal(e.inventory.length, 0, 'gasta');
+  assert.match(G.fundir(e, { slot: 'weapon' }).erro, /não tem Fundidora/);
 });
