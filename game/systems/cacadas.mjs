@@ -30,6 +30,7 @@ import * as Promocao from './promocao.mjs';
 import * as Arena from './arena.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Estados from './skills/estados.mjs';
+import * as RegrasDeUso from './skills/regras-de-uso.mjs';
 import * as Bosses from './bosses.mjs';
 import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt } from './hunt/terreno.mjs';
 import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
@@ -970,6 +971,8 @@ function autoDisparo(estado, hunt, personagem) {
     const action = acoes[slot];
     if (!action?.id || action.enabled === false) continue;
     if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) continue;
+    // As regras de uso (`bloquear` vale também para buff e suporte; cura e poção nunca são barradas).
+    if (!RegrasDeUso.permitida(action.id, RegrasDeUso.ativas(estado, hunt, alvo), { ataque: false })) continue;
     const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
     if (resultado.ok) eventos.push(...resultado.eventos);
   }

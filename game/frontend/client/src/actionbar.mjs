@@ -5,6 +5,7 @@
 // e `catalog.slotsPorFileira`); aqui não há número de slot escrito à mão.
 import { itemCanvas, outfitCanvas, outfitInfo } from './sprites.mjs';
 import { tipForAction, previaDaMagia, blocoDaGemaDaSkill } from './tooltip.mjs';
+import { abrirRegrasDeUso } from './regras-de-uso.mjs';
 import { artOrUiIcon } from './hud.mjs';
 import { ehCelular } from './mobile.mjs';
 // O relógio de cada slot chega como instante: ver `packages/shared/src/prazos.mjs`.
@@ -516,7 +517,7 @@ export function renderActionBar() {
   const automaticos = state.hunt
     ? `${state.hunt.manual ? 'm' : 'a'}${+!!state.hunt.assistencia}${+!!state.hunt.autoBarra}`
     : `c${+!!s.assistencia}${+!!(s.autoBarra ?? s.assistencia)}`;
-  const chaveArranjos = (state.character.actionPresets ?? []).map((preset) => preset.name).join('|') + '#' + automaticos;
+  const chaveArranjos = (state.character.actionPresets ?? []).map((preset) => preset.name).join('|') + '#' + automaticos + '#' + (state.character.regrasDeUso?.length ?? 0);
   if (chaveArranjos !== chavePresets) {
     chavePresets = chaveArranjos;
     renderPresets();
@@ -1034,6 +1035,11 @@ function renderPresets() {
   save.title = 'guardar as hotkeys atuais com um nome';
   save.onclick = () => askPresetName(presets.length + 1);
   holder.append(save);
+  // As regras de uso automático por tag (etapa 5): "muitos bichos → área", "boss → alvo único"...
+  const regras = el('button', 'preset-save', `Regras${ctx.state.character?.regrasDeUso?.length ? ` · ${ctx.state.character.regrasDeUso.length}` : ''}`);
+  regras.title = 'regras de uso automático por tipo de skill';
+  regras.onclick = () => abrirRegrasDeUso(ctx);
+  holder.append(regras);
 
   /*
    * Os arranjos guardados ficam atrás de uma setinha.
@@ -1464,6 +1470,10 @@ export function renderEditor() {
     tabs.append(button);
   }
   body.append(tabs);
+  // As regras de uso automático por tag também daqui: no celular a coluna dos atalhos da barra não aparece.
+  const regrasDaBarra = el('button', 'ghost regras-atalho', `⚙ Regras de uso automático${ctx.state.character?.regrasDeUso?.length ? ` · ${ctx.state.character.regrasDeUso.length}` : ''}`);
+  regrasDaBarra.onclick = () => abrirRegrasDeUso(ctx);
+  body.append(regrasDaBarra);
 
   const layout = el('div', 'action-editor');
   const left = el('div', 'action-side');
