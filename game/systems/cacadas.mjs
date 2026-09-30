@@ -963,6 +963,8 @@ function autoDisparo(estado, hunt, personagem) {
   const eventos = [];
   const alvo = alvoAtual(hunt);
   const acoes = estado.actions ?? [];
+  // "Tirar o escudo quando" (do slot do utamo vita): antes de tudo, para a cura já contar com a vida.
+  eventos.push(...Acoes.tirarEscudoSePreciso(estado, hunt, personagem, alvo));
   // Sustento (vida, mana, velocidade, suporte): em ordem de prioridade, todo
   // tique — é ele que salva o personagem, e o primeiro slot de vida manda.
   for (let slot = 0; slot < acoes.length; slot++) {
