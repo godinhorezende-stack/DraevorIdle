@@ -77,7 +77,7 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
   // Peça que caiu com atributo, efeito ou faixa: um quadrado só dela.
   if (af?.length || efeito || base) {
     if (estado.pouch.length >= VAGAS_DA_BOLSA) return 0;
-    estado.pouch.push({ id, count: 1, ...(af?.length || efeito ? { af: af ?? [] } : {}), ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(base ? { base } : {}), ...(efeito ? { efeito } : {}) });
+    estado.pouch.push({ id, count: 1, ...(af?.length || efeito ? { af: af ?? [] } : {}), ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(peca?.ilvl ? { ilvl: peca.ilvl } : {}), ...(base ? { base } : {}), ...(efeito ? { efeito } : {}) });
     return 1;
   }
   const bolsa = estado.pouch;
