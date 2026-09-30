@@ -11,5 +11,12 @@
   "_nunca": "Nunca ganham preço (moedas, fichas, bolsas e os itens especiais do jogo — Divine Scroll, premium scroll... — não se vendem ao NPC): nomes com estas palavras. Nada genérico demais: \"scroll\" sozinho pegava o scroll comum (relato, 30/09).",
   "nunca": ["coin", "token", "bag you", "bag set", "divine scroll", "divine hunts scroll", "premium scroll", "scroll speed exercise", "conjurer stone", "summon upgrade"],
   "_tiposNunca": "Tipos do catálogo (`type`) que nunca ganham preço: item de quest e de domar montaria.",
-  "tiposNunca": ["quest items", "taming items"]
+  "tiposNunca": ["quest items", "taming items"],
+
+  "_precoFixo": "Loot comum sem preço nenhum (nem venda, nem compra, e não é equipamento) que ficava preso na bolsa — decisão do dono, 30/09: 1 de ouro. Por tipo do catálogo (`(sem tipo)` = item sem `type`) e pelas palavras do nome (as armaduras enferrujadas estão como \"valuables\"). A lista `nunca` continua valendo por cima.",
+  "precoFixo": {
+    "valor": 1,
+    "tipos": ["rubbish", "creature products", "food", "decoration", "dolls and bears", "books", "musical instruments", "(sem tipo)"],
+    "nomes": ["rusted armor", "rusted legs", "rusted helmet"]
+  }
 }

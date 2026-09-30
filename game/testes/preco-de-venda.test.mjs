@@ -79,3 +79,16 @@ test('o scroll comum vende (a exclusão é só dos itens especiais: Divine Scrol
   assert.equal(e.pouch.length, 0);
   for (const nome of ['Divine Scroll', 'Divine Hunts Scroll', 'premium scroll', 'Scroll Speed Exercise']) assert.ok(!(porNome(nome).m.sell > 0), nome);
 });
+
+test('loot comum sem preço nenhum (lixo, produto de bicho, comida, decoração, sem tipo, enferrujados) vende por 1', () => {
+  for (const nome of ['bone', 'mysterious remains', 'energy bar', 'piggy bank', 'teddy bear', 'flask of demonic blood', 'skull', 'rusted armor', 'slightly rusted legs', 'burnt scroll']) {
+    const { m } = porNome(nome);
+    assert.equal(m.sell, PrecoDeVenda.CONFIG.precoFixo.valor, nome);
+  }
+  // Os especiais continuam de fora (a lista `nunca` e os tipos de quest/montaria valem por cima).
+  for (const nome of ['gold coin', 'Boss Token', 'Bag You Desire', 'Summon Upgrade Dropped', 'death toll', 'bamboo leaves']) assert.ok(!(porNome(nome).m.sell > 0), nome);
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  Bolsa.garantir(e);
+  e.pouch = [{ id: porNome('bone').id, count: 5 }];
+  assert.equal(Bolsa.venderBolsa(e).gold, 5);
+});
