@@ -18,7 +18,7 @@
   },
 
   "niveis": {
-    "_nota": "Nível da gema (decisão do dono, 30/09): começa SEMPRE no 1 e sobe por XP até `maximo` (30); acima disso, só com o add '+N ao nível das gemas encaixadas' das peças. A XP para sair do nível N é uma fração da exp que o PERSONAGEM ganha nos `levelsPorNivel` levels que aquele nível pede (do level de N ao level de N+1): `parteDaExpDoPersonagem` da faixa — 1–10 fácil (a gema sobe antes de o level liberar), 10–20 normal (no ritmo do personagem), 20–30 difícil (bem mais lento). A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Não há trava de level (decisão do dono): `levelsPorNivel` só dimensiona a XP (o trecho de levels do personagem que mede cada nível).",
+    "_nota": "Nível da gema (decisão do dono, 30/09): começa SEMPRE no 1 e sobe por XP até `maximo` (30); acima disso, só com o add '+N ao nível das gemas encaixadas' das peças. A XP para sair do nível N é uma fração da exp de UM level do personagem no level ATUAL dele: `parteDaExpDoPersonagem` da faixa — 1–10 fácil, 10–20 normal, 20–30 difícil. Assim um level 50 e um level 500 levam o mesmo tempo para subir a gema. A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Não há trava de level. `levelsPorNivel` não é mais usado na XP.",
     "maximo": 30,
     "faixas": [
       { "nome": "fácil", "ate": 10, "parteDaExpDoPersonagem": 0.3 },
@@ -36,6 +36,23 @@
     "_nota": "O DANO e a CURA base são os da MAGIA, pelo level do personagem (a curva do catálogo) — decisão do dono, 30/09. O treino entra em %: magic level × `porMagicLevel` nas mágicas e curas; nas magias de dano físico, skill × `porSkill`: melee de perto, distance de longe (tag `ranged`). O NÍVEL da gema é um bônus a mais (`progressaoPadrao`, × a raridade), e a qualidade outro.",
     "porMagicLevel": 0.5,
     "porSkill": 0.5
+  },
+
+  "fundidora": {
+    "_nota": "A FUNDIDORA (moeda, como a Orb of Fusing do Path of Exile; decisão do dono, 30/09): usada numa peça VESTIDA, sorteia de novo os links entre os sockets abertos — cada par vizinho liga com a `chanceDeLink` da raridade da peça (`sockets.drop`). Cai de bicho com `chancePorAto`.",
+    "itemId": 912002,
+    "nome": "fundidora",
+    "sprite": 9655,
+    "chancePorAto": { "1": 0.001, "2": 0.0015, "3": 0.002, "4": 0.0025 }
+  },
+
+  "iniciais": {
+    "_nota": "As gemas com que o personagem NOVO nasce (decisão do dono, 30/09): uma de ataque e uma de cura por classe, comuns, nível 1, encaixadas nas peças iniciais (a arma primeiro). Entregues uma vez, no primeiro login (depois de as peças ganharem sockets). O Druid ganha a Terra Strike, e não a Mud Attack: no level 8 a Mud Attack bate 6–8, a Terra Strike 12–19.",
+    "knight": ["spell-brutal-strike", "spell-wound-cleansing"],
+    "paladin": ["spell-lesser-ethereal-spear", "spell-light-healing"],
+    "sorcerer": ["spell-flame-strike", "spell-light-healing"],
+    "druid": ["spell-terra-strike", "spell-light-healing"],
+    "monk": ["spell-swift-jab", "spell-light-healing"]
   },
 
   "qualidade": {

@@ -186,6 +186,8 @@ function estadoInicialPersonagem(vocacao, sexo) {
   const look = R.LOOK_DA_VOCACAO[vocacao][sexo];
   const { maxHp, maxMana } = R.statsBase(vocacao, R.NIVEL_INICIAL);
   return {
+    // As gemas iniciais da classe: entregues no primeiro login (`GemasDeSkill.darGemasIniciais`).
+    gemasIniciais: true,
     level: R.NIVEL_INICIAL,
     // A exp REAL de um level 8 (o personagem de teste capturado nasceu com
     // 4200). Com 0 a barra ficava em 0% e o level não subia nunca.
@@ -977,6 +979,7 @@ export class Sessao {
           m.action === 'encaixar' ? GemasDeSkill.encaixar(this.estado, m) :
           m.action === 'tirar' ? GemasDeSkill.tirar(this.estado, m) :
           m.action === 'lapidar' ? GemasDeSkill.lapidar(this.estado, m) :
+          m.action === 'fundir' ? GemasDeSkill.fundir(this.estado, m) :
           { ok: false, erro: 'Ação de gema desconhecida.' }
         );
       // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,
@@ -1585,6 +1588,8 @@ export class Sessao {
     Recompensas.marcosDaVocacao(estado);
     // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
     ItensDoJogo.converterPersonagem(estado);
+    // O personagem novo ganha as gemas iniciais da classe (uma vez).
+    GemasDeSkill.darGemasIniciais(estado);
     // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).
     Acoes.sincronizarBarraComGemas(estado);
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.

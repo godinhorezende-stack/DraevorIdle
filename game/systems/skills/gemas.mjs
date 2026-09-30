@@ -149,20 +149,40 @@ ITEM_CATALOG[LAPIDADORA] ??= {
   sell: 0,
 };
 
+// A FUNDIDORA: a moeda que sorteia de novo os links da peça (empilha; cai de bicho).
+const F = CONFIG.fundidora;
+export const FUNDIDORA = F.itemId;
+ITEM_CATALOG[FUNDIDORA] ??= {
+  id: FUNDIDORA,
+  name: F.nome,
+  weight: 0.1,
+  stackable: true,
+  type: 'moeda',
+  rarity: 'raro',
+  hasSprite: true,
+  spriteDe: F.sprite,
+  descricao: 'Use numa peça vestida: sorteia de novo os links entre os sockets abertos (mais chance de ligar quanto mais rara a peça).',
+  sell: 0,
+};
+
 export const defDaGema = (itemId) => DEFS.get(Number(itemId)) ?? null;
 export const ehGema = (id) => DEFS.has(Number(id));
 
 // ---------------------------------------------------------------- níveis e XP
 
 const N = CONFIG.niveis;
-/** A XP para sair do nível `nivel`: pelas faixas de `config.niveis` (fácil, normal, difícil). */
-export function xpParaSubir(nivel) {
+/**
+ * A XP para sair do nível `nivel` da gema, com o personagem no `level` dele AGORA
+ * (decisão do dono, 30/09): uma fração da exp de UM level do personagem nesse level —
+ * 1–10 fácil, 10–20 normal, 20–30 difícil (`faixas`). Um level 50 e um level 500
+ * levam o mesmo tempo para subir a gema.
+ */
+export function xpParaSubir(nivel, level = 1) {
   const n = Math.max(1, Math.floor(nivel));
-  const levelDe = (k) => 1 + (k - 1) * N.levelsPorNivel;
-  // A exp que o personagem ganha do level do nível n ao do n+1, × a parte da faixa (fácil, normal, difícil).
-  const doPersonagem = R.expForLevel(levelDe(n + 1)) - R.expForLevel(levelDe(n));
+  const L = Math.max(1, Math.floor(level));
+  const umLevel = R.expForLevel(L + 1) - R.expForLevel(L);
   const faixa = N.faixas.find((f) => n < f.ate) ?? N.faixas.at(-1);
-  return Math.max(1, Math.round(doPersonagem * faixa.parteDaExpDoPersonagem));
+  return Math.max(1, Math.round(umLevel * faixa.parteDaExpDoPersonagem));
 }
 
 // ---------------------------------------------------------------- raridade
@@ -335,12 +355,12 @@ export function ganharXp(estado, exp) {
       // Por XP a gema para no `maximo` (30); acima, só o add de nível das peças.
       if (!def || g.nivel >= N.maximo) continue;
       g.xp = (g.xp ?? 0) + ganho;
-      while (g.nivel < N.maximo && g.xp >= xpParaSubir(g.nivel)) {
-        g.xp -= xpParaSubir(g.nivel);
+      while (g.nivel < N.maximo && g.xp >= xpParaSubir(g.nivel, estado.level)) {
+        g.xp -= xpParaSubir(g.nivel, estado.level);
         g.nivel++;
         subiram.push({ nome: def.nome, nivel: g.nivel });
       }
-      g.xp = g.nivel >= N.maximo ? 0 : Math.min(g.xp, xpParaSubir(g.nivel));
+      g.xp = g.nivel >= N.maximo ? 0 : Math.min(g.xp, xpParaSubir(g.nivel, estado.level));
     }
   }
   return subiram;
@@ -430,6 +450,33 @@ export function lapidar(estado, { de, slot, indice }, rng = Math.random) {
   return { ok: true, notice: `A gema foi lapidada: ${antes}% → ${alvo.qualidade}% de qualidade.` };
 }
 
+/**
+ * Usa uma FUNDIDORA da mochila na peça vestida em `slot`: cada par de sockets
+ * abertos vizinhos liga com a `chanceDeLink` da raridade da peça.
+ */
+export function fundir(estado, { slot }, rng = Math.random) {
+  const inv = (estado.inventory ??= []);
+  const k = inv.findIndex((p) => Number(p.id) === FUNDIDORA && (p.count ?? 1) > 0);
+  if (k < 0) return erro('Você não tem Fundidora.');
+  const peca = estado.equipment?.[slot];
+  const s = peca && soquetesDe(peca);
+  if (!s) return erro('Essa peça não tem sockets.');
+  if (s.abertos < 2) return erro('Precisa de pelo menos 2 sockets abertos para ligar.');
+  const chance = (CONFIG.sockets.drop[peca.raridade] ?? CONFIG.sockets.drop.comum).chanceDeLink;
+  const antes = s.links.filter(Boolean).length;
+  const links = s.links.map((_, i) => i + 1 < s.abertos && rng() < chance);
+  peca.soquetes = { abertos: s.abertos, links, gemas: s.gemas };
+  if ((inv[k].count ?? 1) > 1) inv[k].count -= 1;
+  else inv.splice(k, 1);
+  return { ok: true, notice: `Links sorteados de novo: ${antes} → ${links.filter(Boolean).length}.` };
+}
+
+/** A Fundidora que cai de um bicho (ou null): a chance do ato. */
+export function sortearFundidora({ ato = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
+  const c = F.chancePorAto;
+  return rng() < (c[String(ato)] ?? c['1'] ?? 0) * fatorDeChance ? { id: FUNDIDORA, count: 1 } : null;
+}
+
 /** A Lapidadora que cai de um bicho (ou null): a chance do ato. */
 export function sortearLapidadora({ ato = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
   const c = Q.lapidadora.chancePorAto;
@@ -457,36 +504,57 @@ export function migrarPersonagem(estado) {
     const itemId = ITEM_DA_ACAO.get(acao);
     if (jaTem.has(itemId)) continue;
     // Sempre no nível 1 (decisão do dono) — o nível 1 é o dano de antes das gemas.
-    const gema = novaGema(itemId);
-    let encaixou = false;
-    for (const slot of ORDEM_DE_ENCAIXE) {
-      const peca = estado.equipment?.[slot];
-      const s = peca && soquetesDe(peca);
-      if (!s) continue;
-      const livre = s.gemas.findIndex((g, i) => !g && i < s.abertos);
-      if (livre < 0) continue;
-      s.gemas[livre] = gema;
-      peca.soquetes = { abertos: s.abertos, links: s.links, gemas: s.gemas };
-      encaixou = true;
-      break;
-    }
-    if (!encaixou) (estado.inventory ??= []).push(itemDaGema(gema));
+    encaixarOndeCouber(estado, novaGema(itemId));
     criadas++;
   }
   return criadas;
 }
 
+/** Encaixa a gema no primeiro socket aberto e vazio das peças vestidas (na ordem de `ORDEM_DE_ENCAIXE`); sem lugar, vai para a mochila. */
+function encaixarOndeCouber(estado, gema) {
+  for (const slot of ORDEM_DE_ENCAIXE) {
+    const peca = estado.equipment?.[slot];
+    const s = peca && soquetesDe(peca);
+    if (!s) continue;
+    const livre = s.gemas.findIndex((g, i) => !g && i < s.abertos);
+    if (livre < 0) continue;
+    s.gemas[livre] = gema;
+    peca.soquetes = { abertos: s.abertos, links: s.links, gemas: s.gemas };
+    return true;
+  }
+  (estado.inventory ??= []).push(itemDaGema(gema));
+  return false;
+}
+
+/**
+ * As gemas do personagem NOVO (config `iniciais`, por classe): entregues uma vez,
+ * no primeiro login — quando as peças iniciais já têm sockets. Marca: `gemasIniciais`
+ * (posta na criação). Devolve quantas deu.
+ */
+export function darGemasIniciais(estado) {
+  if (!estado?.gemasIniciais) return 0;
+  delete estado.gemasIniciais;
+  let n = 0;
+  for (const acao of CONFIG.iniciais?.[estado.vocation] ?? []) {
+    const itemId = ITEM_DA_ACAO.get(acao);
+    if (!itemId) continue;
+    encaixarOndeCouber(estado, novaGema(itemId));
+    n++;
+  }
+  return n;
+}
+
 // ---------------------------------------------------------------- vista
 
 /** Os sockets de uma peça para a tela: `{ max, abertos, links, gemas: [{ id, nome, tipo, nivel, xp, xpProximo } | null] }`. */
-export function vistaDosSoquetes(peca) {
+export function vistaDosSoquetes(peca, level = 1) {
   const s = soquetesDe(peca);
   if (!s) return null;
   return {
     ...s,
     gemas: s.gemas.map((g) => {
       const def = g && DEFS.get(Number(g.id));
-      return def ? { id: g.id, nome: def.nome, tipo: def.tipo, nivel: g.nivel, xp: g.xp ?? 0, xpProximo: g.nivel >= N.maximo ? 0 : xpParaSubir(g.nivel), raridade: raridadeDaGema(g.raridade) } : null;
+      return def ? { id: g.id, nome: def.nome, tipo: def.tipo, nivel: g.nivel, xp: g.xp ?? 0, xpProximo: g.nivel >= N.maximo ? 0 : xpParaSubir(g.nivel, level), raridade: raridadeDaGema(g.raridade) } : null;
     }),
   };
 }

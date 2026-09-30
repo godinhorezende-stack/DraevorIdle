@@ -2980,7 +2980,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
   regra('Peso', `${meta.weight} oz`);
   // A chance conta de onde saiu a raridade — sem ela o rótulo parece chute.
-  if (meta.dropChance != null) {
+  // Só a chance que é chance (0 a 1): 57 itens vieram da captura com números maiores que 1 (136, 10, 2,5...), que não são uma probabilidade — e saíam como "13600%".
+  if (meta.dropChance > 0 && meta.dropChance <= 1) {
     const pct = meta.dropChance >= 0.01 ? (meta.dropChance * 100).toFixed(1) : (meta.dropChance * 100).toFixed(2);
     regra('Chance de drop', `${pct.replace('.', ',')}%`);
   }

@@ -178,7 +178,7 @@ export function catalogo(estado) {
       itemId: a.itemId,
       nivel: a.nivel,
       xp: a.xp,
-      xpProximo: a.nivel >= Gemas.CONFIG.niveis.maximo ? 0 : Gemas.xpParaSubir(a.nivel),
+      xpProximo: a.nivel >= Gemas.CONFIG.niveis.maximo ? 0 : Gemas.xpParaSubir(a.nivel, estado.level),
       raridade: a.raridade,
       multiplicador: Gemas.multiplicadorDaRaridade(a.raridade),
       supports: a.supports.map((sp) => ({ nome: sp.def.nome, nivel: sp.nivel })),
@@ -249,10 +249,14 @@ export function definir(estado, { slot, value }) {
 export function sincronizarBarraComGemas(estado) {
   const ativas = Gemas.skillsAtivas(estado);
   const acoes = (estado.actions ??= Array(SLOTS).fill(null));
+  // A configuração da skill que saiu (condições, alvos, mana mínima) fica GUARDADA pelo id,
+  // com o slot onde estava — e volta igual quando a gema volta (decisão do dono, 30/09).
+  const guardadas = (estado.barraGuardada ??= {});
   let mudou = false;
   for (let slot = 0; slot < acoes.length; slot++) {
     const id = acoes[slot]?.id;
     if (id && Gemas.ITEM_DA_ACAO.has(id) && !ativas.has(id)) {
+      guardadas[id] = { slot, action: acoes[slot] };
       acoes[slot] = null;
       mudou = true;
     }
@@ -261,8 +265,12 @@ export function sincronizarBarraComGemas(estado) {
   for (const id of ativas.keys()) {
     const entry = POR_ID.get(id);
     if (!entry || naBarra.has(id)) continue;
-    const slot = acoes.findIndex((a, i) => !a && entry.papeis.includes(PAPEL_DO_SLOT[i]));
-    if (slot >= 0 && definir(estado, { slot, value: { id } }).ok) {
+    const guardada = guardadas[id];
+    // O slot de antes, se ainda está livre e é do papel dela; senão, o primeiro livre do papel.
+    const antes = guardada && !acoes[guardada.slot] && entry.papeis.includes(PAPEL_DO_SLOT[guardada.slot]) ? guardada.slot : -1;
+    const slot = antes >= 0 ? antes : acoes.findIndex((a, i) => !a && entry.papeis.includes(PAPEL_DO_SLOT[i]));
+    if (slot >= 0 && definir(estado, { slot, value: guardada?.action ?? { id } }).ok) {
+      delete guardadas[id];
       naBarra.add(id);
       mudou = true;
     }

@@ -105,6 +105,17 @@ function corpo(body, peca) {
   }
   body.append(fila);
 
+  // A FUNDIDORA (moeda): sorteia de novo os links desta peça.
+  const fundidoraId = Object.values(state.items ?? {}).find((i) => i?.type === 'moeda' && i?.name === 'fundidora')?.id;
+  const fundidoras = (state.character?.inventory ?? []).filter((p) => p.id === fundidoraId).reduce((t, p) => t + (p.count ?? 1), 0);
+  const fundir = el('button', 'ghost', `Fundir links · ${fundidoras} Fundidora${fundidoras === 1 ? '' : 's'}`);
+  fundir.title = 'Sorteia de novo os links entre os sockets abertos desta peça (mais chance quanto mais rara a peça).';
+  fundir.disabled = !fundidoras || abertos < 2;
+  fundir.onclick = () => send({ t: 'gema', action: 'fundir', slot: slotAberto });
+  const barraDaPeca = el('div', 'soquetes-acoes');
+  barraDaPeca.append(fundir);
+  body.append(barraDaPeca);
+
   if (escolhido == null) {
     body.append(el('p', 'shop-note dica', 'Clique num socket para encaixar ou tirar uma gema.'));
     return;
