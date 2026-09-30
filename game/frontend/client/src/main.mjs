@@ -76,7 +76,8 @@ import { renderSheet as renderSheetInto } from './sheet.mjs';
 import { initTooltip, tipFor, tipPanel, tipTexto, ligarComparacao, receberComparacao, usarCatalogoDeAcoes } from './tooltip.mjs';
 // O QR do pagamento, desenhado aqui dentro: ver `packages/shared/src/qrcode.mjs`.
 import { qrcode } from '/packages/shared/src/qrcode.mjs';
-import { initArvore, openArvore, resumoDaArvoreParaBalao } from './arvore.mjs';
+import { initArvore } from './arvore.mjs';
+import { initPassivas, openPassivas, aoReceberPassivas, resumoDasPassivasParaBalao } from './passivas.mjs';
 import { initGemas, openGemas } from './gemas.mjs';
 /* As guildas — e, depois, o castle war. Ver `guildas.mjs`. */
 import { initGuildas, openGuildas, bauDaGuildaAberto, guardarNoBauDaGuilda } from './guildas.mjs';
@@ -1232,6 +1233,11 @@ function handle(message) {
        */
       if (message.view?.aviso) notice(message.view.aviso);
       panelCtx.redraw?.();
+      break;
+    /* A árvore de passivas única (etapa 7). Ver `passivas.mjs`: ela se redesenha sozinha (canvas). */
+    case 'passivas':
+      aoReceberPassivas(message);
+      if (message.aviso) notice(message.aviso);
       break;
     case 'arvore':
       state.arvore = message.view;
@@ -2565,7 +2571,8 @@ function buildWindows() {
     },
     openProficiency,
     openCharms,
-    openArvore,
+    // O botão da árvore no HUD abre a Árvore de Passivas única (a antiga, por vocação, saiu na etapa 7).
+    openArvore: openPassivas,
     openImbuements,
     openPrey,
     openPromotion,
@@ -2640,6 +2647,7 @@ function buildWindows() {
   initSocial(panelCtx);
   initPanels(panelCtx);
   initArvore(panelCtx);
+  initPassivas(panelCtx);
   initGemas(panelCtx);
   initGuildas(panelCtx);
   initChat(send);
@@ -2811,8 +2819,8 @@ const SISTEMAS = [
    * jogador GASTA algo que o level deu, e ele vai procurar os dois no mesmo
    * lugar. O alerta acende quando há ponto parado — ponto guardado não faz nada.
    */
-  { id: 'arvore', label: 'Árvore', abre: () => openArvore(),
-    tip: 'Gasta os pontos que o level dá, nos três ramos da sua vocação.',
+  { id: 'arvore', label: 'Árvore', abre: () => openPassivas(),
+    tip: 'A Árvore de Passivas: gasta os pontos que o level dá. Uma árvore só para todas as classes — cada uma começa num lugar e pode andar para qualquer região.',
     /*
      * O balão deste botão mostra o que a árvore JÁ DÁ, e não só o que ele faz.
      *
@@ -2820,8 +2828,8 @@ const SISTEMAS = [
      * de dano, quanto de vida — e que estava a dois cliques (abrir o painel,
      * achar a lista). Passar o mouse é mais barato que isso.
      */
-    corpo: () => resumoDaArvoreParaBalao(),
-    alerta: () => (state.character?.arvorePontos?.livres ?? 0) > 0 },
+    corpo: () => resumoDasPassivasParaBalao(),
+    alerta: () => (state.character?.passivas?.pontos?.livres ?? 0) > 0 },
   /*
    * O Gem Atelier logo depois da Árvore: as gemas acendem com os vessels que a
    * árvore enche, e as duas telas são lidas juntas. Ver `gemas.mjs`.
@@ -6189,7 +6197,7 @@ const objetoEm = (x, y) => (state.city?.objetos ?? []).find((o) => o.x === x && 
 const ABERTURAS_DE_OBJETO = {
   exercise: () => openExerciseRapido(),
   'treino-offline': () => openTreinoOffline(),
-  arvore: () => openArvore(),
+  arvore: () => openPassivas(),
   aventuras: () => openHunts(),
   forja: () => openForja(),
   imbuements: () => openImbuements(),
@@ -6974,7 +6982,7 @@ window.__abrir = {
   },
   aparencia: () => openCharacter('aparencia'),
   deposito: () => openLocker(),
-  arvore: () => openArvore(),
+  arvore: () => openPassivas(),
   // A faixa de novidades tem um clique só, e ele mora fora de `panels.mjs`.
   novidades: () => abrirNovidades(),
   forja: () => openForja(),
