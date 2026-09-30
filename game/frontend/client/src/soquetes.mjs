@@ -59,6 +59,9 @@ function corpo(body, peca) {
     )
   );
 
+  // As supports que estão VALENDO (o servidor diz, por skill, quais supports ligadas e compatíveis ela tem).
+  const cat = state.actionCatalog ?? {};
+  const valendo = new Set([...(cat.spells ?? []), ...(cat.runes ?? [])].flatMap((x) => (x.gema?.supports ?? []).map((s) => s.nome)));
   const fila = el('div', 'soquetes-fila');
   for (let i = 0; i < max; i++) {
     const g = sq.gemas[i];
@@ -70,6 +73,11 @@ function corpo(body, peca) {
       casa.disabled = true;
       casa.title = 'Socket bloqueado';
     } else if (g) {
+      const def = state.items?.[g.id]?.gemaDef;
+      if (def?.tipo === 'support' && !valendo.has(def.nome)) {
+        casa.classList.add('sem-efeito');
+        casa.title = 'Sem efeito: não está ligada a uma gema de skill compatível';
+      }
       casa.append(itemCanvas(g.id, 32));
       casa.append(el('i', 'soquete-nivel', String(g.nivel)));
       tipFor(casa, g.id, null, null, { id: g.id, count: 1, raridade: g.raridade, gema: { nivel: g.nivel, xp: g.xp, qualidade: g.qualidade } });

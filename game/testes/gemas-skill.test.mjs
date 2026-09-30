@@ -520,3 +520,39 @@ test('sem trava: qualquer personagem usa qualquer gema; o dano base escala pelo 
   assert.equal(G.bonusDoTreino(e, G.DEFS.get(GEMA('spell-brutal-strike'))), 100 * G.CONFIG.dano.porSkill, 'física de perto: melee');
   assert.equal(G.bonusDoTreino(e, def), 10 * G.CONFIG.dano.porMagicLevel, 'mágica: magic level');
 });
+
+// ---------------------------------------------------------------- a barra segue as gemas encaixadas
+
+test('barra: gema encaixada entra sozinha no slot livre do papel dela; gema tirada (ou peça desvestida) esvazia o slot', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  const pocao = Acoes.catalogo(e).items[0];
+  e.actions[0] = { id: pocao.id, kind: 'item', enabled: true, conditions: [] };
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GEMA('spell-light-healing'))] });
+  assert.equal(Acoes.sincronizarBarraComGemas(e), true);
+  const onde = (id) => e.actions.findIndex((a) => a?.id === id);
+  assert.equal(Acoes.PAPEL_DO_SLOT[onde(FLAME)], 'attack');
+  assert.equal(Acoes.PAPEL_DO_SLOT[onde('spell-light-healing')], 'hp');
+  assert.equal(e.actions[0].id, pocao.id, 'a poção fica');
+  assert.equal(Acoes.sincronizarBarraComGemas(e), false, 'nada mudou');
+  // Tirou a gema: o slot esvazia; a poção continua.
+  G.tirar(e, { slot: 'weapon', indice: 0 });
+  Acoes.sincronizarBarraComGemas(e);
+  assert.equal(onde(FLAME), -1);
+  assert.ok(onde('spell-light-healing') >= 0);
+  // Desvestiu a peça: as skills dela saem da barra.
+  Inventario.desequipar(e, { slot: 'weapon' });
+  Acoes.sincronizarBarraComGemas(e);
+  assert.equal(onde('spell-light-healing'), -1);
+  assert.equal(e.actions[0].id, pocao.id);
+});
+
+test('encaixar sem dizer o socket (a gema arrastada até a peça): vai no primeiro aberto e vazio', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { abertos: 2, gemas: [G.novaGema(GEMA(FLAME))] });
+  e.inventory.push(G.itemDaGema(G.novaGema(GEMA('spell-energy-strike'))));
+  assert.equal(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon' }).ok, true);
+  assert.equal(e.equipment.weapon.soquetes.gemas[1].id, GEMA('spell-energy-strike'));
+  e.inventory.push(G.itemDaGema(G.novaGema(GEMA('spell-ice-strike'))));
+  assert.match(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon' }).erro, /socket livre/);
+});

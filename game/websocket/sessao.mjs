@@ -674,6 +674,8 @@ export class Sessao {
    * gema mudam as skills disponíveis (a Action Bar só mostra as gemas encaixadas).
    */
   aplicarComSkills(resultado) {
+    // A barra segue as gemas encaixadas: tira a skill que perdeu a gema, põe a nova (antes do estado ir).
+    if (resultado?.ok) Acoes.sincronizarBarraComGemas(this.estado);
     this.aplicar(resultado);
     if (resultado?.ok) {
       Ficha.invalidar(this.estado);
@@ -1583,6 +1585,8 @@ export class Sessao {
     Recompensas.marcosDaVocacao(estado);
     // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
     ItensDoJogo.converterPersonagem(estado);
+    // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).
+    Acoes.sincronizarBarraComGemas(estado);
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
     Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.

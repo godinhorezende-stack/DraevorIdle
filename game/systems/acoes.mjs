@@ -182,6 +182,37 @@ export function definir(estado, { slot, value }) {
   return { ok: true };
 }
 
+/**
+ * ---- A barra segue as GEMAS encaixadas (decisão do dono, 30/09) ----
+ * Equipamento → sockets → gemas → skills ativas → barra: a skill cuja gema
+ * saiu (tirada do socket, peça desvestida) sai do slot; a gema nova encaixada
+ * entra sozinha no primeiro slot livre do papel dela (ataque, cura, suporte...).
+ * Poções e itens não são de gema: ficam como estão. Devolve se mudou algo.
+ */
+export function sincronizarBarraComGemas(estado) {
+  const ativas = Gemas.skillsAtivas(estado);
+  const acoes = (estado.actions ??= Array(SLOTS).fill(null));
+  let mudou = false;
+  for (let slot = 0; slot < acoes.length; slot++) {
+    const id = acoes[slot]?.id;
+    if (id && Gemas.ITEM_DA_ACAO.has(id) && !ativas.has(id)) {
+      acoes[slot] = null;
+      mudou = true;
+    }
+  }
+  const naBarra = new Set(acoes.filter(Boolean).map((a) => a.id));
+  for (const id of ativas.keys()) {
+    const entry = POR_ID.get(id);
+    if (!entry || naBarra.has(id)) continue;
+    const slot = acoes.findIndex((a, i) => !a && entry.papeis.includes(PAPEL_DO_SLOT[i]));
+    if (slot >= 0 && definir(estado, { slot, value: { id } }).ok) {
+      naBarra.add(id);
+      mudou = true;
+    }
+  }
+  return mudou;
+}
+
 /** `send({t:'actions', action:'key', slot, key})` — `key:null` tira a tecla. */
 export function trocarTecla(estado, { slot, key }) {
   if (!Number.isInteger(slot) || slot < 0 || slot >= SLOTS) return { ok: false, erro: 'Slot inválido.' };

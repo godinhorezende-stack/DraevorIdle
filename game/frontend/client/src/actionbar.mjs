@@ -1246,6 +1246,8 @@ function filtered(entries) {
      * dizer "aqui só cabe cura" é a tela, antes do clique.
      */
     if (papel && !(entry.papeis ?? []).includes(papel)) return false;
+    // Só as skills das GEMAS ENCAIXADAS (decisão do dono): sem a gema, nem aparece.
+    if (entry.blocked === 'sem a gema') return false;
     if (needle && !`${entry.name} ${entry.words ?? ''}`.toLowerCase().includes(needle)) return false;
     if (level && (entry.level ?? 0) < level) return false;
     if (vocation && entry.vocations?.length && !entry.vocations.includes(vocation)) return false;
@@ -1513,6 +1515,9 @@ export function renderEditor() {
   const redrawList = () => {
     list.innerHTML = '';
     const entries = filtered(catalog[editing.tab] ?? []);
+    if (!entries.length && editing.tab !== 'items') {
+      list.append(el('p', 'empty', 'Nenhuma gema encaixada para este slot. Encaixe gemas nos sockets das peças vestidas (clique no selo de sockets da peça, ou Ctrl + botão direito → Sockets). A Zuma Magehide vende todas.'));
+    }
     for (const entry of entries) {
       /*
        * A mesma classe de funcao do balao (`acao-ataque`, `acao-cura`, ...), para
@@ -1537,6 +1542,8 @@ export function renderEditor() {
       // As palavras da magia em dourado, como aparecem no client.
       if (entry.words) text.append(el('em', 'words', entry.words));
       else if (entry.level) text.append(el('em', 'words', `level ${entry.level}`));
+      // A gema de onde a skill vem: nível e supports ligadas.
+      if (entry.gema) text.append(el('em', 'gema-da-skill', `gema nv ${entry.gema.nivel}${entry.gema.supports?.length ? ` · ${entry.gema.supports.map((s) => s.nome).join(', ')}` : ''}`));
       item.append(text);
 
       if (entry.cost) item.append(el('span', 'action-cost', `${money(entry.cost)}g`));

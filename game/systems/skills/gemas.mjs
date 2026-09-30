@@ -362,7 +362,9 @@ export function encaixar(estado, { de, slot, indice }) {
   if (!peca) return erro('Não há peça nesse slot.');
   const s = soquetesDe(peca);
   if (!s) return erro('Essa peça não tem sockets.');
-  const i = Math.floor(Number(indice));
+  // Sem `indice` (a gema arrastada até a peça): o primeiro socket aberto e vazio.
+  const i = indice == null ? s.gemas.findIndex((g, k) => !g && k < s.abertos) : Math.floor(Number(indice));
+  if (indice == null && i < 0) return erro('Essa peça não tem socket livre.');
   if (!(i >= 0 && i < s.max)) return erro('Socket inexistente.');
   if (i >= s.abertos) return erro('Esse socket está bloqueado.');
   const inv = estado.inventory ?? [];

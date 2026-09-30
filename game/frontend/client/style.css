@@ -27499,3 +27499,19 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 #barra-de-conjuracao.cancelada .conj-enche { background: #9a2a2a; }
 #barra-de-conjuracao.concluida .conj-enche { width: 100% !important; }
 .soquetes-acoes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.action-text .gema-da-skill { display: block; font-size: 11px; font-style: normal; color: #1ba29b; }
+
+/* ---- Sockets desenhados na peça (inventory.mjs `selarSoquetes`) ---- */
+.cell { position: relative; }
+.selo-soquetes { position: absolute; left: 1px; bottom: 1px; display: flex; align-items: center; gap: 0; padding: 1px 2px; background: #000a; border-radius: 3px; border: 0; line-height: 0; z-index: 2; pointer-events: none; }
+.selo-soquetes.tocavel { pointer-events: auto; cursor: pointer; }
+.selo-soquetes.tocavel::after { content: ''; position: absolute; inset: -6px; } /* área de toque maior no celular */
+.selo-soquetes .sq { width: 5px; height: 5px; border-radius: 50%; border: 1px solid #c8a15a; box-sizing: border-box; display: inline-block; }
+.selo-soquetes .sq.ativa { background: #e0564d; border-color: #e0564d; }
+.selo-soquetes .sq.support { background: #4d8fe0; border-color: #4d8fe0; }
+.selo-soquetes .sq.trancado { border-color: #555; opacity: .6; }
+.selo-soquetes .lk { width: 3px; height: 1px; display: inline-block; }
+.selo-soquetes .lk.ligado { background: #e8c66a; }
+.selo-gema { position: absolute; right: 1px; bottom: 1px; font-size: 9px; font-style: normal; line-height: 1; padding: 1px 2px; background: #000b; color: #7fe0d8; border-radius: 3px; pointer-events: none; }
+.soquete-casa.sem-efeito { border-color: #b0342a; box-shadow: 0 0 6px #b0342a99; }
+.soquete-casa.sem-efeito::after { content: '!'; position: absolute; top: -4px; right: -2px; font-size: 11px; font-weight: 700; color: #fff; background: #b0342a; border-radius: 50%; width: 13px; height: 13px; line-height: 13px; text-align: center; }
