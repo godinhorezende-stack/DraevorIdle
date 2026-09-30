@@ -103,10 +103,10 @@
       "keystone": { "nome": "Raiz Venenosa", "descricao": "Magia de terra tem 25% de chance de envenenar o bicho com 30% do dano, ao longo de 5 segundos.", "keystone": { "regra": "habilidade", "id": "raizVenenosa" } } },
 
     { "id": "spell", "nome": "Spell", "angulo": 90, "raio": 1500, "dominio": "dano", "tags": ["spell"], "perto": ["earth", "fire", "cast_speed"],
-      "pequenos": [[{ "dano": 3, "tag": "spell" }], [{ "add": "skill_magic", "valor": 2 }], [{ "dano": 3, "tag": "spell" }]],
+      "pequenos": [[{ "dano": 2, "tag": "spell" }], [{ "add": "skill_magic", "valor": 2 }], [{ "dano": 2, "tag": "spell" }]],
       "notaveis": [
-        { "nome": "Arcane Mind", "efeitos": [{ "add": "mana", "valor": 150 }, { "dano": 10, "tag": "spell" }] },
-        { "nome": "Erudito", "efeitos": [{ "add": "skill_magic", "valor": 6 }, { "dano": 6, "tag": "area" }] }
+        { "nome": "Arcane Mind", "efeitos": [{ "add": "mana", "valor": 150 }, { "dano": 7, "tag": "spell" }] },
+        { "nome": "Erudito", "efeitos": [{ "add": "skill_magic", "valor": 6 }, { "dano": 3, "tag": "area" }] }
       ],
       "keystone": { "nome": "Avatar do Fogo", "descricao": "50% do dano físico do golpe da arma sai como fogo.", "keystone": { "regra": "conversao", "de": "physical", "para": "fire", "pct": 50 } } },
 

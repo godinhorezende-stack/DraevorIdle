@@ -4486,7 +4486,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 3,
+     "dano": 2,
      "tag": "spell"
     }
    ],
@@ -4535,7 +4535,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 3,
+     "dano": 2,
      "tag": "spell"
     }
    ],
@@ -4560,7 +4560,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 3,
+     "dano": 2,
      "tag": "spell"
     }
    ],
@@ -4608,7 +4608,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 3,
+     "dano": 2,
      "tag": "spell"
     }
    ],
@@ -4634,7 +4634,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 3,
+     "dano": 2,
      "tag": "spell"
     }
    ],
@@ -4682,7 +4682,7 @@
    "levelMinimo": 0,
    "efeitos": [
     {
-     "dano": 3,
+     "dano": 2,
      "tag": "spell"
     }
    ],
@@ -4711,7 +4711,7 @@
      "valor": 150
     },
     {
-     "dano": 10,
+     "dano": 7,
      "tag": "spell"
     }
    ],
@@ -4739,7 +4739,7 @@
      "valor": 6
     },
     {
-     "dano": 6,
+     "dano": 3,
      "tag": "area"
     }
    ],
