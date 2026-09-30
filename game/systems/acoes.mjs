@@ -557,12 +557,15 @@ export function disparar(estado, hunt, personagem, slot, alvo) {
   }
 
   // Gemas: "-Ns recarga de <magia>" (supremo), sem passar de zero.
-  const recarga = Math.max(0, recargaDe(entry, entry.cooldown ?? 1000) - (Ficha.combate(estado).magiasDasGemas?.[action.id]?.recargaMs ?? 0));
+  // "Cooldown Recovery" (add): a recarga própria anda mais rápido.
+  const fichaDaRecarga = Ficha.combate(estado);
+  const recarga = Math.max(0, Math.round((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)));
   cds[action.id] = { ate: agora + recarga, total: recarga };
   // O familiar: o slot mostra a espera dele (17 min no nível 0, 2 min no 100).
   if (entry.summon) cds[action.id] = { ate: agora + Summon.recarga(estado), total: Summon.recarga(estado) };
   if (entry.kind === 'spell' || grupoDeAtaque) {
-    const doGrupo = recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0));
+    // "Cast Speed" (add): encurta o intervalo entre magias (a recarga do grupo).
+    const doGrupo = Math.round(recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0)) / (entry.kind === 'spell' ? 1 + (fichaDaRecarga.castSpeed ?? 0) / 100 : 1));
     cds[grupoQueConta] = { ate: agora + doGrupo, total: doGrupo };
   }
   if (entry.kind === 'item') cds[grupo] = { ate: agora + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };

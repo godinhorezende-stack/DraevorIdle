@@ -49,7 +49,7 @@ test('um atributo NOVO no registro aparece sozinho, sem mexer na comparação', 
 test('vida máxima entra no impacto (passa por sincronizarMaximos, fora da ficha de combate); o estado de verdade não muda', () => {
   const { e, arma } = knight();
   const antes = JSON.stringify(e);
-  const r = Comparar.comparar(e, { id: arma, af: [...e.equipment.weapon.af, { id: 'hp_max', nivel: 5, value: 10 }] });
+  const r = Comparar.comparar(e, { id: arma, af: [...e.equipment.weapon.af, { id: 'life', nivel: 5, value: 500 }] });
   assert.ok(linha(r.personagem, 'vidaMaxima').delta > 0);
   assert.equal(JSON.stringify(e), antes, 'comparar não pode mexer no personagem');
 });
@@ -63,4 +63,23 @@ test('a mesma peça dá lista vazia; arma de duas mãos avisa que o escudo sai; 
   assert.equal(Comparar.comparar(e, { id: duas.id }).tiraOEscudo, true);
   const pocao = Object.values(ITEM_CATALOG).find((i) => i.stackable && !i.slot);
   assert.equal(Comparar.comparar(e, { id: pocao.id }).ok, false);
+});
+
+test('"AO EQUIPAR": atual → novo → diferença, na ordem das seções da ficha; `todos` traz a ficha inteira', () => {
+  const { e } = knight();
+  const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
+  const r = Comparar.comparar(e, { id: ANEL, af: [{ id: 'str', nivel: 5, value: 40 }, { id: 'evasion', nivel: 3, value: 50 }] });
+  const str = linha(r.personagem, 'atributos.str');
+  assert.equal(str.nome, 'STR');
+  assert.equal(str.para - str.de, 40);
+  assert.equal(str.delta, 40);
+  // Ordem: Atributos antes de Recursos antes de Defensivo.
+  const secoes = r.personagem.map((l) => l.secao);
+  const ordem = ['Atributos', 'Recursos', 'Ofensivo', 'Defensivo', 'Resistências', 'Utilidade'];
+  for (let i = 1; i < secoes.length; i++) assert.ok(ordem.indexOf(secoes[i]) >= ordem.indexOf(secoes[i - 1]), secoes.join(','));
+  assert.ok(secoes.includes('Defensivo'), 'Evasion subiu');
+  // `todos` inclui o que não muda (DEX, INT...) e nada com zero dos dois lados.
+  assert.ok(r.todos.length > r.personagem.length);
+  assert.ok(linha(r.todos, 'atributos.dex'));
+  assert.ok(r.todos.every((l) => l.de !== 0 || l.para !== 0));
 });

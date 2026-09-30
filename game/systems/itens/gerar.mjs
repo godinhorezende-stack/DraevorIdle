@@ -15,23 +15,85 @@
 // não existe: quando existir, entra no contexto como variável própria.
 import { ITEM_CATALOG } from '../dados.mjs';
 import * as C from './config.mjs';
-import * as Treino from '../treino.mjs';
+import * as Atributos from '../personagem/atributos.mjs';
 
-/** Slots que recebem atributo no drop (a mochila não). */
-export const SLOTS_COM_ATRIBUTO = new Set(Object.entries(C.POOLS).filter(([, p]) => p.length).map(([s]) => s));
-
-/** O item-base recebe atributos? (equipável, não empilha, de um slot com pool) */
-export function aceitaAtributos(id) {
-  const meta = ITEM_CATALOG[id];
-  return !!meta && !meta.stackable && SLOTS_COM_ATRIBUTO.has(meta.slot);
+/**
+ * O TIPO do item, que escolhe o pool de adds (`pools.json`): arma corpo a
+ * corpo, de distância (arco, besta, arremesso) ou mágica (wand/rod); munição;
+ * escudo, spellbook (livro) ou aljava; armadura (elmo, peitoral, calça), bota;
+ * anel, amuleto. `null`: não recebe add (mochila, item que não se veste).
+ */
+export function tipoDoItem(meta) {
+  if (!meta?.slot || meta.stackable) return null;
+  switch (meta.slot) {
+    case 'weapon':
+      return meta.wand || meta.skill === 'magic' ? 'arma_magica' : meta.skill === 'distance' ? 'arma_distancia' : 'arma_melee';
+    case 'ammo':
+      return 'municao';
+    case 'shield':
+      return meta.quiver ? 'aljava' : meta.type === 'spellbooks' ? 'livro' : 'escudo';
+    case 'head':
+    case 'body':
+    case 'legs':
+      return 'armadura';
+    case 'feet':
+      return 'bota';
+    case 'ring':
+      return 'anel';
+    case 'neck':
+      return 'amuleto';
+    default:
+      return null;
+  }
 }
 
-/** O pool DESTE item: o do slot, com a perícia da própria arma no lugar de `skill_da_arma`. */
-export function poolDe(itemId) {
+/** O item-base recebe atributos? (equipável, não empilha, de um tipo com pool) */
+export function aceitaAtributos(id) {
+  const tipo = tipoDoItem(ITEM_CATALOG[id]);
+  return !!tipo && (C.POOLS[tipo]?.length ?? 0) > 0;
+}
+
+/*
+ * Os adds de DEFESA da base só saem se a base da peça tiver aquele tipo (anel
+ * e amuleto: livres). Armour = o campo `armor` da base.
+ */
+const DEFESA_DO_ADD = { armor_flat: 'armor', armour_pct: 'armor', evasion: 'evasion', evasion_pct: 'evasion', energy_shield: 'es', es_pct: 'es' };
+
+/**
+ * O pool DESTE item, para ESTA peça: o do tipo dele, sem os adds que não caem
+ * (`dropa: false`), os de Item Level mínimo acima do da peça, os que a
+ * raridade não permite e — fora anel/amuleto — os de defesa que a base não tem.
+ * `ctx`: `{ itemLevel, raridade, base }` (sem ctx, o pool inteiro do tipo).
+ */
+export function poolDe(itemId, ctx = null) {
   const meta = ITEM_CATALOG[itemId];
-  const pericia = meta?.wand ? 'magic' : Treino.canonica(meta?.skill);
-  const lista = (C.POOLS[meta?.slot] ?? []).flatMap((id) => (id === 'skill_da_arma' ? (C.ATRIBUTOS[`skill_${pericia}`] ? [`skill_${pericia}`] : []) : [id]));
-  return [...new Set(lista)];
+  const tipo = tipoDoItem(meta);
+  const lista = [...new Set(C.POOLS[tipo] ?? [])];
+  if (!ctx) return lista;
+  const livre = tipo === 'anel' || tipo === 'amuleto';
+  return lista.filter((id) => {
+    const a = C.ATRIBUTOS[id];
+    if (!a || a.dropa === false) return false;
+    if ((a.nivelMinimo ?? 1) > (ctx.itemLevel ?? 1)) return false;
+    if (ctx.raridade && a.raridades && !a.raridades.includes(ctx.raridade)) return false;
+    const precisa = DEFESA_DO_ADD[id];
+    if (precisa && !livre && !(ctx.base?.[precisa]?.[1] > 0)) return false;
+    return true;
+  });
+}
+
+/** Sorteia `quantos` adds do pool, SEM repetir, pelo `peso` de cada um. */
+export function sortearAdds(pool, quantos, rng = Math.random) {
+  const restantes = [...pool];
+  const escolhidos = [];
+  for (let i = 0; i < quantos && restantes.length; i++) {
+    const pesos = restantes.map((id) => C.ATRIBUTOS[id]?.peso ?? 1);
+    let r = rng() * pesos.reduce((a, b) => a + b, 0);
+    let k = pesos.findIndex((p) => (r -= p) < 0);
+    if (k < 0) k = restantes.length - 1;
+    escolhidos.push(restantes.splice(k, 1)[0]);
+  }
+  return escolhidos;
 }
 
 /** Sorteia uma chave de `{chave: peso}` (pesos em %, ou qualquer escala). */
@@ -69,8 +131,14 @@ export function nivelDoValor(id, valor) {
   return nivel;
 }
 
-/** Os números do item-base que cada peça sorteia na faixa da raridade (ver `rolarBase`). */
-export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor', 'marmor'];
+/**
+ * Os números do item-base que cada peça sorteia na faixa da raridade (ver
+ * `rolarBase`): dano (`attack`), bloqueio do escudo (`defense`) e as três
+ * defesas — Armour (`armor`), Evasion (`evasion`) e Energy Shield (`es`).
+ * `marmor` (a armadura mágica de antes) só existe nas peças antigas: a
+ * migração v4 a converte em Energy Shield.
+ */
+export const CAMPOS_DA_BASE = ['attack', 'defense', 'armor', 'evasion', 'es', 'marmor'];
 
 /** Slots de joia: anel e amuleto quase nunca têm armadura no catálogo, mas também sorteiam a armadura física/mágica. */
 export const SLOTS_DE_JOIA = new Set(['ring', 'neck']);
@@ -97,7 +165,7 @@ export const FATOR_DAS_DUAS = 0.75;
  * 22–27. Cada golpe sorteia dentro da faixa (`ataqueDoGolpe`, em ficha.mjs).
  * Devolve `{}` se o item não tem nenhum desses números.
  */
-export function rolarBase(itemId, raridade, rng = Math.random) {
+export function rolarBase(itemId, raridade, rng = Math.random, itemLevel = null) {
   const meta = ITEM_CATALOG[itemId];
   const faixa = C.RARIDADES.raridades[raridade]?.base ?? { piso: [1, 1], teto: [1, 1] };
   const sortear = ([lo, hi]) => lo + rng() * (hi - lo);
@@ -114,21 +182,25 @@ export function rolarBase(itemId, raridade, rng = Math.random) {
     const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
     base[campo] = [piso, teto];
   }
-  // A armadura do catálogo vira física, mágica ou as duas (Comum e Incomum: uma só) — `raridades.json`, `armadura`.
   // Joia que veio sem armadura mas TEM no catálogo: zera (senão a peça voltaria ao valor cheio dele).
   if (joia && !querArmadura && Number(meta?.armor) > 0) base.armor = [0, 0];
+  /*
+   * ---- O TIPO da base de defesa: Armour, Evasion, Energy Shield ou híbrida ----
+   * Pela vocação da peça (e o peso, na de todas as vocações) — decisão do dono
+   * (`Atributos.tiposDaBase`). A faixa sorteada da armadura do catálogo vira o
+   * valor de cada tipo: Armour igual, Evasion e Energy Shield pelo Item Level.
+   * Anel/amuleto com armadura: Armour.
+   */
   if (base.armor?.[1] > 0) {
-    const pesos = C.RARIDADES.raridades[raridade]?.armadura;
-    const tipo = pesos ? sortearChave(pesos, rng) : 'fisica';
+    const tipos = joia ? ['armour'] : Atributos.tiposDaBase(meta);
+    const il = itemLevel ?? meta?.minLevel ?? 1;
     const [piso, teto] = base.armor;
-    const fatia = (f) => [Math.max(1, Math.round(piso * f)), Math.max(1, Math.round(teto * f))];
-    if (tipo === 'magica') {
-      base.marmor = base.armor;
-      base.armor = [0, 0];
-    } else if (tipo === 'ambas') {
-      base.armor = fatia(FATOR_DAS_DUAS);
-      base.marmor = fatia(FATOR_DAS_DUAS);
-    }
+    const dePiso = Atributos.valoresDaBase(tipos, piso, il);
+    const deTeto = Atributos.valoresDaBase(tipos, teto, il);
+    const faixa = (k) => [Math.max(1, Math.round(dePiso[k])), Math.max(1, Math.round(deTeto[k]))];
+    base.armor = dePiso.armour != null ? faixa('armour') : [0, 0];
+    if (dePiso.evasion != null) base.evasion = faixa('evasion');
+    if (dePiso.es != null) base.es = faixa('es');
   }
   return base;
 }
@@ -142,39 +214,52 @@ export function origemDoDrop(ctx = {}) {
 }
 
 /**
- * Gera o item de um drop. `ctx`: `{ itemId, level?, ato?, dificuldade?,
- * boss?, raridade? (forçar, p.ex. na simulação), rng? }`.
+ * O ITEM LEVEL de um drop: o que o contexto traz (o level alvo da fase onde
+ * caiu — `contextoDoDrop` na caçada); sem ele, o level do ato/hunt; o boss do
+ * ato dá `bonusDoBoss` a mais (decisão do dono).
+ */
+export function itemLevelDoDrop(ctx = {}) {
+  const base = Math.max(1, Math.round(ctx.itemLevel ?? ctx.level ?? ITEM_CATALOG[ctx.itemId]?.minLevel ?? 1));
+  return ctx.boss ? Math.round(base * (1 + (C.TIERS.bonusDoBoss ?? 0))) : base;
+}
+
+/**
+ * Gera o item de um drop. `ctx`: `{ itemId, itemLevel?, level?, ato?,
+ * dificuldade?, boss?, raridade? (forçar), rng? }`.
  *
- * Devolve a peça no formato que o inventário guarda: `{ id, count: 1 }` para
- * o item simples (não aceita atributo, ou saiu Comum sem nenhum), ou
- * `{ id, count: 1, raridade, af: [{ id, nivel, value }], efeito? }`.
+ *   DROP → item base → raridade (ato × dificuldade) → Item Level → base
+ *   (dano/defesa, em faixa) → quantos adds (raridade) → quais (pool do tipo do
+ *   item, pelo PESO) → o TIER de cada um (Item Level + viés da raridade) → o
+ *   valor dentro da faixa do tier → o poder (Lendário: chance; Mítico: sempre)
+ *
+ * Devolve a peça: `{ id, count: 1 }` (simples), ou `{ id, count: 1, raridade,
+ * ilvl, base?, af: [{ id, nivel, value }], efeito? }` — `nivel` é o TIER (1–5).
  */
 export function gerarItem(ctx) {
   const rng = ctx.rng ?? Math.random;
   const simples = { id: ctx.itemId, count: 1 };
   if (!aceitaAtributos(ctx.itemId)) return simples;
+  const meta = ITEM_CATALOG[ctx.itemId];
   const { ato, dificuldade } = origemDoDrop(ctx);
   const raridade = ctx.raridade ?? sortearChave(C.RARIDADES.chances[ato][dificuldade], rng);
   const def = C.RARIDADES.raridades[raridade];
+  const itemLevel = itemLevelDoDrop(ctx);
 
-  // Quantos, e quais: do pool do equipamento, sem repetir.
-  const pool = poolDe(ctx.itemId);
+  const base = rolarBase(ctx.itemId, raridade, rng, itemLevel);
+  const pool = poolDe(ctx.itemId, { itemLevel, raridade, base });
   const quantos = Math.min(pool.length, Number(sortearChave(def.atributos, rng)));
-  const restantes = [...pool];
-  const tabela = C.NIVEIS.chances[ato][dificuldade][raridade];
-  const af = [];
-  for (let i = 0; i < quantos; i++) {
-    const id = restantes.splice(Math.floor(rng() * restantes.length), 1)[0];
-    const nivel = sortearNivel(tabela, rng);
-    af.push({ id, nivel, value: valorNaFaixa(id, nivel, rng()) });
-  }
+  const amuleto = meta?.slot === 'neck';
+  const af = sortearAdds(pool, quantos, rng).map((id) => {
+    const nivel = C.sortearTier(itemLevel, raridade, rng, { amuleto });
+    return { id, nivel, value: valorNaFaixa(id, nivel, rng()) };
+  });
 
-  // O efeito é separado dos atributos: um por item, do catálogo da raridade.
+  // O poder é separado dos adds: Lendário com chance (`chanceDoEfeito`), Mítico sempre.
   const tipo = def.efeito;
-  const efeito = tipo && C.EFEITOS[tipo] ? { tipo, id: sortearChave(Object.fromEntries(Object.keys(C.EFEITOS[tipo]).map((k) => [k, 1])), rng) } : null;
+  const chance = def.chanceDoEfeito ?? 1;
+  const efeito = tipo && C.EFEITOS[tipo] && rng() < chance ? { tipo, id: sortearChave(Object.fromEntries(Object.keys(C.EFEITOS[tipo]).filter((k) => !k.startsWith('_')).map((k) => [k, 1])), rng) } : null;
 
-  const base = rolarBase(ctx.itemId, raridade, rng);
   const temBase = Object.keys(base).length > 0;
   if (!af.length && !efeito && raridade === 'comum' && !temBase) return simples;
-  return { ...simples, raridade, ...(temBase ? { base } : {}), af, ...(efeito ? { efeito } : {}) };
+  return { ...simples, raridade, ilvl: itemLevel, ...(temBase ? { base } : {}), af, ...(efeito ? { efeito } : {}) };
 }

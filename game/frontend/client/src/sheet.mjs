@@ -176,6 +176,86 @@ function faixa(min, max, media, formatar = (v) => v) {
   return `${formatar(min)} – ${formatar(max)}`;
 }
 
+/** Uma grade de cards. */
+function grade(...cards) {
+  const g = el('div', 'stat-grid');
+  g.append(...cards);
+  return g;
+}
+
+/*
+ * Uma seção da ficha que RECOLHE (no celular a ficha é longa). Aberta ou
+ * fechada fica lembrado neste aparelho; sem armazenamento, abre sempre.
+ */
+function secao(body, id, texto, arte, conteudo) {
+  const d = el('details', 'sheet-secao');
+  d.dataset.secao = id;
+  let aberta = true;
+  try {
+    aberta = localStorage.getItem(`ficha-secao:${id}`) !== '0';
+  } catch {
+    // sem armazenamento: aberta
+  }
+  d.open = aberta;
+  const cabeca = el('summary');
+  cabeca.append(titulo(texto, arte));
+  d.append(cabeca, ...conteudo);
+  d.addEventListener('toggle', () => {
+    try {
+      localStorage.setItem(`ficha-secao:${id}`, d.open ? '1' : '0');
+    } catch {
+      // sem armazenamento: não lembra
+    }
+  });
+  body.append(d);
+}
+
+/** As 7 resistências (a proteção da ficha, em %). */
+function protecaoElemental(derived) {
+  const elements = el('div', 'element-grid');
+  for (const [name, key] of ELEMENTS) {
+    const value = derived.protection?.[key] ?? 0;
+    const chip = el('div', 'element');
+    const total = el('b', null, `${porcento(value)}%`);
+    if (value) total.style.color = 'var(--accent)';
+    chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
+    elements.append(chip);
+  }
+  return elements;
+}
+
+/*
+ * ---- Ataque elemental ----
+ * O dono: "no balance da ficha por que não aparece ataque elemental? igual
+ * fica a proteção elemental". O "Dano de <elemento> %" dos atributos e da
+ * árvore (`derived.danoDoElemento`, a mesma ficha que o combate usa): +X% nas
+ * magias/runas/wand daquele elemento e, no golpe da arma, X% dele saindo
+ * naquele elemento. "arma" marca o elemento da própria arma/wand, e o
+ * imbuement de dano elemental aparece no elemento dele.
+ */
+function ataqueElemental(derived) {
+  const ataques = el('div', 'element-grid');
+  const daArma = derived.element?.type === 'poison' ? 'earth' : derived.element?.type;
+  const doImbuement = derived.imbuElemental;
+  for (const [name, key] of ELEMENTS) {
+    const value = derived.danoDoElemento?.[key] ?? 0;
+    const chip = el('div', 'element');
+    const total = el('b', null, `${value > 0 ? '+' : ''}${porcento(value)}%`);
+    if (value) total.style.color = 'var(--accent)';
+    chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
+    const notas = [];
+    if (daArma === key) notas.push('arma');
+    if (doImbuement?.tipo === key) notas.push(`imbuement ${porcento(doImbuement.pct)}%`);
+    if (notas.length) chip.append(el('em', 'element-nota', notas.join(' · ')));
+    chip.title =
+      key === 'physical'
+        ? `Dano físico: +${porcento(value)}% no golpe da arma (STR e Physical Damage).`
+        : `Dano de ${name.toLowerCase()}: +${porcento(value)}% nas magias, runas e wand de ${name.toLowerCase()}, e ${porcento(value)}% do golpe da arma sai em ${name.toLowerCase()}.`;
+    ataques.append(chip);
+  }
+  return ataques;
+}
+
 export function renderSheet(body, { state, send, closeModal }) {
   const character = state.character;
   const derived = character.derived;
@@ -204,6 +284,8 @@ export function renderSheet(body, { state, send, closeModal }) {
   bars.append(
     bar('Vida', character.hp, derived.maxHp, 'hp', `${character.hp} / ${derived.maxHp}`),
     bar('Mana', character.mana, derived.maxMana, 'mana', `${character.mana} / ${derived.maxMana}`),
+    // Energy Shield: só quem tem (peças de mago, adds) — absorve antes da vida.
+    ...(derived.energyShield > 0 ? [bar('Energy Shield', character.es ?? derived.energyShield, derived.energyShield, 'es', `${character.es ?? derived.energyShield} / ${derived.energyShield}`)] : []),
     bar('Experiência', character.progress.percent * 100, 100, 'exp', `${(character.progress.percent * 100).toFixed(1)}%`),
     bar('Stamina', character.stamina, character.maxStamina, 'stamina', `${Math.floor(character.stamina / 60)}h${String(Math.floor(character.stamina % 60)).padStart(2, '0')}`)
   );
@@ -211,74 +293,12 @@ export function renderSheet(body, { state, send, closeModal }) {
   header.append(portrait, bars);
   body.append(header);
 
-  const regen = el('div', 'stat-grid');
-  regen.append(
-    /*
-     * ---- Regeneração: a NATURAL mais a das PEÇAS ----
-     *
-     * São duas contas diferentes e a ficha mostrava só a primeira. A natural é
-     * uma fração da vida máxima (e a promoção a multiplica); a das peças é um
-     * número fixo por segundo que vem do `healthgain` do items.xml — é o que o
-     * Draevor Ring, o Amuleto e a Backpack anunciam como "regenera mana e vida
-     * 30", e o que fazia o jogador olhar a ficha e achar que não estava valendo.
-     *
-     * O número grande é o total, porque é o que ele sente; a linha de baixo
-     * separa as parcelas, porque é o que explica de onde veio.
-     */
-    statCard(
-      'Regeneração de vida',
-      `+${(derived.maxHp * 0.004 * (derived.regen?.hp ?? 1) + (derived.regenFlat?.hp ?? 0)).toFixed(1)}/s`,
-      derived.regenFlat?.hp
-        ? `${(derived.maxHp * 0.004 * (derived.regen?.hp ?? 1)).toFixed(1)} natural + ${derived.regenFlat.hp.toFixed(1)} do equipamento`
-        : null,
-      null,
-      'ficha-regen-vida'
-    ),
-    statCard(
-      'Regeneração de mana',
-      `+${(derived.maxMana * 0.006 * (derived.regen?.mana ?? 1) + (derived.regenFlat?.mana ?? 0)).toFixed(1)}/s`,
-      derived.regenFlat?.mana
-        ? `${(derived.maxMana * 0.006 * (derived.regen?.mana ?? 1)).toFixed(1)} natural + ${derived.regenFlat.mana.toFixed(1)} do equipamento`
-        : null,
-      null,
-      'ficha-regen-mana'
-    ),
-    statCard('Capacidade', `${Math.max(0, derived.capacity - character.weight).toFixed(0)} oz`, `de ${derived.capacity} oz`, null, 'ficha-capacidade'),
-    /*
-     * ---- A velocidade, COM a corrida que estiver ligada ----
-     *
-     * A base é a do Tibia: 220, +2 por nível, mais o que o equipamento e a
-     * montaria somam. O que faltava era a magia: `utani hur` e companhia somam
-     * num `derived` que vive dentro do tique da caçada e morre lá, então a
-     * ficha — que recebe outro, calculado do zero — mostrava sempre o número
-     * parado. O dono reparou: "não está mostrando a velocidade a mais na ficha".
-     *
-     * A conta é a mesma do servidor (`velocidade * mult + fixo`, a fórmula da
-     * `CONDITION_HASTE` da base dele), refeita aqui com os números que o buff
-     * traz. Sem corrida ligada, `corrida` é nulo e o card fica como era.
-     */
-    (() => {
-      const corrida = (state.hunt?.buffs ?? []).find((buff) => buff.tipo === 'speed' && buff.mult);
-      const comCorrida = corrida ? Math.round(derived.speed * corrida.mult + (corrida.fixo ?? 0)) : derived.speed;
-      const passos = `${(1000 / (100000 / Math.max(30, comCorrida))).toFixed(2)} passos por segundo`;
-      const card = statCard(
-        'Velocidade',
-        comCorrida,
-        corrida ? `${passos} · ${derived.speed} + ${corrida.nome}` : passos,
-        null,
-        'ficha-velocidade'
-      );
-      if (corrida) card.classList.add('com-buff');
-      return card;
-    })()
-  );
-  body.append(regen);
 
   // ---------- skills e progressão ----------
   const columns = el('div', 'sheet');
 
   const left = el('div');
-  left.append(titulo('Atributos e skills', 'ficha-skills'));
+  left.append(titulo('Skills', 'ficha-skills'));
   const skills = el('div', 'skill-table');
   const addSkill = (key, value, percent) => {
     const row = el('div', 'skill-row');
@@ -476,82 +496,163 @@ export function renderSheet(body, { state, send, closeModal }) {
   columns.append(left, right);
   body.append(columns);
 
-  // ---------- combate ----------
-  body.append(titulo('Detalhes de combate', 'ficha-combate'));
-  const combat = el('div', 'stat-grid');
-  combat.append(
-    // Armadura, bloqueio e dano são FAIXAS: a das peças (sorteada no drop), e cada golpe sorteia dentro dela.
-    statCard('Armadura física', faixa(derived.armorMin, derived.armorMax, derived.armor), 'corta o golpe físico', null, 'ficha-armadura'),
-    statCard('Armadura mágica', faixa(derived.armorMagicMin, derived.armorMagicMax, derived.armorMagic ?? 0), 'corta magia e ataque elemental', null, 'ficha-armadura'),
-    statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
-    /*
-     * O elemental é uma FATIA do golpe, e não um golpe à parte.
-     *
-     * O card dizia "somado ao golpe" e mostrava uma faixa própria. Não é assim
-     * na base: o ataque do item já vem repartido (a icy spike sword é 20 + 4
-     * contra os 24 da comum), a rolagem sai do total e o resultado se divide.
-     * Mostrar uma segunda faixa fazia a pessoa somar as duas e esperar um golpe
-     * que a arma não dá.
-     */
-    ...(derived.elementFactor > 0 && derived.element
-      ? [
-          statCard(
-            'Dano elemental',
-            `${Math.round(derived.elementFactor * 100)}%`,
-            `do golpe sai como ${derived.element.type}`,
-            null,
-            'ficha-dano-elemental'
-          ),
-        ]
-      : []),
-    /*
-     * O que a ÁRVORE aumenta em cada elemento, num card só.
-     *
-     * Antes era um card por tipo com uma faixa de dano, porque a árvore dava um
-     * golpe extra por elemento. Agora ela aumenta o dano do elemento em tudo
-     * (magia, runa e arma), e o número honesto é a porcentagem.
-     */
-    ...(Object.keys(derived.danoPorElemento ?? {}).length
-      ? [
-          statCard(
-            'Dano por elemento',
-            Object.entries(derived.danoPorElemento)
-              .map(([tipo, fracao]) => `${tipo} +${(fracao * 100).toFixed(1).replace('.0', '')}%`)
-              .join(' · '),
-            'da árvore, em magia, runa e arma',
-            null,
-            'ficha-dano-elemental'
-          ),
-        ]
-      : []),
-    statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano`, null, 'ficha-critico'),
-    statCard('Bloqueio', faixa(derived.blockChanceMin, derived.blockChanceMax, derived.blockChance, (v) => `${(v * 100).toFixed(0)}%`), 'apara golpe físico (escudo e arma)', null, 'ficha-bloqueio'),
-    // O intervalo entre golpes que a caçada usa de verdade (base 2 s, encurtado pela velocidade de ataque e pelo "Tempo entre golpes").
-    statCard(
-      'Velocidade de ataque',
-      `${(derived.intervaloDoGolpeMs / 1000).toFixed(2).replace('.', ',')} s`,
-      `${(1000 / derived.intervaloDoGolpeMs).toFixed(2).replace('.', ',')} golpes por segundo${derived.velocidadeDeAtaque ? ` · +${Math.round(derived.velocidadeDeAtaque * 10) / 10}% de atributo` : ''}`,
-      null,
-      'ficha-dano'
+  /*
+   * ---- A ficha em SEIS seções: Atributos, Recursos, Ofensivo, Defensivo, Resistências, Utilidade ----
+   *
+   * A reestruturação de itens (29/09): "somente estatísticas que realmente
+   * existem" — os números vêm todos de `derived`, que é o `Ficha.combate` do
+   * servidor (a MESMA conta do combate, do balão e da comparação). O que é
+   * opcional (Cast Speed, dano contra boss, Gold Find...) só aparece quando o
+   * personagem tem. Cada seção recolhe (lembra aberta/fechada neste aparelho).
+   */
+  const pct = (v) => `${v > 0 ? '+' : ''}${porcento(v)}%`;
+  const soSeTem = (valor, card) => (valor ? [card()] : []);
+  const at = derived.atributos ?? { str: 0, dex: 0, int: 0, daVocacao: { str: 0, dex: 0, int: 0 } };
+  const ef = derived.efeitosDosAtributos ?? {};
+  const origem = (k) => {
+    const itens = at[k] - (at.daVocacao?.[k] ?? 0);
+    return `${at.daVocacao?.[k] ?? 0} da vocação${itens ? ` + ${itens} dos itens` : ''}`;
+  };
+  const chances = derived.chancesNoLevel ?? {};
+
+  secao(body, 'atributos', 'Atributos', 'ficha-skills', [
+    grade(
+      statCard('STR', at.str, `${origem('str')} · +${Math.round(ef.vida ?? 0)} vida, ${pct(ef.danoFisicoPct ?? 0)} dano físico`, null, 'ficha-dano'),
+      statCard('DEX', at.dex, `${origem('dex')} · +${Math.round(ef.precisao ?? 0)} accuracy, +${Math.round(ef.evasao ?? 0)} evasion, ${pct(ef.velocidadeDeAtaquePct ?? 0)} vel. de ataque`, null, 'ficha-alcance'),
+      statCard('INT', at.int, `${origem('int')} · +${Math.round(ef.mana ?? 0)} mana, ${pct(ef.danoMagicoPct ?? 0)} dano mágico`, null, 'ficha-regen-mana'),
     ),
-    statCard('Life leech', `${(derived.lifeLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-life-leech'),
-    statCard('Mana leech', `${(derived.manaLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-mana-leech'),
-    statCard('Alcance', derived.attackRange > 1 ? `${derived.attackRange} sqm` : 'corpo a corpo', null, null, 'ficha-alcance'),
-    // O prêmio de colecionar: outfits completos e montarias viram crítico.
-    statCard(
-      'Coleção',
-      `+${(((derived.collection?.critChance ?? 0) * 100).toFixed(1)).replace('.', ',')}%`,
-      `${derived.collection?.pieces ?? 0} peças × 0,3% de crítico`,
-      null,
-      'ficha-colecao'
-    )
-  );
-  if (derived.element) {
-    // Pelo mesmo motivo do `porcento`: este também é soma de fração e também
-    // pode chegar aqui com dezoito casas decimais.
-    combat.append(statCard('Dano elemental', `${porcento(derived.element.value)}%`, `convertido em ${derived.element.type}`, null, 'ficha-dano-elemental'));
-  }
-  body.append(combat);
+  ]);
+
+  secao(body, 'recursos', 'Recursos', 'ficha-regen-vida', [
+    grade(
+      statCard('Vida', derived.maxHp.toLocaleString('pt-BR'), null, null, 'ficha-regen-vida'),
+      statCard('Mana', derived.maxMana.toLocaleString('pt-BR'), null, null, 'ficha-regen-mana'),
+      ...soSeTem(derived.energyShield, () => statCard('Energy Shield', `${(character.es ?? derived.energyShield).toLocaleString('pt-BR')} / ${derived.energyShield.toLocaleString('pt-BR')}`, 'absorve o dano antes da vida · recarrega sozinho', null, 'ficha-armadura')),
+      /*
+       * ---- Regeneração: a NATURAL mais a das PEÇAS ----
+       *
+       * São duas contas diferentes e a ficha mostrava só a primeira. A natural é
+       * uma fração da vida máxima (e a promoção a multiplica); a das peças é um
+       * número fixo por segundo que vem do `healthgain` do items.xml — é o que o
+       * Draevor Ring, o Amuleto e a Backpack anunciam como "regenera mana e vida
+       * 30", e o que fazia o jogador olhar a ficha e achar que não estava valendo.
+       *
+       * O número grande é o total, porque é o que ele sente; a linha de baixo
+       * separa as parcelas, porque é o que explica de onde veio.
+       */
+      statCard(
+        'Regeneração de vida',
+        `+${(derived.maxHp * 0.004 * (derived.regen?.hp ?? 1) + (derived.regenFlat?.hp ?? 0)).toFixed(1)}/s`,
+        derived.regenFlat?.hp
+          ? `${(derived.maxHp * 0.004 * (derived.regen?.hp ?? 1)).toFixed(1)} natural + ${derived.regenFlat.hp.toFixed(1)} do equipamento`
+          : null,
+        null,
+        'ficha-regen-vida'
+      ),
+      statCard(
+        'Regeneração de mana',
+        `+${(derived.maxMana * 0.006 * (derived.regen?.mana ?? 1) + (derived.regenFlat?.mana ?? 0)).toFixed(1)}/s`,
+        derived.regenFlat?.mana
+          ? `${(derived.maxMana * 0.006 * (derived.regen?.mana ?? 1)).toFixed(1)} natural + ${derived.regenFlat.mana.toFixed(1)} do equipamento`
+          : null,
+        null,
+        'ficha-regen-mana'
+      ),
+    ),
+  ]);
+
+  secao(body, 'ofensivo', 'Ofensivo', 'ficha-combate', [
+    grade(
+      // Dano e crítico são FAIXAS: a das peças (sorteada no drop), e cada golpe sorteia dentro dela.
+      statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
+      statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano`, null, 'ficha-critico'),
+      // O intervalo entre golpes que a caçada usa de verdade (base 2 s, encurtado pela velocidade de ataque e pelo "Tempo entre golpes").
+      statCard(
+        'Velocidade de ataque',
+        `${(derived.intervaloDoGolpeMs / 1000).toFixed(2).replace('.', ',')} s`,
+        `${(1000 / derived.intervaloDoGolpeMs).toFixed(2).replace('.', ',')} golpes por segundo${derived.velocidadeDeAtaque ? ` · ${pct(derived.velocidadeDeAtaque)}` : ''}`,
+        null,
+        'ficha-dano'
+      ),
+      statCard('Accuracy', (derived.accuracy ?? 0).toLocaleString('pt-BR'), chances.acerto != null ? `${Math.round(chances.acerto * 100)}% de acerto num bicho do seu level` : null, null, 'ficha-alcance'),
+      ...soSeTem(derived.danoDeMagia, () => statCard('Dano mágico', pct(derived.danoDeMagia), 'magias, runas e wand', null, 'ficha-dano-elemental')),
+      ...soSeTem(derived.castSpeed, () => statCard('Cast Speed', pct(derived.castSpeed), 'intervalo entre magias mais curto', null, 'ficha-velocidade')),
+      ...soSeTem(derived.recuperacaoDeRecarga, () => statCard('Cooldown Recovery', pct(derived.recuperacaoDeRecarga), 'recarga das magias mais rápida', null, 'ficha-velocidade')),
+      ...soSeTem(derived.custoDeMana < 0, () => statCard('Custo de magias', `${porcento(derived.custoDeMana * 100)}%`, 'mana gasta por magia', null, 'ficha-regen-mana')),
+      statCard('Life leech', `${(derived.lifeLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-life-leech'),
+      statCard('Mana leech', `${(derived.manaLeech * 100).toFixed(1)}%`, 'do dano causado', null, 'ficha-mana-leech'),
+      ...soSeTem(derived.danoContra?.monstros, () => statCard('Dano contra criaturas', pct(derived.danoContra.monstros), null, null, 'ficha-kills')),
+      ...soSeTem(derived.danoContra?.boss, () => statCard('Dano contra boss', pct(derived.danoContra.boss), null, null, 'ficha-kills')),
+      ...soSeTem(derived.danoContra?.elite, () => statCard('Dano contra elite', pct(derived.danoContra.elite), null, null, 'ficha-kills')),
+      statCard('Alcance', derived.attackRange > 1 ? `${derived.attackRange} sqm` : 'corpo a corpo', null, null, 'ficha-alcance'),
+      /*
+       * O elemental da ARMA é uma FATIA do golpe, e não um golpe à parte: o
+       * ataque do item já vem repartido e a rolagem sai do total.
+       */
+      ...(derived.elementFactor > 0 && derived.element
+        ? [statCard('Dano elemental da arma', `${Math.round(derived.elementFactor * 100)}%`, `do golpe sai como ${derived.element.type}`, null, 'ficha-dano-elemental')]
+        : []),
+    ),
+    el('div', 'sheet-sub', 'Dano por tipo'),
+    ataqueElemental(derived),
+  ]);
+
+  secao(body, 'defensivo', 'Defensivo', 'ficha-armadura', [
+    grade(
+      statCard('Armour', faixa(derived.armorMin, derived.armorMax, derived.armor), 'corta o golpe físico', null, 'ficha-armadura'),
+      statCard('Evasion', (derived.evasion ?? 0).toLocaleString('pt-BR'), chances.esquiva != null ? `${Math.round(chances.esquiva * 100)}% de esquiva do golpe de um bicho do seu level` : null, null, 'ficha-bloqueio'),
+      statCard('Bloqueio', faixa(derived.blockChanceMin, derived.blockChanceMax, derived.blockChance, (v) => `${(v * 100).toFixed(0)}%`), 'apara o golpe (escudo e arma)', null, 'ficha-bloqueio'),
+      ...soSeTem(derived.danoRecebidoDasGemas > 0, () => statCard('Redução de dano', `${porcento(derived.danoRecebidoDasGemas * 100)}%`, 'de todo dano recebido', null, 'ficha-armadura')),
+      ...soSeTem(derived.evitarDano, () => statCard('Evitar dano', `${porcento(derived.evitarDano * 100)}%`, 'chance de ignorar um golpe ou magia', null, 'ficha-bloqueio')),
+      ...soSeTem(derived.esquiva, () => statCard('Esquiva das gemas', `${porcento(derived.esquiva * 100)}%`, 'o golpe ou a magia não pega', null, 'ficha-bloqueio')),
+    ),
+  ]);
+
+  secao(body, 'resistencias', 'Resistências', 'ficha-elemental', [protecaoElemental(derived)]);
+
+  secao(body, 'utilidade', 'Utilidade', 'ficha-velocidade', [
+    grade(
+      /*
+       * ---- A velocidade, COM a corrida que estiver ligada ----
+       *
+       * A base é a do Tibia: 220, +2 por nível, mais o que o equipamento e a
+       * montaria somam. O que faltava era a magia: `utani hur` e companhia somam
+       * num `derived` que vive dentro do tique da caçada e morre lá, então a
+       * ficha — que recebe outro, calculado do zero — mostrava sempre o número
+       * parado. O dono reparou: "não está mostrando a velocidade a mais na ficha".
+       *
+       * A conta é a mesma do servidor (`velocidade * mult + fixo`, a fórmula da
+       * `CONDITION_HASTE` da base dele), refeita aqui com os números que o buff
+       * traz. Sem corrida ligada, `corrida` é nulo e o card fica como era.
+       */
+      (() => {
+        const corrida = (state.hunt?.buffs ?? []).find((buff) => buff.tipo === 'speed' && buff.mult);
+        const comCorrida = corrida ? Math.round(derived.speed * corrida.mult + (corrida.fixo ?? 0)) : derived.speed;
+        const passos = `${(1000 / (100000 / Math.max(30, comCorrida))).toFixed(2)} passos por segundo`;
+        const card = statCard(
+          'Velocidade',
+          comCorrida,
+          corrida ? `${passos} · ${derived.speed} + ${corrida.nome}` : passos,
+          null,
+          'ficha-velocidade'
+        );
+        if (corrida) card.classList.add('com-buff');
+        return card;
+      })(),
+      statCard('Capacidade', `${Math.max(0, derived.capacity - character.weight).toFixed(0)} oz`, `de ${derived.capacity} oz`, null, 'ficha-capacidade'),
+      ...soSeTem(derived.goldFind, () => statCard('Gold Find', pct(derived.goldFind), 'mais moedas por drop', null, 'ficha-ouro')),
+      ...soSeTem(derived.lootRate, () => statCard('Loot Rate', pct(derived.lootRate), 'mais chance de cada drop', null, 'ficha-ouro')),
+      ...soSeTem(derived.experiencia, () => statCard('Experiência dos itens', pct(derived.experiencia), null, null, 'ficha-exp')),
+      // O prêmio de colecionar: outfits completos e montarias viram crítico.
+      statCard(
+        'Coleção',
+        `+${(((derived.collection?.critChance ?? 0) * 100).toFixed(1)).replace('.', ',')}%`,
+        `${derived.collection?.pieces ?? 0} peças × 0,3% de crítico`,
+        null,
+        'ficha-colecao'
+      ),
+    ),
+  ]);
 
   /*
    * ---- O que o BUFF POWER está somando agora ----
@@ -594,48 +695,6 @@ export function renderSheet(body, { state, send, closeModal }) {
     body.append(grade);
   }
 
-  body.append(titulo('Proteção elemental', 'ficha-elemental'));
-  const elements = el('div', 'element-grid');
-  for (const [name, key] of ELEMENTS) {
-    const value = derived.protection?.[key] ?? 0;
-    const chip = el('div', 'element');
-    const total = el('b', null, `${porcento(value)}%`);
-    if (value) total.style.color = 'var(--accent)';
-    chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
-    elements.append(chip);
-  }
-  body.append(elements);
-
-  /*
-   * ---- Ataque elemental ----
-   * O dono: "no balance da ficha por que não aparece ataque elemental? igual
-   * fica a proteção elemental". O "Dano de <elemento> %" dos atributos e da
-   * árvore (`derived.danoDoElemento`, a mesma ficha que o combate usa): +X% nas
-   * magias/runas/wand daquele elemento e, no golpe da arma, X% dele saindo
-   * naquele elemento. "arma" marca o elemento da própria arma/wand, e o
-   * imbuement de dano elemental aparece no elemento dele.
-   */
-  body.append(titulo('Ataque elemental', 'ficha-elemental'));
-  const ataques = el('div', 'element-grid');
-  const daArma = derived.element?.type === 'poison' ? 'earth' : derived.element?.type;
-  const doImbuement = derived.imbuElemental;
-  for (const [name, key] of ELEMENTS) {
-    const value = derived.danoDoElemento?.[key] ?? 0;
-    const chip = el('div', 'element');
-    const total = el('b', null, `${value > 0 ? '+' : ''}${porcento(value)}%`);
-    if (value) total.style.color = 'var(--accent)';
-    chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
-    const notas = [];
-    if (daArma === key) notas.push('arma');
-    if (doImbuement?.tipo === key) notas.push(`imbuement ${porcento(doImbuement.pct)}%`);
-    if (notas.length) chip.append(el('em', 'element-nota', notas.join(' · ')));
-    chip.title =
-      key === 'physical'
-        ? `Dano físico: +${porcento(value)}% no golpe da arma.`
-        : `Dano de ${name.toLowerCase()}: +${porcento(value)}% nas magias, runas e wand de ${name.toLowerCase()}, e ${porcento(value)}% do golpe da arma sai em ${name.toLowerCase()}.`;
-    ataques.append(chip);
-  }
-  body.append(ataques);
 
   // ---------- imbuements ativos ----------
   const imbued = Object.entries(character.imbuements ?? {}).flatMap(([slot, list]) =>

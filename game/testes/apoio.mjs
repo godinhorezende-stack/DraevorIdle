@@ -2,6 +2,7 @@
 // `estadoInicialPersonagem` (sessao.mjs), sem abrir o banco.
 import * as R from '../systems/regras.mjs';
 import * as Inventario from '../systems/inventario.mjs';
+import * as Afixos from '../systems/afixos.mjs';
 import * as Recompensas from '../systems/recompensas.mjs';
 import * as Loja from '../systems/loja.mjs';
 import { CHARACTER_TEMPLATE } from '../systems/dados.mjs';
@@ -19,7 +20,7 @@ export function campanhaCompleta() {
 
 export function personagemDeTeste({ vocacao = 'knight', level = R.NIVEL_INICIAL, campanha = campanhaCompleta() } = {}) {
   const { maxHp, maxMana } = R.statsBase(vocacao, level);
-  return {
+  const e = {
     level,
     xp: R.expForLevel(level),
     vocation: vocacao,
@@ -45,6 +46,11 @@ export function personagemDeTeste({ vocacao = 'knight', level = R.NIVEL_INICIAL,
     ...Loja.estadoInicial(),
     campanha,
   };
+  // Como ao entrar no jogo (`sessao.mjs`): a vida/mana dos adds e do STR/INT já no máximo, e cheias.
+  Afixos.sincronizarMaximos(e);
+  e.hp = e.maxHp;
+  e.mana = e.maxMana;
+  return e;
 }
 
 export const PERSONAGEM = { id: 0, nome: 'Teste Automatizado' };

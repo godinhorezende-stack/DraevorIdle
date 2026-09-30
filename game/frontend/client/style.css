@@ -7217,6 +7217,19 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
 .track i { display: block; height: 100%; }
 .track.hp i { background: linear-gradient(180deg, #66d6a0, var(--hp)); }
 .track.mana i { background: linear-gradient(180deg, #6ba6e0, var(--mana)); }
+/* Energy Shield: barra própria, roxa (absorve antes da vida). */
+.track.es i { background: linear-gradient(180deg, #c3a6ff, #7e57c2); }
+
+/* ---------- A ficha em seções que recolhem (Atributos, Recursos, Ofensivo...) ---------- */
+.sheet-secao { margin-top: 14px; }
+.sheet-secao > summary { list-style: none; cursor: pointer; user-select: none; }
+.sheet-secao > summary::-webkit-details-marker { display: none; }
+.sheet-secao > summary .sheet-titulo { margin: 0 0 8px; }
+.sheet-secao > summary .sheet-titulo::after { content: '▾'; margin-left: auto; color: var(--muted); font-size: 12px; transition: transform .15s; }
+.sheet-secao:not([open]) > summary .sheet-titulo::after { transform: rotate(-90deg); }
+.sheet-secao:not([open]) > summary .sheet-titulo { margin-bottom: 0; }
+.sheet-secao > .sheet-sub { margin: 10px 0 6px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+.sheet-secao > .element-grid { margin-top: 2px; }
 
 /* ---------- A barra de mana com escudo de mana de pe' ----------
  *
@@ -7433,6 +7446,9 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
 .tip-stats div.leech { color: #ff8a7a; }
 .tip-stats div.mana { color: #6fa8ff; }
 .tip-stats div.heal { color: #57e0a8; }
+/* Os subtítulos do bloco (Base, Implícitos). */
+.tip-stats div.tip-sec { color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; margin-top: 4px; }
+.tip-stats div.tip-sec:first-child { margin-top: 0; }
 .tip-stats div.area { color: #b184e8; }
 .tip-stats div.plain { color: var(--muted); font-weight: 400; }
 
@@ -11249,6 +11265,19 @@ body.mirando #map { cursor: crosshair; }
 .tip-vs div.vs-pior span { color: var(--muted); }
 .tip-vs div.vs-melhor b { color: #57e0a8; }
 .tip-vs div.vs-pior b { color: #ff6a5a; }
+/* "AO EQUIPAR": nome | atual → novo | diferença — três colunas que não se empurram. */
+.tip-vs .vs-cabeca { font-family: var(--font-heading); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #e8f0f0; }
+.tip-vs div.vs-linha { display: grid; grid-template-columns: minmax(0, 1fr) auto 48px; gap: 8px; align-items: baseline; }
+.tip-vs div.vs-linha .vs-nome { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tip-vs div.vs-linha .vs-de { font-style: normal; color: #b8c6c9; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tip-vs div.vs-linha b { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tip-vs div.vs-mesmo b { color: var(--muted); font-weight: 400; }
+.tip-vs .vs-todos { margin-top: 6px; padding-top: 5px; border-top: 1px dashed var(--line-soft); color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.tip-vs .vs-todos kbd { font: inherit; font-size: 9px; padding: 1px 5px; border: 1px solid var(--line-soft); border-radius: 3px; color: #b8c6c9; }
+/* No toque o balão fica aberto e o "Mostrar todos" é tocável (o resto do balão segue sem pegar o dedo). */
+@media (hover: none) {
+  .tooltip .vs-todos { pointer-events: auto; cursor: pointer; color: var(--accent); }
+}
 
 /* ---- O desenho de onde uma magia pega ----
    Uma grade com o personagem no meio (a casa clara) e as casas atingidas na

@@ -83,9 +83,10 @@ test('baú: guarda a peça apontada (alvo), não a primeira de mesmo id', async 
   assert.deepEqual(lider.estado.inventory, [{ id: 3280, count: 1 }]);
   // O baú lê a peça já com a faixa sorteada (`base`) — ela não muda de uma leitura para outra.
   const noBau = (await Guildas.vista(NOMES[0])).view.bau.itens;
-  const { base, ...resto } = noBau[0];
+  const { base, ilvl, ...resto } = noBau[0];
   assert.deepEqual(resto, { id: 3280, raridade: 'incomum', af, count: 1 });
   assert.ok(base, 'a peça do baú tem faixa');
+  assert.ok(ilvl >= 1, 'e Item Level (a migração v4 dá o nível mínimo da peça)');
   assert.deepEqual((await Guildas.vista(NOMES[0])).view.bau.itens[0].base, base, 'a mesma faixa a cada leitura');
   // índice velho (a mochila mudou): acha pela peça
   lider.estado.inventory = [{ id: 1, count: 1 }, { id: 3280, count: 1, tier: 3 }, { id: 3280, count: 1 }];

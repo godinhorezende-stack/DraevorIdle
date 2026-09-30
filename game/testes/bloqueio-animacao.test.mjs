@@ -29,7 +29,8 @@ function troco(armaduraPlana, golpes = 300) {
 }
 
 test('armadura que engole o golpe inteiro NÃO é "bloqueou": sai marcada como absorvida', () => {
-  const blocos = troco(100000);
+  // A esquiva (Evasion do DEX) sai marcada `esquiva` — é outra coisa, fica de fora.
+  const blocos = troco(100000).filter((b) => !b.esquiva);
   assert.ok(blocos.length > 0, 'a armadura absorveu golpes');
   for (const b of blocos) assert.equal(b.absorvido, true);
 });

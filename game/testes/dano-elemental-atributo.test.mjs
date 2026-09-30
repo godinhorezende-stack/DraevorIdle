@@ -14,7 +14,8 @@ const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ri
 function golpeCom(elemento, pct) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 1 });
   Treino.garantir(e);
-  e.equipment.ring = { id: ANEL, count: 1, af: [{ id: `${elemento}_dmg`, nivel: 1, value: pct }] };
+  // Accuracy de sobra: o golpe nunca erra (o erro tem teste próprio, em defesas-novas).
+  e.equipment.ring = { id: ANEL, count: 1, af: [{ id: `${elemento}_dmg`, nivel: 1, value: pct }, { id: 'accuracy', nivel: 5, value: 1e6 }] };
   e.maxHp = e.hp = 1e9;
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);

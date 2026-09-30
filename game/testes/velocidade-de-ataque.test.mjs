@@ -16,11 +16,15 @@ function comVelocidade(pct) {
   return Ficha.combate(e);
 }
 
-test('a ficha traz o intervalo real entre golpes: 2 s sem bônus, e a velocidade de ataque o encurta', () => {
+test('a ficha traz o intervalo real entre golpes: 2 s sem bônus, e a velocidade de ataque (add + DEX) o encurta', () => {
   assert.equal(ATAQUE_MS, 2000);
-  assert.equal(comVelocidade(0).intervaloDoGolpeMs, 2000);
+  // O DEX da vocação já dá um pouco de Attack Speed (`Atributos.efeitos`).
+  const doDex = comVelocidade(0).velocidadeDeAtaque;
+  assert.ok(doDex > 0 && doDex < 5, `DEX dá ${doDex}%`);
+  const intervalo = (pct) => Math.round(2000 / (1 + (pct + doDex) / 100));
+  assert.equal(comVelocidade(0).intervaloDoGolpeMs, intervalo(0));
   const f = comVelocidade(100);
-  assert.equal(f.velocidadeDeAtaque, 100);
-  assert.equal(f.intervaloDoGolpeMs, 1000, '+100% = metade do intervalo');
-  assert.ok(comVelocidade(25).intervaloDoGolpeMs === 1600);
+  assert.equal(f.velocidadeDeAtaque, 100 + doDex);
+  assert.equal(f.intervaloDoGolpeMs, intervalo(100), '+100% ≈ metade do intervalo');
+  assert.equal(comVelocidade(25).intervaloDoGolpeMs, intervalo(25));
 });

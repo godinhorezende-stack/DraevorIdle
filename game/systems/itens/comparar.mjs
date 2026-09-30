@@ -12,10 +12,11 @@
 //     qualquer id de `gamedata/itens/atributos.json`) e o tier. Um atributo
 //     novo registrado aparece sozinho.
 //
-//   personagem — o IMPACTO: o personagem é copiado, veste a peça nova, e a
-//     ficha é recalculada pelo MESMO `Ficha.combate` que o combate usa (mais
-//     vida/mana máximas e capacidade). A diferença é campo a campo da ficha,
-//     achatada — um campo novo na ficha também aparece sozinho.
+//   personagem — o IMPACTO ("AO EQUIPAR"): o personagem é copiado, veste a
+//     peça nova, e a ficha é recalculada pelo MESMO `Ficha.combate` que o
+//     combate usa (mais vida/mana máximas e capacidade). Atual → novo →
+//     diferença, campo a campo da ficha, na ordem das seções dela. `todos`
+//     traz a ficha inteira (o "Mostrar todos os atributos").
 //
 // Os NOMES vêm de registros: `atributos.json` (atributos da peça) e
 // `gamedata/itens/campos.json` (item-base e ficha). Campo sem nome aparece
@@ -48,8 +49,12 @@ function rotuloDe(registro, chave) {
   const def = exato ?? curinga;
   if (!def) return null;
   const nome = def.nome.replace('{sub}', CAMPOS.subchaves?.[sub] ?? sub);
-  return { nome, escala: def.escala ?? 1, sufixo: def.sufixo ?? '' };
+  return { nome, escala: def.escala ?? 1, sufixo: def.sufixo ?? '', secao: def.secao ?? null, ordem: Object.keys(registro).indexOf(exato ? chave : `${pai}.*`) };
 }
+
+/** A ordem da ficha: a seção (Atributos, Recursos, Ofensivo...) e, dentro dela, a do registro. */
+const ORDEM_DAS_SECOES = CAMPOS.secoes ?? [];
+const naOrdemDaFicha = (a, b) => ORDEM_DAS_SECOES.indexOf(a.secao) - ORDEM_DAS_SECOES.indexOf(b.secao) || a.ordem - b.ordem || a.chave.localeCompare(b.chave);
 
 /*
  * Os campos do ITEM-BASE que contam como atributo: os números do catálogo que
@@ -109,7 +114,7 @@ function retrato(estado) {
   const pares = [...achatar(f), ['vidaMaxima', copia.maxHp ?? 0], ['manaMaxima', copia.maxMana ?? 0], ['capacidade', Afixos.capacidade(copia)]];
   for (const [chave, valor] of pares) {
     const r = rotuloDe(CAMPOS.ficha, chave);
-    numeros.set(chave, { nome: r?.nome ?? chave, sufixo: r?.sufixo ?? '', valor: valor * (r?.escala ?? 1), conhecido: !!r });
+    numeros.set(chave, { nome: r?.nome ?? chave, sufixo: r?.sufixo ?? '', valor: valor * (r?.escala ?? 1), conhecido: !!r, secao: r?.secao ?? null, ordem: r?.ordem ?? 0 });
   }
   return numeros;
 }
@@ -134,12 +139,23 @@ export function comparar(estado, peca) {
   if (escudoSai) equipamento.shield = null;
   const antes = retrato(estado);
   const depois = retrato({ ...estado, equipment: equipamento });
-  // Só os campos da ficha com nome no registro — os internos (proficiência por
-  // golpe, custo de mana...) mudam por dentro sem dizer nada à pessoa.
-  const personagem = diferenca(
-    new Map([...depois].filter(([, v]) => v.conhecido)),
-    new Map([...antes].filter(([, v]) => v.conhecido))
-  ).map(({ chave, nome, sufixo, de, para, delta }) => ({ chave, nome, sufixo, de: arredondar(de), para: arredondar(para), delta: arredondar(delta) }));
+  /*
+   * "AO EQUIPAR": atual → novo → diferença, na ordem das seções da ficha. Só os
+   * campos com nome no registro — os internos (proficiência por golpe...)
+   * mudam por dentro sem dizer nada à pessoa. `personagem` é só o que muda;
+   * `todos`, a ficha inteira (o "Mostrar todos os atributos" do balão).
+   */
+  const conhecidos = (m) => new Map([...m].filter(([, v]) => v.conhecido));
+  const linhaDaFicha = (chave) => {
+    const a = antes.get(chave);
+    const d = depois.get(chave);
+    const ref = d ?? a;
+    const de = arredondar(a?.valor ?? 0);
+    const para = arredondar(d?.valor ?? 0);
+    return { chave, nome: ref.nome, sufixo: ref.sufixo, secao: ref.secao, ordem: ref.ordem, de, para, delta: arredondar(para - de) };
+  };
+  const todos = [...new Set([...conhecidos(antes).keys(), ...conhecidos(depois).keys()])].map(linhaDaFicha).sort(naOrdemDaFicha);
+  const personagem = todos.filter((l) => l.delta !== 0);
   const atributos = diferenca(atributosDaPeca(limpa), atributosDaPeca(vestida)).map((l) => ({ ...l, de: arredondar(l.de), para: arredondar(l.para), delta: arredondar(l.delta) }));
   return {
     ok: true,
@@ -147,7 +163,8 @@ export function comparar(estado, peca) {
     contra: vestida ? { id: vestida.id, nome: ITEM_CATALOG[vestida.id]?.name ?? String(vestida.id) } : null,
     tiraOEscudo: escudoSai,
     atributos: atributos.filter((l) => l.delta !== 0),
-    personagem: personagem.filter((l) => l.delta !== 0),
+    personagem: personagem.map(({ ordem, ...l }) => l),
+    todos: todos.filter((l) => l.de !== 0 || l.para !== 0).map(({ ordem, ...l }) => l),
   };
 }
 

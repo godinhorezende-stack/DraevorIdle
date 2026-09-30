@@ -2,7 +2,7 @@
 // forja (rerrolar) e a regra de guardar na venda automática.
 //
 // Formato na peça: `af: [{id, nivel, value, rr?}]` — `id` do `catalog.afixos`
-// (38 no total), `nivel` o "Nível do Atributo" (1–5), `value` já no número final
+// (49 no total), `nivel` o TIER do add (T1–T5), `value` já no número final
 // ("+3.1%"), `rr` quantas vezes aquele posto foi rerrolado. Peça de antes do
 // sistema de itens tinha `tier` (1–3) no lugar do nível: `nivelDe` resolve as
 // duas, e a entrada no personagem converte (ver `systems/itens/item.mjs`). A
@@ -13,9 +13,9 @@
 // valor saem do gerador central (`systems/itens/gerar.mjs`), com as tabelas em
 // `gamedata/itens/*.json`. Antes era fixo em código, medido nos drops reais do
 // original (1 afixo 73% / 2 24% / 3 3%; T1 90% / T2 8% / T3 2%; 31% "tortos").
+import * as Atributos from './personagem/atributos.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
-import * as Treino from './treino.mjs';
 import * as Gemas from './gemas.mjs';
 import * as Imbuements from './imbuements.mjs';
 // O sistema de itens (raridade, níveis 1–5, faixas por nível, pools): a régua
@@ -30,42 +30,15 @@ export const MAX_AFIXOS = 3;
 export const FRACAO_DA_MITICA = 1.3;
 export const RARIDADES = ['comum', 'incomum', 'raro', 'épico', 'lendário', 'mítico'];
 
-const ELEMENTOS = ['fire', 'energy', 'earth', 'ice', 'death', 'holy'];
-// Os quatro `skill_fist/club/sword/axe` só existem em peça salva antes da fusão em melee (não dropam mais).
-const SKILLS = ['skill_melee', 'skill_fist', 'skill_club', 'skill_sword', 'skill_axe', 'skill_distance', 'skill_magic', 'skill_shielding'];
-const OFENSIVOS = ['atk_flat', 'crit_chance', 'crit_dmg', 'life_leech', 'mana_leech', 'atk_speed', ...ELEMENTOS.map((e) => `${e}_dmg`), 'onslaught', 'weapon_atk_pct', 'exp_bonus', 'loot_bonus', 'protect_all'];
-const DEFENSIVOS = ['armor_flat', 'hp_max', 'mana_max', 'phys_res', ...ELEMENTOS.filter((e) => e !== 'holy').map((e) => `${e}_res`), 'hp_regen', 'spell_dmg', 'spell_heal', 'weapon_atk_pct', 'loot_bonus'];
-// O grupo natural de cada slot — o que a captura mostra SEM a marca "torto".
-const NATIVOS = {
-  weapon: [...OFENSIVOS, ...SKILLS],
-  head: [...DEFENSIVOS, ...SKILLS],
-  body: [...DEFENSIVOS, ...SKILLS],
-  legs: [...DEFENSIVOS, ...SKILLS],
-  feet: [...DEFENSIVOS, 'speed', ...SKILLS],
-  shield: [...DEFENSIVOS, ...SKILLS],
-  neck: Object.keys(FICHAS),
-  ring: Object.keys(FICHAS),
-  // A mochila aparece na lista de afixos do original (vazia, 3 vagas), mas a
-  // captura não tem nenhum afixo nela para dizer o grupo — e nenhum drop de
-  // mochila com afixo (ver `rolarDrop`). Nada fica "torto" nela.
-  backpack: Object.keys(FICHAS),
-};
-const SLOTS_COM_AFIXO = new Set(Object.keys(NATIVOS));
+// Os slots cujas peças levam adds. O que cada peça aceita é o POOL do tipo dela
+// (`gamedata/itens/pools.json`, via `Gerar.poolDe`) — a lista única de "o que
+// pode rolar onde"; um add fora do pool (peça antiga, forja) sai "torto".
+const SLOTS_COM_AFIXO = new Set(['weapon', 'head', 'body', 'legs', 'feet', 'shield', 'neck', 'ring', 'backpack']);
 
-/*
- * ---- Na ARMA, só a perícia DELA é natural ----
- *
- * Na captura, o hand axe tem skill_axe normal e skill_magic "torto"; a dagger
- * (sword) tem skill_sword normal e distance, shielding e magic tortos. Em elmo e
- * bota, qualquer perícia é natural. A wand/rod treina magic.
- */
+/** Os adds que a peça aceita: o pool do tipo dela (sem os que não dropam); sem peça, todos. */
 function nativosDe(slot, itemId) {
-  if (slot !== 'weapon') return NATIVOS[slot] ?? Object.keys(FICHAS);
-  const meta = ITEM_CATALOG[itemId];
-  const pericia = meta?.wand ? 'magic' : Treino.canonica(meta?.skill);
-  // O nome antigo (skill_axe...) segue natural na arma do próprio tipo: peça
-  // salva antes da fusão em melee não vira "torto" de repente.
-  return pericia ? [...OFENSIVOS, `skill_${pericia}`, `skill_${meta?.skill}`] : NATIVOS.weapon;
+  if (!itemId || slot === 'backpack') return Object.keys(FICHAS);
+  return Gerar.poolDe(itemId).filter((id) => ItensConfig.ATRIBUTOS[id]?.dropa !== false);
 }
 
 const sorteio = (lista) => lista[Math.floor(Math.random() * lista.length)];
@@ -126,7 +99,7 @@ export function rerrolar(slot, af, indice, itemId = null) {
   const atual = af[indice];
   const pctAtual = Math.min(100, pctDe(atual));
   const outros = af.filter((_, i) => i !== indice).map((a) => a.id);
-  const pool = (itemId ? Gerar.poolDe(itemId) : nativosDe(slot, itemId)).filter((id) => FICHAS[id]);
+  const pool = nativosDe(slot, itemId).filter((id) => FICHAS[id]);
   const livres = pool.filter((id) => !outros.includes(id) && !(pctAtual >= 100 && id === atual.id));
   let id = Math.random() < 0.5 && pctAtual < 100 ? atual.id : sorteio(livres);
   id ??= atual.id;
@@ -237,18 +210,19 @@ export function guarda(estado, p) {
 /** A capacidade com o afixo "Capacidade" das peças vestidas. */
 // + o imbuement "Increase Capacity" (% da capacidade), nas botas e na armadura.
 export const capacidade = (estado) =>
-  (R.maxCapacity(estado.vocation, estado.level ?? 1) + de(estado, 'capacity') + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
+  (R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
 
 /**
- * "Vida máxima" e "Mana máxima" (% da base do level). Aplicados como diferença
+ * "+Life" e "+Mana" dos adds, mais a Life do STR e a Mana do INT. Aplicados como diferença
  * sobre `maxHp`/`maxMana` (o resto do jogo lê esses dois campos), marcando o
  * quanto já foi posto em `afixoMax` — vestir, tirar e subir de level chamam
  * isto de novo e só a diferença entra ou sai.
  */
 export function sincronizarMaximos(estado) {
-  const base = R.statsBase(estado.vocation, estado.level ?? 1);
   const t = soma(estado);
-  const quer = { hp: Math.round((base.maxHp * (t.hp_max ?? 0)) / 100), mana: Math.round((base.maxMana * (t.mana_max ?? 0)) / 100) };
+  // +Life / +Mana dos adds, e o que STR (Life) e INT (Mana) dão — ver `personagem/atributos.mjs`.
+  const doAtributo = Atributos.efeitos(Atributos.principais(estado, t));
+  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida), mana: Math.round((t.mana ?? 0) + doAtributo.mana) };
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };
   if (quer.hp === tem.hp && quer.mana === tem.mana) return;
   estado.maxHp = (estado.maxHp ?? 0) + quer.hp - tem.hp;

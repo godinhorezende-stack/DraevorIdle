@@ -1,77 +1,105 @@
-// Os efeitos ESPECIAIS (Lendário) e SUPREMOS (Mítico) das peças vestidas —
-// separados dos atributos: um atributo soma um número na ficha; um efeito muda
-// uma regra do jogo.
+// Os PODERES Legendary e Mythic das peças vestidas — separados dos adds: um add
+// soma um número na ficha; um poder muda uma regra do jogo.
 //
-// O combate os conhece em TRÊS pontos só, e nenhum sabe qual efeito é qual:
+// O dono: "não codificar esse efeito diretamente em uma classe específica de
+// item. Criar um sistema de efeitos/poderes reutilizável." Por isso nenhum
+// poder tem nome aqui: cada um é `condicao` + `efeito` em
+// gamedata/itens/efeitos.json, e este motor só conhece os TIPOS de condição e
+// de efeito. Poder novo com as peças que já existem = uma entrada no JSON.
+//
+// O combate os conhece em TRÊS pontos, e nenhum sabe qual poder é qual:
 //   - `fatorDeDano`: todo golpe do jogador (arma, wand, magia, runa) passa por
 //     `Ficha.rolarCritico`, que multiplica por isto;
-//   - `reducaoDeDano`: entra na ficha junto com a mitigação das gemas, que o
-//     golpe e a magia dos bichos já aplicam;
+//   - `reducaoDeDano`: todo dano recebido (golpe e magia do bicho) é cortado;
 //   - `aoMatar`: chamado por `matarMonstro`.
-// Efeito novo = um caso a mais aqui e uma entrada em gamedata/itens/efeitos.json.
 //
 // A peça guarda só `{ tipo, id }`; os números vêm da configuração na hora, para
 // rebalancear valer também para o que já caiu. Dois equipados com o MESMO
-// efeito não somam: vale um.
+// poder não somam: vale um.
 import { EFEITOS } from './config.mjs';
 
-/** Os efeitos das peças vestidas: `Map(id -> parâmetros)`. */
+/** Os poderes das peças vestidas: `Map(id -> definição)`. */
 export function ativos(estado) {
   const achados = new Map();
   for (const peca of Object.values(estado?.equipment ?? {})) {
     const e = peca?.efeito;
-    const ficha = e && EFEITOS[e.tipo]?.[e.id];
-    if (ficha && !achados.has(e.id)) achados.set(e.id, ficha);
+    const def = e && EFEITOS[e.tipo]?.[e.id];
+    if (def && !achados.has(e.id)) achados.set(e.id, def);
   }
   return achados;
 }
 
-const agoraDe = (hunt) => Date.now();
+/** A condição do poder vale agora? (sem condição: sempre) */
+function vale(condicao, estado, alvo) {
+  if (!condicao) return true;
+  const c = condicao;
+  if (c.vidaAbaixo != null && !((estado.hp ?? 0) < ((estado.maxHp ?? 1) * c.vidaAbaixo) / 100)) return false;
+  if (c.alvoVidaAbaixo != null && !(alvo && (alvo.maxHp ?? 0) > 0 && alvo.hp < (alvo.maxHp * c.alvoVidaAbaixo) / 100)) return false;
+  if (c.naoBoss && estado.hunt?.isBoss) return false;
+  if (c.soBoss && !estado.hunt?.isBoss) return false;
+  return true;
+}
+
+const agora = () => Date.now();
 
 /** Multiplicador do dano de um golpe do jogador contra `alvo`. */
 export function fatorDeDano(estado, alvo) {
   const a = ativos(estado);
   if (!a.size) return 1;
   let f = 1;
-  const desespero = a.get('desespero');
-  if (desespero && (estado.hp ?? 0) < ((estado.maxHp ?? 1) * desespero.vida) / 100) f *= 1 + desespero.bonus / 100;
-  const carrasco = a.get('carrasco');
-  if (carrasco && alvo && !estado.hunt?.isBoss && (alvo.maxHp ?? 0) > 0 && alvo.hp < (alvo.maxHp * carrasco.vida) / 100) f *= 1 + carrasco.bonus / 100;
-  const colheita = a.get('colheita-de-almas');
-  const almas = estado.hunt?.almas;
-  if (colheita && almas && almas.ate > agoraDe(estado.hunt)) f *= 1 + (almas.n * colheita.porKill) / 100;
+  for (const [id, def] of a) {
+    const e = def.efeito ?? {};
+    if (e.danoPct && vale(def.condicao, estado, alvo)) f *= 1 + e.danoPct / 100;
+    // O acúmulo por morte (Colheita de Almas): o bônus guardado na caçada, enquanto durar.
+    const acumulo = e.acumuloAoMatar;
+    const guardado = acumulo && estado.hunt?.acumulos?.[id];
+    if (guardado && guardado.ate > agora()) f *= 1 + (guardado.n * acumulo.porKill) / 100;
+  }
   return f;
 }
 
-/** Fração do dano recebido que os efeitos cortam (0..1). */
+/** Fração do dano recebido que os poderes cortam AGORA (0..1; vários multiplicam). */
 export function reducaoDeDano(estado) {
-  const pele = ativos(estado).get('pele-de-pedra');
-  return pele ? pele.reducao / 100 : 0;
+  let passa = 1;
+  for (const def of ativos(estado).values()) {
+    const r = def.efeito?.reducaoPct;
+    if (r && vale(def.condicao, estado, null)) passa *= 1 - r / 100;
+  }
+  return 1 - passa;
 }
 
 /** Uma criatura morreu pela mão deste personagem. */
 export function aoMatar(estado, hunt, alvo, eventos, quem) {
   const a = ativos(estado);
   if (!a.size) return;
-  const sede = a.get('sede-de-sangue');
-  if (sede) {
-    const ganho = Math.min(Math.round(((estado.maxHp ?? 0) * sede.cura) / 100), Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));
-    if (ganho > 0) {
-      estado.hp += ganho;
-      eventos?.push({ t: 'heal', uid: 'player', quem, x: hunt.pos.x, y: hunt.pos.y, v: ganho, color: '#00ff66' });
+  for (const [id, def] of a) {
+    if (!vale(def.condicao, estado, alvo)) continue;
+    const e = def.efeito ?? {};
+    for (const [chave, campo, cor] of [['curaAoMatarPct', 'hp', '#00ff66'], ['manaAoMatarPct', 'mana', '#4fc3ff']]) {
+      if (!e[chave]) continue;
+      const maximo = campo === 'hp' ? estado.maxHp ?? 0 : estado.maxMana ?? 0;
+      const ganho = Math.min(Math.round((maximo * e[chave]) / 100), Math.max(0, maximo - (estado[campo] ?? 0)));
+      if (ganho > 0) {
+        estado[campo] += ganho;
+        eventos?.push({ t: 'heal', uid: 'player', quem, x: hunt.pos.x, y: hunt.pos.y, v: ganho, color: cor });
+      }
     }
-  }
-  const colheita = a.get('colheita-de-almas');
-  if (colheita && hunt) {
-    const agora = agoraDe(hunt);
-    const antes = hunt.almas && hunt.almas.ate > agora ? hunt.almas.n : 0;
-    hunt.almas = { n: Math.min(colheita.max, antes + 1), ate: agora + colheita.segundos * 1000 };
+    const acumulo = e.acumuloAoMatar;
+    if (acumulo && hunt) {
+      hunt.acumulos ??= {};
+      const antes = hunt.acumulos[id] && hunt.acumulos[id].ate > agora() ? hunt.acumulos[id].n : 0;
+      hunt.acumulos[id] = { n: Math.min(acumulo.max, antes + 1), ate: agora() + acumulo.segundos * 1000 };
+    }
   }
 }
 
-/** O texto do efeito, com os números da configuração ("+30% de dano ..."). */
+/** Os números de um poder, achatados (condição + efeito + acúmulo) — o que o `texto` usa. */
+export const parametrosDoPoder = (def) => ({ ...(def?.condicao ?? {}), ...(def?.efeito ?? {}), ...(def?.efeito?.acumuloAoMatar ?? {}) });
+
+/** O texto do poder, com os números da configuração ("+20% de dano ..."). */
 export function textoDoEfeito(efeito) {
-  const ficha = efeito && EFEITOS[efeito.tipo]?.[efeito.id];
-  if (!ficha) return null;
-  return { nome: ficha.nome, tipo: efeito.tipo, texto: ficha.texto.replace(/\{(\w+)\}/g, (_, k) => String(ficha[k] ?? '')) };
+  const def = efeito && EFEITOS[efeito.tipo]?.[efeito.id];
+  if (!def) return null;
+  const p = parametrosDoPoder(def);
+  return { nome: def.nome, tipo: efeito.tipo, texto: def.texto.replace(/\{(\w+)\}/g, (_, k) => String(p[k] ?? '')) };
 }

@@ -25,7 +25,7 @@ import { readFileSync } from 'node:fs';
 import * as Arvore from './arvore.mjs';
 import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
-import * as R from './regras.mjs';
+import * as Defesa from './personagem/defesa.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -122,7 +122,8 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     bicho.proximoPoder[i] = agora + a.intervalo;
     if (Math.random() * 100 >= a.chance || !alcanca(a, bicho, alvo)) return;
     // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
-    const esquivou = ficha.esquiva && Math.random() < ficha.esquiva;
+    // "Chance to Avoid Damage" (add) também evita a magia inteira (a Evasion não: só o golpe corpo a corpo).
+    const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha);
     // Dodge (charm) também: sai o `block` dele e o golpe não pega.
     const doCharm = !esquivou && Charms.desviou(estado, hunt, personagem, bicho, eventos);
 
@@ -137,10 +138,10 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     }
     const prot = Math.min(100, ficha.protection?.[a.elemento] ?? 0);
     // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
-    // A armadura MÁGICA corta o golpe depois da proteção em % (a mesma conta da física: 60% a 120% dela), e não o dreno de mana.
+    // A magia é cortada pela resistência do elemento (em %); a antiga armadura
+    // mágica virou o Energy Shield (absorve abaixo, antes do magic shield e da vida).
     const bruto = sortear(a.min, a.max) * (bicho.forca ?? 1) * (1 - prot / 100);
-    const cortado = a.elemento === 'manadrain' ? bruto : Math.max(0, bruto - R.armorReduction(ficha.armorMagic ?? 0, Math.random()));
-    let dano = Math.round(cortado * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+    let dano = Math.round(bruto * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
     const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
     // Void Inversion (charm): o dreno de mana vira ganho de mana.
     if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {
@@ -155,6 +156,7 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
       if (tira > 0) eventos.push({ t: 'dmg', ...base, v: tira, color: COR_DO_ELEMENTO.manadrain });
       return;
     }
+    dano = Defesa.absorver(estado, ficha, dano, eventos, base);
     if (dano > 0 && temEscudo && (estado.mana ?? 0) > 0) {
       const daMana = Math.min(estado.mana, dano);
       estado.mana -= daMana;

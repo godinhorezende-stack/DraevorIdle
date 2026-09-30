@@ -109,6 +109,8 @@ test('os bônus chegam na ficha e na vida máxima', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 407 });
   const antes = Ficha.combate(e);
   const vida = e.maxHp;
+  // O % de vida da árvore é sobre a vida do level (sem a Life do STR e dos adds).
+  const doLevel = vida - (e.afixoMax?.hp ?? 0);
   const real = capturado('arvore-knight-zoros.json');
   const plano = {};
   for (const no of real.nos) if (no.gasto) plano[no.id] = no.gasto;
@@ -121,7 +123,7 @@ test('os bônus chegam na ficha e na vida máxima', () => {
   assert.ok(Math.abs(depois.critChance - antes.critChance - real.bonus.critChance) < 1e-9);
   assert.ok(Math.abs(depois.lifeLeech - antes.lifeLeech - real.bonus.lifeLeech) < 1e-9);
   assert.equal(depois.skillBonus.melee - (antes.skillBonus.melee ?? 0), real.bonus['skill:melee']);
-  assert.equal(e.maxHp - vida, Math.round(vida * real.bonus.maxHp));
+  assert.equal(e.maxHp - vida, Math.round(doLevel * real.bonus.maxHp));
 });
 
 /** Um personagem de level 2100 (3 vagas) com a árvore INTEIRA e as três habilidades. */

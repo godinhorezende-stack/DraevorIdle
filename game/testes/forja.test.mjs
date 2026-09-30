@@ -51,7 +51,10 @@ test('TIER: a ficha é idêntica à real (139 peças, com a bolsa de loot)', () 
  * as peças, os slots, os custos, quantos atributos, quais, com que valor e se
  * é "torto" — os campos que dependem da régua saem da comparação.
  */
-const DA_REGUA = ['min', 'max', 'pct', 'nome', 'texto', 'tier', 'nivel'];
+// A reestruturação de itens (29/09) trocou também o "torto": era a perícia da
+// arma; agora é o pool do TIPO do item (`pools.json`) — e as perícias saíram
+// dos adds. Ele sai da comparação com a captura (tem teste próprio abaixo).
+const DA_REGUA = ['min', 'max', 'pct', 'nome', 'texto', 'tier', 'nivel', 'torto'];
 // E o limite de atributos, que passou a ser o da raridade (Comum 1 ... Mítico 6).
 // E a raridade: equipável sem drop é comum agora (o dono: "o que define é o
 // drop"), e a captura trazia a do catálogo — ver `raridadeDaPeca`.
@@ -67,7 +70,7 @@ function semRegua(o) {
   );
 }
 
-test('AFIXOS: a ficha é idêntica à real (145 peças, mochila incluída, "torto" por perícia da arma)', () => {
+test('AFIXOS: a ficha é idêntica à real (145 peças, mochila incluída)', () => {
   const { e, afixos } = oDaCaptura();
   assert.deepEqual(semRegua(semT(Forja.viewDosAfixos(e))), semRegua(afixos));
 });
@@ -85,29 +88,28 @@ test('DESMANCHE: a ficha é idêntica à real (7 grupos, 134 peças)', () => {
 
 // ---- Afixos: a regra do "torto" também vale no sorteio ----
 
-test('sorteio de afixo numa arma: a única perícia natural é a dela', () => {
+test('sorteio de afixo numa arma: nunca "torto" (sai do pool do tipo dela); um add de fora do pool é', () => {
   const HAND_AXE = 3268;
   for (let i = 0; i < 3000; i++) {
-    for (const a of Afixos.rolarDrop(HAND_AXE)) {
-      const v = Afixos.viewDoAfixo(a, 'weapon', HAND_AXE);
-      if (a.id.startsWith('skill_')) assert.equal(v.torto, a.id !== 'skill_melee', a.id);
-    }
+    for (const a of Afixos.rolarDrop(HAND_AXE)) assert.equal(Afixos.viewDoAfixo(a, 'weapon', HAND_AXE).torto, false, a.id);
   }
+  // Movement Speed não é de arma.
+  assert.equal(Afixos.viewDoAfixo({ id: 'move_speed', nivel: 1, value: 1 }, 'weapon', HAND_AXE).torto, true);
   assert.equal(Afixos.rolarDrop(2854), null, 'mochila não cai com afixo');
 });
 
-test('reroll mantendo o afixo SEMPRE sobe o número, mesmo numa régua curta (perícia 1–3)', () => {
+test('reroll mantendo o afixo SEMPRE sobe o número, mesmo numa régua curta', () => {
   for (let i = 0; i < 2000; i++) {
-    const af = [{ id: 'skill_shielding', tier: 2, value: 2 }, { id: 'crit_chance', tier: 1, value: 1.2 }];
+    const af = [{ id: 'dex', nivel: 1, value: 3 }, { id: 'crit_chance', nivel: 1, value: 1.2 }];
     for (const indice of [0, 1]) {
       const novo = Afixos.rerrolar('weapon', af, indice, 3268);
       if (novo.id === af[indice].id) assert.ok(novo.value > af[indice].value, `${novo.id}: ${af[indice].value} → ${novo.value}`);
     }
   }
   // No topo ele não passa do máximo da régua (a do sistema de itens: o fim do Nível 5).
-  const max = Afixos.FICHAS.skill_axe.max;
-  const topo = Afixos.rerrolar('weapon', [{ id: 'skill_axe', nivel: 5, value: max }], 0, 3268);
-  if (topo.id === 'skill_axe') assert.equal(topo.value, max);
+  const max = Afixos.FICHAS.str.max;
+  const topo = Afixos.rerrolar('weapon', [{ id: 'str', nivel: 5, value: max }], 0, 3268);
+  if (topo.id === 'str') assert.equal(topo.value, max);
 });
 
 // ---- Craft: fazer de verdade ----
