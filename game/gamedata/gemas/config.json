@@ -38,6 +38,13 @@
     "porSkill": 0.5
   },
 
+  "golpesSecundarios": {
+    "_nota": "O motor de PROJÉTIL e ÁREA (systems/skills/golpes-secundarios.mjs): a distância que a bifurcação e o encadeamento procuram o próximo bicho, e o raio da explosão (em volta do bicho atingido).",
+    "distanciaDaBifurcacao": 4,
+    "distanciaDoEncadeamento": 4,
+    "raioDaExplosao": 1
+  },
+
   "fundidora": {
     "_nota": "A FUNDIDORA (moeda, como a Orb of Fusing do Path of Exile; decisão do dono, 30/09): usada numa peça VESTIDA, sorteia de novo os links entre os sockets abertos — cada par vizinho liga com a `chanceDeLink` da raridade da peça (`sockets.drop`). Cai de bicho com `chancePorAto`.",
     "itemId": 912002,

@@ -303,6 +303,8 @@ export const temSkill = (estado, acao) => skillsAtivas(estado).has(acao);
  * recargaPct, critChance, critDano, alvosExtras, danoDosExtrasPct, supports: [nomes] }`.
  * Sem a gema: null. É o que o `disparar` aplica — e o balão mostra.
  */
+const CONTAGENS = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra']);
+const MULTIPLICATIVOS = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct']);
 export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   const a = ativas.get(acao);
   if (!a) return null;
@@ -321,7 +323,14 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   for (const sp of a.supports) {
     const s = sp.def.suporte;
     const mult = multiplicadorDaRaridade(sp.raridade) * (1 + (sp.qualidade * Q.efeitoPorPonto) / 100);
-    for (const [k, v] of Object.entries(s.efeito ?? {})) e[k] = (e[k] ?? 0) + (v + (s.porNivel?.[k] ?? 0) * (sp.nivel - 1)) * mult;
+    for (const [k, v] of Object.entries(s.efeito ?? {})) {
+      // CONTAGEM (projéteis, saltos, casas de área) é inteira e não escala; o resto × raridade/qualidade.
+      const bruto = v + (s.porNivel?.[k] ?? 0) * (sp.nivel - 1);
+      const valor = CONTAGENS.has(k) ? bruto : MULTIPLICATIVOS.has(k) ? Math.min(100, bruto * mult) : bruto * mult;
+      // O % de um golpe SECUNDÁRIO (projéteis extras, perfuração...) se MULTIPLICA entre supports; o resto soma.
+      if (MULTIPLICATIVOS.has(k)) e[k] = e[k] ? (e[k] * valor) / 100 : valor;
+      else e[k] = (e[k] ?? 0) + valor;
+    }
     e.supports.push(sp.def.nome);
   }
   return e;

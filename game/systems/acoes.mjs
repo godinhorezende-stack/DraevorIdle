@@ -32,6 +32,7 @@ import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Proficiencia from './proficiencia.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
+import * as Secundarios from './skills/golpes-secundarios.mjs';
 
 export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
 export const SLOTS = ACTION_CATALOG.slots;
@@ -147,6 +148,8 @@ function saltosDaCadeia(alvo, vivos, { targets = 1, distance = 1 } = {}) {
 
 // Alcance de runa/magia sem `range` próprio (runas vêm com 7 do original).
 const ALCANCE_PADRAO = 7;
+// O efeito na tela da explosão das supports (Explosion, Impact) quando a skill não tem o dela (o `explosionhit` do client).
+const EFEITO_DA_EXPLOSAO = 6;
 const distanciaChebyshev = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 /*
@@ -630,6 +633,8 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       casas = melhor.cs;
       virarPara = melhor.dir;
     }
+    // Area of Effect / Concentrated Effect (supports): a área cresce ou encolhe `areaExtra` casas.
+    if (casas && efeitoDaGema?.areaExtra) casas = Secundarios.mudarArea(casas, Math.round(efeitoDaGema.areaExtra));
     if (casas) atingidos = vivos.filter((b) => casas.some((c) => c.x === b.x && c.y === b.y));
     if (atingidos.length < Math.max(1, Number(action.minTargets) || 1)) return { ok: false, erro: 'Nenhum bicho na área.', motivo: 'SEM_BICHO_NA_AREA' };
   } else if (!entry.heals && entry.kind === 'spell' && !vivos.some((b) => distanciaChebyshev(hunt.pos, b) <= 8)) {
@@ -758,40 +763,45 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const { min, max, daPericia, mult, fatorDaGema, ficha } = contaDoDano(estado, entry, efeitoDaGema);
     let total = 0;
     const danos = [];
-    for (const bicho of atingidos) {
-      // Cada alvo rola o crítico dele; o leech sai uma vez, do dano somado.
-      // "Dano de magia" e "Dano de <elemento>" (afixos e árvore), na magia/runa
-      // daquele elemento, + o ML de bônus (+1%/ponto; o dano do catálogo já é o
-      // do ML treinado); e a resistência do bicho ao elemento dela.
-      // + a afinidade da classe para esta skill (Fire, Spell, Melee... — pelas tags dela, `Ficha.afinidadePara`).
-      // A marca de vulnerável (Aura of Exposed Weakness) no bicho: +X% dos tipos dela.
-      const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, entry.element ?? 'physical', agora));
+    /*
+     * UM acerto num bicho, com `pct`% do golpe — o golpe principal (100%) e os
+     * secundários (projéteis extras, perfuração, bifurcação, encadeamento,
+     * retorno, explosão) passam todos por aqui: cada um rola o crítico dele, com
+     * a resistência do bicho ao elemento, a marca de vulnerável (Aura of Exposed
+     * Weakness) e as marcas das auras. O leech sai uma vez, do dano somado.
+     * ("Dano de magia" e "Dano de <elemento>" dos afixos e da árvore, o treino,
+     * a afinidade da classe e a gema já estão no `mult`/`fatorDaGema`.)
+     */
+    const acertar = (bicho, pct = 100) => {
+      const tipo = entry.element ?? 'physical';
+      const base = resistido(hunt, bicho, tipo, ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct) / 100);
       Reforcos.marcar(hunt, bicho, agora);
       const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;
       total += dano;
       danos.push({ bicho, dano });
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor });
-    }
+    };
+    for (const bicho of atingidos) acertar(bicho);
     /*
-     * ---- Multiple Projectiles (support): outros bichos ao alcance levam o projétil também ----
-     * Só na skill de alvo único; cada extra leva `danoDosExtrasPct`% do dano de um acerto normal.
+     * ---- Os golpes SECUNDÁRIOS das supports (motor de projétil e área, por tag) ----
+     * Quem leva e com quantos % vem de `Secundarios.secundarios`; o projétil voa
+     * de onde ele vem (o alvo, o salto) e a explosão sai em volta de quem foi pego.
      */
-    if (efeitoDaGema?.alvosExtras > 0 && !casas && alvo) {
-      const extras = vivos
-        // Não repete quem já levou o golpe (o alvo e, na cadeia, cada salto).
-        .filter((b) => !atingidos.includes(b) && b.hp > 0 && distanciaChebyshev(hunt.pos, b) <= (entry.range || ALCANCE_PADRAO))
-        .sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))
-        .slice(0, efeitoDaGema.alvosExtras);
-      for (const bicho of extras) {
-        const base = resistido(hunt, bicho, entry.element ?? 'physical', ((sortear(min, max) + daPericia) * mult * fatorDaGema * (efeitoDaGema.danoDosExtrasPct ?? 0)) / 100);
-        const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
-        bicho.hp -= dano;
-        total += dano;
-        danos.push({ bicho, dano });
-        if (entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x, y, tx: bicho.x, ty: bicho.y });
-        eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor });
-      }
+    const extras = Secundarios.secundarios({
+      efeito: efeitoDaGema,
+      tags: Tags.tagsDaAcao(entry),
+      origem: { x, y },
+      alvo: casas ? null : alvo,
+      atingidos,
+      vivos,
+      alcance: entry.range || ALCANCE_PADRAO,
+    });
+    for (const s of extras) {
+      if (s.bicho.hp <= 0) continue;
+      if (s.tipo !== 'explosao' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y });
+      if (s.tipo === 'explosao') eventos.push({ t: 'fx', id: entry.efeito || EFEITO_DA_EXPLOSAO, uid: s.bicho.uid, x: s.bicho.x, y: s.bicho.y });
+      acertar(s.bicho, s.pct);
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);

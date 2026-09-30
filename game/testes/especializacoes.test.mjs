@@ -101,7 +101,7 @@ function ganhoEsperado(voc, tags, somaDasOutras) {
 const perto = (a, b, msg) => assert.ok(Math.abs(a / b - 1) < 0.03, `${msg}: ${a.toFixed(4)} vs ${b.toFixed(4)}`);
 
 test('1. Knight usando skill Physical (Brutal Strike, melee): +Physical +Melee', () => {
-  assert.deepEqual(Tags.tagsDaAcao(skill('spell-brutal-strike')).sort(), ['melee', 'physical', 'single', 'spell']);
+  assert.deepEqual(Tags.tagsDaAcao(skill('spell-brutal-strike')).sort(), ['hit', 'melee', 'physical', 'single', 'spell']);
   const com = danoDaSkill('knight', 'spell-brutal-strike');
   const sem = semEspecializacao('knight', () => danoDaSkill('knight', 'spell-brutal-strike'));
   const k = personagem('knight');
@@ -213,7 +213,7 @@ test('10. a origem dos bônus (o que a ficha e o balão mostram): base, equipame
   // No balão da skill: a afinidade DESTE personagem e de onde vem.
   const flame = Acoes.catalogo(e).spells.find((x) => x.id === 'spell-flame-strike');
   assert.equal(flame.afinidade.pct, 30);
-  assert.deepEqual(flame.tags.sort(), ['fire', 'projectile', 'single', 'spell']);
+  assert.deepEqual(flame.tags.sort(), ['fire', 'hit', 'projectile', 'single', 'spell']);
 });
 
 test('requisito de atributo (modelo Path of Exile): peça de mago pede INT; o knight precisa investir, o sorcerer já tem', () => {

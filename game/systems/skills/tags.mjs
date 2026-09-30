@@ -43,6 +43,8 @@ export function tagsDaAcao(entry) {
   if (entry.papeis?.includes('suporte')) t.add('buff');
   if (entry.papeis?.includes('velocidade')) t.add('buff').add('mobility');
   if (entry.summon) t.add('summon');
+  // Hit: o golpe que ACERTA na hora (causa dano direto, não ao longo do tempo) — Explosion, Impact...
+  if (entry.papeis?.includes('attack') && entry.damage && !entry.overTime) t.add('hit');
   // Golpe físico de magia: perto (alcance 1, ou área em volta de quem lança) é Melee; de longe, Ranged.
   if (el === 'physical' && entry.papeis?.includes('attack')) {
     const emVolta = (forma || entry.area) && !entry.miraNoChao && !entry.alvoNoCentro;
