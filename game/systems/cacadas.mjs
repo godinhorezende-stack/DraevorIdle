@@ -29,6 +29,7 @@ import * as Imbuements from './imbuements.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Arena from './arena.mjs';
 import * as Arvore from './arvore.mjs';
+import * as Estados from './skills/estados.mjs';
 import * as Bosses from './bosses.mjs';
 import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt } from './hunt/terreno.mjs';
 import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
@@ -1508,6 +1509,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
+  // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
+  Estados.tique(hunt, eventos, agora);
   processarMortes(estado, personagem, eventos);
 
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;

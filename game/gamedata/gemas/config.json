@@ -45,6 +45,14 @@
     "raioDaExplosao": 1
   },
 
+  "estados": {
+    "_nota": "Os ESTADOS que as supports põem nos bichos atingidos (systems/skills/estados.mjs, etapa 4): durações (ms). queimando: o % do acerto sai em pulsos a cada `pulso` ms durante `duracao`; congelado e atordoado: o bicho não anda nem ataca; lento: anda e ataca mais devagar (até `maximo`%).",
+    "queimando": { "duracao": 4000, "pulso": 1000 },
+    "congelado": { "duracao": 2000 },
+    "lento": { "duracao": 4000, "maximo": 60 },
+    "atordoado": { "duracao": 1500 }
+  },
+
   "fundidora": {
     "_nota": "A FUNDIDORA (moeda, como a Orb of Fusing do Path of Exile; decisão do dono, 30/09): usada numa peça VESTIDA, sorteia de novo os links entre os sockets abertos — cada par vizinho liga com a `chanceDeLink` da raridade da peça (`sockets.drop`). Cai de bicho com `chancePorAto`.",
     "itemId": 912002,

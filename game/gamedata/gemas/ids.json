@@ -155,6 +155,24 @@
   "support:area-damage": 911018,
   "support:explosion": 911019,
   "support:secondary-explosion": 911020,
-  "support:impact": 911021
+  "support:impact": 911021,
+  "support:physical-damage": 911022,
+  "support:fire-damage": 911023,
+  "support:earth-damage": 911024,
+  "support:energy-damage": 911025,
+  "support:ice-damage": 911026,
+  "support:holy-damage": 911027,
+  "support:death-damage": 911028,
+  "support:elemental-damage": 911029,
+  "support:critical-damage": 911030,
+  "support:faster-attacks": 911031,
+  "support:skill-duration": 911032,
+  "support:life-cost": 911033,
+  "support:life-leech": 911034,
+  "support:mana-leech": 911035,
+  "support:ignite": 911036,
+  "support:freeze": 911037,
+  "support:slow": 911038,
+  "support:stun": 911039
  }
 }
