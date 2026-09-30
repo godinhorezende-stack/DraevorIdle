@@ -56,7 +56,7 @@ function comSemente(semente, fn) {
 /**
  * Mede uma gema ativa de ATAQUE. Opções:
  *  - `nivel` da gema (1), `raridade` ('comum'), `qualidade` (0);
- *  - `classe` (a recomendada da gema; runa sem classe: sorcerer), `level` do personagem (o mínimo da skill);
+ *  - `classe` (a recomendada da gema; runa sem classe: sorcerer), `level` do personagem (o que o nível da gema pede);
  *  - `magicLevel` / `skill` (por cima do que o personagem de teste tem; o mínimo da runa é garantido);
  *  - `usos` (60), `semente` (1).
  * Devolve `{ media, minimo, maximo, alvos, usos }`: o dano POR ALVO por uso (média dos alvos atingidos)
@@ -68,7 +68,8 @@ export function medirGema(acao, opcoes = {}) {
   const x = entrada(acao);
   const { nivel = 1, raridade = 'comum', qualidade = 0, usos = 60, semente = 1 } = opcoes;
   const classe = opcoes.classe ?? def.classeRecomendada?.find((c) => VOCACOES.includes(c)) ?? 'sorcerer';
-  const level = Math.max(1, opcoes.level ?? def.levelMinimo);
+  // O level que o NÍVEL da gema pede (as skills não têm level próprio).
+  const level = Math.max(1, opcoes.level ?? Gemas.levelNecessario(def, nivel));
   return comSemente(semente, () => {
     const e = personagemDeTeste({ vocacao: classe, level });
     Treino.garantir(e); // magic level e skills (a runa pede magic level)

@@ -11,6 +11,7 @@ import * as Inventario from '../systems/inventario.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Especializacoes from '../systems/personagem/especializacoes.mjs';
 import * as Tags from '../systems/skills/tags.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { round } from '../systems/hunt/combate.mjs';
@@ -103,8 +104,11 @@ test('1. Knight usando skill Physical (Brutal Strike, melee): +Physical +Melee',
   assert.deepEqual(Tags.tagsDaAcao(skill('spell-brutal-strike')).sort(), ['melee', 'physical', 'single', 'spell']);
   const com = danoDaSkill('knight', 'spell-brutal-strike');
   const sem = semEspecializacao('knight', () => danoDaSkill('knight', 'spell-brutal-strike'));
-  const f = Ficha.combate(personagem('knight'));
-  perto(com / sem, ganhoEsperado('knight', ['physical', 'melee'], f.danoDeMagia + (f.danoDoElemento.physical ?? 0) + (f.skillBonus.magic ?? 0)), 'knight brutal strike');
+  const k = personagem('knight');
+  const f = Ficha.combate(k);
+  // O treino entra em % na skill de gema (física: skill melee — `Gemas.bonusDoTreino`).
+  const treino = GemasDeSkill.bonusDoTreino(k, GemasDeSkill.DEFS.get(GemasDeSkill.ITEM_DA_ACAO.get('spell-brutal-strike')), f);
+  perto(com / sem, ganhoEsperado('knight', ['physical', 'melee'], f.danoDeMagia + (f.danoDoElemento.physical ?? 0) + treino), 'knight brutal strike');
   assert.ok(com > sem * 1.15);
 });
 

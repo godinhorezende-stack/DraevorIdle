@@ -29,6 +29,20 @@
   },
 
 
+  "dano": {
+    "_nota": "O DANO vem da GEMA, não do level da magia nem do personagem (decisão do dono, 30/09 — modelo Path of Exile). Tabela única: o dano por uso no nível N = `base × crescimento^(N−1)` (na raridade, só a parte acima do nível 1 é multiplicada), × a EFETIVIDADE da gema, ±`variacao`. Efetividade = √(recarga em s, mínimo 1) × área × runa: a skill de recarga longa bate mais por uso; área até `casasDaAreaPequena` casas rende `areaPequena` por alvo, maior rende `areaGrande`; cadeia `cadeia`; runa `runa` (não gasta mana). Pode ser trocada por gema em skills.json (`efetividade`). O personagem entra só em %: magic level (`porMagicLevel`% por ponto) nas skills mágicas, skill de arma (`porSkill`% por ponto: melee ou distance) nas físicas, afinidade da classe, afixos e árvore.",
+    "base": 12,
+    "crescimento": 1.1235,
+    "variacao": 0.1,
+    "porMagicLevel": 0.5,
+    "porSkill": 0.5,
+    "casasDaAreaPequena": 9,
+    "areaPequena": 0.8,
+    "areaGrande": 0.65,
+    "cadeia": 0.85,
+    "runa": 0.8
+  },
+
   "qualidade": {
     "_nota": "Qualidade da gema (modelo Path of Exile, decisão do dono 30/09): 0% a `maximo`, separada do nível. Ativa: +`danoPorPonto`% de dano (e de cura) por 1% de qualidade. Support: o efeito dela × (1 + qualidade × `efeitoPorPonto`/100). A gema que cai de bicho vem com `noDrop` (sorteio uniforme); a da loja, com 0%. A LAPIDADORA (moeda nova) soma `lapidadora.ganho` (sorteio) até o máximo; cai de bicho com `chancePorAto`.",
     "maximo": 20,

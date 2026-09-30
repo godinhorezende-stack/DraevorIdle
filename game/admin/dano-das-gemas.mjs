@@ -2,7 +2,7 @@
 // resistência — pelo disparo de verdade (ver `testes/motor-de-dano.mjs`).
 // Não grava nada.
 //
-//   node game/admin/dano-das-gemas.mjs                         # todas, gema nível 1, personagem no level mínimo da skill
+//   node game/admin/dano-das-gemas.mjs                         # todas, gema nível 1, personagem no level que o nível pede
 //   node game/admin/dano-das-gemas.mjs --nivel 20              # gema nível 20
 //   node game/admin/dano-das-gemas.mjs --level 300             # personagem level 300 (todas no mesmo level)
 //   node game/admin/dano-das-gemas.mjs --classe knight         # força a classe
@@ -36,7 +36,7 @@ if (process.argv.includes('--json')) {
 } else {
   console.log(`Gemas: ${conta.total} no total — ${conta.ativas} ativas (${conta.porTipo.magia} magias, ${conta.porTipo.runa} runas) e ${conta.supports} supports.`);
   console.log(`Ativas por função: ${conta.porFuncao.ataque} de ataque, ${conta.porFuncao.cura} de cura, ${conta.porFuncao.suporte} de suporte/buff.`);
-  console.log(`Medida: gema nível ${opcoes.nivel}, ${opcoes.raridade}, ${opcoes.qualidade}% de qualidade; personagem ${opcoes.level ? `level ${opcoes.level}` : 'no level mínimo da skill'}${opcoes.classe ? `, ${opcoes.classe}` : ', classe recomendada'}; alvo sem resistência. Dano POR ALVO, por uso.\n`);
+  console.log(`Medida: gema nível ${opcoes.nivel}, ${opcoes.raridade}, ${opcoes.qualidade}% de qualidade; personagem ${opcoes.level ? `level ${opcoes.level}` : 'no level que o nível da gema pede'}${opcoes.classe ? `, ${opcoes.classe}` : ', classe recomendada'}; alvo sem resistência. Dano POR ALVO, por uso.\n`);
   const col = (s, n, dir = false) => (dir ? String(s).padStart(n) : String(s).padEnd(n));
   console.log([col('Gema', 28), col('Tipo', 6), col('Elemento', 9), col('Classe', 18), col('Lv', 4, true), col('Mana', 5, true), col('Recarga', 8, true), col('Alcance', 11), col('Alvos', 5, true), col('Dano', 8, true), col('Mín–Máx', 14, true)].join(' '));
   for (const l of linhas.sort((a, b) => a.levelMinimo - b.levelMinimo || a.nome.localeCompare(b.nome))) {

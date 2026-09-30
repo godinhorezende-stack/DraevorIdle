@@ -43,6 +43,50 @@ export const DEFS = new Map();
 /** id da ação (magia/runa) → itemId da gema dela. */
 export const ITEM_DA_ACAO = new Map();
 
+/**
+ * A EFETIVIDADE da gema (quanto da tabela de dano ela rende por uso, por alvo):
+ * √(recarga em s) × área × runa — ver `config.dano`.
+ */
+export function efetividadePadrao(e) {
+  const D = CONFIG.dano;
+  const recarga = Math.max(1000, e?.cooldown ?? 0) / 1000;
+  const area = e?.forma?.length ? (e.forma.length <= D.casasDaAreaPequena ? D.areaPequena : D.areaGrande) : e?.cadeia ? D.cadeia : 1;
+  const runa = e?.kind === 'rune' ? D.runa : 1;
+  return Math.round(Math.sqrt(recarga) * area * runa * 1000) / 1000;
+}
+
+/**
+ * O dano BASE de uma gema (por uso, por alvo) no `nivel` dela: `{ min, max }` —
+ * a tabela única × a efetividade × o `fatorDeDano`; a raridade multiplica só a
+ * parte acima do nível 1. Sem level do personagem nem da magia.
+ */
+export function danoDaGema(def, nivel, raridade = 'comum') {
+  const D = CONFIG.dano;
+  const n = Math.max(1, nivel);
+  const b1 = D.base;
+  const bn = D.base * D.crescimento ** (n - 1);
+  // (a tabela de raridade direto da config: isto roda também na montagem do catálogo, no carregamento do módulo)
+  const mult = CONFIG.raridades.multiplicador[raridade] ?? 1;
+  const v = (b1 + (bn - b1) * mult) * (def?.efetividade ?? 1) * (def?.fatorDeDano ?? 1);
+  const min = Math.max(1, Math.round(v * (1 - D.variacao)));
+  return { min, max: Math.max(min, Math.round(v * (1 + D.variacao))) };
+}
+
+/**
+ * O bônus (em %) do TREINO na skill de gema: magic level × `porMagicLevel` nas
+ * mágicas; skill de arma × `porSkill` nas físicas (distance se a skill é
+ * `ranged`, senão melee). Conta o treinado + o de bônus (afixos, árvore).
+ */
+export function bonusDoTreino(estado, def, ficha = null) {
+  const D = CONFIG.dano;
+  const bonus = ficha?.skillBonus ?? {};
+  if ((def?.tags ?? []).includes('physical')) {
+    const pericia = def.tags.includes('ranged') ? 'distance' : 'melee';
+    return ((estado.skills?.[pericia]?.value ?? 0) + (bonus[pericia] ?? 0)) * D.porSkill;
+  }
+  return ((estado.magic?.value ?? 0) + (bonus.magic ?? 0)) * D.porMagicLevel;
+}
+
 const elementoDaSprite = (e) => (e?.heals ? 'healing' : e?.element === 'poison' ? 'earth' : e?.element);
 for (const [chave, itemId] of Object.entries(IDS)) {
   if (chave.startsWith('support:')) {
@@ -63,11 +107,13 @@ for (const [chave, itemId] of Object.entries(IDS)) {
     nome: e.name,
     tags: Tags.tagsDaAcao(e),
     classeRecomendada: Tags.classeRecomendada(e),
-    levelMinimo: exc.levelMinimo ?? Math.max(1, e.level ?? 1),
+    // Sem level próprio (decisão do dono): toda gema pede só o level do NÍVEL dela (`levelNecessario`).
+    levelMinimo: exc.levelMinimo ?? 1,
     castTime: exc.castTime ?? castTimePadrao(e),
     progressao: exc.progressao ?? CONFIG.progressaoPadrao,
     // O balanceamento do dano da skill (× no dano; `skills.json`).
     fatorDeDano: exc.fatorDeDano ?? 1,
+    efetividade: exc.efetividade ?? efetividadePadrao(e),
   });
   ITEM_DA_ACAO.set(chave, itemId);
 }
@@ -90,7 +136,7 @@ for (const def of DEFS.values()) {
     spriteDe: CONFIG.sprites[def.tipo === 'support' ? 'support' : elementoDaSprite(e)] ?? CONFIG.sprites.outro,
     gemaDef: def.tipo === 'support'
       ? { tipo: 'support', id: def.id, nome: def.nome, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {}, mult: CONFIG.raridades.multiplicador }
-      : { tipo: 'ativa', acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador },
+      : { tipo: 'ativa', acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador, levelsPorNivel: CONFIG.niveis.levelsPorNivel, ...(e?.damage && !e.heals ? { dano: Array.from({ length: 30 }, (_, i) => { const d = danoDaGema(def, i + 1); return [d.min, d.max]; }) } : {}) },
     sell: 0,
   };
 }
@@ -273,8 +319,8 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   if (!a) return null;
   const e = { nivel: a.nivel, danoPct: 0, curaPct: 0, castTimePct: 0, custoPct: 0, recargaPct: 0, critChance: 0, critDano: 0, alvosExtras: 0, danoDosExtrasPct: 0, supports: [] };
   // A raridade multiplica o bônus por nível da ativa e o efeito inteiro da support.
+  // O DANO sobe pela tabela da gema (`danoDaGema`); a CURA ainda pela progressão por nível.
   const acima = (a.nivel - 1) * multiplicadorDaRaridade(a.raridade);
-  e.danoPct += (a.def.progressao?.dano ?? 0) * acima;
   e.curaPct += (a.def.progressao?.cura ?? 0) * acima;
   // A qualidade: +danoPorPonto% por 1% (separada do nível e da raridade).
   if (a.def.progressao?.dano) e.danoPct += a.qualidade * Q.danoPorPonto;
@@ -509,13 +555,13 @@ export const RARIDADES_DA_LOJA = CONFIG.loja.raridades ?? ['comum'];
  */
 export function catalogoDaLoja(estado) {
   const tenho = (id, r) => (estado.inventory ?? []).filter((p) => Number(p.id) === id && raridadeDaGema(p.raridade) === r).length;
-  const defs = [...DEFS.values()].sort((a, b) => (a.tipo === b.tipo ? a.levelMinimo - b.levelMinimo || a.nome.localeCompare(b.nome) : a.tipo === 'ativa' ? -1 : 1));
+  const defs = [...DEFS.values()].sort((a, b) => (a.tipo === b.tipo ? a.nome.localeCompare(b.nome) : a.tipo === 'ativa' ? -1 : 1));
   return defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,
       chave: `${def.itemId}:${r}`,
       raridade: r,
-      nome: `Gema: ${def.nome} (${r})${def.tipo === 'support' ? ' · support' : ` · lv ${def.levelMinimo}`}`,
+      nome: `Gema: ${def.nome} (${r})${def.tipo === 'support' ? ' · support' : ''}`,
       buy: precoNaLoja(def, r),
       tenho: tenho(def.itemId, r),
     }))

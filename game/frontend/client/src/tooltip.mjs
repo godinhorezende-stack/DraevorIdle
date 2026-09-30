@@ -2375,10 +2375,12 @@ function blocoDaGema(def, gema, raridade = 'comum') {
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
   } else {
     if (def.tags?.length) bloco.append(el('div', 'tip-gema-tags', def.tags.join(', ')));
-    const bonusDoNivel = (def.progressao?.dano ?? 0) * (nivel - 1) * mult + (def.progressao?.dano ? qualidade : 0);
-    if (bonusDoNivel) bloco.append(el('div', 'tip-gema-efeito', `+${Math.round(bonusDoNivel * 10) / 10}% de dano (nível e qualidade)`));
+    // O dano vem da tabela da gema (servidor: `danoDaGema`), no nível e na raridade DESTA gema.
+    const d = def.dano?.[Math.min(nivel, def.dano.length) - 1];
+    if (d) bloco.append(el('div', 'tip-gema-efeito', `Dano base: ${d[0].toLocaleString('pt-BR')}–${d[1].toLocaleString('pt-BR')}${mult !== 1 ? ` (comum; ${raridade} ×${mult.toLocaleString('pt-BR')} no que cresce)` : ''}`));
+    if (qualidade) bloco.append(el('div', 'tip-gema-efeito', `+${qualidade}% de dano (qualidade)`));
     if (def.castTime) bloco.append(el('div', null, `Conjuração: ${(def.castTime / 1000).toLocaleString('pt-BR')} s`));
-    if (def.levelMinimo) bloco.append(el('div', null, `Level do personagem: ${def.levelMinimo}+`));
+    bloco.append(el('div', null, `Nível ${nivel} pede level ${1 + (nivel - 1) * (def.levelsPorNivel ?? 8)}`));
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
   }
   return bloco;

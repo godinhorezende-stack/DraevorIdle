@@ -78,6 +78,8 @@ export const COR_DO_ELEMENTO = {
 function bloqueio(entry, estado) {
   // Magia e runa vêm da GEMA encaixada numa peça vestida (modelo Path of Exile): sem ela, sem skill.
   if (Gemas.ehSkillDeGema(entry) && !Gemas.temSkill(estado, entry.id)) return 'sem a gema';
+  // A skill de gema não tem level nem magic level próprios (decisão do dono): quem pede level é o NÍVEL da gema.
+  if (Gemas.ehSkillDeGema(entry)) return null;
   if ((entry.level ?? 0) > (estado.level ?? 0)) return `requer level ${entry.level}`;
   const ml = estado.magic?.value ?? 0;
   if ((entry.magicLevel ?? 0) > ml) return `requer magic level ${entry.magicLevel}`;
@@ -128,6 +130,10 @@ export function catalogo(estado) {
       castTime: Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed, ativas),
     };
   };
+  const danoBaseDaGema = (entry) => {
+    const a = ativas.get(entry.id);
+    return Gemas.danoDaGema(Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id)), a?.nivel ?? 1, a?.raridade);
+  };
   const comBloqueio = (entry) => ({
     ...entry,
     ...(Gemas.ehSkillDeGema(entry) ? { gema: daGema(entry) } : {}),
@@ -137,6 +143,9 @@ export function catalogo(estado) {
     classeRecomendada: Tags.classeRecomendada(entry),
     afinidade: Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)),
     ...(entry.damage ? { damage: { ...entry.damage, ...danoNoLevel(entry, estado.level) } } : {}),
+    // Skill de gema: sem level nem magic level próprios, e o dano base é o da GEMA (no nível dela; sem a gema, o do nível 1).
+    ...(Gemas.ehSkillDeGema(entry) ? { level: 1, magicLevel: 0 } : {}),
+    ...(Gemas.ehSkillDeGema(entry) && entry.damage && !entry.heals ? { damage: { ...entry.damage, ...danoBaseDaGema(entry) } } : {}),
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
     // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
     ...(entry.cooldown ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
@@ -621,7 +630,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const cor = COR_DO_ELEMENTO[entry.element] ?? COR_DO_ELEMENTO.physical;
     if (casas && entry.efeito) for (const c of casas) eventos.push({ t: 'fx', id: entry.efeito, x: c.x, y: c.y });
     else if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
-    const { min, max } = danoNoLevel(entry, estado.level);
+    // O dano BASE vem da GEMA (tabela por nível × efetividade — `Gemas.danoDaGema`), não do level.
+    const defDaGema = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
+    const { min, max } = defDaGema && efeitoDaGema ? Gemas.danoDaGema(defDaGema, efeitoDaGema.nivel, efeitoDaGema.raridade) : danoNoLevel(entry, estado.level);
     const fichaBase = Ficha.combate(estado);
     // Gemas: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
     const daGema = fichaBase.magiasDasGemas?.[action.id];
@@ -629,7 +640,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     // Runa: + crítico de runa da proficiência. Magia: + "% da perícia como dano".
     const prof = fichaBase.proficiencia;
     if (entry.kind === 'rune' && (prof.critChanceRunas || prof.critDanoRunas)) ficha = { ...ficha, critChance: ficha.critChance + prof.critChanceRunas, critMultiplier: ficha.critMultiplier + prof.critDanoRunas };
-    const daPericia = entry.kind === 'spell' ? Proficiencia.daPericia(estado, prof.periciaNaMagia, fichaBase.skillBonus) : 0;
+    // Skill de gema: o magic level (mágica) ou o skill de arma (física) entram em % (`config.dano`), não somando dano fixo.
+    const daPericia = defDaGema ? 0 : entry.kind === 'spell' ? Proficiencia.daPericia(estado, prof.periciaNaMagia, fichaBase.skillBonus) : 0;
+    const doTreino = defDaGema ? Gemas.bonusDoTreino(estado, defDaGema, fichaBase) : fichaBase.skillBonus?.magic ?? 0;
     // A gema: o crítico das supports soma na chance/dano; o nível e as supports multiplicam o dano.
     if (efeitoDaGema?.critChance || efeitoDaGema?.critDano) ficha = { ...ficha, critChance: ficha.critChance + (efeitoDaGema.critChance ?? 0) / 100, critMultiplier: ficha.critMultiplier + (efeitoDaGema.critDano ?? 0) / 100 };
     // O bônus da gema (nível, qualidade, supports) × o balanceamento da skill (`fatorDeDano`).
@@ -642,7 +655,7 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       // daquele elemento, + o ML de bônus (+1%/ponto; o dano do catálogo já é o
       // do ML treinado); e a resistência do bicho ao elemento dela.
       // + a afinidade da classe para esta skill (Fire, Spell, Melee... — pelas tags dela, `Ficha.afinidadePara`).
-      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + (ficha.skillBonus?.magic ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
+      const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + doTreino + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
       const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult * fatorDaGema);
       const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;
@@ -660,7 +673,7 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
         .sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))
         .slice(0, efeitoDaGema.alvosExtras);
       for (const bicho of extras) {
-        const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + (ficha.skillBonus?.magic ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
+        const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + doTreino + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
         const base = resistido(hunt, bicho, entry.element ?? 'physical', ((sortear(min, max) + daPericia) * mult * fatorDaGema * (efeitoDaGema.danoDosExtrasPct ?? 0)) / 100);
         const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
         bicho.hp -= dano;
