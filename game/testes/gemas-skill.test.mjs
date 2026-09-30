@@ -11,7 +11,7 @@ import * as Inventario from '../systems/inventario.mjs';
 import * as G from '../systems/skills/gemas.mjs';
 import { converterPersonagem, converterTudo } from '../systems/itens/item.mjs';
 import { gerarItem } from '../systems/itens/gerar.mjs';
-import { ITEM_CATALOG } from '../systems/dados.mjs';
+import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
 
@@ -569,4 +569,27 @@ test('regra dos sockets compartilhada com a tela (engine/sockets-de-gema.mjs): a
   const flame = G.DEFS.get(GEMA(FLAME)).tags;
   assert.equal(E.compativel(gd, flame), true);
   assert.equal(E.compativel(cura, flame), false);
+});
+
+test('o dano do balão da skill é o do disparo: sobe com o nível da gema, a support e o level (uma conta só)', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 100 });
+  Treino.garantir(e);
+  const peca = vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 1)] });
+  const noBalao = () => Acoes.catalogo(e).spells.find((x) => x.id === FLAME).damage;
+  const n1 = noBalao();
+  peca.soquetes.gemas[0].nivel = 11;
+  Ficha.invalidar(e);
+  const n11 = noBalao();
+  assert.ok(n11.max > n1.max, `nível: ${n1.max} → ${n11.max}`);
+  peca.soquetes.gemas[1] = G.novaGema(SUPPORT('greater-damage'));
+  Ficha.invalidar(e);
+  const comSupport = noBalao();
+  assert.ok(comSupport.max > n11.max, `support: ${n11.max} → ${comSupport.max}`);
+  // O disparo de verdade cai dentro da faixa do balão (sem crítico, alvo sem resistência).
+  // (a entrada CRUA do catálogo de ações: a do balão já vem calculada)
+  const conta = Acoes.danoMostrado(e, ACTION_CATALOG.spells.find((x) => x.id === FLAME));
+  assert.deepEqual({ min: comSupport.min, max: comSupport.max }, conta);
+  e.level = 300;
+  Ficha.invalidar(e);
+  assert.ok(noBalao().max > comSupport.max, 'o level também sobe o dano mostrado');
 });

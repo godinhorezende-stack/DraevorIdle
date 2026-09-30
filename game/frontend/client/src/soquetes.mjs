@@ -60,6 +60,15 @@ function corpo(body, peca) {
       'A gema de skill dá a skill enquanto a peça estiver vestida. Uma support só vale para a gema de skill LIGADA a ela (o traço dourado).'
     )
   );
+  // Os LINKS explicados: são da peça, e não se trocam (ainda).
+  body.append(
+    el(
+      'p',
+      'shop-note dica',
+      'Links: o traço dourado entre dois sockets é um link — os sockets ligados formam um grupo, e as supports do grupo valem para as skills do mesmo grupo. ' +
+        'Sem traço, os sockets não conversam. Os links vêm na peça: a que cai sorteia (quanto mais rara, mais chance de link) e as peças de antes das gemas vieram todas ligadas. Por enquanto não dá para mudar.'
+    )
+  );
 
   const defDe = (g) => (g ? state.items?.[g.id]?.gemaDef ?? null : null);
   // As gemas do grupo ligado ao socket `i` (sem ele mesmo): o que valeria se algo entrasse ali.
