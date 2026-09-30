@@ -1,0 +1,191 @@
+{
+  "_nota": "As GEMAS DE REFORÇO (buffs, posturas, auras, escudo, velocidade, provocação) — o que cada uma FAZ, por dados (etapa 2 do plano, 30/09). Lido por systems/skills/reforcos.mjs. `dur` (ms) e `tipo` (o grupo: só um de 'speed' por vez; 'shield' é o magic shield). `mult` (velocidade). `efeitos`: lista genérica — `dano` (+pct% de dano nas skills/golpes com ALGUMA das `tags`), `critChance`/`critDano` (+pct pontos, nas `tags`), `treino` (+pct% do magic level/skill, nas `tags`), `treinoDeOutraPericia` (pct% da perícia `de` vira magic level nas `tags`), `curaRecebida` (+pct% em toda cura que você recebe), `esquivaDeLonge` (pct% de chance de desviar de magia de bicho à distância), `marcaVulneravel` (quem você atinge sofre +pct% dos `tipos` por `durMarca`), `marcaEnfraquece` (quem você atinge bate pct% mais fraco por `durMarca`), `provocar` (os bichos a até `raio` sqm — até `alvos`, se tiver — vêm atacar você). ESCALA: o efeito × (1 + (nível−1) × `escalaPorNivel`% × a raridade + a qualidade%) — ver `fatorDaGema`; a duração não muda. Números do texto de cada magia no catálogo; Blood Rage e Sharpshooter sem texto: +15% (ponto de partida para balancear).",
+  "escalaPorNivel": 3,
+  "reforcos": {
+    "spell-magic-shield": {
+      "dur": 200000,
+      "tipo": "shield"
+    },
+    "spell-haste": {
+      "dur": 33000,
+      "tipo": "speed",
+      "mult": 1.3
+    },
+    "spell-strong-haste": {
+      "dur": 22000,
+      "tipo": "speed",
+      "mult": 1.7
+    },
+    "spell-charge": {
+      "dur": 5000,
+      "tipo": "speed",
+      "mult": 1.9
+    },
+    "spell-swift-foot": {
+      "dur": 10000,
+      "tipo": "speed",
+      "mult": 1.8
+    },
+    "spell-blood-rage": {
+      "dur": 10000,
+      "tipo": "rage",
+      "efeitos": [
+        {
+          "efeito": "dano",
+          "tags": [
+            "melee"
+          ],
+          "pct": 15
+        }
+      ]
+    },
+    "spell-sharpshooter": {
+      "dur": 10000,
+      "tipo": "rage",
+      "efeitos": [
+        {
+          "efeito": "dano",
+          "tags": [
+            "ranged"
+          ],
+          "pct": 15
+        }
+      ]
+    },
+    "spell-master-of-decay": {
+      "dur": 60000,
+      "tipo": "postura",
+      "efeitos": [
+        {
+          "efeito": "critDano",
+          "tags": [
+            "death"
+          ],
+          "pct": 30
+        }
+      ]
+    },
+    "spell-master-of-flames": {
+      "dur": 60000,
+      "tipo": "postura",
+      "efeitos": [
+        {
+          "efeito": "dano",
+          "tags": [
+            "fire"
+          ],
+          "pct": 4
+        }
+      ]
+    },
+    "spell-master-of-thunder": {
+      "dur": 60000,
+      "tipo": "postura",
+      "efeitos": [
+        {
+          "efeito": "critChance",
+          "tags": [
+            "energy"
+          ],
+          "pct": 4
+        }
+      ]
+    },
+    "spell-divine-defiance": {
+      "dur": 60000,
+      "tipo": "postura",
+      "efeitos": [
+        {
+          "efeito": "treinoDeOutraPericia",
+          "de": "distance",
+          "tags": [
+            "holy",
+            "healing"
+          ],
+          "pct": 7.5
+        },
+        {
+          "efeito": "esquivaDeLonge",
+          "pct": 15
+        }
+      ]
+    },
+    "spell-elemental-synthesis": {
+      "dur": 60000,
+      "tipo": "postura",
+      "efeitos": [
+        {
+          "efeito": "treino",
+          "tags": [
+            "ice",
+            "earth"
+          ],
+          "pct": 10
+        }
+      ]
+    },
+    "spell-shared-conservation": {
+      "dur": 60000,
+      "tipo": "postura",
+      "efeitos": [
+        {
+          "efeito": "curaRecebida",
+          "pct": 10
+        }
+      ]
+    },
+    "spell-aura-of-exposed-weakness": {
+      "dur": 10000,
+      "tipo": "aura",
+      "efeitos": [
+        {
+          "efeito": "marcaVulneravel",
+          "tipos": [
+            "fire",
+            "ice",
+            "energy",
+            "earth"
+          ],
+          "pct": 8,
+          "durMarca": 10000
+        }
+      ]
+    },
+    "spell-aura-of-sapped-strength": {
+      "dur": 10000,
+      "tipo": "aura",
+      "efeitos": [
+        {
+          "efeito": "marcaEnfraquece",
+          "pct": 10,
+          "durMarca": 10000
+        }
+      ]
+    },
+    "spell-challenge": {
+      "dur": 10000,
+      "tipo": "desafio",
+      "efeitos": [
+        {
+          "efeito": "provocar",
+          "raio": 4
+        }
+      ]
+    },
+    "spell-chivalrous-challenge": {
+      "dur": 10000,
+      "tipo": "desafio",
+      "efeitos": [
+        {
+          "efeito": "provocar",
+          "raio": 7,
+          "alvos": 6
+        }
+      ]
+    }
+  },
+  "cancelamentos": {
+    "_nota": "A skill que DESLIGA um reforço do tipo dado (e só sai se ele estiver ligado).",
+    "spell-cancel-magic-shield": "shield"
+  }
+}

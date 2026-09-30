@@ -31,6 +31,7 @@ import * as Ficha from './ficha.mjs';
 import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Proficiencia from './proficiencia.mjs';
+import * as Reforcos from './skills/reforcos.mjs';
 
 export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
 export const SLOTS = ACTION_CATALOG.slots;
@@ -76,7 +77,15 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   // A gema: o crítico das supports soma na chance/dano; o nível e as supports multiplicam o dano.
   if (efeitoDaGema?.critChance || efeitoDaGema?.critDano) ficha = { ...ficha, critChance: ficha.critChance + (efeitoDaGema.critChance ?? 0) / 100, critMultiplier: ficha.critMultiplier + (efeitoDaGema.critDano ?? 0) / 100 };
   const fatorDaGema = (1 + (efeitoDaGema?.danoPct ?? 0) / 100) * (efeitoDaGema?.fatorDeDano ?? 1);
-  const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + doTreino + Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)).pct) / 100;
+  // Os REFORÇOS ligados (posturas, raiva...): dano, crítico e treino nas skills com as tags deles.
+  const tags = Tags.tagsDaAcao(entry);
+  const hunt = estado.hunt;
+  const doReforco = Reforcos.bonus(hunt, 'dano', tags);
+  const critDoReforco = Reforcos.bonus(hunt, 'critChance', tags);
+  const critDanoDoReforco = Reforcos.bonus(hunt, 'critDano', tags);
+  if (critDoReforco || critDanoDoReforco) ficha = { ...ficha, critChance: ficha.critChance + critDoReforco / 100, critMultiplier: ficha.critMultiplier + critDanoDoReforco / 100 };
+  const treino = doTreino * (1 + Reforcos.bonus(hunt, 'treino', tags) / 100) + (defDaGema ? Reforcos.treinoDeOutraPericia(estado, hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);
+  const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100;
   return { min, max, daPericia, mult, fatorDaGema, ficha };
 }
 
@@ -98,7 +107,9 @@ function contaDaCura(estado, entry, efeitoDaGema) {
   const f = Ficha.combate(estado);
   const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
   const pericia = entry.kind === 'spell' ? Proficiencia.daPericia(estado, Proficiencia.bonus(estado).periciaNaCura) : 0;
-  const doTreino = def ? Gemas.bonusDoTreino(estado, def, f) : f.skillBonus?.magic ?? 0;
+  const tags = Tags.tagsDaAcao(entry);
+  // O treino (ML) × os reforços de treino + o ML que vem de outra perícia (Divine Defiance).
+  const doTreino = (def ? Gemas.bonusDoTreino(estado, def, f) : f.skillBonus?.magic ?? 0) * (1 + Reforcos.bonus(estado.hunt, 'treino', tags) / 100) + (def ? Reforcos.treinoDeOutraPericia(estado, estado.hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);
   const mult = 1 + ((f.curaDeMagia ?? 0) + (f.magiasDasGemas?.[entry.id]?.cura ?? 0) + doTreino + (efeitoDaGema?.curaPct ?? 0)) / 100;
   return { min, max, pericia, mult };
 }
@@ -410,25 +421,8 @@ function precisaDeCura(entry, estado) {
  * é o que o client lê: 'shield' (o escudo na vida) e 'speed' (com `mult`, a
  * corrida na ficha).
  */
-const BUFFS = {
-  'spell-magic-shield': { dur: 200_000, tipo: 'shield' },
-  'spell-haste': { dur: 33_000, tipo: 'speed', mult: 1.3 },
-  'spell-strong-haste': { dur: 22_000, tipo: 'speed', mult: 1.7 },
-  'spell-charge': { dur: 5_000, tipo: 'speed', mult: 1.9 },
-  'spell-swift-foot': { dur: 10_000, tipo: 'speed', mult: 1.8 },
-  'spell-blood-rage': { dur: 10_000, tipo: 'rage' },
-  'spell-sharpshooter': { dur: 10_000, tipo: 'rage' },
-  'spell-master-of-decay': { dur: 60_000, tipo: 'postura' },
-  'spell-master-of-flames': { dur: 60_000, tipo: 'postura' },
-  'spell-master-of-thunder': { dur: 60_000, tipo: 'postura' },
-  'spell-divine-defiance': { dur: 60_000, tipo: 'postura' },
-  'spell-elemental-synthesis': { dur: 60_000, tipo: 'postura' },
-  'spell-shared-conservation': { dur: 60_000, tipo: 'postura' },
-  'spell-aura-of-exposed-weakness': { dur: 10_000, tipo: 'aura' },
-  'spell-aura-of-sapped-strength': { dur: 10_000, tipo: 'aura' },
-  'spell-challenge': { dur: 10_000, tipo: 'desafio' },
-  'spell-chivalrous-challenge': { dur: 10_000, tipo: 'desafio' },
-};
+// A tabela vem dos DADOS (gamedata/gemas/reforcos.json): duração, tipo, velocidade e os efeitos de cada reforço.
+const BUFFS = Reforcos.REFORCOS;
 
 /** Os buffs ativos agora, no formato do client (`{icone, nome, resta, tipo, mult}`). */
 export function buffsAtivos(hunt) {
@@ -645,7 +639,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
   // Suporte: não relança enquanto o efeito dele ainda está ligado.
   const buff = BUFFS[entry.id];
   if (buff && !R.jaPode(agora, hunt.buffs?.[entry.id]?.ate)) return { ok: false, erro: 'Ainda está ativo.', motivo: 'EFEITO_ATIVO' };
-  if (entry.id === 'spell-cancel-magic-shield' && !temBuff(hunt, 'shield')) return { ok: false, erro: 'Sem escudo para cancelar.', motivo: 'SEM_ESCUDO' };
+  // A skill que desliga um reforço (dados: `cancelamentos`) só sai com ele ligado.
+  const cancela = Reforcos.CANCELA[entry.id];
+  if (cancela && !temBuff(hunt, cancela)) return { ok: false, erro: 'Não há o que cancelar.', motivo: cancela === 'shield' ? 'SEM_ESCUDO' : 'SEM_REFORCO' };
   // Magia de familiar: só sem um em campo e fora da recarga dele (ver `summon.mjs`).
   if (entry.summon) {
     const pode = Summon.podeInvocar(estado, hunt, hunt.ultimoTique ?? Date.now());
@@ -707,11 +703,15 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
   if (buff) {
     // Uma velocidade só por vez (a mais nova vale), como no Tibia.
     if (buff.tipo === 'speed') for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === 'speed') delete hunt.buffs[id];
-    (hunt.buffs ??= {})[entry.id] = { ate: agora + buff.dur, tipo: buff.tipo, ...(buff.mult ? { mult: buff.mult } : {}) };
+    // O nível, a raridade e a qualidade da gema escalam o efeito (`Reforcos.fatorDaGema`); a duração não muda.
+    const fator = Reforcos.fatorDaGema(efeitoDaGema);
+    (hunt.buffs ??= {})[entry.id] = { ate: agora + buff.dur, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
+    // A provocação: os bichos por perto vêm atacar você.
+    if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' });
   }
-  if (entry.id === 'spell-cancel-magic-shield') {
-    for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === 'shield') delete hunt.buffs[id];
+  if (cancela) {
+    for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === cancela) delete hunt.buffs[id];
   }
   if (entry.summon) {
     Summon.invocar(estado, hunt, action, hunt.ultimoTique ?? Date.now());
@@ -728,7 +728,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: 'player', x, y });
     if (hp) {
       // Poção: o número dela. Magia: × a conta, e a árvore (Graça, Fonte viva) por cima, no momento.
-      const cura = entry.kind === 'item' ? sortear(hp[0], hp[1]) : Arvore.aoCurarComMagia(estado, Math.round((sortear(hp[0], hp[1]) + conta.pericia) * conta.mult));
+      const curaBruta = entry.kind === 'item' ? sortear(hp[0], hp[1]) : Arvore.aoCurarComMagia(estado, Math.round((sortear(hp[0], hp[1]) + conta.pericia) * conta.mult));
+      // "Toda cura que você recebe vale X% a mais" (Shared Conservation).
+      const cura = Math.round(curaBruta * (1 + Reforcos.bonus(hunt, 'curaRecebida') / 100));
       estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + cura);
       eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: cura, color: '#00ff66' });
     }
@@ -762,7 +764,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       // daquele elemento, + o ML de bônus (+1%/ponto; o dano do catálogo já é o
       // do ML treinado); e a resistência do bicho ao elemento dela.
       // + a afinidade da classe para esta skill (Fire, Spell, Melee... — pelas tags dela, `Ficha.afinidadePara`).
-      const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult * fatorDaGema);
+      // A marca de vulnerável (Aura of Exposed Weakness) no bicho: +X% dos tipos dela.
+      const base = resistido(hunt, bicho, entry.element ?? 'physical', (sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, entry.element ?? 'physical', agora));
+      Reforcos.marcar(hunt, bicho, agora);
       const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;
       total += dano;
