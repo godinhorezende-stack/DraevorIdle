@@ -254,9 +254,14 @@ test('bolsa de loot: a peça que cai leva a faixa (`base`) para a bolsa, com ou 
   assert.equal(Bolsa.porNaBolsa(e, arma.id, 1, comum), 1);
   assert.deepEqual(e.pouch[0].base, comum.base);
   assert.equal(e.pouch[0].raridade, 'comum');
+  // E o Item Level do drop (sem ele o balão mostrava o nível do item-base).
+  assert.equal(e.pouch[0].ilvl, comum.ilvl);
+  const daFase = gerarItem({ itemId: arma.id, itemLevel: 777, raridade: 'raro', rng: () => 0.6 });
+  Bolsa.porNaBolsa(e, arma.id, 1, daFase);
+  assert.equal(e.pouch.at(-1).ilvl, 777);
   // Com atributo (Raro).
   const raro = gerarItem({ itemId: arma.id, raridade: 'raro', rng: () => 0.6 });
   Bolsa.porNaBolsa(e, arma.id, 1, raro);
-  assert.deepEqual(e.pouch[1].base, raro.base);
-  assert.deepEqual(e.pouch[1].af, raro.af);
+  assert.deepEqual(e.pouch.at(-1).base, raro.base);
+  assert.deepEqual(e.pouch.at(-1).af, raro.af);
 });
