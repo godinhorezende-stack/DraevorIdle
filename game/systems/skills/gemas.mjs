@@ -210,28 +210,9 @@ export function sortearSoquetes(meta, raridade, rng = Math.random) {
   return { abertos, links, gemas: Array(max).fill(null) };
 }
 
-/** Os GRUPOS de sockets ligados de uma peça: listas de índices abertos conectados. */
-export function gruposLigados(s) {
-  const grupos = [];
-  let atual = [];
-  for (let i = 0; i < s.abertos; i++) {
-    atual.push(i);
-    if (!(i + 1 < s.abertos && s.links[i])) {
-      grupos.push(atual);
-      atual = [];
-    }
-  }
-  return grupos;
-}
-
-/** A support vale para uma skill com estas tags? (`requer` todas, `algum` uma, `exclui` nenhuma) */
-export function compativel(suporte, tags) {
-  const t = new Set(tags ?? []);
-  if ((suporte.requer ?? []).some((x) => !t.has(x))) return false;
-  if ((suporte.algum ?? []).length && !suporte.algum.some((x) => t.has(x))) return false;
-  if ((suporte.exclui ?? []).some((x) => t.has(x))) return false;
-  return true;
-}
+// Os grupos ligados e a compatibilidade por tag: a MESMA regra que a tela usa (engine/sockets-de-gema.mjs).
+export { gruposLigados, grupoDoSocket, compativel } from '../../engine/sockets-de-gema.mjs';
+import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
 
 const SLOTS_COM_SOCKET = Object.keys(CONFIG.sockets.maximo);
 
@@ -362,7 +343,9 @@ export function encaixar(estado, { de, slot, indice }) {
   if (!peca) return erro('Não há peça nesse slot.');
   const s = soquetesDe(peca);
   if (!s) return erro('Essa peça não tem sockets.');
-  const i = Math.floor(Number(indice));
+  // Sem `indice` (a gema arrastada até a peça): o primeiro socket aberto e vazio.
+  const i = indice == null ? s.gemas.findIndex((g, k) => !g && k < s.abertos) : Math.floor(Number(indice));
+  if (indice == null && i < 0) return erro('Essa peça não tem socket livre.');
   if (!(i >= 0 && i < s.max)) return erro('Socket inexistente.');
   if (i >= s.abertos) return erro('Esse socket está bloqueado.');
   const inv = estado.inventory ?? [];

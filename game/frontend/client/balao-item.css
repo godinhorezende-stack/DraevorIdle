@@ -185,11 +185,11 @@
 .tip-item .tip-rules div.tip-falta, .tip-item .tip-rules div.tip-falta b, .tip-rules div.tip-falta b { color: #ff5a4a; }
 
 /* Gema de skill e sockets (à Path of Exile). */
-.tip-item .tip-gema { text-align: center; font-size: 12.5px; color: #c8c8c8; }
-.tip-item .tip-gema-tipo { color: #1ba29b; font-weight: 600; }
-.tip-item .tip-gema-tags { color: var(--prop); }
-.tip-item .tip-gema-efeito { color: #8888ff; }
-.tip-item .tip-gema-ajuda { color: #7f7f7f; font-style: italic; font-size: 11.5px; margin-top: 2px; }
+:is(.tooltip, .gema-no-editor) .tip-gema { text-align: center; font-size: 12.5px; color: #c8c8c8; }
+:is(.tooltip, .gema-no-editor) .tip-gema-tipo { color: #1ba29b; font-weight: 600; }
+:is(.tooltip, .gema-no-editor) .tip-gema-tags { color: var(--prop, #8888ff); }
+:is(.tooltip, .gema-no-editor) .tip-gema-efeito { color: #8888ff; }
+:is(.tooltip, .gema-no-editor) .tip-gema-ajuda { color: #7f7f7f; font-style: italic; font-size: 11.5px; margin-top: 2px; }
 .tip-item .tip-soquetes { text-align: center; font-size: 12px; color: var(--prop); }
 .tip-item .tip-soquetes-fila { display: flex; justify-content: center; align-items: center; margin: 3px 0; }
 .tip-item .soquete { width: 18px; height: 18px; border: 1px solid #6b5a3a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; background: #111; }
@@ -197,3 +197,6 @@
 .tip-item .soquete-link { width: 10px; text-align: center; color: #555; }
 .tip-item .soquete-link.ligado { color: #d8b56a; font-weight: 700; }
 .tip-item .tip-soquetes-gemas { color: #c8c8c8; }
+:is(.tooltip, .gema-no-editor) .tip-gema-xp { height: 4px; background: #222; border-radius: 2px; margin: 3px auto; max-width: 180px; overflow: hidden; }
+:is(.tooltip, .gema-no-editor) .tip-gema-xp i { display: block; height: 100%; background: #1ba29b; }
+.gema-no-editor { margin-top: 8px; padding: 6px 8px; border: 1px solid #1ba29b55; border-radius: 4px; background: #0b1214; }

@@ -547,6 +547,36 @@ function escolherPecaParaTier() {
   });
 }
 
+/**
+ * ---- Os SOCKETS desenhados na própria peça (modelo Path of Exile) ----
+ * Uma fileira pequena no pé da célula: bolinha cheia = gema (azul = support),
+ * vazia = socket aberto, apagada = bloqueado; o traço entre duas = link.
+ * Com `aoTocar` (a peça vestida), a fileira é um botão: abre a janela de sockets.
+ */
+function selarSoquetes(cell, peca, aoTocar = null) {
+  const sq = peca?.soquetes;
+  if (!sq?.gemas?.length) return;
+  const itens = ctx.state.items;
+  const fila = el(aoTocar ? 'button' : 'span', `selo-soquetes${aoTocar ? ' tocavel' : ''}`);
+  if (aoTocar) {
+    fila.type = 'button';
+    fila.title = 'Sockets — encaixar gemas';
+    const abrir = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      aoTocar();
+    };
+    fila.addEventListener('click', abrir);
+    fila.addEventListener('contextmenu', abrir);
+  }
+  sq.gemas.forEach((g, i) => {
+    const tipo = i >= (sq.abertos ?? 0) ? 'trancado' : !g ? 'vazio' : itens[g.id]?.gemaDef?.tipo === 'support' ? 'support' : 'ativa';
+    fila.append(el('i', `sq ${tipo}`));
+    if (i < sq.gemas.length - 1) fila.append(el('i', `lk${sq.links?.[i] ? ' ligado' : ''}`));
+  });
+  cell.append(fila);
+}
+
 /** Opções de um item, iguais em qualquer lista onde ele apareça. */
 /*
  * ---- O BOTÃO DIREITO USA; O CTRL+DIREITO ABRE O MENU ----
@@ -1449,6 +1479,10 @@ function makeDropSlot(node, slot) {
       const payload = JSON.parse(event.dataTransfer.getData('text/plain'));
       // O equipar lê a MOCHILA: vindo da Store Inbox vestiria a cópia de lá. Ver `naStoreInbox`.
       if (payload.from === 'storeInbox') return void ctx.notice?.('Leve da Store Inbox para a mochila primeiro.');
+      // Uma GEMA arrastada da mochila até a peça vestida: encaixa no primeiro socket livre dela.
+      if (ctx.state.items[payload.id]?.gemaDef && payload.from === 'bag' && payload.pilha != null) {
+        return void ctx.send({ t: 'gema', action: 'encaixar', slot, de: payload.pilha });
+      }
       if (payload.from === 'pouch') ctx.send({ t: 'pouch', id: payload.id, count: 1, to: 'bag' });
       ctx.send({ t: 'equip', id: payload.id, slot, pilha: payload.pilha, alvo: payload.alvo ?? null });
     } catch {
@@ -1821,6 +1855,9 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
 
   // A entrada inteira: é ela que tem o tier e os imbuements desta peça.
   tipFor(cell, entry.id, entry.count > 1 ? `${entry.count} unidades` : null, null, entry);
+  // Os sockets da peça (só mostrar) e o nível da gema solta.
+  selarSoquetes(cell, entry);
+  if (meta?.gemaDef) cell.append(el('i', 'selo-gema', String(entry.gema?.nivel ?? 1)));
   /*
    * ---- A ESSÊNCIA de afixo desenha a SILHUETA do slot ----
    *
@@ -2012,6 +2049,8 @@ export function renderInventory() {
       // do tier existe. Ver `selarTier`.
       selarTier(cell, equipped, 'equipment');
       selarAfixos(cell, equipped);
+      // Os sockets da peça vestida, no próprio slot: um toque abre a janela (desktop e celular).
+      selarSoquetes(cell, equipped, () => abrirSoquetes(ctx, slot));
       // A carga que resta, quando a peça se gasta. Ver `selarDesgaste`.
       selarDesgaste(cell, character.desgaste?.[slot]);
       /*

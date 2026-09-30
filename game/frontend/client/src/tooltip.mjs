@@ -959,7 +959,8 @@ const segundos = (ms) => `${(ms / 1000).toFixed(ms % 1000 ? 1 : 0).replace('.', 
  * que ele responde é outro: quanto bate, quanto custa e por que não sai.
  */
 function showAction(holder) {
-  const entry = holder._tipAction;
+  // Pode ser uma função: o balão pega a entrada do catálogo de AGORA (o dano e a gema mudam sem a barra se refazer).
+  const entry = typeof holder._tipAction === 'function' ? holder._tipAction() : holder._tipAction;
   if (!entry) return hide();
   const ficha = fichaDeAcao(entry, holder._tipIcon, holder.dataset.tipExtra);
   node.innerHTML = '';
@@ -977,6 +978,41 @@ function showAction(holder) {
  * versão própria, mais pobre, com os mesmos dados em texto corrido. Agora é o
  * mesmo desenho nos dois lugares, e mexer num muda o outro.
  */
+/**
+ * O bloco da GEMA de uma skill (servidor: `catalogo` → `gema`): nível e barra de XP,
+ * raridade, qualidade, o bônus somado, as supports ligadas e a conjuração. Um só
+ * desenho para o balão do slot da barra e para a tela "Configurar ação".
+ */
+export function blocoDaGemaDaSkill(entry) {
+  const g = entry?.gema;
+  if (!g) return null;
+  const bloco = el('div', 'tip-gema');
+  bloco.append(el('div', 'tip-gema-tipo', 'Gema de Skill'));
+  const xp = g.xpProximo ? ` · XP ${Math.floor(g.xp).toLocaleString('pt-BR')} / ${g.xpProximo.toLocaleString('pt-BR')}` : ' · nível máximo';
+  bloco.append(el('div', null, `Nível ${g.nivel}${xp}`));
+  if (g.xpProximo) {
+    const barra = el('div', 'tip-gema-xp');
+    const cheio = el('i');
+    cheio.style.width = `${Math.min(100, (100 * g.xp) / g.xpProximo)}%`;
+    barra.append(cheio);
+    bloco.append(barra);
+  }
+  const qualidade = g.efeito?.qualidade ?? 0;
+  bloco.append(el('div', null, `${g.raridade ?? 'comum'}${g.multiplicador && g.multiplicador !== 1 ? ` (bônus ×${g.multiplicador.toLocaleString('pt-BR')})` : ''} · qualidade ${qualidade}%`));
+  const e = g.efeito ?? {};
+  const partes = [];
+  if (e.danoPct) partes.push(`+${Math.round(e.danoPct * 10) / 10}% dano`);
+  if (e.curaPct) partes.push(`+${Math.round(e.curaPct * 10) / 10}% cura`);
+  if (e.custoPct) partes.push(`${Math.round(e.custoPct)}% mana`);
+  if (e.recargaPct) partes.push(`${Math.round(e.recargaPct)}% recarga`);
+  if (e.critChance) partes.push(`+${e.critChance}% crítico`);
+  if (e.alvosExtras) partes.push(`+${e.alvosExtras} alvos`);
+  if (partes.length) bloco.append(el('div', 'tip-gema-efeito', partes.join(' · ')));
+  bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Supports ligadas: ${g.supports.map((s) => `${s.nome} ${s.nivel}`).join(', ')}` : 'Sem support ligada'));
+  if (g.castTime) bloco.append(el('div', null, `Conjuração: ${(g.castTime / 1000).toLocaleString('pt-BR')} s`));
+  return bloco;
+}
+
 export function fichaDeAcao(entry, icone = null, extra = null) {
   const partes = [];
   const node = { append: (...n) => partes.push(...n) };
@@ -1049,14 +1085,19 @@ export function fichaDeAcao(entry, icone = null, extra = null) {
   if (entry.groupCooldown && entry.groupCooldown !== entry.cooldown) {
     regra(`Grupo de ${GROUP_NAMES[entry.group] ?? entry.group}`, segundos(entry.groupCooldown), 'imbue');
   }
-  if (entry.level) regra('Level mínimo', String(entry.level));
-  if (entry.magicLevel) regra('Magic level', String(entry.magicLevel));
+  // Skill de gema não pede level nem magic level (qualquer um usa qualquer gema).
+  if (entry.level && entry.levelDaMagia == null) regra('Level mínimo', String(entry.level));
+  if (entry.magicLevel && entry.levelDaMagia == null) regra('Magic level', String(entry.magicLevel));
   // A classe recomendada (não é trava: qualquer classe usa — modelo Path of Exile) e as tags da skill.
   if (entry.vocations?.length) regra('Classe recomendada', entry.vocations.map((v) => VOCATION_NAMES[v] ?? v).join(', '));
   if (entry.tags?.length) regra('Tags', entry.tags.join(' · '));
   // A afinidade da classe DESTE personagem nesta skill (a mesma conta do servidor: `Ficha.afinidadePara`).
   if (entry.afinidade?.pct) regra('Sua afinidade', `+${entry.afinidade.pct}% (${entry.afinidade.fontes.map((f) => `${f.especializacao} +${f.pct}%`).join(', ')})`, 'crit');
   if (regras.children.length) node.append(regras);
+
+  // ---- a GEMA de onde a skill vem ----
+  const daGema = blocoDaGemaDaSkill(entry);
+  if (daGema) node.append(daGema);
 
   if (entry.blocked) node.append(el('div', 'tip-blocked', entry.blocked));
   if (extra) node.append(el('div', 'tip-extra', extra));

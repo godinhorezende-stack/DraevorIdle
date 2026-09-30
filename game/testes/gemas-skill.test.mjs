@@ -11,7 +11,7 @@ import * as Inventario from '../systems/inventario.mjs';
 import * as G from '../systems/skills/gemas.mjs';
 import { converterPersonagem, converterTudo } from '../systems/itens/item.mjs';
 import { gerarItem } from '../systems/itens/gerar.mjs';
-import { ITEM_CATALOG } from '../systems/dados.mjs';
+import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
 
@@ -519,4 +519,77 @@ test('sem trava: qualquer personagem usa qualquer gema; o dano base escala pelo 
   assert.equal(G.bonusDoTreino(e, lanca), 10 * G.CONFIG.dano.porSkill, 'física de longe: distance');
   assert.equal(G.bonusDoTreino(e, G.DEFS.get(GEMA('spell-brutal-strike'))), 100 * G.CONFIG.dano.porSkill, 'física de perto: melee');
   assert.equal(G.bonusDoTreino(e, def), 10 * G.CONFIG.dano.porMagicLevel, 'mágica: magic level');
+});
+
+// ---------------------------------------------------------------- a barra segue as gemas encaixadas
+
+test('barra: gema encaixada entra sozinha no slot livre do papel dela; gema tirada (ou peça desvestida) esvazia o slot', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  const pocao = Acoes.catalogo(e).items[0];
+  e.actions[0] = { id: pocao.id, kind: 'item', enabled: true, conditions: [] };
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GEMA('spell-light-healing'))] });
+  assert.equal(Acoes.sincronizarBarraComGemas(e), true);
+  const onde = (id) => e.actions.findIndex((a) => a?.id === id);
+  assert.equal(Acoes.PAPEL_DO_SLOT[onde(FLAME)], 'attack');
+  assert.equal(Acoes.PAPEL_DO_SLOT[onde('spell-light-healing')], 'hp');
+  assert.equal(e.actions[0].id, pocao.id, 'a poção fica');
+  assert.equal(Acoes.sincronizarBarraComGemas(e), false, 'nada mudou');
+  // Tirou a gema: o slot esvazia; a poção continua.
+  G.tirar(e, { slot: 'weapon', indice: 0 });
+  Acoes.sincronizarBarraComGemas(e);
+  assert.equal(onde(FLAME), -1);
+  assert.ok(onde('spell-light-healing') >= 0);
+  // Desvestiu a peça: as skills dela saem da barra.
+  Inventario.desequipar(e, { slot: 'weapon' });
+  Acoes.sincronizarBarraComGemas(e);
+  assert.equal(onde('spell-light-healing'), -1);
+  assert.equal(e.actions[0].id, pocao.id);
+});
+
+test('encaixar sem dizer o socket (a gema arrastada até a peça): vai no primeiro aberto e vazio', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { abertos: 2, gemas: [G.novaGema(GEMA(FLAME))] });
+  e.inventory.push(G.itemDaGema(G.novaGema(GEMA('spell-energy-strike'))));
+  assert.equal(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon' }).ok, true);
+  assert.equal(e.equipment.weapon.soquetes.gemas[1].id, GEMA('spell-energy-strike'));
+  e.inventory.push(G.itemDaGema(G.novaGema(GEMA('spell-ice-strike'))));
+  assert.match(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon' }).erro, /socket livre/);
+});
+
+test('regra dos sockets compartilhada com a tela (engine/sockets-de-gema.mjs): a mesma função no servidor', async () => {
+  const E = await import('../engine/sockets-de-gema.mjs');
+  assert.equal(G.compativel, E.compativel);
+  const s = { abertos: 3, links: [true, false, false] };
+  assert.deepEqual(E.gruposLigados(s), [[0, 1], [2]]);
+  assert.deepEqual(E.grupoDoSocket(s, 1), [0, 1]);
+  assert.deepEqual(E.grupoDoSocket(s, 3), [], 'socket bloqueado: sem grupo');
+  const gd = G.DEFS.get(SUPPORT('greater-damage')).suporte;
+  const cura = G.DEFS.get(SUPPORT('potent-healing')).suporte;
+  const flame = G.DEFS.get(GEMA(FLAME)).tags;
+  assert.equal(E.compativel(gd, flame), true);
+  assert.equal(E.compativel(cura, flame), false);
+});
+
+test('o dano do balão da skill é o do disparo: sobe com o nível da gema, a support e o level (uma conta só)', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 100 });
+  Treino.garantir(e);
+  const peca = vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 1)] });
+  const noBalao = () => Acoes.catalogo(e).spells.find((x) => x.id === FLAME).damage;
+  const n1 = noBalao();
+  peca.soquetes.gemas[0].nivel = 11;
+  Ficha.invalidar(e);
+  const n11 = noBalao();
+  assert.ok(n11.max > n1.max, `nível: ${n1.max} → ${n11.max}`);
+  peca.soquetes.gemas[1] = G.novaGema(SUPPORT('greater-damage'));
+  Ficha.invalidar(e);
+  const comSupport = noBalao();
+  assert.ok(comSupport.max > n11.max, `support: ${n11.max} → ${comSupport.max}`);
+  // O disparo de verdade cai dentro da faixa do balão (sem crítico, alvo sem resistência).
+  // (a entrada CRUA do catálogo de ações: a do balão já vem calculada)
+  const conta = Acoes.danoMostrado(e, ACTION_CATALOG.spells.find((x) => x.id === FLAME));
+  assert.deepEqual({ min: comSupport.min, max: comSupport.max }, conta);
+  e.level = 300;
+  Ficha.invalidar(e);
+  assert.ok(noBalao().max > comSupport.max, 'o level também sobe o dano mostrado');
 });

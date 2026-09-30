@@ -4,7 +4,7 @@
 // Quantos slots existem e onde a linha quebra vêm do servidor (`catalog.slots`
 // e `catalog.slotsPorFileira`); aqui não há número de slot escrito à mão.
 import { itemCanvas, outfitCanvas, outfitInfo } from './sprites.mjs';
-import { tipForAction, previaDaMagia } from './tooltip.mjs';
+import { tipForAction, previaDaMagia, blocoDaGemaDaSkill } from './tooltip.mjs';
 import { artOrUiIcon } from './hud.mjs';
 import { ehCelular } from './mobile.mjs';
 // O relógio de cada slot chega como instante: ver `packages/shared/src/prazos.mjs`.
@@ -573,7 +573,9 @@ function montarHotbar(bar, actions, total) {
       // É a resposta para “por que a minha magia não dispara?”.
       tipForAction(
         slot,
-        entry,
+        // A entrada do catálogo de AGORA, lida quando o balão abre: o dano, a XP e as supports
+        // da gema mudam (o servidor reenvia o catálogo) sem a barra precisar se redesenhar.
+        entry ? () => entradaDaAcao(action.id) ?? entry : null,
         // O desenho vem daqui pronto: só a barra sabe recortar a folha de
         // ícones de magia, e o tooltip não precisa aprender isso.
         () => actionIcon(entry, 40),
@@ -1246,6 +1248,8 @@ function filtered(entries) {
      * dizer "aqui só cabe cura" é a tela, antes do clique.
      */
     if (papel && !(entry.papeis ?? []).includes(papel)) return false;
+    // Só as skills das GEMAS ENCAIXADAS (decisão do dono): sem a gema, nem aparece.
+    if (entry.blocked === 'sem a gema') return false;
     if (needle && !`${entry.name} ${entry.words ?? ''}`.toLowerCase().includes(needle)) return false;
     if (level && (entry.level ?? 0) < level) return false;
     if (vocation && entry.vocations?.length && !entry.vocations.includes(vocation)) return false;
@@ -1513,6 +1517,10 @@ export function renderEditor() {
   const redrawList = () => {
     list.innerHTML = '';
     const entries = filtered(catalog[editing.tab] ?? []);
+    if (editing.tab !== 'items') list.append(el('p', 'shop-note', 'As gemas encaixadas nas peças que você está vestindo (o seu set).'));
+    if (!entries.length && editing.tab !== 'items') {
+      list.append(el('p', 'empty', 'Nenhuma gema encaixada para este slot. Encaixe gemas nos sockets das peças vestidas (clique no selo de sockets da peça, ou Ctrl + botão direito → Sockets). A Zuma Magehide vende todas.'));
+    }
     for (const entry of entries) {
       /*
        * A mesma classe de funcao do balao (`acao-ataque`, `acao-cura`, ...), para
@@ -1537,6 +1545,8 @@ export function renderEditor() {
       // As palavras da magia em dourado, como aparecem no client.
       if (entry.words) text.append(el('em', 'words', entry.words));
       else if (entry.level) text.append(el('em', 'words', `level ${entry.level}`));
+      // A gema de onde a skill vem: nível e supports ligadas.
+      if (entry.gema) text.append(el('em', 'gema-da-skill', `gema nv ${entry.gema.nivel}${entry.gema.supports?.length ? ` · ${entry.gema.supports.map((s) => s.nome).join(', ')}` : ''}`));
       item.append(text);
 
       if (entry.cost) item.append(el('span', 'action-cost', `${money(entry.cost)}g`));
@@ -1654,10 +1664,18 @@ export function renderEditor() {
     if (entry.vocations?.length) lines.push([`Classe recomendada: ${entry.vocations.join(', ')} (qualquer classe pode usar).`, 'plain']);
     if (entry.tags?.length) lines.push([`Tags: ${entry.tags.join(', ')}.`, 'plain']);
     if (entry.afinidade?.pct) lines.push([`Sua afinidade de classe: +${entry.afinidade.pct}% (${entry.afinidade.fontes.map((f) => `${f.especializacao} +${f.pct}%`).join(', ')}).`, 'crit']);
-    if (entry.level) {
+    // Skill de gema não pede level nem magic level (qualquer um usa qualquer gema).
+    if (entry.level && entry.levelDaMagia == null) {
       lines.push([`Requer level ${entry.level}${entry.magicLevel ? ` e magic level ${entry.magicLevel}` : ''}.`, 'plain']);
     }
     for (const [line, className] of lines) texto.append(el('p', className, line));
+    // A gema de onde a skill vem — o mesmo bloco do balão do slot (nível, XP, bônus, supports).
+    const daGema = blocoDaGemaDaSkill(entry);
+    if (daGema) {
+      const caixa = el('div', 'gema-no-editor');
+      caixa.append(daGema);
+      texto.append(caixa);
+    }
 
     /*
      * O desenho de onde a magia pega, logo abaixo do que ela faz.

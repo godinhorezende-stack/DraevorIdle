@@ -674,6 +674,8 @@ export class Sessao {
    * gema mudam as skills disponíveis (a Action Bar só mostra as gemas encaixadas).
    */
   aplicarComSkills(resultado) {
+    // A barra segue as gemas encaixadas: tira a skill que perdeu a gema, põe a nova (antes do estado ir).
+    if (resultado?.ok) Acoes.sincronizarBarraComGemas(this.estado);
     this.aplicar(resultado);
     if (resultado?.ok) {
       Ficha.invalidar(this.estado);
@@ -1583,6 +1585,8 @@ export class Sessao {
     Recompensas.marcosDaVocacao(estado);
     // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
     ItensDoJogo.converterPersonagem(estado);
+    // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).
+    Acoes.sincronizarBarraComGemas(estado);
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
     Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.
@@ -1948,6 +1952,33 @@ export class Sessao {
     estado.proximoPassoEm = agora + R.PASSO_MS;
   }
 
+  /**
+   * ---- O dano/cura do balão da skill sempre em dia ----
+   * O catálogo de ações leva o dano e a cura que cada skill faz AGORA (`Acoes.danoMostrado`,
+   * a mesma conta do `disparar`) e a gema dela (nível, XP, supports). Ele vai de novo quando
+   * muda o que entra na conta: level, magic level, skills, as gemas (nível, raridade,
+   * qualidade), as peças vestidas; e a XP das gemas no máximo a cada 5 s.
+   */
+  catalogoSeMudou() {
+    const e = this.estado;
+    const gemas = [];
+    for (const p of Object.values(e.equipment ?? {})) for (const g of p?.soquetes?.gemas ?? []) if (g) gemas.push(`${g.id}.${g.nivel}.${g.raridade}.${g.qualidade}`);
+    const pecas = Object.entries(e.equipment ?? {}).map(([s, p]) => `${s}:${p?.id ?? ''}:${p?.tier ?? ''}:${p?.af?.length ?? ''}`);
+    const assinatura = [e.level, e.magic?.value, e.skills?.melee?.value, e.skills?.distance?.value, gemas.join(','), pecas.join(','), Object.keys(e.hunt?.buffs ?? {}).join(',')].join('|');
+    const xp = gemas.length ? Object.values(e.equipment ?? {}).flatMap((p) => (p?.soquetes?.gemas ?? []).map((g) => g?.xp ?? 0)).join(',') : '';
+    const agora = Date.now();
+    const mudouXp = xp !== this.xpDoCatalogo && agora - (this.catalogoEm ?? 0) >= 5000;
+    if (assinatura === this.assinaturaDoCatalogo && !mudouXp) return;
+    const primeira = this.assinaturaDoCatalogo == null;
+    this.assinaturaDoCatalogo = assinatura;
+    this.xpDoCatalogo = xp;
+    this.catalogoEm = agora;
+    // Na primeira vez o catálogo já foi no welcome/pedido: só guarda a assinatura.
+    if (primeira) return;
+    Ficha.invalidar(e);
+    this.enviar({ t: 'actionCatalog', catalog: Acoes.catalogo(e) });
+  }
+
   mandarEstado(comMapa = false, eventos = []) {
     // A cortina de carregamento da hunt nova vai UMA vez (ver `Cacadas.entrar`).
     const viagem = this.estado?.hunt?.viagem ?? null;
@@ -1955,6 +1986,7 @@ export class Sessao {
     if (!this.personagem) return;
     // Sem aba, não há quem desenhe: montar o quadro seria trabalho para ninguém.
     if (this.semAba) return;
+    this.catalogoSeMudou();
     const naHunt = !!this.estado.hunt;
     /*
      * ---- Só o que MUDOU ----
