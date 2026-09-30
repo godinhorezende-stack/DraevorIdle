@@ -1,4 +1,25 @@
 {
-  "_nota": "Exceções às TAGS automáticas das skills (systems/skills/tags.mjs tira as tags do catálogo: kind, element, area/forma, projétil, cura, papéis). Por id: `mais` acrescenta, `menos` tira. Tags conhecidas: attack, spell, rune, item, physical, fire, earth, energy, ice, holy, death, healing, melee, ranged, projectile, area, single, wave, line, chain, buff, mobility, summon.",
-  "excecoes": {}
+  "_nota": "Exceções às TAGS automáticas das skills (systems/skills/tags.mjs tira as tags do catálogo: kind, element, area/forma, projétil, cura, papéis). Por id: `mais` acrescenta, `menos` tira. Tags conhecidas: attack, spell, rune, item, physical, fire, earth, energy, ice, holy, death, healing, melee, ranged, projectile, area, single, wave, line, chain, buff, mobility, summon, ground (campo no chão).",
+  "excecoes": {
+    "rune-magic-wall-rune": {
+      "_por": "runa de CAMPO (parede no chão): não é projétil nem alvo único",
+      "mais": [
+        "ground"
+      ],
+      "menos": [
+        "projectile",
+        "single"
+      ]
+    },
+    "rune-wild-growth-rune": {
+      "_por": "runa de CAMPO (mato no chão): não é projétil nem alvo único",
+      "mais": [
+        "ground"
+      ],
+      "menos": [
+        "projectile",
+        "single"
+      ]
+    }
+  }
 }

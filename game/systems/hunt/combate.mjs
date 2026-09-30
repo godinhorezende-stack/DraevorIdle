@@ -22,6 +22,7 @@ import * as Prey from '../prey.mjs';
 import * as Arvore from '../arvore.mjs';
 import * as Bosses from '../bosses.mjs';
 import * as Poderes from '../poderes.mjs';
+import * as Reforcos from '../skills/reforcos.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
@@ -579,7 +580,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   }
   // O melee do monster.lua (`Poderes`); bicho sem arquivo, a regra de sempre.
   // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
-  const bruto = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * (bicho.forca ?? 1);
+  // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
+  const bruto = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now());
   // Golpe corpo a corpo é físico: a proteção física do equipamento corta em %.
   const protegido = Math.round(bruto * (1 - Math.min(100, ficha.protection.physical ?? 0) / 100));
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
@@ -771,7 +773,9 @@ export function round(estado, personagem) {
       // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
       // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
       // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
-      const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe(categoriaDaArma(arma))).pct) / 100;
+      // + os reforços ligados (Blood Rage no corpo a corpo, Sharpshooter à distância), pelas tags do golpe.
+      const tagsDoGolpe = Tags.tagsDoGolpe(categoriaDaArma(arma));
+      const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, tagsDoGolpe).pct + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
       // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
       const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
       const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia), alvo, eventos, ficha);
@@ -808,6 +812,8 @@ export function round(estado, personagem) {
       }
       // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
       Charms.aoAcertar(estado, hunt, alvo, eventos);
+      // As auras ligadas marcam o bicho atingido (vulnerável, enfraquecido).
+      Reforcos.marcar(hunt, alvo);
     }
     // Momentum (tier do elmo): a cada golpe, chance de tirar 2s de todas as recargas.
     if (Tiers.rolar(estado, 'head')) {

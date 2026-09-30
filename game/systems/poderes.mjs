@@ -26,6 +26,7 @@ import * as Arvore from './arvore.mjs';
 import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
 import * as Defesa from './personagem/defesa.mjs';
+import * as Reforcos from './skills/reforcos.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -123,7 +124,10 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     if (Math.random() * 100 >= a.chance || !alcanca(a, bicho, alvo)) return;
     // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
     // "Chance to Avoid Damage" (add) também evita a magia inteira (a Evasion não: só o golpe corpo a corpo).
-    const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha);
+    // + a esquiva de magia de LONGE dos reforços (Divine Defiance): só se o bicho não está colado.
+    const deLonge = Math.max(Math.abs(bicho.x - alvo.x), Math.abs(bicho.y - alvo.y)) > 1;
+    const esquivaDeLonge = deLonge ? Reforcos.bonus(hunt, 'esquivaDeLonge') / 100 : 0;
+    const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha) || (esquivaDeLonge > 0 && Math.random() < esquivaDeLonge);
     // Dodge (charm) também: sai o `block` dele e o golpe não pega.
     const doCharm = !esquivou && Charms.desviou(estado, hunt, personagem, bicho, eventos);
 
@@ -140,7 +144,8 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
     // A magia é cortada pela resistência do elemento (em %); a antiga armadura
     // mágica virou o Energy Shield (absorve abaixo, antes do magic shield e da vida).
-    const bruto = sortear(a.min, a.max) * (bicho.forca ?? 1) * (1 - prot / 100);
+    // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
+    const bruto = sortear(a.min, a.max) * Reforcos.forcaDoBicho(bicho, agora) * (1 - prot / 100);
     let dano = Math.round(bruto * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
     const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
     // Void Inversion (charm): o dreno de mana vira ganho de mana.
