@@ -505,7 +505,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     let dono = null;
     let ignorado = true;
     for (const [k, m] of fila.entries()) {
-      if (Bolsa.ignora(m.estado, drop.id)) continue;
+      // A peça já sorteada (raridade e atributos) vai junto: as regras específicas de "não coletar" olham os atributos reais.
+      if (Bolsa.ignora(m.estado, drop.id, peca)) continue;
       ignorado = false;
       const semCap = pesoDoInventario(m.estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(m.estado);
       if (semCap || !Bolsa.porNaBolsa(m.estado, drop.id, 1, peca)) continue;
