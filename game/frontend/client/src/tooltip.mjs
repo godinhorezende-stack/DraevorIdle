@@ -2297,7 +2297,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     : // A raridade do DROP; equipável sem ela é comum (ver `raridadeDaPeca`).
       raridadeDaPeca(meta, peca);
   const tier = tierOf({ rarity: raridadeDoBalao });
-  const classe = `tier-${tier.key}`;
+  // `tip-item`: o visual do balão de item (à Path of Exile — ver style.css).
+  const classe = `tier-${tier.key} tip-item`;
 
   // ---- cabeçalho: nome à esquerda, sprite grande à direita ----
   const head = el('div', 'tip-head');
@@ -2390,9 +2391,18 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   const stats = el('div', 'tip-stats');
   // Devolve a linha: quem precisa apagá-la ou pôr um `title` (ver os augments,
   // logo abaixo) precisa do nó, e não só do efeito colateral.
+  // Depois do subtítulo "Implícitos" as linhas ganham `impl` (o azul dos modificadores).
+  let emImplicitos = false;
   const add = (text, className) => {
     if (!text) return null;
-    const linha = el('div', className, text);
+    const linha = el('div', emImplicitos && className !== 'tip-sec' ? `${className ?? ''} impl` : className, text);
+    stats.append(linha);
+    return linha;
+  };
+  // Uma propriedade da base como no Path of Exile: "Armour: 8" (rótulo apagado, valor claro).
+  const prop = (rotulo, valor, className) => {
+    const linha = el('div', `prop ${className ?? ''}`);
+    linha.append(el('span', null, `${rotulo}: `), el('b', null, valor));
     stats.append(linha);
     return linha;
   };
@@ -2465,15 +2475,16 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    */
   const temBase = meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
   if (temBase) add('Base', 'tip-sec');
-  if (meta.attack) add(`${numeroOuFaixa(meta, 'attack')} de dano`, 'atk');
-  if (meta.defense) add(`${numeroOuFaixa(meta, 'defense')} de bloqueio${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
+  // A faixa do dano sai sem o "+" ("10–26"): é o que cada golpe sorteia.
+  if (meta.attack) prop('Dano', numeroOuFaixa(meta, 'attack').replace(/^\+/, ''), 'atk');
+  if (meta.defense) prop('Bloqueio', `${numeroOuFaixa(meta, 'defense').replace(/^\+/, '')}${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
   // A defesa sai num número só: a média da faixa sorteada, que é o que a ficha usa
   // (a faixa "5–10" parecia sinal de menos, e só o dano da arma sorteia a cada golpe).
-  if (meta.armor) add(`${sinal(meta.armor)} de Armour`, 'def');
-  if (meta.evasion) add(`${sinal(meta.evasion)} de Evasion`, 'def');
-  if (meta.es) add(`${sinal(meta.es)} de Energy Shield`, 'mana');
-  if (meta.range) add(`Alcance de ${meta.range} sqm`, 'plain');
-  if (meta.speed) add(`${sinal(meta.speed)} de velocidade`, 'speed');
+  if (meta.armor) prop('Armour', String(meta.armor), 'def');
+  if (meta.evasion) prop('Evasion', String(meta.evasion), 'def');
+  if (meta.es) prop('Energy Shield', String(meta.es), 'mana');
+  if (meta.range) prop('Alcance', `${meta.range} sqm`, 'plain');
+  if (meta.speed) prop('Velocidade', sinal(meta.speed), 'speed');
   // Elemento é um segundo golpe, não uma fatia do primeiro: o servidor roda a
   // mesma fórmula com este valor no lugar do ataque da arma e soma o resultado.
   if (meta.element) {
@@ -2484,6 +2495,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
   const temImplicito = Object.keys(meta.skillBonus ?? {}).length || meta.critChance || meta.critDamage || meta.lifeLeech || meta.manaLeech || Object.keys(meta.protection ?? {}).length || meta.regen?.hp || meta.regen?.mana;
   if (temImplicito) add('Implícitos', 'tip-sec');
+  emImplicitos = true;
   for (const [skill, value] of Object.entries(meta.skillBonus ?? {})) {
     add(`${sinal(value)} de ${SKILL_NAMES[skill] ?? skill}`, 'skill');
   }
