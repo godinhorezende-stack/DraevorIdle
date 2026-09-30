@@ -1,12 +1,26 @@
 {
-  "_nota": "SUPPORT GEMS: modificam a gema ATIVA ligada a elas (mesmo grupo de sockets ligados). Compatibilidade pelas tags da skill: `requer` (todas), `algum` (pelo menos uma), `exclui` (nenhuma). `efeito` no nível 1 e `porNivel` a cada nível acima. Chaves de efeito: danoPct, curaPct, castTimePct (−20 = 20% mais rápido), custoPct (−20 = 20% mais barata), recargaPct, critChance (pontos %), critDano (pontos %), alvosExtras (projéteis extras: outros bichos ao alcance), danoDosExtrasPct.",
+  "_nota": "SUPPORT GEMS: modificam a gema ATIVA ligada a elas (mesmo grupo de sockets ligados). Compatibilidade pelas tags da skill: `requer` (todas), `algum` (pelo menos uma), `exclui` (nenhuma). `efeito` no nível 1 e `porNivel` a cada nível acima. Chaves de efeito: danoPct, curaPct, castTimePct (−20 = 20% mais rápido), custoPct (−20 = 20% mais barata), recargaPct, critChance (pontos %), critDano (pontos %), alvosExtras (projéteis extras: outros bichos ao alcance), danoDosExtrasPct. PROJÉTIL/ÁREA (etapa 3): perfurar/danoDaPerfuracaoPct, bifurcar/danoDaBifurcacaoPct, encadear/danoDoEncadeamentoPct, retornar/danoDoRetornoPct, explosaoPct, segundaExplosaoPct, areaExtra (casas de raio; negativo concentra). As chaves de % dos golpes secundários (danoDosExtrasPct, danoDa...Pct) se MULTIPLICAM entre supports (60% × 80% = 48%); as demais somam.",
   "supports": {
-    "greater-damage":        { "nome": "Greater Damage",        "algum": ["physical", "fire", "earth", "energy", "ice", "holy", "death"], "exclui": ["healing"], "efeito": { "danoPct": 25 }, "porNivel": { "danoPct": 1 } },
-    "faster-casting":        { "nome": "Faster Casting",        "requer": ["spell"], "efeito": { "castTimePct": -20 }, "porNivel": { "castTimePct": -0.5 } },
-    "multiple-projectiles":  { "nome": "Multiple Projectiles",  "requer": ["projectile"], "efeito": { "alvosExtras": 2, "danoDosExtrasPct": 60 }, "porNivel": { "danoDosExtrasPct": 1 } },
-    "increased-critical":    { "nome": "Increased Critical Strikes", "algum": ["physical", "fire", "earth", "energy", "ice", "holy", "death"], "efeito": { "critChance": 5, "critDano": 20 }, "porNivel": { "critChance": 0.2 } },
-    "mana-efficiency":       { "nome": "Mana Efficiency",       "requer": ["spell"], "efeito": { "custoPct": -20 }, "porNivel": { "custoPct": -0.5 } },
-    "cooldown-recovery":     { "nome": "Cooldown Recovery",     "efeito": { "recargaPct": -15 }, "porNivel": { "recargaPct": -0.5 } },
-    "potent-healing":        { "nome": "Potent Healing",        "requer": ["healing"], "efeito": { "curaPct": 25 }, "porNivel": { "curaPct": 1 } }
+    "greater-damage":               { "nome": "Greater Damage", "algum": ["physical", "fire", "earth", "energy", "ice", "holy", "death"], "exclui": ["healing"], "efeito": { "danoPct": 25}, "porNivel": { "danoPct": 1} },
+    "faster-casting":               { "nome": "Faster Casting", "requer": ["spell"], "efeito": { "castTimePct": -20}, "porNivel": { "castTimePct": -0.5} },
+    "multiple-projectiles":         { "nome": "Multiple Projectiles", "requer": ["projectile"], "efeito": { "alvosExtras": 2, "danoDosExtrasPct": 60}, "porNivel": { "danoDosExtrasPct": 1} },
+    "increased-critical":           { "nome": "Increased Critical Strikes", "algum": ["physical", "fire", "earth", "energy", "ice", "holy", "death"], "efeito": { "critChance": 5, "critDano": 20}, "porNivel": { "critChance": 0.2} },
+    "mana-efficiency":              { "nome": "Mana Efficiency", "requer": ["spell"], "efeito": { "custoPct": -20}, "porNivel": { "custoPct": -0.5} },
+    "cooldown-recovery":            { "nome": "Cooldown Recovery", "efeito": { "recargaPct": -15}, "porNivel": { "recargaPct": -0.5} },
+    "potent-healing":               { "nome": "Potent Healing", "requer": ["healing"], "efeito": { "curaPct": 25}, "porNivel": { "curaPct": 1} },
+    "extra-projectile":             { "nome": "Extra Projectile", "requer": ["projectile"], "efeito": { "alvosExtras": 1, "danoDosExtrasPct": 80}, "porNivel": { "danoDosExtrasPct": 0.5} },
+    "greater-multiple-projectiles": { "nome": "Greater Multiple Projectiles", "requer": ["projectile"], "efeito": { "alvosExtras": 4, "danoDosExtrasPct": 45}, "porNivel": { "danoDosExtrasPct": 0.5} },
+    "pierce":                       { "nome": "Pierce", "requer": ["projectile"], "efeito": { "perfurar": 2, "danoDaPerfuracaoPct": 70}, "porNivel": { "danoDaPerfuracaoPct": 0.5} },
+    "fork":                         { "nome": "Fork", "requer": ["projectile"], "efeito": { "bifurcar": 2, "danoDaBifurcacaoPct": 60}, "porNivel": { "danoDaBifurcacaoPct": 0.5} },
+    "chain":                        { "nome": "Chain", "requer": ["projectile"], "efeito": { "encadear": 2, "danoDoEncadeamentoPct": 70}, "porNivel": { "danoDoEncadeamentoPct": 0.5} },
+    "returning-projectile":         { "nome": "Returning Projectile", "requer": ["projectile"], "efeito": { "retornar": 1, "danoDoRetornoPct": 50}, "porNivel": { "danoDoRetornoPct": 0.5} },
+    "projectile-damage":            { "nome": "Projectile Damage", "requer": ["projectile"], "efeito": { "danoPct": 20}, "porNivel": { "danoPct": 1} },
+    "area-of-effect":               { "nome": "Area of Effect", "algum": ["area", "wave", "line"], "efeito": { "areaExtra": 1} },
+    "greater-area-of-effect":       { "nome": "Greater Area of Effect", "algum": ["area", "wave", "line"], "efeito": { "areaExtra": 2, "danoPct": -15}, "porNivel": { "danoPct": 0.5} },
+    "concentrated-effect":          { "nome": "Concentrated Effect", "algum": ["area", "wave", "line"], "efeito": { "areaExtra": -1, "danoPct": 35}, "porNivel": { "danoPct": 1} },
+    "area-damage":                  { "nome": "Area Damage", "algum": ["area", "wave", "line"], "efeito": { "danoPct": 25}, "porNivel": { "danoPct": 1} },
+    "explosion":                    { "nome": "Explosion", "requer": ["hit"], "algum": ["projectile", "single"], "efeito": { "explosaoPct": 50}, "porNivel": { "explosaoPct": 0.5} },
+    "secondary-explosion":          { "nome": "Secondary Explosion", "requer": ["hit"], "algum": ["projectile", "single"], "efeito": { "segundaExplosaoPct": 35}, "porNivel": { "segundaExplosaoPct": 0.5} },
+    "impact":                       { "nome": "Impact", "requer": ["hit", "melee", "single"], "efeito": { "explosaoPct": 40}, "porNivel": { "explosaoPct": 0.5} }
   }
 }

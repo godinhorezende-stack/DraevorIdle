@@ -1016,7 +1016,13 @@ export function blocoDaGemaDaSkill(entry) {
   if (e.custoPct) partes.push(`${Math.round(e.custoPct)}% mana`);
   if (e.recargaPct) partes.push(`${Math.round(e.recargaPct)}% recarga`);
   if (e.critChance) partes.push(`+${e.critChance}% crítico`);
-  if (e.alvosExtras) partes.push(`+${e.alvosExtras} alvos`);
+  if (e.alvosExtras) partes.push(`+${e.alvosExtras} projéteis`);
+  if (e.perfurar) partes.push(`perfura ${e.perfurar}`);
+  if (e.bifurcar) partes.push(`divide em ${e.bifurcar}`);
+  if (e.encadear) partes.push(`salta ${e.encadear}×`);
+  if (e.retornar) partes.push('volta');
+  if (e.explosaoPct || e.segundaExplosaoPct) partes.push('explode');
+  if (e.areaExtra) partes.push(`área ${e.areaExtra > 0 ? '+' : ''}${Math.round(e.areaExtra)}`);
   if (partes.length) bloco.append(el('div', 'tip-gema-efeito', partes.join(' · ')));
   bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Supports ligadas: ${g.supports.map((s) => `${s.nome} ${s.nivel}`).join(', ')}` : 'Sem support ligada'));
   if (g.castTime) bloco.append(el('div', null, `Conjuração: ${(g.castTime / 1000).toLocaleString('pt-BR')} s`));
@@ -2401,9 +2407,23 @@ const NOME_DO_EFEITO_DA_SUPPORT = {
   critChance: 'chance de crítico',
   critDano: 'dano crítico',
   alvosExtras: 'projéteis extras',
-  danoDosExtrasPct: 'dano dos projéteis extras',
+  danoDosExtrasPct: 'do dano em cada projétil extra',
+  perfurar: 'bichos atravessados (perfura)',
+  danoDaPerfuracaoPct: 'do dano ao atravessar',
+  bifurcar: 'projéteis ao se dividir no alvo',
+  danoDaBifurcacaoPct: 'do dano em cada divisão',
+  encadear: 'saltos de bicho em bicho',
+  danoDoEncadeamentoPct: 'do dano em cada salto',
+  retornar: 'volta (acerta de novo)',
+  danoDoRetornoPct: 'do dano na volta',
+  explosaoPct: 'do dano numa explosão em volta do alvo',
+  segundaExplosaoPct: 'do dano numa segunda explosão',
+  areaExtra: 'casas de raio na área',
 };
-const numeroDoEfeito = (chave, v) => (chave === 'alvosExtras' ? `+${v}` : `${v > 0 ? '+' : ''}${v}%`);
+// Contagem sai "+2"; os % dos golpes secundários saem "70% do dano..." (não "+70%").
+const CONTAGENS_DA_SUPPORT = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra']);
+const PORCENTO_DO_GOLPE = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct', 'explosaoPct', 'segundaExplosaoPct']);
+const numeroDoEfeito = (chave, v) => (CONTAGENS_DA_SUPPORT.has(chave) ? `${v > 0 ? '+' : ''}${v}` : PORCENTO_DO_GOLPE.has(chave) ? `${v}%` : `${v > 0 ? '+' : ''}${v}%`);
 
 /** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
 function blocoDaGema(def, gema, raridade = 'comum') {
@@ -2422,7 +2442,9 @@ function blocoDaGema(def, gema, raridade = 'comum') {
     const reqs = [...(def.requer ?? []), ...(def.algum?.length ? [def.algum.join(' ou ')] : [])];
     if (reqs.length) bloco.append(el('div', 'tip-gema-tags', `Suporta: ${reqs.join(', ')}`));
     for (const [chave, v] of Object.entries(def.efeito ?? {})) {
-      const total = (v + (def.porNivel?.[chave] ?? 0) * (nivel - 1)) * mult * (1 + qualidade / 100);
+      // Contagem (projéteis, saltos, casas) não escala com a raridade/qualidade — igual ao servidor; o % do golpe tem teto de 100%.
+      const bruto = v + (def.porNivel?.[chave] ?? 0) * (nivel - 1);
+      const total = CONTAGENS_DA_SUPPORT.has(chave) ? bruto : PORCENTO_DO_GOLPE.has(chave) ? Math.min(100, bruto * mult * (1 + qualidade / 100)) : bruto * mult * (1 + qualidade / 100);
       bloco.append(el('div', 'tip-gema-efeito', `${numeroDoEfeito(chave, Math.round(total * 100) / 100)} ${NOME_DO_EFEITO_DA_SUPPORT[chave] ?? chave}`));
     }
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));

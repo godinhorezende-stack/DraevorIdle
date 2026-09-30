@@ -141,6 +141,20 @@
   "support:increased-critical": 911004,
   "support:mana-efficiency": 911005,
   "support:cooldown-recovery": 911006,
-  "support:potent-healing": 911007
+  "support:potent-healing": 911007,
+  "support:extra-projectile": 911008,
+  "support:greater-multiple-projectiles": 911009,
+  "support:pierce": 911010,
+  "support:fork": 911011,
+  "support:chain": 911012,
+  "support:returning-projectile": 911013,
+  "support:projectile-damage": 911014,
+  "support:area-of-effect": 911015,
+  "support:greater-area-of-effect": 911016,
+  "support:concentrated-effect": 911017,
+  "support:area-damage": 911018,
+  "support:explosion": 911019,
+  "support:secondary-explosion": 911020,
+  "support:impact": 911021
  }
 }
