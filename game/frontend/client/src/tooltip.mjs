@@ -2467,9 +2467,11 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (temBase) add('Base', 'tip-sec');
   if (meta.attack) add(`${numeroOuFaixa(meta, 'attack')} de dano`, 'atk');
   if (meta.defense) add(`${numeroOuFaixa(meta, 'defense')} de bloqueio${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
-  if (meta.armor) add(`${numeroOuFaixa(meta, 'armor')} de Armour`, 'def');
-  if (meta.evasion) add(`${numeroOuFaixa(meta, 'evasion')} de Evasion`, 'def');
-  if (meta.es) add(`${numeroOuFaixa(meta, 'es')} de Energy Shield`, 'mana');
+  // A defesa sai num número só: a média da faixa sorteada, que é o que a ficha usa
+  // (a faixa "5–10" parecia sinal de menos, e só o dano da arma sorteia a cada golpe).
+  if (meta.armor) add(`${sinal(meta.armor)} de Armour`, 'def');
+  if (meta.evasion) add(`${sinal(meta.evasion)} de Evasion`, 'def');
+  if (meta.es) add(`${sinal(meta.es)} de Energy Shield`, 'mana');
   if (meta.range) add(`Alcance de ${meta.range} sqm`, 'plain');
   if (meta.speed) add(`${sinal(meta.speed)} de velocidade`, 'speed');
   // Elemento é um segundo golpe, não uma fatia do primeiro: o servidor roda a
