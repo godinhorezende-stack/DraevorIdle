@@ -68,3 +68,14 @@ test('a raridade não muda o preço (decisão do dono)', () => {
   };
   assert.equal(vende('comum'), vende('mítico'));
 });
+
+test('o scroll comum vende (a exclusão é só dos itens especiais: Divine Scroll, premium scroll...)', () => {
+  const { id, m } = porNome('scroll');
+  assert.equal(m.sell, Math.floor(m.buy * PrecoDeVenda.CONFIG.fracaoDoPrecoDeCompra));
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  Bolsa.garantir(e);
+  e.pouch = [{ id, count: 3 }];
+  assert.ok(Bolsa.venderBolsa(e).gold > 0);
+  assert.equal(e.pouch.length, 0);
+  for (const nome of ['Divine Scroll', 'Divine Hunts Scroll', 'premium scroll', 'Scroll Speed Exercise']) assert.ok(!(porNome(nome).m.sell > 0), nome);
+});

@@ -8,8 +8,8 @@
   "janelaDeLevel": 15,
   "semLevel": 50,
 
-  "_nunca": "Nunca ganham preço (moedas, fichas, bolsas e itens de quest não se vendem ao NPC): nomes com estas palavras.",
-  "nunca": ["coin", "token", "bag you", "bag set", "scroll", "conjurer stone", "summon upgrade"],
+  "_nunca": "Nunca ganham preço (moedas, fichas, bolsas e os itens especiais do jogo — Divine Scroll, premium scroll... — não se vendem ao NPC): nomes com estas palavras. Nada genérico demais: \"scroll\" sozinho pegava o scroll comum (relato, 30/09).",
+  "nunca": ["coin", "token", "bag you", "bag set", "divine scroll", "divine hunts scroll", "premium scroll", "scroll speed exercise", "conjurer stone", "summon upgrade"],
   "_tiposNunca": "Tipos do catálogo (`type`) que nunca ganham preço: item de quest e de domar montaria.",
   "tiposNunca": ["quest items", "taming items"]
 }
