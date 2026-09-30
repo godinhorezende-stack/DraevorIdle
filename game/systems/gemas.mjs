@@ -25,6 +25,7 @@
 // - "Trocar domínio" vai para o próximo no sentido horário da roda
 //   (verde → vermelho → roxo → azul), como no Tibia;
 // - triturar uma gema fechada rende a mesma faixa de destruir uma revelada.
+import * as Passivas from './passivas/arvore.mjs';
 import { readFileSync } from 'node:fs';
 import { contarGuardadas, tirarGuardadas } from './inventario.mjs';
 import * as Arvore from './arvore.mjs';
@@ -85,8 +86,19 @@ const motivo = (estado) => ((estado.level ?? 0) < DADOS.levelMinimo ? `O Gem Ate
 
 // ------------------------------------------------------------------ vessels
 
-/** A fração de cada domínio (graus comprados ÷ graus do caminho) e quantos vessels ela enche. */
+/**
+ * A fração de cada domínio e quantos vessels ela enche. Desde a árvore de
+ * passivas única (etapa 7): os nós alocados de cada domínio (defesa → vermelho,
+ * dano → roxo, sustento → azul; verde = todos) ÷ a referência do config
+ * (`Passivas.fracaoDosDominios`). Enquanto o personagem ainda tem a árvore
+ * antiga (não entrou desde a migração), vale a conta dela.
+ */
 export function vessels(estado) {
+  if (estado.passivas?.migrado) {
+    const fracao = Passivas.fracaoDosDominios(estado);
+    const cheios = Object.fromEntries(ORDEM_DA_RODA.map((d) => [d, DADOS.marcas.filter((m) => fracao[d] >= m).length]));
+    return { ...cheios, fracao, nomes: DADOS.nomesDosVessels };
+  }
   const cat = Arvore.catalogoDe(estado);
   const graus = Arvore.garantir(estado).graus;
   const soma = { todas: [0, 0] };

@@ -58,6 +58,8 @@ import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
 import * as Prey from '../systems/prey.mjs';
 import * as Arvore from '../systems/arvore.mjs';
+import * as Passivas from '../systems/passivas/arvore.mjs';
+import * as ComandosDasPassivas from '../systems/passivas/comandos.mjs';
 import * as Banqueiro from '../systems/banqueiro.mjs';
 import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
@@ -325,6 +327,8 @@ function characterParaCliente(personagem, estado) {
     huntLaps: estado.huntLaps ?? {},
     arvorePontos: Arvore.pontos(estado),
     arvoreBonus: Arvore.bonus(estado),
+    // A árvore de passivas única: os pontos (o alerta do botão) e o que está alocado.
+    passivas: Passivas.vista(estado, !!estado.hunt),
     // Stamina de verdade: gasta caçando, volta na cidade (ver game/systems/stamina.mjs).
     ...Stamina.paraCliente(estado),
     ...Exercicio.paraCliente(estado),
@@ -474,6 +478,26 @@ export class Sessao {
     Gemas.sincronizarMaximos(this.estado);
     this.enviar({ t: 'arvore', view: Arvore.vista(this.estado), emCacada: !!this.estado.hunt });
     if (m.action) this.mandarEstado();
+  }
+
+  /**
+   * `send({t:'passivas', action?, id?, ids?, tudo?, junto?})` — a árvore de
+   * passivas única (`systems/passivas/`). Erro vira `{t:'error'}`; o resto
+   * responde `{t:'passivas', view, plano?, arvore?}` — `arvore` (os nós, grande)
+   * só quando pedida (`action:'arvore'`) — e o `state` segue quando algo mudou.
+   */
+  despacharPassivas(m) {
+    const emCacada = !!this.estado.hunt;
+    const r = ComandosDasPassivas.comando(this.estado, m, emCacada);
+    if (!r.ok) return this.erro(r.erro);
+    this.enviar({
+      t: 'passivas',
+      view: Passivas.vista(this.estado, emCacada),
+      ...(r.plano ? { plano: r.plano } : {}),
+      ...(m.action === 'arvore' ? { arvore: Passivas.arvoreParaCliente() } : {}),
+      ...(r.aviso ? { aviso: r.aviso } : {}),
+    });
+    if (r.mudou) this.mandarEstado();
   }
 
   /** `send({t:'gemas', action?})` — o Gem Atelier: responde com a vista inteira, como a árvore. */
@@ -1063,6 +1087,8 @@ export class Sessao {
         return this.aplicar(Prey.comando(this.estado, m));
       case 'arvore':
         return this.despacharArvore(m);
+      case 'passivas':
+        return this.despacharPassivas(m);
       case 'gemas':
         return this.despacharGemas(m);
       case 'charms':
@@ -1599,6 +1625,9 @@ export class Sessao {
     GemasDeSkill.darGemasIniciais(estado);
     // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).
     Acoes.sincronizarBarraComGemas(estado);
+    // A árvore de passivas única: garante o início da classe e, para quem tinha a árvore
+    // ANTIGA por vocação, devolve todos os pontos (com um respec grátis) — uma vez.
+    if (Passivas.garantir(estado).migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
     Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.

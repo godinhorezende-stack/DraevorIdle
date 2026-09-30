@@ -8,6 +8,7 @@
 // Funções PURAS sobre `estado`; quem soma na conta é a ficha (`ficha.mjs`,
 // `Ficha.combate`) — a mesma do combate, da ficha, do balão e da comparação.
 // Classe, especialização ou tag nova = dados no JSON, sem mexer no combate.
+import * as Passivas from '../passivas/arvore.mjs';
 import { readFileSync } from 'node:fs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/classes.json', import.meta.url), 'utf8'));
@@ -44,6 +45,11 @@ export function efeitos(estado) {
       (fontes[chave] ??= []).push({ especializacao: e.nome, pct });
     }
   }
+  // A ÁRVORE DE PASSIVAS: os nós de "+X% de dano <tag>" e "+X% <stat>" no mesmo formato (e na ficha, com a origem).
+  const arv = Passivas.efeitos(estado);
+  for (const [tag, pct] of Object.entries(arv.dano)) dano[tag] = (dano[tag] ?? 0) + pct;
+  for (const [stat, pct] of Object.entries(arv.stats)) stats[stat] = (stats[stat] ?? 0) + pct;
+  for (const [chave, lista] of Object.entries(arv.fontes)) (fontes[chave] ??= []).push(...lista);
   return { dano, stats, fontes };
 }
 

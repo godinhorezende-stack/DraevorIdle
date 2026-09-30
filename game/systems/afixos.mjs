@@ -14,6 +14,7 @@
 // `gamedata/itens/*.json`. Antes era fixo em código, medido nos drops reais do
 // original (1 afixo 73% / 2 24% / 3 3%; T1 90% / T2 8% / T3 2%; 31% "tortos").
 import * as Atributos from './personagem/atributos.mjs';
+import * as Passivas from './passivas/arvore.mjs';
 import * as Especializacoes from './personagem/especializacoes.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
@@ -121,13 +122,19 @@ export function rerrolar(slot, af, indice, itemId = null) {
 
 // ------------------------------------------------------- o que está vestido
 
-/** A soma de cada afixo nas peças VESTIDAS: `{atk_flat: 7, crit_chance: 1.3, ...}`. */
+/**
+ * A soma de cada add que vale: os das peças VESTIDAS mais os da ÁRVORE DE
+ * PASSIVAS (os nós "+5 STR", "+2% Crit"... usam as mesmas chaves dos adds de
+ * item, e por isso entram aqui — a ficha, os requisitos de item e a
+ * comparação leem esta soma e não fazem conta própria). `{atk_flat: 7, str: 12, ...}`.
+ */
 export function soma(estado) {
   const total = {};
   for (const [slot, peca] of Object.entries(estado.equipment ?? {})) {
     if (!peca?.af?.length || slot === 'backpack') continue;
     for (const a of peca.af) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
   }
+  for (const [k, v] of Object.entries(Passivas.efeitos(estado).adds)) total[k] = (total[k] ?? 0) + v;
   return total;
 }
 
