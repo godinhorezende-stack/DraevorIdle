@@ -593,3 +593,16 @@ test('o dano do balão da skill é o do disparo: sobe com o nível da gema, a su
   Ficha.invalidar(e);
   assert.ok(noBalao().max > comSupport.max, 'o level também sobe o dano mostrado');
 });
+
+test('categorias das gemas (como no Path of Exile): Ataque, Cura, Reforço, Suporte — no item e na loja, em ordem', () => {
+  const cat = (id) => G.DEFS.get(id).categoria;
+  assert.equal(cat(GEMA(FLAME)), 'ataque');
+  assert.equal(cat(GEMA('spell-light-healing')), 'cura');
+  assert.equal(cat(GEMA('spell-haste')), 'reforco');
+  assert.equal(cat(SUPPORT('greater-damage')), 'suporte');
+  assert.equal(ITEM_CATALOG[GEMA(FLAME)].gemaDef.categoria, 'ataque');
+  const lista = G.catalogoDaLoja(personagemDeTeste({ level: 50 }));
+  const ordem = [...new Set(lista.map((l) => l.categoria))];
+  assert.deepEqual(ordem, ['ataque', 'cura', 'reforco', 'suporte']);
+  assert.equal(lista.find((l) => l.categoria === 'suporte').categoriaNome, 'Gema de Suporte');
+});

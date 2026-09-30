@@ -1161,7 +1161,7 @@ function openEditor(slot) {
   editing = {
     slot,
     tab: action ? (action.kind === 'item' ? 'items' : action.kind === 'rune' ? 'runes' : 'spells') : 'spells',
-    filters: { search: '', level: 0, vocation: ctx.state.character.vocation ?? '' },
+    filters: { search: '', level: 0, vocation: ctx.state.character.vocation ?? '', todas: false },
     draft: action
       ? {
           ...action,
@@ -1248,10 +1248,11 @@ function filtered(entries) {
      * dizer "aqui só cabe cura" é a tela, antes do clique.
      */
     if (papel && !(entry.papeis ?? []).includes(papel)) return false;
-    // Só as skills das GEMAS ENCAIXADAS (decisão do dono): sem a gema, nem aparece.
-    if (entry.blocked === 'sem a gema') return false;
+    // Só as skills das GEMAS ENCAIXADAS (decisão do dono); em "Todas (consulta)", todas as do servidor.
+    if (entry.blocked === 'sem a gema' && !editing.filters.todas) return false;
     if (needle && !`${entry.name} ${entry.words ?? ''}`.toLowerCase().includes(needle)) return false;
-    if (level && (entry.level ?? 0) < level) return false;
+    // O level da magia no catálogo (a gema não pede level: é só para consultar e ordenar).
+    if (level && (entry.levelDaMagia ?? entry.level ?? 0) < level) return false;
     if (vocation && entry.vocations?.length && !entry.vocations.includes(vocation)) return false;
     return true;
   });
@@ -1470,6 +1471,24 @@ export function renderEditor() {
   // ---- filtros ----
   const filters = el('div', 'action-filters');
 
+  // Meu set (as gemas encaixadas) ou todas as gemas do servidor, para consultar.
+  if (editing.tab !== 'items') {
+    const origem = document.createElement('select');
+    origem.className = 'filtro-origem';
+    for (const [id, label] of [['set', 'Meu set (gemas encaixadas)'], ['todas', 'Todas as gemas (consulta)']]) {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = label;
+      origem.append(option);
+    }
+    origem.value = editing.filters.todas ? 'todas' : 'set';
+    origem.onchange = () => {
+      editing.filters.todas = origem.value === 'todas';
+      redrawList();
+    };
+    filters.append(origem);
+  }
+
   const search = document.createElement('input');
   search.type = 'search';
   search.placeholder = 'Buscar por nome ou palavras';
@@ -1484,7 +1503,7 @@ export function renderEditor() {
   const levelInput = document.createElement('input');
   levelInput.type = 'number';
   levelInput.min = '0';
-  levelInput.placeholder = 'level mín.';
+  levelInput.placeholder = 'level da magia';
   levelInput.value = editing.filters.level || '';
   levelInput.oninput = () => {
     editing.filters.level = Number(levelInput.value) || 0;
@@ -1517,8 +1536,18 @@ export function renderEditor() {
   const redrawList = () => {
     list.innerHTML = '';
     const entries = filtered(catalog[editing.tab] ?? []);
-    if (editing.tab !== 'items') list.append(el('p', 'shop-note', 'As gemas encaixadas nas peças que você está vestindo (o seu set).'));
-    if (!entries.length && editing.tab !== 'items') {
+    if (editing.tab !== 'items') {
+      list.append(
+        el(
+          'p',
+          'shop-note',
+          editing.filters.todas
+            ? 'Todas as gemas do jogo, para consulta. As apagadas você não tem encaixadas: para usar, encaixe a gema (a Zuma Magehide vende todas).'
+            : 'As gemas encaixadas nas peças que você está vestindo (o seu set).'
+        )
+      );
+    }
+    if (!entries.length && editing.tab !== 'items' && !editing.filters.todas) {
       list.append(el('p', 'empty', 'Nenhuma gema encaixada para este slot. Encaixe gemas nos sockets das peças vestidas (clique no selo de sockets da peça, ou Ctrl + botão direito → Sockets). A Zuma Magehide vende todas.'));
     }
     for (const entry of entries) {
@@ -1544,7 +1573,7 @@ export function renderEditor() {
       text.append(el('b', null, entry.name));
       // As palavras da magia em dourado, como aparecem no client.
       if (entry.words) text.append(el('em', 'words', entry.words));
-      else if (entry.level) text.append(el('em', 'words', `level ${entry.level}`));
+      else if (entry.levelDaMagia ?? entry.level) text.append(el('em', 'words', `level ${entry.levelDaMagia ?? entry.level}`));
       // A gema de onde a skill vem: nível e supports ligadas.
       if (entry.gema) text.append(el('em', 'gema-da-skill', `gema nv ${entry.gema.nivel}${entry.gema.supports?.length ? ` · ${entry.gema.supports.map((s) => s.nome).join(', ')}` : ''}`));
       item.append(text);
@@ -1687,7 +1716,9 @@ export function renderEditor() {
     const forma = previaDaMagia(entry, { comOutfit: true });
     if (forma) resumo.append(forma);
 
-    if (entry.blocked) detail.append(el('p', 'blocked-note', `Você ainda não pode usar: ${entry.blocked}.`));
+    if (entry.blocked === 'sem a gema') {
+      detail.append(el('p', 'blocked-note', 'Só consulta: você não tem esta gema encaixada. Compre na Zuma Magehide (ou pegue no drop) e encaixe num socket de uma peça vestida.'));
+    } else if (entry.blocked) detail.append(el('p', 'blocked-note', `Você ainda não pode usar: ${entry.blocked}.`));
   }
 
   /*
@@ -2305,7 +2336,8 @@ export function renderEditor() {
   toggle.append(input, document.createTextNode('Ativada'));
 
   const save = el('button', null, 'Salvar');
-  save.disabled = !entry;
+  // Consulta (sem a gema): dá para ver tudo, mas não pôr na barra.
+  save.disabled = !entry || entry.blocked === 'sem a gema';
   save.onclick = () => {
     ctx.send({ t: 'actions', action: 'set', slot: editing.slot, value: editing.draft });
     ctx.closeModal();

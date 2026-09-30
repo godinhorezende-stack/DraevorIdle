@@ -73,7 +73,7 @@ import {
 } from './panels.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { renderSheet as renderSheetInto } from './sheet.mjs';
-import { initTooltip, tipFor, tipPanel, tipTexto, ligarComparacao, receberComparacao } from './tooltip.mjs';
+import { initTooltip, tipFor, tipPanel, tipTexto, ligarComparacao, receberComparacao, usarCatalogoDeAcoes } from './tooltip.mjs';
 // O QR do pagamento, desenhado aqui dentro: ver `packages/shared/src/qrcode.mjs`.
 import { qrcode } from '/packages/shared/src/qrcode.mjs';
 import { initArvore, openArvore, resumoDaArvoreParaBalao } from './arvore.mjs';
@@ -284,6 +284,8 @@ window.__send = send;
  * jogo continua existindo e é ela que passa o personagem e o catálogo.
  */
 initTooltip(() => state.items, () => state.character, () => state.catalog);
+// O balão da gema mostra o que a skill dela faz: lê o catálogo de ações de agora.
+usarCatalogoDeAcoes(() => state.actionCatalog);
 // A comparação de itens do balão pede ao servidor (ver `comparacaoComOEquipado`).
 ligarComparacao(send);
 
