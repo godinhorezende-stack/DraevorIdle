@@ -57,7 +57,10 @@ test('/api/personagem: a ficha inteira e o "não existe"', async () => {
   assert.equal(nosso.ok, true);
   assert.deepEqual(chaves(nosso.personagem), chaves(original.personagem));
   assert.deepEqual(chaves(nosso.personagem.draevor), chaves(original.personagem.draevor));
-  assert.deepEqual(chaves(nosso.personagem.catalogo), chaves(original.personagem.catalogo));
+  // As réguas do original, mais os poderes Lendário/Mítico (o texto deles no balão do equipamento).
+  const { efeitosDeItem, ...catalogoDoOriginal } = nosso.personagem.catalogo;
+  assert.deepEqual(chaves(catalogoDoOriginal), chaves(original.personagem.catalogo));
+  assert.ok(efeitosDeItem?.lendario && efeitosDeItem?.mitico);
   assert.deepEqual(chaves(nosso.personagem.equipamento), chaves(original.personagem.equipamento));
   assert.equal(nosso.personagem.jogando, true);
   assert.equal(nosso.personagem.atividade.onde, 'cidade');
@@ -74,9 +77,16 @@ test('/api/drops: só o raro entra, no formato do original', async () => {
   // Uma bag entra; um item comum sem afixo não.
   await DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 34109 });
   await DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 3081 });
-  const meus = (await DropsDoSite.vista()).drops.filter((d) => d.quem === NOME);
+  const vista = await DropsDoSite.vista();
+  const meus = vista.drops.filter((d) => d.quem === NOME);
   assert.deepEqual(meus.map((d) => d.nome), ['Bag You Desire']);
-  assert.deepEqual(chaves(meus[0]), chaves(ler('drops.json').drops.find((d) => d.afixos)));
+  // Os campos do original, mais a PEÇA inteira (o balão do jogo, à Path of Exile, desenha com ela).
+  const { peca, ...doOriginal } = meus[0];
+  assert.deepEqual(chaves(doOriginal), chaves(ler('drops.json').drops.find((d) => d.afixos)));
+  assert.equal(peca.id, 34109);
+  // E a rota manda o catálogo dessas peças e as réguas de afixo/poder.
+  assert.ok(vista.itens[34109], 'o catálogo da peça');
+  assert.ok(vista.catalogo.afixos && vista.catalogo.efeitosDeItem, 'afixos e poderes');
   assert.equal(meus[0].chance, 0.01);
   // Com três afixos dourados, até um comum entra (como o stone skin amulet capturado).
   assert.equal(DropsDoSite.valeAnotar(3081, [{ id: 'armor_flat', tier: 3, value: 99 }, { id: 'ice_res', tier: 3, value: 99 }, { id: 'fire_res', tier: 3, value: 99 }]), true);

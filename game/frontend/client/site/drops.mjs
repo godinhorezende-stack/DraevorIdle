@@ -35,6 +35,7 @@
  * inevitavelmente iriam divergindo.
  */
 import { loadSpriteData, itemCanvas } from '/client/src/sprites.mjs';
+import { fichaDeItem, usarDados } from '/client/src/tooltip.mjs';
 import { t } from '/client/site/idiomas.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -93,6 +94,7 @@ function selo(drop) {
  * nós escondidos e o mesmo problema de sobreposição trinta vezes.
  */
 let balao = null;
+let cardAberto = null;
 
 /*
  * ---- O balão, com a cara do balão do jogo ----
@@ -280,9 +282,41 @@ function montarBalao(drop) {
   return node;
 }
 
+/*
+ * ---- O MESMO balão do jogo, à Path of Exile ----
+ *
+ * O dono: "onde tem últimos drops (...) colocar o mesmo tooltip do path of
+ * exile". O drop novo guarda a PEÇA inteira (`drop.peca`, ver
+ * drops-do-site.mjs) e a rota manda o catálogo delas: o balão é o
+ * `fichaDeItem` do jogo — Base (Armour/Evasion/Energy Shield), implícitos,
+ * modificadores com tier, poder, Item Level —, mais o rodapé de onde veio.
+ * Drop antigo (de antes, sem `peca`) segue no balão de antes até sair da faixa.
+ */
+function balaoDoJogo(drop) {
+  if (!drop.peca) return null;
+  const ficha = fichaDeItem(drop.id, null, null, drop.peca);
+  if (!ficha) return null;
+  const node = el('div', `tooltip ${ficha.classe}`);
+  node.append(...ficha.partes);
+  const origem = el('div', 'tip-origem');
+  const linha = (rotulo, valor, classe) => {
+    if (!valor) return;
+    const l = el('div');
+    l.append(el('span', null, rotulo), el('b', classe ?? null, valor));
+    origem.append(l);
+  };
+  if (drop.bicho) linha(drop.boss ? t('drops.boss', 'Boss') : t('drops.bicho', 'Largado por'), drop.bicho, drop.boss ? 'boss' : null);
+  if (drop.bagNome) linha(t('drops.daBag', 'Saiu de'), drop.bagNome + (drop.entre > 1 ? ` (1 / ${drop.entre})` : ''));
+  linha(drop.bagNome ? t('drops.abriu', 'Aberta por') : t('drops.quem', 'Achado por'), drop.quem);
+  if (drop.onde && drop.onde !== drop.bicho) linha(t('drops.onde', 'Em'), drop.onde);
+  linha(t('drops.quando', 'Quando'), horaCheia(drop.em));
+  node.append(origem);
+  return node;
+}
+
 function mostrarBalao(card, drop) {
   esconderBalao();
-  balao = montarBalao(drop);
+  balao = balaoDoJogo(drop) ?? montarBalao(drop);
   document.body.append(balao);
   const caixa = card.getBoundingClientRect();
   const largura = balao.offsetWidth;
@@ -291,16 +325,21 @@ function mostrarBalao(card, drop) {
    * bordas, e um balão centrado neles sairia meio para fora da tela.
    */
   const esquerda = Math.max(8, Math.min(window.innerWidth - largura - 8, caixa.left + caixa.width / 2 - largura / 2));
-  const acimaCabe = caixa.top > balao.offsetHeight + 14;
   balao.style.left = `${esquerda}px`;
-  balao.style.top = acimaCabe
-    ? `${caixa.top - balao.offsetHeight - 10}px`
-    : `${caixa.bottom + 10}px`;
+  // Mais alto que a tela (o balão do jogo com poder e requisitos, no celular deitado): rola por dentro.
+  if (balao.classList.contains('tip-item') && balao.offsetHeight > window.innerHeight - 16) balao.classList.add('rolavel');
+  const altura = balao.offsetHeight;
+  // Em cima do card se couber; senão embaixo; senão o mais alto que couber dentro da janela.
+  const acima = caixa.top - altura - 10;
+  const abaixo = caixa.bottom + 10;
+  const topo = acima >= 8 ? acima : abaixo + altura <= window.innerHeight - 8 ? abaixo : Math.max(8, window.innerHeight - altura - 8);
+  balao.style.top = `${topo}px`;
 }
 
 function esconderBalao() {
   balao?.remove();
   balao = null;
+  cardAberto = null;
 }
 
 /*
@@ -354,10 +393,18 @@ function cardDoDrop(drop) {
   if (drop.bicho) card.append(el('span', 'drop-bicho', drop.bicho));
   card.append(el('span', 'drop-quando', quandoFoi(drop.em)));
 
-  card.onmouseenter = () => mostrarBalao(card, drop);
-  card.onmouseleave = esconderBalao;
+  // Passar por cima abre só com MOUSE: no toque o navegador emula um "entrou" antes do
+  // clique, e o balão abria e fechava na mesma batida (no celular ele nunca aparecia).
+  card.onpointerenter = (e) => e.pointerType === 'mouse' && mostrarBalao(card, drop);
+  card.onpointerleave = (e) => e.pointerType === 'mouse' && esconderBalao();
   // No telefone não há "passar o mouse": o toque abre e o toque fora fecha.
-  card.onclick = () => (balao ? esconderBalao() : mostrarBalao(card, drop));
+  card.onclick = (e) => {
+    // Mouse (ou clique sem `pointerType`, do Safari, num aparelho com mouse): o balão é do passar por cima.
+    if (e.pointerType === 'mouse' || (!e.pointerType && window.matchMedia?.('(hover: hover)').matches)) return;
+    if (balao && cardAberto === card) return esconderBalao();
+    mostrarBalao(card, drop);
+    cardAberto = card;
+  };
 
   return card;
 }
@@ -380,6 +427,8 @@ async function atualizar() {
     const resposta = await fetch('/api/drops', { cache: 'no-store' });
     if (!resposta.ok) return;
     const dados = await resposta.json();
+    // O catálogo das peças da faixa e as réguas de afixo/poder: o balão do jogo desenha com eles.
+    usarDados(dados.itens ?? {}, null, dados.catalogo ?? null);
     pintar(
       'drops-faixa',
       dados.drops ?? [],
@@ -410,4 +459,10 @@ loadSpriteData()
 
 window.addEventListener('draevor:idioma', atualizar);
 window.addEventListener('scroll', esconderBalao, { passive: true });
+// O toque fora do card aberto (e do balão, que rola quando é alto) fecha.
+document.addEventListener('pointerdown', (e) => {
+  if (!balao || e.pointerType === 'mouse') return;
+  if (e.target.closest?.('.drop-card') === cardAberto || balao.contains(e.target)) return;
+  esconderBalao();
+});
 setInterval(atualizar, 30_000);

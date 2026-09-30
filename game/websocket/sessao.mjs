@@ -68,6 +68,7 @@ import * as Campanha from '../systems/campanha.mjs';
 import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
+import * as Anuncios from '../systems/anuncios.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -88,6 +89,7 @@ let filaDeTransacoes = Promise.resolve();
 Party.ligar(vivas);
 Amigos.ligar(vivas);
 Chat.ligar(vivas);
+Anuncios.ligar(vivas); // o drop Épico+ para o servidor inteiro
 Ranking.ligar(vivas);
 Guildas.ligar(vivas);
 Arena.ligar(vivas);

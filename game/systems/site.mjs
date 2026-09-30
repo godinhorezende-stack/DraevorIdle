@@ -351,7 +351,8 @@ export async function personagem(nome, agora = Date.now()) {
       visto: vivo ? agora : r?.visto_em != null ? Number(r.visto_em) : null,
       banco: e.bank ?? 0,
       itens,
-      catalogo: { afixos: CATALOGO.afixos, efeitosDeTier: CATALOGO.efeitosDeTier, imbuements: CATALOGO.imbuements },
+      // + os poderes Lendário/Mítico (o balão do jogo escreve o texto deles com estes números).
+      catalogo: { afixos: CATALOGO.afixos, efeitosDeTier: CATALOGO.efeitosDeTier, imbuements: CATALOGO.imbuements, efeitosDeItem: CATALOGO.efeitosDeItem },
       draevor: draevor(e),
     },
   };

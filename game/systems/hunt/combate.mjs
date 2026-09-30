@@ -32,6 +32,7 @@ import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
 import * as Defesa from '../personagem/defesa.mjs';
+import * as Anuncios from '../anuncios.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -256,14 +257,19 @@ export function contextoDoDrop(hunt) {
   return { level: huntOuMapaCustom(hunt?.huntId)?.level ?? 1 };
 }
 
-export function vitoriaNoBoss(estado, hunt, alvo) {
+export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   const itens = [];
   for (const drop of [...alvo.loot, ...Gemas.DROP.boss]) {
     // Buff Power Loot +50%, o afixo "Loot" e a Caça Online ("15% mais chance de loot" na sala do boss).
     if (Math.random() >= drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt)) continue;
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
     if (VALOR_DA_MOEDA[drop.id]) itens.push({ id: drop.id, count: quantasMoedas(alvo, drop.id, estado) });
-    else itens.push(gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true }));
+    else {
+      const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true });
+      itens.push(peca);
+      // Épico para cima na sacola do boss: o anúncio para o servidor inteiro.
+      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
+    }
   }
   Bau.novaSacola(estado, alvo.name, itens);
   // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.
@@ -409,7 +415,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Os efeitos de item que reagem a uma morte (Sede de Sangue, Colheita de Almas).
   EfeitosDeItem.aoMatar(estado, hunt, alvo, eventos, personagem?.nome);
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
-  if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo);
+  if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo, personagem);
   if (sessao) sessao.byMonster[alvo.name] = (sessao.byMonster[alvo.name] ?? 0) + 1;
   if (sessao) sessao.expPorNome[personagem.nome] = (sessao.expPorNome[personagem.nome] ?? 0) + alvo.exp;
   /*
@@ -485,7 +491,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     }
     // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
     // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
-    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito }).catch((e) => console.error('drops-do-site', e.message));
+    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito, peca }).catch((e) => console.error('drops-do-site', e.message));
+    // Épico para cima: o servidor inteiro fica sabendo (ver `anuncios.mjs`).
+    Anuncios.dropRaro({ quem: dono.nome, peca, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
   }
   for (const [outro, items] of deOutros) {
     const lista = eventosDaParty.get(outro) ?? [];

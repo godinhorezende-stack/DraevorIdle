@@ -61,6 +61,17 @@ function tempoCurto(segundos) {
   return `${total}s`;
 }
 
+/*
+ * Só os DADOS do balão, sem o balão flutuante nem os ouvintes da página: para
+ * quem desenha a ficha (`fichaDeItem`) no próprio layout — os Últimos drops da
+ * capa do site. `initTooltip` liga tudo; esta, só o catálogo/personagem.
+ */
+export function usarDados(itens, personagem = null, catalogo = null) {
+  getItems = () => itens ?? {};
+  getPersonagem = () => personagem;
+  getCatalogo = () => catalogo;
+}
+
 export function initTooltip(itemsAccessor, personagemAccessor = () => null, catalogoAccessor = () => null) {
   getItems = itemsAccessor;
   getPersonagem = personagemAccessor;
@@ -93,6 +104,7 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
   nodeVs = el('div', 'tooltip');
   nodeVs.hidden = true;
   document.body.append(nodeVs);
+  if (typeof ResizeObserver === 'function') new ResizeObserver(aoMudarDeTamanho).observe(node);
 
   // Um listener só na página: cada elemento marca o item em data-tip.
   document.addEventListener('pointerover', (event) => {
@@ -121,6 +133,9 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
      * No toque, quem abre o balão é segurar parado (ver `ligarBalaoNoToque`).
      */
     if (event.pointerType === 'touch') return;
+    // O ponteiro em cima do PRÓPRIO balão (o alto, que rola e aceita o ponteiro) não o fecha:
+    // ele abria debaixo do dedo/mouse, recebia o "entrou" e se fechava na hora.
+    if (event.target.closest?.('.tooltip')) return;
 
     const holder = event.target.closest(SELETOR);
     if (!holder) return hide();
@@ -128,9 +143,25 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
   });
   document.addEventListener('pointerout', (event) => {
     if (event.pointerType === 'touch') return;
+    if (event.relatedTarget?.closest?.('.tooltip.rolavel')) return; // foi para o balão alto, para rolar
     if (!event.relatedTarget || !event.relatedTarget.closest?.(SELETOR)) hide();
   });
-  window.addEventListener('scroll', hide, true);
+  /*
+   * Rolar fecha o balão só quando a rolagem MOVE a peça de onde ele saiu (a
+   * página, ou a lista onde ela está). Rolar o próprio balão (o alto, no
+   * celular) não fecha — e uma rolagem alheia também não: a barra de chat do
+   * celular rola sozinha a cada linha nova, e fechava o balão que a pessoa
+   * estava segurando o dedo para abrir.
+   */
+  window.addEventListener('scroll', (event) => {
+    const alvo = event.target;
+    if (alvo instanceof Element) {
+      if (alvo.closest('.tooltip')) return;
+      const aberto = holderAberto ?? holderPosicionado;
+      if (aberto && !alvo.contains(aberto)) return;
+    }
+    hide();
+  }, true);
   // "Mostrar todos os atributos" da comparação: Shift com o balão de item aberto.
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Shift' || event.repeat || node.hidden) return;
@@ -179,6 +210,8 @@ function ligarBalaoNoToque() {
         alternarTodos();
         return;
       }
+      // Dedo DENTRO do balão (o que rola, por ser mais alto que a tela): ele fica aberto.
+      if (evento.target.closest?.('.tooltip.rolavel')) return;
       hide();
       desistir();
       if (!evento.isPrimary) return;
@@ -689,6 +722,22 @@ function afixosDaMarca(bruto) {
     if (saida.length >= 6) break; // o mesmo teto do `marcaDeItem`
   }
   return saida;
+}
+
+/**
+ * O NOME de uma peça inteira (`{id, raridade, ilvl, base, af, efeito, tier}`)
+ * como o chat escreve um item: na cor da raridade, com o tier e as estrelas, e
+ * o balão completo do jogo (base, Item Level, modificadores, poder). É o que o
+ * anúncio de drop raro usa — a marca `[[item:...]]` do texto não leva a base
+ * sorteada nem o poder.
+ */
+export function nomeDaPeca(peca, nome = null) {
+  const meta = getItems?.()?.[peca?.id];
+  const marca = el('span', `item-no-chat ${classeDaRaridade(meta, peca)}`, titleCase(nome ?? meta?.name ?? `item ${peca?.id}`));
+  if (peca?.tier > 0) marca.append(el('i', 'item-tier', `T${peca.tier}`));
+  if (peca?.af?.length) marca.append(seloDeEstrelas('item-estrelas', estrelasDosAfixos(peca.af)));
+  if (meta) tipFor(marca, peca.id, null, null, peca);
+  return marca;
 }
 
 /**
@@ -2022,6 +2071,8 @@ export function receberComparacao(m) {
   for (const bloco of document.querySelectorAll('.tip-vs[data-comparacao]')) {
     if (bloco.dataset.comparacao === m.chave) preencherComparacao(bloco, m);
   }
+  // O balão aberto cresceu com a resposta: arruma o tamanho (colunas/rolagem) e a posição de novo.
+  if (node && !node.hidden && holderAberto?.isConnected && node.querySelector(`.tip-vs[data-comparacao="${CSS.escape(m.chave)}"]`)) place(holderAberto);
 }
 
 function preencherComparacao(bloco, r) {
@@ -2034,7 +2085,15 @@ function preencherComparacao(bloco, r) {
   bloco.append(el('div', 'vs-titulo', r.contra ? `no lugar de ${titleCase(r.contra.nome)}` : `${SLOT_NAMES[r.slot] ?? r.slot} vazio`));
   const numero = (v, sufixo) => `${String(Number(v.toFixed(2))).replace('.', ',')}${sufixo}`;
   // Atual → novo → diferença, agrupado pelas seções da ficha (Atributos, Recursos, Ofensivo...).
-  const lista = mostrarTodos ? r.todos ?? r.personagem : r.personagem;
+  // Só o que muda, até LIMITE_DO_AO_EQUIPAR linhas (as maiores mudanças); o resto, no "Mostrar todos".
+  const LIMITE_DO_AO_EQUIPAR = 10;
+  let lista = mostrarTodos ? r.todos ?? r.personagem : r.personagem;
+  let escondidas = 0;
+  if (!mostrarTodos && lista.length > LIMITE_DO_AO_EQUIPAR) {
+    const maiores = new Set([...lista].sort((a, b) => Math.abs(b.delta) / (Math.abs(b.de) || 1) - Math.abs(a.delta) / (Math.abs(a.de) || 1)).slice(0, LIMITE_DO_AO_EQUIPAR));
+    escondidas = lista.length - maiores.size;
+    lista = lista.filter((l) => maiores.has(l));
+  }
   let secaoAtual = null;
   for (const linha of lista) {
     if (linha.secao && linha.secao !== secaoAtual) {
@@ -2049,6 +2108,7 @@ function preencherComparacao(bloco, r) {
     );
     bloco.append(row);
   }
+  if (escondidas) bloco.append(el('div', 'vs-igual', `+${escondidas} outras mudanças`));
   if (!r.personagem.length) bloco.append(el('div', 'vs-igual', 'nada muda no personagem'));
   if (r.tiraOEscudo) bloco.append(el('div', 'vs-aviso', 'usa as duas mãos — o escudo sai'));
   // A diferença peça a peça (base e adds) vem junto quando pede tudo.
@@ -2877,6 +2937,50 @@ function place(holder) {
    * continua no computador, onde cabe.
    */
   if (ehTelefone() && nodeVs) nodeVs.hidden = true;
+  const anchor = holder.getBoundingClientRect();
+  /*
+   * ---- O balão de item mais ALTO que a tela ----
+   * Com "Ao equipar", poder e requisitos ele passa dos 900px — mais que um
+   * desktop de 768 e mais que o dobro do celular deitado. Primeiro, havendo
+   * largura, duas colunas (o cabeçalho ocupa as duas); se nem assim couber,
+   * ele rola por dentro (no toque, o dedo rola sem fechar).
+   */
+  node.classList.remove('duas-colunas', 'rolavel');
+  // Mede no canto (0,0), com a largura toda: no lugar antigo, perto da borda direita, o texto
+  // quebrava em mais linhas depois de medido e o balão passava da borda de baixo.
+  node.style.left = '0px';
+  node.style.top = '0px';
+  const alturaLivre = window.innerHeight - 16;
+  if (node.classList.contains('tip-item') && node.getBoundingClientRect().height > alturaLivre) {
+    if (window.innerWidth >= 600) node.classList.add('duas-colunas');
+    // Colunas com altura presa vazam para o LADO: sem caber em duas, volta a uma coluna que rola.
+    if (node.getBoundingClientRect().height > alturaLivre) {
+      node.classList.remove('duas-colunas');
+      node.classList.add('rolavel');
+    }
+  }
+  posicionar(holder);
+  holderPosicionado = holder;
+}
+
+/*
+ * A fonte de algum símbolo (★, →, ✨) pode chegar um instante DEPOIS do
+ * primeiro desenho, e o balão crescer umas linhas já posicionado — no celular
+ * em pé isso o empurrava para fora da borda de baixo. Mudou de tamanho aberto:
+ * rola (se passou da tela) e reposiciona.
+ */
+let holderPosicionado = null;
+function aoMudarDeTamanho() {
+  if (!node || node.hidden || !holderPosicionado?.isConnected) return;
+  if (node.classList.contains('tip-item') && !node.classList.contains('rolavel') && node.getBoundingClientRect().height > window.innerHeight - 16) {
+    node.classList.remove('duas-colunas');
+    node.classList.add('rolavel');
+  }
+  posicionar(holderPosicionado);
+}
+
+/** Põe o balão (e o do vestido, ao lado) perto da peça, dentro da janela. */
+function posicionar(holder) {
   const anchor = holder.getBoundingClientRect();
   const box = node.getBoundingClientRect();
 

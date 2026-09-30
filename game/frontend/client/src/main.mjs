@@ -1,4 +1,5 @@
 import './so-quando-muda.mjs';
+import { anunciarDrop } from './anuncio-drop.mjs';
 import { loadSpriteData, loadEffectData, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
 import { MapView } from './map.mjs';
 import {
@@ -35,6 +36,7 @@ import {
   logChat,
   logSystem,
   logAviso,
+  logDropRaro,
   feedEvents,
   abrirConversa,
   focarChat,
@@ -947,6 +949,11 @@ function handle(message) {
       if (message.aviso) logAviso(message.text, message.channel, message.para ?? null);
       // `eu` é o que deixa a aba do privado saber se a linha saiu ou chegou.
       else logChat({ ...message, eu: state.character?.name });
+      break;
+    // Épico para cima caiu para alguém: a linha no Global e a faixa no alto da tela (ver anuncios.mjs no servidor).
+    case 'dropRaro':
+      logDropRaro(message);
+      anunciarDrop(message);
       break;
     // A bolinha de online das abas de privado. Ver `receberPresenca`.
     case 'presenca':

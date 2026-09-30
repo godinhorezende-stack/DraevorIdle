@@ -1,7 +1,7 @@
 // Chat do canto inferior esquerdo, com as abas do servidor:
 // Ajuda, Global, Local, Combate e Loot.
 import { windowBody, fecharAoClicarFora, setVisible } from './windows.mjs';
-import { textoComItens, idsNoTexto, classeDaRaridade } from './tooltip.mjs';
+import { textoComItens, idsNoTexto, classeDaRaridade, nomeDaPeca } from './tooltip.mjs';
 import { artOrUiIcon } from './hud.mjs';
 
 /*
@@ -1123,6 +1123,20 @@ export const logAviso = (text, channel = 'global', para = null) => {
   }
   return push(logs[channel] ? channel : 'global', line);
 };
+
+/*
+ * ---- O drop raro de alguém, no Global ----
+ * "quando alguém dropa um item épico pra cima aparece para todo mundo o nome
+ * do item e a pessoa que dropou" (o dono). A linha fica no Global, com o nome
+ * da peça na cor dela e o balão completo; a faixa no alto da tela
+ * (`anuncio-drop.mjs`) é o aviso de fora do chat.
+ */
+export function logDropRaro(m) {
+  const line = el('div', 'sys drop-raro');
+  line.append(`✦ ${m.quem ?? 'Alguém'} dropou `, nomeDaPeca(m.peca, m.nome));
+  if (m.bicho) line.append(m.boss ? ` do boss ${m.bicho}` : ` de ${m.bicho}`);
+  return push('global', line);
+}
 
 /*
  * ---- De que TIPO é cada linha do combate ----

@@ -19,10 +19,10 @@
 //
 // Este módulo é importado pelo combate: não importa nada de caçada/sessão.
 import { banco } from '../database/banco.mjs';
-import { ITEM_CATALOG } from './dados.mjs';
+import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
 import * as Afixos from './afixos.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
-import { raridadeDaPeca, metaDaPeca } from './itens/item.mjs';
+import { raridadeDaPeca, metaDaPeca, camposDaPeca } from './itens/item.mjs';
 
 const GUARDA = 30;
 const DE_BOSS = new Set(['lendário', 'mítico']);
@@ -120,21 +120,36 @@ async function guardar(tipo, dados) {
  * fogo e esquece de propósito, é só um log para a capa do site, não pode
  * atrasar o golpe que acabou de matar o bicho.
  */
-export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0, raridade = null, efeito = null }) {
+/*
+ * A PEÇA inteira (`{id, count, raridade, ilvl, base, af, efeito, tier}`), para
+ * a capa desenhar o MESMO balão do jogo (`fichaDeItem`, à Path of Exile) — com
+ * Armour/Evasion/Energy Shield, Item Level, tiers e poder. Os campos soltos de
+ * `fichaDaPeca` continuam: são os do card da faixa.
+ */
+const pecaDoSite = (id, count, peca) => ({ id, count, ...camposDaPeca(peca ?? {}) });
+
+export async function anotarDrop({ quem, onde, bicho, boss = false, id, count = 1, af = null, tier = 0, raridade = null, efeito = null, peca = null }) {
   if (emTeste() || !valeAnotar(id, af, { raridade })) return;
-  const { afixos, ...resto } = fichaDaPeca(id, count, { af, tier, raridade, efeito });
-  await guardar('drop', { ...resto, quem, em: Date.now(), onde, boss, bicho, chance: ITEM_CATALOG[id]?.dropChance ?? null, afixos });
+  const { afixos, ...resto } = fichaDaPeca(id, count, { af, tier, raridade, efeito, ...(peca ? { base: peca.base, ilvl: peca.ilvl } : {}) });
+  await guardar('drop', { ...resto, quem, em: Date.now(), onde, boss, bicho, chance: ITEM_CATALOG[id]?.dropChance ?? null, afixos, peca: pecaDoSite(id, count, peca ?? { af, tier, raridade, efeito }) });
 }
 
 /** O que saiu de uma bag aberta (`bag` = o id da bag, `entre` = de quantas opções). */
-export async function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0, raridade = null, efeito = null }) {
+export async function anotarBag({ quem, bag, entre, id, count = 1, af = null, tier = 0, raridade = null, efeito = null, peca = null }) {
   // O que sai de uma bag vai sempre (a lista é "uma peça sorteada por bag").
   if (emTeste()) return;
-  await guardar('bag', { ...fichaDaPeca(id, count, { af, tier, raridade, efeito }), quem, em: Date.now(), bag, bagNome: ITEM_CATALOG[bag]?.name ?? null, entre });
+  await guardar('bag', { ...fichaDaPeca(id, count, { af, tier, raridade, efeito }), quem, em: Date.now(), bag, bagNome: ITEM_CATALOG[bag]?.name ?? null, entre, peca: pecaDoSite(id, count, peca ?? { af, tier, raridade, efeito }) });
 }
 
 /** `GET /api/drops`. */
 export async function vista() {
   const ler = async (tipo) => (await Q.ultimos.all(tipo, GUARDA)).map((r) => JSON.parse(r.dados));
-  return { drops: await ler('drop'), bags: await ler('bag') };
+  const drops = await ler('drop');
+  const bags = await ler('bag');
+  // O que o balão do jogo precisa para desenhar estas peças: o catálogo DELAS e as réguas de afixo e poder.
+  const itens = {};
+  for (const d of [...drops, ...bags]) {
+    for (const id of [d.id, d.bag]) if (id != null && ITEM_CATALOG[id]) itens[id] = ITEM_CATALOG[id];
+  }
+  return { drops, bags, itens, catalogo: { afixos: CATALOGO.afixos, efeitosDeItem: CATALOGO.efeitosDeItem, efeitosDeTier: CATALOGO.efeitosDeTier } };
 }
