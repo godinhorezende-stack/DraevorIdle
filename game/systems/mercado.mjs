@@ -54,6 +54,22 @@ await banco.exec(`
   );
 `);
 
+/*
+ * `creditos.origem`: de onde veio o crédito — nula é o Mercado (venda, compra
+ * por anúncio); `presente` é um presente da equipe (ver `presentes.mjs`), que
+ * chega com o aviso dele e não com o do Mercado. Nasce em banco que já existe.
+ */
+try {
+  if (banco.dialeto === 'sqlite') {
+    const tem = (await banco.prepare('PRAGMA table_info(creditos)').all()).some((c) => c.name === 'origem');
+    if (!tem) await banco.exec('ALTER TABLE creditos ADD COLUMN origem TEXT');
+  } else {
+    await banco.exec('ALTER TABLE creditos ADD COLUMN IF NOT EXISTS origem TEXT');
+  }
+} catch (e) {
+  if (!/duplicate column|already exists/i.test(e?.message ?? '')) throw e;
+}
+
 const POR_PAGINA = 8;
 const moedaValida = (m) => (m === 'coin' ? 'coin' : 'gold');
 const inteiro = (v, min = 1) => Math.max(min, Math.floor(Number(v) || 0));
@@ -108,17 +124,22 @@ function entregar(estado, { gold = 0, coins = 0, itens = [] }) {
 export async function receberCreditos(estado, personagemId) {
   const linhas = await banco.prepare('SELECT * FROM creditos WHERE personagem = ?').all(personagemId);
   if (!linhas.length) return null;
-  let gold = 0, coins = 0, itens = 0;
+  // Um total por origem: o do Mercado e o dos presentes têm avisos diferentes.
+  const somas = { mercado: { gold: 0, coins: 0, itens: 0 }, presente: { gold: 0, coins: 0, itens: 0 } };
   for (const l of linhas) {
     const lista = JSON.parse(l.itens || '[]');
-    entregar(estado, { gold: l.gold, coins: l.coins, itens: lista });
-    gold += l.gold;
-    coins += l.coins;
-    itens += lista.length;
+    entregar(estado, { gold: Number(l.gold) || 0, coins: Number(l.coins) || 0, itens: lista });
+    const s = somas[l.origem === 'presente' ? 'presente' : 'mercado'];
+    s.gold += Number(l.gold) || 0;
+    s.coins += Number(l.coins) || 0;
+    s.itens += lista.length;
   }
   await banco.prepare('DELETE FROM creditos WHERE personagem = ?').run(personagemId);
-  const partes = [gold && `${gold.toLocaleString('pt-BR')} gold`, coins && `${coins} Draevor Coins`, itens && `${itens} item(ns)`].filter(Boolean);
-  return `Mercado: você recebeu ${partes.join(', ')} enquanto estava fora.`;
+  const texto = ({ gold, coins, itens }) => [gold && `${gold.toLocaleString('pt-BR')} gold`, coins && `${coins.toLocaleString('pt-BR')} Draevor Coins`, itens && `${itens} item(ns)`].filter(Boolean).join(', ');
+  const avisos = [];
+  if (texto(somas.presente)) avisos.push(`Presente do Draevor: você recebeu ${texto(somas.presente)}.`);
+  if (texto(somas.mercado)) avisos.push(`Mercado: você recebeu ${texto(somas.mercado)} enquanto estava fora.`);
+  return avisos.join(' ') || null;
 }
 
 // --------------------------------------------------------- balcão de itens
