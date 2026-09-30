@@ -556,3 +556,17 @@ test('encaixar sem dizer o socket (a gema arrastada até a peça): vai no primei
   e.inventory.push(G.itemDaGema(G.novaGema(GEMA('spell-ice-strike'))));
   assert.match(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon' }).erro, /socket livre/);
 });
+
+test('regra dos sockets compartilhada com a tela (engine/sockets-de-gema.mjs): a mesma função no servidor', async () => {
+  const E = await import('../engine/sockets-de-gema.mjs');
+  assert.equal(G.compativel, E.compativel);
+  const s = { abertos: 3, links: [true, false, false] };
+  assert.deepEqual(E.gruposLigados(s), [[0, 1], [2]]);
+  assert.deepEqual(E.grupoDoSocket(s, 1), [0, 1]);
+  assert.deepEqual(E.grupoDoSocket(s, 3), [], 'socket bloqueado: sem grupo');
+  const gd = G.DEFS.get(SUPPORT('greater-damage')).suporte;
+  const cura = G.DEFS.get(SUPPORT('potent-healing')).suporte;
+  const flame = G.DEFS.get(GEMA(FLAME)).tags;
+  assert.equal(E.compativel(gd, flame), true);
+  assert.equal(E.compativel(cura, flame), false);
+});

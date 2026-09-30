@@ -9,6 +9,8 @@
 // que redesenha esta janela pelo `redraw`.
 import { itemCanvas } from './sprites.mjs';
 import { tipFor, classeDaRaridade } from './tooltip.mjs';
+// A MESMA regra do servidor (quais sockets estão ligados; a support vale pelas tags da skill).
+import { grupoDoSocket, compativel } from '/packages/shared/src/sockets-de-gema.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -59,9 +61,11 @@ function corpo(body, peca) {
     )
   );
 
-  // As supports que estão VALENDO (o servidor diz, por skill, quais supports ligadas e compatíveis ela tem).
-  const cat = state.actionCatalog ?? {};
-  const valendo = new Set([...(cat.spells ?? []), ...(cat.runes ?? [])].flatMap((x) => (x.gema?.supports ?? []).map((s) => s.nome)));
+  const defDe = (g) => (g ? state.items?.[g.id]?.gemaDef ?? null : null);
+  // As gemas do grupo ligado ao socket `i` (sem ele mesmo): o que valeria se algo entrasse ali.
+  const vizinhas = (i) => grupoDoSocket(sq, i).filter((k) => k !== i).map((k) => defDe(sq.gemas[k])).filter(Boolean);
+  // A support encaixada vale se há, no grupo dela, uma skill compatível.
+  const valeAgora = (i, def) => vizinhas(i).some((d) => d.tipo === 'ativa' && compativel(def, d.tags));
   const fila = el('div', 'soquetes-fila');
   for (let i = 0; i < max; i++) {
     const g = sq.gemas[i];
@@ -74,7 +78,7 @@ function corpo(body, peca) {
       casa.title = 'Socket bloqueado';
     } else if (g) {
       const def = state.items?.[g.id]?.gemaDef;
-      if (def?.tipo === 'support' && !valendo.has(def.nome)) {
+      if (def?.tipo === 'support' && !valeAgora(i, def)) {
         casa.classList.add('sem-efeito');
         casa.title = 'Sem efeito: não está ligada a uma gema de skill compatível';
       }
@@ -118,6 +122,39 @@ function corpo(body, peca) {
     .map((item, indice) => ({ item, indice, meta: state.items?.[item.id] }))
     .filter((x) => x.meta?.gemaDef);
   body.append(el('h3', null, atual ? 'Trocar por' : 'Encaixar'));
+  // O que está ligado a ESTE socket — é contra isso que cada gema abaixo é conferida.
+  const doGrupo = vizinhas(escolhido);
+  const ativasDoGrupo = doGrupo.filter((d) => d.tipo === 'ativa');
+  const supportsDoGrupo = doGrupo.filter((d) => d.tipo === 'support');
+  body.append(
+    el(
+      'p',
+      'shop-note',
+      grupoDoSocket(sq, escolhido).length > 1
+        ? `Ligado a: ${doGrupo.length ? doGrupo.map((d) => d.nome).join(', ') : 'sockets vazios'}.`
+        : 'Este socket não tem link: uma support aqui não vale para nada.'
+    )
+  );
+  // A prévia de cada gema: para quem a support valeria; que supports a skill receberia.
+  const previa = (def) => {
+    const p = el('span', 'soquetes-previa');
+    const bom = (t) => p.append(el('i', 'vale', t));
+    const ruim = (t) => p.append(el('i', 'nao-vale', t));
+    if (def.tipo === 'support') {
+      const vale = ativasDoGrupo.filter((a) => compativel(def, a.tags));
+      const nao = ativasDoGrupo.filter((a) => !compativel(def, a.tags));
+      if (vale.length) bom(`vale para: ${vale.map((a) => a.nome).join(', ')}`);
+      if (nao.length) ruim(`não vale para: ${nao.map((a) => a.nome).join(', ')}`);
+      if (!ativasDoGrupo.length) ruim('sem skill ligada: não vale para nada');
+    } else {
+      const recebe = supportsDoGrupo.filter((s) => compativel(s, def.tags));
+      const nao = supportsDoGrupo.filter((s) => !compativel(s, def.tags));
+      if (recebe.length) bom(`recebe: ${recebe.map((s) => s.nome).join(', ')}`);
+      if (nao.length) ruim(`não recebe: ${nao.map((s) => s.nome).join(', ')}`);
+      if (!supportsDoGrupo.length) p.append(el('i', null, 'nenhuma support ligada'));
+    }
+    return p;
+  };
   if (!soltas.length) {
     body.append(el('p', 'empty', 'Nenhuma gema na mochila. A Zuma Magehide vende; os bichos também dropam.'));
     return;
@@ -129,6 +166,7 @@ function corpo(body, peca) {
     linha.append(itemCanvas(item.id, 28));
     const texto = el('div', null);
     texto.append(el('b', null, meta.gemaDef.nome), el('em', null, `${meta.gemaDef.tipo === 'support' ? 'support' : 'skill'} · ${item.raridade ?? 'comum'} · nível ${item.gema?.nivel ?? 1} · ${item.gema?.qualidade ?? 0}%`));
+    texto.append(previa(meta.gemaDef));
     linha.classList.add(classeDaRaridade(meta, item));
     linha.append(texto);
     tipFor(linha, item.id, null, null, item);
