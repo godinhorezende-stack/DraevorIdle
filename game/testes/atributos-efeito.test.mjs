@@ -17,6 +17,7 @@ import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { matarMonstro, round, contraAtaque } from '../systems/hunt/combate.mjs';
 import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome)?.id);
@@ -81,6 +82,22 @@ const curaDosGolpes = (cor) => (e) => {
   }
   return c;
 };
+/** A magia com a gema encaixada NO ANEL (a peça da sonda): o +N ao nível das gemas vale por peça. */
+function magiaNoAnel(id) {
+  return (e) => {
+    e.actions = Array(Acoes.SLOTS).fill(null);
+    const slot = Acoes.PAPEL_DO_SLOT.indexOf('attack');
+    e.equipment.ring.soquetes = { abertos: 1, links: [], gemas: [GemasDeSkill.novaGema(GemasDeSkill.ITEM_DA_ACAO.get(id))] };
+    Ficha.invalidar(e);
+    assert.ok(Acoes.definir(e, { slot, value: { id } }).ok, id);
+    for (let i = 0; i < 60; i++) {
+      e.hunt.cooldowns = {};
+      e.mana = e.maxMana;
+      Acoes.disparar(e, e.hunt, PERSONAGEM, slot, e.hunt.monstros[0]);
+    }
+    return 1e12 - e.hunt.monstros[0].hp;
+  };
+}
 function magia(id) {
   return (e) => {
     e.actions = Array(Acoes.SLOTS).fill(null);
@@ -196,6 +213,8 @@ const SONDAS = {
   cast_speed: ['sorcerer', null, cacada(), recargaDaMagia('spell-energy-strike', 'grupo'), 50, 'menos'],
   cooldown_recovery: ['sorcerer', null, cacada(), recargaDaMagia('spell-energy-strike', 'propria'), 50, 'menos'],
   skill_cost: ['sorcerer', null, cacada(), manaGasta('spell-energy-strike'), 30, 'menos'],
+  // +N ao nível das gemas encaixadas NA PEÇA: a gema do anel sobe de nível, e o dano da skill junto.
+  gem_level: ['sorcerer', null, cacada(), magiaNoAnel('spell-energy-strike'), 2, 'mais'],
   // Os elementais: no golpe da arma de um knight (que não tem nada daquele elemento).
   fire_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   energy_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],

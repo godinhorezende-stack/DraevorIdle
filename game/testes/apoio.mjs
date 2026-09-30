@@ -99,7 +99,7 @@ export function comSkills(e, ids, { nivel = 1, conjuracao = false } = {}) {
     e.equipment[slot] ??= { id: PECA_PARA_O_SLOT[slot], count: 1 };
     const max = GemasDeSkill.maximoDeSockets(ITEM_CATALOG[e.equipment[slot].id]);
     const gemas = Array(max).fill(null);
-    for (let i = 0; i < max && k < itens.length; i++) gemas[i] = GemasDeSkill.novaGema(itens[k++], nivel);
+    for (let i = 0; i < max && k < itens.length; i++) gemas[i] = { ...GemasDeSkill.novaGema(itens[k++]), nivel };
     e.equipment[slot] = { ...e.equipment[slot], soquetes: { abertos: max, links: Array(max - 1).fill(false), gemas } };
   }
   if (k < itens.length) throw new Error(`mais skills (${itens.length}) do que sockets`);

@@ -19,6 +19,8 @@ const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name ===
 const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
 const SUPPORT = (id) => [...G.DEFS.values()].find((d) => d.tipo === 'support' && d.id === id).itemId;
 const FLAME = 'spell-flame-strike';
+/** Uma gema já num nível (nos testes; de verdade toda gema nasce no 1). */
+const gemaNv = (itemId, nivel, raridade = 'comum') => ({ ...G.novaGema(itemId, raridade), nivel });
 
 /** Uma peça no slot com sockets (abertos, links) e as gemas. */
 function vestir(e, slot, nome, { abertos, links = [], gemas = [] } = {}) {
@@ -108,14 +110,14 @@ test('sem a gema a skill não existe (Action Bar); encaixada, existe; tirada, so
   const ver = () => Acoes.catalogo(e).spells.find((x) => x.id === FLAME).blocked;
   assert.equal(ver(), 'sem a gema');
   vestir(e, 'weapon', 'wand of vortex', { abertos: 1 });
-  e.inventory.push(G.itemDaGema(G.novaGema(GEMA(FLAME), 3)));
+  e.inventory.push(G.itemDaGema(gemaNv(GEMA(FLAME), 3)));
   assert.equal(G.encaixar(e, { de: e.inventory.length - 1, slot: 'weapon', indice: 0 }).ok, true);
   assert.equal(ver(), null);
   assert.equal(Acoes.catalogo(e).spells.find((x) => x.id === FLAME).gema.nivel, 3);
   // 28. tirada do socket: deixa de valer, e a gema volta para a mochila com o nível dela.
   assert.equal(G.tirar(e, { slot: 'weapon', indice: 0 }).ok, true);
   assert.equal(ver(), 'sem a gema');
-  assert.deepEqual(e.inventory.at(-1), { id: GEMA(FLAME), count: 1, gema: { nivel: 3, xp: 0 } });
+  assert.deepEqual(e.inventory.at(-1), { id: GEMA(FLAME), count: 1, raridade: 'comum', gema: { nivel: 3, xp: 0, qualidade: 0 } });
 });
 
 test('10–11. socket aberto aceita; socket bloqueado recusa encaixar', () => {
@@ -200,15 +202,16 @@ test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes;
   e.level = 200;
   G.ganharXp(e, 1);
   assert.ok(g.nivel > G.nivelPermitido(def, 30), 'o personagem subiu: a gema também');
-  // Nunca passa do máximo.
+  // Por XP, para no 20 (modelo Path of Exile); acima, só bônus de item.
   e.level = 5000;
-  for (let i = 0; i < 40; i++) G.ganharXp(e, 1e12);
+  for (let i = 0; i < 40; i++) G.ganharXp(e, 1e15);
   assert.equal(g.nivel, G.CONFIG.niveis.maximo);
+  assert.equal(G.CONFIG.niveis.maximo, 20);
 });
 
 test('o nível da gema aumenta o dano da skill (a progressão dela)', () => {
-  const n1 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME), 1)] }));
-  const n11 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME), 11)] }));
+  const n1 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 1)] }));
+  const n11 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 11)] }));
   const esperado = 1 + (G.DEFS.get(GEMA(FLAME)).progressao.dano * 10) / 100;
   assert.ok(Math.abs(n11 / n1 - esperado) < 0.03, `${n1} → ${n11} (×${esperado})`);
 });
@@ -228,7 +231,7 @@ test('a XP das gemas vem da morte de verdade (matarMonstro)', async () => {
 
 test('27. tirar a peça tira as skills das gemas dela; vestir de novo, voltam (as gemas vão junto com a peça)', () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
-  vestir(e, 'ring', 'might ring', { gemas: [G.novaGema(GEMA(FLAME), 4)] });
+  vestir(e, 'ring', 'might ring', { gemas: [gemaNv(GEMA(FLAME), 4)] });
   assert.ok(G.temSkill(e, FLAME));
   assert.notEqual(Inventario.desequipar(e, { slot: 'ring' }).ok, false);
   assert.ok(!G.temSkill(e, FLAME));
@@ -317,7 +320,7 @@ test('migração v5: peças que existiam ganham todos os sockets abertos e ligad
   assert.ok(e.inventory.find((p) => p.id === idDe('fire sword')).soquetes, 'a da mochila também');
   for (const id of [FLAME, 'spell-energy-strike', 'rune-fireball-rune']) {
     assert.ok(G.temSkill(e, id), `${id} encaixada`);
-    assert.equal(G.skillsAtivas(e).get(id).nivel, G.nivelPermitido(G.DEFS.get(GEMA(id)), 120));
+    assert.equal(G.skillsAtivas(e).get(id).nivel, 1, 'toda gema começa no nível 1');
   }
   assert.ok(!G.ITEM_DA_ACAO.has(pocao.id), 'poção não vira gema');
   // Uma vez só.
@@ -351,10 +354,13 @@ test('drop de gema: sai no nível 1, entre as skills do level da fase; parte sã
 test('loja da Zuma: lista gemas ativas (preço pelo level) e supports (preço fixo)', () => {
   const e = personagemDeTeste({ level: 50 });
   const lista = G.catalogoDaLoja(e);
-  const flame = lista.find((l) => l.id === GEMA(FLAME));
+  const flame = lista.find((l) => l.chave === `${GEMA(FLAME)}:comum`);
   const def = G.DEFS.get(GEMA(FLAME));
   assert.equal(flame.buy, G.CONFIG.loja.precoBase + G.CONFIG.loja.precoPorLevel * def.levelMinimo);
-  assert.equal(lista.find((l) => l.id === SUPPORT('greater-damage')).buy, G.CONFIG.loja.precoDoSupport);
+  assert.equal(lista.find((l) => l.chave === `${SUPPORT('greater-damage')}:comum`).buy, G.CONFIG.loja.precoDoSupport);
+  // Só comum e incomum (decisão do dono); a incomum custa mais.
+  assert.deepEqual([...new Set(lista.map((l) => l.raridade))], ['comum', 'incomum']);
+  assert.equal(lista.find((l) => l.chave === `${GEMA(FLAME)}:incomum`).buy, flame.buy * G.CONFIG.loja.precoPorRaridade.incomum);
   assert.equal(G.CONFIG.loja.npc, 'zuma');
 });
 
@@ -371,6 +377,11 @@ test('loja da Zuma: compra paga do bolso e depois do banco; gema nível 1 na moc
   assert.equal(e.inventory.filter((p) => p.id === GEMA(FLAME) && p.gema?.nivel === 1).length, 2);
   assert.equal(G.comprarNaLoja(e, { id: GEMA(FLAME) }).ok, false, 'sem ouro');
   assert.equal(G.comprarNaLoja(e, { id: 3031 }).ok, false, 'não é gema');
+  e.gold = 1e9;
+  assert.match(G.comprarNaLoja(e, { id: GEMA(FLAME), raridade: 'raro' }).erro, /comuns e incomuns/);
+  assert.equal(G.comprarNaLoja(e, { id: GEMA(FLAME), raridade: 'incomum' }).ok, true);
+  assert.equal(e.inventory.at(-1).raridade, 'incomum');
+  assert.equal(e.inventory.at(-1).gema.nivel, 1);
 });
 
 // ---------------------------------------------------------------- uso automático por tags
@@ -395,4 +406,111 @@ test('condição "boss": só na sala do boss (ou só fora dela)', () => {
   assert.equal(Acoes.condicoesDoSlotBatem(so, e, null, { isBoss: true }), true);
   assert.equal(Acoes.condicoesDoSlotBatem(so, e, null, { isBoss: false }), false);
   assert.equal(Acoes.condicoesDoSlotBatem(fora, e, null, { isBoss: false }), true);
+});
+
+// ---------------------------------------------------------------- raridade e nível sem teto
+
+test('raridade da gema multiplica o bônus por nível da ativa e o efeito da support', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  const bonus = (rAtiva, rSupport) => {
+    vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 11, rAtiva), gemaNv(SUPPORT('greater-damage'), 1, rSupport)] });
+    return G.efeitoNaSkill(e, FLAME).danoPct;
+  };
+  const prog = G.DEFS.get(GEMA(FLAME)).progressao.dano;
+  const gd = G.DEFS.get(SUPPORT('greater-damage')).suporte.efeito.danoPct;
+  assert.equal(bonus('comum', 'comum'), prog * 10 + gd);
+  assert.equal(bonus('mítico', 'comum'), prog * 10 * 2 + gd);
+  assert.equal(bonus('comum', 'raro'), prog * 10 + gd * 1.3);
+  // No nível 1 a ativa não tem bônus de nível: a raridade dela não muda nada ainda.
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 1, 'mítico')] });
+  assert.equal(G.efeitoNaSkill(e, FLAME).danoPct, 0);
+});
+
+test('gema que cai de bicho: nível 1 e raridade sorteada pelos pesos (a loja não passa da incomum)', () => {
+  let i = 0;
+  const seq = [0, 0.5, 0.999999, 0.999999]; // cai; ativa; a gema; raridade no fim da tabela (mítico)
+  const rng = () => seq[i++ % seq.length];
+  const g = G.sortearDrop({ ato: 1, levelDaFase: 100 }, rng);
+  assert.equal(g.gema.nivel, 1);
+  assert.equal(g.raridade, 'mítico');
+  const cont = {};
+  for (let k = 0; k < 20000; k++) {
+    const r = G.sortearRaridade();
+    cont[r] = (cont[r] ?? 0) + 1;
+  }
+  assert.ok(cont.comum > cont.incomum && cont.incomum > cont.raro && cont.raro > (cont['épico'] ?? 0));
+});
+
+test('curva de XP: fácil até o nível 5, depois cada nível pede mais', () => {
+  const N = G.CONFIG.niveis;
+  assert.equal(G.xpParaSubir(1), N.xpBase);
+  const passo = (n) => G.xpParaSubir(n + 1) / G.xpParaSubir(n);
+  assert.ok(Math.abs(passo(2) - N.crescimentoFacil) < 0.01, 'até o 5: o passo fácil');
+  assert.ok(Math.abs(passo(8) - N.crescimento) < 0.01, 'do 5 em diante: o passo difícil');
+  assert.ok(passo(8) > passo(2), 'depois do 5 fica mais difícil');
+  assert.ok(G.xpParaSubir(100) > G.xpParaSubir(99));
+  assert.ok(Number.isFinite(G.xpParaSubir(500)));
+});
+
+// ---------------------------------------------------------------- modelo Path of Exile: 20 + qualidade + nível de item
+
+test('qualidade: +1% de dano por 1% na ativa; a support rende × (1 + qualidade%)', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [{ ...G.novaGema(GEMA(FLAME)), qualidade: 20 }, { ...G.novaGema(SUPPORT('greater-damage')), qualidade: 10 }] });
+  const gd = G.DEFS.get(SUPPORT('greater-damage')).suporte.efeito.danoPct;
+  assert.equal(Math.round(G.efeitoNaSkill(e, FLAME).danoPct * 100) / 100, Math.round((20 + gd * 1.1) * 100) / 100);
+});
+
+test('Lapidadora: sobe a qualidade (até 20%) da gema na mochila ou no socket, e é consumida', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  e.inventory = [{ id: G.LAPIDADORA, count: 2 }, G.itemDaGema({ ...G.novaGema(GEMA(FLAME)), qualidade: 18 })];
+  const r = G.lapidar(e, { de: 1 }, () => 0.99);
+  assert.equal(r.ok, true);
+  assert.equal(e.inventory[1].gema.qualidade, 20, 'não passa de 20');
+  assert.equal(e.inventory[0].count, 1);
+  assert.match(G.lapidar(e, { de: 1 }).erro, /20%/);
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
+  assert.equal(G.lapidar(e, { slot: 'weapon', indice: 0 }, () => 0).ok, true);
+  assert.equal(e.equipment.weapon.soquetes.gemas[0].qualidade, G.CONFIG.qualidade.lapidadora.ganho[0]);
+  assert.ok(!e.inventory.some((p) => p.id === G.LAPIDADORA), 'a última foi gasta');
+  assert.match(G.lapidar(e, { de: 0 }).erro, /não tem Lapidadora/);
+});
+
+test('nível 21+: o add "+N ao nível das gemas" da peça soma no nível de todas as gemas dela', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 5000 });
+  const peca = vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 20), gemaNv(SUPPORT('greater-damage'), 20)] });
+  peca.af = [{ id: 'gem_level', nivel: 3, value: 2 }];
+  Ficha.invalidar(e);
+  const a = G.skillsAtivas(e).get(FLAME);
+  assert.equal(a.nivel, 22);
+  assert.equal(a.nivelBase, 20);
+  assert.equal(a.supports[0].nivel, 22);
+  // Por XP a gema continua parada no 20.
+  G.ganharXp(e, 1e15);
+  assert.equal(peca.soquetes.gemas[0].nivel, 20);
+});
+
+test('o add de nível das gemas sai pela raridade da peça (+1; épica e acima +2) e só em peça com socket', async () => {
+  const { gerarItem } = await import('../systems/itens/gerar.mjs');
+  const { poolDe } = await import('../systems/itens/gerar.mjs');
+  assert.ok(poolDe(idDe('wand of vortex')).includes('gem_level'));
+  let visto = {};
+  for (let i = 0; i < 4000 && Object.keys(visto).length < 2; i++) {
+    for (const raridade of ['raro', 'épico']) {
+      const p = gerarItem({ itemId: idDe('wand of vortex'), raridade, itemLevel: 500 });
+      const a = p.af?.find((x) => x.id === 'gem_level');
+      if (a) visto[raridade] = a.value;
+    }
+  }
+  assert.deepEqual(visto, { raro: 1, 'épico': 2 });
+});
+
+test('balanceamento: o `fatorDeDano` da gema (skills.json) multiplica o dano da skill; sem ele, ×1', () => {
+  assert.equal(G.DEFS.get(GEMA('spell-curse')).fatorDeDano, 2);
+  assert.equal(G.DEFS.get(GEMA(FLAME)).fatorDeDano, 1);
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
+  vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA('spell-buzz'))] });
+  assert.equal(G.efeitoNaSkill(e, 'spell-buzz').fatorDeDano, G.DEFS.get(GEMA('spell-buzz')).fatorDeDano);
+  // Só aumentos (decisão do dono): nenhuma gema com fator abaixo de 1.
+  assert.ok([...G.DEFS.values()].every((d) => d.tipo !== 'ativa' || d.fatorDeDano >= 1));
 });

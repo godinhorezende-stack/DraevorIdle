@@ -1798,6 +1798,50 @@
     "lendário",
     "mítico"
    ]
+  },
+  "gem_level": {
+   "nome": "Nível das gemas encaixadas",
+   "tipo": "flat",
+   "categoria": "avancado",
+   "peso": 12,
+   "niveis": {
+    "1": [
+     1,
+     1
+    ],
+    "2": [
+     1,
+     1
+    ],
+    "3": [
+     1,
+     1
+    ],
+    "4": [
+     2,
+     2
+    ],
+    "5": [
+     2,
+     2
+    ]
+   },
+   "valorPorRaridade": {
+    "incomum": 1,
+    "raro": 1,
+    "épico": 2,
+    "lendário": 2,
+    "mítico": 2
+   },
+   "_nota": "+N ao nível de TODAS as gemas encaixadas NESTA peça (ativas e supports) — o jeito de passar do nível 20 (modelo Path of Exile, decisão do dono 30/09). O valor sai da raridade da peça (`valorPorRaridade`: +1; épica e acima +2), não do tier. Só em peças com socket. Não entra na ficha do personagem: vale por peça.",
+   "nivelMinimo": 20,
+   "raridades": [
+    "incomum",
+    "raro",
+    "épico",
+    "lendário",
+    "mítico"
+   ]
   }
  },
  "_legado": "Os adds que existiam antes da reestruturação (29/09) e deixaram de cair. Ficam só para a migração v4 (systems/itens/item.mjs) ler o valor antigo na régua dele e converter no add novo (decisão do dono: converter e tirar os extras).",

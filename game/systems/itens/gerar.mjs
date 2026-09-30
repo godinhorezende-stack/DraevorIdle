@@ -252,6 +252,9 @@ export function gerarItem(ctx) {
   const amuleto = meta?.slot === 'neck';
   const af = sortearAdds(pool, quantos, rng).map((id) => {
     const nivel = C.sortearTier(itemLevel, raridade, rng, { amuleto });
+    // Add cujo valor é da RARIDADE da peça e não do tier (o +N ao nível das gemas).
+    const fixo = C.ATRIBUTOS[id]?.valorPorRaridade?.[raridade];
+    if (fixo != null) return { id, nivel, value: fixo };
     return { id, nivel, value: valorNaFaixa(id, nivel, rng()) };
   });
 

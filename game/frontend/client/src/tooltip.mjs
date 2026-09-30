@@ -2355,21 +2355,28 @@ const NOME_DO_EFEITO_DA_SUPPORT = {
 const numeroDoEfeito = (chave, v) => (chave === 'alvosExtras' ? `+${v}` : `${v > 0 ? '+' : ''}${v}%`);
 
 /** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
-function blocoDaGema(def, gema) {
+function blocoDaGema(def, gema, raridade = 'comum') {
   const bloco = el('div', 'tip-gema');
   const nivel = gema?.nivel ?? 1;
+  const qualidade = gema?.qualidade ?? 0;
+  const mult = def.mult?.[raridade] ?? 1;
   bloco.append(el('div', 'tip-gema-tipo', def.tipo === 'support' ? 'Gema de Support' : 'Gema de Skill'));
-  bloco.append(el('div', null, `Nível ${nivel} / 30${gema?.xp ? ` · ${Math.floor(gema.xp).toLocaleString('pt-BR')} XP` : ''}`));
+  // Modelo Path of Exile: nível até 20 por XP (21+ só com o add da peça) e qualidade separada, até 20%.
+  bloco.append(el('div', null, `Nível ${nivel} / 20${gema?.xp ? ` · ${Math.floor(gema.xp).toLocaleString('pt-BR')} XP` : ''}`));
+  bloco.append(el('div', null, `Qualidade: +${qualidade}%`));
+  if (mult !== 1) bloco.append(el('div', 'tip-gema-efeito', `Raridade ${raridade}: bônus ×${mult.toLocaleString('pt-BR')}`));
   if (def.tipo === 'support') {
     const reqs = [...(def.requer ?? []), ...(def.algum?.length ? [def.algum.join(' ou ')] : [])];
     if (reqs.length) bloco.append(el('div', 'tip-gema-tags', `Suporta: ${reqs.join(', ')}`));
     for (const [chave, v] of Object.entries(def.efeito ?? {})) {
-      const total = v + (def.porNivel?.[chave] ?? 0) * (nivel - 1);
+      const total = (v + (def.porNivel?.[chave] ?? 0) * (nivel - 1)) * mult * (1 + qualidade / 100);
       bloco.append(el('div', 'tip-gema-efeito', `${numeroDoEfeito(chave, Math.round(total * 100) / 100)} ${NOME_DO_EFEITO_DA_SUPPORT[chave] ?? chave}`));
     }
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
   } else {
     if (def.tags?.length) bloco.append(el('div', 'tip-gema-tags', def.tags.join(', ')));
+    const bonusDoNivel = (def.progressao?.dano ?? 0) * (nivel - 1) * mult + (def.progressao?.dano ? qualidade : 0);
+    if (bonusDoNivel) bloco.append(el('div', 'tip-gema-efeito', `+${Math.round(bonusDoNivel * 10) / 10}% de dano (nível e qualidade)`));
     if (def.castTime) bloco.append(el('div', null, `Conjuração: ${(def.castTime / 1000).toLocaleString('pt-BR')} s`));
     if (def.levelMinimo) bloco.append(el('div', null, `Level do personagem: ${def.levelMinimo}+`));
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
@@ -2753,7 +2760,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
 
   // ---- a GEMA de skill: nível, XP, tags e o que faz ----
-  if (meta.gemaDef) node.append(blocoDaGema(meta.gemaDef, peca?.gema));
+  if (meta.gemaDef) node.append(blocoDaGema(meta.gemaDef, peca?.gema, raridadeDaPeca(meta, peca)));
 
   // ---- sockets e links (não são afixos: não contam no limite de modificadores) ----
   if (peca?.soquetes) node.append(blocoDosSoquetes(peca.soquetes));

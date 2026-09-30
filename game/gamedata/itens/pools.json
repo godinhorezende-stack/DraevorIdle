@@ -20,7 +20,8 @@
    "mana_leech",
    "dmg_vs_boss",
    "dmg_vs_elite",
-   "dmg_vs_monsters"
+   "dmg_vs_monsters",
+   "gem_level"
   ],
   "arma_distancia": [
    "dex",
@@ -41,7 +42,8 @@
    "mana_leech",
    "dmg_vs_boss",
    "dmg_vs_elite",
-   "dmg_vs_monsters"
+   "dmg_vs_monsters",
+   "gem_level"
   ],
   "arma_magica": [
    "int",
@@ -62,7 +64,8 @@
    "dmg_vs_elite",
    "dmg_vs_monsters",
    "cooldown_recovery",
-   "skill_cost"
+   "skill_cost",
+   "gem_level"
   ],
   "municao": [
    "dex",
@@ -106,7 +109,8 @@
    "evasion_pct",
    "es_pct",
    "dmg_reduction",
-   "avoid_damage"
+   "avoid_damage",
+   "gem_level"
   ],
   "livro": [
    "int",
@@ -134,7 +138,8 @@
    "mana_regen_pct",
    "es_pct",
    "cooldown_recovery",
-   "skill_cost"
+   "skill_cost",
+   "gem_level"
   ],
   "aljava": [
    "dex",
@@ -187,7 +192,8 @@
    "dmg_reduction",
    "avoid_damage",
    "cooldown_recovery",
-   "skill_cost"
+   "skill_cost",
+   "gem_level"
   ],
   "bota": [
    "str",
@@ -214,7 +220,8 @@
    "mana_regen_pct",
    "armour_pct",
    "evasion_pct",
-   "es_pct"
+   "es_pct",
+   "gem_level"
   ],
   "anel": [
    "str",
@@ -258,7 +265,8 @@
    "dmg_vs_elite",
    "dmg_vs_monsters",
    "cooldown_recovery",
-   "skill_cost"
+   "skill_cost",
+   "gem_level"
   ],
   "amuleto": [
    "str",
@@ -309,7 +317,8 @@
    "dmg_reduction",
    "avoid_damage",
    "cooldown_recovery",
-   "skill_cost"
+   "skill_cost",
+   "gem_level"
   ]
  }
 }

@@ -974,6 +974,7 @@ export class Sessao {
         return this.aplicarComSkills(
           m.action === 'encaixar' ? GemasDeSkill.encaixar(this.estado, m) :
           m.action === 'tirar' ? GemasDeSkill.tirar(this.estado, m) :
+          m.action === 'lapidar' ? GemasDeSkill.lapidar(this.estado, m) :
           { ok: false, erro: 'Ação de gema desconhecida.' }
         );
       // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,

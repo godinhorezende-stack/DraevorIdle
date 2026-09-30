@@ -121,6 +121,8 @@ export function catalogo(estado) {
       nivel: a.nivel,
       xp: a.xp,
       xpProximo: a.nivel >= Gemas.CONFIG.niveis.maximo ? 0 : Gemas.xpParaSubir(a.nivel),
+      raridade: a.raridade,
+      multiplicador: Gemas.multiplicadorDaRaridade(a.raridade),
       supports: a.supports.map((sp) => ({ nome: sp.def.nome, nivel: sp.nivel })),
       efeito: Gemas.efeitoNaSkill(estado, entry.id, ativas),
       castTime: Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed, ativas),
@@ -630,7 +632,8 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     const daPericia = entry.kind === 'spell' ? Proficiencia.daPericia(estado, prof.periciaNaMagia, fichaBase.skillBonus) : 0;
     // A gema: o crítico das supports soma na chance/dano; o nível e as supports multiplicam o dano.
     if (efeitoDaGema?.critChance || efeitoDaGema?.critDano) ficha = { ...ficha, critChance: ficha.critChance + (efeitoDaGema.critChance ?? 0) / 100, critMultiplier: ficha.critMultiplier + (efeitoDaGema.critDano ?? 0) / 100 };
-    const fatorDaGema = 1 + (efeitoDaGema?.danoPct ?? 0) / 100;
+    // O bônus da gema (nível, qualidade, supports) × o balanceamento da skill (`fatorDeDano`).
+    const fatorDaGema = (1 + (efeitoDaGema?.danoPct ?? 0) / 100) * (efeitoDaGema?.fatorDeDano ?? 1);
     let total = 0;
     const danos = [];
     for (const bicho of atingidos) {

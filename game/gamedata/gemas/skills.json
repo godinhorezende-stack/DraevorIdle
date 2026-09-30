@@ -1,8 +1,26 @@
 {
-  "_nota": "EXCEÇÕES por gema ativa (a gema de cada magia/runa sai sozinha do catálogo de ações). Por id da ação: `castTime` (ms), `progressao` (o que cada nível dá: {dano, cura} em % por nível — substitui a padrão; `{}` = só o nível, sem bônus), `levelMinimo` (se diferente do da skill).",
+  "_nota": "EXCEÇÕES por gema ativa (a gema de cada magia/runa sai sozinha do catálogo de ações). Por id da ação: `castTime` (ms), `progressao` (o que cada nível dá: {dano, cura} em % por nível — substitui a padrão; `{}` = só o nível, sem bônus), `levelMinimo` (se diferente do da skill). `fatorDeDano`: multiplica o dano da skill (balanceamento do dono, 30/09: só os aumentos da tabela — as gemas que rendiam abaixo da régua do seu level).",
   "gemas": {
     "spell-magic-shield": { "castTime": 0, "progressao": {} },
     "spell-haste": { "castTime": 0, "progressao": {} },
-    "spell-strong-haste": { "castTime": 0, "progressao": {} }
+    "spell-strong-haste": { "castTime": 0, "progressao": {} },
+    "rune-lightest-missile-rune": { "fatorDeDano": 1.35 },
+    "spell-apprentice-s-strike": { "fatorDeDano": 2 },
+    "spell-buzz": { "fatorDeDano": 1.65 },
+    "spell-chill-out": { "fatorDeDano": 2 },
+    "spell-curse": { "fatorDeDano": 2 },
+    "spell-devastating-knockout": { "fatorDeDano": 1.75 },
+    "spell-divine-missile": { "fatorDeDano": 1.3 },
+    "spell-ethereal-spear": { "fatorDeDano": 1.55 },
+    "spell-forceful-uppercut": { "fatorDeDano": 1.65 },
+    "spell-holy-flash": { "fatorDeDano": 2 },
+    "spell-ice-wave": { "fatorDeDano": 1.3 },
+    "spell-mud-attack": { "fatorDeDano": 1.8 },
+    "spell-mystic-repulse": { "fatorDeDano": 1.25 },
+    "spell-physical-strike": { "fatorDeDano": 1.45 },
+    "spell-scorch": { "fatorDeDano": 1.95 },
+    "spell-spiritual-outburst": { "fatorDeDano": 1.95 },
+    "spell-ultimate-terra-strike": { "fatorDeDano": 1.25 },
+    "spell-whirlwind-throw": { "fatorDeDano": 1.35 }
   }
 }

@@ -66,6 +66,8 @@ for (const [chave, itemId] of Object.entries(IDS)) {
     levelMinimo: exc.levelMinimo ?? Math.max(1, e.level ?? 1),
     castTime: exc.castTime ?? castTimePadrao(e),
     progressao: exc.progressao ?? CONFIG.progressaoPadrao,
+    // O balanceamento do dano da skill (× no dano; `skills.json`).
+    fatorDeDano: exc.fatorDeDano ?? 1,
   });
   ITEM_DA_ACAO.set(chave, itemId);
 }
@@ -83,15 +85,31 @@ for (const def of DEFS.values()) {
     weight: 0.1,
     stackable: false,
     type: 'gema',
-    rarity: def.tipo === 'support' ? 'épico' : 'raro',
+    rarity: 'comum', // a de verdade é da instância (`raridade`)
     hasSprite: true,
     spriteDe: CONFIG.sprites[def.tipo === 'support' ? 'support' : elementoDaSprite(e)] ?? CONFIG.sprites.outro,
     gemaDef: def.tipo === 'support'
-      ? { tipo: 'support', id: def.id, nome: def.nome, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {} }
-      : { tipo: 'ativa', acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao },
+      ? { tipo: 'support', id: def.id, nome: def.nome, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {}, mult: CONFIG.raridades.multiplicador }
+      : { tipo: 'ativa', acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador },
     sell: 0,
   };
 }
+
+// A LAPIDADORA: a moeda que sobe a qualidade da gema (empilha; cai de bicho).
+const Q = CONFIG.qualidade;
+export const LAPIDADORA = Q.lapidadora.itemId;
+ITEM_CATALOG[LAPIDADORA] ??= {
+  id: LAPIDADORA,
+  name: Q.lapidadora.nome,
+  weight: 0.1,
+  stackable: true,
+  type: 'moeda',
+  rarity: 'raro',
+  hasSprite: true,
+  spriteDe: Q.lapidadora.sprite,
+  descricao: `Use numa gema de skill: +${Q.lapidadora.ganho[0]}% a +${Q.lapidadora.ganho[1]}% de qualidade (até ${Q.maximo}%).`,
+  sell: 0,
+};
 
 export const defDaGema = (itemId) => DEFS.get(Number(itemId)) ?? null;
 export const ehGema = (id) => DEFS.has(Number(id));
@@ -99,15 +117,43 @@ export const ehGema = (id) => DEFS.has(Number(id));
 // ---------------------------------------------------------------- níveis e XP
 
 const N = CONFIG.niveis;
-/** A XP para sair do nível `nivel`. */
-export const xpParaSubir = (nivel) => Math.round(N.xpBase * N.crescimento ** (Math.max(1, nivel) - 1));
+/**
+ * A XP para sair do nível `nivel` (sem teto): fácil até `faceis`, depois cada
+ * nível pede `crescimento` × o anterior.
+ */
+export function xpParaSubir(nivel) {
+  const n = Math.max(1, Math.floor(nivel));
+  const facil = Math.min(n, N.faceis) - 1;
+  return Math.round(N.xpBase * N.crescimentoFacil ** facil * N.crescimento ** Math.max(0, n - N.faceis));
+}
 /** O level do personagem que o nível `nivel` da gema pede. */
 export const levelNecessario = (def, nivel) => (def?.levelMinimo ?? 1) + (Math.max(1, nivel) - 1) * N.levelsPorNivel;
 /** O maior nível desta gema que um personagem neste level pode ter. */
 export const nivelPermitido = (def, level) => Math.max(1, Math.min(N.maximo, 1 + Math.floor(((level ?? 1) - (def?.levelMinimo ?? 1)) / N.levelsPorNivel)));
 
-/** Uma gema nova (instância): `{ id, nivel, xp }`. */
-export const novaGema = (itemId, nivel = 1) => ({ id: Number(itemId), nivel: Math.max(1, Math.min(N.maximo, nivel)), xp: 0 });
+// ---------------------------------------------------------------- raridade
+
+const RAR = CONFIG.raridades;
+/** A raridade válida (o que não for uma delas vira comum). */
+export const raridadeDaGema = (r) => (RAR.ordem.includes(r) ? r : 'comum');
+/** Quanto a raridade multiplica o bônus da gema (nível da ativa, efeito da support). */
+export const multiplicadorDaRaridade = (r) => RAR.multiplicador[raridadeDaGema(r)] ?? 1;
+/** Sorteia a raridade de uma gema que cai de bicho (`raridades.pesoNoDrop`). */
+export function sortearRaridade(rng = Math.random) {
+  const pesos = Object.entries(RAR.pesoNoDrop);
+  let sorte = rng() * pesos.reduce((t, [, p]) => t + p, 0);
+  for (const [r, p] of pesos) if ((sorte -= p) < 0) return r;
+  return 'comum';
+}
+
+/** A qualidade válida (0..maximo, inteira). */
+export const qualidadeDaGema = (q) => Math.max(0, Math.min(Q.maximo, Math.floor(Number(q) || 0)));
+
+/** Uma gema nova (instância): `{ id, nivel, xp, raridade, qualidade }` — sempre no nível 1. */
+export const novaGema = (itemId, raridade = 'comum', qualidade = 0) => ({ id: Number(itemId), nivel: 1, xp: 0, raridade: raridadeDaGema(raridade), qualidade: qualidadeDaGema(qualidade) });
+
+/** O +N ao nível das gemas que a PEÇA dá (o add `gem_level`) — o que leva a gema além do 20. */
+export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t + (a.id === 'gem_level' ? Number(a.value) || 0 : 0), 0);
 
 // ---------------------------------------------------------------- sockets
 
@@ -184,19 +230,27 @@ export function skillsAtivas(estado) {
     const peca = estado?.equipment?.[slot];
     const s = peca && soquetesDe(peca);
     if (!s) continue;
+    const bonus = bonusDeNivelDaPeca(peca);
     for (const grupo of gruposLigados(s)) {
       const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
       const supports = noGrupo.filter((x) => x.def.tipo === 'support');
       for (const x of noGrupo.filter((y) => y.def.tipo === 'ativa')) {
         const anterior = saida.get(x.def.acao);
-        if (anterior && anterior.nivel >= x.g.nivel) continue;
+        if (anterior && anterior.nivel >= x.g.nivel + bonus) continue;
         saida.set(x.def.acao, {
           acao: x.def.acao,
           itemId: x.def.itemId,
-          nivel: x.g.nivel,
+          // O nível que VALE: o da gema + o bônus da peça (21+ só assim). `nivelBase`: o da gema.
+          nivel: x.g.nivel + bonus,
+          nivelBase: x.g.nivel,
+          bonusDaPeca: bonus,
           xp: x.g.xp ?? 0,
+          raridade: raridadeDaGema(x.g.raridade),
+          qualidade: qualidadeDaGema(x.g.qualidade),
           def: x.def,
-          supports: supports.filter((sp) => compativel(sp.def.suporte, x.def.tags)).map((sp) => ({ def: sp.def, nivel: sp.g.nivel })),
+          supports: supports
+            .filter((sp) => compativel(sp.def.suporte, x.def.tags))
+            .map((sp) => ({ def: sp.def, nivel: sp.g.nivel + bonus, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema(sp.g.qualidade) })),
           onde: { slot, indice: x.i },
         });
       }
@@ -218,12 +272,20 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   const a = ativas.get(acao);
   if (!a) return null;
   const e = { nivel: a.nivel, danoPct: 0, curaPct: 0, castTimePct: 0, custoPct: 0, recargaPct: 0, critChance: 0, critDano: 0, alvosExtras: 0, danoDosExtrasPct: 0, supports: [] };
-  const acima = a.nivel - 1;
+  // A raridade multiplica o bônus por nível da ativa e o efeito inteiro da support.
+  const acima = (a.nivel - 1) * multiplicadorDaRaridade(a.raridade);
   e.danoPct += (a.def.progressao?.dano ?? 0) * acima;
   e.curaPct += (a.def.progressao?.cura ?? 0) * acima;
+  // A qualidade: +danoPorPonto% por 1% (separada do nível e da raridade).
+  if (a.def.progressao?.dano) e.danoPct += a.qualidade * Q.danoPorPonto;
+  if (a.def.progressao?.cura) e.curaPct += a.qualidade * Q.danoPorPonto;
+  e.raridade = a.raridade;
+  e.qualidade = a.qualidade;
+  e.fatorDeDano = a.def.fatorDeDano ?? 1;
   for (const sp of a.supports) {
     const s = sp.def.suporte;
-    for (const [k, v] of Object.entries(s.efeito ?? {})) e[k] = (e[k] ?? 0) + v + (s.porNivel?.[k] ?? 0) * (sp.nivel - 1);
+    const mult = multiplicadorDaRaridade(sp.raridade) * (1 + (sp.qualidade * Q.efeitoPorPonto) / 100);
+    for (const [k, v] of Object.entries(s.efeito ?? {})) e[k] = (e[k] ?? 0) + (v + (s.porNivel?.[k] ?? 0) * (sp.nivel - 1)) * mult;
     e.supports.push(sp.def.nome);
   }
   return e;
@@ -255,6 +317,7 @@ export function ganharXp(estado, exp) {
     if (!gemas) continue;
     for (const g of gemas) {
       const def = g && DEFS.get(Number(g.id));
+      // Por XP a gema para no `maximo` (20); acima, só bônus de item (ver `nivelEfetivo`).
       if (!def || g.nivel >= N.maximo) continue;
       g.xp = (g.xp ?? 0) + ganho;
       while (g.nivel < N.maximo && g.xp >= xpParaSubir(g.nivel) && (estado.level ?? 1) >= levelNecessario(def, g.nivel + 1)) {
@@ -262,8 +325,7 @@ export function ganharXp(estado, exp) {
         g.nivel++;
         subiram.push({ nome: def.nome, nivel: g.nivel });
       }
-      if (g.nivel >= N.maximo) g.xp = 0;
-      else g.xp = Math.min(g.xp, xpParaSubir(g.nivel));
+      g.xp = g.nivel >= N.maximo ? 0 : Math.min(g.xp, xpParaSubir(g.nivel));
     }
   }
   return subiram;
@@ -314,8 +376,48 @@ export function tirar(estado, { slot, indice }) {
 }
 
 /** A gema solta (item) ↔ a gema no socket. */
-export const novaGemaDoItem = (item) => ({ id: Number(item.id), nivel: Math.max(1, Number(item.gema?.nivel) || 1), xp: Math.max(0, Number(item.gema?.xp) || 0) });
-export const itemDaGema = (g) => ({ id: Number(g.id), count: 1, gema: { nivel: g.nivel, xp: g.xp ?? 0 } });
+// A raridade mora na instância: `raridade` no item (é o que pinta o balão e a mochila) e na gema do socket.
+export const novaGemaDoItem = (item) => ({
+  id: Number(item.id),
+  nivel: Math.max(1, Number(item.gema?.nivel) || 1),
+  xp: Math.max(0, Number(item.gema?.xp) || 0),
+  raridade: raridadeDaGema(item.raridade ?? item.gema?.raridade),
+  qualidade: qualidadeDaGema(item.gema?.qualidade),
+});
+export const itemDaGema = (g) => ({ id: Number(g.id), count: 1, raridade: raridadeDaGema(g.raridade), gema: { nivel: g.nivel, xp: g.xp ?? 0, qualidade: qualidadeDaGema(g.qualidade) } });
+
+/**
+ * Usa uma LAPIDADORA da mochila numa gema: `{ de }` (índice da gema na mochila)
+ * ou `{ slot, indice }` (a gema num socket da peça vestida). +ganho% (sorteio), até o máximo.
+ */
+export function lapidar(estado, { de, slot, indice }, rng = Math.random) {
+  const inv = (estado.inventory ??= []);
+  const k = inv.findIndex((p) => Number(p.id) === LAPIDADORA && (p.count ?? 1) > 0);
+  if (k < 0) return erro('Você não tem Lapidadora.');
+  let alvo = null;
+  if (slot != null) {
+    const s = soquetesDe(estado.equipment?.[slot]);
+    alvo = s?.gemas[Math.floor(Number(indice))] ?? null;
+    if (alvo) alvo.qualidade = qualidadeDaGema(alvo.qualidade);
+  } else {
+    const item = inv[Math.floor(Number(de))];
+    if (item && ehGema(item.id)) alvo = (item.gema ??= { nivel: 1, xp: 0 });
+  }
+  if (!alvo) return erro('Escolha uma gema.');
+  const antes = qualidadeDaGema(alvo.qualidade);
+  if (antes >= Q.maximo) return erro(`Essa gema já está com ${Q.maximo}% de qualidade.`);
+  const [lo, hi] = Q.lapidadora.ganho;
+  alvo.qualidade = qualidadeDaGema(antes + lo + Math.floor(rng() * (hi - lo + 1)));
+  if ((inv[k].count ?? 1) > 1) inv[k].count -= 1;
+  else inv.splice(inv.indexOf(inv[k]), 1);
+  return { ok: true, notice: `A gema foi lapidada: ${antes}% → ${alvo.qualidade}% de qualidade.` };
+}
+
+/** A Lapidadora que cai de um bicho (ou null): a chance do ato. */
+export function sortearLapidadora({ ato = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
+  const c = Q.lapidadora.chancePorAto;
+  return rng() < (c[String(ato)] ?? c['1'] ?? 0) * fatorDeChance ? { id: LAPIDADORA, count: 1 } : null;
+}
 
 // ---------------------------------------------------------------- migração
 
@@ -337,7 +439,8 @@ export function migrarPersonagem(estado) {
   for (const acao of acoes) {
     const itemId = ITEM_DA_ACAO.get(acao);
     if (jaTem.has(itemId)) continue;
-    const gema = novaGema(itemId, nivelPermitido(DEFS.get(itemId), estado.level));
+    // Sempre no nível 1 (decisão do dono) — o nível 1 é o dano de antes das gemas.
+    const gema = novaGema(itemId);
     let encaixou = false;
     for (const slot of ORDEM_DE_ENCAIXE) {
       const peca = estado.equipment?.[slot];
@@ -366,7 +469,7 @@ export function vistaDosSoquetes(peca) {
     ...s,
     gemas: s.gemas.map((g) => {
       const def = g && DEFS.get(Number(g.id));
-      return def ? { id: g.id, nome: def.nome, tipo: def.tipo, nivel: g.nivel, xp: g.xp ?? 0, xpProximo: g.nivel >= N.maximo ? 0 : xpParaSubir(g.nivel) } : null;
+      return def ? { id: g.id, nome: def.nome, tipo: def.tipo, nivel: g.nivel, xp: g.xp ?? 0, xpProximo: g.nivel >= N.maximo ? 0 : xpParaSubir(g.nivel), raridade: raridadeDaGema(g.raridade) } : null;
     }),
   };
 }
@@ -386,35 +489,50 @@ export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1 } = {}
   const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && x.levelMinimo <= Math.max(1, levelDaFase));
   const lista = rng() < d.parteSupport && supports.length ? supports : ativas.length ? ativas : supports;
   const def = lista[Math.floor(rng() * lista.length)];
-  return def ? { id: def.itemId, count: 1, gema: { nivel: 1, xp: 0 } } : null;
+  const [qlo, qhi] = Q.noDrop;
+  return def ? itemDaGema(novaGema(def.itemId, sortearRaridade(rng), qlo + Math.floor(rng() * (qhi - qlo + 1)))) : null;
 }
 
 // ---------------------------------------------------------------- loja (Zuma Magehide)
 
-/** O preço de uma gema na loja: ativa pelo level mínimo da skill; support, o preço fixo. */
-export const precoNaLoja = (def) => (def.tipo === 'support' ? CONFIG.loja.precoDoSupport : CONFIG.loja.precoBase + CONFIG.loja.precoPorLevel * (def.levelMinimo ?? 1));
+/** O preço de uma gema na loja: ativa pelo level mínimo da skill; support, o preço fixo — × o fator da raridade. */
+export const precoNaLoja = (def, raridade = 'comum') =>
+  (def.tipo === 'support' ? CONFIG.loja.precoDoSupport : CONFIG.loja.precoBase + CONFIG.loja.precoPorLevel * (def.levelMinimo ?? 1)) * (CONFIG.loja.precoPorRaridade?.[raridade] ?? 1);
+
+/** As raridades que a loja vende (decisão do dono: só até a incomum). */
+export const RARIDADES_DA_LOJA = CONFIG.loja.raridades ?? ['comum'];
 
 /**
  * A lista da loja (o formato do balcão de NPC do cliente — `npcFala`, `tipo: 'loja'`):
- * a gema de cada skill (pelo level) e os supports, no nível 1.
+ * a gema de cada skill (pelo level) e os supports, no nível 1, em cada raridade da loja.
+ * `chave` distingue as linhas do mesmo item (a raridade); `id` é o item (a figura).
  */
 export function catalogoDaLoja(estado) {
-  const tenho = (id) => (estado.inventory ?? []).filter((p) => Number(p.id) === id).length;
-  return [...DEFS.values()]
-    .sort((a, b) => (a.tipo === b.tipo ? a.levelMinimo - b.levelMinimo || a.nome.localeCompare(b.nome) : a.tipo === 'ativa' ? -1 : 1))
-    .map((def) => ({ id: def.itemId, nome: `Gema: ${def.nome}${def.tipo === 'support' ? ' (support)' : ` · lv ${def.levelMinimo}`}`, buy: precoNaLoja(def), tenho: tenho(def.itemId) }));
+  const tenho = (id, r) => (estado.inventory ?? []).filter((p) => Number(p.id) === id && raridadeDaGema(p.raridade) === r).length;
+  const defs = [...DEFS.values()].sort((a, b) => (a.tipo === b.tipo ? a.levelMinimo - b.levelMinimo || a.nome.localeCompare(b.nome) : a.tipo === 'ativa' ? -1 : 1));
+  return defs.flatMap((def) =>
+    RARIDADES_DA_LOJA.map((r) => ({
+      id: def.itemId,
+      chave: `${def.itemId}:${r}`,
+      raridade: r,
+      nome: `Gema: ${def.nome} (${r})${def.tipo === 'support' ? ' · support' : ` · lv ${def.levelMinimo}`}`,
+      buy: precoNaLoja(def, r),
+      tenho: tenho(def.itemId, r),
+    }))
+  );
 }
 
-/** Comprar `count` gemas (nível 1) na loja: paga do bolso e depois do banco; vão para a mochila. */
-export function comprarNaLoja(estado, { id, count = 1 }) {
+/** Comprar `count` gemas (nível 1, na `raridade` pedida) na loja: paga do bolso e depois do banco; vão para a mochila. */
+export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
   const def = DEFS.get(Number(id));
   if (!def) return { ok: false, erro: 'Ela não vende isso.' };
+  if (!RARIDADES_DA_LOJA.includes(raridade)) return { ok: false, erro: 'Ela só vende gemas comuns e incomuns. As raras caem dos bichos.' };
   const n = Math.max(1, Math.min(CONFIG.loja.porVez ?? 20, Math.floor(Number(count) || 1)));
-  const total = precoNaLoja(def) * n;
+  const total = precoNaLoja(def, raridade) * n;
   if ((estado.gold ?? 0) + (estado.bank ?? 0) < total) return { ok: false, erro: 'Ouro insuficiente (bolso + banco).' };
   const doBolso = Math.min(estado.gold ?? 0, total);
   estado.gold = (estado.gold ?? 0) - doBolso;
   estado.bank = (estado.bank ?? 0) - (total - doBolso);
-  for (let i = 0; i < n; i++) (estado.inventory ??= []).push(itemDaGema(novaGema(def.itemId)));
-  return { ok: true, notice: `Você comprou ${n}× gema de ${def.nome}.` };
+  for (let i = 0; i < n; i++) (estado.inventory ??= []).push(itemDaGema(novaGema(def.itemId, raridade)));
+  return { ok: true, notice: `Você comprou ${n}× gema de ${def.nome} (${raridade}).` };
 }

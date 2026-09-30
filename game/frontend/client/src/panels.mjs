@@ -24587,15 +24587,18 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
    * morreria a cada clique no botão.
    */
   const chave = comprando ? 'lojaItemComprar' : 'lojaItemVender';
-  const existe = (id) => linhas.some((linha) => linha.id === id);
-  if (!existe(ctx.tabs[chave])) ctx.tabs[chave] = linhas[0].id;
+  // `chave`: quando o mesmo item aparece em mais de uma linha (a gema em cada raridade, na Zuma).
+  const chaveDa = (linha) => linha.chave ?? linha.id;
+  const existe = (k) => linhas.some((linha) => chaveDa(linha) === k);
+  if (!existe(ctx.tabs[chave])) ctx.tabs[chave] = chaveDa(linhas[0]);
 
   const lista = el('div', 'loja-npc');
   for (const linha of linhas) {
     const preco = comprando ? linha.buy : linha.sell;
     const card = el('button', 'loja-linha');
     card.type = 'button';
-    if (linha.id === ctx.tabs[chave]) card.classList.add('escolhida');
+    if (chaveDa(linha) === ctx.tabs[chave]) card.classList.add('escolhida');
+    if (linha.raridade) card.classList.add(classeDaRaridade(null, { raridade: linha.raridade }));
     card.append(itemCanvas(linha.id, 32));
 
     const texto = el('div', 'loja-texto');
@@ -24611,14 +24614,14 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
     card.append(texto);
 
     card.onclick = () => {
-      ctx.tabs[chave] = linha.id;
+      ctx.tabs[chave] = chaveDa(linha);
       ctx.redraw();
     };
     lista.append(card);
   }
   body.append(lista);
 
-  body.append(balcaoDaLoja({ linha: linhas.find((l) => l.id === ctx.tabs[chave]), lado, loja }));
+  body.append(balcaoDaLoja({ linha: linhas.find((l) => chaveDa(l) === ctx.tabs[chave]), lado, loja }));
 }
 
 /*
@@ -24726,7 +24729,7 @@ function balcaoDaLoja({ linha, lado, loja }) {
   }
   confirmar.onclick = () => {
     const quantos = quantia.ler();
-    ctx.send({ t: comprando ? 'npcComprar' : 'npcVender', id: linha.id, count: quantos });
+    ctx.send({ t: comprando ? 'npcComprar' : 'npcVender', id: linha.id, count: quantos, ...(linha.raridade ? { raridade: linha.raridade } : {}) });
   };
   const acoes = el('div', 'loja-balcao-acoes');
   acoes.append(confirmar);

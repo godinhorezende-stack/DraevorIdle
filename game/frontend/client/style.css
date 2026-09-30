@@ -27498,3 +27498,4 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 #barra-de-conjuracao .conj-nome { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; text-shadow: 0 1px 2px #000; }
 #barra-de-conjuracao.cancelada .conj-enche { background: #9a2a2a; }
 #barra-de-conjuracao.concluida .conj-enche { width: 100% !important; }
+.soquetes-acoes { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }

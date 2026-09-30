@@ -454,6 +454,15 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     caiu.push({ id: gemaQueCai.id, count: 1 });
     conta('loot', gemaQueCai.id, 1);
   }
+  // A LAPIDADORA (a moeda que sobe a qualidade da gema): mesma regra de chance.
+  const lapidadora = GemasDeSkill.sortearLapidadora({
+    ato: Number(contextoDoDrop(hunt).ato) || 1,
+    fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
+  });
+  if (lapidadora && Bolsa.porNaBolsa(estado, lapidadora.id, 1)) {
+    caiu.push({ id: lapidadora.id, count: 1 });
+    conta('loot', lapidadora.id, 1);
+  }
   for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt);
     if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online

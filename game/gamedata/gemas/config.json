@@ -18,13 +18,33 @@
   },
 
   "niveis": {
-    "_nota": "Nível da gema: 1 a `maximo`. A XP de cada nível: `xpBase × crescimento^(nível−1)`. A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Subir para o nível N pede o personagem no level `levelDoPersonagem(N) = levelMinimoDaSkill + (N−1) × levelsPorNivel` (a XP continua guardada até lá).",
-    "maximo": 30,
+    "_nota": "Nível da gema (modelo Path of Exile, decisão do dono 30/09): começa SEMPRE no 1 e sobe por XP até `maximo` (20). Acima disso, só com bônus de item/modificador (+N ao nível das gemas encaixadas: 21+, sem teto). A XP para sair do nível N: `xpBase × crescimentoFacil^(N−1)` até o nível `faceis` ('até 5 fica fácil'); dali em diante cada nível pede `crescimento` × o anterior. A gema ganha, a cada morte, `parteDaExp` × a exp do bicho (todas as gemas encaixadas em peças vestidas). Subir para o nível N pede o personagem no level `levelMinimoDaSkill + (N−1) × levelsPorNivel` (a XP continua guardada até lá).",
+    "maximo": 20,
+    "faceis": 5,
     "xpBase": 400,
-    "crescimento": 1.35,
+    "crescimentoFacil": 1.2,
+    "crescimento": 1.3,
     "parteDaExp": 1,
     "levelsPorNivel": 8
   },
+
+
+  "qualidade": {
+    "_nota": "Qualidade da gema (modelo Path of Exile, decisão do dono 30/09): 0% a `maximo`, separada do nível. Ativa: +`danoPorPonto`% de dano (e de cura) por 1% de qualidade. Support: o efeito dela × (1 + qualidade × `efeitoPorPonto`/100). A gema que cai de bicho vem com `noDrop` (sorteio uniforme); a da loja, com 0%. A LAPIDADORA (moeda nova) soma `lapidadora.ganho` (sorteio) até o máximo; cai de bicho com `chancePorAto`.",
+    "maximo": 20,
+    "danoPorPonto": 1,
+    "efeitoPorPonto": 1,
+    "noDrop": [0, 10],
+    "lapidadora": { "itemId": 912001, "nome": "lapidadora", "sprite": 36835, "ganho": [1, 5], "chancePorAto": { "1": 0.001, "2": 0.0015, "3": 0.002, "4": 0.0025 } }
+  },
+
+  "raridades": {
+    "_nota": "Raridade da gema (decisão do dono: MULTIPLICA o bônus). `multiplicador` vale sobre o bônus por nível da ativa (dano/cura) e sobre o efeito inteiro da support. `pesoNoDrop`: a chance relativa de cada raridade na gema que cai de bicho. A loja vende só as de `loja.raridades`.",
+    "ordem": ["comum", "incomum", "raro", "épico", "lendário", "mítico"],
+    "multiplicador": { "comum": 1, "incomum": 1.15, "raro": 1.3, "épico": 1.5, "lendário": 1.75, "mítico": 2 },
+    "pesoNoDrop": { "comum": 60, "incomum": 25, "raro": 10, "épico": 4, "lendário": 0.9, "mítico": 0.1 }
+  },
+
 
   "_progressao": "O que cada nível da gema ATIVA dá, se a gema não tiver a dela em skills.json: `dano` (+% do dano da skill por nível acima do 1), `cura` (idem na cura). Nem toda gema sobe tudo.",
   "progressaoPadrao": { "dano": 3, "cura": 3 },
@@ -33,7 +53,7 @@
   "castTimePadrao": { "ataque": 400, "runa": 300, "cura": 0, "suporte": 0 },
 
   "drop": {
-    "_nota": "Chance, por bicho morto, de cair uma gema (ativa ou support); cresce com o ato. A gema cai no nível 1. `parteSupport` = fração dos drops que são supports.",
+    "_nota": "Chance, por bicho morto, de cair uma gema (ativa ou support); cresce com o ato. A gema cai no nível 1, com a raridade sorteada por `raridades.pesoNoDrop`. `parteSupport` = fração dos drops que são supports.",
     "chancePorAto": { "1": 0.002, "2": 0.003, "3": 0.004, "4": 0.005 },
     "parteSupport": 0.3
   },
@@ -45,6 +65,9 @@
     "precoDoSupport": 25000,
     "_npc": "O NPC que vende as gemas (decisão do dono: a Zuma Magehide, na praça). `porVez`: o máximo de gemas numa compra.",
     "npc": "zuma",
+    "_raridades": "A loja vende a gema COMUM e a INCOMUM (decisão do dono); a incomum custa `precoPorRaridade.incomum` × o preço da comum.",
+    "raridades": ["comum", "incomum"],
+    "precoPorRaridade": { "comum": 1, "incomum": 3 },
     "porVez": 20
   },
 
