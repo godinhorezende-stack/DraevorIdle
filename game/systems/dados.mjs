@@ -2,6 +2,7 @@
 // de `regras.mjs` (fórmulas) e de `sessao.mjs` (protocolo) para que carregar
 // um arquivo novo de captura não obrigue a tocar em nenhum dos dois.
 import { readFileSync } from 'node:fs';
+import * as PrecoDeVenda from './itens/preco-de-venda.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -26,6 +27,8 @@ export const CITY_META = carregar('city-meta.json');
 export const TREINO_MAP = carregar('treino-map.json');
 /** Catálogo real de itens (nome, peso, raridade) — o mesmo que `welcome.items` manda de verdade. */
 export const ITEM_CATALOG = carregar('item-catalog.json');
+// O preço de venda ao NPC que o catálogo não tem (ver `itens/preco-de-venda.mjs`): uma vez, aqui.
+PrecoDeVenda.completar(ITEM_CATALOG);
 /*
  * Itens das receitas do craft que o `item-catalog.json` capturado não tem (ele é
  * mais velho que o set Crafted V2). O NOME é o real, da ficha do craft capturada
