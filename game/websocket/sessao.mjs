@@ -60,6 +60,7 @@ import * as Prey from '../systems/prey.mjs';
 import * as Arvore from '../systems/arvore.mjs';
 import * as Passivas from '../systems/passivas/arvore.mjs';
 import * as ComandosDasPassivas from '../systems/passivas/comandos.mjs';
+import * as FiltroDaConta from '../systems/filtro-da-conta.mjs';
 import * as Banqueiro from '../systems/banqueiro.mjs';
 import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
@@ -498,6 +499,35 @@ export class Sessao {
       ...(r.aviso ? { aviso: r.aviso } : {}),
     });
     if (r.mudou) this.mandarEstado();
+  }
+
+  /**
+   * O filtro de loot e a caixinha "Toda a conta" (`systems/filtro-da-conta.mjs`):
+   * ligar publica o filtro deste char na conta e põe nos outros chars online;
+   * com ela ligada, cada mudança no filtro vale para todos; desligar deixa cada
+   * um com a sua cópia.
+   */
+  async despacharFiltro(m, resultado) {
+    this.aplicar(resultado);
+    if (!resultado.ok || !this.conta?.id) return;
+    const ligou = m.t === 'lootFiltro' && m.paraTodos === true;
+    const desligou = m.t === 'lootFiltro' && m.paraTodos === false;
+    if (!ligou && !desligou && !(this.estado.lootFiltro?.paraTodos && FiltroDaConta.mudaOFiltro(m))) return;
+    const dados = await B.lerMelhoriasDaConta(this.conta.id);
+    const filtro = FiltroDaConta.copia(this.estado);
+    dados.filtroDeLoot = desligou ? { ...(dados.filtroDeLoot ?? {}), ativo: false } : { ativo: true, ...filtro };
+    await B.gravarMelhoriasDaConta(this.conta.id, dados);
+    for (const o of vivas.values()) {
+      if (o === this || o.conta?.id !== this.conta.id || !o.estado) continue;
+      if (desligou) o.estado.lootFiltro = { ...(o.estado.lootFiltro ?? {}), paraTodos: false };
+      else FiltroDaConta.aplicar(o.estado, filtro);
+      o.characterSujo = true;
+      try {
+        o.mandarEstado();
+      } catch {
+        /* sessão sem aba (char trazido para a party) */
+      }
+    }
   }
 
   /** `send({t:'gemas', action?})` — o Gem Atelier: responde com a vista inteira, como a árvore. */
@@ -1198,13 +1228,13 @@ export class Sessao {
         return this.aplicar(r);
       }
       case 'itemRule':
-        return this.aplicar(Bolsa.regraDeItem(this.estado, m));
+        return this.despacharFiltro(m, Bolsa.regraDeItem(this.estado, m));
       case 'lootPreset':
-        return this.aplicar(Bolsa.presetDeLoot(this.estado, m));
+        return this.despacharFiltro(m, Bolsa.presetDeLoot(this.estado, m));
       case 'lootFiltro':
-        return this.aplicar(Bolsa.definirLootFiltro(this.estado, m));
+        return this.despacharFiltro(m, Bolsa.definirLootFiltro(this.estado, m));
       case 'settings':
-        return this.aplicar(Bolsa.definirSettings(this.estado, m));
+        return this.despacharFiltro(m, Bolsa.definirSettings(this.estado, m));
       case 'resetAnalyzer':
         return this.aplicar(Cacadas.zerarAnalisador(this.estado));
       case 'pegar':
@@ -1625,6 +1655,9 @@ export class Sessao {
     GemasDeSkill.darGemasIniciais(estado);
     // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).
     Acoes.sincronizarBarraComGemas(estado);
+    // O filtro de loot da conta ("Toda a conta" ligado em algum char): vale neste também.
+    const filtroDaConta = B.melhoriasCache(this.conta.id).filtroDeLoot;
+    if (filtroDaConta?.ativo) FiltroDaConta.aplicar(estado, filtroDaConta);
     // A árvore de passivas única: garante o início da classe e, para quem tinha a árvore
     // ANTIGA por vocação, devolve todos os pontos (com um respec grátis) — uma vez.
     if (Passivas.garantir(estado).migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
