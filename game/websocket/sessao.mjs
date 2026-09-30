@@ -69,6 +69,7 @@ import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
 import * as Anuncios from '../systems/anuncios.mjs';
+import * as Presentes from '../systems/presentes.mjs';
 import { readFileSync } from 'node:fs';
 const TASK_TOKEN_REAL = JSON.parse(readFileSync(new URL('../gamedata/task-token-real.json', import.meta.url), 'utf8'));
 
@@ -1637,9 +1638,11 @@ export class Sessao {
     this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
     // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
     const doMercado = await Mercado.receberCreditos(this.estado, personagem.id);
+    // Os presentes da equipe pendentes NA CONTA caem no personagem que entrou (ver `presentes.mjs`).
+    const doPresente = await Presentes.receberNaEntrada(this.estado, this.conta?.id, personagem.id);
     // Personagem que já estava acima da capacidade (loot de antes da regra):
     // o excesso vai para o depósito, com aviso no primeiro `state`.
-    this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? doMercado ?? daCampanha;
+    this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? ([doPresente, doMercado].filter(Boolean).join(' ') || null) ?? daCampanha;
     vivas.set(personagem.nome, this);
 
     // "Progresso enquanto você esteve fora" — `andamento`, no client.

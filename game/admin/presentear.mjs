@@ -1,6 +1,6 @@
-// Presente da equipe para TODAS as contas: uma vez por conta, no personagem
-// mais antigo dela, pela fila de créditos (chega no próximo login, com o aviso
-// "Presente do Draevor"). Ver `systems/presentes.mjs`.
+// Presente da equipe para TODAS as contas: uma vez por conta, pendente NA
+// CONTA — cai no personagem que estiver jogando (na hora, se estiver online;
+// senão no login), com o aviso "Presente do Draevor". Ver `systems/presentes.mjs`.
 //
 //   node game/admin/presentear.mjs --chave coins-10k-2026-09-30 --coins 10000            # só mostra
 //   node game/admin/presentear.mjs --chave coins-10k-2026-09-30 --coins 10000 --gravar   # entrega
@@ -19,8 +19,8 @@ const gravar = process.argv.includes('--gravar');
 
 const linhas = await presentear({ chave, coins, gold, gravar });
 const novas = linhas.filter((l) => !l.jaRecebeu);
-for (const l of linhas) console.log(`${l.jaRecebeu ? 'já recebeu ' : gravar ? 'ENTREGUE   ' : 'vai receber'}  ${l.nome}`);
-console.log(`\n${gravar ? 'Entregue' : 'Seria entregue'}: ${novas.length} conta(s) × ${coins.toLocaleString('pt-BR')} coins${gold ? ` + ${gold.toLocaleString('pt-BR')} gold` : ''}` +
+for (const l of linhas) console.log(`${l.jaRecebeu ? 'já tem      ' : gravar ? 'PENDENTE    ' : 'vai receber '}  conta de ${l.nome}`);
+console.log(`\n${gravar ? 'Deixado na conta' : 'Seria deixado na conta'}: ${novas.length} conta(s) × ${coins.toLocaleString('pt-BR')} coins${gold ? ` + ${gold.toLocaleString('pt-BR')} gold` : ''}` +
   ` = ${(novas.length * coins).toLocaleString('pt-BR')} coins · já tinham recebido: ${linhas.length - novas.length}` +
   (gravar ? '' : '\n(nada foi gravado — rode com --gravar para entregar)'));
 process.exit(0);

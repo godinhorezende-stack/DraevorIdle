@@ -14,10 +14,13 @@ import * as Limites from '../websocket/limites.mjs';
 import { aquecerGrades } from '../systems/cacadas.mjs';
 import * as ConsolidacaoOffline from '../systems/consolidacao-offline.mjs';
 import * as Ausentes from '../systems/ausentes.mjs';
+import * as Presentes from '../systems/presentes.mjs';
 
 Site.ligar(vivas);
 // Quem caça de aba fechada entra no número de online (ver `ausentes.mjs`).
 Ausentes.ligar(vivas);
+// Os presentes da equipe: quem está online recebe na hora (ver `presentes.mjs`).
+Presentes.ligar(vivas);
 // Quem caça de aba fechada sobe no ranking do dia sem esperar logar
 // (ver `consolidacao-offline.mjs`).
 ConsolidacaoOffline.ligar();
