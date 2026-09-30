@@ -33,6 +33,7 @@ import * as Arvore from './arvore.mjs';
 import * as Proficiencia from './proficiencia.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
 import * as Secundarios from './skills/golpes-secundarios.mjs';
+import * as Estados from './skills/estados.mjs';
 
 export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
 export const SLOTS = ACTION_CATALOG.slots;
@@ -585,7 +586,10 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
   const efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
   const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round((entry.mana ?? 0) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
-  if (custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
+  // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
+  const pagaComVida = !!efeitoDaGema?.custoEmVida && custoDeMana > 0;
+  if (pagaComVida && (estado.hp ?? 0) <= custoDeMana) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };
+  if (!pagaComVida && custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
 
   const papel = entry.papeis[0];
   const ataque = papel === 'attack';
@@ -698,7 +702,8 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       sessao.supplies += preco;
     }
   }
-  if (custoDeMana) {
+  if (pagaComVida) estado.hp = Math.max(1, (estado.hp ?? 0) - custoDeMana);
+  else if (custoDeMana) {
     estado.mana = Math.max(0, (estado.mana ?? 0) - custoDeMana);
     Treino.gastarMana(estado, custoDeMana);
   }
@@ -710,7 +715,9 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     if (buff.tipo === 'speed') for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === 'speed') delete hunt.buffs[id];
     // O nível, a raridade e a qualidade da gema escalam o efeito (`Reforcos.fatorDaGema`); a duração não muda.
     const fator = Reforcos.fatorDaGema(efeitoDaGema);
-    (hunt.buffs ??= {})[entry.id] = { ate: agora + buff.dur, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
+    // Skill Duration (support): +% na duração do reforço.
+    const duracao = Math.round(buff.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
+    (hunt.buffs ??= {})[entry.id] = { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
     // A provocação: os bichos por perto vêm atacar você.
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' });
@@ -781,6 +788,8 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
       total += dano;
       danos.push({ bicho, dano });
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor });
+      // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
+      for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
     };
     for (const bicho of atingidos) acertar(bicho);
     /*
@@ -806,6 +815,17 @@ export function disparar(estado, hunt, personagem, slot, alvo, { concluir = fals
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
     Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha);
+    // Life Leech / Mana Leech (supports): % do dano desta skill volta em vida/mana.
+    const vidaDoLeech = Math.round((total * (efeitoDaGema?.leechVidaPct ?? 0)) / 100);
+    const manaDoLeech = Math.round((total * (efeitoDaGema?.leechManaPct ?? 0)) / 100);
+    if (vidaDoLeech > 0) {
+      estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + vidaDoLeech);
+      eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: vidaDoLeech, color: '#00ff66' });
+    }
+    if (manaDoLeech > 0) {
+      estado.mana = Math.min(estado.maxMana ?? estado.mana, (estado.mana ?? 0) + manaDoLeech);
+      eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: manaDoLeech, color: '#4fc3ff' });
+    }
   }
 
   // Gemas: "-Ns recarga de <magia>" (supremo), sem passar de zero.

@@ -23,6 +23,7 @@ import * as Arvore from '../arvore.mjs';
 import * as Bosses from '../bosses.mjs';
 import * as Poderes from '../poderes.mjs';
 import * as Reforcos from '../skills/reforcos.mjs';
+import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
@@ -661,6 +662,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
   let escudo = false;
   for (const bicho of hunt.monstros) {
     if (bicho.dummy || bicho.hp <= 0 || !Poderes.temPoderes(bicho) || distancia(hunt.pos, bicho) > ALCANCE_DAS_MAGIAS) continue;
+    // Congelado ou atordoado (supports Freeze/Stun): não lança.
+    if (!Estados.podeAgir(bicho, agora)) continue;
     if (!ficha) {
       ficha = Ficha.combate(estado);
       escudo = Acoes.temBuff(hunt, 'shield');
@@ -671,7 +674,9 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     if (bicho.dummy || bicho.hp <= 0 || distancia(hunt.pos, bicho) > 1 || Poderes.semCorpoACorpo(bicho)) continue;
     if (estado.hp <= 0) break;
     if (!R.jaPode(agora, bicho.proximoGolpe)) continue;
-    bicho.proximoGolpe = agora + ATAQUE_DO_MONSTRO_MS;
+    // Congelado ou atordoado: não bate; lento: bate mais devagar (supports Freeze/Stun/Slow).
+    if (!Estados.podeAgir(bicho, agora)) continue;
+    bicho.proximoGolpe = agora + ATAQUE_DO_MONSTRO_MS * Estados.fatorDeLentidao(bicho, agora);
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;

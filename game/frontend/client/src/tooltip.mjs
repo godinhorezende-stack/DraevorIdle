@@ -1023,6 +1023,13 @@ export function blocoDaGemaDaSkill(entry) {
   if (e.retornar) partes.push('volta');
   if (e.explosaoPct || e.segundaExplosaoPct) partes.push('explode');
   if (e.areaExtra) partes.push(`área ${e.areaExtra > 0 ? '+' : ''}${Math.round(e.areaExtra)}`);
+  if (e.igniteChance) partes.push('queima');
+  if (e.congelarChance) partes.push('congela');
+  if (e.lentidaoPct) partes.push('lentidão');
+  if (e.atordoarChance) partes.push('atordoa');
+  if (e.leechVidaPct || e.leechManaPct) partes.push('leech');
+  if (e.custoEmVida) partes.push('custo em vida');
+  if (e.duracaoPct) partes.push(`+${Math.round(e.duracaoPct)}% duração`);
   if (partes.length) bloco.append(el('div', 'tip-gema-efeito', partes.join(' · ')));
   bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Supports ligadas: ${g.supports.map((s) => `${s.nome} ${s.nivel}`).join(', ')}` : 'Sem support ligada'));
   if (g.castTime) bloco.append(el('div', null, `Conjuração: ${(g.castTime / 1000).toLocaleString('pt-BR')} s`));
@@ -2419,11 +2426,20 @@ const NOME_DO_EFEITO_DA_SUPPORT = {
   explosaoPct: 'do dano numa explosão em volta do alvo',
   segundaExplosaoPct: 'do dano numa segunda explosão',
   areaExtra: 'casas de raio na área',
+  leechVidaPct: 'do dano volta em vida',
+  leechManaPct: 'do dano volta em mana',
+  custoEmVida: 'paga o custo com VIDA, e não mana',
+  duracaoPct: 'de duração do reforço',
+  igniteChance: 'de chance de queimar o bicho',
+  ignitePct: 'do acerto em queimadura (4 s)',
+  congelarChance: 'de chance de congelar o bicho (não anda nem ataca)',
+  lentidaoPct: 'de lentidão no bicho (anda e ataca mais devagar)',
+  atordoarChance: 'de chance de atordoar o bicho (não anda nem ataca)',
 };
 // Contagem sai "+2"; os % dos golpes secundários saem "70% do dano..." (não "+70%").
 const CONTAGENS_DA_SUPPORT = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra']);
-const PORCENTO_DO_GOLPE = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct', 'explosaoPct', 'segundaExplosaoPct']);
-const numeroDoEfeito = (chave, v) => (CONTAGENS_DA_SUPPORT.has(chave) ? `${v > 0 ? '+' : ''}${v}` : PORCENTO_DO_GOLPE.has(chave) ? `${v}%` : `${v > 0 ? '+' : ''}${v}%`);
+const PORCENTO_DO_GOLPE = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct', 'explosaoPct', 'segundaExplosaoPct', 'leechVidaPct', 'leechManaPct', 'igniteChance', 'ignitePct', 'congelarChance', 'lentidaoPct', 'atordoarChance']);
+const numeroDoEfeito = (chave, v) => (chave === 'custoEmVida' ? '' : CONTAGENS_DA_SUPPORT.has(chave) ? `${v > 0 ? '+' : ''}${v}` : PORCENTO_DO_GOLPE.has(chave) ? `${v}%` : `${v > 0 ? '+' : ''}${v}%`);
 
 /** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
 function blocoDaGema(def, gema, raridade = 'comum') {

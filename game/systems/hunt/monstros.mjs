@@ -7,6 +7,7 @@ import * as R from '../regras.mjs';
 import { huntOuMapaCustom } from './terreno.mjs';
 import { VIZINHANCA_8, VIZINHANCA_4, bfsDistancias, distancia } from './caminho.mjs';
 import * as Charms from '../charms.mjs';
+import * as Estados from '../skills/estados.mjs';
 
 export const BESTIARY = CATALOGO.bestiary;
 
@@ -276,6 +277,8 @@ export function moverMonstros(hunt, grade, agora) {
       continue;
     }
     if (!m.perseguindo || !pronto(m)) continue;
+    // Congelado ou atordoado (supports Freeze/Stun): não anda.
+    if (!Estados.podeAgir(m, agora)) continue;
     let destino = melhorPasso(m, reto, VIZINHANCA_4);
     if (!destino) {
       comDiagonal ??= bfsDistancias(grade, hunt.pos, ALCANCE_DE_PERSEGUICAO + 4);
@@ -291,7 +294,8 @@ export function moverMonstros(hunt, grade, agora) {
     m.y = destino.y;
     m.dir = dy < 0 ? 0 : dy > 0 ? 2 : dx > 0 ? 1 : 3;
     // Paralisado (charms Cripple e Numb): passo bem mais lento por 10 s.
-    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1);
+    // + lento (support Slow): o passo demora mais.
+    m.moveMs = passoDoBicho(m, dx !== 0 && dy !== 0) * (Charms.paralisado(m, agora) ? Charms.FATOR_DA_PARALISIA : 1) * Estados.fatorDeLentidao(m, agora);
     m.proximoPasso = agora + m.moveMs;
   }
 }
