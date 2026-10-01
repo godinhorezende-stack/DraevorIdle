@@ -967,18 +967,22 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null }) {
     state.troca && from !== 'equipment' && !naBolsaDeBoss
       ? presaNoPersonagem
         ? { label: 'Fixa no personagem — não entra na troca', disabled: true }
-        : {
-            label: `Pôr na troca com ${state.troca.com}`,
-            action: () => {
-              const quanto = quantosTenho(id, from, { soLivres: true });
-              pedirQuantidade({
-                id,
-                max: quanto,
-                titulo: 'Quantos oferecer?',
-                aoConfirmar: (count) => send({ t: 'trade', action: 'offer', id, count }),
-              });
-            },
-          }
+        : from === 'pouch'
+          ? { label: 'Leve para a mochila para pôr na troca', disabled: true }
+          : {
+              label: `Pôr na troca com ${state.troca.com}`,
+              action: () => {
+                const quanto = quantosTenho(id, from, { soLivres: true });
+                // `alvo`: ESTA cópia (com raridade e afixos), e não outra igual da mochila.
+                const copia = alvo ?? (pilha != null ? { indice: pilha } : null);
+                pedirQuantidade({
+                  id,
+                  max: quanto,
+                  titulo: 'Quantos oferecer?',
+                  aoConfirmar: (count) => send({ t: 'trade', action: 'offer', id, count, alvo: copia }),
+                });
+              },
+            }
       : null,
     { divider: true },
     from !== 'equipment' && !naStoreInbox

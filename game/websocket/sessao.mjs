@@ -61,6 +61,7 @@ import * as Arvore from '../systems/arvore.mjs';
 import * as Passivas from '../systems/passivas/arvore.mjs';
 import * as ComandosDasPassivas from '../systems/passivas/comandos.mjs';
 import * as FiltroDaConta from '../systems/filtro-da-conta.mjs';
+import * as Troca from '../systems/troca.mjs';
 import * as Combo from '../systems/combo.mjs';
 import * as Raridade from '../systems/mobs/raridade.mjs';
 import * as Banqueiro from '../systems/banqueiro.mjs';
@@ -101,6 +102,7 @@ Anuncios.ligar(vivas); // o drop Épico+ para o servidor inteiro
 Ranking.ligar(vivas);
 Guildas.ligar(vivas);
 Arena.ligar(vivas);
+Troca.ligar(vivas); // a troca entre jogadores (o outro lado é achado pelo nome)
 const AUTOSAVE_MS = 30_000;
 // Um "socket" que nunca está aberto: o char da conta trazido para o mundo sem aba (ver `contaChar`).
 const SEM_ABA = { readyState: 3, bufferedAmount: 0, send() {} };
@@ -139,7 +141,8 @@ const INTERVALO_DO_PEDIDO_DE_MAPA = 2000;
  * guilda, transferência do banco, melhorias da conta. Rodam dentro de
  * `emTransacao`. `LEITURAS` são as ações desses comandos que só olham.
  */
-const COMANDOS_DE_ECONOMIA = new Set(['market', 'coinMarket', 'bank', 'guilda', 'depot', 'store']);
+// (`trade`: a troca entre jogadores grava os DOIS personagens na mesma transação — ver `Troca.comando`.)
+const COMANDOS_DE_ECONOMIA = new Set(['market', 'coinMarket', 'bank', 'guilda', 'depot', 'store', 'trade']);
 const COMANDOS_DE_CAIXA = new Set(['split', 'juntar', 'trocar', 'organizar']);
 const LEITURAS = new Set(['offers', 'historico']);
 const PASSAM_CARREGANDO = new Set(['release', 'logout', 'login', 'resume', 'register', 'delta', 'jaTenhoCatalogo', 'oculta']);
@@ -1026,6 +1029,9 @@ export class Sessao {
         return this.aplicar(Recompensas.coletarPresente(this.estado, m));
       case 'largar':
         return this.aplicar(Inventario.largar(this.estado, m));
+      // A troca entre jogadores (convite, oferta, ouro, confirmar, cancelar) — `systems/troca.mjs`.
+      case 'trade':
+        return this.aplicar(Troca.comando(this, m));
       case 'destroy':
         return this.aplicar(Inventario.destruir(this.estado, m));
       case 'clearBackpack':
@@ -1869,6 +1875,8 @@ export class Sessao {
     Arena.saiuDoJogo(this);
     // Party: sai do grupo; a caçada em grupo vira uma cópia só dele (segue offline).
     Party.saiuDoJogo(this);
+    // Uma troca aberta é cancelada (e os convites dele somem) — nada fica pela metade.
+    Troca.saiuDoJogo(this);
     // Numa hunt, ela segue "offline": grava de quando, e a volta simula o resto.
     if (this.estado.hunt) this.estado.hunt.offlineDesde = Date.now();
     // `bauDaConta` é da conta (tabela própria), não do personagem.
@@ -2089,7 +2097,8 @@ export class Sessao {
      * chave falta. Um `state` sem nada novo é pulado, com um envio de
      * garantia por segundo.
      */
-    const msg = { t: 'state' };
+    // A troca e o convite de troca (o cliente lê os dois em todo `state`; sem eles, a mesa fecha).
+    const msg = { t: 'state', ...Troca.paraCliente(this) };
     const cache = (this.cacheDoCharacter ??= {});
     this.quadrosSemPersonagem = (this.quadrosSemPersonagem ?? 0) + 1;
     const inteiro = !this.characterJaFoi || comMapa || this.characterSujo || this.quadrosSemPersonagem >= QUADROS_POR_PERSONAGEM;
