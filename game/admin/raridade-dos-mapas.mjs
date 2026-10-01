@@ -7,8 +7,11 @@
 // Uso:
 //   node game/admin/raridade-dos-mapas.mjs            # só mostra o que faria
 //   node game/admin/raridade-dos-mapas.mjs --gravar   # grava
-// Mapa que já tem algum spawn com raridade/modificador não é tocado (o dono
-// pode ter mexido nele no editor) — `--refazer` passa por cima disso.
+// Rodar de novo só COMPLETA: o spawn que já tem raridade/modificador fica como
+// está (o dono pode ter mexido nele no editor), e o que falta para chegar nas
+// quantidades da distribuição sai dos spawns normais — foi assim que o Único e
+// o Boss (1 de cada por mapa) entraram nos mapas que já tinham elite/raro.
+// `--refazer` recalcula tudo do zero.
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { CATALOGO } from '../systems/dados.mjs';
@@ -59,11 +62,16 @@ export function modificadoresPara(raridade, key, chave) {
 /** A criatura que dá o tema ao spawn: a de maior peso. */
 const criaturaPrincipal = (s) => [...(s.criaturas ?? [])].sort((a, b) => (b.peso ?? 1) - (a.peso ?? 1))[0]?.key;
 
+/** A ordem em que as raridades são escolhidas (as que vieram depois entram no fim: não mudam as de antes). */
+export const ORDEM = ['elite', 'raro', 'modificado', 'unico', 'boss'];
+
 /**
  * Distribui a raridade nos spawns de um mapa (devolve uma CÓPIA). Os escolhidos
  * saem pela ordem da semente (espalhados pelo mapa); spawn de boss fica de fora.
+ * Com `manter`, o spawn que já tem raridade/modificador fica como está e conta
+ * para a quantidade da raridade dele.
  */
-export function distribuir(mapaId, spawns) {
+export function distribuir(mapaId, spawns, { manter = false } = {}) {
   const elegiveis = spawns.filter((s) => {
     const key = criaturaPrincipal(s);
     return key && !CATALOGO.bestiary[key]?.boss;
@@ -73,17 +81,28 @@ export function distribuir(mapaId, spawns) {
     elite: n ? Math.max(1, Math.round(n / DIST.porMapa.eliteACada)) : 0,
     raro: Math.round(n * DIST.porMapa.raro),
     modificado: Math.round(n * DIST.porMapa.modificado),
+    unico: n ? DIST.porMapa.unico ?? 0 : 0,
+    boss: n ? DIST.porMapa.boss ?? 0 : 0,
   };
-  const ordem = [...elegiveis].sort((a, b) => semente(`${mapaId}:${a.id}`) - semente(`${mapaId}:${b.id}`));
+  const jaTem = (s) => manter && (s.raridade || s.modificadores?.length);
+  // Quanto de cada raridade já existe (com `manter`): conta para a quantidade dela.
+  const existentes = {};
+  for (const s of spawns) if (jaTem(s)) existentes[s.raridade ?? 'modificado'] = (existentes[s.raridade ?? 'modificado'] ?? 0) + 1;
+  const livres = [...elegiveis].filter((s) => !jaTem(s)).sort((a, b) => semente(`${mapaId}:${a.id}`) - semente(`${mapaId}:${b.id}`));
+  // Do zero, a ordem da semente é dividida pelas raridades na `ORDEM`; para COMPLETAR, a
+  // mesma conta: a posição de cada raridade na fila é a soma das de antes (as de antes já
+  // escolhidas não estão mais na fila, por isso a fila anda só o que falta de cada uma).
   const escolha = new Map();
   let i = 0;
-  for (const raridade of ['elite', 'raro', 'modificado']) {
-    for (let k = 0; k < quantos[raridade] && i < ordem.length; k++, i++) {
-      const s = ordem[i];
+  for (const raridade of ORDEM) {
+    const falta = Math.max(0, quantos[raridade] - (existentes[raridade] ?? 0));
+    for (let k = 0; k < falta && i < livres.length; k++, i++) {
+      const s = livres[i];
       escolha.set(s, { raridade, modificadores: modificadoresPara(raridade, criaturaPrincipal(s), `${mapaId}:${s.id}`) });
     }
   }
   return spawns.map((s) => {
+    if (jaTem(s)) return s;
     const { raridade: _r, modificadores: _m, ...resto } = s;
     const e = escolha.get(s);
     return e ? { ...resto, raridade: e.raridade, modificadores: e.modificadores } : resto;
@@ -92,30 +111,28 @@ export function distribuir(mapaId, spawns) {
 
 function rodar({ gravar, refazer }) {
   const linhas = [];
-  const total = { elite: 0, raro: 0, modificado: 0, mapas: 0 };
+  const total = { ...Object.fromEntries(ORDEM.map((r) => [r, 0])), mapas: 0, mudaram: 0 };
   for (const arq of readdirSync(RAIZ_HUNTS).filter((f) => f.endsWith('-map.json')).sort()) {
     const id = arq.slice(0, -'-map.json'.length);
     const caminho = join(RAIZ_HUNTS, arq);
     const cru = JSON.parse(readFileSync(caminho, 'utf8'));
     if (!Array.isArray(cru.spawns) || !cru.spawns.length) continue;
-    if (!refazer && cru.spawns.some((s) => s.raridade || s.modificadores?.length)) {
-      linhas.push(`${id}: já tem raridade — não mexe`);
-      continue;
-    }
-    const spawns = distribuir(id, cru.spawns);
+    const spawns = distribuir(id, cru.spawns, { manter: !refazer });
+    const mudou = JSON.stringify(spawns) !== JSON.stringify(cru.spawns);
     const erros = validar(spawns, { largura: cru.width, altura: cru.height }).filter((e) => /raridade|modificador|aceita/.test(e));
     if (erros.length) {
       linhas.push(`${id}: INVÁLIDO — ${erros.slice(0, 3).join('; ')}`);
       continue;
     }
-    const conta = (r) => spawns.filter((s) => s.raridade === r).length;
-    const c = { elite: conta('elite'), raro: conta('raro'), modificado: conta('modificado') };
-    for (const k of Object.keys(c)) total[k] += c[k];
+    const c = Object.fromEntries(ORDEM.map((r) => [r, spawns.filter((s) => s.raridade === r).length]));
+    for (const k of ORDEM) total[k] += c[k];
     total.mapas += 1;
-    linhas.push(`${id}: ${spawns.length} spawns → ${c.elite} elite, ${c.raro} raro, ${c.modificado} modificado${gravar ? ' — gravado' : ''}`);
-    if (gravar) writeFileSync(caminho, JSON.stringify({ ...cru, spawns }), 'utf8');
+    if (mudou) total.mudaram += 1;
+    const resumo = ORDEM.map((r) => `${c[r]} ${r}`).join(', ');
+    linhas.push(`${id}: ${spawns.length} spawns → ${resumo}${!mudou ? ' — já completo, não mexe' : gravar ? ' — gravado' : ''}`);
+    if (gravar && mudou) writeFileSync(caminho, JSON.stringify({ ...cru, spawns }), 'utf8');
   }
-  linhas.push(`TOTAL: ${total.mapas} mapas — ${total.elite} elite, ${total.raro} raro, ${total.modificado} modificado`);
+  linhas.push(`TOTAL: ${total.mapas} mapas (${total.mudaram} mudam) — ${ORDEM.map((r) => `${total[r]} ${r}`).join(', ')}`);
   return linhas;
 }
 
