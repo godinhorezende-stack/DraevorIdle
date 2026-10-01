@@ -59,10 +59,21 @@ test('resistência e velocidade entram nos cálculos que já existem (Blindado =
   assert.equal(resistenciaDe(null, b, 'physical'), resistenciaDe(null, base, 'physical') + 30, 'a armadura do mob não entra no dano: o Blindado resiste ao físico');
 });
 
-test('o level do mob não sobe com a exp a mais da raridade', () => {
+test('o level do mob sobe só o `levelExtra` da raridade (a exp a mais não conta), e vale no acerto do jogador', () => {
   const base = bicho();
-  const m = Raridade.aplicar(bicho(), { raridade: 'elite' });
-  assert.equal(Atributos.levelDoBicho(null, m), Atributos.levelDoBicho(null, base));
+  for (const r of ['modificado', 'raro', 'elite', 'unico', 'boss']) {
+    const m = Raridade.aplicar(bicho(), { raridade: r });
+    const extra = Raridade.CONFIG.raridades[r].levelExtra;
+    assert.ok(extra > 0, r);
+    assert.equal(Atributos.levelDoBicho(null, m), Atributos.levelDoBicho(null, base) + extra, r);
+  }
+  // Na campanha o level vem da fase: a raridade soma por cima.
+  const hunt = { escala: { nivel: 40 } };
+  const boss = Raridade.aplicar(bicho(), { raridade: 'boss' });
+  assert.equal(Atributos.levelDoBicho(hunt, boss), 40 + Raridade.CONFIG.raridades.boss.levelExtra);
+  assert.equal(Atributos.levelDoBicho(hunt, base), 40);
+  assert.ok(Atributos.chanceDeAcerto(300, Atributos.levelDoBicho(hunt, boss)) < Atributos.chanceDeAcerto(300, 40), 'mais difícil de acertar');
+  assert.equal(Raridade.aplicar(bicho(), { raridade: 'normal', modificadores: [] }).levelExtra, undefined);
 });
 
 test('elite e boss contam para os adds "Damage vs Elite/Boss" do jogador', () => {
@@ -116,7 +127,7 @@ test('instância: o mob do spawn configurado nasce raro, com os modificadores, e
 
 test('a tela recebe o level, a raridade e os NOMES dos modificadores; as cores vão no config', () => {
   const m = Raridade.aplicar(bicho(), { raridade: 'raro', modificadores: ['explosivo', 'regenerador'] });
-  assert.deepEqual(Raridade.paraCliente(m), { raridade: 'raro', mods: ['Explosivo', 'Regenerador'] });
+  assert.deepEqual(Raridade.paraCliente(m), { raridade: 'raro', mods: ['Explosivo', 'Regenerador'], lvExtra: Raridade.CONFIG.raridades.raro.levelExtra });
   assert.deepEqual(Raridade.paraCliente(bicho()), {});
   const cores = Raridade.coresParaCliente();
   assert.equal(cores.raro.cor, Raridade.CONFIG.raridades.raro.cor);
@@ -144,6 +155,7 @@ test('fase 3: o cliente recebe o texto pelo NOME do modificador e o resumo da ra
   assert.equal(textos.Explosivo, Raridade.descricaoDe('explosivo'));
   const raro = Raridade.coresParaCliente().raro;
   assert.match(raro.resumo, /vida ×/);
+  assert.match(raro.resumo, /Lv \+3/);
   assert.equal(Raridade.coresParaCliente().normal.resumo, '');
   const op = Raridade.opcoesParaEditor();
   assert.deepEqual(op.raridades.map((r) => r.id), Raridade.RARIDADES);
