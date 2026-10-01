@@ -1467,6 +1467,57 @@ function botaoDaLoja(rotulo, secao, destaque = null) {
   return botao;
 }
 
+/*
+ * ---- A ORDEM das magias de ataque (fase B da revisão, decisões do dono) ----
+ *
+ * Prioridade (padrão): a do slot 1 sempre que puder. Limite: a de cima sai até N
+ * vezes por volta e as outras se revezam nas brechas. Rotação: todas se revezam. Quem decide é o servidor
+ * (`systems/combo.mjs`); aqui só se escolhe e se manda `{t:'modoDasMagias'}`.
+ */
+const MODOS_DAS_MAGIAS = {
+  prioridade: ['Prioridade', 'A magia do slot de cima sai sempre que puder; as de baixo só quando as de cima estão em recarga.'],
+  limite: ['Limite', 'Segue a ordem dos slots: a magia de cima (a primeira fora de recarga) sai até N vezes por volta, e nas brechas as outras se revezam, uma vez cada. Se nenhuma outra puder, ela sai mesmo assim.'],
+  rotacao: ['Rotação', 'Todas se revezam: depois de uma, a vez é da seguinte que puder sair.'],
+};
+function seletorDoModo() {
+  const settings = ctx.state.character?.settings ?? {};
+  const modo = MODOS_DAS_MAGIAS[settings.modoDasMagias] ? settings.modoDasMagias : 'prioridade';
+  const limite = [1, 2, 3].includes(settings.limiteDasMagias) ? settings.limiteDasMagias : 2;
+  const caixa = el('div', 'modo-das-magias');
+  const rotulo = el('label', 'modo-das-magias-rotulo', 'Ordem das magias de ataque');
+  const escolha = document.createElement('select');
+  for (const [id, [nome]] of Object.entries(MODOS_DAS_MAGIAS)) {
+    const opt = el('option', null, nome);
+    opt.value = id;
+    escolha.append(opt);
+  }
+  escolha.value = modo;
+  const mandar = (novoModo, novoLimite) => {
+    ctx.send({ t: 'modoDasMagias', modo: novoModo, ...(novoModo === 'limite' ? { limite: novoLimite } : {}) });
+    // Já na tela (o servidor confirma no próximo estado): o seletor do limite aparece/some na hora.
+    const s = ctx.state.character && (ctx.state.character.settings ??= {});
+    if (s) Object.assign(s, { modoDasMagias: novoModo, ...(novoModo === 'limite' ? { limiteDasMagias: novoLimite } : {}) });
+    renderEditor();
+  };
+  escolha.onchange = () => mandar(escolha.value, limite);
+  rotulo.append(escolha);
+  caixa.append(rotulo);
+  if (modo === 'limite') {
+    const quantas = document.createElement('select');
+    for (const n of [1, 2, 3]) {
+      const opt = el('option', null, `${n}× por volta`);
+      opt.value = String(n);
+      quantas.append(opt);
+    }
+    quantas.value = String(limite);
+    quantas.title = 'Quantas vezes a magia de cima sai por volta (a volta tem tantas magias quantas a barra tem): 1 = todas se revezam, 3 = a de cima domina';
+    quantas.onchange = () => mandar('limite', Number(quantas.value));
+    caixa.append(quantas);
+  }
+  caixa.append(el('small', 'modo-das-magias-ajuda', MODOS_DAS_MAGIAS[modo][1]));
+  return caixa;
+}
+
 export function renderEditor() {
   if (!editing) return;
   const body = document.getElementById('modal-body');
@@ -1489,6 +1540,7 @@ export function renderEditor() {
   const regrasDaBarra = el('button', 'ghost regras-atalho', `⚙ Regras de uso automático${ctx.state.character?.regrasDeUso?.length ? ` · ${ctx.state.character.regrasDeUso.length}` : ''}`);
   regrasDaBarra.onclick = () => abrirRegrasDeUso(ctx);
   body.append(regrasDaBarra);
+  body.append(seletorDoModo());
 
   const layout = el('div', 'action-editor');
   const left = el('div', 'action-side');

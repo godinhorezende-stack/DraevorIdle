@@ -61,6 +61,7 @@ import * as Arvore from '../systems/arvore.mjs';
 import * as Passivas from '../systems/passivas/arvore.mjs';
 import * as ComandosDasPassivas from '../systems/passivas/comandos.mjs';
 import * as FiltroDaConta from '../systems/filtro-da-conta.mjs';
+import * as Combo from '../systems/combo.mjs';
 import * as Raridade from '../systems/mobs/raridade.mjs';
 import * as Banqueiro from '../systems/banqueiro.mjs';
 import * as Craft from '../systems/craft.mjs';
@@ -113,6 +114,7 @@ const CONFIG_DE_OUTRO = {
   lure: (e, m) => Cacadas.definirLure(e, m),
   settings: (e, m) => Bolsa.definirSettings(e, m),
   huntAssist: (e, m) => Cacadas.definirAssistencia(e, m),
+  modoDasMagias: (e, m) => Combo.definirModo(e, m),
   actions: (e, m) =>
     m.action === 'set' ? Acoes.definir(e, m) :
     m.action === 'key' ? Acoes.trocarTecla(e, m) :
@@ -1288,6 +1290,9 @@ export class Sessao {
         return this.aplicar(Cacadas.usarEscada(this.estado, m));
       case 'huntAssist':
         return this.aplicar(Cacadas.definirAssistencia(this.estado, m));
+      // `send({t:'modoDasMagias', modo, limite?})` — a ordem das magias de ataque (prioridade | limite | rotação).
+      case 'modoDasMagias':
+        return this.aplicar(Combo.definirModo(this.estado, m));
       case 'lure':
         return this.aplicar(Cacadas.definirLure(this.estado, m));
       case 'strategy':
