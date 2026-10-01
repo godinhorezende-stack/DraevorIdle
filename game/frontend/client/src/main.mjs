@@ -2,7 +2,7 @@ import './so-quando-muda.mjs';
 import { anunciarDrop } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
 import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
-import { MapView } from './map.mjs';
+import { MapView, definirCoresDeRaridade, dadosDaRaridade } from './map.mjs';
 import {
   createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir, esconderSemGravar,
   // O browse field troca o título a cada casa que abre: "Chão em 100, 65".
@@ -746,6 +746,9 @@ function handle(message) {
       // Sem catálogo ou itens no quadro, valem os que já chegaram nesta conexão.
       if (message.catalog) state.catalog = message.catalog;
       pintarAvisoDeObra();
+      // As cores do nome por raridade do mob (ver `definirCoresDeRaridade`, map.mjs).
+      if (message.mobRaridades) definirCoresDeRaridade(message.mobRaridades);
+      if (message.mobModificadores) textoDosModificadores = message.mobModificadores;
       if (message.items) {
         state.items = message.items;
         emprestarDoCatalogo(message.items);
@@ -6080,6 +6083,82 @@ function dispararSlot(slot) {
   if (acao?.miraNoChao && !state.hunt?.assistencia && !state.hunt?.autoBarra) return armarMira(slot);
   send({ t: 'huntAction', slot });
 }
+
+/*
+ * ---- O balão do MOB com raridade (fase 3 dos modificadores) ----
+ *
+ * Parou o mouse em cima de um mob que não é normal: o nome na cor da raridade,
+ * o level, o que a raridade muda (vida, dano, exp, loot) e cada modificador com
+ * o que ele FAZ. O texto vem do servidor no welcome (`mobModificadores`), gerado
+ * dos mesmos dados que o combate usa — nenhuma frase escrita aqui.
+ */
+let textoDosModificadores = {};
+let balaoDoMob = null;
+let chaveDoBalao = null;
+
+function esconderBalaoDoMob() {
+  if (balaoDoMob) balaoDoMob.hidden = true;
+  chaveDoBalao = null;
+}
+
+function mostrarBalaoDoMob(bicho, evento) {
+  const chave = `${bicho.uid}|${bicho.raridade}|${(bicho.mods ?? []).join(',')}|${bicho.nivel}`;
+  if (!balaoDoMob) {
+    balaoDoMob = document.createElement('div');
+    balaoDoMob.className = 'tooltip painel balao-do-mob';
+    document.body.append(balaoDoMob);
+  }
+  if (chave !== chaveDoBalao) {
+    chaveDoBalao = chave;
+    const r = dadosDaRaridade(bicho.raridade);
+    balaoDoMob.style.setProperty('--tier', r?.cor ?? 'var(--copper)');
+    balaoDoMob.innerHTML = '';
+    const cabeca = document.createElement('div');
+    cabeca.className = 'balao-do-mob-cabeca';
+    const nome = document.createElement('strong');
+    nome.textContent = bicho.name;
+    nome.style.color = r?.cor ?? '';
+    cabeca.append(nome);
+    if (bicho.nivel != null) {
+      const lv = document.createElement('span');
+      lv.textContent = `Lv ${bicho.nivel}`;
+      cabeca.append(lv);
+    }
+    const raridade = document.createElement('div');
+    raridade.className = 'balao-do-mob-raridade';
+    raridade.textContent = [r?.nome ?? bicho.raridade, r?.resumo].filter(Boolean).join(' — ');
+    raridade.style.color = r?.cor ?? '';
+    balaoDoMob.append(cabeca, raridade);
+    if (bicho.mods?.length) {
+      const lista = document.createElement('div');
+      lista.className = 'balao-do-mob-mods';
+      for (const m of bicho.mods) {
+        const linha = document.createElement('p');
+        const titulo = document.createElement('b');
+        titulo.textContent = m;
+        linha.append(titulo);
+        if (textoDosModificadores[m]) linha.append(document.createTextNode(` — ${textoDosModificadores[m]}`));
+        lista.append(linha);
+      }
+      balaoDoMob.append(lista);
+    }
+  }
+  balaoDoMob.hidden = false;
+  // Ao lado do ponteiro, sem sair da tela.
+  const { innerWidth: w, innerHeight: h } = window;
+  const caixa = balaoDoMob.getBoundingClientRect();
+  const x = evento.clientX + 18 + caixa.width > w ? evento.clientX - 12 - caixa.width : evento.clientX + 18;
+  const y = Math.min(h - caixa.height - 8, evento.clientY + 14);
+  balaoDoMob.style.left = `${Math.max(8, x)}px`;
+  balaoDoMob.style.top = `${Math.max(8, y)}px`;
+}
+
+mapView.onTileHover = (casa, evento) => {
+  if (!casa || !state.hunt) return esconderBalaoDoMob();
+  const bicho = (state.hunt.monsters ?? []).find((m) => m.x === casa.x && m.y === casa.y && m.hp > 0 && m.raridade && m.raridade !== 'normal');
+  if (!bicho) return esconderBalaoDoMob();
+  mostrarBalaoDoMob(bicho, evento);
+};
 
 mapView.onTileClick = (x, y) => {
   // Clique esquerdo no boneco de um NPC fala com ele. Ver `falarComNpcEm`.

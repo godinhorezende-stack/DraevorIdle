@@ -8,6 +8,9 @@
 // original a maioria é gerada de novo a cada sessão, e esse gerador não
 // existe em nenhum arquivo extraído — oferecê-las seria inventar chão. Ver
 // `api-mapeada/checklist-modulos.md`.
+import * as Mecanicas from './mobs/mecanicas.mjs';
+import * as Raridade from './mobs/raridade.mjs';
+import * as Atributos from './personagem/atributos.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario, removerItem } from './inventario.mjs';
@@ -420,7 +423,13 @@ export function entrarNoPatio(estado) {
 
 /** Mapa de editor fora da campanha (sem instância): os spawns dele viram um ponto por bicho, com a 1ª criatura. */
 const pontosDosSpawns = (spawns) =>
-  (spawns ?? []).flatMap((sp) => Array.from({ length: sp.quantidade }, () => ({ key: sp.criaturas[0].key, x: sp.x, y: sp.y, z: sp.z })));
+  (spawns ?? []).flatMap((sp) =>
+    Array.from({ length: sp.quantidade }, () => ({
+      key: sp.criaturas[0].key, x: sp.x, y: sp.y, z: sp.z,
+      // A raridade do spawn vai junto (mapa do editor fora da campanha também a respeita).
+      ...(sp.raridade != null ? { raridade: sp.raridade } : {}),
+      ...(sp.modificadores?.length ? { modificadores: sp.modificadores } : {}),
+    })));
 
 /*
  * Com percurso, nasce no primeiro waypoint DELE: o `route[0]` original pode
@@ -500,6 +509,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
       if (!casa) break;
       casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
       const m = Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
+      // A raridade e os modificadores que o spawn do mapa configura (os mesmos da instância).
+      if (m && (p.raridade || p.modificadores?.length)) Raridade.aplicar(m, Raridade.doSpawn(p));
       if (m) todos.push({ z, m });
     }
   }
@@ -1515,6 +1526,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
   }
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));
+  // As mecânicas dos mobs no tempo: enrage na vida baixa, aura de dano e o veneno dos golpes (`mobs/mecanicas.mjs`).
+  Mecanicas.tique(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
@@ -1732,6 +1745,9 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       hp: m.hp,
       maxHp: m.maxHp,
       moveMs: m.moveMs ?? passoDoBicho(m),
+      // O level do mob (ao lado do nome) e a raridade + os modificadores (a cor do nome e a linha de baixo).
+      nivel: Atributos.levelDoBicho(hunt, m),
+      ...Raridade.paraCliente(m),
     })),
     players: [],
     npcs: [],

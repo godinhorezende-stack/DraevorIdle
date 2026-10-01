@@ -1,0 +1,28 @@
+{
+  "_nota": "MODIFICADORES DOS MOBS (pedido do dono, 01/10): cada um com o nome que aparece no mob, os STATS que soma e as MECÂNICAS que liga. Nenhum nome de mob ou de modificador no código: o motor (systems/mobs/raridade.mjs e mecanicas.mjs) lê só estas chaves. Os stats entram nos mesmos campos que o combate já usa (vida, dano, resistência, armadura, velocidade, regeneração).",
+
+  "_stats": "vidaPct, danoPct, velocidadePct (passo), velocidadeDeAtaquePct (intervalo do golpe), regenPct (% da vida por segundo), resist: { elemento: % } (soma à resistência do bestiário — o mesmo cálculo de resistência do combate). Sem `armaduraPct`: a armadura do mob não entra em nenhuma conta de dano do jogo — para \"mais duro\", use resist.physical.",
+  "_mecanicas": "Lista de { gatilho, efeito, ...parâmetros } — gatilhos: aoMorrer, vidaBaixa, aoReceberDano, aoAtacar, aliadoMorreu, aura. Executadas por systems/mobs/mecanicas.mjs (fase 2 do plano).",
+
+  "modificadores": {
+    "vigoroso":       { "nome": "Vigoroso",        "stats": { "vidaPct": 50 } },
+    "brutal":         { "nome": "Brutal",          "stats": { "danoPct": 25 } },
+    "blindado":       { "nome": "Blindado",        "stats": { "resist": { "physical": 30 } } },
+    "veloz":          { "nome": "Veloz",           "stats": { "velocidadePct": 30, "velocidadeDeAtaquePct": 15 } },
+    "frenetico":      { "nome": "Frenético",       "stats": { "velocidadeDeAtaquePct": 35 } },
+    "regenerador":    { "nome": "Regenerador",     "stats": { "regenPct": 1.5 } },
+    "resistente":     { "nome": "Resistente",      "stats": { "resist": { "physical": 15, "fire": 15, "ice": 15, "energy": 15, "earth": 15, "holy": 15, "death": 15 } } },
+    "ignifugo":       { "nome": "Ignífugo",        "stats": { "resist": { "fire": 40 } } },
+    "gelido":         { "nome": "Gélido",          "stats": { "resist": { "ice": 40 } } },
+    "isolado":        { "nome": "Isolado",         "stats": { "resist": { "energy": 40 } } },
+    "profano":        { "nome": "Profano",         "stats": { "resist": { "holy": 40 } } },
+    "explosivo":      { "nome": "Explosivo",       "mecanicas": [{ "gatilho": "aoMorrer", "efeito": "explosao", "raio": 1, "danoPctDaVida": 8, "elemento": "fire" }] },
+    "procriador":     { "nome": "Procriador",      "mecanicas": [{ "gatilho": "aoMorrer", "efeito": "gerar", "quantidade": 2, "mesmaCriatura": true, "vidaPct": 35 }] },
+    "enfurecido":     { "nome": "Enfurecido",      "mecanicas": [{ "gatilho": "vidaBaixa", "limitePct": 30, "efeito": "enrage", "danoPct": 40, "velocidadeDeAtaquePct": 30 }] },
+    "vingativo":      { "nome": "Vingativo",       "mecanicas": [{ "gatilho": "aliadoMorreu", "raio": 4, "efeito": "buff", "danoPct": 15, "duracaoMs": 8000 }] },
+    "endurecido":     { "nome": "Endurecido",      "mecanicas": [{ "gatilho": "aoReceberDano", "efeito": "buff", "resist": { "physical": 6 }, "acumulaAte": 5, "duracaoMs": 5000 }] },
+    "venenoso":       { "nome": "Venenoso",        "mecanicas": [{ "gatilho": "aoAtacar", "efeito": "debuff", "chance": 30, "elemento": "earth", "danoPctDoGolpe": 30, "duracaoMs": 4000 }] },
+    "abrasador":      { "nome": "Abrasador",       "mecanicas": [{ "gatilho": "aura", "efeito": "areaDeDano", "raio": 1, "danoPctDaVida": 0.5, "elemento": "fire", "intervaloMs": 1000 }] },
+    "espelhado":      { "nome": "Espelhado",       "mecanicas": [{ "gatilho": "aoReceberDano", "efeito": "refletir", "tipos": ["physical"], "pct": 10 }] }
+  }
+}

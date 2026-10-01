@@ -61,6 +61,11 @@ export function tique(hunt, eventos, agora) {
   let total = 0;
   const pulso = E().queimando?.pulso ?? 1000;
   for (const m of hunt?.monstros ?? []) {
+    // A REGENERAÇÃO do modificador (`regen`: % da vida por segundo — ver `mobs/raridade.mjs`).
+    if (m.regen && m.hp > 0 && m.hp < m.maxHp && R.jaPode(agora, m.proximaRegen)) {
+      m.hp = Math.min(m.maxHp, m.hp + Math.max(1, Math.round((m.maxHp * m.regen) / 100)));
+      m.proximaRegen = agora + 1000;
+    }
     const q = m.estados?.queimando;
     if (!q || m.hp <= 0) continue;
     while (q.falta > 0 && R.jaPode(agora, q.proximo) && q.proximo <= q.ate + pulso) {

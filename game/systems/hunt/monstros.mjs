@@ -1,6 +1,7 @@
 // Os bichos: nascer, renascer, andar atrás do jogador, trocar de andar.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
 import { CATALOGO } from '../dados.mjs';
+import * as Raridade from '../mobs/raridade.mjs';
 import { aliadosPorCasa } from './aliados.mjs';
 import { aplicarEscala } from '../campanha.mjs';
 import * as R from '../regras.mjs';
@@ -31,7 +32,12 @@ export function criarMonstro(posicao, hunt) {
     armor: bicho.armor ?? 0,
     exp: bicho.exp ?? 0,
     loot: bicho.loot ?? [],
-    spawn: { key: posicao.key, x: posicao.x, y: posicao.y, ...(posicao.z != null ? { z: posicao.z } : {}) },
+    spawn: {
+      key: posicao.key, x: posicao.x, y: posicao.y, ...(posicao.z != null ? { z: posicao.z } : {}),
+      // O bicho que renasce volta com a raridade do spawn dele (ver `renascer`).
+      ...(posicao.raridade != null ? { raridade: posicao.raridade } : {}),
+      ...(posicao.modificadores?.length ? { modificadores: posicao.modificadores } : {}),
+    },
   };
 }
 
@@ -158,13 +164,18 @@ export function renascer(hunt) {
   const fila = hunt.respawns ?? [];
   if (!fila.length) return;
   const dados = huntOuMapaCustom(hunt.huntId);
+  // A força da fase e a raridade/modificadores do spawn (a mesma ordem de quando nasceu).
+  const criarMonstroDoSpawn = (r) => {
+    const m = aplicarEscala(criarMonstro(r, dados), hunt.escala);
+    return m && (r.raridade || r.modificadores?.length) ? Raridade.aplicar(m, Raridade.doSpawn(r)) : m;
+  };
   // No lugar (splice), e não `hunt.respawns = ...`: numa caçada em grupo a fila
   // é a MESMA para todos da sala (ver `entrarNaSala`).
   const fica = fila.filter((r) => {
     if ((hunt.clock ?? 0) < r.volta) return true;
     // Bicho de outro andar renasce lá, esperando o personagem (ver `trocarDeAndar`).
     if (r.z != null && hunt.z != null && r.z !== hunt.z) {
-      const novo = aplicarEscala(criarMonstro(r, dados), hunt.escala);
+      const novo = criarMonstroDoSpawn(r);
       if (novo) ((hunt.outrosAndares ??= {})[r.z] ??= []).push(novo);
       return false;
     }
@@ -172,7 +183,7 @@ export function renascer(hunt) {
     const ocupado = (hunt.pos.x === r.x && hunt.pos.y === r.y) || aliadosPorCasa(hunt).has(`${r.x},${r.y}`) || hunt.monstros.some((m) => m.x === r.x && m.y === r.y);
     if (ocupado) return true;
     // Na campanha, o bicho renasce com a força da fase (ver `systems/campanha.mjs`).
-    const novo = aplicarEscala(criarMonstro(r, dados), hunt.escala);
+    const novo = criarMonstroDoSpawn(r);
     if (novo) hunt.monstros.push(novo);
     return false;
   });
@@ -204,7 +215,8 @@ export const ALCANCE_DE_PERSEGUICAO = 12;
  * 3x, como na fórmula. O `moveMs` de cada passo vai no snapshot.
  */
 export function passoDoBicho(m, diagonal = false) {
-  const speed = BESTIARY[m.key]?.speed ?? 100;
+  // O modificador de velocidade (`velocidade`, ver `mobs/raridade.mjs`) encurta o passo.
+  const speed = (BESTIARY[m.key]?.speed ?? 100) * (m.velocidade ?? 1);
   return R.duracaoDoPasso(speed, { diagonal, tick: R.PASSO_MS });
 }
 

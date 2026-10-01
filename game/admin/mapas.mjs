@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { CITY_MAP, CATALOGO } from '../systems/dados.mjs';
 import { validar, normalizar } from '../systems/mapa/spawns.mjs';
+import * as Raridade from '../systems/mobs/raridade.mjs';
 
 const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
@@ -50,6 +51,10 @@ function erroDeValidacao(dados) {
  * de hunt, só que agora o dono escolhe onde cada índice vai.
  */
 export function salvar(dados) {
+  // Mapa REAL (o capturado, com atlas próprio e andares): o editor só troca os SPAWNS dele.
+  // Gravar a grade do editor por cima apagaria o mapa — era o que acontecia antes.
+  const atual = dados?.id && ID_VALIDO.test(dados.id) ? carregar(dados.id) : null;
+  if (dados?.soSpawns || (atual && ehMapaReal(atual))) return salvarSpawns(dados);
   const erro = erroDeValidacao(dados);
   if (erro) return { ok: false, erro };
 
@@ -74,10 +79,36 @@ export function salvar(dados) {
   return { ok: true };
 }
 
+/**
+ * Mapa real = não foi pintado aqui: atlas próprio (não o da cidade) ou mais de
+ * um andar. O editor desenha com as sprites dele, mas não mexe no chão.
+ */
+export const ehMapaReal = (mapa) => !!mapa && (mapa.atlas !== CITY_MAP.atlas || (mapa.levels?.length ?? 1) > 1);
+
+/** Grava SÓ o bloco `spawns` de um mapa que já existe (o resto do arquivo fica como está). */
+export function salvarSpawns(dados) {
+  const atual = dados?.id && ID_VALIDO.test(dados.id) ? carregar(dados.id) : null;
+  if (!atual) return { ok: false, erro: 'Mapa não encontrado para gravar os spawns.' };
+  if (!Array.isArray(dados.spawns)) return { ok: false, erro: 'Sem spawns no pedido.' };
+  const erros = validar(dados.spawns, { largura: atual.width, altura: atual.height });
+  if (erros.length) return { ok: false, erro: erros[0] };
+  const spawns = dados.spawns.map((s, i) => normalizar(s, atual.z ?? 7, i));
+  try {
+    writeFileSync(caminhoDe(dados.id), JSON.stringify({ ...atual, spawns }), 'utf8');
+  } catch (e) {
+    return { ok: false, erro: `Não deu para gravar (${e.code ?? e.message}) — o editor grava no servidor de desenvolvimento.` };
+  }
+  return { ok: true, soSpawns: true };
+}
+
 /** Os spawns do pedido: `spawns` (formato do mapa) ou, do editor antigo, `posicoes` (um bicho por ponto). */
 function spawnsDoPedido(dados) {
   if (Array.isArray(dados.spawns)) return dados.spawns;
-  return (dados.posicoes ?? []).map((p, i) => ({ id: `s${i + 1}`, x: p.x, y: p.y, raio: 0, quantidade: 1, criaturas: [{ key: p.key, peso: 1 }] }));
+  return (dados.posicoes ?? []).map((p, i) => ({
+    id: `s${i + 1}`, x: p.x, y: p.y, raio: 0, quantidade: 1, criaturas: [{ key: p.key, peso: 1 }],
+    ...(p.raridade ? { raridade: p.raridade } : {}),
+    ...(Array.isArray(p.modificadores) && p.modificadores.length ? { modificadores: p.modificadores } : {}),
+  }));
 }
 
 /** Índices de paleta reais e seguros pro editor oferecer — ver `cacadas.mjs` linhas 42-67. */
@@ -85,5 +116,19 @@ export const PALETA_DO_EDITOR = [40, 579, 571, 569, 555, 713, 718, 554];
 
 /** Bicho + nome, pro seletor de spawn — nunca um monstro inventado. */
 export function bestiarioParaEditor() {
-  return Object.entries(CATALOGO.bestiary).map(([key, b]) => ({ key, name: b.name, hp: b.hp }));
+  // `look`/`colors` para o editor desenhar a criatura com a sprite do jogo; `boss` e `class` para a lista.
+  return Object.entries(CATALOGO.bestiary).map(([key, b]) => ({ key, name: b.name, hp: b.hp, look: b.look, colors: b.colors, boss: !!b.boss, classe: b.class ?? null }));
 }
+
+/** As criaturas de cada hunt do catálogo (o editor lista primeiro as do mapa aberto). */
+export function criaturasPorHunt() {
+  const r = {};
+  for (const h of CATALOGO.hunts ?? []) if (h.creatures?.length) r[h.id] = h.creatures.map((c) => c.key).filter((k) => CATALOGO.bestiary[k]);
+  return r;
+}
+
+/** O atlas e a paleta da cidade: o chão de um mapa NOVO do editor (os índices do pincel são desta paleta). */
+export const cidadeParaEditor = () => ({ atlas: CITY_MAP.atlas, cell: CITY_MAP.cell, palette: CITY_MAP.palette });
+
+/** As raridades e os modificadores que o editor oferece por spawn (dados de `gamedata/mobs/`). */
+export const raridadesParaEditor = () => Raridade.opcoesParaEditor();

@@ -61,7 +61,8 @@ export const precisaoBase = (level) => CONFIG.precisao.BASE + CONFIG.precisao.PO
  */
 export function levelDoBicho(hunt, bicho) {
   if (hunt?.escala?.nivel) return hunt.escala.nivel;
-  const exp = Math.max(1, bicho?.exp ?? 1);
+  // A exp a mais da raridade (`expMult`) não sobe o level do mob.
+  const exp = Math.max(1, (bicho?.exp ?? 1) / (bicho?.expMult ?? 1));
   return Math.max(1, Math.min(2000, Math.round(Math.sqrt(exp) * 3)));
 }
 

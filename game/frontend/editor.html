@@ -7,33 +7,64 @@
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
-  body { margin: 0; background: #10131a; color: #dfe3ea; font: 14px/1.4 system-ui, sans-serif; }
-  header { padding: 10px 16px; background: #171b26; border-bottom: 1px solid #2a3040; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  header h1 { font-size: 15px; margin: 0; margin-right: 12px; color: #f5c542; }
+  html, body { height: 100%; }
+  body { margin: 0; background: #10131a; color: #dfe3ea; font: 14px/1.4 system-ui, sans-serif; display: flex; flex-direction: column; }
+  header { padding: 8px 16px; background: #171b26; border-bottom: 1px solid #2a3040; display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; margin-right: 8px; color: #f5c542; }
   header label { display: flex; align-items: center; gap: 4px; }
-  header input, header select, header button { background: #202636; color: #dfe3ea; border: 1px solid #333c50; border-radius: 4px; padding: 4px 8px; font: inherit; }
+  input, select, button { background: #202636; color: #dfe3ea; border: 1px solid #333c50; border-radius: 4px; padding: 4px 8px; font: inherit; }
   header input[type=number] { width: 64px; }
-  header button { cursor: pointer; }
-  header button.primario { background: #2f7a4a; border-color: #3a9a5c; }
+  button { cursor: pointer; }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.primario { background: #2f7a4a; border-color: #3a9a5c; }
   #aviso { min-height: 18px; font-size: 12.5px; color: #f0a851; }
-  main { display: flex; height: calc(100vh - 46px); }
-  #paleta { width: 190px; padding: 10px; border-right: 1px solid #2a3040; overflow-y: auto; }
-  #paleta h2 { font-size: 12px; text-transform: uppercase; color: #8894ac; margin: 4px 0 8px; }
-  .swatch { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 4px; cursor: pointer; margin-bottom: 3px; }
+  #barra2 { background: #141824; padding: 6px 16px; }
+  #selo { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #2b3f5c; color: #cfe0ff; }
+  #selo.real { background: #4a3a1a; color: #ffd98a; }
+  #status { font-size: 12px; color: #8894ac; font-variant-numeric: tabular-nums; margin-left: auto; }
+  main { display: flex; flex: 1; min-height: 0; }
+  #paleta { width: 190px; padding: 10px; border-right: 1px solid #2a3040; overflow-y: auto; flex: none; }
+  h2 { font-size: 12px; text-transform: uppercase; color: #8894ac; margin: 10px 0 6px; letter-spacing: .04em; }
+  .swatch { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 4px; cursor: pointer; margin-bottom: 3px; width: 100%; text-align: left; }
   .swatch:hover { background: #202636; }
   .swatch.ativo { background: #2b3f5c; outline: 1px solid #4a6ea8; }
-  .swatch .cor { width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; }
-  #ferramentas { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
-  #ferramentas button { text-align: left; }
-  #canvasWrap { flex: 1; overflow: auto; position: relative; }
-  #grade { image-rendering: pixelated; cursor: crosshair; display: block; }
-  #spawns { width: 230px; border-left: 1px solid #2a3040; padding: 10px; overflow-y: auto; }
-  #spawns h2 { font-size: 12px; text-transform: uppercase; color: #8894ac; margin: 4px 0 8px; }
-  #spawns select, #spawns input { width: 100%; margin-bottom: 6px; }
-  .item-spawn { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; border-radius: 4px; font-size: 12.5px; }
+  .swatch canvas { width: 32px; height: 32px; image-rendering: pixelated; flex: none; background: #0b0d12; border-radius: 3px; }
+  #ferramentas { display: flex; flex-direction: column; gap: 4px; }
+  #ajudaFerramenta { font-size: 11.5px; color: #8894ac; margin-top: 6px; }
+  #canvasWrap { flex: 1; overflow: auto; position: relative; background: #07080b; }
+  #camadas { position: relative; }
+  #camadas canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+  #marcas { cursor: crosshair; }
+  #direita { width: 300px; border-left: 1px solid #2a3040; padding: 10px; overflow-y: auto; flex: none; }
+  #direita input[type=search] { width: 100%; margin-bottom: 6px; }
+  #listaBichos { max-height: 260px; overflow-y: auto; border: 1px solid #2a3040; border-radius: 4px; }
+  .grupo-bichos { font-size: 11px; color: #8894ac; padding: 4px 6px; background: #151a25; text-transform: uppercase; letter-spacing: .04em; }
+  .bicho { display: flex; align-items: center; gap: 8px; padding: 3px 6px; cursor: pointer; font-size: 12.5px; }
+  .bicho:hover { background: #202636; }
+  .bicho.ativo { background: #2b3f5c; }
+  .bicho canvas { width: 32px; height: 32px; flex: none; }
+  .bicho small { color: #8894ac; display: block; font-size: 11px; }
+  .bicho .chefe { color: #ff5b4f; }
+  #painelSpawn { margin-top: 10px; padding: 8px; border: 1px solid #2a3040; border-radius: 6px; background: #141824; }
+  #editandoSpawn { font-size: 12px; color: #f0a851; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+  #editandoSpawn button { font-size: 11px; padding: 2px 8px; }
+  .linha { display: flex; gap: 8px; }
+  .linha label { flex: 1; font-size: 12px; color: #8894ac; display: grid; gap: 2px; }
+  .linha input { width: 100%; }
+  #raridade { width: 100%; }
+  #listaMods { display: grid; gap: 2px; }
+  .mod-opcao { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; padding: 3px 4px; border-radius: 4px; cursor: pointer; }
+  .mod-opcao:hover { background: #202636; }
+  .mod-opcao input { width: auto; margin: 2px 0 0; flex: none; }
+  .mod-opcao small { display: block; color: #8894ac; font-size: 11px; line-height: 1.3; }
+  .mod-opcao.travado { opacity: 0.45; cursor: not-allowed; }
+  #contagemMods { color: #8894ac; font-weight: normal; }
+  #listaSpawns { font-size: 12.5px; }
+  .item-spawn { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 3px 6px; border-radius: 4px; cursor: pointer; }
   .item-spawn:hover { background: #202636; }
-  .item-spawn button { background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; }
-  .legenda-ferramenta { font-size: 12px; color: #8894ac; margin: 10px 0 4px; }
+  .item-spawn.selecionado { background: #2b3f5c; outline: 1px solid #4a6ea8; }
+  .item-spawn .mods-do-spawn { display: block; font-size: 11px; opacity: 0.85; }
+  .item-spawn button { background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; padding: 0 4px; }
 </style>
 </head>
 <body>
@@ -48,24 +79,44 @@
   <button id="btSalvar" class="primario">Salvar</button>
   <span id="aviso"></span>
 </header>
+<header id="barra2">
+  <span id="selo">Mapa novo</span>
+  <label>Andar <select id="andar"></select></label>
+  <label>Zoom <select id="zoom"><option value="0.25">25%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.5">150%</option></select></label>
+  <label><input id="verBloqueio" type="checkbox"> Mostrar bloqueado</label>
+  <label><input id="verRaio" type="checkbox" checked> Mostrar raio dos spawns</label>
+  <span id="status"></span>
+</header>
 <main>
   <div id="paleta">
-    <div class="legenda-ferramenta">Ferramenta</div>
+    <h2>Ferramenta</h2>
     <div id="ferramentas">
-      <button id="ferPincel" class="swatch ativo">Pincel (andável)</button>
-      <button id="ferParede">Parede (bloqueado)</button>
-      <button id="ferSpawn">Marcar spawn</button>
-      <button id="ferApagarSpawn">Apagar spawn</button>
+      <button id="ferSpawn" class="swatch">Spawn (marcar / selecionar)</button>
+      <button id="ferApagarSpawn" class="swatch">Apagar spawn</button>
+      <button id="ferPincel" class="swatch">Pincel (andável)</button>
+      <button id="ferParede" class="swatch">Parede (bloqueado)</button>
     </div>
-    <h2>Piso — índices reais</h2>
+    <div id="ajudaFerramenta"></div>
+    <h2>Piso (sprites reais)</h2>
     <div id="paletaPiso"></div>
   </div>
-  <div id="canvasWrap"><canvas id="grade"></canvas></div>
-  <div id="spawns">
-    <h2>Bicho pro próximo spawn</h2>
-    <input id="filtroBicho" placeholder="buscar...">
-    <select id="bicho" size="10"></select>
-    <h2>Spawns no mapa (<span id="contagemSpawns">0</span>)</h2>
+  <div id="canvasWrap"><div id="camadas"><canvas id="fundo"></canvas><canvas id="marcas"></canvas></div></div>
+  <div id="direita">
+    <h2>Criatura do próximo spawn</h2>
+    <input id="filtroBicho" type="search" placeholder="buscar no bestiário...">
+    <div id="listaBichos"></div>
+    <div id="painelSpawn">
+      <div id="editandoSpawn"></div>
+      <div class="linha">
+        <label>Raio <input id="raio" type="number" min="0" max="10"></label>
+        <label>Quantidade <input id="quantidade" type="number" min="1" max="20"></label>
+      </div>
+      <h2>Raridade</h2>
+      <select id="raridade"></select>
+      <h2>Modificadores <span id="contagemMods"></span></h2>
+      <div id="listaMods"></div>
+    </div>
+    <h2>Spawns neste andar (<span id="contagemSpawns">0</span>)</h2>
     <div id="listaSpawns"></div>
   </div>
 </main>

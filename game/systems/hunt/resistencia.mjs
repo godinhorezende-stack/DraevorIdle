@@ -8,12 +8,15 @@
 //
 // `elements` do bestiário: +20 = resiste 20% (toma 80%), −10 = fraco (toma
 // 110%). Na sala de boss a resistência tem teto (`RESISTENCIA_MAXIMA_DE_BOSS`).
+import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { BESTIARY } from './monstros.mjs';
 import * as R from '../regras.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss. */
 export function resistenciaDe(hunt, alvo, tipo) {
-  const r = BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0;
+  // A do bestiário + a dos modificadores do mob (`resist`, ver `mobs/raridade.mjs`).
+  // (+ a que os buffs das mecânicas dão por um tempo: Endurecido — `mobs/buffs.mjs`.)
+  const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0) + BuffsDeMob.resistencia(alvo, hunt?.clock ?? 0, tipo);
   return hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
 }
 

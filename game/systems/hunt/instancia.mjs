@@ -20,6 +20,7 @@
 // `progresso` = (total − peso dos vivos) / total. Um objetivo que não é bicho
 // (baú, alavanca, evento) entra depois como mais um item com peso, sem mudar a
 // conta — por isso a instância guarda o TOTAL dos pesos, não "quantos bichos".
+import * as Raridade from '../mobs/raridade.mjs';
 import { readFileSync } from 'node:fs';
 import { andarDaGrade, destinoDaMudanca } from './andares.mjs';
 import { VIZINHANCA_8, distancia, bfsDistancias } from './caminho.mjs';
@@ -158,6 +159,8 @@ export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplic
       delete m.spawn;
       m.spawnId = s.id;
       m.tipo = s.tipo;
+      // A raridade e os modificadores do spawn (vida, dano, exp, loot, resistência... — ver `mobs/raridade.mjs`).
+      Raridade.aplicar(m, Raridade.doSpawn(s));
       m.instancia = instanciaId;
       m.objetivo = 1;
       todos.push({ z: s.z, m });

@@ -355,6 +355,19 @@ const telaFora = (largura, altura) =>
     : Object.assign(document.createElement('canvas'), { width: largura, height: altura });
 let reguaDeTexto = null;
 
+/*
+ * ---- As cores do nome por RARIDADE do mob (pedido do dono, 01/10) ----
+ * Vêm do servidor no welcome (`gamedata/mobs/raridades.json`): a tela não sabe
+ * nome de mob nem de modificador — só pinta com a cor da categoria.
+ */
+let coresDeRaridade = {};
+export function definirCoresDeRaridade(cores) {
+  coresDeRaridade = cores ?? {};
+}
+export const corDaRaridade = (r) => coresDeRaridade[r ?? 'normal']?.cor ?? null;
+/** `{ nome, cor, resumo }` da raridade (o balão do mob). */
+export const dadosDaRaridade = (r) => coresDeRaridade[r ?? 'normal'] ?? null;
+
 function placaDoNome(texto, cor, ratio) {
   return placaDeTexto(texto, cor, NAME_SIZE, ratio);
 }
@@ -610,6 +623,7 @@ export class MapView {
     this.camera = { x: 0, y: 0 };
     this.floor = 0;
     this.onTileClick = null;
+    this.onTileHover = null;
     /* Quem está na arena de Boss Diários agora — o portal da cidade escreve
        embaixo do nome dele. Ver `drawNomeDoObjeto` e `vigiarBossesDaArena`. */
     this.bossesNaArena = [];
@@ -709,8 +723,11 @@ export class MapView {
        * o mesmo e exigiria uma regra de CSS para dizer a mesma palavra.
        */
       canvas.style.cursor = peca ? 'grab' : '';
+      // A casa sob o ponteiro, para quem quiser um balão dela (o do mob raro — ver main.mjs).
+      this.onTileHover?.(this.casaDoEvento(event), event);
     });
     canvas.addEventListener('mouseleave', () => {
+      this.onTileHover?.(null, null);
       this.pecaSobOCursor = null;
       canvas.draggable = false;
       canvas.style.cursor = '';
@@ -1168,7 +1185,11 @@ export class MapView {
        */
       aliado: !!data.aliado,
       // O Summon Level do dono dele, desenhado ao lado do nome. Ver `corDoNivelDoSummon`.
+      // (No MOB é o level dele, ao lado do nome — ver `drawNameplate`.)
       nivel: data.nivel,
+      // A raridade e os modificadores do mob (a cor do nome e a linha de cima — ver `drawNameplate`).
+      raridade: data.raridade ?? null,
+      mods: data.mods ?? null,
     });
   }
 
@@ -2945,14 +2966,25 @@ export class MapView {
      * onde estava. E ele passa pelo `nitido` pelo mesmo motivo de sempre —
      * copiar uma imagem para meio pixel a borra igual.
      */
-    const placa = placaDoNome(entity.name, color, this.overlayRatio());
-    ctx.drawImage(
-      placa.lona,
-      this.nitido(meio - placa.largura / 2),
-      this.nitido(barTop - 4 - placa.base),
-      placa.largura,
-      placa.altura
-    );
+    /*
+     * O MOB: o nome na cor da RARIDADE (normal, modificado, raro, elite...), o
+     * level à direita e, em cima, os modificadores — a vida continua na barra
+     * (decisão do dono). Jogador e familiar seguem como eram.
+     */
+    const ehMob = !entity.isPlayer && !entity.isOther && !entity.summon && !entity.aliado;
+    const corDoMob = ehMob ? corDaRaridade(entity.raridade) : null;
+    const placa = placaDoNome(entity.name, corDoMob ?? color, this.overlayRatio());
+    const nomeX = this.nitido(meio - placa.largura / 2);
+    const nomeY = this.nitido(barTop - 4 - placa.base);
+    ctx.drawImage(placa.lona, nomeX, nomeY, placa.largura, placa.altura);
+    if (ehMob && entity.nivel != null) {
+      const lv = placaDeTexto(`Lv ${entity.nivel}`, '#b9b2a2', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
+      ctx.drawImage(lv.lona, this.nitido(nomeX + placa.largura - 1), this.nitido(nomeY + (placa.altura - lv.altura)), lv.largura, lv.altura);
+    }
+    if (ehMob && entity.mods?.length) {
+      const linha = placaDeTexto(entity.mods.join(' · '), corDoMob ?? '#cfc7b4', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
+      ctx.drawImage(linha.lona, this.nitido(meio - linha.largura / 2), this.nitido(nomeY - linha.altura + 3), linha.largura, linha.altura);
+    }
 
     /*
      * ---- O Summon Level, colado no nome do familiar ----

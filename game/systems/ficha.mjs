@@ -425,7 +425,7 @@ export function fatorContraOAlvo(estado, alvo, ficha) {
   const d = ficha.danoContra;
   if (!d || !alvo?.key) return 1;
   let pct = d.monstros ?? 0;
-  if (estado.hunt?.isBoss) pct += d.boss ?? 0;
+  if (estado.hunt?.isBoss || alvo.chefe) pct += d.boss ?? 0;
   if (alvo.elite) pct += d.elite ?? 0;
   return 1 + pct / 100;
 }

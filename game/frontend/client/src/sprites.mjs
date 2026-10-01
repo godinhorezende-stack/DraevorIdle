@@ -1,6 +1,7 @@
 // Sprites extraídos do client do Tibia.
 // Tudo aqui desenha em 1:1; quem amplia é o CSS (image-rendering: pixelated),
 // sempre por um fator inteiro, senão o pixel art vira mingau.
+import { desenharGema } from './icones-de-gema.mjs';
 import { colorize } from '/packages/shared/src/outfit-color.mjs';
 
 const images = new Map();
@@ -173,7 +174,12 @@ function pedir(entry, src) {
 const esperaDe = (entry) =>
   Math.min(ESPERA_MAXIMA_MS, ESPERA_INICIAL_MS * 2 ** Math.max(0, (entry.tentativas ?? 1) - 1));
 
+/** Imagens desenhadas no próprio cliente (os ícones das gemas), pela chave — `image()` devolve sem buscar nada. */
+const imagensGeradas = new Map();
+
 export function image(src) {
+  const gerada = imagensGeradas.get(src);
+  if (gerada) return gerada;
   const agora = performance.now();
   let entry = images.get(src);
   if (entry) {
@@ -228,6 +234,13 @@ export const itemSprite = (id) => itemSprites[id];
  */
 export function emprestarDoCatalogo(catalogo) {
   for (const [id, meta] of Object.entries(catalogo ?? {})) {
+    // As GEMAS ganham o ícone próprio, desenhado (ver `icones-de-gema.mjs`) — no lugar da pedra emprestada.
+    if (meta?.gemaDef) {
+      const chave = `gema:${id}`;
+      if (!imagensGeradas.has(chave)) imagensGeradas.set(chave, { image: desenharGema(meta.gemaDef, id, 32), ready: true, tocadaEm: 0, falhouEm: 0, tentativas: 0 });
+      itemSprites[id] = { w: 32, h: 32, x: 0, y: 0, gerada: chave };
+      continue;
+    }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
   }
 }
@@ -269,7 +282,8 @@ function viewOf(sprite, { count = 0, time = 0 } = {}) {
   return sprite.s[0];
 }
 
-const pageSrc = (sprite, page) => `/gamedata/sprites/items/${sprite.b ?? 'items32-'}${page}.png`;
+// O sprite GERADO no cliente (os ícones das gemas) não tem folha: a chave aponta para o canvas dele.
+const pageSrc = (sprite, page) => sprite.gerada ?? `/gamedata/sprites/items/${sprite.b ?? 'items32-'}${page}.png`;
 
 /** Desenha um item ancorado no canto inferior direito do tile, como no jogo. */
 export function drawItem(ctx, id, x, y, options) {

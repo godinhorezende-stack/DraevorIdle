@@ -1,0 +1,19 @@
+{
+  "_nota": "RARIDADE DOS MOBS (pedido do dono, 01/10): a categoria do mob decide a COR DO NOME e os multiplicadores dele; os modificadores (modificadores.json) somam por cima. Decisões do dono: o nome sai na cor da raridade, com o level ao lado (a vida fica na barra); NADA é sorteado — só nasce diferente o spawn que o mapa configurar (`raridade` e `modificadores` no spawn, editáveis no editor de mapas); raro/elite dão mais exp e loot. Lido por systems/mobs/raridade.mjs e mandado ao cliente no welcome (as cores). Cores próprias do jogo (não as do Path of Exile).",
+
+  "_campos": "cor: a cor do nome; vida/dano/exp/loot: multiplicadores da instância (vida e dano entram nos mesmos campos da escala de dificuldade — maxHp e forca —, exp no `exp`, loot na chance de cada drop); maxModificadores: quantos modificadores o spawn pode dar; elite/boss: o mob conta como elite/boss para os adds \"Damage vs Elite/Boss\".",
+  "raridades": {
+    "normal":     { "nome": "Normal",     "cor": "#e8e2d0", "vida": 1,    "dano": 1,    "exp": 1,   "loot": 1,   "maxModificadores": 0 },
+    "modificado": { "nome": "Modificado", "cor": "#7fd3c0", "vida": 1.15, "dano": 1.05, "exp": 1.5, "loot": 1.3, "maxModificadores": 2 },
+    "raro":       { "nome": "Raro",       "cor": "#e8a33d", "vida": 1.8,  "dano": 1.2,  "exp": 2.5, "loot": 2,   "maxModificadores": 4 },
+    "elite":      { "nome": "Elite",      "cor": "#c77dff", "vida": 2.5,  "dano": 1.35, "exp": 4,   "loot": 3,   "maxModificadores": 4, "elite": true },
+    "unico":      { "nome": "Único",      "cor": "#f0d36b", "vida": 3,    "dano": 1.5,  "exp": 6,   "loot": 4,   "maxModificadores": 6, "elite": true },
+    "boss":       { "nome": "Boss",       "cor": "#ff5b4f", "vida": 1,    "dano": 1,    "exp": 1,   "loot": 1,   "maxModificadores": 6, "boss": true }
+  },
+
+  "_tipoDoSpawn": "O `tipo` que os spawns já tinham (normal | elite | miniboss | boss) vira a raridade quando o spawn não diz `raridade`.",
+  "tipoDoSpawn": { "normal": "normal", "elite": "elite", "miniboss": "raro", "boss": "boss" },
+
+  "_modificadoSemRaridade": "Spawn normal que ganha modificadores vira `modificado` (o nome muda de cor: \"esse mob é diferente\").",
+  "modificadoSemRaridade": "modificado"
+}
