@@ -671,6 +671,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
   let ficha = null;
   let escudo = false;
   for (const bicho of hunt.monstros) {
+    // As magias de um bicho já mataram: os outros não batem no personagem caído.
+    if ((estado.hp ?? 0) <= 0) break;
     if (bicho.dummy || bicho.hp <= 0 || !Poderes.temPoderes(bicho) || distancia(hunt.pos, bicho) > ALCANCE_DAS_MAGIAS) continue;
     // Congelado ou atordoado (supports Freeze/Stun): não lança.
     if (!Estados.podeAgir(bicho, agora)) continue;

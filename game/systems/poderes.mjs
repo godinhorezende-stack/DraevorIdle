@@ -142,6 +142,9 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
   const alvo = hunt.pos;
   p.ataques.forEach((a, i) => {
     if (a.tipo !== 'magia' || agora < (bicho.proximoPoder[i] ?? 0)) return;
+    // Morto no meio do tique (a magia anterior matou): as outras não saem — nem o dano depois
+    // da morte, nem a recarga gasta à toa (elas esperam a próxima luta).
+    if ((estado.hp ?? 0) <= 0) return;
     bicho.proximoPoder[i] = agora + a.intervalo;
     if (Math.random() * 100 >= a.chance || !alcanca(a, bicho, alvo)) return;
     // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
