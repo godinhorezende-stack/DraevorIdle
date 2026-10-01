@@ -16,6 +16,7 @@
 // árvore, charms). Os buffs vão para `buffs.mjs`, que as contas de força,
 // intervalo e resistência já leem. Nenhum nome de mob ou modificador aqui.
 import * as Raridade from './raridade.mjs';
+import * as Areas from '../../engine/areas.mjs';
 import * as Buffs from './buffs.mjs';
 import * as Poderes from '../poderes.mjs';
 import * as Ficha from '../ficha.mjs';
@@ -24,7 +25,8 @@ import { gradeDaHunt, huntOuMapaCustom } from '../hunt/terreno.mjs';
 import { andarDaGrade } from '../hunt/andares.mjs';
 import { daSala } from '../hunt/instancia.mjs';
 
-const distancia = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+// A geometria das áreas é a compartilhada (`engine/areas.mjs`): a distância em casas e o quadrado do raio.
+const distancia = Areas.distancia;
 const relogio = (hunt) => hunt?.clock ?? 0;
 const temEscudo = (hunt) => Object.values(hunt?.buffs ?? {}).some((b) => b.tipo === 'shield' && b.ate > relogio(hunt));
 
@@ -92,8 +94,10 @@ export function aoMorrer(estado, hunt, personagem, m, eventos) {
   for (const mec of Raridade.mecanicasDe(m)) {
     if (mec.gatilho !== 'aoMorrer') continue;
     if (mec.efeito === 'explosao') {
-      eventos.push({ t: 'fx', id: 6, x: m.x, y: m.y });
-      if (distancia(hunt.pos, m) <= (mec.raio ?? 1)) {
+      // Na tela, o quadrado INTEIRO que ela pega (antes: um efeito só, na casa do mob).
+      const raio = mec.raio ?? 1;
+      eventos.push({ t: 'area', id: 6, x: m.x, y: m.y, casas: Areas.paraTela(Areas.quadrado(m, raio), m) });
+      if (distancia(hunt.pos, m) <= raio) {
         ferirJogador(estado, hunt, personagem, m, (m.maxHp * (mec.danoPctDaVida ?? 5)) / 100, mec.elemento ?? 'fire', eventos, 'Explosão');
       }
     } else if (mec.efeito === 'gerar') gerar(hunt, m, mec, eventos);

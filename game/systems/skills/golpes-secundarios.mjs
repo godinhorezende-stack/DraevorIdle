@@ -12,48 +12,16 @@
 // (acoes.mjs) é quem calcula o dano (crítico, resistência, marcas), um acerto por vez.
 // Os efeitos se combinam em cadeia — ver `resolver`.
 import { CONFIG } from './gemas.mjs';
+import * as Areas from '../../engine/areas.mjs';
 
 const G = () => CONFIG.golpesSecundarios ?? {};
-const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+const cheb = Areas.distancia;
 
-/** As casas de uma reta de `de` na direção de `para`, até `alcance` casas de `de` (Bresenham, sem `de`). */
-export function casasDaReta(de, para, alcance) {
-  const dx = para.x - de.x;
-  const dy = para.y - de.y;
-  const passos = Math.max(Math.abs(dx), Math.abs(dy));
-  if (!passos) return [];
-  const casas = [];
-  for (let i = 1; i <= alcance; i++) casas.push({ x: Math.round(de.x + (dx * i) / passos), y: Math.round(de.y + (dy * i) / passos) });
-  return casas;
-}
-
-/**
- * A área aumentada (`n` > 0: toda casa a até `n` de uma casa da área entra) ou
- * concentrada (`n` < 0: tira a borda `|n|` vezes, sem sumir com tudo).
- */
-export function mudarArea(casas, n) {
-  if (!n || !casas?.length) return casas;
-  const chave = (c) => `${c.x},${c.y}`;
-  let conjunto = new Map(casas.map((c) => [chave(c), c]));
-  if (n > 0) {
-    for (const c of casas) {
-      for (let dx = -n; dx <= n; dx++) for (let dy = -n; dy <= n; dy++) {
-        const k = `${c.x + dx},${c.y + dy}`;
-        if (!conjunto.has(k)) conjunto.set(k, { x: c.x + dx, y: c.y + dy });
-      }
-    }
-    return [...conjunto.values()];
-  }
-  for (let vez = 0; vez < -n; vez++) {
-    const miolo = [...conjunto.values()].filter((c) => {
-      for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) if (!conjunto.has(`${c.x + dx},${c.y + dy}`)) return false;
-      return true;
-    });
-    if (!miolo.length) break; // concentrar não apaga a área inteira
-    conjunto = new Map(miolo.map((c) => [chave(c), c]));
-  }
-  return [...conjunto.values()];
-}
+// A geometria (reta, aumentar/concentrar área, o quadrado da explosão) é a compartilhada: `engine/areas.mjs`.
+/** As casas de uma reta de `de` na direção de `para`, até `alcance` casas de `de` (sem `de`). */
+export const casasDaReta = Areas.reta;
+/** A área aumentada (`n` > 0) ou concentrada (`n` < 0) — ver `Areas.mudar`. */
+export const mudarArea = Areas.mudar;
 
 /** Os `n` bichos vivos mais perto de `ponto`, a até `distancia`, fora de `fora`. */
 function maisPerto(vivos, ponto, distancia, n, fora) {
@@ -122,11 +90,10 @@ export function resolver({ efeito, tags, origem, alvo, atingidos = [], vivos, al
       const ponto = { x: centro.x, y: centro.y };
       explosoes.push({ ...ponto, lado });
       const pct = (pctDaExplosao * pctDoImpacto) / 100;
-      for (let dx = -raio; dx <= raio; dx++) {
-        for (let dy = -raio; dy <= raio; dy++) {
-          const b = porCasa.get(`${ponto.x + dx},${ponto.y + dy}`);
-          if (b) golpes.push({ bicho: b, pct, de: ponto, tipo: 'explosao' });
-        }
+      // O quadrado da explosão: a MESMA conta que a tela usa para desenhá-la (`Areas.casasDoEvento`).
+      for (const c of Areas.quadrado(ponto, raio)) {
+        const b = porCasa.get(Areas.chave(c));
+        if (b) golpes.push({ bicho: b, pct, de: ponto, tipo: 'explosao' });
       }
     }
   };

@@ -27,6 +27,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as R from './regras.mjs';
+import * as Areas from '../engine/areas.mjs';
 import * as Passivas from './passivas/arvore.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'arvore');
@@ -245,7 +246,7 @@ function ferir(bicho, dano, eventos, cor, rotulo) {
 }
 
 const vivosPerto = (hunt, de, raio, fora) =>
-  hunt.monstros.filter((b) => b.hp > 0 && !b.dummy && b !== fora && Math.max(Math.abs(b.x - de.x), Math.abs(b.y - de.y)) <= raio);
+  hunt.monstros.filter((b) => b.hp > 0 && !b.dummy && b !== fora && Areas.distancia(b, de) <= raio);
 
 /**
  * Depois do golpe da ARMA (corpo a corpo ou distância). Devolve o dano extra

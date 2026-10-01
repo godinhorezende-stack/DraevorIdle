@@ -2,6 +2,7 @@
 // Regra de ouro para o pixel art não borrar: tudo é desenhado em 1:1 (32px por
 // tile) num canvas do tamanho da tela dividido pelo zoom, e o zoom é sempre
 // inteiro, aplicado pelo CSS com image-rendering: pixelated.
+import { casasDoEvento } from '/packages/shared/src/areas.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
 import { graficoLigado, tetoDeQuadros } from './graficos.mjs';
@@ -86,6 +87,9 @@ const VIDA_DA_FALA = 2200;
  */
 const JANELA_DO_DEGRAU = 400;
 
+/** Quantos efeitos e números a tela guarda ao mesmo tempo (ver `addEvents`). */
+const TETO_DE_EFEITOS = 600;
+const TETO_DE_NUMEROS = 300;
 const TILE = 32;
 
 /*
@@ -1239,7 +1243,7 @@ export class MapView {
     const querProjeteis = graficoLigado('projeteis');
     for (const event of events) {
       if (!querNumeros && (event.t === 'dmg' || event.t === 'heal' || event.t === 'kill' || event.t === 'block')) continue;
-      if (!querEfeitos && (event.t === 'fx' || event.t === 'explosao')) continue;
+      if (!querEfeitos && (event.t === 'fx' || event.t === 'explosao' || event.t === 'area')) continue;
       if (!querProjeteis && event.t === 'shot') continue;
       // A cor de cada número vem do servidor, com a mesma tabela do
       // combatGetTypeInfo: físico vermelho, energia roxo, gelo azul-claro...
@@ -1378,12 +1382,11 @@ export class MapView {
         this.texts.push({ uid: deQuem(event), x: event.x, y: event.y, text: textoDoBloqueio(event), color: event.color ?? '#999999', size: 12, born: now, life: 700, drift: 0, degrau: degrauDoNumero(deQuem(event)) });
       } else if (event.t === 'fx') {
         this.effects.push({ id: event.id, uid: event.uid, x: event.x, y: event.y, born: now, life: effectDuration(event.id) || 600 });
-      } else if (event.t === 'explosao') {
-        // A explosão das supports: o servidor manda UM evento (centro e lado); o quadrado inteiro
-        // (3×3 = 9 casas) é desenhado aqui, com o efeito da skill — a área que de fato pegou.
-        const r = Math.floor((event.lado ?? 3) / 2);
-        for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) {
-          this.effects.push({ id: event.id, x: event.x + dx, y: event.y + dy, born: now, life: effectDuration(event.id) || 600 });
+      } else if (event.t === 'explosao' || event.t === 'area') {
+        // Uma ÁREA (magia, explosão, boss, mob): o servidor manda UM evento com as casas que de
+        // fato pegaram, e cada uma é desenhada aqui — a mesma geometria (`engine/areas.mjs`).
+        for (const c of casasDoEvento(event)) {
+          this.effects.push({ id: event.id, x: c.x, y: c.y, born: now, life: effectDuration(event.id) || 600 });
         }
       } else if (event.t === 'shot') {
         // A velocidade do projétil segue a distância: 60ms por sqm, como no client.
@@ -1395,9 +1398,19 @@ export class MapView {
         });
       }
     }
-    if (this.texts.length > 60) this.texts.splice(0, this.texts.length - 60);
+    /*
+     * ---- Os TETOS da tela não podem cortar uma área no meio ----
+     *
+     * Eram 60 efeitos e 60 números: uma magia de 85 casas (Rage of the Skies, Wrath of
+     * Nature) chegava num lote só, e o corte — que fica com os ÚLTIMOS — jogava fora os
+     * 25 primeiros, que são a parte de CIMA da área (a forma é listada de cima para
+     * baixo). O dano saía em todas as casas; a tela é que não mostrava nem o efeito nem
+     * o número lá em cima. Os tetos agora cabem as maiores áreas (e explosões em
+     * cadeia) com folga; continuam existindo para segurar uma enxurrada.
+     */
+    if (this.texts.length > TETO_DE_NUMEROS) this.texts.splice(0, this.texts.length - TETO_DE_NUMEROS);
     if (this.falas.length > 20) this.falas.splice(0, this.falas.length - 20);
-    if (this.effects.length > 60) this.effects.splice(0, this.effects.length - 60);
+    if (this.effects.length > TETO_DE_EFEITOS) this.effects.splice(0, this.effects.length - TETO_DE_EFEITOS);
     if (this.missiles.length > 40) this.missiles.splice(0, this.missiles.length - 40);
   }
 

@@ -11,6 +11,7 @@
 //   o cliente guarda a do quadro anterior pelo `uid`.
 // Nada disto muda a regra do jogo: o `snapshotDaHunt` continua inteiro (os
 // testes e o próprio servidor leem ele); o recorte é só do que viaja.
+import * as Areas from '../engine/areas.mjs';
 import { METADE_DA_TELA } from '../../game/engine/tela.mjs';
 
 /** A tela do cliente (23x13) e mais duas casas, para o bicho que entra já chegar desenhado. */
@@ -44,13 +45,16 @@ export function bichosDoQuadro(monsters, centro, jaForam) {
   return { lista, uids };
 }
 
-/** Efeitos de tela (`fx`, `shot`, `explosao`) longe dela, ou com a aba escondida, não vão: ninguém os vê. */
+/** Efeitos de tela (`fx`, `shot`, `explosao`, `area`) longe dela, ou com a aba escondida, não vão: ninguém os vê. */
 export function eventosDoQuadro(eventos, centro, oculta) {
   if (!eventos?.length) return eventos;
   return eventos.filter((e) => {
-    if (e.t !== 'fx' && e.t !== 'shot' && e.t !== 'explosao') return true;
+    if (e.t !== 'fx' && e.t !== 'shot' && e.t !== 'explosao' && e.t !== 'area') return true;
     if (oculta) return false;
-    return !centro || e.uid === 'player' || naTela(centro, e);
+    if (!centro || e.uid === 'player') return true;
+    // Área (`area`, `explosao`): vai se QUALQUER casa dela está na tela (a de 85 casas passa da janela).
+    if (e.t === 'area' || e.t === 'explosao') return Areas.casasDoEvento(e).some((c) => naTela(centro, c));
+    return naTela(centro, e);
   });
 }
 

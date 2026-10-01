@@ -109,7 +109,8 @@ test('bichos da hunt (Winter Dream Court): as magias com o nome, a cor e o efeit
     for (const g of ev.filter((x) => x.t === 'dmg' && !x.foe && doOriginal[x.golpe])) {
       (vistos[g.golpe] ??= { cores: new Set(), fx: new Set(), max: 0 }).cores.add(g.color);
       vistos[g.golpe].max = Math.max(vistos[g.golpe].max, g.v);
-      for (const f of ev.filter((x) => x.t === 'fx')) vistos[g.golpe].fx.add(f.id);
+      // (A área sai num evento `area` com as casas — o efeito é o mesmo.)
+      for (const f of ev.filter((x) => x.t === 'fx' || x.t === 'area')) vistos[g.golpe].fx.add(f.id);
     }
   }
   assert.ok(Object.keys(vistos).length >= 3, `magias vistas: ${Object.keys(vistos)}`);
