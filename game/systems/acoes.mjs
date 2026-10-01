@@ -33,6 +33,7 @@ import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Proficiencia from './proficiencia.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
+import * as Areas from '../engine/areas.mjs';
 import * as Secundarios from './skills/golpes-secundarios.mjs';
 import * as Estados from './skills/estados.mjs';
 
@@ -571,10 +572,9 @@ const recargaDe = (entry, ms) => (entry.papeis?.[0] === 'attack' ? Math.round(ms
  * y <= 0 — ver `AREA_WAVE6` da Front Sweep: [[-1,-1],[0,-1],[1,-1]]). Girar
  * para `dir` (0 norte, 1 leste, 2 sul, 3 oeste, o `dir` do personagem).
  */
-const direcional = (entry) => (entry.forma ?? []).some(([, dy]) => dy < 0) && !(entry.forma ?? []).some(([, dy]) => dy > 0);
-const girar = ([dx, dy], dir) => (dir === 1 ? [-dy, dx] : dir === 2 ? [-dx, -dy] : dir === 3 ? [dy, -dx] : [dx, dy]);
-const casasDaForma = (entry, cx, cy, dir = null) =>
-  (entry.forma ?? [[0, 0]]).map((d) => (dir == null ? d : girar(d, dir))).map(([dx, dy]) => ({ x: cx + dx, y: cy + dy }));
+// (A geometria é a compartilhada — `engine/areas.mjs`, a mesma que a tela usa.)
+const direcional = (entry) => Areas.direcional(entry.forma);
+const casasDaForma = (entry, cx, cy, dir = null) => Areas.daForma(entry.forma, { x: cx, y: cy }, dir);
 
 /** Os 4 lados, começando pelo que aponta para o alvo (eixo dominante). */
 function ordemDosLados(pos, alvo) {
@@ -797,15 +797,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       let melhor = null;
       for (const dir of lados) {
         const cs = casasDaForma(entry, x, y, dir);
-        const n = vivos.filter((b) => cs.some((c) => c.x === b.x && c.y === b.y)).length;
+        const n = Areas.dentro(cs, vivos).length;
         if (!melhor || n > melhor.n) melhor = { dir, cs, n };
       }
       casas = melhor.cs;
       virarPara = melhor.dir;
     }
     // Area of Effect / Concentrated Effect (supports): a área cresce ou encolhe `areaExtra` casas.
-    if (casas && efeitoDaGema?.areaExtra) casas = Secundarios.mudarArea(casas, Math.round(efeitoDaGema.areaExtra));
-    if (casas) atingidos = vivos.filter((b) => casas.some((c) => c.x === b.x && c.y === b.y));
+    if (casas && efeitoDaGema?.areaExtra) casas = Areas.mudar(casas, Math.round(efeitoDaGema.areaExtra));
+    // Quem está nas casas da área: por índice de casa (sem varrer área × bichos).
+    if (casas) atingidos = Areas.dentro(casas, vivos);
   }
   /*
    * ---- A faixa de criaturas do slot ("Mínimo" e "Máximo de criaturas") ----
@@ -960,7 +961,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x, y, color: '#f36500' });
     if (entry.projetil && alvo) eventos.push({ t: 'shot', id: entry.projetil, x, y, tx: alvo.x, ty: alvo.y });
     const cor = COR_DO_ELEMENTO[entry.element] ?? COR_DO_ELEMENTO.physical;
-    if (casas && entry.efeito) for (const c of casas) eventos.push({ t: 'fx', id: entry.efeito, x: c.x, y: c.y });
+    // A área vai para a tela num evento SÓ, com as MESMAS casas que causam dano (o cliente
+    // desenha cada uma). Antes era um `fx` por casa — e a tela, que guardava os 60 últimos,
+    // perdia o começo das áreas grandes (a parte de CIMA da Rage of the Skies, 85 casas).
+    if (casas && entry.efeito) eventos.push({ t: 'area', id: entry.efeito, x, y, casas: Areas.paraTela(casas, { x, y }) });
     else if (entry.efeito) eventos.push({ t: 'fx', id: entry.efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
     // A cadeia: o salto de um bicho para o outro (o projétil, se a magia tem) e o efeito em cada um.
     if (entry.cadeia) {

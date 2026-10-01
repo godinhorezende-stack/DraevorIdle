@@ -23,6 +23,7 @@
 //   não o `ataqueDoMonstro` genérico, que dava 25 mil num boss de 50 mil de vida.
 import { readFileSync } from 'node:fs';
 import * as Arvore from './arvore.mjs';
+import * as Areas from '../engine/areas.mjs';
 import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
 import * as Defesa from './personagem/defesa.mjs';
@@ -43,7 +44,6 @@ const COR_DO_ELEMENTO = {
 };
 const FORMA = { area: ' em área', feixe: ' em feixe', alvo: '' };
 const EFEITO_PADRAO = { physical: 35, fire: 7, ice: 42, earth: 21, energy: 38, death: 18, holy: 50, lifedrain: 14, manadrain: 13, drown: 26 };
-const MAXIMO_DE_EFEITOS = 90;
 /** O sangue no jogador a cada golpe que passa (o original manda `fx` 1 junto de todo dano). */
 const EFEITO_DO_SANGUE = 1;
 
@@ -70,28 +70,12 @@ export function golpeCorpoACorpo(bicho) {
   return sortear(m.min, m.max);
 }
 
-/** As casas que a magia pega (para acertar o jogador e para desenhar o efeito). */
+/** As casas que a magia pega (para acertar o jogador e para desenhar o efeito) — geometria de `engine/areas.mjs`. */
 function casasDa(a, bicho, alvo) {
-  const casas = [];
-  if (a.forma === 'area') {
-    const c = a.noAlvo ? alvo : bicho;
-    for (let dy = -a.raio; dy <= a.raio; dy++) {
-      for (let dx = -a.raio; dx <= a.raio; dx++) if (dx * dx + dy * dy <= a.raio * a.raio + a.raio) casas.push({ x: c.x + dx, y: c.y + dy });
-    }
-  } else if (a.forma === 'feixe') {
-    // Sai para o lado em que o jogador está (o boss vira para ele), e abre em
-    // leque quando tem `espalha` (as ondas).
-    const dx = alvo.x - bicho.x;
-    const dy = alvo.y - bicho.y;
-    const [ux, uy] = Math.abs(dx) >= Math.abs(dy) ? [Math.sign(dx) || 1, 0] : [0, Math.sign(dy) || 1];
-    for (let passo = 1; passo <= a.comprimento; passo++) {
-      const largura = a.espalha ? Math.floor((passo - 1) / 2) : 0;
-      for (let l = -largura; l <= largura; l++) casas.push({ x: bicho.x + ux * passo + uy * l, y: bicho.y + uy * passo + ux * l });
-    }
-  } else {
-    casas.push({ x: alvo.x, y: alvo.y });
-  }
-  return casas;
+  if (a.forma === 'area') return Areas.circulo(a.noAlvo ? alvo : bicho, a.raio);
+  // Sai para o lado em que o jogador está (o boss vira para ele), e abre em leque quando tem `espalha` (as ondas).
+  if (a.forma === 'feixe') return Areas.feixe(bicho, alvo, a.comprimento, !!a.espalha);
+  return [{ x: alvo.x, y: alvo.y }];
 }
 
 function alcanca(a, bicho, alvo) {
@@ -171,7 +155,10 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
 
     const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
     if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
-    for (const c of casasDa(a, bicho, alvo).slice(0, MAXIMO_DE_EFEITOS)) eventos.push({ t: 'fx', id: efeito, x: c.x, y: c.y });
+    // A área na tela: um evento só, com as casas que acertam (antes: um `fx` por casa, cortado em 90).
+    const casas = casasDa(a, bicho, alvo);
+    if (casas.length > 1) eventos.push({ t: 'area', id: efeito, x: bicho.x, y: bicho.y, casas: Areas.paraTela(casas, bicho) });
+    else for (const c of casas) eventos.push({ t: 'fx', id: efeito, x: c.x, y: c.y });
 
     if (doCharm) return;
     if (esquivou) {
