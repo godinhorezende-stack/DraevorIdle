@@ -8,6 +8,7 @@
 // original a maioria é gerada de novo a cada sessão, e esse gerador não
 // existe em nenhum arquivo extraído — oferecê-las seria inventar chão. Ver
 // `api-mapeada/checklist-modulos.md`.
+import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Raridade from './mobs/raridade.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
@@ -1517,6 +1518,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
   }
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));
+  // As mecânicas dos mobs no tempo: enrage na vida baixa, aura de dano e o veneno dos golpes (`mobs/mecanicas.mjs`).
+  Mecanicas.tique(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.

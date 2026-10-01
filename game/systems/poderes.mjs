@@ -105,6 +105,44 @@ function alcanca(a, bicho, alvo) {
  * `ficha` é a `Ficha.combate` do personagem (proteção por elemento). Devolve o
  * dano total causado (para quem quiser saber).
  */
+/**
+ * O dano que JÁ passou pela resistência do elemento chega no jogador: Energy
+ * Shield, magic shield (`temEscudo`), a árvore (absorção, Última muralha...),
+ * a vida, o sangue na tela, o número e os charms defensivos. Devolve o que
+ * tirou da vida. É o mesmo caminho para as magias dos bosses e para as
+ * mecânicas dos mobs (explosão, aura, veneno, reflexo — `mobs/mecanicas.mjs`).
+ */
+export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) {
+  dano = Defesa.absorver(estado, ficha, dano, eventos, base);
+  if (dano > 0 && temEscudo && (estado.mana ?? 0) > 0) {
+    const daMana = Math.min(estado.mana, dano);
+    estado.mana -= daMana;
+    dano -= daMana;
+    eventos.push({ t: 'dmg', ...base, v: daMana, color: '#4fc3ff' });
+  }
+  dano = Arvore.danoRecebido(estado, dano, eventos, { x: base.x, y: base.y }, base.quem);
+  if (dano <= 0) return 0;
+  estado.hp = Math.max(0, estado.hp - dano);
+  eventos.push({ t: 'fx', id: EFEITO_DO_SANGUE, uid: 'player', x: base.x, y: base.y });
+  eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO[elemento] ?? '#ff0000' });
+  // Parry e Numb (charms defensivos).
+  Charms.depoisDeApanhar(estado, hunt, bicho, dano, eventos);
+  return dano;
+}
+
+/**
+ * Um dano de `elemento` (o valor ANTES da proteção) de um mob no jogador, pelo
+ * caminho inteiro: a proteção do elemento, a prey de defesa, a mitigação das
+ * gemas e `aplicarNoJogador`. `golpe`: o nome que aparece ("Explosão"...).
+ */
+export function danoDeElementoNoJogador(estado, hunt, personagem, bicho, valor, elemento, eventos, golpe, ficha, temEscudo) {
+  if (!(valor > 0) || estado.hp <= 0) return 0;
+  const prot = Math.min(100, ficha.protection?.[elemento] ?? 0);
+  const dano = Math.round(valor * (1 - prot / 100) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  const base = { uid: 'player', quem: personagem?.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe };
+  return dano > 0 ? aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) : 0;
+}
+
 export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo) {
   const p = PODERES[bicho.key];
   if (!p || bicho.hp <= 0 || estado.hp <= 0) return 0;
@@ -161,22 +199,10 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
       if (tira > 0) eventos.push({ t: 'dmg', ...base, v: tira, color: COR_DO_ELEMENTO.manadrain });
       return;
     }
-    dano = Defesa.absorver(estado, ficha, dano, eventos, base);
-    if (dano > 0 && temEscudo && (estado.mana ?? 0) > 0) {
-      const daMana = Math.min(estado.mana, dano);
-      estado.mana -= daMana;
-      dano -= daMana;
-      eventos.push({ t: 'dmg', ...base, v: daMana, color: '#4fc3ff' });
-    }
-    dano = Arvore.danoRecebido(estado, dano, eventos, alvo, personagem.nome);
+    dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo });
     if (dano <= 0) return;
-    estado.hp = Math.max(0, estado.hp - dano);
-    eventos.push({ t: 'fx', id: EFEITO_DO_SANGUE, uid: 'player', x: alvo.x, y: alvo.y });
     if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
-    eventos.push({ t: 'dmg', ...base, v: dano, color: COR_DO_ELEMENTO[a.elemento] ?? '#ff0000' });
     total += dano;
-    // Parry e Numb (charms defensivos).
-    Charms.depoisDeApanhar(estado, hunt, bicho, dano, eventos);
   });
   // As curas do boss (`monster.defenses` do arquivo).
   p.curas.forEach((c, i) => {

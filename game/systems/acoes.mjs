@@ -20,6 +20,7 @@
 // knights), então magia de mago em mago sai subestimada. Magias de suporte/
 // velocidade gastam mana, cooldown e mostram o efeito, mas ainda não aplicam
 // buff nenhum, e `overTime` (dano contínuo) não é aplicado.
+import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Gemas from './skills/gemas.mjs';
 import * as Tags from './skills/tags.mjs';
 import { resistido } from './hunt/resistencia.mjs';
@@ -957,6 +958,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       bicho.hp -= dano;
       total += dano;
       danos.push({ bicho, dano });
+      // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado — `mobs/mecanicas.mjs`).
+      Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos);
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor });
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
       for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });

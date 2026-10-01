@@ -20,7 +20,7 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
     assert.match(r.cor, /^#[0-9a-f]{6}$/i, id);
     for (const k of ['vida', 'dano', 'exp', 'loot']) assert.ok(Number.isFinite(r[k]), `${id}.${k}`);
   }
-  const STATS = new Set(['vidaPct', 'danoPct', 'armaduraPct', 'velocidadePct', 'velocidadeDeAtaquePct', 'regenPct', 'resist']);
+  const STATS = new Set(['vidaPct', 'danoPct', 'velocidadePct', 'velocidadeDeAtaquePct', 'regenPct', 'resist']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);
@@ -49,14 +49,14 @@ test('raro com "Vigoroso" e "Brutal": vida, dano, exp e loot nos MESMOS campos d
   assert.deepEqual(m.mods, ['vigoroso', 'brutal']);
 });
 
-test('resistência, velocidade e armadura entram nos cálculos que já existem', () => {
+test('resistência e velocidade entram nos cálculos que já existem (Blindado = resistência física)', () => {
   const base = bicho();
   const m = Raridade.aplicar(bicho(), { raridade: 'modificado', modificadores: ['ignifugo', 'veloz'] });
   assert.equal(resistenciaDe(null, m, 'fire'), resistenciaDe(null, base, 'fire') + 40, 'a resistência soma à do bestiário');
   assert.equal(resistenciaDe(null, m, 'ice'), resistenciaDe(null, base, 'ice'));
   assert.ok(passoDoBicho(m) < passoDoBicho(base), 'o passo fica mais curto');
   const b = Raridade.aplicar(bicho(), { raridade: 'modificado', modificadores: ['blindado'] });
-  assert.equal(b.armor, Math.round((base.armor ?? 0) * 1.6));
+  assert.equal(resistenciaDe(null, b, 'physical'), resistenciaDe(null, base, 'physical') + 30, 'a armadura do mob não entra no dano: o Blindado resiste ao físico');
 });
 
 test('o level do mob não sobe com a exp a mais da raridade', () => {

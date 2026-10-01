@@ -8,6 +8,7 @@
 // recebida, a esquiva de magia de longe, as marcas nos bichos atingidos
 // (vulnerável, enfraquecido) e a provocação. O nível, a raridade e a qualidade
 // da gema escalam o efeito (`fatorDaGema`).
+import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { readFileSync } from 'node:fs';
 import { CONFIG as CONFIG_DAS_GEMAS } from './gemas.mjs';
 
@@ -84,7 +85,8 @@ export function vulnerabilidade(bicho, tipo, agora) {
 /** A força do bicho (o `forca` da Arena) × a marca de enfraquecido. */
 export function forcaDoBicho(bicho, agora) {
   const m = bicho?.marcas?.enfraquecido;
-  return (bicho?.forca ?? 1) * (m && m.ate > agora ? 1 - m.pct / 100 : 1);
+  // × o buff de dano das mecânicas do mob (Enfurecido, Vingativo — `mobs/buffs.mjs`).
+  return (bicho?.forca ?? 1) * (m && m.ate > agora ? 1 - m.pct / 100 : 1) * (1 + BuffsDeMob.soma(bicho, agora, 'danoPct') / 100);
 }
 
 /**

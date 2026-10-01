@@ -1,5 +1,7 @@
 // O combate da caçada: golpe do personagem (arma, wand, tiro, elemento), golpe dos bichos, mortes, loot e level.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
+import * as Mecanicas from '../mobs/mecanicas.mjs';
+import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../dados.mjs';
 import * as R from '../regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario } from '../inventario.mjs';
@@ -157,6 +159,8 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
   const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
+  // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado... — `mobs/mecanicas.mjs`).
+  Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, element, eventos);
   Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
   Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem?.nome, hunt.pos);
   Charms.aoAcertar(estado, hunt, alvo, eventos);
@@ -347,6 +351,8 @@ function darOuro(estado, valor) {
 }
 
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
+  // As mecânicas do mob ao morrer (Explosivo, Procriador) e as dos vizinhos (Vingativo) — `mobs/mecanicas.mjs`.
+  Mecanicas.aoMorrer(estado, hunt, personagem, alvo, eventos);
   // Na Arena x1 ninguém ganha exp nem loot dos bichos: eles só atrapalham.
   if (hunt.pvp) {
     eventos.push({ t: 'kill', name: alvo.name, exp: 0, quem: personagem?.nome, x: alvo.x, y: alvo.y, color: '#ffffff' });
@@ -621,6 +627,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     });
     // Parry e Numb (charms defensivos).
     Charms.depoisDeApanhar(estado, hunt, bicho, final, eventos);
+    // As mecânicas do mob ao acertar (Venenoso: dano ao longo do tempo — `mobs/mecanicas.mjs`).
+    Mecanicas.aoAtacar(estado, hunt, personagem, bicho, final, eventos);
   } else {
     // A armadura (e a proteção) engoliu o golpe INTEIRO: não é bloqueio — o escudo não fez nada —,
     // então o texto é outro (`absorvido`), e a chance de bloqueio da ficha não parece maior do que é.
@@ -679,7 +687,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     // Congelado ou atordoado: não bate; lento: bate mais devagar (supports Freeze/Stun/Slow).
     if (!Estados.podeAgir(bicho, agora)) continue;
     // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
-    bicho.proximoGolpe = agora + (ATAQUE_DO_MONSTRO_MS * Estados.fatorDeLentidao(bicho, agora)) / (bicho.velocidadeDeAtaque ?? 1);
+    // (+ o buff de velocidade de ataque das mecânicas: Enfurecido, Vingativo — `mobs/buffs.mjs`.)
+    bicho.proximoGolpe = agora + (ATAQUE_DO_MONSTRO_MS * Estados.fatorDeLentidao(bicho, agora)) / ((bicho.velocidadeDeAtaque ?? 1) * (1 + BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') / 100));
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;
@@ -792,6 +801,7 @@ export function round(estado, personagem) {
       const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
       const golpe = bruto - convertido;
       alvo.hp -= golpe;
+      Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, 'physical', eventos);
       const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
       const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
       // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do

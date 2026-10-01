@@ -8,7 +8,7 @@
 //   dano     → `forca` (o `Reforcos.forcaDoBicho` de todo golpe e magia do mob)
 //   exp      → `exp` (e `expMult`, para o level do mob não subir com a raridade)
 //   loot     → `lootMult` (× a chance de cada drop, em `matarMonstro`)
-//   armadura → `armor`;  resistência → `resist` (somada em `resistenciaDe`)
+//   resistência → `resist` (somada em `resistenciaDe`; a armadura do mob não entra em conta nenhuma do dano)
 //   passo    → `velocidade` (em `passoDoBicho`);  golpe → `velocidadeDeAtaque`
 //   regeneração → `regen` (% da vida por segundo, no tique dos estados)
 //   elite/boss → `elite`/`chefe` (os adds "Damage vs Elite/Boss" do jogador)
@@ -48,7 +48,7 @@ export function errosDoSpawn(s) {
 
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
-  const t = { vidaPct: 0, danoPct: 0, armaduraPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, resist: {} };
+  const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, resist: {} };
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
     for (const k of Object.keys(t)) if (k !== 'resist' && Number.isFinite(s[k])) t[k] += s[k];
@@ -78,7 +78,6 @@ export function aplicar(m, { raridade = 'normal', modificadores = [] } = {}) {
     m.expMult = r.exp;
   }
   if (r.loot !== 1) m.lootMult = r.loot;
-  if (st.armaduraPct) m.armor = Math.round((m.armor ?? 0) * (1 + st.armaduraPct / 100));
   if (st.velocidadePct) m.velocidade = 1 + st.velocidadePct / 100;
   if (st.velocidadeDeAtaquePct) m.velocidadeDeAtaque = 1 + st.velocidadeDeAtaquePct / 100;
   if (st.regenPct) m.regen = st.regenPct;
