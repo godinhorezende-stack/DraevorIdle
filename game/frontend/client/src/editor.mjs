@@ -8,7 +8,14 @@ let largura = 40;
 let altura = 30;
 let blocked = [];
 let stacks = [];
-let spawns = []; // { key, name, x, y }
+let spawns = []; // { key, name, x, y, raridade?, modificadores?, orig? } — `orig` = o spawn como veio do arquivo (raio, quantidade...)
+// A raridade e os modificadores (dados do servidor, `gamedata/mobs/`). Valem para
+// o PRÓXIMO spawn marcado, ou para o spawn selecionado na lista.
+let raridades = [];
+let modificadores = [];
+let tipoDoSpawn = {};
+const proximo = { raridade: 'normal', modificadores: [] };
+let selecionado = -1;
 
 let ferramenta = 'pincel';
 let indicePisoAtivo = 40;
@@ -40,6 +47,7 @@ function novoMapa(w, h) {
   blocked = new Array(n).fill(1);
   stacks = new Array(n).fill(null).map(() => [indicePisoAtivo]);
   spawns = [];
+  selecionado = -1;
   ajustarCanvas();
   desenhar();
   atualizarListaSpawns();
@@ -78,12 +86,22 @@ function desenhar() {
     ctx.lineTo(largura * TAMANHO_CELULA, y * TAMANHO_CELULA);
     ctx.stroke();
   }
-  for (const s of spawns) {
-    ctx.fillStyle = '#e0645a';
+  spawns.forEach((s, i) => {
+    // A bolinha na cor da raridade (a mesma do nome do mob no jogo); um aro branco = tem modificador.
+    const cx = s.x * TAMANHO_CELULA + TAMANHO_CELULA / 2;
+    const cy = s.y * TAMANHO_CELULA + TAMANHO_CELULA / 2;
+    ctx.fillStyle = corDaRaridade(s.raridade) ?? '#e0645a';
     ctx.beginPath();
-    ctx.arc(s.x * TAMANHO_CELULA + TAMANHO_CELULA / 2, s.y * TAMANHO_CELULA + TAMANHO_CELULA / 2, TAMANHO_CELULA * 0.35, 0, 7);
+    ctx.arc(cx, cy, TAMANHO_CELULA * 0.35, 0, 7);
     ctx.fill();
-  }
+    if (s.modificadores?.length || i === selecionado) {
+      ctx.strokeStyle = i === selecionado ? '#4a9eff' : '#ffffff';
+      ctx.lineWidth = i === selecionado ? 2 : 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, TAMANHO_CELULA * 0.45, 0, 7);
+      ctx.stroke();
+    }
+  });
 }
 
 function celulaDoEvento(evento) {
@@ -105,11 +123,11 @@ function aplicarFerramenta(x, y) {
   } else if (ferramenta === 'spawn') {
     if (!bichoAtivo) return mostrarAviso('Escolha um bicho na lista primeiro.', true);
     if (blocked[i]) return mostrarAviso('Spawn precisa ficar numa casa andável.', true);
-    spawns.push({ key: bichoAtivo.key, name: bichoAtivo.name, x, y });
+    spawns.push({ key: bichoAtivo.key, name: bichoAtivo.name, x, y, ...comRaridade(proximo) });
     atualizarListaSpawns();
   } else if (ferramenta === 'apagarSpawn') {
     spawns = spawns.filter((s) => !(s.x === x && s.y === y));
-    atualizarListaSpawns();
+    selecionar(-1);
   }
   desenhar();
 }
@@ -163,16 +181,25 @@ function atualizarListaSpawns() {
   lista.innerHTML = '';
   spawns.forEach((s, i) => {
     const linha = document.createElement('div');
-    linha.className = 'item-spawn';
+    linha.className = 'item-spawn' + (i === selecionado ? ' selecionado' : '');
     const rotulo = document.createElement('span');
     rotulo.textContent = `${s.name} (${s.x},${s.y})`;
+    rotulo.style.color = corDaRaridade(s.raridade) ?? '';
+    rotulo.title = 'Clique para editar a raridade e os modificadores deste spawn';
+    if (s.modificadores?.length) {
+      const mods = document.createElement('span');
+      mods.className = 'mods-do-spawn';
+      mods.textContent = s.modificadores.map((id) => modificadores.find((m) => m.id === id)?.nome ?? id).join(' · ');
+      rotulo.append(mods);
+    }
     linha.append(rotulo);
+    linha.onclick = () => selecionar(i === selecionado ? -1 : i);
     const botao = document.createElement('button');
     botao.textContent = '✕';
-    botao.onclick = () => {
+    botao.onclick = (e) => {
+      e.stopPropagation();
       spawns.splice(i, 1);
-      atualizarListaSpawns();
-      desenhar();
+      selecionar(-1);
     };
     linha.append(botao);
     lista.append(linha);
@@ -208,7 +235,7 @@ document.getElementById('btSalvar').onclick = async () => {
   const resposta = await fetch('/api/mapas', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ id, width: largura, height: altura, blocked, stacks, posicoes: spawns }),
+    body: JSON.stringify({ id, width: largura, height: altura, blocked, stacks, spawns: spawnsParaSalvar() }),
   }).then((r) => r.json());
   if (!resposta.ok) return mostrarAviso(resposta.erro, true);
   mostrarAviso(`Salvo — já dá pra jogar com startHunt "${id}".`);
@@ -236,7 +263,8 @@ document.getElementById('btCarregar').onclick = async () => {
   altura = mapa.height;
   blocked = mapa.blocked;
   stacks = mapa.stacks;
-  spawns = mapa.posicoes ?? [];
+  spawns = spawnsDoArquivo(mapa);
+  selecionado = -1;
   document.getElementById('mapaId').value = id;
   document.getElementById('mapaW').value = largura;
   document.getElementById('mapaH').value = altura;
@@ -246,14 +274,147 @@ document.getElementById('btCarregar').onclick = async () => {
   mostrarAviso(`Carregado "${id}".`);
 };
 
+// ---- Raridade e modificadores do spawn (fase 3 dos mobs) ----
+
+const corDaRaridade = (id) => (id && id !== 'normal' ? raridades.find((r) => r.id === id)?.cor : null) ?? null;
+const tetoDe = (id) => raridades.find((r) => r.id === id)?.maxModificadores ?? 0;
+/** O que um spawn leva da edição: nada quando é normal sem modificador (o arquivo não cresce à toa). */
+function comRaridade(o) {
+  const mods = o.modificadores.slice();
+  // Normal com modificador vira "Modificado" no jogo (`Raridade.doSpawn`); aqui já mostra assim.
+  const raridade = o.raridade === 'normal' && mods.length ? 'modificado' : o.raridade;
+  return raridade === 'normal' ? {} : { raridade, ...(mods.length ? { modificadores: mods } : {}) };
+}
+/** O alvo da edição: o spawn selecionado na lista, ou o próximo a marcar. */
+const alvoDaEdicao = () => (selecionado >= 0 ? spawns[selecionado] : proximo);
+
+function selecionar(i) {
+  selecionado = i;
+  const s = alvoDaEdicao();
+  if (s && i >= 0) {
+    s.raridade ??= 'normal';
+    s.modificadores ??= [];
+  }
+  const aviso = document.getElementById('editandoSpawn');
+  aviso.innerHTML = '';
+  if (i >= 0) {
+    aviso.append(document.createTextNode(`Editando ${spawns[i].name} (${spawns[i].x},${spawns[i].y})`));
+    const pronto = document.createElement('button');
+    pronto.textContent = 'Pronto';
+    pronto.onclick = () => selecionar(-1);
+    aviso.append(pronto);
+  } else aviso.textContent = 'Valem para o próximo spawn marcado';
+  montarRaridade();
+  atualizarListaSpawns();
+  desenhar();
+}
+
+/** Grava a edição no alvo (spawn da lista: limpa os campos se voltou a normal). */
+function aplicarEdicao(raridade, mods) {
+  const alvo = alvoDaEdicao();
+  const teto = tetoDe(raridade === 'normal' && mods.length ? 'modificado' : raridade);
+  alvo.raridade = raridade;
+  alvo.modificadores = mods.slice(0, teto || 0);
+  if (alvo !== proximo) {
+    const limpo = comRaridade(alvo);
+    delete alvo.raridade;
+    delete alvo.modificadores;
+    Object.assign(alvo, limpo);
+    alvo.raridade ??= 'normal';
+    alvo.modificadores ??= [];
+  }
+  montarRaridade();
+  atualizarListaSpawns();
+  desenhar();
+}
+
+function montarRaridade() {
+  const alvo = alvoDaEdicao();
+  const raridade = alvo.raridade ?? 'normal';
+  const mods = alvo.modificadores ?? [];
+  const select = document.getElementById('raridade');
+  select.innerHTML = '';
+  for (const r of raridades) {
+    const opt = document.createElement('option');
+    opt.value = r.id;
+    opt.textContent = `${r.nome}${r.maxModificadores ? ` (até ${r.maxModificadores} modificadores)` : ''}`;
+    opt.style.color = r.cor;
+    select.append(opt);
+  }
+  select.value = raridade;
+  select.style.color = corDaRaridade(raridade) ?? '';
+  select.onchange = () => aplicarEdicao(select.value, mods);
+  // Normal + modificador = "Modificado" (o teto dele).
+  const teto = tetoDe(raridade === 'normal' ? 'modificado' : raridade);
+  document.getElementById('contagemMods').textContent = `(${mods.length}/${teto})`;
+  const lista = document.getElementById('listaMods');
+  lista.innerHTML = '';
+  for (const m of modificadores) {
+    const marcado = mods.includes(m.id);
+    const travado = !marcado && mods.length >= teto;
+    const rotulo = document.createElement('label');
+    rotulo.className = 'mod-opcao' + (travado ? ' travado' : '');
+    const caixa = document.createElement('input');
+    caixa.type = 'checkbox';
+    caixa.checked = marcado;
+    caixa.disabled = travado;
+    caixa.onchange = () => aplicarEdicao(raridade, caixa.checked ? [...mods, m.id] : mods.filter((id) => id !== m.id));
+    const texto = document.createElement('span');
+    texto.textContent = m.nome;
+    const descricao = document.createElement('small');
+    descricao.textContent = m.descricao;
+    texto.append(descricao);
+    rotulo.append(caixa, texto);
+    lista.append(rotulo);
+  }
+}
+
+/** Os spawns do arquivo (`spawns`, ou `posicoes` do editor antigo) como linhas do editor. */
+function spawnsDoArquivo(mapa) {
+  const nomeDe = (key) => bestiario.find((b) => b.key === key)?.name ?? key;
+  if (Array.isArray(mapa.spawns)) {
+    return mapa.spawns.map((s) => {
+      const key = s.criaturas?.[0]?.key ?? s.key;
+      const raridade = s.raridade ?? tipoDoSpawn[s.tipo] ?? 'normal';
+      return { key, name: nomeDe(key), x: s.x, y: s.y, orig: s, ...(raridade !== 'normal' ? { raridade } : {}), ...(s.modificadores?.length ? { modificadores: s.modificadores } : {}) };
+    });
+  }
+  return (mapa.posicoes ?? []).map((p) => ({ ...p, name: p.name ?? nomeDe(p.key) }));
+}
+
+/** As linhas do editor no formato `spawns` do mapa (o que veio do arquivo — raio, quantidade, criaturas — é mantido). */
+function spawnsParaSalvar() {
+  return spawns.map((s, i) => {
+    const { raridade: _r, modificadores: _m, ...orig } = s.orig ?? {};
+    const mudouOBicho = s.orig && (s.orig.criaturas?.[0]?.key ?? s.orig.key) !== s.key;
+    return {
+      ...orig,
+      id: orig.id ?? `s${i + 1}`,
+      x: s.x,
+      y: s.y,
+      raio: orig.raio ?? 0,
+      quantidade: orig.quantidade ?? 1,
+      criaturas: !mudouOBicho && orig.criaturas?.length ? orig.criaturas : [{ key: s.key, peso: 1 }],
+      // Voltou a normal um spawn cujo `tipo` antigo dá raridade (elite...): diz "normal" com todas as letras.
+      ...((tipoDoSpawn[orig.tipo] ?? 'normal') !== 'normal' ? { raridade: 'normal' } : {}),
+      ...comRaridade({ raridade: s.raridade ?? 'normal', modificadores: s.modificadores ?? [] }),
+    };
+  });
+}
+
 async function iniciar() {
   const opcoes = await fetch('/api/mapas/opcoes').then((r) => r.json());
   bestiario = opcoes.bestiario;
   paleta = opcoes.paleta;
+  raridades = opcoes.raridades ?? [];
+  modificadores = opcoes.modificadores ?? [];
+  tipoDoSpawn = opcoes.tipoDoSpawn ?? {};
+  montarRaridade();
   indicePisoAtivo = paleta[0] ?? 40;
   montarPaleta();
   montarListaBichos();
   await carregarListaMapas();
   novoMapa(largura, altura);
+  selecionar(-1);
 }
 iniciar();

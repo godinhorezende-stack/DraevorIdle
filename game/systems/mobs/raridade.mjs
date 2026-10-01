@@ -97,4 +97,83 @@ export function paraCliente(m) {
 }
 
 /** A configuração de cores que o cliente usa para pintar o nome (vai no welcome). */
-export const coresParaCliente = () => Object.fromEntries(Object.entries(CONFIG.raridades).map(([id, r]) => [id, { nome: r.nome, cor: r.cor }]));
+export const coresParaCliente = () => Object.fromEntries(Object.entries(CONFIG.raridades).map(([id, r]) => [id, { nome: r.nome, cor: r.cor, resumo: resumoDaRaridade(r) }]));
+
+/** "vida ×2 · dano ×1,3 · exp ×3 · loot ×2" — o que a raridade muda (para o tooltip do mob). */
+function resumoDaRaridade(r) {
+  const x = (v) => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
+  return [['vida', r.vida], ['dano', r.dano], ['exp', r.exp], ['loot', r.loot]].filter(([, v]) => Number.isFinite(v) && v !== 1).map(([k, v]) => `${k} ${x(v)}`).join(' · ');
+}
+
+// ---- O TEXTO de cada modificador (fase 3): gerado dos MESMOS dados que o motor usa ----
+// Nada escrito à mão por modificador: mudou o número no JSON, mudou o texto. O
+// tooltip do mob no jogo e o editor de mapas mostram estas frases.
+const NOME_DO_ELEMENTO = { physical: 'físico', fire: 'fogo', ice: 'gelo', energy: 'energia', earth: 'terra', holy: 'sagrado', death: 'morte' };
+const pct = (v) => `${v > 0 ? '+' : ''}${String(v).replace('.', ',')}%`;
+const seg = (ms) => `${String((ms ?? 0) / 1000).replace('.', ',')} s`;
+const casas = (n) => `${n} ${n === 1 ? 'casa' : 'casas'}`;
+
+function textoDaResistencia(resist) {
+  const pares = Object.entries(resist ?? {});
+  if (!pares.length) return null;
+  const valores = new Set(pares.map(([, v]) => v));
+  if (pares.length >= 7 && valores.size === 1) return `${pct(pares[0][1])} de resistência a tudo`;
+  return pares.map(([el, v]) => `${pct(v)} de resistência a ${NOME_DO_ELEMENTO[el] ?? el}`).join(', ');
+}
+
+function textoDosStats(s = {}) {
+  const partes = [];
+  if (s.vidaPct) partes.push(`${pct(s.vidaPct)} de vida`);
+  if (s.danoPct) partes.push(`${pct(s.danoPct)} de dano`);
+  if (s.velocidadePct) partes.push(`${pct(s.velocidadePct)} de velocidade`);
+  if (s.velocidadeDeAtaquePct) partes.push(`${pct(s.velocidadeDeAtaquePct)} de velocidade de ataque`);
+  if (s.regenPct) partes.push(`regenera ${String(s.regenPct).replace('.', ',')}% da vida por segundo`);
+  const r = textoDaResistencia(s.resist);
+  if (r) partes.push(r);
+  return partes;
+}
+
+function textoDaMecanica(m) {
+  const el = NOME_DO_ELEMENTO[m.elemento] ?? m.elemento;
+  const ganho = [m.danoPct && `${pct(m.danoPct)} de dano`, m.velocidadeDeAtaquePct && `${pct(m.velocidadeDeAtaquePct)} de velocidade de ataque`, textoDaResistencia(m.resist)].filter(Boolean).join(' e ');
+  switch (`${m.gatilho}:${m.efeito}`) {
+    case 'aoMorrer:explosao':
+      return `Ao morrer, explode: ${m.danoPctDaVida}% da vida dele em dano de ${el} a até ${casas(m.raio ?? 1)}`;
+    case 'aoMorrer:gerar':
+      return `Ao morrer, gera ${m.quantidade ?? 1} ${m.mesmaCriatura === false ? 'criaturas' : 'cópias menores'} (${m.vidaPct ?? 50}% da vida), que contam na limpeza`;
+    case 'vidaBaixa:enrage':
+      return `Com ${m.limitePct ?? 30}% de vida ou menos, se enfurece: ${ganho} até morrer`;
+    case 'aliadoMorreu:buff':
+      return `Quando um aliado morre a até ${casas(m.raio ?? 4)}: ${ganho} por ${seg(m.duracaoMs)}`;
+    case 'aoReceberDano:buff':
+      return `Cada dano recebido dá ${ganho} por ${seg(m.duracaoMs)}${m.acumulaAte > 1 ? ` (acumula até ${m.acumulaAte}×)` : ''}`;
+    case 'aoReceberDano:refletir':
+      return `Devolve ${m.pct ?? 10}% do dano ${(m.tipos ?? []).map((t) => NOME_DO_ELEMENTO[t] ?? t).join('/')} recebido`;
+    case 'aoAtacar:debuff':
+      return `${m.chance ?? 100}% de chance no golpe de deixar ${m.danoPctDoGolpe ?? 30}% do dano em ${el} ao longo de ${seg(m.duracaoMs)}`;
+    case 'aura:areaDeDano':
+      return `Aura: ${String(m.danoPctDaVida).replace('.', ',')}% da vida dele em dano de ${el} a cada ${seg(m.intervaloMs ?? 1000)}, a até ${casas(m.raio ?? 1)}`;
+    default:
+      return null;
+  }
+}
+
+/** A descrição de um modificador (as frases dos stats e das mecânicas). */
+export function descricaoDe(id) {
+  const m = MODIFICADORES[id];
+  if (!m) return '';
+  const stats = textoDosStats(m.stats);
+  const linhas = [...(stats.length ? [stats.join(', ')] : []), ...(m.mecanicas ?? []).map(textoDaMecanica).filter(Boolean)];
+  return linhas.map((l) => l.charAt(0).toUpperCase() + l.slice(1)).join('. ');
+}
+
+/** O texto dos modificadores para a tela, pelo NOME (o que o mob leva no quadro). */
+export const modificadoresParaCliente = () => Object.fromEntries(Object.values(MODIFICADORES).map((m, i) => [m.nome, descricaoDe(Object.keys(MODIFICADORES)[i])]));
+
+/** O que o editor de mapas precisa: raridades (cor, teto de modificadores) e modificadores (id, nome, descrição). */
+export const opcoesParaEditor = () => ({
+  raridades: Object.entries(CONFIG.raridades).map(([id, r]) => ({ id, nome: r.nome, cor: r.cor, maxModificadores: r.maxModificadores ?? 0 })),
+  modificadores: Object.entries(MODIFICADORES).map(([id, m]) => ({ id, nome: m.nome, descricao: descricaoDe(id) })),
+  // O `tipo` antigo do spawn (elite, miniboss...) vira raridade: o editor mostra o mesmo que o jogo faz.
+  tipoDoSpawn: CONFIG.tipoDoSpawn,
+});

@@ -34,6 +34,20 @@
   .item-spawn:hover { background: #202636; }
   .item-spawn button { background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; }
   .legenda-ferramenta { font-size: 12px; color: #8894ac; margin: 10px 0 4px; }
+  /* Raridade e modificadores do spawn (fase 3 dos mobs): o que o mapa configura é o que nasce. */
+  #spawns { width: 270px; }
+  #editandoSpawn { font-size: 12px; color: #f0a851; min-height: 16px; margin-bottom: 4px; display: flex; justify-content: space-between; gap: 6px; }
+  #editandoSpawn button { background: #202636; color: #dfe3ea; border: 1px solid #333c50; border-radius: 4px; font-size: 11px; cursor: pointer; }
+  #listaMods { display: grid; gap: 2px; margin-bottom: 10px; }
+  .mod-opcao { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; padding: 3px 4px; border-radius: 4px; cursor: pointer; }
+  .mod-opcao:hover { background: #202636; }
+  #spawns .mod-opcao input { width: auto; margin: 2px 0 0; flex: none; }
+  .mod-opcao small { display: block; color: #8894ac; font-size: 11px; line-height: 1.3; }
+  .mod-opcao.travado { opacity: 0.45; cursor: not-allowed; }
+  #contagemMods { color: #8894ac; font-weight: normal; }
+  .item-spawn { cursor: pointer; }
+  .item-spawn.selecionado { background: #2b3f5c; outline: 1px solid #4a6ea8; }
+  .item-spawn .mods-do-spawn { display: block; font-size: 11px; opacity: 0.85; }
 </style>
 </head>
 <body>
@@ -65,6 +79,11 @@
     <h2>Bicho pro próximo spawn</h2>
     <input id="filtroBicho" placeholder="buscar...">
     <select id="bicho" size="10"></select>
+    <div id="editandoSpawn"></div>
+    <h2>Raridade</h2>
+    <select id="raridade"></select>
+    <h2>Modificadores <span id="contagemMods"></span></h2>
+    <div id="listaMods"></div>
     <h2>Spawns no mapa (<span id="contagemSpawns">0</span>)</h2>
     <div id="listaSpawns"></div>
   </div>

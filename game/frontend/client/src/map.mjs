@@ -364,7 +364,9 @@ let coresDeRaridade = {};
 export function definirCoresDeRaridade(cores) {
   coresDeRaridade = cores ?? {};
 }
-const corDaRaridade = (r) => coresDeRaridade[r ?? 'normal']?.cor ?? null;
+export const corDaRaridade = (r) => coresDeRaridade[r ?? 'normal']?.cor ?? null;
+/** `{ nome, cor, resumo }` da raridade (o balão do mob). */
+export const dadosDaRaridade = (r) => coresDeRaridade[r ?? 'normal'] ?? null;
 
 function placaDoNome(texto, cor, ratio) {
   return placaDeTexto(texto, cor, NAME_SIZE, ratio);
@@ -621,6 +623,7 @@ export class MapView {
     this.camera = { x: 0, y: 0 };
     this.floor = 0;
     this.onTileClick = null;
+    this.onTileHover = null;
     /* Quem está na arena de Boss Diários agora — o portal da cidade escreve
        embaixo do nome dele. Ver `drawNomeDoObjeto` e `vigiarBossesDaArena`. */
     this.bossesNaArena = [];
@@ -720,8 +723,11 @@ export class MapView {
        * o mesmo e exigiria uma regra de CSS para dizer a mesma palavra.
        */
       canvas.style.cursor = peca ? 'grab' : '';
+      // A casa sob o ponteiro, para quem quiser um balão dela (o do mob raro — ver main.mjs).
+      this.onTileHover?.(this.casaDoEvento(event), event);
     });
     canvas.addEventListener('mouseleave', () => {
+      this.onTileHover?.(null, null);
       this.pecaSobOCursor = null;
       canvas.draggable = false;
       canvas.style.cursor = '';

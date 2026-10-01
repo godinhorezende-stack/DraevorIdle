@@ -27669,3 +27669,16 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
   .pas-info { max-height: none; }
   .pas-busca { width: 100%; order: 5; }
 }
+
+/*
+ * O balão do MOB com raridade (fase 3 dos modificadores — ver `mostrarBalaoDoMob`,
+ * main.mjs). A moldura e a faixa de cima levam a cor da raridade (`--tier`), a
+ * mesma do nome do mob no mapa.
+ */
+.balao-do-mob { max-width: 300px; }
+.balao-do-mob-cabeca { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 11px 2px; font-size: 13px; }
+.balao-do-mob-cabeca span { color: #b9b2a2; font-size: 11px; font-variant-numeric: tabular-nums; }
+.balao-do-mob-raridade { padding: 0 11px 7px; font-size: 11px; border-bottom: 1px solid var(--line); }
+.balao-do-mob-mods { padding: 7px 11px 9px; display: grid; gap: 4px; }
+.balao-do-mob-mods p { margin: 0; font-size: 11px; line-height: 1.35; color: #cfd8d8; }
+.balao-do-mob-mods b { color: var(--tier, var(--copper)); font-weight: 600; }

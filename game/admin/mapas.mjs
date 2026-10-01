@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { CITY_MAP, CATALOGO } from '../systems/dados.mjs';
 import { validar, normalizar } from '../systems/mapa/spawns.mjs';
+import * as Raridade from '../systems/mobs/raridade.mjs';
 
 const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
@@ -77,7 +78,11 @@ export function salvar(dados) {
 /** Os spawns do pedido: `spawns` (formato do mapa) ou, do editor antigo, `posicoes` (um bicho por ponto). */
 function spawnsDoPedido(dados) {
   if (Array.isArray(dados.spawns)) return dados.spawns;
-  return (dados.posicoes ?? []).map((p, i) => ({ id: `s${i + 1}`, x: p.x, y: p.y, raio: 0, quantidade: 1, criaturas: [{ key: p.key, peso: 1 }] }));
+  return (dados.posicoes ?? []).map((p, i) => ({
+    id: `s${i + 1}`, x: p.x, y: p.y, raio: 0, quantidade: 1, criaturas: [{ key: p.key, peso: 1 }],
+    ...(p.raridade ? { raridade: p.raridade } : {}),
+    ...(Array.isArray(p.modificadores) && p.modificadores.length ? { modificadores: p.modificadores } : {}),
+  }));
 }
 
 /** Índices de paleta reais e seguros pro editor oferecer — ver `cacadas.mjs` linhas 42-67. */
@@ -87,3 +92,6 @@ export const PALETA_DO_EDITOR = [40, 579, 571, 569, 555, 713, 718, 554];
 export function bestiarioParaEditor() {
   return Object.entries(CATALOGO.bestiary).map(([key, b]) => ({ key, name: b.name, hp: b.hp }));
 }
+
+/** As raridades e os modificadores que o editor oferece por spawn (dados de `gamedata/mobs/`). */
+export const raridadesParaEditor = () => Raridade.opcoesParaEditor();

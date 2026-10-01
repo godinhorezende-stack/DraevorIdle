@@ -1814,6 +1814,8 @@ export class Sessao {
       ...(itensNesteWelcome ? { items: ITEM_CATALOG } : {}),
       // As cores do nome por raridade do mob (gamedata/mobs/raridades.json) — a tela pinta o nome com elas.
       mobRaridades: Raridade.coresParaCliente(),
+      // O texto de cada modificador, pelo nome (o tooltip do mob — fase 3).
+      mobModificadores: Raridade.modificadoresParaCliente(),
       // O top 25 de experiência, como no welcome do original.
       ranking: rankingDeExp,
       // Conectados + quem caça de aba fechada (ver `ausentes.mjs`).

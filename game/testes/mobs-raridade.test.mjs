@@ -122,3 +122,32 @@ test('a tela recebe o level, a raridade e os NOMES dos modificadores; as cores v
   assert.equal(cores.raro.cor, Raridade.CONFIG.raridades.raro.cor);
   assert.ok(cores.normal && cores.elite && cores.boss);
 });
+
+test('fase 3: todo modificador tem uma descrição gerada dos dados (os números do JSON aparecem no texto)', () => {
+  for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
+    const d = Raridade.descricaoDe(id);
+    assert.ok(d.length > 5, `${id} sem descrição`);
+    const numeros = [...JSON.stringify({ s: m.stats, m: (m.mecanicas ?? []).map(({ gatilho, efeito, elemento, tipos, mesmaCriatura, ...resto }) => resto) }).matchAll(/\d+(\.\d+)?/g)]
+      .map((x) => x[0])
+      .filter((n) => !['1000'].includes(n));
+    for (const n of numeros) {
+      const comoTexto = n.replace('.', ',');
+      // ms viram segundos no texto.
+      assert.ok(d.includes(comoTexto) || d.includes(String(Number(n) / 1000).replace('.', ',')), `${id}: "${n}" não está em "${d}"`);
+    }
+  }
+  assert.equal(Raridade.descricaoDe('xpto'), '');
+});
+
+test('fase 3: o cliente recebe o texto pelo NOME do modificador e o resumo da raridade; o editor recebe ids, tetos e o tipo antigo', () => {
+  const textos = Raridade.modificadoresParaCliente();
+  assert.equal(textos.Explosivo, Raridade.descricaoDe('explosivo'));
+  const raro = Raridade.coresParaCliente().raro;
+  assert.match(raro.resumo, /vida ×/);
+  assert.equal(Raridade.coresParaCliente().normal.resumo, '');
+  const op = Raridade.opcoesParaEditor();
+  assert.deepEqual(op.raridades.map((r) => r.id), Raridade.RARIDADES);
+  assert.equal(op.raridades.find((r) => r.id === 'modificado').maxModificadores, Raridade.CONFIG.raridades.modificado.maxModificadores);
+  assert.ok(op.modificadores.every((m) => m.id && m.nome && m.descricao));
+  assert.equal(op.tipoDoSpawn.elite, 'elite');
+});
