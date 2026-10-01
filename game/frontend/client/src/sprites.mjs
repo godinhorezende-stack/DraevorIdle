@@ -1,6 +1,7 @@
 // Sprites extraídos do client do Tibia.
 // Tudo aqui desenha em 1:1; quem amplia é o CSS (image-rendering: pixelated),
 // sempre por um fator inteiro, senão o pixel art vira mingau.
+import * as SemFigura from './icone-sem-figura.mjs';
 import { desenharGema } from './icones-de-gema.mjs';
 import { colorize } from '/packages/shared/src/outfit-color.mjs';
 
@@ -65,7 +66,31 @@ export async function loadSpriteData() {
   for (const [id, arte] of Object.entries(DESENHO_EMPRESTADO)) {
     if (!itemSprites[id] && itemSprites[arte]) itemSprites[id] = itemSprites[arte];
   }
+  dadosDosSpritesProntos = true;
+  // Os ícones pedidos ANTES do índice chegar saíram vazios: refaz os que ainda estão na tela.
+  for (const { canvas, id, cssSize, count } of iconesAntesDosDados.splice(0)) {
+    if (canvas.isConnected) canvas.replaceWith(itemCanvas(id, cssSize, count));
+  }
 }
+
+/*
+ * ---- O ícone de quem NÃO tem figura (fallback) ----
+ *
+ * Auditoria de 01/10 (`tools/auditar-icones.mjs`, `docs/auditoria-icones.md`): 96 ids que caem dos
+ * bichos não têm figura nenhuma (quase todos nem estão no catálogo de itens), e o ícone era um
+ * `<canvas>` vazio — na Bolsa de Loot, um quadrado em branco que ninguém sabia o que era. Agora sai
+ * um "?" no tamanho de sempre, marcado (`data-sem-icone`), e o id vai UMA vez para o console: o
+ * fallback não esconde o erro, só deixa a tela legível até o ícone de verdade existir.
+ * Só nos ícones de interface (`itemCanvas`): no MAPA (`drawItem`) não — os pisos também são itens
+ * sem figura própria, e um "?" em cada piso cobriria o chão.
+ */
+let dadosDosSpritesProntos = false;
+const iconesAntesDosDados = [];
+// O "?" e o aviso no console moram em `icone-sem-figura.mjs` (puro: testável sem navegador).
+const semIconeAvisados = SemFigura.avisados;
+/** Os ids que pediram ícone e não têm figura (para conferir no console: `semIcone()`). */
+export const semIcone = () => [...semIconeAvisados];
+const desenharSemIcone = SemFigura.desenhar;
 
 /*
  * ---- As folhas de sprite precisam SAIR da memória ----
@@ -243,6 +268,15 @@ export function emprestarDoCatalogo(catalogo) {
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
   }
+  // Quem saiu com o "?" antes deste empréstimo (gema, `spriteDe`) e agora tem figura: refaz.
+  for (const canvas of globalThis.document?.querySelectorAll?.('canvas[data-sem-icone]') ?? []) {
+    const id = Number(canvas.dataset.semIcone);
+    if (!itemSprites[id]) continue;
+    semIconeAvisados.delete(id);
+    const novo = itemCanvas(id, parseInt(canvas.style.width, 10) || 32);
+    novo.className = canvas.className;
+    canvas.replaceWith(novo);
+  }
 }
 
 // ---------- itens ----------
@@ -349,7 +383,12 @@ export function itemCanvas(id, cssSize = 32, count = 0) {
   canvas.height = sprite?.h ?? 32;
   canvas.style.width = `${cssSize}px`;
   canvas.style.height = `${cssSize}px`;
-  if (!sprite) return canvas;
+  if (!sprite) {
+    // Índice ainda não chegou: fica vazio e é refeito quando chegar. Chegou e não tem: o "?".
+    if (!dadosDosSpritesProntos) iconesAntesDosDados.push({ canvas, id, cssSize, count });
+    else desenharSemIcone(canvas, id);
+    return canvas;
+  }
 
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
