@@ -5,6 +5,7 @@ import * as Premium from './premium.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
+import { camposDaPeca } from './itens/item.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import * as Requisitos from './personagem/requisitos.mjs';
 import * as R from './regras.mjs';
@@ -85,6 +86,41 @@ export function moedasParaOBolso(estado) {
 export function cabeNoPeso(estado, id, count = 1) {
   const peso = (ITEM_CATALOG[id]?.weight ?? 0) * count;
   return pesoDoInventario(estado) + peso <= Afixos.capacidade(estado);
+}
+
+/** A peça tem dados de INSTÂNCIA (raridade, afixos, tier, imbuements, sockets, gema...)? — `camposDaPeca`. */
+export const temInstancia = (p) => Object.keys(camposDaPeca(p)).length > 0;
+
+/**
+ * Dá a PEÇA inteira (com raridade, afixos, tier... — `camposDaPeca`) e não só o
+ * id do item-base. Peça limpa vai pelo `darItem` de sempre (empilha); peça com
+ * instância entra como está, numa pilha só dela.
+ */
+export function darPeca(estado, peca) {
+  if (!peca) return;
+  if (!temInstancia(peca)) return darItem(estado, peca.id, peca.count ?? 1);
+  if (guardarMoeda(estado, peca.id, peca.count ?? 1)) return;
+  (estado.inventory ??= []).push({ id: peca.id, count: peca.count ?? 1, ...structuredClone(camposDaPeca(peca)) });
+}
+
+/**
+ * A pilha da mochila que o cliente apontou (`alvo`: índice, tier e afixos — o
+ * `alvoDaPeca` da tela). Se o índice já não bate (a mochila mudou no caminho), a
+ * primeira com o mesmo id, tier e afixos; sem alvo, a primeira LIMPA do id, e só
+ * então qualquer uma — nunca pega a mítica no lugar da comum sem que peçam.
+ */
+export function pilhaDoAlvo(mochila, id, alvo) {
+  const confere = (p) =>
+    p?.id === id &&
+    Math.floor(Number(p.tier) || 0) === Math.floor(Number(alvo?.tier) || 0) &&
+    JSON.stringify(p.af?.length ? p.af : null) === JSON.stringify(alvo?.af?.length ? alvo.af : null);
+  if (alvo && typeof alvo === 'object') {
+    if (Number.isInteger(alvo.indice) && confere(mochila[alvo.indice])) return alvo.indice;
+    const i = mochila.findIndex(confere);
+    if (i >= 0) return i;
+  }
+  const limpa = mochila.findIndex((p) => p?.id === id && !temInstancia(p));
+  return limpa >= 0 ? limpa : mochila.findIndex((p) => p?.id === id);
 }
 
 export function darItem(estado, id, count = 1) {
@@ -250,7 +286,8 @@ export function chaoParaCliente() {
       count: topo.count,
       sob: pilha.length - 1,
       nome: ITEM_CATALOG[topo.id]?.name ?? '',
-      pilha: pilha.map((p) => ({ item: p.id, count: p.count, nome: ITEM_CATALOG[p.id]?.name ?? '' })),
+      // A peça como ela é no chão (raridade, afixos...): a tela mostra a mítica como mítica.
+      pilha: pilha.map((p) => ({ item: p.id, count: p.count, nome: ITEM_CATALOG[p.id]?.name ?? '', ...camposDaPeca(p) })),
     });
   }
   return lista;
@@ -266,7 +303,7 @@ export function chaoParaCliente() {
  * manda esse formato sem `id` nenhum, e sem este ramo a peça nunca ia (dava
  * "Você não tem essa peça" sempre, porque `id` vinha `undefined`).
  */
-export function largar(estado, { id, count = 1, x, y, de, deIndice }) {
+export function largar(estado, { id, count = 1, x, y, de, deIndice, alvo }) {
   if (de) {
     if (!noAlcance(estado.pos, de.x, de.y)) return { ok: false, erro: 'Está muito longe.' };
     const chaveDe = chaveDoTile(de.x, de.y);
@@ -283,10 +320,43 @@ export function largar(estado, { id, count = 1, x, y, de, deIndice }) {
     CHAO.set(chave, pilha);
     return { ok: true };
   }
-  if (!removerItem(estado, id, count)) return { ok: false, erro: 'Você não tem essa peça.' };
+  /*
+   * ---- A PEÇA vai para o chão inteira ----
+   *
+   * Antes: `removerItem(id)` (a última pilha do id, qualquer uma) e no chão só
+   * `{ id, count }` — a raridade, os afixos, o tier e os imbuements ficavam para
+   * trás, e quem pegava ganhava o item-base: a Assassin Star Mítica virava comum.
+   * Agora sai a cópia que o jogador apontou (`alvo`), e o chão guarda ela inteira.
+   */
+  const mochila = estado.inventory ?? [];
+  count = Math.max(1, Math.floor(Number(count) || 1));
+  const i = pilhaDoAlvo(mochila, id, alvo);
+  if (i < 0) return { ok: false, erro: 'Você não tem essa peça.' };
+  const origem = mochila[i];
+  let peca;
+  if (temInstancia(origem)) {
+    // Com instância: só desta pilha (nunca mistura com outra cópia).
+    if ((origem.count ?? 1) < count) return { ok: false, erro: 'Você não tem tudo isso.' };
+    peca = { id, count, ...structuredClone(camposDaPeca(origem)) };
+    origem.count = (origem.count ?? 1) - count;
+    if (origem.count <= 0) mochila.splice(i, 1);
+  } else {
+    // Limpa: das pilhas LIMPAS do id (nunca come uma pilha com raridade/afixos no meio).
+    const limpas = mochila.filter((p) => p.id === id && !temInstancia(p)).reduce((s, p) => s + (p.count ?? 1), 0);
+    if (limpas < count) return { ok: false, erro: 'Você não tem essa peça.' };
+    let falta = count;
+    for (let k = mochila.length - 1; k >= 0 && falta > 0; k--) {
+      if (mochila[k].id !== id || temInstancia(mochila[k])) continue;
+      const tira = Math.min(mochila[k].count ?? 1, falta);
+      mochila[k].count = (mochila[k].count ?? 1) - tira;
+      falta -= tira;
+      if (mochila[k].count <= 0) mochila.splice(k, 1);
+    }
+    peca = { id, count };
+  }
   const chave = chaveDoTile(x, y);
   const pilha = CHAO.get(chave) ?? [];
-  pilha.push({ id, count });
+  pilha.push(peca);
   CHAO.set(chave, pilha);
   return { ok: true };
 }
@@ -305,7 +375,8 @@ export function pegar(estado, { x, y, indice }) {
 
   pilha.splice(i, 1);
   if (!pilha.length) CHAO.delete(chave);
-  darItem(estado, peca.id, peca.count);
+  // A peça INTEIRA (raridade, afixos...), e não um item-base novo pelo id.
+  darPeca(estado, peca);
   return { ok: true };
 }
 

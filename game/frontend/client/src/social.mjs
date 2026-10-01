@@ -17,7 +17,7 @@ import { itemCanvas, outfitCanvas } from './sprites.mjs';
 import { openMenu, closeMenu } from './inventory.mjs';
 import { brasaoDe, abrirGuildasNaTabela } from './guildas.mjs';
 import { vestirNomeDaGuilda } from '/packages/shared/src/desenhar-brasao.mjs';
-import { tipTexto } from './tooltip.mjs';
+import { tipTexto, tipFor, classeDaRaridade } from './tooltip.mjs';
 import { fecharAoClicarFora, atalhosDaCaixa } from './windows.mjs';
 
 const el = (tag, className, text) => {
@@ -1114,12 +1114,11 @@ export function corpoDaTroca(body) {
       const celula = el('div', 'troca-item');
       celula.append(itemCanvas(entry.id, 32));
       if (entry.count > 1) celula.append(el('u', null, String(entry.count)));
-      if (meu) {
-        celula.title = 'clique para tirar da oferta';
-        celula.onclick = () => send({ t: 'trade', action: 'offer', id: entry.id, count: 0 });
-      } else {
-        celula.title = state.items?.[entry.id]?.name ?? '';
-      }
+      // A peça como ela É (o servidor manda a raridade, os afixos, o tier): a borda na cor da
+      // raridade e o balão completo — quem recebe vê que é a Mítica, e não uma qualquer.
+      celula.classList.add(classeDaRaridade(state.items?.[entry.id], entry));
+      tipFor(celula, entry.id, meu ? 'clique para tirar da oferta' : null, null, entry);
+      if (meu) celula.onclick = () => send({ t: 'trade', action: 'offer', id: entry.id, count: 0 });
       grade.append(celula);
     }
     // As casas vazias existem para o quadro não pular de tamanho a cada item.
@@ -1187,7 +1186,8 @@ export function corpoDaTroca(body) {
       id: carga.id,
       max: tem,
       titulo: 'Quantos oferecer?',
-      aoConfirmar: (count) => send({ t: 'trade', action: 'offer', id: carga.id, count }),
+      // A cópia arrastada (`alvo`: raridade e afixos), e não outra igual da mochila.
+      aoConfirmar: (count) => send({ t: 'trade', action: 'offer', id: carga.id, count, alvo: carga.alvo ?? null }),
     });
   });
   colunas.append(meu);
