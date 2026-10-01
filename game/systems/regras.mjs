@@ -83,16 +83,18 @@ export const jaPode = (agora, quando) => agora + FOLGA_DO_TIQUE >= (quando ?? 0)
 export const PASSO_MS = 250;
 
 /*
- * ---- O intervalo do COMBO: entre duas magias de ataque, no mínimo isto ----
+ * ---- O COOLDOWN GLOBAL das magias de ataque ----
  *
- * É o tempo mínimo entre a execução REAL de uma skill da fileira de ataque e a
- * execução real da seguinte — medido no relógio da caçada, pelo instante em que
- * `Acoes.disparar` de fato lançou a anterior (não pela tentativa: uma skill
- * recusada por recarga, mana ou alvo não conta). NÃO é recarga: a recarga
- * individual de cada skill e a do grupo de ataque continuam valendo por cima
- * deste piso (ver `disparar`). Mudar a cadência mínima do combo é mudar só isto.
+ * Pedido do dono (01/10): entre a execução REAL de uma magia de ataque e a
+ * seguinte, no mínimo isto — medido no relógio da caçada, pelo instante em que
+ * `Acoes.disparar` de fato lançou a anterior (uma skill recusada por recarga,
+ * mana ou alvo não conta). Decisões do dono: vale só para as de ATAQUE (cura,
+ * suporte e poção seguem no laço deles, sem esperar) e o Cast Speed encurta
+ * (`intervaloGlobal` em acoes.mjs: 2000 / (1 + castSpeed%)). É independente da
+ * recarga individual de cada magia: as duas valem ao mesmo tempo. Antes eram
+ * 500 ms (+ a recarga do grupo de ataque, 1 s). Mudar a cadência é mudar só isto.
  */
-export const COMBO_SKILL_INTERVAL_MS = 500;
+export const GLOBAL_SPELL_COOLDOWN = 2000;
 
 /*
  * O intervalo mínimo entre duas coletas da recompensa diária. 20h, e não

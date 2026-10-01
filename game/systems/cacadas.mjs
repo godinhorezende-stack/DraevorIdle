@@ -992,7 +992,7 @@ function autoDisparo(estado, hunt, personagem) {
     const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
     if (resultado.ok) eventos.push(...resultado.eventos);
   }
-  // Ataque: os 11 slots da fileira em RODÍZIO (ver combo.mjs), não sempre do primeiro.
+  // Ataque: os 11 slots da fileira por PRIORIDADE (a 1ª disponível, a partir do slot 1 — ver combo.mjs).
   if (estado.hp > 0) eventos.push(...Combo.tiqueDoCombo(estado, hunt, personagem, alvo));
   processarMortes(estado, personagem, eventos);
   return eventos;
