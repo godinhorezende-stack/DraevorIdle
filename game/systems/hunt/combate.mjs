@@ -480,6 +480,18 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     caiu.push({ id: fundidora.id, count: 1 });
     conta('loot', fundidora.id, 1);
   }
+  // Os ORBES de socket (config `orbes`): a chance por ato é ZERO por enquanto (a fonte é a loja da Zuma) —
+  // o gancho existe para ligar quando houver balanceamento, sem tocar de novo no combate.
+  for (const tipo of ['encaixe', 'ligacao']) {
+    const orbe = GemasDeSkill.sortearOrbe(tipo, {
+      ato: Number(contextoDoDrop(hunt).ato) || 1,
+      fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
+    });
+    if (orbe && Bolsa.porNaBolsa(estado, orbe.id, 1)) {
+      caiu.push({ id: orbe.id, count: 1 });
+      conta('loot', orbe.id, 1);
+    }
+  }
   for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
     // Entrada de loot SEM id no bestiário (64 bichos têm "rotten feather"/"ritual tooth" assim): não é
     // item nenhum — antes entrava na bolsa como um item fantasma (sem nome, sem venda) e como

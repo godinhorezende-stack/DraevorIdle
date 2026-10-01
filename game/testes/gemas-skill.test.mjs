@@ -345,7 +345,8 @@ test('drop de gema: sai no nível 1, entre as skills do level da fase; parte sã
 
 test('loja da Zuma: vende todas as gemas, só comuns (preço pelo level da magia) e supports (preço fixo)', () => {
   const e = personagemDeTeste({ level: 50 });
-  const lista = G.catalogoDaLoja(e);
+  // Só as GEMAS: a mesma loja também vende os orbes de socket (categoria 'orbes', testada em orbes-de-socket.test.mjs).
+  const lista = G.catalogoDaLoja(e).filter((l) => l.categoria !== 'orbes');
   const flame = lista.find((l) => l.chave === `${GEMA(FLAME)}:comum`);
   const def = G.DEFS.get(GEMA(FLAME));
   assert.equal(flame.buy, G.CONFIG.loja.precoBase + G.CONFIG.loja.precoPorLevel * def.levelDaMagia);
@@ -588,7 +589,7 @@ test('categorias das gemas (como no Path of Exile): Ataque, Cura, Reforço, Supo
   assert.equal(cat(GEMA('spell-haste')), 'reforco');
   assert.equal(cat(SUPPORT('greater-damage')), 'suporte');
   assert.equal(ITEM_CATALOG[GEMA(FLAME)].gemaDef.categoria, 'ataque');
-  const lista = G.catalogoDaLoja(personagemDeTeste({ level: 50 }));
+  const lista = G.catalogoDaLoja(personagemDeTeste({ level: 50 })).filter((l) => l.categoria !== 'orbes');
   const ordem = [...new Set(lista.map((l) => l.categoria))];
   assert.deepEqual(ordem, ['ataque', 'cura', 'reforco', 'suporte']);
   assert.equal(lista.find((l) => l.categoria === 'suporte').categoriaNome, 'Gema de Suporte');

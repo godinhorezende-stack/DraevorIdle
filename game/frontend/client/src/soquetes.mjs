@@ -10,7 +10,7 @@
 import { itemCanvas } from './sprites.mjs';
 import { tipFor, classeDaRaridade } from './tooltip.mjs';
 // A MESMA regra do servidor (quais sockets estão ligados; a support vale pelas tags da skill).
-import { grupoDoSocket, compativel } from '/packages/shared/src/sockets-de-gema.mjs';
+import { grupoDoSocket, gruposLigados, compativel } from '/packages/shared/src/sockets-de-gema.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -22,15 +22,80 @@ const el = (tag, className, text) => {
 let ctx = null;
 let slotAberto = null;
 let escolhido = null; // o índice do socket em que a próxima gema vai
+let proposta = null; // a operação de orbe que o jogador está olhando: { tipo: 'encaixe' } ou { tipo: 'ligacao', elo, ligar }
+
+/*
+ * ---- Os ORBES (Orb of Socketing / Orb of Linking) ----
+ * Itens reais da mochila (`orbeDeSocket` no catálogo). O servidor é quem decide e gasta o orbe
+ * (`abrirSocket`, `ligarElo`); aqui só se MOSTRA a proposta e se pede a confirmação. Nada acontece por
+ * toque ou toque longo numa casa: abrir socket e mexer num link exigem o botão "Confirmar" depois
+ * de ver o que vai mudar.
+ */
+const itemDoOrbe = (tipo) => Object.values(ctx.state.items ?? {}).find((i) => i?.orbeDeSocket === tipo) ?? null;
+const quantosOrbes = (tipo) => {
+  const id = itemDoOrbe(tipo)?.id;
+  return (ctx.state.character?.inventory ?? []).filter((p) => p.id === id).reduce((t, p) => t + (p.count ?? 1), 0);
+};
+/** O máximo de sockets do slot (a peça sem `soquetes` ainda não diz): o catálogo dos orbes traz a tabela. */
+const limiteDoSlot = (slot) => itemDoOrbe('encaixe')?.limitesDeSocket?.[slot] ?? 0;
+/** Os sockets da peça, ou os de uma peça que ainda não abriu nenhum (todos bloqueados). */
+const soquetesDe = (peca, slot) => {
+  if (peca?.soquetes?.gemas?.length) return peca.soquetes;
+  const max = limiteDoSlot(slot);
+  return max ? { abertos: 0, links: [], gemas: Array(max).fill(null) } : null;
+};
+/** Os grupos ligados (a MESMA regra do servidor) como texto: "1+2 | 3". */
+const gruposComoTexto = (sq, links) => gruposLigados({ abertos: sq.abertos, links }).map((g) => g.map((n) => n + 1).join('+')).join(' | ');
+
 
 /** A peça vestida em `slot` tem sockets? (o menu da peça só oferece a janela quando tem). */
 export const temSoquetes = (peca) => !!peca?.soquetes?.gemas?.length;
 
-export function abrirSoquetes(context, slot) {
+export function abrirSoquetes(context, slot, modo = null) {
   ctx = context;
   slotAberto = slot;
   escolhido = null;
+  // Veio de um orbe: a proposta já nasce para ele (encaixe: abrir o próximo socket; ligação: o jogador escolhe o elo).
+  proposta = modo === 'encaixe' ? { tipo: 'encaixe' } : modo === 'ligacao' ? { tipo: 'ligacao', elo: null } : null;
   desenhar();
+}
+
+/**
+ * Usar um orbe: o jogador escolhe a PEÇA de destino (só as vestidas que aceitam aquele orbe) e cai na
+ * janela de sockets com a proposta aberta. Abre pelo direito/menu do orbe na mochila — um gesto
+ * explícito, que no celular é o toque longo ao soltar (`mobile.mjs`), o mesmo de qualquer item.
+ */
+export function usarOrbe(context, tipo) {
+  ctx = context;
+  const orbe = itemDoOrbe(tipo);
+  const nome = orbe?.name ?? 'orbe';
+  ctx.openModal(`Usar ${nome}`, (body) => {
+    body.append(el('p', 'shop-note', orbe?.descricao ?? ''));
+    body.append(el('p', 'shop-note dica', `Você tem ${quantosOrbes(tipo)}. Escolha a peça vestida:`));
+    const lista = el('div', 'soquetes-gemas');
+    let algum = false;
+    for (const [slot, peca] of Object.entries(ctx.state.character?.equipment ?? {})) {
+      const max = limiteDoSlot(slot);
+      if (!peca || !max) continue;
+      algum = true;
+      const sq = soquetesDe(peca, slot);
+      const meta = ctx.state.items?.[peca.id];
+      const motivo =
+        tipo === 'encaixe'
+          ? sq.abertos >= max ? `no máximo (${max} sockets)` : null
+          : sq.abertos < 2 ? 'precisa de 2 sockets abertos' : null;
+      const linha = el('button', 'soquetes-gema');
+      linha.type = 'button';
+      linha.append(itemCanvas(peca.id, 28));
+      const texto = el('div', null);
+      texto.append(el('b', null, meta?.name ?? 'peça'), el('em', null, `${sq.abertos}/${max} sockets${motivo ? ` — ${motivo}` : ''}`));
+      linha.append(texto);
+      linha.disabled = !!motivo;
+      linha.onclick = () => abrirSoquetes(ctx, slot, tipo);
+      lista.append(linha);
+    }
+    body.append(algum ? lista : el('p', 'empty', 'Nenhuma peça vestida aceita sockets.'));
+  });
 }
 
 function desenhar() {
@@ -39,11 +104,12 @@ function desenhar() {
   const meta = peca ? state.items?.[peca.id] : null;
   ctx.openModal(`Sockets — ${meta?.name ?? 'peça'}`, (body) => {
     ctx.redraw = desenhar;
-    if (!temSoquetes(peca)) {
+    const sq = soquetesDe(peca, slotAberto);
+    if (!sq) {
       body.append(el('p', 'empty', 'Esta peça não tem sockets.'));
       return;
     }
-    corpo(body, peca);
+    corpo(body, { ...peca, soquetes: sq });
   });
 }
 
@@ -70,6 +136,16 @@ function corpo(body, peca) {
     )
   );
 
+  // O limite da peça e os grupos ligados de agora (cada grupo com a sua cor na fila).
+  body.append(
+    el(
+      'p',
+      'soquetes-limite',
+      `Sockets abertos: ${abertos} de ${max}${abertos >= max ? ' (o máximo desta peça)' : ''} · grupos: ${abertos ? gruposComoTexto(sq, sq.links ?? []) : 'nenhum'}`
+    )
+  );
+  const grupos = gruposLigados({ abertos, links: sq.links ?? [] });
+  const grupoDe = (i) => grupos.findIndex((g) => g.includes(i));
   const defDe = (g) => (g ? state.items?.[g.id]?.gemaDef ?? null : null);
   // As gemas do grupo ligado ao socket `i` (sem ele mesmo): o que valeria se algo entrasse ali.
   const vizinhas = (i) => grupoDoSocket(sq, i).filter((k) => k !== i).map((k) => defDe(sq.gemas[k])).filter(Boolean);
@@ -79,7 +155,9 @@ function corpo(body, peca) {
   for (let i = 0; i < max; i++) {
     const g = sq.gemas[i];
     const trancado = i >= abertos;
-    const casa = el('button', `soquete-casa${trancado ? ' trancado' : ''}${escolhido === i ? ' escolhido' : ''}`);
+    const nGrupo = trancado ? -1 : grupoDe(i);
+    const emGrupo = nGrupo >= 0 && grupos[nGrupo].length > 1;
+    const casa = el('button', `soquete-casa${trancado ? ' trancado' : ''}${escolhido === i ? ' escolhido' : ''}${emGrupo ? ` grupo grupo-${nGrupo % 4}` : ''}${trancado && proposta?.tipo === 'encaixe' && i === abertos ? ' proximo' : ''}`);
     casa.type = 'button';
     if (trancado) {
       casa.append(el('span', null, '🔒'));
@@ -101,7 +179,23 @@ function corpo(body, peca) {
       desenhar();
     };
     fila.append(casa);
-    if (i < max - 1) fila.append(el('span', `soquete-elo${sq.links?.[i] ? ' ligado' : ''}`, sq.links?.[i] ? '━' : ''));
+    if (i < max - 1) {
+      const aberto = i + 1 < abertos; // os DOIS sockets do elo precisam estar abertos
+      const ligado = aberto && !!sq.links?.[i];
+      const classe = `soquete-elo${ligado ? ' ligado' : ''}${ligado && emGrupo ? ` grupo-${nGrupo % 4}` : ''}${proposta?.tipo === 'ligacao' && proposta.elo === i ? ' escolhido' : ''}`;
+      if (!aberto) fila.append(el('span', classe, ''));
+      else {
+        // Um BOTÃO: tocar nele só mostra a proposta (abaixo) — quem muda o link é o "Confirmar".
+        const elo = el('button', classe, ligado ? '━' : '·');
+        elo.type = 'button';
+        elo.title = ligado ? `Link entre os sockets ${i + 1} e ${i + 2} — toque para propor desfazer` : `Sem link entre os sockets ${i + 1} e ${i + 2} — toque para propor ligar`;
+        elo.onclick = () => {
+          proposta = { tipo: 'ligacao', elo: i, ligar: !ligado };
+          desenhar();
+        };
+        fila.append(elo);
+      }
+    }
   }
   body.append(fila);
 
@@ -136,6 +230,7 @@ function corpo(body, peca) {
   const barraDaPeca = el('div', 'soquetes-acoes');
   barraDaPeca.append(fundir);
   body.append(barraDaPeca);
+  orbes(body, sq, max, abertos);
 
   if (escolhido == null) {
     body.append(el('p', 'shop-note dica', 'Clique num socket para encaixar ou tirar uma gema.'));
@@ -215,4 +310,90 @@ function corpo(body, peca) {
     lista.append(linha);
   }
   body.append(lista);
+}
+
+/*
+ * O painel dos ORBES: quantos você tem, o que cada um faria NESTA peça, a proposta (o que muda) e
+ * o "Confirmar". Quando não dá para usar, diz por quê — e o orbe não é gasto.
+ */
+function orbes(body, sq, max, abertos) {
+  const { send } = ctx;
+  const caixa = el('div', 'soquetes-orbes');
+  const nEncaixe = quantosOrbes('encaixe');
+  const nLigacao = quantosOrbes('ligacao');
+  const nomeEncaixe = itemDoOrbe('encaixe')?.name ?? 'orbe de encaixe';
+  const nomeLigacao = itemDoOrbe('ligacao')?.name ?? 'orbe de ligação';
+
+  // --- Encaixe: abrir o próximo socket
+  const encaixe = el('div', 'orbe-linha');
+  const motivoEncaixe = abertos >= max ? `Esta peça já está no máximo (${max} sockets).` : nEncaixe < 1 ? `Você não tem ${nomeEncaixe}.` : null;
+  const abrir = el('button', 'ghost', `Abrir o socket ${abertos + 1} · ${nomeEncaixe} (${nEncaixe})`);
+  abrir.type = 'button';
+  abrir.disabled = !!motivoEncaixe;
+  abrir.onclick = () => {
+    proposta = { tipo: 'encaixe' };
+    desenhar();
+  };
+  encaixe.append(abrir);
+  if (motivoEncaixe) encaixe.append(el('em', 'orbe-motivo', motivoEncaixe));
+  caixa.append(encaixe);
+
+  // --- Ligação: o elo escolhido na fila
+  const ligacao = el('div', 'orbe-linha');
+  const semLigacao = abertos < 2 ? 'Precisa de pelo menos 2 sockets abertos.' : nLigacao < 1 ? `Você não tem ${nomeLigacao}.` : null;
+  ligacao.append(el('em', 'orbe-motivo', semLigacao ?? `${nomeLigacao} (${nLigacao}): toque no elo entre dois sockets da fila para propor ligar ou desligar.`));
+  caixa.append(ligacao);
+
+  // --- A proposta
+  if (proposta?.tipo === 'encaixe' && !motivoEncaixe) {
+    const p = el('div', 'orbe-proposta');
+    p.append(
+      el('b', null, `Proposta: abrir o socket ${abertos + 1} de ${max}`),
+      el('p', null, `Ele nasce vazio e sem link. Gasta 1 ${nomeEncaixe} (sobram ${nEncaixe - 1}). Nenhuma gema nem link é mexido.`)
+    );
+    p.append(botoesDaProposta(() => send({ t: 'gema', action: 'abrirSocket', slot: slotAberto })));
+    caixa.append(p);
+  } else if (proposta?.tipo === 'ligacao' && proposta.elo != null) {
+    const i = proposta.elo;
+    const depois = [...(sq.links ?? [])];
+    depois[i] = proposta.ligar;
+    const p = el('div', 'orbe-proposta');
+    if (semLigacao) {
+      p.append(el('b', null, 'Não dá para usar agora'), el('p', null, semLigacao));
+    } else {
+      const grupoAntes = gruposComoTexto(sq, sq.links ?? []);
+      const grupoDepois = gruposComoTexto(sq, depois);
+      p.append(
+        el('b', null, proposta.ligar ? `Proposta: ligar os sockets ${i + 1} e ${i + 2}` : `Proposta: desfazer o link entre os sockets ${i + 1} e ${i + 2}`),
+        el('p', null, `Grupos: ${grupoAntes}  →  ${grupoDepois}. Gasta 1 ${nomeLigacao} (sobram ${nLigacao - 1}).`)
+      );
+      // Desligar pode apagar o efeito de uma support que estava neste grupo: avisa antes.
+      if (!proposta.ligar && (sq.gemas[i] || sq.gemas[i + 1])) {
+        p.append(el('p', 'orbe-aviso', 'Atenção: há gema neste link. Se for uma support, ela deixa de valer para a skill do outro lado. As gemas não saem do lugar.'));
+      }
+      p.append(botoesDaProposta(() => send({ t: 'gema', action: 'ligarElo', slot: slotAberto, elo: i, ligar: proposta.ligar })));
+    }
+    caixa.append(p);
+  }
+  body.append(caixa);
+}
+
+/** "Confirmar" e "Cancelar" de uma proposta. Confirmar manda UMA vez (o botão se desliga) e limpa a proposta. */
+function botoesDaProposta(aoConfirmar) {
+  const linha = el('div', 'soquetes-acoes');
+  const confirmar = el('button', 'primary', 'Confirmar');
+  confirmar.type = 'button';
+  confirmar.onclick = () => {
+    confirmar.disabled = true;
+    proposta = null;
+    aoConfirmar();
+  };
+  const cancelar = el('button', 'ghost', 'Cancelar');
+  cancelar.type = 'button';
+  cancelar.onclick = () => {
+    proposta = null;
+    desenhar();
+  };
+  linha.append(confirmar, cancelar);
+  return linha;
 }
