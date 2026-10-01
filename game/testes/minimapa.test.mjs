@@ -77,3 +77,19 @@ test('desempenho: montar a geometria do maior mapa é rápido (é feito só ao t
   for (let i = 0; i < 100; i++) pontosDoRetrato(snap);
   assert.ok((performance.now() - t1) / 100 < 5);
 });
+
+test('o minimapa desvia das janelas: vai para a esquerda do Inventário no canto; sem lugar, desce', async () => {
+  const { lugarLivre } = await import('../frontend/client/src/minimapa.mjs');
+  const tela = 1920;
+  // O Inventário no canto superior direito (o report): x 1700–1910, y 60–500.
+  const inventario = { left: 1700, right: 1910, top: 60, bottom: 500 };
+  const l = lugarLivre({ topo: 70, direita: 8, largura: 186, altura: 186, larguraDaTela: tela, obstaculos: [inventario] });
+  const caixa = { left: tela - l.direita - 186, right: tela - l.direita, top: l.topo, bottom: l.topo + 186 };
+  assert.ok(caixa.right <= inventario.left, `à esquerda do inventário (${caixa.right} ≤ ${inventario.left})`);
+  assert.equal(l.topo, 70, 'na mesma altura');
+  // Sem janela: no canto de sempre.
+  assert.deepEqual(lugarLivre({ topo: 70, direita: 8, largura: 186, altura: 186, larguraDaTela: tela, obstaculos: [] }), { topo: 70, direita: 8 });
+  // A tela toda ocupada à esquerda (esquerdaMinima): desce para baixo da janela do canto.
+  const baixo = lugarLivre({ topo: 70, direita: 8, largura: 186, altura: 186, larguraDaTela: 400, obstaculos: [{ left: 150, right: 400, top: 60, bottom: 300 }], esquerdaMinima: 100 });
+  assert.ok(baixo.topo >= 300, `desceu (${baixo.topo})`);
+});

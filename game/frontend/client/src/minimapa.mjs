@@ -131,6 +131,37 @@ export function pontosDoRetrato(snap) {
   return pontos;
 }
 
+/*
+ * ---- Nunca por cima das janelas ----
+ *
+ * Report de 01/10: no computador o minimapa (canto superior direito) caiu em cima do Inventário, que
+ * mora justamente ali. Duas regras: (1) ele DESVIA das janelas abertas — anda para a esquerda de
+ * quem ocupa o canto, e, se não houver lugar, desce para baixo delas; (2) a camada fica ABAIXO
+ * das janelas (z-index), então mesmo num caso não previsto a janela nunca fica coberta.
+ */
+export function lugarLivre({ topo, direita, largura, altura, larguraDaTela, obstaculos, esquerdaMinima = 0 }) {
+  const cruza = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  const caixa = (d, t) => ({ left: larguraDaTela - d - largura, right: larguraDaTela - d, top: t, bottom: t + altura });
+  // 1) para a esquerda de quem estiver no caminho, na mesma altura
+  let d = direita;
+  for (let i = 0; i < 8; i++) {
+    const c = caixa(d, topo);
+    const bate = obstaculos.find((o) => cruza(c, o));
+    if (!bate) return { topo, direita: d };
+    d = larguraDaTela - bate.left + MARGEM;
+    if (larguraDaTela - d - largura < esquerdaMinima) break;
+  }
+  // 2) sem lugar ao lado: embaixo de quem ocupa o canto
+  let t = topo;
+  for (let i = 0; i < 8; i++) {
+    const c = caixa(direita, t);
+    const bate = obstaculos.find((o) => cruza(c, o));
+    if (!bate) return { topo: t, direita };
+    t = bate.bottom + MARGEM;
+  }
+  return { topo, direita }; // não coube: fica no canto, por BAIXO das janelas (CSS)
+}
+
 function posicionar() {
   const r = mapViewRef.canvas.getBoundingClientRect();
   const raizCss = getComputedStyle(document.documentElement);
@@ -139,8 +170,15 @@ function posicionar() {
   const aviso = faixa && !faixa.hidden ? faixa.getBoundingClientRect().bottom : 0;
   const topo = Math.max(r.top, topbar, aviso) + MARGEM;
   const direita = Math.max(0, window.innerWidth - Math.min(r.right, window.innerWidth)) + MARGEM;
-  raiz.style.top = `${Math.round(topo)}px`;
-  raiz.style.right = `${Math.round(direita)}px`;
+  const largura = raiz.offsetWidth || lado() + 10;
+  const altura = raiz.offsetHeight || lado() + 10;
+  const obstaculos = [...document.querySelectorAll('.window')]
+    .filter((j) => !j.hidden && j.offsetParent !== null)
+    .map((j) => j.getBoundingClientRect())
+    .filter((b) => b.width > 0 && b.height > 0);
+  const lugar = lugarLivre({ topo, direita, largura, altura, larguraDaTela: window.innerWidth, obstaculos, esquerdaMinima: r.left + r.width * 0.25 });
+  raiz.style.top = `${Math.round(lugar.topo)}px`;
+  raiz.style.right = `${Math.round(lugar.direita)}px`;
 }
 
 function desenhar() {
