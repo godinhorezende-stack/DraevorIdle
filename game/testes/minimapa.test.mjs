@@ -77,3 +77,52 @@ test('desempenho: montar a geometria do maior mapa é rápido (é feito só ao t
   for (let i = 0; i < 100; i++) pontosDoRetrato(snap);
   assert.ok((performance.now() - t1) / 100 < 5);
 });
+
+test('o minimapa desvia das janelas: vai para a esquerda do Inventário no canto; sem lugar, desce', async () => {
+  const { lugarLivre } = await import('../frontend/client/src/minimapa.mjs');
+  const tela = 1920;
+  // O Inventário no canto superior direito (o report): x 1700–1910, y 60–500.
+  const inventario = { left: 1700, right: 1910, top: 60, bottom: 500 };
+  const l = lugarLivre({ topo: 70, direita: 8, largura: 186, altura: 186, larguraDaTela: tela, obstaculos: [inventario] });
+  const caixa = { left: tela - l.direita - 186, right: tela - l.direita, top: l.topo, bottom: l.topo + 186 };
+  assert.ok(caixa.right <= inventario.left, `à esquerda do inventário (${caixa.right} ≤ ${inventario.left})`);
+  assert.equal(l.topo, 70, 'na mesma altura');
+  // Sem janela: no canto de sempre.
+  assert.deepEqual(lugarLivre({ topo: 70, direita: 8, largura: 186, altura: 186, larguraDaTela: tela, obstaculos: [] }), { topo: 70, direita: 8 });
+  // A tela toda ocupada à esquerda (esquerdaMinima): desce para baixo da janela do canto.
+  const baixo = lugarLivre({ topo: 70, direita: 8, largura: 186, altura: 186, larguraDaTela: 400, obstaculos: [{ left: 150, right: 400, top: 60, bottom: 300 }], esquerdaMinima: 100 });
+  assert.ok(baixo.topo >= 300, `desceu (${baixo.topo})`);
+});
+
+test('o RADAR vai pelo fio com TODOS os bichos do andar, e não só os da tela (o quadro corta a tela)', async () => {
+  const { Sessao } = await import('../websocket/sessao.mjs');
+  const Quadro = await import('../websocket/quadro.mjs');
+  const e = personagemDeTeste({ level: 2000 });
+  assert.equal(Cacadas.entrar(e, { huntId: 'werelions-1', mode: 'auto', dificuldade: 'facil' }).ok || Cacadas.entrar(e, { huntId: Campanha.FASES[5].huntId, mode: 'auto', dificuldade: 'facil' }).ok, true);
+  const s = new Sessao({ readyState: 1, bufferedAmount: 0, send: () => {} });
+  s.delta = true;
+  const vivos = e.hunt.monstros.filter((m) => m.hp > 0).length;
+  const msg = {};
+  s.quadroDaCacada(msg, Cacadas.snapshotDaHunt(e, true), true);
+  assert.equal(msg.hunt.radar.length / 3, vivos, 'o radar tem todos os vivos do andar');
+  assert.ok(msg.hunt.monsters.length < vivos, `o quadro só leva os da tela (${msg.hunt.monsters.length} de ${vivos})`);
+  // E no minimapa, os pontos saem do radar.
+  const pontos = pontosDoRetrato({ ...msg.hunt });
+  assert.equal(pontos.filter((p) => p.tipo !== 'jogador' && p.tipo !== 'aliado').length, vivos);
+  // Antes de RADAR_MS, o radar não viaja de novo (o delta não o leva); depois, sim.
+  const m2 = {};
+  s.quadroDaCacada(m2, Cacadas.snapshotDaHunt(e), false);
+  assert.ok(!m2.hunt || !('radar' in m2.hunt), 'dentro de 1 s: sem radar repetido');
+  e.hunt.monstros[0].hp = 0; // um morreu: a quantidade mudou — vai na hora
+  const m3 = {};
+  s.quadroDaCacada(m3, Cacadas.snapshotDaHunt(e), false);
+  assert.equal(m3.hunt.radar.length / 3, vivos - 1, 'morreu um: o radar já vem sem ele');
+  assert.ok(Quadro.RADAR_MS >= 500);
+});
+
+test('radarDosBichos: só os vivos, boss e raridade marcados', async () => {
+  const { radarDosBichos } = await import('../websocket/quadro.mjs');
+  const r = radarDosBichos([{ uid: 1, x: 1, y: 2, hp: 5 }, { uid: 2, x: 3, y: 4, hp: 0 }, { uid: 3, x: 5, y: 6, hp: 1, raridade: 'raro' }, { uid: 4, x: 7, y: 8, hp: 9 }], 4);
+  assert.deepEqual(r, [1, 2, 0, 5, 6, 1, 7, 8, 2]);
+  assert.deepEqual(radarDosBichos([{ uid: 9, x: 0, y: 0, hp: 1 }], null, true), [0, 0, 2], 'sala de boss');
+});

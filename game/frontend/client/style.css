@@ -27707,7 +27707,8 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
  * abaixo da barra de cima e da faixa de aviso). Não recebe toque: só o botão de recolher.
  */
 #minimapa {
-  position: fixed; z-index: 22; pointer-events: none;
+  /* Abaixo das janelas (que começam no 10): nunca as cobre. Ver `lugarLivre`, minimapa.mjs. */
+  position: fixed; z-index: 9; pointer-events: none;
   padding: 4px; border-radius: 8px;
   background: rgba(6, 9, 11, 0.55);
   border: 1px solid rgba(201, 162, 90, 0.35);
