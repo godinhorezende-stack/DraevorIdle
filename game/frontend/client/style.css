@@ -27700,3 +27700,32 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 /* Analisador: de onde vem o valor do loot e a estimativa pelas chances (ver `renderAnalyzer`). */
 .analyzer-detalhe { margin: 6px 0 4px; font-size: 11px; line-height: 1.35; }
 .analyzer-detalhe p { margin: 2px 0; overflow-wrap: anywhere; }
+
+/*
+ * ---- O minimapa, por cima do mapa (ver `minimapa.mjs`) ----
+ * Fixo no canto superior direito da área de jogo (o JS calcula `top`/`right` pelo canvas do mapa,
+ * abaixo da barra de cima e da faixa de aviso). Não recebe toque: só o botão de recolher.
+ */
+#minimapa {
+  position: fixed; z-index: 22; pointer-events: none;
+  padding: 4px; border-radius: 8px;
+  background: rgba(6, 9, 11, 0.55);
+  border: 1px solid rgba(201, 162, 90, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+#minimapa[hidden] { display: none; }
+#minimapa .minimapa-lona { display: block; image-rendering: pixelated; opacity: 0.92; }
+#minimapa .minimapa-botao {
+  position: absolute; top: 2px; right: 2px; pointer-events: auto;
+  width: 22px; height: 22px; padding: 0; border-radius: 6px; cursor: pointer;
+  display: grid; place-items: center; font: 14px/1 system-ui, sans-serif;
+  color: #e8e1cf; background: rgba(6, 9, 11, 0.7); border: 1px solid rgba(201, 162, 90, 0.4);
+}
+#minimapa.recolhido { padding: 0; background: none; border: 0; box-shadow: none; }
+#minimapa.recolhido .minimapa-lona { display: none; }
+#minimapa.recolhido .minimapa-botao { position: static; width: 34px; height: 34px; font-size: 18px; }
+/* No toque, o botão maior para o dedo. */
+@media (pointer: coarse) {
+  #minimapa .minimapa-botao { width: 28px; height: 28px; }
+  #minimapa.recolhido .minimapa-botao { width: 40px; height: 40px; }
+}
