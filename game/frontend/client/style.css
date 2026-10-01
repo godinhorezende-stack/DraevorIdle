@@ -27696,3 +27696,7 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
   background: #080b0c; color: var(--text, #e6ecec); border: 1px solid var(--line); border-radius: 5px; padding: 5px 8px; font-size: 12px;
 }
 .modo-das-magias-ajuda { flex-basis: 100%; color: var(--muted, #9aa6a6); font-size: 11px; line-height: 1.35; }
+
+/* Analisador: de onde vem o valor do loot e a estimativa pelas chances (ver `renderAnalyzer`). */
+.analyzer-detalhe { margin: 6px 0 4px; font-size: 11px; line-height: 1.35; }
+.analyzer-detalhe p { margin: 2px 0; overflow-wrap: anywhere; }

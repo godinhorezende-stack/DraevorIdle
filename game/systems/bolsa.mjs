@@ -11,8 +11,9 @@
 // `noSell` — isso fica guardado. Na cidade não há venda sozinha: botão Vender.
 import * as Afixos from './afixos.mjs';
 import * as Gemas from './gemas.mjs';
-import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
+import { ITEM_CATALOG } from './dados.mjs';
 import { darItem, guardarMoeda } from './inventario.mjs';
+import { precoNpc } from './hunt/rentabilidade.mjs';
 
 export const VAGAS_DA_BOLSA = 1000;
 export const VENDA_A_CADA_S = 120;
@@ -20,7 +21,6 @@ export const VENDA_A_CADA_S = 120;
 export const VENDA_RAPIDA_MAX = 5;
 export const vendasRapidas = (estado) => Math.min(VENDA_RAPIDA_MAX, estado.compras?.['venda-rapida'] ?? 0);
 export const esperaDaVenda = (estado) => VENDA_A_CADA_S - 20 * vendasRapidas(estado);
-const TAXA_DA_VENDA = CATALOGO.quickSellRate ?? 1;
 
 export function garantir(estado) {
   estado.pouch ??= [];
@@ -32,7 +32,8 @@ export function garantir(estado) {
   estado.settings ??= {};
 }
 
-const precoDeVenda = (id) => Math.floor((ITEM_CATALOG[id]?.sell ?? 0) * TAXA_DA_VENDA);
+// O preço do NPC é UM só no jogo (bolsa, mochila, baú e Analisador): ver `hunt/rentabilidade.mjs`.
+const precoDeVenda = (id) => precoNpc(id);
 /*
  * ---- Munição e arremessável deixaram de empilhar (29/09) ----
  * O dono: flecha, bolt, spear, throwing star... não empilham e vêm com
@@ -131,9 +132,18 @@ export function definirRegrasDeLoot(estado, { regras }) {
 export function valorDaBolsa(estado) {
   garantir(estado);
   const porId = new Map();
-  for (const p of estado.pouch) porId.set(p.id, (porId.get(p.id) ?? 0) + p.count);
+  const guardadas = new Set();
+  for (const p of estado.pouch) {
+    // A mesma regra da venda (`venderBolsa`): a peça que o filtro manda guardar não entra no valor
+    // da "próxima venda" — antes entrava, e o número prometia um ouro que a venda não pagava.
+    if (Afixos.guarda(estado, p)) {
+      guardadas.add(p.id);
+      continue;
+    }
+    porId.set(p.id, (porId.get(p.id) ?? 0) + p.count);
+  }
   const lines = [];
-  const kept = [];
+  const kept = [...guardadas];
   let gold = 0;
   for (const [id, count] of porId) {
     if (!vende(estado, id)) {
