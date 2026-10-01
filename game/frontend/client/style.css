@@ -27730,3 +27730,31 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
   #minimapa .minimapa-botao { width: 28px; height: 28px; }
   #minimapa.recolhido .minimapa-botao { width: 40px; height: 40px; }
 }
+
+/*
+ * ---- Orbes de socket: limite, grupos, elos clicáveis e a proposta (ver `soquetes.mjs`) ----
+ * Cada grupo ligado tem a sua cor (4 ciclos); o elo é um BOTÃO de toque confortável (44px de altura),
+ * e a proposta só vira ação no "Confirmar".
+ */
+.soquetes-limite { margin: 4px 0 8px; font-size: 12px; color: var(--muted, #a8a08c); }
+button.soquete-elo {
+  min-width: 28px; min-height: 44px; padding: 0 4px; background: none; border: 0; cursor: pointer;
+  font: 700 18px/1 system-ui, sans-serif; color: #5a5a5a; border-radius: 6px;
+}
+button.soquete-elo:hover, button.soquete-elo.escolhido { background: rgba(232, 198, 106, 0.18); }
+button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
+.soquete-casa.proximo { border-color: #5ee0c8; border-style: dashed; opacity: 0.9; }
+.soquete-casa.grupo-0, .soquete-elo.grupo-0 { --cor-do-grupo: #e8c66a; }
+.soquete-casa.grupo-1, .soquete-elo.grupo-1 { --cor-do-grupo: #6fb8ff; }
+.soquete-casa.grupo-2, .soquete-elo.grupo-2 { --cor-do-grupo: #6fe08f; }
+.soquete-casa.grupo-3, .soquete-elo.grupo-3 { --cor-do-grupo: #e88aff; }
+.soquete-casa.grupo { box-shadow: 0 0 0 2px var(--cor-do-grupo, #e8c66a) inset; }
+.soquete-elo.ligado.grupo-0, .soquete-elo.ligado.grupo-1, .soquete-elo.ligado.grupo-2, .soquete-elo.ligado.grupo-3 { color: var(--cor-do-grupo); }
+.soquetes-orbes { display: grid; gap: 8px; margin: 10px 0; }
+.soquetes-orbes .orbe-linha { display: grid; gap: 4px; }
+.soquetes-orbes .orbe-linha button { min-height: 40px; justify-self: start; }
+.soquetes-orbes .orbe-motivo { font-style: normal; font-size: 12px; color: var(--muted, #a8a08c); }
+.soquetes-orbes .orbe-proposta { padding: 10px 12px; border: 1px solid #e8c66a66; border-radius: 8px; background: rgba(232, 198, 106, 0.07); }
+.soquetes-orbes .orbe-proposta p { margin: 6px 0; font-size: 13px; }
+.soquetes-orbes .orbe-aviso { color: #ffb15a; }
+.soquetes-orbes .soquetes-acoes button { min-height: 44px; min-width: 110px; }

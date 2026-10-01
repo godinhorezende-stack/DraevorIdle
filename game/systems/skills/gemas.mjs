@@ -165,6 +165,28 @@ ITEM_CATALOG[FUNDIDORA] ??= {
   sell: 0,
 };
 
+// Os ORBES de socket (config `orbes`): itens reais da mochila, que empilham e o NPC não compra de volta.
+const O = CONFIG.orbes;
+export const ORBE_DE_ENCAIXE = O.encaixe.itemId;
+export const ORBE_DE_LIGACAO = O.ligacao.itemId;
+for (const o of [O.encaixe, O.ligacao]) {
+  ITEM_CATALOG[o.itemId] ??= {
+    id: o.itemId,
+    name: o.nome,
+    weight: 0.1,
+    stackable: true,
+    type: 'moeda',
+    rarity: 'lendário',
+    hasSprite: true,
+    spriteDe: o.sprite,
+    descricao: o.descricao,
+    // Para a tela: que orbe é, e o máximo de sockets de cada slot (a peça sem `soquetes` ainda não diz).
+    orbeDeSocket: o === O.encaixe ? 'encaixe' : 'ligacao',
+    limitesDeSocket: CONFIG.sockets.maximo,
+    sell: 0,
+  };
+}
+
 export const defDaGema = (itemId) => DEFS.get(Number(itemId)) ?? null;
 export const ehGema = (id) => DEFS.has(Number(id));
 
@@ -511,6 +533,117 @@ export function sortearLapidadora({ ato = 1, fatorDeChance = 1 } = {}, rng = Mat
   return rng() < (c[String(ato)] ?? c['1'] ?? 0) * fatorDeChance ? { id: LAPIDADORA, count: 1 } : null;
 }
 
+// ---------------------------------------------------------------- orbes de socket
+
+/** Põe `n` do item empilhável na mochila, em pilhas de até 100 (o mesmo teto de `darItem`; importá-lo daqui fecharia um ciclo de módulos). */
+function empilhar(estado, itemId, n) {
+  const inv = (estado.inventory ??= []);
+  let falta = n;
+  for (const pilha of inv) {
+    if (falta <= 0) break;
+    if (Number(pilha.id) !== itemId || pilha.af?.length || pilha.tier) continue;
+    const cabe = Math.min(100 - (pilha.count ?? 1), falta);
+    if (cabe > 0) {
+      pilha.count = (pilha.count ?? 1) + cabe;
+      falta -= cabe;
+    }
+  }
+  while (falta > 0) {
+    const c = Math.min(100, falta);
+    inv.push({ id: itemId, count: c });
+    falta -= c;
+  }
+}
+
+/**
+ * Comprar `count` orbes na loja (a Zuma), em gold: paga do bolso e depois do banco. Atômico: confere
+ * o produto, a quantidade e o saldo ANTES de tirar um centavo; só então desconta e entrega, tudo
+ * no mesmo passo síncrono (duas compras seguidas conferem o saldo uma depois da outra). O peso que
+ * passar da capacidade vai para o depósito (o `aplicar` da sessão, como em toda compra).
+ */
+function comprarOrbe(estado, orbe, count) {
+  if (!orbe.loja?.disponivel) return erro('Ela não vende isso agora.');
+  const n = Math.max(1, Math.min(CONFIG.loja.porVez ?? 20, Math.floor(Number(count) || 1)));
+  const total = orbe.loja.preco * n;
+  if ((estado.gold ?? 0) + (estado.bank ?? 0) < total) return erro('Ouro insuficiente (bolso + banco).');
+  const doBolso = Math.min(estado.gold ?? 0, total);
+  estado.gold = (estado.gold ?? 0) - doBolso;
+  estado.bank = (estado.bank ?? 0) - (total - doBolso);
+  empilhar(estado, orbe.itemId, n);
+  return { ok: true, notice: `Você comprou ${n}× ${orbe.nomeEn} por ${total.toLocaleString('pt-BR')} gold.` };
+}
+
+/*
+ * ---- Abrir socket e ligar elo: as DUAS operações dos orbes ----
+ *
+ * Servidor é a fonte da verdade, e a ordem é sempre a mesma: (1) acha a peça e o orbe, (2) valida
+ * TUDO, (3) muda a peça, (4) só então gasta o orbe. Nada é gravado antes de validar, então um erro
+ * não deixa a peça pela metade nem gasta o orbe. É síncrono (um comando por vez por sessão): dois
+ * cliques seguidos não gastam o mesmo orbe duas vezes.
+ *
+ * Preservação: as duas só ADICIONAM um socket ou MUDAM um elo — nunca tiram gema nem socket. Os
+ * campos extras de `peca.soquetes` (as cores, se um dia houver) seguem como estavam.
+ */
+const achaOrbe = (estado, itemId) => (estado.inventory ??= []).findIndex((p) => Number(p.id) === itemId && (p.count ?? 1) > 0);
+function gastaOrbe(estado, k) {
+  const inv = estado.inventory;
+  if ((inv[k].count ?? 1) > 1) inv[k].count -= 1;
+  else inv.splice(k, 1);
+}
+/** A peça vestida em `slot` que aceita a operação, com os sockets normalizados; ou `{ erro }`. */
+function pecaComSockets(estado, slot) {
+  const peca = estado.equipment?.[slot];
+  if (!peca) return { erro: 'Não há nada vestido nesse slot.' };
+  const max = maximoDeSockets(ITEM_CATALOG[peca.id]);
+  if (!max) return { erro: 'Esse tipo de peça não tem sockets.' };
+  return { peca, max, s: soquetesDe(peca) };
+}
+
+/** O ORBE DE ENCAIXE: abre UM socket novo (vazio e sem link) na peça vestida em `slot`. Até o `maximo` do slot. */
+export function abrirSocket(estado, { slot }) {
+  const { peca, max, s, erro: e } = pecaComSockets(estado, slot);
+  if (e) return erro(e);
+  if (s.abertos >= max) return erro(`Esta peça já tem o máximo de sockets (${max}). O orbe não foi gasto.`);
+  const k = achaOrbe(estado, ORBE_DE_ENCAIXE);
+  if (k < 0) return erro('Você não tem Orbe de Encaixe.');
+  const links = [...s.links];
+  if (s.abertos > 0) links[s.abertos - 1] = false; // o socket novo nasce SEM link com o vizinho
+  peca.soquetes = { ...(peca.soquetes ?? {}), abertos: s.abertos + 1, links, gemas: s.gemas };
+  gastaOrbe(estado, k);
+  return { ok: true, notice: `Socket aberto: agora são ${s.abertos + 1} de ${max}.` };
+}
+
+/**
+ * O ORBE DE LIGAÇÃO: põe o elo `elo` (entre o socket `elo` e o `elo + 1`) no estado pedido — `ligar:
+ * true` liga, `false` desliga. Os dois sockets precisam estar abertos. É o estado DESEJADO, e não
+ * "inverter": pedir o que já está não faz nada e não gasta o orbe (um clique duplo não desfaz o que
+ * o primeiro fez). Desligar também gasta um orbe (é a operação de remover link).
+ */
+export function ligarElo(estado, { slot, elo, ligar }) {
+  const { peca, s, erro: e } = pecaComSockets(estado, slot);
+  if (e) return erro(e);
+  const i = Number(elo);
+  if (!Number.isInteger(i) || i < 0 || i + 1 >= s.abertos) return erro('Esse elo não existe: os dois sockets precisam estar abertos.');
+  if (typeof ligar !== 'boolean') return erro('Diga se é para ligar ou desligar.');
+  if (s.links[i] === ligar) return erro(ligar ? 'Esses sockets já estão ligados. O orbe não foi gasto.' : 'Esses sockets já estão sem link. O orbe não foi gasto.');
+  const k = achaOrbe(estado, ORBE_DE_LIGACAO);
+  if (k < 0) return erro('Você não tem Orbe de Ligação.');
+  const links = [...s.links];
+  links[i] = ligar;
+  peca.soquetes = { ...(peca.soquetes ?? {}), abertos: s.abertos, links, gemas: s.gemas };
+  gastaOrbe(estado, k);
+  const grupos = gruposLigados({ abertos: s.abertos, links }).map((g) => g.map((n) => n + 1).join('+')).join(' | ');
+  return { ok: true, notice: `${ligar ? 'Sockets ligados' : 'Link desfeito'}. Grupos agora: ${grupos}.` };
+}
+
+/** O orbe que cai de um bicho (ou null): `tipo` 'encaixe' | 'ligacao'; a chance do ato (zero até haver balanceamento). */
+export function sortearOrbe(tipo, { ato = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
+  const o = O[tipo];
+  const c = o?.drop?.chancePorAto ?? {};
+  const chance = (c[String(ato)] ?? c['1'] ?? 0) * fatorDeChance;
+  return chance > 0 && rng() < chance ? { id: o.itemId, count: 1 } : null;
+}
+
 // ---------------------------------------------------------------- migração
 
 /*
@@ -625,7 +758,7 @@ export function catalogoDaLoja(estado) {
   // Pela categoria (Ataque, Cura, Reforço, Suporte), e dentro dela pelo level da magia e o nome.
   const ordem = Object.keys(CATEGORIAS);
   const defs = [...DEFS.values()].sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
-  return defs.flatMap((def) =>
+  const gemas = defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,
       chave: `${def.itemId}:${r}`,
@@ -637,10 +770,30 @@ export function catalogoDaLoja(estado) {
       tenho: tenho(def.itemId, r),
     }))
   );
+  // Os orbes de socket, depois das gemas (mesma loja, mesmo balcão).
+  return [...gemas, ...linhasDosOrbes(estado)];
+}
+
+/** As linhas da loja dos orbes que estão à venda (`orbes.*.loja`). */
+export function linhasDosOrbes(estado) {
+  const tenho = (id) => (estado.inventory ?? []).filter((p) => Number(p.id) === id).reduce((t, p) => t + (p.count ?? 1), 0);
+  return [O.encaixe, O.ligacao]
+    .filter((o) => o.loja?.disponivel)
+    .map((o) => ({
+      id: o.itemId,
+      chave: `${o.itemId}:orbe`,
+      categoria: 'orbes',
+      categoriaNome: 'Orbes de socket',
+      nome: `${o.nomeEn} (${o.nome})`,
+      buy: o.loja.preco,
+      tenho: tenho(o.itemId),
+    }));
 }
 
 /** Comprar `count` gemas (nível 1, na `raridade` pedida) na loja: paga do bolso e depois do banco; vão para a mochila. */
 export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
+  const orbe = [O.encaixe, O.ligacao].find((o) => o.itemId === Number(id));
+  if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));
   if (!def) return { ok: false, erro: 'Ela não vende isso.' };
   if (!RARIDADES_DA_LOJA.includes(raridade)) return { ok: false, erro: 'Ela só vende gemas comuns. As de outras raridades caem dos bichos.' };

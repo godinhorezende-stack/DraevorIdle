@@ -2726,6 +2726,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * no corpo, e quem olhasse na mochila acharia que já os tem.
    */
   if (meta.aoVestir) add('Os atributos abaixo valem com a peça VESTIDA', 'plain');
+  // As moedas de uso (lapidadora, fundidora, orbes de socket) dizem o que fazem.
+  if (meta.type === 'moeda' && meta.descricao) add(meta.descricao, 'plain');
   for (const aug of meta.augments ?? []) {
     const linha = add(aug.texto, aug.vale ? 'area' : 'plain');
     if (linha && !aug.vale) {

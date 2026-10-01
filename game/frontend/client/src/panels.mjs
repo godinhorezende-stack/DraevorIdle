@@ -24747,7 +24747,7 @@ function fileiraDaLoja(body, { sub, linhas, lado, loja, vazio }) {
     const card = el('button', 'loja-linha');
     card.type = 'button';
     // O balão do item (a gema: o que faz, com os números do seu personagem), como em qualquer lista de itens.
-    tipFor(card, linha.id, null, null, { id: linha.id, count: 1, ...(linha.raridade ? { raridade: linha.raridade } : {}), ...(linha.categoria ? { gema: { nivel: 1, xp: 0, qualidade: 0 } } : {}) });
+    tipFor(card, linha.id, null, null, { id: linha.id, count: 1, ...(linha.raridade ? { raridade: linha.raridade } : {}), ...(linha.categoria && linha.categoria !== 'orbes' ? { gema: { nivel: 1, xp: 0, qualidade: 0 } } : {}) });
     if (chaveDa(linha) === ctx.tabs[chave]) card.classList.add('escolhida');
     if (linha.raridade) card.classList.add(classeDaRaridade(null, { raridade: linha.raridade }));
     card.append(itemCanvas(linha.id, 32));
@@ -24880,7 +24880,9 @@ function balcaoDaLoja({ linha, lado, loja }) {
   }
   confirmar.onclick = () => {
     const quantos = quantia.ler();
-    ctx.send({ t: comprando ? 'npcComprar' : 'npcVender', id: linha.id, count: quantos, ...(linha.raridade ? { raridade: linha.raridade } : {}) });
+    // `pedido`: o id deste clique. O servidor ignora o mesmo pedido chegando de novo (duplo clique, reenvio) — a compra não duplica.
+    const pedido = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+    ctx.send({ t: comprando ? 'npcComprar' : 'npcVender', id: linha.id, count: quantos, ...(comprando ? { pedido } : {}), ...(linha.raridade ? { raridade: linha.raridade } : {}) });
   };
   const acoes = el('div', 'loja-balcao-acoes');
   acoes.append(confirmar);

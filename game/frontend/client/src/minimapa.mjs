@@ -28,6 +28,8 @@ const CORES = {
   boss: '#ffd34d',
   aliado: '#4ade80',
   jogador: '#3fa2ff',
+  desce: '#f5c542',
+  sobe: '#5ee0c8',
 };
 
 let mapViewRef = null;
@@ -37,6 +39,7 @@ let lona = null;
 let botao = null;
 let base = null; // a geometria da fase, 1 pixel por casa
 let chaveDaBase = null;
+let passagens = []; // os buracos/escadas que funcionam no andar (refeito junto com a base)
 let agendado = false;
 let ativo = false;
 let recolhido = false;
@@ -109,6 +112,44 @@ export function montarBase(map, z) {
     pixels.set(cor, i * 4);
   }
   return { width, height, pixels };
+}
+
+/*
+ * ---- Buracos e escadas QUE FUNCIONAM ----
+ *
+ * Os dois jeitos de trocar de andar que o mapa guarda (os mesmos que o servidor usa):
+ *   `floors[z].mudanca` — pisar: bit 1 = desce (buraco, rampa para baixo); bits 2/4/8/16 = rampa de subir;
+ *   `floors[z].escada`  — clicar: 1 sobe, 2 desce (escada de mão, alçapão).
+ * Só entra a que leva a um andar que EXISTE no mapa — a mesma regra do servidor
+ * (`destinoDaMudanca`, hunt/andares.mjs, e `usarEscada`, cacadas.mjs): a que não leva a lugar
+ * nenhum não é marcada. Casas vizinhas da mesma passagem (a rampa larga) viram um marcador só.
+ * Devolve `[{x, y, sentido: 'desce'|'sobe'}]`.
+ */
+export function passagensDoAndar(map, z) {
+  const andar = map.floors?.[z];
+  if (!andar) return [];
+  const existe = (dz) => !!map.floors?.[z + dz];
+  const w = map.width;
+  const achadas = [];
+  const juntar = (i, sentido) => {
+    const x = i % w;
+    const y = Math.floor(i / w);
+    if (achadas.some((p) => p.sentido === sentido && Math.abs(p.x - x) <= 2 && Math.abs(p.y - y) <= 2)) return;
+    achadas.push({ x, y, sentido });
+  };
+  for (const [indice, valor] of Object.entries(andar.mudanca ?? {})) {
+    const bits = Number(valor);
+    if (!bits) continue;
+    if (bits & 1) {
+      if (existe(1)) juntar(Number(indice), 'desce');
+    } else if (bits & 30 && existe(-1)) juntar(Number(indice), 'sobe');
+  }
+  for (const [indice, valor] of Object.entries(andar.escada ?? {})) {
+    const tipo = Number(valor);
+    if (tipo === 1 && existe(-1)) juntar(Number(indice), 'sobe');
+    else if (tipo === 2 && existe(1)) juntar(Number(indice), 'desce');
+  }
+  return achadas;
 }
 
 /** Onde cada ponto cai na lona (coordenada da casa → pixel), com a fase inteira encaixada no quadrado. */
@@ -212,6 +253,7 @@ function desenhar() {
     base.width = b.width;
     base.height = b.height;
     base.getContext('2d').putImageData(new ImageData(b.pixels, b.width, b.height), 0, 0);
+    passagens = passagensDoAndar(map, z);
     chaveDaBase = chave;
   }
 
@@ -230,6 +272,28 @@ function desenhar() {
   const { s, ox, oy } = escala(map, ladoPx);
   ctx.drawImage(base, ox, oy, map.width * s, map.height * s);
 
+  // Buracos e escadas: triângulo para baixo (desce) e para cima (sobe), por baixo dos pontos.
+  const t = 3.2 * k;
+  for (const p of passagens) {
+    const x = ox + (p.x + 0.5) * s;
+    const y = oy + (p.y + 0.5) * s;
+    ctx.beginPath();
+    if (p.sentido === 'desce') {
+      ctx.moveTo(x - t, y - t * 0.7);
+      ctx.lineTo(x + t, y - t * 0.7);
+      ctx.lineTo(x, y + t * 0.9);
+    } else {
+      ctx.moveTo(x - t, y + t * 0.7);
+      ctx.lineTo(x + t, y + t * 0.7);
+      ctx.lineTo(x, y - t * 0.9);
+    }
+    ctx.closePath();
+    ctx.fillStyle = p.sentido === 'desce' ? CORES.desce : CORES.sobe;
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, k * 0.8);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.stroke();
+  }
   const raio = { monstro: 1.6, raro: 2.2, boss: 3.4, aliado: 2.2, jogador: 2.8 };
   for (const p of pontosDoRetrato(snap)) {
     const x = ox + (p.x + 0.5) * s;

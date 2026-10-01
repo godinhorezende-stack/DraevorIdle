@@ -1,7 +1,7 @@
 // Inventário: slots de equipamento com os PNGs do client, arrastar e soltar
 // para equipar, menu de contexto por item e a loot pouch com venda rápida.
 import { itemCanvas, itemSprite } from './sprites.mjs';
-import { abrirSoquetes, temSoquetes } from './soquetes.mjs';
+import { abrirSoquetes, temSoquetes, usarOrbe } from './soquetes.mjs';
 import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
 // O desenho da bolsa numa definição só, com a reserva. Ver o módulo.
 import { ITEM_DA_BOSS_POUCH, ITEM_DA_BOSS_POUCH_RESERVA, ITEM_DA_STORE_INBOX } from '/packages/shared/src/boss-pouch.mjs';
@@ -632,6 +632,8 @@ function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null
    */
   // Da Store Inbox o servidor precisa saber de onde: é lá que ele gasta (`usarDaStoreInbox`).
   const onde = from === 'storeInbox' ? 'storeInbox' : undefined;
+  // Os orbes de socket: o direito escolhe a peça e abre a proposta (ver `usarOrbe`, soquetes.mjs) — nada muda sem o "Confirmar".
+  if (meta?.orbeDeSocket && from !== 'equipment') return void usarOrbe(ctx, meta.orbeDeSocket);
   if (meta?.usavel) return void (ctx.pedirUso ? ctx.pedirUso(id, onde) : ctx.send({ t: 'usar', id, onde }));
 }
 
@@ -801,6 +803,9 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null }) {
             return ctx.pedirUso ? ctx.pedirUso(id, onde) : send({ t: 'usar', id, onde });
           },
         }
+      : null,
+    meta?.orbeDeSocket && from !== 'equipment' && !naBolsaDeBoss
+      ? { label: `Usar ${meta.name} numa peça…`, action: () => usarOrbe(ctx, meta.orbeDeSocket) }
       : null,
     meta?.slot && from !== 'equipment' && !naBolsaDeBoss
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }

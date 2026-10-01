@@ -678,6 +678,14 @@ export class Sessao {
 
   /** `send({t:'npcComprar', id, count})` — comprar no balcão do NPC (a Zuma: gemas). */
   comprarNoNpc(m) {
+    // O mesmo pedido (o `pedido` que a tela gera a cada clique) chegando de novo — duplo clique, reenvio da
+    // rede — não compra duas vezes. Só se lembra dos últimos 50; pedido sem id (cliente antigo) passa como antes.
+    if (m.pedido != null) {
+      this.pedidosDeCompra ??= new Set();
+      if (this.pedidosDeCompra.has(String(m.pedido))) return this.erro('Esse pedido já foi processado.');
+      this.pedidosDeCompra.add(String(m.pedido));
+      if (this.pedidosDeCompra.size > 50) this.pedidosDeCompra.delete(this.pedidosDeCompra.values().next().value);
+    }
     const r = GemasDeSkill.comprarNaLoja(this.estado, m);
     this.aplicar(r);
     if (r.ok) this.mandarLojaDeGemas();
@@ -1047,6 +1055,9 @@ export class Sessao {
           m.action === 'tirar' ? GemasDeSkill.tirar(this.estado, m) :
           m.action === 'lapidar' ? GemasDeSkill.lapidar(this.estado, m) :
           m.action === 'fundir' ? GemasDeSkill.fundir(this.estado, m) :
+          // Os orbes de socket: abrir um socket e ligar/desligar um elo (ver `GemasDeSkill.abrirSocket`).
+          m.action === 'abrirSocket' ? GemasDeSkill.abrirSocket(this.estado, m) :
+          m.action === 'ligarElo' ? GemasDeSkill.ligarElo(this.estado, m) :
           { ok: false, erro: 'Ação de gema desconhecida.' }
         );
       // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,

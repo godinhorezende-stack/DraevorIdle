@@ -1,6 +1,25 @@
 {
   "_nota": "GEMAS DE SKILL, SUPPORTS e SOCKETS (pedido do dono, 30/09) — o modelo Path of Exile: a skill vem da gema encaixada num socket de uma peça VESTIDA; supports ligados (links) à gema ativa a modificam. Lido por systems/skills/gemas.mjs. As \"gemas\" do Gem Atelier (gemas.mjs) são outra coisa (passivas do Tibia). Números iniciais.",
 
+  "orbes": {
+    "_nota": "Os ORBES de socket (inspirados no Path of Exile; 02/10): itens reais da mochila (empilham, o NPC não compra de volta), usados numa peça VESTIDA. Operação DETERMINÍSTICA, sem chance de falha. `encaixe` (Orb of Socketing) abre +1 socket (até o máximo do slot, `sockets.maximo`); `ligacao` (Orb of Linking) liga ou desliga UM elo entre dois sockets vizinhos abertos. Quem decide é o servidor (`skills/gemas.mjs`: `abrirSocket`, `ligarElo`); o orbe só é gasto depois de tudo validado. A fundidora (sorteio dos links) continua como era, separada.",
+    "encaixe": {
+      "itemId": 912003, "nome": "orbe de encaixe", "nomeEn": "Orb of Socketing", "sprite": 11454,
+      "descricao": "Use numa peça vestida: abre UM socket novo, vazio e sem link (até o máximo do tipo de peça). Não falha e não destrói nada.",
+      "precoDeReferencia": 10000000,
+      "loja": { "disponivel": true, "preco": 10000000 },
+      "drop": { "_nota": "Chance por ato de cair de bicho. ZERO por enquanto de propósito: hoje a fonte é a loja (10.000.000 de gold). Ligar um valor aqui é decisão de economia — a fundidora e a lapidadora caem a 0,1% a 0,25%.", "chancePorAto": { "1": 0, "2": 0, "3": 0, "4": 0 } }
+    },
+    "ligacao": {
+      "itemId": 912004, "nome": "orbe de ligação", "nomeEn": "Orb of Linking", "sprite": 24929,
+      "descricao": "Use numa peça vestida: liga (ou desliga) o elo entre DOIS sockets vizinhos abertos, à sua escolha. Os sockets ligados formam um grupo: as supports só valem para as skills do mesmo grupo. Não falha e não mexe nas gemas.",
+      "precoDeReferencia": 10000000,
+      "loja": { "disponivel": true, "preco": 10000000 },
+      "drop": { "_nota": "Igual ao orbe de encaixe: zero até haver especificação de balanceamento.", "chancePorAto": { "1": 0, "2": 0, "3": 0, "4": 0 } }
+    },
+    "_cores": "Os sockets NÃO têm cor hoje (a regra de compatibilidade é por TAGS da gema, `compativel`). Se um dia houver, a cor mora em `peca.soquetes.cores` (as operações dos orbes preservam campos extras do `soquetes`) e um Color Orb entra como mais uma operação ao lado de `abrirSocket`/`ligarElo` — separada da ligação. Nada disso existe ainda."
+  },
+
   "sockets": {
     "_nota": "Máximo por slot (o dono: 19 no total; Legs no lugar de Gloves). Ammo e backpack não têm.",
     "maximo": { "weapon": 4, "head": 2, "body": 4, "shield": 3, "legs": 2, "feet": 2, "ring": 1, "neck": 1 },
@@ -13,7 +32,7 @@
       "lendário": { "abertos": { "0": 10, "1": 25, "2": 30, "3": 23, "4": 12 }, "chanceDeLink": 0.7 },
       "mítico":   { "abertos": { "1": 20, "2": 30, "3": 30, "4": 20 },          "chanceDeLink": 0.8 }
     },
-    "_desbloqueio": "Preparado para o desbloqueio pago (futuro): `custoDoDesbloqueio` fica aqui quando existir; o item nunca é destruído.",
+    "_desbloqueio": "O desbloqueio é pelo ORBE DE ENCAIXE (ver `orbes`): +1 socket por orbe, até `maximo` do slot. A peça nunca é destruída.",
     "custoDoDesbloqueio": null
   },
 
@@ -101,6 +120,7 @@
   },
 
   "loja": {
+    "_orbes": "A Zuma Magehide também vende os dois orbes (`orbes.*.loja.preco`), na categoria 'Orbes de socket', pelo mesmo balcão das gemas.",
     "_nota": "O NPC vende a gema de cada skill (e de cada support) no nível 1, por gold: `precoBase + precoPorLevel × level mínimo da skill`.",
     "precoBase": 500,
     "precoPorLevel": 60,
