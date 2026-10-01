@@ -13,7 +13,8 @@ import * as R from '../regras.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss. */
 export function resistenciaDe(hunt, alvo, tipo) {
-  const r = BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0;
+  // A do bestiário + a dos modificadores do mob (`resist`, ver `mobs/raridade.mjs`).
+  const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0);
   return hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
 }
 

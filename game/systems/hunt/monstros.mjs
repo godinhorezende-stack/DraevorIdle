@@ -204,7 +204,8 @@ export const ALCANCE_DE_PERSEGUICAO = 12;
  * 3x, como na fórmula. O `moveMs` de cada passo vai no snapshot.
  */
 export function passoDoBicho(m, diagonal = false) {
-  const speed = BESTIARY[m.key]?.speed ?? 100;
+  // O modificador de velocidade (`velocidade`, ver `mobs/raridade.mjs`) encurta o passo.
+  const speed = (BESTIARY[m.key]?.speed ?? 100) * (m.velocidade ?? 1);
   return R.duracaoDoPasso(speed, { diagonal, tick: R.PASSO_MS });
 }
 

@@ -17,6 +17,7 @@
 // Este módulo só LÊ e VALIDA. Quem cria os bichos de uma instância é
 // `hunt/instancia.mjs`; quem grava é o editor (`admin/mapas.mjs`) e, uma vez,
 // a migração (`admin/migrar-spawns.mjs`).
+import * as Raridade from '../mobs/raridade.mjs';
 import { CATALOGO } from '../dados.mjs';
 
 export const TIPOS = ['normal', 'elite', 'miniboss', 'boss'];
@@ -38,6 +39,9 @@ export function normalizar(s, zDoMapa, i = 0) {
     quantidade: Number.isInteger(s.quantidade) && s.quantidade > 0 ? s.quantidade : PADRAO.quantidade,
     tipo: TIPOS.includes(s.tipo) ? s.tipo : PADRAO.tipo,
     criaturas,
+    // A raridade e os modificadores do mob deste ponto (ver `mobs/raridade.mjs`): só o que o mapa configura.
+    ...(s.raridade != null ? { raridade: s.raridade } : {}),
+    ...(Array.isArray(s.modificadores) && s.modificadores.length ? { modificadores: s.modificadores.map(String) } : {}),
   };
 }
 
@@ -75,6 +79,7 @@ export function validar(spawns, { largura, altura } = {}) {
     if (s?.quantidade != null && !(Number.isInteger(s.quantidade) && s.quantidade > 0)) erros.push(`${onde}: quantidade inválida.`);
     if (s?.raio != null && !(Number.isInteger(s.raio) && s.raio >= 0)) erros.push(`${onde}: raio inválido.`);
     if (s?.tipo != null && !TIPOS.includes(s.tipo)) erros.push(`${onde}: tipo "${s.tipo}" desconhecido.`);
+    for (const e of Raridade.errosDoSpawn(s)) erros.push(`${onde}: ${e}.`);
   });
   return erros;
 }

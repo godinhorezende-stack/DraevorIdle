@@ -8,6 +8,8 @@
 // original a maioria é gerada de novo a cada sessão, e esse gerador não
 // existe em nenhum arquivo extraído — oferecê-las seria inventar chão. Ver
 // `api-mapeada/checklist-modulos.md`.
+import * as Raridade from './mobs/raridade.mjs';
+import * as Atributos from './personagem/atributos.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario, removerItem } from './inventario.mjs';
@@ -1732,6 +1734,9 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       hp: m.hp,
       maxHp: m.maxHp,
       moveMs: m.moveMs ?? passoDoBicho(m),
+      // O level do mob (ao lado do nome) e a raridade + os modificadores (a cor do nome e a linha de baixo).
+      nivel: Atributos.levelDoBicho(hunt, m),
+      ...Raridade.paraCliente(m),
     })),
     players: [],
     npcs: [],

@@ -475,7 +475,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     conta('loot', fundidora.id, 1);
   }
   for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
-    const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt);
+    // `lootMult`: a raridade do mob (raro/elite dão mais loot — ver `mobs/raridade.mjs`).
+    const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
     if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
     if (VALOR_DA_MOEDA[drop.id]) {
       const n = quantasMoedas(alvo, drop.id, estado);
@@ -677,7 +678,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     if (!R.jaPode(agora, bicho.proximoGolpe)) continue;
     // Congelado ou atordoado: não bate; lento: bate mais devagar (supports Freeze/Stun/Slow).
     if (!Estados.podeAgir(bicho, agora)) continue;
-    bicho.proximoGolpe = agora + ATAQUE_DO_MONSTRO_MS * Estados.fatorDeLentidao(bicho, agora);
+    // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
+    bicho.proximoGolpe = agora + (ATAQUE_DO_MONSTRO_MS * Estados.fatorDeLentidao(bicho, agora)) / (bicho.velocidadeDeAtaque ?? 1);
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;

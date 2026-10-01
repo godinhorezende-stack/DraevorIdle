@@ -2,7 +2,7 @@ import './so-quando-muda.mjs';
 import { anunciarDrop } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
 import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
-import { MapView } from './map.mjs';
+import { MapView, definirCoresDeRaridade } from './map.mjs';
 import {
   createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir, esconderSemGravar,
   // O browse field troca o título a cada casa que abre: "Chão em 100, 65".
@@ -746,6 +746,8 @@ function handle(message) {
       // Sem catálogo ou itens no quadro, valem os que já chegaram nesta conexão.
       if (message.catalog) state.catalog = message.catalog;
       pintarAvisoDeObra();
+      // As cores do nome por raridade do mob (ver `definirCoresDeRaridade`, map.mjs).
+      if (message.mobRaridades) definirCoresDeRaridade(message.mobRaridades);
       if (message.items) {
         state.items = message.items;
         emprestarDoCatalogo(message.items);

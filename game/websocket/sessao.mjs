@@ -61,6 +61,7 @@ import * as Arvore from '../systems/arvore.mjs';
 import * as Passivas from '../systems/passivas/arvore.mjs';
 import * as ComandosDasPassivas from '../systems/passivas/comandos.mjs';
 import * as FiltroDaConta from '../systems/filtro-da-conta.mjs';
+import * as Raridade from '../systems/mobs/raridade.mjs';
 import * as Banqueiro from '../systems/banqueiro.mjs';
 import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
@@ -1811,6 +1812,8 @@ export class Sessao {
       // extração) mas não sabe o NOME de nenhum — todo balão de item ficaria
       // em branco.
       ...(itensNesteWelcome ? { items: ITEM_CATALOG } : {}),
+      // As cores do nome por raridade do mob (gamedata/mobs/raridades.json) — a tela pinta o nome com elas.
+      mobRaridades: Raridade.coresParaCliente(),
       // O top 25 de experiência, como no welcome do original.
       ranking: rankingDeExp,
       // Conectados + quem caça de aba fechada (ver `ausentes.mjs`).
