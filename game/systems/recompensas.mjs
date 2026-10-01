@@ -91,17 +91,12 @@ function concederRecompensaDoDia(estado, doPersonagem) {
       return;
     }
     // "Outfit Feral Trapper, com os dois addons": os dois sexos, como a loja.
-    case 'outfit': {
-      const nome = MONTARIAS_REAIS.outfits.find((o) => o.look === dia.look)?.name;
-      const looks = MONTARIAS_REAIS.outfits.filter((o) => o.name === nome).map((o) => o.look);
-      estado.lojaOutfits = [...new Set([...(estado.lojaOutfits ?? []), ...(looks.length ? looks : [dia.look])])];
+    case 'outfit':
+      liberarOutfit(estado, dia.look);
       return;
-    }
-    case 'montaria': {
-      const id = MONTARIAS_REAIS.mounts.find((m) => m.look === dia.look)?.id;
-      if (id != null) estado.lojaMontarias = [...new Set([...(estado.lojaMontarias ?? []), id])];
+    case 'montaria':
+      liberarMontaria(estado, { look: dia.look });
       return;
-    }
     default:
       return;
   }
@@ -164,6 +159,8 @@ const SETS_DE_MARCO = JSON.parse(readFileSync(new URL('../gamedata/sets-de-marco
 const TITULO_DO_BAU = { 50: 'Baú de itens (nível 50)', 100: 'Baú de itens (nível 100)' };
 
 export function marcosDaVocacao(estado) {
+  // Quem já tinha resgatado montaria/outfit sem receber, recebe agora (ver `repararEntregas`).
+  repararEntregas(estado);
   const sets = SETS_DE_MARCO[estado?.vocation];
   for (const marco of estado.presentes?.marcos ?? []) {
     if (marco.pego) continue;
@@ -188,6 +185,80 @@ function abrirBau(estado, marco) {
 }
 
 /*
+ * ---- Montaria e outfit: o MESMO sistema da Store e da aba Aparência ----
+ *
+ * Não existe lista paralela: liberar é pôr na `lojaMontarias` (ids) / `lojaOutfits` (looks) do
+ * personagem — é o que `Aparencia.temMontaria`/`temOutfit` leem, o que a aba Aparência lista como
+ * "owned" e o que `equiparMontaria`/`salvarAparencia` deixam vestir. O outfit entra nos DOIS sexos
+ * (os looks com o mesmo nome) e, vindo por aqui, com os dois addons (`addonsQueTem` dá 3 a quem o
+ * tem em `lojaOutfits`). Idempotente: liberar de novo não duplica nada.
+ */
+/** Libera a montaria (pelo id OU pelo look). Devolve o id, ou `null` se ela não existe no catálogo. */
+export function liberarMontaria(estado, { id, look } = {}) {
+  const montaria = MONTARIAS_REAIS.mounts.find((m) => (id != null && m.id === id) || (look != null && m.look === look));
+  if (!montaria) return null;
+  estado.lojaMontarias = [...new Set([...(estado.lojaMontarias ?? []), montaria.id])];
+  return montaria.id;
+}
+
+/** Libera o outfit do `look` nos dois sexos (com os dois addons). Devolve os looks, ou `null` se ele não existe. */
+export function liberarOutfit(estado, look) {
+  const nome = MONTARIAS_REAIS.outfits.find((o) => o.look === look)?.name;
+  if (!nome) return null;
+  const looks = MONTARIAS_REAIS.outfits.filter((o) => o.name === nome).map((o) => o.look);
+  estado.lojaOutfits = [...new Set([...(estado.lojaOutfits ?? []), ...looks])];
+  return looks;
+}
+
+const temAMontaria = (estado, marco) => {
+  const id = MONTARIAS_REAIS.mounts.find((m) => m.id === marco.mount || m.look === marco.look)?.id;
+  return id != null && (estado.lojaMontarias ?? []).includes(id);
+};
+const looksDoOutfit = (look) => {
+  const nome = MONTARIAS_REAIS.outfits.find((o) => o.look === look)?.name;
+  return nome ? MONTARIAS_REAIS.outfits.filter((o) => o.name === nome).map((o) => o.look) : [];
+};
+const temOOutfit = (estado, marco) => looksDoOutfit(marco.look).some((l) => (estado.lojaOutfits ?? []).includes(l));
+
+/**
+ * Personagens que resgataram a montaria (120) ou o outfit (130) ANTES desta correção pagaram o ouro
+ * e não receberam nada (o marco não tinha itens, e o resgate só sabia dar item ou abrir baú). Na
+ * entrada, quem tem o marco "pego" e não tem a montaria/outfit recebe agora — sem cobrar de novo.
+ * Nada é apagado nem desmarcado.
+ */
+export function repararEntregas(estado) {
+  for (const marco of estado?.presentes?.marcos ?? []) {
+    if (!marco.pego) continue;
+    if (marco.tipo === 'montaria' && !temAMontaria(estado, marco)) liberarMontaria(estado, { id: marco.mount, look: marco.look });
+    if (marco.tipo === 'outfit' && !temOOutfit(estado, marco)) liberarOutfit(estado, marco.look);
+  }
+}
+
+/*
+ * ---- Cada recompensa tem um ID, e não só o level ----
+ *
+ * O level não é único: no 50 há a arma de treino E o baú. O resgate e a tela passam a usar o `id`
+ * (`arma-de-treino-50`, `bau-50`, `montaria-120`...). Personagens salvos antes ganham o id na hora,
+ * calculado do que a recompensa já é — o `pego` de cada uma fica como estava.
+ */
+export function idDaRecompensa(recompensa, trilha) {
+  if (trilha === 'degrau') return `${recompensa.boosted ? 'exercise-boosted' : 'arma-de-treino'}-${recompensa.level}`;
+  return `${recompensa.tipo ?? 'marco'}-${recompensa.level}`;
+}
+
+function garantirIds(presentes) {
+  const usados = new Set();
+  const marcar = (r, trilha) => {
+    let id = r.id ?? idDaRecompensa(r, trilha);
+    for (let n = 2; usados.has(id); n++) id = `${idDaRecompensa(r, trilha)}-${n}`;
+    r.id = id;
+    usados.add(id);
+  };
+  for (const d of presentes.degraus ?? []) marcar(d, 'degrau');
+  for (const m of presentes.marcos ?? []) marcar(m, 'marco');
+}
+
+/*
  * ---- Quem está ABERTO na tela de Recompensas de nível ----
  *
  * As recompensas de level formam UMA fila, por level (e, no mesmo level, a arma de treino antes do
@@ -207,6 +278,7 @@ function filaDeRecompensas(presentes) {
 export function abrirProximas(estado) {
   const presentes = estado?.presentes;
   if (!presentes) return;
+  garantirIds(presentes);
   const fila = filaDeRecompensas(presentes);
   const primeira = fila.find((x) => !x.recompensa.pego);
   const level = estado.level ?? 1;
@@ -221,49 +293,96 @@ export function abrirProximas(estado) {
   presentes.marcosAbertos = marcosAbertos;
 }
 
-/** Os presentes como vão para o cliente: com as aberturas em dia (ver `abrirProximas`). */
+/**
+ * Os presentes como vão para o cliente: aberturas em dia (ver `abrirProximas`) e, na montaria e no
+ * outfit já resgatados, o estado REAL da entrega lido do sistema de Aparência — `entregue` (está na
+ * lista dele) e `emUso` (está vestido/montado agora). A tela não marca "concluído" pelo `pego` só.
+ * É uma cópia: estes campos não vão para o save.
+ */
 export function presentesParaCliente(estado) {
+  if (!estado?.presentes) return CHARACTER_TEMPLATE.presentes;
   abrirProximas(estado);
-  return estado.presentes ?? CHARACTER_TEMPLATE.presentes;
+  const presentes = estado.presentes;
+  return {
+    ...presentes,
+    marcos: (presentes.marcos ?? []).map((m) => {
+      if (m.tipo === 'montaria') {
+        const look = MONTARIAS_REAIS.mounts.find((x) => x.id === m.mount || x.look === m.look)?.look;
+        return { ...m, entregue: temAMontaria(estado, m), emUso: look != null && estado.outfit?.mount === look, onde: 'Personagem › Aparência' };
+      }
+      if (m.tipo === 'outfit') {
+        return { ...m, entregue: temOOutfit(estado, m), emUso: looksDoOutfit(m.look).includes(estado.outfit?.type), onde: 'Personagem › Aparência' };
+      }
+      return m;
+    }),
+  };
 }
 
-/** `send({t:'marco', level})` — um marco de EQUIPAMENTO (baú/outfit/montaria). */
-export function coletarMarco(estado, { level }) {
+/**
+ * `send({t:'marco', id})` (ou o `level` antigo) — um marco de EQUIPAMENTO: baú, montaria, outfit.
+ *
+ * A ordem importa: confere tudo, ENTREGA, e só então cobra e marca "pego". Se a entrega não der
+ * (baú sem itens da vocação, montaria/outfit que não existe no catálogo), nada é cobrado nem
+ * marcado. Resgatar de novo devolve erro (o `pego` já está gravado) — o servidor processa um
+ * comando por vez por sessão, então dois cliques seguidos não entregam duas vezes.
+ */
+export function coletarMarco(estado, { id, level } = {}) {
   const presentes = estado?.presentes;
-  const marco = presentes?.marcos?.find((m) => m.level === level);
-  if (!marco || marco.pego) return { ok: false, erro: 'Recompensa não encontrada.' };
+  if (presentes) garantirIds(presentes);
+  const marco = presentes?.marcos?.find((m) => (id != null ? m.id === id : m.level === level));
+  if (!marco) return { ok: false, erro: 'Recompensa não encontrada.' };
+  if (marco.pego) return { ok: false, erro: 'Esta recompensa já foi resgatada.' };
   // O marco é do LEVEL: antes só o ouro era conferido, e um level 8 com 100 mil
   // pegava o Set completo do level 100.
   if ((estado.level ?? 1) < marco.level) return { ok: false, erro: `Esta recompensa abre no level ${marco.level}.` };
   if ((estado.gold ?? 0) < marco.custo) return { ok: false, erro: 'Ouro insuficiente.' };
   marcosDaVocacao(estado);
 
-  estado.gold -= marco.custo;
+  // 1) entregar
   let peca = null;
-  if (marco.tipo === 'bau') peca = abrirBau(estado, marco);
-  else for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
+  let aviso = null;
+  if (marco.tipo === 'bau') {
+    peca = abrirBau(estado, marco);
+    if (!peca) return { ok: false, erro: 'O baú não tem itens para a sua vocação — nada foi cobrado.' };
+    aviso = `O baú abriu: ${ITEM_CATALOG[peca.id]?.name ?? `item ${peca.id}`} (${nomeDaRaridade(peca.raridade ?? 'comum')}).`;
+  } else if (marco.tipo === 'montaria') {
+    if (liberarMontaria(estado, { id: marco.mount, look: marco.look }) == null) return { ok: false, erro: 'Montaria não encontrada — nada foi cobrado.' };
+    aviso = `${marco.name ?? 'Montaria'} liberada! Monte em Personagem › Aparência.`;
+  } else if (marco.tipo === 'outfit') {
+    if (!liberarOutfit(estado, marco.look)) return { ok: false, erro: 'Outfit não encontrado — nada foi cobrado.' };
+    aviso = `${marco.name ?? 'Outfit'} liberado, com os 2 addons! Vista em Personagem › Aparência.`;
+  } else {
+    for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
+  }
+  // 2) só agora cobra e marca
+  estado.gold -= marco.custo;
   marco.pego = true;
   marco.aberto = false;
   abrirProximas(estado); // a próxima da fila abre, se o level já chega
-  if (!peca) return { ok: true };
-  const raridade = peca.raridade ?? 'comum';
   return {
     ok: true,
-    item: { id: peca.id, raridade },
-    notice: `O baú abriu: ${ITEM_CATALOG[peca.id]?.name ?? `item ${peca.id}`} (${nomeDaRaridade(raridade)}).`,
+    ...(peca ? { item: { id: peca.id, raridade: peca.raridade ?? 'comum' } } : {}),
+    ...(aviso ? { notice: aviso } : {}),
   };
 }
 
-/** `send({t:'presente', itemId})` — o degrau de ARMA DE TREINO (o jogador escolhe a arma). */
-export function coletarPresente(estado, { itemId }) {
+/**
+ * `send({t:'presente', itemId, id?})` — o degrau de ARMA DE TREINO (o jogador escolhe a arma). Só
+ * vale uma arma da lista DAQUELE degrau (`escolhas`, ou `escolhasBoosted` no boosted): antes qualquer
+ * `itemId` mandado pelo cliente entrava na mochila.
+ */
+export function coletarPresente(estado, { itemId, id } = {}) {
   const presentes = estado?.presentes;
   abrirProximas(estado); // a abertura pode estar atrasada (o level subiu depois do último envio)
   const degrau = presentes?.degraus?.find((d) => d.aberto && !d.pego);
   if (!degrau) return { ok: false, erro: 'Nenhum presente disponível.' };
+  if (id != null && degrau.id !== id) return { ok: false, erro: 'Esta recompensa ainda não está disponível.' };
+  const lista = degrau.boosted ? presentes.escolhasBoosted ?? presentes.escolhas : presentes.escolhas;
+  if (!(lista ?? []).some((e) => e.itemId === itemId)) return { ok: false, erro: 'Escolha uma das armas da lista.' };
   if ((estado.gold ?? 0) < degrau.custo) return { ok: false, erro: 'Ouro insuficiente.' };
 
-  estado.gold -= degrau.custo;
   darItem(estado, itemId);
+  estado.gold -= degrau.custo;
   degrau.pego = true;
   degrau.aberto = false;
   presentes.pegos = (presentes.pegos ?? 0) + 1;

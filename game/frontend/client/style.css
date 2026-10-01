@@ -13737,6 +13737,8 @@ body.mirando #map { cursor: crosshair; }
 /* O cartão pego ganha rodapé para a faixa não encostar no texto. */
 .recompensa-cartao.pego { padding-bottom: 22px; }
 .recompensa-cartao.aberto .recompensa-selo { color: #e0b45a; opacity: 1; }
+/* Montaria/outfit resgatados e ainda não usados: o caminho para equipar, clicável. */
+.recompensa-onde { margin-top: 4px; padding: 4px 8px; font-size: 10.5px; line-height: 1.25; white-space: normal; max-width: 100%; }
 .recompensa-cartao button { margin-top: auto; width: 100%; }
 
 /* ---- O botão de pegar o prêmio ----

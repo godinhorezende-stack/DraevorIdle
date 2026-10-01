@@ -20178,7 +20178,27 @@ export function corpoDasRecompensas(body, comFechar = true) {
       caixa.append(preco);
     }
 
-    if (cartao.pego) caixa.append(el('em', 'recompensa-selo', 'pego'));
+    /*
+     * ---- Os estados: bloqueada, disponível, resgatada — e, na montaria/outfit, onde está ----
+     *
+     * O selo de "pego" da montaria e do outfit vem do que o SERVIDOR leu no sistema de Aparência
+     * (`entregue`, `emUso`), e não só do `pego`: resgatada e ainda não usada mostra onde equipar,
+     * com um botão que abre a Aparência; sem a entrega registrada, avisa em vez de dizer "pego".
+     */
+    if (cartao.pego && (cartao.tipo === 'montaria' || cartao.tipo === 'outfit')) {
+      const usar = cartao.tipo === 'montaria' ? 'montar' : 'vestir';
+      if (cartao.entregue === false) caixa.append(el('em', 'recompensa-espera', 'resgatada — liberação pendente, entre de novo no jogo'));
+      else if (cartao.emUso) caixa.append(el('em', 'recompensa-selo', 'pego · em uso'));
+      else {
+        caixa.append(el('em', 'recompensa-selo', 'pego'));
+        const ir = el('button', 'ghost recompensa-onde', `Para ${usar}: ${cartao.onde ?? 'Personagem › Aparência'}`);
+        ir.onclick = () => {
+          ctx.closeModal?.();
+          ctx.abrirAparencia?.();
+        };
+        caixa.append(ir);
+      }
+    } else if (cartao.pego) caixa.append(el('em', 'recompensa-selo', 'pego'));
     else if (cartao.aberto) {
       const pegar = el('button', 'recompensa-pegar', cartao.trilha === 'exercicio' ? 'Escolher' : 'Pegar');
       // Sem ouro o botão fica apagado e DIZ o quanto falta, em vez de aceitar
@@ -20187,7 +20207,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
       if (!temOuro) tipTexto(pegar, `faltam ${(custo - meuOuro).toLocaleString('pt-BR')} gold`);
       pegar.onclick = () => {
         if (cartao.trilha === 'exercicio') {
-          escolhendo = cartao.level;
+          escolhendo = cartao.id ?? cartao.level;
           escolhido = null;
           return void desenhar();
         }
@@ -20285,7 +20305,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
     confirmar.disabled = sobra < 0;
     confirmar.onclick = () => {
       confirmar.disabled = true;
-      send({ t: 'marco', level: cartao.level });
+      send({ t: 'marco', id: cartao.id, level: cartao.level });
       closeModal();
     };
     acoes.append(cancelar, confirmar);
@@ -20293,13 +20313,14 @@ export function corpoDasRecompensas(body, comFechar = true) {
   };
 
   const desenharEscolha = () => {
-    const doDegrau = cartoes.find((c) => c.level === escolhendo) ?? {};
+    // Pelo ID: no level 50 há DUAS recompensas (a arma de treino e o baú), e o level não as separa.
+    const doDegrau = cartoes.find((c) => (c.id ?? c.level) === escolhendo) ?? {};
     const custoDaEscolha = doDegrau.custo ?? 0;
     area.append(
       el(
         'p',
         'shop-note',
-        `Presente do level ${escolhendo} — escolha uma ${doDegrau.boosted ? 'exercise boosted' : 'arma de treino'}. ` +
+        `Presente do level ${doDegrau.level} — escolha uma ${doDegrau.boosted ? 'exercise boosted' : 'arma de treino'}. ` +
           `Ela vem cheia, com ${(presentes.escolhas?.[0]?.cargas ?? 64400).toLocaleString('pt-BR')} cargas` +
           (doDegrau.boosted ? ', e cada carga rende o dobro de uma durable.' : '.')
       )
@@ -20364,7 +20385,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
     confirmar.disabled = !escolha || meuOuro < custoDaEscolha;
     confirmar.onclick = () => {
       if (!escolhido) return;
-      send({ t: 'presente', itemId: escolhido });
+      send({ t: 'presente', itemId: escolhido, ...(typeof escolhendo === 'string' ? { id: escolhendo } : {}) });
       closeModal();
     };
     acoes.append(voltar, confirmar);
