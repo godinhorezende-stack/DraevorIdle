@@ -1,3 +1,4 @@
+import { engoleEsteClique } from './regras-de-toque.mjs';
 /*
  * ---- O jogo na mão: analógico e o que mais o dedo precisa ----
  *
@@ -820,7 +821,8 @@ const TOQUE_LONGO_MS = 500;
 const TREMOR_DO_DEDO = 12;
 
 let toque = null;
-let engolirOClique = false;
+// Quando o toque longo disparou (o `click` dele chega logo depois — ou não chega, em alguns navegadores).
+let engolirOClique = null;
 
 const emCampoDeTexto = (no) => !!no?.closest?.('input, textarea, select, [contenteditable="true"]');
 
@@ -888,7 +890,7 @@ function ligarToqueLongo() {
        */
       const alvo = document.elementFromPoint(evento.clientX, evento.clientY) ?? atual.alvo;
       if (!alvo || emCampoDeTexto(alvo)) return;
-      engolirOClique = true;
+      engolirOClique = Date.now();
       alvo.dispatchEvent(
         new MouseEvent('contextmenu', {
           bubbles: true,
@@ -913,8 +915,14 @@ function ligarToqueLongo() {
   document.addEventListener(
     'click',
     (evento) => {
-      if (!engolirOClique) return;
-      engolirOClique = false;
+      if (engolirOClique == null) return;
+      const armado = engolirOClique;
+      engolirOClique = null;
+      /*
+       * Só o `click` do PRÓPRIO toque longo é engolido. Antes a marca ficava armada para sempre
+       * quando o navegador não mandava esse `click` — e engolia o PRÓXIMO toque, em outro botão.
+       */
+      if (!engoleEsteClique(armado, Date.now())) return;
       evento.preventDefault();
       evento.stopPropagation();
     },

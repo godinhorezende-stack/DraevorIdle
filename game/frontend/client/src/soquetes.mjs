@@ -111,7 +111,28 @@ function corpo(body, peca) {
   const fundir = el('button', 'ghost', `Fundir links · ${fundidoras} Fundidora${fundidoras === 1 ? '' : 's'}`);
   fundir.title = 'Sorteia de novo os links entre os sockets abertos desta peça (mais chance quanto mais rara a peça).';
   fundir.disabled = !fundidoras || abertos < 2;
-  fundir.onclick = () => send({ t: 'gema', action: 'fundir', slot: slotAberto });
+  /*
+   * Refazer os links é uma ação que MUDA a peça (e gasta a moeda): pede confirmação — o primeiro
+   * toque só arma ("Confirmar: fundir links"), o segundo, em até 4 s, manda. Um toque perdido no
+   * celular (o dedo que escorrega depois de segurar um socket) não refaz os links de ninguém.
+   */
+  let armadoAte = 0;
+  fundir.onclick = () => {
+    if (Date.now() > armadoAte) {
+      armadoAte = Date.now() + 4000;
+      fundir.textContent = 'Confirmar: fundir links (toque de novo)';
+      fundir.classList.add('perigo');
+      setTimeout(() => {
+        if (Date.now() >= armadoAte && fundir.isConnected) {
+          fundir.textContent = `Fundir links · ${fundidoras} Fundidora${fundidoras === 1 ? '' : 's'}`;
+          fundir.classList.remove('perigo');
+        }
+      }, 4000);
+      return;
+    }
+    armadoAte = 0;
+    send({ t: 'gema', action: 'fundir', slot: slotAberto });
+  };
   const barraDaPeca = el('div', 'soquetes-acoes');
   barraDaPeca.append(fundir);
   body.append(barraDaPeca);
