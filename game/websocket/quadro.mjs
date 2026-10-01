@@ -19,7 +19,7 @@ export const JANELA = { x: METADE_DA_TELA.x + MARGEM, y: METADE_DA_TELA.y + MARG
 
 /** O que um bicho tem de fixo: vai uma vez, e o cliente guarda. */
 // (A raridade, os modificadores e o level do mob também não mudam: vão uma vez — ver `mobs/raridade.mjs`.)
-const MOBILIA = ['name', 'look', 'lookItem', 'colors', 'maxHp', 'raridade', 'mods', 'nivel'];
+const MOBILIA = ['name', 'look', 'lookItem', 'colors', 'maxHp', 'raridade', 'mods', 'nivel', 'lvExtra'];
 
 export const naTela = (centro, p) => !!centro && Math.abs(p.x - centro.x) <= JANELA.x && Math.abs(p.y - centro.y) <= JANELA.y;
 

@@ -6102,7 +6102,7 @@ function esconderBalaoDoMob() {
 }
 
 function mostrarBalaoDoMob(bicho, evento) {
-  const chave = `${bicho.uid}|${bicho.raridade}|${(bicho.mods ?? []).join(',')}|${bicho.nivel}`;
+  const chave = `${bicho.uid}|${bicho.raridade}|${(bicho.mods ?? []).join(',')}|${bicho.nivel}|${bicho.lvExtra}`;
   if (!balaoDoMob) {
     balaoDoMob = document.createElement('div');
     balaoDoMob.className = 'tooltip painel balao-do-mob';
@@ -6121,7 +6121,8 @@ function mostrarBalaoDoMob(bicho, evento) {
     cabeca.append(nome);
     if (bicho.nivel != null) {
       const lv = document.createElement('span');
-      lv.textContent = `Lv ${bicho.nivel}`;
+      // Com os levels a mais da raridade: "Lv 20 (8 +12)".
+      lv.textContent = bicho.lvExtra ? `Lv ${bicho.nivel} (${bicho.nivel - bicho.lvExtra} +${bicho.lvExtra})` : `Lv ${bicho.nivel}`;
       cabeca.append(lv);
     }
     const raridade = document.createElement('div');

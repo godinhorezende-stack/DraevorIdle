@@ -12,6 +12,7 @@
 //   passo    → `velocidade` (em `passoDoBicho`);  golpe → `velocidadeDeAtaque`
 //   regeneração → `regen` (% da vida por segundo, no tique dos estados)
 //   elite/boss → `elite`/`chefe` (os adds "Damage vs Elite/Boss" do jogador)
+//   level    → `levelExtra` (somado ao level do mob: Accuracy/Evasion e o Lv da tela)
 // As MECÂNICAS (ao morrer explode, gera mobs...) ficam nos dados do
 // modificador: o mob guarda só os ids (`mods`), e `mecanicas.mjs` as lê na hora.
 //
@@ -84,6 +85,8 @@ export function aplicar(m, { raridade = 'normal', modificadores = [] } = {}) {
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;
   if (r.boss) m.chefe = true;
+  // Levels a mais (somados em `Atributos.levelDoBicho`: valem na Accuracy/Evasion e no Lv da tela).
+  if (r.levelExtra) m.levelExtra = r.levelExtra;
   return m;
 }
 
@@ -93,7 +96,12 @@ export const mecanicasDe = (m) => (m?.mods ?? []).flatMap((id) => (MODIFICADORES
 /** O que vai para a tela junto com o mob: a raridade e os NOMES dos modificadores. */
 export function paraCliente(m) {
   if (!m?.raridade) return {};
-  return { raridade: m.raridade, ...(m.mods?.length ? { mods: m.mods.map((id) => MODIFICADORES[id]?.nome ?? id) } : {}) };
+  return {
+    raridade: m.raridade,
+    ...(m.mods?.length ? { mods: m.mods.map((id) => MODIFICADORES[id]?.nome ?? id) } : {}),
+    // Os levels a mais da raridade (o balão mostra "Lv 20 (8 +12)").
+    ...(m.levelExtra ? { lvExtra: m.levelExtra } : {}),
+  };
 }
 
 /** A configuração de cores que o cliente usa para pintar o nome (vai no welcome). */
@@ -102,7 +110,9 @@ export const coresParaCliente = () => Object.fromEntries(Object.entries(CONFIG.r
 /** "vida ×2 · dano ×1,3 · exp ×3 · loot ×2" — o que a raridade muda (para o tooltip do mob). */
 function resumoDaRaridade(r) {
   const x = (v) => `×${String(Math.round(v * 100) / 100).replace('.', ',')}`;
-  return [['vida', r.vida], ['dano', r.dano], ['exp', r.exp], ['loot', r.loot]].filter(([, v]) => Number.isFinite(v) && v !== 1).map(([k, v]) => `${k} ${x(v)}`).join(' · ');
+  const partes = [['vida', r.vida], ['dano', r.dano], ['exp', r.exp], ['loot', r.loot]].filter(([, v]) => Number.isFinite(v) && v !== 1).map(([k, v]) => `${k} ${x(v)}`);
+  if (r.levelExtra) partes.push(`Lv +${r.levelExtra}`);
+  return partes.join(' · ');
 }
 
 // ---- O TEXTO de cada modificador (fase 3): gerado dos MESMOS dados que o motor usa ----

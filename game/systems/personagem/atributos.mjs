@@ -60,10 +60,12 @@ export const precisaoBase = (level) => CONFIG.precisao.BASE + CONFIG.precisao.PO
  * (os bichos do Tibia não têm level próprio).
  */
 export function levelDoBicho(hunt, bicho) {
-  if (hunt?.escala?.nivel) return hunt.escala.nivel;
-  // A exp a mais da raridade (`expMult`) não sobe o level do mob.
+  // Os levels a mais da raridade (pedido do dono, 01/10: valem no combate — ver `mobs/raridade.mjs`).
+  const extra = bicho?.levelExtra ?? 0;
+  if (hunt?.escala?.nivel) return hunt.escala.nivel + extra;
+  // A exp a mais da raridade (`expMult`) não sobe o level do mob — quem sobe é o `levelExtra`.
   const exp = Math.max(1, (bicho?.exp ?? 1) / (bicho?.expMult ?? 1));
-  return Math.max(1, Math.min(2000, Math.round(Math.sqrt(exp) * 3)));
+  return Math.min(2000, Math.max(1, Math.min(2000, Math.round(Math.sqrt(exp) * 3))) + extra);
 }
 
 /** Chance (0–1) do golpe do jogador ACERTAR o bicho: a Accuracy dele contra a evasão do bicho. */
