@@ -2280,7 +2280,8 @@ const panelCtx = {
    * aparencia pela aba da ficha, o privado pelo canal do chat. So faltava a
    * ponte.
    */
-  abrirAparencia: () => openCharacter('aparencia'),
+  // A aba de aparência da ficha é a 'look' (as abas são 'sheet' e 'look'); 'aparencia' não abria aba nenhuma.
+  abrirAparencia: () => openCharacter('look'),
   abrirChatPrivado: (nome) => {
     abrirConversa(nome);
     // Sem isto a conversa abre numa janela que pode estar fechada ou minimizada.
