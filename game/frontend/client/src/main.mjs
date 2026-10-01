@@ -88,6 +88,7 @@ import { atualizarMedidor, pongChegou } from './medidor.mjs';
 // O remendo dentro dos campos do delta. Ver `juntarOsRemendos`.
 import { aplicarRemendo } from '/packages/shared/src/remendo.mjs';
 import { initMobile, ehCelular } from './mobile.mjs';
+import { initMinimapa, atualizarMinimapa } from './minimapa.mjs';
 import { instalarArrastoDoMouse } from './arrasto-do-mouse.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -238,6 +239,8 @@ marcarFoco();
  */
 atualizarMedidor((mensagem) => send(mensagem));
 mapView = new MapView($('map'));
+// O minimapa por cima do mapa, no canto superior direito da área de jogo (ver `minimapa.mjs`).
+initMinimapa(mapView, { ehTelefone });
 
 /*
  * A cortina sai com uma dissolvida, e só depois é removida do documento: um
@@ -1525,6 +1528,7 @@ function resetCharacterState() {
   panelCtx.tabs = {};
   panelCtx.redraw = null;
   mapView.setSnapshot(null, null);
+  atualizarMinimapa(false);
 }
 
 /*
@@ -2073,6 +2077,8 @@ function applyState(message) {
   acompanharTroca(message);
 
   mapView.setSnapshot(message.hunt ?? message.city, message.character);
+  // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
+  atualizarMinimapa(!!message.hunt);
   /*
    * ---- A tela em branco pede o mapa de volta ----
    *
