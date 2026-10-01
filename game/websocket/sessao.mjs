@@ -2238,6 +2238,16 @@ export class Sessao {
     }
     const base = this.huntNoCliente;
     const inteira = comMapa || 'map' in hunt || !base || base === 'nenhuma' || base.mapId !== hunt.mapId;
+    // O radar do minimapa (todos os bichos do andar), ANTES do recorte da tela. Ver `Quadro.radarDosBichos`.
+    const radar = Quadro.radarDosBichos(hunt.monsters, hunt.boss?.uid ?? null, hunt.isBoss);
+    const agora = Date.now();
+    if (!inteira && this.radarAnterior && agora - this.radarEm < Quadro.RADAR_MS && radar.length === this.radarAnterior.length) {
+      hunt.radar = this.radarAnterior; // o mesmo de antes: o delta não o leva de novo
+    } else {
+      hunt.radar = radar;
+      this.radarAnterior = radar;
+      this.radarEm = agora;
+    }
     const { lista, uids } = Quadro.bichosDoQuadro(hunt.monsters, hunt.player, inteira ? null : base.uids);
     hunt.monsters = lista;
     if (inteira) {

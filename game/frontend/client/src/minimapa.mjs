@@ -121,7 +121,15 @@ export function escala(map, ladoPx) {
 export function pontosDoRetrato(snap) {
   const pontos = [];
   const bossUid = snap.boss?.uid ?? null;
-  for (const m of snap.monsters ?? []) {
+  /*
+   * O RADAR (todos os bichos do andar, só a posição — ver `radarDosBichos`, websocket/quadro.mjs):
+   * o quadro da caçada só traz os bichos da TELA, e sem o radar o minimapa só via quem estava perto.
+   */
+  if (Array.isArray(snap.radar)) {
+    const TIPOS = ['monstro', 'raro', 'boss'];
+    for (let i = 0; i + 2 < snap.radar.length; i += 3) pontos.push({ x: snap.radar[i], y: snap.radar[i + 1], tipo: TIPOS[snap.radar[i + 2]] ?? 'monstro' });
+  }
+  for (const m of Array.isArray(snap.radar) ? [] : snap.monsters ?? []) {
     if (!(m.hp > 0) || !Number.isFinite(m.x) || !Number.isFinite(m.y)) continue;
     const tipo = snap.isBoss || m.uid === bossUid ? 'boss' : m.raridade && m.raridade !== 'normal' ? 'raro' : 'monstro';
     pontos.push({ x: m.x, y: m.y, tipo });

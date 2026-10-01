@@ -45,6 +45,26 @@ export function bichosDoQuadro(monsters, centro, jaForam) {
   return { lista, uids };
 }
 
+/*
+ * ---- O RADAR do minimapa: TODOS os bichos do andar, só a posição ----
+ *
+ * O quadro só leva os bichos da TELA (acima), e o minimapa mostra a fase inteira: sem isto ele só
+ * via o bicho que já estava perto. Aqui vai uma lista enxuta, plana — `[x, y, tipo, x, y, tipo…]`,
+ * tipo 0 normal, 1 de raridade, 2 boss —, só dos vivos. Quem manda (`sessao.mjs`) a refaz no
+ * máximo a cada `RADAR_MS` (e sempre que muda a quantidade): o delta do quadro só a leva quando
+ * ela mudou. Werelions -1, 148 bichos: ~1 KB, uma vez por segundo, contra os 30 KB do quadro inteiro.
+ */
+export const RADAR_MS = 1000;
+export function radarDosBichos(monsters, bossUid = null, salaDeBoss = false) {
+  const radar = [];
+  for (const m of monsters ?? []) {
+    if (!(m.hp > 0) || !Number.isFinite(m.x) || !Number.isFinite(m.y)) continue;
+    const tipo = salaDeBoss || (bossUid != null && m.uid === bossUid) ? 2 : m.raridade && m.raridade !== 'normal' ? 1 : 0;
+    radar.push(m.x, m.y, tipo);
+  }
+  return radar;
+}
+
 /** Efeitos de tela (`fx`, `shot`, `explosao`, `area`) longe dela, ou com a aba escondida, não vão: ninguém os vê. */
 export function eventosDoQuadro(eventos, centro, oculta) {
   if (!eventos?.length) return eventos;
