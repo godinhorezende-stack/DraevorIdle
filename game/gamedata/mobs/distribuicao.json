@@ -1,10 +1,10 @@
 {
   "_nota": "A RARIDADE dos spawns dos mapas já criados (pedido do dono, 01/10: distribuição moderada, modificadores pelo tema do mob). Lida UMA vez por game/admin/raridade-dos-mapas.mjs, que grava o resultado no bloco `spawns` de cada mapa — o jogo nunca sorteia nada; a escolha é fixa (semente = id do mapa + id do spawn). Depois disso o mapa é a fonte: o editor muda spawn por spawn.",
 
-  "_porMapa": "Fração dos spawns de cada mapa por raridade (arredondada); `eliteACada`: 1 elite a cada N spawns (no mínimo 1 por mapa). `modificadores`: [mínimo, máximo] por raridade; `mecanicasNoMaximo`: quantos modificadores com mecânica (explosão, aura...) um spawn dessa raridade leva no máximo.",
-  "porMapa": { "modificado": 0.15, "raro": 0.05, "eliteACada": 40 },
-  "modificadores": { "modificado": [1, 2], "raro": [2, 3], "elite": [2, 3] },
-  "mecanicasNoMaximo": { "modificado": 1, "raro": 2, "elite": 2 },
+  "_porMapa": "Fração dos spawns de cada mapa por raridade (arredondada); `eliteACada`: 1 elite a cada N spawns (no mínimo 1 por mapa); `unico`/`boss`: quantos por mapa (pedido do dono, 01/10: 1 de cada — um mob comum com a raridade, não o boss do bestiário). `modificadores`: [mínimo, máximo] por raridade; `mecanicasNoMaximo`: quantos modificadores com mecânica (explosão, aura...) um spawn dessa raridade leva no máximo.",
+  "porMapa": { "modificado": 0.15, "raro": 0.05, "eliteACada": 40, "unico": 1, "boss": 1 },
+  "modificadores": { "modificado": [1, 2], "raro": [2, 3], "elite": [2, 3], "unico": [3, 4], "boss": [4, 5] },
+  "mecanicasNoMaximo": { "modificado": 1, "raro": 2, "elite": 2, "unico": 2, "boss": 3 },
 
   "_temas": "Modificadores que combinam com cada `class` do bestiário (o primeiro modificador sai daqui). `elementos`: o mob que resiste 50% ou mais a um elemento ganha também estes. `geral` completa a lista.",
   "temas": {

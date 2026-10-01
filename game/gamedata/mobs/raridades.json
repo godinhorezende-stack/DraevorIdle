@@ -8,7 +8,7 @@
     "raro":       { "nome": "Raro",       "cor": "#e8a33d", "vida": 1.8,  "dano": 1.2,  "exp": 2.5, "loot": 2,   "maxModificadores": 4 },
     "elite":      { "nome": "Elite",      "cor": "#c77dff", "vida": 2.5,  "dano": 1.35, "exp": 4,   "loot": 3,   "maxModificadores": 4, "elite": true },
     "unico":      { "nome": "Único",      "cor": "#f0d36b", "vida": 3,    "dano": 1.5,  "exp": 6,   "loot": 4,   "maxModificadores": 6, "elite": true },
-    "boss":       { "nome": "Boss",       "cor": "#ff5b4f", "vida": 1,    "dano": 1,    "exp": 1,   "loot": 1,   "maxModificadores": 6, "boss": true }
+    "boss":       { "nome": "Boss",       "cor": "#ff5b4f", "vida": 5,    "dano": 1.8,  "exp": 10,  "loot": 6,   "maxModificadores": 6, "boss": true }
   },
 
   "_tipoDoSpawn": "O `tipo` que os spawns já tinham (normal | elite | miniboss | boss) vira a raridade quando o spawn não diz `raridade`.",

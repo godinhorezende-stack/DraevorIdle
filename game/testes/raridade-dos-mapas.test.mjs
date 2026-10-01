@@ -25,9 +25,24 @@ test('distribuir: fixo (a mesma entrada dá o mesmo resultado) e nas quantidades
   assert.equal(conta('elite'), Math.round(100 / A.DIST.porMapa.eliteACada));
   assert.equal(conta('raro'), Math.round(100 * A.DIST.porMapa.raro));
   assert.equal(conta('modificado'), Math.round(100 * A.DIST.porMapa.modificado));
+  assert.equal(conta('unico'), A.DIST.porMapa.unico);
+  assert.equal(conta('boss'), A.DIST.porMapa.boss);
   assert.notDeepEqual(a.map((s) => s.raridade ?? ''), A.distribuir('mapa-y', spawns).map((s) => s.raridade ?? ''), 'outro mapa, outra escolha');
   // Mapa pequeno: ao menos 1 elite.
   assert.equal(A.distribuir('mapa-z', spawnsDeTeste(5)).filter((s) => s.raridade === 'elite').length, 1);
+});
+
+test('completar: o que já tem raridade fica como está, e dá o mesmo que distribuir do zero', () => {
+  const spawns = spawnsDeTeste(80);
+  const antes = A.distribuir('mapa-c', spawns).map((s) => (s.raridade === 'unico' || s.raridade === 'boss' ? (({ raridade, modificadores, ...r }) => r)(s) : s));
+  const completo = A.distribuir('mapa-c', antes, { manter: true });
+  assert.deepEqual(completo, A.distribuir('mapa-c', spawns));
+  antes.forEach((s, i) => { if (s.raridade) assert.deepEqual(completo[i], s, 'não mexe no que já tinha'); });
+  // Um spawn editado à mão fica como está, e conta para a raridade dele.
+  const mao = antes.map((s, i) => (i === 0 ? { ...s, raridade: 'boss', modificadores: ['brutal'] } : s));
+  const r = A.distribuir('mapa-c', mao, { manter: true });
+  assert.deepEqual(r[0], mao[0]);
+  assert.equal(r.filter((s) => s.raridade === 'boss').length, 1);
 });
 
 test('distribuir: modificadores do tema, dentro do teto, com no máximo N mecânicas; boss fica de fora', () => {
@@ -52,7 +67,7 @@ test('os mapas com spawn já têm a raridade gravada, e válida', () => {
     const m = JSON.parse(readFileSync(join(RAIZ_HUNTS, arq), 'utf8'));
     if (!m.spawns?.length) continue;
     mapas++;
-    assert.ok(m.spawns.some((s) => s.raridade === 'elite'), `${arq} sem elite`);
+    for (const r of ['elite', 'unico', 'boss']) assert.ok(m.spawns.some((s) => s.raridade === r), `${arq} sem ${r}`);
     for (const s of m.spawns) assert.deepEqual(Raridade.errosDoSpawn(s), [], `${arq} ${s.id}`);
   }
   assert.ok(mapas >= 40);
