@@ -2,6 +2,7 @@
 // para equipar, menu de contexto por item e a loot pouch com venda rápida.
 import { itemCanvas, itemSprite } from './sprites.mjs';
 import { abrirSoquetes, temSoquetes } from './soquetes.mjs';
+import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
 // O desenho da bolsa numa definição só, com a reserva. Ver o módulo.
 import { ITEM_DA_BOSS_POUCH, ITEM_DA_BOSS_POUCH_RESERVA, ITEM_DA_STORE_INBOX } from '/packages/shared/src/boss-pouch.mjs';
 import { pedirQuantidade, controleDeQuantidade } from './social.mjs';
@@ -559,6 +560,9 @@ function selarSoquetes(cell, peca, aoTocar = null) {
   const itens = ctx.state.items;
   const fila = el(aoTocar ? 'button' : 'span', `selo-soquetes${aoTocar ? ' tocavel' : ''}`);
   if (aoTocar) {
+    // Tocar/segurar AQUI abre a janela de sockets e nunca arrasta a peça (ver `regras-de-toque.mjs`).
+    fila.dataset.semArrasto = '';
+    fila.draggable = false;
     fila.type = 'button';
     fila.title = 'Sockets — encaixar gemas';
     const abrir = (event) => {
@@ -1279,7 +1283,15 @@ export const alvoDaPeca = (entry, pilha) => ({
 
 function makeDraggable(node, id, from, count = 1, pilha = null, entry = null) {
   node.draggable = true;
+  // De onde o dedo/mouse partiu: o arrasto que começa numa área "sem arrasto" (a fileira de
+  // sockets) não sai — no celular o toque longo ali é para abrir a janela, e não para levar a peça.
+  let origem = null;
+  node.addEventListener('pointerdown', (event) => { origem = event.target; }, true);
   node.addEventListener('dragstart', (event) => {
+    if (comecouSemArrasto(origem)) {
+      event.preventDefault();
+      return;
+    }
     event.dataTransfer.setData(
       'text/plain',
       JSON.stringify({
@@ -1481,12 +1493,17 @@ function makeDropSlot(node, slot) {
     node.classList.remove('drop-target');
     try {
       const payload = JSON.parse(event.dataTransfer.getData('text/plain'));
+      const acao = acaoDaSolturaNoSlot(payload, !!ctx.state.items[payload.id]?.gemaDef);
+      /*
+       * Veio do PRÓPRIO corpo (a peça vestida arrastada e solta num slot): não há o que vestir.
+       * O `equip` lê a mochila, e com outra cópia do mesmo item lá ele trocaria a peça vestida
+       * por ela — outros sockets, e as gemas da vestida indo para a mochila. Ver `regras-de-toque.mjs`.
+       */
+      if (acao === 'ignorar') return;
       // O equipar lê a MOCHILA: vindo da Store Inbox vestiria a cópia de lá. Ver `naStoreInbox`.
-      if (payload.from === 'storeInbox') return void ctx.notice?.('Leve da Store Inbox para a mochila primeiro.');
+      if (acao === 'aviso') return void ctx.notice?.('Leve da Store Inbox para a mochila primeiro.');
       // Uma GEMA arrastada da mochila até a peça vestida: encaixa no primeiro socket livre dela.
-      if (ctx.state.items[payload.id]?.gemaDef && payload.from === 'bag' && payload.pilha != null) {
-        return void ctx.send({ t: 'gema', action: 'encaixar', slot, de: payload.pilha });
-      }
+      if (acao === 'gema') return void ctx.send({ t: 'gema', action: 'encaixar', slot, de: payload.pilha });
       if (payload.from === 'pouch') ctx.send({ t: 'pouch', id: payload.id, count: 1, to: 'bag' });
       ctx.send({ t: 'equip', id: payload.id, slot, pilha: payload.pilha, alvo: payload.alvo ?? null });
     } catch {
