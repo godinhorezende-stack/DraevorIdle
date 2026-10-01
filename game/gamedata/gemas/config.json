@@ -39,10 +39,11 @@
   },
 
   "golpesSecundarios": {
-    "_nota": "O motor de PROJÉTIL e ÁREA (systems/skills/golpes-secundarios.mjs): a distância que a bifurcação e o encadeamento procuram o próximo bicho, e o raio da explosão (em volta do bicho atingido).",
+    "_nota": "O motor de PROJÉTIL e ÁREA (systems/skills/golpes-secundarios.mjs): a distância que a bifurcação e o encadeamento procuram o próximo bicho; a EXPLOSÃO (lado do quadrado centrado no impacto: 3 = 3×3 = 9 casas — pega todos dentro, inclusive o do impacto); e os TETOS por uso da skill (impactos secundários e explosões), contra combinações sem fim.",
     "distanciaDaBifurcacao": 4,
     "distanciaDoEncadeamento": 4,
-    "raioDaExplosao": 1
+    "explosao": { "lado": 3 },
+    "limites": { "impactosPorUso": 60, "explosoesPorUso": 30 }
   },
 
   "estados": {
