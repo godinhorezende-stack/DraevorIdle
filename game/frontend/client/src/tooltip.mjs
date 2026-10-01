@@ -30,6 +30,8 @@ const ELEMENT_NAMES = {
 };
 
 let node = null;
+// O balão aberto agora veio do DEDO (segurar parado) — e não do mouse: a ficha do item vira a compacta com X.
+let abertoPeloToque = false;
 let getItems = () => ({});
 /*
  * O personagem e o catalogo, para o balao poder falar dos IMBUEMENTS.
@@ -149,6 +151,7 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
 
     const holder = event.target.closest(SELETOR);
     if (!holder) return hide();
+    abertoPeloToque = false;
     mostrarBalao(holder);
   });
   document.addEventListener('pointerout', (event) => {
@@ -172,6 +175,14 @@ export function initTooltip(itemsAccessor, personagemAccessor = () => null, cata
     }
     hide();
   }, true);
+  // Escape fecha o balão aberto (no computador; no celular há o X).
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && node && !node.hidden) hide();
+  });
+  // Girar o celular / mudar o tamanho da janela: a ficha compacta volta para o meio.
+  window.addEventListener('resize', () => {
+    if (node && !node.hidden && node.classList.contains('tip-movel') && holderPosicionado) posicionar(holderPosicionado);
+  });
   // "Mostrar todos os atributos" da comparação: Shift com o balão de item aberto.
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Shift' || event.repeat || node.hidden) return;
@@ -220,8 +231,8 @@ function ligarBalaoNoToque() {
         alternarTodos();
         return;
       }
-      // Dedo DENTRO do balão (o que rola, por ser mais alto que a tela): ele fica aberto.
-      if (evento.target.closest?.('.tooltip.rolavel')) return;
+      // Dedo DENTRO do balão (o que rola, e o compacto do celular): ele fica aberto — o X fecha.
+      if (evento.target.closest?.('.tooltip.rolavel, .tooltip.tip-movel')) return;
       hide();
       desistir();
       if (!evento.isPrimary) return;
@@ -235,6 +246,7 @@ function ligarBalaoNoToque() {
         y: evento.clientY,
         timer: setTimeout(() => {
           espera = null;
+          abertoPeloToque = true;
           if (holder.isConnected) mostrarBalao(holder);
         }, BALAO_NO_TOQUE_MS),
       };
@@ -3145,6 +3157,32 @@ function place(holder) {
    * continua no computador, onde cabe.
    */
   if (ehTelefone() && nodeVs) nodeVs.hidden = true;
+  /*
+   * ---- A ficha do ITEM aberta pelo DEDO: compacta, centrada, com X ----
+   *
+   * Report de 01/10: no celular a ficha do item (o balão alto que rola) ocupava a tela inteira
+   * menos 8px de cada lado — e, como o toque DENTRO dele não fecha (é para rolar), sobrava só
+   * essa borda para sair. Agora ela tem largura e altura limitadas (CSS `.tip-movel`), fica no
+   * meio deixando a tela em volta à vista (tocar fora fecha, como antes), rola por dentro, e tem
+   * um X fixo no alto, de 44px, que fecha com um toque. No computador nada muda.
+   */
+  if (abertoPeloToque && node.classList.contains('tip-item')) {
+    node.classList.remove('duas-colunas', 'rolavel');
+    node.classList.add('tip-movel');
+    const fechar = el('button', 'tip-fechar', '✕');
+    fechar.type = 'button';
+    fechar.setAttribute('aria-label', 'Fechar');
+    fechar.onclick = (evento) => {
+      evento.preventDefault();
+      evento.stopPropagation();
+      hide();
+    };
+    node.prepend(fechar);
+    node.scrollTop = 0;
+    posicionar(holder);
+    holderPosicionado = holder;
+    return;
+  }
   const anchor = holder.getBoundingClientRect();
   /*
    * ---- O balão de item mais ALTO que a tela ----
@@ -3180,7 +3218,7 @@ function place(holder) {
 let holderPosicionado = null;
 function aoMudarDeTamanho() {
   if (!node || node.hidden || !holderPosicionado?.isConnected) return;
-  if (node.classList.contains('tip-item') && !node.classList.contains('rolavel') && node.getBoundingClientRect().height > window.innerHeight - 16) {
+  if (node.classList.contains('tip-item') && !node.classList.contains('rolavel') && !node.classList.contains('tip-movel') && node.getBoundingClientRect().height > window.innerHeight - 16) {
     node.classList.remove('duas-colunas');
     node.classList.add('rolavel');
   }
@@ -3189,8 +3227,14 @@ function aoMudarDeTamanho() {
 
 /** Põe o balão (e o do vestido, ao lado) perto da peça, dentro da janela. */
 function posicionar(holder) {
-  const anchor = holder.getBoundingClientRect();
   const box = node.getBoundingClientRect();
+  if (node.classList.contains('tip-movel')) {
+    // No meio da tela (a altura máxima e as áreas seguras do aparelho moram no CSS).
+    node.style.left = `${Math.max(8, Math.round((window.innerWidth - box.width) / 2))}px`;
+    node.style.top = `${Math.max(8, Math.round((window.innerHeight - box.height) / 2))}px`;
+    return;
+  }
+  const anchor = holder.getBoundingClientRect();
 
   /*
    * Com o balao de comparacao aberto, o par ocupa a largura dos dois mais a

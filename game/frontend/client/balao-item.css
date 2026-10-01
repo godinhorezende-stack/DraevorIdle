@@ -202,3 +202,33 @@
 .gema-no-editor { margin-top: 8px; padding: 6px 8px; border: 1px solid #1ba29b55; border-radius: 4px; background: #0b1214; }
 :is(.tooltip, .gema-no-editor) .tip-gema-faz { margin: 4px 0; padding: 3px 0; border-top: 1px solid #ffffff14; border-bottom: 1px solid #ffffff14; }
 :is(.tooltip, .gema-no-editor) .tip-gema-numero { color: #e8c66a; font-weight: 600; }
+
+/*
+ * ---- A ficha do item aberta pelo DEDO (celular): compacta, centrada, com X ----
+ * Antes ela ia até 8px das bordas e só fechava tocando nessa borda. Agora: no máximo 360px de
+ * largura e ~3/4 da altura útil (descontadas as áreas seguras do aparelho), rola por dentro, e o X
+ * fica preso no alto mesmo rolando. Ver `place`, tooltip.mjs.
+ */
+.tooltip.tip-item.tip-movel {
+  pointer-events: auto;
+  width: min(360px, calc(100vw - 32px)) !important;
+  max-width: min(360px, calc(100vw - 32px)) !important;
+  max-height: min(74dvh, calc(100dvh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
+  overflow-y: auto; overscroll-behavior: contain; column-count: auto;
+  scrollbar-width: thin; touch-action: pan-y;
+}
+/* Deitado (pouca altura): usa quase toda a altura, mas a largura continua limitada. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .tooltip.tip-item.tip-movel { max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+}
+.tooltip.tip-item.tip-movel .tip-head { padding-right: 46px; }
+.tooltip .tip-fechar {
+  position: sticky; top: 0; z-index: 3; float: right;
+  width: 44px; height: 44px; margin: 0 0 -44px 0; padding: 0;
+  display: grid; place-items: center;
+  font: 20px/1 system-ui, sans-serif; color: #e8e8e8; cursor: pointer;
+  background: rgba(11, 17, 19, 0.92); border: 0;
+  border-left: 1px solid var(--tier, #555); border-bottom: 1px solid var(--tier, #555);
+  border-bottom-left-radius: 8px;
+}
+.tooltip .tip-fechar:active { background: rgba(40, 50, 55, 0.95); }
