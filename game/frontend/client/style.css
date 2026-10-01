@@ -27682,3 +27682,12 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .balao-do-mob-mods { padding: 7px 11px 9px; display: grid; gap: 4px; }
 .balao-do-mob-mods p { margin: 0; font-size: 11px; line-height: 1.35; color: #cfd8d8; }
 .balao-do-mob-mods b { color: var(--tier, var(--copper)); font-weight: 600; }
+
+/* A ordem das magias de ataque (Prioridade / Limite / Rotação), no editor da barra. */
+.modo-das-magias { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 6px 0 10px; font-size: 12px; }
+.modo-das-magias-rotulo { display: flex; align-items: center; gap: 8px; }
+.modo-das-magias select {
+  /* O mesmo campo dos filtros do editor (`.action-filters select`): o padrão do navegador saía apagado no celular. */
+  background: #080b0c; color: var(--text, #e6ecec); border: 1px solid var(--line); border-radius: 5px; padding: 5px 8px; font-size: 12px;
+}
+.modo-das-magias-ajuda { flex-basis: 100%; color: var(--muted, #9aa6a6); font-size: 11px; line-height: 1.35; }

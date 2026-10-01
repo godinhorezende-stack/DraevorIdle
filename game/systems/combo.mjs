@@ -19,6 +19,23 @@
 // cooldown global, a recarga do grupo de ataque, a conjuração em andamento)
 // para a varredura: nada sai neste tique — uma magia por vez, nunca duas.
 //
+// ---- Os MODOS de execução (fase B da revisão, decisões do dono, 01/10) ----
+//
+// O jogador escolhe na tela da barra (`estado.settings.modoDasMagias`):
+//   prioridade (padrão): o de cima — a do slot 1 sempre que puder;
+//   limite N:  a ordem dos slots, mas numa volta de W execuções (W = as magias
+//              que podem entrar) a de maior prioridade (a primeira fora de
+//              recarga) sai até N vezes e cada
+//              uma das outras 1 vez, revezando-se nas brechas: com N = 2,
+//              "Fire, Fire, Ice, Death, Fire, Fire, Light...". Se nenhuma outra
+//              puder sair, ela sai mesmo assim — a janela nunca fica vazia por
+//              causa do limite. N de 1 a 3 (`settings.limiteDasMagias`, padrão 2);
+//   rotacao:   todas se revezam — a volta começa no slot seguinte ao da última que
+//              saiu (`hunt.cursorDoCombo`), pulando as que não podem.
+// Só a ORDEM muda: quem decide se sai continua sendo `Acoes.disparar`, igual nos
+// três. As Regras de Uso entram por cima da ordem do modo (filtram e põem as
+// preferidas na frente); o limite vale por último, também sobre elas.
+//
 // Quem decide se a skill sai continua sendo SÓ `Acoes.disparar` (servidor):
 // recarga individual, recarga do grupo, cooldown global, mana, alvo, alcance e
 // condições estão lá — inclusive para o clique/tecla manual. Este arquivo só
@@ -33,6 +50,90 @@ export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === '
 // Bloqueios da fileira inteira: esperar, sem pular a vez do slot.
 // (CONJURANDO: a skill da vez está sendo conjurada — a fileira espera ela terminar.)
 const DA_FILEIRA = new Set(['COOLDOWN_GLOBAL', 'COOLDOWN_DO_GRUPO', 'CONJURANDO']);
+
+export const MODOS = ['prioridade', 'limite', 'rotacao'];
+export const MODO_PADRAO = 'prioridade';
+export const LIMITE_PADRAO = 2;
+export const LIMITES = [1, 2, 3];
+/** Quantas execuções o histórico do modo Limite guarda (W nunca passa de 11, a fileira inteira). */
+const HISTORICO = 11;
+
+/** O modo e o limite deste personagem (sempre válidos: um valor estranho vira o padrão). */
+export function modoDe(estado) {
+  const modo = MODOS.includes(estado?.settings?.modoDasMagias) ? estado.settings.modoDasMagias : MODO_PADRAO;
+  const limite = LIMITES.includes(estado?.settings?.limiteDasMagias) ? estado.settings.limiteDasMagias : LIMITE_PADRAO;
+  return { modo, limite };
+}
+
+/** `send({t:'modoDasMagias', modo, limite?})` — o jogador escolhe na tela da barra. */
+export function definirModo(estado, { modo, limite } = {}) {
+  if (!MODOS.includes(modo)) return { ok: false, erro: 'Modo desconhecido.' };
+  if (limite != null && !LIMITES.includes(Number(limite))) return { ok: false, erro: 'O limite vai de 1 a 3.' };
+  const settings = (estado.settings ??= {});
+  settings.modoDasMagias = modo;
+  if (limite != null) settings.limiteDasMagias = Number(limite);
+  // Trocou de modo: o cursor e o histórico de antes não valem para o novo.
+  if (estado.hunt) {
+    delete estado.hunt.cursorDoCombo;
+    delete estado.hunt.ultimasDoCombo;
+    delete estado.hunt.ultimaOutraDoCombo;
+  }
+  const nomes = { prioridade: 'Prioridade', limite: `Limite (${modoDe(estado).limite} por janela)`, rotacao: 'Rotação' };
+  return { ok: true, notice: `Ordem das magias de ataque: ${nomes[modo]}.` };
+}
+
+/**
+ * A ordem em que as posições da fileira (0..10) são tentadas neste tique, pelo
+ * modo, pelas Regras de Uso ativas e pelo limite — nesta ordem.
+ */
+export function ordemDoTique(estado, hunt, regras) {
+  const acoes = estado.actions ?? [];
+  const total = SLOTS_DO_COMBO.length;
+  const idDe = (posicao) => acoes[SLOTS_DO_COMBO[posicao]]?.id;
+  const { modo, limite } = modoDe(estado);
+  // 1. O modo: do slot 1 (prioridade, limite) ou do slot seguinte ao último que saiu (rotação).
+  const inicio = modo === 'rotacao' ? (((hunt.cursorDoCombo ?? 0) % total) + total) % total : 0;
+  let ordem = Array.from({ length: total }, (_, passo) => (inicio + passo) % total);
+  // 2. As Regras de Uso: só as que elas deixam, as preferidas primeiro (empate: a ordem do modo).
+  if (regras.length) {
+    ordem = ordem
+      .filter((posicao) => !idDe(posicao) || RegrasDeUso.permitida(idDe(posicao), regras, { ataque: true }))
+      .map((posicao, i) => ({ posicao, i, peso: RegrasDeUso.peso(idDe(posicao), regras) }))
+      .sort((a, b) => b.peso - a.peso || a.i - b.i)
+      .map((x) => x.posicao);
+  }
+  // 3. O limite (o que o dono aprovou: com N = 2 e quatro magias, "Fire, Fire, Ice, Death, Fire,
+  //    Fire, Light..."): numa volta de W execuções seguidas (W = as magias que podem entrar),
+  //    a de MAIOR prioridade (a primeira da ordem) sai até N vezes — nunca a volta inteira — e
+  //    cada uma das outras no máximo 1 vez, revezando-se nas brechas a partir da seguinte à
+  //    última delas que saiu. Quem bateu o teto vai para o fim da fila: se nenhuma outra puder
+  //    sair, ela sai mesmo assim (a janela nunca fica vazia por causa do limite).
+  hunt.topoDoCombo = null;
+  if (modo === 'limite') {
+    const ativos = ordem.filter((posicao) => {
+      const a = acoes[SLOTS_DO_COMBO[posicao]];
+      return a?.id && a.enabled !== false;
+    });
+    const w = ativos.length;
+    if (w > 1) {
+      // A de maior prioridade AGORA: a primeira que não está em recarga (o slot 1 de recarga longa,
+      // recarregando, não segura as de baixo — a seguinte assume a vez dele).
+      const agora = hunt.clock ?? 0;
+      const recarregando = (posicao) => (hunt.cooldowns?.[idDe(posicao)]?.ate ?? 0) > agora;
+      const topo = ativos.find((p) => !recarregando(p)) ?? ativos[0];
+      hunt.topoDoCombo = topo;
+      const teto = (posicao) => (posicao === topo ? Math.min(limite, w - 1) : 1);
+      // A volta que ESTA execução fecharia: as últimas W−1.
+      const ultimas = (hunt.ultimasDoCombo ?? []).slice(-(w - 1));
+      const cheia = (posicao) => ultimas.filter((id) => id === idDe(posicao)).length >= teto(posicao);
+      const outras = ativos.filter((p) => p !== topo);
+      const k = outras.indexOf(hunt.ultimaOutraDoCombo);
+      const fila = [topo, ...(k >= 0 ? [...outras.slice(k + 1), ...outras.slice(0, k + 1)] : outras)];
+      ordem = [...fila.filter((p) => !cheia(p)), ...fila.filter(cheia), ...ordem.filter((p) => !fila.includes(p))];
+    }
+  }
+  return ordem;
+}
 
 /*
  * ---- O log do combo ----
@@ -64,8 +165,8 @@ function registrar(linha) {
 }
 
 /**
- * Um tique do combo: tenta os slots da fileira de ataque a partir do PRIMEIRO,
- * em ordem, e para no primeiro que executar (ou num bloqueio da fileira
+ * Um tique do combo: tenta os slots da fileira de ataque na ordem do MODO
+ * (`ordemDoTique`) e para no primeiro que executar (ou num bloqueio da fileira
  * inteira). Devolve os eventos da skill que saiu (vazio se nenhuma).
  */
 export function tiqueDoCombo(estado, hunt, personagem, alvo) {
@@ -81,18 +182,7 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
   // A ordem: a dos slots (1, 2, 3...) — e, com REGRAS DE USO ativas
   // (`regras-de-uso.mjs`, configuradas pelo jogador), só as skills que elas
   // deixam, as preferidas primeiro (empate: a ordem dos slots).
-  const regras = RegrasDeUso.ativas(estado, hunt, alvo);
-  let ordem = Array.from({ length: total }, (_, posicao) => posicao);
-  if (regras.length) {
-    ordem = ordem
-      .filter((posicao) => {
-        const id = acoes[SLOTS_DO_COMBO[posicao]]?.id;
-        return !id || RegrasDeUso.permitida(id, regras, { ataque: true });
-      })
-      .map((posicao) => ({ posicao, peso: RegrasDeUso.peso(acoes[SLOTS_DO_COMBO[posicao]]?.id, regras) }))
-      .sort((a, b) => b.peso - a.peso || a.posicao - b.posicao)
-      .map((x) => x.posicao);
-  }
+  const ordem = ordemDoTique(estado, hunt, RegrasDeUso.ativas(estado, hunt, alvo));
   for (const posicao of ordem) {
     const slot = SLOTS_DO_COMBO[posicao];
     const action = acoes[slot];
@@ -110,6 +200,13 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
     if (resultado.ok) {
       // `logico`: o instante em que ela conta (relógio lógico — `R.instanteLogico`); `relogio` é o do tique.
       registrar({ ...linha, resultado: 'EXECUTADA', recargaRestanteMs, logico: hunt.ultimoAtaqueEm });
+      // A memória dos modos: o slot seguinte para a rotação, e o histórico para o limite.
+      hunt.cursorDoCombo = (posicao + 1) % total;
+      // (Limite: a última das OUTRAS que saiu — a próxima brecha começa na seguinte a ela.)
+      if (hunt.topoDoCombo != null && posicao !== hunt.topoDoCombo) hunt.ultimaOutraDoCombo = posicao;
+      const ultimas = (hunt.ultimasDoCombo ??= []);
+      ultimas.push(action.id);
+      if (ultimas.length > HISTORICO) ultimas.splice(0, ultimas.length - HISTORICO);
       return resultado.eventos;
     }
     registrar({
