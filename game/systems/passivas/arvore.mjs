@@ -102,7 +102,7 @@ export function usarArvore(nova) {
 
 const classeDe = (estado) => (ARVORE.inicios[estado.vocation] ? estado.vocation : 'knight');
 export const inicioDe = (estado) => ARVORE.inicios[classeDe(estado)];
-export const custoDe = (no) => no?.custo ?? CONFIG.custo[no?.tipo] ?? 1;
+export const custoDe = (no) => no?.custo ?? (no?.atributo ? CONFIG.custo.atributo : undefined) ?? CONFIG.custo[no?.tipo] ?? 1;
 export const pontosDoLevel = (level) => Math.max(0, Math.floor(((level ?? 1) - CONFIG.pontos.levelInicial) / CONFIG.pontos.levelsPorPonto));
 
 /**
@@ -140,9 +140,27 @@ export function garantir(estado) {
   // (No MESMO array, e só se mudou: quem guardou a referência continua vendo a lista certa,
   // e o cache de `efeitos` não é refeito à toa.)
   const inicio = inicioDe(estado);
-  const limpos = [inicio, ...[...new Set(p.alocados)].filter((id) => ARVORE.porId.has(id) && ARVORE.porId.get(id).tipo !== 'start')];
+  let limpos = [inicio, ...[...new Set(p.alocados)].filter((id) => ARVORE.porId.has(id) && ARVORE.porId.get(id).tipo !== 'start')];
+  /*
+   * ---- A ÁRVORE MUDOU de versão (ex.: a 2, com os caminhos de atributo) ----
+   * Nó que sumiu ou que ficou sem caminho até o início sai, com os pontos de
+   * volta — e, se saiu algum, um respec completo grátis (para remontar). Uma
+   * vez por versão.
+   */
+  let arvoreMudou = false;
+  if ((p.versaoDaArvore ?? 1) !== ARVORE.versao) {
+    const antes = new Set(p.alocados);
+    const ligados = alcancaveis(ARVORE.porId, new Set(limpos), [inicio]);
+    limpos = limpos.filter((id) => ligados.has(id));
+    const sairam = [...antes].filter((id) => id !== inicio && !limpos.includes(id) && ARVORE.porId.get(id)?.tipo !== 'start').length;
+    if (sairam > 0) {
+      p.respecsGratis += 1;
+      arvoreMudou = true;
+    }
+    p.versaoDaArvore = ARVORE.versao;
+  }
   if (limpos.length !== p.alocados.length || limpos.some((id, i) => id !== p.alocados[i])) p.alocados.splice(0, p.alocados.length, ...limpos);
-  return { passivas: p, migrou };
+  return { passivas: p, migrou, arvoreMudou };
 }
 
 export function pontos(estado) {
@@ -350,6 +368,10 @@ export function arvoreParaCliente() {
       levelMinimo: n.levelMinimo ?? 0,
       efeitos: n.efeitos ?? [],
       descricao: n.descricao ?? null,
+      // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).
+      flavor: n.flavor ?? null,
+      atributo: n.atributo ?? null,
+      orbita: n.orbita ?? null,
       tags: n.tags ?? [],
       cluster: n.cluster,
       classe: n.classe ?? null,

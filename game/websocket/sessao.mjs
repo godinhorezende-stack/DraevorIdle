@@ -1662,7 +1662,9 @@ export class Sessao {
     if (filtroDaConta?.ativo) FiltroDaConta.aplicar(estado, filtroDaConta);
     // A árvore de passivas única: garante o início da classe e, para quem tinha a árvore
     // ANTIGA por vocação, devolve todos os pontos (com um respec grátis) — uma vez.
-    if (Passivas.garantir(estado).migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
+    const passivas = Passivas.garantir(estado);
+    if (passivas.migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
+    else if (passivas.arvoreMudou) estado.avisoDaHunt = 'A árvore de passivas ganhou caminhos de atributo (STR/DEX/INT) entre os clusters. Os nós que perderam o caminho saíram e os pontos voltaram — você tem um respec completo grátis para remontar.';
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
     Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.

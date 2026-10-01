@@ -9,8 +9,9 @@
 //   1. tem preço de compra → `buy` × fração (0,25);
 //   2. equipamento sem preço nenhum → a mediana do `sell` dos equipamentos de
 //      level mínimo parecido (a curva que o próprio catálogo já tem);
-//   3. moeda, ficha, bolsa, item de quest e o que não é equipamento sem `buy`:
-//      continuam sem venda.
+//   3. loot comum sem preço nenhum (lixo, produto de bicho, comida, decoração,
+//      bonecos, livros, instrumentos, sem tipo, armaduras enferrujadas) → 1 de ouro;
+//   4. moeda, ficha, bolsa, item de quest e de montaria: continuam sem venda.
 // A raridade não muda o preço (decisão do dono).
 import { readFileSync } from 'node:fs';
 
@@ -24,6 +25,15 @@ const proibido = (m) => {
   return !nome || CONFIG.nunca.some((p) => nome.includes(p)) || (CONFIG.tiposNunca ?? []).includes(m?.type);
 };
 
+/** O loot comum sem preço nenhum (lixo, produto de bicho, comida...): o preço fixo do config (1 de ouro). */
+function precoFixo(m) {
+  const f = CONFIG.precoFixo;
+  if (!f) return 0;
+  const nome = String(m.name ?? '').toLowerCase();
+  const tipo = m.type ?? '(sem tipo)';
+  return f.tipos.includes(tipo) || f.nomes.some((n) => nome.includes(n)) ? f.valor : 0;
+}
+
 const mediana = (lista) => {
   const v = [...lista].sort((a, b) => a - b);
   return v.length ? v[Math.floor((v.length - 1) / 2)] : 0;
@@ -36,7 +46,7 @@ const mediana = (lista) => {
 export function precoCalculado(m, referencia) {
   if (!m || !semPreco(m) || proibido(m)) return 0;
   if (Number(m.buy) > 0) return Math.max(1, Math.floor(m.buy * CONFIG.fracaoDoPrecoDeCompra));
-  if (!ehEquipamento(m)) return 0;
+  if (!ehEquipamento(m)) return precoFixo(m);
   const level = Number(m.minLevel) || 0;
   if (!level) return CONFIG.semLevel;
   let perto = referencia.filter(([l]) => Math.abs(l - level) <= CONFIG.janelaDeLevel).map(([, s]) => s);
