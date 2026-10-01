@@ -8780,9 +8780,19 @@ function renderAnalyzer() {
   assinaturaDoAnalisador = assinatura;
   const hours = elapsed / 3600000;
   const supplies = session?.supplies ?? 0;
+  /*
+   * ---- O loot vale o que foi COLETADO, pelo preço do NPC ----
+   *
+   * Antes: ouro + o que a venda automática vendeu + a bolsa de AGORA. Vender a bolsa no botão,
+   * levar um item para a mochila ou guardar uma peça tirava o valor da conta (o lucro caía, até
+   * ficar negativo), e depois de zerar o analisador a bolsa de antes entrava na sessão nova. Agora
+   * o servidor manda a análise (`session.analise`, ver `hunt/rentabilidade.mjs`) com a mesma regra
+   * de preço da venda. Servidor antigo (sem ela): a conta de antes.
+   */
+  const analise = session?.analise ?? null;
   const pending = state.character.pouchValue?.gold ?? 0;
-  const income = (session?.gold ?? 0) + (session?.lootValue ?? 0) + pending;
-  const profit = income - supplies;
+  const income = analise ? analise.bruto : (session?.gold ?? 0) + (session?.lootValue ?? 0) + pending;
+  const profit = analise ? analise.liquido : income - supplies;
   const perHour = hours > 0.01 ? (session?.exp ?? 0) / hours : 0;
 
   /*
@@ -8842,13 +8852,44 @@ function renderAnalyzer() {
     const doGrupoHora = hours > 0.01 ? (session.expDoGrupo ?? 0) / hours : 0;
     add('XP/h do grupo', hours > 0.001 ? Math.round(doGrupoHora).toLocaleString('pt-BR') : '0');
   }
-  add('Loot', income.toLocaleString('pt-BR'));
+  add('Loot (bruto)', income.toLocaleString('pt-BR'));
   add('Suprimentos', `-${supplies.toLocaleString('pt-BR')}`, 'var(--danger)');
-  add('Lucro', profit.toLocaleString('pt-BR'), profit < 0 ? 'var(--danger)' : 'var(--accent)');
+  add('Lucro líquido', profit.toLocaleString('pt-BR'), profit < 0 ? 'var(--danger)' : 'var(--accent)');
   add('Lucro/h', hours > 0.001 ? Math.round(profit / hours).toLocaleString('pt-BR') : '0');
   add('Kills', String(session?.kills ?? 0));
   add('Dano causado', (session?.damageDealt ?? 0).toLocaleString('pt-BR'));
   conteudo.append(grid);
+
+  /*
+   * ---- De onde vem o valor, e o que as chances dariam ----
+   *
+   * O bruto separado (ouro das moedas + itens pelo preço do NPC), o aviso dos itens sem preço (que
+   * contam 0 — em vez de um número que parece completo), os itens que mais pesam e, à parte e
+   * marcada como ESTIMATIVA, o que as chances de drop dos bichos mortos dariam (chance × mortes ×
+   * preço, sem os bônus de loot): é probabilidade, não o que caiu.
+   */
+  if (analise) {
+    const detalhe = el('div', 'analyzer-detalhe');
+    const linha = (texto, cor) => {
+      const p = el('p', null, texto);
+      if (cor) p.style.color = cor;
+      detalhe.append(p);
+    };
+    linha(`Ouro (moedas) ${(analise.gold ?? 0).toLocaleString('pt-BR')} + itens pelo preço do NPC ${(analise.valorDoLoot ?? 0).toLocaleString('pt-BR')}`);
+    if (analise.semPreco) linha(`${analise.semPreco.toLocaleString('pt-BR')} item(ns) sem preço de NPC — contam 0.`, 'var(--muted)');
+    if (analise.principais?.length) {
+      linha('Os que mais valem:');
+      for (const i of analise.principais) {
+        const nome = state.items?.[i.id]?.name ?? `item ${i.id}`;
+        linha(`• ${i.count}x ${nome} — ${i.unidade.toLocaleString('pt-BR')} cada = ${i.total.toLocaleString('pt-BR')}`, 'var(--muted)');
+      }
+    }
+    const est = analise.estimativa;
+    if (est && (session?.kills ?? 0) > 0) {
+      linha(`Estimativa pelas chances de drop: ${(est.gold + est.valor).toLocaleString('pt-BR')} bruto, ${est.liquido.toLocaleString('pt-BR')} líquido (probabilidade, sem bônus de loot — não é o que caiu).`, 'var(--muted)');
+    }
+    conteudo.append(detalhe);
+  }
 
   const tally = el('div', 'tally');
   for (const [name, count] of Object.entries(session?.byMonster ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 8)) {
@@ -10081,7 +10122,11 @@ function corpoDoRelatorio(body, report, comOk = true) {
   add('Por hora', `${report.expHora.toLocaleString('pt-BR')} xp/h`);
   add('Níveis', report.levels ? `${report.levelStart} → ${report.levelNow}` : 'nenhum');
   add('Monstros mortos', report.kills.toLocaleString('pt-BR'));
-  add('Loot', ouro(report.gold + report.lootValue));
+  // Ouro das moedas + o loot COLETADO pelo preço do NPC (vendido ou não). Relatório de servidor antigo
+  // (sem `valorDoLoot`) cai no que foi vendido, como antes.
+  add('Ouro (moedas)', ouro(report.gold));
+  add('Loot (preço do NPC)', ouro(report.valorDoLoot ?? report.lootValue));
+  if (report.semPreco) add('Sem preço de NPC', `${report.semPreco.toLocaleString('pt-BR')} item(ns) — contam 0`);
   add('Suprimentos', ouro(-report.supplies));
   add('Lucro', ouro(report.lucro), report.lucro >= 0 ? 'good' : 'bad');
   add('Lucro por hora', ouro(report.lucroHora), report.lucroHora >= 0 ? 'good' : 'bad');

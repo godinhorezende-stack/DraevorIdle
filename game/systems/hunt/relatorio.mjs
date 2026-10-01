@@ -1,5 +1,44 @@
 // O relatório da caçada (`runReport`) e a sessão do Analisador.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
+import * as Rentabilidade from './rentabilidade.mjs';
+import { BESTIARY } from './monstros.mjs';
+
+// `byMonster` guarda as mortes pelo NOME do bicho (é o que o Analisador lista); a estimativa precisa da chave.
+let chavePeloNome = null;
+const chaveDoBicho = (nome) => {
+  chavePeloNome ??= new Map(Object.entries(BESTIARY).map(([k, b]) => [b.name, k]));
+  return chavePeloNome.get(nome) ?? null;
+};
+
+/**
+ * A análise de rentabilidade da sessão (ver `rentabilidade.mjs`): o loot COLETADO pelo preço do NPC
+ * (vendido ou não), os custos, o líquido e — separada, marcada como estimativa — o que as chances
+ * de drop dos bichos mortos dariam. `ms`: a duração da sessão.
+ */
+export function analise(sessao, ms) {
+  const loot = Rentabilidade.valorDoLoot(sessao.itens.loot);
+  const r = Rentabilidade.resumo({ gold: sessao.gold, loot: loot.valor, supplies: sessao.supplies, taxas: loot.taxas, ms });
+  const mortes = {};
+  for (const [nome, n] of Object.entries(sessao.byMonster ?? {})) {
+    const k = chaveDoBicho(nome);
+    if (k) mortes[k] = (mortes[k] ?? 0) + n;
+  }
+  const esperado = Rentabilidade.valorEsperado(mortes, BESTIARY);
+  return {
+    ...r,
+    gold: sessao.gold,
+    valorDoLoot: loot.valor,
+    semPreco: loot.semPreco,
+    vendido: sessao.lootValue,
+    principais: loot.itens.slice(0, 5),
+    estimativa: {
+      gold: Math.round(esperado.gold),
+      valor: Math.round(esperado.valor),
+      liquido: Math.round(esperado.gold + esperado.valor - sessao.supplies),
+      principais: esperado.itens.slice(0, 5).map((i) => ({ ...i, quantidade: Math.round(i.quantidade * 100) / 100, total: Math.round(i.total) })),
+    },
+  };
+}
 
 /*
  * ---- O relatório da caçada ----
@@ -30,6 +69,7 @@ export function sessaoParaCliente(sessao) {
     damageDealt: sessao.damageDealt, porElemento: sessao.porElemento,
     danoDoFamiliar: sessao.danoDoFamiliar ?? 0, acertosDoFamiliar: sessao.acertosDoFamiliar ?? 0,
     loot: sessao.itens.loot, perdido: sessao.itens.perdido, gastos: sessao.itens.gastos,
+    analise: analise(sessao, Math.max(0, Date.now() - (sessao.inicio ?? Date.now()))),
   };
 }
 
@@ -37,7 +77,10 @@ export function relatorio(estado, sessao = estado.hunt?.sessao, fim = Date.now()
   if (!sessao) return null;
   const ms = Math.max(1000, fim - sessao.inicio);
   const horas = ms / 3_600_000;
-  const lucro = sessao.gold + sessao.lootValue - sessao.supplies;
+  // O loot vale o que foi COLETADO (pelo preço do NPC), e não só o que a venda automática vendeu:
+  // antes, item guardado ou vendido à mão não entrava, e o relatório podia dar prejuízo falso.
+  const a = analise(sessao, ms);
+  const lucro = a.liquido;
   return {
     mode: sessao.modo === 'online' ? 'online' : 'single',
     minutos: Math.round(ms / 60000),
@@ -54,6 +97,10 @@ export function relatorio(estado, sessao = estado.hunt?.sessao, fim = Date.now()
     potions: Object.values(sessao.itens.gastos).reduce((a, b) => a + b, 0),
     lucro,
     lucroHora: Math.round(lucro / horas),
+    // As partes do lucro, separadas: ouro das moedas + valor do loot coletado − suprimentos.
+    valorDoLoot: a.valorDoLoot,
+    semPreco: a.semPreco,
+    estimativa: a.estimativa,
     itens: sessao.itens,
   };
 }

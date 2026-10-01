@@ -481,6 +481,10 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     conta('loot', fundidora.id, 1);
   }
   for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
+    // Entrada de loot SEM id no bestiário (64 bichos têm "rotten feather"/"ritual tooth" assim): não é
+    // item nenhum — antes entrava na bolsa como um item fantasma (sem nome, sem venda) e como
+    // "undefined" no Analisador. Não muda a chance de nenhum item de verdade.
+    if (drop.id == null) continue;
     // `lootMult`: a raridade do mob (raro/elite dão mais loot — ver `mobs/raridade.mjs`).
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
     if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online

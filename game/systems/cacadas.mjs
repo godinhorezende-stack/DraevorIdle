@@ -133,6 +133,8 @@ function projetar(estado, base, fator, multExp = 1) {
   estado.gold = (estado.gold ?? 0) + extra.gold; // `gold` da sessão é moeda do loot: vai para o bolso, igual à caçada online (hunt/combate.mjs::matarMonstro)
   subirDeLevel(estado);
   for (const [id, n] of Object.entries(base.itens.loot)) {
+    // Sessão gravada antes da correção pode ter o item fantasma ("undefined"): não projeta.
+    if (!Number.isFinite(Number(id))) continue;
     const qtd = Math.round(n * fator);
     if (!qtd) continue;
     extra.itens.loot[id] = qtd;

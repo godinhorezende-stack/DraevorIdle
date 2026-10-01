@@ -10,13 +10,14 @@
 // - `venderSacolas` vende direto das sacolas; `bossPouch` vende, limpa e move
 //   para a mochila. Ambos com prévia (`linhas`) e o mesmo `aviso`/`mesmoAssim`
 //   da venda da mochila para peça com estrela, tier ou imbuement.
-import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
+import { precoNpc } from './hunt/rentabilidade.mjs';
+import { ITEM_CATALOG } from './dados.mjs';
 import { cabeNoPeso, guardarMoeda } from './inventario.mjs';
 
 export const VAGAS_DA_BOSS_POUCH = 1000;
 const SACOLA_DO_BOSS = 2853; // o desenho da sacola no baú (um "bag")
-const TAXA = CATALOGO.quickSellRate ?? 1;
-const preco = (id) => Math.floor((ITEM_CATALOG[id]?.sell ?? 0) * TAXA);
+// O preço do NPC é UM só no jogo: ver `hunt/rentabilidade.mjs`.
+const preco = (id) => precoNpc(id);
 const valiosa = (p) => !!(p.af?.length || p.tier || p.imbu?.length);
 
 export function garantir(estado) {
