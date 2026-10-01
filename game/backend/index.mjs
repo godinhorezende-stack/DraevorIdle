@@ -123,7 +123,7 @@ async function atender(req, res) {
    * verdade. Sem framework: três `if` bastam pro tamanho disto.
    */
   if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
-    return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, ...Mapas.raridadesParaEditor() });
+    return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, cidade: Mapas.cidadeParaEditor(), criaturasPorHunt: Mapas.criaturasPorHunt(), ...Mapas.raridadesParaEditor() });
   }
   if (caminho === '/api/mapas' && req.method === 'GET') {
     return json(res, 200, { ids: Mapas.listar() });

@@ -1,0 +1,36 @@
+{
+  "_nota": "A RARIDADE dos spawns dos mapas já criados (pedido do dono, 01/10: distribuição moderada, modificadores pelo tema do mob). Lida UMA vez por game/admin/raridade-dos-mapas.mjs, que grava o resultado no bloco `spawns` de cada mapa — o jogo nunca sorteia nada; a escolha é fixa (semente = id do mapa + id do spawn). Depois disso o mapa é a fonte: o editor muda spawn por spawn.",
+
+  "_porMapa": "Fração dos spawns de cada mapa por raridade (arredondada); `eliteACada`: 1 elite a cada N spawns (no mínimo 1 por mapa). `modificadores`: [mínimo, máximo] por raridade; `mecanicasNoMaximo`: quantos modificadores com mecânica (explosão, aura...) um spawn dessa raridade leva no máximo.",
+  "porMapa": { "modificado": 0.15, "raro": 0.05, "eliteACada": 40 },
+  "modificadores": { "modificado": [1, 2], "raro": [2, 3], "elite": [2, 3] },
+  "mecanicasNoMaximo": { "modificado": 1, "raro": 2, "elite": 2 },
+
+  "_temas": "Modificadores que combinam com cada `class` do bestiário (o primeiro modificador sai daqui). `elementos`: o mob que resiste 50% ou mais a um elemento ganha também estes. `geral` completa a lista.",
+  "temas": {
+    "Slime":       ["procriador", "venenoso", "regenerador", "vigoroso"],
+    "Construct":   ["blindado", "espelhado", "endurecido", "resistente"],
+    "Demon":       ["abrasador", "ignifugo", "brutal", "enfurecido", "profano"],
+    "Undead":      ["profano", "vingativo", "regenerador", "gelido"],
+    "Elemental":   ["resistente", "explosivo", "espelhado"],
+    "Human":       ["brutal", "veloz", "vingativo", "enfurecido"],
+    "Humanoid":    ["brutal", "vingativo", "vigoroso", "frenetico"],
+    "Mammal":      ["veloz", "frenetico", "enfurecido", "vigoroso"],
+    "Reptile":     ["venenoso", "blindado", "regenerador", "veloz"],
+    "Aquatic":     ["gelido", "regenerador", "espelhado", "veloz"],
+    "Magical":     ["espelhado", "resistente", "isolado", "explosivo"],
+    "Dragon":      ["ignifugo", "abrasador", "vigoroso", "brutal", "blindado"],
+    "Lycanthrope": ["enfurecido", "frenetico", "veloz", "regenerador"],
+    "Vermin":      ["venenoso", "procriador", "veloz", "frenetico"],
+    "Giant":       ["vigoroso", "brutal", "endurecido", "enfurecido"],
+    "Plant":       ["venenoso", "regenerador", "procriador", "endurecido"]
+  },
+  "elementos": {
+    "fire":   ["ignifugo", "abrasador"],
+    "ice":    ["gelido"],
+    "energy": ["isolado"],
+    "holy":   ["profano"],
+    "earth":  ["venenoso"]
+  },
+  "geral": ["vigoroso", "brutal", "veloz", "resistente"]
+}

@@ -423,7 +423,13 @@ export function entrarNoPatio(estado) {
 
 /** Mapa de editor fora da campanha (sem instância): os spawns dele viram um ponto por bicho, com a 1ª criatura. */
 const pontosDosSpawns = (spawns) =>
-  (spawns ?? []).flatMap((sp) => Array.from({ length: sp.quantidade }, () => ({ key: sp.criaturas[0].key, x: sp.x, y: sp.y, z: sp.z })));
+  (spawns ?? []).flatMap((sp) =>
+    Array.from({ length: sp.quantidade }, () => ({
+      key: sp.criaturas[0].key, x: sp.x, y: sp.y, z: sp.z,
+      // A raridade do spawn vai junto (mapa do editor fora da campanha também a respeita).
+      ...(sp.raridade != null ? { raridade: sp.raridade } : {}),
+      ...(sp.modificadores?.length ? { modificadores: sp.modificadores } : {}),
+    })));
 
 /*
  * Com percurso, nasce no primeiro waypoint DELE: o `route[0]` original pode
@@ -503,6 +509,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
       if (!casa) break;
       casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
       const m = Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
+      // A raridade e os modificadores que o spawn do mapa configura (os mesmos da instância).
+      if (m && (p.raridade || p.modificadores?.length)) Raridade.aplicar(m, Raridade.doSpawn(p));
       if (m) todos.push({ z, m });
     }
   }
