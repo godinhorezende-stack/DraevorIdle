@@ -1512,14 +1512,17 @@ export function tique(estado, personagem, agora = Date.now()) {
 
   if (donoDaSala) moverMonstros(hunt, grade, agora);
 
-  let eventos = [];
+  const eventos = [];
   // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
   eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
   const assiste = hunt.modo !== 'online' || hunt.assistencia !== false;
   // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
   if (assiste && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
     const golpe = round(estado, personagem);
-    eventos = golpe.eventos;
+    // JUNTA aos eventos, e não substitui: no tique em que uma conjuração termina e o golpe
+    // básico também sai, a magia (dano, explosões, o fim da conjuração) sumia da tela e do
+    // analisador de dano — o dano entrava no bicho, mas ninguém via.
+    eventos.push(...golpe.eventos);
     // Só conta o intervalo se de fato bateu: sem alvo ao alcance, o golpe sai
     // assim que chegar nele, não 2s depois.
     // "Velocidade de ataque" (afixo): o intervalo encurta nessa %. "Tempo entre

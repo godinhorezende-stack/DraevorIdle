@@ -984,7 +984,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
      * ("Dano de magia" e "Dano de <elemento>" dos afixos e da árvore, o treino,
      * a afinidade da classe e a gema já estão no `mult`/`fatorDaGema`.)
      */
-    const acertar = (bicho, pct = 100) => {
+    const acertar = (bicho, pct = 100, fonte = null) => {
       const tipo = entry.element ?? 'physical';
       const base = resistido(hunt, bicho, tipo, ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct) / 100);
       Reforcos.marcar(hunt, bicho, agora);
@@ -994,17 +994,20 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       danos.push({ bicho, dano });
       // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado — `mobs/mecanicas.mjs`).
       Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos);
-      eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor });
+      // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
+      eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor, ...(fonte ? { fonte } : {}) });
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
       for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
     };
     for (const bicho of atingidos) acertar(bicho);
     /*
-     * ---- Os golpes SECUNDÁRIOS das supports (motor de projétil e área, por tag) ----
-     * Quem leva e com quantos % vem de `Secundarios.secundarios`; o projétil voa
-     * de onde ele vem (o alvo, o salto) e a explosão sai em volta de quem foi pego.
+     * ---- Os golpes SECUNDÁRIOS das supports, combinados em cadeia ----
+     * Quem leva, com quantos %, de onde e de que tipo vem de `Secundarios.resolver`
+     * (projéteis extras, perfuração, bifurcação, encadeamento, retorno — e a explosão
+     * em CADA impacto, 3×3 em volta dele). Aqui só se aplica, um acerto por vez, na
+     * ordem: quem morreu no meio do caminho não leva o resto.
      */
-    const extras = Secundarios.secundarios({
+    const { golpes, explosoes } = Secundarios.resolver({
       efeito: efeitoDaGema,
       tags: Tags.tagsDaAcao(entry),
       origem: { x, y },
@@ -1013,11 +1016,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       vivos,
       alcance: entry.range || ALCANCE_PADRAO,
     });
-    for (const s of extras) {
+    // A explosão na tela: UM evento por detonação (o cliente desenha o quadrado inteiro).
+    for (const ex of explosoes) eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: ex.x, y: ex.y, lado: ex.lado });
+    for (const s of golpes) {
       if (s.bicho.hp <= 0) continue;
       if (s.tipo !== 'explosao' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y });
-      if (s.tipo === 'explosao') eventos.push({ t: 'fx', id: entry.efeito || EFEITO_DA_EXPLOSAO, uid: s.bicho.uid, x: s.bicho.x, y: s.bicho.y });
-      acertar(s.bicho, s.pct);
+      acertar(s.bicho, s.pct, s.tipo);
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);

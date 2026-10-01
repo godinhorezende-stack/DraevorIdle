@@ -1021,7 +1021,11 @@ export function blocoDaGemaDaSkill(entry) {
   if (e.bifurcar) partes.push(`divide em ${e.bifurcar}`);
   if (e.encadear) partes.push(`salta ${e.encadear}×`);
   if (e.retornar) partes.push('volta');
-  if (e.explosaoPct || e.segundaExplosaoPct) partes.push('explode');
+  // A explosão: em CADA impacto, um quadrado 3×3 em volta dele (o lado vem do servidor, `explosaoLado`).
+  if (e.explosaoPct || e.segundaExplosaoPct) {
+    const lado = e.explosaoLado ?? 3;
+    partes.push(`explode ${lado}×${lado} a cada impacto (${Math.round(e.explosaoPct || e.segundaExplosaoPct)}%)`);
+  }
   if (e.areaExtra) partes.push(`área ${e.areaExtra > 0 ? '+' : ''}${Math.round(e.areaExtra)}`);
   if (e.igniteChance) partes.push('queima');
   if (e.congelarChance) partes.push('congela');

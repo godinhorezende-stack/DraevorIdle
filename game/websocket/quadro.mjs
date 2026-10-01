@@ -44,11 +44,11 @@ export function bichosDoQuadro(monsters, centro, jaForam) {
   return { lista, uids };
 }
 
-/** Efeitos de tela (`fx`, `shot`) longe dela, ou com a aba escondida, não vão: ninguém os vê. */
+/** Efeitos de tela (`fx`, `shot`, `explosao`) longe dela, ou com a aba escondida, não vão: ninguém os vê. */
 export function eventosDoQuadro(eventos, centro, oculta) {
   if (!eventos?.length) return eventos;
   return eventos.filter((e) => {
-    if (e.t !== 'fx' && e.t !== 'shot') return true;
+    if (e.t !== 'fx' && e.t !== 'shot' && e.t !== 'explosao') return true;
     if (oculta) return false;
     return !centro || e.uid === 'player' || naTela(centro, e);
   });

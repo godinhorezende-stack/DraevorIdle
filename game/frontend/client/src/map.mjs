@@ -1239,7 +1239,7 @@ export class MapView {
     const querProjeteis = graficoLigado('projeteis');
     for (const event of events) {
       if (!querNumeros && (event.t === 'dmg' || event.t === 'heal' || event.t === 'kill' || event.t === 'block')) continue;
-      if (!querEfeitos && event.t === 'fx') continue;
+      if (!querEfeitos && (event.t === 'fx' || event.t === 'explosao')) continue;
       if (!querProjeteis && event.t === 'shot') continue;
       // A cor de cada número vem do servidor, com a mesma tabela do
       // combatGetTypeInfo: físico vermelho, energia roxo, gelo azul-claro...
@@ -1378,6 +1378,13 @@ export class MapView {
         this.texts.push({ uid: deQuem(event), x: event.x, y: event.y, text: textoDoBloqueio(event), color: event.color ?? '#999999', size: 12, born: now, life: 700, drift: 0, degrau: degrauDoNumero(deQuem(event)) });
       } else if (event.t === 'fx') {
         this.effects.push({ id: event.id, uid: event.uid, x: event.x, y: event.y, born: now, life: effectDuration(event.id) || 600 });
+      } else if (event.t === 'explosao') {
+        // A explosão das supports: o servidor manda UM evento (centro e lado); o quadrado inteiro
+        // (3×3 = 9 casas) é desenhado aqui, com o efeito da skill — a área que de fato pegou.
+        const r = Math.floor((event.lado ?? 3) / 2);
+        for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) {
+          this.effects.push({ id: event.id, x: event.x + dx, y: event.y + dy, born: now, life: effectDuration(event.id) || 600 });
+        }
       } else if (event.t === 'shot') {
         // A velocidade do projétil segue a distância: 60ms por sqm, como no client.
         const distance = Math.max(Math.abs(event.tx - event.x), Math.abs(event.ty - event.y));

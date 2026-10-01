@@ -114,13 +114,14 @@ test('Returning Projectile: o projétil volta e acerta o alvo de novo', () => {
   assert.equal(quantasVezes(lancar(e, FLAME, alvo), alvo), 2);
 });
 
-test('Explosion: o golpe explode em volta do alvo (os vizinhos dele levam; o alvo não de novo)', () => {
+test('Explosion: o golpe explode 3×3 em volta do impacto — o alvo (direto + explosão) e os vizinhos', () => {
   const e = montar('sorcerer', FLAME, ['explosion']);
   const alvo = bicho(e, 3, 0);
   const vizinho = bicho(e, 4, 1);
   const longe = bicho(e, 6, 0);
   const ev = lancar(e, FLAME, alvo);
-  assert.equal(quantasVezes(ev, alvo), 1);
+  // Decisão do dono (01/10): a explosão pega TODOS no 3×3, inclusive o do impacto.
+  assert.equal(quantasVezes(ev, alvo), 2);
   assert.equal(quantasVezes(ev, vizinho), 1);
   assert.equal(quantasVezes(ev, longe), 0);
 });

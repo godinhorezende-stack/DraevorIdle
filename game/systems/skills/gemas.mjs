@@ -254,6 +254,21 @@ import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
 const SLOTS_COM_SOCKET = Object.keys(CONFIG.sockets.maximo);
 
 /**
+ * A MESMA support duas vezes no grupo vale UMA vez (como no Path of Exile; pedido do
+ * dono, 01/10): fica a de nível mais alto (empate: a de raridade/qualidade maior).
+ * Antes somavam — duas Pierce davam 4 perfurações a 49%.
+ */
+function unicas(supports) {
+  const melhor = new Map();
+  const forca = (sp) => sp.nivel * 1e6 + multiplicadorDaRaridade(sp.raridade) * 1e3 + sp.qualidade;
+  for (const sp of supports) {
+    const ja = melhor.get(sp.def.id);
+    if (!ja || forca(sp) > forca(ja)) melhor.set(sp.def.id, sp);
+  }
+  return [...melhor.values()];
+}
+
+/**
  * As SKILLS que este personagem tem agora: cada gema ativa encaixada numa peça
  * VESTIDA, com as supports compatíveis do MESMO grupo ligado.
  * `Map(idDaAcao → { acao, itemId, nivel, xp, def, supports: [{ def, nivel }], onde: {slot, indice} })`.
@@ -283,9 +298,11 @@ export function skillsAtivas(estado) {
           raridade: raridadeDaGema(x.g.raridade),
           qualidade: qualidadeDaGema(x.g.qualidade),
           def: x.def,
-          supports: supports
-            .filter((sp) => compativel(sp.def.suporte, x.def.tags))
-            .map((sp) => ({ def: sp.def, nivel: sp.g.nivel + bonus, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema(sp.g.qualidade) })),
+          supports: unicas(
+            supports
+              .filter((sp) => compativel(sp.def.suporte, x.def.tags))
+              .map((sp) => ({ def: sp.def, nivel: sp.g.nivel + bonus, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema(sp.g.qualidade) })),
+          ),
           onde: { slot, indice: x.i },
         });
       }
@@ -333,6 +350,8 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
     }
     e.supports.push(sp.def.nome);
   }
+  // O lado da explosão (a tela mostra "explode 3×3"): o mesmo número que o motor usa.
+  if (e.explosaoPct || e.segundaExplosaoPct) e.explosaoLado = CONFIG.golpesSecundarios?.explosao?.lado ?? 3;
   return e;
 }
 
