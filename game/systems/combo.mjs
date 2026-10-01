@@ -1,33 +1,28 @@
 // O COMBO: a fileira de ataque da barra (os 11 slots `attack` de
-// `Acoes.PAPEL_DO_SLOT`), percorrida em RODÍZIO pelo loop automático da caçada.
+// `Acoes.PAPEL_DO_SLOT`), percorrida pelo loop automático da caçada.
 //
-// ---- O defeito que isto corrige ----
+// ---- PRIORIDADE pela ordem dos slots (pedido do dono, 01/10) ----
 //
-// O `autoDisparo` (cacadas.mjs) percorria a barra inteira a partir do slot 0 em
-// todo tique e disparava o PRIMEIRO slot de ataque que estivesse pronto. A
-// primeira magia que saía ligava a recarga do grupo de ataque (1 s no efetivo,
-// ver `recargaDe` em acoes.mjs), e as seguintes ficavam em "Ainda
-// recarregando". No tique em que o grupo liberava, a varredura recomeçava do
-// slot 0 — e as magias do começo da fileira, de recarga curta, já estavam
-// prontas de novo. Medido (sorcerer, 11 magias diferentes, 30 s): só o slot 1
-// saiu, 30 vezes; com uma magia de 4 s no slot 1, os slots 1 e 2 se revezavam e
-// do 3 ao 11 nada saía.
+// A cada tique a varredura começa SEMPRE no slot 1 da fileira e para na
+// primeira magia que de fato sai: se a do slot 1 está disponível, é ela, sempre;
+// em recarga, a próxima disponível; quando ela volta, recupera a vez. Não é
+// rodízio — antes havia um cursor (`hunt.cursorDoCombo`) que avançava a cada
+// magia lançada e fazia o slot 1 esperar a volta inteira pela fileira.
 //
-// ---- O rodízio ----
+// O que impede o slot 1 de sair sozinho para sempre (o defeito que o rodízio
+// tinha corrigido) é a recarga INDIVIDUAL de cada magia: com o cooldown global
+// de 2 s (`R.GLOBAL_SPELL_COOLDOWN`), a magia de recarga curta sai sempre que
+// pode, e as de baixo preenchem os buracos dela.
 //
-// Um cursor por caçada (`hunt.cursorDoCombo`, 0..10 dentro da fileira). A cada
-// tique a varredura começa no cursor e dá a volta (…, 11, 1, 2, …); o primeiro
-// slot que EXECUTA de verdade avança o cursor para o seguinte a ele. Slot que
-// não pode executar (recarga própria, mana, alvo, alcance, condição, vazio,
-// desligado) é pulado com o motivo — como já era: pular não gasta a vez de
-// ninguém. Quando o bloqueio é da fileira inteira (o intervalo do combo ou a
-// recarga do grupo de ataque), a varredura para ali e o cursor não anda: o
-// slot da vez espera, em vez de ser pulado.
+// Slot que não pode executar (recarga própria, mana, alvo, alcance, condição,
+// vazio, desligado) é pulado com o motivo. Bloqueio da fileira INTEIRA (o
+// cooldown global, a recarga do grupo de ataque, a conjuração em andamento)
+// para a varredura: nada sai neste tique — uma magia por vez, nunca duas.
 //
-// Quem decide se a skill sai continua sendo SÓ `Acoes.disparar`: recarga
-// individual, recarga do grupo, o intervalo mínimo do combo
-// (`R.COMBO_SKILL_INTERVAL_MS`), mana, alvo, alcance e condições estão lá. Este
-// arquivo só decide a ORDEM em que os slots são tentados.
+// Quem decide se a skill sai continua sendo SÓ `Acoes.disparar` (servidor):
+// recarga individual, recarga do grupo, cooldown global, mana, alvo, alcance e
+// condições estão lá — inclusive para o clique/tecla manual. Este arquivo só
+// decide a ORDEM em que os slots são tentados.
 import * as Acoes from './acoes.mjs';
 import * as R from './regras.mjs';
 import * as RegrasDeUso from './skills/regras-de-uso.mjs';
@@ -37,7 +32,7 @@ export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === '
 
 // Bloqueios da fileira inteira: esperar, sem pular a vez do slot.
 // (CONJURANDO: a skill da vez está sendo conjurada — a fileira espera ela terminar.)
-const DA_FILEIRA = new Set(['INTERVALO_DO_COMBO', 'COOLDOWN_DO_GRUPO', 'CONJURANDO']);
+const DA_FILEIRA = new Set(['COOLDOWN_GLOBAL', 'COOLDOWN_DO_GRUPO', 'CONJURANDO']);
 
 /*
  * ---- O log do combo ----
@@ -69,14 +64,13 @@ function registrar(linha) {
 }
 
 /**
- * Um tique do combo: tenta os slots da fileira de ataque a partir do cursor e
- * para no primeiro que executar (ou num bloqueio da fileira inteira).
- * Devolve os eventos da skill que saiu (vazio se nenhuma).
+ * Um tique do combo: tenta os slots da fileira de ataque a partir do PRIMEIRO,
+ * em ordem, e para no primeiro que executar (ou num bloqueio da fileira
+ * inteira). Devolve os eventos da skill que saiu (vazio se nenhuma).
  */
 export function tiqueDoCombo(estado, hunt, personagem, alvo) {
   const acoes = estado.actions ?? [];
   const total = SLOTS_DO_COMBO.length;
-  const inicio = ((hunt.cursorDoCombo ?? 0) % total + total) % total;
   quemAgora = personagem?.nome ?? null;
   const parede = hunt.ultimoTique ?? Date.now();
   const relogio = hunt.clock ?? 0;
@@ -84,18 +78,19 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
   // A mesma trava de sempre: juntando bichos, a fileira de ataque espera.
   if (hunt.lurando) return [];
 
-  // A ordem da volta: o rodízio a partir do cursor — e, com REGRAS DE USO ativas
-  // (`regras-de-uso.mjs`), só as skills que elas deixam, as preferidas primeiro.
+  // A ordem: a dos slots (1, 2, 3...) — e, com REGRAS DE USO ativas
+  // (`regras-de-uso.mjs`, configuradas pelo jogador), só as skills que elas
+  // deixam, as preferidas primeiro (empate: a ordem dos slots).
   const regras = RegrasDeUso.ativas(estado, hunt, alvo);
-  let ordem = Array.from({ length: total }, (_, passo) => (inicio + passo) % total);
+  let ordem = Array.from({ length: total }, (_, posicao) => posicao);
   if (regras.length) {
     ordem = ordem
       .filter((posicao) => {
         const id = acoes[SLOTS_DO_COMBO[posicao]]?.id;
         return !id || RegrasDeUso.permitida(id, regras, { ataque: true });
       })
-      .map((posicao, i) => ({ posicao, i, peso: RegrasDeUso.peso(acoes[SLOTS_DO_COMBO[posicao]]?.id, regras) }))
-      .sort((a, b) => b.peso - a.peso || a.i - b.i)
+      .map((posicao) => ({ posicao, peso: RegrasDeUso.peso(acoes[SLOTS_DO_COMBO[posicao]]?.id, regras) }))
+      .sort((a, b) => b.peso - a.peso || a.posicao - b.posicao)
       .map((x) => x.posicao);
   }
   for (const posicao of ordem) {
@@ -114,9 +109,6 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
     const recargaRestanteMs = recarga ? Math.max(0, recarga.ate - relogio) : 0;
     if (resultado.ok) {
       registrar({ ...linha, resultado: 'EXECUTADA', recargaRestanteMs });
-      hunt.cursorDoCombo = (posicao + 1) % total;
-      // Passou do último slot da fileira: a volta seguinte começa do slot 1.
-      if (hunt.cursorDoCombo === 0) registrar({ evento: 'FIM DO CICLO → volta ao Slot 1', parede, relogio });
       return resultado.eventos;
     }
     registrar({
@@ -125,10 +117,11 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
       motivo: resultado.motivo ?? resultado.erro,
       recargaRestanteMs: resultado.motivo === 'COOLDOWN' ? resultado.faltaMs : recargaRestanteMs,
     });
-    // Bloqueio da fileira inteira: o slot da vez espera, ninguém é pulado.
+    // Bloqueio da fileira inteira (cooldown global, grupo, conjuração): nada sai neste tique.
     if (DA_FILEIRA.has(resultado.motivo)) return [];
   }
   return [];
 }
 
-export const INTERVALO_DO_COMBO_MS = R.COMBO_SKILL_INTERVAL_MS;
+/** O cooldown global base (a cadência do combo sem Cast Speed). */
+export const COOLDOWN_GLOBAL_MS = R.GLOBAL_SPELL_COOLDOWN;

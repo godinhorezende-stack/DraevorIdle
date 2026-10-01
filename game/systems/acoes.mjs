@@ -210,6 +210,7 @@ export function concluirConjuracao(estado, hunt, personagem) {
 /** `send({t:'actions'})` — o catálogo inteiro, como o original: cada entrada com seu `blocked`. */
 export function catalogo(estado) {
   const ficha = Ficha.combate(estado);
+  const global = intervaloGlobal(estado);
   const ativas = Gemas.skillsAtivas(estado);
   // A gema da skill (nível, XP, supports ligadas, o efeito somado e o tempo de conjuração) — o balão mostra.
   const daGema = (entry) => {
@@ -242,7 +243,8 @@ export function catalogo(estado) {
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
     // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
     ...(entry.cooldown ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
-    ...(entry.groupCooldown ? { groupCooldown: recargaDe(entry, entry.groupCooldown) } : {}),
+    // Ataque: o intervalo até a próxima magia de ataque é o cooldown global (com o Cast Speed), quando ele é maior.
+    ...(entry.groupCooldown ? { groupCooldown: entry.papeis?.[0] === 'attack' ? Math.max(recargaDe(entry, entry.groupCooldown), global) : recargaDe(entry, entry.groupCooldown) } : {}),
     blocked: bloqueio(entry, estado),
   });
   return {
@@ -632,6 +634,11 @@ export function marcarRecargaDaPocao(estado, entry) {
  * Devolve `{ok, erro?}` e, em caso de sucesso, `eventos` (mesmo formato de
  * `round()`) e `alvo` (se o golpe foi nele — quem chamou decide matar ou não).
  */
+/** O cooldown global com `castSpeed`% de Cast Speed: a base (`R.GLOBAL_SPELL_COOLDOWN`) encurtada por ele (decisão do dono). */
+export const intervaloGlobalCom = (castSpeed = 0) => Math.round(R.GLOBAL_SPELL_COOLDOWN / (1 + Math.max(0, castSpeed ?? 0) / 100));
+/** O cooldown global de AGORA para este personagem. */
+export const intervaloGlobal = (estado) => intervaloGlobalCom(Ficha.combate(estado).castSpeed);
+
 export function disparar(estado, hunt, personagem, slot, alvo, opcoes) {
   const r = dispararSemMarcar(estado, hunt, personagem, slot, alvo, opcoes);
   marcarParado(hunt, slot, r);
@@ -645,7 +652,7 @@ export function disparar(estado, hunt, personagem, slot, alvo, opcoes) {
  * pela `visaoDaHunt`); a que sai apaga. Recarga, intervalo do combo e
  * conjuração não contam: o leque do slot já mostra isso.
  */
-const MOTIVOS_DE_RELOGIO = new Set(['COOLDOWN', 'COOLDOWN_DO_GRUPO', 'INTERVALO_DO_COMBO', 'CONJURANDO', 'VAZIO']);
+const MOTIVOS_DE_RELOGIO = new Set(['COOLDOWN', 'COOLDOWN_DO_GRUPO', 'COOLDOWN_GLOBAL', 'CONJURANDO', 'VAZIO']);
 export function marcarParado(hunt, slot, resultado) {
   if (!hunt) return;
   const p = (hunt.parados ??= {});
@@ -689,16 +696,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const cds = (hunt.cooldowns ??= {});
   const cd = cds[action.id];
   /*
-   * ---- O intervalo do combo (R.COMBO_SKILL_INTERVAL_MS) ----
+   * ---- O cooldown global (R.GLOBAL_SPELL_COOLDOWN) ----
    *
    * Entre a execução REAL da última skill de ataque e esta, no mínimo o
-   * intervalo do combo — pelo instante gravado lá embaixo, quando a anterior
-   * de fato saiu. Vale para o combo automático e para o clique/tecla, que
-   * passam os dois por aqui. Sem folga de tique: é um mínimo, não uma recarga.
+   * cooldown global — pelo instante gravado lá embaixo, quando a anterior de
+   * fato saiu. Vale para o loop automático e para o clique/tecla, que passam os
+   * dois por aqui: o servidor é quem decide, e uma magia por vez. Sem folga de
+   * tique: é um mínimo, nunca menos.
    */
   const deAtaque = entry.papeis?.[0] === 'attack';
-  if (deAtaque && hunt.ultimoAtaqueEm != null && agora - hunt.ultimoAtaqueEm < R.COMBO_SKILL_INTERVAL_MS) {
-    return { ok: false, erro: 'Aguarde o intervalo entre magias.', motivo: 'INTERVALO_DO_COMBO', faltaMs: R.COMBO_SKILL_INTERVAL_MS - (agora - hunt.ultimoAtaqueEm) };
+  const global = intervaloGlobal(estado);
+  if (deAtaque && hunt.ultimoAtaqueEm != null && agora - hunt.ultimoAtaqueEm < global) {
+    return { ok: false, erro: 'Aguarde o cooldown global.', motivo: 'COOLDOWN_GLOBAL', faltaMs: global - (agora - hunt.ultimoAtaqueEm) };
   }
   // `R.jaPode` (meio tique de folga): com tique de 249ms, `agora < ate` fazia
   // uma recarga de 2s esperar 9 tiques (2,24s) em vez de 8.
@@ -1015,7 +1024,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     cds[grupoQueConta] = { ate: agora + doGrupo, total: doGrupo };
   }
   if (entry.kind === 'item') cds[grupo] = { ate: agora + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
-  // A execução REAL de uma skill de ataque: é daqui que o intervalo do combo conta.
+  // A execução REAL de uma skill de ataque: é daqui que o cooldown global conta.
   if (deAtaque) hunt.ultimoAtaqueEm = agora;
   if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;
   return { ok: true, eventos };

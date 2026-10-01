@@ -21,7 +21,7 @@ function naHuntComBarra(ids) {
   return e;
 }
 
-test('recarga de ataque: Fierce Berserk sai a cada 3 s, e o grupo deixa uma magia por segundo', () => {
+test('recarga de ataque: Fierce Berserk sai a cada 3 s; a próxima magia de ataque espera o cooldown global', () => {
   const e = naHuntComBarra(['spell-fierce-berserk', 'spell-berserk']);
   const h = e.hunt;
   const r = Acoes.disparar(e, h, PERSONAGEM, 11, h.monstros[0]);
@@ -29,7 +29,9 @@ test('recarga de ataque: Fierce Berserk sai a cada 3 s, e o grupo deixa uma magi
   assert.equal(h.cooldowns['spell-fierce-berserk'].total, 3000);
   assert.equal(h.cooldowns['grupo:attack'].total, 1000);
   h.clock += 1000;
-  assert.ok(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, 'um segundo depois, a segunda magia');
+  assert.equal(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).motivo, 'COOLDOWN_GLOBAL', 'o grupo (1 s) já liberou, o global ainda não');
+  h.clock += Acoes.intervaloGlobal(e) - 1000;
+  assert.ok(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, 'depois do global, a segunda magia');
 });
 
 test('runa de ataque divide a recarga do grupo com as magias (não sai junto)', () => {
@@ -37,8 +39,8 @@ test('runa de ataque divide a recarga do grupo com as magias (não sai junto)', 
   const h = e.hunt;
   assert.ok(Acoes.disparar(e, h, PERSONAGEM, 11, h.monstros[0]).ok);
   assert.equal(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, false, 'no mesmo instante, a runa espera');
-  h.clock += 1000;
-  assert.ok(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, 'depois do grupo, a runa sai');
+  h.clock += Acoes.intervaloGlobal(e);
+  assert.ok(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, 'depois do global, a runa sai');
 });
 
 test('o catálogo mandado ao cliente mostra a recarga que o servidor aplica', () => {
@@ -46,7 +48,7 @@ test('o catálogo mandado ao cliente mostra a recarga que o servidor aplica', ()
   const cat = Acoes.catalogo(e);
   const lesser = cat.spells.find((s) => s.id === 'spell-lesser-ethereal-spear');
   assert.equal(lesser.cooldown, 1000, 'tooltip dizia 2 s; sai a cada 1 s');
-  assert.equal(lesser.groupCooldown, 1000);
+  assert.equal(lesser.groupCooldown, Acoes.intervaloGlobal(e), 'o intervalo até a próxima de ataque é o cooldown global');
   const fierce = cat.spells.find((s) => s.id === 'spell-fierce-berserk');
   assert.equal(fierce.cooldown, 3000);
   // Cura não é ataque: continua a do catálogo.
