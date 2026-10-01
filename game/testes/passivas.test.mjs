@@ -39,6 +39,8 @@ const ficha = (e) => {
   return Ficha.combate(e);
 };
 const distancia = (a, b) => Math.hypot(no(a).x - no(b).x, no(a).y - no(b).y);
+// O 1º nó do caminho de atributo do início do Knight até a roda da Armour (versão 2 da árvore).
+const V1 = 'via_knight_armour_1';
 
 // ---------- os dados ----------
 
@@ -73,12 +75,13 @@ test('1-2: personagem novo começa no início da classe e ganha pontos pelo leve
 
 // ---------- 3, 4, 5: alocar ----------
 
-test('3: alocar um SMALL ligado ao início — o ponto sai', () => {
+test('3: alocar um nó ligado ao início (o 1º do caminho de atributo) — o ponto sai', () => {
   const e = novo();
-  const r = Comandos.comando(e, { action: 'alocar', id: 'armour_e' });
+  const r = Comandos.comando(e, { action: 'alocar', id: V1 });
   assert.equal(r.ok, true, r.erro);
-  assert.ok(e.passivas.alocados.includes('armour_e'));
-  assert.equal(P.pontos(e).usados, P.CONFIG.custo.small);
+  assert.ok(e.passivas.alocados.includes(V1));
+  assert.equal(P.pontos(e).usados, P.CONFIG.custo.atributo, 'nó de atributo custa o do config');
+  assert.ok(no(V1).efeitos.some((ef) => ef.add === 'str'), 'perto do Knight dá STR');
 });
 
 test('4-5: alocar um NOTABLE e um KEYSTONE pelo caminho', () => {
@@ -101,14 +104,14 @@ test('6: nó sem conexão com um nó seu é recusado (não basta mandar "unlock 
 });
 
 test('7: sem pontos, não aloca', () => {
-  const e = novo('knight', 10); // 1 ponto; o small custa 2
-  const r = Comandos.comando(e, { action: 'alocar', id: 'armour_e' });
+  const e = novo('knight', 10); // 1 ponto; o nó de atributo custa 2
+  const r = Comandos.comando(e, { action: 'alocar', id: V1 });
   assert.equal(r.motivo, 'SEM_PONTOS');
 });
 
 test('8: keystone pede level mínimo', () => {
   const e = novo('knight', 55);
-  e.passivas.alocados.push(...P.caminhoAte(e, 'armour_na')); // (o caminho, direto — o que está em teste é o keystone)
+  e.passivas.alocados.push(...P.caminhoAte(e, 'armour_nb')); // (o caminho, direto — o que está em teste é o keystone, atrás do 2º notável)
   const r = P.podeAlocar(e, 'armour_k');
   assert.equal(r.motivo, 'LEVEL');
 });
@@ -116,14 +119,14 @@ test('8: keystone pede level mínimo', () => {
 test('29: o servidor recusa o inválido — nó que não existe, repetido, início de outra classe, pedido desconhecido', () => {
   const e = novo();
   assert.equal(Comandos.comando(e, { action: 'alocar', id: 'nao_existe' }).motivo, 'NAO_EXISTE');
-  Comandos.comando(e, { action: 'alocar', id: 'armour_e' });
-  assert.equal(Comandos.comando(e, { action: 'alocar', id: 'armour_e' }).motivo, 'JA_ALOCADO');
+  Comandos.comando(e, { action: 'alocar', id: V1 });
+  assert.equal(Comandos.comando(e, { action: 'alocar', id: V1 }).motivo, 'JA_ALOCADO');
   assert.equal(P.podeAlocar(e, 'inicio_paladin').ok, false);
   assert.equal(Comandos.comando(e, { action: 'apagarTudo' }).ok, false);
   // Estado adulterado (nó que não existe, início de outra classe, repetido): `garantir` limpa.
-  e.passivas.alocados.push('xpto', 'inicio_sorcerer', 'armour_e');
+  e.passivas.alocados.push('xpto', 'inicio_sorcerer', V1);
   P.garantir(e);
-  assert.deepEqual(e.passivas.alocados, ['inicio_knight', 'armour_e']);
+  assert.deepEqual(e.passivas.alocados, ['inicio_knight', V1]);
 });
 
 // ---------- 9, 11: respec ----------
@@ -135,7 +138,8 @@ test('9: respec — não tira nó que ilharia outros (a não ser junto); devolve
   const r = Comandos.comando(e, { action: 'respec', id: 'armour_e' });
   assert.equal(r.motivo, 'ILHARIA');
   const plano = Comandos.comando(e, { action: 'planoRespec', id: 'armour_e', junto: true }).plano;
-  assert.equal(plano.tirar.length, e.passivas.alocados.length - 1);
+  assert.equal(plano.tirar.length, P.ilhadosSemEles(e, ['armour_e']).length + 1, 'sai a entrada e o que vem depois dela');
+  assert.ok(!plano.tirar.includes(V1), 'o caminho antes da entrada fica');
   e.gold = 10;
   e.bank = 0;
   assert.equal(Comandos.comando(e, { action: 'respec', id: 'armour_na' }).motivo, 'SEM_OURO');
@@ -185,10 +189,14 @@ const INICIO_PERTO = {
   monk: ['energy', 'melee', 'mobility', 'evasion'],
 };
 for (const [classe, clusters] of Object.entries(INICIO_PERTO)) {
-  test(`12-16: ${classe} começa no início dele, ligado direto a ${clusters.join('/')}`, () => {
+  test(`12-16: ${classe} começa no início dele, a poucos nós (um caminho de atributo) de ${clusters.join('/')}`, () => {
     const e = novo(classe);
     assert.equal(e.passivas.alocados[0], `inicio_${classe}`);
-    for (const c of clusters) assert.equal(P.caminhoAte(e, `${c}_e`)?.length, 1, `${classe} → ${c}`);
+    for (const c of clusters) {
+      const caminho = P.caminhoAte(e, `${c}_e`);
+      assert.ok(caminho?.length >= 2 && caminho.length <= 5, `${classe} → ${c}: ${caminho?.length}`);
+      assert.ok(caminho.slice(0, -1).every((id) => no(id).atributo), 'o trajeto é de nós de atributo');
+    }
   });
 }
 
@@ -306,7 +314,7 @@ test('keystones de regra: Arqueiro Arcano (INT → Ranged) e Guerreiro de Sangue
   assert.ok(f.afinidades.ranged > r0 + 0.5, `ranged ${r0} → ${f.afinidades.ranged}`);
   const s = novo('sorcerer', 1500);
   s.equipment.ring = null;
-  ate(s, 'death_na'); // o keystone fica atrás do 1º notável: tudo que dá leech no caminho já entra antes da medida
+  ate(s, 'death_nb'); // o keystone fica atrás do 2º notável: tudo que dá leech no caminho já entra antes da medida
   const leech = ficha(s).lifeLeech;
   ate(s, 'death_k');
   assert.ok(Math.abs(ficha(s).lifeLeech - leech * 1.5) < 1e-9);
@@ -389,4 +397,59 @@ test('30: desempenho — árvore de 3.000 nós: validar, caminho e efeitos rápi
   } finally {
     P.usarArvore(antes);
   }
+});
+
+// ---------- versão 2: caminhos de atributo, híbridos, rodas e a migração ----------
+
+test('v2: entre os clusters há nós de atributo (+STR/+DEX/+INT), e eles dão o atributo de verdade', () => {
+  const atributos = A.nos.filter((n) => n.atributo && n.cluster === 'caminho');
+  assert.ok(atributos.length >= 80, `${atributos.length} nós de caminho`);
+  for (const n of atributos) assert.ok(n.efeitos.length && n.efeitos.every((ef) => ['str', 'dex', 'int'].includes(ef.add)), n.id);
+  // Nenhum cluster liga direto a outro: o caminho entre eles passa por atributo.
+  for (const n of A.nos.filter((x) => x.cluster && !['caminho', 'anel', 'inicio'].includes(x.cluster))) {
+    for (const c of n.conexoes) {
+      const o = no(c);
+      if (o.cluster && !['caminho', 'anel', 'inicio'].includes(o.cluster)) assert.equal(o.cluster, n.cluster, `${n.id} liga direto a ${c}`);
+    }
+  }
+  // E dá STR na ficha (o mesmo add dos itens).
+  const e = novo();
+  const str0 = ficha(e).atributos.str;
+  Comandos.comando(e, { action: 'alocar', id: V1 });
+  assert.equal(ficha(e).atributos.str, str0 + no(V1).efeitos[0].valor);
+});
+
+test('v2: na fronteira entre classes de atributos diferentes há nós HÍBRIDOS (dois atributos)', () => {
+  const hibridos = A.nos.filter((n) => n.atributo?.includes('+'));
+  assert.ok(hibridos.length >= 10, `${hibridos.length}`);
+  assert.ok(hibridos.some((n) => n.atributo === 'dex+str'), 'Knight × Paladin/Monk');
+  assert.ok(hibridos.some((n) => n.atributo === 'dex+int'), 'Paladin/Monk × Druid/Sorcerer');
+  for (const n of hibridos) assert.equal(n.efeitos.length, 2, n.id);
+});
+
+test('v2: cada cluster é uma roda (órbita fechada com o 1º notável no centro)', () => {
+  for (const c of A.clusters) {
+    const daOrbita = A.nos.filter((n) => n.cluster === c.id && n.orbita);
+    assert.equal(daOrbita.length, 10, c.id);
+    for (const n of daOrbita) assert.equal(Math.round(Math.hypot(n.x - n.orbita.x, n.y - n.orbita.y)), n.orbita.r, n.id);
+    const centro = no(`${c.id}_na`);
+    assert.ok(Math.hypot(centro.x - c.x, centro.y - c.y) < 2, `${c.id}: o 1º notável no centro`);
+  }
+});
+
+test('v2: migração — quem tinha a árvore da versão 1 perde só o que ficou sem caminho, com os pontos de volta e 1 respec grátis', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 400 });
+  // Uma árvore "da versão 1": a entrada da Armour colada no início (sem o caminho de atributo de agora).
+  e.passivas = { alocados: ['inicio_knight', 'armour_e', 'armour_s1', 'anel_0'], respecsGratis: 0, migrado: true };
+  const r = P.garantir(e);
+  assert.equal(r.arvoreMudou, true);
+  assert.deepEqual(e.passivas.alocados, ['inicio_knight', 'anel_0'], 'a Armour perdeu o caminho; o anel ficou');
+  assert.equal(e.passivas.respecsGratis, 1);
+  assert.equal(e.passivas.versaoDaArvore, A.versao);
+  assert.equal(P.garantir(e).arvoreMudou, false, 'uma vez por versão');
+  // Quem não perdeu nada não ganha respec.
+  const f = personagemDeTeste({ vocacao: 'knight', level: 400 });
+  f.passivas = { alocados: ['inicio_knight', 'anel_0'], respecsGratis: 0, migrado: true };
+  assert.equal(P.garantir(f).arvoreMudou, false);
+  assert.equal(f.passivas.respecsGratis, 0);
 });

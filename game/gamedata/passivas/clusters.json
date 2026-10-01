@@ -2,7 +2,13 @@
   "_nota": "Os CLUSTERS da árvore de passivas e os INÍCIOS das classes — a fonte que tools/gerar-arvore-passiva.mjs transforma em arvore.json (nós com posição + conexões). Para mexer na árvore: edite aqui e rode `node tools/gerar-arvore-passiva.mjs`. Ângulo em graus (0 = direita, 90 = baixo), raio em unidades do mapa. Efeitos (os mesmos formatos do resto do jogo, somados pela ficha): { dano, tag } = +% de dano em skill/golpe com a tag; { stat, pct } = +% de stat (armour, life, accuracy, evasion, attackSpeed, castSpeed, moveSpeed, healing); { add, valor } = um add de item (str, dex, int, crit_chance, crit_dmg, life_leech, mana_leech, cooldown_recovery, skill_cost, skill_melee, skill_distance, skill_magic, skill_shielding, life, mana, energy_shield, es_pct, block, life_regen_pct, mana_regen_pct, dmg_vs_boss, move_speed...); { legado, valor } = as chaves da árvore antiga que não têm add (absorb, armorPenetration, attackDamage — em fração). Keystone: { regra: habilidade|atributoParaTag|multiplicarStat|conversao, ... } (ver systems/passivas/keystones.mjs).",
 
   "_anel": "O ANEL de atributos em volta do centro: liga os cinco inícios e é por ele que uma classe caminha até a região de outra (cross-build). `nos` pequenos, com o atributo da classe mais perto.",
-  "anel": { "raio": 620, "nos": 40, "atributo": { "knight": "str", "paladin": "dex", "druid": "int", "sorcerer": "int", "monk": "dex" }, "valor": 6 },
+  "anel": { "raio": 620, "nos": 40, "atributo": { "knight": "str", "paladin": "dex", "druid": "int", "sorcerer": "int", "monk": "dex" }, "valor": 5 },
+
+  "_caminhos": "Os CAMINHOS de atributo (estilo Path of Exile): toda ligação entre um início e um cluster, e entre clusters vizinhos, passa por nós de +atributo — o da classe mais perto (`anel.atributo`) e, na faixa entre duas classes de atributos diferentes, HÍBRIDO (+`hibrido` de cada). Um nó a cada `passo` unidades, entre `min` e `max` nós. Custam `custoDoAtributo` (config.json).",
+  "caminhos": { "valor": 5, "hibrido": 3, "passo": 190, "min": 1, "max": 4, "faixaHibrida": 0.34 },
+
+  "_roda": "Cada cluster é uma RODA: o 1º notável no centro, a entrada e os pequenos em órbita (`raio`), o 2º notável no lado de fora da órbita e o keystone atrás dele. `afastamento`: do ponto do cluster até o centro da roda, para fora.",
+  "roda": { "raio": 190, "afastamento": 330, "keystone": 240 },
 
   "inicios": {
     "knight":   { "nome": "Início do Knight",   "angulo": -90, "raio": 1000, "clusters": ["armour", "life", "physical", "melee"] },
@@ -17,166 +23,166 @@
     { "id": "armour", "nome": "Armour", "angulo": -106, "raio": 1500, "dominio": "defesa", "tags": ["armour", "defesa"], "perto": ["life", "melee"],
       "pequenos": [[{ "stat": "armour", "pct": 3 }], [{ "stat": "armour", "pct": 3 }], [{ "add": "skill_shielding", "valor": 2 }]],
       "notaveis": [
-        { "nome": "Pele de Ferro", "efeitos": [{ "stat": "armour", "pct": 10 }, { "legado": "absorb", "valor": 0.02 }] },
-        { "nome": "Muralha", "efeitos": [{ "add": "block", "valor": 3 }, { "add": "skill_shielding", "valor": 6 }] }
+        { "nome": "Bastião Forjado", "flavor": "O aço não pergunta quem bate — só devolve o silêncio.", "efeitos": [{ "stat": "armour", "pct": 10 }, { "legado": "absorb", "valor": 0.02 }] },
+        { "nome": "Juramento do Escudo", "flavor": "Enquanto eu estiver de pé, ninguém passa.", "efeitos": [{ "add": "block", "valor": 3 }, { "add": "skill_shielding", "valor": 6 }] }
       ],
-      "keystone": { "nome": "Última Muralha", "descricao": "Com menos de 30% de vida, você recebe 15% menos dano.", "keystone": { "regra": "habilidade", "id": "ultimaMuralha" } } },
+      "keystone": { "nome": "Última Muralha", "flavor": "Quando tudo cai, a muralha fica.", "descricao": "Com menos de 30% de vida, você recebe 15% menos dano.", "keystone": { "regra": "habilidade", "id": "ultimaMuralha" } } },
 
     { "id": "life", "nome": "Life", "angulo": -74, "raio": 1500, "dominio": "defesa", "tags": ["life", "defesa"], "perto": ["armour", "physical", "attack_speed"],
       "pequenos": [[{ "stat": "life", "pct": 3 }], [{ "stat": "life", "pct": 3 }], [{ "add": "life_regen_pct", "valor": 3 }]],
       "notaveis": [
-        { "nome": "Coração Forte", "efeitos": [{ "stat": "life", "pct": 8 }, { "add": "life_regen_pct", "valor": 5 }] },
-        { "nome": "Sangue Grosso", "efeitos": [{ "stat": "life", "pct": 6 }, { "legado": "absorb", "valor": 0.02 }, { "add": "skill_shielding", "valor": 4 }] }
+        { "nome": "Coração do Carvalho", "flavor": "Raízes fundas não temem tempestade.", "efeitos": [{ "stat": "life", "pct": 8 }, { "add": "life_regen_pct", "valor": 5 }] },
+        { "nome": "Sangue de Titã", "flavor": "Corta-se a pele; o titã continua de pé.", "efeitos": [{ "stat": "life", "pct": 6 }, { "legado": "absorb", "valor": 0.02 }, { "add": "skill_shielding", "valor": 4 }] }
       ],
-      "keystone": { "nome": "Não Cai Nunca", "descricao": "Um golpe que mataria deixa você vivo, com 10% da vida. Uma vez a cada 120 segundos.", "keystone": { "regra": "habilidade", "id": "naoCaiNunca" } } },
+      "keystone": { "nome": "Não Cai Nunca", "flavor": "A morte bateu à porta. Ninguém atendeu.", "descricao": "Um golpe que mataria deixa você vivo, com 10% da vida. Uma vez a cada 120 segundos.", "keystone": { "regra": "habilidade", "id": "naoCaiNunca" } } },
 
     { "id": "attack_speed", "nome": "Attack Speed", "angulo": -90, "raio": 2350, "dominio": "dano", "tags": ["attack", "speed"], "perto": ["life", "armour"],
       "pequenos": [[{ "stat": "attackSpeed", "pct": 2 }], [{ "stat": "attackSpeed", "pct": 2 }], [{ "add": "skill_melee", "valor": 2 }]],
       "notaveis": [
-        { "nome": "Martial Training", "efeitos": [{ "dano": 10, "tag": "melee" }, { "stat": "attackSpeed", "pct": 5 }] },
-        { "nome": "Golpes Rápidos", "efeitos": [{ "stat": "attackSpeed", "pct": 6 }, { "add": "skill_melee", "valor": 4 }] }
+        { "nome": "Disciplina Marcial", "flavor": "Mil repetições, até o golpe pensar sozinho.", "efeitos": [{ "dano": 10, "tag": "melee" }, { "stat": "attackSpeed", "pct": 5 }] },
+        { "nome": "Lâmina Ligeira", "flavor": "O segundo corte chega antes de o primeiro doer.", "efeitos": [{ "stat": "attackSpeed", "pct": 6 }, { "add": "skill_melee", "valor": 4 }] }
       ],
-      "keystone": { "nome": "Mil Mãos", "descricao": "Cada golpe corpo a corpo tem 15% de chance de acertar duas vezes; a segunda com metade do dano.", "keystone": { "regra": "habilidade", "id": "milMaos" } } },
+      "keystone": { "nome": "Mil Mãos", "flavor": "Viu um golpe? Eram dois.", "descricao": "Cada golpe corpo a corpo tem 15% de chance de acertar duas vezes; a segunda com metade do dano.", "keystone": { "regra": "habilidade", "id": "milMaos" } } },
 
     { "id": "physical", "nome": "Physical", "angulo": -54, "raio": 1500, "dominio": "dano", "tags": ["physical"], "perto": ["life", "ranged"],
       "pequenos": [[{ "dano": 3, "tag": "physical" }], [{ "dano": 3, "tag": "physical" }], [{ "add": "str", "valor": 5 }]],
       "notaveis": [
-        { "nome": "Força Bruta", "efeitos": [{ "dano": 10, "tag": "physical" }, { "legado": "armorPenetration", "valor": 0.05 }, { "add": "skill_melee", "valor": 3 }] },
-        { "nome": "Golpe Certeiro", "efeitos": [{ "dano": 6, "tag": "physical" }, { "add": "crit_dmg", "valor": 8 }] }
+        { "nome": "Quebra-Ossos", "flavor": "Sutileza é para quem não tem força.", "efeitos": [{ "dano": 10, "tag": "physical" }, { "legado": "armorPenetration", "valor": 0.05 }, { "add": "skill_melee", "valor": 3 }] },
+        { "nome": "Mão de Carrasco", "flavor": "Um golpe. Só precisava de um.", "efeitos": [{ "dano": 6, "tag": "physical" }, { "add": "crit_dmg", "valor": 8 }] }
       ],
-      "keystone": { "nome": "Vazio Pleno", "descricao": "Com a vida acima de 90%, você bate 5% mais forte.", "keystone": { "regra": "habilidade", "id": "vazioPleno" } } },
+      "keystone": { "nome": "Vazio Pleno", "flavor": "Inteiro, sou inquebrável.", "descricao": "Com a vida acima de 90%, você bate 5% mais forte.", "keystone": { "regra": "habilidade", "id": "vazioPleno" } } },
 
     { "id": "ranged", "nome": "Ranged", "angulo": -32, "raio": 1500, "dominio": "dano", "tags": ["ranged", "projectile"], "perto": ["physical", "accuracy"],
       "pequenos": [[{ "dano": 3, "tag": "ranged" }], [{ "dano": 3, "tag": "projectile" }], [{ "add": "skill_distance", "valor": 2 }]],
       "notaveis": [
-        { "nome": "Olho de Falcão", "efeitos": [{ "dano": 10, "tag": "ranged" }, { "add": "skill_distance", "valor": 6 }] },
-        { "nome": "Flecha que Atravessa", "efeitos": [{ "dano": 6, "tag": "projectile" }, { "legado": "flechaAtravessa", "valor": 0.1 }] }
+        { "nome": "Olhar do Falcão", "flavor": "Do alto, todo alvo é lento.", "efeitos": [{ "dano": 10, "tag": "ranged" }, { "add": "skill_distance", "valor": 6 }] },
+        { "nome": "Seta Perfurante", "flavor": "Atrás de um inimigo, sempre há outro.", "efeitos": [{ "dano": 6, "tag": "projectile" }, { "legado": "flechaAtravessa", "valor": 0.1 }] }
       ],
-      "keystone": { "nome": "Chuva de Flechas", "descricao": "A cada 6 tiros da arma, o próximo acerta também os bichos em volta do alvo, com 50% do dano.", "keystone": { "regra": "habilidade", "id": "chuvaDeFlechas" } } },
+      "keystone": { "nome": "Chuva de Flechas", "flavor": "O céu escureceu — e não era noite.", "descricao": "A cada 6 tiros da arma, o próximo acerta também os bichos em volta do alvo, com 50% do dano.", "keystone": { "regra": "habilidade", "id": "chuvaDeFlechas" } } },
 
     { "id": "accuracy", "nome": "Accuracy", "angulo": -4, "raio": 1500, "dominio": "dano", "tags": ["accuracy"], "perto": ["ranged", "holy", "critical"],
       "pequenos": [[{ "stat": "accuracy", "pct": 4 }], [{ "add": "skill_distance", "valor": 2 }], [{ "stat": "accuracy", "pct": 4 }]],
       "notaveis": [
-        { "nome": "Mira Perfeita", "efeitos": [{ "stat": "accuracy", "pct": 12 }, { "add": "crit_chance", "valor": 1 }] },
-        { "nome": "Paciência do Caçador", "efeitos": [{ "dano": 6, "tag": "ranged" }, { "add": "dmg_vs_boss", "valor": 6 }, { "add": "skill_distance", "valor": 4 }] }
+        { "nome": "Mira do Caçador", "flavor": "Respire. Solte. Acerte.", "efeitos": [{ "stat": "accuracy", "pct": 12 }, { "add": "crit_chance", "valor": 1 }] },
+        { "nome": "Paciência da Grande Caça", "flavor": "A presa grande cai para quem sabe esperar.", "efeitos": [{ "dano": 6, "tag": "ranged" }, { "add": "dmg_vs_boss", "valor": 6 }, { "add": "skill_distance", "valor": 4 }] }
       ],
-      "keystone": { "nome": "Arqueiro Arcano", "descricao": "Parte da INT vira dano à distância: cada 10 de INT dá +1% de dano em skill/golpe Ranged.", "keystone": { "regra": "atributoParaTag", "atributo": "int", "tag": "ranged", "porPonto": 0.1 } } },
+      "keystone": { "nome": "Arqueiro Arcano", "flavor": "A mente guia a flecha.", "descricao": "Parte da INT vira dano à distância: cada 10 de INT dá +1% de dano em skill/golpe Ranged.", "keystone": { "regra": "atributoParaTag", "atributo": "int", "tag": "ranged", "porPonto": 0.1 } } },
 
     { "id": "critical", "nome": "Critical", "angulo": -18, "raio": 2350, "dominio": "dano", "tags": ["critical"], "perto": ["accuracy", "physical"],
       "pequenos": [[{ "add": "crit_chance", "valor": 0.5 }], [{ "add": "crit_dmg", "valor": 3 }], [{ "add": "crit_chance", "valor": 0.5 }]],
       "notaveis": [
-        { "nome": "Ponto Fraco", "efeitos": [{ "add": "crit_chance", "valor": 2 }, { "add": "crit_dmg", "valor": 8 }, { "add": "skill_distance", "valor": 3 }] },
-        { "nome": "Execução", "efeitos": [{ "add": "crit_dmg", "valor": 12 }] }
+        { "nome": "Fresta na Armadura", "flavor": "Toda muralha tem uma pedra solta.", "efeitos": [{ "add": "crit_chance", "valor": 2 }, { "add": "crit_dmg", "valor": 8 }, { "add": "skill_distance", "valor": 3 }] },
+        { "nome": "Golpe de Misericórdia", "flavor": "Rápido, para que não sofra.", "efeitos": [{ "add": "crit_dmg", "valor": 12 }] }
       ],
-      "keystone": { "nome": "Julgamento", "descricao": "O crítico ignora a resistência elemental do bicho.", "keystone": { "regra": "habilidade", "id": "julgamento" } } },
+      "keystone": { "nome": "Julgamento", "flavor": "Nenhuma armadura protege do veredito.", "descricao": "O crítico ignora a resistência elemental do bicho.", "keystone": { "regra": "habilidade", "id": "julgamento" } } },
 
     { "id": "holy", "nome": "Holy", "angulo": 18, "raio": 1500, "dominio": "dano", "tags": ["holy"], "perto": ["accuracy", "ice"],
       "pequenos": [[{ "dano": 3, "tag": "holy" }], [{ "dano": 3, "tag": "holy" }], [{ "stat": "healing", "pct": 3 }]],
       "notaveis": [
-        { "nome": "Luz Divina", "efeitos": [{ "dano": 12, "tag": "holy" }] },
-        { "nome": "Bênção", "efeitos": [{ "stat": "healing", "pct": 8 }, { "stat": "life", "pct": 4 }] }
+        { "nome": "Chama Sagrada", "flavor": "A luz não queima os justos — só o resto.", "efeitos": [{ "dano": 12, "tag": "holy" }] },
+        { "nome": "Mãos Consagradas", "flavor": "O toque que fecha feridas também as abre.", "efeitos": [{ "stat": "healing", "pct": 8 }, { "stat": "life", "pct": 4 }] }
       ],
-      "keystone": { "nome": "Graça", "descricao": "Com menos de 50% de vida, suas curas saem 10% maiores.", "keystone": { "regra": "habilidade", "id": "graca" } } },
+      "keystone": { "nome": "Graça", "flavor": "Na beira do abismo, a luz brilha mais.", "descricao": "Com menos de 50% de vida, suas curas saem 10% maiores.", "keystone": { "regra": "habilidade", "id": "graca" } } },
 
     { "id": "ice", "nome": "Ice", "angulo": 40, "raio": 1500, "dominio": "dano", "tags": ["ice", "spell"], "perto": ["holy", "healing"],
       "pequenos": [[{ "dano": 3, "tag": "ice" }], [{ "dano": 3, "tag": "ice" }], [{ "add": "int", "valor": 5 }]],
       "notaveis": [
-        { "nome": "Coração de Gelo", "efeitos": [{ "dano": 12, "tag": "ice" }, { "add": "skill_magic", "valor": 2 }] },
-        { "nome": "Frio Cortante", "efeitos": [{ "dano": 6, "tag": "ice" }, { "add": "crit_chance", "valor": 1 }] }
+        { "nome": "Coração do Inverno", "flavor": "Nada se move quando o inverno chega.", "efeitos": [{ "dano": 12, "tag": "ice" }, { "add": "skill_magic", "valor": 2 }] },
+        { "nome": "Geada Afiada", "flavor": "O frio corta mais fundo que o aço.", "efeitos": [{ "dano": 6, "tag": "ice" }, { "add": "crit_chance", "valor": 1 }] }
       ],
-      "keystone": { "nome": "Inverno Sem Fim", "descricao": "Magia de gelo deixa o bicho recebendo 10% mais dano de todos, por 4 segundos.", "keystone": { "regra": "habilidade", "id": "invernoSemFim" } } },
+      "keystone": { "nome": "Inverno Sem Fim", "flavor": "O frio fica, mesmo depois que a neve vai embora.", "descricao": "Magia de gelo deixa o bicho recebendo 10% mais dano de todos, por 4 segundos.", "keystone": { "regra": "habilidade", "id": "invernoSemFim" } } },
 
     { "id": "healing", "nome": "Healing", "angulo": 54, "raio": 2350, "dominio": "sustento", "tags": ["healing"], "perto": ["ice", "earth"],
       "pequenos": [[{ "stat": "healing", "pct": 3 }], [{ "stat": "healing", "pct": 3 }], [{ "add": "mana_regen_pct", "valor": 4 }]],
       "notaveis": [
-        { "nome": "Mãos que Curam", "efeitos": [{ "stat": "healing", "pct": 12 }] },
-        { "nome": "Fonte Serena", "efeitos": [{ "stat": "healing", "pct": 6 }, { "add": "mana_regen_pct", "valor": 8 }] }
+        { "nome": "Fonte da Vida", "flavor": "Onde a água corre, a ferida fecha.", "efeitos": [{ "stat": "healing", "pct": 12 }] },
+        { "nome": "Bálsamo Sereno", "flavor": "Calma é o melhor remédio — e o mais barato.", "efeitos": [{ "stat": "healing", "pct": 6 }, { "add": "mana_regen_pct", "valor": 8 }] }
       ],
-      "keystone": { "nome": "Fonte Viva", "descricao": "Suas magias de cura também põem um escudo de mana por 3 segundos, de 15% do que curaram.", "keystone": { "regra": "habilidade", "id": "fonteViva" } } },
+      "keystone": { "nome": "Fonte Viva", "flavor": "Toda cura deixa uma promessa de proteção.", "descricao": "Suas magias de cura também põem um escudo de mana por 3 segundos, de 15% do que curaram.", "keystone": { "regra": "habilidade", "id": "fonteViva" } } },
 
     { "id": "earth", "nome": "Earth", "angulo": 68, "raio": 1500, "dominio": "dano", "tags": ["earth", "spell"], "perto": ["healing", "spell"],
       "pequenos": [[{ "dano": 3, "tag": "earth" }], [{ "dano": 3, "tag": "earth" }], [{ "add": "int", "valor": 5 }]],
       "notaveis": [
-        { "nome": "Força da Terra", "efeitos": [{ "dano": 12, "tag": "earth" }, { "add": "skill_magic", "valor": 2 }] },
-        { "nome": "Raízes Profundas", "efeitos": [{ "dano": 6, "tag": "earth" }, { "stat": "life", "pct": 4 }] }
+        { "nome": "Fúria da Terra", "flavor": "A montanha não tem pressa, mas esmaga.", "efeitos": [{ "dano": 12, "tag": "earth" }, { "add": "skill_magic", "valor": 2 }] },
+        { "nome": "Raízes Antigas", "flavor": "O que cresce devagar não cai fácil.", "efeitos": [{ "dano": 6, "tag": "earth" }, { "stat": "life", "pct": 4 }] }
       ],
-      "keystone": { "nome": "Raiz Venenosa", "descricao": "Magia de terra tem 25% de chance de envenenar o bicho com 30% do dano, ao longo de 5 segundos.", "keystone": { "regra": "habilidade", "id": "raizVenenosa" } } },
+      "keystone": { "nome": "Raiz Venenosa", "flavor": "A terra lembra quem pisou nela.", "descricao": "Magia de terra tem 25% de chance de envenenar o bicho com 30% do dano, ao longo de 5 segundos.", "keystone": { "regra": "habilidade", "id": "raizVenenosa" } } },
 
     { "id": "spell", "nome": "Spell", "angulo": 90, "raio": 1500, "dominio": "dano", "tags": ["spell"], "perto": ["earth", "fire", "cast_speed"],
       "pequenos": [[{ "dano": 2, "tag": "spell" }], [{ "add": "skill_magic", "valor": 2 }], [{ "dano": 2, "tag": "spell" }]],
       "notaveis": [
-        { "nome": "Arcane Mind", "efeitos": [{ "add": "mana", "valor": 150 }, { "dano": 7, "tag": "spell" }] },
-        { "nome": "Erudito", "efeitos": [{ "add": "skill_magic", "valor": 6 }, { "dano": 3, "tag": "area" }] }
+        { "nome": "Mente Arcana", "flavor": "Todo poder começa com uma palavra lembrada.", "efeitos": [{ "add": "mana", "valor": 150 }, { "dano": 7, "tag": "spell" }] },
+        { "nome": "Tomo do Erudito", "flavor": "Quem leu tudo sabe onde a magia dói mais.", "efeitos": [{ "add": "skill_magic", "valor": 6 }, { "dano": 3, "tag": "area" }] }
       ],
-      "keystone": { "nome": "Avatar do Fogo", "descricao": "50% do dano físico do golpe da arma sai como fogo.", "keystone": { "regra": "conversao", "de": "physical", "para": "fire", "pct": 50 } } },
+      "keystone": { "nome": "Avatar do Fogo", "flavor": "Aço que arde corta duas vezes.", "descricao": "50% do dano físico do golpe da arma sai como fogo.", "keystone": { "regra": "conversao", "de": "physical", "para": "fire", "pct": 50 } } },
 
     { "id": "cast_speed", "nome": "Cast Speed", "angulo": 90, "raio": 2350, "dominio": "dano", "tags": ["spell", "speed"], "perto": ["spell"],
       "pequenos": [[{ "stat": "castSpeed", "pct": 2 }], [{ "add": "skill_magic", "valor": 2 }], [{ "stat": "castSpeed", "pct": 2 }]],
       "notaveis": [
-        { "nome": "Palavras Rápidas", "efeitos": [{ "stat": "castSpeed", "pct": 6 }, { "add": "cooldown_recovery", "valor": 6 }] },
-        { "nome": "Economia Arcana", "efeitos": [{ "add": "skill_cost", "valor": 6 }, { "stat": "castSpeed", "pct": 3 }] }
+        { "nome": "Língua Veloz", "flavor": "O feitiço já saiu antes de você ouvir o nome.", "efeitos": [{ "stat": "castSpeed", "pct": 6 }, { "add": "cooldown_recovery", "valor": 6 }] },
+        { "nome": "Economia do Mago", "flavor": "Mana gasta à toa é mana que falta na hora.", "efeitos": [{ "add": "skill_cost", "valor": 6 }, { "stat": "castSpeed", "pct": 3 }] }
       ] },
 
     { "id": "fire", "nome": "Fire", "angulo": 112, "raio": 1500, "dominio": "dano", "tags": ["fire", "spell"], "perto": ["spell", "energy_shield"],
       "pequenos": [[{ "dano": 3, "tag": "fire" }], [{ "dano": 3, "tag": "fire" }], [{ "stat": "castSpeed", "pct": 1 }]],
       "notaveis": [
-        { "nome": "Fire Adept", "efeitos": [{ "dano": 15, "tag": "fire" }, { "stat": "castSpeed", "pct": 5 }] },
-        { "nome": "Chama Viva", "efeitos": [{ "dano": 8, "tag": "fire" }, { "dano": 4, "tag": "area" }, { "add": "skill_magic", "valor": 2 }] }
+        { "nome": "Adepto das Chamas", "flavor": "Quem brinca com fogo aprende a gostar.", "efeitos": [{ "dano": 15, "tag": "fire" }, { "stat": "castSpeed", "pct": 5 }] },
+        { "nome": "Inferno Vivo", "flavor": "O fogo não tem pressa: tem fome.", "efeitos": [{ "dano": 8, "tag": "fire" }, { "dano": 4, "tag": "area" }, { "add": "skill_magic", "valor": 2 }] }
       ],
-      "keystone": { "nome": "Cataclismo", "descricao": "Cada magia de fogo tem 25% de chance de acertar de novo, com metade do dano.", "keystone": { "regra": "habilidade", "id": "cataclismo" } } },
+      "keystone": { "nome": "Cataclismo", "flavor": "O fim do mundo começa com uma faísca.", "descricao": "Cada magia de fogo tem 25% de chance de acertar de novo, com metade do dano.", "keystone": { "regra": "habilidade", "id": "cataclismo" } } },
 
     { "id": "energy_shield", "nome": "Energy Shield", "angulo": 126, "raio": 2350, "dominio": "defesa", "tags": ["energy_shield", "defesa"], "perto": ["fire", "death"],
       "pequenos": [[{ "add": "es_pct", "valor": 3 }], [{ "add": "energy_shield", "valor": 20 }], [{ "add": "mana", "valor": 40 }]],
       "notaveis": [
-        { "nome": "Barreira Arcana", "efeitos": [{ "add": "es_pct", "valor": 10 }, { "add": "energy_shield", "valor": 60 }] },
-        { "nome": "Mente Blindada", "efeitos": [{ "add": "es_pct", "valor": 6 }, { "legado": "absorb", "valor": 0.02 }] }
+        { "nome": "Véu Arcano", "flavor": "A primeira ferida é sempre na barreira.", "efeitos": [{ "add": "es_pct", "valor": 10 }, { "add": "energy_shield", "valor": 60 }] },
+        { "nome": "Mente Inviolável", "flavor": "Pensamento afiado também é armadura.", "efeitos": [{ "add": "es_pct", "valor": 6 }, { "legado": "absorb", "valor": 0.02 }] }
       ] },
 
     { "id": "death", "nome": "Death", "angulo": 140, "raio": 1500, "dominio": "dano", "tags": ["death", "spell"], "perto": ["energy_shield", "energy"],
       "pequenos": [[{ "dano": 3, "tag": "death" }], [{ "dano": 3, "tag": "death" }], [{ "add": "life_leech", "valor": 0.3 }]],
       "notaveis": [
-        { "nome": "Toque da Morte", "efeitos": [{ "dano": 12, "tag": "death" }] },
-        { "nome": "Colheita", "efeitos": [{ "dano": 6, "tag": "death" }, { "add": "life_leech", "valor": 1 }] }
+        { "nome": "Toque do Túmulo", "flavor": "Tudo o que vive deve à morte — e ela cobra.", "efeitos": [{ "dano": 12, "tag": "death" }] },
+        { "nome": "Colheita Sombria", "flavor": "Cada alma colhida alimenta a próxima.", "efeitos": [{ "dano": 6, "tag": "death" }, { "add": "life_leech", "valor": 1 }] }
       ],
-      "keystone": { "nome": "Guerreiro de Sangue", "descricao": "Seu Life Leech é 50% mais eficiente.", "keystone": { "regra": "multiplicarStat", "stat": "lifeLeech", "fator": 1.5 } } },
+      "keystone": { "nome": "Guerreiro de Sangue", "flavor": "O sangue do inimigo é o melhor remédio.", "descricao": "Seu Life Leech é 50% mais eficiente.", "keystone": { "regra": "multiplicarStat", "stat": "lifeLeech", "fator": 1.5 } } },
 
     { "id": "energy", "nome": "Energy", "angulo": 162, "raio": 1500, "dominio": "dano", "tags": ["energy"], "perto": ["death", "mobility", "mana"],
       "pequenos": [[{ "dano": 3, "tag": "energy" }], [{ "dano": 3, "tag": "energy" }], [{ "add": "crit_chance", "valor": 0.5 }]],
       "notaveis": [
-        { "nome": "Tempestade", "efeitos": [{ "dano": 12, "tag": "energy" }] },
-        { "nome": "Faísca", "efeitos": [{ "dano": 6, "tag": "energy" }, { "stat": "attackSpeed", "pct": 3 }] }
+        { "nome": "Olho da Tempestade", "flavor": "No centro do trovão, tudo é silêncio.", "efeitos": [{ "dano": 12, "tag": "energy" }] },
+        { "nome": "Centelha Errante", "flavor": "Uma faísca basta para começar o incêndio.", "efeitos": [{ "dano": 6, "tag": "energy" }, { "stat": "attackSpeed", "pct": 3 }] }
       ],
-      "keystone": { "nome": "Arco Voltaico", "descricao": "Magia de energia tem 25% de chance de pular para outro bicho próximo, com metade do dano.", "keystone": { "regra": "habilidade", "id": "arcoVoltaico" } } },
+      "keystone": { "nome": "Arco Voltaico", "flavor": "O raio nunca cai uma vez só.", "descricao": "Magia de energia tem 25% de chance de pular para outro bicho próximo, com metade do dano.", "keystone": { "regra": "habilidade", "id": "arcoVoltaico" } } },
 
     { "id": "mana", "nome": "Mana", "angulo": 198, "raio": 2350, "dominio": "sustento", "tags": ["mana"], "perto": ["energy", "evasion"],
       "pequenos": [[{ "add": "mana", "valor": 60 }], [{ "add": "mana_regen_pct", "valor": 4 }], [{ "add": "mana_leech", "valor": 0.3 }]],
       "notaveis": [
-        { "nome": "Poço Fundo", "efeitos": [{ "add": "mana", "valor": 250 }, { "add": "mana_regen_pct", "valor": 6 }] },
-        { "nome": "Sede Arcana", "efeitos": [{ "add": "mana_leech", "valor": 1 }, { "add": "skill_cost", "valor": 4 }] }
+        { "nome": "Poço sem Fundo", "flavor": "Quem guarda mana nunca fica sem palavras.", "efeitos": [{ "add": "mana", "valor": 250 }, { "add": "mana_regen_pct", "valor": 6 }] },
+        { "nome": "Sede de Éter", "flavor": "Bebe-se a magia do inimigo, gota a gota.", "efeitos": [{ "add": "mana_leech", "valor": 1 }, { "add": "skill_cost", "valor": 4 }] }
       ],
-      "keystone": { "nome": "Fonte Eterna", "descricao": "Cada bicho que você mata devolve 1% da sua mana máxima.", "keystone": { "regra": "habilidade", "id": "fonteEterna" } } },
+      "keystone": { "nome": "Fonte Eterna", "flavor": "Cada morte devolve um pouco do que se gastou.", "descricao": "Cada bicho que você mata devolve 1% da sua mana máxima.", "keystone": { "regra": "habilidade", "id": "fonteEterna" } } },
 
     { "id": "mobility", "nome": "Mobility", "angulo": 184, "raio": 1500, "dominio": "sustento", "tags": ["mobility"], "perto": ["energy", "evasion"],
       "pequenos": [[{ "stat": "moveSpeed", "pct": 2 }], [{ "stat": "evasion", "pct": 3 }], [{ "stat": "attackSpeed", "pct": 1 }]],
       "notaveis": [
-        { "nome": "Pés Leves", "efeitos": [{ "stat": "moveSpeed", "pct": 6 }, { "stat": "evasion", "pct": 6 }] },
-        { "nome": "Fluxo", "efeitos": [{ "stat": "attackSpeed", "pct": 4 }, { "add": "dex", "valor": 10 }] }
+        { "nome": "Passo do Vento", "flavor": "Não se acerta o que não está lá.", "efeitos": [{ "stat": "moveSpeed", "pct": 6 }, { "stat": "evasion", "pct": 6 }] },
+        { "nome": "Fluxo Contínuo", "flavor": "Um movimento puxa o outro, sem fim.", "efeitos": [{ "stat": "attackSpeed", "pct": 4 }, { "add": "dex", "valor": 10 }] }
       ] },
 
     { "id": "evasion", "nome": "Evasion", "angulo": 212, "raio": 1500, "dominio": "defesa", "tags": ["evasion", "defesa"], "perto": ["mobility", "melee", "mana"],
       "pequenos": [[{ "stat": "evasion", "pct": 3 }], [{ "stat": "evasion", "pct": 3 }], [{ "add": "dex", "valor": 5 }]],
       "notaveis": [
-        { "nome": "Sombra", "efeitos": [{ "stat": "evasion", "pct": 12 }] },
-        { "nome": "Reflexo", "efeitos": [{ "stat": "evasion", "pct": 6 }, { "add": "avoid_damage", "valor": 2 }] }
+        { "nome": "Dança das Sombras", "flavor": "A lâmina corta o ar onde eu estava.", "efeitos": [{ "stat": "evasion", "pct": 12 }] },
+        { "nome": "Reflexo Felino", "flavor": "Cair de pé é questão de treino.", "efeitos": [{ "stat": "evasion", "pct": 6 }, { "add": "avoid_damage", "valor": 2 }] }
       ],
-      "keystone": { "nome": "Vento que Volta", "descricao": "Cada golpe bloqueado ou esquivado devolve 2% da sua mana máxima.", "keystone": { "regra": "habilidade", "id": "ventoQueVolta" } } },
+      "keystone": { "nome": "Vento que Volta", "flavor": "O que você erra volta para mim.", "descricao": "Cada golpe bloqueado ou esquivado devolve 2% da sua mana máxima.", "keystone": { "regra": "habilidade", "id": "ventoQueVolta" } } },
 
     { "id": "melee", "nome": "Melee", "angulo": 234, "raio": 1500, "dominio": "dano", "tags": ["melee"], "perto": ["evasion", "armour"],
       "pequenos": [[{ "dano": 3, "tag": "melee" }], [{ "add": "skill_melee", "valor": 2 }], [{ "dano": 3, "tag": "melee" }]],
       "notaveis": [
-        { "nome": "Mestre de Armas", "efeitos": [{ "dano": 8, "tag": "melee" }, { "add": "skill_melee", "valor": 6 }] },
-        { "nome": "Fúria", "efeitos": [{ "legado": "attackDamage", "valor": 0.04 }, { "stat": "attackSpeed", "pct": 3 }] }
+        { "nome": "Mestre das Armas", "flavor": "Qualquer coisa vira arma na mão certa.", "efeitos": [{ "dano": 8, "tag": "melee" }, { "add": "skill_melee", "valor": 6 }] },
+        { "nome": "Fúria do Berserker", "flavor": "A dor é só combustível.", "efeitos": [{ "legado": "attackDamage", "valor": 0.04 }, { "stat": "attackSpeed", "pct": 3 }] }
       ],
-      "keystone": { "nome": "Sede de Sangue", "descricao": "Cada bicho que você mata dá +5% de dano por 6 segundos, acumulando até 3 vezes.", "keystone": { "regra": "habilidade", "id": "sedeDeSangue" } } }
+      "keystone": { "nome": "Sede de Sangue", "flavor": "Mais um. Só mais um.", "descricao": "Cada bicho que você mata dá +5% de dano por 6 segundos, acumulando até 3 vezes.", "keystone": { "regra": "habilidade", "id": "sedeDeSangue" } } }
   ]
 }

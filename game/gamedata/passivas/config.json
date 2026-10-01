@@ -5,7 +5,8 @@
   "pontos": { "levelInicial": 8, "levelsPorPonto": 2 },
 
   "_custo": "Pontos que cada TIPO de nó custa (o nó pode sobrescrever com `custo`). O início da classe é de graça e já vem alocado. 4/8/16 (decisão do dono, 30/09): a árvore inteira custa ~1.540 pontos — enche perto do level 3000, como a antiga, e o começo não dispara.",
-  "custo": { "small": 4, "notable": 8, "keystone": 16, "start": 0 },
+  "custo": { "small": 4, "notable": 8, "keystone": 16, "start": 0, "atributo": 2 },
+  "_custoDoAtributo": "`atributo`: o nó de CAMINHO (+STR/+DEX/+INT, estilo Path of Exile — versão 2 da árvore, 01/10) custa metade do pequeno: ele é o trajeto até os clusters.",
 
   "_respec": "Tirar um nó: ouroPorNoPorLevel × level do personagem (bolso primeiro, depois o banco). Full respec = a soma dos nós tirados. Só fora da caçada. `respecsGratis`: quantos respecs completos sem custo cada personagem tem (a migração dá 1).",
   "respec": { "ouroPorNoPorLevel": 2000, "soForaDaCacada": true },

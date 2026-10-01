@@ -205,17 +205,54 @@ export function aoReceberPassivas(msg) {
 
 // ------------------------------------------------------------------ a tela
 
+/*
+ * ---- O VISUAL (versão 2, 01/10 — o estilo do Path of Exile, com arte PRÓPRIA) ----
+ * O dono pediu a árvore "igual à do Path of Exile". A arte deles é deles: aqui
+ * tudo é desenhado no canvas — fundo escuro com textura, a região de cada classe
+ * tingida pela cor do atributo (STR vermelho, DEX verde, INT azul), as rodas com
+ * ligações em ARCO, e uma moldura por tipo: atributo (pedra colorida), pequeno
+ * (aro de bronze), notável (moldura dourada dupla), keystone (coroa de pontas),
+ * início (medalhão com a letra da classe).
+ */
 const CORES = {
-  fundo: '#0b1012', aresta: '#2d3a3f', arestaViva: '#d9a441', arestaPerto: '#4f7c70', caminho: '#3fbfa8',
-  noFundo: '#172024', noBorda: '#3d4c52', alocado: '#e3ae48', alocadoBorda: '#fff0c2', disponivel: '#3fbfa8',
-  busca: '#6fd7ff', selecionado: '#ffffff', texto: '#ccd6d8', textoFraco: '#6f8288', keystone: '#c070ff', inicio: '#e3ae48',
+  fundo: '#090c11', aresta: '#3a3326', arestaViva: '#e2b350', arestaPerto: '#6b5f44', caminho: '#6fc8b4',
+  bronze: '#7a6844', bronzeEscuro: '#3d3220', ouro: '#e8c46a', ouroVivo: '#ffe08a', disponivel: '#7fd3c0',
+  busca: '#6fd7ff', selecionado: '#ffffff', texto: '#d8ccb0', keystone: '#d0843e', keystoneVivo: '#ffb860', noFundo: '#12141a',
 };
-// A cor do miolo por cluster (o "ícone" do nó): o elemento/tema dele.
+const COR_DO_ATRIBUTO = { str: '#c8402f', dex: '#2fa35d', int: '#3474dc' };
+const COR_DA_CLASSE = { knight: 'str', paladin: 'dex', monk: 'dex', sorcerer: 'int', druid: 'int' };
+const LETRA_DA_CLASSE = { knight: 'K', paladin: 'P', sorcerer: 'S', druid: 'D', monk: 'M' };
+// A cor do emblema por cluster (o "ícone" do nó): o elemento/tema dele.
 const COR_DO_CLUSTER = {
   fire: '#ff7a3c', ice: '#7fd0ff', earth: '#7fc05a', energy: '#b58cff', holy: '#ffe07a', death: '#9c7ab8', physical: '#c9b8a0',
   melee: '#e0795c', ranged: '#a5d46a', spell: '#6fa8ff', life: '#ff6f7d', armour: '#b0b8c0', evasion: '#8fe0c0', energy_shield: '#7ab8ff',
-  critical: '#ff9f5a', attack_speed: '#f0c060', cast_speed: '#80c8ff', mana: '#4f8fd0', healing: '#7fe0a0', mobility: '#c0f080', accuracy: '#e8d880', anel: '#aab4b8',
+  critical: '#ff9f5a', attack_speed: '#f0c060', cast_speed: '#80c8ff', mana: '#4f8fd0', healing: '#7fe0a0', mobility: '#c0f080', accuracy: '#e8d880',
 };
+/** A textura do fundo: um ladrilho de "pedra" com pontos e veios, feito uma vez. */
+let texturaDoFundo = null;
+function textura(g) {
+  if (texturaDoFundo) return texturaDoFundo;
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const t = c.getContext('2d');
+  t.fillStyle = CORES.fundo;
+  t.fillRect(0, 0, 256, 256);
+  let semente = 7;
+  const rnd = () => ((semente = (semente * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 900; i++) {
+    t.fillStyle = `rgba(${120 + rnd() * 60},${110 + rnd() * 50},${90 + rnd() * 40},${0.02 + rnd() * 0.05})`;
+    t.fillRect(rnd() * 256, rnd() * 256, 1 + rnd() * 2, 1 + rnd() * 2);
+  }
+  t.strokeStyle = 'rgba(140,120,90,0.05)';
+  for (let i = 0; i < 14; i++) {
+    t.beginPath();
+    t.moveTo(rnd() * 256, rnd() * 256);
+    t.quadraticCurveTo(rnd() * 256, rnd() * 256, rnd() * 256, rnd() * 256);
+    t.stroke();
+  }
+  texturaDoFundo = g.createPattern(c, 'repeat');
+  return texturaDoFundo;
+}
 
 function montar(body) {
   const raiz = el('div', 'pas');
@@ -239,7 +276,9 @@ function montar(body) {
   const balao = el('div', 'pas-balao');
   balao.hidden = true;
   const carregando = el('div', 'pas-carregando', 'Carregando a árvore…');
-  mapa.append(canvas, balao, carregando);
+  // O selo "N Pontos Restantes" no topo do mapa (como no Path of Exile).
+  const selo = el('div', 'pas-selo');
+  mapa.append(canvas, balao, carregando, selo);
   const info = el('aside', 'pas-info');
   corpo.append(mapa, info);
   raiz.append(barra, corpo, el('p', 'pas-dica', 'Arraste para mover · roda do mouse ou pinça para zoom · clique num nó para ver · dois cliques (ou o botão) aloca o caminho até ele.'));
@@ -308,24 +347,120 @@ function montar(body) {
     cancelAnimationFrame(quadro);
     quadro = requestAnimationFrame(desenhar);
   }
-  const raio = (n) => ({ small: 9, notable: 15, keystone: 22, start: 20 })[n.tipo] * Math.max(0.55, Math.min(1.25, cam.zoom * 1.6));
-
-  function forma(n, p, r) {
+  const escala = () => Math.max(0.5, Math.min(1.6, cam.zoom * 1.8));
+  const raio = (n) => (n.atributo ? 6.5 : { small: 10, notable: 17, keystone: 25, start: 38 }[n.tipo]) * escala();
+  const forma = (p, r) => {
     g.beginPath();
-    if (n.tipo === 'notable' || n.tipo === 'keystone') {
-      g.moveTo(p.x, p.y - r);
-      g.lineTo(p.x + r, p.y);
-      g.lineTo(p.x, p.y + r);
-      g.lineTo(p.x - r, p.y);
-      g.closePath();
-    } else if (n.tipo === 'start') {
-      for (let i = 0; i < 10; i++) {
-        const a = -Math.PI / 2 + (i * Math.PI) / 5;
-        const rr = i % 2 ? r * 0.45 : r;
-        g.lineTo(p.x + Math.cos(a) * rr, p.y + Math.sin(a) * rr);
+    g.arc(p.x, p.y, r, 0, Math.PI * 2);
+  };
+  const aro = (p, r, cor, lw) => {
+    forma(p, r);
+    g.strokeStyle = cor;
+    g.lineWidth = lw;
+    g.stroke();
+  };
+
+  /** Um nó, com a moldura do tipo dele. `estado`: alocado | disponivel | bloqueado; `noCaminho`: no caminho até o escolhido. */
+  function desenharNo(n, p, r, estado, noCaminho) {
+    const vivo = estado === 'alocado';
+    const perto = estado === 'disponivel' || noCaminho;
+    const apagado = !vivo && !perto;
+    if (n.atributo) {
+      // A pedra do atributo: a cor dele (o híbrido, meio a meio).
+      const atrs = n.atributo.split('+');
+      atrs.forEach((a, i) => {
+        g.beginPath();
+        if (atrs.length === 1) g.arc(p.x, p.y, r, 0, Math.PI * 2);
+        else {
+          g.moveTo(p.x, p.y);
+          g.arc(p.x, p.y, r, Math.PI / 2 + i * Math.PI, Math.PI / 2 + (i + 1) * Math.PI);
+          g.closePath();
+        }
+        g.fillStyle = COR_DO_ATRIBUTO[a] ?? '#888';
+        g.globalAlpha = vivo ? 1 : apagado ? 0.4 : 0.75;
+        g.fill();
+        g.globalAlpha = 1;
+      });
+      aro(p, r, vivo ? CORES.ouroVivo : perto ? CORES.disponivel : CORES.bronze, vivo ? 2 : 1.4);
+      return;
+    }
+    if (n.tipo === 'start') {
+      const minha = n.classe && vista()?.inicio === n.id;
+      const corClasse = COR_DO_ATRIBUTO[COR_DA_CLASSE[n.classe]] ?? '#888';
+      g.save();
+      g.globalAlpha = minha ? 1 : 0.55;
+      if (minha) {
+        g.shadowColor = CORES.ouro;
+        g.shadowBlur = 22;
+      }
+      const grad = g.createRadialGradient(p.x, p.y - r * 0.3, r * 0.1, p.x, p.y, r);
+      grad.addColorStop(0, '#3a2d18');
+      grad.addColorStop(1, '#120d07');
+      forma(p, r);
+      g.fillStyle = grad;
+      g.fill();
+      g.shadowBlur = 0;
+      aro(p, r, minha ? CORES.ouroVivo : CORES.bronze, 3.2);
+      aro(p, r * 0.82, corClasse, 2);
+      aro(p, r * 0.66, CORES.bronzeEscuro, 1.4);
+      g.fillStyle = minha ? CORES.ouroVivo : '#bfae86';
+      g.font = `700 ${Math.round(r * 0.8)}px Cinzel, Georgia, serif`;
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText(LETRA_DA_CLASSE[n.classe] ?? '?', p.x, p.y + 1);
+      g.textBaseline = 'alphabetic';
+      g.restore();
+      return;
+    }
+    const corEmblema = COR_DO_CLUSTER[n.cluster] ?? '#aab4b8';
+    if (n.tipo === 'keystone') {
+      // A coroa: 12 pontas em volta.
+      g.save();
+      if (vivo) {
+        g.shadowColor = CORES.keystoneVivo;
+        g.shadowBlur = 20;
+      }
+      g.beginPath();
+      for (let i = 0; i < 24; i++) {
+        const ang = (i * Math.PI) / 12;
+        const rr = i % 2 ? r * 1.0 : r * 1.18;
+        g.lineTo(p.x + Math.cos(ang) * rr, p.y + Math.sin(ang) * rr);
       }
       g.closePath();
-    } else g.arc(p.x, p.y, r, 0, Math.PI * 2);
+      g.fillStyle = vivo ? '#5a3418' : '#24170e';
+      g.fill();
+      g.restore();
+      forma(p, r * 0.92);
+      g.fillStyle = '#1b1220';
+      g.fill();
+      aro(p, r * 0.92, vivo ? CORES.keystoneVivo : perto ? CORES.disponivel : CORES.keystone, 2.6);
+      aro(p, r * 0.7, CORES.bronzeEscuro, 1.4);
+    } else {
+      // Pequeno: aro de bronze; notável: moldura dourada dupla (e brilho quando alocado).
+      const notavel = n.tipo === 'notable';
+      g.save();
+      if (vivo && notavel) {
+        g.shadowColor = CORES.ouro;
+        g.shadowBlur = 14;
+      }
+      forma(p, r);
+      g.fillStyle = CORES.noFundo;
+      g.fill();
+      g.restore();
+      aro(p, r, vivo ? CORES.ouroVivo : perto ? CORES.disponivel : notavel ? '#a88a4c' : CORES.bronze, notavel ? 3 : 2);
+      if (notavel) aro(p, r * 0.78, vivo ? '#8a6a30' : CORES.bronzeEscuro, 1.4);
+    }
+    // O emblema: a cor do tema, com um miolo mais claro.
+    const re = r * (n.tipo === 'small' ? 0.48 : 0.5);
+    const grad = g.createRadialGradient(p.x - re * 0.3, p.y - re * 0.3, re * 0.1, p.x, p.y, re);
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.25, corEmblema);
+    grad.addColorStop(1, '#00000099');
+    forma(p, re);
+    g.fillStyle = grad;
+    g.globalAlpha = vivo ? 1 : apagado ? 0.35 : 0.8;
+    g.fill();
+    g.globalAlpha = 1;
   }
 
   function desenhar() {
@@ -334,105 +469,113 @@ function montar(body) {
     const a = arvore();
     const dpr = window.devicePixelRatio || 1;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
-    g.fillStyle = CORES.fundo;
-    g.fillRect(0, 0, largura, altura);
+    // O fundo: a textura presa ao mundo (anda com a câmera).
+    g.save();
+    g.fillStyle = textura(g);
+    const ox = ((-cam.x * cam.zoom) % 256) - 256;
+    const oy = ((-cam.y * cam.zoom) % 256) - 256;
+    g.translate(ox, oy);
+    g.fillRect(-ox, -oy, largura, altura);
+    g.restore();
     if (!a) return;
     const mine = meus();
     const caminho = new Set(selecionado && !mine.has(selecionado.id) ? caminhoAte(selecionado.id) ?? [] : []);
     const visivel = (p, folga) => p.x > -folga && p.y > -folga && p.x < largura + folga && p.y < altura + folga;
 
+    // A região de cada classe, tingida pela cor do atributo dela.
+    for (const n of a.nos.filter((x) => x.tipo === 'start')) {
+      const p = paraTela(n);
+      const r = 1500 * cam.zoom;
+      const cor = COR_DO_ATRIBUTO[COR_DA_CLASSE[n.classe]] ?? '#888888';
+      const grad = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
+      grad.addColorStop(0, `${cor}22`);
+      grad.addColorStop(1, `${cor}00`);
+      g.fillStyle = grad;
+      g.fillRect(p.x - r, p.y - r, r * 2, r * 2);
+    }
+
     // Os nomes dos clusters, grandes e fracos, quando se vê a árvore de longe.
-    if (cam.zoom < 0.75) {
-      g.font = `600 ${Math.round(13 + 10 * (0.75 - cam.zoom))}px Cinzel, Georgia, serif`;
+    if (cam.zoom < 0.6) {
+      g.font = `600 ${Math.round(12 + 10 * (0.6 - cam.zoom))}px Cinzel, Georgia, serif`;
       g.textAlign = 'center';
-      g.fillStyle = 'rgba(204,214,216,0.28)';
+      g.fillStyle = 'rgba(216,204,176,0.30)';
       for (const c of a.clusters) {
         const p = paraTela(c);
-        if (visivel(p, 80)) g.fillText(c.nome.toUpperCase(), p.x, p.y);
+        if (visivel(p, 80)) g.fillText(c.nome.toUpperCase(), p.x, p.y - (c.raio + 60) * cam.zoom);
       }
     }
 
-    // As arestas.
+    // As ligações: em ARCO na mesma órbita (as rodas e o anel), reta no resto.
     g.lineCap = 'round';
+    const lw = Math.max(1.2, 2.4 * escala());
     for (const [x, y] of a.arestas) {
       const px = paraTela(x);
       const py = paraTela(y);
-      if (!visivel(px, 40) && !visivel(py, 40)) continue;
+      if (!visivel(px, 60) && !visivel(py, 60)) continue;
       const vx = mine.has(x.id);
       const vy = mine.has(y.id);
+      g.save();
       if (vx && vy) {
         g.strokeStyle = CORES.arestaViva;
-        g.lineWidth = 3.2;
+        g.lineWidth = lw * 1.5;
+        g.shadowColor = CORES.ouro;
+        g.shadowBlur = 8;
       } else if ((caminho.has(x.id) || vx) && (caminho.has(y.id) || vy) && (caminho.has(x.id) || caminho.has(y.id))) {
         g.strokeStyle = CORES.caminho;
-        g.lineWidth = 3;
+        g.lineWidth = lw * 1.3;
       } else if (vx || vy) {
         g.strokeStyle = CORES.arestaPerto;
-        g.lineWidth = 2;
+        g.lineWidth = lw;
       } else {
         g.strokeStyle = CORES.aresta;
-        g.lineWidth = 1.6;
+        g.lineWidth = lw;
       }
       g.beginPath();
-      g.moveTo(px.x, px.y);
-      g.lineTo(py.x, py.y);
+      const o = x.orbita;
+      if (o && y.orbita && o.x === y.orbita.x && o.y === y.orbita.y && o.r === y.orbita.r) {
+        const c = paraTela(o);
+        const a1 = Math.atan2(x.y - o.y, x.x - o.x);
+        let d = Math.atan2(y.y - o.y, y.x - o.x) - a1;
+        while (d > Math.PI) d -= Math.PI * 2;
+        while (d < -Math.PI) d += Math.PI * 2;
+        g.arc(c.x, c.y, o.r * cam.zoom, a1, a1 + d, d < 0);
+      } else {
+        g.moveTo(px.x, px.y);
+        g.lineTo(py.x, py.y);
+      }
       g.stroke();
+      g.restore();
     }
 
     // Os nós.
     const achadosSet = new Set(achadosLista.map((n) => n.id));
     for (const n of a.nos) {
       const p = paraTela(n);
-      if (!visivel(p, 40)) continue;
+      if (!visivel(p, 60)) continue;
       const r = raio(n);
       const estado = estadoDoNo(n);
-      const noCaminho = caminho.has(n.id);
-      // Brilho do keystone e do início.
-      if (n.tipo === 'keystone' || (n.tipo === 'start' && mine.has(n.id))) {
-        g.save();
-        g.shadowColor = n.tipo === 'keystone' ? CORES.keystone : CORES.inicio;
-        g.shadowBlur = estado === 'alocado' ? 18 : 8;
-        forma(n, p, r);
-        g.fillStyle = CORES.noFundo;
-        g.fill();
-        g.restore();
-      }
-      forma(n, p, r);
-      g.fillStyle = estado === 'alocado' ? CORES.alocado : noCaminho ? 'rgba(63,191,168,0.35)' : CORES.noFundo;
-      g.fill();
-      g.lineWidth = n.tipo === 'small' ? 1.6 : 2.4;
-      g.strokeStyle =
-        estado === 'alocado' ? CORES.alocadoBorda : noCaminho || estado === 'disponivel' ? CORES.disponivel : n.tipo === 'keystone' ? '#6d4a86' : n.tipo === 'start' ? '#8a7440' : CORES.noBorda;
-      g.stroke();
-      // O miolo: a cor do tema do nó (apagada se bloqueado).
-      if (n.tipo !== 'start') {
-        g.beginPath();
-        g.arc(p.x, p.y, Math.max(2, r * 0.38), 0, Math.PI * 2);
-        g.fillStyle = COR_DO_CLUSTER[n.cluster] ?? '#aab4b8';
-        g.globalAlpha = estado === 'bloqueado' && !noCaminho ? 0.35 : 1;
-        g.fill();
-        g.globalAlpha = 1;
-      }
-      if (achadosSet.has(n.id)) {
-        g.beginPath();
-        g.arc(p.x, p.y, r + 6, 0, Math.PI * 2);
-        g.strokeStyle = CORES.busca;
-        g.lineWidth = 2;
-        g.stroke();
-      }
-      if (selecionado?.id === n.id || sobre?.id === n.id) {
-        g.beginPath();
-        g.arc(p.x, p.y, r + 4, 0, Math.PI * 2);
-        g.strokeStyle = CORES.selecionado;
-        g.lineWidth = selecionado?.id === n.id ? 2.4 : 1.2;
-        g.stroke();
-      }
+      desenharNo(n, p, r, estado, caminho.has(n.id));
+      if (achadosSet.has(n.id)) aro(p, r + 6, CORES.busca, 2);
+      if (selecionado?.id === n.id || sobre?.id === n.id) aro(p, r + 4, CORES.selecionado, selecionado?.id === n.id ? 2.4 : 1.2);
       // O nome dos notáveis, keystones e inícios de perto.
-      if (n.tipo !== 'small' && cam.zoom >= 0.55) {
-        g.font = `${n.tipo === 'keystone' ? 700 : 600} ${n.tipo === 'keystone' ? 12 : 11}px system-ui, sans-serif`;
+      if ((n.tipo === 'notable' || n.tipo === 'keystone') && cam.zoom >= 0.5) {
+        g.font = `${n.tipo === 'keystone' ? 700 : 600} ${n.tipo === 'keystone' ? 12 : 11}px Cinzel, Georgia, serif`;
         g.textAlign = 'center';
-        g.fillStyle = estado === 'alocado' ? CORES.alocadoBorda : n.tipo === 'keystone' ? '#d9b8ff' : CORES.texto;
-        g.fillText(n.nome, p.x, p.y + r + 13);
+        g.lineWidth = 3;
+        g.strokeStyle = 'rgba(0,0,0,0.8)';
+        const y = p.y + r * (n.tipo === 'keystone' ? 1.25 : 1) + 13;
+        g.strokeText(n.nome, p.x, y);
+        g.fillStyle = estado === 'alocado' ? CORES.ouroVivo : n.tipo === 'keystone' ? '#f0b070' : CORES.texto;
+        g.fillText(n.nome, p.x, y);
+      }
+      if (n.tipo === 'start' && cam.zoom >= 0.18) {
+        g.font = `600 12px Cinzel, Georgia, serif`;
+        g.textAlign = 'center';
+        g.lineWidth = 3;
+        g.strokeStyle = 'rgba(0,0,0,0.85)';
+        g.strokeText(n.nome, p.x, p.y + r + 16);
+        g.fillStyle = vista()?.inicio === n.id ? CORES.ouroVivo : '#bfae86';
+        g.fillText(n.nome, p.x, p.y + r + 16);
       }
     }
   }
@@ -579,23 +722,42 @@ function montar(body) {
     balao.textContent = '';
     balao.append(...fichaDoNo(n, { curta: true }));
     balao.hidden = false;
-    const bx = Math.min(largura - 250, p.x + 16);
+    const bx = Math.min(largura - 290, p.x + 18);
     const by = Math.min(altura - balao.offsetHeight - 8, p.y + 16);
     balao.style.left = `${Math.max(4, bx)}px`;
     balao.style.top = `${Math.max(4, by)}px`;
   }
 
   /** O que um nó é: nome, tipo, descrição, efeitos, custo, requisitos, estado. */
+  /*
+   * ---- O BALÃO no estilo do Path of Exile ----
+   * Cabeçalho com o nome (a cor diz o tipo: pequeno claro, notável dourado,
+   * keystone âmbar), os bônus em azul, a regra do keystone, o texto de sabor em
+   * itálico e o rodapé com custo, requisito e estado. O mesmo no balão do mouse
+   * e no painel da direita.
+   */
   function fichaDoNo(n, { curta = false } = {}) {
-    const partes = [];
-    const cab = el('div', `pas-cab tipo-${n.tipo}`);
-    cab.append(el('b', null, n.nome), el('span', 'pas-tipo', TIPOS[n.tipo] ?? n.tipo));
-    partes.push(cab);
-    if (n.descricao) partes.push(el('p', 'pas-desc', n.descricao));
+    const tipoVisual = n.atributo ? 'atributo' : n.tipo;
+    const caixa = el('div', `poe-tip tipo-${tipoVisual}`);
+    const cab = el('div', 'poe-cab');
+    cab.append(el('span', 'poe-nome', n.nome));
+    caixa.append(cab);
+    const corpo = el('div', 'poe-corpo');
+    corpo.append(el('div', 'poe-tipo', n.atributo ? 'Atributo' : (TIPOS[n.tipo] ?? n.tipo)));
+    const sep = () => el('div', 'poe-sep');
     if (n.efeitos.length) {
-      const ul = el('ul', 'pas-efeitos');
-      for (const ef of n.efeitos) ul.append(el('li', null, textoDoEfeito(ef)));
-      partes.push(ul);
+      corpo.append(sep());
+      const stats = el('div', 'poe-stats');
+      for (const ef of n.efeitos) stats.append(el('div', null, textoDoEfeito(ef)));
+      corpo.append(stats);
+    }
+    if (n.descricao) {
+      corpo.append(sep());
+      corpo.append(el('div', 'poe-stats poe-regra', n.descricao));
+    }
+    if (n.flavor) {
+      corpo.append(sep());
+      corpo.append(el('div', 'poe-flavor', n.flavor));
     }
     const estado = estadoDoNo(n);
     const lv = ctx.state.character?.level ?? 1;
@@ -606,17 +768,20 @@ function montar(body) {
     if (estado === 'bloqueado' && n.tipo !== 'start') {
       const c = caminhoAte(n.id);
       if (c?.length) {
-        linhas.push(`Caminho: ${c.length} nós · ${c.reduce((s, id) => s + (arvore().porId.get(id)?.custo ?? 0), 0)} pontos`);
+        linhas.push(`Caminho: ${c.length} nós · ${c.reduce((s2, id) => s2 + (arvore().porId.get(id)?.custo ?? 0), 0)} pontos`);
         rotuloEstado = 'Longe — aloque o caminho até ele';
       }
     }
     linhas.push(`Estado: ${rotuloEstado}`);
-    const rod = el('div', `pas-rodape estado-${estado}`);
+    corpo.append(sep());
+    const rod = el('div', `poe-rodape estado-${estado}`);
     for (const l of linhas) rod.append(el('div', null, l));
-    partes.push(rod);
-    if (curta && n.tipo !== 'start' && estado !== 'alocado') partes.push(el('div', 'pas-dica-mini', 'dois cliques para alocar'));
-    return partes;
+    if (curta && n.tipo !== 'start' && estado !== 'alocado') rod.append(el('div', 'poe-dica', 'dois cliques para alocar'));
+    corpo.append(rod);
+    caixa.append(corpo);
+    return [caixa];
   }
+
 
   // ---- pontos na barra ----
   function desenharBarra() {
@@ -624,6 +789,8 @@ function montar(body) {
     const p = v?.pontos ?? { livres: 0, total: 0, usados: 0 };
     pontos.textContent = '';
     pontos.append(el('b', p.livres ? 'tem' : null, String(p.livres)), el('span', null, ` livre${p.livres === 1 ? '' : 's'} · ${p.usados}/${p.total} usados`));
+    selo.textContent = `${p.livres} ${p.livres === 1 ? 'Ponto Restante' : 'Pontos Restantes'}`;
+    selo.classList.toggle('vazio', !p.livres);
     respecTudo.textContent = v?.respecsGratis ? `Respec completo (${v.respecsGratis} grátis)` : 'Respec completo';
     respecTudo.disabled = !v?.podeTirar || (v?.alocados?.length ?? 0) <= 1;
     respecTudo.title = v?.podeTirar ? '' : 'Só fora da caçada';

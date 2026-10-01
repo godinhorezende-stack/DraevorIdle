@@ -27582,14 +27582,47 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .pas-busca { width: min(260px, 100%); }
 .pas-achados { font-size: 12px; color: #6fd7ff; min-width: 3.5em; }
 .pas-corpo { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 8px; min-height: 0; }
-.pas-mapa { position: relative; height: min(68vh, 720px); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: #0b1012; touch-action: none; }
+.pas-mapa { position: relative; height: min(68vh, 720px); border: 1px solid #3d3220; border-radius: 6px; overflow: hidden; background: #090c11; touch-action: none; box-shadow: inset 0 0 40px #000; }
 .pas-mapa canvas { display: block; cursor: grab; }
 .pas-mapa canvas:active { cursor: grabbing; }
 .pas-carregando { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; }
-.pas-balao {
-  position: absolute; width: 240px; padding: 8px 10px; pointer-events: none; z-index: 3;
-  background: #0f1518f2; border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 6px 18px #000a; font-size: 12px;
+.pas-balao { position: absolute; width: 280px; pointer-events: none; z-index: 3; }
+/*
+ * ---- O BALÃO no estilo do Path of Exile (arte própria) ----
+ * Cabeçalho escuro com moldura de bronze e o nome na cor do tipo; os bônus em
+ * azul; a regra do keystone; o texto de sabor em itálico âmbar; o rodapé.
+ */
+.poe-tip { background: #07080bf2; border: 1px solid #6b5a3a; box-shadow: 0 8px 22px #000c, inset 0 0 0 1px #000; font-size: 12px; text-align: center; }
+.poe-cab {
+  padding: 7px 12px 6px; border-bottom: 1px solid #6b5a3a;
+  background: linear-gradient(180deg, #3b2d1a 0%, #1d160d 100%);
+  box-shadow: inset 0 1px 0 #6b5a3a66;
 }
+.poe-nome { font-family: var(--font-heading); font-size: 14px; letter-spacing: .03em; color: #dcd2b8; }
+.poe-tip.tipo-notable .poe-nome { color: #f0c870; }
+.poe-tip.tipo-keystone .poe-nome { color: #e8944c; }
+.poe-tip.tipo-start .poe-nome { color: #e8d7a8; }
+.poe-tip.tipo-keystone .poe-cab { background: linear-gradient(180deg, #4a2a14 0%, #1f1209 100%); }
+.poe-tip.tipo-notable .poe-cab { background: linear-gradient(180deg, #43341a 0%, #1f180c 100%); }
+.poe-corpo { padding: 6px 12px 8px; display: grid; gap: 4px; }
+.poe-tipo { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #8a7b5c; }
+.poe-sep { height: 1px; margin: 2px 0; background: linear-gradient(90deg, transparent, #6b5a3a, transparent); }
+.poe-stats { color: #8f8fff; line-height: 1.45; }
+.poe-regra { color: #b4b4ff; }
+.poe-flavor { color: #af6025; font-style: italic; line-height: 1.4; }
+.poe-rodape { color: #8a8a8a; font-size: 11px; line-height: 1.4; }
+.poe-rodape.estado-alocado div:last-of-type { color: #e3ae48; }
+.poe-rodape.estado-disponivel div:last-of-type { color: var(--accent); }
+.poe-dica { color: var(--accent); margin-top: 2px; }
+.pas-info .poe-tip { box-shadow: none; }
+/* O selo "N Pontos Restantes" no topo do mapa. */
+.pas-selo {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 2; pointer-events: none;
+  padding: 4px 18px; font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: #fff3d6; white-space: nowrap;
+  background: linear-gradient(180deg, #b4501e 0%, #7a2e0e 100%); border: 1px solid #e0a060; border-radius: 3px;
+  box-shadow: 0 2px 8px #000a, inset 0 1px 0 #ffd0a066; text-shadow: 0 1px 2px #000;
+}
+.pas-selo.vazio { background: linear-gradient(180deg, #3a3326 0%, #1f1a12 100%); border-color: #6b5a3a; color: #bfae86; }
 .pas-info { border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: var(--panel-2); overflow-y: auto; max-height: min(68vh, 720px); font-size: 13px; min-width: 0; }
 .pas-info h3 { margin: 0 0 6px; font-size: 13px; }
 .pas-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
