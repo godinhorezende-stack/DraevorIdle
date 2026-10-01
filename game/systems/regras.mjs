@@ -83,6 +83,39 @@ export const jaPode = (agora, quando) => agora + FOLGA_DO_TIQUE >= (quando ?? 0)
 export const PASSO_MS = 250;
 
 /*
+ * ---- O RELÓGIO LÓGICO das magias (decisão do dono, 01/10) ----
+ *
+ * O tique anda de ~250 em ~250 ms, e uma magia só sai num tique. Antes, cada
+ * tempo arredondava de um jeito: o cooldown global para o tique SEGUINTE, a
+ * conjuração e as recargas para o tique mais PERTO (`jaPode`, meia volta de
+ * folga). Resultado: degraus de Cast Speed que não mudavam nada (de 25% a 30%,
+ * o mesmo ciclo) e online (tique oscilando) diferente do offline (tique exato).
+ *
+ * Agora, para o cooldown global, a conjuração e as recargas das magias e
+ * poções, vale UMA regra:
+ *   - nada sai antes do instante liberado (`liberou`: sem folga);
+ *   - quem sai conta a partir do instante em que PODIA sair, se ele caiu dentro
+ *     do último tique (`instanteLogico`), e não do tique em que saiu.
+ * A média fica exata (cada ponto de Cast Speed vale) e o tique deixa de pesar.
+ * Entre dois tiques reais um intervalo pode ficar até um tique menor que o
+ * global, mas a média nunca passa dele.
+ */
+/** O instante `quando` já chegou? (Sem folga: nunca antes.) */
+export const liberou = (agora, quando) => agora >= (quando ?? 0);
+/**
+ * O instante LÓGICO de uma execução no tique `agora`: a última liberação que
+ * caiu dentro deste tique (depois de `anterior`, o tique de antes, e até
+ * `agora`) — ou `agora`, se nenhuma caiu (a magia esperava outra coisa: mana,
+ * alvo, a vez dela).
+ */
+export function instanteLogico(agora, anterior, liberacoes) {
+  if (anterior == null || !(anterior < agora)) return agora;
+  let l = null;
+  for (const q of liberacoes) if (q != null && q > anterior && q <= agora && (l == null || q > l)) l = q;
+  return l ?? agora;
+}
+
+/*
  * ---- O COOLDOWN GLOBAL das magias de ataque ----
  *
  * Pedido do dono (01/10): entre a execução REAL de uma magia de ataque e a

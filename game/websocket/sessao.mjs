@@ -866,12 +866,13 @@ export class Sessao {
   }
 
   /**
-   * `send({t:'huntAction', slot})` — clique ou tecla, fora da barra
+   * `send({t:'huntAction', slot, x?, y?})` — clique ou tecla, fora da barra
    * automática. Tem eventos (dano/cura/fx) igual ao `tique`, por isso não
    * passa por `aplicar` (que só manda `state`, sem eventos).
    */
-  dispararAcaoManual({ slot }) {
-    const resultado = Cacadas.disparoManual(this.estado, this.personagem, slot);
+  dispararAcaoManual({ slot, x, y }) {
+    // `x, y`: a casa da mira (o cliente manda quando a runa/magia de área foi armada e o jogador clicou no chão).
+    const resultado = Cacadas.disparoManual(this.estado, this.personagem, slot, { x, y });
     if (!resultado.ok) return this.erro(resultado.erro);
     // Ação do jogador, como em `aplicar`: o personagem vai inteiro já neste
     // quadro — senão a cura aparecia na hora e a poção só saía da mochila da
