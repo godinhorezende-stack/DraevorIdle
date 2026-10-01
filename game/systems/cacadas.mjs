@@ -747,11 +747,13 @@ export function definirAssistencia(estado, { tipo, on }) {
  * `tique`), só que sem checar `enabled`/condições de novo: um clique manual
  * já É a decisão do jogador.
  */
-export function disparoManual(estado, personagem, slot) {
+export function disparoManual(estado, personagem, slot, mira = null) {
   const hunt = estado.hunt;
   if (!hunt) return { ok: false, erro: 'Você não está numa hunt.' };
   const alvo = alvoAtual(hunt);
-  const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo);
+  // A casa que o jogador escolheu na MIRA (runa/magia de área com `miraNoChao`): é lá que a área cai.
+  const noChao = mira && Number.isInteger(mira.x) && Number.isInteger(mira.y) ? { x: mira.x, y: mira.y } : null;
+  const resultado = Acoes.disparar(estado, hunt, personagem, slot, alvo, { mira: noChao });
   if (!resultado.ok) return resultado;
   processarMortes(estado, personagem, resultado.eventos);
   return resultado;
@@ -1221,6 +1223,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     return [];
   }
   const passou = agora - (hunt.ultimoTique ?? agora);
+  // O tique de antes: o relógio lógico das magias conta de dentro deste intervalo (`R.instanteLogico`).
+  hunt.relogioAnterior = hunt.clock ?? 0;
   hunt.clock = (hunt.clock ?? 0) + passou;
   hunt.ultimoTique = agora;
   Ficha.totais(estado).time += passou / 1000;

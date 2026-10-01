@@ -108,7 +108,8 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
     const recarga = hunt.cooldowns?.[action.id];
     const recargaRestanteMs = recarga ? Math.max(0, recarga.ate - relogio) : 0;
     if (resultado.ok) {
-      registrar({ ...linha, resultado: 'EXECUTADA', recargaRestanteMs });
+      // `logico`: o instante em que ela conta (relógio lógico — `R.instanteLogico`); `relogio` é o do tique.
+      registrar({ ...linha, resultado: 'EXECUTADA', recargaRestanteMs, logico: hunt.ultimoAtaqueEm });
       return resultado.eventos;
     }
     registrar({

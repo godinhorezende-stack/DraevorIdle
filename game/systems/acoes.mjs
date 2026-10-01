@@ -195,13 +195,17 @@ export function concluirConjuracao(estado, hunt, personagem) {
   const alvo = c.alvo != null ? hunt.monstros.find((b) => b.uid === c.alvo && b.hp > 0) ?? null : null;
   const cancelar = (motivo) => {
     hunt.conjurando = null;
+    // O cooldown global começou no INÍCIO da conjuração: se ela não saiu (alvo morreu,
+    // barra mudou...), ele volta a ser o de antes — a magia seguinte não paga por esta.
+    if ('globalAntes' in c) hunt.ultimoAtaqueEm = c.globalAntes;
     return [{ t: 'castCancel', uid: 'player', quem: personagem?.nome, motivo }];
   };
   if ((estado.hp ?? 0) <= 0) return cancelar('morreu');
   if (estado.actions?.[c.slot]?.id !== c.id) return cancelar('a barra mudou');
   if (c.alvo != null && !alvo) return cancelar('o alvo sumiu');
-  if (!R.jaPode(hunt.clock ?? 0, c.fim)) return [];
-  const r = disparar(estado, hunt, personagem, c.slot, alvo, { concluir: true });
+  // Relógio lógico (`R.liberou`): nunca antes do fim; e a magia conta a partir do `fim`, não do tique.
+  if (!R.liberou(hunt.clock ?? 0, c.fim)) return [];
+  const r = disparar(estado, hunt, personagem, c.slot, alvo, { concluir: true, mira: c.mira ?? null });
   hunt.conjurando = null;
   if (!r.ok) return cancelar(r.erro ?? 'não saiu');
   return [{ t: 'castFim', uid: 'player', quem: personagem?.nome }, ...(r.eventos ?? [])];
@@ -609,7 +613,7 @@ export function podeBeberPocao(estado, entry) {
     const agora = hunt.clock ?? 0;
     for (const chave of [entry.id, GRUPO_DAS_POCOES]) {
       const cd = hunt.cooldowns?.[chave];
-      if (cd && !R.jaPode(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: chave === entry.id ? 'COOLDOWN' : 'COOLDOWN_DO_GRUPO', faltaMs: cd.ate - agora };
+      if (cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: chave === entry.id ? 'COOLDOWN' : 'COOLDOWN_DO_GRUPO', faltaMs: cd.ate - agora };
     }
   }
   if (!precisaDeCura(entry, estado)) return { ok: false, erro: 'Não precisa agora.', motivo: 'NAO_PRECISA' };
@@ -620,8 +624,9 @@ export function podeBeberPocao(estado, entry) {
 export function marcarRecargaDaPocao(estado, entry) {
   const hunt = estado.hunt;
   if (!hunt) return;
-  const agora = hunt.clock ?? 0;
   const cds = (hunt.cooldowns ??= {});
+  // Relógio lógico: conta do instante em que ela PODIA sair (se caiu dentro do último tique).
+  const agora = R.instanteLogico(hunt.clock ?? 0, hunt.relogioAnterior, [cds[entry.id]?.ate, cds[GRUPO_DAS_POCOES]?.ate]);
   const propria = recargaDe(entry, entry.cooldown ?? RECARGA_DA_POCAO_MS);
   cds[entry.id] = { ate: agora + propria, total: propria };
   cds[GRUPO_DAS_POCOES] = { ate: agora + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
@@ -679,7 +684,9 @@ export function condicoesParaCliente(estado, hunt, alvo) {
   return r;
 }
 
-function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false } = {}) {
+function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null } = {}) {
+  // Morto não lança nada (o clique manual chegava aqui entre o golpe e o fim da caçada).
+  if ((estado.hp ?? 0) <= 0) return { ok: false, erro: 'Você está morto.', motivo: 'MORTO' };
   // Conjurando outra skill: nada mais sai até ela terminar (ou cancelar) — ver `concluirConjuracao`.
   if (hunt.conjurando && !concluir) return { ok: false, erro: 'Conjurando.', motivo: 'CONJURANDO' };
   const action = estado.actions?.[slot];
@@ -698,20 +705,22 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   /*
    * ---- O cooldown global (R.GLOBAL_SPELL_COOLDOWN) ----
    *
-   * Entre a execução REAL da última skill de ataque e esta, no mínimo o
-   * cooldown global — pelo instante gravado lá embaixo, quando a anterior de
-   * fato saiu. Vale para o loop automático e para o clique/tecla, que passam os
-   * dois por aqui: o servidor é quem decide, e uma magia por vez. Sem folga de
-   * tique: é um mínimo, nunca menos.
+   * Entre o INÍCIO da última skill de ataque e o desta, no mínimo o cooldown
+   * global (`hunt.ultimoAtaqueEm`, gravado quando ela começou: a conjuração
+   * corre DENTRO do global — antes ela somava, e "2 s" eram 2,5 s). Vale para o
+   * loop automático e para o clique/tecla, que passam os dois por aqui: o
+   * servidor é quem decide, e uma magia por vez. Relógio lógico (`R.liberou`,
+   * `R.instanteLogico`): nunca antes do instante, e contado de quando podia sair.
+   * A conclusão de uma conjuração (`concluir`) não confere de novo: o global
+   * dela começou no início.
    */
   const deAtaque = entry.papeis?.[0] === 'attack';
   const global = intervaloGlobal(estado);
-  if (deAtaque && hunt.ultimoAtaqueEm != null && agora - hunt.ultimoAtaqueEm < global) {
-    return { ok: false, erro: 'Aguarde o cooldown global.', motivo: 'COOLDOWN_GLOBAL', faltaMs: global - (agora - hunt.ultimoAtaqueEm) };
+  const globalLibera = deAtaque && hunt.ultimoAtaqueEm != null ? hunt.ultimoAtaqueEm + global : null;
+  if (!concluir && globalLibera != null && !R.liberou(agora, globalLibera)) {
+    return { ok: false, erro: 'Aguarde o cooldown global.', motivo: 'COOLDOWN_GLOBAL', faltaMs: globalLibera - agora };
   }
-  // `R.jaPode` (meio tique de folga): com tique de 249ms, `agora < ate` fazia
-  // uma recarga de 2s esperar 9 tiques (2,24s) em vez de 8.
-  if (cd && !R.jaPode(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
+  if (cd && !R.liberou(agora, cd.ate)) return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN', faltaMs: cd.ate - agora };
   const grupo = `grupo:${entry.group ?? entry.kind}`;
   // Magias: recarga do grupo (attack/healing/support). Poções: uma recarga só
   // para todas, como no Tibia (vida e mana não saem no mesmo instante). Runa
@@ -721,9 +730,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // original para conferir — é a regra do Tibia). Runa de cura continua livre.
   const grupoDeAtaque = entry.kind === 'rune' && entry.papeis?.[0] === 'attack' ? 'grupo:attack' : null;
   const grupoQueConta = grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
-  if (grupoQueConta && cds[grupoQueConta] && !R.jaPode(agora, cds[grupoQueConta].ate)) {
+  if (grupoQueConta && cds[grupoQueConta] && !R.liberou(agora, cds[grupoQueConta].ate)) {
     return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN_DO_GRUPO', faltaMs: cds[grupoQueConta].ate - agora };
   }
+  // O instante LÓGICO desta execução: o de quando ela podia sair, se caiu dentro do último tique
+  // (`R.instanteLogico`) — é dele que o global, a recarga e o grupo contam. Numa conjuração, o
+  // INÍCIO dela (critério único: global e recargas contam do mesmo instante — "recarga de 5 s" são
+  // 5 s de um lançamento ao outro; contando do fim, uma de 4 s com 400 ms de conjuração virava 6 s).
+  const inicio = concluir
+    ? Math.min(agora, hunt.conjurando?.inicio ?? agora)
+    : R.instanteLogico(agora, hunt.relogioAnterior, [globalLibera, cd?.ate, grupoQueConta ? cds[grupoQueConta]?.ate : null]);
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
   const efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
@@ -768,6 +784,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // CADEIA (tag `chain`: Forked Thorns, Forked Glacier, Chained Penance...): do alvo, salta para o
       // bicho vivo mais perto a até `cadeia.distance` sqm do último atingido, até `cadeia.targets` alvos.
       if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, entry.cadeia);
+    } else if (centradoNoAlvo && entry.miraNoChao && mira) {
+      // A casa que o jogador escolheu na mira (`huntAction` com x, y): a área cai lá, com ou sem alvo.
+      if (distanciaChebyshev(hunt.pos, mira) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
+      casas = casasDaForma(entry, mira.x, mira.y);
     } else if (centradoNoAlvo) {
       if (!alvo) return { ok: false, erro: 'Sem alvo.', motivo: 'SEM_ALVO' };
       if (distanciaChebyshev(hunt.pos, alvo) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Alvo fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
@@ -832,7 +852,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // Exana vita com "Só tirar se o utamo vita já puder voltar": espera a recarga de quem põe o escudo.
   if (cancela && action.soComUtamoPronto) {
     const quemPoe = Object.keys(BUFFS).filter((id) => BUFFS[id]?.tipo === cancela);
-    if (quemPoe.some((id) => cds[id] && !R.jaPode(agora, cds[id].ate))) return { ok: false, erro: 'O escudo ainda não pode voltar.', motivo: 'ESCUDO_RECARREGANDO' };
+    if (quemPoe.some((id) => cds[id] && !R.liberou(agora, cds[id].ate))) return { ok: false, erro: 'O escudo ainda não pode voltar.', motivo: 'ESCUDO_RECARREGANDO' };
   }
   if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return falhaDaCondicao(action, estado, alvo, hunt);
   // Cura sem condição configurada não é desperdiçada: só sai se faltar pelo
@@ -851,7 +871,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (!concluir && Gemas.ehSkillDeGema(entry)) {
     const castMs = Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed);
     if (castMs > 0) {
-      hunt.conjurando = { slot, id: entry.id, alvo: alvo?.uid ?? null, inicio: agora, fim: agora + castMs };
+      hunt.conjurando = { slot, id: entry.id, alvo: mira && entry.miraNoChao ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}) };
+      // O global começa AQUI (a conjuração corre dentro dele); se ela for cancelada, volta o de antes.
+      if (deAtaque) {
+        hunt.conjurando.globalAntes = hunt.ultimoAtaqueEm ?? null;
+        hunt.ultimoAtaqueEm = inicio;
+      }
       return { ok: true, conjurando: true, eventos: [{ t: 'cast', uid: 'player', quem: personagem?.nome, skill: entry.name, ms: castMs }] };
     }
   }
@@ -1015,17 +1040,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const fichaDaRecarga = Ficha.combate(estado);
   // + o Cooldown Recovery da gema (support).
   const recarga = Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
-  cds[action.id] = { ate: agora + recarga, total: recarga };
+  // Tudo a partir do instante LÓGICO (`inicio`), não do tique em que saiu.
+  cds[action.id] = { ate: inicio + recarga, total: recarga };
   // O familiar: o slot mostra a espera dele (17 min no nível 0, 2 min no 100).
-  if (entry.summon) cds[action.id] = { ate: agora + Summon.recarga(estado), total: Summon.recarga(estado) };
+  if (entry.summon) cds[action.id] = { ate: inicio + Summon.recarga(estado), total: Summon.recarga(estado) };
   if (entry.kind === 'spell' || grupoDeAtaque) {
     // "Cast Speed" (add): encurta o intervalo entre magias (a recarga do grupo).
     const doGrupo = Math.round(recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0)) / (entry.kind === 'spell' ? 1 + (fichaDaRecarga.castSpeed ?? 0) / 100 : 1));
-    cds[grupoQueConta] = { ate: agora + doGrupo, total: doGrupo };
+    cds[grupoQueConta] = { ate: inicio + doGrupo, total: doGrupo };
   }
-  if (entry.kind === 'item') cds[grupo] = { ate: agora + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
-  // A execução REAL de uma skill de ataque: é daqui que o cooldown global conta.
-  if (deAtaque) hunt.ultimoAtaqueEm = agora;
+  if (entry.kind === 'item') cds[grupo] = { ate: inicio + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
+  // Skill de ataque instantânea: o global conta deste instante. (A conjurada já marcou no início.)
+  if (deAtaque && !concluir) hunt.ultimoAtaqueEm = inicio;
   if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;
   return { ok: true, eventos };
 }

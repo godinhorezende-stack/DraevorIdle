@@ -71,8 +71,17 @@ function rodar(cenario, segundos, { passoMs = 250, aCadaTique = null } = {}) {
 
 const intervalos = (execucoes) => execucoes.slice(1).map((x, i) => x.relogio - execucoes[i].relogio);
 const globalDe = (cenario) => Acoes.intervaloGlobal(cenario.e);
-/** Sai no 1º tique a partir do global: nunca antes dele, e no máximo um tique (250 ms) depois. */
-const noTiqueDoGlobal = (d, g, passo = 250) => assert.ok(d >= g && d < g + passo, `intervalo de ${d} ms (global ${g})`);
+/*
+ * Relógio lógico (decisão do dono): no tempo LÓGICO (o instante em que a magia
+ * podia sair) o intervalo é sempre >= o global; no tempo do tique ele pode ficar
+ * até um tique abaixo, e a média bate com o global.
+ */
+const intervalosLogicos = (execucoes) => execucoes.slice(1).map((x, i) => x.logico - execucoes[i].logico);
+function conferirGlobal(execucoes, g, { exato = false, passo = 250 } = {}) {
+  for (const d of intervalosLogicos(execucoes)) assert.ok(exato ? d === g : d >= g, `intervalo lógico de ${d} ms (global ${g})`);
+  for (const d of intervalos(execucoes)) assert.ok(d > g - passo, `intervalo real de ${d} ms (global ${g})`);
+}
+const media = (ds) => ds.reduce((a, b) => a + b, 0) / ds.length;
 
 /**
  * A regra da prioridade, conferida execução por execução: quando o slot N saiu,
@@ -105,7 +114,9 @@ test('a primeira magia disponível SEMPRE sai: com o slot 1 pronto a cada global
   const { execucoes, linhas } = rodar(cenario, 30);
   assert.ok(execucoes.length >= 14);
   assert.ok(execucoes.every((x) => x.slot === 1), `saíram: ${[...new Set(execucoes.map((x) => x.slot))]}`);
-  for (const d of intervalos(execucoes)) noTiqueDoGlobal(d, globalDe(cenario));
+  conferirGlobal(execucoes, globalDe(cenario), { exato: true });
+  // A média real bate com o global (o tique não come Cast Speed).
+  assert.ok(Math.abs(media(intervalos(execucoes)) - globalDe(cenario)) < 30, `média ${media(intervalos(execucoes))}`);
   conferirPrioridade(linhas, execucoes);
   assert.ok(!linhas.some((l) => l.evento?.startsWith('FIM DO CICLO')), 'não há mais ciclo/rodízio');
 });
@@ -121,7 +132,8 @@ test('slot 1 em recarga: sai o próximo disponível; quando o 1 volta, ele recup
   // 4 s de recarga / 2 s de global: 1, 2, 1, 2, ... — o 3 nunca sai (o 2 está sempre pronto antes dele).
   assert.deepEqual(execucoes.slice(0, 10).map((x) => x.slot), [1, 2, 1, 2, 1, 2, 1, 2, 1, 2]);
   assert.ok(!execucoes.some((x) => x.slot === 3));
-  for (const d of intervalos(execucoes)) noTiqueDoGlobal(d, g);
+  // Aqui quem segura o slot 1 às vezes é a recarga DELE (4 s), não o global: o intervalo é >= o global.
+  conferirGlobal(execucoes, g);
   conferirPrioridade(linhas, execucoes);
 });
 
@@ -132,9 +144,9 @@ test('com as 11 magias: a prioridade vale em toda execução, nunca duas no mesm
   conferirPrioridade(linhas, execucoes);
   const instantes = execucoes.map((x) => x.relogio);
   assert.equal(new Set(instantes).size, instantes.length, 'duas magias no mesmo instante');
-  for (const d of intervalos(execucoes)) assert.ok(d >= g, `intervalo de ${d} ms < ${g}`);
-  // Sem laço nem execução duplicada: 60 s / 2 s = 30 janelas — com tique de 249 ms, no máximo isso.
-  assert.ok(execucoes.length <= Math.ceil(60000 / g) && execucoes.length >= 25, `${execucoes.length} execuções`);
+  conferirGlobal(execucoes, g, { passo: 249 });
+  // Sem laço nem execução duplicada: em 60 s cabem no máximo 60 000 / global execuções (+1, a do instante 0).
+  assert.ok(execucoes.length <= Math.floor(60000 / g) + 1 && execucoes.length >= 25, `${execucoes.length} execuções`);
 });
 
 test('a recarga individual de cada skill continua valendo junto com o global', () => {
