@@ -8071,7 +8071,10 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
  * rótulo ou a barra muda de altura, e a conta se refaz sozinha.
  */
 #hotbar-presets {
-  display: flex; align-items: center; justify-content: center; gap: 4px;
+  /* Quebra linha: com o "Regras" (regras de uso) ao lado do "Salvar hk", a fileira passava
+     da largura da coluna, a barra inteira ganhava rolagem horizontal e o "Regras" saía
+     cortado na borda. Agora o que não cabe desce para a linha de baixo. */
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px;
   margin: auto 0;
 }
 #hotbar-presets button { font-size: 10px; padding: 3px 7px; }

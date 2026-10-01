@@ -1516,11 +1516,6 @@ function empilharNoTopo() {
    * A não ser que tenha sido ARRASTADA: aí quem manda é onde a pessoa a pôs, e
    * mexer nisso a faria pular de volta sozinha.
    */
-  const dosBuffs = $('pilulas-de-efeito');
-  if (dosBuffs && !dosBuffs.hidden && !dosBuffs.classList.contains('arrastada')) {
-    const acima = fundoDe('cartaz-beta', 'faixa-novidades', 'treino-faixa');
-    dosBuffs.style.top = acima ? `${acima + 8}px` : '';
-  }
 
   /*
    * A do boss embaixo de todas as faixas, e MEDIDA como as outras: "sem ficar
@@ -1550,6 +1545,18 @@ function empilharNoTopo() {
   if (daFase && !daFase.hidden) {
     const acima = fundoDe('cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'treino-faixa');
     daFase.style.top = acima ? `${acima + 6}px` : '';
+  }
+
+  /*
+   * As pílulas dos relógios (boosts, buffs) por ÚLTIMO, embaixo de TODAS as faixas —
+   * inclusive a da fase, a do boss e a da arena. Antes ela só se desviava do cartaz,
+   * das novidades e do treino, e caía em cima do nome da fase ("o boost fica em cima
+   * do nome da fase").
+   */
+  const dosBuffs = $('pilulas-de-efeito');
+  if (dosBuffs && !dosBuffs.hidden && !dosBuffs.classList.contains('arrastada')) {
+    const acima = fundoDe('cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'treino-faixa', 'barra-do-boss', 'barras-da-arena', 'barra-da-fase');
+    dosBuffs.style.top = acima ? `${acima + 8}px` : '';
   }
 }
 
