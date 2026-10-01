@@ -126,3 +126,39 @@ test('radarDosBichos: só os vivos, boss e raridade marcados', async () => {
   assert.deepEqual(r, [1, 2, 0, 5, 6, 1, 7, 8, 2]);
   assert.deepEqual(radarDosBichos([{ uid: 9, x: 0, y: 0, hp: 1 }], null, true), [0, 0, 2], 'sala de boss');
 });
+
+test('buracos e escadas: só os que FUNCIONAM, pela mesma regra do servidor, em todas as fases', async () => {
+  const { passagensDoAndar } = await import('../frontend/client/src/minimapa.mjs');
+  const { destinoDaMudanca } = await import('../systems/hunt/andares.mjs');
+  let total = 0;
+  for (const f of Campanha.FASES) {
+    if (f.pular) continue;
+    const snap = retratoDa(f.huntId);
+    const map = snap.map;
+    for (const z of Object.keys(map.floors ?? {}).map(Number)) {
+      for (const p of passagensDoAndar(map, z)) {
+        total++;
+        const i = p.y * map.width + p.x;
+        const mud = Number(map.floors[z].mudanca?.[i] ?? 0);
+        const esc = Number(map.floors[z].escada?.[i] ?? 0);
+        const dz = p.sentido === 'desce' ? 1 : -1;
+        assert.ok(map.floors[z + dz], `${f.huntId} z${z} (${p.x},${p.y}): leva a um andar que existe`);
+        if (mud) assert.ok(destinoDaMudanca(map, z, p.x, p.y), `${f.huntId}: o servidor também troca de andar aí`);
+        else assert.equal(esc, p.sentido === 'desce' ? 2 : 1, `${f.huntId}: escada de clicar no sentido certo`);
+      }
+    }
+  }
+  assert.ok(total > 50, `${total} passagens conferidas`);
+});
+
+test('passagem que não leva a lugar nenhum não aparece; a rampa larga vira um marcador só', async () => {
+  const { passagensDoAndar } = await import('../frontend/client/src/minimapa.mjs');
+  const w = 10;
+  const map = { width: w, height: 10, floors: { 7: { mudanca: { 11: 1, 12: 1, 13: 1, 55: 2 }, escada: { 77: 2, 88: 1 } } } };
+  assert.deepEqual(passagensDoAndar(map, 7), [], 'andar único: nada leva a lugar nenhum');
+  map.floors[8] = {};
+  const desce = passagensDoAndar(map, 7);
+  assert.deepEqual(desce.map((p) => p.sentido), ['desce', 'desce'], 'a rampa de 3 casas vira 1, mais a escada de clicar de descer');
+  map.floors[6] = {};
+  assert.equal(passagensDoAndar(map, 7).filter((p) => p.sentido === 'sobe').length, 2, 'com o andar de cima, as de subir aparecem');
+});
