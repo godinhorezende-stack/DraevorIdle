@@ -14,6 +14,19 @@ function criar() {
   document.body.append(barra);
 }
 
+/*
+ * Logo ACIMA do painel de baixo (vida, mana e a barra de ações), medido: a barra de ações
+ * tem uma ou duas fileiras e muda de altura com a tela, e o `bottom` fixo no css a deixava
+ * em cima das barras de vida e mana quando o painel era mais alto.
+ */
+function posicionar() {
+  // O rodapé inteiro (`#actionbar`): as réguas de vida/mana/exp e as fileiras de slots.
+  const painel = document.getElementById('actionbar');
+  if (!painel || painel.hidden || !painel.getBoundingClientRect().height) return;
+  const topo = painel.getBoundingClientRect().top;
+  barra.style.bottom = `${Math.max(8, Math.round(window.innerHeight - topo + 8))}px`;
+}
+
 function tique() {
   laco = 0;
   if (!barra || barra.hidden) return;
@@ -39,6 +52,7 @@ export function acompanharConjuracao(events, eu) {
     if (eu && e.quem && e.quem !== eu) continue;
     if (!barra) criar();
     if (e.t === 'cast') {
+      posicionar();
       barra.classList.remove('cancelada');
       barra.dataset.total = String(e.ms || 1);
       fim = performance.now() + (e.ms || 0);
