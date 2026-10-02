@@ -1047,7 +1047,7 @@ export function blocoDaGemaDaSkill(entry) {
   if (e.custoEmVida) partes.push('custo em vida');
   if (e.duracaoPct) partes.push(`+${Math.round(e.duracaoPct)}% duração`);
   if (partes.length) bloco.append(el('div', 'tip-gema-efeito', partes.join(' · ')));
-  bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Supports ligadas: ${g.supports.map((s) => `${s.nome} ${s.nivel}`).join(', ')}` : 'Sem support ligada'));
+  bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Suportes ligados: ${g.supports.map((s) => `${s.nomePt ?? s.nome} ${s.nivel}`).join(', ')}` : 'Sem suporte ligado'));
   if (g.castTime) bloco.append(el('div', null, `Conjuração: ${(g.castTime / 1000).toLocaleString('pt-BR')} s`));
   return bloco;
 }
@@ -2442,7 +2442,88 @@ const PORCENTO_DO_GOLPE = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'd
 const LENTIDAO_MAXIMA = 40;
 const numeroDoEfeito = (chave, v) => (chave === 'lentidaoPct' ? (v = Math.min(LENTIDAO_MAXIMA, v)) && `${v}%` : chave === 'custoEmVida' ? '' : CONTAGENS_DA_SUPPORT.has(chave) ? `${v > 0 ? '+' : ''}${v}` : PORCENTO_DO_GOLPE.has(chave) ? `${v}%` : `${v > 0 ? '+' : ''}${v}%`);
 
-const ESCALA_DA_GEMA = { melee: 'Melee', distance: 'Distance', magic: 'Magic Level' };
+const TAG_PT = {
+  physical: 'físico', fire: 'fogo', earth: 'terra', energy: 'energia', ice: 'gelo', holy: 'sagrado', death: 'morte',
+  spell: 'magia', projectile: 'projétil', area: 'área', wave: 'onda', line: 'linha', hit: 'golpe direto', single: 'alvo único',
+  melee: 'corpo a corpo', ranged: 'à distância', healing: 'cura', buff: 'reforço',
+};
+
+const COMPATIBILIDADE_SIMPLES = {
+  spell: 'magias (não vale para runas)', projectile: 'habilidades de projétil', healing: 'habilidades de cura', buff: 'habilidades de reforço',
+  physical: 'habilidades de dano físico', fire: 'habilidades de dano de fogo', earth: 'habilidades de dano de terra', energy: 'habilidades de dano de energia',
+  ice: 'habilidades de dano de gelo', holy: 'habilidades de dano sagrado', death: 'habilidades de dano de morte', hit: 'habilidades que causam dano direto',
+};
+
+/** A compatibilidade do suporte em português: `requer` (todas), `algum` (uma delas); sem nada, qualquer habilidade. */
+export function textoDaCompatibilidade(def) {
+  const nome = (t) => TAG_PT[t] ?? t;
+  const requer = def.requer ?? [];
+  const algum = def.algum ?? [];
+  if (algum.length >= 7) return 'qualquer habilidade de dano';
+  if (requer.length === 1 && !algum.length) return COMPATIBILIDADE_SIMPLES[requer[0]] ?? `habilidades com ${nome(requer[0])}`;
+  if (!requer.length && algum.length && algum.every((t) => ['area', 'wave', 'line'].includes(t))) return 'habilidades de área, onda ou linha';
+  if (!requer.length && !algum.length) return 'qualquer habilidade';
+  const partes = [];
+  if (requer.length) partes.push(`${requer.map(nome).join(' + ')}`);
+  if (algum.length) partes.push(`${requer.length ? 'e ' : ''}${algum.length > 1 ? 'ao menos um de: ' : ''}${algum.map(nome).join(' ou ')}`);
+  return `habilidades com ${partes.join(' ')}`;
+}
+
+const ETIQUETA_DO_EFEITO = [
+  ['alvosExtras', 'PROJÉTIL'], ['perfurar', 'PROJÉTIL'], ['bifurcar', 'PROJÉTIL'], ['encadear', 'PROJÉTIL'], ['retornar', 'PROJÉTIL'],
+  ['areaExtra', 'ÁREA'], ['explosaoPct', 'EXPLOSÃO'], ['segundaExplosaoPct', 'EXPLOSÃO'],
+  ['critChance', 'CRÍTICO'], ['critDano', 'CRÍTICO'], ['castTimePct', 'CONJURAÇÃO'], ['custoPct', 'CUSTO'], ['custoEmVida', 'CUSTO'],
+  ['recargaPct', 'RECARGA'], ['curaPct', 'CURA'], ['duracaoPct', 'DURAÇÃO'], ['leechVidaPct', 'ROUBO'], ['leechManaPct', 'ROUBO'],
+  ['igniteChance', 'QUEIMADURA'], ['congelarChance', 'CONTROLE'], ['lentidaoPct', 'CONTROLE'], ['atordoarChance', 'CONTROLE'],
+];
+
+/** A ficha do suporte: etiqueta, linhas do efeito (com os números reais) e contrapartidas. Mesma conta do servidor (`efeitoNaSkill`). */
+export function fichaDoSuporte(def, nivel, qualidade, mult) {
+  const fmt = (v) => (Math.round(v * 10) / 10).toLocaleString('pt-BR');
+  const f = mult * (1 + qualidade / 100);
+  const v = {};
+  for (const [chave, base] of Object.entries(def.efeito ?? {})) {
+    const bruto = base + (def.porNivel?.[chave] ?? 0) * (nivel - 1);
+    v[chave] = CONTAGENS_DA_SUPPORT.has(chave) ? bruto : PORCENTO_DO_GOLPE.has(chave) && chave.startsWith('danoD') ? Math.min(100, bruto * f) : bruto * f;
+  }
+  const principais = [];
+  const contrapartidas = [];
+  const plural = (n, um, varios) => (n === 1 ? um : varios);
+  const dano = v.danoPct;
+  if (dano > 0) principais.push(`Aumenta em ${fmt(dano)}% o dano da habilidade (soma com as outras gemas de dano).`);
+  else if (dano < 0) contrapartidas.push(`Contrapartida: ${fmt(dano)}% de dano.`);
+  if (v.curaPct) principais.push(`Aumenta em ${fmt(v.curaPct)}% a cura.`);
+  if (v.castTimePct) principais.push(`Reduz em ${fmt(-v.castTimePct)}% o tempo de conjuração.`);
+  if (v.custoPct) principais.push(`Reduz em ${fmt(-v.custoPct)}% o custo de mana.`);
+  if (v.recargaPct) principais.push(`Reduz em ${fmt(-v.recargaPct)}% a recarga própria da habilidade (não reduz o intervalo global entre ataques).`);
+  if (v.critChance) principais.push(`+${fmt(v.critChance)} pontos de chance de crítico.`);
+  if (v.critDano) principais.push(`+${fmt(v.critDano)} pontos de dano crítico.`);
+  if (v.alvosExtras) principais.push(`Dispara +${v.alvosExtras} ${plural(v.alvosExtras, 'projétil extra', 'projéteis extras')}; cada um causa ${fmt(v.danoDosExtrasPct)}% do dano.`);
+  if (v.perfurar) principais.push(`Atravessa ${v.perfurar} ${plural(v.perfurar, 'criatura', 'criaturas')}; ${fmt(v.danoDaPerfuracaoPct)}% do dano ao atravessar.`);
+  if (v.bifurcar) principais.push(`Ao acertar, divide-se em ${v.bifurcar} projéteis; ${fmt(v.danoDaBifurcacaoPct)}% do dano em cada um.`);
+  if (v.encadear) principais.push(`Salta por ${v.encadear} ${plural(v.encadear, 'criatura', 'criaturas')} a mais; ${fmt(v.danoDoEncadeamentoPct)}% do dano em cada salto.`);
+  if (v.retornar) principais.push(`Volta ${v.retornar} ${plural(v.retornar, 'vez', 'vezes')}; ${fmt(v.danoDoRetornoPct)}% do dano na volta.`);
+  if (v.areaExtra > 0) principais.push(`Aumenta o raio da área em ${v.areaExtra} ${plural(v.areaExtra, 'casa', 'casas')}.`);
+  else if (v.areaExtra < 0) contrapartidas.push(`Contrapartida: reduz o raio da área em ${-v.areaExtra} ${plural(-v.areaExtra, 'casa', 'casas')}.`);
+  if (v.explosaoPct) principais.push(`Explode em volta do alvo, causando ${fmt(v.explosaoPct)}% do dano.`);
+  if (v.segundaExplosaoPct) principais.push(`Uma segunda explosão causa ${fmt(v.segundaExplosaoPct)}% do dano.`);
+  if (v.leechVidaPct) principais.push(`${fmt(v.leechVidaPct)}% do dano causado volta como vida.`);
+  if (v.leechManaPct) principais.push(`${fmt(v.leechManaPct)}% do dano causado volta como mana.`);
+  if (v.custoEmVida) contrapartidas.push('Contrapartida: paga o custo da habilidade com VIDA, e não com mana.');
+  if (v.duracaoPct) principais.push(`Aumenta em ${fmt(v.duracaoPct)}% a duração do reforço.`);
+  if (v.ignitePct) principais.push(`${v.igniteChance < 100 ? `${fmt(v.igniteChance)}% de chance de queimar: ` : 'Queima a criatura atingida: '}${fmt(v.ignitePct)}% do acerto em 4 s (uma queimadura por criatura: vale a maior).`);
+  if (v.congelarChance) principais.push(`${fmt(Math.min(100, v.congelarChance))}% de chance de congelar por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade).`);
+  if (v.lentidaoPct) principais.push(`Lentidão de ${fmt(Math.min(LENTIDAO_MAXIMA, v.lentidaoPct))}% por 3 s (anda e ataca mais devagar; chefe leva metade, elite metade do tempo).`);
+  if (v.atordoarChance) principais.push(`${fmt(Math.min(100, v.atordoarChance))}% de chance de atordoar por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade).`);
+
+  const elemento = (def.requer ?? []).find((t) => ['physical', 'fire', 'earth', 'energy', 'ice', 'holy', 'death'].includes(t));
+  let etiqueta = ETIQUETA_DO_EFEITO.find(([c]) => v[c] !== undefined && c !== 'custoEmVida')?.[1];
+  if (!etiqueta && v.custoEmVida) etiqueta = 'CUSTO';
+  if (!etiqueta) etiqueta = elemento ? TAG_PT[elemento].toUpperCase() : (def.algum ?? []).includes('fire') && (def.algum ?? []).length < 7 ? 'ELEMENTAL' : (def.requer ?? []).includes('projectile') ? 'PROJÉTIL' : (def.algum ?? []).includes('area') ? 'ÁREA' : 'DANO';
+  return { etiqueta, principais, contrapartidas };
+}
+
+const ESCALA_DA_GEMA ={ melee: 'Melee', distance: 'Distance', magic: 'Magic Level' };
 const nomeDoElemento = (e) => {
   const n = ELEMENT_NAMES[e] ?? e;
   return n.charAt(0).toUpperCase() + n.slice(1);
@@ -2474,22 +2555,23 @@ function blocoDaGema(def, gema, raridade = 'comum') {
   const qualidade = gema?.qualidade ?? 0;
   const mult = def.mult?.[raridade] ?? 1;
   const categoria = def.categoria ?? (def.tipo === 'support' ? 'suporte' : 'ataque');
-  bloco.append(el('div', 'tip-gema-tipo', NOME_DA_CATEGORIA[categoria] ?? 'Gema'));
-  bloco.append(el('div', 'tip-gema-ajuda', AJUDA_DA_CATEGORIA[categoria] ?? ''));
+  const ehSuporte = def.tipo === 'support';
+  bloco.append(el('div', 'tip-gema-tipo', ehSuporte ? `${raridade.toUpperCase()} · ${(NOME_DA_CATEGORIA[categoria] ?? 'Gema').toUpperCase()}` : NOME_DA_CATEGORIA[categoria] ?? 'Gema'));
+  if (!ehSuporte) bloco.append(el('div', 'tip-gema-ajuda', AJUDA_DA_CATEGORIA[categoria] ?? ''));
   // Modelo Path of Exile: nível até 20 por XP (21+ só com o add da peça) e qualidade separada, até 20%.
   bloco.append(el('div', null, `Nível ${nivel} / ${def.nivelMaximo ?? 30}${gema?.xp ? ` · ${Math.floor(gema.xp).toLocaleString('pt-BR')} XP` : ''}`));
   bloco.append(el('div', null, `Qualidade: +${qualidade}%`));
-  if (mult !== 1) bloco.append(el('div', 'tip-gema-efeito', `Raridade ${raridade}: bônus ×${mult.toLocaleString('pt-BR')}`));
+  if (mult !== 1) bloco.append(el('div', 'tip-gema-efeito', `Raridade ${raridade}: ${ehSuporte ? 'efeito' : 'bônus'} ×${mult.toLocaleString('pt-BR')}`));
   if (def.tipo === 'support') {
-    const reqs = [...(def.requer ?? []), ...(def.algum?.length ? [def.algum.join(' ou ')] : [])];
-    if (reqs.length) bloco.append(el('div', 'tip-gema-tags', `Suporta: ${reqs.join(', ')}`));
-    for (const [chave, v] of Object.entries(def.efeito ?? {})) {
-      // Contagem (projéteis, saltos, casas) não escala com a raridade/qualidade — igual ao servidor; o % do golpe tem teto de 100%.
-      const bruto = v + (def.porNivel?.[chave] ?? 0) * (nivel - 1);
-      const total = CONTAGENS_DA_SUPPORT.has(chave) ? bruto : PORCENTO_DO_GOLPE.has(chave) ? Math.min(100, bruto * mult * (1 + qualidade / 100)) : bruto * mult * (1 + qualidade / 100);
-      bloco.append(el('div', 'tip-gema-efeito', `${numeroDoEfeito(chave, Math.round(total * 100) / 100)} ${NOME_DO_EFEITO_DA_SUPPORT[chave] ?? chave}`));
-    }
-    bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
+    // Tooltip padronizada do suporte (auditoria de 02/10): etiqueta, o que faz em frase (com o número real: nível, raridade e
+    // qualidade), a contrapartida em linha própria, a compatibilidade em português e o que a qualidade faz.
+    const f = fichaDoSuporte(def, nivel, qualidade, mult);
+    bloco.append(el('div', 'tip-gema-tags', `SUPORTE · ${f.etiqueta}`));
+    for (const t of f.principais) bloco.append(el('div', 'tip-gema-efeito', t));
+    for (const t of f.contrapartidas) bloco.append(el('div', 'tip-gema-penalidade', t));
+    bloco.append(el('div', 'tip-gema-ajuda', `Compatível com: ${textoDaCompatibilidade(def)}.`));
+    if (qualidade) bloco.append(el('div', 'tip-gema-ajuda', `Qualidade +${qualidade}%: aumenta em ${qualidade}% o efeito desta gema (os números inteiros — projéteis, saltos, casas — não crescem).`));
+    bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket ligado ao da habilidade.'));
   } else {
     // ---- O que a skill FAZ, com os números do seu personagem (o catálogo de ações do servidor) ----
     const cat = getCatalogoDeAcoes();
@@ -2591,7 +2673,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   // ---- cabeçalho: nome à esquerda, sprite grande à direita ----
   const head = el('div', 'tip-head');
   const identidade = el('div', 'tip-id');
-  identidade.append(el('b', null, titleCase(essencia ? nomeDaEssencia(peca) : meta.name)));
+  identidade.append(el('b', null, titleCase(essencia ? nomeDaEssencia(peca) : meta.nomeExibicao ?? meta.name)));
   /*
    * ---- O tier da peça, ao lado do nome ----
    *
