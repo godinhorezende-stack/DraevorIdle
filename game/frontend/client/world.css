@@ -113,6 +113,19 @@
 .w2-atalho.on { color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e); border-color: #f6dc8a; }
 .w2-registro { padding: 8px 12px; border: 1px solid #3a2c12; border-radius: 8px; background: #15100a; }
 .w2-registro[hidden], .w2-aviso[hidden], .w2-balao[hidden] { display: none; }
+/* desktop: o painel da fase fica À DIREITA do mapa e tudo cabe na janela, sem barra de rolagem */
+@media (min-width: 1000px) and (min-height: 560px) {
+  .w2 { grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "cab cab" "dif abas" "aviso aviso" "palco painel" "barra barra" "registro registro"; gap: 6px 10px; align-items: start; }
+  .w2-cab { grid-area: cab; padding: 2px 44px; } .w2-titulo h2 { font-size: 22px; } .w2-ornamento { height: 18px; }
+  .w2-dificuldades { grid-area: dif; justify-content: flex-start; flex-wrap: nowrap; } .w2-placa { min-height: 38px; padding: 2px 14px; min-width: 96px; }
+  .w2-atos { grid-area: abas; border-bottom: 0; } .w2-aba { min-height: 36px; }
+  .w2-aviso { grid-area: aviso; } .w2-palco { grid-area: palco; }
+  .w2-viewport { height: clamp(340px, calc(100vh - 270px), 760px); }
+  .w2-painel { grid-area: painel; grid-template-columns: 1fr; gap: 8px; height: clamp(340px, calc(100vh - 270px), 760px); overflow-y: auto; align-content: start; padding: 12px; }
+  .w2-col.acao { position: sticky; bottom: -12px; padding: 8px 0 2px; background: linear-gradient(180deg, transparent, #15100a 28%); order: 9; }
+  .w2-barra { grid-area: barra; padding: 2px; } .w2-atalho { min-height: 32px; }
+  .w2-registro { grid-area: registro; }
+}
 /* celular: o mapa ocupa o que dá; o painel vira uma coluna compacta */
 @media (max-width: 760px) {
   .w2-painel { grid-template-columns: 1fr; gap: 8px; padding: 10px; }
