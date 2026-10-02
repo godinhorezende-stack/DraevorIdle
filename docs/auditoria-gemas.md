@@ -28,3 +28,33 @@ Inventário: 132 ações (114 magias + 18 runas); por vocação, só as que ela 
 ## O que ainda NÃO foi medido (não há número aqui)
 
 Suportes e multiplicadores de custo; reforços e tooltips; rotação completa com o intervalo global; mana sustentada; alvos múltiplos reais; cura contra dano recebido; combinações e builds; wand contra rod; matriz entre classes com equipamento. Os números acima são de habilidades isoladas e não valem como conclusão de balanceamento.
+
+---
+
+# Fase 2: simulador de rotação (motor real) — resultados MEDIDOS
+
+Ferramenta: `node tools/simular-rotacao.mjs --matriz [--duracao 60]` (cada gema de ataque sozinha, 60 s, em 1 e em 5 bonecos) e `--grupo skill+suporte…` para builds. Núcleo: `game/systems/combate/simulador-rotacao.mjs` — roda `Cacadas.tique` (intervalo global, recarga, conjuração, mana, suportes, tique de 250 ms), lê o dano do registro de golpes do motor e usa semente fixa. Testes: `game/testes/simulador-de-rotacao.test.mjs`. Personagem de referência: level 300, perícias a 40%, gemas no nível 1, sem crítico extra, boneco com resistência 0, que não ataca. **Os números abaixo são o DPS só das gemas** (sem o golpe básico e a wand que batem entre uma magia e outra).
+
+## Resultado por vocação (gemas sozinhas)
+
+| Vocação | Mediana 1 alvo | Mediana 5 alvos | Melhor 1 alvo | Melhor 5 alvos | Regen. de mana/s |
+|---|---|---|---|---|---|
+| Knight | 161 | 562 | Fierce Berserk 308 | Fierce Berserk 1.229 · Shield Bash 1.163 | 9 |
+| Paladin | 103 | 119 | Ethereal Barrage 183 | Ethereal Barrage 902 | 27 |
+| Sorcerer | 65 | 113 | Great Fire Wave 156 | Great Fire Wave 652 | 57 |
+| Druid | 72 | 129 | Strong Terra Strike 138 | Forked Thorns 619 | 57 |
+| Monk | 161 | 196 | **Chained Penance 670** | **Chained Penance 3.250** | 18 |
+
+## Achados novos (só o simulador mostra)
+
+1. **Inversão de identidade em área.** O Sorcerer, que deveria ser o "excelente em área", tem a mediana mais baixa de 5 alvos (113) e o melhor de 652; o Knight chega a 1.229 e o Monk a 3.250. Shield Bash do Knight faz 1.163 de DPS em 5 alvos por 30 de mana — a área mais barata do jogo.
+2. **Chained Penance** é 5× o melhor DPS de qualquer outra classe em 5 alvos (3.250 contra 652 do Sorcerer) e 4,3× em alvo único, a 180 de mana.
+3. **Mana não sustenta as áreas fortes.** Gasto contra regeneração (por segundo): Knight Fierce Berserk 120 contra 9; Monk Chained Penance 90 contra 18; Paladin Ethereal Barrage 67 contra 27. O Sorcerer e o Druid sustentam quase tudo (regen 57), mas só Great Fire Wave e Hell's Core chegam perto do teto. Hoje o jogador cobre a diferença com poções, que o simulador **não** conta.
+4. **O intervalo global é quantizado pelo tique de 250 ms.** Uma magia com intervalo de 1.905 ms sai de fato a cada 2.000–2.250 ms (≈ 1,88–2 s medidos). O DPS real fica de 5% a 8% abaixo do teórico da fase 1 (Energy Strike: 107 teórico, 91 medido).
+5. **O 1º slot de ataque monopoliza a rotação.** Com recarga menor que o intervalo global, a magia do slot 1 está pronta toda vez que o global libera, e as de baixo nunca saem (testado: Energy Strike no slot 1, Fire Wave no slot 2 → Fire Wave com 0 de dano). Comportamento de prioridade por slot, não bug: obriga a pôr as magias de recarga longa em cima.
+6. **O dano da gema não atinge a soma do catálogo.** O balão diz 126–156 para Energy Strike, mas os acertos medidos contra o boneco saem de 106 a 165 (variação do dano e do crítico de 3%); a média bate com o catálogo dentro da variação.
+7. **Beam e Wave de 1 alvo dão 6–9 de DPS no simulador** (Energy Beam, Great Energy Beam, Terra Wave, Strong Ice Wave, Ice/Terra Burst): é artefato do posicionamento do boneco único (fica fora da forma da magia), **não** um achado de balanceamento; só a coluna de 5 alvos vale para essas gemas.
+
+## Ainda não medido
+
+Suportes e multiplicadores de custo em combinações; wand contra rod; rotações multi-habilidade com buffs e curas; cenários de sobrevivência (os bonecos não atacam); cura contra dano recebido; hunts de 15 e 30 min com poções; a matriz de classes com equipamento avançado.
