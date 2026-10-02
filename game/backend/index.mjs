@@ -5,6 +5,7 @@ import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
+import * as ConteudoHttp from '../admin/conteudo-http.mjs';
 import * as Mapas from '../admin/mapas.mjs';
 import * as Estaticos from './estaticos.mjs';
 import * as Site from '../systems/site.mjs';
@@ -52,6 +53,7 @@ const PAGINAS = {
   '/guildas': '/guildas.html',
   '/personagem': '/personagem.html',
   '/editor': '/editor.html',
+  '/editor/conteudo': '/editor-conteudo.html',
 };
 
 const PREFIXO_ENGINE = '/packages/shared/src/';
@@ -122,6 +124,8 @@ async function atender(req, res) {
    * mapas (`/editor`) é a primeira coisa que precisa de um POST de
    * verdade. Sem framework: três `if` bastam pro tamanho disto.
    */
+  // O editor de conteúdo (fases, encontros, bosses): sob `/api/mapas/_conteudo/`, o prefixo que o nginx já tranca.
+  if (await ConteudoHttp.atender(req, res, caminho, url, { json, corpoJson })) return;
   if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
     return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, cidade: Mapas.cidadeParaEditor(), criaturasPorHunt: Mapas.criaturasPorHunt(), ...Mapas.raridadesParaEditor() });
   }
