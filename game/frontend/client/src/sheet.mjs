@@ -236,18 +236,6 @@ function porHabilidade(state) {
 }
 
 /** A linha de baixo do cartão "Penetração elemental": a global e, quando houver, a específica de cada elemento. */
-/** A arma equipada: nome, level exigido e o poder que ela dá às habilidades (Magic Attack nas wands e rods) — o número do servidor. */
-function armaEquipadaCard(arma) {
-  const card = statCard(arma.ehMagicAttack ? 'Magic Attack' : 'Poder da arma', String(arma.poder), `${arma.nome}${arma.nivelRequerido ? ` · level ${arma.nivelRequerido}` : ''}`, null, 'ficha-dano');
-  card.title = [
-    `Arma equipada: ${arma.nome}`,
-    `Level exigido: ${arma.nivelRequerido || 'nenhum'}`,
-    `${arma.ehMagicAttack ? 'Magic Attack (fixo, sem sorteio)' : 'Poder da arma'}: ${arma.poder}${arma.raridade && arma.raridade !== 'comum' ? ` (já com a raridade ${arma.raridade})` : ''}`,
-    'É a base do dano das gemas de ataque, multiplicada pela afinidade da arma com a habilidade (a gema mostra o resultado).',
-  ].join('\n');
-  return card;
-}
-
 function penetracaoPorElemento(derived) {
   const por = Object.entries(derived.penetracao?.porElemento ?? {}).filter(([, v]) => v > 0);
   const nome = Object.fromEntries(ELEMENTS.map(([n, k]) => [k, n]));
@@ -739,7 +727,6 @@ export function renderSheet(body, { state, send, closeModal }) {
       statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
       limitado(derived, 'critChance', 'Chance de crítico', derived.critChance * 100, derived.limites?.critico ?? 100, (derived.excedentes?.critChance ?? 0) * 100, statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%${derived.critChance * 100 >= (derived.limites?.critico ?? 100) ? ' (limite)' : ''}`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano${derived.excedentes?.critChance ? ` · ${(derived.excedentes.critChance * 100).toFixed(1)}% a mais não valem` : ''}`, null, 'ficha-critico')),
       comOrigem(statCard('Dano crítico', `${porcento(derived.critMultiplier * 100)}%`, 'do dano normal em cada crítico (sem limite)', null, 'ficha-critico'), derived, 'critMultiplier', `${porcento(derived.critMultiplier * 100)}%`),
-      ...soSeTem(derived.armaEquipada, () => armaEquipadaCard(derived.armaEquipada)),
       // Ataque duplo e penetração (limite de 100%): o valor é o EFETIVO; o que passa do limite não conta.
       limitado(derived, 'ataqueDuplo', 'Ataque duplo', (derived.ataqueDuplo ?? 0) * 100, derived.limites?.ataqueDuplo ?? 100, (derived.excedentes?.ataqueDuplo ?? 0) * 100, statCard('Ataque duplo', `${((derived.ataqueDuplo ?? 0) * 100).toFixed(1)}%${(derived.ataqueDuplo ?? 0) * 100 >= (derived.limites?.ataqueDuplo ?? 100) ? ' (limite)' : ''}`, 'chance de um segundo golpe', null, 'ficha-critico')),
       limitado(derived, 'penetracao.fisica', 'Penetração física', derived.penetracao?.fisica ?? 0, derived.limites?.penetracao ?? 100, 0, statCard('Penetração física', `${porcento(derived.penetracao?.fisica ?? 0)}%${(derived.penetracao?.fisica ?? 0) >= (derived.limites?.penetracao ?? 100) ? ' (limite)' : ''}`, 'ignora esta parte da resistência física do alvo', null, 'ficha-dano')),
