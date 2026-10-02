@@ -1370,10 +1370,16 @@ function handle(message) {
     case 'comparacao':
       receberComparacao(message);
       break;
-    case 'campanha':
+    case 'campanha': {
+      // O WORLD aberto pergunta de tempos em tempos (a limpeza anda sozinha, até offline): só redesenha se algo MUDOU — a câmera,
+      // a seleção e o Ato continuam como estavam, e quem abriu agora ganha o brilho de "descoberta".
+      const assinatura = JSON.stringify([message.campanha?.dificuldades?.map((d) => [d.liberada, d.fases.map((f) => [f.completa, f.liberada, f.limpezas]), d.bosses.map((b) => [b.liberado, b.vencido])]), message.campanha?.mundo, message.campanha?.bossesDerrotados, message.campanha?.aoCompletar]);
+      const igual = assinatura === state.campanhaAssinatura;
       state.campanha = message.campanha;
-      panelCtx.redraw?.();
+      state.campanhaAssinatura = assinatura;
+      if (!igual) panelCtx.redraw?.();
       break;
+    }
     case 'actionCatalog':
       setActionCatalog(message.catalog);
       // A Cyclopedia lê o mesmo catálogo: uma fonte só para a barra e para a

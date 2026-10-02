@@ -615,6 +615,17 @@ function campanhaCards(body) {
   }
   if (visao !== 'mapa') body.append(visoes);
   if (visao === 'mapa') {
+    // Aberto, o WORLD acompanha o progresso: pergunta de novo a cada 8 s e some quando a tela fecha.
+    if (!ctx.tabs.worldPoll) {
+      ctx.tabs.worldPoll = setInterval(() => {
+        if (!document.querySelector('.w2')) {
+          clearInterval(ctx.tabs.worldPoll);
+          ctx.tabs.worldPoll = null;
+          return;
+        }
+        send({ t: 'campanha' });
+      }, 8000);
+    }
     return void desenharMundo(body, {
       campanha,
       escolhida,
