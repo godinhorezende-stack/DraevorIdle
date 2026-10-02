@@ -13,6 +13,7 @@ import * as Afixos from './afixos.mjs';
 import * as Gemas from './gemas.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import { darItem, guardarMoeda } from './inventario.mjs';
+import { pecaEspecial } from './itens/item.mjs';
 import { precoNpc } from './hunt/rentabilidade.mjs';
 
 export const VAGAS_DA_BOLSA = 1000;
@@ -238,7 +239,8 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   id = Number(id);
   const de = to === 'bag' ? estado.pouch : (estado.inventory ??= []);
   if (!Number.isInteger(pilha) && Number.isInteger(alvo?.indice)) pilha = alvo.indice;
-  const especial = (p) => !!(p?.af?.length || p?.tier || p?.imbu?.length);
+  // A mesma regra de todos os compartimentos (`pecaEspecial`): gema com raridade/nível, base sorteada, sockets... também vão INTEIROS.
+  const especial = (p) => pecaEspecial(p);
   /*
    * ---- Sem dizer QUAL peça, a especial não pode virar cópia limpa ----
    *

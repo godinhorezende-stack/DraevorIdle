@@ -4,7 +4,7 @@
 // recompensa que não coube ("O que não coube foi para o DEPÓSITO... Nada se
 // perdeu", `marcoNoDeposito` no client).
 import * as Afixos from './afixos.mjs';
-import { converterTudo } from './itens/item.mjs';
+import { converterTudo, pecaEspecial } from './itens/item.mjs';
 import * as R from './regras.mjs';
 import { ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
 import { pesoDoInventario, cabeNoPeso, guardarMoeda } from './inventario.mjs';
@@ -69,7 +69,7 @@ function porNaCaixa(estado, id, count, peca = {}, indice = null, caixas = garant
   if (guardarMoeda(estado, id, count)) return true;
   // Com caixa pedida: só ela. Sem (o excesso de peso): a primeira NUMERADA com lugar.
   const ordem = indice != null ? caixas.filter((c) => c.indice === indice) : caixas.filter((c) => !c.chegadas && !c.compartilhada);
-  const empilha = ITEM_CATALOG[id]?.stackable && !peca.af?.length && !peca.tier && !peca.imbu?.length;
+  const empilha = ITEM_CATALOG[id]?.stackable && !pecaEspecial(peca);
   for (const caixa of ordem) {
     const igual = empilha ? caixa.itens.find((p) => p.id === id) : null;
     if (igual) {

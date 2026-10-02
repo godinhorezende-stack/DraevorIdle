@@ -5,7 +5,7 @@ import * as Premium from './premium.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
-import { camposDaPeca } from './itens/item.mjs';
+import { camposDaPeca, pecaEspecial } from './itens/item.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import * as Requisitos from './personagem/requisitos.mjs';
 import * as R from './regras.mjs';
@@ -130,7 +130,7 @@ export function darItem(estado, id, count = 1) {
   if (ITEM_CATALOG[id]?.stackable) {
     for (const pilha of inventory) {
       if (falta <= 0) break;
-      if (pilha.id !== id || pilha.af?.length || pilha.tier || pilha.imbu?.length) continue;
+      if (pilha.id !== id || pecaEspecial(pilha)) continue;
       const cabe = Math.min(PILHA_MAX - (pilha.count ?? 1), falta);
       if (cabe <= 0) continue;
       pilha.count = (pilha.count ?? 1) + cabe;
@@ -175,7 +175,7 @@ export function removerItem(estado, id, count) {
 // A peça é ÚNICA (não vira item comum empilhado): tier, adds, imbuements, poder, a base sorteada no drop,
 // os sockets (com gemas) e a instância de uma gema. Sem a base/sockets aqui, tirar a peça do corpo a
 // devolvia como item de catálogo e perdia o sorteio (e as gemas encaixadas).
-export const temExtras = (p) => !!(p?.tier || p?.af?.length || p?.imbu?.length || p?.efeito || p?.base || p?.soquetes || p?.gema);
+export const temExtras = (p) => pecaEspecial(p);
 
 const GUARDADAS = ['inventory', 'pouch'];
 
@@ -575,6 +575,8 @@ export function juntar(estado, { de, para, from }) {
   const a = itens[de];
   const b = itens[para];
   if (!a || !b || a === b || a.id !== b.id) return { ok: false, erro: 'Só junta pilhas do mesmo item.' };
+  // Peça com dados próprios (gema com nível/raridade, equipamento com atributos...) NUNCA se funde: a contagem somaria e a instância sumiria.
+  if (!ITEM_CATALOG[a.id]?.stackable || pecaEspecial(a) || pecaEspecial(b)) return { ok: false, erro: 'Essa peça não empilha.' };
   const passa = Math.min(a.count, 100 - b.count);
   b.count += passa;
   a.count -= passa;
@@ -597,8 +599,7 @@ export function organizar(estado, { from }) {
   const soltos = [];
   const pilhas = new Map();
   for (const p of itens) {
-    const valioso = p.af?.length || p.tier || p.imbu?.length;
-    if (!ITEM_CATALOG[p.id]?.stackable || valioso) soltos.push(p);
+    if (!ITEM_CATALOG[p.id]?.stackable || pecaEspecial(p)) soltos.push(p);
     else pilhas.set(p.id, (pilhas.get(p.id) ?? 0) + p.count);
   }
   const novos = [...soltos];

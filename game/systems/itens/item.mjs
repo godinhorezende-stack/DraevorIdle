@@ -47,6 +47,19 @@ export function camposDaPeca(p) {
   };
 }
 
+/**
+ * A peça tem dados de INSTÂNCIA que o item-base LIMPO do catálogo não tem (raridade acima da comum, atributos, tier, imbuements, faixa
+ * sorteada, sockets, efeito, item level, a gema com nível/XP/qualidade)? Quem move peças entre compartimentos (mochila, bolsa de loot,
+ * depósito, mercado, craft...) usa ESTE predicado para decidir se a peça vai INTEIRA ou se pode virar um item limpo por id — um predicado
+ * que esquece um campo (como o das gemas, que só têm `raridade` e `gema`) devolve uma cópia limpa e a peça perde o que é dela.
+ * `raridade: 'comum'` sozinha não conta (é o padrão do item limpo).
+ */
+export function pecaEspecial(p) {
+  const campos = camposDaPeca(p);
+  if (campos.raridade === 'comum') delete campos.raridade;
+  return Object.keys(campos).length > 0;
+}
+
 /** Um campo do `base` como `[piso, teto]` (aceita o número solto das peças de antes da faixa); `null` se inválido. */
 function faixaValida(v) {
   const [a, b] = Array.isArray(v) ? v : [v, v];
