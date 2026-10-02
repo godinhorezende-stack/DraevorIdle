@@ -138,3 +138,16 @@ Travas novas em `game/testes/balanceamento-das-gemas.test.mjs`: custo multiplica
 - **Pierce** deu ×1,00 no simulador: provável efeito do posicionamento dos bonecos (a perfuração exige alvos em linha), não confirmado.
 - Não medi os suportes de cura (Potent Healing) nem de duração (Skill Duration) no simulador (as gemas de teste são de ataque); a compatibilidade com cada tag foi verificada, mas o efeito não.
 - Wand contra rod, buffs e tooltips dos buffs, rotações com vários slots e gemas novas continuam fora.
+
+---
+
+# Fase 5: tooltip dos buffs (02/10)
+
+O servidor descreve cada gema de reforço em texto (`Reforcos.descrever`, em `game/systems/skills/reforcos.mjs`) com os números **reais**: a tabela `gamedata/gemas/reforcos.json` que o combate lê, × o fator da gema (nível, raridade, qualidade) e a duração com o Skill Duration. O catálogo de ações manda isso em `reforco` (só nos 17 reforços), e o cliente desenha o bloco padronizado (`blocoDoReforco`, `tooltip.mjs`) no balão da barra, na "Configurar ação" e no balão da gema: tipo do buff, o que faz, **Duração**, **Afeta**, **Custo** (mana), **Recarga** e as condições.
+
+Exemplo real (Blood Rage, nível 1): "Buff · Fúria — +15% de dano nos ataques corpo a corpo · Duração 10 s · Afeta: só você · Custo 20 de mana · Recarga 2 s · Não pode ser lançado de novo enquanto estiver ativo."
+
+- **Quem é afetado:** todos os reforços são pessoais (`hunt.buffs` de quem lançou), então "Só você"; as auras agem nos bichos que você atingir e a provocação nos bichos por perto. Não existe buff de grupo hoje.
+- **Mobile:** vale o mecanismo de balão que já existia: tocar e segurar abre, o próximo toque fecha.
+- **Não cobertos:** os familiares (summons) e as pílulas de buffs ativos no HUD (continuam como eram); o valor dos reforços não foi rebalanceado nesta fase.
+- **Testes:** `game/testes/tooltip-dos-buffs.test.mjs` garante que todo reforço tem texto, que os números do texto vêm da tabela do combate, que nível e Skill Duration mudam o texto e que o cliente usa o bloco nos três balões. Não foi aberto no navegador: o desenho (CSS) só foi checado por código.
