@@ -182,6 +182,12 @@
  ],
  "dificuldadePadrao": "facil",
  "_boss": "Boss de Ato (campanha): o drop usa a dificuldade N degraus acima (`dificuldadeAMais`; a última não tem acima). `equipamentoGarantido`: quantas peças de equipamento a vitória acrescenta ao loot do boss (por dificuldade), sorteadas entre as `janelaDePecas` de maior level mínimo até o level do boss (da vocação do personagem), e `raridadeMinima`: a raridade mínima dessas peças naquela dificuldade (a peça abaixo disso sai na raridade mínima).",
+ "minimaPorOrigem": {
+  "_nota": "A raridade MÍNIMA do equipamento por origem do drop (dono, 02/10: boss e baú não podem soltar peça Comum, sem atributos e sem raridade visível). `boss`: o drop normal dos bosses (de Ato, avulsos e únicos); `bau`: o loot dos baús dos encontros; `guardiao`: o dos guardiões dos baús. O mob normal segue a tabela de `chances`. O equipamento garantido do boss de Ato tem a sua (`boss.raridadeMinima`).",
+  "boss": "incomum",
+  "bau": "incomum",
+  "guardiao": "incomum"
+ },
  "boss": {
   "dificuldadeAMais": 1,
   "equipamentoGarantido": {

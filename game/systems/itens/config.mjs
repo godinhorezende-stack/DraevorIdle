@@ -154,5 +154,11 @@ export function inclinarTabela(tabela, raridadeDoMob) {
   return Object.fromEntries(ORDEM.map((r) => [r, (100 * pesos[r]) / total]));
 }
 
+/** A raridade mínima do equipamento que cai desta origem (`boss`, `bau`, `guardiao`; `raridades.json` → `minimaPorOrigem`), ou null. */
+export const raridadeMinimaDe = (origem) => {
+  const r = origem ? RARIDADES.minimaPorOrigem?.[origem] : null;
+  return r && ORDEM.includes(r) ? r : null;
+};
+
 /** Os nomes para a tela ("Épico", "🟣"). */
 export const nomeDaRaridade = (r) => RARIDADES.raridades[r]?.nome ?? r;

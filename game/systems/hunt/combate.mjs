@@ -290,7 +290,7 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
     if (VALOR_DA_MOEDA[drop.id]) itens.push({ id: drop.id, count: quantasMoedas(alvo, drop.id, estado) });
     else {
-      const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true });
+      const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true, origem: 'boss' });
       itens.push(peca);
       // Épico para cima na sacola do boss: o anúncio para o servidor inteiro.
       Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
@@ -435,7 +435,9 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
       continue;
     }
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
-    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), raridadeDoMob: alvo.raridade });
+    // A origem decide a raridade mínima: boss e boss único, o baú do encontro e os guardiões dele não soltam peça Comum.
+    const origem = alvo.origemDoLoot ?? (alvo.raridade === 'boss' || alvo.raridade === 'unico' || alvo.isBoss ? 'boss' : alvo.guardiao ? 'guardiao' : null);
+    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), raridadeDoMob: alvo.raridade, ...(origem ? { origem } : {}) });
     const af = peca.af ?? null;
     // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
     const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;
