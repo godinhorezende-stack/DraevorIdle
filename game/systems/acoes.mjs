@@ -37,6 +37,7 @@ import * as Areas from '../engine/areas.mjs';
 import * as Secundarios from './skills/golpes-secundarios.mjs';
 import * as Estados from './skills/estados.mjs';
 import * as Poder from './armas/poder.mjs';
+import * as Limites from './combate/limites.mjs';
 
 export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
 export const SLOTS = ACTION_CATALOG.slots;
@@ -1009,9 +1010,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
      * ("Dano de magia" e "Dano de <elemento>" dos afixos e da árvore, o treino,
      * a afinidade da classe e a gema já estão no `mult`/`fatorDaGema`.)
      */
+    let fatorDoAtaque = 100; // 100% no ataque normal; o do 2º golpe do ataque duplo vem de `combate/limites.json`
     const acertar = (bicho, pct = 100, fonte = null) => {
       const tipo = entry.element ?? 'physical';
-      const base = resistido(hunt, bicho, tipo, ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct) / 100);
+      const base = resistido(hunt, bicho, tipo, ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct * fatorDoAtaque) / 10000, ficha);
       Reforcos.marcar(hunt, bicho, agora);
       const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;
@@ -1024,29 +1026,48 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
       for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
     };
-    for (const bicho of atingidos) acertar(bicho);
     /*
-     * ---- Os golpes SECUNDÁRIOS das supports, combinados em cadeia ----
-     * Quem leva, com quantos %, de onde e de que tipo vem de `Secundarios.resolver`
-     * (projéteis extras, perfuração, bifurcação, encadeamento, retorno — e a explosão
-     * em CADA impacto, 3×3 em volta dele). Aqui só se aplica, um acerto por vez, na
-     * ordem: quem morreu no meio do caminho não leva o resto.
+     * ---- O ATAQUE (o golpe principal + os secundários das supports) e o ATAQUE DUPLO ----
+     * `segundo`: o ataque EXTRA (chance `ficha.ataqueDuplo`, no máximo UM por uso — ele nunca rola o duplo de novo). Repete o ataque inteiro, com
+     * a precisão, o crítico, a resistência e os estados de cada alvo, mas não gasta mana nem recarga, e o roubo de vida/mana e as habilidades da
+     * árvore (depois da magia) contam só do primeiro.
      */
-    const { golpes, explosoes } = Secundarios.resolver({
-      efeito: efeitoDaGema,
-      tags: Tags.tagsDaAcao(entry),
-      origem: { x, y },
-      alvo: casas ? null : alvo,
-      atingidos,
-      vivos,
-      alcance: entry.range || ALCANCE_PADRAO,
-    });
-    // A explosão na tela: UM evento por detonação (o cliente desenha o quadrado inteiro).
-    for (const ex of explosoes) eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: ex.x, y: ex.y, lado: ex.lado });
-    for (const s of golpes) {
-      if (s.bicho.hp <= 0) continue;
-      if (s.tipo !== 'explosao' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y });
-      acertar(s.bicho, s.pct, s.tipo);
+    const atacar = (segundo) => {
+      for (const bicho of atingidos) if (!segundo || bicho.hp > 0) acertar(bicho);
+      /*
+       * ---- Os golpes SECUNDÁRIOS das supports, combinados em cadeia ----
+       * Quem leva, com quantos %, de onde e de que tipo vem de `Secundarios.resolver`
+       * (projéteis extras, perfuração, bifurcação, encadeamento, retorno — e a explosão
+       * em CADA impacto, 3×3 em volta dele). Aqui só se aplica, um acerto por vez, na
+       * ordem: quem morreu no meio do caminho não leva o resto.
+       */
+      const { golpes, explosoes } = Secundarios.resolver({
+        efeito: efeitoDaGema,
+        tags: Tags.tagsDaAcao(entry),
+        origem: { x, y },
+        alvo: casas ? null : alvo,
+        atingidos,
+        vivos,
+        alcance: entry.range || ALCANCE_PADRAO,
+      });
+      // A explosão na tela: UM evento por detonação (o cliente desenha o quadrado inteiro).
+      for (const ex of explosoes) eventos.push({ t: 'explosao', id: entry.efeito || EFEITO_DA_EXPLOSAO, x: ex.x, y: ex.y, lado: ex.lado });
+      for (const s of golpes) {
+        if (s.bicho.hp <= 0) continue;
+        if (s.tipo !== 'explosao' && entry.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: s.de.x, y: s.de.y, tx: s.bicho.x, ty: s.bicho.y });
+        acertar(s.bicho, s.pct, s.tipo);
+      }
+    };
+    atacar(false);
+    const totalDoPrimeiro = total;
+    const danosDoPrimeiro = danos.slice();
+    if (Math.random() < (ficha.ataqueDuplo ?? 0)) {
+      fatorDoAtaque = Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct;
+      atacar(true);
+      fatorDoAtaque = 100;
+      total = totalDoPrimeiro;
+      danos.length = 0;
+      danos.push(...danosDoPrimeiro);
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);

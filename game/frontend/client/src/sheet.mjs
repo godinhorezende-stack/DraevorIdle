@@ -210,13 +210,24 @@ function secao(body, id, texto, arte, conteudo) {
   body.append(d);
 }
 
+/** A linha de baixo do cartão "Penetração elemental": a global e, quando houver, a específica de cada elemento. */
+function penetracaoPorElemento(derived) {
+  const por = Object.entries(derived.penetracao?.porElemento ?? {}).filter(([, v]) => v > 0);
+  const nome = Object.fromEntries(ELEMENTS.map(([n, k]) => [k, n]));
+  return por.length ? `global; ${por.map(([k, v]) => `${nome[k] ?? k} +${porcento(v)}%`).join(', ')}` : 'ignora esta parte da resistência elemental do alvo';
+}
+
 /** As 7 resistências (a proteção da ficha, em %). */
 function protecaoElemental(derived) {
   const elements = el('div', 'element-grid');
   for (const [name, key] of ELEMENTS) {
     const value = derived.protection?.[key] ?? 0;
     const chip = el('div', 'element');
-    const total = el('b', null, `${porcento(value)}%`);
+    // No limite (100%): o valor é o efetivo, o que passou dele fica no balão (`derived.excedentes`).
+    const noLimite = value >= (derived.limites?.resistenciaDoJogador ?? 100);
+    const sobra = derived.excedentes?.protection?.[key] ?? 0;
+    const total = el('b', null, `${porcento(value)}%${noLimite ? ' (limite)' : ''}`);
+    if (noLimite) total.title = `Limite de ${derived.limites?.resistenciaDoJogador ?? 100}%${sobra ? ` — ${porcento(sobra)}% a mais não valem` : ''}`;
     if (value) total.style.color = 'var(--accent)';
     chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
     elements.append(chip);
@@ -642,7 +653,11 @@ export function renderSheet(body, { state, send, closeModal }) {
     grade(
       // Dano e crítico são FAIXAS: a das peças (sorteada no drop), e cada golpe sorteia dentro dela.
       statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
-      statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano`, null, 'ficha-critico'),
+      statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%${derived.critChance * 100 >= (derived.limites?.critico ?? 100) ? ' (limite)' : ''}`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano${derived.excedentes?.critChance ? ` · ${(derived.excedentes.critChance * 100).toFixed(1)}% a mais não valem` : ''}`, null, 'ficha-critico'),
+      // Ataque duplo e penetração (limite de 100%): o valor é o EFETIVO; o que passa do limite não conta.
+      statCard('Ataque duplo', `${((derived.ataqueDuplo ?? 0) * 100).toFixed(1)}%${(derived.ataqueDuplo ?? 0) * 100 >= (derived.limites?.ataqueDuplo ?? 100) ? ' (limite)' : ''}`, 'chance de um segundo golpe', null, 'ficha-critico'),
+      statCard('Penetração física', `${porcento(derived.penetracao?.fisica ?? 0)}%${(derived.penetracao?.fisica ?? 0) >= (derived.limites?.penetracao ?? 100) ? ' (limite)' : ''}`, 'ignora esta parte da resistência física do alvo', null, 'ficha-dano'),
+      statCard('Penetração elemental', `${porcento(derived.penetracao?.elemental ?? 0)}%${(derived.penetracao?.elemental ?? 0) >= (derived.limites?.penetracao ?? 100) ? ' (limite)' : ''}`, penetracaoPorElemento(derived), null, 'ficha-dano'),
       // O intervalo entre golpes que a caçada usa de verdade (base 2 s, encurtado pela velocidade de ataque e pelo "Tempo entre golpes").
       comOrigem(statCard(
         'Velocidade de ataque',

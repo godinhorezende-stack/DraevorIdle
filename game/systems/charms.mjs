@@ -31,6 +31,8 @@
 import { readFileSync } from 'node:fs';
 import { CATALOGO } from './dados.mjs';
 import * as R from './regras.mjs';
+import { resistido } from './hunt/resistencia.mjs';
+import * as Ficha from './ficha.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../gamedata/charms.json', import.meta.url), 'utf8'));
 export const CHARMS = DADOS.charms;
@@ -176,8 +178,8 @@ export function aoAcertar(estado, hunt, bicho, eventos) {
     if (!noBicho(estado, id, bicho.key) || !dispara(estado, id)) continue;
     const charm = POR_ID.get(id);
     const bruto = Math.min(estado.level * 2, Math.ceil(bicho.maxHp * (charm.percent / 100)));
-    const resistencia = BESTIARY[bicho.key]?.elements?.[charm.element] ?? 0;
-    bater(estado, hunt, bicho, charm, R.applyElement(bruto, hunt.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, resistencia) : resistencia), eventos);
+    // A resistência do bicho ao elemento do charm: a mesma conta de todo golpe (teto, boss, penetração do jogador).
+    bater(estado, hunt, bicho, charm, resistido(hunt, bicho, charm.element, bruto, Ficha.combate(estado)), eventos);
     if (bicho.hp <= 0) return;
   }
   for (const [id, maximo] of [[ID.overpower, estado.maxHp], [ID.overflux, estado.maxMana]]) {

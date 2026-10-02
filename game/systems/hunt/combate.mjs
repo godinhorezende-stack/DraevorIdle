@@ -33,7 +33,8 @@ import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
 import * as Tarefas from '../tarefas.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
-import { resistido } from './resistencia.mjs';
+import { resistido, resistenciaEfetivaDe } from './resistencia.mjs';
+import * as Limites from '../combate/limites.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
@@ -138,11 +139,12 @@ export function tiroDaArma(estado, arma) {
 export const EFEITO_DO_ELEMENTO = { energy: 38, fire: 37, ice: 44, earth: 47, death: 18, holy: 40, physical: 1 };
 
 /** Golpe de wand/rod: dano REAL do próprio item (`wand.min/max`), sem fórmula — não precisa de magic level pra isso. */
-export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
-  const custo = arma.wand.mana ?? 0;
+export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segundo = false) {
+  // O 2º golpe do ataque duplo (`segundo`) não gasta mana nem treina, e não dá roubo de vida/mana (ver `round`).
+  const custo = segundo ? 0 : arma.wand.mana ?? 0;
   if ((estado.mana ?? 0) < custo) return false; // sem mana: fica sem golpe este round, não cai pro físico (simplificação, ver comentário do arquivo)
   estado.mana -= custo;
-  Treino.gastarMana(estado, custo);
+  if (!segundo) Treino.gastarMana(estado, custo);
   const { min, max, element } = arma.wand;
   eventos.push({ t: 'shot', id: ID_DO_TIRO[arma.shoot] ?? 5, x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
   eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[element] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
@@ -156,16 +158,18 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem) {
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
   // (+1%/ponto) e o dano mágico do INT; + "% da perícia como dano" (proficiência); e a resistência do
   // bicho àquele elemento (`resistido`).
-  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
-  const base = resistido(hunt, alvo, element, bruto);
+  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
+  const base = resistido(hunt, alvo, element, bruto, ficha);
   const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
   // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado... — `mobs/mecanicas.mjs`).
   Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, element, eventos);
-  Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
-  Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem?.nome, hunt.pos);
-  Charms.aoAcertar(estado, hunt, alvo, eventos);
+  if (!segundo) {
+    Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
+    Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem?.nome, hunt.pos);
+    Charms.aoAcertar(estado, hunt, alvo, eventos);
+  }
   return true;
 }
 
@@ -823,7 +827,7 @@ export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) 
   if (!el?.value) return null;
   const tipo = ELEMENTO_DO_CATALOGO[el.type] ?? el.type;
   const bruto = R.golpeDoJogador({ attack: el.value }, ficha.skillValue, estado.level) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
-  const base = resistido(hunt, alvo, tipo, bruto);
+  const base = resistido(hunt, alvo, tipo, bruto, ficha);
   const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
   alvo.hp -= dano;
   return { v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
@@ -835,7 +839,7 @@ export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) 
  * resistência do bicho (teto do boss).
  */
 export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
-  const v = Math.round(resistido(hunt, alvo, tipo, parte * (1 + (ficha?.danoDoElemento?.[tipo] ?? 0) / 100)));
+  const v = Math.round(resistido(hunt, alvo, tipo, parte * (1 + (ficha?.danoDoElemento?.[tipo] ?? 0) / 100), ficha));
   alvo.hp -= v;
   return { v, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' };
 }
@@ -853,9 +857,11 @@ export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem
   const saida = [];
   for (const [tipo, pct] of Object.entries(ficha.danoDoElemento ?? {})) {
     if (tipo === 'physical' || !(pct > 0)) continue;
+    // Resistência efetiva de 100% (o bicho no teto menos a penetração): nada passa, nem o 1 mínimo.
+    if (resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100) continue;
     // Nunca menos que 1: 2,2% de um golpe de 10 dá 0,22 — e o elemento tem de aparecer batendo 1
-    // (a resistência do bicho tem teto de 80%, então ninguém é imune). Vale antes e depois do crítico.
-    const base = Math.max(1, resistido(hunt, alvo, tipo, (fisico * pct) / 100));
+    // (com o teto de resistência do bicho abaixo de 100%, ninguém é imune). Vale antes e depois do crítico.
+    const base = Math.max(1, resistido(hunt, alvo, tipo, (fisico * pct) / 100, ficha));
     const { dano: rolado } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
     const dano = Math.max(1, rolado);
     alvo.hp -= dano;
@@ -880,65 +886,79 @@ export function round(estado, personagem) {
   if (!hunt.lurando && alvo && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
     bateu = true;
     if (categoriaDaArma(arma) === 'magica') {
-      golpeDaWand(estado, hunt, alvo, arma, eventos, personagem);
+      const acertou = golpeDaWand(estado, hunt, alvo, arma, eventos, personagem);
+      // Ataque duplo: no máximo UM golpe extra (que não gasta mana e não rola o duplo de novo).
+      if (acertou && alvo.hp > 0 && Math.random() < (Ficha.combate(estado).ataqueDuplo ?? 0)) golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, true);
     } else {
       // A perícia REAL da arma (sword/axe/club/distance; sem arma, fist) —
       // o golpe treina ela e o dano usa o valor dela.
       // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
       const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
       const pericia = ficha.skillName;
-      // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
-      if (Defesa.errou(ficha, hunt, alvo)) {
-        Treino.treinar(estado, pericia);
-        if (categoriaDaArma(arma) === 'distancia') eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
-        eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
-        return { eventos, bateu };
-      }
-      // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
-      // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
-      // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
-      // + os reforços ligados (Blood Rage no corpo a corpo, Sharpshooter à distância), pelas tags do golpe.
-      const tagsDoGolpe = Tags.tagsDoGolpe(categoriaDaArma(arma));
-      const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, tagsDoGolpe).pct + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
-      // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
-      const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico;
-      const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia), alvo, eventos, ficha);
-      Treino.treinar(estado, pericia);
-      // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).
-      const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
-      const golpe = bruto - convertido;
-      alvo.hp -= golpe;
-      Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, 'physical', eventos);
-      const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
-      const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
-      // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
-      // físico, X% dele em cada elemento (decisão do dono), na mesma rolagem.
-      const dosAtributos = elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught });
-      // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
-      const extra = Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
-      Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
-      // Vida/mana por acerto (proficiência).
-      Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem.nome, hunt.pos);
-      // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
-      // alvo antes do dano, igual ao original — antes só a wand mandava `shot`.
-      if (categoriaDaArma(arma) === 'distancia') {
-        eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
-      }
-      eventos.push({ t: 'fx', id: 1, uid: alvo.uid, x: alvo.x, y: alvo.y });
-      // Com parte elemental, o físico sai CINZA e o elemento na cor dele — os dois
-      // números do mesmo golpe, como no original.
-      eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental || doImbuement || dosAtributos.length ? '#999999' : '#ff0000' });
-      if (elemental) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: elemental.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental.cor });
-      if (doImbuement) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: doImbuement.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: doImbuement.cor });
-      for (const d of dosAtributos) {
-        // O efeito do elemento no bicho (chama, gelo, raio...) junto do número colorido.
-        eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[d.tipo] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
-        eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
-      }
-      // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
-      Charms.aoAcertar(estado, hunt, alvo, eventos);
-      // As auras ligadas marcam o bicho atingido (vulnerável, enfraquecido).
-      Reforcos.marcar(hunt, alvo);
+      /*
+       * ---- O golpe, e o ATAQUE DUPLO ----
+       * `segundo`: o golpe EXTRA (chance `ficha.ataqueDuplo`, no máximo UM por golpe — o extra nunca rola o duplo de novo). Ele rola a
+       * precisão, o crítico e a resistência dele, mas não gasta nada, não treina, não dá roubo de vida/mana nem charm.
+       */
+      const golpear = (segundo) => {
+        const fatorDoGolpe = segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1;
+        // Accuracy: o golpe pode errar o bicho (a perícia treina igual, como no Tibia).
+        if (Defesa.errou(ficha, hunt, alvo)) {
+          Treino.treinar(estado, pericia);
+          if (categoriaDaArma(arma) === 'distancia') eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
+          eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
+          return false;
+        }
+        // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
+        // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
+        // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
+        // + os reforços ligados (Blood Rage no corpo a corpo, Sharpshooter à distância), pelas tags do golpe.
+        const tagsDoGolpe = Tags.tagsDoGolpe(categoriaDaArma(arma));
+        const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, tagsDoGolpe).pct + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
+        // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
+        const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico * fatorDoGolpe;
+        const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
+        if (!segundo) Treino.treinar(estado, pericia);
+        // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).
+        const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
+        const golpe = bruto - convertido;
+        alvo.hp -= golpe;
+        Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, 'physical', eventos);
+        const elemental = parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, { crit: critico, onslaught });
+        const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
+        // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
+        // físico, X% dele em cada elemento (decisão do dono), na mesma rolagem.
+        const dosAtributos = elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught });
+        // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
+        // O 2º golpe do ataque duplo não repete o que vem DEPOIS do golpe (árvore, roubo de vida e mana, vida/mana por acerto, charms).
+        const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
+        if (!segundo) Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
+        // Vida/mana por acerto (proficiência).
+        if (!segundo) Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem.nome, hunt.pos);
+        // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
+        // alvo antes do dano, igual ao original — antes só a wand mandava `shot`.
+        if (categoriaDaArma(arma) === 'distancia') {
+          eventos.push({ t: 'shot', id: tiroDaArma(estado, arma), x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
+        }
+        eventos.push({ t: 'fx', id: 1, uid: alvo.uid, x: alvo.x, y: alvo.y });
+        // Com parte elemental, o físico sai CINZA e o elemento na cor dele — os dois
+        // números do mesmo golpe, como no original.
+        eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental || doImbuement || dosAtributos.length ? '#999999' : '#ff0000' });
+        if (elemental) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: elemental.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: elemental.cor });
+        if (doImbuement) eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: doImbuement.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: doImbuement.cor });
+        for (const d of dosAtributos) {
+          // O efeito do elemento no bicho (chama, gelo, raio...) junto do número colorido.
+          eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[d.tipo] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
+          eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
+        }
+        // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
+        if (!segundo) Charms.aoAcertar(estado, hunt, alvo, eventos);
+        // As auras ligadas marcam o bicho atingido (vulnerável, enfraquecido).
+        Reforcos.marcar(hunt, alvo);
+        return true;
+      };
+      if (!golpear(false)) return { eventos, bateu };
+      if (alvo.hp > 0 && Math.random() < (ficha.ataqueDuplo ?? 0)) golpear(true);
     }
     // Momentum (tier do elmo): a cada golpe, chance de tirar 2s de todas as recargas.
     if (Tiers.rolar(estado, 'head')) {

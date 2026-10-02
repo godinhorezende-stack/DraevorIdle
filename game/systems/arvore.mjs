@@ -214,9 +214,9 @@ export function vista(estado) {
 // mesmo das recargas — vale igual na caçada offline simulada.
 //
 // Uma não tem efeito aqui: `julgamento` (paladin, "o crítico ignora a
-// resistência elemental do bicho") — este servidor ainda não dá resistência
-// elemental aos bichos, então não há o que ignorar. Idem a "Penetração de
-// armadura" dos nós: a armadura do bicho não corta o golpe do jogador aqui.
+// resistência elemental do bicho") — os bichos TÊM resistência (bestiário, `hunt/resistencia.mjs`) e agora há penetração
+// (`combate/limites.mjs`), mas esta habilidade em particular ainda não foi ligada a ela. A "Penetração de armadura" dos nós,
+// ao contrário, já vale: vira a Penetração FÍSICA da ficha (`ficha.penetracao.fisica`).
 
 // Vale a habilidade escolhida na árvore antiga OU o keystone alocado na árvore de passivas (`passivas/`).
 const tem = (estado, id) => Passivas.efeitos(estado).habilidades.has(id) || habilidadesAtivas(estado).has(id);

@@ -21,7 +21,10 @@
    "dmg_vs_boss",
    "dmg_vs_elite",
    "dmg_vs_monsters",
-   "gem_level"
+   "gem_level",
+   "phys_pen",
+   "elem_pen",
+   "double_attack"
   ],
   "arma_distancia": [
    "dex",
@@ -43,7 +46,10 @@
    "dmg_vs_boss",
    "dmg_vs_elite",
    "dmg_vs_monsters",
-   "gem_level"
+   "gem_level",
+   "phys_pen",
+   "elem_pen",
+   "double_attack"
   ],
   "arma_magica": [
    "int",
@@ -65,7 +71,9 @@
    "dmg_vs_monsters",
    "cooldown_recovery",
    "skill_cost",
-   "gem_level"
+   "gem_level",
+   "elem_pen",
+   "double_attack"
   ],
   "municao": [
    "dex",
@@ -221,7 +229,8 @@
    "armour_pct",
    "evasion_pct",
    "es_pct",
-   "gem_level"
+   "gem_level",
+   "double_attack"
   ],
   "anel": [
    "str",
@@ -266,7 +275,9 @@
    "dmg_vs_monsters",
    "cooldown_recovery",
    "skill_cost",
-   "gem_level"
+   "gem_level",
+   "phys_pen",
+   "elem_pen"
   ],
   "amuleto": [
    "str",
@@ -318,7 +329,9 @@
    "avoid_damage",
    "cooldown_recovery",
    "skill_cost",
-   "gem_level"
+   "gem_level",
+   "phys_pen",
+   "elem_pen"
   ]
  }
 }

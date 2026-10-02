@@ -51,7 +51,7 @@ import * as Defesa from './personagem/defesa.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
-import { resistido } from './hunt/resistencia.mjs';
+import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
@@ -1608,7 +1608,8 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
   for (const bicho of hunt.monstros) {
     if (bicho.hp <= 0 || distancia(bicho, alvo) > f.alcance) continue;
     // E a resistência do bicho ao elemento do familiar (`resistido`).
-    const dano = Math.max(1, Math.round(resistido(hunt, bicho, f.elemento ?? 'physical', doDono * Summon.fracao(estado) * (0.85 + Math.random() * 0.3))));
+    if (resistenciaEfetivaDe(hunt, bicho, f.elemento ?? 'physical', ficha) >= 100) continue; // imune: nada passa
+    const dano = Math.max(1, Math.round(resistido(hunt, bicho, f.elemento ?? 'physical', doDono * Summon.fracao(estado) * (0.85 + Math.random() * 0.3), ficha)));
     bicho.hp -= dano;
     eventos.push({ t: 'fx', id: f.fx, uid: bicho.uid, x: bicho.x, y: bicho.y });
     eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, familiar: true, alvo: bicho.name, color: cor });
