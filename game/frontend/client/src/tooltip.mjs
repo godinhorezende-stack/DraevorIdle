@@ -2523,7 +2523,8 @@ export function fichaDoSuporte(def, nivel, qualidade, mult) {
   return { etiqueta, principais, contrapartidas };
 }
 
-const ESCALA_DA_GEMA ={ melee: 'Melee', distance: 'Distance', magic: 'Magic Level' };
+const ESCALA_DA_GEMA = { melee: 'Melee', distance: 'Distance', magic: 'Magic Level' };
+const ORIGEM_DO_PODER = { melee: 'o poder da arma corpo a corpo', distance: 'o poder da arma de distância', magic: 'o Magic Attack da wand/rod' };
 const nomeDoElemento = (e) => {
   const n = ELEMENT_NAMES[e] ?? e;
   return n.charAt(0).toUpperCase() + n.slice(1);
@@ -2593,8 +2594,13 @@ function blocoDaGema(def, gema, raridade = 'comum') {
       const alcance = x.range > 1 ? `alcance ${x.range} sqm` : null;
       const custo = [typeof x.mana === 'number' && x.mana ? `${x.mana} de mana` : null, x.cooldown ? `recarga ${(x.cooldown / 1000).toLocaleString('pt-BR')} s` : null, alcance, area, alvo].filter(Boolean).join(' · ');
       if (custo) linha(custo);
+      // A ORIGEM do dano (a fórmula do servidor): o poder da arma × a afinidade dela com a habilidade + a perícia. O level do personagem não soma.
       const escala = x.escalaCom ? ESCALA_DA_GEMA[x.escalaCom] : null;
-      if (escala) linha(`Escala com ${escala} e o level do personagem.`, 'tip-gema-ajuda');
+      if (escala) linha(`Escala com ${ORIGEM_DO_PODER[x.escalaCom] ?? 'a arma'} e o ${escala}.`, 'tip-gema-ajuda');
+      const a = x.armaDoDano;
+      if (a?.semArma) linha(`Sem arma equipada: dano reduzido (${Math.round(a.afinidade * 100)}% do poder).`, 'tip-gema-penalidade');
+      else if (a && !a.compativel) linha(`Arma incompatível com esta habilidade: aproveita ${Math.round(a.afinidade * 100)}% do poder dela.`, 'tip-gema-penalidade');
+      else if (a?.noPiso) linha('Arma fraca para o seu level: um piso de transição segura o dano (troque de arma).', 'tip-gema-penalidade');
       bloco.append(faz);
     } else if (def.tags?.length && def.categoria === 'ataque') {
       // Sem entrada no catálogo (ex.: runas de campo): só a linha de tags, sem números.
@@ -2843,10 +2849,15 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * (Modificadores, abaixo). Os implícitos (perícia, crítico, resistência...)
    * saíram do jogo: o catálogo não os traz mais.
    */
-  const temBase = meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
+  const temBase = meta.poderDaArma || meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
   if (temBase) add('Base', 'tip-sec');
   // A faixa do dano sai sem o "+" ("10–26"): é o que cada golpe sorteia.
   if (meta.attack) prop('Dano', numeroOuFaixa(meta, 'attack').replace(/^\+/, ''), 'atk');
+  // O poder que a ARMA dá às habilidades (`armas/poder.mjs`): o Magic Attack da wand/rod (fixo) ou o poder da arma física, × a raridade da peça.
+  if (meta.poderDaArma) {
+    const fator = getCatalogoDeAcoes()?.poderDasArmas?.raridade?.[peca?.raridade ?? 'comum'] ?? 1;
+    prop(meta.magicAttack ? 'Magic Attack' : 'Poder da arma', String(Math.round(meta.poderDaArma * fator)), meta.magicAttack ? 'mana' : 'atk');
+  }
   if (meta.defense) prop('Bloqueio', `${numeroOuFaixa(meta, 'defense').replace(/^\+/, '')}${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
   // A defesa sai num número só: a média da faixa sorteada, que é o que a ficha usa
   // (a faixa "5–10" parecia sinal de menos, e só o dano da arma sorteia a cada golpe).

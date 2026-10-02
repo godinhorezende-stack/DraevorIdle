@@ -1,8 +1,16 @@
 {
-  "_nota": "EXCEÇÕES por gema ativa (a gema de cada magia/runa sai sozinha do catálogo de ações). Por id da ação: `castTime` (ms), `progressao` (o que cada nível dá: {dano, cura} em % por nível — substitui a padrão; `{}` = só o nível, sem bônus), `levelMinimo` (se diferente do da skill). `fatorDeDano`: multiplica o dano da skill (balanceamento fino por gema, por cima da efetividade). `efetividade`: troca a efetividade calculada (ver config.dano).",
+  "_nota": "EXCEÇÕES por gema ativa (a gema de cada magia/runa sai sozinha do catálogo de ações). Por id da ação: `castTime` (ms), `progressao` (o que cada nível dá: {dano, cura} em % por nível — substitui a padrão; `{}` = só o nível, sem bônus), `levelMinimo` (se diferente do da skill). `escala` (02/10, 'melee' | 'distance' | 'magic'): a skill e a ARMA que escalam o dano — sem ela vale a regra das tags (físico: melee, ou distance se `ranged`; o resto: magic). Paladin: as gemas sagradas escalam com Distance (arco, besta); Monk: Mystic Repulse e Thousand Fist Blows com Melee (punho). `fatorDeDano`: multiplica o dano da skill (balanceamento fino por gema, por cima da efetividade). `efetividade`: troca a efetividade calculada (ver config.dano).",
   "gemas": {
     "spell-magic-shield": { "castTime": 0, "progressao": {} },
     "spell-haste": { "castTime": 0, "progressao": {} },
-    "spell-strong-haste": { "castTime": 0, "progressao": {} }
+    "spell-strong-haste": { "castTime": 0, "progressao": {} },
+    "spell-divine-missile": { "escala": "distance" },
+    "spell-divine-caldera": { "escala": "distance" },
+    "spell-divine-barrage": { "escala": "distance" },
+    "spell-holy-flash": { "escala": "distance" },
+    "spell-divine-grenade": { "escala": "distance" },
+    "rune-holy-missile-rune": { "escala": "distance" },
+    "spell-mystic-repulse": { "escala": "melee" },
+    "spell-thousand-fist-blows": { "escala": "melee" }
   }
 }

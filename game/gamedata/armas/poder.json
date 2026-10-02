@@ -1,0 +1,27 @@
+{
+  "_nota": "O PODER DA ARMA (decisão do dono, 02/10): o dano base das gemas de ATAQUE deixa de crescer pelo level do personagem e passa a crescer pelo poder da arma equipada. Lido por systems/armas/poder.mjs. O poder de uma arma = curva(nível de poder dela) × fator da raridade da peça; wand e rod usam o MESMO número como Magic Attack (fixo, sem sorteio). O dano da gema usa o poder × a afinidade da arma com a habilidade e, com isso, pergunta ao catálogo (a mesma reta entre as capturas) qual o dano de uma magia num personagem de 'nível equivalente' àquele poder — por isso uma arma NO NÍVEL dá o dano de antes. O level do personagem só decide o que a arma exige para ser usada. Tudo daqui é balanceamento: edite sem tocar no código.",
+
+  "curva": { "_nota": "poder(nível) = base + inclinação × nível. Bate com os exemplos do dono (10→11, 30→25, 60→45, 100→73) e com a Wand V2 do nível 2500 (≈1.730).", "base": 4, "inclinacao": 0.69 },
+
+  "raridade": { "_nota": "Fator sobre o poder, dentro do mesmo nível da arma.", "comum": 1, "incomum": 1.05, "raro": 1.1, "épico": 1.15, "lendário": 1.2, "mítico": 1.25 },
+
+  "afinidade": {
+    "_nota": "Quanto a família da ARMA (linhas) aproveita a família da HABILIDADE (colunas). melee = espada, machado, maça e punho; distance = arco, besta e arremesso; magic = wand e rod. `semArma`: sem arma na mão. Baixa = 0,25 (a construção alternativa funciona, mas rende uma fração).",
+    "melee":    { "melee": 1,    "distance": 0.25, "magic": 0.25 },
+    "distance": { "melee": 0.25, "distance": 1,    "magic": 0.25 },
+    "magic":    { "melee": 0.25, "distance": 0.25, "magic": 1 },
+    "semArma":  { "melee": 0.15, "distance": 0.15, "magic": 0.15 }
+  },
+
+  "pisoLegado": {
+    "_nota": "A MIGRAÇÃO: o poder da arma nunca cai abaixo desta fração do poder esperado para o LEVEL do personagem (antes da afinidade). Quem ainda usa a arma inicial não perde o dano de uma vez; baixe o número por etapa de conteúdo até 0 (a arma passa a mandar sozinha). 1 = idêntico ao sistema antigo para quem está sem arma melhor.",
+    "fracao": 0.7
+  },
+
+  "identidade": {
+    "_nota": "Wand e rod (a identidade fica aqui, em configuração: os implícitos saíram do jogo). Wand: conjura mais rápido (+% de Cast Speed enquanto empunhada). Rod: +% de poder. `elementosAfins`: o elemento da habilidade que a arma favorece (+% de poder, só para habilidade da família magic).",
+    "wand": { "castSpeedPct": 10, "poderPct": 0, "elementosAfins": ["fire", "energy", "death"] },
+    "rod":  { "castSpeedPct": 0,  "poderPct": 8, "elementosAfins": ["ice", "earth", "holy"] },
+    "bonusDeElementoAfimPct": 10
+  }
+}
