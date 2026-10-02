@@ -49,6 +49,8 @@ export const ITEM_DA_ACAO = new Map();
 
 /** Qual skill escala o dano da gema: 'melee' ou 'distance' (físicas, pela tag `ranged`) ou 'magic' (todo o resto). A tooltip lê esta mesma regra. */
 export function habilidadeDeEscala(def) {
+  // A exceção da gema (`skills.json`: `escala`) vence a regra das tags — a habilidade elemental que escala com Melee ou Distance.
+  if (def?.escala) return def.escala;
   const tags = def?.tags ?? [];
   if (!tags.includes('physical')) return 'magic';
   return tags.includes('ranged') ? 'distance' : 'melee';
@@ -116,6 +118,8 @@ for (const [chave, itemId] of Object.entries(IDS)) {
     progressao: exc.progressao ?? CONFIG.progressaoPadrao,
     // O balanceamento do dano da skill (× no dano; `skills.json`).
     fatorDeDano: exc.fatorDeDano ?? 1,
+    // A skill/arma que escala o dano, quando não é a das tags (`skills.json`).
+    ...(exc.escala ? { escala: exc.escala } : {}),
   });
   ITEM_DA_ACAO.set(chave, itemId);
 }

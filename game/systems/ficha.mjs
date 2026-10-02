@@ -29,6 +29,7 @@ import * as Atributos from './personagem/atributos.mjs';
 import * as Especializacoes from './personagem/especializacoes.mjs';
 import * as Passivas from './passivas/arvore.mjs';
 import * as Keystones from './passivas/keystones.mjs';
+import * as PoderDaArma from './armas/poder.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -268,7 +269,8 @@ function calcularCombate(estado) {
     danoDeMagia: doAtributo.danoMagicoPct,
     curaDeMagia: (arv.cura ?? 0) * 100 + espStat('healing'),
     // Cast Speed (intervalo global entre magias), Cooldown Recovery (recarga de cada magia), Skill Cost Reduction.
-    castSpeed: (af.cast_speed ?? 0) + espStat('castSpeed'),
+    // + a identidade da wand na mão (`armas/poder.json`: conjura mais rápido).
+    castSpeed: (af.cast_speed ?? 0) + espStat('castSpeed') + PoderDaArma.castSpeedDaIdentidade(estado),
     recuperacaoDeRecarga: af.cooldown_recovery ?? 0,
     // Damage vs Boss / vs Elite / vs Monsters (não-boss), em %.
     danoContra: { boss: af.dmg_vs_boss ?? 0, elite: af.dmg_vs_elite ?? 0, monstros: af.dmg_vs_monsters ?? 0 },
@@ -327,6 +329,7 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais }) {
   por('velocidadeDeAtaque', `DEX (${principais.dex})`, doAtributo.velocidadeDeAtaquePct);
   daEspecializacao('velocidadeDeAtaque', 'attackSpeed');
   por('castSpeed', 'Equipamento', af.cast_speed ?? 0);
+  por('castSpeed', 'Wand', PoderDaArma.castSpeedDaIdentidade(estado));
   daEspecializacao('castSpeed', 'castSpeed');
   por('curaDeMagia', 'Árvore', (arv.cura ?? 0) * 100);
   daEspecializacao('curaDeMagia', 'healing');

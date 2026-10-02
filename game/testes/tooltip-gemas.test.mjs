@@ -15,10 +15,10 @@ test('habilidadeDeEscala: físico de perto = melee, físico de longe (ranged) = 
   assert.equal(Gemas.habilidadeDeEscala({}), 'magic');
 });
 
-test('as 92 gemas de ataque: 21 melee + 10 distance + 61 magic (a regra de antes, sem mudar nenhuma)', () => {
+test('as 92 gemas de ataque: 23 melee + 14 distance + 55 magic (a regra das tags + as 8 exceções de : paladin sagrado → Distance, monk → Melee)', () => {
   const por = { melee: 0, distance: 0, magic: 0 };
   for (const d of ataques()) por[Gemas.habilidadeDeEscala(d)]++;
-  assert.deepEqual(por, { melee: 21, distance: 10, magic: 61 });
+  assert.deepEqual(por, { melee: 23, distance: 14, magic: 55 });
 });
 
 test('bonusDoTreino segue a habilidade de escala', () => {

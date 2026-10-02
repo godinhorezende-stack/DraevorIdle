@@ -36,6 +36,7 @@ import * as Reforcos from './skills/reforcos.mjs';
 import * as Areas from '../engine/areas.mjs';
 import * as Secundarios from './skills/golpes-secundarios.mjs';
 import * as Estados from './skills/estados.mjs';
+import * as Poder from './armas/poder.mjs';
 
 export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
 export const SLOTS = ACTION_CATALOG.slots;
@@ -58,6 +59,12 @@ function danoNoLevel(entry, level) {
   return { min, max: Math.max(min, reta(baixo.max, alto.max)) };
 }
 
+/** O "nível" que o catálogo usa para o dano base: o equivalente ao poder da arma nas gemas de ataque; o level do personagem no resto (item, cura). */
+function nivelDoDano(estado, entry, defDaGema) {
+  if (!defDaGema || entry.heals || !Gemas.ehSkillDeGema(entry)) return estado.level;
+  return Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).nivelEquivalente;
+}
+
 /**
  * ---- O DANO de uma skill, numa conta só (o `disparar` e o balão usam esta) ----
  * Base da magia pelo level + a perícia; × (afinidade, magic level ou skill em %,
@@ -67,8 +74,9 @@ function danoNoLevel(entry, level) {
  * Devolve também a ficha com o crítico das supports (o que o golpe rola).
  */
 function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado)) {
-  const { min, max } = danoNoLevel(entry, estado.level);
   const defDaGema = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
+  // O dano base da gema de ATAQUE cresce pela ARMA (poder × afinidade → "nível equivalente"); o level do personagem não soma mais (`armas/poder.mjs`).
+  const { min, max } = danoNoLevel(entry, nivelDoDano(estado, entry, defDaGema));
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
@@ -212,6 +220,13 @@ export function concluirConjuracao(estado, hunt, personagem) {
   return [{ t: 'castFim', uid: 'player', quem: personagem?.nome }, ...(r.eventos ?? [])];
 }
 
+/** A origem do dano base de uma gema de ataque, para o balão: família da arma, afinidade, poder efetivo e se é o piso legado que segura. */
+function armaDoDano(estado, entry) {
+  const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
+  const p = Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(def), entry.element);
+  return { familia: p.familia, afinidade: p.afinidade, poder: Math.round(p.poder), compativel: p.compativel, semArma: p.semArma, noPiso: p.noPiso };
+}
+
 /** `send({t:'actions'})` — o catálogo inteiro, como o original: cada entrada com seu `blocked`. */
 export function catalogo(estado) {
   const ficha = Ficha.combate(estado);
@@ -245,6 +260,8 @@ export function catalogo(estado) {
     ...(entry.damage ? { damage: { ...entry.damage, ...(entry.kind === 'item' ? danoNoLevel(entry, estado.level) : entry.heals ? curaMostrada(estado, entry) : danoMostrado(estado, entry)) } } : {}),
     // Para a tooltip da gema: o dano/cura SEM o bônus da gema (nível, raridade, qualidade, supports) e a skill que escala — igual com a gema solta ou equipada.
     ...(Gemas.ehSkillDeGema(entry) && entry.damage && entry.kind !== 'item' ? { danoBase: entry.heals ? curaMostrada(estado, entry, null) : danoMostrado(estado, entry, null), escalaCom: Gemas.habilidadeDeEscala(Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id))) } : {}),
+    // A ARMA como fonte do dano (só gema de ataque): a família dela, a afinidade com esta habilidade e o poder efetivo — o balão mostra o que a fórmula usa.
+    ...(Gemas.ehSkillDeGema(entry) && entry.damage && !entry.heals ? { armaDoDano: armaDoDano(estado, entry) } : {}),
     // Skill de gema: sem level nem magic level exigidos (qualquer um usa qualquer gema). `levelDaMagia`: o de antes, só informativo.
     ...(Gemas.ehSkillDeGema(entry) ? { level: 1, magicLevel: 0, levelDaMagia: entry.level ?? 1 } : {}),
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
@@ -258,6 +275,8 @@ export function catalogo(estado) {
     spells: ACTION_CATALOG.spells.map(comBloqueio),
     runes: ACTION_CATALOG.runes.map(comBloqueio),
     items: ACTION_CATALOG.items.map(comBloqueio),
+    // O poder das armas: o fator da raridade (o balão multiplica o poder base do item) e a matriz de afinidade.
+    poderDasArmas: { raridade: Poder.CONFIG.raridade, afinidade: Poder.CONFIG.afinidade },
     slots: SLOTS,
     slotsPorFileira: SLOTS_POR_FILEIRA,
     papeis: PAPEIS,

@@ -440,6 +440,25 @@ export function corrigirDuasMaos(estado) {
   return true;
 }
 
+/**
+ * Peça vestida com `minLevel` ACIMA do level do personagem (de antes de a arma virar a fonte do dano, ou de um requisito que subiu): volta
+ * para a mochila, sem perda nenhuma. Roda na entrada; devolve os nomes das peças que saíram.
+ */
+export function devolverPecasAcimaDoLevel(estado) {
+  const eq = estado.equipment ?? {};
+  const saiu = [];
+  for (const [slot, peca] of Object.entries(eq)) {
+    if (!peca || slot === 'backpack') continue;
+    const meta = ITEM_CATALOG[peca.id];
+    if (!meta || (meta.minLevel ?? 0) <= (estado.level ?? 0)) continue;
+    eq[slot] = null;
+    devolverPeca(estado, peca);
+    saiu.push(meta.name);
+  }
+  if (saiu.length) Afixos.sincronizarMaximos(estado);
+  return saiu;
+}
+
 export function equipar(estado, { id, pilha, slot }) {
   id = Number(id);
   const meta = ITEM_CATALOG[id];

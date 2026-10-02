@@ -1719,6 +1719,9 @@ export class Sessao {
     Inventario.moedasParaOBolso(estado);
     // Arma de duas mãos com escudo vestido (de antes da regra): o escudo volta para a mochila.
     Inventario.corrigirDuasMaos(estado);
+    // Peça vestida que pede um level acima do dele (a arma agora define o dano): volta para a mochila, sem perda.
+    const acimaDoLevel = Inventario.devolverPecasAcimaDoLevel(estado);
+    if (acimaDoLevel.length) estado.avisoDaHunt = `${acimaDoLevel.join(', ')} ${acimaDoLevel.length > 1 ? 'pedem' : 'pede'} um level acima do seu e ${acimaDoLevel.length > 1 ? 'voltaram' : 'voltou'} para a mochila.`;
     // Munição/arremessável em pilha (de antes de deixarem de empilhar): uma peça, o resto vendido.
     const desempilhada = Bolsa.desempilharMunicao(estado);
     if (desempilhada.pecas) estado.avisoDaHunt = `Munição e armas de arremesso não empilham mais: ficou uma de cada pilha, e ${desempilhada.pecas.toLocaleString('pt-BR')} a mais viraram ${desempilhada.ouro.toLocaleString('pt-BR')} de ouro.`;
