@@ -118,6 +118,9 @@ for (const [chave, itemId] of Object.entries(IDS)) {
     progressao: exc.progressao ?? CONFIG.progressaoPadrao,
     // O balanceamento do dano da skill (× no dano; `skills.json`).
     fatorDeDano: exc.fatorDeDano ?? 1,
+    // O balanceamento da CURA (× na cura) e do CUSTO de mana (× no custo do catálogo) — `skills.json`.
+    fatorDeCura: exc.fatorDeCura ?? 1,
+    fatorDeCusto: exc.fatorDeCusto ?? 1,
     // A skill/arma que escala o dano, quando não é a das tags (`skills.json`).
     ...(exc.escala ? { escala: exc.escala } : {}),
   });

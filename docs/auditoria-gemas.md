@@ -58,3 +58,43 @@ Ferramenta: `node tools/simular-rotacao.mjs --matriz [--duracao 60]` (cada gema 
 ## Ainda não medido
 
 Suportes e multiplicadores de custo em combinações; wand contra rod; rotações multi-habilidade com buffs e curas; cenários de sobrevivência (os bonecos não atacam); cura contra dano recebido; hunts de 15 e 30 min com poções; a matriz de classes com equipamento avançado.
+
+---
+
+# Fase 3: rebalanceamento aplicado (02/10) — antes e depois MEDIDOS
+
+Decisões do dono: baixar o Monk; baixar Knight e Monk e subir Sorcerer e Druid em área; corrigir a cura do Knight e subir a do Druid; **não mexer** no intervalo global (2 s). Botões: `fatorDeDano` (já existia), e os novos `fatorDeCura` e `fatorDeCusto`, todos em `gamedata/gemas/skills.json` (uma linha por gema; nada mais mudou nos dados nem na estrutura de personagens, equipamentos ou slots).
+
+## DPS das gemas (simulador de rotação, 60 s, motor real, level 300)
+
+| Vocação | Mediana 1 alvo | Mediana 5 alvos | Melhor 1 alvo | Melhor 5 alvos |
+|---|---|---|---|---|
+| Knight | 161 → 147 | 562 → 506 | 308 → 219 | 1.229 → 860 |
+| Paladin | 103 → 124 | 119 → 143 | 183 → 192 | 902 → 902 |
+| Sorcerer | 65 → 95 | 113 → 149 | 156 → 282 | 652 → **1.173** |
+| Druid | 72 → 95 | 129 → 161 | 138 → 173 | 619 → 712 |
+| Monk | 161 → 151 | 196 → 182 | **670 → 228** | **3.250 → 1.025** |
+
+Mudanças principais (`fatorDeDano`): Chained Penance ×0,3, Greater Flurry ×0,55, Double Jab ×0,6, Flurry ×0,8, Sweeping Takedown ×0,85, Swift Jab ×0,8; Knight: Shield Bash ×0,55, Fierce Berserk e Berserk ×0,7, Front Sweep ×0,75, Shield Slam ×0,8, Groundshaker ×0,9; Sorcerer: ondas, feixes e Death Echo de ×1,5 a ×1,8, os "strikes" ×1,3, as Ultimate ×2,2, Rage of the Skies e Hell's Core ×2, Curse ×3; Druid: ondas ×1,4, Bursts e Ultimate ×2, Wrath e Eternal Winter ×1,6, strikes ×1,25; Paladin: lanças ×1,2, Caldera e Grenade ×1,5, Holy Flash ×3 (Barrages ficam como estavam). Resultado: a melhor área é a do Sorcerer (1.173), seguida de Monk (1.025), Paladin (902), Knight (860) e Druid (712); o Monk em alvo único deixa de ser 4,3× o resto (228 contra 219 do Knight).
+
+## Cura (cura por mana, catálogo)
+
+| Magia | Antes | Depois |
+|---|---|---|
+| Knight: Wound / Fair / Intense Wound Cleansing | 15,4 / 16,0 / 15,2 | 6,8 / 7,1 / 6,7 (cura ×0,8, custo ×1,8) |
+| Light Healing (todas as vocações) | 8,8 | 6,8 (custo ×1,3) |
+| Intense Healing | 4,6 | 6,9 (cura ×1,5) |
+| Divine Healing (Paladin) / Ultimate Healing (Druid, Sorcerer) | 3,8 / 3,8 | 6,1 / 6,1 (cura ×1,6) |
+| Restoration (Druid, Sorcerer) | 3,3 | 4,9 (×1,5) |
+| Heal Friend / Mass Healing / Nature's Embrace (Druid) | 5,7 / 3,8 / 10,3 | 7,9 / 5,7 / 12,4 |
+| Salvation (Paladin) | 5,5 | 7,1 (×1,3) |
+
+A cura do Knight deixa de ser mais barata que a do Druid, e as magias grandes deixam de ser menos eficientes que a de 20 de mana.
+
+## Limites desta rodada (honestidade)
+
+- A cura de Intense/Ultimate/Restoration é **compartilhada** entre vocações (a gema é a mesma): o Sorcerer e o Paladin também sobem. Dar cura exclusiva ao Druid exigiria um fator por vocação (não existe).
+- Não medi o efeito da cura no tempo de sobrevivência (os bonecos não atacam) nem o consumo de mana com poções.
+- O Monk perde a "explosão" sem ganhar ainda a identidade de combo/janela proposta; isso fica para uma etapa própria, com proposta antes de implementar.
+- Suportes, wand contra rod, buffs e tooltips dos buffs, e as gemas novas ainda não foram tratados.
+- Travas automáticas (`game/testes/balanceamento-das-gemas.test.mjs`) medem no motor que o Monk não passa do Knight em alvo único (×1,5) nem do Sorcerer em área, e que a cura do Knight não é mais eficiente que a do Druid.
