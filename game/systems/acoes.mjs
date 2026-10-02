@@ -52,6 +52,9 @@ const ENTRADAS = [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes, ...ACTION_C
 const POR_ID = new Map(ENTRADAS.map((e) => [e.id, e]));
 const ALTO_POR_ID = new Map([...ACTION_CATALOG_ALTO.spells, ...ACTION_CATALOG_ALTO.runes].map((e) => [e.id, e]));
 
+/** O custo de mana DO CATÁLOGO da skill, com o balanceamento da gema (`fatorDeCusto` em `skills.json`); o resto (afixos, suportes) multiplica por cima. */
+const custoDoCatalogo = (entry) => Math.round((entry.mana ?? 0) * (Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id))?.fatorDeCusto ?? 1));
+
 /** O `{min,max}` da entrada no level dado — reta entre as duas capturas reais. */
 function danoNoLevel(entry, level) {
   const baixo = entry.damage;
@@ -127,7 +130,7 @@ function contaDaCura(estado, entry, efeitoDaGema) {
   const tags = Tags.tagsDaAcao(entry);
   // O treino (ML) × os reforços de treino + o ML que vem de outra perícia (Divine Defiance).
   const doTreino = (def ? Gemas.bonusDoTreino(estado, def, f) : f.skillBonus?.magic ?? 0) * (1 + Reforcos.bonus(estado.hunt, 'treino', tags) / 100) + (def ? Reforcos.treinoDeOutraPericia(estado, estado.hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);
-  const mult = 1 + ((f.curaDeMagia ?? 0) + (f.magiasDasGemas?.[entry.id]?.cura ?? 0) + doTreino + (efeitoDaGema?.curaPct ?? 0)) / 100;
+  const mult = (1 + ((f.curaDeMagia ?? 0) + (f.magiasDasGemas?.[entry.id]?.cura ?? 0) + doTreino + (efeitoDaGema?.curaPct ?? 0)) / 100) * (def?.fatorDeCura ?? 1);
   return { min, max, pericia, mult };
 }
 
@@ -256,6 +259,8 @@ export function catalogo(estado) {
   const comBloqueio = (entry) => ({
     ...entry,
     ...(Gemas.ehSkillDeGema(entry) ? { gema: daGema(entry) } : {}),
+    // O tooltip do BUFF (reforço): o que faz, com os números desta gema, a duração e quem é afetado (`Reforcos.descrever`).
+    ...(Reforcos.REFORCOS[entry.id] ? { reforco: Reforcos.descrever(entry.id, daGema(entry)?.efeito ?? null) } : {}),
     // As tags (o que as especializações leem), a classe recomendada (não é trava) e a
     // afinidade DESTE personagem nesta skill — a mesma conta do `disparar` (`Ficha.afinidadePara`).
     tags: Tags.tagsDaAcao(entry),
@@ -271,6 +276,7 @@ export function catalogo(estado) {
     ...(Gemas.ehSkillDeGema(entry) ? { level: 1, magicLevel: 0, levelDaMagia: entry.level ?? 1 } : {}),
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
     // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
+    ...(entry.kind !== 'item' && entry.mana ? { mana: custoDoCatalogo(entry) } : {}),
     ...(entry.cooldown ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
     // Ataque: o intervalo até a próxima magia de ataque é o cooldown global (com o Cast Speed), quando ele é maior.
     ...(entry.groupCooldown ? { groupCooldown: entry.papeis?.[0] === 'attack' ? Math.max(recargaDe(entry, entry.groupCooldown), global) : recargaDe(entry, entry.groupCooldown) } : {}),
@@ -771,7 +777,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
   const efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
-  const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round((entry.mana ?? 0) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
+  const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round(custoDoCatalogo(entry) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   const pagaComVida = !!efeitoDaGema?.custoEmVida && custoDeMana > 0;
   if (pagaComVida && (estado.hp ?? 0) <= custoDeMana) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };

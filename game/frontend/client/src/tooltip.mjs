@@ -1052,6 +1052,30 @@ export function blocoDaGemaDaSkill(entry) {
   return bloco;
 }
 
+/**
+ * O bloco do BUFF (servidor: `catalogo` → `reforco`, de `Reforcos.descrever`): nome do tipo, o que faz com os números reais desta gema,
+ * a duração, quem é afetado e as condições — o mesmo desenho para o balão da barra, a tela "Configurar ação" e o balão da gema.
+ * Custo e recarga vêm da própria entrada (`mana`, `cooldown`).
+ */
+export function blocoDoReforco(entry) {
+  const r = entry?.reforco;
+  if (!r) return null;
+  const bloco = el('div', 'tip-buff-gema');
+  bloco.append(el('div', 'tip-buff-gema-tipo', `Buff · ${r.tipoNome}`));
+  const efeitos = el('ul', 'tip-buff-gema-efeitos');
+  for (const l of r.linhas) efeitos.append(el('li', null, l));
+  if (r.linhas.length) bloco.append(efeitos);
+  const linhas = el('div', 'tip-buff-gema-dados');
+  const dado = (rotulo, valor) => { if (valor) { const row = el('div'); row.append(el('span', null, rotulo), el('b', null, valor)); linhas.append(row); } };
+  dado('Duração', r.duracao);
+  dado('Afeta', r.afeta);
+  if (entry.mana && entry.kind !== 'item') dado('Custo', `${entry.mana} de mana`);
+  if (entry.cooldown) dado('Recarga', segundos(entry.cooldown));
+  bloco.append(linhas);
+  for (const c of r.condicoes ?? []) bloco.append(el('div', 'tip-buff-gema-cond', c));
+  return bloco;
+}
+
 export function fichaDeAcao(entry, icone = null, extra = null) {
   const partes = [];
   const node = { append: (...n) => partes.push(...n) };
@@ -1104,6 +1128,10 @@ export function fichaDeAcao(entry, icone = null, extra = null) {
   if (entry.area) add('Pega uma área', 'area');
   if (entry.range) add(`Alcance de ${entry.range} sqm`, 'plain');
   if (stats.children.length) node.append(stats);
+
+  // O BUFF diz o que faz, por quanto tempo e em quem (o desenho de onde pega não tem o que mostrar aqui).
+  const doBuff = blocoDoReforco(entry);
+  if (doBuff) node.append(doBuff);
 
   // E o desenho de ONDE ela pega, que e' o que aquelas duas linhas nao dizem.
   const forma = previaDaMagia(entry);
@@ -2591,8 +2619,9 @@ function blocoDaGema(def, gema, raridade = 'comum') {
       const d = x.danoBase ?? x.damage;
       if (x.overTime && x.damage) linha(`${d.min.toLocaleString('pt-BR')} de dano ao longo de ${x.overTime.rounds} rodadas${x.element ? ` (${nomeDoElemento(x.element)})` : ''}`, 'tip-gema-numero');
       else if (x.damage) linha(`${ehCura ? 'Cura' : 'Dano'} de ${d.min.toLocaleString('pt-BR')} a ${d.max.toLocaleString('pt-BR')}${x.element && !ehCura ? ` (${nomeDoElemento(x.element)})` : ''} por golpe`, 'tip-gema-numero');
-      if (x.postura) linha(x.postura);
-      if (x.desafio) linha(x.desafio);
+      // O buff tem bloco próprio (números reais, duração, quem é afetado); o texto antigo do catálogo só vale sem ele.
+      if (x.postura && !x.reforco) linha(x.postura);
+      if (x.desafio && !x.reforco) linha(x.desafio);
       const area = x.forma?.length ? `área de ${x.forma.length} casas` : null;
       const alvo = x.cadeia ? `salta em até ${x.cadeia.targets} criaturas` : null;
       const alcance = x.range > 1 ? `alcance ${x.range} sqm` : null;
@@ -2606,6 +2635,8 @@ function blocoDaGema(def, gema, raridade = 'comum') {
       else if (a && !a.compativel) linha(`Arma incompatível com esta habilidade: aproveita ${Math.round(a.afinidade * 100)}% do poder dela.`, 'tip-gema-penalidade');
       else if (a?.noPiso) linha('Arma fraca para o seu level: um piso de transição segura o dano (troque de arma).', 'tip-gema-penalidade');
       bloco.append(faz);
+      const doBuff = blocoDoReforco(x);
+      if (doBuff) bloco.append(doBuff);
     } else if (def.tags?.length && def.categoria === 'ataque') {
       // Sem entrada no catálogo (ex.: runas de campo): só a linha de tags, sem números.
       bloco.append(el('div', 'tip-gema-tags', etiquetasDaGema(null, def)));
@@ -2853,10 +2884,16 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * (Modificadores, abaixo). Os implícitos (perícia, crítico, resistência...)
    * saíram do jogo: o catálogo não os traz mais.
    */
-  const temBase = meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
+  const temBase = meta.magicAttack || meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
   if (temBase) add('Base', 'tip-sec');
   // A faixa do dano sai sem o "+" ("10–26"): é o que cada golpe sorteia.
   if (meta.attack) prop('Dano', numeroOuFaixa(meta, 'attack').replace(/^\+/, ''), 'atk');
+  // O Magic Attack da wand e da rod (fixo, `armas/poder.mjs`) × a raridade da peça: é o atributo base que escala as gemas de ataque mágicas.
+  // As armas físicas não mostram o "Poder da arma" (decisão do dono, 02/10).
+  if (meta.magicAttack) {
+    const fator = getCatalogoDeAcoes()?.poderDasArmas?.raridade?.[peca?.raridade ?? 'comum'] ?? 1;
+    prop('Magic Attack', String(Math.round(meta.magicAttack * fator)), 'mana');
+  }
   if (meta.defense) prop('Bloqueio', `${numeroOuFaixa(meta, 'defense').replace(/^\+/, '')}${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
   // A defesa sai num número só: a média da faixa sorteada, que é o que a ficha usa
   // (a faixa "5–10" parecia sinal de menos, e só o dano da arma sorteia a cada golpe).

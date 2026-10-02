@@ -159,7 +159,7 @@ test('explosão em coordenadas diferentes: sempre no bicho do impacto', () => {
   }
 });
 
-test('explosão: dano ~50% de um golpe direto (rolagem própria) e passa pela resistência do bicho (teto de resistência do bicho)', () => {
+test('explosão: dano ~40% de um golpe direto (rolagem própria) e passa pela resistência do bicho (teto de resistência do bicho)', () => {
   const e = montar([FLAME, 'explosion']);
   const alvo = bicho(e, 3, 0);
   // Resistência 100% a fogo: o jogo limita no teto do bicho (`combate/limites.json`, 75%) — não há imunidade total.
@@ -172,7 +172,7 @@ test('explosão: dano ~50% de um golpe direto (rolagem própria) e passa pela re
     direto += ev.filter((x) => x.t === 'dmg' && x.uid === alvo.uid && !x.fonte).reduce((a, x) => a + x.v, 0);
     explosao += ev.filter((x) => x.t === 'dmg' && x.uid === alvo.uid && x.fonte === 'explosao').reduce((a, x) => a + x.v, 0);
   }
-  assert.ok(Math.abs(explosao / direto - 0.5) < 0.06, `explosão/direto = ${(explosao / direto).toFixed(3)}`);
+  assert.ok(Math.abs(explosao / direto - 0.4) < 0.06, `explosão/direto = ${(explosao / direto).toFixed(3)}`);
   const perda = (m) => HP - m.hp;
   const passa = 1 - L.LIMITES.resistenciaDoMob.maximo / 100;
   assert.ok(Math.abs(perda(resistente) / perda(comum) - passa) < 0.05, `o resistente perdeu ${(perda(resistente) / perda(comum)).toFixed(3)} do comum (esperado ${passa})`);

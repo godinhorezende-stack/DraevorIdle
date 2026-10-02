@@ -110,3 +110,51 @@ export function provocar(hunt, def, distancia) {
   }
   return n;
 }
+
+// ---------------------------------------------------------------- o texto do reforço (o tooltip dos buffs)
+
+const TAGS_PT = { melee: 'corpo a corpo', ranged: 'à distância', physical: 'físico', fire: 'fogo', ice: 'gelo', earth: 'terra', energy: 'energia', death: 'morte', holy: 'sagrado', healing: 'cura', spell: 'magias' };
+const TIPO_PT = { speed: 'Velocidade', rage: 'Fúria', postura: 'Postura', aura: 'Aura', shield: 'Escudo', desafio: 'Provocação' };
+const AFETA_PT = { aura: 'Os bichos que você atingir', desafio: 'Os bichos por perto' };
+const listaPt = (itens) => (itens ?? []).map((t) => TAGS_PT[t] ?? t).join(' e ');
+const PERICIA_PT = { melee: 'Melee', distance: 'Distance', magic: 'Magic Level', shielding: 'Shielding' };
+/** Onde o efeito vale: os ataques de perto/longe, ou as habilidades de tal tipo. */
+const ondeVale = (tags) => (!tags?.length ? '' : tags.every((t) => t === 'melee' || t === 'ranged') ? ` nos ataques ${tags.map((t) => (t === 'melee' ? 'corpo a corpo' : 'à distância')).join(' e ')}` : ` nas habilidades de ${listaPt(tags)}`);
+const num = (v) => String(Math.round(v * 10) / 10).replace('.', ',');
+const seg = (ms) => {
+  const s = Math.round(ms / 1000);
+  return s >= 60 ? `${Math.floor(s / 60)} min${s % 60 ? ` ${s % 60} s` : ''}` : `${s} s`;
+};
+
+/**
+ * O que o reforço FAZ, em texto, com os números REAIS (já × o fator da gema: nível, raridade, qualidade; a duração com o Skill Duration).
+ * `{ nome?, tipo, tipoNome, duracaoMs, duracao, afeta, linhas, condicoes }`. Só texto: o combate lê os `efeitos` (`bonus`), nunca isto.
+ * Os reforços são todos PESSOAIS (`hunt.buffs` de quem lançou); só as auras e a provocação agem nos bichos.
+ */
+export function descrever(id, efeitoDaGema = null) {
+  const def = REFORCOS[id];
+  if (!def) return null;
+  const fator = fatorDaGema(efeitoDaGema);
+  const duracaoMs = Math.round(def.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
+  const linhas = [];
+  if (def.tipo === 'shield') linhas.push('O dano que você sofre sai da sua mana antes de sair da vida');
+  if (def.mult) linhas.push(`+${num((velocidadeEscalada(def.mult, fator) - 1) * 100)}% de velocidade de movimento`);
+  for (const e of def.efeitos ?? []) {
+    const v = num((e.pct ?? 0) * fator);
+    const onde = ondeVale(e.tags);
+    if (e.efeito === 'dano') linhas.push(`+${v}% de dano${onde}`);
+    else if (e.efeito === 'critChance') linhas.push(`+${v}% de chance de crítico${onde}`);
+    else if (e.efeito === 'critDano') linhas.push(`+${v}% de dano crítico${onde}`);
+    else if (e.efeito === 'treino') linhas.push(`+${v}% do seu magic level/skill${onde}`);
+    else if (e.efeito === 'treinoDeOutraPericia') linhas.push(`${v}% da sua perícia de ${PERICIA_PT[e.de] ?? e.de} conta como magic level${onde}`);
+    else if (e.efeito === 'curaRecebida') linhas.push(`+${v}% em toda cura que você recebe`);
+    else if (e.efeito === 'esquivaDeLonge') linhas.push(`${v}% de chance de desviar de magias de bichos à distância`);
+    else if (e.efeito === 'marcaVulneravel') linhas.push(`Quem você atinge sofre +${v}% de dano de ${listaPt(e.tipos)} por ${seg(e.durMarca)}`);
+    else if (e.efeito === 'marcaEnfraquece') linhas.push(`Quem você atinge causa ${v}% menos dano por ${seg(e.durMarca)}`);
+    else if (e.efeito === 'provocar') linhas.push(`Os bichos a até ${e.raio} sqm${e.alvos ? ` (no máximo ${e.alvos})` : ''} passam a atacar você`);
+  }
+  const condicoes = ['Não pode ser lançado de novo enquanto estiver ativo'];
+  if (def.tipo === 'speed') condicoes.push('Só uma velocidade por vez: a mais nova vale');
+  if (CANCELA && Object.values(CANCELA).includes(def.tipo)) condicoes.push('Pode ser desligado pela magia de cancelar');
+  return { tipo: def.tipo, tipoNome: TIPO_PT[def.tipo] ?? def.tipo, duracaoMs, duracao: seg(duracaoMs), afeta: AFETA_PT[def.tipo] ?? 'Só você', linhas, condicoes };
+}

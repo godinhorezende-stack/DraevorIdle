@@ -233,3 +233,12 @@
   border-bottom-left-radius: 8px;
 }
 .tooltip .tip-fechar:active { background: rgba(40, 50, 55, 0.95); }
+
+/* O tooltip do BUFF (gema de reforço): tipo, o que faz com os números reais, duração, quem é afetado e as condições. */
+:is(.tooltip, .gema-no-editor) .tip-buff-gema { display: grid; gap: 4px; margin-top: 6px; padding: 6px 8px; border-left: 3px solid #1ba29b; background: rgba(27, 162, 155, 0.08); font-size: 12.5px; color: #d6d6d6; }
+:is(.tooltip, .gema-no-editor) .tip-buff-gema-tipo { color: #1ba29b; font-weight: 600; }
+:is(.tooltip, .gema-no-editor) .tip-buff-gema-efeitos { margin: 0; padding-left: 16px; display: grid; gap: 2px; color: #f0f0f0; }
+:is(.tooltip, .gema-no-editor) .tip-buff-gema-dados { display: grid; gap: 2px; }
+:is(.tooltip, .gema-no-editor) .tip-buff-gema-dados > div { display: flex; justify-content: space-between; gap: 12px; }
+:is(.tooltip, .gema-no-editor) .tip-buff-gema-dados span { color: #9a9a9a; }
+:is(.tooltip, .gema-no-editor) .tip-buff-gema-cond { color: #9a9a9a; font-size: 11.5px; }
