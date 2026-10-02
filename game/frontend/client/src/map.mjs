@@ -1201,6 +1201,8 @@ export class MapView {
       // A raridade e os modificadores do mob (a cor do nome e a linha de cima — ver `drawNameplate`).
       raridade: data.raridade ?? null,
       mods: data.mods ?? null,
+      // Os estados ativos do mob (congelado, atordoado, lento, queimando): um ícone de cada ao lado da barra.
+      estados: data.estados ?? null,
     });
   }
 
@@ -3009,6 +3011,50 @@ export class MapView {
     ctx.imageSmoothingEnabled = suave;
   }
 
+  /**
+   * Os estados que as gemas põem no mob (Freeze, Stun, Slow, Ignite): um ícone de 9 px de cada, ao lado da barra de vida. Formas
+   * desenhadas (sem emoji, sem imagem): losango azul-gelo = congelado, estrela amarela = atordoado, anel azul com traço = lento,
+   * gota laranja = queimando. A cor não é a única pista: cada um tem a sua FORMA.
+   */
+  drawEstadosDoMob(estados, x0, y) {
+    const ctx = this.octx;
+    const r = 4.5;
+    let x = this.nitido(x0 + r);
+    const cy = this.nitido(y + 2);
+    ctx.save();
+    ctx.lineWidth = 1.4;
+    for (const estado of estados) {
+      ctx.beginPath();
+      if (estado === 'congelado') {
+        ctx.moveTo(x, cy - r); ctx.lineTo(x + r, cy); ctx.lineTo(x, cy + r); ctx.lineTo(x - r, cy); ctx.closePath();
+        ctx.fillStyle = '#9fe8ff';
+        ctx.fill();
+      } else if (estado === 'atordoado') {
+        for (let i = 0; i < 8; i++) {
+          const raio = i % 2 ? r * 0.45 : r;
+          const ang = (i * Math.PI) / 4 - Math.PI / 2;
+          ctx[i ? 'lineTo' : 'moveTo'](x + Math.cos(ang) * raio, cy + Math.sin(ang) * raio);
+        }
+        ctx.closePath();
+        ctx.fillStyle = '#ffe066';
+        ctx.fill();
+      } else if (estado === 'lento') {
+        ctx.arc(x, cy, r - 0.5, 0, Math.PI * 2);
+        ctx.strokeStyle = '#7fb6ff';
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x - 1.6, cy); ctx.lineTo(x + 1.6, cy);
+        ctx.stroke();
+      } else if (estado === 'queimando') {
+        ctx.moveTo(x, cy - r); ctx.quadraticCurveTo(x + r * 1.5, cy + r * 0.3, x, cy + r); ctx.quadraticCurveTo(x - r * 1.5, cy + r * 0.3, x, cy - r);
+        ctx.fillStyle = '#ff8a1f';
+        ctx.fill();
+      }
+      x += r * 2 + 2;
+    }
+    ctx.restore();
+  }
+
   drawNameplate(entity, cx, py) {
     const ctx = this.octx;
     const screen = this.toScreen(cx, py);
@@ -3045,6 +3091,7 @@ export class MapView {
       const lv = placaDeTexto(`Lv ${entity.nivel}`, '#b9b2a2', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
       ctx.drawImage(lv.lona, this.nitido(nomeX + placa.largura - 1), this.nitido(nomeY + (placa.altura - lv.altura)), lv.largura, lv.altura);
     }
+    if (ehMob && entity.estados?.length) this.drawEstadosDoMob(entity.estados, meio + width / 2 + 3, barTop);
     if (ehMob && entity.mods?.length) {
       const linha = placaDeTexto(entity.mods.join(' · '), corDoMob ?? '#cfc7b4', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
       ctx.drawImage(linha.lona, this.nitido(meio - linha.largura / 2), this.nitido(nomeY - linha.altura + 3), linha.largura, linha.altura);

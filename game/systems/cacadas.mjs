@@ -1770,6 +1770,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
       // O level do mob (ao lado do nome) e a raridade + os modificadores (a cor do nome e a linha de baixo).
       nivel: Atributos.levelDoBicho(hunt, m),
       ...Raridade.paraCliente(m),
+      // Congelado / atordoado / lento / queimando: o cliente mostra um ícone de cada (só quando há).
+      ...(m.estados ? ((a) => (a.length ? { estados: a } : {}))(Estados.ativosDe(m, hunt.clock ?? 0)) : {}),
     })),
     players: [],
     npcs: [],
