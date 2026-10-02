@@ -1082,19 +1082,62 @@ const RAIO_DO_RECUO = 5;
 const FOLGA_DO_RECUO_MS = 4000;
 const CASAS_RUINS_MS = 30_000;
 const MAXIMO_DE_RUINS = 24;
+/** Quantos recuos seguidos sem a distância crescer encerram a corrida (o bicho acompanha na mesma velocidade). */
+const PASSOS_SEM_GANHO = 3;
+/**
+ * O kite está GANHANDO distância? Compara a distância de agora com a do último passo de recuo (`hunt.kite`): sem ganho `PASSOS_SEM_GANHO`
+ * vezes seguidas, para por `FOLGA_DO_RECUO_MS` (`true` = não recua agora). Distância que cresceu zera a conta.
+ */
+function recuoSemGanho(hunt, alvo, d) {
+  const agora = hunt.clock ?? 0;
+  const k = (hunt.kite ??= { semGanho: 0, d: null, uid: null, paradoAte: 0 });
+  if (k.paradoAte > agora) return true;
+  if (k.uid === alvo.uid && k.d != null) {
+    if (d > k.d) k.semGanho = 0;
+    else if (d <= k.d && k.passou) k.semGanho++;
+  } else k.semGanho = 0;
+  k.uid = alvo.uid;
+  if (k.semGanho >= PASSOS_SEM_GANHO) {
+    k.paradoAte = agora + FOLGA_DO_RECUO_MS;
+    k.semGanho = 0;
+    k.d = null;
+    k.passou = false;
+    return true;
+  }
+  k.d = d;
+  k.passou = true; // o passo deste tique (se sair) é um recuo: o próximo tique mede se ganhou
+  return false;
+}
+
 function recuoPlanejado(grade, hunt, alvo) {
   const agora = hunt.clock ?? 0;
   const d = distancia(hunt.pos, alvo);
   const vivos = hunt.monstros.filter((m) => m.hp > 0);
   const casasDeBicho = new Set(vivos.map((m) => `${m.x},${m.y}`));
   const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
+  /*
+   * ---- O deslize NUNCA se aproxima do alvo (a rota inteira, não só o 1º passo) ----
+   * A BFS e o passo até a casa escolhida só evitavam os bichos: o caminho MAIS CURTO até uma casa longe do alvo costuma passar
+   * ao lado dele, o 1º passo era recusado por aproximar, e as 8 candidatas caíam uma a uma — com uma rota que nunca se aproxima
+   * (pela diagonal ou pelo lado) ali do lado, ele ficava parado levando dano (medido: 13 em 1.195 posições perto de parede, com
+   * uma casa mais longe alcançável sem se aproximar). Agora as casas mais PERTO do alvo que a atual valem como parede para a
+   * busca: o caminho achado já nasce sem aproximar.
+   */
+  const bloqueadas = new Set(casasDeBicho);
+  const dAtual = distancia(hunt.pos, alvo);
+  for (let yy = -RAIO_DO_RECUO - 1; yy <= RAIO_DO_RECUO + 1; yy++) {
+    for (let xx = -RAIO_DO_RECUO - 1; xx <= RAIO_DO_RECUO + 1; xx++) {
+      const c = { x: hunt.pos.x + xx, y: hunt.pos.y + yy };
+      if (distancia(c, alvo) < dAtual) bloqueadas.add(`${c.x},${c.y}`);
+    }
+  }
   const r = (hunt.recuo ??= { ruins: {} });
   for (const [k, ate] of Object.entries(r.ruins)) if (ate <= agora) delete r.ruins[k];
 
   // Um deslize em andamento: segue até o destino, sem reavaliar a direção.
   if (r.destino && r.uid === alvo.uid) {
     const chegou = hunt.pos.x === r.destino.x && hunt.pos.y === r.destino.y;
-    const passo = chegou ? null : proximoPassoAte(grade, hunt.pos, r.destino, ocupado, casasDeBicho);
+    const passo = chegou ? null : proximoPassoAte(grade, hunt.pos, r.destino, ocupado, bloqueadas);
     // Um deslize só anda para a frente: repassar por uma casa dele (o bicho
     // fechando o caminho até o destino, e o passo indo e vindo) ou passar do
     // raio é tentativa que não deu — acaba aqui, como se tivesse chegado.
@@ -1116,8 +1159,11 @@ function recuoPlanejado(grade, hunt, alvo) {
     if (!deuCerto) return null;
   }
   if ((r.paradoAte ?? 0) > agora) return null;
+  // Já procurou e não havia saída nesta MESMA situação (ele, o alvo e os bichos em volta no mesmo lugar): não refaz a busca a cada tique.
+  const situacao = `${hunt.pos.x},${hunt.pos.y}|${alvo.uid}@${alvo.x},${alvo.y}|${vivos.filter((m) => distancia(m, hunt.pos) <= RAIO_DO_RECUO + d + 2).map((m) => `${m.x},${m.y}`).sort().join(';')}`;
+  if (r.semSaida === situacao) return null;
 
-  const aPe = bfsDistancias(grade, hunt.pos, RAIO_DO_RECUO, null, VIZINHANCA_8, casasDeBicho);
+  const aPe = bfsDistancias(grade, hunt.pos, RAIO_DO_RECUO, null, VIZINHANCA_8, bloqueadas);
   const candidatas = [];
   for (let dy = -RAIO_DO_RECUO; dy <= RAIO_DO_RECUO; dy++) {
     for (let dx = -RAIO_DO_RECUO; dx <= RAIO_DO_RECUO; dx++) {
@@ -1130,16 +1176,21 @@ function recuoPlanejado(grade, hunt, alvo) {
       if (longe <= d) continue;
       // Longe do alvo primeiro; depois perto (menos passos); depois longe dos outros bichos.
       const outros = Math.min(RAIO_DO_RECUO * 2, ...vivos.filter((m) => m !== alvo).map((m) => distancia(c, m)));
-      candidatas.push({ c, nota: longe * 100 - passos * 10 + outros });
+      // E com saída: uma casa com vizinhas livres não encurrala (o canto e o beco valem menos que o aberto).
+      let saidas = 0;
+      for (const [vx, vy] of VIZINHANCA_8) if (grade.andavel.has(`${c.x + vx},${c.y + vy}`) && !casasDeBicho.has(`${c.x + vx},${c.y + vy}`)) saidas++;
+      candidatas.push({ c, nota: longe * 100 - passos * 10 + outros + saidas * 2 });
     }
   }
   candidatas.sort((a, b) => b.nota - a.nota);
   for (const { c } of candidatas.slice(0, 8)) {
-    const passo = proximoPassoAte(grade, hunt.pos, c, ocupado, casasDeBicho);
+    const passo = proximoPassoAte(grade, hunt.pos, c, ocupado, bloqueadas);
     if (!passo || distancia(passo, alvo) < d || r.ruins[`${passo.x},${passo.y}`]) continue;
     Object.assign(r, { uid: alvo.uid, destino: c, dAntes: d, caminho: [`${hunt.pos.x},${hunt.pos.y}`] });
+    r.semSaida = null;
     return passo;
   }
+  r.semSaida = situacao;
   return null;
 }
 
@@ -1445,9 +1496,13 @@ export function tique(estado, personagem, agora = Date.now()) {
           }
         } else if (alvo && !hunt.lurando && hunt.distancia > 0 && d < querDistancia) {
           const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-          const recuo = passoDeRecuo(grade, hunt, alvo);
+          // Recuar só vale se AFASTA: bicho na mesma velocidade que cola de novo a cada passo (d não cresce) não se despista — depois de
+          // `PASSOS_SEM_GANHO` recuos assim ele para de correr e bate de onde está (`FOLGA_DO_RECUO_MS`), e só tenta de novo depois.
+          const parou = recuoSemGanho(hunt, alvo, d);
+          const recuo = parou ? null : passoDeRecuo(grade, hunt, alvo);
           // Sem vizinha que afaste: o deslize planejado (com compromisso próprio, fora do vigia).
-          if (!recuo) destino = recuoPlanejado(grade, hunt, alvo);
+          if (parou) destino = null;
+          else if (!recuo) destino = recuoPlanejado(grade, hunt, alvo);
           else destino = passoComProgresso(hunt, grade, alvo, recuo, {
             quer: querDistancia,
             kite: true,

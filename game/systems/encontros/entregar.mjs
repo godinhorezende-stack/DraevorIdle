@@ -9,7 +9,7 @@ import * as Eventos from './eventos.mjs';
 import { quemEstaNaSala } from './sala.mjs';
 import { lootDoEncontro, pagarPremio } from '../hunt/combate.mjs';
 
-export const lootOrigem = (e) => ({ key: `encontro:${e.defId}`, name: e.nome, exp: e.recompensa?.moedasMedia ?? 100, expDasMoedas: e.recompensa?.moedasMedia ?? 100 });
+export const lootOrigem = (e) => ({ key: `encontro:${e.defId}`, origemDoLoot: 'bau', name: e.nome, exp: e.recompensa?.moedasMedia ?? 100, expDasMoedas: e.recompensa?.moedasMedia ?? 100 });
 
 /** Sorteia a tabela do encontro `n` vezes (as moedas e os itens passam pelas regras de loot do jogo). */
 export function pagarRolagens(ctx, e, n) {
