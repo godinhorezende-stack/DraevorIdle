@@ -31,6 +31,7 @@ import * as Passivas from './passivas/arvore.mjs';
 import * as Keystones from './passivas/keystones.mjs';
 import * as PoderDaArma from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
+import { PARAMETROS as FORMULAS } from './combate/formulas.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -47,8 +48,8 @@ const PERICIAS_DA_ARVORE = {
 
 /** O intervalo entre golpes da arma, sem bônus: o 2s do Tibia (a caçada, a barra de magias e o troco dos bichos seguem esse relógio). */
 export const INTERVALO_BASE_DO_GOLPE_MS = 2000;
-const CRITICO_BASE = 0.03; // o 3% do molde real
-const MULTIPLICADOR_CRITICO_BASE = 1.6; // "+60% de dano", idem
+const CRITICO_BASE = FORMULAS.critico.chanceBase; // o 3% do molde real (`combate/formulas.json`)
+const MULTIPLICADOR_CRITICO_BASE = FORMULAS.critico.multiplicadorBase; // "+60% de dano", idem
 const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
 // O catálogo chama a terra de `poison` em parte dos itens (o nome do OTServ).
 const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
@@ -508,9 +509,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
   const daArvore = (1 + (ficha.danoDaArvore ?? 0)) * Arvore.fatorDasHabilidades(estado, alvo);
   // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
-  const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? 1.6 : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
+  const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
-  return { dano, crit, onslaught };
+  return { dano, crit, onslaught, chance: chanceDeCritico };
 }
 
 /**

@@ -23,7 +23,8 @@
 import * as Mecanicas from './mobs/mecanicas.mjs';
 import * as Gemas from './skills/gemas.mjs';
 import * as Tags from './skills/tags.mjs';
-import { resistido } from './hunt/resistencia.mjs';
+import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
+import { registrarGolpe } from './combate/registro.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -1013,10 +1014,18 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     let fatorDoAtaque = 100; // 100% no ataque normal; o do 2º golpe do ataque duplo vem de `combate/limites.json`
     const acertar = (bicho, pct = 100, fonte = null) => {
       const tipo = entry.element ?? 'physical';
-      const base = resistido(hunt, bicho, tipo, ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct * fatorDoAtaque) / 10000, ficha);
+      const bruto = ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct * fatorDoAtaque) / 10000;
+      const base = resistido(hunt, bicho, tipo, bruto, ficha);
       Reforcos.marcar(hunt, bicho, agora);
-      const { dano, crit, onslaught } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
+      const { dano, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       bicho.hp -= dano;
+      // O registro do golpe (desligado em produção: nem monta o objeto).
+      registrarGolpe(() => ({
+        origem: 'gema', habilidade: entry.id, alvo: bicho.name, tipo, danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: resistenciaDe(hunt, bicho, tipo),
+        penetracao: Limites.penetracaoDe(ficha.penetracao, tipo), resistenciaEfetiva: resistenciaEfetivaDe(hunt, bicho, tipo, ficha), danoAposResistencia: base,
+        chanceCritica: chance, critico: crit, danoFinal: dano, vidaRestante: Math.max(0, bicho.hp),
+        detalhe: { min, max, daPericia, multiplicador: mult, fatorDaGema, porcentagemDoGolpe: pct, fatorDoAtaque, ataqueDuplo: fatorDoAtaque !== 100 },
+      }));
       total += dano;
       danos.push({ bicho, dano });
       // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado — `mobs/mecanicas.mjs`).

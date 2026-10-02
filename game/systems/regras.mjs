@@ -22,6 +22,7 @@ import {
   applyElement,
   RESISTENCIA_MAXIMA_DE_BOSS,
 } from '../engine/formulas.mjs';
+import * as Formulas from './combate/formulas.mjs';
 export { applyElement, RESISTENCIA_MAXIMA_DE_BOSS };
 
 export const NIVEL_INICIAL = 8;
@@ -161,7 +162,7 @@ export function ataqueDoMonstro(bicho) {
 
 /** Dano final que chega no personagem, depois da armadura dele absorver uma parte. */
 export function danoRecebido(ataqueBruto, armorDoPersonagem) {
-  const absorvido = armorReduction(armorDoPersonagem, Math.random());
+  const absorvido = Formulas.absorcaoPorArmadura(armorDoPersonagem, Math.random());
   return Math.max(0, ataqueBruto - absorvido);
 }
 
