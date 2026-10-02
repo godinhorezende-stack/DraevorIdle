@@ -44,6 +44,13 @@ export const DEFS = new Map();
 /** id da ação (magia/runa) → itemId da gema dela. */
 export const ITEM_DA_ACAO = new Map();
 
+/** Qual skill escala o dano da gema: 'melee' ou 'distance' (físicas, pela tag `ranged`) ou 'magic' (todo o resto). A tooltip lê esta mesma regra. */
+export function habilidadeDeEscala(def) {
+  const tags = def?.tags ?? [];
+  if (!tags.includes('physical')) return 'magic';
+  return tags.includes('ranged') ? 'distance' : 'melee';
+}
+
 /**
  * O bônus (em %) do TREINO na skill (decisão do dono, 30/09: o dano base escala
  * pelo level E pelo magic level — melee/distance nas skills físicas): magic
@@ -54,8 +61,8 @@ export function bonusDoTreino(estado, def, ficha = null) {
   const D = CONFIG.dano;
   const bonus = ficha?.skillBonus ?? {};
   // Magia de dano físico (decisão do dono, 30/09): de perto, level + MELEE; de longe (tag `ranged`), level + DISTANCE.
-  if ((def?.tags ?? []).includes('physical')) {
-    const pericia = def.tags.includes('ranged') ? 'distance' : 'melee';
+  const pericia = habilidadeDeEscala(def);
+  if (pericia !== 'magic') {
     return ((estado.skills?.[pericia]?.value ?? 0) + (bonus[pericia] ?? 0)) * D.porSkill;
   }
   return ((estado.magic?.value ?? 0) + (bonus.magic ?? 0)) * D.porMagicLevel;
