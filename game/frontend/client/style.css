@@ -27833,3 +27833,11 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
 .sheet-subtitulo { margin: 10px 0 4px; font-family: var(--font-heading); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .skills-destaque { align-self: start; }
 .skill-xp { display: block; font-size: 9px; letter-spacing: 0; text-transform: none; color: var(--muted); opacity: .85; }
+
+/* A tabela da party (follow, independente, distância) e o reagrupamento: cabe na janelinha do canto e no celular (rola de lado se faltar largura). */
+.party-tabela-caixa { overflow-x: auto; max-width: 100%; margin: 6px 0; }
+.party-tabela { border-collapse: collapse; width: 100%; font-size: 12px; white-space: nowrap; }
+.party-tabela th, .party-tabela td { padding: 3px 6px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.party-tabela th { color: #9a9a9a; font-weight: 600; }
+.party-reagrupar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.party-botao { padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.06); color: inherit; cursor: pointer; }

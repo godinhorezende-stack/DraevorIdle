@@ -1082,6 +1082,20 @@ const RAIO_DO_RECUO = 5;
 const FOLGA_DO_RECUO_MS = 4000;
 const CASAS_RUINS_MS = 30_000;
 const MAXIMO_DE_RUINS = 24;
+/**
+ * O passo até um aliado da party (o que ele segue, ou o ponto do reagrupamento): a mesma BFS da caçada (contorna parede, bicho e
+ * aliado), com o vigia de progresso (sem A → B → A) e sem refazer a busca enquanto nada mudou (`aindaTravado`). Sem rota, fica parado
+ * e tenta de novo quando a situação muda.
+ */
+function passoAteAliado(grade, hunt, pos, quer, uid) {
+  const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
+  const ocupado = (c) => casasDeBicho.has(`${c.x},${c.y}`);
+  const alvo = { uid, x: pos.x, y: pos.y };
+  if (aindaTravado(hunt, alvo)) return null;
+  const bruto = proximoPassoAte(grade, hunt.pos, pos, ocupado, casasDeBicho);
+  return passoComProgresso(hunt, grade, alvo, bruto, { quer, ocupado, bloqueado: casasDeBicho });
+}
+
 /** Quantos recuos seguidos sem a distância crescer encerram a corrida (o bicho acompanha na mesma velocidade). */
 const PASSOS_SEM_GANHO = 3;
 /**
@@ -1410,10 +1424,17 @@ export function tique(estado, personagem, agora = Date.now()) {
           const chegada = casaAndavelMaisProxima(andarDaGrade(gradeDaCacada, outroAndar.z), outroAndar.x, outroAndar.y);
           trocarDeAndar(hunt, { ...chegada, z: outroAndar.z });
         } else if (grade.andavel.has(`${tentativa.x},${tentativa.y}`) && !ocupada) destino = tentativa;
+      } else if (hunt.reagrupar && distancia(hunt.pos, hunt.reagrupar.pos) > hunt.reagrupar.perto) {
+        // Party: o líder chamou para perto de alguém (`party.mjs` → `reagruparDe`): anda até lá pela mesma busca, sem teleporte.
+        destino = passoAteAliado(grade, hunt, hunt.reagrupar.pos, hunt.reagrupar.perto, 'reagrupar');
+        if (destino) {
+          const dx = Math.sign(destino.x - hunt.pos.x);
+          const dy = Math.sign(destino.y - hunt.pos.y);
+          hunt.pos.dir = dy < 0 ? 0 : dy > 0 ? 2 : dx > 0 ? 1 : 3;
+        }
       } else if (hunt.guia && distancia(hunt.pos, hunt.guia.pos) > hunt.guia.coleira) {
-        // Party: longe demais de quem segue ("Seguir ... a N sqm") — volta para perto.
-        const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-        destino = proximoPassoAte(grade, hunt.pos, hunt.guia.pos, (c) => casasDeBicho.has(`${c.x},${c.y}`), casasDeBicho);
+        // Party: longe demais de quem segue ("Seguir ... a N sqm") — volta para perto. Dentro da distância não anda (a faixa vai de 0 a N).
+        destino = passoAteAliado(grade, hunt, hunt.guia.pos, hunt.guia.coleira, 'guia');
         if (destino) {
           const dx = Math.sign(destino.x - hunt.pos.x);
           const dy = Math.sign(destino.y - hunt.pos.y);

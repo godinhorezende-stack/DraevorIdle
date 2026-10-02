@@ -35,7 +35,14 @@ import * as Promocao from './promocao.mjs';
 import * as Amigos from './amigos.mjs';
 
 const CONVITE_MS = 60_000;
-const COLEIRAS = [1, 2, 3, 5, 7, 9, 12];
+const COLEIRAS = [1, 2, 3, 5, 7, 8, 9, 12];
+const COLEIRA_MAXIMA = 12;
+/** Quanto tempo um chamado de reagrupamento vale, e a que distância se considera que o membro chegou. */
+const REAGRUPAR_MS = 60_000;
+const REAGRUPAR_PERTO = 2;
+/** Um membro INDEPENDENTE parado (sem andar nem ter alvo) por este tempo sai da partilha: seguir ou ficar parado não rende exp (`ativo`). */
+const PARADO_MS = 60_000;
+const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 const LONGE = 30;
 const BONUS_POR_VOCACOES = [1, 1.2, 1.35, 1.7, 2];
 /*
@@ -50,7 +57,7 @@ export const DIFERENCA_DE_LEVEL = 10;
 let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
 export const ligar = (mapa) => void (vivas = mapa);
 
-const parties = new Map(); // id -> { id, lider, membros:[nome], convites:Map(nome->expira), frente, coleiras:Map, seguir:Map }
+const parties = new Map(); // id -> { id, lider, membros:[nome], convites:Map(nome->expira), frente, coleiras:Map, seguir:Map, modo:Map(nome->'seguir'|'independente'), reagrupar:{alvo,ate,cancelou:Set,chegou:Set}|null }
 const partyDe = new Map(); // nome -> id
 const convitesDeCaca = new Map(); // convidado -> { de, expira }
 const pedidos = new Map(); // anfitrião -> { de, expira }
@@ -171,7 +178,7 @@ export function comandoDoGrupo(s, m) {
 }
 
 function criar(lider) {
-  const p = { id: proximoId++, lider, membros: [lider], convites: new Map(), frente: null, coleiras: new Map(), seguir: new Map() };
+  const p = { id: proximoId++, lider, membros: [lider], convites: new Map(), frente: null, coleiras: new Map(), seguir: new Map(), modo: new Map(), reagrupar: null };
   parties.set(p.id, p);
   partyDe.set(lider, p.id);
   return p;
@@ -207,6 +214,17 @@ function tirar(p, nome, motivo, { saindoDoJogo = false } = {}) {
   p.membros = p.membros.filter((n) => n !== nome);
   partyDe.delete(nome);
   if (p.frente === nome) p.frente = null;
+  // Quem seguia este membro deixa de segui-lo (o follow não anda para uma posição antiga) e é avisado, para escolher outro.
+  for (const [seguidor, alvo] of [...p.seguir]) {
+    if (seguidor === nome) p.seguir.delete(seguidor);
+    else if (alvo === nome) {
+      p.seguir.delete(seguidor);
+      avisar(sessaoDe(seguidor), `${nome} saiu da party: você deixou de segui-lo. Escolha outro em "Andar atrás de" (por enquanto você segue quem vai na frente).`);
+    }
+  }
+  p.coleiras.delete(nome);
+  p.modo.delete(nome);
+  if (p.reagrupar?.alvo === nome) p.reagrupar = null;
   for (const n of p.membros) avisar(sessaoDe(n), `${nome} ${motivo}.`);
   if (p.lider === nome) p.lider = p.membros[0] ?? null;
   if (!saindoDoJogo) mandarJa(s);
@@ -385,15 +403,51 @@ export function comandoDaCaca(s, m) {
     case 'seguirQuem': {
       if (!p) return { ok: false, erro: 'Você não está numa party.' };
       const alvo = p.membros.find((n) => n.toLowerCase() === String(m.name ?? '').toLowerCase());
-      if (alvo) p.seguir.set(eu, alvo);
-      else p.seguir.delete(eu);
+      if (alvo === eu) return { ok: false, erro: 'Você não pode seguir a si mesmo.' };
+      // Sem ciclo: A→B→C→A deixaria os três parados. Percorre a fila de quem o alvo segue; se voltar a mim, recusa (a regra vale AGORA, na escolha).
+      if (alvo) {
+        const visto = new Set([eu]);
+        for (let n = alvo; n; n = p.seguir.get(n)) {
+          if (visto.has(n)) return { ok: false, erro: `Seguir ${alvo} fecharia um círculo (${[...visto, n].join(' → ')}): escolha outra pessoa.` };
+          visto.add(n);
+        }
+        p.seguir.set(eu, alvo);
+        p.modo.set(eu, 'seguir');
+      } else p.seguir.delete(eu);
       atualizar(p);
       return { ok: true };
     }
     case 'coleira': {
       if (!p) return { ok: false, erro: 'Você não está numa party.' };
       const v = Number(m.valor);
-      p.coleiras.set(eu, COLEIRAS.includes(v) ? v : 5);
+      // Qualquer inteiro de 1 a 12 sqm (Chebyshev, como o resto do jogo); fora disso é recusado, não ajustado em silêncio.
+      if (!Number.isInteger(v) || v < 1 || v > COLEIRA_MAXIMA) return { ok: false, erro: `A distância de seguir vai de 1 a ${COLEIRA_MAXIMA} sqm.` };
+      p.coleiras.set(eu, v);
+      atualizar(p);
+      return { ok: true };
+    }
+    case 'modo': {
+      if (!p) return { ok: false, erro: 'Você não está numa party.' };
+      if (m.valor !== 'seguir' && m.valor !== 'independente') return { ok: false, erro: 'Modo de movimento inválido.' };
+      p.modo.set(eu, m.valor);
+      atualizar(p);
+      return { ok: true, notice: m.valor === 'independente' ? 'Exploração independente: você não segue ninguém e continua dividindo a exp da party.' : 'Voltou a seguir.' };
+    }
+    case 'reagrupar': {
+      if (!p || p.lider !== eu) return { ok: false, erro: 'Só o líder reagrupa a party.' };
+      const ponto = p.membros.find((n) => n.toLowerCase() === String(m.name ?? eu).toLowerCase()) ?? eu;
+      const quem = sessaoDe(ponto);
+      const minhaSala = s.estado?.hunt ? Cacadas.salaDe(s.estado.hunt) : null;
+      if (!minhaSala || !quem?.estado?.hunt || Cacadas.salaDe(quem.estado.hunt) !== minhaSala) return { ok: false, erro: `${ponto} precisa estar na mesma caçada que você.` };
+      p.reagrupar = { alvo: ponto, ate: Date.now() + REAGRUPAR_MS, cancelou: new Set(), chegou: new Set() };
+      for (const o of naMesmaSala(s)) if (o !== quem && minhaParty(o) === p) avisar(o, `${eu} chamou a party para perto de ${ponto}. Você pode cancelar pelo seu painel.`);
+      atualizar(p);
+      return { ok: true };
+    }
+    case 'cancelarReagrupar': {
+      if (!p?.reagrupar) return { ok: true };
+      if (p.lider === eu) p.reagrupar = null;
+      else p.reagrupar.cancelou.add(eu);
       atualizar(p);
       return { ok: true };
     }
@@ -417,17 +471,40 @@ function faixa(sessoes) {
   return { min: Math.max(1, Math.max(...niveis) - DIFERENCA_DE_LEVEL), max: Math.min(...niveis) + DIFERENCA_DE_LEVEL };
 }
 
+/** O membro está jogando de fato? Independente e parado (sem andar nem alvo) por `PARADO_MS` não está; quem segue conta sempre. */
+function ativo(o) {
+  const p = minhaParty(o);
+  if (p?.modo.get(nomeDe(o)) !== 'independente') return true;
+  const em = o.estado?.hunt?.atividadeEm;
+  return em == null || Date.now() - em <= PARADO_MS;
+}
+
+/** Chamado a cada tique da sessão: anda ou tem alvo = atividade (o relógio de `ativo`). Não vai para o banco. */
+export function registrarAtividade(s) {
+  const h = s.estado?.hunt;
+  if (!h) return;
+  const antes = h.posAnterior;
+  const mexeu = !antes || antes.x !== h.pos.x || antes.y !== h.pos.y || antes.z !== h.z;
+  Object.defineProperty(h, 'posAnterior', { value: { x: h.pos.x, y: h.pos.y, z: h.z }, enumerable: false, writable: true, configurable: true });
+  if (mexeu || h.alvo != null || h.atividadeEm == null) Object.defineProperty(h, 'atividadeEm', { value: Date.now(), enumerable: false, writable: true, configurable: true });
+}
+
 /** A partilha agora: `{ativa, motivo, bonus, vocacoes, faixa, membros:[estado]}`. */
 export function partilha(s) {
-  const juntos = naMesmaSala(s).filter((o) => minhaParty(o) && minhaParty(o) === minhaParty(s));
+  // Quem está INDEPENDENTE e parado há `PARADO_MS` (sem andar nem alvo) não entra na partilha: ninguém ganha exp só por estar na sala.
+  const juntos = naMesmaSala(s).filter((o) => minhaParty(o) && minhaParty(o) === minhaParty(s) && (o === s || ativo(o)));
   const f = juntos.length ? faixa(juntos) : null;
   const base = { membros: juntos.map((o) => ({ estado: o.estado, nome: nomeDe(o) })), faixa: f, vocacoes: new Set(juntos.map((o) => o.estado.vocation)).size };
   if (juntos.length < 2) return { ...base, ativa: false, motivo: 'sozinho', bonus: 1 };
   // Alguém subiu de level na caçada e passou da diferença: a partilha desliga até ele voltar a caber.
   const niveis = juntos.map((o) => o.estado.level ?? 1);
   if (Math.max(...niveis) - Math.min(...niveis) > DIFERENCA_DE_LEVEL) return { ...base, ativa: false, motivo: 'level', bonus: 1 };
+  // Exploração INDEPENDENTE (decisão do dono, 02/10): quem escolheu explorar sozinho continua na partilha mesmo longe (a fase é da party
+  // inteira). A distância só vale entre quem SEGUE — um seguidor preso longe do grupo não rende exp parado.
+  const p = minhaParty(s);
+  const independente = (o) => p?.modo.get(nomeDe(o)) === 'independente';
   const eu = s.estado.hunt.pos;
-  if (juntos.some((o) => Math.max(Math.abs(o.estado.hunt.pos.x - eu.x), Math.abs(o.estado.hunt.pos.y - eu.y)) > LONGE)) {
+  if (!independente(s) && juntos.some((o) => !independente(o) && cheb(o.estado.hunt.pos, eu) > LONGE)) {
     return { ...base, ativa: false, motivo: 'longe', bonus: 1 };
   }
   return { ...base, ativa: true, motivo: null, bonus: BONUS_POR_VOCACOES[Math.min(4, base.vocacoes)] };
@@ -437,6 +514,8 @@ export function partilha(s) {
 export function guia(s) {
   const p = minhaParty(s);
   if (!p) return null;
+  // Exploração independente: não segue ninguém (nem a ponta).
+  if (p.modo.get(nomeDe(s)) === 'independente') return null;
   const juntos = naMesmaSala(s).filter((o) => p.membros.includes(nomeDe(o)));
   if (juntos.length < 2) return null;
   const nomes = juntos.map(nomeDe);
@@ -454,6 +533,31 @@ export function guia(s) {
   }
   const quem = sessaoDe(alvo && nomes.includes(alvo) ? alvo : ponta);
   return quem?.estado?.hunt ? { pos: quem.estado.hunt.pos, coleira: p.coleiras.get(nomeDe(s)) ?? 5 } : null;
+}
+
+/**
+ * O reagrupamento que vale para `s` agora: `{ pos, perto }` (a posição VIVA de quem é o ponto de encontro) ou null. Some quando o chamado
+ * venceu (`REAGRUPAR_MS`), o líder ou o próprio membro cancelou, ele já chegou (a `REAGRUPAR_PERTO` casas) ou o ponto saiu da sala. Quem
+ * anda é o passo de sempre da caçada (mesma BFS, sem teleporte); o combate e as magias seguem como estavam.
+ */
+export function reagruparDe(s) {
+  const p = minhaParty(s);
+  const r = p?.reagrupar;
+  if (!r) return null;
+  if (Date.now() > r.ate) {
+    p.reagrupar = null;
+    return null;
+  }
+  const eu = nomeDe(s);
+  if (eu === r.alvo || r.cancelou.has(eu) || r.chegou.has(eu)) return null;
+  const ponto = sessaoDe(r.alvo);
+  const h = s.estado?.hunt;
+  if (!h || !ponto?.estado?.hunt || Cacadas.salaDe(ponto.estado.hunt) !== Cacadas.salaDe(h) || (ponto.estado.hunt.z ?? 0) !== (h.z ?? 0)) return null;
+  if (cheb(h.pos, ponto.estado.hunt.pos) <= REAGRUPAR_PERTO) {
+    r.chegou.add(eu);
+    return null;
+  }
+  return { pos: ponto.estado.hunt.pos, perto: REAGRUPAR_PERTO };
 }
 
 const olhar = (e) => ({ type: e.outfit?.type ?? 128, head: e.outfit?.head ?? 78, body: e.outfit?.body ?? 88, legs: e.outfit?.legs ?? 58, feet: e.outfit?.feet ?? 76, mount: e.outfit?.mount ?? 0, addons: e.outfit?.addons ?? 0 });
@@ -494,6 +598,8 @@ export function extrasDoRetrato(s) {
       seguirQuem: p.seguir.get(nomeDe(s)) ?? null,
       coleira: p.coleiras.get(nomeDe(s)) ?? 5,
       coleiras: COLEIRAS,
+      modo: p.modo.get(nomeDe(s)) ?? 'seguir',
+      reagrupar: p.reagrupar && Date.now() <= p.reagrupar.ate ? { alvo: p.reagrupar.alvo, resta: Math.max(0, p.reagrupar.ate - Date.now()) } : null,
       membros: part.membros.map((m) => {
         const o = sessaoDe(m.nome);
         const mostrar = o?.estado?.settings?.verAcoesDaParty !== false;
@@ -501,6 +607,9 @@ export function extrasDoRetrato(s) {
           name: m.nome,
           coleira: p.coleiras.get(m.nome) ?? 5,
           estado: 'ok',
+          modo: p.modo.get(m.nome) ?? 'seguir',
+          seguindo: p.seguir.get(m.nome) ?? null,
+          emCombate: !!o?.estado?.hunt?.alvo,
           acoes: mostrar ? (o?.estado?.actions ?? []).filter((a) => a?.id).slice(0, 8).map((a) => ({ id: a.id, ...(o.estado.hunt?.cooldowns?.[a.id] ?? {}) })) : null,
         };
       }),
@@ -540,6 +649,11 @@ export function camposDoPersonagem(s) {
         eu: nome === eu,
         lider: nome === p.lider,
         online: !!o,
+        // O estado de movimento (follow/independente), quem ele segue, a distância e se está em combate — a tabela da party mostra.
+        modo: p.modo.get(nome) ?? 'seguir',
+        seguindo: p.seguir.get(nome) ?? null,
+        coleira: p.coleiras.get(nome) ?? 5,
+        emCombate: !!e?.hunt?.alvo,
         vocation: e?.vocation ?? 'none',
         // O nome depois da promoção ("Royal Paladin"), para o card do membro.
         vocationName: e ? Promocao.nomeDaClasse(e) : null,
