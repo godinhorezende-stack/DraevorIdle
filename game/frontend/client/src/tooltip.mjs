@@ -2745,22 +2745,14 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
   if (meta.container) add(`Guarda ${meta.container} itens`, 'plain');
   /*
-   * ---- Carga e duração: quanto RESTA, quando dá para saber ----
-   *
-   * Uma peça que se gasta e anuncia sempre o total de fábrica é pior que uma
-   * que não anuncia nada — ela afirma vinte cargas num anel que tem duas. O
-   * número de verdade só existe para a peça VESTIDA (é ela que o servidor
-   * acompanha), e é por isso que a linha muda de forma conforme o que se sabe.
+   * ---- Duração: quanto RESTA, quando dá para saber ----
+   * (Cargas NÃO aparecem no balão: a peça não gasta cargas ao aparar golpes — dizer "5 cargas" era anunciar uma coisa que não acontece.)
    */
   /* Vem do personagem: e o servidor quem acompanha o que resta. Ver desgaste.mjs. */
   const desgastado = slot ? getPersonagem()?.desgaste?.[slot] : null;
-  if (desgastado?.tipo === 'carga') {
-    add(`${desgastado.resta} de ${desgastado.total} cargas`, 'plain');
-  } else if (desgastado?.tipo === 'tempo') {
+  if (desgastado?.tipo === 'tempo') {
     add(`${tempoCurto(desgastado.resta)} de uso restantes`, 'plain');
-  } else if (meta.charges) {
-    add(`${meta.charges} cargas — gasta uma a cada golpe que ela apara`, 'plain');
-  } else if (meta.duration) {
+  } else if (meta.duration && !meta.charges) {
     add(`${tempoCurto(meta.duration)} de uso — o tempo só corre com ela vestida`, 'plain');
   }
   /*

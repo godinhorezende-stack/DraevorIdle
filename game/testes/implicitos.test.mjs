@@ -77,3 +77,10 @@ test('o balão do item e a comparação não têm mais o bloco "Implícitos" nem
   const campos = JSON.parse(readFileSync(new URL('../gamedata/itens/campos.json', import.meta.url), 'utf8'));
   for (const c of ['critChance', 'critDamage', 'lifeLeech', 'manaLeech', 'regen.hp', 'regen.mana', 'protection.*', 'skillBonus.*']) assert.equal(campos.item[c], undefined, `${c} saiu da comparação de itens`);
 });
+
+test('o balão do item não anuncia cargas (a peça não gasta cargas ao aparar golpes)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const fonte = readFileSync(new URL('../frontend/client/src/tooltip.mjs', import.meta.url), 'utf8');
+  assert.ok(!fonte.includes('gasta uma a cada golpe'), 'a linha de cargas saiu');
+  assert.ok(!/de \$\{desgastado\.total\} cargas/.test(fonte), 'nem a de "N de M cargas"');
+});
