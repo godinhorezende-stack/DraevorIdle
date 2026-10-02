@@ -23,6 +23,8 @@
 //   não o `ataqueDoMonstro` genérico, que dava 25 mil num boss de 50 mil de vida.
 import * as Formulas from './combate/formulas.mjs';
 import * as Controle from './combate/controle.mjs';
+import * as AtributosDoMob from './mobs/atributos.mjs';
+import * as Dot from './combate/dot.mjs';
 import { readFileSync } from 'node:fs';
 import * as Arvore from './arvore.mjs';
 import * as Areas from '../engine/areas.mjs';
@@ -195,7 +197,18 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // A magia é cortada pela resistência do elemento (em %); a antiga armadura
   // mágica virou o Energy Shield (absorve abaixo, antes do magic shield e da vida).
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
-  const bruto = sortear(a.min, a.max) * Reforcos.forcaDoBicho(bicho, agora) * (1 - prot / 100) * fatorDoBloqueio;
+  // O CRÍTICO do mob (só quem tem — `mobs/atributos.json`): rola UMA vez e vale para a magia toda, todos os tipos de dano.
+  const critDoMob = AtributosDoMob.rolarCritico(bicho, a);
+  const forcaDaMagia = Reforcos.forcaDoBicho(bicho, agora) * fatorDoBloqueio * critDoMob.fator;
+  // `extras` da magia: dano de OUTROS tipos no mesmo lançamento, cada um com a proteção do SEU elemento.
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(null, a).reduce((n, x) => n + sortear(x.min, x.max) * forcaDaMagia * (1 - Math.min(100, ficha.protection?.[x.elemento] ?? 0) / 100), 0);
+  const bruto = sortear(a.min, a.max) * forcaDaMagia * (1 - prot / 100) + doutrosTipos;
+  // Os EFEITOS da magia (`efeitos` do ataque): dano contínuo no jogador pelo motor `combate/dot.mjs`.
+  for (const ef of AtributosDoMob.efeitosDoGolpe(null, a)) {
+    if (Math.random() * 100 >= (ef.chance ?? 100)) continue;
+    const posto = Dot.aplicarNoJogador(hunt, { tipo: ef.tipo, total: (sortear(a.min, a.max) * ef.pctDoGolpe) / 100, duracaoMs: ef.duracaoMs ?? null, origem: { fonte: 'mob', mob: bicho.name, uid: bicho.uid, key: bicho.key } }, hunt.clock ?? agora);
+    if (posto) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: posto, de: bicho.name });
+  }
   // A magia ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador (`combate/controle.mjs`).
   if (a.min > 0 || a.max > 0) {
     const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0);

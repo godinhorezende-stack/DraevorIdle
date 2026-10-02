@@ -24,6 +24,7 @@ import { criarMonstro, BESTIARY } from '../hunt/monstros.mjs';
 import { gradeDaHunt, huntOuMapaCustom } from '../hunt/terreno.mjs';
 import { andarDaGrade } from '../hunt/andares.mjs';
 import { daSala } from '../hunt/instancia.mjs';
+import * as Dot from '../combate/dot.mjs';
 
 // A geometria das áreas é a compartilhada (`engine/areas.mjs`): a distância em casas e o quadrado do raio.
 const distancia = Areas.distancia;
@@ -135,7 +136,9 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
     if (Math.random() * 100 >= (mec.chance ?? 100)) continue;
     const pulsos = Math.max(1, Math.round((mec.duracaoMs ?? 4000) / 1000));
     const total = (danoDoGolpe * (mec.danoPctDoGolpe ?? 30)) / 100;
-    (hunt.danoNoTempo ??= []).push({ uid: m.uid, de: m.name, key: m.key, elemento: mec.elemento ?? 'earth', porPulso: total / pulsos, restantes: pulsos, proximo: agora + 1000 });
+    // O dano contínuo no JOGADOR passa pelo motor de efeitos (`combate/dot.mjs`): acumulação por tipo, relógio da caçada, resistência no pulso.
+    const tipo = Dot.tipoDoElemento(mec.elemento ?? 'earth');
+    if (tipo) Dot.aplicarNoJogador(hunt, { tipo, total, duracaoMs: pulsos * 1000, origem: { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key } }, agora);
   }
 }
 
@@ -158,15 +161,7 @@ export function tique(estado, hunt, personagem, eventos) {
       }
     }
   }
-  // O dano ao longo do tempo (o debuff do golpe), um pulso por segundo.
-  const lista = hunt.danoNoTempo ?? [];
-  for (const d of lista) {
-    while (d.restantes > 0 && agora >= d.proximo && estado.hp > 0) {
-      ferirJogador(estado, hunt, personagem, { uid: d.uid, name: d.de, key: d.key }, d.porPulso, d.elemento, eventos, 'Veneno');
-      d.restantes -= 1;
-      d.proximo += 1000;
-    }
-  }
-  if (lista.length) hunt.danoNoTempo = lista.filter((d) => d.restantes > 0);
+  // O dano ao longo do tempo no JOGADOR (o debuff do golpe: veneno, queimadura, sangramento...), um pulso por segundo, pelo motor `combate/dot.mjs`.
+  Dot.tiqueDoJogador(hunt, agora, (origem, valor, elemento, nome) => ferirJogador(estado, hunt, personagem, { uid: origem?.uid, name: origem?.mob, key: origem?.key }, valor, elemento, eventos, nome), () => estado.hp > 0);
 }
 

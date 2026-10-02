@@ -49,7 +49,7 @@ export function errosDoSpawn(s) {
 
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
-  const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, resist: {} };
+  const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, critChance: 0, critMultiplicador: 0, resist: {} };
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
     for (const k of Object.keys(t)) if (k !== 'resist' && Number.isFinite(s[k])) t[k] += s[k];
@@ -88,6 +88,8 @@ export function aplicar(m, { raridade = 'normal', modificadores = [] } = {}) {
   if (st.armaduraPct) m.armaduraPct = st.armaduraPct;
   if (st.bloqueio) m.bloqueio = st.bloqueio;
   if (st.reducaoDeDano) m.reducaoDeDano = st.reducaoDeDano;
+  if (st.critChance) m.critChance = st.critChance;
+  if (st.critMultiplicador) m.critMultiplicador = st.critMultiplicador;
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;
   if (r.boss) m.chefe = true;

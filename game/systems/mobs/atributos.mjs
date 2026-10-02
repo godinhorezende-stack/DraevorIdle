@@ -103,3 +103,41 @@ export function atributosFinais(m, level) {
   guardados.set(m, { chave, valor });
   return valor;
 }
+
+// ---------------------------------------------------------------- o ATAQUE do mob: velocidade, crítico, dano de vários tipos, efeitos
+
+const A = CONFIG.ataque;
+
+/** A velocidade de ataque final do mob (1 = normal): a do modificador × os buffs, no intervalo configurado. */
+export const velocidadeDeAtaque = (m, buffPct = 0) => Math.max(A.velocidadeMinima, Math.min(A.velocidadeMaxima, (m?.velocidadeDeAtaque ?? 1) * (1 + (buffPct || 0) / 100)));
+
+/** O intervalo (ms) até o próximo golpe do mob: `base` (o do boss ou o padrão) × a lentidão ÷ a velocidade, nunca abaixo do mínimo. */
+export function intervaloDoGolpe(m, { base = A.intervaloBaseMs, lentidao = 1, buffPct = 0 } = {}) {
+  return Math.max(A.intervaloMinimoMs, Math.round((base * lentidao) / velocidadeDeAtaque(m, buffPct)));
+}
+
+/**
+ * O crítico do mob neste ataque: `{ chance (0–1), fator }`. A chance soma a da espécie (ou do ataque) e a do modificador; sem nenhuma, 0
+ * (nenhum mob tem crítico por padrão). O fator vem do ataque, da espécie ou do modificador, ou do padrão.
+ */
+export function critico(m, ataque = null) {
+  const e = especieDe(m) ?? {};
+  const chance = limitar((ataque?.critChance ?? e.critChance ?? 0) + (m?.critChance ?? 0), CONFIG.critico.chanceMaxima) / 100;
+  const pct = ataque?.critMultiplicador ?? e.critMultiplicador ?? (m?.critMultiplicador ? CONFIG.critico.multiplicadorPadraoPct + m.critMultiplicador : CONFIG.critico.multiplicadorPadraoPct);
+  return { chance, fator: Math.max(1, pct / 100) };
+}
+
+/** Rola o crítico UMA vez: `{ critico, fator }` (fator 1 quando não critica). */
+export function rolarCritico(m, ataque = null, rng = Math.random) {
+  const c = critico(m, ataque);
+  return c.chance > 0 && rng() < c.chance ? { critico: true, fator: c.fator } : { critico: false, fator: 1 };
+}
+
+/** O dano de OUTROS tipos que o golpe corpo a corpo da espécie traz (`danoExtra`), normalizado: `[{ elemento, min, max }]`. */
+export function danoExtraDoGolpe(m, ataque = null) {
+  const lista = [...(especieDe(m)?.danoExtra ?? []), ...(ataque?.extras ?? [])];
+  return lista.filter((x) => x?.elemento && Math.max(x.min ?? 0, x.max ?? 0) > 0).map((x) => ({ elemento: x.elemento, min: Math.max(0, Math.min(x.min ?? 0, x.max ?? 0)), max: Math.max(0, x.min ?? 0, x.max ?? 0) }));
+}
+
+/** Os efeitos de dano contínuo que o golpe do mob põe no jogador: `[{ tipo, chance, pctDoGolpe, duracaoMs? }]` (espécie + ataque). */
+export const efeitosDoGolpe = (m, ataque = null) => [...(especieDe(m)?.efeitos ?? []), ...(ataque?.efeitos ?? [])].filter((x) => x?.tipo && x.pctDoGolpe > 0);
