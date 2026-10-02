@@ -152,3 +152,28 @@ test('na tela da caçada: o encontro na casa, o mais perto ao alcance e a assina
   assert.notEqual(assinaturaDosEncontros(lista), assinaturaDosEncontros([{ ...lista[0], estado: 'ativo' }, ...lista.slice(1)]), 'mudar de estado muda a assinatura (o mapa redesenha)');
   assert.equal(assinaturaDosEncontros(undefined), '');
 });
+
+test('WORLD etapa 5: o servidor anuncia só o opcional FIXO e não secreto (boss/miniboss/evento); aleatório, baú e segredo ficam por descobrir', () => {
+  const [F1] = Campanha.FASES;
+  const todos = [
+    { id: 'm-fixo', nome: 'Capitão Orc', tipo: 'miniboss', obrigatorio: false, probabilidade: 100, bossNome: 'Capitão Orc', categoria: 'miniboss' },
+    { id: 'm-sorte', nome: 'Raro', tipo: 'miniboss', obrigatorio: false, probabilidade: 20, bossNome: 'Raro', categoria: 'miniboss' },
+    { id: 'secreto', nome: 'Rei Oculto', tipo: 'boss-secreto', obrigatorio: false, probabilidade: 100 },
+    { id: 'bau', nome: 'Baú', tipo: 'bau-comum', obrigatorio: false, probabilidade: 100 },
+    { id: 'obr', nome: 'Chefe', tipo: 'boss', obrigatorio: true, probabilidade: 100, bossNome: 'Chefe', categoria: 'principal' },
+    { id: 'fenda', nome: 'Fenda', tipo: 'fenda', obrigatorio: false, probabilidade: 100 },
+  ];
+  const restaurar = Conteudo._definirParaTestes({ [F1.huntId]: { mundo: { bossPrincipal: null, obrigatorios: [], todos } } });
+  try {
+    const est = personagemDeTeste({ vocacao: 'knight', level: 50 });
+    const m = Campanha.paraCliente(est).mundo[F1.huntId];
+    assert.deepEqual(m.conhecidos.map((c) => c.nome).sort(), ['Capitão Orc', 'Fenda']);
+    assert.ok(!JSON.stringify(m).includes('Rei Oculto'), 'o segredo não vai para a tela antes de ser encontrado');
+    assert.ok(!JSON.stringify(m).includes('Raro'), 'o aleatório também não');
+    // depois de encontrar o segredo, ele aparece em "descobertos" (como antes)
+    est.encontros = { concluidos: { [F1.huntId]: { secreto: 1 } } };
+    assert.ok(Campanha.paraCliente(est).mundo[F1.huntId].descobertos.some((d) => d.nome === 'Rei Oculto'));
+  } finally {
+    restaurar();
+  }
+});

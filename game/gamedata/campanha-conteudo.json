@@ -11,12 +11,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Troll Cave",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Troll Cave",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -31,12 +35,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Amazon Camp",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Amazon Camp",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -51,19 +59,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Dark Pyramid",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Dark Pyramid",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Matriarca de Dark Pyramid",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-dark-pyramid",
-            "bossNome": "Matriarca de Dark Pyramid"
+            "bossNome": "Matriarca de Dark Pyramid",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -78,12 +93,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Port Hope Corym Dungeons",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Port Hope Corym Dungeons",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -98,17 +117,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Mistrock Cyclops",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Mistrock Cyclops",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Mistrock Cyclops",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -123,14 +148,19 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Hive Surface",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Arauto de Hive Surface",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-hive-surface",
-            "bossNome": "Arauto de Hive Surface"
+            "bossNome": "Arauto de Hive Surface",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -145,12 +175,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Mother of Scarabs Lair",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Mother of Scarabs Lair",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -165,24 +199,33 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Cults Carlin",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Cults Carlin",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Cults Carlin",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "segredo-1",
             "nome": "A Sombra de Cults Carlin",
             "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
             "bossId": "segredo-cults-carlin",
-            "bossNome": "A Sombra de Cults Carlin"
+            "bossNome": "A Sombra de Cults Carlin",
+            "categoria": "secreto"
           }
         ]
       }
@@ -197,19 +240,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Drefia Wyrm Caves",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Drefia Wyrm Caves",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Guardião de Drefia Wyrm Caves",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-drefia-wyrm-caves",
-            "bossNome": "Guardião de Drefia Wyrm Caves"
+            "bossNome": "Guardião de Drefia Wyrm Caves",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -224,7 +274,9 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Edron Were Mobs",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -239,17 +291,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Old Fortress - Hero Cave",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Old Fortress - Hero Cave",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Old Fortress - Hero Cave",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -264,19 +322,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Putrid Mummies",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Putrid Mummies",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Capataz de Putrid Mummies",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-putrid-mummies",
-            "bossNome": "Capataz de Putrid Mummies"
+            "bossNome": "Capataz de Putrid Mummies",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -291,12 +356,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Black Serpent Dungeon",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Black Serpent Dungeon",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -311,12 +380,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Ghastly Dragon Lair",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Ghastly Dragon Lair",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -331,19 +404,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Feyrist Nightmare",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Feyrist Nightmare",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Sentinela de Feyrist Nightmare",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-feyrist-nightmare",
-            "bossNome": "Sentinela de Feyrist Nightmare"
+            "bossNome": "Sentinela de Feyrist Nightmare",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -358,12 +438,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Medusa Cave",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Medusa Cave",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -378,17 +462,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Oramond Hydras",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Oramond Hydras",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Oramond Hydras",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -403,14 +493,19 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Werehyaenna North",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Carrasco de Werehyaenna North",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-werehyaenna-north",
-            "bossNome": "Carrasco de Werehyaenna North"
+            "bossNome": "Carrasco de Werehyaenna North",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -425,12 +520,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Haunted Temple",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Haunted Temple",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -445,24 +544,33 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Glooth Bandits East",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Glooth Bandits East",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Glooth Bandits East",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "segredo-1",
             "nome": "A Sombra de Glooth Bandits East",
             "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
             "bossId": "segredo-glooth-bandits-east",
-            "bossNome": "A Sombra de Glooth Bandits East"
+            "bossNome": "A Sombra de Glooth Bandits East",
+            "categoria": "secreto"
           }
         ]
       }
@@ -477,19 +585,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Zaoan Draken Walls",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Zaoan Draken Walls",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Vigia de Zaoan Draken Walls",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-zaoan-draken-walls",
-            "bossNome": "Vigia de Zaoan Draken Walls"
+            "bossNome": "Vigia de Zaoan Draken Walls",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -504,7 +619,9 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Deeper Banuta -8",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -519,17 +636,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Golems Catacombs",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Golems Catacombs",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Golems Catacombs",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -544,19 +667,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Medusa Tower",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Medusa Tower",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Senhor de Medusa Tower",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-medusa-tower",
-            "bossNome": "Senhor de Medusa Tower"
+            "bossNome": "Senhor de Medusa Tower",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -571,12 +701,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Wild Life Raid - Oramond",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Wild Life Raid - Oramond",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -591,12 +725,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Winter Dream Court",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Winter Dream Court",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -611,19 +749,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Burster Spectres",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Burster Spectres",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Matriarca de Burster Spectres",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-burster-spectres",
-            "bossNome": "Matriarca de Burster Spectres"
+            "bossNome": "Matriarca de Burster Spectres",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -638,12 +783,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de ROSHAMUUL CAVE",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de ROSHAMUUL CAVE",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -658,17 +807,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Werelions -1",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Werelions -1",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Werelions -1",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -683,14 +838,19 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Abandoned Sewers",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Arauto de Abandoned Sewers",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-abandoned-sewers",
-            "bossNome": "Arauto de Abandoned Sewers"
+            "bossNome": "Arauto de Abandoned Sewers",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -705,12 +865,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Asura Mirror",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Asura Mirror",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -725,24 +889,33 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Deathlings",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Deathlings",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Deathlings",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "segredo-1",
             "nome": "A Sombra de Deathlings",
             "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
             "bossId": "segredo-deathlings",
-            "bossNome": "A Sombra de Deathlings"
+            "bossNome": "A Sombra de Deathlings",
+            "categoria": "secreto"
           }
         ]
       }
@@ -757,19 +930,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Falcons",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Falcons",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Guardião de Falcons",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-falcons",
-            "bossNome": "Guardião de Falcons"
+            "bossNome": "Guardião de Falcons",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -784,7 +964,9 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Netherworld",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -799,17 +981,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de POI DT Seal",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de POI DT Seal",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de POI DT Seal",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -824,19 +1012,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Spike -8",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Spike -8",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Capataz de Spike -8",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-spike-8",
-            "bossNome": "Capataz de Spike -8"
+            "bossNome": "Capataz de Spike -8",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -851,12 +1046,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Summer Court",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Summer Court",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -871,12 +1070,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Prison -2",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Prison -2",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -891,19 +1094,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Sphinx Issavi",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Sphinx Issavi",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Sentinela de Sphinx Issavi",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-sphinx-issavi",
-            "bossNome": "Sentinela de Sphinx Issavi"
+            "bossNome": "Sentinela de Sphinx Issavi",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -918,12 +1128,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Cobra Bastion -1",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Cobra Bastion -1",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -938,17 +1152,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de DT Seal INQ",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de DT Seal INQ",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de DT Seal INQ",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -963,14 +1183,19 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Feru Way",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Carrasco de Feru Way",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-feru-way",
-            "bossNome": "Carrasco de Feru Way"
+            "bossNome": "Carrasco de Feru Way",
+            "categoria": "miniboss"
           }
         ]
       }
@@ -985,12 +1210,16 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Flimsy Lost Souls Venore",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Flimsy Lost Souls Venore",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -1005,24 +1234,33 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Warzone 2",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Warzone 2",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Warzone 2",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "segredo-1",
             "nome": "A Sombra de Warzone 2",
             "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
             "bossId": "segredo-warzone-2",
-            "bossNome": "A Sombra de Warzone 2"
+            "bossNome": "A Sombra de Warzone 2",
+            "categoria": "secreto"
           }
         ]
       }
@@ -1037,7 +1275,9 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Infernatil Seal",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -1052,17 +1292,23 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Jaded Roots",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "altar-1",
             "nome": "Altar de Jaded Roots",
-            "tipo": "altar"
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-raro-1",
             "nome": "Cofre vigiado de Jaded Roots",
-            "tipo": "bau-raro"
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
           }
         ]
       }
@@ -1077,19 +1323,26 @@
           {
             "id": "bau-1",
             "nome": "Baú esquecido de Walking Pillar",
-            "tipo": "bau-comum"
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "bau-maldito-1",
             "nome": "Baú maldito de Walking Pillar",
-            "tipo": "bau-amaldicoado"
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
           },
           {
             "id": "miniboss-1",
             "nome": "Senhor de Walking Pillar",
             "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
             "bossId": "mini-walking-pillar",
-            "bossNome": "Senhor de Walking Pillar"
+            "bossNome": "Senhor de Walking Pillar",
+            "categoria": "miniboss"
           }
         ]
       }

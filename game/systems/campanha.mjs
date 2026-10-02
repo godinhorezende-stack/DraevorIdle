@@ -221,10 +221,14 @@ export function venceuBoss(estado, dif, ato) {
  * principal e os encontros OBRIGATÓRIOS (a condição de conclusão) — e, dos opcionais e secretos, SÓ os que este
  * personagem já ENCONTROU (concluiu): nenhum segredo, baú ou boss oculto é revelado antes da hora.
  */
+/** Os tipos de encontro opcional que o mapa pode anunciar de antemão (fixos): bosses, minibosses e eventos de combate. Baús, altares e segredos não. */
+const TIPOS_CONHECIDOS = new Set(['boss', 'miniboss', 'sobrevivencia', 'fenda', 'invasor']);
+
 function mundoDaFase(estado, f) {
   const c = conteudoDaFase(f.huntId);
   const m = c.mundo ?? {};
   const concluidos = estado.encontros?.concluidos?.[f.huntId] ?? {};
+  const conhecidos = (m.todos ?? []).filter((e) => !e.obrigatorio && e.probabilidade === 100 && TIPOS_CONHECIDOS.has(e.tipo)).map((e) => ({ nome: e.bossNome ?? e.nome, tipo: e.tipo, ...(e.categoria ? { categoria: e.categoria } : {}), ...(concluidos[e.id] ? { feito: true } : {}) }));
   const descobertos = (m.todos ?? []).filter((e) => concluidos[e.id]).map((e) => ({ nome: e.nome, tipo: e.tipo, vezes: concluidos[e.id] }));
   return {
     ...(c.descricao ? { descricao: c.descricao } : {}),
@@ -236,6 +240,8 @@ function mundoDaFase(estado, f) {
     ...(c.requisitos?.levelMin ? { levelRecomendado: c.requisitos.levelMin } : {}),
     ...(c.requisitos?.exige?.length ? { exige: c.requisitos.exige.map((id) => ({ huntId: id, nome: faseDe(id)?.nome ?? id })) } : {}),
     ...(m.bossPrincipal ? { bossPrincipal: m.bossPrincipal.nome } : {}),
+    // O que o jogador JÁ SABE que existe: conteúdo opcional e FIXO (100%) de boss/miniboss/evento. Aleatório e secreto só se descobre ao encontrar.
+    ...(conhecidos.length ? { conhecidos } : {}),
     ...(m.obrigatorios?.length ? { obrigatorios: m.obrigatorios.map((e) => ({ nome: e.nome, tipo: e.tipo })) } : {}),
     ...(descobertos.length ? { descobertos } : {}),
   };

@@ -74,6 +74,7 @@ export function atosDaCampanha(escolhida, metas = {}) {
       nome: meta.nome || `Ato ${ato}`,
       parte: meta.parte ?? null,
       tema: meta.tema ?? null,
+      bossMapa: meta.bossMapa && Number.isFinite(meta.bossMapa.x) && Number.isFinite(meta.bossMapa.y) ? meta.bossMapa : null,
       descricao: meta.descricao ?? null,
       fases,
       boss,
@@ -100,7 +101,11 @@ export function tipoDaFase(m = {}) {
   if (m.tipo && TIPOS_DE_NO[m.tipo] && m.tipo !== 'boss') return m.tipo;
   if (m.bossPrincipal) return 'boss-fase';
   const obr = m.obrigatorios ?? [];
+  const conhecidos = m.conhecidos ?? [];
   if (obr.some((o) => o.tipo === 'miniboss')) return 'miniboss';
+  if (conhecidos.some((o) => o.tipo === 'boss')) return 'boss-opcional';
+  if (conhecidos.some((o) => o.tipo === 'miniboss')) return 'miniboss';
+  if (conhecidos.some((o) => ['sobrevivencia', 'fenda', 'invasor'].includes(o.tipo))) return 'evento';
   if (obr.length) return 'quest';
   return 'comum';
 }
@@ -121,7 +126,7 @@ export const aleatorio = semente;
  * `mundo[huntId].mapa`). O caminho padrão é uma serpentina em até 3 linhas com um balanço fixo por Ato (determinístico). Devolve
  * `{ pontos: [{x,y,manual}], boss: {x,y,manual}|null }`.
  */
-export function posicoesDoAto(fases, temBoss, mundo = {}, ato = 1) {
+export function posicoesDoAto(fases, temBoss, mundo = {}, ato = 1, bossManual = null) {
   const total = fases.length + (temBoss ? 1 : 0);
   const linhas = Math.max(1, Math.min(3, Math.ceil(total / 5)));
   const porLinha = Math.ceil(total / linhas);
@@ -144,7 +149,7 @@ export function posicoesDoAto(fases, temBoss, mundo = {}, ato = 1) {
     return m && Number.isFinite(m.x) && Number.isFinite(m.y) ? { x: m.x, y: m.y, manual: true } : { ...g, manual: false };
   };
   const pontos = fases.map((f, i) => dono(f.huntId, gerados[i]));
-  return { pontos, boss: temBoss ? { ...gerados[fases.length], manual: false } : null };
+  return { pontos, boss: temBoss ? (bossManual ? { x: bossManual.x, y: bossManual.y, manual: true } : { ...gerados[fases.length], manual: false }) : null };
 }
 
 /**
@@ -180,41 +185,4 @@ export function tracadoDaEstrada(a, b, tipo = 'cadeia') {
   const cx = mx + (-dy / comp) * comp * lado;
   const cy = my + (dx / comp) * comp * lado;
   return `M${a.x} ${a.y} Q${Math.round(cx)} ${Math.round(cy)} ${b.x} ${b.y}`;
-}
-
-// ---------------------------------------------------------------- validação dos dados do mapa (o editor usa)
-
-/**
- * Confere o que o editor gravou sobre o mapa: posições dentro do espaço, tipos conhecidos, conexões para fases do mesmo Ato, sem ligar uma fase a si
- * mesma e sem nó sobre outro. `fases`: `[{huntId, ato}]`; `conteudo`: `{[huntId]: {mapa, tipo, conexoes}}`. Devolve `[{nivel, onde, mensagem}]`.
- */
-export function validarMapa(fases, conteudo = {}) {
-  const erros = [];
-  const porId = new Map(fases.map((f) => [f.huntId, f]));
-  const usados = [];
-  for (const f of fases) {
-    const c = conteudo[f.huntId] ?? {};
-    const onde = f.huntId;
-    if (c.mapa != null) {
-      if (!(Number.isFinite(c.mapa.x) && Number.isFinite(c.mapa.y))) erros.push({ nivel: 'erro', onde, mensagem: 'a posição no mapa precisa de x e y numéricos.' });
-      else if (c.mapa.x < 20 || c.mapa.x > LARGURA - 20 || c.mapa.y < 20 || c.mapa.y > ALTURA - 20) erros.push({ nivel: 'erro', onde, mensagem: `a posição no mapa precisa ficar dentro de ${LARGURA}×${ALTURA}.` });
-      else {
-        const perto = usados.find((u) => Math.hypot(u.x - c.mapa.x, u.y - c.mapa.y) < RAIO_DA_FASE * 1.6 && u.ato === f.ato);
-        if (perto) erros.push({ nivel: 'aviso', onde, mensagem: `o nó está sobre o de "${perto.id}".` });
-        usados.push({ id: f.huntId, ato: f.ato, x: c.mapa.x, y: c.mapa.y });
-      }
-    }
-    if (c.tipo != null && !(TIPOS_DE_NO[c.tipo] && c.tipo !== 'boss')) erros.push({ nivel: 'erro', onde, mensagem: `tipo de nó "${c.tipo}" desconhecido.` });
-    for (const alvo of c.conexoes ?? []) {
-      if (alvo === f.huntId) erros.push({ nivel: 'erro', onde, mensagem: 'a fase não pode se ligar a si mesma.' });
-      else if (!porId.has(alvo)) erros.push({ nivel: 'erro', onde, mensagem: `a conexão "${alvo}" não é uma fase da campanha.` });
-      else if (porId.get(alvo).ato !== f.ato) erros.push({ nivel: 'aviso', onde, mensagem: `a conexão "${alvo}" é de outro Ato (o mapa só desenha ligações dentro do Ato).` });
-    }
-    for (const e of c.requisitos?.exige ?? []) {
-      if (e === f.huntId) erros.push({ nivel: 'erro', onde, mensagem: 'a fase não pode exigir a si mesma (nunca abriria).' });
-      else if (!porId.has(e)) erros.push({ nivel: 'erro', onde, mensagem: `o requisito "${e}" não é uma fase da campanha.` });
-      else if (porId.get(e).ato > f.ato || (porId.get(e).ato === f.ato && fases.indexOf(porId.get(e)) > fases.indexOf(f))) erros.push({ nivel: 'erro', onde, mensagem: `o requisito "${e}" vem depois desta fase: ela nunca abriria.` });
-    }
-  }
-  return erros;
 }

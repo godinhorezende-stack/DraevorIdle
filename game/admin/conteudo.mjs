@@ -32,6 +32,7 @@ import { gradeDaHunt, huntOuMapaCustom } from '../systems/hunt/terreno.mjs';
 import { andarDaGrade } from '../systems/hunt/andares.mjs';
 import { casasAlcancaveis } from '../systems/hunt/instancia.mjs';
 import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
+import { validarMapa, validarAtos, TIPOS_DE_FASE, TEMAS_DE_MAPA, LARGURA as MAPA_LARGURA, ALTURA as MAPA_ALTURA } from '../systems/campanha-mapa.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 /** Onde ler e gravar (os testes apontam para uma pasta temporária; o editor usa o `gamedata` do jogo). */
@@ -61,8 +62,27 @@ export function indiceDoMundo(encontros) {
   return {
     bossPrincipal: principal ? { bossId: principal.bossId, nome: bossNome(principal) } : null,
     obrigatorios: ativos.filter((e) => e.obrigatorio).map((e) => ({ id: e.id, nome: e.nome, tipo: e.tipo })),
-    todos: ativos.map((e) => ({ id: e.id, nome: e.nome, tipo: e.tipo, ...(e.bossId ? { bossId: e.bossId, bossNome: bossNome(e) } : {}) })),
+    // `probabilidade`/`obrigatorio`/`categoria`: o servidor decide o que já é CONHECIDO do jogador (fixo e não secreto) e o que só se descobre ao encontrar.
+    todos: ativos.map((e) => ({ id: e.id, nome: e.nome, tipo: e.tipo, obrigatorio: !!e.obrigatorio, probabilidade: e.probabilidade, ...(e.bossId ? { bossId: e.bossId, bossNome: bossNome(e), categoria: Catalogo.bossUnico(e.bossId)?.categoria ?? null } : {}) })),
   };
+}
+
+/** Refaz o índice do WORLD de TODAS as fases a partir dos encontros gravados (depois de mudar o formato do índice). Devolve quantas mudaram. */
+export function reindexarMundo() {
+  let mudou = 0;
+  const arq = lerArquivoDeFases();
+  for (const f of Campanha.FASES) {
+    const indice = indiceDoMundo(lerEncontros(f.huntId));
+    const atual = arq.fases[f.huntId] ?? {};
+    if (JSON.stringify(atual.mundo ?? null) === JSON.stringify(indice.todos.length ? indice : null)) continue;
+    if (indice.todos.length) atual.mundo = indice;
+    else delete atual.mundo;
+    if (Object.keys(atual).length) arq.fases[f.huntId] = atual;
+    else delete arq.fases[f.huntId];
+    mudou++;
+  }
+  if (mudou) gravarArquivoDeFases(arq);
+  return mudou;
 }
 
 function gravarIndice(huntId, encontros) {
@@ -97,6 +117,8 @@ export function validarMeta(huntId, meta) {
     if (!faseDe(c)) erros.push(`conexoes: "${c}" não é uma fase da campanha.`);
     if (c === huntId) erros.push('conexoes: uma fase não conecta a si mesma.');
   }
+  const posicionadas = validarMapa([{ huntId, ato: faseDe(huntId).ato }], { [huntId]: meta }).filter((e) => e.nivel === 'erro' && !/conexão|requisito|si mesma/.test(e.mensagem));
+  for (const e of posicionadas) erros.push(e.mensagem);
   const r = meta.requisitos ?? {};
   if (r.levelMin != null && !(Number.isInteger(r.levelMin) && r.levelMin >= 1)) erros.push('requisitos.levelMin (level recomendado) inválido.');
   // `exige`: fases que precisam estar completas para ENTRAR (o servidor impõe). Só de trás: assim nunca fecha um ciclo
@@ -116,6 +138,8 @@ export function salvarMeta(huntId, bruto) {
     ...(bruto.ambiente ? { ambiente: String(bruto.ambiente) } : {}),
     ...(bruto.conexoes?.length ? { conexoes: bruto.conexoes.map(String) } : {}),
     ...(bruto.requisitos && Object.keys(bruto.requisitos).length ? { requisitos: bruto.requisitos } : {}),
+    ...(bruto.mapa ? { mapa: { x: Number(bruto.mapa.x), y: Number(bruto.mapa.y), ...(bruto.mapa.icone ? { icone: String(bruto.mapa.icone) } : {}) } } : {}),
+    ...(bruto.tipo ? { tipo: String(bruto.tipo) } : {}),
   };
   const erros = validarMeta(huntId, meta);
   if (erros.length) return { ok: false, erros };
@@ -127,6 +151,65 @@ export function salvarMeta(huntId, bruto) {
   else delete atual.fases[huntId];
   gravarArquivoDeFases(atual);
   return { ok: true };
+}
+
+/** Tudo que a aba "Mapa do mundo" precisa: cada fase com o que o editor grava (mapa, tipo, conexões, requisitos) e o que a tela deduz sozinha. */
+export function lerMapa() {
+  const brutos = lerArquivoDeFases().fases ?? {};
+  return {
+    atos: lerAtos(),
+    fases: Campanha.FASES.map((f, i) => {
+      const { mundo, ...meta } = brutos[f.huntId] ?? {};
+      return { huntId: f.huntId, nome: f.nome, ato: f.ato, indice: i, nivel: f.nivel, pular: !!f.pular, mapa: meta.mapa ?? null, tipo: meta.tipo ?? null, conexoes: meta.conexoes ?? [], exige: meta.requisitos?.exige ?? [], deduzido: { bossPrincipal: mundo?.bossPrincipal?.nome ?? null, obrigatorios: (mundo?.obrigatorios ?? []).map((o) => ({ nome: o.nome, tipo: o.tipo })) } };
+    }),
+  };
+}
+
+/** Os metadados de Ato gravados (`atos[n]`: nome, parte, tema, descricao). */
+export const lerAtos = () => lerArquivoDeFases().atos ?? {};
+
+/**
+ * Grava o MAPA de uma vez (a aba "Mapa do mundo" do editor): `{ atos?, fases?: {huntId: {mapa, tipo, conexoes}} }`. Cada fase troca só
+ * os campos do mapa (descrição, requisitos e o índice do WORLD ficam como estão); `mapa: null` volta ao caminho automático. Valida tudo
+ * junto — nada é gravado se algo é recusado.
+ */
+export function salvarMapa(bruto, { gravar = true } = {}) {
+  const arq = lerArquivoDeFases();
+  const erros = [];
+  const proximo = {};
+  for (const [huntId, v] of Object.entries(bruto?.fases ?? {})) {
+    if (!faseDe(huntId)) {
+      erros.push(`Fase desconhecida: ${huntId}.`);
+      continue;
+    }
+    const atual = { ...(arq.fases[huntId] ?? {}) };
+    for (const campo of ['mapa', 'tipo', 'conexoes']) {
+      if (!(campo in (v ?? {}))) continue;
+      const valor = v[campo];
+      if (valor == null || (Array.isArray(valor) && !valor.length) || valor === '' || valor === 'comum') delete atual[campo];
+      else atual[campo] = campo === 'mapa' ? { x: Number(valor.x), y: Number(valor.y), ...(valor.icone ? { icone: String(valor.icone) } : {}) } : valor;
+    }
+    const { mundo, ...meta } = atual;
+    erros.push(...validarMeta(huntId, meta).map((m) => `${huntId}: ${m}`));
+    proximo[huntId] = atual;
+  }
+  const atos = { ...(arq.atos ?? {}) };
+  for (const [n, a] of Object.entries(bruto?.atos ?? {})) {
+    const limpo = Object.fromEntries(Object.entries(a ?? {}).filter(([, x]) => x != null && x !== ''));
+    if (Object.keys(limpo).length) atos[n] = limpo;
+    else delete atos[n];
+  }
+  erros.push(...validarAtos(atos, [...new Set(Campanha.FASES.map((f) => f.ato))]));
+  const fasesFinais = { ...arq.fases, ...proximo };
+  for (const [id, v] of Object.entries(fasesFinais)) if (!Object.keys(v).length) delete fasesFinais[id];
+  const doMapa = validarMapa(Campanha.FASES.map((f) => ({ huntId: f.huntId, ato: f.ato })), fasesFinais).filter((e) => e.nivel === 'erro');
+  erros.push(...doMapa.map((e) => `${e.onde}: ${e.mensagem}`));
+  if (erros.length) return { ok: false, erros: [...new Set(erros)] };
+  arq.fases = fasesFinais;
+  if (Object.keys(atos).length) arq.atos = atos;
+  else delete arq.atos;
+  if (gravar) gravarArquivoDeFases(arq);
+  return { ok: true, avisos: validarMapa(Campanha.FASES.map((f) => ({ huntId: f.huntId, ato: f.ato })), fasesFinais).filter((e) => e.nivel === 'aviso') };
 }
 
 // ------------------------------------------------------------------ validação de encontros no mapa
@@ -324,6 +407,10 @@ export function auditar() {
     for (const m of v.erros) problemas.push({ nivel: 'erro', onde: f.huntId, mensagem: m });
     for (const m of v.avisos) problemas.push({ nivel: 'aviso', onde: f.huntId, mensagem: m });
   }
+  // O mapa da tela WORLD: posições, tipos, conexões, requisitos e Atos.
+  const conteudoFases = lerArquivoDeFases().fases ?? {};
+  for (const e of validarMapa(Campanha.FASES.map((f) => ({ huntId: f.huntId, ato: f.ato })), conteudoFases)) problemas.push({ nivel: e.nivel, onde: e.onde, mensagem: `mapa: ${e.mensagem}` });
+  for (const m of validarAtos(lerAtos(), [...new Set(Campanha.FASES.map((f) => f.ato))])) problemas.push({ nivel: 'erro', onde: 'atos', mensagem: m });
   for (const b of listarBosses()) {
     if (!b.usos.length) problemas.push({ nivel: 'aviso', onde: `boss ${b.id}`, mensagem: 'cadastrado mas não usado por nenhum encontro.' });
     if (!b.recompensas.loot.length && !b.recompensas.primeiraVitoria) problemas.push({ nivel: 'aviso', onde: `boss ${b.id}`, mensagem: 'sem recompensa própria (usa o loot da criatura-base).' });
@@ -354,6 +441,10 @@ export function opcoes() {
     bestiario: Mapas.bestiarioParaEditor(),
     bosses: Catalogo.todos().map((b) => ({ id: b.id, nome: b.nome, categoria: b.categoria })),
     fases: Campanha.FASES.map((f) => ({ huntId: f.huntId, nome: f.nome, ato: f.ato })),
+    tiposDeNo: TIPOS_DE_FASE,
+    temasDeMapa: TEMAS_DE_MAPA,
+    espacoDoMapa: { largura: MAPA_LARGURA, altura: MAPA_ALTURA },
+    atos: lerAtos(),
   };
 }
 

@@ -1,7 +1,9 @@
 // A tela WORLD (v2): as contas do mapa sem DOM — Atos dinâmicos, posições (manual e gerada), conexões e seus estados, tipos de nó e a validação do que o editor grava.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LARGURA, ALTURA, atosDaCampanha, partesDaCampanha, faseDaFronteira, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, validarMapa, TIPOS_DE_NO } from '../frontend/client/src/world-dados.mjs';
+import { LARGURA, ALTURA, atosDaCampanha, partesDaCampanha, faseDaFronteira, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, TIPOS_DE_NO, RAIO_DA_FASE } from '../frontend/client/src/world-dados.mjs';
+import * as Mapa from '../systems/campanha-mapa.mjs';
+import { validarMapa, validarAtos } from '../systems/campanha-mapa.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as Conteudo from '../systems/campanha-conteudo.mjs';
 import { personagemDeTeste } from './apoio.mjs';
@@ -85,7 +87,7 @@ test('tipo do nó: o do editor, ou deduzido do conteúdo (boss da fase, miniboss
 
 test('validação do mapa: posição fora do espaço, tipo desconhecido, conexão inválida, requisito impossível', () => {
   const fases = [{ huntId: 'a', ato: 1 }, { huntId: 'b', ato: 1 }, { huntId: 'c', ato: 2 }];
-  assert.deepEqual(validarMapa(fases, { a: { mapa: { x: 100, y: 100 }, tipo: 'quest', conexoes: ['b'] } }), []);
+  assert.deepEqual(validarMapa(fases, { a: { mapa: { x: 100, y: 100 }, tipo: 'quest', conexoes: ['b'] } }).filter((e) => e.nivel === 'erro'), []);
   const msgs = (conteudo) => validarMapa(fases, conteudo).map((e) => e.mensagem).join(' | ');
   assert.match(msgs({ a: { mapa: { x: 5000, y: 10 } } }), /dentro de/);
   assert.match(msgs({ a: { mapa: { x: 'a', y: 10 } } }), /numéricos/);
@@ -112,4 +114,40 @@ test('servidor: a campanha entrega os metadados dos Atos e a posição/tipo de c
   } finally {
     restaurar();
   }
+});
+
+test('as constantes do cliente e do servidor não divergem (espaço do mapa, tipos de nó)', () => {
+  assert.equal(Mapa.LARGURA, LARGURA);
+  assert.equal(Mapa.ALTURA, ALTURA);
+  assert.equal(Mapa.RAIO_DA_FASE, RAIO_DA_FASE);
+  assert.deepEqual([...Mapa.TIPOS_DE_FASE].sort(), Object.keys(TIPOS_DE_NO).filter((t) => t !== 'boss').sort());
+});
+
+test('validação dos Atos: nome/parte/descrição curtos, tema conhecido, só Atos que existem', () => {
+  assert.deepEqual(validarAtos({ 1: { nome: 'A', parte: 'Parte I', tema: 'neve', descricao: 'x' } }, [1, 2]), []);
+  const m = (a) => validarAtos(a, [1, 2]).join(' | ');
+  assert.match(m({ 9: { nome: 'x' } }), /não existe/);
+  assert.match(m({ 1: { nome: 'x'.repeat(41) } }), /nome de até 40/);
+  assert.match(m({ 1: { tema: 'lava' } }), /tema "lava"/);
+  assert.match(m({ 1: { parte: 5 } }), /parte/);
+});
+
+test('validação: avisa quando só parte dos nós de um Ato tem posição', () => {
+  const fases = [{ huntId: 'a', ato: 1 }, { huntId: 'b', ato: 1 }];
+  assert.match(validarMapa(fases, { a: { mapa: { x: 100, y: 100 } } }).map((e) => e.mensagem).join('|'), /só 1 de 2 nós/);
+});
+
+test('tipo do nó com conteúdo opcional conhecido (fixo): boss opcional, miniboss, evento — e o segredo nunca aparece de antemão', () => {
+  assert.equal(tipoDaFase({ conhecidos: [{ nome: 'x', tipo: 'boss' }] }), 'boss-opcional');
+  assert.equal(tipoDaFase({ conhecidos: [{ nome: 'x', tipo: 'miniboss' }] }), 'miniboss');
+  assert.equal(tipoDaFase({ conhecidos: [{ nome: 'x', tipo: 'fenda' }] }), 'evento');
+  assert.equal(tipoDaFase({ bossPrincipal: 'B', conhecidos: [{ nome: 'x', tipo: 'miniboss' }] }), 'boss-fase', 'o boss principal manda');
+  assert.equal(tipoDaFase({ tipo: 'cidade', bossPrincipal: 'B' }), 'cidade', 'o editor manda mais ainda');
+});
+
+test('boss do Ato com posição à mão (bossMapa) vence o automático', () => {
+  const fases = Array.from({ length: 3 }, (_, i) => fase(`f${i}`, 1));
+  assert.deepEqual(posicoesDoAto(fases, true, {}, 1, { x: 800, y: 300 }).boss, { x: 800, y: 300, manual: true });
+  assert.equal(posicoesDoAto(fases, true, {}, 1).boss.manual, false);
+  assert.deepEqual(atosDaCampanha(ESC, { 1: { bossMapa: { x: 1, y: 2 } } })[0].bossMapa, { x: 1, y: 2 });
 });

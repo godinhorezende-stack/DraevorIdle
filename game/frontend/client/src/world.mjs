@@ -156,7 +156,7 @@ function criarCamera(viewport, svgEl, cam, vista, aoMudar) {
 
 // ---------------------------------------------------------------- o nó
 
-function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, escolhido, boss }) {
+export function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, escolhido, boss, achados = 0 }) {
   const r = boss ? RAIO_DO_BOSS : RAIO_DA_FASE;
   const g = svg('g', { class: `w-no ${estado} t-${tipo}${atual ? ' atual' : ''}${novo ? ' novo' : ''}${escolhido ? ' escolhido' : ''}`, transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${nome}. ${TIPOS_DE_NO[tipo]}. ${TEXTO_DO_ESTADO[estado]}${atual ? '. Fase atual' : ''}` });
   g.append(svg('circle', { class: 'w-halo', r: r + 9 }));
@@ -175,6 +175,8 @@ function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, escolhido,
   g.append(conteudo);
   // selo do tipo no canto quando o nó mostra o estado (concluído/bloqueado) e o tipo é especial
   if (estado !== 'aberta' && ICONE_DO_TIPO[tipo] && !boss) g.append(svg('g', { class: 'w-selo', transform: `translate(${r - 4} ${-r + 5}) scale(.55)` }, svg('circle', { r: 11 }), ICONES[ICONE_DO_TIPO[tipo]]()));
+  // algo que o jogador JÁ ENCONTROU nesta fase (baú, altar, segredo): uma estrela no canto — nunca o que ele ainda não achou
+  if (achados) g.append(svg('g', { class: 'w-selo achado', transform: `translate(${-r + 4} ${-r + 5}) scale(.6)` }, svg('circle', { r: 11 }), ICONES.estrela(1.2)));
   const texto = nome.length > 20 ? `${nome.slice(0, 19)}…` : nome;
   g.append(svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 17 }, texto));
   return g;
@@ -309,7 +311,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     cam.replaceChildren();
     nosPorId.clear();
     const a = atoAtual;
-    const pos = posicoesDoAto(a.fases, !!a.boss, mundo, a.ato);
+    const pos = posicoesDoAto(a.fases, !!a.boss, mundo, a.ato, a.bossMapa);
     const pontos = [...pos.pontos, ...(pos.boss ? [pos.boss] : [])];
     cam.append(fundoDoAto(a.ato, nomeDoTema(a.ato, a.tema), pontos));
     const ids = [...a.fases.map((f) => f.huntId), ...(a.boss ? [`boss:${a.ato}`] : [])];
@@ -324,7 +326,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const nos = svg('g', { class: 'w2-nos' });
     a.fases.forEach((f, i) => {
       const m = mundo[f.huntId] ?? {};
-      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: E.sel?.huntId === f.huntId });
+      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: E.sel?.huntId === f.huntId, achados: m.descobertos?.length ?? 0 });
       nosPorId.set(f.huntId, g);
       nos.append(g);
     });
@@ -456,13 +458,14 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       }
       const conclusao = el('ul', 'w2-lista');
       conclusao.append(el('li', null, 'Eliminar os monstros da fase'));
-      for (const o of m.obrigatorios ?? []) conclusao.append(el('li', null, o.nome));
+      for (const o of m.obrigatorios ?? []) conclusao.append(el('li', null, `${o.nome}${o.tipo === 'boss' || o.tipo === 'miniboss' ? ' (obrigatório)' : ''}`));
       col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Para concluir'), conclusao));
       const exigencias = [];
       const anterior = escolhida.fases[posicao - 1];
       if (anterior && anterior.ato === f.ato && !anterior.pular) exigencias.push([anterior.nome, anterior.completa]);
       for (const e of m.exige ?? []) exigencias.push([e.nome, escolhida.fases.find((x) => x.huntId === e.huntId)?.completa ?? false]);
       if (exigencias.length) col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Requisitos'), el('ul', 'w2-lista', ...exigencias.map(([nome, ok]) => el('li', ok ? 'feito' : 'falta', `${ok ? '✓' : '○'} Completar ${nome}`)))));
+      if (m.conhecidos?.length) col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Também nesta fase'), el('ul', 'w2-lista', ...m.conhecidos.map((o) => el('li', o.feito ? 'feito' : null, `${o.feito ? '✓ ' : ''}${o.nome} — ${{ boss: 'boss opcional', miniboss: 'miniboss opcional', sobrevivencia: 'desafio de ondas', fenda: 'fenda', invasor: 'invasão' }[o.tipo] ?? o.tipo}`)))));
       if (m.descobertos?.length) col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Encontrado aqui'), el('ul', 'w2-lista achados', ...m.descobertos.map((d) => el('li', null, `✦ ${d.nome}${d.vezes > 1 ? ` (×${d.vezes})` : ''}`)))));
       const entrar = botao('w2-entrar', st === 'travada' ? 'Em obras' : f.liberada ? 'Entrar' : 'Bloqueada');
       entrar.disabled = !f.liberada || !hunt || !!f.pular;

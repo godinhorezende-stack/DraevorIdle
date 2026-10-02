@@ -1,6 +1,10 @@
 // Editor de conteúdo (/editor/conteudo): fases, encontros e bosses. Ferramenta interna do dono, sem login — as rotas
 // de escrita ficam sob `/api/mapas/_conteudo/`, que o nginx de produção só abre por túnel SSH. NENHUMA regra mora
 // aqui: toda validação é do servidor (a mesma do jogo, mais "o ponto é andável no mapa?").
+import { svg, fundoDoAto, nomeDoTema } from './world-arte.mjs';
+import { LARGURA, ALTURA, TIPOS_DE_NO, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, atosDaCampanha } from './world-dados.mjs';
+import { desenharNo } from './world.mjs';
+
 const BASE = '/api/mapas/_conteudo/';
 const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, bosses: [], bossoId: null, boss: null, bossErros: [], sujo: false };
 
@@ -259,7 +263,7 @@ function cartaoDeEncontro(e, i) {
 
 // ------------------------------------------------------------------ abas
 
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fase e encontros'], ['bosses', 'Bosses']];
+const ABAS = [['geral', 'Visão geral'], ['fase', 'Fase e encontros'], ['mapa', 'Mapa do mundo'], ['bosses', 'Bosses']];
 function desenharAbas() {
   $('#abas').replaceChildren(...ABAS.map(([id, nome]) => el('button', { class: S.aba === id ? 'ativa' : '', onclick: () => irPara(id) }, nome)));
 }
@@ -272,6 +276,10 @@ async function irPara(aba, faseId = null) {
   msg('');
   if (aba === 'geral') await desenharGeral();
   if (aba === 'fase') await carregarFase(S.faseId ?? S.opcoes.fases[0].huntId);
+  if (aba === 'mapa') {
+    MW.dados = null;
+    await desenharMapaDoMundo();
+  }
   if (aba === 'bosses') await desenharBosses();
 }
 
@@ -483,3 +491,202 @@ window.addEventListener('beforeunload', (e) => {
 S.opcoes = await api('opcoes');
 desenharAbas();
 await desenharGeral();
+
+
+// ---- Mapa do mundo (a tela WORLD): posição dos nós, tipos, conexões, dados dos Atos e pré-visualização dos estados
+const copia = (x) => JSON.parse(JSON.stringify(x));
+const arredonda = (n) => Math.round(n / 5) * 5;
+const MW = { dados: null, ato: 1, sel: null, previa: 0, original: '', validacao: null, arrastando: null };
+
+const estadoDaPrevia = (indiceNoAto, total) => (indiceNoAto < MW.previa ? 'completa' : indiceNoAto === MW.previa ? 'aberta' : 'fechada');
+
+/** As fases do Ato no formato da tela (`completa`/`liberada` vêm da pré-visualização), para reaproveitar as mesmas contas do jogo. */
+function fasesDoAtoParaTela() {
+  const doAto = MW.dados.fases.filter((f) => f.ato === MW.ato);
+  return doAto.map((f, i) => ({ ...f, completa: i < MW.previa, liberada: i <= MW.previa }));
+}
+const mundoDoEditor = () => Object.fromEntries(MW.dados.fases.map((f) => [f.huntId, { mapa: f.mapa ?? undefined, conexoes: f.conexoes, tipo: f.tipo ?? undefined, bossPrincipal: f.deduzido.bossPrincipal, obrigatorios: f.deduzido.obrigatorios }]));
+
+async function desenharMapaDoMundo() {
+  if (!MW.dados) {
+    MW.dados = await api('mapa');
+    MW.original = JSON.stringify(corpoDoMapa());
+  }
+  const atos = [...new Set(MW.dados.fases.map((f) => f.ato))];
+  if (!atos.includes(MW.ato)) MW.ato = atos[0] ?? 1;
+  const meta = (MW.dados.atos[MW.ato] ??= {});
+  const doAto = MW.dados.fases.filter((f) => f.ato === MW.ato);
+  MW.sel ??= doAto[0]?.huntId ?? null;
+
+  const aoMudarAto = () => {
+    S.sujo = true;
+    validarMapaDoMundo();
+  };
+  const seletor = el('select', { onchange: (ev) => { MW.ato = Number(ev.target.value); MW.sel = null; MW.previa = 0; desenharMapaDoMundo(); } }, atos.map((a) => el('option', { value: a }, `Ato ${a}${MW.dados.atos[a]?.nome ? ` — ${MW.dados.atos[a].nome}` : ''}`)));
+  seletor.value = MW.ato;
+  const previa = el('input', { type: 'range', min: 0, max: doAto.length, value: MW.previa, oninput: (ev) => { MW.previa = Number(ev.target.value); legendaPrevia.textContent = textoDaPrevia(); pintarMapa(); } });
+  const textoDaPrevia = () => (MW.previa === 0 ? 'nada concluído (só a 1ª fase aberta)' : MW.previa >= doAto.length ? 'tudo concluído (boss aberto)' : `${MW.previa} fase(s) concluída(s)`);
+  const legendaPrevia = el('span', { class: 'dica' }, textoDaPrevia());
+
+  const palco = el('div', { class: 'w2-palco', style: 'max-width:900px' });
+  const viewport = el('div', { class: 'w2-viewport', style: 'height:auto;aspect-ratio:1000/640;cursor:default;touch-action:none' });
+  const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid meet' });
+  const cam = svg('g', {});
+  mapaSvg.append(cam);
+  viewport.append(mapaSvg);
+  palco.append(viewport);
+
+  const lateral = el('div', { id: 'mw-lateral', class: 'linhas' });
+
+  function pintarMapa() {
+    const fases = fasesDoAtoParaTela();
+    const bossReal = { ato: MW.ato, liberado: MW.previa >= fases.length, vencido: false };
+    const mundo = mundoDoEditor();
+    const pos = posicoesDoAto(fases, true, mundo, MW.ato, meta.bossMapa ?? null);
+    const pontos = [...pos.pontos, pos.boss];
+    cam.replaceChildren(fundoDoAto(MW.ato, nomeDoTema(MW.ato, meta.tema), pontos));
+    const ids = [...fases.map((f) => f.huntId), `boss:${MW.ato}`];
+    const posDe = (id) => pontos[ids.indexOf(id)];
+    const estradas = svg('g', { class: 'w2-estradas' });
+    for (const c of conexoesDoAto(fases, bossReal, mundo)) {
+      const d = tracadoDaEstrada(posDe(c.de), posDe(c.para), c.tipo);
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${c.estado} ${c.tipo}` }));
+    }
+    cam.append(estradas);
+    const nos = svg('g', {});
+    fases.forEach((f, i) => {
+      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(mundo[f.huntId]), estado: f.completa ? 'completa' : f.liberada ? 'aberta' : 'fechada', numero: f.indice + 1, nome: f.nome, p: pos.pontos[i], escolhido: MW.sel === f.huntId });
+      // posição à mão: um aro tracejado menor no canto diz "esta foi posicionada"
+      if (f.mapa) g.append(svg('circle', { cx: -18, cy: -18, r: 4, fill: '#7fd3c0', stroke: '#0e0d10', 'stroke-width': 1 }));
+      nos.append(g);
+    });
+    nos.append(desenharNo({ id: `boss:${MW.ato}`, tipo: 'boss', estado: bossReal.liberado ? 'aberta' : 'fechada', numero: 0, nome: 'Boss do Ato', p: pos.boss, boss: true, escolhido: MW.sel === `boss:${MW.ato}` }));
+    cam.append(nos);
+  }
+
+  // arrastar um nó: a posição vira "à mão" (arredondada de 5 em 5)
+  const aoPonto = (ev) => {
+    const m = mapaSvg.getScreenCTM();
+    const p = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(m.inverse());
+    return { x: Math.max(30, Math.min(LARGURA - 30, arredonda(p.x))), y: Math.max(30, Math.min(ALTURA - 30, arredonda(p.y))) };
+  };
+  mapaSvg.addEventListener('pointerdown', (ev) => {
+    const no = ev.target.closest?.('.w-no');
+    if (!no) return;
+    const id = no.dataset.id;
+    MW.sel = id;
+    MW.arrastando = { id, moveu: false };
+    mapaSvg.setPointerCapture(ev.pointerId);
+    desenharLateral();
+    pintarMapa();
+  });
+  mapaSvg.addEventListener('pointermove', (ev) => {
+    const a = MW.arrastando;
+    if (!a) return;
+    a.moveu = true;
+    const p = aoPonto(ev);
+    if (a.id.startsWith('boss:')) meta.bossMapa = p;
+    else MW.dados.fases.find((f) => f.huntId === a.id).mapa = p;
+    pintarMapa();
+  });
+  mapaSvg.addEventListener('pointerup', () => {
+    if (MW.arrastando?.moveu) {
+      aoMudarAto();
+      desenharLateral();
+    }
+    MW.arrastando = null;
+  });
+
+  function desenharLateral() {
+    lateral.replaceChildren();
+    const sel = MW.sel;
+    if (!sel) return lateral.append(el('p', { class: 'dica' }, 'Clique num nó do mapa para editar.'));
+    if (sel.startsWith('boss:')) {
+      return lateral.append(el('b', {}, 'Boss do Ato'), el('p', { class: 'dica' }, meta.bossMapa ? `Posição à mão: ${meta.bossMapa.x}, ${meta.bossMapa.y}` : 'Posição automática (fim do caminho).'), el('button', { type: 'button', onclick: () => { delete meta.bossMapa; aoMudarAto(); pintarMapa(); desenharLateral(); } }, 'Voltar ao automático'));
+    }
+    const f = MW.dados.fases.find((x) => x.huntId === sel);
+    const posicao = f.mapa ?? { x: '', y: '' };
+    const tipoDeduzido = tipoDaFase({ bossPrincipal: f.deduzido.bossPrincipal, obrigatorios: f.deduzido.obrigatorios });
+    const tipos = el('select', { onchange: (ev) => { f.tipo = ev.target.value || null; aoMudarAto(); pintarMapa(); } }, el('option', { value: '' }, `automático (${TIPOS_DE_NO[tipoDeduzido]})`), (S.opcoes.tiposDeNo ?? []).filter((t) => t !== 'comum').map((t) => el('option', { value: t }, TIPOS_DE_NO[t] ?? t)));
+    tipos.value = f.tipo ?? '';
+    const coord = (eixo) => el('input', { type: 'number', step: 5, value: posicao[eixo], onchange: (ev) => { f.mapa = { ...(f.mapa ?? { x: 500, y: 320 }), [eixo]: Number(ev.target.value) }; aoMudarAto(); pintarMapa(); } });
+    const outras = MW.dados.fases.filter((x) => x.ato === MW.ato && x.huntId !== f.huntId);
+    lateral.append(
+      el('b', {}, f.nome),
+      el('div', { class: 'dica' }, f.exige.length ? `Exige: ${f.exige.join(', ')} (edite na aba Fase).` : 'Requisitos: só a cadeia do Ato (edite extras na aba Fase).'),
+      el('label', { class: 'campo' }, 'Tipo do nó', tipos),
+      el('div', { class: 'grade' }, el('label', { class: 'campo' }, 'x', coord('x')), el('label', { class: 'campo' }, 'y', coord('y'))),
+      el('button', { type: 'button', onclick: () => { f.mapa = null; aoMudarAto(); pintarMapa(); desenharLateral(); } }, 'Posição automática'),
+      el('details', {}, el('summary', {}, `Conexões extras (${f.conexoes.length})`), el('div', { class: 'linhas' }, outras.map((o) => {
+        const c = el('input', { type: 'checkbox' });
+        c.checked = f.conexoes.includes(o.huntId);
+        c.addEventListener('change', () => { f.conexoes = c.checked ? [...f.conexoes, o.huntId] : f.conexoes.filter((x) => x !== o.huntId); aoMudarAto(); pintarMapa(); });
+        return el('label', { class: 'marca' }, c, o.nome);
+      })))
+    );
+  }
+
+  const gerarPosicoes = () => {
+    const fases = fasesDoAtoParaTela();
+    const pos = posicoesDoAto(fases, true, {}, MW.ato);
+    fases.forEach((f, i) => { MW.dados.fases.find((x) => x.huntId === f.huntId).mapa = { x: pos.pontos[i].x, y: pos.pontos[i].y }; });
+    meta.bossMapa = { x: pos.boss.x, y: pos.boss.y };
+    aoMudarAto();
+    pintarMapa();
+    desenharLateral();
+  };
+  const limparPosicoes = () => {
+    for (const f of doAto) f.mapa = null;
+    delete meta.bossMapa;
+    aoMudarAto();
+    pintarMapa();
+    desenharLateral();
+  };
+
+  const form = el('div', { class: 'grade' },
+    el('label', { class: 'campo' }, 'Nome do Ato', ligar(el('input', { value: meta.nome ?? '' }), meta, 'nome', { opcional: true, aoMudar: aoMudarAto })),
+    el('label', { class: 'campo' }, 'Parte da campanha', ligar(el('input', { value: meta.parte ?? '', placeholder: 'Parte I' }), meta, 'parte', { opcional: true, aoMudar: aoMudarAto })),
+    (() => {
+      const t = el('select', {}, el('option', { value: '' }, '— padrão do Ato —'), (S.opcoes.temasDeMapa ?? []).map((x) => el('option', { value: x }, x)));
+      t.value = meta.tema ?? '';
+      return el('label', { class: 'campo' }, 'Tema do mapa', ligar(t, meta, 'tema', { opcional: true, aoMudar: () => { aoMudarAto(); pintarMapa(); } }));
+    })(),
+    el('label', { class: 'campo' }, 'Descrição do Ato', ligar(el('input', { value: meta.descricao ?? '' }), meta, 'descricao', { opcional: true, aoMudar: aoMudarAto }))
+  );
+
+  $('#raiz').replaceChildren(
+    el('div', { class: 'linha' }, el('label', { class: 'campo' }, 'Ato', seletor), el('label', { class: 'campo' }, 'Pré-visualizar estados', previa, legendaPrevia)),
+    form,
+    el('div', { class: 'linha' }, el('button', { type: 'button', onclick: gerarPosicoes }, 'Gerar posições do caminho automático'), el('button', { type: 'button', onclick: limparPosicoes }, 'Limpar posições do Ato'), el('button', { type: 'button', class: 'primario', id: 'salvarMapa', onclick: salvarMapaDoMundo }, 'Salvar mapa')),
+    el('div', { id: 'mw-validacao' }),
+    el('div', { class: 'duas', style: 'grid-template-columns:1fr 300px' }, palco, lateral),
+    el('p', { class: 'dica' }, 'Arraste os nós para posicioná-los (de 5 em 5). Sem posição à mão, a tela desenha o caminho sozinha. O ponto verde marca o nó posicionado à mão. As conexões extras só valem dentro do Ato.')
+  );
+  pintarMapa();
+  desenharLateral();
+  validarMapaDoMundo();
+}
+
+/** O que vai para o servidor: o mapa, o tipo e as conexões de cada fase + os dados dos Atos. */
+function corpoDoMapa() {
+  return { atos: MW.dados.atos, fases: Object.fromEntries(MW.dados.fases.map((f) => [f.huntId, { mapa: f.mapa, tipo: f.tipo, conexoes: f.conexoes }])) };
+}
+const validarMapaDoMundo = depois(async () => {
+  if (S.aba !== 'mapa' || !MW.dados) return;
+  const r = await api('mapa/validar', corpoDoMapa());
+  MW.validacao = r;
+  const caixa = $('#mw-validacao');
+  if (caixa) caixa.replaceChildren(el('ul', { class: 'problemas' }, (r.erros ?? []).map((m) => el('li', { class: 'erro' }, m)), (r.avisos ?? []).map((a) => el('li', { class: 'aviso' }, `${a.onde}: ${a.mensagem}`)), !(r.erros?.length || r.avisos?.length) ? el('li', { class: 'dica' }, 'Sem erros nem avisos.') : null));
+  const salvar = $('#salvarMapa');
+  if (salvar) salvar.disabled = !!r.erros?.length;
+});
+async function salvarMapaDoMundo() {
+  const r = await api('mapa', corpoDoMapa());
+  if (r.ok) {
+    S.sujo = false;
+    MW.dados = null;
+    msg('Mapa salvo. O jogo lê na próxima vez que a campanha for pedida.', 'ok');
+    await desenharMapaDoMundo();
+  } else msg((r.erros ?? ['Erro ao salvar'])[0], 'erro');
+}
+void atosDaCampanha;
