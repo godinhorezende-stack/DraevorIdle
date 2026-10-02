@@ -1,0 +1,79 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Dark Pyramid",
+      "x": 47,
+      "y": 34,
+      "z": 7,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3446,
+            "chance": 25
+          },
+          {
+            "id": 3410,
+            "chance": 25
+          },
+          {
+            "id": 3492,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 321
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Dark Pyramid",
+      "x": 7,
+      "y": 42,
+      "z": 7,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "phys_dmg",
+          "valor": 8
+        },
+        {
+          "afixo": "armour_pct",
+          "valor": 10
+        }
+      ],
+      "duracaoMs": 90000
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Matriarca de Dark Pyramid",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-dark-pyramid"
+    }
+  ]
+}

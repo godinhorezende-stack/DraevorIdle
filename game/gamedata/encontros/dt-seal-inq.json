@@ -1,0 +1,128 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de DT Seal INQ",
+      "x": 22,
+      "y": 32,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 12.25
+          },
+          {
+            "id": 3450,
+            "chance": 12.25
+          },
+          {
+            "id": 3147,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 8259
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de DT Seal INQ",
+      "x": 16,
+      "y": 34,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "crit_chance",
+          "valor": 3
+        },
+        {
+          "afixo": "dmg_reduction",
+          "valor": 3
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "dark-torturer",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de DT Seal INQ",
+      "x": 14,
+      "y": 17,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 12.25
+          },
+          {
+            "id": 3450,
+            "chance": 12.25
+          },
+          {
+            "id": 3147,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 16519
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "dark-torturer",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

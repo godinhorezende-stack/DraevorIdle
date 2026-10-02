@@ -136,7 +136,30 @@ export function soma(estado) {
     for (const a of peca.af) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
   }
   for (const [k, v] of Object.entries(Passivas.efeitos(estado).adds)) total[k] = (total[k] ?? 0) + v;
+  // + o altar ativado nesta caçada (temporário): mesma chave dos adds de item.
+  const altar = efeitosDeAltar(estado);
+  if (altar) for (const [k, v] of Object.entries(altar)) total[k] = (total[k] ?? 0) + v;
   return total;
+}
+
+/** O relógio da sala (o do anfitrião, se for convidado): é nele que contam os efeitos de altar. */
+export const relogioDaSala = (hunt) => (hunt?.anfitriao ?? hunt)?.clock ?? 0;
+
+/**
+ * Os efeitos TEMPORÁRIOS de altar (`estado.hunt.efeitosDeAltar`, ver `encontros/altares.mjs`) vigentes agora: a soma por
+ * afixo, limitada a 2× o teto do afixo numa peça (altares empilhados não passam disso). `null`: nenhum.
+ */
+export function efeitosDeAltar(estado) {
+  const h = estado?.hunt;
+  if (!h?.efeitosDeAltar?.length) return null;
+  const agora = relogioDaSala(h);
+  const total = {};
+  for (const e of h.efeitosDeAltar) if (e.ate > agora && FICHAS[e.afixo]) total[e.afixo] = (total[e.afixo] ?? 0) + e.valor;
+  for (const [id, v] of Object.entries(total)) {
+    const teto = FICHAS[id].max * 2;
+    total[id] = Math.max(-teto, Math.min(teto, v));
+  }
+  return Object.keys(total).length ? total : null;
 }
 
 /** O que vale agora de um afixo (0 se não tem). Cache por tique fica para depois. */

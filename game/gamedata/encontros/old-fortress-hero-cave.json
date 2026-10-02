@@ -1,0 +1,112 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Old Fortress - Hero Cave",
+      "x": 64,
+      "y": 92,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3447,
+            "chance": 25
+          },
+          {
+            "id": 3446,
+            "chance": 25
+          },
+          {
+            "id": 18929,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 1710
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Old Fortress - Hero Cave",
+      "x": 87,
+      "y": 83,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "phys_dmg",
+          "valor": 8
+        },
+        {
+          "afixo": "armour_pct",
+          "valor": 10
+        }
+      ],
+      "duracaoMs": 90000
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Old Fortress - Hero Cave",
+      "x": 71,
+      "y": 21,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3447,
+            "chance": 25
+          },
+          {
+            "id": 3446,
+            "chance": 25
+          },
+          {
+            "id": 18929,
+            "chance": 25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 3420
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "vile-grandmaster",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de POI DT Seal",
+      "x": 39,
+      "y": 20,
+      "z": 15,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 12.25
+          },
+          {
+            "id": 2917,
+            "chance": 12.25
+          },
+          {
+            "id": 3577,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 3588
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de POI DT Seal",
+      "x": 36,
+      "y": 32,
+      "z": 15,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "spell_dmg",
+          "valor": 2
+        },
+        {
+          "afixo": "protect_all",
+          "valor": 0.6
+        }
+      ],
+      "duracaoMs": 90000
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de POI DT Seal",
+      "x": 19,
+      "y": 27,
+      "z": 15,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 12.25
+          },
+          {
+            "id": 2917,
+            "chance": 12.25
+          },
+          {
+            "id": 3577,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 7176
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "demon",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

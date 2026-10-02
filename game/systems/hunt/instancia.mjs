@@ -27,6 +27,7 @@ import { VIZINHANCA_8, distancia, bfsDistancias } from './caminho.mjs';
 import { criarMonstro } from './monstros.mjs';
 import { salaDe } from './sala.mjs';
 import { sortearCriatura } from '../mapa/spawns.mjs';
+import * as Encontros from '../encontros/estado.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/instancias.json', import.meta.url), 'utf8'));
 
@@ -187,7 +188,8 @@ function bichosDaSala(hunt) {
 export function pendentes(hunt) {
   const inst = daSala(hunt);
   let n = 0;
-  for (const m of bichosDaSala(hunt)) if (m.hp > 0 && m.instancia === inst?.id) n += m.objetivo ?? 1;
+  // `opcional`: um boss de encontro opcional (e seus lacaios) não conta para o CLEAR — só o encontro em andamento o segura.
+  for (const m of bichosDaSala(hunt)) if (m.hp > 0 && m.instancia === inst?.id && !m.opcional) n += m.objetivo ?? 1;
   return n;
 }
 
@@ -201,9 +203,15 @@ export function progresso(hunt) {
 }
 
 /** Acabou de limpar (100%)? Marca `limpa` (uma vez) e devolve `true` só nessa vez. `agora` = relógio da caçada. */
-export function marcarSeLimpou(hunt, agora) {
+export function marcarSeLimpou(hunt, agora, quem = {}) {
   const inst = hunt?.instancia;
-  if (!inst || inst.status !== 'ativa' || pendentes(hunt) > 0) return false;
+  if (!inst || inst.status !== 'ativa') return false;
+  const bichosLimpos = pendentes(hunt) === 0;
+  // Os encontros acompanham a limpeza (libera os que esperam os bichos, expira os opcionais, o idle resolve o que pode).
+  Encontros.avaliar(inst, { monstrosLimpos: bichosLimpos, agora, hunt, estado: quem.estado ?? null, personagem: quem.personagem ?? null });
+  // CLEAR = bichos mortos E encontros OBRIGATÓRIOS concluídos. Opcional nunca trava.
+  // Um encontro EM ANDAMENTO (ativo) também segura o CLEAR: a instância não some no meio de uma luta de boss.
+  if (!bichosLimpos || Encontros.obrigatoriosPendentes(inst) > 0 || Encontros.emAndamento(inst) > 0) return false;
   inst.status = 'limpa';
   inst.limpaEm = Date.now();
   inst.limpaNoRelogio = agora;
@@ -266,5 +274,20 @@ export function tirarAoAcaso(hunt, n, rng = Math.random) {
 export function paraCliente(hunt) {
   const inst = daSala(hunt);
   if (!inst) return null;
-  return { id: inst.id, status: inst.status, ...progresso(hunt) };
+  const encontros = encontrosVisiveis(inst);
+  return { id: inst.id, status: inst.status, ...progresso(hunt), ...(encontros.length ? { encontros } : {}) };
+}
+
+/** Os tipos que pedem uma DECISÃO do líder do grupo antes de começar (o cliente mostra a janela de decisão). */
+const DECISAO = new Set(['area-secreta', 'escolta']);
+
+/**
+ * Os encontros que o jogador PODE VER e usar agora: baús, altares, sobrevivências e fendas com posição, disponíveis (ou em andamento).
+ * Nada de boss (nasce quando o encontro é ativado), nada dormindo (a condição ainda não foi cumprida) e nada sem
+ * posição: segredo não é anunciado antes da hora.
+ */
+export function encontrosVisiveis(inst) {
+  return Object.values(inst?.encontros ?? {})
+    .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda' || e.tipo === 'aprisionado' || DECISAO.has(e.tipo)) && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
+    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), estado: e.estado, ...(DECISAO.has(e.tipo) ? { decisao: true, ...(e.descricao ? { descricao: e.descricao } : {}) } : {}) }));
 }

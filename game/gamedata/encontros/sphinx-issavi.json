@@ -1,0 +1,79 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Sphinx Issavi",
+      "x": 25,
+      "y": 62,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 16125,
+            "chance": 25
+          },
+          {
+            "id": 31442,
+            "chance": 25
+          },
+          {
+            "id": 31441,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 4132
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Sphinx Issavi",
+      "x": 25,
+      "y": 92,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "crit_chance",
+          "valor": 3
+        },
+        {
+          "afixo": "dmg_reduction",
+          "valor": 3
+        }
+      ],
+      "duracaoMs": 90000
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Sentinela de Sphinx Issavi",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-sphinx-issavi"
+    }
+  ]
+}

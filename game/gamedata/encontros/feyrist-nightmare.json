@@ -1,0 +1,79 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Feyrist Nightmare",
+      "x": 48,
+      "y": 15,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3114,
+            "chance": 25
+          },
+          {
+            "id": 25694,
+            "chance": 25
+          },
+          {
+            "id": 20198,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 1150
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Feyrist Nightmare",
+      "x": 47,
+      "y": 50,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "atk_speed",
+          "valor": 6
+        },
+        {
+          "afixo": "avoid_damage",
+          "valor": 2
+        }
+      ],
+      "duracaoMs": 90000
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Sentinela de Feyrist Nightmare",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-feyrist-nightmare"
+    }
+  ]
+}

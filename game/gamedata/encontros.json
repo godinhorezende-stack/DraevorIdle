@@ -1,0 +1,19 @@
+{
+  "_nota": "Configuração dos ENCONTROS (systems/encontros/): os tetos que protegem a economia e o servidor, e as tabelas de recompensa reutilizáveis (um baú aponta `recompensa.tabela`). Os tetos valem para o validador (mapa e editor): conteúdo acima deles não é aceito. `valorEsperadoPorEncontro` é um teto ABSOLUTO por abertura (rolagens × chance × preço, em ouro de NPC). Mas o valor de uma instância varia de ~800 (Troll Cave Fácil) a milhões: o que protege a economia é o teto RELATIVO — a soma dos encontros de uma fase, por instância, em fração do valor de limpar a fase (`fracaoDaFaseAviso` avisa, `fracaoDaFaseErro` recusa). Medida em `tools/impacto-economico.mjs`.",
+  "limites": {
+    "rolagensMax": 5,
+    "valorEsperadoPorEncontro": 150000,
+    "fracaoDaFaseAviso": 0.3,
+    "fracaoDaFaseErro": 1,
+    "guardioesMax": 8,
+    "altarDuracaoMsMax": 600000,
+    "altarEfeitosMax": 3,
+    "armadilhaPctDaVidaMax": 50,
+    "ondasMax": 10,
+    "ondaMaxMonstros": 10,
+    "pausaDaOndaMsMax": 30000,
+    "limiteDaFendaMsMin": 20000,
+    "limiteDaFendaMsMax": 1800000
+  },
+  "tabelas": {}
+}

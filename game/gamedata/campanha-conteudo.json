@@ -1,0 +1,1351 @@
+{
+  "_nota": "Descrição, ambiente, conexões, requisitos e o índice do que cada fase tem (o que a tela WORLD mostra). Editado em /editor/conteudo.",
+  "fases": {
+    "troll-cave": {
+      "descricao": "Uma caverna úmida onde os trolls guardam, sem saber, a entrada de uma cripta esquecida sob a colina.",
+      "ambiente": "caverna",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Troll Cave",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Troll Cave",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "amazon-camp": {
+      "descricao": "Um acampamento de guerreiras entre as árvores: lanças, feitiços de bruxa e leões domados vigiam cada trilha.",
+      "ambiente": "acampamento",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Amazon Camp",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Amazon Camp",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "dark-pyramid": {
+      "descricao": "Corredores de pedra escura onde minotauros de todas as castas defendem câmaras que ninguém lembra de ter construído.",
+      "ambiente": "pirâmide",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Dark Pyramid",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Dark Pyramid",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Matriarca de Dark Pyramid",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-dark-pyramid",
+            "bossNome": "Matriarca de Dark Pyramid",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "port-hope-corym-dungeons": {
+      "descricao": "Túneis sob o porto, roídos por corym engenhosos que escondem o que roubam atrás de portas frágeis.",
+      "ambiente": "masmorra",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Port Hope Corym Dungeons",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Port Hope Corym Dungeons",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "mistrock-cyclops": {
+      "descricao": "Forjas de ciclopes encravadas na rocha: o martelar não para, e quem entra sem ser convidado vira sucata.",
+      "ambiente": "montanha",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Mistrock Cyclops",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Mistrock Cyclops",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Mistrock Cyclops",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "hive-surface": {
+      "descricao": "A superfície de uma colmeia viva, zumbindo de insetos que defendem a rainha sem nunca terem visto o sol.",
+      "ambiente": "colmeia",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Hive Surface",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Arauto de Hive Surface",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-hive-surface",
+            "bossNome": "Arauto de Hive Surface",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "mother-of-scarabs-lair": {
+      "descricao": "Uma tumba de areia e ossos onde a Mãe dos Escaravelhos cria sua ninhada à sombra de bonebeasts famintos.",
+      "ambiente": "tumba",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Mother of Scarabs Lair",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Mother of Scarabs Lair",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "cults-carlin": {
+      "descricao": "Sob as ruas de Carlin, um culto de capas negras sussurra rituais proibidos para quem ainda acredita na superfície.",
+      "ambiente": "catacumba",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Cults Carlin",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Cults Carlin",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Cults Carlin",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "segredo-1",
+            "nome": "A Sombra de Cults Carlin",
+            "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
+            "bossId": "segredo-cults-carlin",
+            "bossNome": "A Sombra de Cults Carlin",
+            "categoria": "secreto"
+          }
+        ]
+      }
+    },
+    "drefia-wyrm-caves": {
+      "descricao": "Cavernas frias de Drefia, onde wyrms antigos descansam sobre ossos e ceifadores rondam os túneis laterais.",
+      "ambiente": "caverna",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Drefia Wyrm Caves",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Drefia Wyrm Caves",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Guardião de Drefia Wyrm Caves",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-drefia-wyrm-caves",
+            "bossNome": "Guardião de Drefia Wyrm Caves",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "edron-were-mobs": {
+      "descricao": "Uma floresta que muda de dono à noite: lobisomens de várias formas caçam em bando ao lado de orcs desertores.",
+      "ambiente": "floresta",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Edron Were Mobs",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "old-fortress-hero-cave": {
+      "descricao": "Os porões da velha fortaleza, onde cavaleiros renegados e grão-mestres vis disputam um tesouro que já perdeu o dono.",
+      "ambiente": "fortaleza",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Old Fortress - Hero Cave",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Old Fortress - Hero Cave",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Old Fortress - Hero Cave",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "putrid-mummies": {
+      "descricao": "Uma câmara fúnebre apodrecida: múmias putrefatas, aranhas gigantes e ossos que não aceitam o descanso.",
+      "ambiente": "tumba",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Putrid Mummies",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Putrid Mummies",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Capataz de Putrid Mummies",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-putrid-mummies",
+            "bossNome": "Capataz de Putrid Mummies",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "black-serpent-dungeon": {
+      "descricao": "Uma masmorra de pedra negra onde os Escolhidos Lagarto montam guarda ao redor de um altar de serpentes.",
+      "ambiente": "masmorra",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Black Serpent Dungeon",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Black Serpent Dungeon",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "ghastly-dragon-lair": {
+      "descricao": "O covil de um dragão espectral: o ar pesa, o chão é de ossos e o calor vem de nenhum fogo visível.",
+      "ambiente": "covil",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Ghastly Dragon Lair",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Ghastly Dragon Lair",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "feyrist-nightmare": {
+      "descricao": "Um canto da Feyrist que sonha mal: silenciadores e criaturas devoradoras vagam por trilhas que se desfazem ao olhar.",
+      "ambiente": "pesadelo",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Feyrist Nightmare",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Feyrist Nightmare",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Sentinela de Feyrist Nightmare",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-feyrist-nightmare",
+            "bossNome": "Sentinela de Feyrist Nightmare",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "medusa-cave": {
+      "descricao": "A caverna da Medusa, fria e úmida, tomada por serpentes de olhar vazio e estátuas que já foram viajantes.",
+      "ambiente": "caverna",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Medusa Cave",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Medusa Cave",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "oramond-hydras": {
+      "descricao": "Pântanos de Oramond onde as hidras brotam da lama: cada cabeça cortada deixa o ar mais denso e o chão mais fundo.",
+      "ambiente": "pântano",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Oramond Hydras",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Oramond Hydras",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Oramond Hydras",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "werehyaenna-north": {
+      "descricao": "Ruínas ao norte onde hienas-lobisomens e suas xamãs uivam à lua, marcando território com ossos pintados.",
+      "ambiente": "savana",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Werehyaenna North",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Carrasco de Werehyaenna North",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-werehyaenna-north",
+            "bossNome": "Carrasco de Werehyaenna North",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "haunted-temple": {
+      "descricao": "Um templo assombrado, com olhares espectrais pelos corredores e thanatursus tecendo véus de morte entre as colunas.",
+      "ambiente": "templo",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Haunted Temple",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Haunted Temple",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "glooth-bandits-east": {
+      "descricao": "O leste da mina de glooth, tomado por bandidos mecanizados que aprenderam a roubar com mais ferro que vergonha.",
+      "ambiente": "mina",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Glooth Bandits East",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Glooth Bandits East",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Glooth Bandits East",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "segredo-1",
+            "nome": "A Sombra de Glooth Bandits East",
+            "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
+            "bossId": "segredo-glooth-bandits-east",
+            "bossNome": "A Sombra de Glooth Bandits East",
+            "categoria": "secreto"
+          }
+        ]
+      }
+    },
+    "zaoan-draken-walls": {
+      "descricao": "Muralhas de Zao onde dракen warmasters e tecelões de feitiços protegem a passagem com disciplina de legião.",
+      "ambiente": "muralha",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Zaoan Draken Walls",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Zaoan Draken Walls",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Vigia de Zaoan Draken Walls",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-zaoan-draken-walls",
+            "bossNome": "Vigia de Zaoan Draken Walls",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "deeper-banuta-8": {
+      "descricao": "As profundezas de Banuta, oito andares abaixo: medusas, guardiões eternos e comedores de almas disputam o silêncio.",
+      "ambiente": "ruínas",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Deeper Banuta -8",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "golems-catacombs": {
+      "descricao": "Catacumbas de golens e demônios menores, onde torturadores sombrios cuidam do que o fogo da terra deixou para trás.",
+      "ambiente": "catacumba",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Golems Catacombs",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Golems Catacombs",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Golems Catacombs",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "medusa-tower": {
+      "descricao": "Uma torre de barro e veneno, guardada por guardiões de argila e aranhas que tecem em tons de verde-doente.",
+      "ambiente": "torre",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Medusa Tower",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Medusa Tower",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Senhor de Medusa Tower",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-medusa-tower",
+            "bossNome": "Senhor de Medusa Tower",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "wild-life-raid-oramond": {
+      "descricao": "Uma incursão selvagem em Oramond: vermes de perfuração, wyrms anciões e anêmonas de glooth num mesmo vale.",
+      "ambiente": "selva",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Wild Life Raid - Oramond",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Wild Life Raid - Oramond",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "winter-dream-court": {
+      "descricao": "A corte do sonho de inverno, onde vanguardas enlouquecidas guardam um trono de gelo que ninguém lembra de ter visto vazio.",
+      "ambiente": "corte gélida",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Winter Dream Court",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Winter Dream Court",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "burster-spectres": {
+      "descricao": "Um abismo onde espectros estouram em luz fria ao morrer, deixando para trás ecos que ainda sabem lutar.",
+      "ambiente": "abismo",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Burster Spectres",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Burster Spectres",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Matriarca de Burster Spectres",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-burster-spectres",
+            "bossNome": "Matriarca de Burster Spectres",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "roshamuul-cave": {
+      "descricao": "Cavernas de Roshamuul: mandíbulas, silêncios e horrores que reviram a terra à procura de quem ainda sonha.",
+      "ambiente": "caverna",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de ROSHAMUUL CAVE",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de ROSHAMUUL CAVE",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "werelions-1": {
+      "descricao": "Um território de leões-lobisomem, onde o sol queima a pele e a noite devolve a forma errada.",
+      "ambiente": "savana",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Werelions -1",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Werelions -1",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Werelions -1",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "abandoned-sewers": {
+      "descricao": "Esgotos abandonados da cidade, cheios de demônios foragidos, gárgulas de metal e glooth que ainda se mexe.",
+      "ambiente": "esgoto",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Abandoned Sewers",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Arauto de Abandoned Sewers",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-abandoned-sewers",
+            "bossNome": "Arauto de Abandoned Sewers",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "asura-palace": {
+      "descricao": "Salões de espelho e fogo onde asuras da meia-noite e do amanhecer dançam uma guerra que nunca termina.",
+      "ambiente": "palácio",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Asura Mirror",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Asura Mirror",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "deathlings": {
+      "descricao": "Uma necrópole de deathlings: batedores e cantores de feitiço que ainda treinam para um cerco que já aconteceu.",
+      "ambiente": "necrópole",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Deathlings",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Deathlings",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Deathlings",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "segredo-1",
+            "nome": "A Sombra de Deathlings",
+            "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
+            "bossId": "segredo-deathlings",
+            "bossNome": "A Sombra de Deathlings",
+            "categoria": "secreto"
+          }
+        ]
+      }
+    },
+    "falcons": {
+      "descricao": "A fortaleza dos Falcões, onde cavaleiros e paladinos juraram defender uma coroa que se desfez em cinzas.",
+      "ambiente": "fortaleza",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Falcons",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Falcons",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Guardião de Falcons",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-falcons",
+            "bossNome": "Guardião de Falcons",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "netherworld": {
+      "descricao": "O Mundo Inferior: almas frágeis e almas más vagam entre névoas, sem saber qual das duas é a própria.",
+      "ambiente": "plano sombrio",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Netherworld",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "poi-dt-seal": {
+      "descricao": "Diante do selo dos torturadores, banshees e demônios guardam o fim do caminho, e todos sabem o que vem depois.",
+      "ambiente": "vale de fogo",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de POI DT Seal",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de POI DT Seal",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de POI DT Seal",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "spike-8": {
+      "descricao": "Oito andares abaixo, almas arremessadoras e silenciadoras se escondem entre estalagmites e magma vulcânico.",
+      "ambiente": "gruta",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Spike -8",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Spike -8",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Capataz de Spike -8",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-spike-8",
+            "bossNome": "Capataz de Spike -8",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "summer-court": {
+      "descricao": "A corte do verão: sirenes insanas e vanguardas inebriadas por um calor que não deveria existir tão fundo.",
+      "ambiente": "corte solar",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Summer Court",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Summer Court",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "prison-2": {
+      "descricao": "O segundo nível da prisão, onde demônios banidos, ferreiros da peste e cães do inferno guardam celas sem prisioneiros.",
+      "ambiente": "prisão",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Prison -2",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Prison -2",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "sphinx-issavi": {
+      "descricao": "Sob a esfinge de Issavi, guardiães de cripta, gladiadores em chamas e sacerdotisas do sol selvagem.",
+      "ambiente": "deserto",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Sphinx Issavi",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Sphinx Issavi",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Sentinela de Sphinx Issavi",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-sphinx-issavi",
+            "bossNome": "Sentinela de Sphinx Issavi",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "cobra-bastion-1": {
+      "descricao": "O Bastião da Cobra, primeiro nível: assassinas, vizires e batedoras que atacam antes de se deixarem ver.",
+      "ambiente": "bastião",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Cobra Bastion -1",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Cobra Bastion -1",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "dt-seal-inq": {
+      "descricao": "Um selo sombrio da Inquisição, onde torturadores, espectros traídos e mãos do destino amaldiçoado montam guarda.",
+      "ambiente": "santuário",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de DT Seal INQ",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de DT Seal INQ",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de DT Seal INQ",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "feru-way": {
+      "descricao": "O caminho de Feru, onde sanguessugas, garras e demônios rasgam o ar em disputas por nada.",
+      "ambiente": "caminho infernal",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Feru Way",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Carrasco de Feru Way",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-feru-way",
+            "bossNome": "Carrasco de Feru Way",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    },
+    "flimsy-lost-souls-venore": {
+      "descricao": "Pântanos de Venore, onde almas perdidas e ceifadores seguem um cortejo que ninguém ousa interromper.",
+      "ambiente": "pântano",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Flimsy Lost Souls Venore",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Flimsy Lost Souls Venore",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "warzone-2": {
+      "descricao": "A segunda zona de guerra: lava, golens de magma e berserkers perdidos entre trincheiras que ainda queimam.",
+      "ambiente": "campo de guerra",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Warzone 2",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Warzone 2",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Warzone 2",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "segredo-1",
+            "nome": "A Sombra de Warzone 2",
+            "tipo": "boss-secreto",
+            "obrigatorio": false,
+            "probabilidade": 5,
+            "bossId": "segredo-warzone-2",
+            "bossNome": "A Sombra de Warzone 2",
+            "categoria": "secreto"
+          }
+        ]
+      }
+    },
+    "infernatil-seal": {
+      "descricao": "O selo de Infernatil, onde garras, sanguessugas e fúrias protegem um portal que ninguém deveria cruzar.",
+      "ambiente": "inferno",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Infernatil Seal",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "jaded-roots": {
+      "descricao": "Raízes jade e corrompidas, tomadas por besouros micobiontes, comedores de cadáver e massas que se movem sem vontade.",
+      "ambiente": "floresta corrompida",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Jaded Roots",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "altar-1",
+            "nome": "Altar de Jaded Roots",
+            "tipo": "altar",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-raro-1",
+            "nome": "Cofre vigiado de Jaded Roots",
+            "tipo": "bau-raro",
+            "obrigatorio": false,
+            "probabilidade": 100
+          }
+        ]
+      }
+    },
+    "walking-pillar": {
+      "descricao": "O Pilar Caminhante e sua corte de luz escura: matéria, fonte e golpeadores da escuridão que gira ao redor.",
+      "ambiente": "coluna viva",
+      "mundo": {
+        "bossPrincipal": null,
+        "obrigatorios": [],
+        "todos": [
+          {
+            "id": "bau-1",
+            "nome": "Baú esquecido de Walking Pillar",
+            "tipo": "bau-comum",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "bau-maldito-1",
+            "nome": "Baú maldito de Walking Pillar",
+            "tipo": "bau-amaldicoado",
+            "obrigatorio": false,
+            "probabilidade": 100
+          },
+          {
+            "id": "miniboss-1",
+            "nome": "Senhor de Walking Pillar",
+            "tipo": "miniboss",
+            "obrigatorio": false,
+            "probabilidade": 20,
+            "bossId": "mini-walking-pillar",
+            "bossNome": "Senhor de Walking Pillar",
+            "categoria": "miniboss"
+          }
+        ]
+      }
+    }
+  }
+}

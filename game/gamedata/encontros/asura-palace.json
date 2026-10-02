@@ -1,0 +1,66 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Asura Mirror",
+      "x": 52,
+      "y": 59,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 10304,
+            "chance": 25
+          },
+          {
+            "id": 3067,
+            "chance": 25
+          },
+          {
+            "id": 8083,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 17380
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Asura Mirror",
+      "x": 45,
+      "y": 84,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "spell_dmg",
+          "valor": 2
+        },
+        {
+          "afixo": "protect_all",
+          "valor": 0.6
+        }
+      ],
+      "duracaoMs": 90000
+    }
+  ]
+}

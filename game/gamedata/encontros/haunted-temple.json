@@ -1,0 +1,66 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Haunted Temple",
+      "x": 54,
+      "y": 57,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 7642,
+            "chance": 25
+          },
+          {
+            "id": 7643,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 1146
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Haunted Temple",
+      "x": 25,
+      "y": 35,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "atk_speed",
+          "valor": 6
+        },
+        {
+          "afixo": "avoid_damage",
+          "valor": 2
+        }
+      ],
+      "duracaoMs": 90000
+    }
+  ]
+}

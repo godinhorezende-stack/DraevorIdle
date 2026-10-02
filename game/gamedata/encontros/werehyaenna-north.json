@@ -1,0 +1,53 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Werehyaenna North",
+      "x": 47,
+      "y": 86,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 239,
+            "chance": 25
+          },
+          {
+            "id": 238,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 3644
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Carrasco de Werehyaenna North",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-werehyaenna-north"
+    }
+  ]
+}

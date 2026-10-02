@@ -1,0 +1,128 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Oramond Hydras",
+      "x": 64,
+      "y": 57,
+      "z": 10,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 12.25
+          },
+          {
+            "id": 10282,
+            "chance": 12.25
+          },
+          {
+            "id": 8014,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 1255
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Oramond Hydras",
+      "x": 51,
+      "y": 72,
+      "z": 10,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "atk_speed",
+          "valor": 6
+        },
+        {
+          "afixo": "avoid_damage",
+          "valor": 2
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "hydra",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Oramond Hydras",
+      "x": 65,
+      "y": 94,
+      "z": 10,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 12.25
+          },
+          {
+            "id": 10282,
+            "chance": 12.25
+          },
+          {
+            "id": 8014,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 2510
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "hydra",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

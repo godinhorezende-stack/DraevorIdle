@@ -44,6 +44,8 @@ test('ticar no worker dá o MESMO resultado que ticar direto (mesmo estado, mesm
     // haver luta (dano e loot são sorteados). A instância é densa perto da
     // entrada, então os bichos a menos de 15 casas saem.
     base.hunt.monstros = base.hunt.monstros.filter((m) => Math.max(Math.abs(m.x - base.hunt.pos.x), Math.abs(m.y - base.hunt.pos.y)) > 15);
+    // Os encontros da fase (baú, altar: o idle os abre sozinho e sorteia loot) também são sorteio: ficam de fora desta comparação.
+    if (base.hunt.instancia) delete base.hunt.instancia.encontros;
     const semente = clonar(base); // ponto de partida idêntico para as duas simulações
 
     // Mesma linha do tempo para as duas simulações — senão o tempo real que o

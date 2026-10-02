@@ -1,0 +1,128 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Werelions -1",
+      "x": 85,
+      "y": 56,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 7642,
+            "chance": 25
+          },
+          {
+            "id": 676,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 10781
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Werelions -1",
+      "x": 41,
+      "y": 45,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "spell_dmg",
+          "valor": 2
+        },
+        {
+          "afixo": "protect_all",
+          "valor": 0.6
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "werelion",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Werelions -1",
+      "x": 15,
+      "y": 62,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 7642,
+            "chance": 25
+          },
+          {
+            "id": 676,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 21562
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "werelioness",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

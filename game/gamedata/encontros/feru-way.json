@@ -1,0 +1,53 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Feru Way",
+      "x": 54,
+      "y": 77,
+      "z": 13,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 238,
+            "chance": 25
+          },
+          {
+            "id": 239,
+            "chance": 25
+          },
+          {
+            "id": 7642,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 12181
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Carrasco de Feru Way",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-feru-way"
+    }
+  ]
+}

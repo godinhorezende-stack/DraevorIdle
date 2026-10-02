@@ -1,0 +1,53 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Hive Surface",
+      "x": 64,
+      "y": 73,
+      "z": 7,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 14079,
+            "chance": 25
+          },
+          {
+            "id": 14083,
+            "chance": 25
+          },
+          {
+            "id": 14076,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 773
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Arauto de Hive Surface",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-hive-surface"
+    }
+  ]
+}

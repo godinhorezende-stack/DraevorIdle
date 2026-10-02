@@ -568,6 +568,12 @@ export function camposDoPersonagem(s) {
 /** Está numa party agora? (o char sem aba — ver `Sessao.contaChar` — sai do mundo quando deixa de estar). */
 export const naParty = (s) => !!minhaParty(s);
 
+/** Quem decide pelo grupo (encontros que pedem decisão): o líder da party — ou o jogador sozinho, sem party. */
+export const decidePeloGrupo = (s) => {
+  const p = minhaParty(s);
+  return !p || p.lider === nomeDe(s);
+};
+
 /**
  * "+ Party" na troca de personagem: põe `outro` (da MESMA conta, já no mundo)
  * na party de `dono`, sem convite para aceitar — é a mesma pessoa dos dois

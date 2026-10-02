@@ -35,7 +35,7 @@ import * as Arvore from './arvore.mjs';
 import * as Estados from './skills/estados.mjs';
 import * as RegrasDeUso from './skills/regras-de-uso.mjs';
 import * as Bosses from './bosses.mjs';
-import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt } from './hunt/terreno.mjs';
+import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt, encontrosDaHunt } from './hunt/terreno.mjs';
 import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
 import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho, bfsDistancias } from './hunt/caminho.mjs';
@@ -53,6 +53,12 @@ import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { resistido } from './hunt/resistencia.mjs';
 import * as Instancia from './hunt/instancia.mjs';
+import * as Encontros from './encontros/estado.mjs';
+import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
+import './encontros/tipos-de-bau.mjs'; // registra os baús e o altar
+import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (ondas)
+import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
+import * as EventosDeEncontro from './encontros/eventos.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -528,6 +534,9 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
   if (comInstancia) {
     instancia = Instancia.novoRegistro(huntId, instanciaId);
     for (const m of [...monstros, ...Object.values(outrosAndares).flat()]) instancia.objetivos.total += m.objetivo ?? 1;
+    // Os encontros do mapa (se houver): sorteados AGORA, uma vez, com a semente guardada na instância.
+    const definicoes = encontrosDaHunt(huntId);
+    if (definicoes.length) Encontros.criar(instancia, definicoes);
   }
   return { grade, inicio, andarInicial, monstros, outrosAndares, instancia };
 }
@@ -845,6 +854,8 @@ function projetarNaInstancia(estado, kills) {
   let limpezas = hunt.instancia.status === 'ativa' ? 1 : 0;
   limpezas += Math.floor(sobra / total);
   sobra %= total;
+  // A projeção zerou a instância: o idle resolve os encontros pendentes (obrigatórios sem recompensa; opcionais expiram).
+  Encontros.resolverNaProjecao(hunt.instancia);
   for (let i = 0; i < limpezas; i++) Campanha.limpou(estado, hunt);
   novaInstancia(estado);
   Instancia.tirarAoAcaso(hunt, sobra);
@@ -1253,7 +1264,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     // "Hunt Clear!", uma instância NOVA da mesma hunt (ver `hunt/instancia.mjs`).
     // Online com "Avançar sozinho", a sessão troca de fase antes da pausa acabar.
     if (hunt.instancia) {
-      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0)) aoLimparAInstancia(estado, hunt);
+      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt);
       else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0)) novaInstancia(estado);
     }
   } else {
@@ -1535,6 +1546,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
   }
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));
+  // O que os encontros abriram neste tique (loot de baú, falas): vai junto com os eventos da caçada.
+  eventos.push(...EventosDeEncontro.tirar(hunt));
   // As mecânicas dos mobs no tempo: enrage na vida baixa, aura de dano e o veneno dos golpes (`mobs/mecanicas.mjs`).
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.

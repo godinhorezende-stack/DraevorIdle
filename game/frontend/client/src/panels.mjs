@@ -1,6 +1,7 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
 import { listaDetalhe } from './lista-detalhe.mjs';
+import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
 import { montarAosPoucos } from './aos-poucos.mjs';
 import { ehTelefone } from './perfil.mjs';
 import { analogicoLigado, ligarAnalogico } from './celular.mjs';
@@ -551,49 +552,113 @@ function campanhaCards(body) {
   const campanha = state.campanha;
   if (!campanha) return void body.append(el('p', 'empty', 'carregando a campanha...'));
 
+  // A última dificuldade escolhida no WORLD volta (se o servidor ainda a mantém aberta).
+  ctx.tabs.dificuldade ??= preferenciaDoMundo().dificuldade;
   const escolhida = campanha.dificuldades.find((d) => d.id === ctx.tabs.dificuldade && d.liberada) ?? campanha.dificuldades.findLast((d) => d.liberada);
+  const visao = ctx.tabs.campanhaVisao ?? 'mapa';
   ctx.tabs.dificuldade = escolhida.id;
 
-  // ---- as três dificuldades ----
-  const barra = el('div', 'tabs campanha-dificuldades');
-  for (const d of campanha.dificuldades) {
-    const botao = el('button', d.id === escolhida.id ? 'active' : null);
-    botao.type = 'button';
-    botao.append(el('b', null, d.liberada ? d.nome : `🔒 ${d.nome}`), el('span', null, `level ${d.faixa[0]}–${d.faixa[1]}`));
-    botao.disabled = !d.liberada;
-    tipTexto(botao, d.liberada ? `Campanha no ${d.nome}` : `O ${d.nome} abre depois de vencer o boss do Ato 4 na dificuldade anterior.`);
-    botao.onclick = () => {
-      ctx.tabs.dificuldade = d.id;
-      ctx.redraw();
-    };
-    barra.append(botao);
-  }
-  body.append(barra);
+  // No WORLD, as dificuldades e o "quando completar" ficam dentro da própria tela (cabeçalho e barra de atalhos).
+  if (visao !== 'mapa') {
+    // ---- as três dificuldades ----
+    const barra = el('div', 'tabs campanha-dificuldades');
+    for (const d of campanha.dificuldades) {
+      const botao = el('button', d.id === escolhida.id ? 'active' : null);
+      botao.type = 'button';
+      botao.append(el('b', null, d.liberada ? d.nome : `🔒 ${d.nome}`), el('span', null, `level ${d.faixa[0]}–${d.faixa[1]}`));
+      botao.disabled = !d.liberada;
+      tipTexto(botao, d.liberada ? `Campanha no ${d.nome}` : `O ${d.nome} abre depois de vencer o boss do Ato 4 na dificuldade anterior.`);
+      botao.onclick = () => {
+        ctx.tabs.dificuldade = d.id;
+        ctx.redraw();
+      };
+      barra.append(botao);
+    }
+    body.append(barra);
 
-  // ---- ao completar a fase: repetir (loop) ou seguir ----
-  const modo = el('div', 'campanha-modo');
-  modo.append(el('span', null, 'Quando a fase estiver completa:'));
-  const opcoes = el('div', 'campanha-modo-opcoes');
-  for (const [valor, rotulo, dica] of [
-    ['repetir', '🔁 Ficar na fase', 'Continua em loop na mesma fase, mesmo completa (bom para farmar). Offline é sempre assim.'],
-    ['seguir', '⏭ Avançar sozinho', 'Jogando online, com a fase completa vai para a próxima do ato — na hora, se você já está numa fase completa. Na party, quem também marcou "Avançar sozinho" vai junto com você. No fim do ato para: o boss é você quem chama. Offline fica sempre em loop.'],
-  ]) {
-    const botao = el('button', campanha.aoCompletar === valor ? 'active' : null, rotulo);
-    botao.type = 'button';
-    tipTexto(botao, dica);
-    botao.onclick = () => {
-      campanha.aoCompletar = valor;
-      send({ t: 'aoCompletarFase', value: valor });
-      ctx.redraw();
-    };
-    opcoes.append(botao);
+    // ---- ao completar a fase: repetir (loop) ou seguir ----
+    const modo = el('div', 'campanha-modo');
+    modo.append(el('span', null, 'Quando a fase estiver completa:'));
+    const opcoes = el('div', 'campanha-modo-opcoes');
+    for (const [valor, rotulo, dica] of [
+      ['repetir', '🔁 Ficar na fase', 'Continua em loop na mesma fase, mesmo completa (bom para farmar). Offline é sempre assim.'],
+      ['seguir', '⏭ Avançar sozinho', 'Jogando online, com a fase completa vai para a próxima do ato — na hora, se você já está numa fase completa. Na party, quem também marcou "Avançar sozinho" vai junto com você. No fim do ato para: o boss é você quem chama. Offline fica sempre em loop.'],
+    ]) {
+      const botao = el('button', campanha.aoCompletar === valor ? 'active' : null, rotulo);
+      botao.type = 'button';
+      tipTexto(botao, dica);
+      botao.onclick = () => {
+        campanha.aoCompletar = valor;
+        send({ t: 'aoCompletarFase', value: valor });
+        ctx.redraw();
+      };
+      opcoes.append(botao);
+    }
+    modo.append(opcoes);
+    body.append(modo);
   }
-  modo.append(opcoes);
-  body.append(modo);
 
   const porId = new Map((state.catalog.hunts ?? []).map((h) => [h.id, h]));
   const bossPorId = new Map((state.catalog.bosses ?? []).map((b) => [b.id, b]));
   const catalog = state.catalog.bestiary;
+
+  // ---- WORLD (o mapa do mundo) ou a lista de sempre ----
+  const visoes = el('div', 'tabs campanha-visao');
+  for (const [id, rotulo] of [['mapa', '🗺 Mapa do mundo'], ['lista', '☰ Lista']]) {
+    const botao = el('button', visao === id ? 'active' : null, rotulo);
+    botao.type = 'button';
+    botao.onclick = () => {
+      ctx.tabs.campanhaVisao = id;
+      ctx.redraw();
+    };
+    visoes.append(botao);
+  }
+  if (visao !== 'mapa') body.append(visoes);
+  if (visao === 'mapa') {
+    // Aberto, o WORLD acompanha o progresso: pergunta de novo a cada 8 s e some quando a tela fecha.
+    if (!ctx.tabs.worldPoll) {
+      ctx.tabs.worldPoll = setInterval(() => {
+        if (!document.querySelector('.w2')) {
+          clearInterval(ctx.tabs.worldPoll);
+          ctx.tabs.worldPoll = null;
+          return;
+        }
+        send({ t: 'campanha' });
+      }, 8000);
+    }
+    return void desenharMundo(body, {
+      campanha,
+      escolhida,
+      hunts: porId,
+      bosses: bossPorId,
+      bestiario: catalog,
+      h: {
+        figuraDaCriatura,
+        entrarNaFase: (hunt, lista) => {
+          rolagemDaLista.hunts = document.getElementById('modal-body')?.scrollTop ?? 0;
+          askRunMode(hunt, lista);
+        },
+        enfrentarBoss: (b) => {
+          send({ t: 'startHunt', huntId: b.bossId, mode: 'auto', dificuldade: escolhida.id, campanha: true, strategy: document.getElementById('strategy')?.value });
+          ctx.closeModal();
+        },
+        escolherDificuldade: (id) => {
+          ctx.tabs.dificuldade = id;
+          ctx.redraw();
+        },
+        definirAoCompletar: (valor) => {
+          campanha.aoCompletar = valor;
+          send({ t: 'aoCompletarFase', value: valor });
+          ctx.redraw();
+        },
+        fechar: () => ctx.closeModal(),
+        verLista: () => {
+          ctx.tabs.campanhaVisao = 'lista';
+          ctx.redraw();
+        },
+      },
+    });
+  }
 
   for (let ato = 1; ato <= 4; ato++) {
     const fases = escolhida.fases.filter((f) => f.ato === ato);

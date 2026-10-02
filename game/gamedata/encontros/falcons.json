@@ -1,0 +1,95 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Falcons",
+      "x": 54,
+      "y": 23,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 25
+          },
+          {
+            "id": 7642,
+            "chance": 25
+          },
+          {
+            "id": 5944,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 4492
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Falcons",
+      "x": 19,
+      "y": 59,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "spell_dmg",
+          "valor": 2
+        },
+        {
+          "afixo": "protect_all",
+          "valor": 0.6
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "falcon-knight",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Guardião de Falcons",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-falcons"
+    }
+  ]
+}

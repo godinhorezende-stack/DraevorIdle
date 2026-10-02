@@ -1,0 +1,86 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Winter Dream Court",
+      "x": 55,
+      "y": 40,
+      "z": 7,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 3062,
+            "chance": 25
+          },
+          {
+            "id": 3284,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 13337
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Winter Dream Court",
+      "x": 18,
+      "y": 35,
+      "z": 7,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 3062,
+            "chance": 25
+          },
+          {
+            "id": 3284,
+            "chance": 25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 26674
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "thanatursus",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

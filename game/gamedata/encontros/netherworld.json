@@ -1,0 +1,40 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Netherworld",
+      "x": 77,
+      "y": 40,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 32227,
+            "chance": 25
+          },
+          {
+            "id": 3073,
+            "chance": 25
+          },
+          {
+            "id": 3324,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 7019
+      }
+    }
+  ]
+}

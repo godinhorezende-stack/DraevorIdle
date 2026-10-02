@@ -1,0 +1,1744 @@
+{
+  "_nota": "Os BOSSES ÚNICOS (systems/bosses-unicos/): entidades próprias, com fases de combate e comportamentos configuráveis — não um monstro comum com vida aumentada. Vazio por enquanto: o conteúdo (nomes, lore, mecânicas) é decisão de design. O formato está em systems/bosses-unicos/catalogo.mjs (`normalizar`/`validar`) e nos testes (bosses-unicos.test.mjs).",
+  "_exemplo": {
+    "id": "guardiao-da-fortaleza",
+    "nome": "Guardião da Fortaleza",
+    "descricao": "O último guardião da fortaleza corrompida.",
+    "lore": "Jurou proteger a passagem e não percebeu quando o juramento virou prisão.",
+    "categoria": "principal",
+    "base": "cyclops-smith",
+    "nivel": 60,
+    "atributos": {
+      "vidaMult": 12,
+      "danoMult": 1.2,
+      "armadura": 40,
+      "expMult": 5,
+      "resistencias": {
+        "fire": 20
+      }
+    },
+    "melee": {
+      "min": 40,
+      "max": 120,
+      "intervaloMs": 2000
+    },
+    "comportamentos": [
+      {
+        "tipo": "area-telegrafada",
+        "nome": "Pancada no chão",
+        "elemento": "physical",
+        "min": 150,
+        "max": 250,
+        "raio": 2,
+        "avisoMs": 1500,
+        "intervaloMs": 7000,
+        "chance": 100
+      }
+    ],
+    "fases": [
+      {
+        "nome": "Enfurecido",
+        "ate": 60,
+        "mods": {
+          "danoMult": 1.3
+        },
+        "aoEntrar": {
+          "fala": "Não passarão!",
+          "escudo": {
+            "pctVida": 10,
+            "duracaoMs": 8000,
+            "vulnerabilidade": {
+              "pct": 30,
+              "ms": 5000
+            }
+          }
+        },
+        "comportamentos": [
+          {
+            "tipo": "invocar",
+            "criaturas": [
+              {
+                "key": "cyclops",
+                "qtd": 2
+              }
+            ],
+            "maxVivos": 4,
+            "intervaloMs": 15000,
+            "chance": 100
+          }
+        ]
+      }
+    ],
+    "recompensas": {
+      "loot": [
+        {
+          "id": 3031,
+          "chance": 100,
+          "min": 50,
+          "max": 100
+        }
+      ],
+      "primeiraVitoria": {
+        "gold": 5000
+      }
+    }
+  },
+  "bosses": {
+    "mini-dark-pyramid": {
+      "id": "mini-dark-pyramid",
+      "nome": "Matriarca de Dark Pyramid",
+      "descricao": "Um chefe menor de Dark Pyramid.",
+      "lore": "Dizem que corredores de pedra escura onde minotauros de todas as castas defendem câmaras que ninguém lembra de ter construído — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "mummy",
+      "nivel": 12,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 18
+      },
+      "melee": {
+        "min": 17,
+        "max": 68,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 34,
+          "max": 77,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3007,
+            "chance": 6
+          },
+          {
+            "id": 3017,
+            "chance": 16
+          },
+          {
+            "id": 3027,
+            "chance": 4
+          },
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3045,
+            "chance": 20
+          },
+          {
+            "id": 3046,
+            "chance": 23.2
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 2675
+        }
+      }
+    },
+    "mini-hive-surface": {
+      "id": "mini-hive-surface",
+      "nome": "Arauto de Hive Surface",
+      "descricao": "Um chefe menor de Hive Surface.",
+      "lore": "Dizem que a superfície de uma colmeia viva, zumbindo de insetos que defendem a rainha sem nunca terem visto o sol — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "crawler",
+      "nivel": 18,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 49
+      },
+      "melee": {
+        "min": 46,
+        "max": 182,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 91,
+          "max": 205,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3037,
+            "chance": 2.12
+          },
+          {
+            "id": 3279,
+            "chance": 8.28
+          },
+          {
+            "id": 238,
+            "chance": 37.2
+          },
+          {
+            "id": 239,
+            "chance": 24.8
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 6440
+        }
+      }
+    },
+    "segredo-cults-carlin": {
+      "id": "segredo-cults-carlin",
+      "nome": "A Sombra de Cults Carlin",
+      "descricao": "Um segredo de Cults Carlin.",
+      "lore": "Dizem que sob as ruas de Carlin, um culto de capas negras sussurra rituais proibidos para quem ainda acredita na superfície — e que alguém continua lá dentro, esperando.",
+      "categoria": "secreto",
+      "base": "vile-grandmaster",
+      "nivel": 22,
+      "atributos": {
+        "vidaMult": 9,
+        "danoMult": 1.5,
+        "expMult": 8,
+        "armadura": 52
+      },
+      "melee": {
+        "min": 52,
+        "max": 208,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Ruptura",
+          "elemento": "physical",
+          "min": 104,
+          "max": 234,
+          "raio": 3,
+          "avisoMs": 1800,
+          "intervaloMs": 9000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Ferido",
+          "ate": 60,
+          "mods": {
+            "danoMult": 1.25
+          },
+          "aoEntrar": {
+            "fala": "Vocês não deviam ter achado este lugar.",
+            "escudo": {
+              "pctVida": 12,
+              "duracaoMs": 8000,
+              "vulnerabilidade": {
+                "pct": 25,
+                "ms": 5000
+              }
+            }
+          },
+          "comportamentos": [
+            {
+              "tipo": "invocar",
+              "criaturas": [
+                {
+                  "key": "vile-grandmaster",
+                  "qtd": 2
+                }
+              ],
+              "maxVivos": 4,
+              "intervaloMs": 18000,
+              "chance": 100,
+              "fala": "Venham!"
+            }
+          ]
+        },
+        {
+          "nome": "Enfurecido",
+          "ate": 30,
+          "mods": {
+            "danoMult": 1.5,
+            "velocidadeDeAtaque": 1.2
+          },
+          "aoEntrar": {
+            "fala": "Chega!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 7364,
+            "chance": 9.68
+          },
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3592,
+            "chance": 9.68
+          },
+          {
+            "id": 3577,
+            "chance": 9.68
+          },
+          {
+            "id": 239,
+            "chance": 9.68
+          },
+          {
+            "id": 3269,
+            "chance": 12.88
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 27990
+        }
+      }
+    },
+    "mini-drefia-wyrm-caves": {
+      "id": "mini-drefia-wyrm-caves",
+      "nome": "Guardião de Drefia Wyrm Caves",
+      "descricao": "Um chefe menor de Drefia Wyrm Caves.",
+      "lore": "Dizem que cavernas frias de Drefia, onde wyrms antigos descansam sobre ossos e ceifadores rondam os túneis laterais — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "grim-reaper",
+      "nivel": 24,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 39
+      },
+      "melee": {
+        "min": 64,
+        "max": 256,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 288,
+          "max": 648,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3046,
+            "chance": 19.4
+          },
+          {
+            "id": 3421,
+            "chance": 12
+          },
+          {
+            "id": 3453,
+            "chance": 36
+          },
+          {
+            "id": 5021,
+            "chance": 5.6
+          },
+          {
+            "id": 6299,
+            "chance": 1.32
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 43129
+        }
+      }
+    },
+    "mini-putrid-mummies": {
+      "id": "mini-putrid-mummies",
+      "nome": "Capataz de Putrid Mummies",
+      "descricao": "Um chefe menor de Putrid Mummies.",
+      "lore": "Dizem que uma câmara fúnebre apodrecida: múmias putrefatas, aranhas gigantes e ossos que não aceitam o descanso — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "putrid-mummy",
+      "nivel": 30,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 52
+      },
+      "melee": {
+        "min": 60,
+        "max": 240,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 120,
+          "max": 270,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 12483,
+            "chance": 15.36
+          },
+          {
+            "id": 3027,
+            "chance": 5.12
+          },
+          {
+            "id": 25702,
+            "chance": 54.2
+          },
+          {
+            "id": 25701,
+            "chance": 35.8
+          },
+          {
+            "id": 3038,
+            "chance": 12.28
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 11899
+        }
+      }
+    },
+    "mini-feyrist-nightmare": {
+      "id": "mini-feyrist-nightmare",
+      "nome": "Sentinela de Feyrist Nightmare",
+      "descricao": "Um chefe menor de Feyrist Nightmare.",
+      "lore": "Dizem que um canto da Feyrist que sonha mal: silenciadores e criaturas devoradoras vagam por trilhas que se desfazem ao olhar — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "weakened-frazzlemaw",
+      "nivel": 35,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 59
+      },
+      "melee": {
+        "min": 80,
+        "max": 320,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 160,
+          "max": 360,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3110,
+            "chance": 20
+          },
+          {
+            "id": 3114,
+            "chance": 50.72
+          },
+          {
+            "id": 3115,
+            "chance": 40
+          },
+          {
+            "id": 3116,
+            "chance": 22
+          },
+          {
+            "id": 3578,
+            "chance": 27
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 9581
+        }
+      }
+    },
+    "mini-werehyaenna-north": {
+      "id": "mini-werehyaenna-north",
+      "nome": "Carrasco de Werehyaenna North",
+      "descricao": "Um chefe menor de Werehyaenna North.",
+      "lore": "Dizem que ruínas ao norte onde hienas-lobisomens e suas xamãs uivam à lua, marcando território com ossos pintados — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "werehyaena",
+      "nivel": 41,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 47
+      },
+      "melee": {
+        "min": 60,
+        "max": 240,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 148,
+          "max": 333,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 239,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 76.28
+          },
+          {
+            "id": 3274,
+            "chance": 67.24
+          },
+          {
+            "id": 3291,
+            "chance": 66.48
+          },
+          {
+            "id": 33943,
+            "chance": 50.68
+          },
+          {
+            "id": 3269,
+            "chance": 45.92
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 30368
+        }
+      }
+    },
+    "segredo-glooth-bandits-east": {
+      "id": "segredo-glooth-bandits-east",
+      "nome": "A Sombra de Glooth Bandits East",
+      "descricao": "Um segredo de Glooth Bandits East.",
+      "lore": "Dizem que o leste da mina de glooth, tomado por bandidos mecanizados que aprenderam a roubar com mais ferro que vergonha — e que alguém continua lá dentro, esperando.",
+      "categoria": "secreto",
+      "base": "glooth-bandit",
+      "nivel": 45,
+      "atributos": {
+        "vidaMult": 9,
+        "danoMult": 1.5,
+        "expMult": 8,
+        "armadura": 60
+      },
+      "melee": {
+        "min": 61,
+        "max": 245,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Ruptura",
+          "elemento": "physical",
+          "min": 122,
+          "max": 275,
+          "raio": 3,
+          "avisoMs": 1800,
+          "intervaloMs": 9000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Ferido",
+          "ate": 60,
+          "mods": {
+            "danoMult": 1.25
+          },
+          "aoEntrar": {
+            "fala": "Vocês não deviam ter achado este lugar.",
+            "escudo": {
+              "pctVida": 12,
+              "duracaoMs": 8000,
+              "vulnerabilidade": {
+                "pct": 25,
+                "ms": 5000
+              }
+            }
+          },
+          "comportamentos": [
+            {
+              "tipo": "invocar",
+              "criaturas": [
+                {
+                  "key": "glooth-bandit",
+                  "qtd": 2
+                }
+              ],
+              "maxVivos": 4,
+              "intervaloMs": 18000,
+              "chance": 100,
+              "fala": "Venham!"
+            }
+          ]
+        },
+        {
+          "nome": "Enfurecido",
+          "ate": 30,
+          "mods": {
+            "danoMult": 1.5,
+            "velocidadeDeAtaque": 1.2
+          },
+          "aoEntrar": {
+            "fala": "Chega!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 238,
+            "chance": 57.14
+          },
+          {
+            "id": 9057,
+            "chance": 44.44
+          },
+          {
+            "id": 7642,
+            "chance": 40
+          },
+          {
+            "id": 239,
+            "chance": 36.36
+          },
+          {
+            "id": 21143,
+            "chance": 32
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 105409
+        }
+      }
+    },
+    "mini-zaoan-draken-walls": {
+      "id": "mini-zaoan-draken-walls",
+      "nome": "Vigia de Zaoan Draken Walls",
+      "descricao": "Um chefe menor de Zaoan Draken Walls.",
+      "lore": "Dizem que muralhas de Zao onde dракen warmasters e tecelões de feitiços protegem a passagem com disciplina de legião — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "draken-spellweaver",
+      "nivel": 47,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 33
+      },
+      "melee": {
+        "min": 50,
+        "max": 202,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 192,
+          "max": 432,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 100
+          },
+          {
+            "id": 10397,
+            "chance": 73.8
+          },
+          {
+            "id": 3030,
+            "chance": 26.56
+          },
+          {
+            "id": 238,
+            "chance": 21.4
+          },
+          {
+            "id": 11658,
+            "chance": 18.44
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 110947
+        }
+      }
+    },
+    "mini-medusa-tower": {
+      "id": "mini-medusa-tower",
+      "nome": "Senhor de Medusa Tower",
+      "descricao": "Um chefe menor de Medusa Tower.",
+      "lore": "Dizem que uma torre de barro e veneno, guardada por guardiões de argila e aranhas que tecem em tons de verde-doente — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "medusa",
+      "nivel": 54,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 59
+      },
+      "melee": {
+        "min": 90,
+        "max": 360,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 200,
+          "max": 450,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3032,
+            "chance": 15.08
+          },
+          {
+            "id": 3370,
+            "chance": 7.36
+          },
+          {
+            "id": 3436,
+            "chance": 12.16
+          },
+          {
+            "id": 7413,
+            "chance": 4.64
+          },
+          {
+            "id": 238,
+            "chance": 40
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 5628
+        }
+      }
+    },
+    "mini-burster-spectres": {
+      "id": "mini-burster-spectres",
+      "nome": "Matriarca de Burster Spectres",
+      "descricao": "Um chefe menor de Burster Spectres.",
+      "lore": "Dizem que um abismo onde espectros estouram em luz fria ao morrer, deixando para trás ecos que ainda sabem lutar — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "burster-spectre",
+      "nivel": 58,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 91
+      },
+      "melee": {
+        "min": 80,
+        "max": 320,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 180,
+          "max": 405,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 7642,
+            "chance": 100
+          },
+          {
+            "id": 3084,
+            "chance": 60
+          },
+          {
+            "id": 3061,
+            "chance": 48.2
+          },
+          {
+            "id": 3054,
+            "chance": 60
+          },
+          {
+            "id": 8094,
+            "chance": 44.2
+          },
+          {
+            "id": 3073,
+            "chance": 47.2
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 57878
+        }
+      }
+    },
+    "mini-abandoned-sewers": {
+      "id": "mini-abandoned-sewers",
+      "nome": "Arauto de Abandoned Sewers",
+      "descricao": "Um chefe menor de Abandoned Sewers.",
+      "lore": "Dizem que esgotos abandonados da cidade, cheios de demônios foragidos, gárgulas de metal e glooth que ainda se mexe — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "demon",
+      "nivel": 65,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 57
+      },
+      "melee": {
+        "min": 100,
+        "max": 400,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 200,
+          "max": 450,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 2848,
+            "chance": 4.72
+          },
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3032,
+            "chance": 38.76
+          },
+          {
+            "id": 3033,
+            "chance": 29
+          },
+          {
+            "id": 3030,
+            "chance": 29.72
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 171033
+        }
+      }
+    },
+    "segredo-deathlings": {
+      "id": "segredo-deathlings",
+      "nome": "A Sombra de Deathlings",
+      "descricao": "Um segredo de Deathlings.",
+      "lore": "Dizem que uma necrópole de deathlings: batedores e cantores de feitiço que ainda treinam para um cerco que já aconteceu — e que alguém continua lá dentro, esperando.",
+      "categoria": "secreto",
+      "base": "deathling-spellsinger",
+      "nivel": 68,
+      "atributos": {
+        "vidaMult": 9,
+        "danoMult": 1.5,
+        "expMult": 8,
+        "armadura": 94
+      },
+      "melee": {
+        "min": 60,
+        "max": 240,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Ruptura",
+          "elemento": "physical",
+          "min": 280,
+          "max": 630,
+          "raio": 3,
+          "avisoMs": 1800,
+          "intervaloMs": 9000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Ferido",
+          "ate": 60,
+          "mods": {
+            "danoMult": 1.25
+          },
+          "aoEntrar": {
+            "fala": "Vocês não deviam ter achado este lugar.",
+            "escudo": {
+              "pctVida": 12,
+              "duracaoMs": 8000,
+              "vulnerabilidade": {
+                "pct": 25,
+                "ms": 5000
+              }
+            }
+          },
+          "comportamentos": [
+            {
+              "tipo": "invocar",
+              "criaturas": [
+                {
+                  "key": "deathling-spellsinger",
+                  "qtd": 2
+                }
+              ],
+              "maxVivos": 4,
+              "intervaloMs": 18000,
+              "chance": 100,
+              "fala": "Venham!"
+            }
+          ]
+        },
+        {
+          "nome": "Enfurecido",
+          "ate": 30,
+          "mods": {
+            "danoMult": 1.5,
+            "velocidadeDeAtaque": 1.2
+          },
+          "aoEntrar": {
+            "fala": "Chega!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 15793,
+            "chance": 100
+          },
+          {
+            "id": 3032,
+            "chance": 100
+          },
+          {
+            "id": 14013,
+            "chance": 100
+          },
+          {
+            "id": 14085,
+            "chance": 100
+          },
+          {
+            "id": 14041,
+            "chance": 72.16
+          },
+          {
+            "id": 239,
+            "chance": 70
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 171286
+        }
+      }
+    },
+    "mini-falcons": {
+      "id": "mini-falcons",
+      "nome": "Guardião de Falcons",
+      "descricao": "Um chefe menor de Falcons.",
+      "lore": "Dizem que a fortaleza dos Falcões, onde cavaleiros e paladinos juraram defender uma coroa que se desfez em cinzas — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "falcon-knight",
+      "nivel": 70,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 112
+      },
+      "melee": {
+        "min": 80,
+        "max": 320,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 200,
+          "max": 450,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3582,
+            "chance": 100
+          },
+          {
+            "id": 5944,
+            "chance": 100
+          },
+          {
+            "id": 238,
+            "chance": 100
+          },
+          {
+            "id": 239,
+            "chance": 100
+          },
+          {
+            "id": 6558,
+            "chance": 100
+          },
+          {
+            "id": 3033,
+            "chance": 99.8
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 37432
+        }
+      }
+    },
+    "mini-spike-8": {
+      "id": "mini-spike-8",
+      "nome": "Capataz de Spike -8",
+      "descricao": "Um chefe menor de Spike -8.",
+      "lore": "Dizem que oito andares abaixo, almas arremessadoras e silenciadoras se escondem entre estalagmites e magma vulcânico — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "behemoth",
+      "nivel": 77,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 65
+      },
+      "melee": {
+        "min": 90,
+        "max": 360,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 180,
+          "max": 405,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 2893,
+            "chance": 1
+          },
+          {
+            "id": 3008,
+            "chance": 10.12
+          },
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3033,
+            "chance": 25.52
+          },
+          {
+            "id": 3058,
+            "chance": 3
+          },
+          {
+            "id": 3116,
+            "chance": 2.68
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 226154
+        }
+      }
+    },
+    "mini-sphinx-issavi": {
+      "id": "mini-sphinx-issavi",
+      "nome": "Sentinela de Sphinx Issavi",
+      "descricao": "Um chefe menor de Sphinx Issavi.",
+      "lore": "Dizem que sob a esfinge de Issavi, guardiães de cripta, gladiadores em chamas e sacerdotisas do sol selvagem — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "burning-gladiator",
+      "nivel": 81,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 116
+      },
+      "melee": {
+        "min": 110,
+        "max": 440,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 220,
+          "max": 495,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 31443,
+            "chance": 26.4
+          },
+          {
+            "id": 31433,
+            "chance": 22.4
+          },
+          {
+            "id": 31435,
+            "chance": 22.4
+          },
+          {
+            "id": 31436,
+            "chance": 22.4
+          },
+          {
+            "id": 3085,
+            "chance": 18.8
+          },
+          {
+            "id": 816,
+            "chance": 16.4
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 34430
+        }
+      }
+    },
+    "mini-feru-way": {
+      "id": "mini-feru-way",
+      "nome": "Carrasco de Feru Way",
+      "descricao": "Um chefe menor de Feru Way.",
+      "lore": "Dizem que o caminho de Feru, onde sanguessugas, garras e demônios rasgam o ar em disputas por nada — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "hellflayer",
+      "nivel": 88,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 72
+      },
+      "melee": {
+        "min": 174,
+        "max": 695,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 348,
+          "max": 782,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 6558,
+            "chance": 16
+          },
+          {
+            "id": 9058,
+            "chance": 5.2
+          },
+          {
+            "id": 238,
+            "chance": 38.4
+          },
+          {
+            "id": 7642,
+            "chance": 9.2
+          },
+          {
+            "id": 3033,
+            "chance": 8
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 101511
+        }
+      }
+    },
+    "segredo-warzone-2": {
+      "id": "segredo-warzone-2",
+      "nome": "A Sombra de Warzone 2",
+      "descricao": "Um segredo de Warzone 2.",
+      "lore": "Dizem que a segunda zona de guerra: lava, golens de magma e berserkers perdidos entre trincheiras que ainda queimam — e que alguém continua lá dentro, esperando.",
+      "categoria": "secreto",
+      "base": "lava-golem",
+      "nivel": 92,
+      "atributos": {
+        "vidaMult": 9,
+        "danoMult": 1.5,
+        "expMult": 8,
+        "armadura": 109
+      },
+      "melee": {
+        "min": 80,
+        "max": 320,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Ruptura",
+          "elemento": "physical",
+          "min": 280,
+          "max": 630,
+          "raio": 3,
+          "avisoMs": 1800,
+          "intervaloMs": 9000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Ferido",
+          "ate": 60,
+          "mods": {
+            "danoMult": 1.25
+          },
+          "aoEntrar": {
+            "fala": "Vocês não deviam ter achado este lugar.",
+            "escudo": {
+              "pctVida": 12,
+              "duracaoMs": 8000,
+              "vulnerabilidade": {
+                "pct": 25,
+                "ms": 5000
+              }
+            }
+          },
+          "comportamentos": [
+            {
+              "tipo": "invocar",
+              "criaturas": [
+                {
+                  "key": "magma-crawler",
+                  "qtd": 2
+                }
+              ],
+              "maxVivos": 4,
+              "intervaloMs": 18000,
+              "chance": 100,
+              "fala": "Venham!"
+            }
+          ]
+        },
+        {
+          "nome": "Enfurecido",
+          "ate": 30,
+          "mods": {
+            "danoMult": 1.5,
+            "velocidadeDeAtaque": 1.2
+          },
+          "aoEntrar": {
+            "fala": "Chega!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3037,
+            "chance": 51.84
+          },
+          {
+            "id": 3039,
+            "chance": 9.44
+          },
+          {
+            "id": 3071,
+            "chance": 23.6
+          },
+          {
+            "id": 3280,
+            "chance": 13.68
+          },
+          {
+            "id": 3320,
+            "chance": 12.48
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 168738
+        }
+      }
+    },
+    "mini-walking-pillar": {
+      "id": "mini-walking-pillar",
+      "nome": "Senhor de Walking Pillar",
+      "descricao": "Um chefe menor de Walking Pillar.",
+      "lore": "Dizem que o Pilar Caminhante e sua corte de luz escura: matéria, fonte e golpeadores da escuridão que gira ao redor — e que alguém continua lá dentro, esperando.",
+      "categoria": "miniboss",
+      "base": "walking-pillar",
+      "nivel": 100,
+      "atributos": {
+        "vidaMult": 5,
+        "danoMult": 1.25,
+        "expMult": 4,
+        "armadura": 156
+      },
+      "melee": {
+        "min": 300,
+        "max": 1200,
+        "intervaloMs": 2000
+      },
+      "usaPoderesDoBase": true,
+      "usaEscalaDaFase": true,
+      "comportamentos": [
+        {
+          "tipo": "area-telegrafada",
+          "nome": "Pancada no chão",
+          "elemento": "physical",
+          "min": 720,
+          "max": 1620,
+          "raio": 2,
+          "avisoMs": 1800,
+          "intervaloMs": 12000,
+          "chance": 100,
+          "alcance": 7
+        }
+      ],
+      "fases": [
+        {
+          "nome": "Enfurecido",
+          "ate": 50,
+          "mods": {
+            "danoMult": 1.3
+          },
+          "aoEntrar": {
+            "fala": "Não passarão!"
+          },
+          "comportamentos": []
+        }
+      ],
+      "recompensas": {
+        "loot": [
+          {
+            "id": 16130,
+            "chance": 45.76
+          },
+          {
+            "id": 43853,
+            "chance": 41.1
+          },
+          {
+            "id": 12600,
+            "chance": 33.96
+          },
+          {
+            "id": 43852,
+            "chance": 51.42
+          },
+          {
+            "id": 22193,
+            "chance": 51.32
+          },
+          {
+            "id": 3373,
+            "chance": 44
+          }
+        ],
+        "primeiraVitoria": {
+          "gold": 324818
+        }
+      }
+    }
+  }
+}

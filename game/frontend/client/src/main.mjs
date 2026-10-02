@@ -3,6 +3,7 @@ import { anunciarDrop } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
 import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
 import { MapView, definirCoresDeRaridade, dadosDaRaridade } from './map.mjs';
+import { encontroNaCasa, encontroPerto } from './encontros-na-tela.mjs';
 import {
   createWindow, windowBody, toggleWindow, setVisible, isVisible, setNotice, fecharAoClicarFora, quandoAbrir, esconderSemGravar,
   // O browse field troca o título a cada casa que abre: "Chão em 100, 65".
@@ -1369,10 +1370,16 @@ function handle(message) {
     case 'comparacao':
       receberComparacao(message);
       break;
-    case 'campanha':
+    case 'campanha': {
+      // O WORLD aberto pergunta de tempos em tempos (a limpeza anda sozinha, até offline): só redesenha se algo MUDOU — a câmera,
+      // a seleção e o Ato continuam como estavam, e quem abriu agora ganha o brilho de "descoberta".
+      const assinatura = JSON.stringify([message.campanha?.dificuldades?.map((d) => [d.liberada, d.fases.map((f) => [f.completa, f.liberada, f.limpezas]), d.bosses.map((b) => [b.liberado, b.vencido])]), message.campanha?.mundo, message.campanha?.bossesDerrotados, message.campanha?.aoCompletar]);
+      const igual = assinatura === state.campanhaAssinatura;
       state.campanha = message.campanha;
-      panelCtx.redraw?.();
+      state.campanhaAssinatura = assinatura;
+      if (!igual) panelCtx.redraw?.();
       break;
+    }
     case 'actionCatalog':
       setActionCatalog(message.catalog);
       // A Cyclopedia lê o mesmo catálogo: uma fonte só para a barra e para a
@@ -2082,6 +2089,7 @@ function applyState(message) {
   acompanharTroca(message);
 
   mapView.setSnapshot(message.hunt ?? message.city, message.character);
+  atualizarBotaoDeInteragir();
   // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
   atualizarMinimapa(!!message.hunt);
   /*
@@ -6195,6 +6203,56 @@ mapView.onTileHover = (casa, evento) => {
   mostrarBalaoDoMob(bicho, evento);
 };
 
+/*
+ * ---- Baús e altares da caçada ----
+ * Os marcadores vêm do servidor (`instancia.encontros`). Tocar no encontro ao alcance pede para interagir; o servidor
+ * confere distância, requisitos e "uma vez só". Longe, o clique segue como um passo normal.
+ */
+function pedirInteracao(encontro) {
+  if (encontro.decisao && encontro.estado === 'disponivel') return abrirJanelaDeDecisao(encontro);
+  send({ t: 'interagir', id: encontro.id });
+}
+
+/** A janela de decisão (área secreta, escolta): quem decide é o líder da party (ou quem está sozinho) — o servidor confere. */
+function abrirJanelaDeDecisao(encontro) {
+  document.getElementById('janela-decisao')?.remove();
+  const janela = el('div', 'janela-decisao');
+  janela.id = 'janela-decisao';
+  const fechar = () => janela.remove();
+  const responder = (aceitar) => {
+    send({ t: 'decidir', id: encontro.id, aceitar });
+    fechar();
+  };
+  const aceitar = el('button', 'decisao-sim', encontro.tipo === 'escolta' ? 'Partir' : 'Entrar');
+  const recusar = el('button', 'decisao-nao', 'Recusar');
+  const depois = el('button', 'decisao-depois', 'Decidir depois');
+  aceitar.type = recusar.type = depois.type = 'button';
+  aceitar.onclick = () => responder(true);
+  recusar.onclick = () => responder(false);
+  depois.onclick = fechar;
+  janela.append(el('h3', '', encontro.nome), el('p', '', encontro.descricao ?? (encontro.tipo === 'escolta' ? 'Alguém precisa de proteção na travessia.' : 'Uma passagem escondida.')), el('p', 'decisao-dica', 'Em grupo, quem decide é o líder. Recusar descarta esta oportunidade.'), el('div', 'decisao-botoes'));
+  janela.lastChild.append(aceitar, recusar, depois);
+  document.body.append(janela);
+}
+
+/** O botão "Interagir": aparece (só na caça online) quando há um baú ou altar ao alcance, e some quando não há. */
+function atualizarBotaoDeInteragir() {
+  const hunt = state.hunt;
+  const perto = hunt?.manual ? encontroPerto(hunt.instancia?.encontros, hunt.player ?? {}, hunt.z) : null;
+  let botao = document.getElementById('btn-interagir');
+  if (!perto) return void botao?.setAttribute('hidden', '');
+  if (!botao) {
+    botao = el('button', 'btn-interagir');
+    botao.id = 'btn-interagir';
+    botao.type = 'button';
+    document.body.append(botao);
+  }
+  botao.dataset.encontro = perto.id;
+  botao.textContent = perto.tipo === 'altar' ? `Ativar: ${perto.nome}` : perto.tipo === 'sobrevivencia' || perto.tipo === 'fenda' ? `Iniciar: ${perto.nome}` : perto.tipo === 'aprisionado' ? `Libertar: ${perto.nome}` : perto.decisao && perto.estado === 'disponivel' ? `Decidir: ${perto.nome}` : `Abrir: ${perto.nome}`;
+  botao.onclick = () => pedirInteracao(perto);
+  botao.removeAttribute('hidden');
+}
+
 mapView.onTileClick = (x, y) => {
   // Clique esquerdo no boneco de um NPC fala com ele. Ver `falarComNpcEm`.
   if (!state.hunt && falarComNpcEm(x, y)) return;
@@ -6210,6 +6268,8 @@ mapView.onTileClick = (x, y) => {
   if (!state.hunt && abrirObjetoEm(x, y)) return;
   if (!state.hunt) return send({ t: 'walkTo', x, y });
   if (!state.hunt.manual) return;
+  const encontroAqui = encontroNaCasa(state.hunt.instancia?.encontros, x, y, state.hunt.z);
+  if (encontroAqui && encontroPerto([encontroAqui], state.hunt.player ?? {}, state.hunt.z)) return pedirInteracao(encontroAqui);
   /*
    * A mira de ITEM vem antes da de slot por uma razão boba e real: as duas
    * nunca valem juntas, mas se um dia valerem, o gesto que o jogador acabou de

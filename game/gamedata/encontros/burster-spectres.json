@@ -1,0 +1,79 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Burster Spectres",
+      "x": 68,
+      "y": 60,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 7642,
+            "chance": 25
+          },
+          {
+            "id": 3060,
+            "chance": 25
+          },
+          {
+            "id": 3067,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 6945
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Burster Spectres",
+      "x": 61,
+      "y": 35,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "spell_dmg",
+          "valor": 2
+        },
+        {
+          "afixo": "protect_all",
+          "valor": 0.6
+        }
+      ],
+      "duracaoMs": 90000
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Matriarca de Burster Spectres",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-burster-spectres"
+    }
+  ]
+}

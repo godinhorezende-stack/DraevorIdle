@@ -1,0 +1,152 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Deathlings",
+      "x": 94,
+      "y": 53,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 15793,
+            "chance": 2.95
+          },
+          {
+            "id": 3032,
+            "chance": 2.95
+          },
+          {
+            "id": 14013,
+            "chance": 2.95
+          }
+        ],
+        "moedasMedia": 5036
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Deathlings",
+      "x": 36,
+      "y": 29,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 15793,
+            "chance": 2.95
+          },
+          {
+            "id": 3032,
+            "chance": 2.95
+          },
+          {
+            "id": 14013,
+            "chance": 2.95
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 10072
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "deathling-spellsinger",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Deathlings",
+      "x": 65,
+      "y": 84,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 15793,
+            "chance": 2.95
+          },
+          {
+            "id": 3032,
+            "chance": 2.95
+          },
+          {
+            "id": 14013,
+            "chance": 2.95
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 10072
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "deathling-spellsinger",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    },
+    {
+      "id": "segredo-1",
+      "tipo": "boss-secreto",
+      "nome": "A Sombra de Deathlings",
+      "ativo": true,
+      "probabilidade": 5,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "apos-encontro",
+        "encontro": "bau-raro-1"
+      },
+      "bossId": "segredo-deathlings"
+    }
+  ]
+}

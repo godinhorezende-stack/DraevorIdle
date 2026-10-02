@@ -1,0 +1,128 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Mistrock Cyclops",
+      "x": 78,
+      "y": 33,
+      "z": 3,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 1.45
+          },
+          {
+            "id": 3294,
+            "chance": 1.45
+          },
+          {
+            "id": 3266,
+            "chance": 1.45
+          }
+        ],
+        "moedasMedia": 20
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Mistrock Cyclops",
+      "x": 72,
+      "y": 30,
+      "z": 3,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "phys_dmg",
+          "valor": 8
+        },
+        {
+          "afixo": "armour_pct",
+          "valor": 10
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "cyclops",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Mistrock Cyclops",
+      "x": 62,
+      "y": 39,
+      "z": 3,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 1.45
+          },
+          {
+            "id": 3294,
+            "chance": 1.45
+          },
+          {
+            "id": 3266,
+            "chance": 1.45
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 40
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "cyclops-smith",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

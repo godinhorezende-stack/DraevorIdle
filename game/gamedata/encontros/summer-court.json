@@ -1,0 +1,82 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Summer Court",
+      "x": 44,
+      "y": 40,
+      "z": 13,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 7642,
+            "chance": 25
+          },
+          {
+            "id": 7643,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 16650
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Summer Court",
+      "x": 42,
+      "y": 76,
+      "z": 13,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "crit_chance",
+          "valor": 3
+        },
+        {
+          "afixo": "dmg_reduction",
+          "valor": 3
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "thanatursus",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

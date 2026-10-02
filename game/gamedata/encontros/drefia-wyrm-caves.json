@@ -1,0 +1,95 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Drefia Wyrm Caves",
+      "x": 30,
+      "y": 71,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 6558,
+            "chance": 25
+          },
+          {
+            "id": 9665,
+            "chance": 25
+          },
+          {
+            "id": 3583,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 5175
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Drefia Wyrm Caves",
+      "x": 77,
+      "y": 43,
+      "z": 14,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "phys_dmg",
+          "valor": 8
+        },
+        {
+          "afixo": "armour_pct",
+          "valor": 10
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "elder-wyrm",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Guardião de Drefia Wyrm Caves",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-drefia-wyrm-caves"
+    }
+  ]
+}
