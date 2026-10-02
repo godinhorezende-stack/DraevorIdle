@@ -1035,7 +1035,7 @@
     "id": "loot",
     "item": 55853,
     "nome": "Buff Power Loot",
-    "resumo": "+50% de loot, em caverna e em boss",
+    "resumo": "+50% de chance de cada drop, em caverna e em boss (mais itens; não muda a raridade)",
     "cor": "dourado",
     "custo": {
      "moeda": "coins",

@@ -1,5 +1,5 @@
 {
- "_nota": "Raridade do ITEM (sorteada em cada drop). Chances em %, por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Ato 3 Médio: Lendário 2 -> 2,85 (a tabela original somava 99,15). Números iniciais, não balanceamento definitivo.",
+ "_nota": "Raridade do ITEM (sorteada em cada drop), tabela do mob NORMAL por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Curva global de 02/10: a qualidade nunca cai ao passar de um estágio para o seguinte; a média pelo mix real de mobs dá, no Merciless 4 e sem booster, ~raro 1/10 abates, épico 1/30, lendário 1/150 e mítico 1/1.000.",
  "ordem": [
   "comum",
   "incomum",
@@ -181,117 +181,145 @@
   }
  ],
  "dificuldadePadrao": "facil",
- "_boss": "Sala de boss: o drop usa a dificuldade N degraus acima (Fácil -> Médio), no lugar do degrau de tier a mais que o boss já dava.",
+ "_boss": "Boss de Ato (campanha): o drop usa a dificuldade N degraus acima (`dificuldadeAMais`; a última não tem acima). `equipamentoGarantido`: quantas peças de equipamento a vitória acrescenta ao loot do boss (por dificuldade), sorteadas entre as `janelaDePecas` de maior level mínimo até o level do boss (da vocação do personagem), e `raridadeMinima`: a raridade mínima dessas peças naquela dificuldade (a peça abaixo disso sai na raridade mínima).",
  "boss": {
-  "dificuldadeAMais": 1
+  "dificuldadeAMais": 1,
+  "equipamentoGarantido": {
+   "facil": 1,
+   "medio": 2,
+   "dificil": 3
+  },
+  "raridadeMinima": {
+   "dificil": "raro"
+  },
+  "janelaDePecas": 40
  },
  "chances": {
   "1": {
    "facil": {
-    "comum": 72,
-    "incomum": 20,
-    "raro": 7,
-    "épico": 0.9,
-    "lendário": 0.099,
-    "mítico": 0.001
+    "comum": 75.733405,
+    "incomum": 20.0,
+    "raro": 3.990685,
+    "épico": 0.265813,
+    "lendário": 0.009878,
+    "mítico": 0.000219
    },
    "medio": {
-    "comum": 68,
-    "incomum": 22,
-    "raro": 8.8,
-    "épico": 1,
-    "lendário": 0.197,
-    "mítico": 0.003
+    "comum": 67.370495,
+    "incomum": 22.8,
+    "raro": 8.27624,
+    "épico": 1.332727,
+    "lendário": 0.200501,
+    "mítico": 0.020037
    },
    "dificil": {
-    "comum": 64,
-    "incomum": 23,
-    "raro": 10.8,
-    "épico": 1.7,
-    "lendário": 0.49,
-    "mítico": 0.01
+    "comum": 64.675935,
+    "incomum": 22.0,
+    "raro": 10.283253,
+    "épico": 2.522669,
+    "lendário": 0.462841,
+    "mítico": 0.055302
    }
   },
   "2": {
    "facil": {
-    "comum": 68,
-    "incomum": 22,
-    "raro": 8.5,
-    "épico": 1.2,
-    "lendário": 0.29,
-    "mítico": 0.01
+    "comum": 72.76847,
+    "incomum": 22.0,
+    "raro": 4.846704,
+    "épico": 0.354564,
+    "lendário": 0.028955,
+    "mítico": 0.001307
    },
    "medio": {
-    "comum": 63,
-    "incomum": 24,
-    "raro": 10.5,
-    "épico": 1.8,
-    "lendário": 0.67,
-    "mítico": 0.03
+    "comum": 64.237073,
+    "incomum": 25.0,
+    "raro": 8.849075,
+    "épico": 1.629769,
+    "lendário": 0.260897,
+    "mítico": 0.023186
    },
    "dificil": {
-    "comum": 58,
-    "incomum": 25,
-    "raro": 12,
-    "épico": 3,
-    "lendário": 1.92,
-    "mítico": 0.08
+    "comum": 60.736576,
+    "incomum": 25.0,
+    "raro": 10.856995,
+    "épico": 2.82093,
+    "lendário": 0.523688,
+    "mítico": 0.061811
    }
   },
   "3": {
    "facil": {
-    "comum": 62,
-    "incomum": 24,
-    "raro": 11,
-    "épico": 2,
-    "lendário": 0.95,
-    "mítico": 0.05
+    "comum": 69.034664,
+    "incomum": 24.0,
+    "raro": 6.274431,
+    "épico": 0.591427,
+    "lendário": 0.094988,
+    "mítico": 0.00449
    },
    "medio": {
-    "comum": 56,
-    "incomum": 25,
-    "raro": 13,
-    "épico": 3,
-    "lendário": 2.85,
-    "mítico": 0.15
+    "comum": 62.281256,
+    "incomum": 26.0,
+    "raro": 9.422289,
+    "épico": 1.927186,
+    "lendário": 0.34151,
+    "mítico": 0.027759
    },
    "dificil": {
-    "comum": 49,
-    "incomum": 26,
-    "raro": 15,
-    "épico": 5,
-    "lendário": 4.6,
-    "mítico": 0.4
+    "comum": 58.929405,
+    "incomum": 26.0,
+    "raro": 11.145348,
+    "épico": 3.26814,
+    "lendário": 0.584674,
+    "mítico": 0.072433
    }
   },
   "4": {
    "facil": {
-    "comum": 55,
-    "incomum": 25,
-    "raro": 14,
-    "épico": 4,
-    "lendário": 1.8,
-    "mítico": 0.2
+    "comum": 65.633514,
+    "incomum": 25.0,
+    "raro": 7.989933,
+    "épico": 1.18433,
+    "lendário": 0.180367,
+    "mítico": 0.011856
    },
    "medio": {
-    "comum": 48,
-    "incomum": 26,
-    "raro": 16,
-    "épico": 6,
-    "lendário": 3.5,
-    "mítico": 0.5
+    "comum": 61.161913,
+    "incomum": 26.0,
+    "raro": 9.996364,
+    "épico": 2.37359,
+    "lendário": 0.432438,
+    "mítico": 0.035695
    },
    "dificil": {
-    "comum": 40,
-    "incomum": 25,
-    "raro": 19,
-    "épico": 10,
-    "lendário": 5,
-    "mítico": 1
+    "comum": 58.254506,
+    "incomum": 26.0,
+    "raro": 11.433357,
+    "épico": 3.566861,
+    "lendário": 0.655755,
+    "mítico": 0.089521
    }
   }
  },
  "_nota_base": "Faixa de ataque/defesa/armadura da peça, em % do valor do catálogo. No drop sorteia-se o PISO em `piso` e o TETO em `teto`; o maior piso possível é o menor teto possível, então o teto nunca fica abaixo do piso. A peça guarda [piso, teto] e o ataque de cada golpe sorteia entre os dois. Comum nunca passa de 100%. Ex. ataque 20: Comum 2–16 / 16–20, Épico 17–22 / 22–27.",
  "_nota_joia": "Anel e amuleto: o que a peça traz de base, em %: nada, só armadura (física/mágica, ver `armadura`), só ataque ou armadura + ataque. Comum e Incomum nunca vêm com os dois.",
- "_nota_poder": "chanceDoEfeito: a chance de a peça vir com o poder da raridade (Lendário: 'possível Legendary Power' — 50%; Mítico: sempre)."
+ "_nota_poder": "chanceDoEfeito: a chance de a peça vir com o poder da raridade (Lendário: 'possível Legendary Power' — 50%; Mítico: sempre).",
+ "mobs": {
+  "inclinacao": {
+   "normal": 1,
+   "modificado": 1.05,
+   "raro": 1.15,
+   "elite": 1.3,
+   "unico": 1.45,
+   "boss": 1.6
+  },
+  "posicao": {
+   "comum": 0,
+   "incomum": 0,
+   "raro": 1,
+   "épico": 2,
+   "lendário": 3,
+   "mítico": 3
+  }
+ },
+ "_mobs": "A RARIDADE DO MOB inclina a qualidade do drop (auditoria de loot, 02/10): o peso de cada raridade do item é `base(estágio)[r] × inclinacao[mob] ^ posicao[r]`, normalizado para somar 100% — nunca passa de 100%. `chances` é a tabela do mob NORMAL, calibrada para que a média pelo mix real de mobs (75/15/5/2,6/1,1/1,1%) reproduza a curva aprovada. O mítico tem a mesma posição do lendário (não explode em elites). A QUANTIDADE (chance de cada drop) é o `loot` de `gamedata/mobs/raridades.json`; o booster só mexe na quantidade."
 }

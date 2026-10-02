@@ -31,8 +31,8 @@ test('configuração: validada, e as faixas T1 < T2 < T3 < T4 < T5 (T1 o mais fr
     const medias = [1, 2, 3, 4, 5].map((n) => (a.niveis[n][0] + a.niveis[n][1]) / 2);
     for (let i = 1; i < 5; i++) assert.ok(medias[i] > medias[i - 1], `${id}: T${i + 1} > T${i}`);
   }
-  // A correção do Ato 3 Médio (a tabela original somava 99,15).
-  assert.equal(C.RARIDADES.chances['3'].medio['lendário'], 2.85);
+  // Ato 3 Médio: a curva global de 02/10 (auditoria de loot) substituiu a tabela original.
+  assert.equal(C.RARIDADES.chances['3'].medio['lendário'], 0.34151); // curva de 02/10 (a tabela antiga era 2,85)
 });
 
 // A lista de modificadores confirmada pelo dono (29/09).

@@ -214,9 +214,13 @@ const RAR = CONFIG.raridades;
 export const raridadeDaGema = (r) => (RAR.ordem.includes(r) ? r : 'comum');
 /** Quanto a raridade multiplica o bônus da gema (nível da ativa, efeito da support). */
 export const multiplicadorDaRaridade = (r) => RAR.multiplicador[raridadeDaGema(r)] ?? 1;
-/** Sorteia a raridade de uma gema que cai de bicho (`raridades.pesoNoDrop`). */
-export function sortearRaridade(rng = Math.random) {
-  const pesos = Object.entries(RAR.pesoNoDrop);
+/** O fator de raridade do estágio (Ato × dificuldade da fase); 1 fora da campanha. */
+export const fatorDoEstagio = (ato, dificuldade) => RAR.porEstagio?.[dificuldade]?.[Number(ato) - 1] ?? 1;
+/** Sorteia a raridade de uma gema que cai de bicho (`raridades.pesoNoDrop`, pelo estágio da fase). */
+export function sortearRaridade(rng = Math.random, { ato = null, dificuldade = null } = {}) {
+  const fator = fatorDoEstagio(ato, dificuldade);
+  // Raro para cima × o fator do estágio (e o mítico ainda × `fatorDoMitico`); o comum e o incomum ficam como estão.
+  const pesos = Object.entries(RAR.pesoNoDrop).map(([r, p]) => [r, RAR.ordem.indexOf(r) >= RAR.ordem.indexOf('raro') ? p * fator * (r === 'mítico' ? RAR.fatorDoMitico ?? 1 : 1) : p]);
   let sorte = rng() * pesos.reduce((t, [, p]) => t + p, 0);
   for (const [r, p] of pesos) if ((sorte -= p) < 0) return r;
   return 'comum';
@@ -727,7 +731,7 @@ export function vistaDosSoquetes(peca, level = 1) {
  * fração vira support. A ativa sai entre as skills que um personagem no
  * gemas do jogo (sem trava de level — a gema cai no nível 1).
  */
-export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
+export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1, dificuldade = null } = {}, rng = Math.random) {
   const d = CONFIG.drop;
   const chance = (d.chancePorAto[String(ato)] ?? d.chancePorAto['1'] ?? 0) * fatorDeChance;
   if (!(rng() < chance)) return null;
@@ -736,7 +740,7 @@ export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1 } = {}
   const lista = rng() < d.parteSupport && supports.length ? supports : ativas.length ? ativas : supports;
   const def = lista[Math.floor(rng() * lista.length)];
   const [qlo, qhi] = Q.noDrop;
-  return def ? itemDaGema(novaGema(def.itemId, sortearRaridade(rng), qlo + Math.floor(rng() * (qhi - qlo + 1)))) : null;
+  return def ? itemDaGema(novaGema(def.itemId, sortearRaridade(rng, { ato, dificuldade }), qlo + Math.floor(rng() * (qhi - qlo + 1)))) : null;
 }
 
 // ---------------------------------------------------------------- loja (Zuma Magehide)

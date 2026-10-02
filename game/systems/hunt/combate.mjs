@@ -17,6 +17,7 @@ import * as Tiers from '../tiers.mjs';
 import * as Afixos from '../afixos.mjs';
 import * as DropsDoSite from '../drops-do-site.mjs';
 import { nomeDaHunt, huntOuMapaCustom } from './terreno.mjs';
+import { pecasGarantidas } from '../itens/equipamento-do-boss.mjs';
 import { gerarItem } from '../itens/gerar.mjs';
 import * as EfeitosDeItem from '../itens/efeitos.mjs';
 import * as Campanha from '../campanha.mjs';
@@ -280,6 +281,13 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
       Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
   }
+  // O boss de fim de Ato (campanha) ACRESCENTA equipamento ao loot: antes só dava tokens, poções e gemas (`itens/equipamento-do-boss.mjs`).
+  if (hunt.campanha?.bossDoAto) {
+    for (const peca of pecasGarantidas(contextoDoDrop(hunt), estado.vocation)) {
+      itens.push(peca);
+      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
+    }
+  }
   Bau.novaSacola(estado, alvo.name, itens);
   // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.
   if (hunt.campanha?.bossDoAto) Campanha.venceuBoss(estado, hunt.campanha.dificuldade, hunt.campanha.bossDoAto);
@@ -412,7 +420,7 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
       continue;
     }
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
-    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt) });
+    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), raridadeDoMob: alvo.raridade });
     const af = peca.af ?? null;
     // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
     const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;
@@ -607,6 +615,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   const gemaQueCai = GemasDeSkill.sortearDrop({
     ato: Number(contextoDoDrop(hunt).ato) || 1,
     levelDaFase: hunt.escala?.nivel ?? estado.level ?? 1,
+    dificuldade: contextoDoDrop(hunt).dificuldade ?? null,
     fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
   });
   if (gemaQueCai && Bolsa.porNaBolsa(estado, gemaQueCai.id, 1, gemaQueCai)) {
