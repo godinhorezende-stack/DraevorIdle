@@ -84,3 +84,10 @@ test('o balão do item não anuncia cargas (a peça não gasta cargas ao aparar 
   assert.ok(!fonte.includes('gasta uma a cada golpe'), 'a linha de cargas saiu');
   assert.ok(!/de \$\{desgastado\.total\} cargas/.test(fonte), 'nem a de "N de M cargas"');
 });
+
+test('a barra de cargas do inventário só existe para a arma de treino (a única que gasta cargas)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const fonte = readFileSync(new URL('../frontend/client/src/inventory.mjs', import.meta.url), 'utf8');
+  assert.match(fonte, /meta\.charges > 0 && ehTreino \? 'carga'/);
+  assert.match(fonte, /meta\.type === 'exercise weapons'/);
+});

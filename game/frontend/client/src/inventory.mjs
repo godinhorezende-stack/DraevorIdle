@@ -1658,7 +1658,10 @@ function selarAfixos(cell, entry) {
 function desgasteDaPeca(entry) {
   const meta = ctx.state.items?.[entry?.id];
   if (!meta) return null;
-  const tipo = meta.charges > 0 ? 'carga' : meta.duration > 0 ? 'tempo' : null;
+  // Cargas: só a ARMA DE TREINO gasta (o servidor desconta a cada golpe no boneco — `exercicio.mjs`). Amuleto, anel e runa trazem `charges` no
+  // catálogo, mas nada os gasta: a barra "5 de 5 cargas" seria uma informação falsa.
+  const ehTreino = meta.type === 'exercise weapons';
+  const tipo = meta.charges > 0 && ehTreino ? 'carga' : meta.duration > 0 ? 'tempo' : null;
   if (!tipo) return null;
 
   const total = tipo === 'carga' ? meta.charges : meta.duration;
