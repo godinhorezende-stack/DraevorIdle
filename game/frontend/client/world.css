@@ -125,7 +125,7 @@
 .w2.larga .w2-barra { grid-area: barra; padding: 2px; } .w2.larga .w2-atalho { min-height: 32px; }
 .w2.larga .w2-registro { position: absolute; right: 12px; top: 150px; z-index: 5; max-width: 320px; }
 /* lado (a janela tem 1100 px ou mais): o painel da fase fica À DIREITA do mapa */
-.w2.lado { grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "cab cab" "dif dif" "abas abas" "barra barra" "aviso aviso" "palco painel"; grid-template-rows: auto auto auto auto auto minmax(0, 1fr); }
+.w2.lado { grid-template-columns: minmax(0, 1fr) var(--w2-painel, 340px); grid-template-areas: "cab cab" "dif dif" "abas abas" "barra barra" "aviso aviso" "palco painel"; grid-template-rows: auto auto auto auto auto minmax(0, 1fr); }
 .w2.lado .w2-painel { grid-template-columns: 1fr; max-height: none; height: 100%; gap: 8px; }
 .w2.lado .w2-col.acao { position: sticky; bottom: -12px; padding: 8px 0 2px; background: linear-gradient(180deg, transparent, #15100a 28%); order: 9; }
 

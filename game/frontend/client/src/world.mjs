@@ -290,21 +290,26 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   // A tela se adapta à CAIXA do jogo em que está: mede a janela (e remede quando ela muda) e marca `larga` (700 px+: ocupa a altura toda, sem
   // rolagem) e `lado` (1100 px+: painel à direita). Celular em pé fica no fluxo normal (a página rola).
   const medir = () => {
-    if (!raiz.isConnected) return void observador?.disconnect();
+    if (!raiz.isConnected) return void window.removeEventListener('resize', medir);
     const cs = getComputedStyle(body);
     const larguraUtil = body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    // A altura vem do LIMITE da janela do jogo (`max-height` da caixa), nunca do tamanho atual do conteúdo: medir o conteúdo que a própria
+    // medida define faria a tela encolher a cada passo.
+    const caixa = body.closest('.modal-box');
+    const ccs = caixa ? getComputedStyle(caixa) : null;
+    const teto = ccs && /px$/.test(ccs.maxHeight) ? parseFloat(ccs.maxHeight) : window.innerHeight * 0.9;
+    const molduras = ccs ? parseFloat(ccs.borderTopWidth) + parseFloat(ccs.borderBottomWidth) : 0;
+    const irmaos = caixa ? [...caixa.children].filter((c) => c !== body && getComputedStyle(c).position !== 'absolute').reduce((n, c) => n + c.offsetHeight, 0) : 0;
     const topo = raiz.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop;
-    const altura = body.clientHeight - topo - parseFloat(cs.paddingBottom) - 2;
-    const cabe = larguraUtil >= 700 && altura >= 420 && !(window.innerHeight < 460 && window.innerWidth > window.innerHeight);
+    const altura = teto - molduras - irmaos - topo - parseFloat(cs.paddingBottom) - 6;
+    const cabe = larguraUtil >= 700 && altura >= 340 && !(window.innerHeight < 460 && window.innerWidth > window.innerHeight);
     raiz.classList.toggle('larga', cabe);
-    raiz.classList.toggle('lado', cabe && larguraUtil >= 1100);
+    // O painel vai para o LADO do mapa assim que cabe (a caixa do jogo é baixa: empilhar deixaria o mapa minúsculo).
+    raiz.classList.toggle('lado', cabe && larguraUtil >= 780);
+    raiz.style.setProperty('--w2-painel', larguraUtil >= 1100 ? '340px' : '300px');
     raiz.style.setProperty('--w2-h', cabe ? `${Math.floor(altura)}px` : 'auto');
   };
-  let observador = null;
-  if (typeof ResizeObserver === 'function') {
-    observador = new ResizeObserver(medir);
-    observador.observe(body);
-  }
+  window.addEventListener('resize', medir);
   body.scrollTop = 0;
   medir();
 
