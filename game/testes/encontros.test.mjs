@@ -42,7 +42,8 @@ test('validação: o que é aceito e o que é recusado (com mensagem)', () => {
 });
 
 test('os tipos planejados ainda NÃO são utilizáveis em mapa (conteúdo pela metade nunca chega a uma instância)', () => {
-  for (const [nome, t] of Object.entries(TIPOS)) if (!nome.startsWith('t-')) assert.equal(t.implementado, false, nome);
+  // Os de boss chegaram na etapa 2; baús e altares (etapa 3) e a v2 seguem fora.
+  for (const [nome, t] of Object.entries(TIPOS)) if (!nome.startsWith('t-') && !['boss', 'miniboss', 'boss-secreto'].includes(nome)) assert.equal(t.implementado, false, nome);
   assert.throws(() => registrarTipo('t-sem-gancho', { idle: 'auto' }), /resolverNoIdle/);
 });
 

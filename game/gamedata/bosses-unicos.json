@@ -1,0 +1,23 @@
+{
+  "_nota": "Os BOSSES ÚNICOS (systems/bosses-unicos/): entidades próprias, com fases de combate e comportamentos configuráveis — não um monstro comum com vida aumentada. Vazio por enquanto: o conteúdo (nomes, lore, mecânicas) é decisão de design. O formato está em systems/bosses-unicos/catalogo.mjs (`normalizar`/`validar`) e nos testes (bosses-unicos.test.mjs).",
+  "_exemplo": {
+    "id": "guardiao-da-fortaleza",
+    "nome": "Guardião da Fortaleza",
+    "descricao": "O último guardião da fortaleza corrompida.",
+    "lore": "Jurou proteger a passagem e não percebeu quando o juramento virou prisão.",
+    "categoria": "principal",
+    "base": "cyclops-smith",
+    "nivel": 60,
+    "atributos": { "vidaMult": 12, "danoMult": 1.2, "armadura": 40, "expMult": 5, "resistencias": { "fire": 20 } },
+    "melee": { "min": 40, "max": 120, "intervaloMs": 2000 },
+    "comportamentos": [
+      { "tipo": "area-telegrafada", "nome": "Pancada no chão", "elemento": "physical", "min": 150, "max": 250, "raio": 2, "avisoMs": 1500, "intervaloMs": 7000, "chance": 100 }
+    ],
+    "fases": [
+      { "nome": "Enfurecido", "ate": 60, "mods": { "danoMult": 1.3 }, "aoEntrar": { "fala": "Não passarão!", "escudo": { "pctVida": 10, "duracaoMs": 8000, "vulnerabilidade": { "pct": 30, "ms": 5000 } } },
+        "comportamentos": [ { "tipo": "invocar", "criaturas": [{ "key": "cyclops", "qtd": 2 }], "maxVivos": 4, "intervaloMs": 15000, "chance": 100 } ] }
+    ],
+    "recompensas": { "loot": [{ "id": 3031, "chance": 100, "min": 50, "max": 100 }], "primeiraVitoria": { "gold": 5000 } }
+  },
+  "bosses": {}
+}

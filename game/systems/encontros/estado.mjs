@@ -50,6 +50,7 @@ export function criar(instancia, definicoes, { semente = novaSemente(), agora = 
         ...(def.expiraMs ? { expiraMs: def.expiraMs } : {}),
         ...(def.x != null ? { x: def.x, y: def.y, ...(def.z != null ? { z: def.z } : {}) } : {}),
         ...(def.recompensa ? { recompensa: def.recompensa } : {}),
+        ...(def.bossId ? { bossId: def.bossId } : {}),
       };
     }
   }
@@ -102,12 +103,17 @@ export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = n
       mudou++;
     }
   }
+  // O tipo confere se o encontro EM ANDAMENTO ainda tem como terminar (ex.: o boss sumiu sem o gancho de morte):
+  // nunca deixa a instância esperando por algo que não existe mais.
+  if (hunt) {
+    for (const e of Object.values(todos)) if (e.estado === 'ativo') tipoDe(e.tipo)?.verificar?.({ hunt, instancia, encontro: e, agora });
+  }
   if (hunt?.modo === 'auto') {
     for (const e of Object.values(todos)) {
       const tipo = tipoDe(e.tipo);
       // Quem pede uma DECISÃO do jogador não é ativado pelo idle (e expira, se for opcional).
       if (!tipo || tipo.idle === 'escolha') continue;
-      if (e.estado === 'disponivel' && ativar(instancia, e.id, { quem: 'idle', agora }).ok) mudou++;
+      if (e.estado === 'disponivel' && ativar(instancia, e.id, { quem: 'idle', agora, hunt }).ok) mudou++;
       if (e.estado === 'ativo' && tipo.resolverNoIdle) {
         tipo.resolverNoIdle({ hunt, instancia, encontro: e, agora });
         mudou++;
@@ -120,7 +126,7 @@ export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = n
 const nega = (motivo) => ({ ok: false, motivo });
 
 /** `disponivel → ativo`. Só o primeiro comando vale: o segundo (mesmo de outro jogador) devolve `ja-ativo`. */
-export function ativar(instancia, id, { quem = null, agora = 0 } = {}) {
+export function ativar(instancia, id, { quem = null, agora = 0, hunt = null } = {}) {
   const e = instancia?.encontros?.[id];
   if (!e) return nega('nao-existe');
   if (e.estado === 'ativo') return nega('ja-ativo');
@@ -129,7 +135,7 @@ export function ativar(instancia, id, { quem = null, agora = 0 } = {}) {
   e.estado = 'ativo';
   e.ativadoPor = quem;
   e.ativadoEm = agora;
-  tipoDe(e.tipo)?.aoAtivar?.({ instancia, encontro: e, agora });
+  tipoDe(e.tipo)?.aoAtivar?.({ hunt, instancia, encontro: e, agora });
   return { ok: true, encontro: e };
 }
 
@@ -170,6 +176,13 @@ export function cancelar(instancia, id, { agora = 0 } = {}) {
   e.disponivelEm = agora;
   delete e.ativadoPor;
   return { ok: true, encontro: e };
+}
+
+/** Quantos encontros estão EM ANDAMENTO (ativos): seguram o CLEAR, obrigatórios ou não. */
+export function emAndamento(instancia) {
+  let n = 0;
+  for (const e of Object.values(instancia?.encontros ?? {})) if (e.estado === 'ativo') n++;
+  return n;
 }
 
 /** Quantos encontros OBRIGATÓRIOS ainda faltam (trava o CLEAR da fase). */

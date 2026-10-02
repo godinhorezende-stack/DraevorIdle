@@ -24,6 +24,7 @@ import * as Prey from '../prey.mjs';
 import * as Arvore from '../arvore.mjs';
 import * as Bosses from '../bosses.mjs';
 import * as Poderes from '../poderes.mjs';
+import * as BossesUnicos from '../bosses-unicos/boss.mjs';
 import * as Reforcos from '../skills/reforcos.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
@@ -376,6 +377,23 @@ export function fichaDoBicho(estado, hunt, key, { huntId = null, dificuldade = n
   return { ...estimarExpDoBicho(estado, hunt, key, { huntId, dificuldade }), ataques: Poderes.ataquesParaFicha(key), escalaDoDano };
 }
 
+/** A recompensa de PRIMEIRA vitória sobre um boss único (ouro, exp e itens), entregue por `BossesUnicos.aoMorrer`. */
+function aplicarRecompensaDeBoss({ estado, gold, exp, itens, nome }) {
+  const partes = [];
+  if (gold > 0) {
+    darOuro(estado, gold);
+    partes.push(`${gold.toLocaleString('pt-BR')} de ouro`);
+  }
+  if (exp > 0) {
+    estado.xp = (estado.xp ?? 0) + exp;
+    Ficha.totais(estado).exp += exp;
+    subirDeLevel(estado);
+    partes.push(`${exp.toLocaleString('pt-BR')} de experiência`);
+  }
+  for (const { id, count } of itens) if (Bolsa.porNaBolsa(estado, id, count)) partes.push(`${count}x ${ITEM_CATALOG[id]?.name ?? id}`);
+  estado.avisoDaHunt = `Primeira vitória sobre ${nome}${partes.length ? `: ${partes.join(', ')}` : ''}.`;
+}
+
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // As mecânicas do mob ao morrer (Explosivo, Procriador) e as dos vizinhos (Vingativo) — `mobs/mecanicas.mjs`.
   Mecanicas.aoMorrer(estado, hunt, personagem, alvo, eventos);
@@ -385,6 +403,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (alvo.spawn) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
     tirarMonstro(hunt, alvo);
     return;
+  }
+  // Boss único (`bosses-unicos/`): leva os lacaios, conclui o encontro e paga a PRIMEIRA vitória de quem estava na luta.
+  if (alvo.boss) {
+    const partilha = hunt.partilha;
+    const quem = [estado, ...(partilha?.ativa ? partilha.membros.map((m) => m.estado).filter((e) => e?.hunt) : [])];
+    for (const r of BossesUnicos.aoMorrer(hunt, alvo, { quem, agora: hunt.clock ?? 0 })) aplicarRecompensaDeBoss(r);
   }
   // A exp de verdade: a do bicho x (bônus de level + boosts + premium). Ver `Boosts.expDoBicho`.
   // Shared Experience (party na mesma caçada, ver `party.mjs`): a exp do bicho,
@@ -715,14 +739,16 @@ export function golpesDosMonstros(estado, hunt, personagem) {
   for (const bicho of hunt.monstros) {
     // As magias de um bicho já mataram: os outros não batem no personagem caído.
     if ((estado.hp ?? 0) <= 0) break;
-    if (bicho.dummy || bicho.hp <= 0 || !Poderes.temPoderes(bicho) || distancia(hunt.pos, bicho) > ALCANCE_DAS_MAGIAS) continue;
+    // O boss único (`bosses-unicos/`) tem os comportamentos DELE além (ou no lugar) das magias do arquivo da criatura-base.
+    if (bicho.dummy || bicho.hp <= 0 || !(bicho.boss || Poderes.temPoderes(bicho)) || distancia(hunt.pos, bicho) > ALCANCE_DAS_MAGIAS) continue;
     // Congelado ou atordoado (supports Freeze/Stun): não lança.
     if (!Estados.podeAgir(bicho, agora)) continue;
     if (!ficha) {
       ficha = Ficha.combate(estado);
       escudo = Acoes.temBuff(hunt, 'shield');
     }
-    Poderes.lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, escudo);
+    if (bicho.boss) BossesUnicos.tique({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo: escudo });
+    if (Poderes.temPoderes(bicho) && !bicho.boss?.semPoderesDoBase) Poderes.lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, escudo);
   }
   for (const bicho of hunt.monstros) {
     if (bicho.dummy || bicho.hp <= 0 || distancia(hunt.pos, bicho) > 1 || Poderes.semCorpoACorpo(bicho)) continue;
@@ -732,7 +758,7 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     if (!Estados.podeAgir(bicho, agora)) continue;
     // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
     // (+ o buff de velocidade de ataque das mecânicas: Enfurecido, Vingativo — `mobs/buffs.mjs`.)
-    bicho.proximoGolpe = agora + (ATAQUE_DO_MONSTRO_MS * Estados.fatorDeLentidao(bicho, agora)) / ((bicho.velocidadeDeAtaque ?? 1) * (1 + BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') / 100));
+    bicho.proximoGolpe = agora + ((bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS) * Estados.fatorDeLentidao(bicho, agora)) / ((bicho.velocidadeDeAtaque ?? 1) * (1 + BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') / 100));
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;

@@ -49,14 +49,19 @@ const EFEITO_DO_SANGUE = 1;
 
 /** O nome do golpe como o original escreve: o físico no alvo é "à distância" (Ghastly Dragon). */
 function nomeDoGolpe(a) {
+  // Boss único: o golpe leva o nome que o cadastro deu (as magias dos arquivos não têm `golpe`).
+  if (a.golpe) return a.golpe;
   if (a.elemento === 'physical' && a.forma === 'alvo') return 'à distância';
   return `${NOME_DO_ELEMENTO[a.elemento] ?? a.elemento}${FORMA[a.forma]}`;
 }
 
 const sortear = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
 const distancia = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+/** A distância em casas (a regra de alcance das magias). */
+export const distanciaAte = distancia;
 
 export const temPoderes = (bicho) => !!PODERES[bicho?.key];
+
 
 /**
  * Os ataques de um bicho para a FICHA (bestiário e prévia da hunt): os mesmos do arquivo que `lancar` e
@@ -84,10 +89,12 @@ export function ataquesParaFicha(key) {
 }
 
 /** Boss cujo arquivo não tem melee (Brain Head, Malofur, The Nightmare Beast): só magia. */
-export const semCorpoACorpo = (bicho) => !!PODERES[bicho?.key] && !PODERES[bicho.key].ataques.some((a) => a.tipo === 'melee');
+// Boss único: só bate de perto se o cadastro deu um `melee` (a regra genérica daria milhares num chefe de muita vida).
+export const semCorpoACorpo = (bicho) => (bicho?.boss ? !bicho.boss.melee : !!PODERES[bicho?.key] && !PODERES[bicho.key].ataques.some((a) => a.tipo === 'melee'));
 
 /** O melee do arquivo; `null` = bicho sem poderes (usa a regra de sempre); 0 = boss sem melee. */
 export function golpeCorpoACorpo(bicho) {
+  if (bicho?.boss) return bicho.boss.melee ? sortear(bicho.boss.melee.min, bicho.boss.melee.max) : 0;
   const p = PODERES[bicho?.key];
   if (!p) return null;
   const m = p.ataques.find((a) => a.tipo === 'melee');
@@ -103,7 +110,7 @@ function casasDa(a, bicho, alvo) {
   return [{ x: alvo.x, y: alvo.y }];
 }
 
-function alcanca(a, bicho, alvo) {
+export function alcanca(a, bicho, alvo) {
   const d = distancia(bicho, alvo);
   if (a.forma === 'alvo' || (a.forma === 'area' && a.noAlvo)) return d <= (a.alcance || 7);
   return casasDa(a, bicho, alvo).some((c) => c.x === alvo.x && c.y === alvo.y);
@@ -140,6 +147,62 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
 }
 
 /**
+ * UMA magia do bicho, da esquiva ao dano no jogador (sem o relógio, a chance e o alcance, que são de quem chama).
+ * `casas`: as casas já decididas (a magia TELEGRAFADA de um boss único as fixa no aviso); sem isso, a geometria do
+ * momento. Devolve o dano que chegou na vida do jogador. É o corpo que `lancar` sempre teve, extraído para os
+ * bosses únicos (`bosses-unicos/`) reaproveitarem a MESMA esquiva, proteção, escudo, charms e efeitos.
+ */
+export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a, { casas: casasFixas = null } = {}) {
+  const alvo = hunt.pos;
+  // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
+  // "Chance to Avoid Damage" (add) também evita a magia inteira (a Evasion não: só o golpe corpo a corpo).
+  // + a esquiva de magia de LONGE dos reforços (Divine Defiance): só se o bicho não está colado.
+  const deLonge = Math.max(Math.abs(bicho.x - alvo.x), Math.abs(bicho.y - alvo.y)) > 1;
+  const esquivaDeLonge = deLonge ? Reforcos.bonus(hunt, 'esquivaDeLonge') / 100 : 0;
+  const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha) || (esquivaDeLonge > 0 && Math.random() < esquivaDeLonge);
+  // Dodge (charm) também: sai o `block` dele e o golpe não pega.
+  const doCharm = !esquivou && Charms.desviou(estado, hunt, personagem, bicho, eventos);
+
+  const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
+  if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
+  // A área na tela: um evento só, com as casas que acertam (antes: um `fx` por casa, cortado em 90).
+  const casas = casasFixas ?? casasDa(a, bicho, alvo);
+  if (casas.length > 1) eventos.push({ t: 'area', id: efeito, x: bicho.x, y: bicho.y, casas: Areas.paraTela(casas, bicho) });
+  else for (const c of casas) eventos.push({ t: 'fx', id: efeito, x: c.x, y: c.y });
+
+  if (doCharm) return 0;
+  if (esquivou) {
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true });
+    return 0;
+  }
+  const prot = Math.min(100, ficha.protection?.[a.elemento] ?? 0);
+  // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
+  // A magia é cortada pela resistência do elemento (em %); a antiga armadura
+  // mágica virou o Energy Shield (absorve abaixo, antes do magic shield e da vida).
+  // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
+  const bruto = sortear(a.min, a.max) * Reforcos.forcaDoBicho(bicho, agora) * (1 - prot / 100);
+  let dano = Math.round(bruto * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
+  // Void Inversion (charm): o dreno de mana vira ganho de mana.
+  if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {
+    const ganho = Math.min(dano, Math.max(0, (estado.maxMana ?? 0) - (estado.mana ?? 0)));
+    estado.mana = (estado.mana ?? 0) + ganho;
+    if (ganho > 0) eventos.push({ t: 'heal', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, v: ganho, color: '#4fc3ff' });
+    return 0;
+  }
+  if (a.elemento === 'manadrain') {
+    const tira = Math.min(estado.mana ?? 0, dano);
+    estado.mana = (estado.mana ?? 0) - tira;
+    if (tira > 0) eventos.push({ t: 'dmg', ...base, v: tira, color: COR_DO_ELEMENTO.manadrain });
+    return 0;
+  }
+  dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo });
+  if (dano <= 0) return 0;
+  if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
+  return dano;
+}
+
+/**
  * Um dano de `elemento` (o valor ANTES da proteção) de um mob no jogador, pelo
  * caminho inteiro: a proteção do elemento, a prey de defesa, a mitigação das
  * gemas e `aplicarNoJogador`. `golpe`: o nome que aparece ("Explosão"...).
@@ -172,52 +235,7 @@ export function lancar(estado, hunt, personagem, bicho, eventos, agora, ficha, t
     if ((estado.hp ?? 0) <= 0) return;
     bicho.proximoPoder[i] = agora + a.intervalo;
     if (Math.random() * 100 >= a.chance || !alcanca(a, bicho, alvo)) return;
-    // Esquiva das gemas: a magia inteira não pega (o efeito na tela sai igual).
-    // "Chance to Avoid Damage" (add) também evita a magia inteira (a Evasion não: só o golpe corpo a corpo).
-    // + a esquiva de magia de LONGE dos reforços (Divine Defiance): só se o bicho não está colado.
-    const deLonge = Math.max(Math.abs(bicho.x - alvo.x), Math.abs(bicho.y - alvo.y)) > 1;
-    const esquivaDeLonge = deLonge ? Reforcos.bonus(hunt, 'esquivaDeLonge') / 100 : 0;
-    const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha) || (esquivaDeLonge > 0 && Math.random() < esquivaDeLonge);
-    // Dodge (charm) também: sai o `block` dele e o golpe não pega.
-    const doCharm = !esquivou && Charms.desviou(estado, hunt, personagem, bicho, eventos);
-
-    const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
-    if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
-    // A área na tela: um evento só, com as casas que acertam (antes: um `fx` por casa, cortado em 90).
-    const casas = casasDa(a, bicho, alvo);
-    if (casas.length > 1) eventos.push({ t: 'area', id: efeito, x: bicho.x, y: bicho.y, casas: Areas.paraTela(casas, bicho) });
-    else for (const c of casas) eventos.push({ t: 'fx', id: efeito, x: c.x, y: c.y });
-
-    if (doCharm) return;
-    if (esquivou) {
-      eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true });
-      return;
-    }
-    const prot = Math.min(100, ficha.protection?.[a.elemento] ?? 0);
-    // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
-    // A magia é cortada pela resistência do elemento (em %); a antiga armadura
-    // mágica virou o Energy Shield (absorve abaixo, antes do magic shield e da vida).
-    // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
-    const bruto = sortear(a.min, a.max) * Reforcos.forcaDoBicho(bicho, agora) * (1 - prot / 100);
-    let dano = Math.round(bruto * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
-    const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
-    // Void Inversion (charm): o dreno de mana vira ganho de mana.
-    if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {
-      const ganho = Math.min(dano, Math.max(0, (estado.maxMana ?? 0) - (estado.mana ?? 0)));
-      estado.mana = (estado.mana ?? 0) + ganho;
-      if (ganho > 0) eventos.push({ t: 'heal', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, v: ganho, color: '#4fc3ff' });
-      return;
-    }
-    if (a.elemento === 'manadrain') {
-      const tira = Math.min(estado.mana ?? 0, dano);
-      estado.mana = (estado.mana ?? 0) - tira;
-      if (tira > 0) eventos.push({ t: 'dmg', ...base, v: tira, color: COR_DO_ELEMENTO.manadrain });
-      return;
-    }
-    dano = aplicarNoJogador({ estado, hunt, bicho, dano, elemento: a.elemento, eventos, base, ficha, temEscudo });
-    if (dano <= 0) return;
-    if (a.elemento === 'lifedrain') bicho.hp = Math.min(bicho.maxHp, bicho.hp + dano);
-    total += dano;
+    total += dispararMagia({ estado, hunt, personagem, bicho, eventos, agora, ficha, temEscudo }, a);
   });
   // As curas do boss (`monster.defenses` do arquivo).
   p.curas.forEach((c, i) => {

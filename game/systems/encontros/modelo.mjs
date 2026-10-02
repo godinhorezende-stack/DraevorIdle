@@ -37,6 +37,7 @@ export function normalizar(e) {
     obrigatorio: e.obrigatorio === true,
     condicao: { tipo: condicao.tipo ?? 'sempre', ...(condicao.encontro != null ? { encontro: String(condicao.encontro) } : {}) },
     ...(e.expiraMs != null ? { expiraMs: Number(e.expiraMs) } : {}),
+    ...(e.bossId != null ? { bossId: String(e.bossId) } : {}),
     ...(e.recompensa != null ? { recompensa: e.recompensa } : {}),
   };
 }
@@ -79,6 +80,8 @@ export function validar(encontros, { largura, altura } = {}) {
       else if (!ids.has(e.condicao.encontro)) erros.push(`${onde}: depende de "${e.condicao.encontro}", que não existe.`);
       else if (e.condicao.encontro === e.id) erros.push(`${onde}: não pode depender de si mesmo.`);
     }
+    // Cada tipo valida o que é só dele (ex.: o `bossId` dos encontros de boss).
+    if (tipo?.validar && e.ativo) erros.push(...tipo.validar(e).map((m) => `${onde}: ${m}`));
     if (e.expiraMs != null && !(e.expiraMs > 0)) erros.push(`${onde}: expiraMs precisa ser positivo.`);
     if (e.obrigatorio) {
       // Obrigatório trava a conclusão da fase: nada de sorte, de expiração nem de decisão que o idle não toma.

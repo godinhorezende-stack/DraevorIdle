@@ -188,7 +188,8 @@ function bichosDaSala(hunt) {
 export function pendentes(hunt) {
   const inst = daSala(hunt);
   let n = 0;
-  for (const m of bichosDaSala(hunt)) if (m.hp > 0 && m.instancia === inst?.id) n += m.objetivo ?? 1;
+  // `opcional`: um boss de encontro opcional (e seus lacaios) não conta para o CLEAR — só o encontro em andamento o segura.
+  for (const m of bichosDaSala(hunt)) if (m.hp > 0 && m.instancia === inst?.id && !m.opcional) n += m.objetivo ?? 1;
   return n;
 }
 
@@ -209,7 +210,8 @@ export function marcarSeLimpou(hunt, agora) {
   // Os encontros acompanham a limpeza (libera os que esperam os bichos, expira os opcionais, o idle resolve o que pode).
   Encontros.avaliar(inst, { monstrosLimpos: bichosLimpos, agora, hunt });
   // CLEAR = bichos mortos E encontros OBRIGATÓRIOS concluídos. Opcional nunca trava.
-  if (!bichosLimpos || Encontros.obrigatoriosPendentes(inst) > 0) return false;
+  // Um encontro EM ANDAMENTO (ativo) também segura o CLEAR: a instância não some no meio de uma luta de boss.
+  if (!bichosLimpos || Encontros.obrigatoriosPendentes(inst) > 0 || Encontros.emAndamento(inst) > 0) return false;
   inst.status = 'limpa';
   inst.limpaEm = Date.now();
   inst.limpaNoRelogio = agora;
