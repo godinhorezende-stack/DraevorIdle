@@ -7,20 +7,23 @@
     "onslaught": 1.6
   },
   "armadura": {
-    "_nota": "`modo`: 'tibia' (hoje: a armadura absorve de 60% a 120% dela, sorteado a cada golpe) ou 'poe' (reduz o dano físico em armadura / (armadura + coeficiente × dano do golpe)). Só o 'tibia' está ligado ao combate.",
+    "_nota": "`modo`: 'tibia' (hoje: a armadura absorve de 60% a 120% dela, sorteado a cada golpe) ou 'poe' (reduz o dano físico do golpe em armadura / (armadura + coeficiente × dano do golpe), sem sorteio).",
     "modo": "tibia",
     "tibia": { "fatorMinimo": 0.6, "faixa": 0.6 },
     "poe": { "coeficiente": 5 }
   },
   "acerto": {
-    "_nota": "`modo`: 'draevor' (a conta de `atributos-principais.json`: FATOR × acc / (acc + evasão do bicho), de MIN a MAX) ou 'poe' (precisão / (precisão + (evasão / divisor)^expoente), de `minimo` a `maximo`). Só o 'draevor' está ligado ao combate.",
+    "_nota": "`modo`: 'draevor' (a conta de `atributos-principais.json`: FATOR × acc / (acc + evasão do bicho), de MIN a MAX) ou 'poe' (precisão / (precisão + (evasão / divisor)^expoente), de `minimo` a `maximo`; vale para o golpe do jogador no bicho e para a esquiva do jogador). `entropia`: o sorteio do acerto acumula chance a cada erro seguido (sequências mais curtas, mesma taxa).",
     "modo": "draevor",
-    "poe": { "minimo": 0.05, "maximo": 0.95, "expoente": 0.8, "divisorDaEvasao": 4 }
+    "poe": { "minimo": 0.05, "maximo": 0.95, "expoente": 0.8, "divisorDaEvasao": 4 },
+    "entropia": false
   },
   "bloqueio": {
-    "_nota": "Os tetos do bloqueio, por tipo (o golpe e a magia). Hoje só o do golpe corpo a corpo está ligado (`atributos-principais.json`, bloqueio.MAX); o da magia é a base para a etapa do bloqueio de magia.",
+    "_nota": "Os tetos do bloqueio, por tipo (o golpe e a magia). `modo`: 'draevor' (hoje: o bloqueio vem ANTES da esquiva e só existe para o golpe corpo a corpo) ou 'poe' (a esquiva/acerto vem primeiro, depois o bloqueio; e a magia do bicho também pode ser bloqueada — `spell_block`). `glancingPct`: o golpe bloqueado ainda causa esta % do dano (0 = o bloqueio anula, como sempre).",
     "limiteDoGolpe": 0.75,
-    "limiteDaMagia": 0.75
+    "limiteDaMagia": 0.75,
+    "modo": "draevor",
+    "glancingPct": 0
   },
   "arredondamento": { "_nota": "O dano final é arredondado UMA vez, no fim; 'round' (como hoje) ou 'floor'.", "modo": "round" },
   "registro": { "_nota": "O registro de cada golpe (depuração): nível 0 = desligado (produção), 1 = resumo, 2 = detalhe; `capacidade` = quantos golpes ficam guardados (o mais antigo sai). Também liga por `COMBATE_LOG=1|2` no ambiente.", "nivel": 0, "capacidade": 200 }

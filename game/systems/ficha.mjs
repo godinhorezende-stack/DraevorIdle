@@ -32,6 +32,7 @@ import * as Keystones from './passivas/keystones.mjs';
 import * as PoderDaArma from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
 import { PARAMETROS as FORMULAS } from './combate/formulas.mjs';
+import * as FORMULAS_FN from './combate/formulas.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -313,6 +314,8 @@ function calcularCombate(estado) {
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao,
     ataqueDuplo,
+    // Bloqueio de MAGIA (add Spell Block Chance), no teto do tipo (`combate/formulas.json`); só vale com `bloqueio.modo` = 'poe'.
+    bloqueioDeMagia: FORMULAS_FN.bloqueioFinal((af.spell_block ?? 0) / 100, 'magia'),
     // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
     armaEquipada: armaEquipadaDaFicha(estado),
     // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".

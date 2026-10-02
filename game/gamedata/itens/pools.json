@@ -118,7 +118,8 @@
    "es_pct",
    "dmg_reduction",
    "avoid_damage",
-   "gem_level"
+   "gem_level",
+   "spell_block"
   ],
   "livro": [
    "int",
@@ -147,7 +148,8 @@
    "es_pct",
    "cooldown_recovery",
    "skill_cost",
-   "gem_level"
+   "gem_level",
+   "spell_block"
   ],
   "aljava": [
    "dex",

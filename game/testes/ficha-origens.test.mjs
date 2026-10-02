@@ -47,8 +47,8 @@ test('as origens de cada resistência somam proteção + excedente (o balão mos
     const bruto = f.protection[el] + f.excedentes.protection[el];
     assert.ok(Math.abs(soma(f.origens[`protection.${el}`]) - bruto) < 0.02, el);
   }
-  assert.equal(f.protection.fire, 100);
-  assert.ok(f.excedentes.protection.fire >= 30);
+  assert.equal(f.protection.fire, f.limites.resistenciaDoJogador);
+  assert.ok(f.excedentes.protection.fire >= 30, 'passou do teto');
   assert.equal(f.origens['protection.earth'], undefined, 'o que o personagem não tem não ganha origem');
 });
 

@@ -48,6 +48,8 @@ const MODIFICADORES = [
   'dmg_vs_boss', 'dmg_vs_elite', 'dmg_vs_monsters', 'dmg_reduction', 'cooldown_recovery', 'skill_cost', 'avoid_damage',
   // Penetração e ataque duplo (o dono, 02/10).
   'phys_pen', 'elem_pen', 'double_attack',
+  // Bloqueio de magia (02/10).
+  'spell_block',
 ];
 
 test('modificadores: exatamente a lista do dono, cada um com peso, faixa por tier, nível mínimo e raridades', () => {

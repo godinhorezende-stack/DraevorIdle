@@ -210,6 +210,8 @@ const SONDAS = {
   phys_pen: ['knight', null, (e) => { naCacada(e, 'troll').resist = { physical: 60 }; }, golpes, 40, 'mais'],
   elem_pen: ['sorcerer', null, (e) => { naCacada(e, 'troll').resist = { energy: 60 }; }, magia('spell-energy-strike'), 40, 'mais'],
   double_attack: ['knight', null, cacada(), golpes, 100, 'mais'],
+  // Bloqueio de magia: a chance da ficha (só vale no combate com `bloqueio.modo` = 'poe').
+  spell_block: ['knight', null, () => {}, sobre((f) => f.bloqueioDeMagia), 30, 'mais'],
   life_leech: ['knight', null, cacada(), curaDosGolpes(null), 50, 'mais'],
   mana_leech: ['knight', null, cacada(), curaDosGolpes('#4fc3ff'), 50, 'mais'],
   // A velocidade de ataque encurta o intervalo do golpe básico (a ficha é o que o tique lê).

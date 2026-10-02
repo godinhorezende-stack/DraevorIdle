@@ -21,6 +21,7 @@
 //   Malice: 69 `fx` 18 num raio 4).
 // - O melee dos bosses é o do arquivo (Essence of Malice: 1..488 de 0..603) —
 //   não o `ataqueDoMonstro` genérico, que dava 25 mil num boss de 50 mil de vida.
+import * as Formulas from './combate/formulas.mjs';
 import { readFileSync } from 'node:fs';
 import * as Arvore from './arvore.mjs';
 import * as Areas from '../engine/areas.mjs';
@@ -162,6 +163,15 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   const esquivou = (ficha.esquiva && Math.random() < ficha.esquiva) || Defesa.evitou(ficha) || (esquivaDeLonge > 0 && Math.random() < esquivaDeLonge);
   // Dodge (charm) também: sai o `block` dele e o golpe não pega.
   const doCharm = !esquivou && Charms.desviou(estado, hunt, personagem, bicho, eventos);
+  // Bloqueio de MAGIA (`bloqueio.modo` = 'poe', `combate/formulas.json`): depois da esquiva, a magia pode ser bloqueada (`ficha.bloqueioDeMagia`);
+  // com `glancingPct` ela ainda causa essa % do dano, senão não causa nada.
+  let fatorDoBloqueio = 1;
+  let bloqueouAMagia = false;
+  if (!esquivou && !doCharm && Formulas.PARAMETROS.bloqueio.modo === 'poe' && Math.random() < (ficha.bloqueioDeMagia ?? 0)) {
+    const glancing = Formulas.PARAMETROS.bloqueio.glancingPct;
+    if (glancing > 0) fatorDoBloqueio = glancing / 100;
+    else bloqueouAMagia = true;
+  }
 
   const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
   if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: bicho.x, y: bicho.y, tx: alvo.x, ty: alvo.y });
@@ -171,6 +181,10 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   else for (const c of casas) eventos.push({ t: 'fx', id: efeito, x: c.x, y: c.y });
 
   if (doCharm) return 0;
+  if (bloqueouAMagia) {
+    eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#999999' });
+    return 0;
+  }
   if (esquivou) {
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true });
     return 0;
@@ -180,7 +194,7 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // A magia é cortada pela resistência do elemento (em %); a antiga armadura
   // mágica virou o Energy Shield (absorve abaixo, antes do magic shield e da vida).
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
-  const bruto = sortear(a.min, a.max) * Reforcos.forcaDoBicho(bicho, agora) * (1 - prot / 100);
+  const bruto = sortear(a.min, a.max) * Reforcos.forcaDoBicho(bicho, agora) * (1 - prot / 100) * fatorDoBloqueio;
   let dano = Math.round(bruto * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
   const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
   // Void Inversion (charm): o dreno de mana vira ganho de mana.

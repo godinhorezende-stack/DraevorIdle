@@ -36,6 +36,7 @@ import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
+import * as Formulas from '../combate/formulas.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
@@ -673,11 +674,22 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // golpe inteiro — o `block` que o original manda, visto ao vivo.
   // A chance sorteia entre o pior e o melhor bloqueio da faixa das peças (escudo e arma) a cada golpe.
   const chanceDeBloquear = (ficha.blockChanceMin ?? ficha.blockChance) + Math.random() * ((ficha.blockChanceMax ?? ficha.blockChance) - (ficha.blockChanceMin ?? ficha.blockChance));
-  if (Math.random() < chanceDeBloquear) {
+  // `bloqueio.modo` (`combate/formulas.json`): 'draevor' bloqueia ANTES da esquiva (como sempre); 'poe' só depois que o golpe ACERTOU (esquiva primeiro).
+  // `glancingPct`: o golpe bloqueado ainda causa esta % do dano (0 = o bloqueio anula o golpe).
+  let fatorDoBloqueio = 1;
+  const bloquear = () => {
+    if (!(Math.random() < chanceDeBloquear)) return false;
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
-    return;
-  }
+    const glancing = Formulas.PARAMETROS.bloqueio.glancingPct;
+    if (glancing > 0) {
+      fatorDoBloqueio = glancing / 100;
+      return false;
+    }
+    return true;
+  };
+  const bloqueioDepois = Formulas.PARAMETROS.bloqueio.modo === 'poe';
+  if (!bloqueioDepois && bloquear()) return;
   // Esquiva das gemas (supremo "Esquiva"): o golpe inteiro não pega.
   if (ficha.esquiva && Math.random() < ficha.esquiva) {
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999', esquiva: true });
@@ -696,10 +708,11 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome);
     return;
   }
+  if (bloqueioDepois && bloquear()) return;
   // O melee do monster.lua (`Poderes`); bicho sem arquivo, a regra de sempre.
   // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
-  const bruto = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now());
+  const bruto = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now()) * fatorDoBloqueio;
   // Golpe corpo a corpo é físico: a proteção física do equipamento corta em %.
   const protegido = Math.round(bruto * (1 - Math.min(100, ficha.protection.physical ?? 0) / 100));
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura

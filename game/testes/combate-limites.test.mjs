@@ -33,11 +33,11 @@ test('o dano depois da resistência: 0%, 25%, 50%, 75% e 100% (nada passa)', () 
   assert.deepEqual([0, 25, 50, 75, 100].map((r) => L.danoAposResistencia(100, r)), [100, 75, 50, 25, 0]);
 });
 
-test('a resistência do bicho vai até o teto dele (80, configurável) e a fraqueza só até −100', () => {
+test('a resistência do bicho vai até o teto dele (75, configurável) e a fraqueza só até −100', () => {
   assert.equal(L.resistenciaDoMob(150), L.LIMITES.resistenciaDoMob.maximo);
   assert.equal(L.resistenciaDoMob(-300), -100);
   assert.equal(L.resistenciaDoMob(35), 35);
-  assert.equal(L.resistenciaDoJogador(130), 100);
+  assert.equal(L.resistenciaDoJogador(130), L.LIMITES.resistenciaDoJogador.maximo);
   assert.equal(L.resistenciaDoJogador(-20), 0, 'a proteção do jogador nunca fica negativa');
 });
 
@@ -106,7 +106,7 @@ test('a ficha corta resistência, crítico, ataque duplo e penetração em 100%;
     { id: 'elem_pen', nivel: 5, value: 140 },
   ]);
   const f = Ficha.combate(e);
-  assert.equal(f.protection.fire, 100);
+  assert.equal(f.protection.fire, f.limites.resistenciaDoJogador);
   assert.ok(f.excedentes.protection.fire >= 60);
   assert.equal(f.critChance, 1);
   assert.ok(f.excedentes.critChance > 0.5);

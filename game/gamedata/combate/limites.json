@@ -1,9 +1,9 @@
 {
   "_nota": "Os LIMITES do combate (decisão do dono, 02/10): resistência, penetração, chance de crítico e de ataque duplo valem de 0 a 100% e nenhum equipamento, gema, efeito temporário ou combinação passa disso — o servidor corta o valor FINAL. Lido por systems/combate/limites.mjs. O multiplicador de crítico NÃO entra aqui: é outro atributo, com as regras dele. Elementos do jogo: physical, fire, ice, earth (o 'veneno' do catálogo), energy (o 'raio'), death, holy; drown/lifedrain/manadrain/agony são só de mob e o jogador não tem resistência a eles.",
-  "resistenciaDoJogador": { "_nota": "A proteção do equipamento, das gemas e dos imbuements, por elemento.", "maximo": 100 },
+  "resistenciaDoJogador": { "_nota": "A proteção do equipamento, das gemas e dos imbuements, por elemento. O teto padrão é o do Path of Exile: 75% (decisão do dono, 02/10; antes 100).", "maximo": 75 },
   "resistenciaDoMob": {
     "_nota": "`maximo`: o teto da resistência do bicho ANTES da penetração (o bestiário traz valores de 100 a 600, que ficam neste teto). Está em 80 (o de sempre) até existirem fontes de penetração suficientes: virar 100 é decisão separada — com 100, o bicho resistente a 100% não toma dano nenhum, antes da penetração. `fraquezaMaxima`: a resistência negativa (fraqueza) vai só até −100% (dano ×2). O boss continua com o teto de 20% (`RESISTENCIA_MAXIMA_DE_BOSS`).",
-    "maximo": 80,
+    "maximo": 75,
     "fraquezaMaxima": 100
   },
   "critico": { "chanceMaxima": 100 },
