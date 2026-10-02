@@ -2884,10 +2884,16 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * (Modificadores, abaixo). Os implícitos (perícia, crítico, resistência...)
    * saíram do jogo: o catálogo não os traz mais.
    */
-  const temBase = meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
+  const temBase = meta.magicAttack || meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
   if (temBase) add('Base', 'tip-sec');
   // A faixa do dano sai sem o "+" ("10–26"): é o que cada golpe sorteia.
   if (meta.attack) prop('Dano', numeroOuFaixa(meta, 'attack').replace(/^\+/, ''), 'atk');
+  // O Magic Attack da wand e da rod (fixo, `armas/poder.mjs`) × a raridade da peça: é o atributo base que escala as gemas de ataque mágicas.
+  // As armas físicas não mostram o "Poder da arma" (decisão do dono, 02/10).
+  if (meta.magicAttack) {
+    const fator = getCatalogoDeAcoes()?.poderDasArmas?.raridade?.[peca?.raridade ?? 'comum'] ?? 1;
+    prop('Magic Attack', String(Math.round(meta.magicAttack * fator)), 'mana');
+  }
   if (meta.defense) prop('Bloqueio', `${numeroOuFaixa(meta, 'defense').replace(/^\+/, '')}${meta.extraDefense ? ` (${sinal(meta.extraDefense)})` : ''}`, 'def');
   // A defesa sai num número só: a média da faixa sorteada, que é o que a ficha usa
   // (a faixa "5–10" parecia sinal de menos, e só o dano da arma sorteia a cada golpe).

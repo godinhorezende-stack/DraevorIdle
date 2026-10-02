@@ -65,3 +65,10 @@ test('o cliente desenha o bloco do buff no balão da barra, na configuração e 
   assert.match(css, /\.tip-buff-gema\b/);
   assert.match(tip, /BALAO_NO_TOQUE_MS/, 'o toque longo abre o balão e o próximo toque fecha (mobile)');
 });
+
+test('o balão da wand e da rod mostra o Magic Attack na seção Base; as armas físicas não mostram o Poder da arma', () => {
+  const tip = readFileSync(new URL('../frontend/client/src/tooltip.mjs', import.meta.url), 'utf8');
+  assert.match(tip, /const temBase = meta\.magicAttack \|\|/);
+  assert.match(tip, /prop\('Magic Attack', String\(Math\.round\(meta\.magicAttack \* fator\)\), 'mana'\)/);
+  assert.doesNotMatch(tip, /Poder da arma'/);
+});
