@@ -118,7 +118,9 @@
    "es_pct",
    "dmg_reduction",
    "avoid_damage",
-   "gem_level"
+   "gem_level",
+   "spell_block",
+   "control_resist"
   ],
   "livro": [
    "int",
@@ -147,7 +149,8 @@
    "es_pct",
    "cooldown_recovery",
    "skill_cost",
-   "gem_level"
+   "gem_level",
+   "spell_block"
   ],
   "aljava": [
    "dex",
@@ -201,7 +204,8 @@
    "avoid_damage",
    "cooldown_recovery",
    "skill_cost",
-   "gem_level"
+   "gem_level",
+   "control_resist"
   ],
   "bota": [
    "str",
@@ -230,7 +234,8 @@
    "evasion_pct",
    "es_pct",
    "gem_level",
-   "double_attack"
+   "double_attack",
+   "control_resist"
   ],
   "anel": [
    "str",
@@ -277,7 +282,8 @@
    "skill_cost",
    "gem_level",
    "phys_pen",
-   "elem_pen"
+   "elem_pen",
+   "control_resist"
   ],
   "amuleto": [
    "str",
@@ -331,7 +337,8 @@
    "skill_cost",
    "gem_level",
    "phys_pen",
-   "elem_pen"
+   "elem_pen",
+   "control_resist"
   ]
  }
 }

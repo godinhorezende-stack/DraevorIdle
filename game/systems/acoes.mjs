@@ -25,6 +25,8 @@ import * as Gemas from './skills/gemas.mjs';
 import * as Tags from './skills/tags.mjs';
 import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import { registrarGolpe } from './combate/registro.mjs';
+import * as Dot from './combate/dot.mjs';
+import * as Controle from './combate/controle.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -668,6 +670,8 @@ export const intervaloGlobalCom = (castSpeed = 0) => Math.round(R.GLOBAL_SPELL_C
 export const intervaloGlobal = (estado) => intervaloGlobalCom(Ficha.combate(estado).castSpeed);
 
 export function disparar(estado, hunt, personagem, slot, alvo, opcoes) {
+  // Congelado ou atordoado (controle de boss/elite, `combate/controle.mjs`): nada sai.
+  if (!Controle.podeAgir(hunt, hunt?.clock ?? 0)) return { ok: false, erro: 'Você está paralisado.', motivo: 'CONTROLE' };
   const r = dispararSemMarcar(estado, hunt, personagem, slot, alvo, opcoes);
   marcarParado(hunt, slot, r);
   return r;
@@ -1015,6 +1019,16 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const acertar = (bicho, pct = 100, fonte = null) => {
       const tipo = entry.element ?? 'physical';
       const bruto = ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct * fatorDoAtaque) / 10000;
+      // Gema de DANO CONTÍNUO (Ignite, Envenom, Inflict Wound...): o dano dela é o TOTAL de um efeito ao longo do tempo (`combate/dot.mjs`),
+      // não um golpe — sem acerto, sem crítico, e a resistência passa em cada pulso.
+      const tipoDoDot = entry.overTime ? Dot.tipoDaFonte(entry.overTime.type) : null;
+      if (tipoDoDot) {
+        Reforcos.marcar(hunt, bicho, agora);
+        const estado = Dot.aplicar(bicho, { tipo: tipoDoDot, total: bruto, origem: { fonte: 'gema', habilidade: entry.id } }, agora);
+        if (estado) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado });
+        registrarGolpe(() => ({ origem: 'gema-dot', habilidade: entry.id, alvo: bicho.name, tipo, dot: tipoDoDot, totalDoEfeito: Math.round(bruto), aplicou: !!estado }));
+        return;
+      }
       const base = resistido(hunt, bicho, tipo, bruto, ficha);
       Reforcos.marcar(hunt, bicho, agora);
       const { dano, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
@@ -1033,7 +1047,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor, ...(fonte ? { fonte } : {}) });
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
-      for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
     };
     /*
      * ---- O ATAQUE (o golpe principal + os secundários das supports) e o ATAQUE DUPLO ----

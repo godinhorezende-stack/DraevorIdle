@@ -1,5 +1,6 @@
 // Etapa 4 do plano: as supports de dano por elemento, crítico, velocidade, recurso,
 // duração e os ESTADOS nos bichos (Ignite, Freeze, Slow, Stun) — genéricas por tag.
+import * as Dot from '../systems/combate/dot.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Acoes from '../systems/acoes.mjs';
@@ -55,10 +56,10 @@ function lancar(e, acao, alvo) {
   return r.eventos;
 }
 
-test('as 39 supports: cada uma com gema, nome e efeito de chave conhecida', () => {
-  const conhecidas = new Set(['danoPct', 'curaPct', 'castTimePct', 'custoPct', 'recargaPct', 'critChance', 'critDano', 'alvosExtras', 'danoDosExtrasPct', 'perfurar', 'danoDaPerfuracaoPct', 'bifurcar', 'danoDaBifurcacaoPct', 'encadear', 'danoDoEncadeamentoPct', 'retornar', 'danoDoRetornoPct', 'explosaoPct', 'segundaExplosaoPct', 'areaExtra', 'leechVidaPct', 'leechManaPct', 'custoEmVida', 'duracaoPct', 'igniteChance', 'ignitePct', 'congelarChance', 'lentidaoPct', 'atordoarChance']);
+test('as 41 supports: cada uma com gema, nome e efeito de chave conhecida', () => {
+  const conhecidas = new Set(['venenoChance', 'venenoPct', 'sangramentoChance', 'sangramentoPct', 'danoPct', 'curaPct', 'castTimePct', 'custoPct', 'recargaPct', 'critChance', 'critDano', 'alvosExtras', 'danoDosExtrasPct', 'perfurar', 'danoDaPerfuracaoPct', 'bifurcar', 'danoDaBifurcacaoPct', 'encadear', 'danoDoEncadeamentoPct', 'retornar', 'danoDoRetornoPct', 'explosaoPct', 'segundaExplosaoPct', 'areaExtra', 'leechVidaPct', 'leechManaPct', 'custoEmVida', 'duracaoPct', 'igniteChance', 'ignitePct', 'congelarChance', 'lentidaoPct', 'atordoarChance']);
   const sups = [...G.DEFS.values()].filter((d) => d.tipo === 'support');
-  assert.equal(sups.length, 39);
+  assert.equal(sups.length, 41);
   for (const d of sups) for (const k of Object.keys(d.suporte.efeito)) assert.ok(conhecidas.has(k), `${d.nome}: ${k}`);
 });
 
@@ -76,7 +77,7 @@ test('Ignite: o bicho atingido queima — o % do acerto sai em pulsos no tique',
   const e = montar('sorcerer', FLAME, ['ignite']);
   const m = bicho(e, 2, 0);
   lancar(e, FLAME, m);
-  assert.ok(m.estados?.queimando?.falta > 0, 'queimando');
+  assert.ok(Dot.restante(m, 'queimadura') > 0, 'queimando');
   const vidaAntes = m.hp;
   const ev = [];
   const agora = (e.hunt.clock ?? Date.now()) + 1000;

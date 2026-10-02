@@ -5,6 +5,7 @@
 //     TODOS dentro, inclusive o do impacto; explosões sobrepostas acumulam;
 //   - os projéteis seguem Pierce → Fork → Chain → fim → retorno, cada um por conta
 //     própria, e todo impacto explode; tetos de impactos/explosões por uso.
+import * as L from '../systems/combate/limites.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Acoes from '../systems/acoes.mjs';
@@ -158,10 +159,10 @@ test('explosão em coordenadas diferentes: sempre no bicho do impacto', () => {
   }
 });
 
-test('explosão: dano ~50% de um golpe direto (rolagem própria) e passa pela resistência do bicho (teto de 80%)', () => {
+test('explosão: dano ~50% de um golpe direto (rolagem própria) e passa pela resistência do bicho (teto de resistência do bicho)', () => {
   const e = montar([FLAME, 'explosion']);
   const alvo = bicho(e, 3, 0);
-  // Resistência 100% a fogo: o jogo limita em 80% (RESISTENCIA_MAXIMA) — não há imunidade total.
+  // Resistência 100% a fogo: o jogo limita no teto do bicho (`combate/limites.json`, 75%) — não há imunidade total.
   const resistente = bicho(e, 4, 0, { resist: { fire: 100 } });
   const comum = bicho(e, 3, 1);
   let direto = 0;
@@ -173,7 +174,8 @@ test('explosão: dano ~50% de um golpe direto (rolagem própria) e passa pela re
   }
   assert.ok(Math.abs(explosao / direto - 0.5) < 0.06, `explosão/direto = ${(explosao / direto).toFixed(3)}`);
   const perda = (m) => HP - m.hp;
-  assert.ok(Math.abs(perda(resistente) / perda(comum) - 0.2) < 0.05, `o resistente perdeu ${(perda(resistente) / perda(comum)).toFixed(3)} do comum (esperado 0,2)`);
+  const passa = 1 - L.LIMITES.resistenciaDoMob.maximo / 100;
+  assert.ok(Math.abs(perda(resistente) / perda(comum) - passa) < 0.05, `o resistente perdeu ${(perda(resistente) / perda(comum)).toFixed(3)} do comum (esperado ${passa})`);
 });
 
 // ---------------------------------------------------------------- combinações

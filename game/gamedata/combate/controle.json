@@ -1,0 +1,13 @@
+{
+  "_nota": "O CONTROLE que os MOBS põem no JOGADOR (dono, 02/10): só bosses e elites, e raro. Congelar e atordoar: o jogador não anda nem ataca nem conjura; lentidão: anda e ataca mais devagar (até `lentidaoMaxima`%). A RESISTÊNCIA A CONTROLE do jogador (`resistenciaAControle`, afixo Control Resistance, 0–`resistenciaMaxima`%) encurta a duração do efeito (100% = imune; a chance de ser atingido não muda). Depois que um congelamento ou atordoamento ACABA o jogador fica `imunidadeMs` sem sofrer nenhum dos dois (não dá para mantê-lo preso). Durações em ms. Chances em % por golpe do mob que ACERTA o jogador; `efeitos`: o peso de cada efeito no sorteio. Os valores são iniciais: ajuste aqui, sem tocar no código. As regras dos bichos contra o controle do JOGADOR (boss imune, elite com metade) seguem em `gamedata/gemas/config.json` (`estados`) e o atributo `resistControle` do bicho soma a elas.",
+  "jogador": {
+    "resistenciaMaxima": 75,
+    "imunidadeMs": 3000,
+    "lentidaoMaxima": 40,
+    "duracaoMs": { "congelado": 1500, "atordoado": 1500, "lento": 3000 }
+  },
+  "mobs": {
+    "elite": { "chance": 6, "efeitos": { "lento": 3, "atordoado": 1 }, "lentidaoPct": 30 },
+    "boss": { "chance": 10, "efeitos": { "atordoado": 2, "congelado": 2, "lento": 3 }, "lentidaoPct": 40 }
+  }
+}

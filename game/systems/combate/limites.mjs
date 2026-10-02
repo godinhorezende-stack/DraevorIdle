@@ -46,6 +46,7 @@ export const danoAposResistencia = (valor, resistenciaEfetivaPct) => Math.max(0,
 export const tetos = () => ({
   resistenciaDoJogador: LIMITES.resistenciaDoJogador.maximo,
   critico: LIMITES.critico.chanceMaxima,
+  resistenciaAControle: LIMITES.resistenciaAControle.maximo,
   ataqueDuplo: LIMITES.ataqueDuplo.chanceMaxima,
   penetracao: LIMITES.penetracao.maximo,
 });

@@ -12,6 +12,15 @@ import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
 function golpeCom(elemento, pct) {
+  // O acerto vai de 5% a 95% (PoE): repete até o golpe acertar (cada tentativa é um personagem novo).
+  for (let k = 0; k < 60; k++) {
+    const ev = golpeUnico(elemento, pct);
+    if (ev.some((x) => x.t === 'dmg' && x.foe)) return ev;
+  }
+  return [];
+}
+
+function golpeUnico(elemento, pct) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 1 });
   Treino.garantir(e);
   // Accuracy de sobra: o golpe nunca erra (o erro tem teste próprio, em defesas-novas).
@@ -48,6 +57,7 @@ test('percentual minúsculo: o elemento nunca bate menos que 1', () => {
   // 0,1% de um golpe de nível 1 dá bem menos que 1 — e tem de bater 1.
   for (let i = 0; i < 40; i++) {
     const numeros = golpeCom('fire', 0.1).filter((x) => x.t === 'dmg' && x.foe);
+    if (!numeros.length) continue; // o golpe errou (o acerto vai de 5% a 95%): sem golpe, sem elemento
     assert.equal(numeros.length, 2, 'o elemento aparece mesmo assim');
     assert.ok(numeros[1].v >= 1, `bateu ${numeros[1].v}`);
   }

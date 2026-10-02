@@ -12,6 +12,7 @@
 // agrega é a ficha (`ficha.mjs`, `Ficha.combate`) — a MESMA conta que a tela,
 // a comparação e o combate usam.
 import { readFileSync } from 'node:fs';
+import * as Formulas from '../combate/formulas.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
@@ -72,6 +73,8 @@ export function levelDoBicho(hunt, bicho) {
 export function chanceDeAcerto(precisao, levelBicho) {
   const c = CONFIG.precisao;
   const evasaoDoBicho = c.EVASAO_DO_BICHO_BASE + c.EVASAO_DO_BICHO_POR_LEVEL * levelBicho;
+  // Modo 'poe' (`combate/formulas.json`): precisão / (precisão + (evasão / 4)^0,8), entre 5% e 95%.
+  if (Formulas.PARAMETROS.acerto.modo === 'poe') return Formulas.chanceDeAcertoPoe(precisao, evasaoDoBicho);
   const bruta = (c.FATOR * precisao) / Math.max(1, precisao + evasaoDoBicho);
   return Math.min(c.MAX, Math.max(c.MIN, bruta));
 }
@@ -81,6 +84,8 @@ export function chanceDeEsquiva(evasao, levelBicho) {
   const c = CONFIG.evasao;
   if (!(evasao > 0)) return 0;
   const precisaoDoBicho = c.PRECISAO_DO_BICHO_BASE + c.PRECISAO_DO_BICHO_POR_LEVEL * levelBicho;
+  // Modo 'poe': a chance de evitar é o complemento da chance de acerto do bicho contra esta evasão.
+  if (Formulas.PARAMETROS.acerto.modo === 'poe') return 1 - Formulas.chanceDeAcertoPoe(precisaoDoBicho, evasao);
   return Math.min(c.MAX, evasao / (evasao + precisaoDoBicho));
 }
 

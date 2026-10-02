@@ -39,6 +39,8 @@
     "ignite": "Chance de Incendiar",
     "freeze": "Congelamento",
     "slow": "Lentidão",
-    "stun": "Atordoamento"
+    "stun": "Atordoamento",
+    "poison": "Chance de Envenenar",
+    "bleed": "Chance de Sangrar"
   }
 }

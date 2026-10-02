@@ -7,6 +7,7 @@
 //   - Energy Shield: barra que absorve o dano ANTES da vida e recarrega sozinha
 //     depois de um tempo sem apanhar.
 // Os números moram em `gamedata/atributos-principais.json` (via `Atributos.CONFIG`).
+import * as Formulas from '../combate/formulas.mjs';
 import * as Atributos from './atributos.mjs';
 
 const ES = Atributos.CONFIG.energyShield;
@@ -15,11 +16,22 @@ const ES = Atributos.CONFIG.energyShield;
 export function errou(ficha, hunt, alvo) {
   if (!alvo || alvo.dummy) return false;
   const chance = Atributos.chanceDeAcerto(ficha.accuracy ?? 0, Atributos.levelDoBicho(hunt, alvo));
-  return Math.random() >= chance;
+  return !sorteioDoAcerto(chance, alvo, 'errosDoJogador');
+}
+
+/**
+ * O sorteio de um acerto (ou de uma esquiva): com a `entropia` ligada (`combate/formulas.json`), a chance cresce a cada erro seguido e
+ * volta ao começo no acerto — a taxa é a mesma, mas as sequências longas de sorte ou azar não saem. `quem` guarda a contagem de erros.
+ */
+function sorteioDoAcerto(chance, quem, campo) {
+  if (!Formulas.PARAMETROS.acerto.entropia || !quem) return Math.random() < chance;
+  const r = Formulas.acertoComEntropia(chance, quem[campo] ?? 0, Math.random());
+  quem[campo] = r.erros;
+  return r.acertou;
 }
 
 /** O jogador esquivou (Evasion) do golpe corpo a corpo de `bicho`? */
-export const esquivou = (ficha, hunt, bicho) => Math.random() < Atributos.chanceDeEsquiva(ficha.evasion ?? 0, Atributos.levelDoBicho(hunt, bicho));
+export const esquivou = (ficha, hunt, bicho) => sorteioDoAcerto(Atributos.chanceDeEsquiva(ficha.evasion ?? 0, Atributos.levelDoBicho(hunt, bicho)), bicho, 'errosDoBicho');
 
 /** "Chance to Avoid Damage": o dano inteiro não pega. */
 export const evitou = (ficha) => (ficha.evitarDano ?? 0) > 0 && Math.random() < ficha.evitarDano;

@@ -3045,6 +3045,20 @@ export class MapView {
         ctx.beginPath();
         ctx.moveTo(x - 1.6, cy); ctx.lineTo(x + 1.6, cy);
         ctx.stroke();
+      } else if (estado === 'envenenado' || estado === 'sangrando') {
+        // Gota verde (veneno) ou vermelha (sangramento), com um ponto claro: a forma de gota é a do dano contínuo; a cor diz qual.
+        ctx.moveTo(x, cy - r); ctx.quadraticCurveTo(x + r * 1.5, cy + r * 0.3, x, cy + r); ctx.quadraticCurveTo(x - r * 1.5, cy + r * 0.3, x, cy - r);
+        ctx.fillStyle = estado === 'envenenado' ? '#5fd35f' : '#d03030';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(x - 1, cy + 0.5, 1, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,.75)';
+        ctx.fill();
+      } else if (estado === 'eletrizado' || estado === 'amaldicoado' || estado === 'ofuscado') {
+        // Os outros efeitos de dano contínuo: um quadrado pequeno, na cor do elemento.
+        ctx.rect(x - r + 1, cy - r + 1, (r - 1) * 2, (r - 1) * 2);
+        ctx.fillStyle = estado === 'eletrizado' ? '#8fb6ff' : estado === 'amaldicoado' ? '#9a6bd6' : '#fff1a8';
+        ctx.fill();
       } else if (estado === 'queimando') {
         ctx.moveTo(x, cy - r); ctx.quadraticCurveTo(x + r * 1.5, cy + r * 0.3, x, cy + r); ctx.quadraticCurveTo(x - r * 1.5, cy + r * 0.3, x, cy - r);
         ctx.fillStyle = '#ff8a1f';

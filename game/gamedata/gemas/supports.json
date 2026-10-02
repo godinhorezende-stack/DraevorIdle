@@ -39,6 +39,8 @@
     "ignite":                       { "nome": "Chance to Ignite", "requer": ["hit"], "algum": ["fire", "physical"], "efeito": { "igniteChance": 100, "ignitePct": 40 }, "porNivel": { "ignitePct": 1 } },
     "freeze":                       { "nome": "Freeze", "requer": ["hit"], "algum": ["ice"], "efeito": { "congelarChance": 20 }, "porNivel": { "congelarChance": 0.3 } },
     "slow":                         { "nome": "Slow", "requer": ["hit"], "efeito": { "lentidaoPct": 30 }, "porNivel": { "lentidaoPct": 0.5 } },
-    "stun":                         { "nome": "Stun", "requer": ["hit"], "algum": ["physical"], "efeito": { "atordoarChance": 15 }, "porNivel": { "atordoarChance": 0.3 } }
+    "stun":                         { "nome": "Stun", "requer": ["hit"], "algum": ["physical"], "efeito": { "atordoarChance": 15 }, "porNivel": { "atordoarChance": 0.3 } },
+    "poison":                       { "nome": "Chance to Poison", "requer": ["hit"], "algum": ["physical", "earth"], "efeito": { "venenoChance": 100, "venenoPct": 30 }, "porNivel": { "venenoPct": 1 } },
+    "bleed":                        { "nome": "Chance to Bleed", "requer": ["hit", "physical"], "efeito": { "sangramentoChance": 100, "sangramentoPct": 40 }, "porNivel": { "sangramentoPct": 1 } }
   }
 }

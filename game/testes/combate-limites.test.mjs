@@ -3,6 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as L from '../systems/combate/limites.mjs';
+import { PARAMETROS as PARAMETROS_DO_COMBATE } from '../systems/combate/formulas.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import * as Afixos from '../systems/afixos.mjs';
@@ -33,11 +34,11 @@ test('o dano depois da resistência: 0%, 25%, 50%, 75% e 100% (nada passa)', () 
   assert.deepEqual([0, 25, 50, 75, 100].map((r) => L.danoAposResistencia(100, r)), [100, 75, 50, 25, 0]);
 });
 
-test('a resistência do bicho vai até o teto dele (80, configurável) e a fraqueza só até −100', () => {
+test('a resistência do bicho vai até o teto dele (75, configurável) e a fraqueza só até −100', () => {
   assert.equal(L.resistenciaDoMob(150), L.LIMITES.resistenciaDoMob.maximo);
   assert.equal(L.resistenciaDoMob(-300), -100);
   assert.equal(L.resistenciaDoMob(35), 35);
-  assert.equal(L.resistenciaDoJogador(130), 100);
+  assert.equal(L.resistenciaDoJogador(130), L.LIMITES.resistenciaDoJogador.maximo);
   assert.equal(L.resistenciaDoJogador(-20), 0, 'a proteção do jogador nunca fica negativa');
 });
 
@@ -106,7 +107,7 @@ test('a ficha corta resistência, crítico, ataque duplo e penetração em 100%;
     { id: 'elem_pen', nivel: 5, value: 140 },
   ]);
   const f = Ficha.combate(e);
-  assert.equal(f.protection.fire, 100);
+  assert.equal(f.protection.fire, f.limites.resistenciaDoJogador);
   assert.ok(f.excedentes.protection.fire >= 60);
   assert.equal(f.critChance, 1);
   assert.ok(f.excedentes.critChance > 0.5);
@@ -149,6 +150,9 @@ function naCacada(e, forca = 1) {
 }
 
 test('ataque duplo no golpe básico: com 100%, exatamente UM golpe extra por golpe (sem recursão em cadeia)', () => {
+  const modo = PARAMETROS_DO_COMBATE.acerto.modo;
+  PARAMETROS_DO_COMBATE.acerto.modo = 'draevor'; // acerto de ~100%: o teste conta golpes, não erros
+  try {
   const e = comAfixos([{ id: 'double_attack', nivel: 5, value: 100 }]);
   e.maxHp = e.hp = 1e9;
   naCacada(e);
@@ -163,9 +167,15 @@ test('ataque duplo no golpe básico: com 100%, exatamente UM golpe extra por gol
   }
   assert.ok(rodadas > 0);
   assert.equal(golpes, rodadas * 2, `${golpes} golpes em ${rodadas} rodadas`);
+  } finally {
+    PARAMETROS_DO_COMBATE.acerto.modo = modo;
+  }
 });
 
 test('ataque duplo sem a chance: um golpe só', () => {
+  const modo = PARAMETROS_DO_COMBATE.acerto.modo;
+  PARAMETROS_DO_COMBATE.acerto.modo = 'draevor'; // acerto de ~100%: o teste conta golpes, não erros
+  try {
   const e = comAfixos([]);
   e.maxHp = e.hp = 1e9;
   naCacada(e);
@@ -176,6 +186,9 @@ test('ataque duplo sem a chance: um golpe só', () => {
     if (ev.length) { rodadas++; golpes += ev.length; }
   }
   assert.equal(golpes, rodadas);
+  } finally {
+    PARAMETROS_DO_COMBATE.acerto.modo = modo;
+  }
 });
 
 test('ataque duplo na gema: o ataque repete UMA vez, sem gastar mana a mais, e o roubo de vida conta só do primeiro', () => {

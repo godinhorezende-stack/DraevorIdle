@@ -72,7 +72,7 @@ test('o level do mob sobe só o `levelExtra` da raridade (a exp a mais não cont
   const boss = Raridade.aplicar(bicho(), { raridade: 'boss' });
   assert.equal(Atributos.levelDoBicho(hunt, boss), 40 + Raridade.CONFIG.raridades.boss.levelExtra);
   assert.equal(Atributos.levelDoBicho(hunt, base), 40);
-  assert.ok(Atributos.chanceDeAcerto(300, Atributos.levelDoBicho(hunt, boss)) < Atributos.chanceDeAcerto(300, 40), 'mais difícil de acertar');
+  assert.ok(Atributos.chanceDeAcerto(30, Atributos.levelDoBicho(hunt, boss)) < Atributos.chanceDeAcerto(30, 40), 'mais difícil de acertar');
   assert.equal(Raridade.aplicar(bicho(), { raridade: 'normal', modificadores: [] }).levelExtra, undefined);
 });
 

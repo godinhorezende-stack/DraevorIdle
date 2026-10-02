@@ -173,6 +173,8 @@
   "support:ignite": 911036,
   "support:freeze": 911037,
   "support:slow": 911038,
-  "support:stun": 911039
+  "support:stun": 911039,
+  "support:poison": 911040,
+  "support:bleed": 911041
  }
 }

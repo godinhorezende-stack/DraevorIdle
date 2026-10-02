@@ -1,5 +1,7 @@
 // O motor de dano das gemas (testes/motor-de-dano.mjs): conta as gemas e mede
 // o dano de cada uma de ataque num boneco sem resistência, pelo disparo real.
+import * as Dot from '../systems/combate/dot.mjs';
+import { ACTION_CATALOG } from '../systems/dados.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Gemas from '../systems/skills/gemas.mjs';
@@ -15,7 +17,9 @@ test('contagem: ativas + supports = total; toda ativa tem uma função', () => {
 });
 
 test('toda gema de ATAQUE causa dano no nível 1, no boneco sem resistência', () => {
-  const linhas = medirTodas({ usos: 5 });
+  // As gemas de DANO CONTÍNUO (Ignite, Envenom...) não batem: põem um efeito de dano ao longo do tempo (testado em `dano-ao-longo-do-tempo.test.mjs`).
+  const contino = new Set([...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes].filter((a) => a.overTime && Dot.tipoDaFonte(a.overTime.type)).map((a) => a.id));
+  const linhas = medirTodas({ usos: 5 }).filter((l) => !contino.has(l.acao));
   const sem = linhas.filter((l) => !(l.media > 0)).map((l) => `${l.acao}: ${l.erro ?? l.media}`);
   assert.deepEqual(sem, []);
 });

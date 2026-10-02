@@ -162,6 +162,8 @@ export function ataqueDoMonstro(bicho) {
 
 /** Dano final que chega no personagem, depois da armadura dele absorver uma parte. */
 export function danoRecebido(ataqueBruto, armorDoPersonagem) {
+  // Modo 'poe' (`combate/formulas.json`): a armadura corta uma FRAÇÃO do golpe físico, que encolhe contra golpes muito fortes; sem sorteio.
+  if (Formulas.PARAMETROS.armadura.modo === 'poe') return Math.max(0, ataqueBruto * (1 - Formulas.reducaoDeArmaduraPoe(armorDoPersonagem, ataqueBruto)));
   const absorvido = Formulas.absorcaoPorArmadura(armorDoPersonagem, Math.random());
   return Math.max(0, ataqueBruto - absorvido);
 }

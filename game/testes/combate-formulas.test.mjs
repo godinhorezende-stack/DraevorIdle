@@ -79,10 +79,12 @@ test('bloqueio: zero, no teto e acima do teto (golpe e magia, com bônus de limi
   assert.equal(F.bloqueioFinal(-1), 0);
 });
 
-test('a armadura de HOJE vem da configuração e dá o mesmo resultado: absorve de 60% a 120%, e `danoRecebido` não mudou', () => {
+test('a armadura do modo \'tibia\' (a de antes) vem da configuração e dá o mesmo resultado: absorve de 60% a 120%, e `danoRecebido` não mudou', () => {
   assert.equal(F.absorcaoPorArmadura(1000, 0), 600);
   assert.equal(F.absorcaoPorArmadura(1000, 1), 1200);
   assert.equal(F.absorcaoPorArmadura(0, 0.5), 0);
+  const modoAntes = F.PARAMETROS.armadura.modo;
+  F.PARAMETROS.armadura.modo = 'tibia';
   const original = Math.random;
   try {
     // Igual à conta original da engine (`armorReduction`), para qualquer sorteio.
@@ -96,9 +98,8 @@ test('a armadura de HOJE vem da configuração e dá o mesmo resultado: absorve 
     assert.equal(R.danoRecebido(500, 1000), 0);
   } finally {
     Math.random = original;
+    F.PARAMETROS.armadura.modo = modoAntes;
   }
-  assert.equal(F.PARAMETROS.armadura.modo, 'tibia', 'a armadura do PoE existe, mas segue desligada');
-  assert.equal(F.PARAMETROS.acerto.modo, 'draevor');
 });
 
 test('o crítico base e o Onslaught vêm da configuração (3%, +60%, ×1,6) — a ficha de um personagem novo não mudou', () => {

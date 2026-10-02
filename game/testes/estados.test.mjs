@@ -1,6 +1,7 @@
 // Os ESTADOS das supports (Freeze, Slow, Ignite, Stun) — regras da auditoria de 02/10 (decididas pelo dono):
 // Freeze 1,5 s / Slow 3 s e teto de 40%; congelar e atordoar não renovam e deixam o bicho imune por 3 s; boss imune, elite com metade
 // da duração; UMA queimação por bicho (a maior) e o relógio dos pulsos que não reinicia; só os estados ATIVOS vão para o cliente.
+import * as Dot from '../systems/combate/dot.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Estados from '../systems/skills/estados.mjs';
@@ -98,11 +99,11 @@ test('Ignite: UMA queimação por bicho — a maior vale, a mais fraca é ignora
   const m = mob();
   const ig = { igniteChance: 100, ignitePct: 40 };
   Estados.aplicar(m, ig, 1000, 1000, SEMPRE);
-  assert.equal(m.estados.queimando.falta, 400);
+  assert.equal(Dot.restante(m, 'queimadura'), 400);
   assert.deepEqual(Estados.aplicar(m, ig, 500, 1100, SEMPRE), [], 'mais fraca: ignorada');
-  assert.equal(m.estados.queimando.falta, 400);
+  assert.equal(Dot.restante(m, 'queimadura'), 400);
   assert.deepEqual(Estados.aplicar(m, ig, 2000, 1200, SEMPRE), ['queimando']);
-  assert.equal(m.estados.queimando.falta, 800, 'a maior substitui (não soma)');
+  assert.equal(Dot.restante(m, 'queimadura'), 800, 'a maior substitui (não soma)');
 });
 
 test('Ignite: o relógio dos pulsos NÃO reinicia — com acertos a cada 0,4 s a queimação paga (antes: dano zero)', () => {
@@ -190,7 +191,9 @@ test('o balão das gemas (Freeze, Slow, Ignite, Stun) diz a duração e as regra
   const s = (ms) => `${ms / 1000}`.replace('.', ',') + ' s';
   const c = CONFIG.estados;
   const linha = (chave) => fonte.split('\n').find((l) => l.trim().startsWith(`${chave}:`) && l.includes("'")) ?? '';
-  assert.ok(linha('ignitePct').includes(s(c.queimando.duracao)), 'Ignite: duração');
+  assert.ok(linha('ignitePct').includes(s(Dot.CONFIG.tipos.queimadura.duracaoMs)), 'Ignite: duração');
+  assert.ok(linha('venenoPct').includes(s(Dot.CONFIG.tipos.veneno.duracaoMs)) && linha('venenoPct').includes(`${Dot.CONFIG.tipos.veneno.maxPilhas}×`), 'Poison: duração e pilhas');
+  assert.ok(linha('sangramentoPct').includes(s(Dot.CONFIG.tipos.sangramento.duracaoMs)), 'Bleed: duração');
   assert.ok(linha('congelarChance').includes(s(c.congelado.duracao)), 'Freeze: duração');
   assert.ok(linha('congelarChance').includes(s(c.controle.imunidade)), 'Freeze: imunidade');
   assert.ok(linha('lentidaoPct').includes(s(c.lento.duracao)), 'Slow: duração');
