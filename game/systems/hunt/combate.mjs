@@ -38,6 +38,7 @@ import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
 import * as Controle from '../combate/controle.mjs';
+import * as AtributosDoMob from '../mobs/atributos.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
@@ -156,6 +157,11 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // Accuracy: o tiro pode errar (a mana já foi gasta, como um golpe no ar).
   if (Defesa.errou(ficha, hunt, alvo)) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
+    return true;
+  }
+  // O bicho BLOQUEIA o tiro (só quem tem bloqueio configurado): sem dano.
+  if (AtributosDoMob.bloqueou(alvo)) {
+    eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
     return true;
   }
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
@@ -932,7 +938,13 @@ export function round(estado, personagem) {
           eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
           return false;
         }
-        // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
+        // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): o golpe não causa dano.
+      if (AtributosDoMob.bloqueou(alvo)) {
+        Treino.treinar(estado, pericia);
+        eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
+        return true;
+      }
+      // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
         // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
         // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
         // + os reforços ligados (Blood Rage no corpo a corpo, Sharpshooter à distância), pelas tags do golpe.

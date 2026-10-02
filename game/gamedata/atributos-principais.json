@@ -22,11 +22,9 @@
   "_efeitos": "STR_PHYSICAL_DAMAGE_PER_POINT, DEX_ATTACK_SPEED_PER_POINT e INT_MAGIC_DAMAGE_PER_POINT em % por ponto (0,05 = +0,05%). LIFE/MANA em pontos de vida/mana por ponto. ACCURACY/EVASION em pontos de rating.",
 
   "precisao": {
-    "_nota": "Accuracy do jogador contra a Evasão do bicho (golpe da arma e wand; magia sempre acerta). Chance de acerto = FATOR × acc / (acc + evasaoDoBicho), entre MIN e MAX. Com os valores abaixo, um personagem no level do bicho acerta ~95%.",
+    "_nota": "Accuracy do jogador contra a Evasão do bicho (golpe da arma e wand; magia sempre acerta). Chance de acerto = FATOR × acc / (acc + evasaoDoBicho), entre MIN e MAX (a evasão do bicho vem de `mobs/atributos.json`). Com os valores abaixo, um personagem no level do bicho acerta ~95%.",
     "BASE": 20,
     "POR_LEVEL": 6,
-    "EVASAO_DO_BICHO_BASE": 10,
-    "EVASAO_DO_BICHO_POR_LEVEL": 2,
     "FATOR": 1.25,
     "MIN": 0.5,
     "MAX": 1
@@ -34,8 +32,6 @@
 
   "evasao": {
     "_nota": "Evasion do jogador contra a precisão do bicho: chance de esquivar o GOLPE corpo a corpo = ev / (ev + precisaoDoBicho), até MAX. Magia do bicho não é esquivável (é o Energy Shield e a resistência que cuidam dela).",
-    "PRECISAO_DO_BICHO_BASE": 10,
-    "PRECISAO_DO_BICHO_POR_LEVEL": 4,
     "MAX": 0.5
   },
 

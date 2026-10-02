@@ -179,7 +179,7 @@ export function aoAcertar(estado, hunt, bicho, eventos) {
     const charm = POR_ID.get(id);
     const bruto = Math.min(estado.level * 2, Math.ceil(bicho.maxHp * (charm.percent / 100)));
     // A resistência do bicho ao elemento do charm: a mesma conta de todo golpe (teto, boss, penetração do jogador).
-    bater(estado, hunt, bicho, charm, resistido(hunt, bicho, charm.element, bruto, Ficha.combate(estado)), eventos);
+    bater(estado, hunt, bicho, charm, resistido(hunt, bicho, charm.element, bruto, Ficha.combate(estado), { armadura: false }), eventos);
     if (bicho.hp <= 0) return;
   }
   for (const [id, maximo] of [[ID.overpower, estado.maxHp], [ID.overflux, estado.maxMana]]) {

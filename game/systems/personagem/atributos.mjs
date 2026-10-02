@@ -13,6 +13,7 @@
 // a comparação e o combate usam.
 import { readFileSync } from 'node:fs';
 import * as Formulas from '../combate/formulas.mjs';
+import { daCurva } from '../mobs/curvas.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
@@ -70,9 +71,10 @@ export function levelDoBicho(hunt, bicho) {
 }
 
 /** Chance (0–1) do golpe do jogador ACERTAR o bicho: a Accuracy dele contra a evasão do bicho. */
-export function chanceDeAcerto(precisao, levelBicho) {
+export function chanceDeAcerto(precisao, levelBicho, evasaoDoBichoPronta = null) {
   const c = CONFIG.precisao;
-  const evasaoDoBicho = c.EVASAO_DO_BICHO_BASE + c.EVASAO_DO_BICHO_POR_LEVEL * levelBicho;
+  // A evasão do bicho: a que `mobs/atributos.mjs` calculou (curva, faixa, espécie, modificadores) ou, sem ela, a curva deste level.
+  const evasaoDoBicho = evasaoDoBichoPronta ?? daCurva('evasao', levelBicho);
   // Modo 'poe' (`combate/formulas.json`): precisão / (precisão + (evasão / 4)^0,8), entre 5% e 95%.
   if (Formulas.PARAMETROS.acerto.modo === 'poe') return Formulas.chanceDeAcertoPoe(precisao, evasaoDoBicho);
   const bruta = (c.FATOR * precisao) / Math.max(1, precisao + evasaoDoBicho);
@@ -80,10 +82,11 @@ export function chanceDeAcerto(precisao, levelBicho) {
 }
 
 /** Chance (0–1) de o jogador ESQUIVAR o golpe corpo a corpo do bicho: a Evasion dele contra a precisão do bicho. */
-export function chanceDeEsquiva(evasao, levelBicho) {
+export function chanceDeEsquiva(evasao, levelBicho, precisaoDoBichoPronta = null) {
   const c = CONFIG.evasao;
   if (!(evasao > 0)) return 0;
-  const precisaoDoBicho = c.PRECISAO_DO_BICHO_BASE + c.PRECISAO_DO_BICHO_POR_LEVEL * levelBicho;
+  // A precisão do bicho: a de `mobs/atributos.mjs` ou, sem ela, a curva deste level.
+  const precisaoDoBicho = precisaoDoBichoPronta ?? daCurva('precisao', levelBicho);
   // Modo 'poe': a chance de evitar é o complemento da chance de acerto do bicho contra esta evasão.
   if (Formulas.PARAMETROS.acerto.modo === 'poe') return 1 - Formulas.chanceDeAcertoPoe(precisaoDoBicho, evasao);
   return Math.min(c.MAX, evasao / (evasao + precisaoDoBicho));

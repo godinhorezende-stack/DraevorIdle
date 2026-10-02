@@ -8,7 +8,7 @@
 //   dano     → `forca` (o `Reforcos.forcaDoBicho` de todo golpe e magia do mob)
 //   exp      → `exp` (e `expMult`, para o level do mob não subir com a raridade)
 //   loot     → `lootMult` (× a chance de cada drop, em `matarMonstro`)
-//   resistência → `resist` (somada em `resistenciaDe`; a armadura do mob não entra em conta nenhuma do dano)
+//   resistência → `resist` (somada em `resistenciaDe`); armadura/precisão/evasão → `armaduraPct`/`precisaoPct`/`evasaoPct`, bloqueio/redução → `bloqueio`/`reducaoDeDano` (`mobs/atributos.mjs`)
 //   passo    → `velocidade` (em `passoDoBicho`);  golpe → `velocidadeDeAtaque`
 //   regeneração → `regen` (% da vida por segundo, no tique dos estados)
 //   elite/boss → `elite`/`chefe` (os adds "Damage vs Elite/Boss" do jogador)
@@ -49,7 +49,7 @@ export function errosDoSpawn(s) {
 
 /** A soma dos stats dos modificadores. */
 export function statsDos(ids) {
-  const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, resist: {} };
+  const t = { vidaPct: 0, danoPct: 0, velocidadePct: 0, velocidadeDeAtaquePct: 0, regenPct: 0, precisaoPct: 0, evasaoPct: 0, armaduraPct: 0, bloqueio: 0, reducaoDeDano: 0, resist: {} };
   for (const id of ids ?? []) {
     const s = MODIFICADORES[id]?.stats ?? {};
     for (const k of Object.keys(t)) if (k !== 'resist' && Number.isFinite(s[k])) t[k] += s[k];
@@ -82,6 +82,12 @@ export function aplicar(m, { raridade = 'normal', modificadores = [] } = {}) {
   if (st.velocidadePct) m.velocidade = 1 + st.velocidadePct / 100;
   if (st.velocidadeDeAtaquePct) m.velocidadeDeAtaque = 1 + st.velocidadeDeAtaquePct / 100;
   if (st.regenPct) m.regen = st.regenPct;
+  // Os atributos de defesa e precisão do bicho (`mobs/atributos.mjs`): % sobre a curva, e bloqueio/redução em % (só quem declara).
+  if (st.precisaoPct) m.precisaoPct = st.precisaoPct;
+  if (st.evasaoPct) m.evasaoPct = st.evasaoPct;
+  if (st.armaduraPct) m.armaduraPct = st.armaduraPct;
+  if (st.bloqueio) m.bloqueio = st.bloqueio;
+  if (st.reducaoDeDano) m.reducaoDeDano = st.reducaoDeDano;
   if (Object.keys(st.resist).length) m.resist = st.resist;
   if (r.elite) m.elite = true;
   if (r.boss) m.chefe = true;

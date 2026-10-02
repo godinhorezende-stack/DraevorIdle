@@ -13,6 +13,9 @@ import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { BESTIARY } from './monstros.mjs';
 import * as R from '../regras.mjs';
 import * as Limites from '../combate/limites.mjs';
+import * as Formulas from '../combate/formulas.mjs';
+import * as Atributos from '../personagem/atributos.mjs';
+import * as AtributosDoMob from '../mobs/atributos.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss e o piso da fraqueza (antes do teto de resistência e da penetração). */
 export function resistenciaDe(hunt, alvo, tipo) {
@@ -34,5 +37,15 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
   return Limites.resistenciaEfetiva(Limites.resistenciaDoMob(resistenciaDe(hunt, alvo, tipo)), Limites.penetracaoDe(ficha?.penetracao, tipo));
 }
 
-/** `valor` de dano do `tipo` depois da resistência (e da penetração do atacante, se a `ficha` dele vier). */
-export const resistido = (hunt, alvo, tipo, valor, ficha = null) => Math.max(0, Math.round(Limites.danoAposResistencia(valor, resistenciaEfetivaDe(hunt, alvo, tipo, ficha))));
+/**
+ * `valor` de dano do `tipo` depois das defesas do bicho: a ARMADURA (só no golpe FÍSICO — com a `ficha` do atacante, que marca o golpe; o
+ * dano contínuo não passa por ela), a redução de dano do bicho (separada), a resistência ao elemento e a penetração do atacante.
+ * (`mobs/atributos.mjs`: armadura, bloqueio e redução vêm da espécie e dos modificadores.)
+ */
+export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = true } = {}) {
+  let v = valor;
+  if (ficha && armadura && tipo === 'physical') v *= 1 - AtributosDoMob.reducaoDeArmadura(alvo, Atributos.levelDoBicho(hunt, alvo), valor, Formulas.PARAMETROS.armadura.poe.coeficiente);
+  const reducao = AtributosDoMob.reducaoDeDano(alvo);
+  if (reducao > 0) v *= 1 - reducao;
+  return Math.max(0, Math.round(Limites.danoAposResistencia(v, resistenciaEfetivaDe(hunt, alvo, tipo, ficha))));
+}
