@@ -18,7 +18,7 @@ import { banco } from '../database/banco.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import { darItem, cabeNoPeso } from './inventario.mjs';
 import * as Deposito from './deposito.mjs';
-import { converterTudo, camposDaPeca, raridadeDaPeca } from './itens/item.mjs';
+import { converterTudo, camposDaPeca, raridadeDaPeca, pecaEspecial } from './itens/item.mjs';
 
 /** A peça de uma oferta, com as de antes do sistema de itens já convertidas. */
 const pecaDa = (o) => {
@@ -108,7 +108,7 @@ function entregar(estado, { gold = 0, coins = 0, itens = [] }) {
   estado.coins = (estado.coins ?? 0) + coins;
   const chegadas = Deposito.garantir(estado).find((c) => c.chegadas);
   for (const it of itens) {
-    const especial = it.peca && (it.peca.af?.length || it.peca.tier || it.peca.imbu?.length || it.peca.efeito);
+    const especial = it.peca && pecaEspecial(it.peca);
     if (cabeNoPeso(estado, it.id, it.count)) {
       if (especial) (estado.inventory ??= []).push({ ...it.peca, id: it.id, count: it.count });
       else darItem(estado, it.id, it.count);
@@ -224,7 +224,7 @@ export async function anunciar(estado, personagem, { kind, id, count, price, pec
     if (i < 0 || disponivel < n) return { ok: false, erro: 'Você não tem essa quantidade na mochila.' };
     let falta = n;
     const primeira = inv[i];
-    if (primeira.af?.length || primeira.tier || primeira.imbu?.length) {
+    if (pecaEspecial(primeira)) {
       const { count: _c, id: _i, ...extras } = primeira;
       pecaGuardada = extras;
     }
