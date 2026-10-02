@@ -4,6 +4,7 @@
 // O que está LIGADO ao combate hoje é o modo 'tibia' da armadura e o 'draevor' do acerto; as fórmulas do 'poe' estão aqui, testadas,
 // para a etapa em que o dono aprovar a troca (cada uma atrás do seu `modo`).
 import { readFileSync } from 'node:fs';
+import * as Modificadores from './modificadores.mjs';
 
 export const PARAMETROS = JSON.parse(readFileSync(new URL('../../gamedata/combate/formulas.json', import.meta.url), 'utf8'));
 
@@ -15,12 +16,16 @@ export const PARAMETROS = JSON.parse(readFileSync(new URL('../../gamedata/combat
  * Devolve o número e as parcelas (a origem de cada uma) para o registro e a ficha.
  */
 export function combinarModificadores(base, { aumentos = [], reducoes = [], mais = [], menos = [] } = {}) {
-  const soma = (l) => l.reduce((n, m) => n + (Number(m.valor) || 0), 0);
-  const aditivo = 1 + (soma(aumentos) - soma(reducoes)) / 100;
-  let multiplicativo = 1;
-  for (const m of mais) multiplicativo *= 1 + (Number(m.valor) || 0) / 100;
-  for (const m of menos) multiplicativo *= 1 - (Number(m.valor) || 0) / 100;
-  return { valor: base * Math.max(0, aditivo) * multiplicativo, aditivo: Math.max(0, aditivo), multiplicativo, parcelas: { aumentos, reducoes, mais, menos } };
+  // A conta é a do motor único (`modificadores.mjs`); aqui só o formato antigo de entrada e saída.
+  const lista = [
+    ...aumentos.map((m) => ({ tipo: 'increased', valor: Number(m.valor) || 0 })),
+    ...reducoes.map((m) => ({ tipo: 'increased', valor: -(Number(m.valor) || 0) })),
+    ...mais.map((m) => ({ tipo: 'more', valor: Number(m.valor) || 0 })),
+    ...menos.map((m) => ({ tipo: 'more', valor: -(Number(m.valor) || 0) })),
+  ];
+  const aditivo = Math.max(0, 1 + lista.reduce((n, m) => (m.tipo === 'increased' ? n + m.valor : n), 0) / 100);
+  const multiplicativo = lista.reduce((n, m) => (m.tipo === 'more' ? n * (1 + m.valor / 100) : n), 1);
+  return { valor: Modificadores.calcular(base, lista, {}, { min: 0, casas: 12 }).valor, aditivo, multiplicativo, parcelas: { aumentos, reducoes, mais, menos } };
 }
 
 // ---------------------------------------------------------------- crítico

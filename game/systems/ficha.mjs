@@ -31,6 +31,7 @@ import * as Passivas from './passivas/arvore.mjs';
 import * as Keystones from './passivas/keystones.mjs';
 import * as PoderDaArma from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
+import { simples } from './combate/modificadores.mjs';
 import { PARAMETROS as FORMULAS } from './combate/formulas.mjs';
 import * as FORMULAS_FN from './combate/formulas.mjs';
 
@@ -258,7 +259,7 @@ function calcularCombate(estado) {
     evasion: defesas.evasion,
     energyShield: defesas.energyShield,
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
-    accuracy: Math.round((Atributos.precisaoBase(estado.level) + doAtributo.precisao + (af.accuracy ?? 0)) * (1 + espStat('accuracy') / 100)),
+    accuracy: Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') }).bruto),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
@@ -469,9 +470,9 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
     const [a, b] = faixaDoCampo(p, campo);
     return n + (a + b) / 2;
   }, 0);
-  const armour = (somaDoCampo('armor') + (af.armor_flat ?? 0)) * (1 + ((af.armour_pct ?? 0) + espStat('armour')) / 100);
-  const evasion = (somaDoCampo('evasion') + (af.evasion ?? 0) + doAtributo.evasao) * (1 + ((af.evasion_pct ?? 0) + espStat('evasion')) / 100);
-  const energyShield = (somaDoCampo('es') + (af.energy_shield ?? 0)) * (1 + (af.es_pct ?? 0) / 100);
+  const armour = simples(somaDoCampo('armor'), { fixos: af.armor_flat ?? 0, pct: (af.armour_pct ?? 0) + espStat('armour') }).bruto;
+  const evasion = simples(somaDoCampo('evasion'), { fixos: (af.evasion ?? 0) + doAtributo.evasao, pct: (af.evasion_pct ?? 0) + espStat('evasion') }).bruto;
+  const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: af.es_pct ?? 0 }).bruto;
   return { armour: Math.round(armour), evasion: Math.round(evasion), energyShield: Math.round(energyShield) };
 }
 
@@ -566,11 +567,10 @@ function faixaDeArmadura(estado, af, pctDaEspecializacao = 0) {
       soma[campo][1] += b;
     }
   }
-  const plana = af?.armor_flat ?? 0;
-  const pct = 1 + ((af?.armour_pct ?? 0) + pctDaEspecializacao) / 100;
+  const opcoes = { fixos: af?.armor_flat ?? 0, pct: (af?.armour_pct ?? 0) + pctDaEspecializacao };
   return {
-    armorMin: Math.round((soma.armor[0] + plana) * pct),
-    armorMax: Math.round((soma.armor[1] + plana) * pct),
+    armorMin: Math.round(simples(soma.armor[0], opcoes).bruto),
+    armorMax: Math.round(simples(soma.armor[1], opcoes).bruto),
   };
 }
 
