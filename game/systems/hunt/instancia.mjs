@@ -27,6 +27,7 @@ import { VIZINHANCA_8, distancia, bfsDistancias } from './caminho.mjs';
 import { criarMonstro } from './monstros.mjs';
 import { salaDe } from './sala.mjs';
 import { sortearCriatura } from '../mapa/spawns.mjs';
+import * as Encontros from '../encontros/estado.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/instancias.json', import.meta.url), 'utf8'));
 
@@ -203,7 +204,12 @@ export function progresso(hunt) {
 /** Acabou de limpar (100%)? Marca `limpa` (uma vez) e devolve `true` só nessa vez. `agora` = relógio da caçada. */
 export function marcarSeLimpou(hunt, agora) {
   const inst = hunt?.instancia;
-  if (!inst || inst.status !== 'ativa' || pendentes(hunt) > 0) return false;
+  if (!inst || inst.status !== 'ativa') return false;
+  const bichosLimpos = pendentes(hunt) === 0;
+  // Os encontros acompanham a limpeza (libera os que esperam os bichos, expira os opcionais, o idle resolve o que pode).
+  Encontros.avaliar(inst, { monstrosLimpos: bichosLimpos, agora, hunt });
+  // CLEAR = bichos mortos E encontros OBRIGATÓRIOS concluídos. Opcional nunca trava.
+  if (!bichosLimpos || Encontros.obrigatoriosPendentes(inst) > 0) return false;
   inst.status = 'limpa';
   inst.limpaEm = Date.now();
   inst.limpaNoRelogio = agora;

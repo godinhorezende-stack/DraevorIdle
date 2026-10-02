@@ -1,6 +1,7 @@
 // O terreno da hunt: mapa capturado, pontos de nascimento no referencial do mapa, a grade andável.
 // Parte de `cacadas.mjs` (dividido em 2026-09-25); a fachada continua lá.
 import { spawnsDoMapa } from '../mapa/spawns.mjs';
+import { encontrosDoMapa } from '../encontros/modelo.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -243,6 +244,11 @@ export function spawnsDaHunt(huntId) {
   const hunt = acharHunt(huntId);
   if (Array.isArray(hunt?.spawns)) return spawnsDoMapa({ spawns: hunt.spawns, z: hunt.origin?.z ?? 7 });
   return null;
+}
+
+/** Os encontros que o arquivo do mapa define (ver `encontros/modelo.mjs`); lista vazia = nenhum. */
+export function encontrosDaHunt(huntId) {
+  return encontrosDoMapa(mapaRealCapturado(huntId));
 }
 
 export function temTerrenoReal(hunt) {

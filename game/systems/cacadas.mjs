@@ -35,7 +35,7 @@ import * as Arvore from './arvore.mjs';
 import * as Estados from './skills/estados.mjs';
 import * as RegrasDeUso from './skills/regras-de-uso.mjs';
 import * as Bosses from './bosses.mjs';
-import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt } from './hunt/terreno.mjs';
+import { SPAWNS_CAPTURADOS, spawnsCapturados, mapaRealCapturado, pontosNoMapa, acharHunt, huntOuMapaCustom, nomeDaHunt, temTerrenoReal, gradeDaHunt, spawnsDaHunt, encontrosDaHunt } from './hunt/terreno.mjs';
 import { BESTIARY, criarMonstro, trocarDeAndar, renascer, passoDoBicho, moverMonstros, compactarMonstro, completarMonstro, garantirUidAcimaDe } from './hunt/monstros.mjs';
 import { destinoDaMudanca, andarDaGrade } from './hunt/andares.mjs';
 import { VIZINHANCA_8, proximoPassoAte, casaAndavelMaisProxima, casaLivrePerto, distancia, temCaminho, bfsDistancias } from './hunt/caminho.mjs';
@@ -53,6 +53,7 @@ import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { resistido } from './hunt/resistencia.mjs';
 import * as Instancia from './hunt/instancia.mjs';
+import * as Encontros from './encontros/estado.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -528,6 +529,9 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
   if (comInstancia) {
     instancia = Instancia.novoRegistro(huntId, instanciaId);
     for (const m of [...monstros, ...Object.values(outrosAndares).flat()]) instancia.objetivos.total += m.objetivo ?? 1;
+    // Os encontros do mapa (se houver): sorteados AGORA, uma vez, com a semente guardada na instância.
+    const definicoes = encontrosDaHunt(huntId);
+    if (definicoes.length) Encontros.criar(instancia, definicoes);
   }
   return { grade, inicio, andarInicial, monstros, outrosAndares, instancia };
 }
@@ -845,6 +849,8 @@ function projetarNaInstancia(estado, kills) {
   let limpezas = hunt.instancia.status === 'ativa' ? 1 : 0;
   limpezas += Math.floor(sobra / total);
   sobra %= total;
+  // A projeção zerou a instância: o idle resolve os encontros pendentes (obrigatórios sem recompensa; opcionais expiram).
+  Encontros.resolverNaProjecao(hunt.instancia);
   for (let i = 0; i < limpezas; i++) Campanha.limpou(estado, hunt);
   novaInstancia(estado);
   Instancia.tirarAoAcaso(hunt, sobra);
