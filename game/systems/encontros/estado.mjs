@@ -98,7 +98,18 @@ export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = n
   // O tipo confere se o encontro EM ANDAMENTO ainda tem como terminar (ex.: o boss sumiu sem o gancho de morte):
   // nunca deixa a instância esperando por algo que não existe mais.
   if (hunt) {
-    for (const e of Object.values(todos)) if (e.estado === 'ativo') tipoDe(e.tipo)?.verificar?.({ hunt, instancia, encontro: e, agora, estado, personagem });
+    let verificou = false;
+    for (const e of Object.values(todos)) if (e.estado === 'ativo') (verificou = true), tipoDe(e.tipo)?.verificar?.({ hunt, instancia, encontro: e, agora, estado, personagem });
+    // Quem concluiu agora (ex.: a última onda) libera já os que dependem dele — a fase pode fechar neste mesmo passo.
+    if (verificou) {
+      for (const e of Object.values(todos)) {
+        if (e.estado === 'dormindo' && condicaoCumprida(instancia, e, { monstrosLimpos })) {
+          e.estado = 'disponivel';
+          e.disponivelEm = agora;
+          mudou++;
+        }
+      }
+    }
   }
   if (hunt?.modo === 'auto') {
     for (const e of Object.values(todos)) {

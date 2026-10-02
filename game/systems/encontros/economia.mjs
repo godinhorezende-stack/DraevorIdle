@@ -46,7 +46,11 @@ const grupo = (g) => Object.fromEntries((g?.criaturas ?? []).map((c) => [c.key, 
 /** O valor esperado de UM encontro (sem a probabilidade): recompensa do baú + o loot dos guardiões/invocados + o loot do boss. */
 export function valorDeUmEncontro(e, escala) {
   let valor = 0;
-  if (e.recompensa) valor += valorDaRecompensa(e.recompensa);
+  // Ondas: cada onda é um grupo de bichos que dropa; com `porOnda` a recompensa se repete a cada onda vencida.
+  if (e.ondas?.length) {
+    for (const o of e.ondas) valor += valorDeMortes(grupo(o), escala);
+    if (e.recompensa) valor += valorDaRecompensa(e.recompensa) * (e.recompensa.porOnda ? e.ondas.length : 1);
+  } else if (e.recompensa) valor += valorDaRecompensa(e.recompensa);
   // Guardiões e invocados são bichos de verdade: quando morrem, dropam como qualquer outro.
   for (const g of [e.guardioes, e.invocacao, e.penalidade?.invocacao]) if (g) valor += valorDeMortes(grupo(g), escala);
   // Boss único: o loot do cadastro (ou o da criatura-base), na escala da fase.

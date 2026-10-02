@@ -8,7 +8,12 @@
     "guardioesMax": 8,
     "altarDuracaoMsMax": 600000,
     "altarEfeitosMax": 3,
-    "armadilhaPctDaVidaMax": 50
+    "armadilhaPctDaVidaMax": 50,
+    "ondasMax": 10,
+    "ondaMaxMonstros": 10,
+    "pausaDaOndaMsMax": 30000,
+    "limiteDaFendaMsMin": 20000,
+    "limiteDaFendaMsMax": 1800000
   },
   "tabelas": {}
 }

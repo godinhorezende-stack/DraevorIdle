@@ -21,7 +21,7 @@ import * as Altares from './altares.mjs';
 import * as Eventos from './eventos.mjs';
 import { quemEstaNaSala, nascerGrupo, bichosDaSala, avisarSala } from './sala.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
-import { lootDoEncontro, pagarPremio } from '../hunt/combate.mjs';
+import { pagarRolagens, pagarConclusao } from './entregar.mjs';
 import { danoDeElementoNoJogador } from '../poderes.mjs';
 import * as Ficha from '../ficha.mjs';
 import * as Entrega from './entrega.mjs';
@@ -87,8 +87,6 @@ export function podeAbrir(estado, e) {
   return { ok: true };
 }
 
-const lootOrigem = (e) => ({ key: `encontro:${e.defId}`, name: e.nome, exp: e.recompensa?.moedasMedia ?? 100, expDasMoedas: e.recompensa?.moedasMedia ?? 100 });
-
 function armadilha(ctx, e) {
   const { estado, personagem, hunt } = ctx;
   const a = e.armadilha;
@@ -101,21 +99,11 @@ function armadilha(ctx, e) {
   Eventos.empurrar(hunt, eventos);
 }
 
-/** Paga a recompensa do baú (loot de sempre + primeira conclusão por membro). Chamada UMA vez, pelo `finalizar`. */
+/** Paga a recompensa do baú: as rolagens (loot de sempre) e a conclusão. Chamada UMA vez, pelo `finalizar`. */
 function pagar(ctx, e) {
-  const { estado, personagem, hunt, instancia } = ctx;
-  const r = e.recompensa;
-  if (!r || !estado) return;
-  const eventos = [];
-  for (let i = 0; i < (r.rolagens ?? 1); i++) lootDoEncontro(estado, hunt, personagem, lootOrigem(e), Recompensas.dropsDe(r), eventos);
-  Eventos.empurrar(hunt, eventos);
-  for (const quem of quemEstaNaSala(hunt, estado)) {
-    const { primeira } = Entrega.registrarConclusao(quem, hunt.huntId, e.defId);
-    const pc = r.primeiraConclusao;
-    if (primeira && pc && Entrega.reivindicar(quem, instancia.id, e.id).ok) {
-      pagarPremio({ estado: quem, gold: Number(pc.gold ?? 0), exp: Number(pc.exp ?? 0), itens: (pc.itens ?? []).map((i) => ({ id: i.id, count: i.count })), nome: e.nome });
-    }
-  }
+  if (!e.recompensa || !ctx.estado) return;
+  pagarRolagens(ctx, e, e.recompensa.rolagens ?? 1);
+  pagarConclusao(ctx, e);
 }
 
 /** O fim do encontro: conclui (uma vez só) e, só se concluiu agora, paga. */
