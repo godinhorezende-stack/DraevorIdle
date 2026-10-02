@@ -1,5 +1,5 @@
 {
- "_nota": "Raridade do ITEM (sorteada em cada drop). Chances em %, por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Ato 3 Médio: Lendário 2 -> 2,85 (a tabela original somava 99,15). Números iniciais, não balanceamento definitivo.",
+ "_nota": "Raridade do ITEM (sorteada em cada drop). Chances em %, por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Curva global de 02/10 (auditoria de loot, decisão do dono): a qualidade nunca cai ao passar de um estágio para o seguinte (Normal 1→4, Cruel 1→4, Merciless 1→4); o Normal ficou como estava, exceto o mítico (escada ×0,4, para o mítico ser especial).",
  "ordem": [
   "comum",
   "incomum",
@@ -181,113 +181,122 @@
   }
  ],
  "dificuldadePadrao": "facil",
- "_boss": "Sala de boss: o drop usa a dificuldade N degraus acima (Fácil -> Médio), no lugar do degrau de tier a mais que o boss já dava.",
+ "_boss": "Boss de Ato (campanha): o drop usa a dificuldade N degraus acima (`dificuldadeAMais`; a última não tem acima). `equipamentoGarantido`: quantas peças de equipamento a vitória acrescenta ao loot do boss (por dificuldade), sorteadas entre as `janelaDePecas` de maior level mínimo até o level do boss (da vocação do personagem), e `raridadeMinima`: a raridade mínima dessas peças naquela dificuldade (a peça abaixo disso sai na raridade mínima).",
  "boss": {
-  "dificuldadeAMais": 1
+  "dificuldadeAMais": 1,
+  "equipamentoGarantido": {
+   "facil": 1,
+   "medio": 2,
+   "dificil": 3
+  },
+  "raridadeMinima": {
+   "dificil": "raro"
+  },
+  "janelaDePecas": 40
  },
  "chances": {
   "1": {
    "facil": {
-    "comum": 72,
+    "comum": 72.0006,
     "incomum": 20,
     "raro": 7,
     "épico": 0.9,
     "lendário": 0.099,
-    "mítico": 0.001
+    "mítico": 0.0004
    },
    "medio": {
-    "comum": 68,
-    "incomum": 22,
-    "raro": 8.8,
-    "épico": 1,
-    "lendário": 0.197,
-    "mítico": 0.003
+    "comum": 56.116,
+    "incomum": 22.8,
+    "raro": 14.5,
+    "épico": 4.5,
+    "lendário": 2.0,
+    "mítico": 0.084
    },
    "dificil": {
-    "comum": 64,
-    "incomum": 23,
-    "raro": 10.8,
-    "épico": 1.7,
-    "lendário": 0.49,
-    "mítico": 0.01
+    "comum": 46.7,
+    "incomum": 22,
+    "raro": 18,
+    "épico": 8.5,
+    "lendário": 4.6,
+    "mítico": 0.2
    }
   },
   "2": {
    "facil": {
-    "comum": 68,
+    "comum": 68.006,
     "incomum": 22,
     "raro": 8.5,
     "épico": 1.2,
     "lendário": 0.29,
-    "mítico": 0.01
+    "mítico": 0.004
    },
    "medio": {
-    "comum": 63,
-    "incomum": 24,
-    "raro": 10.5,
-    "épico": 1.8,
-    "lendário": 0.67,
-    "mítico": 0.03
+    "comum": 51.29,
+    "incomum": 25,
+    "raro": 15.5,
+    "épico": 5.5,
+    "lendário": 2.6,
+    "mítico": 0.11
    },
    "dificil": {
-    "comum": 58,
+    "comum": 41.06,
     "incomum": 25,
-    "raro": 12,
-    "épico": 3,
-    "lendário": 1.92,
-    "mítico": 0.08
+    "raro": 19,
+    "épico": 9.5,
+    "lendário": 5.2,
+    "mítico": 0.24
    }
   },
   "3": {
    "facil": {
-    "comum": 62,
+    "comum": 62.03,
     "incomum": 24,
     "raro": 11,
     "épico": 2,
     "lendário": 0.95,
-    "mítico": 0.05
+    "mítico": 0.02
    },
    "medio": {
-    "comum": 56,
-    "incomum": 25,
-    "raro": 13,
-    "épico": 3,
-    "lendário": 2.85,
-    "mítico": 0.15
+    "comum": 47.456,
+    "incomum": 26,
+    "raro": 16.5,
+    "épico": 6.5,
+    "lendário": 3.4,
+    "mítico": 0.144
    },
    "dificil": {
-    "comum": 49,
+    "comum": 37.4,
     "incomum": 26,
-    "raro": 15,
-    "épico": 5,
-    "lendário": 4.6,
-    "mítico": 0.4
+    "raro": 19.5,
+    "épico": 11,
+    "lendário": 5.8,
+    "mítico": 0.3
    }
   },
   "4": {
    "facil": {
-    "comum": 55,
+    "comum": 55.12,
     "incomum": 25,
     "raro": 14,
     "épico": 4,
     "lendário": 1.8,
-    "mítico": 0.2
+    "mítico": 0.08
    },
    "medio": {
-    "comum": 48,
+    "comum": 44.02,
     "incomum": 26,
-    "raro": 16,
-    "épico": 6,
-    "lendário": 3.5,
-    "mítico": 0.5
+    "raro": 17.5,
+    "épico": 8,
+    "lendário": 4.3,
+    "mítico": 0.18
    },
    "dificil": {
-    "comum": 40,
-    "incomum": 25,
-    "raro": 19,
-    "épico": 10,
-    "lendário": 5,
-    "mítico": 1
+    "comum": 35.1,
+    "incomum": 26,
+    "raro": 20,
+    "épico": 12,
+    "lendário": 6.5,
+    "mítico": 0.4
    }
   }
  },

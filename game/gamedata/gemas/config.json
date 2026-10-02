@@ -106,7 +106,10 @@
     "_nota": "Raridade da gema (decisão do dono: MULTIPLICA o bônus). `multiplicador` vale sobre o bônus por nível da ativa (dano/cura) e sobre o efeito inteiro da support. `pesoNoDrop`: a chance relativa de cada raridade na gema que cai de bicho. A loja vende só as de `loja.raridades`.",
     "ordem": ["comum", "incomum", "raro", "épico", "lendário", "mítico"],
     "multiplicador": { "comum": 1, "incomum": 1.15, "raro": 1.3, "épico": 1.5, "lendário": 1.75, "mítico": 2 },
-    "pesoNoDrop": { "comum": 60, "incomum": 25, "raro": 10, "épico": 4, "lendário": 0.9, "mítico": 0.1 }
+    "pesoNoDrop": { "comum": 60, "incomum": 25, "raro": 10, "épico": 4, "lendário": 0.9, "mítico": 0.1 },
+    "_porEstagio": "A raridade da gema que cai segue a escada de estágio (auditoria de loot, 02/10): o peso de raro para cima é multiplicado pelo fator do estágio [Ato 1, 2, 3, 4] da dificuldade da fase (Normal ×1 em tudo), e o do mítico ainda por `fatorDoMitico` (o mítico especial, como o do item). O comum fecha o resto. Fora da campanha, o fator é 1.",
+    "porEstagio": { "facil": [1, 1, 1, 1], "medio": [1.1, 1.2, 1.3, 1.4], "dificil": [1.5, 1.6, 1.8, 2] },
+    "fatorDoMitico": 0.4
   },
 
 
