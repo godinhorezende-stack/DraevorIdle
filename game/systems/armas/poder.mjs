@@ -4,7 +4,7 @@
 // o nível de poder de cada arma). Aqui só a conta, pura: nada de estado de caçada nem de sorteio.
 //
 //   poder da arma  = curva(nível de poder) × fator da raridade da peça   (wand/rod: é o Magic Attack, fixo)
-//   poder efetivo  = max(poder, piso legado × curva(level do personagem)) × afinidade(arma, habilidade) × identidade
+//   poder efetivo  = max(poder, piso legado × curva(level do personagem)) × identidade   (sem penalidade de compatibilidade: qualquer arma, qualquer habilidade)
 //   nível equiv.   = a inversa da curva → o `danoNoLevel` do catálogo responde pelo dano da magia nesse "nível"
 //
 // Uma arma NO NÍVEL (poder = curva do level do personagem) devolve o nível equivalente = o level dele: o dano de antes.

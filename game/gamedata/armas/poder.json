@@ -6,12 +6,12 @@
   "raridade": { "_nota": "Fator sobre o poder, dentro do mesmo nível da arma.", "comum": 1, "incomum": 1.05, "raro": 1.1, "épico": 1.15, "lendário": 1.2, "mítico": 1.25 },
 
   "afinidade": {
-    "_nota": "Quanto a família da ARMA (linhas) aproveita a família da HABILIDADE (colunas). melee = espada, machado, maça e punho; distance = arco, besta e arremesso; magic = wand e rod. `semArma`: sem arma na mão. Baixa = 0,25 (a construção alternativa funciona, mas rende uma fração).",
-    "melee":    { "melee": 1,    "distance": 0.25, "magic": 0.25 },
-    "distance": { "melee": 0.25, "distance": 1,    "magic": 0.25 },
-    "magic":    { "melee": 0.25, "distance": 0.25, "magic": 1 },
-    "semArma":  { "melee": 0.15, "distance": 0.15, "magic": 0.15 }
-  },
+  "_nota": "Qualquer arma rende o poder INTEIRO em qualquer habilidade (dono, 02/10: sem penalidade de compatibilidade entre arma e habilidade). Só resta `semArma`: sem arma na mão.",
+  "melee": { "melee": 1, "distance": 1, "magic": 1 },
+  "distance": { "melee": 1, "distance": 1, "magic": 1 },
+  "magic": { "melee": 1, "distance": 1, "magic": 1 },
+  "semArma": { "melee": 0.15, "distance": 0.15, "magic": 0.15 }
+ },
 
   "pisoLegado": {
     "_nota": "A MIGRAÇÃO: o poder da arma nunca cai abaixo desta fração do poder esperado para o LEVEL do personagem (antes da afinidade). Quem ainda usa a arma inicial não perde o dano de uma vez; baixe o número por etapa de conteúdo até 0 (a arma passa a mandar sozinha). 1 = idêntico ao sistema antigo para quem está sem arma melhor.",

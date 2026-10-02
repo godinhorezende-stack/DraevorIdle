@@ -2632,7 +2632,6 @@ function blocoDaGema(def, gema, raridade = 'comum') {
       if (escala) linha(`Escala com ${ORIGEM_DO_PODER[x.escalaCom] ?? 'a arma'} e o ${escala}.`, 'tip-gema-ajuda');
       const a = x.armaDoDano;
       if (a?.semArma) linha(`Sem arma equipada: dano reduzido (${Math.round(a.afinidade * 100)}% do poder).`, 'tip-gema-penalidade');
-      else if (a && !a.compativel) linha(`Arma incompatível com esta habilidade: aproveita ${Math.round(a.afinidade * 100)}% do poder dela.`, 'tip-gema-penalidade');
       else if (a?.noPiso) linha('Arma fraca para o seu level: um piso de transição segura o dano (troque de arma).', 'tip-gema-penalidade');
       bloco.append(faz);
       const doBuff = blocoDoReforco(x);

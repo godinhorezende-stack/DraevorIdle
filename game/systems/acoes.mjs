@@ -232,7 +232,7 @@ export function concluirConjuracao(estado, hunt, personagem) {
 function armaDoDano(estado, entry) {
   const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
   const p = Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(def), entry.element);
-  return { familia: p.familia, afinidade: p.afinidade, poder: Math.round(p.poder), compativel: p.compativel, semArma: p.semArma, noPiso: p.noPiso };
+  return { familia: p.familia, afinidade: p.afinidade, poder: Math.round(p.poder), semArma: p.semArma, noPiso: p.noPiso };
 }
 
 /** `send({t:'actions'})` — o catálogo inteiro, como o original: cada entrada com seu `blocked`. */

@@ -1,4 +1,4 @@
-// O PODER DA ARMA (decisão do dono, 02/10): o dano base das gemas de ataque cresce pela arma equipada (poder × afinidade), e não mais
+// O PODER DA ARMA (decisão do dono, 02/10): o dano base das gemas de ataque cresce pela arma equipada (poder da arma), e não mais
 // pelo level do personagem. Uma arma NO NÍVEL devolve o dano de antes; o piso legado segura quem ainda usa a arma inicial.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -85,16 +85,11 @@ test('uma arma mais forte dá mais dano; a de nível mais baixo, menos (mesmo pe
   });
 });
 
-test('a afinidade: a arma errada rende a fração configurada (0,25) e sem arma, a de "sem arma" (0,15)', () => {
-  const magica = personagem({ level: 343, id: ARMA.wand });
-  assert.equal(Poder.poderEfetivo(magica, 'melee').afinidade, 0.25);
-  assert.equal(Poder.poderEfetivo(magica, 'magic').afinidade, 1);
-  assert.equal(Poder.poderEfetivo(magica, 'melee').compativel, false);
-  const espada = personagem({ level: 343, id: ARMA.espada });
-  assert.equal(Poder.poderEfetivo(espada, 'melee').afinidade, 1);
-  assert.equal(Poder.poderEfetivo(espada, 'magic').afinidade, 0.25);
-  const arco = personagem({ level: 343, id: ARMA.arco });
-  assert.equal(Poder.poderEfetivo(arco, 'distance').afinidade, 1);
+test('sem penalidade de compatibilidade: qualquer arma rende o poder INTEIRO em qualquer habilidade; só "sem arma" tem fração (0,15)', () => {
+  for (const [nome, id] of [['wand', ARMA.wand], ['espada', ARMA.espada], ['arco', ARMA.arco]]) {
+    const e = personagem({ level: 343, id });
+    for (const escala of ['melee', 'distance', 'magic']) assert.equal(Poder.poderEfetivo(e, escala).afinidade, 1, `${nome} com ${escala}`);
+  }
   const nua = personagem({ level: 343 });
   nua.equipment.weapon = null;
   const p = Poder.poderEfetivo(nua, 'magic');
@@ -102,11 +97,13 @@ test('a afinidade: a arma errada rende a fração configurada (0,25) e sem arma,
   assert.equal(p.afinidade, 0.15);
 });
 
-test('a arma incompatível dá bem menos dano que a certa (Buzz com wand × com espada, no mesmo nível)', () => {
+test('a arma "errada" não perde dano: a espada numa magia (Buzz) rende exatamente o poder dela, sem fração', () => {
   emPisoZero(() => {
-    const certa = danoDe(personagem({ level: 343, id: ARMA.wand }), 'spell-buzz');
-    const errada = danoDe(personagem({ level: 343, id: ARMA.espada }), 'spell-buzz');
-    assert.ok(errada.max < certa.max * 0.5, `${errada.max} vs ${certa.max}`);
+    const espada = personagem({ level: 343, id: ARMA.espada });
+    const p = Poder.poderEfetivo(espada, 'magic');
+    assert.equal(p.poder, Poder.poderDaPeca(espada.equipment.weapon), 'o poder efetivo é o da peça, sem multiplicador de compatibilidade');
+    const wand = personagem({ level: 343, id: ARMA.wand });
+    assert.equal(Poder.poderEfetivo(wand, 'melee').poder, Poder.poderDaPeca(wand.equipment.weapon));
   });
 });
 
@@ -117,7 +114,7 @@ test('wand e rod: o rod dá +8% de poder; o elemento afim dá +10% só nas magia
   assert.ok(Math.abs(Poder.poderEfetivo(rod, 'magic', 'death').poder - base * 1.08) < 1e-6, 'rod, elemento não afim (morte)');
   assert.ok(Math.abs(Poder.poderEfetivo(rod, 'magic', 'ice').poder - base * 1.08 * 1.1) < 1e-6, 'rod, gelo é afim');
   assert.ok(Math.abs(Poder.poderEfetivo(wand, 'magic', 'fire').poder - base * 1.1) < 1e-6, 'wand, fogo é afim');
-  assert.ok(Math.abs(Poder.poderEfetivo(wand, 'melee', 'fire').poder - base * 0.25) < 1e-6, 'nada de identidade fora da família mágica');
+  assert.ok(Math.abs(Poder.poderEfetivo(wand, 'melee', 'fire').poder - base) < 1e-6, 'nada de identidade fora das habilidades mágicas, e sem fração por incompatibilidade');
   assert.equal(Ficha.combate(wand).castSpeed - Ficha.combate(rod).castSpeed, Poder.CONFIG.identidade.wand.castSpeedPct);
 });
 
@@ -142,7 +139,7 @@ test('catálogo: a gema de ataque diz a origem do dano (família da arma, afinid
   const e = personagem({ level: 343, id: ARMA.espada });
   const buzz = Acoes.catalogo(e).spells.find((a) => a.id === 'spell-buzz');
   assert.equal(buzz.armaDoDano.familia, 'melee');
-  assert.equal(buzz.armaDoDano.compativel, false);
+  assert.equal(buzz.armaDoDano.compativel, undefined, 'o catálogo não manda mais a marca de incompatibilidade');
   assert.equal(buzz.escalaCom, 'magic');
   assert.ok(Acoes.catalogo(e).poderDasArmas.raridade['mítico'] === 1.25);
 });
