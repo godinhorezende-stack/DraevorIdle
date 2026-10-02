@@ -3429,7 +3429,7 @@ function previaDaHunt(hunt, { comFoto = true } = {}) {
 
   // Passo 3: vida, experiência, armadura, velocidade, pontos de charm,
   // ocorrência e resistências. O 4 traria o loot, que já está na outra coluna.
-  creatureSheet(ficha, entry, 3, { dicaDeLoot: false });
+  creatureSheet(ficha, entry, 3, { dicaDeLoot: false, key: escolhidoNaPrevia, huntId: hunt.id, dificuldade: ctx.tabs.dificuldade ?? 'facil' });
   bichos.append(ficha);
   colunas.append(bichos);
 
@@ -18353,6 +18353,22 @@ function renderBestiary(body) {
   body.append(layout);
 }
 
+function textoDoExpParaVoce(alvo, r) {
+  const n = (v) => money(Math.round(v));
+  const fase = r.escalaDaFase !== 1 ? ` × ${String(Math.round(r.escalaDaFase * 100) / 100).replace('.', ',')} da fase = ${n(r.naFase)}` : '';
+  alvo.textContent = `Para você agora: ~${n(r.final)} XP por morte (criatura normal). Conta: ${n(r.base)} de base${fase}, mais level, estágio de level, stamina e boosts.`;
+}
+
+/** Chega `{t:'expDoBicho'}`: guarda e preenche a linha da ficha, se ela ainda estiver aberta. */
+const chaveDaEstimativa = (key, huntId, dificuldade) => `${key}|${huntId ?? ''}|${huntId ? dificuldade ?? '' : ''}`;
+export function chegouExpDoBicho(r) {
+  if (!ctx?.tabs) return;
+  const chave = chaveDaEstimativa(r.key, r.huntId, r.dificuldade);
+  (ctx.tabs.expDoBicho ??= {})[chave] = { ...r, em: Date.now() };
+  const alvo = document.querySelector(`[data-exp-do-bicho="${CSS.escape(chave)}"]`);
+  if (alvo) textoDoExpParaVoce(alvo, r);
+}
+
 function bestiaryDetail(catalog, kills) {
   const { state } = ctx;
   const key = ctx.tabs.bestiaryPick;
@@ -18387,7 +18403,7 @@ function bestiaryDetail(catalog, kills) {
     return detail;
   }
 
-  creatureSheet(detail, entry, step);
+  creatureSheet(detail, entry, step, { key });
   return detail;
 }
 
@@ -18396,7 +18412,7 @@ function bestiaryDetail(catalog, kills) {
  * aparece. O `step` é o degrau do bestiary — no bestiary ele cresce com as
  * mortes, na ficha da hunt ele já vem completo.
  */
-function creatureSheet(detail, entry, step, { dicaDeLoot = true } = {}) {
+function creatureSheet(detail, entry, step, { dicaDeLoot = true, key = null, huntId = null, dificuldade = null } = {}) {
   const { state } = ctx;
 
   const stats = el('div', 'bestiary-stats');
@@ -18432,7 +18448,7 @@ function creatureSheet(detail, entry, step, { dicaDeLoot = true } = {}) {
    * ocupa o lugar de nada e ensina o olho a pular a fileira inteira.
    */
   stat('bes-vida', 'vida', money(entry.hp), 'health', 'Quanto de dano ela aguenta antes de morrer.');
-  stat('ficha-exp', 'experiência', money(entry.exp), 'exp', 'Experiência que ela dá por morte, antes dos bônus.');
+  stat('ficha-exp', 'XP-base', money(entry.exp), 'exp', 'XP-BASE do bestiário: o que ela dá antes de tudo. Na campanha a fase multiplica este valor, e depois entram o seu level, o estágio de level, a stamina e os boosts — o quanto ISSO paga a você está logo abaixo.');
   if (step >= 2) {
     stat('ficha-armadura', 'armadura', entry.armor, 'armor', 'Desconta uma parte de cada golpe que ela recebe.');
     stat(
@@ -18453,6 +18469,27 @@ function creatureSheet(detail, entry, step, { dicaDeLoot = true } = {}) {
     );
   }
   detail.append(stats);
+
+  /*
+   * ---- "Quanto isto paga a MIM" ----
+   *
+   * O número da fileira acima é o XP-BASE do bestiário, e o que cai na caçada é outro: a fase da campanha
+   * multiplica o bicho, e o level, o estágio, a stamina e os boosts multiplicam de novo. A conta é do
+   * servidor (`estimarExpDoBicho`, a mesma cadeia da morte) — aqui só se mostra, e não se refaz.
+   */
+  if (key) {
+    const paraVoce = el('p', 'sheet-nota bestiary-exp-voce');
+    const chave = chaveDaEstimativa(key, huntId, dificuldade);
+    paraVoce.dataset.expDoBicho = chave;
+    const guardada = ctx.tabs.expDoBicho?.[chave];
+    // Vale por poucos segundos: stamina, level e boosts mudam, e o número tem de ser o de agora.
+    if (guardada && Date.now() - guardada.em < 10_000) textoDoExpParaVoce(paraVoce, guardada);
+    else {
+      paraVoce.textContent = 'Calculando o XP para você…';
+      ctx.send({ t: 'expDoBicho', key, ...(huntId ? { huntId, dificuldade } : {}) });
+    }
+    detail.append(paraVoce);
+  }
 
   /*
    * ---- Elementos: o que o SEU golpe faz nela ----

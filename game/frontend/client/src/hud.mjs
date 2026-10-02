@@ -958,12 +958,16 @@ function painelExperiencia(character, catalog, party = null) {
   // parte. Os degraus são os do servidor (Player.getFinalBonusStamina).
   const stamina = character.stamina ?? 0;
   const temPremium = (character.premium ?? 0) > 0;
-  const fator = stamina > 2340 && temPremium ? 1.5 : stamina <= 840 ? 0.5 : 1;
+  const fator = character.efeitos?.exp?.fatorStamina ?? (stamina > 2340 && temPremium ? 1.5 : stamina <= 840 ? 0.5 : 1);
+  // O estágio de level (x3 até o 50, x2 até o 100) também multiplica — vem do servidor.
+  const estagio = character.efeitos?.exp?.estagio ?? 1;
   if (fator !== 1) {
     linhaDeBonus('Stamina', `×${fator}`, fator > 1 ? 'acima de 39h' : '14h ou menos');
   }
 
-  bonusDaExp.append(el('div', 'tip-exp-total', `Em qualquer criatura: ×${((1 + somaGeral / 100) * fator).toFixed(2)}`));
+  if (estagio !== 1) linhaDeBonus('Estágio de level', `×${estagio}`, `até o level ${character.level <= 50 ? 50 : 100}`);
+
+  bonusDaExp.append(el('div', 'tip-exp-total', `Em qualquer criatura: ×${((1 + somaGeral / 100) * fator * estagio).toFixed(2)}`));
 
   /*
    * A outra metade da party, dita à parte para o total não mentir.
@@ -979,7 +983,7 @@ function painelExperiencia(character, catalog, party = null) {
       el(
         'div',
         'tip-exp-total',
-        `E dividida entre ${membrosDaParty} da party: ×${(((1 + somaGeral / 100) * fator) / membrosDaParty).toFixed(2)} para você`
+        `E dividida entre ${membrosDaParty} da party: ×${(((1 + somaGeral / 100) * fator * estagio) / membrosDaParty).toFixed(2)} para você`
       )
     );
   }

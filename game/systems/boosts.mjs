@@ -68,5 +68,10 @@ export const estagioDeExp = (level) => ESTAGIOS_DE_EXP.find((e) => (level ?? 1) 
 
 export function paraCliente(estado) {
   const buff = BuffPower.fonteDeExp(estado); // o Buff Power Exp é a fonte 'buff-power'
-  return { fontes: [...garantir(estado).map((b) => ({ ...b })), ...(buff ? [buff] : [])] };
+  return {
+    fontes: [...garantir(estado).map((b) => ({ ...b })), ...(buff ? [buff] : [])],
+    // Os dois MULTIPLICADORES, calculados aqui: a ficha e a régua de XP só mostram, não refazem a conta.
+    fatorStamina: Stamina.fatorDeExp(estado),
+    estagio: estagioDeExp(estado.level),
+  };
 }

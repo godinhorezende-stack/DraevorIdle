@@ -350,6 +350,22 @@ function darOuro(estado, valor) {
   Ficha.totais(estado).gold += valor;
 }
 
+/**
+ * Quanto de exp um bicho (`key`) pagaria AGORA a este personagem, nesta caçada (ou fora de uma): a mesma
+ * cadeia de `matarMonstro` — escala da fase, level/boosts/premium/stamina/estágio (`Boosts.expDoBicho`), prey,
+ * pódio e Caça Online. É o que a ficha do monstro mostra ao lado do XP-base. Sem raridade/modificadores
+ * (esses são do bicho que nasceu) e sem a partilha da party (que divide e dá bônus).
+ */
+export function estimarExpDoBicho(estado, hunt, key, { huntId = null, dificuldade = null } = {}) {
+  const base = BESTIARY[key]?.exp ?? 0;
+  // Na prévia do seletor ainda não há caçada: a escala é a da fase e dificuldade ESCOLHIDAS (a mesma da hora de entrar).
+  const escalaDaFase = (huntId && Campanha.escalaDaFase(huntId, dificuldade)?.exp) ?? hunt?.escala?.exp ?? 1;
+  const naFase = Math.round(base * escalaDaFase);
+  const podio = hunt?.podio ?? SEM_PODIO;
+  const semOnline = Boosts.expDoBicho(estado, naFase) * Prey.fatorDeExp(estado, key) * (1 + podio.exp / 100);
+  return { key, huntId, dificuldade, base, escalaDaFase, naFase, final: Math.round(semOnline * fatorDaCacaOnline(hunt)) };
+}
+
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // As mecânicas do mob ao morrer (Explosivo, Procriador) e as dos vizinhos (Vingativo) — `mobs/mecanicas.mjs`.
   Mecanicas.aoMorrer(estado, hunt, personagem, alvo, eventos);
