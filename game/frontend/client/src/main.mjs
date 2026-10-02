@@ -804,6 +804,7 @@ function handle(message) {
         if (message.treinoPendente?.ganho?.length || message.treinoPendente?.gastos?.length)
           mostrarGanhoDoTreino(message.treinoPendente.ganho, message.treinoPendente);
         else if (message.offline) showOfflineReport(message.offline);
+        else if (message.andamento && message.morte) mostrarMorte({ ...message.morte, report: message.andamento, offline: true });
         else if (message.andamento) showAndamento(message.andamento);
       };
       if (message.pendente) {
@@ -5070,7 +5071,20 @@ function mostrarMorte(message) {
   selo.src = '/client/assets/ui/morte-selo.png';
   painel.append(selo);
 
-  painel.append(el('h2', null, 'Você morreu'));
+  painel.append(el('h2', null, message.offline ? 'Você morreu enquanto estava fora' : 'Você morreu'));
+  /*
+   * Morte OFFLINE: a mesma caixa, e uma linha dizendo a que período o extrato
+   * se refere — ele vai do início da ausência até a morte, não até agora.
+   */
+  if (message.offline && message.report) {
+    painel.append(
+      el(
+        'p',
+        'morte-nota',
+        `O resumo abaixo é da caçada offline: do momento em que você saiu até a morte (${formatTime((message.report.minutos ?? 0) * 60000)}). O loot e a experiência dele já estão com você.`
+      )
+    );
+  }
 
   const perdas = el('div', 'morte-perdas');
   const perda = (rotulo, valor, classe) => {
@@ -5147,7 +5161,8 @@ function mostrarMorte(message) {
    * onde religar, porque uma opção que some sem deixar rastro é uma opção que
    * ninguém encontra de volta.
    */
-  if (resumoDaMorteLigado()) {
+  // Offline: o extrato é o único registro do que a caçada rendeu — não some pela opção da tela de morte.
+  if (message.offline || resumoDaMorteLigado()) {
     /*
      * ---- Foto e extrato LADO A LADO ----
      *
@@ -5161,7 +5176,8 @@ function mostrarMorte(message) {
      */
     const colunas = el('div', 'morte-colunas');
 
-    const foto = fotoDaMorte();
+    // Offline não há um instante da morte: o mapa na tela é o da cidade.
+    const foto = message.offline ? null : fotoDaMorte();
     if (foto) {
       /*
        * A MOLDURA inteira é o botão, e não só a imagem.
@@ -5198,14 +5214,16 @@ function mostrarMorte(message) {
       painel.append(colunas);
     }
 
-    const ocultar = el('button', 'ghost morte-ocultar', 'Não mostrar mais a foto e o resumo');
-    ocultar.onclick = () => {
-      ligarResumoDaMorte(false);
-      ocultar.replaceWith(el('p', 'morte-nota', 'Ocultado. Para trazer de volta: Opções → Tela de morte.'));
-      document.querySelector('#morte .morte-foto')?.remove();
-      document.querySelector('#morte .morte-extrato')?.remove();
-    };
-    painel.append(ocultar);
+    if (!message.offline) {
+      const ocultar = el('button', 'ghost morte-ocultar', 'Não mostrar mais a foto e o resumo');
+      ocultar.onclick = () => {
+        ligarResumoDaMorte(false);
+        ocultar.replaceWith(el('p', 'morte-nota', 'Ocultado. Para trazer de volta: Opções → Tela de morte.'));
+        document.querySelector('#morte .morte-foto')?.remove();
+        document.querySelector('#morte .morte-extrato')?.remove();
+      };
+      painel.append(ocultar);
+    }
   } else {
     painel.append(el('p', 'morte-nota', 'A foto e o resumo estão ocultos — Opções → Tela de morte para trazê-los de volta.'));
   }
@@ -5216,7 +5234,10 @@ function mostrarMorte(message) {
 
   const acoes = el('div', 'confirm-actions');
   const fechar = el('button', 'primary', 'Continuar');
-  fechar.onclick = () => caixa.remove();
+  fechar.onclick = () => {
+    caixa.remove();
+    if (message.offline) send({ t: 'ackAusencia' });
+  };
   acoes.append(fechar);
   painel.append(acoes);
 
@@ -5244,7 +5265,9 @@ function mostrarMorte(message) {
     };
     contar();
   } else {
-    destino.textContent = 'Você acordou no templo de Draevor. A caçada foi encerrada.';
+    destino.textContent = message.offline
+      ? 'Você está no templo de Draevor. A caçada offline foi encerrada pela morte.'
+      : 'Você acordou no templo de Draevor. A caçada foi encerrada.';
   }
 }
 
@@ -10330,7 +10353,16 @@ function showPendente({ report, motivo }, depois = null) {
  */
 function showAndamento(report) {
   if (!report) return;
-  openModal('Progresso enquanto você esteve fora', (body) => corpoDoRelatorio(body, report));
+  openModal(
+    'Progresso enquanto você esteve fora',
+    (body) => {
+      // "A stamina acabou..." e afins: antes só quem abria pelo `runReport` lia o motivo.
+      if (report.motivo) body.append(el('p', 'relatorio-motivo', report.motivo));
+      corpoDoRelatorio(body, report);
+    },
+    // O servidor guarda o relatório até o OK: reconectar antes dele mostra de novo.
+    () => send({ t: 'ackAusencia' })
+  );
 }
 
 /*

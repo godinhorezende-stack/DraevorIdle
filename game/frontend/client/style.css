@@ -13884,6 +13884,12 @@ body.mirando #map { cursor: crosshair; }
 /* E nunca passa da altura da tela: o "Continuar" tem de estar sempre à vista. */
 .morte-painel { max-height: 92vh; overflow-y: auto; }
 
+/* O "Continuar" fica sempre à vista: no celular o extrato empurrava o botão para baixo da dobra. */
+.morte-painel > .confirm-actions {
+  position: sticky; bottom: -20px; padding: 10px 0 8px; margin: 0 -30px -20px;
+  background: linear-gradient(180deg, #0b0d0e00, #0b0d0efa 35%);
+}
+
 /* ---------- a foto ampliada ----------
  *
  * Acima da caixa de morte (80), que é de onde ela é aberta. `contain` para a
