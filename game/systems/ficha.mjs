@@ -30,6 +30,7 @@ import * as Especializacoes from './personagem/especializacoes.mjs';
 import * as Passivas from './passivas/arvore.mjs';
 import * as Keystones from './passivas/keystones.mjs';
 import * as PoderDaArma from './armas/poder.mjs';
+import * as Limites from './combate/limites.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -194,6 +195,27 @@ function calcularCombate(estado) {
   for (const el of ELEMENTOS) {
     protection[el] += (af[el === 'physical' ? 'phys_res' : `${el}_res`] ?? 0) + (gem.resistencia[el] ?? 0) + (imb.protecao[el] ?? 0);
   }
+  // O LIMITE (`combate/limites.json`): a proteção final de cada elemento vai de 0 a 100%; o que passa disso fica em `excedentes` (a tela mostra à parte).
+  const excedentes = { protection: {}, critChance: 0, ataqueDuplo: 0 };
+  for (const el of ELEMENTOS) {
+    const bruto = protection[el];
+    protection[el] = Limites.resistenciaDoJogador(bruto);
+    excedentes.protection[el] = Math.max(0, bruto - protection[el]);
+  }
+  // Chance de crítico e de ataque duplo (frações de 0 a 1), com o teto; a penetração (em %) por tipo: física, elemental global e por elemento.
+  const critBruto = CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance;
+  const critChance = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critBruto));
+  excedentes.critChance = Math.max(0, critBruto - critChance);
+  const duploBruto = (af.double_attack ?? 0) / 100;
+  const ataqueDuplo = Math.min(Limites.LIMITES.ataqueDuplo.chanceMaxima / 100, Math.max(0, duploBruto));
+  excedentes.ataqueDuplo = Math.max(0, duploBruto - ataqueDuplo);
+  const penetracao = {
+    // Física: o add Physical Penetration + o nó "Penetração de armadura" da árvore (fração → %).
+    fisica: Limites.limitar((af.phys_pen ?? 0) + (arv.armorPenetration ?? 0) * 100, Limites.LIMITES.penetracao.maximo),
+    // Elemental GLOBAL (todos os elementos, menos o físico) e a específica de cada elemento (`<elemento>_pen`).
+    elemental: Limites.limitar(af.elem_pen ?? 0, Limites.LIMITES.penetracao.maximo),
+    porElemento: Object.fromEntries(Limites.ELEMENTOS_DE_PENETRACAO.map((el) => [el, Limites.limitar(af[`${el}_pen`] ?? 0, Limites.LIMITES.penetracao.maximo)])),
+  };
   defense += prof.defesa;
   const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) + prof.alcance : 1;
   const defesas = defesasDaFicha(estado, af, doAtributo, espStat);
@@ -221,7 +243,7 @@ function calcularCombate(estado) {
     skillName: pericia,
     skillValue: valorDaPericia,
     skillBonus: bonusDePericia,
-    critChance: CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance,
+    critChance,
     critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100 + prof.critDano + imb.critDano,
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
@@ -287,7 +309,11 @@ function calcularCombate(estado) {
     // "% a mais de regeneração": a árvore + o add Life/Mana Regeneration %.
     regenDaArvore: { hp: (arv.regenHp ?? 0) + (af.life_regen_pct ?? 0) / 100, mana: (arv.regenMana ?? 0) + (af.mana_regen_pct ?? 0) / 100 },
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
-    penetracao: arv.armorPenetration ?? 0,
+    penetracao,
+    ataqueDuplo,
+    // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".
+    excedentes,
+    limites: Limites.tetos(),
     // Os nós da árvore de passivas alocados (a ficha mostra quantos e quais keystones).
     passivas: { keystones: passivas.keystones.map((k) => k.nome) },
   };
@@ -407,7 +433,9 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // rolagem da parte física — é UM golpe só, com dois números.
   // Low Blow e Savage Blow (charms): mais chance e mais dano crítico na criatura apontada.
   const doCharm = Charms.criticoExtra(estado, alvo?.key);
-  const crit = mesmaRolagem ? mesmaRolagem.crit : Math.random() < ficha.critChance + doCharm.chance / 100;
+  // O teto da chance FINAL (a ficha + os suportes, os reforços, os charms e o crítico do golpe básico somam depois dela): `combate/limites.json`.
+  const chanceDeCritico = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100));
+  const crit = mesmaRolagem ? mesmaRolagem.crit : Math.random() < chanceDeCritico;
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.

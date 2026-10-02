@@ -46,6 +46,8 @@ const MODIFICADORES = [
   // +N ao nível das gemas encaixadas (modelo Path of Exile, o dono 30/09).
   'gem_level',
   'dmg_vs_boss', 'dmg_vs_elite', 'dmg_vs_monsters', 'dmg_reduction', 'cooldown_recovery', 'skill_cost', 'avoid_damage',
+  // Penetração e ataque duplo (o dono, 02/10).
+  'phys_pen', 'elem_pen', 'double_attack',
 ];
 
 test('modificadores: exatamente a lista do dono, cada um com peso, faixa por tier, nível mínimo e raridades', () => {
