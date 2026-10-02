@@ -241,9 +241,10 @@ const SONDAS = {
   mana_regen_pct: ['knight', null, () => {}, regenerado('mana'), 50, 'mais'],
   // Defensivos: o golpe do bicho de verdade (`contraAtaque`).
   armor_flat: ['knight', null, cacada('troll', 30), recebido, 50, 'menos'],
-  armour_pct: ['knight', null, cacada('troll', 30), recebido, 50, 'menos'],
-  evasion: ['knight', null, bichoForte(30), recebido, 5000, 'menos'],
-  evasion_pct: ['knight', null, bichoForte(30), recebido, 3000, 'menos'],
+  // (Com a armadura do PoE, a redução depende do golpe: números grandes para o efeito aparecer contra o troll forte.)
+  armour_pct: ['knight', null, cacada('troll', 30), recebido, 20000, 'menos'],
+  evasion: ['knight', null, bichoForte(30), recebido, 1e6, 'menos'],
+  evasion_pct: ['knight', null, bichoForte(30), recebido, 1e8, 'menos'],
   energy_shield: ['sorcerer', null, cacada('troll', 30), recebido, 1e6, 'menos'],
   es_pct: ['sorcerer', null, comPeca('body', 'terra mantle', { armor: [0, 0], es: [100, 100] }), recebido, 100, 'menos'],
   block: ['knight', null, () => {}, sobre((f) => f.blockChance), 30, 'mais'],

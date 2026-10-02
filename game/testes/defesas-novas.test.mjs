@@ -1,6 +1,7 @@
 // A reestruturação de itens (29/09): STR/DEX/INT, Accuracy, Evasion, Energy
 // Shield, Chance to Avoid Damage, bloqueio com teto, a migração v4 das peças
 // antigas e o vestir/tirar passando pela MESMA ficha.
+import * as Formulas from '../systems/combate/formulas.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
@@ -91,8 +92,10 @@ test('STR dá Life e dano físico; DEX Accuracy, Evasion e Attack Speed; INT Man
 
 test('Accuracy: chance de acerto pela precisão contra a evasão do bicho (entre o piso e o teto)', () => {
   const p = C.precisao;
-  assert.equal(Atributos.chanceDeAcerto(0, 100), p.MIN);
-  assert.equal(Atributos.chanceDeAcerto(1e9, 100), p.MAX);
+  // O piso e o teto do acerto são os do modo em uso (`combate/formulas.json`): 5–95% no PoE, `precisao.MIN/MAX` no de antes.
+  const poe = Formulas.PARAMETROS.acerto.modo === 'poe';
+  assert.equal(Atributos.chanceDeAcerto(0, 100), poe ? Formulas.PARAMETROS.acerto.poe.minimo : p.MIN);
+  assert.equal(Atributos.chanceDeAcerto(1e9, 100), poe ? Formulas.PARAMETROS.acerto.poe.maximo : p.MAX);
   // No level do bicho, a precisão base acerta a maioria.
   const L = 300;
   assert.ok(Atributos.chanceDeAcerto(Atributos.precisaoBase(L), L) > 0.8);
@@ -119,7 +122,7 @@ test('Accuracy no combate: o golpe da arma pode ERRAR (evento marcado), o boneco
 
 test('Evasion: esquiva do golpe corpo a corpo do bicho, com teto', () => {
   assert.equal(Atributos.chanceDeEsquiva(0, 100), 0);
-  assert.equal(Atributos.chanceDeEsquiva(1e9, 100), C.evasao.MAX);
+  assert.equal(Atributos.chanceDeEsquiva(1e9, 100), Formulas.PARAMETROS.acerto.modo === 'poe' ? 1 - Formulas.PARAMETROS.acerto.poe.minimo : C.evasao.MAX);
   assert.ok(Atributos.chanceDeEsquiva(500, 50) > Atributos.chanceDeEsquiva(500, 500));
 });
 

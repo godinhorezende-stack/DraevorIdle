@@ -22,11 +22,11 @@ const com = (parte, chave, valor, fn) => {
   try { return fn(); } finally { P[parte][chave] = antes; }
 };
 
-test('por padrão a defesa é a de hoje: armadura tibia, acerto draevor, bloqueio draevor, sem glancing e sem entropia; teto de resistência 75%', () => {
-  assert.equal(P.armadura.modo, 'tibia');
-  assert.equal(P.acerto.modo, 'draevor');
+test('por padrão a defesa é a do PoE (decisão do dono, 02/10): armadura, acerto/evasão e bloqueio em \'poe\', sem glancing nem entropia; teto de resistência 75%', () => {
+  assert.equal(P.armadura.modo, 'poe');
+  assert.equal(P.acerto.modo, 'poe');
   assert.equal(P.acerto.entropia, false);
-  assert.equal(P.bloqueio.modo, 'draevor');
+  assert.equal(P.bloqueio.modo, 'poe');
   assert.equal(P.bloqueio.glancingPct, 0);
   assert.equal(Limites.LIMITES.resistenciaDoJogador.maximo, 75);
   assert.equal(Limites.LIMITES.resistenciaDoMob.maximo, 75);
@@ -118,9 +118,9 @@ function golpeDoBicho(af) {
 
 test('bloqueio: no modo de hoje bloqueia ANTES da esquiva; no modo PoE a esquiva (acerto) vem primeiro e o bloqueio depois', () => {
   const af = [{ id: 'block', nivel: 5, value: 70 }, { id: 'evasion', nivel: 5, value: 5000 }];
-  const antes = golpeDoBicho(af).find((x) => x.t === 'block');
+  const antes = com('bloqueio', 'modo', 'draevor', () => golpeDoBicho(af).find((x) => x.t === 'block'));
   assert.ok(antes, 'bloqueou');
-  assert.equal(antes.esquiva, undefined, 'no modo de hoje o bloqueio vem primeiro');
+  assert.equal(antes.esquiva, undefined, 'no modo de antes o bloqueio vem primeiro');
   const depois = com('bloqueio', 'modo', 'poe', () => golpeDoBicho(af).find((x) => x.t === 'block'));
   assert.equal(depois.esquiva, true, 'no modo PoE o golpe foi esquivado antes de chegar ao bloqueio');
 });
@@ -128,8 +128,15 @@ test('bloqueio: no modo de hoje bloqueia ANTES da esquiva; no modo PoE a esquiva
 test('glancing blow: com 40% o golpe bloqueado ainda causa 40% do dano; com 0 o bloqueio anula', () => {
   const af = [{ id: 'block', nivel: 5, value: 70 }];
   const dano = (ev) => ev.filter((x) => x.t === 'dmg' && !x.foe).reduce((n, x) => n + x.v, 0);
-  assert.equal(dano(golpeDoBicho(af)), 0, 'bloqueado: nada');
-  const meio = com('bloqueio', 'glancingPct', 40, () => golpeDoBicho(af));
-  assert.ok(meio.some((x) => x.t === 'block'), 'ainda mostra o bloqueio');
-  assert.ok(dano(meio) > 0, 'e causa dano parcial');
+  // (No modo 'draevor' o bloqueio é a primeira coisa sorteada — o teste controla as duas rolagens dele.)
+  const antes = P.bloqueio.modo;
+  P.bloqueio.modo = 'draevor';
+  try {
+    assert.equal(dano(golpeDoBicho(af)), 0, 'bloqueado: nada');
+    const meio = com('bloqueio', 'glancingPct', 40, () => golpeDoBicho(af));
+    assert.ok(meio.some((x) => x.t === 'block'), 'ainda mostra o bloqueio');
+    assert.ok(dano(meio) > 0, 'e causa dano parcial');
+  } finally {
+    P.bloqueio.modo = antes;
+  }
 });
