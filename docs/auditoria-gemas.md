@@ -98,3 +98,43 @@ A cura do Knight deixa de ser mais barata que a do Druid, e as magias grandes de
 - O Monk perde a "explosão" sem ganhar ainda a identidade de combo/janela proposta; isso fica para uma etapa própria, com proposta antes de implementar.
 - Suportes, wand contra rod, buffs e tooltips dos buffs, e as gemas novas ainda não foram tratados.
 - Travas automáticas (`game/testes/balanceamento-das-gemas.test.mjs`) medem no motor que o Monk não passa do Knight em alvo único (×1,5) nem do Sorcerer em área, e que a cura do Knight não é mais eficiente que a do Druid.
+
+---
+
+# Fase 4: suportes — auditoria medida e ajuste (02/10)
+
+Ferramenta: `node tools/simular-suportes.mjs` (cada suporte ligado, só onde é compatível, a gemas representativas das 5 vocações, em 1 e em 5 alvos, 30 s no motor real; compara o DPS e a mana por segundo da gema com e sem o suporte). Cada número abaixo é a mediana dos casos compatíveis (7 a 16 por suporte).
+
+## O que a medição mostrou
+
+| Suporte | DPS 1 alvo | DPS 5 alvos | Observação |
+|---|---|---|---|
+| Greater Damage, Physical/Fire/Earth/Energy/Ice/Holy Damage | ×1,25 | ×1,25 | Os genéricos e os específicos davam o mesmo (25%): redundantes |
+| Multiple Projectiles / Greater Multiple / Fork / Chain | ×1,00 | ×2,19 / ×2,83 / ×2,19 / ×2,38 | Não multiplicam em alvo único (correto); em grupo viravam área, **sem custo** |
+| Explosion / Secondary Explosion / Impact | ×1,28–1,42 | ×2,43–3,02 | O mais forte em grupo, **sem custo** |
+| Life Cost | ×1,10 | ×1,10 | Mana vai a zero (custo em vida de 1:1, irrisório com a vida alta); **combina com Life/Mana Leech e cura = mana infinita** |
+| Faster Casting, Faster Attacks, Cooldown Recovery | ×1,00 | ×1,00 | **Inúteis** para a maioria das gemas (ver abaixo) |
+| Increased Critical, Critical Damage | ×1,01–1,07 | ×1,01–1,07 | Fracos com 3% de crítico base: só valem com build de crítico |
+| Ignite, Slow, Stun, Poison, Bleed | ×0,93–1,00 | ×0,98–1,00 | Pequena perda de DPS direto; o efeito é de controle/dano contínuo |
+
+**Combinação dominante encontrada:** Flame Strike (20 de mana) + Greater Multiple Projectiles + Explosion + Greater Damage rendia **1.455 DPS em 5 alvos por 11 de mana/s**, mais que a melhor área nativa do jogo (Great Fire Wave, 1.173 por 60 de mana/s) com 1/5 do gasto, e em alvo único 283 (acima do melhor alvo único nativo, 282).
+
+**Por que Faster Casting / Faster Attacks / Cooldown Recovery não fazem nada:** eles encurtam a recarga ou o tempo de conjuração da própria gema, mas quase todas as magias de ataque têm recarga e conjuração **menores** que o intervalo global (≈ 2 s), e é o intervalo global que limita a cadência. A única forma de deixá-los úteis é fazê-los encurtar também o intervalo global que a gema impõe; isso muda o ritmo de todo o combate e **não foi feito** (decisão anterior de não mexer no intervalo global).
+
+## O que foi alterado
+
+1. **Custo dos suportes agora MULTIPLICA** (`custoPct`, em `skills/gemas.mjs`): +30% e +20% valem ×1,3 × ×1,2; a economia (Mana Efficiency, −20%) também multiplica. O custo **extra** (positivo) não cresce com a raridade da gema; a economia continua crescendo.
+2. **Custos novos em `supports.json`:** Multiple Projectiles +30%, Extra Projectile +15%, Greater Multiple Projectiles +50% (e o dano dos extras de 45% para 40%), Fork +25%, Chain +30%, Returning Projectile +25%, Explosion +30% (e o dano da explosão de 50% para 40%), Secondary Explosion +20%, Impact +20%, Greater Damage +10%, Life Cost +50% de custo (pago em vida) e +20% de dano (era +10%).
+3. **Resultado da combinação dominante:** 1.455 → 1.174 DPS em 5 alvos, com 23 de mana/s (era 11) — igual à melhor área nativa, mas ocupando 3 sockets de suporte e com o dobro do gasto de antes; alvo único 283 → 266.
+
+Travas novas em `game/testes/balanceamento-das-gemas.test.mjs`: custo multiplicativo, raridade sem encarecer, e a combinação barata não pode passar de 1,2× a melhor área nativa.
+
+## Pendências desta fase
+
+- **Faster Casting / Faster Attacks / Cooldown Recovery** seguem sem efeito para a maioria das gemas (decisão estrutural: precisam encurtar o intervalo global).
+- **Life Cost + leech/cura** continua dando mana "infinita" para quem tem vida de sobra; o custo em vida precisa virar % da vida máxima para pesar de verdade.
+- **Suportes defensivos, de controle e utilitários:** só existem Slow, Stun, Freeze, Ignite, Poison e Bleed; faltam suportes de defesa, eficiência, conversão de dano e mudança de comportamento (candidatas na fase de gemas novas).
+- **Greater Damage × os de dano específico:** os específicos (25%) seguem igualando o genérico (25% + 10% de custo); falta separar (candidato: específicos a 30%).
+- **Pierce** deu ×1,00 no simulador: provável efeito do posicionamento dos bonecos (a perfuração exige alvos em linha), não confirmado.
+- Não medi os suportes de cura (Potent Healing) nem de duração (Skill Duration) no simulador (as gemas de teste são de ataque); a compatibilidade com cada tag foi verificada, mas o efeito não.
+- Wand contra rod, buffs e tooltips dos buffs, rotações com vários slots e gemas novas continuam fora.

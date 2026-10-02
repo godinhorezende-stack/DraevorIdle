@@ -167,8 +167,8 @@ export function medirRotacao(estado, personagem, { duracaoMs = 60000, tiqueMs = 
       alvos,
       dano: Math.round(m.dano),
       dps: Math.round(m.dano / seg),
-      // O DPS só das gemas (sem o golpe básico/wand que bate entre uma magia e outra): é o que compara habilidades entre si.
-      dpsDasGemas: Math.round(Object.values(m.porHabilidade).reduce((a, v) => a + v, 0) / seg),
+      // O DPS só das gemas e dos efeitos delas (explosões, dano contínuo; sem o golpe básico/wand que bate entre uma magia e outra): é o que compara habilidades entre si.
+      dpsDasGemas: Math.round((m.dano - ['wand', 'wand-2o-golpe', 'golpe-basico', 'golpe-basico-2o-golpe'].reduce((a, o) => a + (m.porOrigem[o] ?? 0), 0)) / seg),
       acertos: m.acertos,
       criticos: m.criticos,
       taxaDeCritico: m.acertos ? Math.round((m.criticos / m.acertos) * 1000) / 1000 : 0,

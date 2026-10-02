@@ -388,9 +388,12 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
     for (const [k, v] of Object.entries(s.efeito ?? {})) {
       // CONTAGEM (projéteis, saltos, casas de área) é inteira e não escala; o resto × raridade/qualidade.
       const bruto = v + (s.porNivel?.[k] ?? 0) * (sp.nivel - 1);
-      const valor = CONTAGENS.has(k) ? bruto : MULTIPLICATIVOS.has(k) ? Math.min(100, bruto * mult) : bruto * mult;
+      // O custo EXTRA de um suporte (positivo) não cresce com a raridade da gema (a rara não custa mais); a economia (negativo) cresce.
+      const valor = CONTAGENS.has(k) || (k === 'custoPct' && bruto > 0) ? bruto : MULTIPLICATIVOS.has(k) ? Math.min(100, bruto * mult) : bruto * mult;
       // O % de um golpe SECUNDÁRIO (projéteis extras, perfuração...) se MULTIPLICA entre supports; o resto soma.
       if (MULTIPLICATIVOS.has(k)) e[k] = e[k] ? (e[k] * valor) / 100 : valor;
+      // O CUSTO de mana dos suportes se MULTIPLICA (+30% e +20% são ×1,3 × ×1,2 = +56%, e −20% duas vezes são ×0,64), como no PoE.
+      else if (k === 'custoPct') e.custoPct = ((1 + e.custoPct / 100) * (1 + valor / 100) - 1) * 100;
       else e[k] = (e[k] ?? 0) + valor;
     }
     e.supports.push(sp.def.nome);

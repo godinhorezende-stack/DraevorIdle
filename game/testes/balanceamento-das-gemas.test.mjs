@@ -57,3 +57,30 @@ test('trava de balanceamento: o melhor DPS do Monk fica na faixa das demais clas
   const knight5 = dps('knight', 'spell-shield-bash', 5);
   assert.ok(knight5 <= sorc5, `Shield Bash do Knight (${knight5}) não passa da área do Sorcerer (${sorc5})`);
 });
+
+test('o custo dos suportes se MULTIPLICA (Multiple Projectiles +30% e Explosion +30% = ×1,69), o custo extra não cresce com a raridade e a mana cobrada é a do catálogo × isso', () => {
+  const montar = (supports, raridade = 'comum') => {
+    const e = personagemDeTeste({ vocacao: 'sorcerer', level: 300 });
+    assert.ok(Rot.vestirBuild(e, { grupos: [{ skill: 'spell-flame-strike', supports }], raridade }).ok);
+    return e;
+  };
+  const e = montar(['multiple-projectiles', 'explosion']);
+  const ef = Gemas.efeitoNaSkill(e, 'spell-flame-strike');
+  assert.ok(Math.abs(ef.custoPct - 69) < 0.01, `custoPct ${ef.custoPct}`);
+  const lendario = Gemas.efeitoNaSkill(montar(['multiple-projectiles', 'explosion'], 'lendário'), 'spell-flame-strike');
+  assert.ok(Math.abs(lendario.custoPct - 69) < 0.01, 'a raridade não encarece o suporte');
+  // A economia e o custo extra também se multiplicam: ×0,8 (Mana Efficiency) × ×1,3 (Explosion) = ×1,04.
+  const misto = Gemas.efeitoNaSkill(montar(['mana-efficiency', 'explosion']), 'spell-flame-strike');
+  assert.ok(Math.abs(misto.custoPct - 4) < 0.01, `${misto.custoPct}`);
+});
+
+test('trava: a combinação barata (Flame Strike + Greater Multiple Projectiles + Explosion + Greater Damage) não supera a melhor área nativa gastando menos mana', () => {
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 300 });
+  assert.ok(Rot.vestirBuild(e, { grupos: [{ skill: 'spell-flame-strike', supports: ['greater-multiple-projectiles', 'explosion', 'greater-damage'] }] }).ok);
+  const combo = Rot.medirRotacao(e, PERSONAGEM, { duracaoMs: 30000, alvos: 5 });
+  const e2 = personagemDeTeste({ vocacao: 'sorcerer', level: 300 });
+  assert.ok(Rot.vestirBuild(e2, { grupos: [{ skill: 'spell-great-fire-wave' }] }).ok);
+  const nativa = Rot.medirRotacao(e2, PERSONAGEM, { duracaoMs: 30000, alvos: 5 });
+  assert.ok(combo.dpsDasGemas <= nativa.dpsDasGemas * 1.2, `combo ${combo.dpsDasGemas} contra nativa ${nativa.dpsDasGemas}`);
+  assert.ok(combo.manaPorSegundo >= nativa.manaPorSegundo * 0.3, `mana do combo ${combo.manaPorSegundo} contra ${nativa.manaPorSegundo}`);
+});
