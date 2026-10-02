@@ -28,12 +28,14 @@ test('a qualidade NUNCA cai de um estágio para o seguinte: raro+, épico+, lend
   }
 });
 
-test('o Normal ficou como estava (só o mítico mudou) e o mítico segue a escada ×0,4', () => {
+test('o Normal ficou como estava (só o mítico mudou) e o mítico é especial: ~1 a cada 20 mil abates no topo, sem booster', () => {
   assert.deepEqual([tab(['1', 'facil']).raro, tab(['1', 'facil'])['épico'], tab(['4', 'facil'])['lendário']], [7, 0.9, 1.8]);
-  assert.equal(tab(['4', 'facil'])['mítico'], 0.08);
-  assert.equal(tab(['4', 'dificil'])['mítico'], 0.4);
-  // o mítico é raro: nenhum estágio passa de 0,4%
-  for (const e of ORDEM_DOS_ESTAGIOS) assert.ok(tab(e)['mítico'] <= 0.4 + 1e-9, e.join('/'));
+  // abates por mítico = 1 ÷ (equipamentos por abate × chance do mítico); equipamentos por abate médios por Ato (auditoria de 02/10)
+  const EQ = { 1: 0.67, 2: 0.75, 3: 0.82, 4: 0.83 };
+  const abates = (e) => 100 / (EQ[e[0]] * tab(e)['mítico']);
+  assert.ok(Math.abs(abates(['4', 'dificil']) - 20000) < 500, `Merciless 4: ${abates(['4', 'dificil']).toFixed(0)} abates por mítico`);
+  assert.ok(abates(['4', 'facil']) > 100000, 'Normal 4: mais raro que o topo');
+  for (const e of ORDEM_DOS_ESTAGIOS) assert.ok(abates(e) >= 19000, `${e.join('/')}: nenhum estágio passa de 1 mítico a cada 19 mil abates`);
 });
 
 test('o gerador real sorteia o que a tabela diz (Monte Carlo, 60 mil por estágio, tolerância de amostra)', () => {

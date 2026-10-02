@@ -1,5 +1,5 @@
 {
- "_nota": "Raridade do ITEM (sorteada em cada drop). Chances em %, por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Curva global de 02/10 (auditoria de loot, decisão do dono): a qualidade nunca cai ao passar de um estágio para o seguinte (Normal 1→4, Cruel 1→4, Merciless 1→4); o Normal ficou como estava, exceto o mítico (escada ×0,4, para o mítico ser especial).",
+ "_nota": "Raridade do ITEM (sorteada em cada drop). Chances em %, por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Curva global de 02/10 (auditoria de loot, decisão do dono): a qualidade nunca cai ao passar de um estágio para o seguinte (Normal 1→4, Cruel 1→4, Merciless 1→4). O MÍTICO é especial: ~1 a cada 20 mil abates no estágio mais alto (Merciless 4, sem booster) e muito mais raro nos de baixo (1 a cada 150 mil no Normal 4).",
  "ordem": [
   "comum",
   "incomum",
@@ -197,106 +197,106 @@
  "chances": {
   "1": {
    "facil": {
-    "comum": 72.0006,
+    "comum": 72.0009851,
     "incomum": 20,
     "raro": 7,
     "épico": 0.9,
     "lendário": 0.099,
-    "mítico": 0.0004
+    "mítico": 1.49e-05
    },
    "medio": {
-    "comum": 56.116,
+    "comum": 56.1986431,
     "incomum": 22.8,
     "raro": 14.5,
     "épico": 4.5,
     "lendário": 2.0,
-    "mítico": 0.084
+    "mítico": 0.0013569
    },
    "dificil": {
-    "comum": 46.7,
+    "comum": 46.8962687,
     "incomum": 22,
     "raro": 18,
     "épico": 8.5,
     "lendário": 4.6,
-    "mítico": 0.2
+    "mítico": 0.0037313
    }
   },
   "2": {
    "facil": {
-    "comum": 68.006,
+    "comum": 68.0099111,
     "incomum": 22,
     "raro": 8.5,
     "épico": 1.2,
     "lendário": 0.29,
-    "mítico": 0.004
+    "mítico": 8.89e-05
    },
    "medio": {
-    "comum": 51.29,
+    "comum": 51.3984314,
     "incomum": 25,
     "raro": 15.5,
     "épico": 5.5,
     "lendário": 2.6,
-    "mítico": 0.11
+    "mítico": 0.0015686
    },
    "dificil": {
-    "comum": 41.06,
+    "comum": 41.2958333,
     "incomum": 25,
     "raro": 19,
     "épico": 9.5,
     "lendário": 5.2,
-    "mítico": 0.24
+    "mítico": 0.0041667
    }
   },
   "3": {
    "facil": {
-    "comum": 62.03,
+    "comum": 62.0496951,
     "incomum": 24,
     "raro": 11,
     "épico": 2,
     "lendário": 0.95,
-    "mítico": 0.02
+    "mítico": 0.0003049
    },
    "medio": {
-    "comum": 47.456,
+    "comum": 47.5981238,
     "incomum": 26,
     "raro": 16.5,
     "épico": 6.5,
     "lendário": 3.4,
-    "mítico": 0.144
+    "mítico": 0.0018762
    },
    "dificil": {
-    "comum": 37.4,
+    "comum": 37.695122,
     "incomum": 26,
     "raro": 19.5,
     "épico": 11,
     "lendário": 5.8,
-    "mítico": 0.3
+    "mítico": 0.004878
    }
   },
   "4": {
    "facil": {
-    "comum": 55.12,
+    "comum": 55.1991968,
     "incomum": 25,
     "raro": 14,
     "épico": 4,
     "lendário": 1.8,
-    "mítico": 0.08
+    "mítico": 0.0008032
    },
    "medio": {
-    "comum": 44.02,
+    "comum": 44.1975904,
     "incomum": 26,
     "raro": 17.5,
     "épico": 8,
     "lendário": 4.3,
-    "mítico": 0.18
+    "mítico": 0.0024096
    },
    "dificil": {
-    "comum": 35.1,
+    "comum": 35.4939759,
     "incomum": 26,
     "raro": 20,
     "épico": 12,
     "lendário": 6.5,
-    "mítico": 0.4
+    "mítico": 0.0060241
    }
   }
  },
