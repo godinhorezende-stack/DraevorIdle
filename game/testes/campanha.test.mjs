@@ -62,7 +62,7 @@ test('limpar a instância completa a fase e libera a seguinte (com o "Hunt Clear
   for (const m of vivos()) m.hp = 0;
   Cacadas.tique(e, PERSONAGEM, Date.now() + 500);
   assert.equal(e.hunt.instancia.status, 'limpa');
-  assert.match(e.avisoDaHunt, /Hunt Clear! Fase completa: Troll Cave \(Fácil\). Liberou Amazon Camp/);
+  assert.match(e.avisoDaHunt, /Hunt Clear! Fase completa: Troll Cave \(Normal\). Liberou Amazon Camp/);
   assert.equal(Campanha.faseLiberada(e, 'facil', F[1].huntId), true);
   assert.equal(Campanha.faseAtual(e, e.hunt).completa, true);
 });
@@ -89,7 +89,7 @@ test('sem respawn; depois da pausa do "Hunt Clear!", uma instância NOVA (outro 
   // Repetir limpo conta a limpeza, sem "completar" de novo.
   for (const m of [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares).flat()]) m.hp = 0;
   Cacadas.tique(e, PERSONAGEM, (t += 250));
-  assert.match(e.avisoDaHunt, /Hunt Clear! Troll Cave \(Fácil\) limpa/);
+  assert.match(e.avisoDaHunt, /Hunt Clear! Troll Cave \(Normal\) limpa/);
   assert.equal(e.campanha.facil.limpezas[F[0].huntId], 2);
 });
 
@@ -132,7 +132,7 @@ test('fim do ato: o boss abre com as 12 fases; a 1ª vitória libera o ato segui
   const r = Cacadas.entrar(e, { huntId: boss.bossId, mode: 'auto', dificuldade: 'facil', campanha: true });
   assert.equal(r.ok, true, r.erro);
   assert.equal(e.hunt.campanha.bossDoAto, 1);
-  assert.match(Campanha.venceuBoss(e, 'facil', 1), /Ato 1 concluído no Fácil! O Ato 2 está liberado/);
+  assert.match(Campanha.venceuBoss(e, 'facil', 1), /Ato 1 concluído no Normal! O Ato 2 está liberado/);
   assert.equal(Campanha.faseLiberada(e, 'facil', F[12].huntId), true);
 });
 

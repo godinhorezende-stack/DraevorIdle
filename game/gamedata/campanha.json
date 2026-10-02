@@ -2,21 +2,21 @@
  "_nota": "A campanha: as 48 hunts normais em 4 atos (12 fases cada), jogadas em Fácil, depois Médio, depois Difícil (como o Normal/Cruel/Merciless do Path of Exile). Completar uma fase = matar kills[dificuldade] bichos nela; libera a seguinte. Fim de cada ato: um boss (a 1a vitória, sem task nem recarga, libera o ato seguinte; depois da vitória do Ato 4 abre a dificuldade seguinte). nivel[dificuldade] = o level ALVO da fase (cada ato é um quarto da faixa da dificuldade, as 12 fases em escada): os bichos são escalados do level original para ele (ver escala). Tudo editável.",
  "dificuldades": {
   "facil": {
-   "nome": "Fácil",
+   "nome": "Normal",
    "faixa": [
     8,
     100
    ]
   },
   "medio": {
-   "nome": "Médio",
+   "nome": "Cruel",
    "faixa": [
     101,
     600
    ]
   },
   "dificil": {
-   "nome": "Difícil",
+   "nome": "Merciless",
    "faixa": [
     601,
     2000
