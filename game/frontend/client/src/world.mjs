@@ -284,7 +284,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   const painel = el('section', 'w2-painel');
   const barra = el('footer', 'w2-barra');
 
-  raiz.append(cab, dif, aviso, abas, barra, palco, painel);
+  raiz.append(cab, dif, barra, abas, aviso, palco, painel);
   body.append(raiz);
 
   // A tela se adapta à CAIXA do jogo em que está: mede a janela (e remede quando ela muda) e marca `larga` (700 px+: ocupa a altura toda, sem
@@ -370,9 +370,10 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     else {
       Object.assign(vista, { x: 0, y: 0, k: 1 });
       // No celular em pé o mapa inteiro ficaria miúdo: abre mais perto, centrado onde o jogador está.
-      if (estreita()) {
+      // (No desktop abre com um pouco de zoom, centrado na fase: com o mapa inteiro na tela não haveria nada para arrastar.)
+      {
         const alvo = posicao(E.sel?.tipo === 'boss' ? `boss:${a.ato}` : E.sel?.huntId) ?? { x: LARGURA / 2, y: ALTURA / 2 };
-        vista.k = 2.2;
+        vista.k = estreita() ? 2.2 : 1.25;
         vista.x = LARGURA / 2 - alvo.x * vista.k;
         vista.y = ALTURA / 2 - alvo.y * vista.k;
       }
@@ -513,8 +514,6 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   }
 
   // ---- 6. a barra de atalhos (só o que existe de verdade)
-  const registro = el('div', 'w2-registro');
-  registro.hidden = true;
   const aoc = campanha.aoCompletar;
   barra.append(
     botao(`w2-atalho${aoc === 'repetir' ? ' on' : ''}`, 'Ficar na fase', () => h.definirAoCompletar('repetir')),
@@ -527,22 +526,9 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     }),
     botao('w2-atalho', 'Lista', () => h.verLista?.())
   );
-  if (campanha.bossesDerrotados?.length) {
-    barra.insertBefore(
-      botao('w2-atalho', `Bosses derrotados (${campanha.bossesDerrotados.length})`, () => {
-        registro.hidden = !registro.hidden;
-      }),
-      barra.lastChild
-    );
-  }
   const sub = barra.querySelectorAll('.w2-atalho');
   sub[0].title = 'Com a fase completa, continua em loop na mesma fase (bom para farmar).';
   sub[1].title = 'Jogando online, com a fase completa vai para a próxima do Ato. Offline fica sempre em loop.';
-  if (campanha.bossesDerrotados?.length) {
-    registro.append(el('b', null, 'Bosses derrotados'), el('ul', 'w2-lista', ...campanha.bossesDerrotados.map((x) => el('li', null, `☠ ${x.nome}${x.vezes > 1 ? ` (×${x.vezes})` : ''}`))));
-    raiz.append(registro);
-  }
-
   desenharControles();
   trocarAto(atoAtual, true);
 }

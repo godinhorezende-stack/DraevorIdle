@@ -115,18 +115,17 @@
 .w2-registro[hidden], .w2-aviso[hidden], .w2-balao[hidden] { display: none; }
 /* ---- A tela se ADAPTA À CAIXA em que está (o JS mede a janela do jogo e marca `larga` / `lado` e a altura `--w2-h`) ---- */
 /* larga (a janela tem pelo menos 700 px): a tela ocupa a altura disponível, sem rolagem; o mapa leva o que sobra e o painel fica embaixo, em 3 colunas */
-.w2.larga { height: var(--w2-h); grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto; grid-template-areas: "cab" "dif" "abas" "barra" "aviso" "palco" "painel"; gap: 6px 10px; align-content: stretch; }
+.w2.larga { height: var(--w2-h); grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto; grid-template-areas: "cab" "dif" "barra" "abas" "aviso" "palco" "painel"; gap: 6px 10px; align-content: stretch; }
 .w2.larga .w2-cab { grid-area: cab; padding: 2px 44px; } .w2.larga .w2-titulo h2 { font-size: 22px; } .w2.larga .w2-ornamento { height: 18px; }
 .w2.larga .w2-dificuldades { grid-area: dif; justify-content: center; flex-wrap: nowrap; } .w2.larga .w2-placa { min-height: 38px; padding: 2px 14px; min-width: 96px; }
-.w2.larga .w2-atos { grid-area: abas; border-bottom: 0; min-width: 0; } .w2.larga .w2-aba { min-height: 36px; }
+.w2.larga .w2-barra { grid-area: barra; } .w2.larga .w2-atos { grid-area: abas; border-bottom: 0; min-width: 0; } .w2.larga .w2-aba { min-height: 36px; }
 .w2.larga .w2-aviso { grid-area: aviso; }
 .w2.larga .w2-palco { grid-area: palco; min-height: 0; } .w2.larga .w2-viewport { height: 100%; }
 .w2.larga .w2-painel { grid-area: painel; max-height: 34vh; overflow-y: auto; align-content: start; }
-.w2.larga .w2-barra { grid-area: barra; padding: 2px; } .w2.larga .w2-atalho { min-height: 32px; }
-.w2.larga .w2-registro { position: absolute; right: 12px; top: 150px; z-index: 5; max-width: 320px; }
+.w2.larga .w2-barra { padding: 0; justify-content: center; } .w2.larga .w2-atalho { min-height: 32px; }
 /* lado (a janela tem 1100 px ou mais): o painel da fase fica À DIREITA do mapa */
-.w2.lado { grid-template-columns: minmax(0, 1fr) var(--w2-painel, 340px); grid-template-areas: "cab cab" "dif barra" "abas abas" "aviso aviso" "palco painel"; grid-template-rows: auto auto auto auto minmax(0, 1fr); align-items: center; }
-.w2.lado .w2-dificuldades { justify-content: flex-start; } .w2.lado .w2-barra { justify-content: flex-end; flex-wrap: wrap; } .w2.lado .w2-palco, .w2.lado .w2-painel { align-self: stretch; }
+.w2.lado { grid-template-columns: minmax(0, 1fr) var(--w2-painel, 340px); grid-template-areas: "cab cab" "dif dif" "barra barra" "abas abas" "aviso aviso" "palco painel"; grid-template-rows: auto auto auto auto auto minmax(0, 1fr); }
+.w2.lado .w2-palco, .w2.lado .w2-painel { align-self: stretch; }
 .w2.lado .w2-painel { grid-template-columns: 1fr; max-height: none; height: 100%; gap: 8px; }
 .w2.lado .w2-col.acao { position: sticky; bottom: -12px; padding: 8px 0 2px; background: linear-gradient(180deg, transparent, #15100a 28%); order: 9; }
 
@@ -143,12 +142,11 @@
 }
 /* celular DEITADO (paisagem): o mapa ganha a altura toda; o painel vai para o lado; cabeçalho, dificuldades e Atos viram uma faixa só */
 @media (max-height: 460px) and (orientation: landscape) {
-  .w2 { grid-template-columns: minmax(0, 1fr) 280px; grid-template-areas: "cab cab" "dif abas" "aviso aviso" "palco painel" "barra barra"; gap: 6px; }
+  .w2 { grid-template-columns: minmax(0, 1fr) 280px; grid-template-areas: "cab cab" "dif abas" "barra barra" "aviso aviso" "palco painel"; gap: 6px; }
   .w2-cab { grid-area: cab; padding: 2px 40px; min-height: 34px; } .w2-titulo h2 { font-size: 17px; letter-spacing: .3em; } .w2-parte { display: none; } .w2-ornamento { display: none; } .w2-cab { grid-template-columns: 1fr; }
   .w2-dificuldades { grid-area: dif; justify-content: flex-start; flex-wrap: nowrap; } .w2-placa { min-width: 0; min-height: 36px; padding: 2px 10px; } .w2-placa small { display: none; }
-  .w2-atos { grid-area: abas; border-bottom: 0; } .w2-aba { min-height: 36px; padding: 4px 10px; }
+  .w2-atos { grid-area: abas; border-bottom: 0; } .w2-barra { grid-area: barra; } .w2-aba { min-height: 36px; padding: 4px 10px; }
   .w2-aviso { grid-area: aviso; } .w2-palco { grid-area: palco; } .w2-painel { grid-area: painel; grid-template-columns: 1fr; max-height: 74vh; overflow-y: auto; }
-  .w2-barra { grid-area: barra; } .w2-registro { grid-column: 1 / -1; }
   .w2-viewport { height: 74vh; } .w2-dica { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -157,3 +155,5 @@
 .w-selo.achado { color: #7fd3c0; }
 .w2-sombra { fill: rgba(0, 0, 0, .45); }
 .w2.lado .w2-atalho { padding: 3px 9px; font-size: 11px; min-height: 30px; letter-spacing: .03em; }
+
+.w2.lado .w2-atalho { padding: 3px 12px; }
