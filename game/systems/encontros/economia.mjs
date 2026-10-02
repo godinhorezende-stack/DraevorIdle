@@ -52,7 +52,7 @@ export function valorDeUmEncontro(e, escala) {
     if (e.recompensa) valor += valorDaRecompensa(e.recompensa) * (e.recompensa.porOnda ? e.ondas.length : 1);
   } else if (e.recompensa) valor += valorDaRecompensa(e.recompensa);
   // Guardiões e invocados são bichos de verdade: quando morrem, dropam como qualquer outro.
-  for (const g of [e.guardioes, e.invocacao, e.penalidade?.invocacao, e.captores, e.invasores]) if (g) valor += valorDeMortes(grupo(g), escala);
+  for (const g of [e.guardioes, e.invocacao, e.penalidade?.invocacao, e.captores, e.invasores, e.ocupantes]) if (g) valor += valorDeMortes(grupo(g), escala);
   // Boss único: o loot do cadastro (ou o da criatura-base), na escala da fase.
   const boss = e.bossId ? bossUnico(e.bossId) : null;
   if (boss) {

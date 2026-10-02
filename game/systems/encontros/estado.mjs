@@ -177,6 +177,17 @@ export function falhar(instancia, id, { agora = 0 } = {}) {
   return { ok: true, encontro: e, terminou: !e.obrigatorio };
 }
 
+/** O líder recusou o que estava disponível: `disponivel → expirado` (não volta; opcional, a decisão é dele). */
+export function recusar(instancia, id, { agora = 0, quem = null } = {}) {
+  const e = instancia?.encontros?.[id];
+  if (!e) return nega('nao-existe');
+  if (e.estado !== 'disponivel') return nega(`indisponivel:${e.estado}`);
+  e.estado = 'expirado';
+  e.recusadoPor = quem;
+  e.expiradoEm = agora;
+  return { ok: true, encontro: e };
+}
+
 /** O evento foi cancelado (quem o ativou saiu da sala, a hunt acabou...): `ativo → disponivel`, sem contar tentativa. */
 export function cancelar(instancia, id, { agora = 0 } = {}) {
   const e = instancia?.encontros?.[id];

@@ -1,9 +1,10 @@
-// Os encontros de LUTA COM UM PROPÓSITO: `aprisionado` e `invasor`. Reaproveitam o que já existe — o grupo de bichos de
+// Os encontros de LUTA COM UM PROPÓSITO: `aprisionado`, `invasor` e `area-secreta`. Reaproveitam o que já existe — o grupo de bichos de
 // verdade (`sala.nascerGrupo`, como os guardiões de baú) e o boss único (`bosses-unicos`), cada um com o seu papel:
 //
 //   aprisionado — alguém está preso e vigiado: `captores` (grupo) e/ou `bossId` (um boss captor) guardam a cela. O jogador
 //                 "interage" (como num baú) e, quando o último captor cai, o prisioneiro é libertado: paga a `recompensa`
 //                 (o agradecimento), a primeira conclusão e, se houver, uma `bencao` temporária (os mesmos efeitos de altar).
+//   area-secreta — uma área escondida que o LÍDER decide abrir (`ocupantes` e/ou `bossId`, `recompensa`, `bencao`); recusar a descarta.
 //   invasor     — um ataque: quando fica disponível, os `invasores` (grupo e/ou `bossId`) CHEGAM sozinhos, perto do jogador, sem
 //                 ninguém interagir e em qualquer modo de caçada (`sozinho`). Vencer paga a `recompensa` (opcional).
 //
@@ -25,8 +26,8 @@ import { aparecer, vivoDoEncontro } from '../bosses-unicos/boss.mjs';
 const ponto = (e) => (e.x != null ? { x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}) } : null);
 
 /** Quem luta contra o jogador neste encontro: o campo do grupo depende do tipo. */
-const campoDoGrupo = (tipo) => (tipo === 'aprisionado' ? 'captores' : 'invasores');
-const marcaDoGrupo = (tipo) => (tipo === 'aprisionado' ? 'guardiao' : 'invasor');
+const campoDoGrupo = (tipo) => ({ aprisionado: 'captores', invasor: 'invasores', 'area-secreta': 'ocupantes' })[tipo];
+const marcaDoGrupo = (tipo) => (tipo === 'invasor' ? 'invasor' : 'guardiao');
 
 function validar(tipo, e) {
   const erros = [];
@@ -39,8 +40,10 @@ function validar(tipo, e) {
     erros.push(...Altares.validarEfeitos(e.bencao.efeitos, 'bencao.efeitos'));
     if (!(Number(e.bencao.duracaoMs) > 0 && Number(e.bencao.duracaoMs) <= CONFIG.limites.altarDuracaoMsMax)) erros.push(`bencao.duracaoMs de 1 a ${CONFIG.limites.altarDuracaoMsMax}.`);
   }
+  if (tipo === 'area-secreta' && e.x == null) erros.push('a área secreta precisa de posição (x/y): é onde o líder decide entrar.');
   if (tipo === 'invasor' && e.x != null) erros.push('invasor chega perto do jogador: não tem posição (x/y).');
   if (e.prisioneiro != null && typeof e.prisioneiro?.nome !== 'string') erros.push('prisioneiro precisa de "nome".');
+  if (e.descricao != null && typeof e.descricao !== 'string') erros.push('descricao precisa ser texto.');
   if (tipo === 'invasor' && e.prisioneiro != null) erros.push('só "aprisionado" tem prisioneiro.');
   if (e.recompensa && e.bossId && e.bossId === e.id) erros.push('bossId inválido.');
   return erros;
@@ -57,7 +60,7 @@ function aoAtivar(tipo, ctx) {
     const r = aparecer(hunt, def, ponto(e), { instanciaId: instancia.id, encontro: e.id, opcional: !e.obrigatorio });
     if (r.ok) e.bossUid = r.monstro.uid;
   }
-  Eventos.empurrar(hunt, [{ t: 'say', uid: 'player', text: tipo === 'invasor' ? `Invasão! ${e.nome}` : 'Os captores!', x: hunt.pos.x, y: hunt.pos.y, color: tipo === 'invasor' ? '#ff4a4a' : '#c040ff' }]);
+  Eventos.empurrar(hunt, [{ t: 'say', uid: 'player', text: tipo === 'invasor' ? `Invasão! ${e.nome}` : tipo === 'area-secreta' ? `Área secreta: ${e.nome}` : 'Os captores!', x: hunt.pos.x, y: hunt.pos.y, color: tipo === 'invasor' ? '#ff4a4a' : tipo === 'area-secreta' ? '#5cc8ff' : '#c040ff' }]);
 }
 
 const emCampo = (hunt, e) => bichosDaSala(hunt).some((m) => m.hp > 0 && m.encontro === e.id && (m.guardiao || m.invasor)) || vivoDoEncontro(hunt, e.id);
@@ -69,12 +72,14 @@ function verificar(tipo, ctx) {
   if (e.recompensa) pagarRolagens(ctx, e, e.recompensa.rolagens ?? 1);
   pagarConclusao(ctx, e);
   if (e.bencao && ctx.estado) Altares.aplicar(quemEstaNaSala(hunt, ctx.estado), e.bencao.efeitos, e.bencao.duracaoMs, { id: `${e.id}:bencao`, hunt });
-  Eventos.empurrar(hunt, [{ t: 'say', uid: 'player', text: tipo === 'aprisionado' ? `${e.prisioneiro?.nome ?? 'O prisioneiro'} foi libertado!` : 'A invasão foi repelida!', x: hunt.pos.x, y: hunt.pos.y, color: '#4fbf7a' }]);
+  Eventos.empurrar(hunt, [{ t: 'say', uid: 'player', text: tipo === 'aprisionado' ? `${e.prisioneiro?.nome ?? 'O prisioneiro'} foi libertado!` : tipo === 'area-secreta' ? 'A área secreta foi limpa!' : 'A invasão foi repelida!', x: hunt.pos.x, y: hunt.pos.y, color: '#4fbf7a' }]);
 }
 
-for (const tipo of ['aprisionado', 'invasor']) {
+for (const tipo of ['aprisionado', 'invasor', 'area-secreta']) {
   registrarTipo(tipo, {
-    idle: 'combate',
+    // A área secreta pede a DECISÃO do líder: o idle não entra nela (só opcional; expira se `expiraMs`).
+    idle: tipo === 'area-secreta' ? 'escolha' : 'combate',
+    ...(tipo === 'area-secreta' ? { decisaoDoLider: true } : {}),
     // O invasor não espera interação: chega sozinho, em qualquer modo.
     ...(tipo === 'invasor' ? { sozinho: true } : {}),
     validar: (e) => validar(tipo, e),

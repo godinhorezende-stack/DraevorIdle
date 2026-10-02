@@ -22,7 +22,7 @@ import { tipoDe } from './tipos.mjs';
 export const CONDICOES = ['sempre', 'monstros-limpos', 'apos-encontro'];
 export const PADRAO = { ativo: true, probabilidade: 100, quantidade: 1, obrigatorio: false };
 /** Campos que só alguns tipos usam: baú (recompensa, armadilha, guardioes, invocacao, chanceDeInvocacao, requisitos) e altar (efeitos, duracaoMs, penalidade). */
-const CAMPOS_DOS_TIPOS = ['recompensa', 'armadilha', 'guardioes', 'invocacao', 'chanceDeInvocacao', 'requisitos', 'efeitos', 'duracaoMs', 'penalidade', 'ondas', 'pausaMs', 'limiteMs', 'crescimento', 'captores', 'invasores', 'bencao', 'prisioneiro'];
+const CAMPOS_DOS_TIPOS = ['recompensa', 'armadilha', 'guardioes', 'invocacao', 'chanceDeInvocacao', 'requisitos', 'efeitos', 'duracaoMs', 'penalidade', 'ondas', 'pausaMs', 'limiteMs', 'crescimento', 'captores', 'invasores', 'bencao', 'prisioneiro', 'ocupantes', 'protegido', 'descricao'];
 
 /** O encontro completo, com os padrões preenchidos (`null` se não é um objeto com id e tipo). */
 export function normalizar(e) {

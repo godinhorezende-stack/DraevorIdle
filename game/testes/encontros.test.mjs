@@ -21,12 +21,14 @@ registrarTipo('t-combate', { idle: 'combate' });
 
 const def = (o) => Modelo.normalizar({ id: 'e1', tipo: 't-auto', ...o });
 
+registrarTipo('t-futuro', { idle: 'combate', implementado: false });
+
 test('validação: o que é aceito e o que é recusado (com mensagem)', () => {
   assert.deepEqual(Modelo.validar([{ id: 'a', tipo: 't-auto' }, { id: 'b', tipo: 't-combate', probabilidade: 20, condicao: { tipo: 'monstros-limpos' } }]), []);
   const erros = (lista, g) => Modelo.validar(lista, g).join(' | ');
   assert.match(erros([{ id: 'a', tipo: 'nao-existe' }]), /desconhecido/);
-  assert.match(erros([{ id: 'a', tipo: 'escolta' }]), /ainda não está disponível/);
-  assert.deepEqual(Modelo.validar([{ id: 'a', tipo: 'escolta', ativo: false }]), [], 'desligado pode ficar em obra');
+  assert.match(erros([{ id: 'a', tipo: 't-futuro' }]), /ainda não está disponível/);
+  assert.deepEqual(Modelo.validar([{ id: 'a', tipo: 't-futuro', ativo: false }]), [], 'desligado pode ficar em obra');
   assert.match(erros([{ id: 'a', tipo: 't-auto', probabilidade: 120 }]), /entre 0 e 100/);
   assert.match(erros([{ id: 'a', tipo: 't-auto', quantidade: 0 }]), /quantidade/);
   assert.match(erros([{ id: 'a', tipo: 't-auto' }, { id: 'a', tipo: 't-auto' }]), /id repetido/);
@@ -42,9 +44,9 @@ test('validação: o que é aceito e o que é recusado (com mensagem)', () => {
   assert.match(erros([{ id: 'a', tipo: 't-auto', probabilidade: 30 }, { id: 'b', tipo: 't-auto', obrigatorio: true, condicao: { tipo: 'apos-encontro', encontro: 'a' } }]), /pode não existir/);
 });
 
-test('os tipos planejados ainda NÃO são utilizáveis em mapa (conteúdo pela metade nunca chega a uma instância)', () => {
-  // Os de boss chegaram na etapa 2 e os baús/altar na 3; só a v2 segue fora.
-  for (const [nome, t] of Object.entries(TIPOS)) if (!nome.startsWith('t-') && !['boss', 'miniboss', 'boss-secreto', 'bau-comum', 'bau-raro', 'bau-amaldicoado', 'altar', 'sobrevivencia', 'fenda', 'aprisionado', 'invasor'].includes(nome)) assert.equal(t.implementado, false, nome);
+test('um tipo não implementado não é utilizável em mapa; e todos os tipos planejados (v1 e v2) já estão implementados', () => {
+  // Conteúdo pela metade nunca chega a uma instância (o validador recusa); hoje só tipos de teste ficam de fora.
+  for (const [nome, t] of Object.entries(TIPOS)) if (!nome.startsWith('t-')) assert.equal(t.implementado, true, nome);
   assert.throws(() => registrarTipo('t-sem-gancho', { idle: 'auto' }), /resolverNoIdle/);
 });
 

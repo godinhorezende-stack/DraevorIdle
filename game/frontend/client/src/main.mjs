@@ -6203,7 +6203,30 @@ mapView.onTileHover = (casa, evento) => {
  * confere distância, requisitos e "uma vez só". Longe, o clique segue como um passo normal.
  */
 function pedirInteracao(encontro) {
+  if (encontro.decisao && encontro.estado === 'disponivel') return abrirJanelaDeDecisao(encontro);
   send({ t: 'interagir', id: encontro.id });
+}
+
+/** A janela de decisão (área secreta, escolta): quem decide é o líder da party (ou quem está sozinho) — o servidor confere. */
+function abrirJanelaDeDecisao(encontro) {
+  document.getElementById('janela-decisao')?.remove();
+  const janela = el('div', 'janela-decisao');
+  janela.id = 'janela-decisao';
+  const fechar = () => janela.remove();
+  const responder = (aceitar) => {
+    send({ t: 'decidir', id: encontro.id, aceitar });
+    fechar();
+  };
+  const aceitar = el('button', 'decisao-sim', encontro.tipo === 'escolta' ? 'Partir' : 'Entrar');
+  const recusar = el('button', 'decisao-nao', 'Recusar');
+  const depois = el('button', 'decisao-depois', 'Decidir depois');
+  aceitar.type = recusar.type = depois.type = 'button';
+  aceitar.onclick = () => responder(true);
+  recusar.onclick = () => responder(false);
+  depois.onclick = fechar;
+  janela.append(el('h3', '', encontro.nome), el('p', '', encontro.descricao ?? (encontro.tipo === 'escolta' ? 'Alguém precisa de proteção na travessia.' : 'Uma passagem escondida.')), el('p', 'decisao-dica', 'Em grupo, quem decide é o líder. Recusar descarta esta oportunidade.'), el('div', 'decisao-botoes'));
+  janela.lastChild.append(aceitar, recusar, depois);
+  document.body.append(janela);
 }
 
 /** O botão "Interagir": aparece (só na caça online) quando há um baú ou altar ao alcance, e some quando não há. */
@@ -6219,7 +6242,7 @@ function atualizarBotaoDeInteragir() {
     document.body.append(botao);
   }
   botao.dataset.encontro = perto.id;
-  botao.textContent = perto.tipo === 'altar' ? `Ativar: ${perto.nome}` : perto.tipo === 'sobrevivencia' || perto.tipo === 'fenda' ? `Iniciar: ${perto.nome}` : perto.tipo === 'aprisionado' ? `Libertar: ${perto.nome}` : `Abrir: ${perto.nome}`;
+  botao.textContent = perto.tipo === 'altar' ? `Ativar: ${perto.nome}` : perto.tipo === 'sobrevivencia' || perto.tipo === 'fenda' ? `Iniciar: ${perto.nome}` : perto.tipo === 'aprisionado' ? `Libertar: ${perto.nome}` : perto.decisao && perto.estado === 'disponivel' ? `Decidir: ${perto.nome}` : `Abrir: ${perto.nome}`;
   botao.onclick = () => pedirInteracao(perto);
   botao.removeAttribute('hidden');
 }

@@ -55,6 +55,7 @@ import * as SimuladorTique from '../systems/simulador-tique.mjs';
 import { descerDeLevel, tirarEventosDaParty, fichaDoBicho } from '../systems/hunt/combate.mjs';
 import * as InstanciaDaHunt from '../systems/hunt/instancia.mjs';
 import * as EstadoDosEncontros from '../systems/encontros/estado.mjs';
+import * as TiposDosEncontros from '../systems/encontros/tipos.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
 import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
@@ -1013,6 +1014,8 @@ export class Sessao {
       // Interagir com um encontro da fase (abrir o baú, ativar o altar...): o servidor valida tudo.
       case 'interagir':
         return this.interagirComEncontro(m);
+      case 'decidir':
+        return this.decidirEncontro(m);
       // O jogador leu o relatório da ausência (OK): só agora ele deixa de ser entregue.
       case 'ackAusencia':
         return this.confirmarRelatorioDaAusencia();
@@ -1808,11 +1811,25 @@ export class Sessao {
       const longe = Math.max(Math.abs(hunt.pos.x - e.x), Math.abs(hunt.pos.y - e.y)) > 2 || (e.z != null && e.z !== hunt.z);
       if (longe) return this.erro('Chegue mais perto.');
     }
+    // Os que pedem DECISÃO (área secreta, escolta) são do LÍDER da party — ou de quem está sozinho.
+    if (TiposDosEncontros.tipoDe(e.tipo)?.decisaoDoLider && !Party.decidePeloGrupo(this)) return this.erro('Só o líder da party decide isso.');
     const agora = (hunt.anfitriao ?? hunt).clock ?? 0;
     const r = EstadoDosEncontros.ativar(inst, e.id, { quem: this.personagem?.nome ?? null, agora, hunt, estado: this.estado, personagem: this.personagem });
     if (r.ok) return;
     const texto = { 'ja-ativo': 'Já está em andamento.', 'ja-concluido': 'Já foi aberto.' }[r.motivo] ?? (r.motivo?.startsWith('requisito:') ? `Você ${r.motivo.slice(10)}.` : 'Ainda não dá para fazer isso.');
     return this.erro(texto);
+  }
+
+  /** `{t:'decidir', id, aceitar}`: a resposta do líder à janela de decisão (aceitar = o mesmo que interagir; recusar descarta o encontro). */
+  decidirEncontro(m) {
+    if (m.aceitar !== false) return this.interagirComEncontro(m);
+    const hunt = this.estado?.hunt;
+    const inst = hunt ? InstanciaDaHunt.daSala(hunt) : null;
+    const e = inst?.encontros?.[String(m.id)];
+    if (!e) return this.erro('Não há nada para decidir aqui.');
+    if (!TiposDosEncontros.tipoDe(e.tipo)?.decisaoDoLider) return this.erro('Isso não pede decisão.');
+    if (!Party.decidePeloGrupo(this)) return this.erro('Só o líder da party decide isso.');
+    EstadoDosEncontros.recusar(inst, e.id, { agora: (hunt.anfitriao ?? hunt).clock ?? 0, quem: this.personagem?.nome ?? null });
   }
 
   /** `{t:'ackAusencia'}`: o OK do relatório da ausência. Idempotente (um OK repetido não faz nada). */

@@ -27810,6 +27810,16 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
   color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e); border: 1px solid #7a5a12; box-shadow: 0 4px 18px #000a, 0 0 14px #f5c54266; cursor: pointer;
 }
 .btn-interagir[hidden] { display: none; }
+.janela-decisao {
+  position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 70; width: min(92vw, 360px);
+  padding: 16px; border-radius: 12px; background: #1b1710; border: 1px solid #7a5a12; box-shadow: 0 8px 30px #000c; color: #f1e6c8;
+}
+.janela-decisao h3 { margin: 0 0 8px; font: 600 18px var(--font-heading, Oswald, system-ui, sans-serif); }
+.janela-decisao p { margin: 6px 0; font-size: 14px; }
+.janela-decisao .decisao-dica { font-size: 12px; color: #a8a08c; }
+.janela-decisao .decisao-botoes { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.janela-decisao button { flex: 1; min-height: 44px; border-radius: 8px; border: 1px solid #7a5a12; background: #2a2314; color: #f1e6c8; font-weight: 600; cursor: pointer; }
+.janela-decisao .decisao-sim { background: linear-gradient(180deg, #f5d27a, #c89a2e); color: #1a1204; }
 
 /* ---- WORLD: o mapa da campanha (Atos, fases, caminhos) e o painel da fase ---- */
 .campanha-visao { margin: 6px 0 10px; }

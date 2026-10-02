@@ -80,13 +80,13 @@ const vivosDaOnda = (hunt, e) => {
 };
 
 /** Tira da sala o que sobrou da fenda/onda (fechou por tempo): nada fica esperando por um evento que acabou. */
-function limparSobras(hunt, e) {
+export function limparSobras(hunt, e) {
   for (const lista of [listaDoAndar(hunt, null), ...Object.values(hunt.outrosAndares ?? {})]) {
     for (let i = lista.length - 1; i >= 0; i--) if (lista[i].encontro === e.id && lista[i].onda) lista.splice(i, 1);
   }
 }
 
-function aviso(hunt, e, texto, cor = '#f0a851') {
+export function aviso(hunt, e, texto, cor = '#f0a851') {
   Eventos.empurrar(hunt, [{ t: 'say', uid: 'player', text: texto, x: hunt.pos.x, y: hunt.pos.y, color: cor }]);
 }
 

@@ -278,6 +278,9 @@ export function paraCliente(hunt) {
   return { id: inst.id, status: inst.status, ...progresso(hunt), ...(encontros.length ? { encontros } : {}) };
 }
 
+/** Os tipos que pedem uma DECISÃO do líder do grupo antes de começar (o cliente mostra a janela de decisão). */
+const DECISAO = new Set(['area-secreta', 'escolta']);
+
 /**
  * Os encontros que o jogador PODE VER e usar agora: baús, altares, sobrevivências e fendas com posição, disponíveis (ou em andamento).
  * Nada de boss (nasce quando o encontro é ativado), nada dormindo (a condição ainda não foi cumprida) e nada sem
@@ -285,6 +288,6 @@ export function paraCliente(hunt) {
  */
 export function encontrosVisiveis(inst) {
   return Object.values(inst?.encontros ?? {})
-    .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda' || e.tipo === 'aprisionado') && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
-    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), estado: e.estado }));
+    .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda' || e.tipo === 'aprisionado' || DECISAO.has(e.tipo)) && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
+    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), estado: e.estado, ...(DECISAO.has(e.tipo) ? { decisao: true, ...(e.descricao ? { descricao: e.descricao } : {}) } : {}) }));
 }
