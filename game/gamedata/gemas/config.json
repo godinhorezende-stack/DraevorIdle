@@ -66,11 +66,14 @@
   },
 
   "estados": {
-    "_nota": "Os ESTADOS que as supports põem nos bichos atingidos (systems/skills/estados.mjs, etapa 4): durações (ms). queimando: o % do acerto sai em pulsos a cada `pulso` ms durante `duracao`; congelado e atordoado: o bicho não anda nem ataca; lento: anda e ataca mais devagar (até `maximo`%).",
+    "_nota": "Os ESTADOS que as supports põem nos bichos atingidos (systems/skills/estados.mjs): durações (ms). queimando: UMA queimação por bicho (vale a de maior dano, como no Path of Exile): o % do acerto sai em pulsos a cada `pulso` ms durante `duracao`, e o relógio dos pulsos não reinicia ao reaplicar; congelado e atordoado: o bicho não anda nem ataca; lento: anda e ataca mais devagar (até `maximo`%, vale a maior lentidão). `controle`: depois que um congelamento ou atordoamento ACABA o bicho fica `imunidade` ms sem sofrer nenhum dos dois (não dá para manter o bicho preso). `elite`: multiplica a duração de congelar, atordoar e lentidão (0,5 = metade). `chefe`: boss único, boss de sala e mob de raridade chefe — `controle` 0 = imune a congelar e atordoar; `lento` = fração da lentidão que pega.",
     "queimando": { "duracao": 4000, "pulso": 1000 },
-    "congelado": { "duracao": 2000 },
-    "lento": { "duracao": 4000, "maximo": 60 },
-    "atordoado": { "duracao": 1500 }
+    "congelado": { "duracao": 1500 },
+    "lento": { "duracao": 3000, "maximo": 40 },
+    "atordoado": { "duracao": 1500 },
+    "controle": { "imunidade": 3000 },
+    "elite": { "duracao": 0.5 },
+    "chefe": { "controle": 0, "lento": 0.5 }
   },
 
   "fundidora": {
