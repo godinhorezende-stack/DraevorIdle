@@ -179,14 +179,51 @@ const TETO_ABSOLUTO = 520;
 const ESPERA_INICIAL_MS = 2000;
 const ESPERA_MAXIMA_MS = 30000;
 
+/*
+ * ---- Folha gigante: decodificada UMA vez e para sempre ----
+ *
+ * "lag na cidade só no celular". Medido (Chromium emulando celular, 25 jogadores
+ * na praça): de 456 cópias do atlas da cidade para as tiras, 448 custavam 0 ms e
+ * 8 custavam ~340 ms cada — todas a PRIMEIRA leitura depois de o navegador
+ * descartar a imagem decodificada. O atlas da cidade tem 4096x4096 (64 MB
+ * decodificados, o maior de todos: as caçadas vão até 3200x3200, 41 MB) e o cache
+ * de imagens decodificadas do Chrome o joga fora quando outras folhas disputam o
+ * espaço (jogadores, itens, brasões) — no celular o limite é bem menor. Cada
+ * descarte é uma redecodificação inteira no meio do quadro.
+ *
+ * O `ImageBitmap` já nasce decodificado e fica com o arquivo: o navegador não
+ * descarta, e copiar dele custa o mesmo 0,01 ms de sempre. Só as folhas maiores
+ * que a maior caçada: as outras continuam como eram, sem gastar memória à toa.
+ */
+const PIXELS_DA_FOLHA_GIGANTE = 12_000_000;
+
+function fixarDecodificada(entry, imagem) {
+  if (typeof createImageBitmap !== 'function') return;
+  if (imagem.naturalWidth * imagem.naturalHeight < PIXELS_DA_FOLHA_GIGANTE) return;
+  createImageBitmap(imagem).then(
+    (bitmap) => {
+      // Se a folha foi pedida de novo enquanto isso, o bitmap é da imagem velha.
+      if (entry.image === imagem) entry.image = bitmap;
+      else bitmap.close?.();
+    },
+    () => {} // sem bitmap: segue com a <img>, como antes
+  );
+}
+
+/** Devolve a memória do bitmap (só ele tem `close`; a `<img>` o navegador coleta). */
+const soltar = (entry) => entry.image?.close?.();
+
 function pedir(entry, src) {
+  soltar(entry);
   entry.ready = false;
   entry.falhouEm = 0;
   entry.image = new Image();
+  const imagem = entry.image;
   entry.image.onload = () => {
     entry.ready = true;
     // Deu certo: a próxima falha recomeça a espera do começo.
     entry.tentativas = 0;
+    fixarDecodificada(entry, imagem);
   };
   entry.image.onerror = () => {
     entry.falhouEm = performance.now();
@@ -237,6 +274,7 @@ function despejar(agora) {
   for (const [chave, folha] of images) {
     if (!estourou && agora - (folha.tocadaEm ?? 0) < CARENCIA_MS) continue;
     images.delete(chave);
+    soltar(folha);
     return;
   }
 }
