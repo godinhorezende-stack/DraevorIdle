@@ -428,6 +428,68 @@ function aplicarRaridade(raridade, mods) {
 
 const raridadeDe = (s) => s.raridade ?? tipoDoSpawn[s.tipo] ?? 'normal';
 
+/*
+ * ---- Os atributos CALCULADOS do monstro do spawn (etapa 5, dono 02/10) ----
+ * O servidor monta (`GET /api/mapas/atributos-do-mob`): vida, dano, precisão, evasão, armadura, bloqueio e resistências, cada um com a ORIGEM das
+ * parcelas, mais os ataques e os erros e avisos das regras de combinação dos modificadores. O editor só mostra — nenhuma conta aqui.
+ */
+let pedidoDoPainel = 0;
+const textoDaOrigem = (o) => `${o.fonte}${o.valor != null ? `: ${o.valor}` : ''}${o.fator != null ? ` ×${String(o.fator).replace('.', ',')}` : ''}${o.pct != null ? ` ${o.pct > 0 ? '+' : ''}${o.pct}%` : ''}${o.raridade && o.raridade !== 'normal' ? ` (${o.raridade} ×${String(o.fatorDaRaridade).replace('.', ',')})` : ''}`;
+
+async function montarPainelDeAtributos(alvo, raridade, mods) {
+  let painel = $('atributosDoMob');
+  if (!painel) {
+    painel = document.createElement('div');
+    painel.id = 'atributosDoMob';
+    painel.className = 'atributos-do-mob';
+    $('listaMods').parentElement.append(painel);
+  }
+  if (alvo === proximo) {
+    painel.textContent = 'Selecione um spawn para ver os atributos calculados do monstro.';
+    return;
+  }
+  const meu = ++pedidoDoPainel;
+  const nivel = Number(painel.dataset.nivel || 100);
+  const q = new URLSearchParams({ key: keyDoSpawn(alvo), level: String(nivel), raridade, mods: mods.join(',') });
+  const d = await fetch(`/api/mapas/atributos-do-mob?${q}`).then((r) => r.json()).catch(() => null);
+  if (meu !== pedidoDoPainel) return;
+  painel.innerHTML = '';
+  if (!d?.ok) {
+    painel.textContent = d?.erro ?? 'Não consegui calcular os atributos.';
+    return;
+  }
+  const titulo = document.createElement('h3');
+  titulo.textContent = `Atributos calculados — ${d.nome} (Lv ${d.level})`;
+  const campoNivel = document.createElement('input');
+  campoNivel.type = 'number';
+  campoNivel.min = '1';
+  campoNivel.max = '2000';
+  campoNivel.value = String(nivel);
+  campoNivel.title = 'Level da fase para o cálculo';
+  campoNivel.onchange = () => { painel.dataset.nivel = campoNivel.value; montarPainelDeAtributos(alvo, raridade, mods); };
+  titulo.append(' · level ', campoNivel);
+  painel.append(titulo);
+  for (const e of d.erros ?? []) painel.append(Object.assign(document.createElement('p'), { className: 'erro', textContent: `Erro: ${e}` }));
+  for (const a of d.avisos ?? []) painel.append(Object.assign(document.createElement('p'), { className: 'aviso', textContent: `Aviso: ${a}` }));
+  const linhas = [['Vida', d.atributos.vida], ['Dano (multiplicador)', d.atributos.dano], ['Precisão', d.atributos.precisao], ['Evasão', d.atributos.evasao], ['Armadura', d.atributos.armadura]];
+  for (const [nome, a] of linhas) {
+    const bloco = document.createElement('details');
+    const resumo = document.createElement('summary');
+    resumo.textContent = `${nome}: ${Math.round(a.valor * 100) / 100}`;
+    bloco.append(resumo);
+    for (const o of a.origens) bloco.append(Object.assign(document.createElement('div'), { className: 'origem', textContent: textoDaOrigem(o) }));
+    painel.append(bloco);
+  }
+  const extras = [];
+  if (d.atributos.bloqueio) extras.push(`Bloqueio: ${Math.round(d.atributos.bloqueio * 100)}%`);
+  if (d.atributos.reducaoDeDano) extras.push(`Redução de dano: ${Math.round(d.atributos.reducaoDeDano * 100)}%`);
+  extras.push(`Velocidade de ataque: ×${String(d.atributos.velocidadeDeAtaque).replace('.', ',')}`);
+  const res = Object.entries(d.atributos.resistencias ?? {}).filter(([, v]) => v).map(([k, v]) => `${k} ${v}%`);
+  if (res.length) extras.push(`Resistências do bestiário: ${res.join(', ')}`);
+  painel.append(Object.assign(document.createElement('p'), { textContent: extras.join(' · ') }));
+  for (const at of d.ataques ?? []) painel.append(Object.assign(document.createElement('div'), { className: 'origem', textContent: `${at.tipo === 'melee' ? 'Corpo a corpo' : 'Magia'} (${at.elemento}): ${at.min}–${at.max}, a cada ${(at.intervalo / 1000).toFixed(1).replace('.', ',')} s, ${at.chance}% de chance` }));
+}
+
 function montarEdicao() {
   const alvo = alvoDaEdicao();
   const raridade = alvo === proximo ? proximo.raridade : raridadeDe(alvo);
@@ -452,9 +514,15 @@ function montarEdicao() {
   lista.innerHTML = '';
   for (const m of modificadores) {
     const marcado = mods.includes(m.id);
-    const travado = !marcado && mods.length >= teto;
+    // As regras do modificador (raridades permitidas e incompatibilidades, vindas do servidor): quem não pode entrar fica travado, com o motivo.
+    const raridadeEfetiva = raridade === 'normal' && mods.length ? 'modificado' : raridade;
+    const fora = m.raridades && !m.raridades.includes(raridadeEfetiva);
+    const incompativel = mods.some((id) => m.incompativeis?.includes(id) || modificadores.find((x) => x.id === id)?.incompativeis?.includes(m.id));
+    const travado = !marcado && (mods.length >= teto || fora || incompativel);
     const rotulo = document.createElement('label');
     rotulo.className = 'mod-opcao' + (travado ? ' travado' : '');
+    if (!marcado && fora) rotulo.title = `Só entra em: ${m.raridades.map((r) => raridades.find((x) => x.id === r)?.nome ?? r).join(', ')}`;
+    else if (!marcado && incompativel) rotulo.title = 'Não combina com um modificador já escolhido';
     const caixa = document.createElement('input');
     caixa.type = 'checkbox';
     caixa.checked = marcado;
@@ -468,6 +536,7 @@ function montarEdicao() {
     rotulo.append(caixa, texto);
     lista.append(rotulo);
   }
+  montarPainelDeAtributos(alvo, raridade, mods);
 }
 $('raio').onchange = () => {
   alvoDaEdicao().raio = Math.max(0, Math.min(10, Math.round(Number($('raio').value) || 0)));

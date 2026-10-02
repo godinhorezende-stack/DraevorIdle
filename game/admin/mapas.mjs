@@ -14,6 +14,9 @@ import { dirname, join } from 'node:path';
 import { CITY_MAP, CATALOGO } from '../systems/dados.mjs';
 import { validar, normalizar } from '../systems/mapa/spawns.mjs';
 import * as Raridade from '../systems/mobs/raridade.mjs';
+import * as Mobs from '../systems/mobs/atributos.mjs';
+import * as Poderes from '../systems/poderes.mjs';
+import { montarMob } from '../systems/combate/simulador-mob.mjs';
 
 const RAIZ_HUNTS = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'hunts');
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
@@ -132,3 +135,26 @@ export const cidadeParaEditor = () => ({ atlas: CITY_MAP.atlas, cell: CITY_MAP.c
 
 /** As raridades e os modificadores que o editor oferece por spawn (dados de `gamedata/mobs/`). */
 export const raridadesParaEditor = () => Raridade.opcoesParaEditor();
+
+/**
+ * O detalhamento de um monstro para o editor (`GET /api/mapas/atributos-do-mob`): os atributos finais com a ORIGEM de cada parcela, os ataques
+ * que ele tem e os erros e avisos das regras de combinação. `level`: o do mob (a fase); a raridade soma o `levelExtra` dela.
+ */
+export function atributosDoMob({ key, level = 100, raridade = 'normal', modificadores = [] } = {}) {
+  if (!CATALOGO.bestiary?.[key]) return { ok: false, erro: 'Criatura desconhecida.' };
+  const nivel = Math.max(1, Math.min(2000, Math.round(Number(level) || 100)));
+  const spawn = { key, raridade, modificadores };
+  const { raridade: r, modificadores: mods } = Raridade.doSpawn(spawn);
+  const m = montarMob({ key, raridade: r, modificadores: mods });
+  return {
+    ok: true,
+    nome: m.name,
+    raridade: r,
+    modificadores: mods,
+    level: nivel + (m.levelExtra ?? 0),
+    atributos: Mobs.atributosFinais(m, nivel + (m.levelExtra ?? 0)),
+    ataques: Poderes.ataquesParaFicha(key),
+    erros: Raridade.errosDoSpawn(spawn),
+    avisos: Raridade.avisosDoSpawn(spawn),
+  };
+}

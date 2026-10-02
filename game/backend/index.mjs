@@ -132,6 +132,11 @@ async function atender(req, res) {
   if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
     return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, cidade: Mapas.cidadeParaEditor(), criaturasPorHunt: Mapas.criaturasPorHunt(), ...Mapas.raridadesParaEditor() });
   }
+  // O detalhamento dos atributos de um monstro (com a origem de cada parcela), para o editor de mapas.
+  if (caminho === '/api/mapas/atributos-do-mob' && req.method === 'GET') {
+    const q = url.searchParams;
+    return json(res, 200, Mapas.atributosDoMob({ key: q.get('key'), level: q.get('level'), raridade: q.get('raridade') ?? 'normal', modificadores: (q.get('mods') ?? '').split(',').filter(Boolean) }));
+  }
   if (caminho === '/api/mapas' && req.method === 'GET') {
     return json(res, 200, { ids: Mapas.listar() });
   }

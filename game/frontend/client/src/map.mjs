@@ -3045,6 +3045,11 @@ export class MapView {
         ctx.beginPath();
         ctx.moveTo(x - 1.6, cy); ctx.lineTo(x + 1.6, cy);
         ctx.stroke();
+      } else if (estado === 'enregelado') {
+        // Enregelamento (dano contínuo de gelo): um losango azul-claro vazado (o congelado é cheio).
+        ctx.moveTo(x, cy - r); ctx.lineTo(x + r, cy); ctx.lineTo(x, cy + r); ctx.lineTo(x - r, cy); ctx.closePath();
+        ctx.strokeStyle = '#9fe8ff';
+        ctx.stroke();
       } else if (estado === 'envenenado' || estado === 'sangrando') {
         // Gota verde (veneno) ou vermelha (sangramento), com um ponto claro: a forma de gota é a do dano contínuo; a cor diz qual.
         ctx.moveTo(x, cy - r); ctx.quadraticCurveTo(x + r * 1.5, cy + r * 0.3, x, cy + r); ctx.quadraticCurveTo(x - r * 1.5, cy + r * 0.3, x, cy - r);
@@ -3105,7 +3110,8 @@ export class MapView {
       const lv = placaDeTexto(`Lv ${entity.nivel}`, '#b9b2a2', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
       ctx.drawImage(lv.lona, this.nitido(nomeX + placa.largura - 1), this.nitido(nomeY + (placa.altura - lv.altura)), lv.largura, lv.altura);
     }
-    if (ehMob && entity.estados?.length) this.drawEstadosDoMob(entity.estados, meio + width / 2 + 3, barTop);
+    // Os estados ativos: do mob (gemas do jogador) e do próprio JOGADOR (controle de boss/elite e dano contínuo dos mobs).
+    if ((ehMob || entity.isPlayer) && entity.estados?.length) this.drawEstadosDoMob(entity.estados, meio + width / 2 + 3, barTop);
     if (ehMob && entity.mods?.length) {
       const linha = placaDeTexto(entity.mods.join(' · '), corDoMob ?? '#cfc7b4', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
       ctx.drawImage(linha.lona, this.nitido(meio - linha.largura / 2), this.nitido(nomeY - linha.altura + 3), linha.largura, linha.altura);
