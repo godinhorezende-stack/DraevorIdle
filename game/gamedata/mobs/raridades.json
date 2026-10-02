@@ -11,6 +11,15 @@
     "boss":       { "nome": "Chefe",     "cor": "#ff5b4f", "vida": 5,    "dano": 1.8,  "exp": 10,  "loot": 3,   "maxModificadores": 6, "levelExtra": 12, "boss": true }
   },
 
+  "_regras": "As REGRAS de combinação dos modificadores de um spawn (dono, 02/10), para evitar mob injusto: `ofensivoMaximo` — o produto (dano da raridade × (1 + danoPct) × (1 + velocidade de ataque)) não passa disto (ERRO ao salvar o mapa); `resistenciaSomadaMaxima` — a soma da resistência que os modificadores dão a um elemento não passa disto (ERRO); `maxPorCategoria` — quantos modificadores de uma categoria a raridade aceita, ex.: `{ modificado: { defensivo: 1 } }` (ERRO; vazio = sem limite — os mapas atuais combinam à vontade); `avisos` — combinações que PUNEM demais e só geram AVISO (os spawns antigos ficam como estão): quando TODOS os limites de `quando` são atingidos (danoPct, velocidadeDeAtaquePct, e vidaPct ou resistência física).",
+  "regras": {
+    "ofensivoMaximo": 3.5,
+    "resistenciaSomadaMaxima": 75,
+    "maxPorCategoria": {},
+    "avisos": [
+      { "id": "dano-velocidade-mitigacao", "quando": { "danoPct": 25, "velocidadeDeAtaquePct": 30, "vidaPct": 50, "resistenciaFisica": 30, "mitigacaoOu": true }, "texto": "dano alto, ataque rápido e mitigação juntos (pode ser injusto)" }
+    ]
+  },
   "_tipoDoSpawn": "O `tipo` que os spawns já tinham (normal | elite | miniboss | boss) vira a raridade quando o spawn não diz `raridade`.",
   "tipoDoSpawn": { "normal": "normal", "elite": "elite", "miniboss": "raro", "boss": "boss" },
 

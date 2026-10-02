@@ -20,7 +20,7 @@ test('dados: toda raridade tem cor e multiplicadores; todo modificador tem nome 
     assert.match(r.cor, /^#[0-9a-f]{6}$/i, id);
     for (const k of ['vida', 'dano', 'exp', 'loot']) assert.ok(Number.isFinite(r[k]), `${id}.${k}`);
   }
-  const STATS = new Set(['vidaPct', 'danoPct', 'velocidadePct', 'velocidadeDeAtaquePct', 'regenPct', 'resist']);
+  const STATS = new Set(['vidaPct', 'danoPct', 'velocidadePct', 'velocidadeDeAtaquePct', 'regenPct', 'resist', 'precisaoPct', 'evasaoPct', 'armaduraPct', 'bloqueio', 'reducaoDeDano', 'critChance', 'critMultiplicador']);
   const GATILHOS = new Set(['aoMorrer', 'vidaBaixa', 'aoReceberDano', 'aoAtacar', 'aliadoMorreu', 'aura']);
   for (const [id, m] of Object.entries(Raridade.MODIFICADORES)) {
     assert.ok(m.nome, id);
