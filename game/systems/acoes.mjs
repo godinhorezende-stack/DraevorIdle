@@ -26,6 +26,7 @@ import * as Tags from './skills/tags.mjs';
 import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
+import * as Controle from './combate/controle.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -669,6 +670,8 @@ export const intervaloGlobalCom = (castSpeed = 0) => Math.round(R.GLOBAL_SPELL_C
 export const intervaloGlobal = (estado) => intervaloGlobalCom(Ficha.combate(estado).castSpeed);
 
 export function disparar(estado, hunt, personagem, slot, alvo, opcoes) {
+  // Congelado ou atordoado (controle de boss/elite, `combate/controle.mjs`): nada sai.
+  if (!Controle.podeAgir(hunt, hunt?.clock ?? 0)) return { ok: false, erro: 'Você está paralisado.', motivo: 'CONTROLE' };
   const r = dispararSemMarcar(estado, hunt, personagem, slot, alvo, opcoes);
   marcarParado(hunt, slot, r);
   return r;

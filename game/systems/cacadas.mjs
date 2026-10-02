@@ -52,6 +52,7 @@ import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
+import * as Controle from './combate/controle.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
@@ -670,7 +671,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
  */
 export function razaoDeVelocidade(estado) {
   const base = R.baseSpeed(estado.level ?? 1);
-  return Math.min(2, Math.max(0.25, (Ficha.combate(estado).speed ?? base) / Math.max(1, base)));
+  // Lento (controle de boss/elite): anda mais devagar (`combate/controle.mjs`); preso, nem anda (`podeAgir`, no tique).
+  return Math.min(2, Math.max(0.25, (Ficha.combate(estado).speed ?? base) / Math.max(1, base) / Controle.fatorDeLentidao(estado.hunt)));
 }
 
 /** Quantos passos ele dá neste tique: o crédito acumulado (fração de passo) + a razão, inteiro, até 2. */
@@ -1319,7 +1321,7 @@ export function tique(estado, personagem, agora = Date.now()) {
       hunt.pos.x = hunt.posto.x;
       hunt.pos.y = hunt.posto.y;
     }
-  } else if (!hunt.conjurando && R.jaPode(agora, hunt.proximoPassoEm)) {
+  } else if (!hunt.conjurando && Controle.podeAgir(hunt) && R.jaPode(agora, hunt.proximoPassoEm)) {
     // (Conjurando uma skill — o Cast Time da gema — o personagem não anda.)
     /*
      * ---- Movimento: quantos passos neste tique ----
@@ -1526,11 +1528,14 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (donoDaSala) moverMonstros(hunt, grade, agora);
 
   const eventos = [];
+  // Congelado ou atordoado (controle de boss/elite): a conjuração em andamento se perde, e o jogador não age até acabar.
+  const livre = Controle.podeAgir(hunt);
+  if (!livre) hunt.conjurando = null;
   // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
   eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
   const assiste = hunt.modo !== 'online' || hunt.assistencia !== false;
   // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
-  if (assiste && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
+  if (assiste && livre && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
     const golpe = round(estado, personagem);
     // JUNTA aos eventos, e não substitui: no tique em que uma conjuração termina e o golpe
     // básico também sai, a magia (dano, explosões, o fim da conjuração) sumia da tela e do
@@ -1542,7 +1547,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     // golpes" (árvore) mexe no próprio intervalo: −3% é 3% mais curto.
     if (golpe.bateu) {
       const f = Ficha.combate(estado);
-      hunt.proximoGolpeEm = agora + f.intervaloDoGolpeMs;
+      hunt.proximoGolpeEm = agora + Math.round(f.intervaloDoGolpeMs * Controle.fatorDeLentidao(hunt));
     }
   }
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));
@@ -1557,7 +1562,7 @@ export function tique(estado, personagem, agora = Date.now()) {
   processarMortes(estado, personagem, eventos);
 
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;
-  if (usaBarra && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
+  if (usaBarra && livre && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
 
   anotarDano(hunt.sessao, eventos);
@@ -1755,7 +1760,7 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     z: hunt.z,
     ...(mandarMapa ? { map: gradeDaHunt(hd).mapa } : {}),
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).
-    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)) },
+    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}) },
     monsters: hunt.monstros.map((m) => ({
       uid: m.uid,
       x: m.x,

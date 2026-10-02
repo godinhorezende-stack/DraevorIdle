@@ -1,5 +1,5 @@
 {
- "_nota": "Os MODIFICADORES (adds) — a fonte única: nome, tipo (flat = número, pct = %), categoria (a seção da ficha/tooltip), peso (a chance relativa de sair no drop; maior = mais comum), a faixa de cada TIER, nivelMinimo (Item Level mínimo para sair), raridades (em quais raridades pode sair) e dropa:false (cadastrado mas desligado do drop — ex.: Damage vs Elite, até existirem monstros Elite). REGRA: T1 é o mais fraco e T5 o mais forte. Que tiers podem sair depende do Item Level (tiers.json); em que itens, do pool (pools.json). Atributo novo aqui aparece sozinho na ficha, no tooltip e na comparação — mas precisa de uma sonda de efeito em testes/atributos-efeito.test.mjs. Penetração (02/10): `phys_pen` (física) e `elem_pen` (elemental, todos os elementos menos o físico) cortam a resistência do alvo (`combate/limites.mjs`); `double_attack` dá chance de um segundo golpe. Os três valem de 0 a 100% na ficha (`combate/limites.json`). Bloqueio de magia (02/10): `spell_block` (Spell Block Chance) só tem efeito com `bloqueio.modo` = 'poe' em `combate/formulas.json`.",
+ "_nota": "Os MODIFICADORES (adds) — a fonte única: nome, tipo (flat = número, pct = %), categoria (a seção da ficha/tooltip), peso (a chance relativa de sair no drop; maior = mais comum), a faixa de cada TIER, nivelMinimo (Item Level mínimo para sair), raridades (em quais raridades pode sair) e dropa:false (cadastrado mas desligado do drop — ex.: Damage vs Elite, até existirem monstros Elite). REGRA: T1 é o mais fraco e T5 o mais forte. Que tiers podem sair depende do Item Level (tiers.json); em que itens, do pool (pools.json). Atributo novo aqui aparece sozinho na ficha, no tooltip e na comparação — mas precisa de uma sonda de efeito em testes/atributos-efeito.test.mjs. Penetração (02/10): `phys_pen` (física) e `elem_pen` (elemental, todos os elementos menos o físico) cortam a resistência do alvo (`combate/limites.mjs`); `double_attack` dá chance de um segundo golpe. Os três valem de 0 a 100% na ficha (`combate/limites.json`). Bloqueio de magia (02/10): `spell_block` (Spell Block Chance) só tem efeito com `bloqueio.modo` = 'poe' em `combate/formulas.json`. Resistência a controle (02/10): `control_resist` (Control Resistance) encurta a duração do congelar/atordoar/lentidão que bosses e elites põem no jogador (`combate/controle.json`).",
  "atributos": {
   "str": {
    "nome": "STR",
@@ -1018,6 +1018,41 @@
     "5": [
      4.5,
      7.0
+    ]
+   },
+   "nivelMinimo": 1,
+   "raridades": [
+    "raro",
+    "épico",
+    "lendário",
+    "mítico"
+   ]
+  },
+  "control_resist": {
+   "nome": "Control Resistance",
+   "tipo": "pct",
+   "categoria": "defensivo",
+   "peso": 25,
+   "niveis": {
+    "1": [
+     1.5,
+     2.5
+    ],
+    "2": [
+     3.0,
+     5.0
+    ],
+    "3": [
+     5.5,
+     8.0
+    ],
+    "4": [
+     8.5,
+     11.0
+    ],
+    "5": [
+     11.5,
+     15.0
     ]
    },
    "nivelMinimo": 1,

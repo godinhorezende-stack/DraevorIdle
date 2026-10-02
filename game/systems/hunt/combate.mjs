@@ -37,6 +37,7 @@ import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mj
 import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
+import * as Controle from '../combate/controle.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
@@ -713,6 +714,12 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
   const bruto = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now()) * fatorDoBloqueio;
+  // O golpe ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador
+  // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
+  if (bruto > 0) {
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0);
+    if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: controle, de: bicho.name });
+  }
   // Golpe corpo a corpo é físico: a proteção física do equipamento corta em %.
   const protegido = Math.round(bruto * (1 - Math.min(100, ficha.protection.physical ?? 0) / 100));
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura

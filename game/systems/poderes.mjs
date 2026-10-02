@@ -22,6 +22,7 @@
 // - O melee dos bosses é o do arquivo (Essence of Malice: 1..488 de 0..603) —
 //   não o `ataqueDoMonstro` genérico, que dava 25 mil num boss de 50 mil de vida.
 import * as Formulas from './combate/formulas.mjs';
+import * as Controle from './combate/controle.mjs';
 import { readFileSync } from 'node:fs';
 import * as Arvore from './arvore.mjs';
 import * as Areas from '../engine/areas.mjs';
@@ -195,6 +196,11 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   // mágica virou o Energy Shield (absorve abaixo, antes do magic shield e da vida).
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
   const bruto = sortear(a.min, a.max) * Reforcos.forcaDoBicho(bicho, agora) * (1 - prot / 100) * fatorDoBloqueio;
+  // A magia ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador (`combate/controle.mjs`).
+  if (a.min > 0 || a.max > 0) {
+    const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0);
+    if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, estado: controle, de: bicho.name });
+  }
   let dano = Math.round(bruto * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
   const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
   // Void Inversion (charm): o dreno de mana vira ganho de mana.

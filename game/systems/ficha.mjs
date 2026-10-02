@@ -199,7 +199,7 @@ function calcularCombate(estado) {
     protection[el] += (af[el === 'physical' ? 'phys_res' : `${el}_res`] ?? 0) + (gem.resistencia[el] ?? 0) + (imb.protecao[el] ?? 0);
   }
   // O LIMITE (`combate/limites.json`): a proteção final de cada elemento vai de 0 a 100%; o que passa disso fica em `excedentes` (a tela mostra à parte).
-  const excedentes = { protection: {}, critChance: 0, ataqueDuplo: 0 };
+  const excedentes = { protection: {}, critChance: 0, ataqueDuplo: 0, resistenciaAControle: Math.max(0, (af.control_resist ?? 0) - Limites.LIMITES.resistenciaAControle.maximo) };
   for (const el of ELEMENTOS) {
     const bruto = protection[el];
     protection[el] = Limites.resistenciaDoJogador(bruto);
@@ -314,6 +314,8 @@ function calcularCombate(estado) {
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao,
     ataqueDuplo,
+    // A resistência do JOGADOR aos efeitos de controle dos mobs (add Control Resistance), no teto (`combate/limites.json`), em %.
+    resistenciaAControle: Limites.limitar(af.control_resist ?? 0, Limites.LIMITES.resistenciaAControle.maximo),
     // Bloqueio de MAGIA (add Spell Block Chance), no teto do tipo (`combate/formulas.json`); só vale com `bloqueio.modo` = 'poe'.
     bloqueioDeMagia: FORMULAS_FN.bloqueioFinal((af.spell_block ?? 0) / 100, 'magia'),
     // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
@@ -431,6 +433,7 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosI
   por('critMultiplier', 'Imbuement', imb.critDano * 100);
   // Ataque duplo e penetração.
   dosAfixos('ataqueDuplo', 'double_attack');
+  dosAfixos('resistenciaAControle', 'control_resist');
   dosAfixos('penetracao.fisica', 'phys_pen');
   por('penetracao.fisica', 'Árvore de habilidades', (arv.armorPenetration ?? 0) * 100);
   dosAfixos('penetracao.elemental', 'elem_pen');

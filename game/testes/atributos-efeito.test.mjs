@@ -212,6 +212,8 @@ const SONDAS = {
   double_attack: ['knight', null, cacada(), golpes, 100, 'mais'],
   // Bloqueio de magia: a chance da ficha (só vale no combate com `bloqueio.modo` = 'poe').
   spell_block: ['knight', null, () => {}, sobre((f) => f.bloqueioDeMagia), 30, 'mais'],
+  // Resistência a controle: a da ficha (encurta o congelar/atordoar/lentidão de boss e elite — medido em `controle-do-jogador.test.mjs`).
+  control_resist: ['knight', null, () => {}, sobre((f) => f.resistenciaAControle), 30, 'mais'],
   life_leech: ['knight', null, cacada(), curaDosGolpes(null), 50, 'mais'],
   mana_leech: ['knight', null, cacada(), curaDosGolpes('#4fc3ff'), 50, 'mais'],
   // A velocidade de ataque encurta o intervalo do golpe básico (a ficha é o que o tique lê).

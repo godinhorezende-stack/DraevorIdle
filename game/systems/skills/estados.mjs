@@ -23,7 +23,9 @@ export const ehChefe = (m, salaDeBoss = false) => !!(m?.boss || m?.chefe || sala
 const ehElite = (m) => !!m?.elite;
 
 /** A duração (ms) de um estado de controle neste bicho: a da config × a regra de elite. */
-const duracaoNo = (m, base) => Math.round(base * (ehElite(m) ? E().elite?.duracao ?? 1 : 1));
+/** A resistência do BICHO a controle (`m.resistControle`, em %, do bestiário/modificadores): encurta a duração; 100% = imune. */
+const resistenciaDoBichoAControle = (m) => Math.max(0, Math.min(100, Number(m?.resistControle) || 0));
+const duracaoNo = (m, base) => Math.round(base * (ehElite(m) ? E().elite?.duracao ?? 1 : 1) * (1 - resistenciaDoBichoAControle(m) / 100));
 
 /**
  * Depois de um acerto (`dano` do `tipo`) com o efeito da gema: sorteia e põe os estados.
@@ -50,7 +52,7 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
 
   // Congelar e atordoar dividem a MESMA imunidade (um depois do outro seria controle quase contínuo).
   const preso = ativo(estados.congelado, agora) || ativo(estados.atordoado, agora) || agora < (estados.controleImuneAte ?? 0);
-  const podeControlar = !preso && !(chefe && (cfg.chefe?.controle ?? 1) <= 0);
+  const podeControlar = !preso && !(chefe && (cfg.chefe?.controle ?? 1) <= 0) && resistenciaDoBichoAControle(bicho) < 100;
   const prender = (nome, base) => {
     const dur = duracaoNo(bicho, base);
     estados[nome] = { ate: agora + dur };
