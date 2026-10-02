@@ -1,0 +1,27 @@
+{
+  "_nota": "Os PARÂMETROS das fórmulas do combate (dono, 02/10): nenhum coeficiente fica fixo no código — as funções de `systems/combate/formulas.mjs` leem daqui. Os valores abaixo são os de HOJE (o jogo não muda); os campos `poe` são os coeficientes do Path of Exile 1, já prontos para a etapa em que o dono aprovar trocar a armadura, a evasão e o acerto (`modo`). Os limites de resistência, penetração, crítico e ataque duplo ficam em `limites.json`.",
+  "critico": {
+    "_nota": "A chance e o multiplicador de crítico BASE do personagem (o molde real: 3% e +60%) e o multiplicador do Onslaught do tier da arma.",
+    "chanceBase": 0.03,
+    "multiplicadorBase": 1.6,
+    "onslaught": 1.6
+  },
+  "armadura": {
+    "_nota": "`modo`: 'tibia' (hoje: a armadura absorve de 60% a 120% dela, sorteado a cada golpe) ou 'poe' (reduz o dano físico em armadura / (armadura + coeficiente × dano do golpe)). Só o 'tibia' está ligado ao combate.",
+    "modo": "tibia",
+    "tibia": { "fatorMinimo": 0.6, "faixa": 0.6 },
+    "poe": { "coeficiente": 5 }
+  },
+  "acerto": {
+    "_nota": "`modo`: 'draevor' (a conta de `atributos-principais.json`: FATOR × acc / (acc + evasão do bicho), de MIN a MAX) ou 'poe' (precisão / (precisão + (evasão / divisor)^expoente), de `minimo` a `maximo`). Só o 'draevor' está ligado ao combate.",
+    "modo": "draevor",
+    "poe": { "minimo": 0.05, "maximo": 0.95, "expoente": 0.8, "divisorDaEvasao": 4 }
+  },
+  "bloqueio": {
+    "_nota": "Os tetos do bloqueio, por tipo (o golpe e a magia). Hoje só o do golpe corpo a corpo está ligado (`atributos-principais.json`, bloqueio.MAX); o da magia é a base para a etapa do bloqueio de magia.",
+    "limiteDoGolpe": 0.75,
+    "limiteDaMagia": 0.75
+  },
+  "arredondamento": { "_nota": "O dano final é arredondado UMA vez, no fim; 'round' (como hoje) ou 'floor'.", "modo": "round" },
+  "registro": { "_nota": "O registro de cada golpe (depuração): nível 0 = desligado (produção), 1 = resumo, 2 = detalhe; `capacidade` = quantos golpes ficam guardados (o mais antigo sai). Também liga por `COMBATE_LOG=1|2` no ambiente.", "nivel": 0, "capacidade": 200 }
+}

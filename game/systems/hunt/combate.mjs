@@ -33,7 +33,8 @@ import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
 import * as Tarefas from '../tarefas.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
-import { resistido, resistenciaEfetivaDe } from './resistencia.mjs';
+import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
+import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
@@ -160,8 +161,9 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // bicho àquele elemento (`resistido`).
   const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
   const base = resistido(hunt, alvo, element, bruto, ficha);
-  const { dano: golpe, crit, onslaught } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
+  const { dano: golpe, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
+  registrarGolpe(() => ({ origem: segundo ? 'wand-2o-golpe' : 'wand', alvo: alvo.name, tipo: element, danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: resistenciaDe(hunt, alvo, element), penetracao: ficha.penetracao, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, element, ficha), danoAposResistencia: base, chanceCritica: chance, critico: crit, danoFinal: golpe, vidaRestante: Math.max(0, alvo.hp) }));
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
   // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado... — `mobs/mecanicas.mjs`).
   Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, element, eventos);
@@ -715,6 +717,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Absorção e "Dano recebido" da árvore, Última muralha, o escudo da Fonte
   // viva e o Não cai nunca (ver `Arvore.danoRecebido`).
   final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome);
+  registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
   if (final > 0) {
     estado.hp = Math.max(0, estado.hp - final);
     // O sangue no boneco — sem isto o golpe só existia no número que sobe,
@@ -917,7 +920,8 @@ export function round(estado, personagem) {
         const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, tagsDoGolpe).pct + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
         // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
         const semResistencia = (R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico * fatorDoGolpe;
-        const { dano: bruto, crit: critico, onslaught } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
+        const { dano: bruto, crit: critico, onslaught, chance: chanceCritica } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
+        registrarGolpe(() => ({ origem: segundo ? 'golpe-basico-2o-golpe' : 'golpe-basico', alvo: alvo.name, tipo: 'physical', danoAntesDaResistencia: Math.round(semResistencia), resistenciaDoAlvo: resistenciaDe(hunt, alvo, 'physical'), penetracao: ficha.penetracao?.fisica ?? 0, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, 'physical', ficha), chanceCritica, critico: critico, danoFinal: bruto, vidaRestante: Math.max(0, alvo.hp - bruto) }));
         if (!segundo) Treino.treinar(estado, pericia);
         // Imbuement de dano elemental: X% do golpe físico vira o elemento (ver `elementalDoImbuement`).
         const convertido = ficha.imbuElemental ? Math.round((bruto * ficha.imbuElemental.pct) / 100) : 0;
