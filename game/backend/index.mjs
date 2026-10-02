@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
 import * as ConteudoHttp from '../admin/conteudo-http.mjs';
+import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
 import * as Estaticos from './estaticos.mjs';
 import * as Site from '../systems/site.mjs';
@@ -69,6 +70,8 @@ async function servirArquivo(req, res, caminho) {
   if (caminho.startsWith(PREFIXO_GAMEDATA)) {
     const alvo = normalize(join(RAIZ_GAMEDATA, caminho.slice(PREFIXO_GAMEDATA.length)));
     if (!alvo.startsWith(RAIZ_GAMEDATA)) return false;
+    // Conteúdo secreto (encontros, bosses únicos): o servidor lê, o público não baixa.
+    if (ehPrivado(alvo.slice(RAIZ_GAMEDATA.length + 1).split('\\').join('/'))) return false;
     return Estaticos.servir(req, res, alvo);
   }
   const alvo = normalize(join(RAIZ, caminho));
