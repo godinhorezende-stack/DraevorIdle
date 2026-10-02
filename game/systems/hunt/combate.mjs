@@ -420,7 +420,7 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
       continue;
     }
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
-    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt) });
+    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), raridadeDoMob: alvo.raridade });
     const af = peca.af ?? null;
     // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
     const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;

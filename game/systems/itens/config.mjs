@@ -44,6 +44,8 @@ export function validar() {
     if (!q) erros.push(`raridades: ${r} sem quantidade de atributos`);
     else if (!perto100(soma(Object.values(q)))) erros.push(`raridades: quantidade de atributos de ${r} soma ${soma(Object.values(q))}`);
   }
+  for (const [mob, g] of Object.entries(RARIDADES.mobs?.inclinacao ?? {})) if (!(g >= 1)) erros.push(`raridades: inclinação do mob ${mob} precisa ser >= 1`);
+  for (const r of ORDEM) if (!(Number(RARIDADES.mobs?.posicao?.[r]) >= 0)) erros.push(`raridades: posição de ${r} (inclinação do mob) inválida`);
   for (const faixa of TIERS.itemLevel ?? []) {
     if (!faixa.tiers?.length || faixa.tiers.some((t) => !(t >= 1 && t <= NIVEL_MAXIMO))) erros.push(`tiers: faixa até ${faixa.ate} com tiers inválidos`);
   }
@@ -136,6 +138,20 @@ export function atoDoLevel(level) {
 export function dificuldadeAcima(d, degraus) {
   const i = DIFICULDADES.indexOf(d);
   return DIFICULDADES[Math.min(DIFICULDADES.length - 1, Math.max(0, i) + degraus)];
+}
+
+/**
+ * A tabela de raridade do item para um mob de `raridadeDoMob`: o peso de cada raridade × `inclinacao[mob] ^ posicao[raridade]`,
+ * NORMALIZADO para somar 100 (nunca passa de 100%, não importa o tamanho da inclinação). Mob normal (ou sem raridade) = a tabela do estágio.
+ * Só a QUALIDADE: a quantidade de itens do mob é o `loot` de `mobs/raridades.json`, e o booster mexe só nela.
+ */
+export function inclinarTabela(tabela, raridadeDoMob) {
+  const g = RARIDADES.mobs?.inclinacao?.[raridadeDoMob] ?? 1;
+  if (g === 1) return tabela;
+  const pos = RARIDADES.mobs?.posicao ?? {};
+  const pesos = Object.fromEntries(ORDEM.map((r) => [r, (tabela[r] ?? 0) * g ** (pos[r] ?? 0)]));
+  const total = ORDEM.reduce((s, r) => s + pesos[r], 0);
+  return Object.fromEntries(ORDEM.map((r) => [r, (100 * pesos[r]) / total]));
 }
 
 /** Os nomes para a tela ("Épico", "🟣"). */

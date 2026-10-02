@@ -226,7 +226,7 @@ export function itemLevelDoDrop(ctx = {}) {
 
 /**
  * Gera o item de um drop. `ctx`: `{ itemId, itemLevel?, level?, ato?,
- * dificuldade?, boss?, raridade? (forçar), rng? }`.
+ * dificuldade?, boss?, raridadeDoMob?, raridade? (forçar), rng? }`.
  *
  *   DROP → item base → raridade (ato × dificuldade) → Item Level → base
  *   (dano/defesa, em faixa) → quantos adds (raridade) → quais (pool do tipo do
@@ -242,7 +242,8 @@ export function gerarItem(ctx) {
   if (!aceitaAtributos(ctx.itemId)) return simples;
   const meta = ITEM_CATALOG[ctx.itemId];
   const { ato, dificuldade } = origemDoDrop(ctx);
-  const raridade = ctx.raridade ?? sortearChave(C.RARIDADES.chances[ato][dificuldade], rng);
+  // A raridade do mob inclina a QUALIDADE (o boss de Ato conta como `boss`); sem ela, a tabela do estágio (mob normal).
+  const raridade = ctx.raridade ?? sortearChave(C.inclinarTabela(C.RARIDADES.chances[ato][dificuldade], ctx.boss ? 'boss' : ctx.raridadeDoMob), rng);
   const def = C.RARIDADES.raridades[raridade];
   const itemLevel = itemLevelDoDrop(ctx);
 

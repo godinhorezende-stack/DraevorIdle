@@ -2,6 +2,7 @@
 // (Normal 1→4, Cruel 1→4, Merciless 1→4), o mítico é especial (escada ×0,4), o boss de Ato dá equipamento garantido e a raridade da gema
 // segue o estágio.
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import * as C from '../systems/itens/config.mjs';
 import { gerarItem } from '../systems/itens/gerar.mjs';
@@ -28,18 +29,64 @@ test('a qualidade NUNCA cai de um estágio para o seguinte: raro+, épico+, lend
   }
 });
 
-test('as raridades altas são ESPECIAIS: no topo (Merciless 4, sem booster) raro ~1/10 abates, épico 1/30, lendário 1/150, mítico 1/1.000', () => {
-  // abates por mítico = 1 ÷ (equipamentos por abate × chance do mítico); equipamentos por abate médios por Ato (auditoria de 02/10)
-  const EQ = { 1: 0.67, 2: 0.75, 3: 0.82, 4: 0.83 };
-  const abates = (e) => 100 / (EQ[e[0]] * tab(e)['mítico']);
-  const abatesDe = (e, r) => 100 / (EQ[e[0]] * tab(e)[r]);
+// O mix real de mobs (peso dos spawns das 47 fases) e o multiplicador EFETIVO de itens por abate de cada raridade de mob
+// (a chance de cada drop satura em 100%, então o nominal ×1,15/1,5/2/2,5/3 rende ×1,14/1,45/1,89/2,29/2,67) — auditoria de 02/10.
+const MIX = { normal: 0.752, modificado: 0.15, raro: 0.05, elite: 0.026, unico: 0.011, boss: 0.011 };
+const QEFETIVO = { normal: 1, modificado: 1.136, raro: 1.452, elite: 1.892, unico: 2.294, boss: 2.668 };
+const EQUIP_POR_ABATE = { 1: 0.67, 2: 0.75, 3: 0.82, 4: 0.83 };
+/** Quantos ABATES REAIS (o mix todo) até 1 item da raridade `r` no estágio `e`. */
+const abatesReais = (e, r) => 1 / (EQUIP_POR_ABATE[e[0]] * Object.keys(MIX).reduce((s, m) => s + MIX[m] * QEFETIVO[m] * (C.inclinarTabela(tab(e), m)[r] / 100), 0));
+
+test('as raridades altas são ESPECIAIS: no topo (Merciless 4, sem booster, mix real) raro ~1/10 abates, épico 1/30, lendário 1/150, mítico 1/1.000', () => {
   const topo = ['4', 'dificil'];
-  assert.ok(Math.abs(abatesDe(topo, 'raro') - 10) < 0.5, `raro ${abatesDe(topo, 'raro').toFixed(1)}`);
-  assert.ok(Math.abs(abatesDe(topo, 'épico') - 30) < 1, `épico ${abatesDe(topo, 'épico').toFixed(1)}`);
-  assert.ok(Math.abs(abatesDe(topo, 'lendário') - 150) < 3, `lendário ${abatesDe(topo, 'lendário').toFixed(1)}`);
-  assert.ok(Math.abs(abates(['4', 'dificil']) - 1000) < 25, `Merciless 4: ${abates(['4', 'dificil']).toFixed(0)} abates por mítico`);
-  assert.ok(abates(['4', 'facil']) > 5000, 'Normal 4: mais raro que o topo');
-  for (const e of ORDEM_DOS_ESTAGIOS) assert.ok(abates(e) >= 975, `${e.join('/')}: nenhum estágio passa de 1 mítico a cada ~1.000 abates`);
+  const perto = (obs, alvo, tol) => Math.abs(obs - alvo) / alvo <= tol;
+  assert.ok(perto(abatesReais(topo, 'raro'), 10, 0.08), `raro ${abatesReais(topo, 'raro').toFixed(1)}`);
+  assert.ok(perto(abatesReais(topo, 'épico'), 30, 0.08), `épico ${abatesReais(topo, 'épico').toFixed(1)}`);
+  assert.ok(perto(abatesReais(topo, 'lendário'), 150, 0.08), `lendário ${abatesReais(topo, 'lendário').toFixed(1)}`);
+  assert.ok(perto(abatesReais(topo, 'mítico'), 1000, 0.08), `mítico ${abatesReais(topo, 'mítico').toFixed(0)}`);
+  assert.ok(abatesReais(['4', 'facil'], 'mítico') > 5000, 'Normal 4: mais raro que o topo');
+  for (const e of ORDEM_DOS_ESTAGIOS) assert.ok(abatesReais(e, 'mítico') >= 950, `${e.join('/')}: nenhum estágio passa de 1 mítico a cada ~1.000 abates`);
+});
+
+test('raridade do mob: inclina a qualidade (normalizada, nunca passa de 100%), o mítico não ganha mais que o lendário, e a quantidade é o loot do mob', () => {
+  const topo = tab(['4', 'dificil']);
+  assert.deepEqual(C.inclinarTabela(topo, 'normal'), topo, 'mob normal = a tabela do estágio');
+  assert.deepEqual(C.inclinarTabela(topo, 'qualquer-coisa'), topo, 'sem raridade conhecida = a tabela do estágio');
+  let anterior = null;
+  for (const mob of ['normal', 'modificado', 'raro', 'elite', 'unico', 'boss']) {
+    const t = C.inclinarTabela(topo, mob);
+    assert.ok(Math.abs(C.ORDEM.reduce((s, r) => s + t[r], 0) - 100) < 1e-9, `${mob} soma 100`);
+    for (const r of C.ORDEM) assert.ok(t[r] >= 0, `${mob}/${r}`);
+    if (anterior) for (const r of ['épico', 'lendário', 'mítico']) assert.ok(t[r] > anterior[r], `${mob} tem mais ${r} que o mob de baixo`);
+    anterior = t;
+  }
+  const fator = (r) => C.inclinarTabela(topo, 'boss')[r] / topo[r];
+  assert.ok(Math.abs(fator('lendário') / fator('mítico') - 1) < 1e-9, 'o mítico tem a mesma inclinação do lendário');
+  const loot = JSON.parse(readFileSync(new URL('../gamedata/mobs/raridades.json', import.meta.url), 'utf8')).raridades;
+  assert.deepEqual(['normal', 'modificado', 'raro', 'elite', 'unico', 'boss'].map((m) => loot[m].loot), [1, 1.15, 1.5, 2, 2.5, 3]);
+});
+
+test('o gerador real: elite e boss dão mais lendário que o mob normal (qualidade), e o boss de Ato usa a inclinação de boss', () => {
+  const N = 150000;
+  const taxa = (ctx) => {
+    let n = 0;
+    for (let i = 0; i < N; i++) if (['lendário', 'mítico'].includes(gerarItem({ itemId: 3268, ato: 4, dificuldade: 'dificil', itemLevel: 100, ...ctx }).raridade)) n++;
+    return n / N;
+  };
+  const normal = taxa({});
+  const elite = taxa({ raridadeDoMob: 'elite' });
+  const boss = taxa({ boss: true });
+  assert.ok(elite > normal * 1.5, `elite ${elite} × normal ${normal}`);
+  assert.ok(boss > elite * 0.9, 'boss de Ato: pelo menos a inclinação de elite');
+});
+
+test('o booster só mexe na QUANTIDADE e a descrição diz isso', () => {
+  const t = JSON.parse(readFileSync(new URL('../gamedata/character-template.json', import.meta.url), 'utf8'));
+  const loot = t.efeitos.buffPower.find((l) => l.id === 'loot');
+  assert.match(loot.resumo, /chance de cada drop/);
+  assert.match(loot.resumo, /não muda a raridade/);
+  const fonte = readFileSync(new URL('../systems/hunt/combate.mjs', import.meta.url), 'utf8');
+  assert.match(fonte, /raridadeDoMob: alvo\.raridade/, 'a raridade do mob chega ao gerador');
 });
 
 test('o gerador real sorteia o que a tabela diz (Monte Carlo, 60 mil por estágio, tolerância de amostra)', () => {
