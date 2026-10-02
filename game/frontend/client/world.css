@@ -108,14 +108,14 @@
 .w2-entrar:disabled { opacity: .5; cursor: not-allowed; background: #3a3426; color: #8d8470; box-shadow: none; }
 .w2-nota { margin: 0; font-size: 11.5px; color: #8d8470; text-align: center; }
 /* 6. barra de atalhos */
-.w2-barra { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; padding: 6px; border-top: 1px solid #3a2c12; }
+.w2-barra { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; padding: 4px 6px; }
 .w2-atalho { min-height: 36px; padding: 4px 14px; border-radius: 6px; border: 1px solid #5a4416; background: linear-gradient(180deg, #2e2412, #1d160a); color: #cdbb8a; font: 600 12px var(--font-heading, system-ui); letter-spacing: .06em; cursor: pointer; }
 .w2-atalho.on { color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e); border-color: #f6dc8a; }
 .w2-registro { padding: 8px 12px; border: 1px solid #3a2c12; border-radius: 8px; background: #15100a; }
 .w2-registro[hidden], .w2-aviso[hidden], .w2-balao[hidden] { display: none; }
 /* ---- A tela se ADAPTA À CAIXA em que está (o JS mede a janela do jogo e marca `larga` / `lado` e a altura `--w2-h`) ---- */
 /* larga (a janela tem pelo menos 700 px): a tela ocupa a altura disponível, sem rolagem; o mapa leva o que sobra e o painel fica embaixo, em 3 colunas */
-.w2.larga { height: var(--w2-h); grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto; grid-template-areas: "cab" "dif" "abas" "aviso" "palco" "painel" "barra"; gap: 6px 10px; align-content: stretch; }
+.w2.larga { height: var(--w2-h); grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto auto minmax(0, 1fr) auto; grid-template-areas: "cab" "dif" "abas" "barra" "aviso" "palco" "painel"; gap: 6px 10px; align-content: stretch; }
 .w2.larga .w2-cab { grid-area: cab; padding: 2px 44px; } .w2.larga .w2-titulo h2 { font-size: 22px; } .w2.larga .w2-ornamento { height: 18px; }
 .w2.larga .w2-dificuldades { grid-area: dif; justify-content: center; flex-wrap: nowrap; } .w2.larga .w2-placa { min-height: 38px; padding: 2px 14px; min-width: 96px; }
 .w2.larga .w2-atos { grid-area: abas; border-bottom: 0; min-width: 0; } .w2.larga .w2-aba { min-height: 36px; }
@@ -123,9 +123,9 @@
 .w2.larga .w2-palco { grid-area: palco; min-height: 0; } .w2.larga .w2-viewport { height: 100%; }
 .w2.larga .w2-painel { grid-area: painel; max-height: 34vh; overflow-y: auto; align-content: start; }
 .w2.larga .w2-barra { grid-area: barra; padding: 2px; } .w2.larga .w2-atalho { min-height: 32px; }
-.w2.larga .w2-registro { position: absolute; right: 12px; bottom: 56px; z-index: 5; max-width: 320px; }
+.w2.larga .w2-registro { position: absolute; right: 12px; top: 150px; z-index: 5; max-width: 320px; }
 /* lado (a janela tem 1100 px ou mais): o painel da fase fica À DIREITA do mapa */
-.w2.lado { grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "cab cab" "dif dif" "abas abas" "aviso aviso" "palco painel" "barra barra"; grid-template-rows: auto auto auto auto minmax(0, 1fr) auto; }
+.w2.lado { grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "cab cab" "dif dif" "abas abas" "barra barra" "aviso aviso" "palco painel"; grid-template-rows: auto auto auto auto auto minmax(0, 1fr); }
 .w2.lado .w2-painel { grid-template-columns: 1fr; max-height: none; height: 100%; gap: 8px; }
 .w2.lado .w2-col.acao { position: sticky; bottom: -12px; padding: 8px 0 2px; background: linear-gradient(180deg, transparent, #15100a 28%); order: 9; }
 
