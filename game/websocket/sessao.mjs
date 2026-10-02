@@ -1004,6 +1004,9 @@ export class Sessao {
         return this.entrarNoPersonagem(m);
       case 'release':
         return this.soltarPersonagem();
+      // O jogador leu o relatório da ausência (OK): só agora ele deixa de ser entregue.
+      case 'ackAusencia':
+        return this.confirmarRelatorioDaAusencia();
       case 'deixarOffline':
         return this.deixarOffline();
       case 'contaChar':
@@ -1457,6 +1460,8 @@ export class Sessao {
       outro = r.sessao;
       // O que ele rendeu caçando offline até agora (ou como morreu), para quem chamou.
       if (r.andamento) {
+        // Quem chamou recebeu o relatório dele: não fica pendente para a próxima entrada.
+        delete outro.estado?.relatorioDaAusencia;
         this.enviar({ t: 'runReport', report: r.andamento, titulo: `${linha.nome}: enquanto esteve fora`, motivo: r.andamento.motivo ?? null });
         // A caçada dele de agora começou nesta entrada: o extrato dela seria de
         // segundos — e a janela dele cobriria esta, que é a que conta.
@@ -1780,6 +1785,13 @@ export class Sessao {
     this.pararDeCarregar();
   }
 
+  /** `{t:'ackAusencia'}`: o OK do relatório da ausência. Idempotente (um OK repetido não faz nada). */
+  confirmarRelatorioDaAusencia() {
+    if (!this.estado?.relatorioDaAusencia) return;
+    delete this.estado.relatorioDaAusencia;
+    this.gravarAgora().catch((e) => console.error('gravar ack da ausência', e.message));
+  }
+
   /** O resto da entrada, com o estado já com a ausência simulada (`ausencia`: o que `simularAusencia` devolveu). */
   async concluirEntrada(personagem, estado, ausencia, treinoPendente) {
     this.personagem = personagem;
@@ -1796,17 +1808,36 @@ export class Sessao {
     this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? ([doPresente, doMercado].filter(Boolean).join(' ') || null) ?? daCampanha;
     vivas.set(personagem.nome, this);
 
-    // "Progresso enquanto você esteve fora" — `andamento`, no client.
+    /*
+     * "Progresso enquanto você esteve fora" — `andamento`, no client — e, se
+     * morreu, a conta da morte (`morte`) NO MESMO relatório: uma janela só, com
+     * o que a caçada rendeu até a morte e o que a morte custou.
+     *
+     * O relatório fica gravado no personagem (`relatorioDaAusencia`) até o
+     * jogador dar OK (`ackAusencia`). O loot e a morte já foram aplicados ao
+     * estado aqui; o que fica pendente é só o AVISO — então reconectar,
+     * atualizar a página ou perder a rede antes do OK mostra o mesmo relatório
+     * de novo, sem refazer nem duplicar nenhuma recompensa.
+     */
     let andamento = null;
+    let morteDaAusencia = null;
     if (ausencia) {
       andamento = ausencia.report;
       if (ausencia.morreu) {
         const morte = this.morrerNaHunt();
+        morteDaAusencia = morte;
         andamento.motivo =
           `Você morreu caçando enquanto estava fora e perdeu ${morte.lost.toLocaleString('pt-BR')} de experiência` +
           `${morte.goldLost ? ` e ${morte.goldLost.toLocaleString('pt-BR')} de ouro` : ''}` +
           `${morte.levelPerdido ? ` (caiu ${morte.levelPerdido} level)` : ''}.`;
       }
+      this.estado.relatorioDaAusencia = { report: andamento, morte: morteDaAusencia, em: Date.now() };
+      // Grava já: o aviso e o estado já mexido vão juntos para o banco, e a janela de perder o aviso encolhe.
+      this.gravarAgora().catch((e) => console.error('gravar relatório da ausência', e.message));
+    } else if (this.estado.relatorioDaAusencia) {
+      // Entrou de novo sem ter dado OK: o mesmo relatório, como estava.
+      andamento = this.estado.relatorioDaAusencia.report;
+      morteDaAusencia = this.estado.relatorioDaAusencia.morte ?? null;
     }
 
     const completo = characterParaCliente(personagem, this.estado);
@@ -1844,6 +1875,7 @@ export class Sessao {
       // Conectados + quem caça de aba fechada (ver `ausentes.mjs`).
       online: vivas.size + Ausentes.contagem(),
       ...(andamento ? { andamento } : {}),
+      ...(morteDaAusencia ? { morte: morteDaAusencia } : {}),
       ...(treinoPendente ? { treinoPendente } : {}),
     });
     // A lista de amigos logo depois do welcome, como o original; e os amigos
