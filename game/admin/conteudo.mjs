@@ -23,6 +23,7 @@ import { CATEGORIAS_DO_TIPO } from '../systems/encontros/tipos-de-boss.mjs';
 import { CONFIG } from '../systems/encontros/config.mjs';
 import { AFIXOS_DE_ALTAR } from '../systems/encontros/altares.mjs';
 import { valorEsperado } from '../systems/encontros/recompensas.mjs';
+import { impactoEconomico } from '../systems/encontros/economia.mjs';
 import * as Catalogo from '../systems/bosses-unicos/catalogo.mjs';
 import { FICHAS } from '../systems/afixos.mjs';
 import { gradeDaHunt, huntOuMapaCustom } from '../systems/hunt/terreno.mjs';
@@ -139,7 +140,7 @@ export function validarFase(huntId, encontros) {
   erros.push(...Modelo.validar(encontros, { largura: mapa.width, altura: mapa.height }));
   const lista = Modelo.encontrosDoMapa({ encontros });
   // Sem encontros não há ponto a conferir (e ler o terreno de 48 fases só para dizer "vazio" seria lento).
-  if (!lista.length) return { erros, avisos };
+  if (!lista.length) return { erros, avisos, economia: null };
   let grade = null;
   try {
     grade = gradeDaHunt(huntOuMapaCustom(huntId));
@@ -162,7 +163,16 @@ export function validarFase(huntId, encontros) {
     if (e.recompensa && valorEsperado(e.recompensa) > CONFIG.limites.valorEsperadoPorEncontro * 0.8) avisos.push(`encontro ${e.id}: o valor esperado da recompensa está perto do teto.`);
     if (e.obrigatorio && fase.pular) erros.push(`encontro ${e.id}: a fase está travada (em obras) — um obrigatório não tem como ser cumprido.`);
   }
-  return { erros, avisos };
+  // O impacto econômico: os encontros são um EXTRA da fase, não a fonte de ouro dela.
+  let economia = null;
+  if (!erros.length) {
+    economia = impactoEconomico(huntId, lista);
+    const pct = `${Math.round(economia.fracao * 100)}%`;
+    const detalhe = `os encontros somam ~${economia.valorDosEncontros.toLocaleString('pt-BR')} de ouro por instância, ${pct} do valor de limpar a fase (~${economia.valorDaFase.toLocaleString('pt-BR')})`;
+    if (economia.fracao > CONFIG.limites.fracaoDaFaseErro) erros.push(`economia: ${detalhe} — acima do teto de ${Math.round(CONFIG.limites.fracaoDaFaseErro * 100)}%.`);
+    else if (economia.fracao > CONFIG.limites.fracaoDaFaseAviso) avisos.push(`economia: ${detalhe} — acima de ${Math.round(CONFIG.limites.fracaoDaFaseAviso * 100)}%, revise.`);
+  }
+  return { erros, avisos, economia };
 }
 
 /** Grava SÓ o bloco `encontros` do mapa (o resto do arquivo fica como está). */
@@ -245,6 +255,7 @@ export function carregarFase(huntId) {
     condicaoDeConclusao: condicaoDeConclusao(encontros),
     resumo: resumoDosEncontros(encontros),
     validacao: validarFase(huntId, encontros),
+    economia: impactoEconomico(huntId, Modelo.encontrosDoMapa({ encontros })),
     conexoesDeEntrada: Object.entries(metaDasFases()).filter(([, m]) => m.conexoes?.includes(huntId)).map(([id]) => id),
   };
 }

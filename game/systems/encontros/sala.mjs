@@ -36,6 +36,11 @@ export function quemEstaNaSala(hunt, estado) {
   return [estado, ...outros];
 }
 
+/** Um aviso (na tela de cada um) para quem está na luta, menos para quem ativou: "Ana abriu o Baú da Cripta". */
+export function avisarSala(hunt, estado, texto) {
+  for (const outro of quemEstaNaSala(hunt, estado)) if (outro !== estado) outro.avisoDaHunt = texto;
+}
+
 /**
  * Nasce um grupo de bichos de um encontro (guardiões de um baú, invasores, penalidade de altar) perto de `ponto`.
  * Cada um leva a escala da fase, a raridade/modificadores pedidos, e o `encontro` que o chamou. `opcional`: não

@@ -19,7 +19,7 @@ import { CONFIG } from './config.mjs';
 import * as Recompensas from './recompensas.mjs';
 import * as Altares from './altares.mjs';
 import * as Eventos from './eventos.mjs';
-import { quemEstaNaSala, nascerGrupo, bichosDaSala } from './sala.mjs';
+import { quemEstaNaSala, nascerGrupo, bichosDaSala, avisarSala } from './sala.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 import { lootDoEncontro, pagarPremio } from '../hunt/combate.mjs';
 import { danoDeElementoNoJogador } from '../poderes.mjs';
@@ -139,6 +139,7 @@ function ponto(e) {
 function aoAtivarBau(ctx) {
   const { hunt, instancia, encontro: e } = ctx;
   if (!hunt) return;
+  if (ctx.estado && ctx.personagem?.nome) avisarSala(hunt, ctx.estado, `${ctx.personagem.nome} abriu: ${e.nome}.`);
   // A chave só é gasta quando o baú de fato abre.
   if (e.requisitos?.chave && ctx.estado) Inventario.tirarGuardadas(ctx.estado, e.requisitos.chave.id, e.requisitos.chave.count ?? 1);
   armadilha(ctx, e);
@@ -187,6 +188,7 @@ registrarTipo('altar', {
     const { hunt, instancia, encontro: e } = ctx;
     if (!hunt || !ctx.estado) return;
     const todos = quemEstaNaSala(hunt, ctx.estado);
+    if (ctx.personagem?.nome) avisarSala(hunt, ctx.estado, `${ctx.personagem.nome} ativou: ${e.nome}.`);
     Altares.aplicar(todos, e.efeitos, e.duracaoMs, { id: e.id, hunt });
     if (e.penalidade?.efeitos) Altares.aplicar(todos, e.penalidade.efeitos, e.duracaoMs, { id: `${e.id}:penalidade`, hunt });
     if (e.penalidade?.invocacao) nascerGrupo(hunt, { ...e.penalidade.invocacao, ponto: ponto(e), instanciaId: instancia.id, encontro: e.id, opcional: true, marca: 'invasor' });

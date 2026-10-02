@@ -283,8 +283,13 @@ const validarEncontros = depois(async () => {
   const salvar = $('#salvarEncontros');
   if (salvar) salvar.disabled = !!S.validacao.erros?.length;
 });
+const textoDaEconomia = () => {
+  const ec = S.validacao.economia ?? S.fase?.economia;
+  if (!ec || !ec.valorDosEncontros) return null;
+  return el('li', { class: 'dica' }, `Impacto econômico: os encontros somam ~${ec.valorDosEncontros.toLocaleString('pt-BR')} de ouro por instância — ${Math.round(ec.fracao * 100)}% do valor de limpar a fase (~${ec.valorDaFase.toLocaleString('pt-BR')}).`);
+};
 const blocoDeValidacao = () =>
-  el('ul', { class: 'problemas', id: 'validacao' }, (S.validacao.erros ?? []).map((m) => el('li', { class: 'erro' }, m)), (S.validacao.avisos ?? []).map((m) => el('li', { class: 'aviso' }, m)), !(S.validacao.erros?.length || S.validacao.avisos?.length) ? el('li', { class: 'dica' }, 'Sem erros nem avisos.') : null);
+  el('ul', { class: 'problemas', id: 'validacao' }, textoDaEconomia(), (S.validacao.erros ?? []).map((m) => el('li', { class: 'erro' }, m)), (S.validacao.avisos ?? []).map((m) => el('li', { class: 'aviso' }, m)), !(S.validacao.erros?.length || S.validacao.avisos?.length) ? el('li', { class: 'dica' }, 'Sem erros nem avisos.') : null);
 
 function desenharFase() {
   const { fase } = S.fase;
