@@ -20783,6 +20783,62 @@ export const NOME_DA_VOCACAO = {
  * `dicas` liga as linhas de explicação: cabem no painel largo de Amigos e não
  * cabem na janelinha do canto, que tem 232px.
  */
+/**
+ * A tabela da party: quem é quem, o movimento de cada um, quem ele segue e a distância. Os dados vêm do servidor (`hunt.party.membros`
+ * traz modo, seguindo, coleira e emCombate; level, classe e vida vêm do personagem). Só mostra o que o servidor decidiu.
+ */
+function tabelaDaParty(body, grupo, state) {
+  const membros = grupo.membros ?? [];
+  if (membros.length < 2) return;
+  const doPersonagem = new Map((state.character?.party?.membros ?? []).map((m) => [m.name, m]));
+  const naPonta = grupo.frente ?? grupo.lider;
+  const envoltorio = el('div', 'party-tabela-caixa');
+  const tabela = document.createElement('table');
+  tabela.className = 'party-tabela';
+  const cabeca = document.createElement('tr');
+  for (const titulo of ['Jogador', 'Classe', 'Lv', 'Vida', 'Movimento', 'Seguindo', 'Dist.']) cabeca.append(el('th', null, titulo));
+  tabela.append(cabeca);
+  for (const m of membros) {
+    const info = doPersonagem.get(m.name) ?? {};
+    const linha = document.createElement('tr');
+    const ehPonta = m.name === naPonta;
+    const movimento = ehPonta ? (m.name === grupo.lider ? 'Líder' : 'Na frente') : m.modo === 'independente' ? 'Independente' : 'Follow';
+    const seguindo = ehPonta || m.modo === 'independente' ? '—' : m.seguindo ?? naPonta;
+    const distancia = ehPonta || m.modo === 'independente' ? '—' : `${m.coleira} SQM`;
+    const vida = info.maxHp ? `${Math.round((100 * (info.hp ?? 0)) / info.maxHp)}%` : '—';
+    for (const texto of [`${m.emCombate ? '⚔ ' : ''}${m.name}`, info.vocationName ?? '—', info.level ?? '—', vida, movimento, seguindo, distancia]) linha.append(el('td', null, String(texto)));
+    tabela.append(linha);
+  }
+  envoltorio.append(tabela);
+  body.append(envoltorio);
+}
+
+/** Os controles do líder para chamar a party para perto de alguém (ou dele) e para cancelar o chamado. */
+function controlesDeReagrupar(body, grupo, send) {
+  const caixa = el('div', 'party-config party-reagrupar');
+  caixa.append(el('span', null, 'Reagrupar a party'));
+  const quem = document.createElement('select');
+  for (const m of grupo.membros ?? []) {
+    const opcao = document.createElement('option');
+    opcao.value = m.name;
+    opcao.textContent = m.name === grupo.lider ? `${m.name} (você)` : m.name;
+    quem.append(opcao);
+  }
+  quem.value = grupo.lider;
+  const chamar = el('button', 'party-botao', 'Reagrupar');
+  chamar.type = 'button';
+  chamar.onclick = () => send({ t: 'party', action: 'reagrupar', name: quem.value });
+  const cancelar = el('button', 'party-botao', 'Cancelar');
+  cancelar.type = 'button';
+  cancelar.onclick = () => send({ t: 'party', action: 'cancelarReagrupar' });
+  caixa.append(quem, chamar);
+  if (grupo.reagrupar) {
+    caixa.append(cancelar);
+    caixa.append(el('em', null, `Chamando para perto de ${grupo.reagrupar.alvo} (${Math.ceil(grupo.reagrupar.resta / 1000)} s).`));
+  }
+  body.append(caixa);
+}
+
 export function escolhasDaPosicao(body, grupo, state, send, { dicas = false } = {}) {
   /*
    * Nada disso vale na Caça Online: lá quem anda é a pessoa, com a tecla na
@@ -20818,12 +20874,46 @@ export function escolhasDaPosicao(body, grupo, state, send, { dicas = false } = 
     body.append(frente);
   }
 
+  // A tabela da party (quem faz o quê) e, para o líder, o reagrupamento.
+  tabelaDaParty(body, grupo, state);
+  if (grupo.lider === state.character?.name && (grupo.membros ?? []).length > 1) controlesDeReagrupar(body, grupo, send);
+
   /*
    * E daqui para baixo é de quem SEGUE — líder incluído, quando ele mandou
    * outra pessoa para a ponta. Quem está na ponta para por aqui.
    */
   const naPonta = grupo.frente ?? grupo.lider;
   if (naPonta === state.character?.name) return;
+
+  /*
+   * ---- O MODO de movimento: seguir ou explorar sozinho ----
+   * "Independente": não segue ninguém e a fase continua sendo da party (a exp segue dividida, os bichos são os mesmos). A distância e
+   * "andar atrás de" só valem seguindo — por isso só aparecem nesse modo.
+   */
+  const modo = el('label', 'party-config');
+  modo.append(el('span', null, 'Movimento'));
+  const seletorDoModo = document.createElement('select');
+  for (const [valor, texto] of [['seguir', 'Seguir'], ['independente', 'Explorar independente']]) {
+    const opcao = document.createElement('option');
+    opcao.value = valor;
+    opcao.textContent = texto;
+    seletorDoModo.append(opcao);
+  }
+  seletorDoModo.value = grupo.modo ?? 'seguir';
+  seletorDoModo.onchange = () => send({ t: 'party', action: 'modo', valor: seletorDoModo.value });
+  modo.append(seletorDoModo);
+  if (dicas) modo.append(el('em', null, 'Independente: você anda sozinho pela fase (cada um limpa a sua região) e continua dividindo a exp com a party.'));
+  body.append(modo);
+  if (grupo.modo === 'independente') {
+    const voltar = el('button', 'party-botao', 'Voltar a seguir quem está na frente');
+    voltar.type = 'button';
+    voltar.onclick = () => {
+      send({ t: 'party', action: 'seguirQuem', name: '' });
+      send({ t: 'party', action: 'modo', valor: 'seguir' });
+    };
+    body.append(voltar);
+    return;
+  }
 
   /*
    * ---- E QUEM este personagem segue ----
@@ -20882,8 +20972,14 @@ export function escolhasDaPosicao(body, grupo, state, send, { dicas = false } = 
   escolha.value = String(grupo.coleira ?? 5);
   escolha.onchange = () => send({ t: 'party', action: 'coleira', valor: Number(escolha.value) });
   coleira.append(escolha);
-  if (dicas) coleira.append(el('em', null, 'Mais perto: você fica junto e larga o alvo antes. Mais longe: persegue mais.'));
+  if (dicas) coleira.append(el('em', null, 'Mais perto: você fica junto e larga o alvo antes. Mais longe: persegue mais. Dentro da distância você não anda.'));
   body.append(coleira);
+  if (grupo.reagrupar && grupo.lider !== state.character?.name) {
+    const cancelar = el('button', 'party-botao', `Cancelar o reagrupamento (${grupo.reagrupar.alvo})`);
+    cancelar.type = 'button';
+    cancelar.onclick = () => send({ t: 'party', action: 'cancelarReagrupar' });
+    body.append(cancelar);
+  }
 }
 
 /*

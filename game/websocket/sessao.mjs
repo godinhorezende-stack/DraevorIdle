@@ -1428,7 +1428,7 @@ export class Sessao {
     const t = cmd?.t;
     // `{t:'actions'}` sem ação é o editor pedindo o catálogo: vai junto dos dados.
     if (t === 'actions' && !cmd.action) return this.mandarDadosDoOutro(linha, vivo);
-    const partyDele = t === 'party' && ['frente', 'seguirQuem', 'coleira'].includes(cmd.action);
+    const partyDele = t === 'party' && ['frente', 'seguirQuem', 'coleira', 'modo', 'reagrupar', 'cancelarReagrupar'].includes(cmd.action);
     if (!CONFIG_DE_OUTRO[t] && !partyDele) return this.erro('Isso não dá para mudar daqui.');
     if (vivo) {
       const r = partyDele ? Party.comandoDaCaca(vivo, cmd) : CONFIG_DE_OUTRO[t](vivo.estado, cmd);
@@ -2387,6 +2387,9 @@ export class Sessao {
         // Party: quem seguir e a partilha da exp (não-enumeráveis — não vão para o banco).
         const h = this.estado.hunt;
         Object.defineProperty(h, 'guia', { value: Party.guia(this), enumerable: false, writable: true, configurable: true });
+        // Reagrupar (o líder chamou a party para perto de alguém) e a atividade (exp só de quem joga) — como o guia, não vão para o banco.
+        Object.defineProperty(h, 'reagrupar', { value: Party.reagruparDe(this), enumerable: false, writable: true, configurable: true });
+        Party.registrarAtividade(this);
         Object.defineProperty(h, 'partilha', { value: Party.partilha(this), enumerable: false, writable: true, configurable: true });
         // Bônus de pódio da Arena (mesmo padrão de guia/partilha): calculado aqui,
         // uma vez por tique, para `matarMonstro` (game/systems/hunt/combate.mjs) não
