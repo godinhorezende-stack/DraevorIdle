@@ -10,6 +10,7 @@ import { BESTIARY } from '../hunt/monstros.mjs';
 import { CONFIG as RARIDADES } from './raridade.mjs';
 
 import { CONFIG, daCurva } from './curvas.mjs';
+import { simples } from '../combate/modificadores.mjs';
 
 export { CONFIG, daCurva };
 const L = CONFIG.limites;
@@ -30,7 +31,7 @@ const fatorDaEspecie = (atributo, m) => especieDe(m)?.fatores?.[atributo] ?? 1;
 function compor(atributo, base, level, m, { pct = 0, fixos = 0 } = {}) {
   const fator = fatorDaFaixa(atributo, level) * fatorDaClasse(atributo, m) * fatorDaEspecie(atributo, m);
   const fixo = fixos + (especieDe(m)?.fixos?.[atributo] ?? 0);
-  const valor = limitar((base * fator + fixo) * (1 + pct / 100), L.atributoMaximo);
+  const valor = limitar(simples(base * fator, { fixos: fixo, pct }).bruto, L.atributoMaximo);
   const origens = [{ fonte: 'Base', valor: Math.round(base * 100) / 100 }];
   if (fator !== 1) origens.push({ fonte: 'Fator da faixa, classe e espécie', fator: Math.round(fator * 1000) / 1000 });
   if (fixo) origens.push({ fonte: 'Fixo', valor: fixo });
