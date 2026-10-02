@@ -10840,6 +10840,44 @@ input, textarea {
  * estavam TROCADAS: `resist` usava o verde da vida e `weak` o vermelho do
  * perigo, porque a regra fora escrita do ponto de vista do bicho.
  */
+/* ---- Ataques do monstro na ficha: dano-base por golpe, com a cor e o ícone do tipo ---- */
+.bestiary-ficha-voce { display: grid; gap: 6px; margin: 6px 0 10px; }
+.bestiary-ataques {
+  border: 1px solid var(--line, #2c3a42); border-radius: 8px; background: #0b1214aa; padding: 4px 8px;
+}
+.bestiary-ataques > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;
+  list-style: none; padding: 4px 0; min-height: 32px; font-size: 13px;
+}
+.bestiary-ataques > summary::-webkit-details-marker { display: none; }
+.bestiary-ataques > summary::before { content: '▸'; color: var(--muted, #6f8088); margin-right: 6px; }
+.bestiary-ataques[open] > summary::before { content: '▾'; }
+.bestiary-ataques > summary b { flex: 1; text-align: left; }
+.bestiary-ataques > summary span { color: var(--copper, #d8a36a); font-variant-numeric: tabular-nums; }
+/* Aberto, as linhas já dizem os valores: o resumo não repete. */
+.bestiary-ataques[open] > summary span { display: none; }
+.bestiary-ataque {
+  display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 8px;
+  padding: 5px 0; border-top: 1px solid #ffffff0d;
+}
+.bestiary-ataque img, .bestiary-ataque canvas { width: 24px; height: 24px; }
+.bestiary-ataque-texto { display: grid; text-align: left; line-height: 1.15; min-width: 0; }
+.bestiary-ataque-texto b { font-size: 12.5px; font-weight: 600; }
+.bestiary-ataque-texto em { font-style: normal; font-size: 11px; color: var(--muted, #6f8088); }
+.bestiary-ataque-dano { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bestiary-ataque.el-physical .bestiary-ataque-dano { color: #e8e2dc; }
+.bestiary-ataque.el-fire .bestiary-ataque-dano { color: #ff9a3c; }
+.bestiary-ataque.el-ice .bestiary-ataque-dano { color: #8fe3ff; }
+.bestiary-ataque.el-energy .bestiary-ataque-dano { color: #d36bff; }
+.bestiary-ataque.el-earth .bestiary-ataque-dano { color: #6fe36f; }
+.bestiary-ataque.el-death .bestiary-ataque-dano { color: #c0554c; }
+.bestiary-ataque.el-holy .bestiary-ataque-dano { color: #ffe36b; }
+.bestiary-ataque.el-lifedrain .bestiary-ataque-dano { color: #ff6b6b; }
+.bestiary-ataque.el-manadrain .bestiary-ataque-dano { color: #6ba8ff; }
+.bestiary-ataque.el-drown .bestiary-ataque-dano { color: #4fc3ff; }
+.hunt-previa .bestiary-ataque-texto b { font-size: 12px; }
+@media (max-width: 520px) { .bestiary-ataque { grid-template-columns: 24px 1fr auto; gap: 6px; } }
+
 .bestiary-elgrupo { display: grid; gap: 4px; margin-bottom: 8px; }
 /* Sem o "Contra que dano ela se defende" em cima, o primeiro grupo precisa do
    respiro que o h3 dava — senão ele encosta na grade de atributos. */

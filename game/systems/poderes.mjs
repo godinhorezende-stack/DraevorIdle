@@ -58,6 +58,31 @@ const distancia = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 
 export const temPoderes = (bicho) => !!PODERES[bicho?.key];
 
+/**
+ * Os ataques de um bicho para a FICHA (bestiário e prévia da hunt): os mesmos do arquivo que `lancar` e
+ * `golpeCorpoACorpo` sorteiam, com o dano-BASE (`min`..`max`, antes de fase, raridade, proteção e armadura).
+ * `null` = o bicho não tem arquivo de poderes (nada a mostrar — a ficha não inventa). O melee é físico;
+ * `estimado` marca os golpes cujo valor o gerador dos dados estimou (a magia não tinha número no monster.lua).
+ */
+export function ataquesParaFicha(key) {
+  const p = PODERES[key];
+  if (!p) return null;
+  return p.ataques.map((a) => ({
+    tipo: a.tipo,
+    elemento: a.tipo === 'melee' ? 'physical' : a.elemento,
+    // Cinco golpes dos dados vêm com a faixa invertida (140..80) e um melee negativo (0..-6160, que na luta não causa dano):
+    // a ficha mostra a faixa que o combate de fato sorteia — ordenada e sem negativos. Os dados não são tocados.
+    min: Math.max(0, Math.min(a.min, a.max)),
+    max: Math.max(0, Math.max(a.min, a.max)),
+    intervalo: a.intervalo,
+    chance: a.chance,
+    forma: a.forma ?? null,
+    raio: a.raio || 0,
+    comprimento: a.comprimento || 0,
+    estimado: !!a.estimado,
+  }));
+}
+
 /** Boss cujo arquivo não tem melee (Brain Head, Malofur, The Nightmare Beast): só magia. */
 export const semCorpoACorpo = (bicho) => !!PODERES[bicho?.key] && !PODERES[bicho.key].ataques.some((a) => a.tipo === 'melee');
 

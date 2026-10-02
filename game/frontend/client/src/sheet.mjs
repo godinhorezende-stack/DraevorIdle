@@ -477,7 +477,8 @@ export function renderSheet(body, { state, send, closeModal }) {
    * nunca usa.
    */
   const temPremium = (character.premium ?? 0) > 0;
-  const fatorStamina = character.stamina > 39 * 60 && temPremium ? 1.5 : character.stamina > 14 * 60 ? 1 : 0.5;
+  // O fator é do SERVIDOR (`efeitos.exp.fatorStamina`); a conta local só vale para um servidor antigo.
+  const fatorStamina = character.efeitos?.exp?.fatorStamina ?? (character.stamina > 39 * 60 && temPremium ? 1.5 : character.stamina > 14 * 60 ? 1 : 0.5);
   addRow(
     'Stamina',
     fatorStamina === 1.5
@@ -491,6 +492,21 @@ export function renderSheet(body, { state, send, closeModal }) {
     'ficha-stamina'
   );
 
+  /*
+   * ---- O estágio de level também MULTIPLICA ----
+   *
+   * x3 até o level 50, x2 até o 100, x1 depois (`ESTAGIOS_DE_EXP`). Ele não aparecia em lugar nenhum da
+   * ficha, e é o que faz o XP cair pela metade ao passar do level 100 (ou por um terço no 50): quem
+   * olhava só o "Bônus total" não tinha como saber o motivo.
+   */
+  const estagio = character.efeitos?.exp?.estagio ?? 1;
+  addRow(
+    'Estágio de level',
+    estagio > 1 ? `×${estagio} — até o level ${character.level <= 50 ? 50 : 100}` : '×1 — acima do level 100',
+    estagio === 1,
+    'ficha-level'
+  );
+
   const totalRow = el('div', 'total');
   totalRow.append(
     rotulo('Bônus total', 'ficha-bonus-total'),
@@ -501,9 +517,7 @@ export function renderSheet(body, { state, send, closeModal }) {
     el(
       'p',
       'sheet-nota',
-      fatorStamina === 1
-        ? 'Vale em qualquer criatura.'
-        : `Vale em qualquer criatura, e a stamina multiplica o resultado por ${String(fatorStamina).replace('.', ',')}.`
+      `Vale em qualquer criatura. Multiplicador final sobre o XP-base: ×${(((1 + (derived.expBonus + percentComprado + percentDasSkins) / 100) * fatorStamina * estagio)).toFixed(2).replace('.', ',')} (bônus × stamina × estágio; na campanha a fase multiplica o bicho antes).`
     )
   );
   /*

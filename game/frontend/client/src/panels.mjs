@@ -3429,7 +3429,7 @@ function previaDaHunt(hunt, { comFoto = true } = {}) {
 
   // Passo 3: vida, experiência, armadura, velocidade, pontos de charm,
   // ocorrência e resistências. O 4 traria o loot, que já está na outra coluna.
-  creatureSheet(ficha, entry, 3, { dicaDeLoot: false });
+  creatureSheet(ficha, entry, 3, { dicaDeLoot: false, key: escolhidoNaPrevia, huntId: hunt.id, dificuldade: ctx.tabs.dificuldade ?? 'facil' });
   bichos.append(ficha);
   colunas.append(bichos);
 
@@ -18353,6 +18353,86 @@ function renderBestiary(body) {
   body.append(layout);
 }
 
+const numero = (v) => money(Math.round(v));
+const intervaloEmTexto = (ms) => `${String(Math.round((ms / 1000) * 10) / 10).replace('.', ',')} s`;
+
+/** "Corpo a corpo", "Magia em área", "Magia em feixe", "Magia à distância": o nome do golpe, sem o nome cru do arquivo. */
+function nomeDoAtaque(a) {
+  if (a.tipo === 'melee') return 'Corpo a corpo';
+  if (a.forma === 'area') return `Magia em área${a.raio ? ` (raio ${a.raio})` : ''}`;
+  if (a.forma === 'feixe') return `Magia em feixe${a.comprimento ? ` (${a.comprimento} casas)` : ''}`;
+  return 'Magia à distância';
+}
+
+/** Uma linha de ataque: ícone do elemento, nome, faixa de dano-base e o ritmo. */
+function linhaDeAtaque(a) {
+  const linha = el('div', `bestiary-ataque el-${a.elemento}`);
+  linha.append(bestiaryArt(ELEMENT_ART[a.elemento] ?? 'el-physical', a.elemento));
+  const texto = el('div', 'bestiary-ataque-texto');
+  texto.append(el('b', null, nomeDoAtaque(a)), el('em', null, ELEMENT_LABEL[a.elemento] ?? a.elemento));
+  linha.append(texto);
+  // "~" quando o valor foi ESTIMADO na geração dos dados (a magia não tinha número no arquivo do monstro).
+  const dano = el('span', 'bestiary-ataque-dano', `${a.estimado ? '~' : ''}${numero(a.min)}–${numero(a.max)}`);
+  linha.append(dano);
+  tipTexto(
+    linha,
+    `${nomeDoAtaque(a)} — dano ${ELEMENT_LABEL[a.elemento] ?? a.elemento}: ${numero(a.min)} a ${numero(a.max)} (dano-base).\n` +
+      `Tenta a cada ${intervaloEmTexto(a.intervalo)}${a.chance < 100 ? `, em ${a.chance}% das vezes` : ''}.` +
+      (a.estimado ? '\nValor ESTIMADO: o arquivo do monstro não tem o número exato desta magia.' : '')
+  );
+  return linha;
+}
+
+/** Preenche a área "para você" da ficha (XP e ataques) com o que o servidor respondeu. */
+function pintarFichaDoBicho(alvo, r, { mostrarAtaques }) {
+  alvo.textContent = '';
+  const fase = r.escalaDaFase !== 1 ? ` × ${String(Math.round(r.escalaDaFase * 100) / 100).replace('.', ',')} da fase = ${numero(r.naFase)}` : '';
+  alvo.append(
+    el(
+      'p',
+      'sheet-nota bestiary-exp-voce',
+      `Para você agora: ~${numero(r.final)} XP por morte (criatura normal). Conta: ${numero(r.base)} de base${fase}, mais level, estágio de level, stamina e boosts.`
+    )
+  );
+  if (!mostrarAtaques) return;
+  if (!r.ataques?.length) {
+    alvo.append(el('p', 'sheet-nota', 'Dano: sem dados de ataque deste monstro.'));
+    return;
+  }
+  const maior = Math.max(...r.ataques.map((a) => a.max));
+  const menor = r.ataques.length === 1 ? r.ataques[0].min : null;
+  const bloco = el('details', 'bestiary-ataques');
+  // Poucos golpes cabem abertos; a lista longa fica recolhida, com o maior golpe no título.
+  if (r.ataques.length <= 3) bloco.open = true;
+  const resumo = el('summary', null);
+  resumo.append(
+    el('b', null, r.ataques.length === 1 ? 'Dano' : `Ataques (${r.ataques.length})`),
+    el('span', null, menor != null ? `${numero(menor)}–${numero(maior)}` : `maior golpe até ${numero(maior)}`)
+  );
+  bloco.append(resumo);
+  for (const a of r.ataques) bloco.append(linhaDeAtaque(a));
+  const escala = r.escalaDoDano !== 1 ? ` Nesta fase o dano dele sai ×${String(Math.round(r.escalaDoDano * 100) / 100).replace('.', ',')}.` : '';
+  bloco.append(
+    el(
+      'p',
+      'sheet-nota',
+      `Dano-BASE do arquivo do monstro, e não o que chega a você: raridade e fase o escalam, e a sua armadura, proteções e bloqueio o reduzem.${escala}`
+    )
+  );
+  alvo.append(bloco);
+}
+
+const chaveDaFicha = (key, huntId, dificuldade) => `${key}|${huntId ?? ''}|${huntId ? dificuldade ?? '' : ''}`;
+
+/** Chega `{t:'fichaDoBicho'}`: guarda e preenche a ficha, se ela ainda estiver aberta. */
+export function chegouFichaDoBicho(r) {
+  if (!ctx?.tabs) return;
+  const chave = chaveDaFicha(r.key, r.huntId, r.dificuldade);
+  (ctx.tabs.fichaDoBicho ??= {})[chave] = { ...r, em: Date.now() };
+  const alvo = document.querySelector(`[data-ficha-do-bicho="${CSS.escape(chave)}"]`);
+  if (alvo) pintarFichaDoBicho(alvo, r, { mostrarAtaques: alvo.dataset.ataques === '1' });
+}
+
 function bestiaryDetail(catalog, kills) {
   const { state } = ctx;
   const key = ctx.tabs.bestiaryPick;
@@ -18387,7 +18467,7 @@ function bestiaryDetail(catalog, kills) {
     return detail;
   }
 
-  creatureSheet(detail, entry, step);
+  creatureSheet(detail, entry, step, { key });
   return detail;
 }
 
@@ -18396,7 +18476,7 @@ function bestiaryDetail(catalog, kills) {
  * aparece. O `step` é o degrau do bestiary — no bestiary ele cresce com as
  * mortes, na ficha da hunt ele já vem completo.
  */
-function creatureSheet(detail, entry, step, { dicaDeLoot = true } = {}) {
+function creatureSheet(detail, entry, step, { dicaDeLoot = true, key = null, huntId = null, dificuldade = null } = {}) {
   const { state } = ctx;
 
   const stats = el('div', 'bestiary-stats');
@@ -18432,7 +18512,7 @@ function creatureSheet(detail, entry, step, { dicaDeLoot = true } = {}) {
    * ocupa o lugar de nada e ensina o olho a pular a fileira inteira.
    */
   stat('bes-vida', 'vida', money(entry.hp), 'health', 'Quanto de dano ela aguenta antes de morrer.');
-  stat('ficha-exp', 'experiência', money(entry.exp), 'exp', 'Experiência que ela dá por morte, antes dos bônus.');
+  stat('ficha-exp', 'XP-base', money(entry.exp), 'exp', 'XP-BASE do bestiário: o que ela dá antes de tudo. Na campanha a fase multiplica este valor, e depois entram o seu level, o estágio de level, a stamina e os boosts — o quanto ISSO paga a você está logo abaixo.');
   if (step >= 2) {
     stat('ficha-armadura', 'armadura', entry.armor, 'armor', 'Desconta uma parte de cada golpe que ela recebe.');
     stat(
@@ -18453,6 +18533,29 @@ function creatureSheet(detail, entry, step, { dicaDeLoot = true } = {}) {
     );
   }
   detail.append(stats);
+
+  /*
+   * ---- "Quanto isto paga a MIM" ----
+   *
+   * O número da fileira acima é o XP-BASE do bestiário, e o que cai na caçada é outro: a fase da campanha
+   * multiplica o bicho, e o level, o estágio, a stamina e os boosts multiplicam de novo. A conta é do
+   * servidor (`fichaDoBicho`: a mesma cadeia da morte e os mesmos ataques do combate) — aqui só se mostra, e não se refaz.
+   */
+  if (key) {
+    const area = el('div', 'bestiary-ficha-voce');
+    const chave = chaveDaFicha(key, huntId, dificuldade);
+    area.dataset.fichaDoBicho = chave;
+    // Como a armadura e a velocidade, o dano se revela com as mortes (degrau 2); a prévia da hunt já está no 3.
+    area.dataset.ataques = step >= 2 ? '1' : '0';
+    const guardada = ctx.tabs.fichaDoBicho?.[chave];
+    // Vale por poucos segundos: stamina, level e boosts mudam, e o número tem de ser o de agora.
+    if (guardada && Date.now() - guardada.em < 10_000) pintarFichaDoBicho(area, guardada, { mostrarAtaques: step >= 2 });
+    else {
+      area.append(el('p', 'sheet-nota bestiary-exp-voce', 'Calculando o XP e o dano para você…'));
+      ctx.send({ t: 'fichaDoBicho', key, ...(huntId ? { huntId, dificuldade } : {}) });
+    }
+    detail.append(area);
+  }
 
   /*
    * ---- Elementos: o que o SEU golpe faz nela ----
