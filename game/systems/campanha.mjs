@@ -19,7 +19,7 @@
 // {huntId: n}, completas: [huntId], bosses: [ato] }` (`kills` é do sistema de
 // antes, por contagem de mortes: fica gravado, ninguém mais lê).
 import { readFileSync } from 'node:fs';
-import { conteudoDaFase, exigidasDaFase, nomesDeBosses } from './campanha-conteudo.mjs';
+import { conteudoDaFase, exigidasDaFase, nomesDeBosses, atosDoConteudo } from './campanha-conteudo.mjs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
@@ -229,6 +229,9 @@ function mundoDaFase(estado, f) {
   return {
     ...(c.descricao ? { descricao: c.descricao } : {}),
     ...(c.ambiente ? { ambiente: c.ambiente } : {}),
+    // Onde o nó fica no mapa (0–1000 × 0–640), o tipo e o ícone escolhidos no editor; sem isso a tela desenha o caminho sozinha.
+    ...(c.mapa && Number.isFinite(c.mapa.x) && Number.isFinite(c.mapa.y) ? { mapa: { x: c.mapa.x, y: c.mapa.y, ...(c.mapa.icone ? { icone: c.mapa.icone } : {}) } } : {}),
+    ...(c.tipo ? { tipo: c.tipo } : {}),
     ...(c.conexoes?.length ? { conexoes: c.conexoes } : {}),
     ...(c.requisitos?.levelMin ? { levelRecomendado: c.requisitos.levelMin } : {}),
     ...(c.requisitos?.exige?.length ? { exige: c.requisitos.exige.map((id) => ({ huntId: id, nome: faseDe(id)?.nome ?? id })) } : {}),
@@ -244,6 +247,7 @@ export function paraCliente(estado) {
   const vitorias = estado.encontros?.concluidos?.boss ?? {};
   return {
     aoCompletar: aoCompletar(estado),
+    atos: atosDoConteudo(),
     mundo: Object.fromEntries(FASES.map((f) => [f.huntId, mundoDaFase(estado, f)]).filter(([, v]) => Object.keys(v).length)),
     bossesDerrotados: Object.entries(vitorias).map(([id, vezes]) => ({ id, nome: nomes[id] ?? id, vezes })),
     dificuldades: DIFICULDADES.map((dif) => {

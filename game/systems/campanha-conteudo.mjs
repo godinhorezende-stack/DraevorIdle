@@ -17,7 +17,10 @@
 import { readFileSync, existsSync } from 'node:fs';
 
 const ARQUIVO = new URL('../gamedata/campanha-conteudo.json', import.meta.url);
-const DADOS = existsSync(ARQUIVO) ? JSON.parse(readFileSync(ARQUIVO, 'utf8')).fases ?? {} : {};
+const BRUTO = existsSync(ARQUIVO) ? JSON.parse(readFileSync(ARQUIVO, 'utf8')) : {};
+const DADOS = BRUTO.fases ?? {};
+/** Metadados de cada Ato para a tela WORLD (`atos[n] = { nome, parte, tema, descricao }`): tudo opcional, editado em /editor/conteudo. */
+export const atosDoConteudo = () => BRUTO.atos ?? {};
 
 /** Só os testes: troca o conteúdo carregado (devolve uma função que o restaura). */
 export function _definirParaTestes(novo) {

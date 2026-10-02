@@ -1,252 +1,519 @@
-// A tela WORLD: o mapa da campanha (Atos, fases, caminhos) e o painel de detalhes da fase escolhida.
+// A tela WORLD: o mapa da campanha — cabeçalho, dificuldades, abas dos Atos, mapa interativo (zoom, arraste, pinça), painel da fase e barra de atalhos.
 //
-// É a MESMA campanha de sempre (`{t:'campanha'}` → `systems/campanha.mjs`): quem decide o que está aberto, concluído ou
-// exigido é o servidor — aqui só se desenha. Nada de segredo vai para o mapa: o servidor só manda, de cada fase, o que o
-// jogador pode saber (descrição, boss principal, condição de conclusão) e, dos opcionais e secretos, o que ele JÁ ENCONTROU.
+// É a MESMA campanha de sempre (`{t:'campanha'}` → `systems/campanha.mjs`): quem decide o que está aberto, concluído ou exigido é o
+// SERVIDOR — aqui só se desenha o que chegou e se pede o que o jogo já permite (entrar na fase pelo mesmo fluxo de sempre). Segredo nunca
+// chega aqui: o servidor só manda o que o jogador já encontrou.
 //
-// O estilo é o do Draevor (pergaminho escuro, ouro, serifa gótica); o desenho é nosso: nada copiado de outro jogo.
-const NS = 'http://www.w3.org/2000/svg';
-const svg = (tag, attrs = {}, ...filhos) => {
-  const e = document.createElementNS(NS, tag);
-  for (const [k, v] of Object.entries(attrs)) if (v != null) e.setAttribute(k, String(v));
-  for (const f of filhos) if (f) e.append(f);
-  return e;
-};
+// O mapa é SVG (13 nós por Ato: poucas formas, nítido em qualquer zoom e acessível por teclado/leitor de tela); a câmera move UM grupo
+// (`transform`), o pergaminho de cada Ato é desenhado uma vez, e trocar a seleção só mexe em classes e no painel — nada é refeito.
+// Os dados e as contas moram em `world-dados.mjs` (testável sem DOM); a arte procedural em `world-arte.mjs`.
+import { LARGURA, ALTURA, RAIO_DA_FASE, RAIO_DO_BOSS, TIPOS_DE_NO, TEXTO_DO_ESTADO, atosDaCampanha, partesDaCampanha, faseDaFronteira, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, estadoDoNo } from './world-dados.mjs';
+import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, ornamentoDoCabecalho, iconeDeBotao } from './world-arte.mjs';
 
-/** Um elemento com filhos (texto ou nós) — o `el` das janelas só aceita um texto, e aqui há vários filhos. */
+export { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from './world-dados.mjs';
+
+/** Um elemento com filhos (texto ou nós). */
 const el = (tag, classe, ...filhos) => {
   const n = document.createElement(tag);
   if (classe) n.className = classe;
   for (const f of filhos.flat()) if (f != null && f !== false) n.append(f.nodeType ? f : document.createTextNode(String(f)));
   return n;
 };
-
-// Os ícones dos nós são FORMAS (e não emoji): a fonte de emoji muda de aparelho para aparelho e some em alguns.
-const icone = {
-  /** O visto de "concluída". */
-  visto: () => svg('path', { d: 'M-8 0 L-2 7 L9 -8', class: 'world-ico traco' }),
-  /** O cadeado de "bloqueada". */
-  cadeado: () => svg('g', { class: 'world-ico' }, svg('rect', { x: -7, y: -1, width: 14, height: 10, rx: 2 }), svg('path', { d: 'M-4 -1 V-5 a4 4 0 0 1 8 0 V-1', class: 'traco' })),
-  /** O xis de "em obras". */
-  xis: () => svg('path', { d: 'M-7 -7 L7 7 M7 -7 L-7 7', class: 'world-ico traco' }),
-  /** A caveira do boss. */
-  caveira: (escala = 1) => svg('g', { class: 'world-ico', transform: `scale(${escala})` }, svg('path', { d: 'M-9 2 a9 9 0 1 1 18 0 v5 h-4 v4 h-3 v-4 h-4 v4 h-3 v-4 h-4 z' }), svg('circle', { cx: -3.5, cy: 1, r: 2.4, class: 'vazado' }), svg('circle', { cx: 3.5, cy: 1, r: 2.4, class: 'vazado' })),
-  /** A estrela de "algo encontrado". */
-  estrela: (escala = 1) => svg('polygon', { points: '0,-7 2,-2 7,-2 3,1.5 4.5,7 0,3.8 -4.5,7 -3,1.5 -7,-2 -2,-2', class: 'world-ico achado', transform: `scale(${escala})` }),
+/** O nome do painel: um `div` (o `#modal-body h3` do jogo pintaria um título de ficha por cima). */
+const titulo = (...filhos) => {
+  const n = el('div', 'w2-nome', ...filhos);
+  n.setAttribute('role', 'heading');
+  n.setAttribute('aria-level', '3');
+  return n;
+};
+const botao = (classe, texto, aoClicar) => {
+  const b = el('button', classe, texto);
+  b.type = 'button';
+  if (aoClicar) b.onclick = aoClicar;
+  return b;
 };
 
-export const RAIO_DA_FASE = 22;
-export const RAIO_DO_BOSS = 28;
-const ESPACO = 78;
+// ---------------------------------------------------------------- memória da tela (a câmera e a seleção sobrevivem aos redesenhos)
 
-/**
- * Onde cada nó fica: as fases do Ato em SERPENTINA (a linha vai e volta), `colunas` por linha, e o boss na ponta.
- * Devolve `{ pontos: [{x, y}], boss: {x, y}, largura, altura }`. Pura (a tela e os testes usam a mesma conta).
- */
-export function layoutDoAto(quantidade, colunas) {
-  const margem = RAIO_DO_BOSS + 8;
-  const pontos = [];
-  for (let i = 0; i < quantidade; i++) {
-    const linha = Math.floor(i / colunas);
-    const coluna = i % colunas;
-    const x = margem + (linha % 2 === 0 ? coluna : colunas - 1 - coluna) * ESPACO;
-    pontos.push({ x, y: margem + linha * ESPACO });
+const CHAVE = 'draevor.world.v1';
+const E = { sel: null, ato: null, vistas: new Map(), vistos: new Map() };
+const ler = () => {
+  try {
+    return JSON.parse(localStorage.getItem(CHAVE) ?? '{}') ?? {};
+  } catch {
+    return {};
   }
-  const linhas = Math.ceil(quantidade / colunas);
-  const ultimo = pontos.at(-1);
-  // O boss continua o caminho: na linha de baixo, embaixo da última fase.
-  const boss = { x: ultimo.x, y: margem + linhas * ESPACO };
-  return { pontos, boss, largura: margem * 2 + (colunas - 1) * ESPACO, altura: boss.y + margem };
-}
+};
+const gravar = (parcial) => {
+  try {
+    localStorage.setItem(CHAVE, JSON.stringify({ ...ler(), ...parcial }));
+  } catch {
+    /* sem armazenamento (janela privada): a tela funciona igual */
+  }
+};
+/** A última dificuldade/Ato escolhidos (o servidor ainda decide se estão abertos). */
+export const preferencia = () => ler();
+export const lembrarDificuldade = (id) => gravar({ dificuldade: id });
 
-/** Quantas colunas cabem em `largura` px (mínimo 3, máximo 6). */
-export const colunasPara = (largura) => Math.max(3, Math.min(6, Math.floor((largura - 40) / ESPACO) + 1));
+const reduzMovimento = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const estreita = () => (typeof window !== 'undefined' ? window.innerWidth < 700 : false);
 
-/** O estado de um nó, em uma palavra (a cor, o ícone e o texto saem dele). */
-export function estadoDoNo(no) {
-  if (no.pular) return 'travada';
-  if (no.completa || no.vencido) return 'completa';
-  if (no.liberada || no.liberado) return 'aberta';
-  return 'fechada';
-}
-const TEXTO_DO_ESTADO = { completa: 'Concluída', aberta: 'Aberta', fechada: 'Bloqueada', travada: 'Em obras' };
+// ---------------------------------------------------------------- câmera (arrastar, zoom, pinça)
 
-/**
- * Desenha o mapa e o painel dentro de `body`. `h` traz o que vem do resto do jogo (para não importar `panels.mjs`):
- * `figuraDaCriatura`, `entrarNaFase(hunt, lista)` e `enfrentarBoss(boss)`.
- */
-export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestiario, h, selecao, aoSelecionar, largura }) {
-  const { figuraDaCriatura } = h;
-  const mundo = campanha.mundo ?? {};
-  const colunas = colunasPara(largura);
-  const porAto = (ato) => escolhida.fases.filter((f) => f.ato === ato);
-  const fronteira = escolhida.fases.find((f) => f.liberada && !f.completa && !f.pular) ?? escolhida.fases.find((f) => f.liberada) ?? escolhida.fases[0];
-  const atual = selecao ?? { tipo: 'fase', huntId: fronteira.huntId };
-
-  const raiz = el('div', 'world');
-  const mapa = el('div', 'world-mapa');
-  const detalhe = el('div', 'world-detalhe');
-  raiz.append(mapa, detalhe);
-
-  const escolher = (s) => {
-    aoSelecionar(s);
+const K_MIN = 1;
+const K_MAX = 3.5;
+function criarCamera(viewport, svgEl, cam, vista, aoMudar) {
+  const limitar = () => {
+    vista.k = Math.max(K_MIN, Math.min(K_MAX, vista.k));
+    vista.x = Math.max(LARGURA - LARGURA * vista.k, Math.min(0, vista.x));
+    vista.y = Math.max(ALTURA - ALTURA * vista.k, Math.min(0, vista.y));
+  };
+  const aplicar = () => {
+    limitar();
+    cam.setAttribute('transform', `translate(${vista.x.toFixed(1)} ${vista.y.toFixed(1)}) scale(${vista.k.toFixed(3)})`);
+    viewport.classList.toggle('ampliado', vista.k > 1.05);
+    aoMudar?.();
+  };
+  const emUnidades = (cx, cy) => {
+    const m = svgEl.getScreenCTM();
+    if (!m) return { x: 0, y: 0, esc: 1 };
+    const p = new DOMPoint(cx, cy).matrixTransform(m.inverse());
+    return { x: p.x, y: p.y, esc: m.a };
+  };
+  /** Zoom por `fator` mantendo o ponto da tela (cx, cy) parado. */
+  const zoom = (fator, cx, cy) => {
+    const antes = emUnidades(cx, cy);
+    const k = Math.max(K_MIN, Math.min(K_MAX, vista.k * fator));
+    const real = k / vista.k;
+    vista.x = antes.x - (antes.x - vista.x) * real;
+    vista.y = antes.y - (antes.y - vista.y) * real;
+    vista.k = k;
+    aplicar();
+  };
+  const centrarEm = (px, py, k = vista.k) => {
+    vista.k = k;
+    vista.x = LARGURA / 2 - px * k;
+    vista.y = ALTURA / 2 - py * k;
+    aplicar();
   };
 
-  for (let ato = 1; ato <= 4; ato++) {
-    const fases = porAto(ato);
-    if (!fases.length) continue;
-    const boss = escolhida.bosses.find((b) => b.ato === ato);
-    const feitas = fases.filter((f) => f.completa).length;
-    const sec = el('section', 'world-ato');
-    sec.append(
-      el('h4', 'world-ato-titulo', `Ato ${ato}`),
-      el('span', 'world-ato-info', `level ${fases[0].nivel}–${fases.at(-1).nivel} · ${feitas}/${fases.length} fases${boss ? ` · boss: ${boss.nome}` : ''}`)
-    );
-    const L = layoutDoAto(fases.length, colunas);
-    const s = svg('svg', { viewBox: `0 0 ${L.largura} ${L.altura}`, width: L.largura, height: L.altura, class: 'world-svg', role: 'group', 'aria-label': `Mapa do Ato ${ato}` });
-    s.append(svg('defs', {},
-      (() => {
-        const g = svg('radialGradient', { id: `ouro-${ato}` }, svg('stop', { offset: '0%', 'stop-color': '#f6dc8a' }), svg('stop', { offset: '100%', 'stop-color': '#b88a22' }));
-        return g;
-      })()
-    ));
-
-    // Os caminhos: da fase à seguinte, e da última ao boss.
-    const caminho = (a, b, aberto) => s.append(svg('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y, class: `world-caminho${aberto ? ' aberto' : ''}` }));
-    fases.forEach((f, i) => {
-      if (i) caminho(L.pontos[i - 1], L.pontos[i], f.liberada);
-    });
-    if (boss) caminho(L.pontos.at(-1), L.boss, boss.liberado);
-    // As conexões extras do conteúdo (`conexoes`): tracejadas, entre fases do mesmo Ato.
-    fases.forEach((f, i) => {
-      for (const alvo of mundo[f.huntId]?.conexoes ?? []) {
-        const j = fases.findIndex((x) => x.huntId === alvo);
-        if (j >= 0 && Math.abs(j - i) > 1) s.append(svg('line', { x1: L.pontos[i].x, y1: L.pontos[i].y, x2: L.pontos[j].x, y2: L.pontos[j].y, class: 'world-conexao' }));
-      }
-    });
-
-    // Os nós das fases.
-    fases.forEach((f, i) => {
-      const p = L.pontos[i];
-      const st = estadoDoNo(f);
-      const m = mundo[f.huntId] ?? {};
-      const marcada = atual.tipo === 'fase' && atual.huntId === f.huntId;
-      const g = svg('g', { class: `world-no ${st}${marcada ? ' escolhido' : ''}`, transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: 'button', 'aria-label': `${f.nome}, ${TEXTO_DO_ESTADO[st]}` });
-      if (marcada) g.append(svg('circle', { r: RAIO_DA_FASE + 7, class: 'world-halo' }));
-      g.append(svg('circle', { r: RAIO_DA_FASE, class: 'world-disco', fill: st === 'completa' ? `url(#ouro-${ato})` : null }));
-      if (st === 'aberta') {
-        const txt = svg('text', { class: 'world-numero', 'text-anchor': 'middle', y: 6 });
-        txt.textContent = String((ato - 1) * 12 + i + 1);
-        g.append(txt);
-      } else {
-        g.append(st === 'completa' ? icone.visto() : st === 'fechada' ? icone.cadeado() : icone.xis());
-      }
-      if (m.bossPrincipal) {
-        const b = svg('g', { transform: `translate(${RAIO_DA_FASE - 3} ${-RAIO_DA_FASE + 6})`, class: 'world-selo-boss' }, svg('circle', { r: 9, class: 'fundo' }), icone.caveira(0.6));
-        g.append(b);
-      }
-      if (m.descobertos?.length) {
-        const d = svg('g', { transform: `translate(${-RAIO_DA_FASE + 3} ${-RAIO_DA_FASE + 6})`, class: 'world-selo-achado' }, svg('circle', { r: 9, class: 'fundo' }), icone.estrela(0.9));
-        g.append(d);
-      }
-      const titulo = svg('title');
-      titulo.textContent = `${f.nome} — ${TEXTO_DO_ESTADO[st]}`;
-      g.append(titulo);
-      const abrir = () => escolher({ tipo: 'fase', huntId: f.huntId });
-      g.addEventListener('click', abrir);
-      g.addEventListener('keydown', (ev) => (ev.key === 'Enter' || ev.key === ' ') && (ev.preventDefault(), abrir()));
-      s.append(g);
-    });
-
-    // O boss do Ato.
-    if (boss) {
-      const st = estadoDoNo(boss);
-      const marcada = atual.tipo === 'boss' && atual.ato === ato;
-      const g = svg('g', { class: `world-no world-boss ${st}${marcada ? ' escolhido' : ''}`, transform: `translate(${L.boss.x} ${L.boss.y})`, tabindex: 0, role: 'button', 'aria-label': `Boss do Ato ${ato}: ${boss.nome}, ${TEXTO_DO_ESTADO[st]}` });
-      if (marcada) g.append(svg('circle', { r: RAIO_DO_BOSS + 7, class: 'world-halo' }));
-      const r = RAIO_DO_BOSS;
-      g.append(svg('polygon', { class: 'world-disco', points: `0,${-r} ${r},0 0,${r} ${-r},0`, fill: st === 'completa' ? `url(#ouro-${ato})` : null }));
-      g.append(st === 'fechada' ? icone.cadeado() : icone.caveira(1.15));
-      const titulo = svg('title');
-      titulo.textContent = `Boss do Ato ${ato}: ${boss.nome} — ${TEXTO_DO_ESTADO[st]}`;
-      g.append(titulo);
-      const abrir = () => escolher({ tipo: 'boss', ato });
-      g.addEventListener('click', abrir);
-      g.addEventListener('keydown', (ev) => (ev.key === 'Enter' || ev.key === ' ') && (ev.preventDefault(), abrir()));
-      s.append(g);
+  const ponteiros = new Map();
+  let gesto = null;
+  viewport.addEventListener('pointerdown', (ev) => {
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+    ponteiros.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    viewport.setPointerCapture?.(ev.pointerId);
+    gesto = { inicioX: ev.clientX, inicioY: ev.clientY, moveu: false, pinca: ponteiros.size > 1 ? distancia() : null, alvo: ev.target };
+  });
+  const distancia = () => {
+    const [a, b] = [...ponteiros.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y) || 1;
+  };
+  viewport.addEventListener('pointermove', (ev) => {
+    const p = ponteiros.get(ev.pointerId);
+    if (!p || !gesto) return;
+    const dx = ev.clientX - p.x;
+    const dy = ev.clientY - p.y;
+    p.x = ev.clientX;
+    p.y = ev.clientY;
+    if (ponteiros.size >= 2) {
+      gesto.moveu = true;
+      const d = distancia();
+      const [a, b] = [...ponteiros.values()];
+      if (gesto.pinca) zoom(d / gesto.pinca, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      gesto.pinca = d;
+      return;
     }
-    sec.append(el('div', 'world-svg-caixa'));
-    sec.lastChild.append(s);
-    mapa.append(sec);
+    // Só vira ARRASTE depois de 6 px: um toque que escorrega um pouco continua sendo um toque no nó.
+    if (!gesto.moveu && Math.hypot(ev.clientX - gesto.inicioX, ev.clientY - gesto.inicioY) < 6) return;
+    gesto.moveu = true;
+    const esc = emUnidades(0, 0).esc || 1;
+    vista.x += dx / esc;
+    vista.y += dy / esc;
+    aplicar();
+  });
+  const soltar = (ev, cancelado = false) => {
+    if (!ponteiros.has(ev.pointerId)) return;
+    ponteiros.delete(ev.pointerId);
+    if (ponteiros.size === 0 && gesto) {
+      const foiToque = !gesto.moveu && !cancelado;
+      gesto = null;
+      if (foiToque) viewport.dispatchEvent(new CustomEvent('toque', { detail: { x: ev.clientX, y: ev.clientY } }));
+    } else if (gesto) {
+      gesto.pinca = null;
+      gesto.moveu = true; // o dedo que sobrou da pinça não vira toque
+    }
+  };
+  viewport.addEventListener('pointerup', (ev) => soltar(ev));
+  viewport.addEventListener('pointercancel', (ev) => soltar(ev, true));
+  viewport.addEventListener('wheel', (ev) => {
+    ev.preventDefault();
+    zoom(ev.deltaY < 0 ? 1.18 : 1 / 1.18, ev.clientX, ev.clientY);
+  }, { passive: false });
+  viewport.addEventListener('dblclick', (ev) => zoom(1.6, ev.clientX, ev.clientY));
+  return { zoom, centrarEm, aplicar, centro: () => ({ x: viewport.getBoundingClientRect().left + viewport.clientWidth / 2, y: viewport.getBoundingClientRect().top + viewport.clientHeight / 2 }) };
+}
+
+// ---------------------------------------------------------------- o nó
+
+function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, escolhido, boss }) {
+  const r = boss ? RAIO_DO_BOSS : RAIO_DA_FASE;
+  const g = svg('g', { class: `w-no ${estado} t-${tipo}${atual ? ' atual' : ''}${novo ? ' novo' : ''}${escolhido ? ' escolhido' : ''}`, transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${nome}. ${TIPOS_DE_NO[tipo]}. ${TEXTO_DO_ESTADO[estado]}${atual ? '. Fase atual' : ''}` });
+  g.append(svg('circle', { class: 'w-halo', r: r + 9 }));
+  if (atual) g.append(svg('circle', { class: 'w-pulso', r: r + 4 }));
+  // a forma diz o tipo (não só a cor): disco = fase, hexágono = miniboss/desafio, losango com pontas = boss, anel tracejado = opcional/secreto
+  const forma = { class: 'w-forma' };
+  if (boss || tipo === 'boss-fase') g.append(svg('polygon', { ...forma, points: `0,${-r - 4} ${r + 4},0 0,${r + 4} ${-r - 4},0` }));
+  else if (tipo === 'miniboss' || tipo === 'desafio') g.append(svg('polygon', { ...forma, points: [0, 1, 2, 3, 4, 5].map((i) => `${(Math.cos((i * Math.PI) / 3 + Math.PI / 6) * (r + 1)).toFixed(1)},${(Math.sin((i * Math.PI) / 3 + Math.PI / 6) * (r + 1)).toFixed(1)}`).join(' ') }));
+  else g.append(svg('circle', { ...forma, r, ...(tipo === 'boss-opcional' || tipo === 'secreta' ? { 'stroke-dasharray': '4 3' } : {}) }));
+  const conteudo = svg('g', { class: 'w-icone' });
+  if (estado === 'fechada') conteudo.append(ICONES.cadeado());
+  else if (estado === 'travada') conteudo.append(ICONES.xis());
+  else if (estado === 'completa') conteudo.append(ICONES.visto());
+  else if (ICONE_DO_TIPO[tipo]) conteudo.append(ICONES[ICONE_DO_TIPO[tipo]](boss ? 1.25 : 1));
+  else conteudo.append(svg('text', { class: 'w-numero', 'text-anchor': 'middle', y: 6 }, String(numero)));
+  g.append(conteudo);
+  // selo do tipo no canto quando o nó mostra o estado (concluído/bloqueado) e o tipo é especial
+  if (estado !== 'aberta' && ICONE_DO_TIPO[tipo] && !boss) g.append(svg('g', { class: 'w-selo', transform: `translate(${r - 4} ${-r + 5}) scale(.55)` }, svg('circle', { r: 11 }), ICONES[ICONE_DO_TIPO[tipo]]()));
+  const texto = nome.length > 20 ? `${nome.slice(0, 19)}…` : nome;
+  g.append(svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 17 }, texto));
+  return g;
+}
+
+// ---------------------------------------------------------------- a tela
+
+/**
+ * Desenha a tela inteira dentro de `body`. `h` traz o que vem do resto do jogo (para não importar `panels.mjs`):
+ * `figuraDaCriatura`, `entrarNaFase(hunt, lista)`, `enfrentarBoss(boss)`, `escolherDificuldade(id)`, `definirAoCompletar(valor)`, `fechar()`, `verLista()`.
+ */
+export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestiario, h }) {
+  const { figuraDaCriatura } = h;
+  const mundo = campanha.mundo ?? {};
+  const atos = atosDaCampanha(escolhida, campanha.atos ?? {});
+  if (!atos.length) return void body.append(el('p', 'empty', 'A campanha ainda não tem Atos.'));
+  const fronteira = faseDaFronteira(escolhida);
+
+  // Qual Ato mostrar: o que o jogador estava vendo (se segue aberto) ou o da fase atual.
+  let atoAtual = atos.find((a) => a.ato === (E.ato ?? ler().ato) && a.aberto) ?? atos.find((a) => a.ato === fronteira?.ato) ?? atos[0];
+  if (!E.sel || !(E.sel.tipo === 'boss' ? atos.some((a) => a.ato === E.sel.ato) : escolhida.fases.some((f) => f.huntId === E.sel.huntId))) E.sel = fronteira ? { tipo: 'fase', huntId: fronteira.huntId } : null;
+  if (E.sel && (E.sel.tipo === 'boss' ? E.sel.ato : escolhida.fases.find((f) => f.huntId === E.sel.huntId)?.ato) !== atoAtual.ato) E.sel = null;
+  if (!E.sel) E.sel = atoAtual.fases.length ? { tipo: 'fase', huntId: (atoAtual.fases.find((f) => f.huntId === fronteira?.huntId) ?? atoAtual.fases[0]).huntId } : null;
+
+  // O que já era visível antes: o que abriu desde a última vez ganha o brilho de "descoberta".
+  const chaveVisto = escolhida.id;
+  const antes = E.vistos.get(chaveVisto);
+  const agora = new Set(escolhida.fases.filter((f) => f.liberada).map((f) => f.huntId));
+  E.vistos.set(chaveVisto, agora);
+  const novos = antes ? new Set([...agora].filter((id) => !antes.has(id))) : new Set();
+
+  const raiz = el('div', 'w2');
+  raiz.dataset.dificuldade = escolhida.id;
+
+  // ---- 1. cabeçalho
+  const partes = partesDaCampanha(atos);
+  const cab = el('header', 'w2-cab', ornamentoDoCabecalho(), el('div', 'w2-titulo', el('h2', null, 'WORLD'), partes.length ? el('span', 'w2-parte', atoAtual.parte ?? partes[0]) : null), ornamentoDoCabecalho(true), botao('w2-fechar', iconeDeBotao('fechar'), () => h.fechar?.()));
+  cab.lastChild.setAttribute('aria-label', 'Fechar o mapa');
+  cab.lastChild.title = 'Fechar';
+
+  // ---- 2. dificuldades
+  const aviso = el('div', 'w2-aviso');
+  aviso.hidden = true;
+  const mostrarAviso = (texto) => {
+    aviso.textContent = texto;
+    aviso.hidden = !texto;
+  };
+  const dif = el('nav', 'w2-dificuldades', null);
+  dif.setAttribute('aria-label', 'Dificuldade');
+  const concluidaDif = (d) => d.fases.every((f) => f.completa || f.pular) && d.bosses.every((b) => b.vencido);
+  for (const d of campanha.dificuldades) {
+    const ind = d.id === escolhida.id ? 'selecionada' : d.liberada ? 'aberta' : 'bloqueada';
+    const b = botao(`w2-placa ${ind}${concluidaDif(d) ? ' concluida' : ''}`, null);
+    b.append(el('b', null, d.nome), el('small', null, d.liberada ? `level ${d.faixa[0]}–${d.faixa[1]}` : 'bloqueada'));
+    if (concluidaDif(d)) b.append(el('i', 'w2-selo-ok', iconeDeBotao('visto')));
+    b.setAttribute('aria-pressed', String(d.id === escolhida.id));
+    b.onclick = () => {
+      if (!d.liberada) {
+        const i = campanha.dificuldades.findIndex((x) => x.id === d.id);
+        const ant = campanha.dificuldades[i - 1];
+        return mostrarAviso(`O ${d.nome} abre depois de vencer o boss do Ato ${atos.at(-1).ato} no ${ant?.nome ?? 'nível anterior'}.`);
+      }
+      mostrarAviso('');
+      if (d.id !== escolhida.id) {
+        lembrarDificuldade(d.id);
+        h.escolherDificuldade(d.id);
+      }
+    };
+    dif.append(b);
   }
 
-  mapa.append(
-    el('div', 'world-legenda',
-      el('span', 'l-completa', '● concluída'), el('span', 'l-aberta', '● aberta'), el('span', 'l-fechada', '● bloqueada'),
-      el('span', null, 'caveira: boss principal'), el('span', null, 'estrela: algo encontrado'))
-  );
+  // ---- 3. abas dos Atos
+  const abas = el('nav', 'w2-atos');
+  abas.setAttribute('aria-label', 'Atos');
+  abas.setAttribute('role', 'tablist');
+  const abaDe = new Map();
+  for (const a of atos) {
+    const b = botao(`w2-aba${a.aberto ? '' : ' bloqueada'}${a.concluido ? ' concluida' : ''}`, null);
+    b.setAttribute('role', 'tab');
+    if (!a.aberto) b.append(el('i', 'w2-cad', iconeDeBotao('cadeado')));
+    b.append(el('span', null, a.nome), a.concluido ? el('i', 'w2-selo-ok', iconeDeBotao('visto')) : el('small', null, `${a.feitas}/${a.total}`));
+    b.onclick = () => {
+      if (!a.aberto) return mostrarAviso(`${a.nome} abre quando você completar o Ato anterior (e vencer o boss dele).`);
+      mostrarAviso('');
+      trocarAto(a);
+    };
+    abaDe.set(a.ato, b);
+    abas.append(b);
+  }
 
-  // ------------------------------------------------------------ o painel de detalhes
-  const linha = (rotulo, valor) => el('div', 'world-linha', el('span', null, rotulo), valor instanceof Node ? valor : el('b', null, valor));
-  if (atual.tipo === 'fase') {
-    const posicao = Math.max(0, escolhida.fases.findIndex((x) => x.huntId === atual.huntId));
-    const f = escolhida.fases[posicao] ?? fronteira;
-    const m = mundo[f.huntId] ?? {};
-    const st = estadoDoNo(f);
-    const hunt = hunts.get(f.huntId);
-    detalhe.append(
-      el('h3', 'world-titulo', f.nome),
-      el('div', 'world-sub', `Ato ${f.ato} · Fase ${posicao + 1}`, el('span', `world-selo ${st}`, TEXTO_DO_ESTADO[st])),
-      m.ambiente ? el('span', 'world-tag', m.ambiente) : null,
-      el('p', 'world-descricao', m.descricao ?? 'Sem descrição.'),
-      linha('Level dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`),
-      m.bossPrincipal ? linha('Boss principal', m.bossPrincipal) : null
-    );
-    if (hunt?.creatures?.length) {
-      const bichos = el('div', 'world-bichos');
-      for (const c of hunt.creatures.slice(0, 5)) bichos.append(figuraDaCriatura(c, bestiario, 36));
-      detalhe.append(el('div', 'world-bloco', el('span', 'world-rotulo', 'Monstros'), bichos));
-    }
-    const conclusao = el('ul', 'world-lista');
-    conclusao.append(el('li', null, 'Eliminar os monstros da fase'));
-    for (const o of m.obrigatorios ?? []) conclusao.append(el('li', null, o.nome));
-    detalhe.append(el('div', 'world-bloco', el('span', 'world-rotulo', 'Para concluir'), conclusao));
-    // Requisitos de entrada: a cadeia do Ato (a fase de trás) e o que o conteúdo exige.
-    const exigencias = [];
-    const anterior = escolhida.fases[posicao - 1];
-    if (anterior && anterior.ato === f.ato && !anterior.pular) exigencias.push([anterior.nome, anterior.completa]);
-    for (const e of m.exige ?? []) exigencias.push([e.nome, escolhida.fases.find((x) => x.huntId === e.huntId)?.completa ?? false]);
-    if (exigencias.length) {
-      detalhe.append(el('div', 'world-bloco', el('span', 'world-rotulo', 'Requisitos'), el('ul', 'world-lista', ...exigencias.map(([nome, ok]) => el('li', ok ? 'feito' : 'falta', `${ok ? '✓' : '○'} Completar ${nome}`)))));
-    }
-    if (m.conexoes?.length) detalhe.append(linha('Leva também a', m.conexoes.map((id) => escolhida.fases.find((x) => x.huntId === id)?.nome ?? id).join(', ')));
-    if (m.descobertos?.length) {
-      detalhe.append(el('div', 'world-bloco', el('span', 'world-rotulo', 'Encontrado aqui'), el('ul', 'world-lista achados', ...m.descobertos.map((d) => el('li', null, `✦ ${d.nome}${d.vezes > 1 ? ` (×${d.vezes})` : ''}`)))));
-    }
-    const entrar = el('button', 'world-entrar', st === 'travada' ? 'Em obras' : f.liberada ? 'Entrar' : 'Bloqueada');
-    entrar.type = 'button';
-    entrar.disabled = !f.liberada || !hunt || !!f.pular;
-    entrar.onclick = () => h.entrarNaFase(hunt, porAto(f.ato).map((x) => hunts.get(x.huntId)).filter(Boolean));
-    detalhe.append(entrar, el('p', 'world-nota', f.completa ? `${f.limpezas > 1 ? `${f.limpezas} limpezas feitas` : 'Concluída'} — pode repetir a fase.` : f.liberada ? 'Limpe a fase inteira para concluí-la.' : 'Complete os requisitos acima para abrir.'));
-  } else {
-    const b = escolhida.bosses.find((x) => x.ato === atual.ato);
-    const st = estadoDoNo(b);
-    detalhe.append(
-      el('h3', 'world-titulo', `Boss do Ato ${atual.ato}`),
-      el('div', 'world-sub', b.nome, el('span', `world-selo ${st}`, TEXTO_DO_ESTADO[st])),
-      linha('Level', `~${b.nivel}`),
-      el('p', 'world-descricao', b.vencido ? 'Vencido. Pode enfrentá-lo de novo (com a recarga dele).' : b.liberado ? (atual.ato < 4 ? `Vença para liberar o Ato ${atual.ato + 1}.` : 'Vença para liberar a próxima dificuldade.') : `Complete as 12 fases do Ato ${atual.ato} para liberá-lo.`)
-    );
-    const dados = bosses.get(b.bossId);
-    if (dados?.creatures?.length) detalhe.append(el('div', 'world-bichos', figuraDaCriatura(dados.creatures[0], bestiario, 52)));
-    const enfrentar = el('button', 'world-entrar', b.liberado ? 'Enfrentar' : 'Bloqueado');
-    enfrentar.type = 'button';
-    enfrentar.disabled = !b.liberado;
-    enfrentar.onclick = () => h.enfrentarBoss(b);
-    detalhe.append(enfrentar);
-  }
-  if (campanha.bossesDerrotados?.length) {
-    detalhe.append(el('div', 'world-bloco registro', el('span', 'world-rotulo', 'Bosses derrotados'), el('ul', 'world-lista', ...campanha.bossesDerrotados.map((x) => el('li', null, `☠ ${x.nome}${x.vezes > 1 ? ` (×${x.vezes})` : ''}`)))));
-  }
+  // ---- 4. o mapa
+  const palco = el('div', 'w2-palco');
+  const viewport = el('div', 'w2-viewport');
+  const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid meet', role: 'group' });
+  const cam = svg('g', { class: 'w2-cam' });
+  mapaSvg.append(cam);
+  viewport.append(mapaSvg);
+  const balao = el('div', 'w2-balao');
+  balao.hidden = true;
+  const controles = el('div', 'w2-controles');
+  const dica = el('div', 'w2-dica', 'Arraste para mover · roda ou pinça para o zoom · toque num nó para ver a fase');
+  palco.append(viewport, balao, controles, dica);
+
+  // ---- 5. o painel + 6. a barra
+  const painel = el('section', 'w2-painel');
+  const barra = el('footer', 'w2-barra');
+
+  raiz.append(cab, dif, aviso, abas, palco, painel, barra);
   body.append(raiz);
+
+  let dadosDoAto = null;
+  const vista = { x: 0, y: 0, k: 1 };
+  let chaveVista = null;
+  const camera = criarCamera(viewport, mapaSvg, cam, vista, () => {
+    balao.hidden = true;
+    if (chaveVista) E.vistas.set(chaveVista, { ...vista });
+  });
+  const nosPorId = new Map();
+
+  const selecionarNo = (sel, { centrar = false } = {}) => {
+    E.sel = sel;
+    const id = sel.tipo === 'boss' ? `boss:${sel.ato}` : sel.huntId;
+    for (const [nid, g] of nosPorId) g.classList.toggle('escolhido', nid === id);
+    desenharPainel();
+    if (centrar && dadosDoAto) {
+      const p = dadosDoAto.posicao(id);
+      if (p) camera.centrarEm(p.x, p.y, Math.max(1.6, vista.k));
+    }
+  };
+
+  function montarMapa() {
+    cam.replaceChildren();
+    nosPorId.clear();
+    const a = atoAtual;
+    const pos = posicoesDoAto(a.fases, !!a.boss, mundo, a.ato);
+    const pontos = [...pos.pontos, ...(pos.boss ? [pos.boss] : [])];
+    cam.append(fundoDoAto(a.ato, nomeDoTema(a.ato, a.tema), pontos));
+    const ids = [...a.fases.map((f) => f.huntId), ...(a.boss ? [`boss:${a.ato}`] : [])];
+    const posicao = (id) => pontos[ids.indexOf(id)];
+    // as estradas (sob os nós)
+    const estradas = svg('g', { class: 'w2-estradas' });
+    for (const c of conexoesDoAto(a.fases, a.boss, mundo)) {
+      const d = tracadoDaEstrada(posicao(c.de), posicao(c.para), c.tipo);
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${c.estado} ${c.tipo}` }));
+    }
+    cam.append(estradas);
+    const nos = svg('g', { class: 'w2-nos' });
+    a.fases.forEach((f, i) => {
+      const m = mundo[f.huntId] ?? {};
+      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: E.sel?.huntId === f.huntId });
+      nosPorId.set(f.huntId, g);
+      nos.append(g);
+    });
+    if (a.boss) {
+      const g = desenharNo({ id: `boss:${a.ato}`, tipo: 'boss', estado: estadoDoNo(a.boss), numero: 0, nome: a.boss.nome, p: pos.boss, boss: true, escolhido: E.sel?.tipo === 'boss' && E.sel.ato === a.ato });
+      nosPorId.set(`boss:${a.ato}`, g);
+      nos.append(g);
+    }
+    cam.append(nos);
+    mapaSvg.setAttribute('aria-label', `Mapa do ${a.nome}`);
+    dadosDoAto = { posicao: (id) => posicao(id) };
+    chaveVista = `${escolhida.id}:${a.ato}`;
+    const salva = E.vistas.get(chaveVista);
+    if (salva) Object.assign(vista, salva);
+    else {
+      Object.assign(vista, { x: 0, y: 0, k: 1 });
+      // No celular em pé o mapa inteiro ficaria miúdo: abre mais perto, centrado onde o jogador está.
+      if (estreita()) {
+        const alvo = posicao(E.sel?.tipo === 'boss' ? `boss:${a.ato}` : E.sel?.huntId) ?? { x: LARGURA / 2, y: ALTURA / 2 };
+        vista.k = 2.2;
+        vista.x = LARGURA / 2 - alvo.x * vista.k;
+        vista.y = ALTURA / 2 - alvo.y * vista.k;
+      }
+    }
+    camera.aplicar();
+    if (!reduzMovimento()) {
+      cam.classList.remove('entra');
+      void cam.getBoundingClientRect();
+      cam.classList.add('entra');
+    }
+  }
+
+  function desenharControles() {
+    controles.replaceChildren(
+      botao('w2-ctl', iconeDeBotao('mais'), () => camera.zoom(1.4, ...Object.values(camera.centro()))),
+      botao('w2-ctl', iconeDeBotao('menos'), () => camera.zoom(1 / 1.4, ...Object.values(camera.centro()))),
+      botao('w2-ctl', iconeDeBotao('centrar'), () => {
+        const id = E.sel?.tipo === 'boss' ? `boss:${E.sel.ato}` : E.sel?.huntId;
+        const p = dadosDoAto.posicao(id);
+        if (p) camera.centrarEm(p.x, p.y, Math.max(1.6, vista.k));
+      }),
+      botao('w2-ctl', iconeDeBotao('tudo'), () => camera.centrarEm(LARGURA / 2, ALTURA / 2, 1))
+    );
+    [...controles.children].forEach((b, i) => {
+      b.setAttribute('aria-label', ['Aproximar', 'Afastar', 'Centrar na fase escolhida', 'Ver o Ato inteiro'][i]);
+      b.title = b.getAttribute('aria-label');
+    });
+  }
+
+  function trocarAto(a, manterSelecao = false) {
+    atoAtual = a;
+    E.ato = a.ato;
+    gravar({ ato: a.ato });
+    for (const [n, b] of abaDe) {
+      b.classList.toggle('selecionada', n === a.ato);
+      b.setAttribute('aria-selected', String(n === a.ato));
+    }
+    const novaSel = a.fases.length ? { tipo: 'fase', huntId: (a.fases.find((f) => f.huntId === fronteira?.huntId) ?? a.fases.find((f) => f.liberada) ?? a.fases[0]).huntId } : null;
+    if (!manterSelecao) E.sel = novaSel;
+    cab.querySelector('.w2-parte')?.replaceChildren(a.parte ?? partes[0] ?? '');
+    montarMapa();
+    desenharPainel();
+  }
+
+  // ---- interação com os nós: o clique só vale se o gesto NÃO foi um arraste
+  const noDoPonto = (x, y) => {
+    const alvo = document.elementFromPoint(x, y)?.closest?.('.w-no');
+    return alvo && cam.contains(alvo) ? alvo : null;
+  };
+  viewport.addEventListener('toque', (ev) => {
+    const no = noDoPonto(ev.detail.x, ev.detail.y);
+    if (!no) return;
+    const id = no.dataset.id;
+    selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : { tipo: 'fase', huntId: id });
+  });
+  viewport.addEventListener('keydown', (ev) => {
+    const no = ev.target.closest?.('.w-no');
+    if (no && (ev.key === 'Enter' || ev.key === ' ')) {
+      ev.preventDefault();
+      const id = no.dataset.id;
+      selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : { tipo: 'fase', huntId: id });
+    }
+  });
+  // o balão de resumo (só com mouse — no toque quem resume é o painel)
+  viewport.addEventListener('pointermove', (ev) => {
+    if (ev.pointerType !== 'mouse' || ev.buttons) return;
+    const no = ev.target.closest?.('.w-no');
+    if (!no) return void (balao.hidden = true);
+    const id = no.dataset.id;
+    const boss = id.startsWith('boss:');
+    const f = boss ? null : escolhida.fases.find((x) => x.huntId === id);
+    const b = boss ? atoAtual.boss : null;
+    const st = estadoDoNo(boss ? b : f);
+    const r = palco.getBoundingClientRect();
+    balao.replaceChildren(el('b', null, boss ? b.nome : f.nome), el('span', null, `${TIPOS_DE_NO[boss ? 'boss' : tipoDaFase(mundo[id])]} · level ~${boss ? b.nivel : f.nivel}`), el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]));
+    balao.style.left = `${Math.min(r.width - 190, Math.max(4, ev.clientX - r.left + 14))}px`;
+    balao.style.top = `${Math.max(4, ev.clientY - r.top + 14)}px`;
+    balao.hidden = false;
+  });
+  viewport.addEventListener('pointerleave', () => (balao.hidden = true));
+
+  // ---- o painel da fase escolhida
+  const linha = (rotulo, valor) => el('div', 'w2-linha', el('span', null, rotulo), valor instanceof Node ? valor : el('b', null, valor));
+  function desenharPainel() {
+    painel.replaceChildren();
+    painel.classList.remove('abre');
+    if (!reduzMovimento()) {
+      void painel.offsetWidth;
+      painel.classList.add('abre');
+    }
+    const sel = E.sel;
+    if (!sel) {
+      painel.append(titulo( atoAtual.nome), el('p', 'w2-desc', atoAtual.descricao ?? 'Toque num lugar do mapa para ver os detalhes.'));
+      return;
+    }
+    if (sel.tipo === 'fase') {
+      const posicao = Math.max(0, escolhida.fases.findIndex((x) => x.huntId === sel.huntId));
+      const f = escolhida.fases[posicao];
+      const m = mundo[f.huntId] ?? {};
+      const st = estadoDoNo(f);
+      const tipo = tipoDaFase(m);
+      const hunt = hunts.get(f.huntId);
+      const col1 = el('div', 'w2-col', titulo( f.nome), el('div', 'w2-sub', `${atoAtual.nome} · Fase ${posicao + 1}`, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), tipo !== 'comum' ? el('span', 'w2-tipo', TIPOS_DE_NO[tipo]) : null, fronteira?.huntId === f.huntId ? el('span', 'w2-tipo atual', 'Fase atual') : null), m.ambiente ? el('span', 'w2-tag', m.ambiente) : null, el('p', 'w2-desc', m.descricao ?? 'Sem descrição.'), linha('Dificuldade', escolhida.nome), linha('Level dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`), m.bossPrincipal ? linha('Boss principal', m.bossPrincipal) : null);
+      const col2 = el('div', 'w2-col');
+      if (hunt?.creatures?.length) {
+        const bichos = el('div', 'w2-bichos');
+        for (const c of hunt.creatures.slice(0, 5)) bichos.append(figuraDaCriatura(c, bestiario, 34));
+        col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Monstros'), bichos));
+      }
+      const conclusao = el('ul', 'w2-lista');
+      conclusao.append(el('li', null, 'Eliminar os monstros da fase'));
+      for (const o of m.obrigatorios ?? []) conclusao.append(el('li', null, o.nome));
+      col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Para concluir'), conclusao));
+      const exigencias = [];
+      const anterior = escolhida.fases[posicao - 1];
+      if (anterior && anterior.ato === f.ato && !anterior.pular) exigencias.push([anterior.nome, anterior.completa]);
+      for (const e of m.exige ?? []) exigencias.push([e.nome, escolhida.fases.find((x) => x.huntId === e.huntId)?.completa ?? false]);
+      if (exigencias.length) col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Requisitos'), el('ul', 'w2-lista', ...exigencias.map(([nome, ok]) => el('li', ok ? 'feito' : 'falta', `${ok ? '✓' : '○'} Completar ${nome}`)))));
+      if (m.descobertos?.length) col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Encontrado aqui'), el('ul', 'w2-lista achados', ...m.descobertos.map((d) => el('li', null, `✦ ${d.nome}${d.vezes > 1 ? ` (×${d.vezes})` : ''}`)))));
+      const entrar = botao('w2-entrar', st === 'travada' ? 'Em obras' : f.liberada ? 'Entrar' : 'Bloqueada');
+      entrar.disabled = !f.liberada || !hunt || !!f.pular;
+      // Só o servidor decide: este botão pede pelo mesmo fluxo de sempre e o servidor recusa o que não está aberto.
+      entrar.onclick = () => h.entrarNaFase(hunt, atoAtual.fases.map((x) => hunts.get(x.huntId)).filter(Boolean));
+      const col3 = el('div', 'w2-col acao', entrar, el('p', 'w2-nota', f.completa ? `${f.limpezas > 1 ? `${f.limpezas} limpezas feitas` : 'Concluída'} — pode repetir a fase.` : f.liberada ? 'Limpe a fase inteira para concluí-la.' : 'Complete os requisitos acima para abrir.'));
+      painel.append(col1, col2, col3);
+    } else {
+      const b = atoAtual.boss;
+      const st = estadoDoNo(b);
+      const dados = bosses.get(b.bossId);
+      const col1 = el('div', 'w2-col', titulo( `Boss do ${atoAtual.nome}`), el('div', 'w2-sub', b.nome, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), el('span', 'w2-tipo', 'Boss principal')), linha('Dificuldade', escolhida.nome), linha('Level', `~${b.nivel}`), el('p', 'w2-desc', b.vencido ? 'Vencido. Pode enfrentá-lo de novo (com a recarga dele).' : b.liberado ? (atoAtual.ato < atos.at(-1).ato ? `Vença para liberar o ${atos.find((x) => x.ato > atoAtual.ato)?.nome ?? 'próximo Ato'}.` : 'Vença para liberar a próxima dificuldade.') : `Complete as ${atoAtual.total} fases do ${atoAtual.nome} para liberá-lo.`));
+      const col2 = el('div', 'w2-col', dados?.creatures?.length ? el('div', 'w2-bichos', figuraDaCriatura(dados.creatures[0], bestiario, 52)) : null, el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Requisito'), el('ul', 'w2-lista', el('li', atoAtual.feitas === atoAtual.total ? 'feito' : 'falta', `${atoAtual.feitas === atoAtual.total ? '✓' : '○'} ${atoAtual.feitas}/${atoAtual.total} fases completas`))));
+      const enfrentar = botao('w2-entrar', b.liberado ? 'Enfrentar' : 'Bloqueado');
+      enfrentar.disabled = !b.liberado;
+      enfrentar.onclick = () => h.enfrentarBoss(b);
+      painel.append(col1, col2, el('div', 'w2-col acao', enfrentar));
+    }
+  }
+
+  // ---- 6. a barra de atalhos (só o que existe de verdade)
+  const registro = el('div', 'w2-registro');
+  registro.hidden = true;
+  const aoc = campanha.aoCompletar;
+  barra.append(
+    botao(`w2-atalho${aoc === 'repetir' ? ' on' : ''}`, 'Ficar na fase', () => h.definirAoCompletar('repetir')),
+    botao(`w2-atalho${aoc === 'seguir' ? ' on' : ''}`, 'Avançar sozinho', () => h.definirAoCompletar('seguir')),
+    botao('w2-atalho', 'Fase atual', () => {
+      if (!fronteira) return;
+      const a = atos.find((x) => x.ato === fronteira.ato);
+      if (a && a !== atoAtual) trocarAto(a);
+      selecionarNo({ tipo: 'fase', huntId: fronteira.huntId }, { centrar: true });
+    }),
+    botao('w2-atalho', 'Lista', () => h.verLista?.())
+  );
+  if (campanha.bossesDerrotados?.length) {
+    barra.insertBefore(
+      botao('w2-atalho', `Bosses derrotados (${campanha.bossesDerrotados.length})`, () => {
+        registro.hidden = !registro.hidden;
+      }),
+      barra.lastChild
+    );
+  }
+  const sub = barra.querySelectorAll('.w2-atalho');
+  sub[0].title = 'Com a fase completa, continua em loop na mesma fase (bom para farmar).';
+  sub[1].title = 'Jogando online, com a fase completa vai para a próxima do Ato. Offline fica sempre em loop.';
+  if (campanha.bossesDerrotados?.length) {
+    registro.append(el('b', null, 'Bosses derrotados'), el('ul', 'w2-lista', ...campanha.bossesDerrotados.map((x) => el('li', null, `☠ ${x.nome}${x.vezes > 1 ? ` (×${x.vezes})` : ''}`))));
+    raiz.append(registro);
+  }
+
+  desenharControles();
+  trocarAto(atoAtual, true);
 }
