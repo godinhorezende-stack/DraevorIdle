@@ -6219,7 +6219,7 @@ function atualizarBotaoDeInteragir() {
     document.body.append(botao);
   }
   botao.dataset.encontro = perto.id;
-  botao.textContent = perto.tipo === 'altar' ? `Ativar: ${perto.nome}` : perto.tipo === 'sobrevivencia' || perto.tipo === 'fenda' ? `Iniciar: ${perto.nome}` : `Abrir: ${perto.nome}`;
+  botao.textContent = perto.tipo === 'altar' ? `Ativar: ${perto.nome}` : perto.tipo === 'sobrevivencia' || perto.tipo === 'fenda' ? `Iniciar: ${perto.nome}` : perto.tipo === 'aprisionado' ? `Libertar: ${perto.nome}` : `Abrir: ${perto.nome}`;
   botao.onclick = () => pedirInteracao(perto);
   botao.removeAttribute('hidden');
 }

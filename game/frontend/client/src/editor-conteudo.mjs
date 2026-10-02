@@ -164,6 +164,8 @@ const NOVOS = {
   altar: () => ({ tipo: 'altar', efeitos: [{ afixo: 'phys_dmg', valor: 5 }], duracaoMs: 60000 }),
   sobrevivencia: () => ({ tipo: 'sobrevivencia', ondas: [{ criaturas: [{ key: '', qtd: 2 }] }, { criaturas: [{ key: '', qtd: 3 }] }], pausaMs: 4000, recompensa: { drops: [{ id: 3031, chance: 100 }], moedasMedia: 100, porOnda: true } }),
   fenda: () => ({ tipo: 'fenda', ondas: [{ criaturas: [{ key: '', qtd: 2 }] }, { criaturas: [{ key: '', qtd: 3 }] }], pausaMs: 3000, limiteMs: 120000, recompensa: { drops: [{ id: 3031, chance: 100 }], moedasMedia: 100, porOnda: true } }),
+  aprisionado: () => ({ tipo: 'aprisionado', prisioneiro: { nome: 'Prisioneiro' }, captores: { criaturas: [{ key: '', qtd: 3 }] }, recompensa: { drops: [{ id: 3031, chance: 100 }], moedasMedia: 150 } }),
+  invasor: () => ({ tipo: 'invasor', invasores: { criaturas: [{ key: '', qtd: 4 }], raridade: 'raro' }, recompensa: { drops: [{ id: 3031, chance: 100 }], moedasMedia: 150 }, condicao: { tipo: 'monstros-limpos' } }),
   boss: () => ({ tipo: 'boss', bossId: '' }),
   miniboss: () => ({ tipo: 'miniboss', bossId: '', probabilidade: 20 }),
   'boss-secreto': () => ({ tipo: 'boss-secreto', bossId: '', probabilidade: 5 }),
@@ -228,6 +230,19 @@ function cartaoDeEncontro(e, i) {
       listaEditavel('Ondas (em ordem; cada uma só nasce quando a anterior cai)', e.ondas, () => ({ criaturas: [{ key: '', qtd: 3 }] }), (o) => editorDeCriaturas(o)),
       opcional('Recompensa', e, 'recompensa', () => ({ drops: [] }), (r) => el('div', { class: 'linhas' }, marca('Pagar a cada onda vencida (proporcional ao desempenho)', r, 'porOnda', marcarSujo), editorDeRecompensa(r)))
     );
+  }
+  if (e.tipo === 'aprisionado' || e.tipo === 'invasor') {
+    const campoGrupo = e.tipo === 'aprisionado' ? 'captores' : 'invasores';
+    if (e.tipo === 'aprisionado') {
+      e.prisioneiro ??= { nome: '' };
+      corpo.append(el('div', { class: 'grade' }, campo('Nome do prisioneiro', e.prisioneiro, 'nome')));
+    }
+    corpo.append(
+      opcional(e.tipo === 'aprisionado' ? 'Captores (derrotar para libertar)' : 'Invasores (chegam sozinhos)', e, campoGrupo, () => ({ criaturas: [{ key: '', qtd: 3 }] }), editorDeCriaturas),
+      escolha('Boss (opcional; capitão da cela / líder da invasão)', e, 'bossId', S.opcoes.bosses.map((b) => ({ id: b.id, nome: `${b.nome} [${b.categoria}]` })), { opcional: true }),
+      opcional('Recompensa', e, 'recompensa', () => ({ drops: [] }), editorDeRecompensa)
+    );
+    if (e.tipo === 'aprisionado') corpo.append(opcional('Bênção do libertado (temporária)', e, 'bencao', () => ({ efeitos: [], duracaoMs: 60000 }), (b) => (b.efeitos ??= [], el('div', { class: 'linhas' }, campo('Duração (ms)', b, 'duracaoMs', { tipo: 'number' }), editorDeEfeitos(b.efeitos, false)))));
   }
   corpo.append(el('div', { class: 'linha' }, el('span', { class: 'dica' }, 'O que o jogador vê é decidido na tela WORLD; segredos não aparecem no mapa.'), el('button', { type: 'button', class: 'perigo', onclick: () => { S.encontros.splice(i, 1); desenharFase(); marcarSujo(); } }, 'Remover encontro')));
   d.append(corpo);

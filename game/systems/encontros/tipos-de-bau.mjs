@@ -30,7 +30,7 @@ import * as Acoes from '../acoes.mjs';
 
 const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
 
-function errosDeGrupo(g, onde) {
+export function errosDeGrupo(g, onde) {
   const erros = [];
   if (!g?.criaturas?.length) return [`${onde}: precisa de criaturas.`];
   let total = 0;

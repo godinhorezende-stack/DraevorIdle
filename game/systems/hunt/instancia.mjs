@@ -285,6 +285,6 @@ export function paraCliente(hunt) {
  */
 export function encontrosVisiveis(inst) {
   return Object.values(inst?.encontros ?? {})
-    .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda') && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
+    .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda' || e.tipo === 'aprisionado') && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
     .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), estado: e.estado }));
 }

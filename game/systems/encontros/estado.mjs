@@ -111,6 +111,10 @@ export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = n
       }
     }
   }
+  // Os que CHEGAM sozinhos (o invasor) não esperam interação nem o modo automático.
+  if (hunt) {
+    for (const e of Object.values(todos)) if (e.estado === 'disponivel' && tipoDe(e.tipo)?.sozinho && ativar(instancia, e.id, { quem: 'sozinho', agora, hunt, estado, personagem }).ok) mudou++;
+  }
   if (hunt?.modo === 'auto') {
     for (const e of Object.values(todos)) {
       const tipo = tipoDe(e.tipo);

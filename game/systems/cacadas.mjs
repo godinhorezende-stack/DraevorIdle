@@ -57,6 +57,7 @@ import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
 import './encontros/tipos-de-bau.mjs'; // registra os baús e o altar
 import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (ondas)
+import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as EventosDeEncontro from './encontros/eventos.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
