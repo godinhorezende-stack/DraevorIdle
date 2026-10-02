@@ -2745,16 +2745,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   }
   if (meta.container) add(`Guarda ${meta.container} itens`, 'plain');
   /*
-   * ---- Duração: quanto RESTA, quando dá para saber ----
-   * (Cargas NÃO aparecem no balão: a peça não gasta cargas ao aparar golpes — dizer "5 cargas" era anunciar uma coisa que não acontece.)
+   * Cargas e tempo de uso NÃO aparecem no balão: nenhuma peça vestida gasta carga nem tempo (só a arma de treino, que tem a barra própria),
+   * então "20 minutos de uso" ou "5 cargas" anunciariam algo que não acontece.
    */
-  /* Vem do personagem: e o servidor quem acompanha o que resta. Ver desgaste.mjs. */
-  const desgastado = slot ? getPersonagem()?.desgaste?.[slot] : null;
-  if (desgastado?.tipo === 'tempo') {
-    add(`${tempoCurto(desgastado.resta)} de uso restantes`, 'plain');
-  } else if (meta.duration && !meta.charges) {
-    add(`${tempoCurto(meta.duration)} de uso — o tempo só corre com ela vestida`, 'plain');
-  }
   /*
    * O que o TIER da peça dá — Onslaught, Momentum, Ruse, Amplification.
    *
