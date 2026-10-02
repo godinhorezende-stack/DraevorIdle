@@ -41,10 +41,46 @@ const lerJson = (arq, padrao) => (existsSync(arq) ? JSON.parse(readFileSync(arq,
 
 // ------------------------------------------------------------------ fases
 
-const faseDe = (huntId) => Campanha.FASES.find((f) => f.huntId === huntId) ?? null;
+const lerArquivoDeFases = () => lerJson(CAMINHOS.fases, { _nota: 'Descrição, ambiente, conexões, requisitos e o índice do que cada fase tem (o que a tela WORLD mostra). Editado em /editor/conteudo.', fases: {} });
+const gravarArquivoDeFases = (dados) => writeFileSync(CAMINHOS.fases, `${JSON.stringify(dados, null, 2)}\n`, 'utf8');
+
+/**
+ * O ÍNDICE do que a fase tem, para a tela WORLD (`campanha-conteudo.json`, chave `mundo`): o boss principal e os
+ * obrigatórios (a condição de conclusão, que o jogador pode ver) e a lista de TODOS os encontros ativos — esta última só
+ * para o servidor dar nome ao que o jogador já encontrou; ela nunca vai inteira para o cliente.
+ */
+export function indiceDoMundo(encontros) {
+  const ativos = Modelo.encontrosDoMapa({ encontros }).filter((e) => e.ativo);
+  const bossNome = (e) => (e.bossId ? Catalogo.bossUnico(e.bossId)?.nome ?? e.bossId : null);
+  const principal = ativos.find((e) => e.obrigatorio && BOSS_TIPOS.includes(e.tipo) && Catalogo.bossUnico(e.bossId)?.categoria === 'principal');
+  return {
+    bossPrincipal: principal ? { bossId: principal.bossId, nome: bossNome(principal) } : null,
+    obrigatorios: ativos.filter((e) => e.obrigatorio).map((e) => ({ id: e.id, nome: e.nome, tipo: e.tipo })),
+    todos: ativos.map((e) => ({ id: e.id, nome: e.nome, tipo: e.tipo, ...(e.bossId ? { bossId: e.bossId, bossNome: bossNome(e) } : {}) })),
+  };
+}
+
+function gravarIndice(huntId, encontros) {
+  const arq = lerArquivoDeFases();
+  const indice = indiceDoMundo(encontros);
+  const atual = arq.fases[huntId] ?? {};
+  if (indice.todos.length) atual.mundo = indice;
+  else delete atual.mundo;
+  if (Object.keys(atual).length) arq.fases[huntId] = atual;
+  else delete arq.fases[huntId];
+  gravarArquivoDeFases(arq);
+}
+
+const faseDe = (huntId) => Campanha.faseDe(huntId); // com o `indice` na campanha
 
 /** Os metadados editáveis da fase (o que a tela WORLD mostra). */
-export const metaDasFases = () => lerJson(CAMINHOS.fases, { fases: {} }).fases ?? {};
+export const metaDasFases = () =>
+  Object.fromEntries(
+    Object.entries(lerJson(CAMINHOS.fases, { fases: {} }).fases ?? {}).map(([id, v]) => {
+      const { mundo, ...meta } = v; // o índice do WORLD (`mundo`) não é dado editável
+      return [id, meta];
+    })
+  );
 
 /** Os erros de um bloco `meta` (vazio = pode gravar). */
 export function validarMeta(huntId, meta) {
@@ -57,7 +93,15 @@ export function validarMeta(huntId, meta) {
     if (c === huntId) erros.push('conexoes: uma fase não conecta a si mesma.');
   }
   const r = meta.requisitos ?? {};
-  if (r.levelMin != null && !(Number.isInteger(r.levelMin) && r.levelMin >= 1)) erros.push('requisitos.levelMin inválido.');
+  if (r.levelMin != null && !(Number.isInteger(r.levelMin) && r.levelMin >= 1)) erros.push('requisitos.levelMin (level recomendado) inválido.');
+  // `exige`: fases que precisam estar completas para ENTRAR (o servidor impõe). Só de trás: assim nunca fecha um ciclo
+  // com a cadeia do ato (A exige B, e B só abre depois de A).
+  for (const id of r.exige ?? []) {
+    const outra = faseDe(id);
+    if (!outra) erros.push(`requisitos.exige: "${id}" não é uma fase da campanha.`);
+    else if (outra.pular) erros.push(`requisitos.exige: "${outra.nome}" está travada (conta como completa sozinha).`);
+    else if (outra.indice >= faseDe(huntId).indice) erros.push(`requisitos.exige: "${outra.nome}" vem depois desta fase — só dá para exigir fases anteriores.`);
+  }
   return erros;
 }
 
@@ -70,10 +114,13 @@ export function salvarMeta(huntId, bruto) {
   };
   const erros = validarMeta(huntId, meta);
   if (erros.length) return { ok: false, erros };
-  const atual = lerJson(CAMINHOS.fases, { _nota: 'Descrição, ambiente, conexões e requisitos de cada fase (o que a tela WORLD mostra). Editado em /editor/conteudo.', fases: {} });
-  if (Object.keys(meta).length) atual.fases[huntId] = meta;
+  const atual = lerArquivoDeFases();
+  // `mundo` (o índice dos encontros) é do `salvarEncontros`: salvar os dados da fase não o apaga.
+  const mundo = atual.fases[huntId]?.mundo;
+  const novo = { ...meta, ...(mundo ? { mundo } : {}) };
+  if (Object.keys(novo).length) atual.fases[huntId] = novo;
   else delete atual.fases[huntId];
-  writeFileSync(CAMINHOS.fases, `${JSON.stringify(atual, null, 2)}\n`, 'utf8');
+  gravarArquivoDeFases(atual);
   return { ok: true };
 }
 
@@ -133,6 +180,7 @@ export function salvarEncontros(huntId, bruto) {
   } catch (e) {
     return { ok: false, erros: [`Não deu para gravar (${e.code ?? e.message}) — o editor grava no servidor de desenvolvimento.`] };
   }
+  gravarIndice(huntId, normalizados);
   return { ok: true, avisos, reiniciar: 'Reinicie o servidor de desenvolvimento para jogar esta fase com os encontros novos.' };
 }
 
@@ -173,12 +221,12 @@ export function condicaoDeConclusao(encontros) {
 
 export function listarFases() {
   const metas = metaDasFases();
-  return Campanha.FASES.map((f) => {
+  return Campanha.FASES.map((f, indice) => {
     const mapa = carregarMapa(f.huntId);
     const encontros = mapa?.encontros ?? [];
     const v = mapa ? validarFase(f.huntId, encontros) : { erros: [], avisos: [] };
     return {
-      huntId: f.huntId, nome: f.nome, ato: f.ato, indice: f.indice, pular: !!f.pular, nivel: f.nivel,
+      huntId: f.huntId, nome: f.nome, ato: f.ato, indice, pular: !!f.pular, nivel: f.nivel,
       temMapa: !!mapa, meta: metas[f.huntId] ?? {}, resumo: resumoDosEncontros(encontros), erros: v.erros.length, avisos: v.avisos.length,
     };
   });
@@ -253,6 +301,10 @@ export function auditar() {
   const fases = listarFases();
   for (const f of fases) {
     const v = f.temMapa ? validarFase(f.huntId, carregarMapa(f.huntId)?.encontros ?? []) : { erros: [], avisos: [] };
+    // O índice que a tela WORLD lê precisa bater com os encontros do mapa (nome de boss mudou? encontro editado à mão?).
+    const esperado = JSON.stringify(indiceDoMundo(carregarMapa(f.huntId)?.encontros ?? []));
+    const gravado = lerArquivoDeFases().fases?.[f.huntId]?.mundo;
+    if (esperado !== JSON.stringify(gravado ?? indiceDoMundo([]))) problemas.push({ nivel: 'aviso', onde: f.huntId, mensagem: 'o índice da tela WORLD está desatualizado — salve os encontros desta fase de novo no editor.' });
     for (const m of v.erros) problemas.push({ nivel: 'erro', onde: f.huntId, mensagem: m });
     for (const m of v.avisos) problemas.push({ nivel: 'aviso', onde: f.huntId, mensagem: m });
   }

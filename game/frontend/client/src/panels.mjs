@@ -1,6 +1,7 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
 import { listaDetalhe } from './lista-detalhe.mjs';
+import { desenharMundo } from './world.mjs';
 import { montarAosPoucos } from './aos-poucos.mjs';
 import { ehTelefone } from './perfil.mjs';
 import { analogicoLigado, ligarAnalogico } from './celular.mjs';
@@ -594,6 +595,46 @@ function campanhaCards(body) {
   const porId = new Map((state.catalog.hunts ?? []).map((h) => [h.id, h]));
   const bossPorId = new Map((state.catalog.bosses ?? []).map((b) => [b.id, b]));
   const catalog = state.catalog.bestiary;
+
+  // ---- WORLD (o mapa do mundo) ou a lista de sempre ----
+  const visao = ctx.tabs.campanhaVisao ?? 'mapa';
+  const visoes = el('div', 'tabs campanha-visao');
+  for (const [id, rotulo] of [['mapa', '🗺 Mapa do mundo'], ['lista', '☰ Lista']]) {
+    const botao = el('button', visao === id ? 'active' : null, rotulo);
+    botao.type = 'button';
+    botao.onclick = () => {
+      ctx.tabs.campanhaVisao = id;
+      ctx.redraw();
+    };
+    visoes.append(botao);
+  }
+  body.append(visoes);
+  if (visao === 'mapa') {
+    return void desenharMundo(body, {
+      campanha,
+      escolhida,
+      hunts: porId,
+      bosses: bossPorId,
+      bestiario: catalog,
+      selecao: ctx.tabs.worldSelecao ?? null,
+      aoSelecionar: (s) => {
+        ctx.tabs.worldSelecao = s;
+        ctx.redraw();
+      },
+      largura: document.getElementById('modal-body')?.clientWidth || window.innerWidth,
+      h: {
+        figuraDaCriatura,
+        entrarNaFase: (hunt, lista) => {
+          rolagemDaLista.hunts = document.getElementById('modal-body')?.scrollTop ?? 0;
+          askRunMode(hunt, lista);
+        },
+        enfrentarBoss: (b) => {
+          send({ t: 'startHunt', huntId: b.bossId, mode: 'auto', dificuldade: escolhida.id, campanha: true, strategy: document.getElementById('strategy')?.value });
+          ctx.closeModal();
+        },
+      },
+    });
+  }
 
   for (let ato = 1; ato <= 4; ato++) {
     const fases = escolhida.fases.filter((f) => f.ato === ato);

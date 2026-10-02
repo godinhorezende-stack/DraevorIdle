@@ -3,6 +3,7 @@
 // tile) num canvas do tamanho da tela dividido pelo zoom, e o zoom é sempre
 // inteiro, aplicado pelo CSS com image-rendering: pixelated.
 import { casasDoEvento } from '/packages/shared/src/areas.mjs';
+import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
 import { graficoLigado, tetoDeQuadros } from './graficos.mjs';
@@ -252,6 +253,8 @@ function assinaturaDoRetrato(payload) {
   for (const c of payload.chao ?? []) partes.push('c', c.x, c.y, c.item, c.count, c.sob, (c.pilha ?? []).length);
   /* As paredes de runa entram na assinatura: sem elas, plantar uma nao redesenharia. */
   for (const b of payload.barreiras ?? []) partes.push('b', b.x, b.y, b.item);
+  // Baús e altares da caçada: aparecer, mudar de estado ou sumir redesenha.
+  partes.push(assinaturaDosEncontros(payload.instancia?.encontros));
   return partes.join('|');
 }
 
@@ -3678,6 +3681,10 @@ export class MapView {
      * também desenha as FALAS — o nome da magia saindo do boneco, que é outra
      * coisa e não está na chave.
      */
+    // Baús e altares (se a caçada tem): por cima do chão e das criaturas, antes dos efeitos.
+    if (this.snapshot?.instancia?.encontros?.length) {
+      desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player });
+    }
     if (graficoLigado('efeitos')) this.drawEffects(now);
     if (graficoLigado('projeteis')) this.drawMissiles(now);
     this.drawTexts(now);

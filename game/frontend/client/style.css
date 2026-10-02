@@ -27802,3 +27802,69 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
 .soquetes-orbes .orbe-proposta p { margin: 6px 0; font-size: 13px; }
 .soquetes-orbes .orbe-aviso { color: #ffb15a; }
 .soquetes-orbes .soquetes-acoes button { min-height: 44px; min-width: 110px; }
+
+/* ---- O botão "Interagir" (baú/altar ao alcance, caça online) ---- */
+.btn-interagir {
+  position: fixed; left: 50%; bottom: 225px; transform: translateX(-50%); z-index: 60;
+  padding: 10px 18px; min-height: 44px; border-radius: 10px; font: 600 14px var(--font-heading, Oswald, system-ui, sans-serif);
+  color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e); border: 1px solid #7a5a12; box-shadow: 0 4px 18px #000a, 0 0 14px #f5c54266; cursor: pointer;
+}
+.btn-interagir[hidden] { display: none; }
+
+/* ---- WORLD: o mapa da campanha (Atos, fases, caminhos) e o painel da fase ---- */
+.campanha-visao { margin: 6px 0 10px; }
+.world { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; align-items: start; }
+@media (max-width: 760px) { .world { grid-template-columns: 1fr; } }
+.world-mapa { display: grid; gap: 14px; }
+.world-ato {
+  border: 1px solid #5a4416; border-radius: 12px; padding: 10px 12px 12px;
+  background: radial-gradient(120% 90% at 50% 0%, #1d1710 0%, #0e0d10 70%); box-shadow: inset 0 0 40px #00000099, 0 2px 14px #0008;
+}
+.world-ato-titulo { margin: 0; font-family: var(--font-display, var(--font-heading)); letter-spacing: .14em; text-transform: uppercase; color: #e6c15a; font-size: 18px; text-shadow: 0 0 14px #b8862244; }
+.world-ato-info { font-size: 12px; color: #8d8470; }
+.world-svg-caixa { overflow-x: auto; padding-top: 6px; }
+.world-svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.world-caminho { stroke: #3a3426; stroke-width: 5; stroke-linecap: round; }
+.world-caminho.aberto { stroke: #b88a22; filter: drop-shadow(0 0 4px #b88a2266); }
+.world-conexao { stroke: #6e5a2a; stroke-width: 2; stroke-dasharray: 3 6; fill: none; }
+.world-no { cursor: pointer; outline: none; }
+.world-disco { stroke: #2a2418; stroke-width: 3; fill: #17141a; transition: filter .12s; }
+.world-no.aberta .world-disco { stroke: #e6c15a; fill: #231c10; }
+.world-no.completa .world-disco { stroke: #7a5a12; }
+.world-no.fechada .world-disco { fill: #121115; stroke: #2a2630; }
+.world-no.travada .world-disco { fill: #1a1010; stroke: #5a2a2a; stroke-dasharray: 4 3; }
+.world-no:hover .world-disco, .world-no:focus-visible .world-disco { filter: brightness(1.35); }
+.world-numero { font: 700 15px var(--font-heading, Oswald, system-ui, sans-serif); fill: #e9dfc2; pointer-events: none; }
+.world-ico { fill: #5d5848; stroke: none; pointer-events: none; }
+.world-ico .traco, .world-ico.traco { fill: none; stroke: #5d5848; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.world-ico .vazado { fill: #0e0d10; }
+.world-no.completa .world-ico.traco { stroke: #2a1d05; stroke-width: 3.2; }
+.world-boss .world-ico { fill: #e08a7a; } .world-boss.completa .world-ico { fill: #2a1d05; }
+.world-no.travada .world-ico.traco { stroke: #8a4a4a; }
+.world-ico.achado { fill: #7fd3c0; }
+.world-halo { fill: none; stroke: #f6dc8a; stroke-width: 2; stroke-dasharray: 5 4; opacity: .9; }
+.world-selo-boss .fundo, .world-selo-achado .fundo { fill: #0e0d10; stroke: #5a4416; stroke-width: 1.5; }
+.world-selo-boss .world-ico { fill: #e08a7a; }
+.world-selo-boss, .world-selo-achado { pointer-events: none; }
+.world-boss .world-disco { stroke: #8a4a3a; fill: #1d1013; }
+.world-boss.aberta .world-disco { stroke: #e0705a; }
+.world-legenda { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: #8d8470; }
+.world-legenda .l-completa { color: #d9b34a; } .world-legenda .l-aberta { color: #e9dfc2; } .world-legenda .l-fechada { color: #5d5848; }
+.world-detalhe {
+  position: sticky; top: 8px; border: 1px solid #5a4416; border-radius: 12px; padding: 14px;
+  background: linear-gradient(180deg, #1b150d, #100e10); box-shadow: 0 4px 22px #000a; display: grid; gap: 8px;
+}
+.world-titulo { margin: 0; font-family: var(--font-display, var(--font-heading)); font-size: 20px; letter-spacing: .06em; color: #f0d58a; }
+.world-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: #a69c84; font-size: 13px; }
+.world-selo { padding: 1px 9px; border-radius: 999px; font-size: 11.5px; background: #2a2630; color: #cfc8dc; }
+.world-selo.completa { background: #4a3a12; color: #f6dc8a; } .world-selo.aberta { background: #1f3a2a; color: #bff0d0; } .world-selo.travada { background: #4a2020; color: #ffd0cc; }
+.world-tag { justify-self: start; font-size: 11.5px; padding: 1px 9px; border-radius: 6px; background: #2b3f5c; color: #cfe0ff; }
+.world-descricao { margin: 0; font-size: 13.5px; line-height: 1.45; color: #cfc6ad; }
+.world-linha { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: #8d8470; } .world-linha b { color: #e9dfc2; font-weight: 600; text-align: right; }
+.world-bloco { display: grid; gap: 4px; } .world-rotulo { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8d8470; }
+.world-bichos { display: flex; gap: 6px; flex-wrap: wrap; }
+.world-lista { margin: 0; padding-left: 18px; font-size: 13px; color: #cfc6ad; } .world-lista li.feito { color: #8fd7a4; list-style: none; margin-left: -18px; } .world-lista li.falta { color: #e0b04a; list-style: none; margin-left: -18px; } .world-lista.achados li { color: #7fd3c0; }
+.world-entrar { min-height: 44px; border-radius: 10px; font: 700 15px var(--font-heading, Oswald, system-ui, sans-serif); color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e); border: 1px solid #7a5a12; cursor: pointer; }
+.world-entrar:disabled { opacity: .45; cursor: not-allowed; background: #3a3426; color: #8d8470; }
+.world-nota { margin: 0; font-size: 12px; color: #8d8470; }
+.world-bloco.registro { border-top: 1px solid #2a2418; padding-top: 8px; }

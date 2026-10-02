@@ -19,6 +19,7 @@
 // {huntId: n}, completas: [huntId], bosses: [ato] }` (`kills` é do sistema de
 // antes, por contagem de mortes: fica gravado, ninguém mais lê).
 import { readFileSync } from 'node:fs';
+import { conteudoDaFase, exigidasDaFase, nomesDeBosses } from './campanha-conteudo.mjs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
@@ -68,7 +69,9 @@ export function faseLiberada(estado, dif, huntId) {
   if (f.indice === 0) return true;
   // A primeira fase de um ato pede o boss do ato anterior.
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return false;
-  return !primeiraIncompleta(estado, dif, f);
+  if (primeiraIncompleta(estado, dif, f)) return false;
+  // Requisitos de entrada do conteúdo (editor): fases que precisam estar completas além da cadeia do ato.
+  return exigidasDaFase(huntId).every((id) => faseCompleta(estado, dif, id));
 }
 
 /**
@@ -111,6 +114,8 @@ export function motivoParaNaoEntrar(estado, dif, huntId) {
   if (f.pular) return `${f.nome} está travada (em obras) e não abre por enquanto.`;
   if (faseLiberada(estado, dif, huntId)) return null;
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return `Derrote o boss do Ato ${f.ato - 1} (${bossDoAto(f.ato - 1)?.nome}) no ${nomeDif} para abrir o Ato ${f.ato}.`;
+  const faltando = exigidasDaFase(huntId).find((id) => !faseCompleta(estado, dif, id));
+  if (faltando && !primeiraIncompleta(estado, dif, f)) return `Complete antes ${faseDe(faltando)?.nome ?? faltando} no ${nomeDif} para abrir esta.`;
   return `Complete a fase anterior (${(primeiraIncompleta(estado, dif, f) ?? FASES[f.indice - 1]).nome}) no ${nomeDif} para abrir esta.`;
 }
 
@@ -211,10 +216,36 @@ export function venceuBoss(estado, dif, ato) {
   return aviso;
 }
 
-/** A campanha para a tela: por dificuldade, as fases (com progresso) e os bosses. */
+/**
+ * O que a tela WORLD sabe de uma fase além do progresso: descrição, ambiente, conexões, o que ela exige, o boss
+ * principal e os encontros OBRIGATÓRIOS (a condição de conclusão) — e, dos opcionais e secretos, SÓ os que este
+ * personagem já ENCONTROU (concluiu): nenhum segredo, baú ou boss oculto é revelado antes da hora.
+ */
+function mundoDaFase(estado, f) {
+  const c = conteudoDaFase(f.huntId);
+  const m = c.mundo ?? {};
+  const concluidos = estado.encontros?.concluidos?.[f.huntId] ?? {};
+  const descobertos = (m.todos ?? []).filter((e) => concluidos[e.id]).map((e) => ({ nome: e.nome, tipo: e.tipo, vezes: concluidos[e.id] }));
+  return {
+    ...(c.descricao ? { descricao: c.descricao } : {}),
+    ...(c.ambiente ? { ambiente: c.ambiente } : {}),
+    ...(c.conexoes?.length ? { conexoes: c.conexoes } : {}),
+    ...(c.requisitos?.levelMin ? { levelRecomendado: c.requisitos.levelMin } : {}),
+    ...(c.requisitos?.exige?.length ? { exige: c.requisitos.exige.map((id) => ({ huntId: id, nome: faseDe(id)?.nome ?? id })) } : {}),
+    ...(m.bossPrincipal ? { bossPrincipal: m.bossPrincipal.nome } : {}),
+    ...(m.obrigatorios?.length ? { obrigatorios: m.obrigatorios.map((e) => ({ nome: e.nome, tipo: e.tipo })) } : {}),
+    ...(descobertos.length ? { descobertos } : {}),
+  };
+}
+
+/** A campanha para a tela: por dificuldade, as fases (com progresso) e os bosses — mais o conteúdo do WORLD. */
 export function paraCliente(estado) {
+  const nomes = nomesDeBosses();
+  const vitorias = estado.encontros?.concluidos?.boss ?? {};
   return {
     aoCompletar: aoCompletar(estado),
+    mundo: Object.fromEntries(FASES.map((f) => [f.huntId, mundoDaFase(estado, f)]).filter(([, v]) => Object.keys(v).length)),
+    bossesDerrotados: Object.entries(vitorias).map(([id, vezes]) => ({ id, nome: nomes[id] ?? id, vezes })),
     dificuldades: DIFICULDADES.map((dif) => {
       const p = progresso(estado, dif);
       return {

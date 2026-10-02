@@ -274,5 +274,17 @@ export function tirarAoAcaso(hunt, n, rng = Math.random) {
 export function paraCliente(hunt) {
   const inst = daSala(hunt);
   if (!inst) return null;
-  return { id: inst.id, status: inst.status, ...progresso(hunt) };
+  const encontros = encontrosVisiveis(inst);
+  return { id: inst.id, status: inst.status, ...progresso(hunt), ...(encontros.length ? { encontros } : {}) };
+}
+
+/**
+ * Os encontros que o jogador PODE VER e usar agora: baús e altares com posição, disponíveis (ou em andamento).
+ * Nada de boss (nasce quando o encontro é ativado), nada dormindo (a condição ainda não foi cumprida) e nada sem
+ * posição: segredo não é anunciado antes da hora.
+ */
+export function encontrosVisiveis(inst) {
+  return Object.values(inst?.encontros ?? {})
+    .filter((e) => (e.tipo.startsWith('bau') || e.tipo === 'altar') && (e.estado === 'disponivel' || e.estado === 'ativo') && e.x != null)
+    .map((e) => ({ id: e.id, tipo: e.tipo, nome: e.nome, x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}), estado: e.estado }));
 }

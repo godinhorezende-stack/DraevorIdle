@@ -187,3 +187,40 @@ test('o editor roda sobre o jogo de verdade: encontros salvos pelo editor entram
   assert.equal(inst.encontros.bau.estado, 'disponivel');
   assert.equal(inst.encontros.bau.nome, 'Baú do Editor');
 });
+
+test('o índice do WORLD: salvar encontros o grava em campanha-conteudo.json (boss principal, obrigatórios, todos); salvar dados da fase o preserva; ficar desatualizado vira aviso', () => {
+  const { boa, z } = casas();
+  criados.push('principal-do-mundo');
+  assert.equal(Conteudo.salvarBoss({ ...BOSS, id: 'principal-do-mundo', nome: 'Rei do Mundo' }).ok, true);
+  const r = Conteudo.salvarEncontros(FASE, [
+    { id: 'rei', tipo: 'boss', nome: 'Rei', bossId: 'principal-do-mundo', obrigatorio: true, x: boa[0], y: boa[1], z },
+    { id: 'segredo', tipo: 'bau-comum', nome: 'Baú Secreto', probabilidade: 5, recompensa: { drops: [{ id: 3031, chance: 100 }] } },
+  ]);
+  assert.equal(r.ok, true, JSON.stringify(r));
+  const indice = JSON.parse(readFileSync(Conteudo.CAMINHOS.fases, 'utf8')).fases[FASE].mundo;
+  assert.deepEqual(indice.bossPrincipal, { bossId: 'principal-do-mundo', nome: 'Rei do Mundo' });
+  assert.deepEqual(indice.obrigatorios, [{ id: 'rei', nome: 'Rei', tipo: 'boss' }]);
+  assert.equal(indice.todos.length, 2, 'o índice leva todos, para o servidor dar nome ao que o jogador achar');
+  // Salvar os dados da fase não apaga o índice.
+  assert.equal(Conteudo.salvarMeta(FASE, { descricao: 'Mundo.' }).ok, true);
+  assert.ok(JSON.parse(readFileSync(Conteudo.CAMINHOS.fases, 'utf8')).fases[FASE].mundo, 'o índice continua');
+  assert.equal(Conteudo.carregarFase(FASE).meta.mundo, undefined, 'e não aparece como dado editável');
+  assert.equal(Conteudo.auditar().problemas.some((p) => /índice da tela WORLD/.test(p.mensagem)), false, 'em dia');
+  // O boss foi renomeado: o índice guardou o nome antigo → aviso para salvar de novo.
+  assert.equal(Conteudo.salvarBoss({ ...BOSS, id: 'principal-do-mundo', nome: 'Rei Renomeado' }).ok, true);
+  assert.equal(Conteudo.auditar().problemas.some((p) => /índice da tela WORLD está desatualizado/.test(p.mensagem)), true);
+  // Lista vazia remove o índice (e a entrada, se ficou vazia).
+  assert.equal(Conteudo.salvarEncontros(FASE, []).ok, true);
+  assert.equal(JSON.parse(readFileSync(Conteudo.CAMINHOS.fases, 'utf8')).fases[FASE].mundo, undefined);
+  Conteudo.excluirBoss('principal-do-mundo');
+});
+
+test('requisitos "exige": só fases ANTERIORES e abertas (senão fecharia ciclo com a cadeia do ato)', () => {
+  const [a, b, c] = Campanha.FASES;
+  assert.deepEqual(Conteudo.validarMeta(c.huntId, { requisitos: { exige: [a.huntId] } }), []);
+  assert.match(Conteudo.validarMeta(a.huntId, { requisitos: { exige: [c.huntId] } }).join(' '), /vem depois/);
+  assert.match(Conteudo.validarMeta(b.huntId, { requisitos: { exige: [b.huntId] } }).join(' '), /vem depois/);
+  assert.match(Conteudo.validarMeta(c.huntId, { requisitos: { exige: ['nao-existe'] } }).join(' '), /não é uma fase/);
+  const travada = Campanha.FASES.find((f) => f.pular);
+  if (travada) assert.match(Conteudo.validarMeta(Campanha.FASES.at(-1).huntId, { requisitos: { exige: [travada.huntId] } }).join(' '), /travada/);
+});
