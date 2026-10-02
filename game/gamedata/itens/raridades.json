@@ -1,5 +1,5 @@
 {
- "_nota": "Raridade do ITEM (sorteada em cada drop). Chances em %, por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Curva global de 02/10 (auditoria de loot, decisão do dono): a qualidade nunca cai ao passar de um estágio para o seguinte (Normal 1→4, Cruel 1→4, Merciless 1→4). O MÍTICO é especial: ~1 a cada 1.000 abates no estágio mais alto (Merciless 4, sem booster) e mais raro nos de baixo (1 a cada 7.500 no Normal 4).",
+ "_nota": "Raridade do ITEM (sorteada em cada drop). Chances em %, por ATO e DIFICULDADE — cada tabela soma 100 (validado no boot, ver systems/itens/config.mjs). Curva global de 02/10 (auditoria de loot, decisão do dono): a qualidade nunca cai ao passar de um estágio para o seguinte. No estágio mais alto (Merciless 4, sem booster, ~0,83 equipamento por abate): raro 1 a cada ~10 abates, épico 1/30, lendário 1/150, mítico 1/1.000; os demais estágios seguem a mesma proporção.",
  "ordem": [
   "comum",
   "incomum",
@@ -197,105 +197,105 @@
  "chances": {
   "1": {
    "facil": {
-    "comum": 72.000701,
+    "comum": 75.469395,
     "incomum": 20,
-    "raro": 7,
-    "épico": 0.9,
-    "lendário": 0.099,
+    "raro": 4.216867,
+    "épico": 0.301205,
+    "lendário": 0.012234,
     "mítico": 0.000299
    },
    "medio": {
-    "comum": 56.172863,
+    "comum": 66.684757,
     "incomum": 22.8,
-    "raro": 14.5,
-    "épico": 4.5,
-    "lendário": 2.0,
+    "raro": 8.73494,
+    "épico": 1.506024,
+    "lendário": 0.247142,
     "mítico": 0.027137
    },
    "dificil": {
-    "comum": 46.825373,
+    "comum": 63.66886,
     "incomum": 22,
-    "raro": 18,
-    "épico": 8.5,
-    "lendário": 4.6,
+    "raro": 10.843373,
+    "épico": 2.844712,
+    "lendário": 0.568428,
     "mítico": 0.074627
    }
   },
   "2": {
    "facil": {
-    "comum": 68.008222,
+    "comum": 72.440298,
     "incomum": 22,
-    "raro": 8.5,
-    "épico": 1.2,
-    "lendário": 0.29,
+    "raro": 5.120482,
+    "épico": 0.401606,
+    "lendário": 0.035836,
     "mítico": 0.001778
    },
    "medio": {
-    "comum": 51.368627,
+    "comum": 63.469297,
     "incomum": 25,
-    "raro": 15.5,
-    "épico": 5.5,
-    "lendário": 2.6,
+    "raro": 9.337349,
+    "épico": 1.840696,
+    "lendário": 0.321285,
     "mítico": 0.031373
    },
    "dificil": {
-    "comum": 41.216667,
+    "comum": 59.64893,
     "incomum": 25,
-    "raro": 19,
-    "épico": 9.5,
-    "lendário": 5.2,
+    "raro": 11.445783,
+    "épico": 3.179384,
+    "lendário": 0.64257,
     "mítico": 0.083333
    }
   },
   "3": {
    "facil": {
-    "comum": 62.043902,
+    "comum": 68.580659,
     "incomum": 24,
-    "raro": 11,
-    "épico": 2,
-    "lendário": 0.95,
+    "raro": 6.626506,
+    "épico": 0.669344,
+    "lendário": 0.117393,
     "mítico": 0.006098
    },
    "medio": {
-    "comum": 47.562477,
+    "comum": 61.427208,
     "incomum": 26,
-    "raro": 16.5,
-    "épico": 6.5,
-    "lendário": 3.4,
+    "raro": 9.939759,
+    "épico": 2.175368,
+    "lendário": 0.420142,
     "mítico": 0.037523
    },
    "dificil": {
-    "comum": 37.602439,
+    "comum": 57.757346,
     "incomum": 26,
-    "raro": 19.5,
-    "épico": 11,
-    "lendário": 5.8,
+    "raro": 11.746988,
+    "épico": 3.681392,
+    "lendário": 0.716713,
     "mítico": 0.097561
    }
   },
   "4": {
    "facil": {
-    "comum": 55.183936,
+    "comum": 64.989085,
     "incomum": 25,
-    "raro": 14,
-    "épico": 4,
-    "lendário": 1.8,
+    "raro": 8.433735,
+    "épico": 1.338688,
+    "lendário": 0.222428,
     "mítico": 0.016064
    },
    "medio": {
-    "comum": 44.151807,
+    "comum": 60.200906,
     "incomum": 26,
-    "raro": 17.5,
-    "épico": 8,
-    "lendário": 4.3,
+    "raro": 10.542169,
+    "épico": 2.677376,
+    "lendário": 0.531356,
     "mítico": 0.048193
    },
    "dificil": {
-    "comum": 35.379518,
+    "comum": 57.012048,
     "incomum": 26,
-    "raro": 20,
-    "épico": 12,
-    "lendário": 6.5,
+    "raro": 12.048193,
+    "épico": 4.016064,
+    "lendário": 0.803213,
     "mítico": 0.120482
    }
   }

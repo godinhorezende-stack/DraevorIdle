@@ -28,11 +28,15 @@ test('a qualidade NUNCA cai de um estágio para o seguinte: raro+, épico+, lend
   }
 });
 
-test('o Normal ficou como estava (só o mítico mudou) e o mítico é especial: ~1 a cada 1.000 abates no topo, sem booster', () => {
-  assert.deepEqual([tab(['1', 'facil']).raro, tab(['1', 'facil'])['épico'], tab(['4', 'facil'])['lendário']], [7, 0.9, 1.8]);
+test('as raridades altas são ESPECIAIS: no topo (Merciless 4, sem booster) raro ~1/10 abates, épico 1/30, lendário 1/150, mítico 1/1.000', () => {
   // abates por mítico = 1 ÷ (equipamentos por abate × chance do mítico); equipamentos por abate médios por Ato (auditoria de 02/10)
   const EQ = { 1: 0.67, 2: 0.75, 3: 0.82, 4: 0.83 };
   const abates = (e) => 100 / (EQ[e[0]] * tab(e)['mítico']);
+  const abatesDe = (e, r) => 100 / (EQ[e[0]] * tab(e)[r]);
+  const topo = ['4', 'dificil'];
+  assert.ok(Math.abs(abatesDe(topo, 'raro') - 10) < 0.5, `raro ${abatesDe(topo, 'raro').toFixed(1)}`);
+  assert.ok(Math.abs(abatesDe(topo, 'épico') - 30) < 1, `épico ${abatesDe(topo, 'épico').toFixed(1)}`);
+  assert.ok(Math.abs(abatesDe(topo, 'lendário') - 150) < 3, `lendário ${abatesDe(topo, 'lendário').toFixed(1)}`);
   assert.ok(Math.abs(abates(['4', 'dificil']) - 1000) < 25, `Merciless 4: ${abates(['4', 'dificil']).toFixed(0)} abates por mítico`);
   assert.ok(abates(['4', 'facil']) > 5000, 'Normal 4: mais raro que o topo');
   for (const e of ORDEM_DOS_ESTAGIOS) assert.ok(abates(e) >= 975, `${e.join('/')}: nenhum estágio passa de 1 mítico a cada ~1.000 abates`);
