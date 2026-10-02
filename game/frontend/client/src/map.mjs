@@ -91,6 +91,10 @@ const JANELA_DO_DEGRAU = 400;
 const TETO_DE_EFEITOS = 600;
 const TETO_DE_NUMEROS = 300;
 const TILE = 32;
+/** Colunas por tira de linha: blocos fixos na grade do mapa (ver `copiarTiras`). */
+const BLOCO_DA_TIRA = 8;
+/** Quantas tiras ficam guardadas (blocos de 8 casas: ~15 linhas x ~5 blocos na tela, mais o que se andou). */
+const LIMITE_DE_TIRAS = 700;
 
 /*
  * Quanto o numero de dano sobe na vida dele, em pixels de MUNDO.
@@ -2025,24 +2029,8 @@ export class MapView {
        * criatura e objeto, e esta linha não tem nenhum dos dois.
        */
       if (podeUsarTira && !this.linhasVivas?.has(y)) {
-        const tira = this.tiraDaLinha(map, atlas, cell, y, x0, x1, stacks, time);
-        ctx.drawImage(
-          tira.lona,
-          x0 * TILE - this.camera.x - tira.transbordo.x,
-          py - tira.transbordo.y
-        );
-        /*
-         * A tela precisa saber quando o desenho dela vence, senão o laço
-         * dormiria com a água parada. Ver `podePularQuadro`.
-         *
-         * O que vale é `valeAte - agora`, e NÃO o `resto` guardado: `resto` é o
-         * que faltava quando a tira nasceu. Num acerto de cache 300 ms depois,
-         * devolver o `resto` velho diria "não muda nada nos próximos 500 ms"
-         * quando a troca é em 200 — e `trocaDeAnimacaoEm` dormiria por cima
-         * dela. Era um congelamento de animação que só aparecia andando devagar.
-         */
-        const restoDaTira = tira.valeAte === Infinity ? Infinity : tira.valeAte - time;
-        if (restoDaTira < this.trocaDeAnimacao) this.trocaDeAnimacao = restoDaTira;
+        // As pontas SOBEM para a grade de blocos: a chave da tira não depende de onde está a câmera.
+        this.copiarTiras(map, atlas, cell, y, x0 - (x0 % BLOCO_DA_TIRA), Math.min(map.width - 1, x1 - (x1 % BLOCO_DA_TIRA) + BLOCO_DA_TIRA - 1), stacks, time, py);
         continue;
       }
 
@@ -2124,6 +2112,45 @@ export class MapView {
     }
   }
 
+  /**
+   * Copia as casas `a..b` da linha `y` em tiras de blocos FIXOS.
+   *
+   * "FPS cai a quase zero andando." Medido (cidade e caçada, celular emulado,
+   * CPU 4x): a chave da tira levava a coluna da ESQUERDA DA CÂMERA, então a cada
+   * casa andada na horizontal as ~15 linhas visíveis ganhavam chave nova e eram
+   * todas refeitas no mesmo quadro — 1283 `drawImage` num quadro só (390 tiras
+   * refeitas em 12 s de caminhada), mais caro que desenhar casa a casa, que era
+   * o que a tira queria evitar.
+   *
+   * Agora a linha é cortada em blocos de `BLOCO_DA_TIRA` colunas ALINHADOS À
+   * GRADE DO MAPA (0-7, 8-15...). Andar reaproveita os blocos que continuam na
+   * tela e só constrói o que entrou: ~8 casas por linha a cada 8 casas andadas,
+   * em vez da linha inteira a cada casa. A ordem de desenho é a mesma (os
+   * blocos saem da esquerda para a direita e o transbordo de um cobre o
+   * anterior, exatamente como os pedaços de `desenharLinhaEmPedacos`).
+   */
+  copiarTiras(map, atlas, cell, y, a, b, stacks, time, py) {
+    const ctx = this.ctx;
+    for (let de = a; de <= b; ) {
+      const ate = Math.min(b, de - (de % BLOCO_DA_TIRA) + BLOCO_DA_TIRA - 1);
+      const tira = this.tiraDaLinha(map, atlas, cell, y, de, ate, stacks, time);
+      ctx.drawImage(tira.lona, de * TILE - this.camera.x - tira.transbordo.x, py - tira.transbordo.y);
+      /*
+       * A tela precisa saber quando o desenho dela vence, senão o laço
+       * dormiria com a água parada. Ver `podePularQuadro`.
+       *
+       * O que vale é `valeAte - agora`, e NÃO o `resto` guardado: `resto` é o
+       * que faltava quando a tira nasceu. Num acerto de cache 300 ms depois,
+       * devolver o `resto` velho diria "não muda nada nos próximos 500 ms"
+       * quando a troca é em 200 — e `trocaDeAnimacao` dormiria por cima
+       * dela. Era um congelamento de animação que só aparecia andando devagar.
+       */
+      const resto = tira.valeAte === Infinity ? Infinity : tira.valeAte - time;
+      if (resto < this.trocaDeAnimacao) this.trocaDeAnimacao = resto;
+      de = ate + 1;
+    }
+  }
+
   /*
    * ---- A linha COM criatura, em pedaços prontos ----
    *
@@ -2150,19 +2177,16 @@ export class MapView {
     if (!vivas?.size) return false;
     const colunas = [...vivas].filter((x) => x >= x0 && x <= x1).sort((a, b) => a - b);
     const ctx = this.ctx;
-    const copiar = (a, b) => {
-      const tira = this.tiraDaLinha(map, atlas, cell, y, a, b, stacks, time);
-      ctx.drawImage(tira.lona, a * TILE - this.camera.x - tira.transbordo.x, py - tira.transbordo.y);
-      const resto = tira.valeAte === Infinity ? Infinity : tira.valeAte - time;
-      if (resto < this.trocaDeAnimacao) this.trocaDeAnimacao = resto;
-    };
-    let inicio = x0;
+    const copiar = (a, b) => this.copiarTiras(map, atlas, cell, y, a, b, stacks, time, py);
+    // As pontas da linha (e só elas) seguem a câmera: sobem para a grade de blocos, como em `desenharCamada`.
+    let inicio = x0 - (x0 % BLOCO_DA_TIRA);
     for (const x of colunas) {
       copiar(inicio, x);
       porCasa(x, y);
       inicio = x + 1;
     }
-    if (inicio <= x1) copiar(inicio, x1);
+    const fim = Math.min(map.width - 1, x1 - (x1 % BLOCO_DA_TIRA) + BLOCO_DA_TIRA - 1);
+    if (inicio <= fim) copiar(inicio, fim);
     return true;
   }
 
@@ -2257,7 +2281,16 @@ export class MapView {
     const z = this.snapshot?.z ?? 0;
     const chave = `${map.atlas ?? ''}|${z}|${y}|${x0}|${x1}`;
     const guardada = this.tiras.get(chave);
-    if (guardada && time < guardada.valeAte) return guardada;
+    if (guardada && time < guardada.valeAte) {
+      // Vai para o fim da fila (a despejada é a mais antiga, não a que está na tela) — mas só de vez em
+      // quando: reordenar um Map a cada cópia, ~75 por quadro, custava mais que o ganho.
+      if (time - guardada.vistaEm > 2000) {
+        guardada.vistaEm = time;
+        this.tiras.delete(chave);
+        this.tiras.set(chave, guardada);
+      }
+      return guardada;
+    }
 
     const transbordo = this.transbordoDaPaleta(map);
     const largura = (x1 - x0 + 1) * TILE + transbordo.x;
@@ -2307,7 +2340,7 @@ export class MapView {
       }
     }
 
-    const tira = { lona, transbordo, resto, valeAte: resto === Infinity ? Infinity : time + resto };
+    const tira = { lona, transbordo, resto, valeAte: resto === Infinity ? Infinity : time + resto, vistaEm: time };
     /*
      * A chave leva a coluna da esquerda, então andar de lado cria tiras novas e
      * as velhas ficam para trás. Quinze linhas cabem numa tela; o teto é a rede
@@ -2316,7 +2349,15 @@ export class MapView {
      */
     // 400 e não 120: as linhas com criatura agora também viram tiras, em
     // pedaços (ver `desenharLinhaEmPedacos`), e cada passo de bicho cria um par novo.
-    if (this.tiras.size > 400) this.tiras.clear();
+    if (this.tiras.size > LIMITE_DE_TIRAS) {
+      // Despeja as mais antigas (um quarto), e não tudo: esvaziar tudo refazia a tela inteira de uma vez.
+      let sobra = LIMITE_DE_TIRAS >> 2;
+      for (const velha of this.tiras.keys()) {
+        if (sobra-- <= 0) break;
+        this.tiras.delete(velha);
+      }
+    }
+    this.tiras.delete(chave);
     this.tiras.set(chave, tira);
     return tira;
   }
