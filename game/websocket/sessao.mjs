@@ -52,7 +52,7 @@ import * as Ranking from '../systems/ranking.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Arena from '../systems/arena.mjs';
 import * as SimuladorTique from '../systems/simulador-tique.mjs';
-import { descerDeLevel, tirarEventosDaParty, estimarExpDoBicho } from '../systems/hunt/combate.mjs';
+import { descerDeLevel, tirarEventosDaParty, fichaDoBicho } from '../systems/hunt/combate.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
 import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
@@ -1004,9 +1004,9 @@ export class Sessao {
         return this.entrarNoPersonagem(m);
       case 'release':
         return this.soltarPersonagem();
-      // A ficha do monstro pede "quanto isto paga a mim, agora" — a conta é do servidor (`estimarExpDoBicho`).
-      case 'expDoBicho':
-        if (this.estado && typeof m.key === 'string') this.enviar({ t: 'expDoBicho', ...estimarExpDoBicho(this.estado, this.estado.hunt, m.key, { huntId: typeof m.huntId === 'string' ? m.huntId : null, dificuldade: typeof m.dificuldade === 'string' ? m.dificuldade : null }) });
+      // A ficha do monstro pede o que ele paga a mim e como ele bate — a conta é do servidor (`fichaDoBicho`).
+      case 'fichaDoBicho':
+        if (this.estado && typeof m.key === 'string') this.enviar({ t: 'fichaDoBicho', ...fichaDoBicho(this.estado, this.estado.hunt, m.key, { huntId: typeof m.huntId === 'string' ? m.huntId : null, dificuldade: typeof m.dificuldade === 'string' ? m.dificuldade : null }) });
         return;
       // O jogador leu o relatório da ausência (OK): só agora ele deixa de ser entregue.
       case 'ackAusencia':

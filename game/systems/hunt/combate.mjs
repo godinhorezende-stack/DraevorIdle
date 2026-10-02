@@ -366,6 +366,16 @@ export function estimarExpDoBicho(estado, hunt, key, { huntId = null, dificuldad
   return { key, huntId, dificuldade, base, escalaDaFase, naFase, final: Math.round(semOnline * fatorDaCacaOnline(hunt)) };
 }
 
+/**
+ * A ficha do monstro (`{t:'fichaDoBicho'}`): o XP que ele paga a este personagem e os ataques dele — as
+ * duas contas do servidor, na mesma resposta. `escalaDoDano` é a da fase (a `forca` que o golpe leva na
+ * luta, ver `aplicarEscala`); o dano-base dos `ataques` ainda passa por raridade, proteções e armadura.
+ */
+export function fichaDoBicho(estado, hunt, key, { huntId = null, dificuldade = null } = {}) {
+  const escalaDoDano = (huntId && Campanha.escalaDaFase(huntId, dificuldade)?.dano) ?? hunt?.escala?.dano ?? 1;
+  return { ...estimarExpDoBicho(estado, hunt, key, { huntId, dificuldade }), ataques: Poderes.ataquesParaFicha(key), escalaDoDano };
+}
+
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // As mecânicas do mob ao morrer (Explosivo, Procriador) e as dos vizinhos (Vingativo) — `mobs/mecanicas.mjs`.
   Mecanicas.aoMorrer(estado, hunt, personagem, alvo, eventos);

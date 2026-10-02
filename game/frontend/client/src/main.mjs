@@ -70,7 +70,7 @@ import {
   openArena,
   openCyclopedia, openBestiary, openReport, openExerciseRapido, openExercise, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente, openCaixaBoosted,
   escolhasDaPosicao, cartazDeBossLigado, redesenharJanelaAberta,
-  chegouExpDoBicho,
+  chegouFichaDoBicho,
 } from './panels.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { renderSheet as renderSheetInto } from './sheet.mjs';
@@ -832,8 +832,8 @@ function handle(message) {
       }
       break;
     // A ficha de alguém, pedida ao clicar no nome dele no chat.
-    case 'expDoBicho':
-      chegouExpDoBicho(message);
+    case 'fichaDoBicho':
+      chegouFichaDoBicho(message);
       break;
     case 'perfil':
       mostrarPerfil(message.perfil);
