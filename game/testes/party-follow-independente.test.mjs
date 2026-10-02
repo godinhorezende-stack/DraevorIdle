@@ -27,13 +27,13 @@ after(async () => {
 const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 let proximaGrade = 0;
 
-/** Uma grade a partir de um desenho: `#` parede, `.` chão; letras `1`–`4` = posição de cada jogador (chão também), `m` = monstro. */
+/** Uma grade a partir de um desenho: `#` parede, `.` chão; letras `1`–`5` = posição de cada jogador (chão também), `m` = monstro. */
 function desenho(linhas) {
   const andavel = new Set();
   const achados = { jogadores: {}, monstros: [] };
   linhas.forEach((linha, y) => [...linha].forEach((c, x) => {
     if (c !== '#') andavel.add(`${x},${y}`);
-    if (/[1-4]/.test(c)) achados.jogadores[c] = { x, y };
+    if (/[1-5]/.test(c)) achados.jogadores[c] = { x, y };
     if (c === 'm') achados.monstros.push({ x, y });
   }));
   const id = `teste-party-${++proximaGrade}`;
@@ -335,20 +335,22 @@ test('o servidor manda o estado de movimento de cada membro (modo, quem segue, d
   for (const trecho of ['function tabelaDaParty', 'function controlesDeReagrupar', "action: 'modo'", "action: 'reagrupar'", "action: 'cancelarReagrupar'", 'Explorar independente']) assert.ok(painel.includes(trecho), trecho);
 });
 
-test('desempenho: party de 5 (4 seguindo, atravessando uma sala com 150 bichos) — o tique de cada seguidor fica barato e sem busca repetida', async () => {
+test('desempenho: party de 5 (o líder e 4 seguindo, atravessando uma sala com 150 bichos) — o tique de cada seguidor fica barato e sem busca repetida', async () => {
   const linhas = ['1' + '.'.repeat(79), ...Array.from({ length: 28 }, () => '.'.repeat(80)), '.'.repeat(80)];
   linhas[2] = '2' + linhas[2].slice(1);
   linhas[3] = '.3' + linhas[3].slice(2);
   linhas[4] = '..4' + linhas[4].slice(3);
-  const { js, sala } = await partyNaGrade(linhas, 4);
+  linhas[5] = '...5' + linhas[5].slice(4);
+  const { js, sala } = await partyNaGrade(linhas, 5);
   const extra = [];
   for (let i = 0; i < 150; i++) extra.push({ uid: 800_000 + i, key: null, name: 'Passante', look: 0, x: 10 + (i % 60), y: 8 + Math.floor(i / 60) * 4, dir: 2, hp: 1e9, maxHp: 1e9, exp: 0, loot: [], perseguindo: false, proximoPasso: Infinity });
   sala.monstros.push(...extra);
   for (const j of js.slice(1)) assert.ok(Party.comandoDaCaca(j.s, { action: 'coleira', valor: 3 }).ok);
   const t0 = process.hrtime.bigint();
   rodar(js.slice(1), 120, (i) => { if (i < 60) pos(js[0]).x = 1 + i; });
-  const msPorTique = Number(process.hrtime.bigint() - t0) / 1e6 / 120 / 3;
+  const msPorTique = Number(process.hrtime.bigint() - t0) / 1e6 / 120 / 4;
   console.log(`  [medido] ${msPorTique.toFixed(2)} ms por seguidor por tique`);
   assert.ok(msPorTique < 15, `${msPorTique.toFixed(2)} ms por seguidor por tique`);
-  for (const j of js.slice(1)) assert.ok(cheb(pos(j), pos(js[0])) <= 12, 'ninguém ficou para trás');
+  const dists = js.slice(1).map((j) => cheb(pos(j), pos(js[0])));
+  for (const j of js.slice(1)) assert.ok(cheb(pos(j), pos(js[0])) <= 12, `ninguém ficou para trás: ${dists.join(', ')}`);
 });
