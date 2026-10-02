@@ -10,9 +10,7 @@
 import { criarMonstro } from '../hunt/monstros.mjs';
 import { aplicarEscala } from '../campanha.mjs';
 import { salaDe } from '../hunt/sala.mjs';
-import { gradeDaHunt, huntOuMapaCustom } from '../hunt/terreno.mjs';
-import { andarDaGrade } from '../hunt/andares.mjs';
-import { casaLivrePerto } from '../hunt/caminho.mjs';
+import { bichosDaSala, listaDoAndar, casaLivre } from '../encontros/sala.mjs';
 import * as Poderes from '../poderes.mjs';
 import * as Areas from '../../engine/areas.mjs';
 import * as Estado from '../encontros/estado.mjs';
@@ -22,27 +20,6 @@ import { bossUnico } from './catalogo.mjs';
 
 const MAX_TELEGRAFOS = 4;
 const REPETE_AVISO_MS = 500;
-
-/** Todos os bichos da sala, em todos os andares. */
-const bichosDaSala = (hunt) => {
-  const sala = salaDe(hunt);
-  return sala ? [...sala.monstros, ...Object.values(sala.outrosAndares ?? {}).flat()] : [];
-};
-
-/** A lista de bichos do andar `z` da sala (a do andar atual é `sala.monstros`). */
-const listaDoAndar = (hunt, z) => {
-  const sala = salaDe(hunt);
-  if (z == null || z === sala.z) return sala.monstros;
-  return (sala.outrosAndares ??= {})[z] ?? (sala.outrosAndares[z] = []);
-};
-
-/** Uma casa livre perto de `p` no andar `z` (a do ponto, se estiver livre). `null` = sem lugar. */
-function casaLivre(hunt, p, z) {
-  const sala = salaDe(hunt);
-  const grade = andarDaGrade(gradeDaHunt(huntOuMapaCustom(sala.huntId)), z ?? sala.z);
-  const lista = listaDoAndar(hunt, z);
-  return casaLivrePerto(grade, p, (c) => lista.some((m) => m.hp > 0 && m.x === c.x && m.y === c.y) || (sala.pos.x === c.x && sala.pos.y === c.y));
-}
 
 // ---------------------------------------------------------------- nascer
 
@@ -312,7 +289,7 @@ export function aoMorrer(hunt, boss, { quem = [], agora = 0 } = {}) {
     const { primeira } = Entrega.registrarConclusao(estado, 'boss', b.id);
     // A mesma morte nunca paga duas vezes ao mesmo personagem (`reivindicar`), nem as vitórias seguintes.
     if (!primeira || !premio || !Entrega.reivindicar(estado, inst?.id ?? hunt.huntId, `boss:${b.id}`).ok) continue;
-    entregas.push({ estado, gold: Number(premio.gold ?? 0), exp: Number(premio.exp ?? 0), itens: (premio.itens ?? []).map((i) => ({ id: i.id, count: i.count })), nome: def.nome });
+    entregas.push({ estado, gold: Number(premio.gold ?? 0), exp: Number(premio.exp ?? 0), itens: (premio.itens ?? []).map((i) => ({ id: i.id, count: i.count })), nome: def.nome, rotulo: 'Primeira vitória sobre' });
   }
   return entregas;
 }

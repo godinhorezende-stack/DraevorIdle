@@ -203,12 +203,12 @@ export function progresso(hunt) {
 }
 
 /** Acabou de limpar (100%)? Marca `limpa` (uma vez) e devolve `true` só nessa vez. `agora` = relógio da caçada. */
-export function marcarSeLimpou(hunt, agora) {
+export function marcarSeLimpou(hunt, agora, quem = {}) {
   const inst = hunt?.instancia;
   if (!inst || inst.status !== 'ativa') return false;
   const bichosLimpos = pendentes(hunt) === 0;
   // Os encontros acompanham a limpeza (libera os que esperam os bichos, expira os opcionais, o idle resolve o que pode).
-  Encontros.avaliar(inst, { monstrosLimpos: bichosLimpos, agora, hunt });
+  Encontros.avaliar(inst, { monstrosLimpos: bichosLimpos, agora, hunt, estado: quem.estado ?? null, personagem: quem.personagem ?? null });
   // CLEAR = bichos mortos E encontros OBRIGATÓRIOS concluídos. Opcional nunca trava.
   // Um encontro EM ANDAMENTO (ativo) também segura o CLEAR: a instância não some no meio de uma luta de boss.
   if (!bichosLimpos || Encontros.obrigatoriosPendentes(inst) > 0 || Encontros.emAndamento(inst) > 0) return false;

@@ -377,8 +377,109 @@ export function fichaDoBicho(estado, hunt, key, { huntId = null, dificuldade = n
   return { ...estimarExpDoBicho(estado, hunt, key, { huntId, dificuldade }), ataques: Poderes.ataquesParaFicha(key), escalaDoDano };
 }
 
-/** A recompensa de PRIMEIRA vitória sobre um boss único (ouro, exp e itens), entregue por `BossesUnicos.aoMorrer`. */
-function aplicarRecompensaDeBoss({ estado, gold, exp, itens, nome }) {
+/**
+ * Sorteia e ENTREGA uma lista de drops (`[{ id, chance }]`, chance em fração): chance com os bônus de loot, moedas
+ * no bolso, a peça pelo gerador central, filtros de coleta, capacidade, rodízio da party, anúncio de drop raro e o
+ * evento de loot. É o laço que `matarMonstro` sempre teve, extraído para o loot dos ENCONTROS (baús, guardiões)
+ * seguir exatamente as mesmas regras. `alvo`: de onde veio (`key`, `name`, `exp`/`expDasMoedas`, `lootMult`).
+ */
+function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, sala, caiu, conta, deOutros, podio }) {
+  for (const drop of drops) {
+    // Entrada de loot SEM id no bestiário (64 bichos têm "rotten feather"/"ritual tooth" assim): não é
+    // item nenhum — antes entrava na bolsa como um item fantasma (sem nome, sem venda) e como
+    // "undefined" no Analisador. Não muda a chance de nenhum item de verdade.
+    if (drop.id == null) continue;
+    // `lootMult`: a raridade do mob (raro/elite dão mais loot — ver `mobs/raridade.mjs`).
+    const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
+    if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
+    if (VALOR_DA_MOEDA[drop.id]) {
+      const n = quantasMoedas(alvo, drop.id, estado);
+      // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
+      // caçando — só vai para o banco quando o jogador deposita de propósito
+      // no Banqueiro. (Uma versão anterior mandava direto para `bank`, a
+      // partir de uma medição do original que o dono do projeto confirmou
+      // estar errada.)
+      const total = n * VALOR_DA_MOEDA[drop.id];
+      caiu.push({ id: drop.id, count: n });
+      conta('loot', drop.id, n);
+      if (!juntos) {
+        darOuro(estado, total);
+        continue;
+      }
+      // Party: partes iguais; o resto da divisão fica com quem matou.
+      const parte = Math.floor(total / juntos.length);
+      for (const m of juntos) darOuro(m.estado, parte + (m.estado === estado ? total - parte * juntos.length : 0));
+      continue;
+    }
+    // O item inteiro (raridade, atributos, efeito) sai do gerador central.
+    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt) });
+    const af = peca.af ?? null;
+    // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
+    const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;
+    const fila = juntos ? juntos.map((_, k) => juntos[(vez + k) % juntos.length]) : [{ estado, nome: personagem?.nome }];
+    let dono = null;
+    let ignorado = true;
+    for (const [k, m] of fila.entries()) {
+      // A peça já sorteada (raridade e atributos) vai junto: as regras específicas de "não coletar" olham os atributos reais.
+      if (Bolsa.ignora(m.estado, drop.id, peca)) continue;
+      ignorado = false;
+      const semCap = pesoDoInventario(m.estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(m.estado);
+      if (semCap || !Bolsa.porNaBolsa(m.estado, drop.id, 1, peca)) continue;
+      dono = m;
+      if (juntos) vezDoLoot.set(sala, (vez + k + 1) % juntos.length);
+      break;
+    }
+    if (!dono) {
+      conta(ignorado ? 'ignorado' : 'perdido', drop.id, 1);
+      continue;
+    }
+    // A raridade do drop vai no evento: é ela que pinta o nome em "Loot of a ...".
+    const noChat = { id: drop.id, count: 1, ...(peca.raridade ? { raridade: peca.raridade } : {}) };
+    if (dono.estado === estado) {
+      caiu.push(noChat);
+      conta('loot', drop.id, 1);
+    } else {
+      conta('loot', drop.id, 1, dono.estado.hunt?.sessao);
+      const lista = deOutros.get(dono.estado) ?? [];
+      lista.push(noChat);
+      deOutros.set(dono.estado, lista);
+    }
+    // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
+    // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
+    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito, peca }).catch((e) => console.error('drops-do-site', e.message));
+    // Épico para cima: o servidor inteiro fica sabendo (ver `anuncios.mjs`).
+    Anuncios.dropRaro({ quem: dono.nome, peca, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
+  }
+  for (const [outro, items] of deOutros) {
+    const lista = eventosDaParty.get(outro) ?? [];
+    lista.push({ t: 'loot', name: alvo.name, items });
+    eventosDaParty.set(outro, lista);
+  }
+  // Mesmo evento do original (`{t:'loot', name, items:[{id,count}]}`, capturado
+  // ao vivo): é ele que escreve "Loot of a Troll: ..." no chat.
+  if (caiu.length) eventos.push({ t: 'loot', name: alvo.name, items: caiu });
+}
+
+/**
+ * O loot de um ENCONTRO (baú, guardião): a lista de drops `[{ id, chance }]` (chance em fração) pelas MESMAS regras
+ * do loot de um bicho — bônus de loot, filtros de coleta, capacidade, rodízio da party, anúncio de drop raro.
+ * `origem`: `{ key, name, expDasMoedas }` (o que faz o papel do bicho). Devolve o que caiu (para o aviso).
+ */
+export function lootDoEncontro(estado, hunt, personagem, origem, drops, eventos) {
+  const part = hunt.partilha;
+  const sessao = hunt.sessao;
+  const caiu = [];
+  const conta = (grupo, id, n, ses = sessao) => {
+    if (ses) ses.itens[grupo][id] = (ses.itens[grupo][id] ?? 0) + n;
+  };
+  const juntos = part?.ativa && part.membros.length > 1 ? part.membros.filter((m) => m.estado === estado || m.estado?.hunt) : null;
+  const sala = juntos ? salaDe(hunt) : null;
+  soltarDrops({ estado, hunt, personagem, alvo: origem, drops, eventos, juntos, sala, caiu, conta, deOutros: new Map(), podio: hunt.podio ?? SEM_PODIO });
+  return caiu;
+}
+
+/** Paga um prêmio único (`{ estado, gold, exp, itens, nome }`): ouro, experiência e itens, com o aviso na tela. */
+export function pagarPremio({ estado, gold, exp, itens, nome, rotulo = 'Primeira vez:' }) {
   const partes = [];
   if (gold > 0) {
     darOuro(estado, gold);
@@ -391,7 +492,7 @@ function aplicarRecompensaDeBoss({ estado, gold, exp, itens, nome }) {
     partes.push(`${exp.toLocaleString('pt-BR')} de experiência`);
   }
   for (const { id, count } of itens) if (Bolsa.porNaBolsa(estado, id, count)) partes.push(`${count}x ${ITEM_CATALOG[id]?.name ?? id}`);
-  estado.avisoDaHunt = `Primeira vitória sobre ${nome}${partes.length ? `: ${partes.join(', ')}` : ''}.`;
+  estado.avisoDaHunt = `${rotulo} ${nome}${partes.length ? ` — ${partes.join(', ')}` : ''}.`;
 }
 
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
@@ -408,7 +509,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   if (alvo.boss) {
     const partilha = hunt.partilha;
     const quem = [estado, ...(partilha?.ativa ? partilha.membros.map((m) => m.estado).filter((e) => e?.hunt) : [])];
-    for (const r of BossesUnicos.aoMorrer(hunt, alvo, { quem, agora: hunt.clock ?? 0 })) aplicarRecompensaDeBoss(r);
+    for (const r of BossesUnicos.aoMorrer(hunt, alvo, { quem, agora: hunt.clock ?? 0 })) pagarPremio(r);
   }
   // A exp de verdade: a do bicho x (bônus de level + boosts + premium). Ver `Boosts.expDoBicho`.
   // Shared Experience (party na mesma caçada, ver `party.mjs`): a exp do bicho,
@@ -542,80 +643,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       conta('loot', orbe.id, 1);
     }
   }
-  for (const drop of [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])]) {
-    // Entrada de loot SEM id no bestiário (64 bichos têm "rotten feather"/"ritual tooth" assim): não é
-    // item nenhum — antes entrava na bolsa como um item fantasma (sem nome, sem venda) e como
-    // "undefined" no Analisador. Não muda a chance de nenhum item de verdade.
-    if (drop.id == null) continue;
-    // `lootMult`: a raridade do mob (raro/elite dão mais loot — ver `mobs/raridade.mjs`).
-    const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
-    if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
-    if (VALOR_DA_MOEDA[drop.id]) {
-      const n = quantasMoedas(alvo, drop.id, estado);
-      // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
-      // caçando — só vai para o banco quando o jogador deposita de propósito
-      // no Banqueiro. (Uma versão anterior mandava direto para `bank`, a
-      // partir de uma medição do original que o dono do projeto confirmou
-      // estar errada.)
-      const total = n * VALOR_DA_MOEDA[drop.id];
-      caiu.push({ id: drop.id, count: n });
-      conta('loot', drop.id, n);
-      if (!juntos) {
-        darOuro(estado, total);
-        continue;
-      }
-      // Party: partes iguais; o resto da divisão fica com quem matou.
-      const parte = Math.floor(total / juntos.length);
-      for (const m of juntos) darOuro(m.estado, parte + (m.estado === estado ? total - parte * juntos.length : 0));
-      continue;
-    }
-    // O item inteiro (raridade, atributos, efeito) sai do gerador central.
-    const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt) });
-    const af = peca.af ?? null;
-    // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
-    const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;
-    const fila = juntos ? juntos.map((_, k) => juntos[(vez + k) % juntos.length]) : [{ estado, nome: personagem?.nome }];
-    let dono = null;
-    let ignorado = true;
-    for (const [k, m] of fila.entries()) {
-      // A peça já sorteada (raridade e atributos) vai junto: as regras específicas de "não coletar" olham os atributos reais.
-      if (Bolsa.ignora(m.estado, drop.id, peca)) continue;
-      ignorado = false;
-      const semCap = pesoDoInventario(m.estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(m.estado);
-      if (semCap || !Bolsa.porNaBolsa(m.estado, drop.id, 1, peca)) continue;
-      dono = m;
-      if (juntos) vezDoLoot.set(sala, (vez + k + 1) % juntos.length);
-      break;
-    }
-    if (!dono) {
-      conta(ignorado ? 'ignorado' : 'perdido', drop.id, 1);
-      continue;
-    }
-    // A raridade do drop vai no evento: é ela que pinta o nome em "Loot of a ...".
-    const noChat = { id: drop.id, count: 1, ...(peca.raridade ? { raridade: peca.raridade } : {}) };
-    if (dono.estado === estado) {
-      caiu.push(noChat);
-      conta('loot', drop.id, 1);
-    } else {
-      conta('loot', drop.id, 1, dono.estado.hunt?.sessao);
-      const lista = deOutros.get(dono.estado) ?? [];
-      lista.push(noChat);
-      deOutros.set(dono.estado, lista);
-    }
-    // O drop raro vai para a capa do site (ver `drops-do-site.mjs`) — fogo e
-    // esquece, é só um log, não pode atrasar o golpe que matou o bicho.
-    DropsDoSite.anotarDrop({ quem: dono.nome, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, id: drop.id, af, raridade: peca.raridade, efeito: peca.efeito, peca }).catch((e) => console.error('drops-do-site', e.message));
-    // Épico para cima: o servidor inteiro fica sabendo (ver `anuncios.mjs`).
-    Anuncios.dropRaro({ quem: dono.nome, peca, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
-  }
-  for (const [outro, items] of deOutros) {
-    const lista = eventosDaParty.get(outro) ?? [];
-    lista.push({ t: 'loot', name: alvo.name, items });
-    eventosDaParty.set(outro, lista);
-  }
-  // Mesmo evento do original (`{t:'loot', name, items:[{id,count}]}`, capturado
-  // ao vivo): é ele que escreve "Loot of a Troll: ..." no chat.
-  if (caiu.length) eventos.push({ t: 'loot', name: alvo.name, items: caiu });
+  soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
   tirarMonstro(hunt, alvo);

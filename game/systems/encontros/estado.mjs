@@ -38,20 +38,12 @@ export function criar(instancia, definicoes, { semente = novaSemente(), agora = 
         continue;
       }
       existentes.add(def.id);
-      instancia.encontros[slot] = {
-        id: slot,
-        defId: def.id,
-        tipo: def.tipo,
-        nome: def.nome,
-        obrigatorio: def.obrigatorio,
-        condicao: def.condicao,
-        estado: 'dormindo',
-        tentativas: 0,
-        ...(def.expiraMs ? { expiraMs: def.expiraMs } : {}),
-        ...(def.x != null ? { x: def.x, y: def.y, ...(def.z != null ? { z: def.z } : {}) } : {}),
-        ...(def.recompensa ? { recompensa: def.recompensa } : {}),
-        ...(def.bossId ? { bossId: def.bossId } : {}),
-      };
+      // O encontro leva a definição INTEIRA (a instância é gravada com a caçada e o balanceamento do mapa pode mudar
+      // depois: o que foi sorteado e prometido nesta instância continua valendo até ela acabar).
+      const { ativo, quantidade, probabilidade, ...resto } = def;
+      instancia.encontros[slot] = { ...resto, id: slot, defId: def.id, estado: 'dormindo', tentativas: 0 };
+      // Sorteios que são do TIPO (armadilha, invocação secreta) também saem da semente, uma vez.
+      tipoDe(def.tipo)?.aoCriar?.(instancia.encontros[slot], def, { semente });
     }
   }
   // Quem depende de um encontro que não saiu na instância não existe nela (não há como liberá-lo).
@@ -87,7 +79,7 @@ function condicaoCumprida(instancia, e, { monstrosLimpos }) {
  * a condição liberou, expira os opcionais que passaram do prazo e, na Caça AUTOMÁTICA, deixa cada tipo resolver
  * o que o idle resolve sozinho (`resolverNoIdle`). Devolve quantos encontros mudaram de estado.
  */
-export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = null } = {}) {
+export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = null, estado = null, personagem = null } = {}) {
   const todos = instancia?.encontros;
   if (!todos) return 0;
   let mudou = 0;
@@ -106,16 +98,16 @@ export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = n
   // O tipo confere se o encontro EM ANDAMENTO ainda tem como terminar (ex.: o boss sumiu sem o gancho de morte):
   // nunca deixa a instância esperando por algo que não existe mais.
   if (hunt) {
-    for (const e of Object.values(todos)) if (e.estado === 'ativo') tipoDe(e.tipo)?.verificar?.({ hunt, instancia, encontro: e, agora });
+    for (const e of Object.values(todos)) if (e.estado === 'ativo') tipoDe(e.tipo)?.verificar?.({ hunt, instancia, encontro: e, agora, estado, personagem });
   }
   if (hunt?.modo === 'auto') {
     for (const e of Object.values(todos)) {
       const tipo = tipoDe(e.tipo);
       // Quem pede uma DECISÃO do jogador não é ativado pelo idle (e expira, se for opcional).
       if (!tipo || tipo.idle === 'escolha') continue;
-      if (e.estado === 'disponivel' && ativar(instancia, e.id, { quem: 'idle', agora, hunt }).ok) mudou++;
+      if (e.estado === 'disponivel' && ativar(instancia, e.id, { quem: 'idle', agora, hunt, estado, personagem }).ok) mudou++;
       if (e.estado === 'ativo' && tipo.resolverNoIdle) {
-        tipo.resolverNoIdle({ hunt, instancia, encontro: e, agora });
+        tipo.resolverNoIdle({ hunt, instancia, encontro: e, agora, estado, personagem });
         mudou++;
       }
     }
@@ -126,16 +118,19 @@ export function avaliar(instancia, { monstrosLimpos = false, agora = 0, hunt = n
 const nega = (motivo) => ({ ok: false, motivo });
 
 /** `disponivel → ativo`. Só o primeiro comando vale: o segundo (mesmo de outro jogador) devolve `ja-ativo`. */
-export function ativar(instancia, id, { quem = null, agora = 0, hunt = null } = {}) {
+export function ativar(instancia, id, { quem = null, agora = 0, hunt = null, estado = null, personagem = null } = {}) {
   const e = instancia?.encontros?.[id];
   if (!e) return nega('nao-existe');
   if (e.estado === 'ativo') return nega('ja-ativo');
   if (e.estado === 'concluido') return nega('ja-concluido');
   if (e.estado !== 'disponivel') return nega(`indisponivel:${e.estado}`);
+  // Requisitos do tipo (nível, chave): quem não cumpre não ativa — e o encontro segue disponível.
+  const pode = tipoDe(e.tipo)?.podeAtivar?.({ hunt, instancia, encontro: e, agora, estado, personagem });
+  if (pode && !pode.ok) return nega(`requisito:${pode.motivo}`);
   e.estado = 'ativo';
   e.ativadoPor = quem;
   e.ativadoEm = agora;
-  tipoDe(e.tipo)?.aoAtivar?.({ hunt, instancia, encontro: e, agora });
+  tipoDe(e.tipo)?.aoAtivar?.({ hunt, instancia, encontro: e, agora, estado, personagem });
   return { ok: true, encontro: e };
 }
 

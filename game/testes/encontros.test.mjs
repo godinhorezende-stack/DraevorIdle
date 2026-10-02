@@ -24,8 +24,8 @@ test('validação: o que é aceito e o que é recusado (com mensagem)', () => {
   assert.deepEqual(Modelo.validar([{ id: 'a', tipo: 't-auto' }, { id: 'b', tipo: 't-combate', probabilidade: 20, condicao: { tipo: 'monstros-limpos' } }]), []);
   const erros = (lista, g) => Modelo.validar(lista, g).join(' | ');
   assert.match(erros([{ id: 'a', tipo: 'nao-existe' }]), /desconhecido/);
-  assert.match(erros([{ id: 'a', tipo: 'bau-raro' }]), /ainda não está disponível/);
-  assert.deepEqual(Modelo.validar([{ id: 'a', tipo: 'bau-raro', ativo: false }]), [], 'desligado pode ficar em obra');
+  assert.match(erros([{ id: 'a', tipo: 'fenda' }]), /ainda não está disponível/);
+  assert.deepEqual(Modelo.validar([{ id: 'a', tipo: 'fenda', ativo: false }]), [], 'desligado pode ficar em obra');
   assert.match(erros([{ id: 'a', tipo: 't-auto', probabilidade: 120 }]), /entre 0 e 100/);
   assert.match(erros([{ id: 'a', tipo: 't-auto', quantidade: 0 }]), /quantidade/);
   assert.match(erros([{ id: 'a', tipo: 't-auto' }, { id: 'a', tipo: 't-auto' }]), /id repetido/);
@@ -42,8 +42,8 @@ test('validação: o que é aceito e o que é recusado (com mensagem)', () => {
 });
 
 test('os tipos planejados ainda NÃO são utilizáveis em mapa (conteúdo pela metade nunca chega a uma instância)', () => {
-  // Os de boss chegaram na etapa 2; baús e altares (etapa 3) e a v2 seguem fora.
-  for (const [nome, t] of Object.entries(TIPOS)) if (!nome.startsWith('t-') && !['boss', 'miniboss', 'boss-secreto'].includes(nome)) assert.equal(t.implementado, false, nome);
+  // Os de boss chegaram na etapa 2 e os baús/altar na 3; só a v2 segue fora.
+  for (const [nome, t] of Object.entries(TIPOS)) if (!nome.startsWith('t-') && !['boss', 'miniboss', 'boss-secreto', 'bau-comum', 'bau-raro', 'bau-amaldicoado', 'altar'].includes(nome)) assert.equal(t.implementado, false, nome);
   assert.throws(() => registrarTipo('t-sem-gancho', { idle: 'auto' }), /resolverNoIdle/);
 });
 

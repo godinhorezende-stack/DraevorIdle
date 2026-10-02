@@ -53,6 +53,8 @@ import * as Guildas from '../systems/guildas.mjs';
 import * as Arena from '../systems/arena.mjs';
 import * as SimuladorTique from '../systems/simulador-tique.mjs';
 import { descerDeLevel, tirarEventosDaParty, fichaDoBicho } from '../systems/hunt/combate.mjs';
+import * as InstanciaDaHunt from '../systems/hunt/instancia.mjs';
+import * as EstadoDosEncontros from '../systems/encontros/estado.mjs';
 import { registrarGrandes, jsonComGrandes } from './json.mjs';
 import * as Forja from '../systems/forja.mjs';
 import * as Afixos from '../systems/afixos.mjs';
@@ -1008,6 +1010,9 @@ export class Sessao {
       case 'fichaDoBicho':
         if (this.estado && typeof m.key === 'string') this.enviar({ t: 'fichaDoBicho', ...fichaDoBicho(this.estado, this.estado.hunt, m.key, { huntId: typeof m.huntId === 'string' ? m.huntId : null, dificuldade: typeof m.dificuldade === 'string' ? m.dificuldade : null }) });
         return;
+      // Interagir com um encontro da fase (abrir o baú, ativar o altar...): o servidor valida tudo.
+      case 'interagir':
+        return this.interagirComEncontro(m);
       // O jogador leu o relatório da ausência (OK): só agora ele deixa de ser entregue.
       case 'ackAusencia':
         return this.confirmarRelatorioDaAusencia();
@@ -1787,6 +1792,27 @@ export class Sessao {
   /** A entrada foi abandonada no meio da simulação offline: o resultado dela é descartado. */
   cancelarCarregamento() {
     this.pararDeCarregar();
+  }
+
+  /**
+   * `{t:'interagir', id}`: o jogador (ou alguém da party) ativa um encontro da instância. Quem pode, a distância, os
+   * requisitos e o "uma vez só" são do servidor: o clique duplo e dois membros pedindo juntos caem no MESMO encontro
+   * (`Estado.ativar` é idempotente) e a recompensa é paga uma vez, na conclusão.
+   */
+  interagirComEncontro(m) {
+    const hunt = this.estado?.hunt;
+    const inst = hunt ? InstanciaDaHunt.daSala(hunt) : null;
+    const e = inst?.encontros?.[String(m.id)];
+    if (!e) return this.erro('Não há nada para interagir aqui.');
+    if (e.x != null) {
+      const longe = Math.max(Math.abs(hunt.pos.x - e.x), Math.abs(hunt.pos.y - e.y)) > 2 || (e.z != null && e.z !== hunt.z);
+      if (longe) return this.erro('Chegue mais perto.');
+    }
+    const agora = (hunt.anfitriao ?? hunt).clock ?? 0;
+    const r = EstadoDosEncontros.ativar(inst, e.id, { quem: this.personagem?.nome ?? null, agora, hunt, estado: this.estado, personagem: this.personagem });
+    if (r.ok) return;
+    const texto = { 'ja-ativo': 'Já está em andamento.', 'ja-concluido': 'Já foi aberto.' }[r.motivo] ?? (r.motivo?.startsWith('requisito:') ? `Você ${r.motivo.slice(10)}.` : 'Ainda não dá para fazer isso.');
+    return this.erro(texto);
   }
 
   /** `{t:'ackAusencia'}`: o OK do relatório da ausência. Idempotente (um OK repetido não faz nada). */

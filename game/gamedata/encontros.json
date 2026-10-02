@@ -1,0 +1,12 @@
+{
+  "_nota": "Configuração dos ENCONTROS (systems/encontros/): os tetos que protegem a economia e o servidor, e as tabelas de recompensa reutilizáveis (um baú aponta `recompensa.tabela`). Os tetos valem para o validador (mapa e editor): conteúdo acima deles não é aceito. `valorEsperadoPorEncontro` é em ouro de NPC, por abertura (rolagens × chance × preço) — o dono ajusta com o balanceamento.",
+  "limites": {
+    "rolagensMax": 5,
+    "valorEsperadoPorEncontro": 150000,
+    "guardioesMax": 8,
+    "altarDuracaoMsMax": 600000,
+    "altarEfeitosMax": 3,
+    "armadilhaPctDaVidaMax": 50
+  },
+  "tabelas": {}
+}

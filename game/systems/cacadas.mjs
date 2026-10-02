@@ -55,6 +55,8 @@ import { resistido } from './hunt/resistencia.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
+import './encontros/tipos-de-bau.mjs'; // registra os baús e o altar
+import * as EventosDeEncontro from './encontros/eventos.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -1260,7 +1262,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     // "Hunt Clear!", uma instância NOVA da mesma hunt (ver `hunt/instancia.mjs`).
     // Online com "Avançar sozinho", a sessão troca de fase antes da pausa acabar.
     if (hunt.instancia) {
-      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0)) aoLimparAInstancia(estado, hunt);
+      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt);
       else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0)) novaInstancia(estado);
     }
   } else {
@@ -1542,6 +1544,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     }
   }
   if (estado.hp > 0) eventos.push(...golpesDosMonstros(estado, hunt, personagem));
+  // O que os encontros abriram neste tique (loot de baú, falas): vai junto com os eventos da caçada.
+  eventos.push(...EventosDeEncontro.tirar(hunt));
   // As mecânicas dos mobs no tempo: enrage na vida baixa, aura de dano e o veneno dos golpes (`mobs/mecanicas.mjs`).
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.

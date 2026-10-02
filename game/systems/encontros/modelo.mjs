@@ -21,6 +21,8 @@ import { tipoDe } from './tipos.mjs';
 
 export const CONDICOES = ['sempre', 'monstros-limpos', 'apos-encontro'];
 export const PADRAO = { ativo: true, probabilidade: 100, quantidade: 1, obrigatorio: false };
+/** Campos que só alguns tipos usam: baú (recompensa, armadilha, guardioes, invocacao, chanceDeInvocacao, requisitos) e altar (efeitos, duracaoMs, penalidade). */
+const CAMPOS_DOS_TIPOS = ['recompensa', 'armadilha', 'guardioes', 'invocacao', 'chanceDeInvocacao', 'requisitos', 'efeitos', 'duracaoMs', 'penalidade'];
 
 /** O encontro completo, com os padrões preenchidos (`null` se não é um objeto com id e tipo). */
 export function normalizar(e) {
@@ -38,7 +40,8 @@ export function normalizar(e) {
     condicao: { tipo: condicao.tipo ?? 'sempre', ...(condicao.encontro != null ? { encontro: String(condicao.encontro) } : {}) },
     ...(e.expiraMs != null ? { expiraMs: Number(e.expiraMs) } : {}),
     ...(e.bossId != null ? { bossId: String(e.bossId) } : {}),
-    ...(e.recompensa != null ? { recompensa: e.recompensa } : {}),
+    // Os campos específicos dos baús e altares (validados pelo tipo — ver `tipos-de-bau.mjs`).
+    ...Object.fromEntries(CAMPOS_DOS_TIPOS.filter((k) => e[k] != null).map((k) => [k, e[k]])),
   };
 }
 
