@@ -2442,6 +2442,31 @@ const PORCENTO_DO_GOLPE = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'd
 const LENTIDAO_MAXIMA = 40;
 const numeroDoEfeito = (chave, v) => (chave === 'lentidaoPct' ? (v = Math.min(LENTIDAO_MAXIMA, v)) && `${v}%` : chave === 'custoEmVida' ? '' : CONTAGENS_DA_SUPPORT.has(chave) ? `${v > 0 ? '+' : ''}${v}` : PORCENTO_DO_GOLPE.has(chave) ? `${v}%` : `${v > 0 ? '+' : ''}${v}%`);
 
+const ESCALA_DA_GEMA = { melee: 'Melee', distance: 'Distance', magic: 'Magic Level' };
+const nomeDoElemento = (e) => {
+  const n = ELEMENT_NAMES[e] ?? e;
+  return n.charAt(0).toUpperCase() + n.slice(1);
+};
+
+/** A linha de etiquetas da gema de ataque, em português: ELEMENTO · (CORPO A CORPO/À DISTÂNCIA) · FORMA. As tags internas não vão ao jogador. */
+function etiquetasDaGema(x, def) {
+  const tags = new Set(x?.tags ?? def?.tags ?? []);
+  const partes = [];
+  const el1 = x?.element ?? ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'].find((t) => tags.has(t));
+  if (el1 && !x?.heals) partes.push(nomeDoElemento(el1 === 'poison' ? 'earth' : el1));
+  if (tags.has('melee')) partes.push('Corpo a corpo');
+  else if (tags.has('ranged')) partes.push('À distância');
+  if (x?.overTime) partes.push('Dano contínuo');
+  else if (x?.cadeia || tags.has('chain')) partes.push('Cadeia');
+  else if (tags.has('projectile') && tags.has('area')) partes.push('Projétil', 'Área');
+  else if (tags.has('projectile')) partes.push('Projétil');
+  else if (tags.has('wave')) partes.push('Onda');
+  else if (tags.has('line')) partes.push('Linha');
+  else if (tags.has('area')) partes.push('Área');
+  else if (tags.has('single')) partes.push('Alvo único');
+  return partes.map((p) => p.toUpperCase()).join(' · ');
+}
+
 /** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
 function blocoDaGema(def, gema, raridade = 'comum') {
   const bloco = el('div', 'tip-gema');
@@ -2466,22 +2491,32 @@ function blocoDaGema(def, gema, raridade = 'comum') {
     }
     bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket LIGADO ao da gema de skill.'));
   } else {
-    if (def.tags?.length) bloco.append(el('div', 'tip-gema-tags', def.tags.join(', ')));
     // ---- O que a skill FAZ, com os números do seu personagem (o catálogo de ações do servidor) ----
     const cat = getCatalogoDeAcoes();
     const x = [...(cat?.spells ?? []), ...(cat?.runes ?? [])].find((a) => a.id === def.acao);
     if (x) {
       const faz = el('div', 'tip-gema-faz');
       const linha = (t, c = null) => faz.append(el('div', c, t));
-      if (x.overTime && x.damage) linha(`${x.damage.min.toLocaleString('pt-BR')} de dano ao longo de ${x.overTime.rounds} rodadas`, 'tip-gema-numero');
-      else if (x.damage) linha(`${x.heals ? 'Cura' : 'Dano'} de ${x.damage.min.toLocaleString('pt-BR')} a ${x.damage.max.toLocaleString('pt-BR')}${x.element && !x.heals ? ` (${x.element})` : ''} — com o seu personagem`, 'tip-gema-numero');
+      const ehCura = !!x.heals;
+      const etiquetas = etiquetasDaGema(x, def);
+      if (etiquetas) bloco.append(el('div', 'tip-gema-tags', etiquetas));
+      // O número é o BASE do personagem (sem o bônus da gema); o da gema vem na linha "+X% ... da gema", logo abaixo.
+      const d = x.danoBase ?? x.damage;
+      if (x.overTime && x.damage) linha(`${d.min.toLocaleString('pt-BR')} de dano ao longo de ${x.overTime.rounds} rodadas${x.element ? ` (${nomeDoElemento(x.element)})` : ''}`, 'tip-gema-numero');
+      else if (x.damage) linha(`${ehCura ? 'Cura' : 'Dano'} de ${d.min.toLocaleString('pt-BR')} a ${d.max.toLocaleString('pt-BR')}${x.element && !ehCura ? ` (${nomeDoElemento(x.element)})` : ''} por golpe`, 'tip-gema-numero');
       if (x.postura) linha(x.postura);
       if (x.desafio) linha(x.desafio);
-      const alvo = x.forma?.length ? `área de ${x.forma.length} casas` : x.cadeia ? `salta em até ${x.cadeia.targets} criaturas` : x.range ? `alcance ${x.range} sqm` : null;
-      const custo = [typeof x.mana === 'number' && x.mana ? `${x.mana} de mana` : null, x.cooldown ? `recarga ${(x.cooldown / 1000).toLocaleString('pt-BR')} s` : null, alvo].filter(Boolean).join(' · ');
+      const area = x.forma?.length ? `área de ${x.forma.length} casas` : null;
+      const alvo = x.cadeia ? `salta em até ${x.cadeia.targets} criaturas` : null;
+      const alcance = x.range > 1 ? `alcance ${x.range} sqm` : null;
+      const custo = [typeof x.mana === 'number' && x.mana ? `${x.mana} de mana` : null, x.cooldown ? `recarga ${(x.cooldown / 1000).toLocaleString('pt-BR')} s` : null, alcance, area, alvo].filter(Boolean).join(' · ');
       if (custo) linha(custo);
-      if (x.levelDaMagia) linha(`Level da magia: ${x.levelDaMagia} (o dano cresce com o seu level e o seu magic level/skill)`, 'tip-gema-ajuda');
+      const escala = x.escalaCom ? ESCALA_DA_GEMA[x.escalaCom] : null;
+      if (escala) linha(`Escala com ${escala} e o level do personagem.`, 'tip-gema-ajuda');
       bloco.append(faz);
+    } else if (def.tags?.length && def.categoria === 'ataque') {
+      // Sem entrada no catálogo (ex.: runas de campo): só a linha de tags, sem números.
+      bloco.append(el('div', 'tip-gema-tags', etiquetasDaGema(null, def)));
     }
     // O dano/cura base é o da magia (level + magic level, ou melee nas físicas); a gema soma o bônus dela.
     const porNivel = def.progressao?.dano ?? def.progressao?.cura ?? 0;
