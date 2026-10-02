@@ -183,3 +183,18 @@ test('persistência: o estado do mob grava e volta com a caçada (a duração co
   const carregado = volta.monstros.find((x) => x.uid === m.uid);
   assert.deepEqual(carregado.estados, m.estados);
 });
+
+test('o balão das gemas (Freeze, Slow, Ignite, Stun) diz a duração e as regras que a config usa', async () => {
+  const { readFileSync } = await import('node:fs');
+  const fonte = readFileSync(new URL('../frontend/client/src/tooltip.mjs', import.meta.url), 'utf8');
+  const s = (ms) => `${ms / 1000}`.replace('.', ',') + ' s';
+  const c = CONFIG.estados;
+  const linha = (chave) => fonte.split('\n').find((l) => l.trim().startsWith(`${chave}:`) && l.includes("'")) ?? '';
+  assert.ok(linha('ignitePct').includes(s(c.queimando.duracao)), 'Ignite: duração');
+  assert.ok(linha('congelarChance').includes(s(c.congelado.duracao)), 'Freeze: duração');
+  assert.ok(linha('congelarChance').includes(s(c.controle.imunidade)), 'Freeze: imunidade');
+  assert.ok(linha('lentidaoPct').includes(s(c.lento.duracao)), 'Slow: duração');
+  assert.ok(linha('lentidaoPct').includes(`${c.lento.maximo}%`), 'Slow: teto');
+  assert.ok(linha('atordoarChance').includes(s(c.atordoado.duracao)), 'Stun: duração');
+  assert.match(fonte, new RegExp(`const LENTIDAO_MAXIMA = ${c.lento.maximo};`), 'o balão limita o % da lentidão ao teto');
+});

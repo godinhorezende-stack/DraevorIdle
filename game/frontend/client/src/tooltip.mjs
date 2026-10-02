@@ -2429,15 +2429,18 @@ const NOME_DO_EFEITO_DA_SUPPORT = {
   custoEmVida: 'paga o custo com VIDA, e não mana',
   duracaoPct: 'de duração do reforço',
   igniteChance: 'de chance de queimar o bicho',
-  ignitePct: 'do acerto em queimadura (4 s)',
-  congelarChance: 'de chance de congelar o bicho (não anda nem ataca)',
-  lentidaoPct: 'de lentidão no bicho (anda e ataca mais devagar)',
-  atordoarChance: 'de chance de atordoar o bicho (não anda nem ataca)',
+  // As durações e regras abaixo são as de `gamedata/gemas/config.json` (`estados`) — um teste (`estados.test.mjs`) confere que o texto bate.
+  ignitePct: 'do acerto em queimadura por 4 s (uma queimadura por bicho: vale a maior)',
+  congelarChance: 'de chance de congelar o bicho por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade)',
+  lentidaoPct: 'de lentidão no bicho por 3 s (anda e ataca mais devagar; no máximo 40%; chefe leva metade, elite metade do tempo)',
+  atordoarChance: 'de chance de atordoar o bicho por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade)',
 };
 // Contagem sai "+2"; os % dos golpes secundários saem "70% do dano..." (não "+70%").
 const CONTAGENS_DA_SUPPORT = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra']);
 const PORCENTO_DO_GOLPE = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct', 'explosaoPct', 'segundaExplosaoPct', 'leechVidaPct', 'leechManaPct', 'igniteChance', 'ignitePct', 'congelarChance', 'lentidaoPct', 'atordoarChance']);
-const numeroDoEfeito = (chave, v) => (chave === 'custoEmVida' ? '' : CONTAGENS_DA_SUPPORT.has(chave) ? `${v > 0 ? '+' : ''}${v}` : PORCENTO_DO_GOLPE.has(chave) ? `${v}%` : `${v > 0 ? '+' : ''}${v}%`);
+// A lentidão que pega nunca passa deste teto (`config.estados.lento.maximo`): o balão mostra o que vale de verdade.
+const LENTIDAO_MAXIMA = 40;
+const numeroDoEfeito = (chave, v) => (chave === 'lentidaoPct' ? (v = Math.min(LENTIDAO_MAXIMA, v)) && `${v}%` : chave === 'custoEmVida' ? '' : CONTAGENS_DA_SUPPORT.has(chave) ? `${v > 0 ? '+' : ''}${v}` : PORCENTO_DO_GOLPE.has(chave) ? `${v}%` : `${v > 0 ? '+' : ''}${v}%`);
 
 /** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
 function blocoDaGema(def, gema, raridade = 'comum') {
