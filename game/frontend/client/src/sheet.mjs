@@ -208,9 +208,46 @@ function secao(body, id, texto, arte, conteudo) {
     }
   });
   body.append(d);
+  return d;
+}
+
+/**
+ * A seção "Por habilidade": cada gema de ataque equipada, com o dano que o servidor calcula agora (`catalogo` → `damage`), de onde ele vem
+ * (a arma e a afinidade — `armaDoDano`) e as gemas de suporte ligadas. Os suportes só valem NESTA habilidade: não são bônus do personagem.
+ */
+function porHabilidade(state) {
+  const cat = state.actionCatalog;
+  const lista = [...(cat?.spells ?? []), ...(cat?.runes ?? [])].filter((a) => a.gema && a.damage && !a.heals);
+  if (!lista.length) return null;
+  const nomeDoElemento = Object.fromEntries(ELEMENTS.map(([n, k]) => [k, n]));
+  const origem = { melee: 'o poder da arma corpo a corpo e o Melee', distance: 'o poder da arma de distância e o Distance', magic: 'o Magic Attack da wand/rod e o Magic Level' };
+  return grade(...lista.map((a) => {
+    const card = statCard(a.name, `${a.damage.min.toLocaleString('pt-BR')} – ${a.damage.max.toLocaleString('pt-BR')}`, `${nomeDoElemento[a.element] ?? a.element ?? ''} · escala com ${origem[a.escalaCom] ?? 'a arma'}`, null, 'ficha-dano');
+    const w = a.armaDoDano;
+    card.title = [
+      `${a.name}: dano por golpe (sem crítico nem resistência do alvo)`,
+      `Gema nível ${a.gema.nivel}${a.gema.efeito?.qualidade ? ` · qualidade +${a.gema.efeito.qualidade}%` : ''}`,
+      w ? `Arma: poder efetivo ${w.poder} (afinidade ${Math.round(w.afinidade * 100)}%)` : null,
+      w?.semArma ? 'Sem arma equipada: dano reduzido.' : w && !w.compativel ? 'Arma incompatível com esta habilidade: aproveita só parte do poder.' : w?.noPiso ? 'Arma fraca para o seu level: o piso de transição segura o dano.' : null,
+      a.gema.supports?.length ? `Suportes ligados (só valem nesta habilidade): ${a.gema.supports.map((x) => `${x.nomePt ?? x.nome} ${x.nivel}`).join(', ')}` : 'Sem suporte ligado.',
+    ].filter(Boolean).join('\n');
+    return card;
+  }));
 }
 
 /** A linha de baixo do cartão "Penetração elemental": a global e, quando houver, a específica de cada elemento. */
+/** A arma equipada: nome, level exigido e o poder que ela dá às habilidades (Magic Attack nas wands e rods) — o número do servidor. */
+function armaEquipadaCard(arma) {
+  const card = statCard(arma.ehMagicAttack ? 'Magic Attack' : 'Poder da arma', String(arma.poder), `${arma.nome}${arma.nivelRequerido ? ` · level ${arma.nivelRequerido}` : ''}`, null, 'ficha-dano');
+  card.title = [
+    `Arma equipada: ${arma.nome}`,
+    `Level exigido: ${arma.nivelRequerido || 'nenhum'}`,
+    `${arma.ehMagicAttack ? 'Magic Attack (fixo, sem sorteio)' : 'Poder da arma'}: ${arma.poder}${arma.raridade && arma.raridade !== 'comum' ? ` (já com a raridade ${arma.raridade})` : ''}`,
+    'É a base do dano das gemas de ataque, multiplicada pela afinidade da arma com a habilidade (a gema mostra o resultado).',
+  ].join('\n');
+  return card;
+}
+
 function penetracaoPorElemento(derived) {
   const por = Object.entries(derived.penetracao?.porElemento ?? {}).filter(([, v]) => v > 0);
   const nome = Object.fromEntries(ELEMENTS.map(([n, k]) => [k, n]));
@@ -223,6 +260,7 @@ function protecaoElemental(derived) {
   for (const [name, key] of ELEMENTS) {
     const value = derived.protection?.[key] ?? 0;
     const chip = el('div', 'element');
+    chip.title = textoLimitado(derived, `protection.${key}`, `Resistência a ${name.toLowerCase()}`, value, derived.limites?.resistenciaDoJogador ?? 100, derived.excedentes?.protection?.[key] ?? 0);
     // No limite (100%): o valor é o efetivo, o que passou dele fica no balão (`derived.excedentes`).
     const noLimite = value >= (derived.limites?.resistenciaDoJogador ?? 100);
     const sobra = derived.excedentes?.protection?.[key] ?? 0;
@@ -256,6 +294,26 @@ function textoDaOrigem(derived, chave, total, sufixo = '%') {
   const linhas = partes.map((p) => `${p.fonte}: ${p.valor > 0 ? '+' : ''}${porcento(p.valor)}${p.pct ? '%' : sufixo}`);
   return `De onde vem:\n${linhas.join('\n')}\nTotal: ${total}`;
 }
+/**
+ * O balão de um atributo com LIMITE (resistência, crítico, ataque duplo, penetração): as origens por categoria (as parcelas do servidor),
+ * o total bruto, o limite, o valor efetivo (o que o combate usa) e o excedente (que não vale). Os números são os do servidor.
+ */
+function textoLimitado(derived, chave, nome, efetivo, limite, excedente = 0) {
+  const fmt = (v) => `${porcento(v)}%`;
+  const partes = derived.origens?.[chave] ?? [];
+  const linhas = [`${nome}: ${fmt(efetivo)}${efetivo >= limite ? ' (no limite)' : ''}`];
+  if (partes.length) linhas.push('Origem:', ...partes.map((p) => `• ${p.fonte}: ${p.valor > 0 ? '+' : ''}${fmt(p.valor)}`));
+  else linhas.push('Origem: nenhuma (o personagem não tem nada nesse atributo).');
+  linhas.push(`Total bruto: ${fmt(efetivo + excedente)}`, `Limite: ${fmt(limite)}`, `Valor efetivo: ${fmt(efetivo)}`);
+  if (excedente > 0) linhas.push(`Excedente: ${porcento(excedente)} pontos percentuais (não valem no combate)`);
+  return linhas.join('\n');
+}
+const limitado = (derived, chave, nome, efetivo, limite, excedente, card) => {
+  card.title = textoLimitado(derived, chave, nome, efetivo, limite, excedente);
+  if (efetivo >= limite) card.classList.add('no-limite');
+  return card;
+};
+
 function comOrigem(card, derived, chave, total, sufixo = '%') {
   const texto = textoDaOrigem(derived, chave, total, sufixo);
   if (texto) card.title = texto;
@@ -354,24 +412,47 @@ export function renderSheet(body, { state, send, closeModal }) {
   const columns = el('div', 'sheet');
 
   const left = el('div');
+  left.classList.add('skills-destaque');
   left.append(titulo('Skills', 'ficha-skills'));
   const skills = el('div', 'skill-table');
-  const addSkill = (key, value, percent) => {
+  // A regra de evolução de cada skill (o servidor manda as tentativas de agora e as que faltam: `tries`/`precisa`, `mana`/`precisa`).
+  const REGRA_DA_SKILL = {
+    melee: 'Cada golpe corpo a corpo (espada, machado, clava ou punho) é uma tentativa.',
+    distance: 'Cada golpe com arma de distância é uma tentativa.',
+    magic: 'Sobe com a mana gasta em magia (e em wand/rod); runas não contam.',
+    shielding: 'Cada golpe que você recebe é uma tentativa.',
+  };
+  const NOME_DA_SKILL = { melee: 'Melee', distance: 'Distance', magic: 'Magic Level', shielding: 'Escudo' };
+  const addSkill = (key, info) => {
     const row = el('div', 'skill-row');
     const bonus = derived.skillBonus?.[key] ?? 0;
-    const total = el('b', null, bonus ? `${value}+${bonus}` : String(value));
+    const total = el('b', null, bonus ? `${info.value}+${bonus}` : String(info.value));
     if (bonus) total.style.color = 'var(--accent)';
+    const atual = key === 'magic' ? info.mana : info.tries;
+    const exato = info.precisa != null ? ` · ${Math.floor(atual).toLocaleString('pt-BR')} / ${Math.ceil(info.precisa).toLocaleString('pt-BR')}` : '';
+    const nome = el('span', null, SKILL_LABEL[key] ?? key);
+    // O progresso exato (x / y), logo abaixo do nome, quando o servidor manda.
+    if (info.precisa != null) nome.append(el('small', 'skill-xp', `${Math.floor(atual).toLocaleString('pt-BR')} / ${Math.ceil(info.precisa).toLocaleString('pt-BR')}${key === 'magic' ? ' de mana' : ''}`));
     row.append(
       artOrUiIcon(`sk-${key}`, key),
-      el('span', null, SKILL_LABEL[key] ?? key),
+      nome,
       total,
-      pips(percent),
-      el('em', null, `${Math.round(percent * 100)}%`)
+      pips(info.percent),
+      el('em', null, `${Math.round(info.percent * 100)}%`)
     );
+    row.title = [
+      `${NOME_DA_SKILL[key] ?? key}: nível ${info.value}${bonus ? ` (+${bonus} de bônus)` : ''}`,
+      `Progresso para o próximo nível: ${(info.percent * 100).toFixed(1)}%${exato}${key === 'magic' ? ' de mana' : ' tentativas'}`,
+      REGRA_DA_SKILL[key],
+      bonus ? `Bônus de nível: +${bonus} (equipamento, proficiência, imbuement ou árvore); não conta para a evolução.` : null,
+    ].filter(Boolean).join('\n');
     skills.append(row);
   };
-  for (const skill of state.catalog.skills) addSkill(skill, character.skills[skill].value, character.skills[skill].percent);
-  addSkill('magic', character.magic.value, character.magic.percent);
+  // As skills da ficha: Melee, Distance e Magic Level — e o Escudo, que é uma perícia de defesa. A pesca não aparece aqui.
+  addSkill('melee', character.skills.melee);
+  addSkill('distance', character.skills.distance);
+  addSkill('magic', character.magic);
+  addSkill('shielding', character.skills.shielding);
   left.append(skills);
 
   const right = el('div');
@@ -591,9 +672,12 @@ export function renderSheet(body, { state, send, closeModal }) {
    * classe usa qualquer skill e equipamento (com os requisitos de atributo); as
    * especializações dão afinidade quando a skill/golpe tem a tag delas.
    */
+  // As seções são montadas soltas e entram na ordem da ficha: Skills, Ofensivo, Defensivo (com as resistências), Recursos e Especiais
+  // (que leva os atributos principais e a classe).
+  const partes = { ofensivo: el('div'), defensivo: el('div'), recursos: el('div'), especiais: el('div'), atributos: el('div'), classe: el('div') };
   const classe = derived.classe;
   if (classe?.especializacoes?.length) {
-    secao(body, 'classe', `Classe: ${classe.nome}`, 'ficha-skills', [
+    secao(partes.classe, 'classe', `Classe: ${classe.nome}`, 'ficha-skills', [
       el('p', 'sheet-nota', 'Especializações naturais — bônus quando você usa aquele tipo de dano, arma ou mecânica. Não bloqueiam nada: qualquer classe usa qualquer skill e equipamento.'),
       grade(...classe.especializacoes.map((e) => {
         const card = statCard(e.nome, (e.efeitos ?? []).map(textoDoEfeito).join(' · '), null, null, 'ficha-skills');
@@ -603,7 +687,7 @@ export function renderSheet(body, { state, send, closeModal }) {
     ]);
   }
 
-  secao(body, 'atributos', 'Atributos', 'ficha-skills', [
+  secao(partes.atributos, 'atributos', 'Atributos principais', 'ficha-skills', [
     grade(
       statCard('STR', at.str, `${origem('str')} · +${Math.round(ef.vida ?? 0)} vida, ${pct(ef.danoFisicoPct ?? 0)} dano físico`, null, 'ficha-dano'),
       statCard('DEX', at.dex, `${origem('dex')} · +${Math.round(ef.precisao ?? 0)} accuracy, +${Math.round(ef.evasao ?? 0)} evasion, ${pct(ef.velocidadeDeAtaquePct ?? 0)} vel. de ataque`, null, 'ficha-alcance'),
@@ -611,7 +695,7 @@ export function renderSheet(body, { state, send, closeModal }) {
     ),
   ]);
 
-  secao(body, 'recursos', 'Recursos', 'ficha-regen-vida', [
+  secao(partes.recursos, 'recursos', 'Recursos', 'ficha-regen-vida', [
     grade(
       statCard('Vida', derived.maxHp.toLocaleString('pt-BR'), null, null, 'ficha-regen-vida'),
       statCard('Mana', derived.maxMana.toLocaleString('pt-BR'), null, null, 'ficha-regen-mana'),
@@ -649,15 +733,17 @@ export function renderSheet(body, { state, send, closeModal }) {
     ),
   ]);
 
-  secao(body, 'ofensivo', 'Ofensivo', 'ficha-combate', [
+  secao(partes.ofensivo, 'ofensivo', 'Ofensivo', 'ficha-combate', [
     grade(
       // Dano e crítico são FAIXAS: a das peças (sorteada no drop), e cada golpe sorteia dentro dela.
       statCard('Dano', `${derived.damage.min} – ${derived.damage.max}`, `por ataque de ${SKILL_LABEL[derived.skillName] ?? derived.skillName}`, null, 'ficha-dano'),
-      statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%${derived.critChance * 100 >= (derived.limites?.critico ?? 100) ? ' (limite)' : ''}`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano${derived.excedentes?.critChance ? ` · ${(derived.excedentes.critChance * 100).toFixed(1)}% a mais não valem` : ''}`, null, 'ficha-critico'),
+      limitado(derived, 'critChance', 'Chance de crítico', derived.critChance * 100, derived.limites?.critico ?? 100, (derived.excedentes?.critChance ?? 0) * 100, statCard('Chance de crítico', `${(derived.critChance * 100).toFixed(1)}%${derived.critChance * 100 >= (derived.limites?.critico ?? 100) ? ' (limite)' : ''}`, `+${Math.round((derived.critMultiplier - 1) * 100)}% de dano${derived.excedentes?.critChance ? ` · ${(derived.excedentes.critChance * 100).toFixed(1)}% a mais não valem` : ''}`, null, 'ficha-critico')),
+      comOrigem(statCard('Dano crítico', `${porcento(derived.critMultiplier * 100)}%`, 'do dano normal em cada crítico (sem limite)', null, 'ficha-critico'), derived, 'critMultiplier', `${porcento(derived.critMultiplier * 100)}%`),
+      ...soSeTem(derived.armaEquipada, () => armaEquipadaCard(derived.armaEquipada)),
       // Ataque duplo e penetração (limite de 100%): o valor é o EFETIVO; o que passa do limite não conta.
-      statCard('Ataque duplo', `${((derived.ataqueDuplo ?? 0) * 100).toFixed(1)}%${(derived.ataqueDuplo ?? 0) * 100 >= (derived.limites?.ataqueDuplo ?? 100) ? ' (limite)' : ''}`, 'chance de um segundo golpe', null, 'ficha-critico'),
-      statCard('Penetração física', `${porcento(derived.penetracao?.fisica ?? 0)}%${(derived.penetracao?.fisica ?? 0) >= (derived.limites?.penetracao ?? 100) ? ' (limite)' : ''}`, 'ignora esta parte da resistência física do alvo', null, 'ficha-dano'),
-      statCard('Penetração elemental', `${porcento(derived.penetracao?.elemental ?? 0)}%${(derived.penetracao?.elemental ?? 0) >= (derived.limites?.penetracao ?? 100) ? ' (limite)' : ''}`, penetracaoPorElemento(derived), null, 'ficha-dano'),
+      limitado(derived, 'ataqueDuplo', 'Ataque duplo', (derived.ataqueDuplo ?? 0) * 100, derived.limites?.ataqueDuplo ?? 100, (derived.excedentes?.ataqueDuplo ?? 0) * 100, statCard('Ataque duplo', `${((derived.ataqueDuplo ?? 0) * 100).toFixed(1)}%${(derived.ataqueDuplo ?? 0) * 100 >= (derived.limites?.ataqueDuplo ?? 100) ? ' (limite)' : ''}`, 'chance de um segundo golpe', null, 'ficha-critico')),
+      limitado(derived, 'penetracao.fisica', 'Penetração física', derived.penetracao?.fisica ?? 0, derived.limites?.penetracao ?? 100, 0, statCard('Penetração física', `${porcento(derived.penetracao?.fisica ?? 0)}%${(derived.penetracao?.fisica ?? 0) >= (derived.limites?.penetracao ?? 100) ? ' (limite)' : ''}`, 'ignora esta parte da resistência física do alvo', null, 'ficha-dano')),
+      limitado(derived, 'penetracao.elemental', 'Penetração elemental', derived.penetracao?.elemental ?? 0, derived.limites?.penetracao ?? 100, 0, statCard('Penetração elemental', `${porcento(derived.penetracao?.elemental ?? 0)}%${(derived.penetracao?.elemental ?? 0) >= (derived.limites?.penetracao ?? 100) ? ' (limite)' : ''}`, penetracaoPorElemento(derived), null, 'ficha-dano')),
       // O intervalo entre golpes que a caçada usa de verdade (base 2 s, encurtado pela velocidade de ataque e pelo "Tempo entre golpes").
       comOrigem(statCard(
         'Velocidade de ataque',
@@ -689,7 +775,7 @@ export function renderSheet(body, { state, send, closeModal }) {
     ataqueElemental(derived),
   ]);
 
-  secao(body, 'defensivo', 'Defensivo', 'ficha-armadura', [
+  const defensivo = secao(partes.defensivo, 'defensivo', 'Defensivo', 'ficha-armadura', [
     grade(
       comOrigem(statCard('Armour', (derived.armor ?? 0).toLocaleString('pt-BR'), 'corta o golpe físico', null, 'ficha-armadura'), derived, 'armour', (derived.armor ?? 0).toLocaleString('pt-BR'), ''),
       comOrigem(statCard('Evasion', (derived.evasion ?? 0).toLocaleString('pt-BR'), chances.esquiva != null ? `${Math.round(chances.esquiva * 100)}% de esquiva do golpe de um bicho do seu level` : null, null, 'ficha-bloqueio'), derived, 'evasion', (derived.evasion ?? 0).toLocaleString('pt-BR'), ''),
@@ -700,9 +786,10 @@ export function renderSheet(body, { state, send, closeModal }) {
     ),
   ]);
 
-  secao(body, 'resistencias', 'Resistências', 'ficha-elemental', [protecaoElemental(derived)]);
+  // As resistências são do PERSONAGEM (não as dos inimigos), uma por elemento, dentro do Defensivo.
+  defensivo.append(el('div', 'sheet-subtitulo', 'Resistências'), protecaoElemental(derived));
 
-  secao(body, 'utilidade', 'Utilidade', 'ficha-velocidade', [
+  secao(partes.especiais, 'utilidade', 'Especiais', 'ficha-velocidade', [
     grade(
       /*
        * ---- A velocidade, COM a corrida que estiver ligada ----
@@ -745,6 +832,17 @@ export function renderSheet(body, { state, send, closeModal }) {
       ),
     ),
   ]);
+
+  const habilidades = porHabilidade(state);
+  if (habilidades) {
+    const d = secao(partes.ofensivo, 'porHabilidade', 'Por habilidade', 'ficha-dano', [habilidades]);
+    try {
+      if (localStorage.getItem('ficha-secao:porHabilidade') === null) d.open = false; // recolhida até o jogador abrir
+    } catch {
+      // sem armazenamento: fica aberta
+    }
+  }
+  body.append(partes.ofensivo, partes.defensivo, partes.recursos, partes.especiais, partes.atributos, partes.classe);
 
   /*
    * ---- O que o BUFF POWER está somando agora ----

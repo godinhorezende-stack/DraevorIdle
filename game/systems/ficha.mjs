@@ -56,6 +56,7 @@ const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 // `metaDaPeca`: o catálogo com o ataque/defesa/armadura que a peça sorteou no drop.
 const pecas = (estado) => Object.values(estado.equipment ?? {}).filter(Boolean).map((p) => metaDaPeca(p)).filter(Boolean);
 const arma = (estado) => metaDaPeca(estado.equipment?.weapon) ?? null;
+const metasDasPecas = (estado) => pecas(estado);
 
 /** A perícia que a arma usa (sem arma, punho — que também é melee). */
 export function periciaDaArma(item) {
@@ -233,7 +234,7 @@ function calcularCombate(estado) {
     afinidades: esp.dano,
     fontesDasAfinidades: esp.fontes,
     // De onde vem cada parte dos números (a ficha mostra ao passar o mouse): ver `origensDaFicha`.
-    origens: origensDaFicha({ estado, af, arv, doAtributo, esp, principais }),
+    origens: origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens: soma, prof, imb, gem, buff }),
     armor: defesas.armour,
     ataque,
     ataqueMin,
@@ -311,6 +312,8 @@ function calcularCombate(estado) {
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao,
     ataqueDuplo,
+    // A ARMA equipada e o poder que ela dá às habilidades (`armas/poder.mjs`): nome, level exigido e Magic Attack (wand/rod) ou poder.
+    armaEquipada: armaEquipadaDaFicha(estado),
     // O que passou do limite (a ficha mostra à parte) e os tetos que a tela usa para marcar "no limite".
     excedentes,
     limites: Limites.tetos(),
@@ -329,7 +332,22 @@ function calcularCombate(estado) {
  * — `pct: true` quando a parcela é um "+X%" sobre as outras (Armour, Evasion,
  * Accuracy). Parcela zero não entra.
  */
-function origensDaFicha({ estado, af, arv, doAtributo, esp, principais }) {
+/** A arma na mão para a ficha: nome, level exigido, o poder (× raridade) e se é Magic Attack. `null` sem arma. */
+function armaEquipadaDaFicha(estado) {
+  const peca = estado.equipment?.weapon;
+  const meta = peca ? ITEM_CATALOG[peca.id] : null;
+  if (!meta) return null;
+  return {
+    nome: meta.name,
+    nivelRequerido: meta.minLevel ?? 0,
+    poder: Math.round(PoderDaArma.poderDaPeca(peca)),
+    ehMagicAttack: PoderDaArma.familiaDaArma(meta) === 'magic',
+    familia: PoderDaArma.familiaDaArma(meta),
+    raridade: peca.raridade ?? 'comum',
+  };
+}
+
+function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens, prof, imb, gem, buff }) {
   const o = {};
   const por = (chave, fonte, valor, extra = {}) => {
     if (!valor) return;
@@ -374,6 +392,54 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais }) {
   por('armour', 'Equipamento', af.armour_pct ?? 0, { pct: true });
   for (const f of esp.fontes.armour ?? []) por('armour', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
   for (const f of esp.fontes.life ?? []) por('vida', `Especialização: ${f.especializacao}`, f.pct, { pct: true });
+
+  /*
+   * Os atributos com LIMITE (crítico, resistências, penetração, ataque duplo): as MESMAS parcelas da conta de cima, por categoria —
+   * base, equipamento (base das peças e afixos), árvore de passivas, altar, proficiência, imbuement, coleção. A tela soma, mostra o
+   * limite, o efetivo (o valor da ficha) e o excedente (`excedentes`).
+   */
+  const dosItens = Afixos.somaDeItens(estado);
+  const adds = Passivas.efeitos(estado).adds;
+  const dosAfixos = (chave, id, fator = 1) => {
+    const total = af[id] ?? 0;
+    const peca = dosItens[id] ?? 0;
+    const arvore = adds[id] ?? 0;
+    por(chave, 'Equipamento (afixos)', peca * fator);
+    por(chave, 'Árvore de passivas', arvore * fator);
+    por(chave, 'Altar (temporário)', (total - peca - arvore) * fator);
+  };
+  // Chance de crítico (em pontos %): 3% base + a base das peças + afixos + árvore + proficiência + imbuement + coleção.
+  por('critChance', 'Base do personagem', CRITICO_BASE * 100);
+  por('critChance', 'Equipamento (base das peças)', somaDosItens((it) => it.critChance) / 100);
+  dosAfixos('critChance', 'crit_chance');
+  por('critChance', 'Árvore de habilidades', (arv.critChance ?? 0) * 100);
+  por('critChance', 'Proficiência da arma', prof.critChance * 100);
+  por('critChance', 'Imbuement', imb.critChance * 100);
+  por('critChance', 'Coleção (outfits e montarias)', Aparencia.colecao(estado).critChance * 100);
+  // Multiplicador de crítico (em % de dano, sem limite): 160% base + peças + afixos + buffs + árvore + gemas + proficiência + imbuement.
+  por('critMultiplier', 'Base do personagem', MULTIPLICADOR_CRITICO_BASE * 100);
+  por('critMultiplier', 'Equipamento (base das peças)', somaDosItens((it) => it.critDamage) / 100);
+  dosAfixos('critMultiplier', 'crit_dmg');
+  por('critMultiplier', 'Buffs', buff.critMultiplier * 100);
+  por('critMultiplier', 'Árvore de habilidades', (arv.critDamage ?? 0) * 100);
+  por('critMultiplier', 'Gemas (Atelier)', gem.critico);
+  por('critMultiplier', 'Proficiência da arma', prof.critDano * 100);
+  por('critMultiplier', 'Imbuement', imb.critDano * 100);
+  // Ataque duplo e penetração.
+  dosAfixos('ataqueDuplo', 'double_attack');
+  dosAfixos('penetracao.fisica', 'phys_pen');
+  por('penetracao.fisica', 'Árvore de habilidades', (arv.armorPenetration ?? 0) * 100);
+  dosAfixos('penetracao.elemental', 'elem_pen');
+  // As resistências, uma por elemento: a proteção das peças (catálogo), os afixos, as gemas do Atelier e o imbuement.
+  for (const el of ELEMENTOS) {
+    const k = `protection.${el}`;
+    let dasPecas = 0;
+    for (const it of metasDasPecas(estado)) for (const [kk, v] of Object.entries(it.protection ?? {})) if ((ELEMENTO_DO_CATALOGO[kk] ?? kk) === el) dasPecas += v;
+    por(k, 'Equipamento (base das peças)', dasPecas);
+    dosAfixos(k, el === 'physical' ? 'phys_res' : `${el}_res`);
+    por(k, 'Gemas (Atelier)', gem.resistencia[el] ?? 0);
+    por(k, 'Imbuement', imb.protecao[el] ?? 0);
+  }
   return o;
 }
 
