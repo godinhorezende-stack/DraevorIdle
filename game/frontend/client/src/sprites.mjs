@@ -210,7 +210,11 @@ function fixarDecodificada(entry, imagem) {
   );
 }
 
+/** Devolve a memória do bitmap (só ele tem `close`; a `<img>` o navegador coleta). */
+const soltar = (entry) => entry.image?.close?.();
+
 function pedir(entry, src) {
+  soltar(entry);
   entry.ready = false;
   entry.falhouEm = 0;
   entry.image = new Image();
@@ -270,6 +274,7 @@ function despejar(agora) {
   for (const [chave, folha] of images) {
     if (!estourou && agora - (folha.tocadaEm ?? 0) < CARENCIA_MS) continue;
     images.delete(chave);
+    soltar(folha);
     return;
   }
 }
