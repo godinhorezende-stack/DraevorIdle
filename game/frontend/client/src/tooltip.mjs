@@ -2434,6 +2434,8 @@ const NOME_DO_EFEITO_DA_SUPPORT = {
   congelarChance: 'de chance de congelar o bicho por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade)',
   lentidaoPct: 'de lentidão no bicho por 3 s (anda e ataca mais devagar; no máximo 40%; chefe leva metade, elite metade do tempo)',
   atordoarChance: 'de chance de atordoar o bicho por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade)',
+  venenoPct: 'do acerto em veneno por 6 s (empilha até 10×; a resistência a terra vale em cada pulso)',
+  sangramentoPct: 'do acerto em sangramento por 5 s (reaplicar renova a duração; a resistência física vale em cada pulso)',
 };
 // Contagem sai "+2"; os % dos golpes secundários saem "70% do dano..." (não "+70%").
 const CONTAGENS_DA_SUPPORT = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra']);
@@ -2474,7 +2476,7 @@ const ETIQUETA_DO_EFEITO = [
   ['areaExtra', 'ÁREA'], ['explosaoPct', 'EXPLOSÃO'], ['segundaExplosaoPct', 'EXPLOSÃO'],
   ['critChance', 'CRÍTICO'], ['critDano', 'CRÍTICO'], ['castTimePct', 'CONJURAÇÃO'], ['custoPct', 'CUSTO'], ['custoEmVida', 'CUSTO'],
   ['recargaPct', 'RECARGA'], ['curaPct', 'CURA'], ['duracaoPct', 'DURAÇÃO'], ['leechVidaPct', 'ROUBO'], ['leechManaPct', 'ROUBO'],
-  ['igniteChance', 'QUEIMADURA'], ['congelarChance', 'CONTROLE'], ['lentidaoPct', 'CONTROLE'], ['atordoarChance', 'CONTROLE'],
+  ['igniteChance', 'QUEIMADURA'], ['venenoChance', 'VENENO'], ['sangramentoChance', 'SANGRAMENTO'], ['congelarChance', 'CONTROLE'], ['lentidaoPct', 'CONTROLE'], ['atordoarChance', 'CONTROLE'],
 ];
 
 /** A ficha do suporte: etiqueta, linhas do efeito (com os números reais) e contrapartidas. Mesma conta do servidor (`efeitoNaSkill`). */
@@ -2512,6 +2514,8 @@ export function fichaDoSuporte(def, nivel, qualidade, mult) {
   if (v.custoEmVida) contrapartidas.push('Contrapartida: paga o custo da habilidade com VIDA, e não com mana.');
   if (v.duracaoPct) principais.push(`Aumenta em ${fmt(v.duracaoPct)}% a duração do reforço.`);
   if (v.ignitePct) principais.push(`${v.igniteChance < 100 ? `${fmt(v.igniteChance)}% de chance de queimar: ` : 'Queima a criatura atingida: '}${fmt(v.ignitePct)}% do acerto em 4 s (uma queimadura por criatura: vale a maior).`);
+  if (v.venenoPct) principais.push(`${v.venenoChance < 100 ? `${fmt(v.venenoChance)}% de chance de envenenar: ` : 'Envenena a criatura atingida: '}${fmt(v.venenoPct)}% do acerto em veneno por 6 s (empilha até 10×; a resistência a terra vale em cada pulso).`);
+  if (v.sangramentoPct) principais.push(`${v.sangramentoChance < 100 ? `${fmt(v.sangramentoChance)}% de chance de sangrar: ` : 'Faz sangrar a criatura atingida: '}${fmt(v.sangramentoPct)}% do acerto em sangramento por 5 s (reaplicar renova a duração; a resistência física vale em cada pulso).`);
   if (v.congelarChance) principais.push(`${fmt(Math.min(100, v.congelarChance))}% de chance de congelar por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade).`);
   if (v.lentidaoPct) principais.push(`Lentidão de ${fmt(Math.min(LENTIDAO_MAXIMA, v.lentidaoPct))}% por 3 s (anda e ataca mais devagar; chefe leva metade, elite metade do tempo).`);
   if (v.atordoarChance) principais.push(`${fmt(Math.min(100, v.atordoarChance))}% de chance de atordoar por 1,5 s (não anda nem ataca; depois fica 3 s imune; chefe é imune, elite leva metade).`);

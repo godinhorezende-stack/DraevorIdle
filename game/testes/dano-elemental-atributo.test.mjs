@@ -12,6 +12,15 @@ import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
 function golpeCom(elemento, pct) {
+  // O acerto vai de 5% a 95% (PoE): repete até o golpe acertar (cada tentativa é um personagem novo).
+  for (let k = 0; k < 60; k++) {
+    const ev = golpeUnico(elemento, pct);
+    if (ev.some((x) => x.t === 'dmg' && x.foe)) return ev;
+  }
+  return [];
+}
+
+function golpeUnico(elemento, pct) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 1 });
   Treino.garantir(e);
   // Accuracy de sobra: o golpe nunca erra (o erro tem teste próprio, em defesas-novas).

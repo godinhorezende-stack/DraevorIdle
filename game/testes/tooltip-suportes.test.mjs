@@ -19,16 +19,16 @@ const LENTIDAO_MAXIMA = 40;`;
 const cliente = await import(`data:text/javascript,${encodeURIComponent(pre + trecho)}`);
 const defDoCliente = (d) => ITEM_CATALOG[d.itemId].gemaDef;
 
-test('os 39 suportes têm nome em português, e o id, o nome em inglês e o nome do item seguem como chave', () => {
+test('os 41 suportes têm nome em português, e o id, o nome em inglês e o nome do item seguem como chave', () => {
   const lista = suportes();
-  assert.equal(lista.length, 39);
+  assert.equal(lista.length, 41);
   for (const d of lista) {
     assert.ok(d.nomePt && d.nomePt !== d.nome, d.id);
     assert.equal(ITEM_CATALOG[d.itemId].name, `gema: ${d.nome.toLowerCase()}`, 'o `name` do item não muda');
     assert.equal(ITEM_CATALOG[d.itemId].nomeExibicao, `Gema: ${d.nomePt}`);
     assert.equal(defDoCliente(d).nomePt, d.nomePt);
   }
-  assert.equal(new Set(lista.map((d) => d.nomePt)).size, 39, 'nomes únicos');
+  assert.equal(new Set(lista.map((d) => d.nomePt)).size, 41, 'nomes únicos');
   assert.equal(Gemas.DEFS.get(911001).id, 'greater-damage');
 });
 

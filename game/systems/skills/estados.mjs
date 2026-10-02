@@ -1,5 +1,5 @@
 // Os ESTADOS que as supports põem nos bichos atingidos (etapa 4 do plano, 30/09):
-// QUEIMANDO (Ignite: dano ao longo do tempo), CONGELADO (Freeze: não anda nem ataca),
+// QUEIMANDO / ENVENENADO / SANGRANDO (Ignite, Poison, Bleed: dano ao longo do tempo — o motor deles é `combate/dot.mjs`), CONGELADO (Freeze: não anda nem ataca),
 // LENTO (Slow: anda e ataca mais devagar), ATORDOADO (Stun: não anda nem ataca).
 // Genérico e por dados: as chances e os % vêm das supports ligadas
 // (`Gemas.efeitoNaSkill`), as durações e as regras de controle de `config.estados`. Cada estado
@@ -13,6 +13,7 @@
 //  - LENTIDÃO: vale a maior (não a última); boss leva metade do %; elite metade da duração.
 import { CONFIG } from './gemas.mjs';
 import * as R from '../regras.mjs';
+import * as Dot from '../combate/dot.mjs';
 
 const E = () => CONFIG.estados ?? {};
 const ativo = (s, agora) => !!s && s.ate > agora;
@@ -29,31 +30,23 @@ const duracaoNo = (m, base) => Math.round(base * (ehElite(m) ? E().elite?.duraca
  * Queimar guarda o total que falta (o % do acerto) e sai em pulsos (`tique`).
  * Devolve os nomes dos estados postos (para o evento na tela). `salaDeBoss`: a caçada é uma sala de boss.
  */
-export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBoss = false) {
+export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBoss = false, baseDoDot = dano) {
   if (!efeito || !(dano > 0) || bicho.hp <= 0) return [];
   const postos = [];
   const cfg = E();
   const estados = (bicho.estados ??= {});
   const chefe = ehChefe(bicho, salaDeBoss);
 
-  if (efeito.igniteChance > 0 && rng() * 100 < efeito.igniteChance) {
-    const dur = cfg.queimando?.duracao ?? 4000;
-    const pulso = cfg.queimando?.pulso ?? 1000;
-    const total = (dano * (efeito.ignitePct ?? 0)) / 100;
-    const q = estados.queimando;
-    const queimando = ativo(q, agora) && q.falta > 0;
-    // Uma queimação por bicho: a nova só entra se for MAIOR do que o que ainda falta pagar.
-    if (total > 0 && (!queimando || total > q.falta)) {
-      estados.queimando = {
-        ate: agora + dur,
-        falta: total,
-        porPulso: total / Math.max(1, Math.round(dur / pulso)),
-        // O relógio dos pulsos continua o que já corria: reaplicar não adia o próximo pulso.
-        proximo: queimando ? q.proximo : agora + pulso,
-      };
-      postos.push('queimando');
-    }
-  }
+  // Os efeitos de DANO AO LONGO DO TEMPO (`combate/dot.mjs`): o % do acerto (antes da resistência e do crítico — o pulso passa pela
+  // resistência do bicho, e o dano contínuo não rola crítico) que o efeito paga, na duração do tipo.
+  const dot = (chance, pct, tipo) => {
+    if (!(chance > 0) || !(rng() * 100 < chance)) return;
+    const estado = Dot.aplicar(bicho, { tipo, total: (baseDoDot * (pct ?? 0)) / 100, origem: { fonte: 'suporte' } }, agora);
+    if (estado) postos.push(estado);
+  };
+  dot(efeito.igniteChance, efeito.ignitePct, 'queimadura');
+  dot(efeito.venenoChance, efeito.venenoPct, 'veneno');
+  dot(efeito.sangramentoChance, efeito.sangramentoPct, 'sangramento');
 
   // Congelar e atordoar dividem a MESMA imunidade (um depois do outro seria controle quase contínuo).
   const preso = ativo(estados.congelado, agora) || ativo(estados.atordoado, agora) || agora < (estados.controleImuneAte ?? 0);
@@ -83,9 +76,8 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
 
 /** Os estados ATIVOS do bicho agora (o cliente mostra um ícone de cada): `['congelado', 'lento', 'queimando']`. */
 export function ativosDe(m, agora) {
-  const e = m?.estados;
-  if (!e) return [];
-  return ['congelado', 'atordoado', 'lento', 'queimando'].filter((n) => ativo(e[n], agora));
+  const e = m?.estados ?? {};
+  return [...['congelado', 'atordoado', 'lento'].filter((n) => ativo(e[n], agora)), ...Dot.ativosDe(m, agora)];
 }
 
 /** O bicho pode andar/atacar agora? (congelado e atordoado não). */
@@ -98,31 +90,19 @@ export function fatorDeLentidao(m, agora) {
 }
 
 /**
- * Um tique da caçada: os pulsos de QUEIMANDO. O dano sai direto na vida (a
- * resistência já passou no acerto que acendeu); quem cair é recolhido depois por
- * `processarMortes`. Devolve o dano total do tique.
+ * Um tique da caçada: a regeneração dos modificadores e os pulsos de dano ao longo do tempo
+ * (`combate/dot.mjs`). Quem cair é recolhido depois por `processarMortes`. Devolve o dano total dos pulsos.
  */
 export function tique(hunt, eventos, agora) {
   let total = 0;
-  const pulso = E().queimando?.pulso ?? 1000;
   for (const m of hunt?.monstros ?? []) {
     // A REGENERAÇÃO do modificador (`regen`: % da vida por segundo — ver `mobs/raridade.mjs`).
     if (m.regen && m.hp > 0 && m.hp < m.maxHp && R.jaPode(agora, m.proximaRegen)) {
       m.hp = Math.min(m.maxHp, m.hp + Math.max(1, Math.round((m.maxHp * m.regen) / 100)));
       m.proximaRegen = agora + 1000;
     }
-    const q = m.estados?.queimando;
-    if (!q || m.hp <= 0) continue;
-    while (q.falta > 0 && R.jaPode(agora, q.proximo) && q.proximo <= q.ate + pulso) {
-      const v = Math.max(1, Math.round(Math.min(q.falta, q.porPulso)));
-      m.hp -= v;
-      q.falta -= v;
-      q.proximo += pulso;
-      total += v;
-      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v, foe: true, alvo: m.name, color: '#ff9000', queimando: true });
-      if (m.hp <= 0) break;
-    }
-    if (q.falta <= 0 || q.proximo > q.ate + pulso) delete m.estados.queimando;
   }
+  // Os pulsos de dano ao longo do tempo (queimadura, veneno, sangramento...).
+  total += Dot.tique(hunt, eventos, agora);
   return total;
 }
