@@ -130,15 +130,21 @@ export function rerrolar(slot, af, indice, itemId = null) {
  * comparação leem esta soma e não fazem conta própria). `{atk_flat: 7, str: 12, ...}`.
  */
 export function soma(estado) {
+  const total = somaDeItens(estado);
+  for (const [k, v] of Object.entries(Passivas.efeitos(estado).adds)) total[k] = (total[k] ?? 0) + v;
+  // + o altar ativado nesta caçada (temporário): mesma chave dos adds de item.
+  const altar = efeitosDeAltar(estado);
+  if (altar) for (const [k, v] of Object.entries(altar)) total[k] = (total[k] ?? 0) + v;
+  return total;
+}
+
+/** Só os adds das peças VESTIDAS (a parte de `soma` que vem do equipamento; a ficha mostra a origem por categoria). */
+export function somaDeItens(estado) {
   const total = {};
   for (const [slot, peca] of Object.entries(estado.equipment ?? {})) {
     if (!peca?.af?.length || slot === 'backpack') continue;
     for (const a of peca.af) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
   }
-  for (const [k, v] of Object.entries(Passivas.efeitos(estado).adds)) total[k] = (total[k] ?? 0) + v;
-  // + o altar ativado nesta caçada (temporário): mesma chave dos adds de item.
-  const altar = efeitosDeAltar(estado);
-  if (altar) for (const [k, v] of Object.entries(altar)) total[k] = (total[k] ?? 0) + v;
   return total;
 }
 

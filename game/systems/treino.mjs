@@ -84,8 +84,11 @@ export function paraCliente(estado) {
   const skills = {};
   for (const k of PERICIAS) {
     const s = estado.skills[k];
-    skills[k] = { value: s.value, percent: s.tries / Math.max(1, R.triesForSkill(k, s.value, estado.vocation)) };
+    const precisa = Math.max(1, R.triesForSkill(k, s.value, estado.vocation));
+    // `tries`/`precisa`: as tentativas de agora e as que faltam para o próximo nível (a ficha mostra "x / y"); `percent` segue como era.
+    skills[k] = { value: s.value, percent: s.tries / precisa, tries: s.tries, precisa };
   }
   const m = estado.magic;
-  return { skills, magic: { value: m.value, percent: m.mana / Math.max(1, R.manaForMagicLevel(m.value, estado.vocation)) } };
+  const manaPrecisa = Math.max(1, R.manaForMagicLevel(m.value, estado.vocation));
+  return { skills, magic: { value: m.value, percent: m.mana / manaPrecisa, mana: m.mana, precisa: manaPrecisa } };
 }
