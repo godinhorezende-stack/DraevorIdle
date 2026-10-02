@@ -9,15 +9,7 @@
     "es": { "nome": "Energy Shield" },
     "range": { "nome": "Alcance", "sufixo": " sqm" },
     "speed": { "nome": "Velocidade" },
-    "element.value": { "nome": "Dano elemental" },
-    "critChance": { "nome": "Chance de crítico", "escala": 0.01, "sufixo": "%" },
-    "critDamage": { "nome": "Dano crítico", "escala": 0.01, "sufixo": "%" },
-    "lifeLeech": { "nome": "Life leech", "escala": 0.01, "sufixo": "%" },
-    "manaLeech": { "nome": "Mana leech", "escala": 0.01, "sufixo": "%" },
-    "regen.hp": { "nome": "Vida por segundo" },
-    "regen.mana": { "nome": "Mana por segundo" },
-    "protection.*": { "nome": "Resistência {sub}", "sufixo": "%" },
-    "skillBonus.*": { "nome": "Perícia {sub}" }
+    "element.value": { "nome": "Dano elemental" }
   },
   "ficha": {
     "atributos.str": { "nome": "STR", "secao": "Atributos" },

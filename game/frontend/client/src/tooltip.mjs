@@ -2074,24 +2074,6 @@ export function numerosDoItem(meta) {
     const nome = ELEMENT_NAMES[meta.element.type] ?? meta.element.type;
     por(`element:${meta.element.type}`, `dano de ${nome}`, meta.element.value, `el-${meta.element.type}`);
   }
-  for (const [skill, valor] of Object.entries(meta.skillBonus ?? {})) {
-    por(`skill:${skill}`, SKILL_NAMES[skill] ?? skill, valor, 'skill');
-  }
-  // Os que o servidor guarda em centésimos saem em por cento, como no resto do
-  // balão — comparar "150" com "1,5%" seria comparar duas unidades diferentes.
-  por('crit', 'chance de crítico', meta.critChance ? meta.critChance / 100 : 0, 'crit', '%');
-  por('critDmg', 'dano crítico', meta.critDamage ? meta.critDamage / 100 : 0, 'crit', '%');
-  por('lifeLeech', 'life leech', meta.lifeLeech ? meta.lifeLeech / 100 : 0, 'leech', '%');
-  por('manaLeech', 'mana leech', meta.manaLeech ? meta.manaLeech / 100 : 0, 'mana', '%');
-  for (const [elemento, valor] of Object.entries(meta.protection ?? {})) {
-    const nome = ELEMENT_NAMES[elemento] ?? elemento;
-    por(`prot:${elemento}`, `resistência a ${nome}`, valor, `el-${elemento}`, '%');
-  }
-  // A regeneração fixa da peça (`healthgain`/`managain` do items.xml). É o que
-  // as peças Draevor anunciam na descrição, e sem esta linha a comparação entre
-  // um anel comum e o anel bis não mostrava a metade que importa.
-  por('regenHp', 'vida por segundo', meta.regen?.hp ?? 0, 'heal');
-  por('regenMana', 'mana por segundo', meta.regen?.mana ?? 0, 'mana');
   return fora;
 }
 
@@ -2659,11 +2641,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   const stats = el('div', 'tip-stats');
   // Devolve a linha: quem precisa apagá-la ou pôr um `title` (ver os augments,
   // logo abaixo) precisa do nó, e não só do efeito colateral.
-  // Depois do subtítulo "Implícitos" as linhas ganham `impl` (o azul dos modificadores).
-  let emImplicitos = false;
   const add = (text, className) => {
     if (!text) return null;
-    const linha = el('div', emImplicitos && className !== 'tip-sec' ? `${className ?? ''} impl` : className, text);
+    const linha = el('div', className, text);
     stats.append(linha);
     return linha;
   };
@@ -2736,12 +2716,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     }
   }
   /*
-   * ---- BASE e IMPLÍCITOS ----
+   * ---- BASE ----
    * A reestruturação (29/09): o balão diz o que é do item-base — o dano (a
    * faixa sorteada no drop), o bloqueio e a defesa pelo TIPO da base (Armour,
-   * Evasion, Energy Shield ou híbrida) — separado dos implícitos (o que o
-   * catálogo dá a toda cópia: perícia, crítico, resistência...), e os dois
-   * separados dos adds desta cópia (Modificadores, abaixo).
+   * Evasion, Energy Shield ou híbrida) — separado dos adds desta cópia
+   * (Modificadores, abaixo). Os implícitos (perícia, crítico, resistência...)
+   * saíram do jogo: o catálogo não os traz mais.
    */
   const temBase = meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
   if (temBase) add('Base', 'tip-sec');
@@ -2763,21 +2743,6 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (meta.wand?.element) {
     add(`Converte o golpe em ${ELEMENT_NAMES[meta.wand.element] ?? meta.wand.element}`, `el-${meta.wand.element}`);
   }
-  const temImplicito = Object.keys(meta.skillBonus ?? {}).length || meta.critChance || meta.critDamage || meta.lifeLeech || meta.manaLeech || Object.keys(meta.protection ?? {}).length || meta.regen?.hp || meta.regen?.mana;
-  if (temImplicito) add('Implícitos', 'tip-sec');
-  emImplicitos = true;
-  for (const [skill, value] of Object.entries(meta.skillBonus ?? {})) {
-    add(`${sinal(value)} de ${SKILL_NAMES[skill] ?? skill}`, 'skill');
-  }
-  if (meta.critChance) add(`${sinal(Number((meta.critChance / 100).toFixed(1)))}% de chance de crítico`, 'crit');
-  if (meta.critDamage) add(`${sinal(Math.round(meta.critDamage / 100))}% de dano crítico`, 'crit');
-  if (meta.lifeLeech) add(`${sinal(Number((meta.lifeLeech / 100).toFixed(1)))}% de life leech`, 'leech');
-  if (meta.manaLeech) add(`${sinal(Number((meta.manaLeech / 100).toFixed(1)))}% de mana leech`, 'mana');
-  for (const [element, value] of Object.entries(meta.protection ?? {})) {
-    add(`${sinal(value)}% de resistência a ${ELEMENT_NAMES[element] ?? element}`, `el-${element}`);
-  }
-  if (meta.regen?.hp) add(`+${meta.regen.hp} de vida por segundo`, 'heal');
-  if (meta.regen?.mana) add(`+${meta.regen.mana} de mana por segundo`, 'mana');
   if (meta.container) add(`Guarda ${meta.container} itens`, 'plain');
   /*
    * ---- Carga e duração: quanto RESTA, quando dá para saber ----

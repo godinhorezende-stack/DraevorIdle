@@ -68,3 +68,12 @@ test('peça com base sorteada (instância) segue sem implícito: metaDaPeca junt
   assert.equal(meta.attack, 25);
   for (const c of IMPLICITOS) assert.equal(meta[c], undefined, c);
 });
+
+test('o balão do item e a comparação não têm mais o bloco "Implícitos" nem as linhas de implícito', async () => {
+  const { readFileSync } = await import('node:fs');
+  const fonte = readFileSync(new URL('../frontend/client/src/tooltip.mjs', import.meta.url), 'utf8');
+  assert.ok(!/add\('Implícitos'/.test(fonte), 'o subtítulo Implícitos saiu');
+  for (const c of ['meta.skillBonus', 'meta.critChance', 'meta.critDamage', 'meta.lifeLeech', 'meta.manaLeech', 'meta.protection', 'meta.regen']) assert.ok(!fonte.includes(c), `${c} saiu do balão`);
+  const campos = JSON.parse(readFileSync(new URL('../gamedata/itens/campos.json', import.meta.url), 'utf8'));
+  for (const c of ['critChance', 'critDamage', 'lifeLeech', 'manaLeech', 'regen.hp', 'regen.mana', 'protection.*', 'skillBonus.*']) assert.equal(campos.item[c], undefined, `${c} saiu da comparação de itens`);
+});
