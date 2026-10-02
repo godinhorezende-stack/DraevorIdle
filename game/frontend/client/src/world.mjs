@@ -287,6 +287,27 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   raiz.append(cab, dif, aviso, abas, palco, painel, barra);
   body.append(raiz);
 
+  // A tela se adapta à CAIXA do jogo em que está: mede a janela (e remede quando ela muda) e marca `larga` (700 px+: ocupa a altura toda, sem
+  // rolagem) e `lado` (1100 px+: painel à direita). Celular em pé fica no fluxo normal (a página rola).
+  const medir = () => {
+    if (!raiz.isConnected) return void observador?.disconnect();
+    const cs = getComputedStyle(body);
+    const larguraUtil = body.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const topo = raiz.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop;
+    const altura = body.clientHeight - topo - parseFloat(cs.paddingBottom) - 2;
+    const cabe = larguraUtil >= 700 && altura >= 420 && !(window.innerHeight < 460 && window.innerWidth > window.innerHeight);
+    raiz.classList.toggle('larga', cabe);
+    raiz.classList.toggle('lado', cabe && larguraUtil >= 1100);
+    raiz.style.setProperty('--w2-h', cabe ? `${Math.floor(altura)}px` : 'auto');
+  };
+  let observador = null;
+  if (typeof ResizeObserver === 'function') {
+    observador = new ResizeObserver(medir);
+    observador.observe(body);
+  }
+  body.scrollTop = 0;
+  medir();
+
   let dadosDoAto = null;
   const vista = { x: 0, y: 0, k: 1 };
   let chaveVista = null;

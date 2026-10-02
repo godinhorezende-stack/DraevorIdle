@@ -41,28 +41,32 @@ function simbolos(tema) {
  * O pergaminho do Ato: papel, rio, decoração (montanhas, árvores, ruínas...), manchas de corrupção e a moldura. Desenhado UMA vez por Ato
  * (a câmera só move o grupo); `pontos` (os nós) ficam livres de decoração. Determinístico: o mesmo Ato sempre sai igual.
  */
+// O pergaminho é MAIOR que a área jogável (LARGURA × ALTURA): a tela mostra o mapa inteiro em qualquer proporção de janela sem faixa preta/madeira nas laterais.
+const EXT = { x0: -600, y0: -320, x1: LARGURA + 600, y1: ALTURA + 320 };
+const AREA = (EXT.x1 - EXT.x0) * (EXT.y1 - EXT.y0);
+
 export function fundoDoAto(ato, nome, pontos = []) {
   const tema = temaDoAto(ato, nome);
   const rnd = aleatorio(ato * 104729 + 7);
-  const g = svg('g', { class: 'w-fundo', 'aria-hidden': 'true', 'clip-path': `url(#w-recorte-${ato})` });
+  const g = svg('g', { class: 'w-fundo', 'aria-hidden': 'true' });
   g.append(simbolos(tema));
-  g.append(svg('clipPath', { id: `w-recorte-${ato}` }, svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, rx: 6 })));
   g.append(svg('linearGradient', { id: `w-papel-${ato}`, x1: 0, y1: 0, x2: 1, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': tema.papel[0] }), svg('stop', { offset: '100%', 'stop-color': tema.papel[1] })));
-  g.append(svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, rx: 6, fill: `url(#w-papel-${ato})` }));
+  g.append(svg('rect', { x: EXT.x0, y: EXT.y0, width: EXT.x1 - EXT.x0, height: EXT.y1 - EXT.y0, fill: `url(#w-papel-${ato})` }));
   // manchas e dobras do papel
-  for (let i = 0; i < 16; i++) g.append(svg('circle', { cx: Math.round(rnd() * LARGURA), cy: Math.round(rnd() * ALTURA), r: 14 + Math.round(rnd() * 46), fill: rnd() > 0.5 ? 'rgba(90,60,20,.07)' : 'rgba(255,240,200,.08)' }));
-  g.append(svg('path', { d: `M${LARGURA / 2} 0 V${ALTURA} M0 ${ALTURA / 2} H${LARGURA}`, stroke: 'rgba(60,40,15,.16)', 'stroke-width': 1.2, 'stroke-dasharray': '2 5', fill: 'none' }));
-  if (tema.corrupcao) for (let i = 0; i < 3; i++) g.append(svg('circle', { cx: 150 + Math.round(rnd() * 700), cy: 100 + Math.round(rnd() * 440), r: 90 + Math.round(rnd() * 70), fill: 'url(#w-corrupcao)' }));
+  for (let i = 0; i < 48; i++) g.append(svg('circle', { cx: Math.round(EXT.x0 + rnd() * (EXT.x1 - EXT.x0)), cy: Math.round(EXT.y0 + rnd() * (EXT.y1 - EXT.y0)), r: 14 + Math.round(rnd() * 46), fill: rnd() > 0.5 ? 'rgba(90,60,20,.07)' : 'rgba(255,240,200,.08)' }));
+  g.append(svg('path', { d: `M${LARGURA / 2} ${EXT.y0} V${EXT.y1} M${EXT.x0} ${ALTURA / 2} H${EXT.x1}`, stroke: 'rgba(60,40,15,.16)', 'stroke-width': 1.2, 'stroke-dasharray': '2 5', fill: 'none' }));
+  if (tema.corrupcao) for (let i = 0; i < 6; i++) g.append(svg('circle', { cx: EXT.x0 + 150 + Math.round(rnd() * (EXT.x1 - EXT.x0 - 300)), cy: EXT.y0 + 100 + Math.round(rnd() * (EXT.y1 - EXT.y0 - 200)), r: 90 + Math.round(rnd() * 70), fill: 'url(#w-corrupcao)' }));
   if (tema.rio) {
     const y0 = 60 + Math.round(rnd() * 80);
-    g.append(svg('path', { d: `M-10 ${y0} C220 ${y0 + 200} 360 ${y0 - 60} 560 ${y0 + 160} S860 ${y0 + 80} ${LARGURA + 10} ${y0 + 280}`, fill: 'none', stroke: tema.agua, 'stroke-width': 11, 'stroke-linecap': 'round', opacity: 0.55 }));
-    g.append(svg('path', { d: `M-10 ${y0} C220 ${y0 + 200} 360 ${y0 - 60} 560 ${y0 + 160} S860 ${y0 + 80} ${LARGURA + 10} ${y0 + 280}`, fill: 'none', stroke: tema.tinta, 'stroke-width': 1, opacity: 0.4, 'stroke-dasharray': '1 6' }));
+    g.append(svg('path', { d: `M${EXT.x0} ${y0 - 60} C-300 ${y0 + 40} -100 ${y0 + 160} 220 ${y0 + 200} C360 ${y0 - 60} 400 ${y0 + 100} 560 ${y0 + 160} S860 ${y0 + 80} ${EXT.x1} ${y0 + 340}`, fill: 'none', stroke: tema.agua, 'stroke-width': 11, 'stroke-linecap': 'round', opacity: 0.55 }));
+    g.append(svg('path', { d: `M${EXT.x0} ${y0 - 60} C-300 ${y0 + 40} -100 ${y0 + 160} 220 ${y0 + 200} C360 ${y0 - 60} 400 ${y0 + 100} 560 ${y0 + 160} S860 ${y0 + 80} ${EXT.x1} ${y0 + 340}`, fill: 'none', stroke: tema.tinta, 'stroke-width': 1, opacity: 0.4, 'stroke-dasharray': '1 6' }));
   }
   const livre = (x, y) => pontos.every((p) => Math.hypot(p.x - x, p.y - y) > 62);
   for (const [simbolo, qtd] of tema.decoracao) {
-    for (let i = 0, tentativas = 0; i < qtd && tentativas < qtd * 6; tentativas++) {
-      const x = 30 + rnd() * (LARGURA - 60);
-      const y = 30 + rnd() * (ALTURA - 60);
+    const total = Math.round((qtd * AREA) / (LARGURA * ALTURA) * 0.8);
+    for (let i = 0, tentativas = 0; i < total && tentativas < total * 6; tentativas++) {
+      const x = EXT.x0 + 30 + rnd() * (EXT.x1 - EXT.x0 - 60);
+      const y = EXT.y0 + 30 + rnd() * (EXT.y1 - EXT.y0 - 60);
       if (!livre(x, y)) continue;
       const k = 0.7 + rnd() * 0.7;
       g.append(svg('use', { href: `#w-${simbolo}`, transform: `translate(${Math.round(x)} ${Math.round(y)}) scale(${k.toFixed(2)})` }));
@@ -73,8 +77,7 @@ export function fundoDoAto(ato, nome, pontos = []) {
   const arcano = (x, y) => svg('g', { transform: `translate(${x} ${y})`, fill: 'none', stroke: tema.tinta, 'stroke-width': 1, opacity: 0.55 }, svg('circle', { r: 20 }), svg('circle', { r: 13, 'stroke-dasharray': '2 3' }), svg('path', { d: 'M0 -20 L6 8 L-17 -10 H17 L-6 8 Z' }));
   g.append(arcano(70, 70), arcano(LARGURA - 70, ALTURA - 70));
   g.append(svg('g', { transform: `translate(${LARGURA - 78} 74)`, fill: 'none', stroke: tema.tinta, 'stroke-width': 1.2, opacity: 0.7 }, svg('circle', { r: 22 }), svg('path', { d: 'M0 -30 L5 -5 L0 0 L-5 -5 Z M0 30 L5 5 L0 0 L-5 5 Z M-30 0 L-5 -5 L0 0 L-5 5 Z M30 0 L5 -5 L0 0 L5 5 Z', fill: tema.tinta, opacity: 0.55 }), svg('text', { y: -34, 'text-anchor': 'middle', fill: tema.tinta, stroke: 'none', 'font-size': 11, 'font-family': 'serif' }, 'N')));
-  g.append(svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, rx: 6, fill: 'url(#w-vinheta)' }));
-  g.append(svg('rect', { x: 5, y: 5, width: LARGURA - 10, height: ALTURA - 10, rx: 4, fill: 'none', stroke: tema.tinta, 'stroke-width': 2, opacity: 0.7 }), svg('rect', { x: 11, y: 11, width: LARGURA - 22, height: ALTURA - 22, rx: 2, fill: 'none', stroke: tema.tinta, 'stroke-width': 0.8, opacity: 0.5 }));
+  g.append(svg('rect', { x: EXT.x0, y: EXT.y0, width: EXT.x1 - EXT.x0, height: EXT.y1 - EXT.y0, fill: 'url(#w-vinheta)' }));
   return g;
 }
 
