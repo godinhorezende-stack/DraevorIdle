@@ -284,8 +284,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   const painel = el('section', 'w2-painel');
   const barra = el('footer', 'w2-barra');
 
-  const faixa = el('div', 'w2-faixa', abas, barra);
-  raiz.append(cab, dif, faixa, aviso, palco, painel);
+  raiz.append(cab, dif, barra, abas, aviso, palco, painel);
   body.append(raiz);
 
   // A tela se adapta à CAIXA do jogo em que está: mede a janela (e remede quando ela muda) e marca `larga` (700 px+: ocupa a altura toda, sem
