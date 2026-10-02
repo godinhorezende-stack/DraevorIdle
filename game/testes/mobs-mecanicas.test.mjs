@@ -119,14 +119,14 @@ test('Venenoso: o golpe deixa um dano ao longo do tempo, um pulso por segundo', 
   } finally {
     Math.random = rnd;
   }
-  assert.equal(hunt.danoNoTempo.length, 1);
+  assert.equal(hunt.efeitosDoJogador.dots.length, 1);
   const hp = e.hp;
   Mecanicas.tique(e, hunt, personagem, []);
   assert.equal(e.hp, hp, 'o primeiro pulso é daqui a 1 s');
   hunt.clock += 4000;
   Mecanicas.tique(e, hunt, personagem, []);
   assert.ok(e.hp < hp);
-  assert.equal(hunt.danoNoTempo.length, 0, 'acabou');
+  assert.equal(hunt.efeitosDoJogador.dots.length, 0, 'acabou');
 });
 
 test('Abrasador: a aura fere quem está perto, no intervalo dela', () => {

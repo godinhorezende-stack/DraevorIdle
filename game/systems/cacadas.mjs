@@ -53,6 +53,7 @@ import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import * as Controle from './combate/controle.mjs';
+import * as Dot from './combate/dot.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
@@ -682,6 +683,9 @@ function passosDoTique(estado, hunt) {
   hunt.creditoDePasso = Math.min(1, hunt.creditoDePasso - n);
   return n;
 }
+
+/** Os efeitos ativos NO JOGADOR para o ícone ao lado do nome: o controle (congelado, atordoado, lento) e o dano contínuo (queimando, envenenado, sangrando...). */
+const estadosDoJogador = (hunt) => [...Controle.ativosNoJogador(hunt), ...Dot.ativosNoJogador(hunt, hunt.clock ?? 0)];
 
 /** Os três valores do seletor "Alvo" do client (`jogar.html`, `#strategy`). */
 const ESTRATEGIAS = new Set(['nearest', 'lowest', 'highest']);
@@ -1760,7 +1764,7 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     z: hunt.z,
     ...(mandarMapa ? { map: gradeDaHunt(hd).mapa } : {}),
     // A duração do passo na tela acompanha a velocidade (ver `passosDoTique`).
-    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}) },
+    player: { x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir, moveMs: Math.round(R.PASSO_MS / razaoDeVelocidade(estado)), ...(Controle.ativosNoJogador(hunt).length ? { controle: Controle.ativosNoJogador(hunt) } : {}), ...(estadosDoJogador(hunt).length ? { estados: estadosDoJogador(hunt) } : {}) },
     monsters: hunt.monstros.map((m) => ({
       uid: m.uid,
       x: m.x,

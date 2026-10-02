@@ -2,6 +2,7 @@
   "_nota": "MODIFICADORES DOS MOBS (pedido do dono, 01/10): cada um com o nome que aparece no mob, os STATS que soma e as MECÂNICAS que liga. Nenhum nome de mob ou de modificador no código: o motor (systems/mobs/raridade.mjs e mecanicas.mjs) lê só estas chaves. Os stats entram nos mesmos campos que o combate já usa (vida, dano, resistência, armadura, velocidade, regeneração).",
 
   "_stats": "vidaPct, danoPct, velocidadePct (passo), velocidadeDeAtaquePct (intervalo do golpe), regenPct (% da vida por segundo), resist: { elemento: % } (soma à resistência do bestiário — o mesmo cálculo de resistência do combate). Sem `armaduraPct`: a armadura do mob não entra em nenhuma conta de dano do jogo — para \"mais duro\", use resist.physical.",
+  "_declaracao": "CADA modificador pode declarar (todos opcionais; sem eles vale o de sempre): `categoria` (ofensivo | defensivo | velocidade | mecanica | utilidade — sem ela sai dos stats), `raridades` (em quais raridades pode entrar; padrão: todas menos a normal), `incompativeis` (ids que não combinam com ele), `especies` (chaves do bestiário onde pode entrar; vazio = todas), `classes` (`class` do bestiário onde pode entrar), `exceto` (chaves onde NÃO pode), `descricao` (texto próprio; sem ele a frase sai dos stats e das mecânicas) e `indicador` ({ cor, simbolo }: o selo na tela). As regras de COMBINAÇÃO (limite ofensivo, avisos) ficam em `raridades.json` (`regras`).",
   "_mecanicas": "Lista de { gatilho, efeito, ...parâmetros } — gatilhos: aoMorrer, vidaBaixa, aoReceberDano, aoAtacar, aliadoMorreu, aura. Executadas por systems/mobs/mecanicas.mjs (fase 2 do plano).",
 
   "modificadores": {
@@ -16,6 +17,11 @@
     "gelido":         { "nome": "Gélido",          "stats": { "resist": { "ice": 40 } } },
     "isolado":        { "nome": "Isolado",         "stats": { "resist": { "energy": 40 } } },
     "profano":        { "nome": "Profano",         "stats": { "resist": { "holy": 40 } } },
+    "acurado":        { "nome": "Acurado",         "categoria": "ofensivo",   "stats": { "precisaoPct": 30 } },
+    "evasivo":        { "nome": "Evasivo",         "categoria": "defensivo",  "stats": { "evasaoPct": 40 } },
+    "afiado":         { "nome": "Afiado",          "categoria": "ofensivo",   "stats": { "critChance": 8, "critMultiplicador": 25 } },
+    "escudado":       { "nome": "Escudado",        "categoria": "defensivo",  "raridades": ["raro", "elite", "unico", "boss"], "incompativeis": ["evasivo"], "stats": { "bloqueio": 25 } },
+    "temperado":      { "nome": "Temperado",       "categoria": "defensivo",  "raridades": ["raro", "elite", "unico", "boss"], "stats": { "reducaoDeDano": 15 } },
     "explosivo":      { "nome": "Explosivo",       "mecanicas": [{ "gatilho": "aoMorrer", "efeito": "explosao", "raio": 1, "danoPctDaVida": 8, "elemento": "fire" }] },
     "procriador":     { "nome": "Procriador",      "mecanicas": [{ "gatilho": "aoMorrer", "efeito": "gerar", "quantidade": 2, "mesmaCriatura": true, "vidaPct": 35 }] },
     "enfurecido":     { "nome": "Enfurecido",      "mecanicas": [{ "gatilho": "vidaBaixa", "limitePct": 30, "efeito": "enrage", "danoPct": 40, "velocidadeDeAtaquePct": 30 }] },

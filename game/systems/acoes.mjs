@@ -27,6 +27,7 @@ import { resistido, resistenciaDe, resistenciaEfetivaDe } from './hunt/resistenc
 import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
 import * as Controle from './combate/controle.mjs';
+import * as AtributosDoMob from './mobs/atributos.mjs';
 import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
@@ -1027,6 +1028,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const estado = Dot.aplicar(bicho, { tipo: tipoDoDot, total: bruto, origem: { fonte: 'gema', habilidade: entry.id } }, agora);
         if (estado) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado });
         registrarGolpe(() => ({ origem: 'gema-dot', habilidade: entry.id, alvo: bicho.name, tipo, dot: tipoDoDot, totalDoEfeito: Math.round(bruto), aplicou: !!estado }));
+        return;
+      }
+      // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): sem dano nem estados.
+      if (AtributosDoMob.bloqueou(bicho)) {
+        eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', bloqueado: true });
         return;
       }
       const base = resistido(hunt, bicho, tipo, bruto, ficha);

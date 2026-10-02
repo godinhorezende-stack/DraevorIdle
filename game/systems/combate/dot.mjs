@@ -27,18 +27,20 @@ export const restante = (m, tipo) => dosDoTipo(m, tipo).reduce((n, d) => n + d.f
  * Põe um efeito no bicho. `total`: o dano que o efeito paga ao todo (antes da resistência); `origem`: `{ fonte, habilidade?, atacante? }`.
  * Devolve o nome do ESTADO posto (`'queimando'`, `'envenenado'`...) ou null se não entrou (mais fraco que o que já vale, sem dano...).
  */
-export function aplicar(bicho, { tipo, total, origem = null }, agora) {
+export function aplicar(bicho, { tipo, total, origem = null, duracaoMs = null }, agora) {
   const t = CONFIG.tipos[tipo];
   if (!t || !(total > 0) || bicho.hp <= 0) return null;
   const dots = (bicho.dots ??= []);
   const mesmos = dots.filter((d) => d.tipo === tipo && ativo(d, agora));
+  // `duracaoMs`: a duração própria da fonte (um modificador de mob pode ter a dele); sem ela, a do tipo.
+  const duracao = duracaoMs ?? t.duracaoMs;
   const novo = () => ({
     id: `dot-${proximoId++}`,
     tipo,
     elemento: t.elemento,
-    ate: agora + t.duracaoMs,
+    ate: agora + duracao,
     falta: total,
-    porPulso: total / Math.max(1, Math.round(t.duracaoMs / t.pulsoMs)),
+    porPulso: total / Math.max(1, Math.round(duracao / t.pulsoMs)),
     proximo: agora + t.pulsoMs,
     origem,
   });
@@ -60,10 +62,10 @@ export function aplicar(bicho, { tipo, total, origem = null }, agora) {
       dots.push(novo());
     } else {
       // Renova a duração e fica com o maior dano que falta; o relógio dos pulsos continua.
-      atual.ate = agora + t.duracaoMs;
+      atual.ate = agora + duracao;
       if (total > atual.falta) {
         atual.falta = total;
-        atual.porPulso = total / Math.max(1, Math.round(t.duracaoMs / t.pulsoMs));
+        atual.porPulso = total / Math.max(1, Math.round(duracao / t.pulsoMs));
       }
     }
     return t.estado;
@@ -126,3 +128,47 @@ export function remover(m, tipo = null) {
   m.dots = tipo ? m.dots.filter((d) => d.tipo !== tipo) : [];
   if (!m.dots.length) delete m.dots;
 }
+
+// ---------------------------------------------------------------- o dano ao longo do tempo NO JOGADOR (mobs que queimam, envenenam, sangram)
+
+/** O tipo de dano contínuo que um dano do `elemento` vira (`doElemento` em `dot.json`), ou null. */
+export const tipoDoElemento = (elemento) => CONFIG.doElemento[elemento] ?? null;
+
+/** Os efeitos que estão no JOGADOR agora (na caçada: `hunt.efeitosDoJogador`). */
+const doJogador = (hunt) => (hunt.efeitosDoJogador ??= { hp: 1, dots: [] });
+
+/**
+ * Um mob põe um efeito de dano contínuo no JOGADOR: as MESMAS regras de acumulação dos bichos (maior / empilha / renova), no relógio da
+ * caçada. `origem`: `{ fonte: 'mob', mob, uid }`. Devolve o estado posto ou null.
+ */
+export function aplicarNoJogador(hunt, { tipo, total, origem = null, duracaoMs = null }, agora) {
+  return aplicar(doJogador(hunt), { tipo, total, origem, duracaoMs }, agora);
+}
+
+/**
+ * Um tique: os pulsos dos efeitos no jogador. O dano passa por `ferir(origem, valor, elemento, nome)` — a proteção do jogador ao elemento,
+ * o Energy Shield, a mitigação das gemas (o mesmo caminho de qualquer dano elemental do mob); a armadura NÃO vale (dano contínuo).
+ */
+export function tiqueDoJogador(hunt, agora, ferir, vivo = () => true) {
+  const h = hunt.efeitosDoJogador;
+  if (!h?.dots?.length) return 0;
+  let total = 0;
+  for (const d of h.dots) {
+    const t = CONFIG.tipos[d.tipo];
+    if (!t) continue;
+    while (d.falta > 0 && R.jaPode(agora, d.proximo) && d.proximo <= d.ate + t.pulsoMs && vivo()) {
+      const parte = Math.max(1, Math.round(Math.min(d.falta, d.porPulso)));
+      d.falta -= parte;
+      d.proximo += t.pulsoMs;
+      total += ferir(d.origem, parte, d.elemento, t.nome) ?? 0;
+    }
+  }
+  h.dots = h.dots.filter((d) => d.falta > 0 && d.proximo <= d.ate + (CONFIG.tipos[d.tipo]?.pulsoMs ?? 1000));
+  return total;
+}
+
+/** Os estados dos efeitos ATIVOS no jogador (o cliente pode mostrar um ícone de cada). */
+export const ativosNoJogador = (hunt, agora) => ativosDe(hunt?.efeitosDoJogador, agora);
+
+/** Tira os efeitos do jogador (ao morrer, ao sair da caçada, ao ser curado do efeito). */
+export const removerDoJogador = (hunt, tipo = null) => remover(hunt?.efeitosDoJogador ?? {}, tipo);

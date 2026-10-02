@@ -38,6 +38,8 @@ import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
 import * as Controle from '../combate/controle.mjs';
+import * as AtributosDoMob from '../mobs/atributos.mjs';
+import * as Dot from '../combate/dot.mjs';
 import { distancia } from './caminho.mjs';
 import { tirarMonstro, salaDe } from './sala.mjs';
 import { alvoAtual } from './alvo.mjs';
@@ -156,6 +158,11 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // Accuracy: o tiro pode errar (a mana já foi gasta, como um golpe no ar).
   if (Defesa.errou(ficha, hunt, alvo)) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
+    return true;
+  }
+  // O bicho BLOQUEIA o tiro (só quem tem bloqueio configurado): sem dano.
+  if (AtributosDoMob.bloqueou(alvo)) {
+    eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
     return true;
   }
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
@@ -713,18 +720,30 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // O melee do monster.lua (`Poderes`); bicho sem arquivo, a regra de sempre.
   // `forca`: o degrau da Arena x1 (+15% a cada 2 min).
   // `forcaDoBicho`: a força × a marca de enfraquecido (Aura of Sapped Strength).
-  const bruto = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now()) * fatorDoBloqueio;
+  const forcaDoGolpe = Reforcos.forcaDoBicho(bicho, hunt.clock ?? Date.now()) * fatorDoBloqueio;
+  const brutoSemCritico = (Poderes.golpeCorpoACorpo(bicho) ?? R.ataqueDoMonstro(bicho)) * forcaDoGolpe;
+  // O CRÍTICO do mob (só quem tem — `mobs/atributos.json`): rola UMA vez e vale para o golpe todo, todos os tipos de dano.
+  const critDoMob = AtributosDoMob.rolarCritico(bicho);
+  const bruto = brutoSemCritico * critDoMob.fator;
   // O golpe ACERTOU (passou da esquiva e do bloqueio): boss e elite podem CONGELAR, ATORDOAR ou fazer LENTIDÃO no jogador
   // (`combate/controle.mjs`), mesmo que o Energy Shield engula o dano; a resistência a controle dele encurta o efeito.
   if (bruto > 0) {
     const controle = Controle.tentar(hunt, bicho, ficha, hunt.clock ?? 0);
     if (controle) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: controle, de: bicho.name });
   }
+  // Os EFEITOS do golpe (`efeitos` da espécie): dano contínuo no jogador pelo motor `combate/dot.mjs` — do dano antes da defesa e do crítico.
+  for (const ef of AtributosDoMob.efeitosDoGolpe(bicho)) {
+    if (Math.random() * 100 >= (ef.chance ?? 100) || !(brutoSemCritico > 0)) continue;
+    const estadoPosto = Dot.aplicarNoJogador(hunt, { tipo: ef.tipo, total: (brutoSemCritico * ef.pctDoGolpe) / 100, duracaoMs: ef.duracaoMs ?? null, origem: { fonte: 'mob', mob: bicho.name, uid: bicho.uid, key: bicho.key } }, hunt.clock ?? 0);
+    if (estadoPosto) eventos.push({ t: 'estado', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, estado: estadoPosto, de: bicho.name });
+  }
   // Golpe corpo a corpo é físico: a proteção física do equipamento corta em %.
   const protegido = Math.round(bruto * (1 - Math.min(100, ficha.protection.physical ?? 0) / 100));
+  // O dano de OUTROS tipos do mesmo golpe (`danoExtra` da espécie): cada um passa pela proteção do SEU elemento (a armadura é só do físico).
+  const doutrosTipos = AtributosDoMob.danoExtraDoGolpe(bicho).reduce((n, x) => n + Math.round((x.min + Math.floor(Math.random() * (x.max - x.min + 1))) * forcaDoGolpe * critDoMob.fator * (1 - Math.min(100, ficha.protection[x.elemento] ?? 0) / 100)), 0);
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
-  let final = Math.round(R.danoRecebido(protegido, armorDoPersonagem(estado)) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  let final = Math.round((R.danoRecebido(protegido, armorDoPersonagem(estado)) + doutrosTipos) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
   // Energy Shield: absorve antes do magic shield e da vida.
   final = Defesa.absorver(estado, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).
@@ -754,6 +773,7 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
       de: bicho.name,
       golpe: 'corpo a corpo',
       color: '#ff0000',
+      ...(critDoMob.critico ? { crit: true } : {}),
     });
     // Parry e Numb (charms defensivos).
     Charms.depoisDeApanhar(estado, hunt, bicho, final, eventos);
@@ -822,7 +842,8 @@ export function golpesDosMonstros(estado, hunt, personagem) {
     if (!Estados.podeAgir(bicho, agora)) continue;
     // O modificador de velocidade de ataque (`velocidadeDeAtaque`) encurta o intervalo do golpe.
     // (+ o buff de velocidade de ataque das mecânicas: Enfurecido, Vingativo — `mobs/buffs.mjs`.)
-    bicho.proximoGolpe = agora + ((bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS) * Estados.fatorDeLentidao(bicho, agora)) / ((bicho.velocidadeDeAtaque ?? 1) * (1 + BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') / 100));
+    // O intervalo entre golpes (`mobs/atributos.mjs`): o base × a lentidão ÷ a velocidade (modificador × buffs), com limites configuráveis.
+    bicho.proximoGolpe = agora + AtributosDoMob.intervaloDoGolpe(bicho, { base: bicho.boss?.melee?.intervaloMs ?? ATAQUE_DO_MONSTRO_MS, lentidao: Estados.fatorDeLentidao(bicho, agora), buffPct: BuffsDeMob.soma(bicho, agora, 'velocidadeDeAtaquePct') });
     contraAtaque(estado, hunt, personagem, bicho, eventos);
   }
   return eventos;
@@ -932,7 +953,13 @@ export function round(estado, personagem) {
           eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
           return false;
         }
-        // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
+        // O bicho BLOQUEIA o golpe (só quem tem bloqueio configurado — `mobs/atributos.mjs`): o golpe não causa dano.
+      if (AtributosDoMob.bloqueou(alvo)) {
+        Treino.treinar(estado, pericia);
+        eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', bloqueado: true });
+        return true;
+      }
+      // Crítico e leech da ficha (base 3%/+60% e o que o equipamento soma).
         // O golpe da arma é físico: "Dano físico" (árvore/afixo) entra aqui.
         // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
         // + os reforços ligados (Blood Rage no corpo a corpo, Sharpshooter à distância), pelas tags do golpe.

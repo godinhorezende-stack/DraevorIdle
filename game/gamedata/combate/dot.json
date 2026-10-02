@@ -6,6 +6,7 @@
     "sangramento": { "nome": "Sangramento", "elemento": "physical", "duracaoMs": 5000, "pulsoMs": 1000, "acumulacao": "renova",  "maxPilhas": 1,  "cor": "#d03030", "estado": "sangrando" },
     "choque":      { "nome": "Choque",      "elemento": "energy",   "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#8fb6ff", "estado": "eletrizado" },
     "maldicao":    { "nome": "Maldição",    "elemento": "death",    "duracaoMs": 6000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#9a6bd6", "estado": "amaldicoado" },
+    "gelo":        { "nome": "Enregelamento", "elemento": "ice",    "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#9fe8ff", "estado": "enregelado" },
     "ofuscamento": { "nome": "Ofuscamento", "elemento": "holy",     "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#fff1a8", "estado": "ofuscado" }
   },
   "fontes": {
@@ -14,7 +15,9 @@
     "CONDITION_BLEEDING": "sangramento",
     "CONDITION_ENERGY": "choque",
     "CONDITION_CURSED": "maldicao",
-    "CONDITION_DAZZLED": "ofuscamento"
+    "CONDITION_DAZZLED": "ofuscamento",
+    "CONDITION_FREEZING": "gelo"
   },
+  "doElemento": { "_nota": "O tipo de dano contínuo de cada elemento — o que o dano de um mob no JOGADOR vira (o Venenoso, os `efeitos` dos mobs): `earth` → veneno, `fire` → queimadura...", "physical": "sangramento", "earth": "veneno", "fire": "queimadura", "energy": "choque", "death": "maldicao", "holy": "ofuscamento", "ice": "gelo" },
   "limites": { "_nota": "Teto de efeitos de dano contínuo ao mesmo tempo num bicho (contra empilhar sem fim).", "efeitosPorBicho": 12 }
 }

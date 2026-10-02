@@ -1,0 +1,21 @@
+{
+  "_nota": "Os ATRIBUTOS FINAIS dos monstros (dono, 02/10), lidos por systems/mobs/atributos.mjs: precisão, evasão, armadura, bloqueio e redução de dano, cada um com a PRÓPRIA curva por level. Os valores abaixo reproduzem os de HOJE (a precisão e a evasão do bicho saíam de constantes de `atributos-principais.json`; a armadura vem do bestiário). Fórmula: `final = (base da espécie × fator da curva × fator da faixa de level × fator da classe × fator da espécie + fixos) × (1 + aumentos − reduções) × more`. A vida e o dano seguem a escala da fase e a raridade (`campanha.mjs`, `mobs/raridade.mjs`) e entram no detalhamento como estão. Nada escala sem declarar aqui.",
+  "curvas": {
+    "_nota": "O valor por level de quem não vem do bestiário: `base + porLevel × level do mob` (o level é o da fase + `levelExtra` da raridade). precisao: o rating do bicho ao acertar o jogador; evasao: o do bicho ao evitar o golpe do jogador. A armadura vem do bestiário (`armor`), sem curva própria (`porLevel` 0): mude `porLevel` para fazê-la crescer com o level.",
+    "precisao": { "base": 10, "porLevel": 4 },
+    "evasao":   { "base": 10, "porLevel": 2 },
+    "armadura": { "porLevel": 0 }
+  },
+  "faixas": {
+    "_nota": "Um fator por atributo, por faixa de level (`ate`: o level máximo da faixa; a última pega o resto). 1 = não escala por faixa.",
+    "lista": [
+      { "ate": 1000000, "fatores": { "precisao": 1, "evasao": 1, "armadura": 1 } }
+    ]
+  },
+  "porClasse": { "_nota": "Fatores por `class` do bestiário (Humanoid, Dragon, Undead, Demon...): `{ \"Dragon\": { \"armadura\": 1.5 } }`. Vazio = nenhum mob muda.", "fatores": {} },
+  "porEspecie": { "_nota": "Por chave do bestiário: `{ \"troll\": { \"fatores\": { \"armadura\": 2 }, \"bloqueio\": 20, \"reducaoDeDano\": 10, \"fixos\": { \"armadura\": 100 } } }`. `bloqueio` e `reducaoDeDano` em %: nenhum mob tem por padrão (só quem for configurado). Ataque (02/10): `danoExtra` (`[{ \"elemento\": \"fire\", \"min\": 50, \"max\": 90 }]`: dano de OUTRO tipo no mesmo golpe corpo a corpo, cada um com a defesa do seu tipo), `critChance`, `critMultiplicador` e `efeitos` (`[{ \"tipo\": \"sangramento\", \"chance\": 20, \"pctDoGolpe\": 40 }]`: dano contínuo no jogador pelo motor `combate/dot.mjs`).", "especies": {} },
+  "ataque": { "_nota": "A VELOCIDADE DE ATAQUE do mob: o intervalo entre golpes corpo a corpo = `intervaloBaseMs` ÷ (velocidade do modificador × buffs), com a velocidade entre `velocidadeMinima` e `velocidadeMaxima` (e nunca abaixo de `intervaloMinimoMs`), × a lentidão. O cliente nunca decide isso: o servidor controla o relógio dos golpes.", "intervaloBaseMs": 2000, "velocidadeMinima": 0.25, "velocidadeMaxima": 4, "intervaloMinimoMs": 250 },
+  "critico": { "_nota": "O CRÍTICO dos mobs: nenhum mob tem por padrão. `critChance` (em %, por espécie, por ataque ou pelo modificador) e `critMultiplicador` (em % do dano: 150 = ×1,5) ligam o crítico; sem multiplicador próprio vale `multiplicadorPadraoPct`. Rola UMA vez por golpe ou magia, sobre o dano todo (todos os tipos), nunca no dano contínuo.", "multiplicadorPadraoPct": 150, "chanceMaxima": 100 },
+  "armaduraDoMob": { "_nota": "A armadura do mob reduz o dano FÍSICO dos golpes do jogador (não o dano contínuo) pela fórmula do PoE: armadura / (armadura + coeficiente × dano do golpe); o coeficiente é `armadura.poe.coeficiente` de `combate/formulas.json`. Desligue para a armadura voltar a ser só um dado.", "ativa": true },
+  "limites": { "bloqueioMaximo": 75, "reducaoDeDanoMaxima": 90, "armaduraMaxima": 1000000, "atributoMaximo": 100000000 }
+}

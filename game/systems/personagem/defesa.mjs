@@ -9,13 +9,15 @@
 // Os números moram em `gamedata/atributos-principais.json` (via `Atributos.CONFIG`).
 import * as Formulas from '../combate/formulas.mjs';
 import * as Atributos from './atributos.mjs';
+import * as AtributosDoMob from '../mobs/atributos.mjs';
 
 const ES = Atributos.CONFIG.energyShield;
 
 /** O golpe do jogador ERROU `alvo`? (boneco de treino nunca esquiva) */
 export function errou(ficha, hunt, alvo) {
   if (!alvo || alvo.dummy) return false;
-  const chance = Atributos.chanceDeAcerto(ficha.accuracy ?? 0, Atributos.levelDoBicho(hunt, alvo));
+  const level = Atributos.levelDoBicho(hunt, alvo);
+  const chance = Atributos.chanceDeAcerto(ficha.accuracy ?? 0, level, AtributosDoMob.evasaoDe(alvo, level));
   return !sorteioDoAcerto(chance, alvo, 'errosDoJogador');
 }
 
@@ -31,7 +33,10 @@ function sorteioDoAcerto(chance, quem, campo) {
 }
 
 /** O jogador esquivou (Evasion) do golpe corpo a corpo de `bicho`? */
-export const esquivou = (ficha, hunt, bicho) => sorteioDoAcerto(Atributos.chanceDeEsquiva(ficha.evasion ?? 0, Atributos.levelDoBicho(hunt, bicho)), bicho, 'errosDoBicho');
+export const esquivou = (ficha, hunt, bicho) => {
+  const level = Atributos.levelDoBicho(hunt, bicho);
+  return sorteioDoAcerto(Atributos.chanceDeEsquiva(ficha.evasion ?? 0, level, AtributosDoMob.precisaoDe(bicho, level)), bicho, 'errosDoBicho');
+};
 
 /** "Chance to Avoid Damage": o dano inteiro não pega. */
 export const evitou = (ficha) => (ficha.evitarDano ?? 0) > 0 && Math.random() < ficha.evitarDano;
