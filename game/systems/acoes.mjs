@@ -228,7 +228,7 @@ export function catalogo(estado) {
       xpProximo: a.nivel >= Gemas.CONFIG.niveis.maximo ? 0 : Gemas.xpParaSubir(a.nivel, estado.level),
       raridade: a.raridade,
       multiplicador: Gemas.multiplicadorDaRaridade(a.raridade),
-      supports: a.supports.map((sp) => ({ nome: sp.def.nome, nivel: sp.nivel })),
+      supports: a.supports.map((sp) => ({ nome: sp.def.nome, nomePt: sp.def.nomePt ?? sp.def.nome, nivel: sp.nivel })),
       efeito: Gemas.efeitoNaSkill(estado, entry.id, ativas),
       castTime: Gemas.tempoDeConjuracao(estado, entry.id, ficha.castSpeed, ativas),
     };

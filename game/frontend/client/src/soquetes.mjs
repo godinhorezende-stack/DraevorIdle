@@ -267,7 +267,7 @@ function corpo(body, peca) {
       'p',
       'shop-note',
       grupoDoSocket(sq, escolhido).length > 1
-        ? `Ligado a: ${doGrupo.length ? doGrupo.map((d) => d.nome).join(', ') : 'sockets vazios'}.`
+        ? `Ligado a: ${doGrupo.length ? doGrupo.map((d) => d.nomePt ?? d.nome).join(', ') : 'sockets vazios'}.`
         : 'Este socket não tem link: uma support aqui não vale para nada.'
     )
   );
@@ -285,8 +285,8 @@ function corpo(body, peca) {
     } else {
       const recebe = supportsDoGrupo.filter((s) => compativel(s, def.tags));
       const nao = supportsDoGrupo.filter((s) => !compativel(s, def.tags));
-      if (recebe.length) bom(`recebe: ${recebe.map((s) => s.nome).join(', ')}`);
-      if (nao.length) ruim(`não recebe: ${nao.map((s) => s.nome).join(', ')}`);
+      if (recebe.length) bom(`recebe: ${recebe.map((s) => s.nomePt ?? s.nome).join(', ')}`);
+      if (nao.length) ruim(`não recebe: ${nao.map((s) => s.nomePt ?? s.nome).join(', ')}`);
       if (!supportsDoGrupo.length) p.append(el('i', null, 'nenhuma support ligada'));
     }
     return p;
@@ -301,7 +301,7 @@ function corpo(body, peca) {
     linha.type = 'button';
     linha.append(itemCanvas(item.id, 28));
     const texto = el('div', null);
-    texto.append(el('b', null, meta.gemaDef.nome), el('em', null, `${meta.gemaDef.tipo === 'support' ? 'support' : 'skill'} · ${item.raridade ?? 'comum'} · nível ${item.gema?.nivel ?? 1} · ${item.gema?.qualidade ?? 0}%`));
+    texto.append(el('b', null, meta.gemaDef.nomePt ?? meta.gemaDef.nome), el('em', null, `${meta.gemaDef.tipo === 'support' ? 'suporte' : 'skill'} · ${item.raridade ?? 'comum'} · nível ${item.gema?.nivel ?? 1} · ${item.gema?.qualidade ?? 0}%`));
     texto.append(previa(meta.gemaDef));
     linha.classList.add(classeDaRaridade(meta, item));
     linha.append(texto);

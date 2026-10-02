@@ -21,6 +21,9 @@ import * as R from '../regras.mjs';
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
 export const SUPPORTS = ler('supports').supports;
+/** O nome em português dos supports (`nomes-pt.json`): só apresentação — o id e o `nome` em inglês seguem como chave. */
+const NOMES_PT = ler('nomes-pt').suportes ?? {};
+export const nomeDoSupportPt = (id) => NOMES_PT[id] ?? null;
 const EXCECOES = ler('skills').gemas ?? {};
 const IDS = ler('ids').ids;
 
@@ -90,7 +93,7 @@ for (const [chave, itemId] of Object.entries(IDS)) {
     const id = chave.slice(8);
     const s = SUPPORTS[id];
     if (!s) continue;
-    DEFS.set(itemId, { itemId, tipo: 'support', categoria: 'suporte', id, nome: s.nome, levelMinimo: s.levelMinimo ?? 1, suporte: s });
+    DEFS.set(itemId, { itemId, tipo: 'support', categoria: 'suporte', id, nome: s.nome, nomePt: nomeDoSupportPt(id), levelMinimo: s.levelMinimo ?? 1, suporte: s });
     continue;
   }
   const e = ACOES.get(chave);
@@ -127,6 +130,8 @@ for (const def of DEFS.values()) {
   ITEM_CATALOG[def.itemId] ??= {
     id: def.itemId,
     name: `gema: ${def.nome.toLowerCase()}`,
+    // O nome que o jogador vê (supports em português); `name` segue como chave (testes, busca, save).
+    ...(def.nomePt ? { nomeExibicao: `Gema: ${def.nomePt}` } : {}),
     weight: 0.1,
     stackable: false,
     type: 'gema',
@@ -134,7 +139,7 @@ for (const def of DEFS.values()) {
     hasSprite: true,
     spriteDe: CONFIG.sprites[def.tipo === 'support' ? 'support' : elementoDaSprite(e)] ?? CONFIG.sprites.outro,
     gemaDef: def.tipo === 'support'
-      ? { tipo: 'support', categoria: 'suporte', id: def.id, nome: def.nome, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {}, mult: CONFIG.raridades.multiplicador }
+      ? { tipo: 'support', categoria: 'suporte', id: def.id, nome: def.nome, nomePt: def.nomePt, requer: def.suporte.requer ?? [], algum: def.suporte.algum ?? [], exclui: def.suporte.exclui ?? [], efeito: def.suporte.efeito, porNivel: def.suporte.porNivel ?? {}, mult: CONFIG.raridades.multiplicador }
       : { tipo: 'ativa', categoria: def.categoria, acao: def.acao, nome: def.nome, tags: def.tags, classeRecomendada: def.classeRecomendada, levelMinimo: def.levelMinimo, castTime: def.castTime, progressao: def.progressao, mult: CONFIG.raridades.multiplicador, nivelMaximo: CONFIG.niveis.maximo },
     sell: 0,
   };
@@ -776,7 +781,7 @@ export function catalogoDaLoja(estado) {
       raridade: r,
       categoria: def.categoria,
       categoriaNome: CATEGORIAS[def.categoria],
-      nome: `Gema: ${def.nome} (${r})${def.tipo === 'support' ? ' · support' : ''}`,
+      nome: `Gema: ${def.nomePt ?? def.nome} (${r})${def.tipo === 'support' ? ' · suporte' : ''}`,
       buy: precoNaLoja(def, r),
       tenho: tenho(def.itemId, r),
     }))
