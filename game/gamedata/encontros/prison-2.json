@@ -1,0 +1,86 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Prison -2",
+      "x": 109,
+      "y": 42,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 25
+          },
+          {
+            "id": 3120,
+            "chance": 25
+          },
+          {
+            "id": 3122,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 17284
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Prison -2",
+      "x": 30,
+      "y": 17,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3582,
+            "chance": 25
+          },
+          {
+            "id": 3120,
+            "chance": 25
+          },
+          {
+            "id": 3122,
+            "chance": 25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 34568
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "juggernaut",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

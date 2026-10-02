@@ -1,0 +1,95 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Zaoan Draken Walls",
+      "x": 33,
+      "y": 42,
+      "z": 2,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 10397,
+            "chance": 25
+          },
+          {
+            "id": 10414,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 13314
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Zaoan Draken Walls",
+      "x": 95,
+      "y": 18,
+      "z": 2,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "atk_speed",
+          "valor": 6
+        },
+        {
+          "afixo": "avoid_damage",
+          "valor": 2
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "draken-warmaster",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Vigia de Zaoan Draken Walls",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-zaoan-draken-walls"
+    }
+  ]
+}

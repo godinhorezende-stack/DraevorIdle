@@ -21,6 +21,7 @@ const originais = { ...Conteudo.CAMINHOS };
 Conteudo.CAMINHOS.hunts = join(pasta, 'hunts');
 Conteudo.CAMINHOS.bosses = join(pasta, 'bosses-unicos.json');
 Conteudo.CAMINHOS.fases = join(pasta, 'campanha-conteudo.json');
+Conteudo.CAMINHOS.encontros = join(pasta, 'encontros');
 const REAL = new URL('../gamedata/', import.meta.url);
 const FASE = 'troll-cave';
 copyFileSync(new URL(`hunts/${FASE}-map.json`, REAL), join(pasta, 'hunts', `${FASE}-map.json`));
@@ -51,8 +52,9 @@ function casas() {
 test('as fases e a visão geral: 48 fases, nenhum problema nos dados atuais, e as opções para os formulários', () => {
   const a = Conteudo.auditar();
   assert.equal(a.fases.length, 48);
-  assert.deepEqual(a.problemas, []);
-  assert.equal(a.totais.comEncontros, 0, 'hoje nenhum mapa tem encontros');
+  // Nesta pasta temporária não há encontros (o cadastro de bosses é o do pacote real): só avisos de "boss sem uso", nenhum erro.
+  assert.deepEqual(a.problemas.filter((p) => p.nivel === 'erro'), []);
+  assert.equal(a.totais.comEncontros, 0, 'a pasta temporária não tem encontros');
   const o = Conteudo.opcoes();
   assert.ok(o.tipos.some((t) => t.id === 'bau-raro' && t.disponivel));
   assert.ok(o.tipos.some((t) => t.id === 'fenda' && !t.disponivel && t.v2), 'a v2 aparece como indisponível');
@@ -94,24 +96,24 @@ test('encontros: o ponto precisa ser andável (e alcançável); obrigatório ina
   assert.match(v([e({ ativo: false })]).avisos.join(' '), /desligado/);
 });
 
-test('salvar encontros: grava SÓ o bloco `encontros` (o resto do mapa fica idêntico), recusa o inválido sem tocar no arquivo, e lista vazia remove o bloco', () => {
+test('salvar encontros: grava SÓ o arquivo da fase (gamedata/encontros/), o mapa fica byte a byte igual, recusa o inválido sem criar nada, e lista vazia remove o arquivo', () => {
   const { boa, z } = casas();
-  const antes = mapa();
+  const arquivo = join(pasta, 'encontros', `${FASE}.json`);
+  const mapaAntes = readFileSync(join(pasta, 'hunts', `${FASE}-map.json`), 'utf8');
   const ok = Conteudo.salvarEncontros(FASE, [{ id: 'chefe', tipo: 'boss', bossId: BOSS.id, obrigatorio: true, x: boa[0], y: boa[1], z }, { id: 'bau', tipo: 'bau-comum', nome: 'Baú', recompensa: { drops: [{ id: 3031, chance: 100 }] } }]);
   assert.equal(ok.ok, true, JSON.stringify(ok));
   assert.match(ok.reiniciar, /Reinicie/);
-  const depois = mapa();
-  const { encontros, ...resto } = depois;
-  const { encontros: _x, ...restoAntes } = antes;
-  assert.deepEqual(resto, restoAntes, 'nada mais do mapa mudou');
+  assert.equal(readFileSync(join(pasta, 'hunts', `${FASE}-map.json`), 'utf8'), mapaAntes, 'o mapa (1 MB) não foi tocado');
+  const { encontros } = JSON.parse(readFileSync(arquivo, 'utf8'));
   assert.equal(encontros.length, 2);
-  assert.deepEqual(Modelo.validar(encontros, { largura: depois.width, altura: depois.height }), [], 'o que o editor grava é o que o jogo aceita');
+  const mapaJson = mapa();
+  assert.deepEqual(Modelo.validar(encontros, { largura: mapaJson.width, altura: mapaJson.height }), [], 'o que o editor grava é o que o jogo aceita');
   // Inválido: nada é gravado.
-  const bytes = readFileSync(join(pasta, 'hunts', `${FASE}-map.json`), 'utf8');
+  const bytes = readFileSync(arquivo, 'utf8');
   const ruim = Conteudo.salvarEncontros(FASE, [{ id: 'a', tipo: 'bau-comum', recompensa: { drops: [{ id: 3031, chance: 100 }], rolagens: 99 } }]);
   assert.equal(ruim.ok, false);
   assert.match(ruim.erros.join(' '), /rolagens/);
-  assert.equal(readFileSync(join(pasta, 'hunts', `${FASE}-map.json`), 'utf8'), bytes, 'arquivo intacto');
+  assert.equal(readFileSync(arquivo, 'utf8'), bytes, 'arquivo intacto');
   assert.equal(Conteudo.salvarEncontros(FASE, 'nao-e-lista').ok, false);
   // A visão geral e o resumo refletem o salvo.
   const f = Conteudo.carregarFase(FASE);
@@ -125,11 +127,29 @@ test('salvar encontros: grava SÓ o bloco `encontros` (o resto do mapa fica idê
   const exc = Conteudo.excluirBoss(BOSS.id);
   assert.equal(exc.ok, false);
   assert.match(exc.erros[0], /usado por/);
-  // Vazio remove o bloco.
+  // Vazio remove o arquivo.
   assert.equal(Conteudo.salvarEncontros(FASE, []).ok, true);
-  assert.equal('encontros' in mapa(), false);
+  assert.equal(existsSync(arquivo), false);
   assert.equal(Conteudo.excluirBoss(MINI.id).ok, true, 'sem uso, exclui');
   assert.equal(Catalogo.bossUnico(MINI.id), null);
+});
+
+test('compatibilidade: sem arquivo próprio vale o bloco `encontros` do mapa (formato antigo); com arquivo, o arquivo manda', () => {
+  const caminho = join(pasta, 'hunts', `${FASE}-map.json`);
+  const original = readFileSync(caminho, 'utf8');
+  try {
+    const m = JSON.parse(original);
+    m.encontros = [{ id: 'antigo', tipo: 'altar', nome: 'Altar Antigo', efeitos: [{ afixo: 'phys_dmg', valor: 5 }], duracaoMs: 1000 }];
+    writeFileSync(caminho, JSON.stringify(m));
+    assert.deepEqual(Conteudo.carregarFase(FASE).encontros.map((e) => e.id), ['antigo'], 'formato antigo continua lendo');
+    const { boa, z } = casas();
+    assert.equal(Conteudo.salvarEncontros(FASE, [{ id: 'novo', tipo: 'bau-comum', nome: 'Novo', recompensa: { drops: [{ id: 3031, chance: 100 }] }, x: boa[0], y: boa[1], z }]).ok, true);
+    assert.deepEqual(Conteudo.carregarFase(FASE).encontros.map((e) => e.id), ['novo'], 'com arquivo, o arquivo manda');
+    assert.equal(Conteudo.salvarEncontros(FASE, []).ok, true);
+    assert.deepEqual(Conteudo.carregarFase(FASE).encontros.map((e) => e.id), ['antigo'], 'sem arquivo, volta o bloco antigo do mapa');
+  } finally {
+    writeFileSync(caminho, original);
+  }
 });
 
 test('dados da fase (descrição, ambiente, conexões, requisitos): valida e grava em campanha-conteudo.json, sem tocar na campanha', () => {
@@ -181,7 +201,7 @@ test('rotas HTTP: só sob /api/mapas/_conteudo (o prefixo que o nginx tranca), c
 test('o editor roda sobre o jogo de verdade: encontros salvos pelo editor entram numa instância e funcionam', async () => {
   const { boa, z } = casas();
   assert.equal(Conteudo.salvarEncontros(FASE, [{ id: 'bau', tipo: 'bau-comum', nome: 'Baú do Editor', recompensa: { drops: [{ id: 3031, chance: 100 }] }, x: boa[0], y: boa[1], z }]).ok, true);
-  const salvo = mapa();
+  const salvo = JSON.parse(readFileSync(join(pasta, 'encontros', `${FASE}.json`), 'utf8'));
   const Estado = await import('../systems/encontros/estado.mjs');
   const inst = Estado.criar({}, Modelo.encontrosDoMapa(salvo), { semente: 4 });
   assert.equal(inst.encontros.bau.estado, 'disponivel');

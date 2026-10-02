@@ -1,0 +1,82 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Troll Cave",
+      "x": 97,
+      "y": 55,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3268,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 3277,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 23
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Troll Cave",
+      "x": 71,
+      "y": 107,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "phys_dmg",
+          "valor": 8
+        },
+        {
+          "afixo": "armour_pct",
+          "valor": 10
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "troll",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

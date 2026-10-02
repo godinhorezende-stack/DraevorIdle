@@ -7,6 +7,7 @@ import * as Modelo from '../systems/encontros/modelo.mjs';
 import * as Sorteio from '../systems/encontros/sorteio.mjs';
 import * as Estado from '../systems/encontros/estado.mjs';
 import * as Entrega from '../systems/encontros/entrega.mjs';
+import * as Arquivos from '../systems/encontros/arquivos.mjs';
 import { registrarTipo, TIPOS } from '../systems/encontros/tipos.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
@@ -256,8 +257,13 @@ test('integridade: todo mapa do jogo que declara `encontros` passa na validaçã
 
 test('compatibilidade: a campanha sem encontros se comporta como sempre (CLEAR só pelos bichos)', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
-  assert.equal(e.hunt.instancia.encontros, undefined, 'mapa sem bloco encontros: nada é criado');
+  const restaurar = Arquivos._definirParaTestes('troll-cave', []); // a fase sem encontros (o pacote real da Troll Cave fica de fora)
+  try {
+    assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+  } finally {
+    restaurar();
+  }
+  assert.equal(e.hunt.instancia.encontros, undefined, 'sem encontros cadastrados: nada é criado');
   matarTodos(e);
   assert.equal(Instancia.marcarSeLimpou(e.hunt, 1), true);
   assert.ok(Campanha.faseDe('troll-cave'));

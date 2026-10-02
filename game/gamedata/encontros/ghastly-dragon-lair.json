@@ -1,0 +1,86 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Ghastly Dragon Lair",
+      "x": 25,
+      "y": 19,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3557,
+            "chance": 2.95
+          },
+          {
+            "id": 3032,
+            "chance": 2.95
+          },
+          {
+            "id": 7642,
+            "chance": 2.95
+          }
+        ],
+        "moedasMedia": 956
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Ghastly Dragon Lair",
+      "x": 55,
+      "y": 34,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3557,
+            "chance": 2.95
+          },
+          {
+            "id": 3032,
+            "chance": 2.95
+          },
+          {
+            "id": 7642,
+            "chance": 2.95
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 1912
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "ghastly-dragon",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

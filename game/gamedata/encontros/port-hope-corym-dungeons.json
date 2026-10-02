@@ -1,0 +1,92 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Port Hope Corym Dungeons",
+      "x": 31,
+      "y": 38,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3607,
+            "chance": 12.25
+          },
+          {
+            "id": 17821,
+            "chance": 12.25
+          },
+          {
+            "id": 17820,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 147
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Port Hope Corym Dungeons",
+      "x": 88,
+      "y": 41,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3607,
+            "chance": 12.25
+          },
+          {
+            "id": 17821,
+            "chance": 12.25
+          },
+          {
+            "id": 17820,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 294
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "corym-skirmisher",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    }
+  ]
+}

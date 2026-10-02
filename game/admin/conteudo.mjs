@@ -4,13 +4,14 @@
 // Nada aqui valida por conta própria: a validação é a do jogo (`encontros/modelo.mjs`, `encontros/tipos-*.mjs`,
 // `bosses-unicos/catalogo.mjs`), mais o que só o editor sabe fazer — conferir no MAPA se o ponto é andável e se dá para
 // chegar a pé. O que se grava é o que o servidor lê:
-//   - `encontros` no arquivo do mapa (`gamedata/hunts/<id>-map.json`), ao lado dos `spawns`;
+//   - `gamedata/encontros/<huntId>.json`, um arquivo por fase (ver `encontros/arquivos.mjs`: o mapa tem 1 MB e, em produção,
+//     `gamedata/hunts` é sobreposto por `data/mapas`; o arquivo de encontros viaja com o código);
 //   - `gamedata/bosses-unicos.json` (o cadastro dos bosses);
 //   - `gamedata/campanha-conteudo.json` (descrição, ambiente, conexões e requisitos de cada fase — o que a tela WORLD
 //     mostra; a campanha em si, `campanha.json`, não é tocada).
-// Os mapas e o cadastro são lidos no BOOT do servidor: depois de salvar um encontro, reinicie o servidor de
+// Os encontros e o cadastro são lidos no BOOT do servidor: depois de salvar um encontro, reinicie o servidor de
 // desenvolvimento para jogá-lo (o cadastro de bosses já vale na hora).
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as Campanha from '../systems/campanha.mjs';
@@ -24,6 +25,7 @@ import { CONFIG } from '../systems/encontros/config.mjs';
 import { AFIXOS_DE_ALTAR } from '../systems/encontros/altares.mjs';
 import { valorEsperado } from '../systems/encontros/recompensas.mjs';
 import { impactoEconomico } from '../systems/encontros/economia.mjs';
+import * as Arquivos from '../systems/encontros/arquivos.mjs';
 import * as Catalogo from '../systems/bosses-unicos/catalogo.mjs';
 import { FICHAS } from '../systems/afixos.mjs';
 import { gradeDaHunt, huntOuMapaCustom } from '../systems/hunt/terreno.mjs';
@@ -33,9 +35,11 @@ import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 /** Onde ler e gravar (os testes apontam para uma pasta temporária; o editor usa o `gamedata` do jogo). */
-export const CAMINHOS = { bosses: join(RAIZ, 'bosses-unicos.json'), fases: join(RAIZ, 'campanha-conteudo.json'), hunts: join(RAIZ, 'hunts') };
+export const CAMINHOS = { bosses: join(RAIZ, 'bosses-unicos.json'), fases: join(RAIZ, 'campanha-conteudo.json'), hunts: join(RAIZ, 'hunts'), encontros: Arquivos.PASTA };
 const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
 const arquivoDoMapa = (id) => join(CAMINHOS.hunts, `${id}-map.json`);
+/** Os encontros brutos da fase: o arquivo próprio (`gamedata/encontros/`) ou, sem ele, o bloco do mapa (formato antigo). */
+const lerEncontros = (huntId) => Arquivos.brutosDaFase(huntId, carregarMapa(huntId), CAMINHOS.encontros);
 const carregarMapa = (id) => (ID_VALIDO.test(id) && existsSync(arquivoDoMapa(id)) ? JSON.parse(readFileSync(arquivoDoMapa(id), 'utf8')) : null);
 
 const lerJson = (arq, padrao) => (existsSync(arq) ? JSON.parse(readFileSync(arq, 'utf8')) : padrao);
@@ -175,18 +179,19 @@ export function validarFase(huntId, encontros) {
   return { erros, avisos, economia };
 }
 
-/** Grava SÓ o bloco `encontros` do mapa (o resto do arquivo fica como está). */
+/** Grava os encontros da fase em `gamedata/encontros/<huntId>.json` (o mapa não é tocado). */
 export function salvarEncontros(huntId, bruto) {
   if (!Array.isArray(bruto)) return { ok: false, erros: ['`encontros` precisa ser uma lista.'] };
   const { erros, avisos } = validarFase(huntId, bruto);
   if (erros.length) return { ok: false, erros, avisos };
-  const mapa = carregarMapa(huntId);
   const normalizados = Modelo.encontrosDoMapa({ encontros: bruto });
-  const novo = { ...mapa };
-  if (normalizados.length) novo.encontros = normalizados;
-  else delete novo.encontros;
+  const arquivo = Arquivos.caminhoDos(huntId, CAMINHOS.encontros);
   try {
-    writeFileSync(arquivoDoMapa(huntId), JSON.stringify(novo), 'utf8');
+    mkdirSync(CAMINHOS.encontros, { recursive: true });
+    // Só o arquivo da fase: o mapa (1 MB) não é tocado. Lista vazia remove o arquivo — e então vale o formato antigo (bloco do mapa, se houver).
+    if (normalizados.length) writeFileSync(arquivo, `${JSON.stringify({ encontros: normalizados }, null, 2)}\n`, 'utf8');
+    else if (existsSync(arquivo)) unlinkSync(arquivo);
+    Arquivos.esquecerCache();
   } catch (e) {
     return { ok: false, erros: [`Não deu para gravar (${e.code ?? e.message}) — o editor grava no servidor de desenvolvimento.`] };
   }
@@ -233,7 +238,7 @@ export function listarFases() {
   const metas = metaDasFases();
   return Campanha.FASES.map((f, indice) => {
     const mapa = carregarMapa(f.huntId);
-    const encontros = mapa?.encontros ?? [];
+    const encontros = mapa ? lerEncontros(f.huntId) : [];
     const v = mapa ? validarFase(f.huntId, encontros) : { erros: [], avisos: [] };
     return {
       huntId: f.huntId, nome: f.nome, ato: f.ato, indice, pular: !!f.pular, nivel: f.nivel,
@@ -246,7 +251,7 @@ export function carregarFase(huntId) {
   const fase = faseDe(huntId);
   const mapa = carregarMapa(huntId);
   if (!fase || !mapa) return null;
-  const encontros = mapa.encontros ?? [];
+  const encontros = lerEncontros(huntId);
   return {
     fase: { huntId: fase.huntId, nome: fase.nome, ato: fase.ato, nivel: fase.nivel, pular: !!fase.pular },
     meta: metaDasFases()[huntId] ?? {},
@@ -266,7 +271,7 @@ export function carregarFase(huntId) {
 export function usosDosBosses() {
   const usos = {};
   for (const f of Campanha.FASES) {
-    for (const e of carregarMapa(f.huntId)?.encontros ?? []) if (e.bossId) (usos[e.bossId] ??= []).push({ huntId: f.huntId, encontro: e.id });
+    for (const e of lerEncontros(f.huntId)) if (e.bossId) (usos[e.bossId] ??= []).push({ huntId: f.huntId, encontro: e.id });
   }
   return usos;
 }
@@ -311,9 +316,9 @@ export function auditar() {
   const problemas = [];
   const fases = listarFases();
   for (const f of fases) {
-    const v = f.temMapa ? validarFase(f.huntId, carregarMapa(f.huntId)?.encontros ?? []) : { erros: [], avisos: [] };
+    const v = f.temMapa ? validarFase(f.huntId, lerEncontros(f.huntId)) : { erros: [], avisos: [] };
     // O índice que a tela WORLD lê precisa bater com os encontros do mapa (nome de boss mudou? encontro editado à mão?).
-    const esperado = JSON.stringify(indiceDoMundo(carregarMapa(f.huntId)?.encontros ?? []));
+    const esperado = JSON.stringify(indiceDoMundo(lerEncontros(f.huntId)));
     const gravado = lerArquivoDeFases().fases?.[f.huntId]?.mundo;
     if (esperado !== JSON.stringify(gravado ?? indiceDoMundo([]))) problemas.push({ nivel: 'aviso', onde: f.huntId, mensagem: 'o índice da tela WORLD está desatualizado — salve os encontros desta fase de novo no editor.' });
     for (const m of v.erros) problemas.push({ nivel: 'erro', onde: f.huntId, mensagem: m });

@@ -1,0 +1,53 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Abandoned Sewers",
+      "x": 62,
+      "y": 54,
+      "z": 10,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 6558,
+            "chance": 25
+          },
+          {
+            "id": 238,
+            "chance": 25
+          },
+          {
+            "id": 3731,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 20524
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Arauto de Abandoned Sewers",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-abandoned-sewers"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Putrid Mummies",
+      "x": 55,
+      "y": 52,
+      "z": 12,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3115,
+            "chance": 12.25
+          },
+          {
+            "id": 3114,
+            "chance": 12.25
+          },
+          {
+            "id": 25702,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 1000
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Putrid Mummies",
+      "x": 114,
+      "y": 57,
+      "z": 12,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3115,
+            "chance": 12.25
+          },
+          {
+            "id": 3114,
+            "chance": 12.25
+          },
+          {
+            "id": 25702,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 1999
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "putrid-mummy",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Capataz de Putrid Mummies",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-putrid-mummies"
+    }
+  ]
+}

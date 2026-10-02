@@ -1,0 +1,105 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Spike -8",
+      "x": 96,
+      "y": 107,
+      "z": 15,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3583,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 9665,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 27138
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Spike -8",
+      "x": 40,
+      "y": 58,
+      "z": 15,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3583,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 9665,
+            "chance": 25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 54276
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "lost-thrower",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Capataz de Spike -8",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-spike-8"
+    }
+  ]
+}

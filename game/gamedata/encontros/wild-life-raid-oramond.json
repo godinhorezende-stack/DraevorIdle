@@ -1,0 +1,82 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Wild Life Raid - Oramond",
+      "x": 106,
+      "y": 19,
+      "z": 13,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 9665,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 3583,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 4438
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Wild Life Raid - Oramond",
+      "x": 26,
+      "y": 13,
+      "z": 13,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "spell_dmg",
+          "valor": 2
+        },
+        {
+          "afixo": "protect_all",
+          "valor": 0.6
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "drillworm",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

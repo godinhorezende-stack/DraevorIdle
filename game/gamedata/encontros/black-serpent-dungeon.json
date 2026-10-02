@@ -1,0 +1,82 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Black Serpent Dungeon",
+      "x": 26,
+      "y": 91,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 10408,
+            "chance": 25
+          },
+          {
+            "id": 10410,
+            "chance": 25
+          },
+          {
+            "id": 239,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 5896
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Black Serpent Dungeon",
+      "x": 83,
+      "y": 108,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "atk_speed",
+          "valor": 6
+        },
+        {
+          "afixo": "avoid_damage",
+          "valor": 2
+        }
+      ],
+      "duracaoMs": 90000,
+      "penalidade": {
+        "efeitos": [
+          {
+            "afixo": "armour_pct",
+            "valor": -8
+          }
+        ],
+        "invocacao": {
+          "criaturas": [
+            {
+              "key": "lizard-chosen",
+              "qtd": 2
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

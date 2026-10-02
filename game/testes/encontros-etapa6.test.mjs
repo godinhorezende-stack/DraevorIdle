@@ -14,7 +14,7 @@ import * as Catalogo from '../systems/bosses-unicos/catalogo.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
-import { mapaRealCapturado } from '../systems/hunt/terreno.mjs';
+import * as Arquivos from '../systems/encontros/arquivos.mjs';
 import { matarMonstro } from '../systems/hunt/combate.mjs';
 import * as SimulacaoOffline from '../systems/simulacao-offline.mjs';
 import { CONFIG } from '../systems/encontros/config.mjs';
@@ -85,7 +85,7 @@ test('o editor avisa (>30%) e RECUSA (>100%) encontros que valem mais que a fase
   mkdirSync(join(pasta, 'hunts'));
   const original = { ...Conteudo.CAMINHOS };
   copyFileSync(new URL('../gamedata/hunts/troll-cave-map.json', import.meta.url), join(pasta, 'hunts', 'troll-cave-map.json'));
-  Object.assign(Conteudo.CAMINHOS, { hunts: join(pasta, 'hunts'), fases: join(pasta, 'f.json'), bosses: join(pasta, 'b.json') });
+  Object.assign(Conteudo.CAMINHOS, { hunts: join(pasta, 'hunts'), fases: join(pasta, 'f.json'), bosses: join(pasta, 'b.json'), encontros: join(pasta, 'enc') });
   try {
     const v = (moedas) => Conteudo.validarFase('troll-cave', [{ ...BAU, recompensa: { drops: [OURO], moedasMedia: moedas } }]);
     const base = Eco.valorDaInstancia('troll-cave', 'facil').valor;
@@ -168,16 +168,15 @@ test('falha e cancelamento: abandonar a caçada no meio do encontro, ou morrer, 
 // ------------------------------------------------------------------ idle/offline COMPLETO
 
 test('caçada offline de verdade com encontros no mapa (obrigatório de idle, baú, boss obrigatório): não trava, conta limpezas, não paga em dobro', () => {
-  const mapa = mapaRealCapturado('troll-cave');
-  assert.equal(mapa.encontros, undefined, 'produção: o mapa não tem encontros');
+  const antes = Arquivos.doArquivo('troll-cave');
   Catalogo.registrar({ id: 'chefe-offline', nome: 'Chefe Fraco', categoria: 'principal', base: 'cyclops', atributos: { vida: 200, danoMult: 0.01 }, melee: { min: 1, max: 2 }, recompensas: { loot: [OURO], primeiraVitoria: { gold: 7777 } } });
-  mapa.encontros = [
+  const restaurar = Arquivos._definirParaTestes('troll-cave', [
     { id: 'altar', tipo: 'altar', nome: 'Altar', obrigatorio: true, efeitos: [{ afixo: 'phys_dmg', valor: 5 }], duracaoMs: 600000 },
     { id: 'bau', tipo: 'bau-comum', nome: 'Baú Offline', recompensa: { drops: [OURO], moedasMedia: 50, primeiraConclusao: { gold: 3333 } } },
     { id: 'chefe', tipo: 'boss', nome: 'Chefe', bossId: 'chefe-offline', obrigatorio: true, condicao: { tipo: 'monstros-limpos' } },
-  ];
+  ]);
   try {
-    assert.deepEqual(Modelo.validar(mapa.encontros), [], 'o conteúdo de teste é válido');
+    assert.deepEqual(Modelo.validar(Arquivos.doArquivo('troll-cave')), [], 'o conteúdo de teste é válido');
     const e = personagemDeTeste({ vocacao: 'knight', level: 200 });
     e.maxHp = e.hp = 1e9;
     assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
@@ -195,7 +194,8 @@ test('caçada offline de verdade com encontros no mapa (obrigatório de idle, ba
     // A primeira conclusão só pagou uma vez, mesmo com várias instâncias: o aviso de "Primeira vez" é de um único baú.
     assert.equal(Object.keys(e.encontros.entregues).filter((k) => k.endsWith(':bau')).length, 1, 'prêmio de primeira conclusão: uma entrega');
   } finally {
-    delete mapa.encontros;
+    restaurar();
+    void antes;
     Catalogo.esquecer('chefe-offline');
   }
 });

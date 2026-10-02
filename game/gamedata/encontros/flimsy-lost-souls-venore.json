@@ -1,0 +1,66 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Flimsy Lost Souls Venore",
+      "x": 25,
+      "y": 27,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 6558,
+            "chance": 25
+          },
+          {
+            "id": 32227,
+            "chance": 25
+          },
+          {
+            "id": 6499,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 7181
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Flimsy Lost Souls Venore",
+      "x": 110,
+      "y": 60,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "crit_chance",
+          "valor": 3
+        },
+        {
+          "afixo": "dmg_reduction",
+          "valor": 3
+        }
+      ],
+      "duracaoMs": 90000
+    }
+  ]
+}

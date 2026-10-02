@@ -1,0 +1,86 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Amazon Camp",
+      "x": 42,
+      "y": 54,
+      "z": 7,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3267,
+            "chance": 12.25
+          },
+          {
+            "id": 3114,
+            "chance": 12.25
+          },
+          {
+            "id": 3277,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 139
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Amazon Camp",
+      "x": 14,
+      "y": 116,
+      "z": 7,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3267,
+            "chance": 12.25
+          },
+          {
+            "id": 3114,
+            "chance": 12.25
+          },
+          {
+            "id": 3277,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 279
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "witch",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

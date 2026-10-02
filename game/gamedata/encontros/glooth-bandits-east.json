@@ -1,0 +1,152 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Glooth Bandits East",
+      "x": 74,
+      "y": 87,
+      "z": 12,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 238,
+            "chance": 2.95
+          },
+          {
+            "id": 9057,
+            "chance": 2.95
+          },
+          {
+            "id": 7642,
+            "chance": 2.95
+          }
+        ],
+        "moedasMedia": 3100
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Glooth Bandits East",
+      "x": 86,
+      "y": 91,
+      "z": 12,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 238,
+            "chance": 2.95
+          },
+          {
+            "id": 9057,
+            "chance": 2.95
+          },
+          {
+            "id": 7642,
+            "chance": 2.95
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 6199
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "glooth-bandit",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Glooth Bandits East",
+      "x": 44,
+      "y": 38,
+      "z": 12,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 238,
+            "chance": 2.95
+          },
+          {
+            "id": 9057,
+            "chance": 2.95
+          },
+          {
+            "id": 7642,
+            "chance": 2.95
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 6199
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "glooth-bandit",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    },
+    {
+      "id": "segredo-1",
+      "tipo": "boss-secreto",
+      "nome": "A Sombra de Glooth Bandits East",
+      "ativo": true,
+      "probabilidade": 5,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "apos-encontro",
+        "encontro": "bau-raro-1"
+      },
+      "bossId": "segredo-glooth-bandits-east"
+    }
+  ]
+}

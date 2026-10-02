@@ -1,0 +1,105 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Walking Pillar",
+      "x": 42,
+      "y": 81,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 821,
+            "chance": 12.25
+          },
+          {
+            "id": 43850,
+            "chance": 12.25
+          },
+          {
+            "id": 43852,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 27285
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Walking Pillar",
+      "x": 74,
+      "y": 36,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 821,
+            "chance": 12.25
+          },
+          {
+            "id": 43850,
+            "chance": 12.25
+          },
+          {
+            "id": 43852,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 54569
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "walking-pillar",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    },
+    {
+      "id": "miniboss-1",
+      "tipo": "miniboss",
+      "nome": "Senhor de Walking Pillar",
+      "ativo": true,
+      "probabilidade": 20,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "monstros-limpos"
+      },
+      "bossId": "mini-walking-pillar"
+    }
+  ]
+}

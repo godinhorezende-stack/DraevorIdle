@@ -1,0 +1,152 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Cults Carlin",
+      "x": 44,
+      "y": 23,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3446,
+            "chance": 1.02
+          },
+          {
+            "id": 3269,
+            "chance": 0.64
+          },
+          {
+            "id": 3003,
+            "chance": 0.62
+          }
+        ],
+        "moedasMedia": 576
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Cults Carlin",
+      "x": 12,
+      "y": 48,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3446,
+            "chance": 1.02
+          },
+          {
+            "id": 3269,
+            "chance": 0.64
+          },
+          {
+            "id": 3003,
+            "chance": 0.62
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 1152
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "vile-grandmaster",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Cults Carlin",
+      "x": 23,
+      "y": 49,
+      "z": 9,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3446,
+            "chance": 1.02
+          },
+          {
+            "id": 3269,
+            "chance": 0.64
+          },
+          {
+            "id": 3003,
+            "chance": 0.62
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 1152
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "vile-grandmaster",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    },
+    {
+      "id": "segredo-1",
+      "tipo": "boss-secreto",
+      "nome": "A Sombra de Cults Carlin",
+      "ativo": true,
+      "probabilidade": 5,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "apos-encontro",
+        "encontro": "bau-raro-1"
+      },
+      "bossId": "segredo-cults-carlin"
+    }
+  ]
+}

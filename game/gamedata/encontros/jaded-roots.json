@@ -1,0 +1,112 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Jaded Roots",
+      "x": 25,
+      "y": 27,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 7643,
+            "chance": 12.25
+          },
+          {
+            "id": 3029,
+            "chance": 12.25
+          },
+          {
+            "id": 3297,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 36089
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Jaded Roots",
+      "x": 70,
+      "y": 42,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "crit_chance",
+          "valor": 3
+        },
+        {
+          "afixo": "dmg_reduction",
+          "valor": 3
+        }
+      ],
+      "duracaoMs": 90000
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Jaded Roots",
+      "x": 110,
+      "y": 60,
+      "z": 8,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 7643,
+            "chance": 12.25
+          },
+          {
+            "id": 3029,
+            "chance": 12.25
+          },
+          {
+            "id": 3297,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 72177
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "bloated-man-maggot",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    }
+  ]
+}

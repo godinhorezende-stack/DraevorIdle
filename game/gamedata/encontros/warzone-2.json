@@ -1,0 +1,152 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Warzone 2",
+      "x": 42,
+      "y": 81,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 268,
+            "chance": 2.95
+          },
+          {
+            "id": 236,
+            "chance": 2.95
+          },
+          {
+            "id": 237,
+            "chance": 2.95
+          }
+        ],
+        "moedasMedia": 4961
+      }
+    },
+    {
+      "id": "bau-raro-1",
+      "tipo": "bau-raro",
+      "nome": "Cofre vigiado de Warzone 2",
+      "x": 57,
+      "y": 37,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 268,
+            "chance": 2.95
+          },
+          {
+            "id": 236,
+            "chance": 2.95
+          },
+          {
+            "id": 237,
+            "chance": 2.95
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 9922
+      },
+      "guardioes": {
+        "criaturas": [
+          {
+            "key": "lava-golem",
+            "qtd": 2
+          }
+        ],
+        "raridade": "elite"
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Warzone 2",
+      "x": 83,
+      "y": 46,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 268,
+            "chance": 2.95
+          },
+          {
+            "id": 236,
+            "chance": 2.95
+          },
+          {
+            "id": 237,
+            "chance": 2.95
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 9922
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "magma-crawler",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    },
+    {
+      "id": "segredo-1",
+      "tipo": "boss-secreto",
+      "nome": "A Sombra de Warzone 2",
+      "ativo": true,
+      "probabilidade": 5,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "apos-encontro",
+        "encontro": "bau-raro-1"
+      },
+      "bossId": "segredo-warzone-2"
+    }
+  ]
+}

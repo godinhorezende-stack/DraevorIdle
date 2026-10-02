@@ -1,0 +1,92 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Medusa Cave",
+      "x": 45,
+      "y": 80,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3732,
+            "chance": 12.25
+          },
+          {
+            "id": 9694,
+            "chance": 12.25
+          },
+          {
+            "id": 3029,
+            "chance": 12.25
+          }
+        ],
+        "moedasMedia": 2458
+      }
+    },
+    {
+      "id": "bau-maldito-1",
+      "tipo": "bau-amaldicoado",
+      "nome": "Baú maldito de Medusa Cave",
+      "x": 18,
+      "y": 22,
+      "z": 11,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3732,
+            "chance": 12.25
+          },
+          {
+            "id": 9694,
+            "chance": 12.25
+          },
+          {
+            "id": 3029,
+            "chance": 12.25
+          }
+        ],
+        "rolagens": 2,
+        "moedasMedia": 4915
+      },
+      "armadilha": {
+        "chance": 30,
+        "elemento": "physical",
+        "min": 20,
+        "max": 60
+      },
+      "invocacao": {
+        "criaturas": [
+          {
+            "key": "medusa",
+            "qtd": 3
+          }
+        ],
+        "raridade": "modificado"
+      }
+    }
+  ]
+}

@@ -3683,7 +3683,7 @@ export class MapView {
      */
     // Baús e altares (se a caçada tem): por cima do chão e das criaturas, antes dos efeitos.
     if (this.snapshot?.instancia?.encontros?.length) {
-      desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player });
+      desenharMarcadores(this.ctx, this.snapshot.instancia.encontros, { camX: this.camera.x, camY: this.camera.y, tile: TILE, z: this.snapshot.z, jogador: this.snapshot.player, desenharItem: drawItem });
     }
     if (graficoLigado('efeitos')) this.drawEffects(now);
     if (graficoLigado('projeteis')) this.drawMissiles(now);

@@ -1,0 +1,66 @@
+{
+  "encontros": [
+    {
+      "id": "bau-1",
+      "tipo": "bau-comum",
+      "nome": "Baú esquecido de Mother of Scarabs Lair",
+      "x": 42,
+      "y": 42,
+      "z": 12,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "recompensa": {
+        "drops": [
+          {
+            "id": 3031,
+            "chance": 100
+          },
+          {
+            "id": 3115,
+            "chance": 25
+          },
+          {
+            "id": 3577,
+            "chance": 25
+          },
+          {
+            "id": 3114,
+            "chance": 25
+          }
+        ],
+        "moedasMedia": 716
+      }
+    },
+    {
+      "id": "altar-1",
+      "tipo": "altar",
+      "nome": "Altar de Mother of Scarabs Lair",
+      "x": 16,
+      "y": 58,
+      "z": 12,
+      "ativo": true,
+      "probabilidade": 100,
+      "quantidade": 1,
+      "obrigatorio": false,
+      "condicao": {
+        "tipo": "sempre"
+      },
+      "efeitos": [
+        {
+          "afixo": "phys_dmg",
+          "valor": 8
+        },
+        {
+          "afixo": "armour_pct",
+          "valor": 10
+        }
+      ],
+      "duracaoMs": 90000
+    }
+  ]
+}

@@ -29,10 +29,16 @@ export function encontroPerto(lista, jogador, z = null) {
 /** O pedaço da assinatura do retrato (o mapa só redesenha se ela muda): quais encontros, em que estado. */
 export const assinaturaDosEncontros = (lista) => (lista ?? []).map((e) => `enc:${e.id}:${e.estado}`).join('|');
 
+/** O sprite de item de cada tipo (os do próprio jogo): baú, baú ornamentado, baú do coração (amaldiçoado) e pedestal de cristal (altar). */
+export const ITEM_DO_TIPO = { 'bau-comum': 2472, 'bau-raro': 26164, 'bau-amaldicoado': 33043, altar: 9063 };
+
 const COR = { 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c' };
 
-/** Desenha os marcadores (sem sprite: um baú e um altar desenhados, por cima do chão e abaixo das criaturas em volta). */
-export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador }) {
+/**
+ * Desenha os marcadores: o SPRITE do jogo (`desenharItem`, que devolve `false` enquanto a folha não chegou) ou, até lá,
+ * um baú/altar desenhado em código. Por cima do chão e abaixo das criaturas em volta.
+ */
+export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador, desenharItem = null }) {
   for (const e of lista ?? []) {
     if (e.z != null && z != null && e.z !== z) continue;
     const x = e.x * tile - camX;
@@ -49,7 +55,10 @@ export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador })
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#000';
     ctx.fillStyle = cor;
-    if (e.tipo === 'altar') {
+    const sprite = desenharItem && ITEM_DO_TIPO[e.tipo] ? desenharItem(ctx, ITEM_DO_TIPO[e.tipo], x, y) : false;
+    if (sprite) {
+      // O sprite do jogo já é o desenho.
+    } else if (e.tipo === 'altar') {
       // Um losango sobre um pedestal.
       ctx.beginPath();
       ctx.moveTo(x + tile / 2, y + tile * 0.12);

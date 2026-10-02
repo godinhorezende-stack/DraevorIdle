@@ -8,6 +8,7 @@ import * as Entrega from '../systems/encontros/entrega.mjs';
 import * as Estado from '../systems/encontros/estado.mjs';
 import * as Modelo from '../systems/encontros/modelo.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
+import * as Arquivos from '../systems/encontros/arquivos.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
 import { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from '../frontend/client/src/world.mjs';
 import { encontroNaCasa, encontroPerto, assinaturaDosEncontros, ALCANCE_DE_INTERACAO } from '../frontend/client/src/encontros-na-tela.mjs';
