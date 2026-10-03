@@ -8,6 +8,7 @@ import { confirmar, pedirTexto, descartarAlteracoes } from './editor-ui.mjs';
 const obrigatorio = (v) => (v ? null : 'Digite um ID.');
 
 import { tabelaDeDrops } from './editor-drops.mjs';
+import { vistaValidacao, vistaPrevia, vistaVersoes, vistaPublicacao } from './editor-atos-vistas.mjs';
 
 const NS = 'http://www.w3.org/2000/svg';
 const L = 920;
@@ -57,7 +58,7 @@ export function posicoesAutomaticas(ato) {
 }
 
 export function criarEditorDeAtos({ el, api, raiz, msg }) {
-  const E = { lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null } };
+  const E = { vista: 'fluxo', difPrevia: 'facil', lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null } };
   const sv = (tag, attrs = {}, ...filhos) => {
     const n = document.createElementNS(NS, tag);
     for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) n.setAttribute(k, v);
@@ -87,6 +88,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     E.fase = null;
     E.lig = null;
     E.ligando = null;
+    E.vista = 'fluxo';
     pintar();
   }
   let esperando = null;
@@ -107,6 +109,30 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     E.problemas = r.problemas;
     await carregarLista();
     msg(`Rascunho salvo (versão ${r.ato.versao}).${r.valido ? '' : ' Há erros na validação: o ato ainda não pode ir para beta.'}`, r.valido ? 'ok' : 'aviso');
+    pintar();
+  }
+  async function restaurar(n) {
+    if (!(await confirmar(`Restaurar a versão ${n}?`, 'Cria uma versão NOVA com o conteúdo dela, como rascunho. Nada é apagado.', { ok: 'Restaurar' }))) return;
+    const r = await api(`atos-editor/${E.ato.id}/restaurar`, { versao: n });
+    if (r.ok === false) return msg(r.erros.join(' '), 'erro');
+    E.ato = r.ato;
+    E.limpo = JSON.stringify(E.ato);
+    E.problemas = r.problemas;
+    await carregarLista();
+    msg(`Versão ${n} restaurada como versão ${r.ato.versao} (rascunho).`, 'ok');
+    pintar();
+  }
+  async function mudarEstado(estado) {
+    if (E.ato.estado === estado) return msg(`O ato já está em ${estado}.`, 'aviso');
+    const antes = E.ato.estado;
+    E.ato.estado = estado;
+    const r = await api('atos-editor', E.ato);
+    if (r.ok === false) { E.ato.estado = antes; msg(r.erros.join(' '), 'erro'); return pintar(); }
+    E.ato = r.ato;
+    E.limpo = JSON.stringify(E.ato);
+    E.problemas = r.problemas;
+    await carregarLista();
+    msg(`Estado do ato: ${estado} (versão ${r.ato.versao}). ${['beta', 'publicado'].includes(estado) ? 'Vale no próximo boot do servidor (com o deploy).' : ''}`, 'ok');
     pintar();
   }
   async function duplicar() {
@@ -446,7 +472,24 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     const recFase = fase ? painelDeRecompensa(`fase:${fase.id}`, 'fase', fase.huntId, rotulosDe('fase')) : null;
     const recBoss = E.ato.bossFinal ? painelDeRecompensa('boss', 'boss', null, rotulosDe('boss')) : null;
     const lateral = [painelDoAto(), painelDaFase(), recFase, painelDaLigacao(), painelDoBoss(), recBoss, painelPicker()].filter(Boolean);
+    const VISTAS = [['fluxo', 'Fluxo'], ['validacao', 'Validação'], ['previa', 'Pré-visualização'], ['versoes', 'Versões'], ['publicacao', 'Publicação']];
+    const barraDeVistas = el('div', { class: 'eng-abas atos-vistas' }, VISTAS.map(([id, nome]) => el('button', { type: 'button', class: E.vista === id ? 'ativa' : '', onclick: () => { E.vista = id; pintar(); } }, nome, id === 'validacao' && E.problemas.length ? el('span', { class: `selo ${E.problemas.some((p) => p.nivel === 'erro') ? 'erro' : 'aviso'}` }, String(E.problemas.length)) : null)));
+    if (E.vista !== 'fluxo') {
+      const corpo = el('div', { class: 'atos-vista-corpo' }, el('div', { class: 'dica' }, 'Carregando…'));
+      const completar = async () => {
+        if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));
+        else if (E.vista === 'previa') corpo.replaceChildren(vistaPrevia(E.ato, { dif: E.difPrevia, aoMudarDif: (d) => { E.difPrevia = d; pintar(); } }));
+        else if (E.vista === 'versoes') corpo.replaceChildren(await vistaVersoes({ api, ato: E.ato, sujo: sujo(), aoRestaurar: restaurar }));
+        else if (E.vista === 'publicacao') corpo.replaceChildren(await vistaPublicacao({ api, ato: E.ato, sujo: sujo(), aoMudarEstado: mudarEstado }));
+      };
+      alvo.replaceChildren(
+        el('div', { class: 'linha' }, el('button', { onclick: async () => { if (sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return; E.ato = null; await carregarLista(); pintar(); } }, '← Atos'), el('b', {}, `${E.ato.nome} `, el('span', { class: 'dica' }, `(${E.ato.id}, versão ${E.ato.versao}, ${E.ato.estado})${sujo() ? ' • alterações não salvas' : ''}`)), E.somenteLeitura ? null : el('button', { class: 'primario', onclick: salvar }, 'Salvar rascunho')),
+        barraDeVistas, corpo);
+      completar();
+      return;
+    }
     alvo.replaceChildren(
+      barraDeVistas,
       el('div', { class: 'linha' },
         el('button', { onclick: async () => { if (sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return; E.ato = null; await carregarLista(); pintar(); } }, '← Atos'),
         el('b', {}, `${E.ato.nome} `, el('span', { class: 'dica' }, `(${E.ato.id}, versão ${E.ato.versao})${sujo() ? ' • alterações não salvas' : ''}`)),

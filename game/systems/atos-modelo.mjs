@@ -273,3 +273,51 @@ export function validarAto(bruto, ctx = {}) {
 
 /** Só os erros bloqueiam; avisos não. */
 export const temErro = (problemas) => problemas.some((p) => p.nivel === 'erro');
+
+// ------------------------------------------------------------------ comparação entre versões
+
+const igual = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+const CAMPOS_DO_ATO = ['nome', 'descricao', 'imagem', 'nivelRecomendado', 'ordem', 'anterior', 'seguinte', 'requisitos', 'progressao', 'estado', 'inicio'];
+const CAMPOS_DA_FASE = ['nome', 'descricao', 'ordem', 'huntId', 'tipo', 'nivel', 'obrigatoria', 'requisitos', 'objetivos', 'conclusao', 'recompensas', 'eventos', 'sobrescritas'];
+const chaveDaLigacao = (c) => `${c.de}>${c.para}`;
+
+/**
+ * As DIFERENÇAS entre dois atos (`antes` → `depois`), para a tela de versões. Pura. Posições no canvas (`posicao`) não contam como mudança
+ * de conteúdo (só arrastar uma fase não é uma versão diferente de verdade, mas fica registrada em `soPosicao`).
+ * Devolve `{ iguais, ato: [{campo, antes, depois}], fasesNovas, fasesRemovidas, fasesAlteradas: [{id, campos: [{campo, antes, depois}]}],
+ * ligacoesNovas, ligacoesRemovidas, ligacoesAlteradas, bossFinal: [{campo, antes, depois}], soPosicao }`.
+ */
+export function diffDeAtos(antes, depois) {
+  const a = normalizar(antes);
+  const b = normalizar(depois);
+  const campos = (x, y, lista) => lista.filter((c) => !igual(x[c], y[c])).map((campo) => ({ campo, antes: x[campo] ?? null, depois: y[campo] ?? null }));
+  const idsA = new Map(a.fases.map((f) => [f.id, f]));
+  const idsB = new Map(b.fases.map((f) => [f.id, f]));
+  const fasesAlteradas = [];
+  let soPosicao = 0;
+  for (const [id, fb] of idsB) {
+    const fa = idsA.get(id);
+    if (!fa) continue;
+    const c = campos(fa, fb, CAMPOS_DA_FASE);
+    if (c.length) fasesAlteradas.push({ id, nome: fb.nome, campos: c });
+    else if (!igual(fa.posicao, fb.posicao)) soPosicao++;
+  }
+  const ligA = new Map(a.conexoes.map((c) => [chaveDaLigacao(c), c]));
+  const ligB = new Map(b.conexoes.map((c) => [chaveDaLigacao(c), c]));
+  const bossA = a.bossFinal ?? {};
+  const bossB = b.bossFinal ?? {};
+  const bossCampos = ['bossId', 'faseAnterior', 'arena', 'recompensas', 'nivel'].filter((c) => !igual(bossA[c], bossB[c])).map((campo) => ({ campo, antes: bossA[campo] ?? null, depois: bossB[campo] ?? null }));
+  const r = {
+    ato: campos(a, b, CAMPOS_DO_ATO),
+    fasesNovas: [...idsB.keys()].filter((id) => !idsA.has(id)),
+    fasesRemovidas: [...idsA.keys()].filter((id) => !idsB.has(id)),
+    fasesAlteradas,
+    ligacoesNovas: [...ligB.keys()].filter((k) => !ligA.has(k)),
+    ligacoesRemovidas: [...ligA.keys()].filter((k) => !ligB.has(k)),
+    ligacoesAlteradas: [...ligB.keys()].filter((k) => ligA.has(k) && !igual(ligA.get(k), ligB.get(k))),
+    bossFinal: bossCampos,
+    soPosicao,
+  };
+  r.iguais = !r.ato.length && !r.fasesNovas.length && !r.fasesRemovidas.length && !r.fasesAlteradas.length && !r.ligacoesNovas.length && !r.ligacoesRemovidas.length && !r.ligacoesAlteradas.length && !r.bossFinal.length;
+  return r;
+}

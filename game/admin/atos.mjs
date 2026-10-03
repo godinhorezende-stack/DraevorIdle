@@ -155,11 +155,96 @@ export function salvar(bruto) {
     if (erros.length) return { ok: false, erros: [`Não dá para pôr em ${ato.estado}: ${erros.length} erro(s) na validação.`, ...erros.slice(0, 8).map((e) => `[${e.onde}] ${e.mensagem}`)] };
   }
   const antes = existsSync(arquivo(ato.id)) ? Modelo.normalizar(JSON.parse(readFileSync(arquivo(ato.id), 'utf8'))) : null;
-  if (antes) ato.versao = antes.versao + 1;
+  ato.versao = proximaVersao(ato.id, antes);
   mkdirSync(CAMINHOS.atos, { recursive: true });
   writeFileSync(arquivo(ato.id), `${JSON.stringify(ato, null, 2)}\n`);
+  gravarVersao(ato);
   const v = validar(ato);
   return { ok: true, ato, valido: v.ok, problemas: v.problemas };
+}
+
+// ------------------------------------------------------------------ versões (histórico só de acréscimo)
+// Cada gravação deixa uma foto em `gamedata/atos/_versoes/<id>/<n>.json` (a pasta começa com `_`: nem o editor nem o jogo a leem como ato).
+// Nada é apagado nem reescrito: restaurar uma versão grava uma versão NOVA com o conteúdo da antiga. O jogo só executa o arquivo atual
+// (`gamedata/atos/<id>.json`), nunca uma versão antiga.
+const pastaDeVersoes = (id) => join(CAMINHOS.atos, '_versoes', id);
+
+/** A próxima versão: depois da atual E de qualquer uma já guardada (um ato excluído e recriado não reaproveita número). */
+function proximaVersao(id, antes) {
+  const existentes = versoes(id).map((v) => v.versao);
+  return Math.max(antes?.versao ?? 0, ...existentes, 0) + 1;
+}
+
+function gravarVersao(ato) {
+  mkdirSync(pastaDeVersoes(ato.id), { recursive: true });
+  writeFileSync(join(pastaDeVersoes(ato.id), `${ato.versao}.json`), `${JSON.stringify({ salvoEm: Date.now(), ato }, null, 2)}\n`, { flag: 'wx' });
+}
+
+/** As versões de um ato, da mais nova para a mais antiga (sem o conteúdo inteiro). */
+export function versoes(id) {
+  const pasta = pastaDeVersoes(id);
+  if (!existsSync(pasta)) return [];
+  return readdirSync(pasta)
+    .filter((n) => /^\d+\.json$/.test(n))
+    .map((n) => {
+      const { salvoEm, ato } = JSON.parse(readFileSync(join(pasta, n), 'utf8'));
+      return { versao: ato.versao, salvoEm, estado: ato.estado, nome: ato.nome, fases: ato.fases.length, bossFinal: ato.bossFinal?.bossId ?? null };
+    })
+    .sort((a, b) => b.versao - a.versao);
+}
+
+/** O conteúdo de uma versão (`null` se não existe). */
+export function versao(id, n) {
+  const arq = join(pastaDeVersoes(id), `${Number(n)}.json`);
+  if (!/^[a-z0-9-]{3,40}$/.test(id) || !Number.isInteger(Number(n)) || !existsSync(arq)) return null;
+  return Modelo.normalizar(JSON.parse(readFileSync(arq, 'utf8')).ato);
+}
+
+/** As diferenças entre duas versões (`para` = `null`: a atual). */
+export function comparar(id, de, para = null) {
+  const a = versao(id, de);
+  const b = para == null ? obter(id) : versao(id, para);
+  if (!a || !b) return { ok: false, erros: ['Versão não encontrada.'] };
+  return { ok: true, de: Number(de), para: para == null ? b.versao : Number(para), ...Modelo.diffDeAtos(a, b) };
+}
+
+/**
+ * Restaura uma versão: grava o conteúdo dela como uma versão NOVA, sempre como RASCUNHO (restaurar nunca publica sozinho) — para valer no
+ * jogo, passa de novo pela validação e pela publicação.
+ */
+export function restaurar(id, n) {
+  const antiga = versao(id, n);
+  if (!antiga) return { ok: false, erros: ['Versão não encontrada.'] };
+  if (!obter(id)) return { ok: false, erros: ['O ato atual não existe (foi excluído): duplique a versão em vez de restaurar.'] };
+  return salvar({ ...antiga, estado: 'rascunho' });
+}
+
+/**
+ * A lista de conferência da PUBLICAÇÃO: o que falta para o ato valer no jogo e onde ele está hoje. `noJogoAgora`: este servidor já carregou o
+ * ato (o jogo só lê `gamedata/atos` no boot: publicar = o arquivo estar lá no deploy + reinício controlado).
+ */
+export function checklistDePublicacao(id) {
+  const ato = obter(id);
+  if (!ato) return null;
+  const problemas = Modelo.validarAto(Modelo.normalizar({ ...ato, estado: ato.estado === 'beta' ? 'beta' : 'publicado' }), contexto(id));
+  const erros = problemas.filter((p) => p.nivel === 'erro');
+  const registrado = Campanha.ATOS_DO_EDITOR.get(ato.ordem);
+  const itens = [
+    { ok: !Legado.ehLegado(id), texto: 'Ato do editor (os legados já estão no jogo e são somente leitura)' },
+    { ok: erros.length === 0, texto: erros.length ? `Validação com ${erros.length} erro(s) — corrija antes (aba Validação)` : 'Validação sem erros' },
+    { ok: problemas.length === erros.length, aviso: problemas.length > erros.length, texto: `${problemas.length - erros.length} aviso(s) (não bloqueiam)` },
+    { ok: Number.isInteger(ato.ordem) && ato.ordem > Campanha.ATOS, texto: `Ordem ${ato.ordem ?? '—'}: número do ato no jogo (5 em diante)` },
+    { ok: ['beta', 'publicado'].includes(ato.estado), texto: `Estado atual: ${ato.estado} (precisa ser beta ou publicado para valer)` },
+  ];
+  return {
+    id,
+    estado: ato.estado,
+    versao: ato.versao,
+    pronto: itens.every((i) => i.ok || i.aviso),
+    itens,
+    noJogoAgora: !!registrado && registrado.ato.id === id,
+    comoPublicar: 'Salve como Beta (vale só com o modo beta ligado) ou Publicado. O arquivo gamedata/atos/<id>.json vai com o deploy e o jogo o lê no próximo boot (reinício controlado). Nada muda no jogo até lá.',
+  };
 }
 
 /** Cópia como rascunho novo (nunca altera o original). */

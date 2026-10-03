@@ -542,3 +542,20 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .drops-origem { color: var(--eng-txt2); font-size: var(--eng-t-pequeno); }
 .drops-grade tr.com-aviso td { background: var(--eng-aviso-fundo); }
 @media (max-width: 900px) { .hunts-duas { grid-template-columns: 1fr; } .hunts-lista { position: static; max-height: none; } .hunt-monstro { grid-template-columns: 40px 1fr; } .hunt-monstro .hunt-barra { grid-column: 1 / -1; } }
+
+/* ---- Vistas do editor de atos (validação, pré-visualização, versões, publicação) ---- */
+.atos-vistas { margin-bottom: var(--eng-e3); }
+.atos-vistas .selo { margin-left: 6px; }
+.atos-vista { display: grid; gap: var(--eng-e3); min-width: 0; }
+.previa-fases { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--eng-e3); }
+.previa-fase { background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r3); padding: var(--eng-e3); display: grid; gap: 2px; }
+.previa-fase.opcional { border-style: dashed; }
+.previa-fase.inicio { border-color: var(--eng-ok); }
+.previa-topo { display: flex; gap: var(--eng-e2); align-items: center; flex-wrap: wrap; }
+.previa-premio { color: var(--eng-ouro-txt); font-size: var(--eng-t-pequeno); }
+.previa-boss { border-color: var(--eng-boss); }
+.diff-lista { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; }
+.diff-antes { color: var(--eng-erro); text-decoration: line-through; overflow-wrap: anywhere; }
+.diff-depois, .diff-novo { color: var(--eng-ok); overflow-wrap: anywhere; }
+.diff-removido { color: var(--eng-erro); }
+.problemas li.ok { color: var(--eng-ok); }
