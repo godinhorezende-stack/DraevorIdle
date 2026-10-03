@@ -671,3 +671,17 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .eng-pagina-login { background: var(--eng-s0); min-height: 100vh; margin: 0; }
 .eng-login-pagina { display: grid; justify-items: center; gap: var(--eng-e5); padding-top: 14vh; }
 .eng-login-pagina .eng-login { width: min(380px, 92vw); margin: 0; }
+
+/* ---- Níveis da campanha ---- */
+.niv-fluxo { display: flex; flex-wrap: wrap; gap: var(--eng-e2); font-size: var(--eng-t-pequeno); }
+.niv-fluxo span { padding: 3px 10px; border: 1px solid var(--eng-linha); border-radius: 999px; color: var(--eng-txt3); }
+.niv-fluxo span.ativa { border-color: var(--eng-ouro); color: var(--eng-ouro-txt); }
+.niv-tabela { width: 100%; border-collapse: collapse; }
+.niv-tabela th { text-align: left; font-size: var(--eng-t-pequeno); color: var(--eng-txt3); padding: 4px 6px; border-bottom: 1px solid var(--eng-linha); }
+.niv-tabela td { padding: 3px 6px; border-bottom: 1px solid var(--eng-linha); vertical-align: middle; }
+.niv-tabela td small { display: block; color: var(--eng-txt3); }
+.niv-tabela input[type=number] { width: 84px; }
+.niv-tabela input.niv-mudou { border-color: var(--eng-ouro); background: var(--eng-ouro-fundo); }
+.niv-tabela tr.foco td { background: var(--eng-s2); }
+.niv-tabela tr.niv-boss td { background: var(--eng-boss-fundo); }
+.niv-impacto td.niv-forte { color: var(--eng-aviso); font-weight: 600; }

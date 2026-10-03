@@ -288,7 +288,7 @@ const TELAS_FIXAS = {
   beta: OPERACAO.beta,
   config: OPERACAO.config,
   mapas: criarEditorDeMapas({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo, confirmarDescartar: () => descartarAlteracoes('O mapa aberto tem alterações não salvas') } }),
-  hunts: criarPainelDeHunts({ api, raiz: () => $('#raiz'), irPara: irParaDe }),
+  hunts: criarPainelDeHunts({ api, raiz: () => $('#raiz'), irPara: irParaDe, sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   mobs: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. Somente visualização — o bestiário vem do Canary.' }),
   itens: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. Somente visualização.' }),
   outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),

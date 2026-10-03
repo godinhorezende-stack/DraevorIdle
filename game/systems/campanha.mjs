@@ -26,7 +26,8 @@ import { validarAto, temErro, fasesAbertas, normalizar } from './atos-modelo.mjs
 import { lerExecutaveis } from './atos-carregar.mjs';
 import * as RecompensasDeEncontro from './encontros/recompensas.mjs';
 
-export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
+// `DRAEVOR_CAMPANHA`: caminho de outro arquivo no formato desta campanha — só para os testes provarem que o que o editor grava é o que o jogo lê.
+export const CAMPANHA = JSON.parse(readFileSync(process.env.DRAEVOR_CAMPANHA || new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
 export const FASES = CAMPANHA.fases;
 const INDICE = new Map(FASES.map((f, i) => [f.huntId, i]));

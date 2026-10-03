@@ -26,9 +26,9 @@ test('AC1. configuração: produção exige login e desliga a gravação; desenv
 test('AC2. classificação das rotas: leitura, operação (age no servidor), gravação (arquivo) e o POST que só valida; POST desconhecido = grava (negar por padrão)', () => {
   const c = (m, r) => A.classeDaRota(m, r.startsWith('/api') ? r : P + r);
   for (const r of ['opcoes', 'fases', 'atos-editor', 'hunts/painel', 'biblioteca/lista', 'operacao']) assert.equal(c('GET', r), 'leitura', r);
-  for (const r of ['fase/troll-cave/validar', 'mapa/validar', 'bosses/validar', 'atos-editor/validar', 'atos-editor/previa', 'mapas/validar']) assert.equal(c('POST', r), 'leitura', `${r} só valida`);
+  for (const r of ['fase/troll-cave/validar', 'mapa/validar', 'bosses/validar', 'atos-editor/validar', 'atos-editor/previa', 'mapas/validar', 'campanha/validar']) assert.equal(c('POST', r), 'leitura', `${r} só valida`);
   for (const r of ['operacao/beta', 'operacao/manutencao', 'operacao/server-save', 'modo-beta', 'server-save']) assert.equal(c('POST', r), 'operacao', r);
-  for (const r of ['fase/troll-cave/encontros', 'fase/troll-cave/meta', 'mapa', 'bosses', 'atos-editor', 'atos-editor/meu-ato/restaurar', 'rota-nova-que-ninguem-classificou']) assert.equal(c('POST', r), 'grava', r);
+  for (const r of ['fase/troll-cave/encontros', 'fase/troll-cave/meta', 'mapa', 'bosses', 'atos-editor', 'campanha', 'campanha/restaurar', 'atos-editor/meu-ato/restaurar', 'rota-nova-que-ninguem-classificou']) assert.equal(c('POST', r), 'grava', r);
   assert.equal(c('POST', '/api/mapas'), 'grava', 'salvar mapa grava');
   assert.equal(c('GET', '/api/mapas'), 'leitura');
   assert.equal(c('POST', 'auth/entrar'), 'publica');

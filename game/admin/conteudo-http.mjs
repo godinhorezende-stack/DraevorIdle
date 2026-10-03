@@ -6,6 +6,7 @@ import * as Atos from './atos.mjs';
 import * as Hunts from './hunts.mjs';
 import * as Mapas from './mapas.mjs';
 import * as Operacao from './operacao.mjs';
+import * as CampanhaEditor from './campanha-editor.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -37,6 +38,9 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
     if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
     if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
+    // Níveis da campanha (balanceamento/progressão): leitura; a edição é POST `campanha` (grava) e `campanha/validar` (só pré-visualiza).
+    if (rota === 'campanha') return json(res, 200, CampanhaEditor.ler()), true;
+    if (rota === 'campanha/versoes') return json(res, 200, { versoes: CampanhaEditor.versoes() }), true;
     // Painel por hunt (somente leitura): mapa, monstros, distribuição, dificuldade e drops esperados.
     if (rota === 'hunts') return json(res, 200, { hunts: Hunts.listar() }), true;
     if (rota === 'hunts/painel') {
@@ -84,6 +88,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
     if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
     if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'campanha/validar') {
+      const r = CampanhaEditor.propor(dados ?? {});
+      return json(res, 200, { ok: r.erros.length === 0, erros: r.erros, avisos: r.avisos, mudancas: r.mudancas, semMudancas: r.semMudancas }), true;
+    }
+    if (rota === 'campanha/restaurar') return json(res, 200, CampanhaEditor.restaurar(dados?.versao)), true;
+    if (rota === 'campanha') return json(res, 200, CampanhaEditor.salvar(dados ?? {})), true;
     if (rota === 'mapas/validar') return json(res, 200, Mapas.validarSpawns(dados ?? {})), true;
     if (rota === 'atos-editor/validar') return json(res, 200, Atos.validar(dados ?? {})), true;
     if (rota === 'atos-editor') return json(res, 200, dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {})), true;
