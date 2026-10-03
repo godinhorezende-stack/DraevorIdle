@@ -202,12 +202,25 @@ export function baseSpeed(level) {
 
 export const SKILL_BASE = 10;
 const SKILL_TRIES_BASE = 50;
+/**
+ * A taxa de subida (× por nível) das SKILLS DE ATAQUE — Melee, Distance e Magic Level (este em mana, `MAGIC_TRIES_BASE × taxa^ML`, sem joelho).
+ * Dono, 03/10: cada classe sobe a PRÓPRIA skill na mesma velocidade das outras classes na delas; a skill de OUTRA classe é mais difícil, mas alcançável
+ * (antes era de 1,4 a 3,0: impossível, e a arma "de fora" nunca evoluía). Escudo e pesca seguem a vocação (o Knight sobe o escudo mais fácil).
+ *   próprias: Knight = Melee (e escudo), Paladin = Distance, Monk = Melee, Sorcerer e Druid = Magic Level; sem vocação: todas "próprias".
+ */
+export const SKILLS_PROPRIAS = { knight: ['melee'], paladin: ['distance'], monk: ['melee'], sorcerer: ['magic'], druid: ['magic'] };
+export const TAXA_DAS_SKILLS_DE_ATAQUE = { propria: 1.1, deFora: 1.15 };
+/** A taxa de subida da skill de ataque `grupo` ('melee' | 'distance' | 'magic') para esta vocação. */
+export const taxaDaSkillDeAtaque = (grupo, vocationId) => (!SKILLS_PROPRIAS[vocationId] || SKILLS_PROPRIAS[vocationId].includes(grupo) ? TAXA_DAS_SKILLS_DE_ATAQUE.propria : TAXA_DAS_SKILLS_DE_ATAQUE.deFora);
+
 const MAGIC_TRIES_BASE = 1600;
 
 /** Tentativas necessárias para ir de `skill` para `skill + 1`. */
 export function triesForSkill(skill, value, vocationId) {
   const vocation = VOCATIONS[vocationId] ?? VOCATIONS.none;
-  const rate = vocation.rates[SKILL_GROUP[skill]] ?? 1.5;
+  // Melee e Distance: a mesma taxa na skill PRÓPRIA de cada classe e uma maior (alcançável) na de fora (`taxaDaSkillDeAtaque`); escudo e pesca seguem a vocação.
+  const grupo = SKILL_GROUP[skill];
+  const rate = grupo === 'melee' || grupo === 'distance' ? taxaDaSkillDeAtaque(grupo, vocationId) : vocation.rates[grupo] ?? 1.5;
   return Math.round(SKILL_TRIES_BASE * rate ** (value - SKILL_BASE));
 }
 
@@ -239,7 +252,8 @@ export function triesForSkill(skill, value, vocationId) {
  * O KNIGHT saiu desta lista: a curva dele é a da base (3.0) do primeiro nível.
  * Ver o bloco do `MAGIC_JOELHO`, logo abaixo, para o porquê.
  */
-const MAGIC_IDLE = { sorcerer: 1.1, druid: 1.1, paladin: 1.2, monk: 1.2, none: 1.28 };
+// Magic Level: a taxa das skills de ataque (`taxaDaSkillDeAtaque`): 1,1 para Sorcerer e Druid, uma maior (alcançável) para as outras vocações.
+const MAGIC_IDLE = {};
 
 /*
  * ---- O JOELHO: a curva endurece a partir de um magic level ----
@@ -347,15 +361,13 @@ const MAGIC_IDLE = { sorcerer: 1.1, druid: 1.1, paladin: 1.2, monk: 1.2, none: 1
  * 3.0 — o maior da tabela. Na base o knight realmente não sobe magic level, e é
  * a única vocação em que a curva crua já é o comportamento certo.
  */
-const MAGIC_JOELHO = {
-  paladin: { ml: 45, mult: 1.4 },
-  monk: { ml: 45, mult: 1.3 },
-};
+// Sem joelho (dono, 03/10): o Magic Level de Paladin e Monk não endurece num nível; a diferença é só a taxa de quem não é da classe.
+const MAGIC_JOELHO = {};
 
 /** Mana que precisa ser gasta para subir do magic level atual. */
 export function manaForMagicLevel(value, vocationId) {
   const vocation = VOCATIONS[vocationId] ?? VOCATIONS.none;
-  const multiplicador = MAGIC_IDLE[vocationId] ?? vocation.rates.magic;
+  const multiplicador = taxaDaSkillDeAtaque('magic', vocationId);
   const joelho = MAGIC_JOELHO[vocationId];
   if (joelho && value >= joelho.ml) {
     return Math.round(MAGIC_TRIES_BASE * multiplicador ** joelho.ml * joelho.mult ** (value - joelho.ml));
