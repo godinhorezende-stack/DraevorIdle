@@ -30,6 +30,7 @@ import { colunasDaCacaOffline } from '../database/caca-offline.mjs';
 import { validarConfig, MENSAGENS, mensagemDoAviso } from './server-save-config.mjs';
 import { proximoSlot } from './server-save-horario.mjs';
 import { avisoGlobal, ligar as ligarAvisos } from './avisos-globais.mjs';
+import * as Temporarios from './limpeza-de-temporarios.mjs';
 
 const TAG = '[SERVER-SAVE]';
 const BIGINT = banco.dialeto === 'postgres' ? 'BIGINT' : 'INTEGER';
@@ -40,6 +41,8 @@ await banco.exec(`
 `);
 
 const processoId = `${process.pid}-${randomUUID().slice(0, 8)}`;
+/** Quem sou eu na tabela de ciclos (os testes filtram por ele: vários processos dividem o mesmo banco). */
+export const PROCESSO_ID = processoId;
 const relogioReal = { setTimeout: (f, ms) => setTimeout(f, ms), clearTimeout: (t) => clearTimeout(t), agora: () => Date.now(), cederLaco: () => new Promise((r) => setImmediate(r)) };
 
 let sessoes = new Map();
@@ -168,13 +171,22 @@ export async function executar({ slot, manual = false } = {}) {
     } else {
       log('Outro processo conduz a verificação do banco neste ciclo');
     }
+    // Por último, depois da persistência e da verificação: arquivos temporários descartáveis. Pendência adia; erro aqui nunca falha o save.
+    const pendencia = g.erros ? 'houve erro ao gravar jogadores' : r.offline?.ilegiveis ? 'há estado de personagem ilegível' : r.offline?.anomalias.length ? 'o offline farm tem anomalias a verificar' : null;
+    try {
+      r.temporarios = await Temporarios.executar({ config: e.configTemporarios, agora: e.relogio.agora(), adiar: pendencia, log });
+    } catch (erro) {
+      r.temporarios = { erro: erro.message };
+      log(`ERRO na limpeza de temporários (o save segue): ${erro.message}`);
+    }
     r.ms = Math.round(performance.now() - t0);
     r.atrasoMaximoDoLacoMs = Math.round(lag.parar());
     const ok = g.erros === 0;
-    if (lider) await registrar(slot, ok ? 'concluido' : 'falhou', r, e.relogio.agora());
+    // Execução manual não conta como "último ciclo concluído" da agenda (estado próprio).
+    if (lider) await registrar(slot, ok ? (manual ? 'concluido-manual' : 'concluido') : 'falhou', r, e.relogio.agora());
     e.ultimo = { slot, ok, ...r };
     if (!ok) throw Object.assign(new Error(`${g.erros} jogador(es) não foram gravados`), { resultado: r });
-    log(`Concluído em ${r.ms}ms: ${r.gravados} jogadores gravados, ${r.offline?.ausentes ?? '-'} ausentes verificados, ${r.offline?.colunasCorrigidas ?? 0} colunas corrigidas, ${r.offline?.anomalias.length ?? 0} anomalias, laço parou no máximo ${r.atrasoMaximoDoLacoMs}ms`);
+    log(`Concluído em ${r.ms}ms: ${r.gravados} jogadores gravados, ${r.offline?.ausentes ?? '-'} ausentes verificados, ${r.offline?.colunasCorrigidas ?? 0} colunas corrigidas, ${r.offline?.anomalias.length ?? 0} anomalias, laço parou no máximo ${r.atrasoMaximoDoLacoMs}ms; temporários: ${r.temporarios?.adiada ? 'adiada' : `${r.temporarios?.removidos?.length ?? 0} removidos`}`);
     e.anunciar(MENSAGENS.concluido); // só depois de confirmado
     return { ok: true, ...r };
   } catch (erro) {
@@ -257,7 +269,7 @@ function limparTimers() {
  * Liga o agendador (idempotente). Reiniciar o servidor NÃO executa save: só calcula o próximo horário.
  * Ciclos que ficaram "executando" de um processo que caiu são marcados como interrompidos no registro.
  */
-export async function iniciar({ config = null, relogio = relogioReal, logger = console.log, anunciar = avisoGlobal } = {}) {
+export async function iniciar({ config = null, relogio = relogioReal, logger = console.log, anunciar = avisoGlobal, configTemporarios = Temporarios.configPadrao() } = {}) {
   if (estado) return { ok: true, jaIniciado: true };
   const { config: valida, erros } = validarConfig(config ?? {});
   for (const erro of erros) logger(`${TAG} Config: ${erro}`);
@@ -265,10 +277,11 @@ export async function iniciar({ config = null, relogio = relogioReal, logger = c
     logger(`${TAG} Sistema desativado (enabled: false)`);
     return { ok: true, desativado: true };
   }
-  estado = { config: valida, relogio: { ...relogioReal, ...relogio }, log: logger, anunciar, timers: [], slot: null, rodando: false, ultimo: null, ultimosSlots: new Set(), avisados: new Set(), ultimoSlotAgendado: null };
+  estado = { configTemporarios, config: valida, relogio: { ...relogioReal, ...relogio }, log: logger, anunciar, timers: [], slot: null, rodando: false, ultimo: null, ultimosSlots: new Set(), avisados: new Set(), ultimoSlotAgendado: null };
   logger(`${TAG} Sistema iniciado (${valida.horaLocal} ${valida.timezone}, a cada ${valida.intervalHours} h, avisos ${valida.warningsMinutes.join('/')} min)`);
   try {
-    const r = await banco.prepare("UPDATE server_save_ciclos SET estado = 'interrompido' WHERE estado = 'executando'").run();
+    // Só os velhos (> 6 h): um 'executando' recente pode ser de OUTRO processo vivo no mesmo banco.
+    const r = await banco.prepare("UPDATE server_save_ciclos SET estado = 'interrompido' WHERE estado = 'executando' AND iniciado_em < ?").run(estado.relogio.agora() - 6 * 3_600_000);
     if (r.changes) logger(`${TAG} ${r.changes} ciclo(s) anterior(es) ficaram sem conclusão (processo caiu): registrados como interrompidos`);
     const ultimo = await banco.prepare("SELECT slot, concluido_em FROM server_save_ciclos WHERE estado = 'concluido' ORDER BY slot DESC LIMIT 1").get();
     if (ultimo) {
