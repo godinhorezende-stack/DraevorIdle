@@ -70,3 +70,35 @@ test('W4. o artigo de itens existe, tem as seções pedidas e não monta HTML a 
   assert.match(js, /T1 é o tier MAIS FRACO e T5 o MAIS FORTE/);
   assert.doesNotMatch(js, /innerHTML|insertAdjacentHTML|document\.write/);
 });
+
+test('W5. layout: as causas do corte estão corrigidas no CSS (grade com minmax(0, 1fr), container largo, respiro do cabeçalho fixo, tabela sem largura mínima, cartões e sombra de rolagem)', () => {
+  const css = ler('frontend/client/site/wiki.css');
+  assert.match(css, /grid-template-columns: 210px minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 820px\) \{\s*\.wiki \{ grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(css, /max-width: 1480px/);
+  assert.match(css, /padding: calc\(var\(--altura-da-faixa, 30px\) \+ 92px\)/, 'respiro do cabeçalho fixo');
+  assert.match(css, /\.wiki-tabela \.tabela \{ min-width: 0; width: 100%; \}/, 'sem o min-width de 540 px do site.css');
+  assert.match(css, /\.em-cartoes \.tabela tr \{ display: grid/, 'cartões');
+  assert.match(css, /\.wiki-rolagem\.mais-direita::after/, 'sombra quando há mais conteúdo');
+  assert.doesNotMatch(css, /overflow-x: hidden/, 'nada de esconder a rolagem da página');
+  const js = ler('frontend/client/site/wiki.mjs');
+  assert.match(js, /role', 'region'/);
+  assert.match(js, /tabIndex = 0/, 'a caixa da tabela rola pelo teclado');
+});
+
+test('W6. imagens: figura com alt obrigatório, só arquivo do próprio jogo, carregamento sob demanda, ampliar; sprites carregados só quando a figura aparece; artigo de teste oculto', () => {
+  const js = ler('frontend/client/site/wiki.mjs');
+  assert.match(js, /const srcSeguro = \(src\) => \/\^\\\/client\\\/assets\\\//, 'só /client/assets/...');
+  assert.match(js, /if \(!srcSeguro\(src\) \|\| !alt\) return el\('span'\)/);
+  assert.match(js, /img\.loading = 'lazy'/);
+  assert.match(js, /img\.decoding = 'async'/);
+  assert.match(js, /IntersectionObserver/);
+  assert.match(js, /import\('\/client\/src\/sprites\.mjs'\)/, 'sprites.mjs só por import dinâmico (não pesa na abertura)');
+  assert.doesNotMatch(js, /^import .*sprites\.mjs/m);
+  assert.match(js, /hrefSeguro = \(h\) => \/\^\(\\\/wiki/, 'links internos só para a wiki');
+  assert.match(js, /slug: 'layout'[^}]*oculto: true/);
+  assert.match(js, /ARTIGOS\.filter\(\(x\) => !x\.oculto\)/, 'o artigo de teste não aparece no índice');
+  assert.ok(existsSync(new URL('../frontend/client/assets/wiki/.gitkeep', import.meta.url)), 'pasta das imagens da wiki');
+  for (const arq of ['arena-fundo.webp', 'draevor-logo.webp']) assert.ok(existsSync(new URL(`../frontend/client/assets/ui/${arq}`, import.meta.url)), arq);
+  assert.match(ler('backend/index.mjs'), /caminho\.startsWith\('\/wiki\/'\) && !caminho\.includes\('\.'\)/);
+});
