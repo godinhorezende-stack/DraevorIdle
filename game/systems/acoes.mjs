@@ -84,7 +84,12 @@ function nivelDoDano(estado, entry, defDaGema) {
 function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado)) {
   const defDaGema = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
   // O dano base da gema de ATAQUE cresce pela ARMA (poder × afinidade → "nível equivalente"); o level do personagem não soma mais (`armas/poder.mjs`).
-  const { min, max } = danoNoLevel(entry, nivelDoDano(estado, entry, defDaGema));
+  const doNivel = danoNoLevel(entry, nivelDoDano(estado, entry, defDaGema));
+  // O DANO NORMAL da ficha (o "Dano 36–572" do golpe da arma: ataque + perícia + level) SOMA ao dano base da gema de ataque (dono, 02/10):
+  // a magia segue escalando pela arma como antes, e o golpe normal entra por cima; os percentuais (tipo de dano, magia, gema...) valem sobre a soma.
+  const normal = !entry.heals && Gemas.ehSkillDeGema(entry) && entry.kind !== 'item' ? fichaBase.damage : null;
+  const min = doNivel.min + (normal?.min ?? 0);
+  const max = doNivel.max + (normal?.max ?? 0);
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;

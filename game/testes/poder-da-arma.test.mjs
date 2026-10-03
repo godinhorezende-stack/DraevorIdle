@@ -162,3 +162,34 @@ test('peça vestida com level acima do dele volta para a mochila, sem perda', ()
   assert.ok((e.inventory ?? []).length >= antes + 1);
   assert.deepEqual(Inventario.devolverPecasAcimaDoLevel(e), []);
 });
+
+test('o DANO NORMAL da ficha (o golpe da arma) soma ao dano base da gema de ataque: subir o ataque da arma sobe a magia; a cura não recebe', () => {
+  const montar = (atk) => {
+    const e = personagem({ level: 343, id: ARMA.espada });
+    ITEM_CATALOG[ARMA.espada].attack = atk;
+    Ficha.invalidar(e);
+    return e;
+  };
+  const antesAtk = ITEM_CATALOG[ARMA.espada].attack;
+  try {
+    const fraca = montar(30);
+    const fichaFraca = Ficha.combate(fraca).damage;
+    const magiaFraca = danoDe(fraca, 'spell-buzz');
+    const forte = montar(300);
+    const fichaForte = Ficha.combate(forte).damage;
+    const magiaForte = danoDe(forte, 'spell-buzz');
+    assert.ok(fichaForte.max > fichaFraca.max + 100, 'o ataque da arma subiu o dano normal');
+    assert.ok(magiaForte.max - magiaFraca.max >= fichaForte.max - fichaFraca.max, `a magia subiu ${magiaForte.max - magiaFraca.max}, o dano normal subiu ${fichaForte.max - fichaFraca.max}`);
+    assert.ok(magiaFraca.max >= fichaFraca.max, 'o dano mostrado inclui o golpe normal');
+  } finally {
+    ITEM_CATALOG[ARMA.espada].attack = antesAtk;
+  }
+  const kn = personagemDeTeste({ vocacao: 'knight', level: 343 });
+  const sem = Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing');
+  kn.equipment.weapon = { id: ARMA.espada, count: 1 };
+  ITEM_CATALOG[ARMA.espada].attack = 500;
+  Ficha.invalidar(kn);
+  const com = Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing');
+  ITEM_CATALOG[ARMA.espada].attack = antesAtk;
+  assert.equal(com.damage.max, sem.damage.max, 'a cura não depende do ataque da arma');
+});
