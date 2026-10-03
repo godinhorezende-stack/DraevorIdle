@@ -130,7 +130,7 @@ test('o cliente: o editor e o mapa leem o que o servidor manda (as peças existe
   assert.match(editor, /atributos-do-mob/);
   assert.match(editor, /montarPainelDeAtributos/);
   const mapa = readFileSync(new URL('../frontend/client/src/map.mjs', import.meta.url), 'utf8');
-  assert.match(mapa, /entity\.isPlayer\) && entity\.estados/);
+  assert.match(mapa, /entity\.isPlayer && entity\.estados/); // os estados do jogador agora saem no nameplate novo
   assert.match(mapa, /estado === 'enregelado'/);
   const backend = readFileSync(new URL('../backend/index.mjs', import.meta.url), 'utf8');
   assert.match(backend, /api\/mapas\/atributos-do-mob/);

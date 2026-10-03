@@ -8,6 +8,8 @@ import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
 import { graficoLigado, tetoDeQuadros } from './graficos.mjs';
+import { NameplateDoJogador, escalaDoNameplate } from './nameplate-do-jogador.mjs';
+import { ehTelefone } from './perfil.mjs';
 // O contador de FPS do canto conta o quadro daqui. Ver `medidor.mjs`.
 import { contarQuadro, marcarPassadaDoMonitor, intervaloDoMonitor } from './medidor.mjs';
 import { camadasAcima, andaresAbaixo } from '/packages/shared/src/andar-visivel.mjs';
@@ -975,6 +977,10 @@ export class MapView {
           marca: character.marca ?? null,
           hp: character.hp,
           maxHp: character.derived.maxHp,
+          // A esfera de nível e a barra de mana do nameplate (só do PRÓPRIO jogador: o servidor não manda a mana dos outros).
+          level: character.level,
+          mana: character.mana,
+          maxMana: character.derived.maxMana,
         },
         now
       );
@@ -1173,6 +1179,8 @@ export class MapView {
       name: data.name,
       hp: data.hp,
       maxHp: data.maxHp,
+      mana: data.mana,
+      maxMana: data.maxMana,
       level: data.level,
       // O cargo de quem é da equipe, para a tag por cima do nome. `null` em
       // jogador — e é `null` explícito, e não ausente, para uma promoção ou um
@@ -2633,6 +2641,8 @@ export class MapView {
     this.overlay.id = 'map-overlay';
     this.canvas.parentNode.insertBefore(this.overlay, this.canvas.nextSibling);
     this.octx = this.overlay.getContext('2d');
+    // O nameplate dos jogadores (esfera de nível, nome, vida e mana): ver `nameplate-do-jogador.mjs`.
+    this.nameplates = new NameplateDoJogador({ criarTela: telaFora });
   }
 
   /*
@@ -2883,7 +2893,7 @@ export class MapView {
    * lida de canto de olho, em cima de um mapa cheio de textura, sem ninguém
    * parar para comparar.
    */
-  drawEscudoDaParty(entity, meio, linhaDoNome) {
+  drawEscudoDaParty(entity, meio, linhaDoNome, xEsquerdo = null) {
     /*
      * ---- Na arena de x1 não há party, há adversário ----
      *
@@ -2902,7 +2912,7 @@ export class MapView {
      * setenta e cinco caçadas usam. Aqui o alcance é uma arena de pvp e um
      * sprite.
      */
-    if (this.pvp) return this.drawCaveiraDoDuelo(entity, meio, linhaDoNome);
+    if (this.pvp) return this.drawCaveiraDoDuelo(entity, meio, linhaDoNome, xEsquerdo);
 
     const party = this.party;
     if (!party || !entity.name) return;
@@ -2950,7 +2960,8 @@ export class MapView {
      */
     const lado = Math.round(NAME_SIZE * 0.9);
     const meiaPalavra = ctx.measureText(entity.name).width / 2;
-    const x = Math.round(meio - meiaPalavra - lado - 2);
+    // `xEsquerdo`: o nameplate do jogador cola o escudo na esquerda da ESFERA, e não do nome.
+    const x = xEsquerdo ?? Math.round(meio - meiaPalavra - lado - 2);
     // Alinhado pela base da letra, e não pelo topo: `linhaDoNome` é a linha de
     // base do texto, então descer um pixel encaixa o escudo com o nome.
     const y = Math.round(linhaDoNome - lado + 1);
@@ -2990,7 +3001,7 @@ export class MapView {
    * cliente do Tibia, 9x9, e sobe para a altura da letra do nome — um brasão
    * grande pendurado no boneco foi o defeito que o escudo já teve uma vez.
    */
-  drawCaveiraDoDuelo(entity, meio, linhaDoNome) {
+  drawCaveiraDoDuelo(entity, meio, linhaDoNome, xEsquerdo = null) {
     if (!entity.name) return;
     if (!entity.isPlayer && !entity.aliado) return;
 
@@ -3000,7 +3011,8 @@ export class MapView {
     const ctx = this.octx;
     const lado = Math.round(NAME_SIZE * 0.9);
     const meiaPalavra = ctx.measureText(entity.name).width / 2;
-    const x = Math.round(meio - meiaPalavra - lado - 2);
+    // `xEsquerdo`: o nameplate do jogador cola o escudo na esquerda da ESFERA, e não do nome.
+    const x = xEsquerdo ?? Math.round(meio - meiaPalavra - lado - 2);
     const y = Math.round(linhaDoNome - lado + 1);
 
     const suave = ctx.imageSmoothingEnabled;
@@ -3072,7 +3084,99 @@ export class MapView {
     ctx.restore();
   }
 
+  /*
+   * O nameplate de GENTE: o próprio jogador, os outros jogadores da praça e os companheiros de party/duelo. NPCs, o
+   * familiar e as criaturas seguem no desenho de sempre (abaixo).
+   */
+  ehJogador(entity) {
+    return entity.isPlayer || !!entity.aliado || (entity.isOther && !entity.npc && !entity.summon);
+  }
+
+  drawNameplateDoJogador(entity, cx, py) {
+    const ctx = this.octx;
+    const screen = this.toScreen(cx, py);
+    const ratio = this.overlayRatio();
+    const escala = escalaDoNameplate({ zoom: this.zoom, telefone: ehTelefone() });
+    const caixa = this.nameplates.desenhar(
+      ctx,
+      {
+        nome: entity.name,
+        nivel: entity.level,
+        hp: entity.hp,
+        maxHp: entity.maxHp,
+        mana: entity.mana,
+        maxMana: entity.maxMana,
+        propria: entity.isPlayer,
+        cx: screen.x,
+        topoDaCasa: screen.y,
+        escala,
+      },
+      { telaL: this.overlay.width / ratio, telaA: this.overlay.height / ratio, nitido: (v) => this.nitido(v), ratio },
+    );
+    if (!caixa) return; // fora da tela: nada mais a desenhar
+    const lado = Math.round(NAME_SIZE * 0.9 * escala);
+    // O escudo da party (ou a caveira do duelo) à esquerda da esfera, na altura do centro dela.
+    this.drawEscudoDaParty(entity, screen.x, caixa.esferaCY + lado / 2 - 1, Math.round(caixa.esq - lado - 2));
+    // Os estados ativos do jogador (controle, dano contínuo): à direita das barras, na linha da vida.
+    if (entity.isPlayer && entity.estados?.length) this.drawEstadosDoMob(entity.estados, caixa.dir + 3, caixa.vidaH ? caixa.vidaTopo : caixa.nomeTopo + caixa.nomeH);
+    // A tag de cargo (GOD...) por cima do conjunto.
+    if (entity.marca?.tag) this.drawMarcaDoJogador(entity, screen.x, caixa.topo - 3);
+  }
+
+  drawMarcaDoJogador(entity, meio, topo) {
+    const ctx = this.octx;
+    /*
+     * ---- A tag de cargo, por cima do nome ----
+     *
+     * `GOD` em dourado com brilho, na fonte de título do jogo — a mesma dos
+     * painéis, para a marca pertencer ao jogo e não parecer colada.
+     *
+     * O brilho é feito de duas passadas de sombra em vez de uma: uma larga e
+     * fraca dá o halo, uma curta e forte dá o contorno aceso. Uma só faz o
+     * texto parecer borrado em cima do mapa, que é fundo com muita textura.
+     *
+     * Ela vem da LINHA do servidor (`marca`), e não de uma lista de gods no
+     * cliente: quem for rebaixado deixa de ter a tag no quadro seguinte, sem
+     * nada para limpar aqui.
+     */
+    const dourado = entity.marca.nivel >= 3;
+    const cor = dourado ? '#ffd76a' : '#dcecf6';
+    const halo = dourado ? '#ffb32e' : '#9fc4d8';
+
+    /*
+     * A MESMA fonte dos nomes, e não a serifa dos títulos.
+     *
+     * Ela estava em Cinzel, que é bonita e ilegível a nove pixels em cima do
+     * mapa — o dono viu e pediu para voltar ao padrão. O que sobra de
+     * "bonito" é o EFEITO: o dourado, o halo em duas passadas e o contorno.
+     * Isso se lê e continua chamando o olho.
+     */
+    ctx.font = `bold ${Math.max(8, NAME_SIZE - 1)}px Verdana, "Segoe UI", sans-serif`;
+    // As duas passadas de halo saem com a chave dos brilhos apagada — o
+    // dourado e o contorno abaixo seguram a marca sozinhos. Ver
+    // `drawNomeDoObjeto`, que faz a mesma conta pelo mesmo motivo.
+    if (graficoLigado('brilhos')) {
+      ctx.save();
+      ctx.shadowColor = halo;
+      ctx.shadowBlur = 9 * this.zoom;
+      ctx.fillStyle = cor;
+      ctx.fillText(entity.marca.tag, meio, topo);
+      ctx.shadowBlur = 3 * this.zoom;
+      ctx.fillText(entity.marca.tag, meio, topo);
+      ctx.restore();
+    }
+
+    // O contorno preto por último, como nos nomes: sobre chão claro o dourado
+    // sozinho some, e o halo não segura a forma da letra.
+    ctx.fillStyle = '#000';
+    for (const [dx, dy] of OUTLINE) ctx.fillText(entity.marca.tag, meio + dx, topo + dy);
+    ctx.fillStyle = cor;
+    ctx.fillText(entity.marca.tag, meio, topo);
+    ctx.font = `bold ${NAME_SIZE}px Verdana, "Segoe UI", sans-serif`;
+  }
+
   drawNameplate(entity, cx, py) {
+    if (this.ehJogador(entity)) return this.drawNameplateDoJogador(entity, cx, py);
     const ctx = this.octx;
     const screen = this.toScreen(cx, py);
     const percent = entity.maxHp ? Math.max(0, Math.min(100, (entity.hp / entity.maxHp) * 100)) : 100;
@@ -3109,7 +3213,7 @@ export class MapView {
       ctx.drawImage(lv.lona, this.nitido(nomeX + placa.largura - 1), this.nitido(nomeY + (placa.altura - lv.altura)), lv.largura, lv.altura);
     }
     // Os estados ativos: do mob (gemas do jogador) e do próprio JOGADOR (controle de boss/elite e dano contínuo dos mobs).
-    if ((ehMob || entity.isPlayer) && entity.estados?.length) this.drawEstadosDoMob(entity.estados, meio + width / 2 + 3, barTop);
+    if (ehMob && entity.estados?.length) this.drawEstadosDoMob(entity.estados, meio + width / 2 + 3, barTop);
     if (ehMob && entity.mods?.length) {
       const linha = placaDeTexto(entity.mods.join(' · '), corDoMob ?? '#cfc7b4', Math.max(8, NAME_SIZE - 2), this.overlayRatio());
       ctx.drawImage(linha.lona, this.nitido(meio - linha.largura / 2), this.nitido(nomeY - linha.altura + 3), linha.largura, linha.altura);
@@ -3186,61 +3290,6 @@ export class MapView {
 
       ctx.fillStyle = cor;
       ctx.fillText(rotulo, x + largura / 2, y + altura - 3);
-      ctx.font = `bold ${NAME_SIZE}px Verdana, "Segoe UI", sans-serif`;
-    }
-
-    // O escudo da party à ESQUERDA do nome, colado nele — como no Tibia.
-    this.drawEscudoDaParty(entity, meio, barTop - 4);
-
-    /*
-     * ---- A tag de cargo, por cima do nome ----
-     *
-     * `GOD` em dourado com brilho, na fonte de título do jogo — a mesma dos
-     * painéis, para a marca pertencer ao jogo e não parecer colada.
-     *
-     * O brilho é feito de duas passadas de sombra em vez de uma: uma larga e
-     * fraca dá o halo, uma curta e forte dá o contorno aceso. Uma só faz o
-     * texto parecer borrado em cima do mapa, que é fundo com muita textura.
-     *
-     * Ela vem da LINHA do servidor (`marca`), e não de uma lista de gods no
-     * cliente: quem for rebaixado deixa de ter a tag no quadro seguinte, sem
-     * nada para limpar aqui.
-     */
-    if (entity.marca?.tag) {
-      const dourado = entity.marca.nivel >= 3;
-      const cor = dourado ? '#ffd76a' : '#dcecf6';
-      const halo = dourado ? '#ffb32e' : '#9fc4d8';
-      const topo = barTop - 4 - NAME_SIZE - 3;
-
-      /*
-       * A MESMA fonte dos nomes, e não a serifa dos títulos.
-       *
-       * Ela estava em Cinzel, que é bonita e ilegível a nove pixels em cima do
-       * mapa — o dono viu e pediu para voltar ao padrão. O que sobra de
-       * "bonito" é o EFEITO: o dourado, o halo em duas passadas e o contorno.
-       * Isso se lê e continua chamando o olho.
-       */
-      ctx.font = `bold ${Math.max(8, NAME_SIZE - 1)}px Verdana, "Segoe UI", sans-serif`;
-      // As duas passadas de halo saem com a chave dos brilhos apagada — o
-      // dourado e o contorno abaixo seguram a marca sozinhos. Ver
-      // `drawNomeDoObjeto`, que faz a mesma conta pelo mesmo motivo.
-      if (graficoLigado('brilhos')) {
-        ctx.save();
-        ctx.shadowColor = halo;
-        ctx.shadowBlur = 9 * this.zoom;
-        ctx.fillStyle = cor;
-        ctx.fillText(entity.marca.tag, meio, topo);
-        ctx.shadowBlur = 3 * this.zoom;
-        ctx.fillText(entity.marca.tag, meio, topo);
-        ctx.restore();
-      }
-
-      // O contorno preto por último, como nos nomes: sobre chão claro o dourado
-      // sozinho some, e o halo não segura a forma da letra.
-      ctx.fillStyle = '#000';
-      for (const [dx, dy] of OUTLINE) ctx.fillText(entity.marca.tag, meio + dx, topo + dy);
-      ctx.fillStyle = cor;
-      ctx.fillText(entity.marca.tag, meio, topo);
       ctx.font = `bold ${NAME_SIZE}px Verdana, "Segoe UI", sans-serif`;
     }
 
