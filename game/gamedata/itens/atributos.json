@@ -147,6 +147,45 @@
     "épico",
     "lendário",
     "mítico"
+   ],
+   "dropa": false
+  },
+  "phys_add": {
+   "nome": "Dano físico adicional",
+   "tipo": "flat",
+   "categoria": "ofensivo",
+   "peso": 60,
+   "niveis": {
+    "1": [
+     1,
+     2
+    ],
+    "2": [
+     3,
+     4
+    ],
+    "3": [
+     5,
+     6
+    ],
+    "4": [
+     7,
+     8
+    ],
+    "5": [
+     9,
+     10
+    ]
+   },
+   "proporcaoDoMaximo": 2,
+   "nivelMinimo": 1,
+   "raridades": [
+    "comum",
+    "incomum",
+    "raro",
+    "épico",
+    "lendário",
+    "mítico"
    ]
   },
   "phys_dmg": {

@@ -203,7 +203,7 @@
     "lendário",
     "mítico"
    ],
-   "dropa": true,
+   "dropa": false,
    "valorPorRaridade": null,
    "niveis": {
     "1": [
@@ -225,6 +225,59 @@
     "5": [
      16,
      20
+    ]
+   },
+   "tiersLiberadosPorItemLevel": {
+    "1": 1,
+    "2": 1,
+    "3": 101,
+    "4": 601,
+    "5": 1201
+   },
+   "pools": [],
+   "progressao": [],
+   "origem": "gamedata/itens/atributos.json",
+   "estado": "cadastrado e DESLIGADO do drop (dropa:false)"
+  },
+  {
+   "id": "phys_add",
+   "nome": "Dano físico adicional",
+   "tipo": "flat",
+   "unidade": "número",
+   "categoria": "ofensivo",
+   "prefixoOuSufixo": "não existe (o sistema não tem prefixo/sufixo)",
+   "peso": 60,
+   "nivelMinimoDoItem": 1,
+   "raridades": [
+    "comum",
+    "incomum",
+    "raro",
+    "épico",
+    "lendário",
+    "mítico"
+   ],
+   "dropa": true,
+   "valorPorRaridade": null,
+   "niveis": {
+    "1": [
+     1,
+     2
+    ],
+    "2": [
+     3,
+     4
+    ],
+    "3": [
+     5,
+     6
+    ],
+    "4": [
+     7,
+     8
+    ],
+    "5": [
+     9,
+     10
     ]
    },
    "tiersLiberadosPorItemLevel": {

@@ -8,6 +8,7 @@
 // dano do elemento. Unidades do catálogo, como o tooltip do client lê:
 // `critChance`/`critDamage`/`lifeLeech`/`manaLeech` em centésimos de % (1000 =
 // 10%); `protection` em % por elemento; `regen` por segundo.
+import * as ItensConfig from './itens/config.mjs';
 import * as R from './regras.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import * as Treino from './treino.mjs';
@@ -170,7 +171,12 @@ function calcularCombate(estado) {
   // O ataque de anel e amuleto (`base.attack` sorteado no drop) soma ao da arma, também em faixa.
   const joias = Object.entries(estado.equipment ?? {}).filter(([slot, p]) => p && SLOTS_DE_JOIA.has(slot));
   const [jMin, jMax] = joias.reduce(([a, b], [, p]) => { const [x, y] = faixaDoCampo(p, 'attack'); return [a + x, b + y]; }, [0, 0]);
-  const calcAtaque = (a) => Math.round((a ?? 0) + (af.atk_flat ?? 0) + prof.ataque);
+  // "Dano físico adicional" (`phys_add`): soma ao ataque MÍNIMO o valor e ao MÁXIMO `proporcaoDoMaximo` vezes ele (10–20 no topo do T5). O `atk_flat`
+  // (Attack, que não cai mais) segue valendo nas peças antigas: soma o mesmo número aos dois.
+  const razaoDoMaximo = ItensConfig.ATRIBUTOS.phys_add?.proporcaoDoMaximo ?? 2;
+  const addMin = af.phys_add ?? 0;
+  const addMax = addMin * razaoDoMaximo;
+  const calcAtaque = (a, adicional = (addMin + addMax) / 2) => Math.round((a ?? 0) + (af.atk_flat ?? 0) + adicional + prof.ataque);
   // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
   const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
   // A munição do tipo da arma (flecha no arco) soma o ataque dela, também em faixa.
@@ -181,8 +187,8 @@ function calcularCombate(estado) {
   const ataqueBase = !temAtaque && !w?.wand ? FORMULAS.danoFisico?.ataqueSemArma ?? 0 : 0;
   // O "Ataque" mostrado (e o `ataque` da ficha) segue sendo o da arma/munição (0 sem eles); o ataque BASE só entra na conta do dano (mín. e máx. do golpe).
   const ataque = calcAtaque((w?.attack ?? 0) + Math.round((jMin + jMax) / 2) + (daMunicao?.attack ?? 0));
-  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin + mMin) : ataque + ataqueBase;
-  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax + mMax) : ataque + ataqueBase;
+  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin + mMin, addMin) : ataque + ataqueBase;
+  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax + mMax, addMax) : ataque + ataqueBase;
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   // Wand e rod (dono, 02/10): o Magic Attack (fixo, × raridade) é o "ataque" da arma e o Magic Level a perícia — o MESMO cálculo do golpe físico.

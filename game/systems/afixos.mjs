@@ -189,7 +189,7 @@ export function viewDoAfixo(a, slot, itemId = null) {
     max: f.max,
     torto: slot ? ehTorto(slot, a.id, itemId) : false,
     rerrolls: rr,
-    texto: `${f.nome} +${a.value}${f.tipo === 'pct' ? '%' : ''}`,
+    texto: f.proporcaoDoMaximo ? `${f.nome} ${a.value}–${Math.round(a.value * f.proporcaoDoMaximo)}` : `${f.nome} +${a.value}${f.tipo === 'pct' ? '%' : ''}`,
   };
 }
 

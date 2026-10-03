@@ -1,6 +1,6 @@
 # Modificadores do Draevor — inventário da auditoria
 
-Gerado por `tools/auditar-modificadores.mjs` a partir da configuração real (55 modificadores ativos no catálogo, 18 legados). Relatório e achados: [relatorio.md](relatorio.md). Comparação com o PoE 1: [poe1.md](poe1.md). Dados completos: [inventario.json](inventario.json).
+Gerado por `tools/auditar-modificadores.mjs` a partir da configuração real (56 modificadores ativos no catálogo, 18 legados). Relatório e achados: [relatorio.md](relatorio.md). Comparação com o PoE 1: [poe1.md](poe1.md). Dados completos: [inventario.json](inventario.json).
 
 > **T1 = mais fraco, T5 = mais forte.** Não há prefixo/sufixo nem grupos de exclusão: um item recebe N mods distintos de um pool (N pela raridade).
 

@@ -32,12 +32,13 @@ function itensPorTipo() {
 
 // ------------------------------------------------------------------ a estrutura do sistema
 
-test('M1. estrutura: 55 modificadores ativos, 18 legados, todos nos pools, e NÃO existe prefixo/sufixo nem grupo de exclusão', () => {
-  assert.equal(ids.length, 55);
+test('M1. estrutura: 56 modificadores no catálogo (54 caem), 18 legados, todos os que caem estão nos pools, e NÃO existe prefixo/sufixo nem grupo de exclusão', () => {
+  assert.equal(ids.length, 56);
   assert.equal(Object.keys(C.LEGADO).length, 18);
-  assert.equal(Object.keys(Afixos.FICHAS).length, 73, 'catálogo derivado = ativos + legados');
+  assert.equal(Object.keys(Afixos.FICHAS).length, 74, 'catálogo derivado = catálogo + legados');
   const nosPools = new Set(Object.values(C.POOLS).flat());
-  for (const id of ids) assert.ok(nosPools.has(id), `${id} está fora de todo pool`);
+  for (const id of ids) assert.ok(nosPools.has(id) || C.ATRIBUTOS[id].dropa === false, `${id} está fora de todo pool`);
+  assert.deepEqual(ids.filter((id) => C.ATRIBUTOS[id].dropa === false).sort(), ['atk_flat', 'dmg_vs_elite']);
   for (const id of nosPools) assert.ok(C.ATRIBUTOS[id], `${id} está num pool mas não existe em atributos.json`);
   for (const a of Object.values(C.ATRIBUTOS)) for (const campo of ['prefixo', 'sufixo', 'grupo', 'tags']) assert.equal(a[campo], undefined, `campo ${campo} não existe no modelo`);
   assert.equal(C.NIVEL_MAXIMO, 5);
@@ -194,7 +195,7 @@ function vestir(id, valor, nivel = 3) {
   return e;
 }
 
-test('A1. valor aplicado = valor guardado = valor mostrado (servidor): para os 55 mods, Afixos.soma e viewDoAfixo repetem exatamente o valor da peça', () => {
+test('A1. valor aplicado = valor guardado = valor mostrado (servidor): para os 56 mods, Afixos.soma e viewDoAfixo repetem exatamente o valor da peça', () => {
   const divergencias = [];
   for (const [id, a] of Object.entries(C.ATRIBUTOS)) {
     const valor = a.valorPorRaridade ? Object.values(a.valorPorRaridade)[0] : Gerar.valorNaFaixa(id, 3, 0.5);
@@ -209,7 +210,7 @@ test('A1. valor aplicado = valor guardado = valor mostrado (servidor): para os 5
   assert.deepEqual(divergencias, []);
 });
 
-test('A2. cobertura de efeito: toda sonda de efeito existe no teste de efeitos (atributos-efeito.test.mjs cita cada um dos 55 mods)', () => {
+test('A2. cobertura de efeito: toda sonda de efeito existe no teste de efeitos (atributos-efeito.test.mjs cita cada um dos 56 mods)', () => {
   const fonte = readFileSync(new URL('./atributos-efeito.test.mjs', import.meta.url), 'utf8');
   const sem = ids.filter((id) => !new RegExp(`\\b${id}\\b`).test(fonte));
   assert.deepEqual(sem, [], 'mods sem sonda de efeito');
@@ -307,4 +308,57 @@ test('P3. interface: o catálogo que o cliente recebe traz tipo, faixas e nome d
   assert.match(tooltip, /getCatalogo\(\)\?\.afixos/);
   const backend = readFileSync(new URL('../backend/index.mjs', import.meta.url), 'utf8');
   assert.doesNotMatch(backend, /atributos\.json|itens\/atributos/, 'nenhuma rota edita atributos.json');
+});
+
+// ------------------------------------------------------------------ Dano físico adicional (substitui o Attack no drop)
+
+test('F1. Dano físico adicional: o Attack (atk_flat) não cai mais e o novo mod cai nos mesmos tipos de item; topo do T5 = 10–20', () => {
+  assert.equal(C.ATRIBUTOS.atk_flat.dropa, false);
+  for (const lista of Object.values(C.POOLS)) assert.ok(!lista.includes('atk_flat'), 'atk_flat saiu de todos os pools');
+  assert.deepEqual(poolsDoAdd('phys_add'), ['arma_melee', 'arma_distancia', 'municao', 'aljava', 'anel', 'amuleto'], 'os mesmos pools onde o Attack caía');
+  const a = C.ATRIBUTOS.phys_add;
+  assert.equal(a.nome, 'Dano físico adicional');
+  assert.equal(a.proporcaoDoMaximo, 2);
+  assert.deepEqual(a.niveis['5'], [9, 10]);
+  assert.equal(Math.max(...Object.values(a.niveis).map((n) => n[1])) * a.proporcaoDoMaximo, 20, 'o máximo possível é 20');
+  assert.deepEqual(analisarProgressao('phys_add'), [], 'progressão limpa: faixas disjuntas e crescentes');
+  const rng = lcg(21);
+  const arma = itensPorTipo().arma_melee[0];
+  const vistos = new Set();
+  for (let i = 0; i < 4000; i++) for (const x of Gerar.gerarItem({ itemId: arma, itemLevel: 2000, raridade: 'mítico', rng }).af ?? []) { assert.notEqual(x.id, 'atk_flat'); if (x.id === 'phys_add') vistos.add(x.value); }
+  assert.ok(vistos.has(10) && vistos.has(1) && Math.max(...vistos) === 10 && Math.min(...vistos) === 1, `valores sorteados ${[...vistos].sort((p, q) => p - q)}`);
+});
+
+test('F2. o efeito: o valor soma ao ataque MÍNIMO e o dobro ao MÁXIMO; o Attack antigo segue somando igual nos dois (peça antiga)', () => {
+  const arma = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'jagged sword')?.id ?? Object.values(ITEM_CATALOG).find((i) => i.slot === 'weapon' && i.attack > 0 && !i.wand)?.id);
+  const medir = (af) => {
+    const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
+    // Peça de drop de verdade: com a FAIXA de ataque da base (piso–teto), que é onde o mínimo e o máximo do mod entram.
+    e.equipment.weapon = { id: arma, count: 1, base: { attack: [18, 24] }, af };
+    Afixos.sincronizarMaximos(e);
+    Ficha.invalidar(e);
+    return { f: Ficha.combate(e) };
+  };
+  const base = medir([]);
+  const novo = medir([{ id: 'phys_add', nivel: 5, value: 10 }]);
+  const antigo = medir([{ id: 'atk_flat', nivel: 5, value: 10 }]);
+  const dano = (r) => [r.f.damage?.min, r.f.damage?.max];
+  const [bMin, bMax] = dano(base);
+  const [nMin, nMax] = dano(novo);
+  const [aMin, aMax] = dano(antigo);
+  assert.ok(nMin > bMin && nMax > bMax, `o dano sobe: ${bMin}–${bMax} → ${nMin}–${nMax}`);
+  // Pela mesma conta nas duas pontas (ataque × multiplicador da perícia): o mínimo sobe 10 de ataque e o máximo 20.
+  const mult = (bMax - bMin) / (24 - 18);
+  assert.ok(Math.abs((nMin - bMin) - 10 * mult) <= 1.5, `mínimo +10 de ataque: ${nMin - bMin} contra ${10 * mult}`);
+  assert.ok(Math.abs((nMax - bMax) - 20 * mult) <= 1.5, `máximo +20 de ataque: ${nMax - bMax} contra ${20 * mult}`);
+  assert.ok(Math.abs((aMax - bMax) - 10 * mult) <= 1.5 && Math.abs((aMin - bMin) - 10 * mult) <= 1.5, 'o Attack antigo sobe 10 nas duas pontas');
+});
+
+test('F3. texto: "Dano físico adicional 10–20" no servidor e no balão do cliente; o valor guardado continua um número só', () => {
+  const v = Afixos.viewDoAfixo({ id: 'phys_add', nivel: 5, value: 10 }, 'weapon');
+  assert.equal(v.texto, 'Dano físico adicional 10–20');
+  assert.equal(v.valor, 10);
+  assert.equal(Afixos.FICHAS.phys_add.proporcaoDoMaximo, 2);
+  const tooltip = readFileSync(new URL('../frontend/client/src/tooltip.mjs', import.meta.url), 'utf8');
+  assert.match(tooltip, /ficha\?\.proporcaoDoMaximo\s*\?\s*`\$\{posto\.value\}–\$\{Math\.round\(posto\.value \* ficha\.proporcaoDoMaximo\)\}`/);
 });

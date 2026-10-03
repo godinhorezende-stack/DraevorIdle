@@ -4,9 +4,9 @@ Escopo: **somente leitura**. Nenhum valor, tier, regra, item, banco ou economia 
 
 ## A. Resumo do sistema atual
 
-- **Nome e modelo.** O jogo chama de "atributos"/"adds" (código: `afixos`). Existem **55 modificadores ativos** e **18 legados** (que não caem mais). **Não existe prefixo nem sufixo, nem grupo de modificadores, nem tags**: uma peça recebe N modificadores **distintos** de um pool do tipo dela, e a única regra de exclusão é "não repetir o mesmo id".
-- **Cadastro (fonte única):** `gamedata/itens/atributos.json` (nome, tipo `flat`/`pct`, categoria, peso, faixa de cada tier, `nivelMinimo`, raridades permitidas, `dropa`, `valorPorRaridade`). Pools por tipo de item: `pools.json`. Tiers por Item Level, pesos e viés da raridade: `tiers.json`. Quantidade por raridade: `raridades.json`. Tudo carregado e validado no boot por `systems/itens/config.mjs`. O catálogo derivado `FICHAS` (73 = 55 + 18 legados) é montado a partir disso e é o que o servidor e o cliente leem — **não há regra duplicada em código**: o teste M3 confirma que nome, tipo, mínimo, máximo e as faixas do catálogo são idênticos às do arquivo.
-- **Tiers.** São 5 (T1–T5) para todos os 55. **T1 é o MAIS FRACO e T5 o MAIS FORTE** (regra do dono, escrita em `atributos.json`/`tiers.json`) — o inverso do PoE 1. O Item Level libera os tiers: 1–100 → T1–T2; 101–600 → T1–T3; 601–1200 → T1–T4; acima de 1200 → T1–T5 (`tiers.json`). Entre os liberados, o sorteio é `peso × viés^(tier−1)` (pesos 100/60/30/12/4; viés da raridade 1 a 2,5; amuleto ×1,2; boss de ato +10% no Item Level). Cada add também tem um Item Level mínimo próprio (1, 20, 101 ou 301).
+- **Nome e modelo.** O jogo chama de "atributos"/"adds" (código: `afixos`). Existem **56 modificadores cadastrados (54 caem)** e **18 legados** (que não caem mais). **Não existe prefixo nem sufixo, nem grupo de modificadores, nem tags**: uma peça recebe N modificadores **distintos** de um pool do tipo dela, e a única regra de exclusão é "não repetir o mesmo id".
+- **Cadastro (fonte única):** `gamedata/itens/atributos.json` (nome, tipo `flat`/`pct`, categoria, peso, faixa de cada tier, `nivelMinimo`, raridades permitidas, `dropa`, `valorPorRaridade`). Pools por tipo de item: `pools.json`. Tiers por Item Level, pesos e viés da raridade: `tiers.json`. Quantidade por raridade: `raridades.json`. Tudo carregado e validado no boot por `systems/itens/config.mjs`. O catálogo derivado `FICHAS` (74 = 56 + 18 legados) é montado a partir disso e é o que o servidor e o cliente leem — **não há regra duplicada em código**: o teste M3 confirma que nome, tipo, mínimo, máximo e as faixas do catálogo são idênticos às do arquivo.
+- **Tiers.** São 5 (T1–T5) para todos os 56. **T1 é o MAIS FRACO e T5 o MAIS FORTE** (regra do dono, escrita em `atributos.json`/`tiers.json`) — o inverso do PoE 1. O Item Level libera os tiers: 1–100 → T1–T2; 101–600 → T1–T3; 601–1200 → T1–T4; acima de 1200 → T1–T5 (`tiers.json`). Entre os liberados, o sorteio é `peso × viés^(tier−1)` (pesos 100/60/30/12/4; viés da raridade 1 a 2,5; amuleto ×1,2; boss de ato +10% no Item Level). Cada add também tem um Item Level mínimo próprio (1, 20, 101 ou 301).
 - **Geração** (`systems/itens/gerar.mjs`, o único lugar com sorte de item): raridade → Item Level → base → pool filtrado (`poolDe`: `dropa`, `nivelMinimo`, raridade e, fora anel/amuleto, defesa que a base não tem) → quantidade pela raridade → sorteio sem repetição pelo peso → tier → valor dentro da faixa do tier. Quantidades: comum 0; incomum 1–2; raro 2–3; épico 3–4; lendário 4–5; mítico 5–6.
 - **Aplicação.** `Afixos.somaDeItens` soma o valor guardado de cada mod das peças **vestidas** (+ árvore de passivas + altares); a ficha, os requisitos e a comparação leem essa soma. O valor é o da peça, sem escala.
 - **Persistência.** A peça é JSON dentro do estado do personagem (`af: [{ id, nivel, value, rr? }]`, `raridade`, `ilvl`…); `camposDaPeca` leva tudo junto ao mover.
@@ -16,12 +16,12 @@ Escopo: **somente leitura**. Nenhum valor, tier, regra, item, banco ou economia 
 
 Em páginas por categoria (cada uma com a tabela T1–T5 real, Item Level mínimo, peso, raridades, pools e Item Level a partir do qual cada tier é possível): [01 atributos](01-atributo.md) · [02 ofensivos](02-ofensivo.md) · [03 defensivos](03-defensivo.md) · [04 resistências](04-resistencia.md) · [05 regeneração](05-vida.md) · [06 utilitários](06-utilidade.md) · [07 avançados](07-avancado.md) · [08 legados](08-legado.md) · [compatibilidade](09-compatibilidade.md) · [progressão](10-progressao-dos-tiers.md).
 
-Contagem por categoria: atributos principais 3 · ofensivos 18 · defensivos 11 · resistências 7 · regeneração 4 · utilitários 4 · avançados 8.
+Contagem por categoria: atributos principais 3 · ofensivos 19 · defensivos 11 · resistências 7 · regeneração 4 · utilitários 4 · avançados 8.
 
 ### Cobertura das categorias pedidas (só o que existe)
 | Pedido | No Draevor |
 |---|---|
-| Dano físico adicional / % físico | `atk_flat` (número) / `phys_dmg` (%) |
+| Dano físico adicional / % físico | `phys_add` ("Dano físico adicional": soma um mínimo e um máximo ao ataque, 10–20 no topo do T5; substituiu o `atk_flat`/Attack, que ficou só nas peças antigas) / `phys_dmg` (%) |
 | Dano elemental adicional (número) | **não existe** — só % por elemento |
 | Fogo, gelo, elétrico, veneno/terra, sagrado, morte | `fire_dmg`, `ice_dmg`, `energy_dmg`, `earth_dmg`, `holy_dmg`, `death_dmg` (%) |
 | Caos | **não existe** (os elementos do jogo são physical, fire, ice, earth, energy, death, holy) |
@@ -40,9 +40,9 @@ Contagem por categoria: atributos principais 3 · ofensivos 18 · defensivos 11 
 | Suportes | **não existe** |
 
 ## C. Modificadores incompletos
-- Sem tiers / com tier faltando / sem faixa / sem nível mínimo: **nenhum** — os 55 têm T1–T5, faixa e `nivelMinimo` (teste M2/M3/M5).
+- Sem tiers / com tier faltando / sem faixa / sem nível mínimo: **nenhum** — os 56 têm T1–T5, faixa e `nivelMinimo` (teste M2/M3/M5).
 - Sem compatibilidade definida ou fora de todo pool: **nenhum** (M1).
-- **Cadastrado e desligado do drop:** `dmg_vs_elite` (`dropa:false`; fica à espera de monstros Elite). Está nos pools mas nunca cai (G4 prova 0 em 20 mil peças míticas).
+- **Cadastrados e desligados do drop (`dropa:false`):** `dmg_vs_elite` (à espera de monstros Elite) e `atk_flat` (Attack, substituído pelo Dano físico adicional em 03/10; segue valendo nas peças antigas). Está nos pools mas nunca cai (G4 prova 0 em 20 mil peças míticas).
 - **Sem faixa por tier de verdade:** `gem_level` — o valor vem da **raridade** (`valorPorRaridade`: incomum/raro +1, épico/lendário/mítico +2); as cinco faixas (1, 1, 1, 2, 2) são só informativas.
 - Legados (18): fora do drop e convertidos ao carregar a peça (`renomearAdds`); teste P2 prova a conversão preservando tier e posição na faixa.
 
@@ -51,7 +51,7 @@ Contagem por categoria: atributos principais 3 · ofensivos 18 · defensivos 11 
 - Geração (G1: ≈ 8 mil peças semeadas em 11 tipos × 10 Item Levels × 6 raridades): 0 violações de id repetido, pool do tipo, `dropa`, `nivelMinimo`, raridade, tier liberado pelo Item Level, valor dentro da faixa do tier, valor inteiro nos `flat`, quantidade da raridade.
 - Probabilidades (G2/G3): o tier sorteado bate com a fórmula em < 1 ponto percentual (100 mil sorteios por caso) e a quantidade por raridade bate com a tabela.
 - Defesa da base (G6): `armor_flat`/`armour_pct` nunca saem em peça sem armadura.
-- Aplicação (A1): para os 55, o valor guardado = o aplicado em `Afixos.soma` = o mostrado em `viewDoAfixo` (inclusive unidade `%`). Efeito real no combate: as 57 sondas de `atributos-efeito.test.mjs` passam e A2 confirma que cada um dos 55 mods tem a sua.
+- Aplicação (A1): para os 56, o valor guardado = o aplicado em `Afixos.soma` = o mostrado em `viewDoAfixo` (inclusive unidade `%`). Efeito real no combate: as 57 sondas de `atributos-efeito.test.mjs` passam e A2 confirma que cada um dos 56 mods tem a sua.
 - Persistência (P1/P2): equipar, desequipar, trocar e gravar/ler no banco (mochila, equipamento, depósito) mantêm os mods idênticos, sem duplicar. **Não testado:** troca entre jogadores, mercado, reinício real do servidor (o estado é o mesmo JSON, mas não rodei esses fluxos), e o tooltip num navegador.
 
 **Pontos de atenção técnicos (não são erros hoje):**
