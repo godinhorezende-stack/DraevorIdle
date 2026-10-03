@@ -248,3 +248,15 @@ test('U1. cliente: o botão do portal, o marcador roxo, o texto "sem espera" e n
   assert.match(sessao, /String\(m\?\.id\) === 'portal-do-boss'/);
   assert.match(sessao, /Bosses\.limparRecargasDeAto\(this\.estado\)/, 'a recarga antiga é zerada no login');
 });
+
+test('U2. cliente: o boss final mora dentro do cartão da última fase (nunca um 13º cartão), sem texto de recarga', async () => {
+  const { readFileSync } = await import('node:fs');
+  const ler = (r) => readFileSync(new URL(`../${r}`, import.meta.url), 'utf8');
+  const panels = ler('frontend/client/src/panels.mjs');
+  assert.match(panels, /i === fases\.length - 1 \? escolhida\.bosses\.find\(\(x\) => x\.ato === ato\)/);
+  assert.match(panels, /card\.append\(secaoDoBossDoAto\(/);
+  assert.doesNotMatch(panels, /campanha-boss\$\{b\.liberado/, 'sem cartão separado para o boss');
+  assert.doesNotMatch(panels, /com a recarga dele/);
+  assert.doesNotMatch(ler('frontend/client/src/world.mjs'), /com a recarga dele/);
+  assert.match(ler('frontend/client/style.css'), /\.campanha-boss-secao/);
+});

@@ -27870,3 +27870,28 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
 /* Arrastando uma peça: o slot dela se destaca e os outros se apagam (só antecipação — o servidor recusa o slot errado). */
 .slot.slot-compativel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .slot.slot-incompativel { opacity: 0.4; cursor: not-allowed; }
+
+/*
+ * ---- Boss final do ato dentro do cartão da última fase ----
+ * Fase 12 → portal → boss: uma seção embaixo do cartão, separada por divisória. Faz parte do mesmo item da
+ * grade, então nunca abre uma linha só dele. Sem largura fixa: empilha sozinha no celular.
+ */
+.hunt-card.campanha-fase .campanha-boss-secao {
+  align-self: stretch;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--copper);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  text-align: center;
+}
+.campanha-boss-secao h4 { margin: 0; font-size: 14px; color: #e7efef; overflow-wrap: anywhere; }
+.campanha-boss-elo { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--copper); }
+.campanha-boss-secao.bloqueado { opacity: .55; }
+.campanha-boss-secao.aberto .campanha-boss-elo { color: var(--accent); }
+.campanha-boss-secao.vencido .campanha-boss-elo { color: #e0a84a; }
+.campanha-boss-secao.clicavel { cursor: pointer; }
+.campanha-boss-secao.clicavel:hover { filter: brightness(1.2); }
