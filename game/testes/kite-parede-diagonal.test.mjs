@@ -272,3 +272,20 @@ test('R8. kite contínuo com monstros que PERSEGUEM de verdade (1 e 4 trolls, 5 
     assert.ok(Diag.resumo(h).motivos !== undefined);
   }
 });
+
+test('R9. caçada gravada com o estado do kite de uma versão ANTERIOR (ou um JSON com -Infinity virado null) não quebra o tique: o estado recomeça limpo', () => {
+  const formatosAntigos = [
+    { semGanho: 2, d: 1, uid: 123, paradoAte: 0, passou: true }, // a versão que contava "sem ganho" por tique
+    { passos: ['1,1', '2,1'], x: 2, y: 1, paradoAte: 0, nivel: 0, ultimaPausa: null }, // o formato de agora depois de passar pelo JSON (-Infinity vira null)
+    { passos: 'lixo', paradoAte: 'x' },
+    'texto solto',
+    [],
+  ];
+  for (const antigo of formatosAntigos) {
+    const { e, alvo } = naGrade(['..........', '.P.M......', '..........'], { vocacao: 'sorcerer', distancia: 4 });
+    alvo.x = e.hunt.pos.x + 2;
+    e.hunt.kite = JSON.parse(JSON.stringify(antigo));
+    assert.doesNotThrow(() => rodar(e, 12), `quebrou com ${JSON.stringify(antigo)}`);
+    assert.ok(Array.isArray(e.hunt.kite.passos), 'o estado voltou ao formato de agora');
+  }
+});
