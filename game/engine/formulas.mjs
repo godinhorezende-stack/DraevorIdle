@@ -202,12 +202,19 @@ export function baseSpeed(level) {
 
 export const SKILL_BASE = 10;
 const SKILL_TRIES_BASE = 50;
+/**
+ * A taxa de subida (tentativas × taxa por nível) das SKILLS DE ATAQUE — a mesma para toda vocação: Melee, Distance e Magic Level (este em mana,
+ * `MAGIC_TRIES_BASE × taxa^ML`, sem joelho). Antes cada vocação tinha a sua (1,1 na skill dela e 1,4 a 3,0 nas outras): quem usava uma arma de outra
+ * família não evoluía a skill dela nunca. Para mudar o ritmo de todas de uma vez, é só esta taxa.
+ */
+export const TAXA_DAS_SKILLS_DE_ATAQUE = { melee: 1.1, distance: 1.1, magic: 1.1 };
 const MAGIC_TRIES_BASE = 1600;
 
 /** Tentativas necessárias para ir de `skill` para `skill + 1`. */
 export function triesForSkill(skill, value, vocationId) {
   const vocation = VOCATIONS[vocationId] ?? VOCATIONS.none;
-  const rate = vocation.rates[SKILL_GROUP[skill]] ?? 1.5;
+  // Melee e Distance: UMA curva para todas as vocações (dono, 03/10: "a dificuldade de subir todas as skills de ataque igual"); o resto (shielding, pesca) segue a vocação.
+  const rate = TAXA_DAS_SKILLS_DE_ATAQUE[SKILL_GROUP[skill]] ?? vocation.rates[SKILL_GROUP[skill]] ?? 1.5;
   return Math.round(SKILL_TRIES_BASE * rate ** (value - SKILL_BASE));
 }
 
@@ -239,7 +246,8 @@ export function triesForSkill(skill, value, vocationId) {
  * O KNIGHT saiu desta lista: a curva dele é a da base (3.0) do primeiro nível.
  * Ver o bloco do `MAGIC_JOELHO`, logo abaixo, para o porquê.
  */
-const MAGIC_IDLE = { sorcerer: 1.1, druid: 1.1, paladin: 1.2, monk: 1.2, none: 1.28 };
+// Magic Level: a mesma taxa de todas as skills de ataque, para toda vocação (o knight e o 'none' também; ver `TAXA_DAS_SKILLS_DE_ATAQUE`).
+const MAGIC_IDLE = { sorcerer: 1.1, druid: 1.1, paladin: 1.1, monk: 1.1, knight: 1.1, none: 1.1 };
 
 /*
  * ---- O JOELHO: a curva endurece a partir de um magic level ----
@@ -347,15 +355,13 @@ const MAGIC_IDLE = { sorcerer: 1.1, druid: 1.1, paladin: 1.2, monk: 1.2, none: 1
  * 3.0 — o maior da tabela. Na base o knight realmente não sobe magic level, e é
  * a única vocação em que a curva crua já é o comportamento certo.
  */
-const MAGIC_JOELHO = {
-  paladin: { ml: 45, mult: 1.4 },
-  monk: { ml: 45, mult: 1.3 },
-};
+// Sem joelho (dono, 03/10): o Magic Level de Paladin e Monk sobe na mesma curva das outras skills de ataque.
+const MAGIC_JOELHO = {};
 
 /** Mana que precisa ser gasta para subir do magic level atual. */
 export function manaForMagicLevel(value, vocationId) {
   const vocation = VOCATIONS[vocationId] ?? VOCATIONS.none;
-  const multiplicador = MAGIC_IDLE[vocationId] ?? vocation.rates.magic;
+  const multiplicador = TAXA_DAS_SKILLS_DE_ATAQUE.magic;
   const joelho = MAGIC_JOELHO[vocationId];
   if (joelho && value >= joelho.ml) {
     return Math.round(MAGIC_TRIES_BASE * multiplicador ** joelho.ml * joelho.mult ** (value - joelho.ml));
