@@ -3,6 +3,7 @@
 import * as Conteudo from './conteudo.mjs';
 import * as Biblioteca from './biblioteca.mjs';
 import * as Atos from './atos.mjs';
+import * as Hunts from './hunts.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -30,6 +31,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'biblioteca/tooltip') {
       const t = Biblioteca.dadosDoTooltip(url.searchParams.get('id'), { itemLevel: url.searchParams.get('itemLevel'), semente: url.searchParams.get('semente') });
       return t ? json(res, 200, t) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
+    }
+    // Painel por hunt (somente leitura): mapa, monstros, distribuição, dificuldade e drops esperados.
+    if (rota === 'hunts') return json(res, 200, { hunts: Hunts.listar() }), true;
+    if (rota === 'hunts/painel') {
+      const p = Hunts.painel(url.searchParams.get('id'), url.searchParams.get('dif') ?? 'facil');
+      return p ? json(res, 200, p) : json(res, 404, { ok: false, erros: ['Hunt não encontrada.'] }), true;
     }
     // Atos do editor (rascunhos + legados somente leitura).
     if (rota === 'atos-editor') return json(res, 200, { atos: Atos.listar(), ...Atos.opcoes() }), true;

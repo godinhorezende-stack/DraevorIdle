@@ -712,5 +712,11 @@ async function iniciar() {
   selecionarFerramenta('spawn');
   await carregarListaMapas();
   novoMapa(Number($('mapaW').value), Number($('mapaH').value));
+  // `/editor?mapa=<id>` (o painel de hunts do /editor/conteudo): já abre esse mapa.
+  const pedido = new URLSearchParams(location.search).get('mapa');
+  if (pedido && [...$('listaMapas').options].some((o) => o.value === pedido)) {
+    $('listaMapas').value = pedido;
+    $('btCarregar').click();
+  }
 }
 iniciar();

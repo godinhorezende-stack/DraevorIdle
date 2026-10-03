@@ -12,6 +12,8 @@ import * as Campanha from '../systems/campanha.mjs';
 import * as Recompensas from '../systems/encontros/recompensas.mjs';
 import { CONFIG as CONFIG_DE_ENCONTROS } from '../systems/encontros/config.mjs';
 import { valorDaInstancia } from '../systems/encontros/economia.mjs';
+import { desenhoDoItem } from './biblioteca.mjs';
+import { precoNpc } from '../systems/hunt/rentabilidade.mjs';
 
 export const CAMINHOS = { atos: join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'atos') };
 const HUNTS = () => new Set([...CATALOGO.hunts, ...CATALOGO.vips, ...CATALOGO.especiais, ...CATALOGO.divinas].map((h) => h.id));
@@ -63,8 +65,8 @@ export function previa(rec, { origem = 'fase' } = {}) {
   const rolagens = r.rolagens ?? 1;
   const nome = (id) => ITEM_CATALOG[id]?.name ?? null;
   const linhas = [
-    ...Recompensas.dropsDe(r).map((d) => ({ tipo: 'drop', item: d.id, nome: nome(d.id), chancePct: Number((d.chance * 100).toFixed(4)), esperadoPorExecucao: Number((d.chance * rolagens).toFixed(4)), origem: `${origem} (loot)`, condicao: 'sempre' })),
-    ...(r.primeiraConclusao?.itens ?? []).map((i) => ({ tipo: 'primeira vez', item: i.id, nome: nome(i.id), quantidade: i.count, chancePct: 100, origem: `${origem} (1ª vez, uma por personagem)`, condicao: 'só na primeira' })),
+    ...Recompensas.dropsDe(r).map((d) => ({ tipo: 'drop', item: d.id, nome: nome(d.id), desenho: ITEM_CATALOG[d.id] ? desenhoDoItem(ITEM_CATALOG[d.id]) : null, valorPorExecucao: Math.round(d.chance * rolagens * precoNpc(d.id)), chancePct: Number((d.chance * 100).toFixed(4)), esperadoPorExecucao: Number((d.chance * rolagens).toFixed(4)), origem: `${origem} (loot)`, condicao: 'sempre' })),
+    ...(r.primeiraConclusao?.itens ?? []).map((i) => ({ tipo: 'primeira vez', item: i.id, nome: nome(i.id), desenho: ITEM_CATALOG[i.id] ? desenhoDoItem(ITEM_CATALOG[i.id]) : null, quantidade: i.count, chancePct: 100, origem: `${origem} (1ª vez, uma por personagem)`, condicao: 'só na primeira' })),
   ];
   if (r.primeiraConclusao?.gold) linhas.push({ tipo: 'primeira vez', nome: 'ouro', quantidade: r.primeiraConclusao.gold, chancePct: 100, origem: `${origem} (1ª vez)`, condicao: 'só na primeira' });
   if (r.primeiraConclusao?.exp) linhas.push({ tipo: 'primeira vez', nome: 'experiência', quantidade: r.primeiraConclusao.exp, chancePct: 100, origem: `${origem} (1ª vez)`, condicao: 'só na primeira' });

@@ -7,6 +7,8 @@ import { confirmar, pedirTexto, descartarAlteracoes } from './editor-ui.mjs';
 /** O ID do ato: a tela só exige que não fique vazio — o formato é o servidor quem confere. */
 const obrigatorio = (v) => (v ? null : 'Digite um ID.');
 
+import { tabelaDeDrops } from './editor-drops.mjs';
+
 const NS = 'http://www.w3.org/2000/svg';
 const L = 920;
 const A = 520;
@@ -311,7 +313,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       E.somenteLeitura ? null : el('div', { class: 'linha' }, el('input', { placeholder: 'buscar item (nome ou ID) para adicionar', value: R.q, onchange: (e) => buscar(e.target.value) })),
       R.itens.length ? el('div', { class: 'linhas' }, R.itens.map((it) => el('div', { class: 'linha' }, el('span', {}, `${it.id} ${it.name}`), el('button', { onclick: () => mudarRec((x) => (x.drops ??= []).push({ id: it.id, chance: 1 })) }, '+ drop'), el('button', { onclick: () => mudarRec((x) => garantirPc(x).itens.push({ id: it.id, count: 1 })) }, '+ 1ª vez')))) : null,
       R.problemas.length ? el('ul', { class: 'problemas' }, R.problemas.map((p) => el('li', { class: p.nivel }, `${p.nivel === 'erro' ? '✖' : '⚠'} ${p.mensagem}`))) : (R.previa ? el('div', { class: 'selo ok' }, 'Sem alertas') : null),
-      R.previa ? el('table', { class: 'bib-sub' }, el('thead', {}, el('tr', {}, ['Item', 'Qtd', 'Chance', 'Esperado/exec.', 'Origem', 'Condição'].map((h) => el('th', {}, h)))), el('tbody', {}, R.previa.linhas.map((l) => el('tr', {}, el('td', {}, l.nome ?? l.item ?? '—'), el('td', {}, l.quantidade ?? '—'), el('td', {}, `${l.chancePct}%`), el('td', {}, l.esperadoPorExecucao ?? '—'), el('td', {}, l.origem), el('td', {}, l.condicao))))) : null,
+      R.previa ? tabelaDeDrops(R.previa.linhas.map((l) => ({ id: l.item, nome: l.quantidade != null ? `${l.nome ?? l.item ?? ''} × ${l.quantidade.toLocaleString('pt-BR')}` : l.nome, desenho: l.desenho, chancePct: l.chancePct, esperado: l.esperadoPorExecucao ?? (l.tipo === 'primeira vez' ? null : null), valor: l.valorPorExecucao ?? null, origem: `${l.origem} · ${l.condicao}` })), { rotuloDoEsperado: 'Esperado / execução', ordem: 'chancePct', vazio: 'Sem linhas.' }) : null,
       R.previa ? el('div', { class: 'dica' }, `Valor esperado por execução (ouro de NPC, sem a 1ª vez): ${R.previa.valorEsperadoPorExecucao.toLocaleString('pt-BR')}`) : null,
       el('div', { class: 'linha' }, el('button', { onclick: async () => { R.simulacao = { pendente: true }; await atualizarRc(k, origem, huntId); } }, 'Simular 10.000 execuções'), E.somenteLeitura ? null : el('button', { class: 'perigo', onclick: () => { gravarRec(k, null); R.previa = null; R.simulacao = null; mudou(); } }, 'Remover recompensa')),
       R.simulacao?.itens ? el('div', {}, el('div', { class: 'dica' }, R.simulacao.aviso), el('table', { class: 'bib-sub' }, el('tbody', {}, R.simulacao.itens.map((i) => el('tr', {}, el('td', {}, i.nome ?? i.item), el('td', {}, `${i.quedasPorExecucao} quedas/exec.`), el('td', {}, `${i.execucoesComQueda}% das execuções com queda`), el('td', {}, i.execucoesParaUmaQueda ? `1 queda a cada ~${i.execucoesParaUmaQueda} exec.` : 'nunca caiu')))))) : null);
