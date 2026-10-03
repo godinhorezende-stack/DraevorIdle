@@ -576,7 +576,7 @@ export function extrasDoRetrato(s) {
       .filter((o) => o.estado.hunt.summon)
       .map((o) => {
         const f = o.estado.hunt.summon;
-        return { uid: `${f.uid}:${nomeDe(o)}`, x: f.x, y: f.y, dir: f.dir, look: f.look, name: f.name, nivel: f.nivel, moveMs: 250 };
+        return { uid: `${f.uid}:${nomeDe(o)}`, x: f.x, y: f.y, dir: f.dir, look: f.look, name: f.name, nivel: f.nivel, moveMs: f.moveMs ?? 250 };
       }),
   };
   // Sempre presente (null sem party): o quadro em delta (`game/websocket/quadro.mjs`)
