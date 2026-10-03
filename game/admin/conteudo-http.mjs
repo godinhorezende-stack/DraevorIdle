@@ -1,6 +1,7 @@
 // As rotas HTTP do editor de conteúdo (`/api/mapas/_conteudo/…`). O prefixo é o do editor de mapas de propósito: o nginx
 // de produção já tranca `/api/mapas` ao público (só túnel SSH), então nenhuma rota de ESCRITA nova fica exposta.
 import * as Conteudo from './conteudo.mjs';
+import * as Biblioteca from './biblioteca.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -17,6 +18,14 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     return dados;
   };
   if (req.method === 'GET') {
+    // A biblioteca (somente leitura): resumo por categoria, lista filtrada, detalhe e auditoria de referências.
+    if (rota === 'biblioteca') return json(res, 200, { categorias: Biblioteca.resumo() }), true;
+    if (rota === 'biblioteca/lista') return json(res, 200, Biblioteca.listar(Object.fromEntries(url.searchParams))), true;
+    if (rota === 'biblioteca/detalhe') {
+      const d = Biblioteca.detalhe(url.searchParams.get('categoria'), url.searchParams.get('id'));
+      return d ? json(res, 200, d) : json(res, 404, { ok: false, erros: ['Conteúdo não encontrado.'] }), true;
+    }
+    if (rota === 'biblioteca/auditoria') return json(res, 200, { problemas: Biblioteca.auditarReferencias() }), true;
     if (rota === 'opcoes') return json(res, 200, Conteudo.opcoes()), true;
     if (rota === 'fases') return json(res, 200, { fases: Conteudo.listarFases() }), true;
     if (rota === 'auditoria') return json(res, 200, Conteudo.auditar()), true;
