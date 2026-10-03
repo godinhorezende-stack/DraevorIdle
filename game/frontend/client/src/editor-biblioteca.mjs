@@ -4,6 +4,7 @@
 // Também mora aqui a BUSCA GLOBAL (Ctrl+K), que procura em todas as categorias de uma vez.
 import { el, icone, msg, copiar, botaoCopiar, cabecalho } from './editor-ui.mjs';
 import { retrato, previa } from './editor-sprites.mjs';
+import { fichaDoMonstro } from './editor-fichas.mjs';
 
 const POR_PAGINA = 60;
 const NAO = 'não cadastrado';
@@ -32,11 +33,13 @@ const QUANTIDADES = new Set(['hp', 'exp', 'compra', 'venda', 'tamanhoBytes', 'go
 
 /**
  * Cria a Biblioteca. `api` é a da página (descarta leituras de uma tela que já saiu); `raiz()` é onde desenhar;
- * `irPara(aba, id)` leva a outra ferramenta (Atos, Fases, Bosses únicos) a partir do "onde é usado".
+ * `irPara(aba, id, resto)` leva a outra ferramenta (Atos, Fases, Bosses únicos) a partir do "onde é usado".
+ * `categoriaFixa` + `rota`: a mesma tela presa numa categoria (a tela Mobs é a Biblioteca só de monstros, em `#mobs`).
  */
-export function criarBiblioteca({ api, raiz, irPara }) {
+export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota = 'biblioteca', titulo = 'Biblioteca', descricao = null }) {
+  const fixa = !!categoriaFixa;
   const B = {
-    categorias: [], categoria: 'monstros', q: '', tipo: '', raridade: '', situacao: '', nivelMin: '', nivelMax: '', ordem: '',
+    categorias: [], categoria: categoriaFixa ?? 'monstros', q: '', tipo: '', raridade: '', situacao: '', nivelMin: '', nivelMax: '', ordem: '',
     vista: lerPreferencia('vista', 'grade'), itens: [], total: 0, tipos: [], raridades: [], temNivel: false, carregando: false, pedido: 0,
     detalhe: null, abaDoDetalhe: 'resumo',
   };
@@ -71,7 +74,9 @@ export function criarBiblioteca({ api, raiz, irPara }) {
     pintarFiltrosDependentes();
   }
 
-  async function abrir(categoria, id, aba = 'resumo') {
+  async function abrir(categoria, id, aba = null) {
+    // Na tela presa (Mobs), outra categoria (o item do loot) abre na Biblioteca de verdade.
+    if (fixa && categoria !== categoriaFixa) return irPara('biblioteca', null, [categoria, id]);
     if (categoria !== B.categoria) {
       // Veio de um link, do "onde é usado" ou da busca global: a lista passa a mostrar a categoria inteira (sem a busca antiga).
       B.categoria = categoria;
@@ -82,9 +87,12 @@ export function criarBiblioteca({ api, raiz, irPara }) {
     }
     const d = await api(`biblioteca/detalhe?${new URLSearchParams({ categoria, id })}`);
     if (d.ok === false) return msg(d.erros?.[0] ?? 'Conteúdo não encontrado.', 'erro');
+    // Trocar de monstro mantém a aba aberta (comparar o Loot de dois bichos sem voltar ao Geral); outra categoria
+    // começa na primeira aba dela.
+    if (aba) B.abaDoDetalhe = aba;
+    else if (B.detalhe?.categoria !== d.categoria) B.abaDoDetalhe = null;
     B.detalhe = d;
-    B.abaDoDetalhe = aba;
-    history.replaceState(null, '', `#biblioteca/${categoria}/${encodeURIComponent(id)}`);
+    history.replaceState(null, '', fixa ? `#${rota}/${encodeURIComponent(id)}` : `#${rota}/${categoria}/${encodeURIComponent(id)}`);
     marcarSelecionado();
     pintarDetalhe();
   }
@@ -94,14 +102,14 @@ export function criarBiblioteca({ api, raiz, irPara }) {
 
   async function desenhar(resto = []) {
     if (!B.categorias.length) B.categorias = (await api('biblioteca')).categorias;
-    const [cat, id] = resto;
+    const [cat, id] = fixa ? [categoriaFixa, resto[0]] : resto;
     if (cat && ehDaBiblioteca(cat)) B.categoria = cat;
     raiz().replaceChildren(
-      cabecalho('Biblioteca', 'Todos os cadastros do jogo, com o sprite real. Somente leitura — o que o cadastro não traz aparece como "não cadastrado".',
+      cabecalho(titulo, descricao ?? 'Todos os cadastros do jogo, com o sprite real. Somente leitura — o que o cadastro não traz aparece como "não cadastrado".',
         el('div', { class: 'eng-alternar', role: 'group', 'aria-label': 'Vista' },
           el('button', { type: 'button', class: B.vista === 'grade' ? 'ativo' : '', onclick: () => trocarVista('grade') }, 'Grade'),
           el('button', { type: 'button', class: B.vista === 'lista' ? 'ativo' : '', onclick: () => trocarVista('lista') }, 'Lista'))),
-      el('div', { class: 'bib-v' },
+      el('div', { class: 'bib-v', 'data-rota': rota },
         el('aside', { class: 'bib-filtros', id: 'bib-filtros' }),
         el('section', { class: 'bib-resultados', id: 'bib-resultados' }, el('div', { class: 'bib-contagem', id: 'bib-contagem' }), el('div', { id: 'bib-cards' }), el('div', { id: 'bib-fim' })),
         el('aside', { class: 'bib-painel', id: 'bib-painel' })));
@@ -138,8 +146,8 @@ export function criarBiblioteca({ api, raiz, irPara }) {
     const busca = el('input', { type: 'search', id: 'bib-busca', placeholder: 'Nome ou ID…  ( / )', value: B.q, 'aria-label': 'Buscar na categoria', oninput: (e) => buscarDepois(e.target.value.trim()) });
     caixa.replaceChildren(
       el('div', { class: 'bib-busca' }, busca),
-      el('div', { class: 'bib-grupo' }, el('div', { class: 'bib-rotulo' }, 'Categoria'),
-        el('div', { class: 'bib-categorias' }, B.categorias.map((c) => el('button', { type: 'button', class: `bib-cat${c.id === B.categoria ? ' ativa' : ''}`, onclick: () => trocarCategoria(c.id) }, el('span', {}, c.nome), el('span', { class: 'bib-num' }, c.total.toLocaleString('pt-BR')))))),
+      ...(fixa ? [] : [el('div', { class: 'bib-grupo' }, el('div', { class: 'bib-rotulo' }, 'Categoria'),
+        el('div', { class: 'bib-categorias' }, B.categorias.map((c) => el('button', { type: 'button', class: `bib-cat${c.id === B.categoria ? ' ativa' : ''}`, onclick: () => trocarCategoria(c.id) }, el('span', {}, c.nome), el('span', { class: 'bib-num' }, c.total.toLocaleString('pt-BR'))))))]),
       el('div', { id: 'bib-dependentes' }));
     pintarFiltrosDependentes();
   }
@@ -247,17 +255,20 @@ export function criarBiblioteca({ api, raiz, irPara }) {
       return;
     }
     const quebrados = d.referenciasQuebradas?.itens ?? [];
-    const abas = [['resumo', 'Resumo'], ['usos', `Usos (${d.usadoEm?.length ?? 0})`], ['json', 'JSON']];
+    // Monstro: a ficha em abas (Geral, Atributos, Combate, Loot, Visual); o resto, o resumo genérico.
+    const ficha = d.categoria === 'monstros' ? fichaDoMonstro(d, { abrir }) : null;
+    const abas = [...(ficha ? ficha.abas : [['resumo', 'Resumo']]), ['usos', `Usos (${d.usadoEm?.length ?? 0})`], ['json', 'JSON']];
+    if (!B.abaDoDetalhe || !abas.some(([id]) => id === B.abaDoDetalhe)) B.abaDoDetalhe = abas[0][0];
     caixa.replaceChildren(
       el('div', { class: 'bib-painel-topo' },
-        previa(d.desenho, { categoria: d.categoria }),
+        ficha && B.abaDoDetalhe === 'visual' ? null : previa(d.desenho, { categoria: d.categoria }),
         el('div', { class: 'bib-painel-titulo' },
           el('h2', { class: 'bib-nome' }, d.nome ?? NAO),
           el('div', { class: 'linha' }, el('span', { class: 'eng-id', style: 'flex:none' }, `${d.categoria}:${d.id}`), botaoCopiar(d.id, `o ID ${d.id}`), botaoCopiar(`${d.categoria}:${d.id}`, 'a referência'), el('span')),
           el('div', { class: 'eng-card-selos' }, d.tipo ? el('span', { class: 'selo' }, d.tipo) : null, d.raridade ? el('span', { class: `selo ${RARIDADE[d.raridade] ?? ''}` }, d.raridade) : null),
           quebrados.length ? el('div', { class: 'bib-alerta' }, `Referência a ${quebrados.length} item(ns) que não existem no catálogo: ${quebrados.join(', ')}`) : null)),
       el('div', { class: 'eng-abas', role: 'tablist' }, abas.map(([id, nome]) => el('button', { type: 'button', role: 'tab', 'aria-selected': String(B.abaDoDetalhe === id), class: B.abaDoDetalhe === id ? 'ativa' : '', onclick: () => { B.abaDoDetalhe = id; pintarDetalhe(); } }, nome))),
-      el('div', { class: 'bib-painel-corpo' }, B.abaDoDetalhe === 'usos' ? blocoDeUsos(d) : B.abaDoDetalhe === 'json' ? blocoJson(d) : blocoResumo(d)));
+      el('div', { class: 'bib-painel-corpo' }, B.abaDoDetalhe === 'usos' ? blocoDeUsos(d) : B.abaDoDetalhe === 'json' ? blocoJson(d) : ficha ? ficha.corpo(B.abaDoDetalhe) : blocoResumo(d)));
   }
 
   function blocoDeUsos(d) {
@@ -378,7 +389,7 @@ export function criarBiblioteca({ api, raiz, irPara }) {
       const r = resultados[i];
       fechar();
       // Já na Biblioteca: só abre o detalhe (sem redesenhar a tela e perder os filtros).
-      if (document.querySelector('#bib-painel')) await abrir(r.categoria, r.id);
+      if (document.querySelector(`.bib-v[data-rota="${rota}"]`)) await abrir(r.categoria, r.id);
       else await irPara('biblioteca', null, [r.categoria, r.id]);
     };
     const fechar = () => {

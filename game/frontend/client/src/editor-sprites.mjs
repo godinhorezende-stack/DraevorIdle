@@ -4,12 +4,20 @@
 //
 // Desempenho: o índice dos atlas (`outfits.json` + `item-sprites.json`) é baixado UMA vez, e cada retrato só é
 // montado quando o card entra na tela (IntersectionObserver) — uma página de 60 cards não pede 60 folhas de uma vez.
-import { loadSpriteData, outfitCanvas, itemCanvas } from './sprites.mjs';
 import { el, icone } from './editor-ui.mjs';
 
+// O `sprites.mjs` do jogo entra só na primeira vez que um retrato é desenhado (tela sem sprite não baixa nada, e os
+// módulos da Engine continuam importáveis fora do navegador, nos testes).
+let Sprites = null;
 let indice = null;
-/** Carrega o índice dos atlas (uma vez só; falha vira "sem sprite", nunca trava a tela). */
-export const carregarSprites = () => (indice ??= loadSpriteData().catch((e) => console.warn('[engine] sprites:', e.message)));
+/** Carrega o código e o índice dos atlas (uma vez só; falha vira "sem sprite", nunca trava a tela). */
+export const carregarSprites = () =>
+  (indice ??= import('./sprites.mjs')
+    .then((m) => {
+      Sprites = m;
+      return m.loadSpriteData();
+    })
+    .catch((e) => console.warn('[engine] sprites:', e.message)));
 
 const MARCADOR = { hunts: 'mapa', vips: 'mapa', especiais: 'mapa', divinas: 'mapa', mapas: 'mapa', drops: 'livros', encontros: 'fase', bosses: 'coroa', monstros: 'painel', itens: 'painel' };
 
@@ -27,8 +35,9 @@ const vigia = typeof IntersectionObserver === 'function'
 
 /** O canvas do desenho, já no tamanho pedido (criatura: recortada e ampliada; item: ampliado sem borrar). */
 function canvasDo(desenho, tamanho, { animar, dir }) {
-  if (desenho.tipo === 'criatura') return outfitCanvas(desenho.look, desenho.cores ?? undefined, tamanho, dir, animar);
-  return itemCanvas(desenho.id, tamanho);
+  if (!Sprites) return el('span');
+  if (desenho.tipo === 'criatura') return Sprites.outfitCanvas(desenho.look, desenho.cores ?? undefined, tamanho, dir, animar);
+  return Sprites.itemCanvas(desenho.id, tamanho);
 }
 
 /**

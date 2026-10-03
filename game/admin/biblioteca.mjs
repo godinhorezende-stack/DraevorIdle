@@ -267,6 +267,8 @@ function detalheDeMonstro(key) {
     atributos: { hp: ou(m.hp), exp: ou(m.exp), armadura: ou(m.armor), velocidade: ou(m.speed), raca: ou(m.race), estrelas: ou(m.stars) },
     resistencias: ou(m.elements && Object.keys(m.elements).length ? m.elements : null),
     habilidades: PODERES_MONSTRO[key]?.ataques ?? PODERES_BOSS[key]?.ataques ?? null,
+    curas: PODERES_MONSTRO[key]?.curas ?? PODERES_BOSS[key]?.curas ?? null,
+    bestiario: { classe: ou(m.class), abatesParaCompletar: ou(m.toKill), pontosDeCharm: ou(m.charmPoints), ocorrencia: ou(m.occurrence), ondeVive: ou(m.locations) },
     drops: { modelo: 'chance individual por item, por morte (loot do bestiário)', itens: loot.length ? loot : null },
     referenciasQuebradas: { itens: itensQuebrados(loot.map((l) => l.item)) },
   };
