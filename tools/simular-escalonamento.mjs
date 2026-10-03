@@ -11,7 +11,7 @@ const cenarios = [
   ['dois grupos', (N) => [Math.ceil(N / 2), Math.floor(N / 2), 0, 0]],
   ['um por setor', (N) => [1, 1, 1, 1].map((v, i) => (i < N ? v : 0))],
 ];
-console.log('Tempo para limpar os 4 setores (W=100 cada), relativo ao SOLO (=1,00). Vida +30%/jogador extra nos normais.\n');
+console.log('Tempo para limpar os 4 setores (W=100 cada), relativo ao SOLO (=1,00). Vida +30%/jogador extra nos normais (o dano não escala).\n');
 for (const N of [2, 3, 4, 5]) {
   console.log(`== ${N} jogadores ==`);
   for (const [nome, distribui] of cenarios) {
@@ -38,5 +38,5 @@ for (const N of [2, 3, 4, 5]) {
 console.log('\nChefe (vida × dano) com a party ativa inteira, por número de jogadores:');
 for (const N of [1, 2, 3, 4, 5]) {
   const f = fatoresPara('boss', N);
-  console.log(`  ${N}: vida ×${f.vida.toFixed(2)}  dano ×${f.dano.toFixed(2)}  (dano da party ×${N} ⇒ chefe morre em ${(f.vida / N).toFixed(2)} do tempo solo)`);
+  console.log(`  ${N}: vida ×${f.vida.toFixed(2)}  dano ×${f.dano.toFixed(2)}  (dano do chefe não muda; dano da party ×${N} ⇒ chefe morre em ${(f.vida / N).toFixed(2)} do tempo solo)`);
 }
