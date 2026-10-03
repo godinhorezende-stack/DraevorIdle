@@ -21,7 +21,7 @@ Contagem por categoria: atributos principais 3 · ofensivos 19 · defensivos 11 
 ### Cobertura das categorias pedidas (só o que existe)
 | Pedido | No Draevor |
 |---|---|
-| Dano físico adicional / % físico | `phys_add` ("Dano físico adicional": soma um mínimo e um máximo ao ataque; T1 10–20, T2 15–30, T3 22–44, T4 34–68, T5 50–100; substituiu o `atk_flat`/Attack, e as peças antigas são convertidas ao carregar, mesmo tier) / `phys_dmg` (%) |
+| Dano adicional / % físico | `phys_add` ("Dano adicional": soma um mínimo e um máximo ao ataque; T1 10–20, T2 15–30, T3 22–44, T4 34–68, T5 50–100; substituiu o `atk_flat`/Attack, e as peças antigas são convertidas ao carregar, mesmo tier) / `phys_dmg` (%) |
 | Dano elemental adicional (número) | **não existe** — só % por elemento |
 | Fogo, gelo, elétrico, veneno/terra, sagrado, morte | `fire_dmg`, `ice_dmg`, `energy_dmg`, `earth_dmg`, `holy_dmg`, `death_dmg` (%) |
 | Caos | **não existe** (os elementos do jogo são physical, fire, ice, earth, energy, death, holy) |
@@ -42,7 +42,7 @@ Contagem por categoria: atributos principais 3 · ofensivos 19 · defensivos 11 
 ## C. Modificadores incompletos
 - Sem tiers / com tier faltando / sem faixa / sem nível mínimo: **nenhum** — os 56 têm T1–T5, faixa e `nivelMinimo` (teste M2/M3/M5).
 - Sem compatibilidade definida ou fora de todo pool: **nenhum** (M1).
-- **Cadastrados e desligados do drop (`dropa:false`):** `dmg_vs_elite` (à espera de monstros Elite) e `atk_flat` (Attack, substituído pelo Dano físico adicional em 03/10; as peças antigas são convertidas para `phys_add` na versão 6 dos itens). Está nos pools mas nunca cai (G4 prova 0 em 20 mil peças míticas).
+- **Cadastrados e desligados do drop (`dropa:false`):** `dmg_vs_elite` (à espera de monstros Elite) e `atk_flat` (Attack, substituído pelo Dano adicional em 03/10; as peças antigas são convertidas para `phys_add` na versão 6 dos itens). Está nos pools mas nunca cai (G4 prova 0 em 20 mil peças míticas).
 - **Sem faixa por tier de verdade:** `gem_level` — o valor vem da **raridade** (`valorPorRaridade`: incomum/raro +1, épico/lendário/mítico +2); as cinco faixas (1, 1, 1, 2, 2) são só informativas.
 - Legados (18): fora do drop e convertidos ao carregar a peça (`renomearAdds`); teste P2 prova a conversão preservando tier e posição na faixa.
 

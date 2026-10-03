@@ -171,7 +171,7 @@ function calcularCombate(estado) {
   // O ataque de anel e amuleto (`base.attack` sorteado no drop) soma ao da arma, também em faixa.
   const joias = Object.entries(estado.equipment ?? {}).filter(([slot, p]) => p && SLOTS_DE_JOIA.has(slot));
   const [jMin, jMax] = joias.reduce(([a, b], [, p]) => { const [x, y] = faixaDoCampo(p, 'attack'); return [a + x, b + y]; }, [0, 0]);
-  // "Dano físico adicional" (`phys_add`): soma ao ataque MÍNIMO o valor e ao MÁXIMO `proporcaoDoMaximo` vezes ele (10–20 no topo do T5). O `atk_flat`
+  // "Dano adicional" (`phys_add`): soma ao ataque MÍNIMO o valor e ao MÁXIMO `proporcaoDoMaximo` vezes ele (T1 10–20 … T5 50–100). O `atk_flat`
   // (Attack, que não cai mais) segue valendo nas peças antigas: soma o mesmo número aos dois.
   const razaoDoMaximo = ItensConfig.ATRIBUTOS.phys_add?.proporcaoDoMaximo ?? 2;
   const addMin = af.phys_add ?? 0;

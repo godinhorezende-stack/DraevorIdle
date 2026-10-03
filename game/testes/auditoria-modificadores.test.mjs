@@ -310,14 +310,14 @@ test('P3. interface: o catálogo que o cliente recebe traz tipo, faixas e nome d
   assert.doesNotMatch(backend, /atributos\.json|itens\/atributos/, 'nenhuma rota edita atributos.json');
 });
 
-// ------------------------------------------------------------------ Dano físico adicional (substitui o Attack no drop)
+// ------------------------------------------------------------------ Dano adicional (substitui o Attack no drop)
 
-test('F1. Dano físico adicional: o Attack (atk_flat) não cai mais e o novo mod cai nos mesmos tipos de item; T1 = 10–20 e cada tier cresce ~×1,5 (valor fixo por tier)', () => {
+test('F1. Dano adicional: o Attack (atk_flat) não cai mais e o novo mod cai nos mesmos tipos de item; T1 = 10–20 e cada tier cresce ~×1,5 (valor fixo por tier)', () => {
   assert.equal(C.ATRIBUTOS.atk_flat.dropa, false);
   for (const lista of Object.values(C.POOLS)) assert.ok(!lista.includes('atk_flat'), 'atk_flat saiu de todos os pools');
   assert.deepEqual(poolsDoAdd('phys_add'), ['arma_melee', 'arma_distancia', 'municao', 'aljava', 'anel', 'amuleto'], 'os mesmos pools onde o Attack caía');
   const a = C.ATRIBUTOS.phys_add;
-  assert.equal(a.nome, 'Dano físico adicional');
+  assert.equal(a.nome, 'Dano adicional');
   assert.equal(a.proporcaoDoMaximo, 2);
   assert.deepEqual(a.niveis, { 1: [10, 10], 2: [15, 15], 3: [22, 22], 4: [34, 34], 5: [50, 50] }, 'o valor é o mínimo; o máximo é o dobro');
   assert.deepEqual([1, 2, 3, 4, 5].map((t) => `${a.niveis[t][0]}–${a.niveis[t][0] * a.proporcaoDoMaximo}`), ['10–20', '15–30', '22–44', '34–68', '50–100']);
@@ -354,16 +354,16 @@ test('F2. o efeito: o valor soma ao ataque MÍNIMO e o dobro ao MÁXIMO; o Attac
   assert.ok(Math.abs((aMax - bMax) - 10 * mult) <= 1.5 && Math.abs((aMin - bMin) - 10 * mult) <= 1.5, 'o Attack antigo sobe 10 nas duas pontas');
 });
 
-test('F3. texto: "Dano físico adicional 10–20" no servidor e no balão do cliente; o valor guardado continua um número só', () => {
+test('F3. texto: "Dano adicional 10–20" no servidor e no balão do cliente; o valor guardado continua um número só', () => {
   const v = Afixos.viewDoAfixo({ id: 'phys_add', nivel: 5, value: 10 }, 'weapon');
-  assert.equal(v.texto, 'Dano físico adicional 10–20');
+  assert.equal(v.texto, 'Dano adicional 10–20');
   assert.equal(v.valor, 10);
   assert.equal(Afixos.FICHAS.phys_add.proporcaoDoMaximo, 2);
   const tooltip = readFileSync(new URL('../frontend/client/src/tooltip.mjs', import.meta.url), 'utf8');
   assert.match(tooltip, /ficha\?\.proporcaoDoMaximo\s*\?\s*`\$\{posto\.value\}–\$\{Math\.round\(posto\.value \* ficha\.proporcaoDoMaximo\)\}`/);
 });
 
-test('F4. peças antigas com Attack (atk_flat) viram Dano físico adicional: mochila, equipamento, depósito e bolsa; mesmo tier, valor do tier novo; roda uma vez', async () => {
+test('F4. peças antigas com Attack (atk_flat) viram Dano adicional: mochila, equipamento, depósito e bolsa; mesmo tier, valor do tier novo; roda uma vez', async () => {
   const { converterPersonagem, converterTudo, VERSAO_DOS_ITENS } = await import('../systems/itens/item.mjs');
   assert.equal(VERSAO_DOS_ITENS, 6);
   const arma = itensPorTipo().arma_melee[0];
@@ -383,7 +383,7 @@ test('F4. peças antigas com Attack (atk_flat) viram Dano físico adicional: moc
   for (const p of todas) {
     assert.ok(!p.af.some((a) => a.id === 'atk_flat'), 'nenhum Attack sobrou');
     const novo = p.af.find((a) => a.id === 'phys_add');
-    assert.ok(novo, 'virou Dano físico adicional');
+    assert.ok(novo, 'virou Dano adicional');
     assert.equal(novo.value, esperado[novo.nivel], `T${novo.nivel} vale ${esperado[novo.nivel]}`);
   }
   assert.deepEqual(todas.map((p) => p.af.find((a) => a.id === 'phys_add').nivel), [1, 3, 5, 2, 4], 'o tier de cada peça foi mantido');

@@ -152,7 +152,7 @@
    "substituidoPor": "phys_add"
   },
   "phys_add": {
-   "nome": "Dano físico adicional",
+   "nome": "Dano adicional",
    "tipo": "flat",
    "categoria": "ofensivo",
    "peso": 60,

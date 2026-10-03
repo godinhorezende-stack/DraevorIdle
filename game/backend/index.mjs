@@ -12,6 +12,7 @@ import * as Estaticos from './estaticos.mjs';
 import * as Site from '../systems/site.mjs';
 import * as DropsDoSite from '../systems/drops-do-site.mjs';
 import * as Guildas from '../systems/guildas.mjs';
+import * as Wiki from '../systems/wiki.mjs';
 import * as Limites from '../websocket/limites.mjs';
 import { aquecerGrades } from '../systems/cacadas.mjs';
 import * as ConsolidacaoOffline from '../systems/consolidacao-offline.mjs';
@@ -57,6 +58,7 @@ const PAGINAS = {
   '/online': '/online.html',
   '/streamers': '/streamers.html',
   '/guildas': '/guildas.html',
+  '/wiki': '/wiki.html',
   '/personagem': '/personagem.html',
   '/editor': '/editor.html',
   '/editor/conteudo': '/editor-conteudo.html',
@@ -182,11 +184,13 @@ async function atender(req, res) {
     if (caminho === '/api/online') return json(res, 200, Site.jogadoresOnline());
     if (caminho === '/api/drops') return json(res, 200, await DropsDoSite.vista());
     if (caminho === '/api/personagem') return json(res, 200, await Site.personagem(q.get('nome')));
+    if (caminho === '/api/wiki/itens') return json(res, 200, Wiki.itens());
     if (caminho === '/api/guildas') return json(res, 200, { guildas: await Guildas.listaDoSite() });
     if (caminho === '/api/guilda') return json(res, 200, await Guildas.fichaDoSite(q.get('nome')));
   }
 
-  const alvo = PAGINAS[caminho] ?? caminho;
+  // A wiki: `/wiki` e `/wiki/<artigo>` são a mesma página (o artigo vem do caminho, lido por `client/site/wiki.mjs`).
+  const alvo = PAGINAS[caminho] ?? (caminho.startsWith('/wiki/') && !caminho.includes('.') ? '/wiki.html' : caminho);
   if (await servirArquivo(req, res, alvo)) return;
 
   res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });

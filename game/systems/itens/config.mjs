@@ -102,7 +102,7 @@ for (const [id, a] of Object.entries(ATRIBUTOS)) {
   const min = a.niveis['1'][0];
   const max = a.niveis[String(NIVEL_MAXIMO)][1];
   Object.assign(ficha, { nome: a.nome, min, max, teto: min + 1.3 * (max - min), niveis: a.niveis });
-  // Mod de DANO EM FAIXA ("Dano físico adicional 10–20"): o valor é o mínimo e o máximo é `proporcaoDoMaximo` vezes ele.
+  // Mod de DANO EM FAIXA ("Dano adicional 10–20"): o valor é o mínimo e o máximo é `proporcaoDoMaximo` vezes ele.
   if (a.proporcaoDoMaximo) ficha.proporcaoDoMaximo = a.proporcaoDoMaximo;
 }
 

@@ -22,6 +22,7 @@ export const DICIONARIO = {
     // ---- faixa e menu ----
     'faixa.teste': 'Test server · in development — expect bugs',
     'menu.ranking': 'Ranking',
+    'menu.wiki': 'Wiki',
     'menu.online': 'Online',
     'menu.donate': 'Donate',
     'menu.como': 'How it works',
