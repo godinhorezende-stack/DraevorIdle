@@ -5,7 +5,7 @@ import * as Auditoria from './auditoria.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/auth/';
 
-export function criarGuarda(acesso, { auditoria = Auditoria } = {}) {
+export function criarGuarda(acesso, { auditoria = Auditoria, aoGravar = null } = {}) {
   return async function guardar(req, res, caminho, { json, corpoJson }) {
     if (!caminho.startsWith('/api/mapas')) return false;
     const ip = req.headers['x-real-ip'] ?? req.socket?.remoteAddress ?? 'desconhecido';
@@ -32,6 +32,7 @@ export function criarGuarda(acesso, { auditoria = Auditoria } = {}) {
     }
     const d = acesso.autorizar({ metodo: req.method, caminho, cookie, origem: req.headers.origin ?? null, host: req.headers.host, encaminhado: req.headers['x-forwarded-host'] ?? null });
     const quem = acesso.quem(token).email;
+    req.engineQuem = quem ?? null; // quem está agindo (as rotas de versão registram o autor)
     const classe = classeDaRota(req.method, caminho);
     if (!d.ok) {
       // Tentativa recusada (sem login, sem permissão, de outra origem ou gravação desligada): só as que mudariam algo entram no registro.
@@ -45,6 +46,7 @@ export function criarGuarda(acesso, { auditoria = Auditoria } = {}) {
         let ok = res.statusCode < 400;
         try { const corpo = JSON.parse(a[0]); if (corpo && corpo.ok === false) ok = false; } catch { /* resposta sem JSON */ }
         auditoria.registrar({ tipo: classe === 'grava' ? 'gravacao' : 'operacao', quem, ip, metodo: req.method, rota: caminho.replace('/api/mapas/_conteudo/', ''), resumo: Auditoria.resumirCorpo(req.corpoAuditado), ok });
+        if (ok && classe === 'grava') { try { aoGravar?.({ rota: caminho.replace('/api/mapas/_conteudo/', ''), corpo: req.corpoAuditado ?? null }); } catch { /* o Hot Reload nunca derruba a resposta */ } }
         return fim(...a);
       };
     }

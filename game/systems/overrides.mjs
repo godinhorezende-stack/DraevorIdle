@@ -241,3 +241,108 @@ export function aplicarNosItens(catalogo, dados, avisar = console.warn) {
   }
   return saida;
 }
+
+// =====================================================================================================================
+// RE-APLICAÇÃO (Hot Reload): aplicar os overrides DE NOVO num catálogo que já está no ar, sem reiniciar e sem perder o original.
+// O invariante que torna isto seguro: o que NÃO está no conjunto aplicado agora é o original (nunca foi tocado). Antes de sobrescrever uma chave,
+// guarda-se o original dela em `estado.originais`; re-aplicar = devolver os originais das chaves antigas e aplicar o arquivo novo. Em modo
+// `estrito` (o Hot Reload) qualquer entrada inválida CANCELA tudo (nada é tocado: fica a última versão válida); no boot (`estrito: false`) a
+// entrada inválida é só ignorada com aviso, como sempre foi.
+// =====================================================================================================================
+/** O estado de uma camada re-aplicável: originais das chaves alteradas, chaves alteradas e chaves criadas (variações). */
+export const criarEstadoDeCamada = () => ({ originais: new Map(), aplicados: new Set(), criados: new Set() });
+
+/** Lê `monstros.json`/`itens.json` e LANÇA se estiver quebrado (o Hot Reload não pode confundir "arquivo ruim" com "sem overrides"). */
+function lerEstrito(arquivo, campo, pasta) {
+  const arq = join(pasta, arquivo);
+  if (!existsSync(arq)) return { ativo: true, [campo]: {} };
+  let d;
+  try { d = JSON.parse(readFileSync(arq, 'utf8')); } catch (e) { throw new Error(`${arquivo} não é um JSON válido: ${e.message}`); }
+  if (!d || typeof d !== 'object' || Array.isArray(d)) throw new Error(`${arquivo}: o conteúdo precisa ser um objeto.`);
+  return { ativo: d.ativo !== false, [campo]: d[campo] && typeof d[campo] === 'object' ? d[campo] : {} };
+}
+export const lerMonstrosEstrito = (pasta = PASTA) => lerEstrito('monstros.json', 'monstros', pasta);
+export const lerItensEstrito = (pasta = PASTA) => lerEstrito('itens.json', 'itens', pasta);
+
+/**
+ * Re-aplica os overrides de monstros no `bestiario` (muta). Devolve `{ ok, aplicados, criados, ignorados, mudados }`; `mudados` = chaves cujo
+ * monstro efetivo pode ter mudado (as de antes + as de agora). `ok: false` (só no estrito) = nada foi tocado.
+ */
+export function reaplicarNoBestiario(bestiario, estado, dados, contexto, { estrito = false, avisar = console.warn } = {}) {
+  const saida = { ok: true, aplicados: [], criados: [], ignorados: [], mudados: [] };
+  // O olhar "de antes de qualquer override": o original guardado (se a chave está alterada) ou o próprio catálogo (se nunca foi tocada).
+  const original = (k) => (estado.criados.has(k) ? null : estado.originais.has(k) ? estado.originais.get(k) : bestiario[k] ?? null);
+  const plano = [];
+  const criadosNovos = new Set();
+  const ativas = dados?.ativo ? Object.entries(dados.monstros ?? {}).filter(([, ov]) => ov?.ativo !== false) : [];
+  for (const [key, ov] of ativas) {
+    const ctx = { ...contexto, original: ov?.base != null ? null : original(key), existeMonstro: (k) => original(k) != null || criadosNovos.has(k) };
+    const { erros } = validarMonstro(key, ov, ctx);
+    if (erros.length) { saida.ignorados.push({ key, erros }); if (!estrito) avisar(`[overrides] monstro "${key}" ignorado: ${erros.join(' | ')}`); continue; }
+    const base = ov.base != null ? original(ov.base) : original(key);
+    plano.push({ key, ov, efetivo: aplicarNoMonstro(base, ov), variacao: ov.base != null, original: ov.base != null ? null : base });
+    if (ov.base != null) criadosNovos.add(key);
+  }
+  if (estrito && saida.ignorados.length) return { ...saida, ok: false };
+  // Compromete: devolve os originais das chaves de antes e aplica o plano.
+  const antes = new Set([...estado.aplicados, ...estado.criados]);
+  for (const k of estado.aplicados) bestiario[k] = estado.originais.get(k);
+  for (const k of estado.criados) delete bestiario[k];
+  const originaisAntigos = estado.originais;
+  estado.originais = new Map();
+  estado.aplicados.clear();
+  estado.criados.clear();
+  for (const p of plano) {
+    if (p.variacao) { bestiario[p.key] = p.efetivo; estado.criados.add(p.key); saida.criados.push(p.key); }
+    else { estado.originais.set(p.key, originaisAntigos.get(p.key) ?? p.original); bestiario[p.key] = p.efetivo; estado.aplicados.add(p.key); saida.aplicados.push(p.key); }
+  }
+  saida.mudados = [...new Set([...antes, ...saida.aplicados, ...saida.criados])];
+  return saida;
+}
+
+/** O mesmo para o catálogo de itens. `{ ok, aplicados, ignorados, mudados }`. */
+export function reaplicarNosItens(catalogo, estado, dados, { estrito = false, avisar = console.warn } = {}) {
+  const saida = { ok: true, aplicados: [], ignorados: [], mudados: [] };
+  const original = (id) => (estado.originais.has(id) ? estado.originais.get(id) : catalogo[id] ?? null);
+  const plano = [];
+  const ativas = dados?.ativo ? Object.entries(dados.itens ?? {}).filter(([, ov]) => ov?.ativo !== false) : [];
+  for (const [id, ov] of ativas) {
+    const { erros } = validarItem(id, ov, { original: original(id) });
+    if (erros.length) { saida.ignorados.push({ id, erros }); if (!estrito) avisar(`[overrides] item "${id}" ignorado: ${erros.join(' | ')}`); continue; }
+    plano.push({ id, efetivo: aplicarNoItem(original(id), ov), original: original(id) });
+  }
+  if (estrito && saida.ignorados.length) return { ...saida, ok: false };
+  const antes = [...estado.aplicados];
+  for (const id of estado.aplicados) catalogo[id] = estado.originais.get(id);
+  const originaisAntigos = estado.originais;
+  estado.originais = new Map();
+  estado.aplicados.clear();
+  for (const p of plano) { estado.originais.set(p.id, originaisAntigos.get(p.id) ?? p.original); catalogo[p.id] = p.efetivo; estado.aplicados.add(p.id); saida.aplicados.push(p.id); }
+  saida.mudados = [...new Set([...antes, ...saida.aplicados])];
+  return saida;
+}
+
+/** Os ataques: re-aplica em `poderes` (muta) só para as chaves de `validas`. Originais guardados em `estado` (a variação parte do original da base). */
+export function reaplicarNosPoderes(poderes, estado, dados, validas) {
+  const antes = [...estado.aplicados];
+  for (const k of antes) { const o = estado.originais.get(k); if (o == null) delete poderes[k]; else poderes[k] = o; }
+  const originaisAntigos = estado.originais;
+  estado.originais = new Map();
+  estado.aplicados.clear();
+  const orig = (k) => (originaisAntigos.has(k) ? originaisAntigos.get(k) : poderes[k] ?? null);
+  const feitos = [];
+  if (dados?.ativo) {
+    const permitido = new Set(validas);
+    for (const [key, ov] of Object.entries(dados.monstros ?? {})) {
+      if (ov?.ativo === false || !permitido.has(key)) continue;
+      const guardar = () => { if (!estado.originais.has(key)) estado.originais.set(key, orig(key) == null ? null : structuredClone(orig(key))); };
+      if (ov.base != null && orig(ov.base) && !poderes[key]) { guardar(); poderes[key] = structuredClone(orig(ov.base)); estado.aplicados.add(key); }
+      if (ov.ataques === undefined) continue;
+      guardar();
+      poderes[key] = { ...(poderes[key] ?? { curas: [] }), ataques: structuredClone(ov.ataques) };
+      estado.aplicados.add(key);
+      feitos.push(key);
+    }
+  }
+  return { feitos, mudados: [...new Set([...antes, ...estado.aplicados])] };
+}

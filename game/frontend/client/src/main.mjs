@@ -1,6 +1,7 @@
 import './so-quando-muda.mjs';
 import { anunciarDrop, anunciarSistema } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
+import { aplicarContentUpdate } from './hot-reload-cliente.mjs';
 import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta, urlDaFolha } from './sprites.mjs';
 import { MapView, definirCoresDeRaridade, dadosDaRaridade } from './map.mjs';
 import { encontroNaCasa, encontroPerto } from './encontros-na-tela.mjs';
@@ -701,6 +702,10 @@ function handle(message) {
     // O eco do contador do canto. Não mexe em estado nenhum: é uma régua.
     case 'pong':
       pongChegou(message.at);
+      break;
+    // Hot Reload (só no ambiente local de desenvolvimento): a Engine salvou um recurso; atualiza só ele, sem recarregar a página.
+    case 'contentUpdate':
+      aplicarContentUpdate(message, { state, redraw: () => panelCtx.redraw?.() });
       break;
     case 'hello':
       // A versão do jogo já na conexão: depois de um deploy, a aba sabe na hora.

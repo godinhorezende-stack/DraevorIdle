@@ -4,7 +4,7 @@
 import * as SemFigura from './icone-sem-figura.mjs';
 import { desenharGema } from './icones-de-gema.mjs';
 import { colorize } from '/packages/shared/src/outfit-color.mjs';
-import { resolverOverrides } from '/packages/shared/src/sprite-folha.mjs';
+import { resolverOverrides, planejarTrocas } from '/packages/shared/src/sprite-folha.mjs';
 
 const images = new Map();
 const outfitCache = new Map();
@@ -13,6 +13,8 @@ let itemSprites = {};
 // Overrides de sprites (`gamedata/overrides/sprites.json`, editor de sprites da Engine): para os looks com override ATIVO, a folha e o cadastro de quadros
 // vêm do override; o resto segue o original. `variantes` são folhas avulsas (rascunho do editor, ou o original para comparar) sob uma chave própria.
 const urlsDeFolha = {};
+// O cadastro ORIGINAL dos looks que têm override (para o Hot Reload devolver o original quando o override sai).
+const originaisSobrescritos = {};
 const variantes = new Map();
 const metaDe = (look) => variantes.get(look)?.meta ?? outfitMeta[look];
 
@@ -309,9 +311,53 @@ async function aplicarOverridesDeSprites() {
     if (!r.ok) return;
     const d = await r.json();
     const { metas, urls } = resolverOverrides(d, outfitMeta);
+    for (const look of Object.keys(metas)) originaisSobrescritos[look] = outfitMeta[look];
     Object.assign(outfitMeta, metas);
     Object.assign(urlsDeFolha, urls);
   } catch { /* sem overrides */ }
+}
+
+/** Espera a folha `url` chegar (decodificada) — ou rejeita no prazo. Usada pelo Hot Reload ANTES de trocar, para nunca desenhar com a folha pela metade. */
+function folhaPronta(url, prazoMs = 15000) {
+  const inicio = performance.now();
+  return new Promise((ok, falha) => {
+    const olhar = () => {
+      const e = image(url);
+      if (e.ready) return ok();
+      if (performance.now() - inicio > prazoMs) return falha(new Error(`a folha ${url} não carregou`));
+      setTimeout(olhar, 40);
+    };
+    olhar();
+  });
+}
+
+/**
+ * HOT RELOAD (ambiente local): aplica o aviso `contentUpdate` de sprites do servidor SEM recarregar a página. Carrega TODAS as folhas novas primeiro;
+ * só então troca, de uma vez e de forma síncrona, o cadastro de quadros + a URL da folha + o cache de quadros compostos de cada look — o renderer nunca
+ * mistura quadros antigos com novos. A folha antiga é devolvida (memória do bitmap). Devolve os looks trocados. Folha que não carrega: aquele look
+ * continua como estava (o aviso vai ao console).
+ */
+export async function atualizarSpritesDoJogo(aviso) {
+  if (aviso.indice) {
+    try {
+      const novo = await (await fetch(`/gamedata/outfits.json?v=${Date.now()}`)).json();
+      for (const [look, meta] of Object.entries(novo)) { if (look in originaisSobrescritos) originaisSobrescritos[look] = meta; else outfitMeta[look] = meta; }
+    } catch (e) { console.warn('[hot-reload] índice dos desenhos:', e.message); }
+  }
+  const metaOriginal = (look) => originaisSobrescritos[look] ?? (look in urlsDeFolha ? null : outfitMeta[look]);
+  const trocas = planejarTrocas(aviso, { metaOriginal, sobrescritos: new Set(Object.keys(urlsDeFolha)) });
+  const prontas = [];
+  await Promise.all(trocas.map((t) => folhaPronta(t.url).then(() => prontas.push(t), (e) => console.warn('[hot-reload]', e.message))));
+  for (const t of prontas) {
+    const antiga = urlDaFolha(t.look);
+    if (!(t.look in originaisSobrescritos) && !(t.look in urlsDeFolha) && outfitMeta[t.look]) originaisSobrescritos[t.look] = outfitMeta[t.look];
+    outfitMeta[t.look] = t.meta;
+    urlsDeFolha[t.look] = t.url;
+    for (const k of [...outfitCache.keys()]) if (k.startsWith(`${t.look}|`)) outfitCache.delete(k);
+    if (antiga !== t.url) { const e = images.get(antiga); if (e) { soltar(e); images.delete(antiga); } }
+    if (t.url.startsWith('/gamedata/sprites/outfits/') && !t.url.includes('?')) delete urlsDeFolha[t.look];
+  }
+  return prontas.map((t) => t.look);
 }
 
 /**

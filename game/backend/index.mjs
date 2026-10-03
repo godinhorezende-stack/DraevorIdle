@@ -27,6 +27,8 @@ import * as Operacao from '../admin/operacao.mjs';
 import { criarAcesso } from '../admin/acesso.mjs';
 import { contaPorEmail, conferirSenha } from '../database/banco.mjs';
 import { criarGuarda } from '../admin/acesso-http.mjs';
+import { ligarHotReload as ligarHotReloadDaEngine } from '../admin/conteudo-http.mjs';
+import { iniciarHotReload } from '../systems/hot-reload-estrategias.mjs';
 import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
 
 Site.ligar(vivas);
@@ -132,7 +134,11 @@ function json(res, status, corpo) {
 
 // O acesso à Engine: contas do jogo cujo e-mail está em `gamedata/engine.json` (ou ENGINE_ADMINS); ver `admin/acesso.mjs`.
 const acessoDaEngine = criarAcesso({ deps: { contaPorEmail, conferirSenha } });
-const guardaDaEngine = criarGuarda(acessoDaEngine);
+// O Hot Reload de conteúdo: só em desenvolvimento local (desligado em produção, com banco remoto ou HOT_RELOAD=0). O salvamento da Engine avisa direto
+// (`aoGravar`); o monitoramento de arquivos complementa. Ver `systems/hot-reload.mjs`.
+export const hotReload = iniciarHotReload({ producao: acessoDaEngine.config.producao });
+ligarHotReloadDaEngine(hotReload);
+const guardaDaEngine = criarGuarda(acessoDaEngine, { aoGravar: ({ rota, corpo }) => hotReload.aposGravacao(rota, corpo) });
 
 async function atender(req, res) {
   const url = new URL(req.url, 'http://x');
