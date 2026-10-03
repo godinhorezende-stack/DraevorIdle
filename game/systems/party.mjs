@@ -46,13 +46,118 @@ const PARADO_MS = 60_000;
 const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 const BONUS_POR_VOCACOES = [1, 1.2, 1.35, 1.7, 2];
 let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
-export const ligar = (mapa) => void (vivas = mapa);
+let varredura = null;
+export function ligar(mapa) {
+  vivas = mapa;
+  if (varredura) return;
+  // A cada 30 s: tira quem passou do prazo de desconexão e grava o que mudou (`varrer`).
+  varredura = setInterval(() => varrer().catch((e) => console.error('party varrer ->', e.message)), 30_000);
+  varredura.unref();
+}
+
+/*
+ * ---- Desconexão e reinício: a party sobrevive ----
+ * Quem sai do jogo NÃO deixa a party na hora: fica `offline` por `GRACE_MS` (volta em qualquer momento do prazo e retoma
+ * o lugar, o modo, a coleira e — se era o líder — a liderança). Enquanto isso o próximo online conduz. Passado o prazo, sai.
+ * A party é gravada no banco (`parties_salvas`); ao subir o servidor todos voltam como offline por `GRACE_APOS_REINICIO_MS`.
+ * A CAÇADA em grupo não sobrevive à queda (cada um segue offline com a cópia dos bichos, como sempre): ao voltar, o
+ * convite/pedido de caçada de sempre refaz a sala. Convites e reagrupamentos (curtos, de 60 s) não são gravados.
+ */
+export const GRACE_MS = 5 * 60_000;
+export const GRACE_APOS_REINICIO_MS = 10 * 60_000;
+const BIGINT = B.banco.dialeto === 'postgres' ? 'BIGINT' : 'INTEGER';
+await B.banco.exec(`CREATE TABLE IF NOT EXISTS parties_salvas (id INTEGER PRIMARY KEY, dados TEXT NOT NULL, atualizado_em ${BIGINT} NOT NULL);`);
+const gravadas = new Map(); // id -> último JSON gravado
 
 const parties = new Map(); // id -> { id, lider, membros:[nome], convites:Map(nome->expira), frente, coleiras:Map, seguir:Map, modo:Map(nome->'seguir'|'independente'), reagrupar:{alvo,ate,cancelou:Set,chegou:Set}|null }
 const partyDe = new Map(); // nome -> id
 const convitesDeCaca = new Map(); // convidado -> { de, expira }
 const pedidos = new Map(); // anfitrião -> { de, expira }
 let proximoId = 1;
+
+/** O que vai para o banco de uma party (Maps viram listas; convites e reagrupamento ficam de fora). */
+export function serializar(p) {
+  return JSON.stringify({ id: p.id, lider: p.lider, liderOriginal: p.liderOriginal ?? null, membros: p.membros, frente: p.frente ?? null, coleiras: [...p.coleiras], seguir: [...p.seguir], modo: [...p.modo], offline: [...p.offline], cartoes: [...p.cartoes] });
+}
+function novaParty(id, lider) {
+  return { id, lider, liderOriginal: null, membros: [lider], convites: new Map(), frente: null, coleiras: new Map(), seguir: new Map(), modo: new Map(), reagrupar: null, offline: new Map(), cartoes: new Map() };
+}
+/** Grava as que mudaram e apaga as que sumiram. Devolve quantas gravou. */
+export async function gravarMudancas(agora = Date.now()) {
+  let n = 0;
+  for (const p of parties.values()) {
+    const json = serializar(p);
+    if (gravadas.get(p.id) === json) continue;
+    await B.banco.prepare('INSERT INTO parties_salvas (id, dados, atualizado_em) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET dados = excluded.dados, atualizado_em = excluded.atualizado_em').run(p.id, json, agora);
+    gravadas.set(p.id, json);
+    n++;
+  }
+  for (const id of [...gravadas.keys()]) {
+    if (parties.has(id)) continue;
+    await B.banco.prepare('DELETE FROM parties_salvas WHERE id = ?').run(id);
+    gravadas.delete(id);
+    n++;
+  }
+  return n;
+}
+let gravando = null;
+const agendarGravacao = () => {
+  if (gravando) return;
+  gravando = setTimeout(() => {
+    gravando = null;
+    gravarMudancas().catch((e) => console.error('party gravar ->', e.message));
+  }, 500);
+  gravando.unref();
+};
+
+/**
+ * No boot: recarrega as parties gravadas. Todos os integrantes voltam OFFLINE, com o prazo de `GRACE_APOS_REINICIO_MS`
+ * contado de agora (é o tempo de o servidor ficar fora e as pessoas reconectarem). Party com menos de 2 é descartada.
+ */
+export async function carregar(agora = Date.now()) {
+  const linhas = await B.banco.prepare('SELECT id, dados FROM parties_salvas ORDER BY id').all();
+  let n = 0;
+  for (const l of linhas) {
+    let d;
+    try {
+      d = JSON.parse(l.dados);
+    } catch {
+      await B.banco.prepare('DELETE FROM parties_salvas WHERE id = ?').run(l.id);
+      continue;
+    }
+    const membros = (Array.isArray(d.membros) ? d.membros : []).filter((m) => typeof m === 'string' && !partyDe.has(m));
+    if (membros.length < 2) {
+      await B.banco.prepare('DELETE FROM parties_salvas WHERE id = ?').run(l.id);
+      continue;
+    }
+    const p = novaParty(Number(l.id), membros.includes(d.lider) ? d.lider : membros[0]);
+    p.membros = membros;
+    p.frente = membros.includes(d.frente) ? d.frente : null;
+    for (const [k, v] of d.coleiras ?? []) if (membros.includes(k)) p.coleiras.set(k, v);
+    for (const [k, v] of d.seguir ?? []) if (membros.includes(k) && membros.includes(v)) p.seguir.set(k, v);
+    for (const [k, v] of d.modo ?? []) if (membros.includes(k) && (v === 'seguir' || v === 'independente')) p.modo.set(k, v);
+    for (const [k, v] of d.cartoes ?? []) if (membros.includes(k)) p.cartoes.set(k, v);
+    p.liderOriginal = membros.includes(d.liderOriginal) ? d.liderOriginal : null;
+    for (const m of membros) p.offline.set(m, agora + GRACE_APOS_REINICIO_MS);
+    parties.set(p.id, p);
+    for (const m of membros) partyDe.set(m, p.id);
+    proximoId = Math.max(proximoId, p.id + 1);
+    gravadas.set(p.id, serializar(p));
+    n++;
+  }
+  return n;
+}
+
+/** Tira quem passou do prazo de desconexão e grava o que mudou. Chamado a cada 30 s. */
+export async function varrer(agora = Date.now()) {
+  for (const p of [...parties.values()]) {
+    for (const [nome, ate] of [...p.offline]) {
+      if (ate > agora || !parties.has(p.id)) continue;
+      tirar(p, nome, 'ficou desconectado por muito tempo', { saindoDoJogo: true });
+    }
+  }
+  return gravarMudancas(agora);
+}
 
 const sessaoDe = (nome) => vivas.get(nome) ?? [...vivas.values()].find((s) => s.personagem?.nome?.toLowerCase() === String(nome ?? '').toLowerCase()) ?? null;
 const nomeDe = (s) => s.personagem?.nome;
@@ -64,6 +169,7 @@ const minhaParty = (s) => parties.get(partyDe.get(nomeDe(s))) ?? null;
  */
 const atualizar = (party) => {
   for (const nome of party?.membros ?? []) {
+    if (party.offline?.has(nome)) continue; // offline: não há tela para atualizar
     mandarJa(sessaoDe(nome));
     Amigos.avisar(nome).catch((e) => console.error('amigos avisar', e.message));
   }
@@ -162,8 +268,9 @@ export function comandoDoGrupo(s, m) {
 }
 
 function criar(lider) {
-  const p = { id: proximoId++, lider, membros: [lider], convites: new Map(), frente: null, coleiras: new Map(), seguir: new Map(), modo: new Map(), reagrupar: null };
+  const p = novaParty(proximoId++, lider);
   parties.set(p.id, p);
+  agendarGravacao();
   partyDe.set(lider, p.id);
   return p;
 }
@@ -176,6 +283,7 @@ function desfazer(p) {
   }
   for (const n of p.membros) partyDe.delete(n);
   parties.delete(p.id);
+  agendarGravacao();
   for (const n of p.membros) {
     mandarJa(sessaoDe(n));
     Amigos.avisar(n).catch((e) => console.error('amigos avisar', e.message));
@@ -208,6 +316,10 @@ function tirar(p, nome, motivo, { saindoDoJogo = false } = {}) {
   }
   p.coleiras.delete(nome);
   p.modo.delete(nome);
+  p.offline.delete(nome);
+  p.cartoes.delete(nome);
+  if (p.liderOriginal === nome) p.liderOriginal = null;
+  agendarGravacao();
   if (p.reagrupar?.alvo === nome) p.reagrupar = null;
   for (const n of p.membros) avisar(sessaoDe(n), `${nome} ${motivo}.`);
   if (p.lider === nome) p.lider = p.membros[0] ?? null;
@@ -216,11 +328,53 @@ function tirar(p, nome, motivo, { saindoDoJogo = false } = {}) {
   else atualizar(p);
 }
 
-/** Saiu do jogo: sai da caçada em grupo e da party. */
+/**
+ * Saiu do jogo: sai da caçada em grupo (ela segue offline, só dele, com uma cópia dos bichos) e fica na party como OFFLINE por
+ * `GRACE_MS`. Se era o líder, o próximo online conduz até ele voltar.
+ */
 export function saiuDoJogo(s) {
   const p = minhaParty(s);
-  if (p) tirar(p, nomeDe(s), 'saiu do jogo', { saindoDoJogo: true });
-  else if (s.estado?.hunt && Cacadas.salaDe(s.estado.hunt) !== s.estado.hunt) Cacadas.separar(s.estado.hunt);
+  if (!p) {
+    if (s.estado?.hunt && Cacadas.salaDe(s.estado.hunt) !== s.estado.hunt) Cacadas.separar(s.estado.hunt);
+    return;
+  }
+  const nome = nomeDe(s);
+  const hunt = s.estado?.hunt;
+  if (hunt && Cacadas.salaDe(hunt) !== hunt) Cacadas.separar(hunt);
+  else antesDeSairDaCacada(s);
+  const e = s.estado;
+  p.cartoes.set(nome, { level: e?.level ?? 0, vocation: e?.vocation ?? 'none', vocationName: e ? Promocao.nomeDaClasse(e) : null, outfit: e ? olhar(e) : null });
+  p.offline.set(nome, Date.now() + GRACE_MS);
+  if (p.reagrupar?.alvo === nome) p.reagrupar = null;
+  if (p.lider === nome) {
+    const proximo = p.membros.find((n) => n !== nome && !p.offline.has(n));
+    if (proximo) {
+      p.liderOriginal = nome;
+      p.lider = proximo;
+    }
+  }
+  for (const n of p.membros) if (n !== nome) avisar(sessaoDe(n), `${nome} desconectou. Se voltar em ${Math.round(GRACE_MS / 60_000)} min, continua na party.`);
+  // Todos offline: nada a atualizar na tela de ninguém; o prazo corre e o banco guarda.
+  atualizar(p);
+  agendarGravacao();
+}
+
+/** Entrou (ou reconectou) no jogo: se estava numa party como offline, volta ao lugar dele (e à liderança, se era dele). */
+export function entrouNoJogo(s) {
+  const nome = nomeDe(s);
+  const p = parties.get(partyDe.get(nome));
+  if (!p || !p.offline.has(nome)) return false;
+  p.offline.delete(nome);
+  p.cartoes.delete(nome);
+  if (p.liderOriginal === nome) {
+    p.lider = nome;
+    p.liderOriginal = null;
+  }
+  for (const n of p.membros) if (n !== nome) avisar(sessaoDe(n), `${nome} voltou para a party.`);
+  avisar(s, 'Você voltou para a sua party. Para caçar junto de novo, use o convite de caçada.');
+  atualizar(p);
+  agendarGravacao();
+  return true;
 }
 
 // --------------------------------------------------------- caçada em grupo
@@ -550,6 +704,8 @@ export function extrasDoRetrato(s) {
   // só manda chave que MUDOU — uma chave que some nunca chegaria ao client, e
   // ele seguiria mostrando a partilha de antes de sair da party.
   extras.party = null;
+  // O progresso por setor da instância (null fora de instância): a mesma chave sempre, para o quadro em delta.
+  extras.setores = !s.estado.hunt ? null : Cacadas.setoresDaCacada(s.estado.hunt, [s, ...outros].map((o) => ({ nome: nomeDe(o), x: o.estado.hunt.pos.x, y: o.estado.hunt.pos.y, z: o.estado.hunt.z ?? 0 })));
   if (p) {
     const part = partilha(s);
     const nomes = part.membros.map((m) => m.nome);
@@ -621,17 +777,19 @@ export function camposDoPersonagem(s) {
         seguindo: p.seguir.get(nome) ?? null,
         coleira: p.coleiras.get(nome) ?? 5,
         emCombate: !!e?.hunt?.alvo,
-        vocation: e?.vocation ?? 'none',
+        vocation: e?.vocation ?? p.cartoes.get(nome)?.vocation ?? 'none',
         // O nome depois da promoção ("Royal Paladin"), para o card do membro.
-        vocationName: e ? Promocao.nomeDaClasse(e) : null,
-        level: e?.level ?? 0,
-        outfit: e ? olhar(e) : null,
+        vocationName: e ? Promocao.nomeDaClasse(e) : p.cartoes.get(nome)?.vocationName ?? null,
+        level: e?.level ?? p.cartoes.get(nome)?.level ?? 0,
+        outfit: e ? olhar(e) : p.cartoes.get(nome)?.outfit ?? null,
         hp: e?.hp ?? 0,
         maxHp: e?.maxHp ?? 1,
         mana: e?.mana ?? 0,
         maxMana: e?.maxMana ?? 1,
         progresso: expDoLevel,
         hunt: cacando ? Cacadas.nomeDaHunt(e.hunt.huntId) : null,
+        // Em que setor da instância ele está (se a fase tem setores e ele está na MINHA sala).
+        setor: naMinha && e?.hunt ? Cacadas.setorDoJogador(e.hunt)?.nome ?? null : null,
         naMinhaCacada: naMinha && nome !== eu,
         cacandoPorFora: cacando && !naMinha,
         podeChamar: !!o && nome !== eu && !!minhaSala && !naMinha,
@@ -647,7 +805,11 @@ export function camposDoPersonagem(s) {
 // ------------------------------------- os chars da MESMA conta (troca de personagem)
 
 /** Está numa party agora? (o char sem aba — ver `Sessao.contaChar` — sai do mundo quando deixa de estar). */
-export const naParty = (s) => !!minhaParty(s);
+/** Está numa party COM alguém online? (o char sem aba só fica enquanto houver companhia: com todos offline, ele também sai) */
+export const naParty = (s) => {
+  const p = minhaParty(s);
+  return !!p && p.membros.some((n) => n !== nomeDe(s) && !p.offline.has(n) && !!sessaoDe(n));
+};
 
 /** Quem decide pelo grupo (encontros que pedem decisão): o líder da party — ou o jogador sozinho, sem party. */
 export const decidePeloGrupo = (s) => {
@@ -771,4 +933,30 @@ export function voltarComOLider(lider, motivo) {
     avisar(o, `Você voltou para a cidade com ${nomeDe(lider)}.`);
     mandarJa(o);
   }
+}
+
+/** SÓ para os testes: esquece as parties da memória (como um reinício do processo), sem tocar no banco. */
+export function _esquecerParaTeste() {
+  parties.clear();
+  partyDe.clear();
+  gravadas.clear();
+  proximoId = 1;
+}
+
+
+/**
+ * Reagrupamento OBRIGATÓRIO antes de um chefe (só nas fases configuradas em `gamedata/instancias.json`): quem ativa o encontro precisa ter a
+ * party inteira (os membros ATIVOS da sala, online) a `raio` casas do chefe. Devolve os nomes de quem falta (`[]` = pode começar).
+ * Fora de party, ou fase/tipo não configurados, nunca exige nada.
+ */
+export function faltamParaReagrupar(s, encontro, config) {
+  const regra = config?.reagrupamentoObrigatorio;
+  const hunt = s.estado?.hunt;
+  if (!regra || !hunt || !minhaParty(s) || !(regra.fases ?? []).includes(hunt.huntId) || !(regra.tipos ?? []).includes(encontro?.tipo)) return [];
+  const alvo = { x: encontro.x ?? hunt.pos.x, y: encontro.y ?? hunt.pos.y };
+  const raio = regra.raio ?? 6;
+  return naMesmaSala(s)
+    .filter((o) => minhaParty(o) === minhaParty(s) && ativo(o))
+    .filter((o) => (o.estado.hunt.z ?? 0) !== (encontro.z ?? hunt.z ?? 0) || cheb(o.estado.hunt.pos, alvo) > raio)
+    .map(nomeDe);
 }

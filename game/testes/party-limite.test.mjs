@@ -104,7 +104,9 @@ test('com 3 Slots em todas as contas: cinco na party, na MESMA caçada, com a pa
   // O líder sai do jogo: o próximo assume a party E a sala, e os quatro continuam juntos.
   lider.s.soltarPersonagem();
   const depois = Party.camposDoPersonagem(outros[0].s).party;
-  assert.equal(depois.membros.length, 4);
+  // Desconectar NÃO tira da party na hora: o líder fica como offline (5 membros) e o próximo conduz até ele voltar (ou o prazo vencer).
+  assert.equal(depois.membros.length, 5);
+  assert.equal(depois.membros.find((m) => m.nome === lider.nome).online, false);
   assert.equal(depois.lider, outros[0].nome);
   const sala = Cacadas.salaDe(outros[0].s.estado.hunt);
   for (const o of outros.slice(1, 4)) assert.equal(Cacadas.salaDe(o.s.estado.hunt), sala);

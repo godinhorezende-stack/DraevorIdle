@@ -18,6 +18,7 @@ import * as ConsolidacaoOffline from '../systems/consolidacao-offline.mjs';
 import * as Ausentes from '../systems/ausentes.mjs';
 import * as Presentes from '../systems/presentes.mjs';
 import * as LimpezaDoChao from '../systems/limpeza-do-chao.mjs';
+import * as Party from '../systems/party.mjs';
 import * as ServerSave from '../systems/server-save.mjs';
 import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
@@ -266,6 +267,8 @@ LimpezaDoChao.ligar(vivas);
 LimpezaDoChao.iniciar();
 // O Server Save diário (05:00, America/Sao_Paulo) — não mexe no offline farm (ver `server-save.mjs`, docs/server-save.md).
 ServerSave.ligar(vivas);
+// As parties gravadas voltam (todos como offline, com prazo para reconectar) — ver `party.mjs`.
+console.log(`  parties recarregadas: ${await Party.carregar()}`);
 if (validarServerSave().config.maintenanceMode) Manutencao.definir(true);
 ServerSave.iniciar().catch((e) => console.error('[SERVER-SAVE] não iniciou ->', e.message));
 

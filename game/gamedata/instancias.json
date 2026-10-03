@@ -1,4 +1,13 @@
 {
   "_nota": "A instancia de hunt (systems/hunt/instancia.mjs): cada entrada cria uma nova, com os bichos nos SPAWNS DO MAPA (bloco `spawns` do arquivo do mapa, ver systems/mapa/spawns.mjs); sem respawn; a hunt fica CLEAR em 100% de limpeza. `pausaDoClearMs`: quanto tempo o 'Hunt Clear!' fica na tela antes da instancia seguinte.",
-  "pausaDoClearMs": 3000
+  "pausaDoClearMs": 3000,
+  "reagrupamentoObrigatorio": {
+    "_nota": "Fases (huntId) em que a party precisa estar reunida (a `raio` casas do chefe) antes de ativar o encontro de chefe. Vazio = o reagrupamento é opcional em todas as fases.",
+    "fases": [],
+    "tipos": [
+      "miniboss",
+      "boss-secreto"
+    ],
+    "raio": 6
+  }
 }

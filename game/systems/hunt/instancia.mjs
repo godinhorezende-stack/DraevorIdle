@@ -28,6 +28,7 @@ import { criarMonstro } from './monstros.mjs';
 import { salaDe } from './sala.mjs';
 import { sortearCriatura } from '../mapa/spawns.mjs';
 import * as Encontros from '../encontros/estado.mjs';
+import { mapaDeSetores } from './setores.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/instancias.json', import.meta.url), 'utf8'));
 
@@ -142,6 +143,7 @@ function casaNoSpawn(g, alcancaveis, s, ocupada) {
  */
 export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplicarEscala, instanciaId, rng = Math.random }) {
   const alcancaveis = casasAlcancaveis(grade, inicio);
+  const setores = mapaDeSetores(alcancaveis);
   const ocupada = new Set();
   // A casa de onde o personagem sai fica livre.
   if (inicio) ocupada.add(`${inicio.x},${inicio.y},${inicio.z ?? grade.z}`);
@@ -164,6 +166,8 @@ export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplic
       Raridade.aplicar(m, Raridade.doSpawn(s));
       m.instancia = instanciaId;
       m.objetivo = 1;
+      // O setor onde ele nasce (derivado do mapa; ver `setores.mjs`).
+      m.setor = setores.setorDe(casa.x, casa.y, s.z);
       todos.push({ z: s.z, m });
     }
   }

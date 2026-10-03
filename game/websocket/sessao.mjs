@@ -1820,6 +1820,9 @@ export class Sessao {
       const longe = Math.max(Math.abs(hunt.pos.x - e.x), Math.abs(hunt.pos.y - e.y)) > 2 || (e.z != null && e.z !== hunt.z);
       if (longe) return this.erro('Chegue mais perto.');
     }
+    // Fase com reagrupamento obrigatório: o chefe só começa com a party reunida (opcional por padrão — ver `gamedata/instancias.json`).
+    const faltam = Party.faltamParaReagrupar(this, e, InstanciaDaHunt.CONFIG);
+    if (faltam.length) return this.erro(`Reagrupe antes do chefe: faltam ${faltam.join(', ')}.`);
     // Os que pedem DECISÃO (área secreta, escolta) são do LÍDER da party — ou de quem está sozinho.
     if (TiposDosEncontros.tipoDe(e.tipo)?.decisaoDoLider && !Party.decidePeloGrupo(this)) return this.erro('Só o líder da party decide isso.');
     const agora = (hunt.anfitriao ?? hunt).clock ?? 0;
@@ -1863,6 +1866,8 @@ export class Sessao {
     // o excesso vai para o depósito, com aviso no primeiro `state`.
     this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? ([doPresente, doMercado].filter(Boolean).join(' ') || null) ?? daCampanha;
     vivas.set(personagem.nome, this);
+    // Reconexão: volta ao lugar na party (se estava como offline) — ver `Party.entrouNoJogo`.
+    Party.entrouNoJogo(this);
 
     /*
      * "Progresso enquanto você esteve fora" — `andamento`, no client — e, se

@@ -55,6 +55,7 @@ import * as Campanha from './campanha.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as Dot from './combate/dot.mjs';
+import * as Setores from './hunt/setores.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
 import './encontros/tipos-de-boss.mjs'; // registra os encontros de boss (boss, miniboss, boss-secreto)
@@ -537,6 +538,8 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
   if (comInstancia) {
     instancia = Instancia.novoRegistro(huntId, instanciaId);
     for (const m of [...monstros, ...Object.values(outrosAndares).flat()]) instancia.objetivos.total += m.objetivo ?? 1;
+    // O total por setor (o progresso do setor é a contagem dos vivos contra isto).
+    instancia.setores = Setores.contarSetores([...monstros, ...Object.values(outrosAndares).flat()]);
     // Os encontros do mapa (se houver): sorteados AGORA, uma vez, com a semente guardada na instância.
     const definicoes = encontrosDaHunt(huntId);
     if (definicoes.length) Encontros.criar(instancia, definicoes);
@@ -2027,3 +2030,26 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
 }
 
 
+
+/**
+ * O progresso por SETOR da instância da sala (`[{ id, nome, total, vivos, concluido, jogadores }]`), ou `null` fora de instância.
+ * `jogadores`: `[{ nome, x, y, z }]` de quem está na sala (para dizer quem está em cada setor).
+ */
+export function setoresDaCacada(hunt, jogadores = []) {
+  const sala = hunt ? salaDe(hunt) : null;
+  const inst = sala?.instancia;
+  if (!inst?.setores) return null;
+  const grade = gradeDaHunt(huntOuMapaCustom(sala.huntId));
+  const mapa = Setores.mapaDeSetores(Instancia.casasAlcancaveis(grade));
+  return Setores.resumoDosSetores({ instancia: inst, bichos: [...sala.monstros, ...Object.values(sala.outrosAndares ?? {}).flat()], mapa, jogadores });
+}
+
+/** O setor (`{ id, nome }`) em que o jogador de `hunt` está agora, ou `null` (fora de instância). */
+export function setorDoJogador(hunt) {
+  const sala = hunt ? salaDe(hunt) : null;
+  if (!sala?.instancia?.setores) return null;
+  const grade = gradeDaHunt(huntOuMapaCustom(sala.huntId));
+  const mapa = Setores.mapaDeSetores(Instancia.casasAlcancaveis(grade));
+  const id = mapa.setorDe(hunt.pos.x, hunt.pos.y, hunt.z ?? grade.z);
+  return id ? { id, nome: Setores.nomeDoSetor(id, (mapa.andares ?? 1) > 1) } : null;
+}
