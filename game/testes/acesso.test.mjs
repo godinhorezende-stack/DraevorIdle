@@ -142,8 +142,42 @@ test('AC8. a Engine e o servidor usam o acesso: guarda ligada ANTES das rotas, t
   const idx = readFileSync(new URL('../backend/index.mjs', import.meta.url), 'utf8');
   assert.ok(idx.indexOf('guardaDaEngine(req, res, caminho') < idx.indexOf("caminho === '/api/mapas/_conteudo/modo-beta'"), 'o guarda roda antes de qualquer rota /api/mapas');
   const tela = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
-  assert.match(tela, /await garantirAcesso\(/);
   assert.match(tela, /sem-login/);
   assert.match(readFileSync(new URL('../frontend/editor-conteudo.html', import.meta.url), 'utf8'), /id="eng-acesso"/);
   assert.match(readFileSync(new URL('../frontend/client/src/editor.mjs', import.meta.url), 'utf8'), /status === 401/);
+});
+
+test('AC9. REGRESSÃO do "fica carregando": o acesso roda no BOOT da Engine (instrução própria, no topo do arquivo, antes de carregar os dados) e o callback dos bosses ficou intacto', () => {
+  const src = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
+  const linhas = src.split('\n');
+  const iAcesso = linhas.findIndex((l) => l === 'await garantirAcesso();');
+  assert.ok(iAcesso > 0, '`await garantirAcesso();` precisa ser uma instrução de nível de módulo (sem recuo)');
+  assert.equal(linhas.filter((l) => l.includes('garantirAcesso(')).length, 1, 'chamado uma vez só');
+  assert.equal(linhas[iAcesso + 1], "S.opcoes = await api('opcoes');", 'logo antes de carregar as opções');
+  assert.ok(!linhas[iAcesso - 1].includes('{') || linhas[iAcesso - 1].trim().startsWith('//'), 'a linha de cima não abre um bloco que engoliria a chamada');
+  const bosses = linhas.find((l) => l.startsWith('const BOSSES = criarEditorDeBosses('));
+  assert.match(bosses, /aoMudarCadastro: async \(\) => \{ S\.opcoes = await api\('opcoes'\); \} \}\);$/, 'o callback termina na mesma linha, sem comentário que engula o fecho');
+  assert.ok(!bosses.includes('garantirAcesso'));
+});
+
+test('AC10. página de login: /editor/login existe, é autônoma, só volta para páginas da própria Engine e o servidor leva até ela ANTES de entregar a Engine', async () => {
+  const { destinoSeguro } = await import('../frontend/client/src/editor-login.mjs');
+  assert.equal(destinoSeguro('/editor/conteudo#fase/troll-cave'), '/editor/conteudo#fase/troll-cave');
+  assert.equal(destinoSeguro('/editor'), '/editor');
+  for (const ruim of ['https://mal.com', '//mal.com/editor', '/jogar', '/editor/login', 'javascript:alert(1)', '/editor\\evil', null, undefined, '/editor/x\ny']) assert.equal(destinoSeguro(ruim), '/editor/conteudo', String(ruim));
+  const idx = readFileSync(new URL('../backend/index.mjs', import.meta.url), 'utf8');
+  assert.match(idx, /'\/editor\/login': '\/editor-login\.html'/);
+  assert.match(idx, /acessoDaEngine\.precisaDeLogin\(req\.headers\.cookie\)/);
+  assert.match(idx, /PAGINAS_DA_ENGINE = new Set\(\['\/editor', '\/editor\/conteudo'\]\)/);
+  const html = readFileSync(new URL('../frontend/editor-login.html', import.meta.url), 'utf8');
+  assert.match(html, /editor-login\.mjs/);
+  assert.doesNotMatch(html, /editor-conteudo/, 'não depende da Engine');
+  const acesso = readFileSync(new URL('../frontend/client/src/editor-acesso.mjs', import.meta.url), 'utf8');
+  assert.match(acesso, /location\.replace\(enderecoDeLogin/);
+  const prod = A.criarAcesso({ config: cfg({ NODE_ENV: 'production', ENGINE_ADMINS: 'dono@x.com' }), deps });
+  assert.equal(prod.precisaDeLogin(undefined), true);
+  assert.equal(prod.precisaDeLogin('engine_sessao=falso'), true);
+  const r = await prod.entrar({ email: 'dono@x.com', senha: 'ok-dono' });
+  assert.equal(prod.precisaDeLogin(`engine_sessao=${r.token}`), false);
+  assert.equal(A.criarAcesso({ config: cfg({}), deps }).precisaDeLogin(undefined), false, 'em desenvolvimento a página abre direto');
 });

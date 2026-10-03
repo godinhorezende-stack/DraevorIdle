@@ -126,6 +126,12 @@ export function criarAcesso({ config = configuracao(), deps, agora = () => Date.
       return { ok: true, token, email: normalizarEmail(conta.email) };
     },
     sair(token) { sessoes.delete(token); },
+    /** A página da Engine exige ir ao login? (o servidor exige login e o cookie não é de um administrador com sessão válida) */
+    precisaDeLogin(cookieHeader) {
+      if (!config.exigeLogin) return false;
+      const s = sessaoDe(lerCookie(cookieHeader));
+      return !(s && ehAdmin(config, s.email));
+    },
     quem(token) {
       const s = sessaoDe(token);
       return { logado: !!s, email: s?.email ?? null, admin: !!s && ehAdmin(config, s.email), config: { producao: config.producao, exigeLogin: config.exigeLogin, grava: config.grava } };

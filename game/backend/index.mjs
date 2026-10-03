@@ -67,7 +67,10 @@ const PAGINAS = {
   '/personagem': '/personagem.html',
   '/editor': '/editor.html',
   '/editor/conteudo': '/editor-conteudo.html',
+  '/editor/login': '/editor-login.html',
 };
+// As páginas da Engine que exigem sessão de administrador (a de login não): sem sessão, o servidor leva ao login ANTES de entregar a página.
+const PAGINAS_DA_ENGINE = new Set(['/editor', '/editor/conteudo']);
 
 const PREFIXO_ENGINE = '/packages/shared/src/';
 const PREFIXO_GAMEDATA = '/gamedata/';
@@ -124,7 +127,8 @@ function json(res, status, corpo) {
 }
 
 // O acesso à Engine: contas do jogo cujo e-mail está em `gamedata/engine.json` (ou ENGINE_ADMINS); ver `admin/acesso.mjs`.
-const guardaDaEngine = criarGuarda(criarAcesso({ deps: { contaPorEmail, conferirSenha } }));
+const acessoDaEngine = criarAcesso({ deps: { contaPorEmail, conferirSenha } });
+const guardaDaEngine = criarGuarda(acessoDaEngine);
 
 async function atender(req, res) {
   const url = new URL(req.url, 'http://x');
@@ -209,6 +213,10 @@ async function atender(req, res) {
   }
 
   // A wiki: `/wiki` e `/wiki/<artigo>` são a mesma página (o artigo vem do caminho, lido por `client/site/wiki.mjs`).
+  if (PAGINAS_DA_ENGINE.has(caminho) && acessoDaEngine.precisaDeLogin(req.headers.cookie)) {
+    res.writeHead(302, { location: `/editor/login?voltar=${encodeURIComponent(caminho)}`, 'cache-control': 'no-store' });
+    return res.end();
+  }
   const alvo = PAGINAS[caminho] ?? (caminho.startsWith('/wiki/') && !caminho.includes('.') ? '/wiki.html' : caminho);
   if (await servirArquivo(req, res, alvo)) return;
 

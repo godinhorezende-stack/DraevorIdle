@@ -295,9 +295,7 @@ const TELAS_FIXAS = {
   montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
 };
 const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
-const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { // O servidor decide quem entra: em produção, sem sessão de administrador só o login aparece (nenhum dado é entregue).
-await garantirAcesso({ raiz: () => $('#raiz') });
-S.opcoes = await api('opcoes'); } });
+const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
@@ -479,6 +477,8 @@ window.addEventListener('beforeunload', (e) => {
 });
 // O editor de Atos guarda o próprio "sujo": o aviso da barra é conferido depois de cada edição.
 for (const ev of ['input', 'change', 'click', 'pointerup']) document.addEventListener(ev, () => setTimeout(atualizarSujo, 0));
+// O servidor decide quem entra: em produção, sem sessão de administrador a página leva a /editor/login (nenhum dado é entregue).
+await garantirAcesso();
 S.opcoes = await api('opcoes');
 {
   const { aba, id, resto } = lerEndereco();
