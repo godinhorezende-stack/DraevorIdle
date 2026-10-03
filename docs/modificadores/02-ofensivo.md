@@ -5,7 +5,7 @@
 | Modificador (id) | Un. | T1 | T2 | T3 | T4 | T5 | Item Level mín. | Peso | Raridades |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | Attack (`atk_flat`) | número | 2–3 | 4–6 | 7–10 | 11–15 | 16–20 | 1 | 60 | todas |
-| Dano físico adicional (`phys_add`) | número | 1–2 | 3–4 | 5–6 | 7–8 | 9–10 | 1 | 60 | todas |
+| Dano físico adicional (`phys_add`) | número | 10 | 15 | 22 | 34 | 50 | 1 | 60 | todas |
 | Physical Damage (`phys_dmg`) | % | 2–3% | 4–6% | 7–10% | 11–15% | 16–20% | 1 | 50 | todas |
 | Fire Damage (`fire_dmg`) | % | 2–3% | 4–6% | 7–10% | 11–15% | 16–20% | 1 | 50 | todas |
 | Earth Damage (`earth_dmg`) | % | 2–3% | 4–6% | 7–10% | 11–15% | 16–20% | 1 | 50 | todas |

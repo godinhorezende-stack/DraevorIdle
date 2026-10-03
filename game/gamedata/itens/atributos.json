@@ -148,7 +148,8 @@
     "lendário",
     "mítico"
    ],
-   "dropa": false
+   "dropa": false,
+   "substituidoPor": "phys_add"
   },
   "phys_add": {
    "nome": "Dano físico adicional",
@@ -157,24 +158,24 @@
    "peso": 60,
    "niveis": {
     "1": [
-     1,
-     2
+     10,
+     10
     ],
     "2": [
-     3,
-     4
+     15,
+     15
     ],
     "3": [
-     5,
-     6
+     22,
+     22
     ],
     "4": [
-     7,
-     8
+     34,
+     34
     ],
     "5": [
-     9,
-     10
+     50,
+     50
     ]
    },
    "proporcaoDoMaximo": 2,

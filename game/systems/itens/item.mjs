@@ -174,7 +174,8 @@ export function renomearAdds(p) {
   let mudou = false;
   const saida = [];
   for (const a of p.af) {
-    const novo = !ATRIBUTOS[a.id] && ADD_NOVO_DO_ANTIGO[a.id];
+    // Add que saiu do jogo (`ADD_NOVO_DO_ANTIGO`) ou que o catálogo marca como substituído (`substituidoPor`: o Attack virou Dano físico adicional).
+    const novo = ATRIBUTOS[a.id]?.substituidoPor ?? (!ATRIBUTOS[a.id] && ADD_NOVO_DO_ANTIGO[a.id]);
     if (novo && ATRIBUTOS[novo]) {
       const velhos = niveisDe(a.id);
       const nivel = Math.min(NIVEL_MAXIMO, Math.max(1, a.nivel ?? 1));
@@ -328,7 +329,7 @@ export function converterTudo(raiz, rng = null, { abrirSoquetes = false } = {}) 
 }
 
 /** A versão do formato de item do personagem: quem já está nela não precisa ser varrido de novo. */
-export const VERSAO_DOS_ITENS = 5; // 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura); 3: a munição também (a 2 a tirou); 4: reestruturação (adds novos, Evasion/Energy Shield, Item Level); 5: sockets e gemas de skill
+export const VERSAO_DOS_ITENS = 6; // 6: o Attack (atk_flat) virou Dano físico adicional (phys_add) nas peças antigas; 2: toda peça equipável sorteia a faixa (ataque/defesa/armadura); 3: a munição também (a 2 a tirou); 4: reestruturação (adds novos, Evasion/Energy Shield, Item Level); 5: sockets e gemas de skill
 
 /** Converte o personagem (uma vez — marca `versaoDosItens`). Devolve quantas peças mudaram. */
 export function converterPersonagem(estado) {
