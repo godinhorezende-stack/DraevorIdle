@@ -1112,7 +1112,13 @@ const PAUSA_MAXIMA_DO_KITE_MS = 6000;
  */
 function recuoInutil(hunt) {
   const agora = hunt.clock ?? 0;
-  const k = (hunt.kite ??= { passos: [], x: null, y: null, paradoAte: 0, nivel: 0, ultimaPausa: -Infinity });
+  // O estado do kite viaja na caçada gravada no banco: uma caçada de ANTES (outro formato do `hunt.kite`, de versões anteriores do recuo) não pode quebrar o tique — qualquer
+  // coisa que não seja o formato de agora recomeça limpa. (Foi isso que travou a troca de personagem: `passos` indefinido na simulação offline do login.)
+  if (!hunt.kite || !Array.isArray(hunt.kite.passos)) hunt.kite = { passos: [], x: null, y: null, paradoAte: 0, nivel: 0, ultimaPausa: -Infinity };
+  const k = hunt.kite;
+  if (!Number.isFinite(k.paradoAte)) k.paradoAte = 0;
+  if (!Number.isFinite(k.nivel)) k.nivel = 0;
+  if (!Number.isFinite(k.ultimaPausa)) k.ultimaPausa = -Infinity;
   if (k.paradoAte > agora) return true;
   if (k.x != null && (k.x !== hunt.pos.x || k.y !== hunt.pos.y)) {
     k.passos.push(`${hunt.pos.x},${hunt.pos.y}`);
