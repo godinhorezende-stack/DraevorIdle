@@ -24,6 +24,7 @@ import * as Boosts from './boosts.mjs';
 import * as Stamina from './stamina.mjs';
 import * as Treinos from './treinos.mjs';
 import * as Premium from './premium.mjs';
+import * as Beta from './modo-beta.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
@@ -589,7 +590,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // O boss de fim de ato pela campanha: a PRIMEIRA vez sem level, task nem
   // recarga; depois da vitória, repetir segue a recarga dele (sem level/task:
   // a força é a da dificuldade).
-  if (boss && !primeiraDoAto) {
+  // Modo beta: bosses sem level, task nem recarga (a regra do portal do boss de ato, acima, continua valendo).
+  if (boss && !primeiraDoAto && !Beta.ativo()) {
     // Level e a recarga real de cada boss (`cooldownHours`, `bossCooldownsAte`).
     if (atoDoBoss == null && (estado.level ?? 0) < (boss.level ?? 0)) return { ok: false, erro: `Precisa de level ${boss.level}.` };
     // Boss de task: abre com a task feita e sai uma vez por personagem (`bosses.mjs`).

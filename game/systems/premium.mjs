@@ -17,6 +17,7 @@
 // cidade — senão uma caçada offline ficaria dias numa hunt premium de graça.
 import { CATALOGO } from './dados.mjs';
 import { PORTAS_DE_ACESSO } from '../engine/portas-de-acesso.mjs';
+import * as Beta from './modo-beta.mjs';
 
 export const ACESSO_MS = 24 * 3_600_000;
 const PORTA_DO_ITEM = new Map(Object.values(PORTAS_DE_ACESSO).map((p) => [p.item, p]));
@@ -75,7 +76,7 @@ export function trancaDaHunt(hunt) {
 /** Pode ENTRAR? `{ok}` ou `{ok:false, erro}` com a frase do que falta. */
 export function podeEntrar(estado, hunt) {
   const tranca = trancaDaHunt(hunt);
-  if (!tranca) return { ok: true };
+  if (!tranca || Beta.ativo()) return { ok: true }; // modo beta: acesso livre para testar
   const falta = [];
   if (!ativo(estado)) falta.push('premium ativo');
   if (tranca !== 'vip' && !acessoView(estado, tranca)) falta.push(`o acesso das ${PORTAS_DE_ACESSO[tranca].nome} (o pergaminho, na Store)`);
@@ -86,7 +87,7 @@ export function podeEntrar(estado, hunt) {
 
 /** Ainda pode FICAR? (premium e acesso valendo — o level não cai). */
 export function podeFicar(estado, tranca, agora = Date.now()) {
-  if (!tranca) return true;
+  if (!tranca || Beta.ativo()) return true;
   if (!ativo(estado, agora)) return false;
   return tranca === 'vip' || !!acessoView(estado, tranca, agora);
 }

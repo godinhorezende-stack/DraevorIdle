@@ -76,3 +76,6 @@ Exige mudança estrutural: grafo de fases com bifurcação/convergência no serv
 
 1. **Testador:** todos, por enquanto. 2. **Isolamento:** nenhum perfil separado — vale no servidor oficial, que hoje está em beta. 3. **Fases:** qualquer número por ato (generalizar o `12` fixo; atos atuais seguem com 12). 4. **Dificuldades:** as 3 (Normal/Cruel/Merciless). 5. **Publicação:** reinício controlado (Server Save + manutenção).
 - **Beta:** hoje o "beta" é só o aviso `avisoDeDesenvolvimento` do catálogo — **não existe flag de servidor**. Proposta: criar `modoBeta` numa config do servidor (ligado agora, como decidido), com interruptor admin pela rede trancada, para poder desligar sem deploy. O acesso livre fica atrás desse interruptor, nunca gravado nos personagens.
+
+## Etapa 2 — modo beta (feito)
+`systems/modo-beta.mjs` + `gamedata/modo-beta.json` (`ativo: true`). `MODO_BETA=0|1` manda sobre o arquivo; o admin liga/desliga em tempo de execução por `POST /api/mapas/_conteudo/modo-beta {ativo}` (GET mostra a situação). Quando ligado: `Premium.podeEntrar/podeFicar` liberam VIP/Instance/Divine; `Cacadas.entrar` ignora level/task/recarga dos bosses; `Bosses.marcarEntrada` não grava espera; o Auto Boss não pula por level/task/recarga. Não muda: portal e limpeza do boss de ato, duração da sala de boss, instância. Sob `node --test` o padrão é desligado.
