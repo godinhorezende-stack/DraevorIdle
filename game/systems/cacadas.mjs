@@ -1651,11 +1651,59 @@ export function tique(estado, personagem, agora = Date.now()) {
   return eventos;
 }
 
+/**
+ * O passo do familiar atrás do dono — SEM teleporte. Começa a andar quando passa de `perto` casas e para quando chega a uma casa de folga dentro dele
+ * (histerese: não fica no limite andando e parando); nunca pisa na casa do dono nem na de um bicho; se está em cima do dono (acabou de ser invocado), dá
+ * UM passo para uma casa livre ao lado. Rota pela BFS de sempre (contorna parede e bicho, usa diagonal quando precisa). Sem rota: espera um pouco e tenta
+ * de novo (nunca aparece do lado do dono por causa disso). Anda 1 casa por passo (`PASSO_MS`); quando está longe, até 2 por tique para alcançar o dono.
+ */
+const ESPERA_SEM_ROTA_MS = 1500;
+function andarFamiliar(hunt, grade, f, agora) {
+  const d = distancia(f, hunt.pos);
+  const emCimaDoDono = f.x === hunt.pos.x && f.y === hunt.pos.y;
+  const parada = f.andando ? d <= Math.max(1, f.perto - 1) : d <= f.perto;
+  if (!emCimaDoDono && parada) {
+    f.andando = false;
+    f.moveMs = R.PASSO_MS;
+    return;
+  }
+  if (!R.jaPode(agora, f.proximoPassoEm) || !R.jaPode(agora, f.semRotaAte)) return;
+  const bichos = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
+  const dono = `${hunt.pos.x},${hunt.pos.y}`;
+  const bloqueadas = new Set([...bichos, dono]);
+  const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
+  let passos = d > f.perto + 3 ? 2 : 1;
+  let deu = 0;
+  for (let k = 0; k < passos; k++) {
+    let destino;
+    if (f.x === hunt.pos.x && f.y === hunt.pos.y) {
+      // Em cima do dono: uma casa livre do lado dele (um passo de verdade, de uma casa).
+      destino = [[-1, 0], [1, 0], [0, 1], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1]].map(([dx, dy]) => ({ x: f.x + dx, y: f.y + dy })).find((c) => grade.andavel.has(`${c.x},${c.y}`) && !ocupado(c));
+    } else {
+      destino = proximoPassoAte(grade, f, hunt.pos, ocupado, bloqueadas);
+    }
+    if (!destino) break;
+    f.dir = destino.y < f.y ? 0 : destino.y > f.y ? 2 : destino.x > f.x ? 1 : 3;
+    f.x = destino.x;
+    f.y = destino.y;
+    deu++;
+    f.andando = true;
+    if (distancia(f, hunt.pos) <= Math.max(1, f.perto - 1)) break;
+  }
+  if (!deu) {
+    f.semRotaAte = agora + ESPERA_SEM_ROTA_MS;
+    f.andando = false;
+    return;
+  }
+  f.moveMs = Math.round(R.PASSO_MS / deu);
+  f.proximoPassoEm = agora + R.PASSO_MS;
+}
+
 /*
  * ---- O familiar em campo ----
  *
- * Gruda no dono: passou de `perto` casas, reaparece numa casa livre do lado
- * dele. A cada 2s (o golpe da caçada) bate em TODO bicho a até `alcance` casas
+ * Acompanha o dono ANDANDO: passou de `perto` casas, caminha tile por tile até ele
+ * (`andarFamiliar`). A cada 2s (o golpe da caçada) bate em TODO bicho a até `alcance` casas
  * do alvo do dono, com `Summon.fracao` do golpe dele — "nunca sai caçando
  * sozinho": sem alvo do dono, não bate. Acabou o tempo em campo, some.
  */
@@ -1666,18 +1714,9 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
     hunt.summon = null;
     return eventos;
   }
-  if (distancia(f, hunt.pos) > f.perto || (f.x === hunt.pos.x && f.y === hunt.pos.y)) {
-    const ocupadas = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-    ocupadas.add(`${hunt.pos.x},${hunt.pos.y}`);
-    for (const [dx, dy] of [[-1, 0], [1, 0], [0, 1], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1]]) {
-      const c = { x: hunt.pos.x + dx, y: hunt.pos.y + dy };
-      if (grade.andavel.has(`${c.x},${c.y}`) && !ocupadas.has(`${c.x},${c.y}`)) {
-        f.x = c.x;
-        f.y = c.y;
-        break;
-      }
-    }
-  }
+  // O familiar ANDA até o dono, tile por tile, pela mesma busca da caçada (dono, 03/10): antes, passou de `perto` casas, ele era reposicionado numa casa
+  // livre do lado do dono (coordenada trocada de uma vez: o "puxão" na tela).
+  andarFamiliar(hunt, grade, f, agora);
   const alvo = alvoAtual(hunt);
   if (!alvo || hunt.lurando || !R.jaPode(agora, f.proximoGolpe)) return eventos;
   f.proximoGolpe = agora + ATAQUE_MS;
@@ -1868,7 +1907,7 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     targetUid: alvoAtual(hunt)?.uid ?? null,
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
     summon: hunt.summon
-      ? { uid: hunt.summon.uid, x: hunt.summon.x, y: hunt.summon.y, dir: hunt.summon.dir, look: hunt.summon.look, name: hunt.summon.name, nivel: hunt.summon.nivel, moveMs: R.PASSO_MS }
+      ? { uid: hunt.summon.uid, x: hunt.summon.x, y: hunt.summon.y, dir: hunt.summon.dir, look: hunt.summon.look, name: hunt.summon.name, nivel: hunt.summon.nivel, moveMs: hunt.summon.moveMs ?? R.PASSO_MS }
       : null,
     // Relógio da caçada e os cooldowns da barra (ver `faltaDoCooldown`).
     clock: hunt.clock ?? 0,
