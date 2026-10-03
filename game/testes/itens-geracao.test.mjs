@@ -59,7 +59,7 @@ test('modificadores: exatamente a lista do dono, cada um com peso, faixa por tie
     assert.ok(['flat', 'pct'].includes(a.tipo), `${id}: tipo`);
     assert.ok(a.nivelMinimo >= 1, `${id}: nível mínimo`);
     assert.ok(a.raridades?.length && a.raridades.every((r) => C.ORDEM.includes(r)), `${id}: raridades`);
-    // `dropa:false` (Attack, que o Dano físico adicional substituiu; Damage vs Elite) fica cadastrado, mas fora do drop.
+    // `dropa:false` (Attack, que o Dano adicional substituiu; Damage vs Elite) fica cadastrado, mas fora do drop.
     if (a.dropa !== false) assert.ok(Object.values(C.POOLS).some((l) => l.includes(id)), `${id}: em algum pool (tipos de item permitidos)`);
   }
   // Sem "Magic Resistance" nem dano elemental genérico.

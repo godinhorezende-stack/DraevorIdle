@@ -241,7 +241,7 @@
   },
   {
    "id": "phys_add",
-   "nome": "Dano físico adicional",
+   "nome": "Dano adicional",
    "tipo": "flat",
    "unidade": "número",
    "categoria": "ofensivo",

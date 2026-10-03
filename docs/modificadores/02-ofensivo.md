@@ -5,7 +5,7 @@
 | Modificador (id) | Un. | T1 | T2 | T3 | T4 | T5 | Item Level mín. | Peso | Raridades |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | Attack (`atk_flat`) | número | 2–3 | 4–6 | 7–10 | 11–15 | 16–20 | 1 | 60 | todas |
-| Dano físico adicional (`phys_add`) | número | 10 | 15 | 22 | 34 | 50 | 1 | 60 | todas |
+| Dano adicional (`phys_add`) | número | 10 | 15 | 22 | 34 | 50 | 1 | 60 | todas |
 | Physical Damage (`phys_dmg`) | % | 2–3% | 4–6% | 7–10% | 11–15% | 16–20% | 1 | 50 | todas |
 | Fire Damage (`fire_dmg`) | % | 2–3% | 4–6% | 7–10% | 11–15% | 16–20% | 1 | 50 | todas |
 | Earth Damage (`earth_dmg`) | % | 2–3% | 4–6% | 7–10% | 11–15% | 16–20% | 1 | 50 | todas |
@@ -32,7 +32,7 @@
 - Pools (equipamentos onde pode sair): — nenhum —.
 - Tier liberado a partir do Item Level: T1≥1, T2≥1, T3≥101, T4≥601, T5≥1201.
 
-### Dano físico adicional — `phys_add`
+### Dano adicional — `phys_add`
 - Estado: ativo
 - Tipo de valor: número fixo; Item Level mínimo para sair: 1; peso de sorteio: 60.
 - Pools (equipamentos onde pode sair): arma_melee, arma_distancia, municao, aljava, anel, amuleto.

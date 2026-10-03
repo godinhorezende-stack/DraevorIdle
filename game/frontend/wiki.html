@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wiki — Draevor Idle</title>
+<meta name="description" content="A wiki do Draevor Idle: raridade dos itens, tiers e modificadores, com as tabelas reais do jogo.">
+<link rel="icon" type="image/png" sizes="32x32" href="/client/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/client/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/client/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/client/site/site.css">
+<link rel="stylesheet" href="/client/site/wiki.css">
+</head>
+<body>
+
+<header class="topo">
+  <a class="marca" href="/">
+    <img src="/client/assets/ui/draevor-logo.webp" alt="Draevor Idle">
+  </a>
+  <nav>
+    <a href="/#ranking" data-t="menu.ranking">Ranking</a>
+    <a href="/wiki" data-t="menu.wiki" aria-current="page">Wiki</a>
+    <a href="/online" data-t="menu.online">Online</a>
+    <a href="/guildas" data-t="menu.guildas">Guildas</a>
+
+    <span class="menu-sep"></span>
+
+    <a class="botao-entrar" href="/jogar" data-t="menu.entrar">Entrar</a>
+  </nav>
+</header>
+
+<main class="wiki">
+  <aside class="wiki-indice" aria-label="Artigos da wiki">
+    <h2>Wiki</h2>
+    <nav id="wiki-indice"></nav>
+  </aside>
+  <article class="wiki-artigo" id="wiki-artigo">
+    <p class="wiki-carregando">carregando...</p>
+  </article>
+</main>
+
+<footer>
+  <span>Draevor Idle</span>
+  <span class="separador">·</span>
+  <a href="/jogar">Entrar</a>
+  <span class="separador">·</span>
+  <a href="/#ranking">Ranking</a>
+</footer>
+
+<script type="module" src="/client/site/wiki.mjs"></script>
+</body>
+</html>

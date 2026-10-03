@@ -10,7 +10,7 @@ Tipos de item com pool: `arma_melee`, `arma_distancia`, `arma_magica`, `municao`
 | DEX (`dex`) | arma_melee, arma_distancia, municao | escudo, aljava | todos | todos | todos |
 | INT (`int`) | arma_magica | escudo, livro | todos | todos | todos |
 | Attack (`atk_flat`) | — | — | — | — | — |
-| Dano físico adicional (`phys_add`) | arma_melee, arma_distancia, municao | aljava | — | todos | todos |
+| Dano adicional (`phys_add`) | arma_melee, arma_distancia, municao | aljava | — | todos | todos |
 | Physical Damage (`phys_dmg`) | arma_melee, arma_distancia, municao | escudo, aljava | armadura | todos | todos |
 | Fire Damage (`fire_dmg`) | todos | livro, aljava | armadura | todos | todos |
 | Earth Damage (`earth_dmg`) | todos | livro, aljava | armadura | todos | todos |
