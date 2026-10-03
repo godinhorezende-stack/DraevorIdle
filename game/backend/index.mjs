@@ -23,6 +23,7 @@ import * as Party from '../systems/party.mjs';
 import * as ServerSave from '../systems/server-save.mjs';
 import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as ModoBeta from '../systems/modo-beta.mjs';
+import * as Operacao from '../admin/operacao.mjs';
 import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
 
 Site.ligar(vivas);
@@ -146,16 +147,16 @@ async function atender(req, res) {
     if (req.method === 'GET') return json(res, 200, { ativo: ModoBeta.ativo() });
     if (req.method === 'POST') {
       const dados = await corpoJson(req).catch(() => null);
-      if (typeof dados?.ativo !== 'boolean') return json(res, 400, { ok: false, erros: ['ativo deve ser true ou false.'] });
-      return json(res, 200, { ok: true, ativo: ModoBeta.definir(dados.ativo) });
+      const r = Operacao.definirBeta(dados?.ativo);
+      return json(res, r.ok ? 200 : 400, r);
     }
   }
   if (caminho === '/api/mapas/_conteudo/server-save') {
     if (req.method === 'GET') return json(res, 200, { situacao: ServerSave.situacao(), manutencao: Manutencao.bloqueada(), ciclos: await ServerSave.ultimosCiclos(10) });
     if (req.method === 'POST') {
       const dados = await corpoJson(req).catch(() => null);
-      if (dados?.acao === 'executar') return json(res, 200, await ServerSave.executarAgora());
-      if (dados?.acao === 'manutencao') return json(res, 200, { ok: true, manutencao: Manutencao.definir(!!dados.ativo, typeof dados.mensagem === 'string' ? dados.mensagem : null) });
+      if (dados?.acao === 'executar') return json(res, 200, await Operacao.executarServerSave());
+      if (dados?.acao === 'manutencao') return json(res, 200, { ok: true, manutencao: Operacao.definirManutencao(!!dados.ativo, typeof dados.mensagem === 'string' ? dados.mensagem : null).ativa });
       return json(res, 400, { ok: false, erros: ['acao deve ser "executar" ou "manutencao".'] });
     }
   }

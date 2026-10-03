@@ -5,6 +5,7 @@ import * as Biblioteca from './biblioteca.mjs';
 import * as Atos from './atos.mjs';
 import * as Hunts from './hunts.mjs';
 import * as Mapas from './mapas.mjs';
+import * as Operacao from './operacao.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -33,6 +34,9 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       const t = Biblioteca.dadosDoTooltip(url.searchParams.get('id'), { itemLevel: url.searchParams.get('itemLevel'), semente: url.searchParams.get('semente') });
       return t ? json(res, 200, t) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
     }
+    // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
+    if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
+    if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
     // Painel por hunt (somente leitura): mapa, monstros, distribuição, dificuldade e drops esperados.
     if (rota === 'hunts') return json(res, 200, { hunts: Hunts.listar() }), true;
     if (rota === 'hunts/painel') {
@@ -77,6 +81,9 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota.startsWith('fase/') && rota.endsWith('/meta')) return json(res, 200, Conteudo.salvarMeta(rota.slice(5, -'/meta'.length), dados ?? {})), true;
     if (rota === 'atos-editor/previa') return json(res, 200, { previa: Atos.previa(dados?.recompensa, { origem: dados?.origem === 'boss' ? 'boss final' : 'fase' }), simulacao: dados?.simular ? Atos.simular(dados.recompensa, { execucoes: dados.execucoes, semente: dados.semente }) : null, problemas: Atos.validarRecompensa(dados?.recompensa, dados?.huntId ?? null) }), true;
     if (/^atos-editor\/[a-z0-9-]+\/restaurar$/.test(rota)) return json(res, 200, Atos.restaurar(rota.split('/')[1], Number(dados?.versao))), true;
+    if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
+    if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
+    if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
     if (rota === 'mapas/validar') return json(res, 200, Mapas.validarSpawns(dados ?? {})), true;
     if (rota === 'atos-editor/validar') return json(res, 200, Atos.validar(dados ?? {})), true;
     if (rota === 'atos-editor') return json(res, 200, dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {})), true;

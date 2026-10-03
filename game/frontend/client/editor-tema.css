@@ -656,3 +656,7 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .mp-faixa { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: var(--eng-s2); }
 .mp-faixa i { display: block; min-width: 2px; }
 @media (max-width: 1100px) { .mp-corpo { grid-template-columns: 1fr; } .mp-esq, .mp-dir, .mp-wrap { max-height: none; } }
+
+/* ---- Telas de operação (Testes e beta, Configurações) ---- */
+.op-linha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--eng-e3); }
+.op-lista { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; }

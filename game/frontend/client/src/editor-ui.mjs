@@ -32,6 +32,7 @@ const TRACOS = {
   externo: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   copiar: 'M9 9h10v11H9zM5 15V4h10',
   fechar: 'M6 6l12 12M18 6 6 18',
+  frasco: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3M7.5 15h9',
   chevron: 'M9 6l6 6-6 6',
   menu: 'M4 7h16M4 12h16M4 17h16',
   recolher: 'M14 6l-6 6 6 6M20 5v14',
