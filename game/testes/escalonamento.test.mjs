@@ -14,11 +14,12 @@ import { personagemDeTeste } from './apoio.mjs';
 const ret = (x0, y0, w, h) => { const set = new Set(); for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) set.add(`${x},${y}`); return set; };
 const bicho = (extra = {}) => ({ hp: 1000, maxHp: 1000, forca: 1, raridade: 'normal', ...extra });
 
-test('D1. fatores por jogador a mais: sozinho é 1; quatro, +90% de vida e +30% de dano nos normais; chefe pesa mais; há teto', () => {
+test('D1. fatores por jogador a mais: sozinho é 1; quatro, +90% de vida e NENHUM dano a mais nos normais; chefe pesa mais; há teto', () => {
   assert.deepEqual(E.fatoresPara('normal', 1), { vida: 1, dano: 1 });
   const q = E.fatoresPara('normal', 4);
-  assert.ok(Math.abs(q.vida - 1.9) < 1e-9 && Math.abs(q.dano - 1.3) < 1e-9);
+  assert.ok(Math.abs(q.vida - 1.9) < 1e-9 && q.dano === 1);
   assert.ok(E.fatoresPara('boss', 4).vida > q.vida);
+  for (const tipo of Object.keys(E.ESCALONAMENTO.porJogador)) assert.equal(E.fatoresPara(tipo, 5).dano, 1, `${tipo}: o dano não escala`);
   assert.ok(E.fatoresPara('raro', 4).vida > E.fatoresPara('normal', 4).vida);
   assert.deepEqual(E.fatoresPara('normal', 100), { vida: E.ESCALONAMENTO.teto.vida, dano: E.ESCALONAMENTO.teto.dano });
   assert.equal(E.tipoDoBicho({ raridade: 'elite' }), 'elite');

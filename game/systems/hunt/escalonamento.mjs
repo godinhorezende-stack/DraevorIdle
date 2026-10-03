@@ -1,6 +1,6 @@
 // ESCALONAMENTO da dificuldade pelos jogadores ATIVOS da instância compartilhada (party). Config em `ESCALONAMENTO`: nada de número solto.
 //
-// O bicho ganha VIDA e DANO por jogador a mais, por tipo (normal, modificado, raro, elite, único, boss). Quanto cada bicho "sente" os
+// O bicho ganha VIDA por jogador a mais, por tipo (o DANO não escala: `dano: 0` — decisão do dono; o campo e o teto existem para quem quiser religar) (normal, modificado, raro, elite, único, boss). Quanto cada bicho "sente" os
 // outros jogadores depende do modelo:
 //   'setor' (padrão): conta inteiro quem está no MESMO setor do bicho e só `pesoDeFora` (35%) de quem está noutros — um grupo espalhado
 //                     não deixa cada setor com a dificuldade de um grupo reunido. Chefe (boss/único) sente a party ativa INTEIRA.
@@ -17,14 +17,14 @@ export const ESCALONAMENTO = Object.freeze({
   pesoDeFora: 0.35,
   atualizarMs: 1000,
   porJogador: Object.freeze({
-    normal: Object.freeze({ vida: 0.3, dano: 0.1 }),
-    modificado: Object.freeze({ vida: 0.3, dano: 0.1 }),
-    raro: Object.freeze({ vida: 0.35, dano: 0.1 }),
-    elite: Object.freeze({ vida: 0.4, dano: 0.12 }),
-    unico: Object.freeze({ vida: 0.5, dano: 0.15 }),
-    boss: Object.freeze({ vida: 0.5, dano: 0.15 }),
+    normal: Object.freeze({ vida: 0.3, dano: 0 }),
+    modificado: Object.freeze({ vida: 0.3, dano: 0 }),
+    raro: Object.freeze({ vida: 0.35, dano: 0 }),
+    elite: Object.freeze({ vida: 0.4, dano: 0 }),
+    unico: Object.freeze({ vida: 0.5, dano: 0 }),
+    boss: Object.freeze({ vida: 0.5, dano: 0 }),
   }),
-  teto: Object.freeze({ vida: 3, dano: 1.6 }),
+  teto: Object.freeze({ vida: 3, dano: 1 }),
 });
 
 /** O tipo de escalonamento do bicho (pela raridade; `boss`/`unico` também pelas marcas antigas). */

@@ -207,7 +207,8 @@ test('party: os ITENS são SORTEADOS entre os quatro — todos recebem, nenhum s
   for (const [i, j] of js.slice(1).entries()) {
     const ev = Combate.tirarEventosDaParty(j.s.estado);
     assert.ok(ev?.length, `${j.nome} viu o loot`);
-    assert.equal(ev.flatMap((e) => e.items).length, recebidos[i + 1]);
+    // (gemas e orbes que caírem por acaso também são sorteados para a party; aqui só os itens do teste.)
+    assert.equal(ev.flatMap((e) => e.items).filter((it) => leve.includes(it.id)).length, recebidos[i + 1]);
   }
 });
 
