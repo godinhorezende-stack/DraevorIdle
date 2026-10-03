@@ -167,6 +167,12 @@ export function validarAto(bruto, ctx = {}) {
   }
   for (const e of a.requisitos.exige) if (ctx.atos && !ctx.atos.some((x) => x.id === e)) r.push(erro('ato.requisitos', `O ato exigido "${e}" não existe.`));
 
+  // Para o jogo executar o ato (beta/publicado): o `ordem` é o NÚMERO do ato no jogo (os legados são 1–4), único e inteiro.
+  if (exige && !/^legado-\d+$/.test(a.id)) {
+    const min = ctx.ordemMinima ?? 5;
+    if (!(Number.isInteger(a.ordem) && a.ordem >= min)) r.push(erro('ato.ordem', `Para beta/publicado, a ordem é o número do ato no jogo: inteiro, ${min} ou mais (1 a ${min - 1} são dos atos legados).`));
+    else if (ctx.ordensEmUso?.has(a.ordem)) r.push(erro('ato.ordem', `A ordem ${a.ordem} já é do ato "${ctx.ordensEmUso.get(a.ordem)}".`));
+  }
   // ---- fases
   if (!a.fases.length) r.push(erro('ato.fases', 'O ato não tem nenhuma fase.'));
   const ids = new Set();
@@ -189,6 +195,7 @@ export function validarAto(bruto, ctx = {}) {
       if (f.huntId && ctx.huntExiste && !ctx.huntExiste(f.huntId)) r.push(erro(onde, `A hunt "${f.huntId}" não existe no cadastro.`));
       if (f.huntId && ctx.huntsEmUso?.has(f.huntId)) r.push(erro(onde, `A hunt "${f.huntId}" já é usada no ato "${ctx.huntsEmUso.get(f.huntId)}": o progresso é por hunt e os dois atos compartilhariam a conclusão.`));
     }
+    if (exige && f.nivel == null && tipo?.suportado) r.push(erro(onde, 'Defina o nível da fase nas 3 dificuldades: a força dos bichos é escalada para ele.'));
     if (f.nivel != null) for (const d of ['facil', 'medio', 'dificil']) if (!(Number.isFinite(f.nivel[d]) && f.nivel[d] >= 1)) r.push(erro(onde, `Nível "${d}" precisa ser um número ≥ 1.`));
     if (f.conclusao?.tipo !== 'limpar-hunt') r.push(exige ? erro(onde, `Condição de conclusão "${f.conclusao?.tipo}" sem suporte: hoje só 'limpar-hunt'.`) : aviso(onde, `Condição de conclusão "${f.conclusao?.tipo}" sem suporte; só 'limpar-hunt' funciona hoje.`));
     for (const e of f.requisitos.exige) {
@@ -230,6 +237,7 @@ export function validarAto(bruto, ctx = {}) {
   } else {
     if (!b.bossId) r.push(erro('boss final', 'Escolha o boss (da Biblioteca).'));
     else if (ctx.bossExiste && !ctx.bossExiste(b.bossId)) r.push(erro('boss final', `O boss "${b.bossId}" não existe no cadastro.`));
+    else if (ctx.bossesEmUso?.has(b.bossId)) r.push(erro('boss final', `O boss "${b.bossId}" já fecha o ato "${ctx.bossesEmUso.get(b.bossId)}": o boss de ato identifica o ato (um boss, um ato).`));
     if (!b.faseAnterior || !ids.has(b.faseAnterior)) r.push(erro('boss final', 'Escolha a fase anterior ao boss (a que, limpa, abre o portal).'));
     else {
       if (s.get(b.faseAnterior)?.length) r.push(erro('boss final', `A fase "${b.faseAnterior}" tem saídas: o portal do boss final nasce da ÚLTIMA fase do ato.`));

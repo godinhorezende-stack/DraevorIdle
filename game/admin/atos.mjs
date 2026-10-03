@@ -1,6 +1,6 @@
 // O armazém dos ATOS do editor (rascunhos): um arquivo por ato em `gamedata/atos/<id>.json`. Os atos de hoje aparecem como `legado-N`,
 // SÓ LEITURA (`systems/atos-legado.mjs`), e nunca são gravados aqui. Nada disto roda no jogo ainda: o runtime por grafo é a Etapa 6 —
-// por isso, hoje, só se grava `rascunho` e `desativado`; `beta`/`publicado` são recusados com essa explicação.
+// `beta`/`publicado` só gravam com a validação limpa, e o jogo carrega o arquivo no PRÓXIMO BOOT do servidor (`Campanha.registrarAto`).
 // Funções puras; quem fala HTTP é `admin/conteudo-http.mjs` (prefixo trancado).
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { CATALOGO } from '../systems/dados.mjs';
 import * as Modelo from '../systems/atos-modelo.mjs';
 import * as Legado from '../systems/atos-legado.mjs';
+import * as Campanha from '../systems/campanha.mjs';
 
 export const CAMINHOS = { atos: join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'atos') };
 const HUNTS = () => new Set([...CATALOGO.hunts, ...CATALOGO.vips, ...CATALOGO.especiais, ...CATALOGO.divinas].map((h) => h.id));
@@ -42,7 +43,9 @@ export function contexto(idDoAto) {
   const outros = todos().filter((a) => a.id !== idDoAto);
   const emUso = new Map();
   for (const o of outros) for (const f of o.fases) if (f.huntId && !emUso.has(f.huntId)) emUso.set(f.huntId, o.id);
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, atos: outros.map((o) => ({ id: o.id })) };
+  const ordensEmUso = new Map(outros.filter((o) => o.ordem != null).map((o) => [o.ordem, o.id]));
+  const bossesEmUso = new Map(outros.filter((o) => o.bossFinal?.bossId).map((o) => [o.bossFinal.bossId, o.id]));
+  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, bossesEmUso, ordensEmUso, ordemMinima: Campanha.ATOS + 1, atos: outros.map((o) => ({ id: o.id })) };
 }
 
 /** Valida sem gravar. */
@@ -60,7 +63,11 @@ export function salvar(bruto) {
   const ato = Modelo.normalizar(bruto);
   if (!Modelo.ID_VALIDO.test(ato.id)) return { ok: false, erros: ['ID do ato inválido (3 a 40: minúsculas, números, hífen).'] };
   if (Legado.ehLegado(ato.id)) return { ok: false, erros: ['Os atos legados são somente leitura: duplique para editar.'] };
-  if (['beta', 'publicado'].includes(ato.estado)) return { ok: false, erros: ['Beta e publicação ainda não existem: o runtime por grafo é a próxima etapa. Salve como rascunho.'] };
+  // Beta/publicado: o jogo executa este arquivo no próximo boot. Só com a validação limpa (a mesma que o servidor refaz ao carregar).
+  if (['beta', 'publicado'].includes(ato.estado)) {
+    const erros = Modelo.validarAto(ato, contexto(ato.id)).filter((p) => p.nivel === 'erro');
+    if (erros.length) return { ok: false, erros: [`Não dá para pôr em ${ato.estado}: ${erros.length} erro(s) na validação.`, ...erros.slice(0, 8).map((e) => `[${e.onde}] ${e.mensagem}`)] };
+  }
   const antes = existsSync(arquivo(ato.id)) ? Modelo.normalizar(JSON.parse(readFileSync(arquivo(ato.id), 'utf8'))) : null;
   if (antes) ato.versao = antes.versao + 1;
   mkdirSync(CAMINHOS.atos, { recursive: true });

@@ -272,10 +272,10 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         campo('Ordem na campanha', a.ordem, (v) => { a.ordem = numero(v); mudou(); }, { type: 'number' }),
         selecao('Ato anterior', a.anterior, outros, (v) => { a.anterior = v; mudou(); }, '(nenhum)'),
         selecao('Ato seguinte', a.seguinte, outros, (v) => { a.seguinte = v; mudou(); }, '(nenhum)'),
-        selecao('Estado', a.estado, E.opcoes ? [['rascunho', 'Rascunho'], ['desativado', 'Desativado'], ['beta', 'Beta (em breve)'], ['publicado', 'Publicado (em breve)']] : [], (v) => { a.estado = v; mudou(); }),
+        selecao('Estado', a.estado, E.opcoes ? [['rascunho', 'Rascunho'], ['desativado', 'Desativado'], ['beta', 'Beta (vale só com o modo beta ligado)'], ['publicado', 'Publicado']] : [], (v) => { a.estado = v; mudou(); }),
         campo('Imagem / arte (caminho)', a.imagem, (v) => { a.imagem = v || null; mudou(); })),
       el('label', { class: 'campo' }, 'Descrição', el('textarea', { rows: 2, disabled: E.somenteLeitura, onchange: (e) => { a.descricao = e.target.value; mudou(); } }, a.descricao)),
-      el('div', { class: 'dica' }, 'Beta e Publicado ainda não funcionam: o jogo executa o ato por grafo só na Etapa 6. Hoje o ato vale como rascunho validado.'));
+      el('div', { class: 'dica' }, 'Beta/Publicado só gravam com a validação limpa e valem no PRÓXIMO BOOT do servidor (reinício controlado): o arquivo vai para o jogo com o deploy. A ordem é o número do ato no jogo (5 em diante).'));
   }
 
   function painelDaFase() {
@@ -377,7 +377,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     const alvo = raiz();
     if (!E.ato) {
       alvo.replaceChildren(
-        el('div', { class: 'dica' }, 'Atos do jogo (legados, somente leitura) e rascunhos do editor. Hoje o jogo executa só os atos legados; os rascunhos são validados e ficam prontos para a Etapa 6 (runtime por grafo).'),
+        el('div', { class: 'dica' }, 'Atos do jogo (legados, somente leitura) e os do editor. Só beta/publicado são executados pelo jogo (no próximo boot); rascunho e desativado não.'),
         el('div', { class: 'linha' }, el('button', { class: 'primario', onclick: novo }, 'Novo ato')),
         el('table', {}, el('thead', {}, el('tr', {}, ['ID', 'Nome', 'Estado', 'Versão', 'Fases', 'Boss final', ''].map((h) => el('th', {}, h)))),
           el('tbody', {}, E.lista.map((a) => el('tr', { class: 'clicavel', onclick: () => abrir(a.id) }, el('td', {}, a.id), el('td', {}, a.nome), el('td', {}, el('span', { class: 'selo' }, a.estado)), el('td', {}, a.versao), el('td', {}, a.fases), el('td', {}, a.bossFinal ?? '—'), el('td', {}, a.somenteLeitura ? el('span', { class: 'selo' }, 'somente leitura') : ''))))));

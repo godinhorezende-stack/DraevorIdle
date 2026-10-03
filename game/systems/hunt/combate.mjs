@@ -282,7 +282,12 @@ export function quantasMoedas(bicho, id, estado = null) {
  */
 export function contextoDoDrop(hunt) {
   // Item Level = o level da fase onde caiu (decisão do dono; o boss soma o bônus no gerador).
-  if (hunt?.campanha) return { ato: hunt.campanha.ato, dificuldade: hunt.campanha.dificuldade, ...(hunt.escala?.nivel ? { itemLevel: hunt.escala.nivel } : {}) };
+  if (hunt?.campanha) {
+    const extra = hunt.escala?.nivel ? { itemLevel: hunt.escala.nivel } : {};
+    // As tabelas de raridade são dos atos 1–4: um ato do editor (5 em diante) usa a faixa do level alvo da fase, sem criar tabela nova.
+    if (hunt.campanha.ato > Campanha.ATOS) return { level: hunt.escala?.nivel ?? 1, dificuldade: hunt.campanha.dificuldade, ...extra };
+    return { ato: hunt.campanha.ato, dificuldade: hunt.campanha.dificuldade, ...extra };
+  }
   if (hunt?.isBoss) return { level: CATALOGO.bosses.find((b) => b.id === hunt.bossId)?.level ?? 1 };
   return { level: huntOuMapaCustom(hunt?.huntId)?.level ?? 1 };
 }

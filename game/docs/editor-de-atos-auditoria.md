@@ -98,3 +98,10 @@ Exige mudança estrutural: grafo de fases com bifurcação/convergência no serv
 - P6 Publicação: histórico de versões, diff, restaurar, tela de publicação, "testar em beta"; hoje só há contador de versão e rascunho/desativado.
 - P7 Runtime: o ato do editor ainda não roda no jogo (Etapa 6).
 - P8 Navegação: faltam áreas separadas de Drops, Pré-visualização e Publicação.
+
+## Etapa 6 — runtime por grafo (feito)
+- `Campanha.registrarAto` (boot, `systems/campanha.mjs`): lê `gamedata/atos/*.json` com estado `beta`/`publicado` (`systems/atos-carregar.mjs`), valida DE NOVO com o cadastro do servidor e, se houver erro, ignora o ato com aviso (os legados não são afetados). Cada fase vira entrada de `FASES` com `grafo`; `ato` = `ordem` (5 em diante); o boss final vira `CAMPANHA.bosses[ordem]` (sem recarga). Progresso: o mesmo de sempre (`completas` por hunt, `bosses` por número de ato).
+- O que passou a seguir o grafo para esses atos: `faseLiberada`, `motivoParaNaoEntrar`, `bossLiberado` (todas as fases obrigatórias; opcional não conta), `proximaParaSeguir` (Caça Automática/"Seguir"), `ultimaFaseDoAto`/portal, `venceuBoss` (conclui o ato; NÃO abre dificuldade — isso é só o Ato 4 legado). A porta do ato = boss do ato `anterior` (e dos `requisitos.exige`) vencido na dificuldade.
+- Beta: `estado: beta` só vale com o modo beta ligado (some do cliente e fecha quando desligado). Publicação = o arquivo estar em `gamedata/atos` no deploy + reinício (sem recarga a quente).
+- Loot: as tabelas de raridade são dos atos 1–4; um ato do editor usa a faixa do level alvo da fase (`contextoDoDrop`), sem criar tabela nova nem mexer em balanceamento.
+- Limites conhecidos: (1) cada hunt pertence a UM ato (o progresso é por hunt), então os 47 hunts normais já estão nos legados — atos novos pedem hunts novas (mapa com spawns, criadas no editor de mapas); (2) hunts VIP/Instance/Divine NÃO têm spawns de instância (0 de 48), então não se "limpam": os tipos `hunt-vip`/`hunt-especial` seguem sem suporte; (3) recompensas/drops por fase e por boss final configuráveis: Etapa 5.

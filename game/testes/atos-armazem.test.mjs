@@ -34,7 +34,7 @@ test('A2. salvar rascunho: grava, sobe a versão, aponta erros (hunt inexistente
 test('A3. recusa: id de legado, id inválido e beta/publicado (ainda sem runtime)', () => {
   assert.equal(Atos.salvar(rascunho({ id: 'legado-1' })).ok, false);
   assert.equal(Atos.salvar(rascunho({ id: 'X' })).ok, false);
-  assert.match(Atos.salvar(rascunho({ estado: 'publicado' })).erros[0], /runtime/);
+  assert.match(Atos.salvar(rascunho({ estado: 'publicado' })).erros[0], /Não dá para pôr em publicado/);
   assert.equal(Atos.excluir('legado-2').ok, false);
 });
 
@@ -64,8 +64,8 @@ test('A5. rotas HTTP: lista, detalhe com validação, validar sem gravar, 404', 
   assert.equal(existsSync(join(pasta, 'so-validar.json')), false);
 });
 
-test('A6. nada do runtime importa o armazém: os atos do editor ainda não afetam o jogo', () => {
+test('A6. o runtime só usa o modelo puro e o carregador: nunca o armazém do editor (admin) nem o importador de legados', () => {
   for (const arq of ['systems/campanha.mjs', 'systems/cacadas.mjs', 'websocket/sessao.mjs']) {
-    assert.doesNotMatch(readFileSync(new URL(`../${arq}`, import.meta.url), 'utf8'), /atos-modelo|atos-legado|admin\/atos/);
+    assert.doesNotMatch(readFileSync(new URL(`../${arq}`, import.meta.url), 'utf8'), /admin\/atos|atos-legado/);
   }
 });

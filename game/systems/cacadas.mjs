@@ -579,7 +579,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     if (motivo) return { ok: false, erro: motivo };
   }
   if (atoDoBoss != null && !Campanha.bossLiberado(estado, dif, atoDoBoss)) {
-    return { ok: false, erro: `Complete as 12 fases do Ato ${atoDoBoss} no ${Campanha.CAMPANHA.dificuldades[dif].nome} para enfrentar ${boss.name}.` };
+    return { ok: false, erro: `Complete ${Campanha.ATOS_DO_EDITOR.has(atoDoBoss) ? "as fases" : "as 12 fases"} do Ato ${atoDoBoss} no ${Campanha.CAMPANHA.dificuldades[dif].nome} para enfrentar ${boss.name}.` };
   }
   // O boss de fim de ato só se alcança pelo PORTAL, que nasce de uma limpeza da última fase NESTA execução: nem o histórico
   // (fase completa, boss vencido) nem um `startHunt` direto dispensam a limpeza.
