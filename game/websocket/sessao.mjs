@@ -1717,6 +1717,9 @@ export class Sessao {
     // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
     Gemas.sincronizarMaximos(estado);
     Inventario.moedasParaOBolso(estado);
+    // Peça vestida no slot errado (de antes de o servidor validar o slot): volta para a mochila, sem perda.
+    const noSlotErrado = Inventario.recolherPecasNoSlotErrado(estado);
+    if (noSlotErrado.length) estado.avisoDaHunt = `${noSlotErrado.join(', ')} não ${noSlotErrado.length > 1 ? 'pertencem' : 'pertence'} ao slot em que ${noSlotErrado.length > 1 ? 'estavam' : 'estava'} e ${noSlotErrado.length > 1 ? 'voltaram' : 'voltou'} para a mochila.`;
     // Arma de duas mãos com escudo vestido (de antes da regra): o escudo volta para a mochila.
     Inventario.corrigirDuasMaos(estado);
     // Peça vestida que pede um level acima do dele (a arma agora define o dano): volta para a mochila, sem perda.

@@ -50,6 +50,9 @@ function personagem(voc, { arma = null, anel = null } = {}) {
   for (const k of Object.keys(e.skills)) if (k !== 'fishing') e.skills[k].value = 80;
   if (arma) e.equipment.weapon = { id: idDe(arma), count: 1 };
   if (arma && ITEM_CATALOG[idDe(arma)].twoHanded) e.equipment.shield = null;
+  // Arco e besta só atiram com a munição compatível na mão (regra do servidor): o bolt da besta, a flecha do arco.
+  const tipoDeMunicao = arma ? ITEM_CATALOG[idDe(arma)].ammo : null;
+  if (tipoDeMunicao) e.equipment.ammo = { id: Number(Object.values(ITEM_CATALOG).find((i) => i.slot === 'ammo' && i.ammo === tipoDeMunicao && i.attack).id), count: 1 };
   e.equipment.ring = anel ? { id: idDe('might ring'), count: 1, af: anel } : null;
   e.maxHp = e.hp = e.maxMana = e.mana = 1e9;
   Afixos.sincronizarMaximos(e);
