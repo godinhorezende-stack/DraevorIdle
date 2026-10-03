@@ -41,6 +41,8 @@ await banco.exec(`
 `);
 
 const processoId = `${process.pid}-${randomUUID().slice(0, 8)}`;
+/** Quem sou eu na tabela de ciclos (os testes filtram por ele: vários processos dividem o mesmo banco). */
+export const PROCESSO_ID = processoId;
 const relogioReal = { setTimeout: (f, ms) => setTimeout(f, ms), clearTimeout: (t) => clearTimeout(t), agora: () => Date.now(), cederLaco: () => new Promise((r) => setImmediate(r)) };
 
 let sessoes = new Map();
@@ -180,7 +182,8 @@ export async function executar({ slot, manual = false } = {}) {
     r.ms = Math.round(performance.now() - t0);
     r.atrasoMaximoDoLacoMs = Math.round(lag.parar());
     const ok = g.erros === 0;
-    if (lider) await registrar(slot, ok ? 'concluido' : 'falhou', r, e.relogio.agora());
+    // Execução manual não conta como "último ciclo concluído" da agenda (estado próprio).
+    if (lider) await registrar(slot, ok ? (manual ? 'concluido-manual' : 'concluido') : 'falhou', r, e.relogio.agora());
     e.ultimo = { slot, ok, ...r };
     if (!ok) throw Object.assign(new Error(`${g.erros} jogador(es) não foram gravados`), { resultado: r });
     log(`Concluído em ${r.ms}ms: ${r.gravados} jogadores gravados, ${r.offline?.ausentes ?? '-'} ausentes verificados, ${r.offline?.colunasCorrigidas ?? 0} colunas corrigidas, ${r.offline?.anomalias.length ?? 0} anomalias, laço parou no máximo ${r.atrasoMaximoDoLacoMs}ms; temporários: ${r.temporarios?.adiada ? 'adiada' : `${r.temporarios?.removidos?.length ?? 0} removidos`}`);
@@ -277,7 +280,8 @@ export async function iniciar({ config = null, relogio = relogioReal, logger = c
   estado = { configTemporarios, config: valida, relogio: { ...relogioReal, ...relogio }, log: logger, anunciar, timers: [], slot: null, rodando: false, ultimo: null, ultimosSlots: new Set(), avisados: new Set(), ultimoSlotAgendado: null };
   logger(`${TAG} Sistema iniciado (${valida.horaLocal} ${valida.timezone}, a cada ${valida.intervalHours} h, avisos ${valida.warningsMinutes.join('/')} min)`);
   try {
-    const r = await banco.prepare("UPDATE server_save_ciclos SET estado = 'interrompido' WHERE estado = 'executando'").run();
+    // Só os velhos (> 6 h): um 'executando' recente pode ser de OUTRO processo vivo no mesmo banco.
+    const r = await banco.prepare("UPDATE server_save_ciclos SET estado = 'interrompido' WHERE estado = 'executando' AND iniciado_em < ?").run(estado.relogio.agora() - 6 * 3_600_000);
     if (r.changes) logger(`${TAG} ${r.changes} ciclo(s) anterior(es) ficaram sem conclusão (processo caiu): registrados como interrompidos`);
     const ultimo = await banco.prepare("SELECT slot, concluido_em FROM server_save_ciclos WHERE estado = 'concluido' ORDER BY slot DESC LIMIT 1").get();
     if (ultimo) {

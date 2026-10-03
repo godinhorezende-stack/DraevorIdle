@@ -200,7 +200,7 @@ test('I1. o Server Save limpa os temporários DEPOIS das verificações e regist
   assert.equal(r.temporarios.removidos.length, 1);
   assert.equal(await existe(p), false);
   assert.equal(Number((await B.banco.prepare('SELECT COUNT(*) AS n FROM personagens').get()).n), Number(antes.n));
-  await B.banco.prepare('DELETE FROM server_save_ciclos').run();
+  await B.banco.prepare('DELETE FROM server_save_ciclos WHERE lider = ?').run(SS.PROCESSO_ID);
 });
 
 test('I2. pendência no save (jogador sem gravar) ADIA a limpeza inteira: nenhum arquivo é apagado e o save segue com falha própria', async () => {
@@ -212,7 +212,7 @@ test('I2. pendência no save (jogador sem gravar) ADIA a limpeza inteira: nenhum
   assert.equal(r.ok, false);
   assert.equal(await existe(p), true);
   SS.ligar(new Map());
-  await B.banco.prepare('DELETE FROM server_save_ciclos').run();
+  await B.banco.prepare('DELETE FROM server_save_ciclos WHERE lider = ?').run(SS.PROCESSO_ID);
 });
 
 test('I3. anomalia no offline farm adia a limpeza; erro dentro da limpeza NÃO derruba o Server Save', async () => {
@@ -230,13 +230,13 @@ test('I3. anomalia no offline farm adia a limpeza; erro dentro da limpeza NÃO d
     await B.excluirPersonagem(pers.id);
   }
   SS.parar();
-  await B.banco.prepare('DELETE FROM server_save_ciclos').run();
+  await B.banco.prepare('DELETE FROM server_save_ciclos WHERE lider = ?').run(SS.PROCESSO_ID);
   // Erro de verdade dentro da limpeza: `config.areas` malformado (não iterável) estoura; o save conclui mesmo assim.
   await iniciarSave(d, { configTemporarios: { enabled: true, areas: 5 } });
   const r2 = await SS.executarAgora();
   assert.equal(r2.ok, true);
   assert.ok(r2.temporarios.erro);
-  await B.banco.prepare('DELETE FROM server_save_ciclos').run();
+  await B.banco.prepare('DELETE FROM server_save_ciclos WHERE lider = ?').run(SS.PROCESSO_ID);
 });
 
 test('I4. a limpeza não trava o servidor: 3000 arquivos velhos, o laço de eventos segue respondendo', async () => {
