@@ -71,7 +71,7 @@ test('B3. tentativas ilimitadas: entrar, sair, morrer e entrar de novo, dez veze
   const e = novo(300);
   completarAto(e, 'facil', 1, { menosAUltima: false });
   for (let i = 0; i < 10; i++) {
-    const r = Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true });
+    const r = Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
     assert.equal(r.ok, true, `tentativa ${i + 1}: ${r.erro}`);
     assert.equal(e.hunt.isBoss, true);
     assert.equal(e.hunt.campanha.bossDoAto, 1);
@@ -79,17 +79,17 @@ test('B3. tentativas ilimitadas: entrar, sair, morrer e entrar de novo, dez veze
     e.hunt = null; // morreu / saiu
   }
   // E depois da vitória registrada também.
-  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true });
+  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
   const boss = e.hunt.monstros.find((m) => m.hp > 0) ?? e.hunt.monstros[0];
   vitoriaNoBoss(e, e.hunt, boss, PERSONAGEM);
   assert.deepEqual(e.campanha.facil.bosses, [1]);
   e.hunt = null;
-  assert.equal(Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true }).ok, true, 'depois de vencer, entra de novo na hora');
+  assert.equal(Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true }).ok, true, 'depois de vencer, entra de novo na hora');
 });
 
 test('B4. o boss de ato sem as fases completas continua fechado (a recarga saiu, a progressão não)', () => {
   const e = novo(300);
-  const r = Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true });
+  const r = Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
   assert.equal(r.ok, false);
   assert.match(r.erro, /Complete as 12 fases do Ato 1/);
 });
@@ -124,15 +124,17 @@ test('P2. concluir a última fase abre o portal (uma vez, com o boss do ato), av
   assert.equal(e.hunt.portalDoBoss, portal);
 });
 
-test('P3. o portal sobrevive à instância nova da mesma fase e à gravação do personagem (reconexão/reinício)', () => {
+test('P3. instância nova (reinício) fecha o portal: a limpeza antiga não vale; só o portal aberto passa pela gravação', () => {
   const { e } = naUltimaFase();
   limpar(e);
   const portal = structuredClone(e.hunt.portalDoBoss);
-  assert.equal(Cacadas.novaInstancia(e), true, 'a fase repete (instância nova)');
-  assert.deepEqual(e.hunt.portalDoBoss, portal, 'o portal fica');
   const gravado = JSON.parse(JSON.stringify({ ...e, hunt: Cacadas.huntParaGravar(e.hunt) }));
   Cacadas.huntAoCarregar(gravado.hunt);
-  assert.deepEqual(gravado.hunt.portalDoBoss, portal, 'e vai para o banco e volta');
+  assert.deepEqual(gravado.hunt.portalDoBoss, portal, 'a gravação leva o portal aberto');
+  assert.equal(Cacadas.novaInstancia(e), true, 'a fase repete (instância nova)');
+  assert.equal(e.hunt.portalDoBoss, null, 'limpeza nova: o portal da execução anterior fechou');
+  assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, false);
+  assert.equal(Cacadas.snapshotDaHunt(e).portalDoBoss, null);
 });
 
 test('P4. entrar no portal leva à arena do boss (sem a recarga), e um segundo pedido igual é recusado (idempotente)', () => {
@@ -154,20 +156,83 @@ test('P4. entrar no portal leva à arena do boss (sem a recarga), e um segundo p
   assert.equal(e.hunt.isBoss, true);
 });
 
-test('P5. morrer para o boss e voltar: a fase já completa reabre o portal na hora, sem refazer o ato e sem espera', () => {
+test('P5. fase já completa e boss já vencido NÃO dão portal: entrar na última fase de novo exige limpar de novo; sem espera', () => {
   const { e, ultima } = naUltimaFase();
   limpar(e);
   assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, true);
-  e.hunt = null; // morreu na arena e voltou à cidade
+  e.hunt = null;
   assert.equal((e.bossCooldownsAte ?? {})['urmahlullu-the-immaculate'] ?? 0, 0);
-  const r = Cacadas.entrar(e, { huntId: ultima.huntId, mode: 'auto', dificuldade: 'facil' });
-  assert.equal(r.ok, true, r.erro);
-  assert.ok(e.hunt.portalDoBoss, 'a fase já estava completa: o portal já está lá');
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
+    assert.equal(Cacadas.entrar(e, { huntId: ultima.huntId, mode: 'auto', dificuldade: 'facil' }).ok, true);
+    assert.equal(e.hunt.portalDoBoss, undefined, 'fase completa + boss vencido: sem portal ao entrar');
+    assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, false);
+    assert.equal(Cacadas.snapshotDaHunt(e).portalDoBoss, null);
+    limpar(e);
+    assert.ok(e.hunt.portalDoBoss, 'limpou de novo: novo portal');
     assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, true, `tentativa ${i + 1}`);
     e.hunt = null;
-    assert.equal(Cacadas.entrar(e, { huntId: ultima.huntId, mode: 'auto', dificuldade: 'facil' }).ok, true);
   }
+});
+
+test('N1. startHunt direto no boss de ato (cartão/atalho/cliente) é recusado: só o portal da limpeza atual leva à arena', () => {
+  const e = novo();
+  completarAto(e, 'facil', 1, { menosAUltima: false });
+  const r = Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, /Limpe a última hunt/);
+});
+
+test('N2. limpar só parte dos bichos não abre o portal; o mesmo evento de morte repetido não adianta a limpeza', () => {
+  const { e } = naUltimaFase();
+  const todos = vivos(e);
+  for (const m of todos.slice(0, Math.max(1, todos.length - 1))) m.hp = 0;
+  Cacadas.tique(e, PERSONAGEM, Date.now() + 500);
+  Cacadas.tique(e, PERSONAGEM, Date.now() + 1000);
+  assert.notEqual(e.hunt.instancia.status, 'limpa');
+  assert.equal(e.hunt.portalDoBoss, undefined);
+  assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, false);
+  limpar(e);
+  const antes = e.campanha.facil.limpezas[Campanha.ultimaFaseDoAto(1).huntId];
+  for (let i = 0; i < 3; i++) Cacadas.tique(e, PERSONAGEM, Date.now() + 5000 + i * 500);
+  assert.equal(e.campanha.facil.limpezas[Campanha.ultimaFaseDoAto(1).huntId], antes, 'limpar conta uma vez');
+  assert.ok(e.hunt.portalDoBoss);
+});
+
+test('N3. sair antes de limpar não deixa portal; a instância espera o portal aberto por um tempo antes de recomeçar', () => {
+  const { e } = naUltimaFase();
+  e.hunt = null;
+  assert.equal(Cacadas.snapshotDaHunt(e), null);
+  const { e: f } = naUltimaFase();
+  limpar(f);
+  assert.ok(f.hunt.portalDoBoss);
+  Cacadas.tique(f, PERSONAGEM, Date.now() + 20_000);
+  assert.ok(f.hunt.portalDoBoss, 'passou a pausa do Clear e o portal continua (dá tempo de entrar)');
+});
+
+test('N4. todos os atos: a última jogável antes do boss é a que abre o portal; as outras não', () => {
+  for (const ato of [1, 2, 3, 4]) {
+    const ultima = Campanha.ultimaFaseDoAto(ato);
+    assert.ok(ultima && !ultima.pular);
+    assert.equal(Campanha.ehUltimaFaseDoAto(ultima.huntId), true);
+    const outras = F.filter((f) => f.ato === ato && f.huntId !== ultima.huntId);
+    assert.ok(outras.every((f) => !Campanha.ehUltimaFaseDoAto(f.huntId)));
+  }
+});
+
+test('N5. Caça Automática: a sessão entra sozinha no portal uma vez; falha não vira laço; manual (online) não entra sozinho', async () => {
+  const { readFileSync } = await import('node:fs');
+  const sessao = readFileSync(new URL('../websocket/sessao.mjs', import.meta.url), 'utf8');
+  assert.match(sessao, /entrarAutomaticoNoPortal\(\) \{/);
+  assert.match(sessao, /hunt\.modo !== 'auto'/);
+  assert.match(sessao, /hunt\.tentouEntrarNoPortal === portal\.abertoEm/);
+  const { e } = naUltimaFase();
+  limpar(e);
+  const portal = Cacadas.portalParaCliente(e, e.hunt);
+  assert.ok(portal && portal.abertoEm, 'o servidor expõe o portal com o carimbo de abertura');
+  const { e: novato } = naUltimaFase();
+  limpar(novato);
+  novato.campanha.facil.completas.pop();
+  assert.equal(Cacadas.portalParaCliente(novato, novato.hunt), null, 'sem requisito: nada de entrada automática');
 });
 
 test('P6. só abre na ÚLTIMA fase do ato (fases de antes não abrem portal), e a validação é do servidor (cliente não força)', () => {
@@ -216,7 +281,7 @@ test('P7. party: o portal vive na sala do dono; cada integrante entra por conta 
 test('V1. a vitória no boss é registrada UMA vez por luta: evento repetido não paga outra sacola nem outra conclusão; outra luta paga a sua', () => {
   const e = novo(300);
   completarAto(e, 'facil', 1, { menosAUltima: false });
-  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true });
+  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
   const alvo = e.hunt.monstros[0];
   const sacolas0 = (e.rewards ?? []).length;
   vitoriaNoBoss(e, e.hunt, alvo, PERSONAGEM);
@@ -227,7 +292,7 @@ test('V1. a vitória no boss é registrada UMA vez por luta: evento repetido nã
   assert.deepEqual(e.campanha.facil.bosses, [1]);
   // Outra luta (nova entrada): vitória registrada de novo (farm), sem duplicar a conclusão do ato.
   e.hunt = null;
-  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true });
+  Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
   vitoriaNoBoss(e, e.hunt, e.hunt.monstros[0], PERSONAGEM);
   assert.ok(e.rewards.length >= sacolas1);
   assert.deepEqual(e.campanha.facil.bosses, [1], 'o ato conta como concluído uma vez só');

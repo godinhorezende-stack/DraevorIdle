@@ -548,7 +548,10 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
   return { grade, inicio, andarInicial, monstros, outrosAndares, instancia };
 }
 
-export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false }) {
+/** Quanto o portal do boss de ato espera aberto, com a hunt limpa, antes de a instância seguinte começar (e fechá-lo). */
+const TEMPO_DO_PORTAL_MS = 60_000;
+
+export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: pelaCampanha = false, viaPortal = false }) {
   const boss = CATALOGO.bosses.find((b) => b.id === huntId) ?? null;
   // A campanha (ver `systems/campanha.mjs`): a fase desta hunt, ou o boss de fim de ato.
   const dif = Campanha.DIFICULDADES.includes(dificuldade) ? dificuldade : Campanha.DIFICULDADES[0];
@@ -577,6 +580,9 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   if (atoDoBoss != null && !Campanha.bossLiberado(estado, dif, atoDoBoss)) {
     return { ok: false, erro: `Complete as 12 fases do Ato ${atoDoBoss} no ${Campanha.CAMPANHA.dificuldades[dif].nome} para enfrentar ${boss.name}.` };
   }
+  // O boss de fim de ato só se alcança pelo PORTAL, que nasce de uma limpeza da última fase NESTA execução: nem o histórico
+  // (fase completa, boss vencido) nem um `startHunt` direto dispensam a limpeza.
+  if (atoDoBoss != null && !viaPortal) return { ok: false, erro: `Limpe a última hunt do Ato ${atoDoBoss} para abrir o portal do ${boss.name}.` };
   if (hunt && !boss && !tranca && !mapaRealCapturado(hunt.id) && !temTerrenoReal(hunt)) {
     return { ok: false, erro: 'Esta hunt ainda não tem terreno capturado.' };
   }
@@ -669,8 +675,6 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   };
   // "A espera começa quando você ENTRA — mesmo que ele não caia." (Menos a primeira do boss de ato.)
   if (boss && !primeiraDoAto) Bosses.marcarEntrada(estado, boss.id);
-  // A última fase do ato, já completa e com o boss aberto: o portal já nasce (voltar para tentar de novo, sem refazer a fase).
-  if (fase && Campanha.faseCompleta(estado, dif, huntId)) Campanha.abrirPortalDoBoss(estado.hunt, [estado]);
   return { ok: true };
 }
 
@@ -690,16 +694,16 @@ export function entrarNoPortalDoBoss(estado, { antes = null } = {}) {
   const modo = hunt.modo === 'online' ? 'online' : 'auto';
   const estrategia = hunt.strategy;
   antes?.();
-  return entrar(estado, { huntId: portal.bossId, mode: modo, strategy: estrategia, dificuldade: portal.dificuldade, campanha: true });
+  return entrar(estado, { huntId: portal.bossId, mode: modo, strategy: estrategia, dificuldade: portal.dificuldade, campanha: true, viaPortal: true });
 }
 
 /** O portal como o cliente o vê (`null` se não há ou se ESTE personagem ainda não pode entrar). */
-function portalParaCliente(estado, hunt) {
+export function portalParaCliente(estado, hunt) {
   const portal = hunt ? salaDe(hunt)?.portalDoBoss : null;
   const c = hunt?.campanha;
   if (!portal || !c || c.bossDoAto || c.ato !== portal.ato || c.dificuldade !== portal.dificuldade) return null;
   if (!Campanha.bossLiberado(estado, portal.dificuldade, portal.ato)) return null;
-  return { nome: portal.nome, ato: portal.ato, dificuldade: portal.dificuldade, x: portal.x, y: portal.y, z: portal.z };
+  return { nome: portal.nome, ato: portal.ato, dificuldade: portal.dificuldade, x: portal.x, y: portal.y, z: portal.z, abertoEm: portal.abertoEm };
 }
 
 /**
@@ -954,6 +958,8 @@ export function novaInstancia(estado) {
     hunt.summon.y = novo.inicio.y;
   }
   hunt.instancia = novo.instancia;
+  // Instância nova = limpeza nova: o portal da execução anterior fecha (a limpeza velha não vale para entrar).
+  hunt.portalDoBoss = null;
   return true;
 }
 
@@ -1389,7 +1395,8 @@ export function tique(estado, personagem, agora = Date.now()) {
     // Online com "Avançar sozinho", a sessão troca de fase antes da pausa acabar.
     if (hunt.instancia) {
       if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt);
-      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0)) novaInstancia(estado);
+      // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal.
+      else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) novaInstancia(estado);
     }
   } else {
     hunt.lurando = false;

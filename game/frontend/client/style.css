@@ -27891,6 +27891,7 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
 .campanha-boss-secao h4 { margin: 0; font-size: 14px; color: #e7efef; overflow-wrap: anywhere; }
 .campanha-boss-elo { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--copper); }
 .campanha-boss-secao.bloqueado { opacity: .55; }
+.campanha-boss-secao.aguardando { opacity: .8; }
 .campanha-boss-secao.aberto .campanha-boss-elo { color: var(--accent); }
 .campanha-boss-secao.vencido .campanha-boss-elo { color: #e0a84a; }
 .campanha-boss-secao.clicavel { cursor: pointer; }

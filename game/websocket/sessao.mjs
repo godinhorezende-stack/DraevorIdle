@@ -1814,6 +1814,21 @@ export class Sessao {
    * requisitos e o "uma vez só" são do servidor: o clique duplo e dois membros pedindo juntos caem no MESMO encontro
    * (`Estado.ativar` é idempotente) e a recompensa é paga uma vez, na conclusão.
    */
+  /**
+   * Caça Automática (`hunt.modo === 'auto'`): o portal do boss de ato abriu para ESTE personagem → entra, validado pelo servidor
+   * (`entrarNoPortalDoBoss`). Uma tentativa por portal (`tentouEntrar`): se falhar, o personagem segue caçando e o botão do portal continua
+   * lá — sem laço. Não leva a party: cada sessão em Caça Automática decide por si, com os próprios requisitos.
+   */
+  entrarAutomaticoNoPortal() {
+    const hunt = this.estado?.hunt;
+    if (!hunt || hunt.modo !== 'auto' || hunt.campanha?.bossDoAto || this.estado.exercicio?.treinando) return;
+    const portal = Cacadas.portalParaCliente(this.estado, hunt);
+    if (!portal) return;
+    if (hunt.tentouEntrarNoPortal === portal.abertoEm) return;
+    hunt.tentouEntrarNoPortal = portal.abertoEm;
+    this.entrarNoPortalDoBoss();
+  }
+
   /** `{t:'portalDoBoss'}` (ou `interagir` no marcador do portal): entra na arena do boss do ato. Só a sessão que pediu entra. */
   entrarNoPortalDoBoss() {
     if (!this.estado?.hunt) return this.erro('Você não está numa fase.');
@@ -2475,6 +2490,8 @@ export class Sessao {
         // "Seguir" ligado e a fase completa: a próxima fase, no mesmo modo.
         // Só com a aba aberta: o char trazido sem aba (party) é offline, fica em loop.
         if (!this.semAba && this.estado.hp > 0) this.seguirParaAProximaFase();
+        // Caça Automática + portal do boss aberto (limpeza confirmada pelo servidor): entra sozinha, uma tentativa só por portal.
+        if (!this.semAba && this.estado.hp > 0) this.entrarAutomaticoNoPortal();
         // A caixa "Você morreu" do client (`mostrarMorte`), no formato do `death` original.
         // Cair no duelo não é morte: é derrota, sem perder nada (ver `Arena.caiu`).
         if (this.estado.hp <= 0 && !Arena.caiu(this)) this.enviar({ t: 'death', ...this.morrerNaHunt() });

@@ -638,8 +638,14 @@ function campanhaCards(body) {
           rolagemDaLista.hunts = document.getElementById('modal-body')?.scrollTop ?? 0;
           askRunMode(hunt, lista);
         },
+        portalAberto: (b) => {
+          const p = ctx.state.hunt?.portalDoBoss;
+          return !!p && p.ato === b.ato && p.dificuldade === escolhida.id;
+        },
         enfrentarBoss: (b) => {
-          send({ t: 'startHunt', huntId: b.bossId, mode: 'auto', dificuldade: escolhida.id, campanha: true, strategy: document.getElementById('strategy')?.value });
+          // Só pelo portal da limpeza atual; o servidor recusa o resto (`entrar` sem `viaPortal`).
+          const p = ctx.state.hunt?.portalDoBoss;
+          if (p && p.ato === b.ato && p.dificuldade === escolhida.id) send({ t: 'portalDoBoss' });
           ctx.closeModal();
         },
         escolherDificuldade: (id) => {
@@ -716,9 +722,12 @@ function campanhaCards(body) {
 // já decidiu (`liberado`/`vencido`); entrar continua validado lá. Sem recarga: pode ser enfrentado de novo.
 function secaoDoBossDoAto(b, ato, ultimaFase, escolhida, bossPorId, catalog) {
   const dados = bossPorId.get(b.bossId);
-  const estado = b.vencido ? 'vencido' : b.liberado ? 'aberto' : 'bloqueado';
-  const sec = el('div', `campanha-boss-secao ${estado}`);
-  sec.append(el('span', 'campanha-boss-elo', `Fase ${ato * 12} → ${b.liberado ? 'Portal aberto' : 'Portal fechado'} → Boss final`));
+  // Portal aberto = o SERVIDOR mandou `portalDoBoss` desta execução (hunt limpa agora). Histórico (fase completa, boss vencido) não abre.
+  const portal = ctx.state.hunt?.portalDoBoss;
+  const aberto = !!portal && portal.ato === ato && portal.dificuldade === escolhida.id;
+  const estado = aberto ? 'aberto' : b.liberado ? 'aguardando' : 'bloqueado';
+  const sec = el('div', `campanha-boss-secao ${estado}${b.vencido ? ' vencido' : ''}`);
+  sec.append(el('span', 'campanha-boss-elo', `Fase ${ato * 12} → ${aberto ? 'Portal aberto' : 'Portal fechado'} → Boss final`));
   sec.append(el('h4', null, `Boss do Ato ${ato}: ${b.nome}`));
   if (dados?.creatures?.length) {
     const bichos = el('div', 'hunt-card-bichos');
@@ -730,20 +739,18 @@ function secaoDoBossDoAto(b, ato, ultimaFase, escolhida, bossPorId, catalog) {
     el(
       'p',
       null,
-      b.vencido
-        ? 'Vencido ✓ — pode enfrentar de novo, sem espera.'
+      aberto
+        ? `Portal aberto. Toque para enfrentar${ato < 4 ? ` e liberar o Ato ${ato + 1}` : ''}.`
         : b.liberado
-          ? ato < 4
-            ? `Portal aberto. Vença para liberar o Ato ${ato + 1}.`
-            : 'Portal aberto. Vença para liberar a próxima dificuldade.'
-          : `🔒 Conclua a ${ultimaFase.nome} para abrir o portal.`
+          ? `${b.vencido ? 'Vencido ✓ — sem espera, ' : ''}Elimine todos os monstros da ${ultimaFase.nome} (de novo, nesta execução) para abrir o portal.`
+          : `🔒 Conclua a ${ultimaFase.nome} para liberar o boss.`
     )
   );
-  if (b.liberado) {
+  if (aberto) {
     sec.classList.add('clicavel');
     sec.onclick = (ev) => {
       ev.stopPropagation(); // não dispara a fase que hospeda a seção
-      send({ t: 'startHunt', huntId: b.bossId, mode: 'auto', dificuldade: escolhida.id, campanha: true, strategy: document.getElementById('strategy')?.value });
+      send({ t: 'portalDoBoss' });
       ctx.closeModal();
     };
   }

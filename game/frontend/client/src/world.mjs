@@ -186,7 +186,7 @@ export function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, esc
 
 /**
  * Desenha a tela inteira dentro de `body`. `h` traz o que vem do resto do jogo (para não importar `panels.mjs`):
- * `figuraDaCriatura`, `entrarNaFase(hunt, lista)`, `enfrentarBoss(boss)`, `escolherDificuldade(id)`, `definirAoCompletar(valor)`, `fechar()`, `verLista()`.
+ * `figuraDaCriatura`, `entrarNaFase(hunt, lista)`, `enfrentarBoss(boss)`, `portalAberto(boss)`, `escolherDificuldade(id)`, `definirAoCompletar(valor)`, `fechar()`, `verLista()`.
  */
 export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestiario, h }) {
   const { figuraDaCriatura } = h;
@@ -504,10 +504,11 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       const b = atoAtual.boss;
       const st = estadoDoNo(b);
       const dados = bosses.get(b.bossId);
-      const col1 = el('div', 'w2-col', titulo( `Boss do ${atoAtual.nome}`), el('div', 'w2-sub', b.nome, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), el('span', 'w2-tipo', 'Boss principal')), linha('Dificuldade', escolhida.nome), linha('Level', `~${b.nivel}`), el('p', 'w2-desc', b.vencido ? 'Vencido. Pode enfrentá-lo de novo, sem espera.' : b.liberado ? (atoAtual.ato < atos.at(-1).ato ? `Vença para liberar o ${atos.find((x) => x.ato > atoAtual.ato)?.nome ?? 'próximo Ato'}.` : 'Vença para liberar a próxima dificuldade.') : `Complete as ${atoAtual.total} fases do ${atoAtual.nome} para liberá-lo.`));
+      const aberto = h.portalAberto(b);
+      const col1 = el('div', 'w2-col', titulo( `Boss do ${atoAtual.nome}`), el('div', 'w2-sub', b.nome, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), el('span', 'w2-tipo', 'Boss principal')), linha('Dificuldade', escolhida.nome), linha('Level', `~${b.nivel}`), el('p', 'w2-desc', aberto ? 'Portal aberto: pode enfrentá-lo agora, sem espera.' : b.liberado ? `${b.vencido ? 'Vencido, sem espera. ' : ''}Elimine todos os monstros da última fase do ato, nesta execução, para abrir o portal.` : `Complete as ${atoAtual.total} fases do ${atoAtual.nome} para liberá-lo.`));
       const col2 = el('div', 'w2-col', dados?.creatures?.length ? el('div', 'w2-bichos', figuraDaCriatura(dados.creatures[0], bestiario, 52)) : null, el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Requisito'), el('ul', 'w2-lista', el('li', atoAtual.feitas === atoAtual.total ? 'feito' : 'falta', `${atoAtual.feitas === atoAtual.total ? '✓' : '○'} ${atoAtual.feitas}/${atoAtual.total} fases completas`))));
-      const enfrentar = botao('w2-entrar', b.liberado ? 'Enfrentar' : 'Bloqueado');
-      enfrentar.disabled = !b.liberado;
+      const enfrentar = botao('w2-entrar', aberto ? 'Enfrentar' : b.liberado ? 'Limpe a última fase' : 'Bloqueado');
+      enfrentar.disabled = !aberto;
       enfrentar.onclick = () => h.enfrentarBoss(b);
       painel.append(col1, col2, el('div', 'w2-col acao', enfrentar));
     }
