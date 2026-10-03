@@ -10,6 +10,7 @@ import * as O from '../systems/overrides.mjs';
 import { precoNpc } from '../systems/hunt/rentabilidade.mjs';
 import { VALOR_DA_MOEDA } from '../systems/inventario.mjs';
 import { usosDe, desenhoDoMonstro } from './biblioteca.mjs';
+import { revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 /** Onde ler e gravar (os testes apontam para uma pasta temporária). */
@@ -65,7 +66,7 @@ export function listar({ q = '', filtro = '', limite = 80 } = {}) {
     return { key, nome: m.name ?? key, hp: m.hp ?? null, exp: m.exp ?? null, classe: m.class ?? null, temOverride: !!ov, ativo: ov ? ov.ativo !== false : null, variacaoDe: ov?.base ?? null, desenho: m.look ? desenhoDoMonstro(m) : null };
   }).filter((l) => (!t || norm(l.nome).includes(t) || l.key.includes(t)) && (filtro !== 'com-override' || l.temOverride));
   linhas.sort((a, b) => Number(b.temOverride) - Number(a.temOverride) || String(a.nome).localeCompare(String(b.nome)));
-  return { total: linhas.length, itens: linhas.slice(0, Math.min(200, Math.max(1, Number(limite) || 80))), ativo: dados.ativo, comOverride: Object.keys(dados.monstros).length };
+  return { total: linhas.length, itens: linhas.slice(0, Math.min(200, Math.max(1, Number(limite) || 80))), ativo: dados.ativo, comOverride: Object.keys(dados.monstros).length, revisao: revisaoDe(CAMINHOS.arquivo) };
 }
 
 /** A ficha de um monstro para a tela: original, override gravado, efetivo, onde é usado. */
@@ -86,6 +87,7 @@ export function obter(key) {
     usos: usosDe('monstros', key),
     globalAtivo: dados.ativo,
     elementos: O.ELEMENTOS,
+    revisao: revisaoDe(CAMINHOS.arquivo),
   };
 }
 
@@ -136,7 +138,9 @@ function gravar(dados) {
 }
 const COMO_PUBLICAR = 'O arquivo gamedata/overrides/monstros.json foi gravado neste servidor. O jogo só aplica os overrides no boot: faça commit e publique pelo deploy (reinício controlado). Nada muda no jogo antes disso.';
 
-export function salvar(key, ov) {
+export function salvar(key, ov, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const p = propor(key, ov);
   if (!p.ok) return { ok: false, erros: p.erros };
   const dados = lerArquivo();
@@ -149,7 +153,9 @@ export function salvar(key, ov) {
 }
 
 /** Reverter: apaga o override (o original volta). Uma variação em uso não pode ser apagada (quebraria os mapas). */
-export function reverter(key) {
+export function reverter(key, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const dados = lerArquivo();
   const ov = dados.monstros[key];
   if (!ov) return { ok: false, erros: ['Esse monstro não tem override.'] };
@@ -163,7 +169,9 @@ export function reverter(key) {
 }
 
 /** Duplicar: cria uma VARIAÇÃO (`base`) com chave e nome novos — o original não muda. */
-export function duplicar(origem, novaKey, novoNome = null) {
+export function duplicar(origem, novaKey, novoNome = null, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const dados = lerArquivo();
   const base = dados.monstros[origem]?.base ?? origem;
   // A cópia leva o que o monstro de origem JÁ tem de override (duplicar o efetivo, não o original), com a base e o nome novos.
@@ -178,7 +186,9 @@ export function duplicar(origem, novaKey, novoNome = null) {
 }
 
 /** Liga/desliga a camada inteira (`ativo`) ou um monstro só (o jogo ignora o desligado, sem apagar nada). */
-export function definirAtivo(ativo, key = null) {
+export function definirAtivo(ativo, key = null, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   if (typeof ativo !== 'boolean') return { ok: false, erros: ['ativo deve ser true ou false.'] };
   const dados = lerArquivo();
   if (key == null) dados.ativo = ativo;
@@ -190,7 +200,9 @@ export function definirAtivo(ativo, key = null) {
   return { ok: true, comoPublicar: COMO_PUBLICAR };
 }
 
-export function restaurar(n) {
+export function restaurar(n, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const arq = join(CAMINHOS.versoes, `${Number(n)}.json`);
   if (!Number.isInteger(Number(n)) || !existsSync(arq)) return { ok: false, erros: ['Versão não encontrada.'] };
   const antiga = JSON.parse(readFileSync(arq, 'utf8'));

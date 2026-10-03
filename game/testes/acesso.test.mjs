@@ -4,6 +4,12 @@ import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
 import * as A from '../admin/acesso.mjs';
 import { criarGuarda } from '../admin/acesso-http.mjs';
+import * as Auditoria from '../admin/auditoria.mjs';
+import { mkdtempSync as _mk } from 'node:fs';
+import { tmpdir as _tmp } from 'node:os';
+import { join as _join } from 'node:path';
+// O registro de auditoria dos testes vai para uma pasta temporária (nunca para o arquivo real da Engine).
+Auditoria.CAMINHO.arquivo = _join(_mk(_join(_tmp(), 'aud-')), 'engine-auditoria.jsonl');
 
 const nao = () => false;
 const cfg = (env) => A.configuracao({ env, existe: nao, arquivoDeAdmins: '/nao/existe.json' });

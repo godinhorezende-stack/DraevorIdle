@@ -8,11 +8,15 @@ import * as Mapas from './mapas.mjs';
 import * as Operacao from './operacao.mjs';
 import * as CampanhaEditor from './campanha-editor.mjs';
 import * as Overrides from './overrides.mjs';
+import * as Auditoria from './auditoria.mjs';
 import * as OverridesItens from './overrides-itens.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
 /** Atende a rota se for do editor de conteúdo; devolve `true` quando atendeu. */
+/** 200 normalmente; 409 quando o salvar foi recusado por conflito de revisão (o corpo explica). */
+const status = (r) => (r?.codigo === 'conflito' ? 409 : 200);
+
 export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (!caminho.startsWith(PREFIXO)) return false;
   const rota = caminho.slice(PREFIXO.length);
@@ -37,6 +41,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       const t = Biblioteca.dadosDoTooltip(url.searchParams.get('id'), { itemLevel: url.searchParams.get('itemLevel'), semente: url.searchParams.get('semente') });
       return t ? json(res, 200, t) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
     }
+    // O registro de alterações administrativas (só leitura; as linhas são escritas pelo guarda de acesso).
+    if (rota === 'auditoria') return json(res, 200, { eventos: Auditoria.ler({ limite: url.searchParams.get('limite'), tipo: url.searchParams.get('tipo') }) }), true;
     // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
     if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
     if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
@@ -106,31 +112,36 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'overrides/itens/validar') return json(res, 200, OverridesItens.propor(String(dados?.id ?? ''), dados?.override ?? null)), true;
     if (rota === 'overrides/itens') {
       const a = dados?.acao;
-      if (a === 'salvar') return json(res, 200, OverridesItens.salvar(String(dados.id ?? ''), dados.override ?? null)), true;
-      if (a === 'reverter') return json(res, 200, OverridesItens.reverter(String(dados.id ?? ''))), true;
-      if (a === 'ativo') return json(res, 200, OverridesItens.definirAtivo(dados.ativo, dados.id ?? null)), true;
-      if (a === 'restaurar') return json(res, 200, OverridesItens.restaurar(dados.versao)), true;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesItens.salvar(String(dados.id ?? ''), dados.override ?? null, dados.revisao));
+      if (a === 'reverter') return responder(OverridesItens.reverter(String(dados.id ?? ''), dados.revisao));
+      if (a === 'ativo') return responder(OverridesItens.definirAtivo(dados.ativo, dados.id ?? null, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesItens.restaurar(dados.versao, dados.revisao));
       return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
     }
     if (rota === 'overrides/validar') return json(res, 200, Overrides.propor(String(dados?.key ?? ''), dados?.override ?? null)), true;
     if (rota === 'overrides') {
       const a = dados?.acao;
-      if (a === 'salvar') return json(res, 200, Overrides.salvar(String(dados.key ?? ''), dados.override ?? null)), true;
-      if (a === 'reverter') return json(res, 200, Overrides.reverter(String(dados.key ?? ''))), true;
-      if (a === 'duplicar') return json(res, 200, Overrides.duplicar(String(dados.key ?? ''), String(dados.novaKey ?? ''), dados.novoNome ?? null)), true;
-      if (a === 'ativo') return json(res, 200, Overrides.definirAtivo(dados.ativo, dados.key ?? null)), true;
-      if (a === 'restaurar') return json(res, 200, Overrides.restaurar(dados.versao)), true;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(Overrides.salvar(String(dados.key ?? ''), dados.override ?? null, dados.revisao));
+      if (a === 'reverter') return responder(Overrides.reverter(String(dados.key ?? ''), dados.revisao));
+      if (a === 'duplicar') return responder(Overrides.duplicar(String(dados.key ?? ''), String(dados.novaKey ?? ''), dados.novoNome ?? null, dados.revisao));
+      if (a === 'ativo') return responder(Overrides.definirAtivo(dados.ativo, dados.key ?? null, dados.revisao));
+      if (a === 'restaurar') return responder(Overrides.restaurar(dados.versao, dados.revisao));
       return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, duplicar, ativo ou restaurar.'] }), true;
     }
     if (rota === 'campanha/validar') {
       const r = CampanhaEditor.propor(dados ?? {});
       return json(res, 200, { ok: r.erros.length === 0, erros: r.erros, avisos: r.avisos, mudancas: r.mudancas, semMudancas: r.semMudancas }), true;
     }
-    if (rota === 'campanha/restaurar') return json(res, 200, CampanhaEditor.restaurar(dados?.versao)), true;
-    if (rota === 'campanha') return json(res, 200, CampanhaEditor.salvar(dados ?? {})), true;
+    if (rota === 'campanha/restaurar') { const r = CampanhaEditor.restaurar(dados?.versao, dados?.revisao); return json(res, status(r), r), true; }
+    if (rota === 'campanha') { const r = CampanhaEditor.salvar(dados ?? {}); return json(res, status(r), r), true; }
     if (rota === 'mapas/validar') return json(res, 200, Mapas.validarSpawns(dados ?? {})), true;
     if (rota === 'atos-editor/validar') return json(res, 200, Atos.validar(dados ?? {})), true;
-    if (rota === 'atos-editor') return json(res, 200, dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {})), true;
+    if (rota === 'atos-editor') {
+      const r = dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {});
+      return json(res, status(r), r), true;
+    }
     if (rota === 'mapa') return json(res, 200, Conteudo.salvarMapa(dados ?? {})), true;
     if (rota === 'mapa/validar') return json(res, 200, Conteudo.salvarMapa(dados ?? {}, { gravar: false })), true;
     if (rota === 'bosses') return json(res, 200, dados?.excluir ? Conteudo.excluirBoss(String(dados.excluir)) : Conteudo.salvarBoss(dados)), true;

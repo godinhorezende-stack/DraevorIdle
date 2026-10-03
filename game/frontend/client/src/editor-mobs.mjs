@@ -2,7 +2,7 @@
 // `systems/overrides.mjs`). Abas: Geral (nome, classe, vida, exp, armadura, velocidade), Resistências, Ataques, Loot, Sprite e Onde é usado. Cada campo mostra o ORIGINAL ao lado do valor
 // efetivo e só vira override quando difere dele. Fluxo: editar (na tela) → pré-visualizar (servidor: erros, avisos, impacto) → salvar (arquivo, com
 // versão anterior) → publicar (commit + deploy; o jogo aplica no boot). Toda regra é do servidor (`admin/overrides.mjs`).
-import { el, cabecalho, confirmar, pedirTexto, msg } from './editor-ui.mjs';
+import { el, cabecalho, confirmar, pedirTexto, msg, tratarConflito } from './editor-ui.mjs';
 import { retrato } from './editor-sprites.mjs';
 import { num } from './editor-drops.mjs';
 
@@ -84,7 +84,8 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
     if (!alterado(E.ov, E.ficha.override)) return msg('Nenhuma alteração para salvar.', 'aviso');
     const avisos = E.previa?.avisos?.length ?? 0;
     if (!(await confirmar(`Salvar as alterações de ${valorEfetivo(orig(), E.ov, 'name')}?`, `${avisos ? `${avisos} aviso(s) (veja a pré-visualização). ` : ''}Grava gamedata/overrides/monstros.json neste servidor (o original do Canary não é tocado). O jogo só aplica depois do commit + deploy.`, { ok: 'Salvar', perigo: avisos > 0 }))) return;
-    const r = await api('overrides', { acao: 'salvar', key: E.key, override: paraEnviar(E.ov) });
+    const r = await api('overrides', { acao: 'salvar', key: E.key, override: paraEnviar(E.ov), revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.key))) return;
     if (r.ok === false) return msg((r.erros ?? ['Não salvou.']).join(' '), 'erro');
     msg('Override salvo no arquivo. Publique com commit + deploy (o jogo aplica no boot).', 'ok');
     await abrir(E.key);
@@ -97,7 +98,8 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
     const tem = !!E.ficha.override;
     if (!tem) return msg('Este monstro não tem override gravado.', 'aviso');
     if (!(await confirmar(`Reverter ${valorEfetivo(orig(), E.ov, 'name')} ao original?`, E.ficha.ehVariacao ? 'É uma VARIAÇÃO: apagar remove o monstro (se não estiver em uso).' : 'Apaga o override gravado: o valor do Canary volta no próximo boot.', { ok: 'Reverter', perigo: true }))) return;
-    const r = await api('overrides', { acao: 'reverter', key: E.key });
+    const r = await api('overrides', { acao: 'reverter', key: E.key, revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.key))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     msg('Override apagado.', 'ok');
     if (E.ficha.ehVariacao) { E.key = null; E.ficha = null; await desenhar(); history.replaceState(null, '', '#mobs/editar'); } else await abrir(E.key);
@@ -105,14 +107,16 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
   async function duplicar() {
     const novaKey = await pedirTexto('Duplicar como variação', { rotulo: 'Chave da variação (minúsculas, números e hífen)', valor: `${E.key}-variacao`, validar: (v) => (/^[a-z0-9][a-z0-9-]{1,59}$/.test(v) ? '' : 'Use 2 a 60 caracteres: minúsculas, números e hífen.') });
     if (!novaKey) return;
-    const r = await api('overrides', { acao: 'duplicar', key: E.key, novaKey, novoNome: `${valorEfetivo(orig(), E.ov, 'name')} (variação)` });
+    const r = await api('overrides', { acao: 'duplicar', key: E.key, novaKey, novoNome: `${valorEfetivo(orig(), E.ov, 'name')} (variação)`, revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.key))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     msg(`Variação "${novaKey}" criada. Edite-a e coloque-a em um mapa para aparecer no jogo.`, 'ok');
     await desenhar(novaKey);
   }
   async function alternarDesteMonstro() {
     const ligado = E.ficha.override?.ativo !== false;
-    const r = await api('overrides', { acao: 'ativo', ativo: !ligado, key: E.key });
+    const r = await api('overrides', { acao: 'ativo', ativo: !ligado, key: E.key, revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.key))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     msg(`Override de ${E.key} ${ligado ? 'desligado (o jogo usa o original)' : 'ligado'}.`, 'ok');
     await abrir(E.key);
@@ -120,7 +124,8 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
   async function alternarGlobal() {
     const ligar = !E.lista.ativo;
     if (!(await confirmar(ligar ? 'Ligar a camada de overrides?' : 'Desligar a camada de overrides?', ligar ? 'Os overrides gravados voltam a valer no próximo boot.' : 'O jogo ignora TODOS os overrides de monstros no próximo boot (nada é apagado).', { ok: ligar ? 'Ligar' : 'Desligar', perigo: !ligar }))) return;
-    const r = await api('overrides', { acao: 'ativo', ativo: ligar });
+    const r = await api('overrides', { acao: 'ativo', ativo: ligar, revisao: E.lista.revisao });
+    if (await tratarConflito(r, () => desenhar(E.key))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     await desenhar(E.key);
   }

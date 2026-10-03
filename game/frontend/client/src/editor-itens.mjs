@@ -2,7 +2,7 @@
 // `admin/overrides-itens.mjs`), sem tocar no original. Abas: Geral (nome, raridade-base, peso, level mínimo), Combate (ataque, defesa, armadura),
 // Preços (compra e venda) e Onde é usado. Cada campo mostra o ORIGINAL ao lado e só vira override quando difere dele. Fluxo igual ao dos mobs:
 // editar → pré-visualizar (servidor: erros, avisos, impacto) → salvar (arquivo + versão anterior) → publicar (commit + deploy). Regras: servidor.
-import { el, cabecalho, confirmar, msg } from './editor-ui.mjs';
+import { el, cabecalho, confirmar, msg, tratarConflito } from './editor-ui.mjs';
 import { retrato } from './editor-sprites.mjs';
 import { definirCampo, valorEfetivo, alterado, paraEnviar } from './editor-mobs.mjs';
 
@@ -60,7 +60,8 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
     if (!alterado(E.ov, E.ficha.override)) return msg('Nenhuma alteração para salvar.', 'aviso');
     const avisos = E.previa?.avisos?.length ?? 0;
     if (!(await confirmar(`Salvar as alterações de ${valorEfetivo(orig(), E.ov, 'name')}?`, `${avisos ? `${avisos} aviso(s) (veja a pré-visualização). ` : ''}Grava gamedata/overrides/itens.json neste servidor (o catálogo do Canary não é tocado). O jogo só aplica depois do commit + deploy.`, { ok: 'Salvar', perigo: avisos > 0 }))) return;
-    const r = await api('overrides/itens', { acao: 'salvar', id: E.id, override: paraEnviar(E.ov) });
+    const r = await api('overrides/itens', { acao: 'salvar', id: E.id, override: paraEnviar(E.ov), revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.id))) return;
     if (r.ok === false) return msg((r.erros ?? ['Não salvou.']).join(' '), 'erro');
     msg('Override salvo no arquivo. Publique com commit + deploy (o jogo aplica no boot).', 'ok');
     await abrir(E.id);
@@ -72,14 +73,16 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
   async function reverter() {
     if (!E.ficha.override) return msg('Este item não tem override gravado.', 'aviso');
     if (!(await confirmar(`Reverter ${valorEfetivo(orig(), E.ov, 'name')} ao original?`, 'Apaga o override gravado: o valor do Canary volta no próximo boot.', { ok: 'Reverter', perigo: true }))) return;
-    const r = await api('overrides/itens', { acao: 'reverter', id: E.id });
+    const r = await api('overrides/itens', { acao: 'reverter', id: E.id, revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.id))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     msg('Override apagado.', 'ok');
     await abrir(E.id);
   }
   async function alternarDeste() {
     const ligado = E.ficha.override?.ativo !== false;
-    const r = await api('overrides/itens', { acao: 'ativo', ativo: !ligado, id: E.id });
+    const r = await api('overrides/itens', { acao: 'ativo', ativo: !ligado, id: E.id, revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.id))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     msg(`Override de ${E.id} ${ligado ? 'desligado (o jogo usa o original)' : 'ligado'}.`, 'ok');
     await abrir(E.id);
@@ -87,7 +90,8 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
   async function alternarGlobal() {
     const ligar = !E.lista.ativo;
     if (!(await confirmar(ligar ? 'Ligar a camada de overrides de itens?' : 'Desligar a camada de overrides de itens?', ligar ? 'Os overrides gravados voltam a valer no próximo boot.' : 'O jogo ignora TODOS os overrides de itens no próximo boot (nada é apagado).', { ok: ligar ? 'Ligar' : 'Desligar', perigo: !ligar }))) return;
-    const r = await api('overrides/itens', { acao: 'ativo', ativo: ligar });
+    const r = await api('overrides/itens', { acao: 'ativo', ativo: ligar, revisao: E.lista.revisao });
+    if (await tratarConflito(r, () => desenhar(E.id))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     await desenhar(E.id);
   }

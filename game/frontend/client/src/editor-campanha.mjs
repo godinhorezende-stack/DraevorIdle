@@ -2,7 +2,7 @@
 // travada. É BALANCEAMENTO e PROGRESSÃO, então o fluxo é em quatro tempos e a tela mostra cada um: EDITAR (só aqui, na tela) → PRÉ-VISUALIZAR (o
 // servidor devolve erros, avisos e o impacto na vida/dano/exp, sem gravar) → SALVAR (grava `gamedata/campanha.json`, com a cópia da versão
 // anterior) → PUBLICAR (commit + deploy; o jogo lê no boot). Toda regra é do servidor (`admin/campanha-editor.mjs`); a tela só edita e apresenta.
-import { el, cabecalho, confirmar, msg } from './editor-ui.mjs';
+import { el, cabecalho, confirmar, msg, tratarConflito } from './editor-ui.mjs';
 import { num } from './editor-drops.mjs';
 
 const DIFS = [['facil', 'Normal'], ['medio', 'Cruel'], ['dificil', 'Merciless']];
@@ -73,7 +73,8 @@ export function criarEditorDeNiveis({ api, raiz, sujo, aoVoltar, podeGravar = ()
     const avisos = N.previa?.avisos?.length ?? 0;
     const ok = await confirmar('Salvar os níveis da campanha?', `${total()} alteração(ões). ${avisos ? `${avisos} aviso(s) de balanceamento/progressão (veja a pré-visualização). ` : ''}Grava gamedata/campanha.json neste servidor, guardando a versão anterior. O jogo só passa a usar depois do commit + deploy.`, { ok: 'Salvar', perigo: avisos > 0 });
     if (!ok) return;
-    const r = await api('campanha', proposto());
+    const r = await api('campanha', { ...proposto(), revisao: N.original.revisao });
+    if (await tratarConflito(r, () => desenhar(N.foco))) return;
     if (r.ok === false) return msg((r.erros ?? ['Não salvou.']).join(' '), 'erro');
     msg(r.semMudancas ? 'Nada mudou.' : 'Níveis salvos no arquivo. Publique com commit + deploy (o jogo lê a campanha no boot).', 'ok');
     await desenhar(N.foco);
@@ -84,7 +85,8 @@ export function criarEditorDeNiveis({ api, raiz, sujo, aoVoltar, podeGravar = ()
   }
   async function restaurar(v) {
     if (!(await confirmar(`Restaurar a versão ${v}?`, 'Grava o conteúdo dela como a campanha atual (a atual fica guardada como versão nova). O jogo só usa depois do deploy.', { ok: 'Restaurar', perigo: true }))) return;
-    const r = await api('campanha/restaurar', { versao: v });
+    const r = await api('campanha/restaurar', { versao: v, revisao: N.original.revisao });
+    if (await tratarConflito(r, () => desenhar())) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     msg(`Versão ${v} restaurada.`, 'ok');
     await desenhar();

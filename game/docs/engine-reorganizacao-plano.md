@@ -158,3 +158,9 @@ Verificado no código (não pelo selo do menu). "Boot" = o jogo só lê no iníc
 4. Bosses do catálogo (atributos via overrides de monstros) e distinção por tipo na lista.
 5. Outfits e Montarias: primeiro edição dos cadastros existentes (nomes, vocação, preços); criar com assets só depois do pipeline de upload.
 6. Fechamento do menu e regressão.
+
+## Infraestrutura comum dos editores (controle de concorrência + auditoria)
+
+- **Concorrência**: cada leitura devolve uma `revisao` (hash do arquivo, `ausente` se não existe). Campanha, overrides de Mobs e de Itens conferem a revisão em salvar/reverter/duplicar/ativo/restaurar; Atos conferem a `versao`. Revisão velha → HTTP 409 `conflito`, nada é gravado, e a tela abre o modal "Conflito de edição" (recarregar ou continuar vendo a sua).
+- **Auditoria**: `admin/auditoria.mjs` grava uma linha JSON por login, falha de login, logout, recusa, gravação e operação (quem, IP, rota, resumo em nomes de campo, resultado). Nunca guarda senha nem o conteúdo editado. Arquivo em `database/dados/engine-auditoria.jsonl` (rotaciona em 5 MB); lido em Configurações (`GET auditoria`).
+- **Limites**: editores antigos (bosses únicos, fase meta/encontros, mapa do mundo, `/api/mapas`) ainda não conferem revisão; um cliente que omite `revisao` não é checado.

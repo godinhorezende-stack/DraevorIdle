@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { CATALOGO } from '../systems/dados.mjs';
+import { revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 /** Onde ler e gravar (os testes apontam para uma pasta temporária). */
@@ -27,6 +28,7 @@ export function ler() {
     fases: c.fases.map((f, i) => ({ indice: i, huntId: f.huntId, nome: f.nome, ato: f.ato, levelOriginal: f.levelOriginal, nivel: { ...f.nivel }, pular: f.pular === true })),
     bosses: Object.entries(c.bosses).map(([ato, b]) => ({ ato: Number(ato), bossId: b.bossId, nome: b.nome, levelOriginal: b.levelOriginal, nivel: { ...b.nivel } })),
     versoes: versoes().length,
+    revisao: revisaoDe(CAMINHOS.arquivo),
   };
 }
 
@@ -141,6 +143,8 @@ const lerVersao = (n) => (existsSync(join(CAMINHOS.versoes, `${n}.json`)) ? JSON
 
 /** Grava o proposto. Recusa com erros; guarda a versão anterior; preserva todo o resto do arquivo (notas, escala, dificuldades). */
 export function salvar(proposto) {
+  const conflito = conferirRevisao(proposto?.revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const r = propor(proposto);
   if (r.erros.length) return { ok: false, erros: r.erros };
   if (r.semMudancas) return { ok: true, semMudancas: true, avisos: [] };
@@ -152,7 +156,9 @@ export function salvar(proposto) {
 }
 
 /** Restaura uma versão anterior (grava o conteúdo dela como a atual, guardando a atual antes). */
-export function restaurar(n) {
+export function restaurar(n, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const v = lerVersao(Number(n));
   if (!v) return { ok: false, erros: ['Versão não encontrada.'] };
   mkdirSync(CAMINHOS.versoes, { recursive: true });
