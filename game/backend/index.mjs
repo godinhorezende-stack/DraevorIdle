@@ -17,6 +17,10 @@ import { aquecerGrades } from '../systems/cacadas.mjs';
 import * as ConsolidacaoOffline from '../systems/consolidacao-offline.mjs';
 import * as Ausentes from '../systems/ausentes.mjs';
 import * as Presentes from '../systems/presentes.mjs';
+import * as LimpezaDoChao from '../systems/limpeza-do-chao.mjs';
+import * as ServerSave from '../systems/server-save.mjs';
+import * as Manutencao from '../systems/modo-de-manutencao.mjs';
+import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
 
 Site.ligar(vivas);
 // Quem caça de aba fechada entra no número de online (ver `ausentes.mjs`).
@@ -128,6 +132,20 @@ async function atender(req, res) {
    * verdade. Sem framework: três `if` bastam pro tamanho disto.
    */
   // O editor de conteúdo (fases, encontros, bosses): sob `/api/mapas/_conteudo/`, o prefixo que o nginx já tranca.
+  /*
+   * O Server Save e o modo de manutenção, por administrador: sob o mesmo prefixo trancado do editor de conteúdo
+   * (o nginx de produção só deixa passar por túnel SSH). GET = situação e últimos ciclos; POST {acao:'executar'}
+   * roda um save agora; POST {acao:'manutencao', ativo:true|false} liga/desliga o bloqueio de entradas.
+   */
+  if (caminho === '/api/mapas/_conteudo/server-save') {
+    if (req.method === 'GET') return json(res, 200, { situacao: ServerSave.situacao(), manutencao: Manutencao.bloqueada(), ciclos: await ServerSave.ultimosCiclos(10) });
+    if (req.method === 'POST') {
+      const dados = await corpoJson(req).catch(() => null);
+      if (dados?.acao === 'executar') return json(res, 200, await ServerSave.executarAgora());
+      if (dados?.acao === 'manutencao') return json(res, 200, { ok: true, manutencao: Manutencao.definir(!!dados.ativo, typeof dados.mensagem === 'string' ? dados.mensagem : null) });
+      return json(res, 400, { ok: false, erros: ['acao deve ser "executar" ou "manutencao".'] });
+    }
+  }
   if (await ConteudoHttp.atender(req, res, caminho, url, { json, corpoJson })) return;
   if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
     return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, cidade: Mapas.cidadeParaEditor(), criaturasPorHunt: Mapas.criaturasPorHunt(), ...Mapas.raridadesParaEditor() });
@@ -243,6 +261,14 @@ const t0 = performance.now();
 const quantas = aquecerGrades();
 console.log(`  grades de hunt aquecidas: ${quantas} em ${(performance.now() - t0).toFixed(0)}ms`);
 
+// A limpeza automática do chão (a cada 60 min, com aviso 1 min antes — `limpeza-do-chao.mjs`).
+LimpezaDoChao.ligar(vivas);
+LimpezaDoChao.iniciar();
+// O Server Save diário (05:00, America/Sao_Paulo) — não mexe no offline farm (ver `server-save.mjs`, docs/server-save.md).
+ServerSave.ligar(vivas);
+if (validarServerSave().config.maintenanceMode) Manutencao.definir(true);
+ServerSave.iniciar().catch((e) => console.error('[SERVER-SAVE] não iniciou ->', e.message));
+
 http.listen(PORTA, () => {
   console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
 });
@@ -250,6 +276,8 @@ http.listen(PORTA, () => {
 // Desligando o servidor (Ctrl+C): grava todo mundo que está online antes de sair.
 for (const sinal of ['SIGINT', 'SIGTERM', 'SIGBREAK']) {
   process.on(sinal, () => {
+    LimpezaDoChao.parar();
+    ServerSave.parar();
     for (const s of vivas.values()) s.soltarPersonagem?.();
     process.exit(0);
   });

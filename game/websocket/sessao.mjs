@@ -78,6 +78,7 @@ import * as Comparar from '../systems/itens/comparar.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import * as Defesa from '../systems/personagem/defesa.mjs';
 import * as Anuncios from '../systems/anuncios.mjs';
+import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as Presentes from '../systems/presentes.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as RegrasDeUso from '../systems/skills/regras-de-uso.mjs';
@@ -1652,6 +1653,8 @@ export class Sessao {
     // Já entrando num personagem (a simulação offline está rodando): o cliente
     // manda `play` uma vez só; outro no meio é repetição.
     if (this.carregando) return;
+    // Manutenção com indisponibilidade (desligada por padrão): ninguém NOVO entra; a caçada offline segue correndo.
+    if (Manutencao.bloqueada()) return this.erro(Manutencao.mensagemDeBloqueio());
     let personagem = await B.personagemPorNome(name);
     if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
 

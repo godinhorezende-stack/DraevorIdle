@@ -1,5 +1,5 @@
 import './so-quando-muda.mjs';
-import { anunciarDrop } from './anuncio-drop.mjs';
+import { anunciarDrop, anunciarSistema } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
 import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
 import { MapView, definirCoresDeRaridade, dadosDaRaridade } from './map.mjs';
@@ -973,6 +973,13 @@ function handle(message) {
     case 'dropRaro':
       logDropRaro(message);
       anunciarDrop(message);
+      break;
+    // Aviso do sistema para todo mundo (a limpeza do chão): no Global e na faixa do alto da tela.
+    case 'avisoGlobal':
+      if (typeof message.texto === 'string') {
+        logAviso(message.texto, 'global');
+        anunciarSistema(message);
+      }
       break;
     // A bolinha de online das abas de privado. Ver `receberPresenca`.
     case 'presenca':

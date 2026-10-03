@@ -27559,6 +27559,10 @@ b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }
 /* No telefone, logo abaixo da barra de status (em pé) ou das barras de vida/mana (deitado). */
 html[data-perfil="retrato"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) + 52px); }
 html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) + 36px); width: min(420px, calc(100vw - 16px)); }
+/* O aviso do sistema (a limpeza do chão): a mesma faixa, em âmbar, com texto que quebra linha. */
+.anuncio-sistema { --cor: #e0a84a; align-items: flex-start; }
+.anuncio-sistema .anuncio-figura { color: #e0a84a; font-size: 22px; }
+.anuncio-aviso { font-size: 14px; line-height: 1.35; color: #f1e4c4; white-space: normal; }
 /* A linha do Global: o ✦ na cor de destaque. */
 .drop-raro { color: #c8b98a; }
 /* As especializações da classe na ficha: o efeito é uma frase, não um número grande. */

@@ -263,6 +263,36 @@ export function semearChao(chaoCapturado) {
 
 const chaveDoTile = (x, y) => `${x},${y}`;
 
+/*
+ * ---- A limpeza do chão (`limpeza-do-chao.mjs`) ----
+ * O chão é só este Map (memória do processo, não vai para o banco): inventário,
+ * equipamento, bolsa, depósito e banco são outras listas e nunca passam por aqui.
+ * A limpeza tira uma FOTO das pilhas e apaga em lotes; antes de apagar cada uma,
+ * confere que ela ainda é a mesma (se alguém pegou tudo, ou mexeu, o que sobrou
+ * é contado pelo tamanho de AGORA — nada é apagado duas vezes nem fora do chão).
+ */
+export const contarPecasNoChao = () => {
+  let n = 0;
+  for (const pilha of CHAO.values()) n += pilha.length;
+  return n;
+};
+
+/** A foto das pilhas do chão agora: `[chave, pilha][]`. */
+export const fotoDoChao = () => [...CHAO.entries()].filter(([, pilha]) => pilha.length);
+
+/** Apaga as pilhas da foto (um lote). Devolve `{ pilhas, pecas }` realmente removidas. */
+export function limparPilhasDoChao(lote) {
+  let pilhas = 0;
+  let pecas = 0;
+  for (const [chave, pilha] of lote) {
+    if (CHAO.get(chave) !== pilha) continue; // a casa mudou (pegaram tudo / outra pilha): não é mais a da foto
+    pecas += pilha.length;
+    pilhas++;
+    CHAO.delete(chave);
+  }
+  return { pilhas, pecas };
+}
+
 /**
  * "para pegar eu tenho que estar no lado do item ou encima" — a resposta é
  * sim: alcance é a casa em que se está OU qualquer uma das 8 vizinhas
