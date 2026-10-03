@@ -1,0 +1,4 @@
+{
+  "_nota": "Modo beta do servidor (systems/modo-beta.mjs): acesso livre a hunts VIP/Instance/Divine e bosses para testar. `ativo` é o padrão no boot; MODO_BETA=0|1 no ambiente manda sobre ele; o admin liga/desliga em tempo de execução pela rota trancada /api/mapas/_conteudo/modo-beta.",
+  "ativo": true
+}

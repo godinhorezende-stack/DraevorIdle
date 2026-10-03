@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGO, CHARACTER_TEMPLATE, STORE_REAL } from './dados.mjs';
 import { darItem } from './inventario.mjs';
 import * as Bau from './bau.mjs';
+import * as Beta from './modo-beta.mjs';
 import { ehBossDeAto, CAMPANHA } from './campanha.mjs';
 
 export const TEMPO_NA_SALA_MS = 25 * 60_000;
@@ -132,6 +133,7 @@ export function recusaDaTask(estado, bossId) {
 
 /** Na entrada: o de task não tem relógio; o diário começa a esperar agora. */
 export function marcarEntrada(estado, bossId, agora = Date.now()) {
+  if (Beta.ativo()) return; // modo beta: nenhuma espera começa na entrada
   if (taskDoBoss(estado, bossId)) return;
   if (ehBossDeAto(bossId)) return; // boss de fim de ato: sem recarga, nenhuma espera começa na entrada
   const boss = acharBoss(bossId);
@@ -185,6 +187,7 @@ export function autoParaCliente(estado, agora = Date.now()) {
 function motivoParaPular(estado, id, agora) {
   const boss = acharBoss(id);
   if (!boss) return 'não existe';
+  if (Beta.ativo()) return null;
   if ((estado.level ?? 0) < (boss.level ?? 0)) return `level ${boss.level}`;
   const task = recusaDaTask(estado, id);
   if (task) return task;

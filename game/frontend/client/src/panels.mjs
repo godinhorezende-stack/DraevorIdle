@@ -666,7 +666,8 @@ function campanhaCards(body) {
     });
   }
 
-  for (let ato = 1; ato <= 4; ato++) {
+  // Os atos que o servidor mandou: os 4 legados e, se houver, os do editor (5 em diante).
+  for (const ato of [...new Set(escolhida.fases.map((f) => f.ato))].sort((x, y) => x - y)) {
     const fases = escolhida.fases.filter((f) => f.ato === ato);
     const feitas = fases.filter((f) => f.completa).length;
     body.append(el('h4', 'store-degrau campanha-ato', `Ato ${ato} · level ${fases[0]?.nivel}–${fases.at(-1)?.nivel} · ${feitas}/${fases.length} fases`));
@@ -681,7 +682,7 @@ function campanhaCards(body) {
         for (const creature of hunt.creatures.slice(0, 4)) bichos.append(figuraDaCriatura(creature, catalog, 40));
         card.append(bichos);
       }
-      card.append(el('span', 'lv', `Fase ${(ato - 1) * 12 + i + 1} · level ~${f.nivel}`));
+      card.append(el('span', 'lv', `Fase ${ato <= 4 ? (ato - 1) * 12 + i + 1 : i + 1} · level ~${f.nivel}`));
       const progresso = el('div', 'fase-progresso');
       const trilho = el('div', 'fase-trilho');
       const cheio = el('i');
@@ -727,7 +728,7 @@ function secaoDoBossDoAto(b, ato, ultimaFase, escolhida, bossPorId, catalog) {
   const aberto = !!portal && portal.ato === ato && portal.dificuldade === escolhida.id;
   const estado = aberto ? 'aberto' : b.liberado ? 'aguardando' : 'bloqueado';
   const sec = el('div', `campanha-boss-secao ${estado}${b.vencido ? ' vencido' : ''}`);
-  sec.append(el('span', 'campanha-boss-elo', `Fase ${ato * 12} → ${aberto ? 'Portal aberto' : 'Portal fechado'} → Boss final`));
+  sec.append(el('span', 'campanha-boss-elo', `${ultimaFase.nome} → ${aberto ? 'Portal aberto' : 'Portal fechado'} → Boss final`));
   sec.append(el('h4', null, `Boss do Ato ${ato}: ${b.nome}`));
   if (dados?.creatures?.length) {
     const bichos = el('div', 'hunt-card-bichos');

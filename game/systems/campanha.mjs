@@ -19,8 +19,11 @@
 // {huntId: n}, completas: [huntId], bosses: [ato] }` (`kills` é do sistema de
 // antes, por contagem de mortes: fica gravado, ninguém mais lê).
 import { readFileSync } from 'node:fs';
-import { conteudoDaFase, exigidasDaFase, nomesDeBosses, atosDoConteudo } from './campanha-conteudo.mjs';
+import { conteudoDaFase, exigidasDaFase, nomesDeBosses, atosDoConteudo, registrarConteudo, registrarMetaDeAto } from './campanha-conteudo.mjs';
 import { CATALOGO } from './dados.mjs';
+import * as Beta from './modo-beta.mjs';
+import { validarAto, temErro, fasesAbertas, normalizar } from './atos-modelo.mjs';
+import { lerExecutaveis } from './atos-carregar.mjs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
@@ -57,7 +60,11 @@ for (const { bossId } of Object.values(CAMPANHA.bosses)) {
 }
 
 /** A última fase JOGÁVEL do ato (as `pular` não se entram): a que, ao ser concluída, abre o portal do boss. */
-export const ultimaFaseDoAto = (ato) => FASES.filter((f) => f.ato === Number(ato) && !f.pular).at(-1) ?? null;
+export const ultimaFaseDoAto = (ato) => {
+  const g = ATOS_DO_EDITOR.get(Number(ato));
+  if (g) return FASES.find((f) => f.grafo?.atoId === g.ato.id && f.grafo.faseId === g.ato.bossFinal?.faseAnterior) ?? null;
+  return FASES.filter((f) => f.ato === Number(ato) && !f.pular).at(-1) ?? null;
+};
 export const ehUltimaFaseDoAto = (huntId) => {
   const f = faseDe(huntId);
   return !!f && ultimaFaseDoAto(f.ato)?.huntId === huntId;
@@ -95,6 +102,7 @@ export function faseLiberada(estado, dif, huntId) {
   if (!f || !ehDificuldade(dif) || !dificuldadeLiberada(estado, dif)) return false;
   // Fase travada (`pular`): ninguém entra — nem pelo cliente, nem mandando o `startHunt` na mão.
   if (f.pular) return false;
+  if (f.grafo) return liberadaNoGrafo(estado, dif, f);
   if (f.indice === 0) return true;
   // A primeira fase de um ato pede o boss do ato anterior.
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return false;
@@ -130,6 +138,8 @@ export function faseExigida(f) {
 /** O boss do ato está aberto? (as 12 fases dele completas, na dificuldade) */
 export function bossLiberado(estado, dif, ato) {
   if (!ehDificuldade(dif) || !dificuldadeLiberada(estado, dif)) return false;
+  const g = ATOS_DO_EDITOR.get(Number(ato));
+  if (g) return atoAtivo(Number(ato)) && portaoDoAtoAberto(estado, dif, g) && g.ato.fases.filter((f) => f.obrigatoria).every((f) => faseCompleta(estado, dif, f.huntId));
   return FASES.filter((f) => f.ato === Number(ato)).every((f) => faseCompleta(estado, dif, f.huntId));
 }
 
@@ -142,6 +152,7 @@ export function motivoParaNaoEntrar(estado, dif, huntId) {
   if (!dificuldadeLiberada(estado, dif)) return `O ${nomeDif} abre depois de vencer o boss do Ato ${ATOS} na dificuldade anterior.`;
   if (f.pular) return `${f.nome} está travada (em obras) e não abre por enquanto.`;
   if (faseLiberada(estado, dif, huntId)) return null;
+  if (f.grafo) return motivoNoGrafo(estado, dif, f, nomeDif);
   if (f.indice % FASES_POR_ATO === 0 && !bossVencido(estado, dif, f.ato - 1)) return `Derrote o boss do Ato ${f.ato - 1} (${bossDoAto(f.ato - 1)?.nome}) no ${nomeDif} para abrir o Ato ${f.ato}.`;
   const faltando = exigidasDaFase(huntId).find((id) => !faseCompleta(estado, dif, id));
   if (faltando && !primeiraIncompleta(estado, dif, f)) return `Complete antes ${faseDe(faltando)?.nome ?? faltando} no ${nomeDif} para abrir esta.`;
@@ -222,6 +233,7 @@ export const aoCompletar = (estado) => (AO_COMPLETAR.includes(estado.settings?.a
 export function proximaParaSeguir(estado, dif, huntId) {
   const f = faseDe(huntId);
   if (!f) return null;
+  if (f.grafo) return proximaNoGrafo(estado, dif, f);
   for (let i = f.indice + 1; i < FASES.length && FASES[i].ato === f.ato; i++) {
     if (FASES[i].pular) continue;
     return faseLiberada(estado, dif, FASES[i].huntId) ? FASES[i] : null;
@@ -235,6 +247,12 @@ export function venceuBoss(estado, dif, ato) {
   if (p.bosses.includes(Number(ato))) return null;
   p.bosses.push(Number(ato));
   const nomeDif = CAMPANHA.dificuldades[dif].nome;
+  const doEditor = ATOS_DO_EDITOR.get(Number(ato));
+  if (doEditor) {
+    // Ato do editor: concluir libera o ato seguinte que o exige; NÃO mexe na dificuldade (essa é a campanha legada).
+    estado.avisoDaHunt = `${doEditor.ato.nome} concluído no ${nomeDif}!${doEditor.ato.seguinte ? ' O próximo ato está liberado.' : ''}`;
+    return estado.avisoDaHunt;
+  }
   const proxDif = DIFICULDADES[DIFICULDADES.indexOf(dif) + 1];
   const aviso =
     Number(ato) < ATOS
@@ -284,7 +302,7 @@ export function paraCliente(estado) {
   return {
     aoCompletar: aoCompletar(estado),
     atos: atosDoConteudo(),
-    mundo: Object.fromEntries(FASES.map((f) => [f.huntId, mundoDaFase(estado, f)]).filter(([, v]) => Object.keys(v).length)),
+    mundo: Object.fromEntries(FASES.filter(visivel).map((f) => [f.huntId, mundoDaFase(estado, f)]).filter(([, v]) => Object.keys(v).length)),
     bossesDerrotados: Object.entries(vitorias).map(([id, vezes]) => ({ id, nome: nomes[id] ?? id, vezes })),
     dificuldades: DIFICULDADES.map((dif) => {
       const p = progresso(estado, dif);
@@ -293,7 +311,7 @@ export function paraCliente(estado) {
         nome: CAMPANHA.dificuldades[dif].nome,
         faixa: CAMPANHA.dificuldades[dif].faixa,
         liberada: dificuldadeLiberada(estado, dif),
-        fases: FASES.map((f) => ({
+        fases: FASES.filter(visivel).map((f) => ({
           huntId: f.huntId,
           nome: f.nome,
           ato: f.ato,
@@ -303,7 +321,7 @@ export function paraCliente(estado) {
           liberada: faseLiberada(estado, dif, f.huntId),
           ...(f.pular ? { pular: true } : {}),
         })),
-        bosses: Object.entries(CAMPANHA.bosses).map(([ato, b]) => ({
+        bosses: Object.entries(CAMPANHA.bosses).filter(([ato]) => atoAtivo(Number(ato))).map(([ato, b]) => ({
           ato: Number(ato),
           bossId: b.bossId,
           nome: b.nome,
@@ -349,4 +367,146 @@ export function abrirPortalDoBoss(hunt, estados) {
   if (atual && atual.ato === c.ato && atual.dificuldade === c.dificuldade) return atual;
   hunt.portalDoBoss = { ato: c.ato, dificuldade: c.dificuldade, bossId: b.bossId, nome: b.nome, x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, abertoEm: Date.now() };
   return hunt.portalDoBoss;
+}
+
+// =====================================================================================================================
+// ATOS DO EDITOR (runtime por grafo)
+// Os 4 atos legados seguem pelo caminho linear de sempre (acima, sem mudar). Um ato do editor (`gamedata/atos/*.json`, estado `beta` ou
+// `publicado`) entra aqui no boot: suas fases viram entradas de `FASES` com `grafo: {atoId, faseId}` e `ato` = o `ordem` do ato (5 em diante);
+// o boss final vira `CAMPANHA.bosses[ordem]`. Tudo o mais — portal, limpeza, Caça Automática, party, progresso por hunt — é O MESMO caminho:
+// só mudam as perguntas "esta fase está aberta?", "o boss abriu?" e "qual a próxima?", que aqui seguem o grafo (`fasesAbertas`).
+// O progresso fica onde sempre ficou (`completas` por hunt, `bosses` por número de ato): nada novo no personagem.
+// =====================================================================================================================
+export const ATOS_DO_EDITOR = new Map(); // número do ato → { ato, numero, huntPorFase: Map, desfazer: [] }
+const legadoN = (id) => (/^legado-(\d+)$/.test(String(id)) ? Number(String(id).slice(7)) : null);
+/** O ato do editor está valendo? `publicado` sempre; `beta` só com o modo beta ligado. */
+export const atoAtivo = (numero) => {
+  const g = ATOS_DO_EDITOR.get(Number(numero));
+  if (!g) return true; // legado
+  return g.ato.estado === 'publicado' || (g.ato.estado === 'beta' && Beta.ativo());
+};
+const visivel = (f) => !f.grafo || atoAtivo(f.ato);
+const numeroDoAtoId = (id) => legadoN(id) ?? [...ATOS_DO_EDITOR.values()].find((g) => g.ato.id === id)?.numero ?? null;
+
+/** O ato anterior/exigidos têm o boss vencido nesta dificuldade? (a porta do ato) */
+function portaoDoAtoAberto(estado, dif, g) {
+  const ids = [g.ato.anterior, ...g.ato.requisitos.exige].filter(Boolean);
+  return ids.every((id) => {
+    const n = numeroDoAtoId(id);
+    return n != null && bossVencido(estado, dif, n);
+  });
+}
+function liberadaNoGrafo(estado, dif, f) {
+  const g = ATOS_DO_EDITOR.get(f.ato);
+  if (!g || !atoAtivo(f.ato) || !portaoDoAtoAberto(estado, dif, g)) return false;
+  const feitas = new Set(g.ato.fases.filter((x) => faseCompleta(estado, dif, x.huntId)).map((x) => x.id));
+  return fasesAbertas(g.ato, feitas).has(f.grafo.faseId);
+}
+function motivoNoGrafo(estado, dif, f, nomeDif) {
+  const g = ATOS_DO_EDITOR.get(f.ato);
+  if (!g || !atoAtivo(f.ato)) return `${f.nome} ainda não está disponível.`;
+  for (const id of [g.ato.anterior, ...g.ato.requisitos.exige].filter(Boolean)) {
+    const n = numeroDoAtoId(id);
+    if (n == null || !bossVencido(estado, dif, n)) return `Derrote o boss do Ato ${n ?? id} (${n != null ? bossDoAto(n)?.nome : id}) no ${nomeDif} para abrir o ${g.ato.nome}.`;
+  }
+  const nomeDe = (faseId) => g.ato.fases.find((x) => x.id === faseId)?.nome ?? faseId;
+  const antes = g.ato.conexoes.filter((c) => c.para === f.grafo.faseId).map((c) => nomeDe(c.de));
+  const exige = g.ato.fases.find((x) => x.id === f.grafo.faseId)?.requisitos.exige ?? [];
+  const faltaExigida = exige.find((id) => !faseCompleta(estado, dif, g.huntPorFase.get(id)));
+  if (faltaExigida) return `Complete antes ${nomeDe(faltaExigida)} no ${nomeDif} para abrir esta.`;
+  return `Complete ${antes.length > 1 ? `uma de: ${antes.join(', ')}` : (antes[0] ?? 'a fase anterior')} no ${nomeDif} para abrir esta.`;
+}
+function proximaNoGrafo(estado, dif, f) {
+  const g = ATOS_DO_EDITOR.get(f.ato);
+  if (!g) return null;
+  for (const c of g.ato.conexoes.filter((x) => x.de === f.grafo.faseId)) {
+    const huntId = g.huntPorFase.get(c.para);
+    if (huntId && !faseCompleta(estado, dif, huntId) && faseLiberada(estado, dif, huntId)) return faseDe(huntId);
+  }
+  return null;
+}
+
+/** O boss é de ato: sem recarga (catálogo e `semEspera`), igual aos legados. */
+function semEsperaDoBoss(bossId) {
+  for (const lista of [CATALOGO.bosses, CATALOGO.hunts]) for (const e of lista ?? []) if (e.id === bossId || e.id === `${bossId}-online`) Object.assign(e, { cooldownHours: 0, semEspera: true });
+}
+
+function contextoDoRuntime() {
+  const hunts = new Set([...CATALOGO.hunts, ...(CATALOGO.vips ?? []), ...(CATALOGO.especiais ?? []), ...(CATALOGO.divinas ?? [])].map((h) => h.id));
+  const bosses = new Set((CATALOGO.bosses ?? []).map((b) => b.id));
+  const huntsEmUso = new Map();
+  for (const f of FASES) huntsEmUso.set(f.huntId, f.grafo?.atoId ?? `legado-${f.ato}`);
+  const bossesEmUso = new Map(Object.entries(CAMPANHA.bosses).map(([n, b]) => [b.bossId, ATOS_DO_EDITOR.get(Number(n))?.ato.id ?? `legado-${n}`]));
+  const ordensEmUso = new Map([...Array(ATOS)].map((_, i) => [i + 1, `legado-${i + 1}`]));
+  for (const [n, g] of ATOS_DO_EDITOR) ordensEmUso.set(n, g.ato.id);
+  const atos = [...ordensEmUso.values()].map((id) => ({ id }));
+  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos };
+}
+
+/**
+ * Põe um ato do editor para valer. Valida DE NOVO com o cadastro do servidor (nunca confia no arquivo) e recusa, sem efeito nenhum, se houver
+ * erro. Devolve `{ ok, problemas, numero }`.
+ */
+export function registrarAto(bruto) {
+  const ato = normalizar({ ...bruto, estado: bruto.estado === 'beta' ? 'beta' : 'publicado' });
+  const problemas = validarAto(ato, contextoDoRuntime());
+  if (temErro(problemas)) return { ok: false, problemas };
+  const numero = ato.ordem;
+  const desfazer = [];
+  const huntPorFase = new Map(ato.fases.map((f) => [f.id, f.huntId]));
+  const doCadastro = (id) => [...CATALOGO.hunts, ...(CATALOGO.vips ?? []), ...(CATALOGO.especiais ?? []), ...(CATALOGO.divinas ?? [])].find((h) => h.id === id);
+  const niveisPadrao = (f) => f.nivel ?? { facil: doCadastro(f.huntId)?.level ?? 1, medio: doCadastro(f.huntId)?.level ?? 1, dificil: doCadastro(f.huntId)?.level ?? 1 };
+  const ordenadas = [...ato.fases].sort((a, b) => (a.ordem ?? 1e9) - (b.ordem ?? 1e9));
+  const posX = 1000 / 920;
+  const posY = 640 / 520;
+  for (const f of ordenadas) {
+    const entrada = { huntId: f.huntId, nome: f.nome, ato: numero, levelOriginal: Math.max(1, doCadastro(f.huntId)?.level ?? niveisPadrao(f).facil), nivel: niveisPadrao(f), grafo: { atoId: ato.id, faseId: f.id } };
+    INDICE.set(f.huntId, FASES.push(entrada) - 1);
+    desfazer.push(() => {
+      INDICE.delete(f.huntId);
+      FASES.splice(FASES.indexOf(entrada), 1);
+      FASES.forEach((x, i) => INDICE.set(x.huntId, i));
+    });
+    desfazer.push(
+      registrarConteudo(f.huntId, {
+        descricao: f.descricao || undefined,
+        conexoes: ato.conexoes.filter((c) => c.de === f.id).map((c) => huntPorFase.get(c.para)),
+        requisitos: { exige: f.requisitos.exige.map((id) => huntPorFase.get(id)).filter(Boolean) },
+        ...(f.posicao ? { mapa: { x: Math.round(f.posicao.x * posX), y: Math.round(f.posicao.y * posY) } } : {}),
+      })
+    );
+  }
+  const boss = ato.bossFinal;
+  const bossCad = (CATALOGO.bosses ?? []).find((b) => b.id === boss.bossId);
+  const ult = ato.fases.find((f) => f.id === boss.faseAnterior);
+  const nivelBoss = boss.nivel ?? niveisPadrao(ult);
+  CAMPANHA.bosses[String(numero)] = { bossId: boss.bossId, nome: bossCad?.name ?? boss.bossId, levelOriginal: Math.max(1, bossCad?.level ?? nivelBoss.facil), nivel: nivelBoss };
+  desfazer.push(() => delete CAMPANHA.bosses[String(numero)]);
+  semEsperaDoBoss(boss.bossId);
+  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null }));
+  ATOS_DO_EDITOR.set(numero, { ato, numero, huntPorFase, desfazer });
+  return { ok: true, problemas, numero };
+}
+
+/** Só os testes: tira da campanha legada estas hunts (para um ato de teste usá-las; cada hunt pertence a um ato só). */
+export function _liberarHuntsParaTestes(ids) {
+  const fora = new Set(ids);
+  for (let i = FASES.length - 1; i >= 0; i--) if (fora.has(FASES[i].huntId) && !FASES[i].grafo) FASES.splice(i, 1);
+  INDICE.clear();
+  FASES.forEach((x, i) => INDICE.set(x.huntId, i));
+}
+
+/** Só os testes: tira um ato registrado. */
+export function _desregistrarAto(numero) {
+  const g = ATOS_DO_EDITOR.get(Number(numero));
+  if (!g) return;
+  for (const d of g.desfazer.reverse()) d();
+  ATOS_DO_EDITOR.delete(Number(numero));
+}
+
+// No boot: os atos executáveis da pasta. O que não passar na validação é ignorado COM aviso (nunca derruba o servidor nem afeta os legados).
+for (const ato of lerExecutaveis()) {
+  const r = registrarAto(ato);
+  if (!r.ok) console.warn(`[atos] "${ato.id}" não entrou no jogo: ${r.problemas.filter((p) => p.nivel === 'erro').map((p) => `[${p.onde}] ${p.mensagem}`).join(' | ')}`);
+  else console.log(`[atos] "${ato.id}" (${ato.estado}) carregado como Ato ${r.numero}: ${ato.fases.length} fases.`);
 }

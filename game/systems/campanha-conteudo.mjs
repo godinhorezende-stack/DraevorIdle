@@ -22,6 +22,21 @@ const DADOS = BRUTO.fases ?? {};
 /** Metadados de cada Ato para a tela WORLD (`atos[n] = { nome, parte, tema, descricao }`): tudo opcional, editado em /editor/conteudo. */
 export const atosDoConteudo = () => BRUTO.atos ?? {};
 
+/**
+ * Registra o conteúdo de uma fase de ato do EDITOR (`Campanha.registrarAto`): o mesmo formato do arquivo (conexões, mapa, requisitos).
+ * Devolve uma função que desfaz (só os testes).
+ */
+export function registrarConteudo(huntId, dados) {
+  const antes = DADOS[huntId];
+  DADOS[huntId] = dados;
+  return () => (antes === undefined ? delete DADOS[huntId] : (DADOS[huntId] = antes));
+}
+/** Metadados (nome, tema, descrição...) de um ato registrado. */
+export function registrarMetaDeAto(numero, meta) {
+  (BRUTO.atos ??= {})[String(numero)] = meta;
+  return () => delete BRUTO.atos[String(numero)];
+}
+
 /** Só os testes: troca o conteúdo carregado (devolve uma função que o restaura). */
 export function _definirParaTestes(novo) {
   const antes = { ...DADOS };

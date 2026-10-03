@@ -22,6 +22,7 @@ import * as LimpezaDoChao from '../systems/limpeza-do-chao.mjs';
 import * as Party from '../systems/party.mjs';
 import * as ServerSave from '../systems/server-save.mjs';
 import * as Manutencao from '../systems/modo-de-manutencao.mjs';
+import * as ModoBeta from '../systems/modo-beta.mjs';
 import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
 
 Site.ligar(vivas);
@@ -140,6 +141,15 @@ async function atender(req, res) {
    * (o nginx de produção só deixa passar por túnel SSH). GET = situação e últimos ciclos; POST {acao:'executar'}
    * roda um save agora; POST {acao:'manutencao', ativo:true|false} liga/desliga o bloqueio de entradas.
    */
+  // O modo beta (acesso livre para testar): GET = situação; POST {ativo:true|false} liga/desliga em tempo de execução.
+  if (caminho === '/api/mapas/_conteudo/modo-beta') {
+    if (req.method === 'GET') return json(res, 200, { ativo: ModoBeta.ativo() });
+    if (req.method === 'POST') {
+      const dados = await corpoJson(req).catch(() => null);
+      if (typeof dados?.ativo !== 'boolean') return json(res, 400, { ok: false, erros: ['ativo deve ser true ou false.'] });
+      return json(res, 200, { ok: true, ativo: ModoBeta.definir(dados.ativo) });
+    }
+  }
   if (caminho === '/api/mapas/_conteudo/server-save') {
     if (req.method === 'GET') return json(res, 200, { situacao: ServerSave.situacao(), manutencao: Manutencao.bloqueada(), ciclos: await ServerSave.ultimosCiclos(10) });
     if (req.method === 'POST') {

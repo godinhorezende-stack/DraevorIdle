@@ -24,6 +24,7 @@ import * as Boosts from './boosts.mjs';
 import * as Stamina from './stamina.mjs';
 import * as Treinos from './treinos.mjs';
 import * as Premium from './premium.mjs';
+import * as Beta from './modo-beta.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
@@ -578,7 +579,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     if (motivo) return { ok: false, erro: motivo };
   }
   if (atoDoBoss != null && !Campanha.bossLiberado(estado, dif, atoDoBoss)) {
-    return { ok: false, erro: `Complete as 12 fases do Ato ${atoDoBoss} no ${Campanha.CAMPANHA.dificuldades[dif].nome} para enfrentar ${boss.name}.` };
+    return { ok: false, erro: `Complete ${Campanha.ATOS_DO_EDITOR.has(atoDoBoss) ? "as fases" : "as 12 fases"} do Ato ${atoDoBoss} no ${Campanha.CAMPANHA.dificuldades[dif].nome} para enfrentar ${boss.name}.` };
   }
   // O boss de fim de ato só se alcança pelo PORTAL, que nasce de uma limpeza da última fase NESTA execução: nem o histórico
   // (fase completa, boss vencido) nem um `startHunt` direto dispensam a limpeza.
@@ -589,7 +590,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // O boss de fim de ato pela campanha: a PRIMEIRA vez sem level, task nem
   // recarga; depois da vitória, repetir segue a recarga dele (sem level/task:
   // a força é a da dificuldade).
-  if (boss && !primeiraDoAto) {
+  // Modo beta: bosses sem level, task nem recarga (a regra do portal do boss de ato, acima, continua valendo).
+  if (boss && !primeiraDoAto && !Beta.ativo()) {
     // Level e a recarga real de cada boss (`cooldownHours`, `bossCooldownsAte`).
     if (atoDoBoss == null && (estado.level ?? 0) < (boss.level ?? 0)) return { ok: false, erro: `Precisa de level ${boss.level}.` };
     // Boss de task: abre com a task feita e sai uma vez por personagem (`bosses.mjs`).
