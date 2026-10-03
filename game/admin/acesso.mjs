@@ -94,8 +94,16 @@ export function lerCookie(cabecalho, nome = NOME_DO_COOKIE) {
   }
   return null;
 }
-export function montarCookie(token, { seguro = false, maxAgeMs = DURACAO_DA_SESSAO_MS } = {}) {
-  return `${NOME_DO_COOKIE}=${encodeURIComponent(token)}; Path=/api/mapas; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(maxAgeMs / 1000)}${seguro ? '; Secure' : ''}`;
+/**
+ * Os caminhos que recebem o cookie: a API (`/api/mapas`) E as páginas da Engine (`/editor`) — o servidor decide, na hora de entregar a PÁGINA, se
+ * leva ao login, e para isso o cookie precisa chegar nela (com `Path=/api/mapas` só, a página nunca via a sessão e o login girava em laço).
+ * Nunca vai para o jogo nem para o site.
+ */
+export const CAMINHOS_DO_COOKIE = ['/api/mapas', '/editor'];
+export const montarCookies = (token, opcoes) => CAMINHOS_DO_COOKIE.map((c) => montarCookie(token, { ...opcoes, caminho: c }));
+export const apagarCookies = () => CAMINHOS_DO_COOKIE.map((c) => `${NOME_DO_COOKIE}=; Path=${c}; HttpOnly; SameSite=Strict; Max-Age=0`);
+export function montarCookie(token, { seguro = false, maxAgeMs = DURACAO_DA_SESSAO_MS, caminho = '/api/mapas' } = {}) {
+  return `${NOME_DO_COOKIE}=${encodeURIComponent(token)}; Path=${caminho}; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(maxAgeMs / 1000)}${seguro ? '; Secure' : ''}`;
 }
 
 /** O controle de acesso com as dependências do banco injetadas (testes usam falsas). */
