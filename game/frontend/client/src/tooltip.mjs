@@ -2944,9 +2944,12 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     extras.append(el('div', 'tip-afixos-titulo', essencia ? 'O atributo guardado' : 'Modificadores'));
     for (const posto of afixosDaPeca) {
       const ficha = getCatalogo()?.afixos?.[posto.id];
-      const valor = ficha?.tipo === 'flat'
-        ? `+${posto.value}`
-        : `+${String(posto.value).replace('.', ',')}%`;
+      // Dano em faixa ("Dano físico adicional 10–20"): o valor é o mínimo e o máximo é `proporcaoDoMaximo` vezes ele.
+      const valor = ficha?.proporcaoDoMaximo
+        ? `${posto.value}–${Math.round(posto.value * ficha.proporcaoDoMaximo)}`
+        : ficha?.tipo === 'flat'
+          ? `+${posto.value}`
+          : `+${String(posto.value).replace('.', ',')}%`;
       const linha = el('div', 'tip-afixo');
       /*
        * O selo da linha é a estrela DELA, na cor dela, e não mais só "T3".

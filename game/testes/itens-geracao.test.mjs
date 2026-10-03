@@ -37,7 +37,7 @@ test('configuração: validada, e as faixas T1 < T2 < T3 < T4 < T5 (T1 o mais fr
 
 // A lista de modificadores confirmada pelo dono (29/09).
 const MODIFICADORES = [
-  'str', 'dex', 'int', 'atk_flat', 'phys_dmg', 'fire_dmg', 'earth_dmg', 'energy_dmg', 'ice_dmg', 'holy_dmg', 'death_dmg',
+  'str', 'dex', 'int', 'atk_flat', 'phys_add', 'phys_dmg', 'fire_dmg', 'earth_dmg', 'energy_dmg', 'ice_dmg', 'holy_dmg', 'death_dmg',
   'atk_speed', 'cast_speed', 'crit_chance', 'crit_dmg', 'accuracy',
   'life', 'mana', 'life_regen', 'mana_regen', 'life_regen_pct', 'mana_regen_pct', 'life_leech', 'mana_leech',
   'armor_flat', 'armour_pct', 'evasion', 'evasion_pct', 'energy_shield', 'es_pct', 'block',
@@ -59,7 +59,8 @@ test('modificadores: exatamente a lista do dono, cada um com peso, faixa por tie
     assert.ok(['flat', 'pct'].includes(a.tipo), `${id}: tipo`);
     assert.ok(a.nivelMinimo >= 1, `${id}: nível mínimo`);
     assert.ok(a.raridades?.length && a.raridades.every((r) => C.ORDEM.includes(r)), `${id}: raridades`);
-    assert.ok(Object.values(C.POOLS).some((l) => l.includes(id)), `${id}: em algum pool (tipos de item permitidos)`);
+    // `dropa:false` (Attack, que o Dano físico adicional substituiu; Damage vs Elite) fica cadastrado, mas fora do drop.
+    if (a.dropa !== false) assert.ok(Object.values(C.POOLS).some((l) => l.includes(id)), `${id}: em algum pool (tipos de item permitidos)`);
   }
   // Sem "Magic Resistance" nem dano elemental genérico.
   assert.ok(!Object.keys(C.ATRIBUTOS).some((id) => /magic_res|elemental/.test(id)));

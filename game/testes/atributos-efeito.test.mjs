@@ -201,7 +201,8 @@ const SONDAS = {
   dex: ['knight', null, bichoForte(30), recebido, 5000, 'menos'],
   int: ['sorcerer', null, cacada(), magia('spell-energy-strike'), 500, 'mais'],
   // Ofensivos.
-  atk_flat: ['knight', null, cacada(), golpes, 50, 'mais'],
+  atk_flat: ['knight', null, cacada(), golpes, 50, 'mais'], // (não cai mais, mas as peças antigas seguem valendo)
+  phys_add: ['knight', null, cacada(), golpes, 50, 'mais'],
   phys_dmg: ['knight', null, cacada(), golpes, 50, 'mais'],
   crit_chance: ['knight', null, cacada(), golpes, 50, 'mais'],
   crit_dmg: ['knight', null, cacada(), golpes, 200, 'mais'],
