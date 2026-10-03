@@ -20624,8 +20624,6 @@ export function openPresente() {
 /* O mesmo mapa de motivos do rodapé — a frase tem de ser a mesma nos dois. */
 const MOTIVO_DA_PARTY_DO_PAINEL = {
   sozinho: 'você está caçando sozinho',
-  level: 'a diferença de level é grande demais',
-  longe: 'alguém do grupo está longe demais',
   parado: 'alguém do grupo está sem participar',
 };
 
@@ -21051,6 +21049,31 @@ function opcaoDeVerAsAcoes(body, state, send) {
  * virar uma parede. O que ocupa espaço é o que se lê de relance — o boneco, o
  * escudo do cargo, o nome e as três barras. Os números vão para os balões.
  */
+/**
+ * O progresso COLETIVO da instância por setor (`hunt.setores`, do servidor): nome, barra do que já foi limpo, quantos bichos restam e quem
+ * está lá. Compacto: uma linha por setor, sem painel grande — no celular as linhas empilham.
+ */
+function blocoDosSetores(setores) {
+  if (!setores?.length) return null;
+  const caixa = el('div', 'party-setores');
+  const feitos = setores.filter((x) => x.concluido).length;
+  caixa.append(el('div', 'party-setores-titulo', `Setores: ${feitos} de ${setores.length} concluídos`));
+  for (const x of setores) {
+    const linha = el('div', `party-setor-linha${x.concluido ? ' feito' : ''}`);
+    linha.dataset.setor = x.id;
+    linha.append(el('span', 'party-setor-nome', `${x.concluido ? '✓ ' : ''}${x.nome}`));
+    const barra = el('span', 'party-setor-barra');
+    const cheio = el('i');
+    cheio.style.width = `${x.total ? Math.round((100 * (x.total - x.vivos)) / x.total) : 100}%`;
+    barra.append(cheio);
+    linha.append(barra);
+    linha.append(el('span', 'party-setor-resta', x.concluido ? 'limpo' : `restam ${x.vivos}`));
+    if (x.jogadores?.length) linha.append(el('span', 'party-setor-quem', x.jogadores.join(', ')));
+    caixa.append(linha);
+  }
+  return caixa;
+}
+
 function cardDaParty(membro, party, send) {
   // Quem vai na ponta e a coleira de cada um saem da CAÇADA (a party não anda).
   const noGrupo = (ctx.state.hunt?.party?.membros ?? []).find((m) => m.name === membro.name) ?? null;
@@ -21117,6 +21140,9 @@ function cardDaParty(membro, party, send) {
   if (!membro.online) abaixo.append(el('i', 'party-fora', 'offline'));
   else if (membro.naMinhaCacada) abaixo.append(el('i', 'party-dentro', 'na caçada'));
   nomes.append(abaixo);
+  // Onde ele está: o setor da instância (na minha caçada) ou, se desconectou, quanto falta para o prazo de volta acabar.
+  if (!membro.online && membro.voltaEm != null) nomes.append(el('div', 'party-setor offline', `desconectado · volta em ${Math.max(1, Math.ceil(membro.voltaEm / 60_000))} min`));
+  else if (membro.setor) nomes.append(el('div', 'party-setor', `Setor: ${membro.setor}`));
   topo.append(nomes);
   card.append(topo);
 
@@ -21350,6 +21376,8 @@ export function openParty() {
       const grade = el('div', 'party-grade');
       for (const membro of party.membros) grade.append(cardDaParty(membro, party, send));
       body.append(grade);
+      const setoresDaInstancia = blocoDosSetores(state.hunt?.setores);
+      if (setoresDaInstancia) body.append(setoresDaInstancia);
       body.append(el('p', 'shop-note', `${party.membros.length} de ${party.maximo} lugares.`));
 
       /*
@@ -21376,7 +21404,6 @@ export function openParty() {
               : `Sem partilha: ${MOTIVO_DA_PARTY_DO_PAINEL[grupo.motivo] ?? grupo.motivo}`
           )
         );
-        if (grupo.faixa) estado.append(el('em', null, `faixa de level ${grupo.faixa.min}–${grupo.faixa.max}`));
         /*
          * ---- O bônus de vocações, ao lado do escudo ----
          *
@@ -21425,7 +21452,9 @@ export function openParty() {
     const talvez = () => {
       const party = ctx.state.character?.party;
       const marca = JSON.stringify([
-        party?.membros?.map((m) => [m.name, m.hp, m.mana, m.level, m.naMinhaCacada, m.lider, m.online]),
+        party?.membros?.map((m) => [m.name, m.hp, m.mana, m.level, m.naMinhaCacada, m.lider, m.online, m.setor, m.voltaEm == null ? null : Math.ceil(m.voltaEm / 60_000)]),
+        /* O progresso por setor: muda a cada bicho que morre, e só então a tela se refaz. */
+        ctx.state.hunt?.setores?.map((x) => [x.id, x.vivos, (x.jogadores ?? []).join(',')]),
         party?.souLider,
         ctx.state.hunt?.party?.ativa,
         ctx.state.hunt?.party?.motivo,
@@ -21597,7 +21626,6 @@ export function corpoDaJanelaDaParty(body) {
     estado.append(marca);
   }
   body.append(estado);
-  if (grupo?.faixa) body.append(el('p', 'party-faixa', `faixa de level ${grupo.faixa.min}–${grupo.faixa.max}`));
 
   /*
    * ---- Alguém pediu para entrar na SUA caçada ----
@@ -21635,6 +21663,8 @@ export function corpoDaJanelaDaParty(body) {
   const grade = el('div', 'party-grade estreita');
   for (const membro of party.membros) grade.append(cardDaParty(membro, party, send));
   body.append(grade);
+  const setoresDaInstancia = blocoDosSetores(ctx.state.hunt?.setores);
+  if (setoresDaInstancia) body.append(setoresDaInstancia);
 
   /*
    * ---- As duas escolhas são da caçada AUTOMÁTICA ----

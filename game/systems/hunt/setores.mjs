@@ -75,6 +75,13 @@ export function nomeDoSetor(id, comAndar = false) {
   return comAndar ? `Andar ${z} · ${nome}` : nome;
 }
 
+/** O setor em que `morto` acabou de cair ficou VAZIO (nenhum bicho vivo da instância nele)? Devolve o nome do setor, ou `null`. */
+export function setorQueAcabou(morto, bichos, instancia, mapa) {
+  if (!morto?.setor || !instancia?.setores?.[morto.setor] || morto.instancia !== instancia.id) return null;
+  if (bichos.some((m) => m !== morto && m.hp > 0 && m.setor === morto.setor && m.instancia === instancia.id && !m.opcional)) return null;
+  return nomeDoSetor(morto.setor, (mapa?.andares ?? 1) > 1);
+}
+
 /** Soma o peso de cada bicho no seu setor: o `instancia.setores` do nascimento. */
 export function contarSetores(bichos) {
   const total = {};

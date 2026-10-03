@@ -55,6 +55,7 @@ import * as Campanha from './campanha.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as Dot from './combate/dot.mjs';
+import * as Escalonamento from './hunt/escalonamento.mjs';
 import * as Setores from './hunt/setores.mjs';
 import * as Instancia from './hunt/instancia.mjs';
 import * as Encontros from './encontros/estado.mjs';
@@ -1380,6 +1381,12 @@ export function tique(estado, personagem, agora = Date.now()) {
     hunt.alvoTravado = null;
   }
   let grade = andarDaGrade(gradeDaCacada, hunt.z);
+  // A dificuldade acompanha os jogadores ATIVOS da instância (party): só o dono da sala reescala os bichos (`hunt/escalonamento.mjs`).
+  // Sozinho, o fator é 1 e nada é tocado (e quem foi escalonado e ficou sozinho volta ao base).
+  if (sala === hunt && (hunt.instancia || hunt.partilha?.ativa)) {
+    const gente = hunt.partilha?.ativa ? hunt.partilha.membros.map((m) => m.estado).filter((e) => e?.hunt && (e.hp ?? 1) > 0) : [estado];
+    Escalonamento.aplicarNaSala(hunt, { jogadores: gente.map((e) => ({ x: e.hunt.pos.x, y: e.hunt.pos.y, z: e.hunt.z ?? 0 })), totalDaParty: hunt.partilha?.ativa ? hunt.partilha.membros.length : 1, grade: gradeDaCacada });
+  }
   // Caçada que começou antes de existir o percurso: pega o laço de onde está.
   if (hunt.percurso === undefined) hunt.percurso = grade.percurso ? { passo: waypointMaisPerto(grade.percurso, hunt.pos, 0, grade.percurso.length, hunt.z) } : null;
   // Caçada gravada com a rota antiga (só um andar, outro tamanho): retoma pelo waypoint mais perto.

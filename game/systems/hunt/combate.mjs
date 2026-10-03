@@ -7,6 +7,7 @@ import * as R from '../regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario } from '../inventario.mjs';
 import * as Acoes from '../acoes.mjs';
 import * as Treino from '../treino.mjs';
+import * as Setores from './setores.mjs';
 import { partesDeXp, dividirOuro, proximoInicioDoResto, sortearDono, novoIdDeDrop, registrarSorteio } from '../party-recompensas.mjs';
 import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
@@ -707,6 +708,16 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
   tirarMonstro(hunt, alvo);
   if (hunt.alvo === alvo.uid) hunt.alvo = null;
+  // O setor da instância ficou limpo: a party toda é avisada (uma vez — o último bicho do setor só morre uma vez).
+  const salaDoSetor = salaDe(hunt);
+  const bichosDaSala = salaDoSetor?.instancia?.setores ? [...salaDoSetor.monstros, ...Object.values(salaDoSetor.outrosAndares ?? {}).flat()] : [];
+  // O último bicho da INSTÂNCIA inteira não anuncia setor: quem fala é o "Hunt Clear!".
+  const sobrouAlgum = bichosDaSala.some((m) => m.hp > 0 && m.instancia === salaDoSetor.instancia.id && !m.opcional);
+  const setorLimpo = sobrouAlgum ? Setores.setorQueAcabou(alvo, bichosDaSala, salaDoSetor.instancia, null) : null;
+  if (setorLimpo) {
+    const quem = part?.ativa ? part.membros.map((m) => m.estado).filter(Boolean) : [estado];
+    for (const e of quem) e.avisoDaHunt = `Setor concluído: ${setorLimpo}.`;
+  }
 }
 
 /** O troco de UM bicho — chamado pra todo monstro adjacente, não só o alvo (ver `round`). */

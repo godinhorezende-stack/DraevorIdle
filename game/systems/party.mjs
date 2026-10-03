@@ -66,7 +66,8 @@ export function ligar(mapa) {
 export const GRACE_MS = 5 * 60_000;
 export const GRACE_APOS_REINICIO_MS = 10 * 60_000;
 const BIGINT = B.banco.dialeto === 'postgres' ? 'BIGINT' : 'INTEGER';
-await B.banco.exec(`CREATE TABLE IF NOT EXISTS parties_salvas (id INTEGER PRIMARY KEY, dados TEXT NOT NULL, atualizado_em ${BIGINT} NOT NULL);`);
+const TABELA = process.env.PARTY_TABELA ?? 'parties_salvas'; // (os testes usam uma tabela só deles: vários arquivos de teste dividem o banco)
+await B.banco.exec(`CREATE TABLE IF NOT EXISTS ${TABELA} (id INTEGER PRIMARY KEY, dados TEXT NOT NULL, atualizado_em ${BIGINT} NOT NULL);`);
 const gravadas = new Map(); // id -> último JSON gravado
 
 const parties = new Map(); // id -> { id, lider, membros:[nome], convites:Map(nome->expira), frente, coleiras:Map, seguir:Map, modo:Map(nome->'seguir'|'independente'), reagrupar:{alvo,ate,cancelou:Set,chegou:Set}|null }
@@ -88,13 +89,13 @@ export async function gravarMudancas(agora = Date.now()) {
   for (const p of parties.values()) {
     const json = serializar(p);
     if (gravadas.get(p.id) === json) continue;
-    await B.banco.prepare('INSERT INTO parties_salvas (id, dados, atualizado_em) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET dados = excluded.dados, atualizado_em = excluded.atualizado_em').run(p.id, json, agora);
+    await B.banco.prepare(`INSERT INTO ${TABELA} (id, dados, atualizado_em) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET dados = excluded.dados, atualizado_em = excluded.atualizado_em`).run(p.id, json, agora);
     gravadas.set(p.id, json);
     n++;
   }
   for (const id of [...gravadas.keys()]) {
     if (parties.has(id)) continue;
-    await B.banco.prepare('DELETE FROM parties_salvas WHERE id = ?').run(id);
+    await B.banco.prepare(`DELETE FROM ${TABELA} WHERE id = ?`).run(id);
     gravadas.delete(id);
     n++;
   }
@@ -115,19 +116,19 @@ const agendarGravacao = () => {
  * contado de agora (é o tempo de o servidor ficar fora e as pessoas reconectarem). Party com menos de 2 é descartada.
  */
 export async function carregar(agora = Date.now()) {
-  const linhas = await B.banco.prepare('SELECT id, dados FROM parties_salvas ORDER BY id').all();
+  const linhas = await B.banco.prepare(`SELECT id, dados FROM ${TABELA} ORDER BY id`).all();
   let n = 0;
   for (const l of linhas) {
     let d;
     try {
       d = JSON.parse(l.dados);
     } catch {
-      await B.banco.prepare('DELETE FROM parties_salvas WHERE id = ?').run(l.id);
+      await B.banco.prepare(`DELETE FROM ${TABELA} WHERE id = ?`).run(l.id);
       continue;
     }
     const membros = (Array.isArray(d.membros) ? d.membros : []).filter((m) => typeof m === 'string' && !partyDe.has(m));
     if (membros.length < 2) {
-      await B.banco.prepare('DELETE FROM parties_salvas WHERE id = ?').run(l.id);
+      await B.banco.prepare(`DELETE FROM ${TABELA} WHERE id = ?`).run(l.id);
       continue;
     }
     const p = novaParty(Number(l.id), membros.includes(d.lider) ? d.lider : membros[0]);
@@ -772,6 +773,8 @@ export function camposDoPersonagem(s) {
         eu: nome === eu,
         lider: nome === p.lider,
         online: !!o,
+        // Offline: em quantos ms o prazo de volta acaba (a tela mostra "volta em N min").
+        voltaEm: p.offline.has(nome) ? Math.max(0, p.offline.get(nome) - Date.now()) : null,
         // O estado de movimento (follow/independente), quem ele segue, a distância e se está em combate — a tabela da party mostra.
         modo: p.modo.get(nome) ?? 'seguir',
         seguindo: p.seguir.get(nome) ?? null,

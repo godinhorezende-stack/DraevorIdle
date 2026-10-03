@@ -152,3 +152,33 @@ test('R1. reagrupamento: opcional por padrão; obrigatório só na fase/tipo con
   Cacadas.entrar(solo.s.estado, { huntId: 'troll-cave', mode: 'auto', dificuldade: 'medio' });
   assert.deepEqual(Party.faltamParaReagrupar(solo.s, chefe, regra), [], 'sem party nunca exige');
 });
+
+test('U1. servidor: o cartão do membro offline guarda "volta em" e o setor; limpar o setor avisa a party', async () => {
+  const a = await jogador(7);
+  const b = await jogador(8);
+  Party.comandoDoGrupo(a.s, { action: 'convidar', name: b.nome });
+  Party.comandoDoGrupo(b.s, { action: 'aceitar' });
+  Cacadas.entrar(a.s.estado, { huntId: 'troll-cave', mode: 'auto', dificuldade: 'medio' });
+  Party.comandoDaCaca(a.s, { action: 'invite', name: b.nome });
+  Party.comandoDaCaca(b.s, { action: 'accept' });
+  const hunt = a.s.estado.hunt;
+  const alvoSetor = Cacadas.setoresDaCacada(hunt)[0].id;
+  const doSetor = [...hunt.monstros, ...Object.values(hunt.outrosAndares ?? {}).flat()].filter((m) => m.setor === alvoSetor);
+  Object.defineProperty(hunt, 'partilha', { value: Party.partilha(a.s), configurable: true, writable: true });
+  const Combate = await import('../systems/hunt/combate.mjs');
+  const eventos = [];
+  for (const m of doSetor) { m.hp = 0; Combate.matarMonstro(a.s.estado, hunt, a.s.personagem, m, eventos); }
+  assert.match(a.s.estado.avisoDaHunt ?? '', /^Setor concluído: /);
+  assert.match(b.s.estado.avisoDaHunt ?? '', /^Setor concluído: /, 'a party toda é avisada');
+});
+
+test('U2. cliente: o painel da party mostra o setor, o "volta em" e o bloco de setores; o CSS existe; a faixa de level saiu', async () => {
+  const { readFileSync } = await import('node:fs');
+  const panels = readFileSync(new URL('../frontend/client/src/panels.mjs', import.meta.url), 'utf8');
+  const css = readFileSync(new URL('../frontend/client/style.css', import.meta.url), 'utf8');
+  assert.equal((panels.match(/blocoDosSetores\(/g) ?? []).length, 3, 'definição + as duas telas');
+  assert.match(panels, /volta em \$\{Math\.max\(1, Math\.ceil\(membro\.voltaEm/);
+  assert.doesNotMatch(panels, /faixa de level \$\{grupo/);
+  assert.match(panels, /ctx\.state\.hunt\?\.setores\?\.map/, 'o progresso entra na assinatura que redesenha');
+  for (const classe of ['.party-setores', '.party-setor-linha', '.party-setor-barra', '.party-setor.offline']) assert.ok(css.includes(classe), classe);
+});
