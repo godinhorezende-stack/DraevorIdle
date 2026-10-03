@@ -91,7 +91,8 @@ test('L7. filtros combináveis: raridade + tipo + texto, e paginação por deslo
   const usos = B.listar({ categoria: 'itens', ordem: 'usos', limite: 20 }).itens.map((i) => i.usos);
   assert.deepEqual(usos, [...usos].sort((a, b) => b - a));
   assert.equal(B.listar({ categoria: 'hunts' }).temNivel, true);
-  assert.equal(B.listar({ categoria: 'itens' }).temNivel, false);
+  assert.equal(B.listar({ categoria: 'itens' }).temNivel, true, 'item: o nível é o mínimo para usar (minLevel)');
+  assert.equal(B.listar({ categoria: 'mapas' }).temNivel, false);
 });
 
 test('L8. onde é usado: monstro da hunt, item no loot, hunt na campanha, boss final do ato — e o detalhe traz a lista', () => {
@@ -104,4 +105,53 @@ test('L8. onde é usado: monstro da hunt, item no loot, hunt na campanha, boss f
   assert.deepEqual(d.usadoEm, B.usosDe('monstros', 'troll'));
   assert.equal(B.listar({ categoria: 'monstros', q: 'troll', limite: 200 }).itens.find((i) => i.id === 'troll').usos, d.usadoEm.length);
   assert.deepEqual(B.usosDe('drops', 'x'), []);
+});
+
+// ------------------------------------------------------------------ Etapa 5: itens, outfits e montarias
+
+test('L9. itens por slot, com o máximo de sockets do slot e o nível mínimo do catálogo', () => {
+  const r = B.listar({ categoria: 'itens', slot: 'body', limite: 200 });
+  assert.ok(r.total > 50 && r.itens.every((i) => i.slot === 'body' && i.sockets === 4));
+  assert.ok(r.slots.includes('weapon') && r.slots.includes('ring'));
+  assert.equal(B.listar({ categoria: 'itens', q: 'gold coin', limite: 5 }).itens.find((i) => i.id === '3031').sockets, null, 'moeda não tem socket');
+  const fogo = B.detalhe('itens', '3280');
+  assert.equal(fogo.base.ataque, 24);
+  assert.deepEqual(fogo.base.elemento, { type: 'fire', value: 11 });
+  assert.equal(fogo.requisitos.nivelMinimo, 30);
+});
+
+test('L10. regras do item vêm do arquivo de raridades/pools (nada inventado) e a moeda não tem regra de peça', () => {
+  const mpa = B.detalhe('itens', '3366');
+  const R = JSON.parse(readFileSync(new URL('../gamedata/itens/raridades.json', import.meta.url), 'utf8'));
+  assert.deepEqual(mpa.regras.porRaridade.raro.quantosAtributos, R.raridades.raro.atributos);
+  assert.deepEqual(mpa.regras.porRaridade.raro.faixaDaBase.armor, [Math.max(1, Math.round(17 * R.raridades.raro.base.piso[0])), Math.max(1, Math.round(17 * R.raridades.raro.base.teto[1]))]);
+  assert.equal(mpa.regras.sockets.maximo, 4);
+  assert.ok(mpa.regras.atributosPossiveis.length > 10 && mpa.regras.atributosPossiveis.every((a) => a.nome && a.faixasPorTier));
+  assert.equal(B.detalhe('itens', '3031').regras, null);
+});
+
+test('L11. tooltip: exemplos do gerador real por raridade, a mesma semente dá as mesmas peças', () => {
+  const a = B.dadosDoTooltip('3366', { itemLevel: 200, semente: 5 });
+  const b = B.dadosDoTooltip('3366', { itemLevel: 200, semente: 5 });
+  const c = B.dadosDoTooltip('3366', { itemLevel: 200, semente: 6 });
+  assert.deepEqual(a.exemplos, b.exemplos);
+  assert.notDeepEqual(a.exemplos, c.exemplos);
+  assert.deepEqual(a.exemplos.map((x) => x.raridade), ['comum', 'incomum', 'raro', 'épico', 'lendário', 'mítico']);
+  for (const x of a.exemplos) if (x.peca.raridade) assert.equal(x.peca.raridade, x.raridade);
+  assert.ok(a.itens['3366'] && a.catalogo.afixos);
+  assert.deepEqual(B.dadosDoTooltip('3031').exemplos, [], 'item sem atributos não sorteia exemplo');
+  assert.equal(B.dadosDoTooltip('nao-existe'), null);
+});
+
+test('L12. outfits e montarias reais (mounts-real.json), com o desenho só quando há folha', () => {
+  const real = JSON.parse(readFileSync(new URL('../gamedata/mounts-real.json', import.meta.url), 'utf8'));
+  const res = Object.fromEntries(B.resumo().map((c) => [c.id, c.total]));
+  assert.equal(res.outfits, real.outfits.length);
+  assert.equal(res.montarias, real.mounts.length);
+  const o = B.detalhe('outfits', '136');
+  assert.equal(o.nome, 'Citizen');
+  assert.equal(o.tipo, 'feminino');
+  assert.equal(o.gratis, true);
+  assert.equal(B.detalhe('montarias', '1').nome, 'Widow Queen');
+  assert.ok(B.listar({ categoria: 'montarias', limite: 200 }).itens.every((m) => !m.desenho || OUTFITS[m.desenho.look]));
 });

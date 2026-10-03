@@ -4,7 +4,11 @@
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
+import { CATALOGO, ITEM_CATALOG, MONTARIAS_REAIS } from '../systems/dados.mjs';
+import * as ConfigDeItens from '../systems/itens/config.mjs';
+import { tipoDoItem, aceitaAtributos, poolDe, gerarItem, armaduraBase, ataqueBaseDaJoia, SLOTS_DE_JOIA } from '../systems/itens/gerar.mjs';
+import { CONFIG as CONFIG_DE_GEMAS, maximoDeSockets } from '../systems/skills/gemas.mjs';
+import { CRITICO_POR_PECA } from '../systems/aparencia.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import * as Premium from '../systems/premium.mjs';
 import { PORTAS_DE_ACESSO } from '../engine/portas-de-acesso.mjs';
@@ -30,6 +34,8 @@ export const CATEGORIAS = [
   ['itens', 'Itens'],
   ['drops', 'Tabelas de drops'],
   ['encontros', 'Recompensas e eventos'],
+  ['outfits', 'Outfits'],
+  ['montarias', 'Montarias'],
 ];
 const DE_HUNT = { hunts: () => CATALOGO.hunts, vips: () => CATALOGO.vips, especiais: () => CATALOGO.especiais, divinas: () => CATALOGO.divinas, bosses: () => CATALOGO.bosses };
 const TIPO_DA_HUNT = { hunts: 'hunt normal', vips: 'hunt vip', especiais: 'hunt especial', divinas: 'hunt divina', bosses: 'boss' };
@@ -93,7 +99,17 @@ function linhasDeMapas() {
   });
 }
 function linhasDeItens() {
-  return Object.values(ITEM_CATALOG).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: i.type ?? null, nivel: null, desenho: desenhoDoItem(i), raridade: ou(i.rarity), usos: usosDe('itens', String(i.id)).length, alertas: 0, slot: ou(i.slot) }));
+  // `nivel` do item = o nível mínimo para usar (`minLevel`); `sockets` = o máximo do slot (o que cada peça abre é sorteado no drop).
+  return Object.values(ITEM_CATALOG).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: i.type ?? null, nivel: ou(i.minLevel), desenho: desenhoDoItem(i), raridade: ou(i.rarity), usos: usosDe('itens', String(i.id)).length, alertas: 0, slot: ou(i.slot), sockets: maximoDeSockets(i) || null }));
+}
+// Os outfits e as montarias de verdade (`mounts-real.json`, o que a aba Aparência e a Store usam). `vocation` do
+// outfit é o SEXO do boneco (0 feminino, 1 masculino), como no protocolo do cliente.
+const SEXO = { 0: 'feminino', 1: 'masculino' };
+function linhasDeOutfits() {
+  return (MONTARIAS_REAIS.outfits ?? []).map((o) => ({ id: `${o.look}`, nome: o.name ?? null, categoria: 'outfits', tipo: SEXO[o.vocation] ?? null, nivel: null, desenho: temOutfit(o.look) ? { tipo: 'criatura', look: o.look, cores: null } : null, raridade: o.owned ? 'grátis' : 'loja', usos: 0, alertas: 0 }));
+}
+function linhasDeMontarias() {
+  return (MONTARIAS_REAIS.mounts ?? []).map((m) => ({ id: `${m.id}`, nome: m.name ?? null, categoria: 'montarias', tipo: m.type ?? null, nivel: null, desenho: temOutfit(m.look) ? { tipo: 'criatura', look: m.look, cores: null } : null, raridade: m.premium ? 'premium' : 'livre', usos: 0, alertas: 0, velocidade: ou(m.speed) }));
 }
 function linhasDeDrops() {
   const tabelas = Object.keys(CONFIG.tabelas ?? {}).map((id) => ({ id: `tabela:${id}`, nome: id, categoria: 'drops', tipo: 'tabela reutilizável de encontro', nivel: null, desenho: null, raridade: null, usos: 0, alertas: 0 }));
@@ -175,6 +191,8 @@ function todasAsLinhas(cat) {
   if (cat === 'itens') return linhasDeItens();
   if (cat === 'drops') return linhasDeDrops();
   if (cat === 'encontros') return linhasDeEncontros();
+  if (cat === 'outfits') return linhasDeOutfits();
+  if (cat === 'montarias') return linhasDeMontarias();
   return null;
 }
 
@@ -187,7 +205,7 @@ export function resumo() {
  * Busca com filtros. `categoria` obrigatória; `q` casa nome OU id (sem acento/caixa); `tipo` exato; `nivelMin/nivelMax` só valem onde o
  * cadastro tem nível; `ordem`: 'nome' (padrão) | 'nivel' | 'id'. Pagina por `limite` (até 200) e `deslocamento`.
  */
-export function listar({ categoria, q, tipo, raridade, situacao, nivelMin, nivelMax, ordem = 'nome', limite = 100, deslocamento = 0 } = {}) {
+export function listar({ categoria, q, tipo, raridade, slot, situacao, nivelMin, nivelMax, ordem = 'nome', limite = 100, deslocamento = 0 } = {}) {
   const base = todasAsLinhas(categoria);
   if (!base) return { ok: false, erros: [`Categoria desconhecida: ${categoria}.`] };
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -198,6 +216,7 @@ export function listar({ categoria, q, tipo, raridade, situacao, nivelMin, nivel
     if (t && !norm(l.nome).includes(t) && !norm(l.id).includes(t)) return false;
     if (tipo && l.tipo !== tipo) return false;
     if (raridade && l.raridade !== raridade) return false;
+    if (slot && l.slot !== slot) return false;
     // `situacao`: o que pede atenção — sem desenho, com referência quebrada, sem uso nenhum.
     if (situacao === 'sem-desenho' && l.desenho) return false;
     if (situacao === 'alerta' && !l.alertas) return false;
@@ -211,7 +230,7 @@ export function listar({ categoria, q, tipo, raridade, situacao, nivelMin, nivel
   const total = r.length;
   const tam = Math.min(200, Math.max(1, Number(limite) || 100));
   const de = Math.max(0, Number(deslocamento) || 0);
-  return { ok: true, categoria, total, tipos: [...new Set(base.map((l) => l.tipo).filter(Boolean))].sort(), raridades: [...new Set(base.map((l) => l.raridade).filter(Boolean))].sort(), temNivel: base.some((l) => l.nivel != null), itens: r.slice(de, de + tam) };
+  return { ok: true, categoria, total, tipos: [...new Set(base.map((l) => l.tipo).filter(Boolean))].sort(), raridades: [...new Set(base.map((l) => l.raridade).filter(Boolean))].sort(), slots: [...new Set(base.map((l) => l.slot).filter(Boolean))].sort(), temNivel: base.some((l) => l.nivel != null), itens: r.slice(de, de + tam) };
 }
 
 // ------------------------------------------------------------------ detalhes
@@ -302,10 +321,83 @@ function detalheDeMapa(id) {
   return { id, nome: id, categoria: 'mapas', tipo: 'mapa', arquivo: `${id}-map.json`, tamanhoBytes: statSync(arq).size, usadoPor: usadoPor.length ? usadoPor : null, observacao: 'Em produção `gamedata/hunts` é sobreposto por `data/mapas`; esta é a cópia do código.' };
 }
 
+/**
+ * O que a peça deste item PODE ter, tirado das regras de drop (`itens/raridades.json`, `pools.json`, `atributos.json`,
+ * `skills/config` dos sockets) — nada sorteado nem inventado: a faixa da base por raridade, quantos atributos, o poder,
+ * os atributos possíveis e os sockets.
+ */
+function regrasDoItem(meta) {
+  const R = ConfigDeItens.RARIDADES.raridades;
+  const joia = SLOTS_DE_JOIA.has(meta.slot);
+  const valores = { attack: joia ? ataqueBaseDaJoia(meta) : Number(meta.attack) || 0, defense: joia ? 0 : Number(meta.defense) || 0, armor: armaduraBase(meta) };
+  const porRaridade = Object.fromEntries(ConfigDeItens.ORDEM.map((r) => {
+    const f = R[r]?.base ?? { piso: [1, 1], teto: [1, 1] };
+    const faixas = Object.fromEntries(Object.entries(valores).filter(([, v]) => v > 0).map(([c, v]) => [c, [Math.max(1, Math.round(v * f.piso[0])), Math.max(1, Math.round(v * f.teto[1]))]]));
+    return [r, { nome: ConfigDeItens.nomeDaRaridade(r), quantosAtributos: R[r]?.atributos ?? null, poder: R[r]?.efeito ?? null, chanceDoPoder: R[r]?.efeito ? R[r]?.chanceDoEfeito ?? 1 : null, faixaDaBase: faixas, ...(joia ? { conteudoDaJoia: R[r]?.joia ?? null } : {}) }];
+  }));
+  const pool = poolDe(Number(meta.id)).map((id) => {
+    const a = ConfigDeItens.ATRIBUTOS[id] ?? {};
+    return { id, nome: a.nome ?? id, tipo: a.tipo ?? null, categoria: a.categoria ?? null, peso: a.peso ?? null, nivelMinimo: a.nivelMinimo ?? null, raridades: a.raridades ?? null, faixasPorTier: a.niveis ?? null };
+  });
+  const max = maximoDeSockets(meta);
+  return {
+    tipoDaPeca: tipoDoItem(meta),
+    aceitaAtributos: aceitaAtributos(Number(meta.id)),
+    porRaridade,
+    atributosPossiveis: pool,
+    sockets: max ? { maximo: max, porRaridade: CONFIG_DE_GEMAS.sockets.drop } : null,
+  };
+}
+
 function detalheDeItem(id) {
   const i = ITEM_CATALOG[id];
   if (!i) return null;
-  return { id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: ou(i.type), raridade: ou(i.rarity), peso: ou(i.weight), empilhavel: ou(i.stackable), compra: ou(i.buy), venda: ou(i.sell), npc: ou(i.npc), chanceBase: ou(i.dropChance), sprite: ou(i.hasSprite) };
+  const equipavel = !!i.slot && !i.stackable;
+  return {
+    id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: ou(i.type), raridade: ou(i.rarity), slot: ou(i.slot), equipavel,
+    peso: ou(i.weight), empilhavel: ou(i.stackable), compra: ou(i.buy), venda: ou(i.sell), npc: ou(i.npc), chanceBase: ou(i.dropChance), sprite: ou(i.hasSprite),
+    requisitos: { nivelMinimo: ou(i.minLevel), vocacoes: ou(i.vocations) },
+    base: { ataque: ou(i.attack), defesa: ou(i.defense), defesaExtra: ou(i.extraDefense), armadura: ou(i.armor), elemento: ou(i.element), alcance: ou(i.range), duasMaos: ou(i.twoHanded), velocidade: ou(i.speed), habilidade: ou(i.skill) },
+    imbuements: i.imbuementSlots ? { slots: i.imbuementSlots, tipos: ou(i.imbuementTipos) } : null,
+    regras: equipavel ? regrasDoItem(i) : null,
+    meta: i,
+  };
+}
+
+/** Semente → gerador pseudo-aleatório (mulberry32): a mesma semente dá as mesmas peças de exemplo. */
+function rngDaSemente(a) {
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Os dados da PRÉVIA DO TOOLTIP: o catálogo do item e as réguas que o balão do jogo usa (afixos, poderes, tiers), e
+ * peças de EXEMPLO sorteadas pelo gerador do jogo (`gerarItem`) em cada raridade, no `itemLevel` pedido. São exemplos
+ * do que pode cair — o mesmo sorteio do drop, com semente fixa —, não peças de ninguém.
+ */
+export function dadosDoTooltip(id, { itemLevel = null, semente = 1 } = {}) {
+  const meta = ITEM_CATALOG[id];
+  if (!meta) return null;
+  const nivel = Math.max(1, Math.min(2000, Math.round(Number(itemLevel) || meta.minLevel || 1)));
+  const rng = rngDaSemente(Number(semente) || 1);
+  const exemplos = aceitaAtributos(Number(id)) ? ConfigDeItens.ORDEM.map((r) => ({ raridade: r, peca: gerarItem({ itemId: Number(id), raridade: r, itemLevel: nivel, rng }) })) : [];
+  return { itens: { [id]: meta }, catalogo: { afixos: CATALOGO.afixos, efeitosDeItem: CATALOGO.efeitosDeItem, efeitosDeTier: CATALOGO.efeitosDeTier }, itemLevel: nivel, semente: Number(semente) || 1, exemplos };
+}
+
+function detalheDeOutfit(id) {
+  const o = (MONTARIAS_REAIS.outfits ?? []).find((x) => String(x.look) === String(id));
+  if (!o) return null;
+  return { id: String(o.look), nome: ou(o.name), categoria: 'outfits', tipo: SEXO[o.vocation] ?? null, look: o.look, addons: ou(o.addons), premium: !!o.premium, gratis: !!o.owned, preco: ou(o.price), colecao: o.owned ? null : { criticoPorPeca: CRITICO_POR_PECA } };
+}
+function detalheDeMontaria(id) {
+  const m = (MONTARIAS_REAIS.mounts ?? []).find((x) => String(x.id) === String(id));
+  if (!m) return null;
+  return { id: String(m.id), nome: ou(m.name), categoria: 'montarias', tipo: ou(m.type), look: m.look, velocidade: ou(m.speed), premium: !!m.premium, preco: ou(m.price), colecao: { criticoPorPeca: CRITICO_POR_PECA } };
 }
 
 function detalheDeDrop(id) {
@@ -337,6 +429,8 @@ export function detalhe(categoria, id) {
   else if (categoria === 'itens') d = detalheDeItem(i);
   else if (categoria === 'drops') d = detalheDeDrop(i);
   else if (categoria === 'encontros') d = detalheDeEncontros(i);
+  else if (categoria === 'outfits') d = detalheDeOutfit(i);
+  else if (categoria === 'montarias') d = detalheDeMontaria(i);
   if (!d) return null;
   // O desenho e o "onde é usado" vêm da mesma conta da lista (a tela mostra o sprite e a aba Usos).
   const linha = todasAsLinhas(categoria)?.find((l) => l.id === i);

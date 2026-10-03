@@ -4,7 +4,7 @@
 // Também mora aqui a BUSCA GLOBAL (Ctrl+K), que procura em todas as categorias de uma vez.
 import { el, icone, msg, copiar, botaoCopiar, cabecalho } from './editor-ui.mjs';
 import { retrato, previa } from './editor-sprites.mjs';
-import { fichaDoMonstro } from './editor-fichas.mjs';
+import { fichaDoMonstro, fichaDoItem, fichaDoOutfit, fichaDaMontaria, nomeDoSlot } from './editor-fichas.mjs';
 
 const POR_PAGINA = 60;
 const NAO = 'não cadastrado';
@@ -39,9 +39,9 @@ const QUANTIDADES = new Set(['hp', 'exp', 'compra', 'venda', 'tamanhoBytes', 'go
 export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota = 'biblioteca', titulo = 'Biblioteca', descricao = null }) {
   const fixa = !!categoriaFixa;
   const B = {
-    categorias: [], categoria: categoriaFixa ?? 'monstros', q: '', tipo: '', raridade: '', situacao: '', nivelMin: '', nivelMax: '', ordem: '',
-    vista: lerPreferencia('vista', 'grade'), itens: [], total: 0, tipos: [], raridades: [], temNivel: false, carregando: false, pedido: 0,
-    detalhe: null, abaDoDetalhe: 'resumo',
+    categorias: [], categoria: categoriaFixa ?? 'monstros', q: '', tipo: '', raridade: '', slot: '', situacao: '', nivelMin: '', nivelMax: '', ordem: '',
+    vista: lerPreferencia('vista', 'grade'), itens: [], total: 0, tipos: [], raridades: [], slots: [], temNivel: false, carregando: false, pedido: 0,
+    detalhe: null, abaDoDetalhe: 'resumo', largo: lerPreferencia('painel-largo', '') === '1',
   };
   const categoriaDe = (id) => B.categorias.find((c) => c.id === id);
   const ehDaBiblioteca = (cat) => !!categoriaDe(cat);
@@ -49,7 +49,7 @@ export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota 
   // ------------------------------------------------------------------ dados
 
   const parametros = (deslocamento) =>
-    new URLSearchParams({ categoria: B.categoria, q: B.q, tipo: B.tipo, raridade: B.raridade, situacao: B.situacao, nivelMin: B.nivelMin, nivelMax: B.nivelMax, ordem: B.ordem, limite: POR_PAGINA, deslocamento });
+    new URLSearchParams({ categoria: B.categoria, q: B.q, tipo: B.tipo, raridade: B.raridade, slot: B.slot, situacao: B.situacao, nivelMin: B.nivelMin, nivelMax: B.nivelMax, ordem: B.ordem, limite: POR_PAGINA, deslocamento });
 
   /** Busca a primeira página (filtro mudou) ou a próxima (rolou até o fim). Respostas de um filtro antigo são ignoradas. */
   async function buscar({ mais = false } = {}) {
@@ -68,6 +68,7 @@ export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota 
     B.total = r.total;
     B.tipos = r.tipos ?? [];
     B.raridades = r.raridades ?? [];
+    B.slots = r.slots ?? [];
     B.temNivel = !!r.temNivel;
     if (mais) acrescentarCards(r.itens);
     else pintarResultados();
@@ -96,7 +97,7 @@ export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota 
     marcarSelecionado();
     pintarDetalhe();
   }
-  const limparFiltros = () => Object.assign(B, { tipo: '', raridade: '', situacao: '', nivelMin: '', nivelMax: '' });
+  const limparFiltros = () => Object.assign(B, { tipo: '', raridade: '', slot: '', situacao: '', nivelMin: '', nivelMax: '' });
 
   // ------------------------------------------------------------------ tela
 
@@ -157,12 +158,13 @@ export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota 
     if (!caixa) return;
     const selecao = (rotulo, chave, opcoes, vazio = 'Todos') => el('label', { class: 'campo' }, rotulo, el('select', { onchange: (e) => mudar(chave, e.target.value) }, el('option', { value: '' }, vazio), opcoes.map((o) => (Array.isArray(o) ? o : [o, o])).filter(([v]) => v !== '').map(([v, n]) => el('option', { value: v, selected: v === B[chave] }, n))));
     const numero = (rotulo, chave) => el('label', { class: 'campo' }, rotulo, el('input', { type: 'number', value: B[chave], min: 0, onchange: (e) => mudar(chave, e.target.value) }));
-    const ativos = ['tipo', 'raridade', 'situacao', 'nivelMin', 'nivelMax'].filter((k) => B[k] !== '');
+    const ativos = ['tipo', 'raridade', 'slot', 'situacao', 'nivelMin', 'nivelMax'].filter((k) => B[k] !== '');
     caixa.replaceChildren(
       el('div', { class: 'bib-grupo' },
-        B.tipos.length > 1 ? selecao('Tipo', 'tipo', B.tipos) : null,
-        B.raridades.length ? selecao(B.categoria === 'itens' ? 'Raridade' : 'Classificação', 'raridade', B.raridades, 'Todas') : null,
-        B.temNivel ? el('div', { class: 'bib-par' }, numero('Nível mín.', 'nivelMin'), numero('Nível máx.', 'nivelMax')) : null,
+        B.slots.length > 1 ? selecao('Slot', 'slot', B.slots.map((x) => [x, nomeDoSlot(x)])) : null,
+        B.tipos.length > 1 ? selecao(B.categoria === 'outfits' ? 'Sexo' : B.categoria === 'montarias' ? 'Como se obtém' : 'Tipo', 'tipo', B.tipos) : null,
+        B.raridades.length ? selecao({ itens: 'Raridade do catálogo', outfits: 'Grátis ou loja', montarias: 'Premium' }[B.categoria] ?? 'Classificação', 'raridade', B.raridades, 'Todas') : null,
+        B.temNivel ? el('div', { class: 'bib-par' }, numero(B.categoria === 'itens' ? 'Nível req. mín.' : 'Nível mín.', 'nivelMin'), numero('máx.', 'nivelMax')) : null,
         selecao('Situação', 'situacao', SITUACOES.slice(1)),
         selecao('Ordenar por', 'ordem', ORDENS.filter(([v]) => v !== 'nome' && (v !== 'nivel' || B.temNivel)), 'Nome')),
       ...(ativos.length ? [el('button', { type: 'button', class: 'fantasma bib-limpar', onclick: () => { limparFiltros(); buscar(); pintarFiltros(); } }, `Limpar filtros (${ativos.length})`)] : []));
@@ -214,13 +216,15 @@ export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota 
   function selos(i) {
     return [
       i.tipo ? el('span', { class: 'selo' }, i.tipo) : null,
-      i.nivel != null ? el('span', { class: 'selo' }, `nv ${i.nivel}`) : null,
+      i.nivel != null ? el('span', { class: 'selo' }, i.categoria === 'itens' ? `req. ${i.nivel}` : `nv ${i.nivel}`) : null,
       i.raridade ? el('span', { class: `selo ${RARIDADE[i.raridade] ?? ''}` }, i.raridade) : null,
       i.hp != null ? el('span', { class: 'selo vida' }, `${i.hp.toLocaleString('pt-BR')} hp`) : null,
-      i.slot ? el('span', { class: 'selo' }, i.slot) : null,
+      i.slot ? el('span', { class: 'selo' }, nomeDoSlot(i.slot)) : null,
+      i.sockets ? el('span', { class: 'selo', title: 'Máximo de sockets do slot' }, `◇ ${i.sockets}`) : null,
+      i.velocidade != null ? el('span', { class: 'selo' }, `+${i.velocidade} vel.`) : null,
       i.usos ? el('span', { class: 'selo usos', title: 'Onde é usado' }, `${i.usos} uso(s)`) : null,
       i.alertas ? el('span', { class: 'selo erro', title: 'Referência a item que não existe' }, `${i.alertas} alerta(s)`) : null,
-      !i.desenho && ['monstros', 'itens', 'bosses'].includes(i.categoria) ? el('span', { class: 'selo aviso' }, 'sem sprite') : null,
+      !i.desenho && ['monstros', 'itens', 'bosses', 'outfits', 'montarias'].includes(i.categoria) ? el('span', { class: 'selo aviso' }, 'sem sprite') : null,
     ];
   }
   function card(i) {
@@ -251,21 +255,27 @@ export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota 
     if (!caixa) return;
     const d = B.detalhe;
     if (!d) {
+      document.querySelector(`.bib-v[data-rota="${rota}"]`)?.classList.toggle('painel-largo', B.largo);
       caixa.replaceChildren(el('div', { class: 'bib-painel-vazio' }, icone('livros'), el('b', {}, 'Selecione um conteúdo'), el('span', { class: 'dica' }, 'Clique num card para ver sprite, atributos, drops e onde ele é usado. Ctrl+K busca em todas as categorias.')));
       return;
     }
     const quebrados = d.referenciasQuebradas?.itens ?? [];
-    // Monstro: a ficha em abas (Geral, Atributos, Combate, Loot, Visual); o resto, o resumo genérico.
-    const ficha = d.categoria === 'monstros' ? fichaDoMonstro(d, { abrir }) : null;
+    // Monstro, item, outfit e montaria: a ficha em abas (editor-fichas.mjs); o resto, o resumo genérico.
+    const FICHAS = { monstros: () => fichaDoMonstro(d, { abrir }), itens: () => fichaDoItem(d, { abrir, api }), outfits: () => fichaDoOutfit(d), montarias: () => fichaDaMontaria(d) };
+    const ficha = FICHAS[d.categoria]?.() ?? null;
     const abas = [...(ficha ? ficha.abas : [['resumo', 'Resumo']]), ['usos', `Usos (${d.usadoEm?.length ?? 0})`], ['json', 'JSON']];
     if (!B.abaDoDetalhe || !abas.some(([id]) => id === B.abaDoDetalhe)) B.abaDoDetalhe = abas[0][0];
+    // Painel largo: o usuário pediu, ou a aba precisa (tabelas largas, o balão do jogo). A grade de cards encolhe.
+    const largo = B.largo || !!ficha?.largas?.includes(B.abaDoDetalhe);
+    document.querySelector(`.bib-v[data-rota="${rota}"]`)?.classList.toggle('painel-largo', largo);
+    const alternarLargura = el('button', { type: 'button', class: 'fantasma bib-largura', title: B.largo ? 'Voltar o painel ao normal' : 'Alargar o painel de detalhes', onclick: () => { B.largo = !B.largo; gravarPreferencia('painel-largo', B.largo ? '1' : ''); pintarDetalhe(); } }, B.largo ? '⇥ estreitar' : '⇤ alargar');
     caixa.replaceChildren(
       el('div', { class: 'bib-painel-topo' },
         ficha && B.abaDoDetalhe === 'visual' ? null : previa(d.desenho, { categoria: d.categoria }),
         el('div', { class: 'bib-painel-titulo' },
           el('h2', { class: 'bib-nome' }, d.nome ?? NAO),
-          el('div', { class: 'linha' }, el('span', { class: 'eng-id', style: 'flex:none' }, `${d.categoria}:${d.id}`), botaoCopiar(d.id, `o ID ${d.id}`), botaoCopiar(`${d.categoria}:${d.id}`, 'a referência'), el('span')),
-          el('div', { class: 'eng-card-selos' }, d.tipo ? el('span', { class: 'selo' }, d.tipo) : null, d.raridade ? el('span', { class: `selo ${RARIDADE[d.raridade] ?? ''}` }, d.raridade) : null),
+          el('div', { class: 'linha' }, el('span', { class: 'eng-id', style: 'flex:none' }, `${d.categoria}:${d.id}`), botaoCopiar(d.id, `o ID ${d.id}`), botaoCopiar(`${d.categoria}:${d.id}`, 'a referência'), el('span'), alternarLargura),
+          el('div', { class: 'eng-card-selos' }, d.tipo ? el('span', { class: 'selo' }, d.tipo) : null, d.raridade && !(d.categoria === 'itens' && d.equipavel) ? el('span', { class: `selo ${RARIDADE[d.raridade] ?? ''}` }, d.raridade) : null),
           quebrados.length ? el('div', { class: 'bib-alerta' }, `Referência a ${quebrados.length} item(ns) que não existem no catálogo: ${quebrados.join(', ')}`) : null)),
       el('div', { class: 'eng-abas', role: 'tablist' }, abas.map(([id, nome]) => el('button', { type: 'button', role: 'tab', 'aria-selected': String(B.abaDoDetalhe === id), class: B.abaDoDetalhe === id ? 'ativa' : '', onclick: () => { B.abaDoDetalhe = id; pintarDetalhe(); } }, nome))),
       el('div', { class: 'bib-painel-corpo' }, B.abaDoDetalhe === 'usos' ? blocoDeUsos(d) : B.abaDoDetalhe === 'json' ? blocoJson(d) : ficha ? ficha.corpo(B.abaDoDetalhe) : blocoResumo(d)));

@@ -274,17 +274,26 @@ function cartaoDeEncontro(e, i) {
 const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
 const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto) });
 // A tela Mobs é a Biblioteca presa nos monstros (mesmos cards, mesma ficha), com a rota própria `#mobs/<key>`.
-const MOBS = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto), categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. Somente visualização — o bestiário vem do Canary.' });
+// As telas de ENTIDADE (Mobs, Itens, Outfits, Montarias) são a Biblioteca presa numa categoria — mesmos cards, mesma
+// ficha, rota própria (`#mobs/<key>`, `#itens/<id>`…). Somente visualização: esses cadastros vêm do Canary.
+const irParaDe = (aba, id = null, resto = null) => irPara(aba, id, resto);
+const TELAS_FIXAS = {
+  mobs: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. Somente visualização — o bestiário vem do Canary.' }),
+  itens: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. Somente visualização.' }),
+  outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
+  montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
+};
+const CATEGORIA_DA_TELA = { mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
+const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 const GRUPOS = [
   { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', href: '/editor' }] },
-  { titulo: 'Entidades', itens: [{ id: 'mobs', nome: 'Mobs', icone: 'mobs' }, { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }] },
+  { titulo: 'Entidades', itens: [{ id: 'mobs', nome: 'Mobs', icone: 'mobs' }, { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }, { id: 'itens', nome: 'Itens', icone: 'espada' }, { id: 'outfits', nome: 'Outfits', icone: 'outfit' }, { id: 'montarias', nome: 'Montarias', icone: 'montaria' }] },
   { titulo: 'Biblioteca', itens: [{ id: 'biblioteca', nome: 'Todos os cadastros', icone: 'livros' }] },
 ];
 function desenharAbas() {
@@ -303,7 +312,7 @@ async function irPara(aba, faseId = null, resto = []) {
   S.sujo = false;
   S.aba = aba;
   if (faseId) S.faseId = faseId;
-  history.replaceState(null, '', `#${aba}${aba === 'fase' && S.faseId ? `/${S.faseId}` : ['biblioteca', 'mobs'].includes(aba) && resto?.length ? `/${resto.map(encodeURIComponent).join('/')}` : ''}`);
+  history.replaceState(null, '', `#${aba}${aba === 'fase' && S.faseId ? `/${S.faseId}` : (aba === 'biblioteca' || TELAS_FIXAS[aba]) && resto?.length ? `/${resto.map(encodeURIComponent).join('/')}` : ''}`);
   desenharAbas();
   msg('');
   $('#raiz').replaceChildren(el('div', { class: 'dica' }, 'Carregando…'));
@@ -313,7 +322,7 @@ async function irPara(aba, faseId = null, resto = []) {
     MW.dados = null;
     await desenharMapaDoMundo();
   }
-  if (aba === 'mobs') await MOBS.desenhar(resto ?? []);
+  if (TELAS_FIXAS[aba]) await TELAS_FIXAS[aba].desenhar(resto ?? []);
   if (aba === 'bosses') await BOSSES.desenhar();
   if (aba === 'biblioteca') await BIBLIOTECA.desenhar(resto ?? []);
   if (aba === 'atos') await EDITOR_DE_ATOS.desenhar();
@@ -436,7 +445,7 @@ S.opcoes = await api('opcoes');
 window.addEventListener('hashchange', () => {
   const { aba, id, resto } = lerEndereco();
   if (aba === 'biblioteca' && S.aba === 'biblioteca') return resto.length === 2 && BIBLIOTECA.abrir(resto[0], resto[1]);
-  if (aba === 'mobs' && S.aba === 'mobs') return resto.length === 1 && MOBS.abrir('monstros', resto[0]);
+  if (TELAS_FIXAS[aba] && S.aba === aba) return resto.length === 1 && TELAS_FIXAS[aba].abrir(CATEGORIA_DA_TELA[aba], resto[0]);
   if (aba !== S.aba || (aba === 'fase' && id && id !== S.faseId)) irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null, resto);
 });
 // Atalhos: Ctrl+K (ou ⌘K) busca em todos os cadastros; "/" vai para a busca da Biblioteca.
@@ -445,9 +454,9 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault();
     BIBLIOTECA.buscaGlobal();
-  } else if (e.key === '/' && !digitando && ['biblioteca', 'mobs'].includes(S.aba) && !document.querySelector('dialog[open]')) {
+  } else if (e.key === '/' && !digitando && (S.aba === 'biblioteca' || TELAS_FIXAS[S.aba]) && !document.querySelector('dialog[open]')) {
     e.preventDefault();
-    (S.aba === 'mobs' ? MOBS : BIBLIOTECA).focarBusca();
+    (TELAS_FIXAS[S.aba] ?? BIBLIOTECA).focarBusca();
   }
 });
 
