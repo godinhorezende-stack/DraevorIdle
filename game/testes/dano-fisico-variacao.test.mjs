@@ -155,3 +155,28 @@ test('o mínimo E o máximo sobem com a perícia da arma: Magic Level (wand/rod)
     assert.deepEqual(outra, baixa, `${c.nome}: a perícia ${c.outra} não deveria contar`);
   }
 });
+
+test('estilo PoE: a arma 48–61 dá mínimo 48 e máximo 61 ANTES dos modificadores; a perícia e o level entram igual nas duas pontas (sem fração arbitrária)', () => {
+  const nivel = 100;
+  const pericia = 60;
+  const f = (a) => Math.floor(a * 0.0425 * (pericia + 4) + nivel / 5);
+  const d = R.attackDamage({ attack: 54, attackMin: 48, attackMax: 61, skill: pericia, level: nivel });
+  assert.deepEqual(d, { min: f(48), max: f(61) }, 'cada ponta = ataque da ponta × fator da perícia × (perícia + 4) + level/5');
+  assert.equal(d.min, 150);
+  assert.equal(d.max, 185);
+  // O ataque fixo (+20) entra nas duas pontas antes da conta, como no exemplo: (48+20) e (61+20).
+  const comFixo = R.attackDamage({ attack: 74, attackMin: 68, attackMax: 81, skill: pericia, level: nivel });
+  assert.deepEqual(comFixo, { min: f(68), max: f(81) });
+  // O golpe real: um sorteio só, dentro da faixa da arma — a média é a de antes (a do sorteio antigo, ataque médio 54,5).
+  let soma = 0;
+  for (let i = 0; i < 20000; i++) {
+    const g = R.golpeDoJogador({ attack: 54, attackMin: 48, attackMax: 61 }, pericia, nivel);
+    assert.ok(g >= d.min && g <= d.max, `${g} fora de ${d.min}–${d.max}`);
+    soma += g;
+  }
+  const antiga = E.attackDamage({ attack: 54.5, skill: pericia, level: nivel });
+  assert.ok(Math.abs(soma / 20000 - (antiga.min + antiga.max) / 2) < 3, `média ${(soma / 20000).toFixed(1)} contra ${(antiga.min + antiga.max) / 2}`);
+  // Sem faixa (ataque único): a variação configurável em torno da média, como antes.
+  const unico = R.attackDamage({ attack: 54, skill: pericia, level: nivel });
+  assert.ok(unico.min < unico.max);
+});

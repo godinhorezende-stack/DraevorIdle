@@ -602,7 +602,7 @@ function golpeNoAdversario(s, outro, arma, id) {
     base = min + Math.floor(Math.random() * (max - min + 1));
     elemento = element ?? 'energy';
   } else {
-    base = R.golpeDoJogador({ ...arma, attack: Ficha.ataqueDoGolpe(ficha) }, ficha.skillValue, s.estado.level);
+    base = R.golpeDoJogador({ ...arma, attack: Math.round((ficha.ataqueMin + ficha.ataqueMax) / 2), attackMin: ficha.ataqueMin, attackMax: ficha.ataqueMax }, ficha.skillValue, s.estado.level);
   }
   const eventos = [];
   const { dano: bruto, crit } = Ficha.rolarCritico(s.estado, base, { key: null, uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y }, eventos, ficha);

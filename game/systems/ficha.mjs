@@ -190,9 +190,8 @@ function calcularCombate(estado) {
   const damage = w?.wand
     ? R.attackDamage({ attack: Math.round(PoderDaArma.poderDaPeca(estado.equipment?.weapon)), skill: valorDaPericia, level: estado.level ?? 1 })
     : {
-        // A faixa da arma inteira: o menor golpe com o piso dela, o maior com o teto.
-        min: R.attackDamage({ attack: ataqueMin, skill: valorDaPericia, level: estado.level ?? 1 }).min,
-        max: R.attackDamage({ attack: ataqueMax, skill: valorDaPericia, level: estado.level ?? 1 }).max,
+        // A faixa da PRÓPRIA arma (o piso e o teto sorteados no drop) pela mesma conta nas duas pontas (`regras.attackDamage`).
+        ...R.attackDamage({ attack: Math.round((ataqueMin + ataqueMax) / 2), attackMin: ataqueMin, attackMax: ataqueMax, skill: valorDaPericia, level: estado.level ?? 1 }),
       };
   const protection = Object.fromEntries(ELEMENTOS.map((e) => [e, 0]));
   for (const it of itens) {

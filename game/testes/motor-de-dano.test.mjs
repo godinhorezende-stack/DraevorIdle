@@ -28,7 +28,9 @@ test('a medida é repetível (semente) e o nível 20 bate mais que o 1', () => {
   const a = medirGema('spell-flame-strike', { usos: 20 });
   assert.deepEqual(medirGema('spell-flame-strike', { usos: 20 }), a);
   assert.equal(a.usos, 20, 'todos os usos contam (recarga e intervalo do combo zerados)');
-  assert.ok(a.maximo > a.minimo, 'o dano sorteia entre o mínimo e o máximo');
+  // O sorteio entre o mínimo e o máximo só aparece com números maiores que o arredondamento (no level 1 a magia dá ~5 de dano): mede num level alto.
+  const alto = medirGema('spell-flame-strike', { usos: 20, level: 200 });
+  assert.ok(alto.maximo > alto.minimo, 'o dano sorteia entre o mínimo e o máximo');
   const n20 = medirGema('spell-flame-strike', { usos: 20, nivel: 20 });
   assert.ok(n20.media > a.media, `${a.media} → ${n20.media}`);
 });

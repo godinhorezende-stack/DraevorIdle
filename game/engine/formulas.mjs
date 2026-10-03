@@ -368,18 +368,30 @@ export function manaForMagicLevel(value, vocationId) {
 /**
  * Dano de ataque físico. `attack` vem da arma, `skill` da perícia correspondente.
  *
- * A faixa ANTIGA (a do Tibia, sorteio uniforme): `max = 0,085 × ataque × (perícia + 4) + level/5`, `min = level/5` — o mínimo só dependia do level,
- * e ignorava o ataque e a perícia. Resultado: level 190, ataque 78 e perícia 77 davam 38–575 (mínimo = 6,6% do máximo), com a média em 306.
+ * A faixa ANTIGA (a do Tibia, sorteio uniforme; sem `variacao`): `max = 0,085 × ataque × (perícia + 4) + level/5`, `min = level/5` — o mínimo só
+ * dependia do level (level 190, ataque 78, perícia 77 davam 38–575, mínimo = 6,6% do máximo).
  *
- * Com `variacao` (a fração, 0,30 = ±30%) a faixa fica CENTRADA na MESMA média da antiga e sobe junto com o ataque e a perícia:
- * `média = (min antigo + max antigo) / 2`, `min = média × (1 − variacao)`, `max = média × (1 + variacao)`. A média (o DPS esperado) não muda;
- * só some a variância absurda. Sem `variacao` vale a faixa antiga (quem não passa nada continua igual).
+ * A faixa NOVA (com `variacao`; dono, 02/10 — "se a arma tem 48–61, o mínimo inicial é 48, os modificadores afetam os dois lados"): a faixa de ataque da
+ * PRÓPRIA arma (`attackMin`–`attackMax`, a sorteada no drop) passa pela MESMA conta nas duas pontas:
+ *     ponta = ataque da ponta × `fatorPericia` × (perícia + 4) + level/5
+ * `fatorPericia` é 0,0425 (a metade do 0,085 antigo, porque o sorteio antigo ia de ~0 ao máximo): a MÉDIA do golpe fica igual à de antes. A perícia
+ * é um "aumentado" que sobe o mínimo e o máximo; o level/5 é um fixo nas duas pontas. Arma SEM faixa (ataque único, ou punho) não tem mínimo
+ * próprio: aí a faixa é a média ± `variacao` (fração: 0,30 = ±30%).
  */
-export function attackDamage({ attack, skill, level, factor = 1, variacao = null }) {
+export function attackDamage({ attack, attackMin = null, attackMax = null, skill, level, factor = 1, variacao = null, fatorPericia = 0.0425 }) {
   const piso = Math.floor(level / 5);
-  const teto = Math.max(1, Math.floor((0.085 * factor * attack * (skill + 4)) + level / 5));
-  if (variacao == null) return { min: Math.min(piso, teto), max: Math.max(teto, 1) };
-  const media = (Math.min(piso, teto) + Math.max(teto, 1)) / 2;
+  if (variacao == null) {
+    const teto = Math.max(1, Math.floor((0.085 * factor * attack * (skill + 4)) + level / 5));
+    return { min: Math.min(piso, teto), max: Math.max(teto, 1) };
+  }
+  const multiplicador = fatorPericia * factor * (skill + 4);
+  const lo = attackMin ?? attack;
+  const hi = attackMax ?? attack;
+  if (hi > lo) {
+    const min = Math.max(1, Math.floor(lo * multiplicador + level / 5));
+    return { min, max: Math.max(min, Math.floor(hi * multiplicador + level / 5)) };
+  }
+  const media = attack * multiplicador + level / 5;
   const v = Math.max(0, Math.min(1, Number(variacao) || 0));
   const min = Math.max(1, Math.floor(media * (1 - v)));
   return { min, max: Math.max(min, Math.ceil(media * (1 + v))) };

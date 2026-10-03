@@ -140,13 +140,20 @@ export const INTERVALO_DIARIO_MS = 20 * 60 * 60 * 1000;
 export { duracaoDoPasso, blockChance, expForLevel, triesForSkill, manaForMagicLevel, levelFromExp, baseSpeed, maxCapacity, levelBonus, magicDamage, armorReduction };
 
 /**
- * O dano de ataque físico (faixa mínimo–máximo) COM a variação configurável (`gamedata/combate/formulas.json` → `danoFisico.variacaoPct`):
- * a faixa fica centrada na média da fórmula do Tibia, sem o mínimo ridículo de level/5. Todos os caminhos do jogo (ficha, golpe, duelo) passam por aqui.
+ * O dano de ataque físico (faixa mínimo–máximo): a faixa de ataque da PRÓPRIA arma (`attackMin`–`attackMax`) pela mesma conta nas duas pontas; arma sem
+ * faixa leva a variação configurável (`gamedata/combate/formulas.json` → `danoFisico`). Todos os caminhos do jogo (ficha, golpe, duelo) passam por aqui.
  */
-export const attackDamage = (args) => attackDamageDoMotor({ ...args, variacao: Formulas.PARAMETROS.danoFisico.variacaoPct / 100 });
+export const attackDamage = (args) => attackDamageDoMotor({ ...args, variacao: Formulas.PARAMETROS.danoFisico.variacaoPct / 100, fatorPericia: Formulas.PARAMETROS.danoFisico.fatorDaPericia });
 
 /** Um golpe da própria arma — real: `attack` vem do item, `skill` do personagem (10 fixo, ver `CHARACTER_TEMPLATE`). */
 export function golpeDoJogador(arma, skill, level) {
+  const lo = arma?.attackMin;
+  const hi = arma?.attackMax;
+  // Arma com FAIXA de ataque: UM sorteio dentro dela (a faixa da arma já é a variação) pela mesma conta das duas pontas.
+  if (lo != null && hi != null && hi > lo) {
+    const { min, max } = attackDamage({ attack: arma?.attack ?? lo, attackMin: lo, attackMax: hi, skill, level });
+    return min + Math.floor(Math.random() * (max - min + 1));
+  }
   const { min, max } = attackDamage({ attack: arma?.attack ?? 0, skill, level });
   return min + Math.floor(Math.random() * (max - min + 1));
 }
