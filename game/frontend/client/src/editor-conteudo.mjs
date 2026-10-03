@@ -4,6 +4,7 @@
 import { svg, fundoDoAto, nomeDoTema } from './world-arte.mjs';
 import { LARGURA, ALTURA, TIPOS_DE_NO, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, atosDaCampanha } from './world-dados.mjs';
 import { desenharNo } from './world.mjs';
+import { criarEditorDeAtos } from './editor-atos.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
 const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, bosses: [], bossoId: null, boss: null, bossErros: [], sujo: false };
@@ -261,13 +262,16 @@ function cartaoDeEncontro(e, i) {
   return d;
 }
 
+const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
+
 // ------------------------------------------------------------------ abas
 
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fase e encontros'], ['mapa', 'Mapa do mundo'], ['bosses', 'Bosses'], ['biblioteca', 'Biblioteca']];
+const ABAS = [['geral', 'Visão geral'], ['fase', 'Fase e encontros'], ['mapa', 'Mapa do mundo'], ['bosses', 'Bosses'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (novo)']];
 function desenharAbas() {
   $('#abas').replaceChildren(...ABAS.map(([id, nome]) => el('button', { class: S.aba === id ? 'ativa' : '', onclick: () => irPara(id) }, nome)));
 }
 async function irPara(aba, faseId = null) {
+  if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !confirm('O ato aberto tem alterações não salvas. Sair mesmo assim?')) return;
   if (S.sujo && !confirm('Há alterações não salvas. Sair mesmo assim?')) return;
   S.sujo = false;
   S.aba = aba;
@@ -282,6 +286,7 @@ async function irPara(aba, faseId = null) {
   }
   if (aba === 'bosses') await desenharBosses();
   if (aba === 'biblioteca') await desenharBiblioteca();
+  if (aba === 'atos') await EDITOR_DE_ATOS.desenhar();
 }
 
 // ---- Visão geral

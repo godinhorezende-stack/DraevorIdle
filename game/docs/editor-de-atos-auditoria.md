@@ -85,3 +85,16 @@ Exige mudança estrutural: grafo de fases com bifurcação/convergência no serv
 - `systems/atos-legado.mjs`: os 4 atos de hoje no modelo novo, somente leitura (a fase travada `dark-thais` fica fora do grafo, como no runtime).
 - `admin/atos.mjs` + rotas `atos-editor`: lista, detalhe com validação, validar sem gravar, salvar rascunho (`gamedata/atos/<id>.json`, versão sobe), duplicar, excluir. `beta`/`publicado` recusados até o runtime por grafo (Etapa 6).
 - Prova de equivalência: `fasesAbertas` == `Campanha.faseLiberada` ao longo de toda a progressão dos 4 atos. Nada do runtime importa estes módulos.
+
+## Etapa 4 — editor visual de atos (feito) e conferência com o pedido original
+`frontend/client/src/editor-atos.mjs` (aba "Atos (novo)" em `/editor/conteudo`): lista de atos (legados somente leitura + rascunhos), criar/duplicar/excluir/salvar, canvas SVG com setas, arrastar fases (posição gravada), ligar fases (bifurcação, convergência, requisito e rótulo por caminho), fase obrigatória/opcional, fase inicial, escolher hunt/boss pela Biblioteca embutida, boss final com a fase anterior e a ligação "fase → portal → boss", validação ao vivo apontando a fase (clicável).
+
+**Ainda falta em relação ao pedido original** (por parte):
+- P1 Beta: limites de duração/segurança não são configuráveis no beta (a sala de boss segue 25 min); papel de admin por conta não existe (o admin é o acesso trancado).
+- P2 Biblioteca: gemas e tabelas de drop (vazia no cadastro) sem tela própria; arrastar da Biblioteca para o editor (hoje é "Escolher na Biblioteca"); imagem do sprite.
+- P3 Atos/fases: editar `requisitos` e `progressao` do ato, `objetivos`, `eventos`, `recompensas` e `sobrescritas` da fase (existem no modelo, sem campo na tela); painel que separe "dado original / sobrescrita / exclusivo da fase / efetivamente aplicado".
+- P4 Bosses: boss opcional/obrigatório por fase (hoje é encontro da hunt, aba Fase); arena, regras de entrada, recompensas e drops do boss final.
+- P5 Drops e recompensas: tudo (Etapa 5): configurar, pré-visualizar, simulador, alertas, anti-duplicação.
+- P6 Publicação: histórico de versões, diff, restaurar, tela de publicação, "testar em beta"; hoje só há contador de versão e rascunho/desativado.
+- P7 Runtime: o ato do editor ainda não roda no jogo (Etapa 6).
+- P8 Navegação: faltam áreas separadas de Drops, Pré-visualização e Publicação.

@@ -53,6 +53,10 @@
   .bib-campo > b { display: block; font-size: 12px; color: var(--mudo); text-transform: uppercase; }
   .bib-sub th { text-align: left; font-weight: normal; color: var(--mudo); padding-right: 8px; vertical-align: top; }
   @media (max-width: 800px) { .bib-duas { grid-template-columns: 1fr; } }
+  .atos-duas { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 12px; align-items: start; }
+  .atos-direita { display: grid; gap: 8px; max-height: 80vh; overflow: auto; }
+  .atos-canvas { width: 100%; height: auto; background: #10141f; border: 1px solid var(--borda); border-radius: 8px; touch-action: none; }
+  @media (max-width: 900px) { .atos-duas { grid-template-columns: 1fr; } }
   .dica { font-size: 12px; color: var(--mudo); }
   .duas { display: grid; grid-template-columns: 280px 1fr; gap: 14px; } @media (max-width: 800px) { .duas { grid-template-columns: 1fr; } }
   .lista-lateral { border: 1px solid var(--borda); border-radius: 6px; max-height: 70vh; overflow: auto; }
