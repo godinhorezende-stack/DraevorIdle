@@ -2,7 +2,7 @@
 // `confirm`/`prompt`, que travam a página e não seguem o tema), editor JSON avançado com erro localizado, copiar
 // referência, ícones e a navegação lateral. Só apresentação: nenhuma regra de jogo mora aqui.
 
-/** Cria um elemento: `props.class`, `on*` viram eventos, `true` vira atributo vazio; filhos podem ser listas. */
+/** Cria um elemento: `props.class`, `on*` viram eventos, `true` vira atributo vazio; filhos podem ser listas (em qualquer profundidade). */
 export function el(tag, props = {}, ...filhos) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(props ?? {})) {
@@ -11,7 +11,7 @@ export function el(tag, props = {}, ...filhos) {
     else if (v === true) e.setAttribute(k, '');
     else if (v !== false && v != null) e.setAttribute(k, v);
   }
-  for (const f of filhos.flat()) if (f != null && f !== false) e.append(f.nodeType ? f : document.createTextNode(String(f)));
+  for (const f of filhos.flat(Infinity)) if (f != null && f !== false) e.append(f.nodeType ? f : document.createTextNode(String(f)));
   return e;
 }
 

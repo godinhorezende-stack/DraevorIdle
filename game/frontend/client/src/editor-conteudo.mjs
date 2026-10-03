@@ -5,6 +5,7 @@ import { svg, fundoDoAto, nomeDoTema } from './world-arte.mjs';
 import { LARGURA, ALTURA, TIPOS_DE_NO, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, atosDaCampanha } from './world-dados.mjs';
 import { desenharNo } from './world.mjs';
 import { criarEditorDeAtos } from './editor-atos.mjs';
+import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { el, msg, confirmar, descartarAlteracoes, editorJson, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
@@ -270,6 +271,7 @@ function cartaoDeEncontro(e, i) {
 }
 
 const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
+const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto) });
 
 // ------------------------------------------------------------------ abas
 
@@ -287,17 +289,17 @@ function desenharAbas() {
 }
 /** O endereço guarda a tela (`#fase/troll-cave`, `#bosses`...): recarregar ou mandar o link abre no mesmo lugar. */
 const lerEndereco = () => {
-  const [aba, id] = decodeURIComponent(location.hash.slice(1)).split('/');
-  return NOME_DA_ABA[aba] ? { aba, id: id || null } : { aba: 'geral', id: null };
+  const [aba, ...resto] = location.hash.slice(1).split('/').map((p) => decodeURIComponent(p));
+  return NOME_DA_ABA[aba] ? { aba, id: resto[0] || null, resto } : { aba: 'geral', id: null, resto: [] };
 };
-async function irPara(aba, faseId = null) {
+async function irPara(aba, faseId = null, resto = []) {
   if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return desenharAbas();
   if (S.sujo && !(await descartarAlteracoes())) return desenharAbas();
   S.navegacao++;
   S.sujo = false;
   S.aba = aba;
   if (faseId) S.faseId = faseId;
-  history.replaceState(null, '', `#${aba}${aba === 'fase' && S.faseId ? `/${S.faseId}` : ''}`);
+  history.replaceState(null, '', `#${aba}${aba === 'fase' && S.faseId ? `/${S.faseId}` : aba === 'biblioteca' && resto?.length ? `/${resto.map(encodeURIComponent).join('/')}` : ''}`);
   desenharAbas();
   msg('');
   $('#raiz').replaceChildren(el('div', { class: 'dica' }, 'Carregando…'));
@@ -308,7 +310,7 @@ async function irPara(aba, faseId = null) {
     await desenharMapaDoMundo();
   }
   if (aba === 'bosses') await desenharBosses();
-  if (aba === 'biblioteca') await desenharBiblioteca();
+  if (aba === 'biblioteca') await BIBLIOTECA.desenhar(resto ?? []);
   if (aba === 'atos') await EDITOR_DE_ATOS.desenhar();
 }
 
@@ -513,14 +515,26 @@ window.addEventListener('beforeunload', (e) => {
 for (const ev of ['input', 'change', 'click', 'pointerup']) document.addEventListener(ev, () => setTimeout(atualizarSujo, 0));
 S.opcoes = await api('opcoes');
 {
-  const { aba, id } = lerEndereco();
+  const { aba, id, resto } = lerEndereco();
   S.aba = null;
-  await irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null);
+  await irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null, resto);
 }
 // Link colado na barra (ou voltar do navegador) com outro `#`: vai para a tela pedida, com o mesmo aviso de alterações.
 window.addEventListener('hashchange', () => {
-  const { aba, id } = lerEndereco();
-  if (aba !== S.aba || (aba === 'fase' && id && id !== S.faseId)) irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null);
+  const { aba, id, resto } = lerEndereco();
+  if (aba === 'biblioteca' && S.aba === 'biblioteca') return resto.length === 2 && BIBLIOTECA.abrir(resto[0], resto[1]);
+  if (aba !== S.aba || (aba === 'fase' && id && id !== S.faseId)) irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null, resto);
+});
+// Atalhos: Ctrl+K (ou ⌘K) busca em todos os cadastros; "/" vai para a busca da Biblioteca.
+document.addEventListener('keydown', (e) => {
+  const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '') || document.activeElement?.isContentEditable;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    BIBLIOTECA.buscaGlobal();
+  } else if (e.key === '/' && !digitando && S.aba === 'biblioteca' && !document.querySelector('dialog[open]')) {
+    e.preventDefault();
+    BIBLIOTECA.focarBusca();
+  }
 });
 
 
@@ -722,53 +736,3 @@ async function salvarMapaDoMundo() {
   } else msg((r.erros ?? ['Erro ao salvar'])[0], 'erro');
 }
 void atosDaCampanha;
-
-// ------------------------------------------------------------------ biblioteca (somente leitura)
-
-const BIB = { categorias: [], categoria: 'hunts', q: '', tipo: '', nivelMin: '', nivelMax: '', ordem: 'nome', lista: null, detalhe: null };
-const NAO = 'não cadastrado';
-const fmt = (v) => (v === null || v === undefined ? NAO : typeof v === 'object' ? JSON.stringify(v) : String(v));
-
-async function desenharBiblioteca() {
-  if (!BIB.categorias.length) BIB.categorias = (await api('biblioteca')).categorias;
-  await buscarBiblioteca();
-}
-async function buscarBiblioteca() {
-  const p = new URLSearchParams({ categoria: BIB.categoria, q: BIB.q, tipo: BIB.tipo, nivelMin: BIB.nivelMin, nivelMax: BIB.nivelMax, ordem: BIB.ordem, limite: 100 });
-  BIB.lista = await api(`biblioteca/lista?${p}`);
-  pintarBiblioteca();
-}
-async function abrirDetalhe(id) {
-  BIB.detalhe = await api(`biblioteca/detalhe?${new URLSearchParams({ categoria: BIB.categoria, id })}`);
-  pintarBiblioteca();
-}
-function blocoDoDetalhe(d) {
-  const linhas = [];
-  for (const [k, v] of Object.entries(d)) {
-    if (['id', 'nome', 'categoria'].includes(k)) continue;
-    const filho = v && typeof v === 'object' && !Array.isArray(v)
-      ? el('table', { class: 'bib-sub' }, Object.entries(v).map(([k2, v2]) => el('tr', {}, el('th', {}, k2), el('td', { class: v2 == null ? 'dica' : '' }, fmt(v2)))))
-      : el('span', { class: v == null || (Array.isArray(v) && !v.length) ? 'dica' : '' }, Array.isArray(v) ? (v.length ? JSON.stringify(v) : NAO) : fmt(v));
-    linhas.push(el('div', { class: 'bib-campo' }, el('b', {}, k), filho));
-  }
-  return linhas;
-}
-function pintarBiblioteca() {
-  const L = BIB.lista;
-  const campoTexto = (rot, chave, tipo = 'text') => el('label', { class: 'campo' }, rot, el('input', { type: tipo, value: BIB[chave], onchange: (e) => { BIB[chave] = e.target.value; buscarBiblioteca(); } }));
-  const filtros = el('div', { class: 'grade' },
-    el('label', { class: 'campo' }, 'Categoria', el('select', { onchange: (e) => { BIB.categoria = e.target.value; BIB.tipo = ''; BIB.detalhe = null; buscarBiblioteca(); } }, BIB.categorias.map((c) => el('option', { value: c.id, selected: c.id === BIB.categoria }, `${c.nome} (${c.total})`)))),
-    campoTexto('Buscar por nome ou ID', 'q'),
-    el('label', { class: 'campo' }, 'Tipo', el('select', { onchange: (e) => { BIB.tipo = e.target.value; buscarBiblioteca(); } }, el('option', { value: '' }, 'todos'), (L?.tipos ?? []).map((t) => el('option', { value: t, selected: t === BIB.tipo }, t)))),
-    campoTexto('Nível mínimo', 'nivelMin', 'number'),
-    campoTexto('Nível máximo', 'nivelMax', 'number'),
-    el('label', { class: 'campo' }, 'Ordem', el('select', { onchange: (e) => { BIB.ordem = e.target.value; buscarBiblioteca(); } }, [['nome', 'alfabética'], ['nivel', 'por nível'], ['id', 'por ID']].map(([v, n]) => el('option', { value: v, selected: v === BIB.ordem }, n)))));
-  const tabela = el('table', {}, el('thead', {}, el('tr', {}, ['ID', 'Nome', 'Tipo', 'Nível'].map((h) => el('th', {}, h)))),
-    el('tbody', {}, (L?.itens ?? []).map((i) => el('tr', { class: BIB.detalhe?.id === i.id ? 'ativa' : '', style: 'cursor:pointer', onclick: () => abrirDetalhe(i.id) }, el('td', {}, i.id), el('td', {}, i.nome ?? NAO), el('td', {}, i.tipo ?? NAO), el('td', {}, i.nivel ?? '—')))));
-  const d = BIB.detalhe;
-  $('#raiz').replaceChildren(
-    cabecalho('Biblioteca', 'Somente leitura: os cadastros reais do jogo. O que o cadastro não traz aparece como "não cadastrado".'),
-    filtros,
-    el('div', { class: 'dica' }, L?.ok === false ? L.erros.join(' ') : `${L?.total ?? 0} resultado(s)${(L?.total ?? 0) > 100 ? ' — mostrando os 100 primeiros; refine a busca' : ''}.`),
-    el('div', { class: 'bib-duas' }, el('div', { class: 'bib-lista' }, tabela), el('div', { class: 'bib-detalhe' }, d?.id ? [el('h3', {}, `${d.nome ?? d.id} `, el('span', { class: 'dica' }, `(${d.id})`)), ...blocoDoDetalhe(d)] : el('div', { class: 'dica' }, 'Selecione um conteúdo para ver o detalhe.'))));
-}

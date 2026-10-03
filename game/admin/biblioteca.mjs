@@ -55,26 +55,48 @@ const itensQuebrados = (ids) => [...new Set(ids.filter((id) => id != null && !IT
 
 function monstroResumo(key) {
   const m = CATALOGO.bestiary[key];
-  return m ? { key, nome: m.name, hp: ou(m.hp), exp: ou(m.exp), look: ou(m.look) } : { key, nome: null, cadastrado: false };
+  return m ? { key, nome: m.name, hp: ou(m.hp), exp: ou(m.exp), look: ou(m.look), desenho: desenhoDoMonstro(m) } : { key, nome: null, cadastrado: false, desenho: null };
 }
 
 // ------------------------------------------------------------------ listagem
 
+// O DESENHO de cada linha, para a tela pôr o sprite real no card (`sprites.mjs` do jogo): criatura = `look` + cores
+// (ou `lookItem`, o bicho que é um objeto); item = o próprio id. Sem desenho cadastrado: `null` (a tela põe o marcador).
+// Só conta como desenho o que EXISTE nos atlas que o cliente baixa (o cadastro pode apontar um `look` sem folha).
+const OUTFITS = new Set(Object.keys(lerJson('outfits.json')));
+const SPRITES_DE_ITEM = new Set(Object.keys(lerJson('item-sprites.json')));
+const temOutfit = (look) => OUTFITS.has(String(look));
+const temSpriteDeItem = (id) => SPRITES_DE_ITEM.has(String(id));
+const desenhoDoMonstro = (m) => (m?.look && temOutfit(m.look) ? { tipo: 'criatura', look: m.look, cores: m.colors ?? null } : m?.lookItem && temSpriteDeItem(m.lookItem) ? { tipo: 'item', id: m.lookItem } : null);
+const desenhoDaHunt = (h) => {
+  const c = (h.creatures ?? []).find((x) => CATALOGO.bestiary[x.key]);
+  return c ? desenhoDoMonstro(CATALOGO.bestiary[c.key]) : null;
+};
+const desenhoDoItem = (i) => (i && temSpriteDeItem(i.id) ? { tipo: 'item', id: Number(i.id) } : null);
+/** Quantas referências quebradas (itens que não existem) a linha tem — o selo de alerta do card. */
+const alertasDoMonstro = (m) => itensQuebrados((m?.loot ?? []).map((l) => l.id)).length;
+
 function linhasDeHunt(cat) {
-  return (DE_HUNT[cat]() ?? []).map((h) => ({ id: h.id, nome: h.name ?? null, categoria: cat, tipo: TIPO_DA_HUNT[cat], nivel: ou(h.level) }));
+  return (DE_HUNT[cat]() ?? []).map((h) => {
+    const key = cat === 'bosses' ? h.creatures?.[0]?.key : null;
+    return { id: h.id, nome: h.name ?? null, categoria: cat, tipo: TIPO_DA_HUNT[cat], nivel: ou(h.level), desenho: key && CATALOGO.bestiary[key] ? desenhoDoMonstro(CATALOGO.bestiary[key]) : desenhoDaHunt(h), raridade: null, usos: usosDe(cat === 'bosses' ? 'bosses' : 'hunts', h.id).length, alertas: key ? alertasDoMonstro(CATALOGO.bestiary[key]) : 0, monstros: (h.creatures ?? []).length };
+  });
 }
 function linhasDeMonstros() {
-  return Object.entries(CATALOGO.bestiary).map(([key, m]) => ({ id: key, nome: m.name ?? null, categoria: 'monstros', tipo: m.boss ? 'boss' : (m.class ?? null), nivel: null }));
+  return Object.entries(CATALOGO.bestiary).map(([key, m]) => ({ id: key, nome: m.name ?? null, categoria: 'monstros', tipo: m.boss ? 'boss' : (m.class ?? null), nivel: null, desenho: desenhoDoMonstro(m), raridade: m.stars > 0 ? `${m.stars} estrela(s)` : null, usos: usosDe('monstros', key).length, alertas: alertasDoMonstro(m), hp: ou(m.hp) }));
 }
 function linhasDeMapas() {
   const dir = join(RAIZ, 'hunts');
-  return readdirSync(dir).filter((a) => a.endsWith('-map.json')).map((a) => ({ id: a.slice(0, -'-map.json'.length), nome: a.slice(0, -'-map.json'.length), categoria: 'mapas', tipo: 'mapa', nivel: null }));
+  return readdirSync(dir).filter((a) => a.endsWith('-map.json')).map((a) => {
+    const id = a.slice(0, -'-map.json'.length);
+    return { id, nome: id, categoria: 'mapas', tipo: 'mapa', nivel: null, desenho: null, raridade: null, usos: usosDe('mapas', id).length, alertas: 0 };
+  });
 }
 function linhasDeItens() {
-  return Object.values(ITEM_CATALOG).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: i.type ?? null, nivel: null }));
+  return Object.values(ITEM_CATALOG).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: i.type ?? null, nivel: null, desenho: desenhoDoItem(i), raridade: ou(i.rarity), usos: usosDe('itens', String(i.id)).length, alertas: 0, slot: ou(i.slot) }));
 }
 function linhasDeDrops() {
-  const tabelas = Object.keys(CONFIG.tabelas ?? {}).map((id) => ({ id: `tabela:${id}`, nome: id, categoria: 'drops', tipo: 'tabela reutilizável de encontro', nivel: null }));
+  const tabelas = Object.keys(CONFIG.tabelas ?? {}).map((id) => ({ id: `tabela:${id}`, nome: id, categoria: 'drops', tipo: 'tabela reutilizável de encontro', nivel: null, desenho: null, raridade: null, usos: 0, alertas: 0 }));
   return tabelas;
 }
 function linhasDeEncontros() {
@@ -82,8 +104,68 @@ function linhasDeEncontros() {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((a) => a.endsWith('.json')).map((a) => {
     const id = a.slice(0, -5);
-    return { id, nome: fase(id)?.nome ?? id, categoria: 'encontros', tipo: 'encontros da fase', nivel: null };
+    const enc = encontrosDoArquivo(id) ?? [];
+    return { id, nome: fase(id)?.nome ?? id, categoria: 'encontros', tipo: 'encontros da fase', nivel: null, desenho: null, raridade: null, usos: 0, alertas: itensQuebrados(enc.flatMap((e) => (e.recompensa?.drops ?? []).map((d) => d.id))).length, encontros: enc.length };
   });
+}
+
+// ------------------------------------------------------------------ onde cada conteúdo é usado
+
+/**
+ * O índice de USO (montado uma vez, na primeira consulta — os cadastros só mudam com o servidor reiniciando):
+ * `{ categoria: Map<id, [{ categoria, id, nome, como }]> }`. `categoria` da referência pode não ser da Biblioteca
+ * (`atos`, `bosses-unicos`): a tela mostra como texto. Só leitura.
+ */
+let INDICE = null;
+function indiceDeUsos() {
+  if (INDICE) return INDICE;
+  const ix = { monstros: new Map(), itens: new Map(), hunts: new Map(), bosses: new Map(), mapas: new Map() };
+  // Uma referência por (categoria, id): a mesma hunt como "monstro" e "spawn" vira UMA linha, com os dois papéis.
+  const por = (cat, id, ref) => {
+    const k = String(id);
+    const l = ix[cat].get(k) ?? [];
+    const ja = l.find((r) => r.categoria === ref.categoria && r.id === ref.id);
+    if (!ja) l.push({ ...ref });
+    else if (!ja.como.split(' · ').includes(ref.como)) ja.como = `${ja.como} · ${ref.como}`;
+    ix[cat].set(k, l);
+  };
+  for (const cat of Object.keys(DE_HUNT)) {
+    for (const h of DE_HUNT[cat]() ?? []) {
+      const ref = { categoria: cat, id: h.id, nome: h.name ?? h.id };
+      for (const c of h.creatures ?? []) por('monstros', c.key, { ...ref, como: cat === 'bosses' ? 'criatura do boss' : 'monstro da hunt' });
+      for (const l of Object.values(h.spawnPorAndar ?? {})) for (const s of l) por('monstros', s.key, { ...ref, como: 'spawn da hunt' });
+      for (const i of h.itens ?? []) por('itens', i?.id ?? i, { ...ref, como: 'item da hunt' });
+      const mapa = arquivoDeMapa(h.id) ? h.id : h.online && arquivoDeMapa(h.online) ? h.online : null;
+      if (mapa) por('mapas', mapa, { ...ref, como: 'mapa da hunt' });
+    }
+  }
+  for (const [key, m] of Object.entries(CATALOGO.bestiary)) {
+    for (const l of m.loot ?? []) por('itens', l.id, { categoria: 'monstros', id: key, nome: m.name ?? key, como: `loot do monstro (${Number(((l.chance ?? 0) * (l.chance <= 1 ? 100 : 1)).toFixed(4))}%)` });
+  }
+  Campanha.FASES.forEach((f, i) => por('hunts', f.huntId, { categoria: 'atos', id: `ato-${f.ato}`, nome: `Ato ${f.ato}`, como: `fase ${i + 1} da campanha` }));
+  for (let n = 1; n <= Campanha.ATOS; n++) {
+    const b = Campanha.bossDoAto(n);
+    if (b?.bossId) por('bosses', b.bossId, { categoria: 'atos', id: `ato-${n}`, nome: `Ato ${n}`, como: 'boss final do ato' });
+  }
+  for (const b of Catalogo.todos?.() ?? []) if (b.base) por('monstros', b.base, { categoria: 'bosses-unicos', id: b.id, nome: b.nome ?? b.id, como: 'criatura-base do boss único' });
+  const dir = Arquivos.PASTA;
+  if (existsSync(dir)) {
+    for (const a of readdirSync(dir).filter((x) => x.endsWith('.json'))) {
+      const huntId = a.slice(0, -5);
+      for (const e of encontrosDoArquivo(huntId) ?? []) {
+        for (const d of e.recompensa?.drops ?? []) por('itens', d.id, { categoria: 'encontros', id: huntId, nome: fase(huntId)?.nome ?? huntId, como: `drop do encontro ${e.id} (${d.chance}%)` });
+        for (const g of e.criaturas ?? []) if (g?.key) por('monstros', g.key, { categoria: 'encontros', id: huntId, nome: fase(huntId)?.nome ?? huntId, como: `criatura do encontro ${e.id}` });
+      }
+    }
+  }
+  INDICE = ix;
+  return ix;
+}
+const CATEGORIA_DO_USO = { hunts: 'hunts', vips: 'hunts', especiais: 'hunts', divinas: 'hunts', bosses: 'bosses', monstros: 'monstros', itens: 'itens', mapas: 'mapas' };
+/** Onde o conteúdo é usado (lista vazia se não é usado, ou se a categoria não tem índice). */
+export function usosDe(categoria, id) {
+  const cat = CATEGORIA_DO_USO[categoria];
+  return cat ? (indiceDeUsos()[cat].get(String(id)) ?? []) : [];
 }
 
 function todasAsLinhas(cat) {
@@ -105,7 +187,7 @@ export function resumo() {
  * Busca com filtros. `categoria` obrigatória; `q` casa nome OU id (sem acento/caixa); `tipo` exato; `nivelMin/nivelMax` só valem onde o
  * cadastro tem nível; `ordem`: 'nome' (padrão) | 'nivel' | 'id'. Pagina por `limite` (até 200) e `deslocamento`.
  */
-export function listar({ categoria, q, tipo, nivelMin, nivelMax, ordem = 'nome', limite = 100, deslocamento = 0 } = {}) {
+export function listar({ categoria, q, tipo, raridade, situacao, nivelMin, nivelMax, ordem = 'nome', limite = 100, deslocamento = 0 } = {}) {
   const base = todasAsLinhas(categoria);
   if (!base) return { ok: false, erros: [`Categoria desconhecida: ${categoria}.`] };
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -115,16 +197,21 @@ export function listar({ categoria, q, tipo, nivelMin, nivelMax, ordem = 'nome',
   let r = base.filter((l) => {
     if (t && !norm(l.nome).includes(t) && !norm(l.id).includes(t)) return false;
     if (tipo && l.tipo !== tipo) return false;
+    if (raridade && l.raridade !== raridade) return false;
+    // `situacao`: o que pede atenção — sem desenho, com referência quebrada, sem uso nenhum.
+    if (situacao === 'sem-desenho' && l.desenho) return false;
+    if (situacao === 'alerta' && !l.alertas) return false;
+    if (situacao === 'sem-uso' && l.usos) return false;
     if (min != null && Number.isFinite(min) && !(l.nivel != null && l.nivel >= min)) return false;
     if (max != null && Number.isFinite(max) && !(l.nivel != null && l.nivel <= max)) return false;
     return true;
   });
-  const chave = ordem === 'nivel' ? (l) => l.nivel ?? Infinity : ordem === 'id' ? (l) => norm(l.id) : (l) => norm(l.nome ?? l.id);
+  const chave = ordem === 'nivel' ? (l) => l.nivel ?? Infinity : ordem === 'id' ? (l) => norm(l.id) : ordem === 'usos' ? (l) => -l.usos : (l) => norm(l.nome ?? l.id);
   r = r.sort((a, b) => (chave(a) < chave(b) ? -1 : chave(a) > chave(b) ? 1 : 0));
   const total = r.length;
   const tam = Math.min(200, Math.max(1, Number(limite) || 100));
   const de = Math.max(0, Number(deslocamento) || 0);
-  return { ok: true, categoria, total, tipos: [...new Set(base.map((l) => l.tipo).filter(Boolean))].sort(), itens: r.slice(de, de + tam) };
+  return { ok: true, categoria, total, tipos: [...new Set(base.map((l) => l.tipo).filter(Boolean))].sort(), raridades: [...new Set(base.map((l) => l.raridade).filter(Boolean))].sort(), temNivel: base.some((l) => l.nivel != null), itens: r.slice(de, de + tam) };
 }
 
 // ------------------------------------------------------------------ detalhes
@@ -241,13 +328,17 @@ function detalheDeEncontros(id) {
 /** O detalhe de um conteúdo (`null` se não existe). Sempre sobre o cadastro original — nada é copiado. */
 export function detalhe(categoria, id) {
   const i = String(id ?? '');
-  if (DE_HUNT[categoria]) return categoria === 'bosses' ? detalheDeBoss(i) : detalheDeHunt(categoria, i);
-  if (categoria === 'monstros') return detalheDeMonstro(i);
-  if (categoria === 'mapas') return detalheDeMapa(i);
-  if (categoria === 'itens') return detalheDeItem(i);
-  if (categoria === 'drops') return detalheDeDrop(i);
-  if (categoria === 'encontros') return detalheDeEncontros(i);
-  return null;
+  let d = null;
+  if (DE_HUNT[categoria]) d = categoria === 'bosses' ? detalheDeBoss(i) : detalheDeHunt(categoria, i);
+  else if (categoria === 'monstros') d = detalheDeMonstro(i);
+  else if (categoria === 'mapas') d = detalheDeMapa(i);
+  else if (categoria === 'itens') d = detalheDeItem(i);
+  else if (categoria === 'drops') d = detalheDeDrop(i);
+  else if (categoria === 'encontros') d = detalheDeEncontros(i);
+  if (!d) return null;
+  // O desenho e o "onde é usado" vêm da mesma conta da lista (a tela mostra o sprite e a aba Usos).
+  const linha = todasAsLinhas(categoria)?.find((l) => l.id === i);
+  return { ...d, desenho: linha?.desenho ?? null, usadoEm: usosDe(categoria, i) };
 }
 
 /** Referências quebradas em TODO o catálogo de hunts/bosses/monstros (para a validação da biblioteca). */

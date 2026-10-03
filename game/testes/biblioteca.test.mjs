@@ -60,3 +60,48 @@ test('L5. auditoria de referências: aponta item inexistente em drop (real) sem 
   assert.ok(Array.isArray(p));
   for (const x of p) assert.ok(x.itensInexistentes.length > 0);
 });
+
+// ------------------------------------------------------------------ Etapa 3 (biblioteca visual): desenho, filtros e "onde é usado"
+
+const OUTFITS = JSON.parse(readFileSync(new URL('../gamedata/outfits.json', import.meta.url), 'utf8'));
+const SPRITES = JSON.parse(readFileSync(new URL('../gamedata/item-sprites.json', import.meta.url), 'utf8'));
+
+test('L6. desenho de cada linha: só o que existe nos atlas do cliente (nada inventado)', () => {
+  for (const cat of ['monstros', 'itens', 'bosses', 'hunts']) {
+    for (const l of B.listar({ categoria: cat, limite: 200 }).itens) {
+      if (!l.desenho) continue;
+      if (l.desenho.tipo === 'criatura') assert.ok(OUTFITS[l.desenho.look], `${cat}/${l.id}: look ${l.desenho.look} sem folha`);
+      else assert.ok(SPRITES[l.desenho.id], `${cat}/${l.id}: item ${l.desenho.id} sem sprite`);
+    }
+  }
+  const sem = B.listar({ categoria: 'itens', situacao: 'sem-desenho', limite: 200 });
+  assert.ok(sem.total > 0 && sem.itens.every((i) => i.desenho === null && !SPRITES[i.id]));
+});
+
+test('L7. filtros combináveis: raridade + tipo + texto, e paginação por deslocamento sem repetir', () => {
+  const r = B.listar({ categoria: 'itens', raridade: 'lendário', limite: 200 });
+  assert.ok(r.total > 0 && r.itens.every((i) => i.raridade === 'lendário'));
+  assert.ok(r.raridades.includes('comum'));
+  const tipo = r.itens[0].tipo;
+  assert.ok(B.listar({ categoria: 'itens', raridade: 'lendário', tipo, limite: 200 }).itens.every((i) => i.tipo === tipo && i.raridade === 'lendário'));
+  const p1 = B.listar({ categoria: 'monstros', limite: 60 }).itens.map((i) => i.id);
+  const p2 = B.listar({ categoria: 'monstros', limite: 60, deslocamento: 60 }).itens.map((i) => i.id);
+  assert.equal(p1.length, 60);
+  assert.equal(new Set([...p1, ...p2]).size, 120, 'a segunda página não repete a primeira');
+  const usos = B.listar({ categoria: 'itens', ordem: 'usos', limite: 20 }).itens.map((i) => i.usos);
+  assert.deepEqual(usos, [...usos].sort((a, b) => b - a));
+  assert.equal(B.listar({ categoria: 'hunts' }).temNivel, true);
+  assert.equal(B.listar({ categoria: 'itens' }).temNivel, false);
+});
+
+test('L8. onde é usado: monstro da hunt, item no loot, hunt na campanha, boss final do ato — e o detalhe traz a lista', () => {
+  assert.ok(B.usosDe('monstros', 'troll').some((u) => u.categoria === 'hunts' && u.id === 'troll-cave'));
+  const moeda = B.usosDe('itens', '3031');
+  assert.ok(moeda.length > 50 && moeda.every((u) => u.como));
+  assert.ok(B.usosDe('hunts', 'troll-cave').some((u) => u.categoria === 'atos' && u.id === 'ato-1'));
+  assert.ok(B.usosDe('bosses', 'urmahlullu-the-immaculate').some((u) => u.como === 'boss final do ato'));
+  const d = B.detalhe('monstros', 'troll');
+  assert.deepEqual(d.usadoEm, B.usosDe('monstros', 'troll'));
+  assert.equal(B.listar({ categoria: 'monstros', q: 'troll', limite: 200 }).itens.find((i) => i.id === 'troll').usos, d.usadoEm.length);
+  assert.deepEqual(B.usosDe('drops', 'x'), []);
+});
