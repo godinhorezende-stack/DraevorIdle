@@ -9,6 +9,7 @@ import { criarPainelDeHunts } from './editor-hunts.mjs';
 import { criarEditorDeMapas } from './editor-mapas.mjs';
 import { criarTelasDeOperacao } from './editor-operacao.mjs';
 import { criarEditorDeMobs } from './editor-mobs.mjs';
+import { criarEditorDeItens } from './editor-itens.mjs';
 import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
@@ -299,13 +300,27 @@ const MOBS = {
   abrir: (cat, id) => (id === 'editar' ? MOBS_EDITOR.desenhar() : MOBS_BIBLIOTECA.abrir(cat, id)),
   focarBusca: () => (modoDosMobs === 'editor' ? MOBS_EDITOR : MOBS_BIBLIOTECA).focarBusca(),
 };
+const ITENS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('button', { type: 'button', class: 'primario', onclick: () => irPara('itens', null, ['editar', d.id]) }, 'Editar este item (override)'), categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. O catálogo vem do Canary e não é alterado: para editar, use "Editar itens" (camada de overrides).' });
+const ITENS_EDITOR = criarEditorDeItens({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('itens') });
+let modoDosItens = 'biblioteca';
+const ITENS = {
+  async desenhar(resto = []) {
+    if (resto[0] === 'editar') { modoDosItens = 'editor'; return ITENS_EDITOR.desenhar(resto[1] ?? null); }
+    modoDosItens = 'biblioteca';
+    await ITENS_BIBLIOTECA.desenhar(resto);
+    const cab = document.querySelector('#raiz .eng-cabeca');
+    if (cab && !cab.querySelector('.itm-editar')) cab.append(el('div', { class: 'eng-acoes' }, el('button', { type: 'button', class: 'itm-editar primario', onclick: () => irPara('itens', null, ['editar']) }, 'Editar itens (overrides)')));
+  },
+  abrir: (cat, id) => (id === 'editar' ? ITENS_EDITOR.desenhar() : ITENS_BIBLIOTECA.abrir(cat, id)),
+  focarBusca: () => (modoDosItens === 'editor' ? ITENS_EDITOR : ITENS_BIBLIOTECA).focarBusca(),
+};
 const TELAS_FIXAS = {
   beta: OPERACAO.beta,
   config: OPERACAO.config,
   mapas: criarEditorDeMapas({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo, confirmarDescartar: () => descartarAlteracoes('O mapa aberto tem alterações não salvas') } }),
   hunts: criarPainelDeHunts({ api, raiz: () => $('#raiz'), irPara: irParaDe, sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   mobs: MOBS,
-  itens: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. Somente visualização.' }),
+  itens: ITENS,
   outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
   montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
 };
@@ -331,7 +346,7 @@ const GRUPOS = [
   { id: 'conteudo', titulo: 'Conteúdo do jogo', itens: [
     { id: 'mobs', nome: 'Mobs', icone: 'mobs', modo: 'parcial', dica: 'consulta e edição por override (o original do Canary não muda)' },
     { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' },
-    { id: 'itens', nome: 'Itens', icone: 'espada', modo: 'consulta' },
+    { id: 'itens', nome: 'Itens', icone: 'espada', modo: 'parcial', dica: 'consulta e edição por override (o catálogo do Canary não muda)' },
     { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },
     { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' }] },
   { id: 'recursos', titulo: 'Recursos', itens: [

@@ -9,17 +9,23 @@
 import { readFileSync } from 'node:fs';
 import { CATALOGO } from '../dados.mjs';
 
-const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../../gamedata/itens/${arquivo}`, import.meta.url), 'utf8'));
+// `DRAEVOR_ITENS`: outra pasta com os mesmos arquivos — só para os testes provarem que o que o editor grava é o que o jogo lê.
+const PASTA_DOS_ITENS = process.env.DRAEVOR_ITENS ? `${process.env.DRAEVOR_ITENS.replace(/\/$/, '')}/` : null;
+const ler = (arquivo) => JSON.parse(readFileSync(PASTA_DOS_ITENS ? `${PASTA_DOS_ITENS}${arquivo}` : new URL(`../../gamedata/itens/${arquivo}`, import.meta.url), 'utf8'));
 
 export const RARIDADES = ler('raridades.json');
+const RARIDADES_CARREGADAS = RARIDADES;
 const ARQUIVO_DE_ATRIBUTOS = ler('atributos.json');
 /** Os adds que caem (ModifierDefinition): nome, tipo, categoria, peso e a faixa de cada tier (T1 fraco … T5 forte). */
 export const ATRIBUTOS = ARQUIVO_DE_ATRIBUTOS.atributos;
+const ATRIBUTOS_CARREGADOS = ATRIBUTOS;
 /** Os adds de antes da reestruturação (29/09): não caem mais; só a migração v4 lê. */
 export const LEGADO = ARQUIVO_DE_ATRIBUTOS.legado ?? {};
 export const POOLS = ler('pools.json').pools;
+const POOLS_CARREGADOS = POOLS;
 /** Os tiers pelo Item Level, o peso de cada tier e o viés da raridade (`tiers.json`). */
 export const TIERS = ler('tiers.json');
+const TIERS_CARREGADOS = TIERS;
 export const EFEITOS = ler('efeitos.json');
 
 export const ORDEM = RARIDADES.ordem;
@@ -29,8 +35,13 @@ export const NIVEL_MAXIMO = 5;
 const soma = (lista) => lista.reduce((a, b) => a + Number(b), 0);
 const perto100 = (s) => Math.abs(s - 100) < 1e-6;
 
-/** Confere a configuração inteira; devolve a lista de problemas (vazia = ok). */
-export function validar() {
+/**
+ * Confere a configuração inteira; devolve a lista de problemas (vazia = ok). Sem argumento valida a configuração carregada (é o que o boot faz);
+ * com `dados` valida uma configuração PROPOSTA (o editor de regras confere o que vai gravar ANTES, porque erro aqui derruba o boot).
+ */
+export function validar(dados = {}) {
+  const { RARIDADES, TIERS, ATRIBUTOS, POOLS } = { RARIDADES: dados.RARIDADES ?? RARIDADES_CARREGADAS, TIERS: dados.TIERS ?? TIERS_CARREGADOS, ATRIBUTOS: dados.ATRIBUTOS ?? ATRIBUTOS_CARREGADOS, POOLS: dados.POOLS ?? POOLS_CARREGADOS };
+  const ORDEM = RARIDADES.ordem;
   const erros = [];
   for (const [ato, porDif] of Object.entries(RARIDADES.chances)) {
     for (const d of DIFICULDADES) {

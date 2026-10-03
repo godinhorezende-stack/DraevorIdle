@@ -123,6 +123,9 @@ export const CATALOGO = {
  * `gamedata/overrides/monstros.json` guarda só as DIFERENÇAS; aqui elas entram por cima do bestiário no boot (o original, `catalog-real.json`, não é
  * tocado). Sem arquivo, nada muda. Entrada inválida é ignorada com aviso. Os ataques entram em `poderes.mjs`, pelo mesmo arquivo.
  */
+export const OVERRIDES_DE_ITENS = Overrides.lerItens();
+export const resultadoDosOverridesDeItens = Overrides.aplicarNosItens(ITEM_CATALOG, OVERRIDES_DE_ITENS);
+if (resultadoDosOverridesDeItens.aplicados.length) console.log(`[overrides] itens: ${resultadoDosOverridesDeItens.aplicados.length} item(ns) alterado(s).`);
 export const OVERRIDES_DE_MONSTROS = Overrides.lerMonstros();
 export const resultadoDosOverrides = Overrides.aplicarNoBestiario(CATALOGO.bestiary, OVERRIDES_DE_MONSTROS, Overrides.contextoDoJogo(ITEM_CATALOG));
 if (resultadoDosOverrides.aplicados.length || resultadoDosOverrides.criados.length) console.log(`[overrides] bestiário: ${resultadoDosOverrides.aplicados.length} monstro(s) alterado(s), ${resultadoDosOverrides.criados.length} variação(ões) criada(s).`);
