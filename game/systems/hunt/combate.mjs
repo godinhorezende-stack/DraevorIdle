@@ -288,6 +288,8 @@ export function contextoDoDrop(hunt) {
 }
 
 export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
+  // A vitória é registrada UMA vez por luta: um evento de morte repetido não paga outra sacola nem conta outra conclusão.
+  if (hunt.vitoria) return;
   const itens = [];
   for (const drop of [...alvo.loot, ...Gemas.DROP.boss]) {
     // Buff Power Loot +50%, o afixo "Loot" e a Caça Online ("15% mais chance de loot" na sala do boss).

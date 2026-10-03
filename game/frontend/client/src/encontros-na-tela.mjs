@@ -32,7 +32,7 @@ export const assinaturaDosEncontros = (lista) => (lista ?? []).map((e) => `enc:$
 /** O sprite de item de cada tipo (os do próprio jogo): baú, baú ornamentado, baú do coração (amaldiçoado) e pedestal de cristal (altar). */
 export const ITEM_DO_TIPO = { 'bau-comum': 2472, 'bau-raro': 26164, 'bau-amaldicoado': 33043, altar: 9063, sobrevivencia: 9064, fenda: 9065, aprisionado: 9066, 'area-secreta': 9067, escolta: 9068 };
 
-const COR = { 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
+const COR = { portal: '#8a6bff', 'bau-comum': '#e0b84a', 'bau-raro': '#4ab3ff', 'bau-amaldicoado': '#b04aff', altar: '#ffd24c', sobrevivencia: '#ff6a4a', fenda: '#7a5cff', aprisionado: '#4fd0b0', 'area-secreta': '#5cc8ff', escolta: '#8fd06a' };
 
 /**
  * Desenha os marcadores: o SPRITE do jogo (`desenharItem`, que devolve `false` enquanto a folha não chegou) ou, até lá,
@@ -58,6 +58,20 @@ export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador, d
     const sprite = desenharItem && ITEM_DO_TIPO[e.tipo] ? desenharItem(ctx, ITEM_DO_TIPO[e.tipo], x, y) : false;
     if (sprite) {
       // O sprite do jogo já é o desenho.
+    } else if (e.tipo === 'portal') {
+      // O portal do boss do ato: um anel de luz (dois elipses) com o miolo claro — se destaca de baú e altar.
+      const t = (typeof performance !== 'undefined' ? performance.now() : 0) / 700;
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#2b1b66';
+      ctx.fillStyle = `${cor}`;
+      ctx.beginPath();
+      ctx.ellipse(x + tile / 2, y + tile * 0.5, tile * 0.34, tile * 0.46, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fill();
+      ctx.fillStyle = `rgba(190, 230, 255, ${0.55 + 0.25 * Math.sin(t)})`;
+      ctx.beginPath();
+      ctx.ellipse(x + tile / 2, y + tile * 0.5, tile * 0.18, tile * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
     } else if (e.tipo === 'altar' || e.tipo === 'sobrevivencia' || e.tipo === 'fenda' || e.tipo === 'aprisionado' || e.tipo === 'area-secreta' || e.tipo === 'escolta') {
       // Um losango sobre um pedestal.
       ctx.beginPath();
@@ -82,8 +96,8 @@ export function desenharMarcadores(ctx, lista, { camX, camY, tile, z, jogador, d
       ctx.fillStyle = '#2a1a05';
       ctx.fillRect(x + tile * 0.45, y + tile * 0.42, tile * 0.1, tile * 0.16);
     }
-    if (perto) {
-      // Ao alcance: o nome por cima — é o convite para interagir.
+    if (perto || e.tipo === 'portal') {
+      // Ao alcance (ou, no portal, sempre): o nome por cima — é o convite para interagir.
       ctx.globalAlpha = 1;
       ctx.font = '600 11px Oswald, system-ui, sans-serif';
       ctx.textAlign = 'center';

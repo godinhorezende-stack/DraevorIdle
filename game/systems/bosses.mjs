@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { CATALOGO, CHARACTER_TEMPLATE, STORE_REAL } from './dados.mjs';
 import { darItem } from './inventario.mjs';
 import * as Bau from './bau.mjs';
+import { ehBossDeAto, CAMPANHA } from './campanha.mjs';
 
 export const TEMPO_NA_SALA_MS = 25 * 60_000;
 
@@ -132,8 +133,25 @@ export function recusaDaTask(estado, bossId) {
 /** Na entrada: o de task não tem relógio; o diário começa a esperar agora. */
 export function marcarEntrada(estado, bossId, agora = Date.now()) {
   if (taskDoBoss(estado, bossId)) return;
+  if (ehBossDeAto(bossId)) return; // boss de fim de ato: sem recarga, nenhuma espera começa na entrada
   const boss = acharBoss(bossId);
   Bau.garantir(estado).bossCooldownsAte[bossId] = agora + (boss?.cooldownHours ?? 12) * 3_600_000;
+}
+
+/**
+ * Zera as recargas GRAVADAS dos bosses de fim de ato (de antes de eles ficarem sem espera: ex.: The Primal Menace com 72 h). Só o carimbo de
+ * "quando volta" some — progresso, vitórias e sacolas não são tocados. Devolve quantos carimbos limpou.
+ */
+export function limparRecargasDeAto(estado) {
+  const mapa = Bau.garantir(estado).bossCooldownsAte;
+  let n = 0;
+  for (const { bossId } of Object.values(CAMPANHA.bosses)) {
+    if ((mapa[bossId] ?? 0) > 0) {
+      mapa[bossId] = 0;
+      n++;
+    }
+  }
+  return n;
 }
 
 /** Na vitória: o de task fecha para sempre. */
@@ -170,7 +188,7 @@ function motivoParaPular(estado, id, agora) {
   if ((estado.level ?? 0) < (boss.level ?? 0)) return `level ${boss.level}`;
   const task = recusaDaTask(estado, id);
   if (task) return task;
-  if ((Bau.garantir(estado).bossCooldownsAte[id] ?? 0) > agora) return 'cooldown';
+  if (!ehBossDeAto(id) && (Bau.garantir(estado).bossCooldownsAte[id] ?? 0) > agora) return 'cooldown';
   return null;
 }
 

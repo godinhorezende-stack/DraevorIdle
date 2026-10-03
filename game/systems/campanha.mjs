@@ -20,6 +20,7 @@
 // antes, por contagem de mortes: fica gravado, ninguém mais lê).
 import { readFileSync } from 'node:fs';
 import { conteudoDaFase, exigidasDaFase, nomesDeBosses, atosDoConteudo } from './campanha-conteudo.mjs';
+import { CATALOGO } from './dados.mjs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
@@ -33,6 +34,34 @@ export const faseDe = (huntId) => (INDICE.has(huntId) ? { ...FASES[INDICE.get(hu
 /** O boss que fecha um ato (`{bossId, nome, nivel}`), e o ato de um boss (`null` se não fecha nenhum). */
 export const bossDoAto = (ato) => CAMPANHA.bosses[String(ato)] ?? null;
 export const atoDoBoss = (bossId) => Number(Object.entries(CAMPANHA.bosses).find(([, b]) => b.bossId === bossId)?.[0]) || null;
+
+/** O boss é o que fecha algum ato? (esses NÃO têm recarga: entra-se quantas vezes quiser) */
+export const ehBossDeAto = (bossId) => atoDoBoss(bossId) != null;
+
+/*
+ * ---- Boss de fim de ato: SEM recarga e SEM espera (03/10, decisão do dono) ----
+ * O catálogo capturado do jogo original traz `cooldownHours` (12 h; 72 h no The Primal Menace) para todo boss. Os que fecham um ato
+ * perdem a recarga: o catálogo (que também vai para o cliente) passa a dizer `cooldownHours: 0` e `semEspera: true`, e o servidor
+ * ainda ignora recarga desses bosses em `Cacadas.entrar`/`Bosses.marcarEntrada`/Auto Boss (cinto e suspensório: o catálogo é só o aviso).
+ * Os outros bosses (de task, de Instance/Divine...) seguem com a recarga real deles.
+ */
+for (const { bossId } of Object.values(CAMPANHA.bosses)) {
+  for (const lista of [CATALOGO.bosses, CATALOGO.hunts]) {
+    for (const e of lista ?? []) {
+      if (e.id === bossId || e.id === `${bossId}-online`) {
+        e.cooldownHours = 0;
+        e.semEspera = true;
+      }
+    }
+  }
+}
+
+/** A última fase JOGÁVEL do ato (as `pular` não se entram): a que, ao ser concluída, abre o portal do boss. */
+export const ultimaFaseDoAto = (ato) => FASES.filter((f) => f.ato === Number(ato) && !f.pular).at(-1) ?? null;
+export const ehUltimaFaseDoAto = (huntId) => {
+  const f = faseDe(huntId);
+  return !!f && ultimaFaseDoAto(f.ato)?.huntId === huntId;
+};
 
 const ehDificuldade = (d) => DIFICULDADES.includes(d);
 function progresso(estado, dif) {
@@ -166,15 +195,16 @@ export function limpou(estado, hunt) {
   p.limpezas[f.huntId] = (p.limpezas[f.huntId] ?? 0) + 1;
   const nomeDif = CAMPANHA.dificuldades[c.dificuldade].nome;
   let aviso;
+  const abriuOPortal = ehUltimaFaseDoAto(f.huntId) && bossLiberado(estado, c.dificuldade, f.ato);
   if (p.completas.includes(f.huntId)) {
-    aviso = `Hunt Clear! ${f.nome} (${nomeDif}) limpa.`;
+    aviso = abriuOPortal ? `Hunt Clear! ${f.nome} (${nomeDif}) limpa. O portal do boss ${bossDoAto(f.ato)?.nome} está aberto: entre quando quiser.` : `Hunt Clear! ${f.nome} (${nomeDif}) limpa.`;
   } else {
     p.completas.push(f.huntId);
     const proxima = FASES[f.indice + 1];
     aviso =
       proxima && proxima.ato === f.ato
         ? `Hunt Clear! Fase completa: ${f.nome} (${nomeDif}). Liberou ${proxima.nome}.`
-        : `Hunt Clear! Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado.`;
+        : `Hunt Clear! Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`;
   }
   estado.avisoDaHunt = aviso;
   return aviso;
@@ -302,4 +332,21 @@ export function faseAtual(estado, hunt) {
     // Completa e sem próxima para seguir: fim do ato (o boss é o jogador quem chama).
     fimDoAto: completa && !proximaParaSeguir(estado, c.dificuldade, f.huntId),
   };
+}
+
+/**
+ * Abre o portal do boss do ato na SALA `hunt` (a caçada do dono): só na última fase jogável do ato, e se algum de `estados` (quem está na sala)
+ * já tem o boss liberado (as fases do ato completas na dificuldade). O portal nasce onde o dono está e fica na caçada: uma instância nova da
+ * mesma fase não o fecha. Idempotente — não duplica para o mesmo ato e dificuldade. Devolve o portal, ou `null`.
+ */
+export function abrirPortalDoBoss(hunt, estados) {
+  const c = hunt?.campanha;
+  if (!c || c.bossDoAto || hunt.anfitriao || !ehUltimaFaseDoAto(c.huntId)) return null;
+  if (!estados.some((e) => bossLiberado(e, c.dificuldade, c.ato))) return null;
+  const b = bossDoAto(c.ato);
+  if (!b) return null;
+  const atual = hunt.portalDoBoss;
+  if (atual && atual.ato === c.ato && atual.dificuldade === c.dificuldade) return atual;
+  hunt.portalDoBoss = { ato: c.ato, dificuldade: c.dificuldade, bossId: b.bossId, nome: b.nome, x: hunt.pos.x, y: hunt.pos.y, z: hunt.z ?? 0, abertoEm: Date.now() };
+  return hunt.portalDoBoss;
 }

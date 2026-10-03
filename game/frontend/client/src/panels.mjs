@@ -3670,13 +3670,16 @@ function askBoss(hunt) {
 
       const horas = hunt.cooldownHours ?? 0;
       const regras = el('ul', 'boss-regras');
+      // Boss de fim de ato: sem espera nenhuma (entra quantas vezes quiser, inclusive depois de morrer ou de vencer).
       regras.append(
         el(
           'li',
           null,
-          horas
-            ? `A espera de ${horas}h começa quando você ENTRA — mesmo que ele não caia.`
-            : 'A espera começa quando você ENTRA — mesmo que ele não caia.'
+          hunt.semEspera
+            ? 'Sem espera: este é o boss de fim de ato — você pode entrar de novo quantas vezes quiser.'
+            : horas
+              ? `A espera de ${horas}h começa quando você ENTRA — mesmo que ele não caia.`
+              : 'A espera começa quando você ENTRA — mesmo que ele não caia.'
         )
       );
       regras.append(el('li', null, 'Você tem 25 minutos lá dentro, nos dois modos.'));

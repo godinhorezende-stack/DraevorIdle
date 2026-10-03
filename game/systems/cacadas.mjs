@@ -589,7 +589,8 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
     // Boss de task: abre com a task feita e sai uma vez por personagem (`bosses.mjs`).
     const recusa = atoDoBoss == null ? Bosses.recusaDaTask(estado, boss.id) : null;
     if (recusa) return { ok: false, erro: recusa };
-    const volta = Bau.garantir(estado).bossCooldownsAte[boss.id] ?? 0;
+    // Boss de fim de ato: SEM recarga (tentativas ilimitadas); os outros seguem a recarga real (`cooldownHours`, `bossCooldownsAte`).
+    const volta = Campanha.ehBossDeAto(boss.id) ? 0 : Bau.garantir(estado).bossCooldownsAte[boss.id] ?? 0;
     if (volta > Date.now()) {
       const h = Math.ceil((volta - Date.now()) / 3_600_000);
       return { ok: false, erro: `${boss.name} ainda não voltou: faltam ~${h}h.` };
@@ -668,7 +669,37 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   };
   // "A espera começa quando você ENTRA — mesmo que ele não caia." (Menos a primeira do boss de ato.)
   if (boss && !primeiraDoAto) Bosses.marcarEntrada(estado, boss.id);
+  // A última fase do ato, já completa e com o boss aberto: o portal já nasce (voltar para tentar de novo, sem refazer a fase).
+  if (fase && Campanha.faseCompleta(estado, dif, huntId)) Campanha.abrirPortalDoBoss(estado.hunt, [estado]);
   return { ok: true };
+}
+
+/**
+ * O portal do boss do ato (aberto na última fase) → a arena do boss. Valida tudo no servidor: a fase é a última do ato, o portal existe na
+ * SALA (o convidado da party usa o do anfitrião), o boss está liberado para ESTE personagem (as fases do ato completas na dificuldade).
+ * Quem entra é só quem pediu (a party não é carregada junto: quem tem "Seguir líder" ligado vai pelo caminho de sempre). `antes()` roda
+ * depois das validações e antes da troca (a sessão passa o repasse da sala). Sem recarga: pode entrar de novo quantas vezes quiser.
+ */
+export function entrarNoPortalDoBoss(estado, { antes = null } = {}) {
+  const hunt = estado.hunt;
+  if (!hunt) return { ok: false, erro: 'Você não está numa fase.' };
+  const portal = salaDe(hunt)?.portalDoBoss;
+  const c = hunt.campanha;
+  if (!portal || !c || c.bossDoAto || c.ato !== portal.ato || c.dificuldade !== portal.dificuldade || !Campanha.ehUltimaFaseDoAto(c.huntId)) return { ok: false, erro: 'O portal do boss não está aberto aqui.' };
+  if (!Campanha.bossLiberado(estado, portal.dificuldade, portal.ato)) return { ok: false, erro: `Complete as fases do Ato ${portal.ato} no ${Campanha.CAMPANHA.dificuldades[portal.dificuldade].nome} para enfrentar ${portal.nome}.` };
+  const modo = hunt.modo === 'online' ? 'online' : 'auto';
+  const estrategia = hunt.strategy;
+  antes?.();
+  return entrar(estado, { huntId: portal.bossId, mode: modo, strategy: estrategia, dificuldade: portal.dificuldade, campanha: true });
+}
+
+/** O portal como o cliente o vê (`null` se não há ou se ESTE personagem ainda não pode entrar). */
+function portalParaCliente(estado, hunt) {
+  const portal = hunt ? salaDe(hunt)?.portalDoBoss : null;
+  const c = hunt?.campanha;
+  if (!portal || !c || c.bossDoAto || c.ato !== portal.ato || c.dificuldade !== portal.dificuldade) return null;
+  if (!Campanha.bossLiberado(estado, portal.dificuldade, portal.ato)) return null;
+  return { nome: portal.nome, ato: portal.ato, dificuldade: portal.dificuldade, x: portal.x, y: portal.y, z: portal.z };
 }
 
 /**
@@ -879,10 +910,16 @@ function projetarNaInstancia(estado, kills) {
  */
 function aoLimparAInstancia(estado, hunt) {
   Campanha.limpou(estado, hunt);
+  const estados = [estado];
   for (const m of hunt.partilha?.membros ?? []) {
     const h = m.estado?.hunt;
-    if (m.estado !== estado && h && salaDe(h) === hunt) Campanha.limpou(m.estado, h);
+    if (m.estado !== estado && h && salaDe(h) === hunt) {
+      Campanha.limpou(m.estado, h);
+      estados.push(m.estado);
+    }
   }
+  // Última fase do ato concluída: o portal do boss se abre (uma vez por fase; quem da sala puder entrar, entra).
+  Campanha.abrirPortalDoBoss(hunt, estados);
 }
 
 /**
@@ -2015,7 +2052,9 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // A fase da campanha e o progresso nela (a barra "312 / 500" da tela).
     fase: Campanha.faseAtual(estado, hunt),
     // A instância (quantos bichos, quantos restam, CLEAR): a barra da fase.
-    instancia: Instancia.paraCliente(hunt),
+    instancia: Instancia.paraCliente(hunt, portalParaCliente(estado, hunt)),
+    // O portal do boss do ato (HUD: "Entrar no portal"): sempre presente (`null` sem portal), para o quadro em delta limpar quando some.
+    portalDoBoss: portalParaCliente(estado, hunt),
     // A barra do boss no alto da tela (`barraDoBoss`, hud.mjs) — o formato real.
     boss: hunt.isBoss ? barraDoBoss(hunt) : null,
     strategy: hunt.strategy ?? 'nearest',
