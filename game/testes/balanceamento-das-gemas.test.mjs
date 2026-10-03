@@ -6,6 +6,8 @@ import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import * as Gemas from '../systems/skills/gemas.mjs';
 import * as Rot from '../systems/combate/simulador-rotacao.mjs';
+import * as Treino from '../systems/treino.mjs';
+import * as Ficha from '../systems/ficha.mjs';
 import { ACTION_CATALOG } from '../systems/dados.mjs';
 
 const base = (id) => [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes].find((a) => a.id === id);
@@ -41,9 +43,16 @@ test('o Knight não cura mais barato por mana que o Druid (identidade: o curande
   assert.ok(eficiencia('spell-intense-healing') >= eficiencia('spell-light-healing') * 0.9);
 });
 
+// A arma de cada classe NO NÍVEL (300): a magia escala pelo dano normal da ficha, que parte do ataque da arma (Magic Attack na wand/rod).
+const ARMA_NO_NIVEL = { sorcerer: 'falcon wand', druid: 'falcon rod', knight: 'umbral masterblade', paladin: 'umbral master bow', monk: null };
 const dps = (voc, skill, alvos) => {
   const e = personagemDeTeste({ vocacao: voc, level: 300 });
-  assert.ok(Rot.vestirBuild(e, { grupos: [{ skill }] }).ok);
+  // Perícias a 40% do level (a mesma referência da auditoria): a magia escala pelo dano normal da ficha, que depende da perícia.
+  Treino.garantir(e);
+  e.magic.value = 120;
+  for (const p of ['melee', 'distance']) if (e.skills?.[p]) e.skills[p].value = 120;
+  Ficha.invalidar(e);
+  assert.ok(Rot.vestirBuild(e, { grupos: [{ skill }], arma: ARMA_NO_NIVEL[voc] }).ok);
   return Rot.medirRotacao(e, PERSONAGEM, { duracaoMs: 30000, alvos }).dpsDasGemas;
 };
 

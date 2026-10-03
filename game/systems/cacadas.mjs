@@ -1687,7 +1687,7 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
   const ficha = Ficha.combate(estado);
   // Com o ATAQUE DA FICHA (ATK e ATK% dos atributos), não o do catálogo da arma;
   // e o "Dano de <elemento>" do elemento do familiar (auditoria, 29/09).
-  const doDono = (arma?.wand ? (arma.wand.min + arma.wand.max) / 2 : R.golpeDoJogador({ ...arma, attack: ficha.ataque }, ficha.skillValue, estado.level)) * (1 + (ficha.danoDoElemento?.[f.elemento] ?? 0) / 100);
+  const doDono = (arma?.wand ? (arma.wand.min + arma.wand.max) / 2 : R.golpeDoJogador({ ...arma, attack: ficha.ataque, attackMin: ficha.ataqueMin, attackMax: ficha.ataqueMax }, ficha.skillValue, estado.level)) * (1 + (ficha.danoDoElemento?.[f.elemento] ?? 0) / 100);
   const cor = Acoes.COR_DO_ELEMENTO[f.elemento] ?? '#ff0000';
   const sessao = hunt.sessao;
   for (const bicho of hunt.monstros) {
