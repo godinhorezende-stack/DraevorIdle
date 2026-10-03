@@ -494,3 +494,51 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .bib-largura { margin-left: auto; align-self: center; flex: none; font-size: var(--eng-t-pequeno); padding: 3px 10px; white-space: nowrap; }
 .eng-tooltip-grade { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
 .eng-tooltip-grade .tooltip.tip-item { width: auto; }
+
+/* ---- Painel por hunt e tabela visual de drops (Etapa 6 da Engine) ---- */
+.hunts-duas { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: var(--eng-e4); align-items: start; }
+.hunts-lista { display: grid; gap: var(--eng-e3); position: sticky; top: var(--eng-e3); max-height: calc(100vh - 140px); grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.hunts-lista input[type=search] { width: 100%; }
+.hunts-cats { display: flex; flex-wrap: wrap; gap: var(--eng-e2); }
+.hunts-cats button { font-size: var(--eng-t-pequeno); padding: 2px 10px; border-radius: 999px; }
+.hunts-cats button.ativa { background: var(--eng-ouro-fundo); border-color: var(--eng-ouro); color: var(--eng-ouro-txt); }
+.hunts-itens { overflow: auto; display: grid; gap: 2px; align-content: start; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); background: var(--eng-s1); }
+.hunts-item { display: grid; text-align: left; gap: 0; border: 0; border-radius: 0; background: transparent; padding: var(--eng-e2) var(--eng-e3); }
+.hunts-item small { color: var(--eng-txt3); }
+.hunts-item:hover { background: var(--eng-s2); }
+.hunts-item.ativa { background: var(--eng-ouro-fundo); }
+.hunt-painel { display: grid; gap: var(--eng-e4); min-width: 0; }
+.hunt-topo { display: flex; gap: var(--eng-e4); align-items: center; }
+.hunt-topo h2 { margin: 0; }
+.hunt-topo > div { flex: 1; min-width: 0; }
+.hunt-sec { background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r3); padding: var(--eng-e4); display: grid; gap: var(--eng-e3); min-width: 0; }
+.hunt-sec h3 { margin: 0; font-size: 14px; color: var(--eng-ouro-txt); }
+.hunt-sec h4 { margin: var(--eng-e3) 0 0; font-size: 13px; }
+.hunt-minimapa { max-width: 100%; height: auto; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); image-rendering: pixelated; background: #0b0d12; }
+.hunt-legenda { display: flex; flex-wrap: wrap; gap: var(--eng-e3); font-size: var(--eng-t-pequeno); color: var(--eng-txt2); }
+.hunt-legenda i, .hunt-bolinha { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+.hunt-monstros { display: grid; gap: var(--eng-e2); }
+.hunt-monstro { display: grid; grid-template-columns: 40px minmax(0, 1fr) minmax(120px, 220px); gap: var(--eng-e3); align-items: center; }
+.hunt-monstro small { display: block; color: var(--eng-txt3); }
+.hunt-barra { position: relative; display: block; height: 18px; background: var(--eng-s2); border-radius: 4px; overflow: hidden; }
+.hunt-barra i { position: absolute; inset: 0 auto 0 0; background: var(--eng-info); opacity: .55; }
+.hunt-barra em { position: relative; font-style: normal; font-size: var(--eng-t-pequeno); padding: 0 6px; line-height: 18px; }
+.hunt-tabela, .drops-grade { width: 100%; border-collapse: collapse; font-size: 13px; }
+.hunt-tabela th, .drops-grade th { text-align: left; font-weight: 600; color: var(--eng-txt3); font-size: var(--eng-t-pequeno); padding: 4px 8px; border-bottom: 1px solid var(--eng-linha); }
+.hunt-tabela td, .drops-grade td { padding: 4px 8px; border-bottom: 1px solid var(--eng-linha); vertical-align: middle; }
+.hunt-tabela tr.ativa td { background: var(--eng-ouro-fundo); }
+.hunt-tabela .num, .drops-grade .num { text-align: right; font-variant-numeric: tabular-nums; }
+.hunt-barra-celula { min-width: 140px; }
+.drops-tabela { display: grid; gap: var(--eng-e2); min-width: 0; overflow-x: auto; }
+.drops-titulo { font-weight: 600; font-size: 13px; }
+.drops-grade th { cursor: pointer; user-select: none; white-space: nowrap; }
+.drops-grade th.ordenada { color: var(--eng-ouro-txt); }
+.drops-item { display: flex; align-items: center; gap: var(--eng-e3); min-width: 160px; }
+.drops-item small { display: block; color: var(--eng-txt3); }
+.drops-item .drops-aviso { color: var(--eng-aviso); }
+.drops-barra-celula { position: relative; min-width: 150px; }
+.drops-barra-celula .num { position: relative; z-index: 1; padding-right: 4px; display: block; }
+.drops-barra { position: absolute; left: 0; bottom: 2px; height: 4px; border-radius: 2px; background: var(--eng-ok); opacity: .8; }
+.drops-origem { color: var(--eng-txt2); font-size: var(--eng-t-pequeno); }
+.drops-grade tr.com-aviso td { background: var(--eng-aviso-fundo); }
+@media (max-width: 900px) { .hunts-duas { grid-template-columns: 1fr; } .hunts-lista { position: static; max-height: none; } .hunt-monstro { grid-template-columns: 40px 1fr; } .hunt-monstro .hunt-barra { grid-column: 1 / -1; } }
