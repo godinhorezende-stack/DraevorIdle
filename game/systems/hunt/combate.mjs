@@ -11,6 +11,7 @@ import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
+import * as Equipamento from '../itens/equipamento.mjs';
 import * as Boosts from '../boosts.mjs';
 import * as BuffPower from '../buffpower.mjs';
 import * as Tiers from '../tiers.mjs';
@@ -931,7 +932,14 @@ export function round(estado, personagem) {
   // perigo de apanhar sem revidar fica com `atualizarLure`, que manda brigar
   // quando a vida cai abaixo de `VIDA_PARA_DESISTIR_DO_LURE`.
   const arma = armaDoPersonagem(estado);
-  if (!hunt.lurando && alvo && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
+  // Arco e besta (as armas que o catálogo marca com a munição que aceitam) só atiram com a munição COMPATÍVEL na mão; wand, rod e arma de arremesso não
+  // pedem munição, e a magia (gema) nunca pede. A munição é uma peça que dá ataque e não se gasta (decisão do dono: "munição não empilha mais").
+  const semMunicao = Equipamento.faltaMunicao(estado);
+  if (semMunicao && !hunt.avisouSemMunicao) {
+    hunt.avisouSemMunicao = true;
+    estado.avisoDaHunt = 'Sem munição compatível equipada: o arco e a besta só atiram com a munição do tipo deles (flecha no arco, bolt na besta).';
+  } else if (!semMunicao) hunt.avisouSemMunicao = false;
+  if (!hunt.lurando && alvo && !semMunicao && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
     bateu = true;
     if (categoriaDaArma(arma) === 'magica') {
       const acertou = golpeDaWand(estado, hunt, alvo, arma, eventos, personagem);

@@ -8,6 +8,7 @@ import * as Afixos from './afixos.mjs';
 import { camposDaPeca, pecaEspecial } from './itens/item.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import * as Requisitos from './personagem/requisitos.mjs';
+import * as Equipamento from './itens/equipamento.mjs';
 import * as R from './regras.mjs';
 import * as Acoes from './acoes.mjs';
 // Inventário e o chão da praça: equipar de início, peso carregado, destruir,
@@ -441,6 +442,16 @@ export function corrigirDuasMaos(estado) {
 }
 
 /**
+ * Peça vestida no slot ERRADO (de antes de o servidor validar o slot: ele aceitava o que o cliente mandava): volta para a mochila, sem perda. Roda na
+ * entrada; devolve os nomes das peças que saíram. Ver `itens/equipamento.mjs`.
+ */
+export function recolherPecasNoSlotErrado(estado) {
+  const saiu = Equipamento.recolherPecasNoSlotErrado(estado, devolverPeca);
+  if (saiu.length) Afixos.sincronizarMaximos(estado);
+  return saiu;
+}
+
+/**
  * Peça vestida com `minLevel` ACIMA do level do personagem (de antes de a arma virar a fonte do dano, ou de um requisito que subiu): volta
  * para a mochila, sem perda nenhuma. Roda na entrada; devolve os nomes das peças que saíram.
  */
@@ -462,13 +473,17 @@ export function devolverPecasAcimaDoLevel(estado) {
 export function equipar(estado, { id, pilha, slot }) {
   id = Number(id);
   const meta = ITEM_CATALOG[id];
+  // O slot de destino: o que o cliente pediu (arrastar para um slot) ou o do próprio item (clique). A REGRA é do servidor e é uma só: o item só entra no
+  // slot a que pertence (`itens/equipamento.mjs`) — antes `slot ?? meta.slot` aceitava qualquer slot que o cliente mandasse.
   const destino = slot ?? meta?.slot;
-  if (!meta || !destino) return { ok: false, erro: 'Isso não se equipa.' };
   // Modelo Path of Exile (decisão do dono): nenhuma peça é "só de uma classe" — ela pede STR/DEX/INT
   // (ver `personagem/requisitos.mjs`); a vocação da peça é só a classe recomendada.
-  const faltaAtributo = Requisitos.falta(meta, Atributos.principais(estado, Afixos.soma(estado)));
-  if (faltaAtributo) return { ok: false, erro: faltaAtributo };
-  if ((meta.minLevel ?? 0) > (estado.level ?? 0)) return { ok: false, erro: `Precisa do level ${meta.minLevel}.` };
+  const valida = Equipamento.validarEquipar(estado, meta, destino, (m) => {
+    const faltaAtributo = Requisitos.falta(m, Atributos.principais(estado, Afixos.soma(estado)));
+    if (faltaAtributo) return faltaAtributo;
+    return (m.minLevel ?? 0) > (estado.level ?? 0) ? `Precisa do level ${m.minLevel}.` : null;
+  });
+  if (!valida.ok) return valida;
   const itens = lista(estado, 'bag');
   const i = acharPilha(itens, id, Number(pilha));
   if (i < 0) return { ok: false, erro: 'Essa peça não está na mochila.' };

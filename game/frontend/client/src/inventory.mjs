@@ -1311,8 +1311,30 @@ function makeDraggable(node, id, from, count = 1, pilha = null, entry = null) {
     );
     event.dataTransfer.effectAllowed = 'move';
     node.classList.add('dragging');
+    marcarSlotsCompativeis(id);
   });
-  node.addEventListener('dragend', () => node.classList.remove('dragging'));
+  node.addEventListener('dragend', () => {
+    node.classList.remove('dragging');
+    limparMarcasDeSlot();
+  });
+}
+
+/**
+ * Durante o arrasto de uma PEÇA, os slots do corpo se anunciam: o dela fica destacado e os outros apagados. É só antecipação — o servidor
+ * recusa o slot errado de qualquer jeito (`itens/equipamento.mjs`). Item que não se veste (poção, gema solta) não marca nada.
+ */
+function marcarSlotsCompativeis(id) {
+  const slotDoItem = ctx.state.items[id]?.slot;
+  if (!slotDoItem) return;
+  for (const celula of document.querySelectorAll('.slot[data-slot]')) {
+    const certo = celula.dataset.slot === slotDoItem;
+    celula.classList.toggle('slot-compativel', certo);
+    celula.classList.toggle('slot-incompativel', !certo);
+  }
+}
+
+function limparMarcasDeSlot() {
+  for (const celula of document.querySelectorAll('.slot-compativel, .slot-incompativel')) celula.classList.remove('slot-compativel', 'slot-incompativel');
 }
 
 /**
@@ -1490,12 +1512,18 @@ function vindoDoChao(payload) {
 function makeDropSlot(node, slot) {
   node.addEventListener('dragover', (event) => {
     event.preventDefault();
+    // Slot de outra categoria: não acende como alvo (o cursor mostra que não solta aqui).
+    if (node.classList.contains('slot-incompativel')) {
+      event.dataTransfer.dropEffect = 'none';
+      return;
+    }
     node.classList.add('drop-target');
   });
   node.addEventListener('dragleave', () => node.classList.remove('drop-target'));
   node.addEventListener('drop', (event) => {
     event.preventDefault();
     node.classList.remove('drop-target');
+    limparMarcasDeSlot();
     try {
       const payload = JSON.parse(event.dataTransfer.getData('text/plain'));
       const acao = acaoDaSolturaNoSlot(payload, !!ctx.state.items[payload.id]?.gemaDef);
@@ -1509,6 +1537,9 @@ function makeDropSlot(node, slot) {
       if (acao === 'aviso') return void ctx.notice?.('Leve da Store Inbox para a mochila primeiro.');
       // Uma GEMA arrastada da mochila até a peça vestida: encaixa no primeiro socket livre dela.
       if (acao === 'gema') return void ctx.send({ t: 'gema', action: 'encaixar', slot, de: payload.pilha });
+      // O item só entra no slot a que pertence (a mesma regra do servidor, antecipada para a mensagem sair na hora): nada sai da mochila nem do slot.
+      const slotDoItem = ctx.state.items[payload.id]?.slot;
+      if (slotDoItem && slotDoItem !== slot) return void ctx.notice?.('Este item não pode ser equipado neste slot.');
       if (payload.from === 'pouch') ctx.send({ t: 'pouch', id: payload.id, count: 1, to: 'bag' });
       ctx.send({ t: 'equip', id: payload.id, slot, pilha: payload.pilha, alvo: payload.alvo ?? null });
     } catch {
