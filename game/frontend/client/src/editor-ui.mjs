@@ -32,6 +32,12 @@ const TRACOS = {
   externo: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   copiar: 'M9 9h10v11H9zM5 15V4h10',
   fechar: 'M6 6l12 12M18 6 6 18',
+  chevron: 'M9 6l6 6-6 6',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  recolher: 'M14 6l-6 6 6 6M20 5v14',
+  expandir: 'M10 6l6 6-6 6M4 5v14',
+  painelDeControle: 'M4 6h16M4 12h16M4 18h16M9 4v4M15 10v4M8 16v4',
+  engrenagem: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 12l2-1 .5-2-1-2 2-2 2 1 2-.5 1-2h3l1 2 2 .5 2-1 2 2-1 2 .5 2 2 1v3l-2 1-.5 2 1 2-2 2-2-1-2 .5-1 2h-3l-1-2-2-.5-2 1-2-2 1-2-.5-2-2-1z',
 };
 /** Um ícone de traço (`nome` em `TRACOS`), da cor do texto em volta. */
 export function icone(nome) {

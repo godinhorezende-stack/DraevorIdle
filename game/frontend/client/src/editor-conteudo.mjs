@@ -7,9 +7,10 @@ import { desenharNo } from './world.mjs';
 import { criarEditorDeAtos } from './editor-atos.mjs';
 import { criarPainelDeHunts } from './editor-hunts.mjs';
 import { criarEditorDeMapas } from './editor-mapas.mjs';
+import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
-import { el, msg, descartarAlteracoes, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
+import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
 const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, navegacao: 0 };
@@ -293,15 +294,43 @@ const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['hunts', 'Hunts'], ['mapas', 'Mapas'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca de conteúdos']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
+// O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
+// 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
 const GRUPOS = [
-  { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'hunts', nome: 'Hunts', icone: 'mapa' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Mapas', icone: 'mapa' }, { id: 'mapas-antigo', nome: 'Editor de mapas (antigo)', icone: 'mapa', href: '/editor' }] },
-  { titulo: 'Entidades', itens: [{ id: 'mobs', nome: 'Mobs', icone: 'mobs' }, { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }, { id: 'itens', nome: 'Itens', icone: 'espada' }, { id: 'outfits', nome: 'Outfits', icone: 'outfit' }, { id: 'montarias', nome: 'Montarias', icone: 'montaria' }] },
-  { titulo: 'Biblioteca', itens: [{ id: 'biblioteca', nome: 'Todos os cadastros', icone: 'livros' }] },
+  { id: 'gerenciamento', titulo: 'Gerenciamento', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel', modo: 'consulta', dica: 'resumo e problemas do conteúdo' }] },
+  { id: 'mundo', titulo: 'Mundo e campanha', itens: [
+    { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' },
+    { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', dica: 'chão, spawns, raridade' },
+    { id: 'hunts', nome: 'Hunts e áreas', icone: 'mapa', modo: 'consulta', dica: 'mapa, monstros, dificuldade e drops' },
+    { id: 'atos', nome: 'Acts e campanhas', icone: 'atos' },
+    { id: 'fase', nome: 'Fases e encontros', icone: 'fase' },
+    { id: 'mapas-antigo', nome: 'Editor de mapas (antigo)', icone: 'mapa', href: '/editor', dica: 'a tela antiga, enquanto você valida a nova' }] },
+  { id: 'conteudo', titulo: 'Conteúdo do jogo', itens: [
+    { id: 'mobs', nome: 'Mobs', icone: 'mobs', modo: 'consulta', dica: 'o bestiário vem do Canary' },
+    { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' },
+    { id: 'itens', nome: 'Itens', icone: 'espada', modo: 'consulta' },
+    { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },
+    { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' }] },
+  { id: 'recursos', titulo: 'Recursos', itens: [{ id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' }] },
 ];
+
+// O estado do menu (recolhido, grupos fechados) fica no navegador; sem storage o menu funciona igual.
+const armazem = (() => { try { return window.localStorage; } catch { return null; } })();
+let MENU = lerEstadoDoMenu(armazem);
+const gaveta = { aberta: false };
+function abrirGaveta(aberta) {
+  gaveta.aberta = aberta;
+  document.body.classList.toggle('eng-gaveta', aberta);
+  document.getElementById('eng-menu-btn')?.setAttribute('aria-expanded', String(aberta));
+}
+document.getElementById('eng-menu-btn')?.addEventListener('click', () => abrirGaveta(!gaveta.aberta));
+document.getElementById('eng-gaveta-fundo')?.addEventListener('click', () => abrirGaveta(false));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && gaveta.aberta) abrirGaveta(false); });
 function desenharAbas() {
-  $('#abas').replaceChildren(...navegacao(GRUPOS, S.aba, (id) => irPara(id)));
+  MENU = abrirGrupoDe(MENU, GRUPOS, S.aba);
+  desenharMenu({ alvo: $('#abas'), grupos: GRUPOS, ativa: S.aba, irPara: (id) => irPara(id), estado: MENU, fecharGaveta: () => abrirGaveta(false), aoMudar: (novo) => { MENU = novo; gravarEstadoDoMenu(armazem, MENU); desenharAbas(); } });
   $('#eng-local').replaceChildren(NOME_DA_ABA[S.aba] ?? '');
 }
 /** O endereço guarda a tela (`#fase/troll-cave`, `#bosses`...): recarregar ou mandar o link abre no mesmo lugar. */
