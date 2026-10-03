@@ -42,3 +42,43 @@ test('o tema: [hidden] sempre esconde (um display do componente não pode anular
   const css = readFileSync(new URL('../frontend/client/editor-tema.css', import.meta.url), 'utf8');
   assert.match(css, /\[hidden\]\s*\{\s*display:\s*none\s*!important/);
 });
+
+// ------------------------------------------------------------------ Etapa 4: Mobs e editor de Bosses únicos
+
+import { abaDoErro } from '../frontend/client/src/editor-bosses.mjs';
+import { ELEMENTOS } from '../frontend/client/src/editor-fichas.mjs';
+import * as CatalogoDeBosses from '../systems/bosses-unicos/catalogo.mjs';
+
+test('os erros REAIS do validador de bosses levam à aba certa do editor', () => {
+  const base = { id: 'x-teste', nome: 'X', categoria: 'miniboss', base: 'troll', atributos: {}, comportamentos: [], fases: [], recompensas: { loot: [] } };
+  const casos = [
+    [{ ...base, comportamentos: [{ tipo: 'area-telegrafada', elemento: 'fire', min: 1, max: 2, raio: 1, avisoMs: 1 }] }, 'comportamentos'],
+    [{ ...base, fases: [{ nome: 'F', ate: 150, comportamentos: [] }] }, 'fases'],
+    [{ ...base, fases: [{ nome: 'F', ate: 50, comportamentos: [{ tipo: 'magia', elemento: 'xx', min: 1, max: 2 }] }] }, 'fases'],
+    [{ ...base, recompensas: { loot: [{ id: 999999999, chance: 10 }] } }, 'recompensas'],
+    [{ ...base, recompensas: { loot: [{ id: 3031, chance: 300 }] } }, 'recompensas'],
+    [{ ...base, recompensas: { loot: [], primeiraVitoria: { gold: -1 } } }, 'recompensas'],
+    [{ ...base, melee: { min: 9, max: 1 } }, 'combate'],
+    [{ ...base, atributos: { vidaMult: -1 } }, 'atributos'],
+    [{ ...base, base: 'nao-existe' }, 'identidade'],
+  ];
+  for (const [def, aba] of casos) {
+    const erros = CatalogoDeBosses.validar(def);
+    assert.ok(erros.length, `sem erro para ${aba}`);
+    assert.equal(abaDoErro(erros[0]), aba, erros[0]);
+  }
+});
+
+test('a ficha conhece todos os elementos que o editor oferece (nome e cor)', async () => {
+  const { opcoes } = await import('../admin/conteudo.mjs');
+  for (const e of opcoes().elementos) assert.ok(ELEMENTOS[e]?.nome && ELEMENTOS[e]?.cor, e);
+});
+
+test('Mobs e Bosses únicos estão na navegação (Entidades) e o editor de bosses não duplica regra do servidor', () => {
+  const ed = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
+  assert.match(ed, /\['mobs', 'Mobs'\]/);
+  assert.match(ed, /categoriaFixa: 'monstros', rota: 'mobs'/);
+  const bosses = readFileSync(new URL('../frontend/client/src/editor-bosses.mjs', import.meta.url), 'utf8');
+  assert.match(bosses, /'bosses\/validar'/, 'a validação é pedida ao servidor');
+  assert.doesNotMatch(bosses, /avisoMs de 500|LIMITES\s*=|TIPOS_DE_COMPORTAMENTO/, 'os tetos e tipos são do catálogo, não da tela');
+});

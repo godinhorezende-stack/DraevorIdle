@@ -6,10 +6,11 @@ import { LARGURA, ALTURA, TIPOS_DE_NO, posicoesDoAto, conexoesDoAto, tracadoDaEs
 import { desenharNo } from './world.mjs';
 import { criarEditorDeAtos } from './editor-atos.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
-import { el, msg, confirmar, descartarAlteracoes, editorJson, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
+import { criarEditorDeBosses } from './editor-bosses.mjs';
+import { el, msg, descartarAlteracoes, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
-const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, bosses: [], bossoId: null, boss: null, bossErros: [], navegacao: 0 };
+const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, navegacao: 0 };
 
 // `S.sujo` acende o aviso "Alterações não salvas" da barra superior (o editor de Atos tem o próprio estado: ver `atualizarSujo`).
 let sujo = false;
@@ -272,15 +273,18 @@ function cartaoDeEncontro(e, i) {
 
 const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
 const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto) });
+// A tela Mobs é a Biblioteca presa nos monstros (mesmos cards, mesma ficha), com a rota própria `#mobs/<key>`.
+const MOBS = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto), categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. Somente visualização — o bestiário vem do Canary.' });
+const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['bosses', 'Bosses únicos'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
+const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 const GRUPOS = [
   { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', href: '/editor' }] },
-  { titulo: 'Entidades', itens: [{ id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }] },
+  { titulo: 'Entidades', itens: [{ id: 'mobs', nome: 'Mobs', icone: 'mobs' }, { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }] },
   { titulo: 'Biblioteca', itens: [{ id: 'biblioteca', nome: 'Todos os cadastros', icone: 'livros' }] },
 ];
 function desenharAbas() {
@@ -299,7 +303,7 @@ async function irPara(aba, faseId = null, resto = []) {
   S.sujo = false;
   S.aba = aba;
   if (faseId) S.faseId = faseId;
-  history.replaceState(null, '', `#${aba}${aba === 'fase' && S.faseId ? `/${S.faseId}` : aba === 'biblioteca' && resto?.length ? `/${resto.map(encodeURIComponent).join('/')}` : ''}`);
+  history.replaceState(null, '', `#${aba}${aba === 'fase' && S.faseId ? `/${S.faseId}` : ['biblioteca', 'mobs'].includes(aba) && resto?.length ? `/${resto.map(encodeURIComponent).join('/')}` : ''}`);
   desenharAbas();
   msg('');
   $('#raiz').replaceChildren(el('div', { class: 'dica' }, 'Carregando…'));
@@ -309,7 +313,8 @@ async function irPara(aba, faseId = null, resto = []) {
     MW.dados = null;
     await desenharMapaDoMundo();
   }
-  if (aba === 'bosses') await desenharBosses();
+  if (aba === 'mobs') await MOBS.desenhar(resto ?? []);
+  if (aba === 'bosses') await BOSSES.desenhar();
   if (aba === 'biblioteca') await BIBLIOTECA.desenhar(resto ?? []);
   if (aba === 'atos') await EDITOR_DE_ATOS.desenhar();
 }
@@ -414,98 +419,6 @@ async function salvarEncontros() {
   }
 }
 
-// ---- Bosses
-const MODELOS = {
-  'área telegrafada': { tipo: 'area-telegrafada', nome: 'Pancada no chão', elemento: 'physical', min: 100, max: 200, raio: 2, avisoMs: 1500, intervaloMs: 8000, chance: 100 },
-  invocar: { tipo: 'invocar', criaturas: [{ key: 'troll', qtd: 2 }], maxVivos: 4, intervaloMs: 15000, chance: 100 },
-  escudo: { tipo: 'escudo', pctVida: 10, duracaoMs: 8000, vulnerabilidade: { pct: 30, ms: 5000 }, intervaloMs: 30000, chance: 100 },
-  magia: { tipo: 'magia', nome: 'Raio', elemento: 'energy', min: 50, max: 90, forma: 'feixe', comprimento: 6, intervaloMs: 5000, chance: 100 },
-};
-const bossVazio = () => ({ id: '', nome: '', categoria: 'miniboss', base: '', descricao: '', lore: '', atributos: { vidaMult: 5 }, melee: { min: 10, max: 30, intervaloMs: 2000 }, comportamentos: [], fases: [], recompensas: { loot: [], primeiraVitoria: null } });
-const validarBoss = depois(async () => {
-  const r = await api('bosses/validar', S.boss);
-  S.bossErros = r.erros ?? [];
-  S.bossValidado = true;
-  $('#bossErros')?.replaceWith(blocoDeErrosDoBoss());
-  const s = $('#salvarBoss');
-  if (s) s.disabled = !!S.bossErros.length;
-});
-const blocoDeErrosDoBoss = () => el('ul', { class: 'problemas', id: 'bossErros' }, S.bossErros.map((m) => el('li', { class: 'erro' }, m)), S.bossErros.length ? null : el('li', { class: 'dica' }, S.bossValidado ? 'Cadastro válido.' : 'Validando…'));
-const sujoBoss = () => {
-  S.sujo = true;
-  validarBoss();
-};
-
-async function desenharBosses() {
-  S.bosses = (await api('bosses')).bosses;
-  datalists();
-  const lateral = el('div', { class: 'lista-lateral' }, S.bosses.map((b) => el('div', { class: b.id === S.bossoId ? 'ativo' : '', onclick: () => escolherBoss(b.id) }, el('b', {}, b.nome), ' ', el('span', { class: 'selo boss' }, b.categoria), b.usos.length ? el('span', { class: 'selo' }, `${b.usos.length} uso(s)`) : el('span', { class: 'selo aviso' }, 'sem uso'))), el('div', { onclick: async () => { if (S.sujo && !(await descartarAlteracoes('O boss aberto tem alterações não salvas'))) return; S.sujo = false; S.bossoId = null; S.boss = bossVazio(); desenharBosses(); } }, '+ novo boss'));
-  $('#raiz').replaceChildren(cabecalho('Bosses únicos', 'Bosses de encontro (bosses-unicos.json): fases por % de vida e comportamentos. Quando e com que chance aparecem é configurado no encontro da fase.'), el('div', { class: 'duas' }, lateral, el('div', { id: 'formBoss' })));
-  if (!S.boss) S.boss = S.bossoId ? JSON.parse(JSON.stringify(S.bosses.find((b) => b.id === S.bossoId))) : null;
-  if (S.boss) desenharFormDoBoss();
-  else $('#formBoss').append(el('p', { class: 'dica' }, 'Escolha um boss à esquerda ou crie um novo. Um boss único tem fases por % de vida e comportamentos (magia, área telegrafada, invocação, escudo); quando e com que chance ele aparece é do ENCONTRO.'));
-}
-async function escolherBoss(id) {
-  if (S.sujo && !(await descartarAlteracoes('O boss aberto tem alterações não salvas'))) return;
-  S.sujo = false;
-  S.bossoId = id;
-  S.boss = JSON.parse(JSON.stringify(S.bosses.find((b) => b.id === id)));
-  delete S.boss.usos;
-  desenharBosses();
-}
-const areaJson = (rotulo, obj, chave, modelos) => editorJson(rotulo, obj, chave, { aoMudar: sujoBoss, modelos, dica: 'Formato avançado: o servidor valida cada campo ao salvar (a lista de erros fica logo abaixo).' });
-function desenharFormDoBoss() {
-  const b = S.boss;
-  S.bossValidado = false;
-  S.bossErros = [];
-  b.atributos ??= {};
-  b.recompensas ??= { loot: [], primeiraVitoria: null };
-  b.recompensas.loot ??= [];
-  const usos = S.bosses.find((x) => x.id === S.bossoId)?.usos ?? [];
-  $('#formBoss').replaceChildren(
-    el('div', { class: 'linha', style: 'margin-bottom:8px' }, el('h3', { style: 'flex:none;margin:0' }, S.bossoId ? b.nome : 'Novo boss'), S.bossoId ? el('span', { class: 'eng-id', style: 'flex:none' }, S.bossoId) : null, S.bossoId ? botaoCopiar(S.bossoId) : null, el('span')),
-    el('div', { class: 'cartao' }, el('div', { class: 'corpo' },
-      el('div', { class: 'grade' }, campo('Id (minúsculas e hífen)', b, 'id', { aoMudar: sujoBoss }), campo('Nome', b, 'nome', { aoMudar: sujoBoss }), escolha('Categoria', b, 'categoria', S.opcoes.categoriasDeBoss, { aoMudar: sujoBoss }), campo('Criatura-base (desenho e loot)', b, 'base', { lista: 'dl-bichos', aoMudar: sujoBoss }), campo('Nível recomendado', b, 'nivel', { tipo: 'number', opcional: true, aoMudar: sujoBoss })),
-      el('label', { class: 'campo' }, 'Descrição', ligar(el('textarea', { rows: 2 }, b.descricao ?? ''), b, 'descricao', { aoMudar: sujoBoss })),
-      el('label', { class: 'campo' }, 'Lore', ligar(el('textarea', { rows: 3 }, b.lore ?? ''), b, 'lore', { aoMudar: sujoBoss })),
-      el('fieldset', {}, el('legend', {}, 'Atributos (vida absoluta OU multiplicador da base)'), el('div', { class: 'grade' }, campo('Vida (absoluta)', b.atributos, 'vida', { tipo: 'number', opcional: true, aoMudar: sujoBoss }), campo('Vida × base', b.atributos, 'vidaMult', { tipo: 'number', opcional: true, aoMudar: sujoBoss }), campo('Dano ×', b.atributos, 'danoMult', { tipo: 'number', opcional: true, aoMudar: sujoBoss }), campo('Armadura', b.atributos, 'armadura', { tipo: 'number', opcional: true, aoMudar: sujoBoss }), campo('XP ×', b.atributos, 'expMult', { tipo: 'number', opcional: true, aoMudar: sujoBoss }))),
-      opcional('Corpo a corpo (sem isto o boss não bate de perto)', b, 'melee', () => ({ min: 10, max: 30, intervaloMs: 2000 }), (m) => el('div', { class: 'grade' }, campo('Mín', m, 'min', { tipo: 'number', aoMudar: sujoBoss }), campo('Máx', m, 'max', { tipo: 'number', aoMudar: sujoBoss }), campo('Intervalo (ms)', m, 'intervaloMs', { tipo: 'number', aoMudar: sujoBoss })), sujoBoss),
-      el('div', { class: 'grade' }, marca('Usa também as magias da criatura-base', b, 'usaPoderesDoBase', sujoBoss), marca('Vai na escala da fase (vida/dano/XP)', Object.assign(b, { usaEscalaDaFase: b.usaEscalaDaFase !== false }), 'usaEscalaDaFase', sujoBoss)),
-      areaJson('Comportamentos (sempre ativos)', b, 'comportamentos', MODELOS),
-      areaJson('Fases de combate (vida cruzando "ate" %: do maior para o menor)', b, 'fases', { 'fase com escudo e fala': { nome: 'Enfurecido', ate: 50, mods: { danoMult: 1.3 }, aoEntrar: { fala: 'Chega!', escudo: { pctVida: 10, duracaoMs: 8000, vulnerabilidade: { pct: 30, ms: 5000 } } }, comportamentos: [] } }),
-      el('fieldset', {}, el('legend', {}, 'Recompensas'), listaEditavel('Loot do boss (chance em %; substitui o da criatura-base)', b.recompensas.loot, () => ({ id: '', chance: 10 }), linhaDeDrop), opcional('Prêmio da primeira vitória', b.recompensas, 'primeiraVitoria', () => ({ gold: 0 }), (p) => el('div', { class: 'grade' }, campo('Ouro', p, 'gold', { tipo: 'number', opcional: true, aoMudar: sujoBoss }), campo('Experiência', p, 'exp', { tipo: 'number', opcional: true, aoMudar: sujoBoss })), sujoBoss)),
-      blocoDeErrosDoBoss(),
-      el('div', { class: 'linha' }, usos.length ? el('span', { class: 'dica' }, `Usado em: ${usos.map((u) => `${u.huntId}/${u.encontro}`).join(', ')}`) : el('span', { class: 'dica' }, 'Quando e com que chance aparece: configure no encontro (aba Fase).'), S.bossoId ? el('button', { class: 'perigo', onclick: excluirBoss }, 'Excluir') : null, el('button', { id: 'salvarBoss', class: 'primario', disabled: true, onclick: salvarBoss }, 'Salvar boss')))
-    )
-  );
-  validarBoss();
-}
-async function salvarBoss() {
-  const r = await api('bosses', S.boss);
-  if (r.ok) {
-    S.sujo = false;
-    S.bossoId = S.boss.id;
-    S.boss = null;
-    msg('Boss salvo (vale na hora neste servidor).', 'ok');
-    await desenharBosses();
-  } else {
-    S.bossErros = r.erros ?? [];
-    $('#bossErros')?.replaceWith(blocoDeErrosDoBoss());
-    msg('Não salvou: corrija os erros.', 'erro');
-  }
-}
-async function excluirBoss() {
-  if (!(await confirmar(`Excluir o boss "${S.boss.nome}"?`, 'O cadastro sai de bosses-unicos.json. O servidor recusa se algum encontro ainda usa este boss.', { ok: 'Excluir', perigo: true }))) return;
-  const r = await api('bosses', { excluir: S.bossoId });
-  if (r.ok) {
-    S.bossoId = null;
-    S.boss = null;
-    S.sujo = false;
-    msg('Boss excluído.', 'ok');
-    await desenharBosses();
-  } else msg((r.erros ?? ['Não excluiu'])[0], 'erro');
-}
-
 // ------------------------------------------------------------------ início
 
 window.addEventListener('beforeunload', (e) => {
@@ -523,6 +436,7 @@ S.opcoes = await api('opcoes');
 window.addEventListener('hashchange', () => {
   const { aba, id, resto } = lerEndereco();
   if (aba === 'biblioteca' && S.aba === 'biblioteca') return resto.length === 2 && BIBLIOTECA.abrir(resto[0], resto[1]);
+  if (aba === 'mobs' && S.aba === 'mobs') return resto.length === 1 && MOBS.abrir('monstros', resto[0]);
   if (aba !== S.aba || (aba === 'fase' && id && id !== S.faseId)) irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null, resto);
 });
 // Atalhos: Ctrl+K (ou ⌘K) busca em todos os cadastros; "/" vai para a busca da Biblioteca.
@@ -531,9 +445,9 @@ document.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault();
     BIBLIOTECA.buscaGlobal();
-  } else if (e.key === '/' && !digitando && S.aba === 'biblioteca' && !document.querySelector('dialog[open]')) {
+  } else if (e.key === '/' && !digitando && ['biblioteca', 'mobs'].includes(S.aba) && !document.querySelector('dialog[open]')) {
     e.preventDefault();
-    BIBLIOTECA.focarBusca();
+    (S.aba === 'mobs' ? MOBS : BIBLIOTECA).focarBusca();
   }
 });
 

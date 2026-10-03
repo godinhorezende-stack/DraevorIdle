@@ -24,6 +24,7 @@ const TRACOS = {
   fase: 'M5 20V5l7-2 7 2v15M5 10h14M9 20v-5h6v5',
   atos: 'M5 6a2 2 0 1 0 0 .01M19 6a2 2 0 1 0 0 .01M12 18a2 2 0 1 0 0 .01M7 6h10M6 8l5 8M18 8l-5 8',
   coroa: 'M3 8l4 4 5-7 5 7 4-4-2 11H5L3 8z',
+  mobs: 'M12 3c4 0 7 3 7 7v9l-2.5-2-2 2-2.5-2-2.5 2-2-2L5 19v-9c0-4 3-7 7-7zM9.5 10h.01M14.5 10h.01',
   livros: 'M4 19V5a1 1 0 0 1 1-1h3v16H5a1 1 0 0 1-1-1zM8 4h4v16H8zM14 5l3-1 4 15-3 1z',
   externo: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   copiar: 'M9 9h10v11H9zM5 15V4h10',
@@ -173,7 +174,7 @@ export function editorJson(rotulo, obj, chave, { aoMudar = () => {}, modelos = n
     mostrar({ ok: true });
     aoMudar();
   };
-  return el('fieldset', { class: 'eng-json' },
+  const caixa = el('fieldset', { class: 'eng-json' },
     el('legend', {}, rotulo),
     el('div', { class: 'eng-json-barra' },
       el('button', { type: 'button', onclick: formatar, title: 'Reindenta o JSON (só se for válido)' }, 'Formatar'),
@@ -181,6 +182,20 @@ export function editorJson(rotulo, obj, chave, { aoMudar = () => {}, modelos = n
     t,
     estado,
     dica ? el('div', { class: 'dica' }, dica) : null);
+  /**
+   * O formulário visual mudou o mesmo dado: reescreve o texto a partir do objeto. NUNCA por cima de um JSON inválido
+   * (é o usuário no meio de uma edição) nem enquanto o cursor está no campo — aí só avisa.
+   */
+  caixa.sincronizar = () => {
+    const r = lerJson(t.value);
+    if (!r.ok || document.activeElement === t) {
+      if (!r.ok) estado.textContent = `${estado.textContent.replace(/ — o formulário.*$/, '')} — o formulário mudou, mas o seu texto com erro foi mantido.`;
+      return;
+    }
+    t.value = JSON.stringify(obj[chave] ?? [], null, 2);
+    mostrar({ ok: true });
+  };
+  return caixa;
 }
 
 // ------------------------------------------------------------------ navegação lateral
