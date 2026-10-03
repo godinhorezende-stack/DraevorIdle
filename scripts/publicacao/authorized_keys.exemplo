@@ -1,0 +1,4 @@
+# EXEMPLO — NÃO está instalado em lugar nenhum. A linha abaixo vai no ~/.ssh/authorized_keys do usuário de PUBLICAÇÃO da VPS (um usuário só para isso, sem sudo),
+# com a chave PÚBLICA gerada na máquina do dono. A chave privada nunca sai de lá e nunca vai para o Git.
+# `restrict` desliga tudo (pty, forwarding, agente, X11, rc); `command=` fixa o único programa que a chave executa.
+command="/srv/draevor/bin/publicacao/entrada.sh",restrict ssh-ed25519 AAAA...SUBSTITUIR-PELA-CHAVE-PUBLICA engine-draevor-publicacao

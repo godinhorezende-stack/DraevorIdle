@@ -11,6 +11,8 @@ import { criarTelasDeOperacao } from './editor-operacao.mjs';
 import { criarEditorDeMobs } from './editor-mobs.mjs';
 import { criarEditorDeItens } from './editor-itens.mjs';
 import { criarEditorDeSprites } from './editor-sprites-editor.mjs';
+import { criarIndicadorDeHotReload } from './editor-hot-reload.mjs';
+import { criarTelaDeValidacao } from './editor-validacao.mjs';
 import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
@@ -328,6 +330,7 @@ const TELAS_FIXAS = {
   mobs: MOBS,
   itens: ITENS,
   sprites: SPRITES,
+  validacao: criarTelaDeValidacao({ api, raiz: () => $('#raiz'), podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
   montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
 };
@@ -337,12 +340,13 @@ const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
 const GRUPOS = [
-  { id: 'gerenciamento', titulo: 'Gerenciamento', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel', modo: 'consulta', dica: 'resumo e problemas do conteúdo' }] },
+  { id: 'gerenciamento', titulo: 'Gerenciamento', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel', modo: 'consulta', dica: 'resumo e problemas do conteúdo' },
+    { id: 'validacao', nome: 'Validação e versão', icone: 'painelDeControle', dica: 'verificações, testes e se a versão pode ser aprovada' }] },
   { id: 'mundo', titulo: 'Mundo e campanha', itens: [
     { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' },
     { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', dica: 'chão, spawns, raridade' },
@@ -519,6 +523,8 @@ for (const ev of ['input', 'change', 'click', 'pointerup']) document.addEventLis
 // O servidor decide quem entra: em produção, sem sessão de administrador a página leva a /editor/login (nenhum dado é entregue).
 await garantirAcesso();
 S.opcoes = await api('opcoes');
+// O indicador de Hot Reload (barra do topo); em produção ele não aparece.
+criarIndicadorDeHotReload({ base: BASE, alvo: document.getElementById('eng-hot') });
 {
   const { aba, id, resto } = lerEndereco();
   S.aba = null;

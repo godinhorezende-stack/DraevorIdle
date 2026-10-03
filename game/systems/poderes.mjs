@@ -38,7 +38,13 @@ import * as Reforcos from './skills/reforcos.mjs';
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
 // Os ataques que o dono sobrescreveu (`gamedata/overrides/monstros.json`, validados e aplicados ao bestiário em `dados.mjs`): só entram para quem passou.
-Overrides.aplicarNosPoderes(PODERES, { ativo: OVERRIDES_DE_MONSTROS.ativo, monstros: Object.fromEntries(Object.entries(OVERRIDES_DE_MONSTROS.monstros).filter(([k]) => [...resultadoDosOverrides.aplicados, ...resultadoDosOverrides.criados].includes(k))) });
+export const ESTADO_DE_PODERES = Overrides.criarEstadoDeCamada();
+const validosDoBoot = () => [...resultadoDosOverrides.aplicados, ...resultadoDosOverrides.criados];
+Overrides.reaplicarNosPoderes(PODERES, ESTADO_DE_PODERES, OVERRIDES_DE_MONSTROS, validosDoBoot());
+/** Hot Reload: re-aplica os ataques dos overrides (só para as chaves que passaram na validação). Devolve `{ feitos, mudados }`. */
+export const recarregarPoderes = (dados, validas) => Overrides.reaplicarNosPoderes(PODERES, ESTADO_DE_PODERES, dados, validas);
+/** Os poderes cadastrados de um bicho (para conferir o que o jogo vai lançar). */
+export const poderesDe = (key) => PODERES[key] ?? null;
 
 const NOME_DO_ELEMENTO = {
   physical: 'físico', fire: 'de fogo', ice: 'de gelo', earth: 'de terra', energy: 'de energia',

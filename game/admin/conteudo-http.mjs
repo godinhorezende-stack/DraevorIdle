@@ -11,6 +11,10 @@ import * as Overrides from './overrides.mjs';
 import * as Auditoria from './auditoria.mjs';
 import * as OverridesItens from './overrides-itens.mjs';
 import * as OverridesSprites from './overrides-sprites.mjs';
+import * as Validacao from './validacao.mjs';
+import * as Versoes from './versoes.mjs';
+import * as GitEnvio from './git-envio.mjs';
+import * as GitIntegracao from './git-integracao.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
@@ -18,6 +22,11 @@ const PREFIXO = '/api/mapas/_conteudo/';
 /** Atende a rota se for do editor de conteúdo; devolve `true` quando atendeu. */
 /** 200 normalmente; 409 quando o salvar foi recusado por conflito de revisão (o corpo explica). */
 const status = (r) => (r?.codigo === 'conflito' ? 409 : 200);
+
+// O Hot Reload (systems/hot-reload.mjs) é ligado pelo backend; sem ele (testes, produção) a Engine vê "desligado".
+let hot = null;
+export const ligarHotReload = (h) => { hot = h; };
+const SEM_HOT = { ativo: false, motivoInativo: 'o Hot Reload não foi iniciado neste servidor.', estado: 'desativado', mensagem: 'Hot Reload desligado.', pendentes: [], erros: [], reinicio: [], recarregaveis: [], historico: [] };
 
 export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (!caminho.startsWith(PREFIXO)) return false;
@@ -43,6 +52,15 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       const t = Biblioteca.dadosDoTooltip(url.searchParams.get('id'), { itemLevel: url.searchParams.get('itemLevel'), semente: url.searchParams.get('semente') });
       return t ? json(res, 200, t) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
     }
+    // Hot Reload: o estado, o histórico e o que dá para recarregar (só leitura). Recarregar à mão é POST `hot-reload/recarregar` (só no ambiente local).
+    if (rota === 'hot-reload') return json(res, 200, hot?.estadoAtual() ?? SEM_HOT), true;
+    // O validador centralizado: o estado (último resultado, o que está rodando, arquivos alterados e se pode aprovar). Executar é POST `validacao/executar` (só lê).
+    if (rota === 'validacao') return json(res, 200, Validacao.estado()), true;
+    // O painel de alterações (original × atual) e as versões aprovadas (somente leitura).
+    if (rota === 'alteracoes') return json(res, 200, Versoes.alteracoes()), true;
+    if (rota === 'alteracoes/diff') { const d = Versoes.diferenca(url.searchParams.get('caminho') ?? ''); return json(res, d.ok ? 200 : 404, d), true; }
+    if (rota === 'versoes') return json(res, 200, { versoes: Versoes.listar() }), true;
+    if (rota.startsWith('versoes/')) { const v = Versoes.obter(decodeURIComponent(rota.slice(8))); return v ? json(res, 200, v) : json(res, 404, { ok: false, erros: ['Versão não encontrada.'] }), true; }
     // O registro de alterações administrativas (só leitura; as linhas são escritas pelo guarda de acesso).
     if (rota === 'auditoria') return json(res, 200, { eventos: Auditoria.ler({ limite: url.searchParams.get('limite'), tipo: url.searchParams.get('tipo') }) }), true;
     // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
@@ -122,6 +140,24 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
     if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
     if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'hot-reload/recarregar') {
+      if (!hot?.estadoAtual().ativo) return json(res, 409, { ok: false, erros: [`Hot Reload desligado: ${(hot?.estadoAtual() ?? SEM_HOT).motivoInativo}`] }), true;
+      const r = await hot.recarregar(String(dados?.tipo ?? ''), dados?.id ?? null);
+      return json(res, 200, { ...r, ...(r.ok === false && r.erro ? { erros: [r.erro] } : {}), estado: hot.estadoAtual() }), true;
+    }
+    // Aprovar congela as alterações escolhidas numa versão (cópia + hash); descartar cancela uma ainda não enviada. Gravam só em `database/dados/versoes` (ambiente local).
+    if (rota === 'versoes/aprovar') { const r = Versoes.aprovar({ caminhos: dados?.caminhos, titulo: dados?.titulo, por: req.engineQuem ?? null }); return json(res, r.ok ? 200 : 409, r), true; }
+    // Envia ao Git (branch `versao/<id>` com um commit das cópias congeladas; sem merge, sem força, sem deploy). Roda assíncrono: o servidor não trava durante o push.
+    if (rota === 'versoes/enviar') { const r = await GitEnvio.enviar(String(dados?.id ?? '')); return json(res, r.ok ? 200 : 409, r), true; }
+    // Status pós-merge: consulta o remoto (só atualiza `origin/main`) e diz se a versão já está na principal e apta para publicar.
+    if (rota === 'versoes/consultar') { const r = await GitIntegracao.consultar(String(dados?.id ?? ''), { buscar: dados?.buscar !== false }); return json(res, r.ok ? 200 : 409, r), true; }
+    if (rota === 'versoes/descartar') { const r = Versoes.descartar(String(dados?.id ?? ''), { por: req.engineQuem ?? null }); return json(res, r.ok ? 200 : 409, r), true; }
+    if (rota === 'validacao/executar') {
+      // As verificações só LEEM; os testes rodam comandos fixos e só fazem sentido no ambiente local (nunca no servidor de produção).
+      if (['testes', 'tudo'].includes(dados?.escopo) && !(hot?.estadoAtual().ativo)) return json(res, 409, { ok: false, erros: ['Os testes só rodam no ambiente local de desenvolvimento (o Hot Reload local está desligado aqui).'] }), true;
+      const r = Validacao.iniciar({ escopo: dados?.escopo ?? 'rapida', completa: dados?.completa === true });
+      return json(res, r.ok ? 200 : 409, { ...r, ...(r.ok ? {} : { erros: [r.erro] }) }), true;
+    }
     if (rota === 'overrides/sprites/validar') return json(res, 200, OverridesSprites.propor(String(dados?.look ?? ''), dados ?? {})), true;
     if (rota === 'overrides/sprites') {
       const a = dados?.acao;

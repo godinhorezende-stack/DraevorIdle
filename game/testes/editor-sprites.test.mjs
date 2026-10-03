@@ -56,7 +56,8 @@ test('ES4. o renderer do jogo: variantes (rascunho/original) entram sob chave pr
   assert.match(sp, /export const removerVariante/);
   assert.match(sp, /export const urlDaFolha = \(look\) => urlsDeFolha\[look\] \?\? `\/gamedata\/sprites\/outfits\/\$\{look\}\.png`/);
   assert.match(sp, /function folhaDe\(look\) \{[\s\S]*?variantes\.get\(look\)[\s\S]*?return image\(urlDaFolha\(look\)\);/);
-  assert.equal((sp.match(/outfitMeta\[look\]/g) ?? []).length, 1, 'só `metaDe` lê o índice cru; o renderer sempre passa por ele (variantes e overrides valem em todo lugar)');
+  assert.match(sp, /const metaDe = \(look\) => variantes\.get\(look\)\?\.meta \?\? outfitMeta\[look\];/);
+  assert.match(sp, /function outfitFrame\([^)]*\) \{\n  const meta = metaDe\(look\);/, 'o renderer lê o cadastro por `metaDe` (variantes e overrides valem em todo lugar)');
   assert.match(sp, /fetch\('\/gamedata\/overrides\/sprites\.json'\)/);
   assert.match(sp, /catch \{ \/\* sem overrides \*\/ \}/, 'sem arquivo de overrides o jogo segue normal');
   assert.match(ler('editor-sprites.mjs'), /export const jogo = async/);

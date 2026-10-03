@@ -236,3 +236,21 @@ export function resolverOverrides(dados, metasOriginais) {
   }
   return { metas, urls };
 }
+
+/**
+ * HOT RELOAD no cliente: do aviso do servidor (`{ ativo, sprites: { look: {hash, meta} | null }, originais: { look: versão } }`) às trocas a fazer:
+ * `[{ look, url, meta }]`. `null` = voltar ao original (`metaOriginal(look)`); a imagem original ganha `?v=` quando foi alterada à mão (fura o cache do navegador).
+ * `sobrescritos`: os looks que HOJE têm override (uma imagem original alterada não vale para eles: o override manda). Pura.
+ */
+export function planejarTrocas({ ativo = true, sprites = {}, originais = {} }, { metaOriginal, sobrescritos = new Set(), urlOriginal = (l) => `/gamedata/sprites/outfits/${l}.png` }) {
+  const trocas = [];
+  for (const [look, e] of Object.entries(sprites)) {
+    if (e && ativo !== false && e.meta?.groups?.length) trocas.push({ look, url: `/gamedata/overrides/sprites/${look}.png?v=${e.hash ?? ''}`, meta: e.meta });
+    else if (metaOriginal(look)) trocas.push({ look, url: `${urlOriginal(look)}${originais[look] ? `?v=${originais[look]}` : ''}`, meta: metaOriginal(look) });
+  }
+  for (const [look, v] of Object.entries(originais)) {
+    if (look in sprites || sobrescritos.has(look) || !metaOriginal(look)) continue;
+    trocas.push({ look, url: `${urlOriginal(look)}?v=${v}`, meta: metaOriginal(look) });
+  }
+  return trocas;
+}
