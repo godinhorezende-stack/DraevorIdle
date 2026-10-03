@@ -23,6 +23,8 @@ const padrao = process.env.NODE_TEST_CONTEXT ? false : arquivo.ativo === true;
 let ligado = doAmbiente === '1' ? true : doAmbiente === '0' ? false : padrao;
 
 export const ativo = () => ligado;
+/** De onde vem o padrão do boot (para a tela dizer): variável de ambiente, o arquivo, ou o padrão desligado dos testes. */
+export const padraoDoBoot = () => ({ valor: doAmbiente === '1' ? true : doAmbiente === '0' ? false : padrao, origem: doAmbiente === '1' || doAmbiente === '0' ? 'ambiente (MODO_BETA)' : process.env.NODE_TEST_CONTEXT ? 'testes (desligado)' : 'arquivo gamedata/modo-beta.json' });
 export const definir = (valor) => {
   ligado = !!valor;
   return ligado;
