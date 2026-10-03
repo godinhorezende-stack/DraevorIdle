@@ -72,10 +72,7 @@ Exige mudança estrutural: grafo de fases com bifurcação/convergência no serv
 6. **Drops por origem** (tabela adicional + simulador + alertas).
 7. **Publicação + versionamento + recarga a quente**, por último.
 
-## 7. Decisões que preciso de você antes da Etapa 2
+## 7. Decisões do dono (03/10)
 
-1. **Beta**: quem é o "testador" — só você (admin pela rede trancada) ou contas específicas escolhidas por e-mail?
-2. **Isolamento**: perfil de teste separado (personagens próprios que não afetam o ranking/economia) ou o mesmo personagem com recompensas marcadas/revertidas?
-3. **Número de atos/fases**: atos novos poderão ter qualquer quantidade de fases (exige generalizar o `12` fixo no servidor e no cliente) — confirma?
-4. **Dificuldades**: atos novos jogam nas 3 dificuldades (Normal/Cruel/Merciless) ou apenas numa faixa de level própria?
-5. **Publicação**: pode ser por reinício controlado do servidor (com Server Save/manutenção) ou você exige recarga a quente?
+1. **Testador:** todos, por enquanto. 2. **Isolamento:** nenhum perfil separado — vale no servidor oficial, que hoje está em beta. 3. **Fases:** qualquer número por ato (generalizar o `12` fixo; atos atuais seguem com 12). 4. **Dificuldades:** as 3 (Normal/Cruel/Merciless). 5. **Publicação:** reinício controlado (Server Save + manutenção).
+- **Beta:** hoje o "beta" é só o aviso `avisoDeDesenvolvimento` do catálogo — **não existe flag de servidor**. Proposta: criar `modoBeta` numa config do servidor (ligado agora, como decidido), com interruptor admin pela rede trancada, para poder desligar sem deploy. O acesso livre fica atrás desse interruptor, nunca gravado nos personagens.
