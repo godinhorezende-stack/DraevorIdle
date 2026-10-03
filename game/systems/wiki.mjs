@@ -1,6 +1,7 @@
 // A WIKI pública (`/wiki`): os dados que as páginas leem. Tudo sai da CONFIGURAÇÃO REAL do jogo (`gamedata/itens/*.json`), então a wiki nunca
 // diverge do que o servidor faz: mudou um valor no JSON, a tabela da wiki muda junto. O texto explicativo mora em `client/site/wiki.mjs`.
 import { ATRIBUTOS, POOLS, TIERS, RARIDADES, ORDEM, EFEITOS } from './itens/config.mjs';
+import { ITEM_CATALOG } from './dados.mjs';
 
 /** Os tipos de equipamento com pool, agrupados do jeito que o jogador pensa. */
 export const GRUPOS_DE_EQUIPAMENTO = [
@@ -19,6 +20,13 @@ export const frequenciaDoPeso = (peso) => (peso >= 80 ? 'muito comum' : peso >= 
 
 const cheia = (texto, numeros) => String(texto ?? '').replace(/\{(\w+)\}/g, (_, k) => String(numeros?.[k] ?? ''));
 const achatar = (def) => ({ ...(def.condicao ?? {}), ...(def.efeito ?? {}), ...(def.efeito?.acumuloAoMatar ?? {}) });
+
+/** Um item de exemplo para as figuras (uma espada de verdade do catálogo): a figura desenha o sprite dele. */
+function armaDeExemplo() {
+  const lista = Object.entries(ITEM_CATALOG).filter(([, i]) => i.slot === 'weapon' && i.attack > 0 && !i.wand && i.skill === 'sword');
+  const achada = lista.find(([, i]) => i.name === 'jagged sword') ?? lista[0];
+  return achada ? { id: Number(achada[0]), nome: achada[1].name } : null;
+}
 
 /** O que a wiki mostra sobre itens: raridades, tiers, modificadores e poderes. */
 export function itens() {
@@ -61,6 +69,7 @@ export function itens() {
       .map(([id, def]) => ({ id, nome: def.nome, texto: cheia(def.texto, achatar(def)) })),
   }));
   return {
+    exemplos: { arma: armaDeExemplo() },
     convencaoDoTier: 'T1 é o tier mais fraco e T5 o mais forte.',
     raridades,
     chancesDeRaridade,
