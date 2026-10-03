@@ -1670,27 +1670,26 @@ export function tique(estado, personagem, agora = Date.now()) {
 }
 
 /**
- * O passo do familiar atrás do dono — SEM teleporte. Começa a andar quando passa de `perto` casas e para quando chega a uma casa de folga dentro dele
- * (histerese: não fica no limite andando e parando); nunca pisa na casa do dono nem na de um bicho; se está em cima do dono (acabou de ser invocado), dá
- * UM passo para uma casa livre ao lado. Rota pela BFS de sempre (contorna parede e bicho, usa diagonal quando precisa). Sem rota: espera um pouco e tenta
- * de novo (nunca aparece do lado do dono por causa disso). Anda 1 casa por passo (`PASSO_MS`); quando está longe, até 2 por tique para alcançar o dono.
+ * O passo do familiar — SEM teleporte, tile por tile, pela BFS de sempre (contorna parede e bicho, usa diagonal quando precisa; nunca pisa na casa do dono nem na de um bicho).
+ * `ate` é o ponto a alcançar (o dono, no follow; o alvo, no combate) e `pararEm(d)` diz quando já chegou perto o bastante. Anda 1 casa por passo (`PASSO_MS`), até 2 por tique
+ * quando está longe (`longe`). Sem rota: espera um pouco e tenta de novo, e devolve `false` (quem chama decide o que fazer — nunca aparece do lado de ninguém por isso).
+ * Devolve `true` se deu pelo menos um passo ou já está onde queria.
  */
 const ESPERA_SEM_ROTA_MS = 1500;
-function andarFamiliar(hunt, grade, f, agora) {
-  const d = distancia(f, hunt.pos);
+function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
+  const d = distancia(f, ate);
   const emCimaDoDono = f.x === hunt.pos.x && f.y === hunt.pos.y;
-  const parada = f.andando ? d <= Math.max(1, f.perto - 1) : d <= f.perto;
-  if (!emCimaDoDono && parada) {
+  if (!emCimaDoDono && pararEm(d, f.andando)) {
     f.andando = false;
     f.moveMs = R.PASSO_MS;
-    return;
+    return true;
   }
-  if (!R.jaPode(agora, f.proximoPassoEm) || !R.jaPode(agora, f.semRotaAte)) return;
+  if (!R.jaPode(agora, f.proximoPassoEm)) return true;
+  if (!R.jaPode(agora, f.semRotaAte)) return false;
   const bichos = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-  const dono = `${hunt.pos.x},${hunt.pos.y}`;
-  const bloqueadas = new Set([...bichos, dono]);
+  const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`]);
   const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
-  let passos = d > f.perto + 3 ? 2 : 1;
+  const passos = d > longe ? 2 : 1;
   let deu = 0;
   for (let k = 0; k < passos; k++) {
     let destino;
@@ -1698,7 +1697,7 @@ function andarFamiliar(hunt, grade, f, agora) {
       // Em cima do dono: uma casa livre do lado dele (um passo de verdade, de uma casa).
       destino = [[-1, 0], [1, 0], [0, 1], [0, -1], [-1, 1], [1, 1], [-1, -1], [1, -1]].map(([dx, dy]) => ({ x: f.x + dx, y: f.y + dy })).find((c) => grade.andavel.has(`${c.x},${c.y}`) && !ocupado(c));
     } else {
-      destino = proximoPassoAte(grade, f, hunt.pos, ocupado, bloqueadas);
+      destino = proximoPassoAte(grade, f, ate, ocupado, bloqueadas);
     }
     if (!destino) break;
     f.dir = destino.y < f.y ? 0 : destino.y > f.y ? 2 : destino.x > f.x ? 1 : 3;
@@ -1706,15 +1705,55 @@ function andarFamiliar(hunt, grade, f, agora) {
     f.y = destino.y;
     deu++;
     f.andando = true;
-    if (distancia(f, hunt.pos) <= Math.max(1, f.perto - 1)) break;
+    if (pararEm(distancia(f, ate), true)) break;
   }
   if (!deu) {
     f.semRotaAte = agora + ESPERA_SEM_ROTA_MS;
     f.andando = false;
-    return;
+    return false;
   }
   f.moveMs = Math.round(R.PASSO_MS / deu);
   f.proximoPassoEm = agora + R.PASSO_MS;
+  return true;
+}
+
+/** O follow: acompanha o dono, começando a andar passando de `perto` casas e parando uma casa antes (histerese). */
+const andarFamiliar = (hunt, grade, f, agora) => passoDoFamiliar(hunt, grade, f, agora, hunt.pos, { pararEm: (d, andando) => (andando ? d <= Math.max(1, f.perto - 1) : d <= f.perto), longe: f.perto + 3 });
+
+/** Quanto além de `perto` o familiar se afasta do dono para combater (o limite de perseguição): passou disso, volta a seguir. */
+const FOLGA_DO_COMBATE = 5;
+/** Depois de largar um alvo por falta de rota ou de coleira, quanto tempo ele não volta a tentar o mesmo. */
+const ESQUECE_ALVO_MS = 3000;
+
+/**
+ * O alvo do familiar: (1) o alvo do DONO, se está no alcance de combate (assistência); (2) senão o bicho vivo mais PERTO DELE dentro do raio de combate ao redor do dono
+ * (agressivo: ele adquire sozinho, sem o dono bater primeiro). Fora de lure não há combate. Alvos que ele largou há pouco (sem rota, coleira) ficam de fora por `ESQUECE_ALVO_MS`.
+ */
+/** Marca o alvo como "esquecido" por uns segundos; poda os vencidos (o estado vai para o JSON do banco — não pode crescer). */
+function esquecerAlvo(f, alvo, agora) {
+  const novo = {};
+  if (f.esquecidos && typeof f.esquecidos === 'object') for (const [k, ate] of Object.entries(f.esquecidos)) if (ate > agora) novo[k] = ate;
+  novo[alvo.uid] = agora + ESQUECE_ALVO_MS;
+  f.esquecidos = novo;
+}
+
+function alvoDoFamiliar(hunt, f, agora) {
+  if (hunt.lurando) return null;
+  const raio = f.perto + FOLGA_DO_COMBATE;
+  const ok = (m) => m && m.hp > 0 && distancia(m, hunt.pos) <= raio && !((f.esquecidos?.[m.uid] ?? 0) > agora);
+  const doDono = alvoAtual(hunt);
+  if (ok(doDono)) return doDono;
+  let melhor = null;
+  let menor = Infinity;
+  for (const m of hunt.monstros) {
+    if (m.dummy || !ok(m)) continue;
+    const d = distancia(m, f);
+    if (d < menor) {
+      menor = d;
+      melhor = m;
+    }
+  }
+  return melhor;
 }
 
 /*
@@ -1732,11 +1771,34 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
     hunt.summon = null;
     return eventos;
   }
-  // O familiar ANDA até o dono, tile por tile, pela mesma busca da caçada (dono, 03/10): antes, passou de `perto` casas, ele era reposicionado numa casa
-  // livre do lado do dono (coordenada trocada de uma vez: o "puxão" na tela).
-  andarFamiliar(hunt, grade, f, agora);
-  const alvo = alvoAtual(hunt);
-  if (!alvo || hunt.lurando || !R.jaPode(agora, f.proximoGolpe)) return eventos;
+  /*
+   * ---- A IA do familiar (dono, 03/10): combate e follow, sem um atrapalhar o outro ----
+   *   1. Tem alvo (o do dono, ou um bicho perto dele)? Combate: aproxima até o `alcanceDeAtaque` pela BFS e bate; não faz ajuste de follow no meio do combate.
+   *   2. Sem rota até o alvo, ou ele ficou longe do dono demais: larga o alvo por uns segundos (não repete a tentativa a cada tique) e volta ao follow.
+   *   3. Sem alvo: acompanha o dono.
+   * O golpe segue sendo o de sempre (`Summon.fracao` do golpe do dono, em volta do alvo) — o familiar não tem habilidades próprias —, mas só sai com o alvo ao alcance.
+   */
+  const alcanceDeAtaque = f.alcanceDeAtaque ?? Summon.familiarDe(estado).alcanceDeAtaque ?? 1;
+  const alvo = alvoDoFamiliar(hunt, f, agora);
+  if (!alvo) {
+    andarFamiliar(hunt, grade, f, agora);
+    return eventos;
+  }
+  if (distancia(f, hunt.pos) > f.perto + FOLGA_DO_COMBATE + 1) {
+    // Perseguiu demais: o limite é do dono — esquece o alvo um instante e volta.
+    esquecerAlvo(f, alvo, agora);
+    andarFamiliar(hunt, grade, f, agora);
+    return eventos;
+  }
+  if (distancia(f, alvo) > alcanceDeAtaque) {
+    const chegou = passoDoFamiliar(hunt, grade, f, agora, alvo, { pararEm: (d) => d <= alcanceDeAtaque, longe: alcanceDeAtaque + 3 });
+    if (!chegou) {
+      esquecerAlvo(f, alvo, agora); // sem rota: tenta outro, e não este por uns segundos
+      return eventos;
+    }
+    if (distancia(f, alvo) > alcanceDeAtaque) return eventos; // ainda a caminho
+  }
+  if (!R.jaPode(agora, f.proximoGolpe)) return eventos;
   f.proximoGolpe = agora + ATAQUE_MS;
   f.dir = alvo.y < f.y ? 0 : alvo.y > f.y ? 2 : alvo.x > f.x ? 1 : 3;
   // "25% do seu golpe": o golpe médio do dono agora (arma, wand ou punho).

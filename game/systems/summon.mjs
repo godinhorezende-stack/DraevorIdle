@@ -29,12 +29,13 @@ const DURACAO_MS = 450_000;
 // os outros são os outfits vizinhos, conferidos no sprite (992 o pássaro
 // dourado do paladin, 993 a árvore do druid, 994 o djinn do sorcerer). O do
 // monk não está no atlas capturado — usa o do knight até capturar.
+// `alcanceDeAtaque`: a que distância (casas, Chebyshev) do alvo ele bate — corpo a corpo (knight, monk) colado nele; o de longe (paladin) e os mágicos (druid, sorcerer) de mais longe.
 const FAMILIARES = {
-  knight: { key: 'knight-familiar', nome: 'Knight familiar', look: 991, magia: 'spell-summon-knight-familiar', fx: 1 },
-  paladin: { key: 'paladin-familiar', nome: 'Paladin familiar', look: 992, magia: 'spell-summon-paladin-familiar', fx: 40, elemento: 'holy' },
-  druid: { key: 'druid-familiar', nome: 'Druid familiar', look: 993, magia: 'spell-summon-druid-familiar', fx: 44, elemento: 'ice' },
-  sorcerer: { key: 'sorcerer-familiar', nome: 'Sorcerer familiar', look: 994, magia: 'spell-summon-sorcerer-familiar', fx: 38, elemento: 'energy' },
-  monk: { key: 'monk-familiar', nome: 'Monk familiar', look: 991, magia: 'spell-monk-familiar', fx: 1 },
+  knight: { key: 'knight-familiar', nome: 'Knight familiar', look: 991, magia: 'spell-summon-knight-familiar', fx: 1, alcanceDeAtaque: 1 },
+  paladin: { key: 'paladin-familiar', nome: 'Paladin familiar', look: 992, magia: 'spell-summon-paladin-familiar', fx: 40, elemento: 'holy', alcanceDeAtaque: 4 },
+  druid: { key: 'druid-familiar', nome: 'Druid familiar', look: 993, magia: 'spell-summon-druid-familiar', fx: 44, elemento: 'ice', alcanceDeAtaque: 3 },
+  sorcerer: { key: 'sorcerer-familiar', nome: 'Sorcerer familiar', look: 994, magia: 'spell-summon-sorcerer-familiar', fx: 38, elemento: 'energy', alcanceDeAtaque: 4 },
+  monk: { key: 'monk-familiar', nome: 'Monk familiar', look: 991, magia: 'spell-monk-familiar', fx: 1, alcanceDeAtaque: 1 },
 };
 
 export const nivel = (estado) => Math.max(0, Math.min(TETO, Math.floor(estado.summon?.nivel ?? 0)));
@@ -65,6 +66,7 @@ export function invocar(estado, hunt, action, agora) {
     fx: f.fx,
     elemento: f.elemento ?? 'physical',
     ate: agora + DURACAO_MS,
+    alcanceDeAtaque: f.alcanceDeAtaque,
     perto: Math.max(1, Math.min(5, Number(action?.summonPerto) || 3)),
     alcance: Math.max(1, Math.min(7, Number(action?.summonAlcance) || 3)),
     proximoGolpe: 0,
