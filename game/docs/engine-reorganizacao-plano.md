@@ -100,3 +100,13 @@ Hoje a proteção é **só de rede** (nginx tranca `/api/mapas`; só chega por t
 - **Componentes reutilizáveis:** `el`/`navegacao`/`cabecalho`/modais/editor JSON (`editor-ui.mjs`), `retrato`/`previa` (`editor-sprites.mjs`), `criarBiblioteca` (consulta com "onde é usado"), `tabelaDeDrops`, validadores (`encontros/modelo`, `atos-modelo`, `mapa/spawns`, `bosses-unicos/catalogo`).
 - **Limitações de persistência/publicação:** sem recarga a quente; o arquivo gravado só vale no boot; produção não deve ser editada (§4.3); dado Canary exige overrides (§4.1).
 - **Conflito a resolver:** a Engine foi decidida como "só desktop"; o pedido novo quer menu utilizável em telas menores — o plano cobre o MENU (gaveta); as telas de edição densas (canvas de mapas e atos) seguem desktop-first.
+
+## Decisões do dono (03/10) e andamento
+1. **Permissões:** login na Engine com a conta do jogo + administradores por e-mail (começando por `god.rafa365@gmail.com`), além do bloqueio de rede. *(etapa 3)*
+2. **Produção:** a gravação do editor é desligada em produção; edição só local (editar → commit → deploy). *(etapa 3)*
+3. **Overrides:** camada `gamedata/overrides/<categoria>.json` por cima do dado do Canary, original intacto. *(etapa 5)*
+4. **Balanceamento:** autorizado construir as telas de edição (Hunts, Mobs…); o editor só gera o arquivo, nada muda no jogo até você publicar (commit + deploy). Nenhum valor atual é alterado por mim.
+5. **Telas pequenas:** só o MENU vira gaveta; as telas densas (mapas, atos) seguem desktop-first.
+6. **Ordem:** seguir as etapas do plano, uma por vez, com PR e testes.
+
+**Etapa 1 — menu e casca (feita):** `editor-menu.mjs` (estado, grupos, recolhido, marcas), `GRUPOS`/`ABAS` reorganizados (Gerenciamento · Mundo e campanha · Conteúdo do jogo · Recursos; o grupo "Sistemas e balanceamento" só aparece quando tiver tela), menu recolhível em trilho de ícones com dicas, grupos que expandem/recolhem, estado guardado no navegador, gaveta com botão ☰ em telas ≤ 900 px, marcas "consulta"/"parcial", rota ativa destacada. URLs atuais mantidas.

@@ -179,7 +179,7 @@ test('NOVO — distribuição de raridade à vista (por bicho) e validação ao 
 test('a aba Mapas está ligada à Engine e o /editor antigo continua existindo (nada é removido)', () => {
   const ed = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
   assert.match(ed, /criarEditorDeMapas/);
-  assert.match(ed, /\['mapas', 'Mapas'\]/);
+  assert.match(ed, /\['mapas', 'Editor de mapas'\]/);
   assert.match(ed, /href: '\/editor'/, 'o link para o editor antigo continua na navegação');
   assert.match(readFileSync(new URL('../frontend/editor.html', import.meta.url), 'utf8'), /Editor de mapas/);
   const tela = readFileSync(new URL('../frontend/client/src/editor-mapas.mjs', import.meta.url), 'utf8');
