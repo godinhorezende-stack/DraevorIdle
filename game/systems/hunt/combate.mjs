@@ -7,6 +7,7 @@ import * as R from '../regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario } from '../inventario.mjs';
 import * as Acoes from '../acoes.mjs';
 import * as Treino from '../treino.mjs';
+import { partesDeXp, dividirOuro, proximoInicioDoResto, sortearDono, novoIdDeDrop, registrarSorteio } from '../party-recompensas.mjs';
 import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
@@ -360,7 +361,7 @@ export function fatorDaCacaOnline(hunt) {
  * bolsa cheia) passa a vez para o seguinte. A CHANCE do drop continua sendo a
  * de quem matou (Buff Power, afixo, prey, pódio).
  */
-const vezDoLoot = new WeakMap(); // sala -> índice do próximo da fila
+const vezDoResto = new WeakMap(); // sala -> quem recebe a primeira unidade do resto do ouro no próximo evento
 // O "Loot of a ..." de um item que foi para outro da party: entra no chat DELE no próximo tique (ver `tirarEventosDaParty`).
 const eventosDaParty = new WeakMap(); // estado -> [evento]
 export function tirarEventosDaParty(estado) {
@@ -409,6 +410,36 @@ export function fichaDoBicho(estado, hunt, key, { huntId = null, dificuldade = n
  * evento de loot. É o laço que `matarMonstro` sempre teve, extraído para o loot dos ENCONTROS (baús, guardiões)
  * seguir exatamente as mesmas regras. `alvo`: de onde veio (`key`, `name`, `exp`/`expDasMoedas`, `lootMult`).
  */
+/**
+ * Escolhe quem leva UM item e já o põe na bolsa dele. Na party, sorteio uniforme (sem peso por nível, dano, distância ou setor)
+ * entre os que podem levar (o filtro "não coletar" e a capacidade dele); se o sorteado não consegue guardar, sai da disputa e
+ * sorteia-se de novo — o item não se perde enquanto alguém puder levar, e nunca vai para dois. `verificar: false` (gemas e
+ * orbes) só exige que a bolsa aceite. Devolve `{ dono, ignorado }` (`ignorado`: todos filtraram o item).
+ */
+function escolherDono({ estado, personagem, juntos, id, peca, origem, verificar = true }) {
+  const fila = juntos ?? [{ estado, nome: personagem?.nome }];
+  let ignorado = verificar;
+  let candidatos = fila.filter((m) => {
+    if (!verificar) return true;
+    // A peça já sorteada (raridade e atributos) vai junto: as regras específicas de "não coletar" olham os atributos reais.
+    if (Bolsa.ignora(m.estado, id, peca)) return false;
+    ignorado = false;
+    return pesoDoInventario(m.estado) + (ITEM_CATALOG[id]?.weight ?? 0) <= Afixos.capacidade(m.estado);
+  });
+  const concorrentes = candidatos.map((m) => m.nome);
+  let dono = null;
+  while (candidatos.length) {
+    const m = sortearDono(candidatos);
+    if (Bolsa.porNaBolsa(m.estado, id, 1, peca)) {
+      dono = m;
+      break;
+    }
+    candidatos = candidatos.filter((x) => x !== m);
+  }
+  if (juntos) registrarSorteio({ drop: novoIdDeDrop(), item: id, origem: origem ?? null, concorrentes, dono: dono?.nome ?? null, resultado: dono ? 'entregue' : ignorado ? 'ignorado' : 'perdido' });
+  return { dono, ignorado };
+}
+
 function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, sala, caiu, conta, deOutros, podio }) {
   for (const drop of drops) {
     // Entrada de loot SEM id no bestiário (64 bichos têm "rotten feather"/"ritual tooth" assim): não é
@@ -432,9 +463,11 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
         darOuro(estado, total);
         continue;
       }
-      // Party: partes iguais; o resto da divisão fica com quem matou.
-      const parte = Math.floor(total / juntos.length);
-      for (const m of juntos) darOuro(m.estado, parte + (m.estado === estado ? total - parte * juntos.length : 0));
+      // Party: partes iguais; o resto (unidades que não dividem) roda entre os integrantes, evento a evento (`dividirOuro`).
+      const inicio = vezDoResto.get(sala) ?? 0;
+      const partes = dividirOuro(total, juntos.length, inicio);
+      juntos.forEach((m, k) => darOuro(m.estado, partes[k]));
+      vezDoResto.set(sala, proximoInicioDoResto(total, juntos.length, inicio));
       continue;
     }
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
@@ -442,21 +475,8 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
     const origem = alvo.origemDoLoot ?? (alvo.raridade === 'boss' || alvo.raridade === 'unico' || alvo.isBoss ? 'boss' : alvo.guardiao ? 'guardiao' : null);
     const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), raridadeDoMob: alvo.raridade, ...(origem ? { origem } : {}) });
     const af = peca.af ?? null;
-    // Quem leva: sozinho, quem matou; na party, o próximo da fila que PODE levar.
-    const vez = juntos ? (vezDoLoot.get(sala) ?? 0) : 0;
-    const fila = juntos ? juntos.map((_, k) => juntos[(vez + k) % juntos.length]) : [{ estado, nome: personagem?.nome }];
-    let dono = null;
-    let ignorado = true;
-    for (const [k, m] of fila.entries()) {
-      // A peça já sorteada (raridade e atributos) vai junto: as regras específicas de "não coletar" olham os atributos reais.
-      if (Bolsa.ignora(m.estado, drop.id, peca)) continue;
-      ignorado = false;
-      const semCap = pesoDoInventario(m.estado) + (ITEM_CATALOG[drop.id]?.weight ?? 0) > Afixos.capacidade(m.estado);
-      if (semCap || !Bolsa.porNaBolsa(m.estado, drop.id, 1, peca)) continue;
-      dono = m;
-      if (juntos) vezDoLoot.set(sala, (vez + k + 1) % juntos.length);
-      break;
-    }
+    // Quem leva: sozinho, quem matou; na party, SORTEIO uniforme entre os que PODEM levar (`escolherDono`).
+    const { dono, ignorado } = escolherDono({ estado, personagem, juntos, id: drop.id, peca, origem: alvo.name });
     if (!dono) {
       conta(ignorado ? 'ignorado' : 'perdido', drop.id, 1);
       continue;
@@ -524,6 +544,9 @@ export function pagarPremio({ estado, gold, exp, itens, nome, rotulo = 'Primeira
 }
 
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
+  // Uma morte é processada UMA vez: um evento repetido (golpe de área e dano contínuo no mesmo quadro) não paga exp, ouro nem item de novo.
+  if (alvo.recompensado) return;
+  Object.defineProperty(alvo, 'recompensado', { value: true, enumerable: false, configurable: true });
   // As mecânicas do mob ao morrer (Explosivo, Procriador) e as dos vizinhos (Vingativo) — `mobs/mecanicas.mjs`.
   Mecanicas.aoMorrer(estado, hunt, personagem, alvo, eventos);
   // Na Arena x1 ninguém ganha exp nem loot dos bichos: eles só atrapalham.
@@ -545,11 +568,15 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // dele com os PRÓPRIOS bônus (level, boosts, stamina).
   const part = hunt.partilha;
   let exp;
+  let parte; // a fatia do próprio matador (party)
   if (part?.ativa && part.membros.length > 1) {
-    const parte = (alvo.exp * (alvo.exp >= 20 ? part.bonus : 1)) / part.membros.length;
-    for (const m of part.membros) {
+    // A exp do bicho (com o bônus das vocações) dividida pelo PESO de cada um: nível ^ k, sem limite de diferença (`party-recompensas.mjs`).
+    const total = alvo.exp * (alvo.exp >= 20 ? part.bonus : 1);
+    const fatias = partesDeXp(part.membros.map((m) => m.estado?.level ?? 1));
+    parte = total * fatias[Math.max(0, part.membros.findIndex((m) => m.estado === estado))];
+    for (const [k, m] of part.membros.entries()) {
       if (m.estado === estado || !m.estado?.hunt) continue;
-      const deles = Math.round(Boosts.expDoBicho(m.estado, parte) * Prey.fatorDeExp(m.estado, alvo.key) * fatorDaCacaOnline(m.estado.hunt));
+      const deles = Math.round(Boosts.expDoBicho(m.estado, total * fatias[k]) * Prey.fatorDeExp(m.estado, alvo.key) * fatorDaCacaOnline(m.estado.hunt));
       m.estado.xp = (m.estado.xp ?? 0) + deles;
       const s2 = m.estado.hunt.sessao;
       if (s2) {
@@ -638,28 +665,34 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     dificuldade: contextoDoDrop(hunt).dificuldade ?? null,
     fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
   });
-  if (gemaQueCai && Bolsa.porNaBolsa(estado, gemaQueCai.id, 1, gemaQueCai)) {
-    caiu.push({ id: gemaQueCai.id, count: 1 });
-    conta('loot', gemaQueCai.id, 1);
-  }
+  // Gemas, lapidadoras, fundidoras e orbes também são sorteados na party (a chance do drop segue a de quem matou).
+  const darExtra = (item, peca = undefined) => {
+    if (!item) return;
+    const { dono } = escolherDono({ estado, personagem, juntos, id: item.id, peca, origem: alvo.name, verificar: false });
+    if (!dono) return;
+    if (dono.estado === estado) {
+      caiu.push({ id: item.id, count: 1 });
+      conta('loot', item.id, 1);
+    } else {
+      conta('loot', item.id, 1, dono.estado.hunt?.sessao);
+      const lista = deOutros.get(dono.estado) ?? [];
+      lista.push({ id: item.id, count: 1 });
+      deOutros.set(dono.estado, lista);
+    }
+  };
+  darExtra(gemaQueCai, gemaQueCai);
   // A LAPIDADORA (a moeda que sobe a qualidade da gema): mesma regra de chance.
   const lapidadora = GemasDeSkill.sortearLapidadora({
     ato: Number(contextoDoDrop(hunt).ato) || 1,
     fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
   });
-  if (lapidadora && Bolsa.porNaBolsa(estado, lapidadora.id, 1)) {
-    caiu.push({ id: lapidadora.id, count: 1 });
-    conta('loot', lapidadora.id, 1);
-  }
+  darExtra(lapidadora);
   // A FUNDIDORA (sorteia de novo os links da peça): mesma regra de chance.
   const fundidora = GemasDeSkill.sortearFundidora({
     ato: Number(contextoDoDrop(hunt).ato) || 1,
     fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
   });
-  if (fundidora && Bolsa.porNaBolsa(estado, fundidora.id, 1)) {
-    caiu.push({ id: fundidora.id, count: 1 });
-    conta('loot', fundidora.id, 1);
-  }
+  darExtra(fundidora);
   // Os ORBES de socket (config `orbes`): a chance por ato é ZERO por enquanto (a fonte é a loja da Zuma) —
   // o gancho existe para ligar quando houver balanceamento, sem tocar de novo no combate.
   for (const tipo of ['encaixe', 'ligacao']) {
@@ -667,10 +700,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       ato: Number(contextoDoDrop(hunt).ato) || 1,
       fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100),
     });
-    if (orbe && Bolsa.porNaBolsa(estado, orbe.id, 1)) {
-      caiu.push({ id: orbe.id, count: 1 });
-      conta('loot', orbe.id, 1);
-    }
+    darExtra(orbe);
   }
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
   // Sede de sangue (knight) e Fonte eterna (sorcerer).

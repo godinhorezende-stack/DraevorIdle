@@ -16,16 +16,17 @@
 // - "Quem vai na frente" (`frente`, escolhido por quem manda na fila, o líder)
 //   puxa; os outros seguem a ponta ou quem escolheram ("Andar atrás de"), a
 //   `coleira` sqm (1, 2, 3, 5, 7, 9, 12; padrão 5).
-// - Level: ninguém mais de `DIFERENCA_DE_LEVEL` (10) longe de ninguém — para
-//   entrar na party e na caçada de alguém. E a caçada precisa estar LIBERADA
-//   para quem entra (o level dela; nas Vip/Instance/Divine, premium e acesso).
-// - Shared Experience: ativa com 2+ na mesma caçada, todos dentro da faixa de
-//   level (os mesmos 10) e perto (30 sqm). A exp do bicho é dividida
-//   em partes iguais, com o bônus por vocações diferentes — "Mesma vocação +20%
-//   · duas +35% · três +70% · quatro ou mais +100%. Vale para criaturas de 20
-//   de experiência para cima." O loot, na partilha: o ouro em partes iguais e
-//   os itens em rodízio (ver `matarMonstro`, em hunt/combate.mjs); a Boss Task
-//   conta para todos, como a task de bicho.
+// - Level: SEM limite de diferença entre os integrantes (nem para formar a party
+//   nem para entrar na caçada de alguém) e SEM exigência de proximidade. A caçada
+//   precisa estar LIBERADA para quem entra (o level dela; nas Vip/Instance/Divine,
+//   premium e acesso) — exceto na campanha, onde o amigo carrega.
+// - Shared Experience: ativa com 2+ na mesma caçada (a mesma sala/instância).
+//   A exp do bicho, com o bônus por vocações diferentes ("Mesma vocação +20% ·
+//   duas +35% · três +70% · quatro ou mais +100%", criaturas de 20 de exp para
+//   cima), é dividida pelo PESO de cada um: nível ^ 1,5 (`party-recompensas.mjs`).
+//   O loot: o ouro em partes iguais (o resto roda entre os integrantes) e cada
+//   item SORTEADO entre quem pode levar (ver `matarMonstro`, em hunt/combate.mjs);
+//   a Boss Task conta para todos, como a task de bicho.
 //
 // O grupo vive na memória do servidor ("a party dura entre uma caçada e
 // outra"); reiniciar o servidor desfaz as parties.
@@ -43,17 +44,7 @@ const REAGRUPAR_PERTO = 2;
 /** Um membro INDEPENDENTE parado (sem andar nem ter alvo) por este tempo sai da partilha: seguir ou ficar parado não rende exp (`ativo`). */
 const PARADO_MS = 60_000;
 const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-const LONGE = 30;
 const BONUS_POR_VOCACOES = [1, 1.2, 1.35, 1.7, 2];
-/*
- * A diferença de level na party: ninguém mais de 10 levels longe de ninguém
- * (pedido do dono, "um limite de lv, exemplo 10 leveis"). Vale para entrar na
- * party, para entrar na caçada de alguém e para a partilha — quem passar disso
- * subindo de level na caçada continua na party, mas a partilha desliga até
- * todos voltarem a caber.
- */
-export const DIFERENCA_DE_LEVEL = 10;
-
 let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
 export const ligar = (mapa) => void (vivas = mapa);
 
@@ -95,15 +86,8 @@ function maximo(nomes) {
   return 2 + Math.min(...[...contas].map(slotsDaConta), 3);
 }
 
-/** `null` se todos os nomes cabem na diferença de level; senão, a frase de quem não cabe. */
-function foraDaFaixa(nomes) {
-  const niveis = nomes.map((n) => ({ n, lv: sessaoDe(n)?.estado?.level ?? 1 }));
-  if (niveis.length < 2) return null;
-  const alto = niveis.reduce((a, b) => (b.lv > a.lv ? b : a));
-  const baixo = niveis.reduce((a, b) => (b.lv < a.lv ? b : a));
-  if (alto.lv - baixo.lv <= DIFERENCA_DE_LEVEL) return null;
-  return `A diferença de level na party é de no máximo ${DIFERENCA_DE_LEVEL}: ${alto.n} é level ${alto.lv} e ${baixo.n} é level ${baixo.lv}.`;
-}
+/** Não há mais limite de diferença de level: sempre `null` (o nome fica porque as chamadas de convite/aceite/entrada passam por aqui). */
+const foraDaFaixa = () => null;
 
 // ------------------------------------------------------------------ grupo
 
@@ -337,7 +321,7 @@ export function comandoDaCaca(s, m) {
       const tranca = Cacadas.podeEntrarNaSala(outro.estado, sala);
       if (!tranca.ok) return { ok: false, erro: `${nomeDe(outro)}: ${tranca.erro}` };
       convitesDeCaca.set(nomeDe(outro), { de: eu, expira: Date.now() + CONVITE_MS });
-      outro.enviar({ t: 'partyInvite', from: eu, hunt: Cacadas.nomeDaHunt(sala.huntId), faixa: faixa([s, outro]), expiraEm: Date.now() + CONVITE_MS });
+      outro.enviar({ t: 'partyInvite', from: eu, hunt: Cacadas.nomeDaHunt(sala.huntId), expiraEm: Date.now() + CONVITE_MS });
       return { ok: true, notice: `Chamado enviado para ${nomeDe(outro)}.` };
     }
     case 'accept': {
@@ -465,12 +449,6 @@ function naMesmaSala(s) {
   return [...vivas.values()].filter((o) => o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala);
 }
 
-/** A faixa de level em que todos cabem: ninguém mais de `DIFERENCA_DE_LEVEL` longe de ninguém. */
-function faixa(sessoes) {
-  const niveis = sessoes.map((o) => o.estado?.level ?? 1);
-  return { min: Math.max(1, Math.max(...niveis) - DIFERENCA_DE_LEVEL), max: Math.min(...niveis) + DIFERENCA_DE_LEVEL };
-}
-
 /** O membro está jogando de fato? Independente e parado (sem andar nem alvo) por `PARADO_MS` não está; quem segue conta sempre. */
 function ativo(o) {
   const p = minhaParty(o);
@@ -493,20 +471,9 @@ export function registrarAtividade(s) {
 export function partilha(s) {
   // Quem está INDEPENDENTE e parado há `PARADO_MS` (sem andar nem alvo) não entra na partilha: ninguém ganha exp só por estar na sala.
   const juntos = naMesmaSala(s).filter((o) => minhaParty(o) && minhaParty(o) === minhaParty(s) && (o === s || ativo(o)));
-  const f = juntos.length ? faixa(juntos) : null;
-  const base = { membros: juntos.map((o) => ({ estado: o.estado, nome: nomeDe(o) })), faixa: f, vocacoes: new Set(juntos.map((o) => o.estado.vocation)).size };
+  const base = { membros: juntos.map((o) => ({ estado: o.estado, nome: nomeDe(o) })), faixa: null, vocacoes: new Set(juntos.map((o) => o.estado.vocation)).size };
   if (juntos.length < 2) return { ...base, ativa: false, motivo: 'sozinho', bonus: 1 };
-  // Alguém subiu de level na caçada e passou da diferença: a partilha desliga até ele voltar a caber.
-  const niveis = juntos.map((o) => o.estado.level ?? 1);
-  if (Math.max(...niveis) - Math.min(...niveis) > DIFERENCA_DE_LEVEL) return { ...base, ativa: false, motivo: 'level', bonus: 1 };
-  // Exploração INDEPENDENTE (decisão do dono, 02/10): quem escolheu explorar sozinho continua na partilha mesmo longe (a fase é da party
-  // inteira). A distância só vale entre quem SEGUE — um seguidor preso longe do grupo não rende exp parado.
-  const p = minhaParty(s);
-  const independente = (o) => p?.modo.get(nomeDe(o)) === 'independente';
-  const eu = s.estado.hunt.pos;
-  if (!independente(s) && juntos.some((o) => !independente(o) && cheb(o.estado.hunt.pos, eu) > LONGE)) {
-    return { ...base, ativa: false, motivo: 'longe', bonus: 1 };
-  }
+  // Sem limite de level e sem proximidade: quem está na mesma sala e ativo participa, esteja onde estiver (a fase é da party inteira).
   return { ...base, ativa: true, motivo: null, bonus: BONUS_POR_VOCACOES[Math.min(4, base.vocacoes)] };
 }
 
