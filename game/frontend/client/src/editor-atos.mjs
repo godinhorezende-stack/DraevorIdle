@@ -2,6 +2,10 @@
 // mora aqui: o servidor valida (`systems/atos-modelo.mjs`) e grava (`admin/atos.mjs`); a tela só edita uma cópia e pede a validação a cada
 // mudança. Os atos legados (os 4 de hoje) são somente leitura: "Duplicar" cria o rascunho editável.
 // Recebe as ferramentas da página (`el`, `api`, a raiz, `msg`) em vez de importá-las, para não fechar ciclo com `editor-conteudo.mjs`.
+import { confirmar, pedirTexto, descartarAlteracoes } from './editor-ui.mjs';
+
+/** O ID do ato: a tela só exige que não fique vazio — o formato é o servidor quem confere. */
+const obrigatorio = (v) => (v ? null : 'Digite um ID.');
 
 const NS = 'http://www.w3.org/2000/svg';
 const L = 920;
@@ -72,7 +76,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     E.opcoes = { tiposDeFase: r.tiposDeFase, estados: r.estados };
   }
   async function abrir(id) {
-    if (sujo() && !confirm('Há alterações não salvas. Abrir outro ato mesmo assim?')) return;
+    if (sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return;
     const r = await api(`atos-editor/${id}`);
     E.ato = r.ato;
     E.somenteLeitura = !!r.ato.legado?.somenteLeitura;
@@ -104,7 +108,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     pintar();
   }
   async function duplicar() {
-    const novoId = prompt('ID do novo ato (minúsculas, números e hífen):', `${E.ato.id}-copia`.replace(/^legado-/, 'ato-'));
+    const novoId = await pedirTexto('Duplicar ato', { rotulo: 'ID do novo ato (minúsculas, números e hífen)', valor: `${E.ato.id}-copia`.replace(/^legado-/, 'ato-'), validar: obrigatorio });
     if (!novoId) return;
     const r = await api('atos-editor', { duplicar: E.ato.id, novoId });
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
@@ -114,7 +118,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     msg('Cópia criada como rascunho. As hunts continuam as do original: troque-as antes de validar.', 'ok');
   }
   async function novo() {
-    const id = prompt('ID do novo ato (minúsculas, números e hífen):', 'ato-novo');
+    const id = await pedirTexto('Novo ato', { rotulo: 'ID do novo ato (minúsculas, números e hífen)', valor: 'ato-novo', validar: obrigatorio });
     if (!id) return;
     const r = await api('atos-editor', { id, nome: 'Novo ato', fases: [], conexoes: [] });
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
@@ -123,7 +127,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     await abrir(id);
   }
   async function excluir() {
-    if (!confirm(`Excluir o rascunho "${E.ato.id}"? Os cadastros do jogo não são tocados.`)) return;
+    if (!(await confirmar(`Excluir o rascunho "${E.ato.id}"?`, 'Os cadastros do jogo não são tocados.', { ok: 'Excluir', perigo: true }))) return;
     const r = await api('atos-editor', { excluir: E.ato.id });
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     E.ato = null;
@@ -442,7 +446,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     const lateral = [painelDoAto(), painelDaFase(), recFase, painelDaLigacao(), painelDoBoss(), recBoss, painelPicker()].filter(Boolean);
     alvo.replaceChildren(
       el('div', { class: 'linha' },
-        el('button', { onclick: async () => { if (sujo() && !confirm('Há alterações não salvas. Voltar mesmo assim?')) return; E.ato = null; await carregarLista(); pintar(); } }, '← Atos'),
+        el('button', { onclick: async () => { if (sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return; E.ato = null; await carregarLista(); pintar(); } }, '← Atos'),
         el('b', {}, `${E.ato.nome} `, el('span', { class: 'dica' }, `(${E.ato.id}, versão ${E.ato.versao})${sujo() ? ' • alterações não salvas' : ''}`)),
         E.somenteLeitura ? el('span', { class: 'selo' }, 'somente leitura — duplique para editar') : null,
         el('button', { onclick: duplicar }, 'Duplicar'),

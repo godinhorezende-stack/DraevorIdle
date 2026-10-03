@@ -5,30 +5,37 @@ import { svg, fundoDoAto, nomeDoTema } from './world-arte.mjs';
 import { LARGURA, ALTURA, TIPOS_DE_NO, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, atosDaCampanha } from './world-dados.mjs';
 import { desenharNo } from './world.mjs';
 import { criarEditorDeAtos } from './editor-atos.mjs';
+import { el, msg, confirmar, descartarAlteracoes, editorJson, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
-const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, bosses: [], bossoId: null, boss: null, bossErros: [], sujo: false };
+const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, bosses: [], bossoId: null, boss: null, bossErros: [], navegacao: 0 };
+
+// `S.sujo` acende o aviso "Alterações não salvas" da barra superior (o editor de Atos tem o próprio estado: ver `atualizarSujo`).
+let sujo = false;
+Object.defineProperty(S, 'sujo', { get: () => sujo, set: (v) => { sujo = !!v; atualizarSujo(); } });
+function atualizarSujo() {
+  const aviso = document.querySelector('#eng-sujo');
+  if (!aviso) return;
+  let atos = false;
+  try {
+    atos = S.aba === 'atos' && EDITOR_DE_ATOS.sujo();
+  } catch {
+    /* o editor de Atos ainda não foi criado (início da página) */
+  }
+  aviso.hidden = !(sujo || atos);
+}
 
 const $ = (s) => document.querySelector(s);
-const msg = (t, tipo = 'aviso') => {
-  const m = $('#msg');
-  m.textContent = t;
-  m.style.color = tipo === 'ok' ? 'var(--ok)' : tipo === 'erro' ? 'var(--erro)' : 'var(--aviso)';
-};
-function el(tag, props = {}, ...filhos) {
-  const e = document.createElement(tag);
-  for (const [k, v] of Object.entries(props ?? {})) {
-    if (k === 'class') e.className = v;
-    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
-    else if (v === true) e.setAttribute(k, '');
-    else if (v !== false && v != null) e.setAttribute(k, v);
-  }
-  for (const f of filhos.flat()) if (f != null && f !== false) e.append(f.nodeType ? f : document.createTextNode(String(f)));
-  return e;
-}
+/**
+ * Fala com o servidor. Uma LEITURA que volta depois de o usuário já ter trocado de tela é descartada (a promessa
+ * nunca resolve): sem isso, a resposta atrasada de uma aba desenhava por cima da aba nova. Gravações sempre resolvem.
+ */
 async function api(rota, corpo) {
+  const vez = S.navegacao;
   const r = await fetch(BASE + rota, corpo === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
-  return r.json();
+  const dados = await r.json();
+  if (corpo === undefined && vez !== S.navegacao) return new Promise(() => {});
+  return dados;
 }
 const depois = (fn, ms = 400) => {
   let t;
@@ -266,18 +273,34 @@ const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg 
 
 // ------------------------------------------------------------------ abas
 
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fase e encontros'], ['mapa', 'Mapa do mundo'], ['bosses', 'Bosses'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (novo)']];
+// A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
+const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['bosses', 'Bosses únicos'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
+const NOME_DA_ABA = Object.fromEntries(ABAS);
+const GRUPOS = [
+  { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', href: '/editor' }] },
+  { titulo: 'Entidades', itens: [{ id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }] },
+  { titulo: 'Biblioteca', itens: [{ id: 'biblioteca', nome: 'Todos os cadastros', icone: 'livros' }] },
+];
 function desenharAbas() {
-  $('#abas').replaceChildren(...ABAS.map(([id, nome]) => el('button', { class: S.aba === id ? 'ativa' : '', onclick: () => irPara(id) }, nome)));
+  $('#abas').replaceChildren(...navegacao(GRUPOS, S.aba, (id) => irPara(id)));
+  $('#eng-local').replaceChildren(NOME_DA_ABA[S.aba] ?? '');
 }
+/** O endereço guarda a tela (`#fase/troll-cave`, `#bosses`...): recarregar ou mandar o link abre no mesmo lugar. */
+const lerEndereco = () => {
+  const [aba, id] = decodeURIComponent(location.hash.slice(1)).split('/');
+  return NOME_DA_ABA[aba] ? { aba, id: id || null } : { aba: 'geral', id: null };
+};
 async function irPara(aba, faseId = null) {
-  if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !confirm('O ato aberto tem alterações não salvas. Sair mesmo assim?')) return;
-  if (S.sujo && !confirm('Há alterações não salvas. Sair mesmo assim?')) return;
+  if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return desenharAbas();
+  if (S.sujo && !(await descartarAlteracoes())) return desenharAbas();
+  S.navegacao++;
   S.sujo = false;
   S.aba = aba;
   if (faseId) S.faseId = faseId;
+  history.replaceState(null, '', `#${aba}${aba === 'fase' && S.faseId ? `/${S.faseId}` : ''}`);
   desenharAbas();
   msg('');
+  $('#raiz').replaceChildren(el('div', { class: 'dica' }, 'Carregando…'));
   if (aba === 'geral') await desenharGeral();
   if (aba === 'fase') await carregarFase(S.faseId ?? S.opcoes.fases[0].huntId);
   if (aba === 'mapa') {
@@ -294,9 +317,11 @@ async function desenharGeral() {
   const a = (S.auditoria = await api('auditoria'));
   const t = a.totais;
   const raiz = $('#raiz');
+  const metrica = (rotulo, valor, classe = '') => el('div', { class: `eng-metrica ${classe}` }, el('span', {}, rotulo), el('b', {}, valor));
   raiz.replaceChildren(
-    el('h2', {}, 'Resumo'),
-    el('div', {}, el('span', { class: 'selo' }, `${t.fases} fases`), el('span', { class: 'selo boss' }, `${t.comBoss} com boss`), el('span', { class: 'selo' }, `${t.comEncontros} com encontros`), el('span', { class: `selo ${t.erros ? 'erro' : 'ok'}` }, `${t.erros} erros`), el('span', { class: `selo ${t.avisos ? 'aviso' : 'ok'}` }, `${t.avisos} avisos`)),
+    cabecalho('Visão geral', 'A campanha inteira de uma vez: fases, encontros, bosses e tudo o que a validação do servidor encontrou.'),
+    el('div', { class: 'eng-metricas' }, metrica('Fases', t.fases), metrica('Com encontros', t.comEncontros), metrica('Com boss', t.comBoss), metrica('Erros', t.erros, t.erros ? 'erro' : 'ok'), metrica('Avisos', t.avisos, t.avisos ? 'aviso' : 'ok')),
+    el('h2', {}, 'Problemas'),
     a.problemas.length ? el('ul', { class: 'problemas' }, a.problemas.map((p) => el('li', { class: p.nivel }, `[${p.onde}] ${p.mensagem}`))) : el('p', { class: 'dica' }, 'Nenhum problema de configuração.'),
     el('h2', {}, 'Fases'),
     el('table', {}, el('thead', {}, el('tr', {}, ['Ato', 'Fase', 'Nível (fácil)', 'Encontros', 'Bosses', 'Obrigatórios', 'Problemas'].map((h) => el('th', {}, h)))), el('tbody', {}, a.fases.map((f) => {
@@ -347,6 +372,7 @@ function desenharFase() {
   seletor.value = S.faseId;
   const novo = el('select', {}, S.opcoes.tipos.filter((t) => t.disponivel).map((t) => el('option', { value: t.id }, `${t.id} (${t.idle})`)));
   $('#raiz').replaceChildren(
+    cabecalho(fase.nome, `Ato ${fase.ato} · ${fase.huntId}`, botaoCopiar(fase.huntId)),
     el('div', { class: 'linha' }, el('label', { class: 'campo' }, 'Fase', seletor), el('span', { class: 'dica' }, `Mapa ${S.fase.mapa.largura}×${S.fase.mapa.altura} · nível fácil/médio/difícil: ${Object.values(fase.nivel).join(' / ')}`)),
     el('h2', {}, 'Dados da fase (o que a tela WORLD mostra)'),
     el('div', { class: 'cartao' }, el('div', { class: 'corpo' },
@@ -411,32 +437,21 @@ const sujoBoss = () => {
 async function desenharBosses() {
   S.bosses = (await api('bosses')).bosses;
   datalists();
-  const lateral = el('div', { class: 'lista-lateral' }, S.bosses.map((b) => el('div', { class: b.id === S.bossoId ? 'ativo' : '', onclick: () => escolherBoss(b.id) }, el('b', {}, b.nome), ' ', el('span', { class: 'selo boss' }, b.categoria), b.usos.length ? el('span', { class: 'selo' }, `${b.usos.length} uso(s)`) : el('span', { class: 'selo aviso' }, 'sem uso'))), el('div', { onclick: () => { S.bossoId = null; S.boss = bossVazio(); desenharBosses(); } }, '+ novo boss'));
-  $('#raiz').replaceChildren(el('div', { class: 'duas' }, lateral, el('div', { id: 'formBoss' })));
+  const lateral = el('div', { class: 'lista-lateral' }, S.bosses.map((b) => el('div', { class: b.id === S.bossoId ? 'ativo' : '', onclick: () => escolherBoss(b.id) }, el('b', {}, b.nome), ' ', el('span', { class: 'selo boss' }, b.categoria), b.usos.length ? el('span', { class: 'selo' }, `${b.usos.length} uso(s)`) : el('span', { class: 'selo aviso' }, 'sem uso'))), el('div', { onclick: async () => { if (S.sujo && !(await descartarAlteracoes('O boss aberto tem alterações não salvas'))) return; S.sujo = false; S.bossoId = null; S.boss = bossVazio(); desenharBosses(); } }, '+ novo boss'));
+  $('#raiz').replaceChildren(cabecalho('Bosses únicos', 'Bosses de encontro (bosses-unicos.json): fases por % de vida e comportamentos. Quando e com que chance aparecem é configurado no encontro da fase.'), el('div', { class: 'duas' }, lateral, el('div', { id: 'formBoss' })));
   if (!S.boss) S.boss = S.bossoId ? JSON.parse(JSON.stringify(S.bosses.find((b) => b.id === S.bossoId))) : null;
   if (S.boss) desenharFormDoBoss();
   else $('#formBoss').append(el('p', { class: 'dica' }, 'Escolha um boss à esquerda ou crie um novo. Um boss único tem fases por % de vida e comportamentos (magia, área telegrafada, invocação, escudo); quando e com que chance ele aparece é do ENCONTRO.'));
 }
-function escolherBoss(id) {
+async function escolherBoss(id) {
+  if (S.sujo && !(await descartarAlteracoes('O boss aberto tem alterações não salvas'))) return;
+  S.sujo = false;
   S.bossoId = id;
   S.boss = JSON.parse(JSON.stringify(S.bosses.find((b) => b.id === id)));
   delete S.boss.usos;
   desenharBosses();
 }
-function areaJson(rotulo, obj, chave, modelos) {
-  const t = el('textarea', { rows: 6, spellcheck: 'false' }, JSON.stringify(obj[chave], null, 2));
-  const erro = el('div', { class: 'dica' });
-  t.addEventListener('input', () => {
-    try {
-      obj[chave] = JSON.parse(t.value);
-      erro.textContent = '';
-      sujoBoss();
-    } catch (e) {
-      erro.textContent = `JSON inválido: ${e.message}`;
-    }
-  });
-  return el('fieldset', {}, el('legend', {}, rotulo), t, erro, modelos ? el('div', { class: 'linha' }, ...Object.entries(modelos).map(([nome, m]) => el('button', { type: 'button', onclick: () => { obj[chave] = [...(obj[chave] ?? []), JSON.parse(JSON.stringify(m))]; t.value = JSON.stringify(obj[chave], null, 2); sujoBoss(); } }, `+ ${nome}`))) : null);
-}
+const areaJson = (rotulo, obj, chave, modelos) => editorJson(rotulo, obj, chave, { aoMudar: sujoBoss, modelos, dica: 'Formato avançado: o servidor valida cada campo ao salvar (a lista de erros fica logo abaixo).' });
 function desenharFormDoBoss() {
   const b = S.boss;
   S.bossValidado = false;
@@ -446,7 +461,7 @@ function desenharFormDoBoss() {
   b.recompensas.loot ??= [];
   const usos = S.bosses.find((x) => x.id === S.bossoId)?.usos ?? [];
   $('#formBoss').replaceChildren(
-    el('h2', {}, S.bossoId ? `Boss: ${b.nome}` : 'Novo boss'),
+    el('div', { class: 'linha', style: 'margin-bottom:8px' }, el('h3', { style: 'flex:none;margin:0' }, S.bossoId ? b.nome : 'Novo boss'), S.bossoId ? el('span', { class: 'eng-id', style: 'flex:none' }, S.bossoId) : null, S.bossoId ? botaoCopiar(S.bossoId) : null, el('span')),
     el('div', { class: 'cartao' }, el('div', { class: 'corpo' },
       el('div', { class: 'grade' }, campo('Id (minúsculas e hífen)', b, 'id', { aoMudar: sujoBoss }), campo('Nome', b, 'nome', { aoMudar: sujoBoss }), escolha('Categoria', b, 'categoria', S.opcoes.categoriasDeBoss, { aoMudar: sujoBoss }), campo('Criatura-base (desenho e loot)', b, 'base', { lista: 'dl-bichos', aoMudar: sujoBoss }), campo('Nível recomendado', b, 'nivel', { tipo: 'number', opcional: true, aoMudar: sujoBoss })),
       el('label', { class: 'campo' }, 'Descrição', ligar(el('textarea', { rows: 2 }, b.descricao ?? ''), b, 'descricao', { aoMudar: sujoBoss })),
@@ -478,7 +493,7 @@ async function salvarBoss() {
   }
 }
 async function excluirBoss() {
-  if (!confirm(`Excluir o boss "${S.boss.nome}"?`)) return;
+  if (!(await confirmar(`Excluir o boss "${S.boss.nome}"?`, 'O cadastro sai de bosses-unicos.json. O servidor recusa se algum encontro ainda usa este boss.', { ok: 'Excluir', perigo: true }))) return;
   const r = await api('bosses', { excluir: S.bossoId });
   if (r.ok) {
     S.bossoId = null;
@@ -492,11 +507,21 @@ async function excluirBoss() {
 // ------------------------------------------------------------------ início
 
 window.addEventListener('beforeunload', (e) => {
-  if (S.sujo) e.preventDefault();
+  if (S.sujo || (S.aba === 'atos' && EDITOR_DE_ATOS.sujo())) e.preventDefault();
 });
+// O editor de Atos guarda o próprio "sujo": o aviso da barra é conferido depois de cada edição.
+for (const ev of ['input', 'change', 'click', 'pointerup']) document.addEventListener(ev, () => setTimeout(atualizarSujo, 0));
 S.opcoes = await api('opcoes');
-desenharAbas();
-await desenharGeral();
+{
+  const { aba, id } = lerEndereco();
+  S.aba = null;
+  await irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null);
+}
+// Link colado na barra (ou voltar do navegador) com outro `#`: vai para a tela pedida, com o mesmo aviso de alterações.
+window.addEventListener('hashchange', () => {
+  const { aba, id } = lerEndereco();
+  if (aba !== S.aba || (aba === 'fase' && id && id !== S.faseId)) irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null);
+});
 
 
 // ---- Mapa do mundo (a tela WORLD): posição dos nós, tipos, conexões, dados dos Atos e pré-visualização dos estados
@@ -661,6 +686,7 @@ async function desenharMapaDoMundo() {
   );
 
   $('#raiz').replaceChildren(
+    cabecalho('Mapa do mundo', 'A tela WORLD do jogo: posição dos nós, tipos, conexões e os dados de cada Ato.'),
     el('div', { class: 'linha' }, el('label', { class: 'campo' }, 'Ato', seletor), el('label', { class: 'campo' }, 'Pré-visualizar estados', previa, legendaPrevia)),
     form,
     el('div', { class: 'linha' }, el('button', { type: 'button', onclick: gerarPosicoes }, 'Gerar posições do caminho automático'), el('button', { type: 'button', onclick: limparPosicoes }, 'Limpar posições do Ato'), el('button', { type: 'button', class: 'primario', id: 'salvarMapa', onclick: salvarMapaDoMundo }, 'Salvar mapa')),
@@ -741,7 +767,7 @@ function pintarBiblioteca() {
     el('tbody', {}, (L?.itens ?? []).map((i) => el('tr', { class: BIB.detalhe?.id === i.id ? 'ativa' : '', style: 'cursor:pointer', onclick: () => abrirDetalhe(i.id) }, el('td', {}, i.id), el('td', {}, i.nome ?? NAO), el('td', {}, i.tipo ?? NAO), el('td', {}, i.nivel ?? '—')))));
   const d = BIB.detalhe;
   $('#raiz').replaceChildren(
-    el('div', { class: 'dica' }, 'Somente leitura: mostra os cadastros reais do jogo. O que o cadastro não traz aparece como "não cadastrado".'),
+    cabecalho('Biblioteca', 'Somente leitura: os cadastros reais do jogo. O que o cadastro não traz aparece como "não cadastrado".'),
     filtros,
     el('div', { class: 'dica' }, L?.ok === false ? L.erros.join(' ') : `${L?.total ?? 0} resultado(s)${(L?.total ?? 0) > 100 ? ' — mostrando os 100 primeiros; refine a busca' : ''}.`),
     el('div', { class: 'bib-duas' }, el('div', { class: 'bib-lista' }, tabela), el('div', { class: 'bib-detalhe' }, d?.id ? [el('h3', {}, `${d.nome ?? d.id} `, el('span', { class: 'dica' }, `(${d.id})`)), ...blocoDoDetalhe(d)] : el('div', { class: 'dica' }, 'Selecione um conteúdo para ver o detalhe.'))));

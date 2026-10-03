@@ -3,74 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Editor de conteúdo — Draevor Idle</title>
+<title>Draevor Engine — editor de conteúdo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/client/world.css">
-<style>
-  :root { color-scheme: dark; --borda: #2a3040; --fundo2: #171b26; --fundo3: #202636; --mudo: #8894ac; --ouro: #f5c542; --erro: #ff6b5e; --aviso: #f0a851; --ok: #4fbf7a; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: #10131a; color: #dfe3ea; font: 14px/1.4 system-ui, sans-serif; }
-  header { padding: 8px 16px; background: var(--fundo2); border-bottom: 1px solid var(--borda); display: flex; gap: 10px 14px; align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 5; }
-  header h1 { font-size: 15px; margin: 0; color: var(--ouro); }
-  header a { color: #8fb4ff; font-size: 12.5px; }
-  nav { display: flex; gap: 4px; }
-  nav button { border-radius: 6px 6px 0 0; }
-  nav button.ativa { background: #2b3f5c; border-color: #4a6ea8; }
-  input, select, button, textarea { background: var(--fundo3); color: #dfe3ea; border: 1px solid #333c50; border-radius: 4px; padding: 4px 8px; font: inherit; }
-  textarea { width: 100%; min-height: 60px; resize: vertical; }
-  button { cursor: pointer; }
-  button:disabled { opacity: .45; cursor: not-allowed; }
-  button.primario { background: #2f7a4a; border-color: #3a9a5c; }
-  button.perigo { background: #5a2a2a; border-color: #8a3a3a; }
-  #msg { margin-left: auto; font-size: 12.5px; color: var(--aviso); min-height: 18px; }
-  main { padding: 14px 16px 60px; max-width: 1180px; margin: 0 auto; }
-  h2 { font-size: 12px; text-transform: uppercase; color: var(--mudo); margin: 16px 0 8px; letter-spacing: .04em; }
-  table { border-collapse: collapse; width: 100%; font-size: 13px; }
-  th, td { padding: 5px 8px; border-bottom: 1px solid var(--borda); text-align: left; }
-  th { color: var(--mudo); font-weight: 500; font-size: 12px; }
-  tr.clicavel { cursor: pointer; }
-  tr.clicavel:hover { background: var(--fundo3); }
-  .selo { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11.5px; margin-right: 4px; background: #2b3f5c; color: #cfe0ff; }
-  .selo.erro { background: #5a2a2a; color: #ffd0cc; } .selo.aviso { background: #5a4520; color: #ffe0a8; } .selo.ok { background: #1f4a30; color: #bff0d0; }
-  .selo.boss { background: #4a2a5c; color: #e8c8ff; }
-  .cartao { border: 1px solid var(--borda); border-radius: 8px; background: #141824; margin-bottom: 10px; }
-  .cartao > summary { padding: 8px 10px; cursor: pointer; display: flex; gap: 8px; align-items: center; }
-  .cartao > summary b { flex: 1; }
-  .cartao .corpo { padding: 4px 12px 12px; border-top: 1px solid var(--borda); display: grid; gap: 8px; }
-  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
-  label.campo { display: grid; gap: 2px; font-size: 12px; color: var(--mudo); }
-  label.campo input, label.campo select { width: 100%; }
-  label.marca { display: flex; gap: 6px; align-items: center; font-size: 13px; color: #dfe3ea; }
-  fieldset { border: 1px solid var(--borda); border-radius: 6px; padding: 6px 10px 10px; margin: 0; }
-  fieldset legend { font-size: 12px; color: var(--mudo); padding: 0 4px; }
-  .linhas { display: grid; gap: 4px; }
-  .linha { display: flex; gap: 6px; align-items: center; } .linha > * { flex: 1; min-width: 0; } .linha > button { flex: none; }
-  .problemas { margin: 6px 0; padding: 0; list-style: none; font-size: 12.5px; }
-  .problemas li.erro { color: var(--erro); } .problemas li.aviso { color: var(--aviso); }
-  .bib-duas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; align-items: start; }
-  .bib-lista { max-height: 70vh; overflow: auto; }
-  .bib-detalhe { max-height: 70vh; overflow: auto; }
-  .bib-campo { margin: 6px 0; overflow-wrap: anywhere; }
-  .bib-campo > b { display: block; font-size: 12px; color: var(--mudo); text-transform: uppercase; }
-  .bib-sub th { text-align: left; font-weight: normal; color: var(--mudo); padding-right: 8px; vertical-align: top; }
-  @media (max-width: 800px) { .bib-duas { grid-template-columns: 1fr; } }
-  .atos-duas { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(300px, 1fr); gap: 12px; align-items: start; }
-  .atos-direita { display: grid; gap: 8px; max-height: 80vh; overflow: auto; }
-  .atos-canvas { width: 100%; height: auto; background: #10141f; border: 1px solid var(--borda); border-radius: 8px; touch-action: none; }
-  @media (max-width: 900px) { .atos-duas { grid-template-columns: 1fr; } }
-  .dica { font-size: 12px; color: var(--mudo); }
-  .duas { display: grid; grid-template-columns: 280px 1fr; gap: 14px; } @media (max-width: 800px) { .duas { grid-template-columns: 1fr; } }
-  .lista-lateral { border: 1px solid var(--borda); border-radius: 6px; max-height: 70vh; overflow: auto; }
-  .lista-lateral div { padding: 6px 10px; cursor: pointer; border-bottom: 1px solid var(--borda); } .lista-lateral div:hover { background: var(--fundo3); } .lista-lateral div.ativo { background: #2b3f5c; }
-</style>
+<link rel="stylesheet" href="/client/editor-tema.css">
 </head>
 <body>
-<header>
-  <h1>Editor de conteúdo</h1>
-  <a href="/editor">← Editor de mapas</a>
-  <nav id="abas"></nav>
-  <span id="msg"></span>
+<header class="eng-topo">
+  <div class="eng-marca"><b>DRAEVOR</b><span>Engine</span></div>
+  <div class="eng-local" id="eng-local"></div>
+  <div class="eng-topo-dir">
+    <span id="msg" role="status" aria-live="polite"></span>
+    <span class="eng-sujo" id="eng-sujo" hidden>Alterações não salvas</span>
+  </div>
 </header>
-<main id="raiz">Carregando…</main>
+<div class="eng-corpo">
+  <nav class="eng-nav" id="abas" aria-label="Ferramentas"></nav>
+  <main id="raiz">Carregando…</main>
+</div>
 <script type="module" src="/client/src/editor-conteudo.mjs"></script>
 </body>
 </html>
