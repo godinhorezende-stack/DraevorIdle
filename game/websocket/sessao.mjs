@@ -1301,6 +1301,9 @@ export class Sessao {
         if (entrou.ok) Party.seguirOLider(this);
         return;
       }
+      // O portal do boss do ato (aberto na última fase concluída): valida no servidor e leva para a arena, sem recarga.
+      case 'portalDoBoss':
+        return this.entrarNoPortalDoBoss();
       case 'entrarNaArena':
         return this.entrarNaArena();
       case 'stopHunt': {
@@ -1811,7 +1814,20 @@ export class Sessao {
    * requisitos e o "uma vez só" são do servidor: o clique duplo e dois membros pedindo juntos caem no MESMO encontro
    * (`Estado.ativar` é idempotente) e a recompensa é paga uma vez, na conclusão.
    */
+  /** `{t:'portalDoBoss'}` (ou `interagir` no marcador do portal): entra na arena do boss do ato. Só a sessão que pediu entra. */
+  entrarNoPortalDoBoss() {
+    if (!this.estado?.hunt) return this.erro('Você não está numa fase.');
+    if (this.estado.exercicio?.treinando) return this.erro('Pare o treino antes.');
+    const r = Cacadas.entrarNoPortalDoBoss(this.estado, { antes: () => Party.antesDeSairDaCacada(this) });
+    this.aplicar(r);
+    // Líder de party: quem marcou "Seguir líder" vem junto (a regra de sempre; ninguém é levado sem ter escolhido seguir).
+    if (r.ok) Party.seguirOLider(this);
+    return undefined;
+  }
+
   interagirComEncontro(m) {
+    // O marcador do portal do boss é um "encontro" só para o cliente: aqui vai para a entrada na arena (sem a regra de distância).
+    if (String(m?.id) === 'portal-do-boss') return this.entrarNoPortalDoBoss();
     const hunt = this.estado?.hunt;
     const inst = hunt ? InstanciaDaHunt.daSala(hunt) : null;
     const e = inst?.encontros?.[String(m.id)];
@@ -1857,6 +1873,8 @@ export class Sessao {
     this.estado = estado;
     // Caçada de antes da campanha: vira a fase (barra e progresso), ou termina se a fase está fechada.
     const daCampanha = Cacadas.adotarNaCampanha(this.estado);
+    // Os bosses de fim de ato não têm mais recarga: o carimbo antigo (ex.: 72 h do The Primal Menace) não bloqueia mais nada (só o relógio some; progresso e vitórias ficam).
+    Bosses.limparRecargasDeAto(this.estado);
     this.estado.bauDaConta = Deposito.caixaDaConta(await B.lerBauDaConta(this.conta.id));
     // O que o mercado entregou enquanto estava fora (venda, compra por anúncio).
     const doMercado = await Mercado.receberCreditos(this.estado, personagem.id);

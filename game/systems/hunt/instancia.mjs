@@ -275,10 +275,11 @@ export function tirarAoAcaso(hunt, n, rng = Math.random) {
 }
 
 /** Para a tela: `{ id, status, total, concluidos, percentual }` (ou `null` fora de instância). */
-export function paraCliente(hunt) {
+export function paraCliente(hunt, portal = null) {
   const inst = daSala(hunt);
   if (!inst) return null;
-  const encontros = encontrosVisiveis(inst);
+  // O portal do boss do ato entra na lista como mais um marcador (`tipo: 'portal'`): o cliente já desenha e clica marcadores.
+  const encontros = [...encontrosVisiveis(inst), ...(portal ? [{ id: 'portal-do-boss', tipo: 'portal', nome: `Portal: ${portal.nome}`, x: portal.x, y: portal.y, z: portal.z, estado: 'disponivel', portal: true }] : [])];
   return { id: inst.id, status: inst.status, ...progresso(hunt), ...(encontros.length ? { encontros } : {}) };
 }
 

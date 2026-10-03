@@ -2097,6 +2097,7 @@ function applyState(message) {
 
   mapView.setSnapshot(message.hunt ?? message.city, message.character);
   atualizarBotaoDeInteragir();
+  atualizarBotaoDoPortal();
   // Só na fase (na cidade não): os pontos andam a cada retrato; a geometria é refeita só ao trocar de fase/andar.
   atualizarMinimapa(!!message.hunt);
   /*
@@ -6242,6 +6243,26 @@ function abrirJanelaDeDecisao(encontro) {
   document.body.append(janela);
 }
 
+/**
+ * O botão do PORTAL DO BOSS: aparece em qualquer modo (a Caça Automática não tem "interagir") enquanto o servidor manda `portalDoBoss` — a última
+ * fase do ato foi concluída e o boss está liberado. Sem espera: pode entrar quantas vezes quiser. O servidor valida tudo.
+ */
+function atualizarBotaoDoPortal() {
+  const portal = state.hunt?.portalDoBoss ?? null;
+  let botao = document.getElementById('btn-portal-do-boss');
+  if (!portal) return void botao?.setAttribute('hidden', '');
+  if (!botao) {
+    botao = el('button', 'btn-portal-do-boss');
+    botao.id = 'btn-portal-do-boss';
+    botao.type = 'button';
+    botao.onclick = () => send({ t: 'portalDoBoss' });
+    document.body.append(botao);
+  }
+  const texto = `Portal aberto — enfrentar ${portal.nome}`;
+  if (botao.textContent !== texto) botao.textContent = texto;
+  botao.removeAttribute('hidden');
+}
+
 /** O botão "Interagir": aparece (só na caça online) quando há um baú ou altar ao alcance, e some quando não há. */
 function atualizarBotaoDeInteragir() {
   const hunt = state.hunt;
@@ -6255,7 +6276,7 @@ function atualizarBotaoDeInteragir() {
     document.body.append(botao);
   }
   botao.dataset.encontro = perto.id;
-  botao.textContent = perto.tipo === 'altar' ? `Ativar: ${perto.nome}` : perto.tipo === 'sobrevivencia' || perto.tipo === 'fenda' ? `Iniciar: ${perto.nome}` : perto.tipo === 'aprisionado' ? `Libertar: ${perto.nome}` : perto.decisao && perto.estado === 'disponivel' ? `Decidir: ${perto.nome}` : `Abrir: ${perto.nome}`;
+  botao.textContent = perto.tipo === 'portal' ? `Entrar: ${perto.nome}` : perto.tipo === 'altar' ? `Ativar: ${perto.nome}` : perto.tipo === 'sobrevivencia' || perto.tipo === 'fenda' ? `Iniciar: ${perto.nome}` : perto.tipo === 'aprisionado' ? `Libertar: ${perto.nome}` : perto.decisao && perto.estado === 'disponivel' ? `Decidir: ${perto.nome}` : `Abrir: ${perto.nome}`;
   botao.onclick = () => pedirInteracao(perto);
   botao.removeAttribute('hidden');
 }

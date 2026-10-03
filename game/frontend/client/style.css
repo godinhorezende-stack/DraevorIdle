@@ -27828,6 +27828,13 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
   color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e); border: 1px solid #7a5a12; box-shadow: 0 4px 18px #000a, 0 0 14px #f5c54266; cursor: pointer;
 }
 .btn-interagir[hidden] { display: none; }
+/* O portal do boss do ato: mais alto que o "Interagir", em roxo, e visível também na Caça Automática. */
+.btn-portal-do-boss {
+  position: fixed; left: 50%; bottom: 280px; transform: translateX(-50%); z-index: 61;
+  padding: 10px 18px; min-height: 44px; max-width: 92vw; border-radius: 10px; font: 600 14px var(--font-heading, Oswald, system-ui, sans-serif);
+  color: #f3ecff; background: linear-gradient(180deg, #7b5cf0, #3d2a9c); border: 1px solid #b8a6ff; box-shadow: 0 4px 18px #000a, 0 0 16px #8a6bffaa; cursor: pointer;
+}
+.btn-portal-do-boss[hidden] { display: none; }
 .janela-decisao {
   position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 70; width: min(92vw, 360px);
   padding: 16px; border-radius: 12px; background: #1b1710; border: 1px solid #7a5a12; box-shadow: 0 8px 30px #000c; color: #f1e6c8;
