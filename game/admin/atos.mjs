@@ -5,10 +5,13 @@
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { CATALOGO } from '../systems/dados.mjs';
+import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
 import * as Modelo from '../systems/atos-modelo.mjs';
 import * as Legado from '../systems/atos-legado.mjs';
 import * as Campanha from '../systems/campanha.mjs';
+import * as Recompensas from '../systems/encontros/recompensas.mjs';
+import { CONFIG as CONFIG_DE_ENCONTROS } from '../systems/encontros/config.mjs';
+import { valorDaInstancia } from '../systems/encontros/economia.mjs';
 
 export const CAMINHOS = { atos: join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'atos') };
 const HUNTS = () => new Set([...CATALOGO.hunts, ...CATALOGO.vips, ...CATALOGO.especiais, ...CATALOGO.divinas].map((h) => h.id));
@@ -36,6 +39,76 @@ export const obter = (id) => todos().find((a) => a.id === id) ?? null;
 export const listar = () =>
   todos().map((a) => ({ id: a.id, nome: a.nome, estado: a.estado, versao: a.versao, ordem: a.ordem, fases: a.fases.length, bossFinal: a.bossFinal?.bossId ?? null, somenteLeitura: !!a.legado?.somenteLeitura }));
 
+/**
+ * O teto RELATIVO de economia (o mesmo dos encontros): o que a recompensa paga a CADA limpeza, em ouro de NPC, contra o valor de limpar a
+ * própria fase. Aviso a partir de `fracaoDaFaseAviso`, erro a partir de `fracaoDaFaseErro`. Sem hunt (boss final) ou sem spawns, não há base.
+ */
+function avaliarEconomia(huntId, rec) {
+  if (!huntId) return [];
+  const base = valorDaInstancia(huntId, 'facil').valor;
+  if (!(base > 0)) return [{ nivel: 'aviso', mensagem: 'Sem base de comparação: a hunt não tem spawns para estimar o valor da fase.' }];
+  const fracao = Recompensas.valorEsperado(rec) / base;
+  const L = CONFIG_DE_ENCONTROS.limites;
+  const pct = `${Math.round(fracao * 100)}%`;
+  if (fracao >= L.fracaoDaFaseErro) return [{ nivel: 'erro', mensagem: `A recompensa vale ${pct} do valor de limpar a fase (teto ${Math.round(L.fracaoDaFaseErro * 100)}%): seria uma fonte nova de loot.` }];
+  if (fracao >= L.fracaoDaFaseAviso) return [{ nivel: 'aviso', mensagem: `A recompensa vale ${pct} do valor de limpar a fase (aviso a partir de ${Math.round(L.fracaoDaFaseAviso * 100)}%): confira o balanceamento.` }];
+  return [];
+}
+
+const NOME_DO_MODELO = 'Chance INDIVIDUAL por item (cada linha sorteia por conta própria, a cada rolagem). Não há peso, quantidade mín./máx. nem condição no loot do jogo.';
+
+/** A PRÉVIA de uma recompensa: o que cada linha paga, com a chance e a origem. Só leitura. */
+export function previa(rec, { origem = 'fase' } = {}) {
+  const r = rec ?? {};
+  const rolagens = r.rolagens ?? 1;
+  const nome = (id) => ITEM_CATALOG[id]?.name ?? null;
+  const linhas = [
+    ...Recompensas.dropsDe(r).map((d) => ({ tipo: 'drop', item: d.id, nome: nome(d.id), chancePct: Number((d.chance * 100).toFixed(4)), esperadoPorExecucao: Number((d.chance * rolagens).toFixed(4)), origem: `${origem} (loot)`, condicao: 'sempre' })),
+    ...(r.primeiraConclusao?.itens ?? []).map((i) => ({ tipo: 'primeira vez', item: i.id, nome: nome(i.id), quantidade: i.count, chancePct: 100, origem: `${origem} (1ª vez, uma por personagem)`, condicao: 'só na primeira' })),
+  ];
+  if (r.primeiraConclusao?.gold) linhas.push({ tipo: 'primeira vez', nome: 'ouro', quantidade: r.primeiraConclusao.gold, chancePct: 100, origem: `${origem} (1ª vez)`, condicao: 'só na primeira' });
+  if (r.primeiraConclusao?.exp) linhas.push({ tipo: 'primeira vez', nome: 'experiência', quantidade: r.primeiraConclusao.exp, chancePct: 100, origem: `${origem} (1ª vez)`, condicao: 'só na primeira' });
+  return { modelo: NOME_DO_MODELO, rolagens, moedasMediaPorRolagem: r.moedasMedia ?? null, valorEsperadoPorExecucao: Recompensas.valorEsperado(r), linhas };
+}
+
+/** Gerador pseudo-aleatório com semente (mulberry32): a mesma simulação dá o mesmo resultado. */
+function semente(a) {
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * SIMULA `execucoes` execuções (limpezas/vitórias) da recompensa. É ESTATÍSTICA: estima a frequência pelo modelo de chance individual; não
+ * garante o resultado de uma execução real (o jogo ainda aplica bônus de loot, filtros e capacidade).
+ */
+export function simular(rec, { execucoes = 10000, semente: s = 1 } = {}) {
+  const n = Math.min(100000, Math.max(1, Math.floor(execucoes) || 10000));
+  const rng = semente(s);
+  const drops = Recompensas.dropsDe(rec ?? {});
+  const rolagens = rec?.rolagens ?? 1;
+  const total = new Map();
+  const comAlgum = new Map();
+  for (let i = 0; i < n; i++) {
+    const nessa = new Set();
+    for (let r = 0; r < rolagens; r++) for (const d of drops) if (rng() < d.chance) {
+      total.set(d.id, (total.get(d.id) ?? 0) + 1);
+      nessa.add(d.id);
+    }
+    for (const id of nessa) comAlgum.set(id, (comAlgum.get(id) ?? 0) + 1);
+  }
+  const ids = [...new Set(drops.map((d) => d.id))];
+  return {
+    aviso: 'Simulação estatística: estima a frequência pela chance configurada; não garante o resultado de uma execução real.',
+    execucoes: n,
+    itens: ids.map((id) => ({ item: id, nome: ITEM_CATALOG[id]?.name ?? null, quedasPorExecucao: Number(((total.get(id) ?? 0) / n).toFixed(4)), execucoesComQueda: Number((((comAlgum.get(id) ?? 0) / n) * 100).toFixed(2)), execucoesParaUmaQueda: total.get(id) ? Number((n / total.get(id)).toFixed(1)) : null })),
+  };
+}
+
 /** O que o validador consulta: cadastros reais + as hunts dos OUTROS atos (o progresso é por hunt: dois atos não podem dividir uma). */
 export function contexto(idDoAto) {
   const hunts = HUNTS();
@@ -45,7 +118,18 @@ export function contexto(idDoAto) {
   for (const o of outros) for (const f of o.fases) if (f.huntId && !emUso.has(f.huntId)) emUso.set(f.huntId, o.id);
   const ordensEmUso = new Map(outros.filter((o) => o.ordem != null).map((o) => [o.ordem, o.id]));
   const bossesEmUso = new Map(outros.filter((o) => o.bossFinal?.bossId).map((o) => [o.bossFinal.bossId, o.id]));
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, bossesEmUso, ordensEmUso, ordemMinima: Campanha.ATOS + 1, atos: outros.map((o) => ({ id: o.id })) };
+  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, bossesEmUso, ordensEmUso, ordemMinima: Campanha.ATOS + 1, atos: outros.map((o) => ({ id: o.id })), validarRecompensa: Recompensas.validar, avaliarEconomia };
+}
+
+/** Só a recompensa (para o painel dar o alerta na hora): estrutura, itens, chances, tetos e economia. */
+export function validarRecompensa(rec, huntId = null) {
+  if (rec == null) return [];
+  const ctx = contexto(null);
+  const erros = (ctx.validarRecompensa(rec, 'recompensa') ?? []).map((mensagem) => ({ nivel: 'erro', mensagem }));
+  const ids = (rec.drops ?? []).map((d) => d?.id);
+  for (const id of new Set(ids.filter((x, i) => ids.indexOf(x) !== i))) erros.push({ nivel: 'aviso', mensagem: `O item ${id} aparece mais de uma vez nos drops.` });
+  for (const it of rec.primeiraConclusao?.itens ?? []) if (ids.includes(it?.id)) erros.push({ nivel: 'aviso', mensagem: `O item ${it.id} está nos drops e na primeira conclusão.` });
+  return [...erros, ...avaliarEconomia(huntId, rec)];
 }
 
 /** Valida sem gravar. */

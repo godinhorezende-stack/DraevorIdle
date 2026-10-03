@@ -11,7 +11,14 @@
 //           fases: [{ id, nome, descricao, ordem, huntId, tipo, nivel:{facil,medio,dificil}, obrigatoria, requisitos:{exige:[faseId]},
 //                     objetivos, conclusao:{tipo}, recompensas, eventos, sobrescritas, posicao:{x,y} }],
 //           conexoes: [{ de, para, requisito:{exige:[faseId]}|null, rotulo }],
-//           bossFinal: { bossId, faseAnterior, arena, recompensas, drops } | null }
+//           bossFinal: { bossId, faseAnterior, arena, recompensas } | null }
+//
+// RECOMPENSAS (fase e boss final): o MESMO formato dos encontros (`systems/encontros/recompensas.mjs`), entregue pelo loot de sempre:
+//   { drops: [{ id, chance (%) }],   // cada item sorteia por conta própria (chance INDIVIDUAL por item) a cada rolagem
+//     rolagens: 1..5,                // quantas vezes a lista inteira é sorteada
+//     moedasMedia,                   // média das moedas de ouro por rolagem
+//     primeiraConclusao: { gold, exp, itens: [{ id, count }] } }   // paga UMA vez por personagem (fase: 1ª limpeza; boss: 1ª vitória)
+// Nada de peso, quantidade mín./máx. por drop nem condição: o loot do jogo não tem esses modelos, então o editor não os oferece.
 
 export const ESTADOS = ['rascunho', 'beta', 'publicado', 'desativado'];
 export const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
@@ -204,6 +211,21 @@ export function validarAto(bruto, ctx = {}) {
     }
   }
   for (const f of a.fases) if (f.huntId && a.fases.filter((x) => x.huntId === f.huntId).length > 1 && f.id === a.fases.find((x) => x.huntId === f.huntId).id) r.push(erro(`fase ${f.id}`, `A hunt "${f.huntId}" aparece em mais de uma fase do ato (o progresso é por hunt).`));
+
+  // ---- recompensas (fase e boss final)
+  const conferirRecompensa = (rec, onde, huntId = null) => {
+    if (rec == null) return;
+    const vazia = !lista(rec.drops).length && !rec.tabela && !rec.primeiraConclusao;
+    if (vazia) return r.push(aviso(onde, 'Recompensa vazia (nada será pago).'));
+    for (const msg of ctx.validarRecompensa?.(rec, 'recompensa') ?? []) r.push(erro(onde, msg));
+    const ids = lista(rec.drops).map((d) => d?.id);
+    const repetidos = ids.filter((id, i) => ids.indexOf(id) !== i);
+    for (const id of new Set(repetidos)) r.push(aviso(onde, `O item ${id} aparece mais de uma vez nos drops: cada linha sorteia à parte e a chance se soma.`));
+    for (const it of lista(rec.primeiraConclusao?.itens)) if (ids.includes(it?.id)) r.push(aviso(onde, `O item ${it.id} está nos drops E na primeira conclusão: o jogador pode receber o mesmo item pelas duas fontes.`));
+    for (const x of ctx.avaliarEconomia?.(huntId, rec) ?? []) r.push(x.nivel === 'erro' ? erro(onde, x.mensagem) : aviso(onde, x.mensagem));
+  };
+  for (const f of a.fases) conferirRecompensa(f.recompensas, `fase ${f.id}`, f.huntId);
+  if (a.bossFinal) conferirRecompensa(a.bossFinal.recompensas, 'boss final');
 
   // ---- ligações
   const pares = new Set();

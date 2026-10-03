@@ -24,6 +24,8 @@ import { pecasGarantidas } from '../itens/equipamento-do-boss.mjs';
 import { gerarItem } from '../itens/gerar.mjs';
 import * as EfeitosDeItem from '../itens/efeitos.mjs';
 import * as Campanha from '../campanha.mjs';
+import * as RecompensasDeEncontro from '../encontros/recompensas.mjs';
+import * as EventosDeEncontro from '../encontros/eventos.mjs';
 import * as Prey from '../prey.mjs';
 import * as Arvore from '../arvore.mjs';
 import * as Bosses from '../bosses.mjs';
@@ -317,7 +319,12 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   }
   Bau.novaSacola(estado, alvo.name, itens);
   // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.
-  if (hunt.campanha?.bossDoAto) Campanha.venceuBoss(estado, hunt.campanha.dificuldade, hunt.campanha.bossDoAto);
+  if (hunt.campanha?.bossDoAto) {
+    Campanha.venceuBoss(estado, hunt.campanha.dificuldade, hunt.campanha.bossDoAto);
+    // Ato do editor: a recompensa configurada do boss final (drops a cada vitória; primeira vitória uma vez por personagem).
+    const rec = Campanha.recompensaDoBoss(hunt.campanha.bossDoAto);
+    if (rec) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: rec, nome: alvo.name, chave: `boss:${hunt.campanha.bossDoAto}`, dificuldade: hunt.campanha.dificuldade });
+  }
   // O cooldown já começou na ENTRADA (`Bosses.marcarEntrada`); aqui o de task fecha.
   Bosses.marcarVitoria(estado, hunt.bossId);
   hunt.vitoria = { boss: alvo.name, exp: alvo.exp, loot: Object.fromEntries(itens.map((i) => [i.id, i.count])) };
@@ -532,6 +539,34 @@ export function lootDoEncontro(estado, hunt, personagem, origem, drops, eventos)
   const sala = juntos ? salaDe(hunt) : null;
   soltarDrops({ estado, hunt, personagem, alvo: origem, drops, eventos, juntos, sala, caiu, conta, deOutros: new Map(), podio: hunt.podio ?? SEM_PODIO });
   return caiu;
+}
+
+/**
+ * Paga a recompensa configurada de um ATO do editor (fase limpa ou boss final vencido), no formato dos encontros: os drops sorteiam
+ * `rolagens` vezes pelo loot de sempre (bônus, filtros, capacidade, rodízio da party) e a `primeiraConclusao` paga UMA vez por personagem
+ * (`Campanha.reivindicarPremio`, chave `chave`). `donos`: quem recebe o prêmio de primeira vez (a sala). Devolve o que caiu (para o teste).
+ */
+export function pagarRecompensaDeAto({ estado, hunt, personagem, recompensa, nome, chave, dificuldade, donos = [estado] }) {
+  const eventos = [];
+  if (!recompensa || !estado) return { caiu: [], pagos: 0 };
+  const drops = RecompensasDeEncontro.dropsDe(recompensa);
+  const origem = { key: `ato:${chave}`, origemDoLoot: 'bau', name: nome, exp: recompensa.moedasMedia ?? 100, expDasMoedas: recompensa.moedasMedia ?? 100 };
+  const caiu = [];
+  if (drops.length) for (let i = 0; i < (recompensa.rolagens ?? 1); i++) caiu.push(...lootDoEncontro(estado, hunt, personagem, origem, drops, eventos));
+  EventosDeEncontro.empurrar(hunt, eventos);
+  let pagos = 0;
+  const pc = recompensa.primeiraConclusao;
+  if (pc) {
+    for (const quem of donos) {
+      if (!Campanha.reivindicarPremio(quem, dificuldade, chave)) continue;
+      const antes = quem.avisoDaHunt;
+      pagarPremio({ estado: quem, gold: Number(pc.gold ?? 0), exp: Number(pc.exp ?? 0), itens: (pc.itens ?? []).map((i) => ({ id: i.id, count: i.count })), nome });
+      // Não apaga o aviso que já estava na tela ("Hunt Clear!"): junta.
+      if (antes) quem.avisoDaHunt = `${antes} ${quem.avisoDaHunt}`;
+      pagos++;
+    }
+  }
+  return { caiu, pagos };
 }
 
 /** Paga um prêmio único (`{ estado, gold, exp, itens, nome }`): ouro, experiência e itens, com o aviso na tela. */

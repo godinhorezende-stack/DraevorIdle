@@ -50,7 +50,7 @@ import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
 import * as Defesa from './personagem/defesa.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
@@ -914,7 +914,7 @@ function projetarNaInstancia(estado, kills) {
  * dono e os convidados da party que estão nela (decisão do dono: conta para
  * todos). O aviso "Hunt Clear!" sai na tela de cada um (`avisoDaHunt`).
  */
-function aoLimparAInstancia(estado, hunt) {
+function aoLimparAInstancia(estado, hunt, personagem = null) {
   Campanha.limpou(estado, hunt);
   const estados = [estado];
   for (const m of hunt.partilha?.membros ?? []) {
@@ -924,6 +924,10 @@ function aoLimparAInstancia(estado, hunt) {
       estados.push(m.estado);
     }
   }
+  // Ato do editor: a recompensa configurada da fase. Os drops sorteiam UMA vez por instância limpa (a sala); a primeira limpeza paga cada
+  // personagem da sala uma vez só (`reivindicarPremio`). Este ponto roda uma vez por limpeza (`marcarSeLimpou` é idempotente).
+  const rec = hunt.campanha ? Campanha.recompensaDaFase(hunt.campanha.huntId) : null;
+  if (rec) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: rec, nome: Campanha.faseDe(hunt.campanha.huntId)?.nome ?? hunt.campanha.huntId, chave: `fase:${hunt.campanha.huntId}`, dificuldade: hunt.campanha.dificuldade, donos: estados });
   // Última fase do ato concluída: o portal do boss se abre (uma vez por fase; quem da sala puder entrar, entra).
   Campanha.abrirPortalDoBoss(hunt, estados);
 }
@@ -1396,7 +1400,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     // "Hunt Clear!", uma instância NOVA da mesma hunt (ver `hunt/instancia.mjs`).
     // Online com "Avançar sozinho", a sessão troca de fase antes da pausa acabar.
     if (hunt.instancia) {
-      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt);
+      if (Instancia.marcarSeLimpou(hunt, hunt.clock ?? 0, { estado, personagem })) aoLimparAInstancia(estado, hunt, personagem);
       // Com o portal do boss aberto a instância espera um pouco mais (dá tempo de entrar); passado isso, a nova fecha o portal.
       else if (Instancia.horaDaProxima(hunt, hunt.clock ?? 0) && (!hunt.portalDoBoss || (hunt.clock ?? 0) - (hunt.instancia.limpaNoRelogio ?? 0) >= TEMPO_DO_PORTAL_MS)) novaInstancia(estado);
     }
