@@ -367,12 +367,22 @@ export function manaForMagicLevel(value, vocationId) {
 
 /**
  * Dano de ataque físico. `attack` vem da arma, `skill` da perícia correspondente.
- * O piso cresce com o nível para que personagens altos nunca zerem o dano.
+ *
+ * A faixa ANTIGA (a do Tibia, sorteio uniforme): `max = 0,085 × ataque × (perícia + 4) + level/5`, `min = level/5` — o mínimo só dependia do level,
+ * e ignorava o ataque e a perícia. Resultado: level 190, ataque 78 e perícia 77 davam 38–575 (mínimo = 6,6% do máximo), com a média em 306.
+ *
+ * Com `variacao` (a fração, 0,30 = ±30%) a faixa fica CENTRADA na MESMA média da antiga e sobe junto com o ataque e a perícia:
+ * `média = (min antigo + max antigo) / 2`, `min = média × (1 − variacao)`, `max = média × (1 + variacao)`. A média (o DPS esperado) não muda;
+ * só some a variância absurda. Sem `variacao` vale a faixa antiga (quem não passa nada continua igual).
  */
-export function attackDamage({ attack, skill, level, factor = 1 }) {
-  const max = Math.floor((0.085 * factor * attack * (skill + 4)) + level / 5);
-  const min = Math.floor(level / 5);
-  return { min: Math.min(min, max), max: Math.max(max, 1) };
+export function attackDamage({ attack, skill, level, factor = 1, variacao = null }) {
+  const piso = Math.floor(level / 5);
+  const teto = Math.max(1, Math.floor((0.085 * factor * attack * (skill + 4)) + level / 5));
+  if (variacao == null) return { min: Math.min(piso, teto), max: Math.max(teto, 1) };
+  const media = (Math.min(piso, teto) + Math.max(teto, 1)) / 2;
+  const v = Math.max(0, Math.min(1, Number(variacao) || 0));
+  const min = Math.max(1, Math.floor(media * (1 - v)));
+  return { min, max: Math.max(min, Math.ceil(media * (1 + v))) };
 }
 
 /** Dano mágico base de varinha/bastão, escalando com magic level e nível. */

@@ -14,7 +14,7 @@ import {
   triesForSkill,
   manaForMagicLevel,
   levelBonus,
-  attackDamage,
+  attackDamage as attackDamageDoMotor,
   magicDamage,
   armorReduction,
   blockChance,
@@ -137,7 +137,13 @@ export const GLOBAL_SPELL_COOLDOWN = 2000;
  * mal com um relógio de 24h em ponto.
  */
 export const INTERVALO_DIARIO_MS = 20 * 60 * 60 * 1000;
-export { duracaoDoPasso, blockChance, expForLevel, triesForSkill, manaForMagicLevel, levelFromExp, baseSpeed, maxCapacity, levelBonus, attackDamage, magicDamage, armorReduction };
+export { duracaoDoPasso, blockChance, expForLevel, triesForSkill, manaForMagicLevel, levelFromExp, baseSpeed, maxCapacity, levelBonus, magicDamage, armorReduction };
+
+/**
+ * O dano de ataque físico (faixa mínimo–máximo) COM a variação configurável (`gamedata/combate/formulas.json` → `danoFisico.variacaoPct`):
+ * a faixa fica centrada na média da fórmula do Tibia, sem o mínimo ridículo de level/5. Todos os caminhos do jogo (ficha, golpe, duelo) passam por aqui.
+ */
+export const attackDamage = (args) => attackDamageDoMotor({ ...args, variacao: Formulas.PARAMETROS.danoFisico.variacaoPct / 100 });
 
 /** Um golpe da própria arma — real: `attack` vem do item, `skill` do personagem (10 fixo, ver `CHARACTER_TEMPLATE`). */
 export function golpeDoJogador(arma, skill, level) {
