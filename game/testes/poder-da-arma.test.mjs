@@ -1,4 +1,4 @@
-// O PODER DA ARMA (decisão do dono, 02/10): o dano base das gemas de ataque cresce pela arma equipada (poder × afinidade), e não mais
+// O PODER DA ARMA (decisão do dono, 02/10): o dano base das gemas de ataque cresce pela arma equipada (poder da arma), e não mais
 // pelo level do personagem. Uma arma NO NÍVEL devolve o dano de antes; o piso legado segura quem ainda usa a arma inicial.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -80,21 +80,18 @@ test('uma arma mais forte dá mais dano; a de nível mais baixo, menos (mesmo pe
     const e = personagem({ level: 343, nivelDaArma: 100 });
     const fraca = danoDe(e, 'spell-buzz');
     ITEM_CATALOG[ARMA.wand].minLevel = 343;
+    Ficha.invalidar(e);
     const forte = danoDe(e, 'spell-buzz');
-    assert.ok(forte.max > fraca.max * 2, `${forte.max} vs ${fraca.max}`);
+    // O Magic Attack é o ataque do "Dano" da ficha (com o Magic Level e o level): mais Magic Attack, mais dano normal e mais magia.
+    assert.ok(forte.max > fraca.max * 1.1, `${forte.max} vs ${fraca.max}`);
   });
 });
 
-test('a afinidade: a arma errada rende a fração configurada (0,25) e sem arma, a de "sem arma" (0,15)', () => {
-  const magica = personagem({ level: 343, id: ARMA.wand });
-  assert.equal(Poder.poderEfetivo(magica, 'melee').afinidade, 0.25);
-  assert.equal(Poder.poderEfetivo(magica, 'magic').afinidade, 1);
-  assert.equal(Poder.poderEfetivo(magica, 'melee').compativel, false);
-  const espada = personagem({ level: 343, id: ARMA.espada });
-  assert.equal(Poder.poderEfetivo(espada, 'melee').afinidade, 1);
-  assert.equal(Poder.poderEfetivo(espada, 'magic').afinidade, 0.25);
-  const arco = personagem({ level: 343, id: ARMA.arco });
-  assert.equal(Poder.poderEfetivo(arco, 'distance').afinidade, 1);
+test('sem penalidade de compatibilidade: qualquer arma rende o poder INTEIRO em qualquer habilidade; só "sem arma" tem fração (0,15)', () => {
+  for (const [nome, id] of [['wand', ARMA.wand], ['espada', ARMA.espada], ['arco', ARMA.arco]]) {
+    const e = personagem({ level: 343, id });
+    for (const escala of ['melee', 'distance', 'magic']) assert.equal(Poder.poderEfetivo(e, escala).afinidade, 1, `${nome} com ${escala}`);
+  }
   const nua = personagem({ level: 343 });
   nua.equipment.weapon = null;
   const p = Poder.poderEfetivo(nua, 'magic');
@@ -102,11 +99,13 @@ test('a afinidade: a arma errada rende a fração configurada (0,25) e sem arma,
   assert.equal(p.afinidade, 0.15);
 });
 
-test('a arma incompatível dá bem menos dano que a certa (Buzz com wand × com espada, no mesmo nível)', () => {
+test('a arma "errada" não perde dano: a espada numa magia (Buzz) rende exatamente o poder dela, sem fração', () => {
   emPisoZero(() => {
-    const certa = danoDe(personagem({ level: 343, id: ARMA.wand }), 'spell-buzz');
-    const errada = danoDe(personagem({ level: 343, id: ARMA.espada }), 'spell-buzz');
-    assert.ok(errada.max < certa.max * 0.5, `${errada.max} vs ${certa.max}`);
+    const espada = personagem({ level: 343, id: ARMA.espada });
+    const p = Poder.poderEfetivo(espada, 'magic');
+    assert.equal(p.poder, Poder.poderDaPeca(espada.equipment.weapon), 'o poder efetivo é o da peça, sem multiplicador de compatibilidade');
+    const wand = personagem({ level: 343, id: ARMA.wand });
+    assert.equal(Poder.poderEfetivo(wand, 'melee').poder, Poder.poderDaPeca(wand.equipment.weapon));
   });
 });
 
@@ -117,7 +116,7 @@ test('wand e rod: o rod dá +8% de poder; o elemento afim dá +10% só nas magia
   assert.ok(Math.abs(Poder.poderEfetivo(rod, 'magic', 'death').poder - base * 1.08) < 1e-6, 'rod, elemento não afim (morte)');
   assert.ok(Math.abs(Poder.poderEfetivo(rod, 'magic', 'ice').poder - base * 1.08 * 1.1) < 1e-6, 'rod, gelo é afim');
   assert.ok(Math.abs(Poder.poderEfetivo(wand, 'magic', 'fire').poder - base * 1.1) < 1e-6, 'wand, fogo é afim');
-  assert.ok(Math.abs(Poder.poderEfetivo(wand, 'melee', 'fire').poder - base * 0.25) < 1e-6, 'nada de identidade fora da família mágica');
+  assert.ok(Math.abs(Poder.poderEfetivo(wand, 'melee', 'fire').poder - base) < 1e-6, 'nada de identidade fora das habilidades mágicas, e sem fração por incompatibilidade');
   assert.equal(Ficha.combate(wand).castSpeed - Ficha.combate(rod).castSpeed, Poder.CONFIG.identidade.wand.castSpeedPct);
 });
 
@@ -142,7 +141,7 @@ test('catálogo: a gema de ataque diz a origem do dano (família da arma, afinid
   const e = personagem({ level: 343, id: ARMA.espada });
   const buzz = Acoes.catalogo(e).spells.find((a) => a.id === 'spell-buzz');
   assert.equal(buzz.armaDoDano.familia, 'melee');
-  assert.equal(buzz.armaDoDano.compativel, false);
+  assert.equal(buzz.armaDoDano.compativel, undefined, 'o catálogo não manda mais a marca de incompatibilidade');
   assert.equal(buzz.escalaCom, 'magic');
   assert.ok(Acoes.catalogo(e).poderDasArmas.raridade['mítico'] === 1.25);
 });
@@ -164,4 +163,65 @@ test('peça vestida com level acima do dele volta para a mochila, sem perda', ()
   assert.equal(e.equipment.weapon, null);
   assert.ok((e.inventory ?? []).length >= antes + 1);
   assert.deepEqual(Inventario.devolverPecasAcimaDoLevel(e), []);
+});
+
+test('arma FÍSICA: a magia escala pelo dano normal da ficha (proporcional ao dano médio ÷ a referência do level); wand/rod seguem o Magic Attack; a cura não muda', () => {
+  const atkOriginal = ITEM_CATALOG[ARMA.espada].attack;
+  const montar = (atk) => {
+    const e = personagem({ level: 343, id: ARMA.espada });
+    ITEM_CATALOG[ARMA.espada].attack = atk;
+    Ficha.invalidar(e);
+    return e;
+  };
+  try {
+    const media = (e) => { const d = Ficha.combate(e).damage; return (d.min + d.max) / 2; };
+    // O ataque da arma é global no catálogo de teste: mede cada uma logo depois de montar.
+    const fraca = montar(30);
+    const mediaFraca = media(fraca);
+    const magiaFraca = danoDe(fraca, 'spell-buzz');
+    const forte = montar(300);
+    const mediaForte = media(forte);
+    const magiaForte = danoDe(forte, 'spell-buzz');
+    const razaoDaFicha = mediaForte / mediaFraca;
+    const razaoDaMagia = (magiaForte.min + magiaForte.max) / (magiaFraca.min + magiaFraca.max);
+    assert.ok(razaoDaFicha > 1.1, `o ataque da arma subiu o dano normal (×${razaoDaFicha.toFixed(2)})`);
+    assert.ok(Math.abs(razaoDaMagia / razaoDaFicha - 1) < 0.05, `a magia subiu ×${razaoDaMagia.toFixed(2)} e o dano normal ×${razaoDaFicha.toFixed(2)}`);
+    // Um personagem NA referência dá o dano de hoje da magia no level dele (o fator da ficha é 1).
+    const ref = Poder.danoNormalDeReferencia(343);
+    assert.ok(ref > 100 && ref < 1000, `${ref}`);
+  } finally {
+    ITEM_CATALOG[ARMA.espada].attack = atkOriginal;
+  }
+  // Wand: o dano de ficha dela (8–18) NÃO entra; mexer no `wand.min/max` não muda a magia (segue o Magic Attack).
+  const wand = personagem({ level: 343, id: ARMA.wand });
+  const antes = danoDe(wand, 'spell-buzz');
+  const m = ITEM_CATALOG[ARMA.wand].wand;
+  const original = { ...m };
+  m.min = 500;
+  m.max = 900;
+  Ficha.invalidar(wand);
+  const depois = danoDe(wand, 'spell-buzz');
+  Object.assign(m, original);
+  assert.deepEqual(depois, antes, 'o dano da ficha da wand não escala a magia');
+  const kn = personagemDeTeste({ vocacao: 'knight', level: 343 });
+  const cura = Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing').damage.max;
+  kn.equipment.weapon = { id: ARMA.espada, count: 1 };
+  ITEM_CATALOG[ARMA.espada].attack = 500;
+  Ficha.invalidar(kn);
+  assert.equal(Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing').damage.max, cura, 'a cura não depende do ataque da arma');
+  ITEM_CATALOG[ARMA.espada].attack = atkOriginal;
+});
+
+test('wand e rod: o Magic Attack vai para o campo "Dano" da ficha (ataque da arma + Magic Level + level), e não o 8–18 do catálogo; o golpe da wand usa esse dano', async () => {
+  const R = await import('../systems/regras.mjs');
+  const e = personagem({ level: 343, id: ARMA.wand });
+  const f = Ficha.combate(e);
+  const esperado = R.attackDamage({ attack: Math.round(Poder.poderDaPeca(e.equipment.weapon)), skill: f.skillValue, level: 343 });
+  assert.deepEqual(f.damage, esperado, 'o Dano da ficha vem do Magic Attack');
+  assert.ok(f.damage.max > ITEM_CATALOG[ARMA.wand].wand.max, 'não é o 10–20 da wand do catálogo');
+  const rod = Ficha.combate(personagem({ level: 343, id: ARMA.rod })).damage;
+  assert.deepEqual(rod, esperado, 'wand e rod do mesmo nível: o mesmo Magic Attack, o mesmo Dano');
+  // A raridade sobe o Magic Attack e, com ele, o Dano.
+  const mitica = Ficha.combate(personagem({ level: 343, id: ARMA.wand, raridade: 'mítico' })).damage;
+  assert.ok(mitica.max > f.damage.max);
 });

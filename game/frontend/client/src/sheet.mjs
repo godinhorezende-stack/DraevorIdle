@@ -227,8 +227,7 @@ function porHabilidade(state) {
     card.title = [
       `${a.name}: dano por golpe (sem crítico nem resistência do alvo)`,
       `Gema nível ${a.gema.nivel}${a.gema.efeito?.qualidade ? ` · qualidade +${a.gema.efeito.qualidade}%` : ''}`,
-      w ? `Arma: poder efetivo ${w.poder} (afinidade ${Math.round(w.afinidade * 100)}%)` : null,
-      w?.semArma ? 'Sem arma equipada: dano reduzido.' : w && !w.compativel ? 'Arma incompatível com esta habilidade: aproveita só parte do poder.' : w?.noPiso ? 'Arma fraca para o seu level: o piso de transição segura o dano.' : null,
+      w?.pelaFicha ? `Dano normal que escala a magia: ${w.danoNormal.min}–${w.danoNormal.max}` : null,
       a.gema.supports?.length ? `Suportes ligados (só valem nesta habilidade): ${a.gema.supports.map((x) => `${x.nomePt ?? x.nome} ${x.nivel}`).join(', ')}` : 'Sem suporte ligado.',
     ].filter(Boolean).join('\n');
     return card;

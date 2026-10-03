@@ -4,7 +4,7 @@
 // o nível de poder de cada arma). Aqui só a conta, pura: nada de estado de caçada nem de sorteio.
 //
 //   poder da arma  = curva(nível de poder) × fator da raridade da peça   (wand/rod: é o Magic Attack, fixo)
-//   poder efetivo  = max(poder, piso legado × curva(level do personagem)) × afinidade(arma, habilidade) × identidade
+//   poder efetivo  = max(poder, piso legado × curva(level do personagem)) × identidade   (sem penalidade de compatibilidade: qualquer arma, qualquer habilidade)
 //   nível equiv.   = a inversa da curva → o `danoNoLevel` do catálogo responde pelo dano da magia nesse "nível"
 //
 // Uma arma NO NÍVEL (poder = curva do level do personagem) devolve o nível equivalente = o level dele: o dano de antes.
@@ -77,6 +77,12 @@ export function poderEfetivo(estado, escala, elemento = null) {
     semArma: !peca, compativel: familia === escala, noPiso: poderBruto < piso,
   };
 }
+
+/** O dano normal médio de REFERÊNCIA neste level (`escalaDaMagia.referencia`): o que um personagem físico "médio" faz num golpe. */
+export const danoNormalDeReferencia = (level) => CONFIG.escalaDaMagia.referencia.a * Math.max(1, Number(level) || 1) ** CONFIG.escalaDaMagia.referencia.b;
+
+/** A arma da mão é wand ou rod? (a magia dela escala pelo Magic Attack; as outras, pelo dano normal da ficha). */
+export const ehArmaMagica = (estado) => familiaDaArma(ITEM_CATALOG[estado?.equipment?.weapon?.id]) === 'magic';
 
 /** O Cast Speed (%) da identidade: a wand na mão conjura mais rápido. */
 export function castSpeedDaIdentidade(estado) {

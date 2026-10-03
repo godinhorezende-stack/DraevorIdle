@@ -2627,14 +2627,11 @@ function blocoDaGema(def, gema, raridade = 'comum') {
       const alcance = x.range > 1 ? `alcance ${x.range} sqm` : null;
       const custo = [typeof x.mana === 'number' && x.mana ? `${x.mana} de mana` : null, x.cooldown ? `recarga ${(x.cooldown / 1000).toLocaleString('pt-BR')} s` : null, alcance, area, alvo].filter(Boolean).join(' · ');
       if (custo) linha(custo);
-      // A ORIGEM do dano (a fórmula do servidor): o poder da arma × a afinidade dela com a habilidade + a perícia. O level do personagem não soma.
+      // A ORIGEM do dano (a fórmula do servidor): o dano NORMAL da ficha (com wand/rod, o Magic Attack é o ataque dele).
       const escala = x.escalaCom ? ESCALA_DA_GEMA[x.escalaCom] : null;
-      if (escala) linha(`Escala com ${ORIGEM_DO_PODER[x.escalaCom] ?? 'a arma'} e o ${escala}.`, 'tip-gema-ajuda');
       const a = x.armaDoDano;
-      if (a?.semArma) linha(`Sem arma equipada: dano reduzido (${Math.round(a.afinidade * 100)}% do poder).`, 'tip-gema-penalidade');
-      else if (a && !a.compativel) linha(`Arma incompatível com esta habilidade: aproveita ${Math.round(a.afinidade * 100)}% do poder dela.`, 'tip-gema-penalidade');
-      else if (a?.noPiso) linha('Arma fraca para o seu level: um piso de transição segura o dano (troque de arma).', 'tip-gema-penalidade');
-      bloco.append(faz);
+      if (a?.pelaFicha) linha(`Escala com o seu dano normal (${a.danoNormal.min.toLocaleString('pt-BR')}–${a.danoNormal.max.toLocaleString('pt-BR')}: ataque da arma, perícia e level)${escala ? ` e o ${escala}` : ''}.`, 'tip-gema-ajuda');
+            bloco.append(faz);
       const doBuff = blocoDoReforco(x);
       if (doBuff) bloco.append(doBuff);
     } else if (def.tags?.length && def.categoria === 'ataque') {

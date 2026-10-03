@@ -150,7 +150,9 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   if ((estado.mana ?? 0) < custo) return false; // sem mana: fica sem golpe este round, não cai pro físico (simplificação, ver comentário do arquivo)
   estado.mana -= custo;
   if (!segundo) Treino.gastarMana(estado, custo);
-  const { min, max, element } = arma.wand;
+  // O dano do golpe da wand/rod é o "Dano" da ficha (Magic Attack + Magic Level + level), como o golpe físico; o elemento é o da arma.
+  const { element } = arma.wand;
+  const { min, max } = Ficha.combate(estado).damage;
   eventos.push({ t: 'shot', id: ID_DO_TIRO[arma.shoot] ?? 5, x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
   eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[element] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
   // A ficha do golpe básico: + crítico de auto-ataque da proficiência.

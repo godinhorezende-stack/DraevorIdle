@@ -84,7 +84,17 @@ function nivelDoDano(estado, entry, defDaGema) {
 function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(estado)) {
   const defDaGema = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
   // O dano base da gema de ATAQUE cresce pela ARMA (poder × afinidade → "nível equivalente"); o level do personagem não soma mais (`armas/poder.mjs`).
-  const { min, max } = danoNoLevel(entry, nivelDoDano(estado, entry, defDaGema));
+  /*
+   * A BASE da gema de ataque (dono, 02/10): a magia escala pelo DANO NORMAL da ficha — com qualquer arma (física ou wand/rod, em que o Magic
+   * Attack já é o ataque desse dano). O dano de hoje da magia no level do personagem × (dano normal médio ÷ o de referência no level);
+   * wand/rod mantêm a identidade (+% do rod e do elemento afim) nas magias mágicas. Sem penalidade de compatibilidade entre arma e habilidade.
+   */
+  const ehAtaque = !entry.heals && Gemas.ehSkillDeGema(entry) && entry.kind !== 'item' && !!defDaGema;
+  const doNivel = danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
+  const identidade = ehAtaque ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
+  const fatorDaFicha = ehAtaque ? (((fichaBase.damage.min + fichaBase.damage.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
+  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha));
+  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha));
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
@@ -228,11 +238,12 @@ export function concluirConjuracao(estado, hunt, personagem) {
   return [{ t: 'castFim', uid: 'player', quem: personagem?.nome }, ...(r.eventos ?? [])];
 }
 
-/** A origem do dano base de uma gema de ataque, para o balão: família da arma, afinidade, poder efetivo e se é o piso legado que segura. */
+/** A origem do dano base de uma gema de ataque, para o balão: a família da arma e de onde sai a base (o dano normal da ficha, ou o Magic Attack da wand/rod). */
 function armaDoDano(estado, entry) {
   const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
   const p = Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(def), entry.element);
-  return { familia: p.familia, afinidade: p.afinidade, poder: Math.round(p.poder), compativel: p.compativel, semArma: p.semArma, noPiso: p.noPiso };
+  const normal = Ficha.combate(estado).damage;
+  return { familia: p.familia, poder: Math.round(p.poder), pelaFicha: true, danoNormal: { min: normal.min, max: normal.max } };
 }
 
 /** `send({t:'actions'})` — o catálogo inteiro, como o original: cada entrada com seu `blocked`. */
