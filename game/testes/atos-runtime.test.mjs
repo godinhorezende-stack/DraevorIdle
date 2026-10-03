@@ -152,3 +152,92 @@ test('R8. o carregador do boot lê só beta/publicado e ignora rascunho, desativ
     rmSync(pasta, { recursive: true, force: true });
   }
 });
+
+// ------------------------------------------------------------------ Etapa 5: recompensas configuradas
+const ouroDe = (e) => (e.gold ?? e.coins ?? 0) + (e.moedas ?? 0);
+const comRec = (recFase, recBoss) => ato5({
+  fases: ato5().fases.map((f) => (f.id === 'fase-1' ? { ...f, recompensas: recFase } : f)),
+  bossFinal: { bossId: BOSS, faseAnterior: 'fase-5', recompensas: recBoss },
+});
+
+test('P1. recompensa da fase: a primeira limpeza paga ouro/exp UMA vez por personagem; a repetição não paga a 1ª vez de novo', () => {
+  assert.equal(registrar(comRec({ drops: [], rolagens: 1, primeiraConclusao: { gold: 777, exp: 123 } })).ok, true);
+  const e = novo();
+  const xp0 = e.xp ?? 0;
+  const ouro0 = JSON.stringify(e.gold ?? 0);
+  jogar(e, h1);
+  assert.match(e.avisoDaHunt, /Hunt Clear/, 'o aviso da limpeza continua na tela');
+  assert.match(e.avisoDaHunt, /777/, 'e o prêmio aparece junto');
+  assert.equal((e.xp ?? 0) - xp0 >= 123, true);
+  assert.deepEqual(e.campanha.facil.premios, ['fase:' + h1]);
+  e.hunt = null;
+  jogar(e, h1); // limpa de novo
+  assert.equal(e.campanha.facil.premios.length, 1, 'a 1ª vez não é reivindicada outra vez');
+  assert.equal(Campanha.reivindicarPremio(e, 'facil', 'fase:' + h1), false);
+  assert.doesNotMatch(e.avisoDaHunt ?? '', /777/, 'a repetição não paga a 1ª vez');
+  void ouro0;
+});
+
+test('P2. drops da fase: item com chance 100% cai a cada limpeza (repetível), pelo loot normal; chance 0 é recusada pela validação', () => {
+  assert.equal(registrar(comRec({ drops: [{ id: 3268, chance: 100 }], rolagens: 2, moedasMedia: 10 })).ok, true);
+  const e = novo();
+  const r1 = Campanha.recompensaDaFase(h1);
+  assert.equal(r1.drops[0].id, 3268);
+  jogar(e, h1);
+  const cristais = () => JSON.stringify(e).split('"id":3268').length - 1;
+  const depoisDe1 = cristais();
+  assert.ok(depoisDe1 >= 1, 'o drop de 100% apareceu');
+  e.hunt = null;
+  jogar(e, h1);
+  assert.ok(cristais() > depoisDe1, 'repetível: cai de novo');
+  Campanha._desregistrarAto(5);
+  assert.equal(registrar(comRec({ drops: [{ id: 3043, chance: 0 }], rolagens: 1 })).ok, false);
+  assert.equal(registrar(comRec({ drops: [{ id: 99999999, chance: 10 }], rolagens: 1 })).ok, false, 'item inexistente');
+  assert.equal(registrar(comRec({ drops: [{ id: 3043, chance: 10 }], rolagens: 9 })).ok, false, 'rolagens acima do teto');
+});
+
+test('P3. recompensa do boss final: paga na vitória (1ª vitória uma vez por personagem), sem pagar duas vezes por evento repetido', () => {
+  assert.equal(registrar(comRec(null, { drops: [{ id: 3043, chance: 100 }], rolagens: 1, primeiraConclusao: { gold: 5000, exp: 900 } })).ok, true);
+  const e = novo();
+  for (const h of [h1, h2, h3, h4]) jogar(e, h);
+  jogar(e, h5);
+  assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, true);
+  const alvo = e.hunt.monstros.find((m) => m.isBoss) ?? e.hunt.monstros[0];
+  alvo.hp = 0;
+  Cacadas.tique(e, PERSONAGEM, Date.now() + 100);
+  Cacadas.tique(e, PERSONAGEM, Date.now() + 600);
+  assert.ok(e.hunt.vitoria, 'o boss caiu');
+  assert.deepEqual(e.campanha.facil.premios.filter((k) => k.startsWith('boss')), ['boss:5']);
+  const xp = e.xp ?? 0;
+  for (let i = 0; i < 3; i++) Cacadas.tique(e, PERSONAGEM, Date.now() + 1000 + i * 500);
+  assert.equal(e.xp ?? 0, xp, 'eventos repetidos não pagam de novo');
+  assert.equal(Campanha.reivindicarPremio(e, 'facil', 'boss:5'), false);
+});
+
+test('P4. alertas da validação: duplicado, mesma fonte dupla e recompensa vazia viram aviso; erro bloqueia a publicação', () => {
+  const r = Campanha.registrarAto(ato5({ fases: ato5().fases.map((f) => (f.id === 'fase-1' ? { ...f, recompensas: { drops: [{ id: 3043, chance: 5 }, { id: 3043, chance: 5 }], rolagens: 1, primeiraConclusao: { gold: 1, itens: [{ id: 3043, count: 1 }] } } } : f)) }));
+  assert.equal(r.ok, true);
+  const msgs = r.problemas.map((p) => p.mensagem).join('|');
+  assert.match(msgs, /mais de uma vez nos drops/);
+  assert.match(msgs, /drops E na primeira conclusão/);
+  Campanha._desregistrarAto(5);
+  const vazia = Campanha.registrarAto(ato5({ fases: ato5().fases.map((f) => (f.id === 'fase-1' ? { ...f, recompensas: { drops: [] } } : f)) }));
+  assert.ok(vazia.problemas.some((p) => /Recompensa vazia/.test(p.mensagem)));
+});
+
+test('P5. party: a primeira vez paga cada personagem da sala uma vez; chamar de novo (evento duplicado) não paga ninguém de novo', async () => {
+  const { pagarRecompensaDeAto } = await import('../systems/hunt/combate.mjs');
+  assert.equal(registrar().ok, true);
+  const dono = novo();
+  const amigo = novo();
+  assert.equal(Cacadas.entrar(dono, { huntId: h1, mode: 'auto', dificuldade: 'facil' }).ok, true);
+  const rec = { drops: [], rolagens: 1, primeiraConclusao: { gold: 50, exp: 0 } };
+  const chamada = () => pagarRecompensaDeAto({ estado: dono, hunt: dono.hunt, personagem: null, recompensa: rec, nome: 'Fase', chave: `fase:${h1}`, dificuldade: 'facil', donos: [dono, amigo] });
+  const ouro = (e) => e.gold ?? 0;
+  const [d0, a0] = [ouro(dono), ouro(amigo)];
+  assert.equal(chamada().pagos, 2);
+  assert.equal(ouro(dono) - d0, 50);
+  assert.equal(ouro(amigo) - a0, 50);
+  assert.equal(chamada().pagos, 0);
+  assert.equal(ouro(dono) - d0, 50, 'sem pagar duas vezes');
+});

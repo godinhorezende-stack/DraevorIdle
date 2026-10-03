@@ -260,6 +260,59 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     return svg;
   }
 
+  // ------------------------------------------------------------------ recompensas (fase e boss final)
+  // Uma por contexto ('fase:<id>' ou 'boss'): prévia, simulador, alertas e busca de item vêm do servidor.
+  const RC = {};
+  const chaveRc = (k) => (RC[k] ??= { previa: null, simulacao: null, problemas: [], q: '', itens: [], esperando: null });
+  const idRc = (k) => `rc-${k.replace(/\W/g, '_')}`;
+  const rotulosDe = (k) => (k === 'boss' ? { titulo: 'Recompensa do boss final (conclusão do ato)', primeira: 'Primeira vitória (uma vez por personagem)', cada: 'A cada vitória' } : { titulo: 'Recompensa da fase', primeira: 'Primeira limpeza (uma vez por personagem)', cada: 'A cada limpeza' });
+  const lerRec = (k) => (k === 'boss' ? E.ato.bossFinal?.recompensas : faseDe(E.fase)?.recompensas);
+  const gravarRec = (k, v) => { if (k === 'boss') E.ato.bossFinal.recompensas = v; else faseDe(E.fase).recompensas = v; };
+  async function atualizarRc(k, origem, huntId) {
+    const R = chaveRc(k);
+    const rec = lerRec(k);
+    if (!rec) { R.previa = null; R.simulacao = null; R.problemas = []; return; }
+    const r = await api('atos-editor/previa', { recompensa: rec, origem, huntId, simular: !!R.simulacao });
+    R.previa = r.previa;
+    R.problemas = r.problemas ?? [];
+    if (R.simulacao) R.simulacao = r.simulacao;
+    document.getElementById(idRc(k))?.replaceWith(painelDeRecompensa(k, origem, huntId));
+  }
+  function painelDeRecompensa(k, origem, huntId) {
+    const rot = rotulosDe(k);
+    const rec = lerRec(k);
+    const R = chaveRc(k);
+    const id = idRc(k);
+    const repintar = () => document.getElementById(id)?.replaceWith(painelDeRecompensa(k, origem, huntId));
+    const mudarRec = (fn) => { fn(lerRec(k)); mudou(); clearTimeout(R.esperando); R.esperando = setTimeout(() => atualizarRc(k, origem, huntId), 300); };
+    if (rec && !R.previa && !R.carregando) {
+      R.carregando = true;
+      setTimeout(() => atualizarRc(k, origem, huntId).finally(() => { R.carregando = false; }), 0);
+    }
+    if (!rec) return el('fieldset', { id }, el('legend', {}, rot.titulo), el('div', { class: 'dica' }, 'Sem recompensa configurada (vale só o loot normal da hunt/boss).'), E.somenteLeitura ? null : el('button', { onclick: () => { gravarRec(k, { drops: [], rolagens: 1 }); mudou(); atualizarRc(k, origem, huntId); } }, 'Configurar recompensa'));
+    const buscar = async (q) => { R.q = q; R.itens = q.length >= 2 ? (await api(`itens?q=${encodeURIComponent(q)}`)).itens : []; repintar(); };
+    const pc = rec.primeiraConclusao;
+    const nomeDe = (iid) => R.previa?.linhas.find((l) => l.item === iid)?.nome ?? '';
+    const linhaDrop = (d, i) => el('div', { class: 'linha' }, el('span', {}, `${d.id} ${nomeDe(d.id)}`), el('input', { type: 'number', step: 'any', value: d.chance, title: 'chance em % (individual por item)', disabled: E.somenteLeitura, onchange: (e) => mudarRec((x) => { x.drops[i].chance = Number(e.target.value); }) }), el('span', { class: 'dica' }, '%'), E.somenteLeitura ? null : el('button', { onclick: () => mudarRec((x) => x.drops.splice(i, 1)) }, '✕'));
+    const linhaPrimeira = (it, i) => el('div', { class: 'linha' }, el('span', {}, `${it.id} ${nomeDe(it.id)}`), el('input', { type: 'number', value: it.count, title: 'quantidade', disabled: E.somenteLeitura, onchange: (e) => mudarRec((x) => { x.primeiraConclusao.itens[i].count = Number(e.target.value); }) }), E.somenteLeitura ? null : el('button', { onclick: () => mudarRec((x) => x.primeiraConclusao.itens.splice(i, 1)) }, '✕'));
+    const garantirPc = (x) => (x.primeiraConclusao ??= { gold: 0, exp: 0, itens: [] });
+    return el('fieldset', { id }, el('legend', {}, rot.titulo),
+      el('div', { class: 'dica' }, `Modelo: ${R.previa?.modelo ?? 'chance individual por item (cada linha sorteia por conta própria).'} Passa pelo loot normal do jogo (bônus, filtros, capacidade, party).`),
+      el('b', {}, `${rot.cada}: drops (chance individual, %)`),
+      el('div', { class: 'linhas' }, (rec.drops ?? []).map(linhaDrop), (rec.drops ?? []).length ? null : el('span', { class: 'dica' }, 'nenhum drop')),
+      el('div', { class: 'grade' }, campo('Rolagens (a lista é sorteada N vezes, 1–5)', rec.rolagens ?? 1, (v) => mudarRec((x) => { x.rolagens = Number(v) || 1; }), { type: 'number' }), campo('Média de moedas por rolagem', rec.moedasMedia, (v) => mudarRec((x) => { x.moedasMedia = v === '' ? undefined : Number(v); }), { type: 'number' })),
+      el('b', {}, rot.primeira),
+      el('div', { class: 'grade' }, campo('Ouro', pc?.gold ?? 0, (v) => mudarRec((x) => { garantirPc(x).gold = Number(v) || 0; }), { type: 'number' }), campo('Experiência', pc?.exp ?? 0, (v) => mudarRec((x) => { garantirPc(x).exp = Number(v) || 0; }), { type: 'number' })),
+      el('div', { class: 'linhas' }, (pc?.itens ?? []).map(linhaPrimeira)),
+      E.somenteLeitura ? null : el('div', { class: 'linha' }, el('input', { placeholder: 'buscar item (nome ou ID) para adicionar', value: R.q, onchange: (e) => buscar(e.target.value) })),
+      R.itens.length ? el('div', { class: 'linhas' }, R.itens.map((it) => el('div', { class: 'linha' }, el('span', {}, `${it.id} ${it.name}`), el('button', { onclick: () => mudarRec((x) => (x.drops ??= []).push({ id: it.id, chance: 1 })) }, '+ drop'), el('button', { onclick: () => mudarRec((x) => garantirPc(x).itens.push({ id: it.id, count: 1 })) }, '+ 1ª vez')))) : null,
+      R.problemas.length ? el('ul', { class: 'problemas' }, R.problemas.map((p) => el('li', { class: p.nivel }, `${p.nivel === 'erro' ? '✖' : '⚠'} ${p.mensagem}`))) : (R.previa ? el('div', { class: 'selo ok' }, 'Sem alertas') : null),
+      R.previa ? el('table', { class: 'bib-sub' }, el('thead', {}, el('tr', {}, ['Item', 'Qtd', 'Chance', 'Esperado/exec.', 'Origem', 'Condição'].map((h) => el('th', {}, h)))), el('tbody', {}, R.previa.linhas.map((l) => el('tr', {}, el('td', {}, l.nome ?? l.item ?? '—'), el('td', {}, l.quantidade ?? '—'), el('td', {}, `${l.chancePct}%`), el('td', {}, l.esperadoPorExecucao ?? '—'), el('td', {}, l.origem), el('td', {}, l.condicao))))) : null,
+      R.previa ? el('div', { class: 'dica' }, `Valor esperado por execução (ouro de NPC, sem a 1ª vez): ${R.previa.valorEsperadoPorExecucao.toLocaleString('pt-BR')}`) : null,
+      el('div', { class: 'linha' }, el('button', { onclick: async () => { R.simulacao = { pendente: true }; await atualizarRc(k, origem, huntId); } }, 'Simular 10.000 execuções'), E.somenteLeitura ? null : el('button', { class: 'perigo', onclick: () => { gravarRec(k, null); R.previa = null; R.simulacao = null; mudou(); } }, 'Remover recompensa')),
+      R.simulacao?.itens ? el('div', {}, el('div', { class: 'dica' }, R.simulacao.aviso), el('table', { class: 'bib-sub' }, el('tbody', {}, R.simulacao.itens.map((i) => el('tr', {}, el('td', {}, i.nome ?? i.item), el('td', {}, `${i.quedasPorExecucao} quedas/exec.`), el('td', {}, `${i.execucoesComQueda}% das execuções com queda`), el('td', {}, i.execucoesParaUmaQueda ? `1 queda a cada ~${i.execucoesParaUmaQueda} exec.` : 'nunca caiu')))))) : null);
+  }
+
   // ------------------------------------------------------------------ painéis
   function painelDoAto() {
     const a = E.ato;
@@ -298,7 +351,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: f.obrigatoria, disabled: E.somenteLeitura, onchange: (e) => { f.obrigatoria = e.target.checked; mudou(); } }), 'Fase obrigatória'),
         el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: f.id === E.ato.inicio, disabled: E.somenteLeitura, onchange: () => { E.ato.inicio = f.id; mudou(); } }), 'Fase inicial')),
       el('label', { class: 'campo' }, 'Requisitos (IDs de fases que precisam estar completas, separados por vírgula)', el('input', { value: f.requisitos.exige.join(', '), disabled: E.somenteLeitura, onchange: (e) => { f.requisitos.exige = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); mudou(); } })),
-      el('div', { class: 'dica' }, 'A conclusão é "limpar a hunt" (a única que o jogo executa hoje). Recompensas e drops da fase: Etapa 5. Dados da hunt (monstros, mapa, drops) vêm do cadastro — nada é copiado.'),
+      el('div', { class: 'dica' }, 'A conclusão é "limpar a hunt" (a única que o jogo executa hoje). Recompensas e drops da fase: painel abaixo. Dados da hunt (monstros, mapa, drops) vêm do cadastro — nada é copiado.'),
       E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { onclick: () => { E.ligando = f.id; msg(`Clique na fase de DESTINO para ligar "${f.nome}" a ela.`, 'aviso'); pintar(); } }, 'Ligar a outra fase →'), el('button', { class: 'perigo', onclick: () => removerFase(f.id) }, 'Remover fase')));
   }
 
@@ -319,7 +372,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       b ? el('div', { class: 'dica' }, `${faseDe(b.faseAnterior)?.nome ?? 'Fase anterior?'} → limpar a hunt NESTA execução → portal aberto → ${b.bossId ?? 'boss?'}`) : el('div', { class: 'dica' }, 'Sem boss final.'),
       el('div', { class: 'linha' }, el('span', {}, el('b', {}, 'Boss: '), b?.bossId ?? 'nenhum'), E.somenteLeitura ? null : el('button', { onclick: () => abrirPicker('boss') }, 'Escolher na Biblioteca'), !E.somenteLeitura && b ? el('button', { class: 'perigo', onclick: () => { a.bossFinal = null; mudou(); } }, 'Tirar') : null),
       b ? selecao('Fase anterior ao boss (a que abre o portal)', b.faseAnterior, fasesOpt, (v) => { b.faseAnterior = v; mudou(); }, '(escolha)') : null,
-      el('div', { class: 'dica' }, 'Regras fixas do jogo para o boss final: o portal só abre ao limpar a hunt na execução atual (o histórico não vale), sem cooldown de entrada; na Caça Automática o personagem entra sozinho. Arena, recompensas e drops do boss: Etapa 5.'));
+      el('div', { class: 'dica' }, 'Regras fixas do jogo para o boss final: o portal só abre ao limpar a hunt na execução atual (o histórico não vale), sem cooldown de entrada; na Caça Automática o personagem entra sozinho. Recompensas e drops do boss final: painel abaixo.'));
   }
 
   function painelDeProblemas() {
@@ -383,7 +436,10 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
           el('tbody', {}, E.lista.map((a) => el('tr', { class: 'clicavel', onclick: () => abrir(a.id) }, el('td', {}, a.id), el('td', {}, a.nome), el('td', {}, el('span', { class: 'selo' }, a.estado)), el('td', {}, a.versao), el('td', {}, a.fases), el('td', {}, a.bossFinal ?? '—'), el('td', {}, a.somenteLeitura ? el('span', { class: 'selo' }, 'somente leitura') : ''))))));
       return;
     }
-    const lateral = [painelDoAto(), painelDaFase(), painelDaLigacao(), painelDoBoss(), painelPicker()].filter(Boolean);
+    const fase = faseDe(E.fase);
+    const recFase = fase ? painelDeRecompensa(`fase:${fase.id}`, 'fase', fase.huntId, rotulosDe('fase')) : null;
+    const recBoss = E.ato.bossFinal ? painelDeRecompensa('boss', 'boss', null, rotulosDe('boss')) : null;
+    const lateral = [painelDoAto(), painelDaFase(), recFase, painelDaLigacao(), painelDoBoss(), recBoss, painelPicker()].filter(Boolean);
     alvo.replaceChildren(
       el('div', { class: 'linha' },
         el('button', { onclick: async () => { if (sujo() && !confirm('Há alterações não salvas. Voltar mesmo assim?')) return; E.ato = null; await carregarLista(); pintar(); } }, '← Atos'),

@@ -24,6 +24,7 @@ import { CATALOGO } from './dados.mjs';
 import * as Beta from './modo-beta.mjs';
 import { validarAto, temErro, fasesAbertas, normalizar } from './atos-modelo.mjs';
 import { lerExecutaveis } from './atos-carregar.mjs';
+import * as RecompensasDeEncontro from './encontros/recompensas.mjs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
@@ -77,6 +78,7 @@ function progresso(estado, dif) {
   p.limpezas ??= {};
   p.completas ??= [];
   p.bosses ??= [];
+  p.premios ??= []; // chaves dos prêmios de PRIMEIRA vez já pagos (`fase:<huntId>`, `boss:<ato>`): nunca pagam duas vezes
   return p;
 }
 
@@ -440,7 +442,7 @@ function contextoDoRuntime() {
   const ordensEmUso = new Map([...Array(ATOS)].map((_, i) => [i + 1, `legado-${i + 1}`]));
   for (const [n, g] of ATOS_DO_EDITOR) ordensEmUso.set(n, g.ato.id);
   const atos = [...ordensEmUso.values()].map((id) => ({ id }));
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos };
+  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos, validarRecompensa: RecompensasDeEncontro.validar };
 }
 
 /**
@@ -486,6 +488,25 @@ export function registrarAto(bruto) {
   desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null }));
   ATOS_DO_EDITOR.set(numero, { ato, numero, huntPorFase, desfazer });
   return { ok: true, problemas, numero };
+}
+
+/** A recompensa configurada de uma fase de ato do editor (`null` se não há / é fase legada). Formato dos encontros. */
+export const recompensaDaFase = (huntId) => {
+  const f = faseDe(huntId);
+  const g = f?.grafo ? ATOS_DO_EDITOR.get(f.ato) : null;
+  return g?.ato.fases.find((x) => x.id === f.grafo.faseId)?.recompensas ?? null;
+};
+/** A recompensa do boss final de um ato do editor (`null` se não há). */
+export const recompensaDoBoss = (ato) => ATOS_DO_EDITOR.get(Number(ato))?.ato.bossFinal?.recompensas ?? null;
+/**
+ * Reivindica o prêmio de PRIMEIRA vez `chave` deste personagem nesta dificuldade: `true` UMA vez só (grava em `premios`), `false` nas demais.
+ * É o que impede pagar duas vezes por evento duplicado ou por duas fontes.
+ */
+export function reivindicarPremio(estado, dif, chave) {
+  const p = progresso(estado, dif);
+  if (p.premios.includes(chave)) return false;
+  p.premios.push(chave);
+  return true;
 }
 
 /** Só os testes: tira da campanha legada estas hunts (para um ato de teste usá-las; cada hunt pertence a um ato só). */
