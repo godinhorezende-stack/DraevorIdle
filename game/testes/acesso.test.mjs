@@ -77,7 +77,7 @@ async function subir(env, agora) {
   });
   await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
   const base = `http://127.0.0.1:${server.address().port}`;
-  const chama = (metodo, caminho, { corpo, cookie, origem } = {}) => fetch(base + caminho, { method: metodo, headers: { 'content-type': 'application/json', ...(cookie ? { cookie } : {}), ...(origem ? { origin: origem } : {}) }, body: corpo ? JSON.stringify(corpo) : undefined }).then(async (r) => ({ status: r.status, setCookie: r.headers.get('set-cookie'), corpo: await r.json() }));
+  const chama = (metodo, caminho, { corpo, cookie, origem } = {}) => fetch(base + caminho, { method: metodo, headers: { 'content-type': 'application/json', ...(cookie ? { cookie } : {}), ...(origem ? { origin: origem } : {}) }, body: corpo ? JSON.stringify(corpo) : undefined }).then(async (r) => ({ status: r.status, setCookie: r.headers.getSetCookie()[0] ?? null, setCookies: r.headers.getSetCookie(), corpo: await r.json() }));
   return { chama, fechar: () => new Promise((ok) => server.close(ok)), acesso, base };
 }
 const servidores = [];
@@ -190,4 +190,24 @@ test('AC10. página de login: /editor/login existe, é autônoma, só volta para
   const r = await prod.entrar({ email: 'dono@x.com', senha: 'ok-dono' });
   assert.equal(prod.precisaDeLogin(`engine_sessao=${r.token}`), false);
   assert.equal(A.criarAcesso({ config: cfg({}), deps }).precisaDeLogin(undefined), false, 'em desenvolvimento a página abre direto');
+});
+
+test('AC11. REGRESSÃO do laço no login: o cookie da sessão chega à PÁGINA da Engine (Path inclui /editor), à API e NUNCA ao jogo; a página só leva ao login quando falta sessão', async () => {
+  const s = await subir({ NODE_ENV: 'production', ENGINE_ADMINS: 'dono@x.com' });
+  servidores.push(s);
+  const ok = await s.chama('POST', `${P}auth/entrar`, { corpo: { email: 'dono@x.com', senha: 'ok-dono' } });
+  assert.equal(ok.setCookies.length, 2, 'um cookie por caminho');
+  const caminhos = ok.setCookies.map((c) => c.match(/Path=([^;]+)/)[1]);
+  assert.deepEqual(caminhos.sort(), ['/api/mapas', '/editor']);
+  for (const c of ok.setCookies) { assert.match(c, /HttpOnly/); assert.match(c, /SameSite=Strict/); }
+  const recebe = (pedido) => caminhos.some((c) => pedido === c || pedido.startsWith(`${c}/`));
+  for (const pagina of ['/editor', '/editor/conteudo', '/editor/login', '/api/mapas', '/api/mapas/_conteudo/opcoes']) assert.ok(recebe(pagina), `${pagina} recebe a sessão`);
+  for (const jogo of ['/', '/jogar', '/ws', '/api/status', '/wiki']) assert.ok(!recebe(jogo), `${jogo} NÃO recebe o cookie da Engine`);
+  // O que o navegador enviaria à página /editor/conteudo agora: o servidor reconhece a sessão e NÃO manda voltar ao login (era o laço).
+  const token = ok.setCookies[0].split(';')[0].split('=')[1];
+  assert.equal(s.acesso.precisaDeLogin(`engine_sessao=${token}`), false);
+  const sair = await s.chama('POST', `${P}auth/sair`, { cookie: `engine_sessao=${token}` });
+  assert.equal(sair.setCookies.length, 2);
+  for (const c of sair.setCookies) assert.match(c, /Max-Age=0/);
+  assert.match(readFileSync(new URL('../frontend/client/src/editor-login.mjs', import.meta.url), 'utf8'), /girandoEmLaco\(\)/, 'a página de login tem o quebra-laço');
 });

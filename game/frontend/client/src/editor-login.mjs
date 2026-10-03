@@ -11,11 +11,26 @@ export function destinoSeguro(voltar) {
   return v;
 }
 
+/** Quebra-laço: se a página de destino manda de volta ao login várias vezes seguidas, para e explica (em vez de girar para sempre). */
+function girandoEmLaco(agora = Date.now(), storage = window.sessionStorage) {
+  try {
+    const marcas = JSON.parse(storage.getItem('engine.voltas') ?? '[]').filter((t) => agora - t < 10_000);
+    marcas.push(agora);
+    storage.setItem('engine.voltas', JSON.stringify(marcas));
+    return marcas.length >= 4;
+  } catch {
+    return false;
+  }
+}
+
 async function iniciar() {
   const voltar = destinoSeguro(new URLSearchParams(location.search).get('voltar'));
   const quem = await fetch(`${BASE}quem`).then((r) => r.json()).catch(() => null);
   if (!quem) return void (document.getElementById('aviso').textContent = 'Não consegui falar com o servidor.');
-  if (quem.admin || !quem.config.exigeLogin) return void location.replace(voltar);
+  if (quem.admin || !quem.config.exigeLogin) {
+    if (girandoEmLaco()) return void (document.getElementById('aviso').textContent = 'A sessão é válida, mas a página de destino mandou de volta ao login várias vezes. Recarregue com Ctrl+F5; se persistir, avise o desenvolvedor.');
+    return void location.replace(voltar);
+  }
   const form = document.getElementById('form');
   const erro = document.getElementById('erro');
   const enviar = document.getElementById('enviar');

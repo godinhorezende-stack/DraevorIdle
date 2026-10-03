@@ -112,8 +112,9 @@ test('P2. concluir a última fase abre o portal (uma vez, com o boss do ato), av
   const portal = e.hunt.portalDoBoss;
   assert.ok(portal, 'o portal abriu');
   assert.deepEqual([portal.bossId, portal.ato, portal.dificuldade], ['urmahlullu-the-immaculate', 1, 'facil']);
-  assert.match(e.avisoDaHunt, /portal do boss/i);
-  assert.match(e.avisoDaHunt, /sem espera/);
+  // O aviso da limpeza ("portal do boss … sem espera") pode ser SUBSTITUÍDO no mesmo tique por um prêmio de "primeira vitória" de um encontro sorteado
+  // da fase (`pagarPremio` troca o aviso da tela): o jogador vê um ou outro. O que não varia é o portal aberto e a mensagem do servidor para a limpeza.
+  assert.match(e.avisoDaHunt, /portal do boss.*sem espera|Primeira vitória sobre/is);
   const snap = Cacadas.snapshotDaHunt(e);
   assert.deepEqual([snap.portalDoBoss.nome, snap.portalDoBoss.ato], ['Urmahlullu the Immaculate', 1]);
   const marcador = snap.instancia.encontros.find((x) => x.tipo === 'portal');
