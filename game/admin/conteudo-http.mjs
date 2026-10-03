@@ -10,6 +10,7 @@ import * as CampanhaEditor from './campanha-editor.mjs';
 import * as Overrides from './overrides.mjs';
 import * as Auditoria from './auditoria.mjs';
 import * as OverridesItens from './overrides-itens.mjs';
+import * as OverridesSprites from './overrides-sprites.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
@@ -48,6 +49,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
     if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
     // Overrides por cima do dado importado (monstros): leitura; a edição é POST `overrides` (grava) e `overrides/validar` (só pré-visualiza).
+    // Sprites (monstros, outfits e montarias: o mesmo formato de folha). `overrides/sprites/<look>` é o look inteiro: original, override, quem usa, versões.
+    if (rota === 'overrides/sprites') return json(res, 200, OverridesSprites.listar()), true;
+    if (rota.startsWith('overrides/sprites/')) {
+      const s = OverridesSprites.obter(decodeURIComponent(rota.slice('overrides/sprites/'.length)));
+      return s ? json(res, 200, s) : json(res, 404, { ok: false, erros: ['Look não encontrado nos desenhos do jogo.'] }), true;
+    }
     if (rota === 'overrides/itens') return json(res, 200, OverridesItens.listar(Object.fromEntries(url.searchParams))), true;
     if (rota.startsWith('overrides/itens/')) {
       const i = OverridesItens.obter(decodeURIComponent(rota.slice('overrides/itens/'.length)));
@@ -115,6 +122,17 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
     if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
     if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'overrides/sprites/validar') return json(res, 200, OverridesSprites.propor(String(dados?.look ?? ''), dados ?? {})), true;
+    if (rota === 'overrides/sprites') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      const look = String(dados?.look ?? '');
+      if (a === 'salvar') return responder(OverridesSprites.salvar(look, dados, dados.revisao));
+      if (a === 'reverter') return responder(OverridesSprites.reverter(look, dados.revisao));
+      if (a === 'ativo') return responder(look ? OverridesSprites.definirAtivo(look, dados.ativo, dados.revisao) : OverridesSprites.definirAtivoGeral(dados.ativo, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesSprites.restaurarVersao(look, dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
+    }
     if (rota === 'overrides/itens/validar') return json(res, 200, OverridesItens.propor(String(dados?.id ?? ''), dados?.override ?? null)), true;
     if (rota === 'overrides/itens') {
       const a = dados?.acao;
