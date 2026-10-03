@@ -120,7 +120,8 @@ export function contexto(idDoAto) {
   for (const o of outros) for (const f of o.fases) if (f.huntId && !emUso.has(f.huntId)) emUso.set(f.huntId, o.id);
   const ordensEmUso = new Map(outros.filter((o) => o.ordem != null).map((o) => [o.ordem, o.id]));
   const bossesEmUso = new Map(outros.filter((o) => o.bossFinal?.bossId).map((o) => [o.bossFinal.bossId, o.id]));
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, bossesEmUso, ordensEmUso, ordemMinima: Campanha.ATOS + 1, atos: outros.map((o) => ({ id: o.id })), validarRecompensa: Recompensas.validar, avaliarEconomia };
+  const categoriaDaHunt = (id) => ['hunts', 'vips', 'especiais', 'divinas'].find((c) => (CATALOGO[c] ?? []).some((h) => h.id === id)) ?? null;
+  return { categoriaDaHunt, huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, bossesEmUso, ordensEmUso, ordemMinima: Campanha.ATOS + 1, atos: outros.map((o) => ({ id: o.id })), validarRecompensa: Recompensas.validar, avaliarEconomia };
 }
 
 /** Só a recompensa (para o painel dar o alerta na hora): estrutura, itens, chances, tetos e economia. */

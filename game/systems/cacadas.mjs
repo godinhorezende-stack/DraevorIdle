@@ -467,6 +467,22 @@ function inicioDaCacada(grade, posicoes, boss) {
  * outros andares e — numa hunt da campanha — a INSTÂNCIA (ver
  * `hunt/instancia.mjs`). Usado por `entrar` e por `novaInstancia`.
  */
+/** Os spawns de uma sala GERADA (hunt Vip/Instance/Divine): um por ponto da sala, com as criaturas do cadastro pelo peso de cada uma. */
+function spawnsDaSalaGerada(posicoes, hunt, grade) {
+  const porAndar = hunt?.spawnPorAndar ?? {};
+  const doCadastro = (hunt?.creatures ?? []).map((c) => ({ key: c.key, peso: 1 }));
+  const quantidade = Math.max(1, Math.round(hunt?.density ?? 1));
+  return (posicoes ?? [])
+    .filter((p) => Number.isInteger(p.x) && Number.isInteger(p.y))
+    .map((p, i) => {
+      const z = Number.isInteger(p.z) ? p.z : grade.z;
+      const pesos = (porAndar[z] ?? porAndar[String(z)] ?? []).map((c) => ({ key: c.key, peso: c.weight > 0 ? c.weight : 1 }));
+      const criaturas = p.key ? [{ key: p.key, peso: 1 }] : pesos.length ? pesos : doCadastro;
+      return { id: `g${i + 1}`, x: p.x, y: p.y, z, raio: 2, quantidade, tipo: 'normal', criaturas };
+    })
+    .filter((s) => s.criaturas.length);
+}
+
 function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
   const grade = gradeDaHunt(hunt ?? { id: huntId });
   const posicoes = boss ? posicaoDoBoss(boss, grade) : hunt?.posicoes?.length ? pontosNoMapa(hunt, grade.mapa?.floors ? grade.mapa : null) : spawnsCapturados(huntId) ?? grade.posicoes ?? mapaCustom?.posicoes ?? pontosDosSpawns(spawnsDaHunt(huntId));
@@ -506,7 +522,9 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
    * `mapa/spawns.mjs`), sem respawn; CLEAR em 100% (ver `hunt/instancia.mjs`).
    * Boss, Vip/Instance/Divine e mapa gerado seguem do jeito deles.
    */
-  const spawnsDoMapa = fase ? spawnsDaHunt(huntId) : null;
+  // Hunt VIP/Instance/Divine como FASE de um ato do editor: elas não têm spawns no mapa (a sala é gerada), então a instância sai dos pontos da
+  // própria sala gerada, com as criaturas e pesos do cadastro (`spawnPorAndar`). Sem isto a fase nunca limparia.
+  const spawnsDoMapa = fase ? (spawnsDaHunt(huntId)?.length ? spawnsDaHunt(huntId) : tranca ? spawnsDaSalaGerada(posicoes, hunt, grade) : null) : null;
   const comInstancia = !!spawnsDoMapa?.length;
   const instanciaId = comInstancia ? Instancia.gerarId() : null;
   // Uma criatura por casa (por andar).

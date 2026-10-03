@@ -31,8 +31,10 @@ export const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
 export const TIPOS_DE_FASE = {
   'hunt-normal': { suportado: true, exigeHunt: true, nome: 'Hunt normal' },
   'fase-final-do-ato': { suportado: true, exigeHunt: true, nome: 'Fase final do ato (abre o portal do boss)' },
-  'hunt-vip': { suportado: false, exigeHunt: true, nome: 'Hunt VIP', motivo: 'a campanha não entra em hunt de premium (Premium.trancaDaHunt)' },
-  'hunt-especial': { suportado: false, exigeHunt: true, nome: 'Hunt especial', motivo: 'a campanha não entra em Instance/Divine' },
+  // VIP/Instance/Divine como fase: a instância sai dos pontos da sala gerada (`Cacadas.spawnsDaSalaGerada`) e a entrada segue a regra de acesso
+  // da hunt (premium, pergaminho e level — com o modo beta ligado o acesso é livre). A fase só abre para quem pode entrar nela.
+  'hunt-vip': { suportado: true, exigeHunt: true, nome: 'Hunt VIP (exige premium)', categoria: 'vips' },
+  'hunt-especial': { suportado: true, exigeHunt: true, nome: 'Hunt especial (Instance/Divine: exige acesso)', categoria: 'especial' },
   'fase-com-bau': { suportado: false, exigeHunt: true, nome: 'Fase com baú', motivo: 'o baú é um encontro da hunt (aba Fase), não um tipo de fase' },
   'fase-com-evento': { suportado: false, exigeHunt: true, nome: 'Fase com evento', motivo: 'o evento é um encontro da hunt (aba Fase), não um tipo de fase' },
   'boss-opcional': { suportado: false, exigeHunt: true, nome: 'Fase com boss opcional', motivo: 'o boss opcional é um encontro da hunt (aba Fase)' },
@@ -200,6 +202,14 @@ export function validarAto(bruto, ctx = {}) {
       if (!tipo.suportado) r.push(exige ? erro(onde, `O tipo "${f.tipo}" ainda não tem suporte no runtime (${tipo.motivo}).`) : aviso(onde, `O tipo "${f.tipo}" ainda não tem suporte no runtime (${tipo.motivo}); só como rascunho.`));
       if (tipo.exigeHunt && !f.huntId) r.push(erro(onde, 'Escolha a hunt (da Biblioteca) desta fase.'));
       if (f.huntId && ctx.huntExiste && !ctx.huntExiste(f.huntId)) r.push(erro(onde, `A hunt "${f.huntId}" não existe no cadastro.`));
+      // O tipo da fase precisa dizer a verdade sobre a hunt: VIP/especial exigem acesso, e o jogador precisa saber disso antes de entrar.
+      const cat = f.huntId && ctx.categoriaDaHunt?.(f.huntId);
+      if (cat) {
+        const esperado = cat === 'vips' ? 'hunt-vip' : ['especiais', 'divinas'].includes(cat) ? 'hunt-especial' : null;
+        if (esperado && !['fase-final-do-ato'].includes(f.tipo) && f.tipo !== esperado) r.push(erro(onde, `A hunt "${f.huntId}" é ${cat === 'vips' ? 'VIP' : 'especial'} (exige acesso): use o tipo "${esperado}".`));
+        if (!esperado && ['hunt-vip', 'hunt-especial'].includes(f.tipo)) r.push(erro(onde, `A hunt "${f.huntId}" é uma hunt normal: use o tipo "hunt-normal".`));
+        if (esperado && f.tipo === 'fase-final-do-ato') r.push(aviso(onde, `Fase final com hunt ${cat === 'vips' ? 'VIP' : 'especial'}: só quem tem acesso chega ao boss final.`));
+      }
       if (f.huntId && ctx.huntsEmUso?.has(f.huntId)) r.push(erro(onde, `A hunt "${f.huntId}" já é usada no ato "${ctx.huntsEmUso.get(f.huntId)}": o progresso é por hunt e os dois atos compartilhariam a conclusão.`));
     }
     if (exige && f.nivel == null && tipo?.suportado) r.push(erro(onde, 'Defina o nível da fase nas 3 dificuldades: a força dos bichos é escalada para ele.'));
@@ -265,7 +275,7 @@ export function validarAto(bruto, ctx = {}) {
       if (s.get(b.faseAnterior)?.length) r.push(erro('boss final', `A fase "${b.faseAnterior}" tem saídas: o portal do boss final nasce da ÚLTIMA fase do ato.`));
       for (const f of terminais) if (f.id !== b.faseAnterior && f.obrigatoria) r.push(erro(`fase ${f.id}`, `Fim de caminho sem chegar ao boss: só "${b.faseAnterior}" pode encerrar o ato.`));
       const tf = a.fases.find((f) => f.id === b.faseAnterior);
-      if (tf && !['hunt-normal', 'fase-final-do-ato'].includes(tf.tipo)) r.push(erro('boss final', 'A fase anterior ao boss precisa ser uma hunt (o portal abre ao limpar a instância).'));
+      if (tf && !['hunt-normal', 'fase-final-do-ato', 'hunt-vip', 'hunt-especial'].includes(tf.tipo)) r.push(erro('boss final', 'A fase anterior ao boss precisa ser uma hunt (o portal abre ao limpar a instância).'));
     }
   }
   return r;

@@ -119,3 +119,8 @@ Fonte de verdade reutilizada: o formato de recompensa dos encontros (`systems/en
 - **Publicação**: `checklistDePublicacao` (validação, ordem, estado, avisos, se este servidor já executa o ato) e mudança de estado Rascunho / Beta / Publicado / Desativado pela tela; beta/publicado só com validação limpa. Publicar = o arquivo `gamedata/atos/<id>.json` ir com o deploy + reinício (o jogo lê no boot).
 - **Vistas** no editor de atos: Fluxo, Validação (erros/avisos clicáveis), Pré-visualização (como o jogador vê, por dificuldade), Versões (lista, comparar, restaurar) e Publicação.
 - **Limite:** o histórico fica no servidor onde o editor roda; no deploy vai o que estiver commitado em `gamedata/atos`.
+
+## VIP e especial como fase (feito)
+- `hunt-vip` e `hunt-especial` (Instance/Divine) passam a ter suporte. Antes eram bloqueados porque essas hunts não têm spawns de instância (a sala é gerada) e nunca "limpavam". Agora, numa fase de ato do editor, `povoar` monta a instância a partir dos pontos da sala gerada com as criaturas e pesos do cadastro (`spawnsDaSalaGerada`, `systems/cacadas.mjs`); as hunts de campanha e as VIP fora de ato seguem iguais.
+- A entrada segue a regra de acesso da hunt (premium; pergaminho e level nas especiais). Com o modo beta ligado o acesso é livre. O jogador sem acesso vê o motivo normal ("pede premium ativo"). Quem escolhe VIP/especial numa fase está criando conteúdo que exige acesso — o validador cobra o tipo certo para cada hunt e avisa se a fase final do ato for de acesso restrito.
+- Limites: a sala é a gerada (placeholder de 16 pontos), não um mapa real capturado; quando essas hunts ganharem mapa com spawns no editor de mapas, a instância passa a usá-los sozinha (`spawnsDaHunt` tem prioridade).
