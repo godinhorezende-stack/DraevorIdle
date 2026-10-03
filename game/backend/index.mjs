@@ -111,7 +111,7 @@ function corpoJson(req) {
     req.on('data', (pedaco) => (dados += pedaco));
     req.on('end', () => {
       try {
-        resolve(dados ? JSON.parse(dados) : null);
+        resolve((req.corpoAuditado = dados ? JSON.parse(dados) : null));
       } catch {
         reject(new Error('JSON inválido no corpo'));
       }

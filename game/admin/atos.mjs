@@ -146,7 +146,7 @@ export function validar(bruto) {
  * Grava um rascunho. Recusa: id de ato legado; estados `beta`/`publicado` (sem runtime ainda); id/forma inválidos (erros de ID e nome
  * bloqueiam; o resto — fases soltas, tipos sem suporte — pode ser salvo como rascunho e aparece na validação).
  */
-export function salvar(bruto) {
+export function salvar(bruto, { forcar = false } = {}) {
   const ato = Modelo.normalizar(bruto);
   if (!Modelo.ID_VALIDO.test(ato.id)) return { ok: false, erros: ['ID do ato inválido (3 a 40: minúsculas, números, hífen).'] };
   if (Legado.ehLegado(ato.id)) return { ok: false, erros: ['Os atos legados são somente leitura: duplique para editar.'] };
@@ -156,6 +156,8 @@ export function salvar(bruto) {
     if (erros.length) return { ok: false, erros: [`Não dá para pôr em ${ato.estado}: ${erros.length} erro(s) na validação.`, ...erros.slice(0, 8).map((e) => `[${e.onde}] ${e.mensagem}`)] };
   }
   const antes = existsSync(arquivo(ato.id)) ? Modelo.normalizar(JSON.parse(readFileSync(arquivo(ato.id), 'utf8'))) : null;
+  // Controle de concorrência: a tela manda a versão que LEU; se o arquivo já está em outra (outra aba/pessoa/commit), recusa em vez de sobrescrever.
+  if (!forcar && antes && bruto?.versao !== undefined && Number(bruto.versao) !== antes.versao) return { ok: false, codigo: 'conflito', erros: [`O ato mudou desde que você o abriu (você tem a versão ${bruto.versao}, o arquivo está na ${antes.versao}). Recarregue antes de salvar — nada foi gravado.`] };
   ato.versao = proximaVersao(ato.id, antes);
   mkdirSync(CAMINHOS.atos, { recursive: true });
   writeFileSync(arquivo(ato.id), `${JSON.stringify(ato, null, 2)}\n`);
@@ -217,7 +219,7 @@ export function restaurar(id, n) {
   const antiga = versao(id, n);
   if (!antiga) return { ok: false, erros: ['Versão não encontrada.'] };
   if (!obter(id)) return { ok: false, erros: ['O ato atual não existe (foi excluído): duplique a versão em vez de restaurar.'] };
-  return salvar({ ...antiga, estado: 'rascunho' });
+  return salvar({ ...antiga, estado: 'rascunho' }, { forcar: true });
 }
 
 /**
@@ -254,7 +256,7 @@ export function duplicar(idOrigem, novoId, novoNome = null) {
   if (!o) return { ok: false, erros: ['Ato de origem não encontrado.'] };
   if (obter(novoId)) return { ok: false, erros: [`Já existe um ato "${novoId}".`] };
   const { legado, ...resto } = o;
-  return salvar({ ...structuredClone(resto), id: novoId, nome: novoNome ?? `${o.nome} (cópia)`, estado: 'rascunho', versao: 1 });
+  return salvar({ ...structuredClone(resto), id: novoId, nome: novoNome ?? `${o.nome} (cópia)`, estado: 'rascunho', versao: 1 }, { forcar: true });
 }
 
 /** Só rascunhos salvos pelo editor podem ser excluídos (nunca os legados). */

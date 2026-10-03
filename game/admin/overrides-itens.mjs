@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as O from '../systems/overrides.mjs';
-import { criarArquivoVersionado } from './arquivo-versionado.mjs';
+import { criarArquivoVersionado, revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
 import { usosDe, desenhoDoItem } from './biblioteca.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
@@ -37,7 +37,7 @@ export function listar({ q = '', filtro = '', slot = '', limite = 80 } = {}) {
     return m ? { id, nome: m.name, tipo: m.type ?? null, slot: m.slot ?? null, rarity: m.rarity ?? null, temOverride: !!ov, ativo: ov ? ov.ativo !== false : null, desenho: desenhoDoItem(m) } : null;
   }).filter((l) => l && (!t || norm(l.nome).includes(t) || l.id === t) && (!slot || l.slot === slot));
   linhas.sort((a, b) => Number(b.temOverride) - Number(a.temOverride) || String(a.nome).localeCompare(String(b.nome)));
-  return { total: linhas.length, itens: linhas.slice(0, Math.min(200, Math.max(1, Number(limite) || 80))), ativo: d.ativo, comOverride: Object.keys(d.itens).length, dica: t.length < 2 && !slot && filtro !== 'com-override' ? 'Busque pelo nome (2 letras ou mais) ou escolha um slot; sem busca só aparecem os itens que já têm override.' : null };
+  return { total: linhas.length, itens: linhas.slice(0, Math.min(200, Math.max(1, Number(limite) || 80))), ativo: d.ativo, comOverride: Object.keys(d.itens).length, revisao: revisaoDe(CAMINHOS.arquivo), dica: t.length < 2 && !slot && filtro !== 'com-override' ? 'Busque pelo nome (2 letras ou mais) ou escolha um slot; sem busca só aparecem os itens que já têm override.' : null };
 }
 
 export function obter(id) {
@@ -46,7 +46,7 @@ export function obter(id) {
   if (!original) return null;
   const ov = d.itens[id] ?? null;
   const efetivo = efetivoDe(id, ov);
-  return { id: String(id), original, override: ov, efetivo, desenho: desenhoDoItem(efetivo), usos: usosDe('itens', id), globalAtivo: d.ativo, rarezas: O.RARIDADES_DE_ITEM, campos: O.CAMPOS_DE_ITEM, equipamento: !!original.slot };
+  return { id: String(id), original, override: ov, efetivo, desenho: desenhoDoItem(efetivo), usos: usosDe('itens', id), globalAtivo: d.ativo, revisao: revisaoDe(CAMINHOS.arquivo), rarezas: O.RARIDADES_DE_ITEM, campos: O.CAMPOS_DE_ITEM, equipamento: !!original.slot };
 }
 
 export function propor(id, ov) {
@@ -69,7 +69,9 @@ export function propor(id, ov) {
   return { ok: true, erros: [], avisos: [...avisos, ...extra], mudancas, efetivo: depois, usos: usos.length, semMudancas: mudancas.length === 0 && !limpo };
 }
 
-export function salvar(id, ov) {
+export function salvar(id, ov, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const p = propor(id, ov);
   if (!p.ok) return { ok: false, erros: p.erros };
   const d = dados();
@@ -80,7 +82,9 @@ export function salvar(id, ov) {
   return { ok: true, avisos: p.avisos, mudancas: p.mudancas, comoPublicar: COMO_PUBLICAR };
 }
 
-export function reverter(id) {
+export function reverter(id, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const d = dados();
   if (!d.itens[id]) return { ok: false, erros: ['Esse item não tem override.'] };
   delete d.itens[id];
@@ -88,7 +92,9 @@ export function reverter(id) {
   return { ok: true, comoPublicar: COMO_PUBLICAR };
 }
 
-export function definirAtivo(ativo, id = null) {
+export function definirAtivo(ativo, id = null, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   if (typeof ativo !== 'boolean') return { ok: false, erros: ['ativo deve ser true ou false.'] };
   const d = dados();
   if (id == null) d.ativo = ativo;
@@ -101,7 +107,9 @@ export function definirAtivo(ativo, id = null) {
 }
 
 export const versoes = () => arq().versoes();
-export function restaurar(n) {
+export function restaurar(n, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
   const r = arq().restaurar(n);
   return r.ok ? { ...r, comoPublicar: COMO_PUBLICAR } : r;
 }

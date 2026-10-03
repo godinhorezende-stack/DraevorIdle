@@ -2,6 +2,7 @@
 // pelos editores de overrides e de regras (a mesma garantia: nada é perdido, restaurar é uma gravação nova). Funções simples; os caminhos entram por
 // parâmetro (os testes apontam para uma pasta temporária).
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 
 export function criarArquivoVersionado({ caminhos, valorPadrao = () => ({}), serializar = (v) => `${JSON.stringify(v, null, 2)}\n` }) {
@@ -22,4 +23,17 @@ export function criarArquivoVersionado({ caminhos, valorPadrao = () => ({}), ser
     return { ok: true };
   }
   return { ler, gravar, versoes, restaurar };
+}
+
+/**
+ * A REVISÃO de um arquivo: uma impressão digital do conteúdo (`ausente` se não existe). A tela guarda a revisão que LEU e a devolve ao salvar; se o
+ * arquivo mudou no meio (outra aba, outra pessoa, um commit), o servidor recusa com `conflito` em vez de sobrescrever em silêncio.
+ */
+export const revisaoDe = (arquivo) => (existsSync(arquivo) ? createHash('sha1').update(readFileSync(arquivo)).digest('hex').slice(0, 16) : 'ausente');
+
+/** `null` se pode gravar; senão o erro de conflito. `esperada` indefinida = o cliente não usa o controle (só clientes de API; a Engine sempre manda). */
+export function conferirRevisao(esperada, arquivo) {
+  if (esperada === undefined || esperada === null) return null;
+  const atual = revisaoDe(arquivo);
+  return esperada === atual ? null : { ok: false, codigo: 'conflito', erros: ['O arquivo mudou desde que você abriu a tela (outra aba, outra pessoa ou um commit). Recarregue para ver a versão atual antes de salvar — nada foi gravado.'] };
 }

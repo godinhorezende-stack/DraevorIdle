@@ -261,7 +261,7 @@ export function criarBiblioteca({ api, raiz, irPara, acaoDaFicha = null, categor
     }
     const quebrados = d.referenciasQuebradas?.itens ?? [];
     // Monstro, item, outfit e montaria: a ficha em abas (editor-fichas.mjs); o resto, o resumo genérico.
-    const FICHAS = { monstros: () => { const f = fichaDoMonstro(d, { abrir }); const a = acaoDaFicha?.(d); return a ? el('div', {}, a, f) : f; }, itens: () => { const f = fichaDoItem(d, { abrir, api }); const a = acaoDaFicha?.(d); return a ? el('div', {}, a, f) : f; }, outfits: () => fichaDoOutfit(d), montarias: () => fichaDaMontaria(d) };
+    const FICHAS = { monstros: () => fichaDoMonstro(d, { abrir }), itens: () => fichaDoItem(d, { abrir, api }), outfits: () => fichaDoOutfit(d), montarias: () => fichaDaMontaria(d) };
     const ficha = FICHAS[d.categoria]?.() ?? null;
     const abas = [...(ficha ? ficha.abas : [['resumo', 'Resumo']]), ['usos', `Usos (${d.usadoEm?.length ?? 0})`], ['json', 'JSON']];
     if (!B.abaDoDetalhe || !abas.some(([id]) => id === B.abaDoDetalhe)) B.abaDoDetalhe = abas[0][0];
@@ -276,6 +276,7 @@ export function criarBiblioteca({ api, raiz, irPara, acaoDaFicha = null, categor
           el('h2', { class: 'bib-nome' }, d.nome ?? NAO),
           el('div', { class: 'linha' }, el('span', { class: 'eng-id', style: 'flex:none' }, `${d.categoria}:${d.id}`), botaoCopiar(d.id, `o ID ${d.id}`), botaoCopiar(`${d.categoria}:${d.id}`, 'a referência'), el('span'), alternarLargura),
           el('div', { class: 'eng-card-selos' }, d.tipo ? el('span', { class: 'selo' }, d.tipo) : null, d.raridade && !(d.categoria === 'itens' && d.equipavel) ? el('span', { class: `selo ${RARIDADE[d.raridade] ?? ''}` }, d.raridade) : null),
+          acaoDaFicha?.(d) ?? null,
           quebrados.length ? el('div', { class: 'bib-alerta' }, `Referência a ${quebrados.length} item(ns) que não existem no catálogo: ${quebrados.join(', ')}`) : null)),
       el('div', { class: 'eng-abas', role: 'tablist' }, abas.map(([id, nome]) => el('button', { type: 'button', role: 'tab', 'aria-selected': String(B.abaDoDetalhe === id), class: B.abaDoDetalhe === id ? 'ativa' : '', onclick: () => { B.abaDoDetalhe = id; pintarDetalhe(); } }, nome))),
       el('div', { class: 'bib-painel-corpo' }, B.abaDoDetalhe === 'usos' ? blocoDeUsos(d) : B.abaDoDetalhe === 'json' ? blocoJson(d) : ficha ? ficha.corpo(B.abaDoDetalhe) : blocoResumo(d)));

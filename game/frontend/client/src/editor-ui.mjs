@@ -118,6 +118,16 @@ function abrirModal({ titulo, texto = '', ok = 'Confirmar', cancelar = 'Cancelar
 export const confirmar = (titulo, texto = '', opcoes = {}) => abrirModal({ titulo, texto, ...opcoes });
 /** Pede um texto (resolve o texto, ou `null` se cancelar). */
 export const pedirTexto = (titulo, campo, opcoes = {}) => abrirModal({ titulo, campo, ok: 'Continuar', ...opcoes });
+/**
+ * Trata a resposta de um salvar recusado por CONFLITO (`codigo: 'conflito'`: o arquivo mudou desde que a tela o leu). Devolve `true` se era
+ * conflito (já tratado): explica, nada foi gravado, e oferece recarregar a versão atual (as alterações da tela se perdem).
+ */
+export async function tratarConflito(r, recarregar) {
+  if (r?.codigo !== 'conflito') return false;
+  const recarregarAgora = await confirmar('Conflito de edição', `${r.erros?.[0] ?? 'O arquivo mudou.'} Recarregar agora descarta as alterações desta tela.`, { ok: 'Recarregar a versão atual', cancelar: 'Continuar vendo a minha', perigo: true });
+  if (recarregarAgora) await recarregar();
+  return true;
+}
 /** O aviso padrão de alterações não salvas. */
 export const descartarAlteracoes = (onde = 'Há alterações não salvas') => confirmar(`${onde}.`, 'Se sair agora, elas se perdem.', { ok: 'Descartar e sair', cancelar: 'Continuar editando', perigo: true });
 

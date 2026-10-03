@@ -134,7 +134,8 @@ test('OI7. a tela de itens está ligada: Itens (Biblioteca de consulta + "Editar
   assert.match(conteudo, /Editar este item \(override\)/);
   assert.match(conteudo, /\{ id: 'itens', nome: 'Itens', icone: 'espada', modo: 'parcial'/);
   const bib = readFileSync(new URL('../frontend/client/src/editor-biblioteca.mjs', import.meta.url), 'utf8');
-  assert.match(bib, /itens: \(\) => \{ const f = fichaDoItem\(d, \{ abrir, api \}\); const a = acaoDaFicha\?\.\(d\)/);
+  assert.match(bib, /itens: \(\) => fichaDoItem\(d, \{ abrir, api \}\),/);
+  assert.match(bib, /acaoDaFicha\?\.\(d\) \?\? null,/);
   const tela = readFileSync(new URL('../frontend/client/src/editor-itens.mjs', import.meta.url), 'utf8');
   for (const r of ["'overrides/itens/validar'", "'overrides/itens'", 'overrides/itens/${encodeURIComponent(id)}']) assert.ok(tela.includes(r), r);
   assert.match(tela, /confirmar\(/);

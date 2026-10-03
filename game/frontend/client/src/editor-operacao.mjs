@@ -47,9 +47,10 @@ export function criarTelasDeOperacao({ api, raiz, irPara }) {
   }
 
   // ------------------------------------------------------------------ Configurações
-  const C = { estado: null, mensagem: '' };
+  const C = { estado: null, mensagem: '', auditoria: [] };
   async function desenharConfig() {
     C.estado = await api('operacao');
+    C.auditoria = (await api('auditoria?limite=60')).eventos ?? [];
     C.mensagem = C.estado.manutencao.mensagem;
     pintarConfig();
   }
@@ -93,6 +94,10 @@ export function criarTelasDeOperacao({ api, raiz, irPara }) {
               el('div', { class: 'op-linha' }, el('button', { type: 'button', onclick: executarSave, disabled: !!ss.situacao.rodando }, 'Executar agora'), el('span', { class: 'dica' }, 'Roda já, sem mexer na agenda; os jogadores recebem o aviso global.'))]
             : el('div', { class: 'dica' }, 'O Server Save não está rodando neste processo (acontece quando o servidor roda sem banco de produção ou o recurso está desligado).'),
           ss.ciclos.length ? el('table', {}, el('thead', {}, el('tr', {}, ['Slot', 'Estado', 'Líder', 'Iniciado', 'Concluído', 'Resultado'].map((h) => el('th', {}, h)))), el('tbody', {}, ss.ciclos.map((c) => el('tr', {}, el('td', {}, quando(c.slot)), el('td', {}, el('span', { class: `selo ${c.estado === 'concluido' ? 'ok' : c.estado === 'falhou' ? 'erro' : ''}` }, c.estado)), el('td', {}, c.lider ?? '—'), el('td', {}, quando(c.iniciado_em)), el('td', {}, quando(c.concluido_em)), el('td', { class: 'dica' }, c.resultado ? String(c.resultado).slice(0, 80) : '—'))))) : null),
+        secao('Registro de alterações administrativas',
+          el('div', { class: 'dica' }, 'Cada login, gravação, operação e tentativa recusada fica registrado de forma permanente (quem, quando, de onde, o quê e o resultado). Não guarda o conteúdo editado nem senhas.'),
+          C.auditoria.length ? el('table', {}, el('thead', {}, el('tr', {}, ['Quando', 'Quem', 'Tipo', 'O quê', 'Resultado'].map((h) => el('th', {}, h)))),
+            el('tbody', {}, C.auditoria.map((a) => el('tr', {}, el('td', { class: 'dica' }, quando(a.quando)), el('td', {}, a.quem ?? '—'), el('td', {}, el('span', { class: `selo ${a.tipo === 'recusado' || a.tipo === 'login-falha' ? 'erro' : ''}` }, a.tipo)), el('td', {}, [a.rota, a.resumo?.acao, a.resumo?.key ?? a.resumo?.id].filter(Boolean).join(' · ') || a.motivo || '—'), el('td', {}, a.ok === false ? el('span', { class: 'selo erro' }, 'falhou') : a.codigo ? el('span', { class: 'selo aviso' }, a.codigo) : el('span', { class: 'selo ok' }, 'ok')))))) : el('div', { class: 'dica' }, 'Nenhum evento registrado ainda.')),
         secao('Ações desta sessão do servidor', e.registro.length ? el('table', { class: 'bib-sub' }, el('tbody', {}, e.registro.map((r) => el('tr', {}, el('td', { class: 'dica' }, quando(r.quando)), el('td', {}, r.acao), el('td', {}, r.detalhe))))) : el('div', { class: 'dica' }, 'Nenhuma ação de operação desde o último boot.')),
         el('div', { class: 'dica' }, 'Protegido hoje só pelo bloqueio de rede (túnel SSH). O login de administrador e o registro permanente de ações entram numa etapa seguinte.')));
   }

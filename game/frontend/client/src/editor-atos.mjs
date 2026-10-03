@@ -2,7 +2,7 @@
 // mora aqui: o servidor valida (`systems/atos-modelo.mjs`) e grava (`admin/atos.mjs`); a tela só edita uma cópia e pede a validação a cada
 // mudança. Os atos legados (os 4 de hoje) são somente leitura: "Duplicar" cria o rascunho editável.
 // Recebe as ferramentas da página (`el`, `api`, a raiz, `msg`) em vez de importá-las, para não fechar ciclo com `editor-conteudo.mjs`.
-import { confirmar, pedirTexto, descartarAlteracoes } from './editor-ui.mjs';
+import { confirmar, pedirTexto, descartarAlteracoes, tratarConflito } from './editor-ui.mjs';
 
 /** O ID do ato: a tela só exige que não fique vazio — o formato é o servidor quem confere. */
 const obrigatorio = (v) => (v ? null : 'Digite um ID.');
@@ -103,6 +103,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
   }
   async function salvar() {
     const r = await api('atos-editor', E.ato);
+    if (await tratarConflito(r, async () => { E.limpo = JSON.stringify(E.ato); await abrir(E.ato.id); })) return;
     if (r.ok === false) return msg(r.erros?.join(' ') ?? 'Não salvou.', 'erro');
     E.ato = r.ato;
     E.limpo = JSON.stringify(E.ato);
@@ -127,6 +128,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     const antes = E.ato.estado;
     E.ato.estado = estado;
     const r = await api('atos-editor', E.ato);
+    if (await tratarConflito(r, async () => { E.limpo = JSON.stringify(E.ato); await abrir(E.ato.id); })) { E.ato.estado = antes; return; }
     if (r.ok === false) { E.ato.estado = antes; msg(r.erros.join(' '), 'erro'); return pintar(); }
     E.ato = r.ato;
     E.limpo = JSON.stringify(E.ato);
