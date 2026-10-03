@@ -4,15 +4,19 @@
 import { el, cabecalho } from './editor-ui.mjs';
 import { retrato } from './editor-sprites.mjs';
 import { tabelaDeDrops, num, pct } from './editor-drops.mjs';
+import { criarEditorDeNiveis } from './editor-campanha.mjs';
 
 const NOME_DA_RARIDADE = { normal: 'Normal', modificado: 'Modificado', raro: 'Raro', elite: 'Elite', unico: 'Único', boss: 'Boss' };
 const COR_DA_RARIDADE = { normal: '#9aa4bd', modificado: '#5aa9ff', raro: '#f2d04a', elite: '#ff9d3c', unico: '#c58bff', boss: '#ff5b4f' };
 const CATEGORIAS = [['', 'Todas'], ['hunts', 'Normais'], ['vips', 'VIP'], ['especiais', 'Especiais'], ['divinas', 'Divinas']];
 
-export function criarPainelDeHunts({ api, raiz, irPara }) {
-  const H = { lista: [], q: '', categoria: '', id: null, dif: 'facil', painel: null, andar: null, pedido: 0 };
+export function criarPainelDeHunts({ api, raiz, irPara, sujo = null, podeGravar = () => true }) {
+  const NIVEIS = criarEditorDeNiveis({ api, raiz, sujo, podeGravar, aoVoltar: () => { H.vista = 'hunt'; pintar(); } });
+  const H = { vista: 'hunt', lista: [], q: '', categoria: '', id: null, dif: 'facil', painel: null, andar: null, pedido: 0 };
 
   async function desenhar(resto = []) {
+    if (resto[0] === 'niveis') { H.vista = 'niveis'; return NIVEIS.desenhar(resto[1] ?? null); }
+    H.vista = 'hunt';
     if (!H.lista.length) H.lista = (await api('hunts')).hunts;
     if (resto[0] && resto[0] !== H.id) await abrir(resto[0], false);
     else pintar();
@@ -106,7 +110,7 @@ export function criarPainelDeHunts({ api, raiz, irPara }) {
     const d = p.dificuldade;
     const seletor = el('div', { class: 'hunts-cats' }, (d.porDificuldade ?? []).map((x) => el('button', { type: 'button', class: H.dif === x.id ? 'ativa' : '', onclick: () => { H.dif = x.id; abrir(H.id); } }, x.nome)));
     if (d.tipo !== 'campanha') return secao('Dificuldade', el('div', { class: 'eng-metricas' }, metrica('Level da hunt', d.levelDaHunt)), el('div', { class: 'dica' }, d.observacao));
-    return secao('Dificuldade (campanha)', seletor,
+    return secao('Dificuldade (campanha)', seletor, el('button', { type: 'button', onclick: () => { H.vista = 'niveis'; history.replaceState(null, '', `#hunts/niveis/${encodeURIComponent(p.id)}`); NIVEIS.desenhar(p.id); } }, 'Editar os níveis desta fase'),
       el('div', { class: 'eng-metricas' }, metrica('Ato', d.ato), metrica('Level original', d.levelOriginal)),
       el('table', { class: 'hunt-tabela' }, el('thead', {}, el('tr', {}, ['Dificuldade', 'Level alvo', 'Vida ×', 'Dano ×', 'Exp ×'].map((h) => el('th', {}, h)))),
         el('tbody', {}, d.porDificuldade.map((x) => el('tr', { class: x.id === H.dif ? 'ativa' : '' }, el('td', {}, x.nome), el('td', { class: 'num' }, x.levelAlvo), el('td', { class: 'num' }, num(x.vida, 3)), el('td', { class: 'num' }, num(x.dano, 3)), el('td', { class: 'num' }, num(x.exp, 3)))))),
@@ -134,8 +138,9 @@ export function criarPainelDeHunts({ api, raiz, irPara }) {
   }
 
   function pintar() {
-    raiz().replaceChildren(cabecalho('Hunts', 'Cada hunt num painel só: o mapa, os monstros, a distribuição de raridade, a dificuldade e os drops esperados. Somente leitura — a hunt continua sendo editada no editor de mapas e em Fases e encontros.'), el('div', { class: 'hunts-duas' }, listaLateral(), painelDaHunt()));
+    if (H.vista === 'niveis') return NIVEIS.desenhar();
+    raiz().replaceChildren(cabecalho('Hunts', 'Cada hunt num painel só: o mapa, os monstros, a distribuição de raridade, a dificuldade e os drops esperados. O painel é de consulta; os níveis da campanha se editam em "Níveis da campanha", o mapa no Editor de mapas e os encontros em Fases e encontros.', el('button', { type: 'button', onclick: () => { H.vista = 'niveis'; history.replaceState(null, '', '#hunts/niveis'); NIVEIS.desenhar(); } }, 'Níveis da campanha (editar)')), el('div', { class: 'hunts-duas' }, listaLateral(), painelDaHunt()));
   }
 
-  return { desenhar, abrir: (_cat, id) => abrir(id), focarBusca: () => document.querySelector('.hunts-lista input')?.focus() };
+  return { desenhar, abrir: (_cat, id) => (id === 'niveis' ? (H.vista = 'niveis', NIVEIS.desenhar()) : abrir(id)), focarBusca: () => document.querySelector('.hunts-lista input')?.focus() };
 }
