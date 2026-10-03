@@ -3,6 +3,7 @@
 // tile) num canvas do tamanho da tela dividido pelo zoom, e o zoom é sempre
 // inteiro, aplicado pelo CSS com image-rendering: pixelated.
 import { casasDoEvento } from '/packages/shared/src/areas.mjs';
+import { comecarPasso } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
@@ -1142,11 +1143,8 @@ export class MapView {
     if (entity.x !== data.x || entity.y !== data.y) {
       // Continua de onde o desenho parou: nada de teleporte quando dois passos
       // se encavalam entre dois pacotes do servidor.
-      const progress = Math.min(1, (now - entity.since) / entity.duration);
-      entity.fromX += (entity.x - entity.fromX) * progress;
-      entity.fromY += (entity.y - entity.fromY) * progress;
-      entity.since = now;
-      entity.duration = Math.max(120, data.moveMs ?? 500);
+      // (A conta, com a folga contra o jitter da rede, mora em `interpolacao.mjs` e é testada lá.)
+      comecarPasso(entity, now, data.moveMs);
       /*
        * Carência de andar.
        *
