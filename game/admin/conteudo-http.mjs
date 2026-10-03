@@ -10,6 +10,7 @@ import * as CampanhaEditor from './campanha-editor.mjs';
 import * as Overrides from './overrides.mjs';
 import * as Auditoria from './auditoria.mjs';
 import * as OverridesItens from './overrides-itens.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -91,7 +92,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'mapa') return json(res, 200, Conteudo.lerMapa()), true;
     if (rota === 'atos') return json(res, 200, { atos: Conteudo.lerAtos() }), true;
     if (rota === 'bosses') return json(res, 200, { bosses: Conteudo.listarBosses() }), true;
-    if (rota === 'itens') return json(res, 200, { itens: Conteudo.buscarItens(url.searchParams.get('q')) }), true;
+    if (rota === 'itens') {
+      // Busca por nome/ID (`q`) ou consulta por ids (`ids=1,2,3`, para mostrar o sprite de quem já está numa lista); cada item leva o `desenho`.
+      const ids = url.searchParams.get('ids');
+      const base = ids ? ids.split(',').slice(0, 100).filter((i) => ITEM_CATALOG[i]).map((i) => ({ id: Number(i), name: ITEM_CATALOG[i].name })) : Conteudo.buscarItens(url.searchParams.get('q'));
+      return json(res, 200, { itens: base.map((i) => ({ ...i, desenho: Biblioteca.desenhoDoItem(ITEM_CATALOG[i.id]) })) }), true;
+    }
     if (rota.startsWith('fase/')) {
       const f = Conteudo.carregarFase(rota.slice('fase/'.length));
       return f ? json(res, 200, f) : json(res, 404, { ok: false, erros: ['Fase não encontrada.'] }), true;

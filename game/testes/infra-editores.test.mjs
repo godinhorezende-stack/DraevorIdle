@@ -189,3 +189,17 @@ test('IN9. Biblioteca: a ação "Editar" entra no topo do painel, sem embrulhar 
   assert.doesNotMatch(fonte, /el\('div', \{\}, a, f\)/);
   assert.match(fonte, /acaoDaFicha\?\.\(d\) \?\? null,/);
 });
+
+test('IN10. busca de itens: devolve o desenho (sprite) de cada resultado e aceita ids; o loot do Mob busca enquanto digita e mostra o sprite', async () => {
+  const chama = async (q) => { const r = []; await Http.atender({ method: 'GET' }, {}, '/api/mapas/_conteudo/itens', new URL(`http://x/?${q}`), { json: (a, c, b) => r.push(b) }); return r[0].itens; };
+  const porNome = await chama('q=gold%20coin');
+  const ouro = porNome.find((i) => i.id === 3031);
+  assert.ok(ouro && ouro.desenho?.tipo === 'item' && ouro.desenho.id === 3031, 'resultado traz o desenho');
+  const porId = await chama('ids=3031,3268,999999999');
+  assert.deepEqual(porId.map((i) => i.id), [3031, 3268], 'ids inexistentes são ignorados');
+  assert.ok(porId.every((i) => i.desenho));
+  const fonte = readFileSync(new URL('../frontend/client/src/editor-mobs.mjs', import.meta.url), 'utf8');
+  assert.match(fonte, /oninput: \(e\) => buscar\(e\.target\.value\)/);
+  assert.match(fonte, /retrato\(it\.desenho, 32/);
+  assert.match(fonte, /retrato\(E\.desenhosDoLoot/);
+});

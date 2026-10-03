@@ -171,13 +171,19 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
     const loot = E.ov.loot ?? orig().loot ?? [];
     const mudado = E.ov.loot !== undefined;
     const trocar = (fn) => { const l = structuredClone(E.ov.loot ?? orig().loot ?? []); fn(l); E.ov.loot = l; if (igual(l.map(({ id, chance }) => ({ id, chance })), (orig().loot ?? []).map(({ id, chance }) => ({ id, chance })))) delete E.ov.loot; mudou(); pintarAba(); };
-    const buscar = async (q) => { E.buscaItens = q.length >= 2 ? (await api(`itens?q=${encodeURIComponent(q)}`)).itens : []; pintarAba(); };
+    // Busca ENQUANTO digita (sem esperar Enter), com o sprite ao lado; os itens já no loot também mostram o sprite.
+    const pintarBusca = () => { const c = document.querySelector('#mob-busca-itens'); if (c) c.replaceChildren(...resultadosDaBusca()); };
+    const buscar = (q) => { clearTimeout(E.tBusca); const t = q.trim(); if (t.length < 2) { E.buscaItens = []; pintarBusca(); return; } E.tBusca = setTimeout(async () => { const r = await api(`itens?q=${encodeURIComponent(t)}`); if (t === document.querySelector('#mob-busca-input')?.value.trim()) { E.buscaItens = r.itens; pintarBusca(); } }, 200); };
+    const resultadosDaBusca = () => (E.buscaItens.length ? E.buscaItens.map((it) => el('div', { class: 'linha mob-resultado' }, retrato(it.desenho, 32, { categoria: 'itens', rotulo: it.name }), el('span', {}, `${it.name} #${it.id}`), el('button', { type: 'button', onclick: () => { E.buscaItens = []; E.desenhosDoLoot[String(it.id)] = it.desenho; document.querySelector('#mob-busca-input').value = ''; trocar((x) => x.push({ id: it.id, name: it.name, chance: 0.1 })); } }, '+ adicionar'))) : (document.querySelector('#mob-busca-input')?.value.trim().length >= 2 ? [el('div', { class: 'dica' }, 'Nenhum item encontrado.')] : []));
+    E.desenhosDoLoot ??= {};
+    const faltam = loot.map((l) => String(l.id)).filter((id) => !(id in E.desenhosDoLoot));
+    if (faltam.length) { for (const id of faltam) E.desenhosDoLoot[id] = null; api(`itens?ids=${faltam.join(',')}`).then((r) => { for (const i of r.itens) E.desenhosDoLoot[String(i.id)] = i.desenho; if (E.aba === 'loot') pintarAba(); }).catch(() => {}); }
     return el('div', {}, el('div', { class: 'dica' }, 'O loot SUBSTITUI a lista do original quando você muda qualquer linha. A chance é uma fração (0,36 = 36%), por morte, por item.'),
       mudado && !dis() ? el('button', { type: 'button', class: 'fantasma', onclick: () => { delete E.ov.loot; mudou(); pintarAba(); } }, 'voltar ao loot do original') : null,
       el('table', { class: 'mob-tabela' }, el('thead', {}, el('tr', {}, ['Item', 'Chance (fração)', ''].map((h) => el('th', {}, h)))),
-        el('tbody', {}, loot.map((l, i) => el('tr', {}, el('td', {}, `${l.name ?? ''} #${l.id}`), el('td', {}, el('input', { type: 'number', step: 'any', min: 0, max: 1, value: l.chance, disabled: dis(), onchange: (e) => trocar((x) => { x[i].chance = Number(e.target.value); }) })), el('td', {}, dis() ? null : el('button', { type: 'button', class: 'fantasma', onclick: () => trocar((x) => x.splice(i, 1)) }, '✕')))))),
-      dis() ? null : el('div', { class: 'linha' }, el('input', { placeholder: 'buscar item (nome ou ID) para adicionar', onchange: (e) => buscar(e.target.value) })),
-      E.buscaItens.length ? el('div', { class: 'linhas' }, E.buscaItens.map((it) => el('div', { class: 'linha' }, el('span', {}, `${it.name} #${it.id}`), el('button', { type: 'button', onclick: () => { E.buscaItens = []; trocar((x) => x.push({ id: it.id, name: it.name, chance: 0.1 })); } }, '+ adicionar')))) : null);
+        el('tbody', {}, loot.map((l, i) => el('tr', {}, el('td', { class: 'mob-item-cel' }, retrato(E.desenhosDoLoot[String(l.id)], 32, { categoria: 'itens', rotulo: l.name }), el('span', {}, `${l.name ?? ''} #${l.id}`)), el('td', {}, el('input', { type: 'number', step: 'any', min: 0, max: 1, value: l.chance, disabled: dis(), onchange: (e) => trocar((x) => { x[i].chance = Number(e.target.value); }) })), el('td', {}, dis() ? null : el('button', { type: 'button', class: 'fantasma', onclick: () => trocar((x) => x.splice(i, 1)) }, '✕')))))),
+      dis() ? null : el('div', { class: 'linha' }, el('input', { id: 'mob-busca-input', autocomplete: 'off', placeholder: 'buscar item (nome ou ID) para adicionar', oninput: (e) => buscar(e.target.value) })),
+      el('div', { id: 'mob-busca-itens', class: 'linhas' }, resultadosDaBusca()));
   }
   function abaSprite() {
     const look = valorEfetivo(orig(), E.ov, 'look');
