@@ -660,3 +660,11 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 /* ---- Telas de operação (Testes e beta, Configurações) ---- */
 .op-linha { display: flex; flex-wrap: wrap; align-items: center; gap: var(--eng-e3); }
 .op-lista { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13px; }
+
+/* ---- Acesso (login e somente leitura) ---- */
+.eng-acesso { display: inline-flex; align-items: center; gap: var(--eng-e3); }
+.eng-usuario { display: inline-flex; align-items: center; gap: var(--eng-e2); font-size: var(--eng-t-pequeno); color: var(--eng-txt2); }
+.eng-usuario button { padding: 2px 8px; font-size: var(--eng-t-pequeno); }
+.eng-login { max-width: 380px; margin: 12vh auto 0; display: grid; gap: var(--eng-e3); background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r3); padding: var(--eng-e5); }
+.eng-login h2 { margin: 0; font: 600 var(--eng-t-grande)/1.2 var(--eng-titulo); }
+.eng-somente-leitura main#raiz button.primario { opacity: .55; }

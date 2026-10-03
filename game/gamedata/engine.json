@@ -1,0 +1,4 @@
+{
+  "_nota": "Acesso à Engine (/editor/conteudo e as rotas /api/mapas): `admins` = e-mails das contas do jogo que podem entrar. A variável de ambiente ENGINE_ADMINS (e-mails separados por vírgula) substitui esta lista. Em produção o login é obrigatório e a gravação de arquivos do editor fica desligada (ENGINE_GRAVA=1 religa; ENGINE_EXIGE_LOGIN=0|1 e ENGINE_MODO=producao|desenvolvimento ajustam). Ver admin/acesso.mjs e docs/engine-reorganizacao-plano.md.",
+  "admins": ["god.rafa365@gmail.com"]
+}
