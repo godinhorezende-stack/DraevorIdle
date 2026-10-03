@@ -49,6 +49,15 @@ test('AC3. decisão: produção sem login = 401; conta comum = 403; admin lê e 
   assert.equal(d(prod, 'POST', 'operacao/beta', { email: 'dono@x.com' }, { origem: 'https://outro.site' }).codigo, 'origem');
   assert.equal(d(prod, 'POST', 'operacao/beta', { email: 'dono@x.com' }, { origem: 'https://engine.local' }).ok, true);
   assert.equal(d(prod, 'GET', 'opcoes', { email: 'dono@x.com' }, { origem: 'https://outro.site' }).ok, true, 'leitura não checa origem');
+  // REGRESSÃO (túnel SSH): o navegador manda Origin com a PORTA (https://localhost:8443) e o nginx repassa Host SEM porta (`Host: $host`).
+  assert.equal(d(prod, 'POST', 'operacao/beta', { email: 'dono@x.com' }, { origem: 'https://engine.local:8443' }).ok, true, 'mesmo nome de host, porta diferente (túnel)');
+  assert.equal(d(prod, 'POST', 'operacao/beta', { email: 'dono@x.com' }, { origem: 'https://engine.local.mal.com' }).codigo, 'origem', 'nome parecido não vale');
+  assert.equal(d(prod, 'POST', 'operacao/beta', { email: 'dono@x.com' }, { origem: 'https://outro.site:8443' }).codigo, 'origem');
+  assert.equal(d(prod, 'POST', 'operacao/beta', { email: 'dono@x.com' }, { origem: 'nao-e-url' }).codigo, 'origem');
+  assert.equal(A.mesmaOrigem('https://localhost:8443', 'localhost'), true);
+  assert.equal(A.mesmaOrigem('https://localhost:8443', 'mmoidledraevor.io'), false);
+  assert.equal(A.mesmaOrigem('https://mmoidledraevor.io', 'x', 'mmoidledraevor.io'), true, 'X-Forwarded-Host');
+  assert.equal(A.mesmaOrigem(null, 'x'), true, 'sem Origin (navegação direta): nada a comparar');
   const dev = cfg({});
   for (const [m, r] of [['GET', 'opcoes'], ['POST', 'atos-editor'], ['POST', '/api/mapas']]) assert.equal(d(dev, m, r, null).ok, true, `${m} ${r} em dev`);
 });
@@ -117,6 +126,7 @@ test('AC6. a sessão expira (12 h) e login de outra origem é recusado (CSRF)', 
   const s = await subir({ NODE_ENV: 'production', ENGINE_ADMINS: 'dono@x.com' }, () => t);
   servidores.push(s);
   assert.equal((await s.chama('POST', `${P}auth/entrar`, { corpo: { email: 'dono@x.com', senha: 'ok-dono' }, origem: 'https://site-malicioso.com' })).status, 403);
+  assert.equal((await s.chama('POST', `${P}auth/entrar`, { corpo: { email: 'nao@x.com', senha: 'x' }, origem: 'https://127.0.0.1:8443' })).status, 401, 'login pelo túnel (host igual, porta diferente) chega à checagem da senha');
   const ok = await s.chama('POST', `${P}auth/entrar`, { corpo: { email: 'dono@x.com', senha: 'ok-dono' } });
   const cookie = ok.setCookie.split(';')[0];
   assert.equal((await s.chama('GET', `${P}opcoes`, { cookie })).status, 200);

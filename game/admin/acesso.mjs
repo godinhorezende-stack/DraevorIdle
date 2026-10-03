@@ -56,8 +56,21 @@ export function classeDaRota(metodo, caminho) {
   return 'grava';
 }
 
+/**
+ * A origem do pedido é a MESMA do servidor? Compara o NOME do host e ignora a porta: atrás do nginx (`Host: $host`, sem porta) e de um túnel SSH
+ * (`https://localhost:8443`) o `Origin` traz a porta e o `Host` não. Outro site (outro nome) continua recusado; o cookie SameSite=Strict e o
+ * login com senha seguem valendo por cima.
+ */
+export function mesmaOrigem(origem, host, encaminhado = null) {
+  if (!origem) return true;
+  let o;
+  try { o = new URL(origem); } catch { return false; }
+  const nome = (h) => String(h ?? '').split(',')[0].trim().replace(/:\d+$/, '').toLowerCase();
+  return !!host && (o.host.toLowerCase() === String(host).toLowerCase() || nome(o.host) === nome(host) || (encaminhado != null && nome(o.host) === nome(encaminhado)));
+}
+
 /** A decisão: `{ ok: true }` ou `{ ok: false, status, codigo, erro }`. `sessao`: `{ email }` ou null. */
-export function decidir({ config, metodo, caminho, sessao, origem = null, host = null }) {
+export function decidir({ config, metodo, caminho, sessao, origem = null, host = null, encaminhado = null }) {
   const classe = classeDaRota(metodo, caminho);
   if (classe === 'publica') return { ok: true, classe };
   if (config.exigeLogin) {
@@ -66,9 +79,7 @@ export function decidir({ config, metodo, caminho, sessao, origem = null, host =
   }
   // Defesa contra CSRF: pedido que muda algo precisa vir da MESMA origem (o cookie já é SameSite=Strict).
   if (classe !== 'leitura' && origem) {
-    let host0 = null;
-    try { host0 = new URL(origem).host; } catch { /* origem inválida */ }
-    if (host0 !== host) return { ok: false, status: 403, codigo: 'origem', erro: 'Pedido de outra origem recusado.' };
+    if (!mesmaOrigem(origem, host, encaminhado)) return { ok: false, status: 403, codigo: 'origem', erro: 'Pedido de outra origem recusado.' };
   }
   if (classe === 'grava' && !config.grava) return { ok: false, status: 403, codigo: 'gravacao-desligada', erro: 'Gravação desligada neste servidor (produção): edite localmente, faça commit e publique pelo deploy.' };
   return { ok: true, classe };
@@ -137,8 +148,8 @@ export function criarAcesso({ config = configuracao(), deps, agora = () => Date.
       return { logado: !!s, email: s?.email ?? null, admin: !!s && ehAdmin(config, s.email), config: { producao: config.producao, exigeLogin: config.exigeLogin, grava: config.grava } };
     },
     /** Decide uma requisição já com o cookie lido. */
-    autorizar({ metodo, caminho, cookie, origem, host }) {
-      return decidir({ config, metodo, caminho, sessao: sessaoDe(lerCookie(cookie)), origem, host });
+    autorizar({ metodo, caminho, cookie, origem, host, encaminhado = null }) {
+      return decidir({ config, metodo, caminho, sessao: sessaoDe(lerCookie(cookie)), origem, host, encaminhado });
     },
   };
 }
