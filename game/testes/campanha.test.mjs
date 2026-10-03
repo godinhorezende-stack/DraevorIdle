@@ -129,7 +129,7 @@ test('fim do ato: o boss abre com as 12 fases; a 1ª vitória libera o ato segui
   assert.match(Campanha.motivoParaNaoEntrar(e, 'facil', F[12].huntId), /Derrote o boss do Ato 1/);
   const boss = Campanha.bossDoAto(1);
   // A primeira tentativa: sem level, sem task e sem recarga.
-  const r = Cacadas.entrar(e, { huntId: boss.bossId, mode: 'auto', dificuldade: 'facil', campanha: true });
+  const r = Cacadas.entrar(e, { huntId: boss.bossId, mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
   assert.equal(r.ok, true, r.erro);
   assert.equal(e.hunt.campanha.bossDoAto, 1);
   assert.match(Campanha.venceuBoss(e, 'facil', 1), /Ato 1 concluído no Normal! O Ato 2 está liberado/);

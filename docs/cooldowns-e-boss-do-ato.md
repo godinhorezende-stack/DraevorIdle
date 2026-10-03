@@ -43,3 +43,11 @@ Fases 1–12 do Fácil → Hunt Clear da 12ª (Putrid Mummies) → portal aberto
 - **O boss final no "editor de atos"**: ele é configurado em `gamedata/campanha.json` (`bosses[ato].bossId`); o `editor-conteudo` hoje não edita esse arquivo (os atos dele cuidam de outro conteúdo). Não adicionei seleção no editor.
 - **Reinício do servidor durante a luta**: a luta é uma hunt gravada como as outras; não testei um reinício real, e o portal (que vive na hunt da fase) é gravado. Reconexão: o portal e o botão voltam no primeiro retrato.
 - A arena é a infraestrutura de boss de sempre (uma sala por entrada); grupos diferentes não compartilham estado de combate.
+
+## O portal exige limpeza da execução atual
+
+- O portal só nasce em `aoLimparAInstancia` (a instância da última fase do ato zerou **agora**). Entrar na fase já completa, ou já ter vencido o boss, não abre nada.
+- `entrar` recusa o boss de ato sem `viaPortal`: `startHunt` direto (cartão, atalho, cliente adulterado) devolve "Limpe a última hunt…".
+- Instância nova (repetir a fase) fecha o portal; com o portal aberto a instância espera 60 s antes de recomeçar.
+- Caça Automática (`hunt.modo === 'auto'`): a sessão entra sozinha no portal, uma tentativa por portal (`tentouEntrarNoPortal`); falha não vira laço. Cada integrante da party decide por si, com os próprios requisitos.
+- Limitações: Caça Automática offline (simulação ao fechar a aba) não abre portal; o boss é enfrentado só com a aba aberta.
