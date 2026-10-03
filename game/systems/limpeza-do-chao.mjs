@@ -16,6 +16,7 @@
 // jogo não esperar.
 import { groundCleanupConfig, validarConfig, MENSAGEM_DO_AVISO } from './limpeza-do-chao-config.mjs';
 import * as Inventario from './inventario.mjs';
+import { ligar, avisoGlobal } from './avisos-globais.mjs';
 
 const TAG = '[GROUND-CLEANUP]';
 
@@ -26,22 +27,9 @@ const FONTES = [
 
 const relogioReal = { setTimeout: (f, ms) => setTimeout(f, ms), clearTimeout: (t) => clearTimeout(t), agora: () => Date.now(), cederLaco: () => new Promise((r) => setImmediate(r)) };
 
-let sessoes = new Map(); // nome -> Sessao (injetado em `ligar`)
+export { ligar, avisoGlobal };
+
 let estado = null; // { config, relogio, log, timer, fase, proximaEm, ciclo, avisouNoCiclo, limpando, execucoes }
-
-export const ligar = (mapa) => void (sessoes = mapa);
-
-/** Mensagem global para todos os jogadores online (um `JSON.stringify` só, como o chat Global). Devolve para quantos foi. */
-export function avisoGlobal(texto, nivel = 'sistema') {
-  const pronto = JSON.stringify({ t: 'avisoGlobal', nivel, texto, em: Date.now() });
-  let n = 0;
-  for (const s of sessoes.values()) {
-    if (!s?.personagem) continue;
-    s.enviarPronto(pronto);
-    n++;
-  }
-  return n;
-}
 
 const log = (msg) => (estado?.log ?? console.log)(`${TAG} ${msg}`);
 
