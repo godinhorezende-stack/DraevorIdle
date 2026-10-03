@@ -188,7 +188,7 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
   function abaSprite() {
     const look = valorEfetivo(orig(), E.ov, 'look');
     return el('div', { class: 'mob-sprite' }, retrato(look ? { tipo: 'criatura', look, cores: valorEfetivo(orig(), E.ov, 'colors') ?? orig().colors } : null, 160, { categoria: 'monstros', imediato: true }),
-      el('div', {}, el('div', { class: 'dica' }, 'O sprite é um desenho que já existe no jogo (look). Informe o número de outro monstro ou outfit para trocar a aparência.'),
+      el('div', {}, irPara && look ? el('button', { type: 'button', class: 'primario', onclick: () => irPara('sprites', null, [String(look)]) }, 'Abrir no editor de sprites (quadros e animação)') : null, el('div', { class: 'dica' }, 'O sprite é um desenho que já existe no jogo (look). Informe o número de outro monstro ou outfit para trocar a aparência.'),
         el('label', { class: `campo mob-campo${E.ov.look !== undefined ? ' mudou' : ''}` }, 'Look (sprite)', el('input', { type: 'number', value: look ?? '', disabled: dis(), onchange: (e) => { definirCampo(orig(), E.ov, 'look', e.target.value === '' ? undefined : Number(e.target.value)); mudou(); pintarAba(); } }), origem(orig().look ?? '—'))));
   }
   function abaUsos() {

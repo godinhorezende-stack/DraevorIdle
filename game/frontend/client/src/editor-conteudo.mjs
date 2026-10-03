@@ -10,6 +10,7 @@ import { criarEditorDeMapas } from './editor-mapas.mjs';
 import { criarTelasDeOperacao } from './editor-operacao.mjs';
 import { criarEditorDeMobs } from './editor-mobs.mjs';
 import { criarEditorDeItens } from './editor-itens.mjs';
+import { criarEditorDeSprites } from './editor-sprites-editor.mjs';
 import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
@@ -280,14 +281,17 @@ function cartaoDeEncontro(e, i) {
 }
 
 const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
-const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto) });
+const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto), acaoDaFicha: (d) => botaoDeSprite(d) });
 // A tela Mobs é a Biblioteca presa nos monstros (mesmos cards, mesma ficha), com a rota própria `#mobs/<key>`.
 // As telas de ENTIDADE (Mobs, Itens, Outfits, Montarias) são a Biblioteca presa numa categoria — mesmos cards, mesma
 // ficha, rota própria (`#mobs/<key>`, `#itens/<id>`…). Somente visualização: esses cadastros vêm do Canary.
 const irParaDe = (aba, id = null, resto = null) => irPara(aba, id, resto);
+// O botão "Editar sprite" das fichas da Biblioteca: abre o editor universal de sprites no look do monstro, outfit ou montaria.
+const lookDaFicha = (d) => (d.desenho?.tipo === 'criatura' ? d.desenho.look : ['outfits', 'montarias'].includes(d.categoria) ? d.look : null);
+const botaoDeSprite = (d) => (lookDaFicha(d) != null ? el('button', { type: 'button', class: 'fantasma', onclick: () => irPara('sprites', null, [String(lookDaFicha(d))]) }, 'Editar sprite (quadros e animação)') : null);
 const OPERACAO = criarTelasDeOperacao({ api, raiz: () => $('#raiz'), irPara: (aba) => irPara(aba) });
-const MOBS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('button', { type: 'button', class: 'primario', onclick: () => irPara('mobs', null, ['editar', d.id]) }, 'Editar este monstro (override)'), categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. O bestiário vem do Canary e não é alterado: para editar, use "Editar mobs" (camada de overrides).' });
-const MOBS_EDITOR = criarEditorDeMobs({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('mobs') });
+const MOBS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('div', { class: 'linha' }, el('button', { type: 'button', class: 'primario', onclick: () => irPara('mobs', null, ['editar', d.id]) }, 'Editar este monstro (override)'), botaoDeSprite(d)), categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. O bestiário vem do Canary e não é alterado: para editar, use "Editar mobs" (camada de overrides).' });
+const MOBS_EDITOR = criarEditorDeMobs({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('mobs'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
 let modoDosMobs = 'biblioteca';
 const MOBS = {
   async desenhar(resto = []) {
@@ -314,6 +318,8 @@ const ITENS = {
   abrir: (cat, id) => (id === 'editar' ? ITENS_EDITOR.desenhar() : ITENS_BIBLIOTECA.abrir(cat, id)),
   focarBusca: () => (modoDosItens === 'editor' ? ITENS_EDITOR : ITENS_BIBLIOTECA).focarBusca(),
 };
+// O editor universal de sprites (monstros, outfits e montarias): rota `#sprites` (escolher) e `#sprites/<look>` (editar).
+const SPRITES = criarEditorDeSprites({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
 const TELAS_FIXAS = {
   beta: OPERACAO.beta,
   config: OPERACAO.config,
@@ -321,16 +327,17 @@ const TELAS_FIXAS = {
   hunts: criarPainelDeHunts({ api, raiz: () => $('#raiz'), irPara: irParaDe, sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   mobs: MOBS,
   itens: ITENS,
-  outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
-  montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
+  sprites: SPRITES,
+  outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
+  montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
 };
-const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
+const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias', sprites: 'sprites' };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -348,7 +355,8 @@ const GRUPOS = [
     { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' },
     { id: 'itens', nome: 'Itens', icone: 'espada', modo: 'parcial', dica: 'consulta e edição por override (o catálogo do Canary não muda)' },
     { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },
-    { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' }] },
+    { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' },
+    { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', modo: 'parcial', dica: 'monstros, outfits e montarias: quadros, direções e animação por override' }] },
   { id: 'recursos', titulo: 'Recursos', itens: [
     { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
     { id: 'beta', nome: 'Testes e beta', icone: 'frasco', dica: 'interruptor do modo beta' },
@@ -380,6 +388,7 @@ const lerEndereco = () => {
 async function irPara(aba, faseId = null, resto = []) {
   if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return desenharAbas();
   if (S.sujo && !(await descartarAlteracoes())) return desenharAbas();
+  if (S.aba === 'sprites' && aba !== 'sprites') SPRITES.sair(); // para a animação e libera as folhas de rascunho do renderer
   S.navegacao++;
   S.sujo = false;
   S.aba = aba;

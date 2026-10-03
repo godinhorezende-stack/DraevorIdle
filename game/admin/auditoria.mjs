@@ -9,7 +9,7 @@ import { dirname, join } from 'node:path';
 
 export const CAMINHO = { arquivo: process.env.ENGINE_AUDITORIA || join(dirname(fileURLToPath(import.meta.url)), '..', 'database', 'dados', 'engine-auditoria.jsonl') };
 const MAX_BYTES = 5 * 1024 * 1024;
-const CAMPOS_DE_RESUMO = ['acao', 'key', 'id', 'novaKey', 'ativo', 'versao', 'huntId', 'categoria'];
+const CAMPOS_DE_RESUMO = ['acao', 'key', 'id', 'novaKey', 'ativo', 'versao', 'huntId', 'categoria', 'look'];
 
 /** Um resumo seguro do corpo do pedido: só campos de identificação (nunca o conteúdo editado nem senha). Pura. */
 export function resumirCorpo(corpo) {
