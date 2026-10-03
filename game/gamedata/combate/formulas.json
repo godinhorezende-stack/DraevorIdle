@@ -27,7 +27,9 @@
   },
   "danoFisico": {
     "_nota": "A VARIAÇÃO do dano do golpe físico (corpo a corpo, distância e o golpe da wand/rod): a faixa do golpe fica CENTRADA na média da fórmula do Tibia, ±`variacaoPct`%. A fórmula antiga sorteava de level/5 até `0,085 × ataque × (perícia + 4) + level/5` (ex.: 38–575, o mínimo era 6,6% do máximo). A média — o DPS esperado — não muda. 0 = sempre a média; 100 = de 0 até o dobro da média.",
-    "variacaoPct": 30
+    "variacaoPct": 30,
+    "_notaAtaqueSemArma": "O ataque BASE de quem está sem nenhum ataque (punho, arco/besta sem munição): o dano é ataque × (perícia + 4), e com ataque 0 a perícia não valia nada. Com isto o Melee/Distance sobe o dano mínimo e o máximo também sem arma.",
+    "ataqueSemArma": 10
   },
   "arredondamento": { "_nota": "O dano final é arredondado UMA vez, no fim; 'round' (como hoje) ou 'floor'.", "modo": "round" },
   "registro": { "_nota": "O registro de cada golpe (depuração): nível 0 = desligado (produção), 1 = resumo, 2 = detalhe; `capacidade` = quantos golpes ficam guardados (o mais antigo sai). Também liga por `COMBATE_LOG=1|2` no ambiente.", "nivel": 0, "capacidade": 200 }

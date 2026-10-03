@@ -176,9 +176,13 @@ function calcularCombate(estado) {
   // A munição do tipo da arma (flecha no arco) soma o ataque dela, também em faixa.
   const [mMin, mMax] = daMunicao ? faixaDoCampo(estado.equipment?.ammo, 'attack') : [0, 0];
   const temAtaque = !!w?.attack || jMax > 0 || mMax > 0;
+  // Sem NENHUM ataque (punho, arco sem flecha): o ataque BASE de `danoFisico.ataqueSemArma` — senão a perícia (Melee/Distance) não valia nada, porque o
+  // dano é ataque × (perícia + 4) e o ataque era 0 (o Monk sem arma dava o mesmo 42–78 com Melee 10 ou 120).
+  const ataqueBase = !temAtaque && !w?.wand ? FORMULAS.danoFisico?.ataqueSemArma ?? 0 : 0;
+  // O "Ataque" mostrado (e o `ataque` da ficha) segue sendo o da arma/munição (0 sem eles); o ataque BASE só entra na conta do dano (mín. e máx. do golpe).
   const ataque = calcAtaque((w?.attack ?? 0) + Math.round((jMin + jMax) / 2) + (daMunicao?.attack ?? 0));
-  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin + mMin) : ataque;
-  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax + mMax) : ataque;
+  const ataqueMin = temAtaque ? calcAtaque(faixaMin + jMin + mMin) : ataque + ataqueBase;
+  const ataqueMax = temAtaque ? calcAtaque(faixaMax + jMax + mMax) : ataque + ataqueBase;
   const valorDaPericia = Treino.valor(estado, pericia) + (bonusDePericia[pericia] ?? 0);
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   // Wand e rod (dono, 02/10): o Magic Attack (fixo, × raridade) é o "ataque" da arma e o Magic Level a perícia — o MESMO cálculo do golpe físico.

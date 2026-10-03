@@ -122,3 +122,36 @@ test('o dano REAL do golpe básico está dentro do "Dano" do tooltip (mesma fór
   // A faixa mostrada continua sem o bônus (os percentuais entram no golpe); o mínimo agora é coerente com o máximo.
   assert.ok(min / max > 0.4, `mínimo/máximo = ${(min / max).toFixed(2)}`);
 });
+
+test('o mínimo E o máximo sobem com a perícia da arma: Magic Level (wand/rod), Distance (arma de longe), Melee (arma de perto e punho) — e não com a perícia dos outros', async () => {
+  const Treino = await import('../systems/treino.mjs');
+  const idDe = (n) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === n).id);
+  const dano = ({ voc, arma, municao = null, perícia, valor, outras = {} }) => {
+    const e = personagemDeTeste({ vocacao: voc, level: 300 });
+    Treino.garantir(e);
+    e.equipment.weapon = arma ? { id: idDe(arma), count: 1 } : null;
+    if (municao) e.equipment.ammo = { id: idDe(municao), count: 100 };
+    const ponha = (nome, v) => (nome === 'magic' ? (e.magic.value = v) : (e.skills[nome].value = v));
+    ponha(perícia, valor);
+    for (const [k, v] of Object.entries(outras)) ponha(k, v);
+    Ficha.invalidar(e);
+    return Ficha.combate(e).damage;
+  };
+  const casos = [
+    { nome: 'wand (Magic Level)', voc: 'sorcerer', arma: 'wand of vortex', perícia: 'magic', outra: 'melee' },
+    { nome: 'rod (Magic Level)', voc: 'druid', arma: 'northwind rod', perícia: 'magic', outra: 'distance' },
+    { nome: 'arco + flecha (Distance)', voc: 'paladin', arma: 'bow', municao: 'flaming arrow', perícia: 'distance', outra: 'melee' },
+    { nome: 'lança (Distance)', voc: 'paladin', arma: 'spear', perícia: 'distance', outra: 'magic' },
+    { nome: 'espada (Melee)', voc: 'knight', arma: 'fire sword', perícia: 'melee', outra: 'distance' },
+    { nome: 'punho, sem arma (Melee)', voc: 'monk', arma: null, perícia: 'melee', outra: 'magic' },
+    { nome: 'arco sem flecha (Distance)', voc: 'paladin', arma: 'crossbow', perícia: 'distance', outra: 'melee' },
+  ];
+  for (const c of casos) {
+    const baixa = dano({ ...c, valor: 10 });
+    const alta = dano({ ...c, valor: 120 });
+    assert.ok(alta.min > baixa.min && alta.max > baixa.max, `${c.nome}: ${baixa.min}–${baixa.max} → ${alta.min}–${alta.max}`);
+    // A perícia dos outros tipos não mexe no dano desta arma.
+    const outra = dano({ ...c, valor: 10, outras: { [c.outra]: 150 } });
+    assert.deepEqual(outra, baixa, `${c.nome}: a perícia ${c.outra} não deveria contar`);
+  }
+});
