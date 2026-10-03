@@ -91,3 +91,37 @@ Cada linha é uma função que a nova tela precisa manter. `[servidor]` = regra 
 - **Painel por hunt** (`#hunts` no `/editor/conteudo`, `admin/hunts.mjs` + `editor-hunts.mjs`): mapa (arquivo, tamanho, andares, tipo, minimapa de spawns por raridade e andar, link para o editor de mapas), monstros (quantidade esperada por limpeza e % dos bichos, vida na escala), distribuição de raridade (contra o alvo de `distribuicao.json`), dificuldade (multiplicadores por dificuldade da campanha) e drops esperados. Somente leitura.
 - **Drops — tabela visual** (`editor-drops.mjs`): item com sprite real, chance, barra do esperado por limpeza/execução, valor NPC, origem; ordenável. Usada no loot esperado da hunt (monstros e encontros) e na prévia da recompensa de ato.
 - **Limites:** o loot dos monstros é do bestiário (Canary) e não é editável aqui; a prévia é estimativa por chance (sem Buff Power, prey nem afixo de loot). Hunts VIP/especial/divina não têm spawns no mapa: o painel mostra o cadastro, sem quantidade nem distribuição.
+
+## 6. Migração para a casca nova — rastreio F# → onde mora → teste
+Aba **Mapas** de `/editor/conteudo` (`editor-mapas.mjs` = tela; `editor-mapas-logica.mjs` = regras puras; servidor inalterado salvo `validarSpawns`). O `/editor` antigo **continua**, ligado na navegação como "Editor de mapas (antigo)".
+
+| F | Função | Onde (novo) | Prova |
+|---|---|---|---|
+| F1 | Novo mapa (tudo bloqueado, 5–300) | `novoMapa`, `tamanhoValido`, `criarNovo` | `editor-mapas.test.mjs` F1/F2/F4 + smoke (passo 1) |
+| F2 | Id válido; salvar sem id recusa | `ID_VALIDO`, `corpoDeSalvar` | teste F5/F6/F8 |
+| F3 | Listar e abrir mapas | `carregarLista`, `abrirPeloId` | smoke passos 1 e 9 |
+| F4 | Mapa do editor × mapa real (selo) | `ehMapaReal`, `pintarTudo` | teste F1/F2/F4 + smoke 9 |
+| F5/F6/F8 | Salvar (grade inteira × só spawns; mesmo id no real; mensagens) | `corpoDeSalvar`, `mensagemDeSalvo` | teste F5/F6/F8 + smoke 8 e 11 |
+| F7 | Formato antigo `posicoes` | `spawnsDoMapaAberto` | teste F7/F10/F11/F31 |
+| F9 | Erro de gravação explicado | servidor (`salvarSpawns`), mensagem mostrada por `dizer` | `mapa-spawns.test.mjs` (servidor) |
+| F10 | Chão com sprites reais do atlas, por andar | `desenharFundo`/`desenharPilha`, `gradeDe` | teste F7/F10 (grade); desenho verificado só por simulação |
+| F11/F31 | Andares com contagem e "(entrada)"; lista do andar | `spawnsPorAndar`, `montarAndares` | teste F7/F10/F11/F31 + smoke 9 |
+| F12 | Zoom 25–150% (50% se > 20 000 casas) | `#mp-zoom`, `abrir` | smoke 9 (andares/zoom) |
+| F13/F14 | Mostrar bloqueado / raio | `desenharMarcas` | só visual (simulado) |
+| F15/F16 | Sprite da criatura, anel da raridade, ×N | `desenharMarcas` | só visual (simulado) |
+| F17 | Casa sob o mouse + status | `casaDoPonteiro`, `textoDaCasa` | teste F17 |
+| F18 | Centralizar no spawn | `centralizar` | só visual |
+| F19/F20/F26 | Marcar/apagar spawn, trocar criatura | `motivoParaNaoMarcar`, `novoSpawn`, `aplicarFerramenta`, `escolherBicho` | teste F19/F20/F26/F33 + smoke 3–4 |
+| F21/F22 | Pincel e parede (só mapa do editor) | `pintarCasa` | teste F21/F22 + smoke 2 |
+| F23/F24 | Paleta de pisos e ajuda | `montarPaleta`, `AJUDA` | só visual |
+| F25 | Lista de criaturas (deste mapa, busca, 60) | `gruposDeBichos` | teste F25 |
+| F27 | Raio 0–10, quantidade 1–20 | `limitarRaio`, `limitarQuantidade` | teste F27 |
+| F28/F32 | Raridade, normal+mod = modificado, tipo antigo | `comRaridade`, `aplicarRaridade` | teste F28/F32 |
+| F29 | Modificadores travados (teto, raridade, incompatível) com motivo | `estadoDoModificador` | teste F29 |
+| F30 | Atributos calculados pelo servidor, origem de cada parcela | `montarAtributos` (rota `atributos-do-mob`) | smoke 10 |
+| F33 | Ids únicos | `novoId` | teste F19/F20/F26/F33 |
+| F34/F35/F36/F37 | Validação, padrões, mapa jogável, dados do editor | servidor (inalterado) | `mapa-spawns.test.mjs`, `raridade-dos-mapas.test.mjs` |
+| F38–F40 | Scripts de manutenção e dados em produção | inalterados | — |
+
+**Lacunas da auditoria resolvidas na aba nova:** desfazer/refazer (Ctrl+Z / Ctrl+Y), validação ao vivo dos spawns (lista TODOS os erros e marca o spawn), aviso de alterações não salvas (o mesmo da Engine) e a distribuição de raridade à vista. **Ainda só no `/editor` antigo?** Nada: todas as funções F1–F37 estão na aba nova; o antigo fica até você validar na prática e decidir removê-lo.
+**Limitação:** o desenho (sprites no canvas) e o arrastar do pincel foram exercitados em jsdom (sem navegador real); a lógica por trás tem teste.

@@ -88,6 +88,17 @@ export function salvar(dados) {
  */
 export const ehMapaReal = (mapa) => !!mapa && (mapa.atlas !== CITY_MAP.atlas || (mapa.levels?.length ?? 1) > 1);
 
+/**
+ * Valida os spawns SEM gravar (a validação ao vivo da aba Mapas): a mesma régua do salvar. Devolve `{ ok, erros: [texto] }` — TODOS os erros,
+ * não só o primeiro (o editor lista quais spawns estão errados).
+ */
+export function validarSpawns({ spawns, width, height }) {
+  if (!Array.isArray(spawns)) return { ok: false, erros: ['Sem spawns no pedido.'] };
+  if (!Number.isInteger(width) || !Number.isInteger(height)) return { ok: false, erros: ['Largura e altura são obrigatórias.'] };
+  const erros = validar(spawns, { largura: width, altura: height });
+  return { ok: erros.length === 0, erros };
+}
+
 /** Grava SÓ o bloco `spawns` de um mapa que já existe (o resto do arquivo fica como está). */
 export function salvarSpawns(dados) {
   const atual = dados?.id && ID_VALIDO.test(dados.id) ? carregar(dados.id) : null;

@@ -4,6 +4,7 @@ import * as Conteudo from './conteudo.mjs';
 import * as Biblioteca from './biblioteca.mjs';
 import * as Atos from './atos.mjs';
 import * as Hunts from './hunts.mjs';
+import * as Mapas from './mapas.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -40,6 +41,17 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     }
     // Atos do editor (rascunhos + legados somente leitura).
     if (rota === 'atos-editor') return json(res, 200, { atos: Atos.listar(), ...Atos.opcoes() }), true;
+    if (/^atos-editor\/[a-z0-9-]+\/versoes$/.test(rota)) return json(res, 200, { versoes: Atos.versoes(rota.split('/')[1]) }), true;
+    if (/^atos-editor\/[a-z0-9-]+\/versao\/\d+$/.test(rota)) {
+      const [, id, , n] = rota.split('/');
+      const v = Atos.versao(id, n);
+      return v ? json(res, 200, { ato: v }) : json(res, 404, { ok: false, erros: ['Versão não encontrada.'] }), true;
+    }
+    if (/^atos-editor\/[a-z0-9-]+\/comparar$/.test(rota)) return json(res, 200, Atos.comparar(rota.split('/')[1], Number(url.searchParams.get('de')), url.searchParams.get('para') ? Number(url.searchParams.get('para')) : null)), true;
+    if (/^atos-editor\/[a-z0-9-]+\/publicacao$/.test(rota)) {
+      const c = Atos.checklistDePublicacao(rota.split('/')[1]);
+      return c ? json(res, 200, c) : json(res, 404, { ok: false, erros: ['Ato não encontrado.'] }), true;
+    }
     if (rota.startsWith('atos-editor/')) {
       const ato = Atos.obter(rota.slice('atos-editor/'.length));
       return ato ? json(res, 200, { ato, ...Atos.validar(ato) }) : json(res, 404, { ok: false, erros: ['Ato não encontrado.'] }), true;
@@ -64,6 +76,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota.startsWith('fase/') && rota.endsWith('/validar')) return json(res, 200, Conteudo.validarFase(rota.slice(5, -'/validar'.length), dados?.encontros ?? [])), true;
     if (rota.startsWith('fase/') && rota.endsWith('/meta')) return json(res, 200, Conteudo.salvarMeta(rota.slice(5, -'/meta'.length), dados ?? {})), true;
     if (rota === 'atos-editor/previa') return json(res, 200, { previa: Atos.previa(dados?.recompensa, { origem: dados?.origem === 'boss' ? 'boss final' : 'fase' }), simulacao: dados?.simular ? Atos.simular(dados.recompensa, { execucoes: dados.execucoes, semente: dados.semente }) : null, problemas: Atos.validarRecompensa(dados?.recompensa, dados?.huntId ?? null) }), true;
+    if (/^atos-editor\/[a-z0-9-]+\/restaurar$/.test(rota)) return json(res, 200, Atos.restaurar(rota.split('/')[1], Number(dados?.versao))), true;
+    if (rota === 'mapas/validar') return json(res, 200, Mapas.validarSpawns(dados ?? {})), true;
     if (rota === 'atos-editor/validar') return json(res, 200, Atos.validar(dados ?? {})), true;
     if (rota === 'atos-editor') return json(res, 200, dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {})), true;
     if (rota === 'mapa') return json(res, 200, Conteudo.salvarMapa(dados ?? {})), true;

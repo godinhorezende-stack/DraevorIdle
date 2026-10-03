@@ -6,6 +6,7 @@ import { LARGURA, ALTURA, TIPOS_DE_NO, posicoesDoAto, conexoesDoAto, tracadoDaEs
 import { desenharNo } from './world.mjs';
 import { criarEditorDeAtos } from './editor-atos.mjs';
 import { criarPainelDeHunts } from './editor-hunts.mjs';
+import { criarEditorDeMapas } from './editor-mapas.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
 import { el, msg, descartarAlteracoes, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
@@ -279,22 +280,23 @@ const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, 
 // ficha, rota própria (`#mobs/<key>`, `#itens/<id>`…). Somente visualização: esses cadastros vêm do Canary.
 const irParaDe = (aba, id = null, resto = null) => irPara(aba, id, resto);
 const TELAS_FIXAS = {
+  mapas: criarEditorDeMapas({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo, confirmarDescartar: () => descartarAlteracoes('O mapa aberto tem alterações não salvas') } }),
   hunts: criarPainelDeHunts({ api, raiz: () => $('#raiz'), irPara: irParaDe }),
   mobs: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. Somente visualização — o bestiário vem do Canary.' }),
   itens: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. Somente visualização.' }),
   outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
   montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
 };
-const CATEGORIA_DA_TELA = { hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
+const CATEGORIA_DA_TELA = { mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['hunts', 'Hunts'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
+const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['hunts', 'Hunts'], ['mapas', 'Mapas'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 const GRUPOS = [
-  { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'hunts', nome: 'Hunts', icone: 'mapa' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', href: '/editor' }] },
+  { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'hunts', nome: 'Hunts', icone: 'mapa' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Mapas', icone: 'mapa' }, { id: 'mapas-antigo', nome: 'Editor de mapas (antigo)', icone: 'mapa', href: '/editor' }] },
   { titulo: 'Entidades', itens: [{ id: 'mobs', nome: 'Mobs', icone: 'mobs' }, { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }, { id: 'itens', nome: 'Itens', icone: 'espada' }, { id: 'outfits', nome: 'Outfits', icone: 'outfit' }, { id: 'montarias', nome: 'Montarias', icone: 'montaria' }] },
   { titulo: 'Biblioteca', itens: [{ id: 'biblioteca', nome: 'Todos os cadastros', icone: 'livros' }] },
 ];

@@ -442,7 +442,8 @@ function contextoDoRuntime() {
   const ordensEmUso = new Map([...Array(ATOS)].map((_, i) => [i + 1, `legado-${i + 1}`]));
   for (const [n, g] of ATOS_DO_EDITOR) ordensEmUso.set(n, g.ato.id);
   const atos = [...ordensEmUso.values()].map((id) => ({ id }));
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos, validarRecompensa: RecompensasDeEncontro.validar };
+  const categoriaDaHunt = (id) => ['hunts', 'vips', 'especiais', 'divinas'].find((c) => (CATALOGO[c] ?? []).some((h) => h.id === id)) ?? null;
+  return { categoriaDaHunt, huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos, validarRecompensa: RecompensasDeEncontro.validar };
 }
 
 /**

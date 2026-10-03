@@ -76,7 +76,7 @@ export function criarPainelDeHunts({ api, raiz, irPara }) {
       andares.length > 1 ? el('label', { class: 'campo' }, 'Andar', el('select', { onchange: (e) => { H.andar = Number(e.target.value); pintar(); } }, andares.map((a) => el('option', { value: a.andar, selected: a.andar === H.andar }, `${a.andar} — ${a.spawns} spawns`)))) : null,
       minimapa(p),
       el('div', { class: 'hunt-legenda' }, Object.entries(NOME_DA_RARIDADE).map(([r, n]) => el('span', {}, el('i', { style: `background:${COR_DA_RARIDADE[r]}` }), n))),
-      m.arquivo ? el('a', { class: 'eng-link', href: `/editor?mapa=${encodeURIComponent(p.id)}`, target: '_blank', rel: 'noopener' }, 'Abrir no editor de mapas ↗') : naoCad('Sem arquivo de mapa: a hunt usa o terreno do cadastro.'));
+      m.arquivo ? el('a', { class: 'eng-link', href: `#mapas/${encodeURIComponent(p.id)}` }, 'Abrir no editor de mapas →') : naoCad('Sem arquivo de mapa: a hunt usa o terreno do cadastro.'));
   }
 
   function sMonstros(p) {
