@@ -8,6 +8,7 @@ import { criarEditorDeAtos } from './editor-atos.mjs';
 import { criarPainelDeHunts } from './editor-hunts.mjs';
 import { criarEditorDeMapas } from './editor-mapas.mjs';
 import { criarTelasDeOperacao } from './editor-operacao.mjs';
+import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
@@ -40,6 +41,7 @@ async function api(rota, corpo) {
   const vez = S.navegacao;
   const r = await fetch(BASE + rota, corpo === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
   const dados = await r.json();
+  if (r.status === 401 && dados?.codigo === 'sem-login') { location.reload(); return new Promise(() => {}); }
   if (corpo === undefined && vez !== S.navegacao) return new Promise(() => {});
   return dados;
 }
@@ -293,7 +295,9 @@ const TELAS_FIXAS = {
   montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
 };
 const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
-const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
+const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { // O servidor decide quem entra: em produção, sem sessão de administrador só o login aparece (nenhum dado é entregue).
+await garantirAcesso({ raiz: () => $('#raiz') });
+S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 

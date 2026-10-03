@@ -24,6 +24,9 @@ import * as ServerSave from '../systems/server-save.mjs';
 import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as ModoBeta from '../systems/modo-beta.mjs';
 import * as Operacao from '../admin/operacao.mjs';
+import { criarAcesso } from '../admin/acesso.mjs';
+import { contaPorEmail, conferirSenha } from '../database/banco.mjs';
+import { criarGuarda } from '../admin/acesso-http.mjs';
 import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
 
 Site.ligar(vivas);
@@ -120,6 +123,9 @@ function json(res, status, corpo) {
   res.end(texto);
 }
 
+// O acesso à Engine: contas do jogo cujo e-mail está em `gamedata/engine.json` (ou ENGINE_ADMINS); ver `admin/acesso.mjs`.
+const guardaDaEngine = criarGuarda(criarAcesso({ deps: { contaPorEmail, conferirSenha } }));
+
 async function atender(req, res) {
   const url = new URL(req.url, 'http://x');
   const caminho = decodeURIComponent(url.pathname.split('?')[0]);
@@ -142,6 +148,8 @@ async function atender(req, res) {
    * (o nginx de produção só deixa passar por túnel SSH). GET = situação e últimos ciclos; POST {acao:'executar'}
    * roda um save agora; POST {acao:'manutencao', ativo:true|false} liga/desliga o bloqueio de entradas.
    */
+  // O ACESSO à Engine (login de administrador + gravação desligada em produção): vale para TODA rota /api/mapas*, antes de qualquer outra.
+  if (await guardaDaEngine(req, res, caminho, { json, corpoJson })) return;
   // O modo beta (acesso livre para testar): GET = situação; POST {ativo:true|false} liga/desliga em tempo de execução.
   if (caminho === '/api/mapas/_conteudo/modo-beta') {
     if (req.method === 'GET') return json(res, 200, { ativo: ModoBeta.ativo() });
