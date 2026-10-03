@@ -256,3 +256,123 @@ button.eng-copiar:hover { color: var(--eng-ouro-txt); border-color: var(--eng-ou
 
 /* o mapa do mundo (w2-*, do jogo) dentro do tema */
 .w2-palco { border-radius: var(--eng-r3); overflow: hidden; border: 1px solid var(--eng-linha); }
+
+/* ------------------------------------------------------------------ sprites (retrato e pré-visualização) */
+
+.eng-arte { width: var(--tam); height: var(--tam); flex: none; display: grid; place-items: center; border-radius: var(--eng-r2); background: radial-gradient(circle at 50% 60%, #222a36 0%, var(--eng-s0) 75%); overflow: hidden; }
+.eng-arte canvas { image-rendering: pixelated; display: block; max-width: 100%; max-height: 100%; }
+.eng-arte.vazia { background: repeating-linear-gradient(45deg, var(--eng-s1) 0 6px, var(--eng-s2) 6px 12px); color: var(--eng-txt3); gap: 2px; align-content: center; }
+.eng-arte.vazia svg { width: 40%; height: 40%; max-width: 28px; max-height: 28px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+.eng-arte.vazia span { font-size: 10.5px; letter-spacing: .04em; }
+.eng-previa { display: grid; gap: var(--eng-e2); }
+.eng-previa-palco { display: grid; place-items: center; min-height: 180px; background: var(--eng-s0); border: 1px solid var(--eng-linha); border-radius: var(--eng-r3); padding: var(--eng-e3); }
+.eng-previa-palco .eng-arte { background: none; }
+.eng-previa-controles { display: flex; align-items: center; gap: 4px; }
+.eng-previa-controles button { padding: 2px 8px; font-size: var(--eng-t-pequeno); }
+.eng-previa-controles button.ativo { color: var(--eng-ouro-txt); background: var(--eng-ouro-fundo); }
+
+/* ------------------------------------------------------------------ biblioteca visual */
+
+.eng-alternar { display: inline-flex; background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); padding: 2px; }
+.eng-alternar button { border: 0; background: transparent; color: var(--eng-txt2); padding: 4px 12px; border-radius: 6px; }
+.eng-alternar button.ativo { background: var(--eng-s3); color: var(--eng-txt); }
+
+.bib-v { display: grid; grid-template-columns: 220px minmax(0, 1fr) minmax(360px, 30%); gap: var(--eng-e4); align-items: start; }
+.bib-filtros, .bib-resultados, .bib-painel { max-height: calc(100vh - var(--eng-topo) - 150px); overflow: auto; }
+.bib-filtros { position: sticky; top: 0; display: grid; gap: var(--eng-e4); padding-right: 4px; }
+.bib-busca input { width: 100%; padding: 8px 12px; background: var(--eng-s1); }
+.bib-grupo { display: grid; gap: var(--eng-e3); }
+.bib-rotulo { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--eng-txt3); }
+.bib-categorias { display: grid; gap: 2px; }
+.bib-cat { display: flex; justify-content: space-between; gap: 8px; border: 0; background: transparent; color: var(--eng-txt2); padding: 6px 10px; border-radius: var(--eng-r2); text-align: left; }
+.bib-cat:hover { background: var(--eng-s1); color: var(--eng-txt); }
+.bib-cat.ativa { background: var(--eng-ouro-fundo); color: var(--eng-ouro-txt); }
+.bib-num { font-variant-numeric: tabular-nums; color: var(--eng-txt3); font-size: var(--eng-t-pequeno); }
+.bib-cat.ativa .bib-num { color: var(--eng-ouro); }
+.bib-par { display: grid; grid-template-columns: 1fr 1fr; gap: var(--eng-e2); }
+.bib-limpar { justify-self: start; font-size: var(--eng-t-pequeno); }
+
+.bib-resultados { padding: 2px; }
+.bib-contagem { display: flex; align-items: baseline; gap: var(--eng-e3); margin-bottom: var(--eng-e3); position: sticky; top: 0; background: var(--eng-s0); z-index: 2; padding: 2px 0 6px; }
+.bib-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: var(--eng-e3); }
+.bib-linhas { display: grid; gap: 4px; }
+.bib-vazio { grid-column: 1 / -1; display: grid; gap: 4px; justify-items: center; padding: 48px 16px; border: 1px dashed var(--eng-linha); border-radius: var(--eng-r3); }
+
+.eng-card { position: relative; display: grid; grid-template-rows: auto 1fr; background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r3); cursor: pointer; transition: border-color .12s, background .12s, transform .12s; overflow: hidden; }
+.eng-card:hover { border-color: var(--eng-linha-forte); background: var(--eng-s2); }
+.eng-card:focus-visible { box-shadow: var(--eng-foco); }
+.eng-card.selecionado { border-color: var(--eng-ouro); box-shadow: inset 0 0 0 1px var(--eng-ouro); }
+.eng-card-arte { display: grid; place-items: center; padding: var(--eng-e3) 0 var(--eng-e2); background: linear-gradient(180deg, #181d27, var(--eng-s1)); }
+.eng-card-arte .eng-arte { background: radial-gradient(circle at 50% 62%, #252e3c 0%, transparent 70%); }
+.eng-card-info { display: grid; gap: 2px; padding: 4px var(--eng-e3) var(--eng-e3); min-width: 0; align-content: start; }
+.eng-card-nome { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eng-card-info .eng-id { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eng-card-selos { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.eng-card-selos .selo { margin: 0; font-size: 11px; padding: 0 7px; }
+.eng-card-acoes { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transform: translateY(-2px); transition: opacity .12s, transform .12s; }
+.eng-card:hover .eng-card-acoes, .eng-card:focus-within .eng-card-acoes { opacity: 1; transform: none; }
+.eng-card-acoes button { padding: 2px 7px; font-size: 11px; background: rgba(13, 15, 20, .88); border-color: var(--eng-linha-forte); }
+.eng-card-acoes button:hover { color: var(--eng-ouro-txt); border-color: var(--eng-ouro); }
+.eng-card.em-linha { grid-template-rows: none; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; border-radius: var(--eng-r2); }
+.eng-card.em-linha .eng-card-arte { padding: 4px 8px; background: none; }
+.eng-card.em-linha .eng-card-info { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); grid-template-areas: 'nome selos' 'id selos'; align-items: center; column-gap: var(--eng-e3); row-gap: 0; padding: 6px var(--eng-e3); }
+.eng-card.em-linha .eng-card-nome { grid-area: nome; }
+.eng-card.em-linha .eng-id { grid-area: id; }
+.eng-card.em-linha .eng-card-selos { grid-area: selos; margin: 0; }
+.eng-card.em-linha .eng-card-acoes { position: static; opacity: 1; transform: none; padding-right: 8px; }
+.eng-card.em-linha .eng-card-acoes button { background: transparent; border-color: transparent; color: var(--eng-txt3); }
+.eng-card.em-linha:hover .eng-card-acoes button { color: var(--eng-txt2); border-color: var(--eng-linha); }
+
+/* raridade dos itens (as mesmas faixas do jogo) e selos dos cards */
+.selo.r-comum { background: #262b33; color: #c9ced8; }
+.selo.r-incomum { background: #17321f; color: #9fe2b0; }
+.selo.r-raro { background: #172843; color: #9cc3ff; }
+.selo.r-epico { background: #2c1d43; color: #d4b0ff; }
+.selo.r-lendario { background: #3b2a10; color: #ffcf7a; }
+.selo.r-mitico { background: #3f1820; color: #ff9fb0; }
+.selo.vida { background: #331b1d; color: #f3b1aa; }
+.selo.usos { background: var(--eng-s3); color: var(--eng-txt2); }
+
+/* painel de detalhes */
+.bib-painel { background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r3); position: sticky; top: 0; }
+.bib-painel-vazio { display: grid; justify-items: center; text-align: center; gap: 6px; padding: 56px 24px; color: var(--eng-txt2); }
+.bib-painel-vazio svg { width: 36px; height: 36px; stroke: var(--eng-txt3); fill: none; stroke-width: 1.5; }
+.bib-painel-topo { display: grid; gap: var(--eng-e3); padding: var(--eng-e4); border-bottom: 1px solid var(--eng-linha); }
+.bib-painel-titulo { display: grid; gap: 6px; }
+h2.bib-nome { margin: 0; font: 600 var(--eng-t-grande)/1.25 var(--eng-titulo); letter-spacing: .03em; text-transform: none; color: var(--eng-txt); }
+.bib-alerta { background: var(--eng-erro-fundo); color: #ffd2cd; border-radius: var(--eng-r2); padding: 6px 10px; font-size: var(--eng-t-pequeno); }
+.eng-abas { display: flex; gap: 2px; padding: 0 var(--eng-e3); border-bottom: 1px solid var(--eng-linha); position: sticky; top: 0; background: var(--eng-s1); z-index: 2; }
+.eng-abas button { border: 0; background: transparent; color: var(--eng-txt2); border-radius: 0; padding: 10px 12px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.eng-abas button:hover { color: var(--eng-txt); background: transparent; }
+.eng-abas button.ativa { color: var(--eng-ouro-txt); border-bottom-color: var(--eng-ouro); }
+.bib-painel-corpo { padding: var(--eng-e3) var(--eng-e4) var(--eng-e5); display: grid; gap: var(--eng-e4); }
+.bib-sec h4 { margin: 0 0 6px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--eng-txt3); font-weight: 600; }
+.bib-dl { display: grid; grid-template-columns: minmax(96px, max-content) minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.bib-dl dt { color: var(--eng-txt3); font-size: var(--eng-t-pequeno); padding-top: 1px; }
+.bib-dl dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.bib-dl .bib-dl { padding-left: 8px; border-left: 1px solid var(--eng-linha); }
+.nao { color: var(--eng-txt3); font-style: italic; font-size: var(--eng-t-pequeno); }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font: 11.5px var(--eng-mono); color: var(--eng-txt2); }
+.bib-tabela { overflow: auto; max-height: 340px; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); }
+.bib-tabela table { font-size: var(--eng-t-pequeno); }
+.bib-tabela th, .bib-tabela td { padding: 5px 8px; }
+.bib-ref { display: inline-flex; align-items: center; gap: 6px; padding: 1px 6px 1px 1px; background: transparent; border-color: transparent; }
+.bib-ref:hover { border-color: var(--eng-ouro); background: transparent; }
+.bib-monstros { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+.bib-monstro { display: grid; justify-items: center; gap: 2px; padding: 6px 4px; background: var(--eng-s0); border-color: var(--eng-linha); font-size: var(--eng-t-pequeno); text-align: center; }
+.bib-monstro:hover { border-color: var(--eng-ouro); background: var(--eng-s0); }
+.bib-usos { display: grid; gap: 4px; }
+.bib-uso { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; align-items: center; text-align: left; padding: 8px 10px; background: var(--eng-s0); border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); }
+.bib-uso .dica { grid-column: 2; }
+button.bib-uso:hover { border-color: var(--eng-ouro); background: var(--eng-s0); }
+pre.bib-json { margin: 0; max-height: 60vh; overflow: auto; font: 12px/1.55 var(--eng-mono); background: var(--eng-s0); border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); padding: var(--eng-e3); color: var(--eng-txt2); }
+
+/* busca global (Ctrl+K) */
+dialog.eng-paleta { width: min(680px, 92vw); top: 12vh; margin-top: 0; }
+.eng-paleta-busca { padding: var(--eng-e3); border-bottom: 1px solid var(--eng-linha); }
+.eng-paleta-busca input { width: 100%; font-size: var(--eng-t-medio); padding: 10px 14px; background: var(--eng-s1); }
+.eng-paleta-lista { max-height: 56vh; overflow: auto; padding: 6px; display: grid; gap: 2px; }
+.eng-paleta-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--eng-e3); padding: 6px 10px; border-radius: var(--eng-r2); cursor: pointer; }
+.eng-paleta-item.ativo { background: var(--eng-ouro-fundo); }
+.eng-paleta-item b { font-weight: 500; }
