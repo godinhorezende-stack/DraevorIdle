@@ -14,6 +14,7 @@ import { itemCanvas } from './sprites.mjs';
 import { nomeDaPeca } from './tooltip.mjs';
 
 const TEMPO_NA_TELA_MS = 6000;
+const TEMPO_DO_AVISO_MS = 15000;
 const FILA_MAXIMA = 3;
 const fila = [];
 let atual = null;
@@ -26,7 +27,16 @@ const el = (tag, className, text) => {
   return node;
 };
 
+function montarSistema(m) {
+  const cartao = el('div', 'anuncio-drop anuncio-sistema');
+  cartao.setAttribute('role', 'alert');
+  cartao.append(el('div', 'anuncio-figura', '⚠'), el('div', 'anuncio-texto anuncio-aviso', m.texto));
+  cartao.addEventListener('click', () => proximo());
+  return cartao;
+}
+
 function montar(m) {
+  if (m.t === 'avisoGlobal') return montarSistema(m);
   const cartao = el('div', `anuncio-drop raridade-${String(m.peca?.raridade ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '')}`);
   cartao.setAttribute('role', 'status');
   const figura = el('div', 'anuncio-figura');
@@ -59,7 +69,15 @@ function proximo() {
   faixa ??= document.body.appendChild(el('div', 'anuncios-drop'));
   const node = montar(m);
   faixa.append(node);
-  atual = { node, timer: setTimeout(proximo, TEMPO_NA_TELA_MS) };
+  atual = { node, timer: setTimeout(proximo, m.t === 'avisoGlobal' ? TEMPO_DO_AVISO_MS : TEMPO_NA_TELA_MS) };
+}
+
+/** Um `{t:'avisoGlobal', texto}` do servidor (a mesma faixa do drop raro; fica mais tempo, porque é um aviso). */
+export function anunciarSistema(m) {
+  if (!m?.texto) return;
+  fila.push({ ...m, t: 'avisoGlobal' });
+  while (fila.length > FILA_MAXIMA) fila.shift();
+  if (!atual) proximo();
 }
 
 /** Um `{t:'dropRaro', ...}` do servidor. */

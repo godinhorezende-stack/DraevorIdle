@@ -17,6 +17,7 @@ import { aquecerGrades } from '../systems/cacadas.mjs';
 import * as ConsolidacaoOffline from '../systems/consolidacao-offline.mjs';
 import * as Ausentes from '../systems/ausentes.mjs';
 import * as Presentes from '../systems/presentes.mjs';
+import * as LimpezaDoChao from '../systems/limpeza-do-chao.mjs';
 
 Site.ligar(vivas);
 // Quem caça de aba fechada entra no número de online (ver `ausentes.mjs`).
@@ -243,6 +244,10 @@ const t0 = performance.now();
 const quantas = aquecerGrades();
 console.log(`  grades de hunt aquecidas: ${quantas} em ${(performance.now() - t0).toFixed(0)}ms`);
 
+// A limpeza automática do chão (a cada 60 min, com aviso 1 min antes — `limpeza-do-chao.mjs`).
+LimpezaDoChao.ligar(vivas);
+LimpezaDoChao.iniciar();
+
 http.listen(PORTA, () => {
   console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
 });
@@ -250,6 +255,7 @@ http.listen(PORTA, () => {
 // Desligando o servidor (Ctrl+C): grava todo mundo que está online antes de sair.
 for (const sinal of ['SIGINT', 'SIGTERM', 'SIGBREAK']) {
   process.on(sinal, () => {
+    LimpezaDoChao.parar();
     for (const s of vivas.values()) s.soltarPersonagem?.();
     process.exit(0);
   });
