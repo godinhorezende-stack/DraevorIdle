@@ -79,3 +79,9 @@ Exige mudança estrutural: grafo de fases com bifurcação/convergência no serv
 
 ## Etapa 2 — modo beta (feito)
 `systems/modo-beta.mjs` + `gamedata/modo-beta.json` (`ativo: true`). `MODO_BETA=0|1` manda sobre o arquivo; o admin liga/desliga em tempo de execução por `POST /api/mapas/_conteudo/modo-beta {ativo}` (GET mostra a situação). Quando ligado: `Premium.podeEntrar/podeFicar` liberam VIP/Instance/Divine; `Cacadas.entrar` ignora level/task/recarga dos bosses; `Bosses.marcarEntrada` não grava espera; o Auto Boss não pula por level/task/recarga. Não muda: portal e limpeza do boss de ato, duração da sala de boss, instância. Sob `node --test` o padrão é desligado.
+
+## Etapa 3b — modelo de ato, validador de grafo e atos legados (feito)
+- `systems/atos-modelo.mjs`: forma do ato, `TIPOS_DE_FASE` (só `hunt-normal` e `fase-final-do-ato` têm suporte no runtime), `validarAto` (isolada, ciclo, referência quebrada, hunt repetida entre atos, boss final/portal), `fasesAbertas` (a regra do grafo).
+- `systems/atos-legado.mjs`: os 4 atos de hoje no modelo novo, somente leitura (a fase travada `dark-thais` fica fora do grafo, como no runtime).
+- `admin/atos.mjs` + rotas `atos-editor`: lista, detalhe com validação, validar sem gravar, salvar rascunho (`gamedata/atos/<id>.json`, versão sobe), duplicar, excluir. `beta`/`publicado` recusados até o runtime por grafo (Etapa 6).
+- Prova de equivalência: `fasesAbertas` == `Campanha.faseLiberada` ao longo de toda a progressão dos 4 atos. Nada do runtime importa estes módulos.
