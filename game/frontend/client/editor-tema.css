@@ -685,3 +685,16 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .niv-tabela tr.foco td { background: var(--eng-s2); }
 .niv-tabela tr.niv-boss td { background: var(--eng-boss-fundo); }
 .niv-impacto td.niv-forte { color: var(--eng-aviso); font-weight: 600; }
+
+/* ---- Editor de mobs (overrides) ---- */
+.mob-item { display: flex; align-items: center; gap: var(--eng-e2); text-align: left; }
+.mob-item span { min-width: 0; }
+.mob-campo input { width: 100%; }
+.mob-campo.mudou input { border-color: var(--eng-ouro); background: var(--eng-ouro-fundo); }
+.mob-original { display: block; color: var(--eng-txt3); }
+.mob-campo button.fantasma { justify-self: start; padding: 0 6px; font-size: var(--eng-t-pequeno); }
+.mob-tabela { width: 100%; border-collapse: collapse; }
+.mob-tabela th { text-align: left; font-size: var(--eng-t-pequeno); color: var(--eng-txt3); padding: 4px 6px; border-bottom: 1px solid var(--eng-linha); }
+.mob-tabela td { padding: 3px 6px; border-bottom: 1px solid var(--eng-linha); }
+.mob-tabela input[type=number] { width: 96px; }
+.mob-sprite { display: flex; gap: var(--eng-e4); align-items: flex-start; flex-wrap: wrap; }

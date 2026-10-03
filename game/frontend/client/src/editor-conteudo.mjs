@@ -8,6 +8,7 @@ import { criarEditorDeAtos } from './editor-atos.mjs';
 import { criarPainelDeHunts } from './editor-hunts.mjs';
 import { criarEditorDeMapas } from './editor-mapas.mjs';
 import { criarTelasDeOperacao } from './editor-operacao.mjs';
+import { criarEditorDeMobs } from './editor-mobs.mjs';
 import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
@@ -284,12 +285,26 @@ const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, 
 // ficha, rota própria (`#mobs/<key>`, `#itens/<id>`…). Somente visualização: esses cadastros vêm do Canary.
 const irParaDe = (aba, id = null, resto = null) => irPara(aba, id, resto);
 const OPERACAO = criarTelasDeOperacao({ api, raiz: () => $('#raiz'), irPara: (aba) => irPara(aba) });
+const MOBS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('button', { type: 'button', class: 'primario', onclick: () => irPara('mobs', null, ['editar', d.id]) }, 'Editar este monstro (override)'), categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. O bestiário vem do Canary e não é alterado: para editar, use "Editar mobs" (camada de overrides).' });
+const MOBS_EDITOR = criarEditorDeMobs({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('mobs') });
+let modoDosMobs = 'biblioteca';
+const MOBS = {
+  async desenhar(resto = []) {
+    if (resto[0] === 'editar') { modoDosMobs = 'editor'; return MOBS_EDITOR.desenhar(resto[1] ?? null); }
+    modoDosMobs = 'biblioteca';
+    await MOBS_BIBLIOTECA.desenhar(resto);
+    const cab = document.querySelector('#raiz .eng-cabeca');
+    if (cab && !cab.querySelector('.mob-editar')) cab.append(el('div', { class: 'eng-acoes' }, el('button', { type: 'button', class: 'mob-editar primario', onclick: () => irPara('mobs', null, ['editar']) }, 'Editar mobs (overrides)')));
+  },
+  abrir: (cat, id) => (id === 'editar' ? MOBS_EDITOR.desenhar() : MOBS_BIBLIOTECA.abrir(cat, id)),
+  focarBusca: () => (modoDosMobs === 'editor' ? MOBS_EDITOR : MOBS_BIBLIOTECA).focarBusca(),
+};
 const TELAS_FIXAS = {
   beta: OPERACAO.beta,
   config: OPERACAO.config,
   mapas: criarEditorDeMapas({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo, confirmarDescartar: () => descartarAlteracoes('O mapa aberto tem alterações não salvas') } }),
   hunts: criarPainelDeHunts({ api, raiz: () => $('#raiz'), irPara: irParaDe, sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
-  mobs: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. Somente visualização — o bestiário vem do Canary.' }),
+  mobs: MOBS,
   itens: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. Somente visualização.' }),
   outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
   montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
@@ -314,7 +329,7 @@ const GRUPOS = [
     { id: 'fase', nome: 'Fases e encontros', icone: 'fase' },
     { id: 'mapas-antigo', nome: 'Editor de mapas (antigo)', icone: 'mapa', href: '/editor', dica: 'a tela antiga, enquanto você valida a nova' }] },
   { id: 'conteudo', titulo: 'Conteúdo do jogo', itens: [
-    { id: 'mobs', nome: 'Mobs', icone: 'mobs', modo: 'consulta', dica: 'o bestiário vem do Canary' },
+    { id: 'mobs', nome: 'Mobs', icone: 'mobs', modo: 'parcial', dica: 'consulta e edição por override (o original do Canary não muda)' },
     { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' },
     { id: 'itens', nome: 'Itens', icone: 'espada', modo: 'consulta' },
     { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },

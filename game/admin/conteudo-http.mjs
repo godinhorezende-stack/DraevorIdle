@@ -7,6 +7,7 @@ import * as Hunts from './hunts.mjs';
 import * as Mapas from './mapas.mjs';
 import * as Operacao from './operacao.mjs';
 import * as CampanhaEditor from './campanha-editor.mjs';
+import * as Overrides from './overrides.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -38,6 +39,13 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
     if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
     if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
+    // Overrides por cima do dado importado (monstros): leitura; a edição é POST `overrides` (grava) e `overrides/validar` (só pré-visualiza).
+    if (rota === 'overrides/monstros') return json(res, 200, Overrides.listar(Object.fromEntries(url.searchParams))), true;
+    if (rota.startsWith('overrides/monstros/')) {
+      const m = Overrides.obter(decodeURIComponent(rota.slice('overrides/monstros/'.length)));
+      return m ? json(res, 200, m) : json(res, 404, { ok: false, erros: ['Monstro não encontrado.'] }), true;
+    }
+    if (rota === 'overrides/versoes') return json(res, 200, { versoes: Overrides.versoes() }), true;
     // Níveis da campanha (balanceamento/progressão): leitura; a edição é POST `campanha` (grava) e `campanha/validar` (só pré-visualiza).
     if (rota === 'campanha') return json(res, 200, CampanhaEditor.ler()), true;
     if (rota === 'campanha/versoes') return json(res, 200, { versoes: CampanhaEditor.versoes() }), true;
@@ -88,6 +96,16 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
     if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
     if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'overrides/validar') return json(res, 200, Overrides.propor(String(dados?.key ?? ''), dados?.override ?? null)), true;
+    if (rota === 'overrides') {
+      const a = dados?.acao;
+      if (a === 'salvar') return json(res, 200, Overrides.salvar(String(dados.key ?? ''), dados.override ?? null)), true;
+      if (a === 'reverter') return json(res, 200, Overrides.reverter(String(dados.key ?? ''))), true;
+      if (a === 'duplicar') return json(res, 200, Overrides.duplicar(String(dados.key ?? ''), String(dados.novaKey ?? ''), dados.novoNome ?? null)), true;
+      if (a === 'ativo') return json(res, 200, Overrides.definirAtivo(dados.ativo, dados.key ?? null)), true;
+      if (a === 'restaurar') return json(res, 200, Overrides.restaurar(dados.versao)), true;
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, duplicar, ativo ou restaurar.'] }), true;
+    }
     if (rota === 'campanha/validar') {
       const r = CampanhaEditor.propor(dados ?? {});
       return json(res, 200, { ok: r.erros.length === 0, erros: r.erros, avisos: r.avisos, mudancas: r.mudancas, semMudancas: r.semMudancas }), true;

@@ -36,7 +36,7 @@ const QUANTIDADES = new Set(['hp', 'exp', 'compra', 'venda', 'tamanhoBytes', 'go
  * `irPara(aba, id, resto)` leva a outra ferramenta (Atos, Fases, Bosses únicos) a partir do "onde é usado".
  * `categoriaFixa` + `rota`: a mesma tela presa numa categoria (a tela Mobs é a Biblioteca só de monstros, em `#mobs`).
  */
-export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota = 'biblioteca', titulo = 'Biblioteca', descricao = null }) {
+export function criarBiblioteca({ api, raiz, irPara, acaoDaFicha = null, categoriaFixa = null, rota = 'biblioteca', titulo = 'Biblioteca', descricao = null }) {
   const fixa = !!categoriaFixa;
   const B = {
     categorias: [], categoria: categoriaFixa ?? 'monstros', q: '', tipo: '', raridade: '', slot: '', situacao: '', nivelMin: '', nivelMax: '', ordem: '',
@@ -261,7 +261,7 @@ export function criarBiblioteca({ api, raiz, irPara, categoriaFixa = null, rota 
     }
     const quebrados = d.referenciasQuebradas?.itens ?? [];
     // Monstro, item, outfit e montaria: a ficha em abas (editor-fichas.mjs); o resto, o resumo genérico.
-    const FICHAS = { monstros: () => fichaDoMonstro(d, { abrir }), itens: () => fichaDoItem(d, { abrir, api }), outfits: () => fichaDoOutfit(d), montarias: () => fichaDaMontaria(d) };
+    const FICHAS = { monstros: () => { const f = fichaDoMonstro(d, { abrir }); const a = acaoDaFicha?.(d); return a ? el('div', {}, a, f) : f; }, itens: () => fichaDoItem(d, { abrir, api }), outfits: () => fichaDoOutfit(d), montarias: () => fichaDaMontaria(d) };
     const ficha = FICHAS[d.categoria]?.() ?? null;
     const abas = [...(ficha ? ficha.abas : [['resumo', 'Resumo']]), ['usos', `Usos (${d.usadoEm?.length ?? 0})`], ['json', 'JSON']];
     if (!B.abaDoDetalhe || !abas.some(([id]) => id === B.abaDoDetalhe)) B.abaDoDetalhe = abas[0][0];
