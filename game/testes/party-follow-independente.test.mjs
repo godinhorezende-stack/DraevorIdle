@@ -257,10 +257,10 @@ test('quatro independentes em regiões diferentes limpam os bichos de cada regi�
   assert.ok(soma <= 8 * porBicho * 2.05, `exp somada ${soma} (um bicho vale ${porBicho})`);
 });
 
-test('partilha: independente longe CONTINUA na partilha; seguidor longe (preso) não; independente parado há mais de 60 s sai', async () => {
+test('partilha: sem exigência de proximidade (seguidor ou independente, longe ou perto); independente parado há mais de 60 s sai', async () => {
   const { js } = await partyNaGrade(['1' + '.'.repeat(60), '.'.repeat(61), '2' + '.'.repeat(60)], 2);
-  pos(js[1]).x = 55; // a 55 casas do líder (a regra antiga desligava a partilha acima de 30)
-  assert.equal(Party.partilha(js[0].s).ativa, false, 'seguidor longe: sem partilha');
+  pos(js[1]).x = 55; // a 55 casas do líder (a regra antiga desligava a partilha acima de 30; agora não há exigência de proximidade)
+  assert.equal(Party.partilha(js[0].s).ativa, true, 'seguidor longe: continua dividindo (mesma instância)');
   assert.ok(Party.comandoDaCaca(js[1].s, { action: 'modo', valor: 'independente' }).ok);
   assert.equal(Party.partilha(js[0].s).ativa, true, 'independente longe: continua dividindo');
   // Parado: sem andar nem alvo há mais de 60 s.

@@ -226,10 +226,10 @@ test('altar com penalidade: efeitos negativos e inimigos invocados; e vale para 
   assert.ok(e.hunt.efeitosDeAltar.some((x) => x.afixo === 'armour_pct' && x.valor === -10));
 });
 
-test('party: o loot do baú segue o rodízio de itens (o mesmo do loot de bicho) e a primeira conclusão paga cada membro', () => {
-  const peca = Object.values(ITEM_CATALOG).find((i) => i.slot === 'weapon' && !i.stackable && i.weight < 50);
+test('party: o loot do baú é SORTEADO entre os membros (o mesmo do loot de bicho) e a primeira conclusão paga cada membro', () => {
+  const peca = Object.values(ITEM_CATALOG).filter((i) => i.slot === 'weapon' && !i.stackable && i.weight < 50).sort((a, b) => a.weight - b.weight)[0];
   assert.ok(peca, 'há uma arma para o teste');
-  const defs = [{ ...BAU, recompensa: { drops: [{ id: Number(peca.id), chance: 100 }], rolagens: 4, primeiraConclusao: { gold: 500 } } }];
+  const defs = [{ ...BAU, recompensa: { drops: [{ id: Number(peca.id), chance: 100 }], rolagens: 16, primeiraConclusao: { gold: 500 } } }];
   const e = luta();
   const amigo = personagemDeTeste({ vocacao: 'knight', level: 60 });
   amigo.maxHp = amigo.hp = 1e9;
@@ -239,8 +239,8 @@ test('party: o loot do baú segue o rodízio de itens (o mesmo do loot de bicho)
   const g = [e.gold ?? 0, amigo.gold ?? 0];
   limpar(e);
   const conta = (est) => (est.pouch ?? []).filter((p) => p.id === Number(peca.id)).reduce((n, p) => n + (p.count ?? 1), 0);
-  assert.equal(conta(e) + conta(amigo), 4, 'as 4 rolagens caíram');
-  assert.ok(conta(e) >= 1 && conta(amigo) >= 1, `rodízio: ${conta(e)} / ${conta(amigo)}`);
+  assert.equal(conta(e) + conta(amigo), 16, 'as 16 rolagens caíram, cada uma para um só dono');
+  assert.ok(conta(e) >= 1 && conta(amigo) >= 1, `sorteio: ${conta(e)} / ${conta(amigo)}`);
   assert.ok(e.gold >= g[0] + 500 && amigo.gold >= g[1] + 500, 'a primeira conclusão paga os dois');
 });
 

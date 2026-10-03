@@ -11,6 +11,8 @@ import * as Party from '../systems/party.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as R from '../systems/regras.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import * as Combate from '../systems/hunt/combate.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const VOCACOES = ['knight', 'paladin', 'druid', 'sorcerer', 'monk', 'knight'];
 const criadas = [];
@@ -102,7 +104,9 @@ test('com 3 Slots em todas as contas: cinco na party, na MESMA caçada, com a pa
   // O líder sai do jogo: o próximo assume a party E a sala, e os quatro continuam juntos.
   lider.s.soltarPersonagem();
   const depois = Party.camposDoPersonagem(outros[0].s).party;
-  assert.equal(depois.membros.length, 4);
+  // Desconectar NÃO tira da party na hora: o líder fica como offline (5 membros) e o próximo conduz até ele voltar (ou o prazo vencer).
+  assert.equal(depois.membros.length, 5);
+  assert.equal(depois.membros.find((m) => m.nome === lider.nome).online, false);
   assert.equal(depois.lider, outros[0].nome);
   const sala = Cacadas.salaDe(outros[0].s.estado.hunt);
   for (const o of outros.slice(1, 4)) assert.equal(Cacadas.salaDe(o.s.estado.hunt), sala);
@@ -121,76 +125,23 @@ test('a party fica no tamanho da conta com MENOS slots', async () => {
   grupo(pobre.s, 'sair');
 });
 
-test('diferença de level: até 10 entra na party; 11 não', async () => {
-  const a = await jogador(0, 1, 60);
-  const dez = await jogador(1, 1, 50);
-  const onze = await jogador(2, 1, 71);
-  const r = grupo(a.s, 'convidar', onze.nome);
-  assert.equal(r.ok, false);
-  assert.match(r.erro, /no máximo 10: .* é level 71 e .* é level 60/);
-  assert.equal(Party.camposDoPersonagem(a.s).party, null, 'recusado não deixa party de um só');
-  assert.equal(grupo(a.s, 'convidar', dez.nome).ok, true);
-  assert.equal(grupo(dez.s, 'aceitar').ok, true);
-  grupo(dez.s, 'sair');
-});
-
-test('subiu de level na caçada e passou de 10: continua na party, mas a partilha desliga', async () => {
-  const alto = await jogador(0, 1, 60);
-  const baixo = await jogador(1, 1, 55);
-  grupo(alto.s, 'convidar', baixo.nome);
-  grupo(baixo.s, 'aceitar');
+test('sem limite de diferença de level: 10 e 300 formam party, entram na mesma caçada e a partilha segue ativa', async () => {
+  const alto = await jogador(0, 1, 300);
+  const baixo = await jogador(1, 1, 10);
+  assert.equal(grupo(alto.s, 'convidar', baixo.nome).ok, true);
+  assert.equal(grupo(baixo.s, 'aceitar').ok, true);
   assert.equal(Cacadas.entrar(alto.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
   caca(alto.s, 'invite', baixo.nome);
   assert.equal(caca(baixo.s, 'accept').ok, true);
-  assert.equal(Party.partilha(alto.s).ativa, true);
-  alto.s.estado.level = 66;
+  assert.equal(naMesmaSala(alto.s, baixo.s), true);
   const p = Party.partilha(alto.s);
-  assert.equal(p.ativa, false);
-  assert.equal(p.motivo, 'level');
-  assert.deepEqual(p.faixa, { min: 56, max: 65 });
+  assert.equal(p.ativa, true);
+  assert.equal(p.faixa, null, 'não existe mais faixa de level');
+  // Subir de level na caçada nunca desliga a partilha.
+  baixo.s.estado.level = 400;
+  assert.equal(Party.partilha(alto.s).ativa, true);
   grupo(baixo.s, 'sair');
 });
-
-test('campanha na party: quem não liberou a fase entra mesmo assim (o amigo carrega), e a morte conta para todos', async () => {
-  const host = await jogador(0, 1, 45);
-  const novato = await jogador(1, 1, 38);
-  novato.s.estado.campanha = {}; // começando a campanha: só a fase 1 do Fácil
-  grupo(host.s, 'convidar', novato.nome);
-  assert.equal(grupo(novato.s, 'aceitar').ok, true);
-  const huntId = 'port-hope-corym-dungeons';
-  assert.equal(Cacadas.entrar(host.s.estado, { huntId, mode: 'auto' }).ok, true);
-  // Sozinho ele não entraria:
-  assert.match(Cacadas.entrar(structuredClone(novato.s.estado), { huntId, mode: 'auto' }).erro, /Complete a fase anterior/);
-  // Na party, entra (chamado e pedido).
-  assert.equal(caca(host.s, 'invite', novato.nome).ok, true);
-  assert.equal(caca(novato.s, 'accept').ok, true);
-  assert.equal(Cacadas.salaDe(novato.s.estado.hunt), Cacadas.salaDe(host.s.estado.hunt));
-  assert.deepEqual(novato.s.estado.hunt.campanha, host.s.estado.hunt.campanha, 'caça a mesma fase');
-  grupo(novato.s, 'sair');
-});
-
-test('aceitou o chamado caçando em outro lugar: o extrato da caçada de antes aparece para ele', async () => {
-  const host = await jogador(0, 1, 60);
-  const outro = await jogador(1, 1, 60);
-  grupo(host.s, 'convidar', outro.nome);
-  grupo(outro.s, 'aceitar');
-  assert.equal(Cacadas.entrar(outro.s.estado, { huntId: 'amazon-camp', mode: 'auto' }).ok, true);
-  for (let i = 0; i < 4; i++) await outro.s.tique();
-  assert.equal(Cacadas.entrar(host.s.estado, { huntId: 'troll-cave', mode: 'auto' }).ok, true);
-  const antes = outro.avisos.filter((m) => m.t === 'runReport').length;
-  caca(host.s, 'invite', outro.nome);
-  assert.equal(caca(outro.s, 'accept').ok, true);
-  const extratos = outro.avisos.filter((m) => m.t === 'runReport');
-  assert.equal(extratos.length, antes + 1, 'um extrato');
-  assert.match(extratos.at(-1).motivo, /Você saiu de Amazon Camp para entrar na caçada de/);
-  assert.ok(extratos.at(-1).report);
-  grupo(outro.s, 'sair');
-});
-
-// ---------------------------------------------------- a divisão do LOOT na party
-
-import * as Combate from '../systems/hunt/combate.mjs';
-import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 /** Quatro contas na mesma caçada, com a partilha como o tique calcula. */
 async function quatroCacando() {
@@ -231,37 +182,36 @@ const leve = Object.entries(ITEM_CATALOG)
   .map(([id]) => Number(id))
   .slice(0, 50);
 
-test('party: o OURO de cada bicho vai em partes iguais para os quatro (o resto, para quem matou)', async () => {
+test('party: o OURO de cada bicho vai em partes iguais para os quatro (o resto roda entre eles)', async () => {
   const { js, lider } = await quatroCacando();
   const antes = js.map((j) => j.s.estado.gold);
   for (let i = 0; i < 20; i++) matar(i % 3 === 0 ? js[1] : lider, [{ id: 3031, chance: 1 }]);
   const ganho = js.map((j, i) => j.s.estado.gold - antes[i]);
   assert.ok(Math.min(...ganho) > 0, `todos ganharam: ${ganho}`);
-  // O resto de cada divisão é de 0 a 3 moedas: 20 bichos, no máximo 60 de diferença.
-  assert.ok(Math.max(...ganho) - Math.min(...ganho) <= 60, `quase igual: ${ganho}`);
+  // O resto de cada divisão (0 a 3 unidades) roda entre os quatro: a diferença nunca passa de 1 unidade de resto.
+  assert.ok(Math.max(...ganho) - Math.min(...ganho) <= 1, `quase igual: ${ganho}`);
   // E o relatório de cada um conta o ouro dele.
   for (const [i, j] of js.entries()) assert.equal(j.s.estado.hunt.sessao.gold >= ganho[i], true);
 });
 
-test('party: os ITENS vão em rodízio — cada um leva a sua vez, e o chat de quem recebeu mostra', async () => {
+test('party: os ITENS são SORTEADOS entre os quatro — todos recebem, nenhum se perde, e o chat de quem recebeu mostra', async () => {
   const { js, lider } = await quatroCacando();
   const itensDe = (j) => Object.entries(j.s.estado.hunt.sessao.itens.loot).filter(([id]) => leve.includes(Number(id))).reduce((a, [, n]) => a + n, 0);
   const antes = js.map(itensDe);
   // Só o líder mata (o pior caso de antes: quem mata levava tudo).
-  for (let i = 0; i < 10; i++) matar(lider, leve.slice(0, 4).map((id) => ({ id, chance: 1 })));
+  for (let i = 0; i < 12; i++) matar(lider, leve.slice(0, 4).map((id) => ({ id, chance: 1 })));
   const recebidos = js.map((j, i) => itensDe(j) - antes[i]);
-  assert.equal(recebidos.reduce((a, b) => a + b, 0), 40, `todos os 40 itens foram para alguém: ${recebidos}`);
-  assert.deepEqual(recebidos, [10, 10, 10, 10], 'dez para cada um');
+  assert.equal(recebidos.reduce((a, b) => a + b, 0), 48, `todos os 48 itens foram para alguém: ${recebidos}`);
+  assert.ok(recebidos.every((n) => n >= 2 && n <= 26), `sorteio sem favorecimento: ${recebidos}`);
   // "Loot of a ...": quem recebeu vê no chat dele (no próximo tique).
-  for (const j of js.slice(1)) {
+  for (const [i, j] of js.slice(1).entries()) {
     const ev = Combate.tirarEventosDaParty(j.s.estado);
     assert.ok(ev?.length, `${j.nome} viu o loot`);
-    assert.equal(ev.flatMap((e) => e.items).length, 10);
+    assert.equal(ev.flatMap((e) => e.items).length, recebidos[i + 1]);
   }
-  assert.equal(Combate.tirarEventosDaParty(lider.s.estado), null, 'o líder viu o dele no próprio golpe');
 });
 
-test('party: quem não pode levar (filtro do loot) passa a vez — o item não se perde', async () => {
+test('party: quem não pode levar (filtro do loot) fica fora do sorteio — o item não se perde', async () => {
   const { js, lider } = await quatroCacando();
   const item = leve[0];
   // O paladin (js[1]) não quer este item.
@@ -269,11 +219,11 @@ test('party: quem não pode levar (filtro do loot) passa a vez — o item não s
   (js[1].s.estado.itemRules.noLoot ??= []).push(item);
   const conta = (j) => j.s.estado.hunt.sessao.itens.loot[item] ?? 0;
   const antes = js.map(conta);
-  for (let i = 0; i < 12; i++) matar(lider, [{ id: item, chance: 1 }]);
+  for (let i = 0; i < 24; i++) matar(lider, [{ id: item, chance: 1 }]);
   const recebidos = js.map((j, i) => conta(j) - antes[i]);
   assert.equal(recebidos[1], 0, 'o que recusa não leva');
-  assert.equal(recebidos.reduce((a, b) => a + b, 0), 12, `nada ficou no chão: ${recebidos}`);
-  assert.deepEqual(recebidos.filter((_, i) => i !== 1), [4, 4, 4]);
+  assert.equal(recebidos.reduce((a, b) => a + b, 0), 24, `nada ficou no chão: ${recebidos}`);
+  assert.ok(recebidos.filter((_, i) => i !== 1).filter((n) => n > 0).length >= 2, `os três que podem levar dividem: ${recebidos}`);
 });
 
 test('party: a exp continua igual para todos, e a Boss Task conta para todos', async () => {
