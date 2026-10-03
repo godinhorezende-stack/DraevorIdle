@@ -698,3 +698,8 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .mob-tabela td { padding: 3px 6px; border-bottom: 1px solid var(--eng-linha); }
 .mob-tabela input[type=number] { width: 96px; }
 .mob-sprite { display: flex; gap: var(--eng-e4); align-items: flex-start; flex-wrap: wrap; }
+
+/* Loot do Mob: sprite ao lado do nome e resultados da busca com sprite */
+.mob-item-cel { display: flex; align-items: center; gap: 10px; }
+.mob-resultado { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.mob-resultado > span { flex: 1; }
