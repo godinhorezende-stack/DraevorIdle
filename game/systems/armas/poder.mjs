@@ -78,6 +78,12 @@ export function poderEfetivo(estado, escala, elemento = null) {
   };
 }
 
+/** O dano normal médio de REFERÊNCIA neste level (`escalaDaMagia.referencia`): o que um personagem físico "médio" faz num golpe. */
+export const danoNormalDeReferencia = (level) => CONFIG.escalaDaMagia.referencia.a * Math.max(1, Number(level) || 1) ** CONFIG.escalaDaMagia.referencia.b;
+
+/** A arma da mão é wand ou rod? (a magia dela escala pelo Magic Attack; as outras, pelo dano normal da ficha). */
+export const ehArmaMagica = (estado) => familiaDaArma(ITEM_CATALOG[estado?.equipment?.weapon?.id]) === 'magic';
+
 /** O Cast Speed (%) da identidade: a wand na mão conjura mais rápido. */
 export function castSpeedDaIdentidade(estado) {
   const tipo = tipoDaArmaMagica(ITEM_CATALOG[estado?.equipment?.weapon?.id]);

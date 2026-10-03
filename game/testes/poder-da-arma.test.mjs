@@ -80,8 +80,10 @@ test('uma arma mais forte dá mais dano; a de nível mais baixo, menos (mesmo pe
     const e = personagem({ level: 343, nivelDaArma: 100 });
     const fraca = danoDe(e, 'spell-buzz');
     ITEM_CATALOG[ARMA.wand].minLevel = 343;
+    Ficha.invalidar(e);
     const forte = danoDe(e, 'spell-buzz');
-    assert.ok(forte.max > fraca.max * 2, `${forte.max} vs ${fraca.max}`);
+    // O Magic Attack é o ataque do "Dano" da ficha (com o Magic Level e o level): mais Magic Attack, mais dano normal e mais magia.
+    assert.ok(forte.max > fraca.max * 1.1, `${forte.max} vs ${fraca.max}`);
   });
 });
 
@@ -163,33 +165,63 @@ test('peça vestida com level acima do dele volta para a mochila, sem perda', ()
   assert.deepEqual(Inventario.devolverPecasAcimaDoLevel(e), []);
 });
 
-test('o DANO NORMAL da ficha (o golpe da arma) soma ao dano base da gema de ataque: subir o ataque da arma sobe a magia; a cura não recebe', () => {
+test('arma FÍSICA: a magia escala pelo dano normal da ficha (proporcional ao dano médio ÷ a referência do level); wand/rod seguem o Magic Attack; a cura não muda', () => {
+  const atkOriginal = ITEM_CATALOG[ARMA.espada].attack;
   const montar = (atk) => {
     const e = personagem({ level: 343, id: ARMA.espada });
     ITEM_CATALOG[ARMA.espada].attack = atk;
     Ficha.invalidar(e);
     return e;
   };
-  const antesAtk = ITEM_CATALOG[ARMA.espada].attack;
   try {
+    const media = (e) => { const d = Ficha.combate(e).damage; return (d.min + d.max) / 2; };
+    // O ataque da arma é global no catálogo de teste: mede cada uma logo depois de montar.
     const fraca = montar(30);
-    const fichaFraca = Ficha.combate(fraca).damage;
+    const mediaFraca = media(fraca);
     const magiaFraca = danoDe(fraca, 'spell-buzz');
     const forte = montar(300);
-    const fichaForte = Ficha.combate(forte).damage;
+    const mediaForte = media(forte);
     const magiaForte = danoDe(forte, 'spell-buzz');
-    assert.ok(fichaForte.max > fichaFraca.max + 100, 'o ataque da arma subiu o dano normal');
-    assert.ok(magiaForte.max - magiaFraca.max >= fichaForte.max - fichaFraca.max, `a magia subiu ${magiaForte.max - magiaFraca.max}, o dano normal subiu ${fichaForte.max - fichaFraca.max}`);
-    assert.ok(magiaFraca.max >= fichaFraca.max, 'o dano mostrado inclui o golpe normal');
+    const razaoDaFicha = mediaForte / mediaFraca;
+    const razaoDaMagia = (magiaForte.min + magiaForte.max) / (magiaFraca.min + magiaFraca.max);
+    assert.ok(razaoDaFicha > 1.1, `o ataque da arma subiu o dano normal (×${razaoDaFicha.toFixed(2)})`);
+    assert.ok(Math.abs(razaoDaMagia / razaoDaFicha - 1) < 0.05, `a magia subiu ×${razaoDaMagia.toFixed(2)} e o dano normal ×${razaoDaFicha.toFixed(2)}`);
+    // Um personagem NA referência dá o dano de hoje da magia no level dele (o fator da ficha é 1).
+    const ref = Poder.danoNormalDeReferencia(343);
+    assert.ok(ref > 100 && ref < 1000, `${ref}`);
   } finally {
-    ITEM_CATALOG[ARMA.espada].attack = antesAtk;
+    ITEM_CATALOG[ARMA.espada].attack = atkOriginal;
   }
+  // Wand: o dano de ficha dela (8–18) NÃO entra; mexer no `wand.min/max` não muda a magia (segue o Magic Attack).
+  const wand = personagem({ level: 343, id: ARMA.wand });
+  const antes = danoDe(wand, 'spell-buzz');
+  const m = ITEM_CATALOG[ARMA.wand].wand;
+  const original = { ...m };
+  m.min = 500;
+  m.max = 900;
+  Ficha.invalidar(wand);
+  const depois = danoDe(wand, 'spell-buzz');
+  Object.assign(m, original);
+  assert.deepEqual(depois, antes, 'o dano da ficha da wand não escala a magia');
   const kn = personagemDeTeste({ vocacao: 'knight', level: 343 });
-  const sem = Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing');
+  const cura = Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing').damage.max;
   kn.equipment.weapon = { id: ARMA.espada, count: 1 };
   ITEM_CATALOG[ARMA.espada].attack = 500;
   Ficha.invalidar(kn);
-  const com = Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing');
-  ITEM_CATALOG[ARMA.espada].attack = antesAtk;
-  assert.equal(com.damage.max, sem.damage.max, 'a cura não depende do ataque da arma');
+  assert.equal(Acoes.catalogo(kn).spells.find((a) => a.id === 'spell-wound-cleansing').damage.max, cura, 'a cura não depende do ataque da arma');
+  ITEM_CATALOG[ARMA.espada].attack = atkOriginal;
+});
+
+test('wand e rod: o Magic Attack vai para o campo "Dano" da ficha (ataque da arma + Magic Level + level), e não o 8–18 do catálogo; o golpe da wand usa esse dano', async () => {
+  const R = await import('../systems/regras.mjs');
+  const e = personagem({ level: 343, id: ARMA.wand });
+  const f = Ficha.combate(e);
+  const esperado = R.attackDamage({ attack: Math.round(Poder.poderDaPeca(e.equipment.weapon)), skill: f.skillValue, level: 343 });
+  assert.deepEqual(f.damage, esperado, 'o Dano da ficha vem do Magic Attack');
+  assert.ok(f.damage.max > ITEM_CATALOG[ARMA.wand].wand.max, 'não é o 10–20 da wand do catálogo');
+  const rod = Ficha.combate(personagem({ level: 343, id: ARMA.rod })).damage;
+  assert.deepEqual(rod, esperado, 'wand e rod do mesmo nível: o mesmo Magic Attack, o mesmo Dano');
+  // A raridade sobe o Magic Attack e, com ele, o Dano.
+  const mitica = Ficha.combate(personagem({ level: 343, id: ARMA.wand, raridade: 'mítico' })).damage;
+  assert.ok(mitica.max > f.damage.max);
 });

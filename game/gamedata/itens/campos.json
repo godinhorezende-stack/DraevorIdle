@@ -46,7 +46,6 @@
     "penetracao.elemental": { "nome": "Penetração elemental", "sufixo": "%", "secao": "Ofensivo" },
     "penetracao.porElemento.*": { "nome": "Penetração {sub}", "sufixo": "%", "secao": "Ofensivo" },
     "ataqueDuplo": { "nome": "Ataque duplo", "escala": 100, "sufixo": "%", "secao": "Ofensivo" },
-    "armaEquipada.poder": { "nome": "Poder da arma (Magic Attack)", "secao": "Ofensivo" },
     "excedentes.critChance": { "nome": "Crítico acima do limite (não vale)", "escala": 100, "sufixo": "%", "secao": "Ofensivo" },
     "excedentes.ataqueDuplo": { "nome": "Ataque duplo acima do limite (não vale)", "escala": 100, "sufixo": "%", "secao": "Ofensivo" },
     "excedentes.protection.*": { "nome": "Resistência {sub} acima do limite (não vale)", "sufixo": "%", "secao": "Resistências" },
