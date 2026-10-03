@@ -26,6 +26,8 @@ import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as Dot from './combate/dot.mjs';
 import { readFileSync } from 'node:fs';
+import * as Overrides from './overrides.mjs';
+import { OVERRIDES_DE_MONSTROS, resultadoDosOverrides } from './dados.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Areas from '../engine/areas.mjs';
 import * as Prey from './prey.mjs';
@@ -35,6 +37,8 @@ import * as Reforcos from './skills/reforcos.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
+// Os ataques que o dono sobrescreveu (`gamedata/overrides/monstros.json`, validados e aplicados ao bestiário em `dados.mjs`): só entram para quem passou.
+Overrides.aplicarNosPoderes(PODERES, { ativo: OVERRIDES_DE_MONSTROS.ativo, monstros: Object.fromEntries(Object.entries(OVERRIDES_DE_MONSTROS.monstros).filter(([k]) => [...resultadoDosOverrides.aplicados, ...resultadoDosOverrides.criados].includes(k))) });
 
 const NOME_DO_ELEMENTO = {
   physical: 'físico', fire: 'de fogo', ice: 'de gelo', earth: 'de terra', energy: 'de energia',
