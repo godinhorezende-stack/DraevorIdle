@@ -83,7 +83,7 @@ test('H7. a tela está ligada ao /editor/conteudo e o link leva ao editor de map
   const ed = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
   assert.match(ed, /criarPainelDeHunts/);
   assert.match(ed, /\['hunts', 'Hunts'\]/);
-  assert.match(readFileSync(new URL('../frontend/client/src/editor-hunts.mjs', import.meta.url), 'utf8'), /\/editor\?mapa=/);
+  assert.match(readFileSync(new URL('../frontend/client/src/editor-hunts.mjs', import.meta.url), 'utf8'), /#mapas\//);
   assert.match(readFileSync(new URL('../frontend/client/src/editor.mjs', import.meta.url), 'utf8'), /get\('mapa'\)/);
   assert.match(readFileSync(new URL('../frontend/client/src/editor-atos.mjs', import.meta.url), 'utf8'), /tabelaDeDrops/, 'a prévia da recompensa do ato usa a mesma tabela visual');
 });

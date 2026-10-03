@@ -27,7 +27,7 @@ test('a navegação só tem itens com tela de verdade e mantém as rotas antigas
   const abas = [...ed.matchAll(/\['(\w+)', '[^']+'\]/g)].map((m) => m[1]);
   for (const a of ['geral', 'fase', 'mapa', 'bosses', 'biblioteca', 'atos']) assert.ok(abas.includes(a), a);
   const ids = [...ed.slice(ed.indexOf('const GRUPOS'), ed.indexOf('function desenharAbas')).matchAll(/id: '([\w-]+)'/g)].map((m) => m[1]);
-  for (const id of ids) assert.ok(abas.includes(id) || id === 'mapas', `item de navegação sem tela: ${id}`);
+  for (const id of ids) assert.ok(abas.includes(id) || id === 'mapas-antigo', `item de navegação sem tela: ${id}`);
   assert.match(ed, /href: '\/editor'/, 'o editor de mapas continua em /editor');
 });
 
