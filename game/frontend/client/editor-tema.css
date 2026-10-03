@@ -468,3 +468,29 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .boss-vida-trecho { display: flex; align-items: center; padding: 0 8px; min-width: 0; font-size: 11px; white-space: nowrap; overflow: hidden; color: #f3e6c8; }
 .boss-vida-trecho span { overflow: hidden; text-overflow: ellipsis; }
 .boss-vida-trecho.t0 { background: #2b4a2f; } .boss-vida-trecho.t1 { background: #5a4518; } .boss-vida-trecho.t2 { background: #613019; } .boss-vida-trecho.t3 { background: #5a1f2b; }
+
+/* ------------------------------------------------------------------ itens: sockets e a prévia do tooltip (o balão do jogo) */
+
+.eng-sockets { display: flex; align-items: center; gap: 0; padding: 6px 0; }
+.eng-socket { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #6b7486; background: radial-gradient(circle at 40% 35%, #2a3140, #0f1218); box-shadow: inset 0 0 6px #000; }
+.eng-link { width: 18px; height: 6px; background: linear-gradient(180deg, #8a7444, #4d3f22); border-radius: 3px; }
+.eng-tooltip-barra { display: flex; align-items: flex-end; gap: var(--eng-e3); }
+.eng-tooltip-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--eng-e3); align-items: start; }
+.eng-tooltip-grade figure { margin: 0; display: grid; gap: 6px; justify-items: start; }
+.eng-tooltip-grade figcaption { font-size: var(--eng-t-pequeno); color: var(--eng-txt2); display: flex; align-items: center; gap: 6px; }
+/* O balão do jogo é flutuante (position: fixed); aqui ele fica parado dentro da grade. */
+.eng-tooltip-grade .tooltip.tip-item { position: static; pointer-events: auto; max-width: 100%; }
+.eng-tooltips { display: grid; gap: var(--eng-e3); }
+
+/* O painel de detalhe nunca cresce além da coluna: retratos e grades encolhem para caber. */
+.bib-painel-corpo { grid-template-columns: minmax(0, 1fr); }
+.eng-direcoes .eng-arte { max-width: 100%; height: auto; aspect-ratio: 1 / 1; }
+.eng-direcoes figure { min-width: 0; }
+
+/* Painel largo: as abas com tabela larga ou o balão do jogo (ou o botão "alargar"). A grade de cards encolhe. */
+.bib-v { transition: grid-template-columns .15s ease; }
+.bib-v.painel-largo { grid-template-columns: 200px minmax(180px, 1fr) minmax(520px, 52%); }
+.bib-v.painel-largo .bib-grade { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.bib-largura { margin-left: auto; align-self: center; flex: none; font-size: var(--eng-t-pequeno); padding: 3px 10px; white-space: nowrap; }
+.eng-tooltip-grade { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.eng-tooltip-grade .tooltip.tip-item { width: auto; }

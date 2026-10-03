@@ -27,6 +27,10 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       return d ? json(res, 200, d) : json(res, 404, { ok: false, erros: ['Conteúdo não encontrado.'] }), true;
     }
     if (rota === 'biblioteca/auditoria') return json(res, 200, { problemas: Biblioteca.auditarReferencias() }), true;
+    if (rota === 'biblioteca/tooltip') {
+      const t = Biblioteca.dadosDoTooltip(url.searchParams.get('id'), { itemLevel: url.searchParams.get('itemLevel'), semente: url.searchParams.get('semente') });
+      return t ? json(res, 200, t) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
+    }
     // Atos do editor (rascunhos + legados somente leitura).
     if (rota === 'atos-editor') return json(res, 200, { atos: Atos.listar(), ...Atos.opcoes() }), true;
     if (rota.startsWith('atos-editor/')) {
