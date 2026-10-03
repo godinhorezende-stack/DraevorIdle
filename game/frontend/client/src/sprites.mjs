@@ -4,11 +4,17 @@
 import * as SemFigura from './icone-sem-figura.mjs';
 import { desenharGema } from './icones-de-gema.mjs';
 import { colorize } from '/packages/shared/src/outfit-color.mjs';
+import { resolverOverrides } from '/packages/shared/src/sprite-folha.mjs';
 
 const images = new Map();
 const outfitCache = new Map();
 let outfitMeta = {};
 let itemSprites = {};
+// Overrides de sprites (`gamedata/overrides/sprites.json`, editor de sprites da Engine): para os looks com override ATIVO, a folha e o cadastro de quadros
+// vêm do override; o resto segue o original. `variantes` são folhas avulsas (rascunho do editor, ou o original para comparar) sob uma chave própria.
+const urlsDeFolha = {};
+const variantes = new Map();
+const metaDe = (look) => variantes.get(look)?.meta ?? outfitMeta[look];
 
 /*
  * ---- Os itens que ele inventou, com desenho EMPRESTADO ----
@@ -54,6 +60,7 @@ export async function loadSpriteData() {
   ]);
   outfitMeta = outfits;
   itemSprites = sprites;
+  await aplicarOverridesDeSprites();
   /*
    * O empréstimo entra no próprio índice, e não numa consulta à parte: assim
    * TODO lugar que desenha item (a loja, a mochila, o balão, o baú, o chão)
@@ -287,7 +294,41 @@ function despejar(agora) {
  */
 export const imagemPronta = (src) => image(src).ready;
 
-export const outfitInfo = (look) => outfitMeta[look];
+export const outfitInfo = (look) => metaDe(look);
+
+/** A URL da folha de um look: a do override, se ele tem um ativo, senão a original. */
+export const urlDaFolha = (look) => urlsDeFolha[look] ?? `/gamedata/sprites/outfits/${look}.png`;
+
+/**
+ * Lê `gamedata/overrides/sprites.json` e aplica no que o jogo desenha: para cada look com override ativo, o cadastro de quadros novo e a imagem
+ * `overrides/sprites/<look>.png` (o `?v=` é o hash, para o navegador não servir a versão velha). Arquivo ausente ou ilegível = sem overrides (nunca trava).
+ */
+async function aplicarOverridesDeSprites() {
+  try {
+    const r = await fetch('/gamedata/overrides/sprites.json');
+    if (!r.ok) return;
+    const d = await r.json();
+    const { metas, urls } = resolverOverrides(d, outfitMeta);
+    Object.assign(outfitMeta, metas);
+    Object.assign(urlsDeFolha, urls);
+  } catch { /* sem overrides */ }
+}
+
+/**
+ * Para o EDITOR de sprites: registra uma folha avulsa sob uma chave (`rascunho:128`, `original:128`). `fonte` é um canvas/imagem já desenhado ou uma URL.
+ * O resto do jogo desenha essa chave como qualquer look (`outfitCanvas`, `drawCreature`), então a pré-visualização usa o MESMO renderer do jogo.
+ */
+export function registrarVariante(chave, { meta, fonte }) {
+  variantes.set(chave, { meta, fonte });
+  for (const k of [...outfitCache.keys()]) if (k.startsWith(`${chave}|`)) outfitCache.delete(k);
+}
+export const removerVariante = (chave) => { variantes.delete(chave); for (const k of [...outfitCache.keys()]) if (k.startsWith(`${chave}|`)) outfitCache.delete(k); };
+/** A folha de um look: a variante registrada, ou a imagem (override ou original). `{ ready, image }` como `image()`. */
+function folhaDe(look) {
+  const v = variantes.get(look);
+  if (v) return typeof v.fonte === 'string' ? image(v.fonte) : { ready: true, image: v.fonte };
+  return image(urlDaFolha(look));
+}
 export const itemSprite = (id) => itemSprites[id];
 
 /**
@@ -480,7 +521,7 @@ const DEFAULT_COLORS = { head: 78, body: 88, legs: 58, feet: 76 };
  * desenha a base e por cima cada addon que o personagem tem.
  */
 function outfitFrame(look, colors, dir, frame, walking, mounted = false, addons = 0) {
-  const meta = outfitMeta[look];
+  const meta = metaDe(look);
   if (!meta) return null;
 
   // Outfit de jogador tem dois frame groups (parado e andando); quase todo
@@ -498,7 +539,7 @@ function outfitFrame(look, colors, dir, frame, walking, mounted = false, addons 
   const cached = outfitCache.get(key);
   if (cached) return cached;
 
-  const sheet = image(`/gamedata/sprites/outfits/${look}.png`);
+  const sheet = folhaDe(look);
   if (!sheet.ready) return null;
 
   const { cw, ch } = meta;
@@ -670,7 +711,7 @@ function contentBounds(canvas) {
  * Com `colors.mount` a montaria entra embaixo, igual ao mapa.
  */
 export function outfitCanvas(look, colors, cssSize = 48, dir = 2, animate = false) {
-  const meta = outfitMeta[look];
+  const meta = metaDe(look);
   // Lista sem cor (loja, escolha de vocação, quadro de tarefas) recebe a paleta
   // padrão: a camada base de um outfit de jogador é quase branca de propósito,
   // e sem tintura o boneco saía manchado de branco. No mapa nada muda — lá a

@@ -108,7 +108,11 @@ const http = createServer((req, res) => {
 function corpoJson(req) {
   return new Promise((resolve, reject) => {
     let dados = '';
-    req.on('data', (pedaco) => (dados += pedaco));
+    req.on('data', (pedaco) => {
+      dados += pedaco;
+      // Teto do corpo (as folhas de sprites do editor vão em base64: algumas centenas de KB a poucos MB).
+      if (dados.length > 24 * 1024 * 1024) { reject(new Error('Corpo grande demais (máximo 24 MB).')); req.destroy(); }
+    });
     req.on('end', () => {
       try {
         resolve((req.corpoAuditado = dados ? JSON.parse(dados) : null));

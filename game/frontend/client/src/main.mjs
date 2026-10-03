@@ -1,7 +1,7 @@
 import './so-quando-muda.mjs';
 import { anunciarDrop, anunciarSistema } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
-import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta } from './sprites.mjs';
+import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta, urlDaFolha } from './sprites.mjs';
 import { MapView, definirCoresDeRaridade, dadosDaRaridade } from './map.mjs';
 import { encontroNaCasa, encontroPerto } from './encontros-na-tela.mjs';
 import {
@@ -7441,7 +7441,7 @@ function pecasDaEntrada() {
   const eu = state.hunt?.player ?? state.city?.player;
   const look = state.character?.outfit?.type ?? eu?.look;
   if (Number.isFinite(look)) {
-    pecas.push({ passo: 'carregando o personagem', src: `/gamedata/sprites/outfits/${look}.png` });
+    pecas.push({ passo: 'carregando o personagem', src: urlDaFolha(look) });
   }
   return pecas;
 }

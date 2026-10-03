@@ -19,6 +19,9 @@ export const carregarSprites = () =>
     })
     .catch((e) => console.warn('[engine] sprites:', e.message)));
 
+/** O módulo de sprites do jogo, já com o índice dos atlas carregado (o editor de sprites usa o MESMO renderer do jogo para a pré-visualização). */
+export const jogo = async () => { await carregarSprites(); return Sprites; };
+
 const MARCADOR = { hunts: 'mapa', vips: 'mapa', especiais: 'mapa', divinas: 'mapa', mapas: 'mapa', drops: 'livros', encontros: 'fase', bosses: 'coroa', monstros: 'painel', itens: 'painel' };
 
 const pendentes = new Map();
