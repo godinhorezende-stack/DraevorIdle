@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Entrar — Draevor Engine</title>
+<link rel="stylesheet" href="/client/editor-tema.css">
+</head>
+<body class="eng-pagina-login">
+<main class="eng-login-pagina">
+  <div class="eng-marca"><b>DRAEVOR</b><span>Engine</span></div>
+  <form class="eng-login" id="form" autocomplete="on">
+    <h1>Entrar na Engine</h1>
+    <p class="dica">Use a conta do jogo de um administrador. Em produção o login é obrigatório; sem ele o servidor não entrega nenhum dado.</p>
+    <label class="campo">E-mail<input id="email" type="email" autocomplete="username" required autofocus></label>
+    <label class="campo">Senha<input id="senha" type="password" autocomplete="current-password" required></label>
+    <div class="eng-modal-erro" id="erro" role="alert"></div>
+    <button type="submit" class="primario" id="enviar">Entrar</button>
+  </form>
+  <p class="dica" id="aviso"></p>
+</main>
+<script type="module" src="/client/src/editor-login.mjs"></script>
+</body>
+</html>

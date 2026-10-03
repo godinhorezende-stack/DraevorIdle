@@ -668,3 +668,6 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .eng-login { max-width: 380px; margin: 12vh auto 0; display: grid; gap: var(--eng-e3); background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r3); padding: var(--eng-e5); }
 .eng-login h2 { margin: 0; font: 600 var(--eng-t-grande)/1.2 var(--eng-titulo); }
 .eng-somente-leitura main#raiz button.primario { opacity: .55; }
+.eng-pagina-login { background: var(--eng-s0); min-height: 100vh; margin: 0; }
+.eng-login-pagina { display: grid; justify-items: center; gap: var(--eng-e5); padding-top: 14vh; }
+.eng-login-pagina .eng-login { width: min(380px, 92vw); margin: 0; }
