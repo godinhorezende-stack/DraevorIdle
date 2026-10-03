@@ -8,6 +8,7 @@ import * as Mapas from './mapas.mjs';
 import * as Operacao from './operacao.mjs';
 import * as CampanhaEditor from './campanha-editor.mjs';
 import * as Overrides from './overrides.mjs';
+import * as OverridesItens from './overrides-itens.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
@@ -40,6 +41,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
     if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
     // Overrides por cima do dado importado (monstros): leitura; a edição é POST `overrides` (grava) e `overrides/validar` (só pré-visualiza).
+    if (rota === 'overrides/itens') return json(res, 200, OverridesItens.listar(Object.fromEntries(url.searchParams))), true;
+    if (rota.startsWith('overrides/itens/')) {
+      const i = OverridesItens.obter(decodeURIComponent(rota.slice('overrides/itens/'.length)));
+      return i ? json(res, 200, i) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
+    }
+    if (rota === 'overrides/itens-versoes') return json(res, 200, { versoes: OverridesItens.versoes() }), true;
     if (rota === 'overrides/monstros') return json(res, 200, Overrides.listar(Object.fromEntries(url.searchParams))), true;
     if (rota.startsWith('overrides/monstros/')) {
       const m = Overrides.obter(decodeURIComponent(rota.slice('overrides/monstros/'.length)));
@@ -96,6 +103,15 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
     if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
     if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'overrides/itens/validar') return json(res, 200, OverridesItens.propor(String(dados?.id ?? ''), dados?.override ?? null)), true;
+    if (rota === 'overrides/itens') {
+      const a = dados?.acao;
+      if (a === 'salvar') return json(res, 200, OverridesItens.salvar(String(dados.id ?? ''), dados.override ?? null)), true;
+      if (a === 'reverter') return json(res, 200, OverridesItens.reverter(String(dados.id ?? ''))), true;
+      if (a === 'ativo') return json(res, 200, OverridesItens.definirAtivo(dados.ativo, dados.id ?? null)), true;
+      if (a === 'restaurar') return json(res, 200, OverridesItens.restaurar(dados.versao)), true;
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
+    }
     if (rota === 'overrides/validar') return json(res, 200, Overrides.propor(String(dados?.key ?? ''), dados?.override ?? null)), true;
     if (rota === 'overrides') {
       const a = dados?.acao;

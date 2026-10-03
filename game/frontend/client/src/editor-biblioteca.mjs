@@ -261,7 +261,7 @@ export function criarBiblioteca({ api, raiz, irPara, acaoDaFicha = null, categor
     }
     const quebrados = d.referenciasQuebradas?.itens ?? [];
     // Monstro, item, outfit e montaria: a ficha em abas (editor-fichas.mjs); o resto, o resumo genérico.
-    const FICHAS = { monstros: () => { const f = fichaDoMonstro(d, { abrir }); const a = acaoDaFicha?.(d); return a ? el('div', {}, a, f) : f; }, itens: () => fichaDoItem(d, { abrir, api }), outfits: () => fichaDoOutfit(d), montarias: () => fichaDaMontaria(d) };
+    const FICHAS = { monstros: () => { const f = fichaDoMonstro(d, { abrir }); const a = acaoDaFicha?.(d); return a ? el('div', {}, a, f) : f; }, itens: () => { const f = fichaDoItem(d, { abrir, api }); const a = acaoDaFicha?.(d); return a ? el('div', {}, a, f) : f; }, outfits: () => fichaDoOutfit(d), montarias: () => fichaDaMontaria(d) };
     const ficha = FICHAS[d.categoria]?.() ?? null;
     const abas = [...(ficha ? ficha.abas : [['resumo', 'Resumo']]), ['usos', `Usos (${d.usadoEm?.length ?? 0})`], ['json', 'JSON']];
     if (!B.abaDoDetalhe || !abas.some(([id]) => id === B.abaDoDetalhe)) B.abaDoDetalhe = abas[0][0];

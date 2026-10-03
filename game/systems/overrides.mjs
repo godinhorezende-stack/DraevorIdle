@@ -169,3 +169,75 @@ export function aplicarNosPoderes(poderes, dados) {
   }
   return feitos;
 }
+
+// =====================================================================================================================
+// ITENS: o mesmo mecanismo para o catálogo importado (`item-catalog.json`) — `gamedata/overrides/itens.json`:
+//   { "ativo": true, "itens": { "3268": { "ativo": true, "name": "...", "weight": 18, "buy": 8, "sell": 5, "attack": 10, "defense": 5, "armor": 0,
+//                                          "minLevel": 1, "rarity": "incomum", "imbuementSlots": 0 } } }
+// Só campos que o jogo já lê no item; só item que EXISTE (não cria item novo: o sprite e o resto vêm do catálogo). Preço de venda explícito vale
+// acima do preço calculado (`itens/preco-de-venda.mjs`) e tira a marca `sellCalculado`.
+// =====================================================================================================================
+export const RARIDADES_DE_ITEM = ['comum', 'incomum', 'raro', 'épico', 'lendário', 'mítico'];
+export const CAMPOS_DE_ITEM = ['name', 'weight', 'buy', 'sell', 'attack', 'defense', 'armor', 'minLevel', 'rarity', 'imbuementSlots'];
+const CAMPOS_PERMITIDOS_DE_ITEM = new Set([...CAMPOS_DE_ITEM, 'ativo']);
+
+/** Valida UM override de item. `ctx`: `{ original: item do catálogo (ou null) }`. `{ erros, avisos }`. */
+export function validarItem(id, ov, ctx) {
+  const erros = [];
+  const avisos = [];
+  const onde = `item ${id}`;
+  if (!ov || typeof ov !== 'object' || Array.isArray(ov)) return { erros: [`${onde}: o override precisa ser um objeto.`], avisos };
+  if (!ctx.original) erros.push(`${onde}: não existe no catálogo de itens (overrides só alteram itens existentes).`);
+  for (const c of Object.keys(ov)) if (!CAMPOS_PERMITIDOS_DE_ITEM.has(c)) erros.push(`${onde}: o campo "${c}" não tem suporte (permitidos: ${CAMPOS_DE_ITEM.join(', ')}).`);
+  if (ov.name !== undefined && !(typeof ov.name === 'string' && ov.name.trim().length >= 1 && ov.name.length <= 80)) erros.push(`${onde}: nome de 1 a 80 caracteres.`);
+  if (ov.weight !== undefined && !(typeof ov.weight === 'number' && ov.weight >= 0 && ov.weight <= 100_000)) erros.push(`${onde}: peso de 0 a 100.000.`);
+  for (const [c, max] of [['buy', 2_000_000_000], ['sell', 2_000_000_000], ['attack', 100_000], ['defense', 100_000], ['armor', 100_000], ['minLevel', 5000], ['imbuementSlots', 10]]) {
+    if (ov[c] !== undefined && !inteiro(ov[c], 0, max)) erros.push(`${onde}: ${c} precisa ser um inteiro de 0 a ${max.toLocaleString('pt-BR')}.`);
+  }
+  if (ov.rarity !== undefined && !RARIDADES_DE_ITEM.includes(ov.rarity)) erros.push(`${onde}: raridade "${ov.rarity}" desconhecida (${RARIDADES_DE_ITEM.join(', ')}).`);
+  if (ctx.original) {
+    for (const c of ['attack', 'defense', 'armor', 'minLevel', 'imbuementSlots']) if (ov[c] !== undefined && ctx.original[c] === undefined && ov[c] !== 0) avisos.push(`${onde}: o item original não tem ${c} (é ${ctx.original.slot ? `um ${ctx.original.slot}` : 'um item sem slot de equipamento'}): o valor só faz efeito onde o jogo lê esse campo.`);
+    if (ov.sell !== undefined && ov.buy === undefined && ov.sell > (ov.buy ?? ctx.original.buy ?? Infinity)) avisos.push(`${onde}: o preço de venda (${ov.sell}) é maior que o de compra (${ctx.original.buy}): dá para comprar e vender com lucro.`);
+    if (ov.buy !== undefined && ov.sell === undefined && (ctx.original.sell ?? 0) > ov.buy) avisos.push(`${onde}: o preço de compra (${ov.buy}) ficou menor que o de venda (${ctx.original.sell}): dá para comprar e vender com lucro.`);
+    if (ov.sell !== undefined && ov.buy !== undefined && ov.sell > ov.buy) avisos.push(`${onde}: o preço de venda (${ov.sell}) é maior que o de compra (${ov.buy}).`);
+  }
+  return { erros, avisos };
+}
+
+/** O item EFETIVO (cópia; o original não muda). Pura. */
+export function aplicarNoItem(original, ov) {
+  const m = structuredClone(original);
+  for (const c of CAMPOS_DE_ITEM) if (ov[c] !== undefined) m[c] = ov[c];
+  if (ov.sell !== undefined) delete m.sellCalculado;
+  return m;
+}
+
+export function lerItens(pasta = PASTA, avisar = console.warn) {
+  const arq = join(pasta, 'itens.json');
+  if (!existsSync(arq)) return { ativo: true, itens: {} };
+  try {
+    const d = JSON.parse(readFileSync(arq, 'utf8'));
+    return { ativo: d.ativo !== false, itens: d.itens && typeof d.itens === 'object' ? d.itens : {} };
+  } catch (e) {
+    avisar(`[overrides] itens.json ignorado: ${e.message}`);
+    return { ativo: false, itens: {} };
+  }
+}
+
+/** Aplica os overrides ao catálogo de itens (MUTA `catalogo`). Entrada inválida é ignorada com aviso. `{ aplicados: [ids], ignorados: [{id, erros}] }`. */
+export function aplicarNosItens(catalogo, dados, avisar = console.warn) {
+  const saida = { aplicados: [], ignorados: [] };
+  if (!dados?.ativo || !Object.keys(dados.itens ?? {}).length) return saida;
+  for (const [id, ov] of Object.entries(dados.itens)) {
+    if (ov?.ativo === false) continue;
+    const { erros } = validarItem(id, ov, { original: catalogo[id] ?? null });
+    if (erros.length) {
+      saida.ignorados.push({ id, erros });
+      avisar(`[overrides] item "${id}" ignorado: ${erros.join(' | ')}`);
+      continue;
+    }
+    catalogo[id] = aplicarNoItem(catalogo[id], ov);
+    saida.aplicados.push(id);
+  }
+  return saida;
+}

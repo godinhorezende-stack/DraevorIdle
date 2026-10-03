@@ -128,3 +128,33 @@ Hoje a proteção é **só de rede** (nginx tranca `/api/mapas`; só chega por t
 - Tela: Mobs (Biblioteca de consulta) ganhou "Editar mobs (overrides)" e "Editar este monstro" na ficha; editor com abas Geral, Resistências, Ataques, Loot, Sprite e Onde é usado, com o original ao lado de cada campo. O marcador do menu passou de "consulta" para "parcial".
 - Prova: o teste OV7 sobe um processo NOVO do jogo apontado para os overrides salvos e confere que o monstro nasce na hunt com a vida nova, que a variação existe, que os ataques mudaram e que o inválido foi ignorado; sem arquivo, o jogo é o original.
 - Limites: só monstros (bosses do catálogo e itens entram nas próximas etapas, pelo mesmo mecanismo); não cria monstro do zero (só variação de um existente); personagens com caçada já gravada mantêm os valores de antes nos bichos já criados (comportamento que o jogo já tinha para qualquer mudança no bestiário).
+
+## Auditoria dos módulos "de consulta" — editores completos (pedido de 03/10)
+
+Verificado no código (não pelo selo do menu). "Boot" = o jogo só lê no início do servidor; "quente" = vale sem reiniciar.
+
+| Módulo | Fonte dos dados | O que EDITA hoje (real) | Recarga | O que falta para "editor completo" | Exige mudança de backend/estrutura? |
+|---|---|---|---|---|---|
+| **Mobs** | `catalog-real.json` → `bestiary` (1840, Canary) + `monstro-poderes.json` (193 com ataques) | **Editar** vida, exp, armadura, velocidade, nome, classe, estrelas, resistências, loot, ataques, sprite/cores (overrides) · **Duplicar** como variação · reverter, desligar, versões (Etapa 5) | Boot | Criar mob do ZERO (hoje só variação); abas Habilidades/Comportamento/Invocações (o bestiário não tem esses campos: comportamento vem de `mobs/modificadores.json` e das mecânicas por modificador; invocação é mecânica de boss único); animações do sprite; "categorias e níveis" (o mob não tem level próprio: o level vem da fase) | Criar do zero: pequeno (aceitar `novo` com campos obrigatórios em `overrides.mjs`). Comportamento/invocação: só via modificadores existentes ou boss único — sem campo novo no jogo |
+| **Bosses únicos** | `bosses-unicos.json` | **Completo** (criar, editar, duplicar, excluir c/ checagem de uso, validar) — `editor-bosses.mjs` | Boot em produção; no servidor de desenvolvimento o cadastro vale na hora (`registrar`) | Distinguir boss de ato / de hunt / miniboss na lista (já há `categoria`); editar os 87 bosses do CATÁLOGO (que são monstros do bestiário + hunt com `cooldownHours`/`task`) | Os 87: os overrides de monstros já cobrem os atributos; cooldown/portal NÃO se mexe (regra fixa) |
+| **Itens** | `item-catalog.json` (6178, Canary) + regras autorais `gamedata/itens/*.json` + `armas/*.json` | **Editar** nome, raridade-base, peso, level mín., slots de imbuement, ataque, defesa, armadura, compra, venda (overrides de ITENS, esta etapa) · reverter, desligar, versões | Boot | Criar/duplicar item (precisa de sprite: o cliente lê `item-sprites.json` por id — um id novo exige "emprestar" o desenho de outro, como já faz `DESENHO_EMPRESTADO`, e levar isso ao cliente); atributos/modificadores/prefixos/sockets de uma peça (os adds NÃO moram no item: saem das REGRAS de geração `itens/*.json`); prévia do tooltip do EFETIVO (hoje o balão real é do original); regras de drop por item | Criar item: **sim** (id novo + sprite emprestado enviado ao cliente). Regras de geração: editor de valores com a MESMA validação do boot (já extraída: `validar(dados)`) |
+| **Outfits** | `outfits.json` (544 KB: folhas de sprite por look) + `mounts-real.json` + atlas PNG em `gamedata/sprites/` | **Nada** (consulta) | Boot (+ imagens estáticas) | Editar nome/vocação/preço/variações (addons); criar outfit exige IMAGEM nova + descritor da folha; "validar arquivos associados" | **Sim**: pipeline de upload/validação de assets e descritor da folha de sprite |
+| **Montarias** | `mounts-real.json` + `outfits.json` | **Nada** (consulta) | Boot | Editar nome/velocidade/preço(?)/referências; criar exige o mesmo pipeline de assets | **Sim**: o mesmo dos outfits |
+| **Biblioteca** | todos os cadastros | consulta; agora **abre o editor** de mob e de item pela ficha (botões "Editar este monstro/item") | — | Abrir editor de boss/outfit/montaria (quando existirem) | Não |
+
+**Leitura do estado quanto às exigências gerais**
+- *Autenticação, permissões e produção protegida:* feitas na Etapa 3 (login por e-mail de administrador; gravação de arquivos desligada em produção). 
+- *Validação no backend:* todos os editores validam no servidor (a tela só apresenta). 
+- *Proteção contra sobrescrita silenciosa e concorrência:* **ainda não** — o salvar não confere se o arquivo mudou desde que a tela abriu. Próximo passo de infraestrutura: enviar a "versão" lida e recusar 409 se divergir. 
+- *Registro de alterações administrativas:* **ainda não** (só o histórico de versões dos arquivos e o registro em memória das ações de operação). Próximo passo: log append-only de cada gravação (quem, quando, o quê). 
+- *Backup/recuperação:* existe por arquivo (versões só de acréscimo + restaurar). 
+- *Recarga sem reiniciar:* nenhum editor de dados importados aplica a quente — tudo é no boot (publicar = commit + deploy). Os bosses únicos aplicam na hora só no servidor de desenvolvimento.
+- *Menu:* "Mobs" e "Itens" estão como **parcial** (editam por override; falta criar do zero e as abas pedidas). Outfits, Montarias e Biblioteca seguem **consulta** até terem salvamento real.
+
+**Ordem das próximas etapas (sem alteração destrutiva)**
+1. Infra comum: controle de concorrência (409) + log de auditoria das gravações.
+2. Mobs: criar do zero; abas Atributos/Combate/Drops/Visual/Referências organizadas como pedido.
+3. Itens: editor das REGRAS de geração (raridades, tiers, atributos, pools, efeitos, preços) + criar/duplicar item com sprite emprestado + prévia do tooltip do efetivo.
+4. Bosses do catálogo (atributos via overrides de monstros) e distinção por tipo na lista.
+5. Outfits e Montarias: primeiro edição dos cadastros existentes (nomes, vocação, preços); criar com assets só depois do pipeline de upload.
+6. Fechamento do menu e regressão.
