@@ -7,6 +7,8 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as R from '../systems/regras.mjs';
 import { gradesCacheadas } from '../systems/hunt/terreno.mjs';
 import * as Caminho from '../systems/hunt/caminho.mjs';
+import { criarMonstro } from '../systems/hunt/monstros.mjs';
+import * as Diag from '../systems/hunt/diagnostico.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
 let proximaGrade = 0;
 
@@ -205,16 +207,68 @@ test('R5. corpo a corpo (Distância 0) não faz kite: continua colando no bicho 
   assert.equal(cheb(e.hunt.pos, alvo), 1);
 });
 
-test('R6. bicho que cola a cada passo (mesma velocidade): o kite desiste depois de 3 recuos sem ganhar distância e bate de onde está, tentando de novo depois da folga', () => {
+test('R6. bicho que cola a cada passo em ÁREA ABERTA: o kite continua correndo por casas novas, sem pausa de vários segundos (antes parava 4 s a cada 3 tiques)', () => {
   const { e, alvo } = naGrade([
-    '..................................',
-    '.......P..M.......................',
-    '..................................',
+    '.'.repeat(80),
+    '..M.P' + '.'.repeat(75),
+    '.'.repeat(80),
   ], { vocacao: 'sorcerer', distancia: 4 });
-  // O bicho acompanha: a cada tique volta a ficar a 1 casa do personagem (cola, na mesma velocidade).
-  const cola = () => { alvo.x = e.hunt.pos.x + (e.hunt.pos.x > 2 ? 1 : -1); alvo.y = e.hunt.pos.y; };
-  const casas = rodar(e, 24, cola);
+  // O bicho acompanha por trás: a cada tique volta a ficar a 1 casa do personagem (cola, na mesma velocidade); o personagem corre para o leste.
+  const cola = () => { alvo.x = e.hunt.pos.x - 1; alvo.y = e.hunt.pos.y; };
+  const casas = rodar(e, 40, cola);
   const andou = passos(casas).length - 1;
-  assert.ok(andou >= 1 && andou <= 12, `andou ${andou} passos em 6 s com o bicho colado`);
-  assert.ok(e.hunt.kite.paradoAte > 0, 'registrou a folga do recuo');
+  assert.ok(andou >= 20, `andou só ${andou} passos em 10 s: ${passos(casas).slice(0, 10).join(' ')}`);
+  assert.equal(retornos(casas), 0, 'correndo para a frente, sem voltar a casa nenhuma');
+  let pausa = 0;
+  let maior = 0;
+  for (let i = 1; i < casas.length; i++) { pausa = casas[i] === casas[i - 1] ? pausa + 1 : 0; maior = Math.max(maior, pausa); }
+  assert.ok(maior <= 3, `pausa de ${maior} tiques (${maior * 0.25} s) correndo em área aberta`);
+});
+
+test('R8. kite contínuo com monstros que PERSEGUEM de verdade (1 e 4 trolls, 5 min): anda em boa parte do tempo, pausa no máximo 2 s e custa pouco por tique', () => {
+  for (const quantos of [1, 4]) {
+    const { e, grade } = naGrade([
+      ...Array.from({ length: 21 }, (_, y) => (y === 10 ? '.....P......M' + '.'.repeat(47) : '.'.repeat(60))),
+    ], { vocacao: 'sorcerer', distancia: 4 });
+    const h = e.hunt;
+    const pontos = [[12, 10], [12, 6], [12, 14], [15, 8]].slice(0, quantos);
+    h.monstros = pontos.map(([x, y]) => {
+      const m = criarMonstro({ key: 'troll', x, y }, null);
+      Object.assign(m, { hp: 1e12, maxHp: 1e12, forca: 0, perseguindo: true, resist: {} });
+      delete m.spawn;
+      return m;
+    });
+    let anterior = `${h.pos.x},${h.pos.y}`;
+    let moveu = 0;
+    let pausa = 0;
+    let maior = 0;
+    const t0 = process.hrtime.bigint();
+    const N = 1200;
+    let agora = Date.now();
+    h.ultimoTique = agora;
+    for (let i = 0; i < N; i++) {
+      agora += R.PASSO_MS;
+      e.hp = e.maxHp = 1e12;
+      Cacadas.tique(e, PERSONAGEM, agora);
+      // O mapa é finito: chegou perto de uma borda (um beco), volta ao meio com os bichos longe e segue — a borda é parada legítima, e não o que se mede.
+      if (h.pos.x > grade.maxX - 3 || h.pos.x < 3 || h.pos.y < 3 || h.pos.y > grade.maxY - 3) {
+        h.pos.x = 30;
+        h.pos.y = 10;
+        h.monstros.forEach((m, k) => { m.x = 36 + (k % 2) * 4; m.y = 6 + k * 3; });
+        anterior = '30,10';
+        pausa = 0;
+        continue;
+      }
+      const atual = `${h.pos.x},${h.pos.y}`;
+      // Pausa INDEVIDA = parado com um bicho a menos de 4 casas (a distância do kite): parado esperando o bicho chegar (longe) é bater de onde está, e vale.
+      const perto = h.pos.x < 50 && h.monstros.some((m) => m.hp > 0 && cheb(m, h.pos) < 4); // (a borda do mapa de teste é beco: parar ali vale)
+      if (atual !== anterior) { moveu++; pausa = 0; } else if (perto) { pausa++; maior = Math.max(maior, pausa); } else pausa = 0;
+      anterior = atual;
+    }
+    const msPorTique = Number(process.hrtime.bigint() - t0) / 1e6 / N;
+    assert.ok(moveu / N >= 0.15, `${quantos} bicho(s): andou em só ${(100 * moveu / N).toFixed(0)}% dos tiques`);
+    assert.ok(maior <= 8, `${quantos} bicho(s): pausa de ${maior} tiques (${maior * 0.25} s)`);
+    assert.ok(msPorTique < 5, `${quantos} bicho(s): ${msPorTique.toFixed(2)} ms por tique`);
+    assert.ok(Diag.resumo(h).motivos !== undefined);
+  }
 });

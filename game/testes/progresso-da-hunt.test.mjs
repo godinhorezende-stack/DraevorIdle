@@ -492,7 +492,8 @@ test('mapas reais que dançavam (ahau, burster-spectres): o kite não repassa em
       if (ultimas.length === 24 && ultimas.every((c) => c && c.split('|')[1] === ultimas[0].split('|')[1])) {
         const cs = ultimas.map((c) => c.split('|')[0]);
         const trocas = cs.filter((c, k) => k && c !== cs[k - 1]).length;
-        if (new Set(cs).size <= 3 && trocas >= 4) pior++;
+        // 6 trocas (e não 4): quatro é correr até um beco e voltar — o personagem encurralado bate de onde está; seis ou mais, nas mesmas 3 casas, é vaivém.
+        if (new Set(cs).size <= 3 && trocas >= 6) pior++;
       }
     }
     assert.equal(pior, 0, `${huntId}: ${pior} janelas em ciclo`);

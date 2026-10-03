@@ -43,6 +43,7 @@ import { novaSessao, sessaoParaCliente, relatorio, somarSessao } from './hunt/re
 import { salaDe, ligarAoDono } from './hunt/sala.mjs';
 import { alvoAtual, esperaOAlvoChegar, voltariaAtras, PERSEGUICAO_MAXIMA_MS } from './hunt/alvo.mjs';
 import { passoComProgresso, faltaAte, aindaTravado } from './hunt/progresso.mjs';
+import * as Diag from './hunt/diagnostico.mjs';
 import { AUSENCIA_MAXIMA_MS } from '../database/caca-offline.mjs';
 import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
@@ -1096,30 +1097,35 @@ function passoAteAliado(grade, hunt, pos, quer, uid) {
   return passoComProgresso(hunt, grade, alvo, bruto, { quer, ocupado, bloqueado: casasDeBicho });
 }
 
-/** Quantos recuos seguidos sem a distância crescer encerram a corrida (o bicho acompanha na mesma velocidade). */
-const PASSOS_SEM_GANHO = 3;
+/** Os últimos passos de verdade que o kite olha para saber se ele corre (casas novas) ou dança (as mesmas poucas casas). */
+const PASSOS_DA_JANELA = 8;
+/** Com tantas casas diferentes ou menos nessa janela, é vaivém (o bicho espelha de lado e o passo desfaz o anterior), não corrida. */
+const CASAS_DO_VAIVEM = 3;
+/** A pausa curta (1,5 s); se o vaivém volta logo (em menos de 10 s), a pausa dobra, até 6 s — o beco com o bicho espelhando pede ficar e bater. */
+const PAUSA_DO_KITE_MS = 1500;
+const PAUSA_MAXIMA_DO_KITE_MS = 6000;
 /**
- * O kite está GANHANDO distância? Compara a distância de agora com a do último passo de recuo (`hunt.kite`): sem ganho `PASSOS_SEM_GANHO`
- * vezes seguidas, para por `FOLGA_DO_RECUO_MS` (`true` = não recua agora). Distância que cresceu zera a conta.
+ * O kite está DANDO VOLTAS? Olha as últimas `PASSOS_DA_JANELA` casas onde ele PISOU (só passos de verdade: a posição mudou desde o último tique de recuo): com
+ * `CASAS_DO_VAIVEM` casas diferentes ou menos, não é corrida — é um vaivém — e ele ganha uma pausa curta para bater (que dobra se o vaivém voltar logo).
+ * Correr por casas NOVAS (área aberta, mesmo com um bicho do mesmo passo colado) nunca pausa. A versão anterior contava TIQUES e não passos e parava o kite por
+ * 4 s a cada 3 tiques sem ganho de distância (medido: 60% dos tiques do kite parados em área aberta). `true` = não recua agora.
  */
-function recuoSemGanho(hunt, alvo, d) {
+function recuoInutil(hunt) {
   const agora = hunt.clock ?? 0;
-  const k = (hunt.kite ??= { semGanho: 0, d: null, uid: null, paradoAte: 0 });
+  const k = (hunt.kite ??= { passos: [], x: null, y: null, paradoAte: 0, nivel: 0, ultimaPausa: -Infinity });
   if (k.paradoAte > agora) return true;
-  if (k.uid === alvo.uid && k.d != null) {
-    if (d > k.d) k.semGanho = 0;
-    else if (d <= k.d && k.passou) k.semGanho++;
-  } else k.semGanho = 0;
-  k.uid = alvo.uid;
-  if (k.semGanho >= PASSOS_SEM_GANHO) {
-    k.paradoAte = agora + FOLGA_DO_RECUO_MS;
-    k.semGanho = 0;
-    k.d = null;
-    k.passou = false;
+  if (k.x != null && (k.x !== hunt.pos.x || k.y !== hunt.pos.y)) {
+    k.passos.push(`${hunt.pos.x},${hunt.pos.y}`);
+    if (k.passos.length > PASSOS_DA_JANELA) k.passos.shift();
+  }
+  Object.assign(k, { x: hunt.pos.x, y: hunt.pos.y });
+  if (k.passos.length === PASSOS_DA_JANELA && new Set(k.passos).size <= CASAS_DO_VAIVEM) {
+    k.nivel = agora - k.ultimaPausa < 10_000 ? Math.min(2, k.nivel + 1) : 0;
+    k.paradoAte = agora + Math.min(PAUSA_MAXIMA_DO_KITE_MS, PAUSA_DO_KITE_MS * 2 ** k.nivel);
+    k.ultimaPausa = agora;
+    k.passos = [];
     return true;
   }
-  k.d = d;
-  k.passou = true; // o passo deste tique (se sair) é um recuo: o próximo tique mede se ganhou
   return false;
 }
 
@@ -1517,19 +1523,25 @@ export function tique(estado, personagem, agora = Date.now()) {
           }
         } else if (alvo && !hunt.lurando && hunt.distancia > 0 && d < querDistancia) {
           const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-          // Recuar só vale se AFASTA: bicho na mesma velocidade que cola de novo a cada passo (d não cresce) não se despista — depois de
-          // `PASSOS_SEM_GANHO` recuos assim ele para de correr e bate de onde está (`FOLGA_DO_RECUO_MS`), e só tenta de novo depois.
-          const parou = recuoSemGanho(hunt, alvo, d);
-          const recuo = parou ? null : passoDeRecuo(grade, hunt, alvo);
+          // O kite CONTINUA enquanto houver passo que afaste do alvo (o golpe sai no mesmo tique, não depende de parar); o vaivém ganha uma pausa curta (`recuoInutil`).
+          const parou = recuoInutil(hunt); // corre sem parar; só o vaivém (as mesmas poucas casas em vários passos) ganha uma pausa curta
+          const recuo = Diag.medir(hunt, 'passoDeRecuo', () => passoDeRecuo(grade, hunt, alvo));
           // Sem vizinha que afaste: o deslize planejado (com compromisso próprio, fora do vigia).
-          if (parou) destino = null;
-          else if (!recuo) destino = recuoPlanejado(grade, hunt, alvo);
-          else destino = passoComProgresso(hunt, grade, alvo, recuo, {
-            quer: querDistancia,
-            kite: true,
-            ocupado: (c) => casasDeBicho.has(`${c.x},${c.y}`),
-            bloqueado: casasDeBicho,
-          });
+          if (parou) {
+            destino = null;
+            Diag.contar(hunt, 'kite:pausa-do-vaivem');
+          } else if (!recuo) {
+            destino = Diag.medir(hunt, 'recuoPlanejado', () => recuoPlanejado(grade, hunt, alvo));
+            Diag.contar(hunt, destino ? 'kite:deslize' : 'kite:deslize-sem-passo');
+          } else {
+            destino = passoComProgresso(hunt, grade, alvo, recuo, {
+              quer: querDistancia,
+              kite: true,
+              ocupado: (c) => casasDeBicho.has(`${c.x},${c.y}`),
+              bloqueado: casasDeBicho,
+            });
+            Diag.contar(hunt, destino ? 'kite:recuo-1-casa' : 'kite:vigia-de-progresso-parou');
+          }
         } else if (!alvo && hunt.percurso && grade.percurso) {
           // Ninguém à vista: segue o laço da hunt (ver `percursoDoMapa`).
           const casasDeBicho = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
