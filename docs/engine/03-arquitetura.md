@@ -88,6 +88,15 @@ o versionamento e o deploy. Uma tabela no Postgres criaria uma segunda verdade. 
 **Fora do piloto (decisão de design separada):** adotar prefixo/sufixo e famílias do PoE muda o modelo da peça e a geração — é uma
 proposta para a ficha de comparação, a ser aprovada depois do piloto, não algo que o piloto troca sozinho.
 
+## Decisões do dono (04/10)
+
+1. **Imagens do PoE**: podem ser **associadas a entidades no jogo local de testes** — mas continuam fora do git e da produção. A
+   associação mora num arquivo local (`/home/deploy/referencias-poe/associacoes.json`), lido só pelo servidor de desenvolvimento com a
+   opção ligada; nenhum arquivo do repositório aponta para elas, então um deploy não as leva.
+2. **Histórico e versões**: em arquivos no git (`gamedata/_historico/<modulo>.jsonl` + o próprio commit).
+3. **Piloto**: já adota **prefixo/sufixo** — desenho em [04-piloto-prefixo-sufixo.md](04-piloto-prefixo-sufixo.md), para aprovar antes
+   de mexer na geração.
+
 ## 6. Migração incremental
 
 1. Piloto (modificadores de item) — validar o padrão com você.
