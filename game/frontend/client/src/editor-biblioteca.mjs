@@ -36,7 +36,7 @@ const QUANTIDADES = new Set(['hp', 'exp', 'compra', 'venda', 'tamanhoBytes', 'go
  * `irPara(aba, id, resto)` leva a outra ferramenta (Atos, Fases, Bosses únicos) a partir do "onde é usado".
  * `categoriaFixa` + `rota`: a mesma tela presa numa categoria (a tela Mobs é a Biblioteca só de monstros, em `#mobs`).
  */
-export function criarBiblioteca({ api, raiz, irPara, acaoDaFicha = null, categoriaFixa = null, rota = 'biblioteca', titulo = 'Biblioteca', descricao = null }) {
+export function criarBiblioteca({ api, raiz, irPara, acaoDaFicha = null, atalhosDeEdicao = null, categoriaFixa = null, rota = 'biblioteca', titulo = 'Biblioteca', descricao = null }) {
   const fixa = !!categoriaFixa;
   const B = {
     categorias: [], categoria: categoriaFixa ?? 'monstros', q: '', tipo: '', raridade: '', slot: '', situacao: '', nivelMin: '', nivelMax: '', ordem: '',
@@ -276,6 +276,7 @@ export function criarBiblioteca({ api, raiz, irPara, acaoDaFicha = null, categor
           el('h2', { class: 'bib-nome' }, d.nome ?? NAO),
           el('div', { class: 'linha' }, el('span', { class: 'eng-id', style: 'flex:none' }, `${d.categoria}:${d.id}`), botaoCopiar(d.id, `o ID ${d.id}`), botaoCopiar(`${d.categoria}:${d.id}`, 'a referência'), el('span'), alternarLargura),
           el('div', { class: 'eng-card-selos' }, d.tipo ? el('span', { class: 'selo' }, d.tipo) : null, d.raridade && !(d.categoria === 'itens' && d.equipavel) ? el('span', { class: `selo ${RARIDADE[d.raridade] ?? ''}` }, d.raridade) : null),
+          atalhosDeEdicao?.(d) ?? null,
           acaoDaFicha?.(d) ?? null,
           quebrados.length ? el('div', { class: 'bib-alerta' }, `Referência a ${quebrados.length} item(ns) que não existem no catálogo: ${quebrados.join(', ')}`) : null)),
       el('div', { class: 'eng-abas', role: 'tablist' }, abas.map(([id, nome]) => el('button', { type: 'button', role: 'tab', 'aria-selected': String(B.abaDoDetalhe === id), class: B.abaDoDetalhe === id ? 'ativa' : '', onclick: () => { B.abaDoDetalhe = id; pintarDetalhe(); } }, nome))),

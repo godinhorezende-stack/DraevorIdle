@@ -64,6 +64,7 @@ export function validarAtos(atos, numeros) {
     if (a.parte != null && (typeof a.parte !== 'string' || a.parte.length > 30)) erros.push(`Ato ${n}: parte de até 30 caracteres.`);
     if (a.descricao != null && (typeof a.descricao !== 'string' || a.descricao.length > 300)) erros.push(`Ato ${n}: descrição de até 300 caracteres.`);
     if (a.bossMapa != null && !(Number.isFinite(a.bossMapa.x) && Number.isFinite(a.bossMapa.y) && a.bossMapa.x >= 20 && a.bossMapa.x <= LARGURA - 20 && a.bossMapa.y >= 20 && a.bossMapa.y <= ALTURA - 20)) erros.push(`Ato ${n}: a posição do boss (bossMapa) precisa de x e y dentro de ${LARGURA}×${ALTURA}.`);
+    if (a.fundo != null && !(typeof a.fundo === 'object' && /^ato-\d+-[0-9a-f]{8}\.(png|jpg|webp)$/.test(a.fundo.arquivo ?? ''))) erros.push(`Ato ${n}: a imagem de fundo é inválida (use o botão de carregar imagem).`);
     if (a.tema != null && !TEMAS_DE_MAPA.includes(a.tema)) erros.push(`Ato ${n}: tema "${a.tema}" desconhecido (${TEMAS_DE_MAPA.join(', ')}).`);
   }
   return erros;

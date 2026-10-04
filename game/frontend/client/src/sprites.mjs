@@ -63,6 +63,7 @@ export async function loadSpriteData() {
   outfitMeta = outfits;
   itemSprites = sprites;
   await aplicarOverridesDeSprites();
+  await aplicarOverridesDeSpritesDeItens();
   /*
    * O empréstimo entra no próprio índice, e não numa consulta à parte: assim
    * TODO lugar que desenha item (a loja, a mochila, o balão, o baú, o chão)
@@ -314,6 +315,26 @@ async function aplicarOverridesDeSprites() {
     for (const look of Object.keys(metas)) originaisSobrescritos[look] = outfitMeta[look];
     Object.assign(outfitMeta, metas);
     Object.assign(urlsDeFolha, urls);
+  } catch { /* sem overrides */ }
+}
+
+/**
+ * Os overrides de ITENS na Engine (`overrides/itens.json` e `overrides/itens-sprites.json`): (1) um item NOVO (entrada com `base`) usa o sprite do item-base até ganhar o seu; (2) um item com sprite
+ * alterado passa a desenhar a imagem do override (`gamedata/overrides/sprites/itens/<id>.png`, `frames` quadros lado a lado). Arquivo ausente ou ilegível = sem overrides (nunca trava).
+ */
+async function aplicarOverridesDeSpritesDeItens() {
+  const ler = (url) => fetch(url).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  try {
+    const [novos, imagens] = await Promise.all([ler('/gamedata/overrides/itens.json'), ler('/gamedata/overrides/itens-sprites.json')]);
+    if (novos && novos.ativo !== false) {
+      for (const [id, ov] of Object.entries(novos.itens ?? {})) if (ov && ov.base !== undefined && ov.ativo !== false && !itemSprites[id] && itemSprites[ov.base]) itemSprites[id] = itemSprites[ov.base];
+    }
+    if (imagens && imagens.ativo !== false) {
+      for (const [id, v] of Object.entries(imagens.itens ?? {})) {
+        const quadros = Math.max(1, Number(v.frames) || 1);
+        itemSprites[id] = { x: 0, y: 0, w: v.w, h: v.h, gerada: `/gamedata/overrides/sprites/itens/${id}.png?v=${v.hash}`, s: Array.from({ length: quadros }, (_, i) => [0, i * v.w, 0]), f: quadros, n: 1, ...(quadros > 1 ? { d: Array(quadros).fill(200) } : {}) };
+      }
+    }
   } catch { /* sem overrides */ }
 }
 

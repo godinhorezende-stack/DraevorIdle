@@ -21,7 +21,15 @@ const gravar = (d) => arq().gravar({ _nota: 'Overrides de itens (systems/overrid
 
 // O ORIGINAL: o catálogo do disco, não o objeto do jogo (que já recebeu os overrides deste boot).
 let BRUTO = null;
-export const originalDe = (id) => (BRUTO ??= JSON.parse(readFileSync(join(RAIZ, 'item-catalog.json'), 'utf8')))[id] ?? null;
+const brutoDoCatalogo = () => (BRUTO ??= JSON.parse(readFileSync(join(RAIZ, 'item-catalog.json'), 'utf8')));
+/** O original de um item: o do catálogo importado — ou, para um item NOVO (entrada com `base`), a cópia do original da base sob o id novo. */
+export const originalDe = (id) => {
+  const doCatalogo = brutoDoCatalogo()[id];
+  if (doCatalogo) return doCatalogo;
+  const base = dados().itens[id]?.base;
+  return base !== undefined && brutoDoCatalogo()[base] ? O.copiaParaItemNovo(brutoDoCatalogo()[base], id) : null;
+};
+export const ehItemNovo = (id) => !brutoDoCatalogo()[id] && dados().itens[id]?.base !== undefined;
 const pct = (a, b) => (a ? Math.round((b / a - 1) * 100) : b ? 100 : 0);
 
 export function efetivoDe(id, ov) {
@@ -33,7 +41,7 @@ export function listar({ q = '', filtro = '', slot = '', limite = 80 } = {}) {
   const d = dados();
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const t = norm(q).trim();
-  const ids = filtro === 'com-override' ? Object.keys(d.itens) : t.length >= 2 || slot ? Object.keys(JSON.parse(readFileSync(join(RAIZ, 'item-catalog.json'), 'utf8'))) : Object.keys(d.itens);
+  const ids = filtro === 'com-override' ? Object.keys(d.itens) : filtro === 'novos' ? Object.keys(d.itens).filter(ehItemNovo) : t.length >= 2 || slot ? [...Object.keys(brutoDoCatalogo()), ...Object.keys(d.itens).filter(ehItemNovo)] : Object.keys(d.itens);
   const linhas = ids.map((id) => {
     const ov = d.itens[id];
     const m = efetivoDe(id, ov);
@@ -41,7 +49,7 @@ export function listar({ q = '', filtro = '', slot = '', limite = 80 } = {}) {
     const f = ItemPower.fichaDoMeta({ ...m, id }, ItemPower.EM_USO);
     const editado = !!ov && ov.ativo !== false && ['name', 'minLevel', 'rarity', 'attack', 'defense', 'armor'].some((k) => k in ov);
     return { id, nome: m.name, tipo: m.type ?? null, slot: m.slot ?? null, rarity: m.rarity ?? null, temOverride: !!ov, ativo: ov ? ov.ativo !== false : null, desenho: desenhoDoItem(m),
-      minLevel: m.minLevel ?? null, attack: m.attack ?? null, defense: m.defense ?? null, armor: m.armor ?? null, ip: f?.ip ?? null, situacao: f?.situacao ?? null, atributosEditados: editado,
+      minLevel: m.minLevel ?? null, attack: m.attack ?? null, defense: m.defense ?? null, armor: m.armor ?? null, ip: f?.ip ?? null, situacao: f?.situacao ?? null, atributosEditados: editado, novo: ehItemNovo(id), baseDoNovo: ov?.base ?? null,
       original: editado ? { minLevel: originalDe(id).minLevel ?? null, attack: originalDe(id).attack ?? null, defense: originalDe(id).defense ?? null, armor: originalDe(id).armor ?? null } : null };
   }).filter((l) => l && (!t || norm(l.nome).includes(t) || l.id === t) && (!slot || l.slot === slot));
   linhas.sort((a, b) => Number(b.temOverride) - Number(a.temOverride) || String(a.nome).localeCompare(String(b.nome)));
@@ -54,13 +62,13 @@ export function obter(id) {
   if (!original) return null;
   const ov = d.itens[id] ?? null;
   const efetivo = efetivoDe(id, ov);
-  return { id: String(id), original, override: ov, efetivo, desenho: desenhoDoItem(efetivo), usos: usosDe('itens', id), conjuntos: Conjuntos.usadoPor(id), globalAtivo: d.ativo, revisao: revisaoDe(CAMINHOS.arquivo), rarezas: O.RARIDADES_DE_ITEM, campos: O.CAMPOS_DE_ITEM, equipamento: !!original.slot };
+  return { id: String(id), novo: ehItemNovo(id), original, override: ov, efetivo, desenho: desenhoDoItem(efetivo), usos: usosDe('itens', id), conjuntos: Conjuntos.usadoPor(id), globalAtivo: d.ativo, revisao: revisaoDe(CAMINHOS.arquivo), rarezas: O.RARIDADES_DE_ITEM, campos: O.CAMPOS_DE_ITEM, equipamento: !!original.slot };
 }
 
 export function propor(id, ov) {
   const limpo = ov && Object.keys(ov).filter((c) => c !== 'ativo').length ? ov : null;
   const original = originalDe(id);
-  const { erros, avisos } = limpo ? O.validarItem(id, limpo, { original }) : { erros: original ? [] : [`item ${id}: não existe no catálogo de itens.`], avisos: [] };
+  const { erros, avisos } = limpo ? O.validarItem(id, limpo, { original, existe: !!brutoDoCatalogo()[id] }) : { erros: original ? [] : [`item ${id}: não existe no catálogo de itens.`], avisos: [] };
   if (erros.length) return { ok: false, erros, avisos, mudancas: [] };
   const antes = efetivoDe(id, null);
   const depois = efetivoDe(id, limpo);
@@ -89,6 +97,28 @@ export function salvar(id, ov, revisao) {
   gravar(d);
   Diario.registrar({ tipo: 'itens-editor', ids: [Number(id)], itens: [{ id: Number(id), nome: p.efetivo?.name ?? null, mudancas: p.mudancas.map((m) => ({ campo: m.campo, de: m.antes, para: m.depois })) }] });
   return { ok: true, avisos: p.avisos, mudancas: p.mudancas, comoPublicar: COMO_PUBLICAR };
+}
+
+/**
+ * Cria um item NOVO a partir de um existente (`base`): entrada de override com `base` e um ID livre (o menor acima de `ID_MINIMO_DE_ITEM_NOVO` e de todo id do catálogo e dos overrides).
+ * O item nasce como CÓPIA do original da base (mesmo slot, tipo, atributos, sprite); depois se edita como qualquer item. Devolve `{ ok, id }`.
+ */
+export function duplicar(idBase, novoNome, revisao) {
+  const conflito = conferirRevisao(revisao, CAMINHOS.arquivo);
+  if (conflito) return conflito;
+  const base = brutoDoCatalogo()[idBase];
+  if (!base) return { ok: false, erros: [`O item-base ${idBase} não existe no catálogo importado (duplique um item original).`] };
+  const d = dados();
+  const usados = [...Object.keys(brutoDoCatalogo()), ...Object.keys(d.itens)].map(Number).filter(Number.isFinite);
+  const id = Math.max(O.ID_MINIMO_DE_ITEM_NOVO - 1, ...usados) + 1;
+  const nome = String(novoNome ?? '').trim() || `${base.name} (novo)`;
+  const entrada = { base: Number(idBase), name: nome.slice(0, 80) };
+  const { erros } = O.validarItem(id, entrada, { original: base, existe: false });
+  if (erros.length) return { ok: false, erros };
+  d.itens[id] = entrada;
+  gravar(d);
+  Diario.registrar({ tipo: 'itens-editor', ids: [id], rotulo: `item novo a partir de #${idBase}`, itens: [{ id, nome, mudancas: [{ campo: 'base', de: null, para: Number(idBase) }] }] });
+  return { ok: true, id, comoPublicar: COMO_PUBLICAR };
 }
 
 export function reverter(id, revisao) {

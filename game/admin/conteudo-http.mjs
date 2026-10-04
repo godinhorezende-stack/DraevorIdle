@@ -20,6 +20,7 @@ import * as OverridesConjuntos from './overrides-conjuntos.mjs';
 import * as OverridesItemPower from './overrides-item-power.mjs';
 import * as AnaliseItemPower from './item-power-analise.mjs';
 import * as EditorItemPower from './item-power-editor.mjs';
+import * as SpritesItens from './overrides-sprites-itens.mjs';
 import * as ItemPower from '../systems/item-power.mjs';
 import * as Conjuntos from '../systems/conjuntos.mjs';
 import * as Progressao from '../systems/progressao.mjs';
@@ -103,6 +104,9 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'item-power/historico') return json(res, 200, EditorItemPower.historico({ limite: url.searchParams.get('limite'), id: url.searchParams.get('id') })), true;
     if (rota === 'item-power/versoes-comparar') { const r = EditorItemPower.compararVersoes(url.searchParams.get('de'), url.searchParams.get('para') ?? 'atual', url.searchParams.get('id')); return json(res, r.ok ? 200 : 404, r), true; }
     if (rota === 'item-power/selecionar') { const ids = EditorItemPower.selecionar(Object.fromEntries(url.searchParams)); return json(res, 200, { total: ids.length, ids: ids.slice(0, 200) }), true; }
+    // Sprite de item (override): o estado de um item e a lista dos alterados — só leitura.
+    if (rota === 'sprites-itens') return json(res, 200, SpritesItens.listar()), true;
+    if (rota.startsWith('sprites-itens/')) { const s = SpritesItens.obter(decodeURIComponent(rota.slice('sprites-itens/'.length))); return s ? json(res, 200, s) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true; }
     if (rota === 'item-power/marcos') return json(res, 200, AnaliseItemPower.presentesDeMarco()), true;
     if (rota === 'item-power/alertas') return json(res, 200, AnaliseItemPower.alertasDeDistribuicao(url.searchParams.get('dif') ?? 'facil', ItemPower.EM_USO, { limite: url.searchParams.get('limite') })), true;
     if (rota.startsWith('item-power/item/')) {
@@ -293,12 +297,22 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Painel de Item Power do editor de itens (atributos original × atual × simulado, IP, composição, curva, alertas) e a resolução de um alvo de Armour/Evasion/Energy Shield — só leem.
     if (rota === 'overrides/itens/poder') { const r = EditorItemPower.poderDoOverride(String(dados?.id ?? ''), dados?.override ?? null, undefined, dados?.arma ?? null); return json(res, r.ok === false && !r.id ? 404 : 200, r), true; }
     if (rota === 'item-power/resolver-defesa') { const r = EditorItemPower.resolverDefesa(String(dados?.id ?? ''), dados?.override ?? null, String(dados?.tipo ?? ''), dados?.valor); return json(res, r.ok ? 200 : 400, r), true; }
+    // Sprite de item: validar a imagem (só lê) e salvar/reverter (gravam).
+    if (rota === 'sprites-itens/validar') { const a = SpritesItens.analisar(String(dados?.id ?? ''), dados ?? {}); const { buffer, ...resto } = a; return json(res, 200, resto), true; }
+    if (rota === 'sprites-itens') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(SpritesItens.salvar(String(dados.id ?? ''), dados, dados.revisao));
+      if (a === 'reverter') return responder(SpritesItens.reverter(String(dados.id ?? ''), dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar ou reverter.'] }), true;
+    }
     if (rota === 'overrides/itens/validar') return json(res, 200, OverridesItens.propor(String(dados?.id ?? ''), dados?.override ?? null)), true;
     if (rota === 'overrides/itens') {
       const a = dados?.acao;
       const responder = (r) => (json(res, status(r), r), true);
       if (a === 'salvar') return responder(await comRecargaDeItens(OverridesItens.salvar(String(dados.id ?? ''), dados.override ?? null, dados.revisao), dados.aplicar));
       if (a === 'reverter') return responder(await comRecargaDeItens(OverridesItens.reverter(String(dados.id ?? ''), dados.revisao), dados.aplicar));
+      if (a === 'duplicar') return responder(await comRecargaDeItens(OverridesItens.duplicar(Number(dados.base), dados.nome, dados.revisao), dados.aplicar));
       if (a === 'ativo') return responder(OverridesItens.definirAtivo(dados.ativo, dados.id ?? null, dados.revisao));
       if (a === 'restaurar') return responder(OverridesItens.restaurar(dados.versao, dados.revisao));
       return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
@@ -327,6 +341,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       return json(res, status(r), r), true;
     }
     if (rota === 'mapa') return json(res, 200, Conteudo.salvarMapa(dados ?? {})), true;
+    // Imagem de fundo do mapa do mundo de um Ato: validar (só lê), salvar e remover (gravam).
+    if (rota === 'mapa/fundo/validar') { const { buffer, ...a } = Conteudo.analisarFundo(dados?.imagem); return json(res, 200, a), true; }
+    if (rota === 'mapa/fundo') {
+      const r = dados?.acao === 'remover' ? Conteudo.removerFundoDoAto(dados?.ato) : dados?.acao === 'salvar' ? Conteudo.salvarFundoDoAto(dados?.ato, dados?.imagem) : { ok: false, erros: ['acao deve ser salvar ou remover.'] };
+      return json(res, r.ok ? 200 : 400, r), true;
+    }
     if (rota === 'mapa/validar') return json(res, 200, Conteudo.salvarMapa(dados ?? {}, { gravar: false })), true;
     if (rota === 'bosses') return json(res, 200, dados?.excluir ? Conteudo.excluirBoss(String(dados.excluir)) : Conteudo.salvarBoss(dados)), true;
     if (rota === 'bosses/validar') return json(res, 200, { erros: (await import('../systems/bosses-unicos/catalogo.mjs')).validar(dados) }), true;

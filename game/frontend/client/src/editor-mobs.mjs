@@ -104,11 +104,22 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
     msg('Override apagado.', 'ok');
     if (E.ficha.ehVariacao) { E.key = null; E.ficha = null; await desenhar(); history.replaceState(null, '', '#mobs/editar'); } else await abrir(E.key);
   }
-  async function duplicar() {
-    const novaKey = await pedirTexto('Duplicar como variação', { rotulo: 'Chave da variação (minúsculas, números e hífen)', valor: `${E.key}-variacao`, validar: (v) => (/^[a-z0-9][a-z0-9-]{1,59}$/.test(v) ? '' : 'Use 2 a 60 caracteres: minúsculas, números e hífen.') });
+  /** Cria um mob NOVO como cópia de `base` (a chave aberta, ou uma que se digita): chave nova, nome e todos os campos do original; depois se edita (atributos, loot, ataques, sprite…). */
+  async function criarMob() {
+    let base = E.key;
+    if (!base) {
+      base = await pedirTexto('Criar mob novo', { rotulo: 'Chave do mob existente em que o novo se baseia (ex.: troll)', valor: '', validar: (v) => (v.trim() ? '' : 'Informe a chave de um mob existente.') });
+      if (!base) return;
+    }
+    await duplicar(base.trim());
+  }
+  async function duplicar(base = E.key) {
+    const nomeDaBase = base === E.key && E.ficha ? valorEfetivo(orig(), E.ov, 'name') : base;
+    const novaKey = await pedirTexto(base === E.key && E.ficha ? 'Duplicar como variação' : 'Criar mob novo', { rotulo: 'Chave do mob novo (minúsculas, números e hífen)', valor: `${base}-novo`, validar: (v) => (/^[a-z0-9][a-z0-9-]{1,59}$/.test(v) ? '' : 'Use 2 a 60 caracteres: minúsculas, números e hífen.') });
     if (!novaKey) return;
-    const r = await api('overrides', { acao: 'duplicar', key: E.key, novaKey, novoNome: `${valorEfetivo(orig(), E.ov, 'name')} (variação)`, revisao: E.ficha.revisao });
-    if (await tratarConflito(r, () => abrir(E.key))) return;
+    const revisao = base === E.key && E.ficha ? E.ficha.revisao : E.lista?.revisao;
+    const r = await api('overrides', { acao: 'duplicar', key: base, novaKey, novoNome: `${nomeDaBase} (variação)`, revisao });
+    if (await tratarConflito(r, () => (E.key ? abrir(E.key) : desenhar()))) return;
     if (r.ok === false) return msg(r.erros.join(' '), 'erro');
     msg(`Variação "${novaKey}" criada. Edite-a e coloque-a em um mapa para aparecer no jogo.`, 'ok');
     await desenhar(novaKey);
@@ -223,6 +234,7 @@ export function criarEditorDeMobs({ api, raiz, sujo = null, podeGravar = () => t
     const itens = E.lista?.itens ?? [];
     return el('aside', { class: 'hunts-lista', id: 'mob-lista' },
       el('input', { type: 'search', placeholder: 'buscar monstro…', value: E.q, oninput: (e) => { E.q = e.target.value; buscarListaComEspera(); } }),
+      el('button', { type: 'button', class: 'primario', disabled: dis(), onclick: criarMob, title: 'Cria um mob novo como cópia de um existente (o aberto, ou o que você digitar)' }, '+ Criar mob (duplicar)'),
       el('div', { class: 'hunts-cats' }, [['', 'Todos'], ['com-override', `Com override (${E.lista?.comOverride ?? 0})`]].map(([id, n]) => el('button', { type: 'button', class: E.filtro === id ? 'ativa' : '', onclick: () => { E.filtro = id; buscarLista(); } }, n))),
       el('div', { class: 'hunts-itens' }, itens.map((m) => el('button', { type: 'button', class: `hunts-item mob-item${m.key === E.key ? ' ativa' : ''}`, onclick: () => abrir(m.key) }, retrato(m.desenho, 32, { categoria: 'monstros', rotulo: m.nome }), el('span', {}, el('b', {}, m.nome), el('small', {}, `${m.key}${m.variacaoDe ? ` · variação de ${m.variacaoDe}` : ''}${m.temOverride ? (m.ativo === false ? ' · override desligado' : ' · com override') : ''}`))))),
       el('div', { class: 'dica' }, `${E.lista?.total ?? 0} monstro(s)`));

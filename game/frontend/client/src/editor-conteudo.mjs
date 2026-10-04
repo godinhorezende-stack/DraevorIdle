@@ -20,7 +20,7 @@ import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
-import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar } from './editor-ui.mjs';
+import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar, pedirTexto } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
 const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, navegacao: 0 };
@@ -286,7 +286,7 @@ function cartaoDeEncontro(e, i) {
 }
 
 const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
-const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto), acaoDaFicha: (d) => botaoDeSprite(d) });
+const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto), acaoDaFicha: (d) => botaoDeSprite(d), atalhosDeEdicao: (d) => botoesDaFicha(d) });
 // A tela Mobs é a Biblioteca presa nos monstros (mesmos cards, mesma ficha), com a rota própria `#mobs/<key>`.
 // As telas de ENTIDADE (Mobs, Itens, Outfits, Montarias) são a Biblioteca presa numa categoria — mesmos cards, mesma
 // ficha, rota própria (`#mobs/<key>`, `#itens/<id>`…). Somente visualização: esses cadastros vêm do Canary.
@@ -294,6 +294,37 @@ const irParaDe = (aba, id = null, resto = null) => irPara(aba, id, resto);
 // O botão "Editar sprite" das fichas da Biblioteca: abre o editor universal de sprites no look do monstro, outfit ou montaria.
 const lookDaFicha = (d) => (d.desenho?.tipo === 'criatura' ? d.desenho.look : ['outfits', 'montarias'].includes(d.categoria) ? d.look : null);
 const botaoDeSprite = (d) => (lookDaFicha(d) != null ? el('button', { type: 'button', class: 'fantasma', onclick: () => irPara('sprites', null, [String(lookDaFicha(d))]) }, 'Editar sprite (quadros e animação)') : null);
+/**
+ * Os atalhos de EDIÇÃO da ficha da Biblioteca geral (cada categoria leva ao editor que já existe — nenhum editor novo aqui): monstro → Mobs; item → Itens; hunts → Hunts; bosses → Bosses únicos;
+ * (o botão de sprite vem de `acaoDaFicha`). Em monstro e item também "criar a partir deste" (duplica como entrada nova de override e abre no editor).
+ */
+function botoesDaFicha(d) {
+  const botoes = [];
+  const gravar = () => !document.body.classList.contains('eng-somente-leitura');
+  if (d.categoria === 'monstros') botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('mobs', null, ['editar', d.id]) }, 'Editar este monstro'));
+  if (d.categoria === 'itens') botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('itens', null, ['editar', d.id]) }, 'Editar este item'));
+  if (['hunts', 'vips', 'especiais', 'divinas'].includes(d.categoria)) botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('hunts', null, [d.id]) }, 'Abrir no painel de Hunts'));
+  if (d.categoria === 'bosses') botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('bosses') }, 'Abrir em Bosses únicos'));
+  if (d.categoria === 'itens' && gravar()) botoes.push(el('button', { type: 'button', onclick: async () => {
+    const nome = await pedirTexto('Criar item novo', { rotulo: `Nome do novo item (cópia de ${d.nome ?? d.id})`, valor: `${d.nome ?? d.id} (novo)`, validar: (v) => (v.trim().length >= 1 && v.length <= 80 ? '' : 'De 1 a 80 caracteres.'), ok: 'Criar' });
+    if (nome == null) return;
+    const rev = (await api('overrides/itens?limite=1')).revisao;
+    const r = await api('overrides/itens', { acao: 'duplicar', base: Number(d.id), nome, aplicar: true, revisao: rev });
+    if (r.ok === false) return msg((r.erros ?? ['Não criou.']).join(' '), 'erro');
+    msg(`Item #${r.id} criado como cópia de #${d.id}.`, 'ok');
+    irPara('itens', null, ['editar', String(r.id)]);
+  } }, 'Criar item novo a partir deste'));
+  if (d.categoria === 'monstros' && gravar()) botoes.push(el('button', { type: 'button', onclick: async () => {
+    const chave = await pedirTexto('Criar mob novo', { rotulo: `Chave do mob novo (cópia de ${d.nome ?? d.id}; minúsculas, números e hífen)`, valor: `${d.id}-novo`, validar: (v) => (/^[a-z0-9][a-z0-9-]{1,59}$/.test(v) ? '' : 'Use 2 a 60 caracteres: minúsculas, números e hífen.'), ok: 'Criar' });
+    if (!chave) return;
+    const rev = (await api('overrides/monstros?limite=1')).revisao;
+    const r = await api('overrides', { acao: 'duplicar', key: d.id, novaKey: chave, novoNome: `${d.nome ?? d.id} (variação)`, revisao: rev });
+    if (r.ok === false) return msg((r.erros ?? ['Não criou.']).join(' '), 'erro');
+    msg(`Mob "${chave}" criado como cópia de ${d.id}.`, 'ok');
+    irPara('mobs', null, ['editar', chave]);
+  } }, 'Criar mob novo a partir deste'));
+  return botoes.length ? el('div', { class: 'linha' }, botoes) : null;
+}
 const OPERACAO = criarTelasDeOperacao({ api, raiz: () => $('#raiz'), irPara: (aba) => irPara(aba) });
 const MOBS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('div', { class: 'linha' }, el('button', { type: 'button', class: 'primario', onclick: () => irPara('mobs', null, ['editar', d.id]) }, 'Editar este monstro (override)'), botaoDeSprite(d)), categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. O bestiário vem do Canary e não é alterado: para editar, use "Editar mobs" (camada de overrides).' });
 const MOBS_EDITOR = criarEditorDeMobs({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('mobs'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
@@ -610,7 +641,7 @@ async function desenharMapaDoMundo() {
     const mundo = mundoDoEditor();
     const pos = posicoesDoAto(fases, true, mundo, MW.ato, meta.bossMapa ?? null);
     const pontos = [...pos.pontos, pos.boss];
-    cam.replaceChildren(fundoDoAto(MW.ato, nomeDoTema(MW.ato, meta.tema), pontos));
+    cam.replaceChildren(fundoDoAto(MW.ato, nomeDoTema(MW.ato, meta.tema), pontos, meta.fundo));
     const ids = [...fases.map((f) => f.huntId), `boss:${MW.ato}`];
     const posDe = (id) => pontos[ids.indexOf(id)];
     const estradas = svg('g', { class: 'w2-estradas' });
@@ -720,10 +751,45 @@ async function desenharMapaDoMundo() {
     el('label', { class: 'campo' }, 'Descrição do Ato', ligar(el('input', { value: meta.descricao ?? '' }), meta, 'descricao', { opcional: true, aoMudar: aoMudarAto }))
   );
 
+  // ---- IMAGEM DE FUNDO do Ato: carrega, valida no servidor, mostra a prévia e SALVA na hora (arquivo em gamedata/mapa-mundo + referência no Ato) ----
+  const blocoDoFundo = (() => {
+    const caixa = el('div', { class: 'ip-painel', id: 'mw-fundo' });
+    let rascunho = null;
+    const dis = () => document.body.classList.contains('eng-somente-leitura');
+    const pintarBloco = () => {
+      const f = meta.fundo; const v = rascunho?.validacao;
+      caixa.replaceChildren(...[
+        el('h4', {}, `Imagem de fundo do Ato ${MW.ato}`),
+        el('div', { class: 'dica' }, 'Carrega uma imagem (PNG, JPG ou WEBP, até 3 MB, 200–4096 px por lado; ideal na proporção 1000×640) como fundo do mapa mundo DESTE Ato. Ela cobre a tela e substitui o fundo desenhado. Salvar grava o arquivo em gamedata/mapa-mundo e vale no jogo depois do commit + deploy (e de reiniciar o servidor local).'),
+        el('div', { class: 'linha' },
+          f ? el('div', {}, el('b', {}, 'Salva'), el('div', {}, el('img', { src: `/gamedata/mapa-mundo/${f.arquivo}`, style: 'max-width:240px;max-height:154px;border:1px solid #444' })), el('div', { class: 'dica' }, `${f.arquivo} · ${f.w ?? '?'}×${f.h ?? '?'}px · ${Math.round((f.bytes ?? 0) / 1000)} KB`)) : el('div', { class: 'dica' }, 'Sem imagem: este Ato usa o fundo desenhado do tema.'),
+          rascunho ? el('div', {}, el('b', {}, 'Nova (não salva)'), el('div', {}, el('img', { src: rascunho.dataUrl, style: 'max-width:240px;max-height:154px;border:1px solid #444' }))) : null),
+        el('div', { class: 'linha' },
+          el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', disabled: dis(), onchange: async (e) => { const a = e.target.files?.[0]; if (!a) return; const dataUrl = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => no(new Error('Não consegui ler o arquivo.')); r.readAsDataURL(a); }); rascunho = { dataUrl, validacao: await api('mapa/fundo/validar', { imagem: dataUrl }) }; pintarBloco(); } }),
+          el('button', { type: 'button', class: 'primario', disabled: dis() || !v?.ok, onclick: async () => {
+            const r = await api('mapa/fundo', { acao: 'salvar', ato: MW.ato, imagem: rascunho.dataUrl });
+            if (r.ok === false) return msg((r.erros ?? ['Não salvou.']).join(' '), 'erro');
+            meta.fundo = r.fundo; MW.original = JSON.stringify(corpoDoMapa()); rascunho = null; msg(`Imagem de fundo do Ato ${MW.ato} salva.`, 'ok'); pintarMapa(); pintarBloco();
+          } }, 'Salvar imagem neste Ato'),
+          el('button', { type: 'button', disabled: !rascunho, onclick: () => { rascunho = null; pintarBloco(); } }, 'Descartar'),
+          el('button', { type: 'button', class: 'perigo', disabled: dis() || !f, onclick: async () => {
+            const r = await api('mapa/fundo', { acao: 'remover', ato: MW.ato });
+            if (r.ok === false) return msg((r.erros ?? ['Não removeu.']).join(' '), 'erro');
+            delete meta.fundo; MW.original = JSON.stringify(corpoDoMapa()); msg('Imagem removida: o Ato volta ao fundo desenhado.', 'ok'); pintarMapa(); pintarBloco();
+          } }, 'Remover imagem')),
+        v ? (v.erros?.length ? el('ul', { class: 'problemas' }, v.erros.map((m) => el('li', { class: 'erro' }, `✖ ${m}`))) : el('div', { class: 'selo ok' }, `Imagem válida: ${v.tipo.toUpperCase()} ${v.w}×${v.h}px, ${Math.round(v.bytes / 1000)} KB`)) : null,
+        v?.avisos?.length ? el('ul', { class: 'problemas' }, v.avisos.map((m) => el('li', { class: 'aviso' }, `⚠ ${m}`))) : null,
+      ].filter(Boolean));
+    };
+    pintarBloco();
+    return caixa;
+  })();
+
   $('#raiz').replaceChildren(
     cabecalho('Mapa do mundo', 'A tela WORLD do jogo: posição dos nós, tipos, conexões e os dados de cada Ato.'),
     el('div', { class: 'linha' }, el('label', { class: 'campo' }, 'Ato', seletor), el('label', { class: 'campo' }, 'Pré-visualizar estados', previa, legendaPrevia)),
     form,
+    blocoDoFundo,
     el('div', { class: 'linha' }, el('button', { type: 'button', onclick: gerarPosicoes }, 'Gerar posições do caminho automático'), el('button', { type: 'button', onclick: limparPosicoes }, 'Limpar posições do Ato'), el('button', { type: 'button', class: 'primario', id: 'salvarMapa', onclick: salvarMapaDoMundo }, 'Salvar mapa')),
     el('div', { id: 'mw-validacao' }),
     el('div', { class: 'duas', style: 'grid-template-columns:1fr 300px' }, palco, lateral),
