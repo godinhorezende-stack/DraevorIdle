@@ -96,3 +96,18 @@ hoje, e cada sufixo com menos. A simulação do piloto mede isso por tipo de ite
 5. Engine: editor de modificadores (lado, família, faixas, pesos, pools), simulação antes × depois (distribuição por lado, por tipo de
    item, valor esperado na ficha), testes com rascunho, histórico em `gamedata/_historico`, aprovação.
 6. Testes: os de geração (G1–G6) passam a checar o limite por lado; regressão das peças antigas.
+
+## Decisões do dono (04/10, depois da proposta)
+
+O dono foi além do piloto: o sistema de itens passa a seguir o PoE por inteiro, construído em paralelo e desligado em produção
+(Fase 1, `ITENS_POE=1`), e só troca o jogo publicado quando ele aprovar (Fase 3).
+
+1. **Raridades:** Normal, Mágico, Raro e Único, como na documentação (`poe-itens/Raridades`). Mágico: 1 mod 50% (só prefixo ou só
+   sufixo), 2 mods 50% (1+1). Raro: 4 mods 80%, 5 mods 15%, 6 mods 5% (até 3+3). Poderes especiais só nos Únicos.
+2. **Itens e mods:** só os da coleção (bases, famílias de prefixo/sufixo, únicos). O destino das peças atuais dos jogadores fica para a Fase 3.
+3. **Conteúdo publicado:** copiar nomes, textos e valores do PoE como estão (o dono assume o risco de direitos; lembrar antes da Fase 3).
+4. **Imagens do PoE:** podem ser associadas a entidades no jogo local de testes; fora do git e da produção.
+5. **Elementos:** Fogo, Gelo, Raio e Caos — o Caos é um elemento próprio (`chaos`); terra, sagrado e morte continuam no Draevor.
+6. **Atributos:** "todas do PoE, sem excluir nada" — todo texto de mod vira atributo (o que o Draevor já calcula, um atributo novo
+   nomeado em `gamedata/itens-poe/atributos-novos.json`, ou um automático `poe.<texto>`). O efeito no combate entra por etapas (3b).
+7. **Escala:** os valores do PoE entram sempre como estão, sem fator de escala.

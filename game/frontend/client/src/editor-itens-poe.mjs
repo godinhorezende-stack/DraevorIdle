@@ -17,8 +17,8 @@ const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance
 const valorDoAtributo = (k, v) => (v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`);
 const GRUPO = { Acessorios: 'Acessórios', Armadura: 'Armaduras', Armas_de_Uma_Mao: 'Armas de uma mão', Armas_de_Duas_Maos: 'Armas de duas mãos', Armas_Secundarias: 'Mão secundária', Frascos: 'Frascos', Joias: 'Joias' };
 const humano = (id) => id.replace(/_/g, ' ');
-const ESTADO = { equivalente: 'Equivalente: o Draevor faz a mesma conta', aproximado: 'Aproximado: existe no Draevor, com diferença', 'sem-equivalente': 'Sem equivalente no Draevor (fica sem efeito)', 'sem-regra': 'Sem regra de tradução ainda' };
-const SIMBOLO = { equivalente: '✓', aproximado: '≈', 'sem-equivalente': '✗', 'sem-regra': '?' };
+const ESTADO = { equivalente: 'Equivalente: o Draevor faz a mesma conta (tem efeito no combate)', aproximado: 'Aproximado: existe no Draevor, com diferença (tem efeito no combate)', novo: 'Atributo NOVO do PoE (registrado; efeito no combate no incremento 3b)', registrado: 'Atributo automático do texto (registrado; sem efeito no combate ainda)' };
+const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○' };
 
 /** O ícone da coleção (ou o marcador quando a base não tem imagem). */
 const icone = (caminho, tam = 64) => (caminho ? el('img', { class: 'poe-icone', src: img(caminho), width: tam, height: tam, loading: 'lazy', alt: '', onerror: (e) => e.target.replaceWith(el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?')) }) : el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?'));
@@ -40,7 +40,7 @@ function balao(p, regras, baseInfo) {
     p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp')] : null,
     p.prefixos?.length || p.sufixos?.length ? [sep(), linhas(p.prefixos ?? [], 'pre'), linhas(p.sufixos ?? [], 'suf')] : null,
     p.modificadores?.length ? [sep(), p.modificadores.map((m) => el('div', { class: 'poe-mod uni' }, marca(fila.shift()), el('span', {}, m.texto)))] : null,
-    p.traducao ? el('div', { class: 'poe-draevor' }, el('b', {}, 'No Draevor: '), Object.keys(p.traducao.af).length ? Object.entries(p.traducao.af).map(([k, v]) => el('span', { class: 'selo' }, `${k} ${v > 0 ? '+' : ''}${v}`)) : el('span', { class: 'dica' }, 'nada (nenhum mod com equivalente)')) : null,
+    p.traducao ? el('div', { class: 'poe-draevor' }, el('b', {}, 'No Draevor: '), Object.keys(p.traducao.af).length ? Object.entries(p.traducao.af).map(([k, v]) => el('span', { class: 'selo' }, `${k} ${v > 0 ? '+' : ''}${v}`)) : el('span', { class: 'dica' }, 'nada')) : null,
     p.aviso ? el('div', { class: 'poe-aviso' }, p.aviso) : null,
     p.erro ? el('div', { class: 'poe-aviso' }, p.erro) : null);
 }
@@ -152,13 +152,13 @@ export function criarTelaDeItensPoe({ raiz }) {
     const c = await api('cobertura');
     const barra = el('div', { class: 'poe-cobertura' }, Object.entries(c.pct).map(([k, v]) => el('span', { class: `poe-tr-barra ${k}`, style: `flex-basis:${v}%`, title: `${ESTADO[k]}: ${v}%` }, v >= 6 ? `${SIMBOLO[k]} ${v}%` : '')));
     return [
-      el('p', { class: 'dica' }, `Quanto do que realmente CAI (peso de drop de todos os tiers do catálogo) já vira atributo do Draevor. Tabela: gamedata/itens-poe/traducao.json (${c.regras} regras).`),
+      el('p', { class: 'dica' }, `Todo texto vira atributo (decisão do dono: "todas do PoE, sem excluir nada"). Pelo peso de drop, ${c.comEfeitoNoCombate}% já tem efeito no combate; o resto está registrado — ${c.atributosNovos} atributos novos com nome (atributos-novos.json) e ${c.atributosAutomaticos} automáticos — e ganha efeito no incremento 3b. Tabela: traducao.json (${c.regras} regras).`),
       barra,
       el('div', { class: 'linha', style: 'flex-wrap:wrap' }, Object.entries(c.pct).map(([k, v]) => el('span', { style: 'flex:none', class: 'dica' }, el('em', { class: `poe-tr ${k}` }, SIMBOLO[k]), ` ${ESTADO[k]} — ${v}%`))),
       el('h4', {}, 'Elementos'),
       el('div', { class: 'eng-card-selos' }, Object.entries(c.elementos).filter(([k]) => !k.startsWith('_')).map(([poe, dv]) => el('span', { class: 'selo' }, `${poe} → ${dv}`))),
       c.elementos._Caos ? el('p', { class: 'dica' }, c.elementos._Caos) : null,
-      el('h4', {}, `Sem regra ainda (${c.totalSemRegra} modelos; os ${c.semRegra.length} mais pesados)`),
+      el('h4', {}, `Atributos automáticos — textos sem regra (${c.totalSemRegra} modelos; os ${c.semRegra.length} mais pesados)`),
       el('div', { class: 'bib-tabela' }, el('table', {}, el('thead', {}, el('tr', {}, el('th', {}, 'Modelo do texto'), el('th', {}, '% do drop'))), el('tbody', {}, c.semRegra.map((x) => el('tr', {}, el('td', {}, x.modelo), el('td', { class: 'num' }, `${x.pct}%`)))))),
     ];
   }

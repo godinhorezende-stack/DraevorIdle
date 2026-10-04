@@ -1,11 +1,11 @@
 {
-  "_nota": "TRADUÇÃO dos textos de mod do PoE (o 'modelo' do catálogo importado, ex.: '+{0} de Vida máxima') para os atributos que o Draevor já soma na ficha (as chaves de `itens/atributos.json`, somadas por `Afixos.somaDeItens`). Fase 1, incremento 2 — desligado em produção. Cada regra: `padrao` (expressão sobre UMA parte do modelo; mods híbridos 'A / B' são divididos em partes), `efeitos` (lista de { stat, valor }) e `estado`: 'equivalente' (mesma conta que o Draevor faz), 'aproximado' (existe, com a diferença em `nota`) ou 'sem-equivalente' (o Draevor não tem o atributo ou a conta é outra — fica listado, sem efeito). `valor`: o índice do número no texto ('{0}') ou 'media({0},{1})'. `{E}` no padrão casa um nome de elemento do PoE, traduzido por `elementos` (decisão do dono pendente para o Caos). Valores 'como estão' (decisão do dono de 04/10: copiar o conteúdo do PoE); a escala de cada atributo é revista pela simulação.",
+  "_nota": "TRADUÇÃO dos textos de mod do PoE (o 'modelo' do catálogo importado, ex.: '+{0} de Vida máxima') para os atributos que o Draevor já soma na ficha (as chaves de `itens/atributos.json`, somadas por `Afixos.somaDeItens`). Fase 1, incremento 2 — desligado em produção. Cada regra: `padrao` (expressão sobre UMA parte do modelo; mods híbridos 'A / B' são divididos em partes), `efeitos` (lista de { stat, valor }) e `estado`: 'equivalente' (mesma conta que o Draevor faz), 'aproximado' (existe, com a diferença em `nota`) ou 'novo' (atributo NOVO do PoE, em itens-poe/atributos-novos.json: registrado, sem efeito no combate até o incremento 3b). Texto sem regra vira atributo automático 'poe.<texto>' (registrado). Nada fica de fora (decisão do dono: 'todas do PoE, sem excluir nada'). `valor`: o índice do número no texto ('{0}') ou 'media({0},{1})'. `{E}` no padrão casa um nome de elemento do PoE, traduzido por `elementos` (decisão do dono de 04/10: Fogo, Gelo, Raio e Caos — o Caos é um elemento próprio). Valores 'como estão' (decisão do dono de 04/10: copiar o conteúdo do PoE); a escala de cada atributo é revista pela simulação.",
   "elementos": {
     "Fogo": "fire",
     "Gelo": "ice",
     "Raio": "energy",
-    "Caos": "earth",
-    "_Caos": "proposta: o Caos do PoE vira a Terra do Draevor (o 'veneno' do catálogo, ver combate/limites.json). Sagrado e Morte não existem no PoE."
+    "Caos": "chaos",
+    "_Caos": "decisão do dono (04/10): o Caos do PoE é um elemento próprio do Draevor (chaos). Gelo = ice e Raio = energy já existiam. Terra, Sagrado e Morte continuam no Draevor, sem fonte nas peças do PoE."
   },
   "elementais": [
     "fire",
@@ -518,196 +518,356 @@
     },
     {
       "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "no PoE é % RELATIVO à chance base; o crit_chance do Draevor soma pontos fixos. Precisa de um atributo 'crítico aumentado' (incremento 3)."
     },
     {
       "padrao": "^Chance de Golpe Crítico com Magias aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "spell_crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "relativo e só de magias; o Draevor não separa."
     },
     {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de {E}( em Ataques)?$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "added_{E}_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_{E}_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o Draevor não tem dano elemental SOMADO (só % por elemento)."
     },
     {
       "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de {E} a Magias$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "spell_added_{E}_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_{E}_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o Draevor não tem dano somado a magias."
     },
     {
       "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "spell_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o Draevor não tem 'dano de magia' genérico."
     },
     {
       "padrao": "^Chance de Bloquear aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "block_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "relativo no PoE; o block do Draevor soma pontos."
     },
     {
       "padrao": "^Raridade de Itens encontrados aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "item_rarity",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o loot_bonus do Draevor é taxa de loot, não raridade."
     },
     {
-      "padrao": "^Ganha \\{(\\d+)\\} de (Vida|Mana) por Inimigo Morto$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
-    },
-    {
-      "padrao": "^Concede \\{(\\d+)\\} de (Vida|Mana) por Inimigo Acertado$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
-    },
-    {
       "padrao": "^Reflete \\{(\\d+)\\} de Dano Físico para Agressores Corpo a Corpo$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "reflect_phys_melee",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^Requisito de Nível reduzido em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "req_level_reduced",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "propriedade da peça (requisito), não atributo."
     },
     {
       "padrao": "^Recuperação de Atordoamentos e Bloqueios aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "stun_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o Draevor não tem recuperação de atordoamento."
     },
     {
       "padrao": "^Duração de Atordoamentos em Inimigos aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "stun_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "spell_suppression",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "supressão de magia não existe no Draevor (o mais próximo é o bloqueio de magia, com outra conta)."
     },
     {
       "padrao": "^Recarga do Escudo de Energia aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "es_recharge",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de aumento da Precisão Global$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "relativo; o accuracy do Draevor soma pontos."
     },
     {
       "padrao": "^\\{(\\d+)\\}% de aumento do Raio de Iluminação$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "light_radius",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^Chance Global de Crítico aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "relativo à chance base; o crit_chance do Draevor soma pontos (incremento 3)."
     },
     {
       "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "dot_multi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o Draevor não tem multiplicador de dano degenerativo."
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de Evitar Afecções Elementais$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "avoid_elem_ailments",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o Draevor não tem afecções elementais (incendiar, congelar, eletrizar)."
     },
     {
       "padrao": "^Início da Recarga do Escudo de Energia \\{(\\d+)\\}% mais rápido$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "es_recharge_start",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^Redução de Dano Físico aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
+      "efeitos": [
+        {
+          "stat": "phys_dmg_reduction_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
       "nota": "o Draevor não tem 'redução de dano físico' separada da armadura."
     },
     {
       "padrao": "^Velocidade do Projétil aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "projectile_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^Dano Extra recebido de Acertos Críticos em Você reduzido em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
       "padrao": "^\\{(\\d+)\\} de Vida recebida por cada Inimigo acertado por seus Ataques$",
-      "efeitos": [],
-      "estado": "sem-equivalente"
+      "efeitos": [
+        {
+          "stat": "life_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^\\{(\\d+)\\}% de chance de (Incendiar|Congelar|Eletrizar|Envenenar|causar Sangramento)$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "o Draevor não tem essas afecções."
+      "padrao": "^Ganha \\{(\\d+)\\} de Vida por Inimigo Morto$",
+      "efeitos": [
+        {
+          "stat": "life_on_kill",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^(Chance de Crítico|Dano|Velocidade de Ataque) com (Arcos|Habilidades de Arco|Machados|Espadas|Maças|Adagas|Garras|Cajados|Varinhas)( aumentad[oa])? em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "condicional ao tipo de arma; o Draevor não separa."
+      "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Morto$",
+      "efeitos": [
+        {
+          "stat": "mana_on_kill",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^Dano com Habilidades de Arco aumentado em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "condicional ao arco; o Draevor não separa."
+      "padrao": "^Concede \\{(\\d+)\\} de Vida por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "life_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com (Arcos|Machados|Espadas|Maças|Adagas|Garras|Cajados|Varinhas)$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "condicional ao tipo de arma; o Draevor não separa."
+      "padrao": "^Concede \\{(\\d+)\\} de Mana por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "mana_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^(Recuperação de Cargas|Velocidade de Recuperação) aumentada em \\{(\\d+)\\}%$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "frascos: o Draevor não tem frascos."
+      "padrao": "^\\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "frascos: o Draevor não tem frascos."
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "frascos: o Draevor não tem frascos."
+      "padrao": "^\\{(\\d+)\\}% de chance de Eletrizar$",
+      "efeitos": [
+        {
+          "stat": "chance_shock",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     },
     {
-      "padrao": "^Cargas reduzidas em \\{(\\d+)\\}% por uso$",
-      "efeitos": [],
-      "estado": "sem-equivalente",
-      "nota": "frascos: o Draevor não tem frascos."
+      "padrao": "^\\{(\\d+)\\}% de chance de Envenenar$",
+      "efeitos": [
+        {
+          "stat": "chance_poison",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Sangramento$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     }
   ]
 }
