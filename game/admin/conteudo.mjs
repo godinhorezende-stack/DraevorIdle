@@ -12,6 +12,7 @@
 // Os encontros e o cadastro são lidos no BOOT do servidor: depois de salvar um encontro, reinicie o servidor de
 // desenvolvimento para jogá-lo (o cadastro de bosses já vale na hora).
 import { readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as Campanha from '../systems/campanha.mjs';
@@ -463,3 +464,92 @@ export function buscarItens(q) {
 }
 
 export const _para_testes = { faseDe, CATALOGO };
+
+// ------------------------------------------------------------------ imagem de fundo do MAPA DO MUNDO, por Ato
+// A figura de fundo da tela WORLD de cada Ato: `gamedata/mapa-mundo/ato-<n>-<hash>.<png|jpg|webp>` (pública, vai no Git) e a referência em `atos[n].fundo` de `campanha-conteudo.json`
+// (`{ arquivo, tipo, w, h, bytes }`). O nome leva o hash do conteúdo: trocar a imagem muda a URL e o navegador nunca serve a antiga. Sem `fundo`, o Ato segue com o fundo desenhado de sempre.
+CAMINHOS.fundo = join(RAIZ, 'mapa-mundo');
+export const LIMITES_DO_FUNDO = { bytes: 3_000_000, ladoMinimo: 200, ladoMaximo: 4096 };
+const EXTENSAO_DO_FUNDO = { png: 'png', jpeg: 'jpg', webp: 'webp' };
+
+/** O tipo da imagem pela ASSINATURA (não pela extensão que o usuário mandou): `png`, `jpeg`, `webp` ou `null`. */
+export function tipoDaImagem(b) {
+  if (b.length > 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png';
+  if (b.length > 4 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'jpeg';
+  if (b.length > 12 && b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 12) === 'WEBP') return 'webp';
+  return null;
+}
+/** Largura e altura (`{ w, h }`) lidas do cabeçalho, ou `null` se não deu para ler. */
+export function dimensoesDaImagem(b, tipo = tipoDaImagem(b)) {
+  try {
+    if (tipo === 'png') return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+    if (tipo === 'jpeg') {
+      let i = 2;
+      while (i + 9 < b.length) {
+        if (b[i] !== 0xff) { i++; continue; }
+        const m = b[i + 1];
+        if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7) };
+        i += 2 + b.readUInt16BE(i + 2);
+      }
+      return null;
+    }
+    if (tipo === 'webp') {
+      const k = b.toString('ascii', 12, 16);
+      if (k === 'VP8X') return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
+      if (k === 'VP8 ') return { w: b.readUInt16LE(26) & 0x3fff, h: b.readUInt16LE(28) & 0x3fff };
+      if (k === 'VP8L') { const v = b.readUInt32LE(21); return { w: (v & 0x3fff) + 1, h: ((v >> 14) & 0x3fff) + 1 }; }
+    }
+  } catch { /* cabeçalho curto */ }
+  return null;
+}
+
+/** Valida uma imagem recebida (base64 ou data URL) sem gravar: `{ ok, erros, avisos, tipo, w, h, bytes, buffer }`. */
+export function analisarFundo(imagem) {
+  const erros = []; const avisos = [];
+  const base64 = typeof imagem === 'string' ? imagem.replace(/^data:image\/[a-z+.-]+;base64,/i, '') : '';
+  if (!base64) return { ok: false, erros: ['Falta a imagem.'], avisos };
+  const buffer = Buffer.from(base64, 'base64');
+  if (buffer.length > LIMITES_DO_FUNDO.bytes) return { ok: false, erros: [`A imagem passa de ${Math.round(LIMITES_DO_FUNDO.bytes / 1_000_000)} MB (tem ${(buffer.length / 1_000_000).toFixed(1)} MB). Reduza ou comprima.`], avisos };
+  const tipo = tipoDaImagem(buffer);
+  if (!tipo) return { ok: false, erros: ['O arquivo não é uma imagem PNG, JPG ou WEBP (a assinatura do arquivo não bate).'], avisos };
+  const d = dimensoesDaImagem(buffer, tipo);
+  if (!d) erros.push('Não consegui ler as dimensões da imagem (arquivo corrompido?).');
+  else if (d.w < LIMITES_DO_FUNDO.ladoMinimo || d.h < LIMITES_DO_FUNDO.ladoMinimo || d.w > LIMITES_DO_FUNDO.ladoMaximo || d.h > LIMITES_DO_FUNDO.ladoMaximo) erros.push(`A imagem precisa ter de ${LIMITES_DO_FUNDO.ladoMinimo} a ${LIMITES_DO_FUNDO.ladoMaximo}px por lado (tem ${d.w}×${d.h}).`);
+  else if (Math.abs(d.w / d.h - LARGURA_DO_MAPA / ALTURA_DO_MAPA) > 0.25) avisos.push(`A tela do mapa é ${LARGURA_DO_MAPA}×${ALTURA_DO_MAPA} (proporção ${(LARGURA_DO_MAPA / ALTURA_DO_MAPA).toFixed(2)}); esta imagem tem proporção ${(d.w / d.h).toFixed(2)} e será cortada nas bordas (cobre a tela inteira).`);
+  return { ok: !erros.length, erros, avisos, tipo, w: d?.w ?? null, h: d?.h ?? null, bytes: buffer.length, buffer };
+}
+const LARGURA_DO_MAPA = 1000; const ALTURA_DO_MAPA = 640;
+const numerosDeAto = () => [...new Set(Campanha.FASES.map((f) => f.ato))];
+
+/** Guarda a imagem de fundo do Ato `ato` (troca a anterior): grava o arquivo, aponta `atos[n].fundo` e apaga o arquivo velho. */
+export function salvarFundoDoAto(ato, imagem) {
+  const n = Number(ato);
+  if (!numerosDeAto().includes(n)) return { ok: false, erros: [`O Ato ${ato} não existe na campanha.`] };
+  const a = analisarFundo(imagem);
+  if (!a.ok) return { ok: false, erros: a.erros, avisos: a.avisos };
+  const hash = createHash('sha1').update(a.buffer).digest('hex').slice(0, 8);
+  const arquivo = `ato-${n}-${hash}.${EXTENSAO_DO_FUNDO[a.tipo]}`;
+  mkdirSync(CAMINHOS.fundo, { recursive: true });
+  writeFileSync(join(CAMINHOS.fundo, arquivo), a.buffer);
+  const arq = lerArquivoDeFases();
+  const anterior = arq.atos?.[String(n)]?.fundo?.arquivo ?? null;
+  const fundo = { arquivo, tipo: a.tipo, w: a.w, h: a.h, bytes: a.bytes };
+  arq.atos = { ...(arq.atos ?? {}), [String(n)]: { ...(arq.atos?.[String(n)] ?? {}), fundo } };
+  gravarArquivoDeFases(arq);
+  if (anterior && anterior !== arquivo && /^ato-\d+-[0-9a-f]{8}\.(png|jpg|webp)$/.test(anterior) && existsSync(join(CAMINHOS.fundo, anterior))) unlinkSync(join(CAMINHOS.fundo, anterior));
+  return { ok: true, ato: n, fundo, url: `/gamedata/mapa-mundo/${arquivo}`, avisos: a.avisos };
+}
+
+/** Remove a imagem de fundo do Ato (volta ao fundo desenhado). */
+export function removerFundoDoAto(ato) {
+  const n = String(Number(ato));
+  const arq = lerArquivoDeFases();
+  const fundo = arq.atos?.[n]?.fundo;
+  if (!fundo) return { ok: false, erros: ['Este Ato não tem imagem de fundo.'] };
+  const { fundo: _, ...resto } = arq.atos[n];
+  if (Object.keys(resto).length) arq.atos[n] = resto; else delete arq.atos[n];
+  if (!Object.keys(arq.atos).length) delete arq.atos;
+  gravarArquivoDeFases(arq);
+  if (/^ato-\d+-[0-9a-f]{8}\.(png|jpg|webp)$/.test(fundo.arquivo ?? '') && existsSync(join(CAMINHOS.fundo, fundo.arquivo))) unlinkSync(join(CAMINHOS.fundo, fundo.arquivo));
+  return { ok: true, ato: Number(n) };
+}

@@ -487,7 +487,7 @@ export function registrarAto(bruto) {
   CAMPANHA.bosses[String(numero)] = { bossId: boss.bossId, nome: bossCad?.name ?? boss.bossId, levelOriginal: Math.max(1, bossCad?.level ?? nivelBoss.facil), nivel: nivelBoss };
   desfazer.push(() => delete CAMPANHA.bosses[String(numero)]);
   semEsperaDoBoss(boss.bossId);
-  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null }));
+  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: atosDoConteudo()[String(numero)]?.fundo ?? null }));
   ATOS_DO_EDITOR.set(numero, { ato, numero, huntPorFase, desfazer });
   return { ok: true, problemas, numero };
 }

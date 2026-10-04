@@ -134,6 +134,14 @@ export function criarVerificacoes() {
       },
     },
     {
+      id: 'sprites-itens', modulo: 'sprites', titulo: 'Sprites de itens (overrides): imagem, hash e item existente',
+      async rodar(ctx) {
+        const SI = await import('./overrides-sprites-itens.mjs');
+        const r = SI.validarTudo(ctx.overrides ?? join(RAIZ, 'overrides'));
+        return { achados: [...r.erros.map((m) => erro('sprites de itens', m)), ...r.avisos.map((m) => aviso('sprites de itens', m))], detalhe: `${Object.keys(SI.lerDados().itens).length} sprite(s) de item` };
+      },
+    },
+    {
       id: 'sprites', modulo: 'sprites', titulo: 'Sprites, outfits e montarias (overrides): imagem, quadros e cadastro',
       async rodar(ctx) {
         const S = await import('./overrides-sprites.mjs');

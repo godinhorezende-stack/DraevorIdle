@@ -89,6 +89,17 @@ export function criarEstrategias({ raiz = RAIZ, overrides = Overrides.PASTA, ato
     },
   };
 
+  // ---------------------------------------------------------------- sprites de itens (só a Engine/cliente leem: o servidor valida; o jogador recarrega a página para ver)
+  const spritesItens = {
+    assinatura: () => assinaturaDe([arq('itens-sprites.json'), arq('itens.json')]),
+    async aplicar() {
+      const { validarTudo } = await import('../admin/overrides-sprites-itens.mjs');
+      const r = validarTudo(overrides);
+      if (r.erros.length) throw new Error(`Sprites de itens inválidos — ${r.erros.join(' | ')}.`);
+      return { ids: ['sprites-itens'], resumo: 'sprites de itens validados (recarregue a página para ver)', payload: {} };
+    },
+  };
+
   // ---------------------------------------------------------------- sprites
   let metas = null;
   const metasOriginais = () => (metas ??= JSON.parse(readFileSync(join(raiz, 'outfits.json'), 'utf8')));
@@ -188,7 +199,7 @@ export function criarEstrategias({ raiz = RAIZ, overrides = Overrides.PASTA, ato
     },
   };
   sprites.semear = () => { try { sprites.aplicar({ caminhos: [], ids: [] }); } catch { /* o boot segue com o que carregou */ } };
-  return { progressao, conjuntos, 'item-power': itemPower, itens, monstros, sprites, campanha, atos: atosEstrategia };
+  return { progressao, conjuntos, 'item-power': itemPower, 'sprites-itens': spritesItens, itens, monstros, sprites, campanha, atos: atosEstrategia };
 }
 
 /**

@@ -2,11 +2,11 @@
 // Abas: Geral (nome, raridade, peso, NÍVEL EXIGIDO), Combate (atributos-base + painel de ITEM POWER com simulação em tempo real), Preços, Onde é usado e Histórico. Cada campo mostra o
 // ORIGINAL ao lado e só vira override quando difere dele. Fluxo: editar → pré-visualizar (servidor: erros, avisos, impacto, Item Power) → salvar (arquivo + versão anterior; no ambiente
 // local o Hot Reload aplica o catálogo em memória) → publicar (commit + deploy). Regras e fórmulas moram no servidor (`admin/item-power-editor.mjs`, `systems/item-power.mjs`): aqui só há tela.
-import { el, cabecalho, confirmar, msg, tratarConflito } from './editor-ui.mjs';
+import { el, cabecalho, confirmar, pedirTexto, msg, tratarConflito } from './editor-ui.mjs';
 import { retrato } from './editor-sprites.mjs';
 import { definirCampo, valorEfetivo, alterado, paraEnviar } from './editor-mobs.mjs';
 
-const ABAS = [['geral', 'Geral'], ['combate', 'Combate'], ['precos', 'Preços'], ['usos', 'Onde é usado'], ['historico', 'Histórico']];
+const ABAS = [['geral', 'Geral'], ['combate', 'Combate'], ['precos', 'Preços'], ['usos', 'Onde é usado'], ['sprite', 'Sprite'], ['historico', 'Histórico']];
 const CAMPOS = {
   geral: [['name', 'Nome', 'text'], ['rarity', 'Raridade-base', 'select'], ['weight', 'Peso', 'number'], ['minLevel', 'Nível exigido', 'number'], ['imbuementSlots', 'Slots de imbuement', 'number']],
   precos: [['buy', 'Preço de compra (NPC)', 'number'], ['sell', 'Preço de venda (NPC)', 'number']],
@@ -22,7 +22,7 @@ export const fmtPct = (v) => (v === null || v === undefined || !Number.isFinite(
 export const fmtDif = (v) => (v === null || v === undefined || !Number.isFinite(v) ? '—' : `${v > 0 ? '+' : ''}${fmt(v)}`);
 
 export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => true, aoVoltar = null, irPara = null }) {
-  const E = { q: '', filtro: '', slot: '', lista: null, id: null, ficha: null, ov: {}, previa: null, aba: 'geral', pedido: 0, poder: null, pedidoPoder: 0, rapido: false, sujos: {}, hist: null, comparacao: null, versaoComparada: '', armaPrevia: { qualidade: 0, locais: {} } };
+  const E = { q: '', filtro: '', slot: '', lista: null, id: null, ficha: null, ov: {}, previa: null, aba: 'geral', pedido: 0, poder: null, pedidoPoder: 0, rapido: false, sujos: {}, hist: null, comparacao: null, versaoComparada: '', armaPrevia: { qualidade: 0, locais: {} }, sprite: null, rascunhoDoSprite: null };
   const orig = () => E.ficha.original;
   const dis = () => !podeGravar();
   const params = () => new URLSearchParams({ q: E.q, filtro: E.filtro, slot: E.slot, limite: 120 });
@@ -45,7 +45,7 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
     E.id = String(id);
     E.ficha = f;
     E.ov = structuredClone(f.override ?? {});
-    E.previa = null; E.poder = null; E.hist = null; E.comparacao = null; E.armaPrevia = { qualidade: 0, locais: {} };
+    E.previa = null; E.poder = null; E.hist = null; E.comparacao = null; E.armaPrevia = { qualidade: 0, locais: {} }; E.sprite = null; E.rascunhoDoSprite = null;
     sujo?.limpar();
     history.replaceState(null, '', `#itens/editar/${encodeURIComponent(id)}`);
     pintar();
@@ -111,6 +111,18 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
     await abrir(E.id);
     buscarLista();
   }
+  /** Cria um item NOVO como cópia deste (ou do item-base, se este já é um item novo): ID livre, mesmo slot, tipo, atributos e sprite; depois se edita como qualquer item. */
+  async function criarNovo() {
+    const idBase = E.ficha.novo ? E.ficha.override.base : Number(E.id);
+    const nome = await pedirTexto('Criar item novo', { rotulo: `Nome do novo item (cópia de ${valorEfetivo(orig(), E.ov, 'name')})`, valor: `${valorEfetivo(orig(), E.ov, 'name')} (novo)`, validar: (v) => (v.trim().length >= 1 && v.length <= 80 ? null : 'De 1 a 80 caracteres.'), ok: 'Criar' });
+    if (nome == null) return;
+    const r = await api('overrides/itens', { acao: 'duplicar', base: idBase, nome, aplicar: true, revisao: E.ficha.revisao });
+    if (await tratarConflito(r, () => abrir(E.id))) return;
+    if (r.ok === false) return msg((r.erros ?? ['Não criou.']).join(' '), 'erro');
+    msg(`Item #${r.id} criado como cópia de #${idBase}. ${mensagemDoHotReload(r.hotReload)} O sprite é o do item-base até você trocar na aba Sprite.`, r.hotReload?.aplicado ? 'ok' : 'aviso');
+    await buscarLista();
+    await abrir(String(r.id));
+  }
   async function alternarDeste() {
     const ligado = E.ficha.override?.ativo !== false;
     const r = await api('overrides/itens', { acao: 'ativo', ativo: !ligado, id: E.id, revisao: E.ficha.revisao });
@@ -161,7 +173,7 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
   function linhaDerivada(d, p) {
     const editavel = ['armour', 'evasion', 'energyShield'].includes(d.atributo) && p.tiposDeDefesa.includes(d.atributo);
     return el('tr', {}, el('td', {}, d.rotulo, d.derivado ? el('small', { class: 'dica' }, ' (derivado da armadura-base)') : null), el('td', {}, fmt(d.original)), el('td', {}, fmt(d.atual)),
-      el('td', {}, editavel ? el('input', { type: 'number', min: 0, step: 1, disabled: dis(), style: 'width:100px', value: '', placeholder: `alvo (${fmt(d.simulado)})`, title: 'Digite o valor desejado: o servidor resolve a armadura-base que o produz neste tipo e nível', onchange: (e) => alvoDeDefesa(d.atributo, e.target.value) }) : el('span', { class: 'dica' }, d.derivado ? 'não aplicável a este item' : '—')),
+      el('td', {}, editavel ? el('input', { type: 'number', min: 0, step: 1, disabled: dis(), style: 'width:100px', value: '', placeholder: `alvo (${fmt(d.simulado)})`, title: 'Digite o valor desejado: o servidor resolve a armadura-base que o produz neste tipo e nível', onchange: (e) => alvoDeDefesa(d.atributo, e.target.value) }) : el('span', { class: 'dica' }, d.derivado ? 'a base da peça não tem este tipo (0)' : '—')),
       el('td', {}, fmt(d.simulado)), el('td', {}, fmtDif(d.diferenca)), el('td', {}, fmtPct(d.diferencaPct)), el('td', {}));
   }
   function blocoDeAtributos(p) {
@@ -174,8 +186,8 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
       p.slot === 'weapon' || p.campos.attack.presente ? tabela(cab, [linhaRaw('attack', p),
         el('tr', {}, el('td', {}, 'Damage mínimo / máximo'), el('td', { colspan: 7, class: 'dica' }, `O catálogo guarda um valor só: mínimo = máximo = Damage (${fmt(p.campos.attack.simulado)}). A fórmula usa a média dos dois.`))]) : el('div', { class: 'dica' }, 'Este item não tem atributo ofensivo-base (Damage).'),
       el('h4', {}, 'Atributos defensivos'),
-      ['weapon', 'shield'].includes(p.slot) || p.campos.defense.presente || p.campos.armor.presente || p.tiposDeDefesa.length
-        ? tabela(cab, [p.campos.defense.aplicavel ? linhaRaw('defense', p) : null, p.campos.armor.aplicavel ? linhaRaw('armor', p) : null, ...['armour', 'evasion', 'energyShield'].map((a) => (p.tiposDeDefesa.includes(a) || (der(a)?.original ?? 0) > 0 ? linhaDerivada(der(a), p) : null))])
+      p.slot !== 'weapon' || p.campos.defense.presente
+        ? tabela(cab, [p.campos.defense.aplicavel ? linhaRaw('defense', p) : null, p.campos.armor.aplicavel ? linhaRaw('armor', p) : null, ...(p.slot === 'weapon' ? [] : ['armour', 'evasion', 'energyShield'].map((a) => linhaDerivada(der(a), p)))]) // sempre as três, com 0 quando a base da peça não tem o tipo
         : el('div', { class: 'dica' }, 'Este item não tem atributos defensivos-base.'),
       naoAplicaveis.length ? el('details', {}, el('summary', {}, `Campos sem aplicação neste slot (${naoAplicaveis.map((c) => p.campos[c].rotulo).join(', ')})`), el('div', { class: 'dica' }, 'Não são mostrados como zero: o item simplesmente não tem esse atributo (ausente ≠ 0). O override só cria o campo se você inseri-lo na aba/linha própria.'),
         tabela(['Campo', 'Original', 'Editar'], naoAplicaveis.map((c) => el('tr', {}, el('td', {}, p.campos[c].rotulo), el('td', {}, fmt(p.campos[c].original)), el('td', {}, entradaDeAtributo(c, valorEfetivo(orig(), E.ov, c))))))) : null,
@@ -197,7 +209,7 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
       cur?.faixaAdequada ? el('div', { class: 'dica' }, `Faixa "adequado" da curva: ${fmt(cur.faixaAdequada[0])} a ${fmt(cur.faixaAdequada[1])} (categoria ${p.slot}). ${cur.independente}`) : null,
       tabela(['Indicador', 'Original', 'Atual (salvo)', 'Simulado', 'Dif. (sim. − orig.)', 'Dif. %'], [
         el('tr', {}, el('td', {}, 'Nível exigido'), el('td', {}, fmt(n.original)), el('td', {}, fmt(n.atual)), el('td', {}, fmt(n.simulado)), el('td', {}, fmtDif(n.simulado != null && n.original != null ? n.simulado - n.original : null)), el('td', {}, '—')),
-        ...p.derivados.filter((d) => d.aplicavel || (d.original ?? 0) > 0 || (d.simulado ?? 0) > 0).map((d) => el('tr', {}, el('td', {}, d.rotulo), el('td', {}, fmt(d.original)), el('td', {}, fmt(d.atual)), el('td', {}, fmt(d.simulado)), el('td', {}, fmtDif(d.diferenca)), el('td', {}, fmtPct(d.diferencaPct)))),
+        ...p.derivados.map((d) => el('tr', {}, el('td', {}, d.rotulo), el('td', {}, fmt(d.original)), el('td', {}, fmt(d.atual)), el('td', {}, fmt(d.simulado)), el('td', {}, fmtDif(d.diferenca)), el('td', {}, fmtPct(d.diferencaPct)))),
         el('tr', { class: 'itm-total' }, el('td', {}, 'Item Power'), el('td', {}, fmt(i.original)), el('td', {}, fmt(i.atual)), el('td', {}, fmt(i.simulado)), el('td', {}, fmtDif(i.diferencaSimuladoOriginal)), el('td', {}, fmtPct(i.pctSimuladoOriginal))),
         el('tr', {}, el('td', {}, 'Situação na curva'), el('td', {}, SITUACAO[i.situacaoOriginal]), el('td', {}, SITUACAO[i.situacaoAtual]), el('td', {}, SITUACAO[i.situacaoSimulada]), el('td', { colspan: 2 }, i.mudouDeSituacao ? 'mudou' : 'igual'))]),
       p.atributosQueMudaram.length ? el('div', { class: 'dica' }, `O que provocou a mudança (pontos do salvo para o simulado): ${p.atributosQueMudaram.map((a) => `${a.rotulo} ${fmtDif(a.diferenca)}`).join(' · ')}`) : null,
@@ -311,11 +323,61 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
       E.comparacao ? (E.comparacao.ok ? (E.comparacao.mudancas.length ? tabela(['Campo', `v${E.comparacao.de}`, 'Atual'], E.comparacao.mudancas.map((m) => el('tr', {}, el('td', {}, m.rotulo), el('td', {}, fmt(m.de)), el('td', {}, fmt(m.para))))) : el('div', { class: 'dica' }, 'Este item é igual nas duas versões.')) : el('ul', { class: 'problemas' }, (E.comparacao.erros ?? []).map((m) => el('li', { class: 'erro' }, m)))) : null);
   }
 
+  // ---------------------------------------------------------------- aba Sprite (override da figura do item)
+  async function carregarSprite() { E.sprite = await api(`sprites-itens/${encodeURIComponent(E.id)}`); pintarAba(); }
+  async function lerArquivo(arquivo) {
+    const dataUrl = await new Promise((ok, falha) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => falha(new Error('Não consegui ler o arquivo.')); r.readAsDataURL(arquivo); });
+    E.rascunhoDoSprite = { png: dataUrl, nome: arquivo.name, frames: E.rascunhoDoSprite?.frames ?? 1, validacao: null };
+    await validarSprite();
+  }
+  async function validarSprite() {
+    const r = E.rascunhoDoSprite; if (!r) return;
+    r.validacao = await api('sprites-itens/validar', { id: E.id, png: r.png, frames: r.frames });
+    pintarAba();
+  }
+  async function salvarSprite() {
+    const r = E.rascunhoDoSprite;
+    if (!r?.validacao?.ok) return msg('Escolha uma imagem válida primeiro.', 'aviso');
+    if (!(await confirmar('Trocar o sprite deste item?', `Grava a imagem em overrides/sprites/itens/${E.id}.png e o cadastro em overrides/itens-sprites.json (o atlas original não é tocado). Quem abrir o jogo depois de recarregar a página vê a figura nova.`, { ok: 'Salvar sprite' }))) return;
+    const resp = await api('sprites-itens', { acao: 'salvar', id: E.id, png: r.png, frames: r.frames, revisao: E.sprite?.revisao });
+    if (await tratarConflito(resp, () => carregarSprite())) return;
+    if (resp.ok === false) return msg((resp.erros ?? ['Não salvou.']).join(' '), 'erro');
+    msg(`Sprite salvo. ${resp.comoPublicar}`, 'ok');
+    E.rascunhoDoSprite = null; await carregarSprite();
+  }
+  async function restaurarSprite() {
+    if (!(await confirmar('Voltar ao sprite original?', 'Remove só a imagem trocada deste item.', { ok: 'Restaurar', perigo: true }))) return;
+    const resp = await api('sprites-itens', { acao: 'reverter', id: E.id, revisao: E.sprite?.revisao });
+    if (await tratarConflito(resp, () => carregarSprite())) return;
+    if (resp.ok === false) return msg((resp.erros ?? ['Não restaurou.']).join(' '), 'erro');
+    msg('Sprite original restaurado (recarregue a página para ver no jogo).', 'ok'); await carregarSprite();
+  }
+  function abaSprite() {
+    const s = E.sprite;
+    if (!s) { carregarSprite(); return el('div', { class: 'dica' }, 'Carregando…'); }
+    const r = E.rascunhoDoSprite; const v = r?.validacao;
+    return el('div', {},
+      el('div', { class: 'dica' }, 'Troca a figura deste item por uma imagem PNG (override): o atlas original nunca é alterado e dá para voltar ao original a qualquer momento. Um item novo usa o sprite do item-base até ganhar o seu.'),
+      el('div', { class: 'linha' }, el('div', {}, el('b', {}, 'Original'), el('div', {}, retrato(f_desenho(), 64, { categoria: 'itens', imediato: true })), el('div', { class: 'dica' }, s.original ? `${s.original.w}×${s.original.h}px · ${s.original.quadros} quadro(s)` : 'sem figura no atlas')),
+        s.override ? el('div', {}, el('b', {}, 'Sprite alterado (salvo)'), el('div', {}, el('img', { src: s.url, width: Math.min(128, s.override.w * 2), style: 'image-rendering:pixelated;background:#222' })), el('div', { class: 'dica' }, `${s.override.w}×${s.override.h}px × ${s.override.frames} quadro(s)`)) : null,
+        r?.png ? el('div', {}, el('b', {}, 'Rascunho (não salvo)'), el('div', {}, el('img', { src: r.png, width: Math.min(256, (v?.quadro?.w ?? 32) * (r.frames || 1) * 2), style: 'image-rendering:pixelated;background:#222' }))) : null),
+      s.herdaDoItemBase != null ? el('div', { class: 'dica' }, `Este item novo usa o sprite do item #${s.herdaDoItemBase} enquanto não tiver o seu.`) : null,
+      el('div', { class: 'linha' }, el('label', { class: 'campo mob-campo' }, 'Imagem PNG (quadros lado a lado)', el('input', { type: 'file', accept: 'image/png', disabled: dis(), onchange: (e) => { if (e.target.files?.[0]) lerArquivo(e.target.files[0]); } })),
+        el('label', { class: 'campo mob-campo' }, 'Quadros (animação)', el('input', { type: 'number', min: 1, max: s.limites.quadrosMax, value: r?.frames ?? 1, style: 'width:80px', disabled: dis() || !r, onchange: (e) => { r.frames = Math.max(1, Number(e.target.value) || 1); validarSprite(); } }))),
+      v ? (v.erros?.length ? el('ul', { class: 'problemas' }, v.erros.map((m) => el('li', { class: 'erro' }, `✖ ${m}`))) : el('div', { class: 'selo ok' }, `Imagem válida: ${v.quadro.w}×${v.quadro.h}px por quadro`)) : null,
+      v?.avisos?.length ? el('ul', { class: 'problemas' }, v.avisos.map((m) => el('li', { class: 'aviso' }, `⚠ ${m}`))) : null,
+      el('div', { class: 'linha' }, el('button', { type: 'button', class: 'primario', disabled: dis() || !v?.ok, onclick: salvarSprite }, 'Salvar sprite'), el('button', { type: 'button', disabled: !r, onclick: () => { E.rascunhoDoSprite = null; pintarAba(); } }, 'Descartar rascunho'),
+        el('button', { type: 'button', class: 'perigo', disabled: dis() || !s.override, onclick: restaurarSprite }, 'Voltar ao sprite original')),
+      el('div', { class: 'dica' }, 'No jogo, recarregue a página (F5) para carregar o sprite novo; limites: quadro de 8 a 128 px, até 32 quadros, 600 KB.'));
+  }
+  const f_desenho = () => E.ficha?.desenho ?? null;
+
   const corpo = (aba) => {
     if (aba === 'usos') return el('div', {}, E.ficha.usos.length ? el('ul', { class: 'op-lista' }, E.ficha.usos.map((x) => el('li', {}, `${x.nome ?? x.id} `, el('small', { class: 'dica' }, x.categoria ?? x.tipo ?? '')))) : el('div', { class: 'dica' }, 'Este item não é usado em nenhuma hunt, boss ou encontro.'), (E.ficha.conjuntos ?? []).length ? el('div', {}, el('h4', {}, 'Conjuntos que usam este item'), el('ul', { class: 'op-lista' }, E.ficha.conjuntos.map((c) => el('li', {}, `${c.nome} `, el('small', { class: 'dica' }, `${c.classe} · Ato ${c.ato} · ${c.slot}${c.ativo ? '' : ' · inativo'}`), ' ', irPara ? el('button', { type: 'button', class: 'fantasma', onclick: () => irPara('conjuntos', null, [c.id]) }, 'abrir conjunto') : null)))) : el('div', { class: 'dica' }, 'Nenhum conjunto usa este item.'));
     if (aba === 'combate') return abaCombate();
     if (aba === 'geral') return abaGeral();
     if (aba === 'historico') return abaHistorico();
+    if (aba === 'sprite') return abaSprite();
     return el('div', {}, el('div', { class: 'grade' }, CAMPOS[aba].map(campo)));
   };
   function pintarAba() { document.getElementById('itm-aba')?.replaceChildren(corpo(E.aba)); }
@@ -373,11 +435,11 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
     const linha = (m) => el('div', { class: `hunts-item mob-item itm-linha${m.id === E.id ? ' ativa' : ''}`, onclick: () => abrir(m.id), role: 'button', tabindex: 0 },
       retrato(m.desenho, 32, { categoria: 'itens', rotulo: m.nome }),
       el('span', {}, el('b', {}, m.nome), el('small', {}, `#${m.id} · ${m.tipo ?? 'sem tipo'}${m.temOverride ? (m.ativo === false ? ' · override desligado' : ' · com override') : ''}`),
-        el('small', { class: 'itm-mini' }, m.ip != null ? `IP ${fmt(m.ip)} ` : '', m.minLevel != null ? `· nv ${m.minLevel} ` : '', m.atributosEditados ? el('span', { class: 'selo', title: m.original ? `original: nível ${fmt(m.original.minLevel)}, Damage ${fmt(m.original.attack)}, Block ${fmt(m.original.defense)}, armadura ${fmt(m.original.armor)}` : '' }, 'modificado') : null),
+        el('small', { class: 'itm-mini' }, m.ip != null ? `IP ${fmt(m.ip)} ` : '', m.minLevel != null ? `· nv ${m.minLevel} ` : '', m.novo ? el('span', { class: 'selo' }, 'novo') : null, m.atributosEditados ? el('span', { class: 'selo', title: m.original ? `original: nível ${fmt(m.original.minLevel)}, Damage ${fmt(m.original.attack)}, Block ${fmt(m.original.defense)}, armadura ${fmt(m.original.armor)}` : '' }, 'modificado') : null),
         E.rapido && m.slot ? el('span', { class: 'itm-rapido' }, campoRapido(m, 'minLevel', m.minLevel), campoRapido(m, 'damage', m.attack), campoRapido(m, 'block', m.defense), campoRapido(m, 'armor', m.armor)) : null));
     return el('aside', { class: 'hunts-lista', id: 'itm-lista' },
       el('input', { type: 'search', placeholder: 'buscar item (2+ letras)…', value: E.q, oninput: (e) => { E.q = e.target.value; clearTimeout(espera); espera = setTimeout(buscarLista, 250); } }),
-      el('div', { class: 'hunts-cats' }, [['', 'Busca'], ['com-override', `Com override (${E.lista?.comOverride ?? 0})`]].map(([id, n]) => el('button', { type: 'button', class: E.filtro === id ? 'ativa' : '', onclick: () => { E.filtro = id; buscarLista(); } }, n))),
+      el('div', { class: 'hunts-cats' }, [['', 'Busca'], ['com-override', `Com override (${E.lista?.comOverride ?? 0})`], ['novos', 'Itens novos']].map(([id, n]) => el('button', { type: 'button', class: E.filtro === id ? 'ativa' : '', onclick: () => { E.filtro = id; buscarLista(); } }, n))),
       el('select', { onchange: (e) => { E.slot = e.target.value; buscarLista(); } }, slots.map((s) => el('option', { value: s, selected: s === E.slot }, s || 'todos os slots'))),
       el('label', { class: 'conj-chk', title: 'Edita nível, Damage, Block e armadura-base direto na lista; a gravação é a mesma do editor completo' }, el('input', { type: 'checkbox', checked: E.rapido, disabled: dis(), onchange: (e) => { E.rapido = e.target.checked; document.getElementById('itm-lista')?.replaceWith(listaLateral()); } }), 'edição rápida (nível · Damage · Block · armadura)'),
       E.rapido ? el('div', { class: 'linha' }, el('button', { id: 'itm-rapido-salvar', type: 'button', class: 'primario', disabled: true, onclick: salvarRapido }, 'Salvar (0)'), el('button', { id: 'itm-rapido-cancelar', type: 'button', disabled: true, onclick: () => { E.sujos = {}; document.getElementById('itm-lista')?.replaceWith(listaLateral()); } }, 'Cancelar')) : null,
@@ -389,12 +451,13 @@ export function criarEditorDeItens({ api, raiz, sujo = null, podeGravar = () => 
     const f = E.ficha;
     if (!f) return el('div', { class: 'bib-painel-vazio' }, 'Busque um item à esquerda para editar. As alterações ficam num arquivo de overrides — o catálogo do Canary nunca é tocado.');
     return el('div', { class: 'hunt-painel' },
-      el('div', { class: 'hunt-topo' }, retrato(f.desenho, 64, { categoria: 'itens', imediato: true }), el('div', {}, el('h2', {}, valorEfetivo(orig(), E.ov, 'name')), el('div', { class: 'dica' }, `#${f.id} · ${orig().type ?? 'sem tipo'}${orig().slot ? ` · slot ${orig().slot}` : ''}${f.override ? (f.override.ativo === false ? ' · override DESLIGADO' : ' · tem override gravado') : ' · original'}`))),
+      el('div', { class: 'hunt-topo' }, retrato(f.desenho, 64, { categoria: 'itens', imediato: true }), el('div', {}, el('h2', {}, valorEfetivo(orig(), E.ov, 'name')), el('div', { class: 'dica' }, `${f.novo ? 'ITEM NOVO · ' : ''}#${f.id} · ${orig().type ?? 'sem tipo'}${orig().slot ? ` · slot ${orig().slot}` : ''}${f.override ? (f.override.ativo === false ? ' · override DESLIGADO' : ' · tem override gravado') : ' · original'}`))),
       dis() ? el('div', { class: 'bib-alerta' }, 'Somente leitura neste servidor (produção): para editar, rode a Engine localmente, salve, faça commit e publique pelo deploy.') : null,
       el('div', { class: 'niv-fluxo' }, ['1 · Editar (na tela)', '2 · Pré-visualizar (impacto e Item Power)', '3 · Salvar (arquivo + Hot Reload local)', '4 · Publicar (commit + deploy)'].map((t, i) => el('span', { class: i === 0 ? 'ativa' : '' }, t))),
       el('div', { class: 'op-linha' }, el('b', { id: 'itm-contagem' }, 'sem alterações'), el('button', { type: 'button', id: 'itm-salvar', class: 'primario', disabled: true, onclick: salvar }, 'Salvar override'), el('button', { type: 'button', id: 'itm-descartar', disabled: true, onclick: descartar }, 'Descartar alterações'),
         el('button', { type: 'button', disabled: dis(), onclick: restaurarTudoNoRascunho, title: 'Volta todos os campos ao original no rascunho (ainda é preciso salvar)' }, 'Restaurar todos os campos'),
-        el('button', { type: 'button', class: 'perigo', disabled: dis() || !f.override, onclick: reverter }, 'Reverter ao original (gravado)'),
+        el('button', { type: 'button', disabled: dis(), onclick: criarNovo, title: 'Cria um item novo (ID livre) como cópia deste, para editar à vontade' }, 'Criar item novo (duplicar)'),
+        el('button', { type: 'button', class: 'perigo', disabled: dis() || !f.override, onclick: reverter }, f.novo ? 'Apagar este item novo' : 'Reverter ao original (gravado)'),
         f.override ? el('button', { type: 'button', disabled: dis(), onclick: alternarDeste }, f.override.ativo === false ? 'Ligar este override' : 'Desligar este override') : null),
       el('div', { class: 'eng-abas' }, ABAS.map(([id, n]) => el('button', { type: 'button', class: E.aba === id ? 'ativa' : '', onclick: () => { E.aba = id; pintarAba(); document.querySelectorAll('.eng-abas button').forEach((b) => b.classList.toggle('ativa', b.textContent === n)); } }, n))),
       el('div', { id: 'itm-aba', class: 'hunt-sec' }, corpo(E.aba)),

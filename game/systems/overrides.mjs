@@ -184,7 +184,12 @@ export const RARIDADES_DE_ITEM = ['comum', 'incomum', 'raro', 'épico', 'lendár
 // usa `attack` único, o APS de hoje (0,5) e nenhum requisito — o combate de antes não muda.
 export const CAMPOS_DE_ARMA = ['attackMin', 'attackMax', 'aps', 'critChance', 'range', 'reqStr', 'reqDex', 'reqInt'];
 export const CAMPOS_DE_ITEM = ['name', 'weight', 'buy', 'sell', 'attack', 'defense', 'armor', 'minLevel', 'rarity', 'imbuementSlots', ...CAMPOS_DE_ARMA];
-const CAMPOS_PERMITIDOS_DE_ITEM = new Set([...CAMPOS_DE_ITEM, 'ativo']);
+// ITEM NOVO (criado no editor): uma entrada com `base` = o id de um item existente nasce como CÓPIA dele (com todos os campos) sob um id novo (a partir de `ID_MINIMO_DE_ITEM_NOVO`, fora da faixa do
+// Canary), e os campos do override ajustam a cópia. O sprite é o do item-base até alguém trocar (`gamedata/overrides/itens-sprites.json`). Apagar a entrada remove o item.
+export const ID_MINIMO_DE_ITEM_NOVO = 900000;
+const CAMPOS_PERMITIDOS_DE_ITEM = new Set([...CAMPOS_DE_ITEM, 'ativo', 'base']);
+/** A cópia-base de um item novo: o original da base sob o id novo. */
+export const copiaParaItemNovo = (baseOriginal, id) => ({ ...structuredClone(baseOriginal), id: Number(id) });
 
 /** Valida UM override de item. `ctx`: `{ original: item do catálogo (ou null) }`. `{ erros, avisos }`. */
 export function validarItem(id, ov, ctx) {
@@ -192,7 +197,13 @@ export function validarItem(id, ov, ctx) {
   const avisos = [];
   const onde = `item ${id}`;
   if (!ov || typeof ov !== 'object' || Array.isArray(ov)) return { erros: [`${onde}: o override precisa ser um objeto.`], avisos };
-  if (!ctx.original) erros.push(`${onde}: não existe no catálogo de itens (overrides só alteram itens existentes).`);
+  if (ov.base !== undefined) {
+    // item NOVO: precisa de um id novo e de uma base que exista
+    if (!(Number.isInteger(Number(id)) && Number(id) >= ID_MINIMO_DE_ITEM_NOVO && Number(id) <= 2_000_000_000)) erros.push(`${onde}: o ID de um item novo precisa ser um inteiro de ${ID_MINIMO_DE_ITEM_NOVO} a 2.000.000.000.`);
+    if (ctx.existe) erros.push(`${onde}: já existe um item com esse ID (um item novo precisa de ID livre).`);
+    if (!ctx.original) erros.push(`${onde}: o item-base ${ov.base} não existe no catálogo.`);
+    else if (!ctx.original.slot && !ctx.original.type) avisos.push(`${onde}: o item-base não tem slot nem tipo (a cópia herda isso).`);
+  } else if (!ctx.original) erros.push(`${onde}: não existe no catálogo de itens (overrides só alteram itens existentes; para criar um item novo use "duplicar").`);
   for (const c of Object.keys(ov)) if (!CAMPOS_PERMITIDOS_DE_ITEM.has(c)) erros.push(`${onde}: o campo "${c}" não tem suporte (permitidos: ${CAMPOS_DE_ITEM.join(', ')}).`);
   if (ov.name !== undefined && !(typeof ov.name === 'string' && ov.name.trim().length >= 1 && ov.name.length <= 80)) erros.push(`${onde}: nome de 1 a 80 caracteres.`);
   if (ov.weight !== undefined && !(typeof ov.weight === 'number' && ov.weight >= 0 && ov.weight <= 100_000)) erros.push(`${onde}: peso de 0 a 100.000.`);
@@ -237,15 +248,18 @@ export function lerItens(pasta = PASTA, avisar = console.warn) {
 export function aplicarNosItens(catalogo, dados, avisar = console.warn) {
   const saida = { aplicados: [], ignorados: [] };
   if (!dados?.ativo || !Object.keys(dados.itens ?? {}).length) return saida;
-  for (const [id, ov] of Object.entries(dados.itens)) {
+  // Os itens NOVOS primeiro (clonam o original da base antes de qualquer override dela), depois os ajustes dos existentes.
+  const entradas = Object.entries(dados.itens);
+  for (const [id, ov] of [...entradas.filter(([, o]) => o?.base !== undefined), ...entradas.filter(([, o]) => o?.base === undefined)]) {
     if (ov?.ativo === false) continue;
-    const { erros } = validarItem(id, ov, { original: catalogo[id] ?? null });
+    const novo = ov?.base !== undefined;
+    const { erros } = validarItem(id, ov, novo ? { original: catalogo[ov.base] ?? null, existe: catalogo[id] != null } : { original: catalogo[id] ?? null });
     if (erros.length) {
       saida.ignorados.push({ id, erros });
       avisar(`[overrides] item "${id}" ignorado: ${erros.join(' | ')}`);
       continue;
     }
-    catalogo[id] = aplicarNoItem(catalogo[id], ov);
+    catalogo[id] = aplicarNoItem(novo ? copiaParaItemNovo(catalogo[ov.base], id) : catalogo[id], ov);
     saida.aplicados.push(id);
   }
   return saida;
@@ -311,23 +325,30 @@ export function reaplicarNoBestiario(bestiario, estado, dados, contexto, { estri
 
 /** O mesmo para o catálogo de itens. `{ ok, aplicados, ignorados, mudados }`. */
 export function reaplicarNosItens(catalogo, estado, dados, { estrito = false, avisar = console.warn } = {}) {
-  const saida = { ok: true, aplicados: [], ignorados: [], mudados: [] };
-  const original = (id) => (estado.originais.has(id) ? estado.originais.get(id) : catalogo[id] ?? null);
+  const saida = { ok: true, aplicados: [], criados: [], ignorados: [], mudados: [] };
+  // O olhar "de antes de qualquer override": o original guardado (se alterado), o catálogo (se nunca tocado) — e um item CRIADO por override não conta como original.
+  const original = (id) => { const k = String(id); return estado.criados.has(k) ? null : estado.originais.has(k) ? estado.originais.get(k) : catalogo[k] ?? null; };
   const plano = [];
   const ativas = dados?.ativo ? Object.entries(dados.itens ?? {}).filter(([, ov]) => ov?.ativo !== false) : [];
   for (const [id, ov] of ativas) {
-    const { erros } = validarItem(id, ov, { original: original(id) });
+    const novo = ov?.base !== undefined;
+    const { erros } = validarItem(id, ov, novo ? { original: original(ov.base), existe: original(id) != null } : { original: original(id) });
     if (erros.length) { saida.ignorados.push({ id, erros }); if (!estrito) avisar(`[overrides] item "${id}" ignorado: ${erros.join(' | ')}`); continue; }
-    plano.push({ id, efetivo: aplicarNoItem(original(id), ov), original: original(id) });
+    plano.push(novo ? { id, efetivo: aplicarNoItem(copiaParaItemNovo(original(ov.base), id), ov), criado: true } : { id, efetivo: aplicarNoItem(original(id), ov), original: original(id) });
   }
   if (estrito && saida.ignorados.length) return { ...saida, ok: false };
-  const antes = [...estado.aplicados];
+  const antes = [...estado.aplicados, ...estado.criados];
   for (const id of estado.aplicados) catalogo[id] = estado.originais.get(id);
+  for (const id of estado.criados) delete catalogo[id];
+  estado.criados.clear();
   const originaisAntigos = estado.originais;
   estado.originais = new Map();
   estado.aplicados.clear();
-  for (const p of plano) { estado.originais.set(p.id, originaisAntigos.get(p.id) ?? p.original); catalogo[p.id] = p.efetivo; estado.aplicados.add(p.id); saida.aplicados.push(p.id); }
-  saida.mudados = [...new Set([...antes, ...saida.aplicados])];
+  for (const p of plano) {
+    if (p.criado) { catalogo[p.id] = p.efetivo; estado.criados.add(String(p.id)); saida.criados.push(String(p.id)); continue; }
+    estado.originais.set(p.id, originaisAntigos.get(p.id) ?? p.original); catalogo[p.id] = p.efetivo; estado.aplicados.add(p.id); saida.aplicados.push(p.id);
+  }
+  saida.mudados = [...new Set([...antes, ...saida.aplicados, ...saida.criados])];
   return saida;
 }
 

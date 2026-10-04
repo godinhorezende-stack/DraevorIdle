@@ -37,6 +37,7 @@ export function moduloDe(caminho) {
   if (c === 'gamedata/overrides/monstros.json') return 'monstros';
   if (c === 'gamedata/overrides/itens.json') return 'itens';
   if (c === 'gamedata/overrides/conjuntos.json' || c === 'gamedata/conjuntos.json') return 'conjuntos';
+  if (c === 'gamedata/overrides/itens-sprites.json' || /^gamedata\/overrides\/sprites\/itens\//.test(c)) return 'sprites';
   if (c === 'gamedata/overrides/item-power.json' || c === 'gamedata/item-power.json') return 'item-power';
   if (c === 'gamedata/overrides/progressao.json' || c === 'gamedata/progressao.json') return 'progressao';
   if (/^gamedata\/overrides\/sprites(\.json|\/)/.test(c)) return 'sprites';
