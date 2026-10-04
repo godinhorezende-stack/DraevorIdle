@@ -88,6 +88,37 @@ export function criarVerificacoes() {
       },
     },
     {
+      id: 'progressao', modulo: 'progressao', titulo: 'Progressão de equipamentos e loot por dificuldade',
+      async rodar(ctx) {
+        const P = await import('../systems/progressao.mjs');
+        const Prog = await import('./overrides-progressao.mjs');
+        const arquivo = join(ctx.overrides ?? join(RAIZ, 'overrides'), 'progressao.json');
+        let ov = null;
+        if (existsSync(arquivo)) { try { ov = JSON.parse(readFileSync(arquivo, 'utf8')); } catch (e) { return { achados: [erro('overrides/progressao.json', `JSON inválido: ${e.message}`)] }; } }
+        const candidata = P.efetiva(P.ORIGINAL, ov);
+        const v = Prog.validarEfetiva(candidata);
+        const achados = [...v.erros.map((m) => erro('progressao', m)), ...v.avisos.map((m) => aviso('progressao', m))];
+        if (ov?.ativo === false) achados.push(aviso('overrides/progressao.json', 'a camada de overrides de progressão está DESLIGADA: nenhuma alteração vale.'));
+        const sem = Prog.obter().cobertura.filter((c) => !c.bases).map((c) => c.ato);
+        if (sem.length) achados.push(aviso('progressao', `Atos sem nenhuma base de equipamento no catálogo: ${sem.join(', ')} (o catálogo importado quase não tem peça acima do level 600).`));
+        return { achados, detalhe: `${candidata.progressao.atos.length} Atos, ${Object.keys(candidata.loot).filter((k) => !k.startsWith('_')).length} dificuldades` };
+      },
+    },
+    {
+      id: 'conjuntos', modulo: 'conjuntos', titulo: 'Conjuntos (sets de equipamento): classes, Atos, slots, itens e níveis',
+      async rodar(ctx) {
+        const Con = await import('../systems/conjuntos.mjs');
+        const arquivo = join(ctx.overrides ?? join(RAIZ, 'overrides'), 'conjuntos.json');
+        let ov = null;
+        if (existsSync(arquivo)) { try { ov = JSON.parse(readFileSync(arquivo, 'utf8')); } catch (e) { return { achados: [erro('overrides/conjuntos.json', `JSON inválido: ${e.message}`)] }; } }
+        const mapa = Con.efetivo(Con.ORIGINAL, ov);
+        const v = Con.validarTodos(mapa, Con.contextoDoJogo());
+        const achados = [...v.erros.map((m) => erro('conjuntos', m)), ...v.avisos.map((m) => aviso('conjuntos', m))];
+        if (ov?.ativo === false && Object.keys(ov.conjuntos ?? {}).length) achados.push(aviso('overrides/conjuntos.json', 'a camada de overrides de conjuntos está DESLIGADA: nenhuma alteração vale.'));
+        return { achados, detalhe: `${Object.keys(mapa).length} conjunto(s)` };
+      },
+    },
+    {
       id: 'sprites', modulo: 'sprites', titulo: 'Sprites, outfits e montarias (overrides): imagem, quadros e cadastro',
       async rodar(ctx) {
         const S = await import('./overrides-sprites.mjs');

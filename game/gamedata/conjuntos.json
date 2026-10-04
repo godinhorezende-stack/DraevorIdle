@@ -1,0 +1,36 @@
+{
+ "_nota": "CONJUNTOS (sets de equipamento) do jogo, por classe: um conjunto é uma lista de bases de equipamento (uma por slot) organizada por Ato, tier e faixa de level — uma ferramenta de desenvolvimento e balanceamento, NÃO uma mecânica nova: não dá bônus de conjunto, não muda drop nem combate. Cada peça é só uma REFERÊNCIA ao item do catálogo (ou do override de itens): nenhum atributo é copiado, então editar o item reflete no conjunto. Os conjuntos valem para Normal, Cruel e Merciless (não se duplicam por dificuldade). Este arquivo é a FÁBRICA e nunca é editado pela Engine: o que o dono cria/altera fica em `gamedata/overrides/conjuntos.json` (só o que é novo ou diferente). `pecas` usa os ids de slot do catálogo: head (cabeça), body (corpo), legs (pernas), feet (botas), weapon (arma), shield (escudo), ring (anel), neck (amuleto). Os Atos e o level máximo vêm de `progressao.json`.",
+ "regras": {
+  "slots": [
+   "head",
+   "body",
+   "legs",
+   "feet",
+   "weapon",
+   "shield",
+   "ring",
+   "neck"
+  ],
+  "obrigatoriosSeCompleto": [
+   "head",
+   "body",
+   "legs",
+   "feet",
+   "weapon",
+   "ring",
+   "neck"
+  ],
+  "_escudo": "O escudo só é exigido num conjunto marcado como completo quando a arma NÃO é de duas mãos (a aljava, que usa o slot do escudo, não conta como escudo). Arma de duas mãos + escudo é incompatível (a regra do jogo: um tira o outro).",
+  "statusPossiveis": [
+   "ativo",
+   "inativo"
+  ]
+ },
+ "planejamento": {
+  "de": 1,
+  "ate": 300,
+  "conjuntosPorClasse": 6,
+  "_nota": "Referência inicial: 5 classes × 6 conjuntos, níveis 1–300 na dificuldade Normal. Só orienta o painel de cobertura e a ação 'gerar modelos iniciais'; nada é criado sozinho."
+ },
+ "conjuntos": {}
+}

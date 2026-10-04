@@ -3,6 +3,7 @@
 import * as Mecanicas from '../mobs/mecanicas.mjs';
 import * as BuffsDeMob from '../mobs/buffs.mjs';
 import { ITEM_CATALOG, CATALOGO } from '../dados.mjs';
+import * as Progressao from '../progressao.mjs';
 import * as R from '../regras.mjs';
 import { VALOR_DA_MOEDA, pesoDoInventario } from '../inventario.mjs';
 import * as Acoes from '../acoes.mjs';
@@ -463,7 +464,7 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
     if (drop.id == null) continue;
     // `lootMult`: a raridade do mob (raro/elite dão mais loot — ver `mobs/raridade.mjs`).
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
-    if (Math.random() >= chance) continue; // Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
+    if (Math.random() >= chance * Progressao.fatorDeDropDe(contextoDoDrop(hunt).dificuldade, drop.id)) continue; // (a dificuldade só mexe na chance de EQUIPAMENTO; neutra por padrão) Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
     if (VALOR_DA_MOEDA[drop.id]) {
       const n = quantasMoedas(alvo, drop.id, estado);
       // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
