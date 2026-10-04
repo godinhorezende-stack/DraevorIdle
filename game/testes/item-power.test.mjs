@@ -372,7 +372,7 @@ test('IPW21. validação centralizada, Git e versões: a verificação "item-pow
   const Git = await import('../admin/git-local.mjs');
   assert.equal(Git.moduloDe('game/gamedata/overrides/item-power.json'), 'item-power');
   const Val = await import('../admin/validacao.mjs');
-  assert.deepEqual(Val.TESTES_POR_MODULO['item-power'], ['item-power', 'hot-reload-conteudo']);
+  assert.deepEqual(Val.TESTES_POR_MODULO['item-power'], ['item-power', 'item-power-editor', 'hot-reload-conteudo']);
 });
 
 test('IPW22. rotas: consulta, lista, detalhe, curva, marcos, alertas, prévia, simulação, comparação e regra só LEEM; salvar é "grava"; ação inválida = 400; conflito = 409', async () => {

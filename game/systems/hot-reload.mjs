@@ -264,6 +264,7 @@ export function caminhosDaRota(rota, corpo = null) {
   if (r === 'progressao') return ['overrides/progressao.json'];
   if (r === 'conjuntos') return ['overrides/conjuntos.json'];
   if (r === 'item-power') return ['overrides/item-power.json'];
+  if (r === 'item-power/edicao') return ['overrides/itens.json'];
   if (r === 'overrides/sprites') return ['overrides/sprites.json', ...(corpo?.look && /^\d+$/.test(String(corpo.look)) ? [`overrides/sprites/${corpo.look}.png`] : [])];
   if (r.startsWith('campanha')) return ['campanha.json'];
   const ato = /^atos-editor(?:\/([a-z0-9-]+))?/.exec(r);

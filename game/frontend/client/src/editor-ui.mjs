@@ -3,6 +3,15 @@
 // referência, ícones e a navegação lateral. Só apresentação: nenhuma regra de jogo mora aqui.
 
 /** Cria um elemento: `props.class`, `on*` viram eventos, `true` vira atributo vazio; filhos podem ser listas (em qualquer profundidade). */
+// `Element.replaceChildren(null)` NÃO ignora o null: escreve o TEXTO "null" na tela (a causa do "nullnullnull" na pré-visualização do editor de itens, e de "null" solto em qualquer
+// tela da Engine que passa `cond ? el(...) : null`). Como `el()` já ignora null/false, o mesmo vale aqui, uma vez, para todas as telas do editor.
+if (typeof Element !== 'undefined' && !Element.prototype.replaceChildren?.__semNulos) {
+  const nativo = Element.prototype.replaceChildren;
+  const seguro = function replaceChildren(...filhos) { return nativo.apply(this, filhos.flat(Infinity).filter((f) => f !== null && f !== undefined && f !== false)); };
+  seguro.__semNulos = true;
+  Element.prototype.replaceChildren = seguro;
+}
+
 export function el(tag, props = {}, ...filhos) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(props ?? {})) {

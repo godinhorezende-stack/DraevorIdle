@@ -16,8 +16,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { ITEM_CATALOG } from './dados.mjs';
 import { PASTA as PASTA_DE_OVERRIDES } from './overrides.mjs';
-import { faixaDoCampo } from './itens/item.mjs';
-import { mesclar } from './progressao.mjs';
+import { defesaDoCatalogo } from './itens/item.mjs';
+import { mesclar, tierDaBaseCom, EM_USO as PROGRESSAO_EM_USO } from './progressao.mjs';
+const P_TIER = () => PROGRESSAO_EM_USO.progressao.tier;
+import * as Atributos from './personagem/atributos.mjs';
 
 export const SLOTS = ['weapon', 'shield', 'head', 'body', 'legs', 'feet', 'ring', 'neck'];
 export const ROTULO_DO_SLOT = { weapon: 'Arma', shield: 'Escudo', head: 'Cabeça', body: 'Corpo', legs: 'Pernas', feet: 'Botas', ring: 'Anel', neck: 'Amuleto' };
@@ -30,18 +32,18 @@ const arred = (n, c = 2) => (eNum(n) ? Number(n.toFixed(c)) : null);
 
 // ---------------------------------------------------------------- atributos base de um item
 /**
- * Os atributos BASE de um equipamento do catálogo (o valor cheio, sem sorteio): `{ damageMin, damageMax, defesa, armour, evasion, energyShield, cajado }`.
- * `null` se o item não existe ou não é equipamento dos 8 slots. Só lê.
+ * Os atributos BASE de um equipamento (um objeto `meta` do catálogo — o efetivo, o original ou um CANDIDATO de edição): `{ damageMin, damageMax, defesa, armour, evasion, energyShield, cajado }`.
+ * Mesma regra da ficha do jogo: o valor cheio do catálogo, com a armadura dividida em Armour / Evasion / Energy Shield pelo tipo da base e pelo level do item (`defesaDoCatalogo`).
+ * `null` se não é equipamento dos 8 slots. Só lê.
  */
-export function atributosBase(itemId, catalogo = ITEM_CATALOG) {
-  const m = catalogo[itemId];
+export function atributosDoMeta(m) {
   if (!m || !SLOTS.includes(m.slot) || m.stackable) return null;
-  const f = (campo) => faixaDoCampo({ id: Number(itemId) }, campo);
-  const [dMin, dMax] = f('attack');
-  const [aMin, aMax] = f('armor'); const [vMin, vMax] = f('evasion'); const [sMin, sMax] = f('es'); const [bMin, bMax] = f('defense');
-  const media = (a, b) => (a + b) / 2;
-  return { damageMin: dMin, damageMax: dMax, defesa: media(bMin, bMax), armour: media(aMin, aMax), evasion: media(vMin, vMax), energyShield: media(sMin, sMax), cajado: m.wand && eNum(m.wand.min) && eNum(m.wand.max) ? { min: m.wand.min, max: m.wand.max } : null };
+  const inteiro = (v) => { const n = Math.floor(Number(v)); return n > 0 ? n : 0; };
+  const d = defesaDoCatalogo(m);
+  return { damageMin: inteiro(m.attackMin ?? m.attack), damageMax: inteiro(m.attackMax ?? m.attack), defesa: inteiro(m.defense), armour: d.armor ?? 0, evasion: d.evasion ?? 0, energyShield: d.es ?? 0, cajado: m.wand && eNum(m.wand.min) && eNum(m.wand.max) ? { min: m.wand.min, max: m.wand.max } : null };
 }
+/** Os atributos base de um item do catálogo pelo id (ver `atributosDoMeta`). */
+export const atributosBase = (itemId, catalogo = ITEM_CATALOG) => atributosDoMeta(catalogo[itemId]);
 
 // ---------------------------------------------------------------- a fórmula
 /** O Block que entra na conta: o rating de defesa do escudo; a metade (configurável) da defesa da arma; nada nos outros slots. */
@@ -136,10 +138,9 @@ export function classeDaDiferenca(diff, cfg) {
   return 'muito-acima';
 }
 
-/** A ficha de poder de um item: IP, esperado no level, diferença absoluta e %, classe e o detalhamento. `null` se não é equipamento. */
-export function fichaDePoder(itemId, cfg, catalogo = ITEM_CATALOG) {
-  const m = catalogo[itemId];
-  const a = atributosBase(itemId, catalogo);
+/** A ficha de poder de um `meta` (efetivo, original ou candidato): IP, esperado no level, diferença absoluta e %, classe, tier e o detalhamento. `null` se não é equipamento. */
+export function fichaDoMeta(m, cfg) {
+  const a = atributosDoMeta(m);
   if (!a) return null;
   const p = calcular(a, cfg, m.slot);
   const level = eNum(m.minLevel) && m.minLevel > 0 ? m.minLevel : null;
@@ -152,10 +153,11 @@ export function fichaDePoder(itemId, cfg, catalogo = ITEM_CATALOG) {
   else { diff = arred(p.ip - exp, 3); diffPct = arred((p.ip - exp) / exp, 4); situacao = classeDaDiferenca(diffPct, cfg); }
   return {
     id: Number(m.id), nome: m.name, slot: m.slot, categoria: m.type ?? m.slot, raridade: m.rarity ?? null, vocations: m.vocations ?? [], twoHanded: !!m.twoHanded,
-    minLevel: level, levelRecomendado: level, ip: p.ip, esperado: exp, diferenca: diff, diferencaPct: diffPct, situacao, contribuicao: p.contribuicao,
-    atributos: { damageMin: a.damageMin, damageMax: a.damageMax, damage: p.damage, block: p.contribuicao.block.valor, armour: a.armour, evasion: a.evasion, energyShield: a.energyShield },
+    minLevel: level, levelRecomendado: level, tier: level != null ? tierDaBaseCom(P_TIER(), level) : null, ip: p.ip, esperado: exp, diferenca: diff, diferencaPct: diffPct, situacao, contribuicao: p.contribuicao,
+    atributos: { damageMin: a.damageMin, damageMax: a.damageMax, damage: p.damage, block: p.contribuicao.block.valor, armour: a.armour, evasion: a.evasion, energyShield: a.energyShield, armor: Math.floor(Number(m.armor)) > 0 ? Math.floor(Number(m.armor)) : 0, attack: a.damageMax, defense: a.defesa },
   };
 }
+export const fichaDePoder = (itemId, cfg, catalogo = ITEM_CATALOG) => fichaDoMeta(catalogo[itemId], cfg);
 
 /** A tabela de TODOS os equipamentos dos 8 slots (sem as peças "Crafted …" se `incluirCraft` for falso): é a base de filtros, curva e relatórios. */
 export function fichasDoCatalogo(cfg, { catalogo = ITEM_CATALOG, incluirCraft = true } = {}) {
@@ -169,9 +171,8 @@ export function fichasDoCatalogo(cfg, { catalogo = ITEM_CATALOG, incluirCraft = 
 }
 
 // ---------------------------------------------------------------- comparação
-/** Compara 2+ itens (ids): IP, atributos, diferença contra o PRIMEIRO (absoluta e %) e quais atributos mais contribuem para a diferença. */
-export function compararItens(ids, cfg, catalogo = ITEM_CATALOG) {
-  const fichas = ids.map((id) => fichaDePoder(id, cfg, catalogo)).filter(Boolean);
+/** Compara 2+ FICHAS de poder (de itens reais, originais ou candidatos de edição): diferença contra a PRIMEIRA (absoluta e %) e o atributo que mais explica a diferença. */
+export function compararFichas(fichas) {
   if (fichas.length < 2) return { ok: false, erros: ['Escolha ao menos dois equipamentos válidos para comparar.'] };
   const ref = fichas[0];
   const linhas = fichas.map((f) => {
@@ -181,6 +182,10 @@ export function compararItens(ids, cfg, catalogo = ITEM_CATALOG) {
     return { ...f, contraReferencia: { diferenca: arred(dif, 3), diferencaPct: ref.ip ? arred(dif / ref.ip, 4) : null, porAtributo, maiorContribuinte: maior?.atributo ?? null } };
   });
   return { ok: true, referencia: ref.id, itens: linhas, aviso: 'Comparação só dos atributos BASE: não é DPS nem força em combate.' };
+}
+/** Compara 2+ itens (ids) do catálogo efetivo. */
+export function compararItens(ids, cfg, catalogo = ITEM_CATALOG) {
+  return compararFichas(ids.map((id) => fichaDePoder(id, cfg, catalogo)).filter(Boolean));
 }
 
 // ---------------------------------------------------------------- relatórios sobre o catálogo
@@ -208,6 +213,38 @@ export function lacunasDePoder(fichas, atos, { lacunaFator = 2 } = {}) {
     }
   }
   return achados;
+}
+
+// ---------------------------------------------------------------- recalcular a curva a partir dos dados
+const quantil = (ordenado, q) => { if (!ordenado.length) return 0; const i = (ordenado.length - 1) * q; const lo = Math.floor(i); const hi = Math.ceil(i); return ordenado[lo] + (ordenado[hi] - ordenado[lo]) * (i - lo); };
+
+/**
+ * Uma PROPOSTA de curva calculada dos equipamentos recebidos (`fichas`, já filtradas por quem chama): por categoria, a MEDIANA do IP numa janela em volta de cada level de referência
+ * (±25% + 10). A mediana e o descarte de valores atípicos (acima de Q3 + 1,5 × IQR, ou abaixo de Q1 − 1,5 × IQR) impedem que um item exagerado distorça a curva. Pontos sem itens
+ * suficientes (`minimoDeItens`) repetem o anterior; com `monotonica` a curva nunca cai. Pura: não grava nada. Devolve `{ categorias: { slot: { pontos, buckets, considerados, descartados } } }`.
+ */
+export function propostaDeCurva(fichas, { niveis = [1, 25, 50, 100, 150, 200, 300, 400, 600, 1000], minimoDeItens = 3, descartarAtipicos = true, monotonica = true, categorias = SLOTS } = {}) {
+  const saida = {};
+  for (const slot of categorias) {
+    const base = fichas.filter((f) => f.slot === slot && f.ip > 0 && f.minLevel != null);
+    let consideradas = base; const descartados = [];
+    if (descartarAtipicos && base.length >= 4) {
+      const o = base.map((f) => f.ip).sort((a, b) => a - b);
+      const q1 = quantil(o, 0.25); const q3 = quantil(o, 0.75); const iqr = q3 - q1;
+      consideradas = base.filter((f) => { const ok = f.ip <= q3 + 1.5 * iqr && f.ip >= q1 - 1.5 * iqr; if (!ok) descartados.push({ id: f.id, nome: f.nome, ip: f.ip, minLevel: f.minLevel }); return ok; });
+    }
+    let anterior = 0; const pontos = []; const buckets = [];
+    for (const l of niveis) {
+      const n = consideradas.filter((f) => Math.abs(f.minLevel - l) <= l * 0.25 + 10).map((f) => f.ip).sort((a, b) => a - b);
+      const med = n.length >= minimoDeItens ? quantil(n, 0.5) : null;
+      let v = med ?? anterior; if (monotonica) v = Math.max(anterior, v);
+      anterior = v; pontos.push({ level: l, ip: Math.round(v * 10) / 10 }); buckets.push({ level: l, itens: n.length, mediana: med == null ? null : Math.round(med * 10) / 10 });
+    }
+    const primeiro = pontos.find((p) => p.ip > 0)?.ip ?? 0;
+    for (const p of pontos) { if (p.ip === 0) p.ip = primeiro; else break; }
+    saida[slot] = { pontos, buckets, considerados: consideradas.length, descartados: descartados.slice(0, 50), totalDescartados: descartados.length };
+  }
+  return { categorias: saida };
 }
 
 // ---------------------------------------------------------------- validação da configuração
@@ -243,6 +280,8 @@ export function validarConfiguracao(c, { nivelMaximo = 1000 } = {}) {
   }
   const al = c.alertas ?? {};
   for (const k of ['saltoAbruptoFator', 'lacunaFator']) if (!eNum(al[k]) || al[k] <= 1) erros.push(`alertas.${k}: precisa ser um número maior que 1.`);
+  for (const k of ['faixaDoTierPct', 'loteExcessoPct']) if (!eNum(al[k]) || al[k] <= 0) erros.push(`alertas.${k}: precisa ser um número maior que 0.`);
+  if (!eInt(al.loteExcessoNiveis) || al.loteExcessoNiveis < 1) erros.push('alertas.loteExcessoNiveis: precisa ser um inteiro a partir de 1.');
   for (const k of ['huntsDemais', 'margemDeLevel']) if (!eInt(al[k]) || al[k] < 1) erros.push(`alertas.${k}: precisa ser um inteiro a partir de 1.`);
   if (!eNum(al.itemMuitoAbaixoPct) || al.itemMuitoAbaixoPct >= 0) erros.push('alertas.itemMuitoAbaixoPct: precisa ser uma fração negativa (-0,6 = 60% abaixo).');
   const ids = new Set();

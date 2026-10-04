@@ -8,11 +8,13 @@ import * as O from '../systems/overrides.mjs';
 import { criarArquivoVersionado, revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
 import { usosDe, desenhoDoItem } from './biblioteca.mjs';
 import * as Conjuntos from '../systems/conjuntos.mjs';
+import * as ItemPower from '../systems/item-power.mjs';
+import * as Diario from './item-power-historico.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 export const CAMINHOS = { arquivo: join(O.PASTA, 'itens.json'), versoes: join(O.PASTA, '_versoes', 'itens') };
 const AVISO_DE_VARIACAO = 0.25;
-const COMO_PUBLICAR = 'O arquivo gamedata/overrides/itens.json foi gravado neste servidor. O jogo só aplica os overrides no boot: faça commit e publique pelo deploy (reinício controlado). Nada muda no jogo antes disso.';
+const COMO_PUBLICAR = 'O arquivo gamedata/overrides/itens.json foi gravado neste servidor. No ambiente local o Hot Reload aplica o catálogo em memória; para valer na produção: faça commit e publique pelo deploy (reinício controlado).';
 const arq = () => criarArquivoVersionado({ caminhos: CAMINHOS, valorPadrao: () => ({ ativo: true, itens: {} }) });
 const dados = () => { const d = arq().ler(); return { ...d, ativo: d.ativo !== false, itens: d.itens ?? {} }; };
 const gravar = (d) => arq().gravar({ _nota: 'Overrides de itens (systems/overrides.mjs): só as DIFERENÇAS sobre o catálogo importado. Apagar uma entrada devolve o original. Editado em /editor/conteudo (Itens).', ativo: d.ativo, itens: Object.fromEntries(Object.keys(d.itens).sort((a, b) => Number(a) - Number(b)).map((k) => [k, d.itens[k]])) });
@@ -35,7 +37,12 @@ export function listar({ q = '', filtro = '', slot = '', limite = 80 } = {}) {
   const linhas = ids.map((id) => {
     const ov = d.itens[id];
     const m = efetivoDe(id, ov);
-    return m ? { id, nome: m.name, tipo: m.type ?? null, slot: m.slot ?? null, rarity: m.rarity ?? null, temOverride: !!ov, ativo: ov ? ov.ativo !== false : null, desenho: desenhoDoItem(m) } : null;
+    if (!m) return null;
+    const f = ItemPower.fichaDoMeta({ ...m, id }, ItemPower.EM_USO);
+    const editado = !!ov && ov.ativo !== false && ['name', 'minLevel', 'rarity', 'attack', 'defense', 'armor'].some((k) => k in ov);
+    return { id, nome: m.name, tipo: m.type ?? null, slot: m.slot ?? null, rarity: m.rarity ?? null, temOverride: !!ov, ativo: ov ? ov.ativo !== false : null, desenho: desenhoDoItem(m),
+      minLevel: m.minLevel ?? null, attack: m.attack ?? null, defense: m.defense ?? null, armor: m.armor ?? null, ip: f?.ip ?? null, situacao: f?.situacao ?? null, atributosEditados: editado,
+      original: editado ? { minLevel: originalDe(id).minLevel ?? null, attack: originalDe(id).attack ?? null, defense: originalDe(id).defense ?? null, armor: originalDe(id).armor ?? null } : null };
   }).filter((l) => l && (!t || norm(l.nome).includes(t) || l.id === t) && (!slot || l.slot === slot));
   linhas.sort((a, b) => Number(b.temOverride) - Number(a.temOverride) || String(a.nome).localeCompare(String(b.nome)));
   return { total: linhas.length, itens: linhas.slice(0, Math.min(200, Math.max(1, Number(limite) || 80))), ativo: d.ativo, comOverride: Object.keys(d.itens).length, revisao: revisaoDe(CAMINHOS.arquivo), dica: t.length < 2 && !slot && filtro !== 'com-override' ? 'Busque pelo nome (2 letras ou mais) ou escolha um slot; sem busca só aparecem os itens que já têm override.' : null };
@@ -80,6 +87,7 @@ export function salvar(id, ov, revisao) {
   if (!limpo && !d.itens[id]) return { ok: true, semMudancas: true, avisos: [] };
   if (!limpo) delete d.itens[id]; else d.itens[id] = { ...(d.itens[id]?.ativo === false ? { ativo: false } : {}), ...limpo };
   gravar(d);
+  Diario.registrar({ tipo: 'itens-editor', ids: [Number(id)], itens: [{ id: Number(id), nome: p.efetivo?.name ?? null, mudancas: p.mudancas.map((m) => ({ campo: m.campo, de: m.antes, para: m.depois })) }] });
   return { ok: true, avisos: p.avisos, mudancas: p.mudancas, comoPublicar: COMO_PUBLICAR };
 }
 
@@ -90,6 +98,7 @@ export function reverter(id, revisao) {
   if (!d.itens[id]) return { ok: false, erros: ['Esse item não tem override.'] };
   delete d.itens[id];
   gravar(d);
+  Diario.registrar({ tipo: 'restauracao', ids: [Number(id)], rotulo: 'reverter ao original (editor de itens)' });
   return { ok: true, comoPublicar: COMO_PUBLICAR };
 }
 
@@ -114,3 +123,7 @@ export function restaurar(n, revisao) {
   const r = arq().restaurar(n);
   return r.ok ? { ...r, comoPublicar: COMO_PUBLICAR } : r;
 }
+
+// Para o editor de atributos-base do Item Power (`item-power-editor.mjs`): a MESMA leitura e gravação versionada deste arquivo — nenhuma fonte de dados paralela.
+export const lerDados = dados;
+export const gravarDados = gravar;

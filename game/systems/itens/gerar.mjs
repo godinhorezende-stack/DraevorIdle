@@ -180,8 +180,11 @@ export function rolarBase(itemId, raridade, rng = Math.random, itemLevel = null)
   for (const campo of ['attack', 'defense', 'armor']) {
     const valor = campo === 'armor' ? (querArmadura ? armaduraBase(meta) : 0) : joia ? (campo === 'attack' && querAtaque ? ataqueBaseDaJoia(meta) : 0) : Number(meta?.[campo]);
     if (!(valor > 0)) continue;
-    const piso = Math.max(1, Math.round(valor * sortear(faixa.piso)));
-    const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
+    // Arma com faixa própria de dano (`attackMin`/`attackMax`): o piso parte do mínimo da base e o teto do máximo; sem ela, o valor único (como sempre).
+    const deMin = campo === 'attack' && !joia && meta?.attackMin > 0 ? Number(meta.attackMin) : valor;
+    const deMax = campo === 'attack' && !joia && meta?.attackMax > 0 ? Number(meta.attackMax) : valor;
+    const piso = Math.max(1, Math.round(deMin * sortear(faixa.piso)));
+    const teto = Math.max(piso, Math.round(deMax * sortear(faixa.teto)));
     base[campo] = [piso, teto];
   }
   // Joia que veio sem armadura mas TEM no catálogo: zera (senão a peça voltaria ao valor cheio dele).

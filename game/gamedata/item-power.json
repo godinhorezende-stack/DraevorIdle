@@ -348,7 +348,10 @@
     "lacunaFator": 2,
     "huntsDemais": 8,
     "margemDeLevel": 50,
-    "itemMuitoAbaixoPct": -0.6
+    "itemMuitoAbaixoPct": -0.6,
+    "faixaDoTierPct": 0.5,
+    "loteExcessoPct": 0.5,
+    "loteExcessoNiveis": 30
   },
   "regras": []
 }
