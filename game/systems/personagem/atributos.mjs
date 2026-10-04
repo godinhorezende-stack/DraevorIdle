@@ -21,6 +21,9 @@ const E = CONFIG.efeitos;
 
 /** A vocação do jogo sem a promoção ("elite knight" → knight). */
 const vocacaoDe = (estado) => {
+  // A CLASSE do Editor de Classes (`systems/classes.mjs`): uma classe criada no editor tem a própria entrada em `porVocacao` (atributos iniciais e por level); sem ela vale a vocação.
+  const classe = String(estado?.classe ?? '').toLowerCase();
+  if (classe && CONFIG.porVocacao[classe]) return classe;
   const v = String(estado?.vocation ?? 'none').toLowerCase();
   return CONFIG.porVocacao[v] ? v : Object.keys(CONFIG.porVocacao).find((k) => v.includes(k)) ?? 'none';
 };
@@ -48,6 +51,9 @@ export function efeitos(p) {
     velocidadeDeAtaquePct: p.dex * E.DEX_ATTACK_SPEED_PER_POINT,
     mana: p.int * E.INT_MANA_PER_POINT,
     danoMagicoPct: p.int * E.INT_MAGIC_DAMAGE_PER_POINT,
+    // Bônus em % da DEX sobre a Evasion e da INT sobre o Energy Shield (0 de fábrica: o jogo de antes não muda; liga-se no Editor de Classes).
+    evasaoPct: p.dex * (E.DEX_EVASION_PCT_PER_POINT ?? 0),
+    energyShieldPct: p.int * (E.INT_ENERGY_SHIELD_PCT_PER_POINT ?? 0),
   };
 }
 

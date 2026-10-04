@@ -6,6 +6,10 @@
       "minLevel": 1000,
       "name": "Draevor Druid Over Rod",
       "attack": 100
+    },
+    "900002": {
+      "base": 7414,
+      "name": "Arco Bruto"
     }
   }
 }

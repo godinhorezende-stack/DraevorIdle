@@ -487,7 +487,19 @@ export function createGate({ send, onPlay }) {
   // Quantos `resume` de dentro do jogo ainda esperam resposta. Ver o `handle`.
   let pedidosDeConta = 0;
   let googleReady = false;
-  let vocation = 'knight';
+  let vocation = 'knight'; // o ID da CLASSE escolhida (a vocação mecânica é a `vocacaoBase` dela)
+  // As classes ATIVAS vêm do servidor (`/api/classes`: Editor de Classes); se a chamada falhar, as cinco vocações de sempre.
+  let classesDoServidor = null;
+  let efeitosPorPonto = [];
+  const classeEscolhida = () => (classesDoServidor ?? []).find((c) => c.id === vocation) ?? null;
+  const vocacaoDaClasse = () => classeEscolhida()?.vocacaoBase ?? vocation;
+  async function carregarClasses() {
+    try {
+      const r = await fetch('/api/classes', { cache: 'no-store' });
+      const d = r.ok ? await r.json() : null;
+      if (d?.classes?.length) { classesDoServidor = d.classes; efeitosPorPonto = d.efeitos ?? []; if (!classesDoServidor.some((c) => c.id === vocation)) vocation = classesDoServidor[0].id; }
+    } catch { /* fica com as vocações de sempre */ }
+  }
   let sex = 'male';
 
   const show = (pane) => {
@@ -1171,13 +1183,14 @@ export function createGate({ send, onPlay }) {
 
     // O botão diz o que vai criar: some a dúvida de "ficou selecionado o que eu
     // quis?" no instante do clique, que é quando ela importa.
-    const nome = VOCATION_INFO[vocation]?.name ?? '';
+    const nome = classeEscolhida()?.nome ?? VOCATION_INFO[vocation]?.name ?? '';
     criar.textContent = nome ? `Criar ${nome}` : 'Criar';
     criar.disabled = !!problema;
   }
 
-  $('new-character').onclick = () => {
+  $('new-character').onclick = async () => {
     show('pane-create');
+    await carregarClasses();
     renderSexes();
     renderVocations();
     const campo = $('form-create')?.elements?.name;
@@ -1195,19 +1208,25 @@ export function createGate({ send, onPlay }) {
   $('form-create').addEventListener('submit', (event) => {
     event.preventDefault();
     const data = new FormData(event.target);
-    send({ t: 'createCharacter', name: data.get('name'), vocation, sex });
+    // O servidor valida a classe (existe? está ativa?) e decide a vocação; o que vai daqui é só a escolha.
+    send({ t: 'createCharacter', name: data.get('name'), vocation: vocacaoDaClasse(), classe: vocation, sex });
   });
 
   function renderVocations() {
     const picker = $('vocation-picker');
     picker.innerHTML = '';
-    for (const [id, info] of Object.entries(VOCATION_INFO)) {
+    const lista = classesDoServidor ?? Object.entries(VOCATION_INFO).map(([id, i]) => ({ id, nome: i.name, descricao: i.blurb, icone: '', cor: null, vocacaoBase: id, atributosIniciais: null }));
+    for (const classe of lista) {
+      const id = classe.id;
+      const info = VOCATION_INFO[classe.vocacaoBase] ?? VOCATION_INFO.knight;
       const button = el('button', null);
       button.type = 'button';
+      if (classe.cor) button.style.setProperty('--cor-da-classe', classe.cor);
       // O CSS pinta o cenário de cada vocação por este atributo — ver
       // `.vocation-picker button[data-vocation=...]` em style.css.
-      button.dataset.vocation = id;
+      button.dataset.vocation = classe.vocacaoBase;
       button.setAttribute('aria-selected', String(vocation === id));
+      if (classe.cor) button.style.borderColor = classe.cor;
       // O boneco acompanha o sexo escolhido: trocar o sexo troca o looktype.
       /*
        * A ordem: NOME, boneco, ícones, descrição.
@@ -1255,7 +1274,13 @@ export function createGate({ send, onPlay }) {
       tela.height = TELA_DO_EFEITO;
       palco.append(tela);
 
-      button.append(el('b', null, info.name), palco, pericias, el('em', null, info.blurb));
+      // Os atributos INICIAIS da classe e o que cada ponto rende (tudo vem do servidor; nada fixo aqui).
+      const iniciais = classe.atributosIniciais ? el('div', 'vocation-atributos') : null;
+      if (iniciais) {
+        iniciais.append(el('span', null, `FOR ${classe.atributosIniciais.str}`), el('span', null, ` · DES ${classe.atributosIniciais.dex}`), el('span', null, ` · INT ${classe.atributosIniciais.int}`));
+        iniciais.title = efeitosPorPonto.length ? `Cada ponto: ${efeitosPorPonto.map((e) => `${e.rotulo.replace(/ por ponto de .*/, '')} +${e.valor}${e.unidade === '%' ? '%' : ''}`).join(' · ')}` : 'Atributos iniciais da classe';
+      }
+      button.append(el('b', null, `${classe.icone ? `${classe.icone} ` : ''}${classe.nome ?? info.name}`), palco, pericias, ...(iniciais ? [iniciais] : []), el('em', null, classe.descricao || info.blurb));
       button.onclick = () => {
         vocation = id;
         renderVocations();

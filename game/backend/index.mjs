@@ -25,9 +25,10 @@ import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as ModoBeta from '../systems/modo-beta.mjs';
 import * as Operacao from '../admin/operacao.mjs';
 import { criarAcesso } from '../admin/acesso.mjs';
-import { contaPorEmail, conferirSenha } from '../database/banco.mjs';
+import { contaPorEmail, conferirSenha, contarPersonagensPorClasse, migrarClasse } from '../database/banco.mjs';
+import * as Classes from '../systems/classes.mjs';
 import { criarGuarda } from '../admin/acesso-http.mjs';
-import { ligarHotReload as ligarHotReloadDaEngine } from '../admin/conteudo-http.mjs';
+import { ligarHotReload as ligarHotReloadDaEngine, ligarBancoDeClasses } from '../admin/conteudo-http.mjs';
 import { iniciarHotReload } from '../systems/hot-reload-estrategias.mjs';
 import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
 
@@ -138,12 +139,18 @@ const acessoDaEngine = criarAcesso({ deps: { contaPorEmail, conferirSenha } });
 // (`aoGravar`); o monitoramento de arquivos complementa. Ver `systems/hot-reload.mjs`.
 export const hotReload = iniciarHotReload({ producao: acessoDaEngine.config.producao });
 ligarHotReloadDaEngine(hotReload);
+ligarBancoDeClasses({ contar: contarPersonagensPorClasse, migrar: migrarClasse });
 const guardaDaEngine = criarGuarda(acessoDaEngine, { aoGravar: ({ rota, corpo }) => hotReload.aposGravacao(rota, corpo) });
 
 async function atender(req, res) {
   const url = new URL(req.url, 'http://x');
   const caminho = decodeURIComponent(url.pathname.split('?')[0]);
 
+  // As classes ATIVAS para a tela de criação de personagem (público: só nome, descrição, ícone, cor, atributos iniciais e bônus por ponto).
+  if (caminho === '/api/classes') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify(Classes.paraOCliente()));
+  }
   if (caminho === '/saude') {
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ ok: true, online: vivas.size }));

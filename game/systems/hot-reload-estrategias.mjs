@@ -11,6 +11,7 @@ import * as Poderes from './poderes.mjs';
 import * as Progressao from './progressao.mjs';
 import * as Conjuntos from './conjuntos.mjs';
 import * as ItemPower from './item-power.mjs';
+import * as ClassesDoJogo from './classes.mjs';
 import { nivelMaximo as nivelMaximoDaProgressao } from './progressao.mjs';
 import * as Campanha from './campanha.mjs';
 import { normalizar } from './atos-modelo.mjs';
@@ -74,6 +75,18 @@ export function criarEstrategias({ raiz = RAIZ, overrides = Overrides.PASTA, ato
       const r = Conjuntos.aplicar(ov, { estrito: true });
       if (!r.ok) throw new Error(`Overrides de conjuntos inválidos — ${r.erros.join(' | ')}.`);
       return { ids: Object.keys(Conjuntos.EM_USO), resumo: `${Object.keys(Conjuntos.EM_USO).length} conjunto(s)${r.avisos.length ? ` (${r.avisos.length} aviso(s))` : ''}`, payload: {} };
+    },
+  };
+
+  // ---------------------------------------------------------------- classes e bônus por atributo (muta a tabela que a engine lê: vale no próximo cálculo da ficha)
+  const classes = {
+    assinatura: () => assinaturaDe([arq('classes.json'), join(raiz, 'classes.json'), join(raiz, 'atributos-principais.json'), join(raiz, 'classes-meta.json')]),
+    aplicar() {
+      let ov = null;
+      if (existsSync(arq('classes.json'))) ov = lerJsonEstrito(arq('classes.json'), 'classes.json');
+      const r = ClassesDoJogo.aplicar(ov, { estrito: true });
+      if (!r.ok) throw new Error(`Overrides de classes inválidos — ${r.erros.join(' | ')}.`);
+      return { ids: Object.keys(ClassesDoJogo.EM_USO.classes), resumo: `${Object.keys(ClassesDoJogo.EM_USO.classes).length} classe(s)`, payload: {} };
     },
   };
 
@@ -199,7 +212,7 @@ export function criarEstrategias({ raiz = RAIZ, overrides = Overrides.PASTA, ato
     },
   };
   sprites.semear = () => { try { sprites.aplicar({ caminhos: [], ids: [] }); } catch { /* o boot segue com o que carregou */ } };
-  return { progressao, conjuntos, 'item-power': itemPower, 'sprites-itens': spritesItens, itens, monstros, sprites, campanha, atos: atosEstrategia };
+  return { progressao, classes, conjuntos, 'item-power': itemPower, 'sprites-itens': spritesItens, itens, monstros, sprites, campanha, atos: atosEstrategia };
 }
 
 /**

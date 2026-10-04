@@ -18,8 +18,8 @@ import { createHash } from 'node:crypto';
 import { watch, existsSync, readFileSync, statSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
-export const ORDEM_DE_RECARGA = ['progressao', 'itens', 'conjuntos', 'item-power', 'monstros', 'sprites', 'sprites-itens', 'campanha', 'atos'];
-export const ROTULOS = { 'sprites-itens': 'Sprites de itens', 'item-power': 'Item Power', conjuntos: 'Conjuntos', progressao: 'Progressão e loot', monstros: 'Monstros', itens: 'Itens', sprites: 'Sprites', atos: 'Acts', campanha: 'Campanha (níveis)' };
+export const ORDEM_DE_RECARGA = ['progressao', 'itens', 'classes', 'conjuntos', 'item-power', 'monstros', 'sprites', 'sprites-itens', 'campanha', 'atos'];
+export const ROTULOS = { classes: 'Classes e atributos', 'sprites-itens': 'Sprites de itens', 'item-power': 'Item Power', conjuntos: 'Conjuntos', progressao: 'Progressão e loot', monstros: 'Monstros', itens: 'Itens', sprites: 'Sprites', atos: 'Acts', campanha: 'Campanha (níveis)' };
 const IGNORAR_NOME = /(^\.|~$|\.(tmp|temp|bak|swp|swx|orig|rej|lock|part|crdownload)$|^\.#|^#.*#$|^4913$|\.jsonl$|\.md$)/;
 const IGNORAR_PASTA = new Set(['_versoes', 'node_modules', '.git', 'hunts-imagens']);
 const MS_DO_ATUALIZADO = 4000;
@@ -51,6 +51,7 @@ export function classificar(caminho) {
   if (c === 'overrides/progressao.json') return { tipo: 'progressao', quente: true };
   if (c === 'overrides/conjuntos.json') return { tipo: 'conjuntos', quente: true };
   if (c === 'overrides/item-power.json') return { tipo: 'item-power', quente: true };
+  if (c === 'overrides/classes.json') return { tipo: 'classes', quente: true };
   if (c === 'overrides/sprites.json') return { tipo: 'sprites', quente: true };
   if (c === 'overrides/itens-sprites.json' || /^overrides\/sprites\/itens\/\d+\.png$/.test(c)) return { tipo: 'sprites-itens', quente: true };
   let m = /^overrides\/sprites\/(\d+)\.png$/.exec(c);
@@ -265,6 +266,7 @@ export function caminhosDaRota(rota, corpo = null) {
   if (r === 'progressao') return ['overrides/progressao.json'];
   if (r === 'conjuntos') return ['overrides/conjuntos.json'];
   if (r === 'item-power') return ['overrides/item-power.json'];
+  if (r === 'classes') return ['overrides/classes.json'];
   if (r === 'item-power/edicao') return ['overrides/itens.json'];
   if (r === 'sprites-itens') return ['overrides/itens-sprites.json', ...(corpo?.id && /^\d+$/.test(String(corpo.id)) ? [`overrides/sprites/itens/${corpo.id}.png`] : [])];
   if (r === 'overrides/sprites') return ['overrides/sprites.json', ...(corpo?.look && /^\d+$/.test(String(corpo.look)) ? [`overrides/sprites/${corpo.look}.png`] : [])];
