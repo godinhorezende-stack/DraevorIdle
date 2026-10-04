@@ -127,7 +127,7 @@ export function criarTelaDeItensPoe({ raiz }) {
       el('div', { class: 'eng-tooltip-barra' }, el('label', { class: 'campo', style: 'flex:none' }, 'Raridade', selRar), el('label', { class: 'campo', style: 'flex:none' }, 'Item Level', nivel),
         el('button', { type: 'button', onclick: () => { T.semente++; pintarPainel(); } }, 'Sortear outras'), el('span', { class: 'dica' }, `semente ${T.semente}`)),
       el('div', { class: 'eng-tooltip-grade' }, r.pecas.map((p) => balao(p, regras, b))),
-      el('p', { class: 'dica' }, `Regras da documentação (poe-itens/Raridades): ${regras.ordem.map((x) => { const R = regras.raridades[x]; return R.fixos ? `${R.nome} = mods fixos` : `${R.nome} até ${R.maxPrefixos}+${R.maxSufixos}`; }).join(' · ')}. A quantidade de mods do Mágico (1–2) e do Raro (4–6, pesos 8/3/1) é conhecimento geral do PoE — a coleção não traz.`),
+      el('p', { class: 'dica' }, `Regras da documentação (poe-itens/Raridades): ${regras.ordem.map((x) => { const R = regras.raridades[x]; return R.fixos ? `${R.nome} = mods fixos` : `${R.nome} até ${R.maxPrefixos}+${R.maxSufixos}`; }).join(' · ')}. Quantos mods (regras do dono): ${['magico', 'raro'].map((x) => { const q = regras.raridades[x].quantidade; const t = Object.values(q).reduce((a, b) => a + b, 0); return `${regras.raridades[x].nome} ${Object.entries(q).map(([n, p]) => `${n} = ${Math.round((p / t) * 100)}%`).join(', ')}`; }).join(' · ')}.`),
     ];
   }
 

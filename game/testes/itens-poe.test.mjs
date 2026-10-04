@@ -53,7 +53,8 @@ test('as regras de raridade são as da documentação (Normal 0, Mágico 1+1, Ra
   assert.deepEqual(R.ordem, ['normal', 'magico', 'raro', 'unico']);
   assert.deepEqual([R.raridades.magico.maxPrefixos, R.raridades.magico.maxSufixos], [1, 1]);
   assert.deepEqual([R.raridades.raro.maxPrefixos, R.raridades.raro.maxSufixos], [3, 3]);
-  assert.deepEqual(Object.keys(R.raridades.raro.quantidade).map(Number), [4, 5, 6]);
+  assert.deepEqual(R.raridades.raro.quantidade, { 4: 80, 5: 15, 6: 5 });
+  assert.deepEqual(R.raridades.magico.quantidade, { 1: 1, 2: 1 });
   assert.equal(R.raridades.unico.fixos, true);
 });
 
@@ -104,7 +105,8 @@ test('Raro: 4 a 6 mods, nunca mais de 3 de um lado, família nunca repete, valor
     }
     contagem[mods.length] = (contagem[mods.length] ?? 0) + 1;
   }
-  assert.ok(contagem[4] > contagem[5] && contagem[5] > contagem[6], JSON.stringify(contagem));
+  // Regra do dono (04/10): 4 mods ~80%, 5 ~15%, 6 ~5%.
+  assert.ok(Math.abs(contagem[4] / 2000 - 0.8) < 0.03 && Math.abs(contagem[5] / 2000 - 0.15) < 0.03 && Math.abs(contagem[6] / 2000 - 0.05) < 0.02, JSON.stringify(contagem));
 });
 
 test('Item Level: tier acima do iLvl da peça não sai; a base e o implícito são sorteados nas faixas', () => {
