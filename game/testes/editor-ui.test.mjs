@@ -24,7 +24,7 @@ test('linhaColuna conta a partir de 1', () => {
 
 test('a navegação só tem itens com tela de verdade e mantém as rotas antigas', () => {
   const ed = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
-  const abas = [...ed.matchAll(/\['(\w+)', '[^']+'\]/g)].map((m) => m[1]);
+  const abas = [...ed.matchAll(/\['([\w-]+)', '[^']+'\]/g)].map((m) => m[1]);
   for (const a of ['geral', 'fase', 'mapa', 'bosses', 'biblioteca', 'atos']) assert.ok(abas.includes(a), a);
   const ids = [...ed.slice(ed.indexOf('const GRUPOS'), ed.indexOf('function desenharAbas')).matchAll(/id: '([\w-]+)'/g)].map((m) => m[1]);
   for (const id of ids) assert.ok(abas.includes(id) || id === 'mapas', `item de navegação sem tela: ${id}`);

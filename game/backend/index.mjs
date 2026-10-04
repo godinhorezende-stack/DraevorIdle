@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
 import * as ConteudoHttp from '../admin/conteudo-http.mjs';
+import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
 import * as Estaticos from './estaticos.mjs';
@@ -160,6 +161,8 @@ async function atender(req, res) {
     }
   }
   if (await ConteudoHttp.atender(req, res, caminho, url, { json, corpoJson })) return;
+  // O sistema de itens no modelo do PoE (Fase 1): só leitura, e só com ITENS_POE=1 (desligado em produção).
+  if (await ItensPoeHttp.atender(req, res, caminho, url, { json })) return;
   if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
     return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, cidade: Mapas.cidadeParaEditor(), criaturasPorHunt: Mapas.criaturasPorHunt(), ...Mapas.raridadesParaEditor() });
   }
