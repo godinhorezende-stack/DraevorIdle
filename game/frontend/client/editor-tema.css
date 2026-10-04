@@ -910,3 +910,18 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .ip-aviso { font-style: italic; }
 .conj-linha.ativa { background: var(--eng-s2, rgba(106, 167, 255, .12)); }
 @media (max-width: 900px) { .ip-duas { grid-template-columns: 1fr; } }
+.ip-sujo { outline: 2px solid var(--eng-destaque, #6aa7ff); }
+.ip-orig { font-size: 11px; opacity: .7; }
+.ip-editor input:disabled { opacity: .75; }
+
+/* Editor de itens — atributos-base e Item Power */
+.itm-rolagem { overflow-x: auto; }
+.itm-modificado { outline: 2px solid var(--eng-destaque, #6aa7ff); background: var(--eng-s2, rgba(106, 167, 255, .1)); }
+.itm-linha-mod td { background: var(--eng-s2, rgba(106, 167, 255, .08)); }
+.itm-total td { font-weight: 600; border-top: 1px solid var(--eng-linha, #3a3f4b); }
+.itm-legenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; opacity: .85; margin: 4px 0 8px; }
+.itm-modificado-ex { outline: 2px solid var(--eng-destaque, #6aa7ff); padding: 0 6px; }
+.itm-mini { display: block; }
+.itm-rapido { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.ip-painel { border: 1px solid var(--eng-linha, #3a3f4b); border-radius: 8px; padding: 8px 12px; margin: 10px 0; }
+.ip-grande { font-size: 1.15rem; }

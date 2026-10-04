@@ -19,6 +19,7 @@ import * as OverridesProgressao from './overrides-progressao.mjs';
 import * as OverridesConjuntos from './overrides-conjuntos.mjs';
 import * as OverridesItemPower from './overrides-item-power.mjs';
 import * as AnaliseItemPower from './item-power-analise.mjs';
+import * as EditorItemPower from './item-power-editor.mjs';
 import * as ItemPower from '../systems/item-power.mjs';
 import * as Conjuntos from '../systems/conjuntos.mjs';
 import * as Progressao from '../systems/progressao.mjs';
@@ -30,6 +31,13 @@ const PREFIXO = '/api/mapas/_conteudo/';
 /** Atende a rota se for do editor de conteúdo; devolve `true` quando atendeu. */
 /** 200 normalmente; 409 quando o salvar foi recusado por conflito de revisão (o corpo explica). */
 const status = (r) => (r?.codigo === 'conflito' ? 409 : 200);
+/** Depois de gravar `itens.json`, `aplicar: true` recarrega o catálogo em memória AGORA (Hot Reload 'itens') e conta o resultado: o que o Item Power mostra e o que o jogo usa só mudam quando isso acontece. */
+async function comRecargaDeItens(r, aplicar) {
+  if (!r?.ok || r.semMudancas || aplicar !== true) return r;
+  if (!hot?.estadoAtual().ativo) return { ...r, hotReload: { aplicado: false, motivo: `Hot Reload desligado: ${(hot?.estadoAtual() ?? SEM_HOT).motivoInativo}` } };
+  const h = await hot.recarregar('itens');
+  return { ...r, hotReload: h.ok === false ? { aplicado: false, motivo: h.erro ?? 'a recarga falhou (a última versão válida segue em uso)' } : { aplicado: true, resumo: h.resumo ?? null } };
+}
 
 // O Hot Reload (systems/hot-reload.mjs) é ligado pelo backend; sem ele (testes, produção) a Engine vê "desligado".
 let hot = null;
@@ -85,6 +93,16 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'item-power/versoes') return json(res, 200, { versoes: OverridesItemPower.versoes() }), true;
     if (rota === 'item-power/itens') return json(res, 200, OverridesItemPower.listarItens(Object.fromEntries(url.searchParams))), true;
     if (rota === 'item-power/hunts') return json(res, 200, { hunts: AnaliseItemPower.huntsComMonstros().map((h) => ({ id: h.id, nome: h.nome, categoria: h.categoria, level: h.levelCadastro, ato: h.fase?.ato ?? null, monstros: h.monstros.length })) }), true;
+    // Item Power — editor de nível e atributos-base (pelos overrides de itens): estado de um item, histórico, comparação de versões e quantos itens um filtro pega — só leitura.
+    if (rota.startsWith('item-power/edicao/')) {
+      const id = decodeURIComponent(rota.slice('item-power/edicao/'.length));
+      const original = OverridesItens.originalDe(id);
+      if (!original) return json(res, 404, { ok: false, erros: ['Equipamento não encontrado.'] }), true;
+      return json(res, 200, { ...EditorItemPower.previaDoItem(id, {}), metaOriginal: original, override: OverridesItens.obter(id)?.override ?? null, revisao: OverridesItens.obter(id)?.revisao, camposEditaveis: EditorItemPower.CAMPOS_EDITAVEIS, somenteLeituraMotivos: EditorItemPower.SOMENTE_LEITURA }), true;
+    }
+    if (rota === 'item-power/historico') return json(res, 200, EditorItemPower.historico({ limite: url.searchParams.get('limite'), id: url.searchParams.get('id') })), true;
+    if (rota === 'item-power/versoes-comparar') { const r = EditorItemPower.compararVersoes(url.searchParams.get('de'), url.searchParams.get('para') ?? 'atual', url.searchParams.get('id')); return json(res, r.ok ? 200 : 404, r), true; }
+    if (rota === 'item-power/selecionar') { const ids = EditorItemPower.selecionar(Object.fromEntries(url.searchParams)); return json(res, 200, { total: ids.length, ids: ids.slice(0, 200) }), true; }
     if (rota === 'item-power/marcos') return json(res, 200, AnaliseItemPower.presentesDeMarco()), true;
     if (rota === 'item-power/alertas') return json(res, 200, AnaliseItemPower.alertasDeDistribuicao(url.searchParams.get('dif') ?? 'facil', ItemPower.EM_USO, { limite: url.searchParams.get('limite') })), true;
     if (rota.startsWith('item-power/item/')) {
@@ -186,10 +204,22 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       return json(res, 200, { ...r, ...(r.ok === false && r.erro ? { erros: [r.erro] } : {}), estado: hot.estadoAtual() }), true;
     }
     // Aprovar congela as alterações escolhidas numa versão (cópia + hash); descartar cancela uma ainda não enviada. Gravam só em `database/dados/versoes` (ambiente local).
+    // Item Power — editor de atributos-base: prévia de edição e de lote, e proposta de curva (só leem); salvar/restaurar gravam em `overrides/itens.json`.
+    if (rota === 'item-power/edicao-previa') return json(res, 200, EditorItemPower.previa(dados?.edicoes ?? {}, { origem: dados?.origem })), true;
+    if (rota === 'item-power/lote-previa') return json(res, 200, EditorItemPower.previaDeLote(dados ?? {})), true;
+    if (rota === 'item-power/curva-proposta') return json(res, 200, EditorItemPower.propostaDeCurva(dados ?? {})), true;
+    if (rota === 'item-power/edicao') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(await comRecargaDeItens(EditorItemPower.salvar({ edicoes: dados.edicoes, origem: dados.origem, rotulo: dados.rotulo, aprovados: dados.aprovados, aprovarTodos: dados.aprovarTodos === true, revisao: dados.revisao }), dados.aplicar));
+      if (a === 'restaurar') return responder(await comRecargaDeItens(EditorItemPower.restaurar({ ids: dados.ids, filtros: dados.filtros ?? null, campos: dados.campos, rotulo: dados.rotulo, revisao: dados.revisao })));
+      if (a === 'restaurar-versao') return responder(await comRecargaDeItens(EditorItemPower.restaurarVersao(dados.versao, dados.revisao)));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, restaurar ou restaurar-versao.'] }), true;
+    }
     // Item Power: validar/prévia, simular, comparar e avaliar uma regra (só leem); salvar/reverter/restaurar gravam.
     if (rota === 'item-power/validar') return json(res, 200, OverridesItemPower.propor(dados?.override ?? null)), true;
     if (rota === 'item-power/simular') { const r = OverridesItemPower.simular(dados ?? {}); return json(res, r.ok ? 200 : 400, r), true; }
-    if (rota === 'item-power/comparar') { const r = OverridesItemPower.comparar(dados?.ids); return json(res, r.ok ? 200 : 400, r), true; }
+    if (rota === 'item-power/comparar') { const r = Array.isArray(dados?.entradas) ? EditorItemPower.compararEntradas(dados.entradas) : OverridesItemPower.comparar(dados?.ids); return json(res, r.ok ? 200 : 400, r), true; }
     if (rota === 'item-power/regra') return json(res, 200, AnaliseItemPower.avaliarRegra(dados?.regra ?? {})), true;
     if (rota === 'item-power') {
       const a = dados?.acao;
@@ -260,12 +290,15 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       if (a === 'restaurar') return responder(OverridesSprites.restaurarVersao(look, dados.versao, dados.revisao));
       return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
     }
+    // Painel de Item Power do editor de itens (atributos original × atual × simulado, IP, composição, curva, alertas) e a resolução de um alvo de Armour/Evasion/Energy Shield — só leem.
+    if (rota === 'overrides/itens/poder') { const r = EditorItemPower.poderDoOverride(String(dados?.id ?? ''), dados?.override ?? null, undefined, dados?.arma ?? null); return json(res, r.ok === false && !r.id ? 404 : 200, r), true; }
+    if (rota === 'item-power/resolver-defesa') { const r = EditorItemPower.resolverDefesa(String(dados?.id ?? ''), dados?.override ?? null, String(dados?.tipo ?? ''), dados?.valor); return json(res, r.ok ? 200 : 400, r), true; }
     if (rota === 'overrides/itens/validar') return json(res, 200, OverridesItens.propor(String(dados?.id ?? ''), dados?.override ?? null)), true;
     if (rota === 'overrides/itens') {
       const a = dados?.acao;
       const responder = (r) => (json(res, status(r), r), true);
-      if (a === 'salvar') return responder(OverridesItens.salvar(String(dados.id ?? ''), dados.override ?? null, dados.revisao));
-      if (a === 'reverter') return responder(OverridesItens.reverter(String(dados.id ?? ''), dados.revisao));
+      if (a === 'salvar') return responder(await comRecargaDeItens(OverridesItens.salvar(String(dados.id ?? ''), dados.override ?? null, dados.revisao), dados.aplicar));
+      if (a === 'reverter') return responder(await comRecargaDeItens(OverridesItens.reverter(String(dados.id ?? ''), dados.revisao), dados.aplicar));
       if (a === 'ativo') return responder(OverridesItens.definirAtivo(dados.ativo, dados.id ?? null, dados.revisao));
       if (a === 'restaurar') return responder(OverridesItens.restaurar(dados.versao, dados.revisao));
       return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;

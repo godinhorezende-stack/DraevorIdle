@@ -8,6 +8,7 @@ import * as O from '../systems/overrides.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { desenhoDoItem } from './biblioteca.mjs';
 import { criarArquivoVersionado, revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
+import * as Itens from './overrides-itens.mjs';
 
 export const CAMINHOS = { arquivo: IP.ARQUIVO_DE_OVERRIDE, versoes: join(O.PASTA, '_versoes', 'item-power') };
 const COMO_PUBLICAR = 'O arquivo gamedata/overrides/item-power.json foi gravado neste servidor e o Hot Reload local já o aplicou. Para valer na produção: faça commit e publique pelo deploy. O Item Power é só um indicador: não muda item, drop nem combate.';
@@ -97,11 +98,20 @@ export const versoes = () => arq().versoes();
 
 // ---------------------------------------------------------------- consultas (sobre a configuração EM USO ou uma candidata)
 const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-const slim = (f) => ({ id: f.id, nome: f.nome, slot: f.slot, categoria: f.categoria, raridade: f.raridade, vocations: f.vocations, minLevel: f.minLevel, ip: f.ip, esperado: f.esperado, diferenca: f.diferenca, diferencaPct: f.diferencaPct, situacao: f.situacao, atributos: f.atributos, desenho: desenhoDoItem(ITEM_CATALOG[f.id]) });
+const EDITAVEIS = ['name', 'minLevel', 'rarity', 'attack', 'defense', 'armor'];
+const slim = (f, modificados = null) => ({ modificado: !!modificados?.[f.id], original: modificados?.[f.id] ? origem(f.id) : null, id: f.id, nome: f.nome, slot: f.slot, categoria: f.categoria, raridade: f.raridade, vocations: f.vocations, minLevel: f.minLevel, ip: f.ip, esperado: f.esperado, diferenca: f.diferenca, diferencaPct: f.diferencaPct, situacao: f.situacao, atributos: f.atributos, desenho: desenhoDoItem(ITEM_CATALOG[f.id]) });
+
+/** Os valores ORIGINAIS (catálogo importado) de um item modificado, com o IP que ele teria. */
+function origem(id) {
+  const m = Itens.originalDe(id);
+  const f = m ? IP.fichaDoMeta(m, IP.EM_USO) : null;
+  return m ? { minLevel: m.minLevel ?? null, attack: m.attack ?? 0, defense: m.defense ?? 0, armor: m.armor ?? 0, nome: m.name, rarity: m.rarity ?? null, ip: f?.ip ?? null } : null;
+}
 
 /** A lista de itens com filtros (slot, classe, raridade, level, situação, nome/ID), ordenada e paginada. */
-export function listarItens({ q = '', slot = '', classe = '', raridade = '', nivelMin = '', nivelMax = '', situacao = '', ordem = 'level', pagina = 0, limite = 60, incluirCraft = '' } = {}, cfg = IP.EM_USO) {
+export function listarItens({ q = '', modificado = '', slot = '', classe = '', raridade = '', nivelMin = '', nivelMax = '', situacao = '', ordem = 'level', pagina = 0, limite = 60, incluirCraft = '' } = {}, cfg = IP.EM_USO) {
   const t = norm(q).trim();
+  const modificadosIds = new Set(Object.entries(Itens.lerDados().itens).filter(([, ov]) => EDITAVEIS.some((k) => k in ov)).map(([id]) => id));
   let l = IP.fichasDoCatalogo(cfg, { incluirCraft: incluirCraft === true || incluirCraft === 'true' || incluirCraft === '1' }).filter((f) => {
     if (slot && f.slot !== slot) return false;
     if (classe && f.vocations.length && !f.vocations.includes(classe)) return false;
@@ -109,13 +119,16 @@ export function listarItens({ q = '', slot = '', classe = '', raridade = '', niv
     if (nivelMin !== '' && (f.minLevel ?? -1) < Number(nivelMin)) return false;
     if (nivelMax !== '' && (f.minLevel ?? Infinity) > Number(nivelMax)) return false;
     if (situacao && f.situacao !== situacao) return false;
+    if (modificado === '1' && !modificadosIds.has(String(f.id))) return false;
     if (t && !norm(f.nome).includes(t) && String(f.id) !== t) return false;
     return true;
   });
   const ordens = { level: (a, b) => (a.minLevel ?? 9999) - (b.minLevel ?? 9999) || b.ip - a.ip, ip: (a, b) => b.ip - a.ip, diferenca: (a, b) => (b.diferencaPct ?? -9) - (a.diferencaPct ?? -9), nome: (a, b) => a.nome.localeCompare(b.nome) };
   l = l.sort(ordens[ordem] ?? ordens.level);
   const lim = Math.min(200, Math.max(1, Number(limite) || 60)); const pag = Math.max(0, Number(pagina) || 0);
-  return { total: l.length, pagina: pag, itens: l.slice(pag * lim, pag * lim + lim).map(slim) };
+  const ovs = Itens.lerDados().itens;
+  const modificados = Object.fromEntries(Object.entries(ovs).filter(([, ov]) => EDITAVEIS.some((k) => k in ov)).map(([id]) => [id, true]));
+  return { total: l.length, pagina: pag, revisaoItens: revisaoDe(Itens.CAMINHOS.arquivo), modificados: Object.keys(modificados).length, itens: l.slice(pag * lim, pag * lim + lim).map((f) => slim(f, modificados)) };
 }
 
 /** O detalhamento de UM item (contribuição de cada atributo, esperado, classe). */

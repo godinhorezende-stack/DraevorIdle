@@ -14,6 +14,8 @@
 //
 // Funções PURAS (testadas); o boot (`dados.mjs`, `poderes.mjs`) só chama `aplicarNoBestiario`/`aplicarNosPoderes`. Entrada inválida é IGNORADA com aviso
 // no log — nunca derruba o servidor nem afeta os outros monstros.
+import { requisitoDe } from './personagem/requisitos.mjs';
+import { validarBaseDaArma } from '../engine/arma.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
@@ -178,7 +180,10 @@ export function aplicarNosPoderes(poderes, dados) {
 // acima do preço calculado (`itens/preco-de-venda.mjs`) e tira a marca `sellCalculado`.
 // =====================================================================================================================
 export const RARIDADES_DE_ITEM = ['comum', 'incomum', 'raro', 'épico', 'lendário', 'mítico'];
-export const CAMPOS_DE_ITEM = ['name', 'weight', 'buy', 'sell', 'attack', 'defense', 'armor', 'minLevel', 'rarity', 'imbuementSlots'];
+// Os campos de BASE DE ARMA (`attackMin/attackMax` = dano físico mín./máx., `aps`, `critChance` em centésimos de %, `range`, `reqStr/reqDex/reqInt`) seguem o catálogo/`engine/arma.mjs`: sem eles a arma
+// usa `attack` único, o APS de hoje (0,5) e nenhum requisito — o combate de antes não muda.
+export const CAMPOS_DE_ARMA = ['attackMin', 'attackMax', 'aps', 'critChance', 'range', 'reqStr', 'reqDex', 'reqInt'];
+export const CAMPOS_DE_ITEM = ['name', 'weight', 'buy', 'sell', 'attack', 'defense', 'armor', 'minLevel', 'rarity', 'imbuementSlots', ...CAMPOS_DE_ARMA];
 const CAMPOS_PERMITIDOS_DE_ITEM = new Set([...CAMPOS_DE_ITEM, 'ativo']);
 
 /** Valida UM override de item. `ctx`: `{ original: item do catálogo (ou null) }`. `{ erros, avisos }`. */
@@ -194,6 +199,8 @@ export function validarItem(id, ov, ctx) {
   for (const [c, max] of [['buy', 2_000_000_000], ['sell', 2_000_000_000], ['attack', 100_000], ['defense', 100_000], ['armor', 100_000], ['minLevel', 5000], ['imbuementSlots', 10]]) {
     if (ov[c] !== undefined && !inteiro(ov[c], 0, max)) erros.push(`${onde}: ${c} precisa ser um inteiro de 0 a ${max.toLocaleString('pt-BR')}.`);
   }
+  for (const e of validarBaseDaArma(ov)) erros.push(`${onde}: ${e}`);
+  if (ctx.original && CAMPOS_DE_ARMA.some((c) => ov[c] !== undefined) && ctx.original.slot !== 'weapon') erros.push(`${onde}: os campos de base de arma (${CAMPOS_DE_ARMA.join(', ')}) só valem para armas (este item é ${ctx.original.slot ?? 'sem slot'}).`);
   if (ov.rarity !== undefined && !RARIDADES_DE_ITEM.includes(ov.rarity)) erros.push(`${onde}: raridade "${ov.rarity}" desconhecida (${RARIDADES_DE_ITEM.join(', ')}).`);
   if (ctx.original) {
     for (const c of ['attack', 'defense', 'armor', 'minLevel', 'imbuementSlots']) if (ov[c] !== undefined && ctx.original[c] === undefined && ov[c] !== 0) avisos.push(`${onde}: o item original não tem ${c} (é ${ctx.original.slot ? `um ${ctx.original.slot}` : 'um item sem slot de equipamento'}): o valor só faz efeito onde o jogo lê esse campo.`);
@@ -209,6 +216,8 @@ export function aplicarNoItem(original, ov) {
   const m = structuredClone(original);
   for (const c of CAMPOS_DE_ITEM) if (ov[c] !== undefined) m[c] = ov[c];
   if (ov.sell !== undefined) delete m.sellCalculado;
+  // O requisito de atributo é DERIVADO do nível/classe (ou dos `req*` explícitos): muda junto com eles.
+  if (['minLevel', 'reqStr', 'reqDex', 'reqInt'].some((c) => ov[c] !== undefined)) { const req = requisitoDe(m); if (req) m.requisito = req; else delete m.requisito; }
   return m;
 }
 

@@ -91,13 +91,19 @@ export function faixaDoCampo(p, campo) {
     const v = defesaDoCatalogo(meta)[campo] ?? 0;
     return v > 0 ? [v, v] : [0, 0];
   }
+  // Base de arma com FAIXA própria (`attackMin`/`attackMax`, `engine/arma.mjs`): é o dano físico da base; sem ela, o `attack` único.
+  if (campo === 'attack' && (meta?.attackMin != null || meta?.attackMax != null)) {
+    const unico = Math.floor(Number(meta.attack)) || 0;
+    const lo = Math.floor(Number(meta.attackMin ?? unico)) || 0; const hi = Math.floor(Number(meta.attackMax ?? unico)) || 0;
+    return [Math.min(lo, hi), Math.max(lo, hi)];
+  }
   const v = Math.floor(Number(meta?.[campo]));
   return v > 0 ? [v, v] : [0, 0];
 }
 
 const DEFESAS = new Set(['armor', 'evasion', 'es']);
 /** A defesa de uma peça do catálogo sem sorteio: a armadura dele no tipo da base (joia: Armour). */
-function defesaDoCatalogo(meta) {
+export function defesaDoCatalogo(meta) {
   const armadura = Math.floor(Number(meta?.armor));
   if (!(armadura > 0)) return {};
   if (SLOTS_DE_JOIA.has(meta.slot) || !aceitaAtributos(meta.id)) return { armor: armadura };
