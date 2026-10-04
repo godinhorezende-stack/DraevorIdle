@@ -17,6 +17,9 @@ import * as GitEnvio from './git-envio.mjs';
 import * as GitIntegracao from './git-integracao.mjs';
 import * as OverridesProgressao from './overrides-progressao.mjs';
 import * as OverridesConjuntos from './overrides-conjuntos.mjs';
+import * as OverridesItemPower from './overrides-item-power.mjs';
+import * as AnaliseItemPower from './item-power-analise.mjs';
+import * as ItemPower from '../systems/item-power.mjs';
 import * as Conjuntos from '../systems/conjuntos.mjs';
 import * as Progressao from '../systems/progressao.mjs';
 import * as Simulador from '../systems/itens/simulador-de-loot.mjs';
@@ -76,6 +79,22 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota.startsWith('conjuntos/totais/')) {
       const c = Conjuntos.obter(decodeURIComponent(rota.slice('conjuntos/totais/'.length)));
       return c ? json(res, 200, OverridesConjuntos.totais(c, { level: url.searchParams.get('level') })) : json(res, 404, { ok: false, erros: ['Conjunto não encontrado.'] }), true;
+    }
+    // Item Power Base (indicador de comparação dos atributos base): configuração, lista de itens, detalhe, curva, alertas de distribuição e presentes de marco — só leitura.
+    if (rota === 'item-power') return json(res, 200, OverridesItemPower.obter()), true;
+    if (rota === 'item-power/versoes') return json(res, 200, { versoes: OverridesItemPower.versoes() }), true;
+    if (rota === 'item-power/itens') return json(res, 200, OverridesItemPower.listarItens(Object.fromEntries(url.searchParams))), true;
+    if (rota === 'item-power/hunts') return json(res, 200, { hunts: AnaliseItemPower.huntsComMonstros().map((h) => ({ id: h.id, nome: h.nome, categoria: h.categoria, level: h.levelCadastro, ato: h.fase?.ato ?? null, monstros: h.monstros.length })) }), true;
+    if (rota === 'item-power/marcos') return json(res, 200, AnaliseItemPower.presentesDeMarco()), true;
+    if (rota === 'item-power/alertas') return json(res, 200, AnaliseItemPower.alertasDeDistribuicao(url.searchParams.get('dif') ?? 'facil', ItemPower.EM_USO, { limite: url.searchParams.get('limite') })), true;
+    if (rota.startsWith('item-power/item/')) {
+      const d = OverridesItemPower.itemDetalhado(decodeURIComponent(rota.slice('item-power/item/'.length)));
+      return d ? json(res, 200, { ...d, ondeCai: AnaliseItemPower.ondeCai(d.id, url.searchParams.get('dif') ?? 'facil') }) : json(res, 404, { ok: false, erros: ['Equipamento não encontrado.'] }), true;
+    }
+    if (rota.startsWith('item-power/curva/')) { const r = OverridesItemPower.curva(decodeURIComponent(rota.slice('item-power/curva/'.length))); return json(res, r.ok ? 200 : 404, r), true; }
+    if (rota.startsWith('item-power/hunt/')) {
+      const a = AnaliseItemPower.analisarHunt(decodeURIComponent(rota.slice('item-power/hunt/'.length)), url.searchParams.get('dif') ?? 'facil');
+      return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Hunt não encontrada.'] }), true;
     }
     // O painel de alterações (original × atual) e as versões aprovadas (somente leitura).
     if (rota === 'alteracoes') return json(res, 200, Versoes.alteracoes()), true;
@@ -167,6 +186,19 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       return json(res, 200, { ...r, ...(r.ok === false && r.erro ? { erros: [r.erro] } : {}), estado: hot.estadoAtual() }), true;
     }
     // Aprovar congela as alterações escolhidas numa versão (cópia + hash); descartar cancela uma ainda não enviada. Gravam só em `database/dados/versoes` (ambiente local).
+    // Item Power: validar/prévia, simular, comparar e avaliar uma regra (só leem); salvar/reverter/restaurar gravam.
+    if (rota === 'item-power/validar') return json(res, 200, OverridesItemPower.propor(dados?.override ?? null)), true;
+    if (rota === 'item-power/simular') { const r = OverridesItemPower.simular(dados ?? {}); return json(res, r.ok ? 200 : 400, r), true; }
+    if (rota === 'item-power/comparar') { const r = OverridesItemPower.comparar(dados?.ids); return json(res, r.ok ? 200 : 400, r), true; }
+    if (rota === 'item-power/regra') return json(res, 200, AnaliseItemPower.avaliarRegra(dados?.regra ?? {})), true;
+    if (rota === 'item-power') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesItemPower.salvar(dados.override, dados.revisao));
+      if (a === 'reverter') return responder(OverridesItemPower.reverter(dados.revisao));
+      if (a === 'restaurar') return responder(OverridesItemPower.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter ou restaurar.'] }), true;
+    }
     // Conjuntos: validar/prévia, totais de um conjunto em edição e modelos iniciais (só leem); salvar/reverter/ativo/restaurar gravam.
     if (rota === 'conjuntos/validar') return json(res, 200, OverridesConjuntos.propor(dados?.override ?? null)), true;
     if (rota === 'conjuntos/totais') return json(res, 200, OverridesConjuntos.totais(dados?.conjunto ?? {}, { level: dados?.level })), true;

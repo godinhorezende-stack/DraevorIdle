@@ -10,6 +10,8 @@ import { CATALOGO, ITEM_CATALOG, ESTADO_DO_BESTIARIO, ESTADO_DE_ITENS } from './
 import * as Poderes from './poderes.mjs';
 import * as Progressao from './progressao.mjs';
 import * as Conjuntos from './conjuntos.mjs';
+import * as ItemPower from './item-power.mjs';
+import { nivelMaximo as nivelMaximoDaProgressao } from './progressao.mjs';
 import * as Campanha from './campanha.mjs';
 import { normalizar } from './atos-modelo.mjs';
 import { PASTA as PASTA_DOS_ATOS } from './atos-carregar.mjs';
@@ -72,6 +74,18 @@ export function criarEstrategias({ raiz = RAIZ, overrides = Overrides.PASTA, ato
       const r = Conjuntos.aplicar(ov, { estrito: true });
       if (!r.ok) throw new Error(`Overrides de conjuntos inválidos — ${r.erros.join(' | ')}.`);
       return { ids: Object.keys(Conjuntos.EM_USO), resumo: `${Object.keys(Conjuntos.EM_USO).length} conjunto(s)${r.avisos.length ? ` (${r.avisos.length} aviso(s))` : ''}`, payload: {} };
+    },
+  };
+
+  // ---------------------------------------------------------------- item power (indicador de comparação: só da Engine, sem mecânica de jogo a recarregar)
+  const itemPower = {
+    assinatura: () => assinaturaDe([arq('item-power.json'), arq('progressao.json')]),
+    aplicar() {
+      let ov = null;
+      if (existsSync(arq('item-power.json'))) ov = lerJsonEstrito(arq('item-power.json'), 'item-power.json');
+      const r = ItemPower.aplicar(ov, { estrito: true, nivelMaximo: nivelMaximoDaProgressao() });
+      if (!r.ok) throw new Error(`Overrides de item power inválidos — ${r.erros.join(' | ')}.`);
+      return { ids: ['item-power'], resumo: `fórmula v${ItemPower.EM_USO.versaoDaFormula}${r.avisos.length ? ` (${r.avisos.length} aviso(s))` : ''}`, payload: {} };
     },
   };
 
@@ -174,7 +188,7 @@ export function criarEstrategias({ raiz = RAIZ, overrides = Overrides.PASTA, ato
     },
   };
   sprites.semear = () => { try { sprites.aplicar({ caminhos: [], ids: [] }); } catch { /* o boot segue com o que carregou */ } };
-  return { progressao, conjuntos, itens, monstros, sprites, campanha, atos: atosEstrategia };
+  return { progressao, conjuntos, 'item-power': itemPower, itens, monstros, sprites, campanha, atos: atosEstrategia };
 }
 
 /**
