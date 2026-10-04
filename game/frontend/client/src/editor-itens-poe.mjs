@@ -17,6 +17,8 @@ const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance
 const valorDoAtributo = (k, v) => (v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`);
 const GRUPO = { Acessorios: 'Acessórios', Armadura: 'Armaduras', Armas_de_Uma_Mao: 'Armas de uma mão', Armas_de_Duas_Maos: 'Armas de duas mãos', Armas_Secundarias: 'Mão secundária', Frascos: 'Frascos', Joias: 'Joias' };
 const humano = (id) => id.replace(/_/g, ' ');
+const ESTADO = { equivalente: 'Equivalente: o Draevor faz a mesma conta', aproximado: 'Aproximado: existe no Draevor, com diferença', 'sem-equivalente': 'Sem equivalente no Draevor (fica sem efeito)', 'sem-regra': 'Sem regra de tradução ainda' };
+const SIMBOLO = { equivalente: '✓', aproximado: '≈', 'sem-equivalente': '✗', 'sem-regra': '?' };
 
 /** O ícone da coleção (ou o marcador quando a base não tem imagem). */
 const icone = (caminho, tam = 64) => (caminho ? el('img', { class: 'poe-icone', src: img(caminho), width: tam, height: tam, loading: 'lazy', alt: '', onerror: (e) => e.target.replaceWith(el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?')) }) : el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?'));
@@ -27,14 +29,18 @@ const icone = (caminho, tam = 64) => (caminho ? el('img', { class: 'poe-icone', 
  */
 function balao(p, regras, baseInfo) {
   const R = regras.raridades[p.raridade] ?? {};
-  const linhas = (lista, classe) => lista.map((m) => el('div', { class: `poe-mod ${classe}` }, el('span', {}, m.texto), m.tier != null ? el('i', { title: `${m.familia} · iLvl ${m.ilvl}` }, `${classe === 'pre' ? 'P' : 'S'} T${m.tier}`) : null));
+  // A tradução vem na ordem implícitos → prefixos → sufixos → únicos (a mesma de `traduzirPeca`).
+  const fila = [...(p.traducao?.linhas ?? [])];
+  const marca = (t) => (t ? el('em', { class: `poe-tr ${t.estado}`, title: [ESTADO[t.estado], ...t.partes.map((x) => x.nota).filter(Boolean), t.efeitos.length ? `→ ${t.efeitos.map((e) => `${e.stat} ${e.valor > 0 ? '+' : ''}${e.valor}`).join(', ')}` : ''].filter(Boolean).join('\n') }, SIMBOLO[t.estado]) : null);
+  const linhas = (lista, classe) => lista.map((m) => el('div', { class: `poe-mod ${classe}` }, marca(fila.shift()), el('span', {}, m.texto), m.tier != null ? el('i', { title: `${m.familia} · iLvl ${m.ilvl}` }, `${classe === 'pre' ? 'P' : 'S'} T${m.tier}`) : null));
   const sep = () => el('div', { class: 'poe-sep' });
   return el('div', { class: `poe-balao r-${p.raridade}`, style: `--cor:${R.cor ?? '#ddd'}` },
     el('div', { class: 'poe-topo' }, el('b', {}, p.nome), p.nome !== baseInfo?.nome ? el('span', {}, baseInfo?.nome) : null),
     el('div', { class: 'poe-props' }, el('div', { class: 'poe-raridade' }, `${R.nome ?? p.raridade} · Item Level ${p.ilvl}`), Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => el('div', {}, `${ROTULO[k]}: `, el('b', {}, valorDoAtributo(k, v))))),
     p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp')] : null,
     p.prefixos?.length || p.sufixos?.length ? [sep(), linhas(p.prefixos ?? [], 'pre'), linhas(p.sufixos ?? [], 'suf')] : null,
-    p.modificadores?.length ? [sep(), p.modificadores.map((m) => el('div', { class: 'poe-mod uni' }, m.texto))] : null,
+    p.modificadores?.length ? [sep(), p.modificadores.map((m) => el('div', { class: 'poe-mod uni' }, marca(fila.shift()), el('span', {}, m.texto)))] : null,
+    p.traducao ? el('div', { class: 'poe-draevor' }, el('b', {}, 'No Draevor: '), Object.keys(p.traducao.af).length ? Object.entries(p.traducao.af).map(([k, v]) => el('span', { class: 'selo' }, `${k} ${v > 0 ? '+' : ''}${v}`)) : el('span', { class: 'dica' }, 'nada (nenhum mod com equivalente)')) : null,
     p.aviso ? el('div', { class: 'poe-aviso' }, p.aviso) : null,
     p.erro ? el('div', { class: 'poe-aviso' }, p.erro) : null);
 }
@@ -106,7 +112,7 @@ export function criarTelaDeItensPoe({ raiz }) {
     const b = T.base;
     document.querySelector('.poe-v')?.classList.toggle('painel-largo', !!b);
     if (!b) return caixa.replaceChildren(el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha uma base'), el('span', { class: 'dica' }, 'Veja o pool de mods dela, gere peças de exemplo em cada raridade e os únicos da classe.')));
-    const abas = [['gerar', 'Gerar'], ['pool', 'Mods do pool'], ['unicos', `Únicos (${T.dados.unicos.filter((u) => u.base === b.nome).length})`]];
+    const abas = [['gerar', 'Gerar'], ['pool', 'Mods do pool'], ['unicos', `Únicos (${T.dados.unicos.filter((u) => u.base === b.nome).length})`], ['traducao', 'Tradução']];
     const corpo = el('div', { class: 'bib-painel-corpo' }, el('span', { class: 'dica' }, 'Carregando…'));
     caixa.replaceChildren(
       el('div', { class: 'bib-painel-topo poe-topo-base' }, icone(b.icone, 96), el('div', { class: 'bib-painel-titulo' }, el('h2', { class: 'bib-nome' }, b.nome), el('div', { class: 'linha' }, el('span', { class: 'eng-id', style: 'flex:none' }, b.id), el('button', { type: 'button', class: 'eng-copiar', onclick: () => copiar(b.id) }, 'copiar'), el('span')),
@@ -115,6 +121,7 @@ export function criarTelaDeItensPoe({ raiz }) {
       corpo);
     if (T.aba === 'gerar') return corpo.replaceChildren(...(await abaGerar(b)));
     if (T.aba === 'pool') return corpo.replaceChildren(...(await abaPool(b)));
+    if (T.aba === 'traducao') return corpo.replaceChildren(...(await abaTraducao()));
     return corpo.replaceChildren(...abaUnicos(b));
   }
 
@@ -136,8 +143,24 @@ export function criarTelaDeItensPoe({ raiz }) {
     const d = await api(`pool?${new URLSearchParams({ base: b.id, ilvl: T.ilvl })}`);
     const tabela = (lista, titulo) => [el('h4', {}, `${titulo} (${lista.length} famílias)`), el('div', { class: 'bib-tabela' }, el('table', {},
       el('thead', {}, el('tr', {}, ['Família', 'Tags', 'Tiers', 'iLvl', '% no lado', `Liberados no iLvl ${d.ilvl}`].map((h) => el('th', {}, h)))),
-      el('tbody', {}, lista.map((g) => el('tr', { title: g.tiers.map((t) => `T${t.tier} (iLvl ${t.ilvl}): ${t.texto}`).join('\n') }, el('td', {}, humano(g.familia)), el('td', { class: 'dica' }, g.tags.join(', ')), el('td', { class: 'num' }, g.tiers.length), el('td', { class: 'num' }, `${g.ilvlMin}–${g.ilvlMax ?? '?'}`), el('td', { class: 'num' }, `${g.pct}%`), el('td', { class: 'num' }, g.liberados))))))];
+      el('tbody', {}, lista.map((g) => el('tr', { title: g.tiers.map((t) => `T${t.tier} (iLvl ${t.ilvl}): ${t.texto}`).join('\n') }, el('td', {}, el('em', { class: `poe-tr ${g.traducao.estado}`, title: ESTADO[g.traducao.estado] }, SIMBOLO[g.traducao.estado]), ' ', humano(g.familia)), el('td', { class: 'dica' }, g.tags.join(', ')), el('td', { class: 'num' }, g.tiers.length), el('td', { class: 'num' }, `${g.ilvlMin}–${g.ilvlMax ?? '?'}`), el('td', { class: 'num' }, `${g.pct}%`), el('td', { class: 'num' }, g.liberados))))))];
     return [el('p', { class: 'dica' }, `Pool "${d.pagina}" (drop normal). Passe o mouse numa linha para ver os tiers. Item Level dos "liberados": ${d.ilvl} (troque na aba Gerar).`), ...tabela(d.prefixos, 'Prefixos'), ...tabela(d.sufixos, 'Sufixos')];
+  }
+
+  /** A cobertura da tabela de tradução sobre o catálogo inteiro (pelo peso de drop) e os modelos ainda sem regra. */
+  async function abaTraducao() {
+    const c = await api('cobertura');
+    const barra = el('div', { class: 'poe-cobertura' }, Object.entries(c.pct).map(([k, v]) => el('span', { class: `poe-tr-barra ${k}`, style: `flex-basis:${v}%`, title: `${ESTADO[k]}: ${v}%` }, v >= 6 ? `${SIMBOLO[k]} ${v}%` : '')));
+    return [
+      el('p', { class: 'dica' }, `Quanto do que realmente CAI (peso de drop de todos os tiers do catálogo) já vira atributo do Draevor. Tabela: gamedata/itens-poe/traducao.json (${c.regras} regras).`),
+      barra,
+      el('div', { class: 'linha', style: 'flex-wrap:wrap' }, Object.entries(c.pct).map(([k, v]) => el('span', { style: 'flex:none', class: 'dica' }, el('em', { class: `poe-tr ${k}` }, SIMBOLO[k]), ` ${ESTADO[k]} — ${v}%`))),
+      el('h4', {}, 'Elementos'),
+      el('div', { class: 'eng-card-selos' }, Object.entries(c.elementos).filter(([k]) => !k.startsWith('_')).map(([poe, dv]) => el('span', { class: 'selo' }, `${poe} → ${dv}`))),
+      c.elementos._Caos ? el('p', { class: 'dica' }, c.elementos._Caos) : null,
+      el('h4', {}, `Sem regra ainda (${c.totalSemRegra} modelos; os ${c.semRegra.length} mais pesados)`),
+      el('div', { class: 'bib-tabela' }, el('table', {}, el('thead', {}, el('tr', {}, el('th', {}, 'Modelo do texto'), el('th', {}, '% do drop'))), el('tbody', {}, c.semRegra.map((x) => el('tr', {}, el('td', {}, x.modelo), el('td', { class: 'num' }, `${x.pct}%`)))))),
+    ];
   }
 
   function abaUnicos(b) {

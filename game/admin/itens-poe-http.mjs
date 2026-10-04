@@ -5,6 +5,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { normalize, join, extname } from 'node:path';
 import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
+import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
 const TIPOS = { '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.gif': 'image/gif' };
@@ -25,7 +26,7 @@ function resumoDoPool(pool, ilvl) {
   const liberados = elegiveis(pool, ilvl);
   const lado = (lista, nome) => {
     const total = lista.reduce((n, g) => n + g.peso, 0) || 1;
-    return lista.map((g) => ({ familia: g.familia, lado: nome, tags: g.tags, peso: g.peso, pct: Number(((g.peso / total) * 100).toFixed(2)), ilvlMin: Math.min(...g.tiers.map((t) => t.ilvl ?? 1)), ilvlMax: g.ilvlMax, tiers: g.tiers.map((t) => ({ tier: t.tier, nome: t.nome, ilvl: t.ilvl, peso: t.peso, texto: t.texto })), liberados: liberados[nome].filter((c) => c.familia === g.familia).length }));
+    return lista.map((g) => ({ traducao: Traduzir.traduzirMod({ modelo: g.tiers[0]?.modelo, valores: (g.tiers[0]?.faixas ?? []).map((f) => f[1]) }), familia: g.familia, lado: nome, tags: g.tags, peso: g.peso, pct: Number(((g.peso / total) * 100).toFixed(2)), ilvlMin: Math.min(...g.tiers.map((t) => t.ilvl ?? 1)), ilvlMax: g.ilvlMax, tiers: g.tiers.map((t) => ({ tier: t.tier, nome: t.nome, ilvl: t.ilvl, peso: t.peso, texto: t.texto })), liberados: liberados[nome].filter((c) => c.familia === g.familia).length }));
   };
   return { prefixos: lado(pool.prefixos, 'prefixo'), sufixos: lado(pool.sufixos, 'sufixo') };
 }
@@ -65,7 +66,12 @@ export async function atender(req, res, caminho, url, { json }) {
     const rng = rngDe(Number(q.get('semente')) || 1);
     const n = Math.min(24, Math.max(1, Number(q.get('n')) || 6));
     const pecas = Array.from({ length: n }, () => gerarPeca({ catalogo: cat, regras: Catalogo.REGRAS, base: q.get('base'), raridade: q.get('raridade') ?? 'raro', ilvl: Number(q.get('ilvl')) || 84, rng, unico: q.get('unico') || null }));
-    return json(res, 200, { pecas }), true;
+    // Cada peça vem com a TRADUÇÃO para os atributos do Draevor (o que somaria na ficha) e o estado de cada mod.
+    return json(res, 200, { pecas: pecas.map((p) => (p.erro ? p : { ...p, traducao: Traduzir.traduzirPeca(p) })) }), true;
+  }
+  if (rota === 'cobertura') {
+    const c = Traduzir.cobertura(cat);
+    return json(res, 200, { ...c, semRegra: c.semRegra.slice(0, 80), totalSemRegra: c.semRegra.length, elementos: Traduzir.TABELA.elementos, regras: Traduzir.TABELA.regras.length }), true;
   }
   return json(res, 404, { ok: false, erros: ['Rota desconhecida.'] }), true;
 }

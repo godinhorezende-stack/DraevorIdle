@@ -159,3 +159,53 @@ test('catálogo importado de verdade (quando existe nesta máquina): bases com p
   }
   assert.ok(geradas > 50, `geradas ${geradas}`);
 });
+
+// ------------------------------------------------------------------ incremento 2: tradução para os atributos do Draevor
+
+import { traduzirMod, traduzirPeca, cobertura, TABELA } from '../systems/itens-poe/traduzir.mjs';
+import { FICHAS } from '../systems/afixos.mjs';
+
+const mod = (texto) => ({ ...analisarTexto(texto), valores: analisarTexto(texto).faixas.map((f) => f[0]) });
+
+test('tradução: equivalente, aproximado (média da faixa), elemento, híbrido e os sem equivalente', () => {
+  assert.deepEqual(traduzirMod(mod('+175 de Vida máxima')).efeitos, [{ stat: 'life', valor: 175 }]);
+  assert.equal(traduzirMod(mod('+175 de Vida máxima')).estado, 'equivalente');
+  const r = traduzirMod(mod('+30% de Resistência a Gelo'));
+  assert.deepEqual(r.efeitos, [{ stat: 'ice_res', valor: 30 }]);
+  assert.deepEqual(traduzirMod(mod('+12% de Resistência a Raio')).efeitos, [{ stat: 'energy_res', valor: 12 }]);
+  assert.deepEqual(traduzirMod(mod('+20% de Resistência a Caos')).efeitos, [{ stat: `${TABELA.elementos.Caos}_res`, valor: 20 }]);
+  const fis = traduzirMod(mod('Adiciona 5 a 9 de Dano Físico'));
+  assert.deepEqual([fis.estado, fis.efeitos], ['aproximado', [{ stat: 'phys_add', valor: 7 }]]);
+  const hib = traduzirMod(mod('Armadura aumentada em 20% / Recuperação de Atordoamentos e Bloqueios aumentada em 11%'));
+  assert.equal(hib.partes.length, 2);
+  assert.equal(hib.estado, 'sem-equivalente', 'o estado do híbrido é o pior das partes');
+  assert.deepEqual(hib.efeitos, [{ stat: 'armour_pct', valor: 20 }], 'a parte que existe continua valendo');
+  assert.equal(traduzirMod(mod('Chance de Crítico aumentada em 25%')).estado, 'sem-equivalente');
+  assert.equal(traduzirMod(mod('Algo que ninguém escreveu 3')).estado, 'sem-regra');
+});
+
+test('tradução: toda regra aponta para um atributo que a ficha do Draevor soma (nada de chave inventada)', () => {
+  const elementos = Object.entries(TABELA.elementos).filter(([k]) => !k.startsWith('_')).map(([, v]) => v);
+  for (const r of TABELA.regras) {
+    if (r.estado === 'sem-equivalente') assert.equal(r.efeitos.length, 0, r.padrao);
+    for (const e of r.efeitos) {
+      const stats = e.stat.includes('{E}') ? elementos.map((x) => e.stat.replace('{E}', x)) : [e.stat];
+      for (const s of stats) assert.ok(FICHAS[s], `${r.padrao} → ${s} não é um atributo do Draevor`);
+    }
+  }
+});
+
+test('tradução de uma peça: soma por atributo, no formato que a ficha lê (af)', () => {
+  const p = gerar('raro', 80, semente(17));
+  const t = traduzirPeca(p);
+  assert.equal(t.linhas.length, p.implicitos.length + p.prefixos.length + p.sufixos.length);
+  for (const [k, v] of Object.entries(t.af)) assert.ok(FICHAS[k] && Number.isFinite(v), `${k}=${v}`);
+  const vida = t.linhas.filter((l) => l.efeitos.some((e) => e.stat === 'life')).flatMap((l) => l.efeitos.filter((e) => e.stat === 'life')).reduce((n, e) => n + e.valor, 0);
+  if (vida) assert.equal(t.af.life, vida);
+});
+
+test('cobertura com o catálogo real (quando existe): a maior parte do drop já vira atributo', { skip: !existsSync(Catalogo.ARQUIVO) && 'catálogo do PoE não importado nesta máquina' }, () => {
+  const c = cobertura(JSON.parse(readFileSync(Catalogo.ARQUIVO, 'utf8')));
+  assert.ok(c.pct.equivalente + c.pct.aproximado >= 55, JSON.stringify(c.pct));
+  assert.ok(c.pct['sem-regra'] <= 15, JSON.stringify(c.pct));
+});

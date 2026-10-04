@@ -1,0 +1,713 @@
+{
+  "_nota": "TRADUÇÃO dos textos de mod do PoE (o 'modelo' do catálogo importado, ex.: '+{0} de Vida máxima') para os atributos que o Draevor já soma na ficha (as chaves de `itens/atributos.json`, somadas por `Afixos.somaDeItens`). Fase 1, incremento 2 — desligado em produção. Cada regra: `padrao` (expressão sobre UMA parte do modelo; mods híbridos 'A / B' são divididos em partes), `efeitos` (lista de { stat, valor }) e `estado`: 'equivalente' (mesma conta que o Draevor faz), 'aproximado' (existe, com a diferença em `nota`) ou 'sem-equivalente' (o Draevor não tem o atributo ou a conta é outra — fica listado, sem efeito). `valor`: o índice do número no texto ('{0}') ou 'media({0},{1})'. `{E}` no padrão casa um nome de elemento do PoE, traduzido por `elementos` (decisão do dono pendente para o Caos). Valores 'como estão' (decisão do dono de 04/10: copiar o conteúdo do PoE); a escala de cada atributo é revista pela simulação.",
+  "elementos": {
+    "Fogo": "fire",
+    "Gelo": "ice",
+    "Raio": "energy",
+    "Caos": "earth",
+    "_Caos": "proposta: o Caos do PoE vira a Terra do Draevor (o 'veneno' do catálogo, ver combate/limites.json). Sagrado e Morte não existem no PoE."
+  },
+  "elementais": [
+    "fire",
+    "ice",
+    "energy"
+  ],
+  "regras": [
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Vida máxima$",
+      "efeitos": [
+        {
+          "stat": "life",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Mana máxima$",
+      "efeitos": [
+        {
+          "stat": "mana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Escudo de Energia máximo$",
+      "efeitos": [
+        {
+          "stat": "energy_shield",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura$",
+      "efeitos": [
+        {
+          "stat": "armor_flat",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "local na peça no PoE; global no Draevor. Escala: o PoE vai a +500, a armadura de item do Draevor (T5) a +14."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão$",
+      "efeitos": [
+        {
+          "stat": "evasion",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "local na peça no PoE; global no Draevor."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Vida Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Mana Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "mana_regen",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Regeneração de Vida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "life_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a {E}$",
+      "efeitos": [
+        {
+          "stat": "{E}_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} a todos os Atributos$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Força e Destreza$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Força e Inteligência$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Destreza e Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Precisão$",
+      "efeitos": [
+        {
+          "stat": "accuracy",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "na arma é LOCAL no PoE (só os ataques dela); no Draevor é global."
+    },
+    {
+      "padrao": "^Velocidade de Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador Global de Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Dano Físico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "na arma é LOCAL no PoE; no Draevor é global."
+    },
+    {
+      "padrao": "^Dano de {E} aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "{E}_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}%( com Habilidades de Ataque)?$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE pode restringir a ataques; o Draevor soma em fogo, gelo e energia para tudo."
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico( em Ataques)?$",
+      "efeitos": [
+        {
+          "stat": "phys_add",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE soma uma faixa (mín–máx); o Draevor tem um número só ('Dano adicional'): entra a média."
+    },
+    {
+      "padrao": "^Armadura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Escudo de Energia aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Armadura e Evasão aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Armadura e Escudo de Energia aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Evasão e Escudo de Energia aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Armadura, Evasão e Escudo de Energia aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Mana$",
+      "efeitos": [
+        {
+          "stat": "mana_leech",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas( [^E]+?)? Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE limita a um tipo de gema (corpo a corpo, de arco, de Força…); o Draevor vale para todas as encaixadas."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de todas as Gemas Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de todos Atributos$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de Chance de Bloquear (o )?Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "spell_block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Escudo de Energia máximo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "no PoE é % RELATIVO à chance base; o crit_chance do Draevor soma pontos fixos. Precisa de um atributo 'crítico aumentado' (incremento 3)."
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico com Magias aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "relativo e só de magias; o Draevor não separa."
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de {E}( em Ataques)?$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem dano elemental SOMADO (só % por elemento)."
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de {E} a Magias$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem dano somado a magias."
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem 'dano de magia' genérico."
+    },
+    {
+      "padrao": "^Chance de Bloquear aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "relativo no PoE; o block do Draevor soma pontos."
+    },
+    {
+      "padrao": "^Raridade de Itens encontrados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o loot_bonus do Draevor é taxa de loot, não raridade."
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de (Vida|Mana) por Inimigo Morto$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^Concede \\{(\\d+)\\} de (Vida|Mana) por Inimigo Acertado$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^Reflete \\{(\\d+)\\} de Dano Físico para Agressores Corpo a Corpo$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^Requisito de Nível reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "propriedade da peça (requisito), não atributo."
+    },
+    {
+      "padrao": "^Recuperação de Atordoamentos e Bloqueios aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem recuperação de atordoamento."
+    },
+    {
+      "padrao": "^Duração de Atordoamentos em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "supressão de magia não existe no Draevor (o mais próximo é o bloqueio de magia, com outra conta)."
+    },
+    {
+      "padrao": "^Recarga do Escudo de Energia aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Precisão Global$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "relativo; o accuracy do Draevor soma pontos."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Raio de Iluminação$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^Chance Global de Crítico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "relativo à chance base; o crit_chance do Draevor soma pontos (incremento 3)."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem multiplicador de dano degenerativo."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Afecções Elementais$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem afecções elementais (incendiar, congelar, eletrizar)."
+    },
+    {
+      "padrao": "^Início da Recarga do Escudo de Energia \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^Redução de Dano Físico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem 'redução de dano físico' separada da armadura."
+    },
+    {
+      "padrao": "^Velocidade do Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^Dano Extra recebido de Acertos Críticos em Você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Vida recebida por cada Inimigo acertado por seus Ataques$",
+      "efeitos": [],
+      "estado": "sem-equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de (Incendiar|Congelar|Eletrizar|Envenenar|causar Sangramento)$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "o Draevor não tem essas afecções."
+    },
+    {
+      "padrao": "^(Chance de Crítico|Dano|Velocidade de Ataque) com (Arcos|Habilidades de Arco|Machados|Espadas|Maças|Adagas|Garras|Cajados|Varinhas)( aumentad[oa])? em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "condicional ao tipo de arma; o Draevor não separa."
+    },
+    {
+      "padrao": "^Dano com Habilidades de Arco aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "condicional ao arco; o Draevor não separa."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com (Arcos|Machados|Espadas|Maças|Adagas|Garras|Cajados|Varinhas)$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "condicional ao tipo de arma; o Draevor não separa."
+    },
+    {
+      "padrao": "^(Recuperação de Cargas|Velocidade de Recuperação) aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "frascos: o Draevor não tem frascos."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "frascos: o Draevor não tem frascos."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "frascos: o Draevor não tem frascos."
+    },
+    {
+      "padrao": "^Cargas reduzidas em \\{(\\d+)\\}% por uso$",
+      "efeitos": [],
+      "estado": "sem-equivalente",
+      "nota": "frascos: o Draevor não tem frascos."
+    }
+  ]
+}

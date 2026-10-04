@@ -30,9 +30,10 @@ export function sortearNaFaixa([a, b], rng) {
 }
 /** O texto final: o modelo ("+{0} de Vida") com os valores. */
 export const escrever = (modelo, valores) => String(modelo ?? '').replace(/\{(\d+)\}/g, (_, i) => String(valores[Number(i)] ?? '?'));
+// O modelo vai junto com os valores: é por ele que a tradução para os atributos do Draevor casa as regras (traduzir.mjs).
 const rolarTexto = (t, rng) => {
   const valores = (t.faixas ?? []).map((f) => sortearNaFaixa(f, rng));
-  return { valores, texto: escrever(t.modelo, valores) };
+  return { modelo: t.modelo, valores, texto: escrever(t.modelo, valores) };
 };
 
 /** A base pelo id (`Classe/Slug`) e a classe dona dela. */
@@ -102,8 +103,8 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
     const escolhido = porPeso(candidatos.map((c) => [c, c.tier.peso]), rng);
     if (!escolhido) break; // o pool acabou (Item Level baixo demais, ou poucas famílias): a peça sai com menos mods
     usadas.add(escolhido.familia);
-    const { valores, texto } = rolarTexto(escolhido.tier, rng);
-    peca[`${escolhido.lado}s`].push({ familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, texto, valores });
+    const { modelo, valores, texto } = rolarTexto(escolhido.tier, rng);
+    peca[`${escolhido.lado}s`].push({ familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, modelo, texto, valores });
   }
   // O nome do Mágico leva o prefixo e o sufixo ("Primordial Colete de Placas da Baleia"); o do Raro é aleatório no PoE — a coleção
   // não traz as listas de palavras, então fica o nome da base (marcado).
