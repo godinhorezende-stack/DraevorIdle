@@ -38,7 +38,7 @@ export const ehAdmin = (config, email) => config.admins.includes(normalizarEmail
 
 // ------------------------------------------------------------------ o que cada rota faz
 
-const ROTAS_DE_LEITURA_POR_POST = [/^fase\/[^/]+\/validar$/, /^mapa\/validar$/, /^bosses\/validar$/, /^atos-editor\/validar$/, /^atos-editor\/previa$/, /^mapas\/validar$/, /^campanha\/validar$/, /^overrides\/validar$/, /^overrides\/sprites\/validar$/, /^validacao\/executar$/, /^progressao\/validar$/, /^conjuntos\/(validar|totais|modelos)$/, /^simulador\/loot$/, /^overrides\/itens\/validar$/];
+const ROTAS_DE_LEITURA_POR_POST = [/^fase\/[^/]+\/validar$/, /^mapa\/validar$/, /^bosses\/validar$/, /^atos-editor\/validar$/, /^atos-editor\/previa$/, /^mapas\/validar$/, /^campanha\/validar$/, /^overrides\/validar$/, /^overrides\/sprites\/validar$/, /^validacao\/executar$/, /^progressao\/validar$/, /^conjuntos\/(validar|totais|modelos)$/, /^item-power\/(validar|simular|comparar|regra)$/, /^simulador\/loot$/, /^overrides\/itens\/validar$/];
 const ROTAS_DE_OPERACAO = [/^operacao\//, /^modo-beta$/, /^server-save$/];
 const PREFIXO = '/api/mapas/_conteudo/';
 

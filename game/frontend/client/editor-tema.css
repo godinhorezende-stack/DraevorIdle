@@ -900,3 +900,13 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .conj-item:hover, .conj-item.atual { border-color: var(--eng-destaque, #6aa7ff); }
 .conj-linha { cursor: pointer; }
 @media (max-width: 900px) { .conj-duas { grid-template-columns: 1fr; } }
+
+/* Item Power */
+.ip-duas { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.ip-esq { display: flex; flex-direction: column; gap: 8px; min-width: 0; overflow-x: auto; }
+.ip-filtros { flex-wrap: wrap; }
+.ip-grafico { width: 100%; max-width: 760px; height: auto; color: var(--eng-texto, #cfd6e4); }
+.ip-bloco { border: 1px solid var(--eng-linha, #3a3f4b); border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+.ip-aviso { font-style: italic; }
+.conj-linha.ativa { background: var(--eng-s2, rgba(106, 167, 255, .12)); }
+@media (max-width: 900px) { .ip-duas { grid-template-columns: 1fr; } }

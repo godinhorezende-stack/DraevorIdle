@@ -1,0 +1,69 @@
+{
+  "_nota": "Overrides de conjuntos (systems/conjuntos.mjs): só o NOVO ou DIFERENTE sobre gamedata/conjuntos.json. Editado em /editor/conteudo (Conjuntos).",
+  "ativo": true,
+  "conjuntos": {
+    "knight_novo_01": {
+      "id": "knight_novo_01",
+      "nome": "Knight — LV 8",
+      "classe": "knight",
+      "ato": 1,
+      "tier": 1,
+      "levelMin": 1,
+      "levelMax": 8,
+      "ativo": true,
+      "completo": true,
+      "pecas": {
+        "head": 3355,
+        "body": 3361,
+        "legs": 3559,
+        "feet": 3552,
+        "shield": 21401,
+        "ring": 3092,
+        "neck": 3081,
+        "weapon": 3274
+      }
+    },
+    "knight_novo_02": {
+      "id": "knight_novo_02",
+      "nome": "Knight — LV 20",
+      "classe": "knight",
+      "ato": 1,
+      "tier": 1,
+      "levelMin": 1,
+      "levelMax": 20,
+      "ativo": true,
+      "completo": true,
+      "pecas": {
+        "head": 3354,
+        "body": 3359,
+        "legs": 3372,
+        "feet": 3552,
+        "weapon": 3316,
+        "shield": 3411,
+        "ring": 3095,
+        "neck": 3056
+      }
+    },
+    "knight_novo_03": {
+      "id": "knight_novo_03",
+      "nome": "Knight — LV 30",
+      "classe": "knight",
+      "ato": 1,
+      "tier": 1,
+      "levelMin": 1,
+      "levelMax": 30,
+      "ativo": true,
+      "completo": true,
+      "pecas": {
+        "head": 3351,
+        "body": 3370,
+        "legs": 3371,
+        "feet": 3554,
+        "weapon": 3317,
+        "shield": 3425,
+        "ring": 3048,
+        "neck": 3055
+      }
+    }
+  }
+}

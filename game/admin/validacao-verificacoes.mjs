@@ -119,6 +119,21 @@ export function criarVerificacoes() {
       },
     },
     {
+      id: 'item-power', modulo: 'item-power', titulo: 'Item Power Base: pesos, normalização, curva de referência e regras de distribuição',
+      async rodar(ctx) {
+        const IP = await import('../systems/item-power.mjs');
+        const Prog = await import('../systems/progressao.mjs');
+        const arquivo = join(ctx.overrides ?? join(RAIZ, 'overrides'), 'item-power.json');
+        let ov = null;
+        if (existsSync(arquivo)) { try { ov = JSON.parse(readFileSync(arquivo, 'utf8')); } catch (e) { return { achados: [erro('overrides/item-power.json', `JSON inválido: ${e.message}`)] }; } }
+        const cfg = IP.efetiva(IP.ORIGINAL, ov);
+        const v = IP.validarConfiguracao(cfg, { nivelMaximo: Prog.nivelMaximo() });
+        const achados = [...v.erros.map((m) => erro('item-power', m)), ...v.avisos.map((m) => aviso('item-power', m))];
+        if (ov?.ativo === false && Object.keys(ov).some((k) => !['ativo', '_nota'].includes(k))) achados.push(aviso('overrides/item-power.json', 'a camada de overrides do Item Power está DESLIGADA: nenhuma alteração vale.'));
+        return { achados, detalhe: `fórmula v${cfg.versaoDaFormula}` };
+      },
+    },
+    {
       id: 'sprites', modulo: 'sprites', titulo: 'Sprites, outfits e montarias (overrides): imagem, quadros e cadastro',
       async rodar(ctx) {
         const S = await import('./overrides-sprites.mjs');
