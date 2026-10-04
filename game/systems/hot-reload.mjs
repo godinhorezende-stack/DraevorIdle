@@ -18,8 +18,8 @@ import { createHash } from 'node:crypto';
 import { watch, existsSync, readFileSync, statSync, readdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
-export const ORDEM_DE_RECARGA = ['itens', 'monstros', 'sprites', 'campanha', 'atos'];
-export const ROTULOS = { monstros: 'Monstros', itens: 'Itens', sprites: 'Sprites', atos: 'Acts', campanha: 'Campanha (níveis)' };
+export const ORDEM_DE_RECARGA = ['progressao', 'itens', 'conjuntos', 'monstros', 'sprites', 'campanha', 'atos'];
+export const ROTULOS = { conjuntos: 'Conjuntos', progressao: 'Progressão e loot', monstros: 'Monstros', itens: 'Itens', sprites: 'Sprites', atos: 'Acts', campanha: 'Campanha (níveis)' };
 const IGNORAR_NOME = /(^\.|~$|\.(tmp|temp|bak|swp|swx|orig|rej|lock|part|crdownload)$|^\.#|^#.*#$|^4913$|\.jsonl$|\.md$)/;
 const IGNORAR_PASTA = new Set(['_versoes', 'node_modules', '.git', 'hunts-imagens']);
 const MS_DO_ATUALIZADO = 4000;
@@ -48,6 +48,8 @@ export function classificar(caminho) {
   if (c === 'engine.json' || c === 'modo-beta.json' || c === 'novidades.json') return null; // estado/config de operação, não conteúdo
   if (c === 'overrides/monstros.json') return { tipo: 'monstros', quente: true };
   if (c === 'overrides/itens.json') return { tipo: 'itens', quente: true };
+  if (c === 'overrides/progressao.json') return { tipo: 'progressao', quente: true };
+  if (c === 'overrides/conjuntos.json') return { tipo: 'conjuntos', quente: true };
   if (c === 'overrides/sprites.json') return { tipo: 'sprites', quente: true };
   let m = /^overrides\/sprites\/(\d+)\.png$/.exec(c);
   if (m) return { tipo: 'sprites', quente: true, id: m[1] };
@@ -258,6 +260,8 @@ export function caminhosDaRota(rota, corpo = null) {
   const r = String(rota ?? '').replace(/^\/?api\/mapas\/_conteudo\//, '').replace(/^\//, '').split('?')[0];
   if (r === 'overrides') return ['overrides/monstros.json'];
   if (r === 'overrides/itens') return ['overrides/itens.json'];
+  if (r === 'progressao') return ['overrides/progressao.json'];
+  if (r === 'conjuntos') return ['overrides/conjuntos.json'];
   if (r === 'overrides/sprites') return ['overrides/sprites.json', ...(corpo?.look && /^\d+$/.test(String(corpo.look)) ? [`overrides/sprites/${corpo.look}.png`] : [])];
   if (r.startsWith('campanha')) return ['campanha.json'];
   const ato = /^atos-editor(?:\/([a-z0-9-]+))?/.exec(r);

@@ -15,6 +15,11 @@ import * as Validacao from './validacao.mjs';
 import * as Versoes from './versoes.mjs';
 import * as GitEnvio from './git-envio.mjs';
 import * as GitIntegracao from './git-integracao.mjs';
+import * as OverridesProgressao from './overrides-progressao.mjs';
+import * as OverridesConjuntos from './overrides-conjuntos.mjs';
+import * as Conjuntos from '../systems/conjuntos.mjs';
+import * as Progressao from '../systems/progressao.mjs';
+import * as Simulador from '../systems/itens/simulador-de-loot.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
@@ -56,6 +61,22 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'hot-reload') return json(res, 200, hot?.estadoAtual() ?? SEM_HOT), true;
     // O validador centralizado: o estado (último resultado, o que está rodando, arquivos alterados e se pode aprovar). Executar é POST `validacao/executar` (só lê).
     if (rota === 'validacao') return json(res, 200, Validacao.estado()), true;
+    // Progressão e loot por dificuldade: a configuração (original, override, efetiva, distribuições exatas), as bases e os marcos de um Ato (iguais nas três dificuldades) — só leitura.
+    if (rota === 'progressao') return json(res, 200, OverridesProgressao.obter()), true;
+    if (rota === 'progressao-versoes') return json(res, 200, { versoes: OverridesProgressao.versoes() }), true;
+    if (rota.startsWith('progressao/ato/')) {
+      const ato = Number(rota.slice('progressao/ato/'.length));
+      const b = Progressao.basesDoAto(ato, { slot: url.searchParams.get('slot') || null, vocacao: url.searchParams.get('vocacao') || null, limite: 300 });
+      return b ? json(res, 200, { ...b, marcos: OverridesProgressao.marcosDoAto(ato), nivelMaximo: Progressao.nivelMaximo() }) : json(res, 404, { ok: false, erros: ['Ato não encontrado na progressão.'] }), true;
+    }
+    // Conjuntos (sets de equipamento por classe): a configuração, a busca de itens para os slots e os atributos totais pela ficha real — só leitura.
+    if (rota === 'conjuntos') return json(res, 200, OverridesConjuntos.obter()), true;
+    if (rota === 'conjuntos/itens') return json(res, 200, OverridesConjuntos.buscarItens(Object.fromEntries(url.searchParams))), true;
+    if (rota === 'conjuntos-versoes') return json(res, 200, { versoes: OverridesConjuntos.versoes() }), true;
+    if (rota.startsWith('conjuntos/totais/')) {
+      const c = Conjuntos.obter(decodeURIComponent(rota.slice('conjuntos/totais/'.length)));
+      return c ? json(res, 200, OverridesConjuntos.totais(c, { level: url.searchParams.get('level') })) : json(res, 404, { ok: false, erros: ['Conjunto não encontrado.'] }), true;
+    }
     // O painel de alterações (original × atual) e as versões aprovadas (somente leitura).
     if (rota === 'alteracoes') return json(res, 200, Versoes.alteracoes()), true;
     if (rota === 'alteracoes/diff') { const d = Versoes.diferenca(url.searchParams.get('caminho') ?? ''); return json(res, d.ok ? 200 : 404, d), true; }
@@ -146,6 +167,44 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       return json(res, 200, { ...r, ...(r.ok === false && r.erro ? { erros: [r.erro] } : {}), estado: hot.estadoAtual() }), true;
     }
     // Aprovar congela as alterações escolhidas numa versão (cópia + hash); descartar cancela uma ainda não enviada. Gravam só em `database/dados/versoes` (ambiente local).
+    // Conjuntos: validar/prévia, totais de um conjunto em edição e modelos iniciais (só leem); salvar/reverter/ativo/restaurar gravam.
+    if (rota === 'conjuntos/validar') return json(res, 200, OverridesConjuntos.propor(dados?.override ?? null)), true;
+    if (rota === 'conjuntos/totais') return json(res, 200, OverridesConjuntos.totais(dados?.conjunto ?? {}, { level: dados?.level })), true;
+    if (rota === 'conjuntos/modelos') return json(res, 200, { conjuntos: Conjuntos.modelosIniciais({ por: dados?.por, de: dados?.de, ate: dados?.ate, ...(Array.isArray(dados?.classes) ? { classes: dados.classes.filter((c) => Conjuntos.CLASSES.includes(c)) } : {}) }) }), true;
+    if (rota === 'conjuntos') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesConjuntos.salvar(dados.override, dados.revisao));
+      if (a === 'reverter') return responder(OverridesConjuntos.reverter(dados.revisao));
+      if (a === 'reverter-conjunto') return responder(OverridesConjuntos.reverterConjunto(String(dados.id ?? ''), dados.revisao));
+      if (a === 'ativo') return responder(OverridesConjuntos.definirAtivo(dados.ativo, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesConjuntos.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, reverter-conjunto, ativo ou restaurar.'] }), true;
+    }
+    // Progressão e loot: validar/prévia (só lê), salvar/reverter/ativo/restaurar (gravam), e o simulador (só lê; o gerador REAL com semente, teto de 50 mil sorteios por pedido).
+    if (rota === 'progressao/validar') return json(res, 200, OverridesProgressao.propor(dados?.override ?? null)), true;
+    if (rota === 'progressao') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesProgressao.salvar(dados.override, dados.revisao));
+      if (a === 'reverter') return responder(OverridesProgressao.reverter(dados.revisao));
+      if (a === 'ativo') return responder(OverridesProgressao.definirAtivo(dados.ativo, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesProgressao.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
+    }
+    if (rota === 'simulador/loot') {
+      const d = dados ?? {};
+      const n = Math.max(1, Math.min(50000, Math.floor(Number(d.n) || 10000)));
+      const base = { ato: Number(d.ato) || 1, n, abates: n, semente: Number(d.semente) || 1 };
+      // `override`: simula uma PROPOSTA (o arquivo de override inteiro) com o gerador real, sem aplicá-la.
+      const candidata = d.override ? OverridesProgressao.candidataDe(d.override) : null;
+      if (d.override && !candidata) return json(res, 409, { ok: false, erros: ['O override proposto é inválido: valide antes de simular.'] }), true;
+      const rodar = (fn) => (candidata ? Progressao.comConfiguracao(candidata, fn) : fn());
+      if (d.modo === 'monstro') return json(res, 200, rodar(() => Simulador.simularMonstro({ ...base, monstro: String(d.monstro ?? ''), dificuldade: String(d.dificuldade ?? 'facil') }))), true;
+      if (d.modo === 'hunt') return json(res, 200, rodar(() => Simulador.simularHunt({ ...base, huntId: String(d.huntId ?? ''), dificuldade: String(d.dificuldade ?? 'facil') }))), true;
+      const opc = { ...base, itemId: d.itemId ? Number(d.itemId) : null, slot: d.slot || null, raridadeDoMob: d.raridadeDoMob || null, boss: d.boss === true };
+      return json(res, 200, rodar(() => (d.dificuldade && d.dificuldade !== 'todas' ? Simulador.simular({ ...opc, dificuldade: String(d.dificuldade) }) : Simulador.compararDificuldades(opc)))), true;
+    }
     if (rota === 'versoes/aprovar') { const r = Versoes.aprovar({ caminhos: dados?.caminhos, titulo: dados?.titulo, por: req.engineQuem ?? null }); return json(res, r.ok ? 200 : 409, r), true; }
     // Envia ao Git (branch `versao/<id>` com um commit das cópias congeladas; sem merge, sem força, sem deploy). Roda assíncrono: o servidor não trava durante o push.
     if (rota === 'versoes/enviar') { const r = await GitEnvio.enviar(String(dados?.id ?? '')); return json(res, r.ok ? 200 : 409, r), true; }

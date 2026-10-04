@@ -36,6 +36,8 @@ export function moduloDe(caminho) {
   const c = caminho.replace(/^game\//, '');
   if (c === 'gamedata/overrides/monstros.json') return 'monstros';
   if (c === 'gamedata/overrides/itens.json') return 'itens';
+  if (c === 'gamedata/overrides/conjuntos.json' || c === 'gamedata/conjuntos.json') return 'conjuntos';
+  if (c === 'gamedata/overrides/progressao.json' || c === 'gamedata/progressao.json') return 'progressao';
   if (/^gamedata\/overrides\/sprites(\.json|\/)/.test(c)) return 'sprites';
   if (/^gamedata\/(sprites\/outfits\/|outfits\.json)/.test(c)) return 'sprites';
   if (c.startsWith('gamedata/atos/')) return 'atos';
