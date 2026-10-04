@@ -10,11 +10,11 @@ Este documento só registra estrutura, contagens e fontes; nenhum conteúdo da c
 - **233 pastas, 3.061 arquivos**: 2.349 PNG, 342 Markdown, 322 JSON, 34 SVG, 10 CSV, 2 HTML, 1 JS, 1 TXT.
 - Texto baixado: 677 de 678. Falhou `poe-apresentacao/mobdata.js` (arquivo grande: o Drive pede confirmação de antivírus;
   dá para baixar manualmente se for necessário).
-- Imagens: ícones de item em **64×64** (o README diz que foram convertidos para "estilo Tibia"), ícones de gema em **78×78**,
-  SVG de diagramas. O catálogo completo (formato, dimensões, tamanho, SHA-1, origem) fica em
+- Imagens: **todas as 2.383 baixadas, 0 falhas** — 2.055 ícones de item em **64×64** (o README diz que foram convertidos para
+  "estilo Tibia"), 292 ícones de gema em **78×78**, 34 SVG de diagramas (árvore, ascendências, grafos dos atos; até 2200×22275).
+  **Nenhuma duplicata** pelo SHA-1. O catálogo (formato, dimensões, tamanho, SHA-1, id e caminho de origem no Drive) fica em
   `/home/deploy/referencias-poe/catalogo-imagens.json`.
-- Nomes repetidos (39) são estruturais (um `ascendencia.md` por ascendência, um `ato.json` por ato), não duplicatas. Duplicatas
-  de conteúdo são apontadas pelo SHA-1 do catálogo.
+- Nomes repetidos (39) são estruturais (um `ascendencia.md` por ascendência, um `ato.json` por ato), não duplicatas.
 
 ## 2. Classificação (pasta → categorias do pedido)
 
