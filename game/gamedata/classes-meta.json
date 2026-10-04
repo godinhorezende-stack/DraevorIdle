@@ -1,0 +1,16 @@
+{
+  "_nota": "Apresentação das classes de fábrica (nome vem de classes.json; atributos iniciais e por level, de atributos-principais.json). Nunca editado pela Engine: o Editor de Classes grava só o que muda em gamedata/overrides/classes.json.",
+  "ordem": ["knight", "paladin", "druid", "sorcerer", "monk"],
+  "classes": {
+    "knight": { "descricao": "Guerreiro corpo a corpo, resistente: muita Força, vida alta e armadura pesada.", "icone": "🛡️", "cor": "#c0392b" },
+    "paladin": { "descricao": "Combatente à distância e híbrido: Destreza alta, precisão e evasão.", "icone": "🏹", "cor": "#e0a526" },
+    "druid": { "descricao": "Mago da natureza: Inteligência alta, cura e magias de terra e gelo.", "icone": "🌿", "cor": "#2e9e5b" },
+    "sorcerer": { "descricao": "Mago de dano: Inteligência altíssima, magias de fogo e energia.", "icone": "🔥", "cor": "#8e44ad" },
+    "monk": { "descricao": "Lutador ágil: equilíbrio entre Força e Destreza, golpes rápidos.", "icone": "👊", "cor": "#2980b9" }
+  },
+  "perfilSugerido": {
+    "_nota": "Valores de TESTE sugeridos (não aplicados por padrão): atributos iniciais por classe e bônus por ponto. Carregue no editor para comparar; só valem se você salvar.",
+    "atributosIniciais": { "knight": { "str": 12, "dex": 6, "int": 2 }, "paladin": { "str": 7, "dex": 11, "int": 4 }, "druid": { "str": 2, "dex": 5, "int": 15 }, "sorcerer": { "str": 2, "dex": 4, "int": 16 }, "monk": { "str": 8, "dex": 10, "int": 4 } },
+    "efeitos": { "STR_LIFE_PER_POINT": 0.5, "STR_PHYSICAL_DAMAGE_PER_POINT": 0.2, "DEX_ACCURACY_PER_POINT": 2, "DEX_EVASION_PCT_PER_POINT": 0.2, "INT_MANA_PER_POINT": 0.5, "INT_ENERGY_SHIELD_PCT_PER_POINT": 0.2 }
+  }
+}

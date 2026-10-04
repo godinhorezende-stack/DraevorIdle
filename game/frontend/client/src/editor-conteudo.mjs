@@ -16,6 +16,7 @@ import { criarTelaDeValidacao } from './editor-validacao.mjs';
 import { criarTelaDeProgressao } from './editor-progressao.mjs';
 import { criarTelaDeConjuntos } from './editor-conjuntos.mjs';
 import { criarTelaDeItemPower } from './editor-item-power.mjs';
+import { criarTelaDeClasses } from './editor-classes.mjs';
 import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
@@ -366,6 +367,7 @@ const TELAS_FIXAS = {
   sprites: SPRITES,
   progressao: criarTelaDeProgressao({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   conjuntos: criarTelaDeConjuntos({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) }),
+  classes: criarTelaDeClasses({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   itempower: criarTelaDeItemPower({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   validacao: criarTelaDeValidacao({ api, raiz: () => $('#raiz'), podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
   outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
@@ -377,7 +379,7 @@ const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -398,6 +400,7 @@ const GRUPOS = [
     { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },
     { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' },
     { id: 'progressao', nome: 'Progressão e loot', icone: 'engrenagem', modo: 'parcial', dica: 'Atos, tiers das bases e loot por dificuldade (override); simulador' },
+    { id: 'classes', nome: 'Classes', icone: 'classes', modo: 'parcial', dica: 'classes, atributos iniciais e bônus por ponto de atributo (override)' },
     { id: 'itempower', nome: 'Item Power', icone: 'espada', modo: 'parcial', dica: 'poder base dos equipamentos, curva por level e alertas de distribuição (override)' },
     { id: 'conjuntos', nome: 'Conjuntos', icone: 'espada', modo: 'parcial', dica: 'sets de equipamento por classe, Ato e tier (override); referências a itens' },
     { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', modo: 'parcial', dica: 'monstros, outfits e montarias: quadros, direções e animação por override' }] },

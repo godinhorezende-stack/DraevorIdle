@@ -8,6 +8,7 @@
 //                         diario | diarioEscolher | marco | presente |
 //                         largar | destroy | pegar | mounts | outfit | mount |
 //                         delta | jaTenhoCatalogo | oculta
+import * as Classes from '../systems/classes.mjs';
 import * as B from '../../game/database/banco.mjs';
 import * as R from '../systems/regras.mjs';
 import { CITY_MAP, CITY_META, ITEM_CATALOG, CATALOGO, CHARACTER_TEMPLATE, bloqueado, gradeDaCidade } from '../systems/dados.mjs';
@@ -183,6 +184,7 @@ function cartaoDaConta(personagens) {
       name: p.nome,
       level: e.level,
       vocation: p.vocacao,
+      classe: p.classe ?? p.vocacao,
       // "Elite Knight · level 639" na lista, depois da promoção.
       vocationName: Promocao.nomeDaClasse({ ...e, vocation: e.vocation ?? p.vocacao }),
       outfit: e.outfit,
@@ -196,7 +198,7 @@ function cartaoDaConta(personagens) {
   });
 }
 
-function estadoInicialPersonagem(vocacao, sexo) {
+function estadoInicialPersonagem(vocacao, sexo, classe = null) {
   const look = R.LOOK_DA_VOCACAO[vocacao][sexo];
   const { maxHp, maxMana } = R.statsBase(vocacao, R.NIVEL_INICIAL);
   return {
@@ -207,6 +209,8 @@ function estadoInicialPersonagem(vocacao, sexo) {
     // 4200). Com 0 a barra ficava em 0% e o level não subia nunca.
     xp: R.expForLevel(R.NIVEL_INICIAL),
     vocation: vocacao,
+    // A CLASSE escolhida (Editor de Classes): o id dela; `vocation` é a vocação mecânica. Os atributos iniciais vêm da classe e são DERIVADOS a cada cálculo (nunca gravados aqui): entram uma vez só.
+    ...(classe ? { classe } : {}),
     sex: sexo,
     outfit: { type: look, head: 78, body: 88, legs: 58, feet: 76, mount: 0, addons: 0 },
     hp: maxHp,
@@ -1605,10 +1609,14 @@ export class Sessao {
 
   // ------------------------------------------------------------ personagem
 
-  async criarPersonagem({ name, vocation, sex }) {
+  async criarPersonagem({ name, vocation, sex, classe }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
     const problema = R.problemaNoNomeDePersonagem(name);
     if (problema) return this.erroDeAuth(problema);
+    // A classe é validada AQUI (o cliente só sugere): precisa existir e estar ATIVA; a vocação mecânica sai da classe, não do que o cliente mandou.
+    const cls = Classes.resolverParaCriacao(typeof classe === 'string' && classe ? classe : vocation);
+    if (!cls) return this.erroDeAuth('Classe inválida ou desativada.');
+    vocation = cls.vocacaoBase;
     if (!R.VOCACOES_VALIDAS.has(vocation)) return this.erroDeAuth('Vocação inválida.');
     if (sex !== 'male' && sex !== 'female') return this.erroDeAuth('Escolha inválida.');
     if (await B.personagemPorNome(name)) return this.erroDeAuth('Já existe um personagem com esse nome.');
@@ -1619,8 +1627,9 @@ export class Sessao {
       conta: this.conta.id,
       nome: name,
       vocacao: vocation,
+      classe: cls.id,
       sexo: sex,
-      estadoInicial: estadoInicialPersonagem(vocation, sex),
+      estadoInicial: estadoInicialPersonagem(vocation, sex, cls.id),
     });
     // O cliente trata `account` como "a lista mudou, redesenhe" também fora do
     // login — ver `auth.mjs`'s `handle`.

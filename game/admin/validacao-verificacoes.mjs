@@ -134,6 +134,19 @@ export function criarVerificacoes() {
       },
     },
     {
+      id: 'classes', modulo: 'classes', titulo: 'Classes e bônus por atributo: IDs, atributos iniciais, limites e classes de fábrica',
+      async rodar(ctx) {
+        const C = await import('../systems/classes.mjs');
+        const arquivo = join(ctx.overrides ?? join(RAIZ, 'overrides'), 'classes.json');
+        let ov = null;
+        if (existsSync(arquivo)) { try { ov = JSON.parse(readFileSync(arquivo, 'utf8')); } catch (e) { return { achados: [erro('overrides/classes.json', `JSON inválido: ${e.message}`)] }; } }
+        const v = C.validarConfiguracao(C.efetivo(C.ORIGINAL, ov));
+        const achados = [...v.erros.map((m) => erro('classes', m)), ...v.avisos.map((m) => aviso('classes', m))];
+        if (ov?.ativo === false && (Object.keys(ov.classes ?? {}).length || Object.keys(ov.efeitos ?? {}).length)) achados.push(aviso('overrides/classes.json', 'a camada de overrides de classes está DESLIGADA: nenhuma alteração vale.'));
+        return { achados, detalhe: `${Object.keys(C.efetivo(C.ORIGINAL, ov).classes).length} classe(s)` };
+      },
+    },
+    {
       id: 'sprites-itens', modulo: 'sprites', titulo: 'Sprites de itens (overrides): imagem, hash e item existente',
       async rodar(ctx) {
         const SI = await import('./overrides-sprites-itens.mjs');

@@ -33,6 +33,7 @@ import * as Keystones from './passivas/keystones.mjs';
 import * as PoderDaArma from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
 import * as ArmaMod from '../engine/arma.mjs';
+import './classes.mjs'; // aplica no boot as classes e os bônus de atributo do Editor de Classes (override)
 import { simples } from './combate/modificadores.mjs';
 import { PARAMETROS as FORMULAS } from './combate/formulas.mjs';
 import * as FORMULAS_FN from './combate/formulas.mjs';
@@ -497,8 +498,8 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
     return n + (a + b) / 2;
   }, 0);
   const armour = simples(somaDoCampo('armor'), { fixos: af.armor_flat ?? 0, pct: (af.armour_pct ?? 0) + espStat('armour') }).bruto;
-  const evasion = simples(somaDoCampo('evasion'), { fixos: (af.evasion ?? 0) + doAtributo.evasao, pct: (af.evasion_pct ?? 0) + espStat('evasion') }).bruto;
-  const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: af.es_pct ?? 0 }).bruto;
+  const evasion = simples(somaDoCampo('evasion'), { fixos: (af.evasion ?? 0) + doAtributo.evasao, pct: (af.evasion_pct ?? 0) + espStat('evasion') + (doAtributo.evasaoPct ?? 0) }).bruto;
+  const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: (af.es_pct ?? 0) + (doAtributo.energyShieldPct ?? 0) }).bruto;
   return { armour: Math.round(armour), evasion: Math.round(evasion), energyShield: Math.round(energyShield) };
 }
 

@@ -925,3 +925,13 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .itm-rapido { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
 .ip-painel { border: 1px solid var(--eng-linha, #3a3f4b); border-radius: 8px; padding: 8px 12px; margin: 10px 0; }
 .ip-grande { font-size: 1.15rem; }
+
+/* Editor de Classes */
+.cls-lista { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.cls-card { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--eng-linha, #3a3f4b); border-radius: 8px; cursor: pointer; }
+.cls-card.ativa { background: var(--eng-s2, rgba(106, 167, 255, .12)); }
+.cls-card.inativa { opacity: .65; }
+.cls-icone { font-size: 1.4rem; }
+.cls-nome { flex: 1; min-width: 120px; }
+.cls-botoes { display: flex; gap: 4px; flex-wrap: wrap; }
+.vocation-atributos { font-size: 12px; opacity: .9; margin: 4px 0; }

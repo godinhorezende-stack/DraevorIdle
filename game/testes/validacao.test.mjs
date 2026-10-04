@@ -73,7 +73,7 @@ test('V5. verificações de verdade (processo à parte, jogo carregado do disco)
   assert.equal(por(e.rapida, 'monstros').status, 'aprovado');
   assert.equal(por(e.rapida, 'itens').status, 'aprovado');
   assert.equal(por(e.rapida, 'json').status, 'aprovado');
-  assert.deepEqual(e.rapida.verificacoes.map((v) => v.id), ['json', 'carga', 'monstros', 'itens', 'progressao', 'conjuntos', 'item-power', 'sprites-itens', 'sprites', 'atos', 'campanha', 'encontros', 'referencias']);
+  assert.deepEqual(e.rapida.verificacoes.map((v) => v.id), ['json', 'carga', 'monstros', 'itens', 'progressao', 'conjuntos', 'item-power', 'classes', 'sprites-itens', 'sprites', 'atos', 'campanha', 'encontros', 'referencias']);
   // 2) defeitos
   grava('monstros.json', { ativo: true, monstros: { troll: { hp: -5, look: 99999999 }, 'sem-base': { hp: 10 }, rotworm: { campoInventado: 1 } } });
   grava('itens.json', { ativo: true, itens: { 3268: { attack: -1, rarity: 'azul' }, 99999999: { attack: 1 } } });

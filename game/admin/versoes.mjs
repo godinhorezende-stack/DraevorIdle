@@ -14,7 +14,7 @@ import { diffJson, resumirDiff } from '../engine/diff-json.mjs';
 const JOGO = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const CAMINHOS = { pasta: process.env.ENGINE_VERSOES || join(JOGO, 'database', 'dados', 'versoes') };
 export const ID_DE_VERSAO = /^v\d{4}\.\d{2}\.\d{2}-\d+$/;
-const NOME_DO_MODULO = { monstros: 'Monstros', itens: 'Itens', progressao: 'Progressão e loot', conjuntos: 'Conjuntos', 'item-power': 'Item Power', sprites: 'Sprites, outfits e montarias', atos: 'Acts', campanha: 'Campanha', encontros: 'Encontros e bosses', hunts: 'Hunts e mapas', 'outros-dados': 'Outros dados', codigo: 'Código do jogo', 'docs-e-testes': 'Docs e testes' };
+const NOME_DO_MODULO = { monstros: 'Monstros', itens: 'Itens', progressao: 'Progressão e loot', conjuntos: 'Conjuntos', classes: 'Classes e atributos', 'item-power': 'Item Power', sprites: 'Sprites, outfits e montarias', atos: 'Acts', campanha: 'Campanha', encontros: 'Encontros e bosses', hunts: 'Hunts e mapas', 'outros-dados': 'Outros dados', codigo: 'Código do jogo', 'docs-e-testes': 'Docs e testes' };
 const sha = (b) => createHash('sha256').update(b).digest('hex');
 const raizDoRepo = () => Git.raizDoRepo();
 const lerDoDisco = (caminho) => { const f = join(raizDoRepo(), caminho); return existsSync(f) ? readFileSync(f) : null; };

@@ -21,6 +21,8 @@ import * as OverridesItemPower from './overrides-item-power.mjs';
 import * as AnaliseItemPower from './item-power-analise.mjs';
 import * as EditorItemPower from './item-power-editor.mjs';
 import * as SpritesItens from './overrides-sprites-itens.mjs';
+import * as OverridesClasses from './overrides-classes.mjs';
+import * as Classes from '../systems/classes.mjs';
 import * as ItemPower from '../systems/item-power.mjs';
 import * as Conjuntos from '../systems/conjuntos.mjs';
 import * as Progressao from '../systems/progressao.mjs';
@@ -43,6 +45,10 @@ async function comRecargaDeItens(r, aplicar) {
 // O Hot Reload (systems/hot-reload.mjs) é ligado pelo backend; sem ele (testes, produção) a Engine vê "desligado".
 let hot = null;
 export const ligarHotReload = (h) => { hot = h; };
+// O banco de personagens (contagem por classe e migração): ligado pelo backend; sem ele (testes) a contagem vem vazia e a migração é recusada.
+let bancoDeClasses = null;
+export const ligarBancoDeClasses = (b) => { bancoDeClasses = b; };
+const contagensDeClasses = async () => (bancoDeClasses ? bancoDeClasses.contar() : null);
 const SEM_HOT = { ativo: false, motivoInativo: 'o Hot Reload não foi iniciado neste servidor.', estado: 'desativado', mensagem: 'Hot Reload desligado.', pendentes: [], erros: [], reinicio: [], recarregaveis: [], historico: [] };
 
 export async function atender(req, res, caminho, url, { json, corpoJson }) {
@@ -107,6 +113,10 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Sprite de item (override): o estado de um item e a lista dos alterados — só leitura.
     if (rota === 'sprites-itens') return json(res, 200, SpritesItens.listar()), true;
     if (rota.startsWith('sprites-itens/')) { const s = SpritesItens.obter(decodeURIComponent(rota.slice('sprites-itens/'.length))); return s ? json(res, 200, s) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true; }
+    // Editor de Classes: a configuração (com os personagens por classe), versões e comparação — só leitura.
+    if (rota === 'classes') return json(res, 200, OverridesClasses.obter(await contagensDeClasses())), true;
+    if (rota === 'classes/versoes') return json(res, 200, { versoes: OverridesClasses.versoes() }), true;
+    if (rota === 'classes/comparar') { const r = OverridesClasses.comparar(url.searchParams.get('de'), url.searchParams.get('para') ?? 'atual'); return json(res, r.ok ? 200 : 404, r), true; }
     if (rota === 'item-power/marcos') return json(res, 200, AnaliseItemPower.presentesDeMarco()), true;
     if (rota === 'item-power/alertas') return json(res, 200, AnaliseItemPower.alertasDeDistribuicao(url.searchParams.get('dif') ?? 'facil', ItemPower.EM_USO, { limite: url.searchParams.get('limite') })), true;
     if (rota.startsWith('item-power/item/')) {
@@ -297,6 +307,28 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Painel de Item Power do editor de itens (atributos original × atual × simulado, IP, composição, curva, alertas) e a resolução de um alvo de Armour/Evasion/Energy Shield — só leem.
     if (rota === 'overrides/itens/poder') { const r = EditorItemPower.poderDoOverride(String(dados?.id ?? ''), dados?.override ?? null, undefined, dados?.arma ?? null); return json(res, r.ok === false && !r.id ? 404 : 200, r), true; }
     if (rota === 'item-power/resolver-defesa') { const r = EditorItemPower.resolverDefesa(String(dados?.id ?? ''), dados?.override ?? null, String(dados?.tipo ?? ''), dados?.valor); return json(res, r.ok ? 200 : 400, r), true; }
+    // Classes: validar/prévia (só lê); salvar, reverter, restaurar e migrar (gravam).
+    if (rota === 'classes/previa') return json(res, 200, { previa: Classes.previaDeEfeitos(dados?.efeitos ?? {}, { str: Number(dados?.str) || 0, dex: Number(dados?.dex) || 0, int: Number(dados?.int) || 0 }) }), true;
+    if (rota === 'classes/validar') return json(res, 200, OverridesClasses.propor(dados?.override ?? null, { contagens: await contagensDeClasses() })), true;
+    if (rota === 'classes') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesClasses.salvar(dados.override, dados.revisao, { contagens: await contagensDeClasses() }));
+      if (a === 'reverter') return responder(OverridesClasses.reverter(dados.revisao));
+      if (a === 'restaurar') return responder(OverridesClasses.restaurar(dados.versao, dados.revisao));
+      if (a === 'migrar') {
+        // MIGRAÇÃO EXPLÍCITA: todos os personagens de `de` passam para `para` (classe ATIVA), no banco. Pede `confirmar: true`.
+        if (!bancoDeClasses) return json(res, 409, { ok: false, erros: ['O banco de personagens não está ligado neste servidor.'] }), true;
+        const de = OverridesClasses.obter().classes.find((c) => c.id === dados.de); const para = OverridesClasses.obter().classes.find((c) => c.id === dados.para);
+        if (!de || !para) return json(res, 400, { ok: false, erros: ['Classe de origem ou destino não existe.'] }), true;
+        if (de.id === para.id) return json(res, 400, { ok: false, erros: ['Origem e destino são a mesma classe.'] }), true;
+        if (!para.ativo) return json(res, 400, { ok: false, erros: ['A classe de destino precisa estar ativa.'] }), true;
+        if (dados.confirmar !== true) return json(res, 400, { ok: false, erros: ['Confirme a migração (confirmar: true): ela altera personagens no banco.'] }), true;
+        const n = await bancoDeClasses.migrar(de.id, para.id, para.vocacaoBase);
+        return json(res, 200, { ok: true, migrados: n, aviso: 'Personagens que estavam online só mudam no próximo login.' }), true;
+      }
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, restaurar ou migrar.'] }), true;
+    }
     // Sprite de item: validar a imagem (só lê) e salvar/reverter (gravam).
     if (rota === 'sprites-itens/validar') { const a = SpritesItens.analisar(String(dados?.id ?? ''), dados ?? {}); const { buffer, ...resto } = a; return json(res, 200, resto), true; }
     if (rota === 'sprites-itens') {

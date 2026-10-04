@@ -141,6 +141,18 @@ for (const coluna of ['caca_offline_desde', 'caca_offline_ate']) {
     if (!jaExiste(e)) throw e;
   }
 }
+// A CLASSE do Editor de Classes (`systems/classes.mjs`): o id da classe escolhida na criação. `vocacao` segue sendo a vocação MECÂNICA (knight, paladin…) de que o jogo depende; personagem antigo fica
+// com `classe` NULL e vale como a própria vocação (compatibilidade).
+try {
+  if (banco.dialeto === 'sqlite') {
+    const tem = banco.bruto.prepare('PRAGMA table_info(personagens)').all().some((c) => c.name === 'classe');
+    if (!tem) await banco.exec('ALTER TABLE personagens ADD COLUMN classe TEXT');
+  } else {
+    await banco.exec('ALTER TABLE personagens ADD COLUMN IF NOT EXISTS classe TEXT');
+  }
+} catch (e) {
+  if (!jaExiste(e)) throw e;
+}
 for (const [indice, coluna] of [['personagens_caca_offline_desde', 'caca_offline_desde'], ['personagens_caca_offline_ate', 'caca_offline_ate']]) {
   try {
     await banco.exec(`CREATE INDEX IF NOT EXISTS ${indice} ON personagens(${coluna})`);
@@ -236,13 +248,33 @@ export const personagensDaConta = (contaId) =>
 export const personagemPorNome = (nome) =>
   nome ? banco.prepare('SELECT * FROM personagens WHERE nome = ?').get(nome) : Promise.resolve(undefined);
 
-export async function criarPersonagem({ conta, nome, vocacao, sexo, estadoInicial }) {
+export async function criarPersonagem({ conta, nome, vocacao, sexo, estadoInicial, classe = null }) {
   const id = randomUUID();
   await banco.prepare(
-    `INSERT INTO personagens (id, conta, nome, vocacao, sexo, criado_em, estado, caca_offline_desde, caca_offline_ate)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(id, conta, nome, vocacao, sexo, Date.now(), JSON.stringify(estadoInicial), ...colunasDaCacaOffline(estadoInicial));
-  return { id, conta, nome, vocacao, sexo, estado: estadoInicial };
+    `INSERT INTO personagens (id, conta, nome, vocacao, sexo, criado_em, estado, caca_offline_desde, caca_offline_ate, classe)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(id, conta, nome, vocacao, sexo, Date.now(), JSON.stringify(estadoInicial), ...colunasDaCacaOffline(estadoInicial), classe);
+  return { id, conta, nome, vocacao, sexo, classe, estado: estadoInicial };
+}
+
+/** Quantos personagens há em cada classe (`{ id: n }`); personagem antigo (sem `classe`) conta na própria vocação. */
+export async function contarPersonagensPorClasse() {
+  const linhas = await banco.prepare('SELECT COALESCE(classe, vocacao) AS classe, COUNT(*) AS n FROM personagens GROUP BY COALESCE(classe, vocacao)').all();
+  return Object.fromEntries(linhas.map((l) => [l.classe, Number(l.n)]));
+}
+
+/**
+ * MIGRAÇÃO EXPLÍCITA de classe: todos os personagens da classe `de` passam para a classe `para` (com a vocação mecânica `vocacaoPara`), no banco e no estado salvo. Devolve quantos mudaram.
+ * É a única forma de esvaziar uma classe antes de apagá-la.
+ */
+export async function migrarClasse(de, para, vocacaoPara) {
+  const lista = await banco.prepare('SELECT id, estado FROM personagens WHERE COALESCE(classe, vocacao) = ?').all(de);
+  for (const p of lista) {
+    let estado; try { estado = JSON.parse(p.estado); } catch { estado = null; }
+    if (estado) { estado.classe = para; estado.vocation = vocacaoPara; }
+    await banco.prepare('UPDATE personagens SET classe = ?, vocacao = ?, estado = ? WHERE id = ?').run(para, vocacaoPara, estado ? JSON.stringify(estado) : p.estado, p.id);
+  }
+  return lista.length;
 }
 
 // Toda gravação de estado leva as colunas da caçada offline junto (ver `caca-offline.mjs`).
