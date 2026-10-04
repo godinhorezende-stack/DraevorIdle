@@ -69,6 +69,25 @@ test('Normal não tem mods; Mágico tem 1–2 com no máximo 1 de cada lado e le
   }
 });
 
+test('Mágico (regra do dono, 04/10): 1 mod em ~50% (só prefixo OU só sufixo) e 2 mods em ~50% (exatamente 1+1)', () => {
+  const rng = semente(21);
+  const N = 4000;
+  let um = 0;
+  let dois = 0;
+  for (let i = 0; i < N; i++) {
+    const p = gerar('magico', 80, rng);
+    const n = p.prefixos.length + p.sufixos.length;
+    if (n === 1) {
+      um++;
+      assert.ok(p.prefixos.length === 1 || p.sufixos.length === 1);
+    } else {
+      dois++;
+      assert.deepEqual([p.prefixos.length, p.sufixos.length], [1, 1], 'com 2 mods vem exatamente 1 prefixo + 1 sufixo');
+    }
+  }
+  assert.ok(Math.abs(um / N - 0.5) < 0.03 && Math.abs(dois / N - 0.5) < 0.03, `1 mod ${um}, 2 mods ${dois}`);
+});
+
 test('Raro: 4 a 6 mods, nunca mais de 3 de um lado, família nunca repete, valores dentro das faixas', () => {
   const rng = semente(11);
   const contagem = {};

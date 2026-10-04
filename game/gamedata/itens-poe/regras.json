@@ -1,8 +1,8 @@
 {
-  "_nota": "As REGRAS do sistema de itens no modelo do PoE (Fase 1, desligado em produção: só vale com ITENS_POE=1). Decisões do dono de 04/10: raridades Normal, Mágico, Raro e Único 'como na documentação' (poe-itens/Raridades/raridades.md — PoEDB: Mágico até 1 prefixo + 1 sufixo; Raro até 3 + 3; Único com mods fixos), Raro com 4 a 6 mods 'como no PoE', poderes especiais só nos Únicos. Os PESOS de quantidade (`quantidade`) NÃO estão na coleção: são conhecimento geral do PoE, marcados como tal, e editáveis na engine.",
+  "_nota": "As REGRAS do sistema de itens no modelo do PoE (Fase 1, desligado em produção: só vale com ITENS_POE=1). Decisões do dono de 04/10: raridades Normal, Mágico, Raro e Único 'como na documentação' (poe-itens/Raridades/raridades.md — PoEDB: Mágico até 1 prefixo + 1 sufixo; Raro até 3 + 3; Único com mods fixos), Raro com 4 a 6 mods 'como no PoE', poderes especiais só nos Únicos. A quantidade do Mágico é regra do dono (04/10); a do Raro NÃO está na coleção: é conhecimento geral do PoE, marcada como tal. Tudo editável na engine.",
   "raridades": {
     "normal": { "nome": "Normal", "cor": "#f6f6f6", "maxPrefixos": 0, "maxSufixos": 0, "quantidade": { "0": 1 } },
-    "magico": { "nome": "Mágico", "cor": "#a29cf9", "maxPrefixos": 1, "maxSufixos": 1, "quantidade": { "1": 1, "2": 1 }, "_quantidade": "conhecimento geral (1 ou 2), não verificado na coleção" },
+    "magico": { "nome": "Mágico", "cor": "#a29cf9", "maxPrefixos": 1, "maxSufixos": 1, "quantidade": { "1": 1, "2": 1 }, "_quantidade": "regra do dono (04/10), para o drop e a Orbe de Transmutação: 1 mod 50% (só o prefixo OU só o sufixo), 2 mods 50% (exatamente 1 prefixo + 1 sufixo). Com 1 mod, o lado sai pelo peso dos mods elegíveis de cada lado." },
     "raro": { "nome": "Raro", "cor": "#fcfca0", "maxPrefixos": 3, "maxSufixos": 3, "quantidade": { "4": 8, "5": 3, "6": 1 }, "_quantidade": "conhecimento geral do PoE (4 mais comum, 6 raro), não verificado na coleção" },
     "unico": { "nome": "Único", "cor": "#a66734", "fixos": true }
   },
