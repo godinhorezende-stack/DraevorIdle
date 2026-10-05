@@ -36,6 +36,8 @@ import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
+import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
+import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
 import * as Tarefas from '../tarefas.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
@@ -751,6 +753,14 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     darExtra(orbe);
   }
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
+  // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1 e os números do dono em `itens-poe/regras.json` → drop; chance 0 = nada cai).
+  {
+    const daPoe = ItensPoeJogo.dropDoMonstro(AtributosDoPersonagem.levelDoBicho(hunt, alvo));
+    if (daPoe && Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) {
+      caiu.push({ id: daPoe.id, count: 1 });
+      conta('loot', daPoe.id, 1);
+    }
+  }
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
   tirarMonstro(hunt, alvo);

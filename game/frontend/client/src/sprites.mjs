@@ -305,6 +305,8 @@ export function emprestarDoCatalogo(catalogo) {
       continue;
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
+    // Item do sistema de itens do PoE (só com ITENS_POE=1 no servidor local): o ícone 64×64 da coleção de referência, servido pela engine.
+    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/mapas/_engine/itens-poe/ref/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
   }
   // Quem saiu com o "?" antes deste empréstimo (gema, `spriteDe`) e agora tem figura: refaz.
   for (const canvas of globalThis.document?.querySelectorAll?.('canvas[data-sem-icone]') ?? []) {

@@ -2,7 +2,8 @@
 // coleção local (classes, bases com os ícones, o pool de prefixos/sufixos por família e tier, os únicos) e um GERADOR de peças de
 // exemplo com as regras da documentação (Normal, Mágico, Raro 4–6, Único). Funciona só no servidor com `ITENS_POE=1`; nos outros,
 // explica como ligar. Nada aqui muda o jogo atual.
-import { el, copiar, cabecalho } from './editor-ui.mjs';
+import { el, msg, copiar, cabecalho } from './editor-ui.mjs';
+import { balaoPoe } from './itens-poe-balao.mjs';
 
 const BASE = '/api/mapas/_engine/itens-poe/';
 const api = async (rota) => (await fetch(BASE + rota)).json();
@@ -23,27 +24,8 @@ const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado
 /** O ícone da coleção (ou o marcador quando a base não tem imagem). */
 const icone = (caminho, tam = 64) => (caminho ? el('img', { class: 'poe-icone', src: img(caminho), width: tam, height: tam, loading: 'lazy', alt: '', onerror: (e) => e.target.replaceWith(el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?')) }) : el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?'));
 
-/**
- * O balão à moda do PoE para uma peça gerada: nome na cor da raridade (regras da documentação), a base, as propriedades, o implícito e
- * os prefixos/sufixos com o tier. Só desenho — os textos são os da coleção, com os valores sorteados.
- */
-function balao(p, regras, baseInfo) {
-  const R = regras.raridades[p.raridade] ?? {};
-  // A tradução vem na ordem implícitos → prefixos → sufixos → únicos (a mesma de `traduzirPeca`).
-  const fila = [...(p.traducao?.linhas ?? [])];
-  const marca = (t) => (t ? el('em', { class: `poe-tr ${t.estado}`, title: [ESTADO[t.estado], ...t.partes.map((x) => x.nota).filter(Boolean), t.efeitos.length ? `→ ${t.efeitos.map((e) => `${e.stat} ${e.valor > 0 ? '+' : ''}${e.valor}`).join(', ')}` : ''].filter(Boolean).join('\n') }, SIMBOLO[t.estado]) : null);
-  const linhas = (lista, classe) => lista.map((m) => el('div', { class: `poe-mod ${classe}` }, marca(fila.shift()), el('span', {}, m.texto), m.tier != null ? el('i', { title: `${m.familia} · iLvl ${m.ilvl}` }, `${classe === 'pre' ? 'P' : 'S'} T${m.tier}`) : null));
-  const sep = () => el('div', { class: 'poe-sep' });
-  return el('div', { class: `poe-balao r-${p.raridade}`, style: `--cor:${R.cor ?? '#ddd'}` },
-    el('div', { class: 'poe-topo' }, el('b', {}, p.nome), p.nome !== baseInfo?.nome ? el('span', {}, baseInfo?.nome) : null),
-    el('div', { class: 'poe-props' }, el('div', { class: 'poe-raridade' }, `${R.nome ?? p.raridade} · Item Level ${p.ilvl}`), Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => el('div', {}, `${ROTULO[k]}: `, el('b', {}, valorDoAtributo(k, v))))),
-    p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp')] : null,
-    p.prefixos?.length || p.sufixos?.length ? [sep(), linhas(p.prefixos ?? [], 'pre'), linhas(p.sufixos ?? [], 'suf')] : null,
-    p.modificadores?.length ? [sep(), p.modificadores.map((m) => el('div', { class: 'poe-mod uni' }, marca(fila.shift()), el('span', {}, m.texto)))] : null,
-    p.traducao ? el('div', { class: 'poe-draevor' }, el('b', {}, 'No Draevor: '), Object.keys(p.traducao.af).length ? Object.entries(p.traducao.af).map(([k, v]) => el('span', { class: 'selo' }, `${k} ${v > 0 ? '+' : ''}${v}`)) : el('span', { class: 'dica' }, 'nada')) : null,
-    p.aviso ? el('div', { class: 'poe-aviso' }, p.aviso) : null,
-    p.erro ? el('div', { class: 'poe-aviso' }, p.erro) : null);
-}
+/** O balão da peça gerada: o MESMO do jogo (itens-poe-balao.mjs), com a tradução de cada mod e o que ela soma no Draevor. */
+const balao = (p, regras, baseInfo) => balaoPoe(p, { cor: regras.raridades[p.raridade]?.cor, raridadeNome: regras.raridades[p.raridade]?.nome ?? p.raridade, nomeDaBase: baseInfo?.nome, estados: p.traducao?.linhas.map((l) => l.estado), af: p.traducao?.af });
 
 export function criarTelaDeItensPoe({ raiz }) {
   const T = { estado: null, classes: null, classe: null, dados: null, base: null, aba: 'gerar', raridade: 'raro', ilvl: 84, semente: 1, pool: null, filtro: '' };
@@ -129,11 +111,25 @@ export function criarTelaDeItensPoe({ raiz }) {
     const regras = T.estado.regras;
     const selRar = el('select', { onchange: (e) => { T.raridade = e.target.value; pintarPainel(); } }, regras.ordem.map((r) => el('option', { value: r, selected: r === T.raridade }, regras.raridades[r].nome)));
     const nivel = el('input', { type: 'number', min: 1, max: 100, value: T.ilvl, style: 'width:80px', onchange: (e) => { T.ilvl = Number(e.target.value) || 84; pintarPainel(); } });
-    const r = await api(`gerar?${new URLSearchParams({ base: b.id, raridade: T.raridade, ilvl: T.ilvl, semente: T.semente, n: 6 })}`);
+    const [r, on] = await Promise.all([api(`gerar?${new URLSearchParams({ base: b.id, raridade: T.raridade, ilvl: T.ilvl, semente: T.semente, n: 6 })}`), api('online')]);
+    const equipavel = on.equipavel.includes(T.classe);
+    // Dar a peça N a um personagem online deste servidor (para testar jogando). O servidor regera a mesma peça pela semente.
+    const dar = async (indice, botao) => {
+      const nome = document.querySelector('#poe-quem')?.value;
+      if (!nome) return msg('Escolha um personagem online.', 'aviso');
+      botao.disabled = true;
+      const resp = await (await fetch(`${BASE}dar`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ personagem: nome, base: b.id, raridade: T.raridade, ilvl: T.ilvl, semente: T.semente, indice }) })).json();
+      botao.disabled = false;
+      msg(resp.ok ? `Peça entregue a ${resp.nome}.` : resp.erros?.[0] ?? 'Não deu.', resp.ok ? 'ok' : 'erro');
+    };
+    const quem = el('select', { id: 'poe-quem' }, on.online.length ? on.online.map((n) => el('option', { value: n }, n)) : el('option', { value: '' }, 'ninguém online'));
     return [
+      equipavel
+        ? el('div', { class: 'eng-tooltip-barra' }, el('label', { class: 'campo', style: 'flex:none' }, 'Dar a (online neste servidor)', quem), el('span', { class: 'dica' }, 'Cada peça abaixo tem o botão "Dar": ela vai para a mochila do personagem.'))
+        : el('p', { class: 'dica' }, `Esta classe não tem slot no Draevor (${on.naoEquipaveis.join(', ')}): dá para ver, não para equipar.`),
       el('div', { class: 'eng-tooltip-barra' }, el('label', { class: 'campo', style: 'flex:none' }, 'Raridade', selRar), el('label', { class: 'campo', style: 'flex:none' }, 'Item Level', nivel),
         el('button', { type: 'button', onclick: () => { T.semente++; pintarPainel(); } }, 'Sortear outras'), el('span', { class: 'dica' }, `semente ${T.semente}`)),
-      el('div', { class: 'eng-tooltip-grade' }, r.pecas.map((p) => balao(p, regras, b))),
+      el('div', { class: 'eng-tooltip-grade' }, r.pecas.map((p, i) => el('figure', {}, balao(p, regras, b), equipavel && !p.erro ? el('button', { type: 'button', onclick: (e) => dar(i, e.currentTarget) }, 'Dar') : null))),
       el('p', { class: 'dica' }, `Regras da documentação (poe-itens/Raridades): ${regras.ordem.map((x) => { const R = regras.raridades[x]; return R.fixos ? `${R.nome} = mods fixos` : `${R.nome} até ${R.maxPrefixos}+${R.maxSufixos}`; }).join(' · ')}. Quantos mods (regras do dono): ${['magico', 'raro'].map((x) => { const q = regras.raridades[x].quantidade; const t = Object.values(q).reduce((a, b) => a + b, 0); return `${regras.raridades[x].nome} ${Object.entries(q).map(([n, p]) => `${n} = ${Math.round((p / t) * 100)}%`).join(', ')}`; }).join(' · ')}.`),
     ];
   }

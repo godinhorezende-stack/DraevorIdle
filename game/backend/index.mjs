@@ -7,6 +7,8 @@ import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
 import * as ConteudoHttp from '../admin/conteudo-http.mjs';
 import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
+import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import { ITEM_CATALOG as CATALOGO_DE_ITENS } from '../systems/dados.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
 import * as Estaticos from './estaticos.mjs';
@@ -88,6 +90,12 @@ async function servirArquivo(req, res, caminho) {
   return Estaticos.servir(req, res, alvo);
 }
 
+// Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): as bases entram no catálogo de itens antes de qualquer `welcome`.
+{
+  const r = ItensPoeJogo.iniciar(CATALOGO_DE_ITENS);
+  if (r.porBase.size) console.log(`  itens do PoE: ${r.porBase.size} bases no catálogo (ids ${ItensPoeJogo.PRIMEIRO_ID}+); sem slot: ${r.naoEquipaveis.join(', ')}`);
+}
+
 const http = createServer((req, res) => {
   atender(req, res).catch((e) => {
     console.error('http', req.method, req.url, '->', e.message);
@@ -162,7 +170,7 @@ async function atender(req, res) {
   }
   if (await ConteudoHttp.atender(req, res, caminho, url, { json, corpoJson })) return;
   // O sistema de itens no modelo do PoE (Fase 1): só leitura, e só com ITENS_POE=1 (desligado em produção).
-  if (await ItensPoeHttp.atender(req, res, caminho, url, { json })) return;
+  if (await ItensPoeHttp.atender(req, res, caminho, url, { json, corpoJson })) return;
   if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
     return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, cidade: Mapas.cidadeParaEditor(), criaturasPorHunt: Mapas.criaturasPorHunt(), ...Mapas.raridadesParaEditor() });
   }

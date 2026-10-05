@@ -507,27 +507,10 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .poe-icone { image-rendering: pixelated; display: block; }
 .poe-icone.vazio { display: grid; place-items: center; color: var(--eng-txt3); background: repeating-linear-gradient(45deg, var(--eng-s1) 0 6px, var(--eng-s2) 6px 12px); border-radius: var(--eng-r2); }
 .poe-topo-base { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
-.poe-balao { background: #0b0b0d; border: 1px solid color-mix(in srgb, var(--cor) 55%, #000); font: 13px/1.45 var(--font-item, 'Alegreya SC', Georgia, serif); color: #c8c8c8; min-width: 0; }
-.poe-topo { display: grid; justify-items: center; padding: 6px 10px; background: linear-gradient(180deg, color-mix(in srgb, var(--cor) 22%, #000), #0b0b0d); color: var(--cor); border-bottom: 1px solid color-mix(in srgb, var(--cor) 40%, #000); text-align: center; }
-.poe-topo b { font-size: 15px; font-weight: 500; }
-.poe-props { display: grid; justify-items: center; padding: 6px 10px; text-align: center; color: #8f8f8f; }
-.poe-props b { color: #e8e8e8; font-weight: 400; }
-.poe-raridade { font-size: 11.5px; color: #7f7f7f; }
-.poe-sep { height: 1px; margin: 0 12px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cor) 50%, #000), transparent); }
-.poe-mod { display: flex; justify-content: center; gap: 8px; padding: 1px 10px; text-align: center; color: #8888ff; }
-.poe-mod.imp { color: #9db9ff; }
-.poe-mod.uni { color: #c8a26a; }
-.poe-mod i { font: 10.5px var(--eng-mono); color: #5d6475; align-self: center; white-space: nowrap; }
-.poe-balao > :last-child { padding-bottom: 8px; }
-.poe-aviso { padding: 4px 10px 8px; color: var(--eng-aviso); font: 12px var(--eng-fonte); text-align: center; }
 .poe-unicos { display: grid; gap: var(--eng-e3); }
 .poe-unico { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--eng-e3); align-items: start; background: var(--eng-s0); border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); padding: var(--eng-e2) var(--eng-e3); }
 .poe-unico b { color: #c8a26a; font-weight: 500; }
 .poe-unico .poe-mod { justify-content: flex-start; text-align: left; padding: 0; }
-.poe-tr { font-style: normal; font: 600 11px var(--eng-mono); width: 14px; display: inline-block; text-align: center; flex: none; }
-.poe-tr.equivalente { color: #5cc28a; } .poe-tr.aproximado { color: #e9c34f; } .poe-tr.novo { color: #c79bff; } .poe-tr.registrado { color: #8a93a5; }
-.poe-draevor { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 6px 10px 8px; border-top: 1px dashed #2a2a30; font: 12px var(--eng-fonte); color: var(--eng-txt2); }
-.poe-draevor b { font-weight: 500; color: var(--eng-txt); }
 .poe-cobertura { display: flex; height: 26px; border-radius: var(--eng-r2); overflow: hidden; border: 1px solid var(--eng-linha); }
 .poe-tr-barra { display: flex; align-items: center; justify-content: center; font-size: 11.5px; color: #0d0f14; white-space: nowrap; overflow: hidden; }
 .poe-tr-barra.equivalente { background: #5cc28a; } .poe-tr-barra.aproximado { background: #e9c34f; } .poe-tr-barra.novo { background: #c79bff; } .poe-tr-barra.registrado { background: #6f7889; }

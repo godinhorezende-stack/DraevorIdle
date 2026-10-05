@@ -35,6 +35,7 @@ import * as Tiers from '../systems/tiers.mjs';
 import * as Summon from '../systems/summon.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
+import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
 import * as Charms from '../systems/charms.mjs';
@@ -100,6 +101,7 @@ export const estaNoJogo = (nome) => !!vivas.get(nome)?.personagem || carregandoA
 /** A fila global de transações (Fase 6) — ver `emTransacao`. */
 let filaDeTransacoes = Promise.resolve();
 Party.ligar(vivas);
+ItensPoeJogo.ligar(vivas); // a engine local entrega peças do PoE a quem está online (só com ITENS_POE=1)
 Amigos.ligar(vivas);
 Chat.ligar(vivas);
 Anuncios.ligar(vivas); // o drop Épico+ para o servidor inteiro

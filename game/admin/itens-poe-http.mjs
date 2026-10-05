@@ -6,6 +6,7 @@ import { normalize, join, extname } from 'node:path';
 import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
 import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
+import * as Jogo from '../systems/itens-poe/jogo.mjs';
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
 const TIPOS = { '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.gif': 'image/gif' };
@@ -31,10 +32,29 @@ function resumoDoPool(pool, ilvl) {
   return { prefixos: lado(pool.prefixos, 'prefixo'), sufixos: lado(pool.sufixos, 'sufixo') };
 }
 
-export async function atender(req, res, caminho, url, { json }) {
+/** As peças de exemplo de uma semente (o mesmo sorteio da tela: dar a peça N regera a mesma peça, sem confiar no navegador). */
+function pecasDe(cat, q) {
+  const rng = rngDe(Number(q.get('semente')) || 1);
+  const n = Math.min(24, Math.max(1, Number(q.get('n')) || 6));
+  return Array.from({ length: n }, () => gerarPeca({ catalogo: cat, regras: Catalogo.REGRAS, base: q.get('base'), raridade: q.get('raridade') ?? 'raro', ilvl: Number(q.get('ilvl')) || 84, rng, unico: q.get('unico') || null }));
+}
+
+export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (!caminho.startsWith(PREFIXO)) return false;
-  if (req.method !== 'GET') return json(res, 405, { ok: false, erros: ['Somente leitura.'] }), true;
   const rota = caminho.slice(PREFIXO.length);
+  // A única escrita: dar uma peça a um personagem ONLINE no servidor local (para testar jogando).
+  if (req.method === 'POST' && rota === 'dar') {
+    const cat = Catalogo.catalogo();
+    if (!cat) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
+    const d = await corpoJson(req).catch(() => null);
+    const q = new URLSearchParams({ base: d?.base ?? '', raridade: d?.raridade ?? 'raro', ilvl: d?.ilvl ?? 84, semente: d?.semente ?? 1, n: Number(d?.indice ?? 0) + 1, ...(d?.unico ? { unico: d.unico } : {}) });
+    const gerada = pecasDe(cat, q)[Number(d?.indice ?? 0)];
+    const peca = Jogo.pecaDoJogo(gerada);
+    if (!peca) return json(res, 400, { ok: false, erros: [gerada?.erro ?? 'Esta base não é equipável no Draevor (sem slot).'] }), true;
+    const r = Jogo.entregar(d?.personagem, peca);
+    return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, nome: r.nome, peca } : { ok: false, erros: [r.erro] }), true;
+  }
+  if (req.method !== 'GET') return json(res, 405, { ok: false, erros: ['Somente leitura.'] }), true;
   const q = url.searchParams;
   if (rota === 'estado') return json(res, 200, { ligado: Catalogo.ligado(), arquivo: Catalogo.ARQUIVO, regras: Catalogo.REGRAS, como: 'Ligue com ITENS_POE=1 e importe com: node tools/importar-poe-itens.mjs' }), true;
   const cat = Catalogo.catalogo();
@@ -62,10 +82,9 @@ export async function atender(req, res, caminho, url, { json }) {
     if (!pool) return json(res, 404, { ok: false, erros: ['A coleção não tem pool de mods para esta base.'] }), true;
     return json(res, 200, { base: achado.base.id, pagina: achado.base.pool, ilvl: Number(q.get('ilvl')) || 84, ...resumoDoPool(pool, Number(q.get('ilvl')) || 84) }), true;
   }
+  if (rota === 'online') return json(res, 200, { online: Jogo.online(), equipavel: Object.keys(Jogo.CLASSES_DO_JOGO), naoEquipaveis: Jogo.registro().naoEquipaveis }), true;
   if (rota === 'gerar') {
-    const rng = rngDe(Number(q.get('semente')) || 1);
-    const n = Math.min(24, Math.max(1, Number(q.get('n')) || 6));
-    const pecas = Array.from({ length: n }, () => gerarPeca({ catalogo: cat, regras: Catalogo.REGRAS, base: q.get('base'), raridade: q.get('raridade') ?? 'raro', ilvl: Number(q.get('ilvl')) || 84, rng, unico: q.get('unico') || null }));
+    const pecas = pecasDe(cat, q);
     // Cada peça vem com a TRADUÇÃO para os atributos do Draevor (o que somaria na ficha) e o estado de cada mod.
     return json(res, 200, { pecas: pecas.map((p) => (p.erro ? p : { ...p, traducao: Traduzir.traduzirPeca(p) })) }), true;
   }

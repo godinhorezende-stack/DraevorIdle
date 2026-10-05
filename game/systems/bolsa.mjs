@@ -82,9 +82,11 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
   const soquetes = Array.isArray(peca) ? null : peca?.soquetes;
   const gema = Array.isArray(peca) ? null : peca?.gema;
   // Peça que caiu com atributo, efeito, faixa, sockets ou é uma gema: um quadrado só dela.
-  if (af?.length || efeito || base || soquetes || gema) {
+  // (A peça do sistema de itens do PoE — `poe`, só com ITENS_POE=1 — também é um quadrado só dela.)
+  const poe = Array.isArray(peca) ? null : peca?.poe;
+  if (af?.length || efeito || base || soquetes || gema || poe) {
     if (estado.pouch.length >= VAGAS_DA_BOLSA) return 0;
-    estado.pouch.push({ id, count: 1, ...(af?.length || efeito ? { af: af ?? [] } : {}), ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(peca?.ilvl ? { ilvl: peca.ilvl } : {}), ...(base ? { base } : {}), ...(efeito ? { efeito } : {}), ...(soquetes ? { soquetes } : {}), ...(gema ? { gema } : {}) });
+    estado.pouch.push({ id, count: 1, ...(af?.length || efeito ? { af: af ?? [] } : {}), ...(peca?.raridade ? { raridade: peca.raridade } : {}), ...(peca?.ilvl ? { ilvl: peca.ilvl } : {}), ...(base ? { base } : {}), ...(efeito ? { efeito } : {}), ...(soquetes ? { soquetes } : {}), ...(gema ? { gema } : {}), ...(poe ? { poe } : {}) });
     return 1;
   }
   const bolsa = estado.pouch;

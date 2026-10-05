@@ -4,6 +4,7 @@
 import { ehTelefone } from './perfil.mjs';
 import { portaDoItemDeAcesso } from '/packages/shared/src/portas-de-acesso.mjs';
 import { itemCanvas, outfitCanvas, drawItem, drawEffect, drawMissile, effectDuration } from './sprites.mjs';
+import { balaoPoe } from './itens-poe-balao.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -2671,6 +2672,8 @@ function blocoDosSoquetes(sq) {
 }
 
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
+  // A peça do sistema de itens do PoE (só existe com ITENS_POE=1 no servidor): o balão próprio, com Prefixos e Sufixos separados.
+  if (peca?.poe) return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: getItems()[id]?.name ?? null })] };
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;
 
