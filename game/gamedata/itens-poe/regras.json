@@ -46,13 +46,14 @@
     "unico"
   ],
   "drop": {
-    "_nota": "O DROP de peças do PoE nas caçadas (só com ITENS_POE=1). A coleção NÃO traz a chance por monstro nem os pesos de raridade: os números são do dono. Com chancePorMonstro 0 (o padrão) nada cai — a engine local tem o botão 'Dar' para testar. O Item Level da peça é o level do bicho, limitado a ilvlMaximo (os tiers do PoE vão até o iLvl 86).",
+    "_nota": "O DROP de peças do PoE nas caçadas (só com ITENS_POE=1). A coleção NÃO traz a chance por monstro nem os pesos de raridade: os números são do dono (pesos de raridade definidos em 05/10; a chance por monstro ainda não). Com chancePorMonstro 0 (o padrão) nada cai — a engine local tem o botão 'Dar' para testar. O Item Level da peça é o level do bicho, limitado a ilvlMaximo (os tiers do PoE vão até o iLvl 86).",
     "chancePorMonstro": 0,
     "raridades": {
-      "normal": 0,
-      "magico": 0,
-      "raro": 0,
-      "unico": 0
+      "normal": 0.85,
+      "magico": 0.125,
+      "raro": 0.03,
+      "unico": 0.00055,
+      "_nota": "Números do dono (05/10): Normal ~0,80–0,90, Mágico ~0,10–0,15, Raro ~0,02–0,04, Único ~0,0001–0,001 — aqui o ponto médio de cada faixa. São PESOS relativos (o sorteio divide pela soma), valendo para cada peça que cai."
     },
     "ilvlMaximo": 100
   }

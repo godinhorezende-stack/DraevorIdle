@@ -98,3 +98,18 @@ test('o drop: chance 0 (o padrão, sem os números do dono) nunca dá; com núme
     assert.equal(p.poe.ilvl, 30);
   }
 });
+
+test('os pesos de raridade do dono (05/10): a peça que cai é quase sempre Normal, Mágica às vezes, Rara pouco e Única raríssima', { skip: SEM }, () => {
+  Jogo.iniciar(ITEM_CATALOG);
+  const R = Catalogo.REGRAS.drop.raridades;
+  assert.deepEqual([R.normal, R.magico, R.raro, R.unico], [0.85, 0.125, 0.03, 0.00055]);
+  const regras = { ...Catalogo.REGRAS, drop: { ...Catalogo.REGRAS.drop, chancePorMonstro: 1 } };
+  const rng = semente(11);
+  const n = 2000;
+  const conta = { normal: 0, magico: 0, raro: 0, unico: 0 };
+  for (let i = 0; i < n; i++) conta[Jogo.dropDoMonstro(60, rng, regras).poe.raridade]++;
+  assert.ok(conta.normal / n > 0.8 && conta.normal / n < 0.9, `normal ${conta.normal}`);
+  assert.ok(conta.magico / n > 0.09 && conta.magico / n < 0.16, `mágico ${conta.magico}`);
+  assert.ok(conta.raro / n > 0.01 && conta.raro / n < 0.05, `raro ${conta.raro}`);
+  assert.ok(conta.unico <= 5, `único ${conta.unico}`);
+});
