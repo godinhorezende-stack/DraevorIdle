@@ -1720,8 +1720,9 @@ export function tique(estado, personagem, agora = Date.now()) {
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
-  // As cargas do PoE que venceram somem (a ficha é refeita).
-  if (CargasPoe.vencer(estado)) Ficha.invalidar(estado);
+  // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).
+  const regrasDasCargas = Ficha.combate(estado).cargas;
+  if (regrasDasCargas && CargasPoe.tique(estado, regrasDasCargas)) Ficha.invalidar(estado);
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
   Estados.tique(hunt, eventos, agora);
   processarMortes(estado, personagem, eventos);

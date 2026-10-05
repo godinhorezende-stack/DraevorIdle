@@ -246,6 +246,11 @@
           "valor": -100
         }
       ]
+    },
+    "Conduit": {
+      "regra": "poe",
+      "id": "conduite",
+      "estado": "equivalente"
     }
   }
 }

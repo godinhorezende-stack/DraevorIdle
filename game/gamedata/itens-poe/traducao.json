@@ -1128,6 +1128,320 @@
         }
       ],
       "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Tolerância quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_ser_acertado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Tolerância quando você Atordoar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_atordoar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Tolerância ao Atordoar um Inimigo com um Acerto Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_atordoar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder quando você Atordoa com Dano Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_atordoar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Poder ao acertar um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder no Golpe Crítico com Varinhas$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_critico_varinha",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Tolerância ao acertar um Golpe Crítico Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_critico_corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder em um Acerto Não Crítico$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_acerto_nao_critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Tolerância ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi quando (?:você )?Bloquear(?: Dano de Ataque)?$",
+      "efeitos": [
+        {
+          "stat": "carga_frenesi_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Cargas de Tolerância por segundo se foi Acertado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_por_segundo_acertado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganhe uma Carga de Frenesi a cada \\{(\\d+)\\} segundos enquanto se Move$",
+      "efeitos": [
+        {
+          "stat": "frenesi_a_cada_s_movendo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Poder após Gastar um total de \\{(\\d+)\\} de Mana$",
+      "efeitos": [
+        {
+          "stat": "poder_por_mana_gasta",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de que se você ganhasse Cargas de Tolerância, você ganha o seu número máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "chance_tolerancia_maxima",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "min_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "min_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "min_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Poder e Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Seu Máximo de Cargas de Tolerância é igual ao seu Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia_igual_frenesi",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "dano_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^(?:Dano aumentado em \\{(\\d+)\\}% por Carga de Frenesi|\\{(\\d+)\\}% de aumento de Dano por Carga de Frenesi)$",
+      "efeitos": [
+        {
+          "stat": "dano_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Carga de Frenesi, Poder ou Tolerância$",
+      "efeitos": [
+        {
+          "stat": "dano_por_carga",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Armadura por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "armour_pct_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "life_regen_pct_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "atk_speed_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "phys_res_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução do Dano Elemental adicional por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "elem_res_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% por cada Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     }
   ]
 }

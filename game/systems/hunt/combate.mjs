@@ -162,6 +162,9 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   if ((estado.mana ?? 0) < custo) return false; // sem mana: fica sem golpe este round, não cai pro físico (simplificação, ver comentário do arquivo)
   estado.mana -= custo;
   if (!segundo) Treino.gastarMana(estado, custo);
+  // O Ocultista (cargas do PoE): Carga de Poder a cada N de mana gasta.
+  const regrasDasCargas = Ficha.combate(estado).cargas;
+  if (regrasDasCargas && CargasPoe.aoGastarMana(estado, regrasDasCargas, custo).length) Ficha.invalidar(estado);
   // O dano do golpe da wand/rod é o "Dano" da ficha (Magic Attack + Magic Level + level), como o golpe físico; o elemento é o da arma.
   const { element } = arma.wand;
   const { min, max } = Ficha.combate(estado).damage;
@@ -190,6 +193,8 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
   // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado... — `mobs/mecanicas.mjs`).
   Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, element, eventos);
+  // As cargas do PoE no acerto da varinha (Poder no crítico, no crítico com varinhas, no acerto não crítico...).
+  if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit, varinha: true }).length) Ficha.invalidar(estado);
   if (!segundo) {
     Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
     Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem?.nome, hunt.pos);
@@ -808,6 +813,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     if (!(Math.random() < chanceDeBloquear)) return false;
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
+    // As cargas do PoE "ao Bloquear".
+    if (ficha.cargas && CargasPoe.aoBloquear(estado, ficha.cargas).length) Ficha.invalidar(estado);
     // Golpes Reveladores (keystone do PoE): o golpe bloqueado ainda causa 65% do dano.
     const glancing = temHabilidade(estado, 'golpesReveladores') ? 65 : Formulas.PARAMETROS.bloqueio.glancingPct;
     if (glancing > 0) {
@@ -876,6 +883,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Absorção e "Dano recebido" da árvore, Última muralha, o escudo da Fonte
   // viva e o Não cai nunca (ver `Arvore.danoRecebido`).
   final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome);
+  // As cargas do PoE: "acertado recentemente" e a chance de Tolerância quando acertado.
+  if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
   if (final > 0) {
     estado.hp = Math.max(0, estado.hp - final);
@@ -1152,7 +1161,7 @@ export function round(estado, personagem) {
         // As afecções do PoE (incêndio, sangramento, veneno, congelar, eletrizar, resfriar — `itens-poe/afeccoes.mjs`, só com ITENS_POE=1):
         // o golpe da arma é ATAQUE; cada parte (o físico e os elementos) entra com o tipo dela.
         // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
-        if (ficha.cargas?.carga_frenesi_ao_acertar_unico && CargasPoe.aoAcertar(estado, ficha.cargas, alvo).length) Ficha.invalidar(estado);
+        if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit: critico, corpoACorpo: categoriaDaArma(arma) !== 'distancia' }).length) Ficha.invalidar(estado);
         if (ficha.afeccoes) {
           const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: d.v }))];
           for (const st of AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });

@@ -408,6 +408,180 @@
       "unidade": "%",
       "combate": true,
       "efeito": "ao acertar um chefe — hunt/combate e acoes"
+    },
+    "carga_tolerancia_ao_ser_acertado": {
+      "nome": "Chance de ganhar Carga de Tolerância quando Acertado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_atordoar": {
+      "nome": "Chance de ganhar Carga de Tolerância ao Atordoar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_atordoar": {
+      "nome": "Chance de ganhar Carga de Poder ao Atordoar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_critico": {
+      "nome": "Chance de ganhar Carga de Poder no Golpe Crítico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_critico_varinha": {
+      "nome": "Chance de ganhar Carga de Poder no Golpe Crítico com Varinhas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_critico_corpo": {
+      "nome": "Chance de ganhar Carga de Tolerância no Golpe Crítico Corpo a Corpo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_acerto_nao_critico": {
+      "nome": "Chance de ganhar Carga de Poder em Acerto Não Crítico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_bloquear": {
+      "nome": "Chance de ganhar Carga de Tolerância ao Bloquear",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_frenesi_ao_bloquear": {
+      "nome": "Chance de ganhar Carga de Frenesi ao Bloquear",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_bloquear": {
+      "nome": "Chance de ganhar Carga de Poder ao Bloquear",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "tolerancia_por_segundo_acertado": {
+      "nome": "Cargas de Tolerância por segundo se Acertado Recentemente",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "frenesi_a_cada_s_movendo": {
+      "nome": "Carga de Frenesi a cada N s enquanto se Move",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "poder_por_mana_gasta": {
+      "nome": "Carga de Poder a cada N de Mana gasta",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "chance_tolerancia_maxima": {
+      "nome": "Chance de ganhar o máximo de Cargas de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "min_poder": {
+      "nome": "Mínimo de Cargas de Poder",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "min_frenesi": {
+      "nome": "Mínimo de Cargas de Frenesi",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "min_tolerancia": {
+      "nome": "Mínimo de Cargas de Tolerância",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "max_tolerancia_igual_frenesi": {
+      "nome": "Máximo de Tolerância igual ao de Frenesi",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "dano_por_tolerancia": {
+      "nome": "Dano aumentado por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "dano_por_frenesi": {
+      "nome": "Dano aumentado por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "dano_por_carga": {
+      "nome": "Dano aumentado por Carga (qualquer)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "armour_pct_por_tolerancia": {
+      "nome": "Armadura por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "life_regen_pct_por_tolerancia": {
+      "nome": "Regeneração de Vida por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "atk_speed_por_frenesi": {
+      "nome": "Velocidade de Ataque por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "crit_chance_inc_por_poder": {
+      "nome": "Chance de Crítico por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "crit_dmg_por_poder": {
+      "nome": "Multiplicador de Crítico por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "phys_res_por_tolerancia": {
+      "nome": "Redução de Dano Físico por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "elem_res_por_tolerancia": {
+      "nome": "Redução de Dano Elemental por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "mana_regen_pct_por_poder": {
+      "nome": "Regeneração de Mana por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
     }
   }
 }

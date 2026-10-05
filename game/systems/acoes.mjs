@@ -973,6 +973,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   else if (custoDeMana) {
     estado.mana = Math.max(0, (estado.mana ?? 0) - custoDeMana);
     Treino.gastarMana(estado, custoDeMana);
+    // O Ocultista (cargas do PoE): Carga de Poder a cada N de mana gasta.
+    const regrasDasCargas = Ficha.combate(estado).cargas;
+    if (regrasDasCargas && CargasPoe.aoGastarMana(estado, regrasDasCargas, custoDeMana).length) Ficha.invalidar(estado);
   }
 
   const eventos = [];
@@ -1088,9 +1091,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor, ...(fonte ? { fonte } : {}) });
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
-      for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      const postosDaGema = Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto);
+      for (const st of postosDaGema) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
-      if (ficha.cargas?.carga_frenesi_ao_acertar_unico && CargasPoe.aoAcertar(estado, ficha.cargas, bicho).length) Ficha.invalidar(estado);
+      // As cargas do PoE no acerto da skill (crítico, não crítico, atordoou, Inimigo Único).
+      if (CargasPoe.reageAoAcerto(ficha.cargas)) {
+        const corpoACorpo = Tags.tagsDaAcao(entry).includes('melee');
+        if (CargasPoe.aoAcertar(estado, ficha.cargas, bicho, { crit, corpoACorpo, atordoou: postosDaGema.includes('atordoado') }).length) Ficha.invalidar(estado);
+      }
       if (ficha.afeccoes) {
         const tagsDoAcerto = Tags.tagsDaAcao(entry);
         const ataque = tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));

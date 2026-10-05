@@ -66,3 +66,73 @@ test('no combate de verdade: matar com "Carga de Frenesi ao Matar" ganha a carga
   const cartao = Cacadas.snapshotDaHunt(e).buffs.find((b) => b.tipo === 'cargaPoe');
   assert.deepEqual([cartao?.carga, cartao?.n], ['frenesi', 1]);
 });
+
+test('máximo e mínimo: Executor (Tolerância = máximo de Frenesi), "+N ao Mínimo" (volta ao mínimo, não a 0), Destruidor (chance do máximo de uma vez)', { skip: SEM }, () => {
+  assert.equal(C.maximo({ max_frenesi: 2, max_tolerancia_igual_frenesi: 1 }, 'tolerancia'), 5);
+  const e = comCacada(0);
+  const af = { min_poder: 1 };
+  C.tique(e, af);
+  assert.equal(C.ativas(e).poder, 1, 'o mínimo entra sozinho');
+  C.ganhar(e, 'poder', af);
+  C.ganhar(e, 'poder', af);
+  e.hunt.clock = 10_000;
+  C.tique(e, af);
+  assert.equal(C.ativas(e).poder, 1, 'venceu: volta ao mínimo');
+  const j = comCacada(0);
+  C.ganhar(j, 'tolerancia', { chance_tolerancia_maxima: 100 }, 1, () => 0);
+  assert.equal(C.ativas(j).tolerancia, 3, 'de 0 direto ao máximo');
+});
+
+test('ganhos: crítico/varinha/não crítico (Poder), crítico corpo a corpo e atordoar (Tolerância), quando acertado, ao bloquear, por mana gasta', { skip: SEM }, () => {
+  const sempre = () => 0;
+  let e = comCacada(0);
+  assert.deepEqual(C.aoAcertar(e, { carga_poder_ao_critico_varinha: 100 }, {}, { crit: true, varinha: false }, sempre), [], 'com varinha só vale na varinha');
+  assert.deepEqual(C.aoAcertar(e, { carga_poder_ao_critico_varinha: 100 }, {}, { crit: true, varinha: true }, sempre), ['poder']);
+  assert.deepEqual(C.aoAcertar(comCacada(0), { carga_poder_ao_acerto_nao_critico: 100 }, {}, { crit: false }, sempre), ['poder']);
+  assert.deepEqual(C.aoAcertar(comCacada(0), { carga_tolerancia_ao_critico_corpo: 100 }, {}, { crit: true, corpoACorpo: true }, sempre), ['tolerancia']);
+  assert.deepEqual(C.aoAcertar(comCacada(0), { carga_tolerancia_ao_atordoar: 100 }, {}, { atordoou: true }, sempre), ['tolerancia']);
+  assert.deepEqual(C.aoSerAcertado(comCacada(0), { carga_tolerancia_ao_ser_acertado: 100 }, sempre), ['tolerancia']);
+  assert.deepEqual(C.aoBloquear(comCacada(0), { carga_frenesi_ao_bloquear: 100 }, sempre), ['frenesi']);
+  e = comCacada(0);
+  C.aoGastarMana(e, { poder_por_mana_gasta: 100 }, 250);
+  assert.equal(C.ativas(e).poder, 2, '250 de mana = 2 cargas (sobram 50)');
+  assert.equal(e.hunt.cargasPoeTempo.manaGasta, 50);
+});
+
+test('por tempo: Tolerância por segundo se acertado recentemente (Destruidor) e Frenesi a cada N s se movendo (Atiradora)', { skip: SEM }, () => {
+  const e = comCacada(0);
+  const af = { tolerancia_por_segundo_acertado: 1 };
+  C.aoSerAcertado(e, af);
+  for (let t = 0; t <= 3000; t += 250) {
+    e.hunt.clock = t;
+    C.tique(e, af);
+  }
+  assert.equal(C.ativas(e).tolerancia, 3, 'uma por segundo, até o máximo');
+  const m = comCacada(0);
+  m.hunt.pos = { x: 0, y: 0, z: 7 };
+  const am = { frenesi_a_cada_s_movendo: 2 };
+  for (let t = 0; t <= 4500; t += 250) {
+    m.hunt.clock = t;
+    m.hunt.pos = { x: t / 250, y: 0, z: 7 };
+    C.tique(m, am);
+  }
+  assert.equal(C.ativas(m).frenesi, 2, 'andando 4,5 s com 1 a cada 2 s');
+});
+
+test('efeitos por carga dos mods e o Conduíte (a party na mesma sala ganha junto)', { skip: SEM }, () => {
+  const e = comCacada(0);
+  for (let i = 0; i < 2; i++) C.ganhar(e, 'tolerancia', {});
+  C.ganhar(e, 'poder', {});
+  const s = C.adds(e, { armour_pct_por_tolerancia: 5, phys_res_por_tolerancia: 1, crit_chance_inc_por_poder: 10, mana_regen_pct_por_poder: 3 });
+  assert.deepEqual([s.armour_pct, s.phys_res, s.crit_chance_inc, s.mana_regen_pct], [10, 10, 50, 3]);
+  assert.ok(Math.abs(C.fatorDeDano(e, { dano_por_tolerancia: 5, dano_por_carga: 2 }) - (1 + (5 * 2 + 2 * 3) / 100)) < 1e-9);
+  // Conduíte
+  const a = comCacada(0);
+  const b = comCacada(0);
+  a.hunt.partilha = b.hunt.partilha = { ativa: true, membros: [{ estado: a }, { estado: b }] };
+  C.definirLeitores({ regras: () => ({}), conduite: (x) => x === a });
+  C.ganhar(a, 'frenesi', {});
+  assert.deepEqual([C.ativas(a).frenesi, C.ativas(b).frenesi], [1, 1], 'b ganhou junto');
+  C.ganhar(b, 'poder', {});
+  assert.equal(C.ativas(a).poder, 0, 'b não tem Conduíte: não reparte');
+});

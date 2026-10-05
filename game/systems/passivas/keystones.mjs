@@ -25,7 +25,7 @@ import { CONFIG as ATRIBUTOS } from '../personagem/atributos.mjs';
 
 const NUMERO = (v) => Number.isFinite(v);
 /** As keystones do PoE com mecânica (o mapa está em `gamedata/itens-poe/traducao-arvore.json` → keystones). */
-export const IDS_DO_POE = new Set(['reflexosDeFerro', 'posturaInabalavel', 'tecnicaResoluta', 'tecnicaPrecisa', 'vontadeDeFerro', 'sobrecargaElemental', 'sintoniaDaDor', 'menteSobreMateria', 'golpesReveladores', 'magiaSanguinea']);
+export const IDS_DO_POE = new Set(['reflexosDeFerro', 'posturaInabalavel', 'tecnicaResoluta', 'tecnicaPrecisa', 'vontadeDeFerro', 'sobrecargaElemental', 'sintoniaDaDor', 'menteSobreMateria', 'golpesReveladores', 'magiaSanguinea', 'conduite']);
 export const REGRAS = {
   habilidade: (k) => typeof k.id === 'string' && k.id.length > 0,
   atributoParaTag: (k) => ['str', 'dex', 'int'].includes(k.atributo) && typeof k.tag === 'string' && NUMERO(k.porPonto),
