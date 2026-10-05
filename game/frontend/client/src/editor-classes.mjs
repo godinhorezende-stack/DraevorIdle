@@ -1,6 +1,8 @@
 // A aba "Classes" da Engine: o EDITOR DE CLASSES — cadastro, atributos iniciais, ganho por level, bônus por ponto de atributo (globais) e a prévia dos efeitos. Edita por override (a fábrica nunca muda):
 // editar → prévia (servidor: valida, mostra impacto e a prévia dos efeitos) → salvar → aprovar versão/Git/deploy manuais. As regras e as contas moram no servidor (`systems/classes.mjs`); aqui só há tela.
 import { el, cabecalho, confirmar, pedirTexto, msg, tratarConflito } from './editor-ui.mjs';
+import { retrato } from './editor-sprites.mjs';
+import { escolherSprite } from './editor-biblioteca-sprites.mjs';
 
 const ROT = { str: 'Força', dex: 'Destreza', int: 'Inteligência' };
 const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -185,8 +187,43 @@ export function criarTelaDeClasses({ api, raiz, sujo = null, podeGravar = () => 
         previaDosIniciais()),
       el('fieldset', { class: 'ip-bloco' }, el('legend', {}, 'Ganho por level (pontos recebidos a cada nível)'),
         el('div', { class: 'linha' }, ['str', 'dex', 'int'].map((a) => campo(ROT[a], entradaNumero(c.porLevel, a, o?.porLevel[a], { passo: 0.01, w: 70 }))))),
+      blocoDoOutfit(c),
       el('div', { class: 'linha' }, salvo?.personagens > 0 ? el('button', { type: 'button', class: 'perigo', disabled: dis(), onclick: () => migrar(c.id) }, `Migrar ${salvo.personagens} personagem(ns) para outra classe`) : null),
       el('div', { class: 'dica' }, `Personagens vinculados: ${salvo?.personagens ?? 0}. Apagar uma classe só é permitido sem personagens (use a migração explícita).`));
+  }
+  /**
+   * O OUTFIT INICIAL da classe: o desenho masculino e o feminino (da Biblioteca de sprites), as quatro cores (0–132, a paleta do jogo) e os addons.
+   * O personagem nasce vestido com ele e o tem para sempre. Sem desenho num sexo, vale o da vocação.
+   */
+  function blocoDoOutfit(c) {
+    const o = c.outfit ?? {};
+    const cores = { head: 78, body: 88, legs: 58, feet: 76, ...(o.cores ?? {}) };
+    const mudarOutfit = (novo) => {
+      const x = { ...o, ...novo };
+      const vazio = !x.male && !x.female;
+      if (vazio) delete c.outfit; else c.outfit = x;
+      mudou();
+      pintar();
+    };
+    const lado = (sexo, rotulo) => {
+      const look = o[sexo] ?? null;
+      return el('div', { class: 'cls-outfit' },
+        el('b', {}, rotulo),
+        look ? retrato({ tipo: 'criatura', look, cores: { ...cores, addons: o.addons ?? 0 } }, 96, { categoria: 'outfits', animar: true }) : el('div', { class: 'cls-outfit-vazio' }, 'o da vocação'),
+        el('small', { class: 'dica' }, look ? `look ${look}` : `(${c.vocacaoBase})`),
+        el('div', { class: 'linha' },
+          el('button', { type: 'button', disabled: dis(), onclick: async () => {
+            const x = await escolherSprite({ tipo: 'outfits', secoes: ['outfits', 'mobs', 'montarias'], titulo: `Outfit inicial (${rotulo.toLowerCase()}) — ${c.nome}` });
+            if (x) mudarOutfit({ [sexo]: Number(x.id) });
+          } }, look ? 'Trocar' : 'Escolher na biblioteca'),
+          look ? el('button', { type: 'button', class: 'fantasma', disabled: dis(), onclick: () => mudarOutfit({ [sexo]: null }) }, 'tirar') : null));
+    };
+    const cor = (p, rotulo) => campo(rotulo, el('input', { type: 'number', min: 0, max: 132, value: cores[p], style: 'width:70px', disabled: dis() || (!o.male && !o.female), onchange: (e) => mudarOutfit({ cores: { ...cores, [p]: Math.max(0, Math.min(132, Math.round(Number(e.target.value) || 0))) } }) }));
+    const addon = (bit, rotulo) => el('label', { class: 'conj-chk' }, el('input', { type: 'checkbox', checked: !!((o.addons ?? 0) & bit), disabled: dis() || (!o.male && !o.female), onchange: (e) => mudarOutfit({ addons: e.target.checked ? (o.addons ?? 0) | bit : (o.addons ?? 0) & ~bit }) }), rotulo);
+    return el('fieldset', { class: 'ip-bloco' }, el('legend', {}, 'Outfit inicial (o personagem nasce vestido com ele e o tem para sempre)'),
+      el('div', { class: 'linha cls-outfits' }, lado('male', 'Masculino'), lado('female', 'Feminino')),
+      el('div', { class: 'linha' }, cor('head', 'Cor da cabeça'), cor('body', 'Cor do corpo'), cor('legs', 'Cor das pernas'), cor('feet', 'Cor dos pés'), addon(1, 'addon 1'), addon(2, 'addon 2')),
+      el('div', { class: 'dica' }, 'As cores vão de 0 a 132 (a paleta de cores do jogo). Vale para personagens criados depois de salvar; quem já existe não muda de roupa.'));
   }
   function pintarLateral() { document.querySelector('#cls-hist')?.replaceWith(historico()); }
   function historico() {

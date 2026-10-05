@@ -39,6 +39,28 @@ export const EFEITOS = {
   INT_ENERGY_SHIELD_PCT_PER_POINT: { rotulo: 'Energy Shield (%) por ponto de Inteligência', atributo: 'int', unidade: '%', max: 10, padrao: 0 },
 };
 const eNum = (n) => typeof n === 'number' && Number.isFinite(n);
+// O OUTFIT INICIAL da classe (Editor de Classes): `{ male: look|null, female: look|null, cores: { head, body, legs, feet }, addons: 0..3 }` — o personagem
+// nasce vestido com ele (e o tem para sempre, mesmo trocando de roupa). Sem ele (ou sem o look de um sexo), vale o da vocação.
+const LOOKS = JSON.parse(readFileSync(join(RAIZ, 'outfits.json'), 'utf8'));
+export const lookExiste = (look) => Object.hasOwn(LOOKS, String(look));
+const PARTES_DA_COR = ['head', 'body', 'legs', 'feet'];
+export function validarOutfit(o, onde) {
+  const erros = [];
+  if (o == null) return erros;
+  if (typeof o !== 'object') return [`${onde}: o outfit inicial precisa ser um objeto.`];
+  for (const sexo of ['male', 'female']) if (o[sexo] != null && !(Number.isInteger(o[sexo]) && lookExiste(o[sexo]))) erros.push(`${onde}: o desenho ${sexo === 'male' ? 'masculino' : 'feminino'} (${o[sexo]}) não existe nos atlas.`);
+  for (const p of PARTES_DA_COR) if (o.cores?.[p] != null && !(Number.isInteger(o.cores[p]) && o.cores[p] >= 0 && o.cores[p] <= 132)) erros.push(`${onde}: a cor "${p}" vai de 0 a 132.`);
+  if (o.addons != null && !(Number.isInteger(o.addons) && o.addons >= 0 && o.addons <= 3)) erros.push(`${onde}: addons de 0 a 3.`);
+  return erros;
+}
+/** O que vestir ao criar o personagem desta classe neste sexo: `{ type, head, body, legs, feet, addons }` ou null (vale o da vocação). */
+export function outfitInicial(classe, sexo) {
+  const o = classe?.outfit;
+  const look = o?.[sexo];
+  if (!look || !lookExiste(look)) return null;
+  const c = o.cores ?? {};
+  return { type: look, head: c.head ?? 78, body: c.body ?? 88, legs: c.legs ?? 58, feet: c.feet ?? 76, mount: 0, addons: o.addons ?? 0 };
+}
 
 // ---------------------------------------------------------------- a fábrica (lida dos arquivos que o jogo já tem)
 function montarFabrica() {
@@ -118,6 +140,7 @@ export function validarConfiguracao(cfg, original = ORIGINAL) {
       if (!eNum(g) || g < 0 || g > 10) erros.push(`${onde}: o ganho de ${ROTULO_DO_ATRIBUTO[a]} por level precisa ser um número de 0 a 10 (veio ${g}).`);
     }
     if (ATRIBUTOS.every((a) => !(c.atributosIniciais?.[a] > 0))) avisos.push(`${onde}: todos os atributos iniciais são 0.`);
+    erros.push(...validarOutfit(c.outfit, onde));
   }
   for (const id of Object.keys(original.classes)) if (!cfg.classes[id]) erros.push(`classe ${id}: classes de fábrica não podem ser apagadas (desative-as).`);
   if (!Object.values(cfg.classes).some((c) => c.ativo === true)) erros.push('Ao menos uma classe precisa ficar ativa (senão ninguém cria personagem).');
@@ -189,6 +212,6 @@ export const resolverParaCriacao = (idOuVocacao) => {
 };
 /** O que a tela de criação do jogador precisa (só o público): classes ativas, atributos iniciais e o que cada ponto rende. */
 export function paraOCliente() {
-  return { classes: ativas().map((c) => ({ id: c.id, nome: c.nome, descricao: c.descricao, icone: c.icone, cor: c.cor, vocacaoBase: c.vocacaoBase, atributosIniciais: { ...c.atributosIniciais }, porLevel: { ...c.porLevel } })),
+  return { classes: ativas().map((c) => ({ id: c.id, nome: c.nome, descricao: c.descricao, icone: c.icone, cor: c.cor, vocacaoBase: c.vocacaoBase, atributosIniciais: { ...c.atributosIniciais }, porLevel: { ...c.porLevel }, ...(c.outfit ? { outfit: structuredClone(c.outfit) } : {}) })),
     efeitos: Object.entries(EFEITOS).map(([k, e]) => ({ chave: k, rotulo: e.rotulo, atributo: e.atributo, unidade: e.unidade, valor: EM_USO.efeitos[k] ?? e.padrao })).filter((x) => x.valor > 0) };
 }

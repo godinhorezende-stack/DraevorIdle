@@ -1271,7 +1271,9 @@ export function createGate({ send, onPlay }) {
        * CSS), senão engoliria o clique do próprio botão.
        */
       const palco = el('div', 'vocation-palco');
-      palco.append(outfitCanvas(info.looks[sex], null, 72));
+      // O outfit inicial da CLASSE (Editor de Classes) quando ela tem um para este sexo; senão o da vocação.
+      const daClasse = classe.outfit?.[sex];
+      palco.append(daClasse ? outfitCanvas(daClasse, { head: 78, body: 88, legs: 58, feet: 76, ...(classe.outfit.cores ?? {}), addons: classe.outfit.addons ?? 0 }, 72) : outfitCanvas(info.looks[sex], null, 72));
       const tela = document.createElement('canvas');
       tela.className = 'vocation-efeito';
       tela.width = TELA_DO_EFEITO;

@@ -205,6 +205,8 @@ function cartaoDaConta(personagens) {
 
 function estadoInicialPersonagem(vocacao, sexo, classe = null) {
   const look = R.LOOK_DA_VOCACAO[vocacao][sexo];
+  // O outfit inicial da CLASSE (Editor de Classes), quando definido para este sexo; senão o da vocação.
+  const daClasse = Classes.outfitInicial(Classes.obter(classe), sexo);
   // Com o PoE ligado (só local), o começo é o do PoE (decisão do dono, 05/10): nível 1 e só a arma da classe (a mochila fica: é onde os itens moram).
   const poe = !!ClassesPoe.paraCliente();
   const nivelInicial = poe ? 1 : R.NIVEL_INICIAL;
@@ -223,7 +225,9 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
     // A CLASSE escolhida (Editor de Classes): o id dela; `vocation` é a vocação mecânica. Os atributos iniciais vêm da classe e são DERIVADOS a cada cálculo (nunca gravados aqui): entram uma vez só.
     ...(classe ? { classe } : {}),
     sex: sexo,
-    outfit: { type: look, head: 78, body: 88, legs: 58, feet: 76, mount: 0, addons: 0 },
+    outfit: daClasse ?? { type: look, head: 78, body: 88, legs: 58, feet: 76, mount: 0, addons: 0 },
+    // O outfit da classe fica do personagem (com os addons), mesmo que ele troque de roupa ou que o outfit seja da Store.
+    ...(daClasse ? { outfitsDaClasse: { [daClasse.type]: daClasse.addons } } : {}),
     hp: maxHp,
     maxHp,
     mana: maxMana,

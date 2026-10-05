@@ -1107,3 +1107,7 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .pmis-item.ativo { border-color: var(--eng-ouro); background: var(--eng-ouro-fundo); }
 .pmis-area { margin: 6px 0; }
 .pmis-area ol { margin: 4px 0; padding-left: 22px; font-size: 12.5px; }
+/* Editor de Classes: outfit inicial */
+.cls-outfits { gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.cls-outfit { display: grid; justify-items: center; gap: 4px; padding: 8px 12px; background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); min-width: 160px; }
+.cls-outfit-vazio { display: grid; place-items: center; width: 96px; height: 96px; border: 1px dashed var(--eng-linha-forte); border-radius: var(--eng-r2); color: var(--eng-txt3); font-size: 12px; }

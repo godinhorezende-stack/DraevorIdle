@@ -12,7 +12,7 @@ const COMO_PUBLICAR = 'O arquivo gamedata/overrides/classes.json foi gravado nes
 const arq = () => criarArquivoVersionado({ caminhos: CAMINHOS, valorPadrao: () => ({ ativo: true, classes: {}, efeitos: {} }) });
 export const lerOverride = () => { const d = arq().ler(); return d && typeof d === 'object' && !Array.isArray(d) ? { ativo: true, classes: {}, efeitos: {}, ...d } : { ativo: true, classes: {}, efeitos: {} }; };
 const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const CAMPOS_DA_CLASSE = ['nome', 'descricao', 'icone', 'cor', 'ativo', 'atributosIniciais', 'porLevel', 'vocacaoBase'];
+const CAMPOS_DA_CLASSE = ['nome', 'descricao', 'icone', 'cor', 'ativo', 'atributosIniciais', 'porLevel', 'vocacaoBase', 'outfit'];
 
 /** Uma classe com o que a tela precisa (contagem de personagens e a prévia dos efeitos dos atributos iniciais). */
 function paraTela(c, efeitos, contagens) {
@@ -58,10 +58,11 @@ export function propor(ov, { contagens = null } = {}) {
   if (ov.classes != null && (typeof ov.classes !== 'object' || Array.isArray(ov.classes))) return { ok: false, erros: ['"classes" precisa ser um objeto { id: classe }.'], avisos: [] };
   for (const [id, c] of Object.entries(ov.classes ?? {})) {
     if (c !== null && (typeof c !== 'object' || Array.isArray(c))) { erros.push(`classe ${id}: precisa ser um objeto.`); continue; }
-    for (const k of Object.keys(c ?? {})) if (!['excluido', ...CAMPOS_DA_CLASSE, 'id', 'builtin', 'personagens', 'previaDosIniciais'].includes(k)) erros.push(`classe ${id}: o campo "${k}" não existe.`);
+    // `poe` (a classe do PoE de onde a de fábrica vem) é derivado como `id`/`builtin`: a tela devolve junto, nada disso se grava.
+    for (const k of Object.keys(c ?? {})) if (!['excluido', ...CAMPOS_DA_CLASSE, 'id', 'builtin', 'poe', 'personagens', 'previaDosIniciais'].includes(k)) erros.push(`classe ${id}: o campo "${k}" não existe.`);
   }
   // campos derivados que a tela devolve junto não fazem parte do que se grava
-  const limpos = Object.fromEntries(Object.entries(ov.classes ?? {}).map(([id, c]) => [id, c && typeof c === 'object' && !Array.isArray(c) ? Object.fromEntries(Object.entries(c).filter(([k]) => !['id', 'builtin', 'personagens', 'previaDosIniciais'].includes(k))) : c]));
+  const limpos = Object.fromEntries(Object.entries(ov.classes ?? {}).map(([id, c]) => [id, c && typeof c === 'object' && !Array.isArray(c) ? Object.fromEntries(Object.entries(c).filter(([k]) => !['id', 'builtin', 'poe', 'personagens', 'previaDosIniciais'].includes(k))) : c]));
   const minimo = minimizar(Classes.ORIGINAL, { ...ov, classes: limpos });
   const candidata = Classes.efetivo(Classes.ORIGINAL, { ...minimo, ativo: ov.ativo !== false });
   const v = Classes.validarConfiguracao(candidata);

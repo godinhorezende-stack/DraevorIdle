@@ -49,7 +49,7 @@ export function colecao(estado) {
 }
 
 export function temOutfit(estado, look) {
-  return OUTFITS_GRATIS.has(look) || look === estado.outfit?.type || (estado.lojaOutfits ?? []).includes(look);
+  return OUTFITS_GRATIS.has(look) || look === estado.outfit?.type || (estado.lojaOutfits ?? []).includes(look) || Object.hasOwn(estado.outfitsDaClasse ?? {}, String(look));
 }
 
 /** Da Store, da task de montaria (`Tarefas`) ou da entrega (`Entregas`). */
@@ -60,7 +60,9 @@ export function temMontaria(estado, id) {
 /** Os addons que o personagem TEM de um outfit (máscara 1|2): os das entregas, e 3 no outfit da loja. */
 export function addonsQueTem(estado, look) {
   const daLoja = (estado.lojaOutfits ?? []).includes(look) ? 3 : 0;
-  return daLoja | Entregas.addonsDoLook(estado, look);
+  // O outfit inicial da classe vem com os addons que a classe definiu.
+  const daClasse = Number(estado.outfitsDaClasse?.[look] ?? 0);
+  return daLoja | daClasse | Entregas.addonsDoLook(estado, look);
 }
 
 export function montariasEOutfits(estado) {

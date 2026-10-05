@@ -3,7 +3,7 @@
 // cada coisa sem reiniciar". O que não tem estratégia aqui (hunts, mapas, habilidades, gemas, catálogos originais…) exige reiniciar: ver `classificar`.
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { join, dirname } from 'node:path';
+import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as Overrides from './overrides.mjs';
 import { CATALOGO, ITEM_CATALOG, ESTADO_DO_BESTIARIO, ESTADO_DE_ITENS } from './dados.mjs';
@@ -79,11 +79,13 @@ export function criarEstrategias({ raiz = RAIZ, overrides = Overrides.PASTA, ato
   };
 
   // ---------------------------------------------------------------- classes e bônus por atributo (muta a tabela que a engine lê: vale no próximo cálculo da ficha)
+  // O arquivo do override é o do sistema de classes em uso (`classes.json`; com o PoE ligado, `classes-poe.json`).
+  const ARQ_CLASSES = basename(ClassesDoJogo.ARQUIVO_DE_OVERRIDE);
   const classes = {
-    assinatura: () => assinaturaDe([arq('classes.json'), join(raiz, 'classes.json'), join(raiz, 'atributos-principais.json'), join(raiz, 'classes-meta.json')]),
+    assinatura: () => assinaturaDe([arq(ARQ_CLASSES), join(raiz, 'classes.json'), join(raiz, 'atributos-principais.json'), join(raiz, 'classes-meta.json')]),
     aplicar() {
       let ov = null;
-      if (existsSync(arq('classes.json'))) ov = lerJsonEstrito(arq('classes.json'), 'classes.json');
+      if (existsSync(arq(ARQ_CLASSES))) ov = lerJsonEstrito(arq(ARQ_CLASSES), ARQ_CLASSES);
       const r = ClassesDoJogo.aplicar(ov, { estrito: true });
       if (!r.ok) throw new Error(`Overrides de classes inválidos — ${r.erros.join(' | ')}.`);
       return { ids: Object.keys(ClassesDoJogo.EM_USO.classes), resumo: `${Object.keys(ClassesDoJogo.EM_USO.classes).length} classe(s)`, payload: {} };
