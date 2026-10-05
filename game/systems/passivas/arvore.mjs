@@ -27,7 +27,8 @@ import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
-export const TIPOS = ['small', 'notable', 'keystone', 'start'];
+// `mastery`: a maestria da árvore do PoE (sem ligação; abre pelo grupo — `podeAlocar`).
+export const TIPOS = ['small', 'notable', 'keystone', 'start', 'mastery'];
 
 /**
  * Confere uma árvore (a do jogo, ou uma de teste/editor): ids únicos, conexões
@@ -44,6 +45,10 @@ export function validar(arvore) {
     if (!Number.isFinite(n.x) || !Number.isFinite(n.y)) erros.push(`${n.id}: sem posição`);
     for (const ef of n.efeitos ?? []) if (!efeitoValido(ef)) erros.push(`${n.id}: efeito ${JSON.stringify(ef)}`);
     if (n.tipo === 'keystone' && !Keystones.valida(n.keystone)) erros.push(`${n.id}: keystone ${JSON.stringify(n.keystone)}`);
+    if (n.tipo === 'mastery') {
+      if (n.grupo == null || !n.opcoes?.length) erros.push(`${n.id}: maestria sem grupo ou sem opções`);
+      for (const o of n.opcoes ?? []) for (const ef of o.efeitos ?? []) if (!efeitoValido(ef)) erros.push(`${n.id}/${o.id}: efeito ${JSON.stringify(ef)}`);
+    }
   }
   if (ids.size > (CONFIG.limites?.maxNos ?? Infinity)) erros.push(`nós demais: ${ids.size}`);
   for (const n of ids.values()) for (const c of n.conexoes ?? []) {
@@ -53,7 +58,13 @@ export function validar(arvore) {
   const inicios = Object.values(arvore.inicios ?? {});
   for (const [classe, id] of Object.entries(arvore.inicios ?? {})) if (ids.get(id)?.tipo !== 'start') erros.push(`início de ${classe} (${id}) não é um nó de início`);
   const alcancados = alcancaveis(ids, new Set(ids.keys()), inicios);
-  for (const id of ids.keys()) if (!alcancados.has(id)) erros.push(`${id}: ninguém alcança`);
+  // A maestria não tem ligação: abre pelo notável do grupo — precisa de um notável alcançável nele.
+  const gruposAlcancados = new Set([...alcancados].map((id) => ids.get(id)).filter((n) => n?.tipo === 'notable' && n.grupo != null).map((n) => n.grupo));
+  for (const [id, n] of ids) {
+    if (n.tipo === 'mastery') {
+      if (!gruposAlcancados.has(n.grupo)) erros.push(`${id}: maestria sem notável alcançável no grupo ${n.grupo}`);
+    } else if (!alcancados.has(id)) erros.push(`${id}: ninguém alcança`);
+  }
   return erros;
 }
 
@@ -187,8 +198,9 @@ export function garantir(estado) {
   let arvoreMudou = false;
   if ((p.versaoDaArvore ?? 1) !== ARVORE.versao) {
     const antes = new Set(p.alocados);
-    const ligados = alcancaveis(ARVORE.porId, new Set(limpos), [inicio]);
-    limpos = limpos.filter((id) => ligados.has(id));
+    const ligados = alcancaveis(ARVORE.porId, new Set(limpos), [inicio, ...(inicioAsc ? [inicioAsc] : [])]);
+    const grupos = gruposComNotavel([...ligados]);
+    limpos = limpos.filter((id) => ligados.has(id) || (ARVORE.porId.get(id)?.tipo === 'mastery' && grupos.has(ARVORE.porId.get(id).grupo)));
     const sairam = [...antes].filter((id) => id !== inicio && !limpos.includes(id) && ARVORE.porId.get(id)?.tipo !== 'start').length;
     if (sairam > 0) {
       p.respecsGratis += 1;
@@ -197,6 +209,8 @@ export function garantir(estado) {
     p.versaoDaArvore = ARVORE.versao;
   }
   if (limpos.length !== p.alocados.length || limpos.some((id, i) => id !== p.alocados[i])) p.alocados.splice(0, p.alocados.length, ...limpos);
+  // A opção de maestria só fica enquanto a maestria está alocada (respec, troca de árvore).
+  if (p.maestrias) for (const id of Object.keys(p.maestrias)) if (!p.alocados.includes(id)) delete p.maestrias[id];
   return { passivas: p, migrou, arvoreMudou };
 }
 
@@ -248,13 +262,14 @@ export function ascender(estado, slug) {
 const erro = (motivo, texto) => ({ ok: false, motivo, erro: texto });
 
 /** Pode alocar este nó agora? `{ok}` ou `{ok:false, motivo, erro}`. */
-export function podeAlocar(estado, id) {
+export function podeAlocar(estado, id, opcao = null) {
   const no = ARVORE.porId.get(id);
   if (!no) return erro('NAO_EXISTE', 'Esse nó não existe.');
   const { passivas } = garantir(estado);
   const meus = new Set(passivas.alocados);
   if (meus.has(id)) return erro('JA_ALOCADO', 'Você já tem esse nó.');
   if (no.tipo === 'start') return erro('INICIO', 'O início de outra classe não se aloca.');
+  if (no.tipo === 'mastery') return podeAlocarMaestria(estado, no, opcao, meus);
   if (!(no.conexoes ?? []).some((c) => meus.has(c))) return erro('SEM_CAMINHO', 'Esse nó não está ligado a nenhum nó seu.');
   if ((estado.level ?? 1) < (no.levelMinimo ?? 0)) return erro('LEVEL', `Precisa do level ${no.levelMinimo}.`);
   if (no.ascendencia) {
@@ -295,12 +310,35 @@ export function caminhoAte(estado, id) {
   return null;
 }
 
-export function alocar(estado, id) {
-  const pode = podeAlocar(estado, id);
+export function alocar(estado, id, opcao = null) {
+  const pode = podeAlocar(estado, id, opcao);
   if (!pode.ok) return pode;
   estado.passivas.alocados.push(id);
+  if (ARVORE.porId.get(id)?.tipo === 'mastery') (estado.passivas.maestrias ??= {})[id] = String(opcao);
   return { ok: true, mudou: true };
 }
+
+// ------------------------------------------------------------ as maestrias (árvore do PoE)
+
+/** Os notáveis alocados por grupo (a maestria do grupo abre com um deles). */
+const gruposComNotavel = (ids) => new Set(ids.map((id) => ARVORE.porId.get(id)).filter((n) => n?.tipo === 'notable' && n.grupo != null).map((n) => n.grupo));
+
+/**
+ * A maestria (como no PoE): abre com um notável alocado no MESMO grupo, custa os pontos dela, e escolhe-se UMA opção — que não pode
+ * estar escolhida em outra maestria do mesmo tipo (o mesmo nome).
+ */
+function podeAlocarMaestria(estado, no, opcao, meus) {
+  if (!gruposComNotavel([...meus]).has(no.grupo)) return erro('SEM_NOTAVEL', 'A maestria abre quando você tem um notável do grupo dela.');
+  const escolhida = no.opcoes?.find((o) => o.id === String(opcao ?? ''));
+  if (!escolhida) return erro('SEM_OPCAO', 'Escolha um dos efeitos da maestria.');
+  const ja = Object.entries(estado.passivas.maestrias ?? {}).find(([outra, op]) => op === escolhida.id && ARVORE.porId.get(outra)?.nome === no.nome && meus.has(outra));
+  if (ja) return erro('OPCAO_REPETIDA', 'Esse efeito já está escolhido em outra maestria do mesmo tipo.');
+  if (pontos(estado).livres < custoDe(no)) return erro('SEM_PONTOS', `Faltam pontos: esse nó custa ${custoDe(no)}.`);
+  return { ok: true };
+}
+
+/** Os efeitos que um nó dá: o da maestria é o da opção escolhida. */
+const efeitosDoNo = (no, passivas) => (no.tipo === 'mastery' ? no.opcoes?.find((o) => o.id === passivas?.maestrias?.[no.id])?.efeitos ?? [] : no.efeitos ?? []);
 
 /**
  * Tirar estes nós deixaria algum outro ilhado (sem caminho até o início)?
@@ -311,7 +349,9 @@ export function ilhadosSemEles(estado, ids) {
   const tirar = new Set(ids);
   const fica = new Set(passivas.alocados.filter((x) => !tirar.has(x)));
   const ligados = alcancaveis(ARVORE.porId, fica, [inicioDe(estado), inicioDaAscendencia(estado)].filter(Boolean));
-  return [...fica].filter((x) => !ligados.has(x));
+  // A maestria fica enquanto houver um notável LIGADO no grupo dela.
+  const grupos = gruposComNotavel([...ligados]);
+  return [...fica].filter((x) => (ARVORE.porId.get(x)?.tipo === 'mastery' ? !grupos.has(ARVORE.porId.get(x).grupo) : !ligados.has(x)));
 }
 
 export const precoDoRespec = (estado, quantos) => Math.round(CONFIG.respec.ouroPorNoPorLevel * (estado.level ?? 1) * quantos);
@@ -359,6 +399,8 @@ export function respec(estado, pedido, emCacada = false) {
   const sai = new Set(plano.tirar);
   const ficam = estado.passivas.alocados.filter((x) => !sai.has(x));
   estado.passivas.alocados.splice(0, estado.passivas.alocados.length, ...ficam);
+  // A maestria que saiu leva a opção escolhida (dá para escolher outra ao alocar de novo).
+  for (const id of sai) delete estado.passivas.maestrias?.[id];
   return { ok: true, mudou: true, tirados: plano.tirar.length, preco: plano.preco };
 }
 
@@ -391,7 +433,7 @@ export function efeitos(estado) {
     const no = ARVORE.porId.get(id);
     if (!no) continue;
     if (no.dominio) r.dominios[no.dominio] = (r.dominios[no.dominio] ?? 0) + 1;
-    for (const ef of no.efeitos ?? []) {
+    for (const ef of efeitosDoNo(no, estado.passivas)) {
       if (ef.tag) {
         r.dano[ef.tag] = (r.dano[ef.tag] ?? 0) + ef.dano;
         fonte(ef.tag, no.nome, ef.dano);
@@ -428,6 +470,7 @@ export function vista(estado, emCacada = false) {
     pontos: pontos(estado),
     respecsGratis: passivas.respecsGratis,
     // Árvore do PoE: a ascendência (escolhida ou não), os pontos dela e as opções da classe.
+    ...(passivas.maestrias && Object.keys(passivas.maestrias).length ? { maestrias: { ...passivas.maestrias } } : {}),
     ...(ARVORE.ascendencias ? { ascendencia: passivas.ascendencia ?? null, inicioAscendencia: inicioDaAscendencia(estado), pontosAscendencia: pontosDeAscendencia(estado), ascendencias: ascendenciasDaClasse(estado) } : {}),
     precoPorNo: precoDoRespec(estado, 1),
     podeTirar: !(CONFIG.respec.soForaDaCacada && emCacada),
@@ -455,6 +498,8 @@ export function arvoreParaCliente() {
       ...(n.textos ? { textos: n.textos, estados: n.estados ?? [] } : {}),
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
       ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
+      ...(n.grupo != null ? { grupo: n.grupo } : {}),
+      ...(n.opcoes ? { opcoes: n.opcoes.map((o) => ({ id: o.id, textos: o.textos, estados: o.estados, efeitos: o.efeitos })) } : {}),
       descricao: n.descricao ?? null,
       // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).
       flavor: n.flavor ?? null,

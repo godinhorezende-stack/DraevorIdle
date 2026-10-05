@@ -27657,6 +27657,8 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .pas-asc { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%; }
 .pas-asc[hidden] { display: none; }
 .pas-asc-nota { font-size: 12px; opacity: .8; }
+/* As opções da maestria (árvore do PoE): um botão por efeito, no painel do nó. */
+.pas-opcao { display: block; width: 100%; text-align: left; white-space: normal; margin: 3px 0; font-size: 12px; line-height: 1.35; }
 .pas-pontos { font-size: 13px; color: var(--muted); margin-right: auto; font-variant-numeric: tabular-nums; }
 .pas-pontos b { font-family: var(--font-numero); font-size: 18px; color: var(--text); }
 .pas-pontos b.tem { color: #e3ae48; }

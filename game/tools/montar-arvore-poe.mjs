@@ -9,9 +9,11 @@ import { validar } from '../systems/passivas/arvore.mjs';
 
 const ORIGEM = '/home/deploy/referencias-poe/original/poe-arvore/Arvore_Principal/arvore.json';
 const ASCENDENCIAS = '/home/deploy/referencias-poe/original/poe-arvore/Ascendencias';
+// A árvore completa (o arquivo oficial do jogo): o grupo de cada nó e as maestrias com as opções.
+const COMPLETA = '/home/deploy/referencias-poe/original/poe-arvore/Arvore_Completa/arvore-completa.json';
 const DESTINO = new URL('../gamedata/itens-poe/arvore-poe.json', import.meta.url);
 
-const { arvore, relatorio } = converterArvore(JSON.parse(readFileSync(ORIGEM, 'utf8')));
+const { arvore, relatorio } = converterArvore(JSON.parse(readFileSync(ORIGEM, 'utf8')), JSON.parse(readFileSync(COMPLETA, 'utf8')));
 // As 21 ascendências (incremento 4e): pedaços à parte, cada um com o próprio início.
 const listaAsc = readdirSync(ASCENDENCIAS).filter((d) => existsSync(`${ASCENDENCIAS}/${d}/ascendencia.json`)).sort().map((d) => JSON.parse(readFileSync(`${ASCENDENCIAS}/${d}/ascendencia.json`, 'utf8')));
 const asc = converterAscendencias(listaAsc);

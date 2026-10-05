@@ -129,3 +129,52 @@ test('4e — ascendências: 2 pontos por boss de fim de ato (até 8), escolha no
   assert.equal(r.ilhados, 0, 'a ascendência não conta como ilhada');
   assert.equal(r.teto, 8, 'até 8 pontos, como no PoE');
 });
+
+test('maestrias (como no PoE): abrem com um notável do grupo, escolhe-se 1 opção (sem repetir no mesmo tipo), o efeito entra, e saem com o notável', { skip: !existsSync('/home/deploy/referencias-poe/importado/itens-poe.json') && 'catálogo do PoE não importado' }, async () => {
+  const { execFileSync } = await import('node:child_process');
+  const codigo = `
+    process.env.ITENS_POE = '1';
+    const P = await import('./systems/passivas/arvore.mjs');
+    const Afixos = await import('./systems/afixos.mjs');
+    const { personagemDeTeste } = await import('./testes/apoio.mjs');
+    const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+    e.campanha = {};
+    P.garantir(e);
+    const a = P.arvore();
+    // a maestria de Vida mais perto do início, com uma opção que dá "+N de Vida máxima"
+    const maestrias = a.nos.filter((n) => n.tipo === 'mastery' && n.opcoes.some((o) => o.efeitos.some((x) => x.add === 'life')));
+    const notavelDe = (m) => a.nos.filter((n) => n.tipo === 'notable' && n.grupo === m.grupo).map((n) => ({ n, c: P.caminhoAte(e, n.id) })).filter((x) => x.c).sort((x, y) => x.c.length - y.c.length)[0];
+    const alvo = maestrias.map((m) => ({ m, ...notavelDe(m) })).filter((x) => x.c).sort((x, y) => x.c.length - y.c.length)[0];
+    const opc = alvo.m.opcoes.find((o) => o.efeitos.some((x) => x.add === 'life'));
+    const r = {};
+    r.semNotavel = P.podeAlocar(e, alvo.m.id, opc.id).motivo;
+    for (const id of alvo.c) P.alocar(e, id);
+    r.semOpcao = P.alocar(e, alvo.m.id).motivo;
+    const antes = Afixos.soma(e).life ?? 0;
+    r.alocou = P.alocar(e, alvo.m.id, opc.id).ok;
+    r.ganhoDeVida = (Afixos.soma(e).life ?? 0) - antes;
+    r.esperado = opc.efeitos.find((x) => x.add === 'life').valor;
+    r.escolhida = e.passivas.maestrias[alvo.m.id] === opc.id;
+    // outra maestria do mesmo tipo: a mesma opção não pode
+    const outra = a.nos.find((n) => n.tipo === 'mastery' && n.nome === alvo.m.nome && n.id !== alvo.m.id);
+    const nOutra = notavelDe(outra);
+    for (const id of nOutra.c) P.alocar(e, id);
+    r.repetida = P.alocar(e, outra.id, opc.id).motivo;
+    r.outraOpcao = P.alocar(e, outra.id, outra.opcoes.find((o) => o.id !== opc.id).id).ok;
+    // tirar o notável do grupo leva a maestria junto
+    r.ilhada = P.ilhadosSemEles(e, [alvo.n.id]).includes(alvo.m.id);
+    e.gold = 1e12;
+    r.respec = P.respec(e, { ids: [alvo.n.id], junto: true }).ok;
+    r.saiu = !e.passivas.alocados.includes(alvo.m.id) && !(alvo.m.id in (e.passivas.maestrias ?? {}));
+    console.log(JSON.stringify(r));
+  `;
+  const r = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', codigo], { cwd: new URL('..', import.meta.url).pathname, encoding: 'utf8' }).trim().split('\n').pop());
+  assert.equal(r.semNotavel, 'SEM_NOTAVEL');
+  assert.equal(r.semOpcao, 'SEM_OPCAO');
+  assert.ok(r.alocou && r.escolhida);
+  assert.equal(r.ganhoDeVida, r.esperado, 'o efeito da opção escolhida entra na soma');
+  assert.equal(r.repetida, 'OPCAO_REPETIDA');
+  assert.ok(r.outraOpcao, 'outra opção na outra maestria do mesmo tipo pode');
+  assert.ok(r.ilhada, 'sem o notável, a maestria fica sem grupo');
+  assert.ok(r.respec && r.saiu, 'o respec do notável leva a maestria e a escolha');
+});

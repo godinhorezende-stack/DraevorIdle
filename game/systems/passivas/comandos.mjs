@@ -39,7 +39,8 @@ export function comando(estado, m, emCacada = false) {
     let feitos = 0;
     let falha = null;
     for (const id of ids) {
-      const r = Passivas.alocar(estado, id);
+      // A maestria (árvore do PoE) vem com a opção escolhida (`opcao`).
+      const r = Passivas.alocar(estado, id, m.opcao ?? null);
       if (!r.ok) {
         falha = r;
         break;

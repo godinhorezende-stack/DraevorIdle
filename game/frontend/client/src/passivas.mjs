@@ -45,7 +45,7 @@ const ADDS = {
   dmg_vs_boss: ['Dano contra boss', '%'], avoid_damage: ['Chance de evitar dano', '%'], move_speed: ['Movement Speed', '%'],
 };
 const LEGADO = { absorb: 'Absorção de dano', armorPenetration: 'Penetração de armadura', attackDamage: 'Todo dano causado', flechaAtravessa: 'Chance de a flecha atravessar' };
-const TIPOS = { small: 'Pequeno', notable: 'Notável', keystone: 'Keystone', start: 'Início da classe' };
+const TIPOS = { small: 'Pequeno', notable: 'Notável', keystone: 'Keystone', start: 'Início da classe', mastery: 'Maestria' };
 const num = (v) => (Math.round(v * 100) / 100).toLocaleString('pt-BR');
 
 /** "+3% Fire Damage", "+5 STR"... — um efeito de nó em texto. */
@@ -74,6 +74,25 @@ const efeitoDaChave = (chave, v) => {
  * mesma que o servidor faz em `Passivas.efeitos`); o total do personagem
  * (classe + itens + árvore) continua na ficha.
  */
+/** Os efeitos de um nó: o da maestria (árvore do PoE) é o da opção escolhida. */
+function efeitosDoNo(n) {
+  if (n.tipo !== 'mastery') return n.efeitos ?? [];
+  const escolhida = vista()?.maestrias?.[n.id];
+  return n.opcoes?.find((o) => o.id === escolhida)?.efeitos ?? [];
+}
+
+/** Os grupos com um notável entre estes ids (a maestria do grupo abre com ele). */
+function gruposComNotavel(a, ids) {
+  return new Set([...ids].map((id) => a.porId.get(id)).filter((n) => n?.tipo === 'notable' && n.grupo != null).map((n) => n.grupo));
+}
+
+/** As opções de maestria já escolhidas em maestrias do MESMO tipo (o mesmo nome), fora esta. */
+function opcoesUsadas(n) {
+  const a = arvore();
+  const v = vista();
+  return new Set(Object.entries(v?.maestrias ?? {}).filter(([id]) => id !== n.id && a.porId.get(id)?.nome === n.nome).map(([, op]) => op));
+}
+
 function somaDosNos(a, ids) {
   const soma = new Map();
   const keystones = [];
@@ -81,7 +100,7 @@ function somaDosNos(a, ids) {
     const n = a.porId.get(id);
     if (!n) continue;
     if (n.tipo === 'keystone') keystones.push(n);
-    for (const ef of n.efeitos) {
+    for (const ef of efeitosDoNo(n)) {
       const [k, val] = chaveDoEfeito(ef);
       if (k) soma.set(k, (soma.get(k) ?? 0) + val);
     }
@@ -170,7 +189,9 @@ function ficamSem(id) {
       }
     }
   }
-  return [...resto].filter((x) => ligados.has(x));
+  // A maestria fica enquanto houver um notável ligado no grupo dela.
+  const grupos = gruposComNotavel(a, ligados);
+  return [...resto].filter((x) => ligados.has(x) || (a.porId.get(x)?.tipo === 'mastery' && grupos.has(a.porId.get(x).grupo)));
 }
 
 /**
@@ -188,6 +209,8 @@ function estadoDoNo(n) {
   const mine = meus();
   if (mine.has(n.id)) return 'alocado';
   if (n.tipo === 'start') return 'bloqueado';
+  // A maestria abre com um notável alocado no grupo dela.
+  if (n.tipo === 'mastery') return gruposComNotavel(arvore(), mine).has(n.grupo) ? 'disponivel' : 'bloqueado';
   return n.conexoes.some((c) => mine.has(c)) ? 'disponivel' : 'bloqueado';
 }
 
@@ -373,7 +396,7 @@ function montar(body) {
     quadro = requestAnimationFrame(desenhar);
   }
   const escala = () => Math.max(0.5, Math.min(1.6, cam.zoom * 1.8));
-  const raio = (n) => (n.atributo ? 6.5 : { small: 10, notable: 17, keystone: 25, start: 38 }[n.tipo]) * escala();
+  const raio = (n) => (n.atributo ? 6.5 : { small: 10, notable: 17, keystone: 25, start: 38, mastery: 15 }[n.tipo] ?? 10) * escala();
   const forma = (p, r) => {
     g.beginPath();
     g.arc(p.x, p.y, r, 0, Math.PI * 2);
@@ -437,7 +460,8 @@ function montar(body) {
       g.restore();
       return;
     }
-    const corEmblema = COR_DO_CLUSTER[n.cluster] ?? '#aab4b8';
+    // A maestria (árvore do PoE) tem a própria cor: violeta.
+    const corEmblema = n.tipo === 'mastery' ? '#9a7fd1' : COR_DO_CLUSTER[n.cluster] ?? '#aab4b8';
     if (n.tipo === 'keystone') {
       // A coroa: 12 pontas em volta.
       g.save();
@@ -472,7 +496,7 @@ function montar(body) {
       g.fillStyle = CORES.noFundo;
       g.fill();
       g.restore();
-      aro(p, r, vivo ? CORES.ouroVivo : perto ? CORES.disponivel : notavel ? '#a88a4c' : CORES.bronze, notavel ? 3 : 2);
+      aro(p, r, vivo ? CORES.ouroVivo : perto ? CORES.disponivel : notavel ? '#a88a4c' : n.tipo === 'mastery' ? '#6f5c99' : CORES.bronze, notavel || n.tipo === 'mastery' ? 3 : 2);
       if (notavel) aro(p, r * 0.78, vivo ? '#8a6a30' : CORES.bronzeEscuro, 1.4);
     }
     // O emblema: a cor do tema, com um miolo mais claro.
@@ -773,7 +797,29 @@ function montar(body) {
     const corpo = el('div', 'poe-corpo');
     corpo.append(el('div', 'poe-tipo', n.atributo ? 'Atributo' : (TIPOS[n.tipo] ?? n.tipo)));
     const sep = () => el('div', 'poe-sep');
-    if (n.textos?.length) {
+    if (n.tipo === 'mastery') {
+      // Maestria (árvore do PoE): as opções, a escolhida em destaque.
+      corpo.append(sep());
+      const escolhida = vista()?.maestrias?.[n.id];
+      const stats = el('div', 'poe-stats');
+      stats.append(el('div', 'poe-nota-arvore', escolhida ? 'Opção escolhida:' : 'Escolha 1 efeito ao alocar (abre com um notável do grupo):'));
+      for (const o of n.opcoes ?? []) {
+        if (escolhida && o.id !== escolhida) continue;
+        o.textos.forEach((t, i) => {
+          const est = o.estados?.[i];
+          const linha = el('div', est === 'nota' ? 'poe-nota-arvore' : null);
+          const marca = MARCA_DO_ESTADO[est];
+          if (marca) {
+            const m = el('em', `poe-tr ${est}`, marca[0]);
+            m.title = marca[1];
+            linha.append(m, ' ');
+          }
+          linha.append(t);
+          stats.append(linha);
+        });
+      }
+      corpo.append(stats);
+    } else if (n.textos?.length) {
       // Nó da árvore do PoE: os textos como no PoE, cada linha com a marca da tradução; o texto explicativo (nota) em itálico.
       corpo.append(sep());
       const stats = el('div', 'poe-stats');
@@ -880,6 +926,13 @@ function montar(body) {
 
   // ---- painel da direita ----
   function alocarAte(n) {
+    // A maestria não tem caminho: abre a escolha da opção no painel.
+    if (n.tipo === 'mastery') {
+      selecionado = n;
+      desenharInfo();
+      pedir();
+      return;
+    }
     const caminho = caminhoAte(n.id);
     if (!caminho?.length) return;
     ctx.send({ t: 'passivas', action: 'alocar', ids: caminho });
@@ -991,6 +1044,19 @@ function montar(body) {
         if (!v.podeTirar) tirar.title = 'Só fora da caçada';
         tirar.onclick = () => ctx.send({ t: 'passivas', action: 'planoRespec', ids: [n.id], junto: true });
         linha.append(tirar);
+      } else if (n.tipo === 'mastery') {
+        // A escolha da maestria: um botão por opção (a já escolhida noutra maestria do mesmo tipo não pode).
+        const usadas = opcoesUsadas(n);
+        const aberta = estado === 'disponivel';
+        if (!aberta) linha.append(el('p', 'pas-aviso', 'Aloque um notável do grupo desta maestria para abri-la.'));
+        else if ((v.pontos?.livres ?? 0) < n.custo) linha.append(el('p', 'pas-aviso', 'Falta 1 ponto.'));
+        for (const o of n.opcoes ?? []) {
+          const b = el('button', 'ghost pas-opcao', o.textos.filter((_, i) => o.estados?.[i] !== 'nota').join(' / '));
+          b.disabled = !aberta || usadas.has(o.id) || (v.pontos?.livres ?? 0) < n.custo;
+          if (usadas.has(o.id)) b.title = 'Já escolhida em outra maestria deste tipo';
+          b.onclick = () => ctx.send({ t: 'passivas', action: 'alocar', id: n.id, opcao: o.id });
+          linha.append(b);
+        }
       } else if (n.tipo !== 'start') {
         const caminho = caminhoAte(n.id) ?? [];
         const custo = caminho.reduce((s, id) => s + (a.porId.get(id)?.custo ?? 0), 0);

@@ -108,7 +108,9 @@ export function converterAscendencias(lista) {
  * efeitos, custo: 1, textos, estados }`, `inicios` por classe do PoE. Nós sem ligação nenhuma (as maestrias soltas) e os que nenhum
  * início alcança ficam de fora (a árvore do Draevor exige tudo alcançável). Devolve `{ arvore, relatorio }`.
  */
-export function converterArvore(poe) {
+export function converterArvore(poe, completa = null) {
+  // A árvore COMPLETA (o arquivo oficial do jogo, na coleção) dá o GRUPO de cada nó e as MAESTRIAS com as opções delas.
+  const daCompleta = new Map((completa?.nos ?? []).map((n) => [n.id, n]));
   const inicioDe = new Map(Object.entries(poe.classes_iniciais ?? {}).map(([classe, v]) => [String(v.no), classe]));
   const viz = new Map(poe.nos.map((n) => [n.id, new Set()]));
   for (const l of poe.ligacoes ?? []) {
@@ -140,6 +142,7 @@ export function converterArvore(poe) {
     const traduzidas = linhas.map(traduzirLinha);
     for (const t of traduzidas) estados[t.estado]++;
     const tipo = classe ? 'start' : TIPO[n.tipo] ?? 'small';
+    const grupo = daCompleta.get(n.id)?.grupo;
     nos.push({
       id: String(n.id),
       nome: classe ? `Início: ${classe}` : n.nome,
@@ -154,12 +157,47 @@ export function converterArvore(poe) {
       estados: traduzidas.map((t) => t.estado),
       ...(tipo === 'keystone' ? { keystone: { regra: 'texto', texto: linhas.filter((l, i) => traduzidas[i].estado !== 'nota').join(' ') || n.nome } } : {}),
       ...(n.placeholder ? { placeholder: true } : {}),
+      // O grupo do notável (é ele que abre a maestria do mesmo grupo).
+      ...(tipo === 'notable' && grupo != null ? { grupo } : {}),
       conexoes: [...viz.get(n.id)].filter((c) => alcancados.has(c)).map(String),
     });
+  }
+  /*
+   * ---- As MAESTRIAS (como no PoE) ----
+   * Um nó sem ligação: abre quando há um notável alocado no MESMO grupo, custa 1 ponto, e ao alocar escolhe-se UMA das opções (cada uma
+   * com os efeitos traduzidos). Só as da árvore principal (posicionadas, fora das ascendências) e com um notável no grupo.
+   */
+  const gruposComNotavel = new Set(nos.filter((x) => x.tipo === 'notable' && x.grupo != null).map((x) => x.grupo));
+  const nomeEn = new Map(poe.nos.map((n) => [n.id, n.nome_en]));
+  let maestrias = 0;
+  for (const m of completa?.nos ?? []) {
+    if (m.tipo !== 'maestria' || !m.posicionado || m.fora_da_arvore || m.ascendencia || !gruposComNotavel.has(m.grupo) || !m.efeitos_de_maestria?.length) continue;
+    const opcoes = m.efeitos_de_maestria.map((o) => {
+      const linhas = (o.efeitos ?? []).flatMap((e) => String(e).split('\n')).map((l) => l.trim()).filter(Boolean);
+      const traduzidas = linhas.map(traduzirLinha);
+      for (const t of traduzidas) estados[t.estado]++;
+      return { id: String(o.id), textos: linhas, estados: traduzidas.map((t) => t.estado), efeitos: traduzidas.flatMap((t) => t.efeitos) };
+    });
+    nos.push({
+      id: String(m.id),
+      nome: m.nome,
+      ...(nomeEn.get(m.id) ? { nomeEn: nomeEn.get(m.id) } : {}),
+      tipo: 'mastery',
+      x: m.x,
+      y: m.y,
+      custo: 1,
+      grupo: m.grupo,
+      efeitos: [],
+      textos: [],
+      estados: [],
+      opcoes,
+      conexoes: [],
+    });
+    maestrias++;
   }
   const inicios = Object.fromEntries([...inicioDe].filter(([id]) => alcancados.has(Number(id))).map(([id, classe]) => [classe, id]));
   return {
     arvore: { versao: 1, inicios, nos },
-    relatorio: { nos: nos.length, foraDaArvore: poe.nos.length - nos.length, linhas: Object.values(estados).reduce((a, b) => a + b, 0), estados },
+    relatorio: { nos: nos.length, maestrias, foraDaArvore: poe.nos.length - (nos.length - maestrias), linhas: Object.values(estados).reduce((a, b) => a + b, 0), estados },
   };
 }
