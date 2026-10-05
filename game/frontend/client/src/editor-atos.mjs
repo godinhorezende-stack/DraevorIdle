@@ -4,6 +4,7 @@
 // Recebe as ferramentas da página (`el`, `api`, a raiz, `msg`) em vez de importá-las, para não fechar ciclo com `editor-conteudo.mjs`.
 import { confirmar, pedirTexto, descartarAlteracoes, tratarConflito } from './editor-ui.mjs';
 import { editorDeDrops } from './editor-poe-telas.mjs';
+import { retrato } from './editor-sprites.mjs';
 
 const POE = '/api/mapas/_engine/itens-poe/';
 const poeApi = async (rota, corpo) => (await fetch(POE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
@@ -336,6 +337,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       const g = sv('g', { transform: `translate(${p.x} ${p.y})`, style: 'cursor:pointer', tabindex: 0, role: 'button', 'aria-label': f.nome });
       g.append(sv('circle', { r: RAIO, fill: f.id === E.ato.inicio ? '#1f4a30' : '#1b2438', stroke: comErro.has(f.id) || alcance.has(f.id) ? '#ff6b6b' : sel ? '#ffd166' : E.ligando === f.id ? '#6bd0ff' : f.obrigatoria ? '#8aa0c8' : '#667', 'stroke-width': sel || E.ligando === f.id ? 3 : 2, 'stroke-dasharray': f.obrigatoria ? null : '4 3' }),
         sv('text', { y: 4, 'text-anchor': 'middle', fill: '#fff', 'font-size': 11 }, (f.ordem ?? '·').toString()),
+        seloDaConclusao(f) ? sv('g', { transform: `translate(${RAIO - 4} ${-RAIO + 4})` }, sv('circle', { r: 9, fill: '#2a1f12', stroke: '#d9b25f', 'stroke-width': 1.5 }), sv('text', { y: 4, 'text-anchor': 'middle', fill: '#f3dca4', 'font-size': 10 }, seloDaConclusao(f))) : null,
         sv('text', { y: RAIO + 14, 'text-anchor': 'middle', fill: tipoOk ? '#cfd6e6' : '#ffb347', 'font-size': 10.5 }, f.nome.length > 16 ? `${f.nome.slice(0, 15)}…` : f.nome));
       let arrastou = false;
       g.addEventListener('pointerdown', (ev) => {
@@ -494,28 +496,75 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     return null;
   }
 
+  // ---- COMO A FASE CONCLUI: cada tipo tem a sua tela (cartões com o desenho dos mobs, a ficha do alvo, a quantidade, o item da missão).
+  const TIPOS_VISUAIS = {
+    'limpar-hunt': { icone: '🧹', titulo: 'Limpar a área', texto: 'matar todos os bichos da instância' },
+    'matar-chefe': { icone: '☠', titulo: 'Matar o chefe', texto: 'um monstro escolhido precisa morrer' },
+    'matar-n': { icone: '⚔', titulo: 'Matar N monstros', texto: 'uma quantidade (de um tipo ou qualquer)' },
+    'item-de-missao': { icone: '📜', titulo: 'Missão: item', texto: 'o alvo solta o item; pegar conclui' },
+  };
+  /** O selo da conclusão no nó do grafo. */
+  const seloDaConclusao = (f) => ({ 'matar-chefe': '☠', 'matar-n': `×${f.conclusao?.quantidade ?? '?'}`, 'item-de-missao': '📜' })[f.conclusao?.tipo] ?? null;
+  const vidaDe = (m) => Number(m.vida ?? 0) + Number(m.escudoDeEnergia ?? 0);
+  /** Um cartão de mob (desenho, nome, nível, vida) — clicável quando `aoEscolher`. */
+  const cartaoDoMob = (m, { ativo = false, aoEscolher = null, pequeno = false } = {}) => el(aoEscolher ? 'button' : 'div', { type: aoEscolher ? 'button' : undefined, class: `conc-mob${ativo ? ' ativo' : ''}${m.unico ? ' unico' : ''}${pequeno ? ' pequeno' : ''}`, disabled: aoEscolher ? E.somenteLeitura : undefined, onclick: aoEscolher ? () => aoEscolher(m) : undefined, title: m.nome },
+    retrato(m.desenho ?? null, pequeno ? 40 : 56, { categoria: 'monstros' }), el('b', {}, m.nome), el('small', {}, `nv ${m.nivel ?? '?'} · ${vidaDe(m).toLocaleString('pt-BR')} vida${m.unico ? ' · único' : ''}`));
+  /** Os mobs da área ordenados: únicos primeiro, depois pela vida. */
+  const mobsOrdenados = (area) => [...(area?.monstros ?? [])].sort((a, b) => Number(!!b.unico) - Number(!!a.unico) || vidaDe(b) - vidaDe(a));
+
   function painelDaConclusao(f) {
     const conc = f.conclusao ?? { tipo: 'limpar-hunt' };
-    const T = E.opcoes.tiposDeConclusao.find((t) => t.id === conc.tipo) ?? {};
     const area = areaDaFase(f.huntId);
-    const monstros = area?.monstros ?? [];
-    const opMonstros = monstros.map((m) => [m.slug, `${m.nome}${m.unico ? ' (único)' : ''}${m.nivel ? ` · nv ${m.nivel}` : ''}`]);
-    if (conc.monstro && !opMonstros.some(([v]) => v === conc.monstro)) opMonstros.unshift([conc.monstro, conc.nome ?? conc.monstro]);
+    const monstros = mobsOrdenados(area);
     const mudar = (novo) => { f.conclusao = novo; mudou(); };
-    const opItens = (E.missao ?? []).map((i) => [String(i.id), `${i.nome} — ${i.missao}`]);
-    return el('fieldset', {}, el('legend', {}, 'Como a fase conclui'),
-      el('div', { class: 'grade' },
-        selecao('Conclusão', conc.tipo, E.opcoes.tiposDeConclusao.map((t) => [t.id, t.nome]), (v) => mudar({ tipo: v || 'limpar-hunt' })),
-        T.exigeMonstro || conc.tipo === 'matar-n' ? selecao('Monstro', conc.monstro ?? '', opMonstros, (v) => { const m = monstros.find((x) => x.slug === v); mudar({ ...conc, monstro: v || undefined, nome: m?.nome }); }, conc.tipo === 'matar-n' ? '(qualquer monstro)' : '(escolha)') : null,
-        T.exigeQuantidade ? campo('Quantidade', conc.quantidade, (v) => mudar({ ...conc, quantidade: numero(v) }), { type: 'number', min: 1 }) : null,
-        T.exigeItem ? selecao('Item da missão', conc.item != null ? String(conc.item) : '', opItens, (v) => mudar({ ...conc, item: v ? Number(v) : undefined }), '(escolha)') : null),
-      el('div', { class: 'dica' }, {
-        'limpar-hunt': 'Conclui ao limpar a instância inteira.',
-        'matar-chefe': 'Conclui quando o monstro escolhido morre (limpar a área sem ele não conclui).',
-        'matar-n': 'Conclui ao matar a quantidade (do monstro escolhido, ou de qualquer um). O progresso fica salvo.',
-        'item-de-missao': 'O monstro alvo solta o item da missão (a tabela de drop dele, abaixo) e pegá-lo conclui. Sem a linha na tabela, o item cai do mesmo jeito ao matar o alvo.',
-      }[conc.tipo] ?? ''),
-      f.objetivos?.length ? [el('b', {}, 'Missões desta área (Drive)'), el('ul', { class: 'atos-missoes' }, f.objetivos.map((o) => el('li', {}, el('b', {}, o.missao ?? ''), o.texto ? ` — ${o.texto}` : '')))] : null);
+    const alvo = monstros.find((m) => m.slug === conc.monstro) ?? null;
+    if (area?.poe && !E.missao) poeApi('itens-de-missao').then((r) => { E.missao = r.itens ?? []; if (faseDe(E.fase)?.huntId === f.huntId) pintar(); }).catch(() => {});
+    // Os quatro tipos como cartões (o escolhido aceso).
+    const tipos = el('div', { class: 'conc-tipos' }, E.opcoes.tiposDeConclusao.map((t) => {
+      const v = TIPOS_VISUAIS[t.id] ?? { icone: '•', titulo: t.nome, texto: '' };
+      return el('button', { type: 'button', class: `conc-tipo${conc.tipo === t.id ? ' ativo' : ''}`, disabled: E.somenteLeitura, onclick: () => conc.tipo !== t.id && mudar(t.id === 'matar-n' ? { tipo: t.id, quantidade: 25 } : t.id === 'item-de-missao' ? { tipo: t.id, item: E.missao?.find((i) => i.area === f.huntId)?.id } : { tipo: t.id }) },
+        el('span', { class: 'conc-icone' }, v.icone), el('b', {}, v.titulo), el('small', {}, v.texto));
+    }));
+    const semMobs = !area ? el('div', { class: 'dica' }, 'Carregando os mobs da área…') : !monstros.length ? el('div', { class: 'dica' }, 'A área não tem monstros (escolha a hunt da fase).') : null;
+    let corpo = null;
+    if (conc.tipo === 'limpar-hunt') {
+      corpo = [el('div', { class: 'dica' }, `Conclui quando a instância inteira é limpa. ${monstros.length} tipo(s) de monstro nesta área:`),
+        semMobs ?? el('div', { class: 'conc-grade' }, monstros.map((m) => cartaoDoMob(m, { pequeno: true })))];
+    } else if (conc.tipo === 'matar-chefe') {
+      corpo = [
+        alvo ? el('div', { class: 'conc-alvo' }, retrato(alvo.desenho ?? null, 96, { categoria: 'monstros', animar: true }), el('div', {},
+          el('div', { class: 'conc-rotulo' }, 'Alvo da fase'), el('h3', {}, alvo.nome), el('div', { class: 'dica' }, `nível ${alvo.nivel} · ${vidaDe(alvo).toLocaleString('pt-BR')} de vida · golpe ${alvo.dano} a cada ${Number(alvo.tempoAtaque ?? 0).toFixed(2)} s${alvo.convertidas?.length ? ` · ${alvo.convertidas.length} habilidade(s)` : ''}`),
+          el('div', { class: 'dica' }, 'Limpar a área sem ele não conclui; matar ele conclui na hora.'))) : el('div', { class: 'conc-aviso' }, '☠ Escolha o chefe da fase entre os mobs da área (os únicos vêm primeiro).'),
+        semMobs ?? el('div', { class: 'conc-grade' }, monstros.map((m) => cartaoDoMob(m, { ativo: m.slug === conc.monstro, aoEscolher: (x) => mudar({ ...conc, monstro: x.slug, nome: x.nome }) })))];
+    } else if (conc.tipo === 'matar-n') {
+      const q = conc.quantidade ?? 25;
+      corpo = [
+        el('div', { class: 'conc-contador' },
+          el('button', { type: 'button', disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, quantidade: Math.max(1, q - 5) }) }, '−5'),
+          el('input', { type: 'number', min: 1, value: q, disabled: E.somenteLeitura, onchange: (e) => mudar({ ...conc, quantidade: Math.max(1, Math.round(Number(e.target.value) || 1)) }) }),
+          el('button', { type: 'button', disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, quantidade: q + 5 }) }, '+5'),
+          [10, 25, 50, 100].map((n) => el('button', { type: 'button', class: n === q ? 'ativo' : '', disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, quantidade: n }) }, String(n)))),
+        el('div', { class: 'dica' }, `Matar ${q} ${alvo ? alvo.nome : 'monstros (qualquer um da área)'}. O progresso fica salvo entre as entradas.`),
+        semMobs ?? el('div', { class: 'conc-grade' },
+          el('button', { type: 'button', class: `conc-mob qualquer${conc.monstro ? '' : ' ativo'}`, disabled: E.somenteLeitura, onclick: () => mudar({ tipo: 'matar-n', quantidade: q }) }, el('span', { class: 'conc-icone' }, '⚔'), el('b', {}, 'Qualquer monstro'), el('small', {}, 'conta todos')),
+          monstros.map((m) => cartaoDoMob(m, { ativo: m.slug === conc.monstro, pequeno: true, aoEscolher: (x) => mudar({ ...conc, monstro: x.slug, nome: x.nome }) })))];
+    } else if (conc.tipo === 'item-de-missao') {
+      const item = (E.missao ?? []).find((i) => Number(i.id) === Number(conc.item));
+      const linha = alvo?.drops?.find((d) => Number(d.id) === Number(conc.item));
+      corpo = [
+        el('div', { class: 'conc-missao' },
+          alvo ? cartaoDoMob(alvo) : el('div', { class: 'conc-mob vazio' }, el('span', { class: 'conc-icone' }, '?'), el('b', {}, 'Escolha o monstro'), el('small', {}, 'que carrega o item')),
+          el('span', { class: 'conc-seta' }, '→ solta →'),
+          el('div', { class: `conc-item${item ? '' : ' vazio'}` }, el('span', { class: 'conc-icone' }, '📜'), el('b', {}, item?.nome ?? 'Escolha o item'), el('small', {}, item ? `missão "${item.missao}"` : 'da missão'))),
+        el('div', { class: 'dica' }, !alvo || !item ? 'Escolha o monstro e o item abaixo.' : linha ? `Na tabela de drop de ${alvo.nome}: ${linha.chance}%${linha.missao ? ', só enquanto a missão está aberta' : ''}. Pegar o item conclui a fase.` : `Sem a linha na tabela de drop de ${alvo.nome}: o item cai do mesmo jeito ao matar o alvo (100%).`),
+        el('div', { class: 'conc-rotulo' }, 'Quem carrega'),
+        semMobs ?? el('div', { class: 'conc-grade' }, monstros.map((m) => cartaoDoMob(m, { ativo: m.slug === conc.monstro, pequeno: true, aoEscolher: (x) => mudar({ ...conc, monstro: x.slug, nome: x.nome }) }))),
+        el('div', { class: 'conc-rotulo' }, 'Item da missão'),
+        el('div', { class: 'conc-grade' }, (E.missao ?? []).sort((a, b) => Number(b.area === f.huntId) - Number(a.area === f.huntId) || a.ato - b.ato).map((i) => el('button', { type: 'button', class: `conc-item${Number(i.id) === Number(conc.item) ? ' ativo' : ''}`, disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, item: Number(i.id) }) },
+          el('span', { class: 'conc-icone' }, '📜'), el('b', {}, i.nome), el('small', {}, `${i.ato === 11 ? 'Epílogo' : `Ato ${i.ato}`}${i.area === f.huntId ? ' · desta área' : ''}`))))];
+    }
+    return el('fieldset', { class: 'conc' }, el('legend', {}, 'Como a fase conclui'), tipos, corpo,
+      f.objetivos?.length ? el('details', { class: 'conc-missoes' }, el('summary', {}, `Missões desta área no Drive (${f.objetivos.length})`), el('ul', { class: 'atos-missoes' }, f.objetivos.map((o) => el('li', {}, el('b', {}, o.missao ?? ''), o.texto ? ` — ${o.texto}` : '')))) : null);
   }
 
   /** Os mobs da área em edição (uma cópia; "Salvar mobs da área" grava e vale na próxima entrada). */

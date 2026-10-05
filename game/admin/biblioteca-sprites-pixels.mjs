@@ -38,4 +38,26 @@ for (const [look, m] of Object.entries(lerJson('outfits.json'))) {
   looks[look] = assinatura(folha(join(RAIZ, 'sprites', 'outfits', `${look}.png`)), 0, 0, m.cw ?? 32, m.ch ?? 32);
   FOLHAS.clear();
 }
-parentPort.postMessage({ itens, looks });
+// A construção do mapa: quais células da paleta de cada mapa têm DESENHO no atlas (o chão de muitos mapas está pintado numa camada de fundo pronta e a
+// célula dele fica vazia). `celulas['<arquivo>|<índice>'] = 1` quando há pixel.
+import { readdirSync } from 'node:fs';
+const celulas = {};
+const pasta = join(RAIZ, 'hunts');
+for (const arq of existsSync(pasta) ? readdirSync(pasta).filter((a) => a.endsWith('-map.json')) : []) {
+  let m;
+  try { m = JSON.parse(readFileSync(join(pasta, arq), 'utf8')); } catch { continue; }
+  const img = folha(join(RAIZ, 'sprites', `${m.atlas}.png`));
+  if (!img?.data) continue;
+  (m.palette ?? []).forEach((p, i) => {
+    const [x, y] = p.cells?.[0] ?? [p.ax ?? 0, p.ay ?? 0];
+    const w = p.w ?? 32;
+    const h = p.h ?? 32;
+    if (x + w > img.w || y + h > img.h) return;
+    for (let lin = 0; lin < h; lin++) {
+      const ini = ((y + lin) * img.w + x) * 4;
+      for (let k = 3; k < w * 4; k += 4) if (img.data[ini + k]) { celulas[`${arq}|${i}`] = 1; return; }
+    }
+  });
+  FOLHAS.clear();
+}
+parentPort.postMessage({ itens, looks, celulas });

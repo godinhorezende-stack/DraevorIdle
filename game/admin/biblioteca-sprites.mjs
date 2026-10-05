@@ -6,7 +6,7 @@
 //   itens     — os sprites de item (`item-sprites.json`), um por desenho (itens diferentes com o mesmo recorte do atlas viram um);
 //   efeitos   — os efeitos de magia (`effect-sprites.json`); tiros — os projéteis (`missile-sprites.json`).
 // O que o dono dá a cada sprite (nome e etiquetas, para organizar e achar) fica em `gamedata/biblioteca-sprites.json`. Só lê os índices; nada é copiado.
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { statSync, mkdirSync } from 'node:fs';
 import { Worker } from 'node:worker_threads';
 import { fileURLToPath } from 'node:url';
@@ -17,10 +17,13 @@ import { BESTIARY } from '../systems/hunt/monstros.mjs';
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 const ARQ_META = join(RAIZ, 'biblioteca-sprites.json');
 const lerJson = (arq, padrao) => (existsSync(join(RAIZ, arq)) ? JSON.parse(readFileSync(join(RAIZ, arq), 'utf8')) : padrao);
-export const TIPOS = ['mobs', 'itens', 'efeitos', 'tiros', 'outfits', 'montarias'];
+export const TIPOS = ['mobs', 'itens', 'mapa', 'efeitos', 'tiros', 'outfits', 'montarias'];
+/** Os tipos do catálogo que são CONSTRUÇÃO do mapa (chão, decoração) — não são itens utilizáveis. */
+const TIPOS_DE_CONSTRUCAO = new Set(['natural tiles', 'artificial tiles', 'decoration']);
+export const CATEGORIAS_DO_MAPA = { chao: 'Chão', cima: 'Bordas e decoração', solido: 'Paredes e sólidos' };
 
 let INDICES = null;
-const indices = () => (INDICES ??= { looks: lerJson('outfits.json', {}), itens: lerJson('item-sprites.json', {}), efeitos: lerJson('effect-sprites.json', {}), tiros: lerJson('missile-sprites.json', {}) });
+const indices = () => (INDICES ??= { catalogoBruto: lerJson('item-catalog.json', {}), looks: lerJson('outfits.json', {}), itens: lerJson('item-sprites.json', {}), efeitos: lerJson('effect-sprites.json', {}), tiros: lerJson('missile-sprites.json', {}) });
 const meta = () => (existsSync(ARQ_META) ? JSON.parse(readFileSync(ARQ_META, 'utf8')) : { sprites: {} });
 const chave = (tipo, id) => `${tipo}:${id}`;
 
@@ -29,7 +32,7 @@ const chave = (tipo, id) => `${tipo}:${id}`;
 // roda numa THREAD à parte e fica em cache (game/database/dados, fora do git), refeito quando os índices mudam. Até ficar pronto, vale a comparação pelo
 // recorte do atlas (e a tela avisa).
 const ARQ_CACHE = join(RAIZ, '..', 'database', 'dados', 'cache-assinaturas-sprites.json');
-const carimbo = () => ['outfits.json', 'item-sprites.json'].map((a) => (existsSync(join(RAIZ, a)) ? statSync(join(RAIZ, a)).mtimeMs : 0)).join('|');
+const carimbo = () => ['outfits.json', 'item-sprites.json', 'hunts'].map((a) => (existsSync(join(RAIZ, a)) ? statSync(join(RAIZ, a)).mtimeMs : 0)).join('|');
 let ASSINATURAS = null;
 let CALCULANDO = false;
 export const calculandoPixels = () => CALCULANDO;
@@ -38,13 +41,14 @@ export function assinaturas() {
   if (ASSINATURAS) return ASSINATURAS;
   try {
     const c = existsSync(ARQ_CACHE) ? JSON.parse(readFileSync(ARQ_CACHE, 'utf8')) : null;
-    if (c?.carimbo === carimbo()) return (ASSINATURAS = { itens: new Map(Object.entries(c.itens)), looks: new Map(Object.entries(c.looks)) });
+    if (c?.carimbo === carimbo() && c.celulas) return (ASSINATURAS = { itens: new Map(Object.entries(c.itens)), looks: new Map(Object.entries(c.looks)), celulas: c.celulas });
   } catch { /* cache ruim: refaz */ }
   if (!CALCULANDO) {
     CALCULANDO = true;
     const w = new Worker(new URL('./biblioteca-sprites-pixels.mjs', import.meta.url), { workerData: { raiz: RAIZ }, execArgv: [] });
     w.once('message', (r) => {
-      ASSINATURAS = { itens: new Map(Object.entries(r.itens)), looks: new Map(Object.entries(r.looks)) };
+      ASSINATURAS = { itens: new Map(Object.entries(r.itens)), looks: new Map(Object.entries(r.looks)), celulas: r.celulas };
+      CONSTRUCAO = null; // refaz a construção com as células que têm desenho
       CALCULANDO = false;
       try { mkdirSync(dirname(ARQ_CACHE), { recursive: true }); writeFileSync(ARQ_CACHE, JSON.stringify({ carimbo: carimbo(), ...r })); } catch { /* sem cache: refaz no próximo boot */ }
     });
@@ -52,6 +56,47 @@ export function assinaturas() {
     w.unref(); // não segura o processo (testes, desligamento)
   }
   return null;
+}
+
+// ---- A CONSTRUÇÃO DO MAPA: os itens que montam os mapas (chão, bordas, paredes, árvores, decoração) — a paleta dos mapas de hunt, cada item com o desenho
+// tirado do atlas de um mapa que o usa. A categoria vem de COMO ele é usado nos mapas de verdade: na base da pilha da casa = chão; por cima e em casa
+// bloqueada na maior parte das vezes = parede/sólido; por cima sem bloquear = borda/decoração.
+let CONSTRUCAO = null;
+let PROVISORIA = null;
+function construcao() {
+  if (CONSTRUCAO) return CONSTRUCAO;
+  if (PROVISORIA && !assinaturas()) return PROVISORIA;
+  const por = new Map();
+  const pasta = join(RAIZ, 'hunts');
+  for (const arq of existsSync(pasta) ? readdirSync(pasta).filter((a) => a.endsWith('-map.json')) : []) {
+    let m;
+    try { m = JSON.parse(readFileSync(join(pasta, arq), 'utf8')); } catch { continue; }
+    const pal = m.palette ?? [];
+    const nomeDoMapa = arq.replace(/-map\.json$/, '');
+    for (const [z, f] of Object.entries(m.floors ?? {})) {
+      const principal = Number(z) === m.z;
+      const pilhas = f.stacks ?? (principal ? m.stacks : null) ?? [];
+      const bloq = f.blocked ?? (principal ? m.blocked : null) ?? [];
+      pilhas.forEach((pilha, i) => (pilha ?? []).forEach((pi, pos) => {
+        const p = pal[pi];
+        if (!p) return;
+        let x = por.get(p.id);
+        if (!x) por.set(p.id, (x = { id: String(p.id), chao: 0, cima: 0, bloq: 0, n: 0, mapas: new Map(), desenho: null }));
+        x.n++;
+        if (pos === 0) x.chao++; else x.cima++;
+        if (bloq[i]) x.bloq++;
+        x.mapas.set(nomeDoMapa, (x.mapas.get(nomeDoMapa) ?? 0) + 1);
+        // O desenho: de um mapa onde a célula do item TEM pixel no atlas (o "tapa" e o chão pintado na camada de fundo ficam em branco), na menor variação.
+        const cel = assinaturas()?.celulas;
+        const tapado = cel ? !cel[`${arq}|${pi}`] : !!p.tapa;
+        const melhor = !x.desenho || (x.desenho.tapado && !tapado) || (x.desenho.tapado === tapado && (p.variant ?? 0) < x.desenho.variante);
+        if (melhor) x.desenho = { tipo: 'atlas', url: `/gamedata/sprites/${m.atlas}.png`, x: p.cells?.[0]?.[0] ?? p.ax ?? 0, y: p.cells?.[0]?.[1] ?? p.ay ?? 0, w: p.w ?? 32, h: p.h ?? 32, variante: p.variant ?? 0, variantes: p.variants ?? 1, tapado };
+      }));
+    }
+  }
+  const pronta = [...por.values()].map((x) => ({ ...x, categoria: x.chao >= x.cima ? 'chao' : x.bloq / x.n > 0.6 ? 'solido' : 'cima', semDesenho: !!x.desenho?.tapado }));
+  if (assinaturas()) { CONSTRUCAO = pronta; PROVISORIA = null; } else PROVISORIA = pronta; // a provisória vale até as células ficarem prontas
+  return pronta;
 }
 
 /** Os sprites de um tipo, cada desenho uma vez: `[{ tipo, id, nome, desenho, usos: [{ nome, ref }], tags }]`. */
@@ -92,6 +137,7 @@ function todos(tipo) {
     // O mesmo recorte do atlas (folha + posições) = o mesmo desenho, mesmo em itens diferentes.
     const porDesenho = new Map();
     for (const [id, s] of Object.entries(I.itens)) {
+      if (TIPOS_DE_CONSTRUCAO.has(ITEM_CATALOG[id]?.type ?? I.catalogoBruto[id]?.type)) continue; // chão e decoração: seção "Construção do mapa"
       const px = assinaturas()?.itens.get(id);
       const assinatura = px && px !== 'vazio' ? px : `${s.b ?? s.p}|${JSON.stringify(s.s ?? [[0, s.x, s.y]])}`;
       const x = porDesenho.get(assinatura) ?? { tipo, id: String(id), nome: ITEM_CATALOG[id]?.name ?? `sprite ${id}`, desenho: { tipo: 'item', id: Number(id) }, usos: [], iguais: [] };
@@ -102,6 +148,9 @@ function todos(tipo) {
     }
     return [...porDesenho.values()].map(com);
   }
+  if (tipo === 'mapa') {
+    return construcao().filter((x) => !x.semDesenho).map((x) => com({ tipo, id: x.id, nome: ITEM_CATALOG[x.id]?.name ?? `item ${x.id}`, categoria: x.categoria, desenho: x.desenho, usos: [...x.mapas.entries()].sort((a, b) => b[1] - a[1]).map(([mapa, n]) => ({ nome: `${mapa} (${n} casa${n > 1 ? 's' : ''})`, ref: mapa })), resumo: `${CATEGORIAS_DO_MAPA[x.categoria]} · ${x.n} casas em ${x.mapas.size} mapa(s)${x.bloq ? ` · ${Math.round((x.bloq / x.n) * 100)}% bloqueia` : ''}` }));
+  }
   if (tipo === 'efeitos' || tipo === 'tiros') return Object.keys(tipo === 'efeitos' ? I.efeitos : I.tiros).map((id) => com({ tipo, id, nome: `${tipo === 'efeitos' ? 'Efeito' : 'Projétil'} #${id}`, desenho: { tipo: tipo === 'efeitos' ? 'efeito' : 'tiro', id: Number(id) }, usos: [] }));
   return [];
 }
@@ -110,7 +159,7 @@ function todos(tipo) {
  * A lista da biblioteca: `{ tipo, total, itens, contagens }`. `q` busca no nome, no id, nas etiquetas e em quem usa; `filtro`: 'com-uso' | 'sem-uso' |
  * 'com-nome' (os que o dono organizou) | ''; paginada.
  */
-export function listar({ tipo = 'mobs', q = '', filtro = '', pagina = 0, limite = 120 } = {}) {
+export function listar({ tipo = 'mobs', q = '', filtro = '', categoria = '', pagina = 0, limite = 120 } = {}) {
   if (!TIPOS.includes(tipo)) tipo = 'mobs';
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const t = norm(q).trim();
@@ -119,6 +168,7 @@ export function listar({ tipo = 'mobs', q = '', filtro = '', pagina = 0, limite 
     if (filtro === 'com-uso' && !x.usos.length) return false;
     if (filtro === 'sem-uso' && x.usos.length) return false;
     if (filtro === 'com-nome' && !M[chave(tipo, x.id)]) return false;
+    if (categoria && x.categoria !== categoria) return false;
     if (!t) return true;
     return x.id === t || norm(x.nome).includes(t) || x.tags.some((g) => norm(g).includes(t)) || x.usos.some((u) => norm(u.nome).includes(t));
   });
@@ -126,7 +176,7 @@ export function listar({ tipo = 'mobs', q = '', filtro = '', pagina = 0, limite 
   const lim = Math.min(300, Math.max(1, Number(limite) || 120));
   const p = Math.max(0, Number(pagina) || 0);
   const contagens = Object.fromEntries(TIPOS.map((x) => [x, todos(x).length]));
-  return { tipo, total: l.length, pagina: p, comparandoPixels: CALCULANDO, itens: l.slice(p * lim, (p + 1) * lim).map((x) => ({ ...x, usos: x.usos.slice(0, 40), totalDeUsos: x.usos.length })), contagens };
+  return { tipo, total: l.length, pagina: p, comparandoPixels: CALCULANDO, categorias: tipo === 'mapa' ? Object.fromEntries(Object.keys(CATEGORIAS_DO_MAPA).map((c) => [c, construcao().filter((x) => x.categoria === c && !x.semDesenho).length])) : null, semDesenho: tipo === 'mapa' ? construcao().filter((x) => x.semDesenho).length : 0, itens: l.slice(p * lim, (p + 1) * lim).map((x) => ({ ...x, usos: x.usos.slice(0, 40), totalDeUsos: x.usos.length })), contagens };
 }
 
 /** Grava o nome e as etiquetas de um sprite (organização do dono). `{ ok, erros? }`. */
