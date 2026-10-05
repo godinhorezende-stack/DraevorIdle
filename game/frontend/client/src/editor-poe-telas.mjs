@@ -601,3 +601,74 @@ export function criarTelaDosMobsPoe({ raiz }) {
   }
   return { desenhar };
 }
+
+// ================================================================ MAPAS (Campanha → Mapas): os terrenos que as áreas usam
+
+export function criarTelaDosMapasPoe({ raiz }) {
+  const T = { lista: null, sel: null, busca: '', soUsados: true };
+  async function desenhar() {
+    if (!(await ligado(raiz, 'Mapas'))) return;
+    T.lista = (await api('mapas')).mapas;
+    raiz().replaceChildren(
+      cabecalho('Mapas', `Os ${T.lista.length} mapas do Draevor que servem de terreno às áreas da campanha. Veja quem usa cada um, troque o mapa de uma área e abra o mapa no Editor de mapas (Ferramentas) para mudar o chão e os spawns.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pmap-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pmap-painel' })));
+    pintar();
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const l = T.lista.filter((m) => (!T.soUsados || m.areas.length) && (!t || m.nome.toLowerCase().includes(t) || m.id.includes(t) || m.areas.some((a) => a.nome.toLowerCase().includes(t))));
+    document.querySelector('#pmap-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} mapa(s)`), el('input', { type: 'search', placeholder: 'Buscar mapa ou área…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: T.soUsados, onchange: (e) => { T.soUsados = e.target.checked; pintar(); } }), 'só os usados')),
+      el('div', { class: 'bib-grade' }, l.map((m) => el('div', { class: `eng-card${m.id === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => { T.sel = m.id; pintar(); } },
+        el('div', { class: 'eng-card-arte' }, retrato(m.desenho, 64, { categoria: 'mapas' })),
+        el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome' }, m.nome), el('span', { class: 'eng-id' }, m.id),
+          el('div', { class: 'eng-card-selos' }, m.nivel ? el('span', { class: 'selo' }, `nv ${m.nivel}`) : null, el('span', { class: m.areas.length ? 'selo usos' : 'selo' }, m.areas.length ? `${m.areas.length} área(s)` : 'livre')))))));
+    const m = T.lista.find((x) => x.id === T.sel);
+    document.querySelector('#pmap-painel')?.replaceChildren(!m ? el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha um mapa'), el('span', { class: 'dica' }, 'Quem usa, trocar o mapa de uma área e abrir no Editor de mapas.')) : el('div', { class: 'bib-painel-corpo' },
+      el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, m.id),
+      el('div', { class: 'linha' }, el('a', { class: 'botao', href: `#mapas/${encodeURIComponent(m.id)}` }, 'Abrir no Editor de mapas →')),
+      el('h4', {}, `Áreas que usam este mapa (${m.areas.length})`),
+      m.areas.length ? el('div', { class: 'pmap-areas' }, m.areas.map((a) => el('div', { class: 'linha' }, el('span', { class: 'selo' }, a.ato === 11 ? 'Ep.' : `A${a.ato}`), el('b', { style: 'flex:1' }, a.nome), el('span', { class: 'dica' }, `nv ${a.nivel}${a.trocado ? ' · trocado' : ''}`), el('a', { href: `#poe-fases/poe-ato-${a.ato}/${a.id}` }, 'editar a fase →')))) : el('p', { class: 'dica' }, 'Nenhuma área usa este mapa. Para ligar: Campanha → Fases → a fase → Mapa e mobs da área.')));
+  }
+  return { desenhar };
+}
+
+// ================================================================ MISSÕES (Campanha → Missões): as missões do Drive e o que o jogo liga a elas
+
+export function criarTelaDasMissoesPoe({ raiz }) {
+  const T = { lista: null, sel: null, busca: '', ato: '', soLigadas: false };
+  async function desenhar() {
+    if (!(await ligado(raiz, 'Missões'))) return;
+    T.lista = (await api('missoes')).missoes;
+    raiz().replaceChildren(
+      cabecalho('Missões', `As ${T.lista.length} missões da campanha (coleção do Drive): onde cada uma passa, os objetivos de cada etapa, a recompensa e o que já está ligado no jogo — o item de missão e as fases cuja conclusão vem dela.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pmis-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pmis-painel' })));
+    pintar();
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const l = T.lista.filter((m) => (!T.ato || String(m.ato) === T.ato) && (!T.soLigadas || m.fasesLigadas.length) && (!t || m.nome.toLowerCase().includes(t) || m.areas.some((a) => a.nome.toLowerCase().includes(t))));
+    const atos = [...new Set(T.lista.map((m) => m.ato))].sort((a, b) => a - b);
+    document.querySelector('#pmis-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} missão(ões)`), el('input', { type: 'search', placeholder: 'Buscar missão ou área…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('select', { onchange: (e) => { T.ato = e.target.value; pintar(); } }, el('option', { value: '' }, 'Todos os atos'), atos.map((a) => el('option', { value: String(a), selected: String(a) === T.ato }, `Ato ${a}`))),
+        el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: T.soLigadas, onchange: (e) => { T.soLigadas = e.target.checked; pintar(); } }), 'só as ligadas a uma fase')),
+      el('div', { class: 'pmis-lista' }, l.map((m) => el('button', { type: 'button', class: `pmis-item${m.slug === T.sel ? ' ativo' : ''}`, onclick: () => { T.sel = m.slug; pintar(); } },
+        el('span', { class: 'selo' }, `Ato ${m.ato}`), el('b', {}, m.nome), el('span', { class: 'dica' }, `${m.tipo === 'Optional' ? 'opcional' : 'principal'} · ${m.areas.length} área(s)`),
+        m.fasesLigadas.length ? el('span', { class: 'selo usos' }, `ligada a ${m.fasesLigadas.length} fase(s)`) : el('span', { class: 'selo' }, 'sem fase'), m.item ? el('span', { class: 'selo aviso' }, `📜 ${m.item.nome}`) : null))));
+    const m = T.lista.find((x) => x.slug === T.sel);
+    document.querySelector('#pmis-painel')?.replaceChildren(!m ? el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha uma missão'), el('span', { class: 'dica' }, 'As etapas por área, a recompensa e as fases ligadas a ela.')) : el('div', { class: 'bib-painel-corpo' },
+      el('h2', { class: 'bib-nome' }, m.nome), el('div', { class: 'dica' }, `Ato ${m.ato} · ${m.tipo === 'Optional' ? 'missão opcional' : 'missão principal'}`),
+      m.descricao ? el('p', {}, m.descricao) : null,
+      m.recompensa ? el('p', { class: 'dica' }, `Recompensa no PoE: ${m.recompensa}`) : null,
+      el('h4', {}, 'No jogo'),
+      m.item ? el('div', { class: 'linha' }, el('span', { class: 'conc-icone' }, '📜'), el('b', {}, m.item.nome), el('span', { class: 'dica' }, `item de missão · ${m.item.monstroNome} carrega`)) : el('p', { class: 'dica' }, 'Sem item de missão.'),
+      m.fasesLigadas.length ? el('div', { class: 'pmap-areas' }, m.fasesLigadas.map((f) => el('div', { class: 'linha' }, el('span', { class: 'selo usos' }, f.conclusao?.tipo === 'item-de-missao' ? '📜 item' : '☠ chefe'), el('b', { style: 'flex:1' }, `${f.atoNome} · ${f.nome}`), el('a', { href: `#poe-fases/${f.ato}/${f.fase}` }, 'editar a fase →'))))
+        : el('p', { class: 'dica' }, 'Nenhuma fase conclui por esta missão. Para ligar: abra uma das fases abaixo e escolha em "Como a fase conclui".'),
+      m.fasesDaMissao.length ? [el('h5', {}, 'Fases por onde ela passa'), el('div', { class: 'eng-card-selos' }, m.fasesDaMissao.map((f) => el('a', { class: 'selo', href: `#poe-fases/${f.ato}/${f.fase}` }, f.nome)))] : null,
+      el('h4', {}, 'Etapas (do Drive)'),
+      m.areas.map((a) => el('div', { class: 'pmis-area' }, el('b', {}, `${a.nome}${a.cidade ? ' (cidade)' : ''}`), el('ol', {}, a.etapas.map((e) => el('li', { value: e.etapa }, e.objetivos.slice(0, 2).join(' — ') || e.titulo || '', e.alvos.length ? el('span', { class: 'dica' }, ` · alvo: ${e.alvos.join(', ')}` ) : null, e.npcs.length ? el('span', { class: 'dica' }, ` · NPC: ${e.npcs.join(', ')}`) : null)))))));
+  }
+  return { desenhar };
+}

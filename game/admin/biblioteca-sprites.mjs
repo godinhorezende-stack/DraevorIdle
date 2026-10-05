@@ -37,13 +37,18 @@ let ASSINATURAS = null;
 let CALCULANDO = false;
 export const calculandoPixels = () => CALCULANDO;
 /** `{ itens: Map, looks: Map }` ou null (ainda calculando: começa o cálculo na thread, se não começou). */
+let FALHOU = null; // o carimbo em que o cálculo falhou: não tenta de novo até os índices mudarem
+let CACHE_CONFERIDO = null; // o carimbo do cache já conferido (vencido): não relê o arquivo a cada chamada
 export function assinaturas() {
   if (ASSINATURAS) return ASSINATURAS;
-  try {
+  if (CALCULANDO) return null;
+  const c0 = carimbo();
+  if (CACHE_CONFERIDO !== c0) try {
+    CACHE_CONFERIDO = c0;
     const c = existsSync(ARQ_CACHE) ? JSON.parse(readFileSync(ARQ_CACHE, 'utf8')) : null;
-    if (c?.carimbo === carimbo() && c.celulas) return (ASSINATURAS = { itens: new Map(Object.entries(c.itens)), looks: new Map(Object.entries(c.looks)), celulas: c.celulas });
+    if (c?.carimbo === c0 && c.celulas) return (ASSINATURAS = { itens: new Map(Object.entries(c.itens)), looks: new Map(Object.entries(c.looks)), celulas: c.celulas });
   } catch { /* cache ruim: refaz */ }
-  if (!CALCULANDO) {
+  if (!CALCULANDO && FALHOU !== c0) {
     CALCULANDO = true;
     const w = new Worker(new URL('./biblioteca-sprites-pixels.mjs', import.meta.url), { workerData: { raiz: RAIZ }, execArgv: [] });
     w.once('message', (r) => {
@@ -52,7 +57,7 @@ export function assinaturas() {
       CALCULANDO = false;
       try { mkdirSync(dirname(ARQ_CACHE), { recursive: true }); writeFileSync(ARQ_CACHE, JSON.stringify({ carimbo: carimbo(), ...r })); } catch { /* sem cache: refaz no próximo boot */ }
     });
-    w.once('error', (e) => { CALCULANDO = false; console.warn('[biblioteca de sprites] comparação de pixels:', e.message); });
+    w.once('error', (e) => { CALCULANDO = false; FALHOU = c0; console.warn('[biblioteca de sprites] comparação de pixels:', e.message); });
     w.unref(); // não segura o processo (testes, desligamento)
   }
   return null;
@@ -68,6 +73,7 @@ function construcao() {
   if (PROVISORIA && !assinaturas()) return PROVISORIA;
   const por = new Map();
   const pasta = join(RAIZ, 'hunts');
+  const cel = assinaturas()?.celulas; // uma vez só (antes era chamada a cada casa de cada mapa)
   for (const arq of existsSync(pasta) ? readdirSync(pasta).filter((a) => a.endsWith('-map.json')) : []) {
     let m;
     try { m = JSON.parse(readFileSync(join(pasta, arq), 'utf8')); } catch { continue; }
@@ -87,7 +93,6 @@ function construcao() {
         if (bloq[i]) x.bloq++;
         x.mapas.set(nomeDoMapa, (x.mapas.get(nomeDoMapa) ?? 0) + 1);
         // O desenho: de um mapa onde a célula do item TEM pixel no atlas (o "tapa" e o chão pintado na camada de fundo ficam em branco), na menor variação.
-        const cel = assinaturas()?.celulas;
         const tapado = cel ? !cel[`${arq}|${pi}`] : !!p.tapa;
         const melhor = !x.desenho || (x.desenho.tapado && !tapado) || (x.desenho.tapado === tapado && (p.variant ?? 0) < x.desenho.variante);
         if (melhor) x.desenho = { tipo: 'atlas', url: `/gamedata/sprites/${m.atlas}.png`, x: p.cells?.[0]?.[0] ?? p.ax ?? 0, y: p.cells?.[0]?.[1] ?? p.ay ?? 0, w: p.w ?? 32, h: p.h ?? 32, variante: p.variant ?? 0, variantes: p.variants ?? 1, tapado };

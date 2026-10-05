@@ -62,7 +62,9 @@ export function posicoesAutomaticas(ato) {
   return pos;
 }
 
-export function criarEditorDeAtos({ el, api, raiz, msg }) {
+export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = null }) {
+  // `modo: 'fases'`: a MESMA edição, organizada por fase (aba Campanha → Fases): a lista das fases do ato à esquerda e, à direita, os painéis da fase
+  // (dados, como conclui, mapa e mobs, recompensa) — sem o grafo (as ligações ficam na aba Acts).
   const E = { vista: 'fluxo', difPrevia: 'facil', lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null },
     // Ferramentas: histórico (desfazer/refazer), grade, zoom/arrasto do grafo, a ajuda de atalhos.
     hist: { passado: [], futuro: [], ultimo: '' }, grade: true, zoom: 1, pan: { x: 0, y: 0 }, ajuda: false, ferramentas: false };
@@ -681,7 +683,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: f.id === E.ato.inicio, disabled: E.somenteLeitura, onchange: () => { E.ato.inicio = f.id; mudou(); } }), 'Fase inicial')),
       el('label', { class: 'campo' }, 'Requisitos (IDs de fases que precisam estar completas, separados por vírgula)', el('input', { value: f.requisitos.exige.join(', '), disabled: E.somenteLeitura, onchange: (e) => { f.requisitos.exige = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); mudou(); } })),
       el('div', { class: 'dica' }, 'A conclusão da fase, o mapa, os mobs e o que cada mob solta: painéis abaixo. Recompensa da fase (por limpeza / 1ª vez): mais abaixo.'),
-      E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { onclick: () => { E.ligando = f.id; msg(`Clique na fase de DESTINO para ligar "${f.nome}" a ela.`, 'aviso'); pintar(); } }, 'Ligar a outra fase →'), el('button', { class: 'perigo', onclick: () => removerFase(f.id) }, 'Remover fase')));
+      E.somenteLeitura ? null : el('div', { class: 'linha' }, modo === 'fases' ? null : el('button', { onclick: () => { E.ligando = f.id; msg(`Clique na fase de DESTINO para ligar "${f.nome}" a ela.`, 'aviso'); pintar(); } }, 'Ligar a outra fase →'), el('button', { class: 'perigo', onclick: () => removerFase(f.id) }, 'Remover fase')));
   }
 
   function painelDaLigacao() {
@@ -825,7 +827,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
 
   // Os atalhos valem só com a aba Acts aberta no fluxo e o foco fora de um campo (Ctrl+S vale sempre).
   document.addEventListener('keydown', (e) => {
-    if (!E.ato || E.vista !== 'fluxo' || !document.querySelector('.atos-canvas')) return;
+    if (!E.ato || (modo === 'fases' ? !document.querySelector('.fases-modo') : E.vista !== 'fluxo' || !document.querySelector('.atos-canvas'))) return;
     const ctrl = e.ctrlKey || e.metaKey;
     const k = e.key.toLowerCase();
     if (ctrl && k === 's') { e.preventDefault(); if (!E.somenteLeitura) salvar(); return; }
@@ -835,6 +837,11 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     if (ctrl && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); return refazer(); }
     if (ctrl || e.altKey) return;
     const feito = () => e.preventDefault();
+    if (modo === 'fases') {
+      if (e.key === 'PageDown') { feito(); vizinhaDaSelecionada(1); }
+      if (e.key === 'PageUp') { feito(); vizinhaDaSelecionada(-1); }
+      return;
+    }
     if (e.key === 'Escape') { feito(); E.ligando = null; E.fase = null; E.lig = null; E.ajuda = false; return pintar(); }
     if (e.key === '?') { feito(); E.ajuda = !E.ajuda; return pintar(); }
     if (k === 'f' || e.key === '/') { feito(); return document.getElementById('atos-busca')?.focus(); }
@@ -860,7 +867,34 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
   });
 
   // ------------------------------------------------------------------ tela
+  function pintarFases() {
+    const alvo = raiz();
+    const atos = E.lista.filter((a) => !a.somenteLeitura);
+    const selAto = el('select', { onchange: async (e) => { await abrir(e.target.value); E.fase = E.ato?.fases[0]?.id ?? null; pintar(); } }, atos.map((a) => el('option', { value: a.id, selected: a.id === E.ato?.id }, `${a.nome} (${a.fases} fases)`)));
+    const cabeca = el('div', { class: 'eng-cabeca' }, el('div', {}, el('h1', {}, 'Fases'), el('p', {}, 'Cada fase do ato: os dados, como ela conclui, o mapa ligado a ela e os mobs. As ligações entre as fases (o caminho do ato) ficam na aba Acts.')));
+    if (!E.ato) return alvo.replaceChildren(el('div', { class: 'fases-modo' }, cabeca, el('div', { class: 'linha' }, el('label', { class: 'campo', style: 'flex:none' }, 'Ato', selAto)), el('div', { class: 'dica' }, 'Escolha um ato.')));
+    const fases = [...E.ato.fases].sort((a, b) => (a.ordem ?? 1e9) - (b.ordem ?? 1e9));
+    if (!faseDe(E.fase)) E.fase = fases[0]?.id ?? null;
+    const f = faseDe(E.fase);
+    const lista = el('div', { class: 'fases-lista' }, fases.map((x) => el('button', { type: 'button', class: `fases-item${x.id === E.fase ? ' ativo' : ''}`, onclick: () => { E.fase = x.id; pintar(); } },
+      el('span', { class: 'fases-ordem' }, String(x.ordem ?? '·')),
+      el('div', { class: 'fases-texto' }, el('b', {}, x.nome), el('small', {}, `nv ${x.nivel?.facil ?? '?'} · ${TIPOS_VISUAIS[x.conclusao?.tipo ?? 'limpar-hunt']?.titulo ?? ''}${x.id === E.ato.inicio ? ' · início' : ''}${x.id === E.ato.bossFinal?.faseAnterior ? ' · antes do chefe' : ''}`)),
+      seloDaConclusao(x) ? el('span', { class: 'fases-selo' }, seloDaConclusao(x)) : null)));
+    const direita = f ? [painelDaFase(), painelDaConclusao(f), painelDosMobs(f), painelDeRecompensa(`fase:${f.id}`, 'fase', f.huntId, rotulosDe('fase'))].filter(Boolean) : [el('div', { class: 'dica' }, 'Escolha uma fase.')];
+    alvo.replaceChildren(el('div', { class: 'fases-modo' }, cabeca,
+      el('div', { class: 'atos-ferramentas' },
+        el('label', { class: 'campo', style: 'flex:none' }, 'Ato', selAto),
+        E.somenteLeitura ? null : el('button', { type: 'button', class: sujo() ? 'primario' : '', onclick: salvar, title: 'Ctrl+S' }, sujo() ? 'Salvar o ato (Ctrl+S)' : 'Salvo'),
+        E.somenteLeitura ? null : el('button', { type: 'button', title: 'Desfazer (Ctrl+Z)', disabled: !E.hist.passado.length, onclick: desfazer }, '↶'),
+        E.somenteLeitura ? null : el('button', { type: 'button', title: 'Refazer (Ctrl+Y)', disabled: !E.hist.futuro.length, onclick: refazer }, '↷'),
+        irPara ? el('button', { type: 'button', onclick: () => irPara('atos', null, [E.ato.id, E.fase]) }, 'Ver no grafo (Acts) →') : null,
+        el('span', { class: 'dica' }, `${fases.length} fases · Page Up/Down troca de fase`)),
+      el('div', { class: 'fases-duas' }, el('aside', { class: 'fases-esq' }, lista), el('section', { class: 'fases-dir' }, direita)),
+      painelDeProblemas()));
+  }
+
   function pintar() {
+    if (modo === 'fases') return pintarFases();
     const alvo = raiz();
     if (!E.ato) {
       alvo.replaceChildren(
@@ -906,9 +940,13 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
   }
 
   return {
-    async desenhar() {
-      if (!E.opcoes) await carregarLista();
-      else await carregarLista();
+    async desenhar(resto = []) {
+      await carregarLista();
+      // Abrir num ato/fase (link de outra tela: `#poe-fases/<ato>/<fase>` ou `#atos/<ato>/<fase>`); a aba Fases abre o primeiro ato do PoE.
+      const alvoAto = resto[0] ?? (modo === 'fases' && !E.ato ? (E.lista.find((a) => a.id.startsWith('poe-ato-')) ?? E.lista.find((a) => !a.somenteLeitura))?.id : null);
+      // Sem alteração pendente, relê do servidor (a outra aba — Acts ou Fases — pode ter salvo o mesmo ato).
+      if (alvoAto && (alvoAto !== E.ato?.id || !sujo()) && E.lista.some((a) => a.id === alvoAto)) await abrir(alvoAto);
+      if (resto[1] && faseDe(resto[1])) E.fase = resto[1];
       pintar();
     },
     sujo,

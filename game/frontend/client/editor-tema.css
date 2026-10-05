@@ -1087,3 +1087,23 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .bs-categorias { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
 .bs-categorias button.ativo { border-color: var(--eng-ouro); color: var(--eng-ouro-txt); background: var(--eng-ouro-fundo); }
 .bs-recorte { image-rendering: pixelated; background: var(--eng-s0); border-radius: 4px; }
+/* Campanha → Fases */
+.fases-duas { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: var(--eng-e4, 16px); align-items: start; }
+.fases-esq { position: sticky; top: 0; max-height: calc(100vh - 160px); overflow: auto; }
+.fases-lista { display: grid; gap: 4px; }
+.fases-item { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 8px; text-align: left; background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); }
+.fases-item.ativo { border-color: var(--eng-ouro); background: var(--eng-ouro-fundo); }
+.fases-ordem { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--eng-s3); font-size: 11px; }
+.fases-texto { min-width: 0; display: grid; }
+.fases-texto b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fases-texto small { color: var(--eng-txt3); font-size: 11px; }
+.fases-selo { color: var(--eng-ouro-txt); font-size: 12px; }
+.fases-dir { display: grid; gap: 10px; min-width: 0; }
+/* Campanha → Mapas / Missões */
+.pmap-areas { display: grid; gap: 4px; }
+.pmis-lista { display: grid; gap: 4px; }
+.pmis-item { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; text-align: left; background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); }
+.pmis-item b { flex: 1 1 200px; font-weight: 500; }
+.pmis-item.ativo { border-color: var(--eng-ouro); background: var(--eng-ouro-fundo); }
+.pmis-area { margin: 6px 0; }
+.pmis-area ol { margin: 4px 0; padding-left: 22px; font-size: 12.5px; }

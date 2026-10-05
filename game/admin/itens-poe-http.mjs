@@ -126,6 +126,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   }
   if (rota === 'chefes') return json(res, 200, Telas.chefes()), true;
   if (rota === 'mobs') return json(res, 200, { mobs: Telas.mobs() }), true;
+  if (rota === 'mapas') return json(res, 200, { mapas: Telas.mapas() }), true;
+  if (rota === 'missoes') return json(res, 200, { missoes: Telas.missoes() }), true;
   if (rota === 'mobs/ataques') {
     const a = Telas.ataquesDe(q.get('slug') ?? '', q.get('nivel'));
     return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Monstro desconhecido.'] }), true;

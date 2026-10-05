@@ -22,7 +22,7 @@ import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstad
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
 import { criarTelaDeItensPoe } from './editor-itens-poe.mjs';
-import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe, criarTelaDosMobsPoe } from './editor-poe-telas.mjs';
+import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe, criarTelaDosMobsPoe, criarTelaDosMapasPoe, criarTelaDasMissoesPoe } from './editor-poe-telas.mjs';
 import { criarTelaDeEfeitos } from './editor-ataques.mjs';
 import { criarTelaDaBibliotecaDeSprites } from './editor-biblioteca-sprites.mjs';
 import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar, pedirTexto } from './editor-ui.mjs';
@@ -293,6 +293,8 @@ function cartaoDeEncontro(e, i) {
 }
 
 const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
+// Campanha → Fases: a mesma edição do ato, organizada por fase (lista + painéis da fase, sem o grafo).
+const EDITOR_DE_FASES = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg, modo: 'fases', irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
 const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto), acaoDaFicha: (d) => botaoDeSprite(d), atalhosDeEdicao: (d) => botoesDaFicha(d) });
 // A tela Mobs é a Biblioteca presa nos monstros (mesmos cards, mesma ficha), com a rota própria `#mobs/<key>`.
 // As telas de ENTIDADE (Mobs, Itens, Outfits, Montarias) são a Biblioteca presa numa categoria — mesmos cards, mesma
@@ -386,13 +388,13 @@ const TELAS_FIXAS = {
 const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias', sprites: 'sprites' };
 // A referência do PoE (Fase 1 do sistema de itens no modelo do PoE): só leitura, só com ITENS_POE=1 no servidor.
 const ITENS_POE = criarTelaDeItensPoe({ raiz: () => $('#raiz') });
-const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }), 'poe-mobs': criarTelaDosMobsPoe({ raiz: () => $('#raiz') }), 'poe-efeitos': criarTelaDeEfeitos({ raiz: () => $('#raiz') }), 'sprites-biblioteca': criarTelaDaBibliotecaDeSprites({ raiz: () => $('#raiz') }) };
+const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }), 'poe-mobs': criarTelaDosMobsPoe({ raiz: () => $('#raiz') }), 'poe-efeitos': criarTelaDeEfeitos({ raiz: () => $('#raiz') }), 'sprites-biblioteca': criarTelaDaBibliotecaDeSprites({ raiz: () => $('#raiz') }), 'poe-mapas': criarTelaDosMapasPoe({ raiz: () => $('#raiz') }), 'poe-missoes': criarTelaDasMissoesPoe({ raiz: () => $('#raiz') }), 'poe-fases': EDITOR_DE_FASES };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis'], ['sprites-biblioteca', 'Biblioteca de sprites']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis'], ['sprites-biblioteca', 'Biblioteca de sprites'], ['poe-fases', 'Fases'], ['poe-mapas', 'Mapas da campanha'], ['poe-missoes', 'Missões']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -450,18 +452,22 @@ function desenharAbas() {
 let MODO_POE = false;
 const GRUPOS_POE = [
   { id: 'poe-campanha-g', titulo: 'Campanha', itens: [
-    { id: 'atos', nome: 'Acts', icone: 'atos', dica: 'ato → áreas (mapa) → mobs → drops, e como cada área conclui' },
-    { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', dica: 'o terreno dos mapas do Draevor que as áreas usam' }] },
+    { id: 'atos', nome: 'Acts', icone: 'atos', dica: 'os atos e o caminho entre as fases (o grafo)' },
+    { id: 'poe-fases', nome: 'Fases', icone: 'fase', dica: 'cada fase: dados, como conclui, o mapa ligado e os mobs' },
+    { id: 'poe-mapas', nome: 'Mapas', icone: 'mapa', dica: 'os mapas que as áreas usam: quem usa, trocar e editar' },
+    { id: 'poe-missoes', nome: 'Missões', icone: 'livros', dica: 'as missões do Drive e as fases ligadas a elas' }] },
   { id: 'poe-conteudo', titulo: 'Conteúdo', itens: [
-    { id: 'poe-mobs', nome: 'Mobs', icone: 'mobs', dica: 'os monstros do PoE: status por área, desenho e drops dos únicos' },
+    { id: 'poe-mobs', nome: 'Mobs', icone: 'mobs', dica: 'os monstros do PoE: status por área, ataques e efeitos, desenho, drops' },
     { id: 'poe-chefes', nome: 'Chefes', icone: 'coroa', dica: 'chefes de ato e pináculos: status, habilidades e arena' },
     { id: 'itens', nome: 'Itens', icone: 'espada', dica: 'as bases do PoE: requisitos, mods, únicos e peças de exemplo' },
     { id: 'classes', nome: 'Classes', icone: 'classes', dica: 'as 7 classes do PoE: atributos iniciais e bônus por ponto' },
     { id: 'poe-arvore', nome: 'Árvore passiva', icone: 'fase', dica: 'nós, maestrias, keystones e ascendências' }] },
-  { id: 'poe-recursos', titulo: 'Recursos', itens: [
-    { id: 'validacao', nome: 'Validação e versão', icone: 'painelDeControle', dica: 'verificações, testes e se a versão pode ser aprovada' },
-    { id: 'sprites-biblioteca', nome: 'Biblioteca de sprites', icone: 'outfit', dica: 'mobs, itens, efeitos de magia, projéteis, outfits e montarias — cada desenho uma vez, de onde a Engine puxa' },
+  { id: 'poe-ferramentas', titulo: 'Ferramentas', itens: [
+    { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', dica: 'o chão e os spawns de um mapa' },
     { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', dica: 'quadros, direções e animação das criaturas' },
+    { id: 'sprites-biblioteca', nome: 'Biblioteca de sprites', icone: 'outfit', dica: 'mobs, itens, construção do mapa, efeitos, outfits — cada desenho uma vez' }] },
+  { id: 'poe-sistema', titulo: 'Sistema', itens: [
+    { id: 'validacao', nome: 'Validação e versão', icone: 'painelDeControle', dica: 'verificações, testes e se a versão pode ser aprovada' },
     { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
     { id: 'beta', nome: 'Testes e beta', icone: 'frasco', dica: 'interruptor do modo beta' },
     { id: 'config', nome: 'Configurações', icone: 'engrenagem', dica: 'manutenção e Server Save' }] },
@@ -477,6 +483,7 @@ const lerEndereco = () => {
 async function irPara(aba, faseId = null, resto = []) {
   if (MODO_POE && NO_POE[aba]) aba = NO_POE[aba];
   if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return desenharAbas();
+  if (S.aba === 'poe-fases' && aba !== 'poe-fases' && EDITOR_DE_FASES.sujo() && !(await descartarAlteracoes('A fase aberta tem alterações não salvas'))) return desenharAbas();
   if (S.sujo && !(await descartarAlteracoes())) return desenharAbas();
   if (S.aba === 'sprites' && aba !== 'sprites') SPRITES.sair(); // para a animação e libera as folhas de rascunho do renderer
   S.navegacao++;
@@ -496,7 +503,7 @@ async function irPara(aba, faseId = null, resto = []) {
   if (TELAS_FIXAS[aba]) await TELAS_FIXAS[aba].desenhar(resto ?? []);
   if (aba === 'bosses') await BOSSES.desenhar();
   if (aba === 'biblioteca') await BIBLIOTECA.desenhar(resto ?? []);
-  if (aba === 'atos') await EDITOR_DE_ATOS.desenhar();
+  if (aba === 'atos') await EDITOR_DE_ATOS.desenhar(resto ?? []);
   if (aba === 'itens-poe') await ITENS_POE.desenhar();
   if (TELAS_POE[aba]) await TELAS_POE[aba].desenhar(resto ?? []);
 }
@@ -625,6 +632,7 @@ window.addEventListener('hashchange', () => {
   const { aba, id, resto } = lerEndereco();
   if (aba === 'biblioteca' && S.aba === 'biblioteca') return resto.length === 2 && BIBLIOTECA.abrir(resto[0], resto[1]);
   if (TELAS_FIXAS[aba] && S.aba === aba) return resto.length === 1 && TELAS_FIXAS[aba].abrir(CATEGORIA_DA_TELA[aba], resto[0]);
+  if ((aba === 'poe-fases' || aba === 'atos') && aba === S.aba && resto.length) return (aba === 'atos' ? EDITOR_DE_ATOS : EDITOR_DE_FASES).desenhar(resto);
   if (aba !== S.aba || (aba === 'fase' && id && id !== S.faseId)) irPara(aba, aba === 'fase' && S.opcoes.fases.some((f) => f.huntId === id) ? id : null, resto);
 });
 // Atalhos: Ctrl+K (ou ⌘K) busca em todos os cadastros; "/" vai para a busca da Biblioteca.
