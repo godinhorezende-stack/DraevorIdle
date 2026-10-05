@@ -79,7 +79,10 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
 /** Os estados ATIVOS do bicho agora (o cliente mostra um ícone de cada): `['congelado', 'lento', 'queimando']`. */
 export function ativosDe(m, agora) {
   const e = m?.estados ?? {};
-  return [...['congelado', 'atordoado', 'lento'].filter((n) => ativo(e[n], agora)), ...Dot.ativosDe(m, agora)];
+  const lista = [...['congelado', 'atordoado', 'lento'].filter((n) => ativo(e[n], agora)), ...Dot.ativosDe(m, agora)];
+  // A Eletrização do PoE (`itens-poe/afeccoes.mjs`: o bicho recebe mais dano) usa o ícone de eletrizado.
+  if (ativo(e.chocado, agora) && !lista.includes('eletrizado')) lista.push('eletrizado');
+  return lista;
 }
 
 /** O bicho pode andar/atacar agora? (congelado e atordoado não). */

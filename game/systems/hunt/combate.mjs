@@ -12,6 +12,7 @@ import { partesDeXp, dividirOuro, proximoInicioDoResto, sortearDono, novoIdDeDro
 import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
 import { temHabilidade } from '../passivas/arvore.mjs';
+import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Equipamento from '../itens/equipamento.mjs';
@@ -1144,6 +1145,12 @@ export function round(estado, personagem) {
           // O efeito do elemento no bicho (chama, gelo, raio...) junto do número colorido.
           eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[d.tipo] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
           eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
+        }
+        // As afecções do PoE (incêndio, sangramento, veneno, congelar, eletrizar, resfriar — `itens-poe/afeccoes.mjs`, só com ITENS_POE=1):
+        // o golpe da arma é ATAQUE; cada parte (o físico e os elementos) entra com o tipo dela.
+        if (ficha.afeccoes) {
+          const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: d.v }))];
+          for (const st of AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
         }
         // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
         if (!segundo) Charms.aoAcertar(estado, hunt, alvo, eventos);

@@ -868,6 +868,76 @@
         }
       ],
       "estado": "novo"
+    },
+    {
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de chance de causar Sangramento$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed_ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ataques possuem \\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite_ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Envenenar ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_poison_ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo de Fogo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_fire",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% Ao Multiplicador do Dano Degenerativo para Envenenamento$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração de Afecções em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração do Veneno aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "poison_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     }
   ]
 }

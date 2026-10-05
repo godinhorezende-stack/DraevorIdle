@@ -34,6 +34,7 @@ import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade } from './passivas/arvore.mjs';
+import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
 import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Proficiencia from './proficiencia.mjs';
@@ -1087,6 +1088,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor, ...(fonte ? { fonte } : {}) });
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
       for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
+      if (ficha.afeccoes) {
+        const tagsDoAcerto = Tags.tagsDaAcao(entry);
+        const ataque = tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
+        for (const st of AfeccoesPoe.aoAcertar(bicho, [{ elemento: tipo, dano: bruto }], { afeccoes: ficha.afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      }
     };
     /*
      * ---- O ATAQUE (o golpe principal + os secundários das supports) e o ATAQUE DUPLO ----

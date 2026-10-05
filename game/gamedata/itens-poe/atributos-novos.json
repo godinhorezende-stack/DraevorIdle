@@ -218,7 +218,8 @@
     "dot_multi": {
       "nome": "Multiplicador do Dano Degenerativo",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "multiplica o dano das afecções (incêndio, sangramento, veneno) — itens-poe/afeccoes.mjs"
     },
     "avoid_elem_ailments": {
       "nome": "Chance de Evitar Afecções Elementais",
@@ -243,27 +244,74 @@
     "chance_ignite": {
       "nome": "Chance de Incendiar",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "chance de Incendiar em todo acerto com dano de Fogo — itens-poe/afeccoes.mjs"
     },
     "chance_freeze": {
       "nome": "Chance de Congelar",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "chance de Congelar em todo acerto com dano de Gelo — itens-poe/afeccoes.mjs"
     },
     "chance_shock": {
       "nome": "Chance de Eletrizar",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "chance de Eletrizar em todo acerto com dano de Raio — itens-poe/afeccoes.mjs"
     },
     "chance_poison": {
       "nome": "Chance de Envenenar",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "chance de Envenenar em todo acerto com dano Físico ou de Caos — itens-poe/afeccoes.mjs"
     },
     "chance_bleed": {
       "nome": "Chance de causar Sangramento",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "chance de Sangramento em todo acerto com dano Físico — itens-poe/afeccoes.mjs"
+    },
+    "chance_ignite_ataque": {
+      "nome": "Chance de Incendiar com Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "só nos ataques (golpe da arma e habilidades de ataque) — itens-poe/afeccoes.mjs"
+    },
+    "chance_poison_ataque": {
+      "nome": "Chance de Envenenar com Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "só nos ataques — itens-poe/afeccoes.mjs"
+    },
+    "chance_bleed_ataque": {
+      "nome": "Chance de Sangramento com Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "só nos ataques — itens-poe/afeccoes.mjs"
+    },
+    "dot_multi_fire": {
+      "nome": "Multiplicador do Dano Degenerativo de Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma ao multiplicador no incêndio — itens-poe/afeccoes.mjs"
+    },
+    "dot_multi_poison": {
+      "nome": "Multiplicador do Dano Degenerativo do Veneno",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma ao multiplicador no veneno — itens-poe/afeccoes.mjs"
+    },
+    "ailment_duration": {
+      "nome": "Duração das Afecções em Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mais duração = mais dano total do incêndio, sangramento e veneno — itens-poe/afeccoes.mjs"
+    },
+    "poison_duration": {
+      "nome": "Duração do Veneno",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma à duração das afecções no veneno — itens-poe/afeccoes.mjs"
     }
   }
 }

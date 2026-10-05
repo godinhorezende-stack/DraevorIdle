@@ -35,6 +35,8 @@ import * as Limites from './combate/limites.mjs';
 import { simples } from './combate/modificadores.mjs';
 import { PARAMETROS as FORMULAS } from './combate/formulas.mjs';
 import * as FORMULAS_FN from './combate/formulas.mjs';
+import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -324,6 +326,8 @@ function calcularCombate(estado) {
     // nos ataques e nas magias, e vida/mana por abate e por acerto.
     danoDeMagiaDoPoe: af.spell_dmg ?? 0,
     danoSomado: somado('added_'),
+    // As afecções do PoE (chances, multiplicadores, duração) — só com o sistema do PoE ligado (`itens-poe/afeccoes.mjs`).
+    afeccoes: itensPoeLigado() ? AfeccoesPoe.daSoma(af) : null,
     danoSomadoMagia: somado('spell_added_'),
     vidaPorAbate: af.life_on_kill ?? 0,
     manaPorAbate: af.mana_on_kill ?? 0,
@@ -550,7 +554,7 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
   // jogador — arma, wand/rod, magia, runa — passa por aqui.
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
-  const daArvore = (1 + (ficha.danoDaArvore ?? 0)) * Arvore.fatorDasHabilidades(estado, alvo);
+  const daArvore = (1 + (ficha.danoDaArvore ?? 0)) * Arvore.fatorDasHabilidades(estado, alvo) * AfeccoesPoe.fatorDeEletrizacao(alvo, estado.hunt?.clock ?? 0);
   // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
   const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
