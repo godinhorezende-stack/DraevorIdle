@@ -22,6 +22,8 @@
 // ficha depois de mudar é `passivas/comandos.mjs`.
 import { readFileSync } from 'node:fs';
 import * as Keystones from './keystones.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
+import { classeDe as classeDoPoe } from '../itens-poe/classes.mjs';
 
 const ler = (arq) => JSON.parse(readFileSync(new URL(`../../gamedata/passivas/${arq}`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config.json');
@@ -88,7 +90,16 @@ export function preparar(arvore) {
   if (erros.length) throw new Error(`árvore de passivas inválida: ${erros.slice(0, 5).join('; ')}`);
   return { ...arvore, porId: new Map(arvore.nos.map((n) => [n.id, n])) };
 }
-let ARVORE = preparar(ler('arvore.json'));
+/*
+ * ---- A árvore do PoE (sistema de itens do PoE, incremento 4c — só com ITENS_POE=1) ----
+ * Com o sistema ligado, a árvore em uso é a do PoE (`gamedata/itens-poe/arvore-poe.json`, gerada por tools/montar-arvore-poe.mjs):
+ * cada classe do PoE parte do nó dela, cada nó custa 1 ponto e os pontos são como no PoE (1 por level). Em produção, a do Draevor.
+ */
+const arvoreDoPoe = () => {
+  const a = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/arvore-poe.json', import.meta.url), 'utf8'));
+  return { ...a, id: 'poe', clusters: [], pontos: { levelInicial: 1, levelsPorPonto: 1 } };
+};
+let ARVORE = preparar(itensPoeLigado() ? arvoreDoPoe() : ler('arvore.json'));
 export const arvore = () => ARVORE;
 /** Troca a árvore em uso (testes de desempenho, editor). Devolve a anterior. */
 export function usarArvore(nova) {
@@ -100,10 +111,17 @@ export function usarArvore(nova) {
 
 // ------------------------------------------------------------ o personagem
 
-const classeDe = (estado) => (ARVORE.inicios[estado.vocation] ? estado.vocation : 'knight');
+const classeDe = (estado) => {
+  // Na árvore do PoE, o início é o da CLASSE do PoE (a escolhida, ou a padrão da vocação).
+  if (ARVORE.id === 'poe') return classeDoPoe(estado)?.slug ?? 'Scion';
+  return ARVORE.inicios[estado.vocation] ? estado.vocation : 'knight';
+};
 export const inicioDe = (estado) => ARVORE.inicios[classeDe(estado)];
 export const custoDe = (no) => no?.custo ?? (no?.atributo ? CONFIG.custo.atributo : undefined) ?? CONFIG.custo[no?.tipo] ?? 1;
-export const pontosDoLevel = (level) => Math.max(0, Math.floor(((level ?? 1) - CONFIG.pontos.levelInicial) / CONFIG.pontos.levelsPorPonto));
+export const pontosDoLevel = (level) => {
+  const regra = ARVORE.pontos ?? CONFIG.pontos;
+  return Math.max(0, Math.floor(((level ?? 1) - regra.levelInicial) / regra.levelsPorPonto));
+};
 
 /**
  * `estado.passivas = { alocados: [ids], respecsGratis, migrado }` — dentro do
@@ -116,6 +134,20 @@ export function garantir(estado) {
   const p = (estado.passivas ??= { alocados: [], respecsGratis: 0 });
   p.alocados ??= [];
   p.respecsGratis ??= 0;
+  /*
+   * ---- Uma alocação por ÁRVORE (a do Draevor e a do PoE, sistema de itens do PoE) ----
+   * Trocar de árvore guarda a alocação da outra (e a versão dela) e traz a desta: ligar o PoE no jogo local não apaga os nós da
+   * árvore do Draevor, e desligar devolve tudo como estava.
+   */
+  const idDaArvore = ARVORE.id ?? 'draevor';
+  if ((p.arvore ?? 'draevor') !== idDaArvore) {
+    (p.porArvore ??= {})[p.arvore ?? 'draevor'] = { alocados: [...p.alocados], versao: p.versaoDaArvore ?? 1 };
+    const guardada = p.porArvore[idDaArvore];
+    p.alocados.splice(0, p.alocados.length, ...(guardada?.alocados ?? []));
+    p.versaoDaArvore = guardada?.versao ?? ARVORE.versao;
+    delete p.porArvore[idDaArvore];
+    p.arvore = idDaArvore;
+  }
   let migrou = false;
   if (!p.migrado) {
     p.migrado = true;
@@ -355,6 +387,7 @@ export function vista(estado, emCacada = false) {
 export function arvoreParaCliente() {
   return {
     versao: ARVORE.versao,
+    ...(ARVORE.id === 'poe' ? { poe: true } : {}),
     inicios: ARVORE.inicios,
     clusters: ARVORE.clusters,
     custo: CONFIG.custo,
@@ -367,6 +400,9 @@ export function arvoreParaCliente() {
       custo: custoDe(n),
       levelMinimo: n.levelMinimo ?? 0,
       efeitos: n.efeitos ?? [],
+      // Árvore do PoE: os textos originais de cada linha e o estado da tradução (o balão mostra como no PoE).
+      ...(n.textos ? { textos: n.textos, estados: n.estados ?? [] } : {}),
+      ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
       descricao: n.descricao ?? null,
       // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).
       flavor: n.flavor ?? null,

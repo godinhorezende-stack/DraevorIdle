@@ -1073,6 +1073,9 @@ export class Sessao {
         // Escolher a classe do PoE (uma vez; só com ITENS_POE=1): os atributos mudam, então vida/mana máximas e a ficha também.
         const r = ClassesPoe.escolher(this.estado, m.classe);
         if (r.ok) {
+          // O início na árvore do PoE é o da classe: a alocação recomeça do nó inicial dela, com todos os pontos de volta.
+          if (Passivas.arvore().id === 'poe' && this.estado.passivas) this.estado.passivas.alocados.splice(0);
+          Passivas.garantir(this.estado);
           Ficha.invalidar(this.estado);
           Afixos.sincronizarMaximos(this.estado);
           Ficha.invalidar(this.estado);

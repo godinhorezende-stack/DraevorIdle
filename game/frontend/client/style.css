@@ -27687,6 +27687,8 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .poe-stats { color: #8f8fff; line-height: 1.45; }
 .poe-regra { color: #b4b4ff; }
 .poe-flavor { color: #af6025; font-style: italic; line-height: 1.4; }
+/* Árvore do PoE (sistema de itens do PoE): o texto explicativo do nó (as linhas entre parênteses do PoE). */
+.poe-nota-arvore { font-style: italic; opacity: .6; font-size: .92em; }
 .poe-rodape { color: #8a8a8a; font-size: 11px; line-height: 1.4; }
 .poe-rodape.estado-alocado div:last-of-type { color: #e3ae48; }
 .poe-rodape.estado-disponivel div:last-of-type { color: var(--accent); }

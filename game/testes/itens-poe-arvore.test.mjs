@@ -1,7 +1,7 @@
 // Incremento 4b: a árvore de passivas do PoE convertida para o formato da árvore do Draevor, com os efeitos traduzidos.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { traduzirLinha, converterArvore, paraModelo } from '../systems/itens-poe/arvore.mjs';
 import { validar } from '../systems/passivas/arvore.mjs';
 
@@ -49,4 +49,34 @@ test('o arquivo gerado (gamedata/itens-poe/arvore-poe.json) é uma árvore váli
   assert.deepEqual(Object.keys(a.inicios).sort(), ['Duelist', 'Marauder', 'Ranger', 'Scion', 'Shadow', 'Templar', 'Witch']);
   assert.ok(a.nos.length > 2000);
   assert.ok(a.relatorio.estados.equivalente > 700);
+});
+
+test('4c — com ITENS_POE=1 a árvore em uso é a do PoE: início da classe, 1 ponto por level, 1 por nó, efeito na ficha, alocação do Draevor guardada', { skip: !existsSync('/home/deploy/referencias-poe/importado/itens-poe.json') && 'catálogo do PoE não importado' }, async () => {
+  // Processo à parte: a árvore é escolhida ao carregar o módulo (com a variável ligada).
+  const { execFileSync } = await import('node:child_process');
+  const codigo = `
+    process.env.ITENS_POE = '1';
+    const P = await import('./systems/passivas/arvore.mjs');
+    const Atributos = await import('./systems/personagem/atributos.mjs');
+    const Afixos = await import('./systems/afixos.mjs');
+    const { personagemDeTeste } = await import('./testes/apoio.mjs');
+    const e = personagemDeTeste({ vocacao: 'knight', level: 30 });
+    e.passivas = { alocados: ['inicio_knight', 'anel_0'], respecsGratis: 0, migrado: true, versaoDaArvore: 2 };
+    P.garantir(e);
+    const inicio = P.inicioDe(e);
+    const viz = P.arvore().porId.get(inicio).conexoes.map((id) => P.arvore().porId.get(id));
+    const vida = viz.find((n) => n.efeitos.some((x) => x.add === 'life')) ?? null;
+    const antes = Afixos.soma(e).life ?? 0;
+    const r = vida ? P.alocar(e, vida.id) : { ok: false };
+    const depois = Afixos.soma(e).life ?? 0;
+    console.log(JSON.stringify({ id: P.arvore().id, inicio, alocados: e.passivas.alocados, guardada: e.passivas.porArvore?.draevor?.alocados, pontos: P.pontos(e), alocou: r.ok, antes, depois, ganho: vida?.efeitos.find((x) => x.add === 'life')?.valor ?? null }));
+  `;
+  const r = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', codigo], { cwd: new URL('..', import.meta.url).pathname, encoding: 'utf8' }).trim().split('\n').pop());
+  assert.equal(r.id, 'poe');
+  assert.equal(r.inicio, '47175', 'knight sem escolha = Marauder, o nó inicial dele');
+  assert.deepEqual(r.guardada, ['inicio_knight', 'anel_0'], 'a alocação da árvore do Draevor fica guardada');
+  assert.equal(r.pontos.total, 29, 'level 30 = 29 pontos (1 por level, como no PoE)');
+  assert.ok(r.alocou, 'aloca o vizinho de vida do início');
+  assert.equal(r.pontos.usados, 1);
+  assert.equal(r.depois - r.antes, r.ganho, 'o +Vida do nó entra na soma da ficha');
 });

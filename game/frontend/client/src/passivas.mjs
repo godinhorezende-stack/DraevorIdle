@@ -119,7 +119,7 @@ function preparar(a) {
   const porId = new Map(a.nos.map((n) => [n.id, n]));
   const arestas = [];
   for (const n of a.nos) for (const c of n.conexoes) if (n.id < c) arestas.push([n, porId.get(c)]);
-  for (const n of a.nos) n.busca = semAcento(`${n.nome} ${n.descricao ?? ''} ${n.efeitos.map(textoDoEfeito).join(' ')} ${n.tags.join(' ')}`);
+  for (const n of a.nos) n.busca = semAcento(`${n.nome} ${n.nomeEn ?? ''} ${n.descricao ?? ''} ${(n.textos ?? n.efeitos.map(textoDoEfeito)).join(' ')} ${n.tags.join(' ')}`);
   return { ...a, porId, arestas };
 }
 
@@ -220,8 +220,11 @@ const CORES = {
   busca: '#6fd7ff', selecionado: '#ffffff', texto: '#d8ccb0', keystone: '#d0843e', keystoneVivo: '#ffb860', noFundo: '#12141a',
 };
 const COR_DO_ATRIBUTO = { str: '#c8402f', dex: '#2fa35d', int: '#3474dc' };
-const COR_DA_CLASSE = { knight: 'str', paladin: 'dex', monk: 'dex', sorcerer: 'int', druid: 'int' };
-const LETRA_DA_CLASSE = { knight: 'K', paladin: 'P', sorcerer: 'S', druid: 'D', monk: 'M' };
+// As 7 classes do PoE (a árvore do PoE, sistema de itens do PoE): a cor pelo atributo principal; as híbridas pelo primeiro.
+const COR_DA_CLASSE = { knight: 'str', paladin: 'dex', monk: 'dex', sorcerer: 'int', druid: 'int', Marauder: 'str', Duelist: 'str', Templar: 'str', Ranger: 'dex', Shadow: 'dex', Witch: 'int', Scion: null };
+const LETRA_DA_CLASSE = { knight: 'K', paladin: 'P', sorcerer: 'S', druid: 'D', monk: 'M', Marauder: 'M', Duelist: 'D', Templar: 'T', Ranger: 'R', Shadow: 'S', Witch: 'B', Scion: 'H' };
+// A marca da tradução de cada linha de um nó da árvore do PoE (as mesmas do balão das peças do PoE).
+const MARCA_DO_ESTADO = { equivalente: ['✓', 'tem efeito no Draevor'], aproximado: ['≈', 'tem efeito no Draevor (com diferença)'], novo: ['◆', 'atributo novo do PoE, com efeito'], registrado: ['○', 'registrado, ainda sem efeito'] };
 // A cor do emblema por cluster (o "ícone" do nó): o elemento/tema dele.
 const COR_DO_CLUSTER = {
   fire: '#ff7a3c', ice: '#7fd0ff', earth: '#7fc05a', energy: '#b58cff', holy: '#ffe07a', death: '#9c7ab8', physical: '#c9b8a0',
@@ -316,10 +319,19 @@ function montar(body) {
   // ---- câmera ----
   const paraTela = (n) => ({ x: (n.x - cam.x) * cam.zoom + largura / 2, y: (n.y - cam.y) * cam.zoom + altura / 2 });
   const paraMundo = (px, py) => ({ x: (px - largura / 2) / cam.zoom + cam.x, y: (py - altura / 2) / cam.zoom + cam.y });
-  const limitarZoom = (z) => Math.max(0.12, Math.min(2.2, z));
+  // A árvore do PoE é ~5× maior que a do Draevor: dá para afastar bem mais.
+  const limitarZoom = (z) => Math.max(arvore()?.poe ? 0.025 : 0.12, Math.min(2.2, z));
   function centrar() {
     const inicio = arvore()?.porId.get(vista()?.inicio);
     if (!inicio) return;
+    if (arvore().poe) {
+      // Árvore do PoE: o início da classe no centro, com a vizinhança dele à vista.
+      cam.x = inicio.x;
+      cam.y = inicio.y;
+      cam.zoom = largura < 500 ? 0.12 : 0.16;
+      cam.centrado = true;
+      return;
+    }
     // A região da classe: um pouco para FORA do início, onde ficam os clusters dela.
     cam.x = inicio.x * 1.7;
     cam.y = inicio.y * 1.7;
@@ -745,7 +757,24 @@ function montar(body) {
     const corpo = el('div', 'poe-corpo');
     corpo.append(el('div', 'poe-tipo', n.atributo ? 'Atributo' : (TIPOS[n.tipo] ?? n.tipo)));
     const sep = () => el('div', 'poe-sep');
-    if (n.efeitos.length) {
+    if (n.textos?.length) {
+      // Nó da árvore do PoE: os textos como no PoE, cada linha com a marca da tradução; o texto explicativo (nota) em itálico.
+      corpo.append(sep());
+      const stats = el('div', 'poe-stats');
+      n.textos.forEach((t, i) => {
+        const estadoDaLinha = n.estados?.[i];
+        const linha = el('div', estadoDaLinha === 'nota' ? 'poe-nota-arvore' : null);
+        const marca = MARCA_DO_ESTADO[estadoDaLinha];
+        if (marca) {
+          const m = el('em', `poe-tr ${estadoDaLinha}`, marca[0]);
+          m.title = marca[1];
+          linha.append(m, ' ');
+        }
+        linha.append(t);
+        stats.append(linha);
+      });
+      corpo.append(stats);
+    } else if (n.efeitos.length) {
       corpo.append(sep());
       const stats = el('div', 'poe-stats');
       for (const ef of n.efeitos) stats.append(el('div', null, textoDoEfeito(ef)));
