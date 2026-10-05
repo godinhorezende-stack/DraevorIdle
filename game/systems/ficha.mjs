@@ -364,7 +364,7 @@ function calcularCombate(estado) {
     passivas: { keystones: passivas.keystones.map((k) => k.nome) },
   };
   // Os KEYSTONES da árvore que mudam a regra (INT → Ranged, Life Leech ×1,5, físico → fogo), por cima da ficha pronta.
-  return Keystones.aplicarNaFicha(ficha, passivas.keystones, principais);
+  return Keystones.aplicarNaFicha(ficha, passivas.keystones, principais, estado);
 }
 
 /*

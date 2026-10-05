@@ -16,6 +16,8 @@ const ES = Atributos.CONFIG.energyShield;
 /** O golpe do jogador ERROU `alvo`? (boneco de treino nunca esquiva) */
 export function errou(ficha, hunt, alvo) {
   if (!alvo || alvo.dummy) return false;
+  // Técnica Resoluta (keystone do PoE): os acertos não podem ser evadidos.
+  if (ficha?.nuncaErra) return false;
   const level = Atributos.levelDoBicho(hunt, alvo);
   const chance = Atributos.chanceDeAcerto(ficha.accuracy ?? 0, level, AtributosDoMob.evasaoDe(alvo, level));
   return !sorteioDoAcerto(chance, alvo, 'errosDoJogador');

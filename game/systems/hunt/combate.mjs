@@ -11,6 +11,7 @@ import * as Setores from './setores.mjs';
 import { partesDeXp, dividirOuro, proximoInicioDoResto, sortearDono, novoIdDeDrop, registrarSorteio } from '../party-recompensas.mjs';
 import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
+import { temHabilidade } from '../passivas/arvore.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Equipamento from '../itens/equipamento.mjs';
@@ -803,7 +804,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     if (!(Math.random() < chanceDeBloquear)) return false;
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
-    const glancing = Formulas.PARAMETROS.bloqueio.glancingPct;
+    // Golpes Reveladores (keystone do PoE): o golpe bloqueado ainda causa 65% do dano.
+    const glancing = temHabilidade(estado, 'golpesReveladores') ? 65 : Formulas.PARAMETROS.bloqueio.glancingPct;
     if (glancing > 0) {
       fatorDoBloqueio = glancing / 100;
       return false;

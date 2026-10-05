@@ -7,7 +7,8 @@ import { validar } from '../systems/passivas/arvore.mjs';
 
 test('as linhas da árvore viram efeitos da árvore do Draevor (atributo somado ou dano por tag); parênteses viram nota', () => {
   assert.deepEqual(paraModelo('Evasão aumentada em 14%'), { modelo: 'Evasão aumentada em {0}%', valores: [14] });
-  assert.deepEqual(traduzirLinha('Vida máxima aumentada em 8%').efeitos, [{ add: 'hp_max', valor: 8 }]);
+  assert.deepEqual(traduzirLinha('Vida máxima aumentada em 8%').efeitos, [{ stat: 'life', pct: 8 }], 'vida % = o % de stat que a vida máxima soma');
+  assert.deepEqual(traduzirLinha('Precisão aumentada em 10%').efeitos, [{ stat: 'accuracy', pct: 10 }]);
   assert.deepEqual(traduzirLinha('+10 de Força').efeitos, [{ add: 'str', valor: 10 }], 'as regras dos mods valem também');
   assert.deepEqual(traduzirLinha('Dano de Projétil aumentado em 12%').efeitos, [{ tag: 'projectile', dano: 12 }]);
   assert.deepEqual(traduzirLinha('Evasão e Armadura aumentadas em 6%').efeitos, [{ add: 'armour_pct', valor: 6 }, { add: 'evasion_pct', valor: 6 }]);
@@ -177,4 +178,63 @@ test('maestrias (como no PoE): abrem com um notável do grupo, escolhe-se 1 opç
   assert.ok(r.outraOpcao, 'outra opção na outra maestria do mesmo tipo pode');
   assert.ok(r.ilhada, 'sem o notável, a maestria fica sem grupo');
   assert.ok(r.respec && r.saiu, 'o respec do notável leva a maestria e a escolha');
+});
+
+test('keystones do PoE com mecânica: ficha (evasão→armadura, sem crítico, nunca erra, STR na magia, crítico sem extra) e combate (mana antes da vida, custo em vida, vida baixa), vida/mana %', { skip: !existsSync('/home/deploy/referencias-poe/importado/itens-poe.json') && 'catálogo do PoE não importado' }, async () => {
+  const { execFileSync } = await import('node:child_process');
+  const codigo = `
+    process.env.ITENS_POE = '1';
+    const P = await import('./systems/passivas/arvore.mjs');
+    const Ficha = await import('./systems/ficha.mjs');
+    const Afixos = await import('./systems/afixos.mjs');
+    const Arvore = await import('./systems/arvore.mjs');
+    const Acoes = await import('./systems/acoes.mjs');
+    const Treino = await import('./systems/treino.mjs');
+    const { ACTION_CATALOG } = await import('./systems/dados.mjs');
+    const { personagemDeTeste } = await import('./testes/apoio.mjs');
+    const id = (nome) => P.arvore().nos.find((n) => n.tipo === 'keystone' && n.nomeEn === nome).id;
+    const novo = (voc = 'knight') => { const e = personagemDeTeste({ vocacao: voc, level: 100 }); Treino.garantir(e); P.garantir(e); return e; };
+    const com = (e, ...nomes) => { for (const n of nomes) e.passivas.alocados.push(id(n)); Ficha.invalidar(e); Afixos.sincronizarMaximos(e); Ficha.invalidar(e); return Ficha.combate(e); };
+    const r = {};
+    let e = novo(); const f0 = Ficha.combate(e);
+    const f1 = com(e, 'Iron Reflexes');
+    r.reflexos = { ev: f1.evasion, armor: f1.armor - f0.armor, ev0: f0.evasion };
+    e = novo(); const f2 = com(e, 'Resolute Technique');
+    r.resoluta = { crit: f2.critChance, nuncaErra: !!f2.nuncaErra };
+    e = novo(); const f3 = com(e, 'Elemental Overload');
+    r.sobrecarga = { mult: f3.critMultiplier, fogo: (f3.danoDoElemento.fire ?? 0) - (f0.danoDoElemento.fire ?? 0) };
+    e = novo(); const f4 = com(e, 'Iron Will');
+    r.vontade = (f4.afinidades?.spell ?? 0) - (f0.afinidades?.spell ?? 0);
+    // Mente Sobre Matéria: 40% de 1000 sai da mana
+    e = novo(); com(e, 'Mind Over Matter'); e.mana = 5000; e.hp = e.maxHp;
+    const sobra = Arvore.danoRecebido(e, 1000, [], { x: 0, y: 0 }, 'x');
+    r.mente = { sobra, mana: 5000 - e.mana };
+    // Magia Sanguínea: mana 0, +10% de vida, custo em vida
+    e = novo('sorcerer'); const hpAntes = e.maxHp; com(e, 'Blood Magic');
+    r.sangue = { mana: e.maxMana, vidaMais: e.maxHp > hpAntes };
+    // Sintonia da Dor: magia mais forte com vida baixa
+    e = novo('sorcerer'); com(e, 'Pain Attunement');
+    const flame = ACTION_CATALOG.spells.find((x) => x.id === 'spell-flame-strike');
+    e.hp = e.maxHp; const cheio = Acoes.danoMostrado(e, flame, null).max;
+    e.hp = Math.floor(e.maxHp * 0.4); const baixo = Acoes.danoMostrado(e, flame, null).max;
+    r.sintonia = baixo / cheio;
+    // vida % da árvore entra na vida máxima
+    e = novo(); const vida0 = e.maxHp;
+    const noVida = P.arvore().nos.find((n) => n.efeitos.some((x) => x.stat === 'life' && x.pct > 0) && n.tipo !== 'keystone');
+    e.passivas.alocados.push(noVida.id); Ficha.invalidar(e); Afixos.sincronizarMaximos(e);
+    r.vidaPct = { ganhou: e.maxHp - vida0, pct: noVida.efeitos.find((x) => x.stat === 'life').pct };
+    console.log(JSON.stringify(r));
+  `;
+  const r = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', codigo], { cwd: new URL('..', import.meta.url).pathname, encoding: 'utf8' }).trim().split('\n').pop());
+  assert.equal(r.reflexos.ev, 0, 'Reflexos de Ferro: sem evasão');
+  assert.equal(r.reflexos.armor, r.reflexos.ev0, 'a evasão toda vira armadura');
+  assert.deepEqual(r.resoluta, { crit: 0, nuncaErra: true });
+  assert.equal(r.sobrecarga.mult, 1, 'crítico sem dano extra');
+  assert.equal(r.sobrecarga.fogo, 40);
+  assert.ok(r.vontade > 0, 'a STR dá dano de magia');
+  assert.deepEqual(r.mente, { sobra: 600, mana: 400 }, '40% do dano sai da mana');
+  assert.equal(r.sangue.mana, 0, 'Magia Sanguínea: sem mana');
+  assert.ok(r.sangue.vidaMais);
+  assert.ok(r.sintonia > 1.2 && r.sintonia < 1.45, `Sintonia da Dor: 30% mais com vida baixa (${r.sintonia}, com o arredondamento de números pequenos)`);
+  assert.ok(r.vidaPct.ganhou > 0, 'a vida % da árvore aumenta a vida máxima');
 });

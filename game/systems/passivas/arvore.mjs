@@ -445,12 +445,16 @@ export function efeitos(estado) {
     }
     if (no.tipo === 'keystone' && no.keystone) {
       r.keystones.push({ ...no.keystone, no: no.id, nome: no.nome });
-      if (no.keystone.regra === 'habilidade') r.habilidades.add(no.keystone.id);
+      // A habilidade da árvore antiga e a keystone do PoE com mecânica: o combate pergunta por elas (`temHabilidade`).
+      if (no.keystone.regra === 'habilidade' || no.keystone.regra === 'poe') r.habilidades.add(no.keystone.id);
     }
   }
   CACHE.set(estado, { assinatura, valor: r, ref: alocados, n: alocados.length, ultimo: alocados[alocados.length - 1], primeiro: alocados[0] });
   return r;
 }
+
+/** O personagem tem a keystone/habilidade `id` alocada? (as do PoE: `keystones.IDS_DO_POE`) */
+export const temHabilidade = (estado, id) => efeitos(estado).habilidades.has(id);
 
 /** Os vessels do Gem Atelier: nós de cada domínio ÷ a referência (0..1). */
 export function fracaoDosDominios(estado) {
@@ -499,6 +503,8 @@ export function arvoreParaCliente() {
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
       ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
       ...(n.grupo != null ? { grupo: n.grupo } : {}),
+      // A keystone do PoE aproximada: a diferença para o PoE (o balão mostra).
+      ...(n.keystone?.nota ? { notaDoDraevor: n.keystone.nota } : {}),
       ...(n.opcoes ? { opcoes: n.opcoes.map((o) => ({ id: o.id, textos: o.textos, estados: o.estados, efeitos: o.efeitos })) } : {}),
       descricao: n.descricao ?? null,
       // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).

@@ -33,6 +33,7 @@ import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import * as Ficha from './ficha.mjs';
+import { temHabilidade } from './passivas/arvore.mjs';
 import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Proficiencia from './proficiencia.mjs';
@@ -127,7 +128,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const critDanoDoReforco = Reforcos.bonus(hunt, 'critDano', tags);
   if (critDoReforco || critDanoDoReforco) ficha = { ...ficha, critChance: ficha.critChance + critDoReforco / 100, critMultiplier: ficha.critMultiplier + critDanoDoReforco / 100 };
   const treino = doTreino * (1 + Reforcos.bonus(hunt, 'treino', tags) / 100) + (defDaGema ? Reforcos.treinoDeOutraPericia(estado, hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);
-  const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100;
+  // Sintonia da Dor (keystone do PoE): 30% mais dano mágico com a vida baixa (50% ou menos).
+  const sintonia = ehMagia && (estado.hp ?? 0) <= 0.5 * (estado.maxHp ?? 0) && temHabilidade(estado, 'sintoniaDaDor') ? 1.3 : 1;
+  const mult = (1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100) * sintonia;
   return { min, max, daPericia, mult, fatorDaGema, ficha };
 }
 
@@ -802,7 +805,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
   const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round(custoDoCatalogo(entry) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
-  const pagaComVida = !!efeitoDaGema?.custoEmVida && custoDeMana > 0;
+  // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
+  const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea')) && custoDeMana > 0;
   if (pagaComVida && (estado.hp ?? 0) <= custoDeMana) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };
   if (!pagaComVida && custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
   // "Mana mínima (%)" do slot: abaixo dela a skill espera (guarda a mana para a cura).

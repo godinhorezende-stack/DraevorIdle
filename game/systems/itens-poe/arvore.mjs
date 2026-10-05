@@ -1,7 +1,8 @@
 // A ÁRVORE DE PASSIVAS do PoE no Draevor (sistema de itens do PoE, Fase 1 — incremento 4b: os dados; 4c: no jogo, só com ITENS_POE=1).
 //
 // `traduzirLinha(texto)`: uma linha de efeito de um nó do PoE ("Vida máxima aumentada em 8%") vira efeitos da árvore do Draevor —
-//   `{ add, valor }` (atributo somado, a mesma chave dos itens: `Afixos.soma` junta) ou `{ tag, dano }` (dano % por tag de skill).
+//   `{ add, valor }` (atributo somado, a mesma chave dos itens: `Afixos.soma` junta), `{ stat, pct }` (% de vida, mana... — o formato das
+//   especializações, que a vida/mana máximas somam) ou `{ tag, dano }` (dano % por tag de skill).
 //   Ordem: as regras PRÓPRIAS da árvore (`gamedata/itens-poe/traducao-arvore.json`), depois as dos mods (`traducao.json`); sem regra, a
 //   linha fica REGISTRADA (o atributo automático do texto, sem efeito ainda — como nos itens). Linha inteira entre parênteses é texto
 //   explicativo do PoE: nota, não efeito.
@@ -42,7 +43,7 @@ export function traduzirLinha(texto) {
   for (const r of PROPRIAS) {
     const m = r.re.exec(modelo);
     if (!m) continue;
-    const efeitos = r.efeitos.map((e) => (e.tag ? { tag: e.tag, dano: valorDe(e.valor, m, valores) } : { add: e.stat, valor: valorDe(e.valor, m, valores) }));
+    const efeitos = r.efeitos.map((e) => (e.tag ? { tag: e.tag, dano: valorDe(e.valor, m, valores) } : e.pct ? { stat: e.pct, pct: valorDe(e.valor, m, valores) } : { add: e.stat, valor: valorDe(e.valor, m, valores) }));
     return { estado: r.estado, efeitos, registrados: [], nota: r.nota ?? null };
   }
   const tm = traduzirMod({ modelo, valores });
@@ -56,6 +57,22 @@ export function traduzirLinha(texto) {
 }
 
 const TIPO = { comum: 'small', notavel: 'notable', keystone: 'keystone' };
+
+/**
+ * A keystone do PoE no Draevor: a do mapa (`traducao-arvore.json` → keystones, pelo nome em inglês) com mecânica, ou só o texto. Devolve
+ * os campos do nó: `keystone` e — se o mapa der — os `efeitos` que ela soma e o estado de cada linha (todas com o estado da keystone).
+ */
+function keystoneDe(n, linhas, traduzidas) {
+  const texto = linhas.filter((l, i) => traduzidas[i].estado !== 'nota').join(' ') || n.nome;
+  const m = REGRAS_DA_ARVORE.keystones?.[n.nome_en];
+  if (!m) return { keystone: { regra: 'texto', texto } };
+  const { estado, nota, efeitos = [], ...regra } = m;
+  return {
+    keystone: { ...regra, texto, ...(nota ? { nota } : {}) },
+    efeitos: efeitos.map((e) => (e.pct ? { stat: e.pct, pct: e.valor } : { add: e.stat, valor: e.valor })),
+    estados: traduzidas.map((t) => (t.estado === 'nota' ? 'nota' : estado)),
+  };
+}
 
 /**
  * As ASCENDÊNCIAS (incremento 4e): cada uma vira um pedaço à parte da árvore (fica na borda de fora da principal, sem tocar nela), com o
@@ -155,7 +172,7 @@ export function converterArvore(poe, completa = null) {
       efeitos: traduzidas.flatMap((t) => t.efeitos),
       textos: linhas,
       estados: traduzidas.map((t) => t.estado),
-      ...(tipo === 'keystone' ? { keystone: { regra: 'texto', texto: linhas.filter((l, i) => traduzidas[i].estado !== 'nota').join(' ') || n.nome } } : {}),
+      ...(tipo === 'keystone' ? keystoneDe(n, linhas, traduzidas) : {}),
       ...(n.placeholder ? { placeholder: true } : {}),
       // O grupo do notável (é ele que abre a maestria do mesmo grupo).
       ...(tipo === 'notable' && grupo != null ? { grupo } : {}),

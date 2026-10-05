@@ -411,8 +411,12 @@ export function sincronizarMaximos(estado) {
   const doAtributo = Atributos.efeitos(Atributos.principais(estado, t));
   // + a Life % da especialização da classe (Knight: Life), sobre a vida do level + a dos adds e do STR.
   const lifePct = Especializacoes.efeitos(estado).stats.life ?? 0;
-  const vidaSemPct = R.statsBase(estado.vocation, estado.level ?? 1).maxHp + (t.life ?? 0) + doAtributo.vida;
-  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana) };
+  const base = R.statsBase(estado.vocation, estado.level ?? 1);
+  const vidaSemPct = base.maxHp + (t.life ?? 0) + doAtributo.vida;
+  // + a Mana % (a árvore do PoE: "Mana máxima aumentada em X%"), do mesmo jeito da Life %. Nada do Draevor dá Mana %: sem ela, nada muda.
+  const manaPct = Especializacoes.efeitos(estado).stats.mana ?? 0;
+  const manaSemPct = base.maxMana + (t.mana ?? 0) + doAtributo.mana;
+  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };
   if (quer.hp === tem.hp && quer.mana === tem.mana) return;
   estado.maxHp = (estado.maxHp ?? 0) + quer.hp - tem.hp;

@@ -835,6 +835,7 @@ function montar(body) {
         linha.append(t);
         stats.append(linha);
       });
+      if (n.notaDoDraevor) stats.append(el('div', 'poe-nota-arvore', `No Draevor: ${n.notaDoDraevor}`));
       corpo.append(stats);
     } else if (n.efeitos.length) {
       corpo.append(sep());
