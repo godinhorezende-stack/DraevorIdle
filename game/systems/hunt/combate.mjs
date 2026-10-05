@@ -26,6 +26,7 @@ import { pecasGarantidas } from '../itens/equipamento-do-boss.mjs';
 import { gerarItem } from '../itens/gerar.mjs';
 import * as EfeitosDeItem from '../itens/efeitos.mjs';
 import * as Campanha from '../campanha.mjs';
+import * as DropsPorMonstro from '../itens-poe/drops-por-monstro.mjs';
 import * as RecompensasDeEncontro from '../encontros/recompensas.mjs';
 import * as EventosDeEncontro from '../encontros/eventos.mjs';
 import * as Prey from '../prey.mjs';
@@ -786,6 +787,24 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);
+  }
+  // A TABELA DE DROP do monstro (engine — Acts/Campanha do PoE; o item de missão só enquanto a fase dele está aberta) e o OBJETIVO da fase
+  // (matar o chefe, N monstros, pegar o item da missão — `Campanha.matou`, que conclui a fase e põe o aviso na tela).
+  {
+    const daBolsa = (id) => {
+      if (!Bolsa.porNaBolsa(estado, id, 1)) return false;
+      caiu.push({ id, count: 1 });
+      conta('loot', id, 1);
+      return true;
+    };
+    const c = hunt.campanha;
+    const missaoAberta = (id) => {
+      if (!c) return false;
+      const conc = Campanha.conclusaoDa(c.huntId);
+      return conc.tipo === 'item-de-missao' && Number(conc.item) === id && !Campanha.faseCompleta(estado, c.dificuldade, c.huntId);
+    };
+    const daTabela = DropsPorMonstro.soltar(alvo.key, { missaoAberta, existe: (id) => !!ITEM_CATALOG[id] }).filter((d) => daBolsa(d.id));
+    Campanha.matou(estado, hunt, alvo, { ganhou: daTabela, dar: daBolsa });
   }
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);

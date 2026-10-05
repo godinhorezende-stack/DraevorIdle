@@ -1,0 +1,117 @@
+{
+ "_nota": "Tabela de drop por monstro (engine → Campanha do PoE / Acts). Chave: o slug do monstro do PoE. Cada linha: { id, chance (%), missao? } — `missao`: só enquanto a missão da fase está aberta.",
+ "monstros": {
+  "hailrake": [
+   {
+    "id": 7600001,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "captain-fairgraves": [
+   {
+    "id": 7600002,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "the-weaver": [
+   {
+    "id": 7600003,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "voll-emperor-of-purity": [
+   {
+    "id": 7600004,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "king-kaom": [
+   {
+    "id": 7600005,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "daresso-king-of-swords": [
+   {
+    "id": 7600006,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "justicar-casticus": [
+   {
+    "id": 7600007,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "riptide": [
+   {
+    "id": 7600008,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "maligaro-the-artist": [
+   {
+    "id": 7600009,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "hector-titucius-eternal-servant": [
+   {
+    "id": 7600010,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "maternal-rhex": [
+   {
+    "id": 7600011,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "boulderback": [
+   {
+    "id": 7600012,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "the-basilisk": [
+   {
+    "id": 7600013,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "garukhan-queen-of-the-winds": [
+   {
+    "id": 7600014,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "general-adus": [
+   {
+    "id": 7600015,
+    "chance": 100,
+    "missao": true
+   }
+  ],
+  "avarius-reassembled": [
+   {
+    "id": 7600016,
+    "chance": 100,
+    "missao": true
+   }
+  ]
+ }
+}

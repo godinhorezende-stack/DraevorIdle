@@ -11,6 +11,7 @@ import * as Catalogo from './catalogo.mjs';
 import { traduzirPeca } from './traduzir.mjs';
 import { gerarPeca } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
+import * as DropsPorMonstro from './drops-por-monstro.mjs';
 
 export const PRIMEIRO_ID = 7_000_000;
 
@@ -93,6 +94,8 @@ export function iniciar(itemCatalog) {
       REG.porId.set(id, b.id);
     }
   }
+  // Os itens de missão (Acts do PoE: o item que o monstro alvo solta) entram junto.
+  DropsPorMonstro.registrarItens(itemCatalog);
   return REG;
 }
 

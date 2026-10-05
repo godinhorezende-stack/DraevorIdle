@@ -1,0 +1,612 @@
+{
+  "id": "poe-ato-6",
+  "nome": "Ato 6",
+  "descricao": "Ato 6 da campanha do Path of Exile.",
+  "ordem": 6,
+  "anterior": "poe-ato-5",
+  "estado": "publicado",
+  "inicio": "poe-a6-the-twilight-strand",
+  "fases": [
+    {
+      "id": "poe-a6-the-twilight-strand",
+      "nome": "Costa do Crepúsculo",
+      "descricao": "Aqueles que naufragam não buscam calor ou abrigo, apenas querem preencher um vazio sem fim de dor e fome.",
+      "ordem": 1,
+      "huntId": "poe-a6-the-twilight-strand",
+      "nivel": {
+        "facil": 45,
+        "medio": 45,
+        "dificil": 45
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 50,
+        "y": 455
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Caído em Desgraça",
+          "texto": "Limpe a Costa do Crepúsculo"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-coast",
+      "nome": "A Costa",
+      "descricao": "Os Ancestrais retornam para conquistar os litorais mais uma vez.",
+      "ordem": 2,
+      "huntId": "poe-a6-the-coast",
+      "nivel": {
+        "facil": 45,
+        "medio": 45,
+        "dificil": 45
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 81,
+        "y": 350
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-tidal-island",
+      "nome": "Ilha da Maré",
+      "descricao": "Conforme a maré aumenta, a esperança se afoga.",
+      "ordem": 3,
+      "huntId": "poe-a6-the-tidal-island",
+      "nivel": {
+        "facil": 45,
+        "medio": 45,
+        "dificil": 45
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 133,
+        "y": 381
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Epopeia de Bestel",
+          "texto": "Encontre o Manuscrito do Bestel na Ilha da Maré"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600008,
+        "monstro": "Riptide",
+        "nome": "Correnteza"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-mud-flats",
+      "nome": "O Lamaçal",
+      "descricao": "Lama e sangue fazem uma bela tinta de guerra.",
+      "ordem": 4,
+      "huntId": "poe-a6-the-mud-flats",
+      "nivel": {
+        "facil": 46,
+        "medio": 46,
+        "dificil": 46
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 127,
+        "y": 308
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-karui-fortress",
+      "nome": "Fortaleza Karui",
+      "descricao": "As águas aqui, que já foram paradas e sujas, agora correm límpidas com um desejo ancestral por sangue.",
+      "ordem": 5,
+      "huntId": "poe-a6-the-karui-fortress",
+      "nivel": {
+        "facil": 46,
+        "medio": 46,
+        "dificil": 46
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 55,
+        "y": 271
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Pai da Guerra",
+          "texto": "Mate Tukohama para desbloquear a saída"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Tukohama,_Karui_God_of_War",
+        "nome": "Tukohama, Deus da Guerra Karui"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-ridge",
+      "nome": "A Cordilheira",
+      "descricao": "O ar está fino, o caminho, estreito.",
+      "ordem": 6,
+      "huntId": "poe-a6-the-ridge",
+      "nivel": {
+        "facil": 46,
+        "medio": 46,
+        "dificil": 46
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 50,
+        "y": 187
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-lower-prison",
+      "nome": "Prisão Inferior",
+      "descricao": "Ecos do passado trazem nova vida a um antigo experimento.",
+      "ordem": 7,
+      "huntId": "poe-a6-the-lower-prison",
+      "nivel": {
+        "facil": 47,
+        "medio": 47,
+        "dificil": 47
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 94,
+        "y": 119
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-shavronnes-tower",
+      "nome": "Torre da Shavronne",
+      "descricao": "",
+      "ordem": 8,
+      "huntId": "poe-a6-shavronnes-tower",
+      "nivel": {
+        "facil": 47,
+        "medio": 47,
+        "dificil": 47
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 128,
+        "y": 92
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-prisoners-gate",
+      "nome": "Portões da Prisão",
+      "descricao": "As terras de caça do deus gretado.",
+      "ordem": 9,
+      "huntId": "poe-a6-prisoners-gate",
+      "nivel": {
+        "facil": 47,
+        "medio": 47,
+        "dificil": 47
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 173,
+        "y": 119
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Ser Gretado",
+          "texto": "Mate Abberath"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Abberath,_the_Cloven_One",
+        "nome": "Abberath, o Ser Gretado"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-western-forest",
+      "nome": "Floresta Ocidental",
+      "descricao": "Quais loucuras tremulam e rastejam pelas florestas escuras?",
+      "ordem": 10,
+      "huntId": "poe-a6-the-western-forest",
+      "nivel": {
+        "facil": 48,
+        "medio": 48,
+        "dificil": 48
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 185,
+        "y": 66
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-riverways",
+      "nome": "Caminhos Fluviais",
+      "descricao": "Estas águas violentas carregam avisos de morte.",
+      "ordem": 11,
+      "huntId": "poe-a6-the-riverways",
+      "nivel": {
+        "facil": 48,
+        "medio": 48,
+        "dificil": 48
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 303,
+        "y": 98
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-wetlands",
+      "nome": "Terras Inundadas",
+      "descricao": "Um verme corpulento vaga sem pensar, infestando a sujeira putrescente.",
+      "ordem": 12,
+      "huntId": "poe-a6-the-wetlands",
+      "nivel": {
+        "facil": 48,
+        "medio": 48,
+        "dificil": 48
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 277,
+        "y": 45
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Senhora das Marionetes",
+          "texto": "Mate a Senhora das Marionetes"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-southern-forest",
+      "nome": "Floresta do Sul",
+      "descricao": "Uma crisália insidiosa se reproduz sob o calor sufocante.",
+      "ordem": 13,
+      "huntId": "poe-a6-the-southern-forest",
+      "nivel": {
+        "facil": 49,
+        "medio": 49,
+        "dificil": 49
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 407,
+        "y": 119
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-cavern-of-anger",
+      "nome": "Caverna da Cólera",
+      "descricao": "Estalactites gotejam em luto por uma rainha do oceano.",
+      "ordem": 14,
+      "huntId": "poe-a6-the-cavern-of-anger",
+      "nivel": {
+        "facil": 49,
+        "medio": 49,
+        "dificil": 49
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 419,
+        "y": 172
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-beacon",
+      "nome": "O Farol",
+      "descricao": "Um eco do destino consome a terra.",
+      "ordem": 15,
+      "huntId": "poe-a6-the-beacon",
+      "nivel": {
+        "facil": 49,
+        "medio": 49,
+        "dificil": 49
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 523,
+        "y": 172
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Rei da Salmoura",
+          "texto": "Entre no Brasão Negro para velejar até o Recife do Rei da Salmoura"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a6-the-brine-kings-reef",
+      "nome": "Recife do Rei da Salmoura",
+      "descricao": "Um trono de coral para um deus salgado.",
+      "ordem": 16,
+      "huntId": "poe-a6-the-brine-kings-reef",
+      "nivel": {
+        "facil": 50,
+        "medio": 50,
+        "dificil": 50
+      },
+      "obrigatoria": true,
+      "posicao": {
+        "x": 750,
+        "y": 115
+      },
+      "tipo": "fase-final-do-ato",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Rei da Salmoura",
+          "texto": "A saída para o Ato 7 agora está aberta"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    }
+  ],
+  "conexoes": [
+    {
+      "de": "poe-a6-the-twilight-strand",
+      "para": "poe-a6-the-coast",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-coast",
+      "para": "poe-a6-the-mud-flats",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-coast",
+      "para": "poe-a6-the-tidal-island",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-mud-flats",
+      "para": "poe-a6-the-karui-fortress",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-karui-fortress",
+      "para": "poe-a6-the-ridge",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-ridge",
+      "para": "poe-a6-the-lower-prison",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-lower-prison",
+      "para": "poe-a6-shavronnes-tower",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-prisoners-gate",
+      "para": "poe-a6-the-western-forest",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-western-forest",
+      "para": "poe-a6-the-riverways",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-riverways",
+      "para": "poe-a6-the-wetlands",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-riverways",
+      "para": "poe-a6-the-southern-forest",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-southern-forest",
+      "para": "poe-a6-the-cavern-of-anger",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-cavern-of-anger",
+      "para": "poe-a6-the-beacon",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-beacon",
+      "para": "poe-a6-the-brine-kings-reef",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a6-the-twilight-strand",
+      "para": "poe-a6-prisoners-gate",
+      "requisito": null,
+      "rotulo": ""
+    }
+  ],
+  "bossFinal": {
+    "bossId": "poe-chefe-ato-6",
+    "faseAnterior": "poe-a6-the-brine-kings-reef",
+    "nivel": {
+      "facil": 50,
+      "medio": 50,
+      "dificil": 50
+    },
+    "arena": null,
+    "recompensas": null
+  },
+  "imagem": null,
+  "nivelRecomendado": 45,
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
+  "versao": 2
+}

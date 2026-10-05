@@ -1,0 +1,703 @@
+{
+  "id": "poe-ato-3",
+  "nome": "Ato 3",
+  "descricao": "Ato 3 da campanha do Path of Exile.",
+  "ordem": 3,
+  "anterior": "poe-ato-2",
+  "estado": "publicado",
+  "inicio": "poe-a3-the-city-of-sarn",
+  "fases": [
+    {
+      "id": "poe-a3-the-city-of-sarn",
+      "nome": "Cidade de Sarn",
+      "descricao": "Uma luz severa em uma paisagem severa.",
+      "ordem": 1,
+      "huntId": "poe-a3-the-city-of-sarn",
+      "nivel": {
+        "facil": 23,
+        "medio": 23,
+        "dificil": 23
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 681,
+        "y": 455
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Perdidamente Apaixonados",
+          "texto": "Mate os guardas da Clarissa"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-slums",
+      "nome": "As Favelas",
+      "descricao": "Agora apenas o vento sussurra e geme aqui.",
+      "ordem": 2,
+      "huntId": "poe-a3-the-slums",
+      "nivel": {
+        "facil": 24,
+        "medio": 24,
+        "dificil": 24
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 668,
+        "y": 365
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-crematorium",
+      "nome": "Crematório",
+      "descricao": "Engasgado com cinzas e brasas.",
+      "ordem": 3,
+      "huntId": "poe-a3-the-crematorium",
+      "nivel": {
+        "facil": 25,
+        "medio": 25,
+        "dificil": 25
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 750,
+        "y": 365
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Perdidamente Apaixonados",
+          "texto": "Pege o bracelete de Tolman"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Piety",
+        "nome": "Piety"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-marketplace",
+      "nome": "O Mercado",
+      "descricao": "Todo o dinheiro no mundo não pode impedir que o mundo acabe.",
+      "ordem": 4,
+      "huntId": "poe-a3-the-marketplace",
+      "nivel": {
+        "facil": 26,
+        "medio": 26,
+        "dificil": 26
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 583,
+        "y": 208
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-catacombs",
+      "nome": "Catacumbas",
+      "descricao": "Tossindo a poeira da devoção sem vida.",
+      "ordem": 5,
+      "huntId": "poe-a3-the-catacombs",
+      "nivel": {
+        "facil": 27,
+        "medio": 27,
+        "dificil": 27
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 668,
+        "y": 187
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-battlefront",
+      "nome": "Frente de Batalha",
+      "descricao": "Carne carbonizada e entranhas espalhadas. Agridoce.",
+      "ordem": 6,
+      "huntId": "poe-a3-the-battlefront",
+      "nivel": {
+        "facil": 27,
+        "medio": 27,
+        "dificil": 27
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 436,
+        "y": 152
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Carretel de Fita",
+          "texto": "Encontre o Carretel de Fita"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-solaris-temple-level-1",
+      "nome": "Templo Solaris Nível 1",
+      "descricao": "Um império em seu apogeu, refletido em ouro polido.",
+      "ordem": 7,
+      "huntId": "poe-a3-the-solaris-temple-level-1",
+      "nivel": {
+        "facil": 27,
+        "medio": 27,
+        "dificil": 27
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 540,
+        "y": 98
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-solaris-temple-level-2",
+      "nome": "Templo Solaris Nível 2",
+      "descricao": "Um império em seu apogeu, refletido em ouro polido.",
+      "ordem": 8,
+      "huntId": "poe-a3-the-solaris-temple-level-2",
+      "nivel": {
+        "facil": 28,
+        "medio": 28,
+        "dificil": 28
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 469,
+        "y": 52
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "A Rainha Gemante",
+          "texto": "Encontre a tumba da Rainha Gemante"
+        },
+        {
+          "missao": "O Carretel de Fita",
+          "texto": "Fale com a Senhora Dialla para receber sua recompensa"
+        },
+        {
+          "missao": "Areia Ardente",
+          "texto": "Fale com a Senhora Dialla"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-docks",
+      "nome": "As Docas",
+      "descricao": "A vida empalidece no despertar do progresso.",
+      "ordem": 9,
+      "huntId": "poe-a3-the-docks",
+      "nivel": {
+        "facil": 29,
+        "medio": 29,
+        "dificil": 29
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 324,
+        "y": 124
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-sewers",
+      "nome": "Os Esgotos",
+      "descricao": "Quais horrores se escondem nas entranhas da cidade?",
+      "ordem": 10,
+      "huntId": "poe-a3-the-sewers",
+      "nivel": {
+        "facil": 26,
+        "medio": 26,
+        "dificil": 26
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 619,
+        "y": 293
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Segredos do Victario",
+          "texto": "Encontre o terceiro Busto de Platina"
+        },
+        {
+          "missao": "Areia Ardente",
+          "texto": "Destrua o Bloqueio Imortal"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-ebony-barracks",
+      "nome": "Quartel de Ébano",
+      "descricao": "Superfícies polidas refletem a eficiência brutal.",
+      "ordem": 11,
+      "huntId": "poe-a3-the-ebony-barracks",
+      "nivel": {
+        "facil": 29,
+        "medio": 29,
+        "dificil": 29
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 193,
+        "y": 199
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Corte a Mão Direita",
+          "texto": "Mate o General Gravicius"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "General_Gravicius",
+        "nome": "General Gravicius"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-lunaris-temple-level-1",
+      "nome": "Templo Lunaris Nível 1",
+      "descricao": "A depravação não tem limites.",
+      "ordem": 12,
+      "huntId": "poe-a3-the-lunaris-temple-level-1",
+      "nivel": {
+        "facil": 29,
+        "medio": 29,
+        "dificil": 29
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 50,
+        "y": 188
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-lunaris-temple-level-2",
+      "nome": "Templo Lunaris Nível 2",
+      "descricao": "",
+      "ordem": 13,
+      "huntId": "poe-a3-the-lunaris-temple-level-2",
+      "nivel": {
+        "facil": 30,
+        "medio": 30,
+        "dificil": 30
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 83,
+        "y": 162
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-imperial-gardens",
+      "nome": "Jardins Imperiais",
+      "descricao": "A natureza sobrepuja os desígnios do Homem.",
+      "ordem": 14,
+      "huntId": "poe-a3-the-imperial-gardens",
+      "nivel": {
+        "facil": 30,
+        "medio": 30,
+        "dificil": 30
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 148,
+        "y": 138
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Uma Gota de Esperança",
+          "texto": "Encontre a Ameixa de Chitus"
+        },
+        {
+          "missao": "O Cetro de Deus",
+          "texto": "Destranque o Cetro de Deus"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-library",
+      "nome": "Biblioteca",
+      "descricao": "Todo o conhecimento no Império não pôde salvá-los.",
+      "ordem": 15,
+      "huntId": "poe-a3-the-library",
+      "nivel": {
+        "facil": 30,
+        "medio": 30,
+        "dificil": 30
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 88,
+        "y": 98
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Um Acerto do Destino",
+          "texto": "Fale com Siosa para receber sua recompensa"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-archives",
+      "nome": "Arquivos",
+      "descricao": "",
+      "ordem": 16,
+      "huntId": "poe-a3-the-archives",
+      "nivel": {
+        "facil": 31,
+        "medio": 31,
+        "dificil": 31
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 122,
+        "y": 72
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-sceptre-of-god",
+      "nome": "Cetro de Deus",
+      "descricao": "O pináculo do poder. O tamanho da arrogância.",
+      "ordem": 17,
+      "huntId": "poe-a3-the-sceptre-of-god",
+      "nivel": {
+        "facil": 32,
+        "medio": 32,
+        "dificil": 32
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 179,
+        "y": 71
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Cetro de Deus",
+          "texto": "Encontre a saída do Ato Quatro"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a3-the-upper-sceptre-of-god",
+      "nome": "Cetro de Deus Superior",
+      "descricao": "",
+      "ordem": 18,
+      "huntId": "poe-a3-the-upper-sceptre-of-god",
+      "nivel": {
+        "facil": 33,
+        "medio": 33,
+        "dificil": 33
+      },
+      "obrigatoria": true,
+      "posicao": {
+        "x": 213,
+        "y": 45
+      },
+      "tipo": "fase-final-do-ato",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    }
+  ],
+  "conexoes": [
+    {
+      "de": "poe-a3-the-city-of-sarn",
+      "para": "poe-a3-the-slums",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-slums",
+      "para": "poe-a3-the-crematorium",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-slums",
+      "para": "poe-a3-the-sewers",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-marketplace",
+      "para": "poe-a3-the-catacombs",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-marketplace",
+      "para": "poe-a3-the-battlefront",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-battlefront",
+      "para": "poe-a3-the-solaris-temple-level-1",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-battlefront",
+      "para": "poe-a3-the-docks",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-solaris-temple-level-1",
+      "para": "poe-a3-the-solaris-temple-level-2",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-sewers",
+      "para": "poe-a3-the-marketplace",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-sewers",
+      "para": "poe-a3-the-ebony-barracks",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-ebony-barracks",
+      "para": "poe-a3-the-lunaris-temple-level-1",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-ebony-barracks",
+      "para": "poe-a3-the-imperial-gardens",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-lunaris-temple-level-1",
+      "para": "poe-a3-the-lunaris-temple-level-2",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-imperial-gardens",
+      "para": "poe-a3-the-library",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-imperial-gardens",
+      "para": "poe-a3-the-sceptre-of-god",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-library",
+      "para": "poe-a3-the-archives",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a3-the-sceptre-of-god",
+      "para": "poe-a3-the-upper-sceptre-of-god",
+      "requisito": null,
+      "rotulo": ""
+    }
+  ],
+  "bossFinal": {
+    "bossId": "poe-chefe-ato-3",
+    "faseAnterior": "poe-a3-the-upper-sceptre-of-god",
+    "nivel": {
+      "facil": 33,
+      "medio": 33,
+      "dificil": 33
+    },
+    "arena": null,
+    "recompensas": null
+  },
+  "imagem": null,
+  "nivelRecomendado": 23,
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
+  "versao": 2
+}

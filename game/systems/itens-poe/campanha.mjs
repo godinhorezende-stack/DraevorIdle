@@ -14,11 +14,13 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import * as Monstros from './monstros.mjs';
 import * as Habilidades from './habilidades.mjs';
-import { CATALOGO } from '../dados.mjs';
+import { CATALOGO, ITEM_CATALOG } from '../dados.mjs';
+import * as DropsPorMonstro from './drops-por-monstro.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt } from '../hunt/terreno.mjs';
 import * as BossesUnicos from '../bosses-unicos/catalogo.mjs';
 import * as Campanha from '../campanha.mjs';
+import { lerExecutaveis } from '../atos-carregar.mjs';
 
 const C = Monstros.CAMPANHA;
 
@@ -223,18 +225,20 @@ export function iniciar() {
   // 3. os chefes de ato e 4. os atos
   const atos = [];
   const problemas = [];
-  let anterior = null;
-  for (const a of C.atos) {
-    if (!registrarChefe(a.numero)) continue;
-    const ato = atoDoRuntime(a.numero, anterior);
-    if (!ato) continue;
+  // Os atos: os do EDITOR (aba Acts — `gamedata/atos/poe-ato-*.json`, importados do Drive por `tools/importar-atos-poe.mjs`: "o editor
+  // manda", decisão do dono, 05/10); sem nenhum, os montados aqui a partir do mapa do PoE.
+  for (const a of C.atos) registrarChefe(a.numero);
+  // Os itens de missão antes dos atos (a conclusão "item da missão" valida que o item existe).
+  DropsPorMonstro.registrarItens(ITEM_CATALOG);
+  const doEditor = lerExecutaveis().filter((a) => a.id.startsWith('poe-ato-'));
+  const fonte = doEditor.length ? doEditor : C.atos.map((a, i) => atoDoRuntime(a.numero, i ? `poe-ato-${C.atos[i - 1].numero}` : null)).filter(Boolean);
+  for (const ato of fonte) {
     const r = Campanha.registrarAto(ato);
     if (!r.ok) {
       problemas.push(...r.problemas.map((p) => `${ato.nome}: ${p.onde} — ${p.mensagem}`));
       continue;
     }
     atos.push(r.numero);
-    anterior = ato.id;
   }
   INICIADO = { areas, atos, problemas };
   return INICIADO;

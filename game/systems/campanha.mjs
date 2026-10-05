@@ -20,7 +20,7 @@
 // antes, por contagem de mortes: fica gravado, ninguém mais lê).
 import { readFileSync } from 'node:fs';
 import { conteudoDaFase, exigidasDaFase, nomesDeBosses, atosDoConteudo, registrarConteudo, registrarMetaDeAto } from './campanha-conteudo.mjs';
-import { CATALOGO } from './dados.mjs';
+import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as Beta from './modo-beta.mjs';
 import { validarAto, temErro, fasesAbertas, normalizar } from './atos-modelo.mjs';
 import { lerExecutaveis } from './atos-carregar.mjs';
@@ -216,16 +216,82 @@ export function limpou(estado, hunt) {
   const nomeDif = CAMPANHA.dificuldades[c.dificuldade].nome;
   let aviso;
   const abriuOPortal = ehUltimaFaseDoAto(f.huntId) && bossLiberado(estado, c.dificuldade, f.ato);
+  const conc = conclusaoDa(f.huntId);
   if (p.completas.includes(f.huntId)) {
     aviso = abriuOPortal ? `Hunt Clear! ${f.nome} (${nomeDif}) limpa. O portal do boss ${bossDoAto(f.ato)?.nome} está aberto: entre quando quiser.` : `Hunt Clear! ${f.nome} (${nomeDif}) limpa.`;
+  } else if (conc.tipo !== 'limpar-hunt') {
+    // A fase conclui por outro objetivo (matar o chefe, N monstros, o item da missão): limpar conta a limpeza, mas não conclui.
+    aviso = `Hunt Clear! ${f.nome} (${nomeDif}) limpa. Para concluir: ${objetivoEmTexto(conc)}.`;
   } else {
-    p.completas.push(f.huntId);
-    const proxima = FASES[f.indice + 1];
-    aviso =
-      proxima && proxima.ato === f.ato
-        ? `Hunt Clear! Fase completa: ${f.nome} (${nomeDif}). Liberou ${proxima.nome}.`
-        : `Hunt Clear! Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`;
+    aviso = `Hunt Clear! ${completar(estado, c.dificuldade, f)}`;
   }
+  estado.avisoDaHunt = aviso;
+  return aviso;
+}
+
+/** Completa a fase (a primeira vez) e devolve o aviso da tela. */
+function completar(estado, dif, f) {
+  const p = progresso(estado, dif);
+  if (!p.completas.includes(f.huntId)) p.completas.push(f.huntId);
+  const nomeDif = CAMPANHA.dificuldades[dif].nome;
+  const proxima = FASES[f.indice + 1];
+  return proxima && proxima.ato === f.ato
+    ? `Fase completa: ${f.nome} (${nomeDif}). Liberou ${proxima.nome}.`
+    : `Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`;
+}
+
+// ---- A CONCLUSÃO da fase por objetivo (atos do editor): matar o chefe, matar N, o item da missão (`atos-modelo.TIPOS_DE_CONCLUSAO`).
+/** Como a fase conclui (`{ tipo, monstro?, quantidade?, item? }`); fase legada: limpar a hunt. */
+export function conclusaoDa(huntId) {
+  const f = faseDe(huntId);
+  const g = f?.grafo ? ATOS_DO_EDITOR.get(f.ato) : null;
+  return g?.ato.fases.find((x) => x.id === f.grafo.faseId)?.conclusao ?? { tipo: 'limpar-hunt' };
+}
+const slugDoMonstro = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+/** O bicho morto é o monstro do objetivo? (a chave do bestiário, ou o slug do monstro do PoE — `poe-<slug>-<nível>`) */
+export const ehOMonstro = (key, alvo) => !!alvo && (key === alvo || String(key ?? '').startsWith(`poe-${slugDoMonstro(alvo)}-`));
+const nomeDoMonstro = (alvo) => String(alvo ?? '').replace(/_/g, ' ');
+/** O objetivo em texto (aviso e painel). */
+export function objetivoEmTexto(conc) {
+  if (conc.tipo === 'matar-chefe') return `matar ${conc.nome ?? nomeDoMonstro(conc.monstro)}`;
+  if (conc.tipo === 'matar-n') return `matar ${conc.quantidade} ${conc.monstro ? conc.nome ?? nomeDoMonstro(conc.monstro) : 'monstros'}`;
+  if (conc.tipo === 'item-de-missao') return `pegar ${ITEM_CATALOG[conc.item]?.name ?? 'o item da missão'} de ${conc.nome ?? nomeDoMonstro(conc.monstro)}`;
+  return 'limpar a área';
+}
+/** O progresso do objetivo `{ feito, total }` (o painel da fase). */
+export function progressoDoObjetivo(estado, dif, huntId) {
+  const conc = conclusaoDa(huntId);
+  const p = progresso(estado, dif);
+  if (conc.tipo === 'matar-n') return { feito: Math.min(conc.quantidade, p.mortes?.[huntId] ?? 0), total: conc.quantidade };
+  return { feito: p.completas.includes(huntId) ? 1 : 0, total: 1 };
+}
+
+/**
+ * Um bicho morreu numa fase da campanha: conta para o objetivo da fase e conclui quando ele se cumpre. `ganhou`: os itens que caíram
+ * nesta morte (`{id}`); `dar(id)`: põe um item na bolsa (o item da missão, quando a tabela de drop do monstro não o soltou). Devolve o
+ * aviso quando a fase concluiu, senão null.
+ */
+export function matou(estado, hunt, bicho, { ganhou = [], dar = null } = {}) {
+  const c = hunt?.campanha;
+  if (!c || c.bossDoAto) return null;
+  const f = faseDe(c.huntId);
+  if (!f || f.pular) return null;
+  const conc = conclusaoDa(f.huntId);
+  if (conc.tipo === 'limpar-hunt') return null;
+  const p = progresso(estado, c.dificuldade);
+  if (p.completas.includes(f.huntId)) return null;
+  const doAlvo = !conc.monstro || ehOMonstro(bicho?.key, conc.monstro);
+  if (!doAlvo) return null;
+  if (conc.tipo === 'matar-n') {
+    p.mortes ??= {};
+    p.mortes[f.huntId] = (p.mortes[f.huntId] ?? 0) + 1;
+    if (p.mortes[f.huntId] < conc.quantidade) return null;
+  }
+  if (conc.tipo === 'item-de-missao') {
+    const veio = ganhou.some((g) => Number(g.id) === Number(conc.item));
+    if (!veio && !(dar && dar(Number(conc.item)))) return null;
+  }
+  const aviso = completar(estado, c.dificuldade, f);
   estado.avisoDaHunt = aviso;
   return aviso;
 }
@@ -449,7 +515,7 @@ function contextoDoRuntime() {
   const ordensEmUso = new Map([...Array(ATOS)].map((_, i) => [i + 1, `legado-${i + 1}`]));
   for (const [n, g] of ATOS_DO_EDITOR) ordensEmUso.set(n, g.ato.id);
   const atos = [...ordensEmUso.values()].map((id) => ({ id }));
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos, validarRecompensa: RecompensasDeEncontro.validar };
+  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos, validarRecompensa: RecompensasDeEncontro.validar, itemExiste: (id) => !!ITEM_CATALOG[id] };
 }
 
 /**
@@ -534,7 +600,8 @@ export function _desregistrarAto(numero) {
 
 // No boot: os atos executáveis da pasta. O que não passar na validação é ignorado COM aviso (nunca derruba o servidor nem afeta os legados).
 // Com o PoE ligado, a campanha é só a do PoE: os atos do editor (que seguem os do Draevor) ficam de fora.
-for (const ato of itensPoeLigado() ? [] : lerExecutaveis()) {
+// Os atos do PoE (`poe-ato-*`) são registrados pela campanha do PoE (`itens-poe/campanha.mjs`), depois das áreas e dos chefes; sem o PoE, ficam de fora.
+for (const ato of itensPoeLigado() ? [] : lerExecutaveis().filter((a) => !a.id.startsWith('poe-ato-'))) {
   const r = registrarAto(ato);
   if (!r.ok) console.warn(`[atos] "${ato.id}" não entrou no jogo: ${r.problemas.filter((p) => p.nivel === 'erro').map((p) => `[${p.onde}] ${p.mensagem}`).join(' | ')}`);
   else console.log(`[atos] "${ato.id}" (${ato.estado}) carregado como Ato ${r.numero}: ${ato.fases.length} fases.`);

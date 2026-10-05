@@ -9,6 +9,8 @@ import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 import * as Jogo from '../systems/itens-poe/jogo.mjs';
 import * as Telas from './itens-poe-telas.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
+import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
 const TIPOS = { '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.gif': 'image/gif' };
@@ -63,6 +65,13 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     const r = CampanhaPoe.trocarMapa(String(d?.area ?? ''), String(d?.mapa ?? ''));
     return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, area: Telas.area(d.area) } : { ok: false, erros: [r.erro] }), true;
   }
+  // A tabela de drop de um monstro (Acts / Campanha do PoE): grava em gamedata/itens-poe/drops-por-monstro.json e vale na hora.
+  if (req.method === 'POST' && rota === 'drops') {
+    if (!Catalogo.ligado()) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
+    const d = await corpoJson(req).catch(() => null);
+    const r = DropsPorMonstro.salvar(String(d?.monstro ?? ''), d?.lista, { existe: (id) => !!ITEM_CATALOG[id], podeTer: Telas.temDropProprio });
+    return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, drops: Telas.dropsDe(String(d.monstro)) } : { ok: false, erros: r.erros }), true;
+  }
   if (req.method !== 'GET') return json(res, 405, { ok: false, erros: ['Somente leitura.'] }), true;
   const q = url.searchParams;
   if (rota === 'estado') return json(res, 200, { ligado: Catalogo.ligado(), arquivo: Catalogo.ARQUIVO, regras: Catalogo.REGRAS, como: 'Ligue com ITENS_POE=1 e importe com: node tools/importar-poe-itens.mjs' }), true;
@@ -97,6 +106,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Área desconhecida.'] }), true;
   }
   if (rota === 'chefes') return json(res, 200, Telas.chefes()), true;
+  if (rota === 'drops') return json(res, 200, { drops: Telas.dropsDe(q.get('monstro') ?? '') }), true;
+  if (rota === 'itens-de-missao') return json(res, 200, { itens: DropsPorMonstro.ITENS_DE_MISSAO }), true;
   if (rota === 'arvore') return json(res, 200, { ...Telas.arvore(), cobertura: Telas.coberturaDaArvore() }), true;
   if (rota === 'online') return json(res, 200, { online: Jogo.online(), equipavel: Object.keys(Jogo.CLASSES_DO_JOGO), naoEquipaveis: Jogo.registro().naoEquipaveis }), true;
   if (rota === 'gerar') {

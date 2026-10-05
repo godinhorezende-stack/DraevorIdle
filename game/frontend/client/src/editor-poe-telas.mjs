@@ -164,7 +164,8 @@ export function criarTelaDaCampanhaPoe({ raiz }) {
           metricasDoMonstro(m),
           el('div', { class: 'linha' }, el('span', { class: 'dica', style: 'flex:none' }, 'Resistências:'), barrasDeResistencia(m.resistencias)),
           m.convertidas.length ? [el('h5', {}, 'No jogo (habilidades convertidas)'), el('div', { class: 'eng-ataques' }, m.convertidas.map(cartaoDeHabilidade))] : null,
-          m.habilidades.length > 1 ? [el('h5', {}, 'Habilidades no poedb'), tabelaDeHabilidades(m.habilidades)] : null))),
+          m.habilidades.length > 1 ? [el('h5', {}, 'Habilidades no poedb'), tabelaDeHabilidades(m.habilidades)] : null,
+          el('h5', {}, 'Drops deste monstro'), m.unico ? editorDeDrops(m.slug, m.drops ?? []) : el('div', { class: 'dica' }, 'Monstro comum: sem item próprio (modelo do PoE). Cai pela tabela global: ~16% de chance (mais nos mágicos/raros), Item Level = o nível dele, qualquer base até esse nível, raridade pelos pesos.')))),
         d.chefeDoAto ? [el('h4', {}, `Chefe do ato: ${d.chefeDoAto.nome}`), fichaDoChefe(d.chefeDoAto)] : null));
   }
 
@@ -472,4 +473,42 @@ export function criarTelaDaArvorePoe({ raiz }) {
   }
 
   return { desenhar };
+}
+
+// ================================================================ TABELA DE DROP DO MONSTRO (Acts e Campanha do PoE)
+
+/**
+ * O editor da tabela de drop de um monstro: as linhas (item, chance %, "só na missão"), a busca de item para acrescentar e o Salvar (vale
+ * na hora no jogo e fica em gamedata/itens-poe/drops-por-monstro.json). `monstro`: o slug do PoE ou a chave do bestiário.
+ */
+export function editorDeDrops(monstro, drops = [], { somenteLeitura = false, aoSalvar = null } = {}) {
+  const T = { lista: drops.map((d) => ({ ...d })), achados: [], sujo: false };
+  const caixa = el('div', { class: 'pd-drops' });
+  const pintar = () => {
+    const linha = (d, i) => el('div', { class: 'pd-linha' },
+      el('span', { class: 'pd-item', title: String(d.id) }, d.nome ?? `item ${d.id}`, d.missao ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'missão') : null),
+      el('input', { type: 'number', min: 0.01, max: 100, step: 'any', value: d.chance, disabled: somenteLeitura, title: 'chance em % (cada linha sorteia sozinha, a cada morte)', onchange: (e) => { d.chance = Number(e.target.value); T.sujo = true; pintar(); } }), el('span', { class: 'dica' }, '%'),
+      el('label', { class: 'marca', title: 'Só cai enquanto a missão da fase está aberta (o item da missão)' }, el('input', { type: 'checkbox', checked: !!d.missao, disabled: somenteLeitura, onchange: (e) => { d.missao = e.target.checked; T.sujo = true; pintar(); } }), 'só na missão'),
+      somenteLeitura ? null : el('button', { type: 'button', class: 'fantasma', title: 'Tirar', onclick: () => { T.lista.splice(i, 1); T.sujo = true; pintar(); } }, '✕'));
+    const busca = el('input', { type: 'search', placeholder: 'Buscar item para acrescentar (nome ou ID)…', onchange: async (e) => {
+      const q = e.target.value.trim();
+      T.achados = q.length >= 2 ? (await (await fetch(`/api/mapas/_conteudo/itens?q=${encodeURIComponent(q)}`)).json()).itens ?? [] : [];
+      pintar();
+    } });
+    caixa.replaceChildren(...[
+      T.lista.length ? el('div', { class: 'pd-linhas' }, T.lista.map(linha)) : el('div', { class: 'dica' }, 'Sem drop próprio (só o drop do PoE pela raridade do monstro).'),
+      somenteLeitura ? null : el('div', { class: 'pd-busca' }, busca),
+      T.achados.length ? el('div', { class: 'pd-achados' }, T.achados.map((it) => el('button', { type: 'button', class: 'selo', onclick: () => { if (!T.lista.some((d) => d.id === it.id)) T.lista.push({ id: it.id, nome: it.name, chance: 1 }); T.achados = []; T.sujo = true; pintar(); } }, `+ ${it.name} (${it.id})`))) : null,
+      somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { type: 'button', class: T.sujo ? 'primario' : '', disabled: !T.sujo, onclick: async () => {
+        const r = await api('drops', { monstro, lista: T.lista.map(({ id, chance, missao }) => ({ id, chance, ...(missao ? { missao: true } : {}) })) });
+        if (!r.ok) return msg(r.erros?.join(' ') ?? 'Não salvou.', 'erro');
+        T.lista = r.drops.map((d) => ({ ...d }));
+        T.sujo = false;
+        msg('Tabela de drop salva (vale na hora).', 'ok');
+        aoSalvar?.(r.drops);
+        pintar();
+      } }, T.sujo ? 'Salvar drops' : 'Drops salvos'), el('span', { class: 'dica' }, 'Por cima do drop do PoE. Cada linha sorteia sozinha a cada morte.'))].filter(Boolean));
+  };
+  pintar();
+  return caixa;
 }

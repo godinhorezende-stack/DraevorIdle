@@ -12,6 +12,7 @@ import * as Campanha from '../systems/campanha.mjs';
 import * as Recompensas from '../systems/encontros/recompensas.mjs';
 import { CONFIG as CONFIG_DE_ENCONTROS } from '../systems/encontros/config.mjs';
 import { valorDaInstancia } from '../systems/encontros/economia.mjs';
+import { ligado as itensPoeLigado } from '../systems/itens-poe/catalogo.mjs';
 
 export const CAMINHOS = { atos: join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata', 'atos') };
 const HUNTS = () => new Set([...CATALOGO.hunts, ...CATALOGO.vips, ...CATALOGO.especiais, ...CATALOGO.divinas].map((h) => h.id));
@@ -21,7 +22,8 @@ const arquivo = (id) => join(CAMINHOS.atos, `${id}.json`);
 function lerSalvos() {
   if (!existsSync(CAMINHOS.atos)) return [];
   const saida = [];
-  for (const a of readdirSync(CAMINHOS.atos).filter((n) => n.endsWith('.json'))) {
+  // Os atos do PoE (`poe-ato-*`) só existem com o PoE ligado (as áreas deles são hunts virtuais do PoE).
+  for (const a of readdirSync(CAMINHOS.atos).filter((n) => n.endsWith('.json') && (itensPoeLigado() || !n.startsWith('poe-ato-')))) {
     try {
       saida.push(Modelo.normalizar(JSON.parse(readFileSync(join(CAMINHOS.atos, a), 'utf8'))));
     } catch {
@@ -118,7 +120,7 @@ export function contexto(idDoAto) {
   for (const o of outros) for (const f of o.fases) if (f.huntId && !emUso.has(f.huntId)) emUso.set(f.huntId, o.id);
   const ordensEmUso = new Map(outros.filter((o) => o.ordem != null).map((o) => [o.ordem, o.id]));
   const bossesEmUso = new Map(outros.filter((o) => o.bossFinal?.bossId).map((o) => [o.bossFinal.bossId, o.id]));
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, bossesEmUso, ordensEmUso, ordemMinima: Campanha.ATOS + 1, atos: outros.map((o) => ({ id: o.id })), validarRecompensa: Recompensas.validar, avaliarEconomia };
+  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso: emUso, bossesEmUso, ordensEmUso, ordemMinima: Campanha.ATOS + 1, atos: outros.map((o) => ({ id: o.id })), validarRecompensa: Recompensas.validar, avaliarEconomia, itemExiste: (id) => !!ITEM_CATALOG[id] };
 }
 
 /** Só a recompensa (para o painel dar o alerta na hora): estrutura, itens, chances, tetos e economia. */
@@ -177,4 +179,30 @@ export function excluir(id) {
   return { ok: true };
 }
 
-export const opcoes = () => ({ tiposDeFase: Object.entries(Modelo.TIPOS_DE_FASE).map(([id, t]) => ({ id, nome: t.nome, suportado: t.suportado, motivo: t.motivo ?? null })), estados: Modelo.ESTADOS });
+export const opcoes = () => ({ tiposDeFase: Object.entries(Modelo.TIPOS_DE_FASE).map(([id, t]) => ({ id, nome: t.nome, suportado: t.suportado, motivo: t.motivo ?? null })), tiposDeConclusao: Object.entries(Modelo.TIPOS_DE_CONCLUSAO).map(([id, t]) => ({ id, ...t })), estados: Modelo.ESTADOS });
+
+// ---- A IMAGEM DE FUNDO do ato (o mapa desenhado por trás do grafo na aba Acts): `gamedata/atos/imagens/<id do ato>.<ext>`.
+const TIPOS_DE_IMAGEM = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg' };
+export const PASTA_DE_IMAGENS = join(CAMINHOS.atos, 'imagens');
+const MAXIMO_DA_IMAGEM = 6 * 1024 * 1024;
+
+/** Grava a imagem (data URL) do ato e devolve `{ ok, imagem }` (o caminho relativo que vai em `ato.imagem`). */
+export function salvarImagem(idDoAto, dataUrl) {
+  if (!Modelo.ID_VALIDO.test(String(idDoAto ?? ''))) return { ok: false, erros: ['ID do ato inválido.'] };
+  const m = /^data:([a-z+/]+);base64,(.+)$/s.exec(String(dataUrl ?? ''));
+  const ext = m && TIPOS_DE_IMAGEM[m[1]];
+  if (!ext) return { ok: false, erros: ['Envie uma imagem PNG, JPG, WEBP, GIF ou SVG.'] };
+  const bytes = Buffer.from(m[2], 'base64');
+  if (bytes.length > MAXIMO_DA_IMAGEM) return { ok: false, erros: ['Imagem grande demais (máximo 6 MB).'] };
+  mkdirSync(PASTA_DE_IMAGENS, { recursive: true });
+  for (const outra of Object.values(TIPOS_DE_IMAGEM)) if (outra !== ext && existsSync(join(PASTA_DE_IMAGENS, `${idDoAto}.${outra}`))) unlinkSync(join(PASTA_DE_IMAGENS, `${idDoAto}.${outra}`));
+  writeFileSync(join(PASTA_DE_IMAGENS, `${idDoAto}.${ext}`), bytes);
+  return { ok: true, imagem: `imagens/${idDoAto}.${ext}` };
+}
+
+/** O arquivo de uma imagem de ato (`imagens/<arquivo>`), ou null — nunca sai da pasta. */
+export function arquivoDaImagem(rel) {
+  const nome = /^imagens\/([a-z0-9-]{3,40}\.(png|jpg|webp|gif|svg))$/.exec(String(rel ?? ''))?.[1];
+  const alvo = nome ? join(PASTA_DE_IMAGENS, nome) : null;
+  return alvo && existsSync(alvo) ? { caminho: alvo, tipo: Object.entries(TIPOS_DE_IMAGEM).find(([, e]) => alvo.endsWith(`.${e}`))[0] } : null;
+}

@@ -2,7 +2,8 @@
 // cada área, monstros e chefes com status e habilidades), a ÁRVORE (nós, maestrias, keystones e ascendências, com o texto do PoE, a
 // tradução e o estado de cada linha) e os CHEFES (pináculos e chefes de ato, com status, habilidades convertidas e arena).
 // Tudo vem do que o jogo carregou de verdade (bestiário, bosses únicos, catálogo de bosses) — nada é recalculado aqui.
-import { CATALOGO } from '../systems/dados.mjs';
+import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
+import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import { BESTIARY } from '../systems/hunt/monstros.mjs';
 import { ataquesParaFicha } from '../systems/poderes.mjs';
 import * as BossesUnicos from '../systems/bosses-unicos/catalogo.mjs';
@@ -29,8 +30,19 @@ function monstro(m) {
     desenho: desenhoDe(chave), desenhoDe: BESTIARY[chave] ? Object.entries(BESTIARY).find(([k, b]) => !k.startsWith('poe-') && b.look === BESTIARY[chave].look)?.[0] ?? null : null,
     habilidades: (m.habilidades ?? []).map((h) => ({ nome: h.nome, interno: h.interno, tags: h.tags, dano: h.dano ?? null, elemento: h.elemento ?? null, tempo: h.tempo ?? null, recarga: h.recarga ?? null, descricao: h.descricao ?? null })),
     convertidas: Habilidades.convertidas(m),
+    drops: dropsDe(chave),
   };
 }
+
+/** O monstro pode ter drop próprio? Só os ÚNICOS da campanha (modelo do PoE: o comum cai pela tabela global). `k`: o slug da tabela. */
+let UNICOS = null;
+export function temDropProprio(k) {
+  UNICOS ??= new Set(Object.values(C.areas).flatMap((a) => a.monstros ?? []).filter((m) => m.unico).map((m) => Monstros.chaveDe({ ...m, nivel: 0 }).replace(/^poe-|-0$/g, '')));
+  return UNICOS.has(k);
+}
+
+/** A tabela de drop do monstro (engine), com o nome de cada item. */
+export const dropsDe = (keyOuSlug) => DropsPorMonstro.tabelaDe(keyOuSlug).map((d) => ({ ...d, nome: ITEM_CATALOG[d.id]?.name ?? null }));
 
 /** A visão geral da campanha: os atos com o grafo (o mesmo que o runtime de atos recebe), as áreas e os mapas do Draevor. */
 export function campanha() {
