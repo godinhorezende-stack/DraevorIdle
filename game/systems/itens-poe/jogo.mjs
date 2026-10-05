@@ -51,6 +51,12 @@ export const registro = () => REG;
 export const idDaBase = (base) => REG.porBase.get(base) ?? null;
 
 const media = (v) => (v && typeof v === 'object' ? Math.round((v.min + v.max) / 2) : Number(v) || 0);
+/** `{ requisitos: { str, dex, int } }` só com o que a base pede (vazio se não pede atributo). */
+const requisitosDaBase = (b) => {
+  const r = b.requisitos ?? {};
+  const pede = Object.fromEntries([['str', r.forca], ['dex', r.destreza], ['int', r.inteligencia]].filter(([, v]) => Number(v) > 0).map(([k, v]) => [k, Number(v)]));
+  return Object.keys(pede).length ? { requisitos: pede } : {};
+};
 
 /** Registra as bases equipáveis do catálogo do PoE em `ITEM_CATALOG` (uma vez). Devolve o registro. Sem o sistema ligado, não faz nada. */
 export function iniciar(itemCatalog) {
@@ -78,7 +84,8 @@ export function iniciar(itemCatalog) {
         ...(regra.quiver ? { quiver: true } : {}),
         ...(a.armadura ? { armor: media(a.armadura) } : {}),
         // Marca de item do PoE: o cliente desenha o ícone da coleção e o balão próprio; o servidor acha a base.
-        poe: { base: b.id, classe: c.id, icone: b.icone ?? null },
+        // Os requisitos de atributo da base, como no PoE (todos valem: `personagem/requisitos.falta`, incremento 4d).
+        poe: { base: b.id, classe: c.id, icone: b.icone ?? null, ...requisitosDaBase(b) },
       };
       REG.porBase.set(b.id, id);
       REG.porId.set(id, b.id);

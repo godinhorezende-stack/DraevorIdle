@@ -183,3 +183,32 @@ test('a venda automática da bolsa não vende peça do PoE (sem preço de NPC de
   assert.equal(r.gold, 0);
   assert.ok(e.pouch.some((x) => x.id === p.id && x.poe), 'a peça continua na bolsa');
 });
+
+test('4d — requisitos do PoE: todos os atributos da base valem (com o +For da árvore/itens a peça entra)', { skip: SEM }, () => {
+  Jogo.iniciar(ITEM_CATALOG);
+  const cat = Catalogo.catalogo();
+  const placa = cat.classes.Body_Armours.bases.find((b) => b.id === 'Body_Armours/Glorious_Plate');
+  const meta = ITEM_CATALOG[Jogo.idDaBase(placa.id)];
+  assert.deepEqual(meta.poe.requisitos, { str: placa.requisitos.forca });
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  Treino.garantir(e);
+  delete e.equipment.body;
+  const p = Jogo.pecaDoJogo(gerar(placa.id, 'normal'));
+  Inventario.darPeca(e, p);
+  const r = Inventario.equipar(e, { id: p.id });
+  assert.equal(r.ok, false);
+  assert.match(r.erro, new RegExp(`Requer ${placa.requisitos.forca} STR`));
+  // +For de uma peça vestida (o mesmo caminho da árvore): com STR suficiente, entra.
+  e.equipment.ring = { id: Jogo.idDaBase(cat.classes.Rings.bases[0].id), count: 1, poe: { af: { str: 300 } } };
+  Ficha.invalidar(e);
+  assert.equal(Inventario.equipar(e, { id: p.id }).ok, true);
+  // Híbrida: os dois atributos valem.
+  const hib = cat.classes.Body_Armours.bases.find((b) => b.requisitos?.forca > 0 && b.requisitos?.destreza > 50);
+  const h = Jogo.pecaDoJogo(gerar(hib.id, 'normal'));
+  delete e.equipment.body;
+  e.equipment.ring.poe.af = { str: 300 };
+  Inventario.darPeca(e, h);
+  const rh = Inventario.equipar(e, { id: h.id });
+  assert.equal(rh.ok, false, 'só STR não basta para a híbrida');
+  assert.match(rh.erro, /DEX/);
+});

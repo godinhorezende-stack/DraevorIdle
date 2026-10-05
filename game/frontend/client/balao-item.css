@@ -265,3 +265,6 @@
 .poe-draevor b { font-weight: 500; color: var(--eng-txt); }
 .poe-secao { margin: 4px 12px 0; font: 10.5px var(--font-item, 'Alegreya SC', Georgia, serif); letter-spacing: .12em; text-transform: uppercase; color: #6d6d78; text-align: center; }
 .poe-af { display: inline-block; padding: 0 6px; border-radius: 999px; background: #1b2840; color: #cfe0ff; font-size: 11px; }
+
+/* Os requisitos da base da peça do PoE (nível e atributos), como no PoE. */
+.poe-balao .poe-requisitos { font-size: .9em; opacity: .8; padding: 2px 0 0; }

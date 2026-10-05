@@ -2674,7 +2674,12 @@ function blocoDosSoquetes(sq) {
 
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   // A peça do sistema de itens do PoE (só existe com ITENS_POE=1 no servidor): o balão próprio, com Prefixos e Sufixos separados.
-  if (peca?.poe) return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: getItems()[id]?.name ?? null })] };
+  if (peca?.poe) {
+    const metaPoe = getItems()[id];
+    // Os requisitos da base (nível e atributos, como no PoE) vêm do catálogo.
+    const requisitos = { nivel: metaPoe?.minLevel ?? 0, ...(metaPoe?.poe?.requisitos ?? {}) };
+    return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos })] };
+  }
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;
 
