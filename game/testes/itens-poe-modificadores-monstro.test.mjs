@@ -153,3 +153,26 @@ test('o monstro do PoE morto solta o ouro do level dele no bolso (o do Draevor n
   assert.equal((e.gold ?? 0) - antes, 0);
   delete BESTIARY['poe-teste-ouro-40'];
 });
+
+test('a curva de level do personagem com o PoE: a tabela do dono (exata nos pontos dela), máximo 100', async () => {
+  const R = await import('../systems/regras.mjs');
+  const pontos = { 1: 0, 10: 17615, 20: 494091, 30: 3418492, 40: 13113982, 50: 38799620, 60: 104259370, 70: 280155640, 80: 759685950, 90: 3047261510, 91: 3698536440, 95: 8000000000, 99: 17275000000, 100: 21057000000 };
+  for (const [lv, xp] of Object.entries(pontos)) assert.equal(R.expForLevel(Number(lv)), xp, `level ${lv}`);
+  // Cada level custa mais que o anterior.
+  for (let L = 1; L < 99; L++) assert.ok(R.expDeUmLevel(L + 1) > R.expDeUmLevel(L), `level ${L + 1}`);
+  assert.equal(R.levelFromExp(0), 1);
+  assert.equal(R.levelFromExp(17615), 10);
+  assert.equal(R.levelFromExp(17614), 9);
+  assert.equal(R.levelFromExp(1e15), 100, 'não passa do 100');
+  assert.equal(R.expForLevel(101), Infinity);
+  assert.deepEqual(R.progressoDoLevel(100, 3e10), { current: 0, needed: 0, percent: 1, toNext: 0 });
+  assert.equal(R.progressoDoLevel(10, 17615).needed, R.expForLevel(11) - 17615);
+  assert.equal(R.expDeUmLevel(100), 21057000000 - 17275000000, 'no 100, a medida do último level (gemas, morte)');
+  // Os estágios (×3 até o 50) e o bônus de level baixo do Draevor não entram na curva do PoE: só stamina/boosts/premium.
+  const Boosts = await import('../systems/boosts.mjs');
+  const Stamina = await import('../systems/stamina.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const e = personagemDeTeste({ vocacao: 'knight', level: 5 });
+  e.level = 5;
+  assert.equal(Boosts.expDoBicho(e, 100), Math.round(100 * Stamina.fatorDeExp(e)));
+});

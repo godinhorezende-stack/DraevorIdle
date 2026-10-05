@@ -1771,7 +1771,8 @@ export class Sessao {
     if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
     // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
     // ganha a exp base do level que já tem, somada ao que caçou.
-    if ((estado.xp ?? 0) < R.expForLevel(estado.level)) estado.xp = (estado.xp ?? 0) + R.expForLevel(estado.level);
+    // (Com o PoE ligado não: a curva é outra, e o personagem do PoE já nasce com a exp do level dele.)
+    if (!ItensPoeCatalogo.ligado() && (estado.xp ?? 0) < R.expForLevel(estado.level)) estado.xp = (estado.xp ?? 0) + R.expForLevel(estado.level);
     Treino.garantir(estado);
     // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
     Gemas.sincronizarMaximos(estado);

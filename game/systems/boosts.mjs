@@ -44,7 +44,11 @@ export function expDoBicho(estado, base) {
   const boosts = garantir(estado).reduce((a, b) => a + b.percent, 0) + (BuffPower.fonteDeExp(estado)?.percent ?? 0) + Afixos.de(estado, 'exp_bonus');
   const premium = (estado.premiumAte ?? 0) > Date.now() ? 10 : 0;
   // A stamina não soma: MULTIPLICA o resultado (x1,5 / x1 / x0,5). O estágio também.
-  return Math.round(base * (1 + (R.levelBonus(estado.level ?? 1) + boosts + premium) / 100) * Stamina.fatorDeExp(estado) * estagioDeExp(estado.level));
+  // Com o PoE ligado vale a curva do PoE (`regras.expForLevel`): o bônus de level baixo e os estágios — que existem para acertar a curva do
+  // Draevor — não entram; os boosts, o premium e a stamina, sim.
+  const curvaDoPoe = R.levelMaximo() !== Infinity;
+  const bonusDeLevel = curvaDoPoe ? 0 : R.levelBonus(estado.level ?? 1);
+  return Math.round(base * (1 + (bonusDeLevel + boosts + premium) / 100) * Stamina.fatorDeExp(estado) * (curvaDoPoe ? 1 : estagioDeExp(estado.level)));
 }
 
 /*

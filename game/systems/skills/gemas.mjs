@@ -221,7 +221,7 @@ const N = CONFIG.niveis;
 export function xpParaSubir(nivel, level = 1) {
   const n = Math.max(1, Math.floor(nivel));
   const L = Math.max(1, Math.floor(level));
-  const umLevel = R.expForLevel(L + 1) - R.expForLevel(L);
+  const umLevel = R.expDeUmLevel(L);
   const faixa = N.faixas.find((f) => n < f.ate) ?? N.faixas.at(-1);
   return Math.max(1, Math.round(umLevel * faixa.parteDaExpDoPersonagem));
 }

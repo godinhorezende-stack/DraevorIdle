@@ -902,6 +902,7 @@ export function progressoDoLevel(estado) {
   const lv = estado.level ?? 1;
   const de = R.expForLevel(lv);
   const ate = R.expForLevel(lv + 1);
+  if (!Number.isFinite(ate)) return 1; // no level máximo do PoE: a barra cheia
   return Math.max(0, Math.min(1, ((estado.xp ?? 0) - de) / Math.max(1, ate - de)));
 }
 

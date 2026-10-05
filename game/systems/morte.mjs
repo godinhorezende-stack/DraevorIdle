@@ -35,7 +35,7 @@ export function precoDaBlessing(level, tipo) {
 /** A conta da morte AGORA, no formato do `resumo` do original. */
 export function conta(estado) {
   const L = estado.level ?? 1;
-  const umLevel = R.expForLevel(L + 1) - R.expForLevel(L);
+  const umLevel = R.expDeUmLevel(L);
   const expCheia = Math.round(((L + 50) / 100) * 50 * (L * L - 5 * L + 8));
   const teto = Math.round(umLevel * TETO_EM_LEVELS);
   const base = Math.min(expCheia, teto);

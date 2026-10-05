@@ -9,8 +9,7 @@ import {
   maxMana,
   maxCapacity,
   baseSpeed,
-  expForLevel,
-  levelFromExp,
+  expForLevel as expForLevelDoDraevor,
   triesForSkill,
   manaForMagicLevel,
   levelBonus,
@@ -23,7 +22,7 @@ import {
   RESISTENCIA_MAXIMA_DE_BOSS,
 } from '../engine/formulas.mjs';
 import * as Formulas from './combate/formulas.mjs';
-import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import { ligado as itensPoeLigado, REGRAS as REGRAS_DO_POE } from './itens-poe/catalogo.mjs';
 export { applyElement, RESISTENCIA_MAXIMA_DE_BOSS };
 
 export const NIVEL_INICIAL = 8;
@@ -141,7 +140,7 @@ export const GLOBAL_SPELL_COOLDOWN = 2000;
  * mal com um relógio de 24h em ponto.
  */
 export const INTERVALO_DIARIO_MS = 20 * 60 * 60 * 1000;
-export { duracaoDoPasso, blockChance, expForLevel, triesForSkill, manaForMagicLevel, levelFromExp, baseSpeed, maxCapacity, levelBonus, magicDamage, armorReduction };
+export { duracaoDoPasso, blockChance, triesForSkill, manaForMagicLevel, baseSpeed, maxCapacity, levelBonus, magicDamage, armorReduction };
 
 /**
  * O dano de ataque físico (faixa mínimo–máximo): a faixa de ataque da PRÓPRIA arma (`attackMin`–`attackMax`) pela mesma conta nas duas pontas; arma sem
@@ -192,10 +191,42 @@ export function danoRecebido(ataqueBruto, armorDoPersonagem) {
   return Math.max(0, ataqueBruto - absorvido);
 }
 
+// ---- A CURVA DE LEVEL do personagem. Com o PoE ligado (decisão do dono, 05/10): a tabela do dono em `itens-poe/regras.json` → `experiencia`
+// (a exp total de cada level, 1 a 100; 100 é o máximo). Sem o PoE, a do Draevor (`engine/formulas.mjs`).
+const curvaDoPoe = () => (itensPoeLigado() ? REGRAS_DO_POE?.experiencia?.niveis : null) ?? null;
+export const levelMaximo = () => (curvaDoPoe() ? REGRAS_DO_POE.experiencia.levelMaximo ?? curvaDoPoe().length : Infinity);
+
+/** A exp total para estar no `level`. Acima do máximo do PoE, infinita (não há level 101). */
+export function expForLevel(level) {
+  const t = curvaDoPoe();
+  if (!t) return expForLevelDoDraevor(level);
+  const L = Math.floor(level);
+  if (L <= 1) return 0;
+  return L > Math.min(t.length, levelMaximo()) ? Infinity : t[L - 1];
+}
+
+/** A exp de UM level a partir do `level` (no máximo do PoE, a do último level: as gemas e a perda na morte seguem tendo uma medida). */
+export function expDeUmLevel(level) {
+  const L = Math.max(1, Math.floor(level));
+  const proximo = expForLevel(L + 1);
+  if (Number.isFinite(proximo)) return proximo - expForLevel(L);
+  return expForLevel(L) - expForLevel(L - 1);
+}
+
+/** O level de quem tem `exp` de experiência total. */
+export function levelFromExp(exp) {
+  const max = levelMaximo();
+  let level = 1;
+  while (level < max && expForLevel(level + 1) <= exp) level++;
+  return level;
+}
+
 /** Progresso real até o próximo level, pela mesma curva de `expForLevel`. */
 export function progressoDoLevel(level, exp) {
   const piso = expForLevel(level);
   const proximo = expForLevel(level + 1);
+  // No level máximo do PoE não há próximo: a barra fica cheia.
+  if (!Number.isFinite(proximo)) return { current: 0, needed: 0, percent: 1, toNext: 0 };
   const necessario = proximo - piso;
   const atual = Math.max(0, exp - piso);
   return {
