@@ -47,7 +47,7 @@ test('o sorteio: Mágico 1 mod, Raro 2 a 4, só os de nível até o do monstro, 
   assert.deepEqual(Mods.sortearMods('normal', 50, rng), []);
 });
 
-test('o monstro comum do PoE nasce Mágico/Raro com os mods e os ocultos; o único do PoE e o mob do Draevor ficam como estão', () => {
+test('com o PoE ligado, todo bicho (do PoE e do Draevor) nasce Mágico/Raro só com os mods do PoE e os ocultos; único e chefe ficam como estão', () => {
   Mods.iniciar();
   BESTIARY['poe-teste-30'] = { name: 'Teste', poe: { nivel: 30 } };
   BESTIARY['poe-teste-unico-30'] = { name: 'Único', poe: { nivel: 30, unico: true } };
@@ -58,11 +58,19 @@ test('o monstro comum do PoE nasce Mágico/Raro com os mods e os ocultos; o úni
   assert.ok(raro.maxHp >= 4900, `vida do Raro com o oculto do PoE (×4,9): ${raro.maxHp}`);
   assert.equal(raro.exp, 850, 'exp do Raro do PoE: +750%');
   assert.ok(!raro.levelExtra, 'o PoE não dá level a mais pela raridade');
-  assert.ok(raro.velocidadeDeAtaque >= 1.33);
-  // O spawn do mapa do Draevor com modificador do Draevor: no monstro do PoE ele não vale — sorteia os do PoE.
-  const doMapa = Raridade.aplicar(novo('poe-teste-30'), { raridade: 'modificado', modificadores: [Object.keys(Raridade.MODIFICADORES).find((id) => !id.startsWith('poe:'))], sortear: true });
+  // A velocidade de ataque = os +33% ocultos do Raro + a dos mods sorteados (há mods que a reduzem).
+  const daRaridade = 1 + (33 + Raridade.statsDos(raro.mods).velocidadeDeAtaquePct) / 100;
+  assert.ok(Math.abs((raro.velocidadeDeAtaque ?? 1) - daRaridade) < 1e-9, `${raro.velocidadeDeAtaque} ≠ ${daRaridade}`);
+  // Com o PoE ligado só existem os do PoE: os do Draevor saem do catálogo (e um spawn/onda que ainda os cite não dá erro — ele sorteia os do PoE).
+  assert.ok(Object.keys(Raridade.MODIFICADORES).every((id) => id.startsWith('poe:')));
+  assert.ok(Raridade.IGNORADOS.has('vigoroso') && Raridade.IGNORADOS.has('brutal'));
+  const doDraevor = [...Raridade.IGNORADOS][0];
+  const doMapa = Raridade.aplicar(novo('poe-teste-30'), { raridade: 'modificado', modificadores: [doDraevor] });
   assert.equal(doMapa.mods.length, 1);
   assert.ok(doMapa.mods[0].startsWith('poe:'));
+  assert.deepEqual(Raridade.errosDoSpawn({ raridade: 'modificado', modificadores: [doDraevor] }), []);
+  assert.equal(Raridade.CONFIG.raridades.modificado.maxModificadores, 1, 'Mágico aceita 1, como no PoE');
+  assert.ok(Raridade.opcoesParaEditor().modificadores.every((m) => m.id.startsWith('poe:')), 'o editor de mapas só oferece os do PoE');
   // Sem `sortear` (simulador, encontros) não sorteia nada.
   assert.equal(Raridade.aplicar(novo('poe-teste-30'), { raridade: 'normal' }).raridade, undefined);
   // Com sorteio, uns viram Mágico/Raro (chance de `sorteioDaRaridade`), os outros seguem normais.
@@ -73,11 +81,14 @@ test('o monstro comum do PoE nasce Mágico/Raro com os mods e os ocultos; o úni
     if (m.raridade === 'modificado') assert.equal(m.mods.length, 1);
   }
   assert.ok(conta.normal > 1500 && conta.modificado > 100 && conta.raro > 10, JSON.stringify(conta));
-  // O único do PoE (já com a vida de único no status) e o mob do Draevor: nada do PoE.
+  // O único do PoE (já com a vida de único no status): nada do PoE.
   assert.equal(Raridade.aplicar(novo('poe-teste-unico-30'), { raridade: 'normal', sortear: true }).raridade, undefined);
+  // O bicho do Draevor também: Raro com 2 a 4 mods do PoE e os ocultos do PoE (vida ×4,9), não os números do Draevor.
   const draevor = Raridade.aplicar({ key: 'rat', maxHp: 100, hp: 100, exp: 10 }, { raridade: 'raro', sortear: true });
-  assert.equal(draevor.maxHp, 180, 'o Raro do Draevor segue com os números do Draevor');
-  assert.ok(!draevor.mods);
+  assert.ok(draevor.maxHp >= 490, `vida ${draevor.maxHp} (×4,9 do oculto, mais os mods de vida)`);
+  assert.ok(draevor.mods.length >= 2 && draevor.mods.every((id) => id.startsWith('poe:')));
+  // O chefe não sorteia.
+  assert.equal(Raridade.aplicar({ key: 'rat', maxHp: 100, hp: 100, exp: 10, isBoss: true }, { raridade: 'normal', sortear: true }).raridade, undefined);
   // A tela mostra o NOME em português e o texto do PoE.
   const tela = Raridade.paraCliente(raro);
   assert.ok(tela.mods.every((n) => typeof n === 'string' && !n.startsWith('poe:')));

@@ -20,7 +20,7 @@ import * as Eventos from './eventos.mjs';
 import { nascerGrupo, bichosDaSala, listaDoAndar } from './sala.mjs';
 import { pagarRolagens, pagarConclusao } from './entregar.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
-import { RARIDADES, MODIFICADORES } from '../mobs/raridade.mjs';
+import { RARIDADES, MODIFICADORES, IGNORADOS } from '../mobs/raridade.mjs';
 
 const ponto = (e) => (e.x != null ? { x: e.x, y: e.y, ...(e.z != null ? { z: e.z } : {}) } : null);
 
@@ -60,7 +60,7 @@ export function validar(tipo, e) {
     }
     if (monstrosDaOnda(o) > L.ondaMaxMonstros) erros.push(`${onde}: no máximo ${L.ondaMaxMonstros} monstros por onda (limite do servidor).`);
     if (o.raridade && !RARIDADES.includes(o.raridade)) erros.push(`${onde}: raridade "${o.raridade}" desconhecida.`);
-    for (const m of o.modificadores ?? []) if (!MODIFICADORES[m]) erros.push(`${onde}: modificador "${m}" desconhecido.`);
+    for (const m of o.modificadores ?? []) if (!MODIFICADORES[m] && !IGNORADOS.has(m)) erros.push(`${onde}: modificador "${m}" desconhecido.`);
   });
   if (e.pausaMs != null && !(Number(e.pausaMs) >= 0 && Number(e.pausaMs) <= L.pausaDaOndaMsMax)) erros.push(`pausaMs de 0 a ${L.pausaDaOndaMsMax}.`);
   if (tipo === 'fenda') {

@@ -113,7 +113,7 @@ export function validarCombinacao(raridade, ids, chaves = []) {
 export function errosDoSpawn(s) {
   const erros = [];
   if (s?.raridade != null && !RARIDADES.includes(s.raridade)) erros.push(`raridade desconhecida: ${s.raridade}`);
-  for (const id of s?.modificadores ?? []) if (!MODIFICADORES[id]) erros.push(`modificador desconhecido: ${id}`);
+  for (const id of s?.modificadores ?? []) if (!MODIFICADORES[id] && !IGNORADOS.has(id)) erros.push(`modificador desconhecido: ${id}`);
   const { raridade, modificadores } = doSpawn(s);
   if ((s?.modificadores?.length ?? 0) > modificadores.length && (s.modificadores ?? []).every((id) => MODIFICADORES[id])) {
     erros.push(`a raridade ${raridade} aceita até ${CONFIG.raridades[raridade].maxModificadores} modificadores`);
@@ -147,6 +147,9 @@ export function statsDos(ids) {
 // Os monstros do PoE (só com ITENS_POE=1 — `itens-poe/modificadores-monstro.mjs`) passam por um aplicador próprio: sorteia a raridade e os
 // modificadores do PoE (Mágico 1, Raro 2 a 4) e troca os multiplicadores da raridade pelos OCULTOS do PoE. Devolve null para os outros mobs.
 let APLICADOR_POE = null;
+// Os modificadores do Draevor tirados do catálogo com o PoE ligado (só valem os do PoE): os mapas e ondas que ainda os citam não dão erro
+// — o modificador só é ignorado e o monstro sorteia os do PoE.
+export const IGNORADOS = new Set();
 export const definirAplicadorPoe = (f) => (APLICADOR_POE = typeof f === 'function' ? f : null);
 
 /**

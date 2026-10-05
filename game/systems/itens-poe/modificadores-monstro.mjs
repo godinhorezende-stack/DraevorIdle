@@ -1,6 +1,7 @@
 // Os MODIFICADORES DE MONSTRO do PoE (pedido do dono, 05/10 — só com ITENS_POE=1): `gamedata/itens-poe/modificadores-monstro.json`, montado
 // por `tools/montar-modificadores-monstro-poe.mjs` a partir do poedb (Monster_Modifiers).
-//   - RARIDADE: o monstro comum do PoE que nasce de um spawn de caçada sem raridade sorteia uma (`sorteioDaRaridade`: Mágico, Raro). O spawn
+//   - TODOS os bichos (os do PoE e os do Draevor) usam só estes: os modificadores do Draevor saem do catálogo com o PoE ligado.
+//   - RARIDADE: o monstro comum que nasce de um spawn de caçada sem raridade sorteia uma (`sorteioDaRaridade`: Mágico, Raro). O spawn
 //     que já diz a raridade (editor de mapas) manda — mas só os modificadores do PoE valem nele (os do Draevor ficam de fora); os ÚNICOS do PoE (Hillock, Brutus...) já vêm com a vida e a exp de único no status.
 //   - MODIFICADORES: Normal nenhum; Mágico 1; Raro 2 a 4 (`quantos`). Pelo PESO da raridade, só os de nível até o do monstro, sem repetir a
 //     família, e só os que têm efeito no Draevor (`soComEfeito`). Entram em `mobs/raridade.MODIFICADORES` como `poe:<id>` (nome e texto
@@ -19,11 +20,14 @@ export const PREFIXO = 'poe:';
 export const RARIDADE_DO_POE = { normal: 'normal', modificado: 'magico', raro: 'raro', elite: 'raro', unico: 'unico', boss: 'unico' };
 const POR_ID = new Map(DADOS.mods.map((m) => [m.id, m]));
 
-/** O monstro é um comum do PoE (os únicos do PoE já trazem a raridade no status)? */
-const doPoe = (m) => {
-  const poe = BESTIARY[m?.key]?.poe;
-  return !!poe && !poe.unico && !m.isBoss && !m.chefe && !m.bossUnico;
-};
+/**
+ * O monstro recebe os modificadores do PoE? Com o PoE ligado, TODO bicho (decisão do dono, 05/10: "não é pra ficar o do Draevor") — menos
+ * os chefes e os únicos do PoE, que já trazem a raridade no status.
+ */
+const doPoe = (m) => !!m && !BESTIARY[m.key]?.poe?.unico && !m.isBoss && !m.chefe && !m.bossUnico;
+
+/** O nível do monstro para o sorteio: o do PoE; num bicho do Draevor, o da curva de `levelDoBicho` (pela exp). */
+const nivelDe = (m) => BESTIARY[m.key]?.poe?.nivel ?? Math.min(100, Math.max(1, Math.round(Math.sqrt(Math.max(1, m.exp ?? BESTIARY[m.key]?.exp ?? 1)) * 3)));
 
 /** O modificador entra no sorteio desta raridade do PoE e deste nível? */
 export function elegivel(mod, raridadePoe, nivel, { soComEfeito = DADOS.soComEfeito !== false } = {}) {
@@ -72,8 +76,10 @@ export function aplicador(m, { raridade = 'normal', modificadores = [], sortear 
   let r = raridade;
   // Monstro do PoE só leva modificador do PoE: os do Draevor que o spawn do mapa traga ficam de fora (o PoE manda) e ele sorteia os dele.
   let mods = modificadores.filter((id) => String(id).startsWith(PREFIXO));
+  // Os do Draevor que vieram (onda de encontro, spawn antigo) dão lugar aos do PoE: sorteia mesmo sem `sortear`.
+  const trocar = modificadores.length > 0 && !mods.length;
   if (sortear && r === 'normal' && !mods.length) r = sortearRaridade(rng);
-  if (sortear && !mods.length && RARIDADE_DO_POE[r] !== 'normal') mods = sortearMods(RARIDADE_DO_POE[r], BESTIARY[m.key].poe.nivel ?? m.level ?? 1, rng).map((id) => PREFIXO + id);
+  if ((sortear || trocar) && !mods.length && RARIDADE_DO_POE[r] !== 'normal') mods = sortearMods(RARIDADE_DO_POE[r], nivelDe(m), rng).map((id) => PREFIXO + id);
   if (r === 'normal' && !mods.length) return { raridade: 'normal', modificadores: [], multiplicadores: {} };
   return { raridade: r, modificadores: mods, ...multiplicadoresDe(r) };
 }
@@ -83,6 +89,14 @@ let INICIADO = false;
 export function iniciar() {
   if (!ligado() || INICIADO) return { modificadores: 0 };
   INICIADO = true;
+  // Só os do PoE: os do Draevor saem do catálogo (o editor de mapas, a tela do mob e o sorteio só veem os do PoE).
+  for (const id of Object.keys(Raridade.MODIFICADORES)) {
+    if (id.startsWith(PREFIXO)) continue;
+    Raridade.IGNORADOS.add(id);
+    delete Raridade.MODIFICADORES[id];
+  }
+  // Quantos modificadores cada raridade aceita no spawn, como no PoE: Mágico 1, Raro/Elite até 4; o Único e o Chefe, nenhum sorteado.
+  for (const [r, n] of Object.entries({ modificado: DADOS.quantos?.magico?.[1] ?? 1, raro: DADOS.quantos?.raro?.[1] ?? 4, elite: DADOS.quantos?.raro?.[1] ?? 4 })) if (Raridade.CONFIG.raridades[r]) Raridade.CONFIG.raridades[r].maxModificadores = n;
   for (const m of DADOS.mods) {
     Raridade.MODIFICADORES[PREFIXO + m.id] = {
       nome: m.nome,
