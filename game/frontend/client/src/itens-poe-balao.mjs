@@ -22,10 +22,11 @@ function no(tag, classe, ...filhos) {
 /**
  * O balão. `p`: a peça gerada OU o `peca.poe` do jogo (os mesmos campos: nome, raridade, ilvl, atributos, implicitos, prefixos, sufixos,
  * modificadores, e — no jogo — `estados` e `af`); `opcoes`: `{ cor, raridadeNome, nomeDaBase, estados, af, requisitos }` —
- * `requisitos`: `{ nivel, str, dex, int }` (o que a base pede; no jogo, do catálogo), mostrado como no PoE ("Requer Nível 68, 191 For").
+ * `requisitos`: `{ nivel, str, dex, int }` (o que a base pede; no jogo, do catálogo), mostrado como no PoE ("Requer Nível 68, 191 For");
+ * `tem`: `{ nivel, str, dex, int }` do personagem — o requisito que ele não cumpre fica em vermelho.
  */
 const NOME_DO_REQUISITO = { str: 'For', dex: 'Des', int: 'Int' };
-export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null } = {}) {
+export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null, tem = null } = {}) {
   const fila = [...(estados ?? [])];
   const marca = () => {
     const e = fila.shift();
@@ -39,7 +40,10 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     no('div', 'poe-topo', no('b', null, p.nome), nomeDaBase && nomeDaBase !== p.nome ? no('span', null, nomeDaBase) : null),
     no('div', 'poe-props', no('div', 'poe-raridade', `${raridadeNome} · Item Level ${p.ilvl}`), props),
     requisitos && (requisitos.nivel > 1 || requisitos.str || requisitos.dex || requisitos.int)
-      ? no('div', 'poe-requisitos', `Requer ${[requisitos.nivel > 1 ? `Nível ${requisitos.nivel}` : null, ...['str', 'dex', 'int'].filter((k) => requisitos[k]).map((k) => `${requisitos[k]} ${NOME_DO_REQUISITO[k]}`)].filter(Boolean).join(', ')}`)
+      ? no('div', 'poe-requisitos', 'Requer ', [requisitos.nivel > 1 ? ['nivel', `Nível ${requisitos.nivel}`] : null, ...['str', 'dex', 'int'].filter((k) => requisitos[k]).map((k) => [k, `${requisitos[k]} ${NOME_DO_REQUISITO[k]}`])]
+          .filter(Boolean)
+          // O que o personagem NÃO tem fica em vermelho (número e atributo), como no PoE. `tem`: o que ele tem (sem `tem`, nada em vermelho).
+          .flatMap(([k, texto], i) => [i ? ', ' : null, no('span', tem && (Number(tem[k]) || 0) < requisitos[k] ? 'poe-req falta' : 'poe-req', texto)]))
       : null,
     p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp', '')] : null,
     p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,

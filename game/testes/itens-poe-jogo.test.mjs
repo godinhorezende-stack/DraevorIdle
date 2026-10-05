@@ -229,3 +229,13 @@ test('bicho de nível 11 só solta mod de iLvl até 11 (regra do dono, 05/10), e
   assert.equal(nivelDoDropPoe({ escala: { nivel: 23 } }, { key: 'rat', levelExtra: 5 }), 23, 'fora do PoE: o nível da fase, sem o extra da raridade');
   delete BESTIARY['poe-teste-ilvl-11'];
 });
+
+test('o peso da peça do PoE é o de um item do Draevor do mesmo tipo (antes 50 oz para tudo: poucas peças estouravam a capacidade e iam para o Depósito)', { skip: SEM }, () => {
+  const peso = (base) => ITEM_CATALOG[Jogo.idDaBase(base)].weight;
+  assert.ok(peso('Rings/Iron_Ring') < 2, 'anel pesa menos de 2 oz');
+  assert.ok(peso('Amulets/Coral_Amulet') < 10);
+  assert.ok(peso('Body_Armours/Astral_Plate') > peso('Gloves/Wool_Gloves'), 'armadura pesa mais que luva');
+  const e = personagemDeTeste({ level: 1 });
+  for (const base of ['Rings/Iron_Ring', 'Belts/Rustic_Sash', 'Gloves/Wool_Gloves', 'Rings/Iron_Ring', 'Belts/Rustic_Sash', 'Gloves/Wool_Gloves']) Inventario.darPeca(e, Jogo.pecaDoJogo(gerar(base, 'magico')));
+  assert.ok(Inventario.pesoDoInventario(e) > 0);
+});

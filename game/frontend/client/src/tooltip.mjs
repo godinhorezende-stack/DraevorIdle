@@ -2678,7 +2678,10 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     const metaPoe = getItems()[id];
     // Os requisitos da base (nível e atributos, como no PoE) vêm do catálogo.
     const requisitos = { nivel: metaPoe?.minLevel ?? 0, ...(metaPoe?.poe?.requisitos ?? {}) };
-    return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos })] };
+    const eu = getPersonagem();
+    const at = eu?.derived?.atributos;
+    const tem = eu ? { nivel: eu.level ?? 0, str: at?.str ?? 0, dex: at?.dex ?? 0, int: at?.int ?? 0 } : null;
+    return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos, tem })] };
   }
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;

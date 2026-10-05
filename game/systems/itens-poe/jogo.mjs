@@ -18,31 +18,33 @@ export const PRIMEIRO_ID = 7_000_000;
  * Classe do PoE → como o Draevor equipa. CINTOS vão no slot de PERNAS e as LUVAS ganham o slot próprio `gloves` (decisões do dono, 05/10).
  * Arco e varinha: arma de distância SEM munição (como a lança/estrela do Draevor). Aljava: o "shield" com `quiver`, como a do Draevor.
  */
+// `peso`: o PESO da peça em oz, a mediana dos itens do Draevor do mesmo slot/tipo (antes era 50 para tudo — um anel do PoE pesava mais que uma
+// maça, e poucas peças estouravam a capacidade: o excesso ia para o Depósito e a peça "sumia" da mochila).
 export const CLASSES_DO_JOGO = {
-  Body_Armours: { slot: 'body', tipo: 'armors' },
-  Helmets: { slot: 'head', tipo: 'helmets' },
-  Boots: { slot: 'feet', tipo: 'boots' },
-  Gloves: { slot: 'gloves', tipo: 'gloves' },
-  Belts: { slot: 'legs', tipo: 'legs' },
-  Shields: { slot: 'shield', tipo: 'shields' },
-  Quivers: { slot: 'shield', tipo: 'quivers', quiver: true },
-  Rings: { slot: 'ring', tipo: 'rings' },
-  Amulets: { slot: 'neck', tipo: 'amulets' },
-  One_Hand_Swords: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword' },
-  Thrusting_One_Hand_Swords: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword' },
-  Two_Hand_Swords: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', twoHanded: true },
-  One_Hand_Axes: { slot: 'weapon', tipo: 'axe weapons', skill: 'axe' },
-  Two_Hand_Axes: { slot: 'weapon', tipo: 'axe weapons', skill: 'axe', twoHanded: true },
-  One_Hand_Maces: { slot: 'weapon', tipo: 'club weapons', skill: 'club' },
-  Two_Hand_Maces: { slot: 'weapon', tipo: 'club weapons', skill: 'club', twoHanded: true },
-  Sceptres: { slot: 'weapon', tipo: 'club weapons', skill: 'club' },
-  Staves: { slot: 'weapon', tipo: 'club weapons', skill: 'club', twoHanded: true },
-  Warstaves: { slot: 'weapon', tipo: 'club weapons', skill: 'club', twoHanded: true },
-  Claws: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword' },
-  Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword' },
-  Rune_Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword' },
-  Bows: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', twoHanded: true, range: 6 },
-  Wands: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', range: 5 },
+  Body_Armours: { slot: 'body', tipo: 'armors', peso: 71 },
+  Helmets: { slot: 'head', tipo: 'helmets', peso: 21 },
+  Boots: { slot: 'feet', tipo: 'boots', peso: 13 },
+  Gloves: { slot: 'gloves', tipo: 'gloves', peso: 13 },
+  Belts: { slot: 'legs', tipo: 'legs', peso: 18 },
+  Shields: { slot: 'shield', tipo: 'shields', peso: 41 },
+  Quivers: { slot: 'shield', tipo: 'quivers', quiver: true, peso: 18 },
+  Rings: { slot: 'ring', tipo: 'rings', peso: 0.9 },
+  Amulets: { slot: 'neck', tipo: 'amulets', peso: 5 },
+  One_Hand_Swords: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 50 },
+  Thrusting_One_Hand_Swords: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 40 },
+  Two_Hand_Swords: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', twoHanded: true, peso: 81 },
+  One_Hand_Axes: { slot: 'weapon', tipo: 'axe weapons', skill: 'axe', peso: 61 },
+  Two_Hand_Axes: { slot: 'weapon', tipo: 'axe weapons', skill: 'axe', twoHanded: true, peso: 72 },
+  One_Hand_Maces: { slot: 'weapon', tipo: 'club weapons', skill: 'club', peso: 65 },
+  Two_Hand_Maces: { slot: 'weapon', tipo: 'club weapons', skill: 'club', twoHanded: true, peso: 85 },
+  Sceptres: { slot: 'weapon', tipo: 'club weapons', skill: 'club', peso: 27 },
+  Staves: { slot: 'weapon', tipo: 'club weapons', skill: 'club', twoHanded: true, peso: 47 },
+  Warstaves: { slot: 'weapon', tipo: 'club weapons', skill: 'club', twoHanded: true, peso: 69 },
+  Claws: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 30 },
+  Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 20 },
+  Rune_Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 20 },
+  Bows: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', twoHanded: true, range: 6, peso: 47 },
+  Wands: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', range: 5, peso: 27 },
 };
 
 const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [] };
@@ -73,7 +75,7 @@ export function iniciar(itemCatalog) {
       const id = n++;
       const a = b.atributos ?? {};
       itemCatalog[id] = {
-        id, name: b.nome, type: regra.tipo, slot: regra.slot, weight: 50, hasSprite: false, rarity: 'comum', stackable: false,
+        id, name: b.nome, type: regra.tipo, slot: regra.slot, weight: regra.peso ?? 20, hasSprite: false, rarity: 'comum', stackable: false,
         ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
         ...(regra.skill ? { skill: regra.skill, attack: media(a.dano_fisico) } : {}),
         // A chance de crítico da BASE da arma (ex.: 5%) no campo que a ficha já soma por peça (`critChance`, em centésimos de %); o
@@ -150,7 +152,10 @@ export function entregar(nome, peca) {
   if (!peca) return { ok: false, erro: 'Peça inválida.' };
   darPeca(s.estado, peca);
   s.enviar?.({ t: 'notice', notice: `Recebeu ${peca.poe?.nome ?? 'uma peça do PoE'} (engine local).` });
-  s.mandarEstado?.();
+  // Pelo `aplicar` da sessão: a regra de capacidade roda NA HORA (o excesso vai para o Depósito, com o aviso) — antes só rodava na próxima
+  // ação (equipar...), e a peça parecia sumir.
+  if (s.aplicar) s.aplicar({ ok: true });
+  else s.mandarEstado?.();
   return { ok: true, nome: s.personagem.nome };
 }
 

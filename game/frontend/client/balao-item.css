@@ -268,3 +268,4 @@
 
 /* Os requisitos da base da peça do PoE (nível e atributos), como no PoE. */
 .poe-balao .poe-requisitos { font-size: .9em; opacity: .8; padding: 2px 0 0; }
+.poe-balao .poe-req.falta { color: #e5534b; font-weight: 600; }
