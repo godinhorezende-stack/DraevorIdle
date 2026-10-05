@@ -14,6 +14,8 @@
 //                      Life Leech ×1,5).
 //   conversao        — parte do dano de um tipo sai como outro (Avatar do Fogo:
 //                      50% do físico do golpe da arma como fogo).
+//   texto            — só o texto, sem efeito ainda (as keystones da árvore do PoE,
+//                      sistema de itens do PoE: a mecânica de cada uma vem depois).
 // Todos agem na FICHA (`Ficha.combate`), a mesma do combate, da tela e do balão.
 
 const NUMERO = (v) => Number.isFinite(v);
@@ -22,6 +24,7 @@ export const REGRAS = {
   atributoParaTag: (k) => ['str', 'dex', 'int'].includes(k.atributo) && typeof k.tag === 'string' && NUMERO(k.porPonto),
   multiplicarStat: (k) => typeof k.stat === 'string' && NUMERO(k.fator),
   conversao: (k) => typeof k.de === 'string' && typeof k.para === 'string' && NUMERO(k.pct),
+  texto: (k) => typeof k.texto === 'string' && k.texto.length > 0,
 };
 
 export const valida = (k) => !!k && !!REGRAS[k.regra]?.(k);

@@ -1,0 +1,21 @@
+{
+  "_nota": "Regras de tradução PRÓPRIAS da árvore de passivas do PoE (incremento 4b), lidas ANTES das regras dos mods (traducao.json) — os textos da árvore dizem 'X aumentado em N%' onde os mods dizem de outro jeito. Mesmo formato das regras dos mods; um efeito pode ser `stat` (atributo somado, a mesma chave dos itens) ou `tag` (dano % por tag de skill, o formato de dano da árvore do Draevor). O que não casa aqui nem nos mods vira atributo registrado do próprio texto (sem efeito ainda). Linhas inteiras entre parênteses são texto explicativo do PoE: viram nota, não efeito.",
+  "regras": [
+    { "padrao": "^Vida máxima aumentada em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "hp_max", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Mana máxima aumentada em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "mana_max", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Escudo de Energia máximo aumentado em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "es_pct", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Evasão aumentada em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "evasion_pct", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Armadura aumentada em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "armour_pct", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Evasão e Armadura aumentadas em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "armour_pct", "valor": "{1}" }, { "stat": "evasion_pct", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "atk_speed", "valor": "{1}" }, { "stat": "cast_speed", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "move_speed", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Precisão aumentada em \\{(\\d+)\\}%$", "efeitos": [{ "stat": "accuracy_inc", "valor": "{1}" }], "estado": "registrado" },
+    { "padrao": "^Dano de Projétil aumentado em \\{(\\d+)\\}%$", "efeitos": [{ "tag": "projectile", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Dano Corpo a Corpo aumentado em \\{(\\d+)\\}%$", "efeitos": [{ "tag": "melee", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^Dano Físico Corpo a Corpo aumentado em \\{(\\d+)\\}%$", "efeitos": [{ "tag": "melee", "valor": "{1}" }], "estado": "aproximado", "nota": "no Draevor vira dano corpo a corpo (todo golpe de perto é físico ou da arma)" },
+    { "padrao": "^Dano de Área aumentado em \\{(\\d+)\\}%$", "efeitos": [{ "tag": "area", "valor": "{1}" }], "estado": "equivalente" },
+    { "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto portar um Escudo$", "efeitos": [{ "stat": "block", "valor": "{1}" }], "estado": "aproximado", "nota": "o bloqueio do Draevor já é o do escudo" },
+    { "padrao": "^\\{(\\d+)\\}% do Dano de Ataques é Drenado como Vida$", "efeitos": [{ "stat": "life_leech", "valor": "{1}" }], "estado": "aproximado", "nota": "o roubo de vida do Draevor vale para todo dano" },
+    { "padrao": "^\\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo$", "efeitos": [{ "stat": "life_regen_pct", "valor": "{1}" }], "estado": "aproximado", "nota": "no PoE é % da vida máxima por segundo; no Draevor, % a mais de regeneração" }
+  ]
+}
