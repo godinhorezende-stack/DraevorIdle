@@ -37,6 +37,7 @@ import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
+import * as Pinaculos from '../itens-poe/pinaculos.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
 import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
 import * as Tarefas from '../tarefas.mjs';
@@ -319,6 +320,15 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
       itens.push(peca);
       Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
+  }
+  // Sistema de itens do PoE (só com ITENS_POE=1): o drop do PoE do boss (raridade do monstro: Único) e, no chefe pináculo, 1 Único
+  // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
+  {
+    const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
+    const nivel = AtributosDoPersonagem.levelDoBicho(hunt, alvo);
+    itens.push(...ItensPoeJogo.dropsDoMonstro(nivel, tipoDoBicho(alvo), Math.random, undefined, quantidade));
+    const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
+    if (exclusivo) itens.push(exclusivo);
   }
   Bau.novaSacola(estado, alvo.name, itens);
   // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.

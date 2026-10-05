@@ -53,6 +53,8 @@ import * as Defesa from './personagem/defesa.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
+import { bossUnico } from './bosses-unicos/catalogo.mjs';
+import { criarBossUnico } from './bosses-unicos/boss.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as Dot from './combate/dot.mjs';
@@ -522,7 +524,9 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
       const casa = casaLivrePerto(g, p, (c) => casasDeSpawn.has(`${c.x},${c.y},${z}`));
       if (!casa) break;
       casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
-      const m = Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
+      // Arena com `bossUnico` (os chefes pináculo do PoE, só com ITENS_POE=1): nasce o boss único, com as fases e os atributos dele.
+      const defDoBoss = boss?.bossUnico ? bossUnico(boss.bossUnico) : null;
+      const m = defDoBoss ? criarBossUnico(defDoBoss, { x: casa.x, y: casa.y, z }) : Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
       // A raridade e os modificadores que o spawn do mapa configura (os mesmos da instância).
       if (m && (p.raridade || p.modificadores?.length)) Raridade.aplicar(m, Raridade.doSpawn(p));
       if (m) todos.push({ z, m });

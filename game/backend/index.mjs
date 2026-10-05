@@ -8,6 +8,7 @@ import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
 import * as ConteudoHttp from '../admin/conteudo-http.mjs';
 import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
 import { ITEM_CATALOG as CATALOGO_DE_ITENS } from '../systems/dados.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
@@ -94,6 +95,8 @@ async function servirArquivo(req, res, caminho) {
 {
   const r = ItensPoeJogo.iniciar(CATALOGO_DE_ITENS);
   if (r.porBase.size) console.log(`  itens do PoE: ${r.porBase.size} bases no catálogo (ids ${ItensPoeJogo.PRIMEIRO_ID}+); sem slot: ${r.naoEquipaveis.join(', ')}`);
+  const pinaculos = Pinaculos.iniciar();
+  if (pinaculos.length) console.log(`  chefes pináculo do PoE: ${pinaculos.length} no painel de Bosses (${pinaculos.join(', ')})`);
 }
 
 const http = createServer((req, res) => {
