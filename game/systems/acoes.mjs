@@ -44,6 +44,7 @@ import * as Secundarios from './skills/golpes-secundarios.mjs';
 import * as Estados from './skills/estados.mjs';
 import * as Poder from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
+import * as CargasPoe from './itens-poe/cargas.mjs';
 
 export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
 export const SLOTS = ACTION_CATALOG.slots;
@@ -1089,6 +1090,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
       for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
+      if (ficha.cargas?.carga_frenesi_ao_acertar_unico && CargasPoe.aoAcertar(estado, ficha.cargas, bicho).length) Ficha.invalidar(estado);
       if (ficha.afeccoes) {
         const tagsDoAcerto = Tags.tagsDaAcao(entry);
         const ataque = tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));

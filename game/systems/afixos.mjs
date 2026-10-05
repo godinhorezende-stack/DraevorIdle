@@ -26,6 +26,7 @@ import * as ItensConfig from './itens/config.mjs';
 import * as Gerar from './itens/gerar.mjs';
 import { raridadeDaPeca } from './itens/item.mjs';
 import { gruposLigados } from '../engine/sockets-de-gema.mjs';
+import * as CargasPoe from './itens-poe/cargas.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -135,6 +136,9 @@ export function soma(estado) {
   // + o altar ativado nesta caçada (temporário): mesma chave dos adds de item.
   const altar = efeitosDeAltar(estado);
   if (altar) for (const [k, v] of Object.entries(altar)) total[k] = (total[k] ?? 0) + v;
+  // + as cargas do PoE ativas (Tolerância, Frenesi, Poder — `itens-poe/cargas.mjs`, só com ITENS_POE=1).
+  const cargas = CargasPoe.adds(estado, total);
+  if (cargas) for (const [k, v] of Object.entries(cargas)) total[k] = (total[k] ?? 0) + v;
   return total;
 }
 

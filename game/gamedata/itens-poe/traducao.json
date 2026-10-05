@@ -938,6 +938,196 @@
         }
       ],
       "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} ao Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de (?:ganhar|receber) uma Carga de Poder ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração da Carga de Poder aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} ao Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de (?:ganhar|receber) uma Carga de Frenesi ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_frenesi_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração da Carga de Frenesi aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} ao Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de (?:ganhar|receber) uma Carga de Tolerância ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração da Carga de Tolerância aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder, Frenesi ou Tolerância ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_qualquer_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração das Cargas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_cargas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "move_speed_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Evasão aumentados? em \\{(\\d+)\\}% por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "dano_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi ao Acertar um Inimigo Único$",
+      "efeitos": [
+        {
+          "stat": "carga_frenesi_ao_acertar_unico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
     }
   ]
 }

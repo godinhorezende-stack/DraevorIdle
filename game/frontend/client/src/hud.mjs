@@ -1650,6 +1650,7 @@ function renderBuffsDaMagia(hunt) {
    * balão de cada cartão são trocados no lugar.
    */
   const estrutura = buffs.map((buff) => `${buff.icone}:${buff.nome}`).join(',');
+  // As cargas do PoE (Tolerância, Frenesi, Poder): o número muda o nome, então o cartão é refeito quando ganha ou perde carga.
   if (buffs.length && !caixa.hidden && caixa.dataset.estrutura === estrutura && caixa.children.length === buffs.length) {
     buffs.forEach((buff, i) => {
       const card = caixa.children[i];
@@ -1676,6 +1677,13 @@ function renderBuffsDaMagia(hunt) {
     card.className = 'hud-buff';
     // A sprite da magia, do mesmo indice que a barra de acoes usa.
     if (buff.icone != null) card.append(hudCtx.spellIcon(buff.icone, LADO_DO_RELOGIO));
+    // Carga do PoE: a bolinha da cor dela (Tolerância vermelha, Frenesi verde, Poder azul) com o número.
+    else if (buff.carga) {
+      const bola = document.createElement('span');
+      bola.className = `hud-carga carga-${buff.carga}`;
+      bola.textContent = String(buff.n ?? '');
+      card.append(bola);
+    }
     const segundos = Math.ceil(buff.resta / 1000);
     const texto = document.createElement('b');
     texto.textContent = relogioDoBuff(segundos);

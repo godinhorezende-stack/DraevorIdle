@@ -17138,6 +17138,14 @@ body.com-novidades #recados { top: calc(var(--altura-da-topbar) + var(--altura-d
 /* Os ultimos cinco segundos: e' quando renovar ainda vale a pena. */
 .hud-buff.acabando { border-color: #b4553f; }
 .hud-buff.acabando b { color: #ffb4a2; }
+/* As cargas do PoE (Tolerância, Frenesi, Poder): a bolinha da cor do atributo, com o número de cargas. */
+.hud-carga {
+  display: grid; place-items: center; width: 18px; height: 18px; margin-bottom: 4px; border-radius: 50%;
+  font-size: 10px; font-weight: 700; color: #fff; text-shadow: 0 1px 0 #000;
+}
+.hud-carga.carga-tolerancia { background: radial-gradient(circle at 35% 35%, #f07a62, #8c2a1c); }
+.hud-carga.carga-frenesi { background: radial-gradient(circle at 35% 35%, #6fe08f, #1d6b37); }
+.hud-carga.carga-poder { background: radial-gradient(circle at 35% 35%, #7fb0ff, #1f4a9c); }
 
 
 /* ---------- a ficha do familiar, na caixa de configurar ação ---------- */

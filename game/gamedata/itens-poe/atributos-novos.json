@@ -312,6 +312,102 @@
       "unidade": "%",
       "combate": true,
       "efeito": "soma à duração das afecções no veneno — itens-poe/afeccoes.mjs"
+    },
+    "max_poder": {
+      "nome": "Máximo de Cargas de Poder",
+      "unidade": "",
+      "combate": true,
+      "efeito": "soma ao máximo (3) de Cargas de Poder — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_matar": {
+      "nome": "Chance de ganhar Carga de Poder ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao matar um bicho — hunt/combate.matarMonstro"
+    },
+    "duracao_poder": {
+      "nome": "Duração da Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração base (10 s) — itens-poe/cargas.mjs"
+    },
+    "max_frenesi": {
+      "nome": "Máximo de Cargas de Frenesi",
+      "unidade": "",
+      "combate": true,
+      "efeito": "soma ao máximo (3) de Cargas de Frenesi — itens-poe/cargas.mjs"
+    },
+    "carga_frenesi_ao_matar": {
+      "nome": "Chance de ganhar Carga de Frenesi ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao matar um bicho — hunt/combate.matarMonstro"
+    },
+    "duracao_frenesi": {
+      "nome": "Duração da Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração base (10 s) — itens-poe/cargas.mjs"
+    },
+    "max_tolerancia": {
+      "nome": "Máximo de Cargas de Tolerância",
+      "unidade": "",
+      "combate": true,
+      "efeito": "soma ao máximo (3) de Cargas de Tolerância — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_matar": {
+      "nome": "Chance de ganhar Carga de Tolerância ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao matar um bicho — hunt/combate.matarMonstro"
+    },
+    "duracao_tolerancia": {
+      "nome": "Duração da Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração base (10 s) — itens-poe/cargas.mjs"
+    },
+    "carga_qualquer_ao_matar": {
+      "nome": "Chance de ganhar Carga de Poder, Frenesi ou Tolerância ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "sorteia o tipo — itens-poe/cargas.mjs"
+    },
+    "duracao_cargas": {
+      "nome": "Duração das Cargas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração de todas as cargas — itens-poe/cargas.mjs"
+    },
+    "move_speed_por_frenesi": {
+      "nome": "Velocidade de Movimento por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "move_speed × Cargas de Frenesi — itens-poe/cargas.mjs"
+    },
+    "evasion_pct_por_frenesi": {
+      "nome": "Evasão por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "evasion_pct × Cargas de Frenesi — itens-poe/cargas.mjs"
+    },
+    "dano_por_poder": {
+      "nome": "Dano aumentado por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica o golpe (Ficha.rolarCritico) × Cargas de Poder — itens-poe/cargas.mjs"
+    },
+    "spell_dmg_por_poder": {
+      "nome": "Dano Mágico por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "spell_dmg × Cargas de Poder — itens-poe/cargas.mjs"
+    },
+    "carga_frenesi_ao_acertar_unico": {
+      "nome": "Chance de ganhar Carga de Frenesi ao Acertar um Inimigo Único",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao acertar um chefe — hunt/combate e acoes"
     }
   }
 }

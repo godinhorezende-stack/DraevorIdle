@@ -58,6 +58,7 @@ import * as Defesa from '../personagem/defesa.mjs';
 import * as Anuncios from '../anuncios.mjs';
 import * as Tags from '../skills/tags.mjs';
 import * as GemasDeSkill from '../skills/gemas.mjs';
+import * as CargasPoe from '../itens-poe/cargas.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -696,6 +697,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   {
     const f = Ficha.combate(estado);
     if ((f.vidaPorAbate || f.manaPorAbate) && estado.hp > 0) Proficiencia.curar(estado, f.vidaPorAbate, f.manaPorAbate, eventos, personagem?.nome, hunt.pos);
+    // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
+    if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
   }
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
   if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo, personagem);
@@ -1148,6 +1151,8 @@ export function round(estado, personagem) {
         }
         // As afecções do PoE (incêndio, sangramento, veneno, congelar, eletrizar, resfriar — `itens-poe/afeccoes.mjs`, só com ITENS_POE=1):
         // o golpe da arma é ATAQUE; cada parte (o físico e os elementos) entra com o tipo dela.
+        // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
+        if (ficha.cargas?.carga_frenesi_ao_acertar_unico && CargasPoe.aoAcertar(estado, ficha.cargas, alvo).length) Ficha.invalidar(estado);
         if (ficha.afeccoes) {
           const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: d.v }))];
           for (const st of AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });

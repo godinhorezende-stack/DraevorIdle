@@ -67,6 +67,7 @@ import './encontros/tipos-de-bau.mjs'; // registra os baús e o altar
 import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (ondas)
 import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as EventosDeEncontro from './encontros/eventos.mjs';
+import * as CargasPoe from './itens-poe/cargas.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -1719,6 +1720,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
+  // As cargas do PoE que venceram somem (a ficha é refeita).
+  if (CargasPoe.vencer(estado)) Ficha.invalidar(estado);
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
   Estados.tique(hunt, eventos, agora);
   processarMortes(estado, personagem, eventos);
@@ -2085,7 +2088,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     startedAt: hunt.startedAt ?? hunt.sessao?.inicio ?? Date.now(),
     session: sessaoParaCliente(hunt.sessao),
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
-    buffs: Acoes.buffsAtivos(hunt),
+    // + as cargas do PoE ativas (Tolerância, Frenesi, Poder), como cartões de buff.
+    buffs: [...Acoes.buffsAtivos(hunt), ...CargasPoe.buffs(estado)],
     // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
     parados: Acoes.paradosParaCliente(hunt),
     condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),
