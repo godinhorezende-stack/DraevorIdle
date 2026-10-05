@@ -123,3 +123,42 @@ test('poedb — as áreas de chefe que faltavam e os chefes de cada área (com h
   }
   assert.ok(C.chefes[1].monstro.habilidades.some((h) => h.dano), 'a Merveil com habilidades (dano no nível)');
 });
+
+test('habilidades dos chefes: magia (com elemento), área avisada, invocação; movimento e ataque padrão ficam de fora; dano na proporção do golpe do chefe', async () => {
+  const H = await import('../systems/itens-poe/habilidades.mjs');
+  const chefe = { dano: 40, habilidades: [
+    { nome: 'Ataque Padrão', interno: 'Melee', tags: ['Attack', 'Melee'], dano: { min: 30, max: 50 } },
+    { nome: 'Lança', interno: 'IceSpear', tags: ['Spell'], dano: { min: 10, max: 20 }, elemento: 'ice', tempo: 1.5 },
+    { nome: 'Salto', interno: 'LeapSlam', tags: ['Attack', 'Area', 'Slam'], dano: { min: 30, max: 50 }, recarga: 7 },
+    { nome: 'Teleporte', interno: 'Teleport', tags: ['Spell'] },
+    { nome: 'Estátua', interno: 'SummonStatue', tags: ['Spell'], recarga: 10 },
+  ] };
+  assert.equal(H.fatorDeDano(chefe), 1, 'golpe 40 ÷ ataque padrão (30–50 → 40)');
+  const c = H.convertidas(chefe);
+  assert.deepEqual(c.map((x) => x.tipo), ['magia', 'area', 'invocar']);
+  assert.deepEqual([c[0].elemento, c[0].min, c[0].max], ['ice', Math.round(10 / 0.67), Math.round(20 / 0.67)], 'magia: sem o 33% menos de ataque do Único');
+  assert.equal(c[0].intervaloMs, 4500, 'sem recarga: 3× o tempo');
+  assert.deepEqual([c[1].min, c[1].max, c[1].intervaloMs, c[1].avisoMs], [30, 50, 7000, 1200]);
+  const comp = H.comportamentos(chefe, ['skeleton']);
+  assert.deepEqual(comp.map((x) => x.tipo), ['magia', 'area-telegrafada', 'invocar']);
+  assert.deepEqual(H.comportamentos(chefe, []).map((x) => x.tipo), ['magia', 'area-telegrafada'], 'sem quem invocar, a invocação sai');
+});
+
+test('habilidades no jogo: os chefes de ato têm os comportamentos (validados) e os chefes de área as magias nos poderes', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const codigo = `
+    process.env.ITENS_POE = '1';
+    const PC = await import('./systems/itens-poe/campanha.mjs');
+    const r0 = PC.iniciar();
+    const BU = await import('./systems/bosses-unicos/catalogo.mjs');
+    const merveil = BU.bossUnico('poe-chefe-ato-1');
+    const M = await import('./systems/itens-poe/monstros.mjs');
+    const { BESTIARY } = await import('./systems/hunt/monstros.mjs');
+    const comHab = Object.values(M.CAMPANHA.areas).flatMap((a) => a.monstros).find((m) => m.unico && m.habilidades?.some((h) => h.dano && (h.elemento || (h.tags ?? []).includes('Spell'))));
+    console.log(JSON.stringify({ problemas: r0.problemas.length, merveil: merveil.comportamentos.map((c) => c.tipo + ':' + c.elemento), unico: comHab?.nome, chave: comHab && M.chaveDe(comHab), tem: !!(comHab && BESTIARY[M.chaveDe(comHab)]) }));
+  `;
+  const r = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', codigo], { cwd: new URL('..', import.meta.url).pathname, encoding: 'utf8' }).trim().split('\n').pop());
+  assert.equal(r.problemas, 0, 'os comportamentos passam na validação dos bosses únicos');
+  assert.ok(r.merveil.includes('magia:ice'), `a Merveil com magia de gelo (${r.merveil})`);
+  assert.ok(r.tem, `um chefe de área com magia registrado (${r.unico})`);
+});

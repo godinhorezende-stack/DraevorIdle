@@ -185,7 +185,7 @@ for (const ar of Object.values(areas)) {
  * HABILIDADES do poedb (dano no nível, recarga, descrição) vão junto, para os golpes especiais dos chefes.
  */
 const UNICO_DE_AREA = { vida: 7.98 * 1.5, dano: 1.7 * 0.67, experiencia: 5.5 };
-const habilidadesDe = (p) => (p?.habilidades ?? []).filter((h) => h.nome && h.dano).map((h) => ({ nome: h.nome, interno: h.interno, tags: h.tags, dano: h.dano, ...(h.recarga ? { recarga: h.recarga } : {}), ...(h.tempo ? { tempo: h.tempo } : {}), ...(h.descricao ? { descricao: h.descricao } : {}) }));
+const habilidadesDe = (p) => (p?.habilidades ?? []).filter((h) => h.nome && h.dano).map((h) => ({ nome: h.nome, interno: h.interno, tags: h.tags, dano: h.dano, ...(h.elemento ? { elemento: h.elemento } : {}), ...(h.critico ? { critico: h.critico } : {}), ...(h.recarga ? { recarga: h.recarga } : {}), ...(h.tempo ? { tempo: h.tempo } : {}), ...(h.descricao ? { descricao: h.descricao } : {}) }));
 function monstroDoPoedb(p, fatorVida = UNICO_DE_AREA.vida) {
   const st = p.status ?? {};
   return {

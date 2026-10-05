@@ -11,6 +11,7 @@ import { ligado } from './catalogo.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 import { CONFIG as ATRIBUTOS_DO_MOB } from '../mobs/atributos.mjs';
 import { registrarPoderes } from '../poderes.mjs';
+import * as Habilidades from './habilidades.mjs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/campanha-poe.json', import.meta.url), 'utf8'));
 
@@ -85,7 +86,9 @@ export function registrar(m, desenho) {
     poe: { nivel: m.nivel, dano: m.dano, tempoAtaque: m.tempoAtaque, evasao: m.evasao ?? 0, armadura: m.armadura ?? 0, unico: !!m.unico },
     ...(m.unico ? { boss: false } : {}),
   };
-  registrarPoderes(key, { ataques: [{ tipo: 'melee', min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervalo: Math.round(m.tempoAtaque * 1000), chance: 100 }], curas: [] });
+  // O golpe corpo a corpo e — nos chefes de área com as habilidades do poedb — as magias e áreas deles (`habilidades.mjs`).
+  const melee = { tipo: 'melee', min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervalo: Math.round(m.tempoAtaque * 1000), chance: 100 };
+  registrarPoderes(key, { ataques: [melee, ...(m.habilidades?.length ? Habilidades.poderes(m) : [])], curas: [] });
   return key;
 }
 

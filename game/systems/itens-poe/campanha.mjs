@@ -12,6 +12,7 @@
 //      do chefe do anterior. A campanha do Draevor sai (a de `campanha.json`, com o PoE ligado, começa vazia — `campanha.mjs`).
 import { ligado } from './catalogo.mjs';
 import * as Monstros from './monstros.mjs';
+import * as Habilidades from './habilidades.mjs';
 import { CATALOGO } from '../dados.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 import { acharHunt, apelidarMapa, definirTransformadorDeSpawns, spawnsDaHunt } from '../hunt/terreno.mjs';
@@ -96,6 +97,14 @@ export function atoDoRuntime(numero, anterior) {
   };
 }
 
+/** Os monstros comuns que o chefe invoca: os da área dele (pelo nome), senão os da última área do ato. */
+function invocaveisDoChefe(numero) {
+  const chefe = C.chefes[numero];
+  const doAto = Object.values(C.areas).filter((a) => a.ato === numero && !a.cidade);
+  const area = doAto.find((a) => a.nome === chefe.area) ?? doAto.at(-1);
+  return (area?.monstros ?? []).filter((m) => !m.unico).map((m) => Monstros.chaveDe(m)).filter((k) => BESTIARY[k]).slice(0, 1);
+}
+
 /** O chefe de ato como boss único + a entrada do painel/arena (o mesmo jeito dos chefes pináculo). */
 function registrarChefe(numero) {
   const chefe = C.chefes[numero];
@@ -116,6 +125,8 @@ function registrarChefe(numero) {
       melee: { min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervaloMs: Math.max(250, Math.round(m.tempoAtaque * 1000)) },
       usaPoderesDoBase: false,
       usaEscalaDaFase: false,
+      // As habilidades do chefe (poedb): magias, áreas avisadas e invocações (os monstros comuns da área dele).
+      comportamentos: Habilidades.comportamentos(m, invocaveisDoChefe(numero)),
     });
   }
   if (!CATALOGO.bosses.some((b) => b.id === id)) {
