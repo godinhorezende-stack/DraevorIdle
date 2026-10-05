@@ -27653,6 +27653,10 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .modal-box.passivas { width: min(1320px, 97vw); }
 .pas { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .pas-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* A ascendência (árvore do PoE): os pontos dela, a escolha no primeiro ponto e o atalho até ela. */
+.pas-asc { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%; }
+.pas-asc[hidden] { display: none; }
+.pas-asc-nota { font-size: 12px; opacity: .8; }
 .pas-pontos { font-size: 13px; color: var(--muted); margin-right: auto; font-variant-numeric: tabular-nums; }
 .pas-pontos b { font-family: var(--font-numero); font-size: 18px; color: var(--text); }
 .pas-pontos b.tem { color: #e3ae48; }

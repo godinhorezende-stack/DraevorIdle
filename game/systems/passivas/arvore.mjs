@@ -172,7 +172,12 @@ export function garantir(estado) {
   // (No MESMO array, e só se mudou: quem guardou a referência continua vendo a lista certa,
   // e o cache de `efeitos` não é refeito à toa.)
   const inicio = inicioDe(estado);
-  let limpos = [inicio, ...[...new Set(p.alocados)].filter((id) => ARVORE.porId.has(id) && ARVORE.porId.get(id).tipo !== 'start')];
+  // A ascendência escolhida (árvore do PoE): o início dela fica alocado; nós de outra ascendência saem.
+  const inicioAsc = inicioDaAscendencia(estado);
+  let limpos = [inicio, ...(inicioAsc ? [inicioAsc] : []), ...[...new Set(p.alocados)].filter((id) => {
+    const no = ARVORE.porId.get(id);
+    return no && no.tipo !== 'start' && (!no.ascendencia || no.ascendencia === p.ascendencia);
+  })];
   /*
    * ---- A ÁRVORE MUDOU de versão (ex.: a 2, com os caminhos de atributo) ----
    * Nó que sumiu ou que ficou sem caminho até o início sai, com os pontos de
@@ -198,8 +203,46 @@ export function garantir(estado) {
 export function pontos(estado) {
   const { passivas } = garantir(estado);
   const total = pontosDoLevel(estado.level);
-  const usados = passivas.alocados.reduce((s, id) => s + custoDe(ARVORE.porId.get(id)), 0);
+  // Os nós de ascendência gastam os pontos de ASCENDÊNCIA (`pontosDeAscendencia`), não estes.
+  const usados = passivas.alocados.reduce((s, id) => (ARVORE.porId.get(id)?.ascendencia ? s : s + custoDe(ARVORE.porId.get(id))), 0);
   return { total, usados, livres: Math.max(0, total - usados) };
+}
+
+// ------------------------------------------------------------ as ascendências (árvore do PoE, incremento 4e)
+
+/** O teto de pontos de ascendência (o do PoE: 8). */
+export const MAXIMO_DE_PONTOS_DE_ASCENDENCIA = 8;
+/** Os atos com o boss de fim de ato vencido (em qualquer dificuldade, cada ato uma vez). */
+const atosVencidos = (estado) => new Set(Object.values(estado?.campanha ?? {}).flatMap((d) => (Array.isArray(d?.bosses) ? d.bosses.map(Number) : []))).size;
+/** O início da ascendência escolhida, ou null (sem escolha, ou na árvore do Draevor). */
+export const inicioDaAscendencia = (estado) => (estado?.passivas?.ascendencia ? ARVORE.inicios[`asc:${estado.passivas.ascendencia}`] ?? null : null);
+
+/** Pontos de ascendência (decisão do dono, 05/10): 2 por boss de fim de ato vencido, até 8 (como no PoE). */
+export function pontosDeAscendencia(estado) {
+  if (!ARVORE.ascendencias) return { total: 0, usados: 0, livres: 0 };
+  const { passivas } = garantir(estado);
+  const total = Math.min(MAXIMO_DE_PONTOS_DE_ASCENDENCIA, 2 * atosVencidos(estado));
+  const usados = passivas.alocados.reduce((s, id) => (ARVORE.porId.get(id)?.ascendencia ? s + custoDe(ARVORE.porId.get(id)) : s), 0);
+  return { total, usados, livres: Math.max(0, total - usados) };
+}
+
+/** As ascendências que a classe do personagem pode escolher (`[{ slug, nome }]`). */
+export function ascendenciasDaClasse(estado) {
+  if (!ARVORE.ascendencias) return [];
+  const classe = classeDe(estado);
+  return Object.values(ARVORE.ascendencias).filter((a) => a.classe === classe).map((a) => ({ slug: a.slug, nome: a.nome }));
+}
+
+/** Escolhe a ascendência (decisão do dono: no primeiro ponto; uma vez). `{ ok }` ou o erro. */
+export function ascender(estado, slug) {
+  const { passivas } = garantir(estado);
+  if (!ARVORE.ascendencias) return erro('SEM_ASCENDENCIA', 'Não há ascendências nesta árvore.');
+  if (passivas.ascendencia) return erro('JA_ASCENDEU', `Você já é ${ARVORE.ascendencias[passivas.ascendencia]?.nome ?? passivas.ascendencia}.`);
+  if (!ascendenciasDaClasse(estado).some((a) => a.slug === slug)) return erro('OUTRA_CLASSE', 'Essa ascendência não é da sua classe.');
+  if (pontosDeAscendencia(estado).total < 1) return erro('SEM_PONTOS', 'Vença um boss de fim de ato para ganhar os primeiros pontos de ascendência.');
+  passivas.ascendencia = slug;
+  garantir(estado);
+  return { ok: true, mudou: true };
 }
 
 const erro = (motivo, texto) => ({ ok: false, motivo, erro: texto });
@@ -214,6 +257,11 @@ export function podeAlocar(estado, id) {
   if (no.tipo === 'start') return erro('INICIO', 'O início de outra classe não se aloca.');
   if (!(no.conexoes ?? []).some((c) => meus.has(c))) return erro('SEM_CAMINHO', 'Esse nó não está ligado a nenhum nó seu.');
   if ((estado.level ?? 1) < (no.levelMinimo ?? 0)) return erro('LEVEL', `Precisa do level ${no.levelMinimo}.`);
+  if (no.ascendencia) {
+    if (passivas.ascendencia !== no.ascendencia) return erro('OUTRA_ASCENDENCIA', 'Esse nó é de outra ascendência.');
+    if (pontosDeAscendencia(estado).livres < custoDe(no)) return erro('SEM_PONTOS', 'Faltam pontos de ascendência: vença o boss de fim de ato seguinte.');
+    return { ok: true };
+  }
   if (pontos(estado).livres < custoDe(no)) return erro('SEM_PONTOS', `Faltam pontos: esse nó custa ${custoDe(no)}.`);
   return { ok: true };
 }
@@ -262,7 +310,7 @@ export function ilhadosSemEles(estado, ids) {
   const { passivas } = garantir(estado);
   const tirar = new Set(ids);
   const fica = new Set(passivas.alocados.filter((x) => !tirar.has(x)));
-  const ligados = alcancaveis(ARVORE.porId, fica, [inicioDe(estado)]);
+  const ligados = alcancaveis(ARVORE.porId, fica, [inicioDe(estado), inicioDaAscendencia(estado)].filter(Boolean));
   return [...fica].filter((x) => !ligados.has(x));
 }
 
@@ -276,10 +324,11 @@ export function planoDeRespec(estado, { ids, tudo = false, junto = false }, emCa
   const { passivas } = garantir(estado);
   if (CONFIG.respec.soForaDaCacada && emCacada) return erro('EM_CACADA', 'Só dá para tirar nós fora da caçada.');
   const inicio = inicioDe(estado);
-  let tirar = tudo ? passivas.alocados.filter((x) => x !== inicio) : [...new Set(ids ?? [])];
+  const inicioAsc = inicioDaAscendencia(estado);
+  let tirar = tudo ? passivas.alocados.filter((x) => x !== inicio && x !== inicioAsc) : [...new Set(ids ?? [])];
   if (!tirar.length) return erro('NADA', 'Nenhum nó para tirar.');
   for (const id of tirar) {
-    if (id === inicio) return erro('INICIO', 'O início da classe não sai.');
+    if (id === inicio || id === inicioAsc) return erro('INICIO', 'O início da classe (e o da ascendência) não sai.');
     if (!passivas.alocados.includes(id)) return erro('NAO_ALOCADO', 'Você não tem esse nó.');
   }
   const ilhados = ilhadosSemEles(estado, tirar);
@@ -378,6 +427,8 @@ export function vista(estado, emCacada = false) {
     inicio: inicioDe(estado),
     pontos: pontos(estado),
     respecsGratis: passivas.respecsGratis,
+    // Árvore do PoE: a ascendência (escolhida ou não), os pontos dela e as opções da classe.
+    ...(ARVORE.ascendencias ? { ascendencia: passivas.ascendencia ?? null, inicioAscendencia: inicioDaAscendencia(estado), pontosAscendencia: pontosDeAscendencia(estado), ascendencias: ascendenciasDaClasse(estado) } : {}),
     precoPorNo: precoDoRespec(estado, 1),
     podeTirar: !(CONFIG.respec.soForaDaCacada && emCacada),
   };
@@ -387,7 +438,7 @@ export function vista(estado, emCacada = false) {
 export function arvoreParaCliente() {
   return {
     versao: ARVORE.versao,
-    ...(ARVORE.id === 'poe' ? { poe: true } : {}),
+    ...(ARVORE.id === 'poe' ? { poe: true, ascendencias: ARVORE.ascendencias ?? {} } : {}),
     inicios: ARVORE.inicios,
     clusters: ARVORE.clusters,
     custo: CONFIG.custo,
@@ -403,6 +454,7 @@ export function arvoreParaCliente() {
       // Árvore do PoE: os textos originais de cada linha e o estado da tradução (o balão mostra como no PoE).
       ...(n.textos ? { textos: n.textos, estados: n.estados ?? [] } : {}),
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
+      ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
       descricao: n.descricao ?? null,
       // O texto de sabor (o itálico do balão, como no Path of Exile), o atributo do nó de caminho e a órbita da roda (arcos).
       flavor: n.flavor ?? null,

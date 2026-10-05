@@ -58,6 +58,52 @@ export function traduzirLinha(texto) {
 const TIPO = { comum: 'small', notavel: 'notable', keystone: 'keystone' };
 
 /**
+ * As ASCENDÊNCIAS (incremento 4e): cada uma vira um pedaço à parte da árvore (fica na borda de fora da principal, sem tocar nela), com o
+ * próprio nó inicial (`tipo: 'start'`, em `inicios` como `asc:<slug>`) e os nós marcados com `ascendencia` (gastam pontos de
+ * ascendência). `lista`: os `ascendencia.json` da coleção. Devolve `{ nos, inicios, ascendencias, relatorio }`.
+ */
+export function converterAscendencias(lista) {
+  const nos = [];
+  const inicios = {};
+  const ascendencias = {};
+  const estados = { equivalente: 0, aproximado: 0, novo: 0, registrado: 0, nota: 0 };
+  for (const a of lista) {
+    const ids = new Set(a.nos.map((n) => n.id));
+    const viz = new Map(a.nos.map((n) => [n.id, new Set()]));
+    const ligar = (x, y) => {
+      if (!ids.has(x) || !ids.has(y) || x === y) return;
+      viz.get(x).add(y);
+      viz.get(y).add(x);
+    };
+    for (const l of a.ligacoes ?? []) ligar(l.de, l.para);
+    for (const n of a.nos) for (const v of n.vizinhos ?? []) ligar(n.id, v);
+    for (const n of a.nos) {
+      const inicio = n.id === a.no_inicial || n.eh_no_inicial;
+      const linhas = (n.efeitos ?? []).flatMap((e) => String(e).split('\n')).map((l) => l.trim()).filter(Boolean);
+      const traduzidas = linhas.map(traduzirLinha);
+      for (const t of traduzidas) estados[t.estado]++;
+      nos.push({
+        id: String(n.id),
+        nome: inicio ? `Ascendência: ${a.nome_pt}` : n.nome,
+        ...(n.nome_en ? { nomeEn: n.nome_en } : {}),
+        tipo: inicio ? 'start' : n.molde === 'notable' ? 'notable' : 'small',
+        x: n.x,
+        y: n.y,
+        custo: inicio ? 0 : 1,
+        ascendencia: a.slug,
+        efeitos: traduzidas.flatMap((t) => t.efeitos),
+        textos: linhas,
+        estados: traduzidas.map((t) => t.estado),
+        conexoes: [...viz.get(n.id)].map(String),
+      });
+      if (inicio) inicios[`asc:${a.slug}`] = String(n.id);
+    }
+    ascendencias[a.slug] = { slug: a.slug, nome: a.nome_pt, classe: a.classe, inicio: String(a.no_inicial), nos: a.nos.length, ...(a.flavour ? { flavour: a.flavour } : {}) };
+  }
+  return { nos, inicios, ascendencias, relatorio: { ascendencias: lista.length, nos: nos.length, estados } };
+}
+
+/**
  * A árvore do PoE (`{ nos, ligacoes, classes_iniciais }`) no formato da árvore do Draevor: nós `{ id, nome, tipo, x, y, conexoes,
  * efeitos, custo: 1, textos, estados }`, `inicios` por classe do PoE. Nós sem ligação nenhuma (as maestrias soltas) e os que nenhum
  * início alcança ficam de fora (a árvore do Draevor exige tudo alcançável). Devolve `{ arvore, relatorio }`.

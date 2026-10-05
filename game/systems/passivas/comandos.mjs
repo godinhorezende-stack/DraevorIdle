@@ -28,6 +28,12 @@ export function comando(estado, m, emCacada = false) {
   Passivas.garantir(estado);
   const acao = m?.action ?? 'ver';
   if (acao === 'ver' || acao === 'arvore') return { ok: true };
+  if (acao === 'ascender') {
+    // A ascendência do PoE (árvore do PoE, incremento 4e): escolhida no primeiro ponto, uma vez.
+    const r = Passivas.ascender(estado, String(m.ascendencia ?? ''));
+    if (r.ok) depoisDeMudar(estado);
+    return r;
+  }
   if (acao === 'alocar') {
     const ids = Array.isArray(m.ids) ? m.ids.slice(0, 200).map(String) : [String(m.id ?? '')];
     let feitos = 0;

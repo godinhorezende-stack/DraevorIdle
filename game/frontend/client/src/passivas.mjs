@@ -159,8 +159,9 @@ function ficamSem(id) {
   const a = arvore();
   const v = vista();
   const resto = new Set((v?.alocados ?? []).filter((x) => x !== id));
-  const ligados = new Set([v?.inicio]);
-  const fila = [v?.inicio];
+  const inicios = [v?.inicio, v?.inicioAscendencia].filter(Boolean);
+  const ligados = new Set(inicios);
+  const fila = [...inicios];
   while (fila.length) {
     for (const c of a.porId.get(fila.pop())?.conexoes ?? []) {
       if (resto.has(c) && !ligados.has(c)) {
@@ -170,6 +171,16 @@ function ficamSem(id) {
     }
   }
   return [...resto].filter((x) => ligados.has(x));
+}
+
+/**
+ * Árvore do PoE: os nós de ASCENDÊNCIA que aparecem — só os da escolhida; antes da escolha, os das 3 ascendências da classe (para ver o
+ * que cada uma dá). Nó que não é de ascendência aparece sempre.
+ */
+function visivelNaArvore(n) {
+  if (!n.ascendencia) return true;
+  const v = vista();
+  return v?.ascendencia ? n.ascendencia === v.ascendencia : (v?.ascendencias ?? []).some((a) => a.slug === n.ascendencia);
 }
 
 /** O estado de um nó para a tela: alocado | disponivel | caminho | bloqueado. */
@@ -272,7 +283,9 @@ function montar(body) {
   const respecTudo = el('button', 'ghost danger', 'Respec completo');
   zoomMenos.title = 'Afastar';
   zoomMais.title = 'Aproximar';
-  barra.append(pontos, busca, achados, zoomMenos, zoomMais, centro, respecTudo);
+  // A ascendência (árvore do PoE): os pontos dela, a escolha no primeiro ponto e o atalho até ela.
+  const ascendencia = el('div', 'pas-asc');
+  barra.append(pontos, busca, achados, zoomMenos, zoomMais, centro, respecTudo, ascendencia);
   const corpo = el('div', 'pas-corpo');
   const mapa = el('div', 'pas-mapa');
   const canvas = document.createElement('canvas');
@@ -495,7 +508,7 @@ function montar(body) {
     const visivel = (p, folga) => p.x > -folga && p.y > -folga && p.x < largura + folga && p.y < altura + folga;
 
     // A região de cada classe, tingida pela cor do atributo dela.
-    for (const n of a.nos.filter((x) => x.tipo === 'start')) {
+    for (const n of a.nos.filter((x) => x.tipo === 'start' && !x.ascendencia)) {
       const p = paraTela(n);
       const r = 1500 * cam.zoom;
       const cor = COR_DO_ATRIBUTO[COR_DA_CLASSE[n.classe]] ?? '#888888';
@@ -521,6 +534,7 @@ function montar(body) {
     g.lineCap = 'round';
     const lw = Math.max(1.2, 2.4 * escala());
     for (const [x, y] of a.arestas) {
+      if (!visivelNaArvore(x) || !visivelNaArvore(y)) continue;
       const px = paraTela(x);
       const py = paraTela(y);
       if (!visivel(px, 60) && !visivel(py, 60)) continue;
@@ -562,6 +576,7 @@ function montar(body) {
     // Os nós.
     const achadosSet = new Set(achadosLista.map((n) => n.id));
     for (const n of a.nos) {
+      if (!visivelNaArvore(n)) continue;
       const p = paraTela(n);
       if (!visivel(p, 60)) continue;
       const r = raio(n);
@@ -615,6 +630,7 @@ function montar(body) {
     if (!a) return null;
     let melhor = null;
     for (const n of a.nos) {
+      if (!visivelNaArvore(n)) continue;
       const p = paraTela(n);
       const d = Math.hypot(p.x - px, p.y - py);
       if (d <= raio(n) + 6 && (!melhor || d < melhor.d)) melhor = { n, d };
@@ -791,7 +807,8 @@ function montar(body) {
     const estado = estadoDoNo(n);
     const lv = ctx.state.character?.level ?? 1;
     const linhas = [];
-    if (n.tipo !== 'start') linhas.push(`Custo: ${n.custo} ponto${n.custo === 1 ? '' : 's'}`);
+    if (n.tipo !== 'start') linhas.push(`Custo: ${n.custo} ponto${n.custo === 1 ? '' : 's'}${n.ascendencia ? ' de ascendência' : ''}`);
+    if (n.ascendencia) linhas.push(`Ascendência: ${arvore()?.ascendencias?.[n.ascendencia]?.nome ?? n.ascendencia}`);
     if (n.levelMinimo) linhas.push(`Requer level ${n.levelMinimo}${lv < n.levelMinimo ? ' (você não tem)' : ''}`);
     let rotuloEstado = { alocado: 'Alocado', disponivel: 'Disponível', bloqueado: n.tipo === 'start' ? 'Início de outra classe' : 'Bloqueado — sem ligação com um nó seu' }[estado];
     if (estado === 'bloqueado' && n.tipo !== 'start') {
@@ -823,6 +840,36 @@ function montar(body) {
     respecTudo.textContent = v?.respecsGratis ? `Respec completo (${v.respecsGratis} grátis)` : 'Respec completo';
     respecTudo.disabled = !v?.podeTirar || (v?.alocados?.length ?? 0) <= 1;
     respecTudo.title = v?.podeTirar ? '' : 'Só fora da caçada';
+    desenharAscendencia(v);
+  }
+  function desenharAscendencia(v) {
+    ascendencia.textContent = '';
+    ascendencia.hidden = !v?.pontosAscendencia;
+    if (!v?.pontosAscendencia) return;
+    const pa = v.pontosAscendencia;
+    const nomes = arvore()?.ascendencias ?? {};
+    if (v.ascendencia) {
+      const ir = el('button', 'ghost', `${nomes[v.ascendencia]?.nome ?? v.ascendencia} · ${pa.livres} livre${pa.livres === 1 ? '' : 's'} (${pa.usados}/${pa.total})`);
+      ir.title = 'Pontos de ascendência: 2 por boss de fim de ato vencido. Clique para ir até a sua ascendência.';
+      ir.onclick = () => {
+        const n = arvore()?.porId.get(v.inicioAscendencia);
+        if (n) irPara(n);
+      };
+      ascendencia.append(ir);
+      return;
+    }
+    if (pa.total < 1) {
+      ascendencia.append(el('span', 'pas-asc-nota', 'Ascendência: vença um boss de fim de ato'));
+      return;
+    }
+    // O primeiro ponto chegou: a escolha (decisão do dono — no primeiro ponto, uma vez).
+    ascendencia.append(el('span', 'pas-asc-nota', 'Escolha sua ascendência:'));
+    for (const a of v.ascendencias ?? []) {
+      const b = el('button', 'ghost', a.nome);
+      b.title = `${nomes[a.slug]?.flavour ?? ''} — passe o mouse nos nós dela na borda da árvore para ver o que dá.`;
+      b.onclick = () => ctx.send({ t: 'passivas', action: 'ascender', ascendencia: a.slug });
+      ascendencia.append(b);
+    }
   }
   respecTudo.onclick = () => {
     selecionado = null;
@@ -850,7 +897,9 @@ function montar(body) {
     const futuro = depois ? somaDosNos(a, depois) : null;
     const caixa = el('div', 'pas-total');
     const cab = el('div', 'pas-total-cab');
-    cab.append(el('b', null, 'Total da árvore'), el('span', null, `${Math.max(0, v.alocados.length - 1)} nós · ${v.pontos?.usados ?? 0} pontos`));
+    // Os inícios (o da classe e o da ascendência) não contam como nós.
+    const nosAlocados = v.alocados.filter((id) => a.porId.get(id)?.tipo !== 'start').length;
+    cab.append(el('b', null, 'Total da árvore'), el('span', null, `${nosAlocados} nós · ${v.pontos?.usados ?? 0} pontos`));
     caixa.append(cab);
     if (futuro) caixa.append(el('em', 'pas-total-previa', rotuloDoDepois));
     const chaves = [...new Set([...agora.soma.keys(), ...(futuro?.soma.keys() ?? [])])];

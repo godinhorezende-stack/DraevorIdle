@@ -46,7 +46,8 @@ test('converter: início por classe, custo 1, só o que um início alcança, lig
 test('o arquivo gerado (gamedata/itens-poe/arvore-poe.json) é uma árvore válida do Draevor, com as 7 classes', () => {
   const a = JSON.parse(readFileSync(new URL('../gamedata/itens-poe/arvore-poe.json', import.meta.url), 'utf8'));
   assert.deepEqual(validar(a), []);
-  assert.deepEqual(Object.keys(a.inicios).sort(), ['Duelist', 'Marauder', 'Ranger', 'Scion', 'Shadow', 'Templar', 'Witch']);
+  assert.deepEqual(Object.keys(a.inicios).filter((k) => !k.startsWith('asc:')).sort(), ['Duelist', 'Marauder', 'Ranger', 'Scion', 'Shadow', 'Templar', 'Witch']);
+  assert.equal(Object.keys(a.ascendencias).length, 21, 'as 21 ascendências');
   assert.ok(a.nos.length > 2000);
   assert.ok(a.relatorio.estados.equivalente > 700);
 });
@@ -79,4 +80,52 @@ test('4c — com ITENS_POE=1 a árvore em uso é a do PoE: início da classe, 1 
   assert.ok(r.alocou, 'aloca o vizinho de vida do início');
   assert.equal(r.pontos.usados, 1);
   assert.equal(r.depois - r.antes, r.ganho, 'o +Vida do nó entra na soma da ficha');
+});
+
+test('4e — ascendências: 2 pontos por boss de fim de ato (até 8), escolha no primeiro ponto (só da classe), nós com pontos próprios', { skip: !existsSync('/home/deploy/referencias-poe/importado/itens-poe.json') && 'catálogo do PoE não importado' }, async () => {
+  const { execFileSync } = await import('node:child_process');
+  const codigo = `
+    process.env.ITENS_POE = '1';
+    const P = await import('./systems/passivas/arvore.mjs');
+    const { personagemDeTeste } = await import('./testes/apoio.mjs');
+    const e = personagemDeTeste({ vocacao: 'knight', level: 30 });
+    e.campanha = {}; // o personagem de teste vem com a campanha feita
+    const r = {};
+    r.semPontos = P.pontosDeAscendencia(e).total;
+    r.recusaSemPonto = P.ascender(e, 'Juggernaut').ok;
+    e.campanha = { facil: { bosses: [1] } };
+    r.umAto = P.pontosDeAscendencia(e).total;
+    r.opcoes = P.ascendenciasDaClasse(e).map((a) => a.slug).sort();
+    r.outraClasse = P.ascender(e, 'Necromancer').ok;
+    r.ascendeu = P.ascender(e, 'Juggernaut').ok;
+    r.denovo = P.ascender(e, 'Berserker').ok;
+    const ini = P.inicioDaAscendencia(e);
+    r.inicioAlocado = e.passivas.alocados.includes(ini);
+    const viz = P.arvore().porId.get(ini).conexoes[0];
+    const antes = P.pontos(e).usados;
+    r.alocouAsc = P.alocar(e, viz).ok;
+    r.ptsAsc = P.pontosDeAscendencia(e);
+    r.principalIgual = P.pontos(e).usados === antes;
+    const outro = P.arvore().nos.find((n) => n.ascendencia === 'Berserker' && n.tipo !== 'start');
+    r.outraAsc = P.podeAlocar(e, outro.id).ok;
+    r.ilhados = P.ilhadosSemEles(e, []).length;
+    e.campanha = { facil: { bosses: [1, 2, 3, 4] }, normal: { bosses: [1, 2] }, extra: { bosses: [5] } };
+    r.teto = P.pontosDeAscendencia(e).total;
+    console.log(JSON.stringify(r));
+  `;
+  const r = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', codigo], { cwd: new URL('..', import.meta.url).pathname, encoding: 'utf8' }).trim().split('\n').pop());
+  assert.equal(r.semPontos, 0);
+  assert.equal(r.recusaSemPonto, false, 'sem boss vencido não ascende');
+  assert.equal(r.umAto, 2, '1 boss de fim de ato = 2 pontos');
+  assert.deepEqual(r.opcoes, ['Berserker', 'Chieftain', 'Juggernaut'], 'as 3 do Marauder');
+  assert.equal(r.outraClasse, false);
+  assert.equal(r.ascendeu, true);
+  assert.equal(r.denovo, false, 'uma vez só');
+  assert.ok(r.inicioAlocado);
+  assert.ok(r.alocouAsc);
+  assert.deepEqual(r.ptsAsc, { total: 2, usados: 1, livres: 1 });
+  assert.ok(r.principalIgual, 'o nó de ascendência não gasta ponto da árvore');
+  assert.equal(r.outraAsc, false, 'nó de outra ascendência: recusa');
+  assert.equal(r.ilhados, 0, 'a ascendência não conta como ilhada');
+  assert.equal(r.teto, 8, 'até 8 pontos, como no PoE');
 });
