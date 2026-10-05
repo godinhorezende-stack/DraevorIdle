@@ -147,16 +147,17 @@ export function entregar(nome, peca) {
 
 /**
  * QUANTAS peças do PoE caem do bicho (a regra do PoE que o dono trouxe, 05/10): quantidade = chanceBase × (1 + bônus de quantidade da
- * raridade do bicho). Abaixo de 1 é a chance de 1 peça; de 1 para cima, a parte inteira é garantida e o excedente rola mais uma.
- * `tipo`: a raridade do bicho no Draevor (normal, modificado, raro, elite, unico, boss — ver `hunt/escalonamento.tipoDoBicho`).
+ * raridade do bicho) × (1 + modificadores de quantidade do jogador/mapa). Abaixo de 1 é a chance de 1 peça; de 1 para cima, a parte
+ * inteira é garantida e o excedente rola mais uma. `tipo`: a raridade do bicho no Draevor (normal, modificado, raro, elite, unico, boss —
+ * ver `hunt/escalonamento.tipoDoBicho`). `fatorDoJogador`: o (1 + modificadores) — na caçada, os mesmos fatores do loot do Draevor.
  */
-export function quantidadeDoDrop(tipo, regras = Catalogo.REGRAS) {
+export function quantidadeDoDrop(tipo, regras = Catalogo.REGRAS, fatorDoJogador = 1) {
   const D = regras.drop;
   const bonus = Number(D?.bonusDeQuantidade?.[tipo] ?? D?.bonusDeQuantidade?.normal ?? 0) || 0;
-  return Math.max(0, Number(D?.chanceBase) || 0) * (1 + bonus);
+  return Math.max(0, Number(D?.chanceBase) || 0) * (1 + bonus) * Math.max(0, Number(fatorDoJogador) || 0);
 }
-export function quantasPecas(tipo, rng = Math.random, regras = Catalogo.REGRAS) {
-  const q = quantidadeDoDrop(tipo, regras);
+export function quantasPecas(tipo, rng = Math.random, regras = Catalogo.REGRAS, fatorDoJogador = 1) {
+  const q = quantidadeDoDrop(tipo, regras, fatorDoJogador);
   return Math.floor(q) + (rng() < q - Math.floor(q) ? 1 : 0);
 }
 
@@ -189,9 +190,9 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
 }
 
 /** As peças do PoE que caem do bicho morto (lista, talvez vazia). Só com o sistema ligado. */
-export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random, regras = Catalogo.REGRAS) {
+export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random, regras = Catalogo.REGRAS, fatorDoJogador = 1) {
   if (!Catalogo.catalogo() || !regras.drop) return [];
-  const n = quantasPecas(tipo, rng, regras);
+  const n = quantasPecas(tipo, rng, regras, fatorDoJogador);
   const pecas = [];
   for (let i = 0; i < n; i++) {
     const p = pecaSorteada(nivelDoBicho, rng, regras);

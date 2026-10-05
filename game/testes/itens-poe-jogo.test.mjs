@@ -90,6 +90,9 @@ test('quantas peças caem (regra do dono, 05/10): 0,16 × (1 + bônus da raridad
   const q = (t) => Math.round(Jogo.quantidadeDoDrop(t) * 100) / 100;
   assert.deepEqual(['normal', 'modificado', 'raro', 'elite', 'unico', 'boss'].map(q), [0.16, 0.4, 1.36, 1.36, 4.72, 4.72]);
   assert.equal(q('desconhecido'), 0.16, 'tipo sem bônus = normal');
+  // O exemplo do dono: mapa/personagem com +50% de Quantidade → 0,16 × 1,5 = 0,24.
+  assert.ok(Math.abs(Jogo.quantidadeDoDrop('normal', Catalogo.REGRAS, 1.5) - 0.24) < 1e-9);
+  assert.ok(Math.abs(Jogo.quantidadeDoDrop('raro', Catalogo.REGRAS, 1.5) - 2.04) < 1e-9);
   const rng = semente(7);
   const media = (t, n = 4000) => Array.from({ length: n }, () => Jogo.quantasPecas(t, rng)).reduce((a, b) => a + b, 0) / n;
   assert.ok(Math.abs(media('normal') - 0.16) < 0.03);

@@ -754,8 +754,10 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     darExtra(orbe);
   }
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
-  // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho, os números do dono em `itens-poe/regras.json` → drop.
-  for (const daPoe of ItensPoeJogo.dropsDoMonstro(AtributosDoPersonagem.levelDoBicho(hunt, alvo), tipoDoBicho(alvo))) {
+  // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho × os modificadores de quantidade do loot
+  // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
+  const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt);
+  for (const daPoe of ItensPoeJogo.dropsDoMonstro(AtributosDoPersonagem.levelDoBicho(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador)) {
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);

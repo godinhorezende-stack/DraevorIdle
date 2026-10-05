@@ -46,7 +46,7 @@
     "unico"
   ],
   "drop": {
-    "_nota": "O DROP de peças do PoE nas caçadas (só com ITENS_POE=1). Números do dono (05/10). QUANTAS peças: chanceBase × (1 + bonusDeQuantidade da raridade do bicho no Draevor); abaixo de 1 é a chance de 1 peça, de 1 para cima a parte inteira é garantida e o excedente rola mais uma. Normal 0,16 (16%); Mágico (modificado) +150% = 0,40 (o meio de '0,30 a 0,50'); Raro e Elite +750% = 1,36 (o dono disse 'supera 1,00'; os 750% são o número conhecido do PoE — a confirmar); Chefe único e Chefe +2850% = 4,72. Depois, a RARIDADE de cada peça pelos pesos de `raridades`. O Item Level da peça é o level do bicho, limitado a ilvlMaximo (os tiers do PoE vão até o iLvl 86).",
+    "_nota": "O DROP de peças do PoE nas caçadas (só com ITENS_POE=1). Números do dono (05/10). QUANTAS peças: chanceBase × (1 + bonusDeQuantidade da raridade do bicho no Draevor) × (1 + modificadores de quantidade do jogador/mapa — os fatores de loot do Draevor: Buff Power, afixo Loot, prey, pódio, Caça Online); abaixo de 1 é a chance de 1 peça, de 1 para cima a parte inteira é garantida e o excedente rola mais uma. Normal 0,16 (16%); Mágico (modificado) +150% = 0,40 (o meio de '0,30 a 0,50'); Raro +750% = 1,36 (confirmado pelo dono); Único +2850% = 4,72. O PoE tem só 4 raridades de monstro (Normal, Mágico, Raro, Único): o Elite do Draevor conta como Raro, e o Chefe (boss) e o Chefe único contam como Único. Depois, a RARIDADE de cada peça pelos pesos de `raridades`. O Item Level da peça é o level do bicho, limitado a ilvlMaximo (os tiers do PoE vão até o iLvl 86).",
     "chanceBase": 0.16,
     "bonusDeQuantidade": {
       "normal": 0,
