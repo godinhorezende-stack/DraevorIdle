@@ -37,6 +37,8 @@ import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
+import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
+import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/combate.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
 import * as Charms from '../systems/charms.mjs';
@@ -1736,6 +1738,14 @@ export class Sessao {
     const passivas = Passivas.garantir(estado);
     if (passivas.migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
     else if (passivas.arvoreMudou) estado.avisoDaHunt = 'A árvore de passivas ganhou caminhos de atributo (STR/DEX/INT) entre os clusters. Os nós que perderam o caminho saíram e os pontos voltaram — você tem um respec completo grátis para remontar.';
+    // A escala da vida/mana mudou (o sistema de itens do PoE foi ligado ou desligado neste servidor — `R.statsBase`): refaz os máximos.
+    const escala = ItensPoeCatalogo.ligado() ? 'poe' : 'draevor';
+    if ((estado.escalaDeVida ?? 'draevor') !== escala) {
+      refazerMaximosDoPersonagem(estado, estado.level ?? 1);
+      estado.hp = Math.min(estado.hp ?? estado.maxHp, estado.maxHp);
+      estado.mana = Math.min(estado.mana ?? estado.maxMana, estado.maxMana);
+      estado.escalaDeVida = escala;
+    }
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
     Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.

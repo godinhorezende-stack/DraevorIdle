@@ -41,3 +41,20 @@ test('escolher a classe: uma vez; inválida recusa', { skip: SEM }, () => {
   assert.equal(r.ok, false);
   assert.match(r.erro, /já é Bruxa/);
 });
+
+test('escala do PoE no personagem: vida 38+12/level, mana 34+6/level, atributos do PoE, precisão 2/level, golpe = a faixa da arma', { skip: SEM }, async () => {
+  const R = await import('../systems/regras.mjs');
+  assert.deepEqual(R.statsBase('knight', 1), { maxHp: 50, maxMana: 40 });
+  assert.deepEqual(R.statsBase('sorcerer', 13), { maxHp: 194, maxMana: 112 }, 'a vocação não muda a base no PoE');
+  const ef = Atributos.efeitos({ str: 32, dex: 14, int: 14 });
+  assert.deepEqual([ef.vida, ef.danoFisicoPct, ef.precisao, ef.evasaoPct, ef.mana, ef.esPct, ef.velocidadeDeAtaquePct, ef.danoMagicoPct].map((v) => Math.round(v * 100) / 100), [16, 6.4, 28, 2.8, 7, 2.8, 0, 0]);
+  assert.equal(Atributos.precisaoBase(13), 26);
+  for (let i = 0; i < 50; i++) {
+    const g = R.golpeDoJogador({ attack: 7, attackMin: 4, attackMax: 9 }, 80, 300);
+    assert.ok(g >= 4 && g <= 9, `golpe ${g}: só a faixa da arma, sem perícia nem level`);
+  }
+  for (let i = 0; i < 50; i++) {
+    const g = R.golpeDoJogador(null, 80, 300);
+    assert.ok(g >= 2 && g <= 6, 'desarmado: 2–6');
+  }
+});

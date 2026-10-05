@@ -23,6 +23,7 @@ import {
   RESISTENCIA_MAXIMA_DE_BOSS,
 } from '../engine/formulas.mjs';
 import * as Formulas from './combate/formulas.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 export { applyElement, RESISTENCIA_MAXIMA_DE_BOSS };
 
 export const NIVEL_INICIAL = 8;
@@ -64,6 +65,8 @@ export const POSICAO_INICIAL = { x: 99, y: 65, z: 7, dir: 2 };
 
 /** Vida/mana máxima no level dado — fórmula real, não chute (ver import acima). */
 export function statsBase(vocacao, level = NIVEL_INICIAL) {
+  // A escala do PoE (sistema de itens do PoE, só com ITENS_POE=1 — decisão do dono, 05/10): vida 38 + 12/level, mana 34 + 6/level.
+  if (itensPoeLigado()) return { maxHp: 38 + 12 * Math.max(1, level), maxMana: 34 + 6 * Math.max(1, level) };
   return { maxHp: maxHealth(vocacao, level), maxMana: maxMana(vocacao, level) };
 }
 
@@ -147,6 +150,13 @@ export const attackDamage = (args) => attackDamageDoMotor({ ...args, variacao: F
 
 /** Um golpe da própria arma — real: `attack` vem do item, `skill` do personagem (10 fixo, ver `CHARACTER_TEMPLATE`). */
 export function golpeDoJogador(arma, skill, level) {
+  // A escala do PoE: o golpe é o dano da ARMA sorteado na faixa dela (sem perícia nem level, como no PoE); desarmado, 2–6.
+  if (itensPoeLigado()) {
+    const lo = arma?.attackMin ?? arma?.attack ?? 2;
+    const hi = arma?.attackMax ?? arma?.attack ?? 6;
+    const [a, b] = lo > 0 || hi > 0 ? [Math.min(lo, hi), Math.max(lo, hi)] : [2, 6];
+    return a + Math.floor(Math.random() * (b - a + 1));
+  }
   const lo = arma?.attackMin;
   const hi = arma?.attackMax;
   // Arma com FAIXA de ataque: UM sorteio dentro dela (a faixa da arma já é a variação) pela mesma conta das duas pontas.

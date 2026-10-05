@@ -247,7 +247,7 @@ export function descerDeLevel(estado) {
 /** Põe o personagem num level (a Arena x1 nivela os dois lados), com vida e mana máximas refeitas. */
 export const definirLevel = (estado, novo) => refazerMaximos(estado, novo);
 
-function refazerMaximos(estado, novo) {
+export function refazerMaximos(estado, novo) {
   const { maxHp, maxMana } = R.statsBase(estado.vocation, novo);
   estado.level = novo;
   estado.maxHp = maxHp + BuffPower.bonusDeVida(estado);

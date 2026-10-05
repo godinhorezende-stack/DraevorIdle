@@ -15,6 +15,7 @@ import { readFileSync } from 'node:fs';
 import * as Formulas from '../combate/formulas.mjs';
 import { daCurva } from '../mobs/curvas.mjs';
 import { classeDe } from '../itens-poe/classes.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
@@ -45,6 +46,11 @@ export function principais(estado, adds = {}) {
 
 /** O que STR/DEX/INT dão ao personagem (`p` = `principais(...)`). */
 export function efeitos(p) {
+  // A escala do PoE (só com ITENS_POE=1): STR +0,5 de vida e +0,2% de dano físico; DEX +2 de precisão e +0,2% de evasão; INT +0,5 de mana
+  // e +0,2% de escudo de energia — por ponto, como no PoE (sem velocidade de ataque nem dano mágico pelos atributos).
+  if (itensPoeLigado()) {
+    return { vida: p.str * 0.5, danoFisicoPct: p.str * 0.2, precisao: p.dex * 2, evasao: 0, evasaoPct: p.dex * 0.2, velocidadeDeAtaquePct: 0, mana: p.int * 0.5, danoMagicoPct: 0, esPct: p.int * 0.2 };
+  }
   return {
     vida: p.str * E.STR_LIFE_PER_POINT,
     danoFisicoPct: p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT,
@@ -59,7 +65,8 @@ export function efeitos(p) {
 // ---------------------------------------------------------------- precisão
 
 /** A Accuracy BASE do personagem (sem DEX e sem itens): cresce com o level. */
-export const precisaoBase = (level) => CONFIG.precisao.BASE + CONFIG.precisao.POR_LEVEL * Math.max(1, level ?? 1);
+// Na escala do PoE: 2 por level (como no PoE).
+export const precisaoBase = (level) => (itensPoeLigado() ? 2 * Math.max(1, level ?? 1) : CONFIG.precisao.BASE + CONFIG.precisao.POR_LEVEL * Math.max(1, level ?? 1));
 
 /**
  * O LEVEL de um bicho: o da fase da campanha onde ele está (`hunt.escala.nivel`,

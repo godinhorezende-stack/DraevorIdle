@@ -514,8 +514,9 @@ function defesasDaFicha(estado, af, doAtributo, espStat = () => 0) {
     return n + (a + b) / 2;
   }, 0);
   const armour = simples(somaDoCampo('armor'), { fixos: af.armor_flat ?? 0, pct: (af.armour_pct ?? 0) + espStat('armour') }).bruto;
-  const evasion = simples(somaDoCampo('evasion'), { fixos: (af.evasion ?? 0) + doAtributo.evasao, pct: (af.evasion_pct ?? 0) + espStat('evasion') }).bruto;
-  const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: af.es_pct ?? 0 }).bruto;
+  // (+ a evasão % da DEX e o escudo % da INT, na escala do PoE — `Atributos.efeitos`.)
+  const evasion = simples(somaDoCampo('evasion'), { fixos: (af.evasion ?? 0) + doAtributo.evasao, pct: (af.evasion_pct ?? 0) + espStat('evasion') + (doAtributo.evasaoPct ?? 0) }).bruto;
+  const energyShield = simples(somaDoCampo('es'), { fixos: af.energy_shield ?? 0, pct: (af.es_pct ?? 0) + (doAtributo.esPct ?? 0) }).bruto;
   return { armour: Math.round(armour), evasion: Math.round(evasion), energyShield: Math.round(energyShield) };
 }
 
