@@ -24,6 +24,7 @@ import { criarEditorDeBosses } from './editor-bosses.mjs';
 import { criarTelaDeItensPoe } from './editor-itens-poe.mjs';
 import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe, criarTelaDosMobsPoe } from './editor-poe-telas.mjs';
 import { criarTelaDeEfeitos } from './editor-ataques.mjs';
+import { criarTelaDaBibliotecaDeSprites } from './editor-biblioteca-sprites.mjs';
 import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar, pedirTexto } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
@@ -385,13 +386,13 @@ const TELAS_FIXAS = {
 const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias', sprites: 'sprites' };
 // A referência do PoE (Fase 1 do sistema de itens no modelo do PoE): só leitura, só com ITENS_POE=1 no servidor.
 const ITENS_POE = criarTelaDeItensPoe({ raiz: () => $('#raiz') });
-const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }), 'poe-mobs': criarTelaDosMobsPoe({ raiz: () => $('#raiz') }), 'poe-efeitos': criarTelaDeEfeitos({ raiz: () => $('#raiz') }) };
+const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }), 'poe-mobs': criarTelaDosMobsPoe({ raiz: () => $('#raiz') }), 'poe-efeitos': criarTelaDeEfeitos({ raiz: () => $('#raiz') }), 'sprites-biblioteca': criarTelaDaBibliotecaDeSprites({ raiz: () => $('#raiz') }) };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis'], ['sprites-biblioteca', 'Biblioteca de sprites']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -418,6 +419,7 @@ const GRUPOS = [
     { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', modo: 'parcial', dica: 'monstros, outfits e montarias: quadros, direções e animação por override' }] },
   { id: 'recursos', titulo: 'Recursos', itens: [
     { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
+    { id: 'sprites-biblioteca', nome: 'Biblioteca de sprites', icone: 'outfit', modo: 'consulta', dica: 'mobs, itens, efeitos, projéteis, outfits e montarias — cada desenho uma vez' },
     { id: 'beta', nome: 'Testes e beta', icone: 'frasco', dica: 'interruptor do modo beta' },
     { id: 'config', nome: 'Configurações', icone: 'engrenagem', dica: 'manutenção e Server Save' }] },
   { id: 'poe', titulo: 'Referência PoE', itens: [{ id: 'itens-poe', nome: 'Itens (PoE)', icone: 'espada', dica: 'catálogo do PoE importado (só com ITENS_POE=1)' }, { id: 'poe-campanha', nome: 'Campanha do PoE', icone: 'atos' }, { id: 'poe-arvore', nome: 'Árvore do PoE', icone: 'fase' }, { id: 'poe-chefes', nome: 'Chefes do PoE', icone: 'coroa' }] },
@@ -458,16 +460,14 @@ const GRUPOS_POE = [
     { id: 'poe-arvore', nome: 'Árvore passiva', icone: 'fase', dica: 'nós, maestrias, keystones e ascendências' }] },
   { id: 'poe-recursos', titulo: 'Recursos', itens: [
     { id: 'validacao', nome: 'Validação e versão', icone: 'painelDeControle', dica: 'verificações, testes e se a versão pode ser aprovada' },
+    { id: 'sprites-biblioteca', nome: 'Biblioteca de sprites', icone: 'outfit', dica: 'mobs, itens, efeitos de magia, projéteis, outfits e montarias — cada desenho uma vez, de onde a Engine puxa' },
     { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', dica: 'quadros, direções e animação das criaturas' },
-    { id: 'poe-efeitos', nome: 'Efeitos e projéteis', icone: 'frasco', modo: 'consulta', dica: 'todos os efeitos e projéteis animados, com o id que vai no ataque' },
-    { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },
-    { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' },
     { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
     { id: 'beta', nome: 'Testes e beta', icone: 'frasco', dica: 'interruptor do modo beta' },
     { id: 'config', nome: 'Configurações', icone: 'engrenagem', dica: 'manutenção e Server Save' }] },
 ];
 /** Com o PoE ligado, a tela do Draevor que não vale no PoE leva à equivalente. */
-const NO_POE = { geral: 'atos', mapa: 'atos', hunts: 'atos', fase: 'atos', 'poe-campanha': 'atos', mobs: 'poe-mobs', bosses: 'poe-chefes', 'itens-poe': 'itens', progressao: 'itens', itempower: 'itens', conjuntos: 'itens' };
+const NO_POE = { outfits: 'sprites-biblioteca', montarias: 'sprites-biblioteca', 'poe-efeitos': 'sprites-biblioteca', geral: 'atos', mapa: 'atos', hunts: 'atos', fase: 'atos', 'poe-campanha': 'atos', mobs: 'poe-mobs', bosses: 'poe-chefes', 'itens-poe': 'itens', progressao: 'itens', itempower: 'itens', conjuntos: 'itens' };
 
 /** O endereço guarda a tela (`#fase/troll-cave`, `#bosses`...): recarregar ou mandar o link abre no mesmo lugar. */
 const lerEndereco = () => {

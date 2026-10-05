@@ -69,8 +69,16 @@ export function definirAtaques(slugDoMonstro, ajuste, { gravar = true } = {}) {
 }
 
 /** Troca o desenho (a criatura do Draevor) de um monstro do PoE, em todas as áreas. `{ ok, erros? }`. */
+const LOOKS = JSON.parse(readFileSync(new URL('../../gamedata/outfits.json', import.meta.url), 'utf8'));
+/** O desenho escolhido na Engine: a chave de uma criatura do bestiário, ou `look:<n>` (um desenho da Biblioteca de sprites). `{ look, colors, base }`. */
+function desenhoEscolhido(valor) {
+  const m = /^look:(\d+)$/.exec(String(valor ?? ''));
+  if (m) return LOOKS[m[1]] ? { look: Number(m[1]), colors: null } : null;
+  const b = BESTIARY[valor];
+  return b ? { look: b.look, colors: b.colors ?? null, base: b } : null;
+}
 export function definirDesenho(slugDoMonstro, chaveDoBestiario, { gravar = true } = {}) {
-  if (chaveDoBestiario && !BESTIARY[chaveDoBestiario]) return { ok: false, erros: [`"${chaveDoBestiario}" não é uma criatura do bestiário.`] };
+  if (chaveDoBestiario && !desenhoEscolhido(chaveDoBestiario)) return { ok: false, erros: [`"${chaveDoBestiario}" não é uma criatura do bestiário nem um desenho da biblioteca.`] };
   if (chaveDoBestiario) AJUSTES.desenhos[slugDoMonstro] = chaveDoBestiario;
   else delete AJUSTES.desenhos[slugDoMonstro];
   if (gravar) gravarAjustes();
@@ -127,7 +135,9 @@ export const chaveDe = (m) => `poe-${slug(m.slug)}-${m.nivel}`;
 export function registrar(m, desenho, { forcar = false } = {}) {
   const key = chaveDe(m);
   if (BESTIARY[key] && !forcar) return key;
-  const base = BESTIARY[AJUSTES.desenhos[m.slug]] ?? BESTIARY[desenhoPeloNome(m.nome) ?? desenho] ?? BESTIARY[desenho] ?? Object.values(BESTIARY)[0];
+  const escolhido = desenhoEscolhido(AJUSTES.desenhos[m.slug]);
+  const doNome = BESTIARY[desenhoPeloNome(m.nome) ?? desenho] ?? BESTIARY[desenho] ?? Object.values(BESTIARY)[0];
+  const base = escolhido?.base ?? (escolhido ? { ...doNome, look: escolhido.look, colors: escolhido.colors, lookItem: 0 } : doNome);
   const intervaloBase = ATRIBUTOS_DO_MOB.ataque?.intervaloBaseMs ?? 2000;
   BESTIARY[key] = {
     name: m.nome,

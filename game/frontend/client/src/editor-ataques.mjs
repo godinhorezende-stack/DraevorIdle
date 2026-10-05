@@ -4,6 +4,7 @@
 // O servidor valida e grava (`itens-poe/habilidades.validarAjuste` → gamedata/itens-poe/campanha-ajustes.json) e o jogo usa na hora.
 import { el, msg, cabecalho } from './editor-ui.mjs';
 import { jogo } from './editor-sprites.mjs';
+import { escolherSprite } from './editor-biblioteca-sprites.mjs';
 
 const BASE = '/api/mapas/_engine/itens-poe/';
 const api = async (rota, corpo) => (await fetch(BASE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
@@ -39,7 +40,7 @@ function animar(canvas, desenhar) {
 }
 
 // ---------------------------------------------------------------- miniatura de um efeito / projétil (animada)
-function miniatura(tipo, id, tam = 48) {
+export function miniatura(tipo, id, tam = 48) {
   const c = el('canvas', { width: 64, height: 64, class: 'atq-mini', style: `width:${tam}px;height:${tam}px` });
   renderer().then((S) => {
     if (!S) return;
@@ -72,6 +73,7 @@ export function seletorDeEfeito({ tipo = 'efeito', valor = null, padrao = null, 
         el('span', {}, atual ? `#${atual}${valor == null && padrao ? ' (padrão)' : ''}` : tipo === 'tiro' ? 'sem projétil' : '—')),
       aberto ? el('div', { class: 'atq-grade' },
         el('button', { type: 'button', class: 'atq-opcao', onclick: () => { valor = null; aoEscolher(null); pintar(false); } }, el('span', { class: 'atq-sem' }, tipo === 'tiro' ? 'sem' : 'padrão'), el('small', {}, tipo === 'tiro' ? 'sem projétil' : 'do elemento')),
+        el('button', { type: 'button', class: 'atq-opcao', title: 'Buscar por nome ou etiqueta na Biblioteca de sprites', onclick: async () => { pintar(false); const x = await escolherSprite({ tipo: tipo === 'tiro' ? 'tiros' : 'efeitos' }); if (x) { valor = Number(x.id); aoEscolher(valor); pintar(false); } } }, el('span', { class: 'atq-sem' }, '🔎'), el('small', {}, 'biblioteca')),
         (tipo === 'tiro' ? INDICE.tiros : INDICE.efeitos).map((id) => el('button', { type: 'button', class: `atq-opcao${id === valor ? ' ativa' : ''}`, onclick: () => { valor = id; aoEscolher(id); pintar(false); } }, miniatura(tipo, id, 40), el('small', {}, `#${id}`)))) : null);
   };
   renderer().then(() => pintar(false));

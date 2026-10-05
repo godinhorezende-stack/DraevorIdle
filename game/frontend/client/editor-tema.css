@@ -1046,3 +1046,17 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .atq-biblioteca .atq-opcao { background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); padding: 8px; }
 .atq-poedb { font-size: 12.5px; padding-left: 18px; }
 .atq-no-chefe { margin-top: 10px; }
+/* Biblioteca de sprites */
+.bs-filtros { flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.bs-filtros input[type=search] { flex: 1 1 260px; min-width: 0; }
+.bs-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.bs-card { display: grid; justify-items: center; gap: 3px; padding: 8px 6px; background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); text-align: center; min-width: 0; }
+.bs-card b { font-size: 12px; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bs-card small { font-size: 11px; color: var(--eng-txt3); }
+.bs-card .bs-tags { color: var(--eng-ouro-txt); }
+.bs-card.ativo, .bs-card:hover { border-color: var(--eng-ouro); }
+.bs-rodape { display: flex; justify-content: center; margin: 10px 0; }
+.bs-usos { font-size: 12.5px; padding-left: 18px; max-height: 260px; overflow: auto; }
+.bs-grande { display: grid; place-items: center; padding: 12px; background: var(--eng-s0); border-radius: var(--eng-r2); }
+.bs-janela-fundo { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.55); display: grid; place-items: center; padding: 16px; }
+.bs-janela { width: min(1100px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: var(--eng-s2); border: 1px solid var(--eng-linha-forte); border-radius: var(--eng-r2); padding: 14px; display: grid; gap: 8px; }

@@ -8,6 +8,7 @@ import { el, msg, cabecalho, botaoCopiar } from './editor-ui.mjs';
 import { retrato } from './editor-sprites.mjs';
 import { cartaoDeAtaque, metrica, barrasDeResistencia, seloDoElemento } from './editor-fichas.mjs';
 import { editorDeAtaques } from './editor-ataques.mjs';
+import { escolherSprite } from './editor-biblioteca-sprites.mjs';
 
 const BASE = '/api/mapas/_engine/itens-poe/';
 const api = async (rota, corpo) => (await fetch(BASE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
@@ -581,8 +582,10 @@ export function criarTelaDosMobsPoe({ raiz }) {
     sec('desenho',
       el('h4', {}, 'Desenho (criatura do Draevor)'),
       el('div', { class: 'dica' }, `Agora: ${m.desenhoDe ?? '—'}${m.desenhoAjustado ? ' (escolhido na Engine)' : ' (automático pelo nome / pelo mapa)'}`),
-      el('div', { class: 'pd-busca' }, el('input', { type: 'search', placeholder: 'Buscar criatura do Draevor para o desenho…', value: T.qCriatura, onchange: (e) => buscarCriaturas(e.target.value.trim()) })),
-      T.criaturas.length ? el('div', { class: 'pm-criaturas' }, T.criaturas.map((c) => el('button', { type: 'button', class: 'pm-criatura', title: c.key, onclick: () => trocarDesenho(c.key) }, retrato(c.desenho, 48, { categoria: 'monstros' }), el('span', {}, c.nome)))) : null,
+      el('button', { type: 'button', class: 'primario', onclick: async () => {
+        const x = await escolherSprite({ tipo: 'mobs', secoes: ['mobs', 'outfits', 'montarias'], titulo: `Desenho de ${m.nome} — escolha na Biblioteca de sprites` });
+        if (x) trocarDesenho(`look:${x.id}`);
+      } }, 'Escolher na Biblioteca de sprites'),
       m.desenhoAjustado ? el('button', { type: 'button', onclick: () => trocarDesenho(null) }, 'Voltar ao desenho automático') : null,
       m.desenho?.look ? el('p', { class: 'dica' }, 'Para mudar os quadros, as direções e a animação do próprio desenho: ', el('a', { href: `#sprites/${m.desenho.look}` }, `Editor de sprites (look ${m.desenho.look}) →`)) : null);
     sec('status',
