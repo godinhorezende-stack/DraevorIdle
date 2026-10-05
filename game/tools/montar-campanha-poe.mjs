@@ -12,6 +12,8 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 
 const ORIGEM = '/home/deploy/referencias-poe/original/poe-atos';
+// Os chefes de cada área e as áreas de chefe que a coleção não tem (tools/extrair-poedb-atos.mjs — referência local; opcional).
+const ARQ_POEDB = '/home/deploy/referencias-poe/poedb/atos.json';
 const DESTINO = new URL('../gamedata/itens-poe/campanha-poe.json', import.meta.url);
 const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 const CONTEUDO = JSON.parse(readFileSync(new URL('../gamedata/campanha-conteudo.json', import.meta.url), 'utf8'));
@@ -67,6 +69,9 @@ const monstro = (m) => ({
   resistencias: { fire: m.res_fogo ?? 0, ice: m.res_gelo ?? 0, energy: m.res_raio ?? 0, chaos: m.res_caos ?? 0 },
 });
 
+/** O id da área no ato (até 40 caracteres, o limite do id de fase do Draevor). */
+const idDaArea = (numero, s) => `poe-a${numero}-${slug(s)}`.slice(0, 40).replace(/-$/, '');
+
 const pastas = readdirSync(ORIGEM).filter((d) => /^Ato_\d+$/.test(d) || d === 'Epilogo').sort();
 const atos = [];
 const areas = {};
@@ -74,7 +79,7 @@ for (const pasta of pastas) {
   const a = JSON.parse(readFileSync(`${ORIGEM}/${pasta}/ato.json`, 'utf8'));
   const numero = pasta === 'Epilogo' ? 11 : Number(pasta.slice(4));
   // Até 40 caracteres (o limite do id de fase do Draevor), sem repetir.
-  const idDe = (s) => `poe-a${numero}-${slug(s)}`.slice(0, 40).replace(/-$/, '');
+  const idDe = (s) => idDaArea(numero, s);
   const ids = [];
   // A posição de cada área no mapa do ato (os pinos do mapa do PoE), ajustada à tela do ato do Draevor (920 × 520).
   const pinos = a.mapa?.pinos ?? [];
@@ -119,6 +124,48 @@ for (const pasta of pastas) {
 }
 // As conexões só para áreas que existem (as "saídas" para outro ato ficam de fora: a ordem dos atos liga um ao outro).
 for (const ar of Object.values(areas)) ar.conexoes = [...new Set(ar.conexoes.filter((c) => areas[c] && c !== ar.id))];
+
+/*
+ * ---- O poedb: os chefes de CADA área e as áreas de chefe que faltavam (pedido do dono, 05/10) ----
+ * Área que a coleção não tem (Prisão Superior, Caverna da Cólera…): entra logo depois da área de onde se chega (`depoisDe`), ligada a ela
+ * e às áreas de nível maior que ela ligava. Cada área ganha a lista de chefes do poedb.
+ */
+const POEDB = existsSync(ARQ_POEDB) ? JSON.parse(readFileSync(ARQ_POEDB, 'utf8')) : null;
+const unicosPorSlug = (lista) => [...new Map((lista ?? []).map((c) => [c.slug, c])).values()];
+if (POEDB) {
+  for (const pa of POEDB.atos) {
+    const ato = atos.find((x) => x.numero === pa.numero);
+    if (!ato) continue;
+    for (const a of pa.areas) {
+      const id = idDaArea(pa.numero, a.slug);
+      if (!areas[id]) {
+        const antes = a.depoisDe ? areas[idDaArea(pa.numero, a.depoisDe)] : null;
+        const adiante = (antes?.conexoes ?? []).filter((c) => areas[c] && !areas[c].cidade && areas[c].nivel > a.nivel);
+        areas[id] = {
+          id,
+          slug: a.slug,
+          nome: a.nome,
+          ato: pa.numero,
+          nivel: a.nivel,
+          ...(a.cidade ? { cidade: true } : {}),
+          ...(a.waypoint ? { waypoint: true } : {}),
+          conexoes: [...(antes ? [antes.id] : []), ...adiante],
+          chefes: [],
+          tags: antes?.tags ?? [],
+          mapa: a.cidade ? null : mapaDaArea({ nome: a.nome, detalhe: { tags: antes?.tags ?? [] } }),
+          ...(antes?.posicao ? { posicao: { x: Math.min(900, antes.posicao.x + 40), y: Math.max(10, antes.posicao.y - 30) } } : {}),
+          monstros: [],
+          doPoedb: true,
+        };
+        if (antes) antes.conexoes.push(id);
+        for (const c of adiante) areas[c].conexoes.push(id);
+        const i = ato.areas.indexOf(antes?.id);
+        ato.areas.splice(i >= 0 ? i + 1 : ato.areas.length, 0, id);
+      }
+      areas[id].chefes = unicosPorSlug(a.chefes).map((c) => c.nome);
+    }
+  }
+}
 // Área sem a tabela de monstros (o poedb omite algumas): os monstros da área de nível mais perto — conectada primeiro, senão do mesmo ato.
 for (const ar of Object.values(areas)) {
   if (ar.cidade || ar.monstros.length) continue;
@@ -128,6 +175,49 @@ for (const ar of Object.values(areas)) {
   if (fonte) {
     ar.monstros = fonte.monstros.filter((m) => !m.unico).map((m) => ({ ...m }));
     ar.monstrosDe = fonte.id;
+  }
+}
+
+/*
+ * ---- Os chefes de cada área como monstros ÚNICOS da área ----
+ * O valor da coleção quando a área já o traz; senão, os status do NÍVEL da área (poedb, `api/monsterLevelSkill`) com os bônus de monstro
+ * Único do PoE (que a chamada não inclui — os da fórmula do Hillock: vida ×7,98 ×1,5 de chefe de área, dano ×1,7 ×0,67, exp ×5,5). As
+ * HABILIDADES do poedb (dano no nível, recarga, descrição) vão junto, para os golpes especiais dos chefes.
+ */
+const UNICO_DE_AREA = { vida: 7.98 * 1.5, dano: 1.7 * 0.67, experiencia: 5.5 };
+const habilidadesDe = (p) => (p?.habilidades ?? []).filter((h) => h.nome && h.dano).map((h) => ({ nome: h.nome, interno: h.interno, tags: h.tags, dano: h.dano, ...(h.recarga ? { recarga: h.recarga } : {}), ...(h.tempo ? { tempo: h.tempo } : {}), ...(h.descricao ? { descricao: h.descricao } : {}) }));
+function monstroDoPoedb(p, fatorVida = UNICO_DE_AREA.vida) {
+  const st = p.status ?? {};
+  return {
+    slug: p.slug,
+    nome: p.nome,
+    nivel: p.nivel,
+    unico: true,
+    experiencia: Math.round((st['Experiência'] ?? 0) * UNICO_DE_AREA.experiencia),
+    dano: Math.round((st.Damage ?? 0) * UNICO_DE_AREA.dano),
+    tempoAtaque: st['Attack Time'] || 1.5,
+    vida: Math.round((st.Vida ?? 1) * fatorVida),
+    armadura: st.Armadura ?? 0,
+    evasao: st['Evasão'] ?? 0,
+    escudoDeEnergia: Math.round((st['Escudo de Energia'] ?? st['Energy Shield'] ?? 0) * fatorVida),
+    resistencias: { fire: p.resistencias?.fire ?? 0, ice: p.resistencias?.ice ?? 0, energy: p.resistencias?.energy ?? 0, chaos: p.resistencias?.chaos ?? 0 },
+    habilidades: habilidadesDe(p),
+    fonte: 'poedb',
+  };
+}
+let chefesDeArea = 0;
+if (POEDB) {
+  for (const pa of POEDB.atos) for (const a of pa.areas) {
+    const ar = areas[idDaArea(pa.numero, a.slug)];
+    if (!ar || ar.cidade) continue;
+    for (const c of unicosPorSlug(a.chefes)) {
+      const p = POEDB.chefes[`${c.slug}@${a.nivel}`];
+      if (!p || p.erro || !p.status) continue;
+      const ja = ar.monstros.find((m) => m.unico && m.slug === c.slug);
+      if (ja) ja.habilidades = habilidadesDe(p);
+      else ar.monstros.push(monstroDoPoedb(p));
+      chefesDeArea++;
+    }
   }
 }
 
@@ -195,6 +285,18 @@ for (const d of existsSync(pastaChefes) ? readdirSync(pastaChefes).sort() : []) 
   };
 }
 
+// Os chefes de ATO com o poedb: o calculado (só a versão de mapa na coleção) passa a ser o do nível da área no poedb (com o bônus de chefe
+// de ato da fórmula da Merveil: vida ×7,98 ×1,74); todos ganham as habilidades.
+if (POEDB) {
+  for (const ch of Object.values(chefes)) {
+    const nome = ch.nome.split(',')[0].split(' / ')[0];
+    const p = Object.values(POEDB.chefes).find((x) => !x.erro && x.status && x.nome.startsWith(nome) && x.nivel === ch.nivel) ?? Object.values(POEDB.chefes).find((x) => !x.erro && x.status && x.nome.startsWith(nome));
+    if (!p) continue;
+    if (!ch.monstro || ch.monstro.calculado) ch.monstro = { ...monstroDoPoedb(p, 7.98 * 1.74), nivel: ch.nivel };
+    ch.monstro.habilidades = habilidadesDe(p);
+  }
+}
+
 const saida = {
   _nota: 'A CAMPANHA do PoE (10 atos + Epílogo) para o Draevor — gerada por tools/montar-campanha-poe.mjs da coleção do Drive (poe-atos). Só entra no jogo com ITENS_POE=1 (incremento C3). `mapa`: a hunt do Draevor cujo terreno a área usa (escolhida pela ambientação; trocável no editor); `monstros`: os do PoE com os status por nível (C2 dá o desenho de uma criatura do Draevor). Cidades não têm mapa nem monstros.',
   atos,
@@ -204,4 +306,5 @@ const saida = {
 writeFileSync(DESTINO, JSON.stringify(saida) + '\n');
 const lista = Object.values(areas);
 const mapasUsados = new Set(lista.map((a) => a.mapa).filter(Boolean));
+console.log(`poedb: ${POEDB ? `${chefesDeArea} chefes de área, ${lista.filter((a) => a.doPoedb).length} áreas de chefe acrescentadas` : 'não extraído (tools/extrair-poedb-atos.mjs)'}`);
 console.log(`${atos.length} atos, ${lista.length} áreas (${lista.filter((a) => a.cidade).length} cidades), ${lista.reduce((n, a) => n + a.monstros.length, 0)} monstros por área, ${mapasUsados.size} mapas do Draevor usados, ${Object.keys(chefes).length} chefes de ato`);

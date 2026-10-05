@@ -92,6 +92,7 @@ test('C3 — a campanha do PoE no lugar da do Draevor: áreas sobre os mapas do 
     p.completas.push(...ato1);
     r.chefeDepois = Campanha.bossLiberado(e, 'facil', 1);
     r.chefe = Campanha.bossDoAto(1)?.nome;
+    r.antesDoChefe = Campanha.ultimaFaseDoAto(1)?.nome;
     r.ato2Antes = Campanha.faseLiberada(e, 'facil', 'poe-a2-the-southern-forest');
     p.bosses.push(1);
     r.ato2Depois = Campanha.faseLiberada(e, 'facil', 'poe-a2-the-southern-forest');
@@ -100,12 +101,25 @@ test('C3 — a campanha do PoE no lugar da do Draevor: áreas sobre os mapas do 
   const r = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', codigo], { cwd: new URL('..', import.meta.url).pathname, encoding: 'utf8' }).trim().split('\n').pop());
   assert.deepEqual(r.atos, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   assert.equal(r.problemas, 0);
-  assert.equal(r.fases, 127);
+  assert.equal(r.fases, Object.values(C.areas).filter((a) => !a.cidade && a.mapa).length, 'uma fase por área de combate');
   assert.equal(r.legado, false, 'a campanha do Draevor saiu');
   assert.ok(r.entrou && r.soDoPoe, 'a Costa do Crepúsculo tem só monstros do PoE');
   assert.ok(r.hillock, 'com o Hillock, o único da área');
   assert.deepEqual([r.costaAntes, r.costaDepois], [false, true], 'a Costa abre depois da Costa do Crepúsculo');
   assert.deepEqual([r.chefeAntes, r.chefeDepois], [false, true]);
   assert.match(r.chefe, /Merveil/);
+  if (C.areas['poe-a1-the-cavern-of-anger']) assert.equal(r.antesDoChefe, 'Caverna da Cólera', 'o chefe do Ato 1 vem depois da Caverna da Cólera (a área dele, do poedb)');
   assert.deepEqual([r.ato2Antes, r.ato2Depois], [false, true], 'o Ato 2 abre com a vitória sobre o chefe do Ato 1');
+});
+
+test('poedb — as áreas de chefe que faltavam e os chefes de cada área (com habilidades)', { skip: !C.areas['poe-a1-the-cavern-of-anger'] && 'poedb não extraído' }, () => {
+  const colera = C.areas['poe-a1-the-cavern-of-anger'];
+  assert.ok(colera.doPoedb && colera.conexoes.includes('poe-a1-the-cavern-of-wrath'), 'a Caverna da Cólera entra depois da Caverna da Ira');
+  const superior = C.areas['poe-a1-the-upper-prison'];
+  assert.ok(superior.monstros.some((m) => m.unico && /Brutus/.test(m.nome)), 'Brutus na Prisão Superior');
+  for (const a of Object.values(C.areas)) for (const nome of a.chefes ?? []) {
+    if (a.cidade || /Totem/.test(nome)) continue;
+    assert.ok(a.monstros.some((m) => m.unico && m.nome === nome), `${a.nome}: ${nome}`);
+  }
+  assert.ok(C.chefes[1].monstro.habilidades.some((h) => h.dano), 'a Merveil com habilidades (dano no nível)');
 });
