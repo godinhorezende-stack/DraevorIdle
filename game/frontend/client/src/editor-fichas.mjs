@@ -3,6 +3,7 @@
 // abas (Geral, Atributos, Combate, Loot, Visual). Só mostra o que o cadastro traz; o que falta sai "não cadastrado".
 import { el, botaoCopiar } from './editor-ui.mjs';
 import { retrato, previa } from './editor-sprites.mjs';
+import { balaoPoe, valorDoAtributo } from './itens-poe-balao.mjs';
 
 const NAO = 'não cadastrado';
 
@@ -162,7 +163,88 @@ function chancesDeSockets(regra, maximo) {
  * A FICHA DO ITEM em abas: Geral, Atributos, Sockets, Visual, Loot e Tooltip (a prévia com o balão do jogo).
  * `api` busca os dados do tooltip; `abrir` abre outro conteúdo (o monstro que solta o item).
  */
+// ---------------------------------------------------------------- itens do PoE (com ITENS_POE=1 a Biblioteca só tem as bases do PoE)
+
+const POE = '/api/mapas/_engine/itens-poe/';
+const poeApi = async (rota) => (await fetch(POE + rota)).json();
+const imgPoe = (c) => (c ? `${POE}ref/${c.split('/').map(encodeURIComponent).join('/')}` : null);
+const iconePoe = (c, tam = 48) => (c ? el('img', { class: 'poe-icone', src: imgPoe(c), width: tam, height: tam, loading: 'lazy', alt: '' }) : el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?'));
+const ROTULO_POE = {
+  armadura: 'Armadura', evasao: 'Evasão', escudo_energia: 'Escudo de Energia', velocidade_movimento_pct: 'Velocidade de Movimento', chance_bloqueio_pct: 'Chance de Bloqueio',
+  dano_fisico: 'Dano Físico', chance_critico_pct: 'Chance de Crítico', ataques_por_segundo: 'Ataques por Segundo', alcance_metros: 'Alcance', dps_fisico_base: 'DPS físico base',
+};
+const SIMBOLO_POE = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○' };
+const ESTADO_POE = { equivalente: 'tem efeito no Draevor (mesma conta)', aproximado: 'tem efeito no Draevor (com diferença)', novo: 'atributo novo do PoE, com efeito', registrado: 'registrado, ainda sem efeito no combate' };
+const marcaPoe = (estado) => el('em', { class: `poe-tr ${estado}`, title: ESTADO_POE[estado] ?? estado }, SIMBOLO_POE[estado] ?? '?');
+/** Um bloco que se preenche depois (as abas que buscam na API do PoE). */
+function depois(promessa) {
+  const caixa = el('div', {}, el('span', { class: 'dica' }, 'Carregando…'));
+  promessa.then((filhos) => caixa.replaceChildren(...[filhos].flat().filter(Boolean))).catch((e) => caixa.replaceChildren(el('p', { class: 'nao' }, `Não carregou: ${e.message}`)));
+  return caixa;
+}
+
+/** A FICHA DE UMA BASE DO PoE: base e requisitos, o que cada atributo vira no Draevor, os mods do pool por iLvl, os únicos e peças de exemplo. */
+function fichaDoItemPoe(d) {
+  const p = d.poe;
+  const R = p.regras;
+  const E = (fichaDoItemPoe.estado ??= { ilvl: 84, raridade: 'raro', semente: 1 });
+  const unicos = p.unicos ?? [];
+  const abas = [['geral', 'Base'], ['mods', 'Mods (pool)'], ['exemplos', 'Peças de exemplo'], ['unicos', `Únicos (${unicos.length})`]];
+  const req = p.requisitos ?? {};
+  const nivelIlvl = (refazer) => el('label', { class: 'campo', style: 'flex:none' }, 'Item Level (= nível do monstro)', el('input', { type: 'number', min: 1, max: 100, value: E.ilvl, style: 'width:80px', onchange: (e) => { E.ilvl = Math.max(1, Math.min(100, Number(e.target.value) || 1)); refazer(); } }));
+  const corpo = (aba) => {
+    if (aba === 'geral') {
+      return [
+        el('div', { class: 'linha', style: 'gap:12px;align-items:flex-start' }, iconePoe(p.icone, 96), el('div', { style: 'min-width:0' },
+          linhas([['Nome', p.nome], ['Base', el('span', { class: 'eng-id' }, p.base)], ['Classe', p.classe.replace(/_/g, ' ')], ['Slot no Draevor', d.slot ? nomeDoSlot(d.slot) : null], ['Pool de mods', p.pool ?? el('span', { class: 'nao' }, 'sem pool: sai sem mods')], ['ID no jogo', el('span', { class: 'eng-id' }, d.id)]]))),
+        el('h4', {}, 'Requisitos (todos valem, como no PoE)'),
+        el('div', { class: 'eng-metricas' }, metrica('Nível', req.nivel ?? 1), req.forca ? metrica('Força', req.forca) : null, req.destreza ? metrica('Destreza', req.destreza) : null, req.inteligencia ? metrica('Inteligência', req.inteligencia) : null),
+        el('h4', {}, 'Atributos da base e o que viram no Draevor'),
+        el('div', { class: 'bib-tabela' }, el('table', {},
+          el('thead', {}, el('tr', {}, ['Atributo (PoE)', 'Valor', 'No Draevor', 'Estado'].map((h) => el('th', {}, h)))),
+          el('tbody', {}, p.atributos.map((a) => el('tr', {}, el('td', {}, ROTULO_POE[a.chave] ?? a.chave), el('td', { class: 'num' }, valorDoAtributo(a.chave, a.valor)), el('td', {}, a.noJogo ?? '—'), el('td', {}, a.estado === 'aplicado' ? el('span', { class: 'selo usos' }, 'aplicado') : el('span', { class: 'selo aviso' }, 'sem efeito'))))))),
+        el('h4', {}, `Implícito${p.implicitos.length === 1 ? '' : 's'}`),
+        p.implicitos.length
+          ? el('div', {}, p.implicitos.map((m) => el('div', { class: 'poe-mod imp' }, marcaPoe(m.traducao.estado), ' ', m.texto, el('span', { class: 'dica' }, `  → ${m.traducao.efeitos.map((f) => f.stat ?? f.id ?? Object.keys(f)[0]).join(', ') || 'sem efeito'}`))))
+          : el('p', { class: 'dica' }, 'Esta base não tem implícito.'),
+        el('p', { class: 'dica' }, 'Os mods das peças (prefixos e sufixos) são sorteados no drop pelo Item Level = o nível do monstro: só saem tiers com iLvl até esse nível. Veja a aba Mods.'),
+      ];
+    }
+    if (aba === 'mods') {
+      if (!p.pool) return [el('p', { class: 'nao' }, 'A coleção não tem pool de mods para esta base (as peças dela saem sem mods).')];
+      const caixa = el('div');
+      const refazer = () => caixa.replaceChildren(depois(poeApi(`pool?${new URLSearchParams({ base: p.base, ilvl: E.ilvl })}`).then((r) => {
+        if (!r.prefixos) return el('p', { class: 'nao' }, r.erros?.[0] ?? 'Sem pool.');
+        const tabela = (lista, titulo) => [el('h4', {}, `${titulo} (${lista.length} famílias · ${lista.filter((g) => g.liberados).length} liberadas no iLvl ${r.ilvl})`), el('div', { class: 'bib-tabela' }, el('table', {},
+          el('thead', {}, el('tr', {}, ['', 'Mod (melhor tier)', 'Tags', 'Peso', '% no lado', 'Tiers liberados / total', 'iLvl dos tiers'].map((h) => el('th', {}, h)))),
+          el('tbody', {}, lista.map((g) => el('tr', { class: g.liberados ? '' : 'apagado', title: g.tiers.map((t) => `T${t.tier} ${t.nome ?? ''} (iLvl ${t.ilvl}, peso ${t.peso}): ${t.texto}`).join('\n') },
+            el('td', {}, marcaPoe(g.traducao.estado)), el('td', {}, g.tiers[0]?.texto ?? g.familia), el('td', { class: 'dica' }, g.tags.join(', ')), el('td', { class: 'num' }, g.peso), el('td', { class: 'num' }, `${g.pct}%`),
+            el('td', { class: 'num' }, `${g.liberados} / ${g.tiers.length}`), el('td', { class: 'num' }, g.tiers.map((t) => t.ilvl).sort((a, b) => a - b).join(' · '))))))) ];
+        return [...tabela(r.prefixos, 'Prefixos'), ...tabela(r.sufixos, 'Sufixos'), el('p', { class: 'dica' }, 'Passe o mouse numa linha para ver todos os tiers. Linha apagada = nenhum tier sai neste Item Level.')];
+      })));
+      refazer();
+      return [el('div', { class: 'eng-tooltip-barra' }, nivelIlvl(refazer)), caixa];
+    }
+    if (aba === 'exemplos') {
+      const caixa = el('div');
+      const refazer = () => caixa.replaceChildren(depois(poeApi(`gerar?${new URLSearchParams({ base: p.base, raridade: E.raridade, ilvl: E.ilvl, semente: E.semente, n: 6 })}`).then((r) =>
+        el('div', { class: 'eng-tooltip-grade' }, r.pecas.map((x) => el('figure', {}, x.erro ? el('p', { class: 'nao' }, x.erro) : balaoPoe(x, { cor: R.raridades[x.raridade]?.cor, raridadeNome: R.raridades[x.raridade]?.nome ?? x.raridade, nomeDaBase: p.nome, estados: x.traducao?.linhas.map((l) => l.estado), af: x.traducao?.af, requisitos: { nivel: req.nivel, str: req.forca, dex: req.destreza, int: req.inteligencia } })))))));
+      refazer();
+      const selRar = el('select', { onchange: (e) => { E.raridade = e.target.value; refazer(); } }, R.ordem.map((r) => el('option', { value: r, selected: r === E.raridade }, R.raridades[r].nome)));
+      return [el('div', { class: 'eng-tooltip-barra' }, el('label', { class: 'campo', style: 'flex:none' }, 'Raridade', selRar), nivelIlvl(refazer), el('button', { type: 'button', onclick: () => { E.semente++; refazer(); } }, 'Sortear outras')), caixa,
+        el('p', { class: 'dica' }, `Mesmo gerador do drop. ${R.ordem.map((x) => { const q = R.raridades[x]; return q.fixos ? `${q.nome} = mods fixos` : `${q.nome} até ${q.maxPrefixos ?? 0}+${q.maxSufixos ?? 0}`; }).join(' · ')}. Cada mod mostra se tem efeito no Draevor (✓ ≈ ◆) ou só está registrado (○).`)];
+    }
+    if (aba === 'unicos') {
+      if (!unicos.length) return [el('p', { class: 'nao' }, 'Nenhum único desta base na coleção.')];
+      return [el('div', { class: 'poe-unicos' }, unicos.map((u) => el('div', { class: 'poe-unico' }, iconePoe(u.icone, 64), el('div', {}, el('b', {}, u.nome), u.modificadores.map((m) => el('div', { class: 'poe-mod uni' }, m))))))];
+    }
+    return null;
+  };
+  return { abas, corpo, largas: ['geral', 'mods', 'exemplos', 'unicos'] };
+}
+
 export function fichaDoItem(d, { abrir, api }) {
+  if (d.poe) return fichaDoItemPoe(d);
   const r = d.regras;
   const fontes = (d.usadoEm ?? []).filter((u) => u.categoria === 'monstros' || u.categoria === 'encontros');
   const abas = [['geral', 'Geral'], ...(r ? [['atributos', 'Atributos'], ...(r.sockets ? [['sockets', 'Sockets']] : [])] : []), ['visual', 'Visual'], ['loot', `Loot (${fontes.length})`], ['tooltip', 'Tooltip']];

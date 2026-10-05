@@ -35,6 +35,8 @@ const vigia = typeof IntersectionObserver === 'function'
 
 /** O canvas do desenho, já no tamanho pedido (criatura: recortada e ampliada; item: ampliado sem borrar). */
 function canvasDo(desenho, tamanho, { animar, dir }) {
+  // Imagem pronta (os ícones dos itens do PoE, servidos pela engine local).
+  if (desenho.tipo === 'imagem') return el('img', { src: desenho.url, width: tamanho, height: tamanho, loading: 'lazy', alt: '', style: 'object-fit:contain;image-rendering:auto' });
   if (!Sprites) return el('span');
   if (desenho.tipo === 'criatura') return Sprites.outfitCanvas(desenho.look, desenho.cores ?? undefined, tamanho, dir, animar);
   return Sprites.itemCanvas(desenho.id, tamanho);

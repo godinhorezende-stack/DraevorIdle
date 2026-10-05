@@ -514,3 +514,46 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .poe-cobertura { display: flex; height: 26px; border-radius: var(--eng-r2); overflow: hidden; border: 1px solid var(--eng-linha); }
 .poe-tr-barra { display: flex; align-items: center; justify-content: center; font-size: 11.5px; color: #0d0f14; white-space: nowrap; overflow: hidden; }
 .poe-tr-barra.equivalente { background: #5cc28a; } .poe-tr-barra.aproximado { background: #e9c34f; } .poe-tr-barra.novo { background: #c79bff; } .poe-tr-barra.registrado { background: #6f7889; }
+/* Ficha da base do PoE na Biblioteca de itens */
+.bib-tabela tr.apagado { opacity: .45; }
+.bib-painel-corpo > div > .poe-mod.imp, .bib-painel-corpo .poe-mod.imp { justify-content: flex-start; text-align: left; padding: 2px 0; }
+
+/* Campanha do PoE: o grafo das áreas do ato */
+.pc-grafo { background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); margin-bottom: var(--eng-e3, 12px); overflow: hidden; }
+.pc-svg { display: block; width: 100%; height: auto; }
+.pc-liga-mapa { stroke: var(--eng-linha-forte); stroke-dasharray: 4 4; stroke-width: 1; }
+.pc-liga { stroke: var(--eng-txt3); stroke-width: 1.6; }
+.pc-seta { fill: var(--eng-txt3); }
+.pc-no { cursor: pointer; }
+.pc-no circle { fill: var(--eng-s3); stroke: var(--eng-txt3); stroke-width: 1.5; }
+.pc-no.com-unico circle { stroke: var(--eng-aviso); }
+.pc-no.trocado circle { fill: var(--eng-info-fundo); }
+.pc-no.cidade circle { fill: var(--eng-ok-fundo); stroke: var(--eng-ok); }
+.pc-no.ativo circle, .pc-no:hover circle, .pc-no:focus circle { stroke: var(--eng-ouro-forte); stroke-width: 3; }
+.pc-no text { text-anchor: middle; fill: var(--eng-txt2); font-size: 11px; pointer-events: none; }
+.pc-no .pc-nv { fill: var(--eng-txt); font-weight: 600; font-size: 10px; }
+.pc-no .pc-chefe { fill: var(--eng-boss); font-weight: 600; }
+.pc-monstros { display: grid; gap: 6px; }
+.pc-monstro { border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); padding: 6px 8px; background: var(--eng-s1); }
+.pc-monstro > summary { display: flex; gap: 8px; align-items: center; cursor: pointer; list-style: none; }
+.pc-monstro[open] > summary { margin-bottom: 8px; }
+.pc-monstro h5, .pc-chefe-ficha h5 { margin: 10px 0 4px; color: var(--eng-txt2); }
+.bib-tabela tr.selecionada td { background: var(--eng-ouro-fundo); }
+/* Árvore do PoE */
+.pa-quadro { --pa-fundo: var(--eng-s0); --pa-texto: var(--eng-txt); border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); overflow: hidden; }
+.pa-canvas { display: block; width: 100%; height: auto; cursor: grab; touch-action: none; --pa-fundo: #0d0f14; --pa-texto: #e3e6ec; }
+.pa-canvas:active { cursor: grabbing; }
+.pa-legenda { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0; font-size: 12px; color: var(--eng-txt2); }
+.pa-legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+.pa-linhas, .pa-opcoes { display: grid; gap: 4px; }
+.pa-linha { display: flex; gap: 6px; align-items: baseline; }
+.pa-opcao { border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); padding: 6px; background: var(--eng-s1); }
+.poe-tr.nota { color: var(--eng-txt3); }
+.poe-v.poe-larga { grid-template-columns: 180px minmax(0, 1.7fr) minmax(340px, 1fr); }
+.pa-barra { flex-wrap: wrap; gap: 8px; }
+.pa-barra input[type=search] { flex: 1 1 200px; min-width: 0; }
+.pc-no text { font-size: 15px; }
+.pc-no .pc-nv { font-size: 12px; }
+.pc-no circle { r: 15px; }
+.pc-no.cidade circle { r: 10px; }
+.eng-ataque-topo { flex-wrap: wrap; }

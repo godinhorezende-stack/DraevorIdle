@@ -8,6 +8,7 @@ import { criarEditorDeAtos } from './editor-atos.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
 import { criarTelaDeItensPoe } from './editor-itens-poe.mjs';
+import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe } from './editor-poe-telas.mjs';
 import { el, msg, descartarAlteracoes, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
@@ -287,18 +288,19 @@ const TELAS_FIXAS = {
 const CATEGORIA_DA_TELA = { mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
 // A referência do PoE (Fase 1 do sistema de itens no modelo do PoE): só leitura, só com ITENS_POE=1 no servidor.
 const ITENS_POE = criarTelaDeItensPoe({ raiz: () => $('#raiz') });
+const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }) };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)'], ['itens-poe', 'Itens (PoE)']];
+const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 const GRUPOS = [
   { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', href: '/editor' }] },
   { titulo: 'Entidades', itens: [{ id: 'mobs', nome: 'Mobs', icone: 'mobs' }, { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }, { id: 'itens', nome: 'Itens', icone: 'espada' }, { id: 'outfits', nome: 'Outfits', icone: 'outfit' }, { id: 'montarias', nome: 'Montarias', icone: 'montaria' }] },
   { titulo: 'Biblioteca', itens: [{ id: 'biblioteca', nome: 'Todos os cadastros', icone: 'livros' }] },
-  { titulo: 'Referência PoE', itens: [{ id: 'itens-poe', nome: 'Itens (PoE)', icone: 'espada' }] },
+  { titulo: 'Referência PoE', itens: [{ id: 'itens-poe', nome: 'Itens (PoE)', icone: 'espada' }, { id: 'poe-campanha', nome: 'Campanha do PoE', icone: 'atos' }, { id: 'poe-arvore', nome: 'Árvore do PoE', icone: 'fase' }, { id: 'poe-chefes', nome: 'Chefes do PoE', icone: 'coroa' }] },
 ];
 function desenharAbas() {
   $('#abas').replaceChildren(...navegacao(GRUPOS, S.aba, (id) => irPara(id)));
@@ -331,6 +333,7 @@ async function irPara(aba, faseId = null, resto = []) {
   if (aba === 'biblioteca') await BIBLIOTECA.desenhar(resto ?? []);
   if (aba === 'atos') await EDITOR_DE_ATOS.desenhar();
   if (aba === 'itens-poe') await ITENS_POE.desenhar();
+  if (TELAS_POE[aba]) await TELAS_POE[aba].desenhar(resto ?? []);
 }
 
 // ---- Visão geral

@@ -10,6 +10,7 @@
 //   4. os atos viram atos do runtime de atos (`Campanha.registrarAto`): as áreas em grafo (as ligações do mapa do PoE, orientadas a partir
 //      da primeira área do ato; as cidades ficam de fora e ligam os dois lados), o chefe depois da última área, cada ato abrindo depois
 //      do chefe do anterior. A campanha do Draevor sai (a de `campanha.json`, com o PoE ligado, começa vazia — `campanha.mjs`).
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import * as Monstros from './monstros.mjs';
 import * as Habilidades from './habilidades.mjs';
@@ -20,6 +21,38 @@ import * as BossesUnicos from '../bosses-unicos/catalogo.mjs';
 import * as Campanha from '../campanha.mjs';
 
 const C = Monstros.CAMPANHA;
+
+// O MAPA trocado na engine (tela "Campanha do PoE"): `{ areaId: huntId }`, por cima do que `montar-campanha-poe.mjs` escolheu.
+const ARQUIVO_DE_MAPAS = new URL('../../gamedata/itens-poe/campanha-mapas.json', import.meta.url);
+export const MAPAS_TROCADOS = existsSync(ARQUIVO_DE_MAPAS) ? JSON.parse(readFileSync(ARQUIVO_DE_MAPAS, 'utf8')) : {};
+for (const [id, mapa] of Object.entries(MAPAS_TROCADOS)) if (C.areas[id] && !C.areas[id].cidade) C.areas[id].mapa = mapa;
+
+/** Os mapas do Draevor que uma área pode usar (as hunts de verdade, sem as áreas virtuais do PoE). */
+export const mapasDoDraevor = () => CATALOGO.hunts.filter((h) => !h.poeArea && acharHunt(h.id)).map((h) => ({ id: h.id, nome: h.name ?? h.id, nivel: h.level ?? null }));
+
+/** A hunt virtual da área (a hunt base com o id, o nome e o nível da área). */
+const huntDaArea = (a, base) => ({ ...base, id: a.id, name: a.nome, level: a.nivel, blurb: `${a.ato === 11 ? 'Epílogo' : `Ato ${a.ato}`} (PoE)`, poeArea: true });
+
+/**
+ * Troca o MAPA (o terreno) de uma área: vale na hora (quem entrar de novo já pega o terreno novo) e fica salvo em `campanha-mapas.json`.
+ * Devolve `{ ok, erro? }`.
+ */
+export function trocarMapa(id, mapa, { salvar = true } = {}) {
+  const a = C.areas[id];
+  if (!a || a.cidade) return { ok: false, erro: 'Área desconhecida (ou cidade, que não tem combate).' };
+  const base = acharHunt(mapa);
+  if (!base || base.poeArea) return { ok: false, erro: `"${mapa}" não é um mapa do Draevor.` };
+  a.mapa = mapa;
+  MAPAS_TROCADOS[id] = mapa;
+  if (INICIADO) {
+    apelidarMapa(id, mapa);
+    const i = CATALOGO.hunts.findIndex((h) => h.id === id);
+    if (i >= 0) CATALOGO.hunts[i] = huntDaArea(a, base);
+    else CATALOGO.hunts.push(huntDaArea(a, base));
+  }
+  if (salvar) writeFileSync(ARQUIVO_DE_MAPAS, `${JSON.stringify(MAPAS_TROCADOS, null, 2)}\n`);
+  return { ok: true };
+}
 export const idDoChefe = (ato) => `poe-chefe-ato-${ato}`;
 const idDoAto = (ato) => `poe-ato-${ato}`;
 
@@ -165,7 +198,7 @@ export function iniciar() {
     const base = acharHunt(a.mapa);
     if (!base) continue;
     apelidarMapa(a.id, a.mapa);
-    if (!CATALOGO.hunts.some((h) => h.id === a.id)) CATALOGO.hunts.push({ ...base, id: a.id, name: a.nome, level: a.nivel, blurb: `${a.ato === 11 ? 'Epílogo' : `Ato ${a.ato}`} (PoE)`, poeArea: true });
+    if (!CATALOGO.hunts.some((h) => h.id === a.id)) CATALOGO.hunts.push(huntDaArea(a, base));
     areas++;
   }
   // 2. os monstros e a troca dos bichos dos spawns

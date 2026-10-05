@@ -7,6 +7,8 @@ import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
 import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 import * as Jogo from '../systems/itens-poe/jogo.mjs';
+import * as Telas from './itens-poe-telas.mjs';
+import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
 const TIPOS = { '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.gif': 'image/gif' };
@@ -54,6 +56,13 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     const r = Jogo.entregar(d?.personagem, peca);
     return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, nome: r.nome, peca } : { ok: false, erros: [r.erro] }), true;
   }
+  // A outra escrita: trocar o MAPA (terreno) de uma área da campanha do PoE (vale na hora e fica salvo em campanha-mapas.json).
+  if (req.method === 'POST' && rota === 'campanha/mapa') {
+    if (!Catalogo.ligado()) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
+    const d = await corpoJson(req).catch(() => null);
+    const r = CampanhaPoe.trocarMapa(String(d?.area ?? ''), String(d?.mapa ?? ''));
+    return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, area: Telas.area(d.area) } : { ok: false, erros: [r.erro] }), true;
+  }
   if (req.method !== 'GET') return json(res, 405, { ok: false, erros: ['Somente leitura.'] }), true;
   const q = url.searchParams;
   if (rota === 'estado') return json(res, 200, { ligado: Catalogo.ligado(), arquivo: Catalogo.ARQUIVO, regras: Catalogo.REGRAS, como: 'Ligue com ITENS_POE=1 e importe com: node tools/importar-poe-itens.mjs' }), true;
@@ -82,6 +91,13 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (!pool) return json(res, 404, { ok: false, erros: ['A coleção não tem pool de mods para esta base.'] }), true;
     return json(res, 200, { base: achado.base.id, pagina: achado.base.pool, ilvl: Number(q.get('ilvl')) || 84, ...resumoDoPool(pool, Number(q.get('ilvl')) || 84) }), true;
   }
+  if (rota === 'campanha') return json(res, 200, Telas.campanha()), true;
+  if (rota === 'campanha/area') {
+    const a = Telas.area(q.get('id'));
+    return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Área desconhecida.'] }), true;
+  }
+  if (rota === 'chefes') return json(res, 200, Telas.chefes()), true;
+  if (rota === 'arvore') return json(res, 200, { ...Telas.arvore(), cobertura: Telas.coberturaDaArvore() }), true;
   if (rota === 'online') return json(res, 200, { online: Jogo.online(), equipavel: Object.keys(Jogo.CLASSES_DO_JOGO), naoEquipaveis: Jogo.registro().naoEquipaveis }), true;
   if (rota === 'gerar') {
     const pecas = pecasDe(cat, q);

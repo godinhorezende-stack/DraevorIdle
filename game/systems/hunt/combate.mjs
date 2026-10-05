@@ -44,6 +44,12 @@ import { tipoDoBicho } from './escalonamento.mjs';
 import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
 import * as Tarefas from '../tarefas.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
+
+/**
+ * O ITEM LEVEL do drop do PoE = o nível do monstro (regra do dono, 05/10: bicho nível 11 não solta mod de iLvl 23). O monstro do PoE tem
+ * o nível dele no bestiário; os outros, o da fase. Os níveis a mais da raridade do Draevor (`levelExtra`) não sobem o iLvl.
+ */
+export const nivelDoDropPoe = (hunt, alvo) => BESTIARY[alvo?.key]?.poe?.nivel ?? hunt?.escala?.nivel ?? AtributosDoPersonagem.levelDoBicho(hunt, { ...alvo, levelExtra: 0 });
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
@@ -333,8 +339,7 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
   {
     const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
-    const nivel = AtributosDoPersonagem.levelDoBicho(hunt, alvo);
-    itens.push(...ItensPoeJogo.dropsDoMonstro(nivel, tipoDoBicho(alvo), Math.random, undefined, quantidade));
+    itens.push(...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade));
     const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
     if (exclusivo) itens.push(exclusivo);
   }
@@ -777,7 +782,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho × os modificadores de quantidade do loot
   // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
   const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt);
-  for (const daPoe of ItensPoeJogo.dropsDoMonstro(AtributosDoPersonagem.levelDoBicho(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador)) {
+  for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador)) {
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);

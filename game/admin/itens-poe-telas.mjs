@@ -1,0 +1,132 @@
+// Os dados das três telas da engine para o PoE (grupo "Referência PoE", só com ITENS_POE=1): a CAMPANHA (atos, grafo de áreas, mapa de
+// cada área, monstros e chefes com status e habilidades), a ÁRVORE (nós, maestrias, keystones e ascendências, com o texto do PoE, a
+// tradução e o estado de cada linha) e os CHEFES (pináculos e chefes de ato, com status, habilidades convertidas e arena).
+// Tudo vem do que o jogo carregou de verdade (bestiário, bosses únicos, catálogo de bosses) — nada é recalculado aqui.
+import { CATALOGO } from '../systems/dados.mjs';
+import { BESTIARY } from '../systems/hunt/monstros.mjs';
+import { ataquesParaFicha } from '../systems/poderes.mjs';
+import * as BossesUnicos from '../systems/bosses-unicos/catalogo.mjs';
+import * as Monstros from '../systems/itens-poe/monstros.mjs';
+import * as Habilidades from '../systems/itens-poe/habilidades.mjs';
+import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
+import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
+import * as Arvore from '../systems/passivas/arvore.mjs';
+import { mapaDe } from '../systems/hunt/terreno.mjs';
+
+const C = Monstros.CAMPANHA;
+const desenhoDe = (key) => {
+  const b = BESTIARY[key];
+  return b?.look ? { tipo: 'criatura', look: b.look, cores: b.colors ?? null } : null;
+};
+const nomeDoMapa = (id) => CATALOGO.hunts.find((h) => h.id === id)?.name ?? id;
+
+/** Um monstro da campanha com os status do PoE, o desenho do Draevor e as habilidades convertidas. */
+function monstro(m) {
+  const chave = Monstros.chaveDe(m);
+  return {
+    chave, nome: m.nome, slug: m.slug, nivel: m.nivel, unico: !!m.unico, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque,
+    armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, resistencias: m.resistencias ?? {}, experiencia: m.experiencia,
+    desenho: desenhoDe(chave), desenhoDe: BESTIARY[chave] ? Object.entries(BESTIARY).find(([k, b]) => !k.startsWith('poe-') && b.look === BESTIARY[chave].look)?.[0] ?? null : null,
+    habilidades: (m.habilidades ?? []).map((h) => ({ nome: h.nome, interno: h.interno, tags: h.tags, dano: h.dano ?? null, elemento: h.elemento ?? null, tempo: h.tempo ?? null, recarga: h.recarga ?? null, descricao: h.descricao ?? null })),
+    convertidas: Habilidades.convertidas(m),
+  };
+}
+
+/** A visão geral da campanha: os atos com o grafo (o mesmo que o runtime de atos recebe), as áreas e os mapas do Draevor. */
+export function campanha() {
+  const atos = C.atos.map((a, i) => {
+    const r = CampanhaPoe.atoDoRuntime(a.numero, i ? `poe-ato-${C.atos[i - 1].numero}` : null);
+    const ch = C.chefes[a.numero];
+    return {
+      numero: a.numero, nome: a.nome, areas: a.areas,
+      conexoes: r?.conexoes ?? [], inicio: r?.inicio ?? null, faseDoChefe: r?.bossFinal?.faseAnterior ?? null,
+      chefe: ch ? { nome: ch.nome, nivel: ch.nivel, area: ch.area, bossId: CampanhaPoe.idDoChefe(a.numero), vida: ch.monstro?.vida ?? null, desenho: desenhoDe(Monstros.desenhoPeloNome(ch.nome) ?? 'demon') } : null,
+    };
+  });
+  const areas = Object.fromEntries(Object.values(C.areas).map((a) => [a.id, {
+    id: a.id, nome: a.nome, ato: a.ato, nivel: a.nivel, cidade: !!a.cidade, posicao: a.posicao ?? null, conexoes: a.conexoes ?? [], chefes: a.chefes ?? [],
+    mapa: a.cidade ? null : a.mapa, nomeDoMapa: a.mapa ? nomeDoMapa(a.mapa) : null, trocado: !!CampanhaPoe.MAPAS_TROCADOS[a.id],
+    monstros: (a.monstros ?? []).length, unicos: (a.monstros ?? []).filter((m) => m.unico).map((m) => m.nome),
+  }]));
+  return { atos, areas, mapas: CampanhaPoe.mapasDoDraevor() };
+}
+
+/** Uma área: o mapa (e o que o jogo usa agora), os monstros com status e habilidades e, se for a área do chefe do ato, o chefe. */
+export function area(id) {
+  const a = C.areas[id];
+  if (!a) return null;
+  const chefeDoAto = Object.values(C.chefes).find((c) => c.monstro && c.ato === a.ato && (c.area === a.nome || CampanhaPoe.atoDoRuntime(a.ato)?.bossFinal?.faseAnterior === id));
+  return {
+    id: a.id, nome: a.nome, ato: a.ato, nivel: a.nivel, cidade: !!a.cidade, notas: a.notas ?? '', tags: a.tags ?? [], slug: a.slug,
+    poedb: a.slug ? `https://poedb.tw/pt/${encodeURIComponent(a.slug)}` : null,
+    mapa: a.mapa ?? null, nomeDoMapa: a.mapa ? nomeDoMapa(a.mapa) : null, mapaNoJogo: a.cidade ? null : mapaDe(a.id), trocado: !!CampanhaPoe.MAPAS_TROCADOS[a.id],
+    monstros: (a.monstros ?? []).map(monstro),
+    chefeDoAto: chefeDoAto ? chefeDeAto(chefeDoAto.ato) : null,
+  };
+}
+
+/** O chefe de ato como o jogo o registrou (boss único) + os status do PoE e as habilidades de origem. */
+function chefeDeAto(numero) {
+  const c = C.chefes[numero];
+  if (!c?.monstro) return null;
+  const id = CampanhaPoe.idDoChefe(numero);
+  const def = BossesUnicos.bossUnico(id);
+  const entrada = CATALOGO.bosses.find((b) => b.id === id);
+  const base = def?.base ?? Monstros.desenhoPeloNome(c.nome) ?? 'demon';
+  const arena = CATALOGO.bosses.find((b) => !b.custom && b.creatures?.[0]?.key === base);
+  return {
+    id, tipo: 'ato', ato: numero, nome: c.nome, nomeEn: c.nomeEn ?? null, area: c.area, nivel: c.nivel,
+    status: monstro(c.monstro), desenho: desenhoDe(base), base,
+    noJogo: def ? { vida: def.atributos.vida ?? null, melee: def.melee, resistencias: def.atributos.resistencias ?? {}, comportamentos: def.comportamentos } : null,
+    arena: entrada ? { nome: arena?.name ?? null, deOutroBoss: !!arena, partida: entrada.partida ?? null } : null,
+    acompanhantes: c.acompanhantes ?? [],
+  };
+}
+
+/** Os chefes: os pináculos (endgame) e os chefes de cada ato. */
+export function chefes() {
+  const pinaculos = Pinaculos.DADOS.chefes.map((c) => {
+    const def = BossesUnicos.bossUnico(c.id);
+    const entrada = CATALOGO.bosses.find((b) => b.id === c.id);
+    const arena = CATALOGO.bosses.find((b) => !b.custom && b.creatures?.[0]?.key === c.base);
+    return {
+      id: c.id, tipo: 'pinaculo', nome: c.nome, poedb: c.poedb ?? null, nivel: Pinaculos.DADOS.regra.nivel, base: c.base, baseNome: BESTIARY[c.base]?.name ?? c.base, desenho: desenhoDe(c.base),
+      poe: { vidaPct: c.vidaPct, danoPct: c.danoPct, expPct: c.expPct, raridadeDoDropPct: c.raridadeDoDropPct ?? null },
+      noJogo: entrada ? { vida: entrada.hp, exp: entrada.exp, resistencias: def?.atributos.resistencias ?? c.resistencias, vidaMult: def?.atributos.vidaMult, danoMult: def?.atributos.danoMult, cooldownHoras: entrada.cooldownHours } : null,
+      ataques: ataquesParaFicha(c.base) ?? [],
+      registrado: !!def,
+      arena: arena ? arena.name : null,
+      unicos: c.unicos,
+    };
+  });
+  const atos = C.atos.map((a) => chefeDeAto(a.numero)).filter(Boolean);
+  return { regra: Pinaculos.DADOS.regra, pinaculos, atos };
+}
+
+// ---------------------------------------------------------------- árvore
+
+/** A árvore do PoE compacta para a tela (posições, ligações, tipo, textos, estados e efeitos), com as ascendências à parte. */
+export function arvore() {
+  const A = Arvore.arvore();
+  if (A?.id !== 'poe') return { ligada: false };
+  const nos = Object.values(A.nos).map((n) => ({
+    id: n.id, nome: n.nome, en: n.nomeEn ?? null, t: n.tipo, x: n.x, y: n.y, c: n.conexoes ?? [], asc: n.ascendencia ?? null,
+    textos: n.textos ?? [], estados: n.estados ?? [], efeitos: n.efeitos ?? [],
+    ...(n.keystone ? { keystone: n.keystone } : {}),
+    ...(n.opcoes ? { opcoes: n.opcoes } : {}), ...(n.grupo != null ? { grupo: n.grupo } : {}),
+  }));
+  return { ligada: true, relatorio: A.relatorio ?? null, inicios: A.inicios, ascendencias: A.ascendencias ?? {}, pontos: A.pontos ?? null, nos };
+}
+
+/** O resumo de cobertura da árvore (por tipo: quantas linhas em cada estado). */
+export function coberturaDaArvore() {
+  const A = Arvore.arvore();
+  const por = {};
+  for (const n of Object.values(A?.nos ?? {})) {
+    const k = n.ascendencia ? 'ascendencia' : n.tipo;
+    por[k] ??= { nos: 0, estados: {} };
+    por[k].nos++;
+    for (const e of [...(n.estados ?? []), ...(n.opcoes ?? []).flatMap((o) => o.estados ?? [])]) por[k].estados[e] = (por[k].estados[e] ?? 0) + 1;
+  }
+  return por;
+}

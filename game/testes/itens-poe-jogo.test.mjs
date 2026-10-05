@@ -212,3 +212,20 @@ test('4d — requisitos do PoE: todos os atributos da base valem (com o +For da 
   assert.equal(rh.ok, false, 'só STR não basta para a híbrida');
   assert.match(rh.erro, /DEX/);
 });
+
+test('bicho de nível 11 só solta mod de iLvl até 11 (regra do dono, 05/10), e o iLvl é o nível do monstro do PoE, sem o nível extra da raridade', { skip: SEM }, async () => {
+  const regras = { ...Catalogo.REGRAS, drop: { ...Catalogo.REGRAS.drop, chanceBase: 50, pesos: { magico: 1, raro: 1 } } };
+  const rng = semente(11);
+  const pecas = Array.from({ length: 60 }, () => Jogo.dropsDoMonstro(11, 'boss', rng, regras)).flat();
+  assert.ok(pecas.some((p) => p.poe.prefixos.length + p.poe.sufixos.length > 0), 'saíram peças com mods');
+  for (const p of pecas) {
+    assert.equal(p.poe.ilvl, 11);
+    for (const m of [...p.poe.prefixos, ...p.poe.sufixos]) assert.ok((m.ilvl ?? 1) <= 11, `${m.nome} (iLvl ${m.ilvl}) num bicho nível 11`);
+  }
+  const { nivelDoDropPoe } = await import('../systems/hunt/combate.mjs');
+  const { BESTIARY } = await import('../systems/hunt/monstros.mjs');
+  BESTIARY['poe-teste-ilvl-11'] = { name: 'teste', hp: 1, exp: 999999, poe: { nivel: 11 } };
+  assert.equal(nivelDoDropPoe({ escala: { nivel: 40 } }, { key: 'poe-teste-ilvl-11', levelExtra: 5 }), 11);
+  assert.equal(nivelDoDropPoe({ escala: { nivel: 23 } }, { key: 'rat', levelExtra: 5 }), 23, 'fora do PoE: o nível da fase, sem o extra da raridade');
+  delete BESTIARY['poe-teste-ilvl-11'];
+});
