@@ -7,6 +7,7 @@
 import { el, msg, cabecalho, botaoCopiar } from './editor-ui.mjs';
 import { retrato } from './editor-sprites.mjs';
 import { cartaoDeAtaque, metrica, barrasDeResistencia, seloDoElemento } from './editor-fichas.mjs';
+import { editorDeAtaques } from './editor-ataques.mjs';
 
 const BASE = '/api/mapas/_engine/itens-poe/';
 const api = async (rota, corpo) => (await fetch(BASE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
@@ -187,6 +188,7 @@ function fichaDoChefe(c) {
         c.noJogo.comportamentos.length ? el('div', { class: 'eng-ataques' }, c.noJogo.comportamentos.map(cartaoDeHabilidade)) : el('p', { class: 'dica' }, 'Só o corpo a corpo (nenhuma habilidade do poedb vira comportamento).')] : el('p', { class: 'nao' }, 'Não registrado no jogo.'),
       c.arena ? el('p', { class: 'dica' }, `Arena: ${c.arena.deOutroBoss ? `a do boss "${c.arena.nome}" do Draevor (mesma criatura de desenho)` : 'sala padrão de boss (40×40)'}.`) : null,
       el('h5', {}, 'Habilidades no poedb'), tabelaDeHabilidades(s.habilidades),
+      el('details', { class: 'atq-no-chefe' }, el('summary', {}, el('b', {}, 'Editar ataques e efeitos (com a arena)')), editorDeAtaques(s.slug)),
       c.acompanhantes?.length ? el('p', { class: 'dica' }, `Acompanhantes no PoE: ${c.acompanhantes.map((a) => a.nome ?? a).join(', ')}.`) : null);
   }
   return el('div', { class: 'pc-chefe-ficha' },
@@ -567,20 +569,32 @@ export function criarTelaDosMobsPoe({ raiz }) {
       pintarLista();
       pintarPainel();
     };
-    caixa.replaceChildren(el('div', { class: 'bib-painel-corpo' },
-      el('div', { class: 'linha', style: 'gap:12px;align-items:center' }, retrato(m.desenho, 96, { categoria: 'monstros', animar: true }), el('div', {}, el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, m.slug), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null)),
+    T.aba ??= 'status';
+    const abas = [['status', 'Status por área'], ['ataques', 'Ataques e efeitos'], ['desenho', 'Desenho'], ['drops', 'Drops']];
+    const topo = el('div', { class: 'linha', style: 'gap:12px;align-items:center' }, retrato(m.desenho, 96, { categoria: 'monstros', animar: true }), el('div', {}, el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, m.slug), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null));
+    const barraDeAbas = el('div', { class: 'eng-abas', role: 'tablist' }, abas.map(([id, nome]) => el('button', { type: 'button', role: 'tab', class: T.aba === id ? 'ativa' : '', onclick: () => { T.aba = id; pintarPainel(); } }, nome)));
+    if (T.aba === 'ataques') return caixa.replaceChildren(el('div', { class: 'bib-painel-corpo' }, topo, barraDeAbas, editorDeAtaques(m.slug)));
+    caixa.replaceChildren(el('div', { class: 'bib-painel-corpo' }, topo, barraDeAbas));
+    const corpo = caixa.firstChild;
+    const secoes = {};
+    const sec = (nome, ...filhos) => (secoes[nome] = filhos);
+    sec('desenho',
       el('h4', {}, 'Desenho (criatura do Draevor)'),
       el('div', { class: 'dica' }, `Agora: ${m.desenhoDe ?? '—'}${m.desenhoAjustado ? ' (escolhido na Engine)' : ' (automático pelo nome / pelo mapa)'}`),
       el('div', { class: 'pd-busca' }, el('input', { type: 'search', placeholder: 'Buscar criatura do Draevor para o desenho…', value: T.qCriatura, onchange: (e) => buscarCriaturas(e.target.value.trim()) })),
       T.criaturas.length ? el('div', { class: 'pm-criaturas' }, T.criaturas.map((c) => el('button', { type: 'button', class: 'pm-criatura', title: c.key, onclick: () => trocarDesenho(c.key) }, retrato(c.desenho, 48, { categoria: 'monstros' }), el('span', {}, c.nome)))) : null,
       m.desenhoAjustado ? el('button', { type: 'button', onclick: () => trocarDesenho(null) }, 'Voltar ao desenho automático') : null,
+      m.desenho?.look ? el('p', { class: 'dica' }, 'Para mudar os quadros, as direções e a animação do próprio desenho: ', el('a', { href: `#sprites/${m.desenho.look}` }, `Editor de sprites (look ${m.desenho.look}) →`)) : null);
+    sec('status',
       el('h4', {}, `Status do PoE por área (${m.ocorrencias.length})`),
       el('div', { class: 'bib-tabela' }, el('table', {},
         el('thead', {}, el('tr', {}, ['Área', 'Nível', 'Vida', 'ES', 'Golpe', 'Tempo', 'Armadura', 'Evasão', 'Res. F/G/R/C', 'Exp'].map((h) => el('th', {}, h)))),
         el('tbody', {}, m.ocorrencias.map((o) => el('tr', {}, el('td', {}, `${o.ato === 11 ? 'Ep.' : `A${o.ato}`} · ${o.areaNome}`), el('td', { class: 'num' }, o.nivel), el('td', { class: 'num' }, num(o.vida)), el('td', { class: 'num' }, num(o.escudoDeEnergia)), el('td', { class: 'num' }, num(o.dano)), el('td', { class: 'num' }, `${Number(o.tempoAtaque).toFixed(2)} s`), el('td', { class: 'num' }, num(o.armadura)), el('td', { class: 'num' }, num(o.evasao)), el('td', { class: 'num' }, ['fire', 'ice', 'energy', 'chaos'].map((e) => o.resistencias?.[e] ?? 0).join('/')), el('td', { class: 'num' }, num(o.experiencia))))))),
-      el('p', { class: 'dica' }, 'Para mudar os status numa área: aba Acts → o ato → a área → Mobs da área.'),
+      el('p', { class: 'dica' }, 'Para mudar os status numa área: aba Acts → o ato → a área → Mobs da área.'));
+    sec('drops',
       el('h4', {}, 'Drops'),
-      m.unico ? editorDeDrops(m.slug, m.drops ?? []) : el('div', { class: 'dica' }, 'Monstro comum: sem item próprio (modelo do PoE). Cai pela tabela global: ~16% de chance (mais nos mágicos/raros), Item Level = o nível dele, qualquer base até esse nível.')));
+      m.unico ? editorDeDrops(m.slug, m.drops ?? []) : el('div', { class: 'dica' }, 'Monstro comum: sem item próprio (modelo do PoE). Cai pela tabela global: ~16% de chance (mais nos mágicos/raros), Item Level = o nível dele, qualquer base até esse nível.'));
+    corpo.append(...(secoes[T.aba] ?? []).filter(Boolean));
   }
   return { desenhar };
 }

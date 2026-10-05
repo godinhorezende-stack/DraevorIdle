@@ -79,6 +79,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     const r = CampanhaPoe.salvarMonstrosDaArea(String(d?.area ?? ''), d?.monstros);
     return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, area: Telas.area(d.area) } : { ok: false, erros: r.erros }), true;
   }
+  if (req.method === 'POST' && rota === 'mobs/ataques') {
+    if (!Catalogo.ligado()) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
+    const d = await corpoJson(req).catch(() => null);
+    const r = CampanhaPoe.definirAtaques(String(d?.slug ?? ''), d?.ajuste ?? {});
+    return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, ataques: Telas.ataquesDe(String(d.slug), d?.nivel) } : { ok: false, erros: r.erros }), true;
+  }
   if (req.method === 'POST' && rota === 'mobs/desenho') {
     if (!Catalogo.ligado()) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
     const d = await corpoJson(req).catch(() => null);
@@ -120,6 +126,10 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   }
   if (rota === 'chefes') return json(res, 200, Telas.chefes()), true;
   if (rota === 'mobs') return json(res, 200, { mobs: Telas.mobs() }), true;
+  if (rota === 'mobs/ataques') {
+    const a = Telas.ataquesDe(q.get('slug') ?? '', q.get('nivel'));
+    return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Monstro desconhecido.'] }), true;
+  }
   if (rota === 'criaturas') return json(res, 200, { criaturas: Telas.criaturasDoDraevor(q.get('q') ?? '') }), true;
   if (rota === 'drops') return json(res, 200, { drops: Telas.dropsDe(q.get('monstro') ?? '') }), true;
   if (rota === 'itens-de-missao') return json(res, 200, { itens: DropsPorMonstro.ITENS_DE_MISSAO }), true;

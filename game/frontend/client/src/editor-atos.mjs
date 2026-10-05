@@ -62,7 +62,9 @@ export function posicoesAutomaticas(ato) {
 }
 
 export function criarEditorDeAtos({ el, api, raiz, msg }) {
-  const E = { vista: 'fluxo', difPrevia: 'facil', lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null } };
+  const E = { vista: 'fluxo', difPrevia: 'facil', lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null },
+    // Ferramentas: histórico (desfazer/refazer), grade, zoom/arrasto do grafo, a ajuda de atalhos.
+    hist: { passado: [], futuro: [], ultimo: '' }, grade: true, zoom: 1, pan: { x: 0, y: 0 }, ajuda: false, ferramentas: false };
   const sv = (tag, attrs = {}, ...filhos) => {
     const n = document.createElementNS(NS, tag);
     for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) n.setAttribute(k, v);
@@ -93,10 +95,43 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     E.lig = null;
     E.ligando = null;
     E.vista = 'fluxo';
+    E.hist = { passado: [], futuro: [], ultimo: JSON.stringify(E.ato) };
+    E.zoom = 1;
+    E.pan = { x: 0, y: 0 };
     pintar();
   }
   let esperando = null;
+  /** Guarda o passo no histórico (o que estava antes desta mudança) — o Ctrl+Z volta para ele. */
+  function lembrar() {
+    const agora = JSON.stringify(E.ato);
+    if (agora === E.hist.ultimo) return;
+    E.hist.passado.push(E.hist.ultimo);
+    if (E.hist.passado.length > 100) E.hist.passado.shift();
+    E.hist.futuro = [];
+    E.hist.ultimo = agora;
+  }
+  function voltarPara(json, de, para) {
+    if (!json) return;
+    para.push(JSON.stringify(E.ato));
+    E.ato = JSON.parse(json);
+    E.hist.ultimo = json;
+    if (E.fase && !faseDe(E.fase)) E.fase = null;
+    if (E.lig != null && !E.ato.conexoes[E.lig]) E.lig = null;
+    pintar();
+    revalidar();
+  }
+  const desfazer = () => voltarPara(E.hist.passado.pop(), E.hist.passado, E.hist.futuro);
+  const refazer = () => voltarPara(E.hist.futuro.pop(), E.hist.futuro, E.hist.passado);
+  function revalidar() {
+    clearTimeout(esperando);
+    esperando = setTimeout(async () => {
+      const r = await api('atos-editor/validar', E.ato);
+      E.problemas = r.problemas ?? [];
+      pintarProblemas();
+    }, 350);
+  }
   function mudou() {
+    lembrar();
     pintar();
     clearTimeout(esperando);
     esperando = setTimeout(async () => {
@@ -213,14 +248,59 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     mudou();
   }
 
+  // ------------------------------------------------------------------ ferramentas do grafo
+  /** Zoom em torno de um ponto (frações da tela, 0..1). 1 = o ato inteiro. */
+  function zoomEm(fator, fx = 0.5, fy = 0.5) {
+    const z = Math.min(4, Math.max(1, E.zoom * fator));
+    const wx = E.pan.x + fx * (L / E.zoom);
+    const wy = E.pan.y + fy * (A / E.zoom);
+    E.zoom = z;
+    E.pan = z === 1 ? { x: 0, y: 0 } : { x: Math.max(-L / 2, Math.min(L, wx - fx * (L / z))), y: Math.max(-A / 2, Math.min(A, wy - fy * (A / z))) };
+    pintar();
+  }
+  /** Centraliza a vista numa fase (busca, Page Up/Down). */
+  function focarFase(id) {
+    const p = posicoesAutomaticas(E.ato).get(id);
+    E.fase = id;
+    E.lig = null;
+    if (p && E.zoom > 1) E.pan = { x: p.x - L / E.zoom / 2, y: p.y - A / E.zoom / 2 };
+    pintar();
+  }
+  /** Organiza as fases automaticamente (colunas por profundidade a partir do início). */
+  function organizar() {
+    const pos = posicoesAutomaticas({ ...E.ato, fases: E.ato.fases.map((f) => ({ ...f, posicao: null })) });
+    for (const f of E.ato.fases) { const p = pos.get(f.id); if (p) f.posicao = { x: Math.round(p.x), y: Math.round(p.y) }; }
+    mudou();
+  }
+  /** A fase anterior/seguinte (pela ordem) à selecionada. */
+  function vizinhaDaSelecionada(passo) {
+    const l = [...E.ato.fases].sort((a, b) => (a.ordem ?? 1e9) - (b.ordem ?? 1e9));
+    const i = l.findIndex((f) => f.id === E.fase);
+    const alvo = l[i < 0 ? 0 : (i + passo + l.length) % l.length];
+    if (alvo) focarFase(alvo.id);
+  }
+  function moverSelecionada(dx, dy) {
+    const f = faseDe(E.fase);
+    if (!f || E.somenteLeitura) return;
+    const p = f.posicao ?? posicoesAutomaticas(E.ato).get(f.id) ?? { x: 100, y: 100 };
+    f.posicao = { x: Math.min(L - 30, Math.max(30, p.x + dx)), y: Math.min(A - 40, Math.max(30, p.y + dy)) };
+    mudou();
+  }
+
   // ------------------------------------------------------------------ canvas
   function pintarCanvas() {
     const pos = posicoesAutomaticas(E.ato);
     const alcance = new Set(E.problemas.filter((p) => /isolada/.test(p.mensagem)).map((p) => p.onde.replace('fase ', '')));
     const comErro = new Set(E.problemas.filter((p) => p.nivel === 'erro' && p.onde.startsWith('fase ')).map((p) => p.onde.replace('fase ', '')));
-    const svg = sv('svg', { viewBox: `0 0 ${L} ${A}`, class: 'atos-canvas', role: 'img', 'aria-label': 'Fluxo do ato' },
+    const svg = sv('svg', { viewBox: `${E.pan.x} ${E.pan.y} ${L / E.zoom} ${A / E.zoom}`, class: 'atos-canvas', role: 'img', 'aria-label': 'Fluxo do ato' },
       sv('defs', {}, sv('marker', { id: 'seta', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, sv('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#8aa0c8' })),
         sv('marker', { id: 'seta-sel', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, sv('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#ffd166' }))));
+    if (E.grade) {
+      const linhas = [];
+      for (let x = 0; x <= L; x += 20) linhas.push(sv('line', { x1: x, y1: 0, x2: x, y2: A, stroke: 'rgba(140,160,200,0.07)', 'stroke-width': 1 }));
+      for (let y = 0; y <= A; y += 20) linhas.push(sv('line', { x1: 0, y1: y, x2: L, y2: y, stroke: 'rgba(140,160,200,0.07)', 'stroke-width': 1 }));
+      svg.append(sv('g', { 'pointer-events': 'none' }, ...linhas));
+    }
     // A imagem de fundo do ato (o mapa desenhado por trás do grafo).
     if (E.ato.imagem) svg.append(sv('image', { href: `/api/mapas/_conteudo/atos-imagem/${encodeURIComponent(E.ato.imagem)}?v=${E.versaoDaImagem ?? 0}`, x: 0, y: 0, width: L, height: A, preserveAspectRatio: 'xMidYMid slice', opacity: 0.55 }));
     E.ato.conexoes.forEach((c, i) => {
@@ -261,7 +341,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       g.addEventListener('pointerdown', (ev) => {
         if (E.somenteLeitura || E.ligando) return;
         const caixa = svg.getBoundingClientRect();
-        const k = L / caixa.width;
+        const k = L / E.zoom / caixa.width;
         const ox = ev.clientX;
         const oy = ev.clientY;
         const x0 = p.x;
@@ -269,7 +349,8 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         const mover = (m) => {
           if (Math.hypot(m.clientX - ox, m.clientY - oy) > 4) arrastou = true;
           if (!arrastou) return;
-          f.posicao = { x: Math.round(Math.min(L - 30, Math.max(30, x0 + (m.clientX - ox) * k))), y: Math.round(Math.min(A - 40, Math.max(30, y0 + (m.clientY - oy) * k))) };
+          const naGrade = (v) => (E.grade && !m.altKey ? Math.round(v / 20) * 20 : Math.round(v)); // Alt solta da grade
+          f.posicao = { x: naGrade(Math.min(L - 30, Math.max(30, x0 + (m.clientX - ox) * k))), y: naGrade(Math.min(A - 40, Math.max(30, y0 + (m.clientY - oy) * k))) };
           p.x = f.posicao.x;
           p.y = f.posicao.y;
           g.setAttribute('transform', `translate(${p.x} ${p.y})`);
@@ -296,7 +377,32 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       });
       svg.append(g);
     }
-    svg.addEventListener('click', () => { E.fase = null; E.lig = null; E.ligando = null; pintar(); });
+    let moveuAVista = false;
+    svg.addEventListener('pointerdown', (ev) => {
+      if (ev.target !== svg && ev.target.tagName !== 'image' && ev.target.tagName !== 'line') return;
+      if (E.zoom === 1) return;
+      const caixa = svg.getBoundingClientRect();
+      const k = L / E.zoom / caixa.width;
+      const o = { x: ev.clientX, y: ev.clientY, px: E.pan.x, py: E.pan.y };
+      moveuAVista = false;
+      const mover = (m) => {
+        if (Math.hypot(m.clientX - o.x, m.clientY - o.y) > 4) moveuAVista = true;
+        E.pan = { x: o.px - (m.clientX - o.x) * k, y: o.py - (m.clientY - o.y) * k };
+        svg.setAttribute('viewBox', `${E.pan.x} ${E.pan.y} ${L / E.zoom} ${A / E.zoom}`);
+      };
+      const soltar = () => { window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', soltar); };
+      window.addEventListener('pointermove', mover);
+      window.addEventListener('pointerup', soltar);
+    });
+    svg.addEventListener('wheel', (ev) => {
+      if (!ev.ctrlKey && !ev.altKey) return; // roda sozinha rola a página; Ctrl/Alt + roda = zoom
+      ev.preventDefault();
+      const caixa = svg.getBoundingClientRect();
+      const fx = (ev.clientX - caixa.left) / caixa.width;
+      const fy = (ev.clientY - caixa.top) / caixa.height;
+      zoomEm(ev.deltaY < 0 ? 1.25 : 0.8, fx, fy);
+    }, { passive: false });
+    svg.addEventListener('click', () => { if (moveuAVista) { moveuAVista = false; return; } E.fase = null; E.lig = null; E.ligando = null; pintar(); });
     return svg;
   }
 
@@ -511,6 +617,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     const tipos = E.opcoes.tiposDeFase.map((t) => [t.id, `${t.nome}${t.suportado ? '' : ' — sem suporte no runtime'}`]);
     const hunt = f.huntId ? `${f.huntId}` : 'nenhuma';
     return el('fieldset', {}, el('legend', {}, `Fase: ${f.nome}${pos(f.id)}`),
+      el('div', { class: 'linha' }, el('button', { type: 'button', title: 'Fase anterior (Page Up)', onclick: () => vizinhaDaSelecionada(-1) }, '◀ anterior'), el('button', { type: 'button', title: 'Fase seguinte (Page Down)', onclick: () => vizinhaDaSelecionada(1) }, 'próxima ▶'), el('span', { class: 'dica' }, `${E.ato.fases.findIndex((x) => x.id === f.id) + 1} de ${E.ato.fases.length}`)),
       el('div', { class: 'grade' },
         campo('ID da fase', f.id, (v) => renomearFase(f.id, v)),
         campo('Nome', f.nome, (v) => { f.nome = v; mudou(); }),
@@ -598,6 +705,111 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         el('div', { class: 'bib-detalhe' }, d?.id ? [el('h4', {}, `${d.nome ?? d.id} (${d.id})`), linhaDe('Tipo', d.tipo), linhaDe('Mapa', d.mapa?.arquivo), linhaDe('Nível', d.nivel?.atual ?? d.nivel), linhaDe('Monstros', d.monstros?.map((m) => m.nome ?? m.key).join(', ') || null), linhaDe('Acesso', d.requisitos?.acesso), linhaDe('Cooldown', d.cooldowns?.horas), linhaDe('Drops de encontros', d.drops?.deEncontros?.length ?? null), el('button', { class: 'primario', onclick: () => usarDoPicker(d) }, 'Usar este') ] : el('div', { class: 'dica' }, 'Clique numa linha para ver o detalhe do cadastro.'))));
   }
 
+  // ------------------------------------------------------------------ barra de ferramentas, atalhos e ferramentas do ato
+  const ATALHOS = [
+    ['Ctrl+S', 'Salvar o ato'], ['Ctrl+Z', 'Desfazer'], ['Ctrl+Y ou Ctrl+Shift+Z', 'Refazer'], ['N', 'Nova fase'], ['L', 'Ligar a fase selecionada a outra (clique no destino)'],
+    ['Delete', 'Remover a fase ou a ligação selecionada'], ['Esc', 'Cancelar / desmarcar'], ['Setas', 'Mover a fase selecionada (Shift: 1 px; sem Shift: 20 px)'],
+    ['Page Up / Page Down', 'Fase anterior / seguinte (pela ordem)'], ['F ou /', 'Buscar fase'], ['+ / −  (ou Ctrl+roda)', 'Zoom do grafo'], ['0', 'Ver o ato inteiro'], ['G', 'Grade liga/desliga (Alt ao arrastar solta da grade)'],
+    ['O', 'Organizar automático'], ['?', 'Esta ajuda'],
+  ];
+  function barraDeFerramentas() {
+    const busca = el('input', { type: 'search', id: 'atos-busca', placeholder: 'Buscar fase… (F)', style: 'width:180px', onkeydown: (e) => {
+      if (e.key !== 'Enter') return;
+      const t = e.target.value.trim().toLowerCase();
+      const f = E.ato.fases.find((x) => x.nome.toLowerCase().includes(t) || x.id.includes(t));
+      if (f) focarFase(f.id); else msg('Nenhuma fase com esse nome.', 'aviso');
+    } });
+    const b = (rotulo, titulo, acao, extra = {}) => el('button', { type: 'button', title: titulo, onclick: acao, ...extra }, rotulo);
+    return el('div', { class: 'atos-ferramentas' },
+      E.somenteLeitura ? null : b('+ Fase', 'Nova fase (N)', novaFase),
+      E.somenteLeitura ? null : b('↶', 'Desfazer (Ctrl+Z)', desfazer, { disabled: !E.hist.passado.length }),
+      E.somenteLeitura ? null : b('↷', 'Refazer (Ctrl+Y)', refazer, { disabled: !E.hist.futuro.length }),
+      el('span', { class: 'atos-sep' }),
+      b('−', 'Afastar (−)', () => zoomEm(0.8)), el('span', { class: 'dica', style: 'min-width:38px;text-align:center' }, `${Math.round(E.zoom * 100)}%`), b('+', 'Aproximar (+)', () => zoomEm(1.25)), b('⤢', 'Ver o ato inteiro (0)', () => { E.zoom = 1; E.pan = { x: 0, y: 0 }; pintar(); }),
+      el('span', { class: 'atos-sep' }),
+      E.somenteLeitura ? null : b('Organizar', 'Organizar as fases automaticamente (O)', organizar),
+      b(E.grade ? 'Grade: ligada' : 'Grade: desligada', 'Alinhar à grade de 20 px ao arrastar (G)', () => { E.grade = !E.grade; pintar(); }),
+      busca,
+      el('span', { class: 'atos-sep' }),
+      E.somenteLeitura ? null : b('Ferramentas do ato', 'Ajustes em todas as áreas de uma vez', () => { E.ferramentas = !E.ferramentas; pintar(); }, { class: E.ferramentas ? 'ativo' : '' }),
+      b('?', 'Atalhos de teclado (?)', () => { E.ajuda = !E.ajuda; pintar(); }),
+      el('span', { class: 'dica' }, E.ligando ? 'Modo ligar: clique na fase de destino (Esc cancela).' : 'Clique numa fase para editar o mapa, os mobs e a conclusão.'));
+  }
+  function painelDeAtalhos() {
+    return el('div', { class: 'atos-ajuda' }, el('b', {}, 'Atalhos de teclado'), el('table', {}, el('tbody', {}, ATALHOS.map(([k, d]) => el('tr', {}, el('td', {}, el('kbd', {}, k)), el('td', {}, d))))), el('button', { type: 'button', onclick: () => { E.ajuda = false; pintar(); } }, 'Fechar'));
+  }
+
+  /** Ajustes em TODAS as áreas do ato (as do PoE): níveis das fases e status dos mobs, de uma vez — grava área por área. */
+  function painelDeFerramentasDoAto() {
+    const F = (E.ferramentasEstado ??= { nivel: 0, vida: 100, dano: 100, exp: 100, ocupado: false });
+    const fasesPoe = E.ato.fases.filter((f) => f.huntId?.startsWith('poe-a'));
+    const num = (rot, chave, sufixo, props = {}) => el('label', { class: 'campo' }, rot, el('div', { class: 'linha' }, el('input', { type: 'number', value: F[chave], style: 'width:90px', ...props, onchange: (e) => { F[chave] = Number(e.target.value); } }), el('span', { class: 'dica' }, sufixo)));
+    const aplicarNiveis = () => {
+      if (!F.nivel) return msg('Digite quantos níveis somar (pode ser negativo).', 'aviso');
+      for (const f of E.ato.fases) if (f.nivel) for (const d of NIVEIS) f.nivel[d] = Math.max(1, (f.nivel[d] ?? 1) + F.nivel);
+      if (E.ato.bossFinal?.nivel) for (const d of NIVEIS) E.ato.bossFinal.nivel[d] = Math.max(1, (E.ato.bossFinal.nivel[d] ?? 1) + F.nivel);
+      msg(`Nível de ${E.ato.fases.length} fase(s) ${F.nivel > 0 ? '+' : ''}${F.nivel}. Salve o ato (Ctrl+S).`, 'ok');
+      mudou();
+    };
+    const aplicarMobs = async () => {
+      if (F.vida === 100 && F.dano === 100 && F.exp === 100) return msg('Mude algum percentual (100% = sem mudança).', 'aviso');
+      if (!(await confirmar(`Ajustar os mobs de ${fasesPoe.length} área(s) do ${E.ato.nome}?`, `Vida ${F.vida}% · golpe ${F.dano}% · experiência ${F.exp}%. Grava área por área (vale na próxima entrada).`, { ok: 'Ajustar' }))) return;
+      F.ocupado = true;
+      pintar();
+      let feitas = 0;
+      for (const f of fasesPoe) {
+        const a = await poeApi(`campanha/area?id=${encodeURIComponent(f.huntId)}`);
+        const lista = a.monstros.map((m) => ({ ...limparMob(m), vida: Math.max(1, Math.round(m.vida * F.vida / 100)), escudoDeEnergia: Math.round((m.escudoDeEnergia ?? 0) * F.vida / 100), dano: Math.round(m.dano * F.dano / 100), experiencia: Math.round(m.experiencia * F.exp / 100) }));
+        const r = await poeApi('campanha/area/monstros', { area: f.huntId, monstros: lista });
+        if (r.ok) { feitas++; E.areas[f.huntId] = { poe: true, ...r.area }; delete E.mobsEditando[f.huntId]; }
+      }
+      F.ocupado = false;
+      msg(`Mobs ajustados em ${feitas} de ${fasesPoe.length} área(s).`, feitas === fasesPoe.length ? 'ok' : 'aviso');
+      pintar();
+    };
+    return el('fieldset', { class: 'atos-ferramentas-do-ato' }, el('legend', {}, `Ferramentas do ato — ${E.ato.nome}`),
+      el('div', { class: 'linha', style: 'flex-wrap:wrap;align-items:flex-end' }, num('Somar ao nível de todas as fases', 'nivel', 'níveis'), el('button', { type: 'button', onclick: aplicarNiveis }, 'Aplicar nos níveis')),
+      fasesPoe.length ? el('div', { class: 'linha', style: 'flex-wrap:wrap;align-items:flex-end' }, num('Vida dos mobs', 'vida', '%', { min: 1 }), num('Golpe dos mobs', 'dano', '%', { min: 0 }), num('Experiência', 'exp', '%', { min: 0 }),
+        el('button', { type: 'button', class: 'primario', disabled: F.ocupado, onclick: aplicarMobs }, F.ocupado ? 'Ajustando…' : `Aplicar nos mobs de ${fasesPoe.length} áreas`)) : null,
+      el('div', { class: 'dica' }, 'Os níveis entram no ato (salve com Ctrl+S). Os mobs gravam direto, área por área (a aba Acts → área → mobs mostra o resultado).'));
+  }
+
+  // Os atalhos valem só com a aba Acts aberta no fluxo e o foco fora de um campo (Ctrl+S vale sempre).
+  document.addEventListener('keydown', (e) => {
+    if (!E.ato || E.vista !== 'fluxo' || !document.querySelector('.atos-canvas')) return;
+    const ctrl = e.ctrlKey || e.metaKey;
+    const k = e.key.toLowerCase();
+    if (ctrl && k === 's') { e.preventDefault(); if (!E.somenteLeitura) salvar(); return; }
+    const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '') || document.activeElement?.isContentEditable;
+    if (digitando || document.querySelector('dialog[open]')) return;
+    if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); return desfazer(); }
+    if (ctrl && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); return refazer(); }
+    if (ctrl || e.altKey) return;
+    const feito = () => e.preventDefault();
+    if (e.key === 'Escape') { feito(); E.ligando = null; E.fase = null; E.lig = null; E.ajuda = false; return pintar(); }
+    if (e.key === '?') { feito(); E.ajuda = !E.ajuda; return pintar(); }
+    if (k === 'f' || e.key === '/') { feito(); return document.getElementById('atos-busca')?.focus(); }
+    if (e.key === '+' || e.key === '=') { feito(); return zoomEm(1.25); }
+    if (e.key === '-') { feito(); return zoomEm(0.8); }
+    if (e.key === '0') { feito(); E.zoom = 1; E.pan = { x: 0, y: 0 }; return pintar(); }
+    if (k === 'g') { feito(); E.grade = !E.grade; return pintar(); }
+    if (e.key === 'PageDown') { feito(); return vizinhaDaSelecionada(1); }
+    if (e.key === 'PageUp') { feito(); return vizinhaDaSelecionada(-1); }
+    if (E.somenteLeitura) return;
+    if (k === 'n') { feito(); return novaFase(); }
+    if (k === 'o') { feito(); return organizar(); }
+    if (k === 'l' && E.fase) { feito(); E.ligando = E.fase; msg('Clique na fase de DESTINO (Esc cancela).', 'aviso'); return pintar(); }
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      feito();
+      if (E.lig != null) { E.ato.conexoes.splice(E.lig, 1); E.lig = null; return mudou(); }
+      if (E.fase) return confirmar(`Remover a fase "${faseDe(E.fase)?.nome}"?`, 'As ligações dela saem junto. Ctrl+Z desfaz.', { ok: 'Remover', perigo: true }).then((sim) => sim && removerFase(E.fase));
+      return;
+    }
+    const passo = e.shiftKey ? 1 : 20;
+    const setas = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, -passo], ArrowDown: [0, passo] };
+    if (setas[e.key] && E.fase) { feito(); return moverSelecionada(...setas[e.key]); }
+  });
+
   // ------------------------------------------------------------------ tela
   function pintar() {
     const alvo = raiz();
@@ -638,7 +850,9 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         el('button', { onclick: duplicar }, 'Duplicar'),
         E.somenteLeitura ? null : el('button', { class: 'primario', onclick: salvar }, 'Salvar rascunho'),
         E.somenteLeitura ? null : el('button', { class: 'perigo', onclick: excluir }, 'Excluir')),
-      E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { onclick: novaFase }, '+ Fase'), el('span', { class: 'dica' }, E.ligando ? 'Modo ligar: clique na fase de destino.' : 'Arraste as fases para organizar; clique numa fase ou seta para editar. Borda tracejada = fase opcional; seta tracejada = caminho com requisito; verde = início; roxo = portal/boss final.')),
+      barraDeFerramentas(),
+      E.ajuda ? painelDeAtalhos() : null,
+      E.ferramentas ? painelDeFerramentasDoAto() : null,
       el('div', { class: 'atos-duas' }, el('div', { class: 'atos-esquerda' }, pintarCanvas(), painelDeProblemas()), el('div', { class: 'atos-direita' }, lateral)));
   }
 

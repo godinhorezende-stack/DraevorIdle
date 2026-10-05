@@ -62,7 +62,7 @@ const COR_DO_ELEMENTO = {
   lifedrain: '#ff0000', ice: '#99ffff', manadrain: '#ff0000', drown: '#00ccff',
 };
 const FORMA = { area: ' em área', feixe: ' em feixe', alvo: '' };
-const EFEITO_PADRAO = { physical: 35, fire: 7, ice: 42, earth: 21, energy: 38, death: 18, holy: 50, lifedrain: 14, manadrain: 13, drown: 26 };
+export const EFEITO_PADRAO = { physical: 35, fire: 7, ice: 42, earth: 21, energy: 38, death: 18, holy: 50, lifedrain: 14, manadrain: 13, drown: 26 };
 /** O sangue no jogador a cada golpe que passa (o original manda `fx` 1 junto de todo dano). */
 const EFEITO_DO_SANGUE = 1;
 
@@ -110,6 +110,9 @@ export function ataquesParaFicha(key) {
 /** Boss cujo arquivo não tem melee (Brain Head, Malofur, The Nightmare Beast): só magia. */
 // Boss único: só bate de perto se o cadastro deu um `melee` (a regra genérica daria milhares num chefe de muita vida).
 export const semCorpoACorpo = (bicho) => (bicho?.boss ? !bicho.boss.melee : !!PODERES[bicho?.key] && !PODERES[bicho.key].ataques.some((a) => a.tipo === 'melee'));
+
+/** O EFEITO na tela quando o golpe corpo a corpo acerta (o id do efeito do Tibia): o do cadastro (aba Mobs → Ataques e efeitos) ou o sangue (1). */
+export const efeitoDoGolpe = (bicho) => (bicho?.boss ? bicho.boss.melee?.efeito : PODERES[bicho?.key]?.ataques.find((a) => a.tipo === 'melee')?.efeito) ?? EFEITO_DO_SANGUE;
 
 /** O melee do arquivo; `null` = bicho sem poderes (usa a regra de sempre); 0 = boss sem melee. */
 export function golpeCorpoACorpo(bicho) {

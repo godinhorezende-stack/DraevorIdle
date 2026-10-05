@@ -5,7 +5,7 @@
 import { CATALOGO, ITEM_CATALOG } from '../systems/dados.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import { BESTIARY } from '../systems/hunt/monstros.mjs';
-import { ataquesParaFicha } from '../systems/poderes.mjs';
+import { ataquesParaFicha, EFEITO_PADRAO } from '../systems/poderes.mjs';
 import * as BossesUnicos from '../systems/bosses-unicos/catalogo.mjs';
 import * as Monstros from '../systems/itens-poe/monstros.mjs';
 import * as Habilidades from '../systems/itens-poe/habilidades.mjs';
@@ -168,4 +168,28 @@ export function mobs() {
 export function criaturasDoDraevor(q = '') {
   const t = String(q).toLowerCase().trim();
   return Object.entries(BESTIARY).filter(([k, b]) => !k.startsWith('poe-') && b.look && (!t || k.includes(t) || String(b.name ?? '').toLowerCase().includes(t))).slice(0, 40).map(([k, b]) => ({ key: k, nome: b.name ?? k, desenho: desenhoDe(k) }));
+}
+
+/**
+ * Os ATAQUES e EFEITOS de um monstro do PoE (aba Mobs): o golpe básico e as habilidades, como o jogo usa (com o ajuste da Engine) e como vieram do PoE (sem ajuste),
+ * no nível da ocorrência `nivel` (padrão: a primeira). O efeito na tela de cada um: o escolhido ou o padrão do elemento.
+ */
+export function ataquesDe(slug, nivel = null) {
+  const ocorrencias = Object.values(C.areas).flatMap((a) => (a.monstros ?? []).filter((m) => m.slug === slug).map((m) => ({ m, area: a })));
+  const chefe = Object.values(C.chefes).find((c) => c.monstro?.slug === slug);
+  const alvo = ocorrencias.find((o) => o.m.nivel === Number(nivel)) ?? ocorrencias[0] ?? (chefe ? { m: chefe.monstro, area: { nome: chefe.area } } : null);
+  if (!alvo) return null;
+  const m = alvo.m;
+  const aj = Monstros.AJUSTES.ataques[slug] ?? null;
+  const efeitoDe = (h) => h.efeito ?? EFEITO_PADRAO[h.elemento] ?? EFEITO_PADRAO.physical;
+  const comAjuste = Habilidades.comAjuste(m, aj).map((h) => ({ ...h, efeitoNaTela: efeitoDe(h) }));
+  return {
+    slug, nome: m.nome, nivel: m.nivel, area: alvo.area.nome, chefeDeAto: !!chefe, niveis: [...new Set(ocorrencias.map((o) => o.m.nivel))].sort((a, b) => a - b),
+    desenho: desenhoDe(Monstros.chaveDe(m)) ?? (chefe ? desenhoDe(Monstros.desenhoPeloNome(chefe.nome) ?? 'demon') : null),
+    basico: { dano: m.dano, tempoAtaque: m.tempoAtaque, efeito: aj?.basico?.efeito ?? null, efeitoNaTela: aj?.basico?.efeito ?? 1 },
+    habilidades: comAjuste,
+    originais: Habilidades.convertidas(m).map((h) => ({ ...h, efeitoNaTela: efeitoDe(h) })),
+    doPoedb: (m.habilidades ?? []).map((h) => ({ nome: h.nome, interno: h.interno, tags: h.tags, dano: h.dano ?? null, elemento: h.elemento ?? null, descricao: h.descricao ?? null })),
+    ajuste: aj ?? {}, efeitoPadrao: EFEITO_PADRAO, elementos: Habilidades.ELEMENTOS_DO_AJUSTE, formas: Habilidades.FORMAS,
+  };
 }

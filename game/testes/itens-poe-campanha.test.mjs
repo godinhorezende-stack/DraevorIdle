@@ -162,3 +162,32 @@ test('habilidades no jogo: os chefes de ato têm os comportamentos (validados) e
   assert.ok(r.merveil.includes('magia:ice'), `a Merveil com magia de gelo (${r.merveil})`);
   assert.ok(r.tem, `um chefe de área com magia registrado (${r.unico})`);
 });
+
+test('ataques e efeitos (aba Mobs): o ajuste valida, liga/desliga e muda a habilidade, cria habilidade nova pela força do golpe e o golpe básico ganha o efeito escolhido', async () => {
+  const H = await import('../systems/itens-poe/habilidades.mjs');
+  const monstro = { nome: 'Teste', dano: 50, habilidades: [
+    { nome: 'Ataque Padrão', interno: 'Melee', tags: ['Attack'], dano: { min: 40, max: 60 } },
+    { nome: 'Lança de Gelo', interno: 'IceSpear', tags: ['Spell'], dano: { min: 20, max: 30 }, elemento: 'ice', recarga: 6 },
+  ] };
+  assert.equal(H.validarAjuste({ habilidades: { 'Lança de Gelo': { forma: 'cubo' } } }).ok, false);
+  assert.equal(H.validarAjuste({ basico: { efeito: 0 } }).ok, false);
+  assert.equal(H.validarAjuste({ novas: [{ nome: 'X', pctDoGolpe: 0 }] }).ok, false);
+  const v = H.validarAjuste({ basico: { efeito: 7 }, habilidades: { 'Lança de Gelo': { forma: 'feixe', efeito: 43, tiro: 12, fatorDano: 2 } }, novas: [{ nome: 'Bola de Fogo', elemento: 'fire', forma: 'area', raio: 2, pctDoGolpe: 150 }] });
+  assert.equal(v.ok, true);
+  const l = H.comAjuste(monstro, v.ajuste);
+  const lanca = l.find((h) => h.nome === 'Lança de Gelo');
+  assert.equal(lanca.forma, 'feixe');
+  assert.equal(lanca.efeito, 43);
+  assert.equal(lanca.tiro, 12);
+  const original = H.convertidas(monstro).find((h) => h.nome === 'Lança de Gelo');
+  assert.equal(lanca.min, original.min * 2, 'a força multiplica o dano do PoE');
+  const nova = l.find((h) => h.nome === 'Bola de Fogo');
+  assert.deepEqual([nova.min, nova.max], [60, 90], '150% do golpe 50, ±20%');
+  assert.equal(H.comAjuste(monstro, { habilidades: { 'Lança de Gelo': { ativo: false } } }).some((h) => h.nome === 'Lança de Gelo'), false, 'desligada sai');
+  const p = H.poderes(monstro, v.ajuste);
+  assert.ok(p.some((x) => x.efeito === 43 && x.tiro === 12 && x.forma === 'feixe'), 'os poderes do bicho levam o efeito e o projétil');
+  const Poderes = await import('../systems/poderes.mjs');
+  Poderes.registrarPoderes('teste-efeito-golpe', { ataques: [{ tipo: 'melee', min: 1, max: 2, intervalo: 1000, chance: 100, efeito: 7 }], curas: [] }, { forcar: true });
+  assert.equal(Poderes.efeitoDoGolpe({ key: 'teste-efeito-golpe' }), 7);
+  assert.equal(Poderes.efeitoDoGolpe({ key: 'rat-que-nao-existe' }), 1, 'sem ajuste: o sangue de sempre');
+});

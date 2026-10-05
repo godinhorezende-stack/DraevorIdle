@@ -48,7 +48,7 @@ export function normalizar(d) {
     base: String(d.base ?? ''),
     nivel: d.nivel != null ? Number(d.nivel) : null,
     atributos: { ...(d.atributos ?? {}) },
-    melee: d.melee ? { min: Number(d.melee.min), max: Number(d.melee.max), intervaloMs: Number(d.melee.intervaloMs ?? 2000) } : null,
+    melee: d.melee ? { min: Number(d.melee.min), max: Number(d.melee.max), intervaloMs: Number(d.melee.intervaloMs ?? 2000), ...(d.melee.efeito != null ? { efeito: Number(d.melee.efeito) } : {}) } : null,
     usaPoderesDoBase: d.usaPoderesDoBase === true,
     // Padrão: o chefe vai na escala da fase (vida/dano/exp) como todo bicho da campanha.
     usaEscalaDaFase: d.usaEscalaDaFase !== false,

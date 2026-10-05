@@ -1016,3 +1016,33 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .pm-criaturas { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
 .pm-criatura { display: grid; justify-items: center; gap: 4px; padding: 6px; font-size: 12px; }
 .atos-mob-campos { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); margin: 6px 0; }
+/* Acts: barra de ferramentas, atalhos e ferramentas do ato */
+.atos-ferramentas { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 0; }
+.atos-ferramentas button { min-width: 32px; }
+.atos-ferramentas button.ativo { border-color: var(--eng-ouro); color: var(--eng-ouro-txt); }
+.atos-sep { width: 1px; height: 22px; background: var(--eng-linha-forte); margin: 0 4px; }
+.atos-ajuda { position: fixed; right: 24px; top: 80px; z-index: 50; background: var(--eng-s2); border: 1px solid var(--eng-linha-forte); border-radius: var(--eng-r2); padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,.45); display: grid; gap: 8px; max-width: 420px; }
+.atos-ajuda td { padding: 3px 8px 3px 0; font-size: 12.5px; vertical-align: top; }
+.atos-ajuda kbd { font: 11.5px var(--eng-mono, monospace); background: var(--eng-s0); border: 1px solid var(--eng-linha-forte); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.atos-ferramentas-do-ato { margin: 6px 0; }
+/* Ataques e efeitos (arena, seletor de efeito, habilidades) */
+.atq-palco { display: grid; gap: 4px; margin: 6px 0; }
+.atq-arena { width: 100%; max-width: 624px; height: auto; image-rendering: pixelated; border: 1px solid var(--eng-linha); border-radius: var(--eng-r2); background: var(--eng-s0); }
+.atq-legenda { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--eng-txt2); min-height: 18px; }
+.atq-ponto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.atq-habs { display: grid; gap: 6px; }
+.atq-hab { border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); padding: 6px 8px; background: var(--eng-s1); display: grid; gap: 6px; }
+.atq-hab.desligada { opacity: .55; }
+.atq-campos { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.atq-num input, .atq-num select { width: 110px; }
+.atq-seletor { position: relative; }
+.atq-atual { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px 2px 2px; }
+.atq-mini { image-rendering: pixelated; background: var(--eng-s0); border-radius: 4px; }
+.atq-sem { display: inline-grid; place-items: center; width: 40px; height: 40px; font-size: 11px; color: var(--eng-txt3); background: var(--eng-s0); border-radius: 4px; }
+.atq-grade { position: absolute; z-index: 30; top: calc(100% + 4px); left: 0; width: min(560px, 80vw); max-height: 360px; overflow: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 4px; padding: 8px; background: var(--eng-s2); border: 1px solid var(--eng-linha-forte); border-radius: var(--eng-r2); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+.atq-opcao { display: grid; justify-items: center; gap: 2px; padding: 4px; font-size: 11px; }
+.atq-opcao.ativa { border-color: var(--eng-ouro); }
+.atq-biblioteca { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-top: 10px; }
+.atq-biblioteca .atq-opcao { background: var(--eng-s1); border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); padding: 8px; }
+.atq-poedb { font-size: 12.5px; padding-left: 18px; }
+.atq-no-chefe { margin-top: 10px; }

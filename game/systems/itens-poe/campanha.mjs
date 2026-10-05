@@ -157,11 +157,11 @@ function registrarChefe(numero) {
       base,
       nivel: chefe.nivel,
       atributos: { vida: m.vida + (m.escudoDeEnergia ?? 0), expMult: Math.max(0.01, m.experiencia / Math.max(1, be?.exp ?? 1)), armadura: m.armadura ?? 0, resistencias: { ...m.resistencias } },
-      melee: { min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervaloMs: Math.max(250, Math.round(m.tempoAtaque * 1000)) },
+      melee: { min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervaloMs: Math.max(250, Math.round(m.tempoAtaque * 1000)), ...(Monstros.AJUSTES.ataques[m.slug]?.basico?.efeito ? { efeito: Monstros.AJUSTES.ataques[m.slug].basico.efeito } : {}) },
       usaPoderesDoBase: false,
       usaEscalaDaFase: false,
       // As habilidades do chefe (poedb): magias, áreas avisadas e invocações (os monstros comuns da área dele).
-      comportamentos: Habilidades.comportamentos(m, invocaveisDoChefe(numero)),
+      comportamentos: Habilidades.comportamentos(m, invocaveisDoChefe(numero), Monstros.AJUSTES.ataques[m.slug] ?? null),
     });
   }
   if (!CATALOGO.bosses.some((b) => b.id === id)) {
@@ -200,6 +200,18 @@ export function salvarMonstrosDaArea(id, lista) {
   if (!r.ok || !PORAREA) return r;
   const nativos = nativosDoMapa(C.areas[id].mapa).filter((k) => BESTIARY[k]);
   PORAREA.set(id, C.areas[id].monstros.map((m, i) => Monstros.registrar(m, nativos[i % Math.max(1, nativos.length)] ?? 'skeleton', { forcar: true })));
+  return r;
+}
+
+/** Os ataques e efeitos de um monstro mudaram (aba Mobs): registra de novo as ocorrências dele e, se for chefe de ato, o boss único. */
+export function definirAtaques(slugDoMonstro, ajuste) {
+  const r = Monstros.definirAtaques(slugDoMonstro, ajuste);
+  if (!r.ok || !PORAREA) return r;
+  for (const a of Object.values(C.areas)) for (const m of a.monstros ?? []) if (m.slug === slugDoMonstro) Monstros.registrar(m, 'skeleton', { forcar: true });
+  for (const [n, c] of Object.entries(C.chefes)) if (c.monstro?.slug === slugDoMonstro) {
+    BossesUnicos.esquecer(idDoChefe(Number(n)));
+    registrarChefe(Number(n));
+  }
   return r;
 }
 

@@ -22,8 +22,9 @@ const ARQ_AJUSTES = new URL('../../gamedata/itens-poe/campanha-ajustes.json', im
 export const AJUSTES = existsSync(ARQ_AJUSTES) ? JSON.parse(readFileSync(ARQ_AJUSTES, 'utf8')) : { areas: {}, desenhos: {} };
 AJUSTES.areas ??= {};
 AJUSTES.desenhos ??= {};
+AJUSTES.ataques ??= {};
 for (const [id, a] of Object.entries(AJUSTES.areas)) if (CAMPANHA.areas[id] && Array.isArray(a.monstros)) CAMPANHA.areas[id].monstros = a.monstros;
-const gravarAjustes = () => writeFileSync(ARQ_AJUSTES, `${JSON.stringify({ _nota: 'Ajustes da Engine sobre a campanha do PoE (mobs por área e desenho dos monstros). Gravado pela aba Acts / Mobs.', areas: AJUSTES.areas, desenhos: AJUSTES.desenhos }, null, 1)}\n`);
+const gravarAjustes = () => writeFileSync(ARQ_AJUSTES, `${JSON.stringify({ _nota: 'Ajustes da Engine sobre a campanha do PoE (mobs por área e desenho dos monstros). Gravado pela aba Acts / Mobs.', areas: AJUSTES.areas, desenhos: AJUSTES.desenhos, ataques: AJUSTES.ataques }, null, 1)}\n`);
 
 const CAMPOS_NUMERICOS = ['nivel', 'vida', 'dano', 'tempoAtaque', 'armadura', 'evasao', 'escudoDeEnergia', 'experiencia'];
 /** Valida a lista de monstros de uma área (status do PoE). Devolve `{ ok, lista?, erros? }` — a lista limpa. */
@@ -55,6 +56,16 @@ export function salvarMonstrosDaArea(id, lista, { gravar = true } = {}) {
   AJUSTES.areas[id] = { monstros: v.lista };
   if (gravar) gravarAjustes();
   return { ok: true };
+}
+
+/** Grava o ajuste de ATAQUES e EFEITOS de um monstro do PoE (golpe básico e habilidades — `habilidades.validarAjuste`). `{ ok, erros? }`. */
+export function definirAtaques(slugDoMonstro, ajuste, { gravar = true } = {}) {
+  const v = Habilidades.validarAjuste(ajuste ?? {});
+  if (!v.ok) return v;
+  if (Object.keys(v.ajuste).length) AJUSTES.ataques[slugDoMonstro] = v.ajuste;
+  else delete AJUSTES.ataques[slugDoMonstro];
+  if (gravar) gravarAjustes();
+  return { ok: true, ajuste: v.ajuste };
 }
 
 /** Troca o desenho (a criatura do Draevor) de um monstro do PoE, em todas as áreas. `{ ok, erros? }`. */
@@ -138,8 +149,9 @@ export function registrar(m, desenho, { forcar = false } = {}) {
     ...(m.unico ? { boss: false } : {}),
   };
   // O golpe corpo a corpo e — nos chefes de área com as habilidades do poedb — as magias e áreas deles (`habilidades.mjs`).
-  const melee = { tipo: 'melee', min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervalo: Math.round(m.tempoAtaque * 1000), chance: 100 };
-  registrarPoderes(key, { ataques: [melee, ...(m.habilidades?.length ? Habilidades.poderes(m) : [])], curas: [] }, { forcar });
+  const aj = AJUSTES.ataques[m.slug] ?? null;
+  const melee = { tipo: 'melee', min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervalo: Math.round(m.tempoAtaque * 1000), chance: 100, ...(aj?.basico?.efeito ? { efeito: aj.basico.efeito } : {}) };
+  registrarPoderes(key, { ataques: [melee, ...(m.habilidades?.length || aj?.novas?.length ? Habilidades.poderes(m, aj) : [])], curas: [] }, { forcar });
   return key;
 }
 

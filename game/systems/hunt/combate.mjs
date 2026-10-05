@@ -915,7 +915,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     estado.hp = Math.max(0, estado.hp - final);
     // O sangue no boneco — sem isto o golpe só existia no número que sobe,
     // nunca na tela (mesmo id real do OTServ que `round()` usa no bicho).
-    eventos.push({ t: 'fx', id: 1, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+    // O efeito do golpe na tela: o do cadastro do bicho (aba Mobs → Ataques e efeitos) ou o sangue de sempre.
+    eventos.push({ t: 'fx', id: Poderes.efeitoDoGolpe(bicho), uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
     eventos.push({
       t: 'dmg',
       uid: 'player',
