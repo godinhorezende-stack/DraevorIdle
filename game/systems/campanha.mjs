@@ -25,8 +25,15 @@ import * as Beta from './modo-beta.mjs';
 import { validarAto, temErro, fasesAbertas, normalizar } from './atos-modelo.mjs';
 import { lerExecutaveis } from './atos-carregar.mjs';
 import * as RecompensasDeEncontro from './encontros/recompensas.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
-export const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
+/*
+ * Com o sistema de itens do PoE ligado (ITENS_POE=1, só local), a campanha é a do PoE (decisão do dono, 05/10): os 4 atos do Draevor saem
+ * (fases e bosses vazios) e os 10 atos do PoE entram como atos do runtime (`itens-poe/campanha.mjs` → `registrarAto`).
+ */
+const LIDA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
+// A campanha do PoE é uma passada só, do nível 1 ao 69: a faixa do Normal diz isso (Cruel e Merciless ficam fechados).
+export const CAMPANHA = itensPoeLigado() ? { ...LIDA, fases: [], bosses: {}, dificuldades: { ...LIDA.dificuldades, facil: { ...LIDA.dificuldades.facil, faixa: [1, 69] } } } : LIDA;
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
 export const FASES = CAMPANHA.fases;
 const INDICE = new Map(FASES.map((f, i) => [f.huntId, i]));
@@ -526,7 +533,8 @@ export function _desregistrarAto(numero) {
 }
 
 // No boot: os atos executáveis da pasta. O que não passar na validação é ignorado COM aviso (nunca derruba o servidor nem afeta os legados).
-for (const ato of lerExecutaveis()) {
+// Com o PoE ligado, a campanha é só a do PoE: os atos do editor (que seguem os do Draevor) ficam de fora.
+for (const ato of itensPoeLigado() ? [] : lerExecutaveis()) {
   const r = registrarAto(ato);
   if (!r.ok) console.warn(`[atos] "${ato.id}" não entrou no jogo: ${r.problemas.filter((p) => p.nivel === 'erro').map((p) => `[${p.onde}] ${p.mensagem}`).join(' | ')}`);
   else console.log(`[atos] "${ato.id}" (${ato.estado}) carregado como Ato ${r.numero}: ${ato.fases.length} fases.`);

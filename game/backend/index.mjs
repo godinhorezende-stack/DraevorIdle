@@ -9,6 +9,7 @@ import * as ConteudoHttp from '../admin/conteudo-http.mjs';
 import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
+import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import { ITEM_CATALOG as CATALOGO_DE_ITENS } from '../systems/dados.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
@@ -97,6 +98,9 @@ async function servirArquivo(req, res, caminho) {
   if (r.porBase.size) console.log(`  itens do PoE: ${r.porBase.size} bases no catálogo (ids ${ItensPoeJogo.PRIMEIRO_ID}+); sem slot: ${r.naoEquipaveis.join(', ')}`);
   const pinaculos = Pinaculos.iniciar();
   if (pinaculos.length) console.log(`  chefes pináculo do PoE: ${pinaculos.length} no painel de Bosses (${pinaculos.join(', ')})`);
+  // A campanha do PoE no lugar da do Draevor (os 10 atos, as áreas sobre os mapas do Draevor, os chefes de ato).
+  const campanha = CampanhaPoe.iniciar();
+  if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
 }
 
 const http = createServer((req, res) => {

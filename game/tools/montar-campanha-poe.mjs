@@ -73,8 +73,19 @@ const areas = {};
 for (const pasta of pastas) {
   const a = JSON.parse(readFileSync(`${ORIGEM}/${pasta}/ato.json`, 'utf8'));
   const numero = pasta === 'Epilogo' ? 11 : Number(pasta.slice(4));
-  const idDe = (s) => `poe-a${numero}-${slug(s)}`;
+  // Até 40 caracteres (o limite do id de fase do Draevor), sem repetir.
+  const idDe = (s) => `poe-a${numero}-${slug(s)}`.slice(0, 40).replace(/-$/, '');
   const ids = [];
+  // A posição de cada área no mapa do ato (os pinos do mapa do PoE), ajustada à tela do ato do Draevor (920 × 520).
+  const pinos = a.mapa?.pinos ?? [];
+  const xs = pinos.map((p) => p.x);
+  const ys = pinos.map((p) => p.y);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const posicaoDe = (s) => {
+    const p = pinos.find((q) => q.slug === s);
+    if (!p || !(x1 > x0) || !(y1 > y0)) return null;
+    return { x: Math.round(40 + ((p.x - x0) / (x1 - x0)) * 840), y: Math.round(30 + ((p.y - y0) / (y1 - y0)) * 460) };
+  };
   for (const ar of a.areas) {
     const id = idDe(ar.slug);
     if (areas[id]) continue;
@@ -100,6 +111,7 @@ for (const pasta of pastas) {
       tags: ar.detalhe?.tags ?? [],
       ...(ar.detalhe?.notas ? { notas: ar.detalhe.notas } : {}),
       mapa: ar.cidade ? null : mapaDaArea(ar),
+      ...(posicaoDe(ar.slug) ? { posicao: posicaoDe(ar.slug) } : {}),
       monstros,
     };
   }

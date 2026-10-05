@@ -64,3 +64,48 @@ test('C2 — os monstros do PoE viram criaturas: status do PoE, desenho do Draev
   assert.equal(r.armadura, r.armPoe, 'a armadura do PoE, sem a curva do Draevor');
   assert.equal(r.desenhoCaranguejo, r.lookCrab, 'o Caranguejo do PoE usa o desenho do caranguejo do Draevor');
 });
+
+test('C3 — a campanha do PoE no lugar da do Draevor: áreas sobre os mapas do Draevor com os monstros do PoE, progressão pelo grafo, chefe de ato, ato seguinte', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const codigo = `
+    process.env.ITENS_POE = '1';
+    const PC = await import('./systems/itens-poe/campanha.mjs');
+    const r0 = PC.iniciar();
+    const Campanha = await import('./systems/campanha.mjs');
+    const Cacadas = await import('./systems/cacadas.mjs');
+    const { personagemDeTeste } = await import('./testes/apoio.mjs');
+    const e = personagemDeTeste({ vocacao: 'knight', level: 20 });
+    e.campanha = {};
+    const r = { atos: r0.atos, problemas: r0.problemas.length, fases: Campanha.FASES.length, legado: Campanha.FASES.some((f) => f.huntId === 'troll-cave') };
+    const ok = Cacadas.entrar(e, { huntId: 'poe-a1-the-twilight-strand', mode: 'auto', dificuldade: 'facil', campanha: true });
+    const bichos = [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares ?? {}).flat()];
+    r.entrou = ok.ok;
+    r.soDoPoe = bichos.length > 0 && bichos.every((m) => m.key.startsWith('poe-'));
+    r.hillock = bichos.some((m) => m.key === 'poe-hillock-1');
+    e.hunt = null;
+    r.costaAntes = Campanha.faseLiberada(e, 'facil', 'poe-a1-the-coast');
+    const p = (e.campanha.facil ??= { limpezas: {}, completas: [], bosses: [], premios: [] });
+    p.completas.push('poe-a1-the-twilight-strand');
+    r.costaDepois = Campanha.faseLiberada(e, 'facil', 'poe-a1-the-coast');
+    r.chefeAntes = Campanha.bossLiberado(e, 'facil', 1);
+    const ato1 = Campanha.FASES.filter((f) => f.ato === 1).map((f) => f.huntId);
+    p.completas.push(...ato1);
+    r.chefeDepois = Campanha.bossLiberado(e, 'facil', 1);
+    r.chefe = Campanha.bossDoAto(1)?.nome;
+    r.ato2Antes = Campanha.faseLiberada(e, 'facil', 'poe-a2-the-southern-forest');
+    p.bosses.push(1);
+    r.ato2Depois = Campanha.faseLiberada(e, 'facil', 'poe-a2-the-southern-forest');
+    console.log(JSON.stringify(r));
+  `;
+  const r = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', codigo], { cwd: new URL('..', import.meta.url).pathname, encoding: 'utf8' }).trim().split('\n').pop());
+  assert.deepEqual(r.atos, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(r.problemas, 0);
+  assert.equal(r.fases, 127);
+  assert.equal(r.legado, false, 'a campanha do Draevor saiu');
+  assert.ok(r.entrou && r.soDoPoe, 'a Costa do Crepúsculo tem só monstros do PoE');
+  assert.ok(r.hillock, 'com o Hillock, o único da área');
+  assert.deepEqual([r.costaAntes, r.costaDepois], [false, true], 'a Costa abre depois da Costa do Crepúsculo');
+  assert.deepEqual([r.chefeAntes, r.chefeDepois], [false, true]);
+  assert.match(r.chefe, /Merveil/);
+  assert.deepEqual([r.ato2Antes, r.ato2Depois], [false, true], 'o Ato 2 abre com a vitória sobre o chefe do Ato 1');
+});
