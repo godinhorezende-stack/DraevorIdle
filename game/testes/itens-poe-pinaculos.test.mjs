@@ -36,3 +36,32 @@ test('a tabela exclusiva: 1 Único só do chefe, como peça do jogo', { skip: SE
   }
   assert.equal(Pinaculos.dropExclusivo('nao-existe'), null);
 });
+
+test('a luta: entrar na arena faz nascer o boss único (vida/dano do PoE) e a vitória põe na sacola o Único exclusivo e o drop do PoE', { skip: SEM }, async () => {
+  const Cacadas = await import('../systems/cacadas.mjs');
+  const Bau = await import('../systems/bau.mjs');
+  const { vitoriaNoBoss } = await import('../systems/hunt/combate.mjs');
+  const { personagemDeTeste, PERSONAGEM } = await import('./apoio.mjs');
+  const { BESTIARY } = await import('../systems/hunt/monstros.mjs');
+  Jogo.iniciar(ITEM_CATALOG);
+  Pinaculos.iniciar();
+  const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
+  const r = Cacadas.entrar(e, { huntId: 'poe-the-maven', mode: 'auto' });
+  assert.equal(r.ok, true, r.erro);
+  assert.equal(e.hunt.isBoss, true);
+  const m = e.hunt.monstros.find((x) => x.boss);
+  assert.ok(m, 'o boss único nasceu na arena');
+  assert.equal(m.boss.id, 'poe-the-maven');
+  assert.equal(m.name, 'The Maven');
+  assert.equal(m.maxHp, Math.round(BESTIARY['the-brainstealer'].hp * bossUnico('poe-the-maven').atributos.vidaMult));
+  assert.equal(m.resist.chaos, 30);
+  Bau.garantir(e);
+  const antes = e.rewards.length;
+  vitoriaNoBoss(e, e.hunt, m, PERSONAGEM);
+  assert.equal(e.rewards.length, antes + 1, 'uma sacola do boss');
+  const itens = e.rewards.at(-1).itens;
+  const doPoe = itens.filter((i) => i.poe);
+  const slugs = new Set(Pinaculos.pinaculo('poe-the-maven').unicos.map((u) => u.slug));
+  assert.ok(doPoe.some((i) => i.poe.raridade === 'unico' && slugs.has(i.poe.unico)), 'o Único exclusivo da Maven está na sacola');
+  assert.ok(doPoe.length >= 5, `drop do PoE de monstro Único (4,72) + o exclusivo: ${doPoe.length}`);
+});
