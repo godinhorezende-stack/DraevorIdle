@@ -12,6 +12,7 @@ import { traduzirPeca } from './traduzir.mjs';
 import { gerarPeca } from './gerar.mjs';
 import { darPeca } from '../inventario.mjs';
 import * as DropsPorMonstro from './drops-por-monstro.mjs';
+import * as SocketsPoe from './sockets.mjs';
 
 export const PRIMEIRO_ID = 7_000_000;
 
@@ -111,7 +112,7 @@ function afDaBase(atributos) {
  * A peça do JOGO a partir da peça gerada (`gerarPeca`). `{ id, count: 1, base, poe }` — sem `raridade`/`af` do Draevor (a peça do PoE
  * não passa pelas regras de raridade e de afixos do Draevor: forja, essência e o resto não a reconhecem).
  */
-export function pecaDoJogo(gerada, regras = Catalogo.REGRAS) {
+export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) {
   if (!gerada || gerada.erro) return null;
   const id = idDaBase(gerada.base);
   if (!id) return null;
@@ -126,9 +127,12 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS) {
   const af = { ...t.af };
   for (const [k, v] of Object.entries(afDaBase(a))) af[k] = (af[k] ?? 0) + v;
   const R = regras.raridades[gerada.raridade] ?? {};
+  // Os sockets (regra do dono: pela classe e pelo item level, quantidade e links ao acaso — `itens-poe/sockets.mjs`).
+  const soquetes = SocketsPoe.sortear(gerada.classe, gerada.ilvl, rng);
   return {
     id, count: 1,
     ...(Object.keys(base).length ? { base } : {}),
+    ...(soquetes ? { soquetes } : {}),
     poe: {
       base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null,
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
@@ -234,7 +238,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   }
   if (!candidatas.length) return null;
   const base = candidatas[Math.floor(rng() * candidatas.length)];
-  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade, ilvl, rng }), regras);
+  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade, ilvl, rng }), regras, rng);
 }
 
 /** As peças do PoE que caem do bicho morto (lista, talvez vazia). Só com o sistema ligado. */
@@ -267,5 +271,5 @@ export function armaInicial(slugDaClasse, regras = Catalogo.REGRAS) {
   const cat = Catalogo.catalogo();
   const base = ARMA_INICIAL[slugDaClasse] ?? ARMA_INICIAL.Scion;
   if (!cat) return null;
-  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng: () => 0.5 }), regras);
+  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng: () => 0.5 }), regras, () => 0.5);
 }

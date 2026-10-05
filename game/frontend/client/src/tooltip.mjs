@@ -2685,7 +2685,10 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     const eu = getPersonagem();
     const at = eu?.derived?.atributos;
     const tem = eu ? { nivel: eu.level ?? 0, str: at?.str ?? 0, dex: at?.dex ?? 0, int: at?.int ?? 0 } : null;
-    return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos, tem })] };
+    const balao = balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos, tem });
+    // Os sockets e links da peça (regra do dono: pela classe e pelo item level), no mesmo desenho das peças do Draevor.
+    if (peca.soquetes?.gemas?.length) balao.append(blocoDosSoquetes(peca.soquetes));
+    return { classe: 'tip-poe', partes: [balao] };
   }
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;

@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { ITEM_CATALOG, ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS } from '../dados.mjs';
 import * as Tags from './tags.mjs';
 import * as R from '../regras.mjs';
+import * as SocketsPoe from '../itens-poe/sockets.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
@@ -256,12 +257,15 @@ export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t 
 
 // ---------------------------------------------------------------- sockets
 
-/** O máximo de sockets de uma peça (pelo slot do catálogo; 0 = não tem). */
-export const maximoDeSockets = (meta) => CONFIG.sockets.maximo[meta?.slot] ?? 0;
+/**
+ * O máximo de sockets de uma peça (pelo slot do catálogo; 0 = não tem). Peça do PoE (`meta.poe`): pela classe e pelo item level dela
+ * (`itens-poe/sockets.mjs`; sem a `peca`, o máximo da classe).
+ */
+export const maximoDeSockets = (meta, peca = null) => (meta?.poe ? SocketsPoe.maximo(SocketsPoe.classeDe(meta, peca), peca?.poe?.ilvl ?? null) : CONFIG.sockets.maximo[meta?.slot] ?? 0);
 
 /** Os sockets de uma peça, normalizados ao máximo do slot (sem gravar). */
 export function soquetesDe(peca) {
-  const max = maximoDeSockets(ITEM_CATALOG[peca?.id]);
+  const max = maximoDeSockets(ITEM_CATALOG[peca?.id], peca);
   if (!max) return null;
   const s = peca.soquetes ?? {};
   const abertos = Math.max(0, Math.min(max, Math.floor(Number(s.abertos) || 0)));
@@ -296,7 +300,8 @@ export function sortearSoquetes(meta, raridade, rng = Math.random) {
 export { gruposLigados, grupoDoSocket, compativel } from '../../engine/sockets-de-gema.mjs';
 import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
 
-const SLOTS_COM_SOCKET = Object.keys(CONFIG.sockets.maximo);
+// + as luvas, que no PoE têm slot próprio (e sockets).
+const SLOTS_COM_SOCKET = [...new Set([...Object.keys(CONFIG.sockets.maximo), 'gloves'])];
 
 /**
  * A MESMA support duas vezes no grupo vale UMA vez (como no Path of Exile; pedido do
@@ -620,7 +625,7 @@ function gastaOrbe(estado, k) {
 function pecaComSockets(estado, slot) {
   const peca = estado.equipment?.[slot];
   if (!peca) return { erro: 'Não há nada vestido nesse slot.' };
-  const max = maximoDeSockets(ITEM_CATALOG[peca.id]);
+  const max = maximoDeSockets(ITEM_CATALOG[peca.id], peca);
   if (!max) return { erro: 'Esse tipo de peça não tem sockets.' };
   return { peca, max, s: soquetesDe(peca) };
 }

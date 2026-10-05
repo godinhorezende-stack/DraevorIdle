@@ -107,5 +107,15 @@
       854581492, 964681502, 1093266881, 1244459877, 1423471462, 1636931409, 1893331864, 2203627803, 2582056095, 3047261510,
       3698536440, 4486500689, 5440518316, 6596991862, 8000000000, 9695687000, 11755842000, 14255880000, 17275000000, 21057000000
     ]
+  },
+  "sockets": {
+    "_nota": "Os SOCKETS das peças do PoE (regra do dono, 05/10): o máximo pela CLASSE da peça (`porClasse`; classe fora da lista = 0: anéis, amuletos, cintos, aljavas...) e pelo ITEM LEVEL (`porItemLevel`: [item level mínimo, sockets possíveis] — 1 e 2 sockets desde o 1, 3 no 2, 4 no 25, 5 no 35, 6 no 50). Peça que cai: TOTALMENTE ALEATÓRIO — de 0 ao máximo (cada quantidade com a mesma chance) e cada par de sockets vizinhos ligado com `chanceDeLink`. Os links nunca passam do número de sockets.",
+    "porClasse": {
+      "Helmets": 4, "Body_Armours": 6, "Gloves": 4, "Boots": 4, "Shields": 3,
+      "One_Hand_Swords": 3, "Thrusting_One_Hand_Swords": 3, "One_Hand_Axes": 3, "One_Hand_Maces": 3, "Daggers": 3, "Rune_Daggers": 3, "Claws": 3, "Wands": 3, "Sceptres": 3,
+      "Two_Hand_Swords": 6, "Two_Hand_Axes": 6, "Two_Hand_Maces": 6, "Staves": 6, "Warstaves": 6, "Bows": 6
+    },
+    "porItemLevel": [[1, 2], [2, 3], [25, 4], [35, 5], [50, 6]],
+    "chanceDeLink": 0.5
   }
 }
