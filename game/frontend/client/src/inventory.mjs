@@ -27,6 +27,20 @@ const el = (tag, className, text) => {
 // anel, o outro embaixo da munição — sem a janela crescer nada.
 const SLOT_LAYOUT = ['neck', 'head', 'backpack', 'weapon', 'body', 'shield', 'ring', 'legs', 'ammo', '@premium', 'feet', '@blessings'];
 /*
+ * Com o sistema de itens do PoE ligado (só local, ITENS_POE=1), há LUVAS: o slot `gloves` entra no canto de baixo à esquerda, ao lado das
+ * botas (onde fica no PoE), e o selo de premium desce uma fileira. Sem peça de luva no catálogo, a grade é a de sempre.
+ */
+const SLOT_LAYOUT_COM_LUVAS = ['neck', 'head', 'backpack', 'weapon', 'body', 'shield', 'ring', 'legs', 'ammo', 'gloves', 'feet', '@blessings', '@premium'];
+let catalogoDasLuvas = null;
+let temLuvas = false;
+function disposicaoDosSlots(itens) {
+  if (itens !== catalogoDasLuvas) {
+    catalogoDasLuvas = itens;
+    temLuvas = Object.values(itens ?? {}).some((i) => i?.slot === 'gloves');
+  }
+  return temLuvas ? SLOT_LAYOUT_COM_LUVAS : SLOT_LAYOUT;
+}
+/*
  * ---- Os dois slots que se trocam sozinhos ----
  *
  * A lista de prioridades da minibot dele, dentro do jogo: cada linha é uma peça
@@ -41,12 +55,12 @@ const MAX_REGRAS_NA_TELA = 8;
 
 const SLOT_LABELS = {
   neck: 'colar', head: 'elmo', backpack: 'mochila', weapon: 'mão direita', body: 'armadura',
-  shield: 'mão esquerda', ring: 'anel', legs: 'pernas', ammo: 'munição', feet: 'botas',
+  shield: 'mão esquerda', ring: 'anel', legs: 'pernas', ammo: 'munição', feet: 'botas', gloves: 'luvas',
 };
 // Placeholders originais do client (data/images/game/slots).
 const SLOT_ART = {
   neck: 'neck', head: 'head', backpack: 'back', weapon: 'right-hand', body: 'body',
-  shield: 'left-hand', ring: 'finger', legs: 'legs', ammo: 'ammo', feet: 'feet',
+  shield: 'left-hand', ring: 'finger', legs: 'legs', ammo: 'ammo', feet: 'feet', gloves: 'gloves.svg',
 };
 
 let ctx = null; // { state, send, notice }
@@ -1588,7 +1602,7 @@ function emptySlotArt(slot) {
    * nenhum. Sem a reserva o `src` viraria `undefined.png` e a figura sumiria.
    */
   const nome = SLOT_ART[slot] ?? 'back';
-  art.src = `/client/assets/slots/${nome}.png`;
+  art.src = `/client/assets/slots/${nome.includes('.') ? nome : `${nome}.png`}`;
   art.alt = SLOT_LABELS[slot] ?? 'afixo';
   art.onerror = () => art.replaceWith(el('small', null, SLOT_LABELS[slot] ?? 'afixo'));
   return art;
@@ -2081,7 +2095,7 @@ export function renderInventory() {
   body.innerHTML = '';
 
   const equipment = el('div', 'equipment');
-  for (const slot of SLOT_LAYOUT) {
+  for (const slot of disposicaoDosSlots(state.items)) {
     // Os dois selos ocupam os buracos da grade: não são slots, não recebem
     // arrasto e não têm moldura de encaixe.
     if (slot === '@premium') {

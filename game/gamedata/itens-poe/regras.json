@@ -1,0 +1,68 @@
+{
+  "_nota": "As REGRAS do sistema de itens no modelo do PoE (Fase 1, desligado em produção: só vale com ITENS_POE=1). Decisões do dono de 04/10: raridades Normal, Mágico, Raro e Único 'como na documentação' (poe-itens/Raridades/raridades.md — PoEDB: Mágico até 1 prefixo + 1 sufixo; Raro até 3 + 3; Único com mods fixos), Raro com 4 a 6 mods 'como no PoE', poderes especiais só nos Únicos. As quantidades do Mágico e do Raro são regras do dono (04/10) — a coleção não traz a distribuição. Tudo editável na engine.",
+  "raridades": {
+    "normal": {
+      "nome": "Normal",
+      "cor": "#f6f6f6",
+      "maxPrefixos": 0,
+      "maxSufixos": 0,
+      "quantidade": {
+        "0": 1
+      }
+    },
+    "magico": {
+      "nome": "Mágico",
+      "cor": "#a29cf9",
+      "maxPrefixos": 1,
+      "maxSufixos": 1,
+      "quantidade": {
+        "1": 1,
+        "2": 1
+      },
+      "_quantidade": "regra do dono (04/10), para o drop e a Orbe de Transmutação: 1 mod 50% (só o prefixo OU só o sufixo), 2 mods 50% (exatamente 1 prefixo + 1 sufixo). Com 1 mod, o lado sai pelo peso dos mods elegíveis de cada lado."
+    },
+    "raro": {
+      "nome": "Raro",
+      "cor": "#fcfca0",
+      "maxPrefixos": 3,
+      "maxSufixos": 3,
+      "quantidade": {
+        "4": 80,
+        "5": 15,
+        "6": 5
+      },
+      "_quantidade": "regra do dono (04/10), para o drop de monstro e as Orbes de Alquimia e do Caos: 4 mods ~80%, 5 mods ~15%, 6 mods ~5% (até 3 prefixos e 3 sufixos)."
+    },
+    "unico": {
+      "nome": "Único",
+      "cor": "#a66734",
+      "fixos": true
+    }
+  },
+  "ordem": [
+    "normal",
+    "magico",
+    "raro",
+    "unico"
+  ],
+  "drop": {
+    "_nota": "O DROP de peças do PoE nas caçadas (só com ITENS_POE=1). Números do dono (05/10). QUANTAS peças: chanceBase × (1 + bonusDeQuantidade da raridade do bicho no Draevor) × (1 + modificadores de quantidade do jogador/mapa — os fatores de loot do Draevor: Buff Power, afixo Loot, prey, pódio, Caça Online); abaixo de 1 é a chance de 1 peça, de 1 para cima a parte inteira é garantida e o excedente rola mais uma. Normal 0,16 (16%); Mágico (modificado) +150% = 0,40 (o meio de '0,30 a 0,50'); Raro +750% = 1,36 (confirmado pelo dono); Único +2850% = 4,72. O PoE tem só 4 raridades de monstro (Normal, Mágico, Raro, Único): o Elite do Draevor conta como Raro, e o Chefe (boss) e o Chefe único contam como Único. Depois, a RARIDADE de cada peça pelos pesos de `raridades`. O Item Level da peça é o level do bicho, limitado a ilvlMaximo (os tiers do PoE vão até o iLvl 86).",
+    "chanceBase": 0.16,
+    "bonusDeQuantidade": {
+      "normal": 0,
+      "modificado": 1.5,
+      "raro": 7.5,
+      "elite": 7.5,
+      "unico": 28.5,
+      "boss": 28.5
+    },
+    "raridades": {
+      "normal": 0.85,
+      "magico": 0.125,
+      "raro": 0.03,
+      "unico": 0.00055,
+      "_nota": "Números do dono (05/10): Normal ~0,80–0,90, Mágico ~0,10–0,15, Raro ~0,02–0,04, Único ~0,0001–0,001 — aqui o ponto médio de cada faixa. São PESOS relativos (o sorteio divide pela soma), valendo para cada peça que cai."
+    },
+    "ilvlMaximo": 100
+  }
+}

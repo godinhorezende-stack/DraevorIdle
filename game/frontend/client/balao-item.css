@@ -242,3 +242,30 @@
 :is(.tooltip, .gema-no-editor) .tip-buff-gema-dados > div { display: flex; justify-content: space-between; gap: 12px; }
 :is(.tooltip, .gema-no-editor) .tip-buff-gema-dados span { color: #9a9a9a; }
 :is(.tooltip, .gema-no-editor) .tip-buff-gema-cond { color: #9a9a9a; font-size: 11.5px; }
+
+
+/* ---- a peça do sistema de itens do PoE (Fase 1, só com ITENS_POE=1): o mesmo balão no jogo e na engine (itens-poe-balao.mjs) ---- */
+.tooltip.tip-poe { padding: 0; background: transparent; border: 0; box-shadow: none; }
+.poe-balao { background: #0b0b0d; border: 1px solid color-mix(in srgb, var(--cor) 55%, #000); font: 13px/1.45 var(--font-item, 'Alegreya SC', Georgia, serif); color: #c8c8c8; min-width: 0; }
+.poe-topo { display: grid; justify-items: center; padding: 6px 10px; background: linear-gradient(180deg, color-mix(in srgb, var(--cor) 22%, #000), #0b0b0d); color: var(--cor); border-bottom: 1px solid color-mix(in srgb, var(--cor) 40%, #000); text-align: center; }
+.poe-topo b { font-size: 15px; font-weight: 500; }
+.poe-props { display: grid; justify-items: center; padding: 6px 10px; text-align: center; color: #8f8f8f; }
+.poe-props b { color: #e8e8e8; font-weight: 400; }
+.poe-raridade { font-size: 11.5px; color: #7f7f7f; }
+.poe-sep { height: 1px; margin: 0 12px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cor) 50%, #000), transparent); }
+.poe-mod { display: flex; justify-content: center; gap: 8px; padding: 1px 10px; text-align: center; color: #8888ff; }
+.poe-mod.imp { color: #9db9ff; }
+.poe-mod.uni { color: #c8a26a; }
+.poe-mod i { font: 10.5px var(--eng-mono); color: #5d6475; align-self: center; white-space: nowrap; }
+.poe-balao > :last-child { padding-bottom: 8px; }
+.poe-aviso { padding: 4px 10px 8px; color: var(--eng-aviso); font: 12px var(--eng-fonte); text-align: center; }
+.poe-tr { font-style: normal; font: 600 11px var(--eng-mono); width: 14px; display: inline-block; text-align: center; flex: none; }
+.poe-tr.equivalente { color: #5cc28a; } .poe-tr.aproximado { color: #e9c34f; } .poe-tr.novo { color: #c79bff; } .poe-tr.registrado { color: #8a93a5; }
+.poe-draevor { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 6px 10px 8px; border-top: 1px dashed #2a2a30; font: 12px var(--eng-fonte); color: var(--eng-txt2); }
+.poe-draevor b { font-weight: 500; color: var(--eng-txt); }
+.poe-secao { margin: 4px 12px 0; font: 10.5px var(--font-item, 'Alegreya SC', Georgia, serif); letter-spacing: .12em; text-transform: uppercase; color: #6d6d78; text-align: center; }
+.poe-af { display: inline-block; padding: 0 6px; border-radius: 999px; background: #1b2840; color: #cfe0ff; font-size: 11px; }
+
+/* Os requisitos da base da peça do PoE (nível e atributos), como no PoE. */
+.poe-balao .poe-requisitos { font-size: .9em; opacity: .8; padding: 2px 0 0; }
+.poe-balao .poe-req.falta { color: #e5534b; font-weight: 600; }

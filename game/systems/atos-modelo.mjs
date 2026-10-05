@@ -42,6 +42,20 @@ export const TIPOS_DE_FASE = {
   transicao: { suportado: false, exigeHunt: false, nome: 'Fase de transição', motivo: 'sem tela/estado de transição no runtime' },
 };
 
+/**
+ * Como a fase CONCLUI (`fase.conclusao.tipo`), todas com suporte no runtime (`Campanha.limpou` / `Campanha.matou`):
+ *   limpar-hunt     — limpar a instância inteira (o de sempre);
+ *   matar-chefe     — matar um monstro da área (`monstro`: a chave do bestiário ou o slug do monstro do PoE);
+ *   matar-n         — matar `quantidade` monstros da área (`monstro` opcional: só daquele);
+ *   item-de-missao  — o monstro alvo (`monstro`) solta o item da missão (`item`: id do item) e pegá-lo conclui.
+ */
+export const TIPOS_DE_CONCLUSAO = {
+  'limpar-hunt': { nome: 'Limpar a área (todos os bichos)' },
+  'matar-chefe': { nome: 'Matar o chefe/único da área', exigeMonstro: true },
+  'matar-n': { nome: 'Matar N monstros', exigeQuantidade: true },
+  'item-de-missao': { nome: 'Missão: item de um monstro', exigeMonstro: true, exigeItem: true },
+};
+
 const erro = (onde, mensagem) => ({ nivel: 'erro', onde, mensagem });
 const aviso = (onde, mensagem) => ({ nivel: 'aviso', onde, mensagem });
 const lista = (v) => (Array.isArray(v) ? v : []);
@@ -214,7 +228,13 @@ export function validarAto(bruto, ctx = {}) {
     }
     if (exige && f.nivel == null && tipo?.suportado) r.push(erro(onde, 'Defina o nível da fase nas 3 dificuldades: a força dos bichos é escalada para ele.'));
     if (f.nivel != null) for (const d of ['facil', 'medio', 'dificil']) if (!(Number.isFinite(f.nivel[d]) && f.nivel[d] >= 1)) r.push(erro(onde, `Nível "${d}" precisa ser um número ≥ 1.`));
-    if (f.conclusao?.tipo !== 'limpar-hunt') r.push(exige ? erro(onde, `Condição de conclusão "${f.conclusao?.tipo}" sem suporte: hoje só 'limpar-hunt'.`) : aviso(onde, `Condição de conclusão "${f.conclusao?.tipo}" sem suporte; só 'limpar-hunt' funciona hoje.`));
+    const conc = TIPOS_DE_CONCLUSAO[f.conclusao?.tipo];
+    if (!conc) r.push(erro(onde, `Condição de conclusão "${f.conclusao?.tipo}" desconhecida.`));
+    else {
+      if (conc.exigeMonstro && !f.conclusao.monstro) r.push(erro(onde, `"${conc.nome}": escolha o monstro.`));
+      if (conc.exigeQuantidade && !(Number.isInteger(f.conclusao.quantidade) && f.conclusao.quantidade >= 1)) r.push(erro(onde, `"${conc.nome}": a quantidade precisa ser um inteiro ≥ 1.`));
+      if (conc.exigeItem && !(ctx.itemExiste ? ctx.itemExiste(f.conclusao.item) : f.conclusao.item)) r.push(erro(onde, `"${conc.nome}": o item ${f.conclusao.item ?? '(nenhum)'} não existe no catálogo.`));
+    }
     for (const e of f.requisitos.exige) {
       if (e === f.id) r.push(erro(onde, 'A fase não pode exigir a si mesma.'));
       else if (!a.fases.some((x) => x.id === e)) r.push(erro(onde, `O requisito "${e}" não é uma fase deste ato.`));

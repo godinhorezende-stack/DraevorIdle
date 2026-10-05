@@ -1,0 +1,642 @@
+{
+  "id": "poe-ato-1",
+  "nome": "Ato 1",
+  "descricao": "Ato 1 da campanha do Path of Exile.",
+  "ordem": 1,
+  "anterior": null,
+  "estado": "publicado",
+  "inicio": "poe-a1-the-twilight-strand",
+  "fases": [
+    {
+      "id": "poe-a1-the-twilight-strand",
+      "nome": "Costa do Crepúsculo",
+      "descricao": "A Esperança morreu afogada aqui.",
+      "ordem": 1,
+      "huntId": "poe-a1-the-twilight-strand",
+      "nivel": {
+        "facil": 1,
+        "medio": 1,
+        "dificil": 1
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 50,
+        "y": 455
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Inimigo Bate à Porta",
+          "texto": "Abra a Tela de Habilidades Passivas Gaste o seu Ponto de Habilidade Passiva"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Hillock",
+        "nome": "Hillock"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-coast",
+      "nome": "A Costa",
+      "descricao": "Os penhascos ecoam a loucura voraz.",
+      "ordem": 2,
+      "huntId": "poe-a1-the-coast",
+      "nivel": {
+        "facil": 2,
+        "medio": 2,
+        "dificil": 2
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 123,
+        "y": 323
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Viagem Inaugural",
+          "texto": "Pegue o bote da Valerie até o Soberano"
+        },
+        {
+          "missao": "A Chama Espiritual",
+          "texto": "Encontre uma utilidade para a Omnichama"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-tidal-island",
+      "nome": "Ilha da Maré",
+      "descricao": "Apesar do calor do sol, a brisa aqui mordisca com presas de gelo.",
+      "ordem": 3,
+      "huntId": "poe-a1-the-tidal-island",
+      "nivel": {
+        "facil": 3,
+        "medio": 3,
+        "dificil": 3
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 195,
+        "y": 351
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Missão de Caridade",
+          "texto": "Encontre o Baú de Remédios"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600001,
+        "monstro": "Hailrake",
+        "nome": "Hailrake"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-mud-flats",
+      "nome": "O Lamaçal",
+      "descricao": "A lama e o ar fervilham com a vida deformada.",
+      "ordem": 4,
+      "huntId": "poe-a1-the-mud-flats",
+      "nivel": {
+        "facil": 4,
+        "medio": 4,
+        "dificil": 4
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 175,
+        "y": 280
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Quebrando Alguns Ovos",
+          "texto": "Leve os Glifos para a Parede de Glifos"
+        },
+        {
+          "missao": "O Caminho Adiante",
+          "texto": "Entre na Passagem Submersa no Lamaçal"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-fetid-pool",
+      "nome": "Lagoa Fétida",
+      "descricao": "Águas vagarosas fervendo em podridão.",
+      "ordem": 5,
+      "huntId": "poe-a1-the-fetid-pool",
+      "nivel": {
+        "facil": 5,
+        "medio": 5,
+        "dificil": 5
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 120,
+        "y": 215
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Um Trabalho Sujo",
+          "texto": "Mate todos os monstros na Lagoa Fétida"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-flooded-depths",
+      "nome": "Profundezas Inundadas",
+      "descricao": "A escuridão congelando à inanição.",
+      "ordem": 6,
+      "huntId": "poe-a1-the-flooded-depths",
+      "nivel": {
+        "facil": 6,
+        "medio": 6,
+        "dificil": 6
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 376,
+        "y": 260
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Habitante das Profundezas",
+          "texto": "Mate o Habitante das Profundezas"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "The_Dweller_of_the_Deep",
+        "nome": "O Habitante das Profundezas"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-submerged-passage",
+      "nome": "Passagem Submersa",
+      "descricao": "Lodo, sombras e dentes muito afiados.",
+      "ordem": 7,
+      "huntId": "poe-a1-the-submerged-passage",
+      "nivel": {
+        "facil": 5,
+        "medio": 5,
+        "dificil": 5
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 277,
+        "y": 230
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Quebrando Alguns Ovos",
+          "texto": "Entre na Passagem Submersa."
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-ledge",
+      "nome": "O Desfiladeiro",
+      "descricao": "Ventos empoeirados carregam o cheiro de ossos, velhos ou não.",
+      "ordem": 8,
+      "huntId": "poe-a1-the-ledge",
+      "nivel": {
+        "facil": 6,
+        "medio": 6,
+        "dificil": 6
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 363,
+        "y": 196
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-climb",
+      "nome": "A Escalada",
+      "descricao": "Os penhascos olham ameaçadoramente como juízes num tribunal.",
+      "ordem": 9,
+      "huntId": "poe-a1-the-climb",
+      "nivel": {
+        "facil": 7,
+        "medio": 7,
+        "dificil": 7
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 193,
+        "y": 149
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-lower-prison",
+      "nome": "Prisão Inferior",
+      "descricao": "O ar é rico em desesperos e aparições.",
+      "ordem": 10,
+      "huntId": "poe-a1-the-lower-prison",
+      "nivel": {
+        "facil": 8,
+        "medio": 8,
+        "dificil": 8
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 159,
+        "y": 62
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-upper-prison",
+      "nome": "Prisão Superior",
+      "descricao": "",
+      "ordem": 11,
+      "huntId": "poe-a1-the-upper-prison",
+      "nivel": {
+        "facil": 9,
+        "medio": 9,
+        "dificil": 9
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 192,
+        "y": 45
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-prisoners-gate",
+      "nome": "Portões da Prisão",
+      "descricao": "Os penhascos observam com olhos caprinos.",
+      "ordem": 12,
+      "huntId": "poe-a1-prisoners-gate",
+      "nivel": {
+        "facil": 10,
+        "medio": 10,
+        "dificil": 10
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 302,
+        "y": 62
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Bruto Enjaulado",
+          "texto": "Encontre a saída da Prisão"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-ship-graveyard",
+      "nome": "Necrópole de Navios",
+      "descricao": "Agonias sussurradas dos mortos ilhados.",
+      "ordem": 13,
+      "huntId": "poe-a1-the-ship-graveyard",
+      "nivel": {
+        "facil": 11,
+        "medio": 11,
+        "dificil": 11
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 472,
+        "y": 147
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Marinheiro Ilhado",
+          "texto": "Mate Fairgraves"
+        },
+        {
+          "missao": "A Chama Espiritual",
+          "texto": "Pegue a Omnichama"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600002,
+        "monstro": "Captain_Fairgraves",
+        "nome": "Capitão Fairgraves"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-ship-graveyard-cave",
+      "nome": "Caverna da Necrópole de Navios",
+      "descricao": "A garganta de um cadáver exalando morte.",
+      "ordem": 14,
+      "huntId": "poe-a1-the-ship-graveyard-cave",
+      "nivel": {
+        "facil": 12,
+        "medio": 12,
+        "dificil": 12
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 455,
+        "y": 99
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "O Marinheiro Ilhado",
+          "texto": "Encontre a Omnichama"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-cavern-of-wrath",
+      "nome": "Caverna da Ira",
+      "descricao": "O ar alfineta a pele com sua fúria frígida.",
+      "ordem": 15,
+      "huntId": "poe-a1-the-cavern-of-wrath",
+      "nivel": {
+        "facil": 12,
+        "medio": 12,
+        "dificil": 12
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 734,
+        "y": 108
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a1-the-cavern-of-anger",
+      "nome": "Caverna da Cólera",
+      "descricao": "",
+      "ordem": 16,
+      "huntId": "poe-a1-the-cavern-of-anger",
+      "nivel": {
+        "facil": 13,
+        "medio": 13,
+        "dificil": 13
+      },
+      "obrigatoria": true,
+      "posicao": {
+        "x": 750,
+        "y": 83
+      },
+      "tipo": "fase-final-do-ato",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    }
+  ],
+  "conexoes": [
+    {
+      "de": "poe-a1-the-twilight-strand",
+      "para": "poe-a1-the-coast",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-coast",
+      "para": "poe-a1-the-mud-flats",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-coast",
+      "para": "poe-a1-the-tidal-island",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-mud-flats",
+      "para": "poe-a1-the-submerged-passage",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-mud-flats",
+      "para": "poe-a1-the-fetid-pool",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-submerged-passage",
+      "para": "poe-a1-the-ledge",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-submerged-passage",
+      "para": "poe-a1-the-flooded-depths",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-ledge",
+      "para": "poe-a1-the-climb",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-climb",
+      "para": "poe-a1-the-lower-prison",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-lower-prison",
+      "para": "poe-a1-the-upper-prison",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-prisoners-gate",
+      "para": "poe-a1-the-ship-graveyard",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-ship-graveyard",
+      "para": "poe-a1-the-ship-graveyard-cave",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-ship-graveyard",
+      "para": "poe-a1-the-cavern-of-wrath",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-cavern-of-wrath",
+      "para": "poe-a1-the-cavern-of-anger",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a1-the-twilight-strand",
+      "para": "poe-a1-prisoners-gate",
+      "requisito": null,
+      "rotulo": ""
+    }
+  ],
+  "bossFinal": {
+    "bossId": "poe-chefe-ato-1",
+    "faseAnterior": "poe-a1-the-cavern-of-anger",
+    "nivel": {
+      "facil": 13,
+      "medio": 13,
+      "dificil": 13
+    },
+    "arena": null,
+    "recompensas": null
+  },
+  "imagem": null,
+  "nivelRecomendado": 1,
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
+  "versao": 2
+}

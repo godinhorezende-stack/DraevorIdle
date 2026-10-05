@@ -44,6 +44,8 @@ export function camposDaPeca(p) {
     // Os sockets (com as gemas encaixadas) e a instância de uma gema solta: vão junto com a peça.
     ...(p.soquetes ? { soquetes: p.soquetes } : {}),
     ...(p.gema ? { gema: p.gema } : {}),
+    // A peça do sistema de itens do PoE (Fase 1, só com ITENS_POE=1): raridade, mods e atributos traduzidos vão junto.
+    ...(p.poe ? { poe: p.poe } : {}),
   };
 }
 

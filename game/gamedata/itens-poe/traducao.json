@@ -1,0 +1,1447 @@
+{
+  "_nota": "TRADUÇÃO dos textos de mod do PoE (o 'modelo' do catálogo importado, ex.: '+{0} de Vida máxima') para os atributos que o Draevor já soma na ficha (as chaves de `itens/atributos.json`, somadas por `Afixos.somaDeItens`). Fase 1, incremento 2 — desligado em produção. Cada regra: `padrao` (expressão sobre UMA parte do modelo; mods híbridos 'A / B' são divididos em partes), `efeitos` (lista de { stat, valor }) e `estado`: 'equivalente' (mesma conta que o Draevor faz), 'aproximado' (existe, com a diferença em `nota`) ou 'novo' (atributo NOVO do PoE, em itens-poe/atributos-novos.json: registrado, sem efeito no combate até o incremento 3b). Texto sem regra vira atributo automático 'poe.<texto>' (registrado). Nada fica de fora (decisão do dono: 'todas do PoE, sem excluir nada'). `valor`: o índice do número no texto ('{0}') ou 'media({0},{1})'. `{E}` no padrão casa um nome de elemento do PoE, traduzido por `elementos` (decisão do dono de 04/10: Fogo, Gelo, Raio e Caos — o Caos é um elemento próprio). Valores 'como estão' (decisão do dono de 04/10: copiar o conteúdo do PoE); a escala de cada atributo é revista pela simulação.",
+  "elementos": {
+    "Fogo": "fire",
+    "Gelo": "ice",
+    "Raio": "energy",
+    "Caos": "chaos",
+    "_Caos": "decisão do dono (04/10): o Caos do PoE é um elemento próprio do Draevor (chaos). Gelo = ice e Raio = energy já existiam. Terra, Sagrado e Morte continuam no Draevor, sem fonte nas peças do PoE."
+  },
+  "elementais": [
+    "fire",
+    "ice",
+    "energy"
+  ],
+  "regras": [
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Vida máxima$",
+      "efeitos": [
+        {
+          "stat": "life",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Mana máxima$",
+      "efeitos": [
+        {
+          "stat": "mana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Escudo de Energia máximo$",
+      "efeitos": [
+        {
+          "stat": "energy_shield",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura$",
+      "efeitos": [
+        {
+          "stat": "armor_flat",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "local na peça no PoE; global no Draevor. Escala: o PoE vai a +500, a armadura de item do Draevor (T5) a +14."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão$",
+      "efeitos": [
+        {
+          "stat": "evasion",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "local na peça no PoE; global no Draevor."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Vida Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Mana Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "mana_regen",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Regeneração de Vida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "life_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a {E}$",
+      "efeitos": [
+        {
+          "stat": "{E}_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Força$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Destreza$",
+      "efeitos": [
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Inteligência$",
+      "efeitos": [
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} a todos os Atributos$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Força e Destreza$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Força e Inteligência$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Destreza e Inteligência$",
+      "efeitos": [
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Precisão$",
+      "efeitos": [
+        {
+          "stat": "accuracy",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "na arma é LOCAL no PoE (só os ataques dela); no Draevor é global."
+    },
+    {
+      "padrao": "^Velocidade de Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador Global de Crítico$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Dano Físico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "na arma é LOCAL no PoE; no Draevor é global."
+    },
+    {
+      "padrao": "^Dano de {E} aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "{E}_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Dano Elemental aumentado em \\{(\\d+)\\}%( com Habilidades de Ataque)?$",
+      "efeitos": [
+        {
+          "stat": "fire_dmg",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_dmg",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE pode restringir a ataques; o Draevor soma em fogo, gelo e energia para tudo."
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico( em Ataques)?$",
+      "efeitos": [
+        {
+          "stat": "phys_add",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE soma uma faixa (mín–máx); o Draevor tem um número só ('Dano adicional'): entra a média."
+    },
+    {
+      "padrao": "^Armadura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Escudo de Energia aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Armadura e Evasão aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Armadura e Escudo de Energia aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Evasão e Escudo de Energia aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Armadura, Evasão e Escudo de Energia aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataques Físicos é Drenado como Mana$",
+      "efeitos": [
+        {
+          "stat": "mana_leech",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE drena só do dano físico de ataque; o Draevor, de todo o dano."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas( [^E]+?)? Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o PoE limita a um tipo de gema (corpo a corpo, de arco, de Força…); o Draevor vale para todas as encaixadas."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de todas as Gemas Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de todos Atributos$",
+      "efeitos": [
+        {
+          "stat": "str",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+?\\{(\\d+)\\}% de Chance de Bloquear (o )?Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "spell_block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Escudo de Energia máximo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "no PoE é % RELATIVO à chance base; o crit_chance do Draevor soma pontos fixos. Precisa de um atributo 'crítico aumentado' (incremento 3)."
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico com Magias aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "spell_crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "relativo e só de magias; o Draevor não separa."
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de {E}( em Ataques)?$",
+      "efeitos": [
+        {
+          "stat": "added_{E}_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_{E}_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Draevor não tem dano elemental SOMADO (só % por elemento)."
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de {E} a Magias$",
+      "efeitos": [
+        {
+          "stat": "spell_added_{E}_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_{E}_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Draevor não tem dano somado a magias."
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Draevor não tem 'dano de magia' genérico."
+    },
+    {
+      "padrao": "^Chance de Bloquear aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "block_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "relativo no PoE; o block do Draevor soma pontos."
+    },
+    {
+      "padrao": "^Raridade de Itens encontrados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "item_rarity",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o loot_bonus do Draevor é taxa de loot, não raridade."
+    },
+    {
+      "padrao": "^Reflete \\{(\\d+)\\} de Dano Físico para Agressores Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "reflect_phys_melee",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Requisito de Nível reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "req_level_reduced",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "propriedade da peça (requisito), não atributo."
+    },
+    {
+      "padrao": "^Recuperação de Atordoamentos e Bloqueios aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Draevor não tem recuperação de atordoamento."
+    },
+    {
+      "padrao": "^Duração de Atordoamentos em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de chance de Suprimir Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "spell_suppression",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "supressão de magia não existe no Draevor (o mais próximo é o bloqueio de magia, com outra conta)."
+    },
+    {
+      "padrao": "^Recarga do Escudo de Energia aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_recharge",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Precisão Global$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "relativo; o accuracy do Draevor soma pontos."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Raio de Iluminação$",
+      "efeitos": [
+        {
+          "stat": "light_radius",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Chance Global de Crítico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "relativo à chance base; o crit_chance do Draevor soma pontos (incremento 3)."
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Draevor não tem multiplicador de dano degenerativo."
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Afecções Elementais$",
+      "efeitos": [
+        {
+          "stat": "avoid_elem_ailments",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Draevor não tem afecções elementais (incendiar, congelar, eletrizar)."
+    },
+    {
+      "padrao": "^Início da Recarga do Escudo de Energia \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "es_recharge_start",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Redução de Dano Físico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg_reduction_inc",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo",
+      "nota": "o Draevor não tem 'redução de dano físico' separada da armadura."
+    },
+    {
+      "padrao": "^Velocidade do Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano Extra recebido de Acertos Críticos em Você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Vida recebida por cada Inimigo acertado por seus Ataques$",
+      "efeitos": [
+        {
+          "stat": "life_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Vida por Inimigo Morto$",
+      "efeitos": [
+        {
+          "stat": "life_on_kill",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Morto$",
+      "efeitos": [
+        {
+          "stat": "mana_on_kill",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Concede \\{(\\d+)\\} de Vida por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "life_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Concede \\{(\\d+)\\} de Mana por Inimigo Acertado$",
+      "efeitos": [
+        {
+          "stat": "mana_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Eletrizar$",
+      "efeitos": [
+        {
+          "stat": "chance_shock",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Envenenar$",
+      "efeitos": [
+        {
+          "stat": "chance_poison",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Sangramento$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ataques têm \\{(\\d+)\\}% de chance de causar Sangramento$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed_ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ataques possuem \\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "chance_ignite_ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Envenenar ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_poison_ataque",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo de Fogo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_fire",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% Ao Multiplicador do Dano Degenerativo para Envenenamento$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_poison",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração de Afecções em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ailment_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração do Veneno aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "poison_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} ao Máximo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de (?:ganhar|receber) uma Carga de Poder ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração da Carga de Poder aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} ao Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de (?:ganhar|receber) uma Carga de Frenesi ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_frenesi_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração da Carga de Frenesi aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} ao Máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de (?:ganhar|receber) uma Carga de Tolerância ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração da Carga de Tolerância aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder, Frenesi ou Tolerância ao Matar$",
+      "efeitos": [
+        {
+          "stat": "carga_qualquer_ao_matar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Duração das Cargas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_cargas",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "move_speed_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Evasão aumentados? em \\{(\\d+)\\}% por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "dano_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi ao Acertar um Inimigo Único$",
+      "efeitos": [
+        {
+          "stat": "carga_frenesi_ao_acertar_unico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Tolerância quando Acertado$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_ser_acertado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Tolerância quando você Atordoar um Inimigo$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_atordoar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Tolerância ao Atordoar um Inimigo com um Acerto Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_atordoar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder quando você Atordoa com Dano Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_atordoar",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Poder ao acertar um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder no Golpe Crítico com Varinhas$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_critico_varinha",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Tolerância ao acertar um Golpe Crítico Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_critico_corpo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder em um Acerto Não Crítico$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_acerto_nao_critico",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de receber uma Carga de Tolerância ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "carga_tolerancia_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frenesi quando (?:você )?Bloquear(?: Dano de Ataque)?$",
+      "efeitos": [
+        {
+          "stat": "carga_frenesi_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Poder ao Bloquear$",
+      "efeitos": [
+        {
+          "stat": "carga_poder_ao_bloquear",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Cargas de Tolerância por segundo se foi Acertado Recentemente$",
+      "efeitos": [
+        {
+          "stat": "tolerancia_por_segundo_acertado",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganhe uma Carga de Frenesi a cada \\{(\\d+)\\} segundos enquanto se Move$",
+      "efeitos": [
+        {
+          "stat": "frenesi_a_cada_s_movendo",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Ganha uma Carga de Poder após Gastar um total de \\{(\\d+)\\} de Mana$",
+      "efeitos": [
+        {
+          "stat": "poder_por_mana_gasta",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de que se você ganhasse Cargas de Tolerância, você ganha o seu número máximo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "chance_tolerancia_maxima",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Poder$",
+      "efeitos": [
+        {
+          "stat": "min_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "min_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "min_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Máximo de Cargas de Poder e Cargas de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "max_poder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "max_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Seu Máximo de Cargas de Tolerância é igual ao seu Máximo de Cargas de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "max_tolerancia_igual_frenesi",
+          "valor": "1"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "dano_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^(?:Dano aumentado em \\{(\\d+)\\}% por Carga de Frenesi|\\{(\\d+)\\}% de aumento de Dano por Carga de Frenesi)$",
+      "efeitos": [
+        {
+          "stat": "dano_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Carga de Frenesi, Poder ou Tolerância$",
+      "efeitos": [
+        {
+          "stat": "dano_por_carga",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento de Armadura por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "armour_pct_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+)\\}% de Vida por segundo por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "life_regen_pct_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% por Carga de Frenesi$",
+      "efeitos": [
+        {
+          "stat": "atk_speed_por_frenesi",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}% por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico por Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "phys_res_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução do Dano Elemental adicional por Carga de Tolerância$",
+      "efeitos": [
+        {
+          "stat": "elem_res_por_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^Regeneração de Mana aumentada em \\{(\\d+)\\}% por cada Carga de Poder$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct_por_poder",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    }
+  ]
+}

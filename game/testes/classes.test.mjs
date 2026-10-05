@@ -212,7 +212,7 @@ test('CL11. criação de personagem: o servidor VALIDA a classe (existe e está 
   const s = readFileSync(new URL('../websocket/sessao.mjs', import.meta.url), 'utf8');
   for (const t of ['Classes.resolverParaCriacao(typeof classe', "'Classe inválida ou desativada.'", 'vocation = cls.vocacaoBase', 'classe: cls.id,', 'estadoInicialPersonagem(vocation, sex, cls.id)', 'classe: p.classe ?? p.vocacao']) assert.ok(s.includes(t), t);
   const au = readFileSync(new URL('../frontend/client/src/auth.mjs', import.meta.url), 'utf8');
-  for (const t of ["fetch('/api/classes'", 'classesDoServidor', "send({ t: 'createCharacter', name: data.get('name'), vocation: vocacaoDaClasse(), classe: vocation, sex })", 'FOR ${classe.atributosIniciais.str}']) assert.ok(au.includes(t), t);
+  for (const t of ["fetch('/api/classes'", 'classesDoServidor', "send({ t: 'createCharacter', name: data.get('name'), vocation: vocacaoDaClasse(), classe: vocation, sex", 'FOR ${classe.atributosIniciais.str}']) assert.ok(au.includes(t), t);
   const be = readFileSync(new URL('../backend/index.mjs', import.meta.url), 'utf8'); assert.match(be, /caminho === '\/api\/classes'/); assert.match(be, /ligarBancoDeClasses\(\{ contar: contarPersonagensPorClasse, migrar: migrarClasse \}\)/);
 });
 

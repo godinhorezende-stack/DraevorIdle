@@ -33,7 +33,7 @@ test('M2. grupos: alternar não muda o estado antigo; navegar até um item de gr
 });
 
 test('M3. o menu só tem itens com tela real: todo item vira uma aba existente ou um link para a página antiga; sem ids repetidos; grupos sem item não existem', () => {
-  const abas = [...trecho('const ABAS = [', 'const NOME_DA_ABA').matchAll(/\['(\w+)', '[^']+'\]/g)].map((m) => m[1]);
+  const abas = [...trecho('const ABAS = [', 'const NOME_DA_ABA').matchAll(/\['([\w-]+)', '[^']+'\]/g)].map((m) => m[1]);
   const grupos = trecho('const GRUPOS = [', 'function abrirGaveta');
   const itens = [...grupos.matchAll(/\{ id: '([\w-]+)', nome: '[^']+', icone: '(\w+)'(?:, modo: '(\w+)')?(?:, href: '([^']+)')?/g)].map((m) => ({ id: m[1], icone: m[2], modo: m[3], href: m[4] }));
   assert.ok(itens.length >= 12);
@@ -48,7 +48,7 @@ test('M3. o menu só tem itens com tela real: todo item vira uma aba existente o
 });
 
 test('M4. as URLs atuais continuam valendo (#geral, #fase/<id>, #mapa, #mapas, #hunts, #atos, #mobs, #bosses, #itens, #outfits, #montarias, #biblioteca)', () => {
-  const abas = [...trecho('const ABAS = [', 'const NOME_DA_ABA').matchAll(/\['(\w+)', '[^']+'\]/g)].map((m) => m[1]);
+  const abas = [...trecho('const ABAS = [', 'const NOME_DA_ABA').matchAll(/\['([\w-]+)', '[^']+'\]/g)].map((m) => m[1]);
   for (const a of ['geral', 'fase', 'mapa', 'mapas', 'hunts', 'atos', 'mobs', 'bosses', 'itens', 'outfits', 'montarias', 'biblioteca']) assert.ok(abas.includes(a), `rota #${a} sumiu`);
   assert.match(conteudo, /lerEndereco/);
   assert.match(conteudo, /href: '\/editor'/, 'o editor de mapas antigo continua acessível');

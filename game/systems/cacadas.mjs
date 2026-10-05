@@ -53,6 +53,8 @@ import * as Defesa from './personagem/defesa.mjs';
 import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
+import { bossUnico } from './bosses-unicos/catalogo.mjs';
+import { criarBossUnico } from './bosses-unicos/boss.mjs';
 import { resistido, resistenciaEfetivaDe } from './hunt/resistencia.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as Dot from './combate/dot.mjs';
@@ -65,6 +67,7 @@ import './encontros/tipos-de-bau.mjs'; // registra os baús e o altar
 import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (ondas)
 import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as EventosDeEncontro from './encontros/eventos.mjs';
+import * as CargasPoe from './itens-poe/cargas.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -540,7 +543,9 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
       const casa = casaLivrePerto(g, p, (c) => casasDeSpawn.has(`${c.x},${c.y},${z}`));
       if (!casa) break;
       casasDeSpawn.add(`${casa.x},${casa.y},${z}`);
-      const m = Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
+      // Arena com `bossUnico` (os chefes pináculo do PoE, só com ITENS_POE=1): nasce o boss único, com as fases e os atributos dele.
+      const defDoBoss = boss?.bossUnico ? bossUnico(boss.bossUnico) : null;
+      const m = defDoBoss ? criarBossUnico(defDoBoss, { x: casa.x, y: casa.y, z }) : Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
       // A raridade e os modificadores que o spawn do mapa configura (os mesmos da instância).
       if (m && (p.raridade || p.modificadores?.length)) Raridade.aplicar(m, Raridade.doSpawn(p));
       if (m) todos.push({ z, m });
@@ -1733,6 +1738,9 @@ export function tique(estado, personagem, agora = Date.now()) {
   Mecanicas.tique(estado, hunt, personagem, eventos);
   // O veneno da Raiz venenosa (druid), um pulso por segundo.
   Arvore.tique(estado, hunt, eventos);
+  // As cargas do PoE: vencimento, mínimo e os ganhos por tempo (a ficha é refeita se mudou). Só com o sistema do PoE (a ficha traz as regras).
+  const regrasDasCargas = Ficha.combate(estado).cargas;
+  if (regrasDasCargas && CargasPoe.tique(estado, regrasDasCargas)) Ficha.invalidar(estado);
   // Os bichos QUEIMANDO (support Ignite): o dano que falta, em pulsos.
   Estados.tique(hunt, eventos, agora);
   processarMortes(estado, personagem, eventos);
@@ -2099,7 +2107,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     startedAt: hunt.startedAt ?? hunt.sessao?.inicio ?? Date.now(),
     session: sessaoParaCliente(hunt.sessao),
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
-    buffs: Acoes.buffsAtivos(hunt),
+    // + as cargas do PoE ativas (Tolerância, Frenesi, Poder), como cartões de buff.
+    buffs: [...Acoes.buffsAtivos(hunt), ...CargasPoe.buffs(estado)],
     // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
     parados: Acoes.paradosParaCliente(hunt),
     condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),

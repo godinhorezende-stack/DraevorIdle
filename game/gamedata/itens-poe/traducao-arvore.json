@@ -1,0 +1,256 @@
+{
+  "_nota": "Regras de tradução PRÓPRIAS da árvore de passivas do PoE (incremento 4b), lidas ANTES das regras dos mods (traducao.json) — os textos da árvore dizem 'X aumentado em N%' onde os mods dizem de outro jeito. Mesmo formato das regras dos mods; um efeito pode ser `stat` (atributo somado, a mesma chave dos itens), `pct` (% de um stat da árvore do Draevor: life, mana, armour... — a vida/mana máximas somam este %) ou `tag` (dano % por tag de skill, o formato de dano da árvore do Draevor). O que não casa aqui nem nos mods vira atributo registrado do próprio texto (sem efeito ainda). Linhas inteiras entre parênteses são texto explicativo do PoE: viram nota, não efeito.",
+  "regras": [
+    {
+      "padrao": "^Vida máxima aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "pct": "life",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Mana máxima aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "pct": "mana",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Escudo de Energia máximo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Armadura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Evasão e Armadura aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Precisão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "pct": "accuracy",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Dano de Projétil aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "tag": "projectile",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Dano Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "tag": "melee",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Dano Físico Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "tag": "melee",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no Draevor vira dano corpo a corpo (todo golpe de perto é físico ou da arma)"
+    },
+    {
+      "padrao": "^Dano de Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "tag": "area",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto portar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o bloqueio do Draevor já é o do escudo"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataques é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "o roubo de vida do Draevor vale para todo dano"
+    },
+    {
+      "padrao": "^\\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no PoE é % da vida máxima por segundo; no Draevor, % a mais de regeneração"
+    }
+  ],
+  "_keystones": "As KEYSTONES do PoE com mecânica no Draevor (pelo nome em inglês). Só as que dá para representar dos DOIS lados (o bônus e o custo); as outras ficam com a regra `texto` (sem efeito). `estado`: equivalente ou aproximado (com `nota` dizendo a diferença). `efeitos`: o que o nó soma (o mesmo formato das linhas).",
+  "keystones": {
+    "Iron Reflexes": {
+      "regra": "poe",
+      "id": "reflexosDeFerro",
+      "estado": "equivalente"
+    },
+    "Unwavering Stance": {
+      "regra": "poe",
+      "id": "posturaInabalavel",
+      "estado": "aproximado",
+      "nota": "no Draevor, imune a controle (o teto da resistência a controle), não só a atordoamento"
+    },
+    "Resolute Technique": {
+      "regra": "poe",
+      "id": "tecnicaResoluta",
+      "estado": "equivalente"
+    },
+    "Precise Technique": {
+      "regra": "poe",
+      "id": "tecnicaPrecisa",
+      "estado": "equivalente"
+    },
+    "Iron Will": {
+      "regra": "poe",
+      "id": "vontadeDeFerro",
+      "estado": "equivalente"
+    },
+    "Avatar of Fire": {
+      "regra": "conversao",
+      "de": "physical",
+      "para": "fire",
+      "pct": 50,
+      "estado": "aproximado",
+      "nota": "50% do físico do golpe vira fogo; o 'não causa dano que não seja de fogo' fica de fora"
+    },
+    "Elemental Overload": {
+      "regra": "poe",
+      "id": "sobrecargaElemental",
+      "estado": "aproximado",
+      "nota": "o +40% de dano elemental fica sempre ligado (no PoE, depois de um crítico nos últimos 8 s)"
+    },
+    "Pain Attunement": {
+      "regra": "poe",
+      "id": "sintoniaDaDor",
+      "estado": "equivalente"
+    },
+    "Mind Over Matter": {
+      "regra": "poe",
+      "id": "menteSobreMateria",
+      "estado": "equivalente"
+    },
+    "Glancing Blows": {
+      "regra": "poe",
+      "id": "golpesReveladores",
+      "estado": "equivalente"
+    },
+    "Blood Magic": {
+      "regra": "poe",
+      "id": "magiaSanguinea",
+      "estado": "aproximado",
+      "nota": "o '10% mais Vida' vira +10% de Vida (aumentada)",
+      "efeitos": [
+        {
+          "pct": "life",
+          "valor": 10
+        },
+        {
+          "pct": "mana",
+          "valor": -100
+        }
+      ]
+    },
+    "Conduit": {
+      "regra": "poe",
+      "id": "conduite",
+      "estado": "equivalente"
+    }
+  }
+}

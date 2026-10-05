@@ -106,7 +106,23 @@ export function spawnsCapturados(huntId) {
   return pontos;
 }
 
-export function mapaRealCapturado(huntId) {
+/*
+ * ---- O APELIDO DE MAPA (a campanha do PoE, só com ITENS_POE=1) ----
+ * Uma área do PoE usa o terreno de uma hunt do Draevor (`apelidarMapa('poe-a1-a-costa', 'oramond-hydras')`): o arquivo do mapa, a grade e os
+ * spawns são os da hunt base; os bichos dos spawns passam pelo `transformarSpawns` (que põe os monstros do PoE da área).
+ */
+const APELIDOS = new Map();
+let transformadorDeSpawns = null;
+export function apelidarMapa(id, base) {
+  APELIDOS.set(id, base);
+}
+export const mapaDe = (id) => APELIDOS.get(id) ?? id;
+export function definirTransformadorDeSpawns(fn) {
+  transformadorDeSpawns = fn;
+}
+
+export function mapaRealCapturado(idPedido) {
+  const huntId = mapaDe(idPedido);
   if (mapasReaisCacheados.has(huntId)) return mapasReaisCacheados.get(huntId);
   const caminho = join(RAIZ_HUNTS, `${huntId}-map.json`);
   const mapa = existsSync(caminho) ? JSON.parse(readFileSync(caminho, 'utf8')) : null;
@@ -240,11 +256,15 @@ export const nomeDaHunt = (huntId) => huntOuMapaCustom(huntId).name ?? huntId;
  * catálogo; mapa de editor antigo, as `posicoes`. `null`: o mapa não define.
  */
 export function spawnsDaHunt(huntId) {
-  const doArquivo = spawnsDoMapa(mapaRealCapturado(huntId));
-  if (doArquivo?.length) return doArquivo;
-  const hunt = acharHunt(huntId);
-  if (Array.isArray(hunt?.spawns)) return spawnsDoMapa({ spawns: hunt.spawns, z: hunt.origin?.z ?? 7 });
-  return null;
+  const doMapa = (() => {
+    const doArquivo = spawnsDoMapa(mapaRealCapturado(huntId));
+    if (doArquivo?.length) return doArquivo;
+    const hunt = acharHunt(mapaDe(huntId));
+    if (Array.isArray(hunt?.spawns)) return spawnsDoMapa({ spawns: hunt.spawns, z: hunt.origin?.z ?? 7 });
+    return null;
+  })();
+  // Área com apelido (a campanha do PoE): os bichos dela no lugar dos da hunt base.
+  return doMapa && APELIDOS.has(huntId) && transformadorDeSpawns ? transformadorDeSpawns(huntId, doMapa) : doMapa;
 }
 
 /** Os encontros que o arquivo do mapa define (ver `encontros/modelo.mjs`); lista vazia = nenhum. */
@@ -295,7 +315,9 @@ export const gradesCacheadas = new Map();
  * uma margem — o próprio polígono só descreve o obstáculo, não os limites
  * do mapa.
  */
-export function gradeDaHunt(hunt) {
+export function gradeDaHunt(huntPedida) {
+  // Área com apelido: a grade da hunt base (a mesma para todas as áreas que usam aquele mapa).
+  const hunt = APELIDOS.has(huntPedida?.id) ? acharHunt(mapaDe(huntPedida.id)) ?? huntPedida : huntPedida;
   if (gradesCacheadas.has(hunt.id)) return gradesCacheadas.get(hunt.id);
 
   // O pátio de treino: a sala REAL do treino online (`TREINO_MAP`), não a cidade.

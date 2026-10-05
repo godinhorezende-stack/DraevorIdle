@@ -26,6 +26,7 @@ import * as ItensConfig from './itens/config.mjs';
 import * as Gerar from './itens/gerar.mjs';
 import { raridadeDaPeca } from './itens/item.mjs';
 import { gruposLigados } from '../engine/sockets-de-gema.mjs';
+import * as CargasPoe from './itens-poe/cargas.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -135,6 +136,9 @@ export function soma(estado) {
   // + o altar ativado nesta caçada (temporário): mesma chave dos adds de item.
   const altar = efeitosDeAltar(estado);
   if (altar) for (const [k, v] of Object.entries(altar)) total[k] = (total[k] ?? 0) + v;
+  // + as cargas do PoE ativas (Tolerância, Frenesi, Poder — `itens-poe/cargas.mjs`, só com ITENS_POE=1).
+  const cargas = CargasPoe.adds(estado, total);
+  if (cargas) for (const [k, v] of Object.entries(cargas)) total[k] = (total[k] ?? 0) + v;
   return total;
 }
 
@@ -142,8 +146,11 @@ export function soma(estado) {
 export function somaDeItens(estado) {
   const total = {};
   for (const [slot, peca] of Object.entries(estado.equipment ?? {})) {
-    if (!peca?.af?.length || slot === 'backpack') continue;
-    for (const a of peca.af) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
+    if (!peca || slot === 'backpack') continue;
+    for (const a of peca.af ?? []) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
+    // A peça no modelo do PoE (sistema de itens do PoE, Fase 1 — só existe com ITENS_POE=1): os mods já traduzidos para os atributos do
+    // Draevor e os atributos NOVOS (`itens-poe/atributos-novos.json`), em `peca.poe.af`. Peça comum não tem `poe`: nada muda para ela.
+    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) if (typeof v === 'number' && Number.isFinite(v)) total[k] = (total[k] ?? 0) + v;
   }
   return total;
 }
@@ -408,8 +415,12 @@ export function sincronizarMaximos(estado) {
   const doAtributo = Atributos.efeitos(Atributos.principais(estado, t));
   // + a Life % da especialização da classe (Knight: Life), sobre a vida do level + a dos adds e do STR.
   const lifePct = Especializacoes.efeitos(estado).stats.life ?? 0;
-  const vidaSemPct = R.statsBase(estado.vocation, estado.level ?? 1).maxHp + (t.life ?? 0) + doAtributo.vida;
-  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana) };
+  const base = R.statsBase(estado.vocation, estado.level ?? 1);
+  const vidaSemPct = base.maxHp + (t.life ?? 0) + doAtributo.vida;
+  // + a Mana % (a árvore do PoE: "Mana máxima aumentada em X%"), do mesmo jeito da Life %. Nada do Draevor dá Mana %: sem ela, nada muda.
+  const manaPct = Especializacoes.efeitos(estado).stats.mana ?? 0;
+  const manaSemPct = base.maxMana + (t.mana ?? 0) + doAtributo.mana;
+  const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };
   if (quer.hp === tem.hp && quer.mana === tem.mana) return;
   estado.maxHp = (estado.maxHp ?? 0) + quer.hp - tem.hp;

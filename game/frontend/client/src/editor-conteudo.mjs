@@ -21,6 +21,8 @@ import { garantirAcesso } from './editor-acesso.mjs';
 import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
+import { criarTelaDeItensPoe } from './editor-itens-poe.mjs';
+import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe } from './editor-poe-telas.mjs';
 import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar, pedirTexto } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
@@ -374,12 +376,15 @@ const TELAS_FIXAS = {
   montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
 };
 const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias', sprites: 'sprites' };
+// A referência do PoE (Fase 1 do sistema de itens no modelo do PoE): só leitura, só com ITENS_POE=1 no servidor.
+const ITENS_POE = criarTelaDeItensPoe({ raiz: () => $('#raiz') });
+const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }) };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -408,6 +413,7 @@ const GRUPOS = [
     { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
     { id: 'beta', nome: 'Testes e beta', icone: 'frasco', dica: 'interruptor do modo beta' },
     { id: 'config', nome: 'Configurações', icone: 'engrenagem', dica: 'manutenção e Server Save' }] },
+  { id: 'poe', titulo: 'Referência PoE', itens: [{ id: 'itens-poe', nome: 'Itens (PoE)', icone: 'espada', dica: 'catálogo do PoE importado (só com ITENS_POE=1)' }, { id: 'poe-campanha', nome: 'Campanha do PoE', icone: 'atos' }, { id: 'poe-arvore', nome: 'Árvore do PoE', icone: 'fase' }, { id: 'poe-chefes', nome: 'Chefes do PoE', icone: 'coroa' }] },
 ];
 
 // O estado do menu (recolhido, grupos fechados) fica no navegador; sem storage o menu funciona igual.
@@ -454,6 +460,8 @@ async function irPara(aba, faseId = null, resto = []) {
   if (aba === 'bosses') await BOSSES.desenhar();
   if (aba === 'biblioteca') await BIBLIOTECA.desenhar(resto ?? []);
   if (aba === 'atos') await EDITOR_DE_ATOS.desenhar();
+  if (aba === 'itens-poe') await ITENS_POE.desenhar();
+  if (TELAS_POE[aba]) await TELAS_POE[aba].desenhar(resto ?? []);
 }
 
 // ---- Visão geral

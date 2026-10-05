@@ -1,0 +1,973 @@
+{
+  "_nota": "Os CHEFES PINÁCULO do PoE no Draevor (sistema de itens do PoE, Fase 1 — só com ITENS_POE=1; em produção não existem). Gerado por tools/montar-pinaculos.mjs a partir do poedb (referência local). Cada um é um boss único (bosses-unicos) numa arena de boss própria, com a criatura-base do Draevor dando desenho, golpes e poderes. Vida: vidaMult = vidaPct / vidaDeReferenciaPct (o pináculo mais fraco = 1× a base); dano: danoPct/100; exp: expPct/100; resistências do PoE (Fogo, Gelo, Raio, Caos). Na vitória: o drop normal do PoE (raridade Único do monstro, +2850%) e 1 Único EXCLUSIVO do chefe com chanceDoExclusivoPct.",
+  "regra": {
+    "nivel": 250,
+    "cooldownHours": 12,
+    "vidaDeReferenciaPct": 400,
+    "chanceDoExclusivoPct": 100
+  },
+  "chefes": [
+    {
+      "id": "poe-the-shaper",
+      "nome": "The Shaper",
+      "poedb": "https://poedb.tw/us/The_Shaper",
+      "variante": "TheShaperBoss",
+      "base": "the-time-guardian",
+      "vidaPct": 2560,
+      "danoPct": 200,
+      "expPct": 400,
+      "vidaMult": 6.4,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Dying_Sun",
+          "nome": "Sol Moribundo",
+          "nomeOriginal": "Dying Sun",
+          "classe": "Utility_Flasks",
+          "base": "Frasco de Rubi"
+        },
+        {
+          "slug": "Echoes_of_Creation",
+          "nome": "Ecos da Criação",
+          "nomeOriginal": "Echoes of Creation",
+          "classe": "Helmets",
+          "base": "Elmo Real com Visor"
+        },
+        {
+          "slug": "Entropic_Devastation",
+          "nome": "Devastação Entrópica",
+          "nomeOriginal": "Entropic Devastation",
+          "classe": "Gloves",
+          "base": "Luvas do Assassino"
+        },
+        {
+          "slug": "Shapers_Touch",
+          "nome": "Toque do Criador",
+          "nomeOriginal": "Shaper's Touch",
+          "classe": "Gloves",
+          "base": "Luvas do Cruzado"
+        },
+        {
+          "slug": "Starforge",
+          "nome": "Forja Estelar",
+          "nomeOriginal": "Starforge",
+          "classe": "Two_Hand_Swords",
+          "base": "Espada Infernal"
+        },
+        {
+          "slug": "Sublime_Vision",
+          "nome": "Visão Sublime",
+          "nomeOriginal": "Sublime Vision",
+          "classe": "Jewels",
+          "base": "Joia Prismática"
+        },
+        {
+          "slug": "The_Tides_of_Time",
+          "nome": "As Marés do Tempo",
+          "nomeOriginal": "The Tides of Time",
+          "classe": "Belts",
+          "base": "Cinto da Vanguarda"
+        },
+        {
+          "slug": "The_Unblinking_Eye",
+          "nome": "O Olho Aberto",
+          "nomeOriginal": "The Unblinking Eye",
+          "classe": "Helmets",
+          "base": ""
+        },
+        {
+          "slug": "Voidwalker",
+          "nome": "Caminhante do Vazio",
+          "nomeOriginal": "Voidwalker",
+          "classe": "Boots",
+          "base": "Botas do Assassinato"
+        },
+        {
+          "slug": "Call_of_the_Void",
+          "nome": "Chamado do Vazio",
+          "nomeOriginal": "Call of the Void",
+          "classe": "Rings",
+          "base": "Anel de Safira"
+        },
+        {
+          "slug": "Disintegrator",
+          "nome": "Desintegrador",
+          "nomeOriginal": "Disintegrator",
+          "classe": "Warstaves",
+          "base": "Cajado do Vórtice"
+        },
+        {
+          "slug": "Impresence",
+          "nome": "Ausência",
+          "nomeOriginal": "Impresence",
+          "classe": "Amulets",
+          "base": "Amuleto de Ônix"
+        },
+        {
+          "slug": "Indigon",
+          "nome": "Indigon",
+          "nomeOriginal": "Indigon",
+          "classe": "Helmets",
+          "base": "Tiara da Arrogância"
+        },
+        {
+          "slug": "Mark_of_the_Shaper",
+          "nome": "Marca do Criador",
+          "nomeOriginal": "Mark of the Shaper",
+          "classe": "Rings",
+          "base": "Anel de Opala"
+        },
+        {
+          "slug": "Replica_Eternity_Shroud",
+          "nome": "Réplica: Mortalha da Eternidade",
+          "nomeOriginal": "Replica Eternity Shroud",
+          "classe": "Body_Armours",
+          "base": "Vestes Sangrentas"
+        },
+        {
+          "slug": "Solstice_Vigil",
+          "nome": "Vigília do Solstício",
+          "nomeOriginal": "Solstice Vigil",
+          "classe": "Amulets",
+          "base": "Amuleto de Ônix"
+        },
+        {
+          "slug": "The_Eternity_Shroud",
+          "nome": "Mortalha da Eternidade",
+          "nomeOriginal": "The Eternity Shroud",
+          "classe": "Body_Armours",
+          "base": "Vestes Sangrentas"
+        },
+        {
+          "slug": "Venarius_Astrolabe",
+          "nome": "Astrolábio de Venarius",
+          "nomeOriginal": "Venarius' Astrolabe",
+          "classe": "Amulets",
+          "base": "Amuleto Astrolábio"
+        },
+        {
+          "slug": "Voidfletcher",
+          "nome": "Atirador do Vazio",
+          "nomeOriginal": "Voidfletcher",
+          "classe": "Quivers",
+          "base": "Aljava de Flechas Primitivas"
+        },
+        {
+          "slug": "Voidforge",
+          "nome": "Forja do Vazio",
+          "nomeOriginal": "Voidforge",
+          "classe": "Two_Hand_Swords",
+          "base": "Espada Infernal"
+        }
+      ]
+    },
+    {
+      "id": "poe-the-elder",
+      "nome": "The Elder",
+      "poedb": "https://poedb.tw/us/The_Elder",
+      "variante": "TheElder",
+      "base": "chagorz",
+      "vidaPct": 1860,
+      "danoPct": 200,
+      "expPct": 400,
+      "vidaMult": 4.65,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Blasphemers_Grasp",
+          "nome": "Punho do Blasfemador",
+          "nomeOriginal": "Blasphemer's Grasp",
+          "classe": "Gloves",
+          "base": "Luvas do Assassino"
+        },
+        {
+          "slug": "Cyclopean_Coil",
+          "nome": "Bobina Ciclópica",
+          "nomeOriginal": "Cyclopean Coil",
+          "classe": "Belts",
+          "base": "Cinto de Couro"
+        },
+        {
+          "slug": "Disintegrator",
+          "nome": "Desintegrador",
+          "nomeOriginal": "Disintegrator",
+          "classe": "Warstaves",
+          "base": "Cajado do Vórtice"
+        },
+        {
+          "slug": "Hopeshredder",
+          "nome": "Destruidor de Sonhos",
+          "nomeOriginal": "Hopeshredder",
+          "classe": "Bows",
+          "base": "Arco da Caçadora"
+        },
+        {
+          "slug": "Indigon",
+          "nome": "Indigon",
+          "nomeOriginal": "Indigon",
+          "classe": "Helmets",
+          "base": "Tiara da Arrogância"
+        },
+        {
+          "slug": "Mark_of_the_Elder",
+          "nome": "Marca do Ancião",
+          "nomeOriginal": "Mark of the Elder",
+          "classe": "Rings",
+          "base": "Anel de Aço"
+        },
+        {
+          "slug": "Mark_of_the_Shaper",
+          "nome": "Marca do Criador",
+          "nomeOriginal": "Mark of the Shaper",
+          "classe": "Rings",
+          "base": "Anel de Opala"
+        },
+        {
+          "slug": "Nebuloch",
+          "nome": "Nebuloch",
+          "nomeOriginal": "Nebuloch",
+          "classe": "One_Hand_Maces",
+          "base": "Maça do Pesadelo"
+        },
+        {
+          "slug": "Shimmeron",
+          "nome": "Shimmeron",
+          "nomeOriginal": "Shimmeron",
+          "classe": "Wands",
+          "base": "Varinha do Tornado"
+        },
+        {
+          "slug": "The_Eternity_Shroud",
+          "nome": "Mortalha da Eternidade",
+          "nomeOriginal": "The Eternity Shroud",
+          "classe": "Body_Armours",
+          "base": "Vestes Sangrentas"
+        },
+        {
+          "slug": "Voidfletcher",
+          "nome": "Atirador do Vazio",
+          "nomeOriginal": "Voidfletcher",
+          "classe": "Quivers",
+          "base": "Aljava de Flechas Primitivas"
+        },
+        {
+          "slug": "Watchers_Eye",
+          "nome": "Olho do Vigia",
+          "nomeOriginal": "Watcher's Eye",
+          "classe": "Jewels",
+          "base": "Joia Prismática"
+        },
+        {
+          "slug": "Call_of_the_Void",
+          "nome": "Chamado do Vazio",
+          "nomeOriginal": "Call of the Void",
+          "classe": "Rings",
+          "base": "Anel de Safira"
+        },
+        {
+          "slug": "Impresence",
+          "nome": "Ausência",
+          "nomeOriginal": "Impresence",
+          "classe": "Amulets",
+          "base": "Amuleto de Ônix"
+        },
+        {
+          "slug": "Replica_Eternity_Shroud",
+          "nome": "Réplica: Mortalha da Eternidade",
+          "nomeOriginal": "Replica Eternity Shroud",
+          "classe": "Body_Armours",
+          "base": "Vestes Sangrentas"
+        },
+        {
+          "slug": "The_Devourer_of_Minds",
+          "nome": "O Devorador de Mentes",
+          "nomeOriginal": "The Devourer of Minds",
+          "classe": "Helmets",
+          "base": "Bascinet Cara de Porco"
+        },
+        {
+          "slug": "Venarius_Astrolabe",
+          "nome": "Astrolábio de Venarius",
+          "nomeOriginal": "Venarius' Astrolabe",
+          "classe": "Amulets",
+          "base": "Amuleto Astrolábio"
+        },
+        {
+          "slug": "Voidforge",
+          "nome": "Forja do Vazio",
+          "nomeOriginal": "Voidforge",
+          "classe": "Two_Hand_Swords",
+          "base": "Espada Infernal"
+        }
+      ]
+    },
+    {
+      "id": "poe-venarius",
+      "nome": "Venarius",
+      "poedb": "https://poedb.tw/us/Venarius",
+      "variante": "SynthesisVenariusBoss",
+      "base": "the-last-lore-keeper",
+      "vidaPct": 400,
+      "danoPct": 200,
+      "expPct": 200,
+      "vidaMult": 1,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Bottled_Faith",
+          "nome": "Fé Engarrafada",
+          "nomeOriginal": "Bottled Faith",
+          "classe": "Utility_Flasks",
+          "base": "Frasco de Enxofre"
+        },
+        {
+          "slug": "Garb_of_the_Ephemeral",
+          "nome": "Vestes do Efêmero",
+          "nomeOriginal": "Garb of the Ephemeral",
+          "classe": "Body_Armours",
+          "base": "Robe do Sábio"
+        },
+        {
+          "slug": "Nebulis",
+          "nome": "Nebulis",
+          "nomeOriginal": "Nebulis",
+          "classe": "Sceptres",
+          "base": "Cetro do Além"
+        },
+        {
+          "slug": "Offering_to_the_Serpent",
+          "nome": "Punho do Tirano",
+          "nomeOriginal": "Offering to the Serpent",
+          "classe": "Gloves",
+          "base": "Luvas da Legião"
+        },
+        {
+          "slug": "Rational_Doctrine",
+          "nome": "Doutrina Racional",
+          "nomeOriginal": "Rational Doctrine",
+          "classe": "Jewels",
+          "base": "Joia Cobalto"
+        }
+      ]
+    },
+    {
+      "id": "poe-sirus",
+      "nome": "Sirus, Awakener of Worlds",
+      "poedb": "https://poedb.tw/us/Sirus%2C_Awakener_of_Worlds",
+      "variante": "AtlasExile5",
+      "base": "eradicator",
+      "vidaPct": 2400,
+      "danoPct": 150,
+      "expPct": 200,
+      "vidaMult": 6,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Crown_of_the_Inward_Eye",
+          "nome": "Coroa do Olho Interior",
+          "nomeOriginal": "Crown of the Inward Eye",
+          "classe": "Helmets",
+          "base": "Coroa do Profeta"
+        },
+        {
+          "slug": "Hands_of_the_High_Templar",
+          "nome": "Mãos do Alto Templário",
+          "nomeOriginal": "Hands of the High Templar",
+          "classe": "Gloves",
+          "base": "Luvas do Cruzado"
+        },
+        {
+          "slug": "Oriaths_End",
+          "nome": "Fim de Oriath",
+          "nomeOriginal": "Oriath's End",
+          "classe": "Utility_Flasks",
+          "base": "Frasco de Bismuto"
+        },
+        {
+          "slug": "The_Burden_of_Truth",
+          "nome": "O Peso da Verdade",
+          "nomeOriginal": "The Burden of Truth",
+          "classe": "Belts",
+          "base": "Cinto de Cristal"
+        },
+        {
+          "slug": "The_Saviour",
+          "nome": "O Salvador",
+          "nomeOriginal": "The Saviour",
+          "classe": "One_Hand_Swords",
+          "base": "Espada da Legião"
+        },
+        {
+          "slug": "The_Tempest_Rising",
+          "nome": "O Despertar da Tormenta",
+          "nomeOriginal": "The Tempest Rising",
+          "classe": "Boots",
+          "base": "Grevas de Golias"
+        },
+        {
+          "slug": "Thread_of_Hope",
+          "nome": "Fio de Esperança",
+          "nomeOriginal": "Thread of Hope",
+          "classe": "Jewels",
+          "base": "Joia Carmesim"
+        }
+      ]
+    },
+    {
+      "id": "poe-the-maven",
+      "nome": "The Maven",
+      "poedb": "https://poedb.tw/us/The_Maven",
+      "variante": "TheMaven",
+      "base": "the-brainstealer",
+      "vidaPct": 1755,
+      "danoPct": 150,
+      "expPct": 200,
+      "vidaMult": 4.39,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Arns_Anguish",
+          "nome": "Angústica de Arn",
+          "nomeOriginal": "Arn's Anguish",
+          "classe": "Belts",
+          "base": "Cinto de Pano"
+        },
+        {
+          "slug": "Echoforge",
+          "nome": "Forja Ecoante",
+          "nomeOriginal": "Echoforge",
+          "classe": "Two_Hand_Swords",
+          "base": "Espada Infernal"
+        },
+        {
+          "slug": "Grace_of_the_Goddess",
+          "nome": "Graça da Deusa",
+          "nomeOriginal": "Grace of the Goddess",
+          "classe": "Wands",
+          "base": "Varinha da Profecia"
+        },
+        {
+          "slug": "Gravens_Secret",
+          "nome": "Segredo de Graven",
+          "nomeOriginal": "Graven's Secret",
+          "classe": "Belts",
+          "base": "Cinto de Pano"
+        },
+        {
+          "slug": "Impossible_Escape",
+          "nome": "Fuga Impossível",
+          "nomeOriginal": "Impossible Escape",
+          "classe": "Jewels",
+          "base": "Joia Viridiana"
+        },
+        {
+          "slug": "Legacy_of_Fury",
+          "nome": "Legado da Fúria",
+          "nomeOriginal": "Legacy of Fury",
+          "classe": "Boots",
+          "base": "Botas de Escamas de Wyrm"
+        },
+        {
+          "slug": "Olesyas_Delight",
+          "nome": "Deleite de Olesya",
+          "nomeOriginal": "Olesya's Delight",
+          "classe": "Belts",
+          "base": "Cinto de Pano"
+        },
+        {
+          "slug": "Progenesis",
+          "nome": "Progênese",
+          "nomeOriginal": "Progenesis",
+          "classe": "Utility_Flasks",
+          "base": "Frasco de Ametista"
+        },
+        {
+          "slug": "Viridis_Veil",
+          "nome": "Véu de Viridi",
+          "nomeOriginal": "Viridi's Veil",
+          "classe": "Helmets",
+          "base": "Coroa do Pretor"
+        }
+      ]
+    },
+    {
+      "id": "poe-nucleus-of-the-maven",
+      "nome": "Nucleus of the Maven",
+      "poedb": "https://poedb.tw/us/Nucleus_of_the_Maven",
+      "variante": "MavenBrainBoss",
+      "base": "brain-head",
+      "vidaPct": 3600,
+      "danoPct": 150,
+      "expPct": 200,
+      "vidaMult": 9,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Arns_Anguish",
+          "nome": "Angústica de Arn",
+          "nomeOriginal": "Arn's Anguish",
+          "classe": "Belts",
+          "base": "Cinto de Pano"
+        },
+        {
+          "slug": "Echoforge",
+          "nome": "Forja Ecoante",
+          "nomeOriginal": "Echoforge",
+          "classe": "Two_Hand_Swords",
+          "base": "Espada Infernal"
+        },
+        {
+          "slug": "Grace_of_the_Goddess",
+          "nome": "Graça da Deusa",
+          "nomeOriginal": "Grace of the Goddess",
+          "classe": "Wands",
+          "base": "Varinha da Profecia"
+        },
+        {
+          "slug": "Gravens_Secret",
+          "nome": "Segredo de Graven",
+          "nomeOriginal": "Graven's Secret",
+          "classe": "Belts",
+          "base": "Cinto de Pano"
+        },
+        {
+          "slug": "Impossible_Escape",
+          "nome": "Fuga Impossível",
+          "nomeOriginal": "Impossible Escape",
+          "classe": "Jewels",
+          "base": "Joia Viridiana"
+        },
+        {
+          "slug": "Legacy_of_Fury",
+          "nome": "Legado da Fúria",
+          "nomeOriginal": "Legacy of Fury",
+          "classe": "Boots",
+          "base": "Botas de Escamas de Wyrm"
+        },
+        {
+          "slug": "Olesyas_Delight",
+          "nome": "Deleite de Olesya",
+          "nomeOriginal": "Olesya's Delight",
+          "classe": "Belts",
+          "base": "Cinto de Pano"
+        },
+        {
+          "slug": "Progenesis",
+          "nome": "Progênese",
+          "nomeOriginal": "Progenesis",
+          "classe": "Utility_Flasks",
+          "base": "Frasco de Ametista"
+        },
+        {
+          "slug": "Viridis_Veil",
+          "nome": "Véu de Viridi",
+          "nomeOriginal": "Viridi's Veil",
+          "classe": "Helmets",
+          "base": "Coroa do Pretor"
+        }
+      ]
+    },
+    {
+      "id": "poe-the-searing-exarch",
+      "nome": "The Searing Exarch",
+      "poedb": "https://poedb.tw/us/The_Searing_Exarch",
+      "variante": "CleansingBoss",
+      "base": "magma-bubble",
+      "vidaPct": 1430,
+      "danoPct": 260,
+      "expPct": 200,
+      "vidaMult": 3.58,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Annihilations_Approach",
+          "nome": "Abordagem da Aniquilação",
+          "nomeOriginal": "Annihilation's Approach",
+          "classe": "Boots",
+          "base": "Botas de Escamas de Dragão"
+        },
+        {
+          "slug": "Crystallised_Omniscience",
+          "nome": "Onisciência Cristalizada",
+          "nomeOriginal": "Crystallised Omniscience",
+          "classe": "Amulets",
+          "base": "Amuleto de Ônix"
+        },
+        {
+          "slug": "Dawnbreaker",
+          "nome": "Rompe-amanhecer",
+          "nomeOriginal": "Dawnbreaker",
+          "classe": "Shields",
+          "base": "Escudo Torre Colossal"
+        },
+        {
+          "slug": "Dawnstrider",
+          "nome": "Peregrino da Madrugada",
+          "nomeOriginal": "Dawnstrider",
+          "classe": "Boots",
+          "base": "Grevas Vaal"
+        },
+        {
+          "slug": "Dissolution_of_the_Flesh",
+          "nome": "Dissolução da Carne",
+          "nomeOriginal": "Dissolution of the Flesh",
+          "classe": "Jewels",
+          "base": "Joia Carmesim"
+        },
+        {
+          "slug": "Forbidden_Flame",
+          "nome": "Chama Proibida",
+          "nomeOriginal": "Forbidden Flame",
+          "classe": "Jewels",
+          "base": "Joia Carmesim"
+        },
+        {
+          "slug": "The_Annihilating_Light",
+          "nome": "A Luz Aniquiladora",
+          "nomeOriginal": "The Annihilating Light",
+          "classe": "Staves",
+          "base": "Bastão de Ferro"
+        },
+        {
+          "slug": "The_Celestial_Brace",
+          "nome": "A Chave Celestial",
+          "nomeOriginal": "The Celestial Brace",
+          "classe": "Gloves",
+          "base": "Manoplas de Golias"
+        }
+      ]
+    },
+    {
+      "id": "poe-the-eater-of-worlds",
+      "nome": "The Eater of Worlds",
+      "poedb": "https://poedb.tw/us/The_Eater_of_Worlds",
+      "variante": "ConsumeBoss",
+      "base": "ravenous-hunger",
+      "vidaPct": 1400,
+      "danoPct": 300,
+      "expPct": 200,
+      "vidaMult": 3.5,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Ashes_of_the_Stars",
+          "nome": "Cinzas das Estrelas",
+          "nomeOriginal": "Ashes of the Stars",
+          "classe": "Amulets",
+          "base": "Amuleto de Ônix"
+        },
+        {
+          "slug": "Forbidden_Flesh",
+          "nome": "Carne Proibida",
+          "nomeOriginal": "Forbidden Flesh",
+          "classe": "Jewels",
+          "base": "Joia Cobalto"
+        },
+        {
+          "slug": "Inextricable_Fate",
+          "nome": "Destino Inextricável",
+          "nomeOriginal": "Inextricable Fate",
+          "classe": "Boots",
+          "base": "Botas do Fugitivo"
+        },
+        {
+          "slug": "Melding_of_the_Flesh",
+          "nome": "União da Carne",
+          "nomeOriginal": "Melding of the Flesh",
+          "classe": "Jewels",
+          "base": "Joia Cobalto"
+        },
+        {
+          "slug": "Nimis",
+          "nome": "Nimis",
+          "nomeOriginal": "Nimis",
+          "classe": "Rings",
+          "base": "Anel de Topázio"
+        },
+        {
+          "slug": "Ravenous_Passion",
+          "nome": "Paixão Voraz",
+          "nomeOriginal": "Ravenous Passion",
+          "classe": "Helmets",
+          "base": "Elmo do Zelote"
+        },
+        {
+          "slug": "The_Gluttonous_Tide",
+          "nome": "A Maré da Gula",
+          "nomeOriginal": "The Gluttonous Tide",
+          "classe": "Bows",
+          "base": "Arco da Cidadela"
+        }
+      ]
+    },
+    {
+      "id": "poe-incarnation-of-dread",
+      "nome": "Incarnation of Dread",
+      "poedb": "https://poedb.tw/us/Incarnation_of_Dread",
+      "variante": "BenevolenceBoss",
+      "base": "the-dread-maiden",
+      "vidaPct": 2000,
+      "danoPct": 320,
+      "expPct": 400,
+      "vidaMult": 5,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Bonemeld",
+          "nome": "Ossofusão",
+          "nomeOriginal": "Bonemeld",
+          "classe": "Amulets",
+          "base": "Amuleto de Mármore"
+        },
+        {
+          "slug": "Seven_Teachings",
+          "nome": "Sete Ensinamentos",
+          "nomeOriginal": "Seven Teachings",
+          "classe": "Body_Armours",
+          "base": "Trajes Encerados"
+        },
+        {
+          "slug": "The_Dark_Monarch",
+          "nome": "O Monarca Sombrio",
+          "nomeOriginal": "The Dark Monarch",
+          "classe": "Helmets",
+          "base": "Tiara do Lich"
+        },
+        {
+          "slug": "The_Golden_Charlatan",
+          "nome": "O Charlatão de Ouro",
+          "nomeOriginal": "The Golden Charlatan",
+          "classe": "Two_Hand_Swords",
+          "base": "Espada Leonina"
+        },
+        {
+          "slug": "The_Hallowed_Monarch",
+          "nome": "O Monarca Santificado",
+          "nomeOriginal": "The Hallowed Monarch",
+          "classe": "Helmets",
+          "base": "Elmo Fiel"
+        },
+        {
+          "slug": "Wellwater_Phylactery",
+          "nome": "Filactério de Água Empoçada",
+          "nomeOriginal": "Wellwater Phylactery",
+          "classe": "Mana_Flasks",
+          "base": "Frasco de Mana Colossal"
+        },
+        {
+          "slug": "Whispers_of_Infinity",
+          "nome": "Sussurros do Infinito",
+          "nomeOriginal": "Whispers of Infinity",
+          "classe": "Amulets",
+          "base": "Amuleto de Vidro Marítimo"
+        },
+        {
+          "slug": "Wine_of_the_Prophet",
+          "nome": "Vinho do Profeta",
+          "nomeOriginal": "Wine of the Prophet",
+          "classe": "Utility_Flasks",
+          "base": "Frasco de Ouro"
+        }
+      ]
+    },
+    {
+      "id": "poe-incarnation-of-fear",
+      "nome": "Incarnation of Fear",
+      "poedb": "https://poedb.tw/us/Incarnation_of_Fear",
+      "variante": "AngerBoss",
+      "base": "the-fear-feaster",
+      "vidaPct": 2000,
+      "danoPct": 400,
+      "expPct": 400,
+      "vidaMult": 5,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Coiling_Whisper",
+          "nome": "Sussurro Serpenteante",
+          "nomeOriginal": "Coiling Whisper",
+          "classe": "Rings",
+          "base": "Anel de Ametista"
+        },
+        {
+          "slug": "Enmitys_Embrace",
+          "nome": "Abraço da Aversão",
+          "nomeOriginal": "Enmity's Embrace",
+          "classe": "Rings",
+          "base": "Anel Vermelho"
+        },
+        {
+          "slug": "Servant_of_Decay",
+          "nome": "Serviçal da Decadência",
+          "nomeOriginal": "Servant of Decay",
+          "classe": "Body_Armours",
+          "base": "Traje do Torturador"
+        },
+        {
+          "slug": "Starcaller",
+          "nome": "Invocador de Estrelas",
+          "nomeOriginal": "Starcaller",
+          "classe": "Two_Hand_Axes",
+          "base": "Machado Abissal"
+        },
+        {
+          "slug": "The_Caged_Mammoth",
+          "nome": "O Mamute Enjaulado",
+          "nomeOriginal": "The Caged Mammoth",
+          "classe": "Gloves",
+          "base": "Manoplas Arcaicas"
+        },
+        {
+          "slug": "The_Unseen_Hue",
+          "nome": "O Tom Oculto",
+          "nomeOriginal": "The Unseen Hue",
+          "classe": "Rings",
+          "base": "Anel de Opala"
+        },
+        {
+          "slug": "Woespike",
+          "nome": "Tristespinho",
+          "nomeOriginal": "Woespike",
+          "classe": "Rings",
+          "base": "Anel de Aço"
+        }
+      ]
+    },
+    {
+      "id": "poe-incarnation-of-neglect",
+      "nome": "Incarnation of Neglect",
+      "poedb": "https://poedb.tw/us/Incarnation_of_Neglect",
+      "variante": "IgnoranceBoss",
+      "base": "the-unwelcome",
+      "vidaPct": 2000,
+      "danoPct": 300,
+      "expPct": 400,
+      "vidaMult": 5,
+      "resistencias": {
+        "fire": 50,
+        "ice": 50,
+        "energy": 50,
+        "chaos": 30
+      },
+      "raridadeDoDropPct": 15000,
+      "unicos": [
+        {
+          "slug": "Betrayals_Sting",
+          "nome": "Aguilhão da Traição",
+          "nomeOriginal": "Betrayal's Sting",
+          "classe": "Rings",
+          "base": "Anel de Aço"
+        },
+        {
+          "slug": "Bitter_Instinct",
+          "nome": "Instinto Amargo",
+          "nomeOriginal": "Bitter Instinct",
+          "classe": "Shields",
+          "base": "Escudo Redondo Espinhoso"
+        },
+        {
+          "slug": "Festering_Resentment",
+          "nome": "Ressentimento Infecto",
+          "nomeOriginal": "Festering Resentment",
+          "classe": "Rune_Daggers",
+          "base": "Adaga do Demônio"
+        },
+        {
+          "slug": "Haunting_Memories",
+          "nome": "Memórias Assombrosas",
+          "nomeOriginal": "Haunting Memories",
+          "classe": "Amulets",
+          "base": "Amuleto de Turquesa"
+        },
+        {
+          "slug": "Legacy_of_the_Rose",
+          "nome": "Legado da Rosa",
+          "nomeOriginal": "Legacy of the Rose",
+          "classe": "Warstaves",
+          "base": "Cajado do Julgamento"
+        },
+        {
+          "slug": "Refuge_in_Isolation",
+          "nome": "Abrigo na Solidão",
+          "nomeOriginal": "Refuge in Isolation",
+          "classe": "Helmets",
+          "base": "Coroa do Paladino"
+        },
+        {
+          "slug": "The_Arkhons_Tools",
+          "nome": "As Ferramentas de Arkhon",
+          "nomeOriginal": "The Arkhon's Tools",
+          "classe": "Belts",
+          "base": "Cinto de Pano"
+        },
+        {
+          "slug": "Venarius_Astrolabe",
+          "nome": "Astrolábio de Venarius",
+          "nomeOriginal": "Venarius' Astrolabe",
+          "classe": "Amulets",
+          "base": "Amuleto Astrolábio"
+        }
+      ]
+    }
+  ]
+}

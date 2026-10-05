@@ -7,7 +7,8 @@
     "choque":      { "nome": "Choque",      "elemento": "energy",   "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#8fb6ff", "estado": "eletrizado" },
     "maldicao":    { "nome": "Maldição",    "elemento": "death",    "duracaoMs": 6000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#9a6bd6", "estado": "amaldicoado" },
     "gelo":        { "nome": "Enregelamento", "elemento": "ice",    "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#9fe8ff", "estado": "enregelado" },
-    "ofuscamento": { "nome": "Ofuscamento", "elemento": "holy",     "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#fff1a8", "estado": "ofuscado" }
+    "ofuscamento": { "nome": "Ofuscamento", "elemento": "holy",     "duracaoMs": 4000, "pulsoMs": 1000, "acumulacao": "maior",   "maxPilhas": 1,  "cor": "#fff1a8", "estado": "ofuscado" },
+    "venenoPoe":   { "nome": "Veneno",      "elemento": "chaos",    "duracaoMs": 2000, "pulsoMs": 500,  "acumulacao": "empilha", "maxPilhas": 8,  "cor": "#5fd35f", "estado": "envenenado", "_nota": "o veneno do sistema de itens do PoE (ITENS_POE=1): de Caos, 2 s, acumula" }
   },
   "fontes": {
     "CONDITION_FIRE": "queimadura",

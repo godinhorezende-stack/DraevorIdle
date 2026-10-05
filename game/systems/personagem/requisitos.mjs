@@ -30,6 +30,12 @@ export function requisitoDe(meta) {
  * Devolve null (cumpre) ou o texto do que falta.
  */
 export function falta(meta, atributos) {
+  // Peça do sistema de itens do PoE (só com ITENS_POE=1): os requisitos da base, TODOS valem (como no PoE).
+  const doPoe = meta?.poe?.requisitos;
+  if (doPoe) {
+    const faltam = Object.entries(doPoe).filter(([a, v]) => (atributos?.[a] ?? 0) < v);
+    return faltam.length ? `Requer ${faltam.map(([a, v]) => `${v} ${NOME_DO_ATRIBUTO[a]}`).join(' e ')}.` : null;
+  }
   const req = requisitoDe(meta);
   if (!req) return null;
   if (req.todos) {

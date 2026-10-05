@@ -6,6 +6,11 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
 import * as ConteudoHttp from '../admin/conteudo-http.mjs';
+import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
+import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
+import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
+import { ITEM_CATALOG as CATALOGO_DE_ITENS } from '../systems/dados.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
 import * as Estaticos from './estaticos.mjs';
@@ -95,6 +100,17 @@ async function servirArquivo(req, res, caminho) {
   const alvo = normalize(join(RAIZ, caminho));
   if (!alvo.startsWith(RAIZ)) return false;
   return Estaticos.servir(req, res, alvo);
+}
+
+// Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): as bases entram no catálogo de itens antes de qualquer `welcome`.
+{
+  const r = ItensPoeJogo.iniciar(CATALOGO_DE_ITENS);
+  if (r.porBase.size) console.log(`  itens do PoE: ${r.porBase.size} bases no catálogo (ids ${ItensPoeJogo.PRIMEIRO_ID}+); sem slot: ${r.naoEquipaveis.join(', ')}`);
+  const pinaculos = Pinaculos.iniciar();
+  if (pinaculos.length) console.log(`  chefes pináculo do PoE: ${pinaculos.length} no painel de Bosses (${pinaculos.join(', ')})`);
+  // A campanha do PoE no lugar da do Draevor (os 10 atos, as áreas sobre os mapas do Draevor, os chefes de ato).
+  const campanha = CampanhaPoe.iniciar();
+  if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
 }
 
 const http = createServer((req, res) => {
@@ -190,6 +206,8 @@ async function atender(req, res) {
     }
   }
   if (await ConteudoHttp.atender(req, res, caminho, url, { json, corpoJson })) return;
+  // O sistema de itens no modelo do PoE (Fase 1): só leitura, e só com ITENS_POE=1 (desligado em produção).
+  if (await ItensPoeHttp.atender(req, res, caminho, url, { json, corpoJson })) return;
   if (caminho === '/api/mapas/opcoes' && req.method === 'GET') {
     return json(res, 200, { bestiario: Mapas.bestiarioParaEditor(), paleta: Mapas.PALETA_DO_EDITOR, cidade: Mapas.cidadeParaEditor(), criaturasPorHunt: Mapas.criaturasPorHunt(), ...Mapas.raridadesParaEditor() });
   }
@@ -320,7 +338,8 @@ console.log(`  parties recarregadas: ${await Party.carregar()}`);
 if (validarServerSave().config.maintenanceMode) Manutencao.definir(true);
 ServerSave.iniciar().catch((e) => console.error('[SERVER-SAVE] não iniciou ->', e.message));
 
-http.listen(PORTA, () => {
+// `ENDERECO` (opcional): só nesse endereço — o servidor de desenvolvimento local usa 127.0.0.1 (acesso por túnel SSH). Sem ele, todas as interfaces.
+http.listen(PORTA, ...(process.env.ENDERECO ? [process.env.ENDERECO] : []), () => {
   console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
 });
 

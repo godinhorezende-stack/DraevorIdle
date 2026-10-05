@@ -119,7 +119,8 @@ export function tique(hunt, eventos, agora) {
 export function ativosDe(m, agora) {
   const nomes = new Set();
   for (const d of m?.dots ?? []) if (ativo(d, agora)) nomes.add(CONFIG.tipos[d.tipo]?.estado);
-  return Object.values(CONFIG.tipos).map((t) => t.estado).filter((e) => nomes.has(e));
+  // Sem repetir: dois tipos podem ter o mesmo estado (o veneno do Draevor e o do PoE são "envenenado").
+  return [...new Set(Object.values(CONFIG.tipos).map((t) => t.estado))].filter((e) => nomes.has(e));
 }
 
 /** Tira os efeitos do bicho (todos, ou só os de um tipo). */

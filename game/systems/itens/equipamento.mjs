@@ -5,12 +5,13 @@
 // A categoria do item é ESTRUTURADA: o campo `slot` do catálogo (`item-catalog.json`), nunca o nome nem o ícone. Matriz de compatibilidade real do jogo:
 //   head → capacete · neck → amuleto · body → armadura · legs → calça · feet → bota · ring → anel
 //   weapon → arma (espada, machado, clava, distância, wand, rod) · shield → escudo, spellbook e aljava · ammo → munição e acessórios de munição (trinket, tocha)
-//   backpack → mochila (container)
+//   backpack → mochila (container) · gloves → luvas (só com o sistema de itens do PoE ligado: nenhum item do Draevor tem esse slot)
 // Cada peça só entra no slot que o catálogo lhe dá.
 import { ITEM_CATALOG } from '../dados.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
-/** Os slots reais do jogo (os de `equipment`). */
-export const SLOTS_DE_EQUIPAMENTO = ['head', 'neck', 'body', 'legs', 'feet', 'ring', 'weapon', 'shield', 'ammo', 'backpack'];
+/** Os slots reais do jogo (os de `equipment`). `gloves` só existe com o sistema de itens do PoE ligado (ITENS_POE=1, só local). */
+export const SLOTS_DE_EQUIPAMENTO = ['head', 'neck', 'body', 'legs', 'feet', 'ring', 'weapon', 'shield', 'ammo', 'backpack', ...(itensPoeLigado() ? ['gloves'] : [])];
 
 /** A frase de recusa por slot errado (a única mensagem de "compatibilidade": nada de penalidade de dano). */
 export const ERRO_DE_SLOT = 'Este item não pode ser equipado neste slot.';

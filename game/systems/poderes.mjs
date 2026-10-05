@@ -34,6 +34,7 @@ import * as Prey from './prey.mjs';
 import * as Charms from './charms.mjs';
 import * as Defesa from './personagem/defesa.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
+import * as CargasPoe from './itens-poe/cargas.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
@@ -45,6 +46,10 @@ Overrides.reaplicarNosPoderes(PODERES, ESTADO_DE_PODERES, OVERRIDES_DE_MONSTROS,
 export const recarregarPoderes = (dados, validas) => Overrides.reaplicarNosPoderes(PODERES, ESTADO_DE_PODERES, dados, validas);
 /** Os poderes cadastrados de um bicho (para conferir o que o jogo vai lançar). */
 export const poderesDe = (key) => PODERES[key] ?? null;
+/** Registra os poderes de um bicho criado em tempo de execução (os monstros da campanha do PoE — `itens-poe/monstros.mjs`). */
+export function registrarPoderes(key, def) {
+  if (!PODERES[key]) PODERES[key] = def;
+}
 
 const NOME_DO_ELEMENTO = {
   physical: 'físico', fire: 'de fogo', ice: 'de gelo', earth: 'de terra', energy: 'de energia',
@@ -151,6 +156,8 @@ export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos,
     eventos.push({ t: 'dmg', ...base, v: daMana, color: '#4fc3ff' });
   }
   dano = Arvore.danoRecebido(estado, dano, eventos, { x: base.x, y: base.y }, base.quem);
+  // As cargas do PoE: a magia do bicho também conta como "acertado" (recentemente, e a chance de Tolerância).
+  if (ficha?.cargas) CargasPoe.aoSerAcertado(estado, ficha.cargas);
   if (dano <= 0) return 0;
   estado.hp = Math.max(0, estado.hp - dano);
   eventos.push({ t: 'fx', id: EFEITO_DO_SANGUE, uid: 'player', x: base.x, y: base.y });

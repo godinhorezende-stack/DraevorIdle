@@ -76,7 +76,8 @@ test('efeitos de tipos DIFERENTES convivem no mesmo bicho; o limite de efeitos p
   const m = mob();
   for (const tipo of Object.keys(T)) Dot.aplicar(m, { tipo, total: 500 }, 1000);
   assert.equal(m.dots.length, Object.keys(T).length);
-  assert.deepEqual(Dot.ativosDe(m, 1100), Object.values(T).map((t) => t.estado));
+  // Sem repetir: o veneno do Draevor e o do PoE são os dois "envenenado".
+  assert.deepEqual(Dot.ativosDe(m, 1100), [...new Set(Object.values(T).map((t) => t.estado))]);
   const cheio = mob();
   const limite = Dot.CONFIG.limites.efeitosPorBicho;
   cheio.dots = Array.from({ length: limite }, (_, i) => ({ id: `x${i}`, tipo: 'veneno', elemento: 'earth', falta: 10, porPulso: 1, ate: 1e9, proximo: 1e9 }));

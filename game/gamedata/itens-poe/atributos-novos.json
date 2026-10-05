@@ -1,0 +1,587 @@
+{
+  "_nota": "Os ATRIBUTOS NOVOS que o sistema de itens do PoE traz para o Draevor (decisão do dono de 04/10: 'todas do PoE, sem excluir nada'). Fase 1, incremento 3a — desligado em produção. Cada um tem nome, unidade e `combate`: true = já tem efeito no combate (incremento 3b, com `efeito` dizendo onde); false = registrado, ainda sem efeito. O que não está aqui e não tem regra na tradução vira atributo automático `poe.<texto>` (também registrado, sem efeito). Elementos: Fogo, Gelo, Raio e Caos (decisão do dono: o Caos é um elemento próprio, `chaos`).",
+  "atributos": {
+    "chaos_res": {
+      "nome": "Resistência a Caos",
+      "unidade": "%",
+      "combate": true,
+      "nota": "elemento novo: nenhum monstro do Draevor causa Caos ainda",
+      "efeito": "na ficha (protection.chaos); nenhum monstro causa Caos ainda, então não muda luta"
+    },
+    "chaos_dmg": {
+      "nome": "Dano de Caos aumentado",
+      "unidade": "%",
+      "combate": true,
+      "nota": "elemento novo: nenhuma habilidade do Draevor causa Caos ainda",
+      "efeito": "aumenta o dano de Caos somado e vira % do golpe físico em Caos (a regra do Draevor para Dano de <elemento> %)"
+    },
+    "added_fire_dmg_min": {
+      "nome": "Dano de Fogo somado (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "added_fire_dmg_max": {
+      "nome": "Dano de Fogo somado (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "added_ice_dmg_min": {
+      "nome": "Dano de Gelo somado (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "added_ice_dmg_max": {
+      "nome": "Dano de Gelo somado (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "added_energy_dmg_min": {
+      "nome": "Dano de Raio somado (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "added_energy_dmg_max": {
+      "nome": "Dano de Raio somado (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "added_chaos_dmg_min": {
+      "nome": "Dano de Caos somado (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "added_chaos_dmg_max": {
+      "nome": "Dano de Caos somado (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
+    },
+    "spell_added_fire_dmg_min": {
+      "nome": "Dano de Fogo somado a Magias (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "spell_added_fire_dmg_max": {
+      "nome": "Dano de Fogo somado a Magias (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "spell_added_ice_dmg_min": {
+      "nome": "Dano de Gelo somado a Magias (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "spell_added_ice_dmg_max": {
+      "nome": "Dano de Gelo somado a Magias (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "spell_added_energy_dmg_min": {
+      "nome": "Dano de Raio somado a Magias (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "spell_added_energy_dmg_max": {
+      "nome": "Dano de Raio somado a Magias (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "spell_added_chaos_dmg_min": {
+      "nome": "Dano de Caos somado a Magias (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "spell_added_chaos_dmg_max": {
+      "nome": "Dano de Caos somado a Magias (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "nas magias do mesmo elemento (dano de outro elemento não entra) — acoes.contaDoDano"
+    },
+    "crit_chance_inc": {
+      "nome": "Chance de Crítico aumentada (relativa)",
+      "unidade": "%",
+      "combate": true,
+      "nota": "multiplica a chance base, como no PoE (o crit_chance do Draevor soma pontos)",
+      "efeito": "multiplica a chance de crítico (pontos × (1 + %)) — ficha.critChance"
+    },
+    "spell_crit_chance_inc": {
+      "nome": "Chance de Crítico com Magias aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma ao crit_chance_inc nas magias — ficha.critChanceMagia"
+    },
+    "spell_dmg": {
+      "nome": "Dano Mágico aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "só nas magias (tag spell) — acoes.contaDoDano"
+    },
+    "block_inc": {
+      "nome": "Chance de Bloquear aumentada (relativa)",
+      "unidade": "%",
+      "combate": false
+    },
+    "accuracy_inc": {
+      "nome": "Precisão Global aumentada",
+      "unidade": "%",
+      "combate": false
+    },
+    "item_rarity": {
+      "nome": "Raridade de Itens encontrados",
+      "unidade": "%",
+      "combate": false
+    },
+    "life_on_kill": {
+      "nome": "Vida por Inimigo Morto",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cura ao matar — hunt/combate.matarMonstro"
+    },
+    "mana_on_kill": {
+      "nome": "Mana por Inimigo Morto",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mana ao matar — hunt/combate.matarMonstro"
+    },
+    "life_on_hit": {
+      "nome": "Vida por Inimigo Acertado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cura no 1º golpe da arma — hunt/combate"
+    },
+    "mana_on_hit": {
+      "nome": "Mana por Inimigo Acertado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mana no 1º golpe da arma — hunt/combate"
+    },
+    "reflect_phys_melee": {
+      "nome": "Dano Físico refletido a agressores corpo a corpo",
+      "unidade": "",
+      "combate": false
+    },
+    "req_level_reduced": {
+      "nome": "Requisito de Nível reduzido",
+      "unidade": "%",
+      "combate": false,
+      "nota": "propriedade da peça (requisito)"
+    },
+    "stun_recovery": {
+      "nome": "Recuperação de Atordoamentos e Bloqueios",
+      "unidade": "%",
+      "combate": false
+    },
+    "stun_duration": {
+      "nome": "Duração de Atordoamentos em Inimigos",
+      "unidade": "%",
+      "combate": false
+    },
+    "enemy_stun_threshold_red": {
+      "nome": "Ponto de Atordoamento Inimigo reduzido",
+      "unidade": "%",
+      "combate": false
+    },
+    "spell_suppression": {
+      "nome": "Chance de Suprimir Dano Mágico",
+      "unidade": "%",
+      "combate": false
+    },
+    "es_recharge": {
+      "nome": "Recarga do Escudo de Energia aumentada",
+      "unidade": "%",
+      "combate": false
+    },
+    "es_recharge_start": {
+      "nome": "Início da Recarga do Escudo de Energia mais rápido",
+      "unidade": "%",
+      "combate": false
+    },
+    "light_radius": {
+      "nome": "Raio de Iluminação aumentado",
+      "unidade": "%",
+      "combate": false
+    },
+    "dot_multi": {
+      "nome": "Multiplicador do Dano Degenerativo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica o dano das afecções (incêndio, sangramento, veneno) — itens-poe/afeccoes.mjs"
+    },
+    "avoid_elem_ailments": {
+      "nome": "Chance de Evitar Afecções Elementais",
+      "unidade": "%",
+      "combate": false
+    },
+    "phys_dmg_reduction_inc": {
+      "nome": "Redução de Dano Físico aumentada",
+      "unidade": "%",
+      "combate": false
+    },
+    "projectile_speed": {
+      "nome": "Velocidade do Projétil aumentada",
+      "unidade": "%",
+      "combate": false
+    },
+    "crit_dmg_taken_red": {
+      "nome": "Dano extra de Críticos recebidos reduzido",
+      "unidade": "%",
+      "combate": false
+    },
+    "chance_ignite": {
+      "nome": "Chance de Incendiar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "chance de Incendiar em todo acerto com dano de Fogo — itens-poe/afeccoes.mjs"
+    },
+    "chance_freeze": {
+      "nome": "Chance de Congelar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "chance de Congelar em todo acerto com dano de Gelo — itens-poe/afeccoes.mjs"
+    },
+    "chance_shock": {
+      "nome": "Chance de Eletrizar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "chance de Eletrizar em todo acerto com dano de Raio — itens-poe/afeccoes.mjs"
+    },
+    "chance_poison": {
+      "nome": "Chance de Envenenar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "chance de Envenenar em todo acerto com dano Físico ou de Caos — itens-poe/afeccoes.mjs"
+    },
+    "chance_bleed": {
+      "nome": "Chance de causar Sangramento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "chance de Sangramento em todo acerto com dano Físico — itens-poe/afeccoes.mjs"
+    },
+    "chance_ignite_ataque": {
+      "nome": "Chance de Incendiar com Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "só nos ataques (golpe da arma e habilidades de ataque) — itens-poe/afeccoes.mjs"
+    },
+    "chance_poison_ataque": {
+      "nome": "Chance de Envenenar com Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "só nos ataques — itens-poe/afeccoes.mjs"
+    },
+    "chance_bleed_ataque": {
+      "nome": "Chance de Sangramento com Ataques",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "só nos ataques — itens-poe/afeccoes.mjs"
+    },
+    "dot_multi_fire": {
+      "nome": "Multiplicador do Dano Degenerativo de Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma ao multiplicador no incêndio — itens-poe/afeccoes.mjs"
+    },
+    "dot_multi_poison": {
+      "nome": "Multiplicador do Dano Degenerativo do Veneno",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma ao multiplicador no veneno — itens-poe/afeccoes.mjs"
+    },
+    "ailment_duration": {
+      "nome": "Duração das Afecções em Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mais duração = mais dano total do incêndio, sangramento e veneno — itens-poe/afeccoes.mjs"
+    },
+    "poison_duration": {
+      "nome": "Duração do Veneno",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "soma à duração das afecções no veneno — itens-poe/afeccoes.mjs"
+    },
+    "max_poder": {
+      "nome": "Máximo de Cargas de Poder",
+      "unidade": "",
+      "combate": true,
+      "efeito": "soma ao máximo (3) de Cargas de Poder — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_matar": {
+      "nome": "Chance de ganhar Carga de Poder ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao matar um bicho — hunt/combate.matarMonstro"
+    },
+    "duracao_poder": {
+      "nome": "Duração da Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração base (10 s) — itens-poe/cargas.mjs"
+    },
+    "max_frenesi": {
+      "nome": "Máximo de Cargas de Frenesi",
+      "unidade": "",
+      "combate": true,
+      "efeito": "soma ao máximo (3) de Cargas de Frenesi — itens-poe/cargas.mjs"
+    },
+    "carga_frenesi_ao_matar": {
+      "nome": "Chance de ganhar Carga de Frenesi ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao matar um bicho — hunt/combate.matarMonstro"
+    },
+    "duracao_frenesi": {
+      "nome": "Duração da Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração base (10 s) — itens-poe/cargas.mjs"
+    },
+    "max_tolerancia": {
+      "nome": "Máximo de Cargas de Tolerância",
+      "unidade": "",
+      "combate": true,
+      "efeito": "soma ao máximo (3) de Cargas de Tolerância — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_matar": {
+      "nome": "Chance de ganhar Carga de Tolerância ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao matar um bicho — hunt/combate.matarMonstro"
+    },
+    "duracao_tolerancia": {
+      "nome": "Duração da Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração base (10 s) — itens-poe/cargas.mjs"
+    },
+    "carga_qualquer_ao_matar": {
+      "nome": "Chance de ganhar Carga de Poder, Frenesi ou Tolerância ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "sorteia o tipo — itens-poe/cargas.mjs"
+    },
+    "duracao_cargas": {
+      "nome": "Duração das Cargas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "aumenta a duração de todas as cargas — itens-poe/cargas.mjs"
+    },
+    "move_speed_por_frenesi": {
+      "nome": "Velocidade de Movimento por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "move_speed × Cargas de Frenesi — itens-poe/cargas.mjs"
+    },
+    "evasion_pct_por_frenesi": {
+      "nome": "Evasão por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "evasion_pct × Cargas de Frenesi — itens-poe/cargas.mjs"
+    },
+    "dano_por_poder": {
+      "nome": "Dano aumentado por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "multiplica o golpe (Ficha.rolarCritico) × Cargas de Poder — itens-poe/cargas.mjs"
+    },
+    "spell_dmg_por_poder": {
+      "nome": "Dano Mágico por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "spell_dmg × Cargas de Poder — itens-poe/cargas.mjs"
+    },
+    "carga_frenesi_ao_acertar_unico": {
+      "nome": "Chance de ganhar Carga de Frenesi ao Acertar um Inimigo Único",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ao acertar um chefe — hunt/combate e acoes"
+    },
+    "carga_tolerancia_ao_ser_acertado": {
+      "nome": "Chance de ganhar Carga de Tolerância quando Acertado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_atordoar": {
+      "nome": "Chance de ganhar Carga de Tolerância ao Atordoar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_atordoar": {
+      "nome": "Chance de ganhar Carga de Poder ao Atordoar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_critico": {
+      "nome": "Chance de ganhar Carga de Poder no Golpe Crítico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_critico_varinha": {
+      "nome": "Chance de ganhar Carga de Poder no Golpe Crítico com Varinhas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_critico_corpo": {
+      "nome": "Chance de ganhar Carga de Tolerância no Golpe Crítico Corpo a Corpo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_acerto_nao_critico": {
+      "nome": "Chance de ganhar Carga de Poder em Acerto Não Crítico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_tolerancia_ao_bloquear": {
+      "nome": "Chance de ganhar Carga de Tolerância ao Bloquear",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_frenesi_ao_bloquear": {
+      "nome": "Chance de ganhar Carga de Frenesi ao Bloquear",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "carga_poder_ao_bloquear": {
+      "nome": "Chance de ganhar Carga de Poder ao Bloquear",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "tolerancia_por_segundo_acertado": {
+      "nome": "Cargas de Tolerância por segundo se Acertado Recentemente",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "frenesi_a_cada_s_movendo": {
+      "nome": "Carga de Frenesi a cada N s enquanto se Move",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "poder_por_mana_gasta": {
+      "nome": "Carga de Poder a cada N de Mana gasta",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "chance_tolerancia_maxima": {
+      "nome": "Chance de ganhar o máximo de Cargas de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "min_poder": {
+      "nome": "Mínimo de Cargas de Poder",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "min_frenesi": {
+      "nome": "Mínimo de Cargas de Frenesi",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "min_tolerancia": {
+      "nome": "Mínimo de Cargas de Tolerância",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "max_tolerancia_igual_frenesi": {
+      "nome": "Máximo de Tolerância igual ao de Frenesi",
+      "unidade": "",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "dano_por_tolerancia": {
+      "nome": "Dano aumentado por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "dano_por_frenesi": {
+      "nome": "Dano aumentado por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "dano_por_carga": {
+      "nome": "Dano aumentado por Carga (qualquer)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "armour_pct_por_tolerancia": {
+      "nome": "Armadura por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "life_regen_pct_por_tolerancia": {
+      "nome": "Regeneração de Vida por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "atk_speed_por_frenesi": {
+      "nome": "Velocidade de Ataque por Carga de Frenesi",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "crit_chance_inc_por_poder": {
+      "nome": "Chance de Crítico por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "crit_dmg_por_poder": {
+      "nome": "Multiplicador de Crítico por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "phys_res_por_tolerancia": {
+      "nome": "Redução de Dano Físico por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "elem_res_por_tolerancia": {
+      "nome": "Redução de Dano Elemental por Carga de Tolerância",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "mana_regen_pct_por_poder": {
+      "nome": "Regeneração de Mana por Carga de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    }
+  }
+}

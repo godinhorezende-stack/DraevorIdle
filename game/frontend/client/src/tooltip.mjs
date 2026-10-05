@@ -6,6 +6,7 @@ import { portaDoItemDeAcesso } from '/packages/shared/src/portas-de-acesso.mjs';
 // A conta da arma (dano físico, APS, crítico, qualidade, modificadores locais, DPS físico): o MESMO arquivo que o servidor usa (`engine/arma.mjs`), então o número do balão é o da engine.
 import * as Arma from '/packages/shared/src/arma.mjs';
 import { itemCanvas, outfitCanvas, drawItem, drawEffect, drawMissile, effectDuration } from './sprites.mjs';
+import { balaoPoe } from './itens-poe-balao.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -16,7 +17,7 @@ const el = (tag, className, text) => {
 
 const SLOT_NAMES = {
   head: 'elmo', neck: 'colar', body: 'armadura', legs: 'pernas', feet: 'botas',
-  ring: 'anel', weapon: 'mão direita', shield: 'mão esquerda', ammo: 'munição', backpack: 'mochila',
+  ring: 'anel', weapon: 'mão direita', shield: 'mão esquerda', ammo: 'munição', backpack: 'mochila', gloves: 'luvas',
 };
 
 const SKILL_NAMES = {
@@ -910,6 +911,7 @@ const TYPE_NAMES = {
   helmets: 'elmo',
   armors: 'armadura',
   legs: 'perneira',
+  gloves: 'luvas',
   boots: 'bota',
   rings: 'anel',
   'amulets and necklaces': 'amuleto',
@@ -2675,6 +2677,16 @@ function blocoDosSoquetes(sq) {
 }
 
 export function fichaDeItem(id, extra = null, slot = null, peca = null) {
+  // A peça do sistema de itens do PoE (só existe com ITENS_POE=1 no servidor): o balão próprio, com Prefixos e Sufixos separados.
+  if (peca?.poe) {
+    const metaPoe = getItems()[id];
+    // Os requisitos da base (nível e atributos, como no PoE) vêm do catálogo.
+    const requisitos = { nivel: metaPoe?.minLevel ?? 0, ...(metaPoe?.poe?.requisitos ?? {}) };
+    const eu = getPersonagem();
+    const at = eu?.derived?.atributos;
+    const tem = eu ? { nivel: eu.level ?? 0, str: at?.str ?? 0, dex: at?.dex ?? 0, int: at?.int ?? 0 } : null;
+    return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos, tem })] };
+  }
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;
 

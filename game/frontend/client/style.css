@@ -1018,6 +1018,16 @@ html, body {
  * comprimentos diferentes: sem isso o card do monge ficava um degrau abaixo dos
  * outros e a fileira ficava serrilhada embaixo.
  */
+/* A classe do PoE (só com o sistema de itens do PoE ligado, jogo local): uma fileira acima das vocações. */
+.classe-poe-picker { display: grid; gap: 6px; margin-bottom: 10px; }
+.classe-poe-titulo { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-dim); }
+.classe-poe-fila { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.classe-poe-fila button {
+  background: linear-gradient(180deg, #12211f, #0d1618); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 4px; cursor: pointer; display: grid; gap: 2px; justify-items: center; color: inherit;
+}
+.classe-poe-fila button small { font-size: 10px; color: inherit; opacity: .7; font-variant-numeric: tabular-nums; }
+.classe-poe-fila button[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 0 0 14px #3fbfa833; }
 .vocation-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: stretch; }
 .vocation-picker button {
   background: linear-gradient(180deg, #12211f, #0d1618);
@@ -17128,6 +17138,14 @@ body.com-novidades #recados { top: calc(var(--altura-da-topbar) + var(--altura-d
 /* Os ultimos cinco segundos: e' quando renovar ainda vale a pena. */
 .hud-buff.acabando { border-color: #b4553f; }
 .hud-buff.acabando b { color: #ffb4a2; }
+/* As cargas do PoE (Tolerância, Frenesi, Poder): a bolinha da cor do atributo, com o número de cargas. */
+.hud-carga {
+  display: grid; place-items: center; width: 18px; height: 18px; margin-bottom: 4px; border-radius: 50%;
+  font-size: 10px; font-weight: 700; color: #fff; text-shadow: 0 1px 0 #000;
+}
+.hud-carga.carga-tolerancia { background: radial-gradient(circle at 35% 35%, #f07a62, #8c2a1c); }
+.hud-carga.carga-frenesi { background: radial-gradient(circle at 35% 35%, #6fe08f, #1d6b37); }
+.hud-carga.carga-poder { background: radial-gradient(circle at 35% 35%, #7fb0ff, #1f4a9c); }
 
 
 /* ---------- a ficha do familiar, na caixa de configurar ação ---------- */
@@ -27643,6 +27661,12 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .modal-box.passivas { width: min(1320px, 97vw); }
 .pas { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .pas-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* A ascendência (árvore do PoE): os pontos dela, a escolha no primeiro ponto e o atalho até ela. */
+.pas-asc { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%; }
+.pas-asc[hidden] { display: none; }
+.pas-asc-nota { font-size: 12px; opacity: .8; }
+/* As opções da maestria (árvore do PoE): um botão por efeito, no painel do nó. */
+.pas-opcao { display: block; width: 100%; text-align: left; white-space: normal; margin: 3px 0; font-size: 12px; line-height: 1.35; }
 .pas-pontos { font-size: 13px; color: var(--muted); margin-right: auto; font-variant-numeric: tabular-nums; }
 .pas-pontos b { font-family: var(--font-numero); font-size: 18px; color: var(--text); }
 .pas-pontos b.tem { color: #e3ae48; }
@@ -27677,6 +27701,8 @@ html[data-perfil="deitado"] .anuncios-drop { top: calc(var(--seguro-topo, 0px) +
 .poe-stats { color: #8f8fff; line-height: 1.45; }
 .poe-regra { color: #b4b4ff; }
 .poe-flavor { color: #af6025; font-style: italic; line-height: 1.4; }
+/* Árvore do PoE (sistema de itens do PoE): o texto explicativo do nó (as linhas entre parênteses do PoE). */
+.poe-nota-arvore { font-style: italic; opacity: .6; font-size: .92em; }
 .poe-rodape { color: #8a8a8a; font-size: 11px; line-height: 1.4; }
 .poe-rodape.estado-alocado div:last-of-type { color: #e3ae48; }
 .poe-rodape.estado-disponivel div:last-of-type { color: var(--accent); }

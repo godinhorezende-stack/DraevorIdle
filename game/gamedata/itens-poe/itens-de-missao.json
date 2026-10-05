@@ -1,0 +1,165 @@
+{
+ "_nota": "Itens de missão do PoE (tools/importar-atos-poe.mjs): entram no catálogo com ITENS_POE=1.",
+ "itens": [
+  {
+   "id": 7600001,
+   "nome": "Baú de Remédios",
+   "missao": "Missão de Caridade",
+   "ato": 1,
+   "area": "poe-a1-the-tidal-island",
+   "monstro": "Hailrake",
+   "monstroNome": "Hailrake",
+   "descricao": "Item da missão \"Missão de Caridade\" (Ato 1): Hailrake o carrega."
+  },
+  {
+   "id": 7600002,
+   "nome": "Omnichama",
+   "missao": "A Chama Espiritual",
+   "ato": 1,
+   "area": "poe-a1-the-ship-graveyard",
+   "monstro": "Captain_Fairgraves",
+   "monstroNome": "Capitão Fairgraves",
+   "descricao": "Item da missão \"A Chama Espiritual\" (Ato 1): Capitão Fairgraves o carrega."
+  },
+  {
+   "id": 7600003,
+   "nome": "Espinho de Maligaro",
+   "missao": "Afiado e Cruel",
+   "ato": 2,
+   "area": "poe-a2-the-weavers-chambers",
+   "monstro": "The_Weaver",
+   "monstroNome": "A Tecelã",
+   "descricao": "Item da missão \"Afiado e Cruel\" (Ato 2): A Tecelã o carrega."
+  },
+  {
+   "id": 7600004,
+   "nome": "Estandarte de Deshret",
+   "missao": "Quebrando o Selo",
+   "ato": 4,
+   "area": "poe-a4-the-dried-lake",
+   "monstro": "Voll,_Emperor_of_Purity",
+   "monstroNome": "Voll, Imperador da Pureza",
+   "descricao": "Item da missão \"Quebrando o Selo\" (Ato 4): Voll, Imperador da Pureza o carrega."
+  },
+  {
+   "id": 7600005,
+   "nome": "Olho da Fúria",
+   "missao": "O Rei da Fúria",
+   "ato": 4,
+   "area": "poe-a4-kaoms-stronghold",
+   "monstro": "King_Kaom",
+   "monstroNome": "Rei Kaom",
+   "descricao": "Item da missão \"O Rei da Fúria\" (Ato 4): Rei Kaom o carrega."
+  },
+  {
+   "id": 7600006,
+   "nome": "Olho do Desejo",
+   "missao": "O Rei do Desejo",
+   "ato": 4,
+   "area": "poe-a4-the-grand-arena",
+   "monstro": "Daresso,_King_of_Swords",
+   "monstroNome": "Daresso, Rei das Espadas",
+   "descricao": "Item da missão \"O Rei do Desejo\" (Ato 4): Daresso, Rei das Espadas o carrega."
+  },
+  {
+   "id": 7600007,
+   "nome": "Olhos do Zelo",
+   "missao": "Morte à Pureza",
+   "ato": 5,
+   "area": "poe-a5-the-control-blocks",
+   "monstro": "Justicar_Casticus",
+   "monstroNome": "Justicar Casticus",
+   "descricao": "Item da missão \"Morte à Pureza\" (Ato 5): Justicar Casticus o carrega."
+  },
+  {
+   "id": 7600008,
+   "nome": "Manuscrito do Bestel",
+   "missao": "Epopeia de Bestel",
+   "ato": 6,
+   "area": "poe-a6-the-tidal-island",
+   "monstro": "Riptide",
+   "monstroNome": "Correnteza",
+   "descricao": "Item da missão \"Epopeia de Bestel\" (Ato 6): Correnteza o carrega."
+  },
+  {
+   "id": 7600009,
+   "nome": "Veneno Negro",
+   "missao": "Rede de Segredos",
+   "ato": 7,
+   "area": "poe-a7-maligaros-sanctum",
+   "monstro": "Maligaro,_the_Artist",
+   "monstroNome": "Maligaro, o Artista",
+   "descricao": "Item da missão \"Rede de Segredos\" (Ato 7): Maligaro, o Artista o carrega."
+  },
+  {
+   "id": 7600010,
+   "nome": "Asas de Vastiri",
+   "missao": "As Asas de Vastiri",
+   "ato": 8,
+   "area": "poe-a8-the-bath-house",
+   "monstro": "Hector_Titucius,_Eternal_Servant",
+   "monstroNome": "Hector Titucius, Eterno Servo",
+   "descricao": "Item da missão \"As Asas de Vastiri\" (Ato 8): Hector Titucius, Eterno Servo o carrega."
+  },
+  {
+   "id": 7600011,
+   "nome": "Lâmina da Tempestade",
+   "missao": "A Lâmina da Tempestade",
+   "ato": 9,
+   "area": "poe-a9-the-vastiri-desert",
+   "monstro": "Maternal_Rhex",
+   "monstroNome": "Rhex Maternal",
+   "descricao": "Item da missão \"A Lâmina da Tempestade\" (Ato 9): Rhex Maternal o carrega."
+  },
+  {
+   "id": 7600012,
+   "nome": "Calendário da Fortuna",
+   "missao": "Fastis Fortuna",
+   "ato": 9,
+   "area": "poe-a9-the-foothills",
+   "monstro": "Boulderback",
+   "monstroNome": "Cabeça de Ferro",
+   "descricao": "Item da missão \"Fastis Fortuna\" (Ato 9): Cabeça de Ferro o carrega."
+  },
+  {
+   "id": 7600013,
+   "nome": "Ácido de Basilisco",
+   "missao": "Pesadelo Recorrente",
+   "ato": 9,
+   "area": "poe-a9-the-boiling-lake",
+   "monstro": "The_Basilisk",
+   "monstroNome": "O Basilisco",
+   "descricao": "Item da missão \"Pesadelo Recorrente\" (Ato 9): O Basilisco o carrega."
+  },
+  {
+   "id": 7600014,
+   "nome": "Pena de Sekhema",
+   "missao": "Soberano de Highgate",
+   "ato": 9,
+   "area": "poe-a9-the-quarry",
+   "monstro": "Garukhan,_Queen_of_the_Winds",
+   "monstroNome": "Garukhan, Rainha dos Ventos",
+   "descricao": "Item da missão \"Soberano de Highgate\" (Ato 9): Garukhan, Rainha dos Ventos o carrega."
+  },
+  {
+   "id": 7600015,
+   "nome": "Pó de Trarthan",
+   "missao": "Pesadelo Recorrente",
+   "ato": 9,
+   "area": "poe-a9-the-refinery",
+   "monstro": "General_Adus",
+   "monstroNome": "General Adus",
+   "descricao": "Item da missão \"Pesadelo Recorrente\" (Ato 9): General Adus o carrega."
+  },
+  {
+   "id": 7600016,
+   "nome": "Cajado da Pureza",
+   "missao": "Morte e Ressurreição",
+   "ato": 10,
+   "area": "poe-a10-the-desecrated-chambers",
+   "monstro": "Avarius,_Reassembled",
+   "monstroNome": "Avarius, Reconstruído",
+   "descricao": "Item da missão \"Morte e Ressurreição\" (Ato 10): Avarius, Reconstruído o carrega."
+  }
+ ]
+}

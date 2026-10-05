@@ -18,7 +18,8 @@ import { ITEM_CATALOG } from '../dados.mjs';
 
 export const CATEGORIAS = ['principal', 'miniboss', 'secreto', 'evento', 'endgame'];
 export const TIPOS_DE_COMPORTAMENTO = ['magia', 'area-telegrafada', 'invocar', 'escudo'];
-const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy', 'lifedrain', 'manadrain', 'drown'];
+// `chaos`: o elemento Caos do sistema de itens do PoE (decisão do dono, 04/10) — as resistências dos chefes pináculo.
+const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy', 'lifedrain', 'manadrain', 'drown', 'chaos'];
 /** Tetos que protegem o servidor (entidades e eventos por tique). */
 export const LIMITES = { comportamentosPorFase: 8, fases: 6, maxVivosDeLacaios: 10, avisoMs: [500, 10_000], raio: 8 };
 

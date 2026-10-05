@@ -1,0 +1,459 @@
+{
+  "id": "poe-ato-9",
+  "nome": "Ato 9",
+  "descricao": "Ato 9 da campanha do Path of Exile.",
+  "ordem": 9,
+  "anterior": "poe-ato-8",
+  "estado": "publicado",
+  "inicio": "poe-a9-the-blood-aqueduct",
+  "fases": [
+    {
+      "id": "poe-a9-the-blood-aqueduct",
+      "nome": "Aqueduto de Sangue",
+      "descricao": "Um vertedouro poderoso infectado pelo preto da escuridão e vermelho do sangue.",
+      "ordem": 1,
+      "huntId": "poe-a9-the-blood-aqueduct",
+      "nivel": {
+        "facil": 61,
+        "medio": 61,
+        "dificil": 61
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 323,
+        "y": 453
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-descent",
+      "nome": "A Descida",
+      "descricao": "Uma queda congelante para testar a determinação.",
+      "ordem": 2,
+      "huntId": "poe-a9-the-descent",
+      "nivel": {
+        "facil": 61,
+        "medio": 61,
+        "dificil": 61
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 416,
+        "y": 266
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-vastiri-desert",
+      "nome": "Deserto Vastiri",
+      "descricao": "Areia estrondosa, mais afiada que a lâmina de um bandido.",
+      "ordem": 3,
+      "huntId": "poe-a9-the-vastiri-desert",
+      "nivel": {
+        "facil": 61,
+        "medio": 61,
+        "dificil": 61
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 629,
+        "y": 455
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "A Lâmina da Tempestade",
+          "texto": "Pegue a Lâmina da Tempestade"
+        },
+        {
+          "missao": "Rainha das Areias",
+          "texto": "Entre no Oásis"
+        },
+        {
+          "missao": "O Sindicato Imortal",
+          "texto": "Fale com o membro do Sindicato e decida como quer lidar com eles"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600011,
+        "monstro": "Maternal_Rhex",
+        "nome": "Rhex Maternal"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-oasis",
+      "nome": "O Oásis",
+      "descricao": "Um parasita escondido entre os ossos queimados e dunas escaldantes.",
+      "ordem": 4,
+      "huntId": "poe-a9-the-oasis",
+      "nivel": {
+        "facil": 61,
+        "medio": 61,
+        "dificil": 61
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 750,
+        "y": 274
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-foothills",
+      "nome": "Contraforte",
+      "descricao": "Os segredos da história escondidos entre camadas de sujeira e poeira.",
+      "ordem": 5,
+      "huntId": "poe-a9-the-foothills",
+      "nivel": {
+        "facil": 62,
+        "medio": 62,
+        "dificil": 62
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 590,
+        "y": 223
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Fastis Fortuna",
+          "texto": "Pegue o Calendário da Fortuna"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600012,
+        "monstro": "Boulderback",
+        "nome": "Cabeça de Ferro"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-boiling-lake",
+      "nome": "Lago Fervente",
+      "descricao": "Estas águas corrosivas devoram tanto a carne quanto os ossos.",
+      "ordem": 6,
+      "huntId": "poe-a9-the-boiling-lake",
+      "nivel": {
+        "facil": 62,
+        "medio": 62,
+        "dificil": 62
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 542,
+        "y": 128
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Pesadelo Recorrente",
+          "texto": "Encontre o Ácido de Basilisco"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600013,
+        "monstro": "The_Basilisk",
+        "nome": "O Basilisco"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-tunnel",
+      "nome": "Túnel",
+      "descricao": "Horrores indescritíveis assombram pela escuridão inominada.",
+      "ordem": 7,
+      "huntId": "poe-a9-the-tunnel",
+      "nivel": {
+        "facil": 62,
+        "medio": 62,
+        "dificil": 62
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 446,
+        "y": 126
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-quarry",
+      "nome": "Pedreira",
+      "descricao": "Um terror monstruoso espreita minas ctônicas, ansiando pelo céu sem limites.",
+      "ordem": 8,
+      "huntId": "poe-a9-the-quarry",
+      "nivel": {
+        "facil": 63,
+        "medio": 63,
+        "dificil": 63
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 334,
+        "y": 95
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Pesadelo Recorrente",
+          "texto": "Encontre-se com Sin na Pedreira"
+        },
+        {
+          "missao": "Soberano de Highgate",
+          "texto": "Pegue a Pena de Sekhema"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600014,
+        "monstro": "Garukhan,_Queen_of_the_Winds",
+        "nome": "Garukhan, Rainha dos Ventos"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-refinery",
+      "nome": "Refinaria",
+      "descricao": "A loucura foi visitada por aqueles que cavaram fundo demais.",
+      "ordem": 9,
+      "huntId": "poe-a9-the-refinery",
+      "nivel": {
+        "facil": 63,
+        "medio": 63,
+        "dificil": 63
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 353,
+        "y": 45
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Pesadelo Recorrente",
+          "texto": "Encontre o Pó de Trarthan"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600015,
+        "monstro": "General_Adus",
+        "nome": "General Adus"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-belly-of-the-beast",
+      "nome": "Ventre da Besta",
+      "descricao": "Uma vez tingido pelo calor do sangue, agora apodrecido; consumido pela podridão de fungos.",
+      "ordem": 10,
+      "huntId": "poe-a9-the-belly-of-the-beast",
+      "nivel": {
+        "facil": 63,
+        "medio": 63,
+        "dificil": 63
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 128,
+        "y": 70
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a9-the-rotting-core",
+      "nome": "Núcleo em Putrefação",
+      "descricao": "O interior pútrido transborda e deteriora.",
+      "ordem": 11,
+      "huntId": "poe-a9-the-rotting-core",
+      "nivel": {
+        "facil": 64,
+        "medio": 64,
+        "dificil": 64
+      },
+      "obrigatoria": true,
+      "posicao": {
+        "x": 50,
+        "y": 130
+      },
+      "tipo": "fase-final-do-ato",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Pesadelo Recorrente",
+          "texto": "Fale com Lilly para retornar à Oriath"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "The_Depraved_Trinity",
+        "nome": "A Trindade Depravada"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    }
+  ],
+  "conexoes": [
+    {
+      "de": "poe-a9-the-blood-aqueduct",
+      "para": "poe-a9-the-descent",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-descent",
+      "para": "poe-a9-the-vastiri-desert",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-vastiri-desert",
+      "para": "poe-a9-the-oasis",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-vastiri-desert",
+      "para": "poe-a9-the-foothills",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-foothills",
+      "para": "poe-a9-the-boiling-lake",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-foothills",
+      "para": "poe-a9-the-tunnel",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-tunnel",
+      "para": "poe-a9-the-quarry",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-quarry",
+      "para": "poe-a9-the-refinery",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-quarry",
+      "para": "poe-a9-the-belly-of-the-beast",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a9-the-belly-of-the-beast",
+      "para": "poe-a9-the-rotting-core",
+      "requisito": null,
+      "rotulo": ""
+    }
+  ],
+  "bossFinal": {
+    "bossId": "poe-chefe-ato-9",
+    "faseAnterior": "poe-a9-the-rotting-core",
+    "nivel": {
+      "facil": 64,
+      "medio": 64,
+      "dificil": 64
+    },
+    "arena": null,
+    "recompensas": null
+  },
+  "imagem": null,
+  "nivelRecomendado": 61,
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
+  "versao": 2
+}

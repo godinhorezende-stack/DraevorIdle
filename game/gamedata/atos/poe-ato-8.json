@@ -1,0 +1,632 @@
+{
+  "id": "poe-ato-8",
+  "nome": "Ato 8",
+  "descricao": "Ato 8 da campanha do Path of Exile.",
+  "ordem": 8,
+  "anterior": "poe-ato-7",
+  "estado": "publicado",
+  "inicio": "poe-a8-the-sarn-ramparts",
+  "fases": [
+    {
+      "id": "poe-a8-the-sarn-ramparts",
+      "nome": "Muralha de Sarn",
+      "descricao": "Um baluarte treme embaixo de um céu crescente.",
+      "ordem": 1,
+      "huntId": "poe-a8-the-sarn-ramparts",
+      "nivel": {
+        "facil": 55,
+        "medio": 55,
+        "dificil": 55
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 633,
+        "y": 455
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-toxic-conduits",
+      "nome": "Canais Tóxicos",
+      "descricao": "Feitiços de sangue mancham as águas abaixo.",
+      "ordem": 2,
+      "huntId": "poe-a8-the-toxic-conduits",
+      "nivel": {
+        "facil": 56,
+        "medio": 56,
+        "dificil": 56
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 373,
+        "y": 293
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Essência da Bruxa",
+          "texto": "Mate Doedre"
+        },
+        {
+          "missao": "Eclipse Solar",
+          "texto": "Atravesse os Esgotos"
+        },
+        {
+          "missao": "Eclipse Lunar",
+          "texto": "Atravesse os Esgotos"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-doedres-cesspool",
+      "nome": "Fossa de Doedre",
+      "descricao": "",
+      "ordem": 3,
+      "huntId": "poe-a8-doedres-cesspool",
+      "nivel": {
+        "facil": 56,
+        "medio": 56,
+        "dificil": 56
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 406,
+        "y": 267
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-grand-promenade",
+      "nome": "Grande Esplanada",
+      "descricao": "O caminho favorito de nobres lordes, agora caídos e arruinados.",
+      "ordem": 4,
+      "huntId": "poe-a8-the-grand-promenade",
+      "nivel": {
+        "facil": 56,
+        "medio": 56,
+        "dificil": 56
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 166,
+        "y": 312
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-high-gardens",
+      "nome": "Grandes Jardins",
+      "descricao": "Horrores rastejantes sufocam a vida deste terraço próspero.",
+      "ordem": 5,
+      "huntId": "poe-a8-the-high-gardens",
+      "nivel": {
+        "facil": 58,
+        "medio": 58,
+        "dificil": 58
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 81,
+        "y": 226
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Reflexo do Terror",
+          "texto": "Mate Yugul"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Yugul,_Reflection_of_Terror",
+        "nome": "Yugul, Reflexo do Terror"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-bath-house",
+      "nome": "Balneário",
+      "descricao": "Pecado escondido onde festas prosperam.",
+      "ordem": 6,
+      "huntId": "poe-a8-the-bath-house",
+      "nivel": {
+        "facil": 57,
+        "medio": 57,
+        "dificil": 57
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 172,
+        "y": 226
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "As Asas de Vastiri",
+          "texto": "Pegue as Asas de Vastiri"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600010,
+        "monstro": "Hector_Titucius,_Eternal_Servant",
+        "nome": "Hector Titucius, Eterno Servo"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-lunaris-concourse",
+      "nome": "Pátio de Lunaris",
+      "descricao": "Alianças enfraquecem como o minguar da lua.",
+      "ordem": 7,
+      "huntId": "poe-a8-the-lunaris-concourse",
+      "nivel": {
+        "facil": 58,
+        "medio": 58,
+        "dificil": 58
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 177,
+        "y": 162
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-lunaris-temple-level-1",
+      "nome": "Templo Lunaris Nível 1",
+      "descricao": "A beleza minguante eclipsada pela rivalidade das irmãs.",
+      "ordem": 8,
+      "huntId": "poe-a8-the-lunaris-temple-level-1",
+      "nivel": {
+        "facil": 59,
+        "medio": 59,
+        "dificil": 59
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 50,
+        "y": 152
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-lunaris-temple-level-2",
+      "nome": "Templo Lunaris Nível 2",
+      "descricao": "",
+      "ordem": 9,
+      "huntId": "poe-a8-the-lunaris-temple-level-2",
+      "nivel": {
+        "facil": 59,
+        "medio": 59,
+        "dificil": 59
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 83,
+        "y": 126
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-quay",
+      "nome": "O Porto",
+      "descricao": "Os mortos incansáveis se mexem debaixo de águas escurecidas.",
+      "ordem": 10,
+      "huntId": "poe-a8-the-quay",
+      "nivel": {
+        "facil": 57,
+        "medio": 57,
+        "dificil": 57
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 495,
+        "y": 270
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-grain-gate",
+      "nome": "Portão de Granito",
+      "descricao": "Uma barreira treme perante os pés dos imortais.",
+      "ordem": 11,
+      "huntId": "poe-a8-the-grain-gate",
+      "nivel": {
+        "facil": 57,
+        "medio": 57,
+        "dificil": 57
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 609,
+        "y": 248
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "A Legião Gemante",
+          "texto": "Mate os Legionários Gemantes"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-imperial-fields",
+      "nome": "Campos Imperiais",
+      "descricao": "A selvageria da guerra mancha tanto a sujeira quanto a lama.",
+      "ordem": 12,
+      "huntId": "poe-a8-the-imperial-fields",
+      "nivel": {
+        "facil": 58,
+        "medio": 58,
+        "dificil": 58
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 750,
+        "y": 146
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-solaris-concourse",
+      "nome": "Pátio de Solaris",
+      "descricao": "Conquistado pela neblina da guerra.",
+      "ordem": 13,
+      "huntId": "poe-a8-the-solaris-concourse",
+      "nivel": {
+        "facil": 58,
+        "medio": 58,
+        "dificil": 58
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 393,
+        "y": 118
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-solaris-temple-level-1",
+      "nome": "Templo Solaris Nível 1",
+      "descricao": "O brilho de luminárias extinguido pelo orgulho flamejante.",
+      "ordem": 14,
+      "huntId": "poe-a8-the-solaris-temple-level-1",
+      "nivel": {
+        "facil": 59,
+        "medio": 59,
+        "dificil": 59
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 466,
+        "y": 62
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-solaris-temple-level-2",
+      "nome": "Templo Solaris Nível 2",
+      "descricao": "",
+      "ordem": 15,
+      "huntId": "poe-a8-the-solaris-temple-level-2",
+      "nivel": {
+        "facil": 59,
+        "medio": 59,
+        "dificil": 59
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 499,
+        "y": 45
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a8-the-harbour-bridge",
+      "nome": "Ponte do Porto",
+      "descricao": "Uma agitação sombria envie fitas à guerra.",
+      "ordem": 16,
+      "huntId": "poe-a8-the-harbour-bridge",
+      "nivel": {
+        "facil": 60,
+        "medio": 60,
+        "dificil": 60
+      },
+      "obrigatoria": true,
+      "posicao": {
+        "x": 306,
+        "y": 183
+      },
+      "tipo": "fase-final-do-ato",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Eclipse Solar",
+          "texto": "A saída para o Ato 9 agora está aberta"
+        },
+        {
+          "missao": "Eclipse Lunar",
+          "texto": "Mate Solaris e Lunaris"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Lunaris,_Eternal_Moon",
+        "nome": "Lunaris, Lua Eterna"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    }
+  ],
+  "conexoes": [
+    {
+      "de": "poe-a8-the-sarn-ramparts",
+      "para": "poe-a8-the-toxic-conduits",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-toxic-conduits",
+      "para": "poe-a8-doedres-cesspool",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-grand-promenade",
+      "para": "poe-a8-the-bath-house",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-high-gardens",
+      "para": "poe-a8-the-bath-house",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-bath-house",
+      "para": "poe-a8-the-lunaris-concourse",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-lunaris-concourse",
+      "para": "poe-a8-the-lunaris-temple-level-1",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-lunaris-concourse",
+      "para": "poe-a8-the-harbour-bridge",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-lunaris-temple-level-1",
+      "para": "poe-a8-the-lunaris-temple-level-2",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-quay",
+      "para": "poe-a8-the-grain-gate",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-grain-gate",
+      "para": "poe-a8-the-imperial-fields",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-imperial-fields",
+      "para": "poe-a8-the-solaris-temple-level-1",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-solaris-concourse",
+      "para": "poe-a8-the-solaris-temple-level-1",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-solaris-concourse",
+      "para": "poe-a8-the-harbour-bridge",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-solaris-temple-level-1",
+      "para": "poe-a8-the-solaris-temple-level-2",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-sarn-ramparts",
+      "para": "poe-a8-the-grand-promenade",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-sarn-ramparts",
+      "para": "poe-a8-the-high-gardens",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-sarn-ramparts",
+      "para": "poe-a8-the-quay",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a8-the-sarn-ramparts",
+      "para": "poe-a8-the-solaris-concourse",
+      "requisito": null,
+      "rotulo": ""
+    }
+  ],
+  "bossFinal": {
+    "bossId": "poe-chefe-ato-8",
+    "faseAnterior": "poe-a8-the-harbour-bridge",
+    "nivel": {
+      "facil": 60,
+      "medio": 60,
+      "dificil": 60
+    },
+    "arena": null,
+    "recompensas": null
+  },
+  "imagem": null,
+  "nivelRecomendado": 55,
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
+  "versao": 2
+}

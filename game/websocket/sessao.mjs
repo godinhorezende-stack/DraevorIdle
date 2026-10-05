@@ -36,6 +36,10 @@ import * as Tiers from '../systems/tiers.mjs';
 import * as Summon from '../systems/summon.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
+import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
+import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
+import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/combate.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
 import * as Charms from '../systems/charms.mjs';
@@ -101,6 +105,7 @@ export const estaNoJogo = (nome) => !!vivas.get(nome)?.personagem || carregandoA
 /** A fila global de transações (Fase 6) — ver `emTransacao`. */
 let filaDeTransacoes = Promise.resolve();
 Party.ligar(vivas);
+ItensPoeJogo.ligar(vivas); // a engine local entrega peças do PoE a quem está online (só com ITENS_POE=1)
 Amigos.ligar(vivas);
 Chat.ligar(vivas);
 Anuncios.ligar(vivas); // o drop Épico+ para o servidor inteiro
@@ -288,6 +293,8 @@ function characterParaCliente(personagem, estado) {
     ...CHARACTER_TEMPLATE,
     name: personagem.nome,
     vocation: estado.vocation,
+    // A classe do PoE (só com ITENS_POE=1): a escolhida, ou a padrão da vocação enquanto não escolheu (`escolhida: false`).
+    ...(ClassesPoe.classeDe(estado) ? { classePoe: { slug: ClassesPoe.classeDe(estado).slug, nome: ClassesPoe.classeDe(estado).nome, escolhida: !!estado.classePoe } } : {}),
     sex: estado.sex,
     level: estado.level,
     exp: estado.xp,
@@ -907,7 +914,9 @@ export class Sessao {
   ola() {
     // A versão do jogo já na conexão: depois de um deploy, a aba aberta se reconecta
     // e fica sabendo aqui, antes de escolher personagem (ver `versao-do-cliente.mjs`).
-    this.enviar({ t: 'hello', catalog: CATALOGO, versao: VERSAO_DO_CLIENTE });
+    // As 7 classes do PoE vão junto só com o sistema ligado (a tela de criação mostra a escolha).
+    const classesPoe = ClassesPoe.paraCliente();
+    this.enviar({ t: 'hello', catalog: CATALOGO, versao: VERSAO_DO_CLIENTE, ...(classesPoe ? { classesPoe } : {}) });
   }
 
   // -------------------------------------------------------------- receber
@@ -1066,6 +1075,19 @@ export class Sessao {
         return this.aplicar(Inventario.limparMochila(this.estado, m));
       case 'equip':
         return this.aplicarComSkills(Inventario.equipar(this.estado, m));
+      case 'classePoe': {
+        // Escolher a classe do PoE (uma vez; só com ITENS_POE=1): os atributos mudam, então vida/mana máximas e a ficha também.
+        const r = ClassesPoe.escolher(this.estado, m.classe);
+        if (r.ok) {
+          // O início na árvore do PoE é o da classe: a alocação recomeça do nó inicial dela, com todos os pontos de volta.
+          if (Passivas.arvore().id === 'poe' && this.estado.passivas) this.estado.passivas.alocados.splice(0);
+          Passivas.garantir(this.estado);
+          Ficha.invalidar(this.estado);
+          Afixos.sincronizarMaximos(this.estado);
+          Ficha.invalidar(this.estado);
+        }
+        return this.aplicarComSkills(r);
+      }
       case 'unequip':
         return this.aplicarComSkills(Inventario.desequipar(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
@@ -1609,7 +1631,7 @@ export class Sessao {
 
   // ------------------------------------------------------------ personagem
 
-  async criarPersonagem({ name, vocation, sex, classe }) {
+  async criarPersonagem({ name, vocation, sex, classe, classePoe }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
     const problema = R.problemaNoNomeDePersonagem(name);
     if (problema) return this.erroDeAuth(problema);
@@ -1629,7 +1651,11 @@ export class Sessao {
       vocacao: vocation,
       classe: cls.id,
       sexo: sex,
-      estadoInicial: estadoInicialPersonagem(vocation, sex, cls.id),
+      estadoInicial: {
+        ...estadoInicialPersonagem(vocation, sex, cls.id),
+        // A classe do PoE escolhida na criação (só com ITENS_POE=1; sem ela, a padrão da vocação até escolher).
+        ...(ClassesPoe.paraCliente() && ClassesPoe.valida(classePoe) ? { classePoe } : {}),
+      },
     });
     // O cliente trata `account` como "a lista mudou, redesenhe" também fora do
     // login — ver `auth.mjs`'s `handle`.
@@ -1721,6 +1747,14 @@ export class Sessao {
     const passivas = Passivas.garantir(estado);
     if (passivas.migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
     else if (passivas.arvoreMudou) estado.avisoDaHunt = 'A árvore de passivas ganhou caminhos de atributo (STR/DEX/INT) entre os clusters. Os nós que perderam o caminho saíram e os pontos voltaram — você tem um respec completo grátis para remontar.';
+    // A escala da vida/mana mudou (o sistema de itens do PoE foi ligado ou desligado neste servidor — `R.statsBase`): refaz os máximos.
+    const escala = ItensPoeCatalogo.ligado() ? 'poe' : 'draevor';
+    if ((estado.escalaDeVida ?? 'draevor') !== escala) {
+      refazerMaximosDoPersonagem(estado, estado.level ?? 1);
+      estado.hp = Math.min(estado.hp ?? estado.maxHp, estado.maxHp);
+      estado.mana = Math.min(estado.mana ?? estado.maxMana, estado.maxMana);
+      estado.escalaDeVida = escala;
+    }
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
     Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.

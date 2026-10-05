@@ -1,0 +1,358 @@
+{
+  "id": "poe-ato-10",
+  "nome": "Ato 10",
+  "descricao": "Ato 10 da campanha do Path of Exile.",
+  "ordem": 10,
+  "anterior": "poe-ato-9",
+  "estado": "publicado",
+  "inicio": "poe-a10-the-cathedral-rooftop",
+  "fases": [
+    {
+      "id": "poe-a10-the-cathedral-rooftop",
+      "nome": "Telhado da Catedral",
+      "descricao": "De cima, o verdadeiro escopo da carnificina é claramente espiado.",
+      "ordem": 1,
+      "huntId": "poe-a10-the-cathedral-rooftop",
+      "nivel": {
+        "facil": 64,
+        "medio": 64,
+        "dificil": 64
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 198,
+        "y": 45
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Passagem Segura",
+          "texto": "Fale com Bannon"
+        }
+      ],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-ravaged-square",
+      "nome": "Praça Devastada",
+      "descricao": "Um lugar próspero para comércio, mal reconhecido no meio de incontáveis mortes.",
+      "ordem": 2,
+      "huntId": "poe-a10-the-ravaged-square",
+      "nivel": {
+        "facil": 64,
+        "medio": 64,
+        "dificil": 64
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 287,
+        "y": 149
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-torched-courts",
+      "nome": "Cortes Incendiadas",
+      "descricao": "Sacerdotes devotos já aplicaram cruelmente a justiça nestes salões, agora ambos ardem em uma agonia silenciosa.",
+      "ordem": 3,
+      "huntId": "poe-a10-the-torched-courts",
+      "nivel": {
+        "facil": 65,
+        "medio": 65,
+        "dificil": 65
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 710,
+        "y": 384
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-desecrated-chambers",
+      "nome": "Câmaras Desecradas",
+      "descricao": "Homens loucos trabalham arduamente sob céus esfumaçados para corromper um santuário sagrado.",
+      "ordem": 4,
+      "huntId": "poe-a10-the-desecrated-chambers",
+      "nivel": {
+        "facil": 65,
+        "medio": 65,
+        "dificil": 65
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 629,
+        "y": 455
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Morte e Ressurreição",
+          "texto": "Pegue o Cajado da Pureza"
+        }
+      ],
+      "conclusao": {
+        "tipo": "item-de-missao",
+        "item": 7600016,
+        "monstro": "Avarius,_Reassembled",
+        "nome": "Avarius, Reconstruído"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-canals",
+      "nome": "Os Canais",
+      "descricao": "Uma ruptura feita pelo homem, na qual tanto sangue como água escorrem.",
+      "ordem": 5,
+      "huntId": "poe-a10-the-canals",
+      "nivel": {
+        "facil": 66,
+        "medio": 66,
+        "dificil": 66
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 602,
+        "y": 146
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-feeding-trough",
+      "nome": "O Comedouro",
+      "descricao": "Gritos de tormento e choros patéticos enquanto o banquete ímpio de carne continua.",
+      "ordem": 6,
+      "huntId": "poe-a10-the-feeding-trough",
+      "nivel": {
+        "facil": 67,
+        "medio": 67,
+        "dificil": 67
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 750,
+        "y": 138
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-control-blocks",
+      "nome": "Central de Comando",
+      "descricao": "Sádicos e degoladores quebram tanto ossos quanto cérebro.",
+      "ordem": 7,
+      "huntId": "poe-a10-the-control-blocks",
+      "nivel": {
+        "facil": 66,
+        "medio": 66,
+        "dificil": 66
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 50,
+        "y": 286
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [
+        {
+          "missao": "Vingança de Vilenta",
+          "texto": "Mate Vilenta"
+        }
+      ],
+      "conclusao": {
+        "tipo": "matar-chefe",
+        "monstro": "Vilenta",
+        "nome": "Vilenta"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-reliquary",
+      "nome": "O Relicário",
+      "descricao": "Prateleiras vazias e quebradas perduram, saqueadas e esquecidas como resultado desta guerra horrível.",
+      "ordem": 8,
+      "huntId": "poe-a10-the-reliquary",
+      "nivel": {
+        "facil": 67,
+        "medio": 67,
+        "dificil": 67
+      },
+      "obrigatoria": false,
+      "posicao": {
+        "x": 179,
+        "y": 360
+      },
+      "tipo": "hunt-normal",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    },
+    {
+      "id": "poe-a10-the-ossuary",
+      "nome": "O Ossuário",
+      "descricao": "Os mortos agradecem por terem sido poupados desta última selvageria.",
+      "ordem": 9,
+      "huntId": "poe-a10-the-ossuary",
+      "nivel": {
+        "facil": 67,
+        "medio": 67,
+        "dificil": 67
+      },
+      "obrigatoria": true,
+      "posicao": {
+        "x": 665,
+        "y": 67
+      },
+      "tipo": "fase-final-do-ato",
+      "requisitos": {
+        "exige": []
+      },
+      "objetivos": [],
+      "conclusao": {
+        "tipo": "limpar-hunt"
+      },
+      "recompensas": null,
+      "eventos": [],
+      "sobrescritas": {}
+    }
+  ],
+  "conexoes": [
+    {
+      "de": "poe-a10-the-cathedral-rooftop",
+      "para": "poe-a10-the-ravaged-square",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-cathedral-rooftop",
+      "para": "poe-a10-the-feeding-trough",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-ravaged-square",
+      "para": "poe-a10-the-torched-courts",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-ravaged-square",
+      "para": "poe-a10-the-ossuary",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-ravaged-square",
+      "para": "poe-a10-the-reliquary",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-ravaged-square",
+      "para": "poe-a10-the-canals",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-ravaged-square",
+      "para": "poe-a10-the-control-blocks",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-torched-courts",
+      "para": "poe-a10-the-desecrated-chambers",
+      "requisito": null,
+      "rotulo": ""
+    },
+    {
+      "de": "poe-a10-the-feeding-trough",
+      "para": "poe-a10-the-canals",
+      "requisito": null,
+      "rotulo": ""
+    }
+  ],
+  "bossFinal": {
+    "bossId": "poe-chefe-ato-10",
+    "faseAnterior": "poe-a10-the-ossuary",
+    "nivel": {
+      "facil": 67,
+      "medio": 67,
+      "dificil": 67
+    },
+    "arena": null,
+    "recompensas": null
+  },
+  "imagem": null,
+  "nivelRecomendado": 64,
+  "seguinte": null,
+  "requisitos": {
+    "exige": []
+  },
+  "progressao": {},
+  "versao": 2
+}

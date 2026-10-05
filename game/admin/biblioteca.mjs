@@ -17,6 +17,9 @@ import { CONFIG } from '../systems/encontros/config.mjs';
 import * as Catalogo from '../systems/bosses-unicos/catalogo.mjs';
 import { TEMPO_NA_SALA_MS } from '../systems/bosses.mjs';
 import { exigidasDaFase } from '../systems/campanha-conteudo.mjs';
+import * as CatalogoPoe from '../systems/itens-poe/catalogo.mjs';
+import { acharBase } from '../systems/itens-poe/gerar.mjs';
+import * as TraduzirPoe from '../systems/itens-poe/traduzir.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 const lerJson = (arq) => JSON.parse(readFileSync(join(RAIZ, arq), 'utf8'));
@@ -98,8 +101,13 @@ function linhasDeMapas() {
     return { id, nome: id, categoria: 'mapas', tipo: 'mapa', nivel: null, desenho: null, raridade: null, usos: usosDe('mapas', id).length, alertas: 0 };
   });
 }
+// Com o sistema de itens do PoE ligado (ITENS_POE=1, só no servidor local), a Biblioteca de itens mostra SÓ as bases do PoE (pedido do
+// dono, 05/10): os itens do Tibia ficam de fora da lista; o desenho é o ícone da coleção e o tipo é a classe do PoE.
+const humanoPoe = (id) => String(id).replace(/_/g, ' ');
+const desenhoPoe = (icone) => (icone ? { tipo: 'imagem', url: `/api/mapas/_engine/itens-poe/ref/${icone.split('/').map(encodeURIComponent).join('/')}` } : null);
 function linhasDeItens() {
   // `nivel` do item = o nível mínimo para usar (`minLevel`); `sockets` = o máximo do slot (o que cada peça abre é sorteado no drop).
+  if (CatalogoPoe.ligado()) return Object.values(ITEM_CATALOG).filter((i) => i.poe).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: humanoPoe(i.poe.classe), nivel: ou(i.minLevel), desenho: desenhoPoe(i.poe.icone), raridade: null, usos: 0, alertas: 0, slot: ou(i.slot), sockets: null }));
   return Object.values(ITEM_CATALOG).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: i.type ?? null, nivel: ou(i.minLevel), desenho: desenhoDoItem(i), raridade: ou(i.rarity), usos: usosDe('itens', String(i.id)).length, alertas: 0, slot: ou(i.slot), sockets: maximoDeSockets(i) || null }));
 }
 // Os outfits e as montarias de verdade (`mounts-real.json`, o que a aba Aparência e a Store usam). `vocation` do
@@ -349,9 +357,47 @@ function regrasDoItem(meta) {
   };
 }
 
+/**
+ * Cada atributo de BASE do PoE e o que ele vira no Draevor (`itens-poe/jogo.mjs`): `aplicado` = soma na ficha / no combate; `fora` = o
+ * Draevor ainda não usa (a peça mostra, mas não muda nada).
+ */
+const BASE_POE_NO_JOGO = {
+  armadura: ['Armadura da peça (reduz o dano físico recebido)', 'aplicado'],
+  evasao: ['Evasão da peça (chance de evitar ataques)', 'aplicado'],
+  escudo_energia: ['Escudo de Energia da peça', 'aplicado'],
+  dano_fisico: ['golpe da arma (cada ataque sorteia na faixa)', 'aplicado'],
+  chance_critico_pct: ['chance de crítico base da arma', 'aplicado'],
+  chance_bloqueio_pct: ['chance de bloqueio (escudo)', 'aplicado'],
+  velocidade_movimento_pct: ['velocidade de movimento', 'aplicado'],
+  ataques_por_segundo: ['o ritmo de ataque continua o do Draevor', 'fora'],
+  alcance_metros: ['o alcance vem do tipo de arma do Draevor', 'fora'],
+  dps_fisico_base: ['só informativo (a conta do PoE)', 'fora'],
+};
+function detalheDeItemPoe(i) {
+  const cat = CatalogoPoe.catalogo();
+  const achado = cat ? acharBase(cat, i.poe.base) : null;
+  if (!achado) return null;
+  const { classe: c, base: b } = achado;
+  return {
+    id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: humanoPoe(c.id), raridade: null, slot: ou(i.slot), equipavel: true,
+    requisitos: { nivelMinimo: ou(i.minLevel) },
+    poe: {
+      base: b.id, classe: c.id, grupo: c.grupo, nome: b.nome, slug: b.slug, icone: b.icone ?? null, pool: b.pool ?? null,
+      requisitos: b.requisitos ?? {},
+      atributos: Object.entries(b.atributos ?? {}).map(([k, v]) => ({ chave: k, valor: v, noJogo: BASE_POE_NO_JOGO[k]?.[0] ?? null, estado: BASE_POE_NO_JOGO[k]?.[1] ?? 'fora' })),
+      implicitos: (b.implicitos ?? []).map((m) => ({ texto: m.texto, traducao: TraduzirPoe.traduzirMod({ modelo: m.modelo, valores: (m.faixas ?? []).map((f) => f[1]) }) })),
+      unicos: c.unicos.filter((u) => u.base === b.nome).map((u) => ({ slug: u.slug, nome: u.nome, requisitos: u.requisitos, icone: u.icone ?? null, modificadores: u.modificadores.map((m) => m.texto) })),
+      noJogo: { slot: i.slot, tipo: i.type, habilidade: ou(i.skill), duasMaos: !!i.twoHanded, critico: i.critChance ? i.critChance / 100 : null },
+      regras: CatalogoPoe.REGRAS,
+    },
+    meta: i,
+  };
+}
+
 function detalheDeItem(id) {
   const i = ITEM_CATALOG[id];
   if (!i) return null;
+  if (i.poe && CatalogoPoe.ligado()) return detalheDeItemPoe(i);
   const equipavel = !!i.slot && !i.stackable;
   return {
     id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: ou(i.type), raridade: ou(i.rarity), slot: ou(i.slot), equipavel,

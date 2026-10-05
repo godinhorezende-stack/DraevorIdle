@@ -33,6 +33,8 @@ import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import * as Ficha from './ficha.mjs';
+import { temHabilidade } from './passivas/arvore.mjs';
+import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
 import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Proficiencia from './proficiencia.mjs';
@@ -42,6 +44,7 @@ import * as Secundarios from './skills/golpes-secundarios.mjs';
 import * as Estados from './skills/estados.mjs';
 import * as Poder from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
+import * as CargasPoe from './itens-poe/cargas.mjs';
 
 export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
 export const SLOTS = ACTION_CATALOG.slots;
@@ -93,11 +96,23 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const doNivel = danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
   const identidade = ehAtaque ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
   const fatorDaFicha = ehAtaque ? (((fichaBase.damage.min + fichaBase.damage.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
-  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha));
-  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha));
+  // Sistema de itens do PoE (Fase 1; sem peças do PoE nada disto muda):
+  //  - um ATAQUE do PoE = golpe físico de perto ou de longe (tags physical + melee/ranged, como o Brutal Strike): o dano somado a
+  //    ataques de TODOS os elementos ("Adiciona X a Y de Dano de Fogo a Ataques") entra na faixa, como no golpe da arma;
+  //  - uma MAGIA (o resto das skills com tag spell): o dano somado a magias do mesmo elemento dela entra na faixa antes dos aumentos,
+  //    e a chance de crítico é a de magia (`critChanceMagia`). Dano somado de outro elemento não entra (a magia tem um elemento só).
+  const tagsDaSkill = Tags.tagsDaAcao(entry);
+  const ehAtaqueDoPoe = !entry.heals && tagsDaSkill.includes('physical') && (tagsDaSkill.includes('melee') || tagsDaSkill.includes('ranged'));
+  const ehMagia = !entry.heals && !ehAtaqueDoPoe && tagsDaSkill.includes('spell');
+  const [somadoMin, somadoMax] = ehAtaqueDoPoe
+    ? Object.values(fichaBase.danoSomado ?? {}).reduce(([a, b], [x, y]) => [a + x, b + y], [0, 0])
+    : ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
+  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin));
+  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha + somadoMax));
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
+  if (ehMagia && fichaBase.critChanceMagia != null && fichaBase.critChanceMagia !== fichaBase.critChance) ficha = { ...ficha, critChance: fichaBase.critChanceMagia };
   // Runa: + crítico de runa da proficiência. Magia: + "% da perícia como dano".
   const prof = fichaBase.proficiencia;
   if (entry.kind === 'rune' && (prof.critChanceRunas || prof.critDanoRunas)) ficha = { ...ficha, critChance: ficha.critChance + prof.critChanceRunas, critMultiplier: ficha.critMultiplier + prof.critDanoRunas };
@@ -115,7 +130,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const critDanoDoReforco = Reforcos.bonus(hunt, 'critDano', tags);
   if (critDoReforco || critDanoDoReforco) ficha = { ...ficha, critChance: ficha.critChance + critDoReforco / 100, critMultiplier: ficha.critMultiplier + critDanoDoReforco / 100 };
   const treino = doTreino * (1 + Reforcos.bonus(hunt, 'treino', tags) / 100) + (defDaGema ? Reforcos.treinoDeOutraPericia(estado, hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);
-  const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100;
+  // Sintonia da Dor (keystone do PoE): 30% mais dano mágico com a vida baixa (50% ou menos).
+  const sintonia = ehMagia && (estado.hp ?? 0) <= 0.5 * (estado.maxHp ?? 0) && temHabilidade(estado, 'sintoniaDaDor') ? 1.3 : 1;
+  const mult = (1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100) * sintonia;
   return { min, max, daPericia, mult, fatorDaGema, ficha };
 }
 
@@ -790,7 +807,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
   const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round(custoDoCatalogo(entry) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
-  const pagaComVida = !!efeitoDaGema?.custoEmVida && custoDeMana > 0;
+  // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
+  const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea')) && custoDeMana > 0;
   if (pagaComVida && (estado.hp ?? 0) <= custoDeMana) return { ok: false, erro: 'Sem vida para pagar.', motivo: 'VIDA' };
   if (!pagaComVida && custoDeMana && (estado.mana ?? 0) < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
   // "Mana mínima (%)" do slot: abaixo dela a skill espera (guarda a mana para a cura).
@@ -955,6 +973,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   else if (custoDeMana) {
     estado.mana = Math.max(0, (estado.mana ?? 0) - custoDeMana);
     Treino.gastarMana(estado, custoDeMana);
+    // O Ocultista (cargas do PoE): Carga de Poder a cada N de mana gasta.
+    const regrasDasCargas = Ficha.combate(estado).cargas;
+    if (regrasDasCargas && CargasPoe.aoGastarMana(estado, regrasDasCargas, custoDeMana).length) Ficha.invalidar(estado);
   }
 
   const eventos = [];
@@ -1070,7 +1091,19 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
       eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor, ...(fonte ? { fonte } : {}) });
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
-      for (const st of Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto)) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      const postosDaGema = Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto);
+      for (const st of postosDaGema) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
+      // As cargas do PoE no acerto da skill (crítico, não crítico, atordoou, Inimigo Único).
+      if (CargasPoe.reageAoAcerto(ficha.cargas)) {
+        const corpoACorpo = Tags.tagsDaAcao(entry).includes('melee');
+        if (CargasPoe.aoAcertar(estado, ficha.cargas, bicho, { crit, corpoACorpo, atordoou: postosDaGema.includes('atordoado') }).length) Ficha.invalidar(estado);
+      }
+      if (ficha.afeccoes) {
+        const tagsDoAcerto = Tags.tagsDaAcao(entry);
+        const ataque = tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
+        for (const st of AfeccoesPoe.aoAcertar(bicho, [{ elemento: tipo, dano: bruto }], { afeccoes: ficha.afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+      }
     };
     /*
      * ---- O ATAQUE (o golpe principal + os secundários das supports) e o ATAQUE DUPLO ----

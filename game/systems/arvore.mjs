@@ -352,6 +352,14 @@ export function danoRecebido(estado, final, eventos, pos, quem) {
   let v = final * (1 - Math.min(0.9, b.absorb ?? 0)) * (1 + (b.danoRecebido ?? 0));
   if ((estado.hp ?? 0) < 0.3 * (estado.maxHp ?? 1) && tem(estado, 'ultimaMuralha')) v *= 0.85;
   v = Math.round(v);
+  // Mente Sobre Matéria (keystone do PoE): 40% do dano sai da mana antes da vida (até a mana que houver).
+  if (v > 0 && tem(estado, 'menteSobreMateria')) {
+    const daMana = Math.min(Math.floor(estado.mana ?? 0), Math.round(v * 0.4));
+    if (daMana > 0) {
+      estado.mana -= daMana;
+      v -= daMana;
+    }
+  }
   const hunt = estado.hunt;
   const agora = relogio(estado);
   // Fonte viva: o escudo que a cura deixou segura primeiro.

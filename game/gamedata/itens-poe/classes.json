@@ -1,0 +1,199 @@
+{
+  "_nota": "As 7 CLASSES do PoE (decisão do dono, 05/10: criar as 7 classes; a classe fica POR CIMA da vocação do Draevor — a vocação segue com skills, outfit e kit; a classe dá os atributos iniciais, o ponto de partida na árvore do PoE e as ascendências). Atributos como no PoE: só os iniciais da classe, SEM ganho por level (decisão do dono) — o resto vem da árvore e do equipamento. Só com ITENS_POE=1. Fonte: coleção do Drive (poe-arvore/Classes/classes.json). padraoPorVocacao: a classe de quem ainda não escolheu.",
+  "ordem": [
+    "Ranger",
+    "Shadow",
+    "Witch",
+    "Marauder",
+    "Duelist",
+    "Scion",
+    "Templar"
+  ],
+  "classes": {
+    "Ranger": {
+      "slug": "Ranger",
+      "nome": "Caçadora",
+      "nomeEn": "Ranger",
+      "atributos": {
+        "str": 14,
+        "dex": 32,
+        "int": 14
+      },
+      "noInicial": 50459,
+      "ascendencias": [
+        {
+          "slug": "Warden",
+          "nome": "Protetora"
+        },
+        {
+          "slug": "Deadeye",
+          "nome": "Atiradora"
+        },
+        {
+          "slug": "Pathfinder",
+          "nome": "Desbravadora"
+        }
+      ]
+    },
+    "Shadow": {
+      "slug": "Shadow",
+      "nome": "Sombra",
+      "nomeEn": "Shadow",
+      "atributos": {
+        "str": 14,
+        "dex": 23,
+        "int": 23
+      },
+      "noInicial": 44683,
+      "noInicialInferido": true,
+      "ascendencias": [
+        {
+          "slug": "Assassin",
+          "nome": "Assassino"
+        },
+        {
+          "slug": "Trickster",
+          "nome": "Trapaceiro"
+        },
+        {
+          "slug": "Saboteur",
+          "nome": "Sabotador"
+        }
+      ]
+    },
+    "Witch": {
+      "slug": "Witch",
+      "nome": "Bruxa",
+      "nomeEn": "Witch",
+      "atributos": {
+        "str": 14,
+        "dex": 14,
+        "int": 32
+      },
+      "noInicial": 54447,
+      "ascendencias": [
+        {
+          "slug": "Occultist",
+          "nome": "Ocultista"
+        },
+        {
+          "slug": "Elementalist",
+          "nome": "Elementalista"
+        },
+        {
+          "slug": "Necromancer",
+          "nome": "Necromante"
+        }
+      ]
+    },
+    "Marauder": {
+      "slug": "Marauder",
+      "nome": "Marauder",
+      "nomeEn": "Marauder",
+      "atributos": {
+        "str": 32,
+        "dex": 14,
+        "int": 14
+      },
+      "noInicial": 47175,
+      "ascendencias": [
+        {
+          "slug": "Juggernaut",
+          "nome": "Destruidor"
+        },
+        {
+          "slug": "Berserker",
+          "nome": "Berserker"
+        },
+        {
+          "slug": "Chieftain",
+          "nome": "Chefe Guerreiro"
+        }
+      ]
+    },
+    "Duelist": {
+      "slug": "Duelist",
+      "nome": "Duelista",
+      "nomeEn": "Duelist",
+      "atributos": {
+        "str": 23,
+        "dex": 23,
+        "int": 14
+      },
+      "noInicial": 50986,
+      "ascendencias": [
+        {
+          "slug": "Slayer",
+          "nome": "Executor"
+        },
+        {
+          "slug": "Gladiator",
+          "nome": "Gladiador"
+        },
+        {
+          "slug": "Champion",
+          "nome": "Campeão"
+        }
+      ]
+    },
+    "Scion": {
+      "slug": "Scion",
+      "nome": "Herdeira",
+      "nomeEn": "Scion",
+      "atributos": {
+        "str": 20,
+        "dex": 20,
+        "int": 20
+      },
+      "noInicial": 58833,
+      "noInicialInferido": true,
+      "ascendencias": [
+        {
+          "slug": "Ascendant",
+          "nome": "Ascendente"
+        },
+        {
+          "slug": "Reliquarian",
+          "nome": "Caçadora de Relíquias"
+        },
+        {
+          "slug": "Luminary",
+          "nome": "Notável"
+        }
+      ]
+    },
+    "Templar": {
+      "slug": "Templar",
+      "nome": "Templário",
+      "nomeEn": "Templar",
+      "atributos": {
+        "str": 23,
+        "dex": 14,
+        "int": 23
+      },
+      "noInicial": 61525,
+      "ascendencias": [
+        {
+          "slug": "Inquisitor",
+          "nome": "Inquisidor"
+        },
+        {
+          "slug": "Hierophant",
+          "nome": "Hierofante"
+        },
+        {
+          "slug": "Guardian",
+          "nome": "Guardião"
+        }
+      ]
+    }
+  },
+  "padraoPorVocacao": {
+    "knight": "Marauder",
+    "paladin": "Ranger",
+    "sorcerer": "Witch",
+    "druid": "Templar",
+    "monk": "Duelist",
+    "none": "Scion"
+  }
+}

@@ -1,5 +1,6 @@
 // As rotas HTTP do editor de conteúdo (`/api/mapas/_conteudo/…`). O prefixo é o do editor de mapas de propósito: o nginx
 // de produção já tranca `/api/mapas` ao público (só túnel SSH), então nenhuma rota de ESCRITA nova fica exposta.
+import { createReadStream } from 'node:fs';
 import * as Conteudo from './conteudo.mjs';
 import * as Biblioteca from './biblioteca.mjs';
 import * as Atos from './atos.mjs';
@@ -182,6 +183,13 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota.startsWith('atos-editor/')) {
       const ato = Atos.obter(rota.slice('atos-editor/'.length));
       return ato ? json(res, 200, { ato, ...Atos.validar(ato) }) : json(res, 404, { ok: false, erros: ['Ato não encontrado.'] }), true;
+    }
+    if (rota.startsWith('atos-imagem/')) {
+      const img = Atos.arquivoDaImagem(decodeURIComponent(rota.slice('atos-imagem/'.length)));
+      if (!img) return json(res, 404, { ok: false }), true;
+      res.writeHead(200, { 'content-type': img.tipo, 'cache-control': 'no-cache' });
+      createReadStream(img.caminho).pipe(res);
+      return true;
     }
     if (rota === 'opcoes') return json(res, 200, Conteudo.opcoes()), true;
     if (rota === 'fases') return json(res, 200, { fases: Conteudo.listarFases() }), true;
@@ -368,6 +376,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'campanha') { const r = CampanhaEditor.salvar(dados ?? {}); return json(res, status(r), r), true; }
     if (rota === 'mapas/validar') return json(res, 200, Mapas.validarSpawns(dados ?? {})), true;
     if (rota === 'atos-editor/validar') return json(res, 200, Atos.validar(dados ?? {})), true;
+    if (rota === 'atos-editor/imagem') return json(res, 200, Atos.salvarImagem(dados?.ato, dados?.dados)), true;
     if (rota === 'atos-editor') {
       const r = dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {});
       return json(res, status(r), r), true;

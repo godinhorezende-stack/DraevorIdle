@@ -12,6 +12,8 @@ import * as Setores from './setores.mjs';
 import { partesDeXp, dividirOuro, proximoInicioDoResto, sortearDono, novoIdDeDrop, registrarSorteio } from '../party-recompensas.mjs';
 import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
+import { temHabilidade } from '../passivas/arvore.mjs';
+import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Equipamento from '../itens/equipamento.mjs';
@@ -25,6 +27,7 @@ import { pecasGarantidas } from '../itens/equipamento-do-boss.mjs';
 import { gerarItem } from '../itens/gerar.mjs';
 import * as EfeitosDeItem from '../itens/efeitos.mjs';
 import * as Campanha from '../campanha.mjs';
+import * as DropsPorMonstro from '../itens-poe/drops-por-monstro.mjs';
 import * as RecompensasDeEncontro from '../encontros/recompensas.mjs';
 import * as EventosDeEncontro from '../encontros/eventos.mjs';
 import * as Prey from '../prey.mjs';
@@ -37,8 +40,18 @@ import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as Proficiencia from '../proficiencia.mjs';
+import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
+import * as Pinaculos from '../itens-poe/pinaculos.mjs';
+import { tipoDoBicho } from './escalonamento.mjs';
+import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
 import * as Tarefas from '../tarefas.mjs';
 import { BESTIARY, RESPAWN_MS } from './monstros.mjs';
+
+/**
+ * O ITEM LEVEL do drop do PoE = o nível do monstro (regra do dono, 05/10: bicho nível 11 não solta mod de iLvl 23). O monstro do PoE tem
+ * o nível dele no bestiário; os outros, o da fase. Os níveis a mais da raridade do Draevor (`levelExtra`) não sobem o iLvl.
+ */
+export const nivelDoDropPoe = (hunt, alvo) => BESTIARY[alvo?.key]?.poe?.nivel ?? hunt?.escala?.nivel ?? AtributosDoPersonagem.levelDoBicho(hunt, { ...alvo, levelExtra: 0 });
 import { resistido, resistenciaEfetivaDe, resistenciaDe } from './resistencia.mjs';
 import { registrarGolpe } from '../combate/registro.mjs';
 import * as Limites from '../combate/limites.mjs';
@@ -53,6 +66,7 @@ import * as Defesa from '../personagem/defesa.mjs';
 import * as Anuncios from '../anuncios.mjs';
 import * as Tags from '../skills/tags.mjs';
 import * as GemasDeSkill from '../skills/gemas.mjs';
+import * as CargasPoe from '../itens-poe/cargas.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -156,6 +170,9 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   if ((estado.mana ?? 0) < custo) return false; // sem mana: fica sem golpe este round, não cai pro físico (simplificação, ver comentário do arquivo)
   estado.mana -= custo;
   if (!segundo) Treino.gastarMana(estado, custo);
+  // O Ocultista (cargas do PoE): Carga de Poder a cada N de mana gasta.
+  const regrasDasCargas = Ficha.combate(estado).cargas;
+  if (regrasDasCargas && CargasPoe.aoGastarMana(estado, regrasDasCargas, custo).length) Ficha.invalidar(estado);
   // O dano do golpe da wand/rod é o "Dano" da ficha (Magic Attack + Magic Level + level), como o golpe físico; o elemento é o da arma.
   const { element } = arma.wand;
   const { min, max } = Ficha.combate(estado).damage;
@@ -184,6 +201,8 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: golpe, foe: true, crit, onslaught, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[element] ?? '#ff0000' });
   // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado... — `mobs/mecanicas.mjs`).
   Mecanicas.aoReceberDano(estado, hunt, personagem, alvo, golpe, element, eventos);
+  // As cargas do PoE no acerto da varinha (Poder no crítico, no crítico com varinhas, no acerto não crítico...).
+  if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit, varinha: true }).length) Ficha.invalidar(estado);
   if (!segundo) {
     Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
     Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem?.nome, hunt.pos);
@@ -236,7 +255,7 @@ export function descerDeLevel(estado) {
 /** Põe o personagem num level (a Arena x1 nivela os dois lados), com vida e mana máximas refeitas. */
 export const definirLevel = (estado, novo) => refazerMaximos(estado, novo);
 
-function refazerMaximos(estado, novo) {
+export function refazerMaximos(estado, novo) {
   const { maxHp, maxMana } = R.statsBase(estado.vocation, novo);
   estado.level = novo;
   estado.maxHp = maxHp + BuffPower.bonusDeVida(estado);
@@ -317,6 +336,14 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
       itens.push(peca);
       Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
+  }
+  // Sistema de itens do PoE (só com ITENS_POE=1): o drop do PoE do boss (raridade do monstro: Único) e, no chefe pináculo, 1 Único
+  // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
+  {
+    const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
+    itens.push(...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade));
+    const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
+    if (exclusivo) itens.push(exclusivo);
   }
   Bau.novaSacola(estado, alvo.name, itens);
   // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.
@@ -678,6 +705,13 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   Proficiencia.curar(estado, prof.vidaNaMorte, prof.manaNaMorte, eventos, personagem?.nome, hunt.pos);
   // Os efeitos de item que reagem a uma morte (Sede de Sangue, Colheita de Almas).
   EfeitosDeItem.aoMatar(estado, hunt, alvo, eventos, personagem?.nome);
+  // Vida/mana por abate das peças do PoE ("Ganha X de Vida por Inimigo Morto"); 0 sem elas.
+  {
+    const f = Ficha.combate(estado);
+    if ((f.vidaPorAbate || f.manaPorAbate) && estado.hp > 0) Proficiencia.curar(estado, f.vidaPorAbate, f.manaPorAbate, eventos, personagem?.nome, hunt.pos);
+    // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
+    if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
+  }
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
   if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo, personagem);
   if (sessao) sessao.byMonster[alvo.name] = (sessao.byMonster[alvo.name] ?? 0) + 1;
@@ -747,6 +781,32 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     darExtra(orbe);
   }
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
+  // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho × os modificadores de quantidade do loot
+  // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
+  const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt);
+  for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador)) {
+    if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
+    caiu.push({ id: daPoe.id, count: 1 });
+    conta('loot', daPoe.id, 1);
+  }
+  // A TABELA DE DROP do monstro (engine — Acts/Campanha do PoE; o item de missão só enquanto a fase dele está aberta) e o OBJETIVO da fase
+  // (matar o chefe, N monstros, pegar o item da missão — `Campanha.matou`, que conclui a fase e põe o aviso na tela).
+  {
+    const daBolsa = (id) => {
+      if (!Bolsa.porNaBolsa(estado, id, 1)) return false;
+      caiu.push({ id, count: 1 });
+      conta('loot', id, 1);
+      return true;
+    };
+    const c = hunt.campanha;
+    const missaoAberta = (id) => {
+      if (!c) return false;
+      const conc = Campanha.conclusaoDa(c.huntId);
+      return conc.tipo === 'item-de-missao' && Number(conc.item) === id && !Campanha.faseCompleta(estado, c.dificuldade, c.huntId);
+    };
+    const daTabela = DropsPorMonstro.soltar(alvo.key, { missaoAberta, existe: (id) => !!ITEM_CATALOG[id] }).filter((d) => daBolsa(d.id));
+    Campanha.matou(estado, hunt, alvo, { ganhou: daTabela, dar: daBolsa });
+  }
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
   tirarMonstro(hunt, alvo);
@@ -778,7 +838,10 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     if (!(Math.random() < chanceDeBloquear)) return false;
     eventos.push({ t: 'block', uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, color: '#999999' });
     Arvore.aoBloquear(estado, eventos, hunt.pos, personagem.nome); // Vento que volta (monk)
-    const glancing = Formulas.PARAMETROS.bloqueio.glancingPct;
+    // As cargas do PoE "ao Bloquear".
+    if (ficha.cargas && CargasPoe.aoBloquear(estado, ficha.cargas).length) Ficha.invalidar(estado);
+    // Golpes Reveladores (keystone do PoE): o golpe bloqueado ainda causa 65% do dano.
+    const glancing = temHabilidade(estado, 'golpesReveladores') ? 65 : Formulas.PARAMETROS.bloqueio.glancingPct;
     if (glancing > 0) {
       fatorDoBloqueio = glancing / 100;
       return false;
@@ -845,6 +908,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Absorção e "Dano recebido" da árvore, Última muralha, o escudo da Fonte
   // viva e o Não cai nunca (ver `Arvore.danoRecebido`).
   final = Arvore.danoRecebido(estado, final, eventos, hunt.pos, personagem.nome);
+  // As cargas do PoE: "acertado recentemente" e a chance de Tolerância quando acertado.
+  if (ficha.cargas && CargasPoe.aoSerAcertado(estado, ficha.cargas).length) Ficha.invalidar(estado);
   registrarGolpe(() => ({ origem: 'mob', atacante: bicho.name, alvo: personagem.nome, tipo: 'physical', danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: Math.min(100, ficha.protection.physical ?? 0), danoAposResistencia: protegido, armadura: armorDoPersonagem(estado), danoFinal: final, vidaRestante: Math.max(0, estado.hp - Math.max(0, final)) }));
   if (final > 0) {
     estado.hp = Math.max(0, estado.hp - final);
@@ -951,7 +1016,7 @@ export function golpesDosMonstros(estado, hunt, personagem) {
  */
 // As reais capturadas: death na soulcutter (#990000) e fire na sanguine blade do Zoros (#ff9900,
 // 2026-09-25 — a magia de fogo é #ff9000); os outros, a cor do elemento.
-export const COR_DO_GOLPE_ELEMENTAL = { death: '#990000', fire: '#ff9900' };
+export const COR_DO_GOLPE_ELEMENTAL = { death: '#990000', fire: '#ff9900', chaos: '#b44dff' };
 export const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 
 export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) {
@@ -986,6 +1051,24 @@ export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
  * "Dano físico" já multiplica o próprio golpe. Cada elemento leva no mínimo 1 de dano
  * e o efeito visual dele no bicho (`round`).
  */
+/**
+ * O dano elemental SOMADO das peças do PoE (sistema de itens do PoE, Fase 1): "Adiciona X a Y de Dano de Fogo/Gelo/Raio/Caos". Cada
+ * elemento sorteia na faixa, ganha o "Dano de <elemento> %" do personagem, passa pela resistência do bicho àquele elemento e usa a
+ * MESMA rolagem de crítico do golpe. Sem peças do PoE a ficha não tem `danoSomado` e nada acontece.
+ */
+export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
+  const saida = [];
+  for (const [tipo, [min, max]] of Object.entries(ficha.danoSomado ?? {})) {
+    if (!(max > 0) || resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100) continue;
+    const bruto = (min + Math.random() * (max - min)) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
+    const base = Math.max(1, Math.round(resistido(hunt, alvo, tipo, bruto, ficha)));
+    const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
+    alvo.hp -= dano;
+    saida.push({ tipo, v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+  }
+  return saida;
+}
+
 export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem) {
   const saida = [];
   for (const [tipo, pct] of Object.entries(ficha.danoDoElemento ?? {})) {
@@ -1075,13 +1158,15 @@ export function round(estado, personagem) {
         const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
         // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
         // físico, X% dele em cada elemento (decisão do dono), na mesma rolagem.
-        const dosAtributos = elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught });
+        const dosAtributos = [...elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught }), ...danoSomadoDoPoe(estado, hunt, alvo, ficha, { crit: critico, onslaught })];
         // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
         // O 2º golpe do ataque duplo não repete o que vem DEPOIS do golpe (árvore, roubo de vida e mana, vida/mana por acerto, charms).
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
         if (!segundo) Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
         // Vida/mana por acerto (proficiência).
         if (!segundo) Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem.nome, hunt.pos);
+        // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").
+        if (!segundo && (ficha.vidaPorAcerto || ficha.manaPorAcerto)) Proficiencia.curar(estado, ficha.vidaPorAcerto, ficha.manaPorAcerto, eventos, personagem.nome, hunt.pos);
         // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
         // alvo antes do dano, igual ao original — antes só a wand mandava `shot`.
         if (categoriaDaArma(arma) === 'distancia') {
@@ -1097,6 +1182,14 @@ export function round(estado, personagem) {
           // O efeito do elemento no bicho (chama, gelo, raio...) junto do número colorido.
           eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[d.tipo] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
           eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: d.v, foe: true, crit: critico, onslaught, alvo: alvo.name, color: d.cor });
+        }
+        // As afecções do PoE (incêndio, sangramento, veneno, congelar, eletrizar, resfriar — `itens-poe/afeccoes.mjs`, só com ITENS_POE=1):
+        // o golpe da arma é ATAQUE; cada parte (o físico e os elementos) entra com o tipo dela.
+        // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
+        if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit: critico, corpoACorpo: categoriaDaArma(arma) !== 'distancia' }).length) Ficha.invalidar(estado);
+        if (ficha.afeccoes) {
+          const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: d.v }))];
+          for (const st of AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
         }
         // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).
         if (!segundo) Charms.aoAcertar(estado, hunt, alvo, eventos);
