@@ -205,14 +205,20 @@ function cartaoDaConta(personagens) {
 
 function estadoInicialPersonagem(vocacao, sexo, classe = null) {
   const look = R.LOOK_DA_VOCACAO[vocacao][sexo];
-  const { maxHp, maxMana } = R.statsBase(vocacao, R.NIVEL_INICIAL);
+  // Com o PoE ligado (só local), o começo é o do PoE (decisão do dono, 05/10): nível 1 e só a arma da classe (a mochila fica: é onde os itens moram).
+  const poe = !!ClassesPoe.paraCliente();
+  const nivelInicial = poe ? 1 : R.NIVEL_INICIAL;
+  const { maxHp, maxMana } = R.statsBase(vocacao, nivelInicial);
+  const slugPoe = poe ? ClassesPoe.classeDe({ classe, vocation: vocacao })?.slug : null;
+  const armaPoe = poe ? ItensPoeJogo.armaInicial(slugPoe) : null;
+  const equipamento = Inventario.equipamentoInicial(vocacao);
   return {
     // As gemas iniciais da classe: entregues no primeiro login (`GemasDeSkill.darGemasIniciais`).
     gemasIniciais: true,
-    level: R.NIVEL_INICIAL,
+    level: nivelInicial,
     // A exp REAL de um level 8 (o personagem de teste capturado nasceu com
     // 4200). Com 0 a barra ficava em 0% e o level não subia nunca.
-    xp: R.expForLevel(R.NIVEL_INICIAL),
+    xp: R.expForLevel(nivelInicial),
     vocation: vocacao,
     // A CLASSE escolhida (Editor de Classes): o id dela; `vocation` é a vocação mecânica. Os atributos iniciais vêm da classe e são DERIVADOS a cada cálculo (nunca gravados aqui): entram uma vez só.
     ...(classe ? { classe } : {}),
@@ -229,8 +235,8 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
     coins: 0,
     stamina: 2520,
     maxStamina: 2520,
-    equipment: Inventario.equipamentoInicial(vocacao),
-    inventory: Inventario.inventarioInicial(vocacao),
+    equipment: armaPoe ? { backpack: equipamento.backpack ?? null, weapon: armaPoe } : equipamento,
+    inventory: armaPoe ? [] : Inventario.inventarioInicial(vocacao),
     pos: { ...R.POSICAO_INICIAL },
     // Barra de ações: vazia (22 slots), teclas 1-9/0/-/= de fábrica (o mesmo
     // molde de `CHARACTER_TEMPLATE.hotkeys`), sem arranjo salvo. Ver `acoes.mjs`.

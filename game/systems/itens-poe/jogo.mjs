@@ -219,3 +219,24 @@ export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random,
   }
   return pecas;
 }
+
+// ---------------------------------------------------------------- o começo do personagem (como no PoE)
+
+/** A arma com que cada classe do PoE começa (a base da coleção). Decisão do dono (05/10): nível 1 e só a arma da classe. */
+export const ARMA_INICIAL = {
+  Marauder: 'One_Hand_Maces/Driftwood_Club',
+  Ranger: 'Bows/Crude_Bow',
+  Witch: 'Wands/Driftwood_Wand',
+  Duelist: 'One_Hand_Swords/Rusted_Sword',
+  Templar: 'Sceptres/Driftwood_Sceptre',
+  Shadow: 'Daggers/Glass_Shank',
+  Scion: 'One_Hand_Swords/Rusted_Sword',
+};
+
+/** A peça da arma inicial da classe (Normal, Item Level 1), ou null (sistema desligado, base que não existe). */
+export function armaInicial(slugDaClasse, regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  const base = ARMA_INICIAL[slugDaClasse] ?? ARMA_INICIAL.Scion;
+  if (!cat) return null;
+  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng: () => 0.5 }), regras);
+}

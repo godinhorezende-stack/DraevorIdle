@@ -65,8 +65,9 @@ export const POSICAO_INICIAL = { x: 99, y: 65, z: 7, dir: 2 };
 
 /** Vida/mana máxima no level dado — fórmula real, não chute (ver import acima). */
 export function statsBase(vocacao, level = NIVEL_INICIAL) {
-  // A escala do PoE (sistema de itens do PoE, só com ITENS_POE=1 — decisão do dono, 05/10): vida 38 + 12/level, mana 34 + 6/level.
-  if (itensPoeLigado()) return { maxHp: 38 + 12 * Math.max(1, level), maxMana: 34 + 6 * Math.max(1, level) };
+  // A escala do PoE (sistema de itens do PoE, só com ITENS_POE=1 — decisão do dono, 05/10): no nível 1, vida 40 e mana 20 (+ a Força e a Inteligência
+  // da classe: a tabela do dono — Marauder ~56/34, Bruxa ~47/52, Herdeira ~50/40); por nível, +12 de vida e +6 de mana, como no PoE.
+  if (itensPoeLigado()) return { maxHp: 28 + 12 * Math.max(1, level), maxMana: 14 + 6 * Math.max(1, level) };
   return { maxHp: maxHealth(vocacao, level), maxMana: maxMana(vocacao, level) };
 }
 
