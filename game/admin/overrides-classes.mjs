@@ -26,7 +26,7 @@ export function obter(contagens = null) {
   return {
     original: { classes: Classes.ORIGINAL.classes, efeitos: Classes.ORIGINAL.efeitos }, override, revisao: revisaoDe(CAMINHOS.arquivo), versoes: arq().versoes(),
     classes: Object.values(ef.classes).map((c) => paraTela(c, ef.efeitos, contagens)), efeitos: ef.efeitos, definicaoDosEfeitos: Classes.EFEITOS, perfilSugerido: Classes.ORIGINAL.perfilSugerido,
-    validacao: Classes.validarConfiguracao(ef), vocacoes: Object.keys(Classes.ORIGINAL.classes), carga: { aplicado: Classes.resultadoDaCarga.aplicado, erros: Classes.resultadoDaCarga.erros },
+    validacao: Classes.validarConfiguracao(ef), vocacoes: Classes.VOCACOES, carga: { aplicado: Classes.resultadoDaCarga.aplicado, erros: Classes.resultadoDaCarga.erros },
     totalDePersonagens: contagens ? Object.values(contagens).reduce((a, b) => a + b, 0) : null,
   };
 }

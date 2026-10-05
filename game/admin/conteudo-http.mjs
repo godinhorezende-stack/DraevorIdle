@@ -193,7 +193,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     }
     if (rota === 'opcoes') return json(res, 200, Conteudo.opcoes()), true;
     if (rota === 'fases') return json(res, 200, { fases: Conteudo.listarFases() }), true;
-    if (rota === 'auditoria') return json(res, 200, Conteudo.auditar()), true;
+    // A auditoria do CONTEÚDO (Visão geral). `auditoria` sozinha é o registro de gravações (acima): o mesmo nome escondia esta rota e a Visão geral ficava em "Carregando…".
+    if (rota === 'auditoria-conteudo' || rota === 'auditoria') return json(res, 200, Conteudo.auditar()), true;
     if (rota === 'mapa') return json(res, 200, Conteudo.lerMapa()), true;
     if (rota === 'atos') return json(res, 200, { atos: Conteudo.lerAtos() }), true;
     if (rota === 'bosses') return json(res, 200, { bosses: Conteudo.listarBosses() }), true;

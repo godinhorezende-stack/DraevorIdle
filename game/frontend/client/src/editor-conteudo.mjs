@@ -22,10 +22,12 @@ import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstad
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
 import { criarTelaDeItensPoe } from './editor-itens-poe.mjs';
-import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe } from './editor-poe-telas.mjs';
+import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe, criarTelaDosMobsPoe } from './editor-poe-telas.mjs';
 import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar, pedirTexto } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
+// O estado do Mapa do mundo: declarado aqui em cima porque a página pode abrir direto em `#mapa` (o boot chama a tela antes do código dela).
+const MW = { dados: null, ato: 1, sel: null, previa: 0, original: '', validacao: null, arrastando: null };
 const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, navegacao: 0 };
 
 // `S.sujo` acende o aviso "Alterações não salvas" da barra superior (o editor de Atos tem o próprio estado: ver `atualizarSujo`).
@@ -343,15 +345,19 @@ const MOBS = {
   abrir: (cat, id) => (id === 'editar' ? MOBS_EDITOR.desenhar() : MOBS_BIBLIOTECA.abrir(cat, id)),
   focarBusca: () => (modoDosMobs === 'editor' ? MOBS_EDITOR : MOBS_BIBLIOTECA).focarBusca(),
 };
-const ITENS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('button', { type: 'button', class: 'primario', onclick: () => irPara('itens', null, ['editar', d.id]) }, 'Editar este item (override)'), categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. O catálogo vem do Canary e não é alterado: para editar, use "Editar itens" (camada de overrides).' });
+const ITENS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => (d.poe ? null : el('button', { type: 'button', class: 'primario', onclick: () => irPara('itens', null, ['editar', d.id]) }, 'Editar este item (override)')), categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. O catálogo vem do Canary e não é alterado: para editar, use "Editar itens" (camada de overrides).' });
 const ITENS_EDITOR = criarEditorDeItens({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('itens'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
 let modoDosItens = 'biblioteca';
+let POE_LIGADO = null;
 const ITENS = {
   async desenhar(resto = []) {
     if (resto[0] === 'editar') { modoDosItens = 'editor'; return ITENS_EDITOR.desenhar(resto[1] ?? null); }
     modoDosItens = 'biblioteca';
     await ITENS_BIBLIOTECA.desenhar(resto);
     const cab = document.querySelector('#raiz .eng-cabeca');
+    // Com o PoE ligado a aba é das bases do PoE (a ficha delas): o editor por override é dos itens do Draevor.
+    POE_LIGADO ??= await fetch('/api/mapas/_engine/itens-poe/estado').then((r) => r.json()).then((e) => !!e.ligado).catch(() => false);
+    if (POE_LIGADO) { cab?.querySelector('p')?.replaceChildren('As bases do Path of Exile (sistema de itens do PoE ligado): requisitos, atributos e o que viram no Draevor, mods por Item Level, peças de exemplo e únicos.'); return; }
     if (cab && !cab.querySelector('.itm-editar')) cab.append(el('div', { class: 'eng-acoes' }, el('button', { type: 'button', class: 'itm-editar primario', onclick: () => irPara('itens', null, ['editar']) }, 'Editar itens (overrides)')));
   },
   abrir: (cat, id) => (id === 'editar' ? ITENS_EDITOR.desenhar() : ITENS_BIBLIOTECA.abrir(cat, id)),
@@ -378,13 +384,13 @@ const TELAS_FIXAS = {
 const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias', sprites: 'sprites' };
 // A referência do PoE (Fase 1 do sistema de itens no modelo do PoE): só leitura, só com ITENS_POE=1 no servidor.
 const ITENS_POE = criarTelaDeItensPoe({ raiz: () => $('#raiz') });
-const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }) };
+const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }), 'poe-mobs': criarTelaDosMobsPoe({ raiz: () => $('#raiz') }) };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -429,16 +435,45 @@ document.getElementById('eng-menu-btn')?.addEventListener('click', () => abrirGa
 document.getElementById('eng-gaveta-fundo')?.addEventListener('click', () => abrirGaveta(false));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && gaveta.aberta) abrirGaveta(false); });
 function desenharAbas() {
-  MENU = abrirGrupoDe(MENU, GRUPOS, S.aba);
-  desenharMenu({ alvo: $('#abas'), grupos: GRUPOS, ativa: S.aba, irPara: (id) => irPara(id), estado: MENU, fecharGaveta: () => abrirGaveta(false), aoMudar: (novo) => { MENU = novo; gravarEstadoDoMenu(armazem, MENU); desenharAbas(); } });
+  const GRUPOS_EM_USO = MODO_POE ? GRUPOS_POE : GRUPOS;
+  MENU = abrirGrupoDe(MENU, GRUPOS_EM_USO, S.aba);
+  desenharMenu({ alvo: $('#abas'), grupos: GRUPOS_EM_USO, ativa: S.aba, irPara: (id) => irPara(id), estado: MENU, fecharGaveta: () => abrirGaveta(false), aoMudar: (novo) => { MENU = novo; gravarEstadoDoMenu(armazem, MENU); desenharAbas(); } });
   $('#eng-local').replaceChildren(NOME_DA_ABA[S.aba] ?? '');
 }
+// ---- O MENU com o sistema de itens do PoE ligado (só local): a Engine do jogo PoE, uma aba por objetivo (decisão do dono, 05/10: "cada aba para construir e editar
+// o jogo"). Campanha (Acts: ato → áreas/mapa → mobs → drops; o terreno dos mapas), Conteúdo (mobs, chefes, itens, classes e árvore do PoE) e Recursos. As telas
+// do Draevor que não valem no PoE (Fases e encontros, Bosses do Draevor, Progressão e loot, Item Power, Conjuntos...) saem do menu; os endereços antigos levam à
+// tela do PoE equivalente.
+let MODO_POE = false;
+const GRUPOS_POE = [
+  { id: 'poe-campanha-g', titulo: 'Campanha', itens: [
+    { id: 'atos', nome: 'Acts', icone: 'atos', dica: 'ato → áreas (mapa) → mobs → drops, e como cada área conclui' },
+    { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', dica: 'o terreno dos mapas do Draevor que as áreas usam' }] },
+  { id: 'poe-conteudo', titulo: 'Conteúdo', itens: [
+    { id: 'poe-mobs', nome: 'Mobs', icone: 'mobs', dica: 'os monstros do PoE: status por área, desenho e drops dos únicos' },
+    { id: 'poe-chefes', nome: 'Chefes', icone: 'coroa', dica: 'chefes de ato e pináculos: status, habilidades e arena' },
+    { id: 'itens', nome: 'Itens', icone: 'espada', dica: 'as bases do PoE: requisitos, mods, únicos e peças de exemplo' },
+    { id: 'classes', nome: 'Classes', icone: 'classes', dica: 'as 7 classes do PoE: atributos iniciais e bônus por ponto' },
+    { id: 'poe-arvore', nome: 'Árvore passiva', icone: 'fase', dica: 'nós, maestrias, keystones e ascendências' }] },
+  { id: 'poe-recursos', titulo: 'Recursos', itens: [
+    { id: 'validacao', nome: 'Validação e versão', icone: 'painelDeControle', dica: 'verificações, testes e se a versão pode ser aprovada' },
+    { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', dica: 'quadros, direções e animação das criaturas' },
+    { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },
+    { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' },
+    { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
+    { id: 'beta', nome: 'Testes e beta', icone: 'frasco', dica: 'interruptor do modo beta' },
+    { id: 'config', nome: 'Configurações', icone: 'engrenagem', dica: 'manutenção e Server Save' }] },
+];
+/** Com o PoE ligado, a tela do Draevor que não vale no PoE leva à equivalente. */
+const NO_POE = { geral: 'atos', mapa: 'atos', hunts: 'atos', fase: 'atos', 'poe-campanha': 'atos', mobs: 'poe-mobs', bosses: 'poe-chefes', 'itens-poe': 'itens', progressao: 'itens', itempower: 'itens', conjuntos: 'itens' };
+
 /** O endereço guarda a tela (`#fase/troll-cave`, `#bosses`...): recarregar ou mandar o link abre no mesmo lugar. */
 const lerEndereco = () => {
   const [aba, ...resto] = location.hash.slice(1).split('/').map((p) => decodeURIComponent(p));
   return NOME_DA_ABA[aba] ? { aba, id: resto[0] || null, resto } : { aba: 'geral', id: null, resto: [] };
 };
 async function irPara(aba, faseId = null, resto = []) {
+  if (MODO_POE && NO_POE[aba]) aba = NO_POE[aba];
   if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return desenharAbas();
   if (S.sujo && !(await descartarAlteracoes())) return desenharAbas();
   if (S.aba === 'sprites' && aba !== 'sprites') SPRITES.sair(); // para a animação e libera as folhas de rascunho do renderer
@@ -466,7 +501,7 @@ async function irPara(aba, faseId = null, resto = []) {
 
 // ---- Visão geral
 async function desenharGeral() {
-  const a = (S.auditoria = await api('auditoria'));
+  const a = (S.auditoria = await api('auditoria-conteudo'));
   const t = a.totais;
   const raiz = $('#raiz');
   const metrica = (rotulo, valor, classe = '') => el('div', { class: `eng-metrica ${classe}` }, el('span', {}, rotulo), el('b', {}, valor));
@@ -574,6 +609,8 @@ for (const ev of ['input', 'change', 'click', 'pointerup']) document.addEventLis
 // O servidor decide quem entra: em produção, sem sessão de administrador a página leva a /editor/login (nenhum dado é entregue).
 await garantirAcesso();
 S.opcoes = await api('opcoes');
+MODO_POE = await fetch('/api/mapas/_engine/itens-poe/estado').then((r) => r.json()).then((e) => !!e.ligado).catch(() => false);
+document.body.classList.toggle('eng-modo-poe', MODO_POE);
 // O indicador de Hot Reload (barra do topo); em produção ele não aparece.
 criarIndicadorDeHotReload({ base: BASE, alvo: document.getElementById('eng-hot') });
 {
@@ -604,7 +641,6 @@ document.addEventListener('keydown', (e) => {
 // ---- Mapa do mundo (a tela WORLD): posição dos nós, tipos, conexões, dados dos Atos e pré-visualização dos estados
 const copia = (x) => JSON.parse(JSON.stringify(x));
 const arredonda = (n) => Math.round(n / 5) * 5;
-const MW = { dados: null, ato: 1, sel: null, previa: 0, original: '', validacao: null, arrastando: null };
 
 const estadoDaPrevia = (indiceNoAto, total) => (indiceNoAto < MW.previa ? 'completa' : indiceNoAto === MW.previa ? 'aberta' : 'fechada');
 

@@ -142,3 +142,30 @@ export function coberturaDaArvore() {
   }
   return por;
 }
+
+// ---------------------------------------------------------------- mobs (aba Mobs com o PoE ligado)
+
+/** Os monstros do PoE da campanha (um por slug), com o desenho, onde aparecem (área, nível e os status do PoE em cada uma) e os drops dos únicos. */
+export function mobs() {
+  const por = new Map();
+  for (const a of Object.values(C.areas)) {
+    if (a.cidade) continue;
+    for (const m of a.monstros ?? []) {
+      const x = por.get(m.slug) ?? { slug: m.slug, nome: m.nome, unico: !!m.unico, ocorrencias: [] };
+      x.unico ||= !!m.unico;
+      x.ocorrencias.push({ area: a.id, areaNome: a.nome, ato: a.ato, nivel: m.nivel, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, resistencias: m.resistencias ?? {}, experiencia: m.experiencia, habilidades: (m.habilidades ?? []).length });
+      por.set(m.slug, x);
+    }
+  }
+  return [...por.values()].map((x) => {
+    const chave = Monstros.chaveDe(x.ocorrencias[0] ? { slug: x.slug, nivel: x.ocorrencias[0].nivel } : x);
+    const base = Monstros.AJUSTES.desenhos[x.slug] ?? (BESTIARY[chave] ? Object.entries(BESTIARY).find(([k, b]) => !k.startsWith('poe-') && b.look === BESTIARY[chave].look)?.[0] : null);
+    return { ...x, ocorrencias: x.ocorrencias.sort((a, b) => a.ato - b.ato || a.nivel - b.nivel), desenho: desenhoDe(chave), desenhoDe: base ?? null, desenhoAjustado: !!Monstros.AJUSTES.desenhos[x.slug], drops: x.unico ? dropsDe(x.slug) : [] };
+  }).sort((a, b) => (a.ocorrencias[0]?.ato ?? 99) - (b.ocorrencias[0]?.ato ?? 99) || a.nome.localeCompare(b.nome));
+}
+
+/** As criaturas do Draevor (para escolher o desenho de um monstro do PoE): `[{ key, nome, desenho }]`, pela busca. */
+export function criaturasDoDraevor(q = '') {
+  const t = String(q).toLowerCase().trim();
+  return Object.entries(BESTIARY).filter(([k, b]) => !k.startsWith('poe-') && b.look && (!t || k.includes(t) || String(b.name ?? '').toLowerCase().includes(t))).slice(0, 40).map(([k, b]) => ({ key: k, nome: b.name ?? k, desenho: desenhoDe(k) }));
+}

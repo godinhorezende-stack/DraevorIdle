@@ -1324,7 +1324,8 @@ export function createGate({ send, onPlay }) {
    */
   function renderClassesPoe() {
     let caixa = $('classe-poe-picker');
-    if (!classesPoe?.length) {
+    // As classes do servidor (Editor de Classes) já são as do PoE com o PoE ligado: a fileira própria só aparece quando elas não vieram.
+    if (!classesPoe?.length || classesDoServidor?.length) {
       caixa?.remove();
       return;
     }

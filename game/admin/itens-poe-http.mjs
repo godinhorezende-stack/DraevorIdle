@@ -72,6 +72,19 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     const r = DropsPorMonstro.salvar(String(d?.monstro ?? ''), d?.lista, { existe: (id) => !!ITEM_CATALOG[id], podeTer: Telas.temDropProprio });
     return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, drops: Telas.dropsDe(String(d.monstro)) } : { ok: false, erros: r.erros }), true;
   }
+  // Os mobs de uma área (aba Acts) e o desenho de um monstro (aba Mobs): gravam em gamedata/itens-poe/campanha-ajustes.json e valem na próxima entrada na área.
+  if (req.method === 'POST' && rota === 'campanha/area/monstros') {
+    if (!Catalogo.ligado()) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
+    const d = await corpoJson(req).catch(() => null);
+    const r = CampanhaPoe.salvarMonstrosDaArea(String(d?.area ?? ''), d?.monstros);
+    return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, area: Telas.area(d.area) } : { ok: false, erros: r.erros }), true;
+  }
+  if (req.method === 'POST' && rota === 'mobs/desenho') {
+    if (!Catalogo.ligado()) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
+    const d = await corpoJson(req).catch(() => null);
+    const r = CampanhaPoe.definirDesenho(String(d?.slug ?? ''), d?.desenho ? String(d.desenho) : null);
+    return json(res, r.ok ? 200 : 400, r.ok ? { ok: true } : { ok: false, erros: r.erros }), true;
+  }
   if (req.method !== 'GET') return json(res, 405, { ok: false, erros: ['Somente leitura.'] }), true;
   const q = url.searchParams;
   if (rota === 'estado') return json(res, 200, { ligado: Catalogo.ligado(), arquivo: Catalogo.ARQUIVO, regras: Catalogo.REGRAS, como: 'Ligue com ITENS_POE=1 e importe com: node tools/importar-poe-itens.mjs' }), true;
@@ -106,6 +119,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Área desconhecida.'] }), true;
   }
   if (rota === 'chefes') return json(res, 200, Telas.chefes()), true;
+  if (rota === 'mobs') return json(res, 200, { mobs: Telas.mobs() }), true;
+  if (rota === 'criaturas') return json(res, 200, { criaturas: Telas.criaturasDoDraevor(q.get('q') ?? '') }), true;
   if (rota === 'drops') return json(res, 200, { drops: Telas.dropsDe(q.get('monstro') ?? '') }), true;
   if (rota === 'itens-de-missao') return json(res, 200, { itens: DropsPorMonstro.ITENS_DE_MISSAO }), true;
   if (rota === 'arvore') return json(res, 200, { ...Telas.arvore(), cobertura: Telas.coberturaDaArvore() }), true;

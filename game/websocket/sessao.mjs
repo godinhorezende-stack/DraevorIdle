@@ -1636,7 +1636,7 @@ export class Sessao {
     const problema = R.problemaNoNomeDePersonagem(name);
     if (problema) return this.erroDeAuth(problema);
     // A classe é validada AQUI (o cliente só sugere): precisa existir e estar ATIVA; a vocação mecânica sai da classe, não do que o cliente mandou.
-    const cls = Classes.resolverParaCriacao(typeof classe === 'string' && classe ? classe : vocation);
+    const cls = Classes.resolverParaCriacao(typeof classe === 'string' && classe ? classe : typeof classePoe === 'string' && classePoe ? classePoe : vocation);
     if (!cls) return this.erroDeAuth('Classe inválida ou desativada.');
     vocation = cls.vocacaoBase;
     if (!R.VOCACOES_VALIDAS.has(vocation)) return this.erroDeAuth('Vocação inválida.');
@@ -1653,8 +1653,8 @@ export class Sessao {
       sexo: sex,
       estadoInicial: {
         ...estadoInicialPersonagem(vocation, sex, cls.id),
-        // A classe do PoE escolhida na criação (só com ITENS_POE=1; sem ela, a padrão da vocação até escolher).
-        ...(ClassesPoe.paraCliente() && ClassesPoe.valida(classePoe) ? { classePoe } : {}),
+        // A classe do PoE (só com ITENS_POE=1): a classe escolhida na tela de criação já é uma das 7 do PoE (a fábrica do Editor de Classes); sem ela, a que o cliente mandou.
+        ...(ClassesPoe.paraCliente() && (cls.poe || ClassesPoe.valida(classePoe)) ? { classePoe: cls.poe ?? classePoe } : {}),
       },
     });
     // O cliente trata `account` como "a lista mudou, redesenhe" também fora do

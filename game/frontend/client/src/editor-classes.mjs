@@ -158,7 +158,7 @@ export function criarTelaDeClasses({ api, raiz, sujo = null, podeGravar = () => 
     const itens = Object.values(E.cfg.classes).filter((c) => !q || `${c.nome} ${c.id}`.toLowerCase().includes(q));
     const cont = (id) => E.dados.classes.find((x) => x.id === id)?.personagens ?? 0;
     return el('div', { id: 'cls-lista', class: 'cls-lista' }, itens.map((c) => el('div', { class: `cls-card${E.sel === c.id ? ' ativa' : ''}${c.ativo ? '' : ' inativa'}`, style: `border-left:6px solid ${c.cor}`, onclick: () => { E.sel = c.id; pintar(); recalcular(); } },
-      el('span', { class: 'cls-icone' }, c.icone), el('span', { class: 'cls-nome' }, el('b', {}, c.nome), el('small', { class: 'dica' }, ` ${c.id}${c.builtin ? '' : ` · sobre ${c.vocacaoBase}`}`)),
+      el('span', { class: 'cls-icone' }, c.icone), el('span', { class: 'cls-nome' }, el('b', {}, c.nome), el('small', { class: 'dica' }, ` ${c.id}${c.builtin && !c.poe ? '' : ` · sobre ${c.vocacaoBase}`}`)),
       el('span', { class: 'dica' }, `${cont(c.id)} personagem(ns)`), el('span', { class: `val-chip ${c.ativo ? 'ok' : 'mudo'}` }, c.ativo ? 'ativa' : 'inativa'),
       el('span', { class: 'cls-botoes' },
         el('button', { type: 'button', class: 'fantasma', disabled: dis(), onclick: (e) => { e.stopPropagation(); c.ativo = !c.ativo; mudou(); pintar(); } }, c.ativo ? 'desativar' : 'ativar'),
@@ -171,7 +171,7 @@ export function criarTelaDeClasses({ api, raiz, sujo = null, podeGravar = () => 
     const o = E.dados.original.classes[c.id];
     const salvo = E.dados.classes.find((x) => x.id === c.id);
     return el('div', { class: 'hunt-sec' },
-      el('div', { class: 'linha' }, el('h3', {}, `${c.icone} ${c.nome}`), el('span', { class: 'dica' }, c.builtin ? 'classe de fábrica' : `classe criada, sobre ${c.vocacaoBase} (herda magias, gemas, equipamento e sprites dela)`)),
+      el('div', { class: 'linha' }, el('h3', {}, `${c.icone} ${c.nome}`), el('span', { class: 'dica' }, c.poe ? `classe do Path of Exile (${c.poe}), sobre ${c.vocacaoBase}: herda as magias, gemas, equipamento e sprites dela; atributos sem ganho por level, como no PoE` : c.builtin ? 'classe de fábrica' : `classe criada, sobre ${c.vocacaoBase} (herda magias, gemas, equipamento e sprites dela)`)),
       el('div', { class: 'grade' },
         campo('Nome', el('input', { type: 'text', value: c.nome, disabled: dis(), onchange: (e) => { c.nome = e.target.value; mudou(); pintar(); } })),
         campo('ID (único, não muda)', el('input', { type: 'text', value: c.id, disabled: true })),

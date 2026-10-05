@@ -412,11 +412,17 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       f.objetivos?.length ? [el('b', {}, 'Missões desta área (Drive)'), el('ul', { class: 'atos-missoes' }, f.objetivos.map((o) => el('li', {}, el('b', {}, o.missao ?? ''), o.texto ? ` — ${o.texto}` : '')))] : null);
   }
 
+  /** Os mobs da área em edição (uma cópia; "Salvar mobs da área" grava e vale na próxima entrada). */
+  E.mobsEditando = {};
+  const CAMPOS_DO_MOB = [['nivel', 'Nível', 1], ['vida', 'Vida', 1], ['escudoDeEnergia', 'Escudo de Energia', 1], ['dano', 'Golpe', 1], ['tempoAtaque', 'Tempo de ataque (s)', 0.01], ['armadura', 'Armadura', 1], ['evasao', 'Evasão', 1], ['experiencia', 'Experiência', 1]];
+  const RES = [['fire', 'Res. fogo'], ['ice', 'Res. gelo'], ['energy', 'Res. raio'], ['chaos', 'Res. caos']];
+  const limparMob = (m) => ({ slug: m.slug, nome: m.nome, unico: !!m.unico, nivel: m.nivel, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, experiencia: m.experiencia, resistencias: { ...(m.resistencias ?? {}) }, ...(m.habilidades?.length ? { habilidades: m.habilidades } : {}) });
+
   function painelDosMobs(f) {
     const area = areaDaFase(f.huntId);
     if (!f.huntId) return null;
-    if (!area) return el('fieldset', {}, el('legend', {}, 'Mapa, mobs e drops'), el('div', { class: 'dica' }, 'Carregando…'));
-    if (!area.poe) return el('fieldset', {}, el('legend', {}, 'Mobs da hunt'), el('div', { class: 'dica' }, area.monstros.map((m) => m.nome).join(', ') || 'sem monstros'), el('div', { class: 'dica' }, 'A tabela de drop por monstro vale para os monstros do PoE (com o PoE ligado).'));
+    if (!area) return el('fieldset', {}, el('legend', {}, 'Mapa e mobs da área'), el('div', { class: 'dica' }, 'Carregando…'));
+    if (!area.poe) return el('fieldset', {}, el('legend', {}, 'Mobs da hunt'), el('div', { class: 'dica' }, area.monstros.map((m) => m.nome).join(', ') || 'sem monstros'), el('div', { class: 'dica' }, 'Os mobs editáveis por área são os da campanha do PoE (com o PoE ligado).'));
     const sel = el('select', { disabled: E.somenteLeitura }, (E.mapas ?? [{ id: area.mapa, nome: area.nomeDoMapa }]).map((m) => el('option', { value: m.id, selected: m.id === area.mapa }, `${m.nome}${m.nivel ? ` (nv ${m.nivel})` : ''}`)));
     const trocar = el('button', { type: 'button', disabled: E.somenteLeitura, onclick: async () => {
       if (sel.value === area.mapa) return msg('Esse já é o mapa da área.', 'aviso');
@@ -426,13 +432,54 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       msg(`Mapa de ${area.nome} trocado (vale na próxima entrada).`, 'ok');
       pintar();
     } }, 'Trocar mapa');
-    return el('fieldset', {}, el('legend', {}, 'Mapa, mobs e drops'),
+    // A edição: começa da lista da área; cada mudança marca "não salvo".
+    const ed = (E.mobsEditando[f.huntId] ??= { lista: area.monstros.map(limparMob), sujo: false });
+    const marcar = () => { ed.sujo = true; pintar(); };
+    // Mudar um número não redesenha a tela (o campo continua onde está): só acende o "Salvar".
+    const idDoSalvar = `mobs-salvar-${f.huntId}`;
+    const marcarCampo = () => {
+      ed.sujo = true;
+      const b = document.getElementById(idDoSalvar);
+      if (b) { b.disabled = false; b.className = 'primario'; b.textContent = 'Salvar mobs da área'; }
+    };
+    if (!E.mobsPoe) poeApi('mobs').then((r) => { E.mobsPoe = r.mobs ?? []; if (faseDe(E.fase)?.huntId === f.huntId) pintar(); }).catch(() => {});
+    const porSlug = new Map(area.monstros.map((m) => [m.slug, m]));
+    const acrescentar = (slug) => {
+      const mob = (E.mobsPoe ?? []).find((x) => x.slug === slug);
+      if (!mob) return;
+      // Os status da ocorrência de nível mais perto do nível da área (ajuste depois, se quiser).
+      const o = [...mob.ocorrencias].sort((a, b) => Math.abs(a.nivel - area.nivel) - Math.abs(b.nivel - area.nivel))[0];
+      ed.lista.push(limparMob({ ...o, slug: mob.slug, nome: mob.nome, unico: mob.unico, nivel: o.nivel }));
+      marcar();
+    };
+    const salvar = async () => {
+      const r = await poeApi('campanha/area/monstros', { area: f.huntId, monstros: ed.lista });
+      if (!r.ok) return msg(r.erros?.slice(0, 3).join(' ') ?? 'Não salvou.', 'erro');
+      E.areas[f.huntId] = { poe: true, ...r.area };
+      delete E.mobsEditando[f.huntId];
+      E.mobsPoe = null;
+      msg(`Mobs de ${area.nome} salvos (valem na próxima entrada na área).`, 'ok');
+      pintar();
+    };
+    return el('fieldset', {}, el('legend', {}, 'Mapa e mobs da área'),
       el('div', { class: 'linha' }, el('label', { class: 'campo', style: 'flex:1;min-width:0' }, 'Mapa (terreno do Draevor)', sel), trocar),
-      el('div', { class: 'dica' }, `Nível ${area.nivel}. Os bichos são os do PoE (status do PoE, desenho do Draevor). Comuns caem pela tabela global do PoE; só os únicos têm drop próprio (clique para editar).`),
-      el('div', { class: 'atos-mobs' }, area.monstros.map((m) => el('details', { class: 'atos-mob' },
-        el('summary', {}, el('b', {}, m.nome), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null, f.conclusao?.monstro === m.slug ? el('span', { class: 'selo usos', style: 'margin-left:6px' }, 'alvo da fase') : null,
-          el('span', { class: 'dica' }, ` nv ${m.nivel} · ${Number(m.vida + (m.escudoDeEnergia ?? 0)).toLocaleString('pt-BR')} vida · golpe ${m.dano}${m.drops?.length ? ` · ${m.drops.length} drop(s)` : ''}`)),
-        m.unico ? editorDeDrops(m.slug, m.drops ?? [], { somenteLeitura: E.somenteLeitura, aoSalvar: (drops) => { m.drops = drops; } }) : el('div', { class: 'dica' }, 'Monstro comum: sem item próprio (modelo do PoE). Cai pela tabela global: ~16% de chance (mais nos mágicos/raros), Item Level = o nível dele, qualquer base até esse nível, raridade pelos pesos.')))));
+      el('div', { class: 'dica' }, `Nível ${area.nivel}. Os bichos são os do PoE (status do PoE, desenho do Draevor). Edite os status, tire ou acrescente monstros e salve. Comuns caem pela tabela global do PoE; só os únicos têm drop próprio.`),
+      el('div', { class: 'atos-mobs' }, ed.lista.map((m, i) => {
+        const original = porSlug.get(m.slug);
+        return el('details', { class: 'atos-mob' },
+          el('summary', {}, el('b', {}, m.nome), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null, f.conclusao?.monstro === m.slug ? el('span', { class: 'selo usos', style: 'margin-left:6px' }, 'alvo da fase') : null,
+            el('span', { class: 'dica' }, ` nv ${m.nivel} · ${Number(m.vida + (m.escudoDeEnergia ?? 0)).toLocaleString('pt-BR')} vida · golpe ${m.dano} a cada ${Number(m.tempoAtaque).toFixed(2)} s`)),
+          el('div', { class: 'grade atos-mob-campos' },
+            CAMPOS_DO_MOB.map(([k, rot, passo]) => campo(rot, m[k], (v) => { m[k] = Number(v); marcarCampo(); }, { type: 'number', step: passo, min: 0 })),
+            RES.map(([k, rot]) => campo(rot, m.resistencias?.[k] ?? 0, (v) => { m.resistencias = { ...(m.resistencias ?? {}), [k]: Number(v) }; marcarCampo(); }, { type: 'number', step: 1, min: -100, max: 90 }))),
+          E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { type: 'button', class: 'perigo', onclick: () => { ed.lista.splice(i, 1); marcar(); } }, 'Tirar da área')),
+          m.unico && original ? [el('b', {}, 'Drops deste único'), editorDeDrops(m.slug, original.drops ?? [], { somenteLeitura: E.somenteLeitura, aoSalvar: (drops) => { original.drops = drops; } })] : null);
+      })),
+      E.somenteLeitura ? null : el('div', { class: 'linha' },
+        el('select', { onchange: (e) => { if (e.target.value) acrescentar(e.target.value); } }, el('option', { value: '' }, E.mobsPoe ? '+ acrescentar monstro do PoE…' : 'carregando monstros…'),
+          (E.mobsPoe ?? []).filter((x) => !ed.lista.some((m) => m.slug === x.slug)).map((x) => el('option', { value: x.slug }, `${x.nome}${x.unico ? ' (único)' : ''} — nv ${x.ocorrencias[0]?.nivel ?? '?'}`))),
+        el('button', { type: 'button', id: idDoSalvar, class: ed.sujo ? 'primario' : '', disabled: !ed.sujo, onclick: salvar }, ed.sujo ? 'Salvar mobs da área' : 'Mobs salvos'),
+        ed.sujo ? el('button', { type: 'button', onclick: () => { delete E.mobsEditando[f.huntId]; pintar(); } }, 'Desfazer') : null));
   }
 
   // ------------------------------------------------------------------ painéis

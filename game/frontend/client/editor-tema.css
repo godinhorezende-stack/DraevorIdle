@@ -1012,3 +1012,7 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .cls-nome { flex: 1; min-width: 120px; }
 .cls-botoes { display: flex; gap: 4px; flex-wrap: wrap; }
 .vocation-atributos { font-size: 12px; opacity: .9; margin: 4px 0; }
+/* Mobs do PoE: escolha do desenho */
+.pm-criaturas { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+.pm-criatura { display: grid; justify-items: center; gap: 4px; padding: 6px; font-size: 12px; }
+.atos-mob-campos { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); margin: 6px 0; }

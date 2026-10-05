@@ -189,6 +189,27 @@ function registrarChefe(numero) {
 }
 
 let INICIADO = null;
+let PORAREA = null;
+
+/**
+ * Os mobs de uma área mudaram na Engine (aba Acts): registra os monstros de novo (status novos) e troca os bichos dos spawns — vale na próxima entrada na área.
+ * `{ ok, erros? }`.
+ */
+export function salvarMonstrosDaArea(id, lista) {
+  const r = Monstros.salvarMonstrosDaArea(id, lista);
+  if (!r.ok || !PORAREA) return r;
+  const nativos = nativosDoMapa(C.areas[id].mapa).filter((k) => BESTIARY[k]);
+  PORAREA.set(id, C.areas[id].monstros.map((m, i) => Monstros.registrar(m, nativos[i % Math.max(1, nativos.length)] ?? 'skeleton', { forcar: true })));
+  return r;
+}
+
+/** O desenho de um monstro do PoE mudou (aba Mobs): registra de novo todas as ocorrências dele. */
+export function definirDesenho(slugDoMonstro, chave) {
+  const r = Monstros.definirDesenho(slugDoMonstro, chave);
+  if (!r.ok || !PORAREA) return r;
+  for (const a of Object.values(C.areas)) for (const m of a.monstros ?? []) if (m.slug === slugDoMonstro) Monstros.registrar(m, chave ?? 'skeleton', { forcar: true });
+  return r;
+}
 /** Monta a campanha do PoE (uma vez). Sem o sistema ligado, nada. Devolve `{ areas, atos, problemas }`. */
 export function iniciar() {
   if (!ligado()) return { areas: 0, atos: [], problemas: [] };
@@ -205,6 +226,7 @@ export function iniciar() {
   }
   // 2. os monstros e a troca dos bichos dos spawns
   const { porArea } = Monstros.iniciar(nativosDoMapa);
+  PORAREA = porArea;
   const unicosDa = (id) => C.areas[id].monstros.map((m, i) => (m.unico ? porArea.get(id)?.[i] : null)).filter(Boolean);
   const comunsDa = (id) => {
     const l = C.areas[id].monstros.map((m, i) => (m.unico ? null : porArea.get(id)?.[i])).filter(Boolean);

@@ -1,6 +1,7 @@
 // O EDITOR DO ITEM POWER BASE por overrides: `gamedata/item-power.json` (fábrica) nunca é editado; o dono grava só o que MUDA (pesos, normalização, classificação, curva, alertas, regras
 // de distribuição) em `gamedata/overrides/item-power.json`. Mesmo fluxo dos outros editores: propor (valida e mostra o impacto, sem gravar) → salvar (arquivo + versão anterior, com
 // revisão) → publicar (commit + deploy manuais). Nada aqui altera um item, uma chance de drop ou o combate: é só um indicador de comparação dos atributos base.
+import { ligado as itensPoeLigado } from '../systems/itens-poe/catalogo.mjs';
 import { join } from 'node:path';
 import * as IP from '../systems/item-power.mjs';
 import * as P from '../systems/progressao.mjs';
@@ -112,7 +113,10 @@ function origem(id) {
 export function listarItens({ q = '', modificado = '', slot = '', classe = '', raridade = '', nivelMin = '', nivelMax = '', situacao = '', ordem = 'level', pagina = 0, limite = 60, incluirCraft = '' } = {}, cfg = IP.EM_USO) {
   const t = norm(q).trim();
   const modificadosIds = new Set(Object.entries(Itens.lerDados().itens).filter(([, ov]) => EDITAVEIS.some((k) => k in ov)).map(([id]) => id));
+  // Com o PoE ligado, só os itens do PoE (decisão do dono, 05/10: "os itens só quero do PoE").
+  const soPoe = itensPoeLigado();
   let l = IP.fichasDoCatalogo(cfg, { incluirCraft: incluirCraft === true || incluirCraft === 'true' || incluirCraft === '1' }).filter((f) => {
+    if (soPoe && !ITEM_CATALOG[f.id]?.poe) return false;
     if (slot && f.slot !== slot) return false;
     if (classe && f.vocations.length && !f.vocations.includes(classe)) return false;
     if (raridade && f.raridade !== raridade) return false;

@@ -512,3 +512,75 @@ export function editorDeDrops(monstro, drops = [], { somenteLeitura = false, aoS
   pintar();
   return caixa;
 }
+
+// ================================================================ MOBS (com o PoE ligado: os monstros do PoE, no lugar do bestiário do Tibia)
+
+export function criarTelaDosMobsPoe({ raiz }) {
+  const T = { lista: null, sel: null, busca: '', ato: '', soUnicos: false, criaturas: [], qCriatura: '' };
+  async function desenhar(resto = []) {
+    if (!(await ligado(raiz, 'Mobs'))) return;
+    T.lista = (await api('mobs')).mobs;
+    if (resto[0]) T.sel = resto[0];
+    raiz().replaceChildren(
+      cabecalho('Mobs', `Os ${T.lista.length} monstros da campanha do PoE: os status são os do PoE (por nível de área), o desenho é o de uma criatura do Draevor. Os status de cada área se editam na aba Acts (ato → área → mobs); aqui ficam o desenho e os drops dos únicos.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pm-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pm-painel' })));
+    pintarLista();
+    pintarPainel();
+  }
+  const filtrados = () => {
+    const t = T.busca.trim().toLowerCase();
+    return T.lista.filter((m) => (!t || m.nome.toLowerCase().includes(t) || m.slug.toLowerCase().includes(t)) && (!T.ato || m.ocorrencias.some((o) => String(o.ato) === T.ato)) && (!T.soUnicos || m.unico));
+  };
+  function pintarLista() {
+    const l = filtrados();
+    const atos = [...new Set(T.lista.flatMap((m) => m.ocorrencias.map((o) => o.ato)))].sort((a, b) => a - b);
+    document.querySelector('#pm-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} de ${T.lista.length}`),
+        el('input', { type: 'search', placeholder: 'Buscar monstro…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintarLista(); } }),
+        el('select', { onchange: (e) => { T.ato = e.target.value; pintarLista(); } }, el('option', { value: '' }, 'Todos os atos'), atos.map((a) => el('option', { value: String(a), selected: String(a) === T.ato }, a === 11 ? 'Epílogo' : `Ato ${a}`))),
+        el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: T.soUnicos, onchange: (e) => { T.soUnicos = e.target.checked; pintarLista(); } }), 'só únicos')),
+      el('div', { class: 'bib-grade' }, l.slice(0, 120).map((m) => {
+        const o = m.ocorrencias[0];
+        return el('div', { class: `eng-card${m.slug === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => { T.sel = m.slug; pintarLista(); pintarPainel(); } },
+          el('div', { class: 'eng-card-arte' }, retrato(m.desenho, 64, { categoria: 'monstros' })),
+          el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome' }, m.nome), el('span', { class: 'eng-id' }, m.slug),
+            el('div', { class: 'eng-card-selos' }, m.unico ? el('span', { class: 'selo aviso' }, 'único') : null, o ? el('span', { class: 'selo' }, `${o.ato === 11 ? 'Epílogo' : `Ato ${o.ato}`} · nv ${o.nivel}`) : null, o ? el('span', { class: 'selo usos' }, `${num(o.vida + o.escudoDeEnergia)} vida`) : null, m.ocorrencias.length > 1 ? el('span', { class: 'selo' }, `${m.ocorrencias.length} áreas`) : null)));
+      })),
+      l.length > 120 ? el('p', { class: 'dica' }, `Mostrando 120 de ${l.length}: use a busca ou o filtro de ato.`) : null);
+  }
+  async function buscarCriaturas(q) {
+    T.qCriatura = q;
+    T.criaturas = q.length >= 2 ? (await api(`criaturas?q=${encodeURIComponent(q)}`)).criaturas : [];
+    pintarPainel();
+  }
+  function pintarPainel() {
+    const caixa = document.querySelector('#pm-painel');
+    if (!caixa) return;
+    const m = T.lista?.find((x) => x.slug === T.sel);
+    if (!m) return caixa.replaceChildren(el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha um monstro'), el('span', { class: 'dica' }, 'Status do PoE em cada área, o desenho e (nos únicos) o que ele solta.')));
+    const trocarDesenho = async (key) => {
+      const r = await api('mobs/desenho', { slug: m.slug, desenho: key });
+      if (!r.ok) return msg(r.erros?.[0] ?? 'Não deu.', 'erro');
+      msg(key ? 'Desenho trocado (vale na próxima entrada nas áreas dele).' : 'Desenho automático de volta.', 'ok');
+      T.lista = (await api('mobs')).mobs;
+      T.criaturas = [];
+      pintarLista();
+      pintarPainel();
+    };
+    caixa.replaceChildren(el('div', { class: 'bib-painel-corpo' },
+      el('div', { class: 'linha', style: 'gap:12px;align-items:center' }, retrato(m.desenho, 96, { categoria: 'monstros', animar: true }), el('div', {}, el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, m.slug), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null)),
+      el('h4', {}, 'Desenho (criatura do Draevor)'),
+      el('div', { class: 'dica' }, `Agora: ${m.desenhoDe ?? '—'}${m.desenhoAjustado ? ' (escolhido na Engine)' : ' (automático pelo nome / pelo mapa)'}`),
+      el('div', { class: 'pd-busca' }, el('input', { type: 'search', placeholder: 'Buscar criatura do Draevor para o desenho…', value: T.qCriatura, onchange: (e) => buscarCriaturas(e.target.value.trim()) })),
+      T.criaturas.length ? el('div', { class: 'pm-criaturas' }, T.criaturas.map((c) => el('button', { type: 'button', class: 'pm-criatura', title: c.key, onclick: () => trocarDesenho(c.key) }, retrato(c.desenho, 48, { categoria: 'monstros' }), el('span', {}, c.nome)))) : null,
+      m.desenhoAjustado ? el('button', { type: 'button', onclick: () => trocarDesenho(null) }, 'Voltar ao desenho automático') : null,
+      el('h4', {}, `Status do PoE por área (${m.ocorrencias.length})`),
+      el('div', { class: 'bib-tabela' }, el('table', {},
+        el('thead', {}, el('tr', {}, ['Área', 'Nível', 'Vida', 'ES', 'Golpe', 'Tempo', 'Armadura', 'Evasão', 'Res. F/G/R/C', 'Exp'].map((h) => el('th', {}, h)))),
+        el('tbody', {}, m.ocorrencias.map((o) => el('tr', {}, el('td', {}, `${o.ato === 11 ? 'Ep.' : `A${o.ato}`} · ${o.areaNome}`), el('td', { class: 'num' }, o.nivel), el('td', { class: 'num' }, num(o.vida)), el('td', { class: 'num' }, num(o.escudoDeEnergia)), el('td', { class: 'num' }, num(o.dano)), el('td', { class: 'num' }, `${Number(o.tempoAtaque).toFixed(2)} s`), el('td', { class: 'num' }, num(o.armadura)), el('td', { class: 'num' }, num(o.evasao)), el('td', { class: 'num' }, ['fire', 'ice', 'energy', 'chaos'].map((e) => o.resistencias?.[e] ?? 0).join('/')), el('td', { class: 'num' }, num(o.experiencia))))))),
+      el('p', { class: 'dica' }, 'Para mudar os status numa área: aba Acts → o ato → a área → Mobs da área.'),
+      el('h4', {}, 'Drops'),
+      m.unico ? editorDeDrops(m.slug, m.drops ?? []) : el('div', { class: 'dica' }, 'Monstro comum: sem item próprio (modelo do PoE). Cai pela tabela global: ~16% de chance (mais nos mágicos/raros), Item Level = o nível dele, qualquer base até esse nível.')));
+  }
+  return { desenhar };
+}

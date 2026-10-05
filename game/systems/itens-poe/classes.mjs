@@ -19,9 +19,11 @@ const vocacaoDe = (estado) => {
 };
 
 /** A classe do PoE do personagem (o objeto), ou null com o sistema desligado. */
+/** O slug do PoE pela classe do Editor de Classes (`estado.classe`: o id em minúsculas, `marauder`), ou null. */
+const slugDaClasse = (id) => DADOS.ordem.find((s) => s.toLowerCase() === String(id ?? '').toLowerCase()) ?? null;
 export function classeDe(estado) {
   if (!ligado()) return null;
-  return CLASSES[estado?.classePoe] ?? CLASSES[DADOS.padraoPorVocacao[vocacaoDe(estado)]] ?? CLASSES.Scion;
+  return CLASSES[slugDaClasse(estado?.classe)] ?? CLASSES[estado?.classePoe] ?? CLASSES[DADOS.padraoPorVocacao[vocacaoDe(estado)]] ?? CLASSES.Scion;
 }
 
 /** A classe é válida? */
@@ -34,7 +36,7 @@ export const valida = (slug) => Object.hasOwn(CLASSES, String(slug ?? ''));
 export function escolher(estado, slug) {
   if (!ligado()) return { ok: false, erro: 'As classes do PoE estão desligadas.' };
   if (!valida(slug)) return { ok: false, erro: 'Classe inválida.' };
-  if (estado.classePoe) return { ok: false, erro: `Você já é ${CLASSES[estado.classePoe]?.nome ?? estado.classePoe}.` };
+  if (estado.classePoe || slugDaClasse(estado.classe)) return { ok: false, erro: `Você já é ${classeDe(estado)?.nome ?? estado.classePoe}.` };
   estado.classePoe = slug;
   return { ok: true };
 }

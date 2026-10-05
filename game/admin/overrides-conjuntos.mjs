@@ -1,6 +1,7 @@
 // O EDITOR DE CONJUNTOS por overrides: `gamedata/conjuntos.json` (fábrica) nunca é editado; o dono grava só o NOVO ou DIFERENTE em `gamedata/overrides/conjuntos.json`
 // (`systems/conjuntos.mjs` aplica no boot e o Hot Reload re-aplica). Mesmo fluxo dos outros editores: propor (valida, sem gravar) → salvar (arquivo + versão anterior, com revisão)
 // → publicar (commit + deploy). Ferramenta de balanceamento: nenhuma mecânica de jogo muda. Os totais de atributos vêm da ficha REAL do jogo (`Ficha.combate`), sem fórmula própria.
+import { ligado as itensPoeLigado } from '../systems/itens-poe/catalogo.mjs';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import * as Con from '../systems/conjuntos.mjs';
@@ -126,6 +127,7 @@ export function buscarItens({ q = '', slot = '', classe = '', tier = '', nivelMi
   const lista = [];
   for (const m of Object.values(ITEM_CATALOG)) {
     if (!m.slot || !Con.SLOTS.includes(m.slot) || m.stackable) continue;
+    if (itensPoeLigado() && !m.poe) continue; // com o PoE ligado, só os itens do PoE
     if (slot && m.slot !== slot) continue;
     if (!incluirCraft && /^Crafted /.test(m.name ?? '')) continue;
     if (classe && m.vocations?.length && !m.vocations.includes(classe)) continue;

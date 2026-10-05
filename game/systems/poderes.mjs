@@ -47,8 +47,8 @@ export const recarregarPoderes = (dados, validas) => Overrides.reaplicarNosPoder
 /** Os poderes cadastrados de um bicho (para conferir o que o jogo vai lançar). */
 export const poderesDe = (key) => PODERES[key] ?? null;
 /** Registra os poderes de um bicho criado em tempo de execução (os monstros da campanha do PoE — `itens-poe/monstros.mjs`). */
-export function registrarPoderes(key, def) {
-  if (!PODERES[key]) PODERES[key] = def;
+export function registrarPoderes(key, def, { forcar = false } = {}) {
+  if (!PODERES[key] || forcar) PODERES[key] = def;
 }
 
 const NOME_DO_ELEMENTO = {
