@@ -153,3 +153,33 @@ test('luvas e cinto do PoE se equipam de verdade (slot gloves e slot legs) e som
   assert.equal(Inventario.desequipar(e, { slot: 'gloves' }).ok, true);
   assert.ok(e.inventory.some((p) => p.id === luva.id && p.poe));
 });
+
+test('a chance de crítico da base da arma do PoE entra na ficha (e o crítico relativo dos mods multiplica por cima)', { skip: SEM }, () => {
+  Jogo.iniciar(ITEM_CATALOG);
+  const arma = Catalogo.catalogo().classes.Daggers.bases.find((b) => b.atributos?.chance_critico_pct >= 6);
+  assert.equal(ITEM_CATALOG[Jogo.idDaBase(arma.id)].critChance, Math.round(arma.atributos.chance_critico_pct * 100));
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  Treino.garantir(e);
+  e.equipment.weapon = { id: Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'fire sword').id), count: 1 };
+  Ficha.invalidar(e);
+  const antes = Ficha.combate(e).critChance;
+  const p = Jogo.pecaDoJogo(gerar(arma.id, 'normal'));
+  p.poe.af = {}; // só a base (o implícito da adaga também mexe no crítico)
+  e.equipment.weapon = p;
+  Ficha.invalidar(e);
+  const comBase = Ficha.combate(e).critChance;
+  assert.ok(Math.abs(comBase - (antes + arma.atributos.chance_critico_pct / 100)) < 1e-9, `${antes} → ${comBase}`);
+  p.poe.af = { crit_chance_inc: 100 };
+  Ficha.invalidar(e);
+  assert.ok(Math.abs(Ficha.combate(e).critChance - Math.min(comBase * 2, 1)) < 1e-9);
+});
+
+test('a venda automática da bolsa não vende peça do PoE (sem preço de NPC definido: a peça fica, nada se perde por 0 de ouro)', { skip: SEM }, () => {
+  Jogo.iniciar(ITEM_CATALOG);
+  const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
+  const p = Jogo.pecaDoJogo(gerar('Body_Armours/Plate_Vest', 'normal'));
+  assert.equal(Bolsa.porNaBolsa(e, p.id, 1, p), 1);
+  const r = Bolsa.venderBolsa(e);
+  assert.equal(r.gold, 0);
+  assert.ok(e.pouch.some((x) => x.id === p.id && x.poe), 'a peça continua na bolsa');
+});

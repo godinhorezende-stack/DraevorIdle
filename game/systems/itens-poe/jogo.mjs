@@ -70,6 +70,9 @@ export function iniciar(itemCatalog) {
         id, name: b.nome, type: regra.tipo, slot: regra.slot, weight: 50, hasSprite: false, rarity: 'comum', stackable: false,
         ...(b.requisitos?.nivel ? { minLevel: b.requisitos.nivel } : {}),
         ...(regra.skill ? { skill: regra.skill, attack: media(a.dano_fisico) } : {}),
+        // A chance de crítico da BASE da arma (ex.: 5%) no campo que a ficha já soma por peça (`critChance`, em centésimos de %); o
+        // "Chance de Crítico aumentada" dos mods multiplica por cima (ficha.critChance), como no PoE.
+        ...(regra.skill && a.chance_critico_pct ? { critChance: Math.round(Number(a.chance_critico_pct) * 100) } : {}),
         ...(regra.twoHanded ? { twoHanded: true } : {}),
         ...(regra.range ? { range: regra.range } : {}),
         ...(regra.quiver ? { quiver: true } : {}),

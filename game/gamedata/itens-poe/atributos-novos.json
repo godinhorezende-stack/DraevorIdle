@@ -19,49 +19,49 @@
       "nome": "Dano de Fogo somado (mín.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "added_fire_dmg_max": {
       "nome": "Dano de Fogo somado (máx.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "added_ice_dmg_min": {
       "nome": "Dano de Gelo somado (mín.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "added_ice_dmg_max": {
       "nome": "Dano de Gelo somado (máx.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "added_energy_dmg_min": {
       "nome": "Dano de Raio somado (mín.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "added_energy_dmg_max": {
       "nome": "Dano de Raio somado (máx.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "added_chaos_dmg_min": {
       "nome": "Dano de Caos somado (mín.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "added_chaos_dmg_max": {
       "nome": "Dano de Caos somado (máx.)",
       "unidade": "",
       "combate": true,
-      "efeito": "no golpe da arma (auto-ataque); as habilidades de ataque ainda não somam — hunt/combate.danoSomadoDoPoe"
+      "efeito": "no golpe da arma (auto-ataque, hunt/combate.danoSomadoDoPoe) e nas habilidades de ataque — golpe físico de perto/longe (acoes.contaDoDano)"
     },
     "spell_added_fire_dmg_min": {
       "nome": "Dano de Fogo somado a Magias (mín.)",

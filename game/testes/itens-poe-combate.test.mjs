@@ -130,3 +130,12 @@ test('a lista de atributos novos diz quais já têm efeito, e onde', () => {
   for (const [id, a] of ligados) assert.ok(a.efeito, `${id}: falta dizer onde o efeito acontece`);
   for (const id of ['crit_chance_inc', 'spell_dmg', 'added_fire_dmg_min', 'life_on_hit', 'mana_on_kill', 'chaos_res']) assert.equal(NOVOS[id].combate, true, id);
 });
+
+test('habilidade de ataque (golpe físico, como o Brutal Strike): soma o dano a ataques de todos os elementos; as coisas de magia não entram', () => {
+  const brutal = ACTION_CATALOG.spells.find((x) => x.id === 'spell-brutal-strike');
+  assert.ok(brutal);
+  const antes = Acoes.danoMostrado(personagem(), brutal, null);
+  const com = Acoes.danoMostrado(vestirPoe(personagem(), { added_fire_dmg_min: 30, added_fire_dmg_max: 30, added_chaos_dmg_min: 20, added_chaos_dmg_max: 20 }), brutal, null);
+  assert.ok(com.min > antes.min + 40, `${antes.min} → ${com.min}`);
+  assert.deepEqual(Acoes.danoMostrado(vestirPoe(personagem(), { spell_dmg: 100, spell_added_physical_dmg_min: 50 }), brutal, null), antes, 'dano de magia não entra no ataque');
+});

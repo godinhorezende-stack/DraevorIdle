@@ -93,11 +93,17 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const doNivel = danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
   const identidade = ehAtaque ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
   const fatorDaFicha = ehAtaque ? (((fichaBase.damage.min + fichaBase.damage.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
-  // Sistema de itens do PoE (Fase 1; sem peças do PoE nada disto muda): numa MAGIA, o dano somado a magias do mesmo elemento dela
-  // ("Adiciona X a Y de Dano de Fogo a Magias") entra na faixa antes dos aumentos, e a chance de crítico é a de magia
-  // (`critChanceMagia`, com o "Chance de Golpe Crítico com Magias aumentada"). Dano somado de outro elemento não entra (a magia tem um elemento só).
-  const ehMagia = !entry.heals && Tags.tagsDaAcao(entry).includes('spell');
-  const [somadoMin, somadoMax] = ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
+  // Sistema de itens do PoE (Fase 1; sem peças do PoE nada disto muda):
+  //  - um ATAQUE do PoE = golpe físico de perto ou de longe (tags physical + melee/ranged, como o Brutal Strike): o dano somado a
+  //    ataques de TODOS os elementos ("Adiciona X a Y de Dano de Fogo a Ataques") entra na faixa, como no golpe da arma;
+  //  - uma MAGIA (o resto das skills com tag spell): o dano somado a magias do mesmo elemento dela entra na faixa antes dos aumentos,
+  //    e a chance de crítico é a de magia (`critChanceMagia`). Dano somado de outro elemento não entra (a magia tem um elemento só).
+  const tagsDaSkill = Tags.tagsDaAcao(entry);
+  const ehAtaqueDoPoe = !entry.heals && tagsDaSkill.includes('physical') && (tagsDaSkill.includes('melee') || tagsDaSkill.includes('ranged'));
+  const ehMagia = !entry.heals && !ehAtaqueDoPoe && tagsDaSkill.includes('spell');
+  const [somadoMin, somadoMax] = ehAtaqueDoPoe
+    ? Object.values(fichaBase.danoSomado ?? {}).reduce(([a, b], [x, y]) => [a + x, b + y], [0, 0])
+    : ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
   const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin));
   const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha + somadoMax));
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
