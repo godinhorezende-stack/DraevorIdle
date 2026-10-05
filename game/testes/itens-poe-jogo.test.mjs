@@ -1,6 +1,6 @@
 // Incremento 3c do sistema de itens do PoE: a peça entra no JOGO local — as bases viram itens do catálogo, a peça carrega a base e o
-// `poe` pela mochila e pela bolsa de loot, equipada muda a ficha de verdade, e o drop só acontece com os números do dono (chance 0 =
-// nada). Usa o catálogo importado de verdade (a coleção fica fora do repositório): sem ele nesta máquina, os testes são pulados.
+// `poe` pela mochila e pela bolsa de loot, equipada muda a ficha de verdade, e o drop segue os números do dono (quantidade pela raridade
+// do bicho, raridade da peça pelos pesos). Usa o catálogo importado de verdade (a coleção fica fora do repositório): sem ele nesta máquina, os testes são pulados.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
@@ -85,15 +85,28 @@ test('equipada, a peça muda a ficha: a armadura da base e os mods traduzidos (v
   assert.ok(Afixos.soma(e).life >= 100, 'vida dos mods');
 });
 
-test('o drop: chance 0 (o padrão, sem os números do dono) nunca dá; com números, sai peça válida no Item Level do bicho', { skip: SEM }, () => {
+test('quantas peças caem (regra do dono, 05/10): 0,16 × (1 + bônus da raridade do bicho); de 1 para cima é garantido e o excedente rola mais uma', { skip: SEM }, () => {
   Jogo.iniciar(ITEM_CATALOG);
-  assert.equal(Catalogo.REGRAS.drop.chancePorMonstro, 0, 'o padrão é não cair nada até o dono definir');
-  for (let i = 0; i < 200; i++) assert.equal(Jogo.dropDoMonstro(80), null);
-  const regras = { ...Catalogo.REGRAS, drop: { chancePorMonstro: 1, raridades: { normal: 0, magico: 1, raro: 1, unico: 1 }, ilvlMaximo: 100 } };
+  const q = (t) => Math.round(Jogo.quantidadeDoDrop(t) * 100) / 100;
+  assert.deepEqual(['normal', 'modificado', 'raro', 'elite', 'unico', 'boss'].map(q), [0.16, 0.4, 1.36, 1.36, 4.72, 4.72]);
+  assert.equal(q('desconhecido'), 0.16, 'tipo sem bônus = normal');
+  const rng = semente(7);
+  const media = (t, n = 4000) => Array.from({ length: n }, () => Jogo.quantasPecas(t, rng)).reduce((a, b) => a + b, 0) / n;
+  assert.ok(Math.abs(media('normal') - 0.16) < 0.03);
+  for (let i = 0; i < 300; i++) assert.ok([1, 2].includes(Jogo.quantasPecas('raro', rng)), 'raro: 1 garantida + 36% de outra');
+  for (let i = 0; i < 300; i++) assert.ok([4, 5].includes(Jogo.quantasPecas('boss', rng)));
+  const nada = { ...Catalogo.REGRAS, drop: { ...Catalogo.REGRAS.drop, chanceBase: 0 } };
+  for (let i = 0; i < 100; i++) assert.deepEqual(Jogo.dropsDoMonstro(80, 'boss', rng, nada), [], 'chanceBase 0 = nada cai');
+});
+
+test('a peça que cai é válida, registrada e no Item Level do bicho', { skip: SEM }, () => {
+  Jogo.iniciar(ITEM_CATALOG);
+  const regras = { ...Catalogo.REGRAS, drop: { ...Catalogo.REGRAS.drop, raridades: { normal: 0, magico: 1, raro: 1, unico: 1 } } };
   const rng = semente(5);
-  for (let i = 0; i < 60; i++) {
-    const p = Jogo.dropDoMonstro(30, rng, regras);
-    assert.ok(p && ITEM_CATALOG[p.id]?.poe, 'peça do PoE registrada');
+  const pecas = Array.from({ length: 30 }, () => Jogo.dropsDoMonstro(30, 'boss', rng, regras)).flat();
+  assert.ok(pecas.length >= 120);
+  for (const p of pecas) {
+    assert.ok(ITEM_CATALOG[p.id]?.poe, 'peça do PoE registrada');
     assert.ok(['magico', 'raro', 'unico'].includes(p.poe.raridade));
     assert.equal(p.poe.ilvl, 30);
   }
@@ -103,11 +116,10 @@ test('os pesos de raridade do dono (05/10): a peça que cai é quase sempre Norm
   Jogo.iniciar(ITEM_CATALOG);
   const R = Catalogo.REGRAS.drop.raridades;
   assert.deepEqual([R.normal, R.magico, R.raro, R.unico], [0.85, 0.125, 0.03, 0.00055]);
-  const regras = { ...Catalogo.REGRAS, drop: { ...Catalogo.REGRAS.drop, chancePorMonstro: 1 } };
   const rng = semente(11);
   const n = 2000;
   const conta = { normal: 0, magico: 0, raro: 0, unico: 0 };
-  for (let i = 0; i < n; i++) conta[Jogo.dropDoMonstro(60, rng, regras).poe.raridade]++;
+  for (let i = 0; i < n; i++) conta[Jogo.pecaSorteada(60, rng).poe.raridade]++;
   assert.ok(conta.normal / n > 0.8 && conta.normal / n < 0.9, `normal ${conta.normal}`);
   assert.ok(conta.magico / n > 0.09 && conta.magico / n < 0.16, `mágico ${conta.magico}`);
   assert.ok(conta.raro / n > 0.01 && conta.raro / n < 0.05, `raro ${conta.raro}`);

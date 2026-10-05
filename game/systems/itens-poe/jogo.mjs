@@ -146,14 +146,28 @@ export function entregar(nome, peca) {
 // ---------------------------------------------------------------- o drop nas caçadas
 
 /**
- * Uma peça do PoE que cai do bicho morto, ou null. Só com o sistema ligado E com os números do dono em `regras.drop` (chance por monstro
- * e pesos de raridade — a coleção não traz; com chance 0, nada cai). A base é sorteada entre as equipáveis cujo nível exigido cabe no
- * Item Level (= o level do bicho, até `ilvlMaximo`); o Único só sai de base que tem único.
+ * QUANTAS peças do PoE caem do bicho (a regra do PoE que o dono trouxe, 05/10): quantidade = chanceBase × (1 + bônus de quantidade da
+ * raridade do bicho). Abaixo de 1 é a chance de 1 peça; de 1 para cima, a parte inteira é garantida e o excedente rola mais uma.
+ * `tipo`: a raridade do bicho no Draevor (normal, modificado, raro, elite, unico, boss — ver `hunt/escalonamento.tipoDoBicho`).
  */
-export function dropDoMonstro(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS) {
+export function quantidadeDoDrop(tipo, regras = Catalogo.REGRAS) {
+  const D = regras.drop;
+  const bonus = Number(D?.bonusDeQuantidade?.[tipo] ?? D?.bonusDeQuantidade?.normal ?? 0) || 0;
+  return Math.max(0, Number(D?.chanceBase) || 0) * (1 + bonus);
+}
+export function quantasPecas(tipo, rng = Math.random, regras = Catalogo.REGRAS) {
+  const q = quantidadeDoDrop(tipo, regras);
+  return Math.floor(q) + (rng() < q - Math.floor(q) ? 1 : 0);
+}
+
+/**
+ * Uma peça do PoE sorteada para o Item Level do bicho (= o level dele, até `ilvlMaximo`): a raridade pelos pesos do dono, a base entre as
+ * equipáveis cujo nível exigido cabe no Item Level; o Único só sai de base que tem único. Null sem o sistema ligado ou sem pesos.
+ */
+export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS) {
   const cat = Catalogo.catalogo();
   const D = regras.drop;
-  if (!cat || !(D?.chancePorMonstro > 0) || rng() >= D.chancePorMonstro) return null;
+  if (!cat || !D) return null;
   const pesos = Object.entries(D.raridades ?? {}).filter(([r, p]) => p > 0 && regras.raridades[r]);
   const total = pesos.reduce((n, [, p]) => n + p, 0);
   if (!(total > 0)) return null;
@@ -172,4 +186,16 @@ export function dropDoMonstro(nivelDoBicho, rng = Math.random, regras = Catalogo
   if (!candidatas.length) return null;
   const base = candidatas[Math.floor(rng() * candidatas.length)];
   return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade, ilvl, rng }), regras);
+}
+
+/** As peças do PoE que caem do bicho morto (lista, talvez vazia). Só com o sistema ligado. */
+export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random, regras = Catalogo.REGRAS) {
+  if (!Catalogo.catalogo() || !regras.drop) return [];
+  const n = quantasPecas(tipo, rng, regras);
+  const pecas = [];
+  for (let i = 0; i < n; i++) {
+    const p = pecaSorteada(nivelDoBicho, rng, regras);
+    if (p) pecas.push(p);
+  }
+  return pecas;
 }
