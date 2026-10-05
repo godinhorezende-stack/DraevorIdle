@@ -304,7 +304,8 @@ console.log(`  parties recarregadas: ${await Party.carregar()}`);
 if (validarServerSave().config.maintenanceMode) Manutencao.definir(true);
 ServerSave.iniciar().catch((e) => console.error('[SERVER-SAVE] não iniciou ->', e.message));
 
-http.listen(PORTA, () => {
+// `ENDERECO` (opcional): só nesse endereço — o servidor de desenvolvimento local usa 127.0.0.1 (acesso por túnel SSH). Sem ele, todas as interfaces.
+http.listen(PORTA, ...(process.env.ENDERECO ? [process.env.ENDERECO] : []), () => {
   console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
 });
 
