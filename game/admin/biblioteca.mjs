@@ -76,12 +76,12 @@ const OUTFITS = new Set(Object.keys(lerJson('outfits.json')));
 const SPRITES_DE_ITEM = new Set(Object.keys(lerJson('item-sprites.json')));
 const temOutfit = (look) => OUTFITS.has(String(look));
 const temSpriteDeItem = (id) => SPRITES_DE_ITEM.has(String(id));
-const desenhoDoMonstro = (m) => (m?.look && temOutfit(m.look) ? { tipo: 'criatura', look: m.look, cores: m.colors ?? null } : m?.lookItem && temSpriteDeItem(m.lookItem) ? { tipo: 'item', id: m.lookItem } : null);
+export const desenhoDoMonstro = (m) => (m?.look && temOutfit(m.look) ? { tipo: 'criatura', look: m.look, cores: m.colors ?? null } : m?.lookItem && temSpriteDeItem(m.lookItem) ? { tipo: 'item', id: m.lookItem } : null);
 const desenhoDaHunt = (h) => {
   const c = (h.creatures ?? []).find((x) => CATALOGO.bestiary[x.key]);
   return c ? desenhoDoMonstro(CATALOGO.bestiary[c.key]) : null;
 };
-const desenhoDoItem = (i) => (i && temSpriteDeItem(i.id) ? { tipo: 'item', id: Number(i.id) } : null);
+export const desenhoDoItem = (i) => (i && temSpriteDeItem(i.id) ? { tipo: 'item', id: Number(i.id) } : null);
 /** Quantas referências quebradas (itens que não existem) a linha tem — o selo de alerta do card. */
 const alertasDoMonstro = (m) => itensQuebrados((m?.loot ?? []).map((l) => l.id)).length;
 

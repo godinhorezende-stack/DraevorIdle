@@ -17,6 +17,7 @@ import { ITEM_CATALOG } from '../dados.mjs';
 import * as C from './config.mjs';
 import * as Atributos from '../personagem/atributos.mjs';
 import * as Gemas from '../skills/gemas.mjs';
+import * as Progressao from '../progressao.mjs';
 
 /**
  * O TIPO do item, que escolhe o pool de adds (`pools.json`): arma corpo a
@@ -179,8 +180,11 @@ export function rolarBase(itemId, raridade, rng = Math.random, itemLevel = null)
   for (const campo of ['attack', 'defense', 'armor']) {
     const valor = campo === 'armor' ? (querArmadura ? armaduraBase(meta) : 0) : joia ? (campo === 'attack' && querAtaque ? ataqueBaseDaJoia(meta) : 0) : Number(meta?.[campo]);
     if (!(valor > 0)) continue;
-    const piso = Math.max(1, Math.round(valor * sortear(faixa.piso)));
-    const teto = Math.max(piso, Math.round(valor * sortear(faixa.teto)));
+    // Arma com faixa própria de dano (`attackMin`/`attackMax`): o piso parte do mínimo da base e o teto do máximo; sem ela, o valor único (como sempre).
+    const deMin = campo === 'attack' && !joia && meta?.attackMin > 0 ? Number(meta.attackMin) : valor;
+    const deMax = campo === 'attack' && !joia && meta?.attackMax > 0 ? Number(meta.attackMax) : valor;
+    const piso = Math.max(1, Math.round(deMin * sortear(faixa.piso)));
+    const teto = Math.max(piso, Math.round(deMax * sortear(faixa.teto)));
     base[campo] = [piso, teto];
   }
   // Joia que veio sem armadura mas TEM no catálogo: zera (senão a peça voltaria ao valor cheio dele).
@@ -243,7 +247,9 @@ export function gerarItem(ctx) {
   const meta = ITEM_CATALOG[ctx.itemId];
   const { ato, dificuldade } = origemDoDrop(ctx);
   // A raridade do mob inclina a QUALIDADE (o boss de Ato conta como `boss`); sem ela, a tabela do estágio (mob normal).
-  let raridade = ctx.raridade ?? sortearChave(C.inclinarTabela(C.RARIDADES.chances[ato][dificuldade], ctx.boss ? 'boss' : ctx.raridadeDoMob), rng);
+  // A DIFICULDADE do conteúdo (não a do degrau do boss) decide o `loot` configurado: pesos de raridade, chance de +1 modificador, pesos e teto dos tiers (`progressao.mjs`; neutro por padrão).
+  const loot = ctx.lootConfig ?? Progressao.lootDa(ctx.dificuldade ?? C.RARIDADES.dificuldadePadrao);
+  let raridade = ctx.raridade ?? sortearChave(Progressao.aplicarPesosDeRaridade(C.inclinarTabela(C.RARIDADES.chances[ato][dificuldade], ctx.boss ? 'boss' : ctx.raridadeDoMob), loot.pesosDeRaridade), rng);
   // A origem do drop (boss, baú, guardião) tem uma raridade MÍNIMA: sobe a que saiu abaixo dela (nunca baixa nem muda uma raridade forçada).
   const minima = ctx.raridade ? null : C.raridadeMinimaDe(ctx.origem);
   if (minima && C.ORDEM.indexOf(raridade) < C.ORDEM.indexOf(minima)) raridade = minima;
@@ -252,10 +258,12 @@ export function gerarItem(ctx) {
 
   const base = rolarBase(ctx.itemId, raridade, rng, itemLevel);
   const pool = poolDe(ctx.itemId, { itemLevel, raridade, base });
-  const quantos = Math.min(pool.length, Number(sortearChave(def.atributos, rng)));
+  let quantos = Math.min(pool.length, Number(sortearChave(def.atributos, rng)));
+  // Chance de +1 modificador (só quando configurada: sem ela o sorteio não gasta uma chamada do rng, e as sementes antigas seguem iguais). Teto: o máximo da raridade + 1.
+  if (loot.chanceDeModificadorExtra > 0 && rng() < loot.chanceDeModificadorExtra) quantos = Math.min(pool.length, quantos + 1, Math.max(...Object.keys(def.atributos).map(Number)) + 1);
   const amuleto = meta?.slot === 'neck';
   const af = sortearAdds(pool, quantos, rng).map((id) => {
-    const nivel = C.sortearTier(itemLevel, raridade, rng, { amuleto });
+    const nivel = C.sortearTier(itemLevel, raridade, rng, { amuleto, pesos: loot.pesosDeTier, maximo: loot.tierMaximo });
     // Add cujo valor é da RARIDADE da peça e não do tier (o +N ao nível das gemas).
     const fixo = C.ATRIBUTOS[id]?.valorPorRaridade?.[raridade];
     if (fixo != null) return { id, nivel, value: fixo };

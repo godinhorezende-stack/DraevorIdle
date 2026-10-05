@@ -40,7 +40,7 @@ test('T3. layout respeita a posição gravada e não trava com ciclo', () => {
 test('T4. a aba Atos está ligada ao editor de conteúdo e a tela só chama as rotas do servidor (a validação é do servidor)', () => {
   const ed = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
   assert.match(ed, /criarEditorDeAtos/);
-  assert.match(ed, /\['atos', 'Atos/);
+  assert.match(ed, /\['atos', 'Acts e campanhas'\]/);
   const tela = readFileSync(new URL('../frontend/client/src/editor-atos.mjs', import.meta.url), 'utf8');
   for (const r of ["'atos-editor'", "'atos-editor/validar'", 'biblioteca/lista', 'biblioteca/detalhe']) assert.ok(tela.includes(r), r);
   assert.doesNotMatch(tela, /ID_VALIDO|TIPOS_DE_FASE\b/, 'nenhuma regra duplicada na tela');

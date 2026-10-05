@@ -45,13 +45,18 @@ function simbolos(tema) {
 const EXT = { x0: -600, y0: -320, x1: LARGURA + 600, y1: ALTURA + 320 };
 const AREA = (EXT.x1 - EXT.x0) * (EXT.y1 - EXT.y0);
 
-export function fundoDoAto(ato, nome, pontos = []) {
+export function fundoDoAto(ato, nome, pontos = [], fundo = null) {
   const tema = temaDoAto(ato, nome);
   const rnd = aleatorio(ato * 104729 + 7);
   const g = svg('g', { class: 'w-fundo', 'aria-hidden': 'true' });
   g.append(simbolos(tema));
   g.append(svg('linearGradient', { id: `w-papel-${ato}`, x1: 0, y1: 0, x2: 1, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': tema.papel[0] }), svg('stop', { offset: '100%', 'stop-color': tema.papel[1] })));
   g.append(svg('rect', { x: EXT.x0, y: EXT.y0, width: EXT.x1 - EXT.x0, height: EXT.y1 - EXT.y0, fill: `url(#w-papel-${ato})` }));
+  // IMAGEM DE FUNDO do Ato (carregada na Engine › Mapa do mundo): cobre a tela do mapa (LARGURA × ALTURA, cortando o excesso) e dispensa a decoração desenhada; sem ela, o fundo de sempre.
+  if (fundo?.arquivo) {
+    g.append(svg('image', { href: `/gamedata/mapa-mundo/${fundo.arquivo}`, x: 0, y: 0, width: LARGURA, height: ALTURA, preserveAspectRatio: 'xMidYMid slice', class: 'w-fundo-imagem' }));
+    return g;
+  }
   // manchas e dobras do papel
   for (let i = 0; i < 48; i++) g.append(svg('circle', { cx: Math.round(EXT.x0 + rnd() * (EXT.x1 - EXT.x0)), cy: Math.round(EXT.y0 + rnd() * (EXT.y1 - EXT.y0)), r: 14 + Math.round(rnd() * 46), fill: rnd() > 0.5 ? 'rgba(90,60,20,.07)' : 'rgba(255,240,200,.08)' }));
   g.append(svg('path', { d: `M${LARGURA / 2} ${EXT.y0} V${EXT.y1} M${EXT.x0} ${ALTURA / 2} H${EXT.x1}`, stroke: 'rgba(60,40,15,.16)', 'stroke-width': 1.2, 'stroke-dasharray': '2 5', fill: 'none' }));

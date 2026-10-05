@@ -8,18 +8,25 @@
 // errado em silêncio. Nada aqui consulta banco, rede ou Redis.
 import { readFileSync } from 'node:fs';
 import { CATALOGO } from '../dados.mjs';
+import * as Progressao from '../progressao.mjs';
 
-const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../../gamedata/itens/${arquivo}`, import.meta.url), 'utf8'));
+// `DRAEVOR_ITENS`: outra pasta com os mesmos arquivos — só para os testes provarem que o que o editor grava é o que o jogo lê.
+const PASTA_DOS_ITENS = process.env.DRAEVOR_ITENS ? `${process.env.DRAEVOR_ITENS.replace(/\/$/, '')}/` : null;
+const ler = (arquivo) => JSON.parse(readFileSync(PASTA_DOS_ITENS ? `${PASTA_DOS_ITENS}${arquivo}` : new URL(`../../gamedata/itens/${arquivo}`, import.meta.url), 'utf8'));
 
 export const RARIDADES = ler('raridades.json');
+const RARIDADES_CARREGADAS = RARIDADES;
 const ARQUIVO_DE_ATRIBUTOS = ler('atributos.json');
 /** Os adds que caem (ModifierDefinition): nome, tipo, categoria, peso e a faixa de cada tier (T1 fraco … T5 forte). */
 export const ATRIBUTOS = ARQUIVO_DE_ATRIBUTOS.atributos;
+const ATRIBUTOS_CARREGADOS = ATRIBUTOS;
 /** Os adds de antes da reestruturação (29/09): não caem mais; só a migração v4 lê. */
 export const LEGADO = ARQUIVO_DE_ATRIBUTOS.legado ?? {};
 export const POOLS = ler('pools.json').pools;
+const POOLS_CARREGADOS = POOLS;
 /** Os tiers pelo Item Level, o peso de cada tier e o viés da raridade (`tiers.json`). */
 export const TIERS = ler('tiers.json');
+const TIERS_CARREGADOS = TIERS;
 export const EFEITOS = ler('efeitos.json');
 
 export const ORDEM = RARIDADES.ordem;
@@ -29,8 +36,13 @@ export const NIVEL_MAXIMO = 5;
 const soma = (lista) => lista.reduce((a, b) => a + Number(b), 0);
 const perto100 = (s) => Math.abs(s - 100) < 1e-6;
 
-/** Confere a configuração inteira; devolve a lista de problemas (vazia = ok). */
-export function validar() {
+/**
+ * Confere a configuração inteira; devolve a lista de problemas (vazia = ok). Sem argumento valida a configuração carregada (é o que o boot faz);
+ * com `dados` valida uma configuração PROPOSTA (o editor de regras confere o que vai gravar ANTES, porque erro aqui derruba o boot).
+ */
+export function validar(dados = {}) {
+  const { RARIDADES, TIERS, ATRIBUTOS, POOLS } = { RARIDADES: dados.RARIDADES ?? RARIDADES_CARREGADAS, TIERS: dados.TIERS ?? TIERS_CARREGADOS, ATRIBUTOS: dados.ATRIBUTOS ?? ATRIBUTOS_CARREGADOS, POOLS: dados.POOLS ?? POOLS_CARREGADOS };
+  const ORDEM = RARIDADES.ordem;
   const erros = [];
   for (const [ato, porDif] of Object.entries(RARIDADES.chances)) {
     for (const d of DIFICULDADES) {
@@ -111,22 +123,27 @@ for (const [id, a] of Object.entries(ATRIBUTOS)) {
 const achatar = (grupo) => Object.fromEntries(Object.entries(grupo ?? {}).filter(([k]) => !k.startsWith('_')).map(([id, d]) => [id, { ...d, ...(d.condicao ?? {}), ...(d.efeito ?? {}), ...(d.efeito?.acumuloAoMatar ?? {}) }]));
 CATALOGO.efeitosDeItem = { lendario: achatar(EFEITOS.lendario), mitico: achatar(EFEITOS.mitico) };
 
-/** Os tiers que o Item Level libera (`tiers.json`, `itemLevel`). */
-export function tiersLiberados(itemLevel) {
+/** Os tiers que o Item Level libera: a tabela dada (ou, sem ela, a da progressão/`tiers.json`). Pura quando se passa `tabela`. */
+export function tiersLiberados(itemLevel, tabela = null) {
   const il = Math.max(1, itemLevel ?? 1);
-  return (TIERS.itemLevel.find((f) => f.ate == null || il <= f.ate) ?? TIERS.itemLevel.at(-1)).tiers;
+  // A progressão pode remapear a tabela (`tiersDeModificador`); sem isso vale a de `tiers.json`.
+  const t = tabela ?? Progressao.EM_USO.progressao.tiersDeModificador?.itemLevel ?? TIERS.itemLevel;
+  return (t.find((f) => f.ate == null || il <= f.ate) ?? t.at(-1)).tiers;
 }
 
 /**
  * Sorteia o TIER de um add: entre os liberados pelo Item Level, pelo peso de
  * cada tier × viés^(tier−1) — o viés da raridade (× o do amuleto, se for).
  */
-export function sortearTier(itemLevel, raridade, rng = Math.random, { amuleto = false } = {}) {
+export function sortearTier(itemLevel, raridade, rng = Math.random, { amuleto = false, pesos = null, maximo = null } = {}) {
   const vies = (TIERS.viesDaRaridade[raridade] ?? 1) * (amuleto ? TIERS.viesDoAmuleto ?? 1 : 1);
-  const tiers = tiersLiberados(itemLevel);
-  const pesos = tiers.map((t) => TIERS.peso[String(t)] * vies ** (t - 1));
-  let r = rng() * pesos.reduce((a, b) => a + b, 0);
-  for (let i = 0; i < tiers.length; i++) if ((r -= pesos[i]) < 0) return tiers[i];
+  // `pesos` (multiplicador por tier) e `maximo` (teto) vêm da DIFICULDADE (`progressao.mjs`): só inclinam a escolha entre os tiers que o Item Level já libera — nunca liberam mais.
+  let tiers = tiersLiberados(itemLevel);
+  if (maximo != null) { const limitado = tiers.filter((t) => t <= maximo); tiers = limitado.length ? limitado : [tiers[0]]; }
+  const ps = tiers.map((t) => TIERS.peso[String(t)] * vies ** (t - 1) * (pesos?.[String(t)] ?? 1));
+  const total = ps.reduce((a, b) => a + b, 0);
+  let r = rng() * (total > 0 ? total : 1);
+  for (let i = 0; i < tiers.length; i++) if ((r -= ps[i]) < 0) return tiers[i];
   return tiers.at(-1);
 }
 

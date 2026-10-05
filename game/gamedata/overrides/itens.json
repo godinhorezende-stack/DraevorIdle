@@ -1,0 +1,15 @@
+{
+  "_nota": "Overrides de itens (systems/overrides.mjs): só as DIFERENÇAS sobre o catálogo importado. Apagar uma entrada devolve o original. Editado em /editor/conteudo (Itens).",
+  "ativo": true,
+  "itens": {
+    "55611": {
+      "minLevel": 1000,
+      "name": "Draevor Druid Over Rod",
+      "attack": 100
+    },
+    "900002": {
+      "base": 7414,
+      "name": "Arco Bruto"
+    }
+  }
+}

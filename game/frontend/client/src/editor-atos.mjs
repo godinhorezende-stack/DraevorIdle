@@ -2,7 +2,7 @@
 // mora aqui: o servidor valida (`systems/atos-modelo.mjs`) e grava (`admin/atos.mjs`); a tela só edita uma cópia e pede a validação a cada
 // mudança. Os atos legados (os 4 de hoje) são somente leitura: "Duplicar" cria o rascunho editável.
 // Recebe as ferramentas da página (`el`, `api`, a raiz, `msg`) em vez de importá-las, para não fechar ciclo com `editor-conteudo.mjs`.
-import { confirmar, pedirTexto, descartarAlteracoes } from './editor-ui.mjs';
+import { confirmar, pedirTexto, descartarAlteracoes, tratarConflito } from './editor-ui.mjs';
 import { editorDeDrops } from './editor-poe-telas.mjs';
 
 const POE = '/api/mapas/_engine/itens-poe/';
@@ -10,6 +10,9 @@ const poeApi = async (rota, corpo) => (await fetch(POE + rota, corpo ? { method:
 
 /** O ID do ato: a tela só exige que não fique vazio — o formato é o servidor quem confere. */
 const obrigatorio = (v) => (v ? null : 'Digite um ID.');
+
+import { tabelaDeDrops } from './editor-drops.mjs';
+import { vistaValidacao, vistaPrevia, vistaVersoes, vistaPublicacao } from './editor-atos-vistas.mjs';
 
 const NS = 'http://www.w3.org/2000/svg';
 const L = 920;
@@ -59,7 +62,7 @@ export function posicoesAutomaticas(ato) {
 }
 
 export function criarEditorDeAtos({ el, api, raiz, msg }) {
-  const E = { lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null } };
+  const E = { vista: 'fluxo', difPrevia: 'facil', lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null } };
   const sv = (tag, attrs = {}, ...filhos) => {
     const n = document.createElementNS(NS, tag);
     for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) n.setAttribute(k, v);
@@ -89,6 +92,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     E.fase = null;
     E.lig = null;
     E.ligando = null;
+    E.vista = 'fluxo';
     pintar();
   }
   let esperando = null;
@@ -103,12 +107,38 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
   }
   async function salvar() {
     const r = await api('atos-editor', E.ato);
+    if (await tratarConflito(r, async () => { E.limpo = JSON.stringify(E.ato); await abrir(E.ato.id); })) return;
     if (r.ok === false) return msg(r.erros?.join(' ') ?? 'Não salvou.', 'erro');
     E.ato = r.ato;
     E.limpo = JSON.stringify(E.ato);
     E.problemas = r.problemas;
     await carregarLista();
     msg(`Rascunho salvo (versão ${r.ato.versao}).${r.valido ? '' : ' Há erros na validação: o ato ainda não pode ir para beta.'}`, r.valido ? 'ok' : 'aviso');
+    pintar();
+  }
+  async function restaurar(n) {
+    if (!(await confirmar(`Restaurar a versão ${n}?`, 'Cria uma versão NOVA com o conteúdo dela, como rascunho. Nada é apagado.', { ok: 'Restaurar' }))) return;
+    const r = await api(`atos-editor/${E.ato.id}/restaurar`, { versao: n });
+    if (r.ok === false) return msg(r.erros.join(' '), 'erro');
+    E.ato = r.ato;
+    E.limpo = JSON.stringify(E.ato);
+    E.problemas = r.problemas;
+    await carregarLista();
+    msg(`Versão ${n} restaurada como versão ${r.ato.versao} (rascunho).`, 'ok');
+    pintar();
+  }
+  async function mudarEstado(estado) {
+    if (E.ato.estado === estado) return msg(`O ato já está em ${estado}.`, 'aviso');
+    const antes = E.ato.estado;
+    E.ato.estado = estado;
+    const r = await api('atos-editor', E.ato);
+    if (await tratarConflito(r, async () => { E.limpo = JSON.stringify(E.ato); await abrir(E.ato.id); })) { E.ato.estado = antes; return; }
+    if (r.ok === false) { E.ato.estado = antes; msg(r.erros.join(' '), 'erro'); return pintar(); }
+    E.ato = r.ato;
+    E.limpo = JSON.stringify(E.ato);
+    E.problemas = r.problemas;
+    await carregarLista();
+    msg(`Estado do ato: ${estado} (versão ${r.ato.versao}). ${['beta', 'publicado'].includes(estado) ? 'Vale no próximo boot do servidor (com o deploy).' : ''}`, 'ok');
     pintar();
   }
   async function duplicar() {
@@ -317,7 +347,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       E.somenteLeitura ? null : el('div', { class: 'linha' }, el('input', { placeholder: 'buscar item (nome ou ID) para adicionar', value: R.q, onchange: (e) => buscar(e.target.value) })),
       R.itens.length ? el('div', { class: 'linhas' }, R.itens.map((it) => el('div', { class: 'linha' }, el('span', {}, `${it.id} ${it.name}`), el('button', { onclick: () => mudarRec((x) => (x.drops ??= []).push({ id: it.id, chance: 1 })) }, '+ drop'), el('button', { onclick: () => mudarRec((x) => garantirPc(x).itens.push({ id: it.id, count: 1 })) }, '+ 1ª vez')))) : null,
       R.problemas.length ? el('ul', { class: 'problemas' }, R.problemas.map((p) => el('li', { class: p.nivel }, `${p.nivel === 'erro' ? '✖' : '⚠'} ${p.mensagem}`))) : (R.previa ? el('div', { class: 'selo ok' }, 'Sem alertas') : null),
-      R.previa ? el('table', { class: 'bib-sub' }, el('thead', {}, el('tr', {}, ['Item', 'Qtd', 'Chance', 'Esperado/exec.', 'Origem', 'Condição'].map((h) => el('th', {}, h)))), el('tbody', {}, R.previa.linhas.map((l) => el('tr', {}, el('td', {}, l.nome ?? l.item ?? '—'), el('td', {}, l.quantidade ?? '—'), el('td', {}, `${l.chancePct}%`), el('td', {}, l.esperadoPorExecucao ?? '—'), el('td', {}, l.origem), el('td', {}, l.condicao))))) : null,
+      R.previa ? tabelaDeDrops(R.previa.linhas.map((l) => ({ id: l.item, nome: l.quantidade != null ? `${l.nome ?? l.item ?? ''} × ${l.quantidade.toLocaleString('pt-BR')}` : l.nome, desenho: l.desenho, chancePct: l.chancePct, esperado: l.esperadoPorExecucao ?? (l.tipo === 'primeira vez' ? null : null), valor: l.valorPorExecucao ?? null, origem: `${l.origem} · ${l.condicao}` })), { rotuloDoEsperado: 'Esperado / execução', ordem: 'chancePct', vazio: 'Sem linhas.' }) : null,
       R.previa ? el('div', { class: 'dica' }, `Valor esperado por execução (ouro de NPC, sem a 1ª vez): ${R.previa.valorEsperadoPorExecucao.toLocaleString('pt-BR')}`) : null,
       el('div', { class: 'linha' }, el('button', { onclick: async () => { R.simulacao = { pendente: true }; await atualizarRc(k, origem, huntId); } }, 'Simular 10.000 execuções'), E.somenteLeitura ? null : el('button', { class: 'perigo', onclick: () => { gravarRec(k, null); R.previa = null; R.simulacao = null; mudou(); } }, 'Remover recompensa')),
       R.simulacao?.itens ? el('div', {}, el('div', { class: 'dica' }, R.simulacao.aviso), el('table', { class: 'bib-sub' }, el('tbody', {}, R.simulacao.itens.map((i) => el('tr', {}, el('td', {}, i.nome ?? i.item), el('td', {}, `${i.quedasPorExecucao} quedas/exec.`), el('td', {}, `${i.execucoesComQueda}% das execuções com queda`), el('td', {}, i.execucoesParaUmaQueda ? `1 queda a cada ~${i.execucoesParaUmaQueda} exec.` : 'nunca caiu')))))) : null);
@@ -536,7 +566,24 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     const recFase = fase ? painelDeRecompensa(`fase:${fase.id}`, 'fase', fase.huntId, rotulosDe('fase')) : null;
     const recBoss = E.ato.bossFinal ? painelDeRecompensa('boss', 'boss', null, rotulosDe('boss')) : null;
     const lateral = [painelDoAto(), painelDaFase(), fase ? painelDaConclusao(fase) : null, fase ? painelDosMobs(fase) : null, recFase, painelDaLigacao(), painelDoBoss(), recBoss, painelPicker()].filter(Boolean);
+    const VISTAS = [['fluxo', 'Fluxo'], ['validacao', 'Validação'], ['previa', 'Pré-visualização'], ['versoes', 'Versões'], ['publicacao', 'Publicação']];
+    const barraDeVistas = el('div', { class: 'eng-abas atos-vistas' }, VISTAS.map(([id, nome]) => el('button', { type: 'button', class: E.vista === id ? 'ativa' : '', onclick: () => { E.vista = id; pintar(); } }, nome, id === 'validacao' && E.problemas.length ? el('span', { class: `selo ${E.problemas.some((p) => p.nivel === 'erro') ? 'erro' : 'aviso'}` }, String(E.problemas.length)) : null)));
+    if (E.vista !== 'fluxo') {
+      const corpo = el('div', { class: 'atos-vista-corpo' }, el('div', { class: 'dica' }, 'Carregando…'));
+      const completar = async () => {
+        if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));
+        else if (E.vista === 'previa') corpo.replaceChildren(vistaPrevia(E.ato, { dif: E.difPrevia, aoMudarDif: (d) => { E.difPrevia = d; pintar(); } }));
+        else if (E.vista === 'versoes') corpo.replaceChildren(await vistaVersoes({ api, ato: E.ato, sujo: sujo(), aoRestaurar: restaurar }));
+        else if (E.vista === 'publicacao') corpo.replaceChildren(await vistaPublicacao({ api, ato: E.ato, sujo: sujo(), aoMudarEstado: mudarEstado }));
+      };
+      alvo.replaceChildren(
+        el('div', { class: 'linha' }, el('button', { onclick: async () => { if (sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return; E.ato = null; await carregarLista(); pintar(); } }, '← Atos'), el('b', {}, `${E.ato.nome} `, el('span', { class: 'dica' }, `(${E.ato.id}, versão ${E.ato.versao}, ${E.ato.estado})${sujo() ? ' • alterações não salvas' : ''}`)), E.somenteLeitura ? null : el('button', { class: 'primario', onclick: salvar }, 'Salvar rascunho')),
+        barraDeVistas, corpo);
+      completar();
+      return;
+    }
     alvo.replaceChildren(
+      barraDeVistas,
       el('div', { class: 'linha' },
         el('button', { onclick: async () => { if (sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return; E.ato = null; await carregarLista(); pintar(); } }, '← Atos'),
         el('b', {}, `${E.ato.nome} `, el('span', { class: 'dica' }, `(${E.ato.id}, versão ${E.ato.versao})${sujo() ? ' • alterações não salvas' : ''}`)),

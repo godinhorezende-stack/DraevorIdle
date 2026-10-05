@@ -28,6 +28,13 @@ import * as Party from '../systems/party.mjs';
 import * as ServerSave from '../systems/server-save.mjs';
 import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as ModoBeta from '../systems/modo-beta.mjs';
+import * as Operacao from '../admin/operacao.mjs';
+import { criarAcesso } from '../admin/acesso.mjs';
+import { contaPorEmail, conferirSenha, contarPersonagensPorClasse, migrarClasse } from '../database/banco.mjs';
+import * as Classes from '../systems/classes.mjs';
+import { criarGuarda } from '../admin/acesso-http.mjs';
+import { ligarHotReload as ligarHotReloadDaEngine, ligarBancoDeClasses } from '../admin/conteudo-http.mjs';
+import { iniciarHotReload } from '../systems/hot-reload-estrategias.mjs';
 import { validarConfig as validarServerSave } from '../systems/server-save-config.mjs';
 
 Site.ligar(vivas);
@@ -68,7 +75,10 @@ const PAGINAS = {
   '/personagem': '/personagem.html',
   '/editor': '/editor.html',
   '/editor/conteudo': '/editor-conteudo.html',
+  '/editor/login': '/editor-login.html',
 };
+// As páginas da Engine que exigem sessão de administrador (a de login não): sem sessão, o servidor leva ao login ANTES de entregar a página.
+const PAGINAS_DA_ENGINE = new Set(['/editor', '/editor/conteudo']);
 
 const PREFIXO_ENGINE = '/packages/shared/src/';
 const PREFIXO_GAMEDATA = '/gamedata/';
@@ -117,10 +127,14 @@ const http = createServer((req, res) => {
 function corpoJson(req) {
   return new Promise((resolve, reject) => {
     let dados = '';
-    req.on('data', (pedaco) => (dados += pedaco));
+    req.on('data', (pedaco) => {
+      dados += pedaco;
+      // Teto do corpo (as folhas de sprites do editor vão em base64: algumas centenas de KB a poucos MB).
+      if (dados.length > 24 * 1024 * 1024) { reject(new Error('Corpo grande demais (máximo 24 MB).')); req.destroy(); }
+    });
     req.on('end', () => {
       try {
-        resolve(dados ? JSON.parse(dados) : null);
+        resolve((req.corpoAuditado = dados ? JSON.parse(dados) : null));
       } catch {
         reject(new Error('JSON inválido no corpo'));
       }
@@ -135,10 +149,24 @@ function json(res, status, corpo) {
   res.end(texto);
 }
 
+// O acesso à Engine: contas do jogo cujo e-mail está em `gamedata/engine.json` (ou ENGINE_ADMINS); ver `admin/acesso.mjs`.
+const acessoDaEngine = criarAcesso({ deps: { contaPorEmail, conferirSenha } });
+// O Hot Reload de conteúdo: só em desenvolvimento local (desligado em produção, com banco remoto ou HOT_RELOAD=0). O salvamento da Engine avisa direto
+// (`aoGravar`); o monitoramento de arquivos complementa. Ver `systems/hot-reload.mjs`.
+export const hotReload = iniciarHotReload({ producao: acessoDaEngine.config.producao });
+ligarHotReloadDaEngine(hotReload);
+ligarBancoDeClasses({ contar: contarPersonagensPorClasse, migrar: migrarClasse });
+const guardaDaEngine = criarGuarda(acessoDaEngine, { aoGravar: ({ rota, corpo }) => hotReload.aposGravacao(rota, corpo) });
+
 async function atender(req, res) {
   const url = new URL(req.url, 'http://x');
   const caminho = decodeURIComponent(url.pathname.split('?')[0]);
 
+  // As classes ATIVAS para a tela de criação de personagem (público: só nome, descrição, ícone, cor, atributos iniciais e bônus por ponto).
+  if (caminho === '/api/classes') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify(Classes.paraOCliente()));
+  }
   if (caminho === '/saude') {
     res.writeHead(200, { 'content-type': 'application/json' });
     return res.end(JSON.stringify({ ok: true, online: vivas.size }));
@@ -157,21 +185,23 @@ async function atender(req, res) {
    * (o nginx de produção só deixa passar por túnel SSH). GET = situação e últimos ciclos; POST {acao:'executar'}
    * roda um save agora; POST {acao:'manutencao', ativo:true|false} liga/desliga o bloqueio de entradas.
    */
+  // O ACESSO à Engine (login de administrador + gravação desligada em produção): vale para TODA rota /api/mapas*, antes de qualquer outra.
+  if (await guardaDaEngine(req, res, caminho, { json, corpoJson })) return;
   // O modo beta (acesso livre para testar): GET = situação; POST {ativo:true|false} liga/desliga em tempo de execução.
   if (caminho === '/api/mapas/_conteudo/modo-beta') {
     if (req.method === 'GET') return json(res, 200, { ativo: ModoBeta.ativo() });
     if (req.method === 'POST') {
       const dados = await corpoJson(req).catch(() => null);
-      if (typeof dados?.ativo !== 'boolean') return json(res, 400, { ok: false, erros: ['ativo deve ser true ou false.'] });
-      return json(res, 200, { ok: true, ativo: ModoBeta.definir(dados.ativo) });
+      const r = Operacao.definirBeta(dados?.ativo);
+      return json(res, r.ok ? 200 : 400, r);
     }
   }
   if (caminho === '/api/mapas/_conteudo/server-save') {
     if (req.method === 'GET') return json(res, 200, { situacao: ServerSave.situacao(), manutencao: Manutencao.bloqueada(), ciclos: await ServerSave.ultimosCiclos(10) });
     if (req.method === 'POST') {
       const dados = await corpoJson(req).catch(() => null);
-      if (dados?.acao === 'executar') return json(res, 200, await ServerSave.executarAgora());
-      if (dados?.acao === 'manutencao') return json(res, 200, { ok: true, manutencao: Manutencao.definir(!!dados.ativo, typeof dados.mensagem === 'string' ? dados.mensagem : null) });
+      if (dados?.acao === 'executar') return json(res, 200, await Operacao.executarServerSave());
+      if (dados?.acao === 'manutencao') return json(res, 200, { ok: true, manutencao: Operacao.definirManutencao(!!dados.ativo, typeof dados.mensagem === 'string' ? dados.mensagem : null).ativa });
       return json(res, 400, { ok: false, erros: ['acao deve ser "executar" ou "manutencao".'] });
     }
   }
@@ -218,6 +248,10 @@ async function atender(req, res) {
   }
 
   // A wiki: `/wiki` e `/wiki/<artigo>` são a mesma página (o artigo vem do caminho, lido por `client/site/wiki.mjs`).
+  if (PAGINAS_DA_ENGINE.has(caminho) && acessoDaEngine.precisaDeLogin(req.headers.cookie)) {
+    res.writeHead(302, { location: `/editor/login?voltar=${encodeURIComponent(caminho)}`, 'cache-control': 'no-store' });
+    return res.end();
+  }
   const alvo = PAGINAS[caminho] ?? (caminho.startsWith('/wiki/') && !caminho.includes('.') ? '/wiki.html' : caminho);
   if (await servirArquivo(req, res, alvo)) return;
 

@@ -31,7 +31,8 @@ import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
  * Com o sistema de itens do PoE ligado (ITENS_POE=1, só local), a campanha é a do PoE (decisão do dono, 05/10): os 4 atos do Draevor saem
  * (fases e bosses vazios) e os 10 atos do PoE entram como atos do runtime (`itens-poe/campanha.mjs` → `registrarAto`).
  */
-const LIDA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
+// `DRAEVOR_CAMPANHA`: caminho de outro arquivo no formato desta campanha — só para os testes provarem que o que o editor grava é o que o jogo lê.
+const LIDA = JSON.parse(readFileSync(process.env.DRAEVOR_CAMPANHA || new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
 // A campanha do PoE é uma passada só, do nível 1 ao 69: a faixa do Normal diz isso (Cruel e Merciless ficam fechados).
 export const CAMPANHA = itensPoeLigado() ? { ...LIDA, fases: [], bosses: {}, dificuldades: { ...LIDA.dificuldades, facil: { ...LIDA.dificuldades.facil, faixa: [1, 69] } } } : LIDA;
 export const DIFICULDADES = Object.keys(CAMPANHA.dificuldades);
@@ -515,7 +516,8 @@ function contextoDoRuntime() {
   const ordensEmUso = new Map([...Array(ATOS)].map((_, i) => [i + 1, `legado-${i + 1}`]));
   for (const [n, g] of ATOS_DO_EDITOR) ordensEmUso.set(n, g.ato.id);
   const atos = [...ordensEmUso.values()].map((id) => ({ id }));
-  return { huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos, validarRecompensa: RecompensasDeEncontro.validar, itemExiste: (id) => !!ITEM_CATALOG[id] };
+  const categoriaDaHunt = (id) => ['hunts', 'vips', 'especiais', 'divinas'].find((c) => (CATALOGO[c] ?? []).some((h) => h.id === id)) ?? null;
+  return { categoriaDaHunt, huntExiste: (h) => hunts.has(h), bossExiste: (b) => bosses.has(b), huntsEmUso, bossesEmUso, ordensEmUso, ordemMinima: ATOS + 1, atos, validarRecompensa: RecompensasDeEncontro.validar, itemExiste: (id) => !!ITEM_CATALOG[id] };
 }
 
 /**
@@ -558,7 +560,7 @@ export function registrarAto(bruto) {
   CAMPANHA.bosses[String(numero)] = { bossId: boss.bossId, nome: bossCad?.name ?? boss.bossId, levelOriginal: Math.max(1, bossCad?.level ?? nivelBoss.facil), nivel: nivelBoss };
   desfazer.push(() => delete CAMPANHA.bosses[String(numero)]);
   semEsperaDoBoss(boss.bossId);
-  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null }));
+  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: atosDoConteudo()[String(numero)]?.fundo ?? null }));
   ATOS_DO_EDITOR.set(numero, { ato, numero, huntPorFase, desfazer });
   return { ok: true, problemas, numero };
 }
@@ -596,6 +598,60 @@ export function _desregistrarAto(numero) {
   if (!g) return;
   for (const d of g.desfazer.reverse()) d();
   ATOS_DO_EDITOR.delete(Number(numero));
+}
+
+/**
+ * HOT RELOAD de um ato do editor (só desenvolvimento): troca o ato JÁ registrado com o mesmo `id` pelo novo, ou registra se for novo. Se o novo não passar
+ * na validação, o antigo é re-registrado (nunca fica sem o ato) e devolve `{ ok: false, problemas }`. O progresso dos personagens é por `huntId` e não
+ * muda; quem está dentro de uma fase segue na instância que já tinha. Só afeta o que for aberto/consultado depois. `estado` que não executa
+ * (rascunho/desativado) apenas remove o ato registrado.
+ */
+export function recarregarAto(bruto) {
+  // A mesma regra do boot: com o PoE ligado só os atos do PoE (`poe-ato-*`) valem; sem ele, nunca os do PoE.
+  if (itensPoeLigado() !== String(bruto.id).startsWith('poe-ato-')) return { ok: true, removido: false, numero: null, ignorado: itensPoeLigado() ? 'PoE ligado: só os atos do PoE valem' : 'ato do PoE: só com ITENS_POE=1' };
+  const existente = [...ATOS_DO_EDITOR.values()].find((g) => g.ato.id === bruto.id);
+  const executa = bruto.estado === 'beta' || bruto.estado === 'publicado';
+  const anterior = existente?.ato;
+  if (existente) _desregistrarAto(existente.numero);
+  if (!executa) return { ok: true, removido: !!existente, numero: null };
+  const r = registrarAto(bruto);
+  if (!r.ok && anterior) registrarAto(anterior);
+  return r.ok ? { ...r, substituiu: !!existente } : r;
+}
+/** Hot reload: tira do jogo o ato registrado com este `id` (arquivo apagado). `true` se havia. */
+export function removerAtoRegistrado(id) {
+  const g = [...ATOS_DO_EDITOR.values()].find((x) => x.ato.id === id);
+  if (!g) return false;
+  _desregistrarAto(g.numero);
+  return true;
+}
+/**
+ * HOT RELOAD dos NÍVEIS da campanha (`campanha.json`): copia `nivel`/`nome`/`pular`/`levelOriginal` das fases LEGADAS e os níveis dos bosses, SE a estrutura
+ * for a mesma (mesmas hunts, na mesma ordem, mesmos bosses, mesmas dificuldades). Estrutura diferente → `{ ok: false, reinicio: true }`: nada é tocado.
+ */
+export function recarregarNiveis(novo) {
+  const legadas = FASES.filter((f) => !f.grafo);
+  const nv = (novo?.fases ?? []);
+  const chavesLegadas = Object.keys(CAMPANHA.bosses).filter((n) => !ATOS_DO_EDITOR.has(Number(n)));
+  const mesmaEstrutura = legadas.length === nv.length && legadas.every((f, i) => f.huntId === nv[i].huntId) && JSON.stringify(Object.keys(novo.dificuldades ?? {})) === JSON.stringify(DIFICULDADES)
+    && JSON.stringify(Object.keys(novo.bosses ?? {}).sort()) === JSON.stringify(chavesLegadas.sort()) && chavesLegadas.every((n) => novo.bosses[n]?.bossId === CAMPANHA.bosses[n].bossId);
+  if (!mesmaEstrutura) return { ok: false, reinicio: true, motivo: 'a estrutura da campanha mudou (fases, bosses ou dificuldades): precisa reiniciar o servidor.' };
+  const mudadas = [];
+  legadas.forEach((f, i) => {
+    const n = nv[i];
+    const antes = JSON.stringify([f.nome, f.nivel, f.pular, f.levelOriginal]);
+    f.nome = n.nome; f.nivel = structuredClone(n.nivel); f.levelOriginal = n.levelOriginal;
+    if (n.pular) f.pular = n.pular; else delete f.pular;
+    if (antes !== JSON.stringify([f.nome, f.nivel, f.pular, f.levelOriginal])) mudadas.push(f.huntId);
+  });
+  for (const [numero, b] of Object.entries(CAMPANHA.bosses)) {
+    if (ATOS_DO_EDITOR.has(Number(numero)) || !novo.bosses?.[numero]) continue;
+    const antes = JSON.stringify([b.nivel, b.levelOriginal]);
+    b.nivel = structuredClone(novo.bosses[numero].nivel); b.levelOriginal = novo.bosses[numero].levelOriginal;
+    if (antes !== JSON.stringify([b.nivel, b.levelOriginal])) mudadas.push(`boss-${numero}`);
+  }
+  if (novo.escala) CAMPANHA.escala = structuredClone(novo.escala);
+  return { ok: true, mudadas };
 }
 
 // No boot: os atos executáveis da pasta. O que não passar na validação é ignorado COM aviso (nunca derruba o servidor nem afeta os legados).

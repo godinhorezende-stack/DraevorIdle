@@ -3,6 +3,15 @@
 // referência, ícones e a navegação lateral. Só apresentação: nenhuma regra de jogo mora aqui.
 
 /** Cria um elemento: `props.class`, `on*` viram eventos, `true` vira atributo vazio; filhos podem ser listas (em qualquer profundidade). */
+// `Element.replaceChildren(null)` NÃO ignora o null: escreve o TEXTO "null" na tela (a causa do "nullnullnull" na pré-visualização do editor de itens, e de "null" solto em qualquer
+// tela da Engine que passa `cond ? el(...) : null`). Como `el()` já ignora null/false, o mesmo vale aqui, uma vez, para todas as telas do editor.
+if (typeof Element !== 'undefined' && !Element.prototype.replaceChildren?.__semNulos) {
+  const nativo = Element.prototype.replaceChildren;
+  const seguro = function replaceChildren(...filhos) { return nativo.apply(this, filhos.flat(Infinity).filter((f) => f !== null && f !== undefined && f !== false)); };
+  seguro.__semNulos = true;
+  Element.prototype.replaceChildren = seguro;
+}
+
 export function el(tag, props = {}, ...filhos) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(props ?? {})) {
@@ -25,6 +34,7 @@ const TRACOS = {
   atos: 'M5 6a2 2 0 1 0 0 .01M19 6a2 2 0 1 0 0 .01M12 18a2 2 0 1 0 0 .01M7 6h10M6 8l5 8M18 8l-5 8',
   coroa: 'M3 8l4 4 5-7 5 7 4-4-2 11H5L3 8z',
   mobs: 'M12 3c4 0 7 3 7 7v9l-2.5-2-2 2-2.5-2-2.5 2-2-2L5 19v-9c0-4 3-7 7-7zM9.5 10h.01M14.5 10h.01',
+  classes: 'M12 3l2.5 4.5L20 8l-4 3.8L17 17l-5-2.7L7 17l1-5.2L4 8l5.5-.5L12 3zM5 21h14',
   espada: 'M14.5 4H20v5.5L9 20.5 3.5 15 14.5 4zM7 13l4 4M4 20l2.5-2.5',
   outfit: 'M9 3l3 2 3-2 5 3-2 5-2-1v10H8V10l-2 1-2-5 5-3z',
   montaria: 'M4 17v-5l3-4h6l3-3 3 1-1 4-3 2v5M8 17v-4M14 17v-3M4 12h12',
@@ -32,6 +42,13 @@ const TRACOS = {
   externo: 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
   copiar: 'M9 9h10v11H9zM5 15V4h10',
   fechar: 'M6 6l12 12M18 6 6 18',
+  frasco: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3M7.5 15h9',
+  chevron: 'M9 6l6 6-6 6',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  recolher: 'M14 6l-6 6 6 6M20 5v14',
+  expandir: 'M10 6l6 6-6 6M4 5v14',
+  painelDeControle: 'M4 6h16M4 12h16M4 18h16M9 4v4M15 10v4M8 16v4',
+  engrenagem: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 12l2-1 .5-2-1-2 2-2 2 1 2-.5 1-2h3l1 2 2 .5 2-1 2 2-1 2 .5 2 2 1v3l-2 1-.5 2 1 2-2 2-2-1-2 .5-1 2h-3l-1-2-2-.5-2 1-2-2 1-2-.5-2-2-1z',
 };
 /** Um ícone de traço (`nome` em `TRACOS`), da cor do texto em volta. */
 export function icone(nome) {
@@ -111,6 +128,16 @@ function abrirModal({ titulo, texto = '', ok = 'Confirmar', cancelar = 'Cancelar
 export const confirmar = (titulo, texto = '', opcoes = {}) => abrirModal({ titulo, texto, ...opcoes });
 /** Pede um texto (resolve o texto, ou `null` se cancelar). */
 export const pedirTexto = (titulo, campo, opcoes = {}) => abrirModal({ titulo, campo, ok: 'Continuar', ...opcoes });
+/**
+ * Trata a resposta de um salvar recusado por CONFLITO (`codigo: 'conflito'`: o arquivo mudou desde que a tela o leu). Devolve `true` se era
+ * conflito (já tratado): explica, nada foi gravado, e oferece recarregar a versão atual (as alterações da tela se perdem).
+ */
+export async function tratarConflito(r, recarregar) {
+  if (r?.codigo !== 'conflito') return false;
+  const recarregarAgora = await confirmar('Conflito de edição', `${r.erros?.[0] ?? 'O arquivo mudou.'} Recarregar agora descarta as alterações desta tela.`, { ok: 'Recarregar a versão atual', cancelar: 'Continuar vendo a minha', perigo: true });
+  if (recarregarAgora) await recarregar();
+  return true;
+}
 /** O aviso padrão de alterações não salvas. */
 export const descartarAlteracoes = (onde = 'Há alterações não salvas') => confirmar(`${onde}.`, 'Se sair agora, elas se perdem.', { ok: 'Descartar e sair', cancelar: 'Continuar editando', perigo: true });
 

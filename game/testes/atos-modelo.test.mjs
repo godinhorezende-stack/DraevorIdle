@@ -43,7 +43,7 @@ test('G3. boss final: fase anterior precisa ser terminal, existir e ser hunt; bo
 });
 
 test('G4. tipos sem suporte no runtime são só aviso no rascunho e ERRO ao pôr em beta/publicado; hunt de outro ato e id/nome inválidos', () => {
-  const vip = ato5({ fases: ato5().fases.map((f) => (f.id === 'fase-2' ? { ...f, tipo: 'hunt-vip' } : f)) });
+  const vip = ato5({ fases: ato5().fases.map((f) => (f.id === 'fase-2' ? { ...f, tipo: 'fase-com-bau' } : f)) });
   assert.deepEqual(erros(vip), []);
   assert.ok(M.validarAto(vip, ctx).some((p) => p.nivel === 'aviso' && /suporte/.test(p.mensagem)));
   assert.ok(erros({ ...vip, estado: 'beta' }).some((e) => /ainda não tem suporte/.test(e.mensagem)));

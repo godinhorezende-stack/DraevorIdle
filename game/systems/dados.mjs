@@ -3,6 +3,7 @@
 // um arquivo novo de captura não obrigue a tocar em nenhum dos dois.
 import { readFileSync } from 'node:fs';
 import * as PrecoDeVenda from './itens/preco-de-venda.mjs';
+import * as Overrides from './overrides.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -116,6 +117,21 @@ export const CATALOGO = {
   // do item diz "cai de qualquer criatura com N de exp" com isto.
   gemas: CATALOGO_REAL.gemas ?? JSON.parse(readFileSync(new URL('../gamedata/gemas.json', import.meta.url), 'utf8')).drop,
 };
+
+/*
+ * ---- Overrides do dono por cima do bestiário importado (ver `overrides.mjs`) ----
+ * `gamedata/overrides/monstros.json` guarda só as DIFERENÇAS; aqui elas entram por cima do bestiário no boot (o original, `catalog-real.json`, não é
+ * tocado). Sem arquivo, nada muda. Entrada inválida é ignorada com aviso. Os ataques entram em `poderes.mjs`, pelo mesmo arquivo.
+ */
+export const OVERRIDES_DE_ITENS = Overrides.lerItens();
+// O estado das camadas fica exportado: o Hot Reload (`hot-reload.mjs`) re-aplica os overrides no mesmo catálogo, sem reiniciar (ver `Overrides.reaplicar*`).
+export const ESTADO_DE_ITENS = Overrides.criarEstadoDeCamada();
+export const resultadoDosOverridesDeItens = Overrides.reaplicarNosItens(ITEM_CATALOG, ESTADO_DE_ITENS, OVERRIDES_DE_ITENS);
+if (resultadoDosOverridesDeItens.aplicados.length) console.log(`[overrides] itens: ${resultadoDosOverridesDeItens.aplicados.length} item(ns) alterado(s).`);
+export const OVERRIDES_DE_MONSTROS = Overrides.lerMonstros();
+export const ESTADO_DO_BESTIARIO = Overrides.criarEstadoDeCamada();
+export const resultadoDosOverrides = Overrides.reaplicarNoBestiario(CATALOGO.bestiary, ESTADO_DO_BESTIARIO, OVERRIDES_DE_MONSTROS, Overrides.contextoDoJogo(ITEM_CATALOG));
+if (resultadoDosOverrides.aplicados.length || resultadoDosOverrides.criados.length) console.log(`[overrides] bestiário: ${resultadoDosOverrides.aplicados.length} monstro(s) alterado(s), ${resultadoDosOverrides.criados.length} variação(ões) criada(s).`);
 
 /** Índice do tile em `CITY_MAP.blocked` (a mesma ordem de `map.ground`: y*width+x). */
 export const bloqueado = (x, y) => {

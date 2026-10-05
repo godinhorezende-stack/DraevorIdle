@@ -26,6 +26,8 @@ import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as Dot from './combate/dot.mjs';
 import { readFileSync } from 'node:fs';
+import * as Overrides from './overrides.mjs';
+import { OVERRIDES_DE_MONSTROS, resultadoDosOverrides } from './dados.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Areas from '../engine/areas.mjs';
 import * as Prey from './prey.mjs';
@@ -36,6 +38,14 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
+// Os ataques que o dono sobrescreveu (`gamedata/overrides/monstros.json`, validados e aplicados ao bestiário em `dados.mjs`): só entram para quem passou.
+export const ESTADO_DE_PODERES = Overrides.criarEstadoDeCamada();
+const validosDoBoot = () => [...resultadoDosOverrides.aplicados, ...resultadoDosOverrides.criados];
+Overrides.reaplicarNosPoderes(PODERES, ESTADO_DE_PODERES, OVERRIDES_DE_MONSTROS, validosDoBoot());
+/** Hot Reload: re-aplica os ataques dos overrides (só para as chaves que passaram na validação). Devolve `{ feitos, mudados }`. */
+export const recarregarPoderes = (dados, validas) => Overrides.reaplicarNosPoderes(PODERES, ESTADO_DE_PODERES, dados, validas);
+/** Os poderes cadastrados de um bicho (para conferir o que o jogo vai lançar). */
+export const poderesDe = (key) => PODERES[key] ?? null;
 /** Registra os poderes de um bicho criado em tempo de execução (os monstros da campanha do PoE — `itens-poe/monstros.mjs`). */
 export function registrarPoderes(key, def) {
   if (!PODERES[key]) PODERES[key] = def;

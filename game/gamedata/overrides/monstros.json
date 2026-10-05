@@ -1,0 +1,75 @@
+{
+ "_nota": "Overrides de monstros (systems/overrides.mjs): só as DIFERENÇAS sobre o bestiário importado. Apagar uma entrada devolve o original. Editado em /editor/conteudo (Mobs).",
+ "ativo": true,
+ "monstros": {
+  "troll": {
+   "loot": [
+    {
+     "id": 3003,
+     "name": "rope",
+     "chance": 0.159
+    },
+    {
+     "id": 3031,
+     "name": "gold coin",
+     "chance": 1
+    },
+    {
+     "id": 3054,
+     "name": "silver amulet",
+     "chance": 0.0016
+    },
+    {
+     "id": 3268,
+     "name": "hand axe",
+     "chance": 0.36
+    },
+    {
+     "id": 3277,
+     "name": "spear",
+     "chance": 0.26
+    },
+    {
+     "id": 3336,
+     "name": "studded club",
+     "chance": 0.1
+    },
+    {
+     "id": 3355,
+     "name": "leather helmet",
+     "chance": 0.24
+    },
+    {
+     "id": 3412,
+     "name": "wooden shield",
+     "chance": 0.0946
+    },
+    {
+     "id": 3552,
+     "name": "leather boots",
+     "chance": 0.2
+    },
+    {
+     "id": 3577,
+     "name": "meat",
+     "chance": 0.3
+    },
+    {
+     "id": 9689,
+     "name": "bunch of troll hair",
+     "chance": 0.02
+    },
+    {
+     "id": 23986,
+     "name": "heavy old tome",
+     "chance": 0.02
+    },
+    {
+     "id": 55159,
+     "name": "Draevor Knight Helmet",
+     "chance": 1
+    }
+   ]
+  }
+ }
+}

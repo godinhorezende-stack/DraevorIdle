@@ -339,7 +339,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const a = atoAtual;
     const pos = posicoesDoAto(a.fases, !!a.boss, mundo, a.ato, a.bossMapa);
     const pontos = [...pos.pontos, ...(pos.boss ? [pos.boss] : [])];
-    cam.append(fundoDoAto(a.ato, nomeDoTema(a.ato, a.tema), pontos));
+    cam.append(fundoDoAto(a.ato, nomeDoTema(a.ato, a.tema), pontos, a.fundo));
     const ids = [...a.fases.map((f) => f.huntId), ...(a.boss ? [`boss:${a.ato}`] : [])];
     const posicao = (id) => pontos[ids.indexOf(id)];
     // as estradas (sob os nós)

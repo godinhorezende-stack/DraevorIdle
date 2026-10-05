@@ -13,6 +13,10 @@ export const NOME_DO_ATRIBUTO = { str: 'STR', dex: 'DEX', int: 'INT' };
 
 /** O requisito de uma peça do catálogo: `{ atributos: ['str', ...], valor }` (basta um), ou null. */
 export function requisitoDe(meta) {
+  // Requisitos EXPLÍCITOS da base (`reqStr`/`reqDex`/`reqInt`, definidos no editor de itens — `engine/arma.mjs`): o estilo Path of Exile de verdade, em que a arma pede os atributos
+  // listados e o personagem precisa ter TODOS. Sem nenhum deles, vale a regra derivada abaixo (e as peças de antes seguem iguais).
+  const explicitos = Object.fromEntries([['str', meta?.reqStr], ['dex', meta?.reqDex], ['int', meta?.reqInt]].filter(([, v]) => Number(v) > 0).map(([k, v]) => [k, Math.ceil(Number(v))]));
+  if (Object.keys(explicitos).length) return { atributos: Object.keys(explicitos), valor: Math.max(...Object.values(explicitos)), porAtributo: explicitos, todos: true };
   const vocs = [...new Set((meta?.vocations ?? []).map((v) => String(v).toLowerCase()))];
   if (!vocs.length) return null;
   const atributos = [...new Set(vocs.flatMap((v) => R.atributoDaClasse[v] ?? []))];
@@ -34,6 +38,10 @@ export function falta(meta, atributos) {
   }
   const req = requisitoDe(meta);
   if (!req) return null;
+  if (req.todos) {
+    const faltam = Object.entries(req.porAtributo).filter(([a, v]) => (atributos?.[a] ?? 0) < v);
+    return faltam.length ? `Requer ${Object.entries(req.porAtributo).map(([a, v]) => `${v} ${NOME_DO_ATRIBUTO[a]}`).join(', ')}.` : null;
+  }
   if (req.atributos.some((a) => (atributos?.[a] ?? 0) >= req.valor)) return null;
   return `Requer ${req.atributos.map((a) => `${req.valor} ${NOME_DO_ATRIBUTO[a]}`).join(' ou ')}.`;
 }

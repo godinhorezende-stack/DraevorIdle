@@ -701,6 +701,9 @@ $('btCarregar').onclick = async () => {
 };
 
 async function iniciar() {
+  // Em produção a Engine exige login de administrador (cookie): sem sessão, o servidor responde 401 e a tela leva ao login.
+  const teste = await fetch('/api/mapas').catch(() => null);
+  if (teste && (teste.status === 401 || teste.status === 403)) { location.href = '/editor/conteudo'; return; }
   const [dados] = await Promise.all([fetch('/api/mapas/opcoes').then((r) => r.json()), loadSpriteData()]);
   opcoes = dados;
   bestiario = [...opcoes.bestiario].sort((a, b) => a.name.localeCompare(b.name));
@@ -712,5 +715,11 @@ async function iniciar() {
   selecionarFerramenta('spawn');
   await carregarListaMapas();
   novoMapa(Number($('mapaW').value), Number($('mapaH').value));
+  // `/editor?mapa=<id>` (o painel de hunts do /editor/conteudo): já abre esse mapa.
+  const pedido = new URLSearchParams(location.search).get('mapa');
+  if (pedido && [...$('listaMapas').options].some((o) => o.value === pedido)) {
+    $('listaMapas').value = pedido;
+    $('btCarregar').click();
+  }
 }
 iniciar();

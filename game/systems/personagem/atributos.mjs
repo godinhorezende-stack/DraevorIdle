@@ -23,6 +23,9 @@ const E = CONFIG.efeitos;
 
 /** A vocação do jogo sem a promoção ("elite knight" → knight). */
 const vocacaoDe = (estado) => {
+  // A CLASSE do Editor de Classes (`systems/classes.mjs`): uma classe criada no editor tem a própria entrada em `porVocacao` (atributos iniciais e por level); sem ela vale a vocação.
+  const classe = String(estado?.classe ?? '').toLowerCase();
+  if (classe && CONFIG.porVocacao[classe]) return classe;
   const v = String(estado?.vocation ?? 'none').toLowerCase();
   return CONFIG.porVocacao[v] ? v : Object.keys(CONFIG.porVocacao).find((k) => v.includes(k)) ?? 'none';
 };
@@ -49,7 +52,7 @@ export function efeitos(p) {
   // A escala do PoE (só com ITENS_POE=1): STR +0,5 de vida e +0,2% de dano físico; DEX +2 de precisão e +0,2% de evasão; INT +0,5 de mana
   // e +0,2% de escudo de energia — por ponto, como no PoE (sem velocidade de ataque nem dano mágico pelos atributos).
   if (itensPoeLigado()) {
-    return { vida: p.str * 0.5, danoFisicoPct: p.str * 0.2, precisao: p.dex * 2, evasao: 0, evasaoPct: p.dex * 0.2, velocidadeDeAtaquePct: 0, mana: p.int * 0.5, danoMagicoPct: 0, esPct: p.int * 0.2 };
+    return { vida: p.str * 0.5, danoFisicoPct: p.str * 0.2, precisao: p.dex * 2, evasao: 0, evasaoPct: p.dex * 0.2, velocidadeDeAtaquePct: 0, mana: p.int * 0.5, danoMagicoPct: 0, energyShieldPct: p.int * 0.2 };
   }
   return {
     vida: p.str * E.STR_LIFE_PER_POINT,
@@ -59,6 +62,9 @@ export function efeitos(p) {
     velocidadeDeAtaquePct: p.dex * E.DEX_ATTACK_SPEED_PER_POINT,
     mana: p.int * E.INT_MANA_PER_POINT,
     danoMagicoPct: p.int * E.INT_MAGIC_DAMAGE_PER_POINT,
+    // Bônus em % da DEX sobre a Evasion e da INT sobre o Energy Shield (0 de fábrica: o jogo de antes não muda; liga-se no Editor de Classes).
+    evasaoPct: p.dex * (E.DEX_EVASION_PCT_PER_POINT ?? 0),
+    energyShieldPct: p.int * (E.INT_ENERGY_SHIELD_PCT_PER_POINT ?? 0),
   };
 }
 

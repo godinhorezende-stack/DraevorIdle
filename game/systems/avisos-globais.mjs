@@ -16,3 +16,15 @@ export function avisoGlobal(texto, nivel = 'sistema') {
   }
   return n;
 }
+
+/** Uma mensagem de protocolo (objeto com `t`) para TODOS os clientes conectados com sessão (um `JSON.stringify` só). Devolve para quantos foi. Usado pelo Hot Reload (`hot-reload.mjs`). */
+export function transmitir(mensagem) {
+  const pronto = JSON.stringify(mensagem);
+  let n = 0;
+  for (const s of sessoes.values()) {
+    if (!s?.ws) continue;
+    s.enviarPronto(pronto);
+    n++;
+  }
+  return n;
+}

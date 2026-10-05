@@ -4,10 +4,54 @@ import { createReadStream } from 'node:fs';
 import * as Conteudo from './conteudo.mjs';
 import * as Biblioteca from './biblioteca.mjs';
 import * as Atos from './atos.mjs';
+import * as Hunts from './hunts.mjs';
+import * as Mapas from './mapas.mjs';
+import * as Operacao from './operacao.mjs';
+import * as CampanhaEditor from './campanha-editor.mjs';
+import * as Overrides from './overrides.mjs';
+import * as Auditoria from './auditoria.mjs';
+import * as OverridesItens from './overrides-itens.mjs';
+import * as OverridesSprites from './overrides-sprites.mjs';
+import * as Validacao from './validacao.mjs';
+import * as Versoes from './versoes.mjs';
+import * as GitEnvio from './git-envio.mjs';
+import * as GitIntegracao from './git-integracao.mjs';
+import * as OverridesProgressao from './overrides-progressao.mjs';
+import * as OverridesConjuntos from './overrides-conjuntos.mjs';
+import * as OverridesItemPower from './overrides-item-power.mjs';
+import * as AnaliseItemPower from './item-power-analise.mjs';
+import * as EditorItemPower from './item-power-editor.mjs';
+import * as SpritesItens from './overrides-sprites-itens.mjs';
+import * as OverridesClasses from './overrides-classes.mjs';
+import * as Classes from '../systems/classes.mjs';
+import * as ItemPower from '../systems/item-power.mjs';
+import * as Conjuntos from '../systems/conjuntos.mjs';
+import * as Progressao from '../systems/progressao.mjs';
+import * as Simulador from '../systems/itens/simulador-de-loot.mjs';
+import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_conteudo/';
 
 /** Atende a rota se for do editor de conteúdo; devolve `true` quando atendeu. */
+/** 200 normalmente; 409 quando o salvar foi recusado por conflito de revisão (o corpo explica). */
+const status = (r) => (r?.codigo === 'conflito' ? 409 : 200);
+/** Depois de gravar `itens.json`, `aplicar: true` recarrega o catálogo em memória AGORA (Hot Reload 'itens') e conta o resultado: o que o Item Power mostra e o que o jogo usa só mudam quando isso acontece. */
+async function comRecargaDeItens(r, aplicar) {
+  if (!r?.ok || r.semMudancas || aplicar !== true) return r;
+  if (!hot?.estadoAtual().ativo) return { ...r, hotReload: { aplicado: false, motivo: `Hot Reload desligado: ${(hot?.estadoAtual() ?? SEM_HOT).motivoInativo}` } };
+  const h = await hot.recarregar('itens');
+  return { ...r, hotReload: h.ok === false ? { aplicado: false, motivo: h.erro ?? 'a recarga falhou (a última versão válida segue em uso)' } : { aplicado: true, resumo: h.resumo ?? null } };
+}
+
+// O Hot Reload (systems/hot-reload.mjs) é ligado pelo backend; sem ele (testes, produção) a Engine vê "desligado".
+let hot = null;
+export const ligarHotReload = (h) => { hot = h; };
+// O banco de personagens (contagem por classe e migração): ligado pelo backend; sem ele (testes) a contagem vem vazia e a migração é recusada.
+let bancoDeClasses = null;
+export const ligarBancoDeClasses = (b) => { bancoDeClasses = b; };
+const contagensDeClasses = async () => (bancoDeClasses ? bancoDeClasses.contar() : null);
+const SEM_HOT = { ativo: false, motivoInativo: 'o Hot Reload não foi iniciado neste servidor.', estado: 'desativado', mensagem: 'Hot Reload desligado.', pendentes: [], erros: [], reinicio: [], recarregaveis: [], historico: [] };
+
 export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (!caminho.startsWith(PREFIXO)) return false;
   const rota = caminho.slice(PREFIXO.length);
@@ -32,8 +76,110 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       const t = Biblioteca.dadosDoTooltip(url.searchParams.get('id'), { itemLevel: url.searchParams.get('itemLevel'), semente: url.searchParams.get('semente') });
       return t ? json(res, 200, t) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
     }
+    // Hot Reload: o estado, o histórico e o que dá para recarregar (só leitura). Recarregar à mão é POST `hot-reload/recarregar` (só no ambiente local).
+    if (rota === 'hot-reload') return json(res, 200, hot?.estadoAtual() ?? SEM_HOT), true;
+    // O validador centralizado: o estado (último resultado, o que está rodando, arquivos alterados e se pode aprovar). Executar é POST `validacao/executar` (só lê).
+    if (rota === 'validacao') return json(res, 200, Validacao.estado()), true;
+    // Progressão e loot por dificuldade: a configuração (original, override, efetiva, distribuições exatas), as bases e os marcos de um Ato (iguais nas três dificuldades) — só leitura.
+    if (rota === 'progressao') return json(res, 200, OverridesProgressao.obter()), true;
+    if (rota === 'progressao-versoes') return json(res, 200, { versoes: OverridesProgressao.versoes() }), true;
+    if (rota.startsWith('progressao/ato/')) {
+      const ato = Number(rota.slice('progressao/ato/'.length));
+      const b = Progressao.basesDoAto(ato, { slot: url.searchParams.get('slot') || null, vocacao: url.searchParams.get('vocacao') || null, limite: 300 });
+      return b ? json(res, 200, { ...b, marcos: OverridesProgressao.marcosDoAto(ato), nivelMaximo: Progressao.nivelMaximo() }) : json(res, 404, { ok: false, erros: ['Ato não encontrado na progressão.'] }), true;
+    }
+    // Conjuntos (sets de equipamento por classe): a configuração, a busca de itens para os slots e os atributos totais pela ficha real — só leitura.
+    if (rota === 'conjuntos') return json(res, 200, OverridesConjuntos.obter()), true;
+    if (rota === 'conjuntos/itens') return json(res, 200, OverridesConjuntos.buscarItens(Object.fromEntries(url.searchParams))), true;
+    if (rota === 'conjuntos-versoes') return json(res, 200, { versoes: OverridesConjuntos.versoes() }), true;
+    if (rota.startsWith('conjuntos/totais/')) {
+      const c = Conjuntos.obter(decodeURIComponent(rota.slice('conjuntos/totais/'.length)));
+      return c ? json(res, 200, OverridesConjuntos.totais(c, { level: url.searchParams.get('level') })) : json(res, 404, { ok: false, erros: ['Conjunto não encontrado.'] }), true;
+    }
+    // Item Power Base (indicador de comparação dos atributos base): configuração, lista de itens, detalhe, curva, alertas de distribuição e presentes de marco — só leitura.
+    if (rota === 'item-power') return json(res, 200, OverridesItemPower.obter()), true;
+    if (rota === 'item-power/versoes') return json(res, 200, { versoes: OverridesItemPower.versoes() }), true;
+    if (rota === 'item-power/itens') return json(res, 200, OverridesItemPower.listarItens(Object.fromEntries(url.searchParams))), true;
+    if (rota === 'item-power/hunts') return json(res, 200, { hunts: AnaliseItemPower.huntsComMonstros().map((h) => ({ id: h.id, nome: h.nome, categoria: h.categoria, level: h.levelCadastro, ato: h.fase?.ato ?? null, monstros: h.monstros.length })) }), true;
+    // Item Power — editor de nível e atributos-base (pelos overrides de itens): estado de um item, histórico, comparação de versões e quantos itens um filtro pega — só leitura.
+    if (rota.startsWith('item-power/edicao/')) {
+      const id = decodeURIComponent(rota.slice('item-power/edicao/'.length));
+      const original = OverridesItens.originalDe(id);
+      if (!original) return json(res, 404, { ok: false, erros: ['Equipamento não encontrado.'] }), true;
+      return json(res, 200, { ...EditorItemPower.previaDoItem(id, {}), metaOriginal: original, override: OverridesItens.obter(id)?.override ?? null, revisao: OverridesItens.obter(id)?.revisao, camposEditaveis: EditorItemPower.CAMPOS_EDITAVEIS, somenteLeituraMotivos: EditorItemPower.SOMENTE_LEITURA }), true;
+    }
+    if (rota === 'item-power/historico') return json(res, 200, EditorItemPower.historico({ limite: url.searchParams.get('limite'), id: url.searchParams.get('id') })), true;
+    if (rota === 'item-power/versoes-comparar') { const r = EditorItemPower.compararVersoes(url.searchParams.get('de'), url.searchParams.get('para') ?? 'atual', url.searchParams.get('id')); return json(res, r.ok ? 200 : 404, r), true; }
+    if (rota === 'item-power/selecionar') { const ids = EditorItemPower.selecionar(Object.fromEntries(url.searchParams)); return json(res, 200, { total: ids.length, ids: ids.slice(0, 200) }), true; }
+    // Sprite de item (override): o estado de um item e a lista dos alterados — só leitura.
+    if (rota === 'sprites-itens') return json(res, 200, SpritesItens.listar()), true;
+    if (rota.startsWith('sprites-itens/')) { const s = SpritesItens.obter(decodeURIComponent(rota.slice('sprites-itens/'.length))); return s ? json(res, 200, s) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true; }
+    // Editor de Classes: a configuração (com os personagens por classe), versões e comparação — só leitura.
+    if (rota === 'classes') return json(res, 200, OverridesClasses.obter(await contagensDeClasses())), true;
+    if (rota === 'classes/versoes') return json(res, 200, { versoes: OverridesClasses.versoes() }), true;
+    if (rota === 'classes/comparar') { const r = OverridesClasses.comparar(url.searchParams.get('de'), url.searchParams.get('para') ?? 'atual'); return json(res, r.ok ? 200 : 404, r), true; }
+    if (rota === 'item-power/marcos') return json(res, 200, AnaliseItemPower.presentesDeMarco()), true;
+    if (rota === 'item-power/alertas') return json(res, 200, AnaliseItemPower.alertasDeDistribuicao(url.searchParams.get('dif') ?? 'facil', ItemPower.EM_USO, { limite: url.searchParams.get('limite') })), true;
+    if (rota.startsWith('item-power/item/')) {
+      const d = OverridesItemPower.itemDetalhado(decodeURIComponent(rota.slice('item-power/item/'.length)));
+      return d ? json(res, 200, { ...d, ondeCai: AnaliseItemPower.ondeCai(d.id, url.searchParams.get('dif') ?? 'facil') }) : json(res, 404, { ok: false, erros: ['Equipamento não encontrado.'] }), true;
+    }
+    if (rota.startsWith('item-power/curva/')) { const r = OverridesItemPower.curva(decodeURIComponent(rota.slice('item-power/curva/'.length))); return json(res, r.ok ? 200 : 404, r), true; }
+    if (rota.startsWith('item-power/hunt/')) {
+      const a = AnaliseItemPower.analisarHunt(decodeURIComponent(rota.slice('item-power/hunt/'.length)), url.searchParams.get('dif') ?? 'facil');
+      return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Hunt não encontrada.'] }), true;
+    }
+    // O painel de alterações (original × atual) e as versões aprovadas (somente leitura).
+    if (rota === 'alteracoes') return json(res, 200, Versoes.alteracoes()), true;
+    if (rota === 'alteracoes/diff') { const d = Versoes.diferenca(url.searchParams.get('caminho') ?? ''); return json(res, d.ok ? 200 : 404, d), true; }
+    if (rota === 'versoes') return json(res, 200, { versoes: Versoes.listar() }), true;
+    if (rota.startsWith('versoes/')) { const v = Versoes.obter(decodeURIComponent(rota.slice(8))); return v ? json(res, 200, v) : json(res, 404, { ok: false, erros: ['Versão não encontrada.'] }), true; }
+    // O registro de alterações administrativas (só leitura; as linhas são escritas pelo guarda de acesso).
+    if (rota === 'auditoria') return json(res, 200, { eventos: Auditoria.ler({ limite: url.searchParams.get('limite'), tipo: url.searchParams.get('tipo') }) }), true;
+    // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
+    if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
+    if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
+    // Overrides por cima do dado importado (monstros): leitura; a edição é POST `overrides` (grava) e `overrides/validar` (só pré-visualiza).
+    // Sprites (monstros, outfits e montarias: o mesmo formato de folha). `overrides/sprites/<look>` é o look inteiro: original, override, quem usa, versões.
+    if (rota === 'overrides/sprites') return json(res, 200, OverridesSprites.listar()), true;
+    if (rota.startsWith('overrides/sprites/')) {
+      const s = OverridesSprites.obter(decodeURIComponent(rota.slice('overrides/sprites/'.length)));
+      return s ? json(res, 200, s) : json(res, 404, { ok: false, erros: ['Look não encontrado nos desenhos do jogo.'] }), true;
+    }
+    if (rota === 'overrides/itens') return json(res, 200, OverridesItens.listar(Object.fromEntries(url.searchParams))), true;
+    if (rota.startsWith('overrides/itens/')) {
+      const i = OverridesItens.obter(decodeURIComponent(rota.slice('overrides/itens/'.length)));
+      return i ? json(res, 200, i) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true;
+    }
+    if (rota === 'overrides/itens-versoes') return json(res, 200, { versoes: OverridesItens.versoes() }), true;
+    if (rota === 'overrides/monstros') return json(res, 200, Overrides.listar(Object.fromEntries(url.searchParams))), true;
+    if (rota.startsWith('overrides/monstros/')) {
+      const m = Overrides.obter(decodeURIComponent(rota.slice('overrides/monstros/'.length)));
+      return m ? json(res, 200, m) : json(res, 404, { ok: false, erros: ['Monstro não encontrado.'] }), true;
+    }
+    if (rota === 'overrides/versoes') return json(res, 200, { versoes: Overrides.versoes() }), true;
+    // Níveis da campanha (balanceamento/progressão): leitura; a edição é POST `campanha` (grava) e `campanha/validar` (só pré-visualiza).
+    if (rota === 'campanha') return json(res, 200, CampanhaEditor.ler()), true;
+    if (rota === 'campanha/versoes') return json(res, 200, { versoes: CampanhaEditor.versoes() }), true;
+    // Painel por hunt (somente leitura): mapa, monstros, distribuição, dificuldade e drops esperados.
+    if (rota === 'hunts') return json(res, 200, { hunts: Hunts.listar() }), true;
+    if (rota === 'hunts/painel') {
+      const p = Hunts.painel(url.searchParams.get('id'), url.searchParams.get('dif') ?? 'facil');
+      return p ? json(res, 200, p) : json(res, 404, { ok: false, erros: ['Hunt não encontrada.'] }), true;
+    }
     // Atos do editor (rascunhos + legados somente leitura).
     if (rota === 'atos-editor') return json(res, 200, { atos: Atos.listar(), ...Atos.opcoes() }), true;
+    if (/^atos-editor\/[a-z0-9-]+\/versoes$/.test(rota)) return json(res, 200, { versoes: Atos.versoes(rota.split('/')[1]) }), true;
+    if (/^atos-editor\/[a-z0-9-]+\/versao\/\d+$/.test(rota)) {
+      const [, id, , n] = rota.split('/');
+      const v = Atos.versao(id, n);
+      return v ? json(res, 200, { ato: v }) : json(res, 404, { ok: false, erros: ['Versão não encontrada.'] }), true;
+    }
+    if (/^atos-editor\/[a-z0-9-]+\/comparar$/.test(rota)) return json(res, 200, Atos.comparar(rota.split('/')[1], Number(url.searchParams.get('de')), url.searchParams.get('para') ? Number(url.searchParams.get('para')) : null)), true;
+    if (/^atos-editor\/[a-z0-9-]+\/publicacao$/.test(rota)) {
+      const c = Atos.checklistDePublicacao(rota.split('/')[1]);
+      return c ? json(res, 200, c) : json(res, 404, { ok: false, erros: ['Ato não encontrado.'] }), true;
+    }
     if (rota.startsWith('atos-editor/')) {
       const ato = Atos.obter(rota.slice('atos-editor/'.length));
       return ato ? json(res, 200, { ato, ...Atos.validar(ato) }) : json(res, 404, { ok: false, erros: ['Ato não encontrado.'] }), true;
@@ -51,7 +197,12 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'mapa') return json(res, 200, Conteudo.lerMapa()), true;
     if (rota === 'atos') return json(res, 200, { atos: Conteudo.lerAtos() }), true;
     if (rota === 'bosses') return json(res, 200, { bosses: Conteudo.listarBosses() }), true;
-    if (rota === 'itens') return json(res, 200, { itens: Conteudo.buscarItens(url.searchParams.get('q')) }), true;
+    if (rota === 'itens') {
+      // Busca por nome/ID (`q`) ou consulta por ids (`ids=1,2,3`, para mostrar o sprite de quem já está numa lista); cada item leva o `desenho`.
+      const ids = url.searchParams.get('ids');
+      const base = ids ? ids.split(',').slice(0, 100).filter((i) => ITEM_CATALOG[i]).map((i) => ({ id: Number(i), name: ITEM_CATALOG[i].name })) : Conteudo.buscarItens(url.searchParams.get('q'));
+      return json(res, 200, { itens: base.map((i) => ({ ...i, desenho: Biblioteca.desenhoDoItem(ITEM_CATALOG[i.id]) })) }), true;
+    }
     if (rota.startsWith('fase/')) {
       const f = Conteudo.carregarFase(rota.slice('fase/'.length));
       return f ? json(res, 200, f) : json(res, 404, { ok: false, erros: ['Fase não encontrada.'] }), true;
@@ -65,10 +216,178 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota.startsWith('fase/') && rota.endsWith('/validar')) return json(res, 200, Conteudo.validarFase(rota.slice(5, -'/validar'.length), dados?.encontros ?? [])), true;
     if (rota.startsWith('fase/') && rota.endsWith('/meta')) return json(res, 200, Conteudo.salvarMeta(rota.slice(5, -'/meta'.length), dados ?? {})), true;
     if (rota === 'atos-editor/previa') return json(res, 200, { previa: Atos.previa(dados?.recompensa, { origem: dados?.origem === 'boss' ? 'boss final' : 'fase' }), simulacao: dados?.simular ? Atos.simular(dados.recompensa, { execucoes: dados.execucoes, semente: dados.semente }) : null, problemas: Atos.validarRecompensa(dados?.recompensa, dados?.huntId ?? null) }), true;
+    if (/^atos-editor\/[a-z0-9-]+\/restaurar$/.test(rota)) return json(res, 200, Atos.restaurar(rota.split('/')[1], Number(dados?.versao))), true;
+    if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
+    if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
+    if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'hot-reload/recarregar') {
+      if (!hot?.estadoAtual().ativo) return json(res, 409, { ok: false, erros: [`Hot Reload desligado: ${(hot?.estadoAtual() ?? SEM_HOT).motivoInativo}`] }), true;
+      const r = await hot.recarregar(String(dados?.tipo ?? ''), dados?.id ?? null);
+      return json(res, 200, { ...r, ...(r.ok === false && r.erro ? { erros: [r.erro] } : {}), estado: hot.estadoAtual() }), true;
+    }
+    // Aprovar congela as alterações escolhidas numa versão (cópia + hash); descartar cancela uma ainda não enviada. Gravam só em `database/dados/versoes` (ambiente local).
+    // Item Power — editor de atributos-base: prévia de edição e de lote, e proposta de curva (só leem); salvar/restaurar gravam em `overrides/itens.json`.
+    if (rota === 'item-power/edicao-previa') return json(res, 200, EditorItemPower.previa(dados?.edicoes ?? {}, { origem: dados?.origem })), true;
+    if (rota === 'item-power/lote-previa') return json(res, 200, EditorItemPower.previaDeLote(dados ?? {})), true;
+    if (rota === 'item-power/curva-proposta') return json(res, 200, EditorItemPower.propostaDeCurva(dados ?? {})), true;
+    if (rota === 'item-power/edicao') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(await comRecargaDeItens(EditorItemPower.salvar({ edicoes: dados.edicoes, origem: dados.origem, rotulo: dados.rotulo, aprovados: dados.aprovados, aprovarTodos: dados.aprovarTodos === true, revisao: dados.revisao }), dados.aplicar));
+      if (a === 'restaurar') return responder(await comRecargaDeItens(EditorItemPower.restaurar({ ids: dados.ids, filtros: dados.filtros ?? null, campos: dados.campos, rotulo: dados.rotulo, revisao: dados.revisao })));
+      if (a === 'restaurar-versao') return responder(await comRecargaDeItens(EditorItemPower.restaurarVersao(dados.versao, dados.revisao)));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, restaurar ou restaurar-versao.'] }), true;
+    }
+    // Item Power: validar/prévia, simular, comparar e avaliar uma regra (só leem); salvar/reverter/restaurar gravam.
+    if (rota === 'item-power/validar') return json(res, 200, OverridesItemPower.propor(dados?.override ?? null)), true;
+    if (rota === 'item-power/simular') { const r = OverridesItemPower.simular(dados ?? {}); return json(res, r.ok ? 200 : 400, r), true; }
+    if (rota === 'item-power/comparar') { const r = Array.isArray(dados?.entradas) ? EditorItemPower.compararEntradas(dados.entradas) : OverridesItemPower.comparar(dados?.ids); return json(res, r.ok ? 200 : 400, r), true; }
+    if (rota === 'item-power/regra') return json(res, 200, AnaliseItemPower.avaliarRegra(dados?.regra ?? {})), true;
+    if (rota === 'item-power') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesItemPower.salvar(dados.override, dados.revisao));
+      if (a === 'reverter') return responder(OverridesItemPower.reverter(dados.revisao));
+      if (a === 'restaurar') return responder(OverridesItemPower.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter ou restaurar.'] }), true;
+    }
+    // Conjuntos: validar/prévia, totais de um conjunto em edição e modelos iniciais (só leem); salvar/reverter/ativo/restaurar gravam.
+    if (rota === 'conjuntos/validar') return json(res, 200, OverridesConjuntos.propor(dados?.override ?? null)), true;
+    if (rota === 'conjuntos/totais') return json(res, 200, OverridesConjuntos.totais(dados?.conjunto ?? {}, { level: dados?.level })), true;
+    if (rota === 'conjuntos/modelos') return json(res, 200, { conjuntos: Conjuntos.modelosIniciais({ por: dados?.por, de: dados?.de, ate: dados?.ate, ...(Array.isArray(dados?.classes) ? { classes: dados.classes.filter((c) => Conjuntos.CLASSES.includes(c)) } : {}) }) }), true;
+    if (rota === 'conjuntos') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesConjuntos.salvar(dados.override, dados.revisao));
+      if (a === 'reverter') return responder(OverridesConjuntos.reverter(dados.revisao));
+      if (a === 'reverter-conjunto') return responder(OverridesConjuntos.reverterConjunto(String(dados.id ?? ''), dados.revisao));
+      if (a === 'ativo') return responder(OverridesConjuntos.definirAtivo(dados.ativo, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesConjuntos.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, reverter-conjunto, ativo ou restaurar.'] }), true;
+    }
+    // Progressão e loot: validar/prévia (só lê), salvar/reverter/ativo/restaurar (gravam), e o simulador (só lê; o gerador REAL com semente, teto de 50 mil sorteios por pedido).
+    if (rota === 'progressao/validar') return json(res, 200, OverridesProgressao.propor(dados?.override ?? null)), true;
+    if (rota === 'progressao') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesProgressao.salvar(dados.override, dados.revisao));
+      if (a === 'reverter') return responder(OverridesProgressao.reverter(dados.revisao));
+      if (a === 'ativo') return responder(OverridesProgressao.definirAtivo(dados.ativo, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesProgressao.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
+    }
+    if (rota === 'simulador/loot') {
+      const d = dados ?? {};
+      const n = Math.max(1, Math.min(50000, Math.floor(Number(d.n) || 10000)));
+      const base = { ato: Number(d.ato) || 1, n, abates: n, semente: Number(d.semente) || 1 };
+      // `override`: simula uma PROPOSTA (o arquivo de override inteiro) com o gerador real, sem aplicá-la.
+      const candidata = d.override ? OverridesProgressao.candidataDe(d.override) : null;
+      if (d.override && !candidata) return json(res, 409, { ok: false, erros: ['O override proposto é inválido: valide antes de simular.'] }), true;
+      const rodar = (fn) => (candidata ? Progressao.comConfiguracao(candidata, fn) : fn());
+      if (d.modo === 'monstro') return json(res, 200, rodar(() => Simulador.simularMonstro({ ...base, monstro: String(d.monstro ?? ''), dificuldade: String(d.dificuldade ?? 'facil') }))), true;
+      if (d.modo === 'hunt') return json(res, 200, rodar(() => Simulador.simularHunt({ ...base, huntId: String(d.huntId ?? ''), dificuldade: String(d.dificuldade ?? 'facil') }))), true;
+      const opc = { ...base, itemId: d.itemId ? Number(d.itemId) : null, slot: d.slot || null, raridadeDoMob: d.raridadeDoMob || null, boss: d.boss === true };
+      return json(res, 200, rodar(() => (d.dificuldade && d.dificuldade !== 'todas' ? Simulador.simular({ ...opc, dificuldade: String(d.dificuldade) }) : Simulador.compararDificuldades(opc)))), true;
+    }
+    if (rota === 'versoes/aprovar') { const r = Versoes.aprovar({ caminhos: dados?.caminhos, titulo: dados?.titulo, por: req.engineQuem ?? null }); return json(res, r.ok ? 200 : 409, r), true; }
+    // Envia ao Git (branch `versao/<id>` com um commit das cópias congeladas; sem merge, sem força, sem deploy). Roda assíncrono: o servidor não trava durante o push.
+    if (rota === 'versoes/enviar') { const r = await GitEnvio.enviar(String(dados?.id ?? '')); return json(res, r.ok ? 200 : 409, r), true; }
+    // Status pós-merge: consulta o remoto (só atualiza `origin/main`) e diz se a versão já está na principal e apta para publicar.
+    if (rota === 'versoes/consultar') { const r = await GitIntegracao.consultar(String(dados?.id ?? ''), { buscar: dados?.buscar !== false }); return json(res, r.ok ? 200 : 409, r), true; }
+    if (rota === 'versoes/descartar') { const r = Versoes.descartar(String(dados?.id ?? ''), { por: req.engineQuem ?? null }); return json(res, r.ok ? 200 : 409, r), true; }
+    if (rota === 'validacao/executar') {
+      // As verificações só LEEM; os testes rodam comandos fixos e só fazem sentido no ambiente local (nunca no servidor de produção).
+      if (['testes', 'tudo'].includes(dados?.escopo) && !(hot?.estadoAtual().ativo)) return json(res, 409, { ok: false, erros: ['Os testes só rodam no ambiente local de desenvolvimento (o Hot Reload local está desligado aqui).'] }), true;
+      const r = Validacao.iniciar({ escopo: dados?.escopo ?? 'rapida', completa: dados?.completa === true });
+      return json(res, r.ok ? 200 : 409, { ...r, ...(r.ok ? {} : { erros: [r.erro] }) }), true;
+    }
+    if (rota === 'overrides/sprites/validar') return json(res, 200, OverridesSprites.propor(String(dados?.look ?? ''), dados ?? {})), true;
+    if (rota === 'overrides/sprites') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      const look = String(dados?.look ?? '');
+      if (a === 'salvar') return responder(OverridesSprites.salvar(look, dados, dados.revisao));
+      if (a === 'reverter') return responder(OverridesSprites.reverter(look, dados.revisao));
+      if (a === 'ativo') return responder(look ? OverridesSprites.definirAtivo(look, dados.ativo, dados.revisao) : OverridesSprites.definirAtivoGeral(dados.ativo, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesSprites.restaurarVersao(look, dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
+    }
+    // Painel de Item Power do editor de itens (atributos original × atual × simulado, IP, composição, curva, alertas) e a resolução de um alvo de Armour/Evasion/Energy Shield — só leem.
+    if (rota === 'overrides/itens/poder') { const r = EditorItemPower.poderDoOverride(String(dados?.id ?? ''), dados?.override ?? null, undefined, dados?.arma ?? null); return json(res, r.ok === false && !r.id ? 404 : 200, r), true; }
+    if (rota === 'item-power/resolver-defesa') { const r = EditorItemPower.resolverDefesa(String(dados?.id ?? ''), dados?.override ?? null, String(dados?.tipo ?? ''), dados?.valor); return json(res, r.ok ? 200 : 400, r), true; }
+    // Classes: validar/prévia (só lê); salvar, reverter, restaurar e migrar (gravam).
+    if (rota === 'classes/previa') return json(res, 200, { previa: Classes.previaDeEfeitos(dados?.efeitos ?? {}, { str: Number(dados?.str) || 0, dex: Number(dados?.dex) || 0, int: Number(dados?.int) || 0 }) }), true;
+    if (rota === 'classes/validar') return json(res, 200, OverridesClasses.propor(dados?.override ?? null, { contagens: await contagensDeClasses() })), true;
+    if (rota === 'classes') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(OverridesClasses.salvar(dados.override, dados.revisao, { contagens: await contagensDeClasses() }));
+      if (a === 'reverter') return responder(OverridesClasses.reverter(dados.revisao));
+      if (a === 'restaurar') return responder(OverridesClasses.restaurar(dados.versao, dados.revisao));
+      if (a === 'migrar') {
+        // MIGRAÇÃO EXPLÍCITA: todos os personagens de `de` passam para `para` (classe ATIVA), no banco. Pede `confirmar: true`.
+        if (!bancoDeClasses) return json(res, 409, { ok: false, erros: ['O banco de personagens não está ligado neste servidor.'] }), true;
+        const de = OverridesClasses.obter().classes.find((c) => c.id === dados.de); const para = OverridesClasses.obter().classes.find((c) => c.id === dados.para);
+        if (!de || !para) return json(res, 400, { ok: false, erros: ['Classe de origem ou destino não existe.'] }), true;
+        if (de.id === para.id) return json(res, 400, { ok: false, erros: ['Origem e destino são a mesma classe.'] }), true;
+        if (!para.ativo) return json(res, 400, { ok: false, erros: ['A classe de destino precisa estar ativa.'] }), true;
+        if (dados.confirmar !== true) return json(res, 400, { ok: false, erros: ['Confirme a migração (confirmar: true): ela altera personagens no banco.'] }), true;
+        const n = await bancoDeClasses.migrar(de.id, para.id, para.vocacaoBase);
+        return json(res, 200, { ok: true, migrados: n, aviso: 'Personagens que estavam online só mudam no próximo login.' }), true;
+      }
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, restaurar ou migrar.'] }), true;
+    }
+    // Sprite de item: validar a imagem (só lê) e salvar/reverter (gravam).
+    if (rota === 'sprites-itens/validar') { const a = SpritesItens.analisar(String(dados?.id ?? ''), dados ?? {}); const { buffer, ...resto } = a; return json(res, 200, resto), true; }
+    if (rota === 'sprites-itens') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(SpritesItens.salvar(String(dados.id ?? ''), dados, dados.revisao));
+      if (a === 'reverter') return responder(SpritesItens.reverter(String(dados.id ?? ''), dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar ou reverter.'] }), true;
+    }
+    if (rota === 'overrides/itens/validar') return json(res, 200, OverridesItens.propor(String(dados?.id ?? ''), dados?.override ?? null)), true;
+    if (rota === 'overrides/itens') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(await comRecargaDeItens(OverridesItens.salvar(String(dados.id ?? ''), dados.override ?? null, dados.revisao), dados.aplicar));
+      if (a === 'reverter') return responder(await comRecargaDeItens(OverridesItens.reverter(String(dados.id ?? ''), dados.revisao), dados.aplicar));
+      if (a === 'duplicar') return responder(await comRecargaDeItens(OverridesItens.duplicar(Number(dados.base), dados.nome, dados.revisao), dados.aplicar));
+      if (a === 'ativo') return responder(OverridesItens.definirAtivo(dados.ativo, dados.id ?? null, dados.revisao));
+      if (a === 'restaurar') return responder(OverridesItens.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, ativo ou restaurar.'] }), true;
+    }
+    if (rota === 'overrides/validar') return json(res, 200, Overrides.propor(String(dados?.key ?? ''), dados?.override ?? null)), true;
+    if (rota === 'overrides') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      if (a === 'salvar') return responder(Overrides.salvar(String(dados.key ?? ''), dados.override ?? null, dados.revisao));
+      if (a === 'reverter') return responder(Overrides.reverter(String(dados.key ?? ''), dados.revisao));
+      if (a === 'duplicar') return responder(Overrides.duplicar(String(dados.key ?? ''), String(dados.novaKey ?? ''), dados.novoNome ?? null, dados.revisao));
+      if (a === 'ativo') return responder(Overrides.definirAtivo(dados.ativo, dados.key ?? null, dados.revisao));
+      if (a === 'restaurar') return responder(Overrides.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar, reverter, duplicar, ativo ou restaurar.'] }), true;
+    }
+    if (rota === 'campanha/validar') {
+      const r = CampanhaEditor.propor(dados ?? {});
+      return json(res, 200, { ok: r.erros.length === 0, erros: r.erros, avisos: r.avisos, mudancas: r.mudancas, semMudancas: r.semMudancas }), true;
+    }
+    if (rota === 'campanha/restaurar') { const r = CampanhaEditor.restaurar(dados?.versao, dados?.revisao); return json(res, status(r), r), true; }
+    if (rota === 'campanha') { const r = CampanhaEditor.salvar(dados ?? {}); return json(res, status(r), r), true; }
+    if (rota === 'mapas/validar') return json(res, 200, Mapas.validarSpawns(dados ?? {})), true;
     if (rota === 'atos-editor/validar') return json(res, 200, Atos.validar(dados ?? {})), true;
     if (rota === 'atos-editor/imagem') return json(res, 200, Atos.salvarImagem(dados?.ato, dados?.dados)), true;
-    if (rota === 'atos-editor') return json(res, 200, dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {})), true;
+    if (rota === 'atos-editor') {
+      const r = dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {});
+      return json(res, status(r), r), true;
+    }
     if (rota === 'mapa') return json(res, 200, Conteudo.salvarMapa(dados ?? {})), true;
+    // Imagem de fundo do mapa do mundo de um Ato: validar (só lê), salvar e remover (gravam).
+    if (rota === 'mapa/fundo/validar') { const { buffer, ...a } = Conteudo.analisarFundo(dados?.imagem); return json(res, 200, a), true; }
+    if (rota === 'mapa/fundo') {
+      const r = dados?.acao === 'remover' ? Conteudo.removerFundoDoAto(dados?.ato) : dados?.acao === 'salvar' ? Conteudo.salvarFundoDoAto(dados?.ato, dados?.imagem) : { ok: false, erros: ['acao deve ser salvar ou remover.'] };
+      return json(res, r.ok ? 200 : 400, r), true;
+    }
     if (rota === 'mapa/validar') return json(res, 200, Conteudo.salvarMapa(dados ?? {}, { gravar: false })), true;
     if (rota === 'bosses') return json(res, 200, dados?.excluir ? Conteudo.excluirBoss(String(dados.excluir)) : Conteudo.salvarBoss(dados)), true;
     if (rota === 'bosses/validar') return json(res, 200, { erros: (await import('../systems/bosses-unicos/catalogo.mjs')).validar(dados) }), true;

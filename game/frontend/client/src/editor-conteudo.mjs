@@ -5,11 +5,25 @@ import { svg, fundoDoAto, nomeDoTema } from './world-arte.mjs';
 import { LARGURA, ALTURA, TIPOS_DE_NO, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, atosDaCampanha } from './world-dados.mjs';
 import { desenharNo } from './world.mjs';
 import { criarEditorDeAtos } from './editor-atos.mjs';
+import { criarPainelDeHunts } from './editor-hunts.mjs';
+import { criarEditorDeMapas } from './editor-mapas.mjs';
+import { criarTelasDeOperacao } from './editor-operacao.mjs';
+import { criarEditorDeMobs } from './editor-mobs.mjs';
+import { criarEditorDeItens } from './editor-itens.mjs';
+import { criarEditorDeSprites } from './editor-sprites-editor.mjs';
+import { criarIndicadorDeHotReload } from './editor-hot-reload.mjs';
+import { criarTelaDeValidacao } from './editor-validacao.mjs';
+import { criarTelaDeProgressao } from './editor-progressao.mjs';
+import { criarTelaDeConjuntos } from './editor-conjuntos.mjs';
+import { criarTelaDeItemPower } from './editor-item-power.mjs';
+import { criarTelaDeClasses } from './editor-classes.mjs';
+import { garantirAcesso } from './editor-acesso.mjs';
+import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstadoDoMenu, abrirGrupoDe } from './editor-menu.mjs';
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
 import { criarTelaDeItensPoe } from './editor-itens-poe.mjs';
 import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe } from './editor-poe-telas.mjs';
-import { el, msg, descartarAlteracoes, navegacao, cabecalho, botaoCopiar } from './editor-ui.mjs';
+import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar, pedirTexto } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_conteudo/';
 const S = { opcoes: null, aba: 'geral', auditoria: null, faseId: null, fase: null, encontros: [], validacao: { erros: [], avisos: [] }, navegacao: 0 };
@@ -38,6 +52,7 @@ async function api(rota, corpo) {
   const vez = S.navegacao;
   const r = await fetch(BASE + rota, corpo === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
   const dados = await r.json();
+  if (r.status === 401 && dados?.codigo === 'sem-login') { location.reload(); return new Promise(() => {}); }
   if (corpo === undefined && vez !== S.navegacao) return new Promise(() => {});
   return dados;
 }
@@ -274,18 +289,93 @@ function cartaoDeEncontro(e, i) {
 }
 
 const EDITOR_DE_ATOS = criarEditorDeAtos({ el, api, raiz: () => $('#raiz'), msg });
-const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto) });
+const BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: (aba, id = null, resto = null) => irPara(aba, id, resto), acaoDaFicha: (d) => botaoDeSprite(d), atalhosDeEdicao: (d) => botoesDaFicha(d) });
 // A tela Mobs é a Biblioteca presa nos monstros (mesmos cards, mesma ficha), com a rota própria `#mobs/<key>`.
 // As telas de ENTIDADE (Mobs, Itens, Outfits, Montarias) são a Biblioteca presa numa categoria — mesmos cards, mesma
 // ficha, rota própria (`#mobs/<key>`, `#itens/<id>`…). Somente visualização: esses cadastros vêm do Canary.
 const irParaDe = (aba, id = null, resto = null) => irPara(aba, id, resto);
-const TELAS_FIXAS = {
-  mobs: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. Somente visualização — o bestiário vem do Canary.' }),
-  itens: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. Somente visualização.' }),
-  outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
-  montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
+// O botão "Editar sprite" das fichas da Biblioteca: abre o editor universal de sprites no look do monstro, outfit ou montaria.
+const lookDaFicha = (d) => (d.desenho?.tipo === 'criatura' ? d.desenho.look : ['outfits', 'montarias'].includes(d.categoria) ? d.look : null);
+const botaoDeSprite = (d) => (lookDaFicha(d) != null ? el('button', { type: 'button', class: 'fantasma', onclick: () => irPara('sprites', null, [String(lookDaFicha(d))]) }, 'Editar sprite (quadros e animação)') : null);
+/**
+ * Os atalhos de EDIÇÃO da ficha da Biblioteca geral (cada categoria leva ao editor que já existe — nenhum editor novo aqui): monstro → Mobs; item → Itens; hunts → Hunts; bosses → Bosses únicos;
+ * (o botão de sprite vem de `acaoDaFicha`). Em monstro e item também "criar a partir deste" (duplica como entrada nova de override e abre no editor).
+ */
+function botoesDaFicha(d) {
+  const botoes = [];
+  const gravar = () => !document.body.classList.contains('eng-somente-leitura');
+  if (d.categoria === 'monstros') botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('mobs', null, ['editar', d.id]) }, 'Editar este monstro'));
+  if (d.categoria === 'itens') botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('itens', null, ['editar', d.id]) }, 'Editar este item'));
+  if (['hunts', 'vips', 'especiais', 'divinas'].includes(d.categoria)) botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('hunts', null, [d.id]) }, 'Abrir no painel de Hunts'));
+  if (d.categoria === 'bosses') botoes.push(el('button', { type: 'button', class: 'primario', onclick: () => irPara('bosses') }, 'Abrir em Bosses únicos'));
+  if (d.categoria === 'itens' && gravar()) botoes.push(el('button', { type: 'button', onclick: async () => {
+    const nome = await pedirTexto('Criar item novo', { rotulo: `Nome do novo item (cópia de ${d.nome ?? d.id})`, valor: `${d.nome ?? d.id} (novo)`, validar: (v) => (v.trim().length >= 1 && v.length <= 80 ? '' : 'De 1 a 80 caracteres.'), ok: 'Criar' });
+    if (nome == null) return;
+    const rev = (await api('overrides/itens?limite=1')).revisao;
+    const r = await api('overrides/itens', { acao: 'duplicar', base: Number(d.id), nome, aplicar: true, revisao: rev });
+    if (r.ok === false) return msg((r.erros ?? ['Não criou.']).join(' '), 'erro');
+    msg(`Item #${r.id} criado como cópia de #${d.id}.`, 'ok');
+    irPara('itens', null, ['editar', String(r.id)]);
+  } }, 'Criar item novo a partir deste'));
+  if (d.categoria === 'monstros' && gravar()) botoes.push(el('button', { type: 'button', onclick: async () => {
+    const chave = await pedirTexto('Criar mob novo', { rotulo: `Chave do mob novo (cópia de ${d.nome ?? d.id}; minúsculas, números e hífen)`, valor: `${d.id}-novo`, validar: (v) => (/^[a-z0-9][a-z0-9-]{1,59}$/.test(v) ? '' : 'Use 2 a 60 caracteres: minúsculas, números e hífen.'), ok: 'Criar' });
+    if (!chave) return;
+    const rev = (await api('overrides/monstros?limite=1')).revisao;
+    const r = await api('overrides', { acao: 'duplicar', key: d.id, novaKey: chave, novoNome: `${d.nome ?? d.id} (variação)`, revisao: rev });
+    if (r.ok === false) return msg((r.erros ?? ['Não criou.']).join(' '), 'erro');
+    msg(`Mob "${chave}" criado como cópia de ${d.id}.`, 'ok');
+    irPara('mobs', null, ['editar', chave]);
+  } }, 'Criar mob novo a partir deste'));
+  return botoes.length ? el('div', { class: 'linha' }, botoes) : null;
+}
+const OPERACAO = criarTelasDeOperacao({ api, raiz: () => $('#raiz'), irPara: (aba) => irPara(aba) });
+const MOBS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('div', { class: 'linha' }, el('button', { type: 'button', class: 'primario', onclick: () => irPara('mobs', null, ['editar', d.id]) }, 'Editar este monstro (override)'), botaoDeSprite(d)), categoriaFixa: 'monstros', rota: 'mobs', titulo: 'Mobs', descricao: 'Os monstros do bestiário com o sprite real: atributos, resistências, ataques, loot e onde cada um aparece. O bestiário vem do Canary e não é alterado: para editar, use "Editar mobs" (camada de overrides).' });
+const MOBS_EDITOR = criarEditorDeMobs({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('mobs'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
+let modoDosMobs = 'biblioteca';
+const MOBS = {
+  async desenhar(resto = []) {
+    if (resto[0] === 'editar') { modoDosMobs = 'editor'; return MOBS_EDITOR.desenhar(resto[1] ?? null); }
+    modoDosMobs = 'biblioteca';
+    await MOBS_BIBLIOTECA.desenhar(resto);
+    const cab = document.querySelector('#raiz .eng-cabeca');
+    if (cab && !cab.querySelector('.mob-editar')) cab.append(el('div', { class: 'eng-acoes' }, el('button', { type: 'button', class: 'mob-editar primario', onclick: () => irPara('mobs', null, ['editar']) }, 'Editar mobs (overrides)')));
+  },
+  abrir: (cat, id) => (id === 'editar' ? MOBS_EDITOR.desenhar() : MOBS_BIBLIOTECA.abrir(cat, id)),
+  focarBusca: () => (modoDosMobs === 'editor' ? MOBS_EDITOR : MOBS_BIBLIOTECA).focarBusca(),
 };
-const CATEGORIA_DA_TELA = { mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias' };
+const ITENS_BIBLIOTECA = criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => el('button', { type: 'button', class: 'primario', onclick: () => irPara('itens', null, ['editar', d.id]) }, 'Editar este item (override)'), categoriaFixa: 'itens', rota: 'itens', titulo: 'Itens', descricao: 'O catálogo de itens por slot e tipo: base, o que cada raridade dá à peça, sockets, onde cai e o tooltip real do jogo. O catálogo vem do Canary e não é alterado: para editar, use "Editar itens" (camada de overrides).' });
+const ITENS_EDITOR = criarEditorDeItens({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), aoVoltar: () => irPara('itens'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
+let modoDosItens = 'biblioteca';
+const ITENS = {
+  async desenhar(resto = []) {
+    if (resto[0] === 'editar') { modoDosItens = 'editor'; return ITENS_EDITOR.desenhar(resto[1] ?? null); }
+    modoDosItens = 'biblioteca';
+    await ITENS_BIBLIOTECA.desenhar(resto);
+    const cab = document.querySelector('#raiz .eng-cabeca');
+    if (cab && !cab.querySelector('.itm-editar')) cab.append(el('div', { class: 'eng-acoes' }, el('button', { type: 'button', class: 'itm-editar primario', onclick: () => irPara('itens', null, ['editar']) }, 'Editar itens (overrides)')));
+  },
+  abrir: (cat, id) => (id === 'editar' ? ITENS_EDITOR.desenhar() : ITENS_BIBLIOTECA.abrir(cat, id)),
+  focarBusca: () => (modoDosItens === 'editor' ? ITENS_EDITOR : ITENS_BIBLIOTECA).focarBusca(),
+};
+// O editor universal de sprites (monstros, outfits e montarias): rota `#sprites` (escolher) e `#sprites/<look>` (editar).
+const SPRITES = criarEditorDeSprites({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) });
+const TELAS_FIXAS = {
+  beta: OPERACAO.beta,
+  config: OPERACAO.config,
+  mapas: criarEditorDeMapas({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo, confirmarDescartar: () => descartarAlteracoes('O mapa aberto tem alterações não salvas') } }),
+  hunts: criarPainelDeHunts({ api, raiz: () => $('#raiz'), irPara: irParaDe, sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
+  mobs: MOBS,
+  itens: ITENS,
+  sprites: SPRITES,
+  progressao: criarTelaDeProgressao({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
+  conjuntos: criarTelaDeConjuntos({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura'), irPara: (aba, id = null, resto = []) => irPara(aba, id, resto) }),
+  classes: criarTelaDeClasses({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
+  itempower: criarTelaDeItemPower({ api, raiz: () => $('#raiz'), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
+  validacao: criarTelaDeValidacao({ api, raiz: () => $('#raiz'), podeGravar: () => !document.body.classList.contains('eng-somente-leitura') }),
+  outfits: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'outfits', rota: 'outfits', titulo: 'Outfits', descricao: 'As aparências de personagem (grátis e da Store): as 4 direções, os addons e a pose montada. Somente visualização.' }),
+  montarias: criarBiblioteca({ api, raiz: () => $('#raiz'), irPara: irParaDe, acaoDaFicha: (d) => botaoDeSprite(d), categoriaFixa: 'montarias', rota: 'montarias', titulo: 'Montarias', descricao: 'As montarias com o sprite real, sozinhas e com um personagem montado. Somente visualização.' }),
+};
+const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias', sprites: 'sprites' };
 // A referência do PoE (Fase 1 do sistema de itens no modelo do PoE): só leitura, só com ITENS_POE=1 no servidor.
 const ITENS_POE = criarTelaDeItensPoe({ raiz: () => $('#raiz') });
 const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }) };
@@ -294,16 +384,53 @@ const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['fase', 'Fases e encontros'], ['mapa', 'Mapa do mundo'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['biblioteca', 'Biblioteca'], ['atos', 'Atos (Acts)'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
+// O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
+// 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
 const GRUPOS = [
-  { titulo: 'Mundo', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel' }, { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' }, { id: 'fase', nome: 'Fases e encontros', icone: 'fase' }, { id: 'atos', nome: 'Acts', icone: 'atos' }, { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', href: '/editor' }] },
-  { titulo: 'Entidades', itens: [{ id: 'mobs', nome: 'Mobs', icone: 'mobs' }, { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' }, { id: 'itens', nome: 'Itens', icone: 'espada' }, { id: 'outfits', nome: 'Outfits', icone: 'outfit' }, { id: 'montarias', nome: 'Montarias', icone: 'montaria' }] },
-  { titulo: 'Biblioteca', itens: [{ id: 'biblioteca', nome: 'Todos os cadastros', icone: 'livros' }] },
-  { titulo: 'Referência PoE', itens: [{ id: 'itens-poe', nome: 'Itens (PoE)', icone: 'espada' }, { id: 'poe-campanha', nome: 'Campanha do PoE', icone: 'atos' }, { id: 'poe-arvore', nome: 'Árvore do PoE', icone: 'fase' }, { id: 'poe-chefes', nome: 'Chefes do PoE', icone: 'coroa' }] },
+  { id: 'gerenciamento', titulo: 'Gerenciamento', itens: [{ id: 'geral', nome: 'Visão geral', icone: 'painel', modo: 'consulta', dica: 'resumo e problemas do conteúdo' },
+    { id: 'validacao', nome: 'Validação e versão', icone: 'painelDeControle', dica: 'verificações, testes e se a versão pode ser aprovada' }] },
+  { id: 'mundo', titulo: 'Mundo e campanha', itens: [
+    { id: 'mapa', nome: 'Mapa do mundo', icone: 'mundo' },
+    { id: 'mapas', nome: 'Editor de mapas', icone: 'mapa', dica: 'chão, spawns, raridade' },
+    { id: 'hunts', nome: 'Hunts e áreas', icone: 'mapa', modo: 'consulta', dica: 'mapa, monstros, dificuldade e drops' },
+    { id: 'atos', nome: 'Acts e campanhas', icone: 'atos' },
+    { id: 'fase', nome: 'Fases e encontros', icone: 'fase' },
+    { id: 'mapas-antigo', nome: 'Editor de mapas (antigo)', icone: 'mapa', href: '/editor', dica: 'a tela antiga, enquanto você valida a nova' }] },
+  { id: 'conteudo', titulo: 'Conteúdo do jogo', itens: [
+    { id: 'mobs', nome: 'Mobs', icone: 'mobs', modo: 'parcial', dica: 'consulta e edição por override (o original do Canary não muda)' },
+    { id: 'bosses', nome: 'Bosses únicos', icone: 'coroa' },
+    { id: 'itens', nome: 'Itens', icone: 'espada', modo: 'parcial', dica: 'consulta e edição por override (o catálogo do Canary não muda)' },
+    { id: 'outfits', nome: 'Outfits', icone: 'outfit', modo: 'consulta' },
+    { id: 'montarias', nome: 'Montarias', icone: 'montaria', modo: 'consulta' },
+    { id: 'progressao', nome: 'Progressão e loot', icone: 'engrenagem', modo: 'parcial', dica: 'Atos, tiers das bases e loot por dificuldade (override); simulador' },
+    { id: 'classes', nome: 'Classes', icone: 'classes', modo: 'parcial', dica: 'classes, atributos iniciais e bônus por ponto de atributo (override)' },
+    { id: 'itempower', nome: 'Item Power', icone: 'espada', modo: 'parcial', dica: 'poder base dos equipamentos, curva por level e alertas de distribuição (override)' },
+    { id: 'conjuntos', nome: 'Conjuntos', icone: 'espada', modo: 'parcial', dica: 'sets de equipamento por classe, Ato e tier (override); referências a itens' },
+    { id: 'sprites', nome: 'Editor de sprites', icone: 'outfit', modo: 'parcial', dica: 'monstros, outfits e montarias: quadros, direções e animação por override' }] },
+  { id: 'recursos', titulo: 'Recursos', itens: [
+    { id: 'biblioteca', nome: 'Biblioteca de conteúdos', icone: 'livros', modo: 'consulta' },
+    { id: 'beta', nome: 'Testes e beta', icone: 'frasco', dica: 'interruptor do modo beta' },
+    { id: 'config', nome: 'Configurações', icone: 'engrenagem', dica: 'manutenção e Server Save' }] },
+  { id: 'poe', titulo: 'Referência PoE', itens: [{ id: 'itens-poe', nome: 'Itens (PoE)', icone: 'espada', dica: 'catálogo do PoE importado (só com ITENS_POE=1)' }, { id: 'poe-campanha', nome: 'Campanha do PoE', icone: 'atos' }, { id: 'poe-arvore', nome: 'Árvore do PoE', icone: 'fase' }, { id: 'poe-chefes', nome: 'Chefes do PoE', icone: 'coroa' }] },
 ];
+
+// O estado do menu (recolhido, grupos fechados) fica no navegador; sem storage o menu funciona igual.
+const armazem = (() => { try { return window.localStorage; } catch { return null; } })();
+let MENU = lerEstadoDoMenu(armazem);
+const gaveta = { aberta: false };
+function abrirGaveta(aberta) {
+  gaveta.aberta = aberta;
+  document.body.classList.toggle('eng-gaveta', aberta);
+  document.getElementById('eng-menu-btn')?.setAttribute('aria-expanded', String(aberta));
+}
+document.getElementById('eng-menu-btn')?.addEventListener('click', () => abrirGaveta(!gaveta.aberta));
+document.getElementById('eng-gaveta-fundo')?.addEventListener('click', () => abrirGaveta(false));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && gaveta.aberta) abrirGaveta(false); });
 function desenharAbas() {
-  $('#abas').replaceChildren(...navegacao(GRUPOS, S.aba, (id) => irPara(id)));
+  MENU = abrirGrupoDe(MENU, GRUPOS, S.aba);
+  desenharMenu({ alvo: $('#abas'), grupos: GRUPOS, ativa: S.aba, irPara: (id) => irPara(id), estado: MENU, fecharGaveta: () => abrirGaveta(false), aoMudar: (novo) => { MENU = novo; gravarEstadoDoMenu(armazem, MENU); desenharAbas(); } });
   $('#eng-local').replaceChildren(NOME_DA_ABA[S.aba] ?? '');
 }
 /** O endereço guarda a tela (`#fase/troll-cave`, `#bosses`...): recarregar ou mandar o link abre no mesmo lugar. */
@@ -314,6 +441,7 @@ const lerEndereco = () => {
 async function irPara(aba, faseId = null, resto = []) {
   if (S.aba === 'atos' && aba !== 'atos' && EDITOR_DE_ATOS.sujo() && !(await descartarAlteracoes('O ato aberto tem alterações não salvas'))) return desenharAbas();
   if (S.sujo && !(await descartarAlteracoes())) return desenharAbas();
+  if (S.aba === 'sprites' && aba !== 'sprites') SPRITES.sair(); // para a animação e libera as folhas de rascunho do renderer
   S.navegacao++;
   S.sujo = false;
   S.aba = aba;
@@ -443,7 +571,11 @@ window.addEventListener('beforeunload', (e) => {
 });
 // O editor de Atos guarda o próprio "sujo": o aviso da barra é conferido depois de cada edição.
 for (const ev of ['input', 'change', 'click', 'pointerup']) document.addEventListener(ev, () => setTimeout(atualizarSujo, 0));
+// O servidor decide quem entra: em produção, sem sessão de administrador a página leva a /editor/login (nenhum dado é entregue).
+await garantirAcesso();
 S.opcoes = await api('opcoes');
+// O indicador de Hot Reload (barra do topo); em produção ele não aparece.
+criarIndicadorDeHotReload({ base: BASE, alvo: document.getElementById('eng-hot') });
 {
   const { aba, id, resto } = lerEndereco();
   S.aba = null;
@@ -520,7 +652,7 @@ async function desenharMapaDoMundo() {
     const mundo = mundoDoEditor();
     const pos = posicoesDoAto(fases, true, mundo, MW.ato, meta.bossMapa ?? null);
     const pontos = [...pos.pontos, pos.boss];
-    cam.replaceChildren(fundoDoAto(MW.ato, nomeDoTema(MW.ato, meta.tema), pontos));
+    cam.replaceChildren(fundoDoAto(MW.ato, nomeDoTema(MW.ato, meta.tema), pontos, meta.fundo));
     const ids = [...fases.map((f) => f.huntId), `boss:${MW.ato}`];
     const posDe = (id) => pontos[ids.indexOf(id)];
     const estradas = svg('g', { class: 'w2-estradas' });
@@ -630,10 +762,45 @@ async function desenharMapaDoMundo() {
     el('label', { class: 'campo' }, 'Descrição do Ato', ligar(el('input', { value: meta.descricao ?? '' }), meta, 'descricao', { opcional: true, aoMudar: aoMudarAto }))
   );
 
+  // ---- IMAGEM DE FUNDO do Ato: carrega, valida no servidor, mostra a prévia e SALVA na hora (arquivo em gamedata/mapa-mundo + referência no Ato) ----
+  const blocoDoFundo = (() => {
+    const caixa = el('div', { class: 'ip-painel', id: 'mw-fundo' });
+    let rascunho = null;
+    const dis = () => document.body.classList.contains('eng-somente-leitura');
+    const pintarBloco = () => {
+      const f = meta.fundo; const v = rascunho?.validacao;
+      caixa.replaceChildren(...[
+        el('h4', {}, `Imagem de fundo do Ato ${MW.ato}`),
+        el('div', { class: 'dica' }, 'Carrega uma imagem (PNG, JPG ou WEBP, até 3 MB, 200–4096 px por lado; ideal na proporção 1000×640) como fundo do mapa mundo DESTE Ato. Ela cobre a tela e substitui o fundo desenhado. Salvar grava o arquivo em gamedata/mapa-mundo e vale no jogo depois do commit + deploy (e de reiniciar o servidor local).'),
+        el('div', { class: 'linha' },
+          f ? el('div', {}, el('b', {}, 'Salva'), el('div', {}, el('img', { src: `/gamedata/mapa-mundo/${f.arquivo}`, style: 'max-width:240px;max-height:154px;border:1px solid #444' })), el('div', { class: 'dica' }, `${f.arquivo} · ${f.w ?? '?'}×${f.h ?? '?'}px · ${Math.round((f.bytes ?? 0) / 1000)} KB`)) : el('div', { class: 'dica' }, 'Sem imagem: este Ato usa o fundo desenhado do tema.'),
+          rascunho ? el('div', {}, el('b', {}, 'Nova (não salva)'), el('div', {}, el('img', { src: rascunho.dataUrl, style: 'max-width:240px;max-height:154px;border:1px solid #444' }))) : null),
+        el('div', { class: 'linha' },
+          el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', disabled: dis(), onchange: async (e) => { const a = e.target.files?.[0]; if (!a) return; const dataUrl = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => no(new Error('Não consegui ler o arquivo.')); r.readAsDataURL(a); }); rascunho = { dataUrl, validacao: await api('mapa/fundo/validar', { imagem: dataUrl }) }; pintarBloco(); } }),
+          el('button', { type: 'button', class: 'primario', disabled: dis() || !v?.ok, onclick: async () => {
+            const r = await api('mapa/fundo', { acao: 'salvar', ato: MW.ato, imagem: rascunho.dataUrl });
+            if (r.ok === false) return msg((r.erros ?? ['Não salvou.']).join(' '), 'erro');
+            meta.fundo = r.fundo; MW.original = JSON.stringify(corpoDoMapa()); rascunho = null; msg(`Imagem de fundo do Ato ${MW.ato} salva.`, 'ok'); pintarMapa(); pintarBloco();
+          } }, 'Salvar imagem neste Ato'),
+          el('button', { type: 'button', disabled: !rascunho, onclick: () => { rascunho = null; pintarBloco(); } }, 'Descartar'),
+          el('button', { type: 'button', class: 'perigo', disabled: dis() || !f, onclick: async () => {
+            const r = await api('mapa/fundo', { acao: 'remover', ato: MW.ato });
+            if (r.ok === false) return msg((r.erros ?? ['Não removeu.']).join(' '), 'erro');
+            delete meta.fundo; MW.original = JSON.stringify(corpoDoMapa()); msg('Imagem removida: o Ato volta ao fundo desenhado.', 'ok'); pintarMapa(); pintarBloco();
+          } }, 'Remover imagem')),
+        v ? (v.erros?.length ? el('ul', { class: 'problemas' }, v.erros.map((m) => el('li', { class: 'erro' }, `✖ ${m}`))) : el('div', { class: 'selo ok' }, `Imagem válida: ${v.tipo.toUpperCase()} ${v.w}×${v.h}px, ${Math.round(v.bytes / 1000)} KB`)) : null,
+        v?.avisos?.length ? el('ul', { class: 'problemas' }, v.avisos.map((m) => el('li', { class: 'aviso' }, `⚠ ${m}`))) : null,
+      ].filter(Boolean));
+    };
+    pintarBloco();
+    return caixa;
+  })();
+
   $('#raiz').replaceChildren(
     cabecalho('Mapa do mundo', 'A tela WORLD do jogo: posição dos nós, tipos, conexões e os dados de cada Ato.'),
     el('div', { class: 'linha' }, el('label', { class: 'campo' }, 'Ato', seletor), el('label', { class: 'campo' }, 'Pré-visualizar estados', previa, legendaPrevia)),
     form,
+    blocoDoFundo,
     el('div', { class: 'linha' }, el('button', { type: 'button', onclick: gerarPosicoes }, 'Gerar posições do caminho automático'), el('button', { type: 'button', onclick: limparPosicoes }, 'Limpar posições do Ato'), el('button', { type: 'button', class: 'primario', id: 'salvarMapa', onclick: salvarMapaDoMundo }, 'Salvar mapa')),
     el('div', { id: 'mw-validacao' }),
     el('div', { class: 'duas', style: 'grid-template-columns:1fr 300px' }, palco, lateral),

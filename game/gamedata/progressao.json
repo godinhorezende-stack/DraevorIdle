@@ -1,0 +1,240 @@
+{
+ "_nota": "A PROGRESSÃO DE EQUIPAMENTOS e a DIFICULDADE são duas dimensões separadas. `progressao`: a faixa de level de equipamento de cada ATO e os tiers das bases — COMPARTILHADA pelas três dificuldades (Normal, Cruel e Merciless reutilizam os mesmos Acts e as mesmas bases; a dificuldade NÃO cria level de equipamento novo e nenhum equipamento passa de `nivelMaximoDeEquipamento`, 1000). `loot`: o que a DIFICULDADE muda — só a qualidade das oportunidades de loot (pesos de raridade, chance de drop de equipamento, chance de mais um modificador, pesos e teto dos tiers de modificador). Os valores de `loot` abaixo são NEUTROS (1 / 0 / vazio): não mudam nada em relação às tabelas que já existem (`itens/raridades.json`, `itens/tiers.json`). Os valores propostos ficam em `perfis` e só valem depois de aprovados (ver docs/progressao-e-loot.md). Tier da base = floor((level + deslocamento − 1) / largura) + 1: Act 1 (1–100) = T1–T2 … Act 10 (901–1000) = T10–T11. `estagioDeRaridade`: qual das 4 tabelas de raridade de `itens/raridades.json` (chances por estágio × dificuldade) cada Ato da progressão usa — derivado dos limites que já existiam (`atoPorLevel`: até 100 → estágio 1, até 400 → 2, até 1000 → 3, acima → 4). Como os equipamentos só vão até 1000, o estágio 4 não é alcançado por nenhum Ato até que seja mapeado aqui (decisão de balanceamento pendente). `tiersDeModificador`: vazio (null) = usa a tabela `itemLevel` de `itens/tiers.json`; preenchido (`{ itemLevel: [{ate, tiers}] }`) substitui essa tabela — é o que libera os tiers de MODIFICADOR pelo Item Level, igual nas três dificuldades (a dificuldade só inclina os pesos). A tabela original foi pensada para levels até 2000+ (T4 só acima de 600, T5 só acima de 1200); com equipamentos até o level 1000, o T5 não é alcançável sem remapear.",
+ "progressao": {
+  "nivelMaximoDeEquipamento": 1000,
+  "tier": {
+   "largura": 100,
+   "deslocamento": 50
+  },
+  "atos": [
+   {
+    "ato": 1,
+    "de": 1,
+    "ate": 100,
+    "tiers": [
+     1,
+     2
+    ]
+   },
+   {
+    "ato": 2,
+    "de": 101,
+    "ate": 200,
+    "tiers": [
+     2,
+     3
+    ]
+   },
+   {
+    "ato": 3,
+    "de": 201,
+    "ate": 300,
+    "tiers": [
+     3,
+     4
+    ]
+   },
+   {
+    "ato": 4,
+    "de": 301,
+    "ate": 400,
+    "tiers": [
+     4,
+     5
+    ]
+   },
+   {
+    "ato": 5,
+    "de": 401,
+    "ate": 500,
+    "tiers": [
+     5,
+     6
+    ]
+   },
+   {
+    "ato": 6,
+    "de": 501,
+    "ate": 600,
+    "tiers": [
+     6,
+     7
+    ]
+   },
+   {
+    "ato": 7,
+    "de": 601,
+    "ate": 700,
+    "tiers": [
+     7,
+     8
+    ]
+   },
+   {
+    "ato": 8,
+    "de": 701,
+    "ate": 800,
+    "tiers": [
+     8,
+     9
+    ]
+   },
+   {
+    "ato": 9,
+    "de": 801,
+    "ate": 900,
+    "tiers": [
+     9,
+     10
+    ]
+   },
+   {
+    "ato": 10,
+    "de": 901,
+    "ate": 1000,
+    "tiers": [
+     10,
+     11
+    ]
+   }
+  ],
+  "estagioDeRaridade": {
+   "1": 1,
+   "2": 2,
+   "3": 2,
+   "4": 2,
+   "5": 3,
+   "6": 3,
+   "7": 3,
+   "8": 3,
+   "9": 3,
+   "10": 3
+  },
+  "tiersDeModificador": null
+ },
+ "dificuldades": {
+  "facil": {
+   "nome": "Normal"
+  },
+  "medio": {
+   "nome": "Cruel"
+  },
+  "dificil": {
+   "nome": "Merciless"
+  }
+ },
+ "loot": {
+  "_nota": "Neutro = igual ao que existe hoje. `pesosDeRaridade`: multiplicador do peso de cada raridade (depois normaliza para 100%). `pesosDeTier`: multiplicador do peso de cada tier de modificador (1–5) entre os que o Item Level libera. `tierMaximo`: teto de tier (nunca libera mais que o Item Level). `chanceDeModificadorExtra`: chance de +1 modificador (limitada ao pool e ao teto da raridade +1). `chanceDeDrop`: multiplicador da chance de drop de EQUIPAMENTO (não mexe em moedas, gemas, poções).",
+  "facil": {
+   "chanceDeDrop": 1,
+   "pesosDeRaridade": {},
+   "chanceDeModificadorExtra": 0,
+   "pesosDeTier": {},
+   "tierMaximo": null
+  },
+  "medio": {
+   "chanceDeDrop": 1,
+   "pesosDeRaridade": {},
+   "chanceDeModificadorExtra": 0,
+   "pesosDeTier": {},
+   "tierMaximo": null
+  },
+  "dificil": {
+   "chanceDeDrop": 1,
+   "pesosDeRaridade": {},
+   "chanceDeModificadorExtra": 0,
+   "pesosDeTier": {},
+   "tierMaximo": null
+  }
+ },
+ "perfis": {
+  "proposta-1": {
+   "_nota": "PROPOSTA de balanceamento — NÃO está aplicada (só vale se for gravada como override). Objetivo: com equipamentos até o level 1000, (1) o tier de modificador sobe pela progressão (T3 a partir do level 101, T4 do 301, T5 do 501), igual nas três dificuldades; (2) a dificuldade só INCLINA as chances: Cruel e Merciless pesam mais os tiers altos, dão mais chance de +1 modificador e inclinam um pouco a raridade, sem apagar os tiers baixos (T1/T2 mantêm o peso: peça básica segue viável); (3) a chance de drop de equipamento sobe pouco. Ver docs/progressao-e-loot.md (simulações). Estágios de raridade: igual ao que já existe até o Ato 8; Atos 9 e 10 passam a usar a tabela do estágio 4 (hoje inalcançável com equipamentos até o level 1000).",
+   "progressao": {
+    "estagioDeRaridade": {
+     "1": 1,
+     "2": 2,
+     "3": 2,
+     "4": 2,
+     "5": 3,
+     "6": 3,
+     "7": 3,
+     "8": 3,
+     "9": 4,
+     "10": 4
+    },
+    "tiersDeModificador": {
+     "itemLevel": [
+      {
+       "ate": 100,
+       "tiers": [
+        1,
+        2
+       ]
+      },
+      {
+       "ate": 300,
+       "tiers": [
+        1,
+        2,
+        3
+       ]
+      },
+      {
+       "ate": 500,
+       "tiers": [
+        1,
+        2,
+        3,
+        4
+       ]
+      },
+      {
+       "ate": null,
+       "tiers": [
+        1,
+        2,
+        3,
+        4,
+        5
+       ]
+      }
+     ]
+    }
+   },
+   "loot": {
+    "facil": {},
+    "medio": {
+     "chanceDeDrop": 1.1,
+     "chanceDeModificadorExtra": 0.05,
+     "pesosDeRaridade": {
+      "raro": 1.05,
+      "épico": 1.1,
+      "lendário": 1.15,
+      "mítico": 1.15
+     },
+     "pesosDeTier": {
+      "3": 1.15,
+      "4": 1.4,
+      "5": 1.8
+     }
+    },
+    "dificil": {
+     "chanceDeDrop": 1.2,
+     "chanceDeModificadorExtra": 0.12,
+     "pesosDeRaridade": {
+      "raro": 1.1,
+      "épico": 1.2,
+      "lendário": 1.3,
+      "mítico": 1.3
+     },
+     "pesosDeTier": {
+      "3": 1.3,
+      "4": 2.0,
+      "5": 3.0
+     }
+    }
+   }
+  }
+ }
+}

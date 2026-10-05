@@ -3,6 +3,8 @@
 // `packages/shared/src/portas-de-acesso.mjs`.
 import { ehTelefone } from './perfil.mjs';
 import { portaDoItemDeAcesso } from '/packages/shared/src/portas-de-acesso.mjs';
+// A conta da arma (dano físico, APS, crítico, qualidade, modificadores locais, DPS físico): o MESMO arquivo que o servidor usa (`engine/arma.mjs`), então o número do balão é o da engine.
+import * as Arma from '/packages/shared/src/arma.mjs';
 import { itemCanvas, outfitCanvas, drawItem, drawEffect, drawMissile, effectDuration } from './sprites.mjs';
 import { balaoPoe } from './itens-poe-balao.mjs';
 
@@ -2429,6 +2431,8 @@ export function faltaRequisito(meta, personagem) {
   const req = meta?.requisito;
   const atributos = personagem?.derived?.atributos;
   if (!req || !atributos) return null;
+  // `todos` (requisitos explícitos da base, `reqStr/reqDex/reqInt`): o personagem precisa ter TODOS; senão (derivado da classe) basta UM.
+  if (req.todos) return Object.entries(req.porAtributo).every(([a, v]) => (atributos[a] ?? 0) >= v) ? null : `Requer ${Object.entries(req.porAtributo).map(([a, v]) => `${v} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(', ')}`;
   if (req.atributos.some((a) => (atributos[a] ?? 0) >= req.valor)) return null;
   return `Requer ${req.atributos.map((a) => `${req.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou ')}`;
 }
@@ -2896,7 +2900,20 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   const temBase = meta.magicAttack || meta.attack || meta.defense || meta.armor || meta.evasion || meta.es || meta.range || meta.speed || meta.element || meta.wand?.element;
   if (temBase) add('Base', 'tip-sec');
   // A faixa do dano sai sem o "+" ("10–26"): é o que cada golpe sorteia.
-  if (meta.attack) prop('Dano', numeroOuFaixa(meta, 'attack').replace(/^\+/, ''), 'atk');
+  // Arma física: o balão no estilo Path of Exile (Qualidade, Dano Físico, Ataques por Segundo, Crítico, DPS Físico) pela conta central; o resto (wand/rod, joia, munição) segue como sempre.
+  const baseDaArma = meta.slot === 'weapon' && !meta.wand && !meta.magicAttack ? Arma.baseDaArma(meta, meta.faixas?.attack ?? null) : null;
+  if (baseDaArma && baseDaArma.danoMax > 0) {
+    const st = Arma.statsDaArma(baseDaArma, { qualidade: peca?.qualidade, locais: peca?.locais });
+    if (st.qualidade > 0) prop('Qualidade', `+${Arma.formatarDano(st.qualidade)}%`, 'plain');
+    const dano = prop('Dano Físico', `${Arma.formatarDano(st.danoMin)}–${Arma.formatarDano(st.danoMax)}`, 'atk');
+    const alterado = st.qualidade > 0 || Object.values(st.locais).some((v) => v !== 0);
+    if (alterado) dano.title = `Base ${Arma.formatarDano(st.dano.base[0])}–${Arma.formatarDano(st.dano.base[1])} · com adicional local ${Arma.formatarDano(st.dano.aposAdicional[0])}–${Arma.formatarDano(st.dano.aposAdicional[1])} · × % local ${Arma.formatarDano(st.dano.aposPercentual[0])}–${Arma.formatarDano(st.dano.aposPercentual[1])} · × qualidade (uma vez) = ${Arma.formatarDano(st.danoMin)}–${Arma.formatarDano(st.danoMax)}`;
+    const aps = prop('Ataques por Segundo', Arma.formatarAps(st.apsFinal), 'speed');
+    if (alterado) aps.title = `APS base ${Arma.formatarAps(st.aps.base)} · × % velocidade local → ${Arma.formatarAps(st.aps.aposLocal)} · × qualidade → ${Arma.formatarAps(st.apsFinal)}. Os aumentos de velocidade do personagem entram depois, na ficha.`;
+    if (st.critChance.final > 0) prop('Chance de Crítico', Arma.formatarCritico(st.critChance.final), 'crit');
+    const dps = prop('DPS Físico', Arma.formatarDano(st.dpsFisico), 'atk');
+    dps.title = 'Dano médio × ataques por segundo DA ARMA. Não é o dano de uma habilidade nem o DPS do personagem (atributos, perícia, críticos e efeitos entram na ficha).';
+  } else if (meta.attack) prop('Dano', numeroOuFaixa(meta, 'attack').replace(/^\+/, ''), 'atk');
   // O Magic Attack da wand e da rod (fixo, `armas/poder.mjs`) × a raridade da peça: é o atributo base que escala as gemas de ataque mágicas.
   // As armas físicas não mostram o "Poder da arma" (decisão do dono, 02/10).
   if (meta.magicAttack) {
@@ -3033,7 +3050,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   // O requisito de atributo (modelo Path of Exile): em vermelho se o personagem não cumpre.
   if (meta.requisito) {
     const falta = faltaRequisito(meta, getPersonagem());
-    regra('Requer', meta.requisito.atributos.map((a) => `${meta.requisito.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou '), falta ? 'tip-falta' : null);
+    regra('Requer', meta.requisito.todos ? Object.entries(meta.requisito.porAtributo).map(([a, v]) => `${v} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(', ') : meta.requisito.atributos.map((a) => `${meta.requisito.valor} ${NOME_DO_ATRIBUTO[a] ?? a}`).join(' ou '), falta ? 'tip-falta' : null);
   }
   regra('Slot', SLOT_NAMES[meta.slot] ?? null);
   /*

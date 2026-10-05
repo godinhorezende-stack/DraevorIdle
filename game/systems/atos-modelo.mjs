@@ -31,8 +31,10 @@ export const ID_VALIDO = /^[a-z0-9-]{3,40}$/;
 export const TIPOS_DE_FASE = {
   'hunt-normal': { suportado: true, exigeHunt: true, nome: 'Hunt normal' },
   'fase-final-do-ato': { suportado: true, exigeHunt: true, nome: 'Fase final do ato (abre o portal do boss)' },
-  'hunt-vip': { suportado: false, exigeHunt: true, nome: 'Hunt VIP', motivo: 'a campanha não entra em hunt de premium (Premium.trancaDaHunt)' },
-  'hunt-especial': { suportado: false, exigeHunt: true, nome: 'Hunt especial', motivo: 'a campanha não entra em Instance/Divine' },
+  // VIP/Instance/Divine como fase: a instância sai dos pontos da sala gerada (`Cacadas.spawnsDaSalaGerada`) e a entrada segue a regra de acesso
+  // da hunt (premium, pergaminho e level — com o modo beta ligado o acesso é livre). A fase só abre para quem pode entrar nela.
+  'hunt-vip': { suportado: true, exigeHunt: true, nome: 'Hunt VIP (exige premium)', categoria: 'vips' },
+  'hunt-especial': { suportado: true, exigeHunt: true, nome: 'Hunt especial (Instance/Divine: exige acesso)', categoria: 'especial' },
   'fase-com-bau': { suportado: false, exigeHunt: true, nome: 'Fase com baú', motivo: 'o baú é um encontro da hunt (aba Fase), não um tipo de fase' },
   'fase-com-evento': { suportado: false, exigeHunt: true, nome: 'Fase com evento', motivo: 'o evento é um encontro da hunt (aba Fase), não um tipo de fase' },
   'boss-opcional': { suportado: false, exigeHunt: true, nome: 'Fase com boss opcional', motivo: 'o boss opcional é um encontro da hunt (aba Fase)' },
@@ -214,6 +216,14 @@ export function validarAto(bruto, ctx = {}) {
       if (!tipo.suportado) r.push(exige ? erro(onde, `O tipo "${f.tipo}" ainda não tem suporte no runtime (${tipo.motivo}).`) : aviso(onde, `O tipo "${f.tipo}" ainda não tem suporte no runtime (${tipo.motivo}); só como rascunho.`));
       if (tipo.exigeHunt && !f.huntId) r.push(erro(onde, 'Escolha a hunt (da Biblioteca) desta fase.'));
       if (f.huntId && ctx.huntExiste && !ctx.huntExiste(f.huntId)) r.push(erro(onde, `A hunt "${f.huntId}" não existe no cadastro.`));
+      // O tipo da fase precisa dizer a verdade sobre a hunt: VIP/especial exigem acesso, e o jogador precisa saber disso antes de entrar.
+      const cat = f.huntId && ctx.categoriaDaHunt?.(f.huntId);
+      if (cat) {
+        const esperado = cat === 'vips' ? 'hunt-vip' : ['especiais', 'divinas'].includes(cat) ? 'hunt-especial' : null;
+        if (esperado && !['fase-final-do-ato'].includes(f.tipo) && f.tipo !== esperado) r.push(erro(onde, `A hunt "${f.huntId}" é ${cat === 'vips' ? 'VIP' : 'especial'} (exige acesso): use o tipo "${esperado}".`));
+        if (!esperado && ['hunt-vip', 'hunt-especial'].includes(f.tipo)) r.push(erro(onde, `A hunt "${f.huntId}" é uma hunt normal: use o tipo "hunt-normal".`));
+        if (esperado && f.tipo === 'fase-final-do-ato') r.push(aviso(onde, `Fase final com hunt ${cat === 'vips' ? 'VIP' : 'especial'}: só quem tem acesso chega ao boss final.`));
+      }
       if (f.huntId && ctx.huntsEmUso?.has(f.huntId)) r.push(erro(onde, `A hunt "${f.huntId}" já é usada no ato "${ctx.huntsEmUso.get(f.huntId)}": o progresso é por hunt e os dois atos compartilhariam a conclusão.`));
     }
     if (exige && f.nivel == null && tipo?.suportado) r.push(erro(onde, 'Defina o nível da fase nas 3 dificuldades: a força dos bichos é escalada para ele.'));
@@ -285,7 +295,7 @@ export function validarAto(bruto, ctx = {}) {
       if (s.get(b.faseAnterior)?.length) r.push(erro('boss final', `A fase "${b.faseAnterior}" tem saídas: o portal do boss final nasce da ÚLTIMA fase do ato.`));
       for (const f of terminais) if (f.id !== b.faseAnterior && f.obrigatoria) r.push(erro(`fase ${f.id}`, `Fim de caminho sem chegar ao boss: só "${b.faseAnterior}" pode encerrar o ato.`));
       const tf = a.fases.find((f) => f.id === b.faseAnterior);
-      if (tf && !['hunt-normal', 'fase-final-do-ato'].includes(tf.tipo)) r.push(erro('boss final', 'A fase anterior ao boss precisa ser uma hunt (o portal abre ao limpar a instância).'));
+      if (tf && !['hunt-normal', 'fase-final-do-ato', 'hunt-vip', 'hunt-especial'].includes(tf.tipo)) r.push(erro('boss final', 'A fase anterior ao boss precisa ser uma hunt (o portal abre ao limpar a instância).'));
     }
   }
   return r;
@@ -293,3 +303,51 @@ export function validarAto(bruto, ctx = {}) {
 
 /** Só os erros bloqueiam; avisos não. */
 export const temErro = (problemas) => problemas.some((p) => p.nivel === 'erro');
+
+// ------------------------------------------------------------------ comparação entre versões
+
+const igual = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+const CAMPOS_DO_ATO = ['nome', 'descricao', 'imagem', 'nivelRecomendado', 'ordem', 'anterior', 'seguinte', 'requisitos', 'progressao', 'estado', 'inicio'];
+const CAMPOS_DA_FASE = ['nome', 'descricao', 'ordem', 'huntId', 'tipo', 'nivel', 'obrigatoria', 'requisitos', 'objetivos', 'conclusao', 'recompensas', 'eventos', 'sobrescritas'];
+const chaveDaLigacao = (c) => `${c.de}>${c.para}`;
+
+/**
+ * As DIFERENÇAS entre dois atos (`antes` → `depois`), para a tela de versões. Pura. Posições no canvas (`posicao`) não contam como mudança
+ * de conteúdo (só arrastar uma fase não é uma versão diferente de verdade, mas fica registrada em `soPosicao`).
+ * Devolve `{ iguais, ato: [{campo, antes, depois}], fasesNovas, fasesRemovidas, fasesAlteradas: [{id, campos: [{campo, antes, depois}]}],
+ * ligacoesNovas, ligacoesRemovidas, ligacoesAlteradas, bossFinal: [{campo, antes, depois}], soPosicao }`.
+ */
+export function diffDeAtos(antes, depois) {
+  const a = normalizar(antes);
+  const b = normalizar(depois);
+  const campos = (x, y, lista) => lista.filter((c) => !igual(x[c], y[c])).map((campo) => ({ campo, antes: x[campo] ?? null, depois: y[campo] ?? null }));
+  const idsA = new Map(a.fases.map((f) => [f.id, f]));
+  const idsB = new Map(b.fases.map((f) => [f.id, f]));
+  const fasesAlteradas = [];
+  let soPosicao = 0;
+  for (const [id, fb] of idsB) {
+    const fa = idsA.get(id);
+    if (!fa) continue;
+    const c = campos(fa, fb, CAMPOS_DA_FASE);
+    if (c.length) fasesAlteradas.push({ id, nome: fb.nome, campos: c });
+    else if (!igual(fa.posicao, fb.posicao)) soPosicao++;
+  }
+  const ligA = new Map(a.conexoes.map((c) => [chaveDaLigacao(c), c]));
+  const ligB = new Map(b.conexoes.map((c) => [chaveDaLigacao(c), c]));
+  const bossA = a.bossFinal ?? {};
+  const bossB = b.bossFinal ?? {};
+  const bossCampos = ['bossId', 'faseAnterior', 'arena', 'recompensas', 'nivel'].filter((c) => !igual(bossA[c], bossB[c])).map((campo) => ({ campo, antes: bossA[campo] ?? null, depois: bossB[campo] ?? null }));
+  const r = {
+    ato: campos(a, b, CAMPOS_DO_ATO),
+    fasesNovas: [...idsB.keys()].filter((id) => !idsA.has(id)),
+    fasesRemovidas: [...idsA.keys()].filter((id) => !idsB.has(id)),
+    fasesAlteradas,
+    ligacoesNovas: [...ligB.keys()].filter((k) => !ligA.has(k)),
+    ligacoesRemovidas: [...ligA.keys()].filter((k) => !ligB.has(k)),
+    ligacoesAlteradas: [...ligB.keys()].filter((k) => ligA.has(k) && !igual(ligA.get(k), ligB.get(k))),
+    bossFinal: bossCampos,
+    soPosicao,
+  };
+  r.iguais = !r.ato.length && !r.fasesNovas.length && !r.fasesRemovidas.length && !r.fasesAlteradas.length && !r.ligacoesNovas.length && !r.ligacoesRemovidas.length && !r.ligacoesAlteradas.length && !r.bossFinal.length;
+  return r;
+}

@@ -13,13 +13,17 @@
 </head>
 <body>
 <header class="eng-topo">
+  <button type="button" class="eng-menu-btn" id="eng-menu-btn" aria-label="Abrir o menu" aria-expanded="false" aria-controls="abas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
   <div class="eng-marca"><b>DRAEVOR</b><span>Engine</span></div>
   <div class="eng-local" id="eng-local"></div>
   <div class="eng-topo-dir">
+    <span id="eng-hot" class="eng-hot"></span>
+    <span id="eng-acesso" class="eng-acesso"></span>
     <span id="msg" role="status" aria-live="polite"></span>
     <span class="eng-sujo" id="eng-sujo" hidden>Alterações não salvas</span>
   </div>
 </header>
+<div class="eng-gaveta-fundo" id="eng-gaveta-fundo" aria-hidden="true"></div>
 <div class="eng-corpo">
   <nav class="eng-nav" id="abas" aria-label="Ferramentas"></nav>
   <main id="raiz">Carregando…</main>
