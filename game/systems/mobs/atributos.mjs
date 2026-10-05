@@ -44,10 +44,13 @@ function compor(atributo, base, level, m, { pct = 0, fixos = 0 } = {}) {
 /** A precisão do bicho (o rating com que ele acerta o jogador) neste level. */
 export const precisaoDe = (m, level) => compor('precisao', daCurva('precisao', level), level, m, { pct: m?.precisaoPct ?? 0 }).valor;
 /** A evasão do bicho (o rating com que ele evita o golpe do jogador) neste level. */
-export const evasaoDe = (m, level) => compor('evasao', daCurva('evasao', level), level, m, { pct: m?.evasaoPct ?? 0 }).valor;
+// O monstro do PoE (`itens-poe/monstros.mjs`) usa a evasão do PoE (sem a curva do Draevor), como está.
+export const evasaoDe = (m, level) => (BESTIARY[m?.key]?.poe ? simples(BESTIARY[m.key].poe.evasao ?? 0, { pct: m?.evasaoPct ?? 0 }).bruto : compor('evasao', daCurva('evasao', level), level, m, { pct: m?.evasaoPct ?? 0 }).valor);
 
 /** A armadura do bicho: a do bestiário (`armor`), a curva, os fatores e os modificadores (`armaduraPct`). Sem `key` no bestiário, zero. */
 export function armaduraDe(m, level) {
+  // O monstro do PoE: a armadura do PoE (sem a curva do Draevor), como está.
+  if (BESTIARY[m?.key]?.poe) return Math.min(L.armaduraMaxima, simples(BESTIARY[m.key].poe.armadura ?? 0, { pct: m?.armaduraPct ?? 0 }).bruto);
   const base = (BESTIARY[m?.key]?.armor ?? 0) + daCurva('armadura', level);
   return Math.min(L.armaduraMaxima, compor('armadura', base, level, m, { pct: m?.armaduraPct ?? 0 }).valor);
 }

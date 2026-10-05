@@ -36,6 +36,10 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 
 const ler = (arquivo) => JSON.parse(readFileSync(new URL(`../gamedata/${arquivo}`, import.meta.url), 'utf8'));
 const PODERES = { ...ler('monstro-poderes.json').monstros, ...ler('boss-poderes.json').bosses };
+/** Registra os poderes de um bicho criado em tempo de execução (os monstros da campanha do PoE — `itens-poe/monstros.mjs`). */
+export function registrarPoderes(key, def) {
+  if (!PODERES[key]) PODERES[key] = def;
+}
 
 const NOME_DO_ELEMENTO = {
   physical: 'físico', fire: 'de fogo', ice: 'de gelo', earth: 'de terra', energy: 'de energia',

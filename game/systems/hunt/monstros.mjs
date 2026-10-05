@@ -32,6 +32,8 @@ export function criarMonstro(posicao, hunt) {
     armor: bicho.armor ?? 0,
     exp: bicho.exp ?? 0,
     loot: bicho.loot ?? [],
+    // O ritmo do golpe dos monstros do PoE (o tempo de ataque deles — `itens-poe/monstros.mjs`); os do Draevor não têm.
+    ...(bicho.velocidadeDeAtaque ? { velocidadeDeAtaque: bicho.velocidadeDeAtaque } : {}),
     spawn: {
       key: posicao.key, x: posicao.x, y: posicao.y, ...(posicao.z != null ? { z: posicao.z } : {}),
       // O bicho que renasce volta com a raridade do spawn dele (ver `renascer`).
