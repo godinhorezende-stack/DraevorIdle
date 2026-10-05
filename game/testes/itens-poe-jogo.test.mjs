@@ -28,10 +28,13 @@ test('as bases equipáveis entram no catálogo de itens como itens virtuais (slo
   const colete = ITEM_CATALOG[Jogo.idDaBase('Body_Armours/Plate_Vest')];
   assert.deepEqual([colete.slot, colete.name, colete.poe.base], ['body', 'Colete de Placas', 'Body_Armours/Plate_Vest']);
   const luva = ITEM_CATALOG[Jogo.idDaBase(Catalogo.catalogo().classes.Gloves.bases[0].id)];
-  assert.equal(luva.slot, 'legs', 'luvas no slot de pernas (o Draevor troca luvas por pernas)');
+  assert.equal(luva.slot, 'gloves', 'luvas no slot próprio (decisão do dono, 05/10)');
+  const cinto = ITEM_CATALOG[Jogo.idDaBase(Catalogo.catalogo().classes.Belts.bases[0].id)];
+  assert.equal(cinto.slot, 'legs', 'cintos no lugar das pernas (decisão do dono, 05/10)');
   const espada = Catalogo.catalogo().classes.Two_Hand_Swords.bases[0];
   assert.deepEqual([ITEM_CATALOG[Jogo.idDaBase(espada.id)].skill, ITEM_CATALOG[Jogo.idDaBase(espada.id)].twoHanded], ['sword', true]);
-  for (const c of ['Belts', 'Life_Flasks', 'Jewels']) assert.ok(r.naoEquipaveis.includes(c), c);
+  for (const c of ['Life_Flasks', 'Jewels']) assert.ok(r.naoEquipaveis.includes(c), c);
+  assert.ok(!r.naoEquipaveis.includes('Belts') && !r.naoEquipaveis.includes('Gloves'));
   assert.ok([...r.porBase.values()].every((id) => id >= Jogo.PRIMEIRO_ID));
 });
 
@@ -49,7 +52,7 @@ test('a peça do jogo: base (defesa sorteada / faixa de dano) + poe (raridade, m
   assert.equal(pe.poe.af.block, escudo.atributos.chance_bloqueio_pct, 'o bloqueio da base do escudo vira o block do Draevor');
   const arma = Catalogo.catalogo().classes.One_Hand_Swords.bases[3];
   assert.deepEqual(Jogo.pecaDoJogo(gerar(arma.id, 'normal')).base.attack, [arma.atributos.dano_fisico.min, arma.atributos.dano_fisico.max]);
-  assert.equal(Jogo.pecaDoJogo(gerar('Belts/' + (Catalogo.catalogo().classes.Belts?.bases[0]?.slug ?? 'x'))), null, 'cinto: sem slot');
+  assert.equal(Jogo.pecaDoJogo(gerar(Catalogo.catalogo().classes.Jewels.bases[0].id)), null, 'joia: sem slot');
 });
 
 test('a peça não perde o poe na mochila, na bolsa de loot nem ao copiar campos', { skip: SEM }, () => {
@@ -127,4 +130,26 @@ test('os pesos de raridade do dono (05/10): a peça que cai é quase sempre Norm
   assert.ok(conta.magico / n > 0.09 && conta.magico / n < 0.16, `mágico ${conta.magico}`);
   assert.ok(conta.raro / n > 0.01 && conta.raro / n < 0.05, `raro ${conta.raro}`);
   assert.ok(conta.unico <= 5, `único ${conta.unico}`);
+});
+
+test('luvas e cinto do PoE se equipam de verdade (slot gloves e slot legs) e somam na ficha; luva não entra nas pernas', { skip: SEM }, () => {
+  Jogo.iniciar(ITEM_CATALOG);
+  const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
+  Treino.garantir(e);
+  delete e.equipment.legs;
+  const luva = Jogo.pecaDoJogo(gerar(Catalogo.catalogo().classes.Gloves.bases[0].id, 'magico'));
+  luva.poe.af = { ...luva.poe.af, life: 33 };
+  const cinto = Jogo.pecaDoJogo(gerar(Catalogo.catalogo().classes.Belts.bases[0].id, 'magico'));
+  cinto.poe.af = { ...cinto.poe.af, fire_res: 7 };
+  Inventario.darPeca(e, luva);
+  Inventario.darPeca(e, cinto);
+  assert.equal(Inventario.equipar(e, { id: luva.id, slot: 'legs' }).ok, false, 'luva nas pernas: recusa');
+  assert.equal(Inventario.equipar(e, { id: luva.id }).ok, true);
+  assert.equal(Inventario.equipar(e, { id: cinto.id }).ok, true);
+  assert.deepEqual([e.equipment.gloves?.id, e.equipment.legs?.id], [luva.id, cinto.id]);
+  assert.deepEqual(e.equipment.gloves.poe, luva.poe, 'a luva vestida mantém o poe');
+  const s = Afixos.somaDeItens(e);
+  assert.ok(s.life >= 33 && s.fire_res >= 7);
+  assert.equal(Inventario.desequipar(e, { slot: 'gloves' }).ok, true);
+  assert.ok(e.inventory.some((p) => p.id === luva.id && p.poe));
 });

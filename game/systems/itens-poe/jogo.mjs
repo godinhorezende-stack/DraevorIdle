@@ -6,7 +6,7 @@
 //      de energia, que a ficha já lê por peça) e o resto em `peca.poe` (raridade, mods, nome, ícone e o `af` traduzido, que
 //      `Afixos.somaDeItens` soma). Os valores entram como estão (decisão do dono, 04/10).
 //   3. `entregar(nome, peca)`: dá a peça a um personagem ONLINE (a engine local usa para testar jogando).
-// Classes sem slot no Draevor (cintos, frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`.
+// Classes sem slot no Draevor (frascos, joias, talismãs, varas de pesca) não entram — ficam listadas em `naoEquipaveis`.
 import * as Catalogo from './catalogo.mjs';
 import { traduzirPeca } from './traduzir.mjs';
 import { gerarPeca } from './gerar.mjs';
@@ -15,14 +15,15 @@ import { darPeca } from '../inventario.mjs';
 export const PRIMEIRO_ID = 7_000_000;
 
 /**
- * Classe do PoE → como o Draevor equipa. Luvas vão no slot de PERNAS (o Draevor troca luvas por pernas — `gemas/config.json`, sockets).
+ * Classe do PoE → como o Draevor equipa. CINTOS vão no slot de PERNAS e as LUVAS ganham o slot próprio `gloves` (decisões do dono, 05/10).
  * Arco e varinha: arma de distância SEM munição (como a lança/estrela do Draevor). Aljava: o "shield" com `quiver`, como a do Draevor.
  */
 export const CLASSES_DO_JOGO = {
   Body_Armours: { slot: 'body', tipo: 'armors' },
   Helmets: { slot: 'head', tipo: 'helmets' },
   Boots: { slot: 'feet', tipo: 'boots' },
-  Gloves: { slot: 'legs', tipo: 'legs' },
+  Gloves: { slot: 'gloves', tipo: 'gloves' },
+  Belts: { slot: 'legs', tipo: 'legs' },
   Shields: { slot: 'shield', tipo: 'shields' },
   Quivers: { slot: 'shield', tipo: 'quivers', quiver: true },
   Rings: { slot: 'ring', tipo: 'rings' },

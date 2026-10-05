@@ -17,7 +17,7 @@ import { readFileSync } from 'node:fs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/itens/precos-de-venda.json', import.meta.url), 'utf8'));
 // Os slots de equipamento (os mesmos de `Afixos.SLOTS_COM_AFIXO`, sem importar o módulo: aqui é o carregamento do catálogo).
-const SLOTS_DE_EQUIPAMENTO = new Set(['weapon', 'head', 'body', 'legs', 'feet', 'shield', 'neck', 'ring', 'backpack', 'ammo']);
+const SLOTS_DE_EQUIPAMENTO = new Set(['weapon', 'head', 'body', 'legs', 'feet', 'shield', 'neck', 'ring', 'backpack', 'ammo', 'gloves']);
 const ehEquipamento = (m) => !!m && SLOTS_DE_EQUIPAMENTO.has(m.slot) && !m.stackable;
 const semPreco = (m) => !(Number(m?.sell) > 0);
 const proibido = (m) => {

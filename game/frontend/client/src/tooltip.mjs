@@ -15,7 +15,7 @@ const el = (tag, className, text) => {
 
 const SLOT_NAMES = {
   head: 'elmo', neck: 'colar', body: 'armadura', legs: 'pernas', feet: 'botas',
-  ring: 'anel', weapon: 'mão direita', shield: 'mão esquerda', ammo: 'munição', backpack: 'mochila',
+  ring: 'anel', weapon: 'mão direita', shield: 'mão esquerda', ammo: 'munição', backpack: 'mochila', gloves: 'luvas',
 };
 
 const SKILL_NAMES = {
@@ -909,6 +909,7 @@ const TYPE_NAMES = {
   helmets: 'elmo',
   armors: 'armadura',
   legs: 'perneira',
+  gloves: 'luvas',
   boots: 'bota',
   rings: 'anel',
   'amulets and necklaces': 'amuleto',
