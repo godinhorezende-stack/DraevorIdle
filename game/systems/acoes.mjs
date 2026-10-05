@@ -93,11 +93,17 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const doNivel = danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
   const identidade = ehAtaque ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
   const fatorDaFicha = ehAtaque ? (((fichaBase.damage.min + fichaBase.damage.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
-  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha));
-  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha));
+  // Sistema de itens do PoE (Fase 1; sem peças do PoE nada disto muda): numa MAGIA, o dano somado a magias do mesmo elemento dela
+  // ("Adiciona X a Y de Dano de Fogo a Magias") entra na faixa antes dos aumentos, e a chance de crítico é a de magia
+  // (`critChanceMagia`, com o "Chance de Golpe Crítico com Magias aumentada"). Dano somado de outro elemento não entra (a magia tem um elemento só).
+  const ehMagia = !entry.heals && Tags.tagsDaAcao(entry).includes('spell');
+  const [somadoMin, somadoMax] = ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
+  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin));
+  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha + somadoMax));
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
+  if (ehMagia && fichaBase.critChanceMagia != null && fichaBase.critChanceMagia !== fichaBase.critChance) ficha = { ...ficha, critChance: fichaBase.critChanceMagia };
   // Runa: + crítico de runa da proficiência. Magia: + "% da perícia como dano".
   const prof = fichaBase.proficiencia;
   if (entry.kind === 'rune' && (prof.critChanceRunas || prof.critDanoRunas)) ficha = { ...ficha, critChance: ficha.critChance + prof.critChanceRunas, critMultiplier: ficha.critMultiplier + prof.critDanoRunas };
@@ -115,7 +121,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const critDanoDoReforco = Reforcos.bonus(hunt, 'critDano', tags);
   if (critDoReforco || critDanoDoReforco) ficha = { ...ficha, critChance: ficha.critChance + critDoReforco / 100, critMultiplier: ficha.critMultiplier + critDanoDoReforco / 100 };
   const treino = doTreino * (1 + Reforcos.bonus(hunt, 'treino', tags) / 100) + (defDaGema ? Reforcos.treinoDeOutraPericia(estado, hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);
-  const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100;
+  const mult = 1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100;
   return { min, max, daPericia, mult, fatorDaGema, ficha };
 }
 

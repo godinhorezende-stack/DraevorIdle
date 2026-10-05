@@ -17,7 +17,7 @@ const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance
 const valorDoAtributo = (k, v) => (v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`);
 const GRUPO = { Acessorios: 'Acessórios', Armadura: 'Armaduras', Armas_de_Uma_Mao: 'Armas de uma mão', Armas_de_Duas_Maos: 'Armas de duas mãos', Armas_Secundarias: 'Mão secundária', Frascos: 'Frascos', Joias: 'Joias' };
 const humano = (id) => id.replace(/_/g, ' ');
-const ESTADO = { equivalente: 'Equivalente: o Draevor faz a mesma conta (tem efeito no combate)', aproximado: 'Aproximado: existe no Draevor, com diferença (tem efeito no combate)', novo: 'Atributo NOVO do PoE (registrado; efeito no combate no incremento 3b)', registrado: 'Atributo automático do texto (registrado; sem efeito no combate ainda)' };
+const ESTADO = { equivalente: 'Equivalente: o Draevor faz a mesma conta (tem efeito no combate)', aproximado: 'Aproximado: existe no Draevor, com diferença (tem efeito no combate)', novo: 'Atributo NOVO do PoE, já com efeito no combate', registrado: 'Registrado, ainda sem efeito no combate (atributo novo não ligado ou automático)' };
 const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○' };
 
 /** O ícone da coleção (ou o marcador quando a base não tem imagem). */
@@ -152,7 +152,7 @@ export function criarTelaDeItensPoe({ raiz }) {
     const c = await api('cobertura');
     const barra = el('div', { class: 'poe-cobertura' }, Object.entries(c.pct).map(([k, v]) => el('span', { class: `poe-tr-barra ${k}`, style: `flex-basis:${v}%`, title: `${ESTADO[k]}: ${v}%` }, v >= 6 ? `${SIMBOLO[k]} ${v}%` : '')));
     return [
-      el('p', { class: 'dica' }, `Todo texto vira atributo (decisão do dono: "todas do PoE, sem excluir nada"). Pelo peso de drop, ${c.comEfeitoNoCombate}% já tem efeito no combate; o resto está registrado — ${c.atributosNovos} atributos novos com nome (atributos-novos.json) e ${c.atributosAutomaticos} automáticos — e ganha efeito no incremento 3b. Tabela: traducao.json (${c.regras} regras).`),
+      el('p', { class: 'dica' }, `Todo texto vira atributo (decisão do dono: "todas do PoE, sem excluir nada"). Pelo peso de drop, ${c.comEfeitoNoCombate}% já tem efeito no combate; o resto está registrado (dos ${c.atributosNovos} atributos novos com nome, os que já têm efeito aparecem como ◆; e ${c.atributosAutomaticos} automáticos) e ganha efeito nas próximas etapas. Tabela: traducao.json (${c.regras} regras).`),
       barra,
       el('div', { class: 'linha', style: 'flex-wrap:wrap' }, Object.entries(c.pct).map(([k, v]) => el('span', { style: 'flex:none', class: 'dica' }, el('em', { class: `poe-tr ${k}` }, SIMBOLO[k]), ` ${ESTADO[k]} — ${v}%`))),
       el('h4', {}, 'Elementos'),

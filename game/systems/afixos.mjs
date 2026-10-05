@@ -142,8 +142,11 @@ export function soma(estado) {
 export function somaDeItens(estado) {
   const total = {};
   for (const [slot, peca] of Object.entries(estado.equipment ?? {})) {
-    if (!peca?.af?.length || slot === 'backpack') continue;
-    for (const a of peca.af) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
+    if (!peca || slot === 'backpack') continue;
+    for (const a of peca.af ?? []) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
+    // A peça no modelo do PoE (sistema de itens do PoE, Fase 1 — só existe com ITENS_POE=1): os mods já traduzidos para os atributos do
+    // Draevor e os atributos NOVOS (`itens-poe/atributos-novos.json`), em `peca.poe.af`. Peça comum não tem `poe`: nada muda para ela.
+    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) if (typeof v === 'number' && Number.isFinite(v)) total[k] = (total[k] ?? 0) + v;
   }
   return total;
 }

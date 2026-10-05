@@ -5,8 +5,8 @@
 // NOVOS do PoE (`gamedata/itens-poe/atributos-novos.json`). Nada é aplicado aqui: quem equipa é o incremento 3c. Decisão do dono (04/10):
 // "todas do PoE, sem excluir nada" — todo texto vira atributo. Cada mod sai com um ESTADO:
 //   'equivalente' / 'aproximado' — atributo que o Draevor já calcula (tem efeito no combate);
-//   'novo'       — atributo novo do PoE com nome (registrado; efeito no combate no incremento 3b);
-//   'registrado' — texto sem regra: atributo automático `poe.<texto>` (registrado, sem efeito ainda).
+//   'novo'       — atributo novo do PoE que JÁ tem efeito no combate (`combate: true` em atributos-novos.json; incremento 3b);
+//   'registrado' — atributo novo ainda sem efeito, ou texto sem regra (atributo automático `poe.<texto>`).
 import { readFileSync } from 'node:fs';
 import { FICHAS } from '../afixos.mjs';
 
@@ -47,8 +47,9 @@ export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA
     const elemento = capturas.find((x) => tabela.elementos?.[x] && !/^\d+$/.test(x));
     const stat = (s) => s.replace('{E}', tabela.elementos?.[elemento] ?? '?');
     const efeitos = r.efeitos.map((e) => ({ stat: stat(e.stat), valor: valorDo(e.valor, indices, valores) }));
-    // Uma regra "equivalente" que cai num atributo que o Draevor ainda não tem (ex.: Resistência a Caos → chaos_res) é 'novo'.
-    const estado = r.estado !== 'novo' && efeitos.some((e) => !FICHAS[e.stat] && NOVOS[e.stat]) ? 'novo' : r.estado;
+    // Atributo que o Draevor não tem (ex.: Resistência a Caos → chaos_res): 'novo' se ele já tem efeito no combate, senão 'registrado'.
+    const novos = efeitos.filter((e) => !FICHAS[e.stat]);
+    const estado = novos.length ? (novos.every((e) => NOVOS[e.stat]?.combate) ? 'novo' : 'registrado') : r.estado;
     return { estado, efeitos, nota: r.nota ?? null, regra: r.i };
   }
   // Sem regra: o atributo automático do próprio texto (nada fica de fora). O valor é o número da parte (ou a lista, se forem vários).
@@ -110,6 +111,6 @@ export function cobertura(catalogo, opcoes) {
     semRegra: [...semRegra.entries()].sort((a, b) => b[1] - a[1]).map(([modelo, p]) => ({ modelo, pct: Number(((p / total) * 100).toFixed(2)) })),
     atributosAutomaticos: automaticos.size,
     atributosNovos: Object.keys(NOVOS).length,
-    comEfeitoNoCombate: Number((((peso.equivalente + peso.aproximado) / total) * 100).toFixed(1)),
+    comEfeitoNoCombate: Number((((peso.equivalente + peso.aproximado + peso.novo) / total) * 100).toFixed(1)),
   };
 }

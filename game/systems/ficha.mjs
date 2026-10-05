@@ -54,6 +54,8 @@ export const INTERVALO_BASE_DO_GOLPE_MS = 2000;
 const CRITICO_BASE = FORMULAS.critico.chanceBase; // o 3% do molde real (`combate/formulas.json`)
 const MULTIPLICADOR_CRITICO_BASE = FORMULAS.critico.multiplicadorBase; // "+60% de dano", idem
 const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
+/** Os elementos do dano somado das peças do PoE: Fogo, Gelo, Raio e Caos (decisão do dono, 04/10). */
+const ELEMENTOS_DO_POE = ['fire', 'ice', 'energy', 'chaos'];
 // O catálogo chama a terra de `poison` em parte dos itens (o nome do OTServ).
 const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 
@@ -218,9 +220,20 @@ function calcularCombate(estado) {
     excedentes.protection[el] = Math.max(0, bruto - protection[el]);
   }
   // Chance de crítico e de ataque duplo (frações de 0 a 1), com o teto; a penetração (em %) por tipo: física, elemental global e por elemento.
-  const critBruto = CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance;
+  // A chance em pontos (base + o que soma) × o "Chance de Crítico aumentada" RELATIVO das peças do PoE (`crit_chance_inc`, 0 sem elas).
+  const critPontos = CRITICO_BASE + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance;
+  const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100);
   const critChance = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
+  // Nas magias o PoE ainda soma o "Chance de Golpe Crítico com Magias aumentada" (`spell_crit_chance_inc`).
+  const critChanceMagia = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
+  // O dano elemental SOMADO das peças do PoE (`added_<el>_dmg_min/max`): faixa por elemento, nos ataques e nas magias.
+  const somado = (prefixo) => Object.fromEntries(ELEMENTOS_DO_POE.map((el) => [el, [af[`${prefixo}${el}_dmg_min`] ?? 0, af[`${prefixo}${el}_dmg_max`] ?? 0]]).filter(([, [a, b]]) => a > 0 || b > 0));
+  // Caos (elemento próprio do PoE — decisão do dono, 04/10): só aparece na ficha quando alguma peça dá.
+  if (af.chaos_res) {
+    protection.chaos = Limites.resistenciaDoJogador(af.chaos_res);
+    excedentes.protection.chaos = Math.max(0, af.chaos_res - protection.chaos);
+  }
   const duploBruto = (af.double_attack ?? 0) / 100;
   const ataqueDuplo = Math.min(Limites.LIMITES.ataqueDuplo.chanceMaxima / 100, Math.max(0, duploBruto));
   excedentes.ataqueDuplo = Math.max(0, duploBruto - ataqueDuplo);
@@ -259,6 +272,7 @@ function calcularCombate(estado) {
     skillValue: valorDaPericia,
     skillBonus: bonusDePericia,
     critChance,
+    critChanceMagia,
     critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100 + prof.critDano + imb.critDano,
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
@@ -299,11 +313,22 @@ function calcularCombate(estado) {
     intervaloDoGolpeMs: Math.round((INTERVALO_BASE_DO_GOLPE_MS * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
-    danoDoElemento: Object.fromEntries(
-      ELEMENTOS.map((el) => [el, (af[el === 'physical' ? 'phys_dmg' : `${el}_dmg`] ?? 0) + (arv[`elemento:${el}`] ?? 0) * 100 + (el === 'physical' ? doAtributo.danoFisicoPct : 0)]),
-    ),
+    danoDoElemento: Object.fromEntries([
+      ...ELEMENTOS.map((el) => [el, (af[el === 'physical' ? 'phys_dmg' : `${el}_dmg`] ?? 0) + (arv[`elemento:${el}`] ?? 0) * 100 + (el === 'physical' ? doAtributo.danoFisicoPct : 0)]),
+      // O "Dano de Caos aumentado" das peças do PoE (só aparece quando alguma dá).
+      ...(af.chaos_dmg ? [['chaos', af.chaos_dmg]] : []),
+    ]),
     // Magic Damage (magias, runas, wand): o que a INT dá.
     danoDeMagia: doAtributo.danoMagicoPct,
+    // Sistema de itens do PoE (Fase 1; tudo 0/vazio sem peças do PoE): "Dano Mágico aumentado" (só magias), o dano elemental somado
+    // nos ataques e nas magias, e vida/mana por abate e por acerto.
+    danoDeMagiaDoPoe: af.spell_dmg ?? 0,
+    danoSomado: somado('added_'),
+    danoSomadoMagia: somado('spell_added_'),
+    vidaPorAbate: af.life_on_kill ?? 0,
+    manaPorAbate: af.mana_on_kill ?? 0,
+    vidaPorAcerto: af.life_on_hit ?? 0,
+    manaPorAcerto: af.mana_on_hit ?? 0,
     curaDeMagia: (arv.cura ?? 0) * 100 + espStat('healing'),
     // Cast Speed (intervalo global entre magias), Cooldown Recovery (recarga de cada magia), Skill Cost Reduction.
     // + a identidade da wand na mão (`armas/poder.json`: conjura mais rápido).

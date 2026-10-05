@@ -180,7 +180,7 @@ test('tradução: equivalente, aproximado (média da faixa), elemento, híbrido 
   assert.deepEqual([fis.estado, fis.efeitos], ['aproximado', [{ stat: 'phys_add', valor: 7 }]]);
   const hib = traduzirMod(mod('Armadura aumentada em 20% / Recuperação de Atordoamentos e Bloqueios aumentada em 11%'));
   assert.equal(hib.partes.length, 2);
-  assert.equal(hib.estado, 'novo', 'o estado do híbrido é o pior das partes');
+  assert.equal(hib.estado, 'registrado', 'o estado do híbrido é o pior das partes (a recuperação de atordoamento ainda não tem efeito)');
   assert.deepEqual(hib.efeitos, [{ stat: 'armour_pct', valor: 20 }, { stat: 'stun_recovery', valor: 11 }], 'cada parte vira o seu atributo');
   assert.deepEqual(traduzirMod(mod('Chance de Crítico aumentada em 25%')).efeitos, [{ stat: 'crit_chance_inc', valor: 25 }]);
   assert.deepEqual(traduzirMod(mod('Adiciona 3 a 7 de Dano de Fogo')).efeitos, [{ stat: 'added_fire_dmg_min', valor: 3 }, { stat: 'added_fire_dmg_max', valor: 7 }]);
@@ -215,5 +215,5 @@ test('cobertura com o catálogo real (quando existe): a maior parte do drop já 
   const c = cobertura(JSON.parse(readFileSync(Catalogo.ARQUIVO, 'utf8')));
   assert.ok(c.pct.equivalente + c.pct.aproximado >= 55, JSON.stringify(c.pct));
   assert.ok(Math.abs(c.pct.equivalente + c.pct.aproximado + c.pct.novo + c.pct.registrado - 100) < 0.5, 'todo o drop vira atributo');
-  assert.ok(c.pct.registrado <= 15, JSON.stringify(c.pct));
+  assert.ok(c.comEfeitoNoCombate >= 70, `com efeito no combate: ${c.comEfeitoNoCombate}%`);
 });

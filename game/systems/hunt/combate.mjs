@@ -677,6 +677,11 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   Proficiencia.curar(estado, prof.vidaNaMorte, prof.manaNaMorte, eventos, personagem?.nome, hunt.pos);
   // Os efeitos de item que reagem a uma morte (Sede de Sangue, Colheita de Almas).
   EfeitosDeItem.aoMatar(estado, hunt, alvo, eventos, personagem?.nome);
+  // Vida/mana por abate das peças do PoE ("Ganha X de Vida por Inimigo Morto"); 0 sem elas.
+  {
+    const f = Ficha.combate(estado);
+    if ((f.vidaPorAbate || f.manaPorAbate) && estado.hp > 0) Proficiencia.curar(estado, f.vidaPorAbate, f.manaPorAbate, eventos, personagem?.nome, hunt.pos);
+  }
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
   if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo, personagem);
   if (sessao) sessao.byMonster[alvo.name] = (sessao.byMonster[alvo.name] ?? 0) + 1;
@@ -950,7 +955,7 @@ export function golpesDosMonstros(estado, hunt, personagem) {
  */
 // As reais capturadas: death na soulcutter (#990000) e fire na sanguine blade do Zoros (#ff9900,
 // 2026-09-25 — a magia de fogo é #ff9000); os outros, a cor do elemento.
-export const COR_DO_GOLPE_ELEMENTAL = { death: '#990000', fire: '#ff9900' };
+export const COR_DO_GOLPE_ELEMENTAL = { death: '#990000', fire: '#ff9900', chaos: '#b44dff' };
 export const ELEMENTO_DO_CATALOGO = { poison: 'earth' };
 
 export function parteElementalDoGolpe(estado, hunt, alvo, arma, ficha, rolagem) {
@@ -985,6 +990,24 @@ export function elementalDoImbuement(hunt, alvo, tipo, parte, ficha = null) {
  * "Dano físico" já multiplica o próprio golpe. Cada elemento leva no mínimo 1 de dano
  * e o efeito visual dele no bicho (`round`).
  */
+/**
+ * O dano elemental SOMADO das peças do PoE (sistema de itens do PoE, Fase 1): "Adiciona X a Y de Dano de Fogo/Gelo/Raio/Caos". Cada
+ * elemento sorteia na faixa, ganha o "Dano de <elemento> %" do personagem, passa pela resistência do bicho àquele elemento e usa a
+ * MESMA rolagem de crítico do golpe. Sem peças do PoE a ficha não tem `danoSomado` e nada acontece.
+ */
+export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
+  const saida = [];
+  for (const [tipo, [min, max]] of Object.entries(ficha.danoSomado ?? {})) {
+    if (!(max > 0) || resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100) continue;
+    const bruto = (min + Math.random() * (max - min)) * (1 + (ficha.danoDoElemento?.[tipo] ?? 0) / 100);
+    const base = Math.max(1, Math.round(resistido(hunt, alvo, tipo, bruto, ficha)));
+    const { dano } = Ficha.rolarCritico(estado, base, alvo, [], ficha, rolagem);
+    alvo.hp -= dano;
+    saida.push({ tipo, v: dano, cor: COR_DO_GOLPE_ELEMENTAL[tipo] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+  }
+  return saida;
+}
+
 export function elementalDosAtributos(estado, hunt, alvo, ficha, fisico, rolagem) {
   const saida = [];
   for (const [tipo, pct] of Object.entries(ficha.danoDoElemento ?? {})) {
@@ -1074,13 +1097,15 @@ export function round(estado, personagem) {
         const doImbuement = convertido ? elementalDoImbuement(hunt, alvo, ficha.imbuElemental.tipo, convertido, ficha) : null;
         // "Dano de <elemento> %" dos atributos: o golpe da arma causa, além do
         // físico, X% dele em cada elemento (decisão do dono), na mesma rolagem.
-        const dosAtributos = elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught });
+        const dosAtributos = [...elementalDosAtributos(estado, hunt, alvo, ficha, semResistencia, { crit: critico, onslaught }), ...danoSomadoDoPoe(estado, hunt, alvo, ficha, { crit: critico, onslaught })];
         // Mil mãos, Flecha que atravessa, Chuva de flechas (ver `Arvore.depoisDoGolpe`).
         // O 2º golpe do ataque duplo não repete o que vem DEPOIS do golpe (árvore, roubo de vida e mana, vida/mana por acerto, charms).
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
         if (!segundo) Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
         // Vida/mana por acerto (proficiência).
         if (!segundo) Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem.nome, hunt.pos);
+        // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").
+        if (!segundo && (ficha.vidaPorAcerto || ficha.manaPorAcerto)) Proficiencia.curar(estado, ficha.vidaPorAcerto, ficha.manaPorAcerto, eventos, personagem.nome, hunt.pos);
         // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
         // alvo antes do dano, igual ao original — antes só a wand mandava `shot`.
         if (categoriaDaArma(arma) === 'distancia') {
