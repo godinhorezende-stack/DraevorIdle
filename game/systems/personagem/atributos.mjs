@@ -14,6 +14,7 @@
 import { readFileSync } from 'node:fs';
 import * as Formulas from '../combate/formulas.mjs';
 import { daCurva } from '../mobs/curvas.mjs';
+import { classeDe } from '../itens-poe/classes.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
@@ -33,7 +34,11 @@ const vocacaoDe = (estado) => {
 export function principais(estado, adds = {}) {
   const v = CONFIG.porVocacao[vocacaoDe(estado)];
   const nivel = Math.max(1, estado?.level ?? 1);
-  const daVocacao = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.floor((v.base[k] ?? 0) + (v.porLevel[k] ?? 0) * (nivel - 1))]));
+  // Sistema de itens do PoE (só com ITENS_POE=1): os atributos iniciais da CLASSE do PoE e nenhum ganho por level (decisão do dono, 05/10).
+  const classe = classeDe(estado);
+  const daVocacao = classe
+    ? { ...classe.atributos }
+    : Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.floor((v.base[k] ?? 0) + (v.porLevel[k] ?? 0) * (nivel - 1))]));
   const total = Object.fromEntries(PRINCIPAIS.map((k) => [k, daVocacao[k] + Math.round(adds[k] ?? 0)]));
   return { ...total, daVocacao };
 }

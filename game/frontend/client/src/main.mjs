@@ -707,7 +707,9 @@ function handle(message) {
       conferirVersao(message.versao);
       state.catalog = message.catalog;
       pintarAvisoDeObra();
-      gate.start(state.catalog);
+      // As 7 classes do PoE (só com ITENS_POE=1): a escolha na criação e na ficha.
+      state.classesPoe = message.classesPoe ?? null;
+      gate.start(state.catalog, message.classesPoe ?? null);
       break;
     case 'released':
       // Soltou o personagem: limpa tudo que era dele antes de escolher outro.

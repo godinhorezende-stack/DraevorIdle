@@ -489,6 +489,9 @@ export function createGate({ send, onPlay }) {
   let googleReady = false;
   let vocation = 'knight';
   let sex = 'male';
+  // As 7 classes do PoE (só quando o servidor manda — ITENS_POE=1, jogo local): a classe fica POR CIMA da vocação.
+  let classesPoe = null;
+  let classePoe = null;
 
   const show = (pane) => {
     for (const id of ['pane-auth', 'pane-characters', 'pane-create']) $(id).hidden = id !== pane;
@@ -1180,6 +1183,7 @@ export function createGate({ send, onPlay }) {
     show('pane-create');
     renderSexes();
     renderVocations();
+    renderClassesPoe();
     const campo = $('form-create')?.elements?.name;
     if (campo) {
       campo.value = '';
@@ -1195,7 +1199,7 @@ export function createGate({ send, onPlay }) {
   $('form-create').addEventListener('submit', (event) => {
     event.preventDefault();
     const data = new FormData(event.target);
-    send({ t: 'createCharacter', name: data.get('name'), vocation, sex });
+    send({ t: 'createCharacter', name: data.get('name'), vocation, sex, ...(classesPoe && classePoe ? { classePoe } : {}) });
   });
 
   function renderVocations() {
@@ -1288,6 +1292,42 @@ export function createGate({ send, onPlay }) {
    * de trocar os dois bonecos daqui, senão eles ficariam mostrando o knight
    * depois de a pessoa ter escolhido druida.
    */
+  /*
+   * ---- A CLASSE do PoE (sistema de itens do PoE, só local) ----
+   * Uma fileira de botões acima das vocações: nome, atributos iniciais (For/Des/Int) e as ascendências no balão. A vocação continua
+   * decidindo skills, roupa e kit; a classe dá os atributos e o ponto de partida na árvore. Sem as classes no `hello`, nada aparece.
+   */
+  function renderClassesPoe() {
+    let caixa = $('classe-poe-picker');
+    if (!classesPoe?.length) {
+      caixa?.remove();
+      return;
+    }
+    if (!caixa) {
+      caixa = el('div', 'classe-poe-picker');
+      caixa.id = 'classe-poe-picker';
+      $('vocation-picker')?.before(caixa);
+    }
+    classePoe ??= classesPoe[0].slug;
+    caixa.innerHTML = '';
+    caixa.append(el('div', 'classe-poe-titulo', 'Classe (PoE)'));
+    const fila = el('div', 'classe-poe-fila');
+    for (const c of classesPoe) {
+      const b = el('button', null);
+      b.type = 'button';
+      b.dataset.classe = c.slug;
+      b.setAttribute('aria-selected', String(classePoe === c.slug));
+      b.title = `${c.nomeEn} — ascendências: ${c.ascendencias.join(', ')}`;
+      b.append(el('b', null, c.nome), el('small', null, `For ${c.atributos.str} · Des ${c.atributos.dex} · Int ${c.atributos.int}`));
+      b.onclick = () => {
+        classePoe = c.slug;
+        renderClassesPoe();
+      };
+      fila.append(b);
+    }
+    caixa.append(fila);
+  }
+
   function renderSexes() {
     const picker = $('sex-picker');
     if (!picker) return;
@@ -1532,7 +1572,8 @@ export function createGate({ send, onPlay }) {
     },
 
     /** Chamado assim que a conexão abre. */
-    start(catalog) {
+    start(catalog, classes = null) {
+      classesPoe = Array.isArray(classes) && classes.length ? classes : null;
       if (catalog?.googleClientId != null) setupGoogle(catalog.googleClientId);
       /*
        * ---- A tela desenha o que ESTE servidor tem ----

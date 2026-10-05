@@ -647,9 +647,11 @@ export function renderSheet(body, { state, send, closeModal }) {
   const soSeTem = (valor, card) => (valor ? [card()] : []);
   const at = derived.atributos ?? { str: 0, dex: 0, int: 0, daVocacao: { str: 0, dex: 0, int: 0 } };
   const ef = derived.efeitosDosAtributos ?? {};
+  // Com a classe do PoE (sistema de itens do PoE, só local), a base é a da CLASSE e o resto vem da árvore e dos itens.
+  const classePoe = character.classePoe ?? null;
   const origem = (k) => {
     const itens = at[k] - (at.daVocacao?.[k] ?? 0);
-    return `${at.daVocacao?.[k] ?? 0} da vocação${itens ? ` + ${itens} dos itens` : ''}`;
+    return `${at.daVocacao?.[k] ?? 0} ${classePoe ? `da classe ${classePoe.nome}` : 'da vocação'}${itens ? ` + ${itens} ${classePoe ? 'da árvore e dos itens' : 'dos itens'}` : ''}`;
   };
   const chances = derived.chancesNoLevel ?? {};
 
@@ -674,7 +676,27 @@ export function renderSheet(body, { state, send, closeModal }) {
     ]);
   }
 
-  secao(partes.atributos, 'atributos', 'Atributos principais', 'ficha-skills', [
+  // Quem ainda não escolheu a classe do PoE (está na padrão da vocação) escolhe aqui, uma vez.
+  const escolhaDaClasse = classePoe && !classePoe.escolhida && state.classesPoe?.length
+    ? [
+        el('p', 'sheet-nota', `Classe do PoE: ${classePoe.nome} (padrão da vocação). Escolha a sua — uma vez só; ela define os atributos iniciais e onde você começa na árvore.`),
+        (() => {
+          const fila = el('div', 'classe-poe-fila');
+          fila.append(...state.classesPoe.map((c) => {
+          const b = el('button');
+          b.append(el('b', null, c.nome), el('small', null, `For ${c.atributos.str} · Des ${c.atributos.dex} · Int ${c.atributos.int}`));
+          b.type = 'button';
+          b.setAttribute('aria-selected', String(c.slug === classePoe.slug));
+          b.title = `${c.nomeEn} — ascendências: ${c.ascendencias.join(', ')}`;
+          b.onclick = () => send({ t: 'classePoe', classe: c.slug });
+          return b;
+          }));
+          return fila;
+        })(),
+      ]
+    : [];
+  secao(partes.atributos, 'atributos', classePoe?.escolhida ? `Atributos principais · ${classePoe.nome}` : 'Atributos principais', 'ficha-skills', [
+    ...escolhaDaClasse,
     grade(
       statCard('STR', at.str, `${origem('str')} · +${Math.round(ef.vida ?? 0)} vida, ${pct(ef.danoFisicoPct ?? 0)} dano físico`, null, 'ficha-dano'),
       statCard('DEX', at.dex, `${origem('dex')} · +${Math.round(ef.precisao ?? 0)} accuracy, +${Math.round(ef.evasao ?? 0)} evasion, ${pct(ef.velocidadeDeAtaquePct ?? 0)} vel. de ataque`, null, 'ficha-alcance'),

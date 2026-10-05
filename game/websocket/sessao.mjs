@@ -36,6 +36,7 @@ import * as Summon from '../systems/summon.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
 import * as Charms from '../systems/charms.mjs';
@@ -286,6 +287,8 @@ function characterParaCliente(personagem, estado) {
     ...CHARACTER_TEMPLATE,
     name: personagem.nome,
     vocation: estado.vocation,
+    // A classe do PoE (só com ITENS_POE=1): a escolhida, ou a padrão da vocação enquanto não escolheu (`escolhida: false`).
+    ...(ClassesPoe.classeDe(estado) ? { classePoe: { slug: ClassesPoe.classeDe(estado).slug, nome: ClassesPoe.classeDe(estado).nome, escolhida: !!estado.classePoe } } : {}),
     sex: estado.sex,
     level: estado.level,
     exp: estado.xp,
@@ -905,7 +908,9 @@ export class Sessao {
   ola() {
     // A versão do jogo já na conexão: depois de um deploy, a aba aberta se reconecta
     // e fica sabendo aqui, antes de escolher personagem (ver `versao-do-cliente.mjs`).
-    this.enviar({ t: 'hello', catalog: CATALOGO, versao: VERSAO_DO_CLIENTE });
+    // As 7 classes do PoE vão junto só com o sistema ligado (a tela de criação mostra a escolha).
+    const classesPoe = ClassesPoe.paraCliente();
+    this.enviar({ t: 'hello', catalog: CATALOGO, versao: VERSAO_DO_CLIENTE, ...(classesPoe ? { classesPoe } : {}) });
   }
 
   // -------------------------------------------------------------- receber
@@ -1064,6 +1069,16 @@ export class Sessao {
         return this.aplicar(Inventario.limparMochila(this.estado, m));
       case 'equip':
         return this.aplicarComSkills(Inventario.equipar(this.estado, m));
+      case 'classePoe': {
+        // Escolher a classe do PoE (uma vez; só com ITENS_POE=1): os atributos mudam, então vida/mana máximas e a ficha também.
+        const r = ClassesPoe.escolher(this.estado, m.classe);
+        if (r.ok) {
+          Ficha.invalidar(this.estado);
+          Afixos.sincronizarMaximos(this.estado);
+          Ficha.invalidar(this.estado);
+        }
+        return this.aplicarComSkills(r);
+      }
       case 'unequip':
         return this.aplicarComSkills(Inventario.desequipar(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
@@ -1607,7 +1622,7 @@ export class Sessao {
 
   // ------------------------------------------------------------ personagem
 
-  async criarPersonagem({ name, vocation, sex }) {
+  async criarPersonagem({ name, vocation, sex, classePoe }) {
     if (!this.conta) return this.erroDeAuth('sem sessão');
     const problema = R.problemaNoNomeDePersonagem(name);
     if (problema) return this.erroDeAuth(problema);
@@ -1622,7 +1637,11 @@ export class Sessao {
       nome: name,
       vocacao: vocation,
       sexo: sex,
-      estadoInicial: estadoInicialPersonagem(vocation, sex),
+      estadoInicial: {
+        ...estadoInicialPersonagem(vocation, sex),
+        // A classe do PoE escolhida na criação (só com ITENS_POE=1; sem ela, a padrão da vocação até escolher).
+        ...(ClassesPoe.paraCliente() && ClassesPoe.valida(classePoe) ? { classePoe } : {}),
+      },
     });
     // O cliente trata `account` como "a lista mudou, redesenhe" também fora do
     // login — ver `auth.mjs`'s `handle`.
