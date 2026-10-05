@@ -64,5 +64,32 @@
       "_nota": "Números do dono (05/10): Normal ~0,80–0,90, Mágico ~0,10–0,15, Raro ~0,02–0,04, Único ~0,0001–0,001 — aqui o ponto médio de cada faixa. São PESOS relativos (o sorteio divide pela soma), valendo para cada peça que cai."
     },
     "ilvlMaximo": 100
+  },
+  "ouro": {
+    "_nota": "O OURO que o monstro do PoE solta ao morrer (pedido do dono, 05/10): pelo LEVEL do monstro, um valor ALEATÓRIO entre o mínimo e o máximo da tabela (entre dois levels da tabela, a faixa é interpolada), × o multiplicador da raridade do monstro. `porRaridade` vazio para uma raridade = usa (1 + bonusDeQuantidade do drop) — a mesma regra do dono para a quantidade de itens (Mágico ×2,5; Raro ×8,5; Único ×29,5). Soma o Gold Find do jogador. Cai no bolso, como as moedas.",
+    "tabela": [
+      [1, 2, 4],
+      [5, 5, 8],
+      [10, 10, 15],
+      [15, 15, 22],
+      [20, 20, 30],
+      [25, 27, 40],
+      [30, 35, 50],
+      [35, 45, 65],
+      [40, 55, 80],
+      [45, 65, 95],
+      [50, 80, 115],
+      [55, 95, 135],
+      [60, 110, 160],
+      [65, 130, 185],
+      [70, 150, 215],
+      [75, 175, 250],
+      [80, 200, 290],
+      [85, 230, 330],
+      [90, 260, 380],
+      [95, 300, 430],
+      [100, 340, 500]
+    ],
+    "porRaridade": {}
   }
 }

@@ -22,7 +22,7 @@ import { desenharMenu, lerEstado as lerEstadoDoMenu, gravarEstado as gravarEstad
 import { criarBiblioteca } from './editor-biblioteca.mjs';
 import { criarEditorDeBosses } from './editor-bosses.mjs';
 import { criarTelaDeItensPoe } from './editor-itens-poe.mjs';
-import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe, criarTelaDosMobsPoe, criarTelaDosMapasPoe, criarTelaDasMissoesPoe } from './editor-poe-telas.mjs';
+import { criarTelaDaCampanhaPoe, criarTelaDaArvorePoe, criarTelaDosChefesPoe, criarTelaDosMobsPoe, criarTelaDosMapasPoe, criarTelaDasMissoesPoe, criarTelaDosModificadoresPoe } from './editor-poe-telas.mjs';
 import { criarTelaDeEfeitos } from './editor-ataques.mjs';
 import { criarTelaDaBibliotecaDeSprites } from './editor-biblioteca-sprites.mjs';
 import { el, msg, descartarAlteracoes, cabecalho, botaoCopiar, pedirTexto } from './editor-ui.mjs';
@@ -388,13 +388,13 @@ const TELAS_FIXAS = {
 const CATEGORIA_DA_TELA = { beta: 'beta', config: 'config', mapas: 'mapas', hunts: 'hunts', mobs: 'monstros', itens: 'itens', outfits: 'outfits', montarias: 'montarias', sprites: 'sprites' };
 // A referência do PoE (Fase 1 do sistema de itens no modelo do PoE): só leitura, só com ITENS_POE=1 no servidor.
 const ITENS_POE = criarTelaDeItensPoe({ raiz: () => $('#raiz') });
-const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }), 'poe-mobs': criarTelaDosMobsPoe({ raiz: () => $('#raiz') }), 'poe-efeitos': criarTelaDeEfeitos({ raiz: () => $('#raiz') }), 'sprites-biblioteca': criarTelaDaBibliotecaDeSprites({ raiz: () => $('#raiz') }), 'poe-mapas': criarTelaDosMapasPoe({ raiz: () => $('#raiz') }), 'poe-missoes': criarTelaDasMissoesPoe({ raiz: () => $('#raiz') }), 'poe-fases': EDITOR_DE_FASES };
+const TELAS_POE = { 'poe-campanha': criarTelaDaCampanhaPoe({ raiz: () => $('#raiz') }), 'poe-arvore': criarTelaDaArvorePoe({ raiz: () => $('#raiz') }), 'poe-chefes': criarTelaDosChefesPoe({ raiz: () => $('#raiz') }), 'poe-mobs': criarTelaDosMobsPoe({ raiz: () => $('#raiz') }), 'poe-efeitos': criarTelaDeEfeitos({ raiz: () => $('#raiz') }), 'sprites-biblioteca': criarTelaDaBibliotecaDeSprites({ raiz: () => $('#raiz') }), 'poe-mapas': criarTelaDosMapasPoe({ raiz: () => $('#raiz') }), 'poe-missoes': criarTelaDasMissoesPoe({ raiz: () => $('#raiz') }), 'poe-modificadores': criarTelaDosModificadoresPoe({ raiz: () => $('#raiz') }), 'poe-fases': EDITOR_DE_FASES };
 const BOSSES = criarEditorDeBosses({ api, raiz: () => $('#raiz'), opcoes: () => S.opcoes, irPara: (aba, id = null) => irPara(aba, id), sujo: { marcar: () => (S.sujo = true), limpar: () => (S.sujo = false), esta: () => S.sujo }, aoMudarCadastro: async () => { S.opcoes = await api('opcoes'); } });
 
 // ------------------------------------------------------------------ abas
 
 // A navegação: SÓ o que tem ferramenta de verdade por trás (nada de aba vazia). `href` = outra página.
-const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis'], ['sprites-biblioteca', 'Biblioteca de sprites'], ['poe-fases', 'Fases'], ['poe-mapas', 'Mapas da campanha'], ['poe-missoes', 'Missões']];
+const ABAS = [['geral', 'Visão geral'], ['mapa', 'Mapa do mundo'], ['mapas', 'Editor de mapas'], ['hunts', 'Hunts e áreas'], ['atos', 'Acts e campanhas'], ['fase', 'Fases e encontros'], ['mobs', 'Mobs'], ['bosses', 'Bosses únicos'], ['itens', 'Itens'], ['outfits', 'Outfits'], ['montarias', 'Montarias'], ['sprites', 'Editor de sprites'], ['validacao', 'Validação e versão'], ['progressao', 'Progressão e loot'], ['conjuntos', 'Conjuntos'], ['itempower', 'Item Power'], ['classes', 'Classes'], ['biblioteca', 'Biblioteca de conteúdos'], ['beta', 'Testes e beta'], ['config', 'Configurações'], ['itens-poe', 'Itens (PoE)'], ['poe-campanha', 'Campanha do PoE'], ['poe-arvore', 'Árvore do PoE'], ['poe-chefes', 'Chefes do PoE'], ['poe-mobs', 'Mobs (PoE)'], ['poe-efeitos', 'Efeitos e projéteis'], ['sprites-biblioteca', 'Biblioteca de sprites'], ['poe-fases', 'Fases'], ['poe-mapas', 'Mapas da campanha'], ['poe-missoes', 'Missões'], ['poe-modificadores', 'Modificadores de monstro']];
 const NOME_DA_ABA = Object.fromEntries(ABAS);
 // O menu: só entra item que tem tela de verdade (grupo sem item não aparece). `modo`: o que a ferramenta faz — sem marca = edição completa;
 // 'consulta' = só mostra o cadastro; 'parcial' = edita parte. Atualizado junto com `docs/engine-reorganizacao-plano.md`.
@@ -458,6 +458,7 @@ const GRUPOS_POE = [
     { id: 'poe-missoes', nome: 'Missões', icone: 'livros', dica: 'as missões do Drive e as fases ligadas a elas' }] },
   { id: 'poe-conteudo', titulo: 'Conteúdo', itens: [
     { id: 'poe-mobs', nome: 'Mobs', icone: 'mobs', dica: 'os monstros do PoE: status por área, ataques e efeitos, desenho, drops' },
+    { id: 'poe-modificadores', nome: 'Modificadores', icone: 'mobs', dica: 'os modificadores de monstro do PoE (Mágico 1, Raro 2 a 4), os ocultos da raridade e o ouro por level' },
     { id: 'poe-chefes', nome: 'Chefes', icone: 'coroa', dica: 'chefes de ato e pináculos: status, habilidades e arena' },
     { id: 'itens', nome: 'Itens', icone: 'espada', dica: 'as bases do PoE: requisitos, mods, únicos e peças de exemplo' },
     { id: 'classes', nome: 'Classes', icone: 'classes', dica: 'as 7 classes do PoE: atributos iniciais e bônus por ponto' },

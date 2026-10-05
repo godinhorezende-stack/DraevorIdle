@@ -180,6 +180,35 @@ export function quantasPecas(tipo, rng = Math.random, regras = Catalogo.REGRAS, 
   return Math.floor(q) + (rng() < q - Math.floor(q) ? 1 : 0);
 }
 
+/** A faixa de ouro `[min, max]` de um level (`regras.ouro.tabela`: `[level, min, max]`, interpolada entre dois levels da tabela). */
+export function faixaDeOuro(nivel, regras = Catalogo.REGRAS) {
+  const t = regras?.ouro?.tabela ?? [];
+  if (!t.length) return [0, 0];
+  const n = Math.max(1, Number(nivel) || 1);
+  if (n <= t[0][0]) return [t[0][1], t[0][2]];
+  const fim = t[t.length - 1];
+  if (n >= fim[0]) return [fim[1], fim[2]];
+  const i = t.findIndex(([lv]) => lv > n);
+  const [a, b] = [t[i - 1], t[i]];
+  const f = (n - a[0]) / (b[0] - a[0]);
+  return [Math.round(a[1] + (b[1] - a[1]) * f), Math.round(a[2] + (b[2] - a[2]) * f)];
+}
+
+/** O multiplicador de ouro da raridade do bicho: o de `ouro.porRaridade`, senão (1 + bônus de quantidade do drop). */
+export function multiplicadorDeOuro(tipo, regras = Catalogo.REGRAS) {
+  const proprio = Number(regras?.ouro?.porRaridade?.[tipo]);
+  if (Number.isFinite(proprio) && proprio >= 0) return proprio;
+  return 1 + (Number(regras?.drop?.bonusDeQuantidade?.[tipo] ?? 0) || 0);
+}
+
+/** O ouro que o monstro do PoE solta (aleatório na faixa do level × raridade × `achado`, o Gold Find). 0 sem o sistema ligado. */
+export function ouroDoMonstro(nivel, tipo, rng = Math.random, regras = Catalogo.REGRAS, achado = 1) {
+  if (!regras?.ouro) return 0;
+  const [min, max] = faixaDeOuro(nivel, regras);
+  const base = min + Math.floor(rng() * (max - min + 1));
+  return Math.max(0, Math.round(base * multiplicadorDeOuro(tipo, regras) * Math.max(0, Number(achado) || 0)));
+}
+
 /**
  * Uma peça do PoE sorteada para o Item Level do bicho (= o level dele, até `ilvlMaximo`): a raridade pelos pesos do dono, a base entre as
  * equipáveis cujo nível exigido cabe no Item Level; o Único só sai de base que tem único. Null sem o sistema ligado ou sem pesos.

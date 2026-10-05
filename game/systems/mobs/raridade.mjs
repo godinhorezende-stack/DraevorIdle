@@ -144,12 +144,26 @@ export function statsDos(ids) {
  * Aplica a raridade e os modificadores no mob da instância (muta e devolve).
  * Mob normal sem modificador não ganha campo nenhum (o banco não cresce à toa).
  */
-export function aplicar(m, { raridade = 'normal', modificadores = [] } = {}) {
+// Os monstros do PoE (só com ITENS_POE=1 — `itens-poe/modificadores-monstro.mjs`) passam por um aplicador próprio: sorteia a raridade e os
+// modificadores do PoE (Mágico 1, Raro 2 a 4) e troca os multiplicadores da raridade pelos OCULTOS do PoE. Devolve null para os outros mobs.
+let APLICADOR_POE = null;
+export const definirAplicadorPoe = (f) => (APLICADOR_POE = typeof f === 'function' ? f : null);
+
+/**
+ * `sortear`: o mob nasce de um SPAWN de caçada (só o aplicador do PoE sorteia; os mobs do Draevor seguem "nada é sorteado").
+ * `multiplicadores`: troca a vida/dano/exp/levelExtra da raridade; `extra`: stats somados aos dos modificadores.
+ */
+export function aplicar(m, { raridade = 'normal', modificadores = [], sortear = false, multiplicadores = null, extra = null } = {}) {
   if (!m) return m;
-  const r = CONFIG.raridades[raridade] ?? CONFIG.raridades.normal;
+  if (APLICADOR_POE && !multiplicadores) {
+    const poe = APLICADOR_POE(m, { raridade, modificadores, sortear });
+    if (poe) return aplicar(m, poe);
+  }
+  const r = { ...(CONFIG.raridades[raridade] ?? CONFIG.raridades.normal), ...(multiplicadores ?? {}) };
   const mods = modificadores.filter((id) => MODIFICADORES[id]);
   if (raridade === 'normal' && !mods.length) return m;
   const st = statsDos(mods);
+  for (const [k, v] of Object.entries(extra ?? {})) if (Number.isFinite(v) && k in st) st[k] += v;
   m.raridade = raridade;
   if (mods.length) m.mods = mods;
   m.maxHp = Math.max(1, Math.round((m.maxHp ?? m.hp) * r.vida * (1 + st.vidaPct / 100)));

@@ -163,7 +163,7 @@ export function comporBichos({ grade, spawns, dadosDaHunt, inicio, escala, aplic
       m.spawnId = s.id;
       m.tipo = s.tipo;
       // A raridade e os modificadores do spawn (vida, dano, exp, loot, resistência... — ver `mobs/raridade.mjs`).
-      Raridade.aplicar(m, Raridade.doSpawn(s));
+      Raridade.aplicar(m, { ...Raridade.doSpawn(s), sortear: true });
       m.instancia = instanciaId;
       m.objetivo = 1;
       // O setor onde ele nasce (derivado do mapa; ver `setores.mjs`).

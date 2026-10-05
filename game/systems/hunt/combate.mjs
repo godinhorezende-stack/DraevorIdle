@@ -342,6 +342,10 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   {
     const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
     itens.push(...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade));
+    if (BESTIARY[alvo.key]?.poe) {
+      const ouro = ItensPoeJogo.ouroDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, 1 + (Ficha.combate(estado).goldFind ?? 0) / 100);
+      if (ouro > 0) itens.push({ id: 3031, count: ouro });
+    }
     const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
     if (exclusivo) itens.push(exclusivo);
   }
@@ -483,6 +487,27 @@ function escolherDono({ estado, personagem, juntos, id, peca, origem, verificar 
   return { dono, ignorado };
 }
 
+/**
+ * Entrega `n` moedas (`id`) de um drop. Moeda do loot cai no bolso (carregado), como o resto do ouro ganho caçando — só vai para o banco
+ * quando o jogador deposita de propósito no Banqueiro. (Uma versão anterior mandava direto para `bank`, a partir de uma medição do original
+ * que o dono do projeto confirmou estar errada.) Na party: partes iguais; o resto (unidades que não dividem) roda entre os integrantes,
+ * evento a evento (`dividirOuro`).
+ */
+function entregarMoedas({ estado, juntos, sala, caiu, conta }, id, n) {
+  if (!(n > 0)) return;
+  const total = n * VALOR_DA_MOEDA[id];
+  caiu.push({ id, count: n });
+  conta('loot', id, n);
+  if (!juntos) {
+    darOuro(estado, total);
+    return;
+  }
+  const inicio = vezDoResto.get(sala) ?? 0;
+  const partes = dividirOuro(total, juntos.length, inicio);
+  juntos.forEach((m, k) => darOuro(m.estado, partes[k]));
+  vezDoResto.set(sala, proximoInicioDoResto(total, juntos.length, inicio));
+}
+
 function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, sala, caiu, conta, deOutros, podio }) {
   for (const drop of drops) {
     // Entrada de loot SEM id no bestiário (64 bichos têm "rotten feather"/"ritual tooth" assim): não é
@@ -493,24 +518,7 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
     if (Math.random() >= chance * Progressao.fatorDeDropDe(contextoDoDrop(hunt).dificuldade, drop.id)) continue; // (a dificuldade só mexe na chance de EQUIPAMENTO; neutra por padrão) Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
     if (VALOR_DA_MOEDA[drop.id]) {
-      const n = quantasMoedas(alvo, drop.id, estado);
-      // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
-      // caçando — só vai para o banco quando o jogador deposita de propósito
-      // no Banqueiro. (Uma versão anterior mandava direto para `bank`, a
-      // partir de uma medição do original que o dono do projeto confirmou
-      // estar errada.)
-      const total = n * VALOR_DA_MOEDA[drop.id];
-      caiu.push({ id: drop.id, count: n });
-      conta('loot', drop.id, n);
-      if (!juntos) {
-        darOuro(estado, total);
-        continue;
-      }
-      // Party: partes iguais; o resto (unidades que não dividem) roda entre os integrantes, evento a evento (`dividirOuro`).
-      const inicio = vezDoResto.get(sala) ?? 0;
-      const partes = dividirOuro(total, juntos.length, inicio);
-      juntos.forEach((m, k) => darOuro(m.estado, partes[k]));
-      vezDoResto.set(sala, proximoInicioDoResto(total, juntos.length, inicio));
+      entregarMoedas({ estado, juntos, sala, caiu, conta }, drop.id, quantasMoedas(alvo, drop.id, estado));
       continue;
     }
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
@@ -788,6 +796,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);
+  }
+  // O OURO do monstro do PoE (pedido do dono, 05/10): aleatório na faixa do level dele × a raridade (`itens-poe/regras.json` → `ouro`),
+  // com o Gold Find de quem matou. Cai no bolso como as moedas (e divide na party).
+  if (BESTIARY[alvo.key]?.poe) {
+    const achado = 1 + (Ficha.combate(estado).goldFind ?? 0) / 100;
+    entregarMoedas({ estado, juntos, sala, caiu, conta }, 3031, ItensPoeJogo.ouroDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, achado));
   }
   // A TABELA DE DROP do monstro (engine — Acts/Campanha do PoE; o item de missão só enquanto a fase dele está aberta) e o OBJETIVO da fase
   // (matar o chefe, N monstros, pegar o item da missão — `Campanha.matou`, que conclui a fase e põe o aviso na tela).

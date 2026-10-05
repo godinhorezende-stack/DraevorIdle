@@ -10,6 +10,7 @@ import * as Jogo from '../systems/itens-poe/jogo.mjs';
 import * as Telas from './itens-poe-telas.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
+import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
@@ -128,6 +129,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (rota === 'mobs') return json(res, 200, { mobs: Telas.mobs() }), true;
   if (rota === 'mapas') return json(res, 200, { mapas: Telas.mapas() }), true;
   if (rota === 'missoes') return json(res, 200, { missoes: Telas.missoes() }), true;
+  // Os modificadores de monstro do PoE (Mágico 1, Raro 2 a 4), os ocultos de cada raridade e a tabela do ouro por level (só leitura).
+  if (rota === 'modificadores-monstro') return json(res, 200, { ...ModificadoresMonstro.paraEngine(), ouro: Catalogo.REGRAS?.ouro ?? null, bonusDeQuantidade: Catalogo.REGRAS?.drop?.bonusDeQuantidade ?? {} }), true;
   if (rota === 'mobs/ataques') {
     const a = Telas.ataquesDe(q.get('slug') ?? '', q.get('nivel'));
     return a ? json(res, 200, a) : json(res, 404, { ok: false, erros: ['Monstro desconhecido.'] }), true;

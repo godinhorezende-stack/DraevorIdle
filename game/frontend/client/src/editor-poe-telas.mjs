@@ -672,3 +672,68 @@ export function criarTelaDasMissoesPoe({ raiz }) {
   }
   return { desenhar };
 }
+
+// ================================================================ MODIFICADORES (Conteúdo → Modificadores): os mods de monstro do PoE e o ouro
+
+const ESTADO_DO_MOD = { efeito: ['ok', 'tem efeito'], aproximado: ['ok', 'efeito aproximado'], parcial: ['aviso', 'efeito parcial'], registrado: ['', 'registrado (sem efeito ainda)'] };
+const NOME_DO_STAT = { vidaPct: 'vida %', danoPct: 'dano %', velocidadePct: 'movimento %', velocidadeDeAtaquePct: 'velocidade de ataque %', regenPct: 'regeneração (% da vida/s)', precisaoPct: 'precisão %', evasaoPct: 'evasão %', armaduraPct: 'armadura %', bloqueio: 'bloqueio %', reducaoDeDano: 'redução de dano %', critChance: 'chance de crítico %', critMultiplicador: 'dano crítico %' };
+const NOME_DO_EL = { physical: 'física', fire: 'fogo', ice: 'gelo', energy: 'raio', chaos: 'caos', earth: 'veneno' };
+const pctX = (f) => `+${num(Math.round(f * 100))}%`;
+
+export function criarTelaDosModificadoresPoe({ raiz }) {
+  const T = { d: null, sel: null, busca: '', raridade: '', estado: '', nivel: '' };
+  async function desenhar() {
+    if (!(await ligado(raiz, 'Modificadores'))) return;
+    T.d = await api('modificadores-monstro');
+    raiz().replaceChildren(
+      cabecalho('Modificadores de monstro', `Os ${T.d.mods.length} modificadores de monstro do PoE (poedb). Monstro Normal não tem; Mágico sorteia 1; Raro, 2 a 4 — pelo peso, entre os de nível até o do monstro, sem repetir a família. Os ocultos da raridade e o ouro por level estão no fim.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pmod-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pmod-painel' })),
+      el('div', { class: 'eng-painel', id: 'pmod-regras' }));
+    pintar();
+    pintarRegras();
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const nivel = Number(T.nivel) || null;
+    const l = T.d.mods.filter((m) => (!T.raridade || (T.raridade === 'magico' ? m.pesoMagico > 0 : m.pesoRaro > 0)) && (!T.estado || m.estado === T.estado) && (!nivel || m.nivel <= nivel)
+      && (!t || m.nome.toLowerCase().includes(t) || (m.nomeEn ?? '').toLowerCase().includes(t) || m.linhas.some((x) => x.toLowerCase().includes(t))));
+    document.querySelector('#pmod-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} modificador(es)`),
+        el('input', { type: 'search', placeholder: 'Buscar nome ou texto…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('select', { onchange: (e) => { T.raridade = e.target.value; pintar(); } }, [['', 'Mágico e Raro'], ['magico', 'Sai em Mágico'], ['raro', 'Sai em Raro']].map(([v, n]) => el('option', { value: v, selected: v === T.raridade }, n))),
+        el('select', { onchange: (e) => { T.estado = e.target.value; pintar(); } }, el('option', { value: '' }, 'Todos os estados'), Object.entries(ESTADO_DO_MOD).map(([v, [, n]]) => el('option', { value: v, selected: v === T.estado }, n))),
+        el('input', { type: 'number', min: 1, max: 100, placeholder: 'Nível do monstro', value: T.nivel, style: 'width:9em', oninput: (e) => { T.nivel = e.target.value; pintar(); } })),
+      el('div', { class: 'pmis-lista' }, l.map((m) => el('button', { type: 'button', class: `pmis-item${m.id === T.sel ? ' ativo' : ''}`, onclick: () => { T.sel = m.id; pintar(); } },
+        el('span', { class: 'selo' }, `nv ${m.nivel}`), el('b', {}, m.nome), el('span', { class: 'dica' }, m.linhas.slice(0, 2).join(' · ')),
+        m.pesoMagico > 0 ? el('span', { class: 'selo' }, 'Mágico') : null, m.pesoRaro > 0 ? el('span', { class: 'selo' }, 'Raro') : null,
+        el('span', { class: `selo ${ESTADO_DO_MOD[m.estado]?.[0] ?? ''}` }, ESTADO_DO_MOD[m.estado]?.[1] ?? m.estado)))));
+    const m = T.d.mods.find((x) => x.id === T.sel);
+    document.querySelector('#pmod-painel')?.replaceChildren(!m ? el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha um modificador'), el('span', { class: 'dica' }, 'O texto do PoE, o que vale no Draevor, o peso e o nível.')) : el('div', { class: 'bib-painel-corpo' },
+      el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, `${m.nomeEn ?? ''} · ${m.id}`),
+      el('div', { class: 'eng-card-selos' }, el('span', { class: 'selo' }, m.tipo === 'archnemesis' ? 'Archnemesis' : 'Modificador'), el('span', { class: 'selo' }, `nível ${m.nivel}+`),
+        el('span', { class: 'selo' }, `peso Mágico ${num(m.pesoMagico)}`), el('span', { class: 'selo' }, `peso Raro ${num(m.pesoRaro)}`), el('span', { class: `selo ${ESTADO_DO_MOD[m.estado]?.[0] ?? ''}` }, `${ESTADO_DO_MOD[m.estado]?.[1] ?? m.estado} (${m.valem}/${m.total})`)),
+      el('h4', {}, 'No PoE'), el('ul', {}, m.linhas.map((x) => el('li', {}, x))),
+      el('h4', {}, 'No Draevor'),
+      Object.keys(m.stats).length || m.mecanicas?.length ? el('ul', {},
+        Object.entries(m.stats).filter(([k]) => k !== 'resist').map(([k, v]) => el('li', {}, `${NOME_DO_STAT[k] ?? k}: ${v > 0 ? '+' : ''}${num(v)}`)),
+        Object.entries(m.stats.resist ?? {}).map(([k, v]) => el('li', {}, `resistência a ${NOME_DO_EL[k] ?? k}: ${v > 0 ? '+' : ''}${num(v)}%`)),
+        (m.mecanicas ?? []).map((x) => el('li', {}, `no golpe (${x.chance}%): ${x.danoPctDoGolpe}% do dano em ${NOME_DO_EL[x.elemento] ?? x.elemento} ao longo de ${x.duracaoMs / 1000} s`)))
+        : el('p', { class: 'dica' }, 'Nada ainda — fica registrado e não entra no sorteio.'),
+      el('h5', {}, 'Stats do PoE'), el('pre', { class: 'bib-json' }, m.statsPoe.map((s) => `${s.stat}: ${s.min === s.max ? s.min : `${s.min} a ${s.max}`}`).join('\n') || '—')));
+  }
+  function pintarRegras() {
+    const d = T.d;
+    const o = d.ocultos ?? {};
+    const linhaOculto = (r, n) => o[r] ? el('tr', {}, el('th', {}, n), el('td', {}, pctX(o[r].vidaMais)), el('td', {}, pctX(o[r].danoMais)), el('td', {}, `+${o[r].velocidadeDeAtaquePct}%`), el('td', {}, `+${o[r].velocidadePct}%`), el('td', {}, pctX(o[r].expMais))) : null;
+    const mult = (r) => d.ouro?.porRaridade?.[r] ?? 1 + (d.bonusDeQuantidade?.[r] ?? 0);
+    document.querySelector('#pmod-regras')?.replaceChildren(el('div', { class: 'eng-painel-corpo' },
+      el('h3', {}, 'Ocultos da raridade (o que o monstro do PoE ganha sem aparecer)'),
+      el('p', { class: 'dica' }, `Chance de um monstro comum nascer Mágico ${num((d.sorteioDaRaridade.modificado ?? 0) * 100)}% e Raro ${num((d.sorteioDaRaridade.raro ?? 0) * 100)}% (spawn sem raridade). O spawn que define a raridade no Editor de mapas manda; os únicos do PoE já vêm com os números de único.`),
+      el('table', { class: 'mob-tabela' }, el('tr', {}, el('th', {}, 'Raridade'), el('th', {}, 'Vida'), el('th', {}, 'Dano'), el('th', {}, 'Vel. ataque'), el('th', {}, 'Movimento'), el('th', {}, 'Exp')),
+        linhaOculto('magico', 'Mágico'), linhaOculto('raro', 'Raro / Elite')),
+      el('h3', {}, 'Ouro por level do monstro'),
+      el('p', { class: 'dica' }, `Aleatório entre o mínimo e o máximo (interpolado entre os levels da tabela) × a raridade: Normal ×${num(mult('normal'))}, Mágico ×${num(mult('modificado'))}, Raro ×${num(mult('raro'))}, Único/Chefe ×${num(mult('boss'))}; soma o Gold Find. Editável em gamedata/itens-poe/regras.json → ouro.`),
+      el('div', { style: 'overflow-x:auto' }, el('table', { class: 'mob-tabela' }, el('tr', {}, el('th', {}, 'Level'), (d.ouro?.tabela ?? []).map(([lv]) => el('th', {}, lv))), el('tr', {}, el('th', {}, 'Ouro'), (d.ouro?.tabela ?? []).map(([, a, b]) => el('td', {}, `${a}–${b}`)))))));
+  }
+  return { desenhar };
+}

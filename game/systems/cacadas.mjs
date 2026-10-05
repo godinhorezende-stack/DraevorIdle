@@ -547,7 +547,7 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
       const defDoBoss = boss?.bossUnico ? bossUnico(boss.bossUnico) : null;
       const m = defDoBoss ? criarBossUnico(defDoBoss, { x: casa.x, y: casa.y, z }) : Campanha.aplicarEscala(criarMonstro({ ...p, x: casa.x, y: casa.y }, hunt), escala);
       // A raridade e os modificadores que o spawn do mapa configura (os mesmos da instância).
-      if (m && (p.raridade || p.modificadores?.length)) Raridade.aplicar(m, Raridade.doSpawn(p));
+      if (m) Raridade.aplicar(m, { ...Raridade.doSpawn(p), sortear: !defDoBoss });
       if (m) todos.push({ z, m });
     }
   }
