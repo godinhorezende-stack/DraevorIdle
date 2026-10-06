@@ -38,7 +38,9 @@
   "energyShield": {
     "_nota": "Barra que absorve o dano ANTES da vida (golpe e magia). Recarrega sozinha depois de ATRASO_MS sem levar dano, RECARGA_POR_SEGUNDO da barra cheia por segundo.",
     "ATRASO_MS": 3000,
-    "RECARGA_POR_SEGUNDO": 0.2
+    "RECARGA_POR_SEGUNDO": 0.2,
+  "_poe": "Com o sistema de itens do PoE ligado (PoE 1): a recarga começa depois de ATRASO_MS_POE sem receber dano (2 s), a 20% do escudo por segundo; qualquer dano recebido interrompe e reinicia a espera. \"Início da Recarga X% mais rápido\" divide a espera por (1 + X%); \"Recarga aumentada em X%\" multiplica os 20%/s.",
+  "ATRASO_MS_POE": 2000
   },
 
   "bloqueio": {

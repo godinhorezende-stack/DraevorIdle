@@ -289,6 +289,9 @@ function calcularCombate(estado) {
     damage,
     // A régua das magias (a conta do Draevor; igual a `damage` sem o PoE).
     danoDeEscala: danoDoDraevor,
+    // A recarga do Energy Shield (PoE): "Recarga aumentada em X%" e "Início da Recarga X% mais rápido" (`personagem/defesa.mjs`).
+    esRecargaPct: af.es_recharge ?? 0,
+    esInicioPct: af.es_recharge_start ?? 0,
     skillName: pericia,
     skillValue: valorDaPericia,
     skillBonus: bonusDePericia,

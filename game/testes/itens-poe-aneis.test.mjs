@@ -74,3 +74,29 @@ test('sem perícias no PoE (dono, 06/10: "o personagem não vai ter mais skill d
   const f = Ficha.combate(e);
   assert.deepEqual([f.damage.min, f.damage.max], [Math.max(1, Math.round(f.ataqueMin)), Math.max(1, Math.round(f.ataqueMax))], 'a ficha mostra a faixa da arma');
 });
+
+test('Escudo de Energia do PoE: absorve antes da vida; recarrega 20%/s depois de 2 s sem dano; dano interrompe; os modificadores de recarga', async () => {
+  const Defesa = await import('../systems/personagem/defesa.mjs');
+  const ficha = { energyShield: 100 };
+  const e = { es: 100 };
+  assert.equal(Defesa.absorver(e, ficha, 30, null, null), 0, 'o escudo engoliu tudo');
+  assert.equal(e.es, 70);
+  assert.equal(Defesa.absorver(e, ficha, 90, null, null), 20, 'o que passa do escudo vai para a vida');
+  assert.equal(e.es, 0);
+  Defesa.recarregar(e, ficha, 1999);
+  assert.equal(e.es, 0, 'ainda esperando os 2 s');
+  Defesa.recarregar(e, ficha, 1001);
+  assert.equal(e.es, 20, '20% do escudo por segundo');
+  Defesa.recarregar(e, ficha, 500);
+  assert.equal(e.es, 30);
+  Defesa.absorver(e, ficha, 5, null, null); // dano no meio da recarga: interrompe
+  Defesa.recarregar(e, ficha, 1500);
+  assert.equal(e.es, 25, 'interrompida: espera de novo');
+  // "Recarga aumentada em 50%" e "Início da Recarga 100% mais rápido".
+  const forte = { energyShield: 100, esRecargaPct: 50, esInicioPct: 100 };
+  const f = { es: 100 };
+  Defesa.absorver(f, forte, 100, null, null);
+  assert.equal(Defesa.esperaDaRecarga(forte), 1000);
+  Defesa.recarregar(f, forte, 1000 + 1000);
+  assert.equal(f.es, 30, '20% × 1,5 = 30% por segundo');
+});

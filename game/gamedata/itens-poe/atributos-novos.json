@@ -203,12 +203,12 @@
     "es_recharge": {
       "nome": "Recarga do Escudo de Energia aumentada",
       "unidade": "%",
-      "combate": false
+      "combate": true
     },
     "es_recharge_start": {
       "nome": "Início da Recarga do Escudo de Energia mais rápido",
       "unidade": "%",
-      "combate": false
+      "combate": true
     },
     "light_radius": {
       "nome": "Raio de Iluminação aumentado",

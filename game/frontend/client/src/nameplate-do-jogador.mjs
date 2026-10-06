@@ -264,6 +264,14 @@ export class NameplateDoJogador {
       ctx.drawImage(cheia.tela, 0, 0, Math.max(1, Math.round(caixa.barraL * fr * ratio)), Math.ceil(altura * ratio), nx, nitido(topo), w, altura);
     };
     preencher('vida', frVida, caixa.vidaTopo, caixa.vidaH);
+    // O Escudo de Energia: cinza por cima da vida, do tamanho do escudo que resta (ele absorve o dano antes da vida).
+    if (frVida != null && d.esMax > 0 && d.es > 0 && caixa.vidaH) {
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = '#aab4b8';
+      ctx.fillRect(nx, nitido(caixa.vidaTopo), Math.max(1, Math.round(caixa.barraL * frVida * fracao(d.es, d.esMax) * ratio) / ratio), caixa.vidaH);
+      ctx.restore();
+    }
     if (comMana) preencher('mana', fracao(d.mana, d.maxMana), caixa.manaTopo, caixa.manaH);
     return caixa;
   }

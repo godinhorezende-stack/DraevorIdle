@@ -981,6 +981,9 @@ export class MapView {
           level: character.level,
           mana: character.mana,
           maxMana: character.derived.maxMana,
+          // O Escudo de Energia (cinza por cima da vida, como no HUD).
+          es: character.es ?? character.derived.energyShield ?? 0,
+          esMax: character.derived.energyShield ?? 0,
         },
         now
       );
@@ -1181,6 +1184,8 @@ export class MapView {
       maxHp: data.maxHp,
       mana: data.mana,
       maxMana: data.maxMana,
+      es: data.es ?? 0,
+      esMax: data.esMax ?? 0,
       level: data.level,
       // O cargo de quem é da equipe, para a tag por cima do nome. `null` em
       // jogador — e é `null` explícito, e não ausente, para uma promoção ou um
@@ -3106,6 +3111,8 @@ export class MapView {
         maxHp: entity.maxHp,
         mana: entity.mana,
         maxMana: entity.maxMana,
+        es: entity.es,
+        esMax: entity.esMax,
         propria: entity.isPlayer,
         cx: screen.x,
         topoDaCasa: screen.y,

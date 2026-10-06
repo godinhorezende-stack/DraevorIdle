@@ -372,3 +372,11 @@
 /* Os três atributos sempre lado a lado (como no PoE), também no celular. */
 .sheet-secao[data-secao="poe-atributos"] .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 720px) { .sheet-secao[data-secao="poe-atributos"] .stat-card em { font-size: 10.5px; } .stat-card.poe-atributo b { font-size: 22px; } }
+
+/* ---- O Escudo de Energia na barra de vida do HUD (hud.mjs `escudoNaBarraDeVida`): cinza por cima da vida, recua conforme absorve ---- */
+.hud-bar.hp .bar-es {
+  position: absolute; left: 0; top: 0; bottom: 0; width: var(--es, 0%); z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, #e6ecef 0%, #9aa6ab 45%, #6d777b 100%);
+  opacity: .88; box-shadow: inset -1px 0 0 #ffffffaa;
+  transition: width .25s linear;
+}
