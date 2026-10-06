@@ -5,7 +5,7 @@
 //   - o personagem e os mobs: os bonecos do jogo (o mob pelo nome, a mesma regra da campanha do PoE — `/api/jogo/poe/desenhos-dos-mobs`);
 //   - os efeitos dela (projétil, explosão, anel, golpe, raio, zonas...): os sprites do VISUAL "AGORA" da gema escolhida (estilo da gema +
 //     o que foi editado na Arena de Efeitos — `/api/jogo/efeitos`); efeito de outro elemento, o do preset de fábrica do elemento.
-import { loadSpriteData, loadEffectData, drawCreature, drawEffect, drawMissile, effectDuration } from './sprites.mjs';
+import { loadSpriteData, loadEffectData, drawCreature, drawEffect, drawMissile, drawItem } from './sprites.mjs';
 import { carregarVisuais, visuaisAtuais, desenharQuadroDeAsset } from './efeitos-visuais.mjs';
 
 const TILE = 32;
@@ -94,7 +94,9 @@ window.__desenharComSprites = (r, m) => {
   for (const e of m.entidades.slice().sort((a, b) => a.y - b.y)) {
     const x = P(e.x);
     const y = P(e.y);
-    const d = e.tipo === 'jogador' ? JOGADOR : desenhos[e.nome] ?? null;
+    // O personagem; o mob pelo nome; o LACAIO/TOTEM (aliado) pela palavra do nome (zumbi, esqueleto, espírito, golem, totem...).
+    const doLacaio = e.time === 'aliado' && e.tipo !== 'jogador' ? Object.entries(desenhos.__lacaios ?? {}).find(([p]) => String(e.nome ?? '').toLowerCase().includes(p))?.[1] ?? Object.values(desenhos.__lacaios ?? {})[0] : null;
+    const d = e.tipo === 'jogador' ? JOGADOR : doLacaio ?? desenhos[e.nome] ?? null;
     ctx.globalAlpha = e.morto ? 0.35 : 1;
     if (d) {
       ctx.save();
@@ -103,7 +105,8 @@ window.__desenharComSprites = (r, m) => {
       // Para onde OLHA: o ângulo da mira dela (`dir`, em radianos — o personagem segue o mouse/o alvo ao lançar; o mob, o alvo dele).
       const ang = typeof e.dir === 'number' ? e.dir : Math.atan2(e.vy ?? 0, e.vx ?? 0);
       const dir = Math.abs(Math.cos(ang)) > Math.abs(Math.sin(ang)) ? (Math.cos(ang) > 0 ? 1 : 3) : Math.sin(ang) > 0 ? 2 : 0;
-      drawCreature(ctx, { look: d.look, colors: d.colors, dir, frame: Math.floor((m.tempo ?? 0) * 6) % 2, walking: Math.hypot(e.vx ?? 0, e.vy ?? 0) > 0.1 }, 0, 0);
+      if (!d.look && d.lookItem) drawItem(ctx, d.lookItem, 0, 0, { time: (m.tempo ?? 0) * 1000 });
+      else drawCreature(ctx, { look: d.look, colors: d.colors, dir, frame: Math.floor((m.tempo ?? 0) * 6) % 2, walking: Math.hypot(e.vx ?? 0, e.vy ?? 0) > 0.1 }, 0, 0);
       ctx.restore();
     } else {
       ctx.fillStyle = e.time === 'inimigo' ? '#c0392b' : '#e0b85a';

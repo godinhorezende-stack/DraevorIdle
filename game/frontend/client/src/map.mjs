@@ -1079,7 +1079,8 @@ export class MapView {
      * cada um veria só o seu e a caverna pareceria ter um familiar quando tem
      * três.
      */
-    for (const summon of [payload.summon, ...(payload.summonsDoGrupo ?? [])]) {
+    // + os LACAIOS e os TOTENS das gemas do PoE (como o familiar: andam com o dono, não são alvo).
+    for (const summon of [payload.summon, ...(payload.summonsDoGrupo ?? []), ...(payload.lacaios ?? [])]) {
       if (!summon) continue;
       seen.add(summon.uid);
       this.track(summon.uid, { ...summon, isOther: true, summon: true }, now);

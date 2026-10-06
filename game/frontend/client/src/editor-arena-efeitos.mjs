@@ -12,10 +12,10 @@
 import { el, msg } from './editor-ui.mjs';
 import { escolherSprite } from './editor-biblioteca-sprites.mjs';
 // O desenho do jogo (sprites e a camada de efeitos) só carrega quando a arena abre — no navegador (os testes do Node importam as telas).
-let loadSpriteData, loadEffectData, drawCreature, criarCamada, desenharEfeito, desenharProjetil, desenharQuadroDeAsset, duracaoDoAsset, desenharContinuo;
+let loadSpriteData, loadEffectData, drawCreature, drawItem, criarCamada, desenharEfeito, desenharProjetil, desenharQuadroDeAsset, duracaoDoAsset, desenharContinuo;
 async function carregarDesenho() {
   if (criarCamada) return;
-  ({ loadSpriteData, loadEffectData, drawCreature } = await import('./sprites.mjs'));
+  ({ loadSpriteData, loadEffectData, drawCreature, drawItem } = await import('./sprites.mjs'));
   ({ criarCamada, desenharEfeito, desenharProjetil, desenharQuadroDeAsset, duracaoDoAsset, desenharContinuo } = await import('./efeitos-visuais.mjs'));
 }
 
@@ -145,12 +145,20 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     const cam = { x: Math.round((cena.pos.x - Math.floor(LARGURA / 2)) * TILE), y: Math.round((cena.pos.y - Math.floor(ALTURA / 2)) * TILE) };
     // O chão: um xadrez discreto (a arena não tem mapa; o que importa é a posição de cada casa).
     for (let y = 0; y < ALTURA; y++) for (let x = 0; x < LARGURA; x++) { ctx.fillStyle = (x + y) % 2 ? '#1b2326' : '#1f2a2e'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
-    const posDe = (uid) => (uid === 'player' ? cena.pos : cena.mobs.find((a) => a.uid === uid) ?? null);
+    const posDe = (uid) => (uid === 'player' ? cena.pos : cena.mobs.find((a) => a.uid === uid) ?? (cena.lacaios ?? []).find((a) => a.uid === uid) ?? null);
     // A aura ligada (contínuo): no combate, enquanto o buff está na lista do tique; num lançamento de buff, logo depois de lançar.
     const ligados = T.sim?.tipo === 'combate' ? cena.buffs ?? [] : (T.lados && t > (T.sim?.conjuracaoMs ?? 0) ? [T.skill] : []);
     const visuaisDoLado = L === T.lados?.custom ? T.cliente : { assets: T.cliente?.assets ?? {}, skills: {} };
     for (const sk of ligados) desenharContinuo(ctx, sk, cena.pos.x * TILE - cam.x, cena.pos.y * TILE - cam.y, t, visuaisDoLado);
     drawCreature(ctx, { look: T.sim.jogador.look, colors: T.sim.jogador.colors, dir: cena.pos.dir ?? dirDoLancador(), frame: 0 }, cena.pos.x * TILE - cam.x, cena.pos.y * TILE - cam.y);
+    // Os LACAIOS e TOTENS (da gema): o boneco (ou o item, no totem) e a vida em verde.
+    for (const a of cena.lacaios ?? []) {
+      const px = a.x * TILE - cam.x;
+      const py = a.y * TILE - cam.y;
+      if (!a.look && a.lookItem) drawItem(ctx, a.lookItem, px, py, { time: t });
+      else drawCreature(ctx, { look: a.look, colors: a.colors, dir: a.dir ?? 2, frame: 0 }, px, py);
+      ctx.fillStyle = '#000'; ctx.fillRect(px + 2, py - 6, 28, 4); ctx.fillStyle = '#3fbf3f'; ctx.fillRect(px + 3, py - 5, Math.round((26 * (a.vida ?? 100)) / 100), 2);
+    }
     for (const a of cena.mobs) {
       const px = a.x * TILE - cam.x;
       const py = a.y * TILE - cam.y;
@@ -188,7 +196,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     const b = Q[Math.min(Q.length - 1, i + 1)];
     const f = Math.max(0, Math.min(1, (t - a.t) / 250));
     const mistura = (p, q) => (q ? { ...p, x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f } : p);
-    return { pos: mistura(a.pos, b.pos), mobs: a.mobs.map((m) => mistura(m, b.mobs.find((x) => x.uid === m.uid))), buffs: a.buffs ?? [] };
+    return { pos: mistura(a.pos, b.pos), mobs: a.mobs.map((m) => mistura(m, b.mobs.find((x) => x.uid === m.uid))), buffs: a.buffs ?? [], lacaios: (a.lacaios ?? []).map((m) => mistura(m, (b.lacaios ?? []).find((x) => x.uid === m.uid))) };
   }
   const dirDoLancador = () => ({ n: 0, ne: 1, l: 1, se: 1, s: 2, so: 3, o: 3, no: 3 })[T.direcao] ?? 2;
   let conectou = false;

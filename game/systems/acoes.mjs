@@ -33,6 +33,7 @@ import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as LacaiosPoe from './itens-poe/lacaios-poe.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade } from './passivas/arvore.mjs';
@@ -698,6 +699,40 @@ export function virarParaOAlvo(hunt, para) {
   hunt.pos.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : dy > 0 ? 2 : 0;
 }
 
+/** A entrada do catálogo de ações pelo id (o totem do PoE usa a skill da gema dele). */
+export const POR_ID_PUBLICO = (id) => POR_ID.get(id) ?? null;
+
+/**
+ * Invoca os LACAIOS (ou o TOTEM) de uma gema do PoE (`LacaiosPoe.oQueInvoca`: quantos por uso, o máximo, a duração, a força pelo nível
+ * e os suportes): nascem na casa do dono (o primeiro passo deles sai para uma casa livre — `cacadas.tiqueDosLacaios`); passou do
+ * máximo da gema, o mais velho sai. O totem fica parado e usa a skill da gema. Devolve os eventos (o efeito de invocação em cada um).
+ */
+let seqDeLacaio = 0;
+function invocarLacaios(hunt, entry, efeito, alvo) {
+  const slug = entry.poeGema.slug;
+  const q = LacaiosPoe.oQueInvoca(slug, efeito?.nivel ?? 1, efeito);
+  if (!q) return [];
+  const agora = hunt.ultimoTique ?? Date.now();
+  const eventos = [];
+  hunt.lacaios ??= [];
+  for (let i = 0; i < q.porUso; i++) {
+    const l = {
+      uid: `lacaio:${Date.now().toString(36)}${(seqDeLacaio++).toString(36)}`, gema: slug, acao: entry.id, tipo: q.tipo, nome: q.nome, nivel: q.nivel,
+      x: hunt.pos.x, y: hunt.pos.y, dir: hunt.pos.dir ?? 2, look: q.desenho.look, lookItem: q.desenho.lookItem ?? 0, colors: q.desenho.colors,
+      hp: q.vida, maxHp: q.vida, dano: q.dano, elemento: q.elemento ?? 'physical', intervaloMs: q.intervaloMs, ate: q.duracaoMs ? agora + q.duracaoMs : null,
+      // A IA do familiar (`cacadas`): perto do dono, batendo no alvo; o totem não anda e usa a skill a até `alcanceDeAtaque` casas.
+      perto: 2, alcance: 0, alcanceDeAtaque: q.tipo === 'totem' ? Math.max(3, entry.range || 6) : 1, proximoGolpe: agora + 400, proximoPassoEm: 0,
+      ...(q.tipo === 'totem' && alvo ? { mira: { x: alvo.x, y: alvo.y } } : {}),
+    };
+    hunt.lacaios.push(l);
+    eventos.push({ t: 'fx', id: 11, uid: l.uid, x: l.x, y: l.y, sk: entry.id });
+  }
+  // Passou do máximo da gema: os mais velhos saem.
+  const desta = hunt.lacaios.filter((l) => l.gema === slug);
+  for (const velho of desta.slice(0, Math.max(0, desta.length - q.maximo))) velho.hp = 0;
+  return eventos;
+}
+
 /** As casas que a `forma` real da magia pega, centradas em (cx, cy). */
 /*
  * Onda, feixe e varredura vêm na `forma` olhando para o NORTE (só casas com
@@ -987,6 +1022,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // A skill que desliga um reforço (dados: `cancelamentos`) só sai com ele ligado.
   const cancela = Reforcos.CANCELA[entry.id];
   if (cancela && !temBuff(hunt, cancela)) return { ok: false, erro: 'Não há o que cancelar.', motivo: cancela === 'shield' ? 'SEM_ESCUDO' : 'SEM_REFORCO' };
+  // LACAIOS do PoE: com todos em campo (e sem duração para renovar), a gema não sai — o auto não fica relançando à toa.
+  if (entry.poeGema?.lacaio) {
+    const q = LacaiosPoe.oQueInvoca(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1, efeitoDaGema);
+    const desta = (hunt.lacaios ?? []).filter((l) => l.gema === entry.poeGema.slug && l.hp > 0);
+    // Com todos em campo, só relança quando o mais velho está para acabar (a duração): senão o novo trocaria o velho sem parar.
+    const agoraL = hunt.ultimoTique ?? Date.now();
+    const venceLogo = desta.some((l) => l.ate && l.ate - agoraL < 1000);
+    if (q && desta.length >= q.maximo && !venceLogo) return { ok: false, erro: `Já estão todos em campo (${desta.length}/${q.maximo}).`, motivo: 'LACAIOS_COMPLETOS' };
+  }
   // Magia de familiar: só sem um em campo e fora da recarga dele (ver `summon.mjs`).
   if (entry.summon) {
     const pode = Summon.podeInvocar(estado, hunt, hunt.ultimoTique ?? Date.now());
@@ -1031,7 +1075,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     if (castMs > 0) {
       // Conjurando, já olha para onde a skill vai sair.
       virarParaOAlvo(hunt, mira && entry.miraNoChao ? mira : alvo);
-      hunt.conjurando = { slot, id: entry.id, alvo: mira && entry.miraNoChao ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}) };
+      // Skill que não é de ataque (invocação, aura, buff) não depende do alvo: ele morrer no meio não cancela a conjuração.
+      hunt.conjurando = { slot, id: entry.id, alvo: !ataque || (mira && entry.miraNoChao) ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}) };
       // O global começa AQUI (a conjuração corre dentro dele); se ela for cancelada, volta o de antes.
       if (deAtaque) {
         hunt.conjurando.globalAntes = hunt.ultimoAtaqueEm ?? null;
@@ -1101,6 +1146,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (cancela) {
     for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === cancela) delete hunt.buffs[id];
   }
+  if (entry.poeGema?.lacaio) eventos.push(...invocarLacaios(hunt, entry, efeitoDaGema, alvo));
   if (entry.summon) {
     Summon.invocar(estado, hunt, action, hunt.ultimoTique ?? Date.now());
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' });

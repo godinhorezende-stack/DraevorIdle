@@ -29,9 +29,9 @@ test('as 562 gemas viram magias do jogo com o molde do Draevor, item com ícone,
   assert.deepEqual([e.element, e.kind, !!e.projetil], ['fire', 'spell', true]);
   assert.equal(ITEM_CATALOG[bola.itemId].poeGema.icone, 'icones/Fireball.png');
   assert.equal(G.doSlug('Arc').molde, 'spell-forked-thorns', 'Arco = a corrente');
-  assert.equal(G.doSlug('Raise_Zombie').statusNoJogo, 'nao', 'lacaio ainda não existe no jogo');
+  assert.equal(G.doSlug('Raise_Zombie').statusNoJogo, 'parcial', 'o lacaio invoca (as habilidades próprias dele ainda não)');
   const st = [...G.REGISTRO.values()].reduce((o, r) => ((o[r.statusNoJogo] = (o[r.statusNoJogo] ?? 0) + 1), o), {});
-  assert.ok(st.funciona > 30 && st.parcial > 300 && st.nao < 120, JSON.stringify(st));
+  assert.ok(st.funciona > 30 && st.parcial > 300 && st.nao < 40, JSON.stringify(st));
   for (const r of G.REGISTRO.values()) if (r.statusNoJogo !== 'funciona') assert.ok(r.motivosNoJogo.length, `${r.gema.slug}: sem motivo`);
 });
 
@@ -202,7 +202,8 @@ test('os 260 suportes do PoE viram gemas de suporte, com o status no jogo e a co
   const st = [...SP.REGISTRO.values()].reduce((o, r) => ((o[r.status] = (o[r.status] ?? 0) + 1), o), {});
   assert.ok(st.funciona > 40 && st.parcial > 100, JSON.stringify(st));
   assert.equal(SP.doSlug('Cast_On_Critical_Strike_Support').status, 'funciona');
-  assert.equal(SP.doSlug('Minion_Damage_Support')?.status ?? 'nao', 'nao', 'lacaio não existe no jogo');
+  assert.equal(SP.doSlug('Minion_Damage_Support')?.status, 'funciona', 'o suporte de dano de lacaio vale nos lacaios');
+  assert.equal(SP.doSlug('Trap_Support')?.status ?? 'nao', 'nao', 'armadilha ainda não existe no jogo');
   const def = (s) => GS.defDaGema(SP.doSlug(s).itemId);
   assert.deepEqual(def('Cast_On_Critical_Strike_Support').suporte.requer, ['poe:Magia'], 'o gatilho restringe só a magia que ativa');
   assert.ok(def('Faster_Projectiles_Support')?.suporte.requer.includes('poe:Projétil') ?? true);
@@ -282,4 +283,26 @@ test('os alvos da gema pelo nível dela: o Arco salta +4 (nv 1) a +7 (nv 20), ma
   assert.deepEqual(G.alvosNoNivel('Arc', 1), { saltos: 4, pctPorRestante: 15, perfurar: 0, projeteis: 0, bifurcar: 0, divide: 0 });
   assert.equal(G.alvosNoNivel('Frostbolt', 1).perfurar, 99, '"Perfuram todos os alvos"');
   assert.ok(!G.fichaNoNivel('Arc', 1).naoFeitas.some((l) => /Ricochete/i.test(l)), 'o ricochete saiu de "não simulado"');
+});
+
+test('lacaios e totens do PoE: o que a gema invoca no nível dela, eles batem e matam, e o totem usa a skill da gema', { skip: SEM_SUPORTES }, async () => {
+  const L = await import('../systems/itens-poe/lacaios-poe.mjs');
+  const z1 = L.oQueInvoca('Raise_Zombie', 1);
+  const z20 = L.oQueInvoca('Raise_Zombie', 20);
+  assert.deepEqual([z1.tipo, z1.nome, z1.maximo, z20.maximo], ['lacaio', 'Zumbi', 3, 6], '"Máximo de (3 — 6) Zumbis"');
+  assert.ok(z20.vida > z1.vida * 10, 'o zumbi do nível 20 é bem mais forte');
+  const esq = L.oQueInvoca('Summon_Skeletons', 1);
+  assert.deepEqual([esq.porUso, esq.duracaoMs], [2, 20000], '"Convoca 2 Guerreiros Esqueleto", 20 s');
+  assert.equal(L.oQueInvoca('Holy_Flame_Totem', 1).tipo, 'totem');
+  const comSuporte = L.oQueInvoca('Raise_Zombie', 10, { lacaioDanoPct: 50 });
+  assert.ok(comSuporte.dano.max > L.oQueInvoca('Raise_Zombie', 10).dano.max * 1.4, 'o suporte de dano de lacaio vale');
+  assert.notEqual(G.doSlug('Raise_Zombie').statusNoJogo, 'nao', 'a invocação não é mais bloqueada');
+  const Arena = await import('../admin/arena-efeitos.mjs');
+  const r = Arena.combate({ skill: G.doSlug('Raise_Zombie').acao, nivel: 10, mobs: 5, segundos: 10 });
+  assert.ok(r.ok, r.erros?.join(' '));
+  const maxEmCampo = Math.max(...r.quadros.map((q) => q.lacaios.length));
+  assert.equal(maxEmCampo, L.oQueInvoca('Raise_Zombie', 10).maximo, 'invoca até o máximo da gema e para');
+  assert.ok(r.quadros.flatMap((q) => q.eventos).some((e) => e.t === 'dmg' && e.lacaio && e.foe), 'os zumbis batem');
+  const t = Arena.combate({ skill: G.doSlug('Holy_Flame_Totem').acao, nivel: 10, mobs: 5, segundos: 8 });
+  assert.ok(t.quadros.flatMap((q) => q.eventos).some((e) => e.t === 'dmg' && e.lacaio && e.foe && e.sk), 'o totem acerta com a skill da gema');
 });

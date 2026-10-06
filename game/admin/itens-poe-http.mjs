@@ -186,6 +186,9 @@ function desenhosDosMobs() {
   const GENERICOS = ['troll', 'orc', 'goblin', 'skeleton', 'demon', 'dragon', 'giant-spider', 'wolf', 'bear', 'cyclops', 'minotaur', 'ghoul', 'scorpion', 'wasp', 'rotworm', 'dwarf'].filter((k) => BESTIARY[k]);
   const hash = (t) => [...String(t)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   DESENHOS_DOS_MOBS = {};
+  // Os LACAIOS e TOTENS da arena (os nomes que ela dá): pela palavra (o cliente procura no nome).
+  DESENHOS_DOS_MOBS.__lacaios = Object.fromEntries([['zumbi', 'zombie'], ['esqueleto', 'skeleton-warrior'], ['espectro', 'spectre'], ['espírito', 'ghost'], ['fantasma', 'ghost'], ['golem', 'stone-golem'], ['guardi', 'gargoyle'], ['sentinela', 'banshee'], ['totem', 'minotaur-totem'], ['aranha', 'giant-spider'], ['corvo', 'gargoyle']]
+    .filter(([, k]) => BESTIARY[k]).map(([p, k]) => [p, { look: BESTIARY[k].look, colors: BESTIARY[k].colors ?? null, lookItem: BESTIARY[k].lookItem ?? 0 }]));
   for (const it of janela.MOBDATA?.items ?? []) {
     const k = MonstrosPoe.desenhoPeloNome(it.n ?? '') ?? GENERICOS[hash(it.en ?? it.n) % Math.max(1, GENERICOS.length)];
     const b = BESTIARY[k];

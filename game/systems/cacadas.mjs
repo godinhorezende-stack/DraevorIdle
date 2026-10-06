@@ -1755,6 +1755,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;
   if (usaBarra && livre && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
+  // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
+  if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 
   anotarDano(hunt.sessao, eventos);
   autoVenda(estado, hunt);
@@ -1780,7 +1782,8 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   if (!R.jaPode(agora, f.proximoPassoEm)) return true;
   if (!R.jaPode(agora, f.semRotaAte)) return false;
   const bichos = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-  const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`]);
+  // Os outros lacaios também ocupam casa (não se empilham).
+  const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`, ...(hunt.lacaios ?? []).filter((l) => l !== f && l.hp > 0).map((l) => `${l.x},${l.y}`)]);
   const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
   const passos = d > longe ? 2 : 1;
   let deu = 0;
@@ -1916,6 +1919,82 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
     }
     if (bicho.dummy) bicho.hp = bicho.maxHp;
   }
+  processarMortes(estado, personagem, eventos);
+  return eventos;
+}
+
+/*
+ * ---- Os LACAIOS e os TOTENS das gemas do PoE ----
+ * O lacaio usa a IA do familiar (segue o dono; tem alvo — o do dono ou o bicho mais perto —, vai até ele pela rota e bate), com o golpe
+ * dele (`dano`, a cada `intervaloMs`, no alvo só) e o elemento da gema. O TOTEM não anda (só sai da casa do dono no primeiro passo) e
+ * usa a skill da gema no bicho mais perto a até `alcanceDeAtaque` casas: o dano é a conta do jogo para aquela skill (`Acoes.danoMostrado`)
+ * e o desenho é o dela (o projétil e o impacto, com o `sk`). Os bichos colados num lacaio batem nele; morreu, ou acabou a duração, some.
+ */
+function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
+  const eventos = [];
+  const ficha = Ficha.combate(estado);
+  const vivos = [];
+  for (const l of hunt.lacaios) {
+    if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
+      eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
+      continue;
+    }
+    vivos.push(l);
+    // Os bichos colados batem no lacaio (um golpe por bicho a cada ~2 s, metade da força do golpe deles).
+    for (const b of hunt.monstros) {
+      if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
+      const d = Math.max(1, Math.round(R.ataqueDoMonstro(b) * 0.5));
+      l.hp -= d;
+      eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
+    }
+    if (l.hp <= 0) continue;
+    if (l.tipo === 'totem') {
+      if (l.x === hunt.pos.x && l.y === hunt.pos.y) passoDoFamiliar(hunt, grade, l, agora, hunt.pos, { pararEm: (d) => d >= 1 });
+      if (!R.jaPode(agora, l.proximoGolpe)) continue;
+      let alvo = null;
+      for (const m of hunt.monstros) if (m.hp > 0 && !m.dummy && distancia(m, l) <= l.alcanceDeAtaque && (!alvo || distancia(m, l) < distancia(alvo, l))) alvo = m;
+      if (!alvo) continue;
+      const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
+      const conta = entry ? Acoes.danoMostrado(estado, entry) : l.dano;
+      const uso = entry ? Acoes.temposDaGemaPoe(estado, entry).uso : l.intervaloMs;
+      l.proximoGolpe = agora + Math.max(400, uso);
+      l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
+      const tipo = entry?.element ?? l.elemento ?? 'physical';
+      const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, conta.min + Math.random() * Math.max(0, conta.max - conta.min), ficha)));
+      alvo.hp -= dano;
+      if (entry?.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y, sk: l.acao });
+      eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });
+      eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
+      continue;
+    }
+    // O LACAIO: a IA do familiar.
+    const alvo = alvoDoFamiliar(hunt, l, agora);
+    if (!alvo) {
+      andarFamiliar(hunt, grade, l, agora);
+      continue;
+    }
+    if (distancia(l, hunt.pos) > l.perto + FOLGA_DO_COMBATE + 1) {
+      esquecerAlvo(l, alvo, agora);
+      andarFamiliar(hunt, grade, l, agora);
+      continue;
+    }
+    if (distancia(l, alvo) > l.alcanceDeAtaque) {
+      const chegou = passoDoFamiliar(hunt, grade, l, agora, alvo, { pararEm: (d) => d <= l.alcanceDeAtaque, longe: l.alcanceDeAtaque + 3 });
+      if (!chegou) { esquecerAlvo(l, alvo, agora); continue; }
+      if (distancia(l, alvo) > l.alcanceDeAtaque) continue;
+    }
+    if (!R.jaPode(agora, l.proximoGolpe)) continue;
+    l.proximoGolpe = agora + l.intervaloMs;
+    l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
+    const tipo = l.elemento ?? 'physical';
+    if (resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100) continue;
+    const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min), ficha)));
+    alvo.hp -= dano;
+    eventos.push({ t: 'fx', id: 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });
+    eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
+  }
+  hunt.lacaios = vivos.filter((l) => l.hp > 0);
   processarMortes(estado, personagem, eventos);
   return eventos;
 }
@@ -2079,6 +2158,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // nunca viajava, e o alvo nunca aparecia marcado.
     targetUid: alvoAtual(hunt)?.uid ?? null,
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
+    // Os lacaios e os totens das gemas do PoE (desenhados como o familiar, com a vida).
+    lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS })),
     summon: hunt.summon
       ? { uid: hunt.summon.uid, x: hunt.summon.x, y: hunt.summon.y, dir: hunt.summon.dir, look: hunt.summon.look, name: hunt.summon.name, nivel: hunt.summon.nivel, moveMs: hunt.summon.moveMs ?? R.PASSO_MS }
       : null,

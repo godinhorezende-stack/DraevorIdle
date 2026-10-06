@@ -46,7 +46,10 @@ const MOLDES = {
 /** O formato de cada arquétipo da arena (o `carga` dos objetos: armadilha e mina valem pelo que soltam). */
 const FORMATO = { projetil: 'projetil', area: 'chao', chuva: 'chao', orbe: 'chao', marca: 'chao', armadilha: 'chao', mina: 'chao', nova: 'nova', impacto: 'onda', canalizacao: 'feixe', ricochete: 'cadeia' };
 const BUFF = new Set(['aura', 'arauto', 'guarda', 'clamor', 'maldicao']);
-const SEM_NO_JOGO = { lacaio: 'lacaios ainda não existem no jogo (o Draevor tem só o familiar)', totem: 'totens ainda não existem no jogo', generico: 'a gema não tem comportamento de combate reconhecido' };
+const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconhecido' };
+/** Lacaios e totens (`itens-poe/lacaios-poe.mjs`): as linhas que o jogo faz. (Aqui, e não lá: o módulo dos lacaios importa este.) */
+const LINHA_DE_LACAIO = /^Máximo de |^\+\d+ ao número máximo de Totens|^Convoca \d+ |^Duração base é de|^Totem dura|Lacaios? têm .*mais Vida|Lacaios? causam? .*mais Dano|são de Nível|Invoca um Totem que usa/i;
+export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l);
 
 const acaoPorId = (id) => ACTION_CATALOG.spells.find((e) => e.id === id) ?? ACTION_CATALOG.runes?.find((e) => e.id === id) ?? null;
 
@@ -93,6 +96,14 @@ const REGRAS_DE_ALVOS = [
   [/se divide em direção a (\d+) alvos adiciona/i, (m, a) => { a.divide += Number(m[1]); }],
   [/^Projéteis se Difundem$/i, (m, a) => { a.bifurcar = Math.max(a.bifurcar, 2); }],
 ];
+/** As linhas da gema no nível (os números DESTE nível), e o "RequerNível" dele — para quem lê a gema fora daqui (os lacaios). */
+export function textosDaGema(slug, nivel = 1) {
+  const g = POR_SLUG.get(slug);
+  if (!g || !COMPILADOR?.textosDoNivel) return { linhas: [], props: [], requer: 1 };
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40));
+  return { linhas: COMPILADOR.textosDoNivel(g, n), props: COMPILADOR.propsDoNivel(g, n), requer: COMPILADOR.basicosDoNivel(g, n).nivelReq ?? g.nivelReq ?? 1, nome: g.nome, tags: g.tags ?? [] };
+}
+
 /** As linhas da gema que o jogo agora faz (saem de "não simulado"). */
 export const ehLinhaDeAlvos = (linha) => REGRAS_DE_ALVOS.some(([re]) => re.test(linha));
 const ALVOS = new Map();
@@ -185,7 +196,15 @@ export function buffNoNivel(slug, nivel) {
 function avaliarNoJogo(h, formato) {
   const st = h.stats;
   const motivos = [];
-  if (SEM_NO_JOGO[h.arquetipo] || (['totem'].includes(h.arquetipo))) return { status: 'nao', motivos: [SEM_NO_JOGO[h.arquetipo] ?? SEM_NO_JOGO.totem] };
+  if (SEM_NO_JOGO[h.arquetipo]) return { status: 'nao', motivos: [SEM_NO_JOGO[h.arquetipo]] };
+  // LACAIOS e TOTENS (`lacaios-poe.mjs`): invocam de verdade, com o máximo, a duração e os bônus da gema; o que ainda é simplificado vai nos motivos.
+  if (h.arquetipo === 'lacaio' || h.arquetipo === 'totem') {
+    const motivos = h.arquetipo === 'totem'
+      ? ['o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)']
+      : ['o lacaio bate corpo a corpo, com a força de um monstro comum do nível dele; as habilidades próprias (as magias do espectro, as auras dos golens) ainda não'];
+    for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeLacaio(l) && !ehLinhaDeAlvos(l)) motivos.push(`efeito não simulado: ${l}`);
+    return { status: 'parcial', motivos };
+  }
   if (BUFF.has(h.arquetipo)) {
     const b = buffNoNivel(h.slug, h.nivel);
     motivos.push(...b.motivos);
@@ -212,6 +231,8 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
   const tagsArea = (g.tags ?? []).some((t) => /Área/i.test(t));
   let moldeId;
   if (buff) moldeId = 'spell-blood-rage';
+  // O lacaio só invoca (o visual é o do estilo da gema): o molde sem alvo. O totem usa o molde da skill que ele vai usar (o projétil, a área).
+  else if (h.arquetipo === 'lacaio') moldeId = 'spell-haste';
   else if (h.arquetipo === 'corpo_a_corpo') moldeId = tagsArea ? 'spell-front-sweep' : 'spell-brutal-strike';
   else if (h.arquetipo === 'movimento') moldeId = h.ataque || Object.keys(h.stats.dano ?? {}).length ? 'spell-ethereal-barrage' : 'spell-haste';
   else moldeId = MOLDES[formato]?.[visual] ?? MOLDES.projetil[visual] ?? 'spell-brutal-strike';
@@ -245,10 +266,11 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     runeId: null,
     kind: 'spell',
     vocations: null,
-    papeis: buff ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
-    group: buff || moldeId === 'spell-haste' ? 'support' : 'attack',
+    // Lacaio e totem são de SUPORTE na barra (invocam; quem bate é o invocado).
+    papeis: buff || ['lacaio', 'totem'].includes(h.arquetipo) ? ['suporte'] : moldeId === 'spell-haste' ? ['velocidade'] : ['attack'],
+    group: buff || moldeId === 'spell-haste' || ['lacaio', 'totem'].includes(h.arquetipo) ? 'support' : 'attack',
     // Para os ganchos do combate (dano pelo nível da gema, custo, buff, bloqueio).
-    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff, molde: moldeId },
+    poeGema: { slug: g.slug, arquetipo: h.arquetipo, ataque: !!h.ataque, buff, molde: moldeId, ...(['lacaio', 'totem'].includes(h.arquetipo) ? { lacaio: h.arquetipo } : {}) },
   };
   delete entry.blocked;
   return entry;
@@ -333,7 +355,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

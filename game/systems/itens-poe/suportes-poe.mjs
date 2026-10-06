@@ -86,6 +86,14 @@ const REGRAS = [
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
   [/não Custam nada/i, () => ({ custoPct: -100 })],
   [/custam Vida ao invés de Mana|Reservam Vida ao invés de Mana/i, () => ({ custoEmVida: 1 })],
+  // LACAIOS e TOTENS (`itens-poe/lacaios-poe.mjs`): dano e vida dos lacaios, totens a mais.
+  [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?causam? ${N}% (mais|menos) Dano`, 'i'), (m) => ({ lacaioDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?(?:causam? )?Dano aumentado em ${N}%`, 'i'), (m) => ({ lacaioDanoPct: num(m[1]) })],
+  [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?têm ${N}% (mais|menos) Vida`, 'i'), (m) => ({ lacaioVidaPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?têm Vida Máxima aumentada em ${N}%`, 'i'), (m) => ({ lacaioVidaPct: num(m[1]) })],
+  [new RegExp(`têm ${N}% (mais|menos) Vida de Lacaio`, 'i'), (m) => ({ lacaioVidaPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
+  [new RegExp(`têm ${N}% de Vida máxima de Lacaios aumentada`, 'i'), (m) => ({ lacaioVidaPct: num(m[1]) })],
+  [new RegExp(`\\+${N} (?:ao|de) número máximo de Totens`, 'i'), (m) => ({ totensExtras: num(m[1]) })],
   // Dano: "mais/menos" multiplica (como no PoE); "aumentado/reduzido" soma.
   [new RegExp(`causa[m]? (?:até )?${N}% (mais|menos) Dano(?! com Sangramento| com Incêndio| de Afecções| Propagado| enquanto Morto| com Acertos e Afecções contra)`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { maisDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) } : null)],
   [new RegExp(`causam? ([+-])${N}% de dano`, 'i'), (m, t, a) => (valeParaOTipo(t, a) ? { maisDanoPct: (m[1] === '-' ? -1 : 1) * num(m[2]) } : null)],
@@ -172,9 +180,8 @@ function gatilhoDe(s, textos) {
 
 /** O que o jogo não tem (o suporte inteiro não age): totens, armadilhas, minas, lacaios, marcas, clamores, estandartes. */
 const SEM_SISTEMA = [
-  [/Totem|Balista/i, 'totens ainda não existem no jogo'],
   [/Armadilha|Minas?\b/i, 'armadilhas e minas ainda não existem no jogo'],
-  [/Lacaio|Sentinela|torres de osso/i, 'lacaios ainda não existem no jogo'],
+  [/Sentinela|torres de osso/i, 'esses lacaios especiais ainda não existem no jogo'],
   [/ao Morrer|quando (?:você (?:for|é) )?Atordoad|enquanto (?:você )?Canaliz|Canalização/i, 'esse gatilho ainda não existe no jogo (só o crítico, o abate corpo a corpo e o dano recebido)'],
 ];
 
