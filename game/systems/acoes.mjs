@@ -844,7 +844,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // davam 215 golpes cada em 10 min por cima das magias (sem captura de runa no
   // original para conferir — é a regra do Tibia). Runa de cura continua livre.
   const grupoDeAtaque = entry.kind === 'rune' && entry.papeis?.[0] === 'attack' ? 'grupo:attack' : null;
-  const grupoQueConta = grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
+  // Gema do PoE: uma ação por vez entre TODAS as skills (ataque, magia, aura...) — um relógio só, o tempo de uso da última.
+  const grupoQueConta = entry.poeGema ? 'grupo:poe' : grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
   if (grupoQueConta && cds[grupoQueConta] && !R.liberou(agora, cds[grupoQueConta].ate)) {
     return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN_DO_GRUPO', faltaMs: cds[grupoQueConta].ate - agora };
   }
