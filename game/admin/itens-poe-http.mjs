@@ -173,6 +173,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
  * nível (`GemasPoe.fichaNoNivel`: o balão da gema na loja e na mochila).
  */
 const PUBLICO = '/api/jogo/poe/';
+const PASTA_DOS_SUPORTES = join(process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe', 'poe-suportes-poedb');
 const imagem = (res, pasta, relativo) => {
   const alvo = normalize(join(pasta, relativo));
   if (!alvo.startsWith(pasta) || !TIPOS[extname(alvo).toLowerCase()] || !existsSync(alvo) || !statSync(alvo).isFile()) return false;
@@ -187,6 +188,7 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   // O nome pode vir decodificado ou não (há arquivo com "%C3%B6" no próprio nome): tenta os dois.
   const nomes = (r) => { let d = r; try { d = decodeURIComponent(r); } catch { /* fica cru */ } return [...new Set([d, r])]; };
   if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, join(GemasPoe.PASTA, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/suporte/')) return nomes(rota.slice('icone/suporte/'.length)).some((n) => imagem(res, join(PASTA_DOS_SUPORTES, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
   if (rota === 'gema') {
     const q = url.searchParams;

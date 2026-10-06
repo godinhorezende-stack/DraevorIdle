@@ -13,9 +13,12 @@ const Acoes = await import('../systems/acoes.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
 const R = await import('../systems/skills/reforcos.mjs');
 const G = await import('../systems/itens-poe/gemas-poe.mjs');
+const SP = await import('../systems/itens-poe/suportes-poe.mjs');
+const SEM_SUPORTES = SEM || (!existsSync('/home/deploy/referencias-poe/poe-suportes-poedb/suportes.json') && 'suportes do PoE não baixados (node tools/baixar-suportes-poedb.mjs)');
 if (!SEM) {
   (await import('../systems/itens-poe/jogo.mjs')).iniciar(ITEM_CATALOG);
   await G.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GS.registrarAtiva(g)), registrarReforco: R.registrar });
+  SP.iniciar({ registrarSuporte: GS.registrarSuporte });
 }
 
 test('as 562 gemas viram magias do jogo com o molde do Draevor, item com ícone, e um status no jogo', { skip: SEM }, () => {
@@ -139,7 +142,7 @@ test('a gema do PoE nasce no nível 1 (drop e loja) e sobe pela tabela de XP do 
 
 test('a loja do Zuma vende TODAS as gemas do PoE, para qualquer level, no nível 1', { skip: SEM }, () => {
   const lista = GS.catalogoDaLoja({ level: 1, inventory: [] }).filter((l) => l.categoria !== 'orbes');
-  const doPoe = lista.filter((l) => GS.defDaGema(l.id)?.poe);
+  const doPoe = lista.filter((l) => GS.defDaGema(l.id)?.poe && GS.defDaGema(l.id).tipo === 'ativa');
   assert.equal(new Set(doPoe.map((l) => l.id)).size, 562);
   assert.ok(lista.some((l) => l.nome.includes('Ira')), 'a Ira (pede level 24) aparece para o level 1');
 });
@@ -167,4 +170,86 @@ test('os tempos do PoE: conjuração, velocidade de ataque da gema, recarga e ca
   assert.equal(t('Cleave').uso, Math.round(golpe / 0.8), 'Cleave: o golpe da arma ÷ 80%');
   const fb = ACTION_CATALOG.spells.find((x) => x.id === 'poe-gema:Fireball');
   assert.equal(fb.cooldown, 0, 'o catálogo não inventa recarga');
+});
+
+// ---------------------------------------------------------------- os SUPORTES do PoE e os gatilhos
+
+/** Um personagem numa caçada do Ato 1 com as gemas `[ativa|suporte]` (slugs) ligadas na varinha. */
+async function comGemas(slugs, { crit = 0 } = {}) {
+  const J = await import('../systems/itens-poe/jogo.mjs');
+  const Cat = await import('../systems/itens-poe/catalogo.mjs');
+  const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
+  const Cacadas = await import('../systems/cacadas.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const Afixos = await import('../systems/afixos.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  (await import('../systems/itens-poe/campanha.mjs')).iniciar();
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 40 });
+  e.classePoe = 'Witch';
+  const arma = J.pecaDoJogo(gerarPeca({ catalogo: Cat.catalogo(), regras: Cat.REGRAS, base: 'Wands/Driftwood_Wand', raridade: 'normal', ilvl: 20, rng: () => 0.99 }));
+  arma.soquetes = { abertos: slugs.length, links: slugs.slice(1).map(() => true), gemas: slugs.map(() => null) };
+  e.equipment = { ...(e.equipment ?? {}), weapon: arma };
+  e.inventory = slugs.map((s) => GS.itemDaGema({ id: (G.doSlug(s) ?? SP.doSlug(s)).itemId, nivel: 10, xp: 0, raridade: 'comum' }));
+  slugs.forEach((_, i) => GS.encaixar(e, { de: 0, slot: 'weapon', indice: i }));
+  Ficha.invalidar(e); Afixos.sincronizarMaximos(e); e.mana = 99999; e.maxMana = 99999;
+  Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' });
+  if (crit) { e.hunt.buffs = { teste: { ate: 1e15, afPoe: { crit_chance: crit } } }; Ficha.invalidar(e); }
+  return e;
+}
+
+test('os 260 suportes do PoE viram gemas de suporte, com o status no jogo e a compatibilidade pelas tags do PoE', { skip: SEM_SUPORTES }, () => {
+  assert.equal(SP.REGISTRO.size, 260);
+  const st = [...SP.REGISTRO.values()].reduce((o, r) => ((o[r.status] = (o[r.status] ?? 0) + 1), o), {});
+  assert.ok(st.funciona > 40 && st.parcial > 100, JSON.stringify(st));
+  assert.equal(SP.doSlug('Cast_On_Critical_Strike_Support').status, 'funciona');
+  assert.equal(SP.doSlug('Minion_Damage_Support')?.status ?? 'nao', 'nao', 'lacaio não existe no jogo');
+  const def = (s) => GS.defDaGema(SP.doSlug(s).itemId);
+  assert.deepEqual(def('Cast_On_Critical_Strike_Support').suporte.requer, ['poe:Magia'], 'o gatilho restringe só a magia que ativa');
+  assert.ok(def('Faster_Projectiles_Support')?.suporte.requer.includes('poe:Projétil') ?? true);
+  // A loja e o drop do modo PoE: só os suportes do PoE.
+  const loja = GS.catalogoDaLoja({ level: 1, inventory: [] }).filter((l) => GS.defDaGema(l.id)?.tipo === 'support');
+  assert.ok(loja.length >= 250 && loja.every((l) => GS.defDaGema(l.id).poe), 'os suportes do Draevor saem da loja');
+});
+
+test('o efeito do suporte no nível: "mais/menos" multiplica, custo, velocidade, projéteis, nível extra', { skip: SEM_SUPORTES }, () => {
+  const magia = { tags: ['poe:Magia', 'poe:Projétil', 'poe:Fogo'] };
+  const gmp = SP.efeitoNoNivel('Greater_Multiple_Projectiles_Support', 10, 0, magia).efeito;
+  assert.equal(gmp.alvosExtras, 4);
+  assert.ok(gmp.maisDanoPct < 0 && gmp.custoPct === 50);
+  assert.ok(SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, magia).efeito.castTimePct < -15);
+  assert.equal(SP.efeitoNoNivel('Faster_Casting_Support', 10, 0, { tags: ['poe:Ataque'] }).efeito.castTimePct, undefined, 'conjuração não vale no ataque');
+  assert.equal(SP.efeitoNoNivel('Empower_Support', 2, 0, magia).efeito.nivelExtra, 1);
+  const cwdt = SP.fichaNoNivel('Cast_when_Damage_Taken_Support', 1).gatilho;
+  assert.deepEqual(cwdt, { quando: 'danoRecebido', recargaMs: 250, limiar: 528 }, 'limiar do nível 1 do PoE');
+});
+
+test('Conjurar no Acerto Crítico: o crítico do ataque ligado ativa a magia ligada (e ela não sai à mão)', { skip: SEM_SUPORTES }, async () => {
+  const e = await comGemas(['Kinetic_Bolt', 'Cast_On_Critical_Strike_Support', 'Fireball'], { crit: 50 });
+  const bola = G.doSlug('Fireball').acao;
+  assert.equal(GS.ativadaPor(e, bola), 'Conjurar no Acerto Crítico');
+  e.actions = Array(22).fill(null);
+  e.actions[0] = { id: G.doSlug('Kinetic_Bolt').acao, enabled: true, minMana: 0, conditions: [] };
+  e.actions[1] = { id: bola, enabled: true, minMana: 0, conditions: [] };
+  const Cacadas = await import('../systems/cacadas.mjs');
+  const { PERSONAGEM } = await import('./apoio.mjs');
+  let agora = Date.now();
+  const ev = [];
+  for (let t = 0; t < 320 && e.hunt; t++) ev.push(...(Cacadas.tique(e, PERSONAGEM, (agora += 250)) ?? []));
+  const ativadas = ev.filter((x) => x.t === 'gatilho').length;
+  assert.ok(ativadas > 5, `${ativadas} magias ativadas`);
+  assert.equal(ev.filter((x) => x.t === 'cast' && x.skill === 'Bola de Fogo').length, 0, 'a magia ativada não se conjura à mão');
+});
+
+test('Conjurar ao Receber Dano: soma o dano recebido e, no limiar do nível, ativa a magia ligada', { skip: SEM_SUPORTES }, async () => {
+  const e = await comGemas(['Cast_when_Damage_Taken_Support', 'Arc']);
+  const { PERSONAGEM } = await import('./apoio.mjs');
+  const limiar = SP.fichaNoNivel('Cast_when_Damage_Taken_Support', 10).gatilho.limiar;
+  // Um bicho do lado, para a magia ter alvo.
+  const bicho = e.hunt.monstros.find((b) => b.hp > 0);
+  e.hunt.pos = { ...e.hunt.pos, x: bicho.x + 1, y: bicho.y };
+  assert.equal(Acoes.aoReceberDano(e, e.hunt, PERSONAGEM, limiar - 1), 0, 'abaixo do limiar: nada');
+  const ev = [];
+  assert.equal(Acoes.aoReceberDano(e, e.hunt, PERSONAGEM, 1, ev), 1, 'no limiar: a magia sai');
+  assert.equal(ev[0].t, 'gatilho');
+  assert.equal(Acoes.aoReceberDano(e, e.hunt, PERSONAGEM, limiar), 0, 'dentro da recarga do gatilho: espera');
 });

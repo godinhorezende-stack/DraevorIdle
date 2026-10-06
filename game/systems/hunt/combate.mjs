@@ -915,6 +915,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
   // Prey de defesa: corta o que SOBROU da armadura. Antes dela, a armadura
   // (redução fixa) ampliava o corte — "Defesa +30%" virava -69% num golpe de 13.
   let final = Math.round((R.danoRecebido(protegido, armorDoPersonagem(estado)) + doutrosTipos) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  // "Conjurar ao Receber Dano" (suporte de gatilho do PoE): o dano recebido (antes do Escudo de Energia, como no PoE) soma no limiar.
+  if (final > 0) Acoes.aoReceberDano(estado, hunt, personagem, final, eventos);
   // Energy Shield: absorve antes do magic shield e da vida.
   final = Defesa.absorver(estado, ficha, final, eventos, { uid: 'player', quem: personagem.nome, x: hunt.pos.x, y: hunt.pos.y, foe: false, de: bicho.name, golpe: 'corpo a corpo' });
   // Magic shield ligado: o golpe sai da MANA primeiro (o que sobra, da vida).

@@ -12,6 +12,7 @@ import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as ModificadoresMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
+import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as Reforcos from '../systems/skills/reforcos.mjs';
 import * as Acoes from '../systems/acoes.mjs';
@@ -121,6 +122,8 @@ async function servirArquivo(req, res, caminho) {
   // As GEMAS do PoE no jogo (substituem as ativas do Draevor; a coleção do dono, poe-gemas-poedb): a magia, o item e o buff de cada uma.
   const gemasPoe = await GemasPoe.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GemasDeSkill.registrarAtiva(g)), registrarReforco: Reforcos.registrar });
   if (gemasPoe.gemas) console.log(`  gemas do PoE: ${gemasPoe.gemas} (${Object.entries(gemasPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
+  const suportesPoe = SuportesPoe.iniciar({ registrarSuporte: GemasDeSkill.registrarSuporte });
+  if (suportesPoe.suportes) console.log(`  suportes do PoE: ${suportesPoe.suportes} (${Object.entries(suportesPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
   if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
 }
 
@@ -175,7 +178,7 @@ async function atender(req, res) {
 
   // As classes ATIVAS para a tela de criação de personagem (público: só nome, descrição, ícone, cor, atributos iniciais e bônus por ponto).
   // O PoE que o JOGO lê (público, só leitura): os ícones das gemas e dos itens do PoE e a ficha da gema num nível (`itens-poe-http.atenderPublico`).
-  if (await ItensPoeHttp.atenderPublico(req, res, caminho, url, { json, fichaDaGema: GemasPoe.fichaNoNivel })) return;
+  if (await ItensPoeHttp.atenderPublico(req, res, caminho, url, { json, fichaDaGema: (slug, n, q) => GemasPoe.fichaNoNivel(slug, n, q) ?? SuportesPoe.fichaNoNivel(slug, n, q) })) return;
   if (caminho === '/api/classes') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     return res.end(JSON.stringify(Classes.paraOCliente()));

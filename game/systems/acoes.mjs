@@ -126,8 +126,12 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const [somadoMin, somadoMax] = ehAtaqueDoPoe
     ? Object.values(fichaBase.danoSomado ?? {}).reduce(([a, b], [x, y]) => [a + x, b + y], [0, 0])
     : ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
-  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin));
-  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha + somadoMax));
+  // O dano ADICIONADO dos suportes do PoE ("têm 10 a 15 de Dano de Gelo adicional") × a eficácia do dano adicionado da gema.
+  const eficacia = daGemaPoe ? (daGemaPoe.ataque ? 1 : GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe)) : 1;
+  const doSuporteMin = (efeitoDaGema?.somadoMin ?? 0) * eficacia;
+  const doSuporteMax = (efeitoDaGema?.somadoMax ?? 0) * eficacia;
+  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin + doSuporteMin));
+  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha + somadoMax + doSuporteMax));
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
@@ -318,6 +322,8 @@ export function catalogo(estado) {
     ...(Gemas.ehSkillDeGema(entry) ? { gema: daGema(entry) } : {}),
     // O tooltip do BUFF (reforço): o que faz, com os números desta gema, a duração e quem é afetado (`Reforcos.descrever`).
     // A gema do PoE: a ficha dela no nível (o balão e o "Configurar ação" mostram como no PoE, no lugar da ficha do Draevor).
+    // A magia ligada a um suporte de gatilho (só sai pelo gatilho).
+    ...(entry.poeGema && Gemas.ativadaPor(estado, entry.id) ? { ativadaPor: Gemas.ativadaPor(estado, entry.id) } : {}),
     ...(entry.poeGema ? { poeFicha: GemasPoe.fichaNoNivel(entry.poeGema.slug, daGema(entry)?.nivel ?? 1, daGema(entry)?.efeito?.qualidade ?? 0) } : {}),
     ...(Reforcos.REFORCOS[entry.id] ? { reforco: Reforcos.descrever(entry.id, daGema(entry)?.efeito ?? null) } : {}),
     // As tags (o que as especializações leem), a classe recomendada (não é trava) e a
@@ -798,12 +804,14 @@ export function condicoesParaCliente(estado, hunt, alvo) {
   return r;
 }
 
-function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null } = {}) {
+function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = false, mira = null, gatilho = null } = {}) {
   // Morto não lança nada (o clique manual chegava aqui entre o golpe e o fim da caçada).
   if ((estado.hp ?? 0) <= 0) return { ok: false, erro: 'Você está morto.', motivo: 'MORTO' };
   // Conjurando outra skill: nada mais sai até ela terminar (ou cancelar) — ver `concluirConjuracao`.
-  if (hunt.conjurando && !concluir) return { ok: false, erro: 'Conjurando.', motivo: 'CONJURANDO' };
-  const action = estado.actions?.[slot];
+  if (hunt.conjurando && !concluir && !gatilho) return { ok: false, erro: 'Conjurando.', motivo: 'CONJURANDO' };
+  // `gatilho`: a magia ATIVADA por um suporte de gatilho do PoE (`ativarGatilhos`) — instantânea, fora da barra, sem o relógio de uso
+  // (uma ação por vez) nem as condições do slot; respeita a recarga própria e paga o custo.
+  const action = gatilho ? gatilho.acao : estado.actions?.[slot];
   if (!action?.id) return { ok: false, erro: 'Esse slot está vazio.', motivo: 'VAZIO' };
   if (action.enabled === false) return { ok: false, erro: 'Esse slot está desligado.', motivo: 'DESLIGADA' };
   const entry = POR_ID.get(action.id);
@@ -812,6 +820,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // configurar o slot, mas um arranjo salvo (`actionPresets`) antes de um
   // level up, por exemplo, não passa por ali de novo.
   if (bloqueio(entry, estado)) return { ok: false, erro: 'Você não pode mais usar isso.', motivo: 'BLOQUEADA' };
+  // A magia ligada a um suporte de gatilho só sai pelo gatilho (como no PoE: não se conjura à mão).
+  if (!gatilho && entry.poeGema && Gemas.ativadaPor(estado, entry.id)) return { ok: false, erro: `Ativada por ${Gemas.ativadaPor(estado, entry.id)}.`, motivo: 'ATIVADA_POR_GATILHO' };
 
   const agora = hunt.clock ?? 0;
   const cds = (hunt.cooldowns ??= {});
@@ -846,7 +856,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const grupoDeAtaque = entry.kind === 'rune' && entry.papeis?.[0] === 'attack' ? 'grupo:attack' : null;
   // Gema do PoE: uma ação por vez entre TODAS as skills (ataque, magia, aura...) — um relógio só, o tempo de uso da última.
   const grupoQueConta = entry.poeGema ? 'grupo:poe' : grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
-  if (grupoQueConta && cds[grupoQueConta] && !R.liberou(agora, cds[grupoQueConta].ate)) {
+  if (!gatilho && grupoQueConta && cds[grupoQueConta] && !R.liberou(agora, cds[grupoQueConta].ate)) {
     return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN_DO_GRUPO', faltaMs: cds[grupoQueConta].ate - agora };
   }
   // O instante LÓGICO desta execução: o de quando ela podia sair, se caiu dentro do último tique
@@ -972,11 +982,11 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const quemPoe = Object.keys(BUFFS).filter((id) => BUFFS[id]?.tipo === cancela);
     if (quemPoe.some((id) => cds[id] && !R.liberou(agora, cds[id].ate))) return { ok: false, erro: 'O escudo ainda não pode voltar.', motivo: 'ESCUDO_RECARREGANDO' };
   }
-  if (!condicoesDoSlotBatem(action, estado, alvo, hunt)) return falhaDaCondicao(action, estado, alvo, hunt);
+  if (!gatilho && !condicoesDoSlotBatem(action, estado, alvo, hunt)) return falhaDaCondicao(action, estado, alvo, hunt);
   // Cura sem condição configurada não é desperdiçada: só sai se faltar pelo
   // menos a cura MÍNIMA dela (o slot novo nasce com `conditions: []` no client,
   // e sem isto a poção de vida saía a cada recarga com a vida cheia).
-  if (!ataque && !(action.conditions ?? []).length && !precisaDeCura(entry, estado, curado.estado)) {
+  if (!gatilho && !ataque && !(action.conditions ?? []).length && !precisaDeCura(entry, estado, curado.estado)) {
     return { ok: false, erro: 'Não precisa agora.', motivo: 'NAO_PRECISA' };
   }
 
@@ -986,7 +996,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    * no tique), revalidando alvo, alcance e mana. Nada é gasto ainda; durante a
    * conjuração o personagem não bate, não anda e não lança outra coisa.
    */
-  if (!concluir && Gemas.ehSkillDeGema(entry)) {
+  if (!concluir && !gatilho && Gemas.ehSkillDeGema(entry)) {
     const castMs = Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed);
     if (castMs > 0) {
       hunt.conjurando = { slot, id: entry.id, alvo: mira && entry.miraNoChao ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}) };
@@ -1114,6 +1124,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
      * ("Dano de magia" e "Dano de <elemento>" dos afixos e da árvore, o treino,
      * a afinidade da classe e a gema já estão no `mult`/`fatorDaGema`.)
      */
+    // O ataque do PoE que acertou crítico / matou de perto: o que os suportes de gatilho escutam (`ativarGatilhos`).
+    let houveCritico = false;
     let fatorDoAtaque = 100; // 100% no ataque normal; o do 2º golpe do ataque duplo vem de `combate/limites.json`
     const acertar = (bicho, pct = 100, fonte = null) => {
       const tipo = entry.element ?? 'physical';
@@ -1136,6 +1148,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       const base = resistido(hunt, bicho, tipo, bruto, ficha);
       Reforcos.marcar(hunt, bicho, agora);
       const { dano, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
+      if (crit) houveCritico = true;
       bicho.hp -= dano;
       // O registro do golpe (desligado em produção: nem monta o objeto).
       registrarGolpe(() => ({
@@ -1200,6 +1213,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
     };
     atacar(false);
+    // REPETIÇÕES dos suportes do PoE (Eco de Magia, Golpe Múltiplo): a skill sai de novo na hora, nos vivos (sem gastar de novo).
+    for (let r = 0; r < Math.min(3, efeitoDaGema?.repeticoes ?? 0); r++) if (atingidos.some((b) => b.hp > 0)) atacar(true);
     const totalDoPrimeiro = total;
     const danosDoPrimeiro = danos.slice();
     if (Math.random() < (ficha.ataqueDuplo ?? 0)) {
@@ -1224,6 +1239,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       estado.mana = Math.min(estado.maxMana ?? estado.mana, (estado.mana ?? 0) + manaDoLeech);
       eventos.push({ t: 'heal', uid: 'player', quem: personagem?.nome, x, y, v: manaDoLeech, color: '#4fc3ff' });
     }
+    // Os SUPORTES DE GATILHO do PoE: o ATAQUE que acertou crítico ("Conjurar no Acerto Crítico") ou que matou de perto ("Conjurar ao
+    // Abater Corpo a Corpo") ativa as magias ligadas no mesmo grupo de sockets.
+    if (entry.poeGema?.ataque && !gatilho) {
+      const vivoAinda = atingidos.find((b) => b.hp > 0) ?? null;
+      if (houveCritico) ativarGatilhos(estado, hunt, personagem, 'critico', { acao: entry.id, alvo: vivoAinda }, eventos);
+      const corpoACorpo = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id))?.tags?.includes('poe:Corpo a Corpo');
+      if (corpoACorpo && atingidos.some((b) => b.hp <= 0)) ativarGatilhos(estado, hunt, personagem, 'abate', { acao: entry.id, alvo: vivoAinda }, eventos);
+    }
   }
 
   // Gemas: "-Ns recarga de <magia>" (supremo), sem passar de zero.
@@ -1244,18 +1267,69 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
   // O familiar: o slot mostra a espera dele (17 min no nível 0, 2 min no 100).
   if (entry.summon) cds[action.id] = { ate: inicio + Summon.recarga(estado), total: Summon.recarga(estado) };
-  if (entry.kind === 'spell' || grupoDeAtaque) {
+  if (!gatilho && (entry.kind === 'spell' || grupoDeAtaque)) {
     // "Cast Speed" (add): encurta o intervalo entre magias (a recarga do grupo).
     const doGrupo = tempoPoe ? tempoPoe.uso : Math.round(recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0)) / (entry.kind === 'spell' ? 1 + (fichaDaRecarga.castSpeed ?? 0) / 100 : 1));
     cds[grupoQueConta] = { ate: inicio + doGrupo, total: doGrupo };
   }
   if (entry.kind === 'item') cds[grupo] = { ate: inicio + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
   // Gema do PoE: uma ação por vez, como no PoE — o golpe básico espera o tempo de uso dela.
-  if (tempoPoe) hunt.proximoGolpeEm = Math.max(hunt.proximoGolpeEm ?? 0, inicio + tempoPoe.uso);
+  if (tempoPoe && !gatilho) hunt.proximoGolpeEm = Math.max(hunt.proximoGolpeEm ?? 0, inicio + tempoPoe.uso);
   // Skill de ataque instantânea: o global conta deste instante. (A conjurada já marcou no início.)
-  if (deAtaque && !concluir) hunt.ultimoAtaqueEm = inicio;
+  if (deAtaque && !concluir && !gatilho) hunt.ultimoAtaqueEm = inicio;
   if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;
   return { ok: true, eventos };
+}
+
+/**
+ * ---- Os SUPORTES DE GATILHO do PoE (dono, 06/10: "faça isso" — as magias ativadas) ----
+ * Cada grupo de sockets ligados com um suporte de gatilho (`Gemas.gruposComGatilho`): quando o `evento` acontece (o ataque do grupo acerta
+ * crítico, mata de perto, ou o personagem acumula o dano do limiar), as MAGIAS do grupo saem na hora — instantâneas, sem o relógio de uso,
+ * pagando o custo e respeitando a recarga própria — e o gatilho entra na recarga dele (0,15 s na "Conjurar no Acerto Crítico").
+ * Os eventos das magias entram nos do ataque. Devolve quantas saíram.
+ */
+export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, alvo = null } = {}, eventos = []) {
+  const cds = (hunt.cooldowns ??= {});
+  const agora = hunt.clock ?? 0;
+  let n = 0;
+  for (const g of Gemas.gruposComGatilho(estado)) {
+    if (g.gatilho.quando !== evento) continue;
+    // O ataque que dispara tem de estar no MESMO grupo (o dano recebido não tem ataque).
+    if (acao && !g.ataques.includes(acao)) continue;
+    const chave = `gatilho:${g.chave}`;
+    if (cds[chave] && !R.liberou(agora, cds[chave].ate)) continue;
+    let saiu = false;
+    for (const magia of g.magias) {
+      // O alvo do ataque, se ainda vive; senão o bicho vivo mais perto (o do crítico pode ter morrido no golpe).
+      const alvoDaMagia = alvo && alvo.hp > 0 ? alvo : hunt.monstros.filter((b) => b.hp > 0).sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))[0] ?? null;
+      const r = dispararSemMarcar(estado, hunt, personagem, null, alvoDaMagia, { gatilho: { acao: { id: magia, enabled: true, minMana: 0, minTargets: 1, conditions: [] } } });
+      if (!r.ok) continue;
+      saiu = true;
+      n++;
+      eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: g.nome, skill: POR_ID.get(magia)?.name ?? magia }, ...(r.eventos ?? []));
+    }
+    if (saiu && g.gatilho.recargaMs) cds[chave] = { ate: agora + g.gatilho.recargaMs, total: g.gatilho.recargaMs };
+  }
+  return n;
+}
+
+/**
+ * O DANO RECEBIDO pelo personagem ("Conjurar ao Receber Dano"): soma no grupo e, passando do limiar do nível do suporte, ativa as magias
+ * dele e zera a conta. Quem chama: o golpe do bicho no personagem (`hunt/combate.mjs`).
+ */
+export function aoReceberDano(estado, hunt, personagem, dano, eventos = []) {
+  if (!(dano > 0) || !hunt) return 0;
+  let n = 0;
+  for (const g of Gemas.gruposComGatilho(estado)) {
+    if (g.gatilho.quando !== 'danoRecebido' || !g.magias.length) continue;
+    const contas = (hunt.danoParaGatilho ??= {});
+    contas[g.chave] = (contas[g.chave] ?? 0) + dano;
+    if (contas[g.chave] < (g.gatilho.limiar ?? Infinity)) continue;
+    const saiu = ativarGatilhos(estado, hunt, personagem, 'danoRecebido', {}, eventos);
+    if (saiu) contas[g.chave] = 0;
+    n += saiu;
+  }
+  return n;
 }
 
 const fracaoDeVida = (e) => (e?.hp ?? 0) / Math.max(1, e?.maxHp ?? 1);

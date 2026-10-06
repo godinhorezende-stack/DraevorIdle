@@ -424,7 +424,9 @@ export function emprestarDoCatalogo(catalogo) {
   for (const [id, meta] of Object.entries(catalogo ?? {})) {
     // A GEMA DO PoE (só com ITENS_POE=1): o ícone dela, da coleção do dono (servido pela engine local).
     if (meta?.poeGema?.icone) {
-      itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/gema/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
+      // O ícone do suporte vem do CDN oficial do PoE (78×78); o da ativa, da coleção (64×64).
+      const lado = meta.poeGema.suporte ? 78 : 64;
+      itemSprites[id] = { w: lado, h: lado, x: 0, y: 0, gerada: `/api/jogo/poe/icone/${meta.poeGema.suporte ? 'suporte' : 'gema'}/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
       continue;
     }
     // As GEMAS ganham o ícone próprio, desenhado (ver `icones-de-gema.mjs`) — no lugar da pedra emprestada.

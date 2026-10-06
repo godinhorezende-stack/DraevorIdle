@@ -1128,8 +1128,12 @@ export function corpoDaGemaPoe(entry) {
   else if (f.ataque) linhaDeTempo('Tempo de ataque', `o da arma × ${tb.velAtaqueBase ?? 100}%`);
   else if (tb.conjuracaoMs != null) linhaDeTempo('Tempo de conjuração', tb.conjuracaoMs ? seg(tb.conjuracaoMs) : 'instantânea');
   const recarga = t ? t.recarga : tb.recargaMs ?? 0;
-  linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
-  jogo.append(tempos);
+  if (!f.suporte) linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
+  // O suporte de GATILHO: quando as magias ligadas saem sozinhas e a recarga do gatilho.
+  const QUANDO = { critico: 'quando o ataque ligado acerta um crítico', abate: 'quando o ataque corpo a corpo ligado mata', danoRecebido: `a cada ${f.gatilho?.limiar ?? '?'} de dano que você recebe` };
+  if (f.gatilho) linhaDeTempo('Ativa as magias ligadas', `${QUANDO[f.gatilho.quando] ?? f.gatilho.quando} · recarga ${seg(f.gatilho.recargaMs)}`);
+  if (entry.ativadaPor) linhaDeTempo('Ativada por', `${entry.ativadaPor} (não se conjura à mão)`);
+  if (tempos.children.length) jogo.append(tempos);
   if (entry.damage) {
     const cor = entry.element ? `el-${entry.element}` : 'atk';
     jogo.append(el('div', cor, `Dano agora: ${Math.round(Math.abs(entry.damage.min))} a ${Math.round(Math.abs(entry.damage.max))} (com os seus bônus)`));
@@ -2717,7 +2721,7 @@ function blocoDaGemaPoeDoItem(def, gema) {
   }
   bloco.append(corpo);
   if (gema?.xp) bloco.append(el('div', null, `XP ${Math.floor(gema.xp).toLocaleString('pt-BR')}`));
-  bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
+  bloco.append(el('div', 'tip-gema-ajuda', def.poe.suporte ? 'Encaixe num socket LIGADO ao da habilidade (numa peça vestida).' : 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
   return bloco;
 }
 

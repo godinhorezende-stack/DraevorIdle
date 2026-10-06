@@ -744,7 +744,7 @@ export function criarTelaDosModificadoresPoe({ raiz }) {
 
 const STATUS_DA_GEMA = { funciona: ['ok', '✓ funciona'], parcial: ['aviso', '◐ parcial'], nao: ['erro', '✗ não funciona'] };
 const COR_DA_GEMA = { vermelha: '#e0705c', verde: '#7fd36b', azul: '#6ba5e0', branca: '#e8e2d0' };
-const iconeDaGema = (g, tamanho = 40) => el('img', { src: `${BASE}gemas-arena/${g.icone}`, alt: '', width: tamanho, height: tamanho, loading: 'lazy', style: `width:${tamanho}px;height:${tamanho}px;object-fit:contain`, onerror: (e) => (e.target.style.visibility = 'hidden') });
+const iconeDaGema = (g, tamanho = 40) => el('img', { src: g.iconeUrl ?? `${BASE}gemas-arena/${g.icone}`, alt: '', width: tamanho, height: tamanho, loading: 'lazy', style: `width:${tamanho}px;height:${tamanho}px;object-fit:contain`, onerror: (e) => (e.target.style.visibility = 'hidden') });
 
 export function criarTelaDasGemasPoe({ raiz }) {
   const T = { lista: null, resumo: null, sel: null, det: null, busca: '', status: '', jogo: '', cor: '', arq: '' };
@@ -778,13 +778,14 @@ export function criarTelaDasGemasPoe({ raiz }) {
       el('div', { class: 'bib-grade' }, l.map((g) => el('div', { class: `eng-card${g.slug === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => abrir(g.slug) },
         el('div', { class: 'eng-card-arte' }, iconeDaGema(g, 48)),
         el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, g.en),
-          el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${STATUS_DA_GEMA[g.status]?.[0] ?? ''}`, title: 'na Arena de Gemas' }, `arena ${STATUS_DA_GEMA[g.status]?.[1] ?? g.status}`), g.statusJogo ? el('span', { class: `selo ${STATUS_DA_GEMA[g.statusJogo]?.[0] ?? ''}`, title: 'no combate do jogo' }, `jogo ${STATUS_DA_GEMA[g.statusJogo]?.[1] ?? g.statusJogo}`) : null, g.arquetipoNome ? el('span', { class: 'selo' }, g.arquetipoNome) : null, el('span', { class: 'selo' }, `nv ${g.nivelReq}`)))))));
+          el('div', { class: 'eng-card-selos' }, g.status ? el('span', { class: `selo ${STATUS_DA_GEMA[g.status]?.[0] ?? ''}`, title: 'na Arena de Gemas' }, `arena ${STATUS_DA_GEMA[g.status]?.[1] ?? g.status}`) : null, g.statusJogo ? el('span', { class: `selo ${STATUS_DA_GEMA[g.statusJogo]?.[0] ?? ''}`, title: 'no combate do jogo' }, `jogo ${STATUS_DA_GEMA[g.statusJogo]?.[1] ?? g.statusJogo}`) : null, g.arquetipoNome ? el('span', { class: 'selo' }, g.arquetipoNome) : null, el('span', { class: 'selo' }, `nv ${g.nivelReq}`)))))));
   }
   async function abrir(slug) {
     T.sel = slug;
     pintar();
     const g = await api(`gemas/detalhe?slug=${encodeURIComponent(slug)}`);
     if (!g?.slug) return;
+    if (g.suporte) return pintarSuporte(g);
     const v = g.verificacao ?? {};
     const st = STATUS_DA_GEMA[v.status] ?? ['', v.status ?? '?'];
     const ex = v.execucao ?? {};
@@ -813,6 +814,23 @@ export function criarTelaDasGemasPoe({ raiz }) {
       (g.mods ?? []).length ? [el('h4', {}, 'Efeitos'), el('ul', {}, g.mods.map((m) => el('li', {}, m)))] : null,
       (g.qualidade ?? []).length ? [el('h4', {}, 'Qualidade'), el('ul', {}, g.qualidade.map((m) => el('li', {}, m)))] : null,
       g.obtencao ? [el('h4', {}, 'Onde se ganha'), el('p', { class: 'dica' }, typeof g.obtencao === 'string' ? g.obtencao : JSON.stringify(g.obtencao))] : null,
+      (g.linhas ?? []).length ? [el('h4', {}, `Por nível (${g.linhas.length})`), el('div', { style: 'overflow-x:auto;max-height:280px;overflow-y:auto' }, el('table', { class: 'mob-tabela' }, el('tr', {}, (g.colunas ?? []).map((c) => el('th', {}, c))), g.linhas.map((l) => el('tr', {}, l.map((c) => el('td', {}, c))))))] : null));
+  }
+  /** O painel de um SUPORTE do PoE: o status no jogo, o gatilho, a compatibilidade e os dados do poedb. */
+  function pintarSuporte(g) {
+    const j = g.noJogo ?? {};
+    const QUANDO = { critico: 'quando o ataque ligado acerta um crítico', abate: 'quando o ataque corpo a corpo ligado mata', danoRecebido: `a cada ${j.gatilho?.limiar ?? '?'} de dano recebido (nível 1)` };
+    document.querySelector('#pgem-painel')?.replaceChildren(el('div', { class: 'bib-painel-corpo' },
+      el('div', { class: 'linha' }, iconeDaGema(g, 64), el('div', {}, el('h2', { class: 'bib-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, `${g.en} · ${g.slug}`))),
+      el('div', { class: 'eng-card-selos' }, el('span', { class: 'selo' }, 'Suporte'), ...(g.tags ?? []).map((t) => el('span', { class: 'selo' }, t))),
+      el('h4', {}, `No jogo: ${STATUS_DA_GEMA[j.status]?.[1] ?? j.status}`),
+      el('p', { class: 'dica' }, `Suporta: ${j.requer?.length ? j.requer.map((t) => t.replace('poe:', '')).join(' + ') : 'qualquer habilidade'}. O efeito usa os números do nível do suporte (a tabela do poedb): "mais/menos dano" multiplica, o custo multiplica, velocidade muda o tempo de uso.`),
+      j.gatilho ? el('p', {}, `Gatilho: ativa as magias ligadas ${QUANDO[j.gatilho.quando] ?? j.gatilho.quando}; recarga ${(j.gatilho.recargaMs / 1000).toLocaleString('pt-BR')} s. A magia ativada não se conjura à mão.`) : null,
+      (j.motivos ?? []).length ? el('ul', {}, j.motivos.map((m) => el('li', {}, m))) : el('p', { class: 'dica' }, 'Tudo do suporte tem efeito no jogo.'),
+      g.desc ? el('p', {}, g.desc) : null,
+      el('h4', {}, 'Propriedades'), el('ul', {}, (g.props ?? []).map((p) => el('li', {}, p))),
+      (g.mods ?? []).length ? [el('h4', {}, 'Efeitos'), el('ul', {}, g.mods.map((m) => el('li', {}, m)))] : null,
+      (g.qualidade ?? []).length ? [el('h4', {}, 'Qualidade'), el('ul', {}, g.qualidade.map((m) => el('li', {}, m)))] : null,
       (g.linhas ?? []).length ? [el('h4', {}, `Por nível (${g.linhas.length})`), el('div', { style: 'overflow-x:auto;max-height:280px;overflow-y:auto' }, el('table', { class: 'mob-tabela' }, el('tr', {}, (g.colunas ?? []).map((c) => el('th', {}, c))), g.linhas.map((l) => el('tr', {}, l.map((c) => el('td', {}, c))))))] : null));
   }
   return { desenhar };

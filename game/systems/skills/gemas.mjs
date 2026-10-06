@@ -217,7 +217,8 @@ for (const o of [O.encaixe, O.ligacao]) {
 export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categoria, castTime, levelMinimo = 1 }) {
   ACOES.set(entry.id, entry);
   const def = {
-    itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: Tags.tagsDaAcao(entry), classeRecomendada: null,
+    // As tags do Draevor (o molde) e as do PoE (`poe:Projétil`, `poe:Magia`...): os suportes do PoE conferem a compatibilidade por estas.
+    itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: [...Tags.tagsDaAcao(entry), ...(gema.tags ?? []).map((t) => `poe:${t}`)], classeRecomendada: null,
     levelMinimo, levelDaMagia: levelMinimo, castTime, progressao: {}, fatorDeDano: 1, fatorDeCura: 1, fatorDeCusto: 1,
     poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
     // A XP por nível: a da gema ou, sem ela no arquivo, a da gema de base (`tabelaDeXp`, de `GemasPoe.gemaDaTabelaDeXp`).
@@ -252,9 +253,33 @@ function tabelaDeXpDoPoe(gema) {
   return { xp, req, maximo: ultimo + 2 };
 }
 
-/** Com as gemas do PoE ligadas, as ATIVAS do Draevor saem de cena (drop, loja, iniciais); os suportes seguem. */
-const soDoPoe = () => [...DEFS.values()].some((d) => d.poe);
-const valeNoModo = (def) => def.tipo === 'support' || !soDoPoe() || !!def.poe;
+/**
+ * Registra uma gema de SUPORTE do PoE (`itens-poe/suportes-poe.mjs`, só com ITENS_POE=1): a compatibilidade pelas tags do PoE da ativa
+ * (`requer`: `poe:Projétil`...), o efeito NO NÍVEL (`efeitoDoPoe(nivel, qualidade, ativa)` → as mesmas chaves dos suportes do Draevor:
+ * `danoPct`, `custoPct`, `castTimePct`...) e o gatilho, quando é um suporte de ativação. A XP é a da tabela dele.
+ */
+export function registrarSuporte({ itemId, suporte, requer = [], exclui = [], efeitoDoPoe, gatilho = null, levelMinimo = 1 }) {
+  const id = `poe-suporte:${suporte.slug}`;
+  const def = {
+    itemId, tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, levelMinimo,
+    suporte: { nome: suporte.nome, requer, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho },
+    poe: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, en: suporte.en, suporte: true },
+    poeXp: tabelaDeXpDoPoe(suporte),
+  };
+  DEFS.set(itemId, def);
+  ITEM_CATALOG[itemId] = {
+    id: itemId, name: `gema: ${suporte.nome.toLowerCase()}`, nomeExibicao: `Gema: ${suporte.nome}`, weight: 0.1, stackable: false, type: 'gema', rarity: 'comum',
+    hasSprite: true, spriteDe: CONFIG.sprites.support ?? CONFIG.sprites.outro,
+    poeGema: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, suporte: true },
+    gemaDef: { tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, requer, algum: [], exclui, efeito: {}, porNivel: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
+    sell: 0,
+  };
+  return def;
+}
+/** Com as gemas do PoE ligadas, as do Draevor saem de cena (drop, loja, iniciais): as ATIVAS quando há ativas do PoE, os SUPORTES quando há suportes do PoE. */
+const soDoPoe = () => [...DEFS.values()].some((d) => d.poe && d.tipo === 'ativa');
+const suportesDoPoe = () => [...DEFS.values()].some((d) => d.poe && d.tipo === 'support');
+const valeNoModo = (def) => (def.tipo === 'support' ? !suportesDoPoe() || !!def.poe : !soDoPoe() || !!def.poe);
 
 export const defDaGema = (itemId) => DEFS.get(Number(itemId)) ?? null;
 export const ehGema = (id) => DEFS.has(Number(id));
@@ -419,6 +444,38 @@ export function skillsAtivas(estado) {
   return saida;
 }
 
+/**
+ * Os grupos de sockets ligados (nas peças VESTIDAS) com um SUPORTE DE GATILHO do PoE: `[{ chave, nome, nivel, gatilho: { quando,
+ * recargaMs, limiar }, ataques: [idDaAcao], magias: [idDaAcao] }]`. `ataques`: as gemas de ataque do grupo (quem dispara o crítico/abate);
+ * `magias`: as magias do grupo compatíveis com o suporte (as que saem ativadas).
+ */
+export function gruposComGatilho(estado) {
+  const saida = [];
+  for (const slot of SLOTS_COM_SOCKET) {
+    const peca = estado?.equipment?.[slot];
+    const s = peca && soquetesDe(peca);
+    if (!s) continue;
+    const bonus = bonusDeNivelDaPeca(peca);
+    for (const grupo of gruposLigados(s)) {
+      const noGrupo = grupo.map((i) => ({ i, g: s.gemas[i], def: s.gemas[i] && DEFS.get(Number(s.gemas[i].id)) })).filter((x) => x.def);
+      for (const x of noGrupo.filter((y) => y.def.tipo === 'support' && y.def.suporte?.gatilho)) {
+        const gat = typeof x.def.suporte.gatilho === 'function' ? x.def.suporte.gatilho(x.g.nivel + bonus) : x.def.suporte.gatilho;
+        const ativas = noGrupo.filter((y) => y.def.tipo === 'ativa');
+        saida.push({
+          chave: `${slot}:${x.i}`, nome: x.def.nome, nivel: x.g.nivel + bonus, gatilho: gat,
+          ataques: ativas.filter((y) => y.def.tags?.includes('poe:Ataque')).map((y) => y.def.acao),
+          magias: ativas.filter((y) => y.def.tags?.includes('poe:Magia') && !y.def.tags?.includes('poe:Ataque') && compativel(x.def.suporte, y.def.tags)).map((y) => y.def.acao),
+        });
+      }
+    }
+  }
+  return saida;
+}
+/** O suporte de gatilho que ativa esta magia (o nome), ou null: a magia ligada a ele não se conjura à mão. */
+export function ativadaPor(estado, acao) {
+  return gruposComGatilho(estado).find((g) => g.magias.includes(acao))?.nome ?? null;
+}
+
 /** Esta skill (magia/runa) está disponível (a gema dela está encaixada numa peça vestida)? */
 export const temSkill = (estado, acao) => skillsAtivas(estado).has(acao);
 
@@ -447,20 +504,28 @@ export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   e.fatorDeDano = a.def.fatorDeDano ?? 1;
   for (const sp of a.supports) {
     const s = sp.def.suporte;
-    const mult = multiplicadorDaRaridade(sp.raridade) * (1 + (sp.qualidade * Q.efeitoPorPonto) / 100);
-    for (const [k, v] of Object.entries(s.efeito ?? {})) {
+    // O suporte do PoE: os números DO NÍVEL dele (a tabela do poedb) e da qualidade, já prontos — sem a régua de raridade do Draevor.
+    const doPoe = s.efeitoDoPoe ? s.efeitoDoPoe(sp.nivel, sp.qualidade, a.def) : null;
+    const mult = doPoe ? 1 : multiplicadorDaRaridade(sp.raridade) * (1 + (sp.qualidade * Q.efeitoPorPonto) / 100);
+    for (const [k, v] of Object.entries(doPoe ?? s.efeito ?? {})) {
       // CONTAGEM (projéteis, saltos, casas de área) é inteira e não escala; o resto × raridade/qualidade.
-      const bruto = v + (s.porNivel?.[k] ?? 0) * (sp.nivel - 1);
+      const bruto = doPoe ? v : v + (s.porNivel?.[k] ?? 0) * (sp.nivel - 1);
       // O custo EXTRA de um suporte (positivo) não cresce com a raridade da gema (a rara não custa mais); a economia (negativo) cresce.
       const valor = CONTAGENS.has(k) || (k === 'custoPct' && bruto > 0) ? bruto : MULTIPLICATIVOS.has(k) ? Math.min(100, bruto * mult) : bruto * mult;
       // O % de um golpe SECUNDÁRIO (projéteis extras, perfuração...) se MULTIPLICA entre supports; o resto soma.
       if (MULTIPLICATIVOS.has(k)) e[k] = e[k] ? (e[k] * valor) / 100 : valor;
       // O CUSTO de mana dos suportes se MULTIPLICA (+30% e +20% são ×1,3 × ×1,2 = +56%, e −20% duas vezes são ×0,64), como no PoE.
       else if (k === 'custoPct') e.custoPct = ((1 + e.custoPct / 100) * (1 + valor / 100) - 1) * 100;
+      // O "X% mais/menos Dano" dos suportes do PoE MULTIPLICA (como no PoE), por cima do fator da gema.
+      else if (k === 'maisDanoPct') e.fatorDeDano *= Math.max(0, 1 + valor / 100);
+      // O tempo de uso dos suportes do PoE também multiplica (40% mais velocidade e 20% menos são ×1/1,4 × ×1/0,8).
+      else if (k === 'castTimePct' && doPoe) e.castTimePct = ((1 + (e.castTimePct ?? 0) / 100) * (1 + valor / 100) - 1) * 100;
       else e[k] = (e[k] ?? 0) + valor;
     }
     e.supports.push(sp.def.nome);
   }
+  // "+N ao Nível das Gemas Suportadas" (Fortalecer, do PoE): o nível que vale (dano, custo, tempos da tabela).
+  if (e.nivelExtra) e.nivel += e.nivelExtra;
   // O lado da explosão (a tela mostra "explode 3×3"): o mesmo número que o motor usa.
   if (e.explosaoPct || e.segundaExplosaoPct) e.explosaoLado = CONFIG.golpesSecundarios?.explosao?.lado ?? 3;
   return e;
