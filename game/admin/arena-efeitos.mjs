@@ -179,7 +179,7 @@ export function simular({ skill, nivel = 10, suportes = [], alvos = 1, distancia
   }
   if (!r.ok) return { ok: false, erros: [r.erro ?? 'A skill não saiu.'] };
   return {
-    ok: true, eventos, conjuracaoMs, pos: { x: h.pos.x, y: h.pos.y }, distancia: d, alcance: entry.range ?? 1,
+    ok: true, eventos, conjuracaoMs, pos: { x: h.pos.x, y: h.pos.y, dir: h.pos.dir ?? 2 }, distancia: d, alcance: entry.range ?? 1,
     alvos: h.monstros.map((m) => ({ uid: m.uid, x: m.x, y: m.y, look: m.look, colors: m.colors ?? null, nome: m.name })),
     jogador: { look: e.outfit.type, colors: { head: e.outfit.head, body: e.outfit.body, legs: e.outfit.legs, feet: e.outfit.feet } },
     visual: Efeitos.visualDaSkill(entry.id), skill: { id: entry.id, nome: entry.name },

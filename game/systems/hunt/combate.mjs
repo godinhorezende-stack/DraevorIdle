@@ -1130,6 +1130,8 @@ export function round(estado, personagem) {
   } else if (!semMunicao) hunt.avisouSemMunicao = false;
   if (!hunt.lurando && alvo && !semMunicao && distancia(hunt.pos, alvo) <= alcanceDaArma(arma, estado)) {
     bateu = true;
+    // O golpe básico também vira o personagem para o alvo.
+    Acoes.virarParaOAlvo(hunt, alvo);
     if (categoriaDaArma(arma) === 'magica') {
       const acertou = golpeDaWand(estado, hunt, alvo, arma, eventos, personagem);
       // Ataque duplo: no máximo UM golpe extra (que não gasta mana e não rola o duplo de novo).

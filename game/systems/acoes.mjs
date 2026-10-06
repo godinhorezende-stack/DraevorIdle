@@ -689,6 +689,14 @@ function comOsAlvosDaGema(entry, efeito) {
   return e;
 }
 
+/** O personagem olha para `para` (0 norte, 1 leste, 2 sul, 3 oeste — o eixo de maior distância), se não está na mesma casa. */
+export function virarParaOAlvo(hunt, para) {
+  if (!hunt?.pos || !para || (para.x === hunt.pos.x && para.y === hunt.pos.y)) return;
+  const dx = para.x - hunt.pos.x;
+  const dy = para.y - hunt.pos.y;
+  hunt.pos.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : dy > 0 ? 2 : 0;
+}
+
 /** As casas que a `forma` real da magia pega, centradas em (cx, cy). */
 /*
  * Onda, feixe e varredura vêm na `forma` olhando para o NORTE (só casas com
@@ -1020,6 +1028,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (!concluir && !gatilho && Gemas.ehSkillDeGema(entry)) {
     const castMs = Gemas.tempoDeConjuracao(estado, entry.id, Ficha.combate(estado).castSpeed);
     if (castMs > 0) {
+      // Conjurando, já olha para onde a skill vai sair.
+      virarParaOAlvo(hunt, mira && entry.miraNoChao ? mira : alvo);
       hunt.conjurando = { slot, id: entry.id, alvo: mira && entry.miraNoChao ? null : alvo?.uid ?? null, inicio, fim: inicio + castMs, ...(mira && entry.miraNoChao ? { mira } : {}) };
       // O global começa AQUI (a conjuração corre dentro dele); se ela for cancelada, volta o de antes.
       if (deAtaque) {
@@ -1065,7 +1075,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   }
 
   const eventos = [];
+  // Vira para ONDE a skill vai (dono, 06/10: "o boneco vira para onde lança a magia?"): a onda/feixe já escolheu o lado (`virarPara`);
+  // o resto olha para a casa mirada ou para o alvo.
   if (virarPara != null) hunt.pos.dir = virarPara;
+  else virarParaOAlvo(hunt, mira && entry.miraNoChao ? mira : alvo);
   if (buff) {
     // Uma velocidade só por vez (a mais nova vale), como no Tibia.
     if (buff.tipo === 'speed') for (const [id, b] of Object.entries(hunt.buffs ?? {})) if (b.tipo === 'speed') delete hunt.buffs[id];

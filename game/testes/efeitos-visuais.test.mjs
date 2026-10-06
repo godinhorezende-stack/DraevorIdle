@@ -69,3 +69,14 @@ test('o estilo automático da gema: pelo que ela é (nome, tags, arquétipo, ele
   assert.ok(est('Despair', { elemento: 'chaos', arquetipo: 'maldicao' }).visual.alvo, 'maldição: o efeito no alvo');
   assert.ok(est('Vaal Fireball', { elemento: 'fire' }).visual.lancamento, 'a Vaal ganha o lançamento roxo');
 });
+
+test('o personagem vira para onde lança a skill (o alvo ou a casa mirada)', async () => {
+  const Acoes = await import('../systems/acoes.mjs');
+  const h = { pos: { x: 10, y: 10, dir: 2 } };
+  for (const [alvo, dir] of [[{ x: 10, y: 6 }, 0], [{ x: 14, y: 11 }, 1], [{ x: 9, y: 15 }, 2], [{ x: 5, y: 10 }, 3]]) {
+    Acoes.virarParaOAlvo(h, alvo);
+    assert.equal(h.pos.dir, dir, JSON.stringify(alvo));
+  }
+  Acoes.virarParaOAlvo(h, { x: 10, y: 10 });
+  assert.equal(h.pos.dir, 3, 'na mesma casa: fica como estava');
+});

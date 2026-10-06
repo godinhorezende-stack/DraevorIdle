@@ -100,7 +100,9 @@ window.__desenharComSprites = (r, m) => {
       ctx.save();
       ctx.translate(x - (TILE * k) / 2, y - TILE * k * 0.85);
       ctx.scale(k, k);
-      const dir = Math.abs(e.vx ?? 0) > Math.abs(e.vy ?? 0) ? ((e.vx ?? 0) > 0 ? 1 : 3) : (e.vy ?? 0) < 0 ? 0 : 2;
+      // Para onde OLHA: o ângulo da mira dela (`dir`, em radianos — o personagem segue o mouse/o alvo ao lançar; o mob, o alvo dele).
+      const ang = typeof e.dir === 'number' ? e.dir : Math.atan2(e.vy ?? 0, e.vx ?? 0);
+      const dir = Math.abs(Math.cos(ang)) > Math.abs(Math.sin(ang)) ? (Math.cos(ang) > 0 ? 1 : 3) : Math.sin(ang) > 0 ? 2 : 0;
       drawCreature(ctx, { look: d.look, colors: d.colors, dir, frame: Math.floor((m.tempo ?? 0) * 6) % 2, walking: Math.hypot(e.vx ?? 0, e.vy ?? 0) > 0.1 }, 0, 0);
       ctx.restore();
     } else {
