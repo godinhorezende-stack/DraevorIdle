@@ -111,7 +111,7 @@ function retrato(estado) {
   Afixos.sincronizarMaximos(copia);
   const f = Ficha.combate(copia);
   const numeros = new Map();
-  const pares = [...achatar(f), ['vidaMaxima', copia.maxHp ?? 0], ['manaMaxima', copia.maxMana ?? 0], ['capacidade', Afixos.capacidade(copia)]];
+  const pares = [...achatar(f), ['vidaMaxima', copia.maxHp ?? 0], ['manaMaxima', copia.maxMana ?? 0], ...(Number.isFinite(Afixos.capacidade(copia)) ? [['capacidade', Afixos.capacidade(copia)]] : [])];
   for (const [chave, valor] of pares) {
     const r = rotuloDe(CAMPOS.ficha, chave);
     numeros.set(chave, { nome: r?.nome ?? chave, sufixo: r?.sufixo ?? '', valor: valor * (r?.escala ?? 1), conhecido: !!r, secao: r?.secao ?? null, ordem: r?.ordem ?? 0 });

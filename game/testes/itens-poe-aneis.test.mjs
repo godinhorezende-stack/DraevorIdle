@@ -45,3 +45,16 @@ test('dois anéis: o clique veste no primeiro anel livre, o arrasto escolhe, os 
   e.inventory.push(elmo);
   assert.equal(Inventario.equipar(e, { id: elmo.id, pilha: e.inventory.length - 1, slot: 'ring2' }).ok, false);
 });
+
+test('sem capacidade no PoE (dono, 06/10: "não existe cap mais"): o peso não manda nada para o Depósito nem impede pegar loot', { skip: SEM }, async () => {
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const Deposito = await import('../systems/deposito.mjs');
+  const e = personagemDeTeste({ vocacao: 'knight', level: 1 });
+  assert.equal(Afixos.capacidade(e), Infinity);
+  const placa = Jogo.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Body_Armours/Plate_Vest', raridade: 'normal', ilvl: 10, rng: semente(4) }));
+  e.inventory = Array.from({ length: 80 }, () => structuredClone(placa));
+  assert.ok(Inventario.pesoDoInventario(e) > 5000);
+  assert.deepEqual(Deposito.excessoParaODeposito(e), []);
+  assert.equal(e.inventory.length, 80);
+  assert.equal(Inventario.cabeNoPeso(e, placa.id, 1000), true, 'o loot sempre cabe no peso');
+});

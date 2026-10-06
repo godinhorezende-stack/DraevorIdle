@@ -27,6 +27,7 @@ import * as Gerar from './itens/gerar.mjs';
 import { raridadeDaPeca } from './itens/item.mjs';
 import { gruposLigados } from '../engine/sockets-de-gema.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
@@ -404,8 +405,10 @@ export function guardaPelosSockets(s, p) {
 
 /** A capacidade com o afixo "Capacidade" das peças vestidas. */
 // + o imbuement "Increase Capacity" (% da capacidade), nas botas e na armadura.
+// Com o sistema de itens do PoE ligado NÃO HÁ capacidade (dono, 06/10: "não existe cap mais" — o PoE não tem peso): infinita, então o
+// peso nunca impede pegar loot, trocar nem manda nada para o Depósito.
 export const capacidade = (estado) =>
-  (R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
+  itensPoeLigado() ? Infinity : (R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
 
 /**
  * "+Life" e "+Mana" dos adds, mais a Life do STR e a Mana do INT. Aplicados como diferença

@@ -826,7 +826,8 @@ export function renderSheet(body, { state, send, closeModal }) {
         if (corrida) card.classList.add('com-buff');
         return card;
       })(),
-      statCard('Capacidade', `${Math.max(0, derived.capacity - character.weight).toFixed(0)} oz`, `de ${derived.capacity} oz`, null, 'ficha-capacidade'),
+      // Sem capacidade (o PoE não tem peso): o cartão sai.
+      ...(derived.capacity == null ? [] : [statCard('Capacidade', `${Math.max(0, derived.capacity - character.weight).toFixed(0)} oz`, `de ${derived.capacity} oz`, null, 'ficha-capacidade')]),
       ...soSeTem(derived.goldFind, () => statCard('Gold Find', pct(derived.goldFind), 'mais moedas por drop', null, 'ficha-ouro')),
       ...soSeTem(derived.lootRate, () => statCard('Loot Rate', pct(derived.lootRate), 'mais chance de cada drop', null, 'ficha-ouro')),
       ...soSeTem(derived.experiencia, () => statCard('Experiência dos itens', pct(derived.experiencia), null, null, 'ficha-exp')),

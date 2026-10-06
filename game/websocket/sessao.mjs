@@ -316,7 +316,8 @@ function characterParaCliente(personagem, estado) {
       ...CHARACTER_TEMPLATE.derived,
       maxHp: estado.maxHp,
       maxMana: estado.maxMana,
-      capacity: Afixos.capacidade(estado),
+      // `null` = sem capacidade (o PoE não tem peso: a tela esconde a barra de Cap). JSON não carrega o Infinity.
+      capacity: Number.isFinite(Afixos.capacidade(estado)) ? Afixos.capacidade(estado) : null,
       speed: R.baseSpeed(estado.level),
       // Real (fórmula, não o valor fixo do molde): 48% no level 8 é a MESMA
       // conta, mas fixo ele ficaria errado no primeiro level up.

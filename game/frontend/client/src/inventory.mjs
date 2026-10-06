@@ -2431,6 +2431,8 @@ export function renderInventory() {
    * moldura, mesmo texto centrado. Uma barra própria aqui seria uma segunda
    * linguagem visual para dizer a mesma coisa.
    */
+  // Sem capacidade (o PoE não tem peso: `capacity` vem null): a barra de Cap some.
+  const temCap = character.derived?.capacity != null;
   const capacidade = Math.max(1, character.derived.capacity ?? 1);
   const peso = Math.max(0, character.weight ?? 0);
   const cheio = Math.min(100, (peso / capacidade) * 100);
@@ -2469,7 +2471,7 @@ export function renderInventory() {
    * na mão. Ela desceu para o rodapé, que é onde uma coisa que quase nunca se
    * usa deve ficar.
    */
-  body.append(line);
+  if (temCap) body.append(line);
   if (rodape) {
     rodape.append(lixeira);
     body.append(rodape);
@@ -3429,7 +3431,8 @@ export function renderPouch() {
   const janela = body.closest('.window');
   janela?.querySelector('.bag-alert')?.remove();
 
-  const free = Math.max(0, (character.derived?.capacity ?? 0) - (character.weight ?? 0));
+  // Sem capacidade (PoE: `capacity` null) nunca falta espaço por peso.
+  const free = character.derived?.capacity == null ? Infinity : Math.max(0, character.derived.capacity - (character.weight ?? 0));
   const semCap = free < 20;
   const cheia = pouch.length >= slots;
   janela?.classList.toggle('nocap', semCap || cheia);
