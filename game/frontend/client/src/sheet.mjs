@@ -631,7 +631,11 @@ export function renderSheet(body, { state, send, closeModal }) {
   }
   right.append(bonuses);
 
-  columns.append(left, right);
+  // Com o PoE ligado não há perícias (dono, 06/10: "o personagem não vai ter mais skill de treino"): a coluna das Skills sai.
+  if (state.classesPoe) {
+    columns.append(right);
+    columns.classList.add('sem-skills');
+  } else columns.append(left, right);
   body.append(columns);
 
   /*

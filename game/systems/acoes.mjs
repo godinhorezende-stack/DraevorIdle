@@ -32,6 +32,7 @@ import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG 
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
@@ -223,7 +224,8 @@ function bloqueio(entry, estado) {
   if (Gemas.ehSkillDeGema(entry)) return null;
   if ((entry.level ?? 0) > (estado.level ?? 0)) return `requer level ${entry.level}`;
   const ml = estado.magic?.value ?? 0;
-  if ((entry.magicLevel ?? 0) > ml) return `requer magic level ${entry.magicLevel}`;
+  // No PoE não há magic level (nem perícia nenhuma): a magia pede só o level.
+  if (!itensPoeLigado() && (entry.magicLevel ?? 0) > ml) return `requer magic level ${entry.magicLevel}`;
   return null;
 }
 

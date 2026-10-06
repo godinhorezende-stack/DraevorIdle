@@ -26,6 +26,7 @@
 // específica (spellAugment), magic level especializado, chance/dano de acerto
 // elemental, perfect shot e chance de acerto à distância.
 import { readFileSync } from 'node:fs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import { CATALOGO } from './dados.mjs';
 import * as Treino from './treino.mjs';
 
@@ -217,6 +218,8 @@ export function bonus(estado) {
 
 /** "% da perícia vira dano/cura": a soma de ceil(perícia × fração) de cada perícia. */
 export function daPericia(estado, porPericia, bonusDePericia = {}) {
+  // No PoE não há perícia: o dano é o da arma (e dos mods), sem o acréscimo por skill.
+  if (itensPoeLigado()) return 0;
   let total = 0;
   for (const [pericia, fracao] of Object.entries(porPericia)) {
     const p = Treino.canonica(pericia);

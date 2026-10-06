@@ -58,3 +58,19 @@ test('sem capacidade no PoE (dono, 06/10: "não existe cap mais"): o peso não m
   assert.equal(e.inventory.length, 80);
   assert.equal(Inventario.cabeNoPeso(e, placa.id, 1000), true, 'o loot sempre cabe no peso');
 });
+
+test('sem perícias no PoE (dono, 06/10: "o personagem não vai ter mais skill de treino"): nada sobe, o dano é o da arma, magia pede só level', { skip: SEM }, async () => {
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const Treino = await import('../systems/treino.mjs');
+  const Proficiencia = await import('../systems/proficiencia.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const e = personagemDeTeste({ vocacao: 'knight', level: 10 });
+  const antes = JSON.stringify([e.skills, e.magic]);
+  Treino.treinar(e, 'melee', 100000);
+  Treino.treinar(e, 'shielding', 100000);
+  Treino.gastarMana(e, 1e7);
+  assert.equal(JSON.stringify([e.skills, e.magic]), antes);
+  assert.equal(Proficiencia.daPericia(e, { melee: 1, shielding: 1 }), 0);
+  const f = Ficha.combate(e);
+  assert.deepEqual([f.damage.min, f.damage.max], [Math.max(1, Math.round(f.ataqueMin)), Math.max(1, Math.round(f.ataqueMax))], 'a ficha mostra a faixa da arma');
+});

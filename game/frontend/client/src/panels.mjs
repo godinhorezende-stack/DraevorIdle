@@ -301,7 +301,8 @@ function tabbedModal(title, tabs, stateKey, render, variant, opcoes = {}) {
       // O canto de ações é remontado por quem desenha a aba; limpar aqui é o
       // que impede o botão de uma aba de sobreviver na aba seguinte.
       ctx.acoesDoModal?.();
-      body.append(tabBar(tabs, ctx.tabs[stateKey], (tab) => {
+      // Uma aba só (a campanha do PoE): sem a barra de abas.
+      if (Object.keys(tabs).length > 1) body.append(tabBar(tabs, ctx.tabs[stateKey], (tab) => {
         ctx.tabs[stateKey] = tab;
         draw();
       }, opcoes.icones ?? null, opcoes.alertas ?? null));
@@ -437,7 +438,10 @@ export function openHunts() {
    * marca de cada personagem) continua no servidor, intocado — quando a arena de
    * verdade chegar, ela reaproveita a progressão em vez de recomeçar do zero.
    */
-  tabbedModal('Aventuras', { hunts: 'Normal Hunts', vips: 'Hunts Vip', especiais: 'Especial Hunts', bosses: 'Bosses', training: 'Treino' }, 'hunts', (body, tab) => {
+  // Com o PoE ligado (dono, 06/10): só a CAMPANHA — sem Hunts Vip, Especial Hunts, Bosses nem Treino (no PoE não há treino de skills).
+  const abasDeAventuras = ctx.state.classesPoe ? { hunts: 'Campanha' } : { hunts: 'Normal Hunts', vips: 'Hunts Vip', especiais: 'Especial Hunts', bosses: 'Bosses', training: 'Treino' };
+  if (ctx.state.classesPoe) ctx.tabs.hunts = 'hunts';
+  tabbedModal(ctx.state.classesPoe ? 'Campanha' : 'Aventuras', abasDeAventuras, 'hunts', (body, tab) => {
     // As hunts normais são a CAMPANHA: 4 atos, 3 dificuldades, fases que se liberam (ver `campanhaCards`).
     if (tab === 'hunts') campanhaCards(body);
     /*

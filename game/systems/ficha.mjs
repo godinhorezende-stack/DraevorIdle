@@ -209,7 +209,8 @@ function calcularCombate(estado) {
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   // Wand e rod (dono, 02/10): o Magic Attack (fixo, × raridade) é o "ataque" da arma e o Magic Level a perícia — o MESMO cálculo do golpe físico.
   // O `wand.min/max` do catálogo (o 8–18 do Tibia) não entra mais no "Dano".
-  const damage = w?.wand
+  // No PoE o golpe é o dano da ARMA (sem perícia nem level — `regras.golpeDoJogador`): a ficha mostra a mesma faixa.
+  const damage = itensPoeLigado() ? { min: Math.max(1, Math.round(ataqueMin)), max: Math.max(1, Math.round(ataqueMax)) } : w?.wand
     ? R.attackDamage({ attack: Math.round(PoderDaArma.poderDaPeca(estado.equipment?.weapon)), skill: valorDaPericia, level: estado.level ?? 1 })
     : {
         // A faixa da PRÓPRIA arma (o piso e o teto sorteados no drop) pela mesma conta nas duas pontas (`regras.attackDamage`).

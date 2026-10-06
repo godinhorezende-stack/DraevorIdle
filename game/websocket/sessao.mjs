@@ -589,6 +589,8 @@ export class Sessao {
   }
 
   async despacharTreino(m) {
+    // Com o PoE ligado não há treino de perícia (dono, 06/10): começar é recusado; parar continua valendo (quem já estava treinando sai).
+    if (m.action === 'start' && ItensPoeCatalogo.ligado()) return this.erro('Não há treino de skills: no PoE o personagem evolui pelo level, pelos itens e pela árvore de passivas.');
     if (m.action === 'stop') {
       // O pátio (treino online) e o Exercise têm cada um o seu fim; "Você não
       // está treinando." só quando NENHUM dos dois está ligado.

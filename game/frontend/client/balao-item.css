@@ -361,3 +361,6 @@
   .poe-previa-linha { font-size: 12.5px; }
   .poe-previa-linha b { white-space: normal; }
 }
+
+/* A ficha sem a coluna das Skills (PoE: não há perícias) — sheet.mjs. */
+.sheet.sem-skills { grid-template-columns: 1fr; }

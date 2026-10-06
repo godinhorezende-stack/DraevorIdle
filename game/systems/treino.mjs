@@ -7,6 +7,7 @@
 // Como no Tibia: cada golpe é 1 tentativa na perícia da arma, cada golpe
 // recebido é 1 tentativa de shielding, e o magic level sobe com a MANA gasta.
 import * as R from './regras.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
 export const PERICIAS = ['melee', 'distance', 'shielding', 'fishing'];
 const INICIAL = 10;
@@ -47,6 +48,8 @@ export function valor(estado, pericia) {
 
 /** `n` tentativas numa perícia; sobe quantos níveis couberem. */
 export function treinar(estado, pericia, n = 1) {
+  // Com o PoE ligado não há perícia (dono, 06/10: "o personagem não vai ter mais skill de treino"): nada sobe.
+  if (itensPoeLigado()) return;
   pericia = canonica(pericia);
   if (!PERICIAS.includes(pericia)) return;
   garantir(estado);
@@ -60,7 +63,7 @@ export function treinar(estado, pericia, n = 1) {
 
 /** Mana gasta (magia, runa não, wand/rod sim) conta para o magic level. */
 export function gastarMana(estado, mana) {
-  if (!(mana > 0)) return;
+  if (!(mana > 0) || itensPoeLigado()) return;
   garantir(estado);
   const m = estado.magic;
   m.mana += mana;
