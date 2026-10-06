@@ -299,11 +299,14 @@
 }
 .equipment.poe .poe-cinto { margin: 0; align-self: center; }
 .equipment.poe .poe-cinto-fila { gap: 2px; }
-.equipment.poe .poe-frasco { width: 27px; }
-.equipment.poe .poe-frasco.vazio { width: 24px; height: 26px; }
-.equipment.poe .poe-frasco .cell { width: 24px; height: 24px; }
-.equipment.poe .poe-frasco-cargas { height: 22px; right: -1px; }
-.equipment.poe .poe-frasco-num { font-size: 8px; }
+/* A vaga do frasco é alta e estreita (o formato do frasco do PoE); o desenho (um quadrado de 64 com o frasco em pé no meio) vai em 40 px e
+   só as laterais transparentes ficam de fora. O número das cargas fica por cima, embaixo, para a fileira não crescer. */
+.equipment.poe .poe-frasco { width: 26px; }
+.equipment.poe .poe-frasco.vazio { width: 26px; height: 40px; box-sizing: border-box; }
+.equipment.poe .poe-frasco .cell { width: 26px; height: 40px; overflow: hidden; box-sizing: border-box; }
+.equipment.poe .poe-frasco .cell canvas { width: 40px !important; height: 40px !important; flex: none; }
+.equipment.poe .poe-frasco-cargas { height: 34px; top: 3px; right: 0; }
+.equipment.poe .poe-frasco-num { position: absolute; left: -2px; right: 1px; bottom: 1px; text-align: center; white-space: nowrap; letter-spacing: -.3px; font-size: 7.5px; line-height: 1; color: #e8e2d0; text-shadow: 0 0 2px #000, 0 0 2px #000; pointer-events: none; }
 /* O rodapé do PoE: a mochila e os selos de premium/blessings, menores, na linha da lixeira. */
 .inv-rodape-poe { display: flex; align-items: center; gap: 4px; margin-top: 3px; height: 28px; }
 .inv-rodape-poe > .slot { width: 28px; height: 28px; min-height: 0; flex: none; }

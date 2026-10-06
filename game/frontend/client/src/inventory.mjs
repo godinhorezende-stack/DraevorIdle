@@ -2122,7 +2122,7 @@ function cintoDeFrascos(vagas, send) {
       return void fila.append(vazia);
     }
     const caixa = el('div', `poe-frasco ${f.tipo ?? ''}${f.ativoAte > 0 ? ' ativo' : ''}`);
-    const cell = itemCell(f.peca, 'frascos', { size: 26, onClick: () => send({ t: 'frasco', action: 'usar', vaga: v }) });
+    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => send({ t: 'frasco', action: 'usar', vaga: v }) });
     cell.oncontextmenu = (event) => {
       event.preventDefault();
       openMenu(event, [
