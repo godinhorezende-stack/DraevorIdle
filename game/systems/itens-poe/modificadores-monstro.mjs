@@ -65,7 +65,8 @@ export function multiplicadoresDe(raridade) {
   const o = DADOS.ocultos?.[RARIDADE_DO_POE[raridade]];
   if (!o) return { multiplicadores: { levelExtra: 0 }, extra: null };
   return {
-    multiplicadores: { vida: 1 + (o.vidaMais ?? 0), dano: 1 + (o.danoMais ?? 0), exp: 1 + (o.expMais ?? 0), levelExtra: 0 },
+    // A exp pela raridade: a regra do dono (`expPorRaridade`: Mágico ×3, Raro ×5, Único ×5); sem ela, a dos ocultos do PoE.
+    multiplicadores: { vida: 1 + (o.vidaMais ?? 0), dano: 1 + (o.danoMais ?? 0), exp: Number(DADOS.expPorRaridade?.[RARIDADE_DO_POE[raridade]]) || 1 + (o.expMais ?? 0), levelExtra: 0 },
     extra: { velocidadeDeAtaquePct: o.velocidadeDeAtaquePct ?? 0, velocidadePct: o.velocidadePct ?? 0 },
   };
 }
@@ -115,6 +116,7 @@ export function iniciar() {
 export const paraEngine = () => ({
   quantos: DADOS.quantos,
   sorteioDaRaridade: DADOS.sorteioDaRaridade ?? {},
+  expPorRaridade: DADOS.expPorRaridade ?? {},
   ocultos: DADOS.ocultos,
   mods: DADOS.mods.map(({ statsPoe, ...m }) => ({ ...m, statsPoe: statsPoe ?? [] })),
 });

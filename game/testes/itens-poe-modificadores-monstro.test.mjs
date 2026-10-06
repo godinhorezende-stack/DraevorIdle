@@ -56,7 +56,10 @@ test('com o PoE ligado, todo bicho (do PoE e do Draevor) nasce Mágico/Raro só 
   assert.equal(raro.raridade, 'raro');
   assert.ok(raro.mods.length >= 2 && raro.mods.length <= 4 && raro.mods.every((id) => id.startsWith('poe:')));
   assert.ok(raro.maxHp >= 4900, `vida do Raro com o oculto do PoE (×4,9): ${raro.maxHp}`);
-  assert.equal(raro.exp, 850, 'exp do Raro do PoE: +750%');
+  assert.equal(raro.exp, 500, 'exp do Raro: ×5 (regra do dono)');
+  assert.equal(Raridade.aplicar(novo('poe-teste-30'), { raridade: 'modificado', modificadores: [], sortear: true }).exp, 300, 'Mágico ×3');
+  assert.equal(Raridade.aplicar(novo('poe-teste-30'), { raridade: 'elite', modificadores: [], sortear: true }).exp, 500, 'Elite conta como Raro: ×5');
+  assert.equal(Raridade.aplicar(novo('poe-teste-30'), { raridade: 'boss', modificadores: [], sortear: true }).exp, 500, 'Chefe conta como Único: ×5');
   assert.ok(!raro.levelExtra, 'o PoE não dá level a mais pela raridade');
   // A velocidade de ataque = os +33% ocultos do Raro + a dos mods sorteados (há mods que a reduzem).
   const daRaridade = 1 + (33 + Raridade.statsDos(raro.mods).velocidadeDeAtaquePct) / 100;

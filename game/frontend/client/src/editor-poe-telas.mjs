@@ -724,13 +724,13 @@ export function criarTelaDosModificadoresPoe({ raiz }) {
   function pintarRegras() {
     const d = T.d;
     const o = d.ocultos ?? {};
-    const linhaOculto = (r, n) => o[r] ? el('tr', {}, el('th', {}, n), el('td', {}, pctX(o[r].vidaMais)), el('td', {}, pctX(o[r].danoMais)), el('td', {}, `+${o[r].velocidadeDeAtaquePct}%`), el('td', {}, `+${o[r].velocidadePct}%`), el('td', {}, pctX(o[r].expMais))) : null;
+    const linhaOculto = (r, n) => o[r] ? el('tr', {}, el('th', {}, n), el('td', {}, pctX(o[r].vidaMais)), el('td', {}, pctX(o[r].danoMais)), el('td', {}, `+${o[r].velocidadeDeAtaquePct}%`), el('td', {}, `+${o[r].velocidadePct}%`), el('td', {}, d.expPorRaridade?.[r] ? `×${num(d.expPorRaridade[r])}` : pctX(o[r].expMais))) : null;
     const mult = (r) => d.ouro?.porRaridade?.[r] ?? 1 + (d.bonusDeQuantidade?.[r] ?? 0);
     document.querySelector('#pmod-regras')?.replaceChildren(el('div', { class: 'eng-painel-corpo' },
       el('h3', {}, 'Ocultos da raridade (o que o monstro do PoE ganha sem aparecer)'),
       el('p', { class: 'dica' }, `Chance de um monstro comum nascer Mágico ${num((d.sorteioDaRaridade.modificado ?? 0) * 100)}% e Raro ${num((d.sorteioDaRaridade.raro ?? 0) * 100)}% (spawn sem raridade). O spawn que define a raridade no Editor de mapas manda; os únicos do PoE já vêm com os números de único.`),
       el('table', { class: 'mob-tabela' }, el('tr', {}, el('th', {}, 'Raridade'), el('th', {}, 'Vida'), el('th', {}, 'Dano'), el('th', {}, 'Vel. ataque'), el('th', {}, 'Movimento'), el('th', {}, 'Exp')),
-        linhaOculto('magico', 'Mágico'), linhaOculto('raro', 'Raro / Elite')),
+        linhaOculto('magico', 'Mágico'), linhaOculto('raro', 'Raro / Elite'), linhaOculto('unico', 'Único / Chefe')),
       el('h3', {}, 'Ouro por level do monstro'),
       el('p', { class: 'dica' }, `Aleatório entre o mínimo e o máximo (interpolado entre os levels da tabela) × a raridade: Normal ×${num(mult('normal'))}, Mágico ×${num(mult('modificado'))}, Raro ×${num(mult('raro'))}, Único/Chefe ×${num(mult('boss'))}; soma o Gold Find. Editável em gamedata/itens-poe/regras.json → ouro.`),
       el('div', { style: 'overflow-x:auto' }, el('table', { class: 'mob-tabela' }, el('tr', {}, el('th', {}, 'Level'), (d.ouro?.tabela ?? []).map(([lv]) => el('th', {}, lv))), el('tr', {}, el('th', {}, 'Ouro'), (d.ouro?.tabela ?? []).map(([, a, b]) => el('td', {}, `${a}–${b}`)))))));

@@ -17,6 +17,12 @@
  },
  "_soComEfeito": "true: só sorteia os modificadores que já valem algo no Draevor (estado diferente de registrado).",
  "soComEfeito": true,
+ "_expPorRaridade": "A EXPERIÊNCIA do monstro pela raridade (regra do dono, 06/10): multiplica a exp base — Mágico ×3, Raro ×5, Único ×5 (o Elite conta como Raro; o Chefe como Único). Manda no lugar do \"exp\" dos ocultos do PoE. Os únicos do PoE (Hillock, Brutus...) já trazem a exp própria nos dados e não passam por aqui.",
+ "expPorRaridade": {
+  "magico": 3,
+  "raro": 5,
+  "unico": 5
+ },
  "ocultos": {
   "magico": {
    "vidaMais": 1.48,
