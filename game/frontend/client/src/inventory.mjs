@@ -647,7 +647,7 @@ function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null
    */
   if (meta?.container && from === 'equipment') {
     event.preventDefault();
-    return void toggleWindow('container');
+    return void toggleWindow('inventory');
   }
   /*
    * `usavel` é carimbo do SERVIDOR (`consumiveis.mjs`), e é ele que separa o
@@ -860,7 +860,7 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
      */
     ...tierUpNoMenu(id, from),
     meta?.container && from === 'equipment'
-      ? { label: 'Abrir ou fechar a mochila', action: () => toggleWindow('container') }
+      ? { label: 'Abrir ou fechar o inventário', action: () => toggleWindow('inventory') }
       : null,
     /*
      * Só a VOLTA. A bolsa de loot não recebe nada da mão — ela se esvazia
@@ -2172,6 +2172,14 @@ export function renderInventory() {
   if (body.dataset.assinaturaDoInventario === assinatura && body.firstChild) return;
   body.dataset.assinaturaDoInventario = assinatura;
 
+  /*
+   * ---- A MOCHILA mora aqui dentro (dono, 06/10: "inventário desse tipo [o do PoE] e responsivo para mobile, a mochila fica junta com os
+   * equipamentos") ----
+   * O corpo em cima, a grade da mochila embaixo, numa janela só (no computador e no celular). A mochila tem o retrato dela
+   * (`renderContainer`, que refaz só a grade): o nó dela sobrevive ao redesenho do equipamento — sai antes de limpar e volta no fim.
+   */
+  const mochila = body.querySelector(':scope > .inv-mochila') ?? el('div', 'inv-mochila');
+  mochila.remove();
   body.innerHTML = '';
 
   const poe = disposicaoDosSlots(state.items) === SLOT_LAYOUT_COM_LUVAS;
@@ -2246,7 +2254,7 @@ export function renderInventory() {
       cell.oncontextmenu = (event) => {
         if (!event.ctrlKey && slot === 'backpack') {
           event.preventDefault();
-          return void toggleWindow('container');
+          return void toggleWindow('inventory');
         }
         if (!event.ctrlKey && aljava) {
           event.preventDefault();
@@ -2268,7 +2276,7 @@ export function renderInventory() {
       const aljava = slot === 'shield' && character.ammoChoices?.length && ehAljava(equipped.id);
 
       cell.onclick = () => {
-        if (slot === 'backpack') return void setVisible('container', true);
+        if (slot === 'backpack') return void setVisible('inventory', true);
         /*
          * ---- A aljava abre no BOTÃO DIREITO ----
          *
@@ -2478,6 +2486,8 @@ export function renderInventory() {
     rodape.append(lixeira);
     body.append(rodape);
   } else body.append(lixeira);
+  body.append(mochila);
+  if (!mochila.firstChild) renderContainer();
 
 }
 
@@ -4033,9 +4043,13 @@ function soltarDaBossPouch(payload) {
 let cabecaDaMochila = null;
 
 /** O conteúdo da mochila equipada, aberto com o botão direito no slot. */
+/** Onde a mochila é desenhada: dentro do inventário (o arranjo do PoE); a janela "Mochila" antiga só se o inventário ainda não existe. */
+const corpoDaMochila = () => windowBody('inventory')?.querySelector(':scope > .inv-mochila') ?? null;
+/** A janela que leva o botão "Organizar" da mochila no cabeçalho. */
+const janelaDaMochila = () => (corpoDaMochila() ? 'inventory' : 'container');
 export function renderContainer() {
   if (esperaOArrasto(renderContainer)) return;
-  const body = windowBody('container');
+  const body = corpoDaMochila() ?? windowBody('container');
   if (!body) return;
   const { state } = ctx;
   const character = state.character;
@@ -4058,7 +4072,7 @@ export function renderContainer() {
     atualizarCabecaDaMochila(cabecaDaMochila, character, meta);
     // O botão do cabeçalho sobrevive ao retrato — ele mora na moldura da
     // janela, e não neste corpo. Só o `disabled` anda com a mochila.
-    botaoNoCabecalho('container', {
+    botaoNoCabecalho(janelaDaMochila(), {
       classe: 'window-organizar',
       texto: '⇅',
       titulo: 'Organizar a mochila por nome — não junta pilhas, não vende e não joga nada fora',
@@ -4157,7 +4171,7 @@ export function renderContainer() {
    * este so' muda a ordem, e misturar os tres poria o inofensivo ao lado do
    * que apaga. Ver `botaoNoCabecalho`.
    */
-  botaoNoCabecalho('container', {
+  botaoNoCabecalho(janelaDaMochila(), {
     classe: 'window-organizar',
     texto: '⇅',
     titulo: 'Organizar a mochila por nome — não junta pilhas, não vende e não joga nada fora',
@@ -4201,6 +4215,14 @@ export function renderContainer() {
   encherFaixaDaBolsa(faixaDaBolsa, character, state);
   encherGradeDaMochila(grid, character, state);
   body.append(grid);
+  // A grade do PoE mostra TODAS as vagas da mochila (as livres desenhadas no fundo): quantas linhas a capacidade pede nesta largura.
+  if (corpoDaMochila()) requestAnimationFrame(() => {
+    grid.style.maxWidth = '';
+    const colunas = Math.max(1, Math.floor((grid.clientWidth - 8 + 5) / 49));
+    grid.style.setProperty('--linhas', String(Math.ceil((meta?.container ?? 20) / colunas)));
+    // Fecha em colunas inteiras (a casa cortada na borda não existe), centrada.
+    grid.style.maxWidth = `${colunas * 49 - 5 + 8 + (grid.offsetWidth - grid.clientWidth)}px`;
+  });
 }
 
 /*

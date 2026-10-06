@@ -419,9 +419,9 @@ function ligarMenuDoItem() {
  * enquanto qualquer uma das cinco estiver aberta, e cada aba abre a MESMA
  * janela de sempre (com o mesmo desenho, arrasto e menus).
  */
+// O equipamento e a mochila numa aba só (dono, 06/10: o inventário do PoE — a mochila junto com os equipamentos).
 const ABAS_DA_MOCHILA = [
-  ['inventory', 'Equipado'],
-  ['container', 'Mochila'],
+  ['inventory', 'Inventário'],
   ['loot', 'Loot'],
   ['bossPouch', 'Boss Pouch'],
   ['storeInbox', 'Store Inbox'],
@@ -430,9 +430,9 @@ const CHAVE_DA_ABA = 'draevor:aba-mochila';
 const abaGuardada = () => {
   try {
     const id = localStorage.getItem(CHAVE_DA_ABA);
-    return ABAS_DA_MOCHILA.some(([aba]) => aba === id) ? id : 'container';
+    return ABAS_DA_MOCHILA.some(([aba]) => aba === id) ? id : 'inventory';
   } catch {
-    return 'container';
+    return 'inventory';
   }
 };
 const abaAberta = () => ABAS_DA_MOCHILA.map(([id]) => id).find((id) => api.janelaAberta(id)) ?? null;

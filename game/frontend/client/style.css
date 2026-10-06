@@ -27938,3 +27938,37 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
 .cor-gema.cor-R { background: #e0564d; } .cor-gema.cor-G { background: #5ec45a; } .cor-gema.cor-B { background: #5a95ea; } .cor-gema.cor-W { background: #f0ece4; }
 .soquetes-orbes .orbe-poe { display: inline-flex; align-items: center; gap: 6px; }
 .soquetes-orbes .orbe-poe canvas { flex: none; }
+
+/* ---- O INVENTÁRIO do PoE: o corpo em cima e a MOCHILA embaixo, numa janela só (dono, 06/10, com a foto do inventário do PoE) ----
+   inventory.mjs `renderInventory` (o nó `.inv-mochila`) e `renderContainer` (desenha nele). A janela "Mochila" antiga sai de cena. */
+.window[data-window-id="container"] { display: none !important; }
+html:not([data-perfil="retrato"]):not([data-perfil="deitado"]) .window[data-window-id="inventory"] { width: 268px !important; }
+.window[data-window-id="inventory"] .equipment {
+  padding: 8px 6px; margin: 0 0 4px; border: 1px solid #3d3324; border-radius: 4px;
+  background: radial-gradient(ellipse at 50% 30%, #2a2419 0%, #15120d 60%, #0c0a08 100%);
+  box-shadow: inset 0 0 18px #000;
+}
+.window[data-window-id="inventory"] .equipment .slot { background: #0b0a08; border-color: #4a3d28; box-shadow: inset 0 0 6px #000; }
+.inv-mochila { display: flex; flex-direction: column; min-height: 0; margin-top: 6px; padding-top: 6px; border-top: 1px solid #4a3d28; }
+/* A grade como a do PoE: as casas vazias desenhadas no fundo (44px + 5 de vão, alinhadas com as células; `--linhas` vem do JS). */
+.inv-mochila .bag {
+  grid-template-columns: repeat(auto-fill, 44px); justify-content: start; max-height: 232px; overflow-y: auto;
+  padding: 4px; border: 1px solid #2a2a30; border-radius: 3px;
+  background-color: #08090b;
+  background-image: linear-gradient(90deg, transparent 44px, #08090b 44px), linear-gradient(transparent 44px, #08090b 44px), linear-gradient(#151922, #151922);
+  background-size: 49px 49px, 49px 49px, auto; background-position: 4px 4px; background-origin: padding-box; background-clip: padding-box;
+  min-height: min(calc(var(--linhas, 1) * 49px + 3px), 232px); box-sizing: border-box; align-self: center; width: 100%;
+}
+html:is([data-perfil="retrato"], [data-perfil="deitado"]) .inv-mochila .bag { min-height: calc(var(--linhas, 1) * 49px + 3px); }
+/* Celular em pé: a janela ocupa a gaveta; o corpo maior (zoom), a grade da mochila na largura toda, e a janela rola. */
+html[data-perfil="retrato"] .window[data-window-id="inventory"] .window-body { overflow-y: auto; }
+html[data-perfil="retrato"] .window[data-window-id="inventory"] .equipment { zoom: 1.45; align-self: center; }
+html[data-perfil="retrato"] .inv-mochila .bag { max-height: none; overflow: visible; }
+html[data-perfil="deitado"] .window[data-window-id="inventory"] .window-body { overflow-y: auto; }
+html[data-perfil="deitado"] .inv-mochila .bag { max-height: none; overflow: visible; }
+/* As peças do corpo da janela não encolhem (a coluna flex esmagava o corpo quando a mochila não cabia): quem rola é a janela. */
+.window[data-window-id="inventory"] .window-body > * { flex-shrink: 0; }
+/* Em pé, o inventário toma a gaveta toda (do status até a pilha de baixo). */
+html[data-perfil="retrato"] .window[data-window-id="inventory"] {
+  top: calc(var(--seguro-topo) + var(--cel-status) + 8px) !important; height: auto !important;
+}

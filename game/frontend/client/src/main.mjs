@@ -2528,10 +2528,12 @@ function buildWindows() {
     // lado, entao 12 de folga viram 21 de buraco na tela. Colada, ela encosta
     // na borda como no arranjo do dono — e a Mochila logo abaixo usa o mesmo
     // numero, senao as duas da coluna da direita ficam desalinhadas entre si.
-    defaults: { right: 0, top: 72, width: 188 },
+    // Com a MOCHILA dentro (o inventário do PoE): um pouco mais larga, para a grade ter 4 colunas.
+    defaults: { right: 0, top: 72, width: 268 },
     resizable: false,
   });
-  createWindow({ id: 'container', title: 'Mochila', defaults: { right: 0, top: 360, width: 188, height: 214 } });
+  // A janela "Mochila" antiga: a mochila agora mora no inventário. Fica registrada (escondida pelo CSS) para quem ainda a chama.
+  createWindow({ id: 'container', title: 'Mochila', defaults: { right: 0, top: 360, width: 188, height: 214, hidden: true } });
   /*
    * ---- A casa do chão é uma JANELA, e não um modal ----
    *
@@ -2921,7 +2923,7 @@ const DO_PERSONAGEM = [
   { id: 'character', label: 'Personagem', curto: 'Ficha', abre: () => openCharacter(),
     tip: 'Atributos, equipamento, proficiência e aparência.' },
   { id: 'inventory', label: 'Inventário', curto: 'Mochila', janela: 'inventory',
-    tip: 'Mostra ou esconde o que está vestido, com a capacidade.' },
+    tip: 'Mostra ou esconde o que está vestido e a mochila, com a capacidade.' },
   { id: 'analyzer', label: 'Analisador', curto: 'Análise', janela: 'analyzer',
     tip: 'Três analisadores numa janela só.',
     corpo: () => resumoDosAnalisadores() },
