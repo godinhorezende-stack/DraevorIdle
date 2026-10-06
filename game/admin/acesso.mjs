@@ -38,7 +38,7 @@ export const ehAdmin = (config, email) => config.admins.includes(normalizarEmail
 
 // ------------------------------------------------------------------ o que cada rota faz
 
-const ROTAS_DE_LEITURA_POR_POST = [/^fase\/[^/]+\/validar$/, /^mapa\/validar$/, /^bosses\/validar$/, /^atos-editor\/validar$/, /^atos-editor\/previa$/, /^mapas\/validar$/, /^campanha\/validar$/, /^overrides\/validar$/, /^overrides\/sprites\/validar$/, /^validacao\/executar$/, /^progressao\/validar$/, /^conjuntos\/(validar|totais|modelos)$/, /^item-power\/(validar|simular|comparar|regra|edicao-previa|lote-previa|curva-proposta|resolver-defesa)$/, /^overrides\/itens\/poder$/, /^sprites-itens\/validar$/, /^classes\/(validar|previa)$/, /^mapa\/fundo\/validar$/, /^simulador\/loot$/, /^overrides\/itens\/validar$/];
+const ROTAS_DE_LEITURA_POR_POST = [/^fase\/[^/]+\/validar$/, /^mapa\/validar$/, /^bosses\/validar$/, /^atos-editor\/validar$/, /^atos-editor\/previa$/, /^mapas\/validar$/, /^campanha\/validar$/, /^overrides\/validar$/, /^overrides\/sprites\/validar$/, /^validacao\/executar$/, /^progressao\/validar$/, /^conjuntos\/(validar|totais|modelos)$/, /^item-power\/(validar|simular|comparar|regra|edicao-previa|lote-previa|curva-proposta|resolver-defesa)$/, /^overrides\/itens\/poder$/, /^sprites-itens\/validar$/, /^classes\/(validar|previa)$/, /^mapa\/fundo\/validar$/, /^simulador\/loot$/, /^overrides\/itens\/validar$/, /^efeitos\/(simular|previa)$/];
 const ROTAS_DE_OPERACAO = [/^operacao\//, /^modo-beta$/, /^server-save$/];
 const PREFIXO = '/api/mapas/_conteudo/';
 

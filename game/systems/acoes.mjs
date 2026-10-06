@@ -1005,7 +1005,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         hunt.conjurando.globalAntes = hunt.ultimoAtaqueEm ?? null;
         hunt.ultimoAtaqueEm = inicio;
       }
-      return { ok: true, conjurando: true, eventos: [{ t: 'cast', uid: 'player', quem: personagem?.nome, skill: entry.name, ms: castMs }] };
+      // `sk`: o id da skill — o VISUAL dela (efeitos-visuais) desenha o lançamento no começo da conjuração.
+      return { ok: true, conjurando: true, eventos: [{ t: 'cast', uid: 'player', quem: personagem?.nome, skill: entry.name, ms: castMs, sk: entry.id, x: hunt.pos.x, y: hunt.pos.y }] };
     }
   }
 
@@ -1278,7 +1279,22 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // Skill de ataque instantânea: o global conta deste instante. (A conjurada já marcou no início.)
   if (deAtaque && !concluir && !gatilho) hunt.ultimoAtaqueEm = inicio;
   if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;
+  marcarDaSkill(eventos, entry, hunt, alvo, { conjurada: concluir });
   return { ok: true, eventos };
+}
+
+/**
+ * ---- O VISUAL da skill (Arena de Efeitos — `systems/efeitos-visuais.mjs`) ----
+ * Cada evento de DESENHO que a skill gerou (projétil, efeito, área, dano) leva o id dela (`sk`): o cliente desenha com o visual
+ * configurado para a skill (sem configuração, o de sempre). E o LANÇAMENTO vira um evento (`skill`, SKILL_CAST) na frente — a skill
+ * conjurada já o teve no `cast`. Os eventos de outra skill no meio (a magia ativada por gatilho) ficam com o `sk` dela.
+ */
+const EVENTOS_DE_DESENHO = new Set(['shot', 'fx', 'explosao', 'area', 'dmg']);
+function marcarDaSkill(eventos, entry, hunt, alvo, { conjurada = false } = {}) {
+  if (!entry.poeGema && !Gemas.ehSkillDeGema(entry)) return;
+  for (const ev of eventos) if (EVENTOS_DE_DESENHO.has(ev.t) && ev.sk === undefined && !(ev.t === 'dmg' && !ev.foe)) ev.sk = entry.id;
+  // A conjurada já desenhou o lançamento no `cast`: o evento vai só com a posição (o impacto "ao chegar o projétil" conta dela).
+  eventos.unshift({ t: 'skill', sk: entry.id, uid: 'player', x: hunt.pos.x, y: hunt.pos.y, ...(alvo ? { tx: alvo.x, ty: alvo.y, alvo: alvo.uid } : {}), ...(conjurada ? { semLancamento: true } : {}) });
 }
 
 /**

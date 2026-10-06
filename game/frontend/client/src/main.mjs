@@ -2,6 +2,7 @@ import './so-quando-muda.mjs';
 import { anunciarDrop, anunciarSistema } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
 import { aplicarContentUpdate } from './hot-reload-cliente.mjs';
+import { carregarVisuais } from './efeitos-visuais.mjs';
 import { loadSpriteData, loadEffectData, emprestarDoCatalogo, itemCanvas, outfitCanvas, outfitInfo, imagemPronta, urlDaFolha } from './sprites.mjs';
 import { MapView, definirCoresDeRaridade, dadosDaRaridade } from './map.mjs';
 import { encontroNaCasa, encontroPerto } from './encontros-na-tela.mjs';
@@ -167,6 +168,8 @@ aplicarEstiloDaRaridade();
 
 boot('carregando os efeitos', 0.45, 'magias, tiros e animações');
 await loadEffectData();
+// O visual das skills configurado na Arena de Efeitos (sem nada configurado: o desenho de sempre).
+await carregarVisuais();
 
 /*
  * As artes da porta de entrada, esperadas de propósito.

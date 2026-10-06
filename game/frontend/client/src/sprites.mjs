@@ -989,6 +989,10 @@ export async function loadEffectData() {
 }
 
 export const effectInfo = (id) => effectMeta[id];
+export const missileInfo = (id) => missileMeta[id];
+/** Os ids de efeito e de projétil que existem (a Arena de Efeitos lista para escolher). */
+export const idsDeEfeitos = () => Object.keys(effectMeta).map(Number).sort((a, b) => a - b);
+export const idsDeProjeteis = () => Object.keys(missileMeta).map(Number).sort((a, b) => a - b);
 
 /** Quanto tempo a animação inteira do efeito dura. */
 export function effectDuration(id) {

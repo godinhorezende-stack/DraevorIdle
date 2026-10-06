@@ -98,6 +98,13 @@ window.addEventListener('message', (e) => {
   };
   escolher();
 });
+// A gema escolhida AQUI vai para a engine (a Arena de Efeitos embaixo escolhe a mesma).
+document.addEventListener('click', (e) => {
+  const li = e.target.closest && e.target.closest('#lista-gemas li');
+  if (!li || !window.GEMAS || window.parent === window) return;
+  const g = window.GEMAS.find((x) => (li.dataset.slug || '') === x.slug) || window.GEMAS.find((x) => li.textContent.includes(x.nome));
+  if (g) window.parent.postMessage({ tipo: 'gemaEscolhida', slug: g.slug }, '*');
+});
 </script>`;
 
 /** Um arquivo da coleção (caminho relativo à pasta), ou null. `{ tipo, corpo }`. */

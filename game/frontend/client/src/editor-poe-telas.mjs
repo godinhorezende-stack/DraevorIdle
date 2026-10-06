@@ -9,6 +9,7 @@ import { retrato } from './editor-sprites.mjs';
 import { cartaoDeAtaque, metrica, barrasDeResistencia, seloDoElemento } from './editor-fichas.mjs';
 import { editorDeAtaques } from './editor-ataques.mjs';
 import { escolherSprite } from './editor-biblioteca-sprites.mjs';
+import { arenaDeEfeitos } from './editor-arena-efeitos.mjs';
 
 const BASE = '/api/mapas/_engine/itens-poe/';
 const api = async (rota, corpo) => (await fetch(BASE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
@@ -840,11 +841,18 @@ export function criarTelaDaArenaDeGemas({ raiz }) {
   async function desenhar(args = []) {
     if (!(await ligado(raiz, 'Arena de gemas'))) return;
     const slug = args[0] ? decodeURIComponent(args[0]) : null;
-    const quadro = el('iframe', { src: `${BASE}gemas-arena/engine/index.html`, title: 'Arena de Gemas', style: 'width:100%;height:calc(100vh - 150px);min-height:620px;border:1px solid var(--eng-linha, #2a3438);border-radius:6px;background:#0b0f11' });
+    const quadro = el('iframe', { src: `${BASE}gemas-arena/engine/index.html`, title: 'Arena de Gemas', style: 'width:100%;height:calc(100vh - 220px);min-height:560px;border:1px solid var(--eng-linha, #2a3438);border-radius:6px;background:#0b0f11' });
     if (slug) quadro.addEventListener('load', () => quadro.contentWindow?.postMessage({ tipo: 'gema', slug }, '*'), { once: true });
+    // A ARENA DE EFEITOS logo abaixo (o visual das skills, com o combate e o desenho do jogo): a gema escolhida em cima vem escolhida embaixo.
+    const efeitos = arenaDeEfeitos({ slugInicial: slug });
+    const ouvir = (e) => { if (e.source === quadro.contentWindow && e.data?.tipo === 'gemaEscolhida' && e.data.slug) efeitos.escolherGema(e.data.slug); };
+    // Um ouvinte só (a tela se redesenha ao voltar a ela): o anterior sai.
+    if (window.__ouvirArenaDeEfeitos) window.removeEventListener('message', window.__ouvirArenaDeEfeitos);
+    window.__ouvirArenaDeEfeitos = ouvir;
+    window.addEventListener('message', ouvir);
     raiz().replaceChildren(
-      cabecalho('Arena de gemas', 'A Arena de Gemas da coleção do dono: um personagem usando cada gema do PoE contra os monstros do bestiário — escolha a gema na lista da esquerda (ou "Ver na arena" na aba Gemas), o mob, o nível e a quantidade. O inspetor da direita marca cada linha de efeito: ✓ simulada, ✗ não simulada. "Mobs usam esta gema" faz os monstros usarem a gema contra você; "Tour" passa pelas gemas filtradas sozinho.'),
-      quadro);
+      cabecalho('Arena de gemas', 'A Arena de Gemas da coleção do dono: um personagem usando cada gema do PoE contra os monstros do bestiário — escolha a gema na lista da esquerda (ou "Ver na arena" na aba Gemas), o mob, o nível e a quantidade. O inspetor da direita marca cada linha de efeito: ✓ simulada, ✗ não simulada. "Mobs usam esta gema" faz os monstros usarem a gema contra você; "Tour" passa pelas gemas filtradas sozinho. Abaixo, a Arena de Efeitos: o visual de cada skill no jogo.'),
+      quadro, efeitos.elemento);
   }
   return { desenhar };
 }
