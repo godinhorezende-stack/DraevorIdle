@@ -1941,8 +1941,12 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     }
     vivos.push(l);
     // Os bichos colados batem no lacaio (um golpe por bicho a cada ~2 s, metade da força do golpe deles).
+    const oferenda = l.oferenda && l.oferenda.ate > agora ? l.oferenda : null;
+    if (oferenda?.regenPct) l.hp = Math.min(l.maxHp, l.hp + (l.maxHp * oferenda.regenPct) / 100 / 4);
     for (const b of hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
+      // A Oferenda de Osso: o lacaio bloqueia o golpe.
+      if (oferenda?.bloqueioPct && Math.random() * 100 < oferenda.bloqueioPct) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true }); continue; }
       const d = Math.max(1, Math.round(R.ataqueDoMonstro(b) * 0.5));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
@@ -1967,7 +1971,22 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
       continue;
     }
-    // O LACAIO: a IA do familiar.
+    // A AURA (os robôs rastejantes): a cada segundo, um pouco do golpe em quem está em volta (resfria/eletriza na cor).
+    const est = l.estilo ?? {};
+    if (est.aura) {
+      if (!R.jaPode(agora, l.proximoGolpe)) { andarFamiliar(hunt, grade, l, agora); continue; }
+      l.proximoGolpe = agora + 1000;
+      for (const m of hunt.monstros) {
+        if (m.hp <= 0 || m.dummy || distancia(m, l) > est.aura.raio) continue;
+        const d = Math.max(1, Math.round(resistido(hunt, m, l.elemento ?? 'ice', ((l.dano.min + l.dano.max) / 2) * est.aura.pct, ficha)));
+        m.hp -= d;
+        eventos.push({ t: 'fx', id: est.aura.efeito, uid: m.uid, x: m.x, y: m.y });
+        eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[l.elemento] ?? '#7fd8ff' });
+      }
+      andarFamiliar(hunt, grade, l, agora);
+      continue;
+    }
+    // O LACAIO: a IA do familiar (de perto ou de longe — `alcanceDeAtaque` do jeito dele).
     const alvo = alvoDoFamiliar(hunt, l, agora);
     if (!alvo) {
       andarFamiliar(hunt, grade, l, agora);
@@ -1984,17 +2003,51 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       if (distancia(l, alvo) > l.alcanceDeAtaque) continue;
     }
     if (!R.jaPode(agora, l.proximoGolpe)) continue;
-    l.proximoGolpe = agora + l.intervaloMs;
+    // A velocidade: a do monstro do nível × o jeito (o espírito é rápido) ÷ os bônus (a gema, a Oferenda de Carne).
+    const vel = 1 + ((l.velAtaquePct ?? 0) + (oferenda?.velAtaquePct ?? 0)) / 100;
+    l.proximoGolpe = agora + Math.max(250, Math.round((l.intervaloMs * (est.rapido ?? 1)) / vel));
     l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
-    const tipo = l.elemento ?? 'physical';
+    // O ELEMENTO do golpe (o mago varia entre fogo, gelo e raio) e o desenho dele.
+    const tipo = est.magia ? est.elementos[Math.floor(Math.random() * est.elementos.length)] : est.elemento ?? l.elemento ?? 'physical';
+    const PROJETIL = { fire: 4, ice: 37, energy: 36, chaos: 11, physical: 12 };
+    const IMPACTO = { fire: 16, ice: 44, energy: 176, chaos: 17, physical: 10 };
     if (resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100) continue;
-    const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min), ficha)));
+    // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito).
+    const chanceCrit = Math.min(100, (l.critChance ?? 5) * (1 + (oferenda?.critInc ?? 0) / 100));
+    const crit = Math.random() * 100 < chanceCrit;
+    const bruto = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? (l.critMult ?? 1.5) + (oferenda?.critMult ?? 0) / 100 : 1);
+    const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, bruto, ficha)));
     alvo.hp -= dano;
-    eventos.push({ t: 'fx', id: 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });
-    eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    const deLonge = l.alcanceDeAtaque > 1;
+    // O golpe do LACAIO tem o desenho do tipo dele (o mago no elemento da vez): sem o `sk` da gema, que é o da invocação.
+    if (deLonge) eventos.push({ t: 'shot', id: est.projetil ?? PROJETIL[tipo] ?? 12, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
+    eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y });
+    eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, crit, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
     if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
+    // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).
+    if (l.sangrar && Math.random() * 100 < l.sangrar) {
+      const posto = Dot.aplicar(alvo, { tipo: 'sangramento', total: dano * 0.7, origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);
+      if (posto) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: posto });
+    }
+    // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
+    l.acertos = (l.acertos ?? 0) + 1;
+    if (est.area && l.acertos % est.area.cada === 0) {
+      eventos.push({ t: 'explosao', id: est.area.efeito, x: alvo.x, y: alvo.y, lado: 3 });
+      for (const m of hunt.monstros) {
+        if (m === alvo || m.hp <= 0 || m.dummy || distancia(m, alvo) > 1) continue;
+        const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto * 0.6, ficha)));
+        m.hp -= d;
+        eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+      }
+    }
   }
+  const antes = hunt.lacaios.filter((l) => l.afDono || l.porLacaioFisico).length;
   hunt.lacaios = vivos.filter((l) => l.hp > 0);
+  // Um golem nasceu ou morreu (os bônus dele ao dono): a ficha é refeita.
+  if (hunt.lacaiosMudaramAFicha || hunt.lacaios.filter((l) => l.afDono || l.porLacaioFisico).length !== antes) {
+    hunt.lacaiosMudaramAFicha = false;
+    Ficha.invalidar(estado);
+  }
   processarMortes(estado, personagem, eventos);
   return eventos;
 }

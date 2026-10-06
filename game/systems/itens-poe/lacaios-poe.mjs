@@ -77,8 +77,33 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null) {
   let maisVida = 0;
   let maisDano = 0;
   let nivel = null;
+  // As HABILIDADES próprias (as linhas da gema): velocidade de ataque, crítico, dano adicionado, sangramento; e os bônus do golem ao dono.
+  let velAtaquePct = 0;
+  let semprecritico = false;
+  let critMult = 0;
+  let somado = [0, 0];
+  let sangrar = 0;
+  const afDono = {};
+  let porLacaioFisico = null;
+  const soma = (k, v) => { afDono[k] = (afDono[k] ?? 0) + v; };
   for (const l of t.linhas) {
     let m;
+    if ((m = l.match(/Lacaios? (?:tem|têm) (\d+(?:\.\d+)?) ?% mais Velocidade de Ataque/i))) velAtaquePct += Number(m[1]);
+    if (/Acertos dos Lacaios são sempre Golpes Críticos/i.test(l)) semprecritico = true;
+    if ((m = l.match(/Lacaios têm \+(\d+) ?% de Multiplicador de Acerto Crítico/i))) critMult += Number(m[1]);
+    if ((m = l.match(/Ataques de Lacaios causam (\d+) a (\d+) de Dano Físico adicional/i))) somado = [somado[0] + Number(m[1]), somado[1] + Number(m[2])];
+    if ((m = l.match(/Ataques dos Lacaios têm (\d+) ?% de chance de infligir Sangramento/i))) sangrar = Number(m[1]);
+    if ((m = l.match(/Lacaios causam (\d+(?:\.\d+)?) ?% menos Dano/i))) maisDano -= Number(m[1]);
+    // O GOLEM ao dono (enquanto vive).
+    if ((m = l.match(/^Golens aumentam (\d+(?:\.\d+)?) ?% de Dano/i))) soma('dmg_vs_monsters', Number(m[1]));
+    if ((m = l.match(/^Golens aumentam (\d+(?:\.\d+)?) ?% de Chance de Crítico/i))) soma('crit_chance_inc', Number(m[1]));
+    if ((m = l.match(/^Golens aumentam (\d+(?:\.\d+)?) ?% de Velocidade de Ataque e Conjuração/i))) { soma('atk_speed', Number(m[1])); soma('cast_speed', Number(m[1])); }
+    if ((m = l.match(/^Golens concedem \+?(\d+(?:\.\d+)?) de precisão/i))) soma('accuracy', Number(m[1]));
+    if ((m = l.match(/^Golens concedem (\d+(?:\.\d+)?) de Vida Regenerada por segundo/i))) soma('life_regen', Number(m[1]));
+    if ((m = l.match(/^Golens concedem (\d+(?:\.\d+)?) de regeneração de mana por segundo/i))) soma('mana_regen', Number(m[1]));
+    if ((m = l.match(/^Golens concedem \+ ?(\d+(?:\.\d+)?) ?% de resistência a dano de caos/i))) soma('chaos_res', Number(m[1]));
+    if ((m = l.match(/^Golens concedem (\d+(?:\.\d+)?) ?% mais defesas/i))) { soma('armour_pct', Number(m[1])); soma('evasion_pct', Number(m[1])); }
+    if ((m = l.match(/^Golens concedem (\d+) a (\d+) de Dano Físico adicional para cada Lacaio Não-Golem/i))) porLacaioFisico = [Number(m[1]), Number(m[2])];
     if ((m = l.match(/^Máximo de (\d+) (.+?) (?:Evocad|Convocad|Erguid|Invocad|Animad)/i))) { maximo = Number(m[1]); nome = singular(m[2]); }
     else if ((m = l.match(/^Máximo de (.+?) (?:Evocad|Convocad|Erguid|Invocad)\S*: (\d+)/i))) { maximo = Number(m[2]); nome = singular(m[1]); }
     else if ((m = l.match(/^\+(\d+) ao número máximo de Totens/i))) maximo += Number(m[1]);
@@ -89,17 +114,63 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null) {
     else if ((m = l.match(/são de Nível (\d+)/i))) nivel = Number(m[1]);
   }
   if (totem) maximo += efeito?.totensExtras ?? 0;
+  // As OFERENDAS (Osso, Carne, Espírito) e a CONVOCAÇÃO não invocam: dão bônus aos lacaios em campo / chamam todos para perto.
+  const en = r.gema.en ?? '';
+  if (/Offering/i.test(en)) return { tipo: 'oferenda', nome: t.nome, duracaoMs: duracao ?? 4000, bonus: bonusDaOferenda(t.linhas) };
+  if (/^Convocation/i.test(en)) return { tipo: 'convocacao', nome: t.nome, curaPct: Number(t.linhas.map((l) => l.match(/Regenera (\d+(?:\.\d+)?) ?% da Vida por segundo/i)).find(Boolean)?.[1] ?? 0) };
   const n = nivel ?? Math.max(1, t.requer);
   const f = forcaDoNivel(n);
   const vida = Math.max(10, Math.round(f.vida * (1 + maisVida / 100) * (1 + (efeito?.lacaioVidaPct ?? 0) / 100)));
   const golpe = f.dano * (1 + maisDano / 100) * (1 + (efeito?.lacaioDanoPct ?? 0) / 100);
   if (duracao) duracao = Math.round(duracao * (1 + (efeito?.duracaoPct ?? 0) / 100));
+  const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, r.elemento);
   return {
+    estilo, velAtaquePct, critChance: semprecritico ? 100 : 5, critMult: 1.5 + critMult / 100, somado, sangrar,
+    afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * 0.8)), max: Math.max(1, Math.round(golpe * 1.2)) }, intervaloMs: Math.round(f.tempo * 1000), elemento: r.elemento,
     // O desenho pelo nome do lacaio e o da gema ("Golem" + "Convocar Golem de Chamas").
     desenho: desenhoDe(`${nome} ${t.nome}`, r.elemento, totem),
   };
+}
+
+/**
+ * O JEITO de atacar de cada tipo de lacaio (o que o PoE dá a ele): de longe (arqueiro, mago, espectro, sentinela, golens de fogo e de
+ * relâmpago) ou de perto, o elemento, o projétil e o impacto (números do client), o golpe de ÁREA a cada N acertos (a pancada do zumbi,
+ * o golem de pedra, a explosão do golem de chamas), a velocidade e a AURA (os robôs rastejantes resfriam/eletrizam em volta).
+ */
+const ESTILOS_DE_LACAIO = [
+  [/arqueir|archer|ranged arms|blink arrow|mirror arrow|clone/i, { alcance: 5, projetil: 3, impacto: 10, elemento: 'physical' }],
+  [/mag[oa]s?\b|mage/i, { alcance: 5, magia: true, elementos: ['fire', 'ice', 'energy'] }],
+  [/espectro|spectre/i, { alcance: 5, projetil: 11, impacto: 18, elemento: 'chaos' }],
+  [/sentinela|sentinel|relíquia|relic/i, { alcance: 4, projetil: 31, impacto: 40, elemento: 'physical', area: { cada: 4, efeito: 50 } }],
+  [/golem.*(chama|flame)|flame golem/i, { alcance: 5, projetil: 4, impacto: 16, elemento: 'fire', area: { cada: 3, efeito: 7 } }],
+  [/golem.*(relâmp|lightning)|lightning golem/i, { alcance: 5, projetil: 36, impacto: 176, elemento: 'energy' }],
+  [/golem.*(gelo|ice)|ice golem/i, { alcance: 1, impacto: 44, elemento: 'ice', area: { cada: 4, efeito: 42 } }],
+  [/golem.*(caos|chaos)|chaos golem/i, { alcance: 1, impacto: 17, elemento: 'chaos', area: { cada: 3, efeito: 21 } }],
+  [/golem.*(pedra|stone)|stone golem/i, { alcance: 1, impacto: 10, elemento: 'physical', area: { cada: 3, efeito: 45 } }],
+  [/zumbi|zombie/i, { alcance: 1, impacto: 10, elemento: 'physical', area: { cada: 4, efeito: 45 } }],
+  [/espírito furioso|raging spirit/i, { alcance: 1, impacto: 16, elemento: 'fire', rapido: 0.6 }],
+  [/ceifador|reaper/i, { alcance: 1, impacto: 215, elemento: 'physical' }],
+  [/robô|skitterbot/i, { aura: { raio: 2, efeito: 42, pct: 0.15 }, alcance: 0 }],
+];
+export function estiloDoLacaio(texto, elemento) {
+  const e = ESTILOS_DE_LACAIO.find(([re]) => re.test(texto))?.[1];
+  return { alcance: 1, impacto: 10, elemento: elemento ?? 'physical', ...(e ?? {}) };
+}
+
+/** Os bônus de uma OFERENDA aos lacaios em campo: velocidade de ataque, crítico, bloqueio, regeneração. */
+function bonusDaOferenda(linhas) {
+  const b = { velAtaquePct: 0, critInc: 0, critMult: 0, bloqueioPct: 0, regenPct: 0 };
+  for (const l of linhas) {
+    let m;
+    if ((m = l.match(/Velocidade de Ataque dos Lacaios em (\d+)/i))) b.velAtaquePct += Number(m[1]);
+    if ((m = l.match(/Chance de Golpe Crítico aumentada em (\d+)/i))) b.critInc += Number(m[1]);
+    if ((m = l.match(/\+(\d+) ?% de Multiplicador de Golpe Crítico/i))) b.critMult += Number(m[1]);
+    if ((m = l.match(/\+(\d+) ?% de Chance de Bloquear o Dano de Ataques/i))) b.bloqueioPct += Number(m[1]);
+    if ((m = l.match(/(\d+(?:\.\d+)?) ?% da Vida Regenerada por Segundo/i))) b.regenPct += Number(m[1]);
+  }
+  return b;
 }
 
 export { ehLinhaDeLacaio } from './gemas-poe.mjs';

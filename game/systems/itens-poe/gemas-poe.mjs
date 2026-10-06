@@ -48,7 +48,7 @@ const FORMATO = { projetil: 'projetil', area: 'chao', chuva: 'chao', orbe: 'chao
 const BUFF = new Set(['aura', 'arauto', 'guarda', 'clamor', 'maldicao']);
 const SEM_NO_JOGO = { generico: 'a gema não tem comportamento de combate reconhecido' };
 /** Lacaios e totens (`itens-poe/lacaios-poe.mjs`): as linhas que o jogo faz. (Aqui, e não lá: o módulo dos lacaios importa este.) */
-const LINHA_DE_LACAIO = /^Máximo de |^\+\d+ ao número máximo de Totens|^Convoca \d+ |^Duração base é de|^Totem dura|Lacaios? têm .*mais Vida|Lacaios? causam? .*mais Dano|são de Nível|Invoca um Totem que usa/i;
+const LINHA_DE_LACAIO = /^Máximo de |^\+\d+ ao número máximo de Totens|^Convoca \d+ |^Duração base é de|^Totem dura|Lacaios? têm .*mais Vida|Lacaios? causam? .*(mais|menos) Dano|são de Nível|Invoca um Totem que usa|^Golens (aumentam|concedem)|mais Velocidade de Ataque|sempre Golpes Críticos|Multiplicador de Acerto Crítico|Dano Físico adicional|infligir Sangramento|Velocidade de Ataque dos Lacaios|Chance de Golpe Crítico aumentada|Multiplicador de Golpe Crítico|Chance de Bloquear o Dano de Ataques|Vida Regenerada por Segundo|Regenera .*da Vida por segundo|Aura dos Robôs/i;
 export const ehLinhaDeLacaio = (l) => LINHA_DE_LACAIO.test(l);
 
 const acaoPorId = (id) => ACTION_CATALOG.spells.find((e) => e.id === id) ?? ACTION_CATALOG.runes?.find((e) => e.id === id) ?? null;
@@ -201,7 +201,7 @@ function avaliarNoJogo(h, formato) {
   if (h.arquetipo === 'lacaio' || h.arquetipo === 'totem') {
     const motivos = h.arquetipo === 'totem'
       ? ['o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)']
-      : ['o lacaio bate corpo a corpo, com a força de um monstro comum do nível dele; as habilidades próprias (as magias do espectro, as auras dos golens) ainda não'];
+      : ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; a magia própria de cada monstro (o espectro usa a do monstro erguido) é aproximada'];
     for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeLacaio(l) && !ehLinhaDeAlvos(l)) motivos.push(`efeito não simulado: ${l}`);
     return { status: 'parcial', motivos };
   }
@@ -404,10 +404,21 @@ export const daAcao = (acao) => (String(acao).startsWith(PREFIXO) ? REGISTRO.get
 /** Os atributos dos buffs de gema do PoE ligados agora (somados em `Afixos.soma`). null: nenhum. */
 export function adds(estado) {
   const hunt = estado?.hunt;
-  if (!hunt?.buffs) return null;
+  if (!hunt?.buffs && !hunt?.lacaios?.length) return null;
   const agora = hunt.clock ?? 0;
   const total = {};
-  for (const b of Object.values(hunt.buffs)) if (b.afPoe && b.ate > agora) for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v;
+  for (const b of Object.values(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v;
+  // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...); o Golem Carniçal, dano físico
+  // adicional por lacaio não-golem em campo.
+  const vivos = (hunt.lacaios ?? []).filter((l) => l.hp > 0);
+  const naoGolens = vivos.filter((l) => !l.golem && l.tipo === 'lacaio').length;
+  for (const l of vivos) {
+    for (const [k, v] of Object.entries(l.afDono ?? {})) total[k] = (total[k] ?? 0) + v;
+    if (l.porLacaioFisico && naoGolens) {
+      total.added_phys_dmg_min = (total.added_phys_dmg_min ?? 0) + l.porLacaioFisico[0] * naoGolens;
+      total.added_phys_dmg_max = (total.added_phys_dmg_max ?? 0) + l.porLacaioFisico[1] * naoGolens;
+    }
+  }
   return Object.keys(total).length ? total : null;
 }
 

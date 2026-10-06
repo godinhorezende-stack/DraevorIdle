@@ -306,3 +306,22 @@ test('lacaios e totens do PoE: o que a gema invoca no nível dela, eles batem e 
   const t = Arena.combate({ skill: G.doSlug('Holy_Flame_Totem').acao, nivel: 10, mobs: 5, segundos: 8 });
   assert.ok(t.quadros.flatMap((q) => q.eventos).some((e) => e.t === 'dmg' && e.lacaio && e.foe && e.sk), 'o totem acerta com a skill da gema');
 });
+
+test('as habilidades próprias dos lacaios: de longe/de perto, área, crítico da gema, oferenda, e os golens dando bônus ao dono', { skip: SEM_SUPORTES }, async () => {
+  const L = await import('../systems/itens-poe/lacaios-poe.mjs');
+  assert.equal(L.oQueInvoca('Summon_Skeletons_of_Mages', 10).estilo.alcance, 5, 'mago ataca de longe');
+  assert.equal(L.oQueInvoca('Raise_Zombie', 10).estilo.area.cada, 4, 'a pancada do zumbi a cada 4');
+  assert.equal(L.oQueInvoca('Summon_Raging_Spirit_of_Enormity', 10).critChance, 100, '"Acertos dos Lacaios são sempre Golpes Críticos"');
+  assert.deepEqual(L.oQueInvoca('Summon_Flame_Golem', 10).afDono, { dmg_vs_monsters: 24 }, '"Golens aumentam 24% de Dano"');
+  const of = L.oQueInvoca('Flesh_Offering', 10);
+  assert.equal(of.tipo, 'oferenda');
+  assert.ok(of.bonus.velAtaquePct > 0);
+  // O golem vivo entra na ficha do dono (o gancho dos afixos do PoE).
+  const e = { hunt: { clock: 0, buffs: {}, lacaios: [{ hp: 10, tipo: 'lacaio', golem: true, afDono: { dmg_vs_monsters: 24 } }] } };
+  assert.deepEqual(G.adds(e), { dmg_vs_monsters: 24 });
+  e.hunt.lacaios[0].hp = 0;
+  assert.equal(G.adds(e), null, 'morreu: sai');
+  const Arena = await import('../admin/arena-efeitos.mjs');
+  const r = Arena.combate({ skill: G.doSlug('Summon_Skeletons_of_Archers').acao, nivel: 10, mobs: 5, segundos: 8 });
+  assert.ok(r.quadros.flatMap((q) => q.eventos).filter((x) => x.t === 'shot').length > 5, 'os arqueiros atiram de longe');
+});
