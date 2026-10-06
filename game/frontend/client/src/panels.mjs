@@ -3462,9 +3462,9 @@ function previaDaAreaPoe(hunt) {
     l.title = `${c.bases} base(s) neste nível: ${c.exemplos.join(', ')}${c.bases > c.exemplos.length ? '…' : ''}`;
     cai.append(l);
   }
-  cai.append(el('div', 'poe-previa-sub', 'Ouro'));
-  cai.append(linha('Por monstro', `${numBr(p.drop.ouro.min)}–${numBr(p.drop.ouro.max)}`));
-  cai.append(linha('× pela raridade', Object.entries(p.drop.ouro.porRaridade).map(([r, v]) => `${NOME_R[r] ?? r} ×${numBr(v)}`).join(' · ')));
+  cai.append(el('div', 'poe-previa-sub', 'Ouro por monstro'));
+  // A faixa de cada raridade já multiplicada (a base do level × o multiplicador da raridade; o Gold Find soma por cima).
+  for (const [r, v] of Object.entries(p.drop.ouro.porRaridade)) cai.append(linha(NOME_R[r] ?? r, `${numBr(Math.round(p.drop.ouro.min * v))}–${numBr(Math.round(p.drop.ouro.max * v))}`));
   const proprios = p.monstros.filter((m) => m.drops.length);
   if (proprios.length) {
     cai.append(el('div', 'poe-previa-sub', 'Itens de monstros específicos'));
@@ -3479,7 +3479,9 @@ function previaDaAreaPoe(hunt) {
   for (const m of p.monstros) {
     const aba = el('button', 'hunt-aba');
     aba.setAttribute('aria-selected', String(m.key === monstroPoeNaPrevia));
-    if (ctx.state.catalog.bestiary?.[m.key]) aba.append(figuraDaCriatura({ key: m.key }, ctx.state.catalog.bestiary, 34));
+    // O desenho do monstro do PoE é o da criatura do Draevor que a Engine escolheu para ele (o `look` do bestiário).
+    const doBestiario = ctx.state.catalog.bestiary?.[m.key];
+    if (doBestiario) aba.append(figuraDaCriatura({ key: m.key, look: doBestiario.look, colors: doBestiario.colors, lookItem: doBestiario.lookItem }, ctx.state.catalog.bestiary, 34));
     aba.append(el('span', m.unico ? 'poe-unico' : null, m.nome));
     aba.onclick = () => {
       monstroPoeNaPrevia = m.key;

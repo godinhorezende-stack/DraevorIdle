@@ -340,5 +340,24 @@
 .poe-previa .poe-unico, .poe-previa-nome.poe-unico { color: #d98a3d; }
 .poe-previa-mods { display: grid; gap: 4px; margin-top: 8px; border-top: 1px solid #1f2a2e; padding-top: 6px; }
 .poe-previa-mods > em { font-size: 11px; }
-.poe-previa-modlista { display: grid; align-content: start; min-width: 0; max-height: 170px; overflow-y: auto; padding-right: 4px; }
+.poe-previa-modlista { display: grid; align-content: start; min-width: 0; }
 .poe-previa-modtexto { font-size: 10.5px; color: #7f9a9e; margin: -1px 0 3px; }
+
+/* A prévia do PoE entra na mesma cadeia flexível da janela da hunt (style.css: #modal-body → .hunt-previa → colunas → blocos): cada coluna
+   rola dentro de si e o rodapé (Caça Automática / Caça Online) fica sempre à vista, sem nada passando por baixo dele. */
+.modal-box:has(.poe-previa) .poe-previa { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.modal-box:has(.poe-previa) .poe-previa > .hunt-previa-colunas { flex: 1; min-height: 0; align-items: stretch; }
+.modal-box:has(.poe-previa) .poe-previa .hunt-previa-bloco { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.modal-box:has(.poe-previa) .poe-previa .hunt-previa-bloco > * { flex: none; }
+.poe-previa .hunt-previa-abas { flex-wrap: wrap; }
+/* No celular (uma coluna só): a janela inteira rola, e os botões ficam no fim do conteúdo — rolagem dentro de rolagem é ruim no dedo. */
+@media (max-width: 720px) {
+  .modal-box:has(.poe-previa) #modal-body { display: block; overflow-y: auto; }
+  .modal-box:has(.poe-previa) .poe-previa, .modal-box:has(.poe-previa) .hunt-previa { display: block; }
+  .modal-box:has(.poe-previa) .poe-previa .hunt-previa-bloco { overflow: visible; }
+  .modal-box:has(.poe-previa) .poe-previa > .hunt-previa-colunas { display: grid; grid-template-columns: 1fr; }
+  .modal-box:has(.poe-previa) .modal-rodape { position: static; margin: 10px 0 0; box-shadow: none; }
+  .modal-box:has(.poe-previa) .run-modes { grid-template-columns: 1fr; }
+  .poe-previa-linha { font-size: 12.5px; }
+  .poe-previa-linha b { white-space: normal; }
+}
