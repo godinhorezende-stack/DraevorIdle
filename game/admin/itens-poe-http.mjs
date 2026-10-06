@@ -165,3 +165,33 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   }
   return json(res, 404, { ok: false, erros: ['Rota desconhecida.'] }), true;
 }
+
+/**
+ * ---- O que o JOGO lê do PoE (público, só GET, só leitura) ----
+ * A rota da engine (`/api/mapas/...`) pede o login de administrador quando a engine exige login; os jogadores não passam por ela. Aqui
+ * fica só o que a tela do jogo precisa: os ÍCONES (das gemas e dos itens do PoE — só imagem, sem sair das pastas) e a FICHA da gema num
+ * nível (`GemasPoe.fichaNoNivel`: o balão da gema na loja e na mochila).
+ */
+const PUBLICO = '/api/jogo/poe/';
+const imagem = (res, pasta, relativo) => {
+  const alvo = normalize(join(pasta, relativo));
+  if (!alvo.startsWith(pasta) || !TIPOS[extname(alvo).toLowerCase()] || !existsSync(alvo) || !statSync(alvo).isFile()) return false;
+  res.writeHead(200, { 'content-type': TIPOS[extname(alvo).toLowerCase()], 'cache-control': 'public, max-age=86400' });
+  createReadStream(alvo).pipe(res);
+  return true;
+};
+export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema }) {
+  if (!caminho.startsWith(PUBLICO)) return false;
+  if (req.method !== 'GET' && req.method !== 'HEAD') return json(res, 405, { ok: false }), true;
+  const rota = caminho.slice(PUBLICO.length);
+  // O nome pode vir decodificado ou não (há arquivo com "%C3%B6" no próprio nome): tenta os dois.
+  const nomes = (r) => { let d = r; try { d = decodeURIComponent(r); } catch { /* fica cru */ } return [...new Set([d, r])]; };
+  if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, join(GemasPoe.PASTA, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
+  if (rota === 'gema') {
+    const q = url.searchParams;
+    const f = fichaDaGema?.(q.get('slug') ?? '', Number(q.get('nivel')) || 1, Number(q.get('qualidade')) || 0);
+    return f ? json(res, 200, { ok: true, ficha: f }) : json(res, 404, { ok: false }), true;
+  }
+  return json(res, 404, { ok: false }), true;
+}

@@ -136,3 +136,10 @@ test('a gema do PoE nasce no nível 1 (drop e loja) e sobe pela tabela de XP do 
   GS.ganharXp(est, 1);
   assert.equal(gema.nivel, 3, 'com o level, passa');
 });
+
+test('a loja do Zuma vende TODAS as gemas do PoE, para qualquer level, no nível 1', { skip: SEM }, () => {
+  const lista = GS.catalogoDaLoja({ level: 1, inventory: [] }).filter((l) => l.categoria !== 'orbes');
+  const doPoe = lista.filter((l) => GS.defDaGema(l.id)?.poe);
+  assert.equal(new Set(doPoe.map((l) => l.id)).size, 562);
+  assert.ok(lista.some((l) => l.nome.includes('Ira')), 'a Ira (pede level 24) aparece para o level 1');
+});

@@ -174,6 +174,8 @@ async function atender(req, res) {
   const caminho = decodeURIComponent(url.pathname.split('?')[0]);
 
   // As classes ATIVAS para a tela de criação de personagem (público: só nome, descrição, ícone, cor, atributos iniciais e bônus por ponto).
+  // O PoE que o JOGO lê (público, só leitura): os ícones das gemas e dos itens do PoE e a ficha da gema num nível (`itens-poe-http.atenderPublico`).
+  if (await ItensPoeHttp.atenderPublico(req, res, caminho, url, { json, fichaDaGema: GemasPoe.fichaNoNivel })) return;
   if (caminho === '/api/classes') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     return res.end(JSON.stringify(Classes.paraOCliente()));

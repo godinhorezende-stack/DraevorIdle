@@ -407,7 +407,7 @@ export function emprestarDoCatalogo(catalogo) {
   for (const [id, meta] of Object.entries(catalogo ?? {})) {
     // A GEMA DO PoE (só com ITENS_POE=1): o ícone dela, da coleção do dono (servido pela engine local).
     if (meta?.poeGema?.icone) {
-      itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/mapas/_engine/itens-poe/gemas-arena/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
+      itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/gema/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
       continue;
     }
     // As GEMAS ganham o ícone próprio, desenhado (ver `icones-de-gema.mjs`) — no lugar da pedra emprestada.
@@ -419,7 +419,7 @@ export function emprestarDoCatalogo(catalogo) {
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
     // Item do sistema de itens do PoE (só com ITENS_POE=1 no servidor local): o ícone 64×64 da coleção de referência, servido pela engine.
-    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/mapas/_engine/itens-poe/ref/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
+    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/item/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
   }
   // Quem saiu com o "?" antes deste empréstimo (gema, `spriteDe`) e agora tem figura: refaz.
   for (const canvas of globalThis.document?.querySelectorAll?.('canvas[data-sem-icone]') ?? []) {

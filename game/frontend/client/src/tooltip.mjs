@@ -2684,8 +2684,39 @@ function etiquetasDaGema(x, def) {
   return partes.map((p) => p.toUpperCase()).join(' · ');
 }
 
+/**
+ * A gema do PoE no balão do ITEM (loja do Zuma, mochila, socket): a mesma ficha do PoE do balão da barra (`corpoDaGemaPoe`), no nível e
+ * na qualidade DESTA gema — pedida ao servidor (`/api/jogo/poe/gema`) e guardada; o balão se reposiciona quando ela chega.
+ */
+const FICHAS_DA_GEMA_POE = new Map();
+function blocoDaGemaPoeDoItem(def, gema) {
+  const nivel = gema?.nivel ?? 1;
+  const qualidade = gema?.qualidade ?? 0;
+  const bloco = el('div', 'tip-gema');
+  const corpo = el('div');
+  const preencher = (f) => corpo.replaceChildren(f ? corpoDaGemaPoe({ poeFicha: f }) : el('div', 'tip-gema-ajuda', 'Ficha da gema indisponível.'));
+  const chave = `${def.poe.slug}@${nivel}@${qualidade}`;
+  if (FICHAS_DA_GEMA_POE.has(chave)) preencher(FICHAS_DA_GEMA_POE.get(chave));
+  else {
+    corpo.append(el('div', 'tip-gema-ajuda', 'Carregando a ficha da gema…'));
+    fetch(`/api/jogo/poe/gema?slug=${encodeURIComponent(def.poe.slug)}&nivel=${nivel}&qualidade=${qualidade}`)
+      .then((r) => r.json())
+      .then((d) => {
+        FICHAS_DA_GEMA_POE.set(chave, d?.ficha ?? null);
+        preencher(d?.ficha ?? null);
+        if (holderAberto && node && !node.hidden) place(holderAberto);
+      })
+      .catch(() => preencher(null));
+  }
+  bloco.append(corpo);
+  if (gema?.xp) bloco.append(el('div', null, `XP ${Math.floor(gema.xp).toLocaleString('pt-BR')}`));
+  bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
+  return bloco;
+}
+
 /** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
 function blocoDaGema(def, gema, raridade = 'comum') {
+  if (def.poe) return blocoDaGemaPoeDoItem(def, gema);
   const bloco = el('div', 'tip-gema');
   const nivel = gema?.nivel ?? 1;
   const qualidade = gema?.qualidade ?? 0;

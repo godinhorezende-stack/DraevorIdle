@@ -850,8 +850,8 @@ export function catalogoDaLoja(estado) {
   const tenho = (id, r) => (estado.inventory ?? []).filter((p) => Number(p.id) === id && raridadeDaGema(p.raridade) === r).length;
   // Pela categoria (Ataque, Cura, Reforço, Suporte), e dentro dela pelo level da magia e o nome.
   const ordem = Object.keys(CATEGORIAS);
-  // As do PoE: só as que o level do personagem já usa (são 562 — a lista inteira não cabe no balcão).
-  const defs = [...DEFS.values()].filter((d) => valeNoModo(d) && (!d.poe || d.levelMinimo <= (estado?.level ?? 1))).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
+  // As do PoE: TODAS (dono, 06/10: "na loja do Zuma não aparecem todas as gemas"), sempre no nível 1.
+  const defs = [...DEFS.values()].filter((d) => valeNoModo(d)).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
   const gemas = defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,
