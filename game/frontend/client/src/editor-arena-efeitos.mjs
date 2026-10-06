@@ -12,11 +12,11 @@
 import { el, msg } from './editor-ui.mjs';
 import { escolherSprite } from './editor-biblioteca-sprites.mjs';
 // O desenho do jogo (sprites e a camada de efeitos) só carrega quando a arena abre — no navegador (os testes do Node importam as telas).
-let loadSpriteData, loadEffectData, drawCreature, criarCamada, desenharEfeito, desenharProjetil, desenharQuadroDeAsset, duracaoDoAsset;
+let loadSpriteData, loadEffectData, drawCreature, criarCamada, desenharEfeito, desenharProjetil, desenharQuadroDeAsset, duracaoDoAsset, desenharContinuo;
 async function carregarDesenho() {
   if (criarCamada) return;
   ({ loadSpriteData, loadEffectData, drawCreature } = await import('./sprites.mjs'));
-  ({ criarCamada, desenharEfeito, desenharProjetil, desenharQuadroDeAsset, duracaoDoAsset } = await import('./efeitos-visuais.mjs'));
+  ({ criarCamada, desenharEfeito, desenharProjetil, desenharQuadroDeAsset, duracaoDoAsset, desenharContinuo } = await import('./efeitos-visuais.mjs'));
 }
 
 const API = '/api/mapas/_conteudo/';
@@ -27,7 +27,7 @@ const LARGURA = 13;
 const ALTURA = 9;
 const VELOCIDADES = [0.25, 0.5, 1, 2, 4, 8];
 const DIRECOES = [['no', '↖'], ['n', '↑'], ['ne', '↗'], ['o', '←'], [null, '•'], ['l', '→'], ['so', '↙'], ['s', '↓'], ['se', '↘']];
-const COR_DA_PARTE = { lancamento: '#c9a35a', projetil: '#5aa9e6', impacto: '#e0703a', area: '#7bc96f', alvo: '#b07be0' };
+const COR_DA_PARTE = { lancamento: '#c9a35a', projetil: '#5aa9e6', impacto: '#e0703a', area: '#7bc96f', alvo: '#b07be0', continuo: '#4fc3b0' };
 
 /** Os campos de cada parte: `[campo, rótulo, tipo, min, max, passo]` (tipo num | bool | sel). */
 const COMUNS = [
@@ -41,6 +41,7 @@ const DA_PARTE = {
   impacto: [['noImpacto', 'Esperar o projétil chegar', 'bool']],
   area: [['noImpacto', 'Esperar o projétil chegar', 'bool']],
   alvo: [['ancora', 'Âncora no alvo', 'sel', ['acima', 'corpo', 'pes']], ['noImpacto', 'Esperar o projétil chegar', 'bool']],
+  continuo: [['ancora', 'Âncora no personagem', 'sel', ['acima', 'corpo', 'pes']]],
 };
 
 export function arenaDeEfeitos({ slugInicial = null } = {}) {
@@ -145,6 +146,10 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     // O chão: um xadrez discreto (a arena não tem mapa; o que importa é a posição de cada casa).
     for (let y = 0; y < ALTURA; y++) for (let x = 0; x < LARGURA; x++) { ctx.fillStyle = (x + y) % 2 ? '#1b2326' : '#1f2a2e'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
     const posDe = (uid) => (uid === 'player' ? cena.pos : cena.mobs.find((a) => a.uid === uid) ?? null);
+    // A aura ligada (contínuo): no combate, enquanto o buff está na lista do tique; num lançamento de buff, logo depois de lançar.
+    const ligados = T.sim?.tipo === 'combate' ? cena.buffs ?? [] : (T.lados && t > (T.sim?.conjuracaoMs ?? 0) ? [T.skill] : []);
+    const visuaisDoLado = L === T.lados?.custom ? T.cliente : { assets: T.cliente?.assets ?? {}, skills: {} };
+    for (const sk of ligados) desenharContinuo(ctx, sk, cena.pos.x * TILE - cam.x, cena.pos.y * TILE - cam.y, t, visuaisDoLado);
     drawCreature(ctx, { look: T.sim.jogador.look, colors: T.sim.jogador.colors, dir: cena.pos.dir ?? dirDoLancador(), frame: 0 }, cena.pos.x * TILE - cam.x, cena.pos.y * TILE - cam.y);
     for (const a of cena.mobs) {
       const px = a.x * TILE - cam.x;
@@ -183,7 +188,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     const b = Q[Math.min(Q.length - 1, i + 1)];
     const f = Math.max(0, Math.min(1, (t - a.t) / 250));
     const mistura = (p, q) => (q ? { ...p, x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f } : p);
-    return { pos: mistura(a.pos, b.pos), mobs: a.mobs.map((m) => mistura(m, b.mobs.find((x) => x.uid === m.uid))) };
+    return { pos: mistura(a.pos, b.pos), mobs: a.mobs.map((m) => mistura(m, b.mobs.find((x) => x.uid === m.uid))), buffs: a.buffs ?? [] };
   }
   const dirDoLancador = () => ({ n: 0, ne: 1, l: 1, se: 1, s: 2, so: 3, o: 3, no: 3 })[T.direcao] ?? 2;
   let conectou = false;

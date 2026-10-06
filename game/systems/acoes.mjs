@@ -638,7 +638,8 @@ export function buffsAtivos(hunt) {
   for (const [id, b] of Object.entries(hunt.buffs ?? {})) {
     if (b.ate <= agora) continue;
     const entry = POR_ID.get(id);
-    lista.push({ icone: entry?.icon ?? null, nome: entry?.name ?? id, resta: b.ate - agora, tipo: b.tipo, ...(b.mult ? { mult: b.mult } : {}) });
+    // `sk`: a skill do buff — o visual CONTÍNUO dela (a aura ligada) é desenhado no personagem enquanto dura (efeitos-visuais).
+    lista.push({ icone: entry?.icon ?? null, nome: entry?.name ?? id, resta: b.ate - agora, tipo: b.tipo, sk: id, ...(b.mult ? { mult: b.mult } : {}) });
   }
   return lista.sort((a, b) => a.resta - b.resta);
 }

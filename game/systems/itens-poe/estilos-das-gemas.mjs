@@ -77,6 +77,8 @@ function completar(v, el, h) {
   if (h.arquetipo === 'nova') v.lancamento ??= fx(`nova-${pt}`, { escala: 3 });
   if (!v.area) v.area = ef(el.area);
   if (['aura', 'arauto', 'guarda'].includes(h.arquetipo) && !v.lancamento) v.lancamento = h.elemento === 'chaos' ? fx('redemoinho-arcano', { escala: 1.4 }) : h.arquetipo === 'arauto' && h.elemento === 'fire' ? fx('chamas', { escala: 1.3 }) : ef(h.arquetipo === 'arauto' ? el.raio : el.aura);
+  // A AURA LIGADA: o redemoinho do lançamento em loop sob o personagem, enquanto o buff dura (auras, arautos e guardas).
+  if (['aura', 'arauto', 'guarda'].includes(h.arquetipo) && v.lancamento && !v.continuo) v.continuo = { ...structuredClone(v.lancamento), loop: true, opacidade: 0.6, ancora: 'pes', escala: (v.lancamento.escala ?? 1) * 2 };
   if (h.arquetipo === 'clamor' && !v.lancamento) v.lancamento = ef(E.anelDourado, { escala: 1.4 });
   if (h.arquetipo === 'maldicao') {
     v.lancamento ??= ef(E.roxo);

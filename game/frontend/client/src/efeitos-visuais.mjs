@@ -196,6 +196,23 @@ export function desenharProjetil(ctx, inst, agora, camera = { x: 0, y: 0 }) {
   return um(inst.sprite, x, y);
 }
 
+/**
+ * O efeito CONTÍNUO de um buff ligado (a aura): o sprite da parte `continuo` da skill em loop, com o canto do tile em (px, py). Desenhado a
+ * cada quadro enquanto o buff está na lista (`hunt.buffs` → `sk`). false se a skill não tem.
+ */
+const INSTANCIAS_CONTINUAS = new Map();
+export function desenharContinuo(ctx, sk, px, py, agora, visuais = DADOS) {
+  const p = visuais.skills?.[sk]?.continuo;
+  if (!p?.sprite || p.sprite.tipo === 'nenhum') return false;
+  const chave = `${sk}|${JSON.stringify(p)}`;
+  let inst = INSTANCIAS_CONTINUAS.get(chave);
+  if (!inst) {
+    inst = { sprite: p.sprite, parte: { ...p, loop: true }, born: 0, life: Infinity, loop: true, natural: duracaoNatural(p.sprite, visuais), asset: p.sprite.tipo === 'asset' ? visuais.assets?.[p.sprite.id] ?? null : null };
+    INSTANCIAS_CONTINUAS.set(chave, inst);
+  }
+  return desenharEfeito(ctx, inst, px, py, agora);
+}
+
 /** Um quadro de um asset centrado em (cx, cy) — a prévia da biblioteca na Arena de Efeitos (o mesmo desenho do combate). */
 export function desenharQuadroDeAsset(ctx, asset, progresso, cx, cy) {
   ctx.save();

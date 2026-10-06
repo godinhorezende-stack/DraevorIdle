@@ -250,6 +250,8 @@ export function combate({ skill, nivel = 10, suportes = [], mobs = 5, segundos =
   const total = Math.max(2, Math.min(40, Number(segundos) || 12)) * 4;
   const foto = () => ({
     pos: { x: h.pos.x, y: h.pos.y, dir: h.pos.dir ?? 2 },
+    // Os buffs ligados (a aura: o visual contínuo dela).
+    buffs: Object.entries(h.buffs ?? {}).filter(([, b]) => b.ate > (h.clock ?? 0)).map(([id]) => id),
     mobs: h.monstros.filter((m) => m.hp > 0).map((m) => ({ uid: m.uid, x: m.x, y: m.y, dir: m.dir ?? 2, look: m.look, lookItem: m.lookItem ?? null, colors: m.colors ?? null, vida: Math.max(0, Math.round((100 * m.hp) / Math.max(1, m.maxHp))), nome: m.name })),
   });
   quadros.push({ t: 0, ...foto(), eventos: [] });

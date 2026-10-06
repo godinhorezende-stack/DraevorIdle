@@ -6,7 +6,7 @@ import { casasDoEvento } from '/packages/shared/src/areas.mjs';
 import { comecarPasso } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
-import { criarCamada, desenharEfeito, desenharProjetil } from './efeitos-visuais.mjs';
+import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais } from './efeitos-visuais.mjs';
 /** Os eventos que a camada de efeitos desenha (os outros — números, falas — seguem aqui no mapa). */
 const EVENTOS_DA_CAMADA = new Set(['skill', 'cast', 'fx', 'explosao', 'area', 'shot', 'dmg']);
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
@@ -894,6 +894,8 @@ export class MapView {
      * Ver `assinaturaDoRetrato`.
      */
     this.character = character;
+    // Os buffs ligados do personagem (com a skill: `sk`) — o visual CONTÍNUO deles (a aura) é desenhado sob o boneco.
+    this.buffsDoJogador = (payload?.buffs ?? []).filter((b) => b.sk && visuaisAtuais().skills?.[b.sk]?.continuo);
     if (!payload) {
       this.snapshot = null;
       this.entities.clear();
@@ -3408,6 +3410,14 @@ export class MapView {
   /** Efeitos e projéteis passam por cima das criaturas. */
   drawEffects(now) {
     const ctx = this.ctx;
+    // A aura ligada (o efeito contínuo do buff), no boneco do jogador.
+    if (this.buffsDoJogador?.length) {
+      const eu = this.entities.get('player');
+      if (eu) {
+        const p = this.position(eu, now);
+        for (const b of this.buffsDoJogador) desenharContinuo(ctx, b.sk, p.x - this.camera.x, p.y - this.camera.y, now);
+      }
+    }
     this.effects = this.effects.filter((effect) => now - effect.born < effect.life);
     for (const effect of this.effects) {
       // Golpe de alvo único segue o boneco; magia de área fica no chão, que é
@@ -3457,7 +3467,7 @@ export class MapView {
     // Alguma animação de mapa (água, tocha, portal) trocou de quadro.
     if (now >= this.trocaDeAnimacaoEm) return false;
     // Efeito, projétil, número de dano ou fala no ar.
-    if (this.effects.length || this.missiles.length || this.texts.length || this.falas.length) return false;
+    if (this.effects.length || this.missiles.length || this.texts.length || this.falas.length || this.buffsDoJogador?.length) return false;
     /*
      * E qualquer criatura andando ou em pose de andar. `position` é a mesma
      * conta que o desenho faz, e ela é barata: são poucas entidades, e o caro

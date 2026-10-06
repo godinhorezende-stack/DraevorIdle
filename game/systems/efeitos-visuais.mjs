@@ -25,9 +25,9 @@ const ARQ_DE_FABRICA = new URL('../gamedata/efeitos-fabrica/assets.json', import
 export const ASSETS_DE_FABRICA = existsSync(ARQ_DE_FABRICA) ? JSON.parse(readFileSync(ARQ_DE_FABRICA, 'utf8')).assets ?? {} : {};
 const URL_DE_FABRICA = '/gamedata/efeitos-fabrica/';
 
-export const PARTES = ['lancamento', 'projetil', 'impacto', 'area', 'alvo'];
-export const NOME_DA_PARTE = { lancamento: 'Lançamento (no personagem)', projetil: 'Projétil', impacto: 'Impacto (no alvo)', area: 'Área (no chão)', alvo: 'No alvo atingido' };
-export const EVENTO_DA_PARTE = { lancamento: 'SKILL_CAST', projetil: 'PROJECTILE_CREATED', impacto: 'PROJECTILE_HIT', area: 'AREA_CREATED', alvo: 'DAMAGE_APPLIED' };
+export const PARTES = ['lancamento', 'projetil', 'impacto', 'area', 'alvo', 'continuo'];
+export const NOME_DA_PARTE = { lancamento: 'Lançamento (no personagem)', projetil: 'Projétil', impacto: 'Impacto (no alvo)', area: 'Área (no chão)', alvo: 'No alvo atingido', continuo: 'Contínuo (enquanto o buff dura)' };
+export const EVENTO_DA_PARTE = { lancamento: 'SKILL_CAST', projetil: 'PROJECTILE_CREATED', impacto: 'PROJECTILE_HIT', area: 'AREA_CREATED', alvo: 'DAMAGE_APPLIED', continuo: 'BUFF_ACTIVE' };
 export const CATEGORIAS = ['Cast', 'Projectile', 'Trail', 'Impact', 'Explosion', 'Ground', 'Aura', 'Buff', 'Debuff', 'Particle', 'Other'];
 export const ANCORAS = ['acima', 'corpo', 'pes'];
 
