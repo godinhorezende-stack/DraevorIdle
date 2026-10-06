@@ -1,3 +1,4 @@
+import { cuidarDasMissoes } from './missoes-poe.mjs';
 import './so-quando-muda.mjs';
 import { anunciarDrop, anunciarSistema } from './anuncio-drop.mjs';
 import { acompanharConjuracao } from './conjuracao.mjs';
@@ -805,6 +806,8 @@ function handle(message) {
       break;
     case 'state':
       applyState(message);
+      // A gema de recompensa das missões do PoE (abre sozinha uma vez por missão — `missoes-poe.mjs`).
+      cuidarDasMissoes(panelCtx);
       /*
        * Carimbo de "este PERSONAGEM estava sendo visto agora".
        *

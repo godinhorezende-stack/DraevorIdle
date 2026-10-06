@@ -27996,3 +27996,18 @@ html[data-perfil="retrato"] .window[data-window-id="inventory"] {
 html[data-perfil="retrato"] .inv-selo { padding: 8px 10px; }
 html[data-perfil="retrato"] .inv-selo img, html[data-perfil="retrato"] .inv-selo .ui-icon { width: 28px; height: 28px; }
 html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-selo-texto span { font-size: 13px; }
+
+/* ---- A recompensa das missões do PoE (missoes-poe.mjs) ---- */
+.missao-poe-botao {
+  position: fixed; left: 12px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  padding: 8px 12px; border: 1px solid #d8b56a; border-radius: 6px; background: linear-gradient(#2a2216, #15110b); color: #f3e2b0;
+  font-weight: 600; box-shadow: 0 0 10px #d8b56a55; cursor: pointer;
+}
+.missao-poe-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 8px 0 12px; }
+.missao-poe-gema {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; text-align: center;
+  border: 1px solid #3a3326; border-radius: 6px; background: #0f1418; color: #e6e1d6; cursor: pointer;
+}
+.missao-poe-gema em { font-size: 11px; color: #a39b8c; }
+.missao-poe-gema:hover { border-color: #e8c66a; }
+.missao-poe-gema.escolhida { border-color: #e8c66a; box-shadow: 0 0 0 2px #e8c66a, 0 0 10px #e8c66a66; }

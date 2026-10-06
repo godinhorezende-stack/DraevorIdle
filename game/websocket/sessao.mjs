@@ -29,6 +29,7 @@ import * as Mercado from '../systems/mercado.mjs';
 import * as Boosts from '../systems/boosts.mjs';
 import * as Stamina from '../systems/stamina.mjs';
 import * as SemTreino from '../systems/sem-treino.mjs';
+import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
 import * as Premium from '../systems/premium.mjs';
 import * as BuffPower from '../systems/buffpower.mjs';
 import * as Tiers from '../systems/tiers.mjs';
@@ -359,6 +360,8 @@ function characterParaCliente(personagem, estado) {
     huntLaps: estado.huntLaps ?? {},
     arvorePontos: Arvore.pontos(estado),
     arvoreBonus: Arvore.bonus(estado),
+    // As recompensas das missões do PoE esperando a escolha da gema (só com ITENS_POE=1).
+    missoesPoe: MissoesDeGemas.pendentes(estado),
     // A árvore de passivas única: os pontos (o alerta do botão) e o que está alocado.
     passivas: Passivas.vista(estado, !!estado.hunt),
     // Stamina de verdade: gasta caçando, volta na cidade (ver game/systems/stamina.mjs).
@@ -1069,6 +1072,8 @@ export class Sessao {
           // Os orbes de socket: abrir um socket e ligar/desligar um elo (ver `GemasDeSkill.abrirSocket`).
           m.action === 'abrirSocket' ? GemasDeSkill.abrirSocket(this.estado, m) :
           m.action === 'ligarElo' ? GemasDeSkill.ligarElo(this.estado, m) :
+          // A gema de recompensa de uma missão do PoE (`m.missao`, `m.itemId`).
+          m.action === 'recompensaDeMissao' ? MissoesDeGemas.escolher(this.estado, m) :
           // Os orbes do PoE (Joalheiro, Fusão, Cromático): `m.tipo`.
           m.action === 'orbePoe' ? GemasDeSkill.usarOrbeDoPoe(this.estado, m) :
           { ok: false, erro: 'Ação de gema desconhecida.' }

@@ -1,0 +1,1893 @@
+{
+ "_nota": "As missões do PoE que dão gemas (tools/importar-missoes-de-gemas.mjs, da coleção do dono no Drive). `gatilho`: a fase da campanha que, completada pela primeira vez, conclui a missão (ou o chefe do ato). `recompensas`: por classe, as gemas da lista Normal do PoE — o jogador ESCOLHE uma, no nível 1 (dono, 06/10: \"como no PoE\"; só gemas ativas e suportes; a Zuma continua vendendo todas).",
+ "missoes": [
+  {
+   "slug": "Enemy_at_the_Gate",
+   "nome": "O Inimigo Bate à Porta",
+   "en": "Enemy at the Gate",
+   "ato": 1,
+   "gatilho": {
+    "fase": "poe-a1-the-twilight-strand"
+   },
+   "recompensas": {
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Freezing_Pulse"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Rolling_Magma"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Tendrils"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Raise_Zombie"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blight"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Kinetic_Bolt"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Smite"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostbolt"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Rolling_Magma"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Tendrils"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Molten_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Purifying_Flame"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Glacial_Hammer"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Ground_Slam"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Molten_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shield_Crush"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Cleave"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Molten_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Galvanic_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Perforate"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Splitting_Steel"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Split_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Shot"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Blades"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Galvanic_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Caustic_Arrow"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Freezing_Pulse"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Explosive_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Stormblast_Mine"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ethereal_Knives"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blight"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Cobra_Lash"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Molten_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Split_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Tendrils"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Splitting_Steel"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "Mercy_Mission",
+   "nome": "Missão de Caridade",
+   "en": "Mercy Mission",
+   "ato": 1,
+   "gatilho": {
+    "fase": "poe-a1-the-tidal-island"
+   },
+   "recompensas": {
+    "Witch": [
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Proliferation_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Cascade_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Infused_Channelling_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chance_to_Poison_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Summon_Phantasm_Support"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "suporte",
+      "slug": "Arcane_Surge_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ruthless_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chance_to_Bleed_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Cascade_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Infused_Channelling_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ancestral_Call_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Proliferation_Support"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "suporte",
+      "slug": "Chance_to_Bleed_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Momentum_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ancestral_Call_Support"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "suporte",
+      "slug": "Ruthless_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chance_to_Poison_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pierce_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Momentum_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Volley_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Mirage_Archer_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ancestral_Call_Support"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "suporte",
+      "slug": "Pierce_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chance_to_Poison_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Mirage_Archer_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Volley_Support"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "suporte",
+      "slug": "Swift_Assembly_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Proliferation_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pierce_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Momentum_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Volley_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Cascade_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Infused_Channelling_Support"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "suporte",
+      "slug": "Ruthless_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Proliferation_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arcane_Surge_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chance_to_Poison_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pierce_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chance_to_Bleed_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ancestral_Call_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Cascade_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Momentum_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Volley_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Summon_Phantasm_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "The_Caged_Brute",
+   "nome": "O Bruto Enjaulado",
+   "en": "The Caged Brute",
+   "ato": 1,
+   "gatilho": {
+    "fase": "poe-a1-the-upper-prison"
+   },
+   "recompensas": {
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Clarity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Skeletons"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Warp"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flame_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Wither"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bodyswap"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Lightning_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Minion_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Void_Manipulation_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Unbound_Ailments_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Combustion_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Infernal_Legion_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Efficacy_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Devour_Support"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Flame_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Clarity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vitality"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Leap_Slam"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Fire_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Lightning_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Splash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Combustion_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Leap_Slam"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vitality"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Enduring_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Intimidating_Cry"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Splash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Fire_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Flamewood_Support"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Blink_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Leap_Slam"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Whirling_Blades"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Precision"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vitality"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Enduring_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Intimidating_Cry"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Fire_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Splash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Maim_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Whirling_Blades"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blink_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Smoke_Mine"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Precision"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Mirror_Arrow"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Cold_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Splash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Void_Manipulation_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arrow_Nova_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Manaforged_Arrows_Support"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Clarity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Precision"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flame_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Whirling_Blades"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Smoke_Mine"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Withering_Step"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Unearth"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Siphoning_Trap"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Cold_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Lightning_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Void_Manipulation_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multiple_Traps_Support"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Flame_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blink_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Leap_Slam"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Withering_Step"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vitality"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Precision"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Clarity"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Cold_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Lightning_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Fire_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Splash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Unbound_Ailments_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "Sharp_and_Cruel",
+   "nome": "Afiado e Cruel",
+   "en": "Sharp and Cruel",
+   "ato": 2,
+   "gatilho": {
+    "fase": "poe-a2-the-weavers-chambers"
+   },
+   "recompensas": {
+    "Witch": [
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Casting_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Minion_Speed_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Concentrated_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Controlled_Destruction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Focus_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Predator_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Trinity_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cruelty_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Overcharge_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fresh_Meat_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Sacred_Wisps_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Kinetic_Instability_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Living_Lightning_Support"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Casting_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Concentrated_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Controlled_Destruction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Focus_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Shockwave_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cruelty_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Exemplar_Support"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Shockwave_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Close_Combat_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Rage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cruelty_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Volatility_Support"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Vicious_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Close_Combat_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Rage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cruelty_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Sadism_Support"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "suporte",
+      "slug": "Vicious_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Close_Combat_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Trinity_Support"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Casting_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Trap_and_Mine_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Focus_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Deadly_Ailments_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Nightblade_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Trinity_Support"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Casting_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Concentrated_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Vicious_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Deadly_Ailments_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cruelty_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Sadism_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "The_Root_of_the_Problem",
+   "nome": "A Raiz do Problema",
+   "en": "The Root of the Problem",
+   "ato": 2,
+   "gatilho": {
+    "fase": "poe-a2-the-vaal-ruins"
+   },
+   "recompensas": {
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Absolution"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Added_Lightning_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arcane_Surge_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Minion_Damage_Support"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Static_Strike"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Volcanic_Fissure"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Vicious_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Wintertide_Brand"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Controlled_Destruction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Efficacy_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arcane_Surge_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "A_Fixture_of_Fate",
+   "nome": "Um Acerto do Destino",
+   "en": "A Fixture of Fate",
+   "ato": 3,
+   "gatilho": {
+    "fase": "poe-a3-the-library"
+   },
+   "recompensas": {
+    "Witch": [
+     {
+      "tipo": "suporte",
+      "slug": "Fire_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cold_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lightning_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Burning_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Blasphemy_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Swift_Affliction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Energy_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Intensify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pinpoint_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Feeding_Frenzy_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Meat_Shield_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Archmage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Impending_Doom_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Sacrifice_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Focused_Channelling_Support"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "suporte",
+      "slug": "Fire_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cold_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lightning_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fortify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Burning_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Blasphemy_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Energy_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Intensify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pulverise_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Archmage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Swiftbrand_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arrogance_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Guardians_Blessing_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Blessed_Call_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Excommunicate_Support"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "suporte",
+      "slug": "Life_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fortify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arrogance_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "More_Duration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pulverise_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Impale_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Urgent_Orders_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Bloodthirst_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Corrupting_Cry_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Controlled_Blaze_Support"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "suporte",
+      "slug": "Life_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fortify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arrogance_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Hypothermia_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pulverise_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Impale_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Windburst_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Urgent_Orders_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Bloodthirst_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Corrupting_Cry_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Expert_Retaliation_Support"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "suporte",
+      "slug": "Life_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fork_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fortify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Hypothermia_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ice_Bite_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Critical_Strike_Affliction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Impale_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Windburst_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Second_Wind_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Focused_Ballista_Support"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "suporte",
+      "slug": "Second_Wind_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cold_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lightning_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Faster_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ice_Bite_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Innervate_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Critical_Strike_Affliction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Swift_Affliction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Charged_Traps_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "High-Impact_Mine_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Energy_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Charged_Mines_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Archmage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Impending_Doom_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Pinpoint_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Focused_Channelling_Support"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "suporte",
+      "slug": "Fire_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cold_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lightning_Penetration_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Life_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fortify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ice_Bite_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Innervate_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Energy_Leech_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Intensify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Impending_Doom_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Arrogance_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Bloodthirst_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "An_Indomitable_Spirit",
+   "nome": "Um Espírito Indomável",
+   "en": "An Indomitable Spirit",
+   "ato": 4,
+   "gatilho": {
+    "fase": "poe-a4-the-mines-level-2"
+   },
+   "recompensas": {
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Dominating_Blow"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Splash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Minion_Damage_Support"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Crash"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fortify_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Melee_Physical_Damage_Support"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Volcanic_Fissure"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Elemental_Damage_with_Attacks_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Vicious_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Lifetap_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fire_Penetration_Support"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Wintertide_Brand"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Controlled_Destruction_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Efficacy_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Bonechill_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Hypothermia_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "The_Eternal_Nightmare",
+   "nome": "O Eterno Pesadelo",
+   "en": "The Eternal Nightmare",
+   "ato": 4,
+   "gatilho": {
+    "bossDoAto": 4
+   },
+   "recompensas": {
+    "Witch": [
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Echo_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chain_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Increased_Area_of_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Decay_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Immolate_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Bonechill_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Hex_Bloom_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Unleash_Support"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Echo_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chain_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Increased_Area_of_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Ignite_Proliferation_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multiple_Totems_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Unleash_Support"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Arcanist_Brand"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fist_of_War_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Frigid_Bond_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Spellblade_Support"
+     }
+    ],
+    "Marauder": [
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Echo_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chain_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Increased_Area_of_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Brutality_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multiple_Totems_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fist_of_War_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Behead_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Eternal_Blessing_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Trauma_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Overexertion_Support"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Echo_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chain_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Increased_Area_of_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Volley_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Barrage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Fist_of_War_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Behead_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Trauma_Support"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Echo_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chain_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Increased_Area_of_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Withering_Touch_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Volley_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Barrage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Returning_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Rupture_Support"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Echo_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chain_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Increased_Area_of_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Vile_Toxins_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Withering_Touch_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Bonechill_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Cluster_Traps_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Minefield_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Unleash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Volley_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Barrage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Returning_Projectiles_Support"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "suporte",
+      "slug": "Spell_Echo_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Multistrike_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Multiple_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Chain_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Increased_Area_of_Effect_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Decay_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Immolate_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Unleash_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Greater_Volley_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Barrage_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Returning_Projectiles_Support"
+     },
+     {
+      "tipo": "suporte",
+      "slug": "Frigid_Bond_Support"
+     }
+    ]
+   }
+  }
+ ]
+}

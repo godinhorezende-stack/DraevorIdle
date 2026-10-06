@@ -26,6 +26,7 @@ import { validarAto, temErro, fasesAbertas, normalizar } from './atos-modelo.mjs
 import { lerExecutaveis } from './atos-carregar.mjs';
 import * as RecompensasDeEncontro from './encontros/recompensas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as MissoesDeGemas from './itens-poe/missoes-de-gemas.mjs';
 
 /*
  * Com o sistema de itens do PoE ligado (ITENS_POE=1, só local), a campanha é a do PoE (decisão do dono, 05/10): os 4 atos do Draevor saem
@@ -236,9 +237,11 @@ function completar(estado, dif, f) {
   if (!p.completas.includes(f.huntId)) p.completas.push(f.huntId);
   const nomeDif = CAMPANHA.dificuldades[dif].nome;
   const proxima = FASES[f.indice + 1];
-  return proxima && proxima.ato === f.ato
+  // As missões do PoE que terminam nesta fase (a gema de recompensa para escolher — `itens-poe/missoes-de-gemas.mjs`).
+  const daMissao = MissoesDeGemas.aoCompletarFase(estado, f.huntId);
+  return (proxima && proxima.ato === f.ato
     ? `Fase completa: ${f.nome} (${nomeDif}). Liberou ${proxima.nome}.`
-    : `Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`;
+    : `Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`) + daMissao;
 }
 
 // ---- A CONCLUSÃO da fase por objetivo (atos do editor): matar o chefe, matar N, o item da missão (`atos-modelo.TIPOS_DE_CONCLUSAO`).
@@ -324,9 +327,11 @@ export function venceuBoss(estado, dif, ato) {
   p.bosses.push(Number(ato));
   const nomeDif = CAMPANHA.dificuldades[dif].nome;
   const doEditor = ATOS_DO_EDITOR.get(Number(ato));
+  // As missões do PoE que terminam no chefe do ato (O Eterno Pesadelo, o Malachai do Ato 4).
+  const daMissao = MissoesDeGemas.aoVencerBoss(estado, ato);
   if (doEditor) {
     // Ato do editor: concluir libera o ato seguinte que o exige; NÃO mexe na dificuldade (essa é a campanha legada).
-    estado.avisoDaHunt = `${doEditor.ato.nome} concluído no ${nomeDif}!${doEditor.ato.seguinte ? ' O próximo ato está liberado.' : ''}`;
+    estado.avisoDaHunt = `${doEditor.ato.nome} concluído no ${nomeDif}!${doEditor.ato.seguinte ? ' O próximo ato está liberado.' : ''}${daMissao}`;
     return estado.avisoDaHunt;
   }
   const proxDif = DIFICULDADES[DIFICULDADES.indexOf(dif) + 1];
@@ -336,8 +341,8 @@ export function venceuBoss(estado, dif, ato) {
       : proxDif
         ? `Campanha concluída no ${nomeDif}! O ${CAMPANHA.dificuldades[proxDif].nome} está liberado.`
         : `Campanha concluída no ${nomeDif}!`;
-  estado.avisoDaHunt = aviso;
-  return aviso;
+  estado.avisoDaHunt = aviso + daMissao;
+  return estado.avisoDaHunt;
 }
 
 /**

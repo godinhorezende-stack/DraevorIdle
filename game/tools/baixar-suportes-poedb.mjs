@@ -8,7 +8,7 @@
 // A saída é REFERÊNCIA LOCAL (fora do git e da produção), como o resto do PoE: <REFERENCIAS_POE>/poe-suportes-poedb/
 //   suportes.json (todos) e icones/<Slug>.png.
 // Uso: node tools/baixar-suportes-poedb.mjs
-import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const RAIZ = process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe';
@@ -108,6 +108,27 @@ async function icone(s) {
 }
 
 const todos = await lista();
+/*
+ * Os suportes que a lista em português do poedb ainda não mostra, mas que a coleção do dono no Drive (`suportes-drive/gemas`, em inglês)
+ * tem — as páginas em português de cada um existem (06/10: Coursing Current e Eclipse). A cor, o nível e o ícone vêm da ficha do Drive;
+ * as tags em português, de um dicionário montado com os suportes que estão nas duas fontes.
+ */
+const PASTA_DO_DRIVE = join(RAIZ, 'suportes-drive', 'gemas');
+if (existsSync(PASTA_DO_DRIVE)) {
+  const doDrive = readdirSync(PASTA_DO_DRIVE).filter((f) => f.endsWith('.json')).map((f) => JSON.parse(readFileSync(join(PASTA_DO_DRIVE, f), 'utf8')));
+  const naLista = new Map(todos.map((s) => [s.slug, s]));
+  const tagPt = new Map();
+  for (const d of doDrive) {
+    const pt = naLista.get(d.slug);
+    if (!pt) continue;
+    (d.tags ?? []).forEach((t, i) => { if (pt.tags[i] && !tagPt.has(t)) tagPt.set(t, pt.tags[i]); });
+  }
+  for (const d of doDrive) {
+    if (naLista.has(d.slug) || d.secao === 'Awakened' && !/Support$/.test(d.slug)) continue;
+    todos.push({ slug: d.slug, nome: String(d.nome_pt || d.nome).replace(/^Suporte:\s*/, '').replace(/ Support$/, ''), cor: d.cor, nivelReq: Number(d.nivel_requerido) || 1, tags: (d.tags ?? []).map((t) => tagPt.get(t) ?? t), iconeWebp: d.icone_url });
+    console.log(`do Drive: ${d.slug}`);
+  }
+}
 console.log(`${todos.length} suportes na lista`);
 const saida = [];
 const erros = [];

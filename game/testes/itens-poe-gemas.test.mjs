@@ -197,8 +197,8 @@ async function comGemas(slugs, { crit = 0 } = {}) {
   return e;
 }
 
-test('os 260 suportes do PoE viram gemas de suporte, com o status no jogo e a compatibilidade pelas tags do PoE', { skip: SEM_SUPORTES }, () => {
-  assert.equal(SP.REGISTRO.size, 260);
+test('os 262 suportes do PoE viram gemas de suporte, com o status no jogo e a compatibilidade da lista do PoE', { skip: SEM_SUPORTES }, () => {
+  assert.equal(SP.REGISTRO.size, 262);
   const st = [...SP.REGISTRO.values()].reduce((o, r) => ((o[r.status] = (o[r.status] ?? 0) + 1), o), {});
   assert.ok(st.funciona > 40 && st.parcial > 100, JSON.stringify(st));
   assert.equal(SP.doSlug('Cast_On_Critical_Strike_Support').status, 'funciona');
@@ -207,6 +207,11 @@ test('os 260 suportes do PoE viram gemas de suporte, com o status no jogo e a co
   const def = (s) => GS.defDaGema(SP.doSlug(s).itemId);
   assert.deepEqual(def('Cast_On_Critical_Strike_Support').suporte.requer, ['poe:Magia'], 'o gatilho restringe só a magia que ativa');
   assert.ok(def('Faster_Projectiles_Support')?.suporte.requer.includes('poe:Projétil') ?? true);
+  // A compatibilidade é a LISTA do PoE (o Drive): a Bola de Fogo aceita Dano Adicional de Fogo e não aceita Múltiplos Golpes.
+  const bola = GS.defDaGema(G.doSlug('Fireball').itemId);
+  assert.ok(GS.compativel(def('Added_Fire_Damage_Support').suporte, bola.tags));
+  assert.ok(!GS.compativel(def('Multistrike_Support').suporte, bola.tags), 'Múltiplos Golpes é de ataque corpo a corpo');
+  assert.ok(Number.isInteger(def('Added_Fire_Damage_Support').suporte.indicePoe));
   // A loja e o drop do modo PoE: só os suportes do PoE.
   const loja = GS.catalogoDaLoja({ level: 1, inventory: [] }).filter((l) => GS.defDaGema(l.id)?.tipo === 'support');
   assert.ok(loja.length >= 250 && loja.every((l) => GS.defDaGema(l.id).poe), 'os suportes do Draevor saem da loja');

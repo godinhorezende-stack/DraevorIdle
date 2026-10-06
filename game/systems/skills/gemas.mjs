@@ -18,6 +18,7 @@ import { ITEM_CATALOG, ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS 
 import * as Tags from './tags.mjs';
 import * as R from '../regras.mjs';
 import * as SocketsPoe from '../itens-poe/sockets.mjs';
+import * as CompatSuportes from '../itens-poe/compat-suportes.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
@@ -235,7 +236,8 @@ export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categor
   ACOES.set(entry.id, entry);
   const def = {
     // As tags do Draevor (o molde) e as do PoE (`poe:Projétil`, `poe:Magia`...): os suportes do PoE conferem a compatibilidade por estas.
-    itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: [...Tags.tagsDaAcao(entry), ...(gema.tags ?? []).map((t) => `poe:${t}`)], classeRecomendada: null,
+    // + a marca dos suportes do PoE que a suportam (`poe-sup:<bits>`, a lista do PoE — `itens-poe/compat-suportes.mjs`).
+    itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: [...Tags.tagsDaAcao(entry), ...(gema.tags ?? []).map((t) => `poe:${t}`), ...(CompatSuportes.tagDaAtiva(gema.slug) ? [CompatSuportes.tagDaAtiva(gema.slug)] : [])], classeRecomendada: null,
     levelMinimo, levelDaMagia: levelMinimo, castTime, progressao: {}, fatorDeDano: 1, fatorDeCura: 1, fatorDeCusto: 1,
     poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
     // A XP por nível: a da gema ou, sem ela no arquivo, a da gema de base (`tabelaDeXp`, de `GemasPoe.gemaDaTabelaDeXp`).
@@ -277,9 +279,11 @@ function tabelaDeXpDoPoe(gema) {
  */
 export function registrarSuporte({ itemId, suporte, requer = [], algum = [], exclui = [], efeitoDoPoe, gatilho = null, levelMinimo = 1 }) {
   const id = `poe-suporte:${suporte.slug}`;
+  // O índice do suporte na lista do PoE (quais gemas ativas ele suporta — `itens-poe/compat-suportes.mjs`); sem lista, as tags.
+  const indicePoe = CompatSuportes.indiceDoSuporte(suporte.slug);
   const def = {
     itemId, tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, levelMinimo,
-    suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho },
+    suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho, ...(indicePoe != null ? { indicePoe } : {}) },
     poe: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, en: suporte.en, suporte: true },
     poeXp: tabelaDeXpDoPoe(suporte),
   };
@@ -288,7 +292,7 @@ export function registrarSuporte({ itemId, suporte, requer = [], algum = [], exc
     id: itemId, name: `gema: ${suporte.nome.toLowerCase()}`, nomeExibicao: `Gema: ${suporte.nome}`, weight: 0.1, stackable: false, type: 'gema', rarity: 'comum',
     hasSprite: true, spriteDe: CONFIG.sprites.support ?? CONFIG.sprites.outro,
     poeGema: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, suporte: true },
-    gemaDef: { tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
+    gemaDef: { tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, requer, algum, exclui, ...(indicePoe != null ? { indicePoe } : {}), efeito: {}, porNivel: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
     sell: 0,
   };
   return def;

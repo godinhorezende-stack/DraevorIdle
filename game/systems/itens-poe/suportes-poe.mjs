@@ -240,6 +240,12 @@ let INICIADO = null;
  * Liga os suportes do PoE (uma vez): lê `suportes.json`, registra o item e o suporte de cada um (`registrarSuporte` de `skills/gemas.mjs`,
  * passado por quem chama). Devolve `{ suportes, porStatus }`.
  */
+/*
+ * Os suportes SEM a lista do PoE (a coleção do Drive não traz quais gemas eles suportam — `compat-suportes.mjs`) seguem as tags; o
+ * Pacifism "reforça qualquer habilidade que ataque inimigos": as que não atacam (aura, arauto, guarda, postura, clamor, vínculo) ficam de
+ * fora. (O Inspiration "suporta qualquer habilidade" — sem exclusão.)
+ */
+const EXCLUI = { Pacifism_Support: ['poe:Aura', 'poe:Arauto', 'poe:Guarda', 'poe:Postura', 'poe:Clamor', 'poe:Vínculo'] };
 export function iniciar({ registrarSuporte } = {}) {
   if (INICIADO) return INICIADO;
   const arq = join(PASTA, 'suportes.json');
@@ -255,7 +261,7 @@ export function iniciar({ registrarSuporte } = {}) {
     REGISTRO.set(s.slug, { itemId, status, motivos, suporte: s });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
     registrarSuporte?.({
-      itemId, suporte: s, requer: requerDe(s), algum: algumDe(s), levelMinimo: s.nivelReq ?? 1,
+      itemId, suporte: s, requer: requerDe(s), algum: algumDe(s), exclui: EXCLUI[s.slug] ?? [], levelMinimo: s.nivelReq ?? 1,
       // Sem sistema no jogo (totem, armadilha, lacaio...): não mexe em nada.
       efeitoDoPoe: status === 'nao' ? () => ({}) : (nivel, qualidade, ativa) => efeitoNoNivel(s.slug, nivel, qualidade, ativa).efeito,
       gatilho: status === 'nao' ? null : gatilhoDe(s, textosDoNivel(s, 1)) ? (nivel) => gatilhoDe(s, textosDoNivel(s, nivel)) : null,
