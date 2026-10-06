@@ -41,6 +41,7 @@ import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
 import * as FrascosPoe from '../systems/itens-poe/frascos.mjs';
 import * as PreviaPoe from '../systems/itens-poe/previa-da-area.mjs';
+import * as ModsDeMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
 import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/combate.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
@@ -322,7 +323,8 @@ function characterParaCliente(personagem, estado) {
       speed: R.baseSpeed(estado.level),
       // Real (fórmula, não o valor fixo do molde): 48% no level 8 é a MESMA
       // conta, mas fixo ele ficaria errado no primeiro level up.
-      expBonus: R.levelBonus(estado.level),
+      // Na curva do PoE não há bônus de level baixo (`Boosts.expDoBicho`).
+      expBonus: R.levelMaximo() !== Infinity ? 0 : R.levelBonus(estado.level),
       // Armadura, defesa, dano, crítico, bloqueio, leech, proteção, alcance,
       // regeneração do equipamento e velocidade — do equipamento REAL.
       ...Ficha.combate(estado),
@@ -331,6 +333,8 @@ function characterParaCliente(personagem, estado) {
       ...Promocao.derivados(estado, Ficha.combate(estado).regenDaArvore),
       // A Coleção (outfits e montarias que ele tem) — a faixa da aba Aparência. Ver `Aparencia.colecao`.
       collection: Aparencia.colecao(estado),
+      // A exp por raridade do monstro (PoE: a ficha mostra os multiplicadores de verdade).
+      ...(ItensPoeCatalogo.ligado() ? { expPorRaridadePoe: ModsDeMonstroPoe.DADOS.expPorRaridade ?? null } : {}),
       // Quantos sqm a arma alcança — o seletor "Distância" marca "máx N" acima disso.
       attackRange: Cacadas.alcanceDaArma(Cacadas.armaDoPersonagem(estado)),
       // Accuracy e Evasion viram chance contra um bicho do MESMO level (a ficha mostra o que elas valem).

@@ -364,3 +364,11 @@
 
 /* A ficha sem a coluna das Skills (PoE: não há perícias) — sheet.mjs. */
 .sheet.sem-skills { grid-template-columns: 1fr; }
+
+/* ---- A ficha do PoE (sheet.mjs `fichaDoPoe`) ---- */
+.poe-ficha-sub { margin: 10px 0 4px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8fa3a8; font-weight: 500; }
+.stat-card.poe-atributo b { font-size: 26px; }
+.stat-card.poe-no-teto { box-shadow: inset 0 0 0 1px #f0d36b66; }
+/* Os três atributos sempre lado a lado (como no PoE), também no celular. */
+.sheet-secao[data-secao="poe-atributos"] .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 720px) { .sheet-secao[data-secao="poe-atributos"] .stat-card em { font-size: 10.5px; } .stat-card.poe-atributo b { font-size: 22px; } }

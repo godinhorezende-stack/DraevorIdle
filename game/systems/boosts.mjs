@@ -76,6 +76,7 @@ export function paraCliente(estado) {
     fontes: [...garantir(estado).map((b) => ({ ...b })), ...(buff ? [buff] : [])],
     // Os dois MULTIPLICADORES, calculados aqui: a ficha e a régua de XP só mostram, não refazem a conta.
     fatorStamina: Stamina.fatorDeExp(estado),
-    estagio: estagioDeExp(estado.level),
+    // Na curva do PoE não há estágio (`expDoBicho`): ×1.
+    estagio: R.levelMaximo() !== Infinity ? 1 : estagioDeExp(estado.level),
   };
 }
