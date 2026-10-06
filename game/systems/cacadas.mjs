@@ -22,14 +22,12 @@ import * as Ficha from './ficha.mjs';
 import * as Bau from './bau.mjs';
 import * as Boosts from './boosts.mjs';
 import * as Stamina from './stamina.mjs';
-import * as Treinos from './treinos.mjs';
 import * as Premium from './premium.mjs';
 import * as Beta from './modo-beta.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
 import * as Prey from './prey.mjs';
-import * as Imbuements from './imbuements.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Arena from './arena.mjs';
 import * as Arvore from './arvore.mjs';
@@ -361,15 +359,9 @@ function passarOTempoOffline(estado, hunt, ms, extra) {
   totais.time += ms / 1000;
   totais.kills += extra.kills ?? 0;
   totais.exp += extra.exp ?? 0;
-  if (hunt.huntId === 'treino') {
-    Treino.gastarMana(estado, (Treino.manaDoPatioPorSegundo(estado) * ms) / 1000);
-    return;
-  }
   Boosts.consumir(estado, ms);
   BuffPower.consumir(estado, ms);
   Prey.consumir(estado, ms);
-  Imbuements.consumir(estado, ms);
-  Treinos.encherTanque(estado, ms);
 }
 
 /** Na volta (login): termina a ausência e devolve `{report, morreu}` — ou `null`, sem ausência. */
@@ -409,37 +401,6 @@ function posicaoDoBoss(boss, grade) {
   const [dx, dy] = d >= 2 ? [(cx - px) / d, (cy - py) / d] : [0, -1];
   const alvo = casaAndavelMaisProxima(grade, Math.round(px + dx * 5), Math.round(py + dy * 5));
   return [{ key, x: alvo.x, y: alvo.y }];
-}
-
-/**
- * `send({t:'training', action:'start', mode:'online'})` — o pátio: a hunt
- * 'treino' na sala real do treino online, com os bonecos como alvos que não morrem,
- * não andam e não batem. O personagem começa onde o original põe: entre os dois.
- */
-export function entrarNoPatio(estado) {
-  if (estado.hunt) return { ok: false, erro: 'Você já está numa caçada.' };
-  const grade = gradeDaHunt({ id: 'treino' });
-  const bonecos = Treinos.bonecos();
-  const monstros = bonecos.map((b, i) => ({
-    uid: 800000 + i, key: null, name: b.nome ?? 'Target Dummy', look: b.look ?? 0, x: b.x, y: b.y, dir: 2,
-    hp: 1_000_000, maxHp: 1_000_000, armor: 0, exp: 0, loot: [], dummy: true,
-  }));
-  // O posto: a casa a 1 SQM do boneco, escolhida UMA vez (ver `Treinos.postoNoPatio`).
-  const posto = Treinos.postoNoPatio(grade.andavel, bonecos);
-  if (!posto) return { ok: false, erro: 'Não há lugar livre ao lado do boneco agora.' };
-  const alvo = monstros.find((m) => Math.max(Math.abs(m.x - posto.x), Math.abs(m.y - posto.y)) === 1) ?? monstros[0];
-  const settings = estado.settings ?? {};
-  estado.rumo = null;
-  estado.hunt = {
-    huntId: 'treino', modo: 'auto', z: grade.z, pos: { x: posto.x, y: posto.y, dir: direcaoPara(posto, alvo) }, posto: { x: posto.x, y: posto.y },
-    monstros, alvo: alvo.uid, strategy: 'nearest', distancia: Math.max(0, Math.min(6, Number(settings.distance) || 0)),
-    rumo: null, rumoValidoAte: 0, proximoPassoEm: 0, proximoGolpeEm: 0, eventos: [], mapaEnviado: false,
-    clock: 0, ultimoTique: Date.now(), cooldowns: {}, assistencia: true, autoBarra: true,
-    levaAlvo: 0, lureVolta: 0, leva: 0, lurando: false, respawns: [], isBoss: false, bossId: null,
-    startedAt: Date.now(), sessao: novaSessao(estado, 'Pátio de treino', 'auto'), treinoAntes: Treino.paraCliente(estado),
-    viagem: { hunt: 'Pátio de treino', motivo: 'partida' },
-  };
-  return { ok: true };
 }
 
 /** Mapa de editor fora da campanha (sem instância): os spawns dele viram um ponto por bicho, com a 1ª criatura. */
@@ -1028,33 +989,6 @@ export function sair(estado) {
   return { ok: true };
 }
 
-/** Para que lado olhar, de `de` para `para` (0 norte, 1 leste, 2 sul, 3 oeste). */
-function direcaoPara(de, para) {
-  const dx = para.x - de.x;
-  const dy = para.y - de.y;
-  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 1 : 3;
-  return dy > 0 ? 2 : 0;
-}
-
-/*
- * ---- Encerrar o treino online (o pátio) ----
- *
- * O "parar" do pátio (`training stop` e `stopHunt`) caía em `Exercicio.parar`,
- * que só conhece o Exercise: respondia "Você não está treinando." com o
- * personagem DENTRO do pátio, e não havia saída — `relatorioDoPatio` existia e
- * ninguém chamava. Aqui: o relatório, a hunt some (ele volta para a casa da
- * cidade de onde saiu, que nunca mudou — a lógica de sempre da volta de uma
- * caçada) e o movimento fica livre de novo, porque `Treinos.emTreino` deixa de
- * valer.
- */
-export function sairDoPatio(estado) {
-  if (estado.hunt?.huntId !== 'treino') return { ok: false, erro: 'Você não está treinando.' };
-  const relatorio = Treinos.relatorioDoPatio(estado);
-  estado.hunt = null;
-  estado.rumo = null;
-  return { ok: true, relatorio };
-}
-
 /** `send({t:'huntTarget', uid})` — `uid:null` cancela o alvo. */
 export function definirAlvo(estado, { uid }) {
   if (!estado.hunt) return { ok: false, erro: 'Você não está numa hunt.' };
@@ -1405,18 +1339,10 @@ export function tique(estado, personagem, agora = Date.now()) {
   hunt.clock = (hunt.clock ?? 0) + passou;
   hunt.ultimoTique = agora;
   Ficha.totais(estado).time += passou / 1000;
-  // O pátio "rende como caçar — e custa o mesmo tempo": gasta stamina, mas
-  // não boost (não há exp) nem devolve a stamina de treino.
   Stamina.gastar(estado, passou);
-  // No pátio o personagem gasta em magia a mana que regenera (ver `Treino.manaDoPatioPorSegundo`).
-  if (hunt.huntId === 'treino') Treino.gastarMana(estado, (Treino.manaDoPatioPorSegundo(estado) * passou) / 1000);
-  if (hunt.huntId !== 'treino') {
-    Boosts.consumir(estado, passou);
-    BuffPower.consumir(estado, passou);
-    Prey.consumir(estado, passou); // "o relógio só corre dentro da hunt"
-    Imbuements.consumir(estado, passou); // idem: 50.301 s caçando = 50.340 s a menos no Strike do Zoros
-    Treinos.encherTanque(estado, passou); // "caçar devolve" a stamina de treino
-  }
+  Boosts.consumir(estado, passou);
+  BuffPower.consumir(estado, passou);
+  Prey.consumir(estado, passou); // "o relógio só corre dentro da hunt"
   regenerar(estado, passou);
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
@@ -1472,25 +1398,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     hunt.percurso.passo = waypointMaisPerto(grade.percurso, hunt.pos, 0, grade.percurso.length, hunt.z);
   }
 
-  /*
-   * ---- No pátio, nenhum passo ----
-   *
-   * O pátio rodava o passo da Caça Automática: com "Distância" > 0 o kite
-   * levava o personagem a 3 SQM do boneco (18,12 → 18,14), e o `huntWalk` do
-   * teclado/analógico andava. Treinando, ele fica no posto escolhido na entrada
-   * (`hunt.posto`): sem rumo manual, sem perseguição, sem recuo, sem rota. Se
-   * por algum caminho a posição divergir do posto (uma caçada gravada antes
-   * disto), o servidor a devolve ao posto — sem recalcular nada.
-   */
-  if (hunt.huntId === 'treino') {
-    hunt.rumo = null;
-    // Pátio gravado antes de existir o posto: escolhe uma vez e guarda.
-    hunt.posto ??= Treinos.postoNoPatio(grade.andavel);
-    if (hunt.posto && (hunt.pos.x !== hunt.posto.x || hunt.pos.y !== hunt.posto.y)) {
-      hunt.pos.x = hunt.posto.x;
-      hunt.pos.y = hunt.posto.y;
-    }
-  } else if (!hunt.conjurando && Controle.podeAgir(hunt) && R.jaPode(agora, hunt.proximoPassoEm)) {
+  if (!hunt.conjurando && Controle.podeAgir(hunt) && R.jaPode(agora, hunt.proximoPassoEm)) {
     // (Conjurando uma skill — o Cast Time da gema — o personagem não anda.)
     /*
      * ---- Movimento: quantos passos neste tique ----
@@ -2097,12 +2005,6 @@ function magiasDoEspectro(hunt, l, agora, ficha) {
 /** `send({t:'huntWalk', dx, dy})` — mesmo modelo de rumo do `andar` da cidade. */
 export function andar(estado, { dx, dy }) {
   if (!estado.hunt) return;
-  // No pátio o personagem fica no posto: movimento pedido é recusado.
-  if (estado.hunt.huntId === 'treino') {
-    estado.hunt.rumo = null;
-    estado.hunt.destino = null;
-    return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
-  }
   // A tecla manda mais que o clique: apertou uma direção, larga o destino.
   if (dx || dy) estado.hunt.destino = null;
   if (!dx && !dy) {
@@ -2129,10 +2031,6 @@ export function andarAte(estado, { x, y }) {
   if (!hunt) return { ok: true };
   const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
   if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return { ok: true };
-  if (hunt.huntId === 'treino') {
-    hunt.destino = null;
-    return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
-  }
   if (hunt.modo !== 'online') return { ok: false, erro: 'Na Caça Automática quem anda é a rota.' };
   if (destino.x === hunt.pos.x && destino.y === hunt.pos.y) {
     hunt.destino = null;
@@ -2181,7 +2079,6 @@ function passoDoClique(hunt, grade) {
 export function usarEscada(estado, { x, y }) {
   const hunt = estado.hunt;
   if (!hunt) return { ok: false, erro: 'Você não está numa hunt.' };
-  if (hunt.huntId === 'treino') return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
   const base = gradeDaHunt(huntOuMapaCustom(hunt.huntId));
   const mapa = base.mapa;
   const tipo = Number(mapa?.floors?.[hunt.z]?.escada?.[y * mapa.width + x] ?? 0);

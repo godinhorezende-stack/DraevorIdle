@@ -41,7 +41,6 @@ import { temHabilidade } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
 import * as Summon from './summon.mjs';
 import * as Arvore from './arvore.mjs';
-import * as Proficiencia from './proficiencia.mjs';
 import * as Reforcos from './skills/reforcos.mjs';
 import * as Areas from '../engine/areas.mjs';
 import * as Secundarios from './skills/golpes-secundarios.mjs';
@@ -166,10 +165,8 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
   if (ehMagia && fichaBase.critChanceMagia != null && fichaBase.critChanceMagia !== fichaBase.critChance) ficha = { ...ficha, critChance: fichaBase.critChanceMagia };
-  // Runa: + crítico de runa da proficiência. Magia: + "% da perícia como dano".
-  const prof = fichaBase.proficiencia;
-  if (entry.kind === 'rune' && (prof.critChanceRunas || prof.critDanoRunas)) ficha = { ...ficha, critChance: ficha.critChance + prof.critChanceRunas, critMultiplier: ficha.critMultiplier + prof.critDanoRunas };
-  const daPericia = entry.kind === 'spell' ? Proficiencia.daPericia(estado, prof.periciaNaMagia, fichaBase.skillBonus) : 0;
+  // (A proficiência de arma saiu — dono, 06/10: o "% da perícia como dano" e o crítico de runa dela não existem mais.)
+  const daPericia = 0;
   // O treino em %: magic level (mágicas), melee (físicas de perto), distance (físicas de longe).
   const doTreino = defDaGema ? Gemas.bonusDoTreino(estado, defDaGema, fichaBase) : fichaBase.skillBonus?.magic ?? 0;
   // A gema: o crítico das supports soma na chance/dano; o nível e as supports multiplicam o dano.
@@ -215,7 +212,7 @@ function contaDaCura(estado, entry, efeitoDaGema) {
   const { min, max } = danoNoLevel(entry, estado.level);
   const f = Ficha.combate(estado);
   const def = Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id));
-  const pericia = entry.kind === 'spell' ? Proficiencia.daPericia(estado, Proficiencia.bonus(estado).periciaNaCura) : 0;
+  const pericia = 0; // a proficiência de arma (que dava "% da perícia como cura") saiu
   const tags = Tags.tagsDaAcao(entry);
   // O treino (ML) × os reforços de treino + o ML que vem de outra perícia (Divine Defiance).
   const doTreino = (def ? Gemas.bonusDoTreino(estado, def, f) : f.skillBonus?.magic ?? 0) * (1 + Reforcos.bonus(estado.hunt, 'treino', tags) / 100) + (def ? Reforcos.treinoDeOutraPericia(estado, estado.hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);

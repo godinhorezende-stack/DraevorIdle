@@ -332,7 +332,7 @@ function ataqueElemental(derived) {
     chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
     const notas = [];
     if (daArma === key) notas.push('arma');
-    if (doImbuement?.tipo === key) notas.push(`imbuement ${porcento(doImbuement.pct)}%`);
+    if (doImbuement?.tipo === key) notas.push(`conversão ${porcento(doImbuement.pct)}%`);
     if (notas.length) chip.append(el('em', 'element-nota', notas.join(' · ')));
     const uso =
       key === 'physical'
@@ -1011,25 +1011,6 @@ export function renderSheet(body, { state, send, closeModal }) {
     body.append(grade);
   }
 
-
-  // ---------- imbuements ativos ----------
-  const imbued = Object.entries(character.imbuements ?? {}).flatMap(([slot, list]) =>
-    (list ?? []).map((entry) => ({ slot, ...entry }))
-  );
-  if (imbued.length) {
-    body.append(titulo('Imbuements ativos', 'imbuements'));
-    const rows = el('div', 'rows');
-    for (const entry of imbued) {
-      const row = el('div');
-      const left = Math.ceil(entry.left / 60000);
-      row.append(
-        el('span', null, `${entry.name} (${entry.slot})`),
-        el('b', null, entry.paused ? 'pausado' : left >= 60 ? `${Math.floor(left / 60)}h${String(left % 60).padStart(2, '0')}` : `${left} min`)
-      );
-      rows.append(row);
-    }
-    body.append(rows);
-  }
 
   // ---------- totais ----------
   body.append(titulo('Totais', 'ficha-totais'));

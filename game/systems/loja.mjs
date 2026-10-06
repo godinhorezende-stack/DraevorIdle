@@ -76,8 +76,13 @@ const cartaoDePasseDePlataforma = (kind, prefixo, dias, estado) => {
 
 /** `send({t:'store'})` — o catálogo inteiro, prateleira por prateleira. */
 /** Todas as entradas da loja real, por id — o preço e o que cada uma entrega. */
-const PRATELEIRAS = ['services', 'exercises', 'boosts', 'pacotes', 'itens', 'buffpower', 'upgrades', 'extras', 'mounts', 'outfits', 'utilities'];
-const ENTRADA_POR_ID = new Map(PRATELEIRAS.flatMap((k) => (STORE_REAL[k] ?? []).map((e) => [e.id, { ...e, prateleira: k }])));
+const PRATELEIRAS = ['services', 'boosts', 'pacotes', 'itens', 'buffpower', 'upgrades', 'extras', 'mounts', 'outfits', 'utilities'];
+/*
+ * O TREINO saiu do jogo (dono, 06/10 — `sem-treino.mjs`): a prateleira de Exercise, o Scroll Speed Exercise e os Pacotes Treinador
+ * não se vendem mais (nem aparecem, nem se compram por id).
+ */
+const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '');
+const ENTRADA_POR_ID = new Map(PRATELEIRAS.flatMap((k) => (STORE_REAL[k] ?? []).filter((e) => !FORA_DA_LOJA(e)).map((e) => [e.id, { ...e, prateleira: k }])));
 // Os pacotes de quantidade de um produto ("5 Exp Potions", "10 Stamina Extension")
 // vêm em `opcoes`, cada um com o próprio id e preço.
 for (const k of PRATELEIRAS) for (const e of STORE_REAL[k] ?? []) {
@@ -131,7 +136,9 @@ export function catalogoDaLoja(estado, conta = null) {
   const compras = estado.compras ?? {};
   const locais = new Map(servicosLocais(estado).map((e) => [e.id, e]));
   loja.services = loja.services.map((e) => ({ ...e, ...(locais.has(e.id) ? { owned: locais.get(e.id).owned, ativoAte: locais.get(e.id).ativoAte } : {}) }));
-  for (const k of ['exercises', 'itens', 'pacotes', 'buffpower']) {
+  loja.exercises = [];
+  for (const k of PRATELEIRAS) if (Array.isArray(loja[k])) loja[k] = loja[k].filter((e) => !FORA_DA_LOJA(e));
+  for (const k of ['itens', 'pacotes', 'buffpower']) {
     loja[k] = loja[k].map((e) => ({ ...e, tem: e.itemId ? quantosTem(estado, e.itemId) : e.tem, owned: !!compras[e.id] }));
   }
   for (const k of ['boosts', 'extras']) loja[k] = loja[k].map((e) => ({ ...e, owned: !!compras[e.id] }));

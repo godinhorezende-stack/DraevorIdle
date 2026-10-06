@@ -19,7 +19,6 @@ import * as Especializacoes from './personagem/especializacoes.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
 import * as Gemas from './gemas.mjs';
-import * as Imbuements from './imbuements.mjs';
 // O sistema de itens (raridade, níveis 1–5, faixas por nível, pools): a régua
 // de cada atributo passa a ser a dele — ver `systems/itens/config.mjs`.
 import * as ItensConfig from './itens/config.mjs';
@@ -412,7 +411,7 @@ export function guardaPelosSockets(s, p) {
 // Com o sistema de itens do PoE ligado NÃO HÁ capacidade (dono, 06/10: "não existe cap mais" — o PoE não tem peso): infinita, então o
 // peso nunca impede pegar loot, trocar nem manda nada para o Depósito.
 export const capacidade = (estado) =>
-  itensPoeLigado() ? Infinity : (R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
+  itensPoeLigado() ? Infinity : R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade;
 
 /**
  * "+Life" e "+Mana" dos adds, mais a Life do STR e a Mana do INT. Aplicados como diferença

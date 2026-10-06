@@ -1721,10 +1721,9 @@ function selarAfixos(cell, entry) {
 function desgasteDaPeca(entry) {
   const meta = ctx.state.items?.[entry?.id];
   if (!meta) return null;
-  // Cargas: só a ARMA DE TREINO gasta (o servidor desconta a cada golpe no boneco — `exercicio.mjs`). Amuleto, anel e runa trazem `charges` no
-  // catálogo, mas nada os gasta: a barra "5 de 5 cargas" seria uma informação falsa.
-  const ehTreino = meta.type === 'exercise weapons';
-  const tipo = meta.charges > 0 && ehTreino ? 'carga' : meta.duration > 0 ? 'tempo' : null;
+  // Cargas: só a arma de treino gastava (o treino saiu do jogo — dono, 06/10). Amuleto, anel e runa trazem `charges` no catálogo, mas
+  // nada os gasta: a barra "5 de 5 cargas" seria uma informação falsa. Fica o desgaste por tempo.
+  const tipo = meta.duration > 0 ? 'tempo' : null;
   if (!tipo) return null;
 
   const total = tipo === 'carga' ? meta.charges : meta.duration;
@@ -2166,7 +2165,7 @@ export function renderInventory() {
   const assinatura = JSON.stringify([
     character.equipment, character.ammoChoices ?? null, character.ammoPending ?? null, character.municao ?? 0,
     character.derived?.capacity, character.weight, character.desgaste ?? null, character.joias ?? null,
-    character.imbuements ?? null, character.itemRules ?? null, (character.premium ?? 0) > 0, character.blessings ?? null,
+    character.itemRules ?? null, (character.premium ?? 0) > 0, character.blessings ?? null,
     (character.frascosPoe ?? []).map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.ativoAte > 0]),
   ]);
   if (body.dataset.assinaturaDoInventario === assinatura && body.firstChild) return;
@@ -4090,7 +4089,7 @@ export function renderContainer() {
      */
     const assinatura = JSON.stringify([
       character.inventory, character.itemRules ?? null, character.bossPouch ?? null,
-      character.storeInbox ?? null, character.imbuements ?? null,
+      character.storeInbox ?? null,
     ]);
     if (cabecaDaMochila.assinatura === assinatura) return;
     cabecaDaMochila.assinatura = assinatura;

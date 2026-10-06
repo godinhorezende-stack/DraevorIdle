@@ -19,8 +19,6 @@ import * as Prey from './prey.mjs';
 import * as Arvore from './arvore.mjs';
 import * as Gemas from './gemas.mjs';
 import * as Charms from './charms.mjs';
-import * as Proficiencia from './proficiencia.mjs';
-import * as Imbuements from './imbuements.mjs';
 import * as Aparencia from './aparencia.mjs';
 // Os efeitos especiais (Lendário) e supremos (Mítico) das peças vestidas.
 import * as EfeitosDeItem from './itens/efeitos.mjs';
@@ -169,12 +167,6 @@ function calcularCombate(estado) {
   for (const [k, v] of Object.entries(passivas.legado)) arv[k] = (arv[k] ?? 0) + v;
   // As gemas encaixadas e acesas (ver `game/systems/gemas.mjs`), em % e pontos.
   const gem = Gemas.bonus(estado);
-  // Os perks escolhidos da proficiência da arma na mão (ver `game/systems/proficiencia.mjs`).
-  const prof = Proficiencia.bonus(estado);
-  for (const [p, v] of Object.entries(prof.pericias)) somaPericia(p, v);
-  // Os imbuements das peças vestidas (ver `game/systems/imbuements.mjs`).
-  const imb = Imbuements.bonus(estado);
-  for (const [p, v] of Object.entries(imb.pericias)) somaPericia(p, v);
   for (const [chave, pericias] of Object.entries(PERICIAS_DA_ARVORE)) {
     for (const p of pericias) if (arv[chave]) somaPericia(p, arv[chave]);
   }
@@ -195,7 +187,7 @@ function calcularCombate(estado) {
   const razaoDoMaximo = ItensConfig.ATRIBUTOS.phys_add?.proporcaoDoMaximo ?? 2;
   const addMin = af.phys_add ?? 0;
   const addMax = addMin * razaoDoMaximo;
-  const calcAtaque = (a, adicional = (addMin + addMax) / 2) => Math.round((a ?? 0) + (af.atk_flat ?? 0) + adicional + prof.ataque);
+  const calcAtaque = (a, adicional = (addMin + addMax) / 2) => Math.round((a ?? 0) + (af.atk_flat ?? 0) + adicional);
   // A faixa da PEÇA (piso e teto sorteados no drop): cada golpe sorteia entre as duas (`ataqueDoGolpe`).
   const [faixaMin, faixaMax] = faixaDoCampo(estado.equipment?.weapon, 'attack');
   // A munição do tipo da arma (flecha no arco) soma o ataque dela, também em faixa.
@@ -239,7 +231,7 @@ function calcularCombate(estado) {
   }
   // As resistências dos adds (uma por tipo de dano, holy incluso), das gemas e dos imbuements.
   for (const el of ELEMENTOS) {
-    protection[el] += (af[el === 'physical' ? 'phys_res' : `${el}_res`] ?? 0) + (gem.resistencia[el] ?? 0) + (imb.protecao[el] ?? 0);
+    protection[el] += (af[el === 'physical' ? 'phys_res' : `${el}_res`] ?? 0) + (gem.resistencia[el] ?? 0);
   }
   // O LIMITE (`combate/limites.json`): a proteção final de cada elemento vai de 0 a 100%; o que passa disso fica em `excedentes` (a tela mostra à parte).
   const excedentes = { protection: {}, critChance: 0, ataqueDuplo: 0, resistenciaAControle: Math.max(0, (af.control_resist ?? 0) - Limites.LIMITES.resistenciaAControle.maximo) };
@@ -252,7 +244,7 @@ function calcularCombate(estado) {
   // O crítico BASE da arma (`critChance` do catálogo, já na soma das peças) × o % de crítico LOCAL dela: só o ACRÉSCIMO local entra aqui (a qualidade não mexe em crítico).
   const critLocalDaArma = armaFinal ? (armaFinal.critChance.final - armaFinal.critChance.base) / 10000 : 0;
   // A chance em pontos (base + o que soma) × o "Chance de Crítico aumentada" RELATIVO das peças do PoE (`crit_chance_inc`, 0 sem elas).
-  const critPontos = CRITICO_BASE + critLocalDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance;
+  const critPontos = CRITICO_BASE + critLocalDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + Aparencia.colecao(estado).critChance;
   const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100);
   const critChance = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
@@ -275,8 +267,7 @@ function calcularCombate(estado) {
     elemental: Limites.limitar(af.elem_pen ?? 0, Limites.LIMITES.penetracao.maximo),
     porElemento: Object.fromEntries(Limites.ELEMENTOS_DE_PENETRACAO.map((el) => [el, Limites.limitar(af[`${el}_pen`] ?? 0, Limites.LIMITES.penetracao.maximo)])),
   };
-  defense += prof.defesa;
-  const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) + prof.alcance : 1;
+  const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) : 1;
   const defesas = defesasDaFicha(estado, af, doAtributo, espStat);
   const ficha = {
     // STR/DEX/INT (total, e o que veio da vocação+level — a ficha mostra os dois).
@@ -292,7 +283,7 @@ function calcularCombate(estado) {
     afinidades: esp.dano,
     fontesDasAfinidades: esp.fontes,
     // De onde vem cada parte dos números (a ficha mostra ao passar o mouse): ver `origensDaFicha`.
-    origens: origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens: soma, prof, imb, gem, buff }),
+    origens: origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens: soma, gem, buff }),
     armor: defesas.armour,
     ataque,
     ataqueMin,
@@ -311,12 +302,12 @@ function calcularCombate(estado) {
     critChanceMagia,
     // Os números da PRÓPRIA arma (base, qualidade, locais → dano físico final, APS, crítico, DPS físico da arma): o que o tooltip e o editor mostram. `null` sem arma.
     arma: armaFinal,
-    critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100 + prof.critDano + imb.critDano,
+    critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
     // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
-    ...comDuasArmas(bloqueioDaFicha(estado, escudo, w, prof, shielding, af), armaSecundaria),
+    ...comDuasArmas(bloqueioDaFicha(estado, escudo, w, shielding, af), armaSecundaria),
     // O dano da arma da mão secundária (PoE, duas armas): o golpe alterna entre as duas (`hunt/combate.mjs`).
     ...(armaSecundaria
       ? (() => {
@@ -330,8 +321,8 @@ function calcularCombate(estado) {
     energyShield: defesas.energyShield,
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
     accuracy: Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') }).bruto),
-    lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100 + prof.lifeLeech + imb.lifeLeech,
-    manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100 + prof.manaLeech + imb.manaLeech,
+    lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100,
+    manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
     esquiva: gem.esquiva / 100,
     // A mitigação das gemas, a dos poderes (Pele de Pedra, Coração do Titã) e o add Damage Reduction multiplicam: 1 − (1 − a)(1 − b)(1 − c).
@@ -340,15 +331,15 @@ function calcularCombate(estado) {
     evitarDano: (af.avoid_damage ?? 0) / 100,
     magiasDasGemas: gem.magias,
     // O resto dos perks da proficiência (golpe básico, runas, boss, classe, vida/mana, perícia como dano).
-    proficiencia: prof,
     // Imbuement de dano elemental na arma: {tipo, pct} — X% do golpe físico vira o elemento.
-    imbuElemental: imb.elemental,
+    // A conversão de físico em elemento (as keystones da árvore põem aqui; os imbuements, que também punham, saíram).
+    imbuElemental: null,
     protection,
     element: w?.element ?? daMunicao?.element ?? (w?.wand ? { type: w.wand.element, value: 0 } : null),
     attackRange: alcance,
     regenFlat: { hp: soma((it) => it.regen?.hp) + (af.life_regen ?? 0), mana: soma((it) => it.regen?.mana) + (af.mana_regen ?? 0) },
     // Movement Speed %: sobre a velocidade base do level (+ o speed fixo das botas e do imbuement).
-    speed: Math.round(R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed) + imb.velocidade),
+    speed: Math.round(R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)),
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
@@ -443,7 +434,7 @@ function armaEquipadaDaFicha(estado) {
   };
 }
 
-function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens, prof, imb, gem, buff }) {
+function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens, gem, buff }) {
   const o = {};
   const por = (chave, fonte, valor, extra = {}) => {
     if (!valor) return;
@@ -509,8 +500,6 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosI
   por('critChance', 'Equipamento (base das peças)', somaDosItens((it) => it.critChance) / 100);
   dosAfixos('critChance', 'crit_chance');
   por('critChance', 'Árvore de habilidades', (arv.critChance ?? 0) * 100);
-  por('critChance', 'Proficiência da arma', prof.critChance * 100);
-  por('critChance', 'Imbuement', imb.critChance * 100);
   por('critChance', 'Coleção (outfits e montarias)', Aparencia.colecao(estado).critChance * 100);
   // Multiplicador de crítico (em % de dano, sem limite): 160% base + peças + afixos + buffs + árvore + gemas + proficiência + imbuement.
   por('critMultiplier', 'Base do personagem', MULTIPLICADOR_CRITICO_BASE * 100);
@@ -519,8 +508,6 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosI
   por('critMultiplier', 'Buffs', buff.critMultiplier * 100);
   por('critMultiplier', 'Árvore de habilidades', (arv.critDamage ?? 0) * 100);
   por('critMultiplier', 'Gemas (Atelier)', gem.critico);
-  por('critMultiplier', 'Proficiência da arma', prof.critDano * 100);
-  por('critMultiplier', 'Imbuement', imb.critDano * 100);
   // Ataque duplo e penetração.
   dosAfixos('ataqueDuplo', 'double_attack');
   dosAfixos('resistenciaAControle', 'control_resist');
@@ -535,7 +522,6 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosI
     por(k, 'Equipamento (base das peças)', dasPecas);
     dosAfixos(k, el === 'physical' ? 'phys_res' : `${el}_res`);
     por(k, 'Gemas (Atelier)', gem.resistencia[el] ?? 0);
-    por(k, 'Imbuement', imb.protecao[el] ?? 0);
   }
   return o;
 }
@@ -606,7 +592,7 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // A árvore: o "Dano" dos nós e as habilidades que mexem no golpe (ver `Arvore.fatorDasHabilidades`).
   const daArvore = (1 + (ficha.danoDaArvore ?? 0)) * Arvore.fatorDasHabilidades(estado, alvo) * AfeccoesPoe.fatorDeEletrizacao(alvo, estado.hunt?.clock ?? 0) * (ficha.fatorDasCargas ?? 1);
   // E os efeitos de item (Fúria do Desespero, Carrasco, Colheita de Almas — ver `systems/itens/efeitos.mjs`).
-  const dano = Math.round(base * Proficiencia.fatorContra(ficha.proficiencia, alvo) * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
+  const dano = Math.round(base * (crit ? ficha.critMultiplier + doCharm.dano / 100 : 1) * (onslaught ? FORMULAS.critico.onslaught : 1) * Prey.fatorDeDano(estado, alvo.key) * daArvore * EfeitosDeItem.fatorDeDano(estado, alvo) * fatorContraOAlvo(estado, alvo, ficha));
   if (crit) eventos.push({ t: 'fx', id: EFEITO_CRITICO, uid: alvo.uid, x: alvo.x, y: alvo.y });
   return { dano, crit, onslaught, chance: chanceDeCritico };
 }
@@ -626,10 +612,10 @@ export function fatorContraOAlvo(estado, alvo, ficha) {
 }
 
 /** A defesa que sustenta o bloqueio, em faixa: o escudo + metade da defesa da arma + o extra dela (+ perks). */
-function bloqueioDaFicha(estado, escudo, w, prof, shielding, af = {}) {
+function bloqueioDaFicha(estado, escudo, w, shielding, af = {}) {
   const [eMin, eMax] = escudo ? faixaDoCampo(estado.equipment?.shield, 'defense') : [0, 0];
   const [aMin, aMax] = faixaDoCampo(estado.equipment?.weapon, 'defense');
-  const extra = (w?.extraDefense ?? 0) + (prof?.defesa ?? 0);
+  const extra = w?.extraDefense ?? 0;
   const defMin = eMin + Math.floor(aMin / 2) + extra;
   const defMax = eMax + Math.floor(aMax / 2) + extra;
   // A defesa da arma bloqueia mesmo SEM escudo (só que 0 de defesa = 0% de bloqueio).
@@ -671,11 +657,18 @@ export function ataqueDoGolpe(ficha, rng = Math.random) {
   return lo + Math.floor(rng() * (hi - lo + 1));
 }
 
-/** A ficha do GOLPE BÁSICO (arma ou wand): + crítico de auto-ataque da proficiência. */
-export function fichaDoGolpeBasico(ficha) {
-  const p = ficha.proficiencia;
-  if (!p?.critChanceBasico && !p?.critDanoBasico) return ficha;
-  return { ...ficha, critChance: ficha.critChance + p.critChanceBasico, critMultiplier: ficha.critMultiplier + p.critDanoBasico };
+/** Vida/mana a mais (por acerto ou por abate dos afixos), com o número na tela. */
+export function curar(estado, vida, mana, eventos, quem, pos) {
+  const ganhoVida = Math.min(vida, Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));
+  const ganhoMana = Math.min(mana, Math.max(0, (estado.maxMana ?? 0) - (estado.mana ?? 0)));
+  if (ganhoVida > 0) {
+    estado.hp += ganhoVida;
+    eventos.push({ t: 'heal', uid: 'player', quem, x: pos.x, y: pos.y, v: ganhoVida, color: '#00ff66' });
+  }
+  if (ganhoMana > 0) {
+    estado.mana += ganhoMana;
+    eventos.push({ t: 'heal', uid: 'player', quem, x: pos.x, y: pos.y, v: ganhoMana, color: '#4fc3ff' });
+  }
 }
 
 /** Leech de um dano total causado: devolve vida e mana e mostra o quanto. */

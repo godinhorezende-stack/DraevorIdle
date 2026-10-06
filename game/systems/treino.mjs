@@ -73,13 +73,6 @@ export function gastarMana(estado, mana) {
   }
 }
 
-/**
- * A régua dos três modos de treino de magic level: no pátio o personagem gasta
- * em magia TODA a mana que regenera (maxMana x 0,006 por segundo, a regen base).
- * O offline rende metade disso e o Exercise cinco vezes — as mesmas proporções
- * das perícias (0,25 / 0,5 / 2,5 tentativas por segundo).
- */
-export const manaDoPatioPorSegundo = (estado) => (estado.maxMana ?? 0) * 0.006;
 
 /** No formato do personagem real: `{fist:{value, percent}, ...}` e `{value, percent}` (percent de 0 a 1). */
 export function paraCliente(estado) {

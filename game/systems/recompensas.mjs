@@ -42,10 +42,12 @@ function boostDoRotulo(rotulo) {
 }
 
 /** Cópia PRÓPRIA do calendário/presentes — `CHARACTER_TEMPLATE` é compartilhado e só de leitura. */
+// Sem a trilha das ARMAS DE TREINO (os degraus de Exercise): o treino saiu do jogo (dono, 06/10 — `sem-treino.mjs`).
+const PRESENTES_SEM_TREINO = { ...CHARACTER_TEMPLATE.presentes, degraus: [], escolhas: [], escolhasBoosted: [] };
 export function estadoInicial() {
   return {
     wildcards: CHARACTER_TEMPLATE.wildcards,
-    presentes: structuredClone(CHARACTER_TEMPLATE.presentes),
+    presentes: structuredClone(PRESENTES_SEM_TREINO),
     diario: structuredClone(CHARACTER_TEMPLATE.diario),
   };
 }
@@ -300,7 +302,7 @@ export function abrirProximas(estado) {
  * É uma cópia: estes campos não vão para o save.
  */
 export function presentesParaCliente(estado) {
-  if (!estado?.presentes) return CHARACTER_TEMPLATE.presentes;
+  if (!estado?.presentes) return PRESENTES_SEM_TREINO;
   abrirProximas(estado);
   const presentes = estado.presentes;
   return {

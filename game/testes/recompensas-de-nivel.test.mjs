@@ -1,5 +1,5 @@
-// Auditoria das recompensas de nível (arma de treino 8–50, baú 50 e 100, montaria 120, outfit 130,
-// exercise boosted 150): desbloqueio, resgate, ENTREGA de verdade (no sistema de Aparência, para a
+// Auditoria das recompensas de nível (baú 50 e 100, montaria 120, outfit 130 — a trilha das armas de treino, 8–50 e a boosted do
+// 150, saiu com o treino, dono 06/10): desbloqueio, resgate, ENTREGA de verdade (no sistema de Aparência, para a
 // montaria e o outfit), duas recompensas no mesmo level, persistência, resgate repetido, falha na
 // entrega e personagens que já tinham resgatado antes da correção.
 import { test } from 'node:test';
@@ -32,15 +32,15 @@ function resgatar(e, id) {
   }
   return Recompensas.coletarMarco(e, { id });
 }
-const FILA = ['arma-de-treino-8', 'arma-de-treino-20', 'arma-de-treino-30', 'arma-de-treino-40', 'arma-de-treino-50', 'bau-50', 'bau-100', 'montaria-120', 'outfit-130', 'exercise-boosted-150'];
+const FILA = ['bau-50', 'bau-100', 'montaria-120', 'outfit-130'];
 
-test('cadastro: as 10 recompensas, cada uma com um ID único (o level não é único: o 50 tem duas)', () => {
+test('cadastro: as 4 recompensas (sem a trilha de treino), cada uma com um ID único', () => {
   const e = novo();
   Recompensas.abrirProximas(e);
   const ids = [...e.presentes.degraus, ...e.presentes.marcos].map((r) => r.id);
   assert.deepEqual([...ids].sort(), [...FILA].sort());
   assert.equal(new Set(ids).size, ids.length, 'sem id repetido');
-  assert.equal(porId(e, 'arma-de-treino-50').level, 50);
+  assert.equal(e.presentes.degraus.length, 0, 'sem degraus de arma de treino');
   assert.equal(porId(e, 'bau-50').level, 50);
 });
 
@@ -68,26 +68,15 @@ test('resgate de TODAS, uma a uma, e a entrega de cada uma', () => {
     assert.equal(r.ok, true, `${id}: ${r.erro ?? ''}`);
     assert.equal(porId(e, id).pego, true);
   }
-  // 5 armas de treino + 1 boosted + 2 itens de baú na mochila.
-  assert.equal(e.inventory.length, mochilaAntes + 8);
+  // Os 2 itens de baú na mochila (as armas de treino saíram com o treino).
+  assert.equal(e.inventory.length, mochilaAntes + 2);
   assert.ok(Aparencia.temMontaria(e, GORGON.id), 'Gorgon Hydra liberada');
   for (const look of BLADE) assert.ok(Aparencia.temOutfit(e, look), `Blade Dancer (${look}) liberado`);
 });
 
-test('as duas do level 50 são independentes: resgatar o baú não mexe na arma, e vice-versa', () => {
-  const e = novo(50);
-  for (const id of ['arma-de-treino-8', 'arma-de-treino-20', 'arma-de-treino-30', 'arma-de-treino-40']) resgatar(e, id);
-  Recompensas.abrirProximas(e);
-  assert.equal(porId(e, 'arma-de-treino-50').aberto, true);
-  assert.equal(Recompensas.coletarMarco(e, { id: 'bau-50' }).ok, true, 'o baú resgata pelo id');
-  assert.equal(porId(e, 'arma-de-treino-50').pego, false, 'a arma do 50 continua para pegar');
-  assert.equal(resgatar(e, 'arma-de-treino-50').ok, true);
-  assert.equal(porId(e, 'bau-50').pego, true);
-});
-
 test('montaria: entregue no sistema de Aparência, aparece como dona e dá para montar', () => {
   const e = novo(120);
-  for (const id of FILA.slice(0, 7)) resgatar(e, id);
+  for (const id of FILA.slice(0, 2)) resgatar(e, id);
   const r = Recompensas.coletarMarco(e, { id: 'montaria-120' });
   assert.equal(r.ok, true);
   assert.match(r.notice, /Gorgon Hydra.*Aparência/);
@@ -102,7 +91,7 @@ test('montaria: entregue no sistema de Aparência, aparece como dona e dá para 
 
 test('outfit: Blade Dancer nos dois sexos, com os DOIS addons, e dá para vestir com eles', () => {
   const e = novo(130);
-  for (const id of FILA.slice(0, 8)) resgatar(e, id);
+  for (const id of FILA.slice(0, 3)) resgatar(e, id);
   const r = Recompensas.coletarMarco(e, { id: 'outfit-130' });
   assert.equal(r.ok, true);
   assert.match(r.notice, /Blade Dancer.*2 addons/);
@@ -132,7 +121,7 @@ test('persistência: depois de gravar e ler (o save é JSON), resgates e libera�
 
 test('resgate repetido: a segunda chamada é recusada, sem cobrar nem entregar de novo', () => {
   const e = novo(150);
-  for (const id of FILA.slice(0, 7)) resgatar(e, id);
+  for (const id of FILA.slice(0, 2)) resgatar(e, id);
   assert.equal(Recompensas.coletarMarco(e, { id: 'montaria-120' }).ok, true);
   const ouro = e.gold;
   const montarias = [...e.lojaMontarias];
@@ -141,17 +130,11 @@ test('resgate repetido: a segunda chamada é recusada, sem cobrar nem entregar d
   assert.match(segunda.erro, /já foi resgatada/);
   assert.equal(e.gold, ouro);
   assert.deepEqual(e.lojaMontarias, montarias);
-  // A arma de treino também: depois de pega, outra chamada não dá outra arma.
-  const f = novo(8);
-  const antes = f.inventory.length;
-  assert.equal(resgatar(f, 'arma-de-treino-8').ok, true);
-  assert.equal(Recompensas.coletarPresente(f, { itemId: f.presentes.escolhas[0].itemId, id: 'arma-de-treino-8' }).ok, false);
-  assert.equal(f.inventory.length, antes + 1);
 });
 
 test('erro na entrega: nada é cobrado nem marcado como resgatado', () => {
   const e = novo(150);
-  for (const id of FILA.slice(0, 7)) resgatar(e, id);
+  for (const id of FILA.slice(0, 2)) resgatar(e, id);
   const marco = porId(e, 'montaria-120');
   marco.mount = -1;
   marco.look = -1; // montaria que não existe no catálogo
@@ -163,7 +146,6 @@ test('erro na entrega: nada é cobrado nem marcado como resgatado', () => {
   assert.equal(marco.pego, false);
   // Baú sem itens: idem.
   const g = novo(50);
-  for (const id of FILA.slice(0, 5)) resgatar(g, id);
   Recompensas.marcosDaVocacao(g);
   porId(g, 'bau-50').itens = [];
   const sets = g.vocation;
@@ -176,16 +158,9 @@ test('erro na entrega: nada é cobrado nem marcado como resgatado', () => {
   assert.equal(porId(g, 'bau-50').pego, false);
 });
 
-test('a arma de treino só sai da lista do degrau (antes qualquer itemId do cliente entrava)', () => {
-  const e = novo(8);
-  const r = Recompensas.coletarPresente(e, { itemId: 3079, id: 'arma-de-treino-8' }); // boots of haste
-  assert.equal(r.ok, false);
-  assert.equal(porId(e, 'arma-de-treino-8').pego, false);
-});
-
 test('tela: os estados vêm do servidor — bloqueada, disponível, resgatada e, na montaria, entregue/em uso', () => {
   const e = novo(120);
-  for (const id of FILA.slice(0, 7)) resgatar(e, id);
+  for (const id of FILA.slice(0, 2)) resgatar(e, id);
   let tela = Recompensas.presentesParaCliente(e);
   const m = (t) => t.marcos.find((x) => x.id === 'montaria-120');
   assert.equal(m(tela).aberto, true, 'disponível');

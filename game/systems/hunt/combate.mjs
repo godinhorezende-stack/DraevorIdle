@@ -40,7 +40,6 @@ import * as Reforcos from '../skills/reforcos.mjs';
 import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
-import * as Proficiencia from '../proficiencia.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
@@ -127,7 +126,7 @@ export function categoriaDaArma(arma) {
 
 export function alcanceDaArma(arma, estado = null) {
   // + o "alcance" da proficiência (arco, besta, wand), com a arma na mão.
-  return categoriaDaArma(arma) === 'melee' ? 1 : (arma?.range ?? 3) + (estado ? Proficiencia.bonus(estado).alcance : 0);
+  return categoriaDaArma(arma) === 'melee' ? 1 : (arma?.range ?? 3);
 }
 
 /*
@@ -185,7 +184,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   eventos.push({ t: 'shot', id: ID_DO_TIRO[arma.shoot] ?? 5, x: hunt.pos.x, y: hunt.pos.y, tx: alvo.x, ty: alvo.y });
   eventos.push({ t: 'fx', id: EFEITO_DO_ELEMENTO[element] ?? 13, uid: alvo.uid, x: alvo.x, y: alvo.y });
   // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
-  const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
+  const ficha = Ficha.combate(estado);
   // Accuracy: o tiro pode errar (a mana já foi gasta, como um golpe no ar).
   if (Defesa.errou(ficha, hunt, alvo)) {
     eventos.push({ t: 'block', uid: alvo.uid, x: alvo.x, y: alvo.y, color: '#999999', esquiva: true, errou: true });
@@ -199,7 +198,7 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   // "Dano de <elemento>" (afixo) na wand/rod do mesmo elemento, + o ML de bônus
   // (+1%/ponto) e o dano mágico do INT; + "% da perícia como dano" (proficiência); e a resistência do
   // bicho àquele elemento (`resistido`).
-  const bruto = (min + Math.floor(Math.random() * (max - min + 1)) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
+  const bruto = (min + Math.floor(Math.random() * (max - min + 1))) * (segundo ? Limites.LIMITES.ataqueDuplo.danoDoSegundoGolpePct / 100 : 1) * (1 + ((ficha.danoDoElemento?.[element] ?? 0) + bonusDeMagicLevel(ficha) + (ficha.danoDeMagia ?? 0) + Ficha.afinidadePara(ficha, Tags.tagsDoGolpe('magica', element)).pct) / 100);
   const base = resistido(hunt, alvo, element, bruto, ficha);
   const { dano: golpe, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, alvo, eventos, ficha);
   alvo.hp -= golpe;
@@ -211,7 +210,6 @@ export function golpeDaWand(estado, hunt, alvo, arma, eventos, personagem, segun
   if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit, varinha: true }).length) Ficha.invalidar(estado);
   if (!segundo) {
     Ficha.aplicarLeech(estado, golpe, eventos, personagem?.nome, hunt.pos, ficha, alvo.key);
-    Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem?.nome, hunt.pos);
     Charms.aoAcertar(estado, hunt, alvo, eventos);
   }
   return true;
@@ -713,16 +711,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // limpa (ver `hunt/instancia.mjs` e `tique`, em cacadas.mjs).
   Charms.aoMatar(estado, hunt, alvo, eventos);
   // A proficiência: XP para a arma da mão (e para a de cada um da party) e vida/mana por morte.
-  Proficiencia.ganharXp(estado, alvo.key);
-  if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) Proficiencia.ganharXp(m.estado, alvo.key);
-  const prof = Proficiencia.bonus(estado);
-  Proficiencia.curar(estado, prof.vidaNaMorte, prof.manaNaMorte, eventos, personagem?.nome, hunt.pos);
   // Os efeitos de item que reagem a uma morte (Sede de Sangue, Colheita de Almas).
   EfeitosDeItem.aoMatar(estado, hunt, alvo, eventos, personagem?.nome);
   // Vida/mana por abate das peças do PoE ("Ganha X de Vida por Inimigo Morto"); 0 sem elas.
   {
     const f = Ficha.combate(estado);
-    if ((f.vidaPorAbate || f.manaPorAbate) && estado.hp > 0) Proficiencia.curar(estado, f.vidaPorAbate, f.manaPorAbate, eventos, personagem?.nome, hunt.pos);
+    if ((f.vidaPorAbate || f.manaPorAbate) && estado.hp > 0) Ficha.curar(estado, f.vidaPorAbate, f.manaPorAbate, eventos, personagem?.nome, hunt.pos);
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
   }
@@ -1146,7 +1140,7 @@ export function round(estado, personagem) {
       // A perícia REAL da arma (sword/axe/club/distance; sem arma, fist) —
       // o golpe treina ela e o dano usa o valor dela.
       // A ficha do golpe básico: + crítico de auto-ataque da proficiência.
-      const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(estado));
+      const ficha = Ficha.combate(estado);
       const pericia = ficha.skillName;
       /*
        * ---- O golpe, e o ATAQUE DUPLO ----
@@ -1181,7 +1175,7 @@ export function round(estado, personagem) {
         // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária, cada uma com o próprio dano.
         const daSecundaria = !!ficha.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);
         const [faixaMin, faixaMax] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
-        const semResistencia = (R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico * fatorDoGolpe;
+        const semResistencia = (R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level)) * fisico * fatorDoGolpe;
         const { dano: bruto, crit: critico, onslaught, chance: chanceCritica } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
         registrarGolpe(() => ({ origem: segundo ? 'golpe-basico-2o-golpe' : 'golpe-basico', alvo: alvo.name, tipo: 'physical', danoAntesDaResistencia: Math.round(semResistencia), resistenciaDoAlvo: resistenciaDe(hunt, alvo, 'physical'), penetracao: ficha.penetracao?.fisica ?? 0, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, 'physical', ficha), chanceCritica, critico: critico, danoFinal: bruto, vidaRestante: Math.max(0, alvo.hp - bruto) }));
         if (!segundo) Treino.treinar(estado, pericia);
@@ -1200,9 +1194,8 @@ export function round(estado, personagem) {
         const extra = segundo ? 0 : Arvore.depoisDoGolpe(estado, hunt, alvo, golpe, categoriaDaArma(arma) === 'distancia' ? 'distancia' : 'corpo', eventos);
         if (!segundo) Ficha.aplicarLeech(estado, golpe + (elemental?.v ?? 0) + (doImbuement?.v ?? 0) + dosAtributos.reduce((n, d) => n + d.v, 0) + extra, eventos, personagem.nome, hunt.pos, ficha, alvo.key);
         // Vida/mana por acerto (proficiência).
-        if (!segundo) Proficiencia.curar(estado, ficha.proficiencia.vidaNoAcerto, ficha.proficiencia.manaNoAcerto, eventos, personagem.nome, hunt.pos);
         // Vida/mana por acerto das peças do PoE ("Concede X de Vida por Inimigo Acertado").
-        if (!segundo && (ficha.vidaPorAcerto || ficha.manaPorAcerto)) Proficiencia.curar(estado, ficha.vidaPorAcerto, ficha.manaPorAcerto, eventos, personagem.nome, hunt.pos);
+        if (!segundo && (ficha.vidaPorAcerto || ficha.manaPorAcerto)) Ficha.curar(estado, ficha.vidaPorAcerto, ficha.manaPorAcerto, eventos, personagem.nome, hunt.pos);
         // Arma de distância (spear, arco, besta, estrela...): o projétil voa até o
         // alvo antes do dano, igual ao original — antes só a wand mandava `shot`.
         if (categoriaDaArma(arma) === 'distancia') {

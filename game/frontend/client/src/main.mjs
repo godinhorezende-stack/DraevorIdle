@@ -64,15 +64,15 @@ import {
   atualizarBarraDeOutro,
 } from './actionbar.mjs';
 import {
-  initPanels, openHunts, openPrey, openImbuements, openBlessings, openQuests, openOutfits,
+  initPanels, openHunts, openPrey, openBlessings, openQuests, openOutfits,
   renderAppearance, openStore, openMarket, openBank, openLocker, openRanking,
-  openProficiency, openCharms, openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja,
-  openDiario, openLojaNpc, openTreinoOffline, abrirObterCoins,
-  resumoDoPreyParaBalao, resumoDosCharmsParaBalao, resumoDaProficienciaParaBalao,
-  resumoDosImbuementsParaBalao, resumoDasGemasParaBalao,
+  openCharms, openLootFilter, openLimparBolsa, openLimparMochila, openVenderMochila, openVenderSacolas, openVenderBossPouch, openFriends, openParty, corpoDaJanelaDaParty, atualizarBarrasDaParty, openBarSettings, caixaDoDepositoAberta, openForja,
+  openDiario, openLojaNpc, abrirObterCoins,
+  resumoDoPreyParaBalao, resumoDosCharmsParaBalao,
+  resumoDasGemasParaBalao,
   resumoDaMorteLigado, ligarResumoDaMorte, aplicarEstiloDaRaridade,
   openArena,
-  openCyclopedia, openBestiary, openReport, openExerciseRapido, openExercise, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente, openCaixaBoosted,
+  openCyclopedia, openBestiary, openReport, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente,
   escolhasDaPosicao, cartazDeBossLigado, redesenharJanelaAberta,
   chegouFichaDoBicho, chegouPreviaPoe,
 } from './panels.mjs';
@@ -263,19 +263,7 @@ window.__map = mapView;
 
 // ---------- conexão ----------
 
-/*
- * ---- Treinando, o client nem pede para andar ----
- *
- * No pátio (treino online) e no Exercise o personagem fica no posto que o
- * SERVIDOR escolheu, a 1 SQM do boneco, e o servidor recusa todo movimento
- * (`Treinos.emTreino`). Isto aqui é só o espelho visual: teclado, WASD, setas,
- * clique, "Ir até lá" e o analógico do celular passam todos por `send`, então
- * um filtro só cobre todos. O "soltei a tecla" (`dx:0, dy:0`) passa.
- */
-const COMANDOS_DE_ANDAR = new Set(['walk', 'walkTo', 'huntWalk', 'huntWalkTo', 'huntEscada']);
-const treinandoAgora = () => state?.hunt?.huntId === 'treino' || !!state?.character?.exercicio?.treinando;
 const send = (message) => {
-  if (COMANDOS_DE_ANDAR.has(message?.t) && (message.dx || message.dy || message.x != null) && treinandoAgora()) return false;
   return socket?.readyState === 1 && socket.send(JSON.stringify(message));
 };
 // Gancho de inspeção para as ferramentas de screenshot.
@@ -614,14 +602,6 @@ $('cartaz-beta-fechar')?.addEventListener('click', () => {
  * abre neutro, porque a faixa fica na tela o tempo todo e serve tanto para
  * "quebrou" quanto para "podia ser melhor".
  */
-/*
- * Parar o treino pela faixa.
- *
- * O mesmo comando do botão da aba de Aventuras — e é de propósito que sejam o
- * mesmo: dois caminhos que param o treino de jeitos diferentes seriam dois
- * resumos diferentes, e o resumo é o que a pessoa foi ali buscar.
- */
-$('treino-faixa-parar')?.addEventListener('click', () => send({ t: 'training', action: 'stop' }));
 
 /*
  * O botão da barra da fase: alterna "Ficar na fase" (loop) e "Avançar sozinho"
@@ -811,12 +791,7 @@ function handle(message) {
        * ele achou que o personagem estava bugado. As outras esperam o OK.
        */
       const depoisDoPendente = () => {
-        // O que o pátio de treino rendeu enquanto a aba estava fechada.
-        // Também abre quando só houve GASTO: uma arma que queimou cargas sem
-        // fechar nada de perícia ainda tem o que contar.
-        if (message.treinoPendente?.ganho?.length || message.treinoPendente?.gastos?.length)
-          mostrarGanhoDoTreino(message.treinoPendente.ganho, message.treinoPendente);
-        else if (message.offline) showOfflineReport(message.offline);
+        if (message.offline) showOfflineReport(message.offline);
         else if (message.andamento && message.morte) mostrarMorte({ ...message.morte, report: message.andamento, offline: true });
         else if (message.andamento) showAndamento(message.andamento);
       };
@@ -961,13 +936,6 @@ function handle(message) {
           relatoEm: message.relatoEm,
         },
       ]);
-      break;
-    case 'treinoReport':
-      mostrarGanhoDoTreino(message.ganho, {
-        segundos: message.segundos ?? null,
-        gastos: message.gastos ?? null,
-        exercise: !!message.exercise,
-      });
       break;
     case 'online':
       state.online = message.online;
@@ -1278,11 +1246,6 @@ function handle(message) {
       state.arvoreEmCacada = message.emCacada;
       panelCtx.redraw?.();
       break;
-    case 'proficiency':
-      if (state.character) state.character.proficiency = message.view;
-      if (message.list) state.proficiencyList = message.list;
-      panelCtx.redraw?.();
-      break;
     /*
      * As cinco respostas do balcão redesenham PRESERVANDO o foco e a rolagem.
      *
@@ -1501,16 +1464,6 @@ function handle(message) {
       notice(`Report enviado. Obrigado! (${message.pasta})`);
       break;
 
-    /*
-     * A caixa de boosted pede uma escolha antes de virar arma.
-     *
-     * O servidor manda a lista em vez de a tela tê-la escrita: as sete boosted
-     * são as mesmas de `exercicios.mjs`, e uma segunda cópia aqui é uma cópia
-     * para esquecer de atualizar no dia em que houver a oitava.
-     */
-    case 'escolherCaixa':
-      openCaixaBoosted(message.escolhas);
-      break;
   }
 }
 
@@ -1548,7 +1501,6 @@ function resetCharacterState() {
   state.craft = null;
   // O desmanche também: ele lista as peças deste personagem. Ver `desmancheView`.
   state.desmanche = null;
-  state.proficiencyList = null;
   state.shop = null;
   state.store = null;
   state.market = null;
@@ -2617,11 +2569,9 @@ function buildWindows() {
       panelCtx.tabs.character = 'sheet';
       openCharacter();
     },
-    openProficiency,
     openCharms,
     // O botão da árvore no HUD abre a Árvore de Passivas única (a antiga, por vocação, saiu na etapa 7).
     openArvore: openPassivas,
-    openImbuements,
     openPrey,
     openPromotion,
     // A engrenagem da barra abre o modal de ajustes da tela.
@@ -2899,13 +2849,6 @@ const SISTEMAS = [
      */
     alerta: () =>
       state.character?.charmNext != null && (state.character?.charmPoints ?? 0) >= state.character.charmNext },
-  { id: 'proficiency', label: 'Proficiência', curto: 'Profic.', abre: () => openProficiency(),
-    tip: 'A árvore da arma que está na mão. Sobe caçando com ela.',
-    corpo: () => resumoDaProficienciaParaBalao(),
-    alerta: () => !!state.character?.proficiency?.levels?.some((passo) => passo.unlocked && passo.chosen == null) },
-  { id: 'imbuements', label: 'Imbuements', curto: 'Imbuem.', abre: () => openImbuements(),
-    tip: 'Encanta o equipamento: dano elemental, vida por golpe, velocidade.',
-    corpo: () => resumoDosImbuementsParaBalao() },
 
 ];
 
@@ -2921,7 +2864,7 @@ const SISTEMAS = [
  */
 const DO_PERSONAGEM = [
   { id: 'character', label: 'Personagem', curto: 'Ficha', abre: () => openCharacter(),
-    tip: 'Atributos, equipamento, proficiência e aparência.' },
+    tip: 'Atributos, equipamento e aparência.' },
   { id: 'inventory', label: 'Inventário', curto: 'Mochila', janela: 'inventory',
     tip: 'Mostra ou esconde o que está vestido e a mochila, com a capacidade.' },
   { id: 'analyzer', label: 'Analisador', curto: 'Análise', janela: 'analyzer',
@@ -3231,7 +3174,7 @@ const BARRA = [
 
   {
     id: 'sistemas', label: 'Sistemas', icone: 'sistemastopicone', reserva: 'gemas',
-    tip: 'Prey, forja, árvore, gemas, charms, proficiência e imbuements.',
+    tip: 'Prey, forja, árvore, gemas e charms.',
     gaveta: SISTEMAS },
 
   // Para onde ir. Como VOLTAR mora no canto da direita — ver `CIDADE`.
@@ -5458,7 +5401,7 @@ function confirmarSaida() {
           'o mundo junto com você (sem aba) enquanto ele estiver na sua party — até 2 chars da conta ao mesmo ' +
           'tempo, ou mais com "Slot de party".'
       ),
-      el('p', 'sheet-nota', 'DEIXAR CAÇANDO OFFLINE: volta para a lista e o personagem continua a caça automática, o boss ou o exercise, como se você fechasse a aba.'),
+      el('p', 'sheet-nota', 'DEIXAR CAÇANDO OFFLINE: volta para a lista e o personagem continua a caça automática ou o boss, como se você fechasse a aba.'),
       el('p', 'sheet-nota', 'SAIR DO PERSONAGEM: encerra a caçada agora, mostra o extrato e manda o personagem para o templo.')
     );
 
@@ -5739,7 +5682,6 @@ function chegaramDadosDoOutro(message) {
 function porQueNaoDaParaDeixarOffline() {
   const hunt = state.hunt;
   if (hunt) {
-    if (hunt.huntId === 'treino') return 'o pátio de treino para quando você sai; use o exercise.';
     if (hunt.manual) return 'na Caça Online o personagem só anda com você na tela.';
     return null;
   }
@@ -6414,12 +6356,9 @@ const objetoEm = (x, y) => (state.city?.objetos ?? []).find((o) => o.x === x && 
  * skill trainer teria aberto a escolha de arma de exercise.
  */
 const ABERTURAS_DE_OBJETO = {
-  exercise: () => openExerciseRapido(),
-  'treino-offline': () => openTreinoOffline(),
   arvore: () => openPassivas(),
   aventuras: () => openHunts(),
   forja: () => openForja(),
-  imbuements: () => openImbuements(),
   // Não é janela: é a porta da arena. Quem decide se entra é o servidor.
   'boss-diarios': () => send({ t: 'entrarNaArena' }),
 };
@@ -7191,7 +7130,6 @@ window.__abrir = {
    * re-renderizando o tempo todo". Sem este gancho não há como contar os
    * redesenhos sem abrir o navegador à mão.
    */
-  proficiencia: () => openProficiency(),
   // A Store, para a sonda conferir a coluna das prateleiras e o desenho
   // de cada produto. Ver `sonda-loja-draevor`.
   draevorStore: (secao = null) => {
@@ -7232,15 +7170,10 @@ window.__abrir = {
   },
   limparBolsa: () => openLimparBolsa(),
   bestiary: () => openBestiary(),
-  // A tela do Exercise, para a sonda da estimativa de tempo. Ver `sonda-treino`.
-  treino: () => openExercise(),
   /*
-   * Charms e Imbuements: as duas telas que o dono mandou repaginar. Sem os
-   * ganchos não há como fotografar o antes e o depois no mesmo lugar, e "ficou
-   * mais compacta" é exatamente o tipo de afirmação que precisa de medida.
+   * Charms: a tela que o dono mandou repaginar. Sem o gancho não há como fotografar o antes e o depois no mesmo lugar.
    */
   charms: () => openCharms(),
-  imbuements: () => openImbuements(),
   bossToken: () => openLojaDeBossToken(),
   taskToken: () => openLojaDeTaskToken(),
   lobby: () => openLobby(),
@@ -7872,7 +7805,6 @@ function renderAll() {
     character.weight,
     character.settings?.autoSellPouch,
     character.pouchValue ?? null,
-    character.imbuements ?? null,
     // Os dois selos da grade moram no inventário: comprar premium ou uma
     // blessing tem que acender o ícone na hora, e perder tem que apagar. Sem
     // isto a janela só se atualizava no próximo item que entrasse na mochila.
@@ -8279,16 +8211,6 @@ function refreshOpenPanel(character) {
     character.gold, character.bank, character.coins, character.wildcards,
     character.level, character.weight.toFixed(1),
     character.charmPoints, character.charmNext,
-    /*
-     * A proficiência entra pelo NÍVEL e pelos perks por escolher — não pelo XP.
-     *
-     * Com a proficiência de verdade no servidor, o XP muda a cada bicho morto;
-     * na assinatura, ele refazia a tela inteira (mochila, bolsa, depósito) a
-     * cada morte: FPS caindo e o ping subindo junto, porque a página demorava
-     * a ler o pong. A barra de XP da janela anda sozinha (`aoVivo`, panels.mjs).
-     */
-    character.proficiency?.itemId, character.proficiency?.level,
-    (character.proficiency?.levels ?? []).reduce((n, passo) => n + (passo.unlocked && passo.chosen == null ? 1 : 0), 0),
     character.inventory.length, character.pouch.length, (character.mounts ?? []).length,
     /* A ORDEM da mochila, da bolsa e das caixas. Ver `marcaDaOrdem`. */
     marcaDaOrdem(character.inventory),
@@ -8309,7 +8231,6 @@ function refreshOpenPanel(character) {
      * Foi a sonda `sonda-treino` que pegou isto, e não o teste de unidade: a
      * conta estava certa dos dois lados, e o que faltava era o redesenho.
      */
-    character.settings?.exerciseAuto,
     /*
      * O bolso da aljava, e ele precisa de linha PRÓPRIA.
      *
@@ -9507,7 +9428,7 @@ function mostrarCartazDoBoss({ key, nome, texto } = {}) {
    * aparece e' o suficiente e nao custa nada.
    */
   let acima = 0;
-  for (const id of ['cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'faixa-serversave', 'treino-faixa', 'barra-do-boss', 'barras-da-arena', 'barra-da-fase']) {
+  for (const id of ['cartaz-beta', 'faixa-novidades', 'faixa-autoboss', 'faixa-serversave', 'barra-do-boss', 'barras-da-arena', 'barra-da-fase']) {
     const no = $(id);
     if (!no || no.hidden) continue;
     const r = no.getBoundingClientRect();
@@ -10302,120 +10223,6 @@ function corpoDoRelatorio(body, report, comOk = true) {
  * inteiro voltou. Sem essa linha, o convidado via o mapa sumir e o extrato
  * aparecer sem nenhuma explicação de por quê.
  */
-/*
- * ---- O que o treino rendeu ----
- *
- * Uma tela separada do extrato da caçada, de propósito. O extrato fala de
- * experiência, loot, ouro e mortes, e no pátio nada disso acontece: mostrá-lo
- * ali seria seis linhas zeradas em volta da única que interessa.
- *
- * A linha é "de quanto para quanto, COM A PORCENTAGEM". Meia hora de treino
- * quase nunca fecha um nível inteiro, e uma tela que só mostrasse níveis diria
- * "nada subiu" depois de trinta minutos batendo — o que é falso e faz o
- * jogador achar que o treino está quebrado. Com a fração, o avanço aparece
- * sempre: "axe 42 (10%) -> 42 (63%), +0,53".
- */
-/**
- * As linhas de "o que subiu", numa lista só.
- *
- * Duas telas mostram isto — o fim do treino no boneco e o resumo de quem voltou
- * depois de treinar offline —, e são a mesma informação. Duplicar a montagem
- * garantiria que uma das duas ficasse para trás no dia em que a outra mudasse.
- */
-function linhasDoGanho(body, ganho) {
-  const lista = el('div', 'treino-ganho');
-  for (const linha of ganho) {
-    const nome = linha.skill === 'magic' ? 'magic level' : linha.skill;
-    const item = el('div', 'treino-linha');
-    /*
-     * ---- A unidade acompanha o tamanho do ganho ----
-     *
-     * Três degraus, e cada um existe porque o de cima chega a zero:
-     *
-     *   fechou nível        "+2 níveis"     — o que a pessoa quer ouvir
-     *   não fechou          "+0,8%"         — do próximo nível
-     *   nem 0,05% de avanço "+40 pontos"    — a contagem crua de treino
-     *
-     * O terceiro degrau é o que faltava. Numa perícia alta, dez minutos valem
-     * alguns centésimos de por cento: a linha saía "+0,0%" e a tela inteira lia
-     * como quebrada. Ponto de treino é um número interno, e por isso ele é o
-     * ÚLTIMO recurso — mas dizer "+40 pontos" é verdade, e "+0,0%" não era.
-     */
-    const pontos = linha.paraPercent - linha.dePercent;
-    const avanco =
-      linha.niveis > 0
-        ? `+${linha.niveis} ${linha.niveis === 1 ? 'nível' : 'níveis'}`
-        : pontos >= 0.05
-          ? `+${pontos.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
-          : (() => {
-              const n = Math.max(1, Math.round(linha.golpes ?? 0));
-              return `+${n.toLocaleString('pt-BR')} ${n === 1 ? 'ponto' : 'pontos'}`;
-            })();
-    item.append(
-      artOrUiIcon(`sk-${linha.skill}`, nome),
-      el('b', null, nome),
-      el(
-        'span',
-        'de-para',
-        `${linha.de} (${linha.dePercent.toFixed(1)}%) → ${linha.para} (${linha.paraPercent.toFixed(1)}%)`,
-      ),
-      el('em', null, avanco),
-    );
-    lista.append(item);
-  }
-  body.append(lista);
-}
-
-/*
- * ---- O que o treino rendeu ----
- *
- * Uma tela separada do extrato da caçada, de propósito. O extrato fala de
- * experiência, loot, ouro e mortes, e no pátio nada disso acontece: mostrá-lo
- * ali seria seis linhas zeradas em volta da única que interessa.
- */
-function mostrarGanhoDoTreino(ganho, contexto = null) {
-  openModal(contexto?.offline ? 'Treino offline encerrado' : 'Treino encerrado', (body) => {
-    /*
-     * Quanto tempo, antes do quanto subiu. "+0,8% de machado" sozinho não diz
-     * se o treino é bom ou ruim; "em 40 minutos, +0,8%" diz.
-     */
-    if (contexto?.segundos != null) {
-      body.append(
-        el('p', 'relatorio-motivo', `Você treinou por ${formatTime(contexto.segundos * 1000)}.`),
-      );
-    }
-    if (!ganho?.length) body.append(el('p', 'empty', 'Nada mudou — foi pouco tempo.'));
-    else linhasDoGanho(body, ganho);
-    /*
-     * ---- O que o treino CUSTOU ----
-     *
-     * A metade que faltava. O que subiu já estava aqui; o que foi gasto, não —
-     * e no exercise o que se gasta é uma arma comprada com coins. Sem esta
-     * lista, o jogador via a perícia andar e não fazia ideia de quanto da arma
-     * tinha ido embora, nem de qual arma, se trocou no meio.
-     */
-    if (contexto?.gastos?.length) {
-      body.append(el('h4', 'treino-gastos-titulo', 'Cargas gastas'));
-      const lista = el('div', 'treino-gastos');
-      for (const linha of contexto.gastos) {
-        const item = el('div', 'treino-gasto');
-        const arte = itemCanvas(linha.itemId, 28);
-        if (arte) item.append(arte);
-        item.append(el('b', null, linha.name));
-        item.append(el('em', null, `${linha.cargas.toLocaleString('pt-BR')} cargas`));
-        lista.append(item);
-      }
-      body.append(lista);
-    }
-    const acoes = el('div', 'relatorio-ok');
-    const ok = el('button', 'primary', 'OK');
-    ok.onclick = () => closeModal();
-    acoes.append(ok);
-    body.append(acoes);
-  });
-}
-
-// `titulo`: o extrato de OUTRO char da conta (o ➜ Hunt da troca de personagem encerrou a caçada dele).
 function showRunReport(report, motivo = null, titulo = null) {
   if (!report) return;
   openModal(titulo ?? (report.mode === 'cycle' ? 'Ciclo encerrado' : 'Caçada encerrada'), (body) => {

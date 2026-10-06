@@ -1363,33 +1363,6 @@ function pecaVestidaPara(id, slot) {
  * Devolve `null` quando o item não existe no catálogo, e quem chama decide o
  * que fazer com isso.
  */
-/*
- * A cor de um imbuement: a do que ele FAZ.
- *
- * Os que mexem em elemento (converter dano, reduzir dano) saem na cor do
- * elemento, as mesmas que o balao ja usa nas linhas de ataque. Os outros saem
- * na cor da familia deles — critico, leech, skill, velocidade —, tambem as
- * mesmas de cima. Nenhuma cor nova: a peca fica lendo como o resto do balao.
- */
-function corDoImbuement(entrada) {
-  const efeito = entrada?.effect ?? {};
-  if (efeito.combat) return `el-${efeito.combat}`;
-  if (efeito.type === 'speed') return 'speed';
-  if (efeito.value === 'critical') return 'crit';
-  if (efeito.value === 'lifeleech') return 'leech';
-  if (efeito.value === 'manaleech') return 'mana';
-  if (efeito.type === 'skill') return 'skill';
-  return 'plain';
-}
-
-/** O que falta, do jeito que o jogador pensa: horas e minutos. */
-export function restanteDoImbuement(ms) {
-  const total = Math.max(0, Math.floor(ms / 60000));
-  const horas = Math.floor(total / 60);
-  const minutos = total % 60;
-  if (horas) return `${horas}h${String(minutos).padStart(2, '0')}`;
-  return `${minutos}min`;
-}
 
 
 
@@ -3233,94 +3206,6 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (porta) {
     regra('Level mínimo', String(porta.level));
     regra('Exige', 'premium ativo');
-  }
-  /*
-   * ---- Os imbuements DE VERDADE ----
-   *
-   * Aqui saia `vazio, vazio` sempre, mesmo numa peca com tres imbuements
-   * dentro: a linha era montada so' com o numero de encaixes do item, e o que
-   * esta' encaixado nao mora no item — mora em `character.imbuements[slot]`.
-   *
-   * Cada um sai numa linha propria, com o quanto falta e na COR do que ele faz.
-   * O balao e' o unico lugar em que se pergunta "o que tem nesta peca?" com o
-   * mouse ja em cima dela; mandar abrir o painel de imbuements para descobrir
-   * era trocar uma resposta por uma viagem.
-   */
-  /*
-   * ---- O que a PEÇA tem manda mais que o que o catálogo diz ----
-   *
-   * A guarda era só `meta.imbuementSlots`, e por isso a Wand of Vortex do dono
-   * — com um `strike-1` de 20h dentro, gravado no banco — não mostrava
-   * imbuement nenhum no balão: o item não declara encaixe no catálogo
-   * (`imbuementSlots: undefined`), e a linha inteira era pulada. O mesmo valia
-   * na mochila e no chat, porque os dois passam por aqui.
-   *
-   * Quem tem a resposta é a peça. Se há imbuement ativo dentro dela, ele é
-   * mostrado — o catálogo pode estar incompleto, mas o que está gravado na peça
-   * aconteceu de verdade e o jogador pagou por isso.
-   *
-   * O número de encaixes desenhados passa a ser o maior entre o que o item
-   * declara e o que a peça carrega: uma peça de três encaixes com um cheio
-   * continua mostrando "cheio, vazio, vazio", e uma peça sem encaixe declarado
-   * mostra só o que tem.
-   */
-  const imbuDaPeca = (peca?.imbu ?? []).filter((imbued) => (imbued?.left ?? 0) > 0);
-  if (meta.imbuementSlots || imbuDaPeca.length) {
-    /*
-     * ---- O que ha' DENTRO DESTA peca ----
-     *
-     * A lista vinha de `imbuements[slot]`, isto e', do slot de equipamento. Uma
-     * arma na mochila nao esta em slot nenhum, e para ela o balao sempre
-     * escrevia "vazio, vazio, vazio" — mesmo com tres imbuements pagos dentro.
-     *
-     * Desde que o imbuement passou a morar no ITEM (ver `imbuementsDoItem`, no
-     * servidor), a resposta certa esta em `imbuementsPorItem[id]`, e vale para
-     * a peca vestida e para a que esta na mochila do mesmo jeito. O `slot` fica
-     * de reserva para um estado gravado antes da mudanca.
-     */
-    const personagem = getPersonagem();
-    /*
-     * Da PECA primeiro, pelo mesmo motivo do tier: duas copias do mesmo item
-     * tem imbuements diferentes, e `imbuementsPorItem` responde por id — com
-     * duas imbuidas, ele so' pode devolver uma das duas.
-     */
-    const ativos = imbuDaPeca.length
-      ? imbuDaPeca
-      : personagem?.imbuementsPorItem?.[String(id)] ??
-        (slot ? personagem?.imbuements?.[slot] ?? [] : []);
-    const catalogo = getCatalogo()?.imbuements ?? [];
-
-    /*
-     * ---- Uma linha so', com o que esta e o que falta ----
-     *
-     * Eram duas: os cheios em linhas proprias e, embaixo, uma linha "Imbuements
-     * vazio, vazio" com o resto. Lido de cima para baixo isso da' a impressao de
-     * que a peca tem dois conjuntos de encaixes.
-     *
-     * O dono pediu o formato do servidor dele: `Imbuements: strike 19h, vazio,
-     * vazio` — os tres encaixes na ordem, numa linha, o que esta' preenchido com
-     * nome e relogio e o que nao esta' com a palavra vazio.
-     */
-    const linha = el('div', 'imbue');
-    linha.append(el('span', null, 'Imbuements'));
-    const encaixes = el('b', 'tip-imbuements');
-    const encaixesDesenhados = Math.max(meta.imbuementSlots ?? 0, ativos.length);
-    for (let i = 0; i < encaixesDesenhados; i++) {
-      const imbuido = ativos[i];
-      if (i) encaixes.append(el('i', 'tip-imbue-virgula', ', '));
-      if (!imbuido) {
-        encaixes.append(el('i', 'tip-imbue-vazio', 'vazio'));
-        continue;
-      }
-      const entrada = catalogo.find((entry) => entry.id === imbuido.id);
-      const nome = [imbuido.name ?? entrada?.name ?? imbuido.id, entrada?.subgroup].filter(Boolean).join(' ');
-      const cheio = el('i', `tip-imbue-cheio ${corDoImbuement(entrada)}`);
-      cheio.append(el('span', null, nome));
-      cheio.append(el('em', null, restanteDoImbuement(imbuido.left ?? 0)));
-      encaixes.append(cheio);
-    }
-    linha.append(encaixes);
-    regras.append(linha);
   }
   regra('Peso', `${meta.weight} oz`);
   // A chance conta de onde saiu a raridade — sem ela o rótulo parece chute.

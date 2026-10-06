@@ -28,8 +28,7 @@ import * as Bau from '../systems/bau.mjs';
 import * as Mercado from '../systems/mercado.mjs';
 import * as Boosts from '../systems/boosts.mjs';
 import * as Stamina from '../systems/stamina.mjs';
-import * as Exercicio from '../systems/exercicio.mjs';
-import * as Treinos from '../systems/treinos.mjs';
+import * as SemTreino from '../systems/sem-treino.mjs';
 import * as Premium from '../systems/premium.mjs';
 import * as BuffPower from '../systems/buffpower.mjs';
 import * as Tiers from '../systems/tiers.mjs';
@@ -46,8 +45,6 @@ import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/co
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
 import * as Charms from '../systems/charms.mjs';
-import * as Proficiencia from '../systems/proficiencia.mjs';
-import * as Imbuements from '../systems/imbuements.mjs';
 import * as Morte from '../systems/morte.mjs';
 import * as Promocao from '../systems/promocao.mjs';
 import * as Tarefas from '../systems/tarefas.mjs';
@@ -200,7 +197,7 @@ function cartaoDaConta(personagens) {
       // segue sozinha com a aba fechada — ver `Cacadas.simularAusencia`).
       fazendo: e.hunt
         ? { tipo: 'offline', onde: `Caçando offline em ${Cacadas.nomeDaHunt(e.hunt.huntId)}` }
-        : Treinos.fazendo(e),
+        : null,
       lastSeen: p.visto_em ?? null,
     };
   });
@@ -351,10 +348,6 @@ function characterParaCliente(personagem, estado) {
     coins: estado.coins ?? 0,
     // O bestiary (mortes por criatura) e os pontos de charm — ver `game/systems/charms.mjs`.
     ...Charms.paraCliente(estado),
-    // A proficiência da arma na mão (null sem arma com proficiência) — ver `game/systems/proficiencia.mjs`.
-    proficiency: Proficiencia.vistaDaMao(estado),
-    // Os imbuements vestidos e os encaixes de cada peça — ver `game/systems/imbuements.mjs`.
-    ...Imbuements.paraCliente(estado),
     // A promoção de verdade (o molde trazia a do personagem capturado) — ver `game/systems/promocao.mjs`.
     promotion: Promocao.paraCliente(estado),
     // As entregas de outfit/montaria e as tasks de montaria — de cada personagem
@@ -370,9 +363,6 @@ function characterParaCliente(personagem, estado) {
     passivas: Passivas.vista(estado, !!estado.hunt),
     // Stamina de verdade: gasta caçando, volta na cidade (ver game/systems/stamina.mjs).
     ...Stamina.paraCliente(estado),
-    ...Exercicio.paraCliente(estado),
-    treinoStamina: Treinos.tanqueParaCliente(estado),
-    training: estado.training ?? null,
     weight: Inventario.pesoDoInventario(estado),
     deposito: [...Deposito.garantir(estado), ...(estado.bauDaConta ? [estado.bauDaConta] : [])],
     ...Bau.paraCliente(estado),
@@ -423,9 +413,6 @@ function characterParaCliente(personagem, estado) {
       // Os boosts de exp ligados (XP Boost da loja, Exp Potions) — a janelinha
       // com o relógio no alto e a linha na ficha. Ver `game/systems/boosts.mjs`.
       exp: Boosts.paraCliente(estado),
-      // O Scroll Speed Exercise guardado: com saldo, a faixa do treino mostra
-      // "Scroll Speed x2" com o tempo em vez da oferta (hud.mjs, `efeitos.exerciseSpeed`).
-      exerciseSpeed: (estado.scrollExercise ?? 0) > 0 ? { fator: 2, restante: estado.scrollExercise } : null,
       // Os três Buff Power com o relógio de cada um (ver `game/systems/buffpower.mjs`).
       buffPower: BuffPower.paraCliente(estado),
     },
@@ -505,7 +492,6 @@ export class Sessao {
     if (r.renomeou) this.enviar({ t: 'taskToken', loja: TASK_TOKEN_REAL.loja });
   }
 
-  /** `send({t:'training', action, mode, itemId})` — por enquanto o Exercise (ver game/systems/exercicio.mjs). */
   /**
    * `send({t:'arvore', action?})` — como o original: erro vira `{t:'error'}`;
    * todo o resto responde com a vista inteira (`{t:'arvore', view, emCacada}`),
@@ -571,13 +557,6 @@ export class Sessao {
   }
 
   /** `send({t:'gemas', action?})` — o Gem Atelier: responde com a vista inteira, como a árvore. */
-  despacharProficiencia(m) {
-    const r = Proficiencia.comando(this.estado, m);
-    if (!r.ok) return this.erro(r.erro);
-    this.enviar({ t: 'proficiency', view: r.view, ...(r.list ? { list: r.list } : {}) });
-    if (m.action) this.aplicar(r);
-  }
-
   despacharCharms(m) {
     const r = Charms.comando(this.estado, m);
     if (!r.ok) return this.erro(r.erro);
@@ -590,46 +569,6 @@ export class Sessao {
     if (!r.ok) return this.erro(r.erro);
     this.enviar({ t: 'gemas', view: Gemas.vista(this.estado) });
     if (m.action) this.aplicar(r);
-  }
-
-  async despacharTreino(m) {
-    // Com o PoE ligado não há treino de perícia (dono, 06/10): começar é recusado; parar continua valendo (quem já estava treinando sai).
-    if (m.action === 'start' && ItensPoeCatalogo.ligado()) return this.erro('Não há treino de skills: no PoE o personagem evolui pelo level, pelos itens e pela árvore de passivas.');
-    if (m.action === 'stop') {
-      // O pátio (treino online) e o Exercise têm cada um o seu fim; "Você não
-      // está treinando." só quando NENHUM dos dois está ligado.
-      const r = this.estado.hunt?.huntId === 'treino' ? Cacadas.sairDoPatio(this.estado) : Exercicio.parar(this.estado);
-      if (r.relatorio) this.enviar(r.relatorio);
-      if (!r.ok) return this.aplicar(r);
-      this.estado.rumo = null;
-      this.characterSujo = true;
-      // A posição nova (a da cidade) vai para o banco agora, e o cliente recebe
-      // o quadro INTEIRO — com o mapa da cidade, se ele voltou do pátio.
-      if (r.notice) this.avisoPendente = r.notice;
-      this.mandarEstado(true);
-      return this.gravarAgora().catch((e) => console.error('gravar ao parar o treino', e.message));
-    }
-    if ((m.action === 'start' && m.mode === 'exercise') || (m.action === 'start' && m.mode === 'online')) {
-      if (m.mode === 'online' && this.estado.exercicio?.treinando) {
-        const r = Exercicio.parar(this.estado);
-        if (r.relatorio) this.enviar(r.relatorio);
-      }
-      // O servidor põe o personagem no posto (1 SQM do boneco), grava a posição
-      // e só então o treino começa a valer — com o movimento já bloqueado.
-      const r = m.mode === 'exercise' ? Exercicio.comecar(this.estado, m) : Cacadas.entrarNoPatio(this.estado);
-      if (!r.ok) return this.aplicar(r);
-      this.estado.rumo = null;
-      this.aplicar(r);
-      return this.gravarAgora().catch((e) => console.error('gravar ao começar o treino', e.message));
-    }
-    if (m.action === 'start' && m.mode === 'offline') {
-      // "Ao confirmar, você sai deste personagem e volta para a lista."
-      const r = Treinos.comecarOffline(this.estado, m);
-      if (!r.ok) return this.erro(r.erro);
-      this.soltarPersonagem();
-      return this.enviar({ t: 'released', notice: 'Treino offline começou — o personagem treina enquanto você está fora.' });
-    }
-    return this.erro('Modo de treino desconhecido.');
   }
 
   /** O estado de outro personagem que esteja no jogo agora (para o mercado creditar na hora). */
@@ -873,10 +812,6 @@ export class Sessao {
    * pela escala do dia (`Bosses.bossDeHoje`) em vez de deixar a pessoa escolher.
    */
   entrarNaArena() {
-    if (this.estado.exercicio?.treinando) {
-      const r = Exercicio.parar(this.estado);
-      if (r.relatorio) this.enviar(r.relatorio);
-    }
     const hoje = Bosses.bossDeHoje();
     if (!hoje.boss) {
       return this.erro(`Hoje (${hoje.dia}) é dia de ${hoje.nome} na área de Boss Diários, mas esse boss ainda não foi capturado do original.`);
@@ -1222,9 +1157,6 @@ export class Sessao {
         return this.despacharGemas(m);
       case 'charms':
         return this.despacharCharms(m);
-      case 'proficiency':
-        return this.despacharProficiencia(m);
-      // Abrir a oficina: a resposta é o próprio personagem (o cliente lê `imbuements`/`imbuementSlots` dele).
       case 'blessings':
         return this.enviar(Morte.vista(this.estado));
       case 'bless': {
@@ -1271,10 +1203,6 @@ export class Sessao {
         return this.aplicar(Entregas.entregar(this.estado, m));
       case 'promote':
         return this.aplicar(Promocao.promover(this.estado));
-      case 'imbuements':
-        return this.aplicar({ ok: true });
-      case 'imbue':
-        return this.aplicar(Imbuements.comando(this.estado, m));
       case 'tierUp':
         return this.aplicar(Tiers.subir(this.estado, m));
       case 'usar':
@@ -1295,8 +1223,6 @@ export class Sessao {
         return this.despacharMercado(m);
       case 'coinMarket':
         return this.despacharCoins(m);
-      case 'training':
-        return this.despacharTreino(m);
       case 'storeInbox':
         return this.aplicar(Loja.moverDaInbox(this.estado, m, Inventario.cabeNoPeso));
       case 'depot':
@@ -1351,11 +1277,6 @@ export class Sessao {
       case 'historicoDaLoja':
         return this.mandarHistoricoDaLoja();
       case 'startHunt': {
-        // Treinando no boneco? Para o treino (com o relatório) antes de sair caçando.
-        if (this.estado.exercicio?.treinando) {
-          const r = Exercicio.parar(this.estado);
-          if (r.relatorio) this.enviar(r.relatorio);
-        }
         Party.antesDeSairDaCacada(this);
         const entrou = Cacadas.entrar(this.estado, m);
         this.aplicar(entrou);
@@ -1369,7 +1290,6 @@ export class Sessao {
       case 'entrarNaArena':
         return this.entrarNaArena();
       case 'stopHunt': {
-        if (this.estado?.hunt?.huntId === 'treino') return this.despacharTreino({ action: 'stop' });
         // "Caçada encerrada": o relatório da sessão, antes de a hunt sumir.
         const report = this.estado?.hunt ? Cacadas.relatorio(this.estado) : null;
         // Quem segue o líder volta junto (antes de ele sair: é pela sala dele que se acha quem estava junto).
@@ -1562,7 +1482,7 @@ export class Sessao {
        * dela é tirado antes (depois, a hunt já é a sua) e vai para quem chamou
        * — sem aba, não teria ninguém para ver o que ela rendeu.
        */
-      const deOutraCacada = outro.estado.hunt && outro.estado.hunt.huntId !== 'treino' && Cacadas.salaDe(outro.estado.hunt) !== Cacadas.salaDe(this.estado.hunt);
+      const deOutraCacada = outro.estado.hunt && Cacadas.salaDe(outro.estado.hunt) !== Cacadas.salaDe(this.estado.hunt);
       const extrato = deOutraCacada ? { report: Cacadas.relatorio(outro.estado), onde: Cacadas.nomeDaHunt(outro.estado.hunt.huntId) } : null;
       const r = Party.chamarDaConta(this, outro);
       if (!r.ok) return desistir(r.erro);
@@ -1816,8 +1736,8 @@ export class Sessao {
     // Munição/arremessável em pilha (de antes de deixarem de empilhar): uma peça, o resto vendido.
     const desempilhada = Bolsa.desempilharMunicao(estado);
     if (desempilhada.pecas) estado.avisoDaHunt = `Munição e armas de arremesso não empilham mais: ficou uma de cada pilha, e ${desempilhada.pecas.toLocaleString('pt-BR')} a mais viraram ${desempilhada.ouro.toLocaleString('pt-BR')} de ouro.`;
-    // Treino offline / Exercise que ficou rodando com o jogador fora.
-    const treinoPendente = Treinos.voltaDoTreino(estado, personagem.visto_em);
+    // O treino (pátio, Exercise, offline) saiu do jogo: quem ainda tinha algo dele gravado sai limpo (`systems/sem-treino.mjs`).
+    SemTreino.limpar(estado);
     // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
     if (!estado.hunt && personagem.visto_em) Stamina.recuperar(estado, Date.now() - personagem.visto_em);
     // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.
@@ -1835,7 +1755,7 @@ export class Sessao {
      */
     const agora = Date.now();
     if (!Cacadas.temAusenciaParaSimular(estado, agora)) {
-      return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora), treinoPendente);
+      return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora));
     }
     const pedido = { nome: personagem.nome };
     this.carregando = pedido;
@@ -1850,7 +1770,7 @@ export class Sessao {
         if (this.conta?.id !== personagem.conta) return;
         Cacadas.huntAoCarregar(simulado.hunt);
         // Devolvida: quem espera a entrada (ver `trazerParaOMundo`) espera ela INTEIRA.
-        return this.concluirEntrada(personagem, simulado, ausencia, treinoPendente);
+        return this.concluirEntrada(personagem, simulado, ausencia);
       },
       (e) => {
         if (this.carregando !== pedido) return;
@@ -1858,7 +1778,7 @@ export class Sessao {
         console.error('simulação offline ->', e.message);
         this.pararDeCarregar();
         if (this.conta?.id !== personagem.conta) return;
-        return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora), treinoPendente);
+        return this.concluirEntrada(personagem, estado, Cacadas.simularAusencia(estado, personagem, agora));
       },
     );
   }
@@ -1903,7 +1823,7 @@ export class Sessao {
    */
   entrarAutomaticoNoPortal() {
     const hunt = this.estado?.hunt;
-    if (!hunt || hunt.modo !== 'auto' || hunt.campanha?.bossDoAto || this.estado.exercicio?.treinando) return;
+    if (!hunt || hunt.modo !== 'auto' || hunt.campanha?.bossDoAto) return;
     const portal = Cacadas.portalParaCliente(this.estado, hunt);
     if (!portal) return;
     if (hunt.tentouEntrarNoPortal === portal.abertoEm) return;
@@ -1914,7 +1834,6 @@ export class Sessao {
   /** `{t:'portalDoBoss'}` (ou `interagir` no marcador do portal): entra na arena do boss do ato. Só a sessão que pediu entra. */
   entrarNoPortalDoBoss() {
     if (!this.estado?.hunt) return this.erro('Você não está numa fase.');
-    if (this.estado.exercicio?.treinando) return this.erro('Pare o treino antes.');
     const r = Cacadas.entrarNoPortalDoBoss(this.estado, { antes: () => Party.antesDeSairDaCacada(this) });
     this.aplicar(r);
     // Líder de party: quem marcou "Seguir líder" vem junto (a regra de sempre; ninguém é levado sem ter escolhido seguir).
@@ -1965,7 +1884,7 @@ export class Sessao {
   }
 
   /** O resto da entrada, com o estado já com a ausência simulada (`ausencia`: o que `simularAusencia` devolveu). */
-  async concluirEntrada(personagem, estado, ausencia, treinoPendente) {
+  async concluirEntrada(personagem, estado, ausencia) {
     this.personagem = personagem;
     this.estado = estado;
     // Caçada de antes da campanha: vira a fase (barra e progresso), ou termina se a fase está fechada.
@@ -2052,7 +1971,6 @@ export class Sessao {
       online: vivas.size + Ausentes.contagem(),
       ...(andamento ? { andamento } : {}),
       ...(morteDaAusencia ? { morte: morteDaAusencia } : {}),
-      ...(treinoPendente ? { treinoPendente } : {}),
     });
     // A lista de amigos logo depois do welcome, como o original; e os amigos
     // online veem a bolinha dele acender.
@@ -2088,8 +2006,6 @@ export class Sessao {
     // Campos de movimento são de ida (calculados a cada tique a partir do
     // último `walk`); gravá-los faria o personagem "lembrar" um rumo vencido
     // — inofensivo (a validade já expirou até a próxima sessão), mas sujo.
-    // "O pátio de treino para quando você sai."
-    if (this.estado.hunt?.huntId === 'treino') this.estado.hunt = null;
     // Arena x1: sair no meio do duelo é derrota (e o level de verdade volta).
     Arena.saiuDoJogo(this);
     // Party: sai do grupo; a caçada em grupo vira uma cópia só dele (segue offline).
@@ -2122,11 +2038,9 @@ export class Sessao {
   motivoParaNaoDeixarOffline() {
     const hunt = this.estado.hunt;
     if (hunt) {
-      if (hunt.huntId === 'treino') return 'o pátio de treino para quando você sai; use o exercise.';
       if (hunt.manual) return 'na Caça Online o personagem só anda com você na tela.';
       return null;
     }
-    if (this.estado.exercicio?.treinando) return null;
     return 'na cidade não há nada para continuar.';
   }
 
@@ -2161,12 +2075,6 @@ export class Sessao {
    */
   andar({ dx, dy }) {
     if (!this.estado) return;
-    // Treinando (pátio ou Exercise), o servidor recusa o passo: o personagem fica no posto.
-    if (Treinos.emTreino(this.estado)) {
-      this.estado.rumo = null;
-      this.estado.destino = null;
-      return;
-    }
     if (!dx && !dy) {
       this.estado.rumo = null;
       return;
@@ -2191,10 +2099,6 @@ export class Sessao {
     if (!this.estado || this.estado.hunt) return;
     const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
     if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return;
-    if (Treinos.emTreino(this.estado)) {
-      this.estado.destino = null;
-      return this.erro('Treinando: você fica ao lado do boneco até parar o treino.');
-    }
     const pos = this.estado.pos;
     if (destino.x === pos.x && destino.y === pos.y) {
       this.estado.destino = null;
@@ -2225,12 +2129,6 @@ export class Sessao {
   processarMovimento() {
     const estado = this.estado;
     if (!estado?.rumo && !estado?.destino) return;
-    // Nenhum rumo (ou destino de clique) antigo sobrevive ao começo do treino.
-    if (Treinos.emTreino(estado)) {
-      estado.rumo = null;
-      estado.destino = null;
-      return;
-    }
     const agora = Date.now();
     if (estado.rumo && agora > (estado.rumoValidoAte ?? 0)) estado.rumo = null;
     if (!estado.rumo && !estado.destino) return;
@@ -2614,9 +2512,7 @@ export class Sessao {
      * tanto quanto ele no perfil.
      *
      * `ultimaRegen` seguiu por tique, sem represar: `processarMovimento` (uma
-     * casa por PASSO_MS, bem menor que 1s) e `Exercicio.tique` (o efeito de
-     * CADA golpe no boneco, que ficaria represado e apareceria tudo de golpe
-     * no cliente se esperasse 1s) precisam do intervalo de verdade.
+     * casa por PASSO_MS, bem menor que 1s) precisa do intervalo de verdade.
      */
     const desdeARegen = agora - (this.regenadoEm ?? agora);
     // `??=` FORA do `if`: sem isto, antes do 1º segundo `regenadoEm` continua
@@ -2630,17 +2526,9 @@ export class Sessao {
       Stamina.recuperar(this.estado, desdeARegen);
       this.regenadoEm = agora;
     }
-    // Os golpes no boneco (o efeito de cada carga gasta) vão junto com o estado.
-    const golpes = [];
-    const doTreino = Exercicio.tique(this.estado, agora - (this.ultimaRegen ?? agora), golpes);
-    if (doTreino) this.enviar(doTreino);
     this.ultimaRegen = agora;
     this.processarMovimento();
-    // Treinando no Exercise, a posição é a do posto (movimento é recusado em
-    // `andar`); a distância NÃO encerra mais o treino — isto só garante a
-    // integridade, devolvendo ao posto se algo o tirou de lá.
-    Exercicio.manterNoPosto(this.estado);
-    this.mandarEstado(false, golpes);
+    this.mandarEstado(false);
   }
 
   /**

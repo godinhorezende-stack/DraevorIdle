@@ -1,6 +1,5 @@
 import * as Boosts from './boosts.mjs';
 import * as Stamina from './stamina.mjs';
-import * as Exercicio from './exercicio.mjs';
 import * as Premium from './premium.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
@@ -559,14 +558,6 @@ export function desequipar(estado, { slot }) {
 /** `send({t:'usar', id, onde})` — por enquanto, poções (fora da barra de ações). */
 export function usar(estado, { id, onde }) {
   id = Number(id);
-  // Scroll Speed Exercise: treino em dobro por 3 horas de treino.
-  if (id === Exercicio.SCROLL_SPEED) {
-    const itens = lista(estado, onde);
-    const i = acharPilha(itens, id, null);
-    if (i < 0) return { ok: false, erro: 'Você não tem isso.' };
-    if (--itens[i].count <= 0) itens.splice(i, 1);
-    return Exercicio.usarScroll(estado);
-  }
   // Summon Upgrade (loja: 1 por nível até 100; dropado: 100 por nível até 20).
   if (id === Summon.ITEM_DA_LOJA || id === Summon.ITEM_DROPADO) {
     const tem = (estado.inventory ?? []).filter((p) => p.id === id).reduce((a, p) => a + (p.count ?? 1), 0);

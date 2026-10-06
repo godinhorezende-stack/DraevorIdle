@@ -6,7 +6,7 @@ import { brutosDaFase } from '../encontros/arquivos.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { CATALOGO, ITEM_CATALOG, CITY_MAP, TREINO_MAP } from '../dados.mjs';
+import { CATALOGO, ITEM_CATALOG, CITY_MAP } from '../dados.mjs';
 import * as Premium from '../premium.mjs';
 import { andavelDoAndar } from './andares.mjs';
 import { percursoDoMapa, percursoPelosBichos, percursoPelosSpawns } from './rotas.mjs';
@@ -320,17 +320,6 @@ export function gradeDaHunt(huntPedida) {
   const hunt = APELIDOS.has(huntPedida?.id) ? acharHunt(mapaDe(huntPedida.id)) ?? huntPedida : huntPedida;
   if (gradesCacheadas.has(hunt.id)) return gradesCacheadas.get(hunt.id);
 
-  // O pátio de treino: a sala REAL do treino online (`TREINO_MAP`), não a cidade.
-  if (hunt.id === 'treino') {
-    const andavel = new Set();
-    for (let y = 0; y < TREINO_MAP.height; y++) {
-      for (let x = 0; x < TREINO_MAP.width; x++) if (!TREINO_MAP.blocked[y * TREINO_MAP.width + x]) andavel.add(`${x},${y}`);
-    }
-    // z 0: o que o `state.hunt` original manda dentro da sala.
-    const grade = { z: 0, minX: 0, maxX: TREINO_MAP.width - 1, minY: 0, maxY: TREINO_MAP.height - 1, andavel, mapa: TREINO_MAP };
-    gradesCacheadas.set(hunt.id, grade);
-    return grade;
-  }
 
   const real = mapaRealCapturado(hunt.id);
   if (real) {
@@ -419,7 +408,7 @@ export function gradeDaHunt(huntPedida) {
  * vez só, fora do caminho de qualquer jogador de verdade.
  */
 export function aquecerGrades() {
-  const alvos = [{ id: 'treino' }, ...CATALOGO.hunts, ...HUNTS_PREMIUM, ...CATALOGO.bosses];
+  const alvos = [...CATALOGO.hunts, ...HUNTS_PREMIUM, ...CATALOGO.bosses];
   let ok = 0;
   for (const hunt of alvos) {
     try {

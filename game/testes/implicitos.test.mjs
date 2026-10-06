@@ -86,9 +86,8 @@ test('o balão do item não anuncia cargas (a peça não gasta cargas ao aparar 
   assert.ok(!fonte.includes('de uso restantes') && !fonte.includes('o tempo só corre com ela vestida'), 'nem as linhas de tempo de uso');
 });
 
-test('a barra de cargas do inventário só existe para a arma de treino (a única que gasta cargas)', async () => {
+test('o inventário não desenha barra de cargas (nada gasta cargas desde que o treino saiu — dono, 06/10)', async () => {
   const { readFileSync } = await import('node:fs');
   const fonte = readFileSync(new URL('../frontend/client/src/inventory.mjs', import.meta.url), 'utf8');
-  assert.match(fonte, /meta\.charges > 0 && ehTreino \? 'carga'/);
-  assert.match(fonte, /meta\.type === 'exercise weapons'/);
+  assert.match(fonte, /const tipo = meta\.duration > 0 \? 'tempo' : null;/);
 });

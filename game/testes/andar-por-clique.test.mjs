@@ -303,11 +303,3 @@ test('Caça Online, destino sem caminho: "Não dá para chegar lá."', () => {
   assert.equal(enviados.at(-1)?.message, 'Não dá para chegar lá.');
   assert.equal(s.estado.hunt.destino ?? null, null);
 });
-
-test('treinando, clique/toque continua recusado (a regra do treino)', () => {
-  const { s, enviados } = naCidade();
-  assert.equal(Cacadas.entrarNoPatio(s.estado).ok, true);
-  s.receber({ t: 'huntWalkTo', x: 18, y: 14 });
-  assert.match(enviados.at(-1)?.message ?? '', /Treinando/);
-  assert.equal(s.estado.hunt.destino ?? null, null);
-});

@@ -92,7 +92,7 @@ let relogioDaConfirmacao = 0;
 function momento() {
   const hunt = api.state().hunt;
   if (!hunt) return 'cidade';
-  return hunt.huntId === 'treino' ? 'treino' : 'caca';
+  return 'caca';
 }
 
 function tocarNoCentro() {
@@ -122,7 +122,7 @@ function pintarCentro() {
   const agora = momento();
   const botao = nos.centro;
   const confirmando = agora !== 'cidade' && Date.now() < confirmandoAte;
-  const rotulo = confirmando ? 'Parar?' : agora === 'cidade' ? 'Caçar' : agora === 'treino' ? 'Parar treino' : 'Parar';
+  const rotulo = confirmando ? 'Parar?' : agora === 'cidade' ? 'Caçar' : 'Parar';
   if (botao.dataset.rotulo === rotulo) return;
   botao.dataset.rotulo = rotulo;
   botao.dataset.momento = agora;

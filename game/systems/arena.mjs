@@ -593,7 +593,7 @@ export function antesDoTique(s, agora = Date.now()) {
 }
 
 function golpeNoAdversario(s, outro, arma, id) {
-  const ficha = Ficha.fichaDoGolpeBasico(Ficha.combate(s.estado));
+  const ficha = Ficha.combate(s.estado);
   const fo = Ficha.combate(outro.estado);
   const oh = outro.estado.hunt;
   let base;
