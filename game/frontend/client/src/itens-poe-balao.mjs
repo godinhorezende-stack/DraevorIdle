@@ -26,6 +26,18 @@ function no(tag, classe, ...filhos) {
  * `tem`: `{ nivel, str, dex, int }` do personagem — o requisito que ele não cumpre fica em vermelho.
  */
 const NOME_DO_REQUISITO = { str: 'For', dex: 'Des', int: 'Int' };
+/** O frasco com os mods já aplicados (o servidor manda `poe.frasco`): o que recupera, as cargas e o efeito. */
+function resumoDoFrasco(f) {
+  const n = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  const linhas = [];
+  if (f.recurso) linhas.push(f.instantaneo ? `Recupera ${n(f.quantidade)} de ${f.recurso === 'mana' ? 'Mana' : 'Vida'} na hora` : `Recupera ${n(f.quantidade)} de ${f.recurso === 'mana' ? 'Mana' : 'Vida'} em ${n(f.segundos)} s`);
+  if (f.duracao) linhas.push(`Dura ${n(f.duracao)} s`);
+  if (f.efeitoDaBase) linhas.push(f.efeitoDaBase);
+  linhas.push(`Usa ${f.cargasPorUso} de ${f.cargasMaximas} cargas`);
+  linhas.push(f.tipo === 'utilidade' ? 'No cinto: usado sozinho em combate' : `No cinto: usado sozinho com a ${f.recurso === 'mana' ? 'mana' : 'vida'} baixa`);
+  return no('div', 'poe-props poe-frasco-resumo', linhas.map((l) => no('div', null, l)));
+}
+
 export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null, tem = null } = {}) {
   const fila = [...(estados ?? [])];
   const marca = () => {
@@ -45,6 +57,7 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
           // O que o personagem NÃO tem fica em vermelho (número e atributo), como no PoE. `tem`: o que ele tem (sem `tem`, nada em vermelho).
           .flatMap(([k, texto], i) => [i ? ', ' : null, no('span', tem && (Number(tem[k]) || 0) < requisitos[k] ? 'poe-req falta' : 'poe-req', texto)]))
       : null,
+    p.frasco ? [sep(), resumoDoFrasco(p.frasco)] : null,
     p.implicitos?.length ? [sep(), linhas(p.implicitos, 'imp', '')] : null,
     p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
     p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,

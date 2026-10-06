@@ -117,5 +117,31 @@
     },
     "porItemLevel": [[1, 2], [2, 3], [25, 4], [35, 5], [50, 6]],
     "chanceDeLink": 0.5
+  },
+  "frascos": {
+    "_nota": "Os FRASCOS do PoE (systems/itens-poe/frascos.mjs). `vagas`: o cinto. `usoAutomatico`: o jogo usa sozinho na caçada — Vida abaixo de vidaAbaixoPct da vida, Mana abaixo de manaAbaixoPct, Utilidade sempre que há monstro vivo. `cargasPorMorte`: cargas que cada frasco do cinto ganha por monstro morto, pela raridade (× a Recuperação de Cargas do frasco). `utilidade`: o efeito da BASE de cada frasco de Utilidade (o PoE não traz no catálogo importado; números do PoE 1), nos atributos do Draevor — Diamante, Quartzo e Enxofre são aproximados; Água-marinha, Corindo e Ferro (imunidades, Proteção) ficam só no texto.",
+    "vagas": 5,
+    "usoAutomatico": { "vidaAbaixoPct": 50, "manaAbaixoPct": 30, "utilidadeEmCombate": true },
+    "cargasPorMorte": { "normal": 1, "modificado": 2, "raro": 5, "elite": 5, "unico": 10, "boss": 10 },
+    "utilidade": {
+      "Ruby_Flask": { "texto": "+50% de Resistência a Fogo", "af": { "fire_res": 50 } },
+      "Sapphire_Flask": { "texto": "+50% de Resistência a Gelo", "af": { "ice_res": 50 } },
+      "Topaz_Flask": { "texto": "+50% de Resistência a Raio", "af": { "energy_res": 50 } },
+      "Amethyst_Flask": { "texto": "+35% de Resistência a Caos", "af": { "chaos_res": 35 } },
+      "Bismuth_Flask": { "texto": "+35% de todas as Resistências Elementais", "af": { "fire_res": 35, "ice_res": 35, "energy_res": 35 } },
+      "Granite_Flask": { "texto": "+1500 de Armadura", "af": { "armor_flat": 1500 } },
+      "Jade_Flask": { "texto": "+1500 de Evasão", "af": { "evasion": 1500 } },
+      "Stibnite_Flask": { "texto": "Evasão aumentada em 100%", "af": { "evasion_pct": 100 } },
+      "Quicksilver_Flask": { "texto": "Velocidade de Movimento aumentada em 40%", "af": { "move_speed": 40 } },
+      "Silver_Flask": { "texto": "Investida: Velocidade de Ataque, Conjuração e Movimento aumentada em 20%", "af": { "atk_speed": 20, "cast_speed": 20, "move_speed": 20 } },
+      "Basalt_Flask": { "texto": "15% de Redução de Dano Físico adicional", "af": { "phys_res": 15 } },
+      "Diamond_Flask": { "texto": "Acertos Críticos com sorte (aproximado: Chance de Crítico aumentada em 100%)", "af": { "crit_chance_inc": 100 } },
+      "Quartz_Flask": { "texto": "Fase (aproximado: Evasão aumentada em 20%)", "af": { "evasion_pct": 20 } },
+      "Sulphur_Flask": { "texto": "Solo Consagrado (aproximado: Dano contra monstros aumentado em 40%)", "af": { "dmg_vs_monsters": 40 } },
+      "Gold_Flask": { "texto": "Raridade de Itens encontrados aumentada em 15%", "af": { "item_rarity": 15 } },
+      "Aquamarine_Flask": { "texto": "Imune a Resfriamento e Congelamento (ainda sem efeito no Draevor)", "af": {} },
+      "Corundum_Flask": { "texto": "Não pode ser Atordoado (ainda sem efeito no Draevor)", "af": {} },
+      "Iron_Flask": { "texto": "Restaura Proteção (ainda sem efeito no Draevor)", "af": {} }
+    }
   }
 }

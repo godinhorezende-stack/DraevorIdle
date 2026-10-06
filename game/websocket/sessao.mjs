@@ -39,6 +39,7 @@ import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
+import * as FrascosPoe from '../systems/itens-poe/frascos.mjs';
 import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/combate.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
@@ -378,6 +379,8 @@ function characterParaCliente(personagem, estado) {
     ...Bolsa.paraCliente(estado, Cacadas.faltaParaVender(estado)),
     equipment: estado.equipment ?? {},
     inventory: estado.inventory ?? [],
+    // O cinto de frascos do PoE (só com ITENS_POE=1; null sem o sistema).
+    frascosPoe: FrascosPoe.paraCliente(estado),
     // Estes três são MUTÁVEIS por personagem (ver `estadoInicialPersonagem`) —
     // por isso vêm de `estado`, e não ficam para trás no molde compartilhado.
     // `?? CHARACTER_TEMPLATE.X`: personagens salvos ANTES deste sistema
@@ -1100,6 +1103,14 @@ export class Sessao {
       }
       case 'unequip':
         return this.aplicarComSkills(Inventario.desequipar(this.estado, m));
+      // O CINTO de frascos do PoE (`itens-poe/frascos.mjs`): pôr um frasco da mochila e tirar de volta; usar na hora (na caçada).
+      case 'frasco':
+        if (m.action === 'usar') {
+          const usou = FrascosPoe.usar(this.estado, Number(m.vaga), null, this.personagem?.nome);
+          if (usou) Ficha.invalidar(this.estado);
+          return this.aplicar(usou ? { ok: true } : { ok: false, erro: 'Esse frasco não pode ser usado agora (sem cargas, já ativo ou fora da caçada).' });
+        }
+        return this.aplicar(m.action === 'tirar' ? FrascosPoe.tirar(this.estado, m) : FrascosPoe.por(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
       case 'gema':
         return this.aplicarComSkills(

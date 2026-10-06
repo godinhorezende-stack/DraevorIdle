@@ -824,6 +824,7 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null }) {
     meta?.slot && from !== 'equipment' && !naBolsaDeBoss
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }
       : null,
+    meta?.frasco && from === 'bag' ? { label: 'Pôr no cinto de frascos', action: () => send({ t: 'frasco', action: 'por', pilha }) } : null,
     from === 'equipment' ? { label: 'Desequipar', action: () => send({ t: 'unequip', slot: meta.slot }) } : null,
     // Os sockets da peça vestida: encaixar/tirar gemas de skill (ver soquetes.mjs).
     from === 'equipment' && temSoquetes(peca)
@@ -2070,6 +2071,60 @@ export function esquecerOsDesenhos() {
     }
   }
   if (cabecaDaMochila) cabecaDaMochila.assinatura = null;
+}
+
+/**
+ * O CINTO DE FRASCOS do PoE (só com ITENS_POE=1 — `itens-poe/frascos.mjs` no servidor), no HUD junto das réguas de vida e mana (como no
+ * PoE: os frascos ficam entre a vida e a mana; e a janela de equipamento tem tamanho fixo no arranjo, crescer nela cobria a mochila).
+ * 5 vagas com o frasco e a barra de cargas. O jogo usa sozinho na caçada (vida/mana baixa, utilidade em combate); o clique usa na hora; o
+ * direito tira de volta para a mochila. Um frasco da mochila entra no cinto com o clique nele. Chamada a cada estado (`main.mjs`): só refaz
+ * quando o cinto mudou.
+ */
+let assinaturaDoCinto = null;
+export function renderCintoDeFrascos() {
+  const barras = document.getElementById('hud-bars');
+  if (!barras || !ctx) return;
+  const vagas = ctx.state.character?.frascosPoe ?? null;
+  let slot = barras.querySelector('.bar-slot.poe-cinto-slot');
+  if (!vagas) return void slot?.remove();
+  const assinatura = JSON.stringify(vagas.map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.cargasMaximas, f.ativoAte > 0]));
+  if (slot && assinatura === assinaturaDoCinto) return;
+  assinaturaDoCinto = assinatura;
+  if (!slot) {
+    slot = el('div', 'bar-slot poe-cinto-slot');
+    barras.append(slot);
+  }
+  slot.replaceChildren(cintoDeFrascos(vagas, ctx.send));
+}
+function cintoDeFrascos(vagas, send) {
+  const cinto = el('div', 'poe-cinto');
+  cinto.title = 'Frascos: usados sozinhos na caçada. Clique para usar agora; botão direito para tirar do cinto.';
+  const fila = el('div', 'poe-cinto-fila');
+  vagas.forEach((f, v) => {
+    if (!f) {
+      const vazia = el('div', 'poe-frasco vazio');
+      vazia.title = 'Vaga livre: clique num frasco da mochila para pôr aqui.';
+      return void fila.append(vazia);
+    }
+    const caixa = el('div', `poe-frasco ${f.tipo ?? ''}${f.ativoAte > 0 ? ' ativo' : ''}`);
+    const cell = itemCell(f.peca, 'frascos', { size: 26, onClick: () => send({ t: 'frasco', action: 'usar', vaga: v }) });
+    cell.oncontextmenu = (event) => {
+      event.preventDefault();
+      openMenu(event, [
+        { label: 'Usar agora', action: () => send({ t: 'frasco', action: 'usar', vaga: v }) },
+        { label: 'Tirar do cinto', action: () => send({ t: 'frasco', action: 'tirar', vaga: v }) },
+      ]);
+    };
+    const barra = el('div', 'poe-frasco-cargas');
+    const cheio = el('div', null);
+    cheio.style.height = `${Math.round((100 * f.cargas) / Math.max(1, f.cargasMaximas))}%`;
+    barra.append(cheio);
+    barra.title = `${f.cargas}/${f.cargasMaximas} cargas (usa ${f.cargasPorUso})`;
+    caixa.append(cell, barra, el('div', 'poe-frasco-num', `${f.cargas}/${f.cargasMaximas}`));
+    fila.append(caixa);
+  });
+  cinto.append(fila);
+  return cinto;
 }
 
 export function renderInventory() {
@@ -4291,6 +4346,8 @@ function encherGradeDaMochila(grid, character, state) {
             return void ctx.send({ t: 'split', id: item.id, count: quantos });
           }
           if (meta?.slot) ctx.send({ t: 'equip', id: item.id, pilha, alvo: alvoDaPeca(item, pilha) });
+          // O frasco do PoE vai para o cinto de frascos (a primeira vaga livre).
+          else if (meta?.frasco) ctx.send({ t: 'frasco', action: 'por', pilha });
         },
       })
     );

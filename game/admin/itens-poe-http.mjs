@@ -139,7 +139,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   if (rota === 'drops') return json(res, 200, { drops: Telas.dropsDe(q.get('monstro') ?? '') }), true;
   if (rota === 'itens-de-missao') return json(res, 200, { itens: DropsPorMonstro.ITENS_DE_MISSAO }), true;
   if (rota === 'arvore') return json(res, 200, { ...Telas.arvore(), cobertura: Telas.coberturaDaArvore() }), true;
-  if (rota === 'online') return json(res, 200, { online: Jogo.online(), equipavel: Object.keys(Jogo.CLASSES_DO_JOGO), naoEquipaveis: Jogo.registro().naoEquipaveis }), true;
+  if (rota === 'online') return json(res, 200, { online: Jogo.online(), equipavel: [...Object.keys(Jogo.CLASSES_DO_JOGO), ...Jogo.FRASCOS], naoEquipaveis: Jogo.registro().naoEquipaveis }), true;
   if (rota === 'gerar') {
     const pecas = pecasDe(cat, q);
     // Cada peça vem com a TRADUÇÃO para os atributos do Draevor (o que somaria na ficha) e o estado de cada mod.

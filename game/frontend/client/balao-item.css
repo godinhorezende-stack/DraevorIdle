@@ -269,3 +269,17 @@
 /* Os requisitos da base da peça do PoE (nível e atributos), como no PoE. */
 .poe-balao .poe-requisitos { font-size: .9em; opacity: .8; padding: 2px 0 0; }
 .poe-balao .poe-req.falta { color: #e5534b; font-weight: 600; }
+
+/* ---- O cinto de frascos do PoE (inventory.mjs `renderCintoDeFrascos`, no HUD junto das réguas; só com ITENS_POE=1). Aqui porque esta folha não tem cópia comprimida. ---- */
+.poe-cinto { margin: 3px 0 1px; }
+.poe-cinto-titulo { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #a89a7a; margin-bottom: 3px; }
+.poe-cinto-fila { display: flex; gap: 4px; justify-content: center; }
+.poe-frasco { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; width: 40px; }
+.poe-frasco.vazio { height: 34px; width: 34px; border: 1px dashed #4a4030; border-radius: 3px; }
+.poe-frasco-cargas { position: absolute; right: 0; top: 2px; width: 3px; height: 30px; background: #222; display: flex; align-items: flex-end; }
+.poe-frasco-cargas > div { width: 100%; background: #d8b56a; }
+.poe-frasco.vida .poe-frasco-cargas > div { background: #d24a3c; }
+.poe-frasco.mana .poe-frasco-cargas > div { background: #3c7fd2; }
+.poe-frasco-num { font-size: 9px; color: #bbb; font-variant-numeric: tabular-nums; }
+.poe-frasco.ativo .cell { box-shadow: 0 0 6px 1px #f0d36b; }
+.poe-balao .poe-frasco-resumo { color: #8fd0ff; }
