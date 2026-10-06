@@ -34,9 +34,11 @@ const SLOT_LAYOUT = ['neck', 'head', 'backpack', 'weapon', 'body', 'shield', 'ri
  * ---- A grade do PoE (dono, 06/10: "tipo assim", com a foto do inventário do PoE) ----
  *
  * Com o PoE ligado o corpo é desenhado como no PoE: a arma e a mão secundária altas nas laterais, o elmo e o amuleto em cima, a armadura no
- * meio com UM ANEL DE CADA LADO (o segundo anel, `ring2`, só existe com o PoE), e embaixo luvas, cinto e botas. O cinto mora no slot
- * `legs` e ganha a arte de cinto. As posições são `grid-template-areas` (`.equipment.poe`, style.css). O slot de munição não existe no
- * PoE: só aparece se ainda houver algo nele.
+ * meio com UM ANEL DE CADA LADO (o segundo anel, `ring2`, só existe com o PoE), e embaixo luvas, cinto e botas — e, logo abaixo do cinto,
+ * os 5 FRASCOS (dono, 06/10: "falo para colocar os flasks"). O cinto mora no slot `legs` e ganha a arte de cinto. As posições são
+ * `grid-template-areas` (`.equipment.poe`, balao-item.css). A janela não pode crescer (a mochila começa logo abaixo, numa posição fixa do
+ * arranjo): a fileira dos frascos fica no lugar da fileira da mochila e dos selos, que descem, menores, para a linha da lixeira. O slot de
+ * munição não existe no PoE: só aparece se ainda houver algo nele.
  */
 const SLOT_LAYOUT_COM_LUVAS = ['weapon', 'head', 'shield', 'neck', 'ring', 'body', 'ring2', 'gloves', 'legs', 'feet', 'backpack', '@blessings', '@premium'];
 let catalogoDasLuvas = null;
@@ -2156,6 +2158,7 @@ export function renderInventory() {
     character.equipment, character.ammoChoices ?? null, character.ammoPending ?? null, character.municao ?? 0,
     character.derived?.capacity, character.weight, character.desgaste ?? null, character.joias ?? null,
     character.imbuements ?? null, character.itemRules ?? null, (character.premium ?? 0) > 0, character.blessings ?? null,
+    (character.frascosPoe ?? []).map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.ativoAte > 0]),
   ]);
   if (body.dataset.assinaturaDoInventario === assinatura && body.firstChild) return;
   body.dataset.assinaturaDoInventario = assinatura;
@@ -2166,24 +2169,23 @@ export function renderInventory() {
   const equipment = el('div', poe ? 'equipment poe' : 'equipment');
   // No PoE não há slot de munição: ele só aparece se ainda houver algo nele (peça de antes).
   const slots = poe && character.equipment?.ammo ? [...SLOT_LAYOUT_COM_LUVAS, 'ammo'] : disposicaoDosSlots(state.items);
+  // No PoE a mochila e os selos vão para a linha da lixeira (o rodapé), e a grade ganha os frascos.
+  const rodape = poe ? el('div', 'inv-rodape-poe') : null;
+  const ondeVai = (slot) => (rodape && (slot === 'backpack' || slot.startsWith('@')) ? rodape : equipment);
   for (const slot of slots) {
     // Os dois selos ocupam os buracos da grade: não são slots, não recebem
     // arrasto e não têm moldura de encaixe.
     if (slot === '@premium') {
-      const selo = seloPremium(character);
-      if (poe) selo.style.gridArea = 'premium';
-      equipment.append(selo);
+      ondeVai(slot).append(seloPremium(character));
       continue;
     }
     if (slot === '@blessings') {
-      const selo = seloBlessings(character, state.catalog, () => ctx.abrirBlessings?.());
-      if (poe) selo.style.gridArea = 'blessings';
-      equipment.append(selo);
+      ondeVai(slot).append(seloBlessings(character, state.catalog, () => ctx.abrirBlessings?.()));
       continue;
     }
 
     const cell = el('div', 'slot');
-    if (poe) cell.style.gridArea = slot;
+    if (poe && ondeVai(slot) === equipment) cell.style.gridArea = slot;
 
     cell.dataset.slot = slot;
     makeDropSlot(cell, slot);
@@ -2358,7 +2360,12 @@ export function renderInventory() {
       cell.append(engrenagem);
     }
 
-    equipment.append(cell);
+    ondeVai(slot).append(cell);
+  }
+  if (poe && character.frascosPoe) {
+    const frascos = cintoDeFrascos(character.frascosPoe, send);
+    frascos.style.gridArea = 'frascos';
+    equipment.append(frascos);
   }
   body.append(equipment);
 
@@ -2456,7 +2463,10 @@ export function renderInventory() {
    * usa deve ficar.
    */
   body.append(line);
-  body.append(lixeira);
+  if (rodape) {
+    rodape.append(lixeira);
+    body.append(rodape);
+  } else body.append(lixeira);
 
 }
 

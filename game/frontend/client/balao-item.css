@@ -294,9 +294,22 @@
     "weapon neck   shield"
     "ring   body   ring2"
     "gloves legs   feet"
-    "backpack blessings premium"
+    "frascos frascos frascos"
     "ammo   .      .";
 }
+.equipment.poe .poe-cinto { margin: 0; align-self: center; }
+.equipment.poe .poe-cinto-fila { gap: 2px; }
+.equipment.poe .poe-frasco { width: 27px; }
+.equipment.poe .poe-frasco.vazio { width: 24px; height: 26px; }
+.equipment.poe .poe-frasco .cell { width: 24px; height: 24px; }
+.equipment.poe .poe-frasco-cargas { height: 22px; right: -1px; }
+.equipment.poe .poe-frasco-num { font-size: 8px; }
+/* O rodapé do PoE: a mochila e os selos de premium/blessings, menores, na linha da lixeira. */
+.inv-rodape-poe { display: flex; align-items: center; gap: 4px; margin-top: 3px; height: 28px; }
+.inv-rodape-poe > .slot { width: 28px; height: 28px; min-height: 0; flex: none; }
+.inv-rodape-poe > .slot canvas, .inv-rodape-poe > .slot img { transform: scale(.75); }
+.inv-rodape-poe > :not(.slot):not(.inv-trash) { flex: none; zoom: .4; }
+.inv-rodape-poe > .inv-trash { flex: 1; margin-top: 0; min-width: 0; height: 26px; box-sizing: border-box; padding: 2px; }
 .equipment.poe .slot[data-slot="weapon"], .equipment.poe .slot[data-slot="shield"] { height: auto; min-height: 92px; }
 .equipment.poe .slot[data-slot="weapon"] canvas, .equipment.poe .slot[data-slot="shield"] canvas,
 .equipment.poe .slot[data-slot="weapon"] img, .equipment.poe .slot[data-slot="shield"] img { transform: scale(1.35); }
