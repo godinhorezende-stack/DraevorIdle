@@ -73,7 +73,7 @@ import {
   openArena,
   openCyclopedia, openBestiary, openReport, openExerciseRapido, openExercise, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente, openCaixaBoosted,
   escolhasDaPosicao, cartazDeBossLigado, redesenharJanelaAberta,
-  chegouFichaDoBicho,
+  chegouFichaDoBicho, chegouPreviaPoe,
 } from './panels.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { renderSheet as renderSheetInto } from './sheet.mjs';
@@ -843,6 +843,10 @@ function handle(message) {
     // A ficha de alguém, pedida ao clicar no nome dele no chat.
     case 'fichaDoBicho':
       chegouFichaDoBicho(message);
+      break;
+    // A prévia de uma área do PoE (os números reais do PoE na janela da hunt).
+    case 'previaPoe':
+      chegouPreviaPoe(message);
       break;
     case 'perfil':
       mostrarPerfil(message.perfil);

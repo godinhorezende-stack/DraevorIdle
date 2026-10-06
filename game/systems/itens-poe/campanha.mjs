@@ -239,6 +239,11 @@ export function iniciar() {
   // 2. os monstros e a troca dos bichos dos spawns
   const { porArea } = Monstros.iniciar(nativosDoMapa);
   PORAREA = porArea;
+  // As criaturas da hunt da área (o que a lista de hunts e a janela da hunt mostram) são os monstros do PoE da área, não os do mapa do Draevor.
+  for (const [id, chaves] of porArea) {
+    const h = CATALOGO.hunts.find((x) => x.id === id);
+    if (h) h.creatures = [...new Set(chaves)].filter((k) => BESTIARY[k]).map((k) => ({ key: k, name: BESTIARY[k].name, look: BESTIARY[k].look, exp: BESTIARY[k].exp, hp: BESTIARY[k].hp ?? BESTIARY[k].health }));
+  }
   const unicosDa = (id) => C.areas[id].monstros.map((m, i) => (m.unico ? porArea.get(id)?.[i] : null)).filter(Boolean);
   const comunsDa = (id) => {
     const l = C.areas[id].monstros.map((m, i) => (m.unico ? null : porArea.get(id)?.[i])).filter(Boolean);

@@ -3408,6 +3408,126 @@ function blocoDeDrops(criaturas, titulo, { semFiltro = false } = {}) {
   return bloco;
 }
 
+/*
+ * ---- A prévia de uma ÁREA DO PoE (dono, 06/10: "nessa parte aparece os valores reais do PoE que foi utilizado e nomes, sempre do mod,
+ * itens e suas chances") ----
+ *
+ * O servidor monta (`itens-poe/previa-da-area.mjs`, os mesmos dados da hora da morte) e manda por `{t:'previaPoe'}`; aqui só se mostra.
+ * Três blocos: o que cai (peças por monstro, raridade da peça, Item Level, categorias com chance, ouro e os itens próprios de cada
+ * monstro), os monstros com os status do PoE, e os modificadores de monstro do nível da área com a chance de cada um.
+ */
+const pctBr = (v) => `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%`;
+const numBr = (v) => Number(v ?? 0).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+let monstroPoeNaPrevia = null;
+export function chegouPreviaPoe(m) {
+  if (!ctx?.tabs || !m?.previa) return;
+  (ctx.tabs.previaPoe ??= {})[m.id] = m.previa;
+  ctx.redraw?.();
+}
+function previaDaAreaPoe(hunt) {
+  const caixa = el('div', 'poe-previa');
+  const p = ctx.tabs.previaPoe?.[hunt.id];
+  if (!p) {
+    ctx.tabs.previaPoePedida ??= {};
+    if (!ctx.tabs.previaPoePedida[hunt.id]) {
+      ctx.tabs.previaPoePedida[hunt.id] = true;
+      ctx.send({ t: 'previaPoe', id: hunt.id });
+    }
+    caixa.append(el('p', 'empty', 'carregando os dados do PoE...'));
+    return caixa;
+  }
+  const linha = (rotulo, valor) => {
+    const l = el('div', 'poe-previa-linha');
+    l.append(el('span', null, rotulo), el('b', null, valor));
+    return l;
+  };
+  const titulo = (texto) => el('b', 'poe-previa-titulo', texto);
+  const NOME_R = { normal: 'Normal', modificado: 'Mágico', raro: 'Raro', unico: 'Único' };
+
+  // ---- o que cai ----
+  const cai = el('div', 'hunt-previa-bloco poe-previa-bloco');
+  cai.append(titulo(`O que cai aqui (nível ${p.nivel})`));
+  cai.append(el('em', 'words', `Toda peça sai com Item Level ${p.drop.ilvl} (o level do monstro): base e modificadores só até esse nível.`));
+  cai.append(el('div', 'poe-previa-sub', 'Peças por monstro'));
+  for (const [r, v] of Object.entries(p.drop.pecasPorMonstro)) cai.append(linha(NOME_R[r] ?? r, v >= 100 ? `${numBr(v / 100)} peças em média` : `${pctBr(v)} de chance de 1 peça`));
+  cai.append(el('div', 'poe-previa-sub', 'Raridade de cada peça'));
+  for (const r of p.drop.raridadeDaPeca) {
+    const l = linha(r.nome, pctBr(r.chance));
+    l.querySelector('span').style.color = r.cor;
+    cai.append(l);
+  }
+  cai.append(el('div', 'poe-previa-sub', 'Que tipo de item'));
+  for (const c of p.drop.categorias) {
+    const l = linha(c.categoria, pctBr(c.chance));
+    l.title = `${c.bases} base(s) neste nível: ${c.exemplos.join(', ')}${c.bases > c.exemplos.length ? '…' : ''}`;
+    cai.append(l);
+  }
+  cai.append(el('div', 'poe-previa-sub', 'Ouro'));
+  cai.append(linha('Por monstro', `${numBr(p.drop.ouro.min)}–${numBr(p.drop.ouro.max)}`));
+  cai.append(linha('× pela raridade', Object.entries(p.drop.ouro.porRaridade).map(([r, v]) => `${NOME_R[r] ?? r} ×${numBr(v)}`).join(' · ')));
+  const proprios = p.monstros.filter((m) => m.drops.length);
+  if (proprios.length) {
+    cai.append(el('div', 'poe-previa-sub', 'Itens de monstros específicos'));
+    for (const m of proprios) for (const d of m.drops) cai.append(linha(`${d.nome}${d.missao ? ' (missão)' : ''}`, `${pctBr(d.chance)} — ${m.nome}`));
+  }
+
+  // ---- os monstros ----
+  const bichos = el('div', 'hunt-previa-bloco poe-previa-bloco');
+  bichos.append(titulo(`Monstros daqui (${p.monstros.length})`));
+  if (!p.monstros.some((m) => m.key === monstroPoeNaPrevia)) monstroPoeNaPrevia = p.monstros[0]?.key ?? null;
+  const abas = el('div', 'hunt-previa-abas');
+  for (const m of p.monstros) {
+    const aba = el('button', 'hunt-aba');
+    aba.setAttribute('aria-selected', String(m.key === monstroPoeNaPrevia));
+    if (ctx.state.catalog.bestiary?.[m.key]) aba.append(figuraDaCriatura({ key: m.key }, ctx.state.catalog.bestiary, 34));
+    aba.append(el('span', m.unico ? 'poe-unico' : null, m.nome));
+    aba.onclick = () => {
+      monstroPoeNaPrevia = m.key;
+      ctx.redraw?.();
+    };
+    abas.append(aba);
+  }
+  bichos.append(abas);
+  const m = p.monstros.find((x) => x.key === monstroPoeNaPrevia);
+  if (m) {
+    const ficha = el('div', 'poe-previa-ficha');
+    ficha.append(el('div', `poe-previa-nome${m.unico ? ' poe-unico' : ''}`, `${m.nome}${m.unico ? ' (Único)' : ''} — nível ${m.nivel}`));
+    ficha.append(linha('Vida', numBr(m.vida)), linha('Dano', numBr(m.dano)), linha('Tempo de ataque', `${numBr(m.tempoAtaque)} s`),
+      linha('Armadura', numBr(m.armadura)), linha('Evasão', numBr(m.evasao)));
+    if (m.escudoDeEnergia) ficha.append(linha('Escudo de Energia', numBr(m.escudoDeEnergia)));
+    const res = m.resistencias ?? {};
+    ficha.append(linha('Resistências', `Fogo ${res.fire ?? 0}% · Gelo ${res.ice ?? 0}% · Raio ${res.energy ?? 0}% · Caos ${res.chaos ?? 0}%`));
+    ficha.append(linha('Experiência', m.unico ? numBr(m.experiencia) : `${numBr(m.experiencia)} (Mágico ×${numBr(p.raridade.exp.magico ?? 1)}, Raro ×${numBr(p.raridade.exp.raro ?? 1)})`));
+    if (m.habilidades.length) ficha.append(linha('Habilidades', m.habilidades.join(', ')));
+    if (m.drops.length) ficha.append(linha('Solta', m.drops.map((d) => `${d.nome} (${pctBr(d.chance)})`).join(', ')));
+    bichos.append(ficha);
+  }
+
+  // ---- os modificadores de monstro (na coluna dos monstros, abaixo da ficha) ----
+  const mods = el('div', 'poe-previa-mods');
+  mods.append(titulo(`Modificadores de monstro (nível ${p.nivel})`));
+  const R = p.raridade;
+  mods.append(el('em', 'words', `Um monstro comum nasce Mágico com ${pctBr(R.sorteio.modificado ?? 0)} de chance (${R.quantos.magico[0]} modificador) e Raro com ${pctBr(R.sorteio.raro ?? 0)} (${R.quantos.raro[0]} a ${R.quantos.raro[1]}). A raridade também dá, sem aparecer: Mágico +${numBr(R.ocultos.magico?.vida)}% de vida e +${numBr(R.ocultos.magico?.dano)}% de dano; Raro +${numBr(R.ocultos.raro?.vida)}% de vida e +${numBr(R.ocultos.raro?.dano)}% de dano. Cada modificador abaixo: a chance de ser o sorteado.`));
+  const listaDeMods = (rotulo, lista) => {
+    const bloco = el('div', 'poe-previa-modlista');
+    bloco.append(el('div', 'poe-previa-sub', `${rotulo} (${lista.length})`));
+    for (const x of lista) {
+      const l = linha(x.nome, pctBr(x.chance));
+      l.title = `${x.nomeEn ?? ''} — ${x.linhas.join(' / ')} (nível ${x.nivel}+)`;
+      const texto = el('div', 'poe-previa-modtexto', x.linhas.join(' · '));
+      bloco.append(l, texto);
+    }
+    return bloco;
+  };
+  mods.append(listaDeMods('Em monstro Mágico', p.mods.magico), listaDeMods('Em monstro Raro', p.mods.raro));
+  bichos.append(mods);
+
+  const colunas = el('div', 'hunt-previa-colunas');
+  colunas.append(cai, bichos);
+  caixa.append(colunas);
+  return caixa;
+}
+
 function previaDaHunt(hunt, { comFoto = true } = {}) {
   const { state } = ctx;
   const caixa = el('div', 'hunt-previa');
@@ -3453,6 +3573,12 @@ function previaDaHunt(hunt, { comFoto = true } = {}) {
   const voltas = state.character.huntLaps?.[hunt.id] ?? 0;
   if (voltas) {
     caixa.append(el('p', 'hunt-previa-voltas', `Você já completou este percurso ${voltas}x`));
+  }
+
+  // Área do PoE: os números REAIS do PoE (monstros, modificadores, itens e chances) no lugar do loot e da ficha do Draevor.
+  if (hunt.poeArea) {
+    caixa.append(previaDaAreaPoe(hunt));
+    return caixa;
   }
 
   const colunas = el('div', 'hunt-previa-colunas');

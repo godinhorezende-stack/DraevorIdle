@@ -40,6 +40,7 @@ import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
 import * as FrascosPoe from '../systems/itens-poe/frascos.mjs';
+import * as PreviaPoe from '../systems/itens-poe/previa-da-area.mjs';
 import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/combate.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
@@ -1036,6 +1037,11 @@ export class Sessao {
       case 'release':
         return this.soltarPersonagem();
       // A ficha do monstro pede o que ele paga a mim e como ele bate — a conta é do servidor (`fichaDoBicho`).
+      // A prévia de uma área do PoE na janela da hunt (só leitura: monstros, modificadores, itens e chances).
+      case 'previaPoe': {
+        const previa = ItensPoeCatalogo.ligado() && typeof m.id === 'string' ? PreviaPoe.previaDaArea(m.id) : null;
+        return void this.enviar({ t: 'previaPoe', id: m.id, previa });
+      }
       case 'fichaDoBicho':
         if (this.estado && typeof m.key === 'string') this.enviar({ t: 'fichaDoBicho', ...fichaDoBicho(this.estado, this.estado.hunt, m.key, { huntId: typeof m.huntId === 'string' ? m.huntId : null, dificuldade: typeof m.dificuldade === 'string' ? m.dificuldade : null }) });
         return;

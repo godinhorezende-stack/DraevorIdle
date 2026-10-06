@@ -326,3 +326,19 @@
 .cell.poe-raridade.poe-r-normal, .slot.poe-raridade.poe-r-normal { border-color: color-mix(in srgb, var(--cor-poe) 40%, #000) !important; }
 .cell.poe-raridade.poe-r-unico::before, .slot.poe-raridade.poe-r-unico::before,
 .cell.poe-raridade.poe-r-raro::before, .slot.poe-raridade.poe-r-raro::before { box-shadow: 0 0 8px 0 var(--tier), inset 0 0 6px -2px var(--tier); }
+
+/* ---- A prévia de uma área do PoE na janela da hunt (panels.mjs `previaDaAreaPoe`) ---- */
+.poe-previa { display: grid; gap: 12px; }
+.poe-previa-bloco { background: #0e1416; border: 1px solid var(--line-soft, #2a3438); border-radius: 6px; padding: 8px 10px; }
+.poe-previa-titulo { font-family: var(--font-heading, serif); color: #e8d9a8; letter-spacing: .04em; }
+.poe-previa-sub { margin-top: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #8fa3a8; border-bottom: 1px solid #1f2a2e; padding-bottom: 2px; }
+.poe-previa-linha { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; padding: 1px 0; }
+.poe-previa-linha span { color: #b9c4c6; min-width: 0; }
+.poe-previa-linha b { color: #f0eadb; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.poe-previa-ficha { display: grid; gap: 1px; margin-top: 4px; }
+.poe-previa-nome { font-weight: 600; color: #e8e2d0; margin-bottom: 2px; }
+.poe-previa .poe-unico, .poe-previa-nome.poe-unico { color: #d98a3d; }
+.poe-previa-mods { display: grid; gap: 4px; margin-top: 8px; border-top: 1px solid #1f2a2e; padding-top: 6px; }
+.poe-previa-mods > em { font-size: 11px; }
+.poe-previa-modlista { display: grid; align-content: start; min-width: 0; max-height: 170px; overflow-y: auto; padding-right: 4px; }
+.poe-previa-modtexto { font-size: 10.5px; color: #7f9a9e; margin: -1px 0 3px; }

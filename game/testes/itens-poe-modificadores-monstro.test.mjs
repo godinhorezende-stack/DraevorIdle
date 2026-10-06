@@ -179,3 +179,26 @@ test('a curva de level do personagem com o PoE: a tabela do dono (exata nos pont
   e.level = 5;
   assert.equal(Boosts.expDoBicho(e, 100), Math.round(100 * Stamina.fatorDeExp(e)));
 });
+
+test('a prévia da área do PoE na janela da hunt: monstros com os status do PoE, mods e itens com as chances (somam 100%)', async () => {
+  const { existsSync } = await import('node:fs');
+  const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+  if (!existsSync(Catalogo.ARQUIVO)) return;
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  (await import('../systems/itens-poe/jogo.mjs')).iniciar(ITEM_CATALOG);
+  (await import('../systems/itens-poe/campanha.mjs')).iniciar();
+  const { previaDaArea } = await import('../systems/itens-poe/previa-da-area.mjs');
+  assert.equal(previaDaArea('troll-cave'), null, 'hunt do Draevor não tem prévia do PoE');
+  const p = previaDaArea('poe-a1-the-twilight-strand');
+  assert.equal(p.nome, 'Costa do Crepúsculo');
+  const hillock = p.monstros.find((m) => m.slug === 'Hillock');
+  assert.deepEqual([hillock.unico, hillock.vida, hillock.experiencia], [true, 474, 165]);
+  const soma = (l) => Math.round(l.reduce((t, x) => t + x.chance, 0));
+  assert.equal(soma(p.mods.magico), 100);
+  assert.equal(soma(p.mods.raro), 100);
+  assert.equal(soma(p.drop.categorias), 100);
+  assert.equal(soma(p.drop.raridadeDaPeca), 100);
+  assert.ok(p.mods.magico.every((m) => m.nivel <= p.nivel));
+  assert.deepEqual(p.drop.pecasPorMonstro, { normal: 16, modificado: 40, raro: 136, unico: 472 });
+  assert.deepEqual([p.drop.ouro.min, p.drop.ouro.max], [2, 4]);
+});
