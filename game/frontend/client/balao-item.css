@@ -398,3 +398,5 @@
 :is(.tooltip, .action-resumo) .tip-poe-status.nao { color: #e06a5a; font-weight: 600; }
 :is(.tooltip, .action-resumo) .tip-poe-nota { color: #9a9a9a; font-size: 11.5px; }
 .tooltip.tip-gema-poe { max-width: 360px; }
+:is(.tooltip, .gema-no-editor) .tip-gema-req { color: #7f7f7f; font-size: 11.5px; }
+:is(.tooltip, .gema-no-editor) .tip-gema-espera { color: #e0b84a; font-size: 11.5px; }

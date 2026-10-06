@@ -302,7 +302,10 @@ export function catalogo(estado) {
       itemId: a.itemId,
       nivel: a.nivel,
       xp: a.xp,
-      xpProximo: a.nivel >= Gemas.CONFIG.niveis.maximo ? 0 : Gemas.xpParaSubir(a.nivel, estado.level),
+      xpProximo: Gemas.xpProximoDaGema(a.def, a.nivelBase ?? a.nivel, estado.level),
+      // A gema do PoE espera o level do personagem para o próximo nível (o `RequerNível` da tabela dela).
+      levelDoProximo: Gemas.levelDoNivel(a.def, (a.nivelBase ?? a.nivel) + 1),
+      esperaLevel: (estado.level ?? 1) < Gemas.levelDoNivel(a.def, (a.nivelBase ?? a.nivel) + 1),
       raridade: a.raridade,
       multiplicador: Gemas.multiplicadorDaRaridade(a.raridade),
       supports: a.supports.map((sp) => ({ nome: sp.def.nome, nomePt: sp.def.nomePt ?? sp.def.nome, nivel: sp.nivel })),

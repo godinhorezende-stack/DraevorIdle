@@ -229,6 +229,14 @@ function idsDasGemas(slugs) {
 /** Troca as faixas "(a — b)" pelo valor na fração `t` (0..1) — a qualidade da gema vai de 0 a 20%. */
 const naFracao = (texto, t) => texto.replace(/\((-?\d+(?:\.\d+)?)\s*—\s*(-?\d+(?:\.\d+)?)\)/g, (_, a, b) => String(Math.round((parseFloat(a) + (parseFloat(b) - parseFloat(a)) * t) * 10) / 10));
 
+/** O nível máximo por XP (o último com `Experiência` na tabela + 1 — o 20 das gemas comuns); acima, só com o add de nível das peças. */
+function maximoPorXp(g) {
+  const i = g.colunas?.indexOf('Experiência') ?? -1;
+  let ultimo = -1;
+  (g.linhas ?? []).forEach((l, k) => { if (i >= 0 && Number(String(l[i] ?? '').replace(/,/g, '')) > 0) ultimo = k; });
+  return ultimo + 2;
+}
+
 /** O valor interpolado de dano ("334.9 a 502.2") sai inteiro, como no PoE; os pequenos (raio de 1.3 metro) ficam com a casa. */
 const inteiros = (t) => t.replace(/\d+\.\d+/g, (x) => (parseFloat(x) >= 10 ? String(Math.round(parseFloat(x))) : x));
 
@@ -246,7 +254,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   const b = COMPILADOR.basicosDoNivel(g, n);
   const props = [];
   for (const p of COMPILADOR.propsDoNivel(g, n)) {
-    if (/^Nível:/.test(p)) props.push(['Nível', `${n}${n >= h.nivelMax ? ' (Máx)' : ''}`]);
+    if (/^Nível:/.test(p)) props.push(['Nível', `${n}${n >= maximoPorXp(g) ? ' (Máx)' : ''}`]);
     else if (/^Custo:/.test(p)) props.push(['Custo', `${b.custo ?? 0} Mana`]);
     else if (/^Eficácia do Dano Adicionado:/.test(p)) props.push(['Eficácia do Dano Adicionado', `${Math.round((b.efetividade ?? 1) * 100)}%`]);
     else {
@@ -256,7 +264,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   }
   const q = Math.max(0, Math.min(20, qualidade || 0));
   return {
-    nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: h.nivelMax, nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
+    nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
     status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: h.linhas?.naoImplementadas ?? [],
   };

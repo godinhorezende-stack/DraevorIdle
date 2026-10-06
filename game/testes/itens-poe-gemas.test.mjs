@@ -80,7 +80,7 @@ test('a ficha da gema para o balão: as propriedades e os modificadores com os n
   assert.equal(f.qualidade, 10);
   assert.ok(f.modsDaQualidade.every((m) => !m.includes('—')));
   assert.equal(f.status, 'funciona');
-  const max = G.fichaNoNivel('Fireball', 99);
+  const max = G.fichaNoNivel('Fireball', 20);
   assert.match(max.props.find(([r]) => r === 'Nível')[1], /Máx/);
 });
 
@@ -108,4 +108,31 @@ test('cada tipo de dano só escala com o seu "aumentado" (dono, 06/10): o físic
   assert.equal(dano({ spell_dmg: 100 }, 'Cleave'), cleave, 'dano de magia não vale no ataque');
   assert.ok(dano({ phys_dmg: 100 }, 'Cleave') > cleave * 1.8);
   assert.ok(!G.fichaNoNivel('Absolution', 8).mods[0].includes('.'), 'dano inteiro na ficha');
+});
+
+test('a gema do PoE nasce no nível 1 (drop e loja) e sobe pela tabela de XP do arquivo dela, travada pelo level que o nível pede', { skip: SEM }, () => {
+  const id = G.doSlug('Fireball').itemId;
+  const def = GS.defDaGema(id);
+  assert.equal(GS.maximoDaGema(def), 20, 'máximo por XP: o 20 do PoE');
+  assert.equal(GS.xpDaGema(def, 1), 70, 'do 1 ao 2: 70 de XP (poedb)');
+  assert.equal(GS.xpDaGema(def, 2), 308);
+  assert.equal(GS.levelDoNivel(def, 3), 4, 'o nível 3 pede level 4');
+  // Loja: sempre nível 1, XP 0.
+  const e = { level: 3, gold: 1e9, bank: 0, inventory: [], equipment: {} };
+  assert.ok(GS.comprarNaLoja(e, { id, count: 1 }).ok);
+  assert.deepEqual([e.inventory[0].gema.nivel, e.inventory[0].gema.xp], [1, 0]);
+  // Drop: sempre nível 1.
+  let s = 7;
+  const rng = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 3000; i++) { const g = GS.sortearDrop({ ato: 10, levelDaFase: 30, fatorDeChance: 1000 }, rng); if (g) assert.equal(g.gema.nivel, 1); }
+  // XP: 70 leva ao 2; o 3 pede level 4 — com o personagem no 3 a XP enche e espera.
+  const gema = { id, nivel: 1, xp: 0 };
+  const est = { level: 3, equipment: { weapon: { id: 1, soquetes: { abertos: 1, links: [], gemas: [gema] } } } };
+  GS.ganharXp(est, 70);
+  assert.equal(gema.nivel, 2);
+  GS.ganharXp(est, 10_000);
+  assert.deepEqual([gema.nivel, gema.xp], [2, 308], 'XP cheia, esperando o level 4');
+  est.level = 4;
+  GS.ganharXp(est, 1);
+  assert.equal(gema.nivel, 3, 'com o level, passa');
 });

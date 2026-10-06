@@ -1147,6 +1147,8 @@ function blocoDaGemaPoe(entry) {
     barra.append(cheio);
     bloco.append(barra);
   }
+  // Como no PoE: a XP enche, mas o nível só passa quando o personagem tem o level que o próximo nível da gema pede.
+  if (g.xpProximo && g.levelDoProximo) bloco.append(el('div', g.esperaLevel ? 'tip-gema-espera' : 'tip-gema-req', g.esperaLevel ? `O próximo nível pede o level ${g.levelDoProximo} — a XP fica guardada até lá` : `Próximo nível: pede level ${g.levelDoProximo}`));
   bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Suportes ligados: ${g.supports.map((s) => `${s.nomePt ?? s.nome} ${s.nivel}`).join(', ')}` : 'Sem suporte ligado'));
   return bloco;
 }
