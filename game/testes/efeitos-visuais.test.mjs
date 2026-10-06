@@ -56,3 +56,16 @@ test('a prévia valida e resolve o override sem gravar nada', () => {
   assert.deepEqual(Efeitos.ler(), antes, 'nada gravado');
   assert.ok(!Arena.previa({ skills: { x: { preset: '???' } } }).ok);
 });
+
+test('o estilo automático da gema: pelo que ela é (nome, tags, arquétipo, elemento) — flecha de fogo, lâminas, relâmpago, aura, maldição', async () => {
+  const { estiloDaGema } = await import('../systems/itens-poe/estilos-das-gemas.mjs');
+  const est = (en, h = {}) => estiloDaGema({ en, tags: [], arquetipo: 'projetil', elemento: 'physical', ...h });
+  assert.equal(est('Fireball', { elemento: 'fire' }).visual.projetil.sprite.id, 4);
+  assert.equal(est('Blade Vortex', { arquetipo: 'area' }).motivo, 'lâminas', 'lâminas antes do "vortex" de gelo');
+  assert.equal(est('Vortex', { elemento: 'ice', arquetipo: 'area' }).motivo, 'redemoinho de gelo');
+  assert.equal(est('Arc', { elemento: 'energy', arquetipo: 'ricochete' }).visual.impacto.sprite.id, 176);
+  assert.equal(est('Burning Arrow', { elemento: 'fire', tags: ['Arco', 'Ataque'] }).visual.projetil.sprite.id, 34, 'arco de fogo: a flecha de fogo');
+  assert.ok(est('Wrath', { elemento: 'energy', arquetipo: 'aura' }).visual.lancamento, 'aura: o redemoinho no lançamento');
+  assert.ok(est('Despair', { elemento: 'chaos', arquetipo: 'maldicao' }).visual.alvo, 'maldição: o efeito no alvo');
+  assert.ok(est('Vaal Fireball', { elemento: 'fire' }).visual.lancamento, 'a Vaal ganha o lançamento roxo');
+});

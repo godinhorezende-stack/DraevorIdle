@@ -46,6 +46,8 @@ const DA_PARTE = {
 export function arenaDeEfeitos({ slugInicial = null } = {}) {
   const T = {
     dados: null, draft: null, revisao: null, skill: null, filtro: '', suportes: new Set(), nivel: 10, alvos: 1, distancia: 4, direcao: 'l',
+    // O MODO: 'combate' (uma caçada de verdade com vários bichos, o personagem lançando a skill) ou 'lancamento' (um lançamento, parado).
+    modo: 'combate', mobs: 6, segundos: 12, carregando: false,
     sim: null, cliente: null, errosDaPrevia: [], parte: 'projetil', vel: 1, pausado: false, t0: 0, tPausa: 0, loop: true, comparar: true, lados: null,
   };
   const raiz = el('section', { class: 'arena-efeitos' });
@@ -72,16 +74,25 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     montarLados();
     pintarErros();
     pintarTimeline();
+    // Os campos mostram o visual resolvido: repinta o editor, menos enquanto se mexe num campo dele (não roubar o foco do controle).
+    if (!raiz.querySelector('.ae-editor')?.contains(document.activeElement)) pintarEditor();
   }
   let esperaDaPrevia = null;
   const previaEmBreve = () => { clearTimeout(esperaDaPrevia); esperaDaPrevia = setTimeout(previa, 180); };
 
   async function lancar() {
     if (!T.skill) return;
-    const r = await post('efeitos/simular', { skill: T.skill, nivel: T.nivel, suportes: [...T.suportes], alvos: T.alvos, distancia: T.distancia, direcao: T.direcao });
-    if (!r.ok) { msg(`Arena de Efeitos: ${r.erros?.join(' ')}`, 'erro'); T.sim = null; montarLados(); return; }
-    T.sim = r;
-    if (r.distancia !== T.distancia) msg(`A distância ficou em ${r.distancia} casa(s): é o alcance da skill.`, 'aviso');
+    T.carregando = true;
+    pintarTimeline();
+    const combate = T.modo === 'combate';
+    const r = combate
+      ? await post('efeitos/combate', { skill: T.skill, nivel: T.nivel, suportes: [...T.suportes], mobs: T.mobs, segundos: T.segundos })
+      : await post('efeitos/simular', { skill: T.skill, nivel: T.nivel, suportes: [...T.suportes], alvos: T.alvos, distancia: T.distancia, direcao: T.direcao });
+    T.carregando = false;
+    if (!r.ok) { msg(`Arena de Efeitos: ${r.erros?.join(' ')}`, 'erro'); T.sim = null; montarLados(); pintarTimeline(); return; }
+    T.sim = { ...r, tipo: combate ? 'combate' : 'lancamento' };
+    if (combate) msg(`Combate: ${r.usos} uso(s) da skill e ${r.mortes} bicho(s) derrotado(s) em ${T.segundos} s.`, 'ok');
+    else if (r.distancia !== T.distancia) msg(`A distância ficou em ${r.distancia} casa(s): é o alcance da skill.`, 'aviso');
     montarLados();
     reiniciar();
     pintarTimeline();
@@ -92,16 +103,23 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
   function lado(visuais) {
     const camada = criarCamada();
     const saida = { efeitos: [], projeteis: [], danos: [], fim: 0 };
+    // Os eventos com o instante de cada um: no combate, o do tique em que saíram; num lançamento, 0 (e o fim da conjuração depois).
+    const pares = [];
+    if (T.sim?.tipo === 'combate') for (const q of T.sim.quadros) for (const ev of q.eventos) pares.push([q.t, ev]);
+    else {
+      let b = 0;
+      for (const ev of T.sim?.eventos ?? []) { if (ev.t === 'castFim') b = T.sim.conjuracaoMs; pares.push([b, ev]); }
+    }
     let base = 0;
-    for (const ev of T.sim?.eventos ?? []) {
-      if (ev.t === 'castFim') base = T.sim.conjuracaoMs;
+    for (const [t, ev] of pares) {
+      base = t;
       const n = camada.receber(ev, base, { visuais, uidDe: (e) => e.uid });
       saida.efeitos.push(...n.efeitos);
       saida.projeteis.push(...n.projeteis);
       if (ev.t === 'dmg' && ev.foe) saida.danos.push({ born: base, uid: ev.uid, v: ev.v, crit: ev.crit, color: ev.color });
     }
     for (const i of [...saida.efeitos, ...saida.projeteis]) saida.fim = Math.max(saida.fim, i.born + i.life);
-    saida.fim = Math.max(saida.fim, base + 700, T.sim?.conjuracaoMs ?? 0);
+    saida.fim = Math.max(saida.fim, base + 700, T.sim?.conjuracaoMs ?? 0, T.sim?.tipo === 'combate' ? T.sim.quadros.at(-1).t : 0);
     return saida;
   }
   function montarLados() {
@@ -122,12 +140,19 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     if (!canvas || !T.sim) return;
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
-    const cam = { x: (T.sim.pos.x - Math.floor(LARGURA / 2)) * TILE, y: (T.sim.pos.y - Math.floor(ALTURA / 2)) * TILE };
+    const cena = cenaEm(t);
+    const cam = { x: Math.round((cena.pos.x - Math.floor(LARGURA / 2)) * TILE), y: Math.round((cena.pos.y - Math.floor(ALTURA / 2)) * TILE) };
     // O chão: um xadrez discreto (a arena não tem mapa; o que importa é a posição de cada casa).
     for (let y = 0; y < ALTURA; y++) for (let x = 0; x < LARGURA; x++) { ctx.fillStyle = (x + y) % 2 ? '#1b2326' : '#1f2a2e'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE); }
-    const posDe = (uid) => (uid === 'player' ? T.sim.pos : T.sim.alvos.find((a) => a.uid === uid) ?? null);
-    drawCreature(ctx, { look: T.sim.jogador.look, colors: T.sim.jogador.colors, dir: dirDoLancador(), frame: 0 }, T.sim.pos.x * TILE - cam.x, T.sim.pos.y * TILE - cam.y);
-    for (const a of T.sim.alvos) drawCreature(ctx, { look: a.look, colors: a.colors, dir: 3, frame: 0 }, a.x * TILE - cam.x, a.y * TILE - cam.y);
+    const posDe = (uid) => (uid === 'player' ? cena.pos : cena.mobs.find((a) => a.uid === uid) ?? null);
+    drawCreature(ctx, { look: T.sim.jogador.look, colors: T.sim.jogador.colors, dir: cena.pos.dir ?? dirDoLancador(), frame: 0 }, cena.pos.x * TILE - cam.x, cena.pos.y * TILE - cam.y);
+    for (const a of cena.mobs) {
+      const px = a.x * TILE - cam.x;
+      const py = a.y * TILE - cam.y;
+      drawCreature(ctx, { look: a.look, colors: a.colors, dir: a.dir ?? 3, frame: 0 }, px, py);
+      // A vida do bicho (no combate, cai e o bicho some ao morrer).
+      if (a.vida != null) { ctx.fillStyle = '#000'; ctx.fillRect(px + 2, py - 6, 28, 4); ctx.fillStyle = a.vida > 50 ? '#3fbf3f' : a.vida > 20 ? '#e0b84a' : '#e05a3a'; ctx.fillRect(px + 3, py - 5, Math.round((26 * a.vida) / 100), 2); }
+    }
     if (!L) return;
     for (const e of L.efeitos) {
       const dono = e.uid != null ? posDe(e.uid) : null;
@@ -148,6 +173,17 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
       ctx.fillText(String(d.v ?? ''), a.x * TILE - cam.x + TILE / 2, a.y * TILE - cam.y - 4 - idade / 25);
       ctx.globalAlpha = 1;
     }
+  }
+  /** O personagem e os bichos no instante `t`: no combate, entre um tique e o próximo (andam suave); num lançamento, parados. */
+  function cenaEm(t) {
+    if (T.sim?.tipo !== 'combate') return { pos: T.sim.pos, mobs: T.sim.alvos };
+    const Q = T.sim.quadros;
+    const i = Math.max(0, Math.min(Q.length - 1, Math.floor(t / 250)));
+    const a = Q[i];
+    const b = Q[Math.min(Q.length - 1, i + 1)];
+    const f = Math.max(0, Math.min(1, (t - a.t) / 250));
+    const mistura = (p, q) => (q ? { ...p, x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f } : p);
+    return { pos: mistura(a.pos, b.pos), mobs: a.mobs.map((m) => mistura(m, b.mobs.find((x) => x.uid === m.uid))) };
   }
   const dirDoLancador = () => ({ n: 0, ne: 1, l: 1, se: 1, s: 2, so: 3, o: 3, no: 3 })[T.direcao] ?? 2;
   let conectou = false;
@@ -175,7 +211,8 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
   const confDaSkill = () => (T.draft.skills[T.skill] ??= {});
   const presetDe = (id) => (id ? T.draft.presets[id] ?? T.dados.presetsDeFabrica[id] ?? null : null);
   /** A parte como VALE agora (preset + override), para mostrar nos campos; e a do override (o que se edita). */
-  const parteEfetiva = (p) => ({ ...(presetDe(confDaSkill().preset)?.visual?.[p] ?? {}), ...(T.draft.skills[T.skill]?.override?.[p] ?? {}) });
+  // O que VALE agora (o servidor resolveu na prévia: estilo automático + preset + override).
+  const parteEfetiva = (p) => ({ ...(T.cliente?.skills?.[T.skill]?.[p] ?? {}) });
   function mudar(p, campo, valor) {
     const c = confDaSkill();
     c.override ??= {};
@@ -223,13 +260,20 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     const sup = el('select', { multiple: true, size: 6, onchange: (e) => { T.suportes = new Set([...e.target.selectedOptions].map((o) => o.value)); lancar(); } },
       (T.dados.suportes ?? []).map((s) => el('option', { value: s.slug, selected: T.suportes.has(s.slug) }, s.nome)));
     const num = (rotulo, campo, min, max) => el('label', { class: 'ae-campo' }, rotulo, el('input', { type: 'number', min, max, value: T[campo], onchange: (e) => { T[campo] = Number(e.target.value); lancar(); } }));
+    const combate = T.modo === 'combate';
     return el('div', { class: 'ae-bloco' }, el('h4', {}, 'Teste'),
+      el('div', { class: 'ae-abas' },
+        el('button', { type: 'button', class: combate ? 'ativo' : '', onclick: () => { T.modo = 'combate'; pintar(); lancar(); } }, 'Combate (vários mobs)'),
+        el('button', { type: 'button', class: combate ? '' : 'ativo', onclick: () => { T.modo = 'lancamento'; pintar(); lancar(); } }, 'Um lançamento')),
+      el('p', { class: 'dica' }, combate ? 'Uma caçada de verdade: os bichos da área vêm, o personagem lança a skill da barra (como no jogo) e quem morre volta. Bom para ver área, cadeia, projéteis extras e vários alvos.' : 'Um lançamento parado, nos bonecos na direção e distância escolhidas: bom para ajustar o tempo de cada efeito.'),
       num('Nível da gema', 'nivel', 1, 40),
-      el('label', { class: 'ae-campo' }, 'Alvos', el('select', { onchange: (e) => { T.alvos = Number(e.target.value); lancar(); } }, [1, 3, 5, 10].map((n) => el('option', { value: n, selected: n === T.alvos }, String(n))))),
-      num('Distância (casas)', 'distancia', 1, 8),
-      el('div', { class: 'ae-campo' }, 'Direção do alvo', el('div', { class: 'ae-rosa' }, DIRECOES.map(([d, s]) => el('button', { type: 'button', class: d === T.direcao ? 'ativo' : '', disabled: !d, onclick: () => { T.direcao = d; pintar(); lancar(); } }, s)))),
+      combate ? [num('Mobs vivos ao mesmo tempo', 'mobs', 1, 20), num('Duração (segundos)', 'segundos', 4, 40)] : null,
+      combate ? null : [
+        el('label', { class: 'ae-campo' }, 'Alvos', el('select', { onchange: (e) => { T.alvos = Number(e.target.value); lancar(); } }, [1, 3, 5, 10].map((n) => el('option', { value: n, selected: n === T.alvos }, String(n))))),
+        num('Distância (casas)', 'distancia', 1, 8),
+        el('div', { class: 'ae-campo' }, 'Direção do alvo', el('div', { class: 'ae-rosa' }, DIRECOES.map(([d, s]) => el('button', { type: 'button', class: d === T.direcao ? 'ativo' : '', disabled: !d, onclick: () => { T.direcao = d; pintar(); lancar(); } }, s))))],
       el('label', { class: 'ae-campo' }, 'Suportes ligados (Ctrl+clique)', sup),
-      el('button', { type: 'button', class: 'botao', onclick: lancar }, '⟳ Lançar de novo'));
+      el('button', { type: 'button', class: 'botao', onclick: lancar }, combate ? '⚔ Rodar o combate de novo' : '⟳ Lançar de novo'));
   }
   function pintarTelas() {
     const c = raiz.querySelector('.ae-telas');
@@ -240,7 +284,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
       return el('figure', { class: 'ae-tela' }, el('figcaption', {}, rotulo), cv);
     };
     telas.original = null;
-    c.replaceChildren(...(T.comparar ? [tela('ORIGINAL (fábrica)', 'original')] : []), tela('CUSTOMIZADO (em edição)', 'custom'));
+    c.replaceChildren(...(T.comparar ? [tela('ANTES (o molde do Draevor, sem visual)', 'original')] : []), tela('AGORA (estilo da gema + o que você editou)', 'custom'));
   }
   function pintarControles() {
     const c = raiz.querySelector('.ae-controles');
@@ -262,7 +306,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     const c = raiz.querySelector('.ae-timeline');
     if (!c) return;
     const L = T.lados?.custom;
-    if (!L) { c.replaceChildren(el('p', { class: 'dica' }, T.sim ? 'Sem eventos visuais.' : 'Lançando…')); return; }
+    if (T.carregando || !L) { c.replaceChildren(el('p', { class: 'dica' }, T.carregando ? (T.modo === 'combate' ? 'Rodando o combate no servidor…' : 'Lançando…') : 'Sem eventos visuais.')); return; }
     const fim = Math.max(L.fim, T.lados.original.fim) + 400;
     const pct = (ms) => `${(100 * ms) / fim}%`;
     const linhas = [];
@@ -316,7 +360,8 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     c.replaceChildren(el('div', { class: 'ae-bloco' },
       el('h4', {}, 'Editar a parte'),
       el('div', { class: 'ae-abas' }, T.dados.partes.map((x) => el('button', { type: 'button', class: x === p ? 'ativo' : '', style: `border-bottom-color:${COR_DA_PARTE[x]}`, onclick: () => { T.parte = x; pintarEditor(); pintarTimeline(); } }, T.dados.nomeDasPartes[x].replace(/ \(.*\)/, '')))),
-      el('p', { class: 'dica' }, `Evento: ${T.dados.eventosDasPartes[p]}. Os campos marcados mudam só nesta skill (por cima do preset).`),
+      s?.estilo ? el('label', { class: 'ae-campo ae-bool' }, el('input', { type: 'checkbox', checked: !T.draft.skills[T.skill]?.semEstilo, onchange: (e) => { const c2 = confDaSkill(); if (e.target.checked) delete c2.semEstilo; else c2.semEstilo = true; limparSkill(); previaEmBreve(); pintarEditor(); } }), ` Estilo automático da gema: ${s.estilo}`) : null,
+      el('p', { class: 'dica' }, `Evento: ${T.dados.eventosDasPartes[p]}. Os campos marcados mudam só nesta skill (por cima do estilo e do preset).`),
       el('div', { class: 'ae-campo' }, 'Sprite', el('b', {}, spriteTxt(v.sprite)),
         el('div', { class: 'ae-linha' },
           el('button', { type: 'button', onclick: async () => { const x = await escolherSprite({ secoes: ['efeitos', 'tiros'], tipo: p === 'projetil' ? 'tiros' : 'efeitos', titulo: 'Sprite do efeito' }); if (x) { mudar(p, 'sprite', { tipo: x.tipo === 'tiros' ? 'projetil' : 'efeito', id: Number(x.id) }); pintarEditor(); } } }, 'Escolher da biblioteca…'),

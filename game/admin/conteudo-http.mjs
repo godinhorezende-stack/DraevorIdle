@@ -328,6 +328,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'classes/previa') return json(res, 200, { previa: Classes.previaDeEfeitos(dados?.efeitos ?? {}, { str: Number(dados?.str) || 0, dex: Number(dados?.dex) || 0, int: Number(dados?.int) || 0 }) }), true;
     // Arena de Efeitos: simular (lança a skill no combate de verdade, sem gravar nada); salvar/restaurar e enviar asset (gravam).
     if (rota === 'efeitos/previa') return json(res, 200, (await arenaEfeitos()).previa(dados?.override)), true;
+    if (rota === 'efeitos/combate') { const r = (await arenaEfeitos()).combate(dados ?? {}); return json(res, r.ok ? 200 : 400, r), true; }
     if (rota === 'efeitos/simular') { const r = (await arenaEfeitos()).simular(dados ?? {}); return json(res, r.ok ? 200 : 400, r), true; }
     if (rota === 'efeitos/asset') { const r = (await arenaEfeitos()).enviarAsset(dados ?? {}, dados?.revisao); return json(res, status(r), r), true; }
     if (rota === 'efeitos') {

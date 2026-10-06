@@ -21,6 +21,7 @@ import * as Gemas from '../systems/skills/gemas.mjs';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
+import { gradeDaHunt } from '../systems/hunt/terreno.mjs';
 import { criarArquivoVersionado, revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
 
 export const CAMINHOS = { arquivo: Efeitos.ARQUIVO, versoes: join(O.PASTA, '_versoes', 'efeitos') };
@@ -31,10 +32,12 @@ const arq = () => criarArquivoVersionado({ caminhos: CAMINHOS, valorPadrao: () =
 function skills() {
   const lista = [];
   for (const e of [...ACTION_CATALOG.spells, ...(ACTION_CATALOG.runes ?? [])]) {
-    if (!e.efeito && !e.projetil && !e.forma) continue;
+    if (!e.efeito && !e.projetil && !e.forma && !e.poeGema) continue;
     const poe = e.poeGema ? GemasPoe.doSlug(e.poeGema.slug) : null;
     lista.push({
       id: e.id, nome: e.name, elemento: e.element ?? null, poe: !!e.poeGema, slug: e.poeGema?.slug ?? null, statusNoJogo: poe?.statusNoJogo ?? null,
+      // O estilo automático da gema (o motivo: "flecha de fogo", "relâmpago"...).
+      estilo: Efeitos.estiloDaSkill(e.id)?.motivo ?? null,
       // O desenho de FÁBRICA (o que o combate manda sem configuração): a referência do "Original" na comparação.
       fabrica: { efeito: e.efeito ?? null, projetil: e.projetil ?? null, area: e.forma ? e.forma.length : 0, cadeia: !!e.cadeia, alcance: e.range ?? 1 },
     });
@@ -181,4 +184,88 @@ export function simular({ skill, nivel = 10, suportes = [], alvos = 1, distancia
     jogador: { look: e.outfit.type, colors: { head: e.outfit.head, body: e.outfit.body, legs: e.outfit.legs, feet: e.outfit.feet } },
     visual: Efeitos.visualDaSkill(entry.id), skill: { id: entry.id, nome: entry.name },
   };
+}
+
+/**
+ * O MODO COMBATE da arena (dono, 06/10: "invocando vários mobs e aí atacando, eu escolhendo a magia"): uma CAÇADA de verdade por
+ * `segundos` (o `Cacadas.tique`, como no jogo: o personagem anda, mira e lança a skill da barra; os bichos andam e batem), com `mobs`
+ * bichos da área sempre vivos perto (quem morre volta num lugar do começo). O personagem não morre (vida e mana sem fim).
+ * Devolve os QUADROS a cada tique (250 ms): as posições (personagem e bichos, com vida) e os eventos — a arena desenha com a mesma
+ * camada de efeitos do jogo.
+ */
+export function combate({ skill, nivel = 10, suportes = [], mobs = 5, segundos = 12 } = {}) {
+  const entry = ACTION_CATALOG.spells.find((x) => x.id === skill) ?? ACTION_CATALOG.runes?.find((x) => x.id === skill);
+  if (!entry) return { ok: false, erros: ['Skill desconhecida.'] };
+  const itemDaSkill = Gemas.ITEM_DA_ACAO.get(entry.id);
+  if (!itemDaSkill) return { ok: false, erros: ['Esta skill não vem de gema.'] };
+  const e = personagem(70);
+  const ids = [itemDaSkill, ...suportes.map((s) => SuportesPoe.doSlug(s)?.itemId).filter(Boolean)].slice(0, 6);
+  const arma = e.equipment.weapon ?? { id: 3074, count: 1 };
+  e.equipment.weapon = { ...arma, soquetes: { abertos: ids.length, links: Array(Math.max(0, ids.length - 1)).fill(true), gemas: ids.map((id) => ({ ...Gemas.novaGema(id), nivel: Math.max(1, Math.min(40, Number(nivel) || 1)) })) } };
+  Ficha.invalidar(e);
+  Afixos.sincronizarMaximos(e);
+  e.mana = e.maxMana = 1e9;
+  e.hp = e.maxHp = 1e9;
+  const slot = Acoes.PAPEL_DO_SLOT.indexOf(entry.papeis?.[0] === 'attack' ? 'attack' : entry.papeis?.[0] ?? 'attack');
+  e.actions[slot < 0 ? 0 : slot] = { id: entry.id, enabled: true, minMana: 0, minTargets: 1, conditions: [] };
+  let entrou = null;
+  for (const huntId of ['poe-a1-the-twilight-strand', 'poe-a1-the-coast', 'troll-cave']) {
+    entrou = Cacadas.entrar(e, { huntId, mode: 'auto', strategy: 'nearest' });
+    if (entrou?.ok) break;
+  }
+  if (!entrou?.ok) return { ok: false, erros: [`Não consegui abrir uma caçada para o teste: ${entrou?.erro ?? '?'}`] };
+  const h = e.hunt;
+  delete h.instancia;
+  h.respawns = [];
+  const n = Math.max(1, Math.min(20, Number(mobs) || 5));
+  // Os bichos da ÁREA (os do mapa, com o desenho e a força deles) como moldes; nascem PERTO do personagem (2 a 5 casas, em casas livres
+  // do mapa: a tela da arena mostra ±6), e quem morre volta perto de onde o personagem está.
+  const dist = (m) => Math.max(Math.abs(m.x - h.pos.x), Math.abs(m.y - h.pos.y));
+  const moldes = [...h.monstros].sort((a, b) => dist(a) - dist(b)).slice(0, 8).map((m) => ({ ...structuredClone(m), hp: m.maxHp }));
+  const livre = gradeDaHunt({ id: h.huntId })?.andavel ?? null;
+  let proximoUid = 9_000_000;
+  let k = 0;
+  const pertoDoPersonagem = () => {
+    const ocupadas = new Set(h.monstros.filter((m) => m.hp > 0).map((m) => `${m.x},${m.y}`));
+    for (let t = 0; t < 60; t++) {
+      const r = 2 + Math.floor(Math.random() * 4);
+      const ang = Math.random() * Math.PI * 2;
+      const x = h.pos.x + Math.round(Math.cos(ang) * r);
+      const y = h.pos.y + Math.round(Math.sin(ang) * r);
+      if ((!livre || livre.has(`${x},${y}`)) && !ocupadas.has(`${x},${y}`) && !(x === h.pos.x && y === h.pos.y)) return { x, y };
+    }
+    return null;
+  };
+  const nascer = () => {
+    const m = moldes[k++ % moldes.length];
+    const onde = pertoDoPersonagem();
+    if (!m || !onde) return null;
+    return { ...structuredClone(m), uid: proximoUid++, hp: m.maxHp, x: onde.x, y: onde.y, spawn: { ...onde } };
+  };
+  h.monstros = [];
+  for (let i = 0; i < n; i++) { const m = nascer(); if (m) h.monstros.push(m); }
+  const quem = { id: 0, nome: 'Arena' };
+  const quadros = [];
+  let agora = Date.now();
+  const total = Math.max(2, Math.min(40, Number(segundos) || 12)) * 4;
+  const foto = () => ({
+    pos: { x: h.pos.x, y: h.pos.y, dir: h.pos.dir ?? 2 },
+    mobs: h.monstros.filter((m) => m.hp > 0).map((m) => ({ uid: m.uid, x: m.x, y: m.y, dir: m.dir ?? 2, look: m.look, lookItem: m.lookItem ?? null, colors: m.colors ?? null, vida: Math.max(0, Math.round((100 * m.hp) / Math.max(1, m.maxHp))), nome: m.name })),
+  });
+  quadros.push({ t: 0, ...foto(), eventos: [] });
+  let mortes = 0;
+  let usos = 0;
+  for (let i = 1; i <= total && e.hunt; i++) {
+    const eventos = Cacadas.tique(e, quem, (agora += 250)) ?? [];
+    mortes += eventos.filter((x) => x.t === 'kill').length;
+    usos += eventos.filter((x) => (x.t === 'skill' && !x.semLancamento) || (x.t === 'cast' && x.sk)).length;
+    e.hp = e.maxHp;
+    e.mana = e.maxMana;
+    // Os mortos voltam (sempre `n` vivos), num dos lugares do começo.
+    const vivos = h.monstros.filter((m) => m.hp > 0);
+    h.monstros = vivos;
+    for (let falta = n - h.monstros.length; falta > 0; falta--) { const m = nascer(); if (m) h.monstros.push(m); }
+    quadros.push({ t: i * 250, ...foto(), eventos: eventos.filter((x) => x.t !== 'state'), ...(process.env.DBG_ARENA ? { parado: JSON.stringify(h.parados ?? {}) } : {}) });
+  }
+  return { ok: true, quadros, skill: { id: entry.id, nome: entry.name }, jogador: { look: e.outfit.type, colors: { head: e.outfit.head, body: e.outfit.body, legs: e.outfit.legs, feet: e.outfit.feet } }, mortes, usos };
 }

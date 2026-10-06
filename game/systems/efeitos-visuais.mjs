@@ -13,6 +13,8 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ACTION_CATALOG } from './dados.mjs';
+import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import { estiloDaGema } from './itens-poe/estilos-das-gemas.mjs';
 
 export const ARQUIVO = new URL('../gamedata/overrides/efeitos.json', import.meta.url).pathname;
 export const PASTA_DOS_ASSETS = new URL('../gamedata/overrides/efeitos-assets/', import.meta.url).pathname;
@@ -74,14 +76,35 @@ function juntarParte(base, por) {
   return { ...(base ?? {}), ...por, ...(base?.rastro || por.rastro ? { rastro: { ...(base?.rastro ?? {}), ...(por.rastro ?? {}) } } : {}) };
 }
 
-/** O VISUAL final de uma skill (preset + override), ou null (a skill usa o desenho de sempre do combate). */
+/**
+ * O ESTILO automático da skill (as gemas do PoE — `itens-poe/estilos-das-gemas.mjs`): `{ visual, motivo }` ou null. Calculado uma vez
+ * (só depois que as gemas do PoE ligaram).
+ */
+const ESTILOS = new Map();
+let ACAO_POR_ID = null;
+export function estiloDaSkill(skill) {
+  if (ESTILOS.has(skill)) return ESTILOS.get(skill);
+  if (!GemasPoe.ligadas()) return null;
+  if (!ACAO_POR_ID || ACAO_POR_ID.size !== ACTION_CATALOG.spells.length) ACAO_POR_ID = new Map(ACTION_CATALOG.spells.map((e) => [e.id, e]));
+  const e = ACAO_POR_ID.get(skill);
+  const r = e?.poeGema ? GemasPoe.doSlug(e.poeGema.slug) : null;
+  const est = r ? estiloDaGema({ en: r.gema.en, tags: r.gema.tags ?? [], arquetipo: r.arquetipo, elemento: r.elemento, ataque: r.ataque, buff: r.buff }) : null;
+  ESTILOS.set(skill, est);
+  return est;
+}
+
+/**
+ * O VISUAL final de uma skill: o estilo automático da gema (se não desligado com `semEstilo`), o preset por cima e o override por cima
+ * de tudo — parte a parte, campo a campo. null: a skill usa o desenho de sempre do combate (o molde).
+ */
 export function visualDaSkill(skill, dados = ler()) {
   const s = dados.skills?.[skill];
-  if (!s) return null;
-  const preset = s.preset ? dados.presets?.[s.preset] ?? PRESETS_DE_FABRICA[s.preset] ?? null : null;
+  const estilo = s?.semEstilo ? null : estiloDaSkill(skill)?.visual ?? null;
+  if (!s && !estilo) return null;
+  const preset = s?.preset ? dados.presets?.[s.preset] ?? PRESETS_DE_FABRICA[s.preset] ?? null : null;
   const visual = {};
   for (const p of PARTES) {
-    const parte = juntarParte(preset?.visual?.[p], s.override?.[p]);
+    const parte = juntarParte(juntarParte(estilo?.[p], preset?.visual?.[p]), s?.override?.[p]);
     if (parte) visual[p] = parte;
   }
   return Object.keys(visual).length ? visual : null;
@@ -91,7 +114,9 @@ export function visualDaSkill(skill, dados = ler()) {
 export function paraOCliente(dados = ler()) {
   const assets = Object.fromEntries(Object.entries(dados.assets ?? {}).map(([id, a]) => [id, { ...a, url: `${URL_DOS_ASSETS}${encodeURIComponent(a.arquivo)}` }]));
   const skills = {};
-  for (const id of Object.keys(dados.skills ?? {})) {
+  // As configuradas e as gemas do PoE (todas têm o estilo automático).
+  const ids = new Set([...Object.keys(dados.skills ?? {}), ...[...GemasPoe.REGISTRO.values()].map((r) => r.acao)]);
+  for (const id of ids) {
     const v = visualDaSkill(id, dados);
     if (v) skills[id] = v;
   }
@@ -185,8 +210,8 @@ export function validar(ov, { skillsExistentes = null } = {}) {
     if (!ehObjeto(s)) { erros.push(`skill "${id}": precisa ser um objeto { preset, override }.`); continue; }
     if (s.preset && !presets[s.preset] && !PRESETS_DE_FABRICA[s.preset]) { erros.push(`skill "${id}": o preset "${s.preset}" não existe.`); continue; }
     const override = s.override ? limparVisual(`skill ${id}`, s.override) : {};
-    if (!s.preset && !Object.keys(override).length) continue; // nada configurado: some do arquivo
-    skills[id] = { ...(s.preset ? { preset: s.preset } : {}), ...(Object.keys(override).length ? { override } : {}) };
+    if (!s.preset && !Object.keys(override).length && !s.semEstilo) continue; // nada configurado: some do arquivo
+    skills[id] = { ...(s.preset ? { preset: s.preset } : {}), ...(Object.keys(override).length ? { override } : {}), ...(s.semEstilo ? { semEstilo: true } : {}) };
   }
   return { ok: !erros.length, erros, avisos, override: { assets, presets, skills } };
 }

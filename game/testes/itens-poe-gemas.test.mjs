@@ -253,3 +253,18 @@ test('Conjurar ao Receber Dano: soma o dano recebido e, no limiar do nível, ati
   assert.equal(ev[0].t, 'gatilho');
   assert.equal(Acoes.aoReceberDano(e, e.hunt, PERSONAGEM, limiar), 0, 'dentro da recarga do gatilho: espera');
 });
+
+test('o visual das gemas: cada uma com o estilo dela (muito menos repetição), a Nova de Gelo pega quem está colado, e o combate da arena', { skip: SEM }, async () => {
+  const Ef = await import('../systems/efeitos-visuais.mjs');
+  const combos = new Set([...G.REGISTRO.values()].map((r) => { const v = Ef.visualDaSkill(r.acao, { skills: {}, presets: {}, assets: {} }); return JSON.stringify([v?.projetil?.sprite?.id, v?.impacto?.sprite?.id, v?.area?.sprite?.id, v?.lancamento?.sprite?.id]); }));
+  assert.ok(combos.size > 60, `${combos.size} visuais diferentes`);
+  const nova = ACTION_CATALOG.spells.find((x) => x.id === G.doSlug('Ice_Nova').acao);
+  assert.ok(nova.forma.some(([x, y]) => Math.max(Math.abs(x), Math.abs(y)) === 1), 'a nova é cheia (pega as casas coladas)');
+  const Arena = await import('../admin/arena-efeitos.mjs');
+  const r = Arena.combate({ skill: G.doSlug('Arc').acao, mobs: 5, segundos: 6 });
+  assert.ok(r.ok, r.erros?.join(' '));
+  assert.equal(r.quadros.length, 25, 'um quadro por tique (250 ms)');
+  assert.ok(r.usos > 0 && r.mortes > 0, `usos ${r.usos}, mortes ${r.mortes}`);
+  const longe = r.quadros.flatMap((q) => q.mobs.map((m) => Math.max(Math.abs(m.x - q.pos.x), Math.abs(m.y - q.pos.y))));
+  assert.ok(Math.max(...longe) <= 8, 'os bichos ficam perto (a tela mostra ±6)');
+});

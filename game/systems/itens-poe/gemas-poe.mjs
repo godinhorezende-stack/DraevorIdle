@@ -36,7 +36,9 @@ const VISUAL = { physical: 'physical', fire: 'fire', ice: 'ice', energy: 'energy
 const MOLDES = {
   projetil: { fire: 'spell-flame-strike', ice: 'spell-ice-strike', energy: 'spell-energy-strike', physical: 'spell-ethereal-spear', death: 'spell-death-strike' },
   chao: { fire: 'rune-great-fireball-rune', ice: 'rune-avalanche-rune', energy: 'rune-thunderstorm-rune', physical: 'spell-ethereal-barrage', death: 'spell-death-echo' },
-  nova: { fire: 'spell-hell-s-core', ice: 'spell-ice-burst', energy: 'spell-rage-of-the-skies', physical: 'spell-groundshaker', death: 'spell-wrath-of-nature' },
+  // A nova pega em VOLTA, cheia (a "Ice Burst" do Draevor é um anel de 2 a 4 casas, oco no meio: a Nova de Gelo não pegava quem estava
+  // colado). A de gelo usa a forma cheia da de fogo; a cor é a do gelo (o efeito do elemento entra por cima).
+  nova: { fire: 'spell-hell-s-core', ice: 'spell-hell-s-core', energy: 'spell-rage-of-the-skies', physical: 'spell-groundshaker', death: 'spell-wrath-of-nature' },
   onda: { fire: 'spell-fire-wave', ice: 'spell-ice-wave', energy: 'spell-energy-wave', physical: 'spell-front-sweep', death: 'spell-terra-wave' },
   feixe: { fire: 'spell-fire-wave', ice: 'spell-ice-wave', energy: 'spell-energy-beam', physical: 'spell-front-sweep', death: 'spell-great-death-beam' },
   cadeia: { ice: 'spell-forked-glacier', fire: 'spell-forked-thorns', energy: 'spell-forked-thorns', physical: 'spell-forked-thorns', death: 'spell-forked-thorns' },
