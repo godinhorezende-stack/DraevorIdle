@@ -9,6 +9,7 @@ import { camposDaPeca, pecaEspecial } from './itens/item.mjs';
 import * as Atributos from './personagem/atributos.mjs';
 import * as Requisitos from './personagem/requisitos.mjs';
 import * as Equipamento from './itens/equipamento.mjs';
+import * as ItensPoeCatalogo from './itens-poe/catalogo.mjs';
 import * as R from './regras.mjs';
 import * as Acoes from './acoes.mjs';
 // Inventário e o chão da praça: equipar de início, peso carregado, destruir,
@@ -505,7 +506,7 @@ export function equipar(estado, { id, pilha, slot }) {
   const meta = ITEM_CATALOG[id];
   // O slot de destino: o que o cliente pediu (arrastar para um slot) ou o do próprio item (clique). A REGRA é do servidor e é uma só: o item só entra no
   // slot a que pertence (`itens/equipamento.mjs`) — antes `slot ?? meta.slot` aceitava qualquer slot que o cliente mandasse.
-  const destino = slot ?? Equipamento.slotDoClique(estado, meta) ?? meta?.slot;
+  const destino = slot ?? Equipamento.slotDaArmaNoClique(estado, meta) ?? Equipamento.slotDoClique(estado, meta) ?? meta?.slot;
   // Modelo Path of Exile (decisão do dono): nenhuma peça é "só de uma classe" — ela pede STR/DEX/INT
   // (ver `personagem/requisitos.mjs`); a vocação da peça é só a classe recomendada.
   const valida = Equipamento.validarEquipar(estado, meta, destino, (m) => {
@@ -528,7 +529,9 @@ export function equipar(estado, { id, pilha, slot }) {
   if (antes) devolverPeca(estado, antes);
   // Duas mãos: a arma de duas mãos tira o escudo; o escudo tira a arma de duas mãos.
   let saiu = null;
-  if (destino === 'weapon' && deDuasMaos(meta) && ocupaAMaoDoEscudo(ITEM_CATALOG[eq.shield?.id])) saiu = 'shield';
+  // PoE: a regra das duas mãos do PoE (arma de uma mão nas duas, arco só com aljava, aljava só com arco).
+  if (ItensPoeCatalogo.ligado()) saiu = Equipamento.outraMaoQueSai(estado, meta, destino);
+  else if (destino === 'weapon' && deDuasMaos(meta) && ocupaAMaoDoEscudo(ITEM_CATALOG[eq.shield?.id])) saiu = 'shield';
   else if (destino === 'shield' && ocupaAMaoDoEscudo(meta) && deDuasMaos(ITEM_CATALOG[eq.weapon?.id])) saiu = 'weapon';
   if (saiu) {
     const nome = ITEM_CATALOG[eq[saiu].id]?.name ?? 'a peça';

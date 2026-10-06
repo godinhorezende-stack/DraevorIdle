@@ -100,3 +100,51 @@ test('Escudo de Energia do PoE: absorve antes da vida; recarrega 20%/s depois de
   Defesa.recarregar(f, forte, 1000 + 1000);
   assert.equal(f.es, 30, '20% × 1,5 = 30% por segundo');
 });
+
+test('as mãos no PoE: arma de uma mão nas duas; arco de duas mãos só com aljava; aljava só com arco; nada de dois escudos; o golpe alterna', { skip: SEM }, async () => {
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const peca = (base) => Jogo.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base, raridade: 'normal', ilvl: 60, rng: semente(5) }));
+  const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
+  e.classePoe = 'Scion';
+  e.atributos = undefined;
+  e.equipment = { ...(e.equipment ?? {}), weapon: null, shield: null };
+  const vestir = (base, slot) => {
+    const p = peca(base);
+    e.inventory.push(p);
+    return Inventario.equipar(e, { id: p.id, pilha: e.inventory.length - 1, ...(slot ? { slot } : {}) });
+  };
+  const em = (slot) => Jogo.registro().porId.get(e.equipment[slot]?.id) ?? null;
+  // Espada + varinha (uma em cada mão): o clique na segunda vai para a mão secundária.
+  assert.equal(vestir('One_Hand_Swords/Rusted_Sword').ok, true);
+  assert.equal(vestir('Wands/Driftwood_Wand').ok, true);
+  assert.deepEqual([em('weapon'), em('shield')], ['One_Hand_Swords/Rusted_Sword', 'Wands/Driftwood_Wand']);
+  let f = Ficha.combate(e);
+  assert.equal(f.duasArmas, true);
+  assert.ok(f.ataqueSecundarioMax > 0);
+  assert.ok(f.blockChance >= 0.15, 'empunhar duas armas: +15% de bloqueio');
+  // Adaga arrastada para a mão secundária troca a varinha.
+  assert.equal(vestir('Daggers/Glass_Shank', 'shield').ok, true);
+  assert.equal(em('shield'), 'Daggers/Glass_Shank');
+  // Aljava sem arco: recusada.
+  assert.match(vestir('Quivers/Two-Point_Arrow_Quiver', 'shield').erro ?? '', /arco/);
+  // Arco: tira a arma da mão secundária (duas mãos)...
+  const r = vestir('Bows/Crude_Bow');
+  assert.equal(r.ok, true);
+  assert.equal(em('shield'), null, r.notice);
+  // ... e aceita a aljava junto.
+  assert.equal(vestir('Quivers/Two-Point_Arrow_Quiver', 'shield').ok, true);
+  assert.deepEqual([em('weapon'), em('shield')], ['Bows/Crude_Bow', 'Quivers/Two-Point_Arrow_Quiver']);
+  // Escudo com o arco: o arco sai (duas mãos).
+  assert.equal(vestir('Shields/Splintered_Tower_Shield', 'shield').ok, true);
+  assert.equal(em('weapon'), null);
+  // Escudo não vai na mão principal (dois escudos, não).
+  const escudo = peca('Shields/Splintered_Tower_Shield');
+  e.inventory.push(escudo);
+  assert.equal(Inventario.equipar(e, { id: escudo.id, pilha: e.inventory.length - 1, slot: 'weapon' }).ok, false);
+  // Espada de uma mão + escudo: convivem; a aljava sai quando entra uma arma de uma mão.
+  assert.equal(vestir('One_Hand_Swords/Rusted_Sword').ok, true);
+  assert.equal(em('shield'), 'Shields/Splintered_Tower_Shield');
+  Ficha.invalidar(e);
+  assert.equal(Ficha.combate(e).duasArmas, undefined, 'espada + escudo: não são duas armas');
+});

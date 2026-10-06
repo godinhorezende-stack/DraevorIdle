@@ -53,7 +53,9 @@ function disposicaoDosSlots(itens) {
 /** A grade é a do PoE? (a mesma marca das luvas: só o catálogo do PoE tem luvas) */
 const gradeDoPoe = () => temLuvas;
 /** O slot cabe a peça deste slot do catálogo? (o segundo anel aceita anel) */
-const slotAceita = (slotDaCelula, slotDoItem) => slotDaCelula === slotDoItem || (slotDaCelula === 'ring2' && slotDoItem === 'ring');
+// No PoE a arma de UMA mão vai também na mão secundária (uma em cada mão); o arco (duas mãos) não. A regra é do servidor — aqui só se antecipa.
+const slotAceita = (slotDaCelula, slotDoItem, meta = null) =>
+  slotDaCelula === slotDoItem || (slotDaCelula === 'ring2' && slotDoItem === 'ring') || (slotDaCelula === 'shield' && gradeDoPoe() && slotDoItem === 'weapon' && !meta?.twoHanded);
 /*
  * ---- Os dois slots que se trocam sozinhos ----
  *
@@ -1356,7 +1358,7 @@ function marcarSlotsCompativeis(id) {
   const slotDoItem = ctx.state.items[id]?.slot;
   if (!slotDoItem) return;
   for (const celula of document.querySelectorAll('.slot[data-slot]')) {
-    const certo = slotAceita(celula.dataset.slot, slotDoItem);
+    const certo = slotAceita(celula.dataset.slot, slotDoItem, ctx.state.items[id]);
     celula.classList.toggle('slot-compativel', certo);
     celula.classList.toggle('slot-incompativel', !certo);
   }
@@ -1568,7 +1570,7 @@ function makeDropSlot(node, slot) {
       if (acao === 'gema') return void ctx.send({ t: 'gema', action: 'encaixar', slot, de: payload.pilha });
       // O item só entra no slot a que pertence (a mesma regra do servidor, antecipada para a mensagem sair na hora): nada sai da mochila nem do slot.
       const slotDoItem = ctx.state.items[payload.id]?.slot;
-      if (slotDoItem && !slotAceita(slot, slotDoItem)) return void ctx.notice?.('Este item não pode ser equipado neste slot.');
+      if (slotDoItem && !slotAceita(slot, slotDoItem, ctx.state.items[payload.id])) return void ctx.notice?.('Este item não pode ser equipado neste slot.');
       if (payload.from === 'pouch') ctx.send({ t: 'pouch', id: payload.id, count: 1, to: 'bag' });
       ctx.send({ t: 'equip', id: payload.id, slot, pilha: payload.pilha, alvo: payload.alvo ?? null });
     } catch {
