@@ -201,7 +201,7 @@ function avaliarNoJogo(h, formato) {
   if (h.arquetipo === 'lacaio' || h.arquetipo === 'totem') {
     const motivos = h.arquetipo === 'totem'
       ? ['o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)']
-      : ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; a magia própria de cada monstro (o espectro usa a do monstro erguido) é aproximada'];
+      : ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
     for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeLacaio(l) && !ehLinhaDeAlvos(l)) motivos.push(`efeito não simulado: ${l}`);
     return { status: 'parcial', motivos };
   }

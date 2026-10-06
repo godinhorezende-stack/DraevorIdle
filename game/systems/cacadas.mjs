@@ -70,6 +70,8 @@ import * as EventosDeEncontro from './encontros/eventos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as Poderes from './poderes.mjs';
+import * as Areas from '../engine/areas.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -1986,6 +1988,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
       andarFamiliar(hunt, grade, l, agora);
       continue;
     }
+    // O ESPECTRO: as MAGIAS do monstro erguido, cada uma no intervalo e na chance dela, nos bichos (o melee dele vem embaixo).
+    if (l.espectro) eventos.push(...magiasDoEspectro(hunt, l, agora, ficha));
     // O LACAIO: a IA do familiar (de perto ou de longe — `alcanceDeAtaque` do jeito dele).
     const alvo = alvoDoFamiliar(hunt, l, agora);
     if (!alvo) {
@@ -2049,6 +2053,44 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     Ficha.invalidar(estado);
   }
   processarMortes(estado, personagem, eventos);
+  return eventos;
+}
+
+/**
+ * As magias do ESPECTRO (o monstro erguido — `poderes.mjs`): o mesmo arquivo de magias que o monstro usa contra o jogador, agora
+ * contra os bichos. Cada magia no intervalo e na chance dela; mira no bicho mais perto que ela alcança; a área/feixe pega quem está nas
+ * casas; o dano é o da magia × o fator do espectro, pela resistência de cada bicho ao elemento. O desenho é o da magia do monstro.
+ */
+const ELEMENTO_DO_MONSTRO = { earth: 'chaos', death: 'chaos', lifedrain: 'chaos', holy: 'physical', drown: 'ice', manadrain: null };
+function magiasDoEspectro(hunt, l, agora, ficha) {
+  const eventos = [];
+  const p = Poderes.poderesDe(l.espectro.key);
+  if (!p) return eventos;
+  const vivos = hunt.monstros.filter((m) => m.hp > 0 && !m.dummy);
+  if (!vivos.length) return eventos;
+  p.ataques.forEach((a, i) => {
+    if (a.tipo !== 'magia') return;
+    if ((l.proximoPoder[i] ?? 0) === 0) l.proximoPoder[i] = agora + Math.random() * a.intervalo;
+    if (agora < l.proximoPoder[i]) return;
+    l.proximoPoder[i] = agora + a.intervalo;
+    if (Math.random() * 100 >= (a.chance ?? 100)) return;
+    const alvo = vivos.filter((m) => Poderes.alcanca(a, l, m)).sort((x, y) => distancia(l, x) - distancia(l, y))[0];
+    if (!alvo) return;
+    const tipo = ELEMENTO_DO_MONSTRO[a.elemento] === undefined ? a.elemento : ELEMENTO_DO_MONSTRO[a.elemento];
+    if (!tipo) return;
+    const casas = Poderes.casasDaMagia(a, l, alvo);
+    const efeito = a.efeito ?? Poderes.EFEITO_PADRAO[a.elemento] ?? 10;
+    if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
+    if (casas.length > 1) eventos.push({ t: 'area', id: efeito, x: l.x, y: l.y, casas: Areas.paraTela(casas, l) });
+    else eventos.push({ t: 'fx', id: efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
+    const atingidos = casas.length > 1 ? vivos.filter((m) => casas.some((c) => c.x === m.x && c.y === m.y)) : [alvo];
+    for (const m of atingidos) {
+      const bruto = (Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator;
+      const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, ficha)));
+      m.hp -= d;
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[a.elemento] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    }
+  });
   return eventos;
 }
 

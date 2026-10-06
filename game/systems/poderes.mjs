@@ -132,6 +132,9 @@ function casasDa(a, bicho, alvo) {
   return [{ x: alvo.x, y: alvo.y }];
 }
 
+/** As casas que uma magia de monstro pega saindo de `origem` na direção de `alvo` (o espectro do PoE usa as do monstro erguido). */
+export const casasDaMagia = (a, origem, alvo) => casasDa(a, origem, alvo);
+
 export function alcanca(a, bicho, alvo) {
   const d = distancia(bicho, alvo);
   if (a.forma === 'alvo' || (a.forma === 'area' && a.noAlvo)) return d <= (a.alcance || 7);

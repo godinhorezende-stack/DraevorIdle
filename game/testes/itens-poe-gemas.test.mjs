@@ -325,3 +325,15 @@ test('as habilidades próprias dos lacaios: de longe/de perto, área, crítico d
   const r = Arena.combate({ skill: G.doSlug('Summon_Skeletons_of_Archers').acao, nivel: 10, mobs: 5, segundos: 8 });
   assert.ok(r.quadros.flatMap((q) => q.eventos).filter((x) => x.t === 'shot').length > 5, 'os arqueiros atiram de longe');
 });
+
+test('a magia própria dos espectros: o espectro ergue o cadáver de um monstro com magia e lança as magias dele', { skip: SEM_SUPORTES }, async () => {
+  const Arena = await import('../admin/arena-efeitos.mjs');
+  assert.ok(Arena.obter().espectros.length > 50, 'a arena lista os monstros com magia para escolher');
+  const r = Arena.combate({ skill: G.doSlug('Raise_Spectre').acao, nivel: 10, mobs: 5, segundos: 10, espectroDe: 'poe-fire-fury-2' });
+  assert.ok(r.ok, r.erros?.join(' '));
+  const nomes = new Set(r.quadros.flatMap((q) => q.lacaios.map((l) => l.nome)));
+  assert.ok([...nomes].some((n) => /^Espectro de /.test(n)), [...nomes].join(', '));
+  const eventos = r.quadros.flatMap((q) => q.eventos);
+  assert.ok(eventos.some((e) => e.t === 'shot' || e.t === 'area'), 'o espectro lança a magia do monstro');
+  assert.ok(eventos.some((e) => e.t === 'dmg' && e.lacaio && e.foe), 'e a magia acerta');
+});

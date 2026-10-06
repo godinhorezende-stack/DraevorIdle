@@ -22,6 +22,8 @@ import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { gradeDaHunt } from '../systems/hunt/terreno.mjs';
+import * as Poderes from '../systems/poderes.mjs';
+import { CATALOGO } from '../systems/dados.mjs';
 import { criarArquivoVersionado, revisaoDe, conferirRevisao } from './arquivo-versionado.mjs';
 
 export const CAMINHOS = { arquivo: Efeitos.ARQUIVO, versoes: join(O.PASTA, '_versoes', 'efeitos') };
@@ -52,6 +54,8 @@ export function obter() {
     presetsDeFabrica: Efeitos.PRESETS_DE_FABRICA, partes: Efeitos.PARTES, nomeDasPartes: Efeitos.NOME_DA_PARTE, eventosDasPartes: Efeitos.EVENTO_DA_PARTE,
     categorias: Efeitos.CATEGORIAS, ancoras: Efeitos.ANCORAS, skills: skills(),
     suportes: [...SuportesPoe.REGISTRO.values()].filter((r) => r.status !== 'nao').map((r) => ({ slug: r.suporte.slug, nome: r.suporte.nome, tags: r.suporte.tags })),
+    // Os monstros que o Erguer Espectro pode erguer na arena (os do PoE que têm magias), um por nome.
+    espectros: monstrosComMagia(),
     comoPublicar: COMO_PUBLICAR,
   };
 }
@@ -193,7 +197,17 @@ export function simular({ skill, nivel = 10, suportes = [], alvos = 1, distancia
  * Devolve os QUADROS a cada tique (250 ms): as posições (personagem e bichos, com vida) e os eventos — a arena desenha com a mesma
  * camada de efeitos do jogo.
  */
-export function combate({ skill, nivel = 10, suportes = [], mobs = 5, segundos = 12 } = {}) {
+function monstrosComMagia() {
+  const vistos = new Map();
+  for (const [k, b] of Object.entries(CATALOGO.bestiary)) {
+    if (!k.startsWith('poe-') || vistos.has(b.name)) continue;
+    const magias = (Poderes.poderesDe(k)?.ataques ?? []).filter((a) => a.tipo === 'magia');
+    if (magias.length) vistos.set(b.name, { key: k, nome: b.name, magias: magias.map((a) => a.nome).filter(Boolean).slice(0, 3) });
+  }
+  return [...vistos.values()].sort((a, b) => a.nome.localeCompare(b.nome));
+}
+
+export function combate({ skill, nivel = 10, suportes = [], mobs = 5, segundos = 12, espectroDe = null } = {}) {
   const entry = ACTION_CATALOG.spells.find((x) => x.id === skill) ?? ACTION_CATALOG.runes?.find((x) => x.id === skill);
   if (!entry) return { ok: false, erros: ['Skill desconhecida.'] };
   const itemDaSkill = Gemas.ITEM_DA_ACAO.get(entry.id);
@@ -217,6 +231,9 @@ export function combate({ skill, nivel = 10, suportes = [], mobs = 5, segundos =
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
+  // "Espectro de": o cadáver que o Erguer Espectro vai erguer (o monstro escolhido na arena).
+  const b = espectroDe ? CATALOGO.bestiary[espectroDe] : null;
+  if (b) h.cadaveres = [{ key: espectroDe, nome: b.name, look: b.look, lookItem: b.lookItem ?? 0, colors: b.colors ?? null, x: h.pos.x, y: h.pos.y }];
   const n = Math.max(1, Math.min(20, Number(mobs) || 5));
   // Os bichos da ÁREA (os do mapa, com o desenho e a força deles) como moldes; nascem PERTO do personagem (2 a 5 casas, em casas livres
   // do mapa: a tela da arena mostra ±6), e quem morre volta perto de onde o personagem está.

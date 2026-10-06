@@ -48,7 +48,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
   const T = {
     dados: null, draft: null, revisao: null, skill: null, filtro: '', suportes: new Set(), nivel: 10, alvos: 1, distancia: 4, direcao: 'l',
     // O MODO: 'combate' (uma caçada de verdade com vários bichos, o personagem lançando a skill) ou 'lancamento' (um lançamento, parado).
-    modo: 'combate', mobs: 6, segundos: 12, carregando: false,
+    modo: 'combate', mobs: 6, segundos: 12, carregando: false, espectroDe: '',
     sim: null, cliente: null, errosDaPrevia: [], parte: 'projetil', vel: 1, pausado: false, t0: 0, tPausa: 0, loop: true, comparar: false, lados: null,
   };
   const raiz = el('section', { class: 'arena-efeitos' });
@@ -87,7 +87,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     pintarTimeline();
     const combate = T.modo === 'combate';
     const r = combate
-      ? await post('efeitos/combate', { skill: T.skill, nivel: T.nivel, suportes: [...T.suportes], mobs: T.mobs, segundos: T.segundos })
+      ? await post('efeitos/combate', { skill: T.skill, nivel: T.nivel, suportes: [...T.suportes], mobs: T.mobs, segundos: T.segundos, espectroDe: T.espectroDe || null })
       : await post('efeitos/simular', { skill: T.skill, nivel: T.nivel, suportes: [...T.suportes], alvos: T.alvos, distancia: T.distancia, direcao: T.direcao });
     T.carregando = false;
     if (!r.ok) { msg(`Arena de Efeitos: ${r.erros?.join(' ')}`, 'erro'); T.sim = null; montarLados(); pintarTimeline(); return; }
@@ -281,6 +281,9 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
       el('p', { class: 'dica' }, combate ? 'Uma caçada de verdade: os bichos da área vêm, o personagem lança a skill da barra (como no jogo) e quem morre volta. Bom para ver área, cadeia, projéteis extras e vários alvos.' : 'Um lançamento parado, nos bonecos na direção e distância escolhidas: bom para ajustar o tempo de cada efeito.'),
       num('Nível da gema', 'nivel', 1, 40),
       combate ? [num('Mobs vivos ao mesmo tempo', 'mobs', 1, 20), num('Duração (segundos)', 'segundos', 4, 40)] : null,
+      // O Erguer Espectro: qual monstro erguer (o espectro usa as magias dele).
+      combate && /Spectre/i.test(skillAtual()?.slug ?? '') ? el('label', { class: 'ae-campo' }, 'Espectro de (as magias do monstro)', el('select', { onchange: (e) => { T.espectroDe = e.target.value; lancar(); } },
+        el('option', { value: '' }, '— o último que morrer na caçada —'), (T.dados.espectros ?? []).map((m) => el('option', { value: m.key, selected: m.key === T.espectroDe }, `${m.nome}${m.magias.length ? ` (${m.magias.join(', ')})` : ''}`)))) : null,
       combate ? null : [
         el('label', { class: 'ae-campo' }, 'Alvos', el('select', { onchange: (e) => { T.alvos = Number(e.target.value); lancar(); } }, [1, 3, 5, 10].map((n) => el('option', { value: n, selected: n === T.alvos }, String(n))))),
         num('Distância (casas)', 'distancia', 1, 8),
