@@ -64,6 +64,8 @@ export function habilidadeDeEscala(def) {
  * melee de perto, distance de longe (tag `ranged`). Treinado + bônus.
  */
 export function bonusDoTreino(estado, def, ficha = null) {
+  // No PoE não há perícia (dono, 06/10): o dano da gema escala pelo nível dela e pelo level, não por skill.
+  if (SocketsPoe.poeLigado()) return 0;
   const D = CONFIG.dano;
   const bonus = ficha?.skillBonus ?? {};
   // Magia de dano físico (decisão do dono, 30/09): de perto, level + MELEE; de longe (tag `ranged`), level + DISTANCE.

@@ -1,7 +1,10 @@
 // Os SOCKETS das peças do PoE (regra do dono, 05/10 — `itens-poe/regras.json` → `sockets`): o máximo pela classe da peça e pelo item level,
 // e o sorteio da peça que cai (totalmente aleatório: de 0 ao máximo, links ao acaso entre vizinhos). Fica num módulo leve porque o sistema
 // de gemas (`skills/gemas.mjs`) o consulta para toda peça do PoE.
-import { REGRAS } from './catalogo.mjs';
+import { REGRAS, ligado } from './catalogo.mjs';
+
+/** O sistema do PoE está ligado? (atalho para quem já importa este módulo leve) */
+export const poeLigado = () => ligado();
 
 const S = () => REGRAS.sockets ?? {};
 

@@ -96,7 +96,8 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const ehAtaque = !entry.heals && Gemas.ehSkillDeGema(entry) && entry.kind !== 'item' && !!defDaGema;
   const doNivel = danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
   const identidade = ehAtaque ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
-  const fatorDaFicha = ehAtaque ? (((fichaBase.damage.min + fichaBase.damage.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
+  const escala = fichaBase.danoDeEscala ?? fichaBase.damage;
+  const fatorDaFicha = ehAtaque ? (((escala.min + escala.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
   // Sistema de itens do PoE (Fase 1; sem peças do PoE nada disto muda):
   //  - um ATAQUE do PoE = golpe físico de perto ou de longe (tags physical + melee/ranged, como o Brutal Strike): o dano somado a
   //    ataques de TODOS os elementos ("Adiciona X a Y de Dano de Fogo a Ataques") entra na faixa, como no golpe da arma;
