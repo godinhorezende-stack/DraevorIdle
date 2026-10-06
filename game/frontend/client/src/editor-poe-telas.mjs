@@ -794,6 +794,16 @@ export function criarTelaDasGemasPoe({ raiz }) {
       el('div', { class: 'linha' }, el('a', { class: 'botao', href: `#poe-arena-gemas/${encodeURIComponent(g.slug)}` }, 'Ver na arena (batendo nos mobs) →')),
       g.noJogo ? [el('h4', {}, `No jogo: ${STATUS_DA_GEMA[g.noJogo.status]?.[1] ?? g.noJogo.status}`),
         el('p', { class: 'dica' }, `Usa a forma e o efeito visual da magia "${g.noJogo.molde}" do Draevor${g.noJogo.formato ? ` (${g.noJogo.formato})` : ''}, elemento ${g.noJogo.elemento}; o dano, o custo, o tempo e a recarga vêm do nível da gema (a tabela do PoE). Os suportes do Draevor valem nela.`),
+        // Os TEMPOS do PoE que o jogo usa (sem o cooldown global do Draevor): conjuração (magia) ou a velocidade da gema sobre o golpe da arma (ataque), e a recarga.
+        el('div', { class: 'eng-metricas' }, ...[1, 20].flatMap((n) => {
+          const t = g.noJogo.tempos?.[n] ?? {};
+          const s = (ms) => `${(ms / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s`;
+          return [
+            metrica(g.noJogo.ataque ? `Ataque (nv ${n})` : `Conjuração (nv ${n})`, g.noJogo.ataque ? `arma × ${t.velAtaqueBase ?? 100}%` : t.conjuracaoMs ? s(t.conjuracaoMs) : 'instantânea'),
+            metrica(`Recarga (nv ${n})`, t.recargaMs ? `${s(t.recargaMs)}${t.cargas > 1 ? ` · ${t.cargas} usos` : ''}` : 'sem recarga'),
+          ];
+        })),
+        el('p', { class: 'dica' }, 'No jogo: a magia dura a conjuração (÷ a velocidade de conjuração) e o ataque o golpe da arma (APS e velocidade de ataque) ÷ a velocidade da gema; a próxima skill sai quando ela termina — sem o cooldown global do Draevor. Recarga só a da gema no PoE (com a recuperação de recarga).'),
         g.noJogo.motivos.length ? el('ul', {}, g.noJogo.motivos.map((m) => el('li', {}, m))) : el('p', { class: 'dica' }, 'Tudo da gema tem efeito no jogo.')] : null,
       el('h4', {}, `Na arena: ${st[1]}`),
       (v.motivos ?? []).length ? el('ul', {}, v.motivos.map((m) => el('li', {}, m))) : el('p', { class: 'dica' }, 'Todas as linhas de efeito são simuladas.'),

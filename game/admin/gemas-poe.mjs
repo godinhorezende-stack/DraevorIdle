@@ -53,7 +53,7 @@ export function detalhe(slug) {
   const { gemas, status } = carregar();
   const g = gemas.find((x) => x.slug === slug);
   const r = GemasPoe.doSlug(slug);
-  return g ? { ...g, verificacao: status[slug] ?? null, noJogo: r ? { status: r.statusNoJogo, motivos: r.motivosNoJogo, molde: r.molde, formato: r.formato, elemento: r.elemento, itemId: r.itemId, acao: r.acao } : null } : null;
+  return g ? { ...g, verificacao: status[slug] ?? null, noJogo: r ? { status: r.statusNoJogo, motivos: r.motivosNoJogo, molde: r.molde, formato: r.formato, elemento: r.elemento, itemId: r.itemId, acao: r.acao, ataque: r.ataque, tempos: { 1: GemasPoe.temposNoNivel(slug, 1), 20: GemasPoe.temposNoNivel(slug, 20) } } : null } : null;
 }
 
 /** O resumo por status, cor e arquétipo. */

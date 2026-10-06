@@ -155,3 +155,16 @@ test('transfiguradas e Vaal sem XP no arquivo sobem pela tabela da gema de base 
   const vinte = [...G.REGISTRO.values()].filter((r) => GS.maximoDaGema(GS.defDaGema(r.itemId)) === 20).length;
   assert.ok(vinte >= 550, `${vinte} gemas sobem até o 20`);
 });
+
+test('os tempos do PoE: conjuração, velocidade de ataque da gema, recarga e cargas — sem o cooldown global do Draevor', { skip: SEM }, async () => {
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const e = personagemDeTeste({ vocacao: 'knight', level: 20 });
+  const t = (slug) => Acoes.temposDaGemaPoe(e, ACTION_CATALOG.spells.find((x) => x.id === `poe-gema:${slug}`), { nivel: 1 });
+  assert.deepEqual([t('Fireball').uso, t('Fireball').recarga], [750, 0], 'Bola de Fogo: 0,75 s de conjuração, sem recarga');
+  assert.deepEqual([t('Frost_Bomb').uso, t('Frost_Bomb').recarga], [500, 2500]);
+  assert.deepEqual([t('Flame_Dash').recarga, t('Flame_Dash').cargas], [3500, 3], 'Avanço Flamejante: 3,5 s, 3 usos');
+  const golpe = (await import('../systems/ficha.mjs')).combate(e).intervaloDoGolpeMs;
+  assert.equal(t('Cleave').uso, Math.round(golpe / 0.8), 'Cleave: o golpe da arma ÷ 80%');
+  const fb = ACTION_CATALOG.spells.find((x) => x.id === 'poe-gema:Fireball');
+  assert.equal(fb.cooldown, 0, 'o catálogo não inventa recarga');
+});

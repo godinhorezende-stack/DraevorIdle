@@ -1098,11 +1098,6 @@ export function corpoDaGemaPoe(entry) {
     row.append(el('span', null, valor ? `${rotulo}: ` : rotulo), el('b', null, valor));
     props.append(row);
   }
-  if (entry.gema?.castTime && f.props.some(([r]) => /^Tempo de Conjuração/.test(r))) {
-    const row = el('div', 'tip-poe-agora');
-    row.append(el('span', null, 'Com a sua velocidade: '), el('b', null, `${(entry.gema.castTime / 1000).toLocaleString('pt-BR')} s`));
-    props.append(row);
-  }
   const req = el('div', 'tip-poe-req');
   req.append(el('span', null, 'Requer Nível '), el('b', null, String(f.nivelReq)));
   props.append(req);
@@ -1123,6 +1118,18 @@ export function corpoDaGemaPoe(entry) {
   const jogo = el('div', 'tip-poe-jogo');
   const [rotulo, classe] = STATUS_POE[f.status] ?? STATUS_POE.nao;
   jogo.append(el('div', `tip-poe-status ${classe}`, rotulo));
+  // Os TEMPOS no jogo (os do PoE): o de uso (conjuração com a sua velocidade, ou o golpe da sua arma × a velocidade da gema) e a recarga.
+  const seg = (ms) => `${(ms / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s`;
+  const tempos = el('div', 'tip-poe-tempos');
+  const linhaDeTempo = (rotulo, valor) => { const row = el('div'); row.append(el('span', null, `${rotulo}: `), el('b', null, valor)); tempos.append(row); };
+  const t = entry.tempoPoe;
+  const tb = f.tempos ?? {};
+  if (t) linhaDeTempo(t.ataque ? 'Tempo de ataque' : 'Tempo de conjuração', `${seg(t.uso)} ${t.ataque ? `(a sua arma × ${t.velAtaqueBase}%)` : '(com a sua velocidade)'}`);
+  else if (f.ataque) linhaDeTempo('Tempo de ataque', `o da arma × ${tb.velAtaqueBase ?? 100}%`);
+  else if (tb.conjuracaoMs != null) linhaDeTempo('Tempo de conjuração', tb.conjuracaoMs ? seg(tb.conjuracaoMs) : 'instantânea');
+  const recarga = t ? t.recarga : tb.recargaMs ?? 0;
+  linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
+  jogo.append(tempos);
   if (entry.damage) {
     const cor = entry.element ? `el-${entry.element}` : 'atk';
     jogo.append(el('div', cor, `Dano agora: ${Math.round(Math.abs(entry.damage.min))} a ${Math.round(Math.abs(entry.damage.max))} (com os seus bônus)`));

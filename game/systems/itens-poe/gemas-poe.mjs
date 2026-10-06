@@ -65,6 +65,16 @@ export function compilada(slug, nivel = 1) {
   return CACHE.get(k);
 }
 
+/**
+ * Os TEMPOS do PoE da gema no nível (dono, 06/10: "cooldown e cast corretos com o do PoE"): o tempo de conjuração da magia (s), a recarga
+ * própria (s, só as que têm "Recarga" no PoE — a maioria não tem) com as cargas, e a velocidade de ataque da gema de ataque ("X% de base":
+ * o golpe da arma × X%).
+ */
+export function temposNoNivel(slug, nivel = 1) {
+  const st = compilada(slug, nivel)?.stats ?? {};
+  return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100 };
+}
+
 /** O dano direto da gema no nível: `{ min, max, elementos }` (todos os elementos somados no elemento principal). */
 export function danoNoNivel(slug, nivel) {
   const h = compilada(slug, nivel);
@@ -191,8 +201,9 @@ function acaoDaGema(g, h, itemId, formato, elemento) {
     level: g.nivelReq ?? 1,
     magicLevel: 0,
     mana: custoNoNivel(g.slug, 1),
-    cooldown: Math.max(500, Math.round(recarga || tempo)),
-    groupCooldown: Math.max(500, Math.round(tempo)),
+    // Os tempos do PoE (o `disparar` refaz com a ficha: velocidade de conjuração/ataque, recuperação de recarga): recarga só a do PoE.
+    cooldown: Math.round(recarga),
+    groupCooldown: Math.max(250, Math.round(tempo)),
     ...(outroElemento && doElemento ? { efeito: doElemento.efeito, projetil: molde.projetil ? doElemento.projetil : molde.projetil } : {}),
     damage: buff ? null : { min: Math.max(1, d.min), max: Math.max(1, d.max) },
     heals: false,
@@ -283,7 +294,9 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
     else if (/^Eficácia do Dano Adicionado:/.test(p)) props.push(['Eficácia do Dano Adicionado', `${Math.round((b.efetividade ?? 1) * 100)}%`]);
     else {
       const i = p.indexOf(': ');
-      props.push(i > 0 ? [p.slice(0, i), p.slice(i + 2)] : [p, '']);
+      // "(3 Times)" do poedb em português (as cargas da recarga).
+      const valor = p.slice(i + 2).replace(/\((\d+) Times\)/, '($1 usos)');
+      props.push(i > 0 ? [p.slice(0, i), valor] : [p, '']);
     }
   }
   const q = Math.max(0, Math.min(20, qualidade || 0));
@@ -291,6 +304,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
     status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: h.linhas?.naoImplementadas ?? [],
+    ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }
 
