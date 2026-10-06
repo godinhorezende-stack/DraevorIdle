@@ -737,3 +737,80 @@ export function criarTelaDosModificadoresPoe({ raiz }) {
   }
   return { desenhar };
 }
+
+// ================================================================ GEMAS (Conteúdo → Gemas) e a ARENA DE GEMAS (Ferramentas)
+// A coleção do dono (`poe-gemas-poedb`, servida por `admin/gemas-poe.mjs`): as 562 gemas ativas do poedb, cada uma com o STATUS verificado
+// usando a gema na Arena de Gemas dele (funciona / parcial / não) e o porquê; e a própria arena, para ver cada efeito batendo nos mobs.
+
+const STATUS_DA_GEMA = { funciona: ['ok', '✓ funciona'], parcial: ['aviso', '◐ parcial'], nao: ['erro', '✗ não funciona'] };
+const COR_DA_GEMA = { vermelha: '#e0705c', verde: '#7fd36b', azul: '#6ba5e0', branca: '#e8e2d0' };
+const iconeDaGema = (g, tamanho = 40) => el('img', { src: `${BASE}gemas-arena/${g.icone}`, alt: '', width: tamanho, height: tamanho, loading: 'lazy', style: `width:${tamanho}px;height:${tamanho}px;object-fit:contain`, onerror: (e) => (e.target.style.visibility = 'hidden') });
+
+export function criarTelaDasGemasPoe({ raiz }) {
+  const T = { lista: null, resumo: null, sel: null, det: null, busca: '', status: '', cor: '', arq: '' };
+  async function desenhar(args = []) {
+    if (!(await ligado(raiz, 'Gemas'))) return;
+    const r = await api('gemas');
+    if (!r.ok) return raiz().replaceChildren(cabecalho('Gemas', r.erros?.[0] ?? 'Sem a coleção de gemas.'));
+    T.lista = r.gemas;
+    T.resumo = r.resumo;
+    if (args[0]) T.sel = decodeURIComponent(args[0]);
+    const s = T.resumo.porStatus;
+    raiz().replaceChildren(
+      cabecalho('Gemas', `As ${T.resumo.total} gemas ativas do PoE (poedb, coleção do dono). O status vem da verificação na Arena de Gemas — a gema usada de verdade contra bonecos: ✓ ${s.funciona ?? 0} funcionam, ◐ ${s.parcial ?? 0} parcialmente (alguma linha de efeito ainda não simulada — veja os motivos), ✗ ${s.nao ?? 0} não. "Ver na arena" abre a gema batendo nos mobs.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pgem-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pgem-painel' })));
+    pintar();
+    if (T.sel) await abrir(T.sel);
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const l = T.lista.filter((g) => (!T.status || g.status === T.status) && (!T.cor || g.cor === T.cor) && (!T.arq || g.arquetipoNome === T.arq)
+      && (!t || g.nome.toLowerCase().includes(t) || (g.en ?? '').toLowerCase().includes(t) || g.tags.some((x) => x.toLowerCase().includes(t))));
+    const arquetipos = [...new Set(T.lista.map((g) => g.arquetipoNome).filter(Boolean))].sort();
+    document.querySelector('#pgem-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} gema(s)`),
+        el('input', { type: 'search', placeholder: 'Buscar gema, nome em inglês ou tag…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('select', { onchange: (e) => { T.status = e.target.value; pintar(); } }, [['', 'Todos os status'], ...Object.entries(STATUS_DA_GEMA).map(([k, [, n]]) => [k, n])].map(([v, n]) => el('option', { value: v, selected: v === T.status }, n))),
+        el('select', { onchange: (e) => { T.cor = e.target.value; pintar(); } }, [['', 'Todas as cores'], ['vermelha', 'Vermelha (For)'], ['verde', 'Verde (Des)'], ['azul', 'Azul (Int)'], ['branca', 'Branca']].map(([v, n]) => el('option', { value: v, selected: v === T.cor }, n))),
+        el('select', { onchange: (e) => { T.arq = e.target.value; pintar(); } }, el('option', { value: '' }, 'Todos os tipos'), arquetipos.map((a) => el('option', { value: a, selected: a === T.arq }, a)))),
+      el('div', { class: 'bib-grade' }, l.map((g) => el('div', { class: `eng-card${g.slug === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => abrir(g.slug) },
+        el('div', { class: 'eng-card-arte' }, iconeDaGema(g, 48)),
+        el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, g.en),
+          el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${STATUS_DA_GEMA[g.status]?.[0] ?? ''}` }, STATUS_DA_GEMA[g.status]?.[1] ?? g.status), g.arquetipoNome ? el('span', { class: 'selo' }, g.arquetipoNome) : null, el('span', { class: 'selo' }, `nv ${g.nivelReq}`)))))));
+  }
+  async function abrir(slug) {
+    T.sel = slug;
+    pintar();
+    const g = await api(`gemas/detalhe?slug=${encodeURIComponent(slug)}`);
+    if (!g?.slug) return;
+    const v = g.verificacao ?? {};
+    const st = STATUS_DA_GEMA[v.status] ?? ['', v.status ?? '?'];
+    const ex = v.execucao ?? {};
+    document.querySelector('#pgem-painel')?.replaceChildren(el('div', { class: 'bib-painel-corpo' },
+      el('div', { class: 'linha' }, iconeDaGema(g, 64), el('div', {}, el('h2', { class: 'bib-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, `${g.en} · ${g.slug}`))),
+      el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${st[0]}` }, st[1]), v.arquetipoNome ? el('span', { class: 'selo' }, v.arquetipoNome) : null, v.elemento ? el('span', { class: 'selo' }, v.elemento) : null, el('span', { class: 'selo' }, `linhas simuladas ${v.aplicadas ?? 0}/${v.total ?? 0}`), ...(g.tags ?? []).map((t) => el('span', { class: 'selo' }, t))),
+      el('div', { class: 'linha' }, el('a', { class: 'botao', href: `#poe-arena-gemas/${encodeURIComponent(g.slug)}` }, 'Ver na arena (batendo nos mobs) →')),
+      (v.motivos ?? []).length ? [el('h4', {}, 'O que ainda não funciona'), el('ul', {}, v.motivos.map((m) => el('li', {}, m)))] : el('p', { class: 'dica' }, 'Todas as linhas de efeito são simuladas.'),
+      ex.observado?.length || ex.efeitos?.length ? [el('h4', {}, 'Verificação (a gema usada de verdade)'), el('p', { class: 'dica' }, [...(ex.observado ?? []), ex.efeitos?.length ? `efeitos vistos: ${ex.efeitos.join(', ')}` : null].filter(Boolean).join(' · '))] : null,
+      g.desc ? el('p', {}, g.desc) : null,
+      el('h4', {}, 'Propriedades'), el('ul', {}, (g.props ?? []).map((p) => el('li', {}, p))),
+      (g.mods ?? []).length ? [el('h4', {}, 'Efeitos'), el('ul', {}, g.mods.map((m) => el('li', {}, m)))] : null,
+      (g.qualidade ?? []).length ? [el('h4', {}, 'Qualidade'), el('ul', {}, g.qualidade.map((m) => el('li', {}, m)))] : null,
+      g.obtencao ? [el('h4', {}, 'Onde se ganha'), el('p', { class: 'dica' }, typeof g.obtencao === 'string' ? g.obtencao : JSON.stringify(g.obtencao))] : null,
+      (g.linhas ?? []).length ? [el('h4', {}, `Por nível (${g.linhas.length})`), el('div', { style: 'overflow-x:auto;max-height:280px;overflow-y:auto' }, el('table', { class: 'mob-tabela' }, el('tr', {}, (g.colunas ?? []).map((c) => el('th', {}, c))), g.linhas.map((l) => el('tr', {}, l.map((c) => el('td', {}, c))))))] : null));
+  }
+  return { desenhar };
+}
+
+export function criarTelaDaArenaDeGemas({ raiz }) {
+  async function desenhar(args = []) {
+    if (!(await ligado(raiz, 'Arena de gemas'))) return;
+    const slug = args[0] ? decodeURIComponent(args[0]) : null;
+    const quadro = el('iframe', { src: `${BASE}gemas-arena/engine/index.html`, title: 'Arena de Gemas', style: 'width:100%;height:calc(100vh - 150px);min-height:620px;border:1px solid var(--eng-linha, #2a3438);border-radius:6px;background:#0b0f11' });
+    if (slug) quadro.addEventListener('load', () => quadro.contentWindow?.postMessage({ tipo: 'gema', slug }, '*'), { once: true });
+    raiz().replaceChildren(
+      cabecalho('Arena de gemas', 'A Arena de Gemas da coleção do dono: um personagem usando cada gema do PoE contra os monstros do bestiário — escolha a gema na lista da esquerda (ou "Ver na arena" na aba Gemas), o mob, o nível e a quantidade. O inspetor da direita marca cada linha de efeito: ✓ simulada, ✗ não simulada. "Mobs usam esta gema" faz os monstros usarem a gema contra você; "Tour" passa pelas gemas filtradas sozinho.'),
+      quadro);
+  }
+  return { desenhar };
+}

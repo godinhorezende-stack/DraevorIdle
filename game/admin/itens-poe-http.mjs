@@ -11,6 +11,7 @@ import * as Telas from './itens-poe-telas.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
+import * as GemasPoe from './gemas-poe.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
@@ -98,6 +99,19 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
   const cat = Catalogo.catalogo();
   if (!cat) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor (ITENS_POE=1 + catálogo importado).'] }), true;
 
+  // As GEMAS do PoE (a coleção do dono, `poe-gemas-poedb`): a lista e o detalhe da aba Gemas, e a Arena de Gemas dele (os arquivos da pasta).
+  if (rota === 'gemas') return json(res, 200, GemasPoe.disponivel() ? { ok: true, resumo: GemasPoe.resumo(), gemas: GemasPoe.listar() } : { ok: false, erros: [`Coleção de gemas não encontrada em ${GemasPoe.PASTA} (node tools/baixar-drive-publico.mjs).`] }), true;
+  if (rota === 'gemas/detalhe') {
+    const g = GemasPoe.detalhe(q.get('slug') ?? '');
+    return g ? json(res, 200, g) : json(res, 404, { ok: false, erros: ['Gema desconhecida.'] }), true;
+  }
+  if (rota.startsWith('gemas-arena/')) {
+    const a = GemasPoe.arquivo(decodeURIComponent(rota.slice('gemas-arena/'.length)));
+    if (!a) return json(res, 404, { ok: false }), true;
+    res.writeHead(200, { 'content-type': a.tipo, 'cache-control': 'no-cache' });
+    res.end(a.corpo);
+    return true;
+  }
   if (rota.startsWith('ref/')) {
     // A imagem da coleção local (só arquivos de imagem, sem sair da pasta).
     const alvo = normalize(join(Catalogo.PASTA_ORIGINAL, decodeURIComponent(rota.slice(4))));
