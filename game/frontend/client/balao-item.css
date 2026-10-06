@@ -283,3 +283,21 @@
 .poe-frasco-num { font-size: 9px; color: #bbb; font-variant-numeric: tabular-nums; }
 .poe-frasco.ativo .cell { box-shadow: 0 0 6px 1px #f0d36b; }
 .poe-balao .poe-frasco-resumo { color: #8fd0ff; }
+
+/* ---- A grade do corpo como no PoE (inventory.mjs `SLOT_LAYOUT_COM_LUVAS`; só com ITENS_POE=1): arma e mão secundária altas nas laterais,
+   elmo e amuleto em cima, armadura no meio com um anel de cada lado, luvas, cinto e botas embaixo. As mesmas 3 colunas da grade do Draevor
+   (a janela tem tamanho fixo no arranjo), e as mesmas 5 fileiras. ---- */
+.equipment.poe {
+  grid-template-columns: repeat(3, 44px);
+  grid-template-areas:
+    "weapon head   shield"
+    "weapon neck   shield"
+    "ring   body   ring2"
+    "gloves legs   feet"
+    "backpack blessings premium"
+    "ammo   .      .";
+}
+.equipment.poe .slot[data-slot="weapon"], .equipment.poe .slot[data-slot="shield"] { height: auto; min-height: 92px; }
+.equipment.poe .slot[data-slot="weapon"] canvas, .equipment.poe .slot[data-slot="shield"] canvas,
+.equipment.poe .slot[data-slot="weapon"] img, .equipment.poe .slot[data-slot="shield"] img { transform: scale(1.35); }
+.equipment.poe .slot[data-slot="body"] canvas, .equipment.poe .slot[data-slot="body"] img { transform: scale(1.15); }

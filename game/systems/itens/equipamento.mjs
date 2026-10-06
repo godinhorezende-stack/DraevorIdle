@@ -6,12 +6,13 @@
 //   head → capacete · neck → amuleto · body → armadura · legs → calça · feet → bota · ring → anel
 //   weapon → arma (espada, machado, clava, distância, wand, rod) · shield → escudo, spellbook e aljava · ammo → munição e acessórios de munição (trinket, tocha)
 //   backpack → mochila (container) · gloves → luvas (só com o sistema de itens do PoE ligado: nenhum item do Draevor tem esse slot)
+//   ring2 → o SEGUNDO anel (só com o PoE ligado — como no PoE, dois anéis): aceita o que vai em `ring`
 // Cada peça só entra no slot que o catálogo lhe dá.
 import { ITEM_CATALOG } from '../dados.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
-/** Os slots reais do jogo (os de `equipment`). `gloves` só existe com o sistema de itens do PoE ligado (ITENS_POE=1, só local). */
-export const SLOTS_DE_EQUIPAMENTO = ['head', 'neck', 'body', 'legs', 'feet', 'ring', 'weapon', 'shield', 'ammo', 'backpack', ...(itensPoeLigado() ? ['gloves'] : [])];
+/** Os slots reais do jogo (os de `equipment`). `gloves` e `ring2` só existem com o sistema de itens do PoE ligado (ITENS_POE=1, só local). */
+export const SLOTS_DE_EQUIPAMENTO = ['head', 'neck', 'body', 'legs', 'feet', 'ring', 'weapon', 'shield', 'ammo', 'backpack', ...(itensPoeLigado() ? ['gloves', 'ring2'] : [])];
 
 /** A frase de recusa por slot errado (a única mensagem de "compatibilidade": nada de penalidade de dano). */
 export const ERRO_DE_SLOT = 'Este item não pode ser equipado neste slot.';
@@ -30,7 +31,15 @@ for (const meta of Object.values(ITEM_CATALOG)) {
 export const slotDoItem = (meta) => (meta?.slot && SLOTS_DE_EQUIPAMENTO.includes(meta.slot) ? meta.slot : null);
 
 /** O item pode ir para este slot? (só a categoria; os requisitos são do `validarEquipar`) */
-export const cabeNoSlot = (meta, slot) => !!slotDoItem(meta) && slotDoItem(meta) === slot;
+export const cabeNoSlot = (meta, slot) => !!slotDoItem(meta) && (slotDoItem(meta) === slot || (slot === 'ring2' && slotDoItem(meta) === 'ring' && SLOTS_DE_EQUIPAMENTO.includes('ring2')));
+
+/** O slot onde a peça entra quando o jogador só clica nela (sem escolher): o dela; o anel, no primeiro anel livre (com dois anéis). */
+export function slotDoClique(estado, meta) {
+  const slot = slotDoItem(meta);
+  if (slot !== 'ring' || !SLOTS_DE_EQUIPAMENTO.includes('ring2')) return slot;
+  const eq = estado?.equipment ?? {};
+  return eq.ring && !eq.ring2 ? 'ring2' : 'ring';
+}
 
 /** A arma usa munição? (só as que o catálogo marca com o tipo aceito: arco e besta — arma de arremesso, wand e rod não usam) */
 export const usaMunicao = (meta) => !!meta?.ammo;
