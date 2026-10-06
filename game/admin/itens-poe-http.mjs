@@ -4,6 +4,7 @@
 import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { normalize, join, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
 import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
@@ -197,6 +198,7 @@ function desenhosDosMobs() {
   return DESENHOS_DOS_MOBS;
 }
 const PASTA_DOS_SUPORTES = join(process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe', 'poe-suportes-poedb');
+const PASTA_DAS_MOEDAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-moedas', import.meta.url));
 const imagem = (res, pasta, relativo) => {
   const alvo = normalize(join(pasta, relativo));
   if (!alvo.startsWith(pasta) || !TIPOS[extname(alvo).toLowerCase()] || !existsSync(alvo) || !statSync(alvo).isFile()) return false;
@@ -212,6 +214,8 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   const nomes = (r) => { let d = r; try { d = decodeURIComponent(r); } catch { /* fica cru */ } return [...new Set([d, r])]; };
   if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, join(GemasPoe.PASTA, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/suporte/')) return nomes(rota.slice('icone/suporte/'.length)).some((n) => imagem(res, join(PASTA_DOS_SUPORTES, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
+  // Os ícones dos orbes do PoE (Joalheiro, Fusão, Cromático): no repositório (`gamedata/itens-poe/icones-moedas`).
+  if (rota.startsWith('icone/moeda/')) return nomes(rota.slice('icone/moeda/'.length)).some((n) => imagem(res, PASTA_DAS_MOEDAS, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
   // O DESENHO de cada mob do bestiário do PoE (a Arena de Gemas com os sprites do jogo): pelo nome, a mesma regra da campanha.
   if (rota === 'desenhos-dos-mobs') return json(res, 200, desenhosDosMobs()), true;

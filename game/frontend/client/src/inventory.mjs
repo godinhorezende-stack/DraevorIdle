@@ -605,7 +605,7 @@ function selarSoquetes(cell, peca, aoTocar = null) {
   }
   sq.gemas.forEach((g, i) => {
     const tipo = i >= (sq.abertos ?? 0) ? 'trancado' : !g ? 'vazio' : itens[g.id]?.gemaDef?.tipo === 'support' ? 'support' : 'ativa';
-    fila.append(el('i', `sq ${tipo}`));
+    fila.append(el('i', `sq ${tipo}${sq.cores?.[i] && tipo !== 'trancado' ? ` cor-${sq.cores[i]}` : ''}`));
     if (i < sq.gemas.length - 1) fila.append(el('i', `lk${sq.links?.[i] ? ' ligado' : ''}`));
   });
   cell.append(fila);

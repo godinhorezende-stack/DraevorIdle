@@ -436,6 +436,11 @@ export function emprestarDoCatalogo(catalogo) {
       itemSprites[id] = { w: 32, h: 32, x: 0, y: 0, gerada: chave };
       continue;
     }
+    // Os orbes do PoE (Joalheiro, Fusão, Cromático): o ícone do PoE (48×48), no lugar do desenho emprestado.
+    if (meta?.poeMoeda?.icone) {
+      itemSprites[id] = { w: 48, h: 48, x: 0, y: 0, gerada: `/api/jogo/poe/icone/moeda/${encodeURIComponent(meta.poeMoeda.icone)}` };
+      continue;
+    }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
     // Item do sistema de itens do PoE (só com ITENS_POE=1 no servidor local): o ícone 64×64 da coleção de referência, servido pela engine.
     if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/item/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };

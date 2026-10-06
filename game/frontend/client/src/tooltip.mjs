@@ -2804,7 +2804,7 @@ function blocoDosSoquetes(sq) {
     const g = sq.gemas[i];
     const def = g ? itens[g.id]?.gemaDef : null;
     const cls = i >= (sq.abertos ?? 0) ? 'trancado' : !g ? 'vazio' : def?.tipo === 'support' ? 'support' : 'ativa';
-    const casa = el('span', `soquete ${cls}`, cls === 'trancado' ? '🔒' : cls === 'vazio' ? '' : cls === 'support' ? '🔹' : '💎');
+    const casa = el('span', `soquete ${cls}${sq.cores?.[i] && cls !== 'trancado' ? ` cor-${sq.cores[i]}` : ''}`, cls === 'trancado' ? '🔒' : cls === 'vazio' ? '' : cls === 'support' ? '🔹' : '💎');
     if (g) casa.title = `${def?.nome ?? g.id} (nível ${g.nivel})`;
     fila.append(casa);
     if (i < max - 1) fila.append(el('span', `soquete-link${sq.links?.[i] ? ' ligado' : ''}`, sq.links?.[i] ? '─' : ' '));

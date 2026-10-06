@@ -37,13 +37,37 @@ const quantosOrbes = (tipo) => {
   return (ctx.state.character?.inventory ?? []).filter((p) => p.id === id).reduce((t, p) => t + (p.count ?? 1), 0);
 };
 /** O máximo de sockets do slot (a peça sem `soquetes` ainda não diz): o catálogo dos orbes traz a tabela. */
-const limiteDoSlot = (slot) => itemDoOrbe('encaixe')?.limitesDeSocket?.[slot] ?? 0;
+const limiteDoSlot = (slot) => (itemDoOrbe('encaixe') ?? itemDoOrbe('joalheiro'))?.limitesDeSocket?.[slot] ?? 0;
 /** Os sockets da peça, ou os de uma peça que ainda não abriu nenhum (todos bloqueados). */
 const soquetesDe = (peca, slot) => {
   if (peca?.soquetes?.gemas?.length) return peca.soquetes;
   const max = limiteDoSlot(slot);
   return max ? { abertos: 0, links: [], gemas: Array(max).fill(null) } : null;
 };
+/*
+ * ---- As CORES dos sockets e os ORBES DO PoE (só no modo PoE) ----
+ * R vermelho (Força), G verde (Destreza), B azul (Inteligência), W branco (aceita qualquer gema). A gema só entra no socket da cor
+ * dela — a regra é do servidor (`Gemas.encaixar`); aqui só se mostra. Os orbes do PoE (`orbeDoPoe` no catálogo): Joalheiro (número
+ * de sockets), Fusão (links) e Cromático (cores) — sorteios, com a proposta e o "Confirmar" como os outros orbes.
+ */
+const COR_DA_GEMA = { vermelha: 'R', verde: 'G', azul: 'B', branca: 'W' };
+const NOME_DA_COR = { R: 'vermelho', G: 'verde', B: 'azul', W: 'branco' };
+const corDaGemaDoItem = (meta) => COR_DA_GEMA[meta?.poeGema?.cor] ?? 'W';
+const cabe = (socket, gema) => !socket || socket === 'W' || gema === 'W' || socket === gema;
+const ORBES_DO_POE = ['joalheiro', 'fusao', 'cromatico'];
+const modoPoe = () => !!itemDoOrbe('joalheiro');
+const PARA_QUE_SERVE = { joalheiro: 'sorteia de novo o número de sockets', fusao: 'sorteia de novo os links', cromatico: 'sorteia de novo as cores' };
+/** Por que o orbe do PoE não vale nesta peça (ou null). */
+function motivoDoOrbePoe(tipo, sq, max) {
+  const abertos = sq.abertos ?? 0;
+  const comGema = (sq.gemas ?? []).some(Boolean);
+  if (quantosOrbes(tipo) < 1) return `Você não tem ${itemDoOrbe(tipo)?.name ?? 'este orbe'}.`;
+  if (tipo === 'joalheiro') return comGema ? 'Tire as gemas desta peça antes.' : abertos >= max ? `Já está no máximo (${max} sockets).` : null;
+  if (tipo === 'fusao') return abertos < 2 ? 'Precisa de pelo menos 2 sockets.' : (sq.links ?? []).slice(0, abertos - 1).every(Boolean) ? 'Já está toda ligada.' : null;
+  if (tipo === 'cromatico') return comGema ? 'Tire as gemas desta peça antes.' : abertos < 1 ? 'A peça não tem sockets.' : null;
+  return null;
+}
+
 /** Os grupos ligados (a MESMA regra do servidor) como texto: "1+2 | 3". */
 const gruposComoTexto = (sq, links) => gruposLigados({ abertos: sq.abertos, links }).map((g) => g.map((n) => n + 1).join('+')).join(' | ');
 
@@ -56,7 +80,7 @@ export function abrirSoquetes(context, slot, modo = null) {
   slotAberto = slot;
   escolhido = null;
   // Veio de um orbe: a proposta já nasce para ele (encaixe: abrir o próximo socket; ligação: o jogador escolhe o elo).
-  proposta = modo === 'encaixe' ? { tipo: 'encaixe' } : modo === 'ligacao' ? { tipo: 'ligacao', elo: null } : null;
+  proposta = modo === 'encaixe' ? { tipo: 'encaixe' } : modo === 'ligacao' ? { tipo: 'ligacao', elo: null } : ORBES_DO_POE.includes(modo) ? { tipo: 'poe', orbe: modo } : null;
   desenhar();
 }
 
@@ -75,13 +99,14 @@ export function usarOrbe(context, tipo) {
     const lista = el('div', 'soquetes-gemas');
     let algum = false;
     for (const [slot, peca] of Object.entries(ctx.state.character?.equipment ?? {})) {
-      const max = limiteDoSlot(slot);
+      const max = peca?.soquetes?.gemas?.length || limiteDoSlot(slot);
       if (!peca || !max) continue;
       algum = true;
       const sq = soquetesDe(peca, slot);
       const meta = ctx.state.items?.[peca.id];
-      const motivo =
-        tipo === 'encaixe'
+      const motivo = ORBES_DO_POE.includes(tipo)
+        ? motivoDoOrbePoe(tipo, sq, max)
+        : tipo === 'encaixe'
           ? sq.abertos >= max ? `no máximo (${max} sockets)` : null
           : sq.abertos < 2 ? 'precisa de 2 sockets abertos' : null;
       const linha = el('button', 'soquetes-gema');
@@ -132,7 +157,10 @@ function corpo(body, peca) {
       'p',
       'shop-note dica',
       'Links: o traço dourado entre dois sockets é um link — os sockets ligados formam um grupo, e as supports do grupo valem para as skills do mesmo grupo. ' +
-        'Sem traço, os sockets não conversam. Os links vêm na peça: a que cai sorteia (quanto mais rara, mais chance de link) e as peças de antes das gemas vieram todas ligadas. Por enquanto não dá para mudar.'
+        'Sem traço, os sockets não conversam. ' +
+        (modoPoe()
+          ? 'Como no PoE, cada socket tem COR: vermelho (Força), verde (Destreza), azul (Inteligência) ou branco (qualquer gema) — a gema só entra na cor dela. O Orbe do Joalheiro, a Orbe da Fusão e o Orbe Cromático sorteiam de novo o número, os links e as cores.'
+          : 'Os links vêm na peça: a que cai sorteia (quanto mais rara, mais chance de link) e as peças de antes das gemas vieram todas ligadas.')
     )
   );
 
@@ -157,12 +185,15 @@ function corpo(body, peca) {
     const trancado = i >= abertos;
     const nGrupo = trancado ? -1 : grupoDe(i);
     const emGrupo = nGrupo >= 0 && grupos[nGrupo].length > 1;
-    const casa = el('button', `soquete-casa${trancado ? ' trancado' : ''}${escolhido === i ? ' escolhido' : ''}${emGrupo ? ` grupo grupo-${nGrupo % 4}` : ''}${trancado && proposta?.tipo === 'encaixe' && i === abertos ? ' proximo' : ''}`);
+    const cor = !trancado ? sq.cores?.[i] ?? null : null;
+    const casa = el('button', `soquete-casa${cor ? ` cor-${cor}` : ''}${trancado ? ' trancado' : ''}${escolhido === i ? ' escolhido' : ''}${emGrupo ? ` grupo grupo-${nGrupo % 4}` : ''}${trancado && proposta?.tipo === 'encaixe' && i === abertos ? ' proximo' : ''}`);
     casa.type = 'button';
     if (trancado) {
       casa.append(el('span', null, '🔒'));
       casa.disabled = true;
       casa.title = 'Socket bloqueado';
+    } else if (!g && cor) {
+      casa.title = `Socket ${NOME_DA_COR[cor]}${cor === 'W' ? ' (aceita qualquer gema)' : ''}`;
     } else if (g) {
       const def = state.items?.[g.id]?.gemaDef;
       if (def?.tipo === 'support' && !valeAgora(i, def)) {
@@ -183,7 +214,7 @@ function corpo(body, peca) {
       const aberto = i + 1 < abertos; // os DOIS sockets do elo precisam estar abertos
       const ligado = aberto && !!sq.links?.[i];
       const classe = `soquete-elo${ligado ? ' ligado' : ''}${ligado && emGrupo ? ` grupo-${nGrupo % 4}` : ''}${proposta?.tipo === 'ligacao' && proposta.elo === i ? ' escolhido' : ''}`;
-      if (!aberto) fila.append(el('span', classe, ''));
+      if (!aberto || (modoPoe() && quantosOrbes('ligacao') < 1)) fila.append(el('span', classe, aberto ? (ligado ? '━' : '·') : ''));
       else {
         // Um BOTÃO: tocar nele só mostra a proposta (abaixo) — quem muda o link é o "Confirmar".
         const elo = el('button', classe, ligado ? '━' : '·');
@@ -228,8 +259,9 @@ function corpo(body, peca) {
     send({ t: 'gema', action: 'fundir', slot: slotAberto });
   };
   const barraDaPeca = el('div', 'soquetes-acoes');
-  barraDaPeca.append(fundir);
-  body.append(barraDaPeca);
+  // No PoE a Orbe da Fusão faz isto; a Fundidora só aparece para quem ainda tem alguma.
+  if (!modoPoe() || fundidoras > 0) barraDaPeca.append(fundir);
+  if (barraDaPeca.children.length) body.append(barraDaPeca);
   orbes(body, sq, max, abertos);
 
   if (escolhido == null) {
@@ -304,6 +336,17 @@ function corpo(body, peca) {
     texto.append(el('b', null, meta.gemaDef.nomePt ?? meta.gemaDef.nome), el('em', null, `${meta.gemaDef.tipo === 'support' ? 'suporte' : 'skill'} · ${item.raridade ?? 'comum'} · nível ${item.gema?.nivel ?? 1} · ${item.gema?.qualidade ?? 0}%`));
     texto.append(previa(meta.gemaDef));
     linha.classList.add(classeDaRaridade(meta, item));
+    // A cor (PoE): a gema da cor errada não entra neste socket.
+    const corGema = corDaGemaDoItem(meta);
+    const corSocket = sq.cores?.[escolhido] ?? null;
+    if (corSocket) {
+      texto.querySelector('b')?.prepend(el('i', `cor-gema cor-${corGema}`));
+      if (!cabe(corSocket, corGema)) {
+        linha.classList.add('cor-errada');
+        linha.disabled = true;
+        texto.append(el('i', 'nao-vale', `gema ${NOME_DA_COR[corGema]}: precisa de socket ${NOME_DA_COR[corGema]} ou branco`));
+      }
+    }
     linha.append(texto);
     tipFor(linha, item.id, null, null, item);
     linha.onclick = () => send({ t: 'gema', action: 'encaixar', slot: slotAberto, indice: escolhido, de: indice });
@@ -319,6 +362,14 @@ function corpo(body, peca) {
 function orbes(body, sq, max, abertos) {
   const { send } = ctx;
   const caixa = el('div', 'soquetes-orbes');
+  if (modoPoe()) {
+    orbesDoPoe(caixa, sq, max);
+    // Os orbes do Draevor só para quem ainda tem algum (no PoE eles não caem nem se compram mais).
+    if (quantosOrbes('encaixe') < 1 && quantosOrbes('ligacao') < 1) {
+      body.append(caixa);
+      return;
+    }
+  }
   const nEncaixe = quantosOrbes('encaixe');
   const nLigacao = quantosOrbes('ligacao');
   const nomeEncaixe = itemDoOrbe('encaixe')?.name ?? 'orbe de encaixe';
@@ -376,6 +427,42 @@ function orbes(body, sq, max, abertos) {
     caixa.append(p);
   }
   body.append(caixa);
+}
+
+/** Os orbes do PoE nesta peça: um botão por orbe (com quantos você tem e o motivo quando não dá) e a proposta com o "Confirmar". */
+function orbesDoPoe(caixa, sq, max) {
+  const { send } = ctx;
+  const linha = el('div', 'soquetes-acoes');
+  for (const tipo of ORBES_DO_POE) {
+    const item = itemDoOrbe(tipo);
+    if (!item) continue;
+    const motivo = motivoDoOrbePoe(tipo, sq, max);
+    const b = el('button', 'ghost orbe-poe');
+    b.type = 'button';
+    b.append(itemCanvas(item.id, 22), el('span', null, `${item.name} (${quantosOrbes(tipo)})`));
+    b.title = motivo ?? `${item.name}: ${PARA_QUE_SERVE[tipo]}.`;
+    b.disabled = !!motivo;
+    b.onclick = () => {
+      proposta = { tipo: 'poe', orbe: tipo };
+      desenhar();
+    };
+    linha.append(b);
+  }
+  caixa.append(linha);
+  if (proposta?.tipo !== 'poe') return;
+  const tipo = proposta.orbe;
+  const item = itemDoOrbe(tipo);
+  const motivo = motivoDoOrbePoe(tipo, sq, max);
+  const p = el('div', 'orbe-proposta');
+  if (motivo) p.append(el('b', null, 'Não dá para usar agora'), el('p', null, motivo));
+  else {
+    p.append(
+      el('b', null, `Proposta: usar ${item?.name ?? 'o orbe'} nesta peça`),
+      el('p', null, `${PARA_QUE_SERVE[tipo][0].toUpperCase()}${PARA_QUE_SERVE[tipo].slice(1)} (é sorteio: o resultado pode ser pior). Gasta 1 (sobram ${quantosOrbes(tipo) - 1}).${tipo === 'fusao' ? ' As gemas ficam onde estão.' : ''}`)
+    );
+    p.append(botoesDaProposta(() => send({ t: 'gema', action: 'orbePoe', tipo, slot: slotAberto })));
+  }
+  caixa.append(p);
 }
 
 /** "Confirmar" e "Cancelar" de uma proposta. Confirmar manda UMA vez (o botão se desliga) e limpa a proposta. */

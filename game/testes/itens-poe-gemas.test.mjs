@@ -187,7 +187,7 @@ async function comGemas(slugs, { crit = 0 } = {}) {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 40 });
   e.classePoe = 'Witch';
   const arma = J.pecaDoJogo(gerarPeca({ catalogo: Cat.catalogo(), regras: Cat.REGRAS, base: 'Wands/Driftwood_Wand', raridade: 'normal', ilvl: 20, rng: () => 0.99 }));
-  arma.soquetes = { abertos: slugs.length, links: slugs.slice(1).map(() => true), gemas: slugs.map(() => null) };
+  arma.soquetes = { abertos: slugs.length, links: slugs.slice(1).map(() => true), gemas: slugs.map(() => null), cores: slugs.map(() => 'W') }; // brancos: aceitam qualquer gema
   e.equipment = { ...(e.equipment ?? {}), weapon: arma };
   e.inventory = slugs.map((s) => GS.itemDaGema({ id: (G.doSlug(s) ?? SP.doSlug(s)).itemId, nivel: 10, xp: 0, raridade: 'comum' }));
   slugs.forEach((_, i) => GS.encaixar(e, { de: 0, slot: 'weapon', indice: i }));

@@ -1134,6 +1134,8 @@ export class Sessao {
           // Os orbes de socket: abrir um socket e ligar/desligar um elo (ver `GemasDeSkill.abrirSocket`).
           m.action === 'abrirSocket' ? GemasDeSkill.abrirSocket(this.estado, m) :
           m.action === 'ligarElo' ? GemasDeSkill.ligarElo(this.estado, m) :
+          // Os orbes do PoE (Joalheiro, Fusão, Cromático): `m.tipo`.
+          m.action === 'orbePoe' ? GemasDeSkill.usarOrbeDoPoe(this.estado, m) :
           { ok: false, erro: 'Ação de gema desconhecida.' }
         );
       // A Forja: tier (subir com chance, passar) e afixos (rerroll, transferir,

@@ -69,6 +69,7 @@ const requisitosDaBase = (b) => {
 export function iniciar(itemCatalog) {
   const cat = Catalogo.catalogo();
   if (!cat || REG.porBase.size) return REG;
+  REG.catalogo = itemCatalog;
   let n = PRIMEIRO_ID;
   for (const c of Object.values(cat.classes).sort((a, b) => a.id.localeCompare(b.id))) {
     const regra = CLASSES_DO_JOGO[c.id];
@@ -156,7 +157,8 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
     return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, af: {}, frasco: Frascos.resumo({ poe }) } };
   }
   // Os sockets (regra do dono: pela classe e pelo item level, quantidade e links ao acaso — `itens-poe/sockets.mjs`).
-  const soquetes = SocketsPoe.sortear(gerada.classe, gerada.ilvl, rng);
+  // As cores pesam pelo requisito de atributo da base (`ITEM_CATALOG[id].poe.requisitos`).
+  const soquetes = SocketsPoe.sortear(gerada.classe, gerada.ilvl, rng, REG.catalogo?.[id]?.poe?.requisitos ?? null);
   return {
     id, count: 1,
     ...(Object.keys(base).length ? { base } : {}),

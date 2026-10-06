@@ -341,14 +341,17 @@ export const VERSAO_DOS_ITENS = 6; // 6: o Attack (atk_flat) virou Dano adiciona
 
 /** Converte o personagem (uma vez — marca `versaoDosItens`). Devolve quantas peças mudaram. */
 export function converterPersonagem(estado) {
-  if (!estado || estado.versaoDosItens === VERSAO_DOS_ITENS) return 0;
+  if (!estado) return 0;
+  // No PoE: as peças que ainda não têm COR nos sockets ganham (a tela lê da peça; a gema encaixada fica com a cor dela).
+  const comCor = Gemas.gravarCores(estado);
+  if (estado.versaoDosItens === VERSAO_DOS_ITENS) return comCor;
   // Sorteio de verdade (uma vez só, e fica gravado no personagem).
   const antes = estado.versaoDosItens ?? 0;
   let n = converterTudo(estado, Math.random, { abrirSoquetes: antes < 5 });
   // v5: as magias/runas da barra viram gemas encaixadas (ver `skills/gemas.mjs`).
   if (antes < 5) n += Gemas.migrarPersonagem(estado);
   estado.versaoDosItens = VERSAO_DOS_ITENS;
-  return n;
+  return n + comCor;
 }
 
 /** Equipável que não empilha: é a peça que ganha raridade (e atributos) no drop. */

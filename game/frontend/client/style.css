@@ -27922,3 +27922,19 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
 .campanha-boss-secao.vencido .campanha-boss-elo { color: #e0a84a; }
 .campanha-boss-secao.clicavel { cursor: pointer; }
 .campanha-boss-secao.clicavel:hover { filter: brightness(1.2); }
+
+/* As CORES dos sockets do PoE (R Força, G Destreza, B Inteligência, W branco: aceita qualquer gema). */
+.soquete-casa.cor-R { border-color: #c8423a; background: radial-gradient(circle, #3a1412 0%, #0d0d0d 70%); }
+.soquete-casa.cor-G { border-color: #4fae4a; background: radial-gradient(circle, #13301a 0%, #0d0d0d 70%); }
+.soquete-casa.cor-B { border-color: #4f86d8; background: radial-gradient(circle, #122440 0%, #0d0d0d 70%); }
+.soquete-casa.cor-W { border-color: #e6e1d6; background: radial-gradient(circle, #3a3a3a 0%, #0d0d0d 70%); }
+.soquete-casa.escolhido { box-shadow: 0 0 0 2px #e8c66a, 0 0 8px #e8c66a88; }
+.selo-soquetes .sq.cor-R { border-color: #e0564d; } .selo-soquetes .sq.vazio.cor-R { background: #e0564d55; }
+.selo-soquetes .sq.cor-G { border-color: #5ec45a; } .selo-soquetes .sq.vazio.cor-G { background: #5ec45a55; }
+.selo-soquetes .sq.cor-B { border-color: #5a95ea; } .selo-soquetes .sq.vazio.cor-B { background: #5a95ea55; }
+.selo-soquetes .sq.cor-W { border-color: #f0ece4; } .selo-soquetes .sq.vazio.cor-W { background: #f0ece455; }
+.soquetes-gema.cor-errada { opacity: .5; cursor: not-allowed; }
+.soquetes-gema .cor-gema { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.cor-gema.cor-R { background: #e0564d; } .cor-gema.cor-G { background: #5ec45a; } .cor-gema.cor-B { background: #5a95ea; } .cor-gema.cor-W { background: #f0ece4; }
+.soquetes-orbes .orbe-poe { display: inline-flex; align-items: center; gap: 6px; }
+.soquetes-orbes .orbe-poe canvas { flex: none; }

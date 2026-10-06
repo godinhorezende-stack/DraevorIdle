@@ -797,6 +797,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     });
     darExtra(orbe);
   }
+  // No PoE: o Joalheiro, a Fusão e o Cromático (`itens-poe/regras.json` → `sockets.orbes`).
+  for (const orbe of GemasDeSkill.sortearOrbesDoPoe({ ato: Number(contextoDoDrop(hunt).ato) || 1, fatorDeChance: BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) })) darExtra(orbe);
   soltarDrops({ estado, hunt, personagem, alvo, drops: [...alvo.loot, ...Gemas.dropDoBicho(BESTIARY[alvo.key])], eventos, juntos, sala, caiu, conta, deOutros, podio });
   // Sistema de itens do PoE (Fase 1, só com ITENS_POE=1): quantas peças pela raridade do bicho × os modificadores de quantidade do loot
   // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.

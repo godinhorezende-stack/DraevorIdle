@@ -209,6 +209,23 @@ for (const o of [O.encaixe, O.ligacao]) {
   };
 }
 
+// Os ORBES DO PoE (dono, 06/10: "os do PoE no lugar" — `itens-poe/regras.json` → `sockets.orbes`): Joalheiro, Fusão e Cromático. No modo
+// PoE eles caem e a Zuma vende; os do Draevor (encaixe, ligação, fundidora) param de cair e de ser vendidos — quem já tem ainda usa.
+export const ORBES_DO_POE = SocketsPoe.orbes();
+for (const [tipo, o] of Object.entries(SocketsPoe.poeLigado() ? ORBES_DO_POE : {})) {
+  if (!o?.itemId) continue;
+  ITEM_CATALOG[o.itemId] ??= {
+    id: o.itemId, name: o.nome, weight: 0.1, stackable: true, type: 'moeda', rarity: 'raro',
+    hasSprite: true, spriteDe: F.sprite,
+    // O ícone do PoE (`gamedata/itens-poe/icones-moedas`, servido em `/api/jogo/poe/icone/moeda/`).
+    poeMoeda: { icone: o.icone },
+    descricao: o.descricao,
+    orbeDeSocket: tipo, orbeDoPoe: true,
+    limitesDeSocket: CONFIG.sockets.maximo,
+    sell: 0,
+  };
+}
+
 /**
  * Registra uma gema ATIVA que não vem do catálogo do Draevor — as gemas do PoE (`itens-poe/gemas-poe.mjs`, só com ITENS_POE=1): a ação
  * (`entry`, já no catálogo de ações), a definição e o item. A progressão é a do PoE (o dano/custo vêm do nível da gema), então `progressao`
@@ -354,7 +371,40 @@ export function soquetesDe(peca) {
   const abertos = Math.max(0, Math.min(max, Math.floor(Number(s.abertos) || 0)));
   const links = Array.from({ length: max - 1 }, (_, i) => !!s.links?.[i]);
   const gemas = Array.from({ length: max }, (_, i) => (i < abertos && s.gemas?.[i] && DEFS.has(Number(s.gemas[i].id)) ? s.gemas[i] : null));
-  return { max, abertos, links, gemas };
+  // No PoE os sockets têm COR (`itens-poe/sockets.mjs`).
+  return { max, abertos, links, gemas, ...(SocketsPoe.poeLigado() ? { cores: coresDe(peca, max, gemas) } : {}) };
+}
+
+/** A cor de uma gema (a do PoE; a gema sem cor, as do Draevor, vale como branca). */
+export const corDaGema = (g) => SocketsPoe.corDaGema(DEFS.get(Number(g?.id))?.poe?.cor);
+/**
+ * As CORES dos sockets da peça: as gravadas; a peça que ainda não tinha sorteia de um jeito FIXO (pelos requisitos de atributo da base),
+ * e o socket que já tem gema fica com a cor dela — a gema que já estava encaixada nunca fica no socket errado.
+ */
+function coresDe(peca, max, gemas) {
+  const gravadas = peca.soquetes?.cores;
+  const rng = SocketsPoe.sorteioFixo(`${peca.id}|${peca.poe?.ilvl ?? ''}|${JSON.stringify(peca.poe?.modificadores ?? peca.af ?? '')}`);
+  const fixas = SocketsPoe.sortearCores(max, ITEM_CATALOG[peca.id]?.poe?.requisitos ?? null, rng);
+  return Array.from({ length: max }, (_, i) => {
+    const c = ['R', 'G', 'B', 'W'].includes(gravadas?.[i]) ? gravadas[i] : fixas[i];
+    return gemas[i] && !SocketsPoe.cabe(c, corDaGema(gemas[i])) ? corDaGema(gemas[i]) : c;
+  });
+}
+/** Grava os sockets `s` (de `soquetesDe`, mudados) na peça, sem perder campos extras. */
+function gravarSoquetes(peca, s) {
+  peca.soquetes = { ...(peca.soquetes ?? {}), abertos: s.abertos, links: s.links, gemas: s.gemas, ...(s.cores ? { cores: s.cores } : {}) };
+}
+/** No PoE: grava as cores nas peças do personagem que ainda não têm (a tela lê da peça). Devolve quantas mudaram. */
+export function gravarCores(estado) {
+  if (!SocketsPoe.poeLigado()) return 0;
+  let n = 0;
+  const pecas = [...Object.values(estado?.equipment ?? {}), ...(estado?.inventory ?? []), ...(estado?.pouch ?? [])];
+  for (const p of pecas) {
+    if (!p || typeof p !== 'object' || !p.soquetes || p.soquetes.cores) continue;
+    const s = soquetesDe(p);
+    if (s?.cores) { gravarSoquetes(p, s); n++; }
+  }
+  return n;
 }
 
 /** Sockets novos, todos abertos e ligados (as peças que já existiam — decisão do dono). */
@@ -376,7 +426,7 @@ export function sortearSoquetes(meta, raridade, rng = Math.random) {
   let abertos = pesos[pesos.length - 1][0];
   for (const [n, p] of pesos) if ((r -= p) < 0) { abertos = n; break; }
   const links = Array.from({ length: max - 1 }, (_, i) => i + 1 < abertos && rng() < regra.chanceDeLink);
-  return { abertos, links, gemas: Array(max).fill(null) };
+  return { abertos, links, gemas: Array(max).fill(null), ...(SocketsPoe.poeLigado() ? { cores: SocketsPoe.sortearCores(max, meta?.poe?.requisitos ?? null, rng) } : {}) };
 }
 
 // Os grupos ligados e a compatibilidade por tag: a MESMA regra que a tela usa (engine/sockets-de-gema.mjs).
@@ -588,19 +638,21 @@ export function encaixar(estado, { de, slot, indice }) {
   const s = soquetesDe(peca);
   if (!s) return erro('Essa peça não tem sockets.');
   // Sem `indice` (a gema arrastada até a peça): o primeiro socket aberto e vazio.
-  const i = indice == null ? s.gemas.findIndex((g, k) => !g && k < s.abertos) : Math.floor(Number(indice));
-  if (indice == null && i < 0) return erro('Essa peça não tem socket livre.');
+  const i = indice == null ? s.gemas.findIndex((g, k) => !g && k < s.abertos && (!s.cores || SocketsPoe.cabe(s.cores[k], corDaGema(estado.inventory?.[Math.floor(Number(de))])))) : Math.floor(Number(indice));
+  if (indice == null && i < 0) return erro(s.cores ? 'Essa peça não tem socket livre da cor desta gema.' : 'Essa peça não tem socket livre.');
   if (!(i >= 0 && i < s.max)) return erro('Socket inexistente.');
   if (i >= s.abertos) return erro('Esse socket está bloqueado.');
   const inv = estado.inventory ?? [];
   const k = Math.floor(Number(de));
   const item = inv[k];
   if (!item || !ehGema(item.id)) return erro('Isso não é uma gema.');
+  // No PoE: a gema só entra no socket da COR dela (o branco aceita qualquer uma; a gema branca entra em qualquer socket).
+  if (s.cores && !SocketsPoe.cabe(s.cores[i], corDaGema(item))) return erro(`A gema ${SocketsPoe.NOME_DA_COR[corDaGema(item)]} precisa de um socket ${SocketsPoe.NOME_DA_COR[corDaGema(item)]} ou branco (este é ${SocketsPoe.NOME_DA_COR[s.cores[i]]}).`);
   const nova = novaGemaDoItem(item);
   inv.splice(k, 1);
   const antiga = s.gemas[i];
   s.gemas[i] = nova;
-  peca.soquetes = { abertos: s.abertos, links: s.links, gemas: s.gemas };
+  gravarSoquetes(peca, s);
   if (antiga) inv.push(itemDaGema(antiga));
   return { ok: true };
 }
@@ -614,7 +666,7 @@ export function tirar(estado, { slot, indice }) {
   const g = s.gemas[i];
   if (!g) return erro('Não há gema nesse socket.');
   s.gemas[i] = null;
-  peca.soquetes = { abertos: s.abertos, links: s.links, gemas: s.gemas };
+  gravarSoquetes(peca, s);
   (estado.inventory ??= []).push(itemDaGema(g));
   return { ok: true };
 }
@@ -672,7 +724,7 @@ export function fundir(estado, { slot }, rng = Math.random) {
   const chance = (CONFIG.sockets.drop[peca.raridade] ?? CONFIG.sockets.drop.comum).chanceDeLink;
   const antes = s.links.filter(Boolean).length;
   const links = s.links.map((_, i) => i + 1 < s.abertos && rng() < chance);
-  peca.soquetes = { abertos: s.abertos, links, gemas: s.gemas };
+  gravarSoquetes(peca, { ...s, links });
   if ((inv[k].count ?? 1) > 1) inv[k].count -= 1;
   else inv.splice(k, 1);
   return { ok: true, notice: `Links sorteados de novo: ${antes} → ${links.filter(Boolean).length}.` };
@@ -680,6 +732,7 @@ export function fundir(estado, { slot }, rng = Math.random) {
 
 /** A Fundidora que cai de um bicho (ou null): a chance do ato. */
 export function sortearFundidora({ ato = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
+  if (SocketsPoe.poeLigado()) return null; // no PoE: a Orbe da Fusão no lugar
   const c = F.chancePorAto;
   return rng() < (c[String(ato)] ?? c['1'] ?? 0) * fatorDeChance ? { id: FUNDIDORA, count: 1 } : null;
 }
@@ -765,7 +818,7 @@ export function abrirSocket(estado, { slot }) {
   if (k < 0) return erro('Você não tem Orbe de Encaixe.');
   const links = [...s.links];
   if (s.abertos > 0) links[s.abertos - 1] = false; // o socket novo nasce SEM link com o vizinho
-  peca.soquetes = { ...(peca.soquetes ?? {}), abertos: s.abertos + 1, links, gemas: s.gemas };
+  gravarSoquetes(peca, { ...s, abertos: s.abertos + 1, links });
   gastaOrbe(estado, k);
   return { ok: true, notice: `Socket aberto: agora são ${s.abertos + 1} de ${max}.` };
 }
@@ -787,14 +840,64 @@ export function ligarElo(estado, { slot, elo, ligar }) {
   if (k < 0) return erro('Você não tem Orbe de Ligação.');
   const links = [...s.links];
   links[i] = ligar;
-  peca.soquetes = { ...(peca.soquetes ?? {}), abertos: s.abertos, links, gemas: s.gemas };
+  gravarSoquetes(peca, { ...s, links });
   gastaOrbe(estado, k);
   const grupos = gruposLigados({ abertos: s.abertos, links }).map((g) => g.map((n) => n + 1).join('+')).join(' | ');
   return { ok: true, notice: `${ligar ? 'Sockets ligados' : 'Link desfeito'}. Grupos agora: ${grupos}.` };
 }
 
+/**
+ * Usa um ORBE DO PoE (`tipo`: 'joalheiro' | 'fusao' | 'cromatico') na peça vestida em `slot`. Mesma ordem dos orbes do Draevor: valida
+ * tudo, muda a peça e só então gasta o orbe. Joalheiro e Cromático pedem a peça SEM gema (nenhuma gema sai sozinha); a Fusão não mexe
+ * nas gemas. Recusa sem gastar quando não haveria mudança (peça no máximo de sockets, peça toda ligada).
+ */
+export function usarOrbeDoPoe(estado, { slot, tipo }, rng = Math.random) {
+  if (!SocketsPoe.poeLigado()) return erro('Este orbe é do modo PoE.');
+  const o = ORBES_DO_POE[tipo];
+  if (!o?.itemId) return erro('Orbe desconhecido.');
+  const { peca, max, s, erro: e } = pecaComSockets(estado, slot);
+  if (e) return erro(e);
+  const k = achaOrbe(estado, o.itemId);
+  if (k < 0) return erro(`Você não tem ${o.nome}.`);
+  const req = ITEM_CATALOG[peca.id]?.poe?.requisitos ?? null;
+  const comGema = s.gemas.some(Boolean);
+  const cores = (c, n) => c.slice(0, n).map((x) => SocketsPoe.NOME_DA_COR[x]).join(', ') || 'nenhum';
+  let notice;
+  if (tipo === 'joalheiro') {
+    if (comGema) return erro('Tire as gemas desta peça antes: o Joalheiro refaz os sockets. O orbe não foi gasto.');
+    if (s.abertos >= max) return erro(`Esta peça já está no máximo (${max} sockets). O orbe não foi gasto.`);
+    const n = SocketsPoe.sortearNumero(s.abertos, max, rng);
+    if (n == null) return erro('Não há outro número de sockets para esta peça. O orbe não foi gasto.');
+    const chance = Number(SocketsPoe.orbes().joalheiro?.chanceDeLink ?? 0.5);
+    const links = Array.from({ length: max - 1 }, (_, i) => i + 1 < n && rng() < chance);
+    gravarSoquetes(peca, { ...s, abertos: n, links, cores: SocketsPoe.sortearCores(max, req, rng) });
+    notice = `Sockets: ${s.abertos} → ${n}.`;
+  } else if (tipo === 'fusao') {
+    if (s.abertos < 2) return erro('Precisa de pelo menos 2 sockets para ligar. O orbe não foi gasto.');
+    if (s.links.slice(0, s.abertos - 1).every(Boolean)) return erro('Esta peça já está toda ligada. O orbe não foi gasto.');
+    const links = SocketsPoe.sortearLinks(s.abertos, max, rng);
+    gravarSoquetes(peca, { ...s, links });
+    notice = `Links sorteados de novo. Grupos agora: ${gruposLigados({ abertos: s.abertos, links }).map((g) => g.map((x) => x + 1).join('+')).join(' | ')}.`;
+  } else if (tipo === 'cromatico') {
+    if (comGema) return erro('Tire as gemas desta peça antes: o Cromático troca as cores dos sockets. O orbe não foi gasto.');
+    if (s.abertos < 1) return erro('Esta peça não tem sockets. O orbe não foi gasto.');
+    const novas = SocketsPoe.sortearOutrasCores(s.cores ?? [], s.abertos, req, rng);
+    gravarSoquetes(peca, { ...s, cores: novas });
+    notice = `Cores: ${cores(s.cores ?? [], s.abertos)} → ${cores(novas, s.abertos)}.`;
+  } else return erro('Orbe desconhecido.');
+  gastaOrbe(estado, k);
+  return { ok: true, notice };
+}
+
+/** Os orbes do PoE que caem de um bicho (no modo PoE): cada um com a chance do ato dele. */
+export function sortearOrbesDoPoe({ ato = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
+  if (!SocketsPoe.poeLigado()) return [];
+  return Object.values(ORBES_DO_POE).filter((o) => o?.itemId && rng() < (o.chancePorAto?.[String(ato)] ?? o.chancePorAto?.['1'] ?? 0) * fatorDeChance).map((o) => ({ id: o.itemId, count: 1 }));
+}
+
 /** O orbe que cai de um bicho (ou null): `tipo` 'encaixe' | 'ligacao'; a chance do ato (zero até haver balanceamento). */
 export function sortearOrbe(tipo, { ato = 1, fatorDeChance = 1 } = {}, rng = Math.random) {
+  if (SocketsPoe.poeLigado()) return null; // no PoE: os orbes do PoE no lugar (`sortearOrbesDoPoe`)
   const o = O[tipo];
   const c = o?.drop?.chancePorAto ?? {};
   const chance = (c[String(ato)] ?? c['1'] ?? 0) * fatorDeChance;
@@ -834,10 +937,10 @@ function encaixarOndeCouber(estado, gema) {
     const peca = estado.equipment?.[slot];
     const s = peca && soquetesDe(peca);
     if (!s) continue;
-    const livre = s.gemas.findIndex((g, i) => !g && i < s.abertos);
+    const livre = s.gemas.findIndex((g, i) => !g && i < s.abertos && (!s.cores || SocketsPoe.cabe(s.cores[i], corDaGema(gema))));
     if (livre < 0) continue;
     s.gemas[livre] = gema;
-    peca.soquetes = { abertos: s.abertos, links: s.links, gemas: s.gemas };
+    gravarSoquetes(peca, s);
     return true;
   }
   (estado.inventory ??= []).push(itemDaGema(gema));
@@ -937,7 +1040,8 @@ export function catalogoDaLoja(estado) {
 /** As linhas da loja dos orbes que estão à venda (`orbes.*.loja`). */
 export function linhasDosOrbes(estado) {
   const tenho = (id) => (estado.inventory ?? []).filter((p) => Number(p.id) === id).reduce((t, p) => t + (p.count ?? 1), 0);
-  return [O.encaixe, O.ligacao]
+  // No PoE: os orbes do PoE no lugar dos do Draevor.
+  return (SocketsPoe.poeLigado() ? Object.values(ORBES_DO_POE).filter((o) => o?.itemId) : [O.encaixe, O.ligacao])
     .filter((o) => o.loja?.disponivel)
     .map((o) => ({
       id: o.itemId,
@@ -952,7 +1056,7 @@ export function linhasDosOrbes(estado) {
 
 /** Comprar `count` gemas (nível 1, na `raridade` pedida) na loja: paga do bolso e depois do banco; vão para a mochila. */
 export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
-  const orbe = [O.encaixe, O.ligacao].find((o) => o.itemId === Number(id));
+  const orbe = (SocketsPoe.poeLigado() ? Object.values(ORBES_DO_POE).filter((o) => o?.itemId) : [O.encaixe, O.ligacao]).find((o) => o.itemId === Number(id));
   if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));
   if (!def) return { ok: false, erro: 'Ela não vende isso.' };

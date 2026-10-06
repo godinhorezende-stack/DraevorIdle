@@ -26,7 +26,8 @@ const RAIZ = process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe';
 const PASTA = join(RAIZ, 'poe-gemas-poedb', 'engine');
 const ARQ_IDS = new URL('../../gamedata/itens-poe/gemas-poe-ids.json', import.meta.url);
 export const PREFIXO = 'poe-gema:';
-const PRIMEIRO_ID = 912001;
+// 916001 (não 912001: a Lapidadora, a Fundidora e os orbes do Draevor são 912001–912004).
+const PRIMEIRO_ID = 916001;
 
 /** O elemento do PoE (o da arena) → o do Draevor. O caos do PoE fica `chaos` (a resistência a caos já existe; o desenho é o de morte). */
 export const ELEMENTO = { fisico: 'physical', fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos' };
