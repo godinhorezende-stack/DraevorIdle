@@ -229,6 +229,9 @@ function idsDasGemas(slugs) {
 /** Troca as faixas "(a — b)" pelo valor na fração `t` (0..1) — a qualidade da gema vai de 0 a 20%. */
 const naFracao = (texto, t) => texto.replace(/\((-?\d+(?:\.\d+)?)\s*—\s*(-?\d+(?:\.\d+)?)\)/g, (_, a, b) => String(Math.round((parseFloat(a) + (parseFloat(b) - parseFloat(a)) * t) * 10) / 10));
 
+/** O valor interpolado de dano ("334.9 a 502.2") sai inteiro, como no PoE; os pequenos (raio de 1.3 metro) ficam com a casa. */
+const inteiros = (t) => t.replace(/\d+\.\d+/g, (x) => (parseFloat(x) >= 10 ? String(Math.round(parseFloat(x))) : x));
+
 /**
  * A FICHA da gema no nível (dono, 06/10: "mudar isso conforme a magia do PoE"): o que o balão do PoE mostra — tags, as propriedades
  * (nível, custo, conjuração, crítico, eficácia, requisito), a descrição, os modificadores com os números DESTE nível e os da qualidade —
@@ -254,7 +257,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   const q = Math.max(0, Math.min(20, qualidade || 0));
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: h.nivelMax, nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
-    props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
+    props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
     status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: h.linhas?.naoImplementadas ?? [],
   };
 }

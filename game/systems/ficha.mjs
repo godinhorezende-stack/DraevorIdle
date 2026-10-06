@@ -364,6 +364,9 @@ function calcularCombate(estado) {
       // O "Dano de Caos aumentado" das peças do PoE (só aparece quando alguma dá).
       ...(af.chaos_dmg ? [['chaos', af.chaos_dmg]] : []),
     ]),
+    // A parte do "Dano físico" que vem da STR (já somada em `danoDoElemento.physical`): no PoE ela é só de CORPO A CORPO ("+1% de dano físico
+    // corpo a corpo a cada 5 de Força") — quem bate de longe ou com magia física tira esta parte.
+    danoFisicoDaForca: doAtributo.danoFisicoPct ?? 0,
     // Magic Damage (magias, runas, wand): o que a INT dá.
     danoDeMagia: doAtributo.danoMagicoPct,
     // Sistema de itens do PoE (Fase 1; tudo 0/vazio sem peças do PoE): "Dano Mágico aumentado" (só magias), o dano elemental somado

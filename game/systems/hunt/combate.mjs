@@ -14,6 +14,7 @@ import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
 import { temHabilidade } from '../passivas/arvore.mjs';
 import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Equipamento from '../itens/equipamento.mjs';
@@ -1162,7 +1163,10 @@ export function round(estado, personagem) {
         // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
         // + os reforços ligados (Blood Rage no corpo a corpo, Sharpshooter à distância), pelas tags do golpe.
         const tagsDoGolpe = Tags.tagsDoGolpe(categoriaDaArma(arma));
-        const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, tagsDoGolpe).pct + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
+        // No PoE: sem a afinidade de classe do Draevor, e a parte da Força só no corpo a corpo (o arco não ganha dano físico da STR).
+        const poe = itensPoeLigado();
+        const fisicoDoGolpe = (ficha.danoDoElemento?.physical ?? 0) - (poe && !tagsDoGolpe.includes('melee') ? ficha.danoFisicoDaForca ?? 0 : 0);
+        const fisico = 1 + (fisicoDoGolpe + (poe ? 0 : Ficha.afinidadePara(ficha, tagsDoGolpe).pct) + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
         // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
         // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária, cada uma com o próprio dano.
         const daSecundaria = !!ficha.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);

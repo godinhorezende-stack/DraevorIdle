@@ -83,3 +83,29 @@ test('a ficha da gema para o balão: as propriedades e os modificadores com os n
   const max = G.fichaNoNivel('Fireball', 99);
   assert.match(max.props.find(([r]) => r === 'Nível')[1], /Máx/);
 });
+
+test('cada tipo de dano só escala com o seu "aumentado" (dono, 06/10): o físico não sobe o fogo; sem afinidade de classe do Draevor', { skip: SEM }, async () => {
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const efeito = { nivel: 8, danoPct: 0, fatorDeDano: 1 };
+  const acao = (slug) => ACTION_CATALOG.spells.find((x) => x.id === `poe-gema:${slug}`);
+  const dano = (af, slug, vocacao = 'knight') => {
+    const e = personagemDeTeste({ vocacao, level: 12 });
+    e.hunt = { clock: 0, buffs: { teste: { ate: 1e12, afPoe: af } } };
+    Ficha.invalidar?.(e);
+    return Acoes.danoMostrado(e, acao(slug), efeito).min;
+  };
+  const puro = G.danoNoNivel('Fireball', 8).min;
+  assert.equal(dano({}, 'Fireball'), puro);
+  assert.equal(dano({}, 'Fireball', 'sorcerer'), puro, 'a afinidade de classe (Magia/Fogo +15%) do Draevor não entra');
+  assert.equal(dano({ phys_dmg: 100 }, 'Fireball'), puro, 'dano físico aumentado não mexe no fogo');
+  assert.equal(dano({ fire_dmg: 100 }, 'Fireball'), puro * 2);
+  assert.equal(dano({ spell_dmg: 100 }, 'Fireball'), puro * 2);
+  const abs = G.danoNoNivel('Absolution', 8).min;
+  assert.equal(dano({ fire_dmg: 100 }, 'Absolution'), abs, 'fogo aumentado não mexe na magia física');
+  assert.equal(dano({ spell_dmg: 100 }, 'Absolution'), abs * 2, 'magia física (tags physical+ranged) é MAGIA: o dano de magia vale');
+  const cleave = dano({}, 'Cleave');
+  assert.equal(dano({ spell_dmg: 100 }, 'Cleave'), cleave, 'dano de magia não vale no ataque');
+  assert.ok(dano({ phys_dmg: 100 }, 'Cleave') > cleave * 1.8);
+  assert.ok(!G.fichaNoNivel('Absolution', 8).mods[0].includes('.'), 'dano inteiro na ficha');
+});
