@@ -77,6 +77,36 @@ export function temposNoNivel(slug, nivel = 1) {
   return { conjuracaoMs: Math.round((st.tempoUso ?? 0) * 1000), recargaMs: st.recarga ? Math.round(st.recarga * 1000) : 0, cargas: st.cargas ?? 1, velAtaqueBase: st.velAtaqueBase ?? 100 };
 }
 
+/**
+ * Os ALVOS da gema no nível (dono, 06/10: "o arco elétrico bate em vários mobs como no PoE?"): o que as linhas da gema dizem, com os números
+ * DESTE nível — `saltos` ("Ricocheteia +4 Vezes": a cadeia, 1 + saltos alvos), `pctPorRestante` ("15% mais Dano por cada Ricochete
+ * restante"), `perfurar` (N alvos, ou 99 = "todos"), `projeteis` adicionais, `bifurcar` ("se Difundem") e `divide` ("o feixe se divide em
+ * direção a N alvos adicionais"). Antes o jogo usava os da magia-molde do Draevor (a cadeia sempre de 6 alvos).
+ */
+const REGRAS_DE_ALVOS = [
+  [/^(?:Projétil Primário )?(?:Raios )?Ricocheteiam? \+?(\d+) Vez/i, (m, a) => { a.saltos += Number(m[1]); }],
+  [/(\d+) ?% mais Dano .*por (?:cada )?Ricochete restante/i, (m, a) => { a.pctPorRestante += Number(m[1]); }],
+  [/Perfuram todos (?:os )?Alvos/i, (m, a) => { a.perfurar = 99; }],
+  [/Perfuram (\d+) Alvos adiciona/i, (m, a) => { a.perfurar = Math.max(a.perfurar, Number(m[1])); }],
+  [/^Dispara (\d+) Projéteis adicionais$/i, (m, a) => { a.projeteis += Number(m[1]); }],
+  [/^Dispara (?:um|1) Projétil adicional$/i, (m, a) => { a.projeteis += 1; }],
+  [/se divide em direção a (\d+) alvos adiciona/i, (m, a) => { a.divide += Number(m[1]); }],
+  [/^Projéteis se Difundem$/i, (m, a) => { a.bifurcar = Math.max(a.bifurcar, 2); }],
+];
+/** As linhas da gema que o jogo agora faz (saem de "não simulado"). */
+export const ehLinhaDeAlvos = (linha) => REGRAS_DE_ALVOS.some(([re]) => re.test(linha));
+const ALVOS = new Map();
+export function alvosNoNivel(slug, nivel = 1) {
+  const g = POR_SLUG.get(slug);
+  const n = Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR?.nivelMaximo?.(g) ?? 40));
+  const k = `${slug}@${n}`;
+  if (ALVOS.has(k)) return ALVOS.get(k);
+  const a = { saltos: 0, pctPorRestante: 0, perfurar: 0, projeteis: 0, bifurcar: 0, divide: 0 };
+  for (const linha of g && COMPILADOR?.textosDoNivel ? COMPILADOR.textosDoNivel(g, n) : []) for (const [re, fazer] of REGRAS_DE_ALVOS) { const m = linha.match(re); if (m) fazer(m, a); }
+  ALVOS.set(k, a);
+  return a;
+}
+
 /** O dano direto da gema no nível: `{ min, max, elementos }` (todos os elementos somados no elemento principal). */
 export function danoNoNivel(slug, nivel) {
   const h = compilada(slug, nivel);
@@ -163,9 +193,7 @@ function avaliarNoJogo(h, formato) {
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
     if (Object.keys(st.dano ?? {}).length > 1) motivos.push(`o dano de ${Object.keys(st.dano).join(' + ')} sai num elemento só`);
-    if ((st.projeteis ?? 1) > 1 || st.projeteisExtra) motivos.push(`dispara ${(st.projeteis ?? 1) + (st.projeteisExtra ?? 0)} projéteis: no jogo, 1 (os suportes de projétil do Draevor somam)`);
-    if (st.perfura) motivos.push('a perfuração da gema não se aplica (só a dos suportes)');
-    if (st.ricochetes && formato !== 'cadeia') motivos.push('os ricochetes da gema não se aplicam');
+    // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
     if (st.dot?.length) motivos.push('o dano degenerativo (ao longo do tempo) da gema não se aplica');
     if (st.estagios) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
     if (st.repeticoes) motivos.push('as repetições do golpe não existem: no jogo é um');
@@ -173,7 +201,7 @@ function avaliarNoJogo(h, formato) {
     if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
     if (!Object.keys(st.dano ?? {}).length && !h.ataque) motivos.push('sem dano direto: nenhum efeito no combate');
   }
-  for (const l of h.linhas?.naoImplementadas ?? []) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -305,7 +333,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: h.linhas?.naoImplementadas ?? [],
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

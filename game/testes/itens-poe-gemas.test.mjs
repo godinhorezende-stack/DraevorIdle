@@ -268,3 +268,18 @@ test('o visual das gemas: cada uma com o estilo dela (muito menos repetição), 
   const longe = r.quadros.flatMap((q) => q.mobs.map((m) => Math.max(Math.abs(m.x - q.pos.x), Math.abs(m.y - q.pos.y))));
   assert.ok(Math.max(...longe) <= 8, 'os bichos ficam perto (a tela mostra ±6)');
 });
+
+test('os alvos da gema pelo nível dela: o Arco salta +4 (nv 1) a +7 (nv 20), mais 2 com o suporte de Corrente; o Disparo Congelante perfura', { skip: SEM_SUPORTES }, async () => {
+  const Arena = await import('../admin/arena-efeitos.mjs');
+  const mobs = (slug, nivel, suportes = []) => {
+    const r = Arena.simular({ skill: G.doSlug(slug).acao, nivel, suportes, alvos: 10, distancia: 2, direcao: 'l' });
+    assert.ok(r.ok, r.erros?.join(' '));
+    return new Set(r.eventos.filter((e) => e.t === 'dmg' && e.foe).map((e) => e.uid)).size;
+  };
+  assert.equal(mobs('Arc', 1), 5, '1 + 4 ricochetes');
+  assert.equal(mobs('Arc', 20), 8, '1 + 7 ricochetes');
+  assert.equal(mobs('Arc', 10, ['Chain_Support']), mobs('Arc', 10) + 2, 'o suporte de Corrente vale no Arco (Ricochete, sem ser projétil)');
+  assert.deepEqual(G.alvosNoNivel('Arc', 1), { saltos: 4, pctPorRestante: 15, perfurar: 0, projeteis: 0, bifurcar: 0, divide: 0 });
+  assert.equal(G.alvosNoNivel('Frostbolt', 1).perfurar, 99, '"Perfuram todos os alvos"');
+  assert.ok(!G.fichaNoNivel('Arc', 1).naoFeitas.some((l) => /Ricochete/i.test(l)), 'o ricochete saiu de "não simulado"');
+});

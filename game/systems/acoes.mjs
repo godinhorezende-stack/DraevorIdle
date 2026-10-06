@@ -669,6 +669,26 @@ const sortear = (min, max) => min + Math.floor(Math.random() * Math.max(1, max -
 const FATOR_DA_RECARGA_DE_ATAQUE = 0.5;
 const recargaDe = (entry, ms) => (entry.papeis?.[0] === 'attack' ? Math.round(ms * FATOR_DA_RECARGA_DE_ATAQUE) : ms);
 
+/**
+ * Os ALVOS da gema do PoE no nível dela (`GemasPoe.alvosNoNivel`) somados ao efeito dos suportes: projéteis adicionais e a divisão do
+ * feixe (`alvosExtras`), perfuração, difusão, ricochetes do projétil (`encadear`) — e, na magia de CADEIA (o Arco), os saltos da cadeia
+ * (`cadeiaPoe`: os da gema + os do suporte de corrente, com o "% mais dano por ricochete restante"), que não passam também pelos
+ * golpes secundários (senão saltaria duas vezes).
+ */
+function comOsAlvosDaGema(entry, efeito) {
+  if (!entry.poeGema || entry.poeGema.buff || !efeito) return efeito;
+  const a = GemasPoe.alvosNoNivel(entry.poeGema.slug, efeito.nivel ?? 1);
+  const e = { ...efeito };
+  e.alvosExtras = (e.alvosExtras ?? 0) + a.projeteis + a.divide;
+  e.perfurar = Math.max(e.perfurar ?? 0, a.perfurar);
+  e.bifurcar = Math.max(e.bifurcar ?? 0, a.bifurcar);
+  if (entry.cadeia) {
+    e.cadeiaPoe = { saltos: a.saltos + (e.encadear ?? 0), pct: a.pctPorRestante };
+    e.encadear = 0;
+  } else e.encadear = (e.encadear ?? 0) + a.saltos;
+  return e;
+}
+
 /** As casas que a `forma` real da magia pega, centradas em (cx, cy). */
 /*
  * Onda, feixe e varredura vêm na `forma` olhando para o NORTE (só casas com
@@ -867,7 +887,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     ? Math.min(agora, hunt.conjurando?.inicio ?? agora)
     : R.instanteLogico(agora, hunt.relogioAnterior, [globalLibera, cd?.ate, grupoQueConta ? cds[grupoQueConta]?.ate : null]);
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
-  const efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
+  const efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null);
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
   const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round(custoDaSkill(entry, efeitoDaGema) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
@@ -910,7 +930,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       atingidos = [alvo];
       // CADEIA (tag `chain`: Forked Thorns, Forked Glacier, Chained Penance...): do alvo, salta para o
       // bicho vivo mais perto a até `cadeia.distance` sqm do último atingido, até `cadeia.targets` alvos.
-      if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, entry.cadeia);
+      // A cadeia da gema do PoE: 1 + os ricochetes DO NÍVEL dela (+ os do suporte de corrente); a distância do salto é a da magia-molde.
+      if (entry.cadeia) atingidos = saltosDaCadeia(alvo, vivos, efeitoDaGema?.cadeiaPoe ? { ...entry.cadeia, targets: 1 + efeitoDaGema.cadeiaPoe.saltos } : entry.cadeia);
     } else if (centradoNoAlvo && entry.miraNoChao && mira) {
       // A casa que o jogador escolheu na mira (`huntAction` com x, y): a área cai lá, com ou sem alvo.
       if (distanciaChebyshev(hunt.pos, mira) > (entry.range || ALCANCE_PADRAO)) return { ok: false, erro: 'Fora de alcance.', motivo: 'FORA_DE_ALCANCE' };
@@ -1188,7 +1209,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
      * árvore (depois da magia) contam só do primeiro.
      */
     const atacar = (segundo) => {
-      for (const bicho of atingidos) if (!segundo || bicho.hp > 0) acertar(bicho);
+      // "X% mais Dano por cada Ricochete restante" (Arco): o 1º atingido tem todos os ricochetes pela frente; cada salto gasta um.
+      const cp = efeitoDaGema?.cadeiaPoe;
+      atingidos.forEach((bicho, i) => { if (!segundo || bicho.hp > 0) acertar(bicho, cp?.pct ? 100 * (1 + (cp.pct * Math.max(0, cp.saltos - i)) / 100) : 100); });
       /*
        * ---- Os golpes SECUNDÁRIOS das supports, combinados em cadeia ----
        * Quem leva, com quantos %, de onde e de que tipo vem de `Secundarios.resolver`

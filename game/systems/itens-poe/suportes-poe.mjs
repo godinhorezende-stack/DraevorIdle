@@ -199,7 +199,9 @@ export function efeitoNoNivel(slug, nivel = 1, qualidade = 0, ativa = null) {
 /** As tags que RESTRINGEM o suporte (a ativa precisa ter todas): as outras (Fogo, Crítico, Suporte...) não restringem. */
 const RESTRINGEM = new Set(['Magia', 'Ataque', 'Projétil', 'Área', 'Corpo a Corpo', 'Arco', 'Duração', 'Canalização', 'Corrente', 'Movimento', 'Aura', 'Clamor', 'Golpe', 'Totem', 'Armadilha', 'Mina', 'Lacaio', 'Marca', 'Guarda', 'Arauto']);
 // O suporte de GATILHO (tag Ativação) restringe só o que ele ATIVA (a magia); o ataque que dispara é qualquer um do grupo.
-export const requerDe = (s) => (s.tags.includes('Ativação') ? ['poe:Magia'] : s.tags.filter((t) => RESTRINGEM.has(t)).map((t) => `poe:${t}`));
+// "Ricochete + Projétil" (o suporte de Corrente) vale para quem é projétil OU ricocheteia (o Arco não é projétil): vai para `algum`.
+export const requerDe = (s) => (s.tags.includes('Ativação') ? ['poe:Magia'] : s.tags.filter((t) => RESTRINGEM.has(t) && !(t === 'Projétil' && s.tags.includes('Ricochete'))).map((t) => `poe:${t}`));
+export const algumDe = (s) => (s.tags.includes('Ricochete') && !s.tags.includes('Ativação') ? ['poe:Projétil', 'poe:Ricochete'] : []);
 
 // ---------------------------------------------------------------- status, ids, registro
 
@@ -244,7 +246,7 @@ export function iniciar({ registrarSuporte } = {}) {
     REGISTRO.set(s.slug, { itemId, status, motivos, suporte: s });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
     registrarSuporte?.({
-      itemId, suporte: s, requer: requerDe(s), levelMinimo: s.nivelReq ?? 1,
+      itemId, suporte: s, requer: requerDe(s), algum: algumDe(s), levelMinimo: s.nivelReq ?? 1,
       // Sem sistema no jogo (totem, armadilha, lacaio...): não mexe em nada.
       efeitoDoPoe: status === 'nao' ? () => ({}) : (nivel, qualidade, ativa) => efeitoNoNivel(s.slug, nivel, qualidade, ativa).efeito,
       gatilho: status === 'nao' ? null : gatilhoDe(s, textosDoNivel(s, 1)) ? (nivel) => gatilhoDe(s, textosDoNivel(s, nivel)) : null,

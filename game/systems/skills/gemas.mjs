@@ -258,11 +258,11 @@ function tabelaDeXpDoPoe(gema) {
  * (`requer`: `poe:Projétil`...), o efeito NO NÍVEL (`efeitoDoPoe(nivel, qualidade, ativa)` → as mesmas chaves dos suportes do Draevor:
  * `danoPct`, `custoPct`, `castTimePct`...) e o gatilho, quando é um suporte de ativação. A XP é a da tabela dele.
  */
-export function registrarSuporte({ itemId, suporte, requer = [], exclui = [], efeitoDoPoe, gatilho = null, levelMinimo = 1 }) {
+export function registrarSuporte({ itemId, suporte, requer = [], algum = [], exclui = [], efeitoDoPoe, gatilho = null, levelMinimo = 1 }) {
   const id = `poe-suporte:${suporte.slug}`;
   const def = {
     itemId, tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, levelMinimo,
-    suporte: { nome: suporte.nome, requer, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho },
+    suporte: { nome: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, efeitoDoPoe, gatilho },
     poe: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, en: suporte.en, suporte: true },
     poeXp: tabelaDeXpDoPoe(suporte),
   };
@@ -271,7 +271,7 @@ export function registrarSuporte({ itemId, suporte, requer = [], exclui = [], ef
     id: itemId, name: `gema: ${suporte.nome.toLowerCase()}`, nomeExibicao: `Gema: ${suporte.nome}`, weight: 0.1, stackable: false, type: 'gema', rarity: 'comum',
     hasSprite: true, spriteDe: CONFIG.sprites.support ?? CONFIG.sprites.outro,
     poeGema: { slug: suporte.slug, cor: suporte.cor, icone: suporte.icone ?? null, suporte: true },
-    gemaDef: { tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, requer, algum: [], exclui, efeito: {}, porNivel: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
+    gemaDef: { tipo: 'support', categoria: 'suporte', id, nome: suporte.nome, nomePt: suporte.nome, requer, algum, exclui, efeito: {}, porNivel: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
     sell: 0,
   };
   return def;
