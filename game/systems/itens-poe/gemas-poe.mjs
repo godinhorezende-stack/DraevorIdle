@@ -229,13 +229,37 @@ function idsDasGemas(slugs) {
 /** Troca as faixas "(a — b)" pelo valor na fração `t` (0..1) — a qualidade da gema vai de 0 a 20%. */
 const naFracao = (texto, t) => texto.replace(/\((-?\d+(?:\.\d+)?)\s*—\s*(-?\d+(?:\.\d+)?)\)/g, (_, a, b) => String(Math.round((parseFloat(a) + (parseFloat(b) - parseFloat(a)) * t) * 10) / 10));
 
-/** O nível máximo por XP (o último com `Experiência` na tabela + 1 — o 20 das gemas comuns); acima, só com o add de nível das peças. */
-function maximoPorXp(g) {
-  const i = g.colunas?.indexOf('Experiência') ?? -1;
-  let ultimo = -1;
-  (g.linhas ?? []).forEach((l, k) => { if (i >= 0 && Number(String(l[i] ?? '').replace(/,/g, '')) > 0) ultimo = k; });
-  return ultimo + 2;
+/** Quantos níveis da tabela têm `Experiência` (a XP para sair do nível). */
+const niveisComXp = (g) => {
+  const i = g?.colunas?.indexOf('Experiência') ?? -1;
+  return i < 0 ? 0 : (g.linhas ?? []).filter((l) => Number(String(l[i] ?? '').replace(/,/g, '')) > 0).length;
+};
+const chaveDoRequisito = (g) => {
+  const r = g.colunas?.indexOf('RequerNível') ?? -1;
+  return (g.linhas ?? []).slice(0, 20).map((l) => (r >= 0 ? l[r] : '')).join(',');
+};
+let PELO_REQUISITO = null;
+/**
+ * A gema de onde vem a TABELA DE XP: a própria; sem ela (280 da coleção vieram sem a coluna preenchida — as transfiguradas "X of Y" e
+ * as Vaal), a da gema de BASE, como no PoE (Vaal_X → X; X_of_Y → X, pelo nome mais longo que existe); sem base, uma gema com o mesmo
+ * `RequerNível` nível a nível.
+ */
+export function gemaDaTabelaDeXp(g) {
+  if (!g || niveisComXp(g) >= 19) return g;
+  const partes = g.slug.replace(/^Vaal_/, '').split('_');
+  for (let n = partes.length; n >= 1; n--) {
+    const base = POR_SLUG.get(partes.slice(0, n).join('_'));
+    if (base && base !== g && niveisComXp(base) >= 19) return base;
+  }
+  if (!PELO_REQUISITO) {
+    PELO_REQUISITO = new Map();
+    for (const x of GEMAS) if (niveisComXp(x) >= 19 && !PELO_REQUISITO.has(chaveDoRequisito(x))) PELO_REQUISITO.set(chaveDoRequisito(x), x);
+  }
+  return PELO_REQUISITO.get(chaveDoRequisito(g)) ?? g;
 }
+
+/** O nível máximo por XP (o último com `Experiência` na tabela + 1 — o 20 das gemas comuns); acima, só com o add de nível das peças. */
+const maximoPorXp = (g) => niveisComXp(gemaDaTabelaDeXp(g)) + 1;
 
 /** O valor interpolado de dano ("334.9 a 502.2") sai inteiro, como no PoE; os pequenos (raio de 1.3 metro) ficam com a casa. */
 const inteiros = (t) => t.replace(/\d+\.\d+/g, (x) => (parseFloat(x) >= 10 ? String(Math.round(parseFloat(x))) : x));
@@ -301,7 +325,7 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
     ACTION_CATALOG.spells.push(entry);
     REGISTRO.set(g.slug, { itemId, acao: entry.id, arquetipo: h.arquetipo, formato, elemento, ataque: !!h.ataque, buff: entry.poeGema.buff, molde: entry.poeGema.molde, statusNoJogo: status, motivosNoJogo: motivos, nivelMax: prog.nivelMaximo(g), gema: g });
     porStatus[status] = (porStatus[status] ?? 0) + 1;
-    registrarGema?.({ itemId, entry, gema: g, categoria: entry.poeGema.buff ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
+    registrarGema?.({ itemId, entry, gema: g, tabelaDeXp: gemaDaTabelaDeXp(g), categoria: entry.poeGema.buff ? 'reforco' : 'ataque', castTime: entry.poeGema.ataque ? 0 : Math.round((h.stats.tempoUso ?? 0) * 1000), levelMinimo: g.nivelReq ?? 1 });
     if (entry.poeGema.buff) registrarReforco?.(entry.id, { dur: buffNoNivel(g.slug, 1).dur, tipo: `poe-${h.arquetipo}`, efeitos: [] });
   }
   INICIADO = { gemas: REGISTRO.size, porStatus };

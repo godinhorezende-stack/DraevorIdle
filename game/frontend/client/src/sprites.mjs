@@ -249,9 +249,26 @@ const esperaDe = (entry) =>
 /** Imagens desenhadas no próprio cliente (os ícones das gemas), pela chave — `image()` devolve sem buscar nada. */
 const imagensGeradas = new Map();
 
+/*
+ * Os ÍCONES do PoE (gemas e itens, 64×64, um arquivo cada — `/api/jogo/poe/icone/`) ficam fora do teto de folhas: a loja do Zuma abre
+ * ~600 gemas de uma vez, e com o teto (520) os primeiros ícones eram despejados antes de chegar — a lista saía sem figura. São pequenos
+ * (64×64): guardar todos custa pouco.
+ */
+const iconesDoPoe = new Map();
+const PREFIXO_DOS_ICONES_DO_POE = '/api/jogo/poe/icone/';
+
 export function image(src) {
   const gerada = imagensGeradas.get(src);
   if (gerada) return gerada;
+  if (src.startsWith(PREFIXO_DOS_ICONES_DO_POE)) {
+    let icone = iconesDoPoe.get(src);
+    if (!icone) {
+      icone = { image: null, ready: false, tocadaEm: 0, falhouEm: 0, tentativas: 0 };
+      iconesDoPoe.set(src, icone);
+      pedir(icone, src);
+    } else if (icone.falhouEm && performance.now() - icone.falhouEm >= esperaDe(icone)) pedir(icone, src);
+    return icone;
+  }
   const agora = performance.now();
   let entry = images.get(src);
   if (entry) {

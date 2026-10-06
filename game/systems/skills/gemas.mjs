@@ -214,13 +214,14 @@ for (const o of [O.encaixe, O.ligacao]) {
  * (`entry`, já no catálogo de ações), a definição e o item. A progressão é a do PoE (o dano/custo vêm do nível da gema), então `progressao`
  * fica vazia; os suportes do Draevor valem pelas tags.
  */
-export function registrarAtiva({ itemId, entry, gema, categoria, castTime, levelMinimo = 1 }) {
+export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categoria, castTime, levelMinimo = 1 }) {
   ACOES.set(entry.id, entry);
   const def = {
     itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: Tags.tagsDaAcao(entry), classeRecomendada: null,
     levelMinimo, levelDaMagia: levelMinimo, castTime, progressao: {}, fatorDeDano: 1, fatorDeCura: 1, fatorDeCusto: 1,
     poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
-    poeXp: tabelaDeXpDoPoe(gema),
+    // A XP por nível: a da gema ou, sem ela no arquivo, a da gema de base (`tabelaDeXp`, de `GemasPoe.gemaDaTabelaDeXp`).
+    poeXp: tabelaDeXpDoPoe(tabelaDeXp),
   };
   DEFS.set(itemId, def);
   ITEM_DA_ACAO.set(entry.id, itemId);

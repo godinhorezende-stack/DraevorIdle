@@ -143,3 +143,15 @@ test('a loja do Zuma vende TODAS as gemas do PoE, para qualquer level, no nível
   assert.equal(new Set(doPoe.map((l) => l.id)).size, 562);
   assert.ok(lista.some((l) => l.nome.includes('Ira')), 'a Ira (pede level 24) aparece para o level 1');
 });
+
+test('transfiguradas e Vaal sem XP no arquivo sobem pela tabela da gema de base (como no PoE)', { skip: SEM }, () => {
+  for (const [slug, base] of [['Explosive_Trap_of_Magnitude', 'Explosive_Trap'], ['Vaal_Cleave', 'Cleave'], ['Heavy_Strike_of_Trarthus', 'Heavy_Strike']]) {
+    assert.equal(G.gemaDaTabelaDeXp(G.doSlug(slug).gema).slug, base);
+    const def = GS.defDaGema(G.doSlug(slug).itemId);
+    assert.equal(GS.maximoDaGema(def), 20, slug);
+    assert.equal(GS.xpDaGema(def, 1), GS.xpDaGema(GS.defDaGema(G.doSlug(base).itemId), 1));
+    assert.doesNotMatch(G.fichaNoNivel(slug, 1).props[0][1], /Máx/);
+  }
+  const vinte = [...G.REGISTRO.values()].filter((r) => GS.maximoDaGema(GS.defDaGema(r.itemId)) === 20).length;
+  assert.ok(vinte >= 550, `${vinte} gemas sobem até o 20`);
+});
