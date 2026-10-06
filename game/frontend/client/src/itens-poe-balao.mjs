@@ -26,6 +26,17 @@ function no(tag, classe, ...filhos) {
  * `tem`: `{ nivel, str, dex, int }` do personagem — o requisito que ele não cumpre fica em vermelho.
  */
 const NOME_DO_REQUISITO = { str: 'For', dex: 'Des', int: 'Int' };
+/** A CATEGORIA da peça (a classe do PoE em português), a primeira linha das propriedades, como no PoE ("Espada de Duas Mãos"). */
+export const CATEGORIA = {
+  Body_Armours: 'Armadura de Corpo', Helmets: 'Elmo', Gloves: 'Luvas', Boots: 'Botas', Belts: 'Cinto', Shields: 'Escudo', Quivers: 'Aljava',
+  Rings: 'Anel', Amulets: 'Amuleto', Trinkets: 'Bugiganga', Jewels: 'Joia', Abyss_Jewels: 'Joia Abissal',
+  One_Hand_Swords: 'Espada de Uma Mão', Thrusting_One_Hand_Swords: 'Espada de Estocada de Uma Mão', Two_Hand_Swords: 'Espada de Duas Mãos',
+  One_Hand_Axes: 'Machado de Uma Mão', Two_Hand_Axes: 'Machado de Duas Mãos', One_Hand_Maces: 'Maça de Uma Mão', Two_Hand_Maces: 'Maça de Duas Mãos',
+  Sceptres: 'Cetro', Staves: 'Cajado', Warstaves: 'Cajado de Guerra', Claws: 'Garra', Daggers: 'Adaga', Rune_Daggers: 'Adaga Rúnica',
+  Bows: 'Arco', Wands: 'Varinha', Fishing_Rods: 'Vara de Pesca',
+  Life_Flasks: 'Frasco de Vida', Mana_Flasks: 'Frasco de Mana', Utility_Flasks: 'Frasco de Utilidade', Tinctures: 'Tintura',
+};
+const categoriaDe = (p) => CATEGORIA[p.classe ?? String(p.base ?? '').split('/')[0]] ?? null;
 /** O frasco com os mods já aplicados (o servidor manda `poe.frasco`): o que recupera, as cargas e o efeito. */
 function resumoDoFrasco(f) {
   const n = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
@@ -50,7 +61,7 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
   const props = Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', null, valorDoAtributo(k, v))));
   const caixa = no('div', `poe-balao r-${p.raridade}`,
     no('div', 'poe-topo', no('b', null, p.nome), nomeDaBase && nomeDaBase !== p.nome ? no('span', null, nomeDaBase) : null),
-    no('div', 'poe-props', no('div', 'poe-raridade', `${raridadeNome} · Item Level ${p.ilvl}`), props),
+    no('div', 'poe-props', categoriaDe(p) ? no('div', 'poe-categoria', categoriaDe(p)) : null, no('div', 'poe-raridade', `${raridadeNome} · Item Level ${p.ilvl}`), props),
     requisitos && (requisitos.nivel > 1 || requisitos.str || requisitos.dex || requisitos.int)
       ? no('div', 'poe-requisitos', 'Requer ', [requisitos.nivel > 1 ? ['nivel', `Nível ${requisitos.nivel}`] : null, ...['str', 'dex', 'int'].filter((k) => requisitos[k]).map((k) => [k, `${requisitos[k]} ${NOME_DO_REQUISITO[k]}`])]
           .filter(Boolean)

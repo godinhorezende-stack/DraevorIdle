@@ -317,3 +317,12 @@
 .equipment.poe .slot[data-slot="weapon"] canvas, .equipment.poe .slot[data-slot="shield"] canvas,
 .equipment.poe .slot[data-slot="weapon"] img, .equipment.poe .slot[data-slot="shield"] img { transform: scale(1.35); }
 .equipment.poe .slot[data-slot="body"] canvas, .equipment.poe .slot[data-slot="body"] img { transform: scale(1.15); }
+
+/* ---- O balão do PoE: a categoria e os requisitos SEMPRE centralizados (dono, 06/10) ---- */
+.poe-balao .poe-categoria { color: #c8c8c8; font-size: 12.5px; }
+.poe-balao .poe-requisitos { text-align: center; padding: 0 10px 6px; }
+/* ---- A borda da peça do PoE na cor da raridade do PoE (inventory.mjs `vestirRaridade`) ---- */
+.cell.poe-raridade, .slot.poe-raridade { border-color: color-mix(in srgb, var(--cor-poe) 70%, #000) !important; }
+.cell.poe-raridade.poe-r-normal, .slot.poe-raridade.poe-r-normal { border-color: color-mix(in srgb, var(--cor-poe) 40%, #000) !important; }
+.cell.poe-raridade.poe-r-unico::before, .slot.poe-raridade.poe-r-unico::before,
+.cell.poe-raridade.poe-r-raro::before, .slot.poe-raridade.poe-r-raro::before { box-shadow: 0 0 8px 0 var(--tier), inset 0 0 6px -2px var(--tier); }

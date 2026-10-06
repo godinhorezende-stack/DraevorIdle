@@ -1880,7 +1880,14 @@ export function atualizarDesgaste() {
  * entrar (a outra metade é o slot, que a silhueta já conta). Era a metade
  * invisível.
  */
-function vestirRaridade(cell, meta, daPeca = null) {
+function vestirRaridade(cell, meta, daPeca = null, poe = null) {
+  // A peça do PoE: a borda e a luz na cor da raridade do PoE (Normal, Mágico, Raro, Único — `itens-poe/regras.json`), como no PoE.
+  if (poe?.cor) {
+    cell.classList.add('raridade', 'poe-raridade', `poe-r-${poe.raridade ?? 'normal'}`);
+    cell.style.setProperty('--tier', poe.cor);
+    cell.style.setProperty('--cor-poe', poe.cor);
+    return;
+  }
   const classe = daPeca ? `tier-${TIER_DA_PECA[daPeca] ?? 'comum'}` : classeDaRaridade(meta);
   cell.classList.add(classe);
   // Toda peça ganha o anel da raridade, o comum também (cinza) — o dono: "sempre deixar nos itens anel na moldura".
@@ -1924,7 +1931,7 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
    */
   const vermelha = ehEssencia(entry) && ehVermelha(entry);
   // Essência: a raridade da peça de onde saiu; peça: a raridade do DROP (sistema de itens), senão a do catálogo.
-  vestirRaridade(cell, meta, ehEssencia(entry) ? (vermelha ? 'mítico' : entry.raridade ?? 'comum') : entry.raridade ?? null);
+  vestirRaridade(cell, meta, ehEssencia(entry) ? (vermelha ? 'mítico' : entry.raridade ?? 'comum') : entry.raridade ?? null, entry.poe ?? null);
   if (vermelha) cell.classList.add('essencia-vermelha');
   /*
    * ---- Qual PILHA esta célula é ----
@@ -2193,7 +2200,7 @@ export function renderInventory() {
 
     if (equipped) {
       cell.dataset.item = equipped.id;
-      vestirRaridade(cell, state.items[equipped.id], equipped.raridade ?? null);
+      vestirRaridade(cell, state.items[equipped.id], equipped.raridade ?? null, equipped.poe ?? null);
       // O slot vai junto: e' por ele que o balao acha os imbuements da peca.
       tipFor(cell, equipped.id, null, slot, equipped);
       cell.append(itemCanvas(equipped.id, 32, equipped.count));
