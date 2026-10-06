@@ -132,8 +132,36 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const eficacia = daGemaPoe ? (daGemaPoe.ataque ? 1 : GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe)) : 1;
   const doSuporteMin = (efeitoDaGema?.somadoMin ?? 0) * eficacia;
   const doSuporteMax = (efeitoDaGema?.somadoMax ?? 0) * eficacia;
-  const min = Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin + doSuporteMin));
-  const max = Math.max(min, Math.round(doNivel.max * fatorDaFicha + somadoMax + doSuporteMax));
+  /*
+   * A gema do PoE separa o dano por ELEMENTO (dono, 06/10: "Acerto Elemental do Espectro: fogo, gelo e raio"), como a Arena de Gemas: o
+   * ATAQUE é o físico da arma × a eficácia + o adicional da gema × a eficácia + o adicionado das peças e dos suportes (cada um no elemento
+   * dele), com a conversão de físico da gema e o "Não causa Dano não-Elemental"; a MAGIA é o dano de cada elemento dela + o adicionado a
+   * magias das peças (do mesmo elemento) e dos suportes (× a eficácia). Cada parte passa pelo "aumentado" e pela resistência do elemento
+   * dela no acerto (`acertar`), e cada uma sorteia a faixa dela. A faixa (`min`/`max`) é a soma das partes (o que o balão mostra).
+   */
+  let porElemento = null;
+  if (daGemaPoe) {
+    porElemento = {};
+    const somar = (el, [a, b], m = 1) => { if (!(a > 0 || b > 0)) return; const x = porElemento[el] ?? [0, 0]; porElemento[el] = [x[0] + a * m, x[1] + b * m]; };
+    const doSuporte = {};
+    for (const k of Object.keys(efeitoDaGema ?? {})) { const m = k.match(/^somadoMin:(\w+)$/); if (m) doSuporte[m[1]] = [efeitoDaGema[k], efeitoDaGema[`somadoMax:${m[1]}`] ?? efeitoDaGema[k]]; }
+    if (daGemaPoe.ataque) {
+      const extras = { ...(fichaBase.danoSomado ?? {}) };
+      for (const [el, [a, b]] of Object.entries(doSuporte)) extras[el] = [(extras[el]?.[0] ?? 0) + a, (extras[el]?.[1] ?? 0) + b];
+      for (const [el, v] of Object.entries(GemasPoe.partesDoAtaque(daGemaPoe.slug, nivelPoe, fichaBase.damage ?? { min: 1, max: 1 }, extras))) somar(el, v);
+    } else {
+      const daMagia = GemasPoe.partesDaMagia(daGemaPoe.slug, nivelPoe);
+      for (const [el, v] of Object.entries(daMagia)) somar(el, v);
+      for (const el of Object.keys(daMagia)) somar(el, fichaBase.danoSomadoMagia?.[el] ?? [0, 0]);
+      for (const [el, v] of Object.entries(doSuporte)) somar(el, v, eficacia);
+    }
+    if (!Object.keys(porElemento).length) porElemento = null;
+  }
+  const somaDe = (i) => Object.values(porElemento).reduce((t, v) => t + v[i], 0);
+  const min = porElemento ? Math.max(1, Math.round(somaDe(0))) : Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin + doSuporteMin));
+  const max = porElemento ? Math.max(min, Math.round(somaDe(1))) : Math.max(min, Math.round(doNivel.max * fatorDaFicha + somadoMax + doSuporteMax));
+  const mediaTotal = porElemento ? (somaDe(0) + somaDe(1)) / 2 : 0;
+  const partes = porElemento && mediaTotal > 0 ? Object.entries(porElemento).map(([el, [a, b]]) => ({ elemento: el, min: a, max: b, frac: (a + b) / 2 / mediaTotal })) : null;
   // Gemas do Atelier: "+X% dano de <magia>" e "+X% dano crítico de <magia>" (supremos).
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
@@ -162,7 +190,12 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const doElemento = (ficha.danoDoElemento?.[entry.element] ?? 0) - (daGemaPoe && entry.element === 'physical' && !tags.includes('melee') ? ficha.danoFisicoDaForca ?? 0 : 0);
   const afinidade = entry.poeGema ? 0 : Ficha.afinidadePara(ficha, tags).pct;
   const mult = (1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + doElemento + (daGema?.dano ?? 0) + treino + doReforco + afinidade) / 100) * sintonia;
-  return { min, max, daPericia, mult, fatorDaGema, ficha };
+  // O multiplicador de CADA elemento da gema do PoE: o mesmo `mult`, trocando o "aumentado" do elemento da skill pelo da parte.
+  const doElementoDe = (el) => (ficha.danoDoElemento?.[el] ?? 0) - (el === 'physical' && !tags.includes('melee') ? ficha.danoFisicoDaForca ?? 0 : 0);
+  if (partes) for (const p of partes) p.mult = mult + ((doElementoDe(p.elemento) - doElemento) / 100) * sintonia;
+  // "X% mais Dano por cada tipo de Afecção Elemental no Inimigo" (Acerto Elemental do Espectro).
+  const porAfeccao = daGemaPoe ? GemasPoe.extrasDoAtaque(daGemaPoe.slug, nivelPoe, efeitoDaGema?.qualidade ?? 0).porAfeccao : 0;
+  return { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao };
 }
 
 /** O dano que a skill causa agora, por acerto (sem crítico nem resistência): o que o balão mostra. */
@@ -1231,7 +1264,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
     }
     // A conta do dano, a MESMA do balão (`contaDoDano`): base pelo level + treino em % + gema + afixos.
-    const { min, max, daPericia, mult, fatorDaGema, ficha } = contaDoDano(estado, entry, efeitoDaGema);
+    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao } = contaDoDano(estado, entry, efeitoDaGema);
     let total = 0;
     const danos = [];
     /*
@@ -1247,8 +1280,12 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     let houveCritico = false;
     let fatorDoAtaque = 100; // 100% no ataque normal; o do 2º golpe do ataque duplo vem de `combate/limites.json`
     const acertar = (bicho, pct = 100, fonte = null) => {
-      const tipo = entry.element ?? 'physical';
-      const bruto = ((sortear(min, max) + daPericia) * mult * fatorDaGema * Reforcos.vulnerabilidade(bicho, tipo, agora) * pct * fatorDoAtaque) / 10000;
+      // O golpe da gema do PoE com MAIS DE UM elemento (ou de outro elemento que o da skill): cada parte com o "aumentado", a marca de
+      // vulnerável e a resistência do elemento dela; o golpe leva o elemento da maior parte (a cor, o registro, as mecânicas do mob).
+      const fator = (fatorDaGema * (1 + ((porAfeccao ?? 0) * GemasPoe.afeccoesElementaisEm(bicho, agora)) / 100) * pct * fatorDoAtaque) / 10000;
+      const pedacos = partes ? partes.map((p) => ({ elemento: p.elemento, dano: (p.min + Math.random() * (p.max - p.min) + daPericia * p.frac) * fator * p.mult * Reforcos.vulnerabilidade(bicho, p.elemento, agora) })) : null;
+      const tipo = pedacos ? pedacos.reduce((a, b) => (b.dano > a.dano ? b : a)).elemento : entry.element ?? 'physical';
+      const bruto = pedacos ? pedacos.reduce((t, p) => t + p.dano, 0) : (sortear(min, max) + daPericia) * fator * mult * Reforcos.vulnerabilidade(bicho, tipo, agora);
       // Gema de DANO CONTÍNUO (Ignite, Envenom, Inflict Wound...): o dano dela é o TOTAL de um efeito ao longo do tempo (`combate/dot.mjs`),
       // não um golpe — sem acerto, sem crítico, e a resistência passa em cada pulso.
       const tipoDoDot = entry.overTime ? Dot.tipoDaFonte(entry.overTime.type) : null;
@@ -1264,7 +1301,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         eventos.push({ t: 'block', uid: bicho.uid, x: bicho.x, y: bicho.y, color: '#999999', bloqueado: true });
         return;
       }
-      const base = resistido(hunt, bicho, tipo, bruto, ficha);
+      const base = pedacos ? Math.round(pedacos.reduce((t, p) => t + resistido(hunt, bicho, p.elemento, p.dano, ficha), 0)) : resistido(hunt, bicho, tipo, bruto, ficha);
       Reforcos.marcar(hunt, bicho, agora);
       const { dano, crit, onslaught, chance } = Ficha.rolarCritico(estado, base, bicho, eventos, ficha);
       if (crit) houveCritico = true;
@@ -1274,14 +1311,14 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         origem: 'gema', habilidade: entry.id, alvo: bicho.name, tipo, danoAntesDaResistencia: Math.round(bruto), resistenciaDoAlvo: resistenciaDe(hunt, bicho, tipo),
         penetracao: Limites.penetracaoDe(ficha.penetracao, tipo), resistenciaEfetiva: resistenciaEfetivaDe(hunt, bicho, tipo, ficha), danoAposResistencia: base,
         chanceCritica: chance, critico: crit, danoFinal: dano, vidaRestante: Math.max(0, bicho.hp),
-        detalhe: { min, max, daPericia, multiplicador: mult, fatorDaGema, porcentagemDoGolpe: pct, fatorDoAtaque, ataqueDuplo: fatorDoAtaque !== 100 },
+        detalhe: { min, max, daPericia, multiplicador: mult, fatorDaGema, porcentagemDoGolpe: pct, fatorDoAtaque, ataqueDuplo: fatorDoAtaque !== 100, ...(pedacos ? { porElemento: Object.fromEntries(pedacos.map((p) => [p.elemento, Math.round(p.dano)])) } : {}) },
       }));
       total += dano;
       danos.push({ bicho, dano });
       // As mecânicas do mob que reagem ao dano (Endurecido, Espelhado — `mobs/mecanicas.mjs`).
       Mecanicas.aoReceberDano(estado, hunt, personagem, bicho, dano, tipo, eventos);
       // `fonte`: de que efeito veio (explosão, perfuração, bifurcação, encadeamento, retorno, projétil extra).
-      eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: cor, ...(fonte ? { fonte } : {}) });
+      eventos.push({ t: 'dmg', uid: bicho.uid, x: bicho.x, y: bicho.y, v: dano, foe: true, crit, onslaught, spell: entry.name, alvo: bicho.name, color: pedacos ? COR_DO_ELEMENTO[tipo] ?? cor : cor, ...(fonte ? { fonte } : {}) });
       // Os estados das supports (Ignite, Freeze, Slow, Stun) no bicho atingido.
       const postosDaGema = Estados.aplicar(bicho, efeitoDaGema, dano, agora, Math.random, !!hunt.isBoss, bruto);
       for (const st of postosDaGema) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
@@ -1293,10 +1330,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
       if (ficha.afeccoes) {
         const tagsDoAcerto = Tags.tagsDaAcao(entry);
-        const ataque = tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
+        const ataque = entry.poeGema ? !!entry.poeGema.ataque : tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
         // A gema do PoE soma as chances dela (incendiar, congelar, eletrizar, envenenar, sangrar) no nível em que está.
         const afeccoes = entry.poeGema ? GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha.afeccoes;
-        for (const st of AfeccoesPoe.aoAcertar(bicho, [{ elemento: tipo, dano: bruto }], { afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+        for (const st of AfeccoesPoe.aoAcertar(bicho, pedacos ?? [{ elemento: tipo, dano: bruto }], { afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       }
     };
     /*

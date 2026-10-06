@@ -124,6 +124,62 @@ export function danoNoNivel(slug, nivel) {
   const d = Object.values(h?.stats?.dano ?? {});
   return { min: Math.round(d.reduce((t, [a]) => t + a, 0)), max: Math.round(d.reduce((t, [, b]) => t + b, 0)), elementos: Object.keys(h?.stats?.dano ?? {}).length };
 }
+/**
+ * O dano de um ATAQUE do PoE por ELEMENTO (dono, 06/10: "Acerto Elemental do Espectro — vai depender do elemento da arma?"), como o
+ * `montarPacote` da Arena de Gemas: o golpe FÍSICO da arma × a eficácia, + o dano ADICIONAL da gema ("8 a 14 de Dano de Fogo Adicional")
+ * × a eficácia, + o adicionado das peças/suportes (`extras`: `{ elemento: [min, max] }`); depois a CONVERSÃO de físico da gema ("Converte
+ * 50% do Dano Físico em Raio"; "em Fogo, Gelo ou Raio" sorteia) e "Não causa Dano não-Elemental" (o físico e o caos que sobram somem).
+ * Devolve `{ elemento: [min, max] }` (no jogo: physical, fire, ice, energy, chaos).
+ */
+const EL_DA_ARENA = { fisico: 'physical', fogo: 'fire', gelo: 'ice', raio: 'energy', caos: 'chaos' };
+export function partesDoAtaque(slug, nivel, arma = { min: 1, max: 1 }, extras = {}, rng = Math.random) {
+  const st = compilada(slug, nivel)?.stats ?? {};
+  const ef = st.efetividade ?? 1;
+  const p = {};
+  const somar = (el, [a, b], m = 1) => { const x = p[el] ?? [0, 0]; p[el] = [x[0] + a * m, x[1] + b * m]; };
+  somar('physical', [arma.min ?? 1, arma.max ?? 1], ef);
+  for (const [el, v] of Object.entries(st.adicional ?? {})) somar(EL_DA_ARENA[el] ?? 'physical', v, ef);
+  for (const [el, v] of Object.entries(extras)) if (v && (v[0] || v[1])) somar(el, v);
+  if (p.physical) {
+    const fis = p.physical;
+    let resta = 1;
+    for (const c of st.conversao ?? []) {
+      const pct = Math.min(resta, c.pct / 100);
+      somar(c.para === 'aleatorio' ? ['fire', 'ice', 'energy'][Math.floor(rng() * 3)] : EL_DA_ARENA[c.para] ?? 'physical', fis, pct);
+      resta -= pct;
+    }
+    p.physical = [fis[0] * resta, fis[1] * resta];
+  }
+  const ex = extrasDoAtaque(slug, nivel);
+  if (ex.soElemental) { delete p.physical; delete p.chaos; }
+  // "Apenas Causa Dano do Elemento escolhido" (Acerto Elemental): cada uso sorteia fogo, gelo ou raio e só ele fica.
+  if (ex.umElemento) { const els = ['fire', 'ice', 'energy'].filter((el) => p[el]); const fica = els[Math.floor(rng() * els.length)]; for (const el of Object.keys(p)) if (el !== fica) delete p[el]; }
+  for (const el of Object.keys(p)) if (!(p[el][1] > 0)) delete p[el];
+  return p;
+}
+/** O dano de uma MAGIA do PoE por elemento (`{ elemento: [min, max] }`): a Bola de Fogo é só fogo; o Golpe Cósmico, fogo + gelo... */
+export function partesDaMagia(slug, nivel) {
+  const p = {};
+  for (const [el, v] of Object.entries(compilada(slug, nivel)?.stats?.dano ?? {})) { const k = EL_DA_ARENA[el] ?? 'physical'; const x = p[k] ?? [0, 0]; p[k] = [x[0] + v[0], x[1] + v[1]]; }
+  return p;
+}
+/** As linhas de ataque que o jogo faz: "Não causa Dano não-Elemental" e "X% mais Dano por cada tipo de Afecção Elemental no Inimigo". */
+const LINHA_DE_ATAQUE = /^Não causa Dano não-Elemental$|^Apenas Causa Dano do Elemento escolhido|mais Dano por cada tipo de Afecção Elemental no Inimigo/i;
+export const ehLinhaDeAtaque = (l) => LINHA_DE_ATAQUE.test(l);
+export function extrasDoAtaque(slug, nivel = 1, qualidade = 0) {
+  const g = POR_SLUG.get(slug);
+  const linhas = g && COMPILADOR?.textosDoNivel ? COMPILADOR.textosDoNivel(g, Math.max(1, Math.min(nivel | 0 || 1, COMPILADOR.nivelMaximo?.(g) ?? 40))) : [];
+  const daQualidade = qualidade > 0 ? (g?.qualidade ?? []).map((t) => naFracao(t, Math.min(1, qualidade / 20))) : [];
+  let porAfeccao = 0;
+  for (const l of [...linhas, ...daQualidade]) { const m = String(l).match(/\+?(\d+(?:[.,]\d+)?) ?% mais Dano por cada tipo de Afecção Elemental no Inimigo/i); if (m) porAfeccao += Number(m[1].replace(',', '.')); }
+  return { soElemental: linhas.some((l) => /^Não causa Dano não-Elemental$/i.test(l)), umElemento: linhas.some((l) => /^Apenas Causa Dano do Elemento escolhido/i.test(l)), porAfeccao };
+}
+/** Os tipos de AFECÇÃO ELEMENTAL no bicho agora (incêndio, resfriamento, congelamento, eletrização). */
+export function afeccoesElementaisEm(bicho, agora) {
+  const e = bicho?.estados ?? {};
+  const vale = (s) => s && s.ate > agora;
+  return [(bicho?.dots ?? []).some((d) => d.tipo === 'queimadura' && d.ate > agora), vale(e.lento), vale(e.congelado), vale(e.chocado)].filter(Boolean).length;
+}
 /** A eficácia de um ATAQUE no nível (o "Dano de Ataque X% de base"): o golpe da arma × isto. */
 export const eficaciaNoNivel = (slug, nivel) => compilada(slug, nivel)?.stats?.efetividade ?? 1;
 /** As chances de afecção da arena → as do jogo (`itens-poe/afeccoes.mjs`): as que existem. */
@@ -202,7 +258,7 @@ function avaliarNoJogo(h, formato) {
     const motivos = h.arquetipo === 'totem'
       ? ['o totem fica parado e usa a skill da gema no bicho mais perto (os bônus do PoE ao totem, como a velocidade de posicionamento, não entram)']
       : ['o lacaio ataca do jeito do tipo dele (de longe ou de perto, o elemento, o golpe em área, o crítico, o sangramento) com a força de um monstro comum do nível dele, e o golem dá os bônus dele a você; o espectro ergue o último cadáver e usa as magias daquele monstro'];
-    for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeLacaio(l) && !ehLinhaDeAlvos(l)) motivos.push(`efeito não simulado: ${l}`);
+    for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeLacaio(l) && !ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l)) motivos.push(`efeito não simulado: ${l}`);
     return { status: 'parcial', motivos };
   }
   if (BUFF.has(h.arquetipo)) {
@@ -211,7 +267,6 @@ function avaliarNoJogo(h, formato) {
     if (!b.efeitos.length && !Object.keys(b.af).length) motivos.push('nenhum efeito do buff tem equivalente no jogo');
   } else {
     if (h.arquetipo === 'movimento') motivos.push('o deslocamento (salto, investida, teleporte) não existe: no jogo é o golpe na área');
-    if (Object.keys(st.dano ?? {}).length > 1) motivos.push(`o dano de ${Object.keys(st.dano).join(' + ')} sai num elemento só`);
     // Projéteis adicionais, perfuração, ricochetes, difusão e divisão do feixe: aplicados pelo nível da gema (`alvosNoNivel`).
     if (st.dot?.length) motivos.push('o dano degenerativo (ao longo do tempo) da gema não se aplica');
     if (st.estagios) motivos.push('os estágios de canalização não existem: no jogo é um uso por vez');
@@ -220,7 +275,7 @@ function avaliarNoJogo(h, formato) {
     if (st.cadaver) motivos.push('o uso de cadáveres não existe no jogo');
     if (!Object.keys(st.dano ?? {}).length && !h.ataque) motivos.push('sem dano direto: nenhum efeito no combate');
   }
-  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l)) motivos.push(`efeito não simulado: ${l}`);
+  for (const l of h.linhas?.naoImplementadas ?? []) if (!ehLinhaDeAlvos(l) && !ehLinhaDeAtaque(l)) motivos.push(`efeito não simulado: ${l}`);
   return { status: motivos.length ? 'parcial' : 'funciona', motivos };
 }
 
@@ -355,7 +410,7 @@ export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
   return {
     nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: maximoPorXp(g), nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
     props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n).map(inteiros), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
-    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: (h.linhas?.naoImplementadas ?? []).filter((l) => !ehLinhaDeAlvos(l) && !ehLinhaDeLacaio(l) && !ehLinhaDeAtaque(l)),
     ataque: !!h.ataque, tempos: temposNoNivel(slug, n),
   };
 }

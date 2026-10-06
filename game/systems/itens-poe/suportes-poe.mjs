@@ -81,6 +81,7 @@ const tempoDaVelocidade = (pct) => (1 / (1 + pct / 100) - 1) * 100;
  * As REGRAS: `[regex, (m, texto, ativa) → { chave: valor } | null]`. `null` = a linha fala de outra coisa (não vale para esta ativa) e
  * conta como feita. Linha sem regra nenhuma vai para `naoFeitas`.
  */
+const ELEMENTO_DO_TEXTO = { fogo: 'fire', gelo: 'ice', raio: 'energy', 'físico': 'physical', fisico: 'physical', caos: 'chaos' };
 const REGRAS = [
   // O custo (a propriedade "Multiplicador de Custo & Reserva: 120%").
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
@@ -108,7 +109,8 @@ const REGRAS = [
   [/não causam Dano Elemental/i, (m, t, a) => (['Fogo', 'Gelo', 'Raio'].some((x) => temTag(a, x)) ? { maisDanoPct: -100 } : null)],
   [/não causam Dano de Caos/i, (m, t, a) => (temTag(a, 'Caos') ? { maisDanoPct: -100 } : null)],
   // Dano ADICIONADO (× a eficácia da gema, no `contaDoDano`).
-  [new RegExp(`têm ${N} a ${N} de Dano de \\S+ adicional`, 'i'), (m) => ({ somadoMin: num(m[1]), somadoMax: num(m[2]) })],
+  // O elemento vai junto (`somadoMin:fire`...): o ataque do PoE separa o dano por elemento (`GemasPoe.partesDoAtaque`).
+  [new RegExp(`têm ${N} a ${N} de Dano de (\\S+) adicional`, 'i'), (m) => { const el = ELEMENTO_DO_TEXTO[m[3].toLowerCase()] ?? 'physical'; return { somadoMin: num(m[1]), somadoMax: num(m[2]), [`somadoMin:${el}`]: num(m[1]), [`somadoMax:${el}`]: num(m[2]) }; }],
   // Velocidade (o tempo de uso: conjuração ou ataque).
   [new RegExp(`têm ${N}% (mais|menos) Velocidade de (Ataque|Conjuração)( Corpo a Corpo)?`, 'i'), (m, t, a) => ((m[3] === 'Ataque' && !temTag(a, 'Ataque')) || (m[3] === 'Conjuração' && !temTag(a, 'Magia')) || (m[4] && !temTag(a, 'Corpo a Corpo')) ? null : { castTimePct: tempoDaVelocidade((m[2] === 'mais' ? 1 : -1) * num(m[1])) })],
   [new RegExp(`têm Velocidade de (Ataque|Conjuração) aumentada em ${N}%`, 'i'), (m, t, a) => (temTag(a, m[1] === 'Ataque' ? 'Ataque' : 'Magia') ? { castTimePct: tempoDaVelocidade(num(m[2])) } : null)],

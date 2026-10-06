@@ -337,3 +337,31 @@ test('a magia própria dos espectros: o espectro ergue o cadáver de um monstro 
   assert.ok(eventos.some((e) => e.t === 'shot' || e.t === 'area'), 'o espectro lança a magia do monstro');
   assert.ok(eventos.some((e) => e.t === 'dmg' && e.lacaio && e.foe), 'e a magia acerta');
 });
+
+test('o ataque do PoE separa o dano por elemento: a arma × eficácia + o adicional da gema, a conversão e "Não causa Dano não-Elemental"', { skip: SEM }, async () => {
+  const arma = { min: 10, max: 20 };
+  // Acerto Elemental do Espectro: fogo, gelo e raio da gema; o físico da arma some. Não depende do elemento da arma.
+  const esp = G.partesDoAtaque('Elemental_Hit_of_the_Spectrum', 10, arma);
+  assert.deepEqual(Object.keys(esp).sort(), ['energy', 'fire', 'ice']);
+  assert.deepEqual(esp.fire, [53, 98], '"(8 — 182) a (14 — 337) de Dano de Fogo Adicional" no nível 10');
+  assert.equal(G.extrasDoAtaque('Elemental_Hit_of_the_Spectrum', 10).porAfeccao, 10, '"10% mais Dano por cada tipo de Afecção Elemental"');
+  assert.equal(G.extrasDoAtaque('Elemental_Hit_of_the_Spectrum', 10, 20).porAfeccao, 15, 'a qualidade 20% soma +5%');
+  assert.equal(G.doSlug('Elemental_Hit_of_the_Spectrum').statusNoJogo, 'funciona');
+  // Acerto Elemental: um elemento sorteado por uso.
+  assert.equal(Object.keys(G.partesDoAtaque('Elemental_Hit', 10, arma)).length, 1);
+  // Flecha Ardente: 100% do físico vira fogo; Disparo de Gelo: parte física, parte gelo.
+  assert.deepEqual(Object.keys(G.partesDoAtaque('Burning_Arrow', 10, arma)), ['fire']);
+  assert.deepEqual(Object.keys(G.partesDoAtaque('Ice_Shot', 10, arma)).sort(), ['ice', 'physical']);
+  // As afecções elementais no bicho (para o "mais Dano por cada tipo").
+  assert.equal(G.afeccoesElementaisEm({ estados: { chocado: { ate: 50 }, lento: { ate: 50 } }, dots: [{ tipo: 'queimadura', ate: 50 }] }, 10), 3);
+  // No combate: o golpe leva as três partes, cada uma com a resistência dela.
+  const Reg = await import('../systems/combate/registro.mjs');
+  const antes = Reg.nivelDoRegistro();
+  Reg.definirNivel(2);
+  Reg.limparRegistro();
+  const Arena = await import('../admin/arena-efeitos.mjs');
+  Arena.combate({ skill: G.doSlug('Elemental_Hit_of_the_Spectrum').acao, nivel: 10, mobs: 3, segundos: 4 });
+  const golpe = Reg.ultimosGolpes().find((g) => g.habilidade === G.doSlug('Elemental_Hit_of_the_Spectrum').acao);
+  Reg.definirNivel(antes);
+  assert.deepEqual(Object.keys(golpe?.detalhe?.porElemento ?? {}).sort(), ['energy', 'fire', 'ice'], JSON.stringify(golpe));
+});
