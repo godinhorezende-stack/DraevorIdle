@@ -209,6 +209,34 @@ for (const o of [O.encaixe, O.ligacao]) {
   };
 }
 
+/**
+ * Registra uma gema ATIVA que não vem do catálogo do Draevor — as gemas do PoE (`itens-poe/gemas-poe.mjs`, só com ITENS_POE=1): a ação
+ * (`entry`, já no catálogo de ações), a definição e o item. A progressão é a do PoE (o dano/custo vêm do nível da gema), então `progressao`
+ * fica vazia; os suportes do Draevor valem pelas tags.
+ */
+export function registrarAtiva({ itemId, entry, gema, categoria, castTime, levelMinimo = 1 }) {
+  ACOES.set(entry.id, entry);
+  const def = {
+    itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: Tags.tagsDaAcao(entry), classeRecomendada: null,
+    levelMinimo, levelDaMagia: levelMinimo, castTime, progressao: {}, fatorDeDano: 1, fatorDeCura: 1, fatorDeCusto: 1,
+    poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
+  };
+  DEFS.set(itemId, def);
+  ITEM_DA_ACAO.set(entry.id, itemId);
+  ITEM_CATALOG[itemId] = {
+    id: itemId, name: `gema: ${gema.nome.toLowerCase()}`, nomeExibicao: `Gema: ${gema.nome}`, weight: 0.1, stackable: false, type: 'gema', rarity: 'comum',
+    hasSprite: true, spriteDe: CONFIG.sprites[elementoDaSprite(entry)] ?? CONFIG.sprites.outro,
+    // O ícone da gema do PoE (a coleção do dono): o cliente desenha ele no lugar da pedra.
+    poeGema: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null },
+    gemaDef: { tipo: 'ativa', categoria, acao: entry.id, nome: gema.nome, tags: def.tags, classeRecomendada: null, levelMinimo, castTime, progressao: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: CONFIG.niveis.maximo, poe: def.poe },
+    sell: 0,
+  };
+  return def;
+}
+/** Com as gemas do PoE ligadas, as ATIVAS do Draevor saem de cena (drop, loja, iniciais); os suportes seguem. */
+const soDoPoe = () => [...DEFS.values()].some((d) => d.poe);
+const valeNoModo = (def) => def.tipo === 'support' || !soDoPoe() || !!def.poe;
+
 export const defDaGema = (itemId) => DEFS.get(Number(itemId)) ?? null;
 export const ehGema = (id) => DEFS.has(Number(id));
 
@@ -731,7 +759,8 @@ export function darGemasIniciais(estado) {
   let n = 0;
   for (const acao of CONFIG.iniciais?.[estado.vocation] ?? []) {
     const itemId = ITEM_DA_ACAO.get(acao);
-    if (!itemId) continue;
+    // No PoE as gemas ativas do Draevor não são dadas (as do PoE caem e vêm das missões).
+    if (!itemId || !valeNoModo(DEFS.get(itemId))) continue;
     encaixarOndeCouber(estado, novaGema(itemId));
     n++;
   }
@@ -765,7 +794,8 @@ export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1, dific
   const chance = (d.chancePorAto[String(ato)] ?? d.chancePorAto['1'] ?? 0) * fatorDeChance;
   if (!(rng() < chance)) return null;
   const supports = [...DEFS.values()].filter((x) => x.tipo === 'support');
-  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && x.levelMinimo <= Math.max(1, levelDaFase));
+  // No PoE: só as gemas do PoE, e só as que o nível da área já dá (o nível exigido da gema até o da fase).
+  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && valeNoModo(x) && x.levelMinimo <= Math.max(1, levelDaFase));
   const lista = rng() < d.parteSupport && supports.length ? supports : ativas.length ? ativas : supports;
   const def = lista[Math.floor(rng() * lista.length)];
   const [qlo, qhi] = Q.noDrop;
@@ -790,7 +820,8 @@ export function catalogoDaLoja(estado) {
   const tenho = (id, r) => (estado.inventory ?? []).filter((p) => Number(p.id) === id && raridadeDaGema(p.raridade) === r).length;
   // Pela categoria (Ataque, Cura, Reforço, Suporte), e dentro dela pelo level da magia e o nome.
   const ordem = Object.keys(CATEGORIAS);
-  const defs = [...DEFS.values()].sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
+  // As do PoE: só as que o level do personagem já usa (são 562 — a lista inteira não cabe no balcão).
+  const defs = [...DEFS.values()].filter((d) => valeNoModo(d) && (!d.poe || d.levelMinimo <= (estado?.level ?? 1))).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
   const gemas = defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,

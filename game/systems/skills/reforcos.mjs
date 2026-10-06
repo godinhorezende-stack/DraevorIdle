@@ -32,15 +32,20 @@ export function fatorDaGema(efeitoDaGema) {
 /** O multiplicador de velocidade já escalado: a parte acima de 1 × o fator. */
 export const velocidadeEscalada = (mult, fator) => 1 + (mult - 1) * fator;
 
-/** Os reforços LIGADOS agora na caçada: `[{ id, def, fator }]`. */
+/** Os reforços LIGADOS agora na caçada: `[{ id, def, fator }]`. A gema do PoE guarda no buff os efeitos do nível dela (`efeitosPoe`). */
 export function ativos(hunt, agora = hunt?.clock ?? Date.now()) {
   const lista = [];
   for (const [id, b] of Object.entries(hunt?.buffs ?? {})) {
     if (!(b.ate > agora)) continue;
     const def = REFORCOS[id];
-    if (def) lista.push({ id, def, fator: b.fator ?? 1 });
+    if (def) lista.push({ id, def: b.efeitosPoe ? { ...def, efeitos: b.efeitosPoe } : def, fator: b.fator ?? 1 });
   }
   return lista;
+}
+
+/** Registra o reforço de uma gema de fora do catálogo (as do PoE — `itens-poe/gemas-poe.mjs`): `{ dur, tipo, efeitos }`. */
+export function registrar(id, def) {
+  REFORCOS[id] = def;
 }
 
 const bate = (e, tags) => !e.tags?.length || e.tags.some((t) => tags.includes(t));

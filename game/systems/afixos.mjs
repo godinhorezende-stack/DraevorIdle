@@ -29,6 +29,7 @@ import { gruposLigados } from '../engine/sockets-de-gema.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
+import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -144,6 +145,9 @@ export function soma(estado) {
   // + os frascos de Utilidade do PoE ativos (o efeito da base e o "durante o Efeito" — `itens-poe/frascos.mjs`).
   const frascos = FrascosPoe.adds(estado);
   if (frascos) for (const [k, v] of Object.entries(frascos)) total[k] = (total[k] ?? 0) + v;
+  // + os buffs das gemas do PoE ligados (aura, arauto, guarda: armadura, resistências, dano adicionado... — `itens-poe/gemas-poe.mjs`).
+  const gemas = GemasPoe.adds(estado);
+  if (gemas) for (const [k, v] of Object.entries(gemas)) total[k] = (total[k] ?? 0) + v;
   return total;
 }
 

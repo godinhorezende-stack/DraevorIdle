@@ -405,6 +405,11 @@ export const itemSprite = (id) => itemSprites[id];
  */
 export function emprestarDoCatalogo(catalogo) {
   for (const [id, meta] of Object.entries(catalogo ?? {})) {
+    // A GEMA DO PoE (só com ITENS_POE=1): o ícone dela, da coleção do dono (servido pela engine local).
+    if (meta?.poeGema?.icone) {
+      itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/mapas/_engine/itens-poe/gemas-arena/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
+      continue;
+    }
     // As GEMAS ganham o ícone próprio, desenhado (ver `icones-de-gema.mjs`) — no lugar da pedra emprestada.
     if (meta?.gemaDef) {
       const chave = `gema:${id}`;

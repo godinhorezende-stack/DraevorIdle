@@ -747,7 +747,7 @@ const COR_DA_GEMA = { vermelha: '#e0705c', verde: '#7fd36b', azul: '#6ba5e0', br
 const iconeDaGema = (g, tamanho = 40) => el('img', { src: `${BASE}gemas-arena/${g.icone}`, alt: '', width: tamanho, height: tamanho, loading: 'lazy', style: `width:${tamanho}px;height:${tamanho}px;object-fit:contain`, onerror: (e) => (e.target.style.visibility = 'hidden') });
 
 export function criarTelaDasGemasPoe({ raiz }) {
-  const T = { lista: null, resumo: null, sel: null, det: null, busca: '', status: '', cor: '', arq: '' };
+  const T = { lista: null, resumo: null, sel: null, det: null, busca: '', status: '', jogo: '', cor: '', arq: '' };
   async function desenhar(args = []) {
     if (!(await ligado(raiz, 'Gemas'))) return;
     const r = await api('gemas');
@@ -756,27 +756,29 @@ export function criarTelaDasGemasPoe({ raiz }) {
     T.resumo = r.resumo;
     if (args[0]) T.sel = decodeURIComponent(args[0]);
     const s = T.resumo.porStatus;
+    const j = T.resumo.porStatusJogo ?? {};
     raiz().replaceChildren(
-      cabecalho('Gemas', `As ${T.resumo.total} gemas ativas do PoE (poedb, coleção do dono). O status vem da verificação na Arena de Gemas — a gema usada de verdade contra bonecos: ✓ ${s.funciona ?? 0} funcionam, ◐ ${s.parcial ?? 0} parcialmente (alguma linha de efeito ainda não simulada — veja os motivos), ✗ ${s.nao ?? 0} não. "Ver na arena" abre a gema batendo nos mobs.`),
+      cabecalho('Gemas', `As ${T.resumo.total} gemas ativas do PoE (poedb, coleção do dono) — no modo PoE elas substituem as gemas do Draevor. Dois status: NA ARENA (a simulação do dono: ✓ ${s.funciona ?? 0}, ◐ ${s.parcial ?? 0}, ✗ ${s.nao ?? 0}) e NO JOGO (o combate do Draevor, com a forma e o efeito visual de uma magia parecida: ✓ ${j.funciona ?? 0}, ◐ ${j.parcial ?? 0}, ✗ ${j.nao ?? 0}). Cada gema diz o que falta. "Ver na arena" abre a gema batendo nos mobs.`),
       el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pgem-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pgem-painel' })));
     pintar();
     if (T.sel) await abrir(T.sel);
   }
   function pintar() {
     const t = T.busca.trim().toLowerCase();
-    const l = T.lista.filter((g) => (!T.status || g.status === T.status) && (!T.cor || g.cor === T.cor) && (!T.arq || g.arquetipoNome === T.arq)
+    const l = T.lista.filter((g) => (!T.status || g.status === T.status) && (!T.jogo || g.statusJogo === T.jogo) && (!T.cor || g.cor === T.cor) && (!T.arq || g.arquetipoNome === T.arq)
       && (!t || g.nome.toLowerCase().includes(t) || (g.en ?? '').toLowerCase().includes(t) || g.tags.some((x) => x.toLowerCase().includes(t))));
     const arquetipos = [...new Set(T.lista.map((g) => g.arquetipoNome).filter(Boolean))].sort();
     document.querySelector('#pgem-lista')?.replaceChildren(
       el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} gema(s)`),
         el('input', { type: 'search', placeholder: 'Buscar gema, nome em inglês ou tag…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
-        el('select', { onchange: (e) => { T.status = e.target.value; pintar(); } }, [['', 'Todos os status'], ...Object.entries(STATUS_DA_GEMA).map(([k, [, n]]) => [k, n])].map(([v, n]) => el('option', { value: v, selected: v === T.status }, n))),
+        el('select', { onchange: (e) => { T.status = e.target.value; pintar(); } }, [['', 'Arena: todos'], ...Object.entries(STATUS_DA_GEMA).map(([k, [, n]]) => [k, `Arena: ${n}`])].map(([v, n]) => el('option', { value: v, selected: v === T.status }, n))),
+        el('select', { onchange: (e) => { T.jogo = e.target.value; pintar(); } }, [['', 'Jogo: todos'], ...Object.entries(STATUS_DA_GEMA).map(([k, [, n]]) => [k, `Jogo: ${n}`])].map(([v, n]) => el('option', { value: v, selected: v === T.jogo }, n))),
         el('select', { onchange: (e) => { T.cor = e.target.value; pintar(); } }, [['', 'Todas as cores'], ['vermelha', 'Vermelha (For)'], ['verde', 'Verde (Des)'], ['azul', 'Azul (Int)'], ['branca', 'Branca']].map(([v, n]) => el('option', { value: v, selected: v === T.cor }, n))),
         el('select', { onchange: (e) => { T.arq = e.target.value; pintar(); } }, el('option', { value: '' }, 'Todos os tipos'), arquetipos.map((a) => el('option', { value: a, selected: a === T.arq }, a)))),
       el('div', { class: 'bib-grade' }, l.map((g) => el('div', { class: `eng-card${g.slug === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => abrir(g.slug) },
         el('div', { class: 'eng-card-arte' }, iconeDaGema(g, 48)),
         el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, g.en),
-          el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${STATUS_DA_GEMA[g.status]?.[0] ?? ''}` }, STATUS_DA_GEMA[g.status]?.[1] ?? g.status), g.arquetipoNome ? el('span', { class: 'selo' }, g.arquetipoNome) : null, el('span', { class: 'selo' }, `nv ${g.nivelReq}`)))))));
+          el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${STATUS_DA_GEMA[g.status]?.[0] ?? ''}`, title: 'na Arena de Gemas' }, `arena ${STATUS_DA_GEMA[g.status]?.[1] ?? g.status}`), g.statusJogo ? el('span', { class: `selo ${STATUS_DA_GEMA[g.statusJogo]?.[0] ?? ''}`, title: 'no combate do jogo' }, `jogo ${STATUS_DA_GEMA[g.statusJogo]?.[1] ?? g.statusJogo}`) : null, g.arquetipoNome ? el('span', { class: 'selo' }, g.arquetipoNome) : null, el('span', { class: 'selo' }, `nv ${g.nivelReq}`)))))));
   }
   async function abrir(slug) {
     T.sel = slug;
@@ -790,7 +792,11 @@ export function criarTelaDasGemasPoe({ raiz }) {
       el('div', { class: 'linha' }, iconeDaGema(g, 64), el('div', {}, el('h2', { class: 'bib-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, `${g.en} · ${g.slug}`))),
       el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${st[0]}` }, st[1]), v.arquetipoNome ? el('span', { class: 'selo' }, v.arquetipoNome) : null, v.elemento ? el('span', { class: 'selo' }, v.elemento) : null, el('span', { class: 'selo' }, `linhas simuladas ${v.aplicadas ?? 0}/${v.total ?? 0}`), ...(g.tags ?? []).map((t) => el('span', { class: 'selo' }, t))),
       el('div', { class: 'linha' }, el('a', { class: 'botao', href: `#poe-arena-gemas/${encodeURIComponent(g.slug)}` }, 'Ver na arena (batendo nos mobs) →')),
-      (v.motivos ?? []).length ? [el('h4', {}, 'O que ainda não funciona'), el('ul', {}, v.motivos.map((m) => el('li', {}, m)))] : el('p', { class: 'dica' }, 'Todas as linhas de efeito são simuladas.'),
+      g.noJogo ? [el('h4', {}, `No jogo: ${STATUS_DA_GEMA[g.noJogo.status]?.[1] ?? g.noJogo.status}`),
+        el('p', { class: 'dica' }, `Usa a forma e o efeito visual da magia "${g.noJogo.molde}" do Draevor${g.noJogo.formato ? ` (${g.noJogo.formato})` : ''}, elemento ${g.noJogo.elemento}; o dano, o custo, o tempo e a recarga vêm do nível da gema (a tabela do PoE). Os suportes do Draevor valem nela.`),
+        g.noJogo.motivos.length ? el('ul', {}, g.noJogo.motivos.map((m) => el('li', {}, m))) : el('p', { class: 'dica' }, 'Tudo da gema tem efeito no jogo.')] : null,
+      el('h4', {}, `Na arena: ${st[1]}`),
+      (v.motivos ?? []).length ? el('ul', {}, v.motivos.map((m) => el('li', {}, m))) : el('p', { class: 'dica' }, 'Todas as linhas de efeito são simuladas.'),
       ex.observado?.length || ex.efeitos?.length ? [el('h4', {}, 'Verificação (a gema usada de verdade)'), el('p', { class: 'dica' }, [...(ex.observado ?? []), ex.efeitos?.length ? `efeitos vistos: ${ex.efeitos.join(', ')}` : null].filter(Boolean).join(' · '))] : null,
       g.desc ? el('p', {}, g.desc) : null,
       el('h4', {}, 'Propriedades'), el('ul', {}, (g.props ?? []).map((p) => el('li', {}, p))),

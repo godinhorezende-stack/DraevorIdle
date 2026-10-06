@@ -11,6 +11,7 @@
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, normalize, extname } from 'node:path';
 import { runInNewContext } from 'node:vm';
+import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 
 const RAIZ = process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe';
 export const PASTA = join(RAIZ, 'poe-gemas-poedb');
@@ -34,12 +35,15 @@ export const disponivel = () => existsSync(join(DADOS, 'gemas.js'));
 /** A lista enxuta para a tela: nome, cor, nível, tags, arquétipo, elemento, status e motivos. */
 export function listar() {
   const { gemas, status } = carregar();
+  const jogo = GemasPoe.statusNoJogo();
   return gemas.map((g) => {
     const s = status[g.slug] ?? {};
     return {
       slug: g.slug, nome: g.nome, en: g.en, cor: g.cor, nivelReq: g.nivelReq, tags: g.tags ?? [], icone: g.icone ?? null,
       arquetipo: s.arquetipo ?? null, arquetipoNome: s.arquetipoNome ?? null, elemento: s.elemento ?? null,
       status: s.status ?? 'nao', aplicadas: s.aplicadas ?? 0, total: s.total ?? 0, motivos: s.motivos ?? [],
+      // O status NO JOGO (o que o combate do Draevor faz da gema — `itens-poe/gemas-poe.mjs`), separado do da arena.
+      ...(jogo[g.slug] ? { statusJogo: jogo[g.slug].status, motivosJogo: jogo[g.slug].motivos, moldeJogo: jogo[g.slug].molde } : {}),
     };
   });
 }
@@ -48,14 +52,15 @@ export function listar() {
 export function detalhe(slug) {
   const { gemas, status } = carregar();
   const g = gemas.find((x) => x.slug === slug);
-  return g ? { ...g, verificacao: status[slug] ?? null } : null;
+  const r = GemasPoe.doSlug(slug);
+  return g ? { ...g, verificacao: status[slug] ?? null, noJogo: r ? { status: r.statusNoJogo, motivos: r.motivosNoJogo, molde: r.molde, formato: r.formato, elemento: r.elemento, itemId: r.itemId, acao: r.acao } : null } : null;
 }
 
 /** O resumo por status, cor e arquétipo. */
 export function resumo() {
   const l = listar();
   const contar = (f) => l.reduce((o, g) => ((o[f(g)] = (o[f(g)] ?? 0) + 1), o), {});
-  return { total: l.length, porStatus: contar((g) => g.status), porCor: contar((g) => g.cor), porArquetipo: contar((g) => g.arquetipoNome ?? g.arquetipo ?? '?') };
+  return { total: l.length, porStatus: contar((g) => g.status), porStatusJogo: contar((g) => g.statusJogo ?? '—'), porCor: contar((g) => g.cor), porArquetipo: contar((g) => g.arquetipoNome ?? g.arquetipo ?? '?') };
 }
 
 const TIPOS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.json': 'application/json; charset=utf-8', '.md': 'text/plain; charset=utf-8' };

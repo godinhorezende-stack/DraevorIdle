@@ -11,6 +11,10 @@ import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as ModificadoresMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
+import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
+import * as Reforcos from '../systems/skills/reforcos.mjs';
+import * as Acoes from '../systems/acoes.mjs';
 import { ITEM_CATALOG as CATALOGO_DE_ITENS } from '../systems/dados.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
@@ -114,6 +118,9 @@ async function servirArquivo(req, res, caminho) {
   // Os modificadores de monstro do PoE (Mágico 1, Raro 2 a 4) e os ocultos de cada raridade.
   const modsDeMonstro = ModificadoresMonstroPoe.iniciar();
   if (modsDeMonstro.modificadores) console.log(`  modificadores de monstro do PoE: ${modsDeMonstro.modificadores}`);
+  // As GEMAS do PoE no jogo (substituem as ativas do Draevor; a coleção do dono, poe-gemas-poedb): a magia, o item e o buff de cada uma.
+  const gemasPoe = await GemasPoe.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GemasDeSkill.registrarAtiva(g)), registrarReforco: Reforcos.registrar });
+  if (gemasPoe.gemas) console.log(`  gemas do PoE: ${gemasPoe.gemas} (${Object.entries(gemasPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
   if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
 }
 
