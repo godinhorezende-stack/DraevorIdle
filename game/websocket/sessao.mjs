@@ -1771,6 +1771,8 @@ export class Sessao {
     Recompensas.marcosDaVocacao(estado);
     // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
     ItensDoJogo.converterPersonagem(estado);
+    // A Store Inbox e a Boss Pouch saíram: o que ainda estava nelas vai para as Chegadas do Depósito (uma vez; `Deposito.garantir`).
+    Deposito.garantir(estado);
     // O personagem novo ganha as gemas iniciais da classe (uma vez).
     GemasDeSkill.darGemasIniciais(estado);
     // A barra segue as gemas encaixadas (a migração v5 encaixa as magias que estavam nela).

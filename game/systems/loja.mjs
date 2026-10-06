@@ -8,21 +8,18 @@ import { CATALOGO, CHARACTER_TEMPLATE, STORE_REAL } from './dados.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 
 /*
- * ---- O que se compra vai para a STORE INBOX ----
+ * ---- O que se compra vai para as CHEGADAS ----
  *
- * Como no original: item comprado na Store não cai na mochila, cai na
- * Store Inbox (`character.storeInbox`, 2000 vagas, sem peso) — de lá o jogador
- * arrasta para a mochila (`send({t:'storeInbox', mover})`, ver `moverDaInbox`).
+ * Dono, 06/10: "tire boss pouch e store inbox, tudo comprado pela store vai para chegadas". O item comprado na Store não cai na
+ * mochila: vai para a caixa Chegadas do Depósito (sem teto, sem peso) — de lá o jogador tira para a mochila. (Antes era a Store
+ * Inbox; o que ainda estava nela foi para as Chegadas — `Deposito.garantir`.)
  */
 export const VAGAS_DA_INBOX = 2000;
 function porNaInbox(estado, id, count = 1, extras = {}) {
-  const inbox = (estado.storeInbox ??= []);
-  const empilha = ITEM_CATALOG[id]?.stackable && !Object.keys(extras).length;
-  const igual = empilha ? inbox.find((p) => p.id === id && !p.carga) : null;
-  if (igual) igual.count += count;
-  else if (inbox.length < VAGAS_DA_INBOX) inbox.push({ ...extras, id, count });
+  Deposito.porNasChegadas(estado, { ...extras, id, count });
 }
 import * as Boosts from './boosts.mjs';
+import * as Deposito from './deposito.mjs';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 
@@ -88,7 +85,7 @@ for (const k of PRATELEIRAS) for (const e of STORE_REAL[k] ?? []) {
 }
 
 const quantosTem = (estado, itemId) =>
-  [...(estado.inventory ?? []), ...(estado.pouch ?? []), ...(estado.storeInbox ?? [])].filter((p) => p.id === itemId).reduce((a, p) => a + (p.count ?? 1), 0);
+  [...(estado.inventory ?? []), ...(estado.pouch ?? []), ...(estado.storeInbox ?? []), ...((estado.deposito ?? []).find((c) => c.chegadas)?.itens ?? [])].filter((p) => p.id === itemId).reduce((a, p) => a + (p.count ?? 1), 0);
 
 /**
  * `send({t:'store'})` — a loja REAL inteira (`STORE_REAL`), com o que é deste
@@ -242,7 +239,7 @@ export function comprar(estado, { id }, conta = null) {
   aplicarEfeito(estado, id);
   if (id === 'venda-rapida') return { ok: true, notice: `Auto-venda a cada ${120 - 20 * Math.min(5, estado.compras['venda-rapida'])}s.` };
   if (entrada?.itemId && ['summon-upgrade', 'tier-up'].some((p) => id.startsWith(p))) {
-    return { ok: true, notice: `${entrada.amount ?? 1}x ${entrada.name} na Store Inbox.` };
+    return { ok: true, notice: `${entrada.amount ?? 1}x ${entrada.name} nas Chegadas do Depósito.` };
   }
   return { ok: true };
 }

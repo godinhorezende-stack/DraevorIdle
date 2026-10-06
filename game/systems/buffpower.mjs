@@ -108,6 +108,6 @@ export function fonteDeExp(estado) {
 /** `efeitos.buffPower`: as três linhas com o relógio e quantos itens a pessoa tem. */
 export function paraCliente(estado) {
   const quantos = (item) =>
-    [...(estado.inventory ?? []), ...(estado.storeInbox ?? [])].filter((p) => p.id === item).reduce((a, p) => a + (p.count ?? 1), 0);
+    [...(estado.inventory ?? []), ...(estado.storeInbox ?? []), ...((estado.deposito ?? []).find((c) => c.chegadas)?.itens ?? [])].filter((p) => p.id === item).reduce((a, p) => a + (p.count ?? 1), 0);
   return LINHAS.map((linha) => ({ ...linha, restante: restante(estado, linha.id), tem: quantos(linha.item) }));
 }

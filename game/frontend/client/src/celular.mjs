@@ -423,8 +423,6 @@ function ligarMenuDoItem() {
 const ABAS_DA_MOCHILA = [
   ['inventory', 'Inventário'],
   ['loot', 'Loot'],
-  ['bossPouch', 'Boss Pouch'],
-  ['storeInbox', 'Store Inbox'],
 ];
 const CHAVE_DA_ABA = 'draevor:aba-mochila';
 const abaGuardada = () => {

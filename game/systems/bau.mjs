@@ -12,7 +12,8 @@
 //   da venda da mochila para peça com estrela, tier ou imbuement.
 import { precoNpc } from './hunt/rentabilidade.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
-import { cabeNoPeso, guardarMoeda } from './inventario.mjs';
+import { cabeNoPeso, guardarMoeda, darPeca, temInstancia } from './inventario.mjs';
+import * as Bolsa from './bolsa.mjs';
 
 export const VAGAS_DA_BOSS_POUCH = 1000;
 const SACOLA_DO_BOSS = 2853; // o desenho da sacola no baú (um "bag")
@@ -39,33 +40,27 @@ export function novaSacola(estado, boss, itens) {
   return sacola;
 }
 
-/** Põe na Boss Pouch (empilhando). Devolve quantos couberam — vagas e capacidade. */
-function porNaBossPouch(estado, peca, count) {
-  const pouch = estado.bossPouch;
-  const cabe = (n) => cabeNoPeso(estado, peca.id, n);
-  let n = count;
-  while (n > 0 && !cabe(n)) n--;
-  if (!n) return 0;
-  if (ITEM_CATALOG[peca.id]?.stackable && !valiosa(peca)) {
-    const igual = pouch.find((p) => p.id === peca.id && !valiosa(p));
-    if (igual) {
-      igual.count += n;
-      return n;
-    }
-  }
-  if (pouch.length >= VAGAS_DA_BOSS_POUCH) return 0;
-  pouch.push({ ...peca, count: n });
-  return n;
-}
-
-/** Leva itens de uma sacola para a Boss Pouch; tira a sacola se esvaziou. */
+/*
+ * Leva itens de uma sacola para a MOCHILA (o que couber no peso) e o resto para a BOLSA DE LOOT (dono, 06/10: "para a mochila; se não
+ * tiver espaço vai para a bolsa de loot" — a Boss Pouch saiu); o que não couber em nenhuma fica na sacola. Tira a sacola se esvaziou.
+ */
 function levarDaSacola(estado, sacola, filtro = () => true) {
   let levou = 0;
   sacola.itens = sacola.itens.filter((p) => {
     if (!filtro(p)) return true;
-    const n = porNaBossPouch(estado, p, p.count ?? 1);
-    levou += n;
-    p.count = (p.count ?? 1) - n;
+    const total = p.count ?? 1;
+    let n = total;
+    while (n > 0 && !cabeNoPeso(estado, p.id, n)) n--;
+    if (n > 0) darPeca(estado, { ...p, count: n });
+    let resto = total - n;
+    // A bolsa de loot recebe a peça especial uma a uma (cada uma num quadrado) e o empilhável de uma vez.
+    while (resto > 0) {
+      const foi = Bolsa.porNaBolsa(estado, p.id, temInstancia(p) ? 1 : resto, p);
+      if (!foi) break;
+      resto -= foi;
+    }
+    levou += total - resto;
+    p.count = resto;
     return p.count > 0;
   });
   if (!sacola.itens.length) estado.rewards = estado.rewards.filter((s) => s !== sacola);
@@ -80,12 +75,12 @@ export function comandoDoBau(estado, { action, sacola, id, keep }) {
   if (action === 'take' || action === 'takeItem') {
     if (!alvo) return { ok: false, erro: 'Essa sacola não existe mais.' };
     const levou = levarDaSacola(estado, alvo, action === 'takeItem' ? (p) => p.id === Number(id) : undefined);
-    return levou ? { ok: true } : { ok: false, erro: 'Sem capacidade ou sem vaga na Boss Pouch.' };
+    return levou ? { ok: true } : { ok: false, erro: 'Sem espaço na mochila nem na bolsa de loot.' };
   }
   if (action === 'takeAll') {
     let levou = 0;
     for (const s of [...estado.rewards]) levou += levarDaSacola(estado, s);
-    return levou ? { ok: true } : { ok: false, erro: 'Sem capacidade ou sem vaga na Boss Pouch.' };
+    return levou ? { ok: true } : { ok: false, erro: 'Sem espaço na mochila nem na bolsa de loot.' };
   }
   if (action === 'clear' || action === 'clearAll') {
     const sacolas = action === 'clear' ? (alvo ? [alvo] : []) : [...estado.rewards];

@@ -118,12 +118,12 @@ test('depósito: guardar e tirar devolve a mesma gema', () => {
   igual(e.inventory[0], g);
 });
 
-test('baú de recompensas (Boss Pouch): a gema do boss chega com a raridade', () => {
+test('baú de recompensas: a gema do boss chega na mochila com a raridade (a Boss Pouch saiu)', () => {
   const e = novo();
   const g = gema('mítico');
   Bau.novaSacola(e, 'Boss', [structuredClone(g)]);
   assert.ok(Bau.comandoDoBau(e, { action: 'takeAll' }).ok);
-  igual(e.bossPouch[0], g);
+  igual(e.inventory.at(-1), g);
 });
 
 test('socket: encaixar e tirar preserva raridade, nível, XP e qualidade (e trocar devolve a antiga inteira)', () => {

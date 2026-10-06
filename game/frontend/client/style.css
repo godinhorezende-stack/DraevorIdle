@@ -27972,3 +27972,27 @@ html[data-perfil="deitado"] .inv-mochila .bag { max-height: none; overflow: visi
 html[data-perfil="retrato"] .window[data-window-id="inventory"] {
   top: calc(var(--seguro-topo) + var(--cel-status) + 8px) !important; height: auto !important;
 }
+/* A Boss Pouch e a Store Inbox saíram (dono, 06/10): as janelas delas não aparecem mais. */
+.window[data-window-id="bossPouch"], .window[data-window-id="storeInbox"] { display: none !important; }
+/* A linha da mochila é só dos botões (Limpar, Vender), à direita. */
+.inv-mochila .bagline { justify-content: flex-end; }
+/* ---- VIP e Bênçãos: duas fichas legíveis (hud.mjs `faixaDoVipEBencaos`) ---- */
+.inv-selos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 2px 0 4px; }
+.inv-selo {
+  display: flex; align-items: center; gap: 7px; min-width: 0; padding: 4px 8px; box-sizing: border-box;
+  border: 1px solid #3a3326; border-radius: 4px; background: linear-gradient(#17140f, #0d0b08); color: #8e8676; font: inherit; text-align: left;
+}
+.inv-selo img, .inv-selo .ui-icon { width: 22px; height: 22px; flex: none; object-fit: contain; image-rendering: pixelated; }
+.inv-selo.bencaos img { image-rendering: auto; }
+.inv-selo-texto { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.inv-selo-texto b { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: inherit; }
+.inv-selo-texto span { font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inv-selo.vip.on { border-color: #8a6d2a; color: #f0d27a; box-shadow: inset 0 0 8px #f0d27a22; }
+.inv-selo.bencaos { cursor: pointer; }
+.inv-selo.bencaos.on { border-color: #4a7a8a; color: #bfe6f0; }
+.inv-selo.bencaos.todas { border-color: #d8b56a; color: #f3e2b0; box-shadow: inset 0 0 8px #d8b56a33; }
+.inv-selo.bencaos:hover { border-color: #e8c66a; }
+.inv-selo:not(.on) img, .inv-selo:not(.on) .ui-icon { filter: grayscale(1) opacity(.6); }
+html[data-perfil="retrato"] .inv-selo { padding: 8px 10px; }
+html[data-perfil="retrato"] .inv-selo img, html[data-perfil="retrato"] .inv-selo .ui-icon { width: 28px; height: 28px; }
+html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-selo-texto span { font-size: 13px; }

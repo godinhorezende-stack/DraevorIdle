@@ -695,6 +695,38 @@ export function seloBlessings(character, catalog, aoClicar) {
   return selo;
 }
 
+/*
+ * ---- O VIP e as BÊNÇÃOS numa faixa legível (dono, 06/10: "melhorar a apresentação do vip e blessings") ----
+ * Eram dois ícones soltos (no arranjo do PoE, a 40% do tamanho) com tudo no balão. Agora são duas fichas lado a lado, com o estado
+ * escrito: "VIP · 12 dias" (ou "inativo") e "Bênçãos 5/7". O balão continua com o detalhe; as bênçãos seguem sendo o botão de compra.
+ */
+export function faixaDoVipEBencaos(character, catalog, aoClicarBencaos) {
+  const faixa = el('div', 'inv-selos');
+  const resta = character.premium ?? 0;
+  const vip = el('div', `inv-selo vip${resta > 0 ? ' on' : ''}`);
+  const dias = Math.floor(resta / 86400_000);
+  vip.append(icon(resta > 0 ? 'st-premium' : 'st-premium-off', 'VIP'));
+  const tv = el('div', 'inv-selo-texto');
+  tv.append(el('b', null, 'VIP'), el('span', null, resta <= 0 ? 'inativo' : dias >= 1 ? `${dias} dia${dias > 1 ? 's' : ''}` : `${Math.ceil(resta / 3600_000)}h`));
+  vip.append(tv);
+  tipPanel(vip, () => painelPremium(character));
+  const ativas = (character.blessings ?? []).length;
+  const total = catalog?.blessings?.length ?? 7;
+  const bencaos = el('button', `inv-selo bencaos${ativas ? ' on' : ''}${ativas >= total ? ' todas' : ''}`);
+  bencaos.type = 'button';
+  const arte = document.createElement('img');
+  arte.className = 'ui-icon';
+  arte.src = '/client/assets/icons/blessings.png';
+  arte.alt = '';
+  const tb = el('div', 'inv-selo-texto');
+  tb.append(el('b', null, 'Bênçãos'), el('span', null, `${ativas}/${total}`));
+  bencaos.append(arte, tb);
+  if (aoClicarBencaos) bencaos.onclick = aoClicarBencaos;
+  tipPanel(bencaos, () => painelBlessings(character, catalog));
+  faixa.append(vip, bencaos);
+  return faixa;
+}
+
 /**
  * Quanto falta de premium.
  *

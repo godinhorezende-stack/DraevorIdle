@@ -12065,14 +12065,14 @@ function storeFooter(store) {
    * store e ao lado de histórico". É onde chega o que se compra aqui, então a
    * porta mora na loja também. O número é quantas vagas estão ocupadas.
    */
-  const naInbox = (ctx.state.character?.storeInbox ?? []).length;
-  const inbox = comIcone(el('button', 'store-transferir store-inbox-botao'), itemCanvas(55368, 32), 'Store Inbox');
+  // Dono, 06/10: a Store Inbox saiu — o que se compra vai para as CHEGADAS do Depósito; o botão abre lá.
+  const naInbox = ((ctx.state.character?.deposito ?? []).find((c) => c.chegadas)?.itens ?? []).length;
+  const inbox = comIcone(el('button', 'store-transferir store-inbox-botao'), itemCanvas(3503, 32), 'Chegadas');
   if (naInbox) inbox.append(el('b', 'store-inbox-conta', String(naInbox)));
-  tipTexto(inbox, 'Tudo o que você compra na Store chega aqui. De lá as compras saem para a mochila.');
-  // A loja é um modal e tampa as janelas: fecha e abre a inbox por cima do jogo.
+  tipTexto(inbox, 'Tudo o que você compra na Store chega nas Chegadas do Depósito. De lá as compras saem para a mochila.');
   inbox.onclick = () => {
     ctx.closeModal?.();
-    ctx.abrirStoreInbox?.();
+    openLocker('chegadas');
   };
   esquerda.append(inbox);
   rodape.append(esquerda);
@@ -16838,7 +16838,7 @@ function bauDeRecompensa(body, voltar) {
      * servidor: as três portas do baú — esta, o "Levar tudo" de uma sacola e o
      * clique num item — desembocam lá desde o dia em que ela existe.
      */
-    tipTexto(tudo, 'Leva tudo o que está no baú para a Boss Pouch, respeitando a capacidade e as mil vagas dela.');
+    tipTexto(tudo, 'Leva tudo o que está no baú para a mochila (o que couber no peso); o resto vai para a bolsa de loot.');
     tudo.onclick = () => send({ t: 'reward', action: 'takeAll' });
     topo.append(tudo);
 
@@ -16881,7 +16881,7 @@ function bauDeRecompensa(body, voltar) {
     'O que cai de boss vem para aqui em vez da bolsa de loot — a bolsa é vendida sozinha a cada 30 segundos, e ' +
       'o drop de um boss não pode ir junto. Uma sacola por boss derrotado, e cada uma tem prazo: o que passar do ' +
       'prazo some. Clique numa sacola para ver o que tem dentro, num item para levar só ele, ou em Coletar para ' +
-      'levar a sacola inteira para a Boss Pouch.'
+      'levar a sacola inteira para a mochila (o que não couber vai para a bolsa de loot).'
   );
 
   if (!rewards.length) {
@@ -17162,7 +17162,7 @@ function renderLocker(body) {
               ? `${caixa.tipos} sacola${caixa.tipos > 1 ? 's' : ''}`
               : 'vazio'
             : caixa.tipos
-              ? `${caixa.tipos}/${caixa.teto}`
+              ? caixa.semTeto ? `${caixa.tipos}` : `${caixa.tipos}/${caixa.teto}`
               : 'vazia'
         )
       );
@@ -17308,7 +17308,7 @@ function renderLocker(body) {
    * da direita começava por três botões e só depois dizia de qual caixa eles
    * eram.
    */
-  body.append(el('h4', 'deposito-titulo', `${caixa.nome} — ${caixa.tipos}/${caixa.teto} tipos`));
+  body.append(el('h4', 'deposito-titulo', caixa.semTeto ? `${caixa.nome} — ${caixa.tipos} tipos (sem limite)` : `${caixa.nome} — ${caixa.tipos}/${caixa.teto} tipos`));
   body.append(linha);
   /*
    * As duas explicacoes subiram para o "?" do cabecalho (ver `ajudaNoCabecalho`).
@@ -17540,7 +17540,7 @@ function dentroDaSacola(sacola) {
   topo.append(el('span', 'sacola-prazo', `expira em ${quantoFalta(prazoDaSacola(sacola))}`));
   /* "e um botão coletar": o nome é o do dono, e ele diz melhor o que acontece. */
   const levar = el('button', 'primary', 'Coletar');
-  tipTexto(levar, 'Leva o que está nesta sacola para a Boss Pouch.');
+  tipTexto(levar, 'Leva o que está nesta sacola para a mochila; o que não couber vai para a bolsa de loot.');
   levar.onclick = () => send({ t: 'reward', action: 'take', sacola: sacola.indice });
   topo.append(levar);
   /*
@@ -17587,7 +17587,7 @@ function dentroDaSacola(sacola) {
       cela.classList.add('com-afixo');
       cela.append(seloDeEstrelas('selo-afixo', estrelasDaPeca));
     }
-    tipFor(cela, entry.id, `${entry.count > 1 ? `${entry.count} unidades — ` : ''}clique para levar só este para a Boss Pouch`, null, entry);
+    tipFor(cela, entry.id, `${entry.count > 1 ? `${entry.count} unidades — ` : ''}clique para levar só este para a mochila`, null, entry);
     cela.onclick = () => send({ t: 'reward', action: 'takeItem', sacola: sacola.indice, id: entry.id });
     grade.append(cela);
   }

@@ -6,7 +6,7 @@ import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
 // O desenho da bolsa numa definição só, com a reserva. Ver o módulo.
 import { ITEM_DA_BOSS_POUCH, ITEM_DA_BOSS_POUCH_RESERVA, ITEM_DA_STORE_INBOX } from '/packages/shared/src/boss-pouch.mjs';
 import { pedirQuantidade, controleDeQuantidade } from './social.mjs';
-import { seloPremium, seloBlessings } from './hud.mjs';
+import { faixaDoVipEBencaos } from './hud.mjs';
 import {
   windowBody, setVisible, toggleWindow, fecharAoClicarFora, atalhosDaCaixa, botaoNoCabecalho,
 } from './windows.mjs';
@@ -2192,12 +2192,10 @@ export function renderInventory() {
   for (const slot of slots) {
     // Os dois selos ocupam os buracos da grade: não são slots, não recebem
     // arrasto e não têm moldura de encaixe.
-    if (slot === '@premium') {
-      ondeVai(slot).append(seloPremium(character));
-      continue;
-    }
-    if (slot === '@blessings') {
-      ondeVai(slot).append(seloBlessings(character, state.catalog, () => ctx.abrirBlessings?.()));
+    // O VIP e as bênçãos viraram uma faixa própria, legível (`faixaDoVipEBencaos`, logo abaixo do corpo). Na grade do Draevor o
+    // buraco fica (as peças não andam de lugar); no PoE eles saem do rodapé.
+    if (slot === '@premium' || slot === '@blessings') {
+      if (!poe) equipment.append(el('div', 'inv-buraco'));
       continue;
     }
 
@@ -2488,6 +2486,8 @@ export function renderInventory() {
   } else body.append(lixeira);
   body.append(mochila);
   if (!mochila.firstChild) renderContainer();
+  // VIP e bênçãos entre o corpo e a mochila.
+  equipment.after(faixaDoVipEBencaos(character, state.catalog, () => ctx.abrirBlessings?.()));
 
 }
 
@@ -4109,7 +4109,8 @@ export function renderContainer() {
   const nomeDaPeca = el('span', null, meta?.name ?? 'mochila');
   const contador = el('b', null, `${character.inventory.length} / ${meta?.container ?? 20}`);
   titulo.append(nomeDaPeca, contador);
-  head.append(titulo);
+  // Dono, 06/10: "backpack 1/20 tirar também" — a grade já mostra as vagas (as livres desenhadas). Só os botões ficam na linha.
+  if (!corpoDaMochila()) head.append(titulo);
   const botoes = el('div', 'bag-botoes');
   head.append(botoes);
   /*
@@ -4319,6 +4320,9 @@ function celulaDaBossPouch(character, state) {
 function encherFaixaDaBolsa(faixa, character, state) {
   if (!faixa) return;
   faixa.innerHTML = '';
+  // Dono, 06/10: "tire boss pouch e store inbox" — o baú do boss vai para a mochila/bolsa de loot e a Store para as Chegadas.
+  faixa.hidden = true;
+  if (faixa.hidden) return;
   /*
    * As duas coladas, sem o nome e as vagas ao lado (pedido do dono, 15/09): quem
    * diz o que é cada uma é a etiqueta pequena DENTRO do desenho ("boss" /
