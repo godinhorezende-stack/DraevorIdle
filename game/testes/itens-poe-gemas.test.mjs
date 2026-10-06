@@ -69,3 +69,17 @@ test('no modo PoE as gemas ativas do Draevor saem do drop (os suportes ficam) e 
   }
   assert.ok(n > 50);
 });
+
+test('a ficha da gema para o balão: as propriedades e os modificadores com os números DO NÍVEL, e a qualidade', { skip: SEM }, () => {
+  const f = G.fichaNoNivel('Fireball', 8, 10);
+  assert.equal(f.nome, 'Bola de Fogo');
+  assert.deepEqual(f.props.find(([r]) => r === 'Nível'), ['Nível', '8']);
+  assert.deepEqual(f.props.find(([r]) => r === 'Custo'), ['Custo', `${G.custoNoNivel('Fireball', 8)} Mana`]);
+  assert.ok(f.mods.some((m) => /^Causa \d+ a \d+ de Dano de Fogo$/.test(m)), f.mods.join(' | '));
+  assert.ok(!f.mods.some((m) => m.includes('—')), 'sem faixa "(a — b)" no balão');
+  assert.equal(f.qualidade, 10);
+  assert.ok(f.modsDaQualidade.every((m) => !m.includes('—')));
+  assert.equal(f.status, 'funciona');
+  const max = G.fichaNoNivel('Fireball', 99);
+  assert.match(max.props.find(([r]) => r === 'Nível')[1], /Máx/);
+});

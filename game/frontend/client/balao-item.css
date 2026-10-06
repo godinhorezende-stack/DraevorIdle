@@ -380,3 +380,21 @@
   opacity: .88; box-shadow: inset -1px 0 0 #ffffffaa;
   transition: width .25s linear;
 }
+
+/* ---- A ficha da GEMA DO PoE (balão da barra e "Configurar ação") — as cores do balão de gema do PoE ---- */
+.tooltip.tip-gema-poe .tip-id b { color: #1ba29b; }
+:is(.tooltip, .action-resumo) .tip-poe-gema { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; text-align: center; padding: 4px 0; }
+:is(.tooltip, .action-resumo) .tip-poe-gema > * + * { border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 6px; }
+:is(.tooltip, .action-resumo) .tip-poe-tags { color: #7f7f7f; }
+:is(.tooltip, .action-resumo) .tip-poe-props div { color: #7f7f7f; }
+:is(.tooltip, .action-resumo) .tip-poe-props b { color: #e8e8e8; font-weight: 500; }
+:is(.tooltip, .action-resumo) .tip-poe-props .tip-poe-agora b { color: #c9a35a; }
+:is(.tooltip, .action-resumo) .tip-poe-desc { color: #1ba29b; font-style: italic; line-height: 1.35; }
+:is(.tooltip, .action-resumo) .tip-poe-mods div, :is(.tooltip, .action-resumo) .tip-poe-qualidade div { color: #8888ff; line-height: 1.35; }
+:is(.tooltip, .action-resumo) .tip-poe-mods div.fora { color: #66667a; text-decoration: line-through; }
+:is(.tooltip, .action-resumo) .tip-poe-qualidade .tip-poe-rotulo { color: #7f7f7f; }
+:is(.tooltip, .action-resumo) .tip-poe-status.ok { color: #6fcf7a; font-weight: 600; }
+:is(.tooltip, .action-resumo) .tip-poe-status.parcial { color: #e0b84a; font-weight: 600; }
+:is(.tooltip, .action-resumo) .tip-poe-status.nao { color: #e06a5a; font-weight: 600; }
+:is(.tooltip, .action-resumo) .tip-poe-nota { color: #9a9a9a; font-size: 11.5px; }
+.tooltip.tip-gema-poe { max-width: 360px; }

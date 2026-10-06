@@ -226,6 +226,39 @@ function idsDasGemas(slugs) {
   return dados.ids;
 }
 
+/** Troca as faixas "(a — b)" pelo valor na fração `t` (0..1) — a qualidade da gema vai de 0 a 20%. */
+const naFracao = (texto, t) => texto.replace(/\((-?\d+(?:\.\d+)?)\s*—\s*(-?\d+(?:\.\d+)?)\)/g, (_, a, b) => String(Math.round((parseFloat(a) + (parseFloat(b) - parseFloat(a)) * t) * 10) / 10));
+
+/**
+ * A FICHA da gema no nível (dono, 06/10: "mudar isso conforme a magia do PoE"): o que o balão do PoE mostra — tags, as propriedades
+ * (nível, custo, conjuração, crítico, eficácia, requisito), a descrição, os modificadores com os números DESTE nível e os da qualidade —
+ * e o que vale no jogo (status, motivos, as linhas que o combate ainda não faz).
+ */
+export function fichaNoNivel(slug, nivel = 1, qualidade = 0) {
+  const g = POR_SLUG.get(slug);
+  const r = REGISTRO.get(slug);
+  const h = compilada(slug, nivel);
+  if (!g || !h || !COMPILADOR?.textosDoNivel) return null;
+  const n = h.nivel;
+  const b = COMPILADOR.basicosDoNivel(g, n);
+  const props = [];
+  for (const p of COMPILADOR.propsDoNivel(g, n)) {
+    if (/^Nível:/.test(p)) props.push(['Nível', `${n}${n >= h.nivelMax ? ' (Máx)' : ''}`]);
+    else if (/^Custo:/.test(p)) props.push(['Custo', `${b.custo ?? 0} Mana`]);
+    else if (/^Eficácia do Dano Adicionado:/.test(p)) props.push(['Eficácia do Dano Adicionado', `${Math.round((b.efetividade ?? 1) * 100)}%`]);
+    else {
+      const i = p.indexOf(': ');
+      props.push(i > 0 ? [p.slice(0, i), p.slice(i + 2)] : [p, '']);
+    }
+  }
+  const q = Math.max(0, Math.min(20, qualidade || 0));
+  return {
+    nome: g.nome, en: g.en, cor: g.cor, tags: g.tags ?? [], nivel: n, nivelMax: h.nivelMax, nivelReq: b.nivelReq ?? g.nivelReq ?? 1,
+    props, desc: g.desc ?? '', mods: COMPILADOR.textosDoNivel(g, n), qualidade: q, modsDaQualidade: (g.qualidade ?? []).map((t) => naFracao(t, q / 20)),
+    status: r?.statusNoJogo ?? 'nao', motivos: r?.motivosNoJogo ?? [], naoFeitas: h.linhas?.naoImplementadas ?? [],
+  };
+}
+
 let INICIADO = null;
 /**
  * Liga as gemas do PoE no jogo (uma vez): lê a coleção, carrega o interpretador, registra a magia, o item e o buff de cada gema. Devolve
@@ -241,7 +274,7 @@ export async function iniciar({ registrarGema, registrarReforco } = {}) {
   for (const g of GEMAS) POR_SLUG.set(g.slug, g);
   const comp = await import(pathToFileURL(join(PASTA, 'src', 'gemas', 'compilador.mjs')).href);
   const prog = await import(pathToFileURL(join(PASTA, 'src', 'gemas', 'progressao.mjs')).href);
-  COMPILADOR = { compilarHabilidade: comp.compilarHabilidade, nivelMaximo: prog.nivelMaximo };
+  COMPILADOR = { compilarHabilidade: comp.compilarHabilidade, nivelMaximo: prog.nivelMaximo, textosDoNivel: prog.textosDoNivel, propsDoNivel: prog.propsDoNivel, basicosDoNivel: prog.basicosDoNivel };
   const ids = idsDasGemas(GEMAS.map((g) => g.slug));
   const porStatus = {};
   for (const g of GEMAS) {
