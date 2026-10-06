@@ -1,7 +1,8 @@
 // As rotas da engine para o sistema de itens no modelo do PoE (Fase 1): SÓ LEITURA, sob `/api/mapas/_engine/itens-poe/` (prefixo que o
 // nginx de produção tranca), e só com o sistema ligado (`ITENS_POE=1` + o catálogo importado — que não existe no container de produção).
 // Também serve as imagens da coleção local (`ref/<caminho>`), para a engine mostrar os ícones sem copiá-los para o repositório.
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { normalize, join, extname } from 'node:path';
 import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
@@ -12,7 +13,9 @@ import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
-import { ITEM_CATALOG } from '../systems/dados.mjs';
+import { ITEM_CATALOG, CATALOGO } from '../systems/dados.mjs';
+import * as MonstrosPoe from '../systems/itens-poe/monstros.mjs';
+const BESTIARY = CATALOGO.bestiary;
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
 const TIPOS = { '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.gif': 'image/gif' };
@@ -173,6 +176,23 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
  * nível (`GemasPoe.fichaNoNivel`: o balão da gema na loja e na mochila).
  */
 const PUBLICO = '/api/jogo/poe/';
+let DESENHOS_DOS_MOBS = null;
+/** `{ nome (pt): { look, colors, lookItem } }` para os 830 mobs da Arena de Gemas: o desenho pelo nome (`MonstrosPoe.desenhoPeloNome`); sem regra, um do bestiário pelo nome (sempre o mesmo). */
+function desenhosDosMobs() {
+  if (DESENHOS_DOS_MOBS) return DESENHOS_DOS_MOBS;
+  const arq = join(GemasPoe.PASTA, 'engine', 'dados', 'monstros.js');
+  const janela = {};
+  if (existsSync(arq)) runInNewContext(readFileSync(arq, 'utf8'), { window: janela });
+  const GENERICOS = ['troll', 'orc', 'goblin', 'skeleton', 'demon', 'dragon', 'giant-spider', 'wolf', 'bear', 'cyclops', 'minotaur', 'ghoul', 'scorpion', 'wasp', 'rotworm', 'dwarf'].filter((k) => BESTIARY[k]);
+  const hash = (t) => [...String(t)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  DESENHOS_DOS_MOBS = {};
+  for (const it of janela.MOBDATA?.items ?? []) {
+    const k = MonstrosPoe.desenhoPeloNome(it.n ?? '') ?? GENERICOS[hash(it.en ?? it.n) % Math.max(1, GENERICOS.length)];
+    const b = BESTIARY[k];
+    if (b) DESENHOS_DOS_MOBS[it.n] = { look: b.look, colors: b.colors ?? null, lookItem: b.lookItem ?? 0 };
+  }
+  return DESENHOS_DOS_MOBS;
+}
 const PASTA_DOS_SUPORTES = join(process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe', 'poe-suportes-poedb');
 const imagem = (res, pasta, relativo) => {
   const alvo = normalize(join(pasta, relativo));
@@ -190,6 +210,8 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, join(GemasPoe.PASTA, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/suporte/')) return nomes(rota.slice('icone/suporte/'.length)).some((n) => imagem(res, join(PASTA_DOS_SUPORTES, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
+  // O DESENHO de cada mob do bestiário do PoE (a Arena de Gemas com os sprites do jogo): pelo nome, a mesma regra da campanha.
+  if (rota === 'desenhos-dos-mobs') return json(res, 200, desenhosDosMobs()), true;
   if (rota === 'gema') {
     const q = url.searchParams;
     const f = fichaDaGema?.(q.get('slug') ?? '', Number(q.get('nivel')) || 1, Number(q.get('qualidade')) || 0);

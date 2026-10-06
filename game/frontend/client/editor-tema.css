@@ -1156,3 +1156,6 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .ae-grupo { border: 1px solid var(--eng-linha); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
 .ae-assets { margin: 0; padding-left: 16px; font-size: 12px; }
 .ae-erros .nao { color: #e06a5a; margin: 2px 0; }
+.ae-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; max-height: 330px; overflow-y: auto; }
+.ae-vitrine-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; font-size: 10px; line-height: 1.1; }
+.ae-vitrine-cv { width: 56px; height: 56px; background: #11181b; border-radius: 4px; }

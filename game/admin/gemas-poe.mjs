@@ -114,6 +114,11 @@ export function arquivo(relativo) {
   const tipo = TIPOS[extname(alvo).toLowerCase()];
   if (!tipo || !existsSync(alvo) || !statSync(alvo).isFile()) return null;
   let corpo = readFileSync(alvo);
-  if (alvo === join(PASTA, 'engine', 'index.html')) corpo = Buffer.from(String(corpo).replace('</body>', `${PONTE}\n</body>`));
+  if (alvo === join(PASTA, 'engine', 'index.html')) corpo = Buffer.from(String(corpo).replace('</body>', `${PONTE}\n<script type="module" src="/client/src/arena-gemas-sprites.mjs"></script>\n</body>`));
+  // Os SPRITES DO JOGO na arena (dono, 06/10): só na hora de servir, sem mexer nos arquivos dela — o mundo fica visível para o desenho do
+  // jogo (`window.__arenaMundo`) e o desenho dela chama o do jogo antes (que desenha tudo e devolve true quando a chave "Sprites do jogo"
+  // está ligada). Se o código da arena mudar e o trecho não casar, ela segue com o desenho próprio.
+  if (alvo === join(PASTA, 'engine', 'src', 'principal.mjs')) corpo = Buffer.from(String(corpo).replace('const mundo = criarMundo();', 'const mundo = criarMundo(); window.__arenaMundo = mundo;'));
+  if (alvo === join(PASTA, 'engine', 'src', 'render', 'render.mjs')) corpo = Buffer.from(String(corpo).replace('export function desenhar(r, m, ui) {', 'export function desenhar(r, m, ui) {\n  if (window.__desenharComSprites?.(r, m, ui)) return;'));
   return { tipo, corpo };
 }

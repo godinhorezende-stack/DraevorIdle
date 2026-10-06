@@ -48,7 +48,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     dados: null, draft: null, revisao: null, skill: null, filtro: '', suportes: new Set(), nivel: 10, alvos: 1, distancia: 4, direcao: 'l',
     // O MODO: 'combate' (uma caçada de verdade com vários bichos, o personagem lançando a skill) ou 'lancamento' (um lançamento, parado).
     modo: 'combate', mobs: 6, segundos: 12, carregando: false,
-    sim: null, cliente: null, errosDaPrevia: [], parte: 'projetil', vel: 1, pausado: false, t0: 0, tPausa: 0, loop: true, comparar: true, lados: null,
+    sim: null, cliente: null, errosDaPrevia: [], parte: 'projetil', vel: 1, pausado: false, t0: 0, tPausa: 0, loop: true, comparar: false, lados: null,
   };
   const raiz = el('section', { class: 'arena-efeitos' });
 
@@ -298,7 +298,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
       el('span', { class: 'ae-sep' }, 'Velocidade:'),
       VELOCIDADES.map((v) => el('button', { type: 'button', class: v === T.vel ? 'ativo' : '', onclick: () => mudarVelocidade(v) }, `${v}×`)),
       el('label', {}, el('input', { type: 'checkbox', checked: T.loop, onchange: (e) => { T.loop = e.target.checked; } }), ' repetir'),
-      el('label', {}, el('input', { type: 'checkbox', checked: T.comparar, onchange: (e) => { T.comparar = e.target.checked; pintarTelas(); } }), ' Original × Customizado'),
+      el('label', {}, el('input', { type: 'checkbox', checked: T.comparar, onchange: (e) => { T.comparar = e.target.checked; pintarTelas(); } }), ' comparar com o ANTES'),
       el('span', { class: 'ae-relogio' }, '0 ms'));
   }
   /** A LINHA DO TEMPO: cada instância visual do lado Customizado (barra = início e duração), o tempo da conjuração e os danos (●). */
@@ -342,7 +342,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     const v = parteEfetiva(p);
     const ov = T.draft.skills[T.skill]?.override?.[p] ?? {};
     const s = skillAtual();
-    const spriteTxt = (sp) => (!sp ? `padrão do combate${p === 'projetil' && s?.fabrica.projetil ? ` (projétil #${s.fabrica.projetil})` : (p === 'impacto' || p === 'area') && s?.fabrica.efeito ? ` (efeito #${s.fabrica.efeito})` : ''}` : sp.tipo === 'nenhum' ? 'nenhum (não desenha)' : sp.tipo === 'asset' ? `spritesheet "${T.draft.assets[sp.id]?.nome ?? sp.id}"` : `${sp.tipo === 'efeito' ? 'efeito' : 'projétil'} #${sp.id}`);
+    const spriteTxt = (sp) => (!sp ? `padrão do combate${p === 'projetil' && s?.fabrica.projetil ? ` (projétil #${s.fabrica.projetil})` : (p === 'impacto' || p === 'area') && s?.fabrica.efeito ? ` (efeito #${s.fabrica.efeito})` : ''}` : sp.tipo === 'nenhum' ? 'nenhum (não desenha)' : sp.tipo === 'asset' ? `spritesheet "${(T.cliente?.assets ?? T.draft.assets)[sp.id]?.nome ?? sp.id}"` : `${sp.tipo === 'efeito' ? 'efeito' : 'projétil'} #${sp.id}`);
     const campo = ([k, rot, tipo, min, max, passo, pad]) => {
       const marcado = k in ov;
       if (tipo === 'bool') return el('label', { class: `ae-campo ae-bool${marcado ? ' mudado' : ''}` }, el('input', { type: 'checkbox', checked: !!v[k], onchange: (e) => mudar(p, k, e.target.checked) }), ` ${rot}`);
@@ -365,7 +365,7 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
       el('div', { class: 'ae-campo' }, 'Sprite', el('b', {}, spriteTxt(v.sprite)),
         el('div', { class: 'ae-linha' },
           el('button', { type: 'button', onclick: async () => { const x = await escolherSprite({ secoes: ['efeitos', 'tiros'], tipo: p === 'projetil' ? 'tiros' : 'efeitos', titulo: 'Sprite do efeito' }); if (x) { mudar(p, 'sprite', { tipo: x.tipo === 'tiros' ? 'projetil' : 'efeito', id: Number(x.id) }); pintarEditor(); } } }, 'Escolher da biblioteca…'),
-          el('select', { onchange: (e) => { if (e.target.value) mudar(p, 'sprite', { tipo: 'asset', id: e.target.value }); pintarEditor(); } }, el('option', { value: '' }, 'Spritesheet…'), Object.entries(T.draft.assets).map(([id, a]) => el('option', { value: id, selected: v.sprite?.tipo === 'asset' && v.sprite.id === id }, `${a.nome} (${a.categoria})`))),
+          el('select', { onchange: (e) => { if (e.target.value) mudar(p, 'sprite', { tipo: 'asset', id: e.target.value }); pintarEditor(); } }, el('option', { value: '' }, 'Spritesheet…'), Object.entries(T.cliente?.assets ?? T.draft.assets).map(([id, a]) => el('option', { value: id, selected: v.sprite?.tipo === 'asset' && v.sprite.id === id }, `${a.nome} (${a.categoria})${a.fabrica ? ' · fábrica' : ''}`))),
           el('button', { type: 'button', onclick: () => { mudar(p, 'sprite', { tipo: 'nenhum' }); pintarEditor(); } }, 'Nenhum'),
           'sprite' in ov ? el('button', { type: 'button', onclick: () => { mudar(p, 'sprite', undefined); pintarEditor(); } }, '↺ padrão') : null)),
       [...COMUNS, ...(DA_PARTE[p] ?? [])].map(campo),
@@ -429,8 +429,31 @@ export function arenaDeEfeitos({ slugInicial = null } = {}) {
     };
     const num = (k, rot, min, max) => el('label', { class: 'ae-campo' }, rot, el('input', { type: 'number', min, max, value: f[k], onchange: (e) => { f[k] = Number(e.target.value); t0 = performance.now(); } }));
     const bool = (k, rot) => el('label', { class: 'ae-campo ae-bool' }, el('input', { type: 'checkbox', onchange: (e) => { f[k] = e.target.checked; } }), ` ${rot}`);
-    c.replaceChildren(el('details', { class: 'ae-bloco' }, el('summary', {}, `Biblioteca de spritesheets (${Object.keys(T.draft.assets).length})`),
-      el('ul', { class: 'ae-assets' }, Object.entries(T.draft.assets).map(([id, a]) => el('li', {}, `${a.nome} · ${a.categoria} · ${a.colunas}×${a.linhas} · ${a.fps} fps`, el('small', {}, ` (${id})`)))),
+    // Todos os sprites (os de fábrica, desenhados por código, e os enviados), cada um ANIMADO; clicar aplica na parte em edição.
+    const todos = Object.entries(T.cliente?.assets ?? T.draft.assets);
+    const vitrine = el('div', { class: 'ae-vitrine' }, todos.map(([id, a]) => {
+      const cv = el('canvas', { width: 64, height: 64, class: 'ae-vitrine-cv', 'data-asset': id });
+      return el('button', { type: 'button', class: 'ae-vitrine-item', title: `${a.nome} · ${a.categoria} · ${a.colunas}×${a.linhas} · ${a.fps} fps${a.fabrica ? ' (fábrica)' : ''} — clique para usar em "${T.dados.nomeDasPartes[T.parte]}"`, onclick: () => { mudar(T.parte, 'sprite', { tipo: 'asset', id }); pintarEditor(); } }, cv, el('small', {}, a.nome));
+    }));
+    const t1 = performance.now();
+    const animarVitrine = () => {
+      if (!vitrine.isConnected) return;
+      for (const cv of vitrine.querySelectorAll('canvas')) {
+        const a = (T.cliente?.assets ?? {})[cv.dataset.asset];
+        if (!a) continue;
+        const ctx = cv.getContext('2d');
+        ctx.clearRect(0, 0, 64, 64);
+        const d = duracaoDoAsset(a);
+        const esc = 0.62; // cabe o maior quadro (96 px) no quadrinho de 64
+        ctx.save(); ctx.scale(esc, esc);
+        desenharQuadroDeAsset(ctx, a, Math.min(0.999, ((performance.now() - t1) % (d + 250)) / d), 32 / esc, 32 / esc);
+        ctx.restore();
+      }
+      requestAnimationFrame(animarVitrine);
+    };
+    requestAnimationFrame(animarVitrine);
+    c.replaceChildren(el('details', { class: 'ae-bloco', open: true }, el('summary', {}, `Biblioteca de sprites (${todos.length}) — clique num para usar na parte em edição`),
+      vitrine,
       el('h5', {}, 'Enviar um spritesheet (PNG)'),
       el('input', { type: 'file', accept: 'image/png', onchange: (e) => { const arq = e.target.files?.[0]; if (!arq) return; const r = new FileReader(); r.onload = () => { f.png = r.result; f.url = r.result; t0 = performance.now(); if (!f.id) { f.id = arq.name.replace(/\.png$/i, '').replace(/[^\w-]+/g, '-').slice(0, 60); f.nome = f.id; pintarCampos(); } }; r.readAsDataURL(arq); } }),
       el('div', { class: 'ae-campos-asset' }), tela,

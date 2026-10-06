@@ -20,6 +20,11 @@ export const ARQUIVO = new URL('../gamedata/overrides/efeitos.json', import.meta
 export const PASTA_DOS_ASSETS = new URL('../gamedata/overrides/efeitos-assets/', import.meta.url).pathname;
 export const URL_DOS_ASSETS = '/gamedata/overrides/efeitos-assets/';
 
+/** Os SPRITES DE FÁBRICA (tools/gerar-sprites-de-efeitos.mjs): desenhados por código, por elemento — na biblioteca e nos estilos. */
+const ARQ_DE_FABRICA = new URL('../gamedata/efeitos-fabrica/assets.json', import.meta.url).pathname;
+export const ASSETS_DE_FABRICA = existsSync(ARQ_DE_FABRICA) ? JSON.parse(readFileSync(ARQ_DE_FABRICA, 'utf8')).assets ?? {} : {};
+const URL_DE_FABRICA = '/gamedata/efeitos-fabrica/';
+
 export const PARTES = ['lancamento', 'projetil', 'impacto', 'area', 'alvo'];
 export const NOME_DA_PARTE = { lancamento: 'Lançamento (no personagem)', projetil: 'Projétil', impacto: 'Impacto (no alvo)', area: 'Área (no chão)', alvo: 'No alvo atingido' };
 export const EVENTO_DA_PARTE = { lancamento: 'SKILL_CAST', projetil: 'PROJECTILE_CREATED', impacto: 'PROJECTILE_HIT', area: 'AREA_CREATED', alvo: 'DAMAGE_APPLIED' };
@@ -112,7 +117,10 @@ export function visualDaSkill(skill, dados = ler()) {
 
 /** O que o CLIENTE recebe (o jogo e a arena): os assets com a URL, os presets (com os de fábrica) e o visual RESOLVIDO de cada skill. */
 export function paraOCliente(dados = ler()) {
-  const assets = Object.fromEntries(Object.entries(dados.assets ?? {}).map(([id, a]) => [id, { ...a, url: `${URL_DOS_ASSETS}${encodeURIComponent(a.arquivo)}` }]));
+  const assets = {
+    ...Object.fromEntries(Object.entries(ASSETS_DE_FABRICA).map(([id, a]) => [id, { ...a, url: `${URL_DE_FABRICA}${encodeURIComponent(a.arquivo)}` }])),
+    ...Object.fromEntries(Object.entries(dados.assets ?? {}).map(([id, a]) => [id, { ...a, url: `${URL_DOS_ASSETS}${encodeURIComponent(a.arquivo)}` }])),
+  };
   const skills = {};
   // As configuradas e as gemas do PoE (todas têm o estilo automático).
   const ids = new Set([...Object.keys(dados.skills ?? {}), ...[...GemasPoe.REGISTRO.values()].map((r) => r.acao)]);
@@ -175,7 +183,7 @@ export function validar(ov, { skillsExistentes = null } = {}) {
   for (const k of Object.keys(ov)) if (!['assets', 'presets', 'skills', '_nota'].includes(k)) erros.push(`O campo "${k}" não existe (permitidos: assets, presets, skills).`);
   const assets = {};
   for (const [id, a] of Object.entries(ov.assets ?? {})) {
-    if (!/^[\w-]{1,60}$/.test(id)) { erros.push(`asset "${id}": id só com letras, números, _ e -.`); continue; }
+    if (!/^[\w-]{1,60}$/.test(id) || id.startsWith('fabrica-')) { erros.push(`asset "${id}": id só com letras, números, _ e - (e sem começar por "fabrica-": esses são os de fábrica).`); continue; }
     if (!ehObjeto(a) || !a.arquivo || !existsSync(join(PASTA_DOS_ASSETS, a.arquivo))) { erros.push(`asset "${id}": o arquivo ${a?.arquivo ?? '(sem nome)'} não existe em gamedata/overrides/efeitos-assets.`); continue; }
     const n = (v, min, max, pad) => Math.min(max, Math.max(min, Math.round(Number(v ?? pad)) || pad));
     const colunas = n(a.colunas, 1, 64, 1);
@@ -186,12 +194,13 @@ export function validar(ov, { skillsExistentes = null } = {}) {
       loop: !!a.loop, pingpong: !!a.pingpong, reverso: !!a.reverso,
     };
   }
+  const todosOsAssets = { ...ASSETS_DE_FABRICA, ...assets };
   const limparVisual = (onde, v) => {
     const saida = {};
     if (!ehObjeto(v)) { erros.push(`${onde}: o visual precisa ser um objeto.`); return saida; }
     for (const [p, parte] of Object.entries(v)) {
       if (!PARTES.includes(p)) { erros.push(`${onde}: a parte "${p}" não existe (${PARTES.join(', ')}).`); continue; }
-      const r = limparParte(`${onde}.${p}`, parte, assets);
+      const r = limparParte(`${onde}.${p}`, parte, todosOsAssets);
       erros.push(...r.erros);
       if (r.parte) saida[p] = r.parte;
     }

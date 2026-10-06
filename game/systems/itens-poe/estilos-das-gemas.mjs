@@ -20,6 +20,9 @@ const E = {
   runaVerde: 272, explosaoVerde: 280, garrasBrancas: 282,
 };
 const ef = (id, extra = {}) => ({ sprite: { tipo: 'efeito', id }, ...extra });
+/** Um sprite de FÁBRICA do Draevor (gamedata/efeitos-fabrica — desenhado por código, por elemento). */
+const fx = (id, extra = {}) => ({ sprite: { tipo: 'asset', id: `fabrica-${id}` }, ...extra });
+const EL_PT = { fire: 'fogo', ice: 'gelo', energy: 'raio', chaos: 'caos', physical: 'fisico', holy: 'sagrado' };
 const pj = (id, extra = {}) => ({ sprite: { tipo: 'projetil', id }, ...extra });
 
 /** Por ELEMENTO (o do jogo: fire, ice, energy, chaos, physical, holy): o projétil, o acerto, a área e o redemoinho (auras). */
@@ -38,23 +41,23 @@ const DO_ELEMENTO = {
  */
 const REGRAS = [
   [/^vaal /i, null], // a Vaal usa o estilo da base (tratada em `estiloDaGema`)
-  [/purif|holy|divine|smite|consecrat|penance|sacred|righteous|absolution|sanctify|hallow/i, () => ({ motivo: 'sagrado', visual: { projetil: pj(P.sagrado), impacto: ef(E.sagrado), area: ef(E.cruzDourada) } })],
+  [/purif|holy|divine|smite|consecrat|penance|sacred|righteous|absolution|sanctify|hallow/i, () => ({ motivo: 'sagrado', visual: { projetil: fx('esfera-sagrado'), impacto: fx('cruz-sagrada', { noImpacto: true }), area: ef(E.cruzDourada) } })],
   [/blade vortex|bladefall|blade blast|blade trap|ethereal knives|cyclone|bladestorm|whirling/i, () => ({ motivo: 'lâminas', visual: { projetil: pj(P.faca), area: ef(E.corteAzul), impacto: ef(E.corteAzul) } })],
   [/fireball/i, () => ({ motivo: 'bola de fogo', visual: { projetil: pj(P.bolaDeFogo), impacto: ef(E.chamas, { noImpacto: true }), area: ef(E.explosaoDeFogo, { noImpacto: true }) } })],
   [/magma|meteor|volcanic|fissure|firestorm|armageddon/i, () => ({ motivo: 'magma/meteoro', visual: { projetil: pj(P.bolaDeFogo, { escala: 1.25 }), impacto: ef(E.explosaoDeFogo), area: ef(E.chamas) } })],
   [/flameblast|incinerate|scorching|flamethrower|searing|cremation|blazing|fire trap|flame wall|wave of conviction/i, () => ({ motivo: 'chamas', visual: { area: ef(E.explosaoDeFogo), impacto: ef(E.chamas) } })],
-  [/frostbolt|ice spear|freezing pulse|frost blades|ice shot|frost(?:blink)? ?bolt/i, () => ({ motivo: 'estilhaço de gelo', visual: { projetil: pj(P.gelo, { orientar: false }), impacto: ef(E.estilhacoDeGelo, { noImpacto: true }) } })],
+  [/frostbolt|ice spear|freezing pulse|frost blades|ice shot|frost(?:blink)? ?bolt/i, () => ({ motivo: 'estilhaço de gelo', visual: { projetil: pj(P.gelo, { orientar: false }), impacto: fx('estilhaco-de-gelo', { noImpacto: true }) } })],
   [/glacial cascade|ice crash|glacial hammer|ice trap|cold snap/i, () => ({ motivo: 'cristais de gelo', visual: { area: ef(E.cristaisDeGelo), impacto: ef(E.cristaisDeGelo) } })],
   [/vortex|arctic breath|winter orb|frost bomb|creeping frost|frostblink|hydrosphere/i, () => ({ motivo: 'redemoinho de gelo', visual: { area: ef(E.tornadoDeGelo), impacto: ef(E.explosaoDeGelo), projetil: pj(P.geloPequeno) } })],
   [/ice nova|glacial|frost/i, () => ({ motivo: 'gelo', visual: { area: ef(E.areaDeGelo), impacto: ef(E.estilhacoDeGelo) } })],
   [/\barc\b|lightning tendrils|crackling lance|shock nova|static strike|lightning strike|storm burst|galvanic|lightning conduit|stormbind|storm rain/i, () => ({ motivo: 'relâmpago', visual: { projetil: pj(P.bolaDeEnergia), impacto: ef(E.raioAzul), area: ef(E.raioAzul) } })],
-  [/spark|ball lightning|orb of storms|storm call|storm brand|lightning warp|stormblast|storm/i, () => ({ motivo: 'esfera de energia', visual: { projetil: pj(P.bolaDeEnergia), impacto: ef(E.energia), area: ef(E.tempestade) } })],
+  [/spark|ball lightning|orb of storms|storm call|storm brand|lightning warp|stormblast|storm/i, () => ({ motivo: 'esfera de energia', visual: { projetil: fx('esfera-raio'), impacto: fx('explosao-raio', { noImpacto: true }), area: ef(E.tempestade) } })],
   [/kinetic|power siphon|blast rain/i, () => ({ motivo: 'energia de varinha', visual: { projetil: pj(P.energiaRoxa), impacto: ef(E.roxo), area: ef(E.roxo) } })],
-  [/essence drain|soulrend|bane|dark pact|forbidden rite|despair|exsanguinate|reap|corrupting|death/i, () => ({ motivo: 'morte', visual: { projetil: pj(P.morte), impacto: ef(E.caveira), area: ef(E.caveira) } })],
-  [/contagion|blight|wither|toxic|caustic|poison|viper|pestilent|plague|venom|cobra/i, () => ({ motivo: 'veneno', visual: { projetil: pj(P.veneno), impacto: ef(E.acertoVeneno), area: ef(E.nuvemVenenosa) } })],
+  [/essence drain|soulrend|bane|dark pact|forbidden rite|despair|exsanguinate|reap|corrupting|death/i, () => ({ motivo: 'morte', visual: { projetil: fx('esfera-caos'), impacto: fx('explosao-caos', { noImpacto: true }), area: ef(E.caveira) } })],
+  [/contagion|blight|wither|toxic|caustic|poison|viper|pestilent|plague|venom|cobra/i, () => ({ motivo: 'veneno', visual: { projetil: pj(P.veneno), impacto: ef(E.acertoVeneno), area: fx('nuvem-de-veneno') } })],
   [/explosive arrow/i, () => ({ motivo: 'flecha explosiva', visual: { projetil: pj(P.flechaExplosiva), impacto: ef(E.explosaoDeFogo, { noImpacto: true }), area: ef(E.explosaoDeFogo, { noImpacto: true }) } })],
   [/spectral (?:throw|helix|shield throw)|ethereal/i, () => ({ motivo: 'arma etérea', visual: { projetil: pj(P.lancaEterea, { orientar: false }), impacto: ef(E.corteAzul) } })],
-  [/cleave|reave|sweep|lacerate|perforate|double strike|dual strike|frenzy|viper strike|flicker|riposte|counter/i, () => ({ motivo: 'corte', visual: { impacto: ef(E.garrasBrancas), area: ef(E.garrasBrancas) } })],
+  [/cleave|reave|sweep|lacerate|perforate|double strike|dual strike|frenzy|viper strike|flicker|riposte|counter/i, () => ({ motivo: 'corte', visual: { impacto: fx('corte'), area: fx('corte') } })],
   [/slam|earthquake|earthshatter|sunder|tectonic|boneshatter|leap|shockwave|ground|heavy strike|ancestral|rage vortex|shield crush|shield charge/i, () => ({ motivo: 'pancada no chão', visual: { area: ef(E.pedras), impacto: ef(E.golpe), lancamento: ef(E.poeira) } })],
   [/dash|blink|whirling blades|bodyswap|smoke mine|withering step|phase run|charged dash/i, () => ({ motivo: 'deslocamento', visual: { lancamento: ef(E.teleporte), area: ef(E.fumaca) } })],
 ];
@@ -63,11 +66,17 @@ const REGRAS = [
 function completar(v, el, h) {
   const arco = h.tags.includes('Arco');
   const corpo = h.tags.includes('Corpo a Corpo');
+  const pt = EL_PT[h.elemento] ?? 'fisico';
+  const magia = !h.ataque;
   if (arco && !v.projetil) v.projetil = pj(el.flecha);
-  if (!v.projetil) v.projetil = pj(h.ataque && !arco ? P.rocha : el.proj);
-  if (!v.impacto) v.impacto = ef(corpo && h.elemento === 'physical' ? E.golpe : el.acerto);
+  // A magia de projétil: a ESFERA do elemento (o sprite de fábrica); o fogo segue com a bola de fogo do jogo. Ataque sem arco: a rocha.
+  if (!v.projetil) v.projetil = magia && h.elemento !== 'fire' ? fx(`esfera-${pt}`) : pj(h.ataque && !arco ? P.rocha : el.proj);
+  // O impacto da magia: a EXPLOSÃO do elemento quando o projétil chega; o golpe/ataque: o acerto de sempre.
+  if (!v.impacto) v.impacto = magia && !corpo && h.arquetipo === 'projetil' ? fx(`explosao-${pt}`, { noImpacto: true }) : ef(corpo && h.elemento === 'physical' ? E.golpe : el.acerto);
+  // A NOVA: o anel do elemento saindo do personagem (o efeito de área segue em cada casa).
+  if (h.arquetipo === 'nova') v.lancamento ??= fx(`nova-${pt}`, { escala: 3 });
   if (!v.area) v.area = ef(el.area);
-  if (['aura', 'arauto', 'guarda'].includes(h.arquetipo) && !v.lancamento) v.lancamento = ef(h.arquetipo === 'arauto' ? el.raio : el.aura);
+  if (['aura', 'arauto', 'guarda'].includes(h.arquetipo) && !v.lancamento) v.lancamento = h.elemento === 'chaos' ? fx('redemoinho-arcano', { escala: 1.4 }) : h.arquetipo === 'arauto' && h.elemento === 'fire' ? fx('chamas', { escala: 1.3 }) : ef(h.arquetipo === 'arauto' ? el.raio : el.aura);
   if (h.arquetipo === 'clamor' && !v.lancamento) v.lancamento = ef(E.anelDourado, { escala: 1.4 });
   if (h.arquetipo === 'maldicao') {
     v.lancamento ??= ef(E.roxo);
