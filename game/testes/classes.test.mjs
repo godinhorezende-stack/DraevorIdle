@@ -223,3 +223,19 @@ test('CL12. editor (tela): ficha, lista com personagens, criar/duplicar/ativar/a
   for (const x of ["classes: criarTelaDeClasses(", "['classes', 'Classes']", "{ id: 'classes', nome: 'Classes', icone: 'classes'"]) assert.ok(c.includes(x), x);
   assert.match(readFileSync(new URL('../frontend/client/src/editor-ui.mjs', import.meta.url), 'utf8'), /\n  classes: 'M12 3l2\.5/);
 });
+
+test('outfit inicial da classe: valida o desenho, as cores e os addons; veste na criação e o personagem o tem para sempre (com os addons)', async () => {
+  const C = await import('../systems/classes.mjs');
+  const Ap = await import('../systems/aparencia.mjs');
+  assert.deepEqual(C.validarOutfit(null, 'x'), []);
+  assert.deepEqual(C.validarOutfit({ male: 128, female: 136, cores: { head: 10, body: 20, legs: 30, feet: 40 }, addons: 3 }, 'x'), []);
+  assert.equal(C.validarOutfit({ male: 99999999 }, 'x').length, 1, 'desenho que não existe');
+  assert.equal(C.validarOutfit({ male: 128, cores: { head: 200 } }, 'x').length, 1, 'cor fora de 0–132');
+  assert.equal(C.validarOutfit({ male: 128, addons: 4 }, 'x').length, 1, 'addons de 0 a 3');
+  const classe = { outfit: { male: 128, cores: { head: 1, body: 2, legs: 3, feet: 4 }, addons: 2 } };
+  assert.deepEqual(C.outfitInicial(classe, 'male'), { type: 128, head: 1, body: 2, legs: 3, feet: 4, mount: 0, addons: 2 });
+  assert.equal(C.outfitInicial(classe, 'female'), null, 'sem o desenho feminino: vale o da vocação');
+  const estado = { outfit: { type: 131 }, outfitsDaClasse: { 1271: 2 } };
+  assert.equal(Ap.temOutfit(estado, 1271), true, 'o outfit da classe continua dele mesmo vestindo outro');
+  assert.equal(Ap.addonsQueTem(estado, 1271) & 2, 2, 'com os addons da classe');
+});

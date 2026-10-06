@@ -1022,6 +1022,23 @@ function clarear(cor, quanto) {
  * `pintarCooldowns`, no actionbar.mjs): sem ele a fração muda a cada ponto de
  * mana regenerado e a guarda não segura nada.
  */
+/** A camada cinza do Escudo de Energia sobre a barra de vida (some quando o personagem não tem escudo). */
+function escudoNaBarraDeVida(atual, maximo, fracaoDaVida = 1) {
+  const vida = $('bar-hp')?.parentElement;
+  if (!vida) return;
+  let camada = vida.querySelector('.bar-es');
+  if (!(maximo > 0)) return void camada?.remove();
+  if (!camada) {
+    camada = el('b', 'bar-es');
+    camada.setAttribute('aria-hidden', 'true');
+    vida.append(camada);
+  }
+  // O cinza cobre a PARTE DA VIDA que existe, na proporção do escudo que resta: a vida baixa continua visível com o escudo cheio.
+  const pct = Math.max(0, Math.min(100, (atual / maximo) * Math.max(0, Math.min(1, fracaoDaVida)) * 100));
+  camada.style.setProperty('--es', `${pct}%`);
+  vida.title = `Escudo de Energia ${atual}/${maximo}: absorve o dano antes da vida e recarrega sozinho depois de um tempo sem apanhar.`;
+}
+
 function setBar(id, value, max, label) {
   const bar = $(`bar-${id}`);
   if (!bar) return;
@@ -2429,7 +2446,12 @@ export function renderHud(character, catalog, party = null, escudoDeMana = false
     'Sem vocação';
 
   // ---- barras ----
-  setBar('hp', character.hp, derived.maxHp, `${character.hp}/${derived.maxHp}`);
+  // O Escudo de Energia (como no PoE): fica marcado em CINZA por cima da vida; ele absorve o dano primeiro (`personagem/defesa.absorver`), o
+  // cinza recua, e só quando acaba a vida começa a descer. O texto mostra os dois.
+  const esMax = derived.energyShield ?? 0;
+  const esAgora = Math.max(0, Math.min(esMax, character.es ?? esMax));
+  setBar('hp', character.hp, derived.maxHp, esMax > 0 ? `${character.hp}/${derived.maxHp} · ES ${esAgora}/${esMax}` : `${character.hp}/${derived.maxHp}`);
+  escudoNaBarraDeVida(esAgora, esMax, derived.maxHp > 0 ? character.hp / derived.maxHp : 0);
   setBar('mana', character.mana, derived.maxMana, `${character.mana}/${derived.maxMana}`);
   /*
    * ---- A barra de mana BRILHA quando e' ela que esta apanhando ----

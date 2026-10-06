@@ -99,5 +99,5 @@ export function dropExclusivo(bossId, { rng = Math.random, ilvl = DADOS.regra.ni
   if (!lista.length) return null;
   const u = lista[Math.floor(rng() * lista.length)];
   const regras = Catalogo.REGRAS;
-  return pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: u.baseId, raridade: 'unico', ilvl: Math.min(regras.drop?.ilvlMaximo ?? 100, ilvl), rng, unico: u.slug }), regras);
+  return pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras, base: u.baseId, raridade: 'unico', ilvl: Math.min(regras.drop?.ilvlMaximo ?? 100, ilvl), rng, unico: u.slug }), regras, rng);
 }

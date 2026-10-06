@@ -74,6 +74,7 @@ function aplicarDoPoe(ficha, id, principais, estado) {
   };
   const multiplicarDano = (f) => {
     if (ficha.damage) ficha.damage = { ...ficha.damage, min: Math.round(ficha.damage.min * f), max: Math.round(ficha.damage.max * f) };
+    if (ficha.danoDeEscala) ficha.danoDeEscala = { ...ficha.danoDeEscala, min: Math.round(ficha.danoDeEscala.min * f), max: Math.round(ficha.danoDeEscala.max * f) };
     if (NUMERO(ficha.ataqueMin)) ficha.ataqueMin = Math.round(ficha.ataqueMin * f);
     if (NUMERO(ficha.ataqueMax)) ficha.ataqueMax = Math.round(ficha.ataqueMax * f);
   };

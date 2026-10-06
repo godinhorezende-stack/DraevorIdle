@@ -14,6 +14,7 @@ import * as Bolsa from '../bolsa.mjs';
 import * as Ficha from '../ficha.mjs';
 import { temHabilidade } from '../passivas/arvore.mjs';
 import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import { metaDaPeca } from '../itens/item.mjs';
 import * as Bau from '../bau.mjs';
 import * as Equipamento from '../itens/equipamento.mjs';
@@ -67,6 +68,7 @@ import * as Anuncios from '../anuncios.mjs';
 import * as Tags from '../skills/tags.mjs';
 import * as GemasDeSkill from '../skills/gemas.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
+import * as FrascosPoe from '../itens-poe/frascos.mjs';
 
 /** Depois de qualquer dano de ação (magia/runa) — mata e dá loot de quem chegou a 0. */
 export function processarMortes(estado, personagem, eventos) {
@@ -342,6 +344,10 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   {
     const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
     itens.push(...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade));
+    if (BESTIARY[alvo.key]?.poe) {
+      const ouro = ItensPoeJogo.ouroDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, 1 + (Ficha.combate(estado).goldFind ?? 0) / 100);
+      if (ouro > 0) itens.push({ id: 3031, count: ouro });
+    }
     const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
     if (exclusivo) itens.push(exclusivo);
   }
@@ -483,6 +489,27 @@ function escolherDono({ estado, personagem, juntos, id, peca, origem, verificar 
   return { dono, ignorado };
 }
 
+/**
+ * Entrega `n` moedas (`id`) de um drop. Moeda do loot cai no bolso (carregado), como o resto do ouro ganho caçando — só vai para o banco
+ * quando o jogador deposita de propósito no Banqueiro. (Uma versão anterior mandava direto para `bank`, a partir de uma medição do original
+ * que o dono do projeto confirmou estar errada.) Na party: partes iguais; o resto (unidades que não dividem) roda entre os integrantes,
+ * evento a evento (`dividirOuro`).
+ */
+function entregarMoedas({ estado, juntos, sala, caiu, conta }, id, n) {
+  if (!(n > 0)) return;
+  const total = n * VALOR_DA_MOEDA[id];
+  caiu.push({ id, count: n });
+  conta('loot', id, n);
+  if (!juntos) {
+    darOuro(estado, total);
+    return;
+  }
+  const inicio = vezDoResto.get(sala) ?? 0;
+  const partes = dividirOuro(total, juntos.length, inicio);
+  juntos.forEach((m, k) => darOuro(m.estado, partes[k]));
+  vezDoResto.set(sala, proximoInicioDoResto(total, juntos.length, inicio));
+}
+
 function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, sala, caiu, conta, deOutros, podio }) {
   for (const drop of drops) {
     // Entrada de loot SEM id no bestiário (64 bichos têm "rotten feather"/"ritual tooth" assim): não é
@@ -493,24 +520,7 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
     if (Math.random() >= chance * Progressao.fatorDeDropDe(contextoDoDrop(hunt).dificuldade, drop.id)) continue; // (a dificuldade só mexe na chance de EQUIPAMENTO; neutra por padrão) Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
     if (VALOR_DA_MOEDA[drop.id]) {
-      const n = quantasMoedas(alvo, drop.id, estado);
-      // Moeda do loot cai no bolso (carregado), como o resto do ouro ganho
-      // caçando — só vai para o banco quando o jogador deposita de propósito
-      // no Banqueiro. (Uma versão anterior mandava direto para `bank`, a
-      // partir de uma medição do original que o dono do projeto confirmou
-      // estar errada.)
-      const total = n * VALOR_DA_MOEDA[drop.id];
-      caiu.push({ id: drop.id, count: n });
-      conta('loot', drop.id, n);
-      if (!juntos) {
-        darOuro(estado, total);
-        continue;
-      }
-      // Party: partes iguais; o resto (unidades que não dividem) roda entre os integrantes, evento a evento (`dividirOuro`).
-      const inicio = vezDoResto.get(sala) ?? 0;
-      const partes = dividirOuro(total, juntos.length, inicio);
-      juntos.forEach((m, k) => darOuro(m.estado, partes[k]));
-      vezDoResto.set(sala, proximoInicioDoResto(total, juntos.length, inicio));
+      entregarMoedas({ estado, juntos, sala, caiu, conta }, drop.id, quantasMoedas(alvo, drop.id, estado));
       continue;
     }
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
@@ -712,6 +722,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     // As cargas do PoE "ao Matar" (só com ITENS_POE=1): mudou o número, a ficha é refeita.
     if (f.cargas && CargasPoe.aoMatar(estado, f.cargas).length) Ficha.invalidar(estado);
   }
+  // As cargas dos FRASCOS do PoE (de quem matou e da party na sala), pela raridade do monstro.
+  FrascosPoe.aoMatar(estado, tipoDoBicho(alvo));
+  if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) FrascosPoe.aoMatar(m.estado, tipoDoBicho(alvo));
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
   if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo, personagem);
   if (sessao) sessao.byMonster[alvo.name] = (sessao.byMonster[alvo.name] ?? 0) + 1;
@@ -788,6 +801,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);
+  }
+  // O OURO do monstro do PoE (pedido do dono, 05/10): aleatório na faixa do level dele × a raridade (`itens-poe/regras.json` → `ouro`),
+  // com o Gold Find de quem matou. Cai no bolso como as moedas (e divide na party).
+  if (BESTIARY[alvo.key]?.poe) {
+    const achado = 1 + (Ficha.combate(estado).goldFind ?? 0) / 100;
+    entregarMoedas({ estado, juntos, sala, caiu, conta }, 3031, ItensPoeJogo.ouroDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, achado));
   }
   // A TABELA DE DROP do monstro (engine — Acts/Campanha do PoE; o item de missão só enquanto a fase dele está aberta) e o OBJETIVO da fase
   // (matar o chefe, N monstros, pegar o item da missão — `Campanha.matou`, que conclui a fase e põe o aviso na tela).
@@ -915,7 +934,8 @@ export function contraAtaque(estado, hunt, personagem, bicho, eventos) {
     estado.hp = Math.max(0, estado.hp - final);
     // O sangue no boneco — sem isto o golpe só existia no número que sobe,
     // nunca na tela (mesmo id real do OTServ que `round()` usa no bicho).
-    eventos.push({ t: 'fx', id: 1, uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
+    // O efeito do golpe na tela: o do cadastro do bicho (aba Mobs → Ataques e efeitos) ou o sangue de sempre.
+    eventos.push({ t: 'fx', id: Poderes.efeitoDoGolpe(bicho), uid: 'player', x: hunt.pos.x, y: hunt.pos.y });
     eventos.push({
       t: 'dmg',
       uid: 'player',
@@ -1143,9 +1163,15 @@ export function round(estado, personagem) {
         // + a afinidade da classe para este golpe (Physical, Melee/Ranged — `Ficha.afinidadePara`, pelas tags dele).
         // + os reforços ligados (Blood Rage no corpo a corpo, Sharpshooter à distância), pelas tags do golpe.
         const tagsDoGolpe = Tags.tagsDoGolpe(categoriaDaArma(arma));
-        const fisico = 1 + ((ficha.danoDoElemento?.physical ?? 0) + Ficha.afinidadePara(ficha, tagsDoGolpe).pct + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
+        // No PoE: sem a afinidade de classe do Draevor, e a parte da Força só no corpo a corpo (o arco não ganha dano físico da STR).
+        const poe = itensPoeLigado();
+        const fisicoDoGolpe = (ficha.danoDoElemento?.physical ?? 0) - (poe && !tagsDoGolpe.includes('melee') ? ficha.danoFisicoDaForca ?? 0 : 0);
+        const fisico = 1 + (fisicoDoGolpe + (poe ? 0 : Ficha.afinidadePara(ficha, tagsDoGolpe).pct) + Reforcos.bonus(hunt, 'dano', tagsDoGolpe)) / 100;
         // O físico sem a resistência: é dele que sai o dano elemental dos atributos (abaixo).
-        const semResistencia = (R.golpeDoJogador({ ...arma, attack: Math.round((ficha.ataqueMin + ficha.ataqueMax) / 2), attackMin: ficha.ataqueMin, attackMax: ficha.ataqueMax }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico * fatorDoGolpe;
+        // PoE com duas armas: os golpes ALTERNAM entre a mão principal e a secundária, cada uma com o próprio dano.
+        const daSecundaria = !!ficha.duasArmas && (hunt.golpeDaSecundaria = !hunt.golpeDaSecundaria);
+        const [faixaMin, faixaMax] = daSecundaria ? [ficha.ataqueSecundarioMin, ficha.ataqueSecundarioMax] : [ficha.ataqueMin, ficha.ataqueMax];
+        const semResistencia = (R.golpeDoJogador({ ...arma, attack: Math.round((faixaMin + faixaMax) / 2), attackMin: faixaMin, attackMax: faixaMax }, ficha.skillValue, estado.level) + Proficiencia.daPericia(estado, ficha.proficiencia.periciaNoBasico, ficha.skillBonus)) * fisico * fatorDoGolpe;
         const { dano: bruto, crit: critico, onslaught, chance: chanceCritica } = Ficha.rolarCritico(estado, resistido(hunt, alvo, 'physical', semResistencia, ficha), alvo, eventos, ficha);
         registrarGolpe(() => ({ origem: segundo ? 'golpe-basico-2o-golpe' : 'golpe-basico', alvo: alvo.name, tipo: 'physical', danoAntesDaResistencia: Math.round(semResistencia), resistenciaDoAlvo: resistenciaDe(hunt, alvo, 'physical'), penetracao: ficha.penetracao?.fisica ?? 0, resistenciaEfetiva: resistenciaEfetivaDe(hunt, alvo, 'physical', ficha), chanceCritica, critico: critico, danoFinal: bruto, vidaRestante: Math.max(0, alvo.hp - bruto) }));
         if (!segundo) Treino.treinar(estado, pericia);

@@ -4,7 +4,7 @@
 // Quantos slots existem e onde a linha quebra vêm do servidor (`catalog.slots`
 // e `catalog.slotsPorFileira`); aqui não há número de slot escrito à mão.
 import { itemCanvas, outfitCanvas, outfitInfo } from './sprites.mjs';
-import { tipForAction, previaDaMagia, blocoDaGemaDaSkill } from './tooltip.mjs';
+import { tipForAction, previaDaMagia, blocoDaGemaDaSkill, corpoDaGemaPoe, blocoDaGemaPoe } from './tooltip.mjs';
 import { abrirRegrasDeUso } from './regras-de-uso.mjs';
 import { artOrUiIcon } from './hud.mjs';
 import { ehCelular } from './mobile.mjs';
@@ -1722,6 +1722,17 @@ export function renderEditor() {
     resumo.append(texto);
     detail.append(resumo);
 
+    // A gema do PoE: a ficha do PoE (tags, propriedades, modificadores do nível, qualidade) no lugar das linhas e da grade do Draevor.
+    const poe = corpoDaGemaPoe(entry);
+    if (poe) {
+      texto.append(poe);
+      const daGemaPoe = blocoDaGemaPoe(entry);
+      if (daGemaPoe) {
+        const caixa = el('div', 'gema-no-editor');
+        caixa.append(daGemaPoe);
+        texto.append(caixa);
+      }
+    }
     // Cada linha com a cor do que ela diz, como no balao.
     const lines = [];
     const cor = entry.heals ? 'heal' : entry.element ? `el-${entry.element}` : 'atk';
@@ -1774,9 +1785,9 @@ export function renderEditor() {
     if (entry.level && entry.levelDaMagia == null) {
       lines.push([`Requer level ${entry.level}${entry.magicLevel ? ` e magic level ${entry.magicLevel}` : ''}.`, 'plain']);
     }
-    for (const [line, className] of lines) texto.append(el('p', className, line));
+    if (!poe) for (const [line, className] of lines) texto.append(el('p', className, line));
     // A gema de onde a skill vem — o mesmo bloco do balão do slot (nível, XP, bônus, supports).
-    const daGema = blocoDaGemaDaSkill(entry);
+    const daGema = poe ? null : blocoDaGemaDaSkill(entry);
     if (daGema) {
       const caixa = el('div', 'gema-no-editor');
       caixa.append(daGema);
@@ -1790,7 +1801,7 @@ export function renderEditor() {
      * feitio dela. Quem nunca jogou Tibia nao tem como saber que a `exevo vis
      * hur` sai para a frente e a `exevo gran mas frigo` nasce em volta.
      */
-    const forma = previaDaMagia(entry, { comOutfit: true });
+    const forma = poe ? null : previaDaMagia(entry, { comOutfit: true });
     if (forma) resumo.append(forma);
 
     if (entry.blocked === 'sem a gema') {

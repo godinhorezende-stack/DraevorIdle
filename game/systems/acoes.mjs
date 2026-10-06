@@ -32,6 +32,8 @@ import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG 
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Ficha from './ficha.mjs';
 import { temHabilidade } from './passivas/arvore.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
@@ -53,10 +55,16 @@ export const PAPEIS = ACTION_CATALOG.papeis;
 
 const ENTRADAS = [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes, ...ACTION_CATALOG.items];
 const POR_ID = new Map(ENTRADAS.map((e) => [e.id, e]));
+/** Registra uma ação criada depois da carga do catálogo (as magias das gemas do PoE — `itens-poe/gemas-poe.mjs`). */
+export function registrarAcao(entry) {
+  POR_ID.set(entry.id, entry);
+}
 const ALTO_POR_ID = new Map([...ACTION_CATALOG_ALTO.spells, ...ACTION_CATALOG_ALTO.runes].map((e) => [e.id, e]));
 
 /** O custo de mana DO CATÁLOGO da skill, com o balanceamento da gema (`fatorDeCusto` em `skills.json`); o resto (afixos, suportes) multiplica por cima. */
 const custoDoCatalogo = (entry) => Math.round((entry.mana ?? 0) * (Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(entry.id))?.fatorDeCusto ?? 1));
+/** O custo de mana desta skill para quem lança: a gema do PoE custa o do nível dela (a tabela do PoE); as outras, o do catálogo. */
+const custoDaSkill = (entry, efeitoDaGema) => (entry.poeGema ? GemasPoe.custoNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : custoDoCatalogo(entry));
 
 /** O `{min,max}` da entrada no level dado — reta entre as duas capturas reais. */
 function danoNoLevel(entry, level) {
@@ -93,17 +101,28 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
    * wand/rod mantêm a identidade (+% do rod e do elemento afim) nas magias mágicas. Sem penalidade de compatibilidade entre arma e habilidade.
    */
   const ehAtaque = !entry.heals && Gemas.ehSkillDeGema(entry) && entry.kind !== 'item' && !!defDaGema;
-  const doNivel = danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
-  const identidade = ehAtaque ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
-  const fatorDaFicha = ehAtaque ? (((fichaBase.damage.min + fichaBase.damage.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
+  // A GEMA DO PoE (`itens-poe/gemas-poe.mjs`): o dano-base é o do NÍVEL da gema — numa magia, o dano do PoE; num ataque, o golpe da arma
+  // (a faixa da ficha) × a eficácia da gema ("Dano de Ataque X% de base"). Sem a régua do level do Draevor; o resto (ficha, suportes,
+  // reforços) multiplica por cima, como em toda skill.
+  const daGemaPoe = entry.poeGema && !entry.poeGema.buff ? entry.poeGema : null;
+  const nivelPoe = efeitoDaGema?.nivel ?? 1;
+  const doNivel = daGemaPoe
+    ? daGemaPoe.ataque
+      ? { min: (fichaBase.damage?.min ?? 1) * GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe), max: (fichaBase.damage?.max ?? 1) * GemasPoe.eficaciaNoNivel(daGemaPoe.slug, nivelPoe) }
+      : GemasPoe.danoNoNivel(daGemaPoe.slug, nivelPoe)
+    : danoNoLevel(entry, ehAtaque ? estado.level : nivelDoDano(estado, entry, defDaGema));
+  const identidade = ehAtaque && !daGemaPoe ? Poder.poderEfetivo(estado, Gemas.habilidadeDeEscala(defDaGema), entry.element).identidade : 1;
+  const escala = fichaBase.danoDeEscala ?? fichaBase.damage;
+  const fatorDaFicha = ehAtaque && !daGemaPoe ? (((escala.min + escala.max) / 2) / Poder.danoNormalDeReferencia(estado.level)) * identidade : 1;
   // Sistema de itens do PoE (Fase 1; sem peças do PoE nada disto muda):
   //  - um ATAQUE do PoE = golpe físico de perto ou de longe (tags physical + melee/ranged, como o Brutal Strike): o dano somado a
   //    ataques de TODOS os elementos ("Adiciona X a Y de Dano de Fogo a Ataques") entra na faixa, como no golpe da arma;
   //  - uma MAGIA (o resto das skills com tag spell): o dano somado a magias do mesmo elemento dela entra na faixa antes dos aumentos,
   //    e a chance de crítico é a de magia (`critChanceMagia`). Dano somado de outro elemento não entra (a magia tem um elemento só).
   const tagsDaSkill = Tags.tagsDaAcao(entry);
-  const ehAtaqueDoPoe = !entry.heals && tagsDaSkill.includes('physical') && (tagsDaSkill.includes('melee') || tagsDaSkill.includes('ranged'));
-  const ehMagia = !entry.heals && !ehAtaqueDoPoe && tagsDaSkill.includes('spell');
+  // A gema do PoE diz o que é (tipo "Attack" ou "Spell" no poedb); as outras skills, pelas tags.
+  const ehAtaqueDoPoe = !entry.heals && (daGemaPoe ? !!daGemaPoe.ataque : tagsDaSkill.includes('physical') && (tagsDaSkill.includes('melee') || tagsDaSkill.includes('ranged')));
+  const ehMagia = !entry.heals && !ehAtaqueDoPoe && (daGemaPoe ? true : tagsDaSkill.includes('spell'));
   const [somadoMin, somadoMax] = ehAtaqueDoPoe
     ? Object.values(fichaBase.danoSomado ?? {}).reduce(([a, b], [x, y]) => [a + x, b + y], [0, 0])
     : ehMagia ? fichaBase.danoSomadoMagia?.[entry.element] ?? [0, 0] : [0, 0];
@@ -132,7 +151,11 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const treino = doTreino * (1 + Reforcos.bonus(hunt, 'treino', tags) / 100) + (defDaGema ? Reforcos.treinoDeOutraPericia(estado, hunt, tags) * Gemas.CONFIG.dano.porMagicLevel : 0);
   // Sintonia da Dor (keystone do PoE): 30% mais dano mágico com a vida baixa (50% ou menos).
   const sintonia = ehMagia && (estado.hp ?? 0) <= 0.5 * (estado.maxHp ?? 0) && temHabilidade(estado, 'sintoniaDaDor') ? 1.3 : 1;
-  const mult = (1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + (ficha.danoDoElemento?.[entry.element] ?? 0) + (daGema?.dano ?? 0) + treino + doReforco + Ficha.afinidadePara(ficha, tags).pct) / 100) * sintonia;
+  // Gema do PoE (dono, 06/10: "o dano de fogo não aumenta pelo ataque físico" — como no PoE): cada skill só soma o "aumentado" do PRÓPRIO
+  // tipo de dano; a afinidade de classe do Draevor não existe no PoE; e a Força só dá dano físico ao CORPO A CORPO.
+  const doElemento = (ficha.danoDoElemento?.[entry.element] ?? 0) - (daGemaPoe && entry.element === 'physical' && !tags.includes('melee') ? ficha.danoFisicoDaForca ?? 0 : 0);
+  const afinidade = entry.poeGema ? 0 : Ficha.afinidadePara(ficha, tags).pct;
+  const mult = (1 + ((ficha.danoDeMagia ?? 0) + (ehMagia ? ficha.danoDeMagiaDoPoe ?? 0 : 0) + doElemento + (daGema?.dano ?? 0) + treino + doReforco + afinidade) / 100) * sintonia;
   return { min, max, daPericia, mult, fatorDaGema, ficha };
 }
 
@@ -219,11 +242,14 @@ export const COR_DO_ELEMENTO = {
 function bloqueio(entry, estado) {
   // Magia e runa vêm da GEMA encaixada numa peça vestida (modelo Path of Exile): sem ela, sem skill.
   if (Gemas.ehSkillDeGema(entry) && !Gemas.temSkill(estado, entry.id)) return 'sem a gema';
+  // Gema do PoE sem equivalente no jogo (lacaio, totem...): o motivo (`itens-poe/gemas-poe.mjs`).
+  if (entry.poeGema?.bloqueio) return entry.poeGema.bloqueio;
   // A skill de gema não tem level nem magic level próprios (decisão do dono): quem pede level é o NÍVEL da gema.
   if (Gemas.ehSkillDeGema(entry)) return null;
   if ((entry.level ?? 0) > (estado.level ?? 0)) return `requer level ${entry.level}`;
   const ml = estado.magic?.value ?? 0;
-  if ((entry.magicLevel ?? 0) > ml) return `requer magic level ${entry.magicLevel}`;
+  // No PoE não há magic level (nem perícia nenhuma): a magia pede só o level.
+  if (!itensPoeLigado() && (entry.magicLevel ?? 0) > ml) return `requer magic level ${entry.magicLevel}`;
   return null;
 }
 
@@ -276,7 +302,10 @@ export function catalogo(estado) {
       itemId: a.itemId,
       nivel: a.nivel,
       xp: a.xp,
-      xpProximo: a.nivel >= Gemas.CONFIG.niveis.maximo ? 0 : Gemas.xpParaSubir(a.nivel, estado.level),
+      xpProximo: Gemas.xpProximoDaGema(a.def, a.nivelBase ?? a.nivel, estado.level),
+      // A gema do PoE espera o level do personagem para o próximo nível (o `RequerNível` da tabela dela).
+      levelDoProximo: Gemas.levelDoNivel(a.def, (a.nivelBase ?? a.nivel) + 1),
+      esperaLevel: (estado.level ?? 1) < Gemas.levelDoNivel(a.def, (a.nivelBase ?? a.nivel) + 1),
       raridade: a.raridade,
       multiplicador: Gemas.multiplicadorDaRaridade(a.raridade),
       supports: a.supports.map((sp) => ({ nome: sp.def.nome, nomePt: sp.def.nomePt ?? sp.def.nome, nivel: sp.nivel })),
@@ -288,12 +317,14 @@ export function catalogo(estado) {
     ...entry,
     ...(Gemas.ehSkillDeGema(entry) ? { gema: daGema(entry) } : {}),
     // O tooltip do BUFF (reforço): o que faz, com os números desta gema, a duração e quem é afetado (`Reforcos.descrever`).
+    // A gema do PoE: a ficha dela no nível (o balão e o "Configurar ação" mostram como no PoE, no lugar da ficha do Draevor).
+    ...(entry.poeGema ? { poeFicha: GemasPoe.fichaNoNivel(entry.poeGema.slug, daGema(entry)?.nivel ?? 1, daGema(entry)?.efeito?.qualidade ?? 0) } : {}),
     ...(Reforcos.REFORCOS[entry.id] ? { reforco: Reforcos.descrever(entry.id, daGema(entry)?.efeito ?? null) } : {}),
     // As tags (o que as especializações leem), a classe recomendada (não é trava) e a
     // afinidade DESTE personagem nesta skill — a mesma conta do `disparar` (`Ficha.afinidadePara`).
     tags: Tags.tagsDaAcao(entry),
     classeRecomendada: Tags.classeRecomendada(entry),
-    afinidade: Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)),
+    afinidade: entry.poeGema ? { pct: 0, fontes: [] } : Ficha.afinidadePara(ficha, Tags.tagsDaAcao(entry)),
     // O dano/cura que ela faz AGORA (a mesma conta do `disparar`): base, treino, afinidade, gema, afixos.
     ...(entry.damage ? { damage: { ...entry.damage, ...(entry.kind === 'item' ? danoNoLevel(entry, estado.level) : entry.heals ? curaMostrada(estado, entry) : danoMostrado(estado, entry)) } } : {}),
     // Para a tooltip da gema: o dano/cura SEM o bônus da gema (nível, raridade, qualidade, supports) e a skill que escala — igual com a gema solta ou equipada.
@@ -304,15 +335,21 @@ export function catalogo(estado) {
     ...(Gemas.ehSkillDeGema(entry) ? { level: 1, magicLevel: 0, levelDaMagia: entry.level ?? 1 } : {}),
     // A recarga que o servidor aplica de verdade (`recargaDe`: ataque na
     // metade), não a crua do catálogo — senão o tooltip diz 2 s e sai a cada 1 s.
-    ...(entry.kind !== 'item' && entry.mana ? { mana: custoDoCatalogo(entry) } : {}),
-    ...(entry.cooldown ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
+    ...(entry.kind !== 'item' && (entry.mana || entry.poeGema) ? { mana: custoDaSkill(entry, daGema(entry)?.efeito ?? null) } : {}),
+    // Gema do PoE: os tempos do PoE com a ficha (`temposDaGemaPoe`) — o balão mostra o tempo de uso e a recarga de verdade.
+    ...(entry.poeGema ? (() => { const t = temposDaGemaPoe(estado, entry, daGema(entry)?.efeito ?? null, ficha); return { cooldown: t.recarga, groupCooldown: t.uso, tempoPoe: t }; })() : {}),
+    ...(entry.cooldown && !entry.poeGema ? { cooldown: recargaDe(entry, entry.cooldown) } : {}),
     // Ataque: o intervalo até a próxima magia de ataque é o cooldown global (com o Cast Speed), quando ele é maior.
-    ...(entry.groupCooldown ? { groupCooldown: entry.papeis?.[0] === 'attack' ? Math.max(recargaDe(entry, entry.groupCooldown), global) : recargaDe(entry, entry.groupCooldown) } : {}),
+    ...(entry.groupCooldown && !entry.poeGema ? { groupCooldown: entry.papeis?.[0] === 'attack' ? Math.max(recargaDe(entry, entry.groupCooldown), global) : recargaDe(entry, entry.groupCooldown) } : {}),
     blocked: bloqueio(entry, estado),
   });
+  // Com as gemas do PoE ligadas, as magias que vão para a tela são só as das gemas do PoE ENCAIXADAS (são 562: mandar todas, com o dano
+  // calculado, a cada pedido seria pesado — e a barra só mostra o que está encaixado). As do Draevor saem de cena no modo PoE.
+  const soAsDoPoe = GemasPoe.ligadas();
+  const vale = (e) => !soAsDoPoe || (e.poeGema ? ativas.has(e.id) : !Gemas.ehSkillDeGema(e));
   return {
-    spells: ACTION_CATALOG.spells.map(comBloqueio),
-    runes: ACTION_CATALOG.runes.map(comBloqueio),
+    spells: ACTION_CATALOG.spells.filter(vale).map(comBloqueio),
+    runes: ACTION_CATALOG.runes.filter(vale).map(comBloqueio),
     items: ACTION_CATALOG.items.map(comBloqueio),
     // O poder das armas: o fator da raridade (o balão multiplica o poder base do item) e a matriz de afinidade.
     poderDasArmas: { raridade: Poder.CONFIG.raridade, afinidade: Poder.CONFIG.afinidade },
@@ -699,6 +736,21 @@ export function marcarRecargaDaPocao(estado, entry) {
  * Devolve `{ok, erro?}` e, em caso de sucesso, `eventos` (mesmo formato de
  * `round()`) e `alvo` (se o golpe foi nele — quem chamou decide matar ou não).
  */
+/**
+ * Os TEMPOS de uma gema do PoE agora, como no PoE (sem o cooldown global nem a "metade da recarga" do Draevor):
+ *  - `uso`: magia = o tempo de conjuração × os suportes ÷ a velocidade de conjuração; ataque = o intervalo do golpe da arma (APS, velocidade
+ *    de ataque) ÷ a velocidade da gema ("X% de base"). É o tempo até a próxima skill (um uso por vez); instantânea: 0,25 s (um tique).
+ *  - `recarga`: só a da gema no PoE ("Recarga: N seg"), com a recuperação de recarga e os suportes; 0 = sem recarga.
+ */
+export function temposDaGemaPoe(estado, entry, efeitoDaGema = Gemas.efeitoNaSkill(estado, entry.id), ficha = Ficha.combate(estado)) {
+  const t = GemasPoe.temposNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
+  const suportes = 1 + (efeitoDaGema?.castTimePct ?? 0) / 100;
+  const ataque = !!entry.poeGema.ataque;
+  const bruto = ataque ? ((ficha.intervaloDoGolpeMs ?? 2000) / (t.velAtaqueBase / 100)) * suportes : (t.conjuracaoMs * suportes) / (1 + Math.max(0, ficha.castSpeed ?? 0) / 100);
+  const recarga = t.recargaMs ? Math.round((t.recargaMs / (1 + (ficha.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)) : 0;
+  return { uso: Math.max(250, Math.round(bruto)), recarga, ataque, conjuracaoBaseMs: t.conjuracaoMs, velAtaqueBase: t.velAtaqueBase, cargas: t.cargas };
+}
+
 /** O cooldown global com `castSpeed`% de Cast Speed: a base (`R.GLOBAL_SPELL_COOLDOWN`) encurtada por ele (decisão do dono). */
 export const intervaloGlobalCom = (castSpeed = 0) => Math.round(R.GLOBAL_SPELL_COOLDOWN / (1 + Math.max(0, castSpeed ?? 0) / 100));
 /** O cooldown global de AGORA para este personagem. */
@@ -778,7 +830,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
    */
   const deAtaque = entry.papeis?.[0] === 'attack';
   const global = intervaloGlobal(estado);
-  const globalLibera = deAtaque && hunt.ultimoAtaqueEm != null ? hunt.ultimoAtaqueEm + global : null;
+  // A gema do PoE não tem o cooldown global do Draevor: o tempo de uso dela (conjuração/ataque) é o que segura a próxima.
+  const globalLibera = deAtaque && !entry.poeGema && hunt.ultimoAtaqueEm != null ? hunt.ultimoAtaqueEm + global : null;
   if (!concluir && globalLibera != null && !R.liberou(agora, globalLibera)) {
     return { ok: false, erro: 'Aguarde o cooldown global.', motivo: 'COOLDOWN_GLOBAL', faltaMs: globalLibera - agora };
   }
@@ -791,7 +844,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // davam 215 golpes cada em 10 min por cima das magias (sem captura de runa no
   // original para conferir — é a regra do Tibia). Runa de cura continua livre.
   const grupoDeAtaque = entry.kind === 'rune' && entry.papeis?.[0] === 'attack' ? 'grupo:attack' : null;
-  const grupoQueConta = grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
+  // Gema do PoE: uma ação por vez entre TODAS as skills (ataque, magia, aura...) — um relógio só, o tempo de uso da última.
+  const grupoQueConta = entry.poeGema ? 'grupo:poe' : grupoDeAtaque ?? (entry.kind !== 'rune' ? grupo : null);
   if (grupoQueConta && cds[grupoQueConta] && !R.liberou(agora, cds[grupoQueConta].ate)) {
     return { ok: false, erro: 'Ainda recarregando.', motivo: 'COOLDOWN_DO_GRUPO', faltaMs: cds[grupoQueConta].ate - agora };
   }
@@ -805,7 +859,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // A gema da skill: o nível dela e as supports ligadas (`skills/gemas.mjs`) — custo, dano, crítico, alvos, cura, recarga.
   const efeitoDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null;
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
-  const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round(custoDoCatalogo(entry) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
+  const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round(custoDaSkill(entry, efeitoDaGema) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea')) && custoDeMana > 0;
@@ -987,9 +1041,15 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     const fator = Reforcos.fatorDaGema(efeitoDaGema);
     // Skill Duration (support): +% na duração do reforço.
     const duracao = Math.round(buff.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100));
-    (hunt.buffs ??= {})[entry.id] = { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
-    // A provocação: os bichos por perto vêm atacar você.
+    // A gema do PoE: os efeitos e os atributos do NÍVEL dela (`GemasPoe.buffNoNivel`) ficam no buff; a ficha é refeita (atributos novos).
+    const doPoe = entry.poeGema?.buff ? GemasPoe.buffNoNivel(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : null;
+    (hunt.buffs ??= {})[entry.id] = doPoe
+      ? { ate: agora + Math.round(doPoe.dur * (1 + (efeitoDaGema?.duracaoPct ?? 0) / 100)), tipo: buff.tipo, fator: 1, efeitosPoe: doPoe.efeitos, afPoe: doPoe.af }
+      : { ate: agora + duracao, tipo: buff.tipo, fator, ...(buff.mult ? { mult: Reforcos.velocidadeEscalada(buff.mult, fator) } : {}) };
+    if (doPoe) Ficha.invalidar(estado);
+    // A provocação: os bichos por perto vêm atacar você (o grito do PoE traz o `provocar` nos efeitos do nível).
     if (buff.tipo === 'desafio') Reforcos.provocar(hunt, buff, distanciaChebyshev);
+    if (doPoe?.efeitos.some((e) => e.efeito === 'provocar')) Reforcos.provocar(hunt, { efeitos: doPoe.efeitos }, distanciaChebyshev);
     if (entry.words) eventos.push({ t: 'say', uid: 'player', quem: personagem?.nome, text: entry.words, x: hunt.pos.x, y: hunt.pos.y, color: '#f36500' });
   }
   if (cancela) {
@@ -1102,7 +1162,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       if (ficha.afeccoes) {
         const tagsDoAcerto = Tags.tagsDaAcao(entry);
         const ataque = tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
-        for (const st of AfeccoesPoe.aoAcertar(bicho, [{ elemento: tipo, dano: bruto }], { afeccoes: ficha.afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+        // A gema do PoE soma as chances dela (incendiar, congelar, eletrizar, envenenar, sangrar) no nível em que está.
+        const afeccoes = entry.poeGema ? GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha.afeccoes;
+        for (const st of AfeccoesPoe.aoAcertar(bicho, [{ elemento: tipo, dano: bruto }], { afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       }
     };
     /*
@@ -1168,17 +1230,28 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // "Cooldown Recovery" (add): a recarga própria anda mais rápido.
   const fichaDaRecarga = Ficha.combate(estado);
   // + o Cooldown Recovery da gema (support).
-  const recarga = Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
+  const tempoPoe = entry.poeGema ? temposDaGemaPoe(estado, entry, efeitoDaGema, fichaDaRecarga) : null;
+  const recarga = tempoPoe ? tempoPoe.recarga : Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
   // Tudo a partir do instante LÓGICO (`inicio`), não do tique em que saiu.
   cds[action.id] = { ate: inicio + recarga, total: recarga };
+  // Recarga com CARGAS (PoE: "Recarga: 3,5 s (3 usos)" — o Avanço Flamejante): gasta uma por uso e elas voltam uma de cada vez; só trava
+  // quando todas estão recarregando (até a primeira voltar).
+  if (tempoPoe?.cargas > 1 && recarga) {
+    const fila = ((hunt.cargasPoe ??= {})[action.id] ?? []).filter((t) => t > inicio);
+    fila.push(Math.max(inicio, fila.at(-1) ?? inicio) + recarga);
+    hunt.cargasPoe[action.id] = fila;
+    cds[action.id] = fila.length >= tempoPoe.cargas ? { ate: fila[0], total: recarga } : { ate: inicio, total: 0 };
+  }
   // O familiar: o slot mostra a espera dele (17 min no nível 0, 2 min no 100).
   if (entry.summon) cds[action.id] = { ate: inicio + Summon.recarga(estado), total: Summon.recarga(estado) };
   if (entry.kind === 'spell' || grupoDeAtaque) {
     // "Cast Speed" (add): encurta o intervalo entre magias (a recarga do grupo).
-    const doGrupo = Math.round(recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0)) / (entry.kind === 'spell' ? 1 + (fichaDaRecarga.castSpeed ?? 0) / 100 : 1));
+    const doGrupo = tempoPoe ? tempoPoe.uso : Math.round(recargaDe(entry, entry.groupCooldown ?? (grupoDeAtaque ? 2000 : 0)) / (entry.kind === 'spell' ? 1 + (fichaDaRecarga.castSpeed ?? 0) / 100 : 1));
     cds[grupoQueConta] = { ate: inicio + doGrupo, total: doGrupo };
   }
   if (entry.kind === 'item') cds[grupo] = { ate: inicio + RECARGA_DA_POCAO_MS, total: RECARGA_DA_POCAO_MS };
+  // Gema do PoE: uma ação por vez, como no PoE — o golpe básico espera o tempo de uso dela.
+  if (tempoPoe) hunt.proximoGolpeEm = Math.max(hunt.proximoGolpeEm ?? 0, inicio + tempoPoe.uso);
   // Skill de ataque instantânea: o global conta deste instante. (A conjurada já marcou no início.)
   if (deAtaque && !concluir) hunt.ultimoAtaqueEm = inicio;
   if (entry.desafio) (hunt.desafiosEm ??= {})[entry.id] = agora;

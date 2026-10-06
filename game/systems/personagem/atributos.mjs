@@ -20,6 +20,9 @@ import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
 const E = CONFIG.efeitos;
+/** Os bônus por ponto do PoE (Força: 0,5 de vida; Inteligência: 1 de mana — a tabela de vida/mana inicial do dono): a tabela `efeitos` com o PoE ligado — o Editor de Classes edita por cima (`systems/classes.mjs`). */
+export const EFEITOS_DO_POE = { STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2, DEX_ACCURACY_PER_POINT: 2, DEX_EVASION_PER_POINT: 0, DEX_EVASION_PCT_PER_POINT: 0.2, DEX_ATTACK_SPEED_PER_POINT: 0, INT_MANA_PER_POINT: 1, INT_MAGIC_DAMAGE_PER_POINT: 0, INT_ENERGY_SHIELD_PCT_PER_POINT: 0.2 };
+if (itensPoeLigado()) Object.assign(E, EFEITOS_DO_POE);
 
 /** A vocação do jogo sem a promoção ("elite knight" → knight). */
 const vocacaoDe = (estado) => {
@@ -38,22 +41,19 @@ const vocacaoDe = (estado) => {
 export function principais(estado, adds = {}) {
   const v = CONFIG.porVocacao[vocacaoDe(estado)];
   const nivel = Math.max(1, estado?.level ?? 1);
-  // Sistema de itens do PoE (só com ITENS_POE=1): os atributos iniciais da CLASSE do PoE e nenhum ganho por level (decisão do dono, 05/10).
+  // Sistema de itens do PoE (só com ITENS_POE=1): a CLASSE do PoE do personagem (a do Editor de Classes, cuja fábrica é a do PoE: atributos iniciais e nenhum ganho
+  // por level — decisão do dono, 05/10); quem ainda não tem classe do PoE usa a padrão da vocação.
   const classe = classeDe(estado);
-  const daVocacao = classe
-    ? { ...classe.atributos }
-    : Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.floor((v.base[k] ?? 0) + (v.porLevel[k] ?? 0) * (nivel - 1))]));
+  const daClasse = classe ? CONFIG.porVocacao[classe.slug.toLowerCase()] ?? { base: classe.atributos, porLevel: {} } : v;
+  const daVocacao = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.floor((daClasse.base[k] ?? 0) + (daClasse.porLevel?.[k] ?? 0) * (nivel - 1))]));
   const total = Object.fromEntries(PRINCIPAIS.map((k) => [k, daVocacao[k] + Math.round(adds[k] ?? 0)]));
   return { ...total, daVocacao };
 }
 
 /** O que STR/DEX/INT dão ao personagem (`p` = `principais(...)`). */
 export function efeitos(p) {
-  // A escala do PoE (só com ITENS_POE=1): STR +0,5 de vida e +0,2% de dano físico; DEX +2 de precisão e +0,2% de evasão; INT +0,5 de mana
-  // e +0,2% de escudo de energia — por ponto, como no PoE (sem velocidade de ataque nem dano mágico pelos atributos).
-  if (itensPoeLigado()) {
-    return { vida: p.str * 0.5, danoFisicoPct: p.str * 0.2, precisao: p.dex * 2, evasao: 0, evasaoPct: p.dex * 0.2, velocidadeDeAtaquePct: 0, mana: p.int * 0.5, danoMagicoPct: 0, energyShieldPct: p.int * 0.2 };
-  }
+  // Com o PoE ligado, a tabela `E` é a do PoE (STR +0,5 de vida e +0,2% de dano físico; DEX +2 de precisão e +0,2% de evasão; INT +0,5 de mana e +0,2% de
+  // escudo de energia — `classes.EFEITOS_DO_POE`), editável no Editor de Classes como a do Draevor.
   return {
     vida: p.str * E.STR_LIFE_PER_POINT,
     danoFisicoPct: p.str * E.STR_PHYSICAL_DAMAGE_PER_POINT,

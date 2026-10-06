@@ -7,6 +7,8 @@
 import { el, msg, cabecalho, botaoCopiar } from './editor-ui.mjs';
 import { retrato } from './editor-sprites.mjs';
 import { cartaoDeAtaque, metrica, barrasDeResistencia, seloDoElemento } from './editor-fichas.mjs';
+import { editorDeAtaques } from './editor-ataques.mjs';
+import { escolherSprite } from './editor-biblioteca-sprites.mjs';
 
 const BASE = '/api/mapas/_engine/itens-poe/';
 const api = async (rota, corpo) => (await fetch(BASE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
@@ -187,6 +189,7 @@ function fichaDoChefe(c) {
         c.noJogo.comportamentos.length ? el('div', { class: 'eng-ataques' }, c.noJogo.comportamentos.map(cartaoDeHabilidade)) : el('p', { class: 'dica' }, 'Só o corpo a corpo (nenhuma habilidade do poedb vira comportamento).')] : el('p', { class: 'nao' }, 'Não registrado no jogo.'),
       c.arena ? el('p', { class: 'dica' }, `Arena: ${c.arena.deOutroBoss ? `a do boss "${c.arena.nome}" do Draevor (mesma criatura de desenho)` : 'sala padrão de boss (40×40)'}.`) : null,
       el('h5', {}, 'Habilidades no poedb'), tabelaDeHabilidades(s.habilidades),
+      el('details', { class: 'atq-no-chefe' }, el('summary', {}, el('b', {}, 'Editar ataques e efeitos (com a arena)')), editorDeAtaques(s.slug)),
       c.acompanhantes?.length ? el('p', { class: 'dica' }, `Acompanhantes no PoE: ${c.acompanhantes.map((a) => a.nome ?? a).join(', ')}.`) : null);
   }
   return el('div', { class: 'pc-chefe-ficha' },
@@ -511,4 +514,319 @@ export function editorDeDrops(monstro, drops = [], { somenteLeitura = false, aoS
   };
   pintar();
   return caixa;
+}
+
+// ================================================================ MOBS (com o PoE ligado: os monstros do PoE, no lugar do bestiário do Tibia)
+
+export function criarTelaDosMobsPoe({ raiz }) {
+  const T = { lista: null, sel: null, busca: '', ato: '', soUnicos: false, criaturas: [], qCriatura: '' };
+  async function desenhar(resto = []) {
+    if (!(await ligado(raiz, 'Mobs'))) return;
+    T.lista = (await api('mobs')).mobs;
+    if (resto[0]) T.sel = resto[0];
+    raiz().replaceChildren(
+      cabecalho('Mobs', `Os ${T.lista.length} monstros da campanha do PoE: os status são os do PoE (por nível de área), o desenho é o de uma criatura do Draevor. Os status de cada área se editam na aba Acts (ato → área → mobs); aqui ficam o desenho e os drops dos únicos.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pm-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pm-painel' })));
+    pintarLista();
+    pintarPainel();
+  }
+  const filtrados = () => {
+    const t = T.busca.trim().toLowerCase();
+    return T.lista.filter((m) => (!t || m.nome.toLowerCase().includes(t) || m.slug.toLowerCase().includes(t)) && (!T.ato || m.ocorrencias.some((o) => String(o.ato) === T.ato)) && (!T.soUnicos || m.unico));
+  };
+  function pintarLista() {
+    const l = filtrados();
+    const atos = [...new Set(T.lista.flatMap((m) => m.ocorrencias.map((o) => o.ato)))].sort((a, b) => a - b);
+    document.querySelector('#pm-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} de ${T.lista.length}`),
+        el('input', { type: 'search', placeholder: 'Buscar monstro…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintarLista(); } }),
+        el('select', { onchange: (e) => { T.ato = e.target.value; pintarLista(); } }, el('option', { value: '' }, 'Todos os atos'), atos.map((a) => el('option', { value: String(a), selected: String(a) === T.ato }, a === 11 ? 'Epílogo' : `Ato ${a}`))),
+        el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: T.soUnicos, onchange: (e) => { T.soUnicos = e.target.checked; pintarLista(); } }), 'só únicos')),
+      el('div', { class: 'bib-grade' }, l.slice(0, 120).map((m) => {
+        const o = m.ocorrencias[0];
+        return el('div', { class: `eng-card${m.slug === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => { T.sel = m.slug; pintarLista(); pintarPainel(); } },
+          el('div', { class: 'eng-card-arte' }, retrato(m.desenho, 64, { categoria: 'monstros' })),
+          el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome' }, m.nome), el('span', { class: 'eng-id' }, m.slug),
+            el('div', { class: 'eng-card-selos' }, m.unico ? el('span', { class: 'selo aviso' }, 'único') : null, o ? el('span', { class: 'selo' }, `${o.ato === 11 ? 'Epílogo' : `Ato ${o.ato}`} · nv ${o.nivel}`) : null, o ? el('span', { class: 'selo usos' }, `${num(o.vida + o.escudoDeEnergia)} vida`) : null, m.ocorrencias.length > 1 ? el('span', { class: 'selo' }, `${m.ocorrencias.length} áreas`) : null)));
+      })),
+      l.length > 120 ? el('p', { class: 'dica' }, `Mostrando 120 de ${l.length}: use a busca ou o filtro de ato.`) : null);
+  }
+  async function buscarCriaturas(q) {
+    T.qCriatura = q;
+    T.criaturas = q.length >= 2 ? (await api(`criaturas?q=${encodeURIComponent(q)}`)).criaturas : [];
+    pintarPainel();
+  }
+  function pintarPainel() {
+    const caixa = document.querySelector('#pm-painel');
+    if (!caixa) return;
+    const m = T.lista?.find((x) => x.slug === T.sel);
+    if (!m) return caixa.replaceChildren(el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha um monstro'), el('span', { class: 'dica' }, 'Status do PoE em cada área, o desenho e (nos únicos) o que ele solta.')));
+    const trocarDesenho = async (key) => {
+      const r = await api('mobs/desenho', { slug: m.slug, desenho: key });
+      if (!r.ok) return msg(r.erros?.[0] ?? 'Não deu.', 'erro');
+      msg(key ? 'Desenho trocado (vale na próxima entrada nas áreas dele).' : 'Desenho automático de volta.', 'ok');
+      T.lista = (await api('mobs')).mobs;
+      T.criaturas = [];
+      pintarLista();
+      pintarPainel();
+    };
+    T.aba ??= 'status';
+    const abas = [['status', 'Status por área'], ['ataques', 'Ataques e efeitos'], ['desenho', 'Desenho'], ['drops', 'Drops']];
+    const topo = el('div', { class: 'linha', style: 'gap:12px;align-items:center' }, retrato(m.desenho, 96, { categoria: 'monstros', animar: true }), el('div', {}, el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, m.slug), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null));
+    const barraDeAbas = el('div', { class: 'eng-abas', role: 'tablist' }, abas.map(([id, nome]) => el('button', { type: 'button', role: 'tab', class: T.aba === id ? 'ativa' : '', onclick: () => { T.aba = id; pintarPainel(); } }, nome)));
+    if (T.aba === 'ataques') return caixa.replaceChildren(el('div', { class: 'bib-painel-corpo' }, topo, barraDeAbas, editorDeAtaques(m.slug)));
+    caixa.replaceChildren(el('div', { class: 'bib-painel-corpo' }, topo, barraDeAbas));
+    const corpo = caixa.firstChild;
+    const secoes = {};
+    const sec = (nome, ...filhos) => (secoes[nome] = filhos);
+    sec('desenho',
+      el('h4', {}, 'Desenho (criatura do Draevor)'),
+      el('div', { class: 'dica' }, `Agora: ${m.desenhoDe ?? '—'}${m.desenhoAjustado ? ' (escolhido na Engine)' : ' (automático pelo nome / pelo mapa)'}`),
+      el('button', { type: 'button', class: 'primario', onclick: async () => {
+        const x = await escolherSprite({ tipo: 'mobs', secoes: ['mobs', 'outfits', 'montarias'], titulo: `Desenho de ${m.nome} — escolha na Biblioteca de sprites` });
+        if (x) trocarDesenho(`look:${x.id}`);
+      } }, 'Escolher na Biblioteca de sprites'),
+      m.desenhoAjustado ? el('button', { type: 'button', onclick: () => trocarDesenho(null) }, 'Voltar ao desenho automático') : null,
+      m.desenho?.look ? el('p', { class: 'dica' }, 'Para mudar os quadros, as direções e a animação do próprio desenho: ', el('a', { href: `#sprites/${m.desenho.look}` }, `Editor de sprites (look ${m.desenho.look}) →`)) : null);
+    sec('status',
+      el('h4', {}, `Status do PoE por área (${m.ocorrencias.length})`),
+      el('div', { class: 'bib-tabela' }, el('table', {},
+        el('thead', {}, el('tr', {}, ['Área', 'Nível', 'Vida', 'ES', 'Golpe', 'Tempo', 'Armadura', 'Evasão', 'Res. F/G/R/C', 'Exp'].map((h) => el('th', {}, h)))),
+        el('tbody', {}, m.ocorrencias.map((o) => el('tr', {}, el('td', {}, `${o.ato === 11 ? 'Ep.' : `A${o.ato}`} · ${o.areaNome}`), el('td', { class: 'num' }, o.nivel), el('td', { class: 'num' }, num(o.vida)), el('td', { class: 'num' }, num(o.escudoDeEnergia)), el('td', { class: 'num' }, num(o.dano)), el('td', { class: 'num' }, `${Number(o.tempoAtaque).toFixed(2)} s`), el('td', { class: 'num' }, num(o.armadura)), el('td', { class: 'num' }, num(o.evasao)), el('td', { class: 'num' }, ['fire', 'ice', 'energy', 'chaos'].map((e) => o.resistencias?.[e] ?? 0).join('/')), el('td', { class: 'num' }, num(o.experiencia))))))),
+      el('p', { class: 'dica' }, 'Para mudar os status numa área: aba Acts → o ato → a área → Mobs da área.'));
+    sec('drops',
+      el('h4', {}, 'Drops'),
+      m.unico ? editorDeDrops(m.slug, m.drops ?? []) : el('div', { class: 'dica' }, 'Monstro comum: sem item próprio (modelo do PoE). Cai pela tabela global: ~16% de chance (mais nos mágicos/raros), Item Level = o nível dele, qualquer base até esse nível.'));
+    corpo.append(...(secoes[T.aba] ?? []).filter(Boolean));
+  }
+  return { desenhar };
+}
+
+// ================================================================ MAPAS (Campanha → Mapas): os terrenos que as áreas usam
+
+export function criarTelaDosMapasPoe({ raiz }) {
+  const T = { lista: null, sel: null, busca: '', soUsados: true };
+  async function desenhar() {
+    if (!(await ligado(raiz, 'Mapas'))) return;
+    T.lista = (await api('mapas')).mapas;
+    raiz().replaceChildren(
+      cabecalho('Mapas', `Os ${T.lista.length} mapas do Draevor que servem de terreno às áreas da campanha. Veja quem usa cada um, troque o mapa de uma área e abra o mapa no Editor de mapas (Ferramentas) para mudar o chão e os spawns.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pmap-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pmap-painel' })));
+    pintar();
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const l = T.lista.filter((m) => (!T.soUsados || m.areas.length) && (!t || m.nome.toLowerCase().includes(t) || m.id.includes(t) || m.areas.some((a) => a.nome.toLowerCase().includes(t))));
+    document.querySelector('#pmap-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} mapa(s)`), el('input', { type: 'search', placeholder: 'Buscar mapa ou área…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: T.soUsados, onchange: (e) => { T.soUsados = e.target.checked; pintar(); } }), 'só os usados')),
+      el('div', { class: 'bib-grade' }, l.map((m) => el('div', { class: `eng-card${m.id === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => { T.sel = m.id; pintar(); } },
+        el('div', { class: 'eng-card-arte' }, retrato(m.desenho, 64, { categoria: 'mapas' })),
+        el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome' }, m.nome), el('span', { class: 'eng-id' }, m.id),
+          el('div', { class: 'eng-card-selos' }, m.nivel ? el('span', { class: 'selo' }, `nv ${m.nivel}`) : null, el('span', { class: m.areas.length ? 'selo usos' : 'selo' }, m.areas.length ? `${m.areas.length} área(s)` : 'livre')))))));
+    const m = T.lista.find((x) => x.id === T.sel);
+    document.querySelector('#pmap-painel')?.replaceChildren(!m ? el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha um mapa'), el('span', { class: 'dica' }, 'Quem usa, trocar o mapa de uma área e abrir no Editor de mapas.')) : el('div', { class: 'bib-painel-corpo' },
+      el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, m.id),
+      el('div', { class: 'linha' }, el('a', { class: 'botao', href: `#mapas/${encodeURIComponent(m.id)}` }, 'Abrir no Editor de mapas →')),
+      el('h4', {}, `Áreas que usam este mapa (${m.areas.length})`),
+      m.areas.length ? el('div', { class: 'pmap-areas' }, m.areas.map((a) => el('div', { class: 'linha' }, el('span', { class: 'selo' }, a.ato === 11 ? 'Ep.' : `A${a.ato}`), el('b', { style: 'flex:1' }, a.nome), el('span', { class: 'dica' }, `nv ${a.nivel}${a.trocado ? ' · trocado' : ''}`), el('a', { href: `#poe-fases/poe-ato-${a.ato}/${a.id}` }, 'editar a fase →')))) : el('p', { class: 'dica' }, 'Nenhuma área usa este mapa. Para ligar: Campanha → Fases → a fase → Mapa e mobs da área.')));
+  }
+  return { desenhar };
+}
+
+// ================================================================ MISSÕES (Campanha → Missões): as missões do Drive e o que o jogo liga a elas
+
+export function criarTelaDasMissoesPoe({ raiz }) {
+  const T = { lista: null, sel: null, busca: '', ato: '', soLigadas: false };
+  async function desenhar() {
+    if (!(await ligado(raiz, 'Missões'))) return;
+    T.lista = (await api('missoes')).missoes;
+    raiz().replaceChildren(
+      cabecalho('Missões', `As ${T.lista.length} missões da campanha (coleção do Drive): onde cada uma passa, os objetivos de cada etapa, a recompensa e o que já está ligado no jogo — o item de missão e as fases cuja conclusão vem dela.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pmis-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pmis-painel' })));
+    pintar();
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const l = T.lista.filter((m) => (!T.ato || String(m.ato) === T.ato) && (!T.soLigadas || m.fasesLigadas.length) && (!t || m.nome.toLowerCase().includes(t) || m.areas.some((a) => a.nome.toLowerCase().includes(t))));
+    const atos = [...new Set(T.lista.map((m) => m.ato))].sort((a, b) => a - b);
+    document.querySelector('#pmis-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} missão(ões)`), el('input', { type: 'search', placeholder: 'Buscar missão ou área…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('select', { onchange: (e) => { T.ato = e.target.value; pintar(); } }, el('option', { value: '' }, 'Todos os atos'), atos.map((a) => el('option', { value: String(a), selected: String(a) === T.ato }, `Ato ${a}`))),
+        el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: T.soLigadas, onchange: (e) => { T.soLigadas = e.target.checked; pintar(); } }), 'só as ligadas a uma fase')),
+      el('div', { class: 'pmis-lista' }, l.map((m) => el('button', { type: 'button', class: `pmis-item${m.slug === T.sel ? ' ativo' : ''}`, onclick: () => { T.sel = m.slug; pintar(); } },
+        el('span', { class: 'selo' }, `Ato ${m.ato}`), el('b', {}, m.nome), el('span', { class: 'dica' }, `${m.tipo === 'Optional' ? 'opcional' : 'principal'} · ${m.areas.length} área(s)`),
+        m.fasesLigadas.length ? el('span', { class: 'selo usos' }, `ligada a ${m.fasesLigadas.length} fase(s)`) : el('span', { class: 'selo' }, 'sem fase'), m.item ? el('span', { class: 'selo aviso' }, `📜 ${m.item.nome}`) : null))));
+    const m = T.lista.find((x) => x.slug === T.sel);
+    document.querySelector('#pmis-painel')?.replaceChildren(!m ? el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha uma missão'), el('span', { class: 'dica' }, 'As etapas por área, a recompensa e as fases ligadas a ela.')) : el('div', { class: 'bib-painel-corpo' },
+      el('h2', { class: 'bib-nome' }, m.nome), el('div', { class: 'dica' }, `Ato ${m.ato} · ${m.tipo === 'Optional' ? 'missão opcional' : 'missão principal'}`),
+      m.descricao ? el('p', {}, m.descricao) : null,
+      m.recompensa ? el('p', { class: 'dica' }, `Recompensa no PoE: ${m.recompensa}`) : null,
+      el('h4', {}, 'No jogo'),
+      m.item ? el('div', { class: 'linha' }, el('span', { class: 'conc-icone' }, '📜'), el('b', {}, m.item.nome), el('span', { class: 'dica' }, `item de missão · ${m.item.monstroNome} carrega`)) : el('p', { class: 'dica' }, 'Sem item de missão.'),
+      m.fasesLigadas.length ? el('div', { class: 'pmap-areas' }, m.fasesLigadas.map((f) => el('div', { class: 'linha' }, el('span', { class: 'selo usos' }, f.conclusao?.tipo === 'item-de-missao' ? '📜 item' : '☠ chefe'), el('b', { style: 'flex:1' }, `${f.atoNome} · ${f.nome}`), el('a', { href: `#poe-fases/${f.ato}/${f.fase}` }, 'editar a fase →'))))
+        : el('p', { class: 'dica' }, 'Nenhuma fase conclui por esta missão. Para ligar: abra uma das fases abaixo e escolha em "Como a fase conclui".'),
+      m.fasesDaMissao.length ? [el('h5', {}, 'Fases por onde ela passa'), el('div', { class: 'eng-card-selos' }, m.fasesDaMissao.map((f) => el('a', { class: 'selo', href: `#poe-fases/${f.ato}/${f.fase}` }, f.nome)))] : null,
+      el('h4', {}, 'Etapas (do Drive)'),
+      m.areas.map((a) => el('div', { class: 'pmis-area' }, el('b', {}, `${a.nome}${a.cidade ? ' (cidade)' : ''}`), el('ol', {}, a.etapas.map((e) => el('li', { value: e.etapa }, e.objetivos.slice(0, 2).join(' — ') || e.titulo || '', e.alvos.length ? el('span', { class: 'dica' }, ` · alvo: ${e.alvos.join(', ')}` ) : null, e.npcs.length ? el('span', { class: 'dica' }, ` · NPC: ${e.npcs.join(', ')}`) : null)))))));
+  }
+  return { desenhar };
+}
+
+// ================================================================ MODIFICADORES (Conteúdo → Modificadores): os mods de monstro do PoE e o ouro
+
+const ESTADO_DO_MOD = { efeito: ['ok', 'tem efeito'], aproximado: ['ok', 'efeito aproximado'], parcial: ['aviso', 'efeito parcial'], registrado: ['', 'registrado (sem efeito ainda)'] };
+const NOME_DO_STAT = { vidaPct: 'vida %', danoPct: 'dano %', velocidadePct: 'movimento %', velocidadeDeAtaquePct: 'velocidade de ataque %', regenPct: 'regeneração (% da vida/s)', precisaoPct: 'precisão %', evasaoPct: 'evasão %', armaduraPct: 'armadura %', bloqueio: 'bloqueio %', reducaoDeDano: 'redução de dano %', critChance: 'chance de crítico %', critMultiplicador: 'dano crítico %' };
+const NOME_DO_EL = { physical: 'física', fire: 'fogo', ice: 'gelo', energy: 'raio', chaos: 'caos', earth: 'veneno' };
+const pctX = (f) => `+${num(Math.round(f * 100))}%`;
+
+export function criarTelaDosModificadoresPoe({ raiz }) {
+  const T = { d: null, sel: null, busca: '', raridade: '', estado: '', nivel: '' };
+  async function desenhar() {
+    if (!(await ligado(raiz, 'Modificadores'))) return;
+    T.d = await api('modificadores-monstro');
+    raiz().replaceChildren(
+      cabecalho('Modificadores de monstro', `Os ${T.d.mods.length} modificadores de monstro do PoE (poedb). Monstro Normal não tem; Mágico sorteia 1; Raro, 2 a 4 — pelo peso, entre os de nível até o do monstro, sem repetir a família. Os ocultos da raridade e o ouro por level estão no fim.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pmod-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pmod-painel' })),
+      el('div', { class: 'eng-painel', id: 'pmod-regras' }));
+    pintar();
+    pintarRegras();
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const nivel = Number(T.nivel) || null;
+    const l = T.d.mods.filter((m) => (!T.raridade || (T.raridade === 'magico' ? m.pesoMagico > 0 : m.pesoRaro > 0)) && (!T.estado || m.estado === T.estado) && (!nivel || m.nivel <= nivel)
+      && (!t || m.nome.toLowerCase().includes(t) || (m.nomeEn ?? '').toLowerCase().includes(t) || m.linhas.some((x) => x.toLowerCase().includes(t))));
+    document.querySelector('#pmod-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} modificador(es)`),
+        el('input', { type: 'search', placeholder: 'Buscar nome ou texto…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('select', { onchange: (e) => { T.raridade = e.target.value; pintar(); } }, [['', 'Mágico e Raro'], ['magico', 'Sai em Mágico'], ['raro', 'Sai em Raro']].map(([v, n]) => el('option', { value: v, selected: v === T.raridade }, n))),
+        el('select', { onchange: (e) => { T.estado = e.target.value; pintar(); } }, el('option', { value: '' }, 'Todos os estados'), Object.entries(ESTADO_DO_MOD).map(([v, [, n]]) => el('option', { value: v, selected: v === T.estado }, n))),
+        el('input', { type: 'number', min: 1, max: 100, placeholder: 'Nível do monstro', value: T.nivel, style: 'width:9em', oninput: (e) => { T.nivel = e.target.value; pintar(); } })),
+      el('div', { class: 'pmis-lista' }, l.map((m) => el('button', { type: 'button', class: `pmis-item${m.id === T.sel ? ' ativo' : ''}`, onclick: () => { T.sel = m.id; pintar(); } },
+        el('span', { class: 'selo' }, `nv ${m.nivel}`), el('b', {}, m.nome), el('span', { class: 'dica' }, m.linhas.slice(0, 2).join(' · ')),
+        m.pesoMagico > 0 ? el('span', { class: 'selo' }, 'Mágico') : null, m.pesoRaro > 0 ? el('span', { class: 'selo' }, 'Raro') : null,
+        el('span', { class: `selo ${ESTADO_DO_MOD[m.estado]?.[0] ?? ''}` }, ESTADO_DO_MOD[m.estado]?.[1] ?? m.estado)))));
+    const m = T.d.mods.find((x) => x.id === T.sel);
+    document.querySelector('#pmod-painel')?.replaceChildren(!m ? el('div', { class: 'bib-painel-vazio' }, el('b', {}, 'Escolha um modificador'), el('span', { class: 'dica' }, 'O texto do PoE, o que vale no Draevor, o peso e o nível.')) : el('div', { class: 'bib-painel-corpo' },
+      el('h2', { class: 'bib-nome' }, m.nome), el('span', { class: 'eng-id' }, `${m.nomeEn ?? ''} · ${m.id}`),
+      el('div', { class: 'eng-card-selos' }, el('span', { class: 'selo' }, m.tipo === 'archnemesis' ? 'Archnemesis' : 'Modificador'), el('span', { class: 'selo' }, `nível ${m.nivel}+`),
+        el('span', { class: 'selo' }, `peso Mágico ${num(m.pesoMagico)}`), el('span', { class: 'selo' }, `peso Raro ${num(m.pesoRaro)}`), el('span', { class: `selo ${ESTADO_DO_MOD[m.estado]?.[0] ?? ''}` }, `${ESTADO_DO_MOD[m.estado]?.[1] ?? m.estado} (${m.valem}/${m.total})`)),
+      el('h4', {}, 'No PoE'), el('ul', {}, m.linhas.map((x) => el('li', {}, x))),
+      el('h4', {}, 'No Draevor'),
+      Object.keys(m.stats).length || m.mecanicas?.length ? el('ul', {},
+        Object.entries(m.stats).filter(([k]) => k !== 'resist').map(([k, v]) => el('li', {}, `${NOME_DO_STAT[k] ?? k}: ${v > 0 ? '+' : ''}${num(v)}`)),
+        Object.entries(m.stats.resist ?? {}).map(([k, v]) => el('li', {}, `resistência a ${NOME_DO_EL[k] ?? k}: ${v > 0 ? '+' : ''}${num(v)}%`)),
+        (m.mecanicas ?? []).map((x) => el('li', {}, `no golpe (${x.chance}%): ${x.danoPctDoGolpe}% do dano em ${NOME_DO_EL[x.elemento] ?? x.elemento} ao longo de ${x.duracaoMs / 1000} s`)))
+        : el('p', { class: 'dica' }, 'Nada ainda — fica registrado e não entra no sorteio.'),
+      el('h5', {}, 'Stats do PoE'), el('pre', { class: 'bib-json' }, m.statsPoe.map((s) => `${s.stat}: ${s.min === s.max ? s.min : `${s.min} a ${s.max}`}`).join('\n') || '—')));
+  }
+  function pintarRegras() {
+    const d = T.d;
+    const o = d.ocultos ?? {};
+    const linhaOculto = (r, n) => o[r] ? el('tr', {}, el('th', {}, n), el('td', {}, pctX(o[r].vidaMais)), el('td', {}, pctX(o[r].danoMais)), el('td', {}, `+${o[r].velocidadeDeAtaquePct}%`), el('td', {}, `+${o[r].velocidadePct}%`), el('td', {}, d.expPorRaridade?.[r] ? `×${num(d.expPorRaridade[r])}` : pctX(o[r].expMais))) : null;
+    const mult = (r) => d.ouro?.porRaridade?.[r] ?? 1 + (d.bonusDeQuantidade?.[r] ?? 0);
+    document.querySelector('#pmod-regras')?.replaceChildren(el('div', { class: 'eng-painel-corpo' },
+      el('h3', {}, 'Ocultos da raridade (o que o monstro do PoE ganha sem aparecer)'),
+      el('p', { class: 'dica' }, `Chance de um monstro comum nascer Mágico ${num((d.sorteioDaRaridade.modificado ?? 0) * 100)}% e Raro ${num((d.sorteioDaRaridade.raro ?? 0) * 100)}% (spawn sem raridade). O spawn que define a raridade no Editor de mapas manda; os únicos do PoE já vêm com os números de único.`),
+      el('table', { class: 'mob-tabela' }, el('tr', {}, el('th', {}, 'Raridade'), el('th', {}, 'Vida'), el('th', {}, 'Dano'), el('th', {}, 'Vel. ataque'), el('th', {}, 'Movimento'), el('th', {}, 'Exp')),
+        linhaOculto('magico', 'Mágico'), linhaOculto('raro', 'Raro / Elite'), linhaOculto('unico', 'Único / Chefe')),
+      el('h3', {}, 'Ouro por level do monstro'),
+      el('p', { class: 'dica' }, `Aleatório entre o mínimo e o máximo (interpolado entre os levels da tabela) × a raridade: Normal ×${num(mult('normal'))}, Mágico ×${num(mult('modificado'))}, Raro ×${num(mult('raro'))}, Único/Chefe ×${num(mult('boss'))}; soma o Gold Find. Editável em gamedata/itens-poe/regras.json → ouro.`),
+      el('div', { style: 'overflow-x:auto' }, el('table', { class: 'mob-tabela' }, el('tr', {}, el('th', {}, 'Level'), (d.ouro?.tabela ?? []).map(([lv]) => el('th', {}, lv))), el('tr', {}, el('th', {}, 'Ouro'), (d.ouro?.tabela ?? []).map(([, a, b]) => el('td', {}, `${a}–${b}`)))))));
+  }
+  return { desenhar };
+}
+
+// ================================================================ GEMAS (Conteúdo → Gemas) e a ARENA DE GEMAS (Ferramentas)
+// A coleção do dono (`poe-gemas-poedb`, servida por `admin/gemas-poe.mjs`): as 562 gemas ativas do poedb, cada uma com o STATUS verificado
+// usando a gema na Arena de Gemas dele (funciona / parcial / não) e o porquê; e a própria arena, para ver cada efeito batendo nos mobs.
+
+const STATUS_DA_GEMA = { funciona: ['ok', '✓ funciona'], parcial: ['aviso', '◐ parcial'], nao: ['erro', '✗ não funciona'] };
+const COR_DA_GEMA = { vermelha: '#e0705c', verde: '#7fd36b', azul: '#6ba5e0', branca: '#e8e2d0' };
+const iconeDaGema = (g, tamanho = 40) => el('img', { src: `${BASE}gemas-arena/${g.icone}`, alt: '', width: tamanho, height: tamanho, loading: 'lazy', style: `width:${tamanho}px;height:${tamanho}px;object-fit:contain`, onerror: (e) => (e.target.style.visibility = 'hidden') });
+
+export function criarTelaDasGemasPoe({ raiz }) {
+  const T = { lista: null, resumo: null, sel: null, det: null, busca: '', status: '', jogo: '', cor: '', arq: '' };
+  async function desenhar(args = []) {
+    if (!(await ligado(raiz, 'Gemas'))) return;
+    const r = await api('gemas');
+    if (!r.ok) return raiz().replaceChildren(cabecalho('Gemas', r.erros?.[0] ?? 'Sem a coleção de gemas.'));
+    T.lista = r.gemas;
+    T.resumo = r.resumo;
+    if (args[0]) T.sel = decodeURIComponent(args[0]);
+    const s = T.resumo.porStatus;
+    const j = T.resumo.porStatusJogo ?? {};
+    raiz().replaceChildren(
+      cabecalho('Gemas', `As ${T.resumo.total} gemas ativas do PoE (poedb, coleção do dono) — no modo PoE elas substituem as gemas do Draevor. Dois status: NA ARENA (a simulação do dono: ✓ ${s.funciona ?? 0}, ◐ ${s.parcial ?? 0}, ✗ ${s.nao ?? 0}) e NO JOGO (o combate do Draevor, com a forma e o efeito visual de uma magia parecida: ✓ ${j.funciona ?? 0}, ◐ ${j.parcial ?? 0}, ✗ ${j.nao ?? 0}). Cada gema diz o que falta. "Ver na arena" abre a gema batendo nos mobs.`),
+      el('div', { class: 'poe-v painel-largo' }, el('section', { id: 'pgem-lista', style: 'grid-column: span 2' }), el('aside', { class: 'bib-painel', id: 'pgem-painel' })));
+    pintar();
+    if (T.sel) await abrir(T.sel);
+  }
+  function pintar() {
+    const t = T.busca.trim().toLowerCase();
+    const l = T.lista.filter((g) => (!T.status || g.status === T.status) && (!T.jogo || g.statusJogo === T.jogo) && (!T.cor || g.cor === T.cor) && (!T.arq || g.arquetipoNome === T.arq)
+      && (!t || g.nome.toLowerCase().includes(t) || (g.en ?? '').toLowerCase().includes(t) || g.tags.some((x) => x.toLowerCase().includes(t))));
+    const arquetipos = [...new Set(T.lista.map((g) => g.arquetipoNome).filter(Boolean))].sort();
+    document.querySelector('#pgem-lista')?.replaceChildren(
+      el('div', { class: 'bib-contagem pa-barra' }, el('b', {}, `${l.length} gema(s)`),
+        el('input', { type: 'search', placeholder: 'Buscar gema, nome em inglês ou tag…', value: T.busca, oninput: (e) => { T.busca = e.target.value; pintar(); } }),
+        el('select', { onchange: (e) => { T.status = e.target.value; pintar(); } }, [['', 'Arena: todos'], ...Object.entries(STATUS_DA_GEMA).map(([k, [, n]]) => [k, `Arena: ${n}`])].map(([v, n]) => el('option', { value: v, selected: v === T.status }, n))),
+        el('select', { onchange: (e) => { T.jogo = e.target.value; pintar(); } }, [['', 'Jogo: todos'], ...Object.entries(STATUS_DA_GEMA).map(([k, [, n]]) => [k, `Jogo: ${n}`])].map(([v, n]) => el('option', { value: v, selected: v === T.jogo }, n))),
+        el('select', { onchange: (e) => { T.cor = e.target.value; pintar(); } }, [['', 'Todas as cores'], ['vermelha', 'Vermelha (For)'], ['verde', 'Verde (Des)'], ['azul', 'Azul (Int)'], ['branca', 'Branca']].map(([v, n]) => el('option', { value: v, selected: v === T.cor }, n))),
+        el('select', { onchange: (e) => { T.arq = e.target.value; pintar(); } }, el('option', { value: '' }, 'Todos os tipos'), arquetipos.map((a) => el('option', { value: a, selected: a === T.arq }, a)))),
+      el('div', { class: 'bib-grade' }, l.map((g) => el('div', { class: `eng-card${g.slug === T.sel ? ' selecionado' : ''}`, tabindex: 0, role: 'button', onclick: () => abrir(g.slug) },
+        el('div', { class: 'eng-card-arte' }, iconeDaGema(g, 48)),
+        el('div', { class: 'eng-card-info' }, el('b', { class: 'eng-card-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, g.en),
+          el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${STATUS_DA_GEMA[g.status]?.[0] ?? ''}`, title: 'na Arena de Gemas' }, `arena ${STATUS_DA_GEMA[g.status]?.[1] ?? g.status}`), g.statusJogo ? el('span', { class: `selo ${STATUS_DA_GEMA[g.statusJogo]?.[0] ?? ''}`, title: 'no combate do jogo' }, `jogo ${STATUS_DA_GEMA[g.statusJogo]?.[1] ?? g.statusJogo}`) : null, g.arquetipoNome ? el('span', { class: 'selo' }, g.arquetipoNome) : null, el('span', { class: 'selo' }, `nv ${g.nivelReq}`)))))));
+  }
+  async function abrir(slug) {
+    T.sel = slug;
+    pintar();
+    const g = await api(`gemas/detalhe?slug=${encodeURIComponent(slug)}`);
+    if (!g?.slug) return;
+    const v = g.verificacao ?? {};
+    const st = STATUS_DA_GEMA[v.status] ?? ['', v.status ?? '?'];
+    const ex = v.execucao ?? {};
+    document.querySelector('#pgem-painel')?.replaceChildren(el('div', { class: 'bib-painel-corpo' },
+      el('div', { class: 'linha' }, iconeDaGema(g, 64), el('div', {}, el('h2', { class: 'bib-nome', style: `color:${COR_DA_GEMA[g.cor] ?? ''}` }, g.nome), el('span', { class: 'eng-id' }, `${g.en} · ${g.slug}`))),
+      el('div', { class: 'eng-card-selos' }, el('span', { class: `selo ${st[0]}` }, st[1]), v.arquetipoNome ? el('span', { class: 'selo' }, v.arquetipoNome) : null, v.elemento ? el('span', { class: 'selo' }, v.elemento) : null, el('span', { class: 'selo' }, `linhas simuladas ${v.aplicadas ?? 0}/${v.total ?? 0}`), ...(g.tags ?? []).map((t) => el('span', { class: 'selo' }, t))),
+      el('div', { class: 'linha' }, el('a', { class: 'botao', href: `#poe-arena-gemas/${encodeURIComponent(g.slug)}` }, 'Ver na arena (batendo nos mobs) →')),
+      g.noJogo ? [el('h4', {}, `No jogo: ${STATUS_DA_GEMA[g.noJogo.status]?.[1] ?? g.noJogo.status}`),
+        el('p', { class: 'dica' }, `Usa a forma e o efeito visual da magia "${g.noJogo.molde}" do Draevor${g.noJogo.formato ? ` (${g.noJogo.formato})` : ''}, elemento ${g.noJogo.elemento}; o dano, o custo, o tempo e a recarga vêm do nível da gema (a tabela do PoE). Os suportes do Draevor valem nela.`),
+        // Os TEMPOS do PoE que o jogo usa (sem o cooldown global do Draevor): conjuração (magia) ou a velocidade da gema sobre o golpe da arma (ataque), e a recarga.
+        el('div', { class: 'eng-metricas' }, ...[1, 20].flatMap((n) => {
+          const t = g.noJogo.tempos?.[n] ?? {};
+          const s = (ms) => `${(ms / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s`;
+          return [
+            metrica(g.noJogo.ataque ? `Ataque (nv ${n})` : `Conjuração (nv ${n})`, g.noJogo.ataque ? `arma × ${t.velAtaqueBase ?? 100}%` : t.conjuracaoMs ? s(t.conjuracaoMs) : 'instantânea'),
+            metrica(`Recarga (nv ${n})`, t.recargaMs ? `${s(t.recargaMs)}${t.cargas > 1 ? ` · ${t.cargas} usos` : ''}` : 'sem recarga'),
+          ];
+        })),
+        el('p', { class: 'dica' }, 'No jogo: a magia dura a conjuração (÷ a velocidade de conjuração) e o ataque o golpe da arma (APS e velocidade de ataque) ÷ a velocidade da gema; a próxima skill sai quando ela termina — sem o cooldown global do Draevor. Recarga só a da gema no PoE (com a recuperação de recarga).'),
+        g.noJogo.motivos.length ? el('ul', {}, g.noJogo.motivos.map((m) => el('li', {}, m))) : el('p', { class: 'dica' }, 'Tudo da gema tem efeito no jogo.')] : null,
+      el('h4', {}, `Na arena: ${st[1]}`),
+      (v.motivos ?? []).length ? el('ul', {}, v.motivos.map((m) => el('li', {}, m))) : el('p', { class: 'dica' }, 'Todas as linhas de efeito são simuladas.'),
+      ex.observado?.length || ex.efeitos?.length ? [el('h4', {}, 'Verificação (a gema usada de verdade)'), el('p', { class: 'dica' }, [...(ex.observado ?? []), ex.efeitos?.length ? `efeitos vistos: ${ex.efeitos.join(', ')}` : null].filter(Boolean).join(' · '))] : null,
+      g.desc ? el('p', {}, g.desc) : null,
+      el('h4', {}, 'Propriedades'), el('ul', {}, (g.props ?? []).map((p) => el('li', {}, p))),
+      (g.mods ?? []).length ? [el('h4', {}, 'Efeitos'), el('ul', {}, g.mods.map((m) => el('li', {}, m)))] : null,
+      (g.qualidade ?? []).length ? [el('h4', {}, 'Qualidade'), el('ul', {}, g.qualidade.map((m) => el('li', {}, m)))] : null,
+      g.obtencao ? [el('h4', {}, 'Onde se ganha'), el('p', { class: 'dica' }, typeof g.obtencao === 'string' ? g.obtencao : JSON.stringify(g.obtencao))] : null,
+      (g.linhas ?? []).length ? [el('h4', {}, `Por nível (${g.linhas.length})`), el('div', { style: 'overflow-x:auto;max-height:280px;overflow-y:auto' }, el('table', { class: 'mob-tabela' }, el('tr', {}, (g.colunas ?? []).map((c) => el('th', {}, c))), g.linhas.map((l) => el('tr', {}, l.map((c) => el('td', {}, c))))))] : null));
+  }
+  return { desenhar };
+}
+
+export function criarTelaDaArenaDeGemas({ raiz }) {
+  async function desenhar(args = []) {
+    if (!(await ligado(raiz, 'Arena de gemas'))) return;
+    const slug = args[0] ? decodeURIComponent(args[0]) : null;
+    const quadro = el('iframe', { src: `${BASE}gemas-arena/engine/index.html`, title: 'Arena de Gemas', style: 'width:100%;height:calc(100vh - 150px);min-height:620px;border:1px solid var(--eng-linha, #2a3438);border-radius:6px;background:#0b0f11' });
+    if (slug) quadro.addEventListener('load', () => quadro.contentWindow?.postMessage({ tipo: 'gema', slug }, '*'), { once: true });
+    raiz().replaceChildren(
+      cabecalho('Arena de gemas', 'A Arena de Gemas da coleção do dono: um personagem usando cada gema do PoE contra os monstros do bestiário — escolha a gema na lista da esquerda (ou "Ver na arena" na aba Gemas), o mob, o nível e a quantidade. O inspetor da direita marca cada linha de efeito: ✓ simulada, ✗ não simulada. "Mobs usam esta gema" faz os monstros usarem a gema contra você; "Tour" passa pelas gemas filtradas sozinho.'),
+      quadro);
+  }
+  return { desenhar };
 }

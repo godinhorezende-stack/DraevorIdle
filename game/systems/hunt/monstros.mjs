@@ -169,7 +169,7 @@ export function renascer(hunt) {
   // A força da fase e a raridade/modificadores do spawn (a mesma ordem de quando nasceu).
   const criarMonstroDoSpawn = (r) => {
     const m = aplicarEscala(criarMonstro(r, dados), hunt.escala);
-    return m && (r.raridade || r.modificadores?.length) ? Raridade.aplicar(m, Raridade.doSpawn(r)) : m;
+    return m ? Raridade.aplicar(m, { ...Raridade.doSpawn(r), sortear: true }) : m;
   };
   // No lugar (splice), e não `hunt.respawns = ...`: numa caçada em grupo a fila
   // é a MESMA para todos da sala (ver `entrarNaSala`).

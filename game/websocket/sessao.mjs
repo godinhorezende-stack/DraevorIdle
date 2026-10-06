@@ -39,6 +39,9 @@ import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
+import * as FrascosPoe from '../systems/itens-poe/frascos.mjs';
+import * as PreviaPoe from '../systems/itens-poe/previa-da-area.mjs';
+import * as ModsDeMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
 import { refazerMaximos as refazerMaximosDoPersonagem } from '../systems/hunt/combate.mjs';
 import * as Quadro from './quadro.mjs';
 import * as Gemas from '../systems/gemas.mjs';
@@ -205,19 +208,29 @@ function cartaoDaConta(personagens) {
 
 function estadoInicialPersonagem(vocacao, sexo, classe = null) {
   const look = R.LOOK_DA_VOCACAO[vocacao][sexo];
-  const { maxHp, maxMana } = R.statsBase(vocacao, R.NIVEL_INICIAL);
+  // O outfit inicial da CLASSE (Editor de Classes), quando definido para este sexo; senão o da vocação.
+  const daClasse = Classes.outfitInicial(Classes.obter(classe), sexo);
+  // Com o PoE ligado (só local), o começo é o do PoE (decisão do dono, 05/10): nível 1 e só a arma da classe (a mochila fica: é onde os itens moram).
+  const poe = !!ClassesPoe.paraCliente();
+  const nivelInicial = poe ? 1 : R.NIVEL_INICIAL;
+  const { maxHp, maxMana } = R.statsBase(vocacao, nivelInicial);
+  const slugPoe = poe ? ClassesPoe.classeDe({ classe, vocation: vocacao })?.slug : null;
+  const armaPoe = poe ? ItensPoeJogo.armaInicial(slugPoe) : null;
+  const equipamento = Inventario.equipamentoInicial(vocacao);
   return {
     // As gemas iniciais da classe: entregues no primeiro login (`GemasDeSkill.darGemasIniciais`).
     gemasIniciais: true,
-    level: R.NIVEL_INICIAL,
+    level: nivelInicial,
     // A exp REAL de um level 8 (o personagem de teste capturado nasceu com
     // 4200). Com 0 a barra ficava em 0% e o level não subia nunca.
-    xp: R.expForLevel(R.NIVEL_INICIAL),
+    xp: R.expForLevel(nivelInicial),
     vocation: vocacao,
     // A CLASSE escolhida (Editor de Classes): o id dela; `vocation` é a vocação mecânica. Os atributos iniciais vêm da classe e são DERIVADOS a cada cálculo (nunca gravados aqui): entram uma vez só.
     ...(classe ? { classe } : {}),
     sex: sexo,
-    outfit: { type: look, head: 78, body: 88, legs: 58, feet: 76, mount: 0, addons: 0 },
+    outfit: daClasse ?? { type: look, head: 78, body: 88, legs: 58, feet: 76, mount: 0, addons: 0 },
+    // O outfit da classe fica do personagem (com os addons), mesmo que ele troque de roupa ou que o outfit seja da Store.
+    ...(daClasse ? { outfitsDaClasse: { [daClasse.type]: daClasse.addons } } : {}),
     hp: maxHp,
     maxHp,
     mana: maxMana,
@@ -229,8 +242,8 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
     coins: 0,
     stamina: 2520,
     maxStamina: 2520,
-    equipment: Inventario.equipamentoInicial(vocacao),
-    inventory: Inventario.inventarioInicial(vocacao),
+    equipment: armaPoe ? { backpack: equipamento.backpack ?? null, weapon: armaPoe } : equipamento,
+    inventory: armaPoe ? [] : Inventario.inventarioInicial(vocacao),
     pos: { ...R.POSICAO_INICIAL },
     // Barra de ações: vazia (22 slots), teclas 1-9/0/-/= de fábrica (o mesmo
     // molde de `CHARACTER_TEMPLATE.hotkeys`), sem arranjo salvo. Ver `acoes.mjs`.
@@ -305,11 +318,13 @@ function characterParaCliente(personagem, estado) {
       ...CHARACTER_TEMPLATE.derived,
       maxHp: estado.maxHp,
       maxMana: estado.maxMana,
-      capacity: Afixos.capacidade(estado),
+      // `null` = sem capacidade (o PoE não tem peso: a tela esconde a barra de Cap). JSON não carrega o Infinity.
+      capacity: Number.isFinite(Afixos.capacidade(estado)) ? Afixos.capacidade(estado) : null,
       speed: R.baseSpeed(estado.level),
       // Real (fórmula, não o valor fixo do molde): 48% no level 8 é a MESMA
       // conta, mas fixo ele ficaria errado no primeiro level up.
-      expBonus: R.levelBonus(estado.level),
+      // Na curva do PoE não há bônus de level baixo (`Boosts.expDoBicho`).
+      expBonus: R.levelMaximo() !== Infinity ? 0 : R.levelBonus(estado.level),
       // Armadura, defesa, dano, crítico, bloqueio, leech, proteção, alcance,
       // regeneração do equipamento e velocidade — do equipamento REAL.
       ...Ficha.combate(estado),
@@ -318,6 +333,8 @@ function characterParaCliente(personagem, estado) {
       ...Promocao.derivados(estado, Ficha.combate(estado).regenDaArvore),
       // A Coleção (outfits e montarias que ele tem) — a faixa da aba Aparência. Ver `Aparencia.colecao`.
       collection: Aparencia.colecao(estado),
+      // A exp por raridade do monstro (PoE: a ficha mostra os multiplicadores de verdade).
+      ...(ItensPoeCatalogo.ligado() ? { expPorRaridadePoe: ModsDeMonstroPoe.DADOS.expPorRaridade ?? null } : {}),
       // Quantos sqm a arma alcança — o seletor "Distância" marca "máx N" acima disso.
       attackRange: Cacadas.alcanceDaArma(Cacadas.armaDoPersonagem(estado)),
       // Accuracy e Evasion viram chance contra um bicho do MESMO level (a ficha mostra o que elas valem).
@@ -368,6 +385,8 @@ function characterParaCliente(personagem, estado) {
     ...Bolsa.paraCliente(estado, Cacadas.faltaParaVender(estado)),
     equipment: estado.equipment ?? {},
     inventory: estado.inventory ?? [],
+    // O cinto de frascos do PoE (só com ITENS_POE=1; null sem o sistema).
+    frascosPoe: FrascosPoe.paraCliente(estado),
     // Estes três são MUTÁVEIS por personagem (ver `estadoInicialPersonagem`) —
     // por isso vêm de `estado`, e não ficam para trás no molde compartilhado.
     // `?? CHARACTER_TEMPLATE.X`: personagens salvos ANTES deste sistema
@@ -574,6 +593,8 @@ export class Sessao {
   }
 
   async despacharTreino(m) {
+    // Com o PoE ligado não há treino de perícia (dono, 06/10): começar é recusado; parar continua valendo (quem já estava treinando sai).
+    if (m.action === 'start' && ItensPoeCatalogo.ligado()) return this.erro('Não há treino de skills: no PoE o personagem evolui pelo level, pelos itens e pela árvore de passivas.');
     if (m.action === 'stop') {
       // O pátio (treino online) e o Exercise têm cada um o seu fim; "Você não
       // está treinando." só quando NENHUM dos dois está ligado.
@@ -1022,6 +1043,11 @@ export class Sessao {
       case 'release':
         return this.soltarPersonagem();
       // A ficha do monstro pede o que ele paga a mim e como ele bate — a conta é do servidor (`fichaDoBicho`).
+      // A prévia de uma área do PoE na janela da hunt (só leitura: monstros, modificadores, itens e chances).
+      case 'previaPoe': {
+        const previa = ItensPoeCatalogo.ligado() && typeof m.id === 'string' ? PreviaPoe.previaDaArea(m.id) : null;
+        return void this.enviar({ t: 'previaPoe', id: m.id, previa });
+      }
       case 'fichaDoBicho':
         if (this.estado && typeof m.key === 'string') this.enviar({ t: 'fichaDoBicho', ...fichaDoBicho(this.estado, this.estado.hunt, m.key, { huntId: typeof m.huntId === 'string' ? m.huntId : null, dificuldade: typeof m.dificuldade === 'string' ? m.dificuldade : null }) });
         return;
@@ -1090,6 +1116,14 @@ export class Sessao {
       }
       case 'unequip':
         return this.aplicarComSkills(Inventario.desequipar(this.estado, m));
+      // O CINTO de frascos do PoE (`itens-poe/frascos.mjs`): pôr um frasco da mochila e tirar de volta; usar na hora (na caçada).
+      case 'frasco':
+        if (m.action === 'usar') {
+          const usou = FrascosPoe.usar(this.estado, Number(m.vaga), null, this.personagem?.nome);
+          if (usou) Ficha.invalidar(this.estado);
+          return this.aplicar(usou ? { ok: true } : { ok: false, erro: 'Esse frasco não pode ser usado agora (sem cargas, já ativo ou fora da caçada).' });
+        }
+        return this.aplicar(m.action === 'tirar' ? FrascosPoe.tirar(this.estado, m) : FrascosPoe.por(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
       case 'gema':
         return this.aplicarComSkills(
@@ -1636,7 +1670,7 @@ export class Sessao {
     const problema = R.problemaNoNomeDePersonagem(name);
     if (problema) return this.erroDeAuth(problema);
     // A classe é validada AQUI (o cliente só sugere): precisa existir e estar ATIVA; a vocação mecânica sai da classe, não do que o cliente mandou.
-    const cls = Classes.resolverParaCriacao(typeof classe === 'string' && classe ? classe : vocation);
+    const cls = Classes.resolverParaCriacao(typeof classe === 'string' && classe ? classe : typeof classePoe === 'string' && classePoe ? classePoe : vocation);
     if (!cls) return this.erroDeAuth('Classe inválida ou desativada.');
     vocation = cls.vocacaoBase;
     if (!R.VOCACOES_VALIDAS.has(vocation)) return this.erroDeAuth('Vocação inválida.');
@@ -1653,8 +1687,8 @@ export class Sessao {
       sexo: sex,
       estadoInicial: {
         ...estadoInicialPersonagem(vocation, sex, cls.id),
-        // A classe do PoE escolhida na criação (só com ITENS_POE=1; sem ela, a padrão da vocação até escolher).
-        ...(ClassesPoe.paraCliente() && ClassesPoe.valida(classePoe) ? { classePoe } : {}),
+        // A classe do PoE (só com ITENS_POE=1): a classe escolhida na tela de criação já é uma das 7 do PoE (a fábrica do Editor de Classes); sem ela, a que o cliente mandou.
+        ...(ClassesPoe.paraCliente() && (cls.poe || ClassesPoe.valida(classePoe)) ? { classePoe: cls.poe ?? classePoe } : {}),
       },
     });
     // O cliente trata `account` como "a lista mudou, redesenhe" também fora do
@@ -1761,7 +1795,8 @@ export class Sessao {
     if (!estado.autoBoss) Object.assign(estado, Loja.estadoInicial());
     // Migração: quem nasceu com `xp: 0` no level 8 (antes da correção acima)
     // ganha a exp base do level que já tem, somada ao que caçou.
-    if ((estado.xp ?? 0) < R.expForLevel(estado.level)) estado.xp = (estado.xp ?? 0) + R.expForLevel(estado.level);
+    // (Com o PoE ligado não: a curva é outra, e o personagem do PoE já nasce com a exp do level dele.)
+    if (!ItensPoeCatalogo.ligado() && (estado.xp ?? 0) < R.expForLevel(estado.level)) estado.xp = (estado.xp ?? 0) + R.expForLevel(estado.level);
     Treino.garantir(estado);
     // A vida/mana das gemas acesas (quem entrou antes delas existirem acerta aqui).
     Gemas.sincronizarMaximos(estado);

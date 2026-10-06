@@ -32,6 +32,7 @@ import {
   openMenu,
   quantosMover,
   openQuiverPicker,
+  renderCintoDeFrascos,
 } from './inventory.mjs';
 import {
   initChat,
@@ -72,7 +73,7 @@ import {
   openArena,
   openCyclopedia, openBestiary, openReport, openExerciseRapido, openExercise, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente, openCaixaBoosted,
   escolhasDaPosicao, cartazDeBossLigado, redesenharJanelaAberta,
-  chegouFichaDoBicho,
+  chegouFichaDoBicho, chegouPreviaPoe,
 } from './panels.mjs';
 import { lootComGemas } from './loot-do-bicho.mjs';
 import { renderSheet as renderSheetInto } from './sheet.mjs';
@@ -842,6 +843,10 @@ function handle(message) {
     // A ficha de alguém, pedida ao clicar no nome dele no chat.
     case 'fichaDoBicho':
       chegouFichaDoBicho(message);
+      break;
+    // A prévia de uma área do PoE (os números reais do PoE na janela da hunt).
+    case 'previaPoe':
+      chegouPreviaPoe(message);
       break;
     case 'perfil':
       mostrarPerfil(message.perfil);
@@ -7817,6 +7822,8 @@ function renderAll() {
   const comEscudoDeMana =
     !!character.escudoDoAnel || (state.hunt?.buffs ?? []).some((buff) => buff.tipo === 'shield');
   renderHud(character, state.catalog, state.hunt?.party ?? null, comEscudoDeMana, state.hunt);
+  // O cinto de frascos do PoE, junto das réguas de vida e mana (só com ITENS_POE=1).
+  renderCintoDeFrascos();
   // O presente vive do mesmo estado: aparece e some junto com o resto da tela.
   pintarPresente();
   atualizarBotoes();

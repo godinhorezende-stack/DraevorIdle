@@ -203,12 +203,14 @@
     "es_recharge": {
       "nome": "Recarga do Escudo de Energia aumentada",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "personagem/defesa.recarregar: multiplica os 20% do escudo por segundo da recarga"
     },
     "es_recharge_start": {
       "nome": "Início da Recarga do Escudo de Energia mais rápido",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "personagem/defesa.esperaDaRecarga: divide a espera de 2 s até a recarga começar"
     },
     "light_radius": {
       "nome": "Raio de Iluminação aumentado",

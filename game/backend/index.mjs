@@ -10,6 +10,11 @@ import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
+import * as ModificadoresMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
+import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
+import * as GemasDeSkill from '../systems/skills/gemas.mjs';
+import * as Reforcos from '../systems/skills/reforcos.mjs';
+import * as Acoes from '../systems/acoes.mjs';
 import { ITEM_CATALOG as CATALOGO_DE_ITENS } from '../systems/dados.mjs';
 import { ehPrivado } from './privados.mjs';
 import * as Mapas from '../admin/mapas.mjs';
@@ -110,6 +115,12 @@ async function servirArquivo(req, res, caminho) {
   if (pinaculos.length) console.log(`  chefes pináculo do PoE: ${pinaculos.length} no painel de Bosses (${pinaculos.join(', ')})`);
   // A campanha do PoE no lugar da do Draevor (os 10 atos, as áreas sobre os mapas do Draevor, os chefes de ato).
   const campanha = CampanhaPoe.iniciar();
+  // Os modificadores de monstro do PoE (Mágico 1, Raro 2 a 4) e os ocultos de cada raridade.
+  const modsDeMonstro = ModificadoresMonstroPoe.iniciar();
+  if (modsDeMonstro.modificadores) console.log(`  modificadores de monstro do PoE: ${modsDeMonstro.modificadores}`);
+  // As GEMAS do PoE no jogo (substituem as ativas do Draevor; a coleção do dono, poe-gemas-poedb): a magia, o item e o buff de cada uma.
+  const gemasPoe = await GemasPoe.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GemasDeSkill.registrarAtiva(g)), registrarReforco: Reforcos.registrar });
+  if (gemasPoe.gemas) console.log(`  gemas do PoE: ${gemasPoe.gemas} (${Object.entries(gemasPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
   if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
 }
 
@@ -163,6 +174,8 @@ async function atender(req, res) {
   const caminho = decodeURIComponent(url.pathname.split('?')[0]);
 
   // As classes ATIVAS para a tela de criação de personagem (público: só nome, descrição, ícone, cor, atributos iniciais e bônus por ponto).
+  // O PoE que o JOGO lê (público, só leitura): os ícones das gemas e dos itens do PoE e a ficha da gema num nível (`itens-poe-http.atenderPublico`).
+  if (await ItensPoeHttp.atenderPublico(req, res, caminho, url, { json, fichaDaGema: GemasPoe.fichaNoNivel })) return;
   if (caminho === '/api/classes') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     return res.end(JSON.stringify(Classes.paraOCliente()));

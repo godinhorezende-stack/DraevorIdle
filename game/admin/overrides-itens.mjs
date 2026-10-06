@@ -1,6 +1,7 @@
 // O EDITOR DE OVERRIDES DE ITENS: o catálogo importado (`item-catalog.json`) nunca é editado; o dono grava só as diferenças em
 // `gamedata/overrides/itens.json` (`systems/overrides.mjs`), aplicadas no boot. Mesmo fluxo dos monstros: propor (valida + original × efetivo + avisos
 // de balanceamento e de uso, sem gravar) → salvar (arquivo + versão anterior) → publicar (commit + deploy). Reverter apaga a entrada.
+import { ligado as itensPoeLigado } from '../systems/itens-poe/catalogo.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -39,6 +40,8 @@ export function efetivoDe(id, ov) {
 
 export function listar({ q = '', filtro = '', slot = '', limite = 80 } = {}) {
   const d = dados();
+  // Com o PoE ligado os itens do jogo são os do PoE (a ficha da base fica na aba Itens); este editor é dos itens do catálogo do Draevor/Tibia.
+  if (itensPoeLigado()) return { total: 0, itens: [], ativo: d.ativo, comOverride: Object.keys(d.itens).length, revisao: revisaoDe(CAMINHOS.arquivo), poe: true, dica: 'Com o PoE ligado, os itens são os do PoE: veja cada base (requisitos, mods, únicos e peças de exemplo) na aba Itens. A edição por override vale para os itens do Draevor.' };
   const norm = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   const t = norm(q).trim();
   const ids = filtro === 'com-override' ? Object.keys(d.itens) : filtro === 'novos' ? Object.keys(d.itens).filter(ehItemNovo) : t.length >= 2 || slot ? [...Object.keys(brutoDoCatalogo()), ...Object.keys(d.itens).filter(ehItemNovo)] : Object.keys(d.itens);

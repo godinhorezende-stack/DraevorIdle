@@ -8,6 +8,7 @@
 //     depois de um tempo sem apanhar.
 // Os números moram em `gamedata/atributos-principais.json` (via `Atributos.CONFIG`).
 import * as Formulas from '../combate/formulas.mjs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import * as Atributos from './atributos.mjs';
 import * as AtributosDoMob from '../mobs/atributos.mjs';
 
@@ -57,7 +58,7 @@ export function esAtual(estado, ficha) {
  */
 export function absorver(estado, ficha, dano, eventos, evento) {
   if (!(dano > 0)) return dano;
-  estado.esEspera = ES.ATRASO_MS;
+  estado.esEspera = esperaDaRecarga(ficha);
   const tem = esAtual(estado, ficha);
   if (!(tem > 0)) return dano;
   const tira = Math.min(tem, dano);
@@ -66,7 +67,16 @@ export function absorver(estado, ficha, dano, eventos, evento) {
   return dano - tira;
 }
 
-/** Recarga do Energy Shield (`ms` de tempo de jogo): depois da espera, `RECARGA_POR_SEGUNDO` da barra por segundo. */
+/**
+ * A espera até a recarga começar: a do Draevor (`ATRASO_MS`) ou, com o PoE, a do PoE 1 (`ATRASO_MS_POE`, 2 s) — dividida por (1 + "Início
+ * da Recarga X% mais rápido" das peças e da árvore, `ficha.esInicioPct`).
+ */
+export function esperaDaRecarga(ficha) {
+  const base = itensPoeLigado() ? ES.ATRASO_MS_POE ?? ES.ATRASO_MS : ES.ATRASO_MS;
+  return Math.round(base / Math.max(0.1, 1 + (ficha?.esInicioPct ?? 0) / 100));
+}
+
+/** Recarga do Energy Shield (`ms` de tempo de jogo): depois da espera, `RECARGA_POR_SEGUNDO` da barra por segundo (× "Recarga aumentada"). */
 export function recarregar(estado, ficha, ms) {
   const max = Math.max(0, Math.round(ficha.energyShield ?? 0));
   if (!(max > 0)) {
@@ -81,7 +91,7 @@ export function recarregar(estado, ficha, ms) {
     resto -= usa;
   }
   if (!(resto > 0) || atual >= max) return;
-  estado.esResto = (estado.esResto ?? 0) + (max * ES.RECARGA_POR_SEGUNDO * resto) / 1000;
+  estado.esResto = (estado.esResto ?? 0) + (max * ES.RECARGA_POR_SEGUNDO * (1 + (ficha.esRecargaPct ?? 0) / 100) * resto) / 1000;
   const ganho = Math.floor(estado.esResto);
   estado.esResto -= ganho;
   estado.es = Math.min(max, atual + ganho);

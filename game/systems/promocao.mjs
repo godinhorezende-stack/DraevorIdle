@@ -11,6 +11,7 @@
 // ESTIMADO: o custo e o level são os do knight capturado para todas as vocações.
 
 import { CATALOGO } from './dados.mjs';
+import * as ClassesPoe from './itens-poe/classes.mjs';
 
 const VOCACOES = Object.fromEntries((CATALOGO.vocations ?? []).map((v) => [v.id, v]));
 
@@ -78,6 +79,9 @@ export function derivados(estado, daArvore = { hp: 0, mana: 0 }) {
 
 /** O nome de exibição da classe: "Elite Knight" depois da promoção, "Knight" antes. */
 export function nomeDaClasse(estado) {
+  // Com o sistema de itens do PoE ligado (só local), o nome é o da CLASSE do PoE (Marauder, Ranger, Witch...), não o da vocação do Draevor.
+  const poe = ClassesPoe.classeDe(estado);
+  if (poe) return poe.nome;
   const p = promovido(estado) && PROMOCOES[estado.vocation];
   return p ? p.name : VOCACOES[estado.vocation]?.name ?? 'Sem vocação';
 }

@@ -27,6 +27,9 @@ import * as Gerar from './itens/gerar.mjs';
 import { raridadeDaPeca } from './itens/item.mjs';
 import { gruposLigados } from '../engine/sockets-de-gema.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as FrascosPoe from './itens-poe/frascos.mjs';
+import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -139,6 +142,12 @@ export function soma(estado) {
   // + as cargas do PoE ativas (Tolerância, Frenesi, Poder — `itens-poe/cargas.mjs`, só com ITENS_POE=1).
   const cargas = CargasPoe.adds(estado, total);
   if (cargas) for (const [k, v] of Object.entries(cargas)) total[k] = (total[k] ?? 0) + v;
+  // + os frascos de Utilidade do PoE ativos (o efeito da base e o "durante o Efeito" — `itens-poe/frascos.mjs`).
+  const frascos = FrascosPoe.adds(estado);
+  if (frascos) for (const [k, v] of Object.entries(frascos)) total[k] = (total[k] ?? 0) + v;
+  // + os buffs das gemas do PoE ligados (aura, arauto, guarda: armadura, resistências, dano adicionado... — `itens-poe/gemas-poe.mjs`).
+  const gemas = GemasPoe.adds(estado);
+  if (gemas) for (const [k, v] of Object.entries(gemas)) total[k] = (total[k] ?? 0) + v;
   return total;
 }
 
@@ -400,8 +409,10 @@ export function guardaPelosSockets(s, p) {
 
 /** A capacidade com o afixo "Capacidade" das peças vestidas. */
 // + o imbuement "Increase Capacity" (% da capacidade), nas botas e na armadura.
+// Com o sistema de itens do PoE ligado NÃO HÁ capacidade (dono, 06/10: "não existe cap mais" — o PoE não tem peso): infinita, então o
+// peso nunca impede pegar loot, trocar nem manda nada para o Depósito.
 export const capacidade = (estado) =>
-  (R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
+  itensPoeLigado() ? Infinity : (R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
 
 /**
  * "+Life" e "+Mana" dos adds, mais a Life do STR e a Mana do INT. Aplicados como diferença

@@ -357,6 +357,112 @@ function ataqueElemental(derived) {
   return ataques;
 }
 
+/*
+ * ---- A FICHA DO PoE ----
+ *
+ * Os mesmos números da ficha de combate (`derived`, o servidor calcula), organizados como no PoE. Só mostra: nenhuma conta nova aqui além de
+ * dividir/formatar. Seções recolhíveis (`secao`), como a ficha do Draevor.
+ */
+const ELEMENTO_POE = { fire: 'Fogo', ice: 'Gelo', energy: 'Raio', chaos: 'Caos', physical: 'Físico', earth: 'Veneno', death: 'Morte', holy: 'Sagrado' };
+const COR_POE = { fire: '#ff7a52', ice: '#7fc8ff', energy: '#ffe36b', chaos: '#c77dff', physical: '#d9d2c0' };
+const num = (v, casas = 0) => Number(v ?? 0).toLocaleString('pt-BR', { maximumFractionDigits: casas });
+const pctDe = (fracao, casas = 1) => `${num((fracao ?? 0) * 100, casas)}%`;
+function fichaDoPoe(body, state) {
+  const c = state.character;
+  const d = c.derived;
+  const at = d.atributos ?? {};
+  const ef = d.efeitosDosAtributos ?? {};
+
+  // ---- atributos ----
+  const cartaoDeAtributo = (nome, valor, linhas, cor) => {
+    const card = statCard(nome, num(valor), linhas.filter(Boolean).join(' · '), cor);
+    card.classList.add('poe-atributo');
+    return card;
+  };
+  secao(body, 'poe-atributos', 'Atributos', 'ficha-skills', [
+    grade(
+      cartaoDeAtributo('Força', at.str, [ef.vida && `+${num(ef.vida)} de vida`, ef.danoFisicoPct && `+${num(ef.danoFisicoPct, 1)}% de dano físico corpo a corpo`], '#e0705c'),
+      cartaoDeAtributo('Destreza', at.dex, [ef.precisao && `+${num(ef.precisao)} de precisão`, ef.evasaoPct && `+${num(ef.evasaoPct, 1)}% de evasão`], '#7fd36b'),
+      cartaoDeAtributo('Inteligência', at.int, [ef.mana && `+${num(ef.mana)} de mana`, ef.energyShieldPct && `+${num(ef.energyShieldPct, 1)}% de escudo de energia`], '#6ba5e0'),
+    ),
+  ]);
+
+  // ---- defesas ----
+  const prot = d.protection ?? {};
+  const teto = d.limites?.resistenciaDoJogador ?? 75;
+  const excesso = d.excedentes?.protection ?? {};
+  const resist = (el) => {
+    const card = statCard(`Resistência a ${ELEMENTO_POE[el]}`, `${num(prot[el] ?? 0)}%`, `máximo ${teto}%${excesso[el] ? ` · ${num(excesso[el])}% acima do máximo` : ''}`, COR_POE[el]);
+    if ((prot[el] ?? 0) >= teto) card.classList.add('poe-no-teto');
+    return card;
+  };
+  secao(body, 'poe-defesas', 'Defesas', 'ficha-defesa', [
+    grade(
+      statCard('Vida', num(d.maxHp), `regenera ${num(d.hpRegen ?? 0)}/s`, '#d24a3c'),
+      statCard('Mana', num(d.maxMana), `regenera ${num(d.manaRegen ?? 0)}/s`, '#3c7fd2'),
+      ...(d.energyShield > 0 ? [statCard('Escudo de Energia', num(d.energyShield), 'absorve antes da vida e recarrega sozinho', '#8fd0ff')] : []),
+      statCard('Armadura', faixa(d.armorMin, d.armorMax, d.armor, num), 'reduz o dano físico de cada golpe (mais contra golpes fracos)'),
+      statCard('Evasão', num(d.evasion), d.chancesNoLevel?.esquiva != null ? `${pctDe(d.chancesNoLevel.esquiva)} de chance de evitar um ataque de monstro do seu level` : null),
+      statCard('Bloqueio', pctDe(d.blockChance), d.bloqueioDeMagia ? `${pctDe(d.bloqueioDeMagia)} contra magias` : 'chance de bloquear um ataque'),
+      ...(prot.physical ? [statCard('Redução de Dano Físico', `${num(prot.physical)}%`, null, COR_POE.physical)] : []),
+    ),
+    el('h4', 'poe-ficha-sub', 'Resistências'),
+    grade(resist('fire'), resist('ice'), resist('energy'), resist('chaos')),
+  ]);
+
+  // ---- ataque ----
+  const ataquesPorSegundo = d.intervaloDoGolpeMs ? 1000 / d.intervaloDoGolpeMs : 0;
+  const somado = Object.entries(d.danoSomado ?? {}).filter(([, [a, b]]) => a || b);
+  const aumentos = Object.entries(d.danoDoElemento ?? {}).filter(([, v]) => v);
+  const cartoesDeAtaque = [
+    statCard('Dano da arma', faixa(d.damage?.min, d.damage?.max, d.damage?.min, num), d.armaEquipada?.nome ? `por golpe · ${d.armaEquipada.nome}` : 'por golpe'),
+    statCard('Ataques por segundo', num(ataquesPorSegundo, 2), d.velocidadeDeAtaque ? `+${num(d.velocidadeDeAtaque)}% de velocidade de ataque` : null),
+    statCard('Precisão', num(d.accuracy), d.chancesNoLevel?.acerto != null ? `${pctDe(d.chancesNoLevel.acerto)} de chance de acertar um monstro do seu level` : null),
+    statCard('Chance de Crítico', pctDe(d.critChance), d.critChanceMagia != null && d.critChanceMagia !== d.critChance ? `magias: ${pctDe(d.critChanceMagia)}` : null),
+    statCard('Multiplicador de Crítico', `${num((d.critMultiplier ?? 1.5) * 100)}%`, 'do dano normal num crítico'),
+    ...(d.castSpeed ? [statCard('Velocidade de Conjuração', `+${num(d.castSpeed)}%`, null)] : []),
+    ...(d.lifeLeech || d.manaLeech ? [statCard('Roubo', `${num(d.lifeLeech, 1)}% vida · ${num(d.manaLeech, 1)}% mana`, 'do dano causado')] : []),
+    ...(d.vidaPorAcerto || d.vidaPorAbate || d.manaPorAbate ? [statCard('Por acerto / abate', `${num(d.vidaPorAcerto)} vida · ${num(d.vidaPorAbate)} vida · ${num(d.manaPorAbate)} mana`, 'vida por acerto · vida e mana por inimigo morto')] : []),
+  ];
+  const ataque = [grade(...cartoesDeAtaque)];
+  if (somado.length) {
+    ataque.push(el('h4', 'poe-ficha-sub', 'Dano somado aos ataques'));
+    ataque.push(grade(...somado.map(([e, [a, b]]) => statCard(ELEMENTO_POE[e] ?? e, `${num(a)} – ${num(b)}`, null, COR_POE[e]))));
+  }
+  if (aumentos.length || d.danoDeMagiaDoPoe) {
+    ataque.push(el('h4', 'poe-ficha-sub', 'Dano aumentado'));
+    ataque.push(grade(...aumentos.map(([e, v]) => statCard(ELEMENTO_POE[e] ?? e, `+${num(v, 1)}%`, null, COR_POE[e])), ...(d.danoDeMagiaDoPoe ? [statCard('Magias', `+${num(d.danoDeMagiaDoPoe, 1)}%`, null)] : [])));
+  }
+  const pen = d.penetracao ?? {};
+  if (pen.fisica || pen.elemental) ataque.push(grade(statCard('Penetração', `${num(pen.elemental)}% elemental · ${num(pen.fisica)}% física`, 'ignora essa parte da resistência do monstro')));
+  secao(body, 'poe-ataque', 'Ataque', 'ficha-ofensivo', ataque);
+
+  // ---- cargas e outros ----
+  const cg = d.cargas ?? {};
+  secao(body, 'poe-cargas', 'Cargas e outros', 'ficha-progresso', [
+    grade(
+      statCard('Cargas de Tolerância', `até ${3 + (cg.max_tolerancia ?? 0)}`, '+4% de redução física e +4% de resistências elementais cada'),
+      statCard('Cargas de Frenesi', `até ${3 + (cg.max_frenesi ?? 0)}`, '+4% de velocidade de ataque e 4% mais dano cada'),
+      statCard('Cargas de Poder', `até ${3 + (cg.max_poder ?? 0)}`, '+40% de chance de crítico cada'),
+      statCard('Velocidade de movimento', num(d.speed), null),
+      ...(d.goldFind ? [statCard('Ouro encontrado', `+${num(d.goldFind)}%`, null)] : []),
+      ...(d.lootRate ? [statCard('Quantidade de itens', `+${num(d.lootRate)}%`, null)] : []),
+    ),
+  ]);
+
+  // ---- experiência (só o que vale no PoE: boosts, premium e stamina; a raridade do monstro multiplica a exp dele) ----
+  const fontes = (c.efeitos?.exp?.fontes ?? []).map((f) => `+${num(f.percent)}% (${f.fonte === 'loja' ? 'XP Boost' : f.fonte === 'buff-power' ? 'Buff Power' : 'poção'})`);
+  if ((c.premium ?? 0) > 0) fontes.push('+10% (premium)');
+  const fatorStamina = c.efeitos?.exp?.fatorStamina ?? 1;
+  secao(body, 'poe-exp', 'Experiência', 'ficha-exp', [
+    grade(
+      statCard('Para o próximo level', num(c.progress?.toNext), `${num((c.progress?.percent ?? 0) * 100, 1)}% do level ${c.level} · máximo 100`),
+      statCard('Bônus de experiência', fontes.length ? fontes.join(' · ') : 'nenhum', `stamina ×${num(fatorStamina, 1)}`),
+      ...(d.expPorRaridadePoe ? [statCard('Por raridade do monstro', `Mágico ×${num(d.expPorRaridadePoe.magico, 1)} · Raro ×${num(d.expPorRaridadePoe.raro, 1)} · Único ×${num(d.expPorRaridadePoe.unico, 1)}`, 'os únicos do PoE já trazem a exp própria')] : []),
+    ),
+  ]);
+}
+
 export function renderSheet(body, { state, send, closeModal }) {
   const character = state.character;
   const derived = character.derived;
@@ -393,6 +499,13 @@ export function renderSheet(body, { state, send, closeModal }) {
 
   header.append(portrait, bars);
   body.append(header);
+
+  // Com o PoE ligado a ficha é a do PoE (dono, 06/10: "atualize a ficha do personagem com atributos do PoE"): atributos, defesas, ataque,
+  // cargas e experiência — os números da ficha de combate do servidor, no vocabulário do PoE.
+  if (state.classesPoe) {
+    fichaDoPoe(body, state);
+    return;
+  }
 
 
   // ---------- skills e progressão ----------
@@ -631,7 +744,11 @@ export function renderSheet(body, { state, send, closeModal }) {
   }
   right.append(bonuses);
 
-  columns.append(left, right);
+  // Com o PoE ligado não há perícias (dono, 06/10: "o personagem não vai ter mais skill de treino"): a coluna das Skills sai.
+  if (state.classesPoe) {
+    columns.append(right);
+    columns.classList.add('sem-skills');
+  } else columns.append(left, right);
   body.append(columns);
 
   /*
@@ -826,7 +943,8 @@ export function renderSheet(body, { state, send, closeModal }) {
         if (corrida) card.classList.add('com-buff');
         return card;
       })(),
-      statCard('Capacidade', `${Math.max(0, derived.capacity - character.weight).toFixed(0)} oz`, `de ${derived.capacity} oz`, null, 'ficha-capacidade'),
+      // Sem capacidade (o PoE não tem peso): o cartão sai.
+      ...(derived.capacity == null ? [] : [statCard('Capacidade', `${Math.max(0, derived.capacity - character.weight).toFixed(0)} oz`, `de ${derived.capacity} oz`, null, 'ficha-capacidade')]),
       ...soSeTem(derived.goldFind, () => statCard('Gold Find', pct(derived.goldFind), 'mais moedas por drop', null, 'ficha-ouro')),
       ...soSeTem(derived.lootRate, () => statCard('Loot Rate', pct(derived.lootRate), 'mais chance de cada drop', null, 'ficha-ouro')),
       ...soSeTem(derived.experiencia, () => statCard('Experiência dos itens', pct(derived.experiencia), null, null, 'ficha-exp')),

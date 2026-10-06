@@ -13,10 +13,16 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import * as Atributos from './personagem/atributos.mjs';
 import { PASTA as PASTA_DE_OVERRIDES } from './overrides.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..', 'gamedata');
 const lerJson = (c) => JSON.parse(readFileSync(c, 'utf8'));
-export const ARQUIVO_DE_OVERRIDE = join(PASTA_DE_OVERRIDES, 'classes.json');
+// Com o sistema de itens do PoE ligado (ITENS_POE=1, só local) as classes do jogo SÃO as 7 do PoE (decisão do dono, 05/10: "o que vale é o PoE"): a fábrica
+// vem de `itens-poe/classes.json` e o override do dono fica num arquivo à parte (`classes-poe.json`), sem misturar com o das classes do Draevor.
+const POE = itensPoeLigado();
+export const ARQUIVO_DE_OVERRIDE = join(PASTA_DE_OVERRIDES, POE ? 'classes-poe.json' : 'classes.json');
+/** As vocações (a MECÂNICA: magias, gemas, kit, sprites) sobre as quais uma classe se apoia. */
+export const VOCACOES = ['knight', 'paladin', 'druid', 'sorcerer', 'monk'];
 export const ATRIBUTOS = ['str', 'dex', 'int'];
 export const ROTULO_DO_ATRIBUTO = { str: 'Força', dex: 'Destreza', int: 'Inteligência' };
 export const FORMATO_DO_ID = /^[a-z][a-z0-9_-]{2,31}$/;
@@ -33,6 +39,28 @@ export const EFEITOS = {
   INT_ENERGY_SHIELD_PCT_PER_POINT: { rotulo: 'Energy Shield (%) por ponto de Inteligência', atributo: 'int', unidade: '%', max: 10, padrao: 0 },
 };
 const eNum = (n) => typeof n === 'number' && Number.isFinite(n);
+// O OUTFIT INICIAL da classe (Editor de Classes): `{ male: look|null, female: look|null, cores: { head, body, legs, feet }, addons: 0..3 }` — o personagem
+// nasce vestido com ele (e o tem para sempre, mesmo trocando de roupa). Sem ele (ou sem o look de um sexo), vale o da vocação.
+const LOOKS = JSON.parse(readFileSync(join(RAIZ, 'outfits.json'), 'utf8'));
+export const lookExiste = (look) => Object.hasOwn(LOOKS, String(look));
+const PARTES_DA_COR = ['head', 'body', 'legs', 'feet'];
+export function validarOutfit(o, onde) {
+  const erros = [];
+  if (o == null) return erros;
+  if (typeof o !== 'object') return [`${onde}: o outfit inicial precisa ser um objeto.`];
+  for (const sexo of ['male', 'female']) if (o[sexo] != null && !(Number.isInteger(o[sexo]) && lookExiste(o[sexo]))) erros.push(`${onde}: o desenho ${sexo === 'male' ? 'masculino' : 'feminino'} (${o[sexo]}) não existe nos atlas.`);
+  for (const p of PARTES_DA_COR) if (o.cores?.[p] != null && !(Number.isInteger(o.cores[p]) && o.cores[p] >= 0 && o.cores[p] <= 132)) erros.push(`${onde}: a cor "${p}" vai de 0 a 132.`);
+  if (o.addons != null && !(Number.isInteger(o.addons) && o.addons >= 0 && o.addons <= 3)) erros.push(`${onde}: addons de 0 a 3.`);
+  return erros;
+}
+/** O que vestir ao criar o personagem desta classe neste sexo: `{ type, head, body, legs, feet, addons }` ou null (vale o da vocação). */
+export function outfitInicial(classe, sexo) {
+  const o = classe?.outfit;
+  const look = o?.[sexo];
+  if (!look || !lookExiste(look)) return null;
+  const c = o.cores ?? {};
+  return { type: look, head: c.head ?? 78, body: c.body ?? 88, legs: c.legs ?? 58, feet: c.feet ?? 76, mount: 0, addons: o.addons ?? 0 };
+}
 
 // ---------------------------------------------------------------- a fábrica (lida dos arquivos que o jogo já tem)
 function montarFabrica() {
@@ -48,7 +76,26 @@ function montarFabrica() {
   const efeitos = Object.fromEntries(Object.entries(EFEITOS).map(([k, v]) => [k, principais.efeitos[k] ?? v.padrao]));
   return { classes, efeitos, perfilSugerido: meta.perfilSugerido ?? null };
 }
-export const ORIGINAL = montarFabrica();
+/**
+ * A fábrica do PoE: as 7 classes (atributos iniciais do PoE, SEM ganho por level — decisão do dono) sobre a vocação do Draevor que dá a mecânica, e os bônus por ponto
+ * do PoE (Força: +0,5 de vida e +0,2% de dano físico; Destreza: +2 de precisão e +0,2% de evasão; Inteligência: +0,5 de mana e +0,2% de escudo de energia).
+ */
+const VOCACAO_DA_CLASSE_POE = { Marauder: 'knight', Ranger: 'paladin', Witch: 'sorcerer', Templar: 'druid', Duelist: 'monk', Shadow: 'paladin', Scion: 'knight' };
+const VISUAL_DA_CLASSE_POE = { Marauder: ['🪓', '#c0392b'], Ranger: ['🏹', '#27ae60'], Witch: ['🔮', '#2e86de'], Templar: ['✝️', '#d4ac0d'], Duelist: ['⚔️', '#e67e22'], Shadow: ['🗡️', '#8e44ad'], Scion: ['👑', '#bdc3c7'] };
+export const EFEITOS_DO_POE = Atributos.EFEITOS_DO_POE;
+function montarFabricaPoe() {
+  const d = lerJson(join(RAIZ, 'itens-poe', 'classes.json'));
+  const classes = {};
+  for (const slug of d.ordem) {
+    const c = d.classes[slug];
+    const [icone, cor] = VISUAL_DA_CLASSE_POE[slug] ?? ['⚔️', '#888888'];
+    const id = slug.toLowerCase();
+    classes[id] = { id, nome: c.nome, descricao: `Classe do Path of Exile (${c.nomeEn}). Ascendências: ${(c.ascendencias ?? []).map((a) => a.nome).join(', ')}.`.slice(0, 300), icone, cor, ativo: true, builtin: true,
+      vocacaoBase: VOCACAO_DA_CLASSE_POE[slug] ?? 'knight', atributosIniciais: { ...c.atributos }, porLevel: { str: 0, dex: 0, int: 0 }, poe: slug };
+  }
+  return { classes, efeitos: { ...EFEITOS_DO_POE }, perfilSugerido: null };
+}
+export const ORIGINAL = POE ? montarFabricaPoe() : montarFabrica();
 
 // ---------------------------------------------------------------- validação e efetivo
 /** O override (`null` se não existe; ignora e avisa se quebrado). */
@@ -65,7 +112,7 @@ export function efetivo(original, override) {
     for (const [id, ov] of Object.entries(override.classes ?? {})) {
       if (ov === null || ov?.excluido === true) { delete classes[id]; continue; }
       const base = classes[id];
-      if (base) classes[id] = { ...base, ...structuredClone(ov), id, builtin: true, vocacaoBase: id, atributosIniciais: { ...base.atributosIniciais, ...(ov.atributosIniciais ?? {}) }, porLevel: { ...base.porLevel, ...(ov.porLevel ?? {}) } };
+      if (base) classes[id] = { ...base, ...structuredClone(ov), id, builtin: true, vocacaoBase: base.vocacaoBase, ...(base.poe ? { poe: base.poe } : {}), atributosIniciais: { ...base.atributosIniciais, ...(ov.atributosIniciais ?? {}) }, porLevel: { ...base.porLevel, ...(ov.porLevel ?? {}) } };
       else classes[id] = { descricao: '', icone: '⚔️', cor: '#888888', ativo: true, ...structuredClone(ov), id, builtin: false, atributosIniciais: { str: 0, dex: 0, int: 0, ...(ov.atributosIniciais ?? {}) }, porLevel: { str: 0, dex: 0, int: 0, ...(ov.porLevel ?? {}) } };
     }
     Object.assign(efeitos, override.efeitos ?? {});
@@ -76,7 +123,7 @@ export function efetivo(original, override) {
 /** Valida uma configuração efetiva. `{ erros, avisos }`. Pura. */
 export function validarConfiguracao(cfg, original = ORIGINAL) {
   const erros = []; const avisos = [];
-  const vocacoes = Object.keys(original.classes);
+  const vocacoes = VOCACOES;
   for (const [id, c] of Object.entries(cfg.classes)) {
     const onde = `classe ${id}`;
     if (!FORMATO_DO_ID.test(id)) erros.push(`${onde}: o ID precisa ter 3 a 32 caracteres (minúsculas, números, hífen e sublinhado; começa com letra).`);
@@ -93,8 +140,9 @@ export function validarConfiguracao(cfg, original = ORIGINAL) {
       if (!eNum(g) || g < 0 || g > 10) erros.push(`${onde}: o ganho de ${ROTULO_DO_ATRIBUTO[a]} por level precisa ser um número de 0 a 10 (veio ${g}).`);
     }
     if (ATRIBUTOS.every((a) => !(c.atributosIniciais?.[a] > 0))) avisos.push(`${onde}: todos os atributos iniciais são 0.`);
+    erros.push(...validarOutfit(c.outfit, onde));
   }
-  for (const id of vocacoes) if (!cfg.classes[id]) erros.push(`classe ${id}: classes de fábrica não podem ser apagadas (desative-as).`);
+  for (const id of Object.keys(original.classes)) if (!cfg.classes[id]) erros.push(`classe ${id}: classes de fábrica não podem ser apagadas (desative-as).`);
   if (!Object.values(cfg.classes).some((c) => c.ativo === true)) erros.push('Ao menos uma classe precisa ficar ativa (senão ninguém cria personagem).');
   for (const [k, v] of Object.entries(cfg.efeitos)) {
     const e = EFEITOS[k];
@@ -156,9 +204,14 @@ export const ativas = () => listar().filter((c) => c.ativo);
 /** A classe pelo id; sem id (personagem antigo) vale a vocação. `null` se não existe. */
 export const obter = (idOuVocacao) => EM_USO.classes[String(idOuVocacao ?? '').toLowerCase()] ?? null;
 /** A classe ATIVA para criar personagem, ou `null` (inexistente ou desativada). O servidor valida por aqui — nunca confia no que o cliente diz. */
-export const resolverParaCriacao = (idOuVocacao) => { const c = obter(idOuVocacao); return c?.ativo ? c : null; };
+// Com o PoE ligado, aceita também o slug do PoE (`Marauder`) e a vocação (`knight` → a classe do PoE padrão dela: a primeira ativa sobre ela, na ordem do PoE).
+export const resolverParaCriacao = (idOuVocacao) => {
+  const t = String(idOuVocacao ?? '').toLowerCase();
+  const c = obter(t) ?? (POE ? listar().find((x) => x.ativo && x.vocacaoBase === t) ?? null : null);
+  return c?.ativo ? c : null;
+};
 /** O que a tela de criação do jogador precisa (só o público): classes ativas, atributos iniciais e o que cada ponto rende. */
 export function paraOCliente() {
-  return { classes: ativas().map((c) => ({ id: c.id, nome: c.nome, descricao: c.descricao, icone: c.icone, cor: c.cor, vocacaoBase: c.vocacaoBase, atributosIniciais: { ...c.atributosIniciais }, porLevel: { ...c.porLevel } })),
+  return { classes: ativas().map((c) => ({ id: c.id, nome: c.nome, descricao: c.descricao, icone: c.icone, cor: c.cor, vocacaoBase: c.vocacaoBase, atributosIniciais: { ...c.atributosIniciais }, porLevel: { ...c.porLevel }, ...(c.outfit ? { outfit: structuredClone(c.outfit) } : {}) })),
     efeitos: Object.entries(EFEITOS).map(([k, e]) => ({ chave: k, rotulo: e.rotulo, atributo: e.atributo, unidade: e.unidade, valor: EM_USO.efeitos[k] ?? e.padrao })).filter((x) => x.valor > 0) };
 }

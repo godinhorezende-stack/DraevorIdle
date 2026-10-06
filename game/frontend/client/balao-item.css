@@ -191,13 +191,13 @@
 :is(.tooltip, .gema-no-editor) .tip-gema-efeito { color: #8888ff; }
 :is(.tooltip, .gema-no-editor) .tip-gema-penalidade { color: #e08a6a; }
 :is(.tooltip, .gema-no-editor) .tip-gema-ajuda { color: #7f7f7f; font-style: italic; font-size: 11.5px; margin-top: 2px; }
-.tip-item .tip-soquetes { text-align: center; font-size: 12px; color: var(--prop); }
-.tip-item .tip-soquetes-fila { display: flex; justify-content: center; align-items: center; margin: 3px 0; }
-.tip-item .soquete { width: 18px; height: 18px; border: 1px solid #6b5a3a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; background: #111; }
-.tip-item .soquete.trancado { opacity: .55; border-style: dashed; }
-.tip-item .soquete-link { width: 10px; text-align: center; color: #555; }
-.tip-item .soquete-link.ligado { color: #d8b56a; font-weight: 700; }
-.tip-item .tip-soquetes-gemas { color: #c8c8c8; }
+.tip-item .tip-soquetes, .tip-poe .tip-soquetes { text-align: center; font-size: 12px; color: var(--prop); }
+.tip-item .tip-soquetes-fila, .tip-poe .tip-soquetes-fila { display: flex; justify-content: center; align-items: center; margin: 3px 0; }
+.tip-item .soquete, .tip-poe .soquete { width: 18px; height: 18px; border: 1px solid #6b5a3a; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; background: #111; }
+.tip-item .soquete.trancado, .tip-poe .soquete.trancado { opacity: .55; border-style: dashed; }
+.tip-item .soquete-link, .tip-poe .soquete-link { width: 10px; text-align: center; color: #555; }
+.tip-item .soquete-link.ligado, .tip-poe .soquete-link.ligado { color: #d8b56a; font-weight: 700; }
+.tip-item .tip-soquetes-gemas, .tip-poe .tip-soquetes-gemas { color: #c8c8c8; }
 :is(.tooltip, .gema-no-editor) .tip-gema-xp { height: 4px; background: #222; border-radius: 2px; margin: 3px auto; max-width: 180px; overflow: hidden; }
 :is(.tooltip, .gema-no-editor) .tip-gema-xp i { display: block; height: 100%; background: #1ba29b; }
 .gema-no-editor { margin-top: 8px; padding: 6px 8px; border: 1px solid #1ba29b55; border-radius: 4px; background: #0b1214; }
@@ -269,3 +269,136 @@
 /* Os requisitos da base da peça do PoE (nível e atributos), como no PoE. */
 .poe-balao .poe-requisitos { font-size: .9em; opacity: .8; padding: 2px 0 0; }
 .poe-balao .poe-req.falta { color: #e5534b; font-weight: 600; }
+
+/* ---- O cinto de frascos do PoE (inventory.mjs `renderCintoDeFrascos`, no HUD junto das réguas; só com ITENS_POE=1). Aqui porque esta folha não tem cópia comprimida. ---- */
+.poe-cinto { margin: 3px 0 1px; }
+.poe-cinto-titulo { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #a89a7a; margin-bottom: 3px; }
+.poe-cinto-fila { display: flex; gap: 4px; justify-content: center; }
+.poe-frasco { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; width: 40px; }
+.poe-frasco.vazio { height: 34px; width: 34px; border: 1px dashed #4a4030; border-radius: 3px; }
+.poe-frasco-cargas { position: absolute; right: 0; top: 2px; width: 3px; height: 30px; background: #222; display: flex; align-items: flex-end; }
+.poe-frasco-cargas > div { width: 100%; background: #d8b56a; }
+.poe-frasco.vida .poe-frasco-cargas > div { background: #d24a3c; }
+.poe-frasco.mana .poe-frasco-cargas > div { background: #3c7fd2; }
+.poe-frasco-num { font-size: 9px; color: #bbb; font-variant-numeric: tabular-nums; }
+.poe-frasco.ativo .cell { box-shadow: 0 0 6px 1px #f0d36b; }
+.poe-balao .poe-frasco-resumo { color: #8fd0ff; }
+
+/* ---- A grade do corpo como no PoE (inventory.mjs `SLOT_LAYOUT_COM_LUVAS`; só com ITENS_POE=1): arma e mão secundária altas nas laterais,
+   elmo e amuleto em cima, armadura no meio com um anel de cada lado, luvas, cinto e botas embaixo. As mesmas 3 colunas da grade do Draevor
+   (a janela tem tamanho fixo no arranjo), e as mesmas 5 fileiras. ---- */
+.equipment.poe {
+  grid-template-columns: repeat(3, 44px);
+  grid-template-areas:
+    "weapon head   shield"
+    "weapon neck   shield"
+    "ring   body   ring2"
+    "gloves legs   feet"
+    "frascos frascos frascos"
+    "ammo   .      .";
+}
+.equipment.poe .poe-cinto { margin: 0; align-self: center; }
+.equipment.poe .poe-cinto-fila { gap: 2px; }
+/* A vaga do frasco é alta e estreita (o formato do frasco do PoE); o desenho (um quadrado de 64 com o frasco em pé no meio) vai em 40 px e
+   só as laterais transparentes ficam de fora. O número das cargas fica por cima, embaixo, para a fileira não crescer. */
+.equipment.poe .poe-frasco { width: 26px; }
+.equipment.poe .poe-frasco.vazio { width: 26px; height: 40px; box-sizing: border-box; }
+.equipment.poe .poe-frasco .cell { width: 26px; height: 40px; overflow: hidden; box-sizing: border-box; }
+.equipment.poe .poe-frasco .cell canvas { width: 40px !important; height: 40px !important; flex: none; }
+.equipment.poe .poe-frasco-cargas { height: 34px; top: 3px; right: 0; }
+.equipment.poe .poe-frasco-num { position: absolute; left: -2px; right: 1px; bottom: 1px; text-align: center; white-space: nowrap; letter-spacing: -.3px; font-size: 7.5px; line-height: 1; color: #e8e2d0; text-shadow: 0 0 2px #000, 0 0 2px #000; pointer-events: none; }
+/* O rodapé do PoE: a mochila e os selos de premium/blessings, menores, na linha da lixeira. */
+.inv-rodape-poe { display: flex; align-items: center; gap: 4px; margin-top: 3px; height: 28px; }
+.inv-rodape-poe > .slot { width: 28px; height: 28px; min-height: 0; flex: none; }
+.inv-rodape-poe > .slot canvas, .inv-rodape-poe > .slot img { transform: scale(.75); }
+.inv-rodape-poe > :not(.slot):not(.inv-trash) { flex: none; zoom: .4; }
+.inv-rodape-poe > .inv-trash { flex: 1; margin-top: 0; min-width: 0; height: 26px; box-sizing: border-box; padding: 2px; }
+.equipment.poe .slot[data-slot="weapon"], .equipment.poe .slot[data-slot="shield"] { height: auto; min-height: 92px; }
+.equipment.poe .slot[data-slot="weapon"] canvas, .equipment.poe .slot[data-slot="shield"] canvas,
+.equipment.poe .slot[data-slot="weapon"] img, .equipment.poe .slot[data-slot="shield"] img { transform: scale(1.35); }
+.equipment.poe .slot[data-slot="body"] canvas, .equipment.poe .slot[data-slot="body"] img { transform: scale(1.15); }
+
+/* ---- O balão do PoE: a categoria e os requisitos SEMPRE centralizados (dono, 06/10) ---- */
+.poe-balao .poe-categoria { color: #c8c8c8; font-size: 12.5px; }
+.poe-balao .poe-requisitos { text-align: center; padding: 0 10px 6px; }
+/* ---- A borda da peça do PoE na cor da raridade do PoE (inventory.mjs `vestirRaridade`) ---- */
+.cell.poe-raridade, .slot.poe-raridade { border-color: color-mix(in srgb, var(--cor-poe) 70%, #000) !important; }
+.cell.poe-raridade.poe-r-normal, .slot.poe-raridade.poe-r-normal { border-color: color-mix(in srgb, var(--cor-poe) 40%, #000) !important; }
+.cell.poe-raridade.poe-r-unico::before, .slot.poe-raridade.poe-r-unico::before,
+.cell.poe-raridade.poe-r-raro::before, .slot.poe-raridade.poe-r-raro::before { box-shadow: 0 0 8px 0 var(--tier), inset 0 0 6px -2px var(--tier); }
+
+/* ---- A prévia de uma área do PoE na janela da hunt (panels.mjs `previaDaAreaPoe`) ---- */
+.poe-previa { display: grid; gap: 12px; }
+.poe-previa-bloco { background: #0e1416; border: 1px solid var(--line-soft, #2a3438); border-radius: 6px; padding: 8px 10px; }
+.poe-previa-titulo { font-family: var(--font-heading, serif); color: #e8d9a8; letter-spacing: .04em; }
+.poe-previa-sub { margin-top: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #8fa3a8; border-bottom: 1px solid #1f2a2e; padding-bottom: 2px; }
+.poe-previa-linha { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; padding: 1px 0; }
+.poe-previa-linha span { color: #b9c4c6; min-width: 0; }
+.poe-previa-linha b { color: #f0eadb; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.poe-previa-ficha { display: grid; gap: 1px; margin-top: 4px; }
+.poe-previa-nome { font-weight: 600; color: #e8e2d0; margin-bottom: 2px; }
+.poe-previa .poe-unico, .poe-previa-nome.poe-unico { color: #d98a3d; }
+.poe-previa-mods { display: grid; gap: 4px; margin-top: 8px; border-top: 1px solid #1f2a2e; padding-top: 6px; }
+.poe-previa-mods > em { font-size: 11px; }
+.poe-previa-modlista { display: grid; align-content: start; min-width: 0; }
+.poe-previa-modtexto { font-size: 10.5px; color: #7f9a9e; margin: -1px 0 3px; }
+
+/* A prévia do PoE entra na mesma cadeia flexível da janela da hunt (style.css: #modal-body → .hunt-previa → colunas → blocos): cada coluna
+   rola dentro de si e o rodapé (Caça Automática / Caça Online) fica sempre à vista, sem nada passando por baixo dele. */
+.modal-box:has(.poe-previa) .poe-previa { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.modal-box:has(.poe-previa) .poe-previa > .hunt-previa-colunas { flex: 1; min-height: 0; align-items: stretch; }
+.modal-box:has(.poe-previa) .poe-previa .hunt-previa-bloco { display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.modal-box:has(.poe-previa) .poe-previa .hunt-previa-bloco > * { flex: none; }
+.poe-previa .hunt-previa-abas { flex-wrap: wrap; }
+/* No celular (uma coluna só): a janela inteira rola, e os botões ficam no fim do conteúdo — rolagem dentro de rolagem é ruim no dedo. */
+@media (max-width: 720px) {
+  .modal-box:has(.poe-previa) #modal-body { display: block; overflow-y: auto; }
+  .modal-box:has(.poe-previa) .poe-previa, .modal-box:has(.poe-previa) .hunt-previa { display: block; }
+  .modal-box:has(.poe-previa) .poe-previa .hunt-previa-bloco { overflow: visible; }
+  .modal-box:has(.poe-previa) .poe-previa > .hunt-previa-colunas { display: grid; grid-template-columns: 1fr; }
+  .modal-box:has(.poe-previa) .modal-rodape { position: static; margin: 10px 0 0; box-shadow: none; }
+  .modal-box:has(.poe-previa) .run-modes { grid-template-columns: 1fr; }
+  .poe-previa-linha { font-size: 12.5px; }
+  .poe-previa-linha b { white-space: normal; }
+}
+
+/* A ficha sem a coluna das Skills (PoE: não há perícias) — sheet.mjs. */
+.sheet.sem-skills { grid-template-columns: 1fr; }
+
+/* ---- A ficha do PoE (sheet.mjs `fichaDoPoe`) ---- */
+.poe-ficha-sub { margin: 10px 0 4px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8fa3a8; font-weight: 500; }
+.stat-card.poe-atributo b { font-size: 26px; }
+.stat-card.poe-no-teto { box-shadow: inset 0 0 0 1px #f0d36b66; }
+/* Os três atributos sempre lado a lado (como no PoE), também no celular. */
+.sheet-secao[data-secao="poe-atributos"] .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 720px) { .sheet-secao[data-secao="poe-atributos"] .stat-card em { font-size: 10.5px; } .stat-card.poe-atributo b { font-size: 22px; } }
+
+/* ---- O Escudo de Energia na barra de vida do HUD (hud.mjs `escudoNaBarraDeVida`): cinza por cima da vida, recua conforme absorve ---- */
+.hud-bar.hp .bar-es {
+  position: absolute; left: 0; top: 0; bottom: 0; width: var(--es, 0%); z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, #e6ecef 0%, #9aa6ab 45%, #6d777b 100%);
+  opacity: .88; box-shadow: inset -1px 0 0 #ffffffaa;
+  transition: width .25s linear;
+}
+
+/* ---- A ficha da GEMA DO PoE (balão da barra e "Configurar ação") — as cores do balão de gema do PoE ---- */
+.tooltip.tip-gema-poe .tip-id b { color: #1ba29b; }
+:is(.tooltip, .action-resumo) .tip-poe-gema { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; text-align: center; padding: 4px 0; }
+:is(.tooltip, .action-resumo) .tip-poe-gema > * + * { border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 6px; }
+:is(.tooltip, .action-resumo) .tip-poe-tags { color: #7f7f7f; }
+:is(.tooltip, .action-resumo) .tip-poe-props div { color: #7f7f7f; }
+:is(.tooltip, .action-resumo) .tip-poe-props b { color: #e8e8e8; font-weight: 500; }
+:is(.tooltip, .action-resumo) .tip-poe-props .tip-poe-agora b { color: #c9a35a; }
+:is(.tooltip, .action-resumo) .tip-poe-desc { color: #1ba29b; font-style: italic; line-height: 1.35; }
+:is(.tooltip, .action-resumo) .tip-poe-mods div, :is(.tooltip, .action-resumo) .tip-poe-qualidade div { color: #8888ff; line-height: 1.35; }
+:is(.tooltip, .action-resumo) .tip-poe-mods div.fora { color: #66667a; text-decoration: line-through; }
+:is(.tooltip, .action-resumo) .tip-poe-qualidade .tip-poe-rotulo { color: #7f7f7f; }
+:is(.tooltip, .action-resumo) .tip-poe-status.ok { color: #6fcf7a; font-weight: 600; }
+:is(.tooltip, .action-resumo) .tip-poe-status.parcial { color: #e0b84a; font-weight: 600; }
+:is(.tooltip, .action-resumo) .tip-poe-status.nao { color: #e06a5a; font-weight: 600; }
+:is(.tooltip, .action-resumo) .tip-poe-nota { color: #9a9a9a; font-size: 11.5px; }
+.tooltip.tip-gema-poe { max-width: 360px; }
+:is(.tooltip, .gema-no-editor) .tip-gema-req { color: #7f7f7f; font-size: 11.5px; }
+:is(.tooltip, .gema-no-editor) .tip-gema-espera { color: #e0b84a; font-size: 11.5px; }
+:is(.tooltip, .action-resumo) .tip-poe-tempos div { color: #9a9a9a; }
+:is(.tooltip, .action-resumo) .tip-poe-tempos b { color: #c9a35a; font-weight: 500; }

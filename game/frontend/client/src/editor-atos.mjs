@@ -4,6 +4,7 @@
 // Recebe as ferramentas da página (`el`, `api`, a raiz, `msg`) em vez de importá-las, para não fechar ciclo com `editor-conteudo.mjs`.
 import { confirmar, pedirTexto, descartarAlteracoes, tratarConflito } from './editor-ui.mjs';
 import { editorDeDrops } from './editor-poe-telas.mjs';
+import { retrato } from './editor-sprites.mjs';
 
 const POE = '/api/mapas/_engine/itens-poe/';
 const poeApi = async (rota, corpo) => (await fetch(POE + rota, corpo ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(corpo) } : {})).json();
@@ -61,8 +62,12 @@ export function posicoesAutomaticas(ato) {
   return pos;
 }
 
-export function criarEditorDeAtos({ el, api, raiz, msg }) {
-  const E = { vista: 'fluxo', difPrevia: 'facil', lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null } };
+export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = null }) {
+  // `modo: 'fases'`: a MESMA edição, organizada por fase (aba Campanha → Fases): a lista das fases do ato à esquerda e, à direita, os painéis da fase
+  // (dados, como conclui, mapa e mobs, recompensa) — sem o grafo (as ligações ficam na aba Acts).
+  const E = { vista: 'fluxo', difPrevia: 'facil', lista: [], opcoes: null, ato: null, somenteLeitura: false, fase: null, lig: null, ligando: null, problemas: [], limpo: '', picker: { alvo: null, q: '', itens: [], detalhe: null },
+    // Ferramentas: histórico (desfazer/refazer), grade, zoom/arrasto do grafo, a ajuda de atalhos.
+    hist: { passado: [], futuro: [], ultimo: '' }, grade: true, zoom: 1, pan: { x: 0, y: 0 }, ajuda: false, ferramentas: false };
   const sv = (tag, attrs = {}, ...filhos) => {
     const n = document.createElementNS(NS, tag);
     for (const [k, v] of Object.entries(attrs)) if (v != null && v !== false) n.setAttribute(k, v);
@@ -93,10 +98,43 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     E.lig = null;
     E.ligando = null;
     E.vista = 'fluxo';
+    E.hist = { passado: [], futuro: [], ultimo: JSON.stringify(E.ato) };
+    E.zoom = 1;
+    E.pan = { x: 0, y: 0 };
     pintar();
   }
   let esperando = null;
+  /** Guarda o passo no histórico (o que estava antes desta mudança) — o Ctrl+Z volta para ele. */
+  function lembrar() {
+    const agora = JSON.stringify(E.ato);
+    if (agora === E.hist.ultimo) return;
+    E.hist.passado.push(E.hist.ultimo);
+    if (E.hist.passado.length > 100) E.hist.passado.shift();
+    E.hist.futuro = [];
+    E.hist.ultimo = agora;
+  }
+  function voltarPara(json, de, para) {
+    if (!json) return;
+    para.push(JSON.stringify(E.ato));
+    E.ato = JSON.parse(json);
+    E.hist.ultimo = json;
+    if (E.fase && !faseDe(E.fase)) E.fase = null;
+    if (E.lig != null && !E.ato.conexoes[E.lig]) E.lig = null;
+    pintar();
+    revalidar();
+  }
+  const desfazer = () => voltarPara(E.hist.passado.pop(), E.hist.passado, E.hist.futuro);
+  const refazer = () => voltarPara(E.hist.futuro.pop(), E.hist.futuro, E.hist.passado);
+  function revalidar() {
+    clearTimeout(esperando);
+    esperando = setTimeout(async () => {
+      const r = await api('atos-editor/validar', E.ato);
+      E.problemas = r.problemas ?? [];
+      pintarProblemas();
+    }, 350);
+  }
   function mudou() {
+    lembrar();
     pintar();
     clearTimeout(esperando);
     esperando = setTimeout(async () => {
@@ -213,14 +251,59 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     mudou();
   }
 
+  // ------------------------------------------------------------------ ferramentas do grafo
+  /** Zoom em torno de um ponto (frações da tela, 0..1). 1 = o ato inteiro. */
+  function zoomEm(fator, fx = 0.5, fy = 0.5) {
+    const z = Math.min(4, Math.max(1, E.zoom * fator));
+    const wx = E.pan.x + fx * (L / E.zoom);
+    const wy = E.pan.y + fy * (A / E.zoom);
+    E.zoom = z;
+    E.pan = z === 1 ? { x: 0, y: 0 } : { x: Math.max(-L / 2, Math.min(L, wx - fx * (L / z))), y: Math.max(-A / 2, Math.min(A, wy - fy * (A / z))) };
+    pintar();
+  }
+  /** Centraliza a vista numa fase (busca, Page Up/Down). */
+  function focarFase(id) {
+    const p = posicoesAutomaticas(E.ato).get(id);
+    E.fase = id;
+    E.lig = null;
+    if (p && E.zoom > 1) E.pan = { x: p.x - L / E.zoom / 2, y: p.y - A / E.zoom / 2 };
+    pintar();
+  }
+  /** Organiza as fases automaticamente (colunas por profundidade a partir do início). */
+  function organizar() {
+    const pos = posicoesAutomaticas({ ...E.ato, fases: E.ato.fases.map((f) => ({ ...f, posicao: null })) });
+    for (const f of E.ato.fases) { const p = pos.get(f.id); if (p) f.posicao = { x: Math.round(p.x), y: Math.round(p.y) }; }
+    mudou();
+  }
+  /** A fase anterior/seguinte (pela ordem) à selecionada. */
+  function vizinhaDaSelecionada(passo) {
+    const l = [...E.ato.fases].sort((a, b) => (a.ordem ?? 1e9) - (b.ordem ?? 1e9));
+    const i = l.findIndex((f) => f.id === E.fase);
+    const alvo = l[i < 0 ? 0 : (i + passo + l.length) % l.length];
+    if (alvo) focarFase(alvo.id);
+  }
+  function moverSelecionada(dx, dy) {
+    const f = faseDe(E.fase);
+    if (!f || E.somenteLeitura) return;
+    const p = f.posicao ?? posicoesAutomaticas(E.ato).get(f.id) ?? { x: 100, y: 100 };
+    f.posicao = { x: Math.min(L - 30, Math.max(30, p.x + dx)), y: Math.min(A - 40, Math.max(30, p.y + dy)) };
+    mudou();
+  }
+
   // ------------------------------------------------------------------ canvas
   function pintarCanvas() {
     const pos = posicoesAutomaticas(E.ato);
     const alcance = new Set(E.problemas.filter((p) => /isolada/.test(p.mensagem)).map((p) => p.onde.replace('fase ', '')));
     const comErro = new Set(E.problemas.filter((p) => p.nivel === 'erro' && p.onde.startsWith('fase ')).map((p) => p.onde.replace('fase ', '')));
-    const svg = sv('svg', { viewBox: `0 0 ${L} ${A}`, class: 'atos-canvas', role: 'img', 'aria-label': 'Fluxo do ato' },
+    const svg = sv('svg', { viewBox: `${E.pan.x} ${E.pan.y} ${L / E.zoom} ${A / E.zoom}`, class: 'atos-canvas', role: 'img', 'aria-label': 'Fluxo do ato' },
       sv('defs', {}, sv('marker', { id: 'seta', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, sv('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#8aa0c8' })),
         sv('marker', { id: 'seta-sel', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, sv('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#ffd166' }))));
+    if (E.grade) {
+      const linhas = [];
+      for (let x = 0; x <= L; x += 20) linhas.push(sv('line', { x1: x, y1: 0, x2: x, y2: A, stroke: 'rgba(140,160,200,0.07)', 'stroke-width': 1 }));
+      for (let y = 0; y <= A; y += 20) linhas.push(sv('line', { x1: 0, y1: y, x2: L, y2: y, stroke: 'rgba(140,160,200,0.07)', 'stroke-width': 1 }));
+      svg.append(sv('g', { 'pointer-events': 'none' }, ...linhas));
+    }
     // A imagem de fundo do ato (o mapa desenhado por trás do grafo).
     if (E.ato.imagem) svg.append(sv('image', { href: `/api/mapas/_conteudo/atos-imagem/${encodeURIComponent(E.ato.imagem)}?v=${E.versaoDaImagem ?? 0}`, x: 0, y: 0, width: L, height: A, preserveAspectRatio: 'xMidYMid slice', opacity: 0.55 }));
     E.ato.conexoes.forEach((c, i) => {
@@ -256,12 +339,13 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       const g = sv('g', { transform: `translate(${p.x} ${p.y})`, style: 'cursor:pointer', tabindex: 0, role: 'button', 'aria-label': f.nome });
       g.append(sv('circle', { r: RAIO, fill: f.id === E.ato.inicio ? '#1f4a30' : '#1b2438', stroke: comErro.has(f.id) || alcance.has(f.id) ? '#ff6b6b' : sel ? '#ffd166' : E.ligando === f.id ? '#6bd0ff' : f.obrigatoria ? '#8aa0c8' : '#667', 'stroke-width': sel || E.ligando === f.id ? 3 : 2, 'stroke-dasharray': f.obrigatoria ? null : '4 3' }),
         sv('text', { y: 4, 'text-anchor': 'middle', fill: '#fff', 'font-size': 11 }, (f.ordem ?? '·').toString()),
+        seloDaConclusao(f) ? sv('g', { transform: `translate(${RAIO - 4} ${-RAIO + 4})` }, sv('circle', { r: 9, fill: '#2a1f12', stroke: '#d9b25f', 'stroke-width': 1.5 }), sv('text', { y: 4, 'text-anchor': 'middle', fill: '#f3dca4', 'font-size': 10 }, seloDaConclusao(f))) : null,
         sv('text', { y: RAIO + 14, 'text-anchor': 'middle', fill: tipoOk ? '#cfd6e6' : '#ffb347', 'font-size': 10.5 }, f.nome.length > 16 ? `${f.nome.slice(0, 15)}…` : f.nome));
       let arrastou = false;
       g.addEventListener('pointerdown', (ev) => {
         if (E.somenteLeitura || E.ligando) return;
         const caixa = svg.getBoundingClientRect();
-        const k = L / caixa.width;
+        const k = L / E.zoom / caixa.width;
         const ox = ev.clientX;
         const oy = ev.clientY;
         const x0 = p.x;
@@ -269,7 +353,8 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         const mover = (m) => {
           if (Math.hypot(m.clientX - ox, m.clientY - oy) > 4) arrastou = true;
           if (!arrastou) return;
-          f.posicao = { x: Math.round(Math.min(L - 30, Math.max(30, x0 + (m.clientX - ox) * k))), y: Math.round(Math.min(A - 40, Math.max(30, y0 + (m.clientY - oy) * k))) };
+          const naGrade = (v) => (E.grade && !m.altKey ? Math.round(v / 20) * 20 : Math.round(v)); // Alt solta da grade
+          f.posicao = { x: naGrade(Math.min(L - 30, Math.max(30, x0 + (m.clientX - ox) * k))), y: naGrade(Math.min(A - 40, Math.max(30, y0 + (m.clientY - oy) * k))) };
           p.x = f.posicao.x;
           p.y = f.posicao.y;
           g.setAttribute('transform', `translate(${p.x} ${p.y})`);
@@ -296,7 +381,32 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       });
       svg.append(g);
     }
-    svg.addEventListener('click', () => { E.fase = null; E.lig = null; E.ligando = null; pintar(); });
+    let moveuAVista = false;
+    svg.addEventListener('pointerdown', (ev) => {
+      if (ev.target !== svg && ev.target.tagName !== 'image' && ev.target.tagName !== 'line') return;
+      if (E.zoom === 1) return;
+      const caixa = svg.getBoundingClientRect();
+      const k = L / E.zoom / caixa.width;
+      const o = { x: ev.clientX, y: ev.clientY, px: E.pan.x, py: E.pan.y };
+      moveuAVista = false;
+      const mover = (m) => {
+        if (Math.hypot(m.clientX - o.x, m.clientY - o.y) > 4) moveuAVista = true;
+        E.pan = { x: o.px - (m.clientX - o.x) * k, y: o.py - (m.clientY - o.y) * k };
+        svg.setAttribute('viewBox', `${E.pan.x} ${E.pan.y} ${L / E.zoom} ${A / E.zoom}`);
+      };
+      const soltar = () => { window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', soltar); };
+      window.addEventListener('pointermove', mover);
+      window.addEventListener('pointerup', soltar);
+    });
+    svg.addEventListener('wheel', (ev) => {
+      if (!ev.ctrlKey && !ev.altKey) return; // roda sozinha rola a página; Ctrl/Alt + roda = zoom
+      ev.preventDefault();
+      const caixa = svg.getBoundingClientRect();
+      const fx = (ev.clientX - caixa.left) / caixa.width;
+      const fy = (ev.clientY - caixa.top) / caixa.height;
+      zoomEm(ev.deltaY < 0 ? 1.25 : 0.8, fx, fy);
+    }, { passive: false });
+    svg.addEventListener('click', () => { if (moveuAVista) { moveuAVista = false; return; } E.fase = null; E.lig = null; E.ligando = null; pintar(); });
     return svg;
   }
 
@@ -388,35 +498,88 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     return null;
   }
 
+  // ---- COMO A FASE CONCLUI: cada tipo tem a sua tela (cartões com o desenho dos mobs, a ficha do alvo, a quantidade, o item da missão).
+  const TIPOS_VISUAIS = {
+    'limpar-hunt': { icone: '🧹', titulo: 'Limpar a área', texto: 'matar todos os bichos da instância' },
+    'matar-chefe': { icone: '☠', titulo: 'Matar o chefe', texto: 'um monstro escolhido precisa morrer' },
+    'matar-n': { icone: '⚔', titulo: 'Matar N monstros', texto: 'uma quantidade (de um tipo ou qualquer)' },
+    'item-de-missao': { icone: '📜', titulo: 'Missão: item', texto: 'o alvo solta o item; pegar conclui' },
+  };
+  /** O selo da conclusão no nó do grafo. */
+  const seloDaConclusao = (f) => ({ 'matar-chefe': '☠', 'matar-n': `×${f.conclusao?.quantidade ?? '?'}`, 'item-de-missao': '📜' })[f.conclusao?.tipo] ?? null;
+  const vidaDe = (m) => Number(m.vida ?? 0) + Number(m.escudoDeEnergia ?? 0);
+  /** Um cartão de mob (desenho, nome, nível, vida) — clicável quando `aoEscolher`. */
+  const cartaoDoMob = (m, { ativo = false, aoEscolher = null, pequeno = false } = {}) => el(aoEscolher ? 'button' : 'div', { type: aoEscolher ? 'button' : undefined, class: `conc-mob${ativo ? ' ativo' : ''}${m.unico ? ' unico' : ''}${pequeno ? ' pequeno' : ''}`, disabled: aoEscolher ? E.somenteLeitura : undefined, onclick: aoEscolher ? () => aoEscolher(m) : undefined, title: m.nome },
+    retrato(m.desenho ?? null, pequeno ? 40 : 56, { categoria: 'monstros' }), el('b', {}, m.nome), el('small', {}, `nv ${m.nivel ?? '?'} · ${vidaDe(m).toLocaleString('pt-BR')} vida${m.unico ? ' · único' : ''}`));
+  /** Os mobs da área ordenados: únicos primeiro, depois pela vida. */
+  const mobsOrdenados = (area) => [...(area?.monstros ?? [])].sort((a, b) => Number(!!b.unico) - Number(!!a.unico) || vidaDe(b) - vidaDe(a));
+
   function painelDaConclusao(f) {
     const conc = f.conclusao ?? { tipo: 'limpar-hunt' };
-    const T = E.opcoes.tiposDeConclusao.find((t) => t.id === conc.tipo) ?? {};
     const area = areaDaFase(f.huntId);
-    const monstros = area?.monstros ?? [];
-    const opMonstros = monstros.map((m) => [m.slug, `${m.nome}${m.unico ? ' (único)' : ''}${m.nivel ? ` · nv ${m.nivel}` : ''}`]);
-    if (conc.monstro && !opMonstros.some(([v]) => v === conc.monstro)) opMonstros.unshift([conc.monstro, conc.nome ?? conc.monstro]);
+    const monstros = mobsOrdenados(area);
     const mudar = (novo) => { f.conclusao = novo; mudou(); };
-    const opItens = (E.missao ?? []).map((i) => [String(i.id), `${i.nome} — ${i.missao}`]);
-    return el('fieldset', {}, el('legend', {}, 'Como a fase conclui'),
-      el('div', { class: 'grade' },
-        selecao('Conclusão', conc.tipo, E.opcoes.tiposDeConclusao.map((t) => [t.id, t.nome]), (v) => mudar({ tipo: v || 'limpar-hunt' })),
-        T.exigeMonstro || conc.tipo === 'matar-n' ? selecao('Monstro', conc.monstro ?? '', opMonstros, (v) => { const m = monstros.find((x) => x.slug === v); mudar({ ...conc, monstro: v || undefined, nome: m?.nome }); }, conc.tipo === 'matar-n' ? '(qualquer monstro)' : '(escolha)') : null,
-        T.exigeQuantidade ? campo('Quantidade', conc.quantidade, (v) => mudar({ ...conc, quantidade: numero(v) }), { type: 'number', min: 1 }) : null,
-        T.exigeItem ? selecao('Item da missão', conc.item != null ? String(conc.item) : '', opItens, (v) => mudar({ ...conc, item: v ? Number(v) : undefined }), '(escolha)') : null),
-      el('div', { class: 'dica' }, {
-        'limpar-hunt': 'Conclui ao limpar a instância inteira.',
-        'matar-chefe': 'Conclui quando o monstro escolhido morre (limpar a área sem ele não conclui).',
-        'matar-n': 'Conclui ao matar a quantidade (do monstro escolhido, ou de qualquer um). O progresso fica salvo.',
-        'item-de-missao': 'O monstro alvo solta o item da missão (a tabela de drop dele, abaixo) e pegá-lo conclui. Sem a linha na tabela, o item cai do mesmo jeito ao matar o alvo.',
-      }[conc.tipo] ?? ''),
-      f.objetivos?.length ? [el('b', {}, 'Missões desta área (Drive)'), el('ul', { class: 'atos-missoes' }, f.objetivos.map((o) => el('li', {}, el('b', {}, o.missao ?? ''), o.texto ? ` — ${o.texto}` : '')))] : null);
+    const alvo = monstros.find((m) => m.slug === conc.monstro) ?? null;
+    if (area?.poe && !E.missao) poeApi('itens-de-missao').then((r) => { E.missao = r.itens ?? []; if (faseDe(E.fase)?.huntId === f.huntId) pintar(); }).catch(() => {});
+    // Os quatro tipos como cartões (o escolhido aceso).
+    const tipos = el('div', { class: 'conc-tipos' }, E.opcoes.tiposDeConclusao.map((t) => {
+      const v = TIPOS_VISUAIS[t.id] ?? { icone: '•', titulo: t.nome, texto: '' };
+      return el('button', { type: 'button', class: `conc-tipo${conc.tipo === t.id ? ' ativo' : ''}`, disabled: E.somenteLeitura, onclick: () => conc.tipo !== t.id && mudar(t.id === 'matar-n' ? { tipo: t.id, quantidade: 25 } : t.id === 'item-de-missao' ? { tipo: t.id, item: E.missao?.find((i) => i.area === f.huntId)?.id } : { tipo: t.id }) },
+        el('span', { class: 'conc-icone' }, v.icone), el('b', {}, v.titulo), el('small', {}, v.texto));
+    }));
+    const semMobs = !area ? el('div', { class: 'dica' }, 'Carregando os mobs da área…') : !monstros.length ? el('div', { class: 'dica' }, 'A área não tem monstros (escolha a hunt da fase).') : null;
+    let corpo = null;
+    if (conc.tipo === 'limpar-hunt') {
+      corpo = [el('div', { class: 'dica' }, `Conclui quando a instância inteira é limpa. ${monstros.length} tipo(s) de monstro nesta área:`),
+        semMobs ?? el('div', { class: 'conc-grade' }, monstros.map((m) => cartaoDoMob(m, { pequeno: true })))];
+    } else if (conc.tipo === 'matar-chefe') {
+      corpo = [
+        alvo ? el('div', { class: 'conc-alvo' }, retrato(alvo.desenho ?? null, 96, { categoria: 'monstros', animar: true }), el('div', {},
+          el('div', { class: 'conc-rotulo' }, 'Alvo da fase'), el('h3', {}, alvo.nome), el('div', { class: 'dica' }, `nível ${alvo.nivel} · ${vidaDe(alvo).toLocaleString('pt-BR')} de vida · golpe ${alvo.dano} a cada ${Number(alvo.tempoAtaque ?? 0).toFixed(2)} s${alvo.convertidas?.length ? ` · ${alvo.convertidas.length} habilidade(s)` : ''}`),
+          el('div', { class: 'dica' }, 'Limpar a área sem ele não conclui; matar ele conclui na hora.'))) : el('div', { class: 'conc-aviso' }, '☠ Escolha o chefe da fase entre os mobs da área (os únicos vêm primeiro).'),
+        semMobs ?? el('div', { class: 'conc-grade' }, monstros.map((m) => cartaoDoMob(m, { ativo: m.slug === conc.monstro, aoEscolher: (x) => mudar({ ...conc, monstro: x.slug, nome: x.nome }) })))];
+    } else if (conc.tipo === 'matar-n') {
+      const q = conc.quantidade ?? 25;
+      corpo = [
+        el('div', { class: 'conc-contador' },
+          el('button', { type: 'button', disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, quantidade: Math.max(1, q - 5) }) }, '−5'),
+          el('input', { type: 'number', min: 1, value: q, disabled: E.somenteLeitura, onchange: (e) => mudar({ ...conc, quantidade: Math.max(1, Math.round(Number(e.target.value) || 1)) }) }),
+          el('button', { type: 'button', disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, quantidade: q + 5 }) }, '+5'),
+          [10, 25, 50, 100].map((n) => el('button', { type: 'button', class: n === q ? 'ativo' : '', disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, quantidade: n }) }, String(n)))),
+        el('div', { class: 'dica' }, `Matar ${q} ${alvo ? alvo.nome : 'monstros (qualquer um da área)'}. O progresso fica salvo entre as entradas.`),
+        semMobs ?? el('div', { class: 'conc-grade' },
+          el('button', { type: 'button', class: `conc-mob qualquer${conc.monstro ? '' : ' ativo'}`, disabled: E.somenteLeitura, onclick: () => mudar({ tipo: 'matar-n', quantidade: q }) }, el('span', { class: 'conc-icone' }, '⚔'), el('b', {}, 'Qualquer monstro'), el('small', {}, 'conta todos')),
+          monstros.map((m) => cartaoDoMob(m, { ativo: m.slug === conc.monstro, pequeno: true, aoEscolher: (x) => mudar({ ...conc, monstro: x.slug, nome: x.nome }) })))];
+    } else if (conc.tipo === 'item-de-missao') {
+      const item = (E.missao ?? []).find((i) => Number(i.id) === Number(conc.item));
+      const linha = alvo?.drops?.find((d) => Number(d.id) === Number(conc.item));
+      corpo = [
+        el('div', { class: 'conc-missao' },
+          alvo ? cartaoDoMob(alvo) : el('div', { class: 'conc-mob vazio' }, el('span', { class: 'conc-icone' }, '?'), el('b', {}, 'Escolha o monstro'), el('small', {}, 'que carrega o item')),
+          el('span', { class: 'conc-seta' }, '→ solta →'),
+          el('div', { class: `conc-item${item ? '' : ' vazio'}` }, el('span', { class: 'conc-icone' }, '📜'), el('b', {}, item?.nome ?? 'Escolha o item'), el('small', {}, item ? `missão "${item.missao}"` : 'da missão'))),
+        el('div', { class: 'dica' }, !alvo || !item ? 'Escolha o monstro e o item abaixo.' : linha ? `Na tabela de drop de ${alvo.nome}: ${linha.chance}%${linha.missao ? ', só enquanto a missão está aberta' : ''}. Pegar o item conclui a fase.` : `Sem a linha na tabela de drop de ${alvo.nome}: o item cai do mesmo jeito ao matar o alvo (100%).`),
+        el('div', { class: 'conc-rotulo' }, 'Quem carrega'),
+        semMobs ?? el('div', { class: 'conc-grade' }, monstros.map((m) => cartaoDoMob(m, { ativo: m.slug === conc.monstro, pequeno: true, aoEscolher: (x) => mudar({ ...conc, monstro: x.slug, nome: x.nome }) }))),
+        el('div', { class: 'conc-rotulo' }, 'Item da missão'),
+        el('div', { class: 'conc-grade' }, (E.missao ?? []).sort((a, b) => Number(b.area === f.huntId) - Number(a.area === f.huntId) || a.ato - b.ato).map((i) => el('button', { type: 'button', class: `conc-item${Number(i.id) === Number(conc.item) ? ' ativo' : ''}`, disabled: E.somenteLeitura, onclick: () => mudar({ ...conc, item: Number(i.id) }) },
+          el('span', { class: 'conc-icone' }, '📜'), el('b', {}, i.nome), el('small', {}, `${i.ato === 11 ? 'Epílogo' : `Ato ${i.ato}`}${i.area === f.huntId ? ' · desta área' : ''}`))))];
+    }
+    return el('fieldset', { class: 'conc' }, el('legend', {}, 'Como a fase conclui'), tipos, corpo,
+      f.objetivos?.length ? el('details', { class: 'conc-missoes' }, el('summary', {}, `Missões desta área no Drive (${f.objetivos.length})`), el('ul', { class: 'atos-missoes' }, f.objetivos.map((o) => el('li', {}, el('b', {}, o.missao ?? ''), o.texto ? ` — ${o.texto}` : '')))) : null);
   }
+
+  /** Os mobs da área em edição (uma cópia; "Salvar mobs da área" grava e vale na próxima entrada). */
+  E.mobsEditando = {};
+  const CAMPOS_DO_MOB = [['nivel', 'Nível', 1], ['vida', 'Vida', 1], ['escudoDeEnergia', 'Escudo de Energia', 1], ['dano', 'Golpe', 1], ['tempoAtaque', 'Tempo de ataque (s)', 0.01], ['armadura', 'Armadura', 1], ['evasao', 'Evasão', 1], ['experiencia', 'Experiência', 1]];
+  const RES = [['fire', 'Res. fogo'], ['ice', 'Res. gelo'], ['energy', 'Res. raio'], ['chaos', 'Res. caos']];
+  const limparMob = (m) => ({ slug: m.slug, nome: m.nome, unico: !!m.unico, nivel: m.nivel, vida: m.vida, escudoDeEnergia: m.escudoDeEnergia ?? 0, dano: m.dano, tempoAtaque: m.tempoAtaque, armadura: m.armadura ?? 0, evasao: m.evasao ?? 0, experiencia: m.experiencia, resistencias: { ...(m.resistencias ?? {}) }, ...(m.habilidades?.length ? { habilidades: m.habilidades } : {}) });
 
   function painelDosMobs(f) {
     const area = areaDaFase(f.huntId);
     if (!f.huntId) return null;
-    if (!area) return el('fieldset', {}, el('legend', {}, 'Mapa, mobs e drops'), el('div', { class: 'dica' }, 'Carregando…'));
-    if (!area.poe) return el('fieldset', {}, el('legend', {}, 'Mobs da hunt'), el('div', { class: 'dica' }, area.monstros.map((m) => m.nome).join(', ') || 'sem monstros'), el('div', { class: 'dica' }, 'A tabela de drop por monstro vale para os monstros do PoE (com o PoE ligado).'));
+    if (!area) return el('fieldset', {}, el('legend', {}, 'Mapa e mobs da área'), el('div', { class: 'dica' }, 'Carregando…'));
+    if (!area.poe) return el('fieldset', {}, el('legend', {}, 'Mobs da hunt'), el('div', { class: 'dica' }, area.monstros.map((m) => m.nome).join(', ') || 'sem monstros'), el('div', { class: 'dica' }, 'Os mobs editáveis por área são os da campanha do PoE (com o PoE ligado).'));
     const sel = el('select', { disabled: E.somenteLeitura }, (E.mapas ?? [{ id: area.mapa, nome: area.nomeDoMapa }]).map((m) => el('option', { value: m.id, selected: m.id === area.mapa }, `${m.nome}${m.nivel ? ` (nv ${m.nivel})` : ''}`)));
     const trocar = el('button', { type: 'button', disabled: E.somenteLeitura, onclick: async () => {
       if (sel.value === area.mapa) return msg('Esse já é o mapa da área.', 'aviso');
@@ -426,13 +589,54 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
       msg(`Mapa de ${area.nome} trocado (vale na próxima entrada).`, 'ok');
       pintar();
     } }, 'Trocar mapa');
-    return el('fieldset', {}, el('legend', {}, 'Mapa, mobs e drops'),
+    // A edição: começa da lista da área; cada mudança marca "não salvo".
+    const ed = (E.mobsEditando[f.huntId] ??= { lista: area.monstros.map(limparMob), sujo: false });
+    const marcar = () => { ed.sujo = true; pintar(); };
+    // Mudar um número não redesenha a tela (o campo continua onde está): só acende o "Salvar".
+    const idDoSalvar = `mobs-salvar-${f.huntId}`;
+    const marcarCampo = () => {
+      ed.sujo = true;
+      const b = document.getElementById(idDoSalvar);
+      if (b) { b.disabled = false; b.className = 'primario'; b.textContent = 'Salvar mobs da área'; }
+    };
+    if (!E.mobsPoe) poeApi('mobs').then((r) => { E.mobsPoe = r.mobs ?? []; if (faseDe(E.fase)?.huntId === f.huntId) pintar(); }).catch(() => {});
+    const porSlug = new Map(area.monstros.map((m) => [m.slug, m]));
+    const acrescentar = (slug) => {
+      const mob = (E.mobsPoe ?? []).find((x) => x.slug === slug);
+      if (!mob) return;
+      // Os status da ocorrência de nível mais perto do nível da área (ajuste depois, se quiser).
+      const o = [...mob.ocorrencias].sort((a, b) => Math.abs(a.nivel - area.nivel) - Math.abs(b.nivel - area.nivel))[0];
+      ed.lista.push(limparMob({ ...o, slug: mob.slug, nome: mob.nome, unico: mob.unico, nivel: o.nivel }));
+      marcar();
+    };
+    const salvar = async () => {
+      const r = await poeApi('campanha/area/monstros', { area: f.huntId, monstros: ed.lista });
+      if (!r.ok) return msg(r.erros?.slice(0, 3).join(' ') ?? 'Não salvou.', 'erro');
+      E.areas[f.huntId] = { poe: true, ...r.area };
+      delete E.mobsEditando[f.huntId];
+      E.mobsPoe = null;
+      msg(`Mobs de ${area.nome} salvos (valem na próxima entrada na área).`, 'ok');
+      pintar();
+    };
+    return el('fieldset', {}, el('legend', {}, 'Mapa e mobs da área'),
       el('div', { class: 'linha' }, el('label', { class: 'campo', style: 'flex:1;min-width:0' }, 'Mapa (terreno do Draevor)', sel), trocar),
-      el('div', { class: 'dica' }, `Nível ${area.nivel}. Os bichos são os do PoE (status do PoE, desenho do Draevor). Comuns caem pela tabela global do PoE; só os únicos têm drop próprio (clique para editar).`),
-      el('div', { class: 'atos-mobs' }, area.monstros.map((m) => el('details', { class: 'atos-mob' },
-        el('summary', {}, el('b', {}, m.nome), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null, f.conclusao?.monstro === m.slug ? el('span', { class: 'selo usos', style: 'margin-left:6px' }, 'alvo da fase') : null,
-          el('span', { class: 'dica' }, ` nv ${m.nivel} · ${Number(m.vida + (m.escudoDeEnergia ?? 0)).toLocaleString('pt-BR')} vida · golpe ${m.dano}${m.drops?.length ? ` · ${m.drops.length} drop(s)` : ''}`)),
-        m.unico ? editorDeDrops(m.slug, m.drops ?? [], { somenteLeitura: E.somenteLeitura, aoSalvar: (drops) => { m.drops = drops; } }) : el('div', { class: 'dica' }, 'Monstro comum: sem item próprio (modelo do PoE). Cai pela tabela global: ~16% de chance (mais nos mágicos/raros), Item Level = o nível dele, qualquer base até esse nível, raridade pelos pesos.')))));
+      el('div', { class: 'dica' }, `Nível ${area.nivel}. Os bichos são os do PoE (status do PoE, desenho do Draevor). Edite os status, tire ou acrescente monstros e salve. Comuns caem pela tabela global do PoE; só os únicos têm drop próprio.`),
+      el('div', { class: 'atos-mobs' }, ed.lista.map((m, i) => {
+        const original = porSlug.get(m.slug);
+        return el('details', { class: 'atos-mob' },
+          el('summary', {}, el('b', {}, m.nome), m.unico ? el('span', { class: 'selo aviso', style: 'margin-left:6px' }, 'único') : null, f.conclusao?.monstro === m.slug ? el('span', { class: 'selo usos', style: 'margin-left:6px' }, 'alvo da fase') : null,
+            el('span', { class: 'dica' }, ` nv ${m.nivel} · ${Number(m.vida + (m.escudoDeEnergia ?? 0)).toLocaleString('pt-BR')} vida · golpe ${m.dano} a cada ${Number(m.tempoAtaque).toFixed(2)} s`)),
+          el('div', { class: 'grade atos-mob-campos' },
+            CAMPOS_DO_MOB.map(([k, rot, passo]) => campo(rot, m[k], (v) => { m[k] = Number(v); marcarCampo(); }, { type: 'number', step: passo, min: 0 })),
+            RES.map(([k, rot]) => campo(rot, m.resistencias?.[k] ?? 0, (v) => { m.resistencias = { ...(m.resistencias ?? {}), [k]: Number(v) }; marcarCampo(); }, { type: 'number', step: 1, min: -100, max: 90 }))),
+          E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { type: 'button', class: 'perigo', onclick: () => { ed.lista.splice(i, 1); marcar(); } }, 'Tirar da área')),
+          m.unico && original ? [el('b', {}, 'Drops deste único'), editorDeDrops(m.slug, original.drops ?? [], { somenteLeitura: E.somenteLeitura, aoSalvar: (drops) => { original.drops = drops; } })] : null);
+      })),
+      E.somenteLeitura ? null : el('div', { class: 'linha' },
+        el('select', { onchange: (e) => { if (e.target.value) acrescentar(e.target.value); } }, el('option', { value: '' }, E.mobsPoe ? '+ acrescentar monstro do PoE…' : 'carregando monstros…'),
+          (E.mobsPoe ?? []).filter((x) => !ed.lista.some((m) => m.slug === x.slug)).map((x) => el('option', { value: x.slug }, `${x.nome}${x.unico ? ' (único)' : ''} — nv ${x.ocorrencias[0]?.nivel ?? '?'}`))),
+        el('button', { type: 'button', id: idDoSalvar, class: ed.sujo ? 'primario' : '', disabled: !ed.sujo, onclick: salvar }, ed.sujo ? 'Salvar mobs da área' : 'Mobs salvos'),
+        ed.sujo ? el('button', { type: 'button', onclick: () => { delete E.mobsEditando[f.huntId]; pintar(); } }, 'Desfazer') : null));
   }
 
   // ------------------------------------------------------------------ painéis
@@ -464,6 +668,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
     const tipos = E.opcoes.tiposDeFase.map((t) => [t.id, `${t.nome}${t.suportado ? '' : ' — sem suporte no runtime'}`]);
     const hunt = f.huntId ? `${f.huntId}` : 'nenhuma';
     return el('fieldset', {}, el('legend', {}, `Fase: ${f.nome}${pos(f.id)}`),
+      el('div', { class: 'linha' }, el('button', { type: 'button', title: 'Fase anterior (Page Up)', onclick: () => vizinhaDaSelecionada(-1) }, '◀ anterior'), el('button', { type: 'button', title: 'Fase seguinte (Page Down)', onclick: () => vizinhaDaSelecionada(1) }, 'próxima ▶'), el('span', { class: 'dica' }, `${E.ato.fases.findIndex((x) => x.id === f.id) + 1} de ${E.ato.fases.length}`)),
       el('div', { class: 'grade' },
         campo('ID da fase', f.id, (v) => renomearFase(f.id, v)),
         campo('Nome', f.nome, (v) => { f.nome = v; mudou(); }),
@@ -478,7 +683,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         el('label', { class: 'marca' }, el('input', { type: 'checkbox', checked: f.id === E.ato.inicio, disabled: E.somenteLeitura, onchange: () => { E.ato.inicio = f.id; mudou(); } }), 'Fase inicial')),
       el('label', { class: 'campo' }, 'Requisitos (IDs de fases que precisam estar completas, separados por vírgula)', el('input', { value: f.requisitos.exige.join(', '), disabled: E.somenteLeitura, onchange: (e) => { f.requisitos.exige = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); mudou(); } })),
       el('div', { class: 'dica' }, 'A conclusão da fase, o mapa, os mobs e o que cada mob solta: painéis abaixo. Recompensa da fase (por limpeza / 1ª vez): mais abaixo.'),
-      E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { onclick: () => { E.ligando = f.id; msg(`Clique na fase de DESTINO para ligar "${f.nome}" a ela.`, 'aviso'); pintar(); } }, 'Ligar a outra fase →'), el('button', { class: 'perigo', onclick: () => removerFase(f.id) }, 'Remover fase')));
+      E.somenteLeitura ? null : el('div', { class: 'linha' }, modo === 'fases' ? null : el('button', { onclick: () => { E.ligando = f.id; msg(`Clique na fase de DESTINO para ligar "${f.nome}" a ela.`, 'aviso'); pintar(); } }, 'Ligar a outra fase →'), el('button', { class: 'perigo', onclick: () => removerFase(f.id) }, 'Remover fase')));
   }
 
   function painelDaLigacao() {
@@ -551,8 +756,145 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         el('div', { class: 'bib-detalhe' }, d?.id ? [el('h4', {}, `${d.nome ?? d.id} (${d.id})`), linhaDe('Tipo', d.tipo), linhaDe('Mapa', d.mapa?.arquivo), linhaDe('Nível', d.nivel?.atual ?? d.nivel), linhaDe('Monstros', d.monstros?.map((m) => m.nome ?? m.key).join(', ') || null), linhaDe('Acesso', d.requisitos?.acesso), linhaDe('Cooldown', d.cooldowns?.horas), linhaDe('Drops de encontros', d.drops?.deEncontros?.length ?? null), el('button', { class: 'primario', onclick: () => usarDoPicker(d) }, 'Usar este') ] : el('div', { class: 'dica' }, 'Clique numa linha para ver o detalhe do cadastro.'))));
   }
 
+  // ------------------------------------------------------------------ barra de ferramentas, atalhos e ferramentas do ato
+  const ATALHOS = [
+    ['Ctrl+S', 'Salvar o ato'], ['Ctrl+Z', 'Desfazer'], ['Ctrl+Y ou Ctrl+Shift+Z', 'Refazer'], ['N', 'Nova fase'], ['L', 'Ligar a fase selecionada a outra (clique no destino)'],
+    ['Delete', 'Remover a fase ou a ligação selecionada'], ['Esc', 'Cancelar / desmarcar'], ['Setas', 'Mover a fase selecionada (Shift: 1 px; sem Shift: 20 px)'],
+    ['Page Up / Page Down', 'Fase anterior / seguinte (pela ordem)'], ['F ou /', 'Buscar fase'], ['+ / −  (ou Ctrl+roda)', 'Zoom do grafo'], ['0', 'Ver o ato inteiro'], ['G', 'Grade liga/desliga (Alt ao arrastar solta da grade)'],
+    ['O', 'Organizar automático'], ['?', 'Esta ajuda'],
+  ];
+  function barraDeFerramentas() {
+    const busca = el('input', { type: 'search', id: 'atos-busca', placeholder: 'Buscar fase… (F)', style: 'width:180px', onkeydown: (e) => {
+      if (e.key !== 'Enter') return;
+      const t = e.target.value.trim().toLowerCase();
+      const f = E.ato.fases.find((x) => x.nome.toLowerCase().includes(t) || x.id.includes(t));
+      if (f) focarFase(f.id); else msg('Nenhuma fase com esse nome.', 'aviso');
+    } });
+    const b = (rotulo, titulo, acao, extra = {}) => el('button', { type: 'button', title: titulo, onclick: acao, ...extra }, rotulo);
+    return el('div', { class: 'atos-ferramentas' },
+      E.somenteLeitura ? null : b('+ Fase', 'Nova fase (N)', novaFase),
+      E.somenteLeitura ? null : b('↶', 'Desfazer (Ctrl+Z)', desfazer, { disabled: !E.hist.passado.length }),
+      E.somenteLeitura ? null : b('↷', 'Refazer (Ctrl+Y)', refazer, { disabled: !E.hist.futuro.length }),
+      el('span', { class: 'atos-sep' }),
+      b('−', 'Afastar (−)', () => zoomEm(0.8)), el('span', { class: 'dica', style: 'min-width:38px;text-align:center' }, `${Math.round(E.zoom * 100)}%`), b('+', 'Aproximar (+)', () => zoomEm(1.25)), b('⤢', 'Ver o ato inteiro (0)', () => { E.zoom = 1; E.pan = { x: 0, y: 0 }; pintar(); }),
+      el('span', { class: 'atos-sep' }),
+      E.somenteLeitura ? null : b('Organizar', 'Organizar as fases automaticamente (O)', organizar),
+      b(E.grade ? 'Grade: ligada' : 'Grade: desligada', 'Alinhar à grade de 20 px ao arrastar (G)', () => { E.grade = !E.grade; pintar(); }),
+      busca,
+      el('span', { class: 'atos-sep' }),
+      E.somenteLeitura ? null : b('Ferramentas do ato', 'Ajustes em todas as áreas de uma vez', () => { E.ferramentas = !E.ferramentas; pintar(); }, { class: E.ferramentas ? 'ativo' : '' }),
+      b('?', 'Atalhos de teclado (?)', () => { E.ajuda = !E.ajuda; pintar(); }),
+      el('span', { class: 'dica' }, E.ligando ? 'Modo ligar: clique na fase de destino (Esc cancela).' : 'Clique numa fase para editar o mapa, os mobs e a conclusão.'));
+  }
+  function painelDeAtalhos() {
+    return el('div', { class: 'atos-ajuda' }, el('b', {}, 'Atalhos de teclado'), el('table', {}, el('tbody', {}, ATALHOS.map(([k, d]) => el('tr', {}, el('td', {}, el('kbd', {}, k)), el('td', {}, d))))), el('button', { type: 'button', onclick: () => { E.ajuda = false; pintar(); } }, 'Fechar'));
+  }
+
+  /** Ajustes em TODAS as áreas do ato (as do PoE): níveis das fases e status dos mobs, de uma vez — grava área por área. */
+  function painelDeFerramentasDoAto() {
+    const F = (E.ferramentasEstado ??= { nivel: 0, vida: 100, dano: 100, exp: 100, ocupado: false });
+    const fasesPoe = E.ato.fases.filter((f) => f.huntId?.startsWith('poe-a'));
+    const num = (rot, chave, sufixo, props = {}) => el('label', { class: 'campo' }, rot, el('div', { class: 'linha' }, el('input', { type: 'number', value: F[chave], style: 'width:90px', ...props, onchange: (e) => { F[chave] = Number(e.target.value); } }), el('span', { class: 'dica' }, sufixo)));
+    const aplicarNiveis = () => {
+      if (!F.nivel) return msg('Digite quantos níveis somar (pode ser negativo).', 'aviso');
+      for (const f of E.ato.fases) if (f.nivel) for (const d of NIVEIS) f.nivel[d] = Math.max(1, (f.nivel[d] ?? 1) + F.nivel);
+      if (E.ato.bossFinal?.nivel) for (const d of NIVEIS) E.ato.bossFinal.nivel[d] = Math.max(1, (E.ato.bossFinal.nivel[d] ?? 1) + F.nivel);
+      msg(`Nível de ${E.ato.fases.length} fase(s) ${F.nivel > 0 ? '+' : ''}${F.nivel}. Salve o ato (Ctrl+S).`, 'ok');
+      mudou();
+    };
+    const aplicarMobs = async () => {
+      if (F.vida === 100 && F.dano === 100 && F.exp === 100) return msg('Mude algum percentual (100% = sem mudança).', 'aviso');
+      if (!(await confirmar(`Ajustar os mobs de ${fasesPoe.length} área(s) do ${E.ato.nome}?`, `Vida ${F.vida}% · golpe ${F.dano}% · experiência ${F.exp}%. Grava área por área (vale na próxima entrada).`, { ok: 'Ajustar' }))) return;
+      F.ocupado = true;
+      pintar();
+      let feitas = 0;
+      for (const f of fasesPoe) {
+        const a = await poeApi(`campanha/area?id=${encodeURIComponent(f.huntId)}`);
+        const lista = a.monstros.map((m) => ({ ...limparMob(m), vida: Math.max(1, Math.round(m.vida * F.vida / 100)), escudoDeEnergia: Math.round((m.escudoDeEnergia ?? 0) * F.vida / 100), dano: Math.round(m.dano * F.dano / 100), experiencia: Math.round(m.experiencia * F.exp / 100) }));
+        const r = await poeApi('campanha/area/monstros', { area: f.huntId, monstros: lista });
+        if (r.ok) { feitas++; E.areas[f.huntId] = { poe: true, ...r.area }; delete E.mobsEditando[f.huntId]; }
+      }
+      F.ocupado = false;
+      msg(`Mobs ajustados em ${feitas} de ${fasesPoe.length} área(s).`, feitas === fasesPoe.length ? 'ok' : 'aviso');
+      pintar();
+    };
+    return el('fieldset', { class: 'atos-ferramentas-do-ato' }, el('legend', {}, `Ferramentas do ato — ${E.ato.nome}`),
+      el('div', { class: 'linha', style: 'flex-wrap:wrap;align-items:flex-end' }, num('Somar ao nível de todas as fases', 'nivel', 'níveis'), el('button', { type: 'button', onclick: aplicarNiveis }, 'Aplicar nos níveis')),
+      fasesPoe.length ? el('div', { class: 'linha', style: 'flex-wrap:wrap;align-items:flex-end' }, num('Vida dos mobs', 'vida', '%', { min: 1 }), num('Golpe dos mobs', 'dano', '%', { min: 0 }), num('Experiência', 'exp', '%', { min: 0 }),
+        el('button', { type: 'button', class: 'primario', disabled: F.ocupado, onclick: aplicarMobs }, F.ocupado ? 'Ajustando…' : `Aplicar nos mobs de ${fasesPoe.length} áreas`)) : null,
+      el('div', { class: 'dica' }, 'Os níveis entram no ato (salve com Ctrl+S). Os mobs gravam direto, área por área (a aba Acts → área → mobs mostra o resultado).'));
+  }
+
+  // Os atalhos valem só com a aba Acts aberta no fluxo e o foco fora de um campo (Ctrl+S vale sempre).
+  document.addEventListener('keydown', (e) => {
+    if (!E.ato || (modo === 'fases' ? !document.querySelector('.fases-modo') : E.vista !== 'fluxo' || !document.querySelector('.atos-canvas'))) return;
+    const ctrl = e.ctrlKey || e.metaKey;
+    const k = e.key.toLowerCase();
+    if (ctrl && k === 's') { e.preventDefault(); if (!E.somenteLeitura) salvar(); return; }
+    const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '') || document.activeElement?.isContentEditable;
+    if (digitando || document.querySelector('dialog[open]')) return;
+    if (ctrl && k === 'z' && !e.shiftKey) { e.preventDefault(); return desfazer(); }
+    if (ctrl && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); return refazer(); }
+    if (ctrl || e.altKey) return;
+    const feito = () => e.preventDefault();
+    if (modo === 'fases') {
+      if (e.key === 'PageDown') { feito(); vizinhaDaSelecionada(1); }
+      if (e.key === 'PageUp') { feito(); vizinhaDaSelecionada(-1); }
+      return;
+    }
+    if (e.key === 'Escape') { feito(); E.ligando = null; E.fase = null; E.lig = null; E.ajuda = false; return pintar(); }
+    if (e.key === '?') { feito(); E.ajuda = !E.ajuda; return pintar(); }
+    if (k === 'f' || e.key === '/') { feito(); return document.getElementById('atos-busca')?.focus(); }
+    if (e.key === '+' || e.key === '=') { feito(); return zoomEm(1.25); }
+    if (e.key === '-') { feito(); return zoomEm(0.8); }
+    if (e.key === '0') { feito(); E.zoom = 1; E.pan = { x: 0, y: 0 }; return pintar(); }
+    if (k === 'g') { feito(); E.grade = !E.grade; return pintar(); }
+    if (e.key === 'PageDown') { feito(); return vizinhaDaSelecionada(1); }
+    if (e.key === 'PageUp') { feito(); return vizinhaDaSelecionada(-1); }
+    if (E.somenteLeitura) return;
+    if (k === 'n') { feito(); return novaFase(); }
+    if (k === 'o') { feito(); return organizar(); }
+    if (k === 'l' && E.fase) { feito(); E.ligando = E.fase; msg('Clique na fase de DESTINO (Esc cancela).', 'aviso'); return pintar(); }
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      feito();
+      if (E.lig != null) { E.ato.conexoes.splice(E.lig, 1); E.lig = null; return mudou(); }
+      if (E.fase) return confirmar(`Remover a fase "${faseDe(E.fase)?.nome}"?`, 'As ligações dela saem junto. Ctrl+Z desfaz.', { ok: 'Remover', perigo: true }).then((sim) => sim && removerFase(E.fase));
+      return;
+    }
+    const passo = e.shiftKey ? 1 : 20;
+    const setas = { ArrowLeft: [-passo, 0], ArrowRight: [passo, 0], ArrowUp: [0, -passo], ArrowDown: [0, passo] };
+    if (setas[e.key] && E.fase) { feito(); return moverSelecionada(...setas[e.key]); }
+  });
+
   // ------------------------------------------------------------------ tela
+  function pintarFases() {
+    const alvo = raiz();
+    const atos = E.lista.filter((a) => !a.somenteLeitura);
+    const selAto = el('select', { onchange: async (e) => { await abrir(e.target.value); E.fase = E.ato?.fases[0]?.id ?? null; pintar(); } }, atos.map((a) => el('option', { value: a.id, selected: a.id === E.ato?.id }, `${a.nome} (${a.fases} fases)`)));
+    const cabeca = el('div', { class: 'eng-cabeca' }, el('div', {}, el('h1', {}, 'Fases'), el('p', {}, 'Cada fase do ato: os dados, como ela conclui, o mapa ligado a ela e os mobs. As ligações entre as fases (o caminho do ato) ficam na aba Acts.')));
+    if (!E.ato) return alvo.replaceChildren(el('div', { class: 'fases-modo' }, cabeca, el('div', { class: 'linha' }, el('label', { class: 'campo', style: 'flex:none' }, 'Ato', selAto)), el('div', { class: 'dica' }, 'Escolha um ato.')));
+    const fases = [...E.ato.fases].sort((a, b) => (a.ordem ?? 1e9) - (b.ordem ?? 1e9));
+    if (!faseDe(E.fase)) E.fase = fases[0]?.id ?? null;
+    const f = faseDe(E.fase);
+    const lista = el('div', { class: 'fases-lista' }, fases.map((x) => el('button', { type: 'button', class: `fases-item${x.id === E.fase ? ' ativo' : ''}`, onclick: () => { E.fase = x.id; pintar(); } },
+      el('span', { class: 'fases-ordem' }, String(x.ordem ?? '·')),
+      el('div', { class: 'fases-texto' }, el('b', {}, x.nome), el('small', {}, `nv ${x.nivel?.facil ?? '?'} · ${TIPOS_VISUAIS[x.conclusao?.tipo ?? 'limpar-hunt']?.titulo ?? ''}${x.id === E.ato.inicio ? ' · início' : ''}${x.id === E.ato.bossFinal?.faseAnterior ? ' · antes do chefe' : ''}`)),
+      seloDaConclusao(x) ? el('span', { class: 'fases-selo' }, seloDaConclusao(x)) : null)));
+    const direita = f ? [painelDaFase(), painelDaConclusao(f), painelDosMobs(f), painelDeRecompensa(`fase:${f.id}`, 'fase', f.huntId, rotulosDe('fase'))].filter(Boolean) : [el('div', { class: 'dica' }, 'Escolha uma fase.')];
+    alvo.replaceChildren(el('div', { class: 'fases-modo' }, cabeca,
+      el('div', { class: 'atos-ferramentas' },
+        el('label', { class: 'campo', style: 'flex:none' }, 'Ato', selAto),
+        E.somenteLeitura ? null : el('button', { type: 'button', class: sujo() ? 'primario' : '', onclick: salvar, title: 'Ctrl+S' }, sujo() ? 'Salvar o ato (Ctrl+S)' : 'Salvo'),
+        E.somenteLeitura ? null : el('button', { type: 'button', title: 'Desfazer (Ctrl+Z)', disabled: !E.hist.passado.length, onclick: desfazer }, '↶'),
+        E.somenteLeitura ? null : el('button', { type: 'button', title: 'Refazer (Ctrl+Y)', disabled: !E.hist.futuro.length, onclick: refazer }, '↷'),
+        irPara ? el('button', { type: 'button', onclick: () => irPara('atos', null, [E.ato.id, E.fase]) }, 'Ver no grafo (Acts) →') : null,
+        el('span', { class: 'dica' }, `${fases.length} fases · Page Up/Down troca de fase`)),
+      el('div', { class: 'fases-duas' }, el('aside', { class: 'fases-esq' }, lista), el('section', { class: 'fases-dir' }, direita)),
+      painelDeProblemas()));
+  }
+
   function pintar() {
+    if (modo === 'fases') return pintarFases();
     const alvo = raiz();
     if (!E.ato) {
       alvo.replaceChildren(
@@ -591,14 +933,20 @@ export function criarEditorDeAtos({ el, api, raiz, msg }) {
         el('button', { onclick: duplicar }, 'Duplicar'),
         E.somenteLeitura ? null : el('button', { class: 'primario', onclick: salvar }, 'Salvar rascunho'),
         E.somenteLeitura ? null : el('button', { class: 'perigo', onclick: excluir }, 'Excluir')),
-      E.somenteLeitura ? null : el('div', { class: 'linha' }, el('button', { onclick: novaFase }, '+ Fase'), el('span', { class: 'dica' }, E.ligando ? 'Modo ligar: clique na fase de destino.' : 'Arraste as fases para organizar; clique numa fase ou seta para editar. Borda tracejada = fase opcional; seta tracejada = caminho com requisito; verde = início; roxo = portal/boss final.')),
+      barraDeFerramentas(),
+      E.ajuda ? painelDeAtalhos() : null,
+      E.ferramentas ? painelDeFerramentasDoAto() : null,
       el('div', { class: 'atos-duas' }, el('div', { class: 'atos-esquerda' }, pintarCanvas(), painelDeProblemas()), el('div', { class: 'atos-direita' }, lateral)));
   }
 
   return {
-    async desenhar() {
-      if (!E.opcoes) await carregarLista();
-      else await carregarLista();
+    async desenhar(resto = []) {
+      await carregarLista();
+      // Abrir num ato/fase (link de outra tela: `#poe-fases/<ato>/<fase>` ou `#atos/<ato>/<fase>`); a aba Fases abre o primeiro ato do PoE.
+      const alvoAto = resto[0] ?? (modo === 'fases' && !E.ato ? (E.lista.find((a) => a.id.startsWith('poe-ato-')) ?? E.lista.find((a) => !a.somenteLeitura))?.id : null);
+      // Sem alteração pendente, relê do servidor (a outra aba — Acts ou Fases — pode ter salvo o mesmo ato).
+      if (alvoAto && (alvoAto !== E.ato?.id || !sujo()) && E.lista.some((a) => a.id === alvoAto)) await abrir(alvoAto);
+      if (resto[1] && faseDe(resto[1])) E.fase = resto[1];
       pintar();
     },
     sujo,

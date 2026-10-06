@@ -249,9 +249,26 @@ const esperaDe = (entry) =>
 /** Imagens desenhadas no próprio cliente (os ícones das gemas), pela chave — `image()` devolve sem buscar nada. */
 const imagensGeradas = new Map();
 
+/*
+ * Os ÍCONES do PoE (gemas e itens, 64×64, um arquivo cada — `/api/jogo/poe/icone/`) ficam fora do teto de folhas: a loja do Zuma abre
+ * ~600 gemas de uma vez, e com o teto (520) os primeiros ícones eram despejados antes de chegar — a lista saía sem figura. São pequenos
+ * (64×64): guardar todos custa pouco.
+ */
+const iconesDoPoe = new Map();
+const PREFIXO_DOS_ICONES_DO_POE = '/api/jogo/poe/icone/';
+
 export function image(src) {
   const gerada = imagensGeradas.get(src);
   if (gerada) return gerada;
+  if (src.startsWith(PREFIXO_DOS_ICONES_DO_POE)) {
+    let icone = iconesDoPoe.get(src);
+    if (!icone) {
+      icone = { image: null, ready: false, tocadaEm: 0, falhouEm: 0, tentativas: 0 };
+      iconesDoPoe.set(src, icone);
+      pedir(icone, src);
+    } else if (icone.falhouEm && performance.now() - icone.falhouEm >= esperaDe(icone)) pedir(icone, src);
+    return icone;
+  }
   const agora = performance.now();
   let entry = images.get(src);
   if (entry) {
@@ -405,6 +422,11 @@ export const itemSprite = (id) => itemSprites[id];
  */
 export function emprestarDoCatalogo(catalogo) {
   for (const [id, meta] of Object.entries(catalogo ?? {})) {
+    // A GEMA DO PoE (só com ITENS_POE=1): o ícone dela, da coleção do dono (servido pela engine local).
+    if (meta?.poeGema?.icone) {
+      itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/gema/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
+      continue;
+    }
     // As GEMAS ganham o ícone próprio, desenhado (ver `icones-de-gema.mjs`) — no lugar da pedra emprestada.
     if (meta?.gemaDef) {
       const chave = `gema:${id}`;
@@ -414,7 +436,7 @@ export function emprestarDoCatalogo(catalogo) {
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
     // Item do sistema de itens do PoE (só com ITENS_POE=1 no servidor local): o ícone 64×64 da coleção de referência, servido pela engine.
-    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/mapas/_engine/itens-poe/ref/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
+    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/item/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
   }
   // Quem saiu com o "?" antes deste empréstimo (gema, `spriteDe`) e agora tem figura: refaz.
   for (const canvas of globalThis.document?.querySelectorAll?.('canvas[data-sem-icone]') ?? []) {

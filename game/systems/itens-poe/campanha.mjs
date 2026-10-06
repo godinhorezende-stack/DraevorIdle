@@ -157,11 +157,11 @@ function registrarChefe(numero) {
       base,
       nivel: chefe.nivel,
       atributos: { vida: m.vida + (m.escudoDeEnergia ?? 0), expMult: Math.max(0.01, m.experiencia / Math.max(1, be?.exp ?? 1)), armadura: m.armadura ?? 0, resistencias: { ...m.resistencias } },
-      melee: { min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervaloMs: Math.max(250, Math.round(m.tempoAtaque * 1000)) },
+      melee: { min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervaloMs: Math.max(250, Math.round(m.tempoAtaque * 1000)), ...(Monstros.AJUSTES.ataques[m.slug]?.basico?.efeito ? { efeito: Monstros.AJUSTES.ataques[m.slug].basico.efeito } : {}) },
       usaPoderesDoBase: false,
       usaEscalaDaFase: false,
       // As habilidades do chefe (poedb): magias, áreas avisadas e invocações (os monstros comuns da área dele).
-      comportamentos: Habilidades.comportamentos(m, invocaveisDoChefe(numero)),
+      comportamentos: Habilidades.comportamentos(m, invocaveisDoChefe(numero), Monstros.AJUSTES.ataques[m.slug] ?? null),
     });
   }
   if (!CATALOGO.bosses.some((b) => b.id === id)) {
@@ -189,6 +189,39 @@ function registrarChefe(numero) {
 }
 
 let INICIADO = null;
+let PORAREA = null;
+
+/**
+ * Os mobs de uma área mudaram na Engine (aba Acts): registra os monstros de novo (status novos) e troca os bichos dos spawns — vale na próxima entrada na área.
+ * `{ ok, erros? }`.
+ */
+export function salvarMonstrosDaArea(id, lista) {
+  const r = Monstros.salvarMonstrosDaArea(id, lista);
+  if (!r.ok || !PORAREA) return r;
+  const nativos = nativosDoMapa(C.areas[id].mapa).filter((k) => BESTIARY[k]);
+  PORAREA.set(id, C.areas[id].monstros.map((m, i) => Monstros.registrar(m, nativos[i % Math.max(1, nativos.length)] ?? 'skeleton', { forcar: true })));
+  return r;
+}
+
+/** Os ataques e efeitos de um monstro mudaram (aba Mobs): registra de novo as ocorrências dele e, se for chefe de ato, o boss único. */
+export function definirAtaques(slugDoMonstro, ajuste) {
+  const r = Monstros.definirAtaques(slugDoMonstro, ajuste);
+  if (!r.ok || !PORAREA) return r;
+  for (const a of Object.values(C.areas)) for (const m of a.monstros ?? []) if (m.slug === slugDoMonstro) Monstros.registrar(m, 'skeleton', { forcar: true });
+  for (const [n, c] of Object.entries(C.chefes)) if (c.monstro?.slug === slugDoMonstro) {
+    BossesUnicos.esquecer(idDoChefe(Number(n)));
+    registrarChefe(Number(n));
+  }
+  return r;
+}
+
+/** O desenho de um monstro do PoE mudou (aba Mobs): registra de novo todas as ocorrências dele. */
+export function definirDesenho(slugDoMonstro, chave) {
+  const r = Monstros.definirDesenho(slugDoMonstro, chave);
+  if (!r.ok || !PORAREA) return r;
+  for (const a of Object.values(C.areas)) for (const m of a.monstros ?? []) if (m.slug === slugDoMonstro) Monstros.registrar(m, chave ?? 'skeleton', { forcar: true });
+  return r;
+}
 /** Monta a campanha do PoE (uma vez). Sem o sistema ligado, nada. Devolve `{ areas, atos, problemas }`. */
 export function iniciar() {
   if (!ligado()) return { areas: 0, atos: [], problemas: [] };
@@ -205,6 +238,12 @@ export function iniciar() {
   }
   // 2. os monstros e a troca dos bichos dos spawns
   const { porArea } = Monstros.iniciar(nativosDoMapa);
+  PORAREA = porArea;
+  // As criaturas da hunt da área (o que a lista de hunts e a janela da hunt mostram) são os monstros do PoE da área, não os do mapa do Draevor.
+  for (const [id, chaves] of porArea) {
+    const h = CATALOGO.hunts.find((x) => x.id === id);
+    if (h) h.creatures = [...new Set(chaves)].filter((k) => BESTIARY[k]).map((k) => ({ key: k, name: BESTIARY[k].name, look: BESTIARY[k].look, exp: BESTIARY[k].exp, hp: BESTIARY[k].hp ?? BESTIARY[k].health }));
+  }
   const unicosDa = (id) => C.areas[id].monstros.map((m, i) => (m.unico ? porArea.get(id)?.[i] : null)).filter(Boolean);
   const comunsDa = (id) => {
     const l = C.areas[id].monstros.map((m, i) => (m.unico ? null : porArea.get(id)?.[i])).filter(Boolean);

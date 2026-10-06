@@ -6,7 +6,7 @@
 // do bestiário (`poe-<slug>-<nível>`), com o golpe corpo a corpo no formato dos poderes dos bichos (o dano do PoE, ±20% como no PoE).
 //   - O escudo de energia do PoE soma na vida (aproximado: o Draevor não tem escudo nos bichos).
 //   - O tempo de ataque vira a velocidade de ataque do bicho (contra o intervalo base do Draevor).
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { ligado } from './catalogo.mjs';
 import { BESTIARY } from '../hunt/monstros.mjs';
 import { CONFIG as ATRIBUTOS_DO_MOB } from '../mobs/atributos.mjs';
@@ -14,6 +14,76 @@ import { registrarPoderes } from '../poderes.mjs';
 import * as Habilidades from './habilidades.mjs';
 
 export const CAMPANHA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/campanha-poe.json', import.meta.url), 'utf8'));
+
+// ---- OS AJUSTES DA ENGINE (aba Acts → área → mobs; aba Mobs → desenho): `gamedata/itens-poe/campanha-ajustes.json`, por cima do que veio do Drive.
+//   areas[id].monstros: a lista INTEIRA de monstros da área (com os status do PoE de cada um), quando o dono a editou;
+//   desenhos[slug]: a criatura do Draevor que dá o desenho ao monstro do PoE.
+const ARQ_AJUSTES = new URL('../../gamedata/itens-poe/campanha-ajustes.json', import.meta.url);
+export const AJUSTES = existsSync(ARQ_AJUSTES) ? JSON.parse(readFileSync(ARQ_AJUSTES, 'utf8')) : { areas: {}, desenhos: {} };
+AJUSTES.areas ??= {};
+AJUSTES.desenhos ??= {};
+AJUSTES.ataques ??= {};
+for (const [id, a] of Object.entries(AJUSTES.areas)) if (CAMPANHA.areas[id] && Array.isArray(a.monstros)) CAMPANHA.areas[id].monstros = a.monstros;
+const gravarAjustes = () => writeFileSync(ARQ_AJUSTES, `${JSON.stringify({ _nota: 'Ajustes da Engine sobre a campanha do PoE (mobs por área e desenho dos monstros). Gravado pela aba Acts / Mobs.', areas: AJUSTES.areas, desenhos: AJUSTES.desenhos, ataques: AJUSTES.ataques }, null, 1)}\n`);
+
+const CAMPOS_NUMERICOS = ['nivel', 'vida', 'dano', 'tempoAtaque', 'armadura', 'evasao', 'escudoDeEnergia', 'experiencia'];
+/** Valida a lista de monstros de uma área (status do PoE). Devolve `{ ok, lista?, erros? }` — a lista limpa. */
+export function validarMonstros(lista) {
+  if (!Array.isArray(lista) || !lista.length) return { ok: false, erros: ['A área precisa de pelo menos um monstro.'] };
+  const erros = [];
+  const limpa = lista.map((m, i) => {
+    const onde = `Monstro ${i + 1} (${m?.nome ?? '?'})`;
+    if (!m?.slug || !m?.nome) erros.push(`${onde}: falta o monstro.`);
+    const n = Object.fromEntries(CAMPOS_NUMERICOS.map((k) => [k, Number(m?.[k] ?? 0)]));
+    if (!(n.nivel >= 1 && n.nivel <= 100)) erros.push(`${onde}: nível de 1 a 100.`);
+    if (!(n.vida >= 1)) erros.push(`${onde}: vida precisa ser pelo menos 1.`);
+    if (!(n.tempoAtaque >= 0.1 && n.tempoAtaque <= 10)) erros.push(`${onde}: tempo de ataque de 0,1 a 10 s.`);
+    for (const k of ['dano', 'armadura', 'evasao', 'escudoDeEnergia', 'experiencia']) if (!(n[k] >= 0)) erros.push(`${onde}: ${k} não pode ser negativo.`);
+    const res = Object.fromEntries(['fire', 'ice', 'energy', 'chaos'].map((e) => [e, Math.max(-100, Math.min(90, Number(m?.resistencias?.[e] ?? 0) || 0))]));
+    // Só os campos do monstro (o que a tela calcula — desenho, drops, habilidades convertidas — não é gravado).
+    return { slug: String(m.slug), nome: String(m.nome), unico: !!m.unico, ...n, nivel: Math.round(n.nivel), resistencias: res, ...(Array.isArray(m.habilidades) && m.habilidades.length ? { habilidades: m.habilidades } : {}) };
+  });
+  return erros.length ? { ok: false, erros } : { ok: true, lista: limpa };
+}
+
+/** Grava a lista de monstros da área (e põe na campanha carregada). `{ ok, erros? }`. */
+export function salvarMonstrosDaArea(id, lista, { gravar = true } = {}) {
+  const a = CAMPANHA.areas[id];
+  if (!a || a.cidade) return { ok: false, erros: ['Área desconhecida (ou cidade).'] };
+  const v = validarMonstros(lista);
+  if (!v.ok) return v;
+  a.monstros = v.lista;
+  AJUSTES.areas[id] = { monstros: v.lista };
+  if (gravar) gravarAjustes();
+  return { ok: true };
+}
+
+/** Grava o ajuste de ATAQUES e EFEITOS de um monstro do PoE (golpe básico e habilidades — `habilidades.validarAjuste`). `{ ok, erros? }`. */
+export function definirAtaques(slugDoMonstro, ajuste, { gravar = true } = {}) {
+  const v = Habilidades.validarAjuste(ajuste ?? {});
+  if (!v.ok) return v;
+  if (Object.keys(v.ajuste).length) AJUSTES.ataques[slugDoMonstro] = v.ajuste;
+  else delete AJUSTES.ataques[slugDoMonstro];
+  if (gravar) gravarAjustes();
+  return { ok: true, ajuste: v.ajuste };
+}
+
+/** Troca o desenho (a criatura do Draevor) de um monstro do PoE, em todas as áreas. `{ ok, erros? }`. */
+const LOOKS = JSON.parse(readFileSync(new URL('../../gamedata/outfits.json', import.meta.url), 'utf8'));
+/** O desenho escolhido na Engine: a chave de uma criatura do bestiário, ou `look:<n>` (um desenho da Biblioteca de sprites). `{ look, colors, base }`. */
+function desenhoEscolhido(valor) {
+  const m = /^look:(\d+)$/.exec(String(valor ?? ''));
+  if (m) return LOOKS[m[1]] ? { look: Number(m[1]), colors: null } : null;
+  const b = BESTIARY[valor];
+  return b ? { look: b.look, colors: b.colors ?? null, base: b } : null;
+}
+export function definirDesenho(slugDoMonstro, chaveDoBestiario, { gravar = true } = {}) {
+  if (chaveDoBestiario && !desenhoEscolhido(chaveDoBestiario)) return { ok: false, erros: [`"${chaveDoBestiario}" não é uma criatura do bestiário nem um desenho da biblioteca.`] };
+  if (chaveDoBestiario) AJUSTES.desenhos[slugDoMonstro] = chaveDoBestiario;
+  else delete AJUSTES.desenhos[slugDoMonstro];
+  if (gravar) gravarAjustes();
+  return { ok: true };
+}
 
 /** Palavra do nome (pt) → a criatura do Draevor que dá o desenho (a primeira que casar e existir no bestiário). */
 const DESENHOS = [
@@ -62,10 +132,12 @@ export const chaveDe = (m) => `poe-${slug(m.slug)}-${m.nivel}`;
  * Registra no bestiário (e nos poderes) um monstro do PoE, com o desenho de `desenho` (uma chave do bestiário do Draevor). Não repete.
  * Devolve a chave.
  */
-export function registrar(m, desenho) {
+export function registrar(m, desenho, { forcar = false } = {}) {
   const key = chaveDe(m);
-  if (BESTIARY[key]) return key;
-  const base = BESTIARY[desenhoPeloNome(m.nome) ?? desenho] ?? BESTIARY[desenho] ?? Object.values(BESTIARY)[0];
+  if (BESTIARY[key] && !forcar) return key;
+  const escolhido = desenhoEscolhido(AJUSTES.desenhos[m.slug]);
+  const doNome = BESTIARY[desenhoPeloNome(m.nome) ?? desenho] ?? BESTIARY[desenho] ?? Object.values(BESTIARY)[0];
+  const base = escolhido?.base ?? (escolhido ? { ...doNome, look: escolhido.look, colors: escolhido.colors, lookItem: 0 } : doNome);
   const intervaloBase = ATRIBUTOS_DO_MOB.ataque?.intervaloBaseMs ?? 2000;
   BESTIARY[key] = {
     name: m.nome,
@@ -87,8 +159,9 @@ export function registrar(m, desenho) {
     ...(m.unico ? { boss: false } : {}),
   };
   // O golpe corpo a corpo e — nos chefes de área com as habilidades do poedb — as magias e áreas deles (`habilidades.mjs`).
-  const melee = { tipo: 'melee', min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervalo: Math.round(m.tempoAtaque * 1000), chance: 100 };
-  registrarPoderes(key, { ataques: [melee, ...(m.habilidades?.length ? Habilidades.poderes(m) : [])], curas: [] });
+  const aj = AJUSTES.ataques[m.slug] ?? null;
+  const melee = { tipo: 'melee', min: Math.max(1, Math.round(m.dano * 0.8)), max: Math.max(1, Math.round(m.dano * 1.2)), intervalo: Math.round(m.tempoAtaque * 1000), chance: 100, ...(aj?.basico?.efeito ? { efeito: aj.basico.efeito } : {}) };
+  registrarPoderes(key, { ataques: [melee, ...(m.habilidades?.length || aj?.novas?.length ? Habilidades.poderes(m, aj) : [])], curas: [] }, { forcar });
   return key;
 }
 

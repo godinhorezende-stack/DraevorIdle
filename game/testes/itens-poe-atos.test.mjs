@@ -97,3 +97,26 @@ test('modelo do PoE: monstro comum não tem item próprio (cai pela tabela globa
   assert.match(r.erros[0], /tabela global/);
   assert.equal(Drops.salvar('hailrake', [{ id: 7600001, chance: 100, missao: true }], { podeTer: Telas.temDropProprio, gravar: false }).ok, true);
 });
+
+test('mobs da área (aba Acts): valida os status do PoE, troca a lista da área e registra de novo o monstro com os status novos', { skip: SEM }, async () => {
+  const Monstros = await import('../systems/itens-poe/monstros.mjs');
+  const { BESTIARY } = await import('../systems/hunt/monstros.mjs');
+  const id = 'poe-a1-the-coast';
+  const antes = Monstros.CAMPANHA.areas[id].monstros;
+  try {
+    assert.equal(Monstros.validarMonstros([]).ok, false);
+    assert.equal(Monstros.validarMonstros([{ ...antes[0], vida: 0 }]).ok, false);
+    assert.equal(Monstros.validarMonstros([{ ...antes[0], tempoAtaque: 0 }]).ok, false);
+    const editada = [{ ...antes[0], vida: 9999, desenho: { tipo: 'x' }, drops: [1] }, ...antes.slice(1)];
+    assert.equal(Monstros.salvarMonstrosDaArea(id, editada, { gravar: false }).ok, true);
+    const m = Monstros.CAMPANHA.areas[id].monstros[0];
+    assert.equal(m.vida, 9999);
+    assert.equal(m.desenho, undefined, 'o que a tela calcula não é gravado');
+    const key = Monstros.registrar(m, 'skeleton', { forcar: true });
+    assert.equal(BESTIARY[key].hp, 9999 + (m.escudoDeEnergia ?? 0));
+  } finally {
+    Monstros.CAMPANHA.areas[id].monstros = antes;
+    delete Monstros.AJUSTES.areas[id];
+    Monstros.registrar(antes[0], 'skeleton', { forcar: true });
+  }
+});

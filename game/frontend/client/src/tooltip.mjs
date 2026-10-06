@@ -1080,7 +1080,111 @@ export function blocoDoReforco(entry) {
   return bloco;
 }
 
+/**
+ * A FICHA DA GEMA DO PoE (servidor: `catalogo` → `poeFicha`, de `GemasPoe.fichaNoNivel`) — o balão do PoE: as tags, as propriedades do
+ * nível (custo, conjuração, crítico, eficácia), a descrição, os modificadores com os números deste nível e os da qualidade; e embaixo o
+ * que vale no Draevor (o dano de agora, com os bônus do personagem, e o que a gema ainda não faz no jogo). Um desenho para o balão da
+ * barra e para a tela "Configurar ação".
+ */
+const STATUS_POE = { funciona: ['✓ Funciona no jogo', 'ok'], parcial: ['◐ Funciona em parte no jogo', 'parcial'], nao: ['✕ Ainda não funciona no jogo', 'nao'] };
+export function corpoDaGemaPoe(entry) {
+  const f = entry?.poeFicha;
+  if (!f) return null;
+  const corpo = el('div', 'tip-poe-gema');
+  if (f.tags.length) corpo.append(el('div', 'tip-poe-tags', f.tags.join(', ')));
+  const props = el('div', 'tip-poe-props');
+  for (const [rotulo, valor] of f.props) {
+    const row = el('div');
+    row.append(el('span', null, valor ? `${rotulo}: ` : rotulo), el('b', null, valor));
+    props.append(row);
+  }
+  const req = el('div', 'tip-poe-req');
+  req.append(el('span', null, 'Requer Nível '), el('b', null, String(f.nivelReq)));
+  props.append(req);
+  corpo.append(props);
+  if (f.desc) corpo.append(el('div', 'tip-poe-desc', f.desc));
+  if (f.mods.length) {
+    const mods = el('div', 'tip-poe-mods');
+    for (const m of f.mods) mods.append(el('div', f.naoFeitas.includes(m) ? 'fora' : null, m));
+    corpo.append(mods);
+  }
+  if (f.modsDaQualidade.length) {
+    const q = el('div', 'tip-poe-qualidade');
+    q.append(el('div', 'tip-poe-rotulo', `Qualidade +${f.qualidade}%`));
+    for (const m of f.modsDaQualidade) q.append(el('div', null, m));
+    corpo.append(q);
+  }
+  // ---- o que vale no Draevor ----
+  const jogo = el('div', 'tip-poe-jogo');
+  const [rotulo, classe] = STATUS_POE[f.status] ?? STATUS_POE.nao;
+  jogo.append(el('div', `tip-poe-status ${classe}`, rotulo));
+  // Os TEMPOS no jogo (os do PoE): o de uso (conjuração com a sua velocidade, ou o golpe da sua arma × a velocidade da gema) e a recarga.
+  const seg = (ms) => `${(ms / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} s`;
+  const tempos = el('div', 'tip-poe-tempos');
+  const linhaDeTempo = (rotulo, valor) => { const row = el('div'); row.append(el('span', null, `${rotulo}: `), el('b', null, valor)); tempos.append(row); };
+  const t = entry.tempoPoe;
+  const tb = f.tempos ?? {};
+  if (t) linhaDeTempo(t.ataque ? 'Tempo de ataque' : 'Tempo de conjuração', `${seg(t.uso)} ${t.ataque ? `(a sua arma × ${t.velAtaqueBase}%)` : '(com a sua velocidade)'}`);
+  else if (f.ataque) linhaDeTempo('Tempo de ataque', `o da arma × ${tb.velAtaqueBase ?? 100}%`);
+  else if (tb.conjuracaoMs != null) linhaDeTempo('Tempo de conjuração', tb.conjuracaoMs ? seg(tb.conjuracaoMs) : 'instantânea');
+  const recarga = t ? t.recarga : tb.recargaMs ?? 0;
+  linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
+  jogo.append(tempos);
+  if (entry.damage) {
+    const cor = entry.element ? `el-${entry.element}` : 'atk';
+    jogo.append(el('div', cor, `Dano agora: ${Math.round(Math.abs(entry.damage.min))} a ${Math.round(Math.abs(entry.damage.max))} (com os seus bônus)`));
+  }
+  if (f.naoFeitas.length) jogo.append(el('div', 'tip-poe-nota', 'Riscado: o efeito ainda não age no jogo.'));
+  for (const m of f.status === 'funciona' ? [] : f.motivos.slice(0, 2)) jogo.append(el('div', 'tip-poe-nota', m));
+  corpo.append(jogo);
+  return corpo;
+}
+
+/** O bloco da gema (nível, XP, qualidade, supports) de uma gema do PoE — sem a raridade nem o bônus do Draevor, que a gema do PoE não tem. */
+function blocoDaGemaPoe(entry) {
+  const g = entry?.gema;
+  if (!g) return null;
+  const bloco = el('div', 'tip-gema');
+  const xp = g.xpProximo ? `XP ${Math.floor(g.xp).toLocaleString('pt-BR')} / ${g.xpProximo.toLocaleString('pt-BR')}` : 'nível máximo';
+  bloco.append(el('div', null, xp));
+  if (g.xpProximo) {
+    const barra = el('div', 'tip-gema-xp');
+    const cheio = el('i');
+    cheio.style.width = `${Math.min(100, (100 * g.xp) / g.xpProximo)}%`;
+    barra.append(cheio);
+    bloco.append(barra);
+  }
+  // Como no PoE: a XP enche, mas o nível só passa quando o personagem tem o level que o próximo nível da gema pede.
+  if (g.xpProximo && g.levelDoProximo) bloco.append(el('div', g.esperaLevel ? 'tip-gema-espera' : 'tip-gema-req', g.esperaLevel ? `O próximo nível pede o level ${g.levelDoProximo} — a XP fica guardada até lá` : `Próximo nível: pede level ${g.levelDoProximo}`));
+  bloco.append(el('div', 'tip-gema-tags', g.supports?.length ? `Suportes ligados: ${g.supports.map((s) => `${s.nomePt ?? s.nome} ${s.nivel}`).join(', ')}` : 'Sem suporte ligado'));
+  return bloco;
+}
+export { blocoDaGemaPoe };
+
+/** A ficha inteira de uma gema do PoE no balão: cabeçalho com o nome na cor da gema, o corpo do PoE e o bloco da gema. */
+function fichaDaGemaPoe(entry, icone, extra) {
+  const f = entry.poeFicha;
+  const partes = [];
+  const head = el('div', 'tip-head');
+  const identidade = el('div', 'tip-id');
+  identidade.append(el('b', `poe-cor-${f.cor}`, f.nome));
+  identidade.append(el('em', null, f.en));
+  head.append(identidade);
+  const arte = el('div', 'tip-art');
+  const desenho = icone?.();
+  if (desenho) arte.append(desenho);
+  else if (entry.itemId) arte.append(itemCanvas(entry.itemId, 40));
+  head.append(arte);
+  partes.push(head, corpoDaGemaPoe(entry));
+  const daGema = blocoDaGemaPoe(entry);
+  if (daGema) partes.push(daGema);
+  if (entry.blocked) partes.push(el('div', 'tip-blocked', entry.blocked));
+  if (extra) partes.push(el('div', 'tip-extra', extra));
+  return { classe: `acao-${entry.blocked ? 'bloqueada' : 'ataque'} tip-gema-poe`, partes };
+}
+
 export function fichaDeAcao(entry, icone = null, extra = null) {
+  if (entry.poeFicha) return fichaDaGemaPoe(entry, icone, extra);
   const partes = [];
   const node = { append: (...n) => partes.push(...n) };
 
@@ -2587,8 +2691,39 @@ function etiquetasDaGema(x, def) {
   return partes.map((p) => p.toUpperCase()).join(' · ');
 }
 
+/**
+ * A gema do PoE no balão do ITEM (loja do Zuma, mochila, socket): a mesma ficha do PoE do balão da barra (`corpoDaGemaPoe`), no nível e
+ * na qualidade DESTA gema — pedida ao servidor (`/api/jogo/poe/gema`) e guardada; o balão se reposiciona quando ela chega.
+ */
+const FICHAS_DA_GEMA_POE = new Map();
+function blocoDaGemaPoeDoItem(def, gema) {
+  const nivel = gema?.nivel ?? 1;
+  const qualidade = gema?.qualidade ?? 0;
+  const bloco = el('div', 'tip-gema');
+  const corpo = el('div');
+  const preencher = (f) => corpo.replaceChildren(f ? corpoDaGemaPoe({ poeFicha: f }) : el('div', 'tip-gema-ajuda', 'Ficha da gema indisponível.'));
+  const chave = `${def.poe.slug}@${nivel}@${qualidade}`;
+  if (FICHAS_DA_GEMA_POE.has(chave)) preencher(FICHAS_DA_GEMA_POE.get(chave));
+  else {
+    corpo.append(el('div', 'tip-gema-ajuda', 'Carregando a ficha da gema…'));
+    fetch(`/api/jogo/poe/gema?slug=${encodeURIComponent(def.poe.slug)}&nivel=${nivel}&qualidade=${qualidade}`)
+      .then((r) => r.json())
+      .then((d) => {
+        FICHAS_DA_GEMA_POE.set(chave, d?.ficha ?? null);
+        preencher(d?.ficha ?? null);
+        if (holderAberto && node && !node.hidden) place(holderAberto);
+      })
+      .catch(() => preencher(null));
+  }
+  bloco.append(corpo);
+  if (gema?.xp) bloco.append(el('div', null, `XP ${Math.floor(gema.xp).toLocaleString('pt-BR')}`));
+  bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
+  return bloco;
+}
+
 /** A ficha da gema (ativa ou support): nível/XP da instância, tags e o efeito. */
 function blocoDaGema(def, gema, raridade = 'comum') {
+  if (def.poe) return blocoDaGemaPoeDoItem(def, gema);
   const bloco = el('div', 'tip-gema');
   const nivel = gema?.nivel ?? 1;
   const qualidade = gema?.qualidade ?? 0;
@@ -2685,7 +2820,10 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     const eu = getPersonagem();
     const at = eu?.derived?.atributos;
     const tem = eu ? { nivel: eu.level ?? 0, str: at?.str ?? 0, dex: at?.dex ?? 0, int: at?.int ?? 0 } : null;
-    return { classe: 'tip-poe', partes: [balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos, tem })] };
+    const balao = balaoPoe(peca.poe, { nomeDaBase: metaPoe?.name ?? null, requisitos, tem });
+    // Os sockets e links da peça (regra do dono: pela classe e pelo item level), no mesmo desenho das peças do Draevor.
+    if (peca.soquetes?.gemas?.length) balao.append(blocoDosSoquetes(peca.soquetes));
+    return { classe: 'tip-poe', partes: [balao] };
   }
   const meta = comBaseDaPeca(getItems()[id], peca);
   if (!meta) return null;

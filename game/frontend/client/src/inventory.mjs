@@ -30,7 +30,17 @@ const SLOT_LAYOUT = ['neck', 'head', 'backpack', 'weapon', 'body', 'shield', 'ri
  * Com o sistema de itens do PoE ligado (só local, ITENS_POE=1), há LUVAS: o slot `gloves` entra no canto de baixo à esquerda, ao lado das
  * botas (onde fica no PoE), e o selo de premium desce uma fileira. Sem peça de luva no catálogo, a grade é a de sempre.
  */
-const SLOT_LAYOUT_COM_LUVAS = ['neck', 'head', 'backpack', 'weapon', 'body', 'shield', 'ring', 'legs', 'ammo', 'gloves', 'feet', '@blessings', '@premium'];
+/*
+ * ---- A grade do PoE (dono, 06/10: "tipo assim", com a foto do inventário do PoE) ----
+ *
+ * Com o PoE ligado o corpo é desenhado como no PoE: a arma e a mão secundária altas nas laterais, o elmo e o amuleto em cima, a armadura no
+ * meio com UM ANEL DE CADA LADO (o segundo anel, `ring2`, só existe com o PoE), e embaixo luvas, cinto e botas — e, logo abaixo do cinto,
+ * os 5 FRASCOS (dono, 06/10: "falo para colocar os flasks"). O cinto mora no slot `legs` e ganha a arte de cinto. As posições são
+ * `grid-template-areas` (`.equipment.poe`, balao-item.css). A janela não pode crescer (a mochila começa logo abaixo, numa posição fixa do
+ * arranjo): a fileira dos frascos fica no lugar da fileira da mochila e dos selos, que descem, menores, para a linha da lixeira. O slot de
+ * munição não existe no PoE: só aparece se ainda houver algo nele.
+ */
+const SLOT_LAYOUT_COM_LUVAS = ['weapon', 'head', 'shield', 'neck', 'ring', 'body', 'ring2', 'gloves', 'legs', 'feet', 'backpack', '@blessings', '@premium'];
 let catalogoDasLuvas = null;
 let temLuvas = false;
 function disposicaoDosSlots(itens) {
@@ -40,6 +50,12 @@ function disposicaoDosSlots(itens) {
   }
   return temLuvas ? SLOT_LAYOUT_COM_LUVAS : SLOT_LAYOUT;
 }
+/** A grade é a do PoE? (a mesma marca das luvas: só o catálogo do PoE tem luvas) */
+const gradeDoPoe = () => temLuvas;
+/** O slot cabe a peça deste slot do catálogo? (o segundo anel aceita anel) */
+// No PoE a arma de UMA mão vai também na mão secundária (uma em cada mão); o arco (duas mãos) não. A regra é do servidor — aqui só se antecipa.
+const slotAceita = (slotDaCelula, slotDoItem, meta = null) =>
+  slotDaCelula === slotDoItem || (slotDaCelula === 'ring2' && slotDoItem === 'ring') || (slotDaCelula === 'shield' && gradeDoPoe() && slotDoItem === 'weapon' && !meta?.twoHanded);
 /*
  * ---- Os dois slots que se trocam sozinhos ----
  *
@@ -55,12 +71,12 @@ const MAX_REGRAS_NA_TELA = 8;
 
 const SLOT_LABELS = {
   neck: 'colar', head: 'elmo', backpack: 'mochila', weapon: 'mão direita', body: 'armadura',
-  shield: 'mão esquerda', ring: 'anel', legs: 'pernas', ammo: 'munição', feet: 'botas', gloves: 'luvas',
+  shield: 'mão esquerda', ring: 'anel', legs: 'pernas', ammo: 'munição', feet: 'botas', gloves: 'luvas', ring2: 'anel',
 };
 // Placeholders originais do client (data/images/game/slots).
 const SLOT_ART = {
   neck: 'neck', head: 'head', backpack: 'back', weapon: 'right-hand', body: 'body',
-  shield: 'left-hand', ring: 'finger', legs: 'legs', ammo: 'ammo', feet: 'feet', gloves: 'gloves.svg',
+  shield: 'left-hand', ring: 'finger', legs: 'legs', ammo: 'ammo', feet: 'feet', gloves: 'gloves.svg', ring2: 'finger',
 };
 
 let ctx = null; // { state, send, notice }
@@ -616,8 +632,8 @@ function selarSoquetes(cell, peca, aoTocar = null) {
  * Então o direito faz uma coisa só: o que a peça faz. Não fazendo nada, não
  * acontece nada, e quem quer a lista segura o Ctrl.
  */
-function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null }) {
-  if (event.ctrlKey) return itemMenu(event, id, { from, pilha, alvo, peca });
+function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null, slotNoCorpo = null }) {
+  if (event.ctrlKey) return itemMenu(event, id, { from, pilha, alvo, peca, slotNoCorpo });
   // O menu do navegador não aparece em cima da mochila em nenhum caso.
   event.preventDefault();
   const meta = ctx.state.items[id];
@@ -694,7 +710,7 @@ const doChat = () => Date.now() - mandadoParaOChat < 400;
  * ali: aqui dentro eram nomes livres, e "Equipar" pelo menu estourava com
  * ReferenceError em vez de equipar. Ver `alvoDaPeca`.
  */
-function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null }) {
+function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slotNoCorpo = null }) {
   const { state, send } = ctx;
   const meta = state.items[id];
   /*
@@ -824,10 +840,11 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null }) {
     meta?.slot && from !== 'equipment' && !naBolsaDeBoss
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }
       : null,
-    from === 'equipment' ? { label: 'Desequipar', action: () => send({ t: 'unequip', slot: meta.slot }) } : null,
+    meta?.frasco && from === 'bag' ? { label: 'Pôr no cinto de frascos', action: () => send({ t: 'frasco', action: 'por', pilha }) } : null,
+    from === 'equipment' ? { label: 'Desequipar', action: () => send({ t: 'unequip', slot: slotNoCorpo ?? meta.slot }) } : null,
     // Os sockets da peça vestida: encaixar/tirar gemas de skill (ver soquetes.mjs).
     from === 'equipment' && temSoquetes(peca)
-      ? { label: `Sockets (${peca.soquetes.gemas.filter(Boolean).length}/${peca.soquetes.gemas.length} gemas)`, action: () => abrirSoquetes(ctx, meta.slot) }
+      ? { label: `Sockets (${peca.soquetes.gemas.filter(Boolean).length}/${peca.soquetes.gemas.length} gemas)`, action: () => abrirSoquetes(ctx, slotNoCorpo ?? meta.slot) }
       : null,
     /*
      * ---- Subir o tier ----
@@ -1341,7 +1358,7 @@ function marcarSlotsCompativeis(id) {
   const slotDoItem = ctx.state.items[id]?.slot;
   if (!slotDoItem) return;
   for (const celula of document.querySelectorAll('.slot[data-slot]')) {
-    const certo = celula.dataset.slot === slotDoItem;
+    const certo = slotAceita(celula.dataset.slot, slotDoItem, ctx.state.items[id]);
     celula.classList.toggle('slot-compativel', certo);
     celula.classList.toggle('slot-incompativel', !certo);
   }
@@ -1553,7 +1570,7 @@ function makeDropSlot(node, slot) {
       if (acao === 'gema') return void ctx.send({ t: 'gema', action: 'encaixar', slot, de: payload.pilha });
       // O item só entra no slot a que pertence (a mesma regra do servidor, antecipada para a mensagem sair na hora): nada sai da mochila nem do slot.
       const slotDoItem = ctx.state.items[payload.id]?.slot;
-      if (slotDoItem && slotDoItem !== slot) return void ctx.notice?.('Este item não pode ser equipado neste slot.');
+      if (slotDoItem && !slotAceita(slot, slotDoItem, ctx.state.items[payload.id])) return void ctx.notice?.('Este item não pode ser equipado neste slot.');
       if (payload.from === 'pouch') ctx.send({ t: 'pouch', id: payload.id, count: 1, to: 'bag' });
       ctx.send({ t: 'equip', id: payload.id, slot, pilha: payload.pilha, alvo: payload.alvo ?? null });
     } catch {
@@ -1601,9 +1618,10 @@ function emptySlotArt(slot) {
    * de onde o afixo saiu — que pode ser um slot que esta tabela nao conheca, ou
    * nenhum. Sem a reserva o `src` viraria `undefined.png` e a figura sumiria.
    */
-  const nome = SLOT_ART[slot] ?? 'back';
+  // No PoE o slot `legs` é o do CINTO.
+  const nome = slot === 'legs' && gradeDoPoe() ? 'belt.svg' : SLOT_ART[slot] ?? 'back';
   art.src = `/client/assets/slots/${nome.includes('.') ? nome : `${nome}.png`}`;
-  art.alt = SLOT_LABELS[slot] ?? 'afixo';
+  art.alt = slot === 'legs' && gradeDoPoe() ? 'cinto' : SLOT_LABELS[slot] ?? 'afixo';
   art.onerror = () => art.replaceWith(el('small', null, SLOT_LABELS[slot] ?? 'afixo'));
   return art;
 }
@@ -1864,7 +1882,14 @@ export function atualizarDesgaste() {
  * entrar (a outra metade é o slot, que a silhueta já conta). Era a metade
  * invisível.
  */
-function vestirRaridade(cell, meta, daPeca = null) {
+function vestirRaridade(cell, meta, daPeca = null, poe = null) {
+  // A peça do PoE: a borda e a luz na cor da raridade do PoE (Normal, Mágico, Raro, Único — `itens-poe/regras.json`), como no PoE.
+  if (poe?.cor) {
+    cell.classList.add('raridade', 'poe-raridade', `poe-r-${poe.raridade ?? 'normal'}`);
+    cell.style.setProperty('--tier', poe.cor);
+    cell.style.setProperty('--cor-poe', poe.cor);
+    return;
+  }
   const classe = daPeca ? `tier-${TIER_DA_PECA[daPeca] ?? 'comum'}` : classeDaRaridade(meta);
   cell.classList.add(classe);
   // Toda peça ganha o anel da raridade, o comum também (cinza) — o dono: "sempre deixar nos itens anel na moldura".
@@ -1908,7 +1933,7 @@ export function itemCell(entry, from, { size = 30, onClick, titulo, valorInicial
    */
   const vermelha = ehEssencia(entry) && ehVermelha(entry);
   // Essência: a raridade da peça de onde saiu; peça: a raridade do DROP (sistema de itens), senão a do catálogo.
-  vestirRaridade(cell, meta, ehEssencia(entry) ? (vermelha ? 'mítico' : entry.raridade ?? 'comum') : entry.raridade ?? null);
+  vestirRaridade(cell, meta, ehEssencia(entry) ? (vermelha ? 'mítico' : entry.raridade ?? 'comum') : entry.raridade ?? null, entry.poe ?? null);
   if (vermelha) cell.classList.add('essencia-vermelha');
   /*
    * ---- Qual PILHA esta célula é ----
@@ -2072,6 +2097,60 @@ export function esquecerOsDesenhos() {
   if (cabecaDaMochila) cabecaDaMochila.assinatura = null;
 }
 
+/**
+ * O CINTO DE FRASCOS do PoE (só com ITENS_POE=1 — `itens-poe/frascos.mjs` no servidor), no HUD junto das réguas de vida e mana (como no
+ * PoE: os frascos ficam entre a vida e a mana; e a janela de equipamento tem tamanho fixo no arranjo, crescer nela cobria a mochila).
+ * 5 vagas com o frasco e a barra de cargas. O jogo usa sozinho na caçada (vida/mana baixa, utilidade em combate); o clique usa na hora; o
+ * direito tira de volta para a mochila. Um frasco da mochila entra no cinto com o clique nele. Chamada a cada estado (`main.mjs`): só refaz
+ * quando o cinto mudou.
+ */
+let assinaturaDoCinto = null;
+export function renderCintoDeFrascos() {
+  const barras = document.getElementById('hud-bars');
+  if (!barras || !ctx) return;
+  const vagas = ctx.state.character?.frascosPoe ?? null;
+  let slot = barras.querySelector('.bar-slot.poe-cinto-slot');
+  if (!vagas) return void slot?.remove();
+  const assinatura = JSON.stringify(vagas.map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.cargasMaximas, f.ativoAte > 0]));
+  if (slot && assinatura === assinaturaDoCinto) return;
+  assinaturaDoCinto = assinatura;
+  if (!slot) {
+    slot = el('div', 'bar-slot poe-cinto-slot');
+    barras.append(slot);
+  }
+  slot.replaceChildren(cintoDeFrascos(vagas, ctx.send));
+}
+function cintoDeFrascos(vagas, send) {
+  const cinto = el('div', 'poe-cinto');
+  cinto.title = 'Frascos: usados sozinhos na caçada. Clique para usar agora; botão direito para tirar do cinto.';
+  const fila = el('div', 'poe-cinto-fila');
+  vagas.forEach((f, v) => {
+    if (!f) {
+      const vazia = el('div', 'poe-frasco vazio');
+      vazia.title = 'Vaga livre: clique num frasco da mochila para pôr aqui.';
+      return void fila.append(vazia);
+    }
+    const caixa = el('div', `poe-frasco ${f.tipo ?? ''}${f.ativoAte > 0 ? ' ativo' : ''}`);
+    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => send({ t: 'frasco', action: 'usar', vaga: v }) });
+    cell.oncontextmenu = (event) => {
+      event.preventDefault();
+      openMenu(event, [
+        { label: 'Usar agora', action: () => send({ t: 'frasco', action: 'usar', vaga: v }) },
+        { label: 'Tirar do cinto', action: () => send({ t: 'frasco', action: 'tirar', vaga: v }) },
+      ]);
+    };
+    const barra = el('div', 'poe-frasco-cargas');
+    const cheio = el('div', null);
+    cheio.style.height = `${Math.round((100 * f.cargas) / Math.max(1, f.cargasMaximas))}%`;
+    barra.append(cheio);
+    barra.title = `${f.cargas}/${f.cargasMaximas} cargas (usa ${f.cargasPorUso})`;
+    caixa.append(cell, barra, el('div', 'poe-frasco-num', `${f.cargas}/${f.cargasMaximas}`));
+    fila.append(caixa);
+  });
+  cinto.append(fila);
+  return cinto;
+}
+
 export function renderInventory() {
   if (esperaOArrasto(renderInventory)) return;
   const body = windowBody('inventory');
@@ -2088,26 +2167,34 @@ export function renderInventory() {
     character.equipment, character.ammoChoices ?? null, character.ammoPending ?? null, character.municao ?? 0,
     character.derived?.capacity, character.weight, character.desgaste ?? null, character.joias ?? null,
     character.imbuements ?? null, character.itemRules ?? null, (character.premium ?? 0) > 0, character.blessings ?? null,
+    (character.frascosPoe ?? []).map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.ativoAte > 0]),
   ]);
   if (body.dataset.assinaturaDoInventario === assinatura && body.firstChild) return;
   body.dataset.assinaturaDoInventario = assinatura;
 
   body.innerHTML = '';
 
-  const equipment = el('div', 'equipment');
-  for (const slot of disposicaoDosSlots(state.items)) {
+  const poe = disposicaoDosSlots(state.items) === SLOT_LAYOUT_COM_LUVAS;
+  const equipment = el('div', poe ? 'equipment poe' : 'equipment');
+  // No PoE não há slot de munição: ele só aparece se ainda houver algo nele (peça de antes).
+  const slots = poe && character.equipment?.ammo ? [...SLOT_LAYOUT_COM_LUVAS, 'ammo'] : disposicaoDosSlots(state.items);
+  // No PoE a mochila e os selos vão para a linha da lixeira (o rodapé), e a grade ganha os frascos.
+  const rodape = poe ? el('div', 'inv-rodape-poe') : null;
+  const ondeVai = (slot) => (rodape && (slot === 'backpack' || slot.startsWith('@')) ? rodape : equipment);
+  for (const slot of slots) {
     // Os dois selos ocupam os buracos da grade: não são slots, não recebem
     // arrasto e não têm moldura de encaixe.
     if (slot === '@premium') {
-      equipment.append(seloPremium(character));
+      ondeVai(slot).append(seloPremium(character));
       continue;
     }
     if (slot === '@blessings') {
-      equipment.append(seloBlessings(character, state.catalog, () => ctx.abrirBlessings?.()));
+      ondeVai(slot).append(seloBlessings(character, state.catalog, () => ctx.abrirBlessings?.()));
       continue;
     }
 
     const cell = el('div', 'slot');
+    if (poe && ondeVai(slot) === equipment) cell.style.gridArea = slot;
 
     cell.dataset.slot = slot;
     makeDropSlot(cell, slot);
@@ -2115,7 +2202,7 @@ export function renderInventory() {
 
     if (equipped) {
       cell.dataset.item = equipped.id;
-      vestirRaridade(cell, state.items[equipped.id], equipped.raridade ?? null);
+      vestirRaridade(cell, state.items[equipped.id], equipped.raridade ?? null, equipped.poe ?? null);
       // O slot vai junto: e' por ele que o balao acha os imbuements da peca.
       tipFor(cell, equipped.id, null, slot, equipped);
       cell.append(itemCanvas(equipped.id, 32, equipped.count));
@@ -2140,7 +2227,8 @@ export function renderInventory() {
         },
         true
       );
-      makeDraggable(cell, equipped.id, 'equipment');
+      // A `pilha` de uma peça do corpo é o SLOT dela (com dois anéis, o slot do catálogo não diz de qual se trata).
+      makeDraggable(cell, equipped.id, 'equipment', 1, slot);
       cell.addEventListener(
         'mousedown',
         (event) => levarParaOChat(event, equipped.id, equipped.tier, equipped.imbu, equipped.af, equipped.afixoDe, equipped.raridade),
@@ -2164,7 +2252,7 @@ export function renderInventory() {
           event.preventDefault();
           return void openAmmoPicker();
         }
-        acaoDoDireito(event, equipped.id, { from: 'equipment', peca: equipped });
+        acaoDoDireito(event, equipped.id, { from: 'equipment', peca: equipped, slotNoCorpo: slot });
       };
       /*
        * ---- A ALJAVA é o que se clica para escolher a flecha ----
@@ -2281,7 +2369,12 @@ export function renderInventory() {
       cell.append(engrenagem);
     }
 
-    equipment.append(cell);
+    ondeVai(slot).append(cell);
+  }
+  if (poe && character.frascosPoe) {
+    const frascos = cintoDeFrascos(character.frascosPoe, send);
+    frascos.style.gridArea = 'frascos';
+    equipment.append(frascos);
   }
   body.append(equipment);
 
@@ -2340,6 +2433,8 @@ export function renderInventory() {
    * moldura, mesmo texto centrado. Uma barra própria aqui seria uma segunda
    * linguagem visual para dizer a mesma coisa.
    */
+  // Sem capacidade (o PoE não tem peso: `capacity` vem null): a barra de Cap some.
+  const temCap = character.derived?.capacity != null;
   const capacidade = Math.max(1, character.derived.capacity ?? 1);
   const peso = Math.max(0, character.weight ?? 0);
   const cheio = Math.min(100, (peso / capacidade) * 100);
@@ -2378,8 +2473,11 @@ export function renderInventory() {
    * na mão. Ela desceu para o rodapé, que é onde uma coisa que quase nunca se
    * usa deve ficar.
    */
-  body.append(line);
-  body.append(lixeira);
+  if (temCap) body.append(line);
+  if (rodape) {
+    rodape.append(lixeira);
+    body.append(rodape);
+  } else body.append(lixeira);
 
 }
 
@@ -3335,7 +3433,8 @@ export function renderPouch() {
   const janela = body.closest('.window');
   janela?.querySelector('.bag-alert')?.remove();
 
-  const free = Math.max(0, (character.derived?.capacity ?? 0) - (character.weight ?? 0));
+  // Sem capacidade (PoE: `capacity` null) nunca falta espaço por peso.
+  const free = character.derived?.capacity == null ? Infinity : Math.max(0, character.derived.capacity - (character.weight ?? 0));
   const semCap = free < 20;
   const cheia = pouch.length >= slots;
   janela?.classList.toggle('nocap', semCap || cheia);
@@ -4086,7 +4185,7 @@ export function renderContainer() {
       if (vindoDoChao(payload)) return;
       if (juntarArrastando(payload, 'bag', event)) return;
       if (trocarArrastando(payload, 'bag', event)) return;
-      if (payload.from === 'equipment') ctx.send({ t: 'unequip', slot: state.items[payload.id]?.slot });
+      if (payload.from === 'equipment') ctx.send({ t: 'unequip', slot: typeof payload.pilha === 'string' ? payload.pilha : state.items[payload.id]?.slot });
       else if (payload.from === 'pouch') moverComQuantidade(payload.id, 'pouch', 'bag', payload.pilha, payload.alvo ?? null);
       // E da Boss Pouch, que é a saída dela: "eu conseguiria arrastar pra
       // mochila". Ver `soltarDaBossPouch`.
@@ -4291,6 +4390,8 @@ function encherGradeDaMochila(grid, character, state) {
             return void ctx.send({ t: 'split', id: item.id, count: quantos });
           }
           if (meta?.slot) ctx.send({ t: 'equip', id: item.id, pilha, alvo: alvoDaPeca(item, pilha) });
+          // O frasco do PoE vai para o cinto de frascos (a primeira vaga livre).
+          else if (meta?.frasco) ctx.send({ t: 'frasco', action: 'por', pilha });
         },
       })
     );

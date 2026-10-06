@@ -33,7 +33,9 @@ test('as bases equipáveis entram no catálogo de itens como itens virtuais (slo
   assert.equal(cinto.slot, 'legs', 'cintos no lugar das pernas (decisão do dono, 05/10)');
   const espada = Catalogo.catalogo().classes.Two_Hand_Swords.bases[0];
   assert.deepEqual([ITEM_CATALOG[Jogo.idDaBase(espada.id)].skill, ITEM_CATALOG[Jogo.idDaBase(espada.id)].twoHanded], ['sword', true]);
-  for (const c of ['Life_Flasks', 'Jewels']) assert.ok(r.naoEquipaveis.includes(c), c);
+  for (const c of ['Jewels', 'Tinctures']) assert.ok(r.naoEquipaveis.includes(c), c);
+  // Os frascos entram (sem slot de equipamento: vão para o cinto de frascos — `itens-poe/frascos.mjs`).
+  for (const c of ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks']) assert.ok(!r.naoEquipaveis.includes(c), c);
   assert.ok(!r.naoEquipaveis.includes('Belts') && !r.naoEquipaveis.includes('Gloves'));
   assert.ok([...r.porBase.values()].every((id) => id >= Jogo.PRIMEIRO_ID));
 });

@@ -64,5 +64,84 @@
       "_nota": "Números do dono (05/10): Normal ~0,80–0,90, Mágico ~0,10–0,15, Raro ~0,02–0,04, Único ~0,0001–0,001 — aqui o ponto médio de cada faixa. São PESOS relativos (o sorteio divide pela soma), valendo para cada peça que cai."
     },
     "ilvlMaximo": 100
+  },
+  "ouro": {
+    "_nota": "O OURO que o monstro do PoE solta ao morrer (pedido do dono, 05/10): pelo LEVEL do monstro, um valor ALEATÓRIO entre o mínimo e o máximo da tabela (entre dois levels da tabela, a faixa é interpolada), × o multiplicador da raridade do monstro. `porRaridade` vazio para uma raridade = usa (1 + bonusDeQuantidade do drop) — a mesma regra do dono para a quantidade de itens (Mágico ×2,5; Raro ×8,5; Único ×29,5). Soma o Gold Find do jogador. Cai no bolso, como as moedas.",
+    "tabela": [
+      [1, 2, 4],
+      [5, 5, 8],
+      [10, 10, 15],
+      [15, 15, 22],
+      [20, 20, 30],
+      [25, 27, 40],
+      [30, 35, 50],
+      [35, 45, 65],
+      [40, 55, 80],
+      [45, 65, 95],
+      [50, 80, 115],
+      [55, 95, 135],
+      [60, 110, 160],
+      [65, 130, 185],
+      [70, 150, 215],
+      [75, 175, 250],
+      [80, 200, 290],
+      [85, 230, 330],
+      [90, 260, 380],
+      [95, 300, 430],
+      [100, 340, 500]
+    ],
+    "porRaridade": {}
+  },
+  "experiencia": {
+    "_nota": "A CURVA DE LEVEL do personagem com o PoE ligado (tabela do dono, 05/10): `niveis[L-1]` = a exp TOTAL acumulada para estar no level L (1 a 100; 100 é o máximo). Os levels da tabela do dono (1, 10, 20 ... 90, 91 ... 100) estão exatos; os do meio foram interpolados (de 1 a 10 em curva quadrática a partir do 0; de 10 em diante, uma curva suave no logaritmo da exp — PCHIP — que passa pelos pontos e faz cada level custar mais que o anterior). Sem o PoE vale a curva do Draevor (engine/formulas.mjs).",
+    "levelMaximo": 100,
+    "niveis": [
+      0, 217, 870, 1957, 3480, 5437, 7829, 10656, 13918, 17615,
+      24782, 35300, 50640, 72775, 104216, 147923, 207005, 284096, 380343, 494091,
+      626972, 785626, 973069, 1192513, 1447461, 1741839, 2080170, 2467811, 2911250, 3418492,
+      3992949, 4635068, 5350288, 6144866, 7026151, 8002909, 9085718, 10287435, 11623771, 13113982,
+      14761174, 16561542, 18528711, 20678794, 23030944, 25608009, 28437304, 31551541, 34989945, 38799620,
+      42990327, 47559399, 52546511, 57997985, 63968035, 70520238, 77729304, 85683187, 94485651, 104259370,
+      115086919, 127030863, 140209279, 154753434, 170809362, 188539648, 208125438, 229768716, 253694877, 280155640,
+      308974375, 340030599, 373766623, 410756592, 451735901, 497639953, 549656004, 609293216, 678478159, 759685950,
+      854581492, 964681502, 1093266881, 1244459877, 1423471462, 1636931409, 1893331864, 2203627803, 2582056095, 3047261510,
+      3698536440, 4486500689, 5440518316, 6596991862, 8000000000, 9695687000, 11755842000, 14255880000, 17275000000, 21057000000
+    ]
+  },
+  "sockets": {
+    "_nota": "Os SOCKETS das peças do PoE (regra do dono, 05/10): o máximo pela CLASSE da peça (`porClasse`; classe fora da lista = 0: anéis, amuletos, cintos, aljavas...) e pelo ITEM LEVEL (`porItemLevel`: [item level mínimo, sockets possíveis] — 1 e 2 sockets desde o 1, 3 no 2, 4 no 25, 5 no 35, 6 no 50). Peça que cai: TOTALMENTE ALEATÓRIO — de 0 ao máximo (cada quantidade com a mesma chance) e cada par de sockets vizinhos ligado com `chanceDeLink`. Os links nunca passam do número de sockets.",
+    "porClasse": {
+      "Helmets": 4, "Body_Armours": 6, "Gloves": 4, "Boots": 4, "Shields": 3,
+      "One_Hand_Swords": 3, "Thrusting_One_Hand_Swords": 3, "One_Hand_Axes": 3, "One_Hand_Maces": 3, "Daggers": 3, "Rune_Daggers": 3, "Claws": 3, "Wands": 3, "Sceptres": 3,
+      "Two_Hand_Swords": 6, "Two_Hand_Axes": 6, "Two_Hand_Maces": 6, "Staves": 6, "Warstaves": 6, "Bows": 6
+    },
+    "porItemLevel": [[1, 2], [2, 3], [25, 4], [35, 5], [50, 6]],
+    "chanceDeLink": 0.5
+  },
+  "frascos": {
+    "_nota": "Os FRASCOS do PoE (systems/itens-poe/frascos.mjs). `vagas`: o cinto. `usoAutomatico`: o jogo usa sozinho na caçada — Vida abaixo de vidaAbaixoPct da vida, Mana abaixo de manaAbaixoPct, Utilidade sempre que há monstro vivo. `cargasPorMorte`: cargas que cada frasco do cinto ganha por monstro morto, pela raridade (× a Recuperação de Cargas do frasco). `utilidade`: o efeito da BASE de cada frasco de Utilidade (o PoE não traz no catálogo importado; números do PoE 1), nos atributos do Draevor — Diamante, Quartzo e Enxofre são aproximados; Água-marinha, Corindo e Ferro (imunidades, Proteção) ficam só no texto.",
+    "vagas": 5,
+    "usoAutomatico": { "vidaAbaixoPct": 50, "manaAbaixoPct": 30, "utilidadeEmCombate": true },
+    "cargasPorMorte": { "normal": 1, "modificado": 2, "raro": 5, "elite": 5, "unico": 10, "boss": 10 },
+    "utilidade": {
+      "Ruby_Flask": { "texto": "+50% de Resistência a Fogo", "af": { "fire_res": 50 } },
+      "Sapphire_Flask": { "texto": "+50% de Resistência a Gelo", "af": { "ice_res": 50 } },
+      "Topaz_Flask": { "texto": "+50% de Resistência a Raio", "af": { "energy_res": 50 } },
+      "Amethyst_Flask": { "texto": "+35% de Resistência a Caos", "af": { "chaos_res": 35 } },
+      "Bismuth_Flask": { "texto": "+35% de todas as Resistências Elementais", "af": { "fire_res": 35, "ice_res": 35, "energy_res": 35 } },
+      "Granite_Flask": { "texto": "+1500 de Armadura", "af": { "armor_flat": 1500 } },
+      "Jade_Flask": { "texto": "+1500 de Evasão", "af": { "evasion": 1500 } },
+      "Stibnite_Flask": { "texto": "Evasão aumentada em 100%", "af": { "evasion_pct": 100 } },
+      "Quicksilver_Flask": { "texto": "Velocidade de Movimento aumentada em 40%", "af": { "move_speed": 40 } },
+      "Silver_Flask": { "texto": "Investida: Velocidade de Ataque, Conjuração e Movimento aumentada em 20%", "af": { "atk_speed": 20, "cast_speed": 20, "move_speed": 20 } },
+      "Basalt_Flask": { "texto": "15% de Redução de Dano Físico adicional", "af": { "phys_res": 15 } },
+      "Diamond_Flask": { "texto": "Acertos Críticos com sorte (aproximado: Chance de Crítico aumentada em 100%)", "af": { "crit_chance_inc": 100 } },
+      "Quartz_Flask": { "texto": "Fase (aproximado: Evasão aumentada em 20%)", "af": { "evasion_pct": 20 } },
+      "Sulphur_Flask": { "texto": "Solo Consagrado (aproximado: Dano contra monstros aumentado em 40%)", "af": { "dmg_vs_monsters": 40 } },
+      "Gold_Flask": { "texto": "Raridade de Itens encontrados aumentada em 15%", "af": { "item_rarity": 15 } },
+      "Aquamarine_Flask": { "texto": "Imune a Resfriamento e Congelamento (ainda sem efeito no Draevor)", "af": {} },
+      "Corundum_Flask": { "texto": "Não pode ser Atordoado (ainda sem efeito no Draevor)", "af": {} },
+      "Iron_Flask": { "texto": "Restaura Proteção (ainda sem efeito no Draevor)", "af": {} }
+    }
   }
 }

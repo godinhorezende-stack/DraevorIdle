@@ -112,11 +112,23 @@ export function combate(estado) {
   return valor;
 }
 
+/** O bônus de empunhar DUAS ARMAS no PoE: +15% de chance de bloqueio (somada) e 10% mais velocidade de ataque. */
+export const BONUS_DE_DUAS_ARMAS = { bloqueio: 0.15, velocidadeMais: 1.1 };
+function comDuasArmas(bloqueio, armaSecundaria) {
+  if (!armaSecundaria) return bloqueio;
+  const teto = Atributos.CONFIG.bloqueio.MAX;
+  const mais = (v) => Math.min(teto, (v ?? 0) + BONUS_DE_DUAS_ARMAS.bloqueio);
+  return { ...bloqueio, blockChance: mais(bloqueio.blockChance), blockChanceMin: mais(bloqueio.blockChanceMin), blockChanceMax: mais(bloqueio.blockChanceMax) };
+}
+
 function calcularCombate(estado) {
   const itens = pecas(estado);
   const soma = (f) => itens.reduce((a, it) => a + (Number(f(it)) || 0), 0);
   const w = arma(estado);
   const escudo = metaDaPeca(estado.equipment?.shield);
+  // PoE: a arma de uma mão na mão secundária (duas armas). Ela soma os mods dela, tem o próprio dano (o golpe alterna) e o bônus de
+  // empunhar duas armas do PoE (+15% de bloqueio, 10% mais velocidade de ataque); a chance de crítico de arma é a da principal.
+  const armaSecundaria = itensPoeLigado() && escudo?.slot === 'weapon' ? escudo : null;
   // Escudo inteiro + METADE da defesa da arma (+ o extra dela): é a conta que
   // bate com o personagem real capturado — dwarven shield 26 + steel axe 10/2
   // = 31, e com ele o bloqueio de 42% da ficha real.
@@ -209,12 +221,15 @@ function calcularCombate(estado) {
   const shielding = Treino.valor(estado, 'shielding') + (bonusDePericia.shielding ?? 0);
   // Wand e rod (dono, 02/10): o Magic Attack (fixo, × raridade) é o "ataque" da arma e o Magic Level a perícia — o MESMO cálculo do golpe físico.
   // O `wand.min/max` do catálogo (o 8–18 do Tibia) não entra mais no "Dano".
-  const damage = w?.wand
+  // O dano pela conta do Draevor (perícia e level): é a régua com que as magias escalam (`acoes.contaDoDano` → `danoDeEscala`).
+  const danoDoDraevor = w?.wand
     ? R.attackDamage({ attack: Math.round(PoderDaArma.poderDaPeca(estado.equipment?.weapon)), skill: valorDaPericia, level: estado.level ?? 1 })
     : {
         // A faixa da PRÓPRIA arma (o piso e o teto sorteados no drop) pela mesma conta nas duas pontas (`regras.attackDamage`).
         ...R.attackDamage({ attack: Math.round((ataqueMin + ataqueMax) / 2), attackMin: ataqueMin, attackMax: ataqueMax, skill: valorDaPericia, level: estado.level ?? 1 }),
       };
+  // No PoE o golpe é o dano da ARMA (sem perícia nem level — `regras.golpeDoJogador`): a ficha mostra a mesma faixa.
+  const damage = itensPoeLigado() ? { min: Math.max(1, Math.round(ataqueMin)), max: Math.max(1, Math.round(ataqueMax)) } : danoDoDraevor;
   const protection = Object.fromEntries(ELEMENTOS.map((e) => [e, 0]));
   for (const it of itens) {
     for (const [k, v] of Object.entries(it.protection ?? {})) {
@@ -237,7 +252,7 @@ function calcularCombate(estado) {
   // O crítico BASE da arma (`critChance` do catálogo, já na soma das peças) × o % de crítico LOCAL dela: só o ACRÉSCIMO local entra aqui (a qualidade não mexe em crítico).
   const critLocalDaArma = armaFinal ? (armaFinal.critChance.final - armaFinal.critChance.base) / 10000 : 0;
   // A chance em pontos (base + o que soma) × o "Chance de Crítico aumentada" RELATIVO das peças do PoE (`crit_chance_inc`, 0 sem elas).
-  const critPontos = CRITICO_BASE + critLocalDaArma + soma((it) => it.critChance) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance;
+  const critPontos = CRITICO_BASE + critLocalDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + prof.critChance + imb.critChance + Aparencia.colecao(estado).critChance;
   const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100);
   const critChance = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
@@ -284,6 +299,11 @@ function calcularCombate(estado) {
     ataqueMax,
     defense,
     damage,
+    // A régua das magias (a conta do Draevor; igual a `damage` sem o PoE).
+    danoDeEscala: danoDoDraevor,
+    // A recarga do Energy Shield (PoE): "Recarga aumentada em X%" e "Início da Recarga X% mais rápido" (`personagem/defesa.mjs`).
+    esRecargaPct: af.es_recharge ?? 0,
+    esInicioPct: af.es_recharge_start ?? 0,
     skillName: pericia,
     skillValue: valorDaPericia,
     skillBonus: bonusDePericia,
@@ -296,7 +316,14 @@ function calcularCombate(estado) {
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
     // Sem escudo, a defesa da arma sozinha já bloqueia (0 de defesa = 0%).
-    ...bloqueioDaFicha(estado, escudo, w, prof, shielding, af),
+    ...comDuasArmas(bloqueioDaFicha(estado, escudo, w, prof, shielding, af), armaSecundaria),
+    // O dano da arma da mão secundária (PoE, duas armas): o golpe alterna entre as duas (`hunt/combate.mjs`).
+    ...(armaSecundaria
+      ? (() => {
+          const [oMin, oMax] = faixaDoCampo(estado.equipment?.shield, 'attack');
+          return { duasArmas: true, ataqueSecundarioMin: calcAtaque(oMin + jMin, addMin), ataqueSecundarioMax: calcAtaque(oMax + jMax, addMax), armaSecundaria: armaSecundaria.name ?? null };
+        })()
+      : {}),
     ...faixaDeArmadura(estado, af, espStat('armour')),
     // As defesas novas: Evasion (esquiva do golpe do bicho) e Energy Shield (barra antes da vida).
     evasion: defesas.evasion,
@@ -329,7 +356,7 @@ function calcularCombate(estado) {
     // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
-    intervaloDoGolpeMs: Math.round(((armaFinal && armaFinal.aps.intervaloMs ? armaFinal.aps.intervaloMs : INTERVALO_BASE_DO_GOLPE_MS) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    intervaloDoGolpeMs: Math.round((armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * ((armaFinal && armaFinal.aps.intervaloMs ? armaFinal.aps.intervaloMs : INTERVALO_BASE_DO_GOLPE_MS) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([
@@ -337,6 +364,9 @@ function calcularCombate(estado) {
       // O "Dano de Caos aumentado" das peças do PoE (só aparece quando alguma dá).
       ...(af.chaos_dmg ? [['chaos', af.chaos_dmg]] : []),
     ]),
+    // A parte do "Dano físico" que vem da STR (já somada em `danoDoElemento.physical`): no PoE ela é só de CORPO A CORPO ("+1% de dano físico
+    // corpo a corpo a cada 5 de Força") — quem bate de longe ou com magia física tira esta parte.
+    danoFisicoDaForca: doAtributo.danoFisicoPct ?? 0,
     // Magic Damage (magias, runas, wand): o que a INT dá.
     danoDeMagia: doAtributo.danoMagicoPct,
     // Sistema de itens do PoE (Fase 1; tudo 0/vazio sem peças do PoE): "Dano Mágico aumentado" (só magias), o dano elemental somado

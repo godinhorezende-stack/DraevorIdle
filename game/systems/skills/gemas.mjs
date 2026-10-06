@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { ITEM_CATALOG, ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS } from '../dados.mjs';
 import * as Tags from './tags.mjs';
 import * as R from '../regras.mjs';
+import * as SocketsPoe from '../itens-poe/sockets.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
@@ -63,6 +64,8 @@ export function habilidadeDeEscala(def) {
  * melee de perto, distance de longe (tag `ranged`). Treinado + bônus.
  */
 export function bonusDoTreino(estado, def, ficha = null) {
+  // No PoE não há perícia (dono, 06/10): o dano da gema escala pelo nível dela e pelo level, não por skill.
+  if (SocketsPoe.poeLigado()) return 0;
   const D = CONFIG.dano;
   const bonus = ficha?.skillBonus ?? {};
   // Magia de dano físico (decisão do dono, 30/09): de perto, level + MELEE; de longe (tag `ranged`), level + DISTANCE.
@@ -206,6 +209,53 @@ for (const o of [O.encaixe, O.ligacao]) {
   };
 }
 
+/**
+ * Registra uma gema ATIVA que não vem do catálogo do Draevor — as gemas do PoE (`itens-poe/gemas-poe.mjs`, só com ITENS_POE=1): a ação
+ * (`entry`, já no catálogo de ações), a definição e o item. A progressão é a do PoE (o dano/custo vêm do nível da gema), então `progressao`
+ * fica vazia; os suportes do Draevor valem pelas tags.
+ */
+export function registrarAtiva({ itemId, entry, gema, tabelaDeXp = gema, categoria, castTime, levelMinimo = 1 }) {
+  ACOES.set(entry.id, entry);
+  const def = {
+    itemId, tipo: 'ativa', categoria, id: entry.id, acao: entry.id, nome: gema.nome, tags: Tags.tagsDaAcao(entry), classeRecomendada: null,
+    levelMinimo, levelDaMagia: levelMinimo, castTime, progressao: {}, fatorDeDano: 1, fatorDeCura: 1, fatorDeCusto: 1,
+    poe: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null, en: gema.en },
+    // A XP por nível: a da gema ou, sem ela no arquivo, a da gema de base (`tabelaDeXp`, de `GemasPoe.gemaDaTabelaDeXp`).
+    poeXp: tabelaDeXpDoPoe(tabelaDeXp),
+  };
+  DEFS.set(itemId, def);
+  ITEM_DA_ACAO.set(entry.id, itemId);
+  ITEM_CATALOG[itemId] = {
+    id: itemId, name: `gema: ${gema.nome.toLowerCase()}`, nomeExibicao: `Gema: ${gema.nome}`, weight: 0.1, stackable: false, type: 'gema', rarity: 'comum',
+    hasSprite: true, spriteDe: CONFIG.sprites[elementoDaSprite(entry)] ?? CONFIG.sprites.outro,
+    // O ícone da gema do PoE (a coleção do dono): o cliente desenha ele no lugar da pedra.
+    poeGema: { slug: gema.slug, cor: gema.cor, icone: gema.icone ?? null },
+    gemaDef: { tipo: 'ativa', categoria, acao: entry.id, nome: gema.nome, tags: def.tags, classeRecomendada: null, levelMinimo, castTime, progressao: {}, mult: CONFIG.raridades.multiplicador, nivelMaximo: def.poeXp.maximo, poe: def.poe },
+    sell: 0,
+  };
+  return def;
+}
+/**
+ * A PROGRESSÃO da gema do PoE (dono, 06/10: "as gemas sempre dropam e se compram no nível 1, e sobem pela progressão que está nos
+ * arquivos"): a tabela de níveis do poedb da gema — `Experiência` é a XP para ir do nível N ao N+1 (por nível, não acumulada) e
+ * `RequerNível` o level do personagem que o nível pede. O máximo por XP é o último nível com XP + 1 (o 20 das gemas comuns).
+ */
+function tabelaDeXpDoPoe(gema) {
+  const col = (nome) => gema.colunas?.indexOf(nome) ?? -1;
+  const ix = col('Experiência');
+  const ir = col('RequerNível');
+  const num = (v) => Number(String(v ?? '').replace(/,/g, '')) || 0;
+  const xp = (gema.linhas ?? []).map((l) => (ix >= 0 ? num(l[ix]) : 0));
+  const req = (gema.linhas ?? []).map((l) => (ir >= 0 ? num(l[ir]) : 1));
+  let ultimo = -1;
+  xp.forEach((v, i) => { if (v > 0) ultimo = i; });
+  return { xp, req, maximo: ultimo + 2 };
+}
+
+/** Com as gemas do PoE ligadas, as ATIVAS do Draevor saem de cena (drop, loja, iniciais); os suportes seguem. */
+const soDoPoe = () => [...DEFS.values()].some((d) => d.poe);
+const valeNoModo = (def) => def.tipo === 'support' || !soDoPoe() || !!def.poe;
+
 export const defDaGema = (itemId) => DEFS.get(Number(itemId)) ?? null;
 export const ehGema = (id) => DEFS.has(Number(id));
 
@@ -221,10 +271,19 @@ const N = CONFIG.niveis;
 export function xpParaSubir(nivel, level = 1) {
   const n = Math.max(1, Math.floor(nivel));
   const L = Math.max(1, Math.floor(level));
-  const umLevel = R.expForLevel(L + 1) - R.expForLevel(L);
+  const umLevel = R.expDeUmLevel(L);
   const faixa = N.faixas.find((f) => n < f.ate) ?? N.faixas.at(-1);
   return Math.max(1, Math.round(umLevel * faixa.parteDaExpDoPersonagem));
 }
+
+/** O nível máximo POR XP da gema: o da tabela do PoE (20) ou o do Draevor (`niveis.maximo`). */
+export const maximoDaGema = (def) => (def?.poeXp ? def.poeXp.maximo : N.maximo);
+/** A XP para a gema sair do `nivel`: a da tabela do PoE dela ou a régua do Draevor (pelo level do personagem). */
+export const xpDaGema = (def, nivel, level = 1) => (def?.poeXp ? def.poeXp.xp[Math.max(1, Math.floor(nivel)) - 1] || 0 : xpParaSubir(nivel, level));
+/** O level do personagem que o `nivel` da gema do PoE pede (`RequerNível`); 0 nas do Draevor (sem trava). */
+export const levelDoNivel = (def, nivel) => (def?.poeXp ? def.poeXp.req[Math.max(1, Math.floor(nivel)) - 1] ?? 0 : 0);
+/** `xpProximo` da tela: a XP do nível ou 0 no máximo. */
+export const xpProximoDaGema = (def, nivel, level = 1) => (nivel >= maximoDaGema(def) ? 0 : xpDaGema(def, nivel, level));
 
 // ---------------------------------------------------------------- raridade
 
@@ -256,12 +315,15 @@ export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t 
 
 // ---------------------------------------------------------------- sockets
 
-/** O máximo de sockets de uma peça (pelo slot do catálogo; 0 = não tem). */
-export const maximoDeSockets = (meta) => CONFIG.sockets.maximo[meta?.slot] ?? 0;
+/**
+ * O máximo de sockets de uma peça (pelo slot do catálogo; 0 = não tem). Peça do PoE (`meta.poe`): pela classe e pelo item level dela
+ * (`itens-poe/sockets.mjs`; sem a `peca`, o máximo da classe).
+ */
+export const maximoDeSockets = (meta, peca = null) => (meta?.poe ? SocketsPoe.maximo(SocketsPoe.classeDe(meta, peca), peca?.poe?.ilvl ?? null) : CONFIG.sockets.maximo[meta?.slot] ?? 0);
 
 /** Os sockets de uma peça, normalizados ao máximo do slot (sem gravar). */
 export function soquetesDe(peca) {
-  const max = maximoDeSockets(ITEM_CATALOG[peca?.id]);
+  const max = maximoDeSockets(ITEM_CATALOG[peca?.id], peca);
   if (!max) return null;
   const s = peca.soquetes ?? {};
   const abertos = Math.max(0, Math.min(max, Math.floor(Number(s.abertos) || 0)));
@@ -296,7 +358,8 @@ export function sortearSoquetes(meta, raridade, rng = Math.random) {
 export { gruposLigados, grupoDoSocket, compativel } from '../../engine/sockets-de-gema.mjs';
 import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
 
-const SLOTS_COM_SOCKET = Object.keys(CONFIG.sockets.maximo);
+// + as luvas, que no PoE têm slot próprio (e sockets).
+const SLOTS_COM_SOCKET = [...new Set([...Object.keys(CONFIG.sockets.maximo), 'gloves'])];
 
 /**
  * A MESMA support duas vezes no grupo vale UMA vez (como no Path of Exile; pedido do
@@ -428,15 +491,18 @@ export function ganharXp(estado, exp) {
     if (!gemas) continue;
     for (const g of gemas) {
       const def = g && DEFS.get(Number(g.id));
-      // Por XP a gema para no `maximo` (30); acima, só o add de nível das peças.
-      if (!def || g.nivel >= N.maximo) continue;
+      // Por XP a gema para no máximo dela (30 no Draevor, 20 no PoE); acima, só o add de nível das peças.
+      const max = maximoDaGema(def);
+      if (!def || g.nivel >= max) continue;
       g.xp = (g.xp ?? 0) + ganho;
-      while (g.nivel < N.maximo && g.xp >= xpParaSubir(g.nivel, estado.level)) {
-        g.xp -= xpParaSubir(g.nivel, estado.level);
+      while (g.nivel < max && g.xp >= xpDaGema(def, g.nivel, estado.level)) {
+        // A gema do PoE só passa de nível quando o personagem tem o level que o próximo nível pede (a XP fica cheia, esperando).
+        if ((estado.level ?? 1) < levelDoNivel(def, g.nivel + 1)) break;
+        g.xp -= xpDaGema(def, g.nivel, estado.level);
         g.nivel++;
         subiram.push({ nome: def.nome, nivel: g.nivel });
       }
-      g.xp = g.nivel >= N.maximo ? 0 : Math.min(g.xp, xpParaSubir(g.nivel, estado.level));
+      g.xp = g.nivel >= max ? 0 : Math.min(g.xp, xpDaGema(def, g.nivel, estado.level));
     }
   }
   return subiram;
@@ -620,7 +686,7 @@ function gastaOrbe(estado, k) {
 function pecaComSockets(estado, slot) {
   const peca = estado.equipment?.[slot];
   if (!peca) return { erro: 'Não há nada vestido nesse slot.' };
-  const max = maximoDeSockets(ITEM_CATALOG[peca.id]);
+  const max = maximoDeSockets(ITEM_CATALOG[peca.id], peca);
   if (!max) return { erro: 'Esse tipo de peça não tem sockets.' };
   return { peca, max, s: soquetesDe(peca) };
 }
@@ -724,7 +790,8 @@ export function darGemasIniciais(estado) {
   let n = 0;
   for (const acao of CONFIG.iniciais?.[estado.vocation] ?? []) {
     const itemId = ITEM_DA_ACAO.get(acao);
-    if (!itemId) continue;
+    // No PoE as gemas ativas do Draevor não são dadas (as do PoE caem e vêm das missões).
+    if (!itemId || !valeNoModo(DEFS.get(itemId))) continue;
     encaixarOndeCouber(estado, novaGema(itemId));
     n++;
   }
@@ -741,7 +808,7 @@ export function vistaDosSoquetes(peca, level = 1) {
     ...s,
     gemas: s.gemas.map((g) => {
       const def = g && DEFS.get(Number(g.id));
-      return def ? { id: g.id, nome: def.nome, tipo: def.tipo, nivel: g.nivel, xp: g.xp ?? 0, xpProximo: g.nivel >= N.maximo ? 0 : xpParaSubir(g.nivel, level), raridade: raridadeDaGema(g.raridade) } : null;
+      return def ? { id: g.id, nome: def.nome, tipo: def.tipo, nivel: g.nivel, xp: g.xp ?? 0, xpProximo: xpProximoDaGema(def, g.nivel, level), levelDoProximo: levelDoNivel(def, g.nivel + 1), raridade: raridadeDaGema(g.raridade) } : null;
     }),
   };
 }
@@ -758,7 +825,8 @@ export function sortearDrop({ ato = 1, levelDaFase = 1, fatorDeChance = 1, dific
   const chance = (d.chancePorAto[String(ato)] ?? d.chancePorAto['1'] ?? 0) * fatorDeChance;
   if (!(rng() < chance)) return null;
   const supports = [...DEFS.values()].filter((x) => x.tipo === 'support');
-  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && x.levelMinimo <= Math.max(1, levelDaFase));
+  // No PoE: só as gemas do PoE, e só as que o nível da área já dá (o nível exigido da gema até o da fase).
+  const ativas = [...DEFS.values()].filter((x) => x.tipo === 'ativa' && valeNoModo(x) && x.levelMinimo <= Math.max(1, levelDaFase));
   const lista = rng() < d.parteSupport && supports.length ? supports : ativas.length ? ativas : supports;
   const def = lista[Math.floor(rng() * lista.length)];
   const [qlo, qhi] = Q.noDrop;
@@ -783,7 +851,8 @@ export function catalogoDaLoja(estado) {
   const tenho = (id, r) => (estado.inventory ?? []).filter((p) => Number(p.id) === id && raridadeDaGema(p.raridade) === r).length;
   // Pela categoria (Ataque, Cura, Reforço, Suporte), e dentro dela pelo level da magia e o nome.
   const ordem = Object.keys(CATEGORIAS);
-  const defs = [...DEFS.values()].sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
+  // As do PoE: TODAS (dono, 06/10: "na loja do Zuma não aparecem todas as gemas"), sempre no nível 1.
+  const defs = [...DEFS.values()].filter((d) => valeNoModo(d)).sort((a, b) => ordem.indexOf(a.categoria) - ordem.indexOf(b.categoria) || (a.levelDaMagia ?? 0) - (b.levelDaMagia ?? 0) || a.nome.localeCompare(b.nome));
   const gemas = defs.flatMap((def) =>
     RARIDADES_DA_LOJA.map((r) => ({
       id: def.itemId,

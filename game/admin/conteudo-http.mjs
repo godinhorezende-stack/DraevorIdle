@@ -4,6 +4,7 @@ import { createReadStream } from 'node:fs';
 import * as Conteudo from './conteudo.mjs';
 import * as Biblioteca from './biblioteca.mjs';
 import * as Atos from './atos.mjs';
+import * as BibliotecaDeSprites from './biblioteca-sprites.mjs';
 import * as Hunts from './hunts.mjs';
 import * as Mapas from './mapas.mjs';
 import * as Operacao from './operacao.mjs';
@@ -184,6 +185,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
       const ato = Atos.obter(rota.slice('atos-editor/'.length));
       return ato ? json(res, 200, { ato, ...Atos.validar(ato) }) : json(res, 404, { ok: false, erros: ['Ato não encontrado.'] }), true;
     }
+    // A biblioteca de sprites (mobs, itens, efeitos, projéteis, outfits, montarias), cada desenho uma vez.
+    if (rota === 'sprites/biblioteca') return json(res, 200, BibliotecaDeSprites.listar(Object.fromEntries(url.searchParams))), true;
     if (rota.startsWith('atos-imagem/')) {
       const img = Atos.arquivoDaImagem(decodeURIComponent(rota.slice('atos-imagem/'.length)));
       if (!img) return json(res, 404, { ok: false }), true;
@@ -193,7 +196,8 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     }
     if (rota === 'opcoes') return json(res, 200, Conteudo.opcoes()), true;
     if (rota === 'fases') return json(res, 200, { fases: Conteudo.listarFases() }), true;
-    if (rota === 'auditoria') return json(res, 200, Conteudo.auditar()), true;
+    // A auditoria do CONTEÚDO (Visão geral). `auditoria` sozinha é o registro de gravações (acima): o mesmo nome escondia esta rota e a Visão geral ficava em "Carregando…".
+    if (rota === 'auditoria-conteudo' || rota === 'auditoria') return json(res, 200, Conteudo.auditar()), true;
     if (rota === 'mapa') return json(res, 200, Conteudo.lerMapa()), true;
     if (rota === 'atos') return json(res, 200, { atos: Conteudo.lerAtos() }), true;
     if (rota === 'bosses') return json(res, 200, { bosses: Conteudo.listarBosses() }), true;
@@ -377,6 +381,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'mapas/validar') return json(res, 200, Mapas.validarSpawns(dados ?? {})), true;
     if (rota === 'atos-editor/validar') return json(res, 200, Atos.validar(dados ?? {})), true;
     if (rota === 'atos-editor/imagem') return json(res, 200, Atos.salvarImagem(dados?.ato, dados?.dados)), true;
+    if (rota === 'sprites/biblioteca/meta') { const r = BibliotecaDeSprites.salvarMeta(String(dados?.tipo ?? ''), String(dados?.id ?? ''), { nome: dados?.nome, tags: dados?.tags }); return json(res, r.ok ? 200 : 400, r), true; }
     if (rota === 'atos-editor') {
       const r = dados?.excluir ? Atos.excluir(String(dados.excluir)) : dados?.duplicar ? Atos.duplicar(String(dados.duplicar), String(dados.novoId ?? ''), dados.novoNome ?? null) : Atos.salvar(dados ?? {});
       return json(res, status(r), r), true;

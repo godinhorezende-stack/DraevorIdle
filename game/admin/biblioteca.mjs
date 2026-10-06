@@ -372,6 +372,12 @@ const BASE_POE_NO_JOGO = {
   ataques_por_segundo: ['o ritmo de ataque continua o do Draevor', 'fora'],
   alcance_metros: ['o alcance vem do tipo de arma do Draevor', 'fora'],
   dps_fisico_base: ['só informativo (a conta do PoE)', 'fora'],
+  // Os FRASCOS (`itens-poe/frascos.mjs`): valem no cinto de frascos, na caçada.
+  recupera: ['recupera vida/mana ao longo do tempo ao usar (cinto de frascos; usado sozinho com a vida/mana baixa)', 'aplicado'],
+  cargas_por_uso: ['cargas gastas a cada uso', 'aplicado'],
+  cargas_maximas: ['cargas máximas (ganha cargas ao matar, pela raridade do monstro)', 'aplicado'],
+  cargas_atuais: ['o frasco enche ao entrar numa caçada', 'aplicado'],
+  duracao_segundos: ['quanto dura o efeito (frasco de Utilidade: usado sozinho em combate)', 'aplicado'],
 };
 function detalheDeItemPoe(i) {
   const cat = CatalogoPoe.catalogo();
@@ -379,15 +385,19 @@ function detalheDeItemPoe(i) {
   if (!achado) return null;
   const { classe: c, base: b } = achado;
   return {
-    id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: humanoPoe(c.id), raridade: null, slot: ou(i.slot), equipavel: true,
+    id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: humanoPoe(c.id), raridade: null, slot: i.frasco ? 'cinto de frascos' : ou(i.slot), equipavel: true,
     requisitos: { nivelMinimo: ou(i.minLevel) },
     poe: {
       base: b.id, classe: c.id, grupo: c.grupo, nome: b.nome, slug: b.slug, icone: b.icone ?? null, pool: b.pool ?? null,
       requisitos: b.requisitos ?? {},
-      atributos: Object.entries(b.atributos ?? {}).map(([k, v]) => ({ chave: k, valor: v, noJogo: BASE_POE_NO_JOGO[k]?.[0] ?? null, estado: BASE_POE_NO_JOGO[k]?.[1] ?? 'fora' })),
+      atributos: [
+        ...Object.entries(b.atributos ?? {}).map(([k, v]) => ({ chave: k, valor: v, noJogo: BASE_POE_NO_JOGO[k]?.[0] ?? null, estado: BASE_POE_NO_JOGO[k]?.[1] ?? 'fora' })),
+        // O efeito da BASE do frasco de Utilidade (o PoE não traz no catálogo: `regras.frascos.utilidade`).
+        ...(i.frasco && CatalogoPoe.REGRAS.frascos?.utilidade?.[b.slug] ? [{ chave: 'efeito', valor: CatalogoPoe.REGRAS.frascos.utilidade[b.slug].texto, noJogo: Object.entries(CatalogoPoe.REGRAS.frascos.utilidade[b.slug].af).map(([k, v]) => `${k} +${v}`).join(', ') || 'ainda sem efeito no Draevor', estado: Object.keys(CatalogoPoe.REGRAS.frascos.utilidade[b.slug].af).length ? 'aplicado' : 'fora' }] : []),
+      ],
       implicitos: (b.implicitos ?? []).map((m) => ({ texto: m.texto, traducao: TraduzirPoe.traduzirMod({ modelo: m.modelo, valores: (m.faixas ?? []).map((f) => f[1]) }) })),
       unicos: c.unicos.filter((u) => u.base === b.nome).map((u) => ({ slug: u.slug, nome: u.nome, requisitos: u.requisitos, icone: u.icone ?? null, modificadores: u.modificadores.map((m) => m.texto) })),
-      noJogo: { slot: i.slot, tipo: i.type, habilidade: ou(i.skill), duasMaos: !!i.twoHanded, critico: i.critChance ? i.critChance / 100 : null },
+      noJogo: { slot: i.frasco ? 'cinto de frascos' : i.slot, tipo: i.type, habilidade: ou(i.skill), duasMaos: !!i.twoHanded, critico: i.critChance ? i.critChance / 100 : null },
       regras: CatalogoPoe.REGRAS,
     },
     meta: i,

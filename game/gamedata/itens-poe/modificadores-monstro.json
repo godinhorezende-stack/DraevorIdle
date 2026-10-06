@@ -1,0 +1,7268 @@
+{
+ "_nota": "Modificadores de monstro do PoE (poedb Monster_Modifiers; tools/montar-modificadores-monstro-poe.mjs). Só com ITENS_POE=1. Mágico: 1 sorteado; Raro: 2 a 4 (pelo peso, entre os de nível até o do monstro). Ocultos: o que cada raridade ganha sem aparecer (vida, dano, velocidade, experiência). A quantidade de itens do drop segue a regra do dono (regras.json), não a do PoE.",
+ "quantos": {
+  "magico": [
+   1,
+   1
+  ],
+  "raro": [
+   2,
+   4
+  ]
+ },
+ "_sorteioDaRaridade": "Chance de um monstro COMUM do PoE, nascido de spawn sem raridade, virar Mágico (modificado) ou Raro. Editável.",
+ "sorteioDaRaridade": {
+  "modificado": 0.1,
+  "raro": 0.02
+ },
+ "_soComEfeito": "true: só sorteia os modificadores que já valem algo no Draevor (estado diferente de registrado).",
+ "soComEfeito": true,
+ "_expPorRaridade": "A EXPERIÊNCIA do monstro pela raridade (regra do dono, 06/10): multiplica a exp base — Mágico ×3, Raro ×5, Único ×5 (o Elite conta como Raro; o Chefe como Único). Manda no lugar do \"exp\" dos ocultos do PoE. Os únicos do PoE (Hillock, Brutus...) já trazem a exp própria nos dados e não passam por aqui.",
+ "expPorRaridade": {
+  "magico": 3,
+  "raro": 5,
+  "unico": 5
+ },
+ "ocultos": {
+  "magico": {
+   "vidaMais": 1.48,
+   "danoMais": 0.08333333333333348,
+   "velocidadeDeAtaquePct": 20,
+   "velocidadePct": 10,
+   "expMais": 2.5,
+   "quantidadeDoPoe": 600,
+   "raridadeDoPoe": 200
+  },
+  "raro": {
+   "vidaMais": 3.9,
+   "danoMais": 0.1278195488721805,
+   "velocidadeDeAtaquePct": 33,
+   "velocidadePct": 25,
+   "expMais": 7.5,
+   "quantidadeDoPoe": 1400,
+   "raridadeDoPoe": 1000
+  },
+  "unico": {
+   "vidaMais": 6.98,
+   "danoMais": 0.27819548872180433,
+   "velocidadeDeAtaquePct": 33,
+   "velocidadePct": 0,
+   "expMais": 4.5,
+   "quantidadeDoPoe": 2850,
+   "raridadeDoPoe": 1000
+  }
+ },
+ "mods": [
+  {
+   "id": "MonsterArchnemesisPoisoner_",
+   "nome": "Tóxico",
+   "nomeEn": "Toxic",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisPoisoner",
+   "linhas": [
+    "Duração do Veneno aumentada em 30%",
+    "Envenena ao Acertar",
+    "Dano com Veneno aumentado em 30%",
+    "Todo o Dano dos Acertos pode Envenenar",
+    "+25% de Resistência a Caos contra Dano Degenerativo"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "earth",
+     "chance": 100,
+     "danoPctDoGolpe": 39,
+     "duracaoMs": 3000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "global poison on hit",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can poison",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base poison damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base poison duration +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "additional chaos resistance against damage over time %",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisVoidTouched",
+   "nome": "Manipulador do Caos",
+   "nomeEn": "Chaosweaver",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisVoidTouched",
+   "linhas": [
+    "+40% de Resistência a Caos",
+    "25% do Dano Físico Convertido em Dano de Caos",
+    "Ganha 15% de Dano Não Caos como Dano de Caos extra"
+   ],
+   "nivel": 4,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {
+    "danoPct": 15,
+    "resist": {
+     "chaos": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "self wither duration +%",
+     "min": -60,
+     "max": -60
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "non chaos damage to add as chaos damage %",
+     "min": 15,
+     "max": 15
+    },
+    {
+     "stat": "base physical damage % to convert to chaos",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "Sem_Frostweaver",
+   "nome": "Manipulador do Gelo",
+   "nomeEn": "Frostweaver",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFrostTouched",
+   "linhas": [
+    "Dano de Gelo aumentado em 50%",
+    "+50% de Resistência a Gelo",
+    "Receba 50% do Dano Físico como Dano de Gelo Extra",
+    "25% do Dano Físico Convertido em Dano de Gelo",
+    "Causa Exposição a Gelo ao Acertar"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "danoPct": 75,
+    "resist": {
+     "ice": 50
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "cold damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base cold damage resistance %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "cold ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as cold",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base physical damage % to convert to cold",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base inflict cold exposure on hit % chance",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFreezer__",
+   "nome": "Congelamento Permanente",
+   "nomeEn": "Permafrost",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFreezer",
+   "linhas": [
+    "Duração do Congelamento em Inimigos aumentada em 25%",
+    "35% de chance de Congelar",
+    "Todo Dano pode Congelar"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "freeze duration +%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "all damage can freeze",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base chance to freeze %",
+     "min": 35,
+     "max": 35
+    },
+    {
+     "stat": "cold ailment effect on self +%",
+     "min": -80,
+     "max": -80
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisRaider_",
+   "nome": "Rápido",
+   "nomeEn": "Hasted",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisRaider",
+   "linhas": [
+    "Evasão aumentada em 100%"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 8000,
+   "stats": {
+    "velocidadePct": 40,
+    "velocidadeDeAtaquePct": 60,
+    "evasaoPct": 100
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "attack speed +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "evasion rating +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "add frenzy charge on skill hit %",
+     "min": 0,
+     "max": 0
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisDeadeye",
+   "nome": "Atirador",
+   "nomeEn": "Deadeye",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisDeadeye",
+   "linhas": [
+    "Dano aumentado em 20%"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {
+    "danoPct": 20,
+    "precisaoPct": 100,
+    "critChance": 5
+   },
+   "estado": "aproximado",
+   "valem": 3,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "accuracy rating +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "critical strike chance +%",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisBombardier___",
+   "nome": "Combardeiro",
+   "nomeEn": "Bombardier",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisBombardier",
+   "linhas": [
+    "Habilidades Ricocheteiam +2 vezes",
+    "Habilidades disparam 2 Projéteis adicionais",
+    "Projéteis têm 20% de chance de conseguirem Ricochetear ao colidirem com o terreno",
+    "Projéteis ganham Dano conforme viajam adiante, causando",
+    "Dano aumentado em até 60% com Acertos em alvos"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "number of chains",
+     "min": 2,
+     "max": 2
+    },
+    {
+     "stat": "number of additional projectiles",
+     "min": 2,
+     "max": 2
+    },
+    {
+     "stat": "projectile chain from terrain chance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "projectile damage +% max as distance travelled increases",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFlameTouched",
+   "nome": "Manipulador do Fogo",
+   "nomeEn": "Flameweaver",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFlameTouched",
+   "linhas": [
+    "Dano de Fogo aumentado em 50%",
+    "+50% de Resistência a Fogo",
+    "Receba 50% do Dano Físico como Dano de Fogo Extra",
+    "25% do Dano Físico Convertido em Dano de Fogo",
+    "Causa Exposição a Fogo ao Acertar"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "danoPct": 75,
+    "resist": {
+     "fire": 50
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "fire damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base fire damage resistance %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "physical damage % to add as fire",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "scorch ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "base physical damage % to convert to fire",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base inflict fire exposure on hit % chance",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisIgniter",
+   "nome": "Incendiário",
+   "nomeEn": "Incendiary",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisIgniter",
+   "linhas": [
+    "Seus Acertos empre Incendeiam",
+    "Duração do Incêndio em Inimigos aumentada em 25%",
+    "Todo Dano pode Incendiar"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "fire",
+     "chance": 100,
+     "danoPctDoGolpe": 180,
+     "duracaoMs": 5000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "always ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "ignite damage +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "ignite duration +%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "all damage can ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "additional fire resistance against damage over time %",
+     "min": 30,
+     "max": 30
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisArcaneEnchanted",
+   "nome": "Bonificador Arcano",
+   "nomeEn": "Arcane Buffer",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisArcaneGuarded",
+   "linhas": [
+    "Início da Recarga do Escudo de Energia 150% mais rápido",
+    "Dano de Caos sofrido não ultrapassa o Escudo de Energia"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 4000,
+   "stats": {
+    "vidaPct": 40
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "energy shield delay -%",
+     "min": 150,
+     "max": 150
+    },
+    {
+     "stat": "chaos damage does not bypass energy shield",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "maximum life % to add as maximum energy shield",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisEchoist___",
+   "nome": "Ecoante",
+   "nomeEn": "Echoist",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisEchoist",
+   "linhas": [
+    "Echoist"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterArchnemesisStormTouched_",
+   "nome": "Manipulador da Tempestade",
+   "nomeEn": "Stormweaver",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisStormTouched",
+   "linhas": [
+    "Dano de Raio aumentado em 50%",
+    "+50% de Resistência a Raio",
+    "Receba 50% do Dano Físico como Dano de Raio Extra",
+    "25% do Dano Físico Convertido em Dano de Raio",
+    "Causa Exposição a Raio ao Acertar"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "danoPct": 75,
+    "resist": {
+     "energy": 50
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "lightning damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base lightning damage resistance %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "lightning ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as lightning",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base physical damage % to convert to lightning",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base inflict lightning exposure on hit % chance",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisShocker_",
+   "nome": "Eletrocutante",
+   "nomeEn": "Electrocuting",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisShocker",
+   "linhas": [
+    "Seus Acertos empre Eletrizam",
+    "Duração da Eletrização em Inimigos aumentada em 50%",
+    "Todo Dano pode Eletrizar",
+    "Efeito de Eletrização aumentado em 25%"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "always shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "shock effect +%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "shock duration +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "all damage can shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "lightning ailment effect on self +%",
+     "min": -80,
+     "max": -80
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisBonebreaker_",
+   "nome": "Quebra-ossos",
+   "nomeEn": "Bonebreaker",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisBonebreaker",
+   "linhas": [
+    "100% de aumento da Precisão Global",
+    "Sempre Atordoa Inimigos ao Acertar",
+    "Velocidade de Ataque e Conjuração reduzida em 30%",
+    "Tamanho do Personagem aumentado em 20%",
+    "Ponto de Atordoamento aumentado em 250%",
+    "25% de chance de dobrar a Duração de Atordoamentos",
+    "Sanguinolência Extra"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {
+    "danoPct": 40,
+    "velocidadeDeAtaquePct": -30,
+    "precisaoPct": 100
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 8,
+   "statsPoe": [
+    {
+     "stat": "extra gore",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "always stun",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "stun threshold +%",
+     "min": 250,
+     "max": 250
+    },
+    {
+     "stat": "accuracy rating +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "physical damage +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base actor scale +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "attack and cast speed +%",
+     "min": -30,
+     "max": -30
+    },
+    {
+     "stat": "chance to double stun duration %",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisBloodletter_",
+   "nome": "Carta Sangrenta",
+   "nomeEn": "Bloodletter",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisBloodletter",
+   "linhas": [
+    "Ataques causam Sangramento",
+    "Dano com Sangramento aumentado em 50%",
+    "Duração do Sangramento aumentada em 25%",
+    "25% de redução do Dano Físico degenerativo sofrido"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "physical",
+     "chance": 25,
+     "danoPctDoGolpe": 105,
+     "duracaoMs": 6000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 3,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "bleeding damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "global bleed on hit",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base bleed duration +%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage over time taken +%",
+     "min": -25,
+     "max": -25
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisSteelAttuned___",
+   "nome": "Infundido com Aço",
+   "nomeEn": "Steel-infused",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisSteelAttuned",
+   "linhas": [
+    "40% de aumento do Dano Físico Global",
+    "Redução de Dano Físico aumentada em 30%",
+    "Sobrecarrega 10% da Redução de Dano Físico",
+    "Ponto de Atordoamento aumentado em 250%"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "physical": 30
+    }
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "stun threshold +%",
+     "min": 250,
+     "max": 250
+    },
+    {
+     "stat": "physical damage +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "blood and armour type override robot",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "enemy phys reduction % penalty vs hit",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 30,
+     "max": 30
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisGargantuan",
+   "nome": "Enorme",
+   "nomeEn": "Gargantuan",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisGargantuan",
+   "linhas": [
+    "Dano aumentado em 20%",
+    "Vida máxima aumentada em 40%",
+    "Área de Efeito aumentada em 80%",
+    "Tamanho do Personagem aumentado em 40%"
+   ],
+   "nivel": 1,
+   "pesoMagico": 8000,
+   "pesoRaro": 8000,
+   "stats": {
+    "vidaPct": 40,
+    "danoPct": 20
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "maximum life +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base actor scale +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base skill area of effect +%",
+     "min": 80,
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisBerserker__",
+   "nome": "Berserker",
+   "nomeEn": "Berserker",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisBerserker",
+   "linhas": [
+    "immune to culling strike [1]"
+   ],
+   "nivel": 31,
+   "pesoMagico": 1500,
+   "pesoRaro": 1500,
+   "stats": {
+    "danoPct": 40,
+    "velocidadePct": 40,
+    "velocidadeDeAtaquePct": 150,
+    "reducaoDeDano": 30
+   },
+   "estado": "parcial",
+   "valem": 5,
+   "total": 7,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "attack speed +%",
+     "min": 75,
+     "max": 75
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 75,
+     "max": 75
+    },
+    {
+     "stat": "base actor scale +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base damage taken +%",
+     "min": -30,
+     "max": -30
+    },
+    {
+     "stat": "immune to culling strike",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisDefender",
+   "nome": "Sentinela",
+   "nomeEn": "Sentinel",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisDefender",
+   "linhas": [
+    "50% de Chance de Bloquear o Dano de Ataques",
+    "50% de Chance de Bloquear o Dano Mágico",
+    "Você sofre 20% do Dano de Acertos Bloqueados"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {
+    "bloqueio": 50
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "base spell block %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "monster base block %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base block % damage taken",
+     "min": 20,
+     "max": 20
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisJuggernaut___",
+   "nome": "Destruidor",
+   "nomeEn": "Juggernaut",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisJuggernaut",
+   "linhas": [
+    "Dano aumentado em 20%",
+    "Área de Efeito aumentada em 30%",
+    "Tamanho do Personagem aumentado em 15%",
+    "Não Pode ser Atordoado",
+    "Velocidade de Ação não pode ser modificada para abaixo do valor base",
+    "Velocidade de Movimento não pode ser modificada para abaixo do valor base",
+    "Ganha 2 Cargas de Tolerância por segundo se foi Acertado Recentemente"
+   ],
+   "nivel": 19,
+   "pesoMagico": 2000,
+   "pesoRaro": 2000,
+   "stats": {
+    "danoPct": 20
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 7,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base actor scale +%",
+     "min": 15,
+     "max": 15
+    },
+    {
+     "stat": "base cannot be stunned",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base skill area of effect +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "action speed cannot be reduced below base",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "movement speed cannot be reduced below base",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "gain endurance charge per second if have been hit recently",
+     "min": 2,
+     "max": 2
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisVampiric",
+   "nome": "Vampírico",
+   "nomeEn": "Vampiric",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisVampiric",
+   "linhas": [
+    "Dano enquanto Drenando Vida aumentado em 25%",
+    "100% do Dano é Drenado como Vida",
+    "Recuperação total por segundo do Dreno de Vida aumentada em 200%",
+    "Inimigos Não Podem Drenar Vida De Você",
+    "Efeitos do Dreno de Vida não são removidos quando a Vida Não Reservada estiver Cheia",
+    "Inimigos Não Podem Drenar Escudo de Energia de Você"
+   ],
+   "nivel": 10,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "life leech speed +%",
+     "min": 200,
+     "max": 200
+    },
+    {
+     "stat": "cannot have life leeched from",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "damage +% while life leeching",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "life leech from any damage permyriad",
+     "min": 10000,
+     "max": 10000
+    },
+    {
+     "stat": "life leech does not stop at full life",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "cannot have energy shield leeched from",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisChargeGenerator__",
+   "nome": "Sobrecarregado",
+   "nomeEn": "Overcharged",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisChargeGenerator",
+   "linhas": [
+    "Overcharged"
+   ],
+   "nivel": 10,
+   "pesoMagico": 2500,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterArchnemesisSoulConduit____",
+   "nome": "Condutor D'alma",
+   "nomeEn": "Soul Conduit",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisSoulConduit",
+   "linhas": [
+    "cannot be dominated [1]",
+    "corpse cannot be destroyed [1]",
+    "monster raises after death [1]"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "cannot be dominated",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corpse cannot be destroyed",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "monster raises after death",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisWealthy",
+   "nome": "Opulento",
+   "nomeEn": "Opulent",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisWealthy",
+   "linhas": [
+    "monster dropped item quantity +% [10000]",
+    "monster dropped item rarity +% [20000]"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "monster dropped item rarity +%",
+     "min": 20000,
+     "max": 20000
+    },
+    {
+     "stat": "monster dropped item quantity +%",
+     "min": 10000,
+     "max": 10000
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisOppressor_",
+   "nome": "Maldito",
+   "nomeEn": "Malediction",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisOppressor",
+   "linhas": [
+    "base damage taken +% 30",
+    "base movement velocity +% -20",
+    "hellscape monster damage +% final -30"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {
+    "velocidadePct": -20,
+    "reducaoDeDano": -30
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "base damage taken +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": -20,
+     "max": -20
+    },
+    {
+     "stat": "hellscape monster damage +% final",
+     "min": -30,
+     "max": -30
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisConsecration_",
+   "nome": "Consagrador",
+   "nomeEn": "Consecrator",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisConsecration",
+   "linhas": [
+    "Consecrator"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterArchnemesisRampage",
+   "nome": "Frenético",
+   "nomeEn": "Frenzied",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisRampage",
+   "linhas": [
+    "Frenzied"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterArchnemesisHeraldOfTheObelisk_",
+   "nome": "Lacaios Arautos",
+   "nomeEn": "Heralding Minions",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisHeraldOfTheObelisk",
+   "linhas": [
+    "Heralding Minions"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterArchnemesisUnionOfSouls",
+   "nome": "Maximizador de Lacaios",
+   "nomeEn": "Empowering Minions",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisUnionOfSouls",
+   "linhas": [
+    "dropped items have maximum sockets [1]"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "buff impl stat",
+     "min": 3,
+     "max": 3
+    },
+    {
+     "stat": "dropped items have maximum sockets",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisAssassin",
+   "nome": "Assassino",
+   "nomeEn": "Assassin",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisAssassin",
+   "linhas": [
+    "Dano Extra recebido de Acertos Críticos em Você reduzido em 50%",
+    "Todos os acertos são Críticos",
+    "100% de chance Global de Cegar Inimigos ao acertar",
+    "Efeito do Cegamento aumentado em 100%"
+   ],
+   "nivel": 19,
+   "pesoMagico": 800,
+   "pesoRaro": 800,
+   "stats": {
+    "critChance": 100
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "always crit",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "blind effect +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "global chance to blind on hit %",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "base self critical strike multiplier -%",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisTrickster_",
+   "nome": "Trapaceiro",
+   "nomeEn": "Trickster",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisTrickster",
+   "linhas": [
+    "Ignora +10% do Dano Mágico Suprimido",
+    "+100% de chance de Suprimir Dano Mágico",
+    "Reflete Afecções Não-Danificadoras Inimigas"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 50,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "monster slain experience +%",
+     "min": 20000,
+     "max": 20000
+    },
+    {
+     "stat": "base spell damage % suppressed",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "base spell suppression chance %",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "reflect non damaging ailments % chance",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "moment of respite damage taken over time +% final",
+     "min": -50,
+     "max": -50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisNecromancer_",
+   "nome": "Necromante",
+   "nomeEn": "Necromancer",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisNecromancer",
+   "linhas": [
+    "Vida máxima aumentada em 30%",
+    "Ganha 10% de Dano Não Caos como Dano de Caos extra"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {
+    "vidaPct": 30,
+    "danoPct": 10
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "maximum life +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "non chaos damage to add as chaos damage %",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "dropped quality items converted to 20 quality currency",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisRejuvenating",
+   "nome": "Rejuvenescimento",
+   "nomeEn": "Rejuvenating",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisRejuvenating",
+   "linhas": [
+    "Vida máxima aumentada em 20%",
+    "2% de Vida Regenerada por segundo"
+   ],
+   "nivel": 27,
+   "pesoMagico": 500,
+   "pesoRaro": 500,
+   "stats": {
+    "vidaPct": 20,
+    "regenPct": 2
+   },
+   "estado": "efeito",
+   "valem": 2,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "maximum life +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "life regeneration rate per minute %",
+     "min": 120,
+     "max": 120
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisExecutioner",
+   "nome": "Executor",
+   "nomeEn": "Executioner",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisExecutioner",
+   "linhas": [
+    "hit damage +% per 10% missing enemy life [15]",
+    "immune to culling strike [1]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "immune to culling strike",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "hit damage +% per 10% missing enemy life",
+     "min": 15,
+     "max": 15
+    },
+    {
+     "stat": "archnemesis cannot recover life or energy shield above %",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "Sem_Hexer",
+   "nome": "Feiticeiro",
+   "nomeEn": "Hexer",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisHexer",
+   "linhas": [
+    "Anti-Maldições"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "hexproof",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFlaskDrain__",
+   "nome": "Portador da Seca",
+   "nomeEn": "Drought Bringer",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFlaskDrain",
+   "linhas": [
+    "1.5% de Vida Regenerada por segundo"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {
+    "regenPct": 1.5
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "life regeneration rate per minute %",
+     "min": 90,
+     "max": 90
+    },
+    {
+     "stat": "flask charges recovered per 3 seconds",
+     "min": -6,
+     "max": -6
+    },
+    {
+     "stat": "remove enemy flask charge on hit % chance",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "dropped items are converted to utility flasks",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisGraspingVines",
+   "nome": "Emaranhador",
+   "nomeEn": "Entangler",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisGraspingVines",
+   "linhas": [
+    "+25% de Resistência a Caos",
+    "Envenena ao Acertar",
+    "Todo o Dano dos Acertos pode Envenenar"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {
+    "resist": {
+     "chaos": 25
+    }
+   },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "earth",
+     "chance": 100,
+     "danoPctDoGolpe": 30,
+     "duracaoMs": 2000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 3,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "global poison on hit",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can poison",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "dropped items are converted to jewels",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisTimeBubble",
+   "nome": "Bolha Temporal",
+   "nomeEn": "Temporal Bubble",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisTimeBubble",
+   "linhas": [
+    "cannot be damaged by things outside radius [32]",
+    "dropped items are fully linked [1]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "action speed -%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "debuff time passed +%",
+     "min": -40,
+     "max": -40
+    },
+    {
+     "stat": "base cooldown speed +%",
+     "min": -60,
+     "max": -60
+    },
+    {
+     "stat": "dropped items are fully linked",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "cannot be damaged by things outside radius",
+     "min": 32,
+     "max": 32
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisSaplings",
+   "nome": "Horda de Entes",
+   "nomeEn": "Treant Horde",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisSaplings",
+   "linhas": [
+    "damage removed from pack minions before life or es % [50]",
+    "rare pack minions are replaced with saplings [1]"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "rare pack minions are replaced with saplings",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "damage removed from pack minions before life or es %",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFrostWalker",
+   "nome": "Andarilho Gélido",
+   "nomeEn": "Frost Strider",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFrostWalker",
+   "linhas": [
+    "Dano de Gelo aumentado em 30%",
+    "+40% de Resistência a Gelo",
+    "Receba 25% do Dano Físico como Dano de Gelo Extra",
+    "50% do Dano Físico Convertido em Dano de Gelo",
+    "Efeito de Resfriamento aumentado em 200%"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "ice": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "cold damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "chill effect +%",
+     "min": 200,
+     "max": 200
+    },
+    {
+     "stat": "base cold damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "cold ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as cold",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage % to convert to cold",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisGlacialCage",
+   "nome": "Prisão de Gelo",
+   "nomeEn": "Ice Prison",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisGlacialCage",
+   "linhas": [
+    "Dano de Gelo aumentado em 30%",
+    "+40% de Resistência a Gelo",
+    "Receba 25% do Dano Físico como Dano de Gelo Extra",
+    "50% do Dano Físico Convertido em Dano de Gelo",
+    "Redução de Dano Físico aumentada em 20%"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "ice": 40,
+     "physical": 20
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "cold damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base cold damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "cold ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as cold",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage % to convert to cold",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 20,
+     "max": 20
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisSoulEater_",
+   "nome": "Devorador de Almas",
+   "nomeEn": "Soul Eater",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisSoulEater",
+   "linhas": [
+    "dropped items are fully linked [1]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "soul is consumed on death",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "dropped items are fully linked",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "grant cast speed +% to aura owner on death",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "stat": "grant actor scale +% to aura owner on death",
+     "min": 2,
+     "max": 2
+    },
+    {
+     "stat": "grant attack speed +% to aura owner on death",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "stat": "grant damage reduction % to aura owner on death",
+     "min": -2,
+     "max": -2
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFlameWalker_",
+   "nome": "Andarilho da Chama",
+   "nomeEn": "Flame Strider",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFlameWalker",
+   "linhas": [
+    "Dano de Fogo aumentado em 30%",
+    "+40% de Resistência a Fogo",
+    "Seus Acertos empre Incendeiam",
+    "Receba 25% do Dano Físico como Dano de Fogo Extra",
+    "50% do Dano Físico Convertido em Dano de Fogo"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "fire": 40
+    }
+   },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "fire",
+     "chance": 100,
+     "danoPctDoGolpe": 270,
+     "duracaoMs": 4000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 5,
+   "total": 7,
+   "statsPoe": [
+    {
+     "stat": "always ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "fire damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "ignite damage +%",
+     "min": 200,
+     "max": 200
+    },
+    {
+     "stat": "base fire damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "physical damage % to add as fire",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "scorch ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "base physical damage % to convert to fire",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisCorpseExploder_",
+   "nome": "Detonador de Corpos",
+   "nomeEn": "Corpse Detonator",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisCorpseExploder",
+   "linhas": [
+    "+40% de Resistência a Fogo"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {
+    "resist": {
+     "fire": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "base fire damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "dropped items are converted to rings",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisPrismatic",
+   "nome": "Prismático",
+   "nomeEn": "Prismatic",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisElemental",
+   "linhas": [
+    "Seus Acertos empre Incendeiam",
+    "Seus Acertos empre Eletrizam",
+    "Todo o Dano com Acertos pode Resfriar",
+    "Recebe 60% de Dano Físico como Dano Extra de um Elemento aleatório",
+    "Todo Dano pode Incendiar",
+    "Todo Dano pode Eletrizar"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {
+    "danoPct": 60,
+    "resist": {
+     "fire": 50,
+     "ice": 50,
+     "energy": 50
+    }
+   },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "fire",
+     "chance": 100,
+     "danoPctDoGolpe": 90,
+     "duracaoMs": 4000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 4,
+   "total": 7,
+   "statsPoe": [
+    {
+     "stat": "always shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "always ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can chill",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "physical damage % to add as random element",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisVolatileFlameBlood",
+   "nome": "Barreira de Magma",
+   "nomeEn": "Magma Barrier",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisVolatileFlameBlood",
+   "linhas": [
+    "Dano de Fogo aumentado em 30%",
+    "+40% de Resistência a Fogo",
+    "Receba 25% do Dano Físico como Dano de Fogo Extra",
+    "25% do Dano Físico Convertido em Dano de Fogo",
+    "Redução de Dano Físico aumentada em 25%"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "fire": 40,
+     "physical": 25
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "fire damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base fire damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "physical damage % to add as fire",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "dropped items have maximum sockets",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base physical damage % to convert to fire",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisMirrorImage",
+   "nome": "Imagem Espelhada",
+   "nomeEn": "Mirror Image",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisMirrorImage",
+   "linhas": [
+    "dropped items are duplicated [1]"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "dropped items are duplicated",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisLightningWalker_",
+   "nome": "Andarilho da Tempestade",
+   "nomeEn": "Storm Strider",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisLightningWalker",
+   "linhas": [
+    "Dano de Raio aumentado em 30%",
+    "+40% de Resistência a Raio",
+    "Receba 25% do Dano Físico como Dano de Raio Extra",
+    "50% do Dano Físico Convertido em Dano de Raio"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "energy": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "lightning damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base lightning damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "lightning ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as lightning",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage % to convert to lightning",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisManaDonut",
+   "nome": "Sifão de Mana",
+   "nomeEn": "Mana Siphoner",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisManaDonut",
+   "linhas": [
+    "Dano de Raio aumentado em 30%",
+    "+40% de Resistência a Raio",
+    "Receba 25% do Dano Físico como Dano de Raio Extra",
+    "50% do Dano Físico Convertido em Dano de Raio"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "energy": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "lightning damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base lightning damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "lightning ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as lightning",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "dropped items are converted to amulets",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base physical damage % to convert to lightning",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisCorrupter_",
+   "nome": "Corrompedor",
+   "nomeEn": "Corrupter",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisCorrupter",
+   "linhas": [
+    "base corrupt blood when hit % average damage to deal per minute per stack [60]",
+    "corrupted blood on hit % average damage to deal per minute per stack [120]",
+    "corrupted blood on hit duration [4000]",
+    "corrupted blood on hit num stacks [1]",
+    "dropped items are corrupted [1]"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "dropped items are corrupted",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corrupted blood on hit duration",
+     "min": 4000,
+     "max": 4000
+    },
+    {
+     "stat": "corrupted blood on hit num stacks",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corrupted blood on hit % average damage to deal per minute per stack",
+     "min": 120,
+     "max": 120
+    },
+    {
+     "stat": "base corrupt blood when hit % average damage to deal per minute per stack",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisDivineTouched__",
+   "nome": "Guardião Benevolente",
+   "nomeEn": "Benevolent Guardian",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisDivineTouched",
+   "linhas": [
+    "30% de Chance de Bloquear o Dano de Ataques",
+    "30% de Chance de Bloquear o Dano Mágico",
+    "Você sofre 20% do Dano de Acertos Bloqueados"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 300,
+   "stats": {
+    "bloqueio": 30
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "base spell block %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "monster base block %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base block % damage taken",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "monster allies cannot take damage pulse owner",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisLivingCrystals__",
+   "nome": "Pele de Cristal",
+   "nomeEn": "Crystal-skinned",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisLivingCrystals",
+   "linhas": [
+    "+40% de todas Resistências Elementais",
+    "Recebe 40% de Dano Físico como Dano Extra de um Elemento aleatório"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "fire": 40,
+     "ice": 40,
+     "energy": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "base resist all elements %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "dropped items are converted to gems",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "physical damage % to add as random element",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisCycleOfElements",
+   "nome": "Elementos Maximizados",
+   "nomeEn": "Empowered Elements",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisCycleOfElements",
+   "linhas": [
+    "dropped items are fractured [1]"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "dropped items are fractured",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisVoodooDoll",
+   "nome": "Efígie",
+   "nomeEn": "Effigy",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisVoodooDoll",
+   "linhas": [
+    "dropped items have all white sockets [1]"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "dropped items have all white sockets",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisLunaris",
+   "nome": "Tocado por Lunaris",
+   "nomeEn": "Lunaris-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisLunaris",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "dropped items are converted to currency based on rarity",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisSolaris",
+   "nome": "Tocado por Solaris",
+   "nomeEn": "Solaris-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisSolaris",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "dropped items are converted to currency based on rarity",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisArakaali_",
+   "nome": "Tocado por Arakaali",
+   "nomeEn": "Arakaali-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisArakaali",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%",
+    "Itens Derrubados com Raridade são convertidos para Cartas de Adivinhação"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "dropped items are converted to divination cards",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisBrineKing___",
+   "nome": "Tocado pelo Rei da Salmoura",
+   "nomeEn": "Brine King-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisBrineKing",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%",
+    "Itens Derrubados com Raridade são convertidos para Cartas de Adivinhação"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "dropped items are converted to divination cards",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisTukohama",
+   "nome": "Tocado por Tukohama",
+   "nomeEn": "Tukohama-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisTukohama",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%",
+    "Itens Derrubados com Raridade são convertidos para Mapas"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "dropped items are converted to maps",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisAbberath",
+   "nome": "Tocado por Abberath",
+   "nomeEn": "Abberath-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisAbberath",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%",
+    "Itens Derrubados com Raridade são convertidos para Mapas"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "dropped items are converted to maps",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisShakari_",
+   "nome": "Tocado por Shakari",
+   "nomeEn": "Shakari-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisShakari",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "dropped items are converted to currency based on rarity",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisInnocence_____",
+   "nome": "Tocado por Innocence",
+   "nomeEn": "Innocence-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisInnocence",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+40% de todas Resistências Elementais",
+    "+25% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 15%",
+    "Itens Derrubados com Raridade são convertidos para Escaravelhos"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 40,
+     "ice": 40,
+     "energy": 40,
+     "chaos": 25,
+     "physical": 15
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 15,
+     "max": 15
+    },
+    {
+     "stat": "dropped items are converted to scarabs based on rarity",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisKitava",
+   "nome": "Tocado por Kitava",
+   "nomeEn": "Kitava-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisKitava",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+40% de todas Resistências Elementais",
+    "+25% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 15%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 40,
+     "ice": 40,
+     "energy": 40,
+     "chaos": 25,
+     "physical": 15
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "dropped items are one rarity higher",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 15,
+     "max": 15
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisBloodletterMagic",
+   "nome": "Carta Sangrenta",
+   "nomeEn": "Bloodletter",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisBloodletter",
+   "linhas": [
+    "Ataques causam Sangramento",
+    "Dano com Sangramento aumentado em 50%",
+    "Duração do Sangramento aumentada em 25%",
+    "25% de redução do Dano Físico degenerativo sofrido"
+   ],
+   "nivel": 14,
+   "pesoMagico": 1500,
+   "pesoRaro": 0,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "physical",
+     "chance": 25,
+     "danoPctDoGolpe": 105,
+     "duracaoMs": 6000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 3,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "bleeding damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "global bleed on hit",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base bleed duration +%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage over time taken +%",
+     "min": -25,
+     "max": -25
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisHeraldOfTheObeliskMagic",
+   "nome": "Arautos do Obelisco",
+   "nomeEn": "Heralds of the Obelisk",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisHeraldOfTheObeliskMagic",
+   "linhas": [
+    "monster spawn bloodlines ghost totem on death [1]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 800,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "monster spawn bloodlines ghost totem on death",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisSpiritWalkersMagic",
+   "nome": "Andarilhos Espirituais",
+   "nomeEn": "Spirit Walkers",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisSpiritWalkersMagic",
+   "linhas": [
+    "monster dropped item quantity +% [-350]",
+    "monster slain experience +% [-175]",
+    "monster spirit walker [1]"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "monster spirit walker",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "monster slain experience +%",
+     "min": -175,
+     "max": -175
+    },
+    {
+     "stat": "monster dropped item quantity +%",
+     "min": -350,
+     "max": -350
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisUnionOfSoulsMagic",
+   "nome": "União das Almas",
+   "nomeEn": "Union of Souls",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisUnionOfSoulsMagic",
+   "linhas": [
+    "Vida máxima aumentada em 30%",
+    "Área de Efeito aumentada em 20%",
+    "Tamanho do Personagem aumentado em 15%"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {
+    "vidaPct": 30
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "maximum life +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base actor scale +%",
+     "min": 15,
+     "max": 15
+    },
+    {
+     "stat": "base skill area of effect +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "actor scale +% granted to pack members on death",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "maximum life +% granted to pack members on death",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisVoidspawnOfAbaxothMagic",
+   "nome": "Cria de Abaxoth",
+   "nomeEn": "Voidspawn of Abaxoth",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisVoidspawnOfAbaxothMagic",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+50% de todas Resistências Elementais",
+    "+35% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 40%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 50,
+     "ice": 50,
+     "energy": 50,
+     "chaos": 35,
+     "physical": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "monster voidspawn",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 35,
+     "max": 35
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisLightningStorm",
+   "nome": "Arauto das Tempestades",
+   "nomeEn": "Storm Herald",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisLightningStorm",
+   "linhas": [
+    "Dano de Raio aumentado em 30%",
+    "+40% de Resistência a Raio",
+    "Receba 25% do Dano Físico como Dano de Raio Extra",
+    "50% do Dano Físico Convertido em Dano de Raio"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "energy": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "lightning damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base lightning damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "lightning ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as lightning",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage % to convert to lightning",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFinalGasp",
+   "nome": "Suspiro Final",
+   "nomeEn": "Final Gasp",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFinalGasp",
+   "linhas": [
+    "cannot be dominated [1]",
+    "corpse cannot be destroyed [1]",
+    "retaliation godmode ghost duration ms [5000]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "cannot be dominated",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corpse cannot be destroyed",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "retaliation godmode ghost duration ms",
+     "min": 5000,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisArcaneEnchantedMagic",
+   "nome": "Bonificador Arcano",
+   "nomeEn": "Arcane Buffer",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisArcaneGuarded",
+   "linhas": [
+    "Início da Recarga do Escudo de Energia 50% mais rápido",
+    "Dano de Caos sofrido não ultrapassa o Escudo de Energia",
+    "Ganhe 40% de Vida Máxima como Escudo de Energia Máximo Extra"
+   ],
+   "nivel": 4,
+   "pesoMagico": 4000,
+   "pesoRaro": 0,
+   "stats": {
+    "vidaPct": 40
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "energy shield delay -%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "chaos damage does not bypass energy shield",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "maximum life % to add as maximum energy shield",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisPrismaticMagic",
+   "nome": "Prismático",
+   "nomeEn": "Prismatic",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisElemental",
+   "linhas": [
+    "+50% de todas Resistências Elementais",
+    "Seus Acertos empre Incendeiam",
+    "Seus Acertos empre Eletrizam",
+    "Todo o Dano com Acertos pode Resfriar",
+    "Recebe 60% de Dano Físico como Dano Extra de um Elemento aleatório",
+    "Todo Dano pode Incendiar",
+    "Todo Dano pode Eletrizar"
+   ],
+   "nivel": 19,
+   "pesoMagico": 800,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 60,
+    "resist": {
+     "fire": 50,
+     "ice": 50,
+     "energy": 50
+    }
+   },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "fire",
+     "chance": 100,
+     "danoPctDoGolpe": 90,
+     "duracaoMs": 4000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 4,
+   "total": 7,
+   "statsPoe": [
+    {
+     "stat": "always shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "always ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can chill",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "physical damage % to add as random element",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisDeadeyeMagic",
+   "nome": "Atirador",
+   "nomeEn": "Deadeye",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisDeadeye",
+   "linhas": [
+    "Dano aumentado em 30%",
+    "100% de aumento da Precisão Global",
+    "Chance Global de Crítico aumentada em 100%"
+   ],
+   "nivel": 10,
+   "pesoMagico": 3000,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 30,
+    "precisaoPct": 100,
+    "critChance": 5
+   },
+   "estado": "aproximado",
+   "valem": 3,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "accuracy rating +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "critical strike chance +%",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisRaiderMagic",
+   "nome": "Rápido",
+   "nomeEn": "Hasted",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisRaider",
+   "linhas": [
+    "Velocidade de Ataque aumentada em 30%",
+    "Velocidade de Conjuração aumentada em 30%",
+    "Evasão aumentada em 100%",
+    "Velocidade de Movimento aumentada em 40%"
+   ],
+   "nivel": 4,
+   "pesoMagico": 8000,
+   "pesoRaro": 0,
+   "stats": {
+    "velocidadePct": 40,
+    "velocidadeDeAtaquePct": 60,
+    "evasaoPct": 100
+   },
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "attack speed +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "evasion rating +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "add frenzy charge on skill hit %",
+     "min": 0,
+     "max": 0
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisBonebreakerMagic",
+   "nome": "Quebra-ossos",
+   "nomeEn": "Bonebreaker",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisBonebreaker",
+   "linhas": [
+    "60% de aumento do Dano Físico Global",
+    "100% de aumento da Precisão Global",
+    "Ponto de Atordoamento Inimigo reduzido em 50%",
+    "Velocidade de Ataque e Conjuração reduzida em 40%",
+    "Tamanho do Personagem aumentado em 20%",
+    "Ponto de Atordoamento aumentado em 250%",
+    "25% de chance de dobrar a Duração de Atordoamentos",
+    "Sanguinolência Extra"
+   ],
+   "nivel": 19,
+   "pesoMagico": 3000,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 60,
+    "velocidadeDeAtaquePct": -40,
+    "precisaoPct": 100
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 8,
+   "statsPoe": [
+    {
+     "stat": "extra gore",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "stun threshold +%",
+     "min": 250,
+     "max": 250
+    },
+    {
+     "stat": "accuracy rating +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "physical damage +%",
+     "min": 60,
+     "max": 60
+    },
+    {
+     "stat": "base actor scale +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "attack and cast speed +%",
+     "min": -40,
+     "max": -40
+    },
+    {
+     "stat": "base stun threshold reduction +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "chance to double stun duration %",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisMultiProjectiles",
+   "nome": "Fragmentador",
+   "nomeEn": "Splinterer",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisMultiProjectiles",
+   "linhas": [
+    "Habilidades disparam 4 Projéteis adicionais",
+    "Dano de Projétil aumentado em 30%",
+    "30% de chance de evitar Projéteis"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 15
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "projectile damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base avoid projectiles % chance",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "number of additional projectiles",
+     "min": 4,
+     "max": 4
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFreezerMagic",
+   "nome": "Congelamento Permanente",
+   "nomeEn": "Permafrost",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFreezer",
+   "linhas": [
+    "20% de chance de Congelar",
+    "Todo Dano pode Congelar"
+   ],
+   "nivel": 54,
+   "pesoMagico": 2500,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "freeze duration +%",
+     "min": 0,
+     "max": 0
+    },
+    {
+     "stat": "all damage can freeze",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base chance to freeze %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "cold ailment effect on self +%",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisPoisonerMagic",
+   "nome": "Tóxico",
+   "nomeEn": "Toxic",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisPoisoner",
+   "linhas": [
+    "Duração do Veneno aumentada em 30%",
+    "Envenena ao Acertar",
+    "Dano com Veneno aumentado em 30%",
+    "Todo o Dano dos Acertos pode Envenenar",
+    "+25% de Resistência a Caos contra Dano Degenerativo"
+   ],
+   "nivel": 14,
+   "pesoMagico": 1500,
+   "pesoRaro": 0,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "earth",
+     "chance": 100,
+     "danoPctDoGolpe": 39,
+     "duracaoMs": 3000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "global poison on hit",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "all damage can poison",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base poison damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base poison duration +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "additional chaos resistance against damage over time %",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisIgniterMagic",
+   "nome": "Incendiário",
+   "nomeEn": "Incendiary",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisIgniter",
+   "linhas": [
+    "Seus Acertos empre Incendeiam",
+    "Duração do Incêndio em Inimigos aumentada em 25%",
+    "Todo Dano pode Incendiar"
+   ],
+   "nivel": 27,
+   "pesoMagico": 2500,
+   "pesoRaro": 0,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "fire",
+     "chance": 100,
+     "danoPctDoGolpe": 180,
+     "duracaoMs": 5000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 4,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "always ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "ignite damage +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "ignite duration +%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "all damage can ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "additional fire resistance against damage over time %",
+     "min": 30,
+     "max": 30
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisShockerMagic",
+   "nome": "Eletrocutante",
+   "nomeEn": "Electrocuting",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisShocker",
+   "linhas": [
+    "Seus Acertos empre Eletrizam",
+    "Duração da Eletrização em Inimigos aumentada em 50%",
+    "Todo Dano pode Eletrizar",
+    "Efeito de Eletrização aumentado em 25%"
+   ],
+   "nivel": 10,
+   "pesoMagico": 2500,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "always shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "shock effect +%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "shock duration +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "all damage can shock",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "lightning ailment effect on self +%",
+     "min": -80,
+     "max": -80
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisConsecratorMagic",
+   "nome": "Consagrador",
+   "nomeEn": "Consecrator",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisConsecration",
+   "linhas": [
+    "Consecrator"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterArchnemesisFlameWalkerMagic",
+   "nome": "Andarilho da Chama",
+   "nomeEn": "Flame Strider",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFlameWalker",
+   "linhas": [
+    "Dano de Fogo aumentado em 30%",
+    "+40% de Resistência a Fogo",
+    "Seus Acertos empre Incendeiam",
+    "Receba 25% do Dano Físico como Dano de Fogo Extra",
+    "50% do Dano Físico Convertido em Dano de Fogo"
+   ],
+   "nivel": 10,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "fire": 40
+    }
+   },
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "fire",
+     "chance": 100,
+     "danoPctDoGolpe": 270,
+     "duracaoMs": 4000
+    }
+   ],
+   "estado": "parcial",
+   "valem": 5,
+   "total": 7,
+   "statsPoe": [
+    {
+     "stat": "always ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "fire damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "ignite damage +%",
+     "min": 200,
+     "max": 200
+    },
+    {
+     "stat": "base fire damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "physical damage % to add as fire",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "scorch ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "base physical damage % to convert to fire",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisFrostWalkerMagic",
+   "nome": "Andarilho Gélido",
+   "nomeEn": "Frost Strider",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisFrostWalker",
+   "linhas": [
+    "Dano de Gelo aumentado em 30%",
+    "+40% de Resistência a Gelo",
+    "Receba 25% do Dano Físico como Dano de Gelo Extra",
+    "50% do Dano Físico Convertido em Dano de Gelo",
+    "Efeito de Resfriamento aumentado em 200%"
+   ],
+   "nivel": 10,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "ice": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "cold damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "chill effect +%",
+     "min": 200,
+     "max": 200
+    },
+    {
+     "stat": "base cold damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "cold ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as cold",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage % to convert to cold",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisLightningWalkerMagic",
+   "nome": "Andarilho da Tempestade",
+   "nomeEn": "Storm Strider",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisLightningWalker",
+   "linhas": [
+    "Dano de Raio aumentado em 30%",
+    "+40% de Resistência a Raio",
+    "Receba 25% do Dano Físico como Dano de Raio Extra",
+    "50% do Dano Físico Convertido em Dano de Raio"
+   ],
+   "nivel": 10,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 40,
+    "resist": {
+     "energy": 40
+    }
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "lightning damage +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base lightning damage resistance %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "lightning ailment effect on self +%",
+     "min": -50,
+     "max": -50
+    },
+    {
+     "stat": "physical damage % to add as lightning",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base physical damage % to convert to lightning",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisCorrupterMagic",
+   "nome": "Corrompedor",
+   "nomeEn": "Corrupter",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisCorrupter",
+   "linhas": [
+    "base corrupt blood when hit % average damage to deal per minute per stack [60]",
+    "corrupted blood on hit % average damage to deal per minute per stack [120]",
+    "corrupted blood on hit duration [4000]",
+    "corrupted blood on hit num stacks [1]",
+    "dropped items are corrupted [0]"
+   ],
+   "nivel": 36,
+   "pesoMagico": 800,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "dropped items are corrupted",
+     "min": 0,
+     "max": 0
+    },
+    {
+     "stat": "corrupted blood on hit duration",
+     "min": 4000,
+     "max": 4000
+    },
+    {
+     "stat": "corrupted blood on hit num stacks",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corrupted blood on hit % average damage to deal per minute per stack",
+     "min": 120,
+     "max": 120
+    },
+    {
+     "stat": "base corrupt blood when hit % average damage to deal per minute per stack",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterArchnemesisDefenderMagic",
+   "nome": "Sentinela",
+   "nomeEn": "Sentinel",
+   "tipo": "archnemesis",
+   "familia": "MonsterArchnemesisDefender",
+   "linhas": [
+    "50% de Chance de Bloquear o Dano de Ataques",
+    "50% de Chance de Bloquear o Dano Mágico",
+    "Você sofre 10% do Dano de Acertos Bloqueados"
+   ],
+   "nivel": 4,
+   "pesoMagico": 3000,
+   "pesoRaro": 0,
+   "stats": {
+    "bloqueio": 50
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "base spell block %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "monster base block %",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base block % damage taken",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModOverwhelmPDR",
+   "nome": "Esmaga ao Acertar",
+   "nomeEn": "Crush on Hit",
+   "tipo": "mod",
+   "familia": "MonsterModOverwhelmPDR",
+   "linhas": [
+    "Esmaga ao Acertar"
+   ],
+   "nivel": 4,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "chance to crush on hit %",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModExtraFireDamage",
+   "nome": "Dano Extra de Fogo e Exposição",
+   "nomeEn": "Extra Fire Damage and Exposure",
+   "tipo": "mod",
+   "familia": "MonsterModExtraFireDamage",
+   "linhas": [
+    "Receba 50% do Dano Físico como Dano de Fogo Extra",
+    "Inflige Exposição a Fogo ao Acertar, aplicando -25% de Resistência a Fogo"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "danoPct": 50
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "fire exposure on hit magnitude",
+     "min": -25,
+     "max": -25
+    },
+    {
+     "stat": "physical damage % to add as fire",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModExtraColdDamage",
+   "nome": "Dano Extra de Gelo e Exposição",
+   "nomeEn": "Extra Cold Damage and Exposure",
+   "tipo": "mod",
+   "familia": "MonsterModExtraColdDamage",
+   "linhas": [
+    "Receba 50% do Dano Físico como Dano de Gelo Extra",
+    "Inflige Exposição a Gelo ao Acertar, aplicando -25% de Resistência a Gelo"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "danoPct": 50
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "cold exposure on hit magnitude",
+     "min": -25,
+     "max": -25
+    },
+    {
+     "stat": "physical damage % to add as cold",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModExtraLightningDamage",
+   "nome": "Dano Extra de Raio e Exposição",
+   "nomeEn": "Extra Lightning Damage and Exposure",
+   "tipo": "mod",
+   "familia": "MonsterModExtraLightningDamage",
+   "linhas": [
+    "Receba 50% do Dano Físico como Dano de Raio Extra",
+    "Inflige Exposição a Raio ao Acertar, aplicando -25% de Resistência a Raio"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "danoPct": 50
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "lightning exposure on hit magnitude",
+     "min": -25,
+     "max": -25
+    },
+    {
+     "stat": "physical damage % to add as lightning",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModExtraChaosDamage",
+   "nome": "Dano Extra de Caos",
+   "nomeEn": "Extra Chaos Damage",
+   "tipo": "mod",
+   "familia": "MonsterModExtraChaosDamage",
+   "linhas": [
+    "Ganha 15% de Dano Não Caos como Dano de Caos extra"
+   ],
+   "nivel": 4,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {
+    "danoPct": 15
+   },
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "non chaos damage to add as chaos damage %",
+     "min": 15,
+     "max": 15
+    }
+   ]
+  },
+  {
+   "id": "MonsterModExtraElementalDamage",
+   "nome": "Equilíbrio Elemental e Dano Elemental Aleatório",
+   "nomeEn": "Elemental Equilibrium and Random Elemental Damage",
+   "tipo": "mod",
+   "familia": "MonsterModExtraElementalDamage",
+   "linhas": [
+    "Recebe 60% de Dano Físico como Dano Extra de um Elemento aleatório",
+    "Equilíbrio Elemental"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 60
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "keystone elemental equilibrium",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "physical damage % to add as random element",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterModPhysicalDamageReduction",
+   "nome": "Resistência Física",
+   "nomeEn": "Physical Resistant",
+   "tipo": "mod",
+   "familia": "MonsterModPhysicalDamageReduction",
+   "linhas": [
+    "Redução de Dano Físico aumentada em 50%"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "resist": {
+     "physical": 50
+    }
+   },
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModResistantToFire",
+   "nome": "Resistente a Fogo e Incêndio",
+   "nomeEn": "Fire and Ignite Resistant",
+   "tipo": "mod",
+   "familia": "MonsterModResistantToFire",
+   "linhas": [
+    "+75% de Resistência a Fogo",
+    "Duração do Incêndio em Você aumentada em 80%"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "resist": {
+     "fire": 75
+    }
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "base self ignite duration -%",
+     "min": 80,
+     "max": 80
+    },
+    {
+     "stat": "base fire damage resistance %",
+     "min": 75,
+     "max": 75
+    }
+   ]
+  },
+  {
+   "id": "MonsterModResistantToCold",
+   "nome": "Resistente a Gelo, Resfrimento e Congelamento",
+   "nomeEn": "Cold, Chill and Freeze Resistant",
+   "tipo": "mod",
+   "familia": "MonsterModResistantToCold",
+   "linhas": [
+    "+75% de Resistência a Gelo",
+    "Resfriamentos em Você tem Efeito reduzido em 80%",
+    "Duração do Congelamento em Você reduzida em 80%"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "resist": {
+     "ice": 75
+    }
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "base self freeze duration -%",
+     "min": -80,
+     "max": -80
+    },
+    {
+     "stat": "base cold damage resistance %",
+     "min": 75,
+     "max": 75
+    },
+    {
+     "stat": "chill effectiveness on self +%",
+     "min": -80,
+     "max": -80
+    }
+   ]
+  },
+  {
+   "id": "MonsterModResistantToLightning",
+   "nome": "Resistente a Raio e Eletrização",
+   "nomeEn": "Lightning and Shock Resistant",
+   "tipo": "mod",
+   "familia": "MonsterModResistantToLightning",
+   "linhas": [
+    "+75% de Resistência a Raio",
+    "80% de redução do Efeito da Eletrização em você"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "resist": {
+     "energy": 75
+    }
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "shocked effect on self +%",
+     "min": -80,
+     "max": -80
+    },
+    {
+     "stat": "base lightning damage resistance %",
+     "min": 75,
+     "max": 75
+    }
+   ]
+  },
+  {
+   "id": "MonsterModResistantToChaos",
+   "nome": "Resistente a Caos e Definhamento",
+   "nomeEn": "Chaos and Wither Resistant",
+   "tipo": "mod",
+   "familia": "MonsterModResistantToChaos",
+   "linhas": [
+    "+60% de Resistência a Caos"
+   ],
+   "nivel": 12,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {
+    "resist": {
+     "chaos": 60
+    }
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "self wither duration +%",
+     "min": -80,
+     "max": -80
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterModIncreasedEvasionRating",
+   "nome": "Evasivo",
+   "nomeEn": "Evasive",
+   "tipo": "mod",
+   "familia": "MonsterModIncreasedEvasionRating",
+   "linhas": [
+    "Evasão aumentada em 100%"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "evasaoPct": 100
+   },
+   "estado": "efeito",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "evasion rating +%",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModFasterStartOfEnergyShield",
+   "nome": "Recarga Rápida de Escudo de Energia",
+   "nomeEn": "Fast Energy Shield Recharge",
+   "tipo": "mod",
+   "familia": "MonsterModFasterStartOfEnergyShield",
+   "linhas": [
+    "Início da Recarga do Escudo de Energia 150% mais rápido",
+    "Ganhe 40% de Vida Máxima como Escudo de Energia Máximo Extra"
+   ],
+   "nivel": 1,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "vidaPct": 40
+   },
+   "estado": "parcial",
+   "valem": 1,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "energy shield delay -%",
+     "min": 150,
+     "max": 150
+    },
+    {
+     "stat": "maximum life % to add as maximum energy shield",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModIncreasedLife",
+   "nome": "Vida Extra",
+   "nomeEn": "Extra Life",
+   "tipo": "mod",
+   "familia": "MonsterModIncreasedLife",
+   "linhas": [
+    "Vida máxima aumentada em 40%"
+   ],
+   "nivel": 1,
+   "pesoMagico": 8000,
+   "pesoRaro": 8000,
+   "stats": {
+    "vidaPct": 40
+   },
+   "estado": "efeito",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "maximum life +%",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModIncreasedAccuracy",
+   "nome": "Preciso",
+   "nomeEn": "Accurate",
+   "tipo": "mod",
+   "familia": "MonsterModIncreasedAccuracy",
+   "linhas": [
+    "100% de aumento da Precisão Global"
+   ],
+   "nivel": 4,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "precisaoPct": 100
+   },
+   "estado": "efeito",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "accuracy rating +%",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModIncreasedCriticalStrikeChance",
+   "nome": "Crítico Extra",
+   "nomeEn": "Extra Crits",
+   "tipo": "mod",
+   "familia": "MonsterModIncreasedCriticalStrikeChance",
+   "linhas": [
+    "Chance Global de Crítico aumentada em 300%"
+   ],
+   "nivel": 9,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {
+    "critChance": 15
+   },
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "critical strike chance +%",
+     "min": 300,
+     "max": 300
+    }
+   ]
+  },
+  {
+   "id": "MonsterModLifeRegeneration",
+   "nome": "Regeneração de Vida",
+   "nomeEn": "Life Regen",
+   "tipo": "mod",
+   "familia": "MonsterModLifeRegeneration",
+   "linhas": [
+    "3% de Vida Regenerada por segundo"
+   ],
+   "nivel": 19,
+   "pesoMagico": 5000,
+   "pesoRaro": 5000,
+   "stats": {
+    "regenPct": 3
+   },
+   "estado": "efeito",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "life regeneration rate per minute %",
+     "min": 180,
+     "max": 180
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyIgnite",
+   "nome": "Incendeia",
+   "nomeEn": "Ignites",
+   "tipo": "mod",
+   "familia": "MonsterModApplyIgnite",
+   "linhas": [
+    "Seus Acertos empre Incendeiam"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "fire",
+     "chance": 100,
+     "danoPctDoGolpe": 90,
+     "duracaoMs": 4000
+    }
+   ],
+   "estado": "efeito",
+   "valem": 2,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "always ignite",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "ignite damage +%",
+     "min": 0,
+     "max": 0
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyShock",
+   "nome": "Eletriza",
+   "nomeEn": "Shocks",
+   "tipo": "mod",
+   "familia": "MonsterModApplyShock",
+   "linhas": [
+    "Seus Acertos empre Eletrizam"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "always shock",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyPoison",
+   "nome": "Envenena",
+   "nomeEn": "Poisons",
+   "tipo": "mod",
+   "familia": "MonsterModApplyPoison",
+   "linhas": [
+    "Envenena ao Acertar"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "earth",
+     "chance": 100,
+     "danoPctDoGolpe": 30,
+     "duracaoMs": 2000
+    }
+   ],
+   "estado": "efeito",
+   "valem": 2,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "global poison on hit",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "base poison damage +%",
+     "min": 0,
+     "max": 0
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyBleed",
+   "nome": "Sangra",
+   "nomeEn": "Bleeds",
+   "tipo": "mod",
+   "familia": "MonsterModApplyBleed",
+   "linhas": [
+    "Ataques causam Sangramento"
+   ],
+   "nivel": 27,
+   "pesoMagico": 2500,
+   "pesoRaro": 2500,
+   "stats": {},
+   "mecanicas": [
+    {
+     "gatilho": "aoAtacar",
+     "efeito": "debuff",
+     "elemento": "physical",
+     "chance": 25,
+     "danoPctDoGolpe": 70,
+     "duracaoMs": 5000
+    }
+   ],
+   "estado": "efeito",
+   "valem": 2,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "bleeding damage +%",
+     "min": 0,
+     "max": 0
+    },
+    {
+     "stat": "global bleed on hit",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyFreeze",
+   "nome": "Chance de Congelar",
+   "nomeEn": "Chance to Freeze",
+   "tipo": "mod",
+   "familia": "MonsterModApplyFreeze",
+   "linhas": [
+    "25% de chance de Congelar"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "base chance to freeze %",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyStun",
+   "nome": "Atordoa",
+   "nomeEn": "Stuns",
+   "tipo": "mod",
+   "familia": "MonsterModApplyStun",
+   "linhas": [
+    "Sempre Atordoa Inimigos ao Acertar"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "always stun",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModAreaOfEffect",
+   "nome": "Aumenta a Área de Efeito",
+   "nomeEn": "Increased Area of Effect",
+   "tipo": "mod",
+   "familia": "MonsterModAreaOfEffect",
+   "linhas": [
+    "Área de Efeito aumentada em 80%"
+   ],
+   "nivel": 9,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "base skill area of effect +%",
+     "min": 80,
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "MonsterModAttackCastMovementSpeed",
+   "nome": "Rápido",
+   "nomeEn": "Hasted",
+   "tipo": "mod",
+   "familia": "MonsterModAttackCastMovementSpeed",
+   "linhas": [
+    "Velocidade de Ataque aumentada em 30%",
+    "Velocidade de Conjuração aumentada em 30%",
+    "Velocidade de Movimento aumentada em 40%"
+   ],
+   "nivel": 4,
+   "pesoMagico": 8000,
+   "pesoRaro": 8000,
+   "stats": {
+    "velocidadePct": 40,
+    "velocidadeDeAtaquePct": 60
+   },
+   "estado": "aproximado",
+   "valem": 3,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "attack speed +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSkillRepeat",
+   "nome": "Ações Triplas",
+   "nomeEn": "Triple Actions",
+   "tipo": "mod",
+   "familia": "MonsterModSkillRepeat",
+   "linhas": [
+    "Velocidade de Ataque aumentada em 200%",
+    "Velocidade de Conjuração aumentada em 200%",
+    "Habilidades se Repetem 2 Vezes mais"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "velocidadeDeAtaquePct": 400
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "attack speed +%",
+     "min": 200,
+     "max": 200
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 200,
+     "max": 200
+    },
+    {
+     "stat": "skill repeat count",
+     "min": 2,
+     "max": 2
+    },
+    {
+     "stat": "interrupt for X ms after skill use",
+     "min": 1500,
+     "max": 1500
+    }
+   ]
+  },
+  {
+   "id": "MonsterModAdditionalProjectiles",
+   "nome": "Projéteis Extras",
+   "nomeEn": "Extra Projectiles",
+   "tipo": "mod",
+   "familia": "MonsterModAdditionalProjectiles",
+   "linhas": [
+    "Habilidades disparam 4 Projéteis adicionais"
+   ],
+   "nivel": 1,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "number of additional projectiles",
+     "min": 4,
+     "max": 4
+    }
+   ]
+  },
+  {
+   "id": "MonsterModDamageLeechedAsLife",
+   "nome": "Drena vida",
+   "nomeEn": "Leeches Life",
+   "tipo": "mod",
+   "familia": "MonsterModDamageLeechedAsLife",
+   "linhas": [
+    "100% do Dano é Drenado como Vida",
+    "Recuperação total por segundo do Dreno de Vida aumentada em 500%"
+   ],
+   "nivel": 10,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "life leech speed +%",
+     "min": 500,
+     "max": 500
+    },
+    {
+     "stat": "life leech from any damage permyriad",
+     "min": 10000,
+     "max": 10000
+    }
+   ]
+  },
+  {
+   "id": "MonsterModCannotLeech",
+   "nome": "Vida Não Pode ser Drenada",
+   "nomeEn": "Life Cannot Be Leeched",
+   "tipo": "mod",
+   "familia": "MonsterModCannotLeech",
+   "linhas": [
+    "Inimigos Não Podem Drenar Vida De Você"
+   ],
+   "nivel": 27,
+   "pesoMagico": 3000,
+   "pesoRaro": 3000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "cannot have life leeched from",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModGainCharges",
+   "nome": "Ganha Cargas Aleatórias",
+   "nomeEn": "Gains Random Charges",
+   "tipo": "mod",
+   "familia": "MonsterModGainCharges",
+   "linhas": [
+    "Gains Random Charges"
+   ],
+   "nivel": 10,
+   "pesoMagico": 2500,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModEnduranceChargeGain",
+   "nome": "Carga de Tolerância quando Acertado",
+   "nomeEn": "Endurance Charge when Hit",
+   "tipo": "mod",
+   "familia": "MonsterModEnduranceChargeGain",
+   "linhas": [
+    "Ganha 1 Cargas de Tolerância por segundo se foi Acertado Recentemente"
+   ],
+   "nivel": 19,
+   "pesoMagico": 2000,
+   "pesoRaro": 2000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "gain endurance charge per second if have been hit recently",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModFrenzyChargeGain",
+   "nome": "Carga de Frenesi no Acerto",
+   "nomeEn": "Frenzy Charge on Hit",
+   "tipo": "mod",
+   "familia": "MonsterModFrenzyChargeGain",
+   "linhas": [
+    "100% de chance de receber uma Carga de Frenesi ao Acertar"
+   ],
+   "nivel": 19,
+   "pesoMagico": 2000,
+   "pesoRaro": 2000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "add frenzy charge on skill hit %",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModPowerChargeGain",
+   "nome": "Carga de Poder ao Conjurar",
+   "nomeEn": "Power Charge on Cast",
+   "tipo": "mod",
+   "familia": "MonsterModPowerChargeGain",
+   "linhas": [
+    "gain X power charges on casting a spell [1]"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "gain X power charges on casting a spell",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModCannotBeSlowed",
+   "nome": "Não Pode ser Desacelerado",
+   "nomeEn": "Cannot be Slowed",
+   "tipo": "mod",
+   "familia": "MonsterModCannotBeSlowed",
+   "linhas": [
+    "Velocidade de Ação não pode ser modificada para abaixo do valor base",
+    "Velocidade de Movimento não pode ser modificada para abaixo do valor base"
+   ],
+   "nivel": 19,
+   "pesoMagico": 2000,
+   "pesoRaro": 2000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "action speed cannot be reduced below base",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "movement speed cannot be reduced below base",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModCannotBeStunned",
+   "nome": "Não Pode ser Atordoado",
+   "nomeEn": "Cannot be Stunned",
+   "tipo": "mod",
+   "familia": "MonsterModCannotBeStunned",
+   "linhas": [
+    "Não Pode ser Atordoado"
+   ],
+   "nivel": 19,
+   "pesoMagico": 2000,
+   "pesoRaro": 2000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "base cannot be stunned",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModFrenzied",
+   "nome": "Enfurece Periodicamente",
+   "nomeEn": "Periodically Enrages",
+   "tipo": "mod",
+   "familia": "MonsterModFrenzied",
+   "linhas": [
+    "Periodically Enrages"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModAlwaysCrit",
+   "nome": "Sempre Crita",
+   "nomeEn": "Always Crits",
+   "tipo": "mod",
+   "familia": "MonsterModAlwaysCrit",
+   "linhas": [
+    "Todos os acertos são Críticos"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1500,
+   "pesoRaro": 1500,
+   "stats": {
+    "critChance": 100
+   },
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "always crit",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyBlind",
+   "nome": "Cega",
+   "nomeEn": "Blinds",
+   "tipo": "mod",
+   "familia": "MonsterModApplyBlind",
+   "linhas": [
+    "100% de chance Global de Cegar Inimigos ao acertar",
+    "Efeito do Cegamento aumentado em 100%"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1500,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "blind effect +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "global chance to blind on hit %",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModNoExtraDamageFromCrits",
+   "nome": "Resistente a Críticos",
+   "nomeEn": "Crit Resistant",
+   "tipo": "mod",
+   "familia": "MonsterModNoExtraDamageFromCrits",
+   "linhas": [
+    "Não sofre Dano Extra de Golpes Críticos"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1500,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "self take no extra damage from critical strikes",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModHexproof",
+   "nome": "Infeitiçável",
+   "nomeEn": "Hexproof",
+   "tipo": "mod",
+   "familia": "MonsterModHexproof",
+   "linhas": [
+    "Anti-Maldições"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "hexproof",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModAdditionalChain",
+   "nome": "Ricocheteador",
+   "nomeEn": "Chaining",
+   "tipo": "mod",
+   "familia": "MonsterModAdditionalChain",
+   "linhas": [
+    "Habilidades Ricocheteiam +2 vezes",
+    "Projéteis têm 25% de chance de conseguirem Ricochetear ao colidirem com o terreno"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "number of chains",
+     "min": 2,
+     "max": 2
+    },
+    {
+     "stat": "projectile chain from terrain chance %",
+     "min": 25,
+     "max": 25
+    }
+   ]
+  },
+  {
+   "id": "MonsterModProjectilesGainDamage",
+   "nome": "Tiro Distante",
+   "nomeEn": "Far Shot",
+   "tipo": "mod",
+   "familia": "MonsterModProjectilesGainDamage",
+   "linhas": [
+    "Projéteis ganham Dano conforme viajam adiante, causando",
+    "Dano aumentado em até 60% com Acertos em alvos"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "projectile damage +% max as distance travelled increases",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterModDamagePerMissingLife",
+   "nome": "Dano Extra em Inimigos Machucados",
+   "nomeEn": "Extra Damage to Injured Foes",
+   "tipo": "mod",
+   "familia": "MonsterModDamagePerMissingLife",
+   "linhas": [
+    "hit damage +% per 10% missing enemy life [20]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 1500,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "hit damage +% per 10% missing enemy life",
+     "min": 20,
+     "max": 20
+    }
+   ]
+  },
+  {
+   "id": "MonsterModRemoveChargesOnHit",
+   "nome": "Remove Cargas",
+   "nomeEn": "Charge Removal",
+   "tipo": "mod",
+   "familia": "MonsterModRemoveChargesOnHit",
+   "linhas": [
+    "remove charges on hit % [100]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 800,
+   "pesoRaro": 800,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "remove charges on hit %",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModCorruptedBlood",
+   "nome": "Inflige Sangue Corrompido",
+   "nomeEn": "Inflicts Corrupted Blood",
+   "tipo": "mod",
+   "familia": "MonsterModCorruptedBlood",
+   "linhas": [
+    "base corrupt blood when hit % average damage to deal per minute per stack [60]",
+    "corrupted blood on hit % average damage to deal per minute per stack [120]",
+    "corrupted blood on hit duration [4000]",
+    "corrupted blood on hit num stacks [1]"
+   ],
+   "nivel": 36,
+   "pesoMagico": 500,
+   "pesoRaro": 500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "corrupted blood on hit duration",
+     "min": 4000,
+     "max": 4000
+    },
+    {
+     "stat": "corrupted blood on hit num stacks",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corrupted blood on hit % average damage to deal per minute per stack",
+     "min": 120,
+     "max": 120
+    },
+    {
+     "stat": "base corrupt blood when hit % average damage to deal per minute per stack",
+     "min": 60,
+     "max": 60
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSpellResistant",
+   "nome": "Resistente a Magia",
+   "nomeEn": "Spell Resistant",
+   "tipo": "mod",
+   "familia": "MonsterModSpellResistant",
+   "linhas": [
+    "rare monster mod spell damage taken +% final [-50]"
+   ],
+   "nivel": 9,
+   "pesoMagico": 1000,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "rare monster mod spell damage taken +% final",
+     "min": -50,
+     "max": -50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModAttackBlock",
+   "nome": "Bloqueia Ataques",
+   "nomeEn": "Blocks Attacks",
+   "tipo": "mod",
+   "familia": "MonsterModAttackBlock",
+   "linhas": [
+    "50% de Chance de Bloquear o Dano de Ataques"
+   ],
+   "nivel": 9,
+   "pesoMagico": 1000,
+   "pesoRaro": 1000,
+   "stats": {
+    "bloqueio": 50
+   },
+   "estado": "efeito",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "monster base block %",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModReflectNonDamagingAilments",
+   "nome": "Reflete Certas Afecções",
+   "nomeEn": "Reflects Certain Ailments",
+   "tipo": "mod",
+   "familia": "MonsterModReflectNonDamagingAilments",
+   "linhas": [
+    "Reflete Afecções Não-Danificadoras Inimigas"
+   ],
+   "nivel": 36,
+   "pesoMagico": 500,
+   "pesoRaro": 500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "reflect non damaging ailments % chance",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModReflectHexes",
+   "nome": "Reflete Feitiços",
+   "nomeEn": "Reflects Hexes",
+   "tipo": "mod",
+   "familia": "MonsterModReflectHexes",
+   "linhas": [
+    "100% de chance de Refletir Feitiços"
+   ],
+   "nivel": 36,
+   "pesoMagico": 500,
+   "pesoRaro": 500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "reflect hexes chance %",
+     "min": 100,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSpeedAura",
+   "nome": "Aura do Ímpeto",
+   "nomeEn": "Haste Aura",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "attack speed +% 40",
+    "base cast speed +% 40",
+    "base movement velocity +% 30"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {
+    "velocidadePct": 30,
+    "velocidadeDeAtaquePct": 80
+   },
+   "estado": "aproximado",
+   "valem": 3,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "attack speed +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": 30,
+     "max": 30
+    }
+   ]
+  },
+  {
+   "id": "MonsterModEnergyShieldAura",
+   "nome": "Aura de Escudo de Energia",
+   "nomeEn": "Energy Shield Aura",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "maximum life % to add as maximum energy shield 40"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {
+    "vidaPct": 40
+   },
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "maximum life % to add as maximum energy shield",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModApplyRandomMark",
+   "nome": "Aplica uma Marca Aleatória",
+   "nomeEn": "Applies Random Mark",
+   "tipo": "mod",
+   "familia": "MonsterModApplyRandomMark",
+   "linhas": [
+    "Applies Random Mark"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModAccuracyAndCritAura",
+   "nome": "Aura da Precisão",
+   "nomeEn": "Precision Aura",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "accuracy rating +% 100",
+    "critical strike chance +% 300"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {
+    "precisaoPct": 100,
+    "critChance": 15
+   },
+   "estado": "aproximado",
+   "valem": 2,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "accuracy rating +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "critical strike chance +%",
+     "min": 300,
+     "max": 300
+    }
+   ]
+  },
+  {
+   "id": "MonsterModFlameBeacon",
+   "nome": "Explosão de Fogo do Lacaio ao Morrer",
+   "nomeEn": "Minions Fire Explode on Death",
+   "tipo": "mod",
+   "familia": "MonsterModMinionBeacon",
+   "linhas": [
+    "Minions Fire Explode on Death"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModFrostBeacon",
+   "nome": "Explosão de Gelo do Lacaio ao Morrer",
+   "nomeEn": "Minions Cold Explode on Death",
+   "tipo": "mod",
+   "familia": "MonsterModMinionBeacon",
+   "linhas": [
+    "Minions Cold Explode on Death"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModLightningBeacon",
+   "nome": "Explosão de Raio do Lacaio ao Morrer",
+   "nomeEn": "Minions Lightning Explode on Death",
+   "tipo": "mod",
+   "familia": "MonsterModMinionBeacon",
+   "linhas": [
+    "Minions Lightning Explode on Death"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModTreantHorde",
+   "nome": "Vida Compartilhada com Lacaios Trent",
+   "nomeEn": "Life Shared with Treant Minions",
+   "tipo": "mod",
+   "familia": "MonsterModTreantHorde",
+   "linhas": [
+    "damage removed from pack minions before life or es % [50]",
+    "rare pack minions are replaced with saplings [1]"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "rare pack minions are replaced with saplings",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "damage removed from pack minions before life or es %",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModGraspingVines",
+   "nome": "Inflige Vinhas Aprisionadoras",
+   "nomeEn": "Inflicts Grasping Vines",
+   "tipo": "mod",
+   "familia": "MonsterModGraspingVines",
+   "linhas": [
+    "Inflicts Grasping Vines"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModHinderAura",
+   "nome": "Aura da Lentidão",
+   "nomeEn": "Hinder Aura",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "Hinder Aura"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModPhysicalDamageAura",
+   "nome": "Aura do Dano Físico Extra",
+   "nomeEn": "Extra Physical Damage Aura",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "physical damage +% 40"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 3000,
+   "stats": {
+    "danoPct": 40
+   },
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "physical damage +%",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSoulConduit",
+   "nome": "Revive Aliados Próximos ao Morrer",
+   "nomeEn": "Revives Nearby Allies on Death",
+   "tipo": "mod",
+   "familia": "MonsterModSoulConduit",
+   "linhas": [
+    "cannot be dominated [1]",
+    "corpse cannot be destroyed [1]",
+    "monster raises after death [1]"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "cannot be dominated",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corpse cannot be destroyed",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "monster raises after death",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModStrongerMinions",
+   "nome": "Lacaios Poderosos",
+   "nomeEn": "Powerful Minions",
+   "tipo": "mod",
+   "familia": "MonsterModStrongerMinions",
+   "linhas": [
+    "Powerful Minions"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModRevivesMinions",
+   "nome": "Revive Lacaios Constantemente",
+   "nomeEn": "Constantly Revives Minions",
+   "tipo": "mod",
+   "familia": "MonsterModRevivesMinions",
+   "linhas": [
+    "Constantly Revives Minions"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModSkeletonZombieSummons",
+   "nome": "Convoca Mortos-Vivos",
+   "nomeEn": "Summons Undead",
+   "tipo": "mod",
+   "familia": "MonsterModSkeletonZombieSummons",
+   "linhas": [
+    "Summons Undead"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModHealingAura",
+   "nome": "Cura Aliados e Suprime a Recuperação dos Inimigos",
+   "nomeEn": "Heals Allies and Suppresses Foe Recovery",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "Heals Allies and Suppresses Foe Recovery"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModPreventRecoveryAura",
+   "nome": "Impede a Recuperação acima de 50%",
+   "nomeEn": "Prevents Recovery above 50%",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "archnemesis cannot recover life or energy shield above % 50"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "archnemesis cannot recover life or energy shield above %",
+     "min": 50,
+     "max": 50
+    }
+   ]
+  },
+  {
+   "id": "MonsterModTemporalAura",
+   "nome": "Escudo de Proximidade Temporário",
+   "nomeEn": "Temporal Proximity Shield",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "cannot be damaged by things outside radius [32]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "action speed -%",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "debuff time passed +%",
+     "min": -40,
+     "max": -40
+    },
+    {
+     "stat": "base cooldown speed +%",
+     "min": -60,
+     "max": -60
+    },
+    {
+     "stat": "cannot be damaged by things outside radius",
+     "min": 32,
+     "max": 32
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSoulEater",
+   "nome": "Devorador de Almas",
+   "nomeEn": "Soul Eater",
+   "tipo": "mod",
+   "familia": "MonsterModSoulEater",
+   "linhas": [
+    "soul is consumed on death 1",
+    "grant cast speed +% to aura owner on death 5",
+    "grant actor scale +% to aura owner on death 2",
+    "grant attack speed +% to aura owner on death 5",
+    "grant damage reduction % to aura owner on death -2"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 5,
+   "statsPoe": [
+    {
+     "stat": "soul is consumed on death",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "grant cast speed +% to aura owner on death",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "stat": "grant actor scale +% to aura owner on death",
+     "min": 2,
+     "max": 2
+    },
+    {
+     "stat": "grant attack speed +% to aura owner on death",
+     "min": 5,
+     "max": 5
+    },
+    {
+     "stat": "grant damage reduction % to aura owner on death",
+     "min": -2,
+     "max": -2
+    }
+   ]
+  },
+  {
+   "id": "MonsterModManaSiphonAura",
+   "nome": "Suga Mana e Causa Dano de Raio",
+   "nomeEn": "Siphons Mana and Deals Lightning Damage",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "Siphons Mana and Deals Lightning Damage"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModBenevolentGuardian",
+   "nome": "Aura da Invulnerabilidade",
+   "nomeEn": "Invulnerability Aura",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "monster allies cannot take damage pulse owner [1]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "monster allies cannot take damage pulse owner",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModRemoveFlaskChargeAura",
+   "nome": "Suga Cargas de Frascos",
+   "nomeEn": "Siphons Flask Charges",
+   "tipo": "mod",
+   "familia": "MonsterModSpecialAura",
+   "linhas": [
+    "flask charges recovered per 3 seconds -6"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "flask charges recovered per 3 seconds",
+     "min": -6,
+     "max": -6
+    }
+   ]
+  },
+  {
+   "id": "MonsterModEmpoweringMinions",
+   "nome": "Ganha um Mod na Morte de Lacaios",
+   "nomeEn": "Gain a Mod on Minion Death",
+   "tipo": "mod",
+   "familia": "MonsterModEmpoweringMinions",
+   "linhas": [
+    "Gain a Mod on Minion Death"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModShockedGroundOnDeath",
+   "nome": "Solo Eletrizado ao Morrer",
+   "nomeEn": "Shocked Ground on Death",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Shocked Ground on Death"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModBurningGroundOnDeath",
+   "nome": "Solo Ardente ao Morrer",
+   "nomeEn": "Burning Ground on Death",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Burning Ground on Death"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModBurningGroundOnDeathSanctum",
+   "nome": "Solo Ardente ao Morrer",
+   "nomeEn": "Burning Ground on Death",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Burning Ground on Death"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModChilledGroundOnDeath",
+   "nome": "Solo Resfriado ao Morrer",
+   "nomeEn": "Chilled Ground on Death",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Chilled Ground on Death"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 2500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModConsecratedGround",
+   "nome": "Solo Sagrado",
+   "nomeEn": "Consecrated Ground",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Consecrated Ground"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModBurningGroundTrail",
+   "nome": "Provação do Fogo",
+   "nomeEn": "Trail of Fire",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Trail of Fire"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModChilledGroundTrail",
+   "nome": "Provação do Gelo",
+   "nomeEn": "Trail of Cold",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Trail of Cold"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModShockedGroundTrail",
+   "nome": "Provação do Raio",
+   "nomeEn": "Trail of Lightning",
+   "tipo": "mod",
+   "familia": "MonsterModGroundEffect",
+   "linhas": [
+    "Trail of Lightning"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModEnergyShieldStunNova",
+   "nome": "Escudo de Energia Explode",
+   "nomeEn": "Energy Shield Explodes",
+   "tipo": "mod",
+   "familia": "MonsterModEnergyShieldStunNova",
+   "linhas": [
+    "Ganhe 40% de Vida Máxima como Escudo de Energia Máximo Extra"
+   ],
+   "nivel": 4,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {
+    "vidaPct": 40
+   },
+   "estado": "aproximado",
+   "valem": 1,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "maximum life % to add as maximum energy shield",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModInfernoBolt",
+   "nome": "Tiro do Inferno quando Acertado",
+   "nomeEn": "Inferno Bolt when Hit",
+   "tipo": "mod",
+   "familia": "MonsterModInfernoBolt",
+   "linhas": [
+    "Inferno Bolt when Hit"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModSnowBolt",
+   "nome": "Tiro Gélido quando Acertado",
+   "nomeEn": "Snow Bolt when Hit",
+   "tipo": "mod",
+   "familia": "MonsterModSnowBolt",
+   "linhas": [
+    "Snow Bolt when Hit"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModLightningMirage",
+   "nome": "Tiro Elétrico quando Acertado",
+   "nomeEn": "Lightning Mirage when Hit",
+   "tipo": "mod",
+   "familia": "MonsterModLightningMirage",
+   "linhas": [
+    "Lightning Mirage when Hit"
+   ],
+   "nivel": 10,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModIcePrison",
+   "nome": "Prisão de Gelo",
+   "nomeEn": "Ice Prison",
+   "tipo": "mod",
+   "familia": "MonsterModIcePrison",
+   "linhas": [
+    "Ice Prison"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModToxicVolatiles",
+   "nome": "Orbe Cáustico ao Morrer",
+   "nomeEn": "Caustic Orb on Death",
+   "tipo": "mod",
+   "familia": "MonsterModToxicVolatiles",
+   "linhas": [
+    "Caustic Orb on Death"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 1500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModToxicVolatilesSanctum",
+   "nome": "Orbe Cáustico ao Morrer",
+   "nomeEn": "Caustic Orb on Death",
+   "tipo": "mod",
+   "familia": "MonsterModToxicVolatiles",
+   "linhas": [
+    "Caustic Orb on Death"
+   ],
+   "nivel": 14,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModShroudWalker",
+   "nome": "Embosca",
+   "nomeEn": "Ambushes",
+   "tipo": "mod",
+   "familia": "MonsterModShroudWalker",
+   "linhas": [
+    "Ambushes"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModHexingEffigy",
+   "nome": "Amaldiçoa",
+   "nomeEn": "Curses",
+   "tipo": "mod",
+   "familia": "MonsterModHexingEffigy",
+   "linhas": [
+    "Curses"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModMirrorImage",
+   "nome": "Imagens Espelhadas",
+   "nomeEn": "Mirror Images",
+   "tipo": "mod",
+   "familia": "MonsterModMirrorImage",
+   "linhas": [
+    "Mirror Images"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 500,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModFireMortar",
+   "nome": "Dispara Morteiros",
+   "nomeEn": "Fires Mortars",
+   "tipo": "mod",
+   "familia": "MonsterModFireMortar",
+   "linhas": [
+    "Fires Mortars"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModDetonateCorpses",
+   "nome": "Explode Corpos",
+   "nomeEn": "Explodes Corpses",
+   "tipo": "mod",
+   "familia": "MonsterModDetonateCorpses",
+   "linhas": [
+    "Explodes Corpses"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModMagmaBarrier",
+   "nome": "Escudo Vulcânico",
+   "nomeEn": "Molten Shell",
+   "tipo": "mod",
+   "familia": "MonsterModMagmaBarrier",
+   "linhas": [
+    "Molten Shell"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModVolatileFlameblood",
+   "nome": "Orbes Explosivas",
+   "nomeEn": "Exploding Orbs",
+   "tipo": "mod",
+   "familia": "MonsterModVolatileFlameblood",
+   "linhas": [
+    "Exploding Orbs"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModStormHerald",
+   "nome": "Tempestade de Raios",
+   "nomeEn": "Lightning Storm",
+   "tipo": "mod",
+   "familia": "MonsterModStormHerald",
+   "linhas": [
+    "Lightning Storm"
+   ],
+   "nivel": 19,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModExplodingCrystals",
+   "nome": "Cristais Explosivos quando Acertado",
+   "nomeEn": "Exploding Crystals when Hit",
+   "tipo": "mod",
+   "familia": "MonsterModExplodingCrystals",
+   "linhas": [
+    "Exploding Crystals when Hit"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModHeraldingMinionTotems",
+   "nome": "Lacaios Totem de Raio",
+   "nomeEn": "Lightning Totem Minions",
+   "tipo": "mod",
+   "familia": "MonsterModHeraldingMinionTotems",
+   "linhas": [
+    "Lightning Totem Minions"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModFinalGasp",
+   "nome": "Revive Temporariamente",
+   "nomeEn": "Temporarily Revives",
+   "tipo": "mod",
+   "familia": "MonsterModFinalGasp",
+   "linhas": [
+    "cannot be dominated [1]",
+    "corpse cannot be destroyed [1]",
+    "retaliation godmode ghost duration ms [5000]"
+   ],
+   "nivel": 27,
+   "pesoMagico": 0,
+   "pesoRaro": 800,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "cannot be dominated",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "corpse cannot be destroyed",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "retaliation godmode ghost duration ms",
+     "min": 5000,
+     "max": 5000
+    }
+   ]
+  },
+  {
+   "id": "MonsterModBerserker",
+   "nome": "Enfurece ao Perder Vida",
+   "nomeEn": "Enrages as Life Lost",
+   "tipo": "mod",
+   "familia": "MonsterModBerserker",
+   "linhas": [
+    "damage +% 40",
+    "attack speed +% 75",
+    "base cast speed +% 75",
+    "base actor scale +% 50",
+    "base damage taken +% -30",
+    "base movement velocity +% 40"
+   ],
+   "nivel": 31,
+   "pesoMagico": 1500,
+   "pesoRaro": 1500,
+   "stats": {
+    "danoPct": 40,
+    "velocidadePct": 40,
+    "velocidadeDeAtaquePct": 150,
+    "reducaoDeDano": 30
+   },
+   "estado": "parcial",
+   "valem": 5,
+   "total": 6,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "attack speed +%",
+     "min": 75,
+     "max": 75
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 75,
+     "max": 75
+    },
+    {
+     "stat": "base actor scale +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base damage taken +%",
+     "min": -30,
+     "max": -30
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModDamageTypeCycling",
+   "nome": "Resistências Adaptáveis",
+   "nomeEn": "Adaptive Resistances",
+   "tipo": "mod",
+   "familia": "MonsterModDamageTypeCycling",
+   "linhas": [
+    "cycling damage resistance % [75]"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "cycling damage resistance %",
+     "min": 75,
+     "max": 75
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSummonEffigy",
+   "nome": "Cria Bonecas de Voodoo",
+   "nomeEn": "Creates Voodoo Doll",
+   "tipo": "mod",
+   "familia": "MonsterModSummonEffigy",
+   "linhas": [
+    "Creates Voodoo Doll"
+   ],
+   "nivel": 36,
+   "pesoMagico": 0,
+   "pesoRaro": 1000,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModFleeing",
+   "nome": "Cria Paredes Gélidas e Foge",
+   "nomeEn": "Creates Frost Walls and Flees",
+   "tipo": "mod",
+   "familia": "MonsterModFleeing",
+   "linhas": [
+    "Creates Frost Walls and Flees"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 200,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "MonsterModLunarisTouched",
+   "nome": "Tocado por Lunaris",
+   "nomeEn": "Lunaris-touched",
+   "tipo": "mod",
+   "familia": "MonsterModLunarisTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSolarisTouched",
+   "nome": "Tocado por Solaris",
+   "nomeEn": "Solaris-touched",
+   "tipo": "mod",
+   "familia": "MonsterModSolarisTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModArakaaliTouched",
+   "nome": "Tocado por Arakaali",
+   "nomeEn": "Arakaali-touched",
+   "tipo": "mod",
+   "familia": "MonsterModArakaaliTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModBrineKingTouched",
+   "nome": "Tocado pelo Rei da Salmoura",
+   "nomeEn": "Brine King-touched",
+   "tipo": "mod",
+   "familia": "MonsterModBrineKingTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModTukohamaTouched",
+   "nome": "Tocado por Tukohama",
+   "nomeEn": "Tukohama-touched",
+   "tipo": "mod",
+   "familia": "MonsterModTukohamaTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModAbberathTouched",
+   "nome": "Tocado por Abberath",
+   "nomeEn": "Abberath-touched",
+   "tipo": "mod",
+   "familia": "MonsterModAbberathTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModShakariTouched",
+   "nome": "Tocado por Shakari",
+   "nomeEn": "Shakari-touched",
+   "tipo": "mod",
+   "familia": "MonsterModShakariTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+30% de todas Resistências Elementais",
+    "+20% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 10%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 60,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 30,
+     "ice": 30,
+     "energy": 30,
+     "chaos": 20,
+     "physical": 10
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 30,
+     "max": 30
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 10,
+     "max": 10
+    }
+   ]
+  },
+  {
+   "id": "MonsterModInnocenceTouched",
+   "nome": "Tocado por Innocence",
+   "nomeEn": "Innocence-touched",
+   "tipo": "mod",
+   "familia": "MonsterModInnocenceTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+40% de todas Resistências Elementais",
+    "+25% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 15%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 30,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 40,
+     "ice": 40,
+     "energy": 40,
+     "chaos": 25,
+     "physical": 15
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 15,
+     "max": 15
+    }
+   ]
+  },
+  {
+   "id": "MonsterModKitavaTouched",
+   "nome": "Tocado por Kitava",
+   "nomeEn": "Kitava-touched",
+   "tipo": "mod",
+   "familia": "MonsterModKitavaTouched",
+   "linhas": [
+    "Dano aumentado em 50%",
+    "+40% de todas Resistências Elementais",
+    "+25% de Resistência a Caos",
+    "Redução de Dano Físico aumentada em 15%"
+   ],
+   "nivel": 54,
+   "pesoMagico": 0,
+   "pesoRaro": 30,
+   "stats": {
+    "danoPct": 50,
+    "resist": {
+     "fire": 40,
+     "ice": 40,
+     "energy": 40,
+     "chaos": 25,
+     "physical": 15
+    }
+   },
+   "estado": "aproximado",
+   "valem": 4,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 50,
+     "max": 50
+    },
+    {
+     "stat": "base resist all elements %",
+     "min": 40,
+     "max": 40
+    },
+    {
+     "stat": "base chaos damage resistance %",
+     "min": 25,
+     "max": 25
+    },
+    {
+     "stat": "base additional physical damage reduction %",
+     "min": 15,
+     "max": 15
+    }
+   ]
+  },
+  {
+   "id": "MonsterModSpiritWalkers",
+   "nome": "Andarilhos Espirituais",
+   "nomeEn": "Spirit Walkers",
+   "tipo": "mod",
+   "familia": "MonsterModSpiritWalkers",
+   "linhas": [
+    "monster spirit walker [1]"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 1,
+   "statsPoe": [
+    {
+     "stat": "monster spirit walker",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModUnionOfSouls",
+   "nome": "Maximiza Aliados",
+   "nomeEn": "Empowers Allies",
+   "tipo": "mod",
+   "familia": "MonsterModUnionOfSouls",
+   "linhas": [
+    "actor scale +% granted to pack members on death [10]",
+    "maximum life +% granted to pack members on death [40]"
+   ],
+   "nivel": 19,
+   "pesoMagico": 1000,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 2,
+   "statsPoe": [
+    {
+     "stat": "actor scale +% granted to pack members on death",
+     "min": 10,
+     "max": 10
+    },
+    {
+     "stat": "maximum life +% granted to pack members on death",
+     "min": 40,
+     "max": 40
+    }
+   ]
+  },
+  {
+   "id": "MonsterModUberMapShaperTouched",
+   "nome": "Tocado pelo Criador",
+   "nomeEn": "Shaper-touched",
+   "tipo": "mod",
+   "familia": "MonsterModUberMapShaperTouched",
+   "linhas": [
+    "Shaper-touched"
+   ],
+   "nivel": 67,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  },
+  {
+   "id": "FarrulsFarricPresence",
+   "nome": "Presença Farric de Farrul",
+   "nomeEn": "Farrul's Farric Presence",
+   "tipo": "mod",
+   "familia": "AlternateAscendancyAuraMods",
+   "linhas": [
+    "accuracy rating +% 80",
+    "critical strike chance +% 120",
+    "self take no extra damage from critical strikes 1"
+   ],
+   "nivel": 1,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "precisaoPct": 80,
+    "critChance": 6
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "accuracy rating +%",
+     "min": 80,
+     "max": 80
+    },
+    {
+     "stat": "critical strike chance +%",
+     "min": 120,
+     "max": 120
+    },
+    {
+     "stat": "self take no extra damage from critical strikes",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "FarrulsFertilePresence",
+   "nome": "Presença Fértil de Farrul",
+   "nomeEn": "Farrul's Fertile Presence",
+   "tipo": "mod",
+   "familia": "AlternateAscendancyAuraMods",
+   "linhas": [
+    "damage +% 100",
+    "base cannot be stunned 1",
+    "life regeneration rate per minute % 180"
+   ],
+   "nivel": 1,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "danoPct": 100,
+    "regenPct": 3
+   },
+   "estado": "parcial",
+   "valem": 2,
+   "total": 3,
+   "statsPoe": [
+    {
+     "stat": "damage +%",
+     "min": 100,
+     "max": 100
+    },
+    {
+     "stat": "base cannot be stunned",
+     "min": 1,
+     "max": 1
+    },
+    {
+     "stat": "life regeneration rate per minute %",
+     "min": 180,
+     "max": 180
+    }
+   ]
+  },
+  {
+   "id": "Sem_Farrul_s_Wild_Presence",
+   "nome": "Presença Selvagem de Farrul",
+   "nomeEn": "Farrul's Wild Presence",
+   "tipo": "mod",
+   "familia": "AlternateAscendancyAuraMods",
+   "linhas": [
+    "attack speed +% 20",
+    "base cast speed +% 20",
+    "base movement velocity +% 20",
+    "action speed cannot be reduced below base 1"
+   ],
+   "nivel": 1,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {
+    "velocidadePct": 20,
+    "velocidadeDeAtaquePct": 40
+   },
+   "estado": "parcial",
+   "valem": 3,
+   "total": 4,
+   "statsPoe": [
+    {
+     "stat": "attack speed +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base cast speed +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "base movement velocity +%",
+     "min": 20,
+     "max": 20
+    },
+    {
+     "stat": "action speed cannot be reduced below base",
+     "min": 1,
+     "max": 1
+    }
+   ]
+  },
+  {
+   "id": "MonsterModAstralDaemon",
+   "nome": "Tocado pelo Astral",
+   "nomeEn": "Astral-touched",
+   "tipo": "archnemesis",
+   "familia": "MonsterModAstralDaemon",
+   "linhas": [
+    "Astral-touched"
+   ],
+   "nivel": 1,
+   "pesoMagico": 0,
+   "pesoRaro": 0,
+   "stats": {},
+   "estado": "registrado",
+   "valem": 0,
+   "total": 0,
+   "statsPoe": []
+  }
+ ]
+}

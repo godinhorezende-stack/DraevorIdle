@@ -480,6 +480,7 @@ const outroLado = (id, nome) => duelos.get(id)?.lados.find((n) => n !== nome);
 /** Guarda o level de verdade e põe o personagem no level da arena, de vida e mana cheias. */
 function nivelarParaODuelo(estado, level) {
   estado.arenaGuardado = { level: estado.level, xp: estado.xp, hp: estado.hp, mana: estado.mana, pos: { ...estado.pos } };
+  level = Math.min(level, R.levelMaximo()); // com o PoE, o level da arena não passa do 100
   estado.xp = R.expForLevel(level);
   definirLevel(estado, level);
   estado.hp = estado.maxHp;
