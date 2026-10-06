@@ -54,3 +54,14 @@ test('a peça do PoE que cai leva os sockets; o sistema de gemas usa o máximo D
   // A arma inicial (item level 1) também tem sockets, até 2.
   assert.ok(Jogo.armaInicial('marauder').soquetes.gemas.length <= 2);
 });
+
+test('as bases "Royale" (modo Battle Royale do PoE) não caem', { skip: SEM }, async () => {
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  const Jogo = await import('../systems/itens-poe/jogo.mjs');
+  Jogo.iniciar(ITEM_CATALOG);
+  const rng = semente(21);
+  for (let i = 0; i < 4000; i++) {
+    const p = Jogo.pecaSorteada(1 + (i % 70), rng);
+    if (p) assert.ok(!p.poe.base.includes('/Royale_'), p.poe.base);
+  }
+});

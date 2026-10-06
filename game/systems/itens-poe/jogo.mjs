@@ -261,6 +261,8 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     const c = cat.classes[classe];
     const b = c?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > ilvl) continue;
+    // As bases "Royale" são do modo Battle Royale do PoE: ficam no catálogo (os ids não mudam), mas não caem.
+    if (b.slug?.startsWith('Royale_')) continue;
     if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) continue;
     candidatas.push(baseId);
   }
