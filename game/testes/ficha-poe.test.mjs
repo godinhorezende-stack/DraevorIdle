@@ -107,3 +107,21 @@ test('modo PoE: as vocações do Draevor não dão especialização (sem o Life 
     for (const k of ['danoDoElemento', 'afinidades', 'armor', 'accuracy', 'castSpeed', 'velocidadeDeAtaque', 'evasion']) assert.deepEqual(b[k], a[k], `${voc}: ${k}`);
   }
 });
+
+test('modo PoE: sem Buff Power (não liga, sem +3000 de vida/mana, fora da Store) e a coleção de outfits/montarias sem crítico', { skip: SEM }, async () => {
+  const BP = await import('../systems/buffpower.mjs');
+  const Ap = await import('../systems/aparencia.mjs');
+  const Loja = await import('../systems/loja.mjs');
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 10 }), { buffPowerMs: { poder: 3_600_000, exp: 3_600_000, loot: 3_600_000 }, buffVida: true, maxHp: 3200, maxMana: 3100, hp: 3200, mana: 3100 });
+  assert.equal(BP.ativo(e, 'poder'), false);
+  assert.equal(BP.fatorDeLoot(e), 1);
+  assert.equal(BP.fonteDeExp(e), null);
+  assert.deepEqual(BP.paraCliente(e), []);
+  BP.sincronizarVida(e);
+  assert.deepEqual([e.maxHp, e.maxMana, e.buffVida], [200, 100, false], 'os +3000 saem');
+  assert.match(BP.ligar(e, 1).erro, /não existe no modo PoE/);
+  e.lojaOutfits = [1, 2, 3];
+  assert.equal(Ap.colecao(e).critChance, 0);
+  const loja = JSON.stringify(Loja.catalogoDaLoja?.(e) ?? Loja.paraCliente?.(e) ?? {});
+  assert.ok(!/"id":"buffpower-/.test(loja), 'o Buff Power não aparece na Store');
+});

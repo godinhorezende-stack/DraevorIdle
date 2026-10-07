@@ -1749,6 +1749,8 @@ export class Sessao {
       estado.mana = Math.min(estado.mana ?? estado.maxMana, estado.maxMana);
       estado.escalaDeVida = escala;
     }
+    // O Buff Power ligado (o +3000 de vida/mana): sai no modo PoE, onde ele não existe; no Draevor, acerta pelo relógio.
+    BuffPower.sincronizarVida(estado);
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.
     Afixos.sincronizarMaximos(estado);
     // Mesma migração, agora para os campos que a Store passou a usar.

@@ -15,6 +15,11 @@
 // O relógio corre CAÇANDO (online e offline), como o XP Boost da loja: o bônus
 // só vale na caçada, e parado na cidade ele não se perde.
 import { CHARACTER_TEMPLATE } from './dados.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+
+// No modo PoE o Buff Power NÃO EXISTE (dono, 07/10: "esse buff power não vai existir"): não está na Store, não liga, nenhum bônus vale e quem
+// estava com ele ligado perde os +3000 de vida/mana na hora (`sincronizarVida`). Os itens que alguém já tenha ficam, sem efeito.
+const SEM_BUFF_POWER = () => itensPoeLigado();
 
 const LINHAS = CHARACTER_TEMPLATE.efeitos.buffPower; // [{id, item, nome, resumo, cor, custo, teto}]
 const HORA_MS = 3_600_000;
@@ -29,7 +34,7 @@ function tempos(estado) {
 }
 
 /** Quanto ainda sobra do buff `id` ('poder' | 'exp' | 'loot'), em ms. */
-export const restante = (estado, id) => tempos(estado)[id] ?? 0;
+export const restante = (estado, id) => (SEM_BUFF_POWER() ? 0 : tempos(estado)[id] ?? 0);
 export const ativo = (estado, id) => restante(estado, id) > 0;
 
 function pagar(estado, custo) {
@@ -49,6 +54,7 @@ function pagar(estado, custo) {
 
 /** `usar` no item: cobra a hora e soma 1h, até o teto. O item fica. */
 export function ligar(estado, itemId) {
+  if (SEM_BUFF_POWER()) return { ok: false, erro: 'O Buff Power não existe no modo PoE.' };
   const linha = linhaDoItem(itemId);
   if (!linha) return { ok: false, erro: 'Isso não é um Buff Power.' };
   const lista = tempos(estado);
@@ -107,6 +113,7 @@ export function fonteDeExp(estado) {
 
 /** `efeitos.buffPower`: as três linhas com o relógio e quantos itens a pessoa tem. */
 export function paraCliente(estado) {
+  if (SEM_BUFF_POWER()) return [];
   const quantos = (item) =>
     [...(estado.inventory ?? []), ...(estado.storeInbox ?? []), ...((estado.deposito ?? []).find((c) => c.chegadas)?.itens ?? [])].filter((p) => p.id === item).reduce((a, p) => a + (p.count ?? 1), 0);
   return LINHAS.map((linha) => ({ ...linha, restante: restante(estado, linha.id), tem: quantos(linha.item) }));

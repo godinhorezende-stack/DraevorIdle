@@ -3,6 +3,7 @@
 // `game/frontend/client/src/panels.mjs:10103`) — nada de item/montaria/outfit/pacote
 // inventado. As prateleiras sem preço real ficam de propósito como `[]`: o
 // cliente já sabe desenhar "Nada por aqui ainda." para uma lista vazia.
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as Premium from './premium.mjs';
 import { CATALOGO, CHARACTER_TEMPLATE, STORE_REAL } from './dados.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
@@ -81,7 +82,8 @@ const PRATELEIRAS = ['services', 'boosts', 'pacotes', 'itens', 'buffpower', 'upg
  * O TREINO saiu do jogo (dono, 06/10 — `sem-treino.mjs`): a prateleira de Exercise, o Scroll Speed Exercise e os Pacotes Treinador
  * não se vendem mais (nem aparecem, nem se compram por id).
  */
-const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '');
+// (No modo PoE o Buff Power também sai da Store — dono, 07/10: "esse buff power não vai existir".)
+const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '') || (itensPoeLigado() && /^buffpower-/.test(e?.id ?? ''));
 const ENTRADA_POR_ID = new Map(PRATELEIRAS.flatMap((k) => (STORE_REAL[k] ?? []).filter((e) => !FORA_DA_LOJA(e)).map((e) => [e.id, { ...e, prateleira: k }])));
 // Os pacotes de quantidade de um produto ("5 Exp Potions", "10 Stamina Extension")
 // vêm em `opcoes`, cada um com o próprio id e preço.

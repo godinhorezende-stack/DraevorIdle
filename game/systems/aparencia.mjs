@@ -1,4 +1,5 @@
 import { MONTARIAS_REAIS } from './dados.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as Tarefas from './tarefas.mjs';
 import * as Entregas from './entregas.mjs';
 // Aba de Aparência da ficha: quais outfits e montarias o personagem tem, e
@@ -45,6 +46,8 @@ export function colecao(estado) {
     ...(estado.montariasEntregues ?? []),
   ]);
   const pieces = outfits.size + montarias.size;
+  // No modo PoE a coleção não dá crítico (dono, 07/10: "as montarias e outfits vão ficar sem chance de crítico"): as peças continuam contadas.
+  if (itensPoeLigado()) return { pieces, critChance: 0 };
   return { pieces, critChance: Math.round(pieces * CRITICO_POR_PECA * 1e6) / 1e6 };
 }
 
