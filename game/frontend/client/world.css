@@ -157,3 +157,39 @@
 .w2.lado .w2-atalho { padding: 3px 9px; font-size: 11px; min-height: 30px; letter-spacing: .03em; }
 
 .w2.lado .w2-atalho { padding: 3px 12px; }
+
+/* ---- O estilo do mapa ILUSTRADO (dono, 07/10): a arte do ato do editor por trás, nós dourados com ícone, placas escuras nos nomes,
+   estradas douradas — como no exemplo que ele mandou. Vale também sem imagem (o pergaminho). ---- */
+.w-no { --no-fundo: #15110b; --no-borda: #3a2e18; }
+.w-forma { stroke-width: 3.5; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
+.w-no.aberta { color: #1d1506; --no-fundo: #e6c15a; --no-borda: #3b2a08; }
+.w-no.aberta .w-forma { fill: url(#w-ouro); }
+.w-no.completa { color: #1d1506; --no-fundo: #e6c15a; --no-borda: #3b2a08; }
+.w-no.completa .w-forma { fill: url(#w-ouro); }
+.w-no.fechada { color: #8e8470; --no-fundo: #151310; --no-borda: #2a241a; }
+.w-no.fechada .w-forma { fill: #151310; opacity: .92; }
+.w-no.travada { color: #e0a090; --no-fundo: #2a1212; --no-borda: #7a3a3a; }
+.w-no.aberta.t-boss, .w-no.aberta.t-boss-fase, .w-no.fechada.t-boss, .w-no.fechada.t-boss-fase { --no-fundo: #2a0d0b; --no-borda: #c93a2e; color: #ffd9d0; }
+.w-no.aberta.t-boss .w-forma, .w-no.aberta.t-boss-fase .w-forma { fill: #2a0d0b; filter: drop-shadow(0 0 8px #e0402a) drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
+.w-no.completa.t-boss .w-forma, .w-no.completa.t-boss-fase .w-forma { fill: url(#w-ouro); }
+.w-no.atual .w-forma { filter: drop-shadow(0 0 10px #f7d772) drop-shadow(0 2px 3px rgba(0, 0, 0, .7)); }
+.w-numero { font-size: 17px; }
+.w-placa rect { fill: rgba(12, 9, 5, .86); stroke: rgba(230, 193, 90, .35); stroke-width: 1; }
+.w-placa-num { font: 700 9px var(--font-heading, system-ui, sans-serif); fill: #f6dc8a; stroke: #170f05; stroke-width: 2.5px; paint-order: stroke; pointer-events: none; }
+.w-rotulo { font: 600 10.5px var(--font-heading, system-ui, sans-serif); letter-spacing: .06em; text-transform: uppercase; fill: #f4ead0; stroke: none; }
+.w2-viewport:not(.ampliado) .w-rotulo { font-size: 10.5px; }
+.w-no.fechada .w-rotulo { fill: #b9ad90; }
+.w-no.fechada .w-placa rect { stroke: rgba(120, 110, 90, .3); }
+.w2-leito { stroke: rgba(20, 12, 4, .6); stroke-width: 10; }
+.w2-estrada.percorrido { stroke: #e2b84a; stroke-width: 4.5; }
+.w2-estrada.disponivel { stroke: #f7d772; stroke-width: 4.5; filter: drop-shadow(0 0 4px #f5c542cc); }
+.w2-estrada.bloqueado { stroke: #5a4a30; stroke-dasharray: 3 9; stroke-width: 3.5; }
+/* a imagem do ato: nítida; o pergaminho só sem imagem */
+.w2-viewport { background: #0b0805; }
+/* as abas dos atos como no exemplo: placas douradas com o progresso */
+.w2-atos { gap: 6px; padding: 4px 4px 0; border-bottom: 2px solid #8a6420; }
+.w2-aba { min-height: 38px; padding: 5px 18px; border: 1px solid #5a4416; border-bottom: 0; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, #221a0e, #15100a); color: #c9b27a; font: 700 13px var(--font-heading, Oswald, serif); letter-spacing: .12em; text-transform: uppercase; }
+.w2-aba small { font: 600 10.5px var(--font-heading, Oswald, serif); letter-spacing: .04em; color: #9c8a62; }
+.w2-aba.selecionada { color: #1a1204; background: linear-gradient(180deg, #f5d27a, #c89a2e 60%, #a67a1c); border-color: #f6dc8a; }
+.w2-aba.selecionada small { color: #3a2a08; }
+.w2-aba.bloqueada { opacity: .55; }

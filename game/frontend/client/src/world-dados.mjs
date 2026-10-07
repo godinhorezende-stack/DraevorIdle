@@ -74,7 +74,7 @@ export function atosDaCampanha(escolhida, metas = {}) {
       nome: meta.nome || `Ato ${ato}`,
       parte: meta.parte ?? null,
       tema: meta.tema ?? null,
-      fundo: meta.fundo?.arquivo ? meta.fundo : null,
+      fundo: meta.fundo?.url || meta.fundo?.arquivo ? meta.fundo : null,
       bossMapa: meta.bossMapa && Number.isFinite(meta.bossMapa.x) && Number.isFinite(meta.bossMapa.y) ? meta.bossMapa : null,
       descricao: meta.descricao ?? null,
       fases,

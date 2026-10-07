@@ -565,7 +565,10 @@ export function registrarAto(bruto) {
   CAMPANHA.bosses[String(numero)] = { bossId: boss.bossId, nome: bossCad?.name ?? boss.bossId, levelOriginal: Math.max(1, bossCad?.level ?? nivelBoss.facil), nivel: nivelBoss };
   desfazer.push(() => delete CAMPANHA.bosses[String(numero)]);
   semEsperaDoBoss(boss.bossId);
-  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: atosDoConteudo()[String(numero)]?.fundo ?? null }));
+  // O FUNDO do mapa no jogo é a IMAGEM do ato do editor (dono, 07/10: "fazer algo assim na parte de hunts e para montar atos" — a mesma arte em
+  // que as fases são posicionadas no editor). Sem imagem no ato, vale a do Mapa do mundo (`atos[n].fundo`); sem nenhuma, o pergaminho desenhado.
+  const imagemDoAto = ato.imagem ? { url: `/gamedata/atos/${ato.imagem}`, doEditor: true } : null;
+  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: imagemDoAto ?? atosDoConteudo()[String(numero)]?.fundo ?? null }));
   ATOS_DO_EDITOR.set(numero, { ato, numero, huntPorFase, desfazer });
   return { ok: true, problemas, numero };
 }

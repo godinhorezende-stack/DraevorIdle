@@ -1159,3 +1159,9 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .ae-vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; max-height: 330px; overflow-y: auto; }
 .ae-vitrine-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px; font-size: 10px; line-height: 1.1; }
 .ae-vitrine-cv { width: 56px; height: 56px; background: #11181b; border-radius: 4px; }
+/* A vista Mapa do editor de atos (editor-atos-mapa.mjs): a tela do jogo dentro do editor. */
+.atos-mapa { display: grid; gap: var(--eng-e3); }
+.atos-mapa-palco { aspect-ratio: 1000 / 640; max-height: 70vh; }
+.atos-mapa-palco .w2-viewport { height: 100%; }
+.atos-mapa .w-no { cursor: grab; }
+.atos-mapa .w-no:active { cursor: grabbing; }

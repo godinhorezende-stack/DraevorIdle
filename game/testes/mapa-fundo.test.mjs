@@ -91,11 +91,13 @@ test('MF7. rotas: validar (só lê), salvar e remover (gravam), 400 para ação/
 });
 
 test('MF8. cliente: o Ato leva o fundo até a tela WORLD (dados), que desenha a imagem cobrindo o mapa; o editor tem o bloco de carregar/salvar/remover; os arquivos são públicos (fora da lista de privados)', async () => {
-  const dados = readFileSync(new URL('../frontend/client/src/world-dados.mjs', import.meta.url), 'utf8'); assert.match(dados, /fundo: meta\.fundo\?\.arquivo \? meta\.fundo : null/);
-  const arte = readFileSync(new URL('../frontend/client/src/world-arte.mjs', import.meta.url), 'utf8'); assert.match(arte, /\/gamedata\/mapa-mundo\/\$\{fundo\.arquivo\}/); assert.match(arte, /preserveAspectRatio: 'xMidYMid slice'/);
+  const dados = readFileSync(new URL('../frontend/client/src/world-dados.mjs', import.meta.url), 'utf8'); assert.match(dados, /fundo: meta\.fundo\?\.url \|\| meta\.fundo\?\.arquivo \? meta\.fundo : null/);
+  const arte = readFileSync(new URL('../frontend/client/src/world-arte.mjs', import.meta.url), 'utf8'); assert.match(arte, /fundo\.url \?\? `\/gamedata\/mapa-mundo\/\$\{fundo\.arquivo\}`/); assert.match(arte, /preserveAspectRatio: 'xMidYMid slice'/);
   const w = readFileSync(new URL('../frontend/client/src/world.mjs', import.meta.url), 'utf8'); assert.match(w, /pontos, a\.fundo\)/);
   const ed = readFileSync(new URL('../frontend/client/src/editor-conteudo.mjs', import.meta.url), 'utf8');
   for (const t of ["'Salvar imagem neste Ato'", "'Remover imagem'", "'mapa/fundo/validar'", "acao: 'salvar', ato: MW.ato", "meta.fundo));"]) assert.ok(ed.includes(t), t);
   const { ehPrivado } = await import('../backend/privados.mjs'); assert.equal(ehPrivado('mapa-mundo/ato-1-abcdef12.png'), false); assert.equal(ehPrivado('campanha-conteudo.json'), true);
-  const camp = readFileSync(new URL('../systems/campanha.mjs', import.meta.url), 'utf8'); assert.match(camp, /fundo: atosDoConteudo\(\)\[String\(numero\)\]\?\.fundo \?\? null/);
+  const camp = readFileSync(new URL('../systems/campanha.mjs', import.meta.url), 'utf8'); // A imagem do ato do editor vem primeiro (dono, 07/10); sem ela, a do Mapa do mundo.
+  assert.match(camp, /fundo: imagemDoAto \?\? atosDoConteudo\(\)\[String\(numero\)\]\?\.fundo \?\? null/);
+  assert.equal(ehPrivado('atos/imagens/poe-ato-1.png'), false, 'a imagem do ato é pública');
 });

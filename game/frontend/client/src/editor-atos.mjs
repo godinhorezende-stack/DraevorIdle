@@ -14,6 +14,7 @@ const obrigatorio = (v) => (v ? null : 'Digite um ID.');
 
 import { tabelaDeDrops } from './editor-drops.mjs';
 import { vistaValidacao, vistaPrevia, vistaVersoes, vistaPublicacao } from './editor-atos-vistas.mjs';
+import { vistaMapa } from './editor-atos-mapa.mjs';
 
 const NS = 'http://www.w3.org/2000/svg';
 const L = 920;
@@ -305,6 +306,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
       svg.append(sv('g', { 'pointer-events': 'none' }, ...linhas));
     }
     // A imagem de fundo do ato (o mapa desenhado por trás do grafo).
+    // `slice` cobre o espaço todo cortando a sobra — a MESMA regra da tela do jogo (world-arte.mjs): o nó cai no mesmo ponto da arte nos dois.
     if (E.ato.imagem) svg.append(sv('image', { href: `/api/mapas/_conteudo/atos-imagem/${encodeURIComponent(E.ato.imagem)}?v=${E.versaoDaImagem ?? 0}`, x: 0, y: 0, width: L, height: A, preserveAspectRatio: 'xMidYMid slice', opacity: 0.55 }));
     E.ato.conexoes.forEach((c, i) => {
       const a = pos.get(c.de);
@@ -908,12 +910,18 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
     const recFase = fase ? painelDeRecompensa(`fase:${fase.id}`, 'fase', fase.huntId, rotulosDe('fase')) : null;
     const recBoss = E.ato.bossFinal ? painelDeRecompensa('boss', 'boss', null, rotulosDe('boss')) : null;
     const lateral = [painelDoAto(), painelDaFase(), fase ? painelDaConclusao(fase) : null, fase ? painelDosMobs(fase) : null, recFase, painelDaLigacao(), painelDoBoss(), recBoss, painelPicker()].filter(Boolean);
-    const VISTAS = [['fluxo', 'Fluxo'], ['validacao', 'Validação'], ['previa', 'Pré-visualização'], ['versoes', 'Versões'], ['publicacao', 'Publicação']];
+    const VISTAS = [['fluxo', 'Fluxo'], ['mapa', 'Mapa'], ['validacao', 'Validação'], ['previa', 'Pré-visualização'], ['versoes', 'Versões'], ['publicacao', 'Publicação']];
     const barraDeVistas = el('div', { class: 'eng-abas atos-vistas' }, VISTAS.map(([id, nome]) => el('button', { type: 'button', class: E.vista === id ? 'ativa' : '', onclick: () => { E.vista = id; pintar(); } }, nome, id === 'validacao' && E.problemas.length ? el('span', { class: `selo ${E.problemas.some((p) => p.nivel === 'erro') ? 'erro' : 'aviso'}` }, String(E.problemas.length)) : null)));
     if (E.vista !== 'fluxo') {
       const corpo = el('div', { class: 'atos-vista-corpo' }, el('div', { class: 'dica' }, 'Carregando…'));
       const completar = async () => {
-        if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));
+        if (E.vista === 'mapa') corpo.replaceChildren(vistaMapa(E.ato, posicoesAutomaticas(E.ato), {
+          imagem: E.ato.imagem ? `/api/mapas/_conteudo/atos-imagem/${encodeURIComponent(E.ato.imagem)}?v=${E.versaoDaImagem ?? 0}` : null,
+          fase: E.fase, somenteLeitura: E.somenteLeitura,
+          aoMover: (f, p) => { lembrar(); f.posicao = p; mudou(); },
+          aoEscolher: (id) => { E.fase = id; E.lig = null; pintar(); },
+        }), ...[painelDoAto(), painelDaFase()].filter(Boolean));
+        else if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));
         else if (E.vista === 'previa') corpo.replaceChildren(vistaPrevia(E.ato, { dif: E.difPrevia, aoMudarDif: (d) => { E.difPrevia = d; pintar(); } }));
         else if (E.vista === 'versoes') corpo.replaceChildren(await vistaVersoes({ api, ato: E.ato, sujo: sujo(), aoRestaurar: restaurar }));
         else if (E.vista === 'publicacao') corpo.replaceChildren(await vistaPublicacao({ api, ato: E.ato, sujo: sujo(), aoMudarEstado: mudarEstado }));

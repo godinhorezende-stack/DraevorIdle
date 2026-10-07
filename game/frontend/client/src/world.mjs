@@ -177,8 +177,15 @@ export function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, esc
   if (estado !== 'aberta' && ICONE_DO_TIPO[tipo] && !boss) g.append(svg('g', { class: 'w-selo', transform: `translate(${r - 4} ${-r + 5}) scale(.55)` }, svg('circle', { r: 11 }), ICONES[ICONE_DO_TIPO[tipo]]()));
   // algo que o jogador JÁ ENCONTROU nesta fase (baú, altar, segredo): uma estrela no canto — nunca o que ele ainda não achou
   if (achados) g.append(svg('g', { class: 'w-selo achado', transform: `translate(${-r + 4} ${-r + 5}) scale(.6)` }, svg('circle', { r: 11 }), ICONES.estrela(1.2)));
-  const texto = nome.length > 20 ? `${nome.slice(0, 19)}…` : nome;
-  g.append(svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 17 }, texto));
+  const texto = nome.length > 22 ? `${nome.slice(0, 21)}…` : nome;
+  // A PLACA do rótulo (o estilo do mapa ilustrado — dono, 07/10): fundo escuro atrás do nome, legível sobre qualquer arte. A largura
+  // acompanha o texto (~6,4 px por letra na fonte do rótulo); o número da fase vai pequeno acima do nome.
+  const largura = Math.max(56, Math.round(texto.length * 6.4) + 16);
+  const placa = svg('g', { class: 'w-placa' });
+  placa.append(svg('rect', { x: -largura / 2, y: r + 6, width: largura, height: 20, rx: 4 }));
+  if (numero && !boss) placa.append(svg('text', { class: 'w-placa-num', 'text-anchor': 'middle', y: r + 4 }, String(numero)));
+  placa.append(svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 20 }, texto));
+  g.append(placa);
   return g;
 }
 
