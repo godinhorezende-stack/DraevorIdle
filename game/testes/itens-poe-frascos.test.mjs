@@ -154,3 +154,11 @@ test('cargas por monstro como o dono pediu (Comum 1, Mágico 3,5, Raro 6, Único
   e.hunt = null;
   assert.equal(F.paraCliente(e)[0].cargas, F.parametros(f).cargasMaximas, 'na cidade, cheio');
 });
+
+test('morreu e acordou na cidade: os frascos do cinto cheios (a sessão chama encherNaCidade na morte)', async () => {
+  const src = (await import('node:fs')).readFileSync(new URL('../websocket/sessao.mjs', import.meta.url), 'utf8');
+  const morte = src.slice(src.indexOf('const morte = real ? Morte.morrer'), src.indexOf('return morte;', src.indexOf('const morte = real ? Morte.morrer')));
+  assert.match(morte, /FrascosPoe\.encherNaCidade\(this\.estado\)/);
+  const main = (await import('node:fs')).readFileSync(new URL('../frontend/client/src/main.mjs', import.meta.url), 'utf8');
+  assert.match(main.slice(main.indexOf('const bagKey = ['), main.indexOf('const bagKey = [') + 600), /character\.frascosPoe/, 'o inventário redesenha quando as cargas mudam');
+});

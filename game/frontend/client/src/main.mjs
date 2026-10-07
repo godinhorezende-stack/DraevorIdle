@@ -7790,6 +7790,9 @@ function renderAll() {
   const bagKey = [
     character.inventory,
     character.pouch,
+    // O cinto de frascos (cargas e frasco ativo): sem ele a janela do inventário ficava com as cargas velhas enquanto a barra mostrava
+    // as de agora (dono, 07/10: "a carga do cinto do inventário e a do slot estão com números diferentes").
+    character.frascosPoe ?? null,
     /*
      * A Boss Pouch entra na chave porque ela virou uma JANELA: sem isto, matar
      * um boss e pegar a recompensa nao redesenhava a grade dela, e a peca so'

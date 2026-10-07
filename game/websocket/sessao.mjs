@@ -2575,6 +2575,8 @@ export class Sessao {
     this.estado.hunt = null;
     this.estado.hp = this.estado.maxHp;
     this.estado.es = null; // Energy Shield cheio de novo
+    // Acordou na cidade: os frascos do cinto cheios (dono, 07/10), como ao voltar para a cidade.
+    FrascosPoe.encherNaCidade(this.estado);
     this.estado.pos = { ...R.POSICAO_INICIAL };
     return morte;
   }
