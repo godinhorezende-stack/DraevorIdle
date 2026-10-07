@@ -1168,3 +1168,16 @@ tr.ativa td { background: var(--eng-ouro-fundo); }
 .atos-mapa-palco .w2-viewport { height: 100%; }
 .atos-mapa .w-no { cursor: grab; }
 .atos-mapa .w-no:active { cursor: grabbing; }
+
+/* ---- Pendências de modificadores (PoE) ---- */
+.pend-cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--eng-e3); margin-bottom: var(--eng-e3); }
+.pend-cartao .poe-cobertura { margin: 8px 0; }
+.pend-barra { display: block; height: 10px; }
+.pend-barra.funciona { background: #5cc28a; } .pend-barra.parcial { background: #e9c34f; } .pend-barra.pendente { background: #d0605a; } .pend-barra.inexiste { background: #4a5160; } .pend-barra.lembrete { background: #2c313b; }
+.pend-numeros { display: flex; flex-wrap: wrap; gap: 6px; }
+.pend-num { font-size: 12px; padding: 2px 8px; border-radius: 10px; border: 1px solid var(--eng-borda, #333); background: transparent; color: inherit; cursor: pointer; }
+.pend-num.funciona { color: #5cc28a; } .pend-num.parcial { color: #e9c34f; } .pend-num.pendente { color: #ff8a80; } .pend-num.inexiste, .pend-num.lembrete { color: #8a93a5; }
+.pend-marca { font-style: normal; font-weight: 700; }
+.pend-marca.funciona { color: #5cc28a; } .pend-marca.parcial { color: #e9c34f; } .pend-marca.pendente { color: #ff8a80; } .pend-marca.inexiste, .pend-marca.lembrete { color: #8a93a5; }
+.pend-partes { display: flex; flex-direction: column; gap: 2px; margin-top: 3px; font-size: 12px; }
+.pend-partes .poe-tr { width: auto; text-align: left; font-family: inherit; }

@@ -10,6 +10,7 @@ import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/ge
 import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 import * as Jogo from '../systems/itens-poe/jogo.mjs';
 import * as Telas from './itens-poe-telas.mjs';
+import * as Pendencias from './itens-poe-pendencias.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
@@ -170,6 +171,11 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     const pecas = pecasDe(cat, q);
     // Cada peça vem com a TRADUÇÃO para os atributos do Draevor (o que somaria na ficha) e o estado de cada mod.
     return json(res, 200, { pecas: pecas.map((p) => (p.erro ? p : { ...p, traducao: Traduzir.traduzirPeca(p) })) }), true;
+  }
+  // A aba Pendências de modificadores: o estado de cada mod que pode cair (afixos, implícitos, únicos, frascos).
+  if (rota === 'pendencias') {
+    if (q.get('recalcular')) Pendencias.esquecer();
+    return json(res, 200, Pendencias.pendencias()), true;
   }
   if (rota === 'cobertura') {
     const c = Traduzir.cobertura(cat);
