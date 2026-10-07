@@ -338,6 +338,17 @@ export const ARMA_INICIAL = {
 };
 
 /** A peça da arma inicial da classe (Normal, Item Level 1), ou null (sistema desligado, base que não existe). */
+/** O FRASCO DE VIDA inicial (dono, 07/10: "todo personagem já começa com um flask de vida mínimo" — vem pela Recompensa do level 1). Marcado
+ * `inicial`: pede level 3 no PoE, mas o cinto aceita (ver `frascos.mjs` → `por`). */
+export const BASE_DO_FRASCO_INICIAL = 'Life_Flasks/Small_Life_Flask';
+export function frascoInicial(regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  if (!cat) return null;
+  const peca = pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: BASE_DO_FRASCO_INICIAL, raridade: 'normal', ilvl: 1, rng: () => 0.5 }), regras, () => 0.5);
+  if (peca?.poe) peca.poe.inicial = true;
+  return peca;
+}
+
 export function armaInicial(slugDaClasse, regras = Catalogo.REGRAS) {
   const cat = Catalogo.catalogo();
   const base = ARMA_INICIAL[slugDaClasse] ?? ARMA_INICIAL.Scion;

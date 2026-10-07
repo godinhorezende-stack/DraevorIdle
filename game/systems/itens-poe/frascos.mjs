@@ -149,7 +149,8 @@ export function por(estado, { pilha, vaga = null }) {
   const i = Number(pilha);
   const peca = inv[i];
   if (!peca || !ehFrasco(peca)) return { ok: false, erro: 'Isso não é um frasco.' };
-  const minimo = ITEM_CATALOG[peca.id]?.minLevel ?? 0;
+  // O frasco inicial (a Recompensa do level 1) pede level 3 no PoE, mas é de todo exilado desde o começo: o cinto aceita.
+  const minimo = peca.poe?.inicial ? 0 : ITEM_CATALOG[peca.id]?.minLevel ?? 0;
   if (minimo > (estado.level ?? 0)) return { ok: false, erro: `Precisa do level ${minimo}.` };
   const c = cinto(estado);
   const v = vaga == null ? c.findIndex((x) => !x) : Number(vaga);

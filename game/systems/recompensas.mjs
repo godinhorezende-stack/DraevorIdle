@@ -7,6 +7,9 @@ import { darItem } from './inventario.mjs';
 import { gerarItem } from './itens/gerar.mjs';
 import { nomeDaRaridade } from './itens/config.mjs';
 import * as Boosts from './boosts.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as ItensPoeJogo from './itens-poe/jogo.mjs';
+import * as FrascosPoe from './itens-poe/frascos.mjs';
 
 /*
  * ---- O calendário é do JOGO; o personagem guarda só o que é dele ----
@@ -44,10 +47,34 @@ function boostDoRotulo(rotulo) {
 /** Cópia PRÓPRIA do calendário/presentes — `CHARACTER_TEMPLATE` é compartilhado e só de leitura. */
 // Sem a trilha das ARMAS DE TREINO (os degraus de Exercise): o treino saiu do jogo (dono, 06/10 — `sem-treino.mjs`).
 const PRESENTES_SEM_TREINO = { ...CHARACTER_TEMPLATE.presentes, degraus: [], escolhas: [], escolhasBoosted: [] };
+/*
+ * ---- As recompensas de nível NO PoE (dono, 07/10) ----
+ *
+ * "Todo personagem já começa com um flask de vida mínimo — mas como ele pega isso? Coloque para ele pegar aqui no level 1 mesmo; o
+ * flask é level 3, mas ele pode usar. As outras recompensas pode tirar." Com o PoE ligado há UM marco: o Frasco de Vida Pequeno no
+ * level 1, de graça, que vai direto para o cinto (`coletarMarco`). Os marcos do Draevor (baú 50/100, montaria 120, outfit 130) saem —
+ * quem já os tinha pegos não perde nada do que recebeu, só o cartão.
+ */
+const MARCO_DO_FRASCO = { level: 1, custo: 0, tipo: 'frasco-poe', titulo: 'Frasco de Vida Pequeno', base: ItensPoeJogo.BASE_DO_FRASCO_INICIAL, pego: false, aberto: true };
+const PRESENTES_DO_POE = { ...PRESENTES_SEM_TREINO, marcos: [MARCO_DO_FRASCO], total: 1, pendentes: 0, marcosAbertos: 1, proximo: 1, degrau: 1, custo: 0 };
+const presentesPadrao = () => (itensPoeLigado() ? PRESENTES_DO_POE : PRESENTES_SEM_TREINO);
+/** Com o PoE, os marcos do personagem viram só o do frasco (guardando se ele já o pegou). Devolve se mudou. */
+export function marcosDoPoe(estado) {
+  const presentes = estado?.presentes;
+  if (!presentes || !itensPoeLigado()) return false;
+  const marcos = presentes.marcos ?? [];
+  if (marcos.length === 1 && marcos[0].tipo === 'frasco-poe') return false;
+  const antigo = marcos.find((m) => m.tipo === 'frasco-poe');
+  presentes.marcos = [{ ...structuredClone(MARCO_DO_FRASCO), pego: !!antigo?.pego, aberto: !antigo?.pego }];
+  presentes.total = 1;
+  return true;
+}
+/** O item do catálogo que desenha o frasco do marco (a base do PoE registrada como item). */
+const itemDoFrasco = (base) => Object.values(ITEM_CATALOG).find((i) => i.poe?.base === base) ?? null;
 export function estadoInicial() {
   return {
     wildcards: CHARACTER_TEMPLATE.wildcards,
-    presentes: structuredClone(PRESENTES_SEM_TREINO),
+    presentes: structuredClone(presentesPadrao()),
     diario: structuredClone(CHARACTER_TEMPLATE.diario),
   };
 }
@@ -280,6 +307,7 @@ function filaDeRecompensas(presentes) {
 export function abrirProximas(estado) {
   const presentes = estado?.presentes;
   if (!presentes) return;
+  marcosDoPoe(estado);
   garantirIds(presentes);
   const fila = filaDeRecompensas(presentes);
   const primeira = fila.find((x) => !x.recompensa.pego);
@@ -302,12 +330,16 @@ export function abrirProximas(estado) {
  * É uma cópia: estes campos não vão para o save.
  */
 export function presentesParaCliente(estado) {
-  if (!estado?.presentes) return PRESENTES_SEM_TREINO;
+  if (!estado?.presentes) return presentesPadrao();
   abrirProximas(estado);
   const presentes = estado.presentes;
   return {
     ...presentes,
     marcos: (presentes.marcos ?? []).map((m) => {
+      if (m.tipo === 'frasco-poe') {
+        const item = itemDoFrasco(m.base);
+        return { ...m, itens: item ? [{ itemId: item.id, name: item.name, count: 1 }] : [], noCinto: FrascosPoe.cinto(estado).some((f) => f?.poe?.inicial) };
+      }
       if (m.tipo === 'montaria') {
         const look = MONTARIAS_REAIS.mounts.find((x) => x.id === m.mount || x.look === m.look)?.look;
         return { ...m, entregue: temAMontaria(estado, m), emUso: look != null && estado.outfit?.mount === look, onde: 'Personagem › Aparência' };
@@ -353,6 +385,15 @@ export function coletarMarco(estado, { id, level } = {}) {
   } else if (marco.tipo === 'outfit') {
     if (!liberarOutfit(estado, marco.look)) return { ok: false, erro: 'Outfit não encontrado — nada foi cobrado.' };
     aviso = `${marco.name ?? 'Outfit'} liberado, com os 2 addons! Vista em Personagem › Aparência.`;
+  } else if (marco.tipo === 'frasco-poe') {
+    // O frasco inicial vai DIRETO para o cinto (a primeira vaga livre; cinto cheio, para a mochila): é para usar já, na tecla 1.
+    peca = ItensPoeJogo.frascoInicial();
+    if (!peca) return { ok: false, erro: 'O sistema de itens do PoE está desligado — nada foi entregue.' };
+    const cinto = FrascosPoe.cinto(estado);
+    const vaga = cinto.findIndex((f) => !f);
+    if (vaga >= 0) cinto[vaga] = peca;
+    else (estado.inventory ??= []).push(peca);
+    aviso = vaga >= 0 ? `${peca.poe.nome} no cinto (vaga ${vaga + 1}): na caçada, aperte ${vaga + 1} para beber.` : `${peca.poe.nome} na mochila (o cinto está cheio).`;
   } else {
     for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
   }
