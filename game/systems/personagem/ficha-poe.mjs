@@ -67,6 +67,8 @@ export function montar(estado, ficha, extras = {}) {
     ...fonte('Equipamento', itens.life),
     ...fonte('Árvore de passivas', arv.adds.life),
     ...emPontos('life', vidaSemPct),
+    ...fonte('Gem Atelier (gemas do Draevor)', estado.gemasMax?.hp ?? 0),
+    ...fonte('Árvore antiga do Draevor', estado.arvoreMax?.hp ?? 0),
     ...fonte('Buff Power', estado.buffVida ? 3000 : 0),
   ]);
   const mana = partes(estado.maxMana ?? 0, [
@@ -75,6 +77,8 @@ export function montar(estado, ficha, extras = {}) {
     ...fonte('Equipamento', itens.mana),
     ...fonte('Árvore de passivas', arv.adds.mana),
     ...emPontos('mana', manaSemPct),
+    ...fonte('Gem Atelier (gemas do Draevor)', estado.gemasMax?.mana ?? 0),
+    ...fonte('Árvore antiga do Draevor', estado.arvoreMax?.mana ?? 0),
     ...fonte('Buff Power', estado.buffVida ? 3000 : 0),
   ]);
   const vidaPct = (esp.stats.life ?? 0);

@@ -83,3 +83,27 @@ test('na cidade (fora da caçada), modo PoE: vida, mana, Escudo de Energia e fra
   S.encherNaCidade(morto);
   assert.equal(morto.hp, 0, 'morto não ressuscita por aqui (a morte cuida disso)');
 });
+
+test('modo PoE: as vocações do Draevor não dão especialização (sem o Life +15% do Knight, sem o +15% de Fogo do Sorcerer...): a mesma classe do PoE dá a mesma ficha em qualquer vocação', { skip: SEM }, async () => {
+  const C = await import('../systems/hunt/combate.mjs');
+  const Esp = await import('../systems/personagem/especializacoes.mjs');
+  const fazer = (voc) => {
+    const e = Object.assign(personagemDeTeste({ vocacao: voc, level: 1 }), { classePoe: 'Marauder', equipment: {} });
+    C.refazerMaximos(e, 1);
+    Ficha.invalidar(e);
+    return e;
+  };
+  const knight = fazer('knight');
+  assert.deepEqual(Esp.especializacoesDe(knight), []);
+  // Marauder nível 1: 50 do nível + 16 da Força (32) = 66 — sem os +10 da especialização Life.
+  assert.equal(knight.maxHp, 66);
+  const f = FichaPoe.montar(knight, Ficha.combate(knight));
+  assert.ok(!f.grandes[0].fontes.some((x) => /Especialização|Outros/.test(x.fonte)), JSON.stringify(f.grandes[0].fontes));
+  for (const voc of ['paladin', 'sorcerer', 'druid', 'monk']) {
+    const x = fazer(voc);
+    assert.equal(x.maxHp, knight.maxHp, voc);
+    const a = Ficha.combate(knight);
+    const b = Ficha.combate(x);
+    for (const k of ['danoDoElemento', 'afinidades', 'armor', 'accuracy', 'castSpeed', 'velocidadeDeAtaque', 'evasion']) assert.deepEqual(b[k], a[k], `${voc}: ${k}`);
+  }
+});
