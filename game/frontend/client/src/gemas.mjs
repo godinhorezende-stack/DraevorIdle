@@ -20,6 +20,7 @@ import { itemCanvas } from './sprites.mjs';
 import { artOrUiIcon } from './hud.mjs';
 import { spellIcon } from './actionbar.mjs';
 import { tipPanel } from './tooltip.mjs';
+import { painelDoEquipamento } from './soquetes.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -170,6 +171,8 @@ function renderGemas(body) {
   const abas = el('div', 'gemas-abas');
   for (const [id, rotulo, arte] of [
     ['gemas', 'Gem Atelier', 'icon-gematelier'],
+    // Os sockets do EQUIPAMENTO (as gemas de habilidade e as supports, peça por peça — `soquetes.mjs` → painelDoEquipamento).
+    ['equipamento', 'Equipamento', 'icon-socketed'],
     ['encaixes', 'Encaixes', 'icon-socketed'],
     ['oficina', 'Fragment Workshop', 'icon-fragmentworkshop'],
   ]) {
@@ -184,6 +187,10 @@ function renderGemas(body) {
   }
   body.append(abas);
 
+  if (aba === 'equipamento') {
+    painelDoEquipamento(body, ctx);
+    return;
+  }
   if (!view.pode) body.append(el('p', 'gemas-aviso', view.motivo));
 
   if (aba === 'gemas') renderAtelier(body, view);

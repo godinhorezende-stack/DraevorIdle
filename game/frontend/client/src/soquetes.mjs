@@ -77,6 +77,7 @@ export const temSoquetes = (peca) => !!peca?.soquetes?.gemas?.length;
 
 export function abrirSoquetes(context, slot, modo = null) {
   ctx = context;
+  redesenharEmbutido = null;
   slotAberto = slot;
   escolhido = null;
   // Veio de um orbe: a proposta já nasce para ele (encaixe: abrir o próximo socket; ligação: o jogador escolhe o elo).
@@ -91,6 +92,7 @@ export function abrirSoquetes(context, slot, modo = null) {
  */
 export function usarOrbe(context, tipo) {
   ctx = context;
+  redesenharEmbutido = null;
   const orbe = itemDoOrbe(tipo);
   const nome = orbe?.name ?? 'orbe';
   ctx.openModal(`Usar ${nome}`, (body) => {
@@ -123,7 +125,142 @@ export function usarOrbe(context, tipo) {
   });
 }
 
+/*
+ * ---- O EQUIPAMENTO INTEIRO no Gem Atelier (dono, 07/10: "implementar o equipamento de socket mais fácil, aparecendo de onde vem o
+ * socket, de qual parte do set, e visualizando melhor") ----
+ * À esquerda, cada peça vestida (arma, elmo, armadura...) com os sockets dela em miniatura (cor, link, gema e nível) e, em cima, as
+ * HABILIDADES que o equipamento dá agora — cada skill com as supports ligadas e a peça de onde vem. À direita, a peça escolhida com a
+ * fila de sockets completa e o encaixe (o mesmo `corpo` da janela de sockets). Tudo pelo servidor (`{t:'gema', action:'encaixar'|'tirar'}`).
+ */
+let redesenharEmbutido = null;
+const ORDEM_DOS_SLOTS = ['weapon', 'shield', 'head', 'body', 'gloves', 'feet', 'legs', 'neck', 'ring', 'ring2'];
+const NOME_DO_SLOT = { weapon: 'Arma', shield: 'Mão secundária', head: 'Elmo', body: 'Armadura', gloves: 'Luvas', feet: 'Botas', legs: 'Cinto', neck: 'Amuleto', ring: 'Anel (esquerdo)', ring2: 'Anel (direito)' };
+
+/** Os sockets de UMA peça em miniatura (a fila: cor, link, gema). `aoEscolher(i)` no clique de um socket. */
+function filaMiniatura(sq, slot, aoEscolher) {
+  const fila = el('div', 'eq-fila');
+  const grupos = gruposLigados({ abertos: sq.abertos ?? 0, links: sq.links ?? [] });
+  for (let i = 0; i < sq.gemas.length; i++) {
+    const trancado = i >= (sq.abertos ?? 0);
+    const g = sq.gemas[i];
+    const cor = trancado ? null : sq.cores?.[i] ?? null;
+    const nGrupo = grupos.findIndex((x) => x.includes(i));
+    const casa = el('button', `eq-casa${cor ? ` cor-${cor}` : ''}${trancado ? ' trancado' : ''}${slotAberto === slot && escolhido === i ? ' escolhido' : ''}${nGrupo >= 0 && grupos[nGrupo].length > 1 ? ` grupo-${nGrupo % 4}` : ''}`);
+    casa.type = 'button';
+    if (trancado) {
+      casa.disabled = true;
+      casa.title = 'Socket bloqueado';
+    } else if (g) {
+      casa.append(itemCanvas(g.id, 22));
+      casa.append(el('i', 'eq-nivel', String(g.nivel)));
+      tipFor(casa, g.id, null, null, { id: g.id, count: 1, raridade: g.raridade, gema: { nivel: g.nivel, xp: g.xp, qualidade: g.qualidade } });
+    } else casa.title = cor ? `Socket ${NOME_DA_COR[cor]} vazio${cor === 'W' ? ' (aceita qualquer gema)' : ''}` : 'Socket vazio';
+    casa.onclick = (ev) => {
+      ev.stopPropagation();
+      if (!trancado) aoEscolher(i);
+    };
+    fila.append(casa);
+    if (i < sq.gemas.length - 1) fila.append(el('span', `eq-elo${i + 1 < (sq.abertos ?? 0) && sq.links?.[i] ? ' ligado' : ''}`));
+  }
+  return fila;
+}
+
+/** As habilidades do equipamento: cada gema de skill encaixada, as supports que valem para ela e a peça de onde vem. */
+function habilidadesDoEquipamento(state) {
+  const lista = [];
+  for (const slot of ORDEM_DOS_SLOTS) {
+    const peca = state.character?.equipment?.[slot];
+    const sq = peca?.soquetes;
+    if (!sq?.gemas?.length) continue;
+    const def = (g) => (g ? state.items?.[g.id]?.gemaDef ?? null : null);
+    sq.gemas.forEach((g, i) => {
+      const d = def(g);
+      if (!d || d.tipo !== 'ativa' || i >= (sq.abertos ?? 0)) return;
+      const ligadas = grupoDoSocket(sq, i).filter((k) => k !== i).map((k) => ({ g: sq.gemas[k], d: def(sq.gemas[k]) })).filter((x) => x.d?.tipo === 'support');
+      lista.push({ slot, peca, gema: g, def: d, supports: ligadas.map((x) => ({ ...x, vale: compativel(x.d, d.tags) })) });
+    });
+  }
+  return lista;
+}
+
+export function painelDoEquipamento(body, context) {
+  ctx = context;
+  redesenharEmbutido = () => context.redraw?.();
+  const { state } = ctx;
+  const equipamento = state.character?.equipment ?? {};
+  const pecas = ORDEM_DOS_SLOTS.map((slot) => ({ slot, peca: equipamento[slot] })).filter(({ slot, peca }) => peca && (peca.soquetes?.gemas?.length || limiteDoSlot(slot)));
+  if (!pecas.length) return void body.append(el('p', 'empty', 'Nenhuma peça vestida com sockets. Vista uma arma ou armadura com sockets para encaixar gemas.'));
+  if (!pecas.some((x) => x.slot === slotAberto)) {
+    slotAberto = pecas[0].slot;
+    escolhido = null;
+  }
+  const layout = el('div', 'eq-layout');
+  const esquerda = el('div', 'eq-coluna');
+
+  // As habilidades que o equipamento dá agora, e DE ONDE vem cada uma.
+  const habs = habilidadesDoEquipamento(state);
+  const caixaHabs = el('div', 'eq-habilidades');
+  caixaHabs.append(el('h4', null, `Habilidades do equipamento (${habs.length})`));
+  if (!habs.length) caixaHabs.append(el('p', 'empty', 'Nenhuma gema de habilidade encaixada.'));
+  for (const h of habs) {
+    const linha = el('button', 'eq-hab');
+    linha.type = 'button';
+    linha.append(itemCanvas(h.gema.id, 26));
+    const t = el('div');
+    t.append(el('b', null, `${h.def.nomePt ?? h.def.nome} · nv ${h.gema.nivel}`));
+    t.append(el('em', null, `de ${NOME_DO_SLOT[h.slot] ?? h.slot}: ${state.items?.[h.peca.id]?.poe ? h.peca.poe?.nome ?? state.items[h.peca.id].name : state.items?.[h.peca.id]?.name ?? ''}`));
+    const sup = el('div', 'eq-supports');
+    if (!h.supports.length) sup.append(el('i', null, 'sem supports ligadas'));
+    for (const x of h.supports) sup.append(el('i', x.vale ? 'vale' : 'nao-vale', `${x.vale ? '+' : '×'} ${x.d.nomePt ?? x.d.nome}`));
+    t.append(sup);
+    linha.append(t);
+    linha.onclick = () => {
+      slotAberto = h.slot;
+      escolhido = h.peca.soquetes.gemas.indexOf(h.gema);
+      redesenharEmbutido();
+    };
+    caixaHabs.append(linha);
+  }
+  esquerda.append(caixaHabs);
+
+  // Cada peça do set com os sockets em miniatura.
+  for (const { slot, peca } of pecas) {
+    const sq = soquetesDe(peca, slot);
+    const meta = state.items?.[peca.id];
+    const card = el('div', `eq-peca${slot === slotAberto ? ' escolhida' : ''}`);
+    const topo = el('div', 'eq-peca-topo');
+    topo.append(itemCanvas(peca.id, 28));
+    const nome = el('div');
+    const b = el('b', null, peca.poe?.nome ?? meta?.name ?? 'peça');
+    if (peca.poe?.cor) b.style.color = peca.poe.cor;
+    nome.append(el('span', 'eq-slot', NOME_DO_SLOT[slot] ?? slot), b, el('em', null, `${sq.abertos ?? 0}/${sq.gemas.length} sockets · ${sq.gemas.filter(Boolean).length} gema(s)`));
+    topo.append(nome);
+    card.append(topo, filaMiniatura(sq, slot, (i) => {
+      slotAberto = slot;
+      escolhido = escolhido === i && slotAberto === slot ? null : i;
+      redesenharEmbutido();
+    }));
+    card.onclick = () => {
+      if (slotAberto === slot) return;
+      slotAberto = slot;
+      escolhido = null;
+      redesenharEmbutido();
+    };
+    esquerda.append(card);
+  }
+
+  // A peça escolhida: a fila completa e o encaixe.
+  const direita = el('div', 'eq-coluna eq-detalhe');
+  const peca = equipamento[slotAberto];
+  const sq = soquetesDe(peca, slotAberto);
+  direita.append(el('h4', null, `${NOME_DO_SLOT[slotAberto] ?? slotAberto} — ${peca.poe?.nome ?? state.items?.[peca.id]?.name ?? ''}`));
+  if (sq) corpo(direita, { ...peca, soquetes: sq });
+  layout.append(esquerda, direita);
+  body.append(layout);
+}
+
 function desenhar() {
+  if (redesenharEmbutido) return void redesenharEmbutido();
   const { state } = ctx;
   const peca = state.character?.equipment?.[slotAberto];
   const meta = peca ? state.items?.[peca.id] : null;

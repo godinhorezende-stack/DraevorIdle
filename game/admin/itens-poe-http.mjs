@@ -57,6 +57,14 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     const cat = Catalogo.catalogo();
     if (!cat) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
     const d = await corpoJson(req).catch(() => null);
+    // Uma GEMA (ativa ou suporte, pelo slug do PoE ou pelo id do item): a gema nível 1 na mochila do personagem (para testar o encaixe).
+    if (d?.gema) {
+      const GS = await import('../systems/skills/gemas.mjs');
+      const def = [...GS.DEFS.values()].find((x) => String(x.itemId) === String(d.gema) || x.poe?.slug === d.gema || x.slug === d.gema);
+      if (!def) return json(res, 404, { ok: false, erros: [`Gema "${d.gema}" não encontrada.`] }), true;
+      const r = Jogo.entregar(d?.personagem, GS.itemDaGema(GS.novaGema(def.itemId)));
+      return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, nome: r.nome, itemId: def.itemId } : { ok: false, erros: [r.erro] }), true;
+    }
     const q = new URLSearchParams({ base: d?.base ?? '', raridade: d?.raridade ?? 'raro', ilvl: d?.ilvl ?? 84, semente: d?.semente ?? 1, n: Number(d?.indice ?? 0) + 1, ...(d?.unico ? { unico: d.unico } : {}) });
     const gerada = pecasDe(cat, q)[Number(d?.indice ?? 0)];
     const peca = Jogo.pecaDoJogo(gerada);
