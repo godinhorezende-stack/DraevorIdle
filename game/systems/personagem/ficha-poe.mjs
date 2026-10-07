@@ -52,11 +52,21 @@ export function montar(estado, ficha, extras = {}) {
 
   // ---- Vida e Mana: o nível, o atributo, o equipamento, a árvore, os "aumentada em %" e o resto
   const pctDe = (stat) => (esp.fontes[stat] ?? []).map((f) => ({ fonte: f.especializacao, valor: f.pct, pct: true }));
+  // O "aumentada em %" (a especialização da classe do Draevor e os nós da árvore) em PONTOS, com o nome e a %: é o que ele soma de fato
+  // (antes saía a % numa linha e o resultado num "Outros" — dono, 07/10: "de onde está vindo?").
+  const nomeDaVocacao = Especializacoes.CONFIG.classes?.[Especializacoes.classeDe(estado)]?.nome ?? estado.vocation;
+  const emPontos = (stat, semPct) => (esp.fontes[stat] ?? []).map((f) => ({
+    fonte: /^Árvore: /.test(f.especializacao) ? `${f.especializacao} (+${num(f.pct, 1)}%)` : `Especialização do ${nomeDaVocacao} — ${f.especializacao} (+${num(f.pct, 1)}%)`,
+    valor: r2((semPct * f.pct) / 100),
+  }));
+  const vidaSemPct = base.maxHp + (total.life ?? 0) + doAtributo.vida;
+  const manaSemPct = base.maxMana + (total.mana ?? 0) + doAtributo.mana;
   const vida = partes(estado.maxHp ?? 0, [
     ...fonte(`Nível ${estado.level ?? 1} (base)`, base.maxHp),
     ...fonte(`Força (${p.str})`, doAtributo.vida),
     ...fonte('Equipamento', itens.life),
     ...fonte('Árvore de passivas', arv.adds.life),
+    ...emPontos('life', vidaSemPct),
     ...fonte('Buff Power', estado.buffVida ? 3000 : 0),
   ]);
   const mana = partes(estado.maxMana ?? 0, [
@@ -64,6 +74,7 @@ export function montar(estado, ficha, extras = {}) {
     ...fonte(`Inteligência (${p.int})`, doAtributo.mana),
     ...fonte('Equipamento', itens.mana),
     ...fonte('Árvore de passivas', arv.adds.mana),
+    ...emPontos('mana', manaSemPct),
     ...fonte('Buff Power', estado.buffVida ? 3000 : 0),
   ]);
   const vidaPct = (esp.stats.life ?? 0);
@@ -119,7 +130,7 @@ export function montar(estado, ficha, extras = {}) {
 
   const secoes = [
     { id: 'vida', titulo: 'Vida', linhas: [
-      linha('Vida máxima', num(estado.maxHp), { fontes: [...vida, ...pctDe('life')], destaque: true }),
+      linha('Vida máxima', num(estado.maxHp), { fontes: vida, destaque: true }),
       ...(vidaPct ? [linha('Vida máxima aumentada', pct(vidaPct), { fontes: pctDe('life') })] : []),
       linha('Regeneração de vida por segundo', num(regenVida, 1), { fontes: fontesDaRegenVida, dica: 'no PoE a vida não regenera de base: só pelo equipamento e pela árvore' }),
       linha('Roubo de vida', pct(ficha.lifeLeech), { dica: 'do dano causado volta como vida' }),
@@ -133,7 +144,7 @@ export function montar(estado, ficha, extras = {}) {
       linha('A recarga começa depois de', `${num(esperaDaRecarga(ficha) / 1000, 2)} s`, { dica: 'sem levar dano' }),
     ] },
     { id: 'mana', titulo: 'Mana', linhas: [
-      linha('Mana máxima', num(estado.maxMana), { fontes: [...mana, ...pctDe('mana')], destaque: true }),
+      linha('Mana máxima', num(estado.maxMana), { fontes: mana, destaque: true }),
       ...(manaPct ? [linha('Mana máxima aumentada', pct(manaPct), { fontes: pctDe('mana') })] : []),
       linha('Regeneração de mana por segundo', num(regenMana, 1), { fontes: fontesDaRegenMana, dica: `${num(MANA_REGEN_BASE_POE, 1)}% da mana máxima por segundo, como no PoE` }),
       linha('Roubo de mana', pct(ficha.manaLeech)),
@@ -198,9 +209,9 @@ export function montar(estado, ficha, extras = {}) {
       ],
     },
     grandes: [
-      { id: 'vida', nome: 'Vida', valor: estado.maxHp ?? 0, fontes: [...vida, ...pctDe('life')] },
+      { id: 'vida', nome: 'Vida', valor: estado.maxHp ?? 0, fontes: vida },
       { id: 'es', nome: 'Escudo de Energia', valor: esMax, fontes: es },
-      { id: 'mana', nome: 'Mana', valor: estado.maxMana ?? 0, fontes: [...mana, ...pctDe('mana')] },
+      { id: 'mana', nome: 'Mana', valor: estado.maxMana ?? 0, fontes: mana },
     ],
     defesas: [
       { id: 'armadura', nome: 'Armadura', valor: num(ficha.armor), sub: pct(reducaoDaArmadura(ficha.armor ?? 0, 100) * 100, 0), dica: 'redução contra um golpe físico de 100', fontes: daOrigem('armour') },

@@ -2025,7 +2025,45 @@ const SLOTS_DA_RECUPERACAO = ['neck', 'head', 'backpack', 'weapon', 'body', 'shi
 /** A fração da vida/mana máxima que volta por segundo, sem promoção nem peça. */
 const FRACAO_NATURAL = { hp: 0.004, mana: 0.006 };
 
+/** O balão no modo PoE: a regeneração do PoE (`derived.regenPoe`, a mesma conta do servidor) e de onde vem cada parte. */
+function painelDeRecuperacaoPoe(character, qual) {
+  const derived = character.derived ?? {};
+  const rp = derived.regenPoe;
+  const teto = qual === 'hp' ? derived.maxHp ?? 0 : derived.maxMana ?? 0;
+  const agora = qual === 'hp' ? character.hp ?? 0 : character.mana ?? 0;
+  const total = qual === 'hp' ? rp.vidaPorSegundo : rp.manaPorSegundo;
+  const caixa = el('div', 'tip-stamina');
+  const cor = qual === 'hp' ? 'heal' : 'mana';
+  caixa.append(el('div', 'tip-bless-head', qual === 'hp' ? 'Vida' : 'Mana'));
+  const topo = el('div', 'tip-stamina-topo');
+  topo.append(el('b', null, Math.round(agora).toLocaleString('pt-BR')), el('span', null, `de ${Math.round(teto).toLocaleString('pt-BR')}`));
+  caixa.append(topo);
+  const linha = (rotulo, valor, className = null) => {
+    const item = el('div', 'tip-exp-linha');
+    item.append(el('span', null, rotulo), el('b', className, valor));
+    caixa.append(item);
+  };
+  const ps = (v) => `+${(Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/s`;
+  linha('Recupera', ps(total), cor);
+  const faltam = Math.max(0, teto - agora);
+  if (faltam > 0.5 && total > 0) linha('Para encher', formatTime((faltam / total) * 1000));
+  caixa.append(el('div', 'tip-recuperacao-titulo', 'De onde vem'));
+  if (qual === 'hp') {
+    if (rp.vidaFixa) linha('Equipamento e árvore (+N/s)', ps(rp.vidaFixa), cor);
+    if (rp.vidaPctDoMax) linha(`${rp.vidaPctDoMax.toLocaleString('pt-BR')}% da vida máxima por segundo`, ps((teto * rp.vidaPctDoMax) / 100), cor);
+    if (rp.vidaAumentada) linha('Velocidade de regeneração aumentada', `+${rp.vidaAumentada}%`, cor);
+    if (!rp.vidaFixa && !rp.vidaPctDoMax) caixa.append(el('p', 'shop-note', 'Como no PoE, a vida não regenera sozinha: só com itens e nós da árvore que regeneram vida, frascos e roubo de vida.'));
+  } else {
+    linha('Base do PoE (1,8% da mana máxima)', ps((teto * 1.8) / 100), cor);
+    if (rp.manaFixa) linha('Equipamento e árvore (+N/s)', ps(rp.manaFixa), cor);
+    if (rp.manaAumentada) linha('Regeneração de mana aumentada', `+${rp.manaAumentada}%`, cor);
+  }
+  caixa.append(el('p', 'shop-note', 'Na cidade a vida, a mana e os frascos enchem na hora.'));
+  return caixa;
+}
+
 function painelDeRecuperacao(character, qual) {
+  if (character.derived?.regenPoe) return painelDeRecuperacaoPoe(character, qual);
   const derived = character.derived ?? {};
   const teto = qual === 'hp' ? derived.maxHp ?? 0 : derived.maxMana ?? 0;
   const agora = qual === 'hp' ? character.hp ?? 0 : character.mana ?? 0;

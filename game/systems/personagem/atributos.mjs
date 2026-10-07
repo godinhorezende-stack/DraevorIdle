@@ -20,8 +20,8 @@ import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
 const E = CONFIG.efeitos;
-/** Os bônus por ponto do PoE (Força: 0,5 de vida; Inteligência: 1 de mana — a tabela de vida/mana inicial do dono): a tabela `efeitos` com o PoE ligado — o Editor de Classes edita por cima (`systems/classes.mjs`). */
-export const EFEITOS_DO_POE = { STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2, DEX_ACCURACY_PER_POINT: 2, DEX_EVASION_PER_POINT: 0, DEX_EVASION_PCT_PER_POINT: 0.2, DEX_ATTACK_SPEED_PER_POINT: 0, INT_MANA_PER_POINT: 1, INT_MAGIC_DAMAGE_PER_POINT: 0, INT_ENERGY_SHIELD_PCT_PER_POINT: 0.2 };
+/** Os bônus por ponto do PoE (Força: 0,5 de vida; Inteligência: 0,5 de mana — como no PoE, dono 07/10: "2 de Inteligência = 1 de mana"): a tabela `efeitos` com o PoE ligado — o Editor de Classes edita por cima (`systems/classes.mjs`). */
+export const EFEITOS_DO_POE = { STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2, DEX_ACCURACY_PER_POINT: 2, DEX_EVASION_PER_POINT: 0, DEX_EVASION_PCT_PER_POINT: 0.2, DEX_ATTACK_SPEED_PER_POINT: 0, INT_MANA_PER_POINT: 0.5, INT_MAGIC_DAMAGE_PER_POINT: 0, INT_ENERGY_SHIELD_PCT_PER_POINT: 0.2 };
 if (itensPoeLigado()) Object.assign(E, EFEITOS_DO_POE);
 
 /** A vocação do jogo sem a promoção ("elite knight" → knight). */

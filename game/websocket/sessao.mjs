@@ -292,12 +292,22 @@ function snapshotDaPraca(estado, comMapa, sessao = null) {
  * do oceano — a coordenada antiga (x:7,y:5) é literalmente mar na cidade de
  * verdade, que é 187×108 e não 15×11.
  */
+/** Na cidade (fora da caçada), modo PoE: vida, mana e Escudo de Energia cheios, e os frascos do cinto também. */
+export function encherNaCidade(estado) {
+  if (estado.maxHp && estado.hp !== estado.maxHp && (estado.hp ?? 0) > 0) estado.hp = estado.maxHp;
+  if (estado.maxMana && estado.mana !== estado.maxMana) estado.mana = estado.maxMana;
+  estado.es = null; // cheio
+  FrascosPoe.encherNaCidade(estado);
+}
+
 function corrigirPosicaoAntiga(pos) {
   if (pos.z === R.POSICAO_INICIAL.z && !bloqueado(pos.x, pos.y)) return pos;
   return { ...R.POSICAO_INICIAL };
 }
 
 function characterParaCliente(personagem, estado) {
+  // Como no PoE (dono, 07/10: "por que a vida aqui não está cheia?"): na cidade a vida, a mana e o Escudo de Energia ficam cheios.
+  if (ItensPoeCatalogo.ligado() && !estado.hunt) encherNaCidade(estado);
   return {
     // O molde primeiro: todo campo que este servidor ainda não calcula sai
     // dele, no formato real (skills todos em 10, wildcards:5, etc.) — ver o

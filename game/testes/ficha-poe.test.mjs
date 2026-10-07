@@ -73,3 +73,13 @@ test('regras do PoE (dono, 07/10): vida/mana base 50/40 no nível 1, vida sem re
   assert.ok(fp.secoes.find((s) => s.id === 'defesa').linhas.some((l) => /Penalidade/.test(l.rotulo) && l.valor === '−60%'));
   assert.ok(fp.resistencias.find((r) => r.id === 'fire').fontes.some((x) => /Penalidade da campanha/.test(x.fonte) && x.valor === -60));
 });
+
+test('na cidade (fora da caçada), modo PoE: vida, mana, Escudo de Energia e frascos cheios', async () => {
+  const S = await import('../websocket/sessao.mjs');
+  const e = { maxHp: 76, hp: 64, maxMana: 54, mana: 10, es: 3, frascos: [] };
+  S.encherNaCidade(e);
+  assert.deepEqual([e.hp, e.mana, e.es], [76, 54, null]);
+  const morto = { maxHp: 76, hp: 0, maxMana: 54, mana: 0, frascos: [] };
+  S.encherNaCidade(morto);
+  assert.equal(morto.hp, 0, 'morto não ressuscita por aqui (a morte cuida disso)');
+});
