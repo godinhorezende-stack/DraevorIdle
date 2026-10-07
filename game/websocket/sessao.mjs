@@ -1069,6 +1069,7 @@ export class Sessao {
           if (usou) Ficha.invalidar(this.estado);
           return this.aplicar(usou ? { ok: true } : { ok: false, erro: 'Esse frasco não pode ser usado agora (sem cargas, já ativo ou fora da caçada).' });
         }
+        if (m.action === 'configurar') return this.aplicar(FrascosPoe.configurar(this.estado, m));
         return this.aplicar(m.action === 'tirar' ? FrascosPoe.tirar(this.estado, m) : FrascosPoe.por(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
       // Uma moeda do PoE na Forja do PoE (`itens-poe/moedas.mjs`): `m.moeda` (o item) e `m.alvo` (a peça).

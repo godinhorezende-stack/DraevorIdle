@@ -254,21 +254,46 @@ export function tique(estado, eventos = null, quem = null) {
   }
   if (estado.hp <= 0) return mudou;
   // O uso automático.
-  const U = F().usoAutomatico ?? {};
-  const precisa = {
-    vida: (estado.hp ?? 0) < (estado.maxHp ?? 0) * ((U.vidaAbaixoPct ?? 50) / 100),
-    mana: (estado.mana ?? 0) < (estado.maxMana ?? 0) * ((U.manaAbaixoPct ?? 30) / 100),
-  };
   const emCombate = (hunt.monstros ?? []).some((m) => m.hp > 0);
   const recuperando = (r) => Object.values(st.ativos).some((a) => a.recurso === r && a.ate > agora);
   for (let v = 0; v < c.length; v++) {
     const p = c[v];
     if (!p || st.ativos[v]?.ate > agora) continue;
     const tipo = TIPO_DA_CLASSE[p.poe?.classe];
-    const quer = tipo === 'utilidade' ? emCombate && U.utilidadeEmCombate !== false : precisa[tipo] && !recuperando(tipo === 'mana' ? 'mana' : 'vida');
+    // A regra de CADA frasco (dono, 07/10: configurada clicando nele na barra): vida/mana abaixo de X%; utilidade em combate.
+    const r = regraDe(p);
+    const precisa = tipo === 'vida' ? (estado.hp ?? 0) < (estado.maxHp ?? 0) * (r.abaixoPct / 100) : tipo === 'mana' ? (estado.mana ?? 0) < (estado.maxMana ?? 0) * (r.abaixoPct / 100) : false;
+    const quer = tipo === 'utilidade' ? emCombate && r.emCombate : precisa && !recuperando(tipo === 'mana' ? 'mana' : 'vida');
     if (quer && usar(estado, v, eventos, quem) && tipo === 'utilidade') mudou = true;
   }
   return mudou;
+}
+
+// ---------------------------------------------------------------- a regra de uso de cada frasco (dono, 07/10)
+
+/** A regra de uso do frasco: `abaixoPct` (vida/mana abaixo de X% usa) ou `emCombate` (utilidade); o padrão vem de `regras.frascos.usoAutomatico`. */
+export function regraDe(peca) {
+  const U = F().usoAutomatico ?? {};
+  const tipo = TIPO_DA_CLASSE[peca?.poe?.classe];
+  const padrao = tipo === 'mana' ? U.manaAbaixoPct ?? 30 : U.vidaAbaixoPct ?? 50;
+  const pct = Number(peca?.poe?.usarAbaixoPct);
+  return { tipo, abaixoPct: Number.isFinite(pct) && pct >= 1 && pct <= 100 ? Math.round(pct) : padrao, emCombate: peca?.poe?.usarEmCombate !== false && U.utilidadeEmCombate !== false };
+}
+
+/** `send({t:'frasco', action:'configurar', vaga, abaixoPct | emCombate})`: a regra do frasco da vaga. */
+export function configurar(estado, { vaga, abaixoPct, emCombate } = {}) {
+  const peca = cinto(estado)[Number(vaga)];
+  if (!peca) return { ok: false, erro: 'Essa vaga do cinto está vazia.' };
+  const tipo = TIPO_DA_CLASSE[peca.poe?.classe];
+  if (tipo === 'utilidade') {
+    if (typeof emCombate !== 'boolean') return { ok: false, erro: 'O frasco de Utilidade só tem a regra "usar em combate".' };
+    peca.poe.usarEmCombate = emCombate;
+    return { ok: true, notice: `${peca.poe.nome}: ${emCombate ? 'usa sozinho em combate' : 'só na tecla'}.` };
+  }
+  const pct = Math.round(Number(abaixoPct));
+  if (!(pct >= 1 && pct <= 100)) return { ok: false, erro: 'A porcentagem vai de 1 a 100.' };
+  peca.poe.usarAbaixoPct = pct;
+  return { ok: true, notice: `${peca.poe.nome}: usa quando a ${tipo} estiver abaixo de ${pct}%.` };
 }
 
 /** Matou um monstro: cargas para todos os frascos do cinto, pela raridade dele (× a Recuperação de Cargas de cada frasco). */
@@ -308,6 +333,7 @@ export function paraCliente(estado) {
   return cinto(estado).map((p, v) => {
     if (!p) return null;
     const par = parametros(p);
-    return { peca: p, cargas: Math.floor(cargasDe(p, par)), cargasMaximas: par.cargasMaximas, cargasPorUso: par.cargasPorUso, tipo: par.tipo, ativoAte: ativos[v]?.ate > agora ? ativos[v].ate - agora : 0 };
+    const regra = regraDe(p);
+    return { peca: p, cargas: Math.floor(cargasDe(p, par)), cargasMaximas: par.cargasMaximas, cargasPorUso: par.cargasPorUso, tipo: par.tipo, ativoAte: ativos[v]?.ate > agora ? ativos[v].ate - agora : 0, regra: { abaixoPct: regra.abaixoPct, emCombate: regra.emCombate } };
   });
 }

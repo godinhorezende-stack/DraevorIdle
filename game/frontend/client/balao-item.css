@@ -408,3 +408,6 @@
 .tip-item .soquete.cor-G, .tip-poe .soquete.cor-G { border-color: #5ec45a; }
 .tip-item .soquete.cor-B, .tip-poe .soquete.cor-B { border-color: #5a95ea; }
 .tip-item .soquete.cor-W, .tip-poe .soquete.cor-W { border-color: #f0ece4; }
+
+/* O valor aumentado pela qualidade (como no PoE: azul). */
+.poe-balao .poe-aumentado { color: #8888ff; }

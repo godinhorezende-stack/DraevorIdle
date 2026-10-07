@@ -58,7 +58,14 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
   const linhas = (lista, classe, sigla) => (lista ?? []).map((m) => no('div', `poe-mod ${classe}`, estados ? marca() : null, no('span', null, m.texto), m.tier != null ? Object.assign(no('i', null, `${sigla} T${m.tier}`), { title: `${m.familia ?? ''} · iLvl ${m.ilvl ?? '?'}` }) : null));
   const sep = () => no('div', 'poe-sep');
   const titulo = (texto) => no('div', 'poe-secao', texto);
-  const props = Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', null, valorDoAtributo(k, v))));
+  // A QUALIDADE (poedb › Quality): a linha "Qualidade: +X%" em cima e o dano físico/defesa já escalados (em azul, como no PoE).
+  const q = Number(p.qualidade) || 0;
+  const QUALIFICAM = new Set(['dano_fisico', 'armadura', 'evasao', 'escudo_energia']);
+  const comQ = (k, v) => (!q || !QUALIFICAM.has(k) ? v : v && typeof v === 'object' ? { min: Math.round(v.min * (1 + q / 100)), max: Math.round(v.max * (1 + q / 100)) } : Math.round(v * (1 + q / 100)));
+  const props = [
+    q ? no('div', null, 'Qualidade: ', no('b', 'poe-aumentado', `+${q}%`)) : null,
+    ...Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', q && QUALIFICAM.has(k) ? 'poe-aumentado' : null, valorDoAtributo(k, comQ(k, v))))),
+  ];
   const caixa = no('div', `poe-balao r-${p.raridade}`,
     no('div', 'poe-topo', no('b', null, p.nome), nomeDaBase && nomeDaBase !== p.nome ? no('span', null, nomeDaBase) : null),
     no('div', 'poe-props', categoriaDe(p) ? no('div', 'poe-categoria', categoriaDe(p)) : null, no('div', 'poe-raridade', `${raridadeNome} · Item Level ${p.ilvl}`), props),

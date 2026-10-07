@@ -386,14 +386,11 @@ export function coletarMarco(estado, { id, level } = {}) {
     if (!liberarOutfit(estado, marco.look)) return { ok: false, erro: 'Outfit não encontrado — nada foi cobrado.' };
     aviso = `${marco.name ?? 'Outfit'} liberado, com os 2 addons! Vista em Personagem › Aparência.`;
   } else if (marco.tipo === 'frasco-poe') {
-    // O frasco inicial vai DIRETO para o cinto (a primeira vaga livre; cinto cheio, para a mochila): é para usar já, na tecla 1.
+    // O frasco inicial vai para a MOCHILA (dono, 07/10): de lá o jogador põe no cinto e configura a regra de uso clicando nele na barra.
     peca = ItensPoeJogo.frascoInicial();
     if (!peca) return { ok: false, erro: 'O sistema de itens do PoE está desligado — nada foi entregue.' };
-    const cinto = FrascosPoe.cinto(estado);
-    const vaga = cinto.findIndex((f) => !f);
-    if (vaga >= 0) cinto[vaga] = peca;
-    else (estado.inventory ??= []).push(peca);
-    aviso = vaga >= 0 ? `${peca.poe.nome} no cinto (vaga ${vaga + 1}): na caçada, aperte ${vaga + 1} para beber.` : `${peca.poe.nome} na mochila (o cinto está cheio).`;
+    (estado.inventory ??= []).push(peca);
+    aviso = `${peca.poe.nome} na mochila: clique nele para pôr no cinto (vale em qualquer level).`;
   } else {
     for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
   }

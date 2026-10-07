@@ -59,14 +59,18 @@ test('B4. recompensas de nível no PoE: só o Frasco de Vida Pequeno no level 1;
   assert.deepEqual([c.marcos[0].tipo, c.marcos[0].level, c.marcos[0].aberto, c.marcos[0].itens.length, c.marcos[0].id], ['frasco-poe', 1, true, 1, 'frasco-poe-1']);
   const r = R.coletarMarco(e, { id: 'frasco-poe-1' });
   assert.ok(r.ok, r.erro);
-  assert.match(r.notice, /no cinto \(vaga 1\)/);
-  const frasco = F.cinto(e)[0];
-  assert.ok(frasco?.poe?.inicial && /Life/.test(frasco.poe.base), 'o frasco inicial está na vaga 1');
+  assert.match(r.notice, /na mochila/);
+  const frasco = e.inventory.at(-1);
+  assert.ok(frasco?.poe?.inicial && /Life/.test(frasco.poe.base), 'o frasco inicial está na mochila');
   assert.equal(e.presentes.marcos[0].pego, true);
   assert.ok(!R.coletarMarco(e, { id: 'frasco-poe-1' }).ok, 'não repete');
-  // Tirar e pôr de volta no level 1: o inicial não pede o level 3.
-  assert.ok(F.tirar(e, { vaga: 0 }).ok);
+  // Pôr no cinto no level 1: o inicial não pede o level 3. E a regra de uso: vida abaixo de X%.
   assert.ok(F.por(e, { pilha: e.inventory.length - 1 }).ok);
+  assert.equal(F.regraDe(F.cinto(e)[0]).abaixoPct, 50, 'padrão: vida abaixo de 50%');
+  assert.ok(F.configurar(e, { vaga: 0, abaixoPct: 35 }).ok);
+  assert.equal(F.paraCliente(e)[0].regra.abaixoPct, 35);
+  assert.ok(!F.configurar(e, { vaga: 0, abaixoPct: 0 }).ok);
+  assert.match(F.configurar(e, { vaga: 0, emCombate: true }).erro ?? '', /porcentagem/);
   // Um personagem com os marcos do Draevor (baú 50...) fica só com o do frasco.
   const velho = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 60 }), { presentes: { ...R.estadoInicial().presentes, marcos: [{ level: 50, custo: 50000, tipo: 'bau', titulo: 'Baú' }, { level: 120, tipo: 'montaria', mount: 1 }] } });
   R.abrirProximas(velho);

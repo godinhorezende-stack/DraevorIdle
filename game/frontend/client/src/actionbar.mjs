@@ -509,7 +509,7 @@ export function renderActionBar() {
     (state.character.hotkeys ?? []).join(','),
     esperandoTecla ?? '-',
     // Os frascos do cinto (a barra do PoE): o que está em cada vaga, as cargas e se está ativo.
-    ...(state.character.frascosPoe ?? []).map((f) => (f ? `${f.peca.id}:${f.cargas}:${f.ativoAte > 0 ? 1 : 0}` : '-')),
+    ...(state.character.frascosPoe ?? []).map((f) => (f ? `${f.peca.id}:${f.cargas}:${f.ativoAte > 0 ? 1 : 0}:${f.regra?.abaixoPct}:${f.regra?.emCombate}` : '-')),
     ...Array.from({ length: total }, (_, index) => {
       const action = actions[index];
       if (!action) return '-';
@@ -559,6 +559,55 @@ function trocaCabe(de, para) {
   return cabe(acoes[de], para) && cabe(acoes[para], de);
 }
 
+/*
+ * ---- A regra de uso do FRASCO (dono, 07/10) ----
+ * "Quando clico nele no slot configuro a % de vida que quero usar o de vida; se for de mana, a % de mana." O frasco de Utilidade escolhe
+ * entre usar sozinho em combate ou só na tecla. Quem guarda é o servidor (`{t:'frasco', action:'configurar'}` → `frascos.mjs`).
+ */
+function configurarFrasco(vaga) {
+  const f = ctx.state.character.frascosPoe?.[vaga];
+  if (!f) return;
+  const nome = f.peca.poe?.nome ?? 'Frasco';
+  ctx.openModal(nome, (body) => {
+    if (f.tipo === 'utilidade') {
+      body.append(el('p', 'shop-note', 'O frasco de Utilidade pode ser usado sozinho sempre que houver monstro vivo, ou só quando você apertar a tecla.'));
+      const acoes = el('div', 'confirm-actions');
+      for (const [rotulo, valor] of [['Usar sozinho em combate', true], ['Só na tecla', false]]) {
+        const b = el('button', f.regra?.emCombate === valor ? 'primary' : '', rotulo);
+        b.onclick = () => { ctx.send({ t: 'frasco', action: 'configurar', vaga, emCombate: valor }); ctx.closeModal(); };
+        acoes.append(b);
+      }
+      body.append(acoes);
+    } else {
+      const recurso = f.tipo === 'mana' ? 'mana' : 'vida';
+      body.append(el('p', 'shop-note', `Na caçada o frasco é bebido sozinho quando a sua ${recurso} cair abaixo desta porcentagem (e não está recuperando de outro frasco).`));
+      const linha = el('div', 'frasco-config');
+      const faixa = document.createElement('input');
+      faixa.type = 'range';
+      faixa.min = '5';
+      faixa.max = '95';
+      faixa.step = '5';
+      faixa.value = String(f.regra?.abaixoPct ?? 50);
+      const valor = el('b', 'frasco-config-valor', `${faixa.value}%`);
+      faixa.oninput = () => { valor.textContent = `${faixa.value}%`; };
+      linha.append(el('span', null, `${recurso[0].toUpperCase()}${recurso.slice(1)} abaixo de`), faixa, valor);
+      body.append(linha);
+      const acoes = el('div', 'confirm-actions');
+      const salvar = el('button', 'primary', 'Salvar');
+      salvar.onclick = () => { ctx.send({ t: 'frasco', action: 'configurar', vaga, abaixoPct: Number(faixa.value) }); ctx.closeModal(); };
+      acoes.append(salvar);
+      body.append(acoes);
+    }
+    const extras = el('div', 'confirm-actions');
+    const usar = el('button', '', 'Beber agora');
+    usar.onclick = () => { ctx.send({ t: 'frasco', action: 'usar', vaga }); ctx.closeModal(); };
+    const tirar = el('button', 'ghost', 'Tirar do cinto');
+    tirar.onclick = () => { ctx.send({ t: 'frasco', action: 'tirar', vaga }); ctx.closeModal(); };
+    extras.append(usar, tirar);
+    body.append(extras);
+  });
+}
+
 function montarHotbar(bar, actions, total) {
   bar.innerHTML = '';
 
@@ -595,7 +644,9 @@ function montarHotbar(bar, actions, total) {
       cargas.append(cheio);
       cell.append(cargas, el('b', 'frasco-num', String(f.cargas)));
       tipFor(cell, f.peca.id, null, null, f.peca);
-      cell.onclick = () => ctx.send({ t: 'frasco', action: 'usar', vaga: v });
+      // A regra de uso no canto (dono, 07/10): "≤50%" no de vida/mana, "auto" no de utilidade; o clique abre a configuração.
+      if (f.regra) cell.append(el('i', 'frasco-regra', f.tipo === 'utilidade' ? (f.regra.emCombate ? 'auto' : 'tecla') : `≤${f.regra.abaixoPct}%`));
+      cell.onclick = () => configurarFrasco(v);
       cell.oncontextmenu = (event) => {
         event.preventDefault();
         ctx.send({ t: 'frasco', action: 'tirar', vaga: v });
