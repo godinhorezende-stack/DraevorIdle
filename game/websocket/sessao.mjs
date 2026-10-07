@@ -1050,8 +1050,13 @@ export class Sessao {
         return this.aplicar(Recompensas.coletarDiario(this.estado));
       case 'diarioEscolher':
         return this.aplicar(Recompensas.escolherDiario(this.estado, m));
-      case 'marco':
-        return this.aplicar(Recompensas.coletarMarco(this.estado, m));
+      case 'marco': {
+        // O baú abriu: a tela mostra a PEÇA que saiu (dono, 07/10: "aqui aparece já o item que foi sorteado").
+        const r = Recompensas.coletarMarco(this.estado, m);
+        if (r.ok && r.peca) this.enviar({ t: 'marcoAberto', peca: r.peca, notice: r.notice ?? null });
+        const { peca, ...resto } = r;
+        return this.aplicar(resto);
+      }
       case 'presente':
         return this.aplicar(Recompensas.coletarPresente(this.estado, m));
       case 'largar':

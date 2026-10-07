@@ -1,5 +1,6 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
+import { balaoPoe } from './itens-poe-balao.mjs';
 import { abrirForjaPoe, temForjaPoe } from './forja-poe.mjs';
 import { listaDetalhe } from './lista-detalhe.mjs';
 import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
@@ -18907,6 +18908,12 @@ export function corpoDasRecompensas(body, comFechar = true) {
          * perguntar. A confirmação diz o preço, o que sobra depois, e o que
          * entra na mochila.
          */
+        // Grátis (o baú do nível 1 do PoE): sem a conta de ouro — abre direto, e a janela do baú aberto mostra a peça que saiu.
+        if (!(cartao.custo > 0)) {
+          pegar.disabled = true;
+          send({ t: 'marco', id: cartao.id, level: cartao.level });
+          return;
+        }
         confirmando = cartao;
         desenhar();
       };
@@ -19118,6 +19125,25 @@ export function corpoDasRecompensas(body, comFechar = true) {
   };
 
   desenhar();
+}
+
+/** O baú de um marco aberto: a peça que saiu, com o balão dela (o servidor manda `{t:'marcoAberto', peca}`). */
+export function abrirMarcoAberto({ peca, notice }) {
+  if (!peca) return;
+  ctx.openModal('Baú aberto', (body) => {
+    body.append(el('p', 'shop-note', notice ?? 'O baú abriu:'));
+    const caixa = el('div', 'marco-aberto');
+    const arte = itemCanvas(peca.id, 48);
+    if (arte) caixa.append(tipFor(arte, peca.id, null, null, peca));
+    if (peca.poe) caixa.append(balaoPoe(peca.poe, { nomeDaBase: ctx.state.items?.[peca.id]?.name ?? null, requisitos: ctx.state.items?.[peca.id]?.poe?.requisitos ?? null }));
+    else caixa.append(el('b', null, ctx.state.items?.[peca.id]?.name ?? `item ${peca.id}`));
+    body.append(caixa, el('p', 'shop-note dica', 'A peça foi para a mochila.'));
+    const ok = el('button', 'recompensa-pegar', 'Ok');
+    ok.onclick = () => ctx.closeModal();
+    const acoes = el('div', 'confirm-actions');
+    acoes.append(ok);
+    body.append(acoes);
+  });
 }
 
 /** O calendário como janela — o botão de presente da barra de baixo. */

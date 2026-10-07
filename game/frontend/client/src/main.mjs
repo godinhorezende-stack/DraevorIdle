@@ -73,7 +73,7 @@ import {
   resumoDasGemasParaBalao,
   resumoDaMorteLigado, ligarResumoDaMorte, aplicarEstiloDaRaridade,
   openArena,
-  openCyclopedia, openBestiary, openReport, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente,
+  openCyclopedia, openBestiary, openReport, openLojaDeBossToken, openLojaDeTaskToken, openLobby, TITULO_DO_LOBBY, openPresente, abrirMarcoAberto,
   escolhasDaPosicao, cartazDeBossLigado, redesenharJanelaAberta,
   chegouFichaDoBicho, chegouPreviaPoe,
 } from './panels.mjs';
@@ -1223,6 +1223,9 @@ function handle(message) {
       } else {
         panelCtx.redraw?.();
       }
+      break;
+    case 'marcoAberto':
+      abrirMarcoAberto(message);
       break;
     case 'gemas':
       state.gemas = message.view;

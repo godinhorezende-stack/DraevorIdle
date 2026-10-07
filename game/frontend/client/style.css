@@ -28170,3 +28170,8 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
   .fp-defesas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .fp-resist-grade { grid-template-columns: 1fr; }
 }
+
+/* O baú de um marco aberto: a peça e o balão dela (panels.mjs → abrirMarcoAberto). */
+.marco-aberto { display: flex; gap: 14px; align-items: flex-start; justify-content: center; margin: 8px 0; }
+.marco-aberto canvas { border: 1px solid #6b5a3a; border-radius: 4px; background: #0b0a08; }
+.marco-aberto .poe-balao { position: static; max-width: 340px; }

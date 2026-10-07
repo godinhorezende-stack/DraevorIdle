@@ -398,7 +398,7 @@ export function coletarMarco(estado, { id, level } = {}) {
   abrirProximas(estado); // a próxima da fila abre, se o level já chega
   return {
     ok: true,
-    ...(peca ? { item: { id: peca.id, raridade: peca.raridade ?? 'comum' } } : {}),
+    ...(peca ? { item: { id: peca.id, raridade: peca.raridade ?? 'comum' }, peca } : {}),
     ...(aviso ? { notice: aviso } : {}),
   };
 }
