@@ -10,6 +10,16 @@
 import { readFileSync } from 'node:fs';
 import { traduzirMod, compilar, TABELA } from './traduzir.mjs';
 
+/** O caminho local do ícone de uma passiva de ascendência (o mesmo de `tools/baixar-ascendencias-poedb.mjs`): o jogo serve em `/api/jogo/poe/icone/ascendencia/<caminho>`. */
+export function caminhoDoIconeDeAscendencia(url) {
+  const u = String(url ?? '');
+  const p = /\/passives\/(.+\.webp)$/i.exec(u);
+  if (p) return p[1].split('/').map(decodeURIComponent).join('/');
+  const c = /\/UIImages\/Common\/([^/]+\.webp)$/i.exec(u);
+  if (c) return `classes/${decodeURIComponent(c[1])}`;
+  return null;
+}
+
 export const REGRAS_DA_ARVORE = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao-arvore.json', import.meta.url), 'utf8'));
 const PROPRIAS = compilar({ ...TABELA, regras: REGRAS_DA_ARVORE.regras });
 /** As chaves que a árvore do Draevor aceita num `add` (as outras ficam registradas). */
@@ -112,10 +122,12 @@ export function converterAscendencias(lista) {
         textos: linhas,
         estados: traduzidas.map((t) => t.estado),
         conexoes: [...viz.get(n.id)].map(String),
+        // O ícone do PoE (dono, 07/10): o nó da ascendência mostra a arte dele na árvore; o início mostra o emblema da ascendência.
+        ...((inicio ? caminhoDoIconeDeAscendencia(a.icone) : caminhoDoIconeDeAscendencia(n.icone)) ? { icone: inicio ? caminhoDoIconeDeAscendencia(a.icone) : caminhoDoIconeDeAscendencia(n.icone) } : {}),
       });
       if (inicio) inicios[`asc:${a.slug}`] = String(n.id);
     }
-    ascendencias[a.slug] = { slug: a.slug, nome: a.nome_pt, classe: a.classe, inicio: String(a.no_inicial), nos: a.nos.length, ...(a.flavour ? { flavour: a.flavour } : {}) };
+    ascendencias[a.slug] = { slug: a.slug, nome: a.nome_pt, classe: a.classe, inicio: String(a.no_inicial), nos: a.nos.length, ...(a.flavour ? { flavour: a.flavour } : {}), ...(caminhoDoIconeDeAscendencia(a.icone) ? { icone: caminhoDoIconeDeAscendencia(a.icone) } : {}) };
   }
   return { nos, inicios, ascendencias, relatorio: { ascendencias: lista.length, nos: nos.length, estados } };
 }

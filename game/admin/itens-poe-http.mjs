@@ -199,6 +199,7 @@ function desenhosDosMobs() {
 }
 const PASTA_DOS_SUPORTES = join(process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe', 'poe-suportes-poedb');
 const PASTA_DAS_MOEDAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-moedas', import.meta.url));
+const PASTA_DAS_ASCENDENCIAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-ascendencias', import.meta.url));
 const imagem = (res, pasta, relativo) => {
   const alvo = normalize(join(pasta, relativo));
   if (!alvo.startsWith(pasta) || !TIPOS[extname(alvo).toLowerCase()] || !existsSync(alvo) || !statSync(alvo).isFile()) return false;
@@ -215,6 +216,8 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, join(GemasPoe.PASTA, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/suporte/')) return nomes(rota.slice('icone/suporte/'.length)).some((n) => imagem(res, join(PASTA_DOS_SUPORTES, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
   // Os ícones dos orbes do PoE (Joalheiro, Fusão, Cromático): no repositório (`gamedata/itens-poe/icones-moedas`).
+  // Os ícones das passivas de ascendência (`tools/baixar-ascendencias-poedb.mjs`): a árvore do jogo e da Engine desenham com eles.
+  if (rota.startsWith('icone/ascendencia/')) return nomes(rota.slice('icone/ascendencia/'.length)).some((n) => imagem(res, PASTA_DAS_ASCENDENCIAS, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/moeda/')) return nomes(rota.slice('icone/moeda/'.length)).some((n) => imagem(res, PASTA_DAS_MOEDAS, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
   // O DESENHO de cada mob do bestiário do PoE (a Arena de Gemas com os sprites do jogo): pelo nome, a mesma regra da campanha.

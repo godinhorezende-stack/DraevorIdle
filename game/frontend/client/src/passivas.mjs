@@ -395,6 +395,34 @@ function montar(body) {
     cancelAnimationFrame(quadro);
     quadro = requestAnimationFrame(desenhar);
   }
+  /*
+   * ---- Os ÍCONES das passivas de ascendência (dono, 07/10) ----
+   * A arte do PoE de cada nó de ascendência (e o emblema da ascendência no nó inicial) vem de `/api/jogo/poe/icone/ascendencia/`.
+   * Carrega uma vez por caminho; quando a imagem chega, redesenha. Enquanto não chegou, o nó sai com o emblema de sempre.
+   */
+  const imagens = new Map();
+  function imagemDoNo(caminho) {
+    let img = imagens.get(caminho);
+    if (!img) {
+      img = new Image();
+      img.onload = pedir;
+      img.src = `/api/jogo/poe/icone/ascendencia/${caminho.split('/').map(encodeURIComponent).join('/')}`;
+      imagens.set(caminho, img);
+    }
+    return img.complete && img.naturalWidth ? img : null;
+  }
+  /** Desenha a imagem inteira dentro do círculo de raio `rr` (mantendo a proporção), recortada por ele. */
+  function imagemNoDisco(img, p, rr, alpha = 1) {
+    const k = Math.min((rr * 2) / img.naturalWidth, (rr * 2) / img.naturalHeight);
+    const w = img.naturalWidth * k;
+    const h = img.naturalHeight * k;
+    g.save();
+    forma(p, rr);
+    g.clip();
+    g.globalAlpha = alpha;
+    g.drawImage(img, p.x - w / 2, p.y - h / 2, w, h);
+    g.restore();
+  }
   const escala = () => Math.max(0.5, Math.min(1.6, cam.zoom * 1.8));
   const raio = (n) => (n.atributo ? 6.5 : { small: 10, notable: 17, keystone: 25, start: 38, mastery: 15 }[n.tipo] ?? 10) * escala();
   const forma = (p, r) => {
@@ -451,12 +479,17 @@ function montar(body) {
       aro(p, r, minha ? CORES.ouroVivo : CORES.bronze, 3.2);
       aro(p, r * 0.82, corClasse, 2);
       aro(p, r * 0.66, CORES.bronzeEscuro, 1.4);
-      g.fillStyle = minha ? CORES.ouroVivo : '#bfae86';
-      g.font = `700 ${Math.round(r * 0.8)}px Cinzel, Georgia, serif`;
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
-      g.fillText(LETRA_DA_CLASSE[n.classe] ?? '?', p.x, p.y + 1);
-      g.textBaseline = 'alphabetic';
+      // O início de uma ascendência leva o emblema dela (a arte do PoE); o da classe, a letra.
+      const emblema = n.icone ? imagemDoNo(n.icone) : null;
+      if (emblema) imagemNoDisco(emblema, p, r * 0.6, minha ? 1 : 0.8);
+      else {
+        g.fillStyle = minha ? CORES.ouroVivo : '#bfae86';
+        g.font = `700 ${Math.round(r * 0.8)}px Cinzel, Georgia, serif`;
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillText(LETRA_DA_CLASSE[n.classe] ?? '?', p.x, p.y + 1);
+        g.textBaseline = 'alphabetic';
+      }
       g.restore();
       return;
     }
@@ -499,6 +532,9 @@ function montar(body) {
       aro(p, r, vivo ? CORES.ouroVivo : perto ? CORES.disponivel : notavel ? '#a88a4c' : n.tipo === 'mastery' ? '#6f5c99' : CORES.bronze, notavel || n.tipo === 'mastery' ? 3 : 2);
       if (notavel) aro(p, r * 0.78, vivo ? '#8a6a30' : CORES.bronzeEscuro, 1.4);
     }
+    // A passiva de ascendência: a arte do PoE dentro da moldura, no lugar do emblema colorido.
+    const arte = n.icone ? imagemDoNo(n.icone) : null;
+    if (arte) return void imagemNoDisco(arte, p, r * (n.tipo === 'notable' ? 0.74 : 0.8), vivo ? 1 : apagado ? 0.45 : 0.85);
     // O emblema: a cor do tema, com um miolo mais claro.
     const re = r * (n.tipo === 'small' ? 0.48 : 0.5);
     const grad = g.createRadialGradient(p.x - re * 0.3, p.y - re * 0.3, re * 0.1, p.x, p.y, re);

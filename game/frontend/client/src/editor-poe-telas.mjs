@@ -326,6 +326,18 @@ export function criarTelaDaArvorePoe({ raiz }) {
     return [canvas.width / 2 + (n.x - c.cx) * c.esc, canvas.height / 2 + (n.y - c.cy) * c.esc];
   };
 
+  // Os ícones das passivas de ascendência (a arte do PoE): carrega uma vez e redesenha quando chega.
+  const imagens = new Map();
+  function imagemDoNo(caminho, canvas) {
+    let img = imagens.get(caminho);
+    if (!img) {
+      img = new Image();
+      img.onload = () => desenharCanvas(canvas);
+      img.src = `/api/jogo/poe/icone/ascendencia/${caminho.split('/').map(encodeURIComponent).join('/')}`;
+      imagens.set(caminho, img);
+    }
+    return img.complete && img.naturalWidth ? img : null;
+  }
   function desenharCanvas(canvas) {
     const g = canvas.getContext('2d');
     const estilo = getComputedStyle(canvas);
@@ -361,6 +373,17 @@ export function criarTelaDaArvorePoe({ raiz }) {
       if (n.t === 'mastery') g.rect(x - r, y - r, r * 2, r * 2);
       else g.arc(x, y, r, 0, Math.PI * 2);
       g.fill();
+      // A arte do PoE no nó de ascendência (quando o zoom deixa ver).
+      const arte = n.icone && r >= 6 ? imagemDoNo(n.icone, canvas) : null;
+      if (arte) {
+        const k = Math.min((r * 1.8) / arte.naturalWidth, (r * 1.8) / arte.naturalHeight);
+        g.save();
+        g.beginPath();
+        g.arc(x, y, r * 0.9, 0, Math.PI * 2);
+        g.clip();
+        g.drawImage(arte, x - (arte.naturalWidth * k) / 2, y - (arte.naturalHeight * k) / 2, arte.naturalWidth * k, arte.naturalHeight * k);
+        g.restore();
+      }
       if (n.id === T.sel || (buscando && T.achados.has(n.id))) {
         g.strokeStyle = n.id === T.sel ? '#ffffff' : '#ffd166';
         g.lineWidth = 2;
@@ -439,7 +462,7 @@ export function criarTelaDaArvorePoe({ raiz }) {
     const TIPO = { small: 'Pequeno', notable: 'Notável', keystone: 'Keystone', mastery: 'Maestria', start: 'Início de classe' };
     const vizinhos = n.c.map((v) => T.porId.get(v)).filter(Boolean);
     caixa.replaceChildren(
-      el('div', { class: 'bib-painel-topo' }, el('div', { class: 'bib-painel-titulo' }, el('h2', { class: 'bib-nome' }, n.nome), el('div', { class: 'dica' }, `${n.en ?? ''}`),
+      el('div', { class: 'bib-painel-topo' }, n.icone ? el('img', { class: 'pa-icone', src: `/api/jogo/poe/icone/ascendencia/${n.icone.split('/').map(encodeURIComponent).join('/')}`, alt: '', width: 64, height: 64 }) : null, el('div', { class: 'bib-painel-titulo' }, el('h2', { class: 'bib-nome' }, n.nome), el('div', { class: 'dica' }, `${n.en ?? ''}`),
         el('div', { class: 'linha' }, el('span', { class: 'selo', style: `flex:none;border-color:${COR_DO_TIPO[n.t]}` }, TIPO[n.t] ?? n.t), n.asc ? el('span', { class: 'selo aviso', style: 'flex:none' }, `Ascendência ${n.asc}`) : null, el('span', { class: 'eng-id', style: 'flex:none' }, `nó ${n.id}`), el('span')))),
       el('div', { class: 'bib-painel-corpo' },
         n.textos.length ? [el('h4', {}, 'Texto do PoE e estado'), el('div', { class: 'pa-linhas' }, n.textos.map((t, i) => linhaDeTexto(t, n.estados[i])))] : null,

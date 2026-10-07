@@ -598,6 +598,7 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .pa-legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
 .pa-linhas, .pa-opcoes { display: grid; gap: 4px; }
 .pa-linha { display: flex; gap: 6px; align-items: baseline; }
+.pa-icone { width: 64px; height: 64px; object-fit: contain; border-radius: 50%; background: #0a0d12; border: 1px solid var(--eng-linha); flex: none; }
 .pa-opcao { border: 1px solid var(--eng-linha); border-radius: var(--eng-r1); padding: 6px; background: var(--eng-s1); }
 .poe-tr.nota { color: var(--eng-txt3); }
 .poe-v.poe-larga { grid-template-columns: 180px minmax(0, 1.7fr) minmax(340px, 1fr); }

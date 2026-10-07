@@ -505,6 +505,8 @@ export function arvoreParaCliente() {
       ...(n.textos ? { textos: n.textos, estados: n.estados ?? [] } : {}),
       ...(n.nomeEn ? { nomeEn: n.nomeEn } : {}),
       ...(n.ascendencia ? { ascendencia: n.ascendencia } : {}),
+      // O ícone do PoE da passiva de ascendência (servido em /api/jogo/poe/icone/ascendencia/).
+      ...(n.icone ? { icone: n.icone } : {}),
       ...(n.grupo != null ? { grupo: n.grupo } : {}),
       // A keystone do PoE aproximada: a diferença para o PoE (o balão mostra).
       ...(n.keystone?.nota ? { notaDoDraevor: n.keystone.nota } : {}),
