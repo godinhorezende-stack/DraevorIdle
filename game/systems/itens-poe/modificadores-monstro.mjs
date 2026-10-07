@@ -109,6 +109,12 @@ export function iniciar() {
     };
   }
   Raridade.definirAplicadorPoe((m, o) => aplicador(m, o));
+  // As RARIDADES como no PoE (dono, 07/10: "só existe monstro comum, mágico, raro e único"): os nomes e as cores do PoE (Mágico azul,
+  // Raro amarelo, Único laranja; Elite e Chefe caem em Raro e Único), sem os levels a mais do Draevor nem o resumo de multiplicadores
+  // no balão (os números do PoE já entram pelos ocultos de cada raridade — `aplicador`).
+  const POE = { normal: ['Comum', '#e8e2d0'], modificado: ['Mágico', '#8888ff'], raro: ['Raro', '#ffff77'], elite: ['Raro', '#ffff77'], unico: ['Único', '#f0a050'], boss: ['Único', '#f0a050'] };
+  for (const [id, [nome, cor]] of Object.entries(POE)) if (Raridade.CONFIG.raridades[id]) Object.assign(Raridade.CONFIG.raridades[id], { nome, cor, levelExtra: 0 });
+  Raridade.definirResumoNoBalao(false);
   return { modificadores: DADOS.mods.length };
 }
 
