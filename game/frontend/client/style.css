@@ -28089,3 +28089,25 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 .eq-elo.ligado { background: #d8b56a; }
 .eq-detalhe { padding: 8px 10px; border: 1px solid #2f4a52; border-radius: 6px; background: #0f1416; }
 @media (max-width: 760px) { .eq-layout { grid-template-columns: 1fr; } }
+
+/* ---- Gem Atelier › Catálogo de gemas (modo PoE): cada gema e onde se ganha (gemas.mjs → renderCatalogo) ---- */
+.cat-filtros { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+.cat-busca { flex: 1 1 220px; min-width: 0; }
+.cat-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #c8d4d8; }
+.cat-contagem { margin: 2px 0 6px; font-size: 12px; color: #8fa6ab; }
+.cat-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 6px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }
+.cat-gema { display: flex; gap: 8px; align-items: flex-start; padding: 7px 9px; border: 1px solid #2a3a3e; border-radius: 6px; background: #121819; min-width: 0; }
+.cat-texto { min-width: 0; display: grid; gap: 4px; }
+.cat-topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.cat-topo b { font-size: 13px; color: #e6e0cc; display: inline-flex; align-items: center; gap: 5px; }
+.cat-topo em { width: 100%; font-size: 11px; color: #7f969b; font-style: normal; }
+.cat-cor { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.cat-tipo { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #9fb3bf; }
+.cat-origens { display: grid; gap: 3px; }
+.cat-origem { font-size: 11.5px; line-height: 1.35; color: #c8d4d8; padding: 2px 6px; border-radius: 4px; background: #182326; }
+.cat-origem b { color: #d8b56a; margin-right: 2px; }
+.cat-origem i { display: block; font-style: normal; color: #8fa6ab; font-size: 11px; }
+.cat-origem.recompensa { border-left: 3px solid #d8b56a; }
+.cat-origem.recompensa.nojogo { border-left-color: #4fae4a; }
+.cat-origem.vendedor { border-left: 3px solid #4a7fd8; }
+.cat-origem.loja { border-left: 3px solid #6c8290; color: #9fb3bf; }

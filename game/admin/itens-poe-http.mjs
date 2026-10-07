@@ -207,6 +207,8 @@ function desenhosDosMobs() {
 }
 const PASTA_DOS_SUPORTES = join(process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe', 'poe-suportes-poedb');
 const PASTA_DAS_MOEDAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-moedas', import.meta.url));
+let origemDasGemas = null;
+const ORIGEM_DAS_GEMAS = () => (origemDasGemas ??= JSON.parse(readFileSync(new URL('../gamedata/itens-poe/origem-das-gemas.json', import.meta.url), 'utf8')));
 const PASTA_DAS_ASCENDENCIAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-ascendencias', import.meta.url));
 const imagem = (res, pasta, relativo) => {
   const alvo = normalize(join(pasta, relativo));
@@ -230,6 +232,11 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
   // O DESENHO de cada mob do bestiário do PoE (a Arena de Gemas com os sprites do jogo): pelo nome, a mesma regra da campanha.
   if (rota === 'desenhos-dos-mobs') return json(res, 200, desenhosDosMobs()), true;
+  // ONDE SE GANHA CADA GEMA (o catálogo do Gem Atelier): a origem por missão/ato/classe e quais missões já dão a gema no jogo.
+  if (rota === 'origem-das-gemas') {
+    const MG = await import('../systems/itens-poe/missoes-de-gemas.mjs');
+    return json(res, 200, { ...ORIGEM_DAS_GEMAS(), noJogo: MG.MISSOES.map((m) => m.slug) }), true;
+  }
   if (rota === 'gema') {
     const q = url.searchParams;
     const f = fichaDaGema?.(q.get('slug') ?? '', Number(q.get('nivel')) || 1, Number(q.get('qualidade')) || 0);
