@@ -417,6 +417,9 @@ export function paraCliente(estado) {
           completa: faseCompleta(estado, dif, f.huntId),
           liberada: faseLiberada(estado, dif, f.huntId),
           ...(f.pular ? { pular: true } : {}),
+          // O que conclui a fase DE VERDADE (dono, 07/10: "no Para concluir tem que colocar o que realmente tem que fazer"): o objetivo da
+          // Engine (limpar a área, matar o chefe, matar N, pegar o item da missão) e o progresso dele nesta dificuldade.
+          objetivo: { tipo: conclusaoDa(f.huntId).tipo, texto: objetivoEmTexto(conclusaoDa(f.huntId)), ...progressoDoObjetivo(estado, dif, f.huntId) },
         })),
         bosses: Object.entries(CAMPANHA.bosses).filter(([ato]) => atoAtivo(Number(ato))).map(([ato, b]) => ({
           ato: Number(ato),

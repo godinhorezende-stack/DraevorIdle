@@ -63,10 +63,22 @@ const estreita = () => (typeof window !== 'undefined' ? window.innerWidth < 700 
 const K_MIN = 1;
 const K_MAX = 3.5;
 function criarCamera(viewport, svgEl, cam, vista, aoMudar) {
+  /** A parte do viewBox que aparece no palco (com `slice` a proporção do palco corta um dos lados): `{ x0, y0, w, h }` em unidades do mapa. */
+  const visivel = () => {
+    const W = svgEl.clientWidth || LARGURA;
+    const H = svgEl.clientHeight || ALTURA;
+    const slice = (svgEl.getAttribute('preserveAspectRatio') ?? '').includes('slice');
+    const esc = slice ? Math.max(W / LARGURA, H / ALTURA) : Math.min(W / LARGURA, H / ALTURA);
+    const w = Math.min(LARGURA, W / esc);
+    const h = Math.min(ALTURA, H / esc);
+    return { x0: (LARGURA - w) / 2, y0: (ALTURA - h) / 2, w, h };
+  };
   const limitar = () => {
     vista.k = Math.max(K_MIN, Math.min(K_MAX, vista.k));
-    vista.x = Math.max(LARGURA - LARGURA * vista.k, Math.min(0, vista.x));
-    vista.y = Math.max(ALTURA - ALTURA * vista.k, Math.min(0, vista.y));
+    // O mapa (0..LARGURA × 0..ALTURA, escalado por k) sempre cobre a parte visível: dá para arrastar até cada borda, nunca além.
+    const v = visivel();
+    vista.x = Math.max(v.x0 + v.w - LARGURA * vista.k, Math.min(v.x0, vista.x));
+    vista.y = Math.max(v.y0 + v.h - ALTURA * vista.k, Math.min(v.y0, vista.y));
   };
   const aplicar = () => {
     limitar();
@@ -278,8 +290,10 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   progresso.append(progressoBarra);
   const viewport = el('div', 'w2-viewport');
   const bussola = el('div', 'w2-bussola');
-  bussola.innerHTML = '<svg viewBox="-30 -30 60 60" aria-hidden="true"><circle r="26" class="b-anel"/><circle r="18" class="b-anel2"/><path d="M0 -24 L5 0 L0 24 L-5 0 Z" class="b-agulha"/><path d="M-24 0 L0 5 L24 0 L0 -5 Z" class="b-agulha2"/><text y="-27" class="b-txt">N</text><text y="35" class="b-txt">S</text><text x="33" y="4" class="b-txt">L</text><text x="-33" y="4" class="b-txt">O</text></svg>';
-  const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid meet', role: 'group' });
+  bussola.innerHTML = '<svg viewBox="-42 -42 84 84" aria-hidden="true"><circle r="26" class="b-anel"/><circle r="18" class="b-anel2"/><path d="M0 -24 L5 0 L0 24 L-5 0 Z" class="b-agulha"/><path d="M-24 0 L0 5 L24 0 L0 -5 Z" class="b-agulha2"/><text y="-30" class="b-txt">N</text><text y="38" class="b-txt">S</text><text x="34" y="3.5" class="b-txt">L</text><text x="-34" y="3.5" class="b-txt">O</text></svg>';
+  // `slice` (dono, 07/10: "a foto do ato de fundo não está cheia, tem parte preta"): o mapa COBRE o palco em qualquer proporção; o que
+  // sobra fora da tela se alcança arrastando (a câmera limita pela parte visível — `criarCamera`).
+  const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid slice', role: 'group' });
   const cam = svg('g', { class: 'w2-cam' });
   mapaSvg.append(cam);
   viewport.append(mapaSvg);
@@ -519,13 +533,13 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       const hunt = hunts.get(f.huntId);
       const col1 = el('div', 'w2-col', titulo( f.nome), el('div', 'w2-sub', `${atoAtual.nome} · Fase ${m.grafo?.ordem ?? posicao + 1}`, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), tipo !== 'comum' ? el('span', 'w2-tipo', TIPOS_DE_NO[tipo]) : null, fronteira?.huntId === f.huntId ? el('span', 'w2-tipo atual', 'Fase atual') : null), m.ambiente ? el('span', 'w2-tag', m.ambiente) : null, el('p', 'w2-desc', m.descricao ?? 'Sem descrição.'), linha('Dificuldade', escolhida.nome), linha('Level dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`), m.bossPrincipal ? linha('Boss principal', m.bossPrincipal) : null);
       const col2 = el('div', 'w2-col');
-      if (hunt?.creatures?.length) {
-        const bichos = el('div', 'w2-bichos');
-        for (const c of hunt.creatures.slice(0, 5)) bichos.append(figuraDaCriatura(c, bestiario, 34));
-        col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Monstros'), bichos));
-      }
+      // O bloco "Monstros" saiu do painel (dono, 07/10).
+      // O objetivo de verdade da fase (o servidor manda: limpar a área, matar o chefe, matar N, pegar o item da missão) e o progresso.
       const conclusao = el('ul', 'w2-lista');
-      conclusao.append(el('li', null, 'Eliminar os monstros da fase'));
+      const obj = f.objetivo;
+      const texto = obj?.texto ? `${obj.texto[0].toUpperCase()}${obj.texto.slice(1)}` : 'Limpar a área';
+      const feito = f.completa || (obj && obj.feito >= obj.total);
+      conclusao.append(el('li', feito ? 'feito' : null, `${feito ? '✓ ' : ''}${texto}${obj?.tipo === 'matar-n' && !feito ? ` (${obj.feito}/${obj.total})` : ''}`));
       for (const o of m.obrigatorios ?? []) conclusao.append(el('li', null, `${o.nome}${o.tipo === 'boss' || o.tipo === 'miniboss' ? ' (obrigatório)' : ''}`));
       col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Para concluir'), conclusao));
       const exigencias = [];
@@ -539,7 +553,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       entrar.disabled = !f.liberada || !hunt || !!f.pular;
       // Só o servidor decide: este botão pede pelo mesmo fluxo de sempre e o servidor recusa o que não está aberto.
       entrar.onclick = () => h.entrarNaFase(hunt, atoAtual.fases.map((x) => hunts.get(x.huntId)).filter(Boolean));
-      const col3 = el('div', 'w2-col acao', entrar, el('p', 'w2-nota', f.completa ? `${f.limpezas > 1 ? `${f.limpezas} limpezas feitas` : 'Concluída'} — pode repetir a fase.` : f.liberada ? 'Limpe a fase inteira para concluí-la.' : 'Complete os requisitos acima para abrir.'));
+      const col3 = el('div', 'w2-col acao', entrar, el('p', 'w2-nota', f.completa ? `${f.limpezas > 1 ? `${f.limpezas} limpezas feitas` : 'Concluída'} — pode repetir a fase.` : f.liberada ? `Para concluir: ${f.objetivo?.texto ?? 'limpar a área'}.` : 'Complete os requisitos acima para abrir.'));
       painel.append(col1, col2, col3);
     } else {
       const b = atoAtual.boss;
