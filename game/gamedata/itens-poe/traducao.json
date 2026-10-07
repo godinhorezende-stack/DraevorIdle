@@ -106,6 +106,26 @@
       "estado": "equivalente"
     },
     {
+      "padrao": "^\\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
+      "padrao": "^Regenera \\{(\\d+(?:\\.\\d+)?)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "novo"
+    },
+    {
       "padrao": "^\\+\\{(\\d+)\\}% de Resistência a {E}$",
       "efeitos": [
         {
@@ -661,8 +681,7 @@
           "valor": "{1}"
         }
       ],
-      "estado": "novo",
-      "nota": "supressão de magia não existe no Draevor (o mais próximo é o bloqueio de magia, com outra conta)."
+      "estado": "equivalente"
     },
     {
       "padrao": "^Recarga do Escudo de Energia aumentada em \\{(\\d+)\\}%$",

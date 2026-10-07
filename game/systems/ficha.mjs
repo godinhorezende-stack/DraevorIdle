@@ -252,10 +252,23 @@ function calcularCombate(estado) {
   const critChanceMagia = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
   // O dano elemental SOMADO das peças do PoE (`added_<el>_dmg_min/max`): faixa por elemento, nos ataques e nas magias.
   const somado = (prefixo) => Object.fromEntries(ELEMENTOS_DO_POE.map((el) => [el, [af[`${prefixo}${el}_dmg_min`] ?? 0, af[`${prefixo}${el}_dmg_max`] ?? 0]]).filter(([, [a, b]]) => a > 0 || b > 0));
-  // Caos (elemento próprio do PoE — decisão do dono, 04/10): só aparece na ficha quando alguma peça dá.
-  if (af.chaos_res) {
-    protection.chaos = Limites.resistenciaDoJogador(af.chaos_res);
-    excedentes.protection.chaos = Math.max(0, af.chaos_res - protection.chaos);
+  // Caos (elemento próprio do PoE — decisão do dono, 04/10): só aparece na ficha quando alguma peça dá (no PoE, sempre: a penalidade o deixa negativo).
+  if (af.chaos_res || itensPoeLigado()) {
+    protection.chaos = Limites.resistenciaDoJogador(af.chaos_res ?? 0);
+    excedentes.protection.chaos = Math.max(0, (af.chaos_res ?? 0) - protection.chaos);
+  }
+  /*
+   * ---- A PENALIDADE DE RESISTÊNCIA da campanha (PoE; dono, 07/10) ----
+   * Vencer o chefe do Ato 5 tira 30% de todas as resistências (Fogo, Gelo, Raio e Caos); o do Ato 10, mais 30% (−60% ao todo). A conta é
+   * a do PoE: a penalidade entra ANTES do máximo (75%), e a resistência pode ficar NEGATIVA (até −200%: o dano daquele elemento AUMENTA).
+   */
+  const penalidade = itensPoeLigado() ? penalidadeDeResistencia(estado) : 0;
+  if (itensPoeLigado()) {
+    for (const el of ['fire', 'ice', 'energy', 'chaos']) {
+      const bruto = (el === 'chaos' ? af.chaos_res ?? 0 : protection[el] + (excedentes.protection[el] ?? 0)) - penalidade;
+      protection[el] = Math.max(-200, Math.min(Limites.LIMITES.resistenciaDoJogador.maximo, bruto));
+      excedentes.protection[el] = Math.max(0, bruto - protection[el]);
+    }
   }
   const duploBruto = (af.double_attack ?? 0) / 100;
   const ataqueDuplo = Math.min(Limites.LIMITES.ataqueDuplo.chanceMaxima / 100, Math.max(0, duploBruto));
@@ -392,6 +405,11 @@ function calcularCombate(estado) {
     danoRecebidoExtra: arv.danoRecebido ?? 0, // "Dano recebido": o preço de algumas vias
     // "% a mais de regeneração": a árvore + o add Life/Mana Regeneration %.
     regenDaArvore: { hp: (arv.regenHp ?? 0) + (af.life_regen_pct ?? 0) / 100, mana: (arv.regenMana ?? 0) + (af.mana_regen_pct ?? 0) / 100 },
+    // A regeneração do PoE (só com ITENS_POE=1): vida = (+N/s + N% da vida máxima/s) × (1 + aumentada%); mana = (1,8% da máxima + N/s) × (1 + aumentada%).
+    regenPoe: itensPoeLigado() ? regenDoPoe(estado, af) : null,
+    // A SUPRESSÃO DE FEITIÇO do PoE (chance, 0 a 1): a magia suprimida causa 50% menos dano (`poderes.mjs → dispararMagia`).
+    supressaoDeMagia: Math.min(1, Math.max(0, (af.spell_suppression ?? 0) / 100)),
+    penalidadeDeResistencia: penalidade,
     flechaAtravessa: arv.flechaAtravessa ?? 0, // chance de a flecha acertar também quem está atrás
     penetracao,
     ataqueDuplo,
@@ -432,6 +450,22 @@ function armaEquipadaDaFicha(estado) {
     familia: PoderDaArma.familiaDaArma(meta),
     raridade: peca.raridade ?? 'comum',
   };
+}
+
+/** A penalidade de resistência da campanha (PoE): −30% depois do chefe do Ato 5 e −60% depois do Ato 10, em qualquer dificuldade. */
+export function penalidadeDeResistencia(estado) {
+  const vencidos = new Set(Object.values(estado?.campanha ?? {}).flatMap((d) => (Array.isArray(d?.bosses) ? d.bosses.map(Number) : [])));
+  return (vencidos.has(5) ? 30 : 0) + (vencidos.has(10) ? 30 : 0);
+}
+/** A regeneração por segundo no PoE (`{ vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada }`). */
+export const MANA_REGEN_BASE_POE = 1.8;
+export function regenDoPoe(estado, af) {
+  const vidaPctDoMax = af.life_regen_max_pct ?? 0;
+  const vidaAumentada = af.life_regen_pct ?? 0;
+  const manaAumentada = af.mana_regen_pct ?? 0;
+  const vidaPorSegundo = Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  const manaPorSegundo = Math.max(0, (((estado.maxMana ?? 0) * MANA_REGEN_BASE_POE) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));
+  return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0 };
 }
 
 function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosItens, gem, buff }) {
@@ -522,6 +556,13 @@ function origensDaFicha({ estado, af, arv, doAtributo, esp, principais, somaDosI
     por(k, 'Equipamento (base das peças)', dasPecas);
     dosAfixos(k, el === 'physical' ? 'phys_res' : `${el}_res`);
     por(k, 'Gemas (Atelier)', gem.resistencia[el] ?? 0);
+  }
+  if (itensPoeLigado()) {
+    const pen = penalidadeDeResistencia(estado);
+    for (const el of ['fire', 'ice', 'energy', 'chaos']) {
+      if (el === 'chaos') { por('protection.chaos', 'Equipamento (afixos)', dosItens.chaos_res ?? 0); por('protection.chaos', 'Árvore de passivas', adds.chaos_res ?? 0); }
+      por(`protection.${el}`, `Penalidade da campanha (${pen >= 60 ? 'Atos 5 e 10' : 'Ato 5'})`, -pen);
+    }
   }
   return o;
 }

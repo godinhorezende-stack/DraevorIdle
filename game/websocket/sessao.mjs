@@ -1729,7 +1729,8 @@ export class Sessao {
     if (passivas.migrou) estado.avisoDaHunt = 'A árvore de passivas mudou: agora é uma árvore só para todas as classes. Seus pontos voltaram — monte a nova (você tem um respec completo grátis).';
     else if (passivas.arvoreMudou) estado.avisoDaHunt = 'A árvore de passivas ganhou caminhos de atributo (STR/DEX/INT) entre os clusters. Os nós que perderam o caminho saíram e os pontos voltaram — você tem um respec completo grátis para remontar.';
     // A escala da vida/mana mudou (o sistema de itens do PoE foi ligado ou desligado neste servidor — `R.statsBase`): refaz os máximos.
-    const escala = ItensPoeCatalogo.ligado() ? 'poe' : 'draevor';
+    // ('poe-2': a base do PoE de verdade — 50 de vida e 40 de mana no nível 1, dono 07/10 — refaz os máximos de quem estava na escala anterior.)
+    const escala = ItensPoeCatalogo.ligado() ? 'poe-2' : 'draevor';
     if ((estado.escalaDeVida ?? 'draevor') !== escala) {
       refazerMaximosDoPersonagem(estado, estado.level ?? 1);
       estado.hp = Math.min(estado.hp ?? estado.maxHp, estado.maxHp);

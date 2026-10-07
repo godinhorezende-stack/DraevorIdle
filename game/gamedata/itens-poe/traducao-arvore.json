@@ -166,12 +166,11 @@
       "padrao": "^\\{(\\d+(?:\\.\\d+)?)\\}% de Vida Regenerada por segundo$",
       "efeitos": [
         {
-          "stat": "life_regen_pct",
+          "stat": "life_regen_max_pct",
           "valor": "{1}"
         }
       ],
-      "estado": "aproximado",
-      "nota": "no PoE é % da vida máxima por segundo; no Draevor, % a mais de regeneração"
+      "estado": "equivalente"
     }
   ],
   "_keystones": "As KEYSTONES do PoE com mecânica no Draevor (pelo nome em inglês). Só as que dá para representar dos DOIS lados (o bônus e o custo); as outras ficam com a regra `texto` (sem efeito). `estado`: equivalente ou aproximado (com `nota` dizendo a diferença). `efeitos`: o que o nó soma (o mesmo formato das linhas).",

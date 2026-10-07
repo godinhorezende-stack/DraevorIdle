@@ -1255,8 +1255,16 @@ export function regenerar(estado, ms) {
   const daArvore = ficha.regenDaArvore ?? { hp: 0, mana: 0 };
   // A promoção acelera a base (Elite Knight: vida x1,5 — `Promocao.fatorDeRegeneracao`).
   const promo = Promocao.fatorDeRegeneracao(estado);
-  r.hp += (estado.maxHp ?? 0) * 0.004 * s * promo.hp * (1 + daArvore.hp) + (doEquipamento.hp ?? 0) * s;
-  r.mana += (estado.maxMana ?? 0) * 0.006 * s * promo.mana * (1 + daArvore.mana) + (doEquipamento.mana ?? 0) * s;
+  const poe = ficha.regenPoe;
+  if (poe) {
+    // Como no PoE (dono, 07/10): a VIDA não regenera de base — só o "+N por segundo" e o "N% da Vida por segundo" de itens e árvore,
+    // × "Velocidade de Regeneração de Vida aumentada"; a MANA regenera 1,8% da máxima por segundo (+ o fixo), × "Regeneração de Mana aumentada".
+    r.hp += poe.vidaPorSegundo * s;
+    r.mana += poe.manaPorSegundo * s;
+  } else {
+    r.hp += (estado.maxHp ?? 0) * 0.004 * s * promo.hp * (1 + daArvore.hp) + (doEquipamento.hp ?? 0) * s;
+    r.mana += (estado.maxMana ?? 0) * 0.006 * s * promo.mana * (1 + daArvore.mana) + (doEquipamento.mana ?? 0) * s;
+  }
   const hp = Math.floor(r.hp);
   const mana = Math.floor(r.mana);
   r.hp -= hp;

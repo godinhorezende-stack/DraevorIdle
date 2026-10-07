@@ -14,6 +14,8 @@ import * as Passivas from '../passivas/arvore.mjs';
 import * as ClassesPoe from '../itens-poe/classes.mjs';
 import { esperaDaRecarga } from './defesa.mjs';
 import { nomeDaHunt } from '../hunt/terreno.mjs';
+import * as CargasPoe from '../itens-poe/cargas.mjs';
+import { MANA_REGEN_BASE_POE } from '../ficha.mjs';
 
 const ES = Atributos.CONFIG.energyShield ?? {};
 const r2 = (v) => Math.round((Number(v) || 0) * 100) / 100;
@@ -87,7 +89,7 @@ export function montar(estado, ficha, extras = {}) {
   const resistencias = RESIST.map(([el, nome]) => {
     const final = ficha.protection?.[el] ?? 0;
     const bruta = final + (ficha.excedentes?.protection?.[el] ?? 0);
-    return { id: el, nome, final, bruta, maximo: teto, fontes: daOrigem(`protection.${el}`) };
+    return { id: el, nome, final, bruta, maximo: teto, penalidade: ficha.penalidadeDeResistencia ?? 0, fontes: daOrigem(`protection.${el}`) };
   });
 
   // ---- números grandes
@@ -96,8 +98,22 @@ export function montar(estado, ficha, extras = {}) {
   const cg = ficha.cargas ?? {};
   const maxCarga = (k) => 3 + (cg[`max_${k}`] ?? 0);
   const chances = extras.chancesNoLevel ?? {};
-  const regenVida = (extras.hpRegen ?? 0) + (ficha.regenFlat?.hp ?? 0) + (ficha.regenDaArvore?.hp ?? 0);
-  const regenMana = (extras.manaRegen ?? 0) + (ficha.regenFlat?.mana ?? 0) + (ficha.regenDaArvore?.mana ?? 0);
+  // A regeneração do PoE (a mesma conta do jogo — `ficha.regenPoe`, usada em `cacadas.regenerar`).
+  const rp = ficha.regenPoe ?? { vidaPorSegundo: 0, manaPorSegundo: 0, vidaPctDoMax: 0, vidaAumentada: 0, manaAumentada: 0, vidaFixa: 0, manaFixa: 0 };
+  const regenVida = rp.vidaPorSegundo;
+  const regenMana = rp.manaPorSegundo;
+  const fontesDaRegenVida = [
+    ...fonte('Fixa (+N por segundo)', rp.vidaFixa),
+    ...fonte(`${num(rp.vidaPctDoMax, 2)}% da vida máxima por segundo`, ((estado.maxHp ?? 0) * rp.vidaPctDoMax) / 100),
+    ...fonte('Velocidade de regeneração aumentada', rp.vidaAumentada, { pct: true }),
+  ];
+  const fontesDaRegenMana = [
+    ...fonte(`Base do PoE (${num(MANA_REGEN_BASE_POE, 1)}% da mana máxima)`, ((estado.maxMana ?? 0) * MANA_REGEN_BASE_POE) / 100),
+    ...fonte('Fixa (+N por segundo)', rp.manaFixa),
+    ...fonte('Regeneração de mana aumentada', rp.manaAumentada, { pct: true }),
+  ];
+  const cargasAtivas = CargasPoe.ativas(estado);
+  const pen = ficha.penalidadeDeResistencia ?? 0;
   const dano = Object.entries(ficha.danoDoElemento ?? {}).filter(([, v]) => v);
   const NOME_DO_ELEMENTO = { physical: 'Físico', fire: 'de Fogo', ice: 'de Gelo', energy: 'de Raio', chaos: 'de Caos', earth: 'de Veneno', death: 'de Morte', holy: 'Sagrado' };
 
@@ -105,7 +121,7 @@ export function montar(estado, ficha, extras = {}) {
     { id: 'vida', titulo: 'Vida', linhas: [
       linha('Vida máxima', num(estado.maxHp), { fontes: [...vida, ...pctDe('life')], destaque: true }),
       ...(vidaPct ? [linha('Vida máxima aumentada', pct(vidaPct), { fontes: pctDe('life') })] : []),
-      linha('Regeneração de vida por segundo', num(regenVida, 1)),
+      linha('Regeneração de vida por segundo', num(regenVida, 1), { fontes: fontesDaRegenVida, dica: 'no PoE a vida não regenera de base: só pelo equipamento e pela árvore' }),
       linha('Roubo de vida', pct(ficha.lifeLeech), { dica: 'do dano causado volta como vida' }),
       ...(ficha.vidaPorAcerto ? [linha('Vida por acerto', num(ficha.vidaPorAcerto))] : []),
       ...(ficha.vidaPorAbate ? [linha('Vida por inimigo morto', num(ficha.vidaPorAbate))] : []),
@@ -119,7 +135,7 @@ export function montar(estado, ficha, extras = {}) {
     { id: 'mana', titulo: 'Mana', linhas: [
       linha('Mana máxima', num(estado.maxMana), { fontes: [...mana, ...pctDe('mana')], destaque: true }),
       ...(manaPct ? [linha('Mana máxima aumentada', pct(manaPct), { fontes: pctDe('mana') })] : []),
-      linha('Regeneração de mana por segundo', num(regenMana, 1)),
+      linha('Regeneração de mana por segundo', num(regenMana, 1), { fontes: fontesDaRegenMana, dica: `${num(MANA_REGEN_BASE_POE, 1)}% da mana máxima por segundo, como no PoE` }),
       linha('Roubo de mana', pct(ficha.manaLeech)),
       ...(ficha.manaPorAbate ? [linha('Mana por inimigo morto', num(ficha.manaPorAbate))] : []),
       ...(ficha.manaPorAcerto ? [linha('Mana por acerto', num(ficha.manaPorAcerto))] : []),
@@ -150,14 +166,16 @@ export function montar(estado, ficha, extras = {}) {
       linha('Evasão', num(ficha.evasion), { fontes: daOrigem('evasion'), dica: chances.esquiva != null ? `${pct(chances.esquiva * 100, 0)} de chance de evitar o ataque de um monstro do seu nível` : null }),
       linha('Chance de bloquear ataques', pct((ficha.blockChance ?? 0) * 100, 1)),
       linha('Chance de bloquear magias', pct((ficha.bloqueioDeMagia ?? 0) * 100, 1)),
+      linha('Chance de suprimir dano de magia', pct((ficha.supressaoDeMagia ?? 0) * 100, 0), { dica: 'a magia suprimida causa 50% menos dano' }),
+      ...(pen ? [linha('Penalidade de resistência da campanha', `−${pen}%`, { dica: pen >= 60 ? 'depois dos chefes dos Atos 5 e 10' : 'depois do chefe do Ato 5 (mais 30% depois do Ato 10)' })] : []),
       ...(ficha.protection?.physical ? [linha('Redução de dano físico', pct(ficha.protection.physical, 0))] : []),
       ...resistencias.map((r) => linha(`Resistência a ${r.nome}`, `${pct(r.final, 0)}${r.bruta !== r.final ? ` (${pct(r.bruta, 0)})` : ''}`, { fontes: r.fontes, dica: `máximo ${r.maximo}%` })),
       linha('Velocidade de movimento', num(extras.speed ?? ficha.speed), { fontes: daOrigem('speed') }),
     ] },
     { id: 'cargas', titulo: 'Cargas', linhas: [
-      linha('Cargas de Tolerância', `até ${maxCarga('tolerancia')}`, { dica: 'cada: +4% de redução de dano físico e +4% às resistências elementais' }),
-      linha('Cargas de Frenesi', `até ${maxCarga('frenesi')}`, { dica: 'cada: +4% de velocidade de ataque e de conjuração e 4% mais dano' }),
-      linha('Cargas de Poder', `até ${maxCarga('poder')}`, { dica: 'cada: +40% de chance de crítico' }),
+      linha('Cargas de Tolerância', `${cargasAtivas.tolerancia} / ${maxCarga('tolerancia')}`, { dica: 'ativas agora / máximo · cada: +4% de redução de dano físico e +4% às resistências elementais' }),
+      linha('Cargas de Frenesi', `${cargasAtivas.frenesi} / ${maxCarga('frenesi')}`, { dica: 'ativas agora / máximo · cada: +4% de velocidade de ataque e de conjuração e 4% mais dano' }),
+      linha('Cargas de Poder', `${cargasAtivas.poder} / ${maxCarga('poder')}`, { dica: 'ativas agora / máximo · cada: +40% de chance de crítico' }),
     ] },
     { id: 'diversos', titulo: 'Diversos', linhas: [
       linha('Quantidade de itens encontrados', `+${pct(ficha.lootRate, 0)}`),

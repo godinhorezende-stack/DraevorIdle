@@ -198,7 +198,8 @@
     "spell_suppression": {
       "nome": "Chance de Suprimir Dano Mágico",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "systems/poderes.mjs → dispararMagia: a magia suprimida causa 50% menos dano (ficha.supressaoDeMagia)"
     },
     "es_recharge": {
       "nome": "Recarga do Escudo de Energia aumentada",
@@ -584,6 +585,12 @@
       "unidade": "%",
       "combate": true,
       "efeito": "cargas do PoE — itens-poe/cargas.mjs"
+    },
+    "life_regen_max_pct": {
+      "nome": "Vida Regenerada por segundo (% da vida máxima)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "systems/cacadas.mjs → regenerar: % da vida máxima por segundo (ficha.regenPoe)"
     }
   }
 }
