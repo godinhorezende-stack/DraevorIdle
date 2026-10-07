@@ -22,8 +22,8 @@ if (!SEM) {
 }
 const bruxa = () => Object.assign(personagemDeTeste({ vocacao: 'sorcerer', level: 20 }), { classePoe: 'Witch' });
 
-test('as 8 missões do PoE com gatilho e recompensa, e os 262 suportes no jogo (com Coursing Current e Eclipse)', { skip: SEM }, () => {
-  assert.equal(M.MISSOES.length, 8);
+test('as 14 missões do PoE com gatilho e recompensa (todas as da campanha que dão gema), e os 262 suportes no jogo (com Coursing Current e Eclipse)', { skip: SEM }, () => {
+  assert.equal(M.MISSOES.length, 14);
   assert.ok(SP.doSlug('Coursing_Current_Support')?.itemId && SP.doSlug('Eclipse_Support')?.itemId);
   for (const m of M.MISSOES) {
     assert.ok(m.gatilho.fase || m.gatilho.bossDoAto, m.slug);
@@ -71,4 +71,17 @@ test('a campanha chama as missões ao completar a fase (o aviso da tela leva a m
   const src = (await import('node:fs')).readFileSync(new URL('../systems/campanha.mjs', import.meta.url), 'utf8');
   assert.match(src, /MissoesDeGemas\.aoCompletarFase\(estado, f\.huntId\)/);
   assert.match(src, /MissoesDeGemas\.aoVencerBoss\(estado, ato\)/);
+});
+
+test('as missões que faltavam (dono, 07/10): Quebrando Alguns Ovos nos Charcos, O Canto da Sereia no chefe do Ato 1, e as do Ato 2 a 4', { skip: SEM }, () => {
+  const e = bruxa();
+  assert.match(M.aoCompletarFase(e, 'poe-a1-the-mud-flats'), /Quebrando Alguns Ovos/);
+  assert.match(M.aoVencerBoss(e, 1), /O Canto da Sereia/);
+  for (const [fase, nome] of [['poe-a2-the-chamber-of-sins-level-2', 'Invasores de Preto'], ['poe-a3-the-crematorium', 'Perdidamente Apaixonados'], ['poe-a3-the-ebony-barracks', 'Corte a Mão Direita'], ['poe-a4-the-dried-lake', 'Quebrando o Selo']]) {
+    assert.match(M.aoCompletarFase(e, fase), new RegExp(nome), fase);
+  }
+  const p = M.pendentes(e);
+  assert.equal(p.length, 6, 'seis recompensas para escolher');
+  assert.ok(p.every((x) => x.opcoes.length > 0), 'cada uma com gemas da Bruxa');
+  assert.ok(M.escolher(e, { missao: 'The_Sirens_Cadence', itemId: p.find((x) => x.slug === 'The_Sirens_Cadence').opcoes[0] }).ok);
 });

@@ -741,6 +741,468 @@
    }
   },
   {
+   "slug": "Breaking_Some_Eggs",
+   "nome": "Quebrando Alguns Ovos",
+   "en": "Breaking Some Eggs",
+   "ato": 1,
+   "gatilho": {
+    "fase": "poe-a1-the-mud-flats"
+   },
+   "recompensas": {
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Decoy_Totem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Steelskin"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vigilant_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Crushing_Fist"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shield_Charge"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Bomb"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Orb_of_Storms"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Raging_Spirit"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Contagion"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Detonate_Dead"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flame_Wall"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostblink"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Bomb"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bear_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Decoy_Totem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vigilant_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shield_Charge"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostblink"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Snipers_Mark"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bear_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Puncture"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shrapnel_Ballista"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Dash"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Snipers_Mark"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Decoy_Totem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Puncture"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vigilant_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "War_Banner"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blood_and_Sand"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Crushing_Fist"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shield_Charge"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Dash"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Bear_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Orb_of_Storms"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Contagion"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Detonate_Dead"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostblink"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Bomb"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Holy_Relic"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Holy_Flame_Totem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vigilant_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flame_Wall"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shield_Charge"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostblink"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "The_Sirens_Cadence",
+   "nome": "O Canto da Sereia",
+   "en": "The Sirens Cadence",
+   "ato": 1,
+   "gatilho": {
+    "bossDoAto": 1
+   },
+   "recompensas": {
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Infernal_Blow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Static_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Holy_Sweep"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Sunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Chain_Hook"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Earthshatter"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Volcanic_Fissure"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Nova"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blazing_Salvo"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Arc"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flesh_Offering"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Essence_Drain"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Scorching_Ray"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Volatile_Dead"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Creeping_Frost"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Manabond"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Static_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Rain_of_Arrows"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Nova"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blade_Vortex"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Scorching_Ray"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Storm_Burst"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Exsanguinate"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Spectral_Helix"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Toxic_Rain"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Rain_of_Arrows"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Reave"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Siege_Ballista"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Elemental_Hit"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Poisonous_Concoction"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Lacerate"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Holy_Sweep"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Rain_of_Arrows"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shattering_Steel"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Earthshatter"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Reave"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Voltaxic_Burst"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Icicle_Mine"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Fire_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blade_Vortex"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Essence_Drain"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Volatile_Dead"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Venom_Gyre"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Static_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Nova"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blazing_Salvo"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Storm_Call"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Searing_Bond"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Scorching_Ray"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Storm_Brand"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Storm_Burst"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Wintertide_Brand"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Absolution"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Manabond"
+     }
+    ]
+   }
+  },
+  {
    "slug": "Sharp_and_Cruel",
    "nome": "Afiado e Cruel",
    "en": "Sharp and Cruel",
@@ -1062,6 +1524,307 @@
      {
       "tipo": "suporte",
       "slug": "Arcane_Surge_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "Intruders_in_Black",
+   "nome": "Invasores de Preto",
+   "en": "Intruders in Black",
+   "ato": 2,
+   "gatilho": {
+    "fase": "poe-a2-the-chamber-of-sins-level-2"
+   },
+   "recompensas": {
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Warlords_Mark"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Thunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ice"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ancestral_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Seismic_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Corrupting_Fever"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Molten_Shell"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Eviscerate"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Thunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ice"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Desecrate"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Old_Arctic_Armour"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Cold_Snap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Arcane_Cloak"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Galvanic_Field"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Wall_of_Force"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ice"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Thunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frenzy"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Old_Arctic_Armour"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Corrupting_Fever"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Poachers_Mark"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Agony"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ice"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Thunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frenzy"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Old_Arctic_Armour"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blood_Rage"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ensnaring_Arrow"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Poachers_Mark"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Warlords_Mark"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ice"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frenzy"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Thunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flesh_and_Stone"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blood_Rage"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ancestral_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Seismic_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Corrupting_Fever"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Defiance_Banner"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Eviscerate"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Swordstorm"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Glacial_Shield_Swipe"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Assassins_Mark"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Agony"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Thunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ice"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blade_Blast"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Old_Arctic_Armour"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Cold_Snap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Skitterbots"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blood_Rage"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Arcane_Cloak"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Purity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Thunder"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Herald_of_Ice"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Brand_Recall"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Wave_of_Conviction"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Arcane_Cloak"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Divine_Retribution"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shield_of_Light"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Mana-Infused_Staff"
      }
     ]
    }
@@ -1443,6 +2206,628 @@
      {
       "tipo": "suporte",
       "slug": "Bloodthirst_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "Lost_in_Love",
+   "nome": "Perdidamente Apaixonados",
+   "en": "Lost in Love",
+   "ato": 3,
+   "gatilho": {
+    "fase": "poe-a3-the-crematorium"
+   },
+   "recompensas": {
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Anger"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Determination"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Punishment"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vulnerability"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Pride"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Infernal_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Generals_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Petrified_Blood"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vengeful_Cry"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Flammability"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Conductivity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostbite"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Elemental_Weakness"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Despair"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Enfeeble"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Temporal_Chains"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Discipline"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Purity_of_Elements"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Malevolence"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Zealotry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bane"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Spellslinger"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Flammability"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Conductivity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostbite"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Elemental_Weakness"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vulnerability"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Temporal_Chains"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Punishment"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Anger"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Wrath"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Hatred"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bane"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Malevolence"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Zealotry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Petrified_Blood"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Hatred"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Grace"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Despair"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Alchemists_Mark"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Hatred"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Grace"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Dread_Banner"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Pride"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Rallying_Cry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Petrified_Blood"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Flammability"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Conductivity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostbite"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Elemental_Weakness"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Despair"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Enfeeble"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Temporal_Chains"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Wrath"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Hatred"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bane"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Malevolence"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Plague_Bearer"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Flammability"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Conductivity"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frostbite"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Elemental_Weakness"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Vulnerability"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Enfeeble"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Punishment"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Zealotry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Battlemages_Cry"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "Sever_the_Right_Hand",
+   "nome": "Corte a Mão Direita",
+   "en": "Sever the Right Hand",
+   "ato": 3,
+   "gatilho": {
+    "fase": "poe-a3-the-ebony-barracks"
+   },
+   "recompensas": {
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Cyclone"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Crash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Earthquake"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Tectonic_Slam"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Rage_Vortex"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Glacial_Cascade"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flameblast"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Firestorm"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ball_Lightning"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Crackling_Lance"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Raise_Spectre"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Kinetic_Blast"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Somatic_Shell"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Kinetic_Rain"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Cremation"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Soulrend"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Stormbind"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Hexblast"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Reaper"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Eye_of_Winter"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Conduit"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Cyclone"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Tornado_Shot"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flameblast"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bladefall"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blade_Flurry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Charged_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Tectonic_Slam"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Divine_Ire"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Soulrend"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Hexblast"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Reap"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Scourge_Arrow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Conflagration"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Thunderstorm"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Tornado_Shot"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blast_Rain"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Wild_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blade_Flurry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Charged_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Artillery_Ballista"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Storm_Rain"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Explosive_Concoction"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Cyclone"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Crash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blast_Rain"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Thunderstorm"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Charged_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lancing_Steel"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bladestorm"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Spectral_Shield_Throw"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Pyroclast_Mine"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ball_Lightning"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flamethrower_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Lightning_Spire_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Seismic_Trap"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Bladefall"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Blade_Flurry"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Charged_Dash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Cremation"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Soulrend"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Pestilent_Strike"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Hexblast"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Ice_Crash"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Stormbind"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flameblast"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Firestorm"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shock_Nova"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Shockwave_Totem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Consecrated_Path"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Holy_Hammers"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Dominating_Blow"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Armageddon_Brand"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Divine_Ire"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Penance_Brand"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Divine_Blast"
      }
     ]
    }
@@ -1885,6 +3270,267 @@
      {
       "tipo": "suporte",
       "slug": "Frigid_Bond_Support"
+     }
+    ]
+   }
+  },
+  {
+   "slug": "Breaking_the_Seal",
+   "nome": "Quebrando o Selo",
+   "en": "Breaking the Seal",
+   "ato": 4,
+   "gatilho": {
+    "fase": "poe-a4-the-dried-lake"
+   },
+   "recompensas": {
+    "Marauder": [
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Chaos_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Ice_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Flame_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Stone_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Lightning_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Berserk"
+     }
+    ],
+    "Witch": [
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Chaos_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Ice_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Flame_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Stone_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Lightning_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Carrion_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Sigil_of_Power"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Void_Sphere"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Shield"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Hydrosphere"
+     }
+    ],
+    "Scion": [
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Chaos_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Ice_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Flame_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Stone_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Lightning_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Void_Sphere"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Shield"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Soul_Link"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Flame_Link"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Intuitive_Link"
+     }
+    ],
+    "Ranger": [
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Chaos_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Ice_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Flame_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Stone_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Lightning_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Tornado"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Snipe"
+     }
+    ],
+    "Duelist": [
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Chaos_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Ice_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Flame_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Stone_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Lightning_Golem"
+     }
+    ],
+    "Shadow": [
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Chaos_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Ice_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Flame_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Stone_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Lightning_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Temporal_Rift"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Void_Sphere"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Shield"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Tornado"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Ambush"
+     }
+    ],
+    "Templar": [
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Chaos_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Ice_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Flame_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Stone_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Lightning_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Summon_Carrion_Golem"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Sigil_of_Power"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Void_Sphere"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frost_Shield"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Hydrosphere"
+     },
+     {
+      "tipo": "ativa",
+      "slug": "Frozen_Legion"
      }
     ]
    }

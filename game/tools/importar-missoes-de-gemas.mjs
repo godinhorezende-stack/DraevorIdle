@@ -30,6 +30,17 @@ const GATILHOS = {
   A_Fixture_of_Fate: { fase: 'poe-a3-the-library' },
   An_Indomitable_Spirit: { fase: 'poe-a4-the-mines-level-2' },
   The_Eternal_Nightmare: { bossDoAto: 4 },
+  // As que faltavam (dono, 07/10: "implemente as missões que faltam para dar as gemas no jogo") — as recompensas vêm da tabela do poedb
+  // (`original/poe-atos/Missoes/recompensas-por-missao.json`), o fim de cada uma pelo último passo no PoE:
+  //   Quebrando Alguns Ovos — abrir a passagem com os glifos, nos Charcos;  O Canto da Sereia — matar a Merveil, o chefe do Ato 1;
+  //   Intrusos de Preto — matar o Fidelitas, na Câmara dos Pecados 2;  Perdidos de Amor — a pulseira do Tolman, no Crematório;
+  //   Decepar a Mão Direita — matar o General Gravicius, no Quartel de Ébano;  Rompendo o Selo — o estandarte do Voll, no Lago Seco.
+  Breaking_Some_Eggs: { fase: 'poe-a1-the-mud-flats' },
+  The_Sirens_Cadence: { bossDoAto: 1 },
+  Intruders_in_Black: { fase: 'poe-a2-the-chamber-of-sins-level-2' },
+  Lost_in_Love: { fase: 'poe-a3-the-crematorium' },
+  Sever_the_Right_Hand: { fase: 'poe-a3-the-ebony-barracks' },
+  Breaking_the_Seal: { fase: 'poe-a4-the-dried-lake' },
 };
 
 // (O apóstrofo some antes: "Guardian's Blessing" e "Guardians Blessing" são a mesma gema.)
@@ -68,6 +79,28 @@ for (const m of ler('suportes-drive/missoes.json')) {
   }
   missoes.push({ slug: m.slug, nome: nomesPt.get(m.slug) ?? m.nome, en: m.nome, ato: Number(m.ato), gatilho, recompensas });
 }
+
+// As missões que a coleção do Drive não tem: a tabela "Quest Reward" do poedb (por classe, já com o slug de cada gema).
+const POEDB = join(RAIZ, 'original', 'poe-atos', 'Missoes', 'recompensas-por-missao.json');
+const CLASSE_DO_POEDB = { Marauder: 'Marauder', Bruxa: 'Witch', Herdeira: 'Scion', 'Caçadora': 'Ranger', Duelista: 'Duelist', Sombra: 'Shadow', 'Templário': 'Templar' };
+const slugsDeSuporte = new Set(suportes.values());
+const slugsDeAtiva = new Set(ativas.values());
+if (existsSync(POEDB)) {
+  for (const m of JSON.parse(readFileSync(POEDB, 'utf8')).itens) {
+    const gatilho = GATILHOS[m.missao.slug];
+    if (!gatilho || missoes.some((x) => x.slug === m.missao.slug)) continue;
+    const recompensas = {};
+    for (const [classePt, lista] of Object.entries(m.por_classe ?? {})) {
+      const classe = CLASSE_DO_POEDB[classePt];
+      if (!classe) continue;
+      recompensas[classe] = lista
+        .map((g) => (slugsDeSuporte.has(g.slug) ? { tipo: 'suporte', slug: g.slug } : slugsDeAtiva.has(g.slug) ? { tipo: 'ativa', slug: g.slug } : (semGema.add(g.nome), null)))
+        .filter(Boolean);
+    }
+    missoes.push({ slug: m.missao.slug, nome: nomesPt.get(m.missao.slug) ?? m.missao.nome, en: m.missao.slug.replace(/_/g, ' '), ato: Number(m.ato), gatilho, recompensas });
+  }
+}
+missoes.sort((a, b) => a.ato - b.ato);
 
 writeFileSync(SAIDA, `${JSON.stringify({
   _nota: 'As missões do PoE que dão gemas (tools/importar-missoes-de-gemas.mjs, da coleção do dono no Drive). `gatilho`: a fase da campanha que, completada pela primeira vez, conclui a missão (ou o chefe do ato). `recompensas`: por classe, as gemas da lista Normal do PoE — o jogador ESCOLHE uma, no nível 1 (dono, 06/10: "como no PoE"; só gemas ativas e suportes; a Zuma continua vendendo todas).',
