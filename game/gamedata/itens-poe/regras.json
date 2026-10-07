@@ -127,10 +127,10 @@
     }
   },
   "frascos": {
-    "_nota": "Os FRASCOS do PoE (systems/itens-poe/frascos.mjs). `vagas`: o cinto. `usoAutomatico`: o jogo usa sozinho na caçada — Vida abaixo de vidaAbaixoPct da vida, Mana abaixo de manaAbaixoPct, Utilidade sempre que há monstro vivo. `cargasPorMorte`: cargas que cada frasco do cinto ganha por monstro morto, pela raridade (× a Recuperação de Cargas do frasco). `utilidade`: o efeito da BASE de cada frasco de Utilidade (o PoE não traz no catálogo importado; números do PoE 1), nos atributos do Draevor — Diamante, Quartzo e Enxofre são aproximados; Água-marinha, Corindo e Ferro (imunidades, Proteção) ficam só no texto.",
+    "_nota": "Os FRASCOS do PoE (systems/itens-poe/frascos.mjs). `vagas`: o cinto. `usoAutomatico`: o jogo usa sozinho na caçada — Vida abaixo de vidaAbaixoPct da vida, Mana abaixo de manaAbaixoPct, Utilidade sempre que há monstro vivo. `cargasPorMorte`: cargas que cada frasco do cinto ganha por monstro morto, pela raridade (dono, 07/10: Comum 1, Mágico 3,5, Raro 6, Único 11; voltar à cidade enche na hora) (× a Recuperação de Cargas do frasco). `utilidade`: o efeito da BASE de cada frasco de Utilidade (o PoE não traz no catálogo importado; números do PoE 1), nos atributos do Draevor — Diamante, Quartzo e Enxofre são aproximados; Água-marinha, Corindo e Ferro (imunidades, Proteção) ficam só no texto.",
     "vagas": 5,
     "usoAutomatico": { "vidaAbaixoPct": 50, "manaAbaixoPct": 30, "utilidadeEmCombate": true },
-    "cargasPorMorte": { "normal": 1, "modificado": 2, "raro": 5, "elite": 5, "unico": 10, "boss": 10 },
+    "cargasPorMorte": { "normal": 1, "modificado": 3.5, "raro": 6, "elite": 6, "unico": 11, "boss": 11 },
     "utilidade": {
       "Ruby_Flask": { "texto": "+50% de Resistência a Fogo", "af": { "fire_res": 50 } },
       "Sapphire_Flask": { "texto": "+50% de Resistência a Gelo", "af": { "ice_res": 50 } },

@@ -1,6 +1,7 @@
 // Inventário: slots de equipamento com os PNGs do client, arrastar e soltar
 // para equipar, menu de contexto por item e a loot pouch com venda rápida.
 import { abrirForjaPoe } from './forja-poe.mjs';
+import { configurarFrasco } from './actionbar.mjs';
 import { itemCanvas, itemSprite } from './sprites.mjs';
 import { abrirSoquetes, temSoquetes, usarOrbe } from './soquetes.mjs';
 import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
@@ -2115,7 +2116,7 @@ export function renderCintoDeFrascos() {
 }
 function cintoDeFrascos(vagas, send) {
   const cinto = el('div', 'poe-cinto');
-  cinto.title = 'Frascos: usados sozinhos na caçada. Clique para usar agora; botão direito para tirar do cinto.';
+  cinto.title = 'Frascos: usados sozinhos na caçada pela regra de cada um (clique para configurar); botão direito para tirar do cinto. A barra de ações mostra os mesmos, nas teclas 1 a 5.';
   const fila = el('div', 'poe-cinto-fila');
   vagas.forEach((f, v) => {
     if (!f) {
@@ -2124,7 +2125,8 @@ function cintoDeFrascos(vagas, send) {
       return void fila.append(vazia);
     }
     const caixa = el('div', `poe-frasco ${f.tipo ?? ''}${f.ativoAte > 0 ? ' ativo' : ''}`);
-    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => send({ t: 'frasco', action: 'usar', vaga: v }) });
+    // O mesmo clique da casa do frasco na barra (o espelho): abre a regra de uso (vida/mana abaixo de X%), com Beber agora e Tirar.
+    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => configurarFrasco(v) });
     cell.oncontextmenu = (event) => {
       event.preventDefault();
       openMenu(event, [

@@ -564,7 +564,7 @@ function trocaCabe(de, para) {
  * "Quando clico nele no slot configuro a % de vida que quero usar o de vida; se for de mana, a % de mana." O frasco de Utilidade escolhe
  * entre usar sozinho em combate ou só na tecla. Quem guarda é o servidor (`{t:'frasco', action:'configurar'}` → `frascos.mjs`).
  */
-function configurarFrasco(vaga) {
+export function configurarFrasco(vaga) {
   const f = ctx.state.character.frascosPoe?.[vaga];
   if (!f) return;
   const nome = f.peca.poe?.nome ?? 'Frasco';
@@ -642,7 +642,8 @@ function montarHotbar(bar, actions, total) {
       const cheio = el('i');
       cheio.style.height = `${Math.round((100 * f.cargas) / Math.max(1, f.cargasMaximas))}%`;
       cargas.append(cheio);
-      cell.append(cargas, el('b', 'frasco-num', String(f.cargas)));
+      cell.append(cargas, el('b', 'frasco-num', `${f.cargas}/${f.cargasMaximas}`));
+      cargas.title = `${f.cargas}/${f.cargasMaximas} cargas (usa ${f.cargasPorUso})`;
       tipFor(cell, f.peca.id, null, null, f.peca);
       // A regra de uso no canto (dono, 07/10): "≤50%" no de vida/mana, "auto" no de utilidade; o clique abre a configuração.
       if (f.regra) cell.append(el('i', 'frasco-regra', f.tipo === 'utilidade' ? (f.regra.emCombate ? 'auto' : 'tecla') : `≤${f.regra.abaixoPct}%`));
@@ -653,9 +654,20 @@ function montarHotbar(bar, actions, total) {
       };
     } else {
       cell.append(el('span', 'plus', '+'));
-      cell.title = `Vaga ${v + 1} do cinto de frascos: clique num frasco da mochila para pôr aqui.`;
+      cell.title = `Vaga ${v + 1} do cinto de frascos: arraste um frasco da mochila para cá (ou clique nele na mochila).`;
       cell.onclick = () => ctx.openWindow?.('inventory');
     }
+    // O ESPELHO do cinto do inventário (dono, 07/10): arrastar um frasco da mochila para a casa põe ele NESTA vaga do cinto.
+    cell.addEventListener('dragover', (event) => { event.preventDefault(); cell.classList.add('over'); });
+    cell.addEventListener('dragleave', () => cell.classList.remove('over'));
+    cell.addEventListener('drop', (event) => {
+      event.preventDefault();
+      cell.classList.remove('over');
+      try {
+        const carga = JSON.parse(event.dataTransfer.getData('text/plain'));
+        if (carga?.from === 'bag' && Number.isInteger(carga.pilha)) ctx.send({ t: 'frasco', action: 'por', pilha: carga.pilha, vaga: v });
+      } catch { /* arrasto de fora */ }
+    });
     const tecla = catalog?.teclasDosFrascos?.[v];
     if (tecla) cell.append(el('u', 'key', escreverTecla(tecla)));
     bar.append(cell);

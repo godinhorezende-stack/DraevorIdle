@@ -296,6 +296,11 @@ export function configurar(estado, { vaga, abaixoPct, emCombate } = {}) {
   return { ok: true, notice: `${peca.poe.nome}: usa quando a ${tipo} estiver abaixo de ${pct}%.` };
 }
 
+/** Enche todos os frascos do cinto (a cidade). */
+export function encherNaCidade(estado) {
+  for (const p of cinto(estado)) if (p?.poe) p.poe.cargas = parametros(p).cargasMaximas;
+}
+
 /** Matou um monstro: cargas para todos os frascos do cinto, pela raridade dele (× a Recuperação de Cargas de cada frasco). */
 export function aoMatar(estado, tipoDoMonstro = 'normal') {
   if (!ligado()) return;
@@ -328,6 +333,8 @@ export function buffs(estado) {
 /** O cinto para a tela: cada vaga com o frasco (a peça), as cargas, o custo e se está ativo. */
 export function paraCliente(estado) {
   if (!ligado()) return null;
+  // Na cidade (fora da caçada) os frascos estão sempre cheios (dono, 07/10: "voltando para a cidade recupera na hora a carga").
+  if (!estado.hunt) encherNaCidade(estado);
   const agora = estado.hunt?.clock ?? 0;
   const ativos = estado.hunt?.frascosPoe?.ativos ?? {};
   return cinto(estado).map((p, v) => {

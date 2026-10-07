@@ -125,11 +125,32 @@ test('na caçada: enche ao entrar, usa sozinho com a vida baixa, recupera ao lon
   assert.ok(!(Afixos.soma(e).fire_res >= 50));
   // Matar dá cargas a todos (pela raridade do monstro), sem passar do máximo.
   Fr.aoMatar(e, 'raro');
-  assert.equal(Fr.cinto(e)[0].poe.cargas, 7 + 5);
-  assert.equal(Fr.cinto(e)[1].poe.cargas, 30 + 5);
+  assert.equal(Fr.cinto(e)[0].poe.cargas, 7 + 6);
+  assert.equal(Fr.cinto(e)[1].poe.cargas, 30 + 6);
   for (let i = 0; i < 20; i++) Fr.aoMatar(e, 'boss');
   assert.equal(Fr.cinto(e)[1].poe.cargas, 50);
   // Para a tela.
   const tela = Fr.paraCliente(e);
   assert.deepEqual([tela.length, tela[0].tipo, tela[1].cargas, tela[1].cargasPorUso, tela[2]], [5, 'vida', 50, 20, null]);
+});
+
+test('cargas por monstro como o dono pediu (Comum 1, Mágico 3,5, Raro 6, Único 11) e a cidade enche os frascos na hora', { skip: SEM }, async () => {
+  const F = await import('../systems/itens-poe/frascos.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  const Jogo = await import('../systems/itens-poe/jogo.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  Jogo.iniciar(ITEM_CATALOG);
+  const e = personagemDeTeste({ vocacao: 'knight', level: 10 });
+  e.inventory = [Jogo.frascoInicial()];
+  assert.ok(F.por(e, { pilha: 0 }).ok);
+  const f = F.cinto(e)[0];
+  f.poe.cargas = 0;
+  for (const [tipo, n] of [['normal', 1], ['modificado', 3.5], ['raro', 6], ['unico', 11]]) {
+    f.poe.cargas = 0;
+    F.aoMatar(e, tipo);
+    assert.equal(f.poe.cargas, Math.min(n, F.parametros(f).cargasMaximas), tipo);
+  }
+  f.poe.cargas = 2;
+  e.hunt = null;
+  assert.equal(F.paraCliente(e)[0].cargas, F.parametros(f).cargasMaximas, 'na cidade, cheio');
 });

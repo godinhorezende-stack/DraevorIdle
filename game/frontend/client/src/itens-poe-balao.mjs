@@ -10,7 +10,12 @@ const ROTULO = {
 const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance_critico_pct: '%', alcance_metros: ' m', duracao_segundos: ' s' };
 const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○' };
 const ESTADO = { equivalente: 'tem efeito no Draevor (mesma conta)', aproximado: 'tem efeito no Draevor (com diferença)', novo: 'atributo novo do PoE, com efeito', registrado: 'registrado, ainda sem efeito no combate' };
-export const valorDoAtributo = (k, v) => (v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`);
+/** O valor de um atributo da base no balão. `recupera` (frasco): "70 de Vida em 3 s"; faixa: "min–max"; o resto com o sufixo. */
+export const valorDoAtributo = (k, v) => {
+  if (k === 'recupera' && v && typeof v === 'object') return `${v.quantidade} de ${v.recurso === 'mana' ? 'Mana' : 'Vida'} em ${String(v.segundos).replace('.', ',')} s`;
+  if (k === 'cargas_atuais') return String(v);
+  return v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`;
+};
 
 function no(tag, classe, ...filhos) {
   const e = document.createElement(tag);
@@ -60,8 +65,12 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
   const titulo = (texto) => no('div', 'poe-secao', texto);
   // A QUALIDADE (poedb › Quality): a linha "Qualidade: +X%" em cima e o dano físico/defesa já escalados (em azul, como no PoE).
   const q = Number(p.qualidade) || 0;
-  const QUALIFICAM = new Set(['dano_fisico', 'armadura', 'evasao', 'escudo_energia']);
-  const comQ = (k, v) => (!q || !QUALIFICAM.has(k) ? v : v && typeof v === 'object' ? { min: Math.round(v.min * (1 + q / 100)), max: Math.round(v.max * (1 + q / 100)) } : Math.round(v * (1 + q / 100)));
+  const QUALIFICAM = new Set(['dano_fisico', 'armadura', 'evasao', 'escudo_energia', 'recupera']);
+  const comQ = (k, v) => {
+    if (!q || !QUALIFICAM.has(k)) return v;
+    if (k === 'recupera') return v && typeof v === 'object' ? { ...v, quantidade: Math.round(v.quantidade * (1 + q / 100)) } : v;
+    return v && typeof v === 'object' ? { min: Math.round(v.min * (1 + q / 100)), max: Math.round(v.max * (1 + q / 100)) } : Math.round(v * (1 + q / 100));
+  };
   const props = [
     q ? no('div', null, 'Qualidade: ', no('b', 'poe-aumentado', `+${q}%`)) : null,
     ...Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', q && QUALIFICAM.has(k) ? 'poe-aumentado' : null, valorDoAtributo(k, comQ(k, v))))),
