@@ -5859,6 +5859,15 @@ document.addEventListener('keydown', (event) => {
    * Cada tecla é uma ordem única — nada de repetir enquanto se segura, senão a
    * primeira magia queimaria a mana toda no cooldown do grupo.
    */
+  // A barra do PoE: as teclas 1 a 5 usam o frasco da vaga (em qualquer caçada — na automática também vale apertar).
+  if (state.hunt && !event.repeat && state.character?.frascosPoe) {
+    const vaga = (state.actionCatalog?.teclasDosFrascos ?? []).indexOf(key);
+    if (vaga >= 0) {
+      event.preventDefault();
+      if (state.character.frascosPoe[vaga]) send({ t: 'frasco', action: 'usar', vaga });
+      return;
+    }
+  }
   if (state.hunt?.manual && !event.repeat) {
     const slot = (state.character?.hotkeys ?? []).indexOf(key);
     if (slot >= 0) {

@@ -247,7 +247,7 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
     // Barra de ações: vazia (22 slots), teclas 1-9/0/-/= de fábrica (o mesmo
     // molde de `CHARACTER_TEMPLATE.hotkeys`), sem arranjo salvo. Ver `acoes.mjs`.
     actions: Array(Acoes.SLOTS).fill(null),
-    hotkeys: [...CHARACTER_TEMPLATE.hotkeys],
+    hotkeys: [...Acoes.TECLAS_PADRAO],
     actionPresets: [],
     settings: { ...CHARACTER_TEMPLATE.settings },
     ...Recompensas.estadoInicial(),
@@ -395,7 +395,7 @@ function characterParaCliente(personagem, estado) {
     actions: estado.actions ?? CHARACTER_TEMPLATE.actions,
     // As regras de uso automático por tag (etapa 5): a tela lista e edita.
     regrasDeUso: estado.regrasDeUso ?? [],
-    hotkeys: estado.hotkeys ?? CHARACTER_TEMPLATE.hotkeys,
+    hotkeys: estado.hotkeys ?? Acoes.TECLAS_PADRAO,
     actionPresets: estado.actionPresets ?? [],
     settings: { ...CHARACTER_TEMPLATE.settings, ...(estado.settings ?? {}) },
     diario: Recompensas.diarioParaCliente(estado.diario ?? CHARACTER_TEMPLATE.diario),
@@ -1754,6 +1754,8 @@ export class Sessao {
     if (desempilhada.pecas) estado.avisoDaHunt = `Munição e armas de arremesso não empilham mais: ficou uma de cada pilha, e ${desempilhada.pecas.toLocaleString('pt-BR')} a mais viraram ${desempilhada.ouro.toLocaleString('pt-BR')} de ouro.`;
     // O treino (pátio, Exercise, offline) saiu do jogo: quem ainda tinha algo dele gravado sai limpo (`systems/sem-treino.mjs`).
     SemTreino.limpar(estado);
+    // A barra do PoE tem 8 slots de habilidade (antes eram 22 com as poções): quem vem da barra antiga fica com as ações compactadas e as teclas de fábrica.
+    Acoes.ajustarBarra(estado);
     // Deslogado fora de caçada: a stamina voltou nesse tempo (na caçada offline ela gasta — ver `simularAusencia`).
     if (!estado.hunt && personagem.visto_em) Stamina.recuperar(estado, Date.now() - personagem.visto_em);
     // Um duelo da Arena x1 que o servidor não terminou (caiu no meio): o level de verdade volta.

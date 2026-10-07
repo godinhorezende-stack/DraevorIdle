@@ -2109,21 +2109,9 @@ export function esquecerOsDesenhos() {
  * direito tira de volta para a mochila. Um frasco da mochila entra no cinto com o clique nele. Chamada a cada estado (`main.mjs`): só refaz
  * quando o cinto mudou.
  */
-let assinaturaDoCinto = null;
+/** O cinto morava ao lado das réguas de vida e mana; agora é a barra de ações que o desenha (frascos 1 a 5 — `actionbar.mjs`). */
 export function renderCintoDeFrascos() {
-  const barras = document.getElementById('hud-bars');
-  if (!barras || !ctx) return;
-  const vagas = ctx.state.character?.frascosPoe ?? null;
-  let slot = barras.querySelector('.bar-slot.poe-cinto-slot');
-  if (!vagas) return void slot?.remove();
-  const assinatura = JSON.stringify(vagas.map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.cargasMaximas, f.ativoAte > 0]));
-  if (slot && assinatura === assinaturaDoCinto) return;
-  assinaturaDoCinto = assinatura;
-  if (!slot) {
-    slot = el('div', 'bar-slot poe-cinto-slot');
-    barras.append(slot);
-  }
-  slot.replaceChildren(cintoDeFrascos(vagas, ctx.send));
+  document.querySelector('#hud-bars .poe-cinto-slot')?.remove();
 }
 function cintoDeFrascos(vagas, send) {
   const cinto = el('div', 'poe-cinto');
@@ -2195,6 +2183,8 @@ export function renderInventory() {
   const rodape = poe ? el('div', 'inv-rodape-poe') : null;
   const ondeVai = (slot) => (rodape && (slot === 'backpack' || slot.startsWith('@')) ? rodape : equipment);
   for (const slot of slots) {
+    // No PoE a mochila (o item) não aparece: a grade de 20 casas é a mochila; só a lixeira fica no rodapé (dono, 07/10).
+    if (poe && slot === 'backpack') continue;
     // Os dois selos ocupam os buracos da grade: não são slots, não recebem
     // arrasto e não têm moldura de encaixe.
     // O VIP e as bênçãos viraram uma faixa própria, legível (`faixaDoVipEBencaos`, logo abaixo do corpo). Na grade do Draevor o

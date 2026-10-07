@@ -547,14 +547,14 @@ function restoreSize(entry, id) {
 
 function applyMinimized(entry, minimized) {
   const { node } = entry;
+  /*
+   * A altura a restaurar é só a que a pessoa DEU (o `style.height` de uma janela redimensionada); uma janela de tamanho fixo
+   * (o inventário) volta à altura natural dela. Medir `offsetHeight` aqui era o bug do "não consigo maximizar": a medida saía
+   * DEPOIS de a classe `minimized` entrar — 48px de cabeçalho — e a janela voltava com 48px, o corpo espremido em nada.
+   */
+  if (minimized && !node.classList.contains('minimized')) entry.restoreHeight = node.style.height || null;
   node.classList.toggle('minimized', minimized);
-  if (minimized) {
-    // Guarda a altura para restaurar depois; o corpo some, o cabeçalho fica.
-    entry.restoreHeight = node.style.height || `${node.offsetHeight}px`;
-    node.style.height = '';
-  } else if (entry.restoreHeight) {
-    node.style.height = entry.restoreHeight;
-  }
+  node.style.height = minimized ? '' : entry.restoreHeight ?? '';
   node.querySelector('.window-min').textContent = minimized ? '▢' : '—';
   markResized(entry);
 }

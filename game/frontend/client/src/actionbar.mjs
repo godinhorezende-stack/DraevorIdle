@@ -4,7 +4,7 @@
 // Quantos slots existem e onde a linha quebra vêm do servidor (`catalog.slots`
 // e `catalog.slotsPorFileira`); aqui não há número de slot escrito à mão.
 import { itemCanvas, outfitCanvas, outfitInfo } from './sprites.mjs';
-import { tipForAction, previaDaMagia, blocoDaGemaDaSkill, corpoDaGemaPoe, blocoDaGemaPoe } from './tooltip.mjs';
+import { tipForAction, tipFor, previaDaMagia, blocoDaGemaDaSkill, corpoDaGemaPoe, blocoDaGemaPoe } from './tooltip.mjs';
 import { abrirRegrasDeUso } from './regras-de-uso.mjs';
 import { artOrUiIcon } from './hud.mjs';
 import { ehCelular } from './mobile.mjs';
@@ -508,6 +508,8 @@ export function renderActionBar() {
     // canto do slot, e sem isto a barra só mudava quando a AÇÃO mudava.
     (state.character.hotkeys ?? []).join(','),
     esperandoTecla ?? '-',
+    // Os frascos do cinto (a barra do PoE): o que está em cada vaga, as cargas e se está ativo.
+    ...(state.character.frascosPoe ?? []).map((f) => (f ? `${f.peca.id}:${f.cargas}:${f.ativoAte > 0 ? 1 : 0}` : '-')),
     ...Array.from({ length: total }, (_, index) => {
       const action = actions[index];
       if (!action) return '-';
@@ -569,11 +571,48 @@ function montarHotbar(bar, actions, total) {
    * quebra escrita no CSS partiria a fileira no meio de um ofício no dia em
    * que a divisão mudasse.
    */
-  bar.style.setProperty('--slots-por-fileira', catalog?.slotsPorFileira ?? total);
+  const frascos = catalog?.frascos ?? 0;
+  bar.style.setProperty('--slots-por-fileira', (catalog?.slotsPorFileira ?? total) + frascos);
+
+  /*
+   * ---- A BARRA DO PoE: os frascos 1 a 5 antes das habilidades ----
+   *
+   * Dono, 07/10: "os frascos não aparecem do lado da stamina; fica 1 a 5, e mais 8 que podem ser ataques, auras, suporte etc".
+   * As 5 vagas do cinto (`character.frascosPoe`) são as primeiras casas da fileira, nas teclas 1 a 5: clique usa o frasco, botão
+   * direito tira do cinto, a barrinha é a carga. Elas não são ações (sem `data-slot`): quem usa é `{t:'frasco'}`, e o arranjo
+   * do celular as deixa quietas na fileira.
+   */
+  const vagas = ctx.state.character.frascosPoe ?? [];
+  for (let v = 0; v < frascos; v++) {
+    const f = vagas[v] ?? null;
+    const cell = el('div', `slot frasco-slot${f ? ' filled' : ''}${f?.tipo ? ` ${f.tipo}` : ''}${f?.ativoAte > 0 ? ' ativo' : ''}`);
+    cell.dataset.frasco = v;
+    if (f) {
+      cell.append(itemCanvas(f.peca.id, tamanhoDoIcone()));
+      const cargas = el('i', 'frasco-cargas');
+      const cheio = el('i');
+      cheio.style.height = `${Math.round((100 * f.cargas) / Math.max(1, f.cargasMaximas))}%`;
+      cargas.append(cheio);
+      cell.append(cargas, el('b', 'frasco-num', String(f.cargas)));
+      tipFor(cell, f.peca.id, null, null, f.peca);
+      cell.onclick = () => ctx.send({ t: 'frasco', action: 'usar', vaga: v });
+      cell.oncontextmenu = (event) => {
+        event.preventDefault();
+        ctx.send({ t: 'frasco', action: 'tirar', vaga: v });
+      };
+    } else {
+      cell.append(el('span', 'plus', '+'));
+      cell.title = `Vaga ${v + 1} do cinto de frascos: clique num frasco da mochila para pôr aqui.`;
+      cell.onclick = () => ctx.openWindow?.('inventory');
+    }
+    const tecla = catalog?.teclasDosFrascos?.[v];
+    if (tecla) cell.append(el('u', 'key', escreverTecla(tecla)));
+    bar.append(cell);
+  }
 
   for (let index = 0; index < total; index++) {
     const action = actions[index];
-    const slot = el('div', `slot${action ? ' filled' : ''}`);
+    const slot = el('div', `slot${action ? ' filled' : ''}${frascos && index === 0 ? ' primeira-skill' : ''}`);
     slot.dataset.slot = index;
     if (action && !action.enabled) slot.classList.add('off');
 

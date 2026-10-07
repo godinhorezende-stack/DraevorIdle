@@ -3589,6 +3589,19 @@ body {
   border-radius: 999px; padding: 0 5px; line-height: 14px; pointer-events: none;
   background: var(--copper); color: #1a1208;
 }
+/* ---- Os FRASCOS na barra do PoE (as 5 primeiras casas, teclas 1 a 5) ----
+   Quadro em bronze, para se distinguir das habilidades; a barrinha à esquerda é a carga (vermelha = vida, azul = mana, dourada =
+   utilidade), o número embaixo são as cargas, e o frasco ativo acende. Um filete separa os frascos da primeira habilidade. */
+.hotbar .slot.frasco-slot { border-color: #6a5a3a; box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 7px -1px #b08a3e55, 0 1px 2px #0006; }
+.hotbar .slot.frasco-slot.filled { border-color: #b08a3ecc; background: #1f1c15; }
+.hotbar .slot.frasco-slot:hover { border-color: #e0c070; box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 11px -1px #d8b56acc; }
+.hotbar .slot.frasco-slot .frasco-cargas { position: absolute; left: 3px; top: 4px; bottom: 13px; width: 3px; background: #0009; border-radius: 2px; display: flex; align-items: flex-end; pointer-events: none; }
+.hotbar .slot.frasco-slot .frasco-cargas > i { display: block; width: 100%; background: #d8b56a; border-radius: 2px; }
+.hotbar .slot.frasco-slot.vida .frasco-cargas > i { background: #d24a3c; }
+.hotbar .slot.frasco-slot.mana .frasco-cargas > i { background: #3c7fd2; }
+.hotbar .slot.frasco-slot .frasco-num { position: absolute; right: 2px; bottom: 0; font: 600 10px/12px system-ui; color: #e8dcc0; background: #0b0f10cc; border-radius: 3px; padding: 0 3px; pointer-events: none; }
+.hotbar .slot.frasco-slot.ativo { border-color: #f0d36b; box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 10px 1px #f0d36b99; }
+.hotbar .slot.primeira-skill::before { content: ""; position: absolute; left: -4px; top: 5px; bottom: 5px; width: 1px; background: #46656d; }
 /* O número fica por cima do sprite, com fundo próprio: escondido atrás dele
    ninguém enxergava qual tecla era. */
 .hotbar .slot .key {
@@ -4403,8 +4416,12 @@ body {
  */
 /* Sem barra de rolagem: a janela tem a altura exata do que está dentro dela, e
    uma barra de 2px de sobra só sujava a moldura. */
+/* Minimizada, o corpo some também aqui (esta regra tem a mesma força da `.window.minimized .window-body` e vinha depois: o "—" não fechava nada). */
+.window.minimized[data-window-id="inventory"] .window-body { display: none; }
+/* A janela nunca passa da tela: em tela baixa o corpo rola, em vez de cortar a última fileira da mochila (dono, 07/10). */
+.window[data-window-id="inventory"] { max-height: calc(100dvh - 76px); }
 .window[data-window-id="inventory"] .window-body {
-  display: flex; flex-direction: column; overflow: hidden;
+  display: flex; flex-direction: column; overflow: hidden auto;
   /* 2px em vez dos 6 de todas as outras: esta janela nao estica e nao rola,
      entao o recheio do rodape virava sobra de moldura embaixo da lixeira. */
   padding-bottom: 2px;
@@ -27952,12 +27969,13 @@ html:not([data-perfil="retrato"]):not([data-perfil="deitado"]) .window[data-wind
 .inv-mochila { display: flex; flex-direction: column; min-height: 0; margin-top: 6px; padding-top: 6px; border-top: 1px solid #4a3d28; }
 /* A grade como a do PoE: as casas vazias desenhadas no fundo (44px + 5 de vão, alinhadas com as células; `--linhas` vem do JS). */
 .inv-mochila .bag {
-  grid-template-columns: repeat(auto-fill, 44px); justify-content: start; max-height: 232px; overflow-y: auto;
+  grid-template-columns: repeat(auto-fill, 44px); justify-content: start; max-height: 256px; overflow-y: auto;
   padding: 4px; border: 1px solid #2a2a30; border-radius: 3px;
   background-color: #08090b;
   background-image: linear-gradient(90deg, transparent 44px, #08090b 44px), linear-gradient(transparent 44px, #08090b 44px), linear-gradient(#151922, #151922);
   background-size: 49px 49px, 49px 49px, auto; background-position: 4px 4px; background-origin: padding-box; background-clip: padding-box;
-  min-height: min(calc(var(--linhas, 1) * 49px + 3px), 232px); box-sizing: border-box; align-self: center; width: 100%;
+  /* As 20 casas inteiras (5 fileiras de 49px + o recheio): a última fileira ficava cortada com 232px (dono, 07/10). */
+  min-height: min(calc(var(--linhas, 1) * 49px + 3px), 256px); box-sizing: border-box; align-self: center; width: 100%;
 }
 html:is([data-perfil="retrato"], [data-perfil="deitado"]) .inv-mochila .bag { min-height: calc(var(--linhas, 1) * 49px + 3px); }
 /* Celular em pé: a janela ocupa a gaveta; o corpo maior (zoom), a grade da mochila na largura toda, e a janela rola. */

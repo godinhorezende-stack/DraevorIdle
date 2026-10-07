@@ -28,7 +28,7 @@ import { registrarGolpe } from './combate/registro.mjs';
 import * as Dot from './combate/dot.mjs';
 import * as Controle from './combate/controle.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
-import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG } from './dados.mjs';
+import { ACTION_CATALOG, ACTION_CATALOG_ALTO, LEVELS_DAS_CAPTURAS, ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
 import { removerItem } from './inventario.mjs';
 import * as Treino from './treino.mjs';
 import * as R from './regras.mjs';
@@ -49,10 +49,42 @@ import * as Poder from './armas/poder.mjs';
 import * as Limites from './combate/limites.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 
-export const PAPEL_DO_SLOT = ACTION_CATALOG.papelDoSlot;
-export const SLOTS = ACTION_CATALOG.slots;
-export const SLOTS_POR_FILEIRA = ACTION_CATALOG.slotsPorFileira;
-export const PAPEIS = ACTION_CATALOG.papeis;
+// A BARRA DO PoE (dono, 07/10: "frascos 1 a 5 e mais 8 que podem ser ataques, auras, suporte e etc"): com o PoE ligado a barra tem
+// 8 slots de HABILIDADE numa fileira só (qualquer gema cabe em qualquer um — não há mais os ofícios vida/mana/velocidade/suporte/ataque
+// das poções do Draevor) e, antes deles, as 5 vagas do cinto de frascos nas teclas 1 a 5 (os frascos não são ações: ver `itens-poe/frascos.mjs`).
+// Sem o PoE, a barra de sempre: 22 slots em duas fileiras, com os ofícios do catálogo.
+const BARRA_DO_POE = itensPoeLigado();
+export const SLOTS = BARRA_DO_POE ? 8 : ACTION_CATALOG.slots;
+export const SLOTS_POR_FILEIRA = BARRA_DO_POE ? 8 : ACTION_CATALOG.slotsPorFileira;
+export const PAPEL_DO_SLOT = BARRA_DO_POE ? Array(SLOTS).fill('skill') : ACTION_CATALOG.papelDoSlot;
+export const PAPEIS = BARRA_DO_POE ? { skill: { icone: 'el-fire', nome: 'habilidade', dica: 'qualquer gema: ataque, aura, buff, invocação, maldição...' } } : ACTION_CATALOG.papeis;
+/** As vagas do cinto de frascos que a barra desenha antes das habilidades (0 sem o PoE) e as teclas delas (reservadas: nenhuma habilidade as usa). */
+export const FRASCOS_NA_BARRA = BARRA_DO_POE ? 5 : 0;
+export const TECLAS_DOS_FRASCOS = BARRA_DO_POE ? ['1', '2', '3', '4', '5'] : [];
+/** As teclas de fábrica dos slots: no PoE, letras livres (W/A/S/D andam); sem o PoE, o molde do personagem (1-9, 0, -). */
+export const TECLAS_PADRAO = BARRA_DO_POE ? ['q', 'e', 'r', 't', 'f', 'g', 'c', 'v'] : [...CHARACTER_TEMPLATE.hotkeys];
+/** A ação cabe neste slot? O slot de habilidade do PoE aceita qualquer ofício. */
+const cabeNoSlot = (entry, slot) => PAPEL_DO_SLOT[slot] === 'skill' || (entry.papeis ?? []).includes(PAPEL_DO_SLOT[slot]);
+
+/**
+ * Deixa a barra do personagem do tamanho de AGORA (ao entrar): quem vem da barra de 22 com as poções do Draevor fica com as ações que
+ * tinha, compactadas nos primeiros slots (as que não cabem saem), e as teclas de fábrica do PoE. Devolve se mudou algo.
+ */
+export function ajustarBarra(estado) {
+  let mudou = false;
+  const ajustar = (dono) => {
+    const acoes = Array.isArray(dono.actions) ? dono.actions : [];
+    const teclas = Array.isArray(dono.hotkeys) ? dono.hotkeys : [];
+    if (acoes.length === SLOTS && teclas.length === SLOTS) return;
+    const cheias = acoes.filter(Boolean).slice(0, SLOTS);
+    dono.actions = [...cheias, ...Array(SLOTS - cheias.length).fill(null)];
+    dono.hotkeys = BARRA_DO_POE ? [...TECLAS_PADRAO] : [...teclas.slice(0, SLOTS), ...Array(Math.max(0, SLOTS - teclas.length)).fill(null)];
+    mudou = true;
+  };
+  ajustar(estado);
+  for (const p of estado.actionPresets ?? []) ajustar(p);
+  return mudou;
+}
 
 const ENTRADAS = [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes, ...ACTION_CATALOG.items];
 const POR_ID = new Map(ENTRADAS.map((e) => [e.id, e]));
@@ -395,6 +427,9 @@ export function catalogo(estado) {
     slotsPorFileira: SLOTS_POR_FILEIRA,
     papeis: PAPEIS,
     papelDoSlot: PAPEL_DO_SLOT,
+    // A barra do PoE: as vagas do cinto de frascos desenhadas antes das habilidades, nas teclas 1 a 5.
+    frascos: FRASCOS_NA_BARRA,
+    teclasDosFrascos: TECLAS_DOS_FRASCOS,
   };
 }
 
@@ -407,7 +442,7 @@ export function definir(estado, { slot, value }) {
   }
   const entry = POR_ID.get(value.id);
   if (!entry) return { ok: false, erro: 'Essa ação não existe.' };
-  if (!entry.papeis.includes(PAPEL_DO_SLOT[slot])) return { ok: false, erro: `Esse slot só aceita ${PAPEIS[PAPEL_DO_SLOT[slot]].nome}.` };
+  if (!cabeNoSlot(entry, slot)) return { ok: false, erro: `Esse slot só aceita ${PAPEIS[PAPEL_DO_SLOT[slot]].nome}.` };
   const motivo = bloqueio(entry, estado);
   if (motivo) return { ok: false, erro: `Não dá: ${motivo}.` };
   (estado.actions ??= Array(SLOTS).fill(null))[slot] = { id: entry.id, kind: entry.kind, ...configDoSlot(value) };
@@ -515,8 +550,8 @@ export function sincronizarBarraComGemas(estado) {
     if (!entry || naBarra.has(id)) continue;
     const guardada = guardadas[id];
     // O slot de antes, se ainda está livre e é do papel dela; senão, o primeiro livre do papel.
-    const antes = guardada && !acoes[guardada.slot] && entry.papeis.includes(PAPEL_DO_SLOT[guardada.slot]) ? guardada.slot : -1;
-    const slot = antes >= 0 ? antes : acoes.findIndex((a, i) => !a && entry.papeis.includes(PAPEL_DO_SLOT[i]));
+    const antes = guardada && !acoes[guardada.slot] && cabeNoSlot(entry, guardada.slot) ? guardada.slot : -1;
+    const slot = antes >= 0 ? antes : acoes.findIndex((a, i) => !a && cabeNoSlot(entry, i));
     if (slot >= 0 && definir(estado, { slot, value: guardada?.action ?? { id } }).ok) {
       delete guardadas[id];
       naBarra.add(id);
@@ -529,6 +564,7 @@ export function sincronizarBarraComGemas(estado) {
 /** `send({t:'actions', action:'key', slot, key})` — `key:null` tira a tecla. */
 export function trocarTecla(estado, { slot, key }) {
   if (!Number.isInteger(slot) || slot < 0 || slot >= SLOTS) return { ok: false, erro: 'Slot inválido.' };
+  if (key && TECLAS_DOS_FRASCOS.includes(String(key).toLowerCase())) return { ok: false, erro: `As teclas ${TECLAS_DOS_FRASCOS[0]} a ${TECLAS_DOS_FRASCOS.at(-1)} são dos frascos.` };
   (estado.hotkeys ??= Array(SLOTS).fill(null))[slot] = key ? String(key).toLowerCase() : null;
   return { ok: true };
 }
