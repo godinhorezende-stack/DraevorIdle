@@ -243,6 +243,18 @@ function fichaDoItemPoe(d) {
   return { abas, corpo, largas: ['geral', 'mods', 'exemplos', 'unicos'] };
 }
 
+/** A moeda empilhável do PoE (Stackable Currency): o que faz, se funciona no jogo e por quê, onde se usa. */
+const ESTADO_DA_MOEDA = { funciona: ['ok', 'Funciona no jogo'], parcial: ['aviso', 'Funciona em parte'], nao: ['erro', 'Sem efeito no jogo'] };
+function fichaDaMoeda(m) {
+  const [classe, rotulo] = ESTADO_DA_MOEDA[m.status] ?? ['', m.status];
+  return [
+    el('h4', {}, 'Moeda do PoE (Stackable Currency)'),
+    linhas([['No jogo', el('span', { class: `selo ${classe}` }, rotulo)], ['Slug do PoE', el('span', { class: 'eng-id' }, m.slug)], ['Usa em', m.alvo === 'gema' ? 'gema (na Forja do PoE)' : m.alvo === 'nenhum' ? 'nada — se usa sozinha (lascas, Remorso…)' : 'peça do PoE (na Forja do PoE)'], ['Pilha máxima', m.pilha]]),
+    el('p', { class: 'dica' }, m.descricao ?? ''),
+    el('p', { class: 'dica' }, 'Cai dos monstros e as básicas a Zuma vende (regras em itens-poe/regras.json → moedas). O efeito de cada uma está em systems/itens-poe/moedas.mjs.'),
+  ];
+}
+
 export function fichaDoItem(d, { abrir, api }) {
   if (d.poe) return fichaDoItemPoe(d);
   const r = d.regras;
@@ -256,7 +268,7 @@ export function fichaDoItem(d, { abrir, api }) {
           ['Nível mínimo', d.requisitos?.nivelMinimo], ['Vocações', d.requisitos?.vocacoes?.join(', ') ?? (d.equipavel ? 'todas' : null)],
           ['Peso', d.peso != null ? `${num(d.peso)} oz` : null], ['Empilhável', d.empilhavel ? 'sim' : 'não'], ['Compra (NPC)', d.compra != null ? `${num(d.compra)} gp` : null], ['Venda (NPC)', d.venda != null ? `${num(d.venda)} gp` : null], ['NPC', d.npc],
           ['Imbuements', d.imbuements ? `${d.imbuements.slots} slot(s)` : null]]),
-        el('p', { class: 'dica' }, 'Descrição e lore: o catálogo de itens (Canary) não tem esses campos.'),
+        ...(d.moeda ? fichaDaMoeda(d.moeda) : [el('p', { class: 'dica' }, 'Descrição e lore: o catálogo de itens (Canary) não tem esses campos.')]),
       ];
     }
     if (aba === 'atributos' && r) {

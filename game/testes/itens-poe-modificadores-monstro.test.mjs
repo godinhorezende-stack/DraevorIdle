@@ -202,3 +202,13 @@ test('a prévia da área do PoE na janela da hunt: monstros com os status do PoE
   assert.deepEqual(p.drop.pecasPorMonstro, { normal: 16, modificado: 40, raro: 136, unico: 472 });
   assert.deepEqual([p.drop.ouro.min, p.drop.ouro.max], [2, 4]);
 });
+
+test('as raridades como no PoE (dono, 07/10): Comum, Mágico azul, Raro amarelo, Único laranja; sem level a mais nem resumo de multiplicadores no balão', () => {
+  const r = Raridade.CONFIG.raridades;
+  assert.deepEqual([r.normal.nome, r.modificado.nome, r.raro.nome, r.elite.nome, r.unico.nome, r.boss.nome], ['Comum', 'Mágico', 'Raro', 'Raro', 'Único', 'Único']);
+  assert.deepEqual([r.modificado.cor, r.raro.cor, r.unico.cor], ['#8888ff', '#ffff77', '#f0a050']);
+  assert.ok(Object.values(r).every((x) => !x.levelExtra), 'nenhum level a mais pela raridade');
+  const c = Raridade.coresParaCliente();
+  assert.equal(c.raro.resumo, null);
+  assert.equal(c.raro.cor, '#ffff77');
+});

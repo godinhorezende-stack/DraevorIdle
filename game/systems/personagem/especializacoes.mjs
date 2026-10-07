@@ -10,6 +10,7 @@
 // Classe, especialização ou tag nova = dados no JSON, sem mexer no combate.
 import * as Passivas from '../passivas/arvore.mjs';
 import { readFileSync } from 'node:fs';
+import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/classes.json', import.meta.url), 'utf8'));
 
@@ -21,6 +22,9 @@ export function classeDe(estado) {
 
 /** As especializações naturais da classe: `[{ id, nome, efeitos }]`. */
 export function especializacoesDe(estado) {
+  // No modo PoE as vocações do Draevor não dão especialização nenhuma (dono, 07/10: "esse bônus de vida Life 15% não existe no PoE — desligue"):
+  // no PoE o bônus vem só da classe (atributos), da ascendência e da árvore. Os nós da árvore continuam somando em `efeitos` abaixo.
+  if (itensPoeLigado()) return [];
   return (CONFIG.classes[classeDe(estado)]?.especializacoes ?? [])
     .map((id) => ({ id, ...CONFIG.especializacoes[id] }))
     .filter((e) => e.nome);

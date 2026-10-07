@@ -46,8 +46,10 @@ export const CLASSES_DO_JOGO = {
   Claws: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 30 },
   Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 20 },
   Rune_Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 20 },
-  Bows: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', twoHanded: true, range: 6, peso: 47 },
-  Wands: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', range: 5, peso: 27 },
+  // Arcos e Varinhas: 12 m no PoE (o limite padrão dos projéteis) — o mesmo alcance em casas para os dois. A varinha atira um projétil
+  // MÁGICO (dono, 07/10: "o efeito do ataque básico da varinha está como flecha"), não flecha.
+  Bows: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', twoHanded: true, range: 6, alcanceMetros: 12, peso: 47 },
+  Wands: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', range: 6, alcanceMetros: 12, shoot: 'energy', peso: 27 },
 };
 
 const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [] };
@@ -69,6 +71,7 @@ const requisitosDaBase = (b) => {
 export function iniciar(itemCatalog) {
   const cat = Catalogo.catalogo();
   if (!cat || REG.porBase.size) return REG;
+  REG.catalogo = itemCatalog;
   let n = PRIMEIRO_ID;
   for (const c of Object.values(cat.classes).sort((a, b) => a.id.localeCompare(b.id))) {
     const regra = CLASSES_DO_JOGO[c.id];
@@ -88,6 +91,7 @@ export function iniciar(itemCatalog) {
         ...(regra.skill && a.chance_critico_pct ? { critChance: Math.round(Number(a.chance_critico_pct) * 100) } : {}),
         ...(regra.twoHanded ? { twoHanded: true } : {}),
         ...(regra.range ? { range: regra.range } : {}),
+        ...(regra.shoot ? { shoot: regra.shoot } : {}),
         ...(regra.quiver ? { quiver: true } : {}),
         ...(a.armadura ? { armor: media(a.armadura) } : {}),
         // Marca de item do PoE: o cliente desenha o ícone da coleção e o balão próprio; o servidor acha a base.
@@ -122,9 +126,10 @@ export function iniciar(itemCatalog) {
 }
 
 /** O que a BASE dá como atributo do Draevor (o bloqueio do escudo, a velocidade de movimento), somado ao `af` dos mods. */
-function afDaBase(atributos) {
+function afDaBase(atributos, dosMods = {}) {
   const af = {};
-  if (atributos?.chance_bloqueio_pct) af.block = Number(atributos.chance_bloqueio_pct);
+  // (O "Chance de Bloquear aumentada em X%" do escudo é LOCAL no PoE: aumenta o bloqueio da própria base.)
+  if (atributos?.chance_bloqueio_pct) af.block = Number(atributos.chance_bloqueio_pct) * (1 + (Number(dosMods.block_inc) || 0) / 100);
   if (atributos?.velocidade_movimento_pct) af.move_speed = Number(atributos.velocidade_movimento_pct);
   return af;
 }
@@ -137,26 +142,38 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   if (!gerada || gerada.erro) return null;
   const id = idDaBase(gerada.base);
   if (!id) return null;
+  // O alcance da base em metros (o PoE traz nas armas corpo a corpo: 1 a 1,4 m); arco e varinha: 12 m.
+  const alcanceMetros = CLASSES_DO_JOGO[gerada.classe]?.alcanceMetros;
+  if (alcanceMetros && gerada.atributos && gerada.atributos.alcance_metros == null) gerada.atributos = { ...gerada.atributos, alcance_metros: alcanceMetros };
   const a = gerada.atributos ?? {};
+  const t = traduzirPeca(gerada);
+  const af = { ...t.af };
+  // ("Sem Dano Físico": a arma única não tem o dano físico da base.)
   const base = {
-    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: [a.dano_fisico.min, a.dano_fisico.max] } : {}),
+    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: af.arma_sem_fisico > 0 ? [0, 0] : [a.dano_fisico.min, a.dano_fisico.max] } : {}),
     ...(a.armadura ? { armor: [a.armadura, a.armadura] } : {}),
     ...(a.evasao ? { evasion: [a.evasao, a.evasao] } : {}),
     ...(a.escudo_energia ? { es: [a.escudo_energia, a.escudo_energia] } : {}),
   };
-  const t = traduzirPeca(gerada);
-  const af = { ...t.af };
-  for (const [k, v] of Object.entries(afDaBase(a))) af[k] = (af[k] ?? 0) + v;
+  for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
   const R = regras.raridades[gerada.raridade] ?? {};
   // Frasco: não dá atributo ao personagem (só enquanto o efeito dura, pelo cinto — `frascos.mjs`); o balão leva o resumo com os mods aplicados.
   if (FRASCOS.includes(gerada.classe)) {
     const poe = { base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null, ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [] };
     const par = Frascos.parametros({ poe });
-    return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, af: {}, frasco: Frascos.resumo({ poe }) } };
+    return { id, count: 1, poe: { ...poe, estados: par.estadosPorMod, af: {}, frasco: Frascos.resumo({ poe }), tv: VERSAO_DA_TRADUCAO } };
   }
   // Os sockets (regra do dono: pela classe e pelo item level, quantidade e links ao acaso — `itens-poe/sockets.mjs`).
-  const soquetes = SocketsPoe.sortear(gerada.classe, gerada.ilvl, rng);
+  // As cores pesam pelo requisito de atributo da base (`ITEM_CATALOG[id].poe.requisitos`).
+  // "Possui N Encaixes" (o implícito de algumas bases: anel/amuleto/cinto Desmontado, aljava Ornamentada): o número de sockets é esse.
+  const fixos = Math.round(Number(af.encaixes_fixos) || 0);
+  const sorteados = af.sem_encaixes ? null : fixos > 0 ? { abertos: fixos, links: Array.from({ length: fixos - 1 }, () => false), gemas: Array(fixos).fill(null), cores: SocketsPoe.sortearCores(fixos, REG.catalogo?.[id]?.poe?.requisitos ?? null, rng) } : SocketsPoe.sortear(gerada.classe, gerada.ilvl, rng, REG.catalogo?.[id]?.poe?.requisitos ?? null);
+  // "Somente Encaixes Brancos": todas as cores brancas (aceitam qualquer gema).
+  // "[Six Linked]" / "local six linked sockets": o máximo da classe, todos ligados.
+  const maxDaClasse = SocketsPoe.maximo(gerada.classe, gerada.ilvl) || 6;
+  const ligados = af.encaixes_ligados > 0 ? { abertos: maxDaClasse, links: Array.from({ length: maxDaClasse - 1 }, () => true), gemas: Array(maxDaClasse).fill(null), cores: SocketsPoe.sortearCores(maxDaClasse, REG.catalogo?.[id]?.poe?.requisitos ?? null, rng) } : sorteados;
+  const soquetes = ligados && af.encaixes_brancos ? { ...ligados, cores: ligados.cores.map(() => 'W') } : ligados;
   return {
     id, count: 1,
     ...(Object.keys(base).length ? { base } : {}),
@@ -165,9 +182,98 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
       base: gerada.base, classe: gerada.classe, raridade: gerada.raridade, raridadeNome: R.nome ?? gerada.raridade, cor: R.cor ?? null,
       ilvl: gerada.ilvl, nome: gerada.nome, ...(gerada.unico ? { unico: gerada.unico } : {}),
       atributos: a, implicitos: gerada.implicitos ?? [], prefixos: gerada.prefixos ?? [], sufixos: gerada.sufixos ?? [], modificadores: gerada.modificadores ?? [],
-      estados: t.linhas.map((l) => l.estado), af,
+      estados: t.linhas.map((l) => l.estado), notas: notasDe(t), af, tv: VERSAO_DA_TRADUCAO,
     },
   };
+}
+
+/**
+ * A VERSÃO da tradução dos mods (`traducao.json` + `atributos-novos.json`): sobe quando uma regra nova muda o `af` ou os estados das peças.
+ * A peça de uma versão antiga é refeita na entrada (`refazerPecasAntigas`) — mods, valores, sockets e gemas ficam como estão.
+ */
+export const VERSAO_DA_TRADUCAO = 3;
+/** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
+const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
+
+/**
+ * Refaz o `af` e os estados das peças do PoE do personagem que foram traduzidas numa versão antiga (dono, 07/10: os mods "registrados"
+ * passaram a ter efeito). Anda por TODO lugar onde mora peça (equipamento, mochila, bolsas, depósito, cinto de frascos). Devolve quantas.
+ */
+export function refazerPecasAntigas(estado) {
+  if (!Catalogo.ligado() || !estado) return 0;
+  let n = 0;
+  const visto = new Set();
+  const andar = (x, fundo = 0) => {
+    if (!x || typeof x !== 'object' || visto.has(x) || fundo > 8) return;
+    visto.add(x);
+    if (x.poe?.base && (x.poe.tv ?? 1) < VERSAO_DA_TRADUCAO) {
+      recalcular(x);
+      x.poe.tv = VERSAO_DA_TRADUCAO;
+      n++;
+      return;
+    }
+    for (const v of Array.isArray(x) ? x : Object.values(x)) if (v && typeof v === 'object') andar(v, fundo + 1);
+  };
+  for (const [k, v] of Object.entries(estado)) if (!['hunt', 'derived', 'bestiary', 'quests', 'totals', 'progress'].includes(k)) andar(v);
+  return n;
+}
+
+/**
+ * REMONTA a peça do jogo a partir do `peca.poe` mudado (as moedas — `moedas.mjs`): os atributos do Draevor (`poe.af`, os estados das
+ * linhas), o dano/defesa da base e o nome/cor da raridade. A QUALIDADE (`poe.qualidade`, o Amolador e a Sucata) aumenta o dano físico da
+ * arma e a defesa da armadura em qualidade%, como no PoE. Sockets, gemas e o resto da peça ficam como estão.
+ */
+export function recalcular(peca, regras = Catalogo.REGRAS) {
+  const p = peca?.poe;
+  if (!p) return peca;
+  const a = p.atributos ?? {};
+  const fq = 1 + (Number(p.qualidade) || 0) / 100;
+  const R = regras.raridades[p.raridade] ?? {};
+  p.raridadeNome = R.nome ?? p.raridade;
+  p.cor = R.cor ?? null;
+  // "Superior" (poedb › Quality): a peça Normal com qualidade leva o prefixo no nome; sem qualidade (ou com raridade), o nome limpo.
+  const nomeLimpo = String(p.nome ?? '').replace(/^Superior /, '');
+  p.nome = p.raridade === 'normal' && (Number(p.qualidade) || 0) > 0 ? `Superior ${nomeLimpo}` : nomeLimpo;
+  if (FRASCOS.includes(p.classe)) {
+    const par = Frascos.parametros({ poe: p });
+    p.estados = par.estadosPorMod;
+    p.af = {};
+    p.frasco = Frascos.resumo({ poe: p });
+    p.tv = VERSAO_DA_TRADUCAO;
+    return peca;
+  }
+  const mult = ([x, y]) => [Math.round(x * fq), Math.round(y * fq)];
+  const base = {
+    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: mult([a.dano_fisico.min, a.dano_fisico.max]) } : {}),
+    ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
+    ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
+    ...(a.escudo_energia ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
+  };
+  if (Object.keys(base).length) peca.base = base;
+  else delete peca.base;
+  const t = traduzirPeca(p);
+  const af = { ...t.af };
+  for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
+  p.af = af;
+  p.notas = notasDe(t);
+  // A versão da tradução com que `af`/`estados` foram feitos (a entrada no jogo refaz as peças de versões antigas — `refazerPecasAntigas`).
+  p.tv = VERSAO_DA_TRADUCAO;
+  p.estados = t.linhas.map((l) => l.estado);
+  return peca;
+}
+
+/**
+ * A QUALIDADE no drop (dono, 07/10; poedb › Quality): parte das armas, armaduras e frascos cai "Superior", com 1 a `maximo`% de qualidade
+ * (`regras.drop.qualidade.chance` por peça); o resto cai com 0%. A peça é remontada com a qualidade (dano/defesa/recuperação e o nome).
+ */
+export function qualidadeDoDrop(peca, rng = Math.random, regras = Catalogo.REGRAS) {
+  const q = regras.drop?.qualidade;
+  const p = peca?.poe;
+  if (!p || !q?.chance) return peca;
+  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia) || FRASCOS.includes(p.classe);
+  if (!temBase || rng() >= q.chance) return peca;
+  p.qualidade = 1 + Math.floor(rng() * Math.max(1, q.maximo ?? 20));
+  return recalcular(peca, regras);
 }
 
 // ---------------------------------------------------------------- entregar a um personagem online (a engine local)
@@ -245,11 +351,33 @@ export function ouroDoMonstro(nivel, tipo, rng = Math.random, regras = Catalogo.
  * Uma peça do PoE sorteada para o Item Level do bicho (= o level dele, até `ilvlMaximo`): a raridade pelos pesos do dono, a base entre as
  * equipáveis cujo nível exigido cabe no Item Level; o Único só sai de base que tem único. Null sem o sistema ligado ou sem pesos.
  */
-export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS) {
+/**
+ * O BAÚ DE NÍVEL 1 (a recompensa do level 1 — dono, 07/10: "um baú aleatório de itens lv 1 comum"): UMA peça equipável sorteada entre as
+ * bases que pedem nível 1, Normal (comum), Item Level 1. Sem frascos (os dois iniciais já vêm no cinto) e sem as bases do Battle Royale.
+ */
+export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  if (!cat) return null;
+  const candidatas = [];
+  for (const baseId of REG.porBase.keys()) {
+    const [classe] = baseId.split('/');
+    if (FRASCOS.includes(classe)) continue;
+    const b = cat.classes[classe]?.bases.find((x) => x.id === baseId);
+    if (!b || (b.requisitos?.nivel ?? 1) > 1 || b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
+    candidatas.push(baseId);
+  }
+  if (!candidatas.length) return null;
+  const base = candidatas[Math.floor(rng() * candidatas.length)];
+  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng }), regras, rng);
+}
+
+export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0) {
   const cat = Catalogo.catalogo();
   const D = regras.drop;
   if (!cat || !D) return null;
-  const pesos = Object.entries(D.raridades ?? {}).filter(([r, p]) => p > 0 && regras.raridades[r]);
+  // PoE: a "Raridade de Itens encontrados aumentada" do personagem multiplica a chance de Mágico, Raro e Único (a Normal fica).
+  const fatorDeRaridade = Math.max(0, 1 + (Number(raridadeAumentada) || 0) / 100);
+  const pesos = Object.entries(D.raridades ?? {}).filter(([r, p]) => p > 0 && regras.raridades[r]).map(([r, p]) => [r, r === 'normal' ? p : p * fatorDeRaridade]);
   const total = pesos.reduce((n, [, p]) => n + p, 0);
   if (!(total > 0)) return null;
   let sorte = rng() * total;
@@ -261,8 +389,9 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     const c = cat.classes[classe];
     const b = c?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > ilvl) continue;
-    // As bases "Royale" são do modo Battle Royale do PoE: ficam no catálogo (os ids não mudam), mas não caem.
-    if (b.slug?.startsWith('Royale_')) continue;
+    // As bases "Royale" são do modo Battle Royale do PoE: ficam no catálogo (os ids não mudam), mas não caem. A "Lâmina de Energia" também
+    // não: no PoE ela é a arma que a habilidade Lâmina de Energia cria.
+    if (b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
     if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) continue;
     candidatas.push(baseId);
   }
@@ -270,16 +399,16 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   const base = candidatas[Math.floor(rng() * candidatas.length)];
   // Frasco não é Raro no PoE (só Normal, Mágico e Único): o Raro sorteado vira Mágico.
   const r = raridade === 'raro' && FRASCOS.includes(base.split('/')[0]) ? 'magico' : raridade;
-  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: r, ilvl, rng }), regras, rng);
+  return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: r, ilvl, rng }), regras, rng), rng, regras);
 }
 
 /** As peças do PoE que caem do bicho morto (lista, talvez vazia). Só com o sistema ligado. */
-export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random, regras = Catalogo.REGRAS, fatorDoJogador = 1) {
+export function dropsDoMonstro(nivelDoBicho, tipo = 'normal', rng = Math.random, regras = Catalogo.REGRAS, fatorDoJogador = 1, raridadeAumentada = 0) {
   if (!Catalogo.catalogo() || !regras.drop) return [];
   const n = quantasPecas(tipo, rng, regras, fatorDoJogador);
   const pecas = [];
   for (let i = 0; i < n; i++) {
-    const p = pecaSorteada(nivelDoBicho, rng, regras);
+    const p = pecaSorteada(nivelDoBicho, rng, regras, raridadeAumentada);
     if (p) pecas.push(p);
   }
   return pecas;
@@ -299,6 +428,17 @@ export const ARMA_INICIAL = {
 };
 
 /** A peça da arma inicial da classe (Normal, Item Level 1), ou null (sistema desligado, base que não existe). */
+/** O FRASCO DE VIDA inicial (dono, 07/10: "todo personagem já começa com um flask de vida mínimo" — vem pela Recompensa do level 1). Marcado
+ * `inicial`: pede level 3 no PoE, mas o cinto aceita (ver `frascos.mjs` → `por`). */
+export const BASE_DO_FRASCO_INICIAL = 'Life_Flasks/Small_Life_Flask';
+export function frascoInicial(regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  if (!cat) return null;
+  const peca = pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: BASE_DO_FRASCO_INICIAL, raridade: 'normal', ilvl: 1, rng: () => 0.5 }), regras, () => 0.5);
+  if (peca?.poe) peca.poe.inicial = true;
+  return peca;
+}
+
 export function armaInicial(slugDaClasse, regras = Catalogo.REGRAS) {
   const cat = Catalogo.catalogo();
   const base = ARMA_INICIAL[slugDaClasse] ?? ARMA_INICIAL.Scion;

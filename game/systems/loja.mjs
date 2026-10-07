@@ -3,26 +3,24 @@
 // `game/frontend/client/src/panels.mjs:10103`) — nada de item/montaria/outfit/pacote
 // inventado. As prateleiras sem preço real ficam de propósito como `[]`: o
 // cliente já sabe desenhar "Nada por aqui ainda." para uma lista vazia.
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as Premium from './premium.mjs';
 import { CATALOGO, CHARACTER_TEMPLATE, STORE_REAL } from './dados.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 
 /*
- * ---- O que se compra vai para a STORE INBOX ----
+ * ---- O que se compra vai para as CHEGADAS ----
  *
- * Como no original: item comprado na Store não cai na mochila, cai na
- * Store Inbox (`character.storeInbox`, 2000 vagas, sem peso) — de lá o jogador
- * arrasta para a mochila (`send({t:'storeInbox', mover})`, ver `moverDaInbox`).
+ * Dono, 06/10: "tire boss pouch e store inbox, tudo comprado pela store vai para chegadas". O item comprado na Store não cai na
+ * mochila: vai para a caixa Chegadas do Depósito (sem teto, sem peso) — de lá o jogador tira para a mochila. (Antes era a Store
+ * Inbox; o que ainda estava nela foi para as Chegadas — `Deposito.garantir`.)
  */
 export const VAGAS_DA_INBOX = 2000;
 function porNaInbox(estado, id, count = 1, extras = {}) {
-  const inbox = (estado.storeInbox ??= []);
-  const empilha = ITEM_CATALOG[id]?.stackable && !Object.keys(extras).length;
-  const igual = empilha ? inbox.find((p) => p.id === id && !p.carga) : null;
-  if (igual) igual.count += count;
-  else if (inbox.length < VAGAS_DA_INBOX) inbox.push({ ...extras, id, count });
+  Deposito.porNasChegadas(estado, { ...extras, id, count });
 }
 import * as Boosts from './boosts.mjs';
+import * as Deposito from './deposito.mjs';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 
@@ -79,8 +77,14 @@ const cartaoDePasseDePlataforma = (kind, prefixo, dias, estado) => {
 
 /** `send({t:'store'})` — o catálogo inteiro, prateleira por prateleira. */
 /** Todas as entradas da loja real, por id — o preço e o que cada uma entrega. */
-const PRATELEIRAS = ['services', 'exercises', 'boosts', 'pacotes', 'itens', 'buffpower', 'upgrades', 'extras', 'mounts', 'outfits', 'utilities'];
-const ENTRADA_POR_ID = new Map(PRATELEIRAS.flatMap((k) => (STORE_REAL[k] ?? []).map((e) => [e.id, { ...e, prateleira: k }])));
+const PRATELEIRAS = ['services', 'boosts', 'pacotes', 'itens', 'buffpower', 'upgrades', 'extras', 'mounts', 'outfits', 'utilities'];
+/*
+ * O TREINO saiu do jogo (dono, 06/10 — `sem-treino.mjs`): a prateleira de Exercise, o Scroll Speed Exercise e os Pacotes Treinador
+ * não se vendem mais (nem aparecem, nem se compram por id).
+ */
+// (No modo PoE o Buff Power também sai da Store — dono, 07/10: "esse buff power não vai existir".)
+const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '') || (itensPoeLigado() && /^buffpower-/.test(e?.id ?? ''));
+const ENTRADA_POR_ID = new Map(PRATELEIRAS.flatMap((k) => (STORE_REAL[k] ?? []).filter((e) => !FORA_DA_LOJA(e)).map((e) => [e.id, { ...e, prateleira: k }])));
 // Os pacotes de quantidade de um produto ("5 Exp Potions", "10 Stamina Extension")
 // vêm em `opcoes`, cada um com o próprio id e preço.
 for (const k of PRATELEIRAS) for (const e of STORE_REAL[k] ?? []) {
@@ -88,7 +92,7 @@ for (const k of PRATELEIRAS) for (const e of STORE_REAL[k] ?? []) {
 }
 
 const quantosTem = (estado, itemId) =>
-  [...(estado.inventory ?? []), ...(estado.pouch ?? []), ...(estado.storeInbox ?? [])].filter((p) => p.id === itemId).reduce((a, p) => a + (p.count ?? 1), 0);
+  [...(estado.inventory ?? []), ...(estado.pouch ?? []), ...(estado.storeInbox ?? []), ...((estado.deposito ?? []).find((c) => c.chegadas)?.itens ?? [])].filter((p) => p.id === itemId).reduce((a, p) => a + (p.count ?? 1), 0);
 
 /**
  * `send({t:'store'})` — a loja REAL inteira (`STORE_REAL`), com o que é deste
@@ -134,7 +138,9 @@ export function catalogoDaLoja(estado, conta = null) {
   const compras = estado.compras ?? {};
   const locais = new Map(servicosLocais(estado).map((e) => [e.id, e]));
   loja.services = loja.services.map((e) => ({ ...e, ...(locais.has(e.id) ? { owned: locais.get(e.id).owned, ativoAte: locais.get(e.id).ativoAte } : {}) }));
-  for (const k of ['exercises', 'itens', 'pacotes', 'buffpower']) {
+  loja.exercises = [];
+  for (const k of PRATELEIRAS) if (Array.isArray(loja[k])) loja[k] = loja[k].filter((e) => !FORA_DA_LOJA(e));
+  for (const k of ['itens', 'pacotes', 'buffpower']) {
     loja[k] = loja[k].map((e) => ({ ...e, tem: e.itemId ? quantosTem(estado, e.itemId) : e.tem, owned: !!compras[e.id] }));
   }
   for (const k of ['boosts', 'extras']) loja[k] = loja[k].map((e) => ({ ...e, owned: !!compras[e.id] }));
@@ -242,7 +248,7 @@ export function comprar(estado, { id }, conta = null) {
   aplicarEfeito(estado, id);
   if (id === 'venda-rapida') return { ok: true, notice: `Auto-venda a cada ${120 - 20 * Math.min(5, estado.compras['venda-rapida'])}s.` };
   if (entrada?.itemId && ['summon-upgrade', 'tier-up'].some((p) => id.startsWith(p))) {
-    return { ok: true, notice: `${entrada.amount ?? 1}x ${entrada.name} na Store Inbox.` };
+    return { ok: true, notice: `${entrada.amount ?? 1}x ${entrada.name} nas Chegadas do Depósito.` };
   }
   return { ok: true };
 }

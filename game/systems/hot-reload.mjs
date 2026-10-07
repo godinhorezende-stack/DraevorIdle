@@ -29,7 +29,7 @@ const MOTIVO_DO_ESTADO_DO_JOGADOR = 'O estado dos personagens (recargas, gemas e
 const REINICIO = [
   [/^hunts\//, 'hunts', 'Hunts e mapas', 'As grades de spawn são aquecidas no boot e há instâncias de hunt em andamento.'],
   [/^(encontros\/|encontros\.json$|bosses-unicos\.json$|campanha-conteudo\.json$)/, 'encontros', 'Encontros e bosses únicos', 'São lidos no boot (conteúdo secreto do servidor) e ligados às fases e à campanha.'],
-  [/^(skills\/|gemas\/|gemas\.json$|action-catalog|combate\/|passivas\/|arvore\/|armas\/|classes\.json$|charms\.json$|proficiencia\.json$)/, 'habilidades', 'Habilidades, gemas e árvore', MOTIVO_DO_ESTADO_DO_JOGADOR],
+  [/^(skills\/|gemas\/|gemas\.json$|action-catalog|combate\/|passivas\/|arvore\/|armas\/|classes\.json$|charms\.json$)/, 'habilidades', 'Habilidades, gemas e árvore', MOTIVO_DO_ESTADO_DO_JOGADOR],
   [/^(item-catalog\.json$|itens\/|craft-receitas\.json$|desmanche\.json$|store-real\.json$|equipamento-por-vocacao\.json$)/, 'catalogo-de-itens', 'Catálogo de itens original e lojas', 'O catálogo original é lido no boot; edite itens pelo editor de Itens (overrides), que recarrega a quente.'],
   [/^(catalog-real\.json$|mobs\/|monstro-poderes\.json$|boss-poderes\.json$|mounts-real\.json$)/, 'catalogo-original', 'Catálogo original (bestiário, bosses, montarias)', 'O bestiário original é lido no boot; edite monstros pelo editor de Mobs (overrides), que recarrega a quente.'],
   [/^(sprites\/(items|effects|missiles)\/|item-sprites\.json$|effect-sprites\.json$|missile-sprites\.json$|sprites\/city\.|sprites\/treino\.|city-|treino-)/, 'atlas', 'Atlas de itens, efeitos, projéteis e cenário', 'São atlas compilados em páginas: precisam ser reconstruídos e o navegador recarregado.'],

@@ -39,7 +39,35 @@ export function garantir(estado) {
   if (!estado.deposito.some((c) => c.indice === INDICE_DAS_CHEGADAS)) {
     estado.deposito.push({ indice: INDICE_DAS_CHEGADAS, nome: 'Chegadas', tipos: 0, teto: TETO, itens: [], chegadas: true });
   }
+  // As Chegadas NÃO TÊM TETO (dono, 06/10): recebem tudo o que chega (a Store, o Mercado) e só se tira de lá — nada se põe à mão.
+  const chegadas = estado.deposito.find((c) => c.indice === INDICE_DAS_CHEGADAS);
+  chegadas.semTeto = true;
+  chegadas.teto = Math.max(TETO, chegadas.itens.length);
+  /*
+   * ---- A Store Inbox e a Boss Pouch saíram (dono, 06/10: "tire boss pouch e store inbox, tudo comprado pela store vai para
+   * chegadas") ----
+   * O que ainda estiver guardado nelas vai, uma vez, para as Chegadas — inteiro (com a carga, o tier, os afixos), nada se perde.
+   */
+  for (const lista of ['storeInbox', 'bossPouch']) {
+    if (!estado[lista]?.length) continue;
+    for (const p of estado[lista]) porNasChegadas(estado, p);
+    estado[lista] = [];
+  }
+  chegadas.tipos = chegadas.itens.length;
+  chegadas.teto = Math.max(TETO, chegadas.itens.length);
   return estado.deposito;
+}
+
+/** Põe a peça (inteira, com `count`) nas Chegadas: empilha o que empilha (sem carga nem nada especial); sem teto. */
+export function porNasChegadas(estado, peca) {
+  const chegadas = (estado.deposito ?? []).find((c) => c.indice === INDICE_DAS_CHEGADAS) ?? garantir(estado).find((c) => c.indice === INDICE_DAS_CHEGADAS);
+  const empilha = ITEM_CATALOG[peca.id]?.stackable && !pecaEspecial(peca) && !peca.carga;
+  const igual = empilha ? chegadas.itens.find((p) => p.id === peca.id && !pecaEspecial(p) && !p.carga) : null;
+  if (igual) igual.count = (igual.count ?? 1) + (peca.count ?? 1);
+  else chegadas.itens.push({ ...peca, count: peca.count ?? 1 });
+  chegadas.tipos = chegadas.itens.length;
+  chegadas.teto = Math.max(TETO, chegadas.itens.length);
+  return chegadas;
 }
 
 /** A caixa do Baú da Conta, a partir do que o banco guardou (ou vazia). */
@@ -134,6 +162,8 @@ export function comando(estado, m, contaCaixa = null) {
     caixa.nome = nome || nomeDeFabrica(caixa);
     return { ok: true, renomeou: true };
   }
+  // As Chegadas só recebem o que chega (Store, Mercado): nada se guarda nelas à mão.
+  if ((m.action === 'storeAll' || m.action === 'store') && caixa.chegadas) return { ok: false, erro: 'As Chegadas só recebem o que chega (compras da Store e do Mercado). Guarde numa caixa numerada.' };
   if (m.action === 'storeAll') {
     const mochila = estado.inventory ?? [];
     const ficam = [];

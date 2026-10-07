@@ -14,7 +14,9 @@ test('as linhas da árvore viram efeitos da árvore do Draevor (atributo somado 
   assert.deepEqual(traduzirLinha('Evasão e Armadura aumentadas em 6%').efeitos, [{ add: 'armour_pct', valor: 6 }, { add: 'evasion_pct', valor: 6 }]);
   const nota = traduzirLinha('(Recentemente se refere aos últimos 4 segundos)');
   assert.deepEqual([nota.estado, nota.efeitos.length], ['nota', 0]);
-  const reg = traduzirLinha('Lacaios causam Dano aumentado em 10%');
+  // (07/10: "Lacaios causam Dano aumentado" agora tem efeito — vira o atributo dos lacaios.)
+  assert.deepEqual(traduzirLinha('Lacaios causam Dano aumentado em 10%').efeitos, [{ add: 'minion_dmg', valor: 10 }]);
+  const reg = traduzirLinha('Algo que ninguém escreveu em 10%');
   assert.equal(reg.estado, 'registrado');
   assert.equal(reg.efeitos.length, 0, 'sem regra: registrado, sem efeito (a chave automática não entra na árvore)');
   assert.ok(reg.registrados[0].stat.startsWith('poe.'));
@@ -51,6 +53,22 @@ test('o arquivo gerado (gamedata/itens-poe/arvore-poe.json) é uma árvore váli
   assert.equal(Object.keys(a.ascendencias).length, 21, 'as 21 ascendências');
   assert.ok(a.nos.length > 2000);
   assert.ok(a.relatorio.estados.equivalente > 700);
+});
+
+test('as passivas de ascendência (dono, 07/10): os 161 notáveis do poedb, cada nó com o ícone do PoE no repositório e cada ascendência com o emblema', () => {
+  const a = JSON.parse(readFileSync(new URL('../gamedata/itens-poe/arvore-poe.json', import.meta.url), 'utf8'));
+  const nos = a.nos.filter((n) => n.ascendencia);
+  assert.equal(nos.filter((n) => n.tipo === 'notable').length, 161, 'os 161 notáveis de ascendência do poedb');
+  const semIcone = nos.filter((n) => !n.icone);
+  assert.deepEqual(semIcone.map((n) => n.id), [], 'todo nó de ascendência tem ícone');
+  const pasta = new URL('../gamedata/itens-poe/icones-ascendencias/', import.meta.url);
+  const faltando = [...new Set(nos.map((n) => n.icone))].filter((i) => !existsSync(new URL(i, pasta)));
+  assert.deepEqual(faltando, [], 'os arquivos dos ícones estão no repositório');
+  for (const asc of Object.values(a.ascendencias)) assert.match(asc.icone ?? '', /^classes\/Icon/, `${asc.slug} tem o emblema`);
+  // Berserker: isolado da árvore principal (só liga nos nós dele), com o início e o ícone do emblema.
+  const b = nos.filter((n) => n.ascendencia === 'Berserker');
+  assert.ok(b.every((n) => n.conexoes.every((c) => b.some((m) => m.id === c))), 'o Berserker não toca a árvore principal');
+  assert.equal(b.find((n) => n.tipo === 'start').icone, 'classes/IconStr_Berserker.webp');
 });
 
 test('4c — com ITENS_POE=1 a árvore em uso é a do PoE: início da classe, 1 ponto por level, 1 por nó, efeito na ficha, alocação do Draevor guardada', { skip: !existsSync('/home/deploy/referencias-poe/importado/itens-poe.json') && 'catálogo do PoE não importado' }, async () => {

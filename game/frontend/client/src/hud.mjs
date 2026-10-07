@@ -127,14 +127,6 @@ export function artOrUiIcon(name, alt = '') {
 
 const formatHours = (minutes) => `${Math.floor(minutes / 60)}h ${String(Math.floor(minutes % 60)).padStart(2, '0')}m`;
 
-/* O Scroll Speed Exercise, para a pílula desenhar o item que o jogador comprou.
-   É o mesmo id do `consumiveis.mjs` do servidor (55386). */
-/*
- * O `Scroll Speed Exercise` do gamestore dele. Exportado porque a tela do
- * Exercise (em panels.mjs) passou a anunciá-lo também: um segundo `55386`
- * escrito lá seria o mesmo número em dois lugares esperando para divergir.
- */
-export const ITEM_DO_PERGAMINHO = 55386;
 
 let portraitKey = '';
 // O último personagem desenhado: o card da promoção precisa se recolocar quando
@@ -695,6 +687,38 @@ export function seloBlessings(character, catalog, aoClicar) {
   return selo;
 }
 
+/*
+ * ---- O VIP e as BÊNÇÃOS numa faixa legível (dono, 06/10: "melhorar a apresentação do vip e blessings") ----
+ * Eram dois ícones soltos (no arranjo do PoE, a 40% do tamanho) com tudo no balão. Agora são duas fichas lado a lado, com o estado
+ * escrito: "VIP · 12 dias" (ou "inativo") e "Bênçãos 5/7". O balão continua com o detalhe; as bênçãos seguem sendo o botão de compra.
+ */
+export function faixaDoVipEBencaos(character, catalog, aoClicarBencaos) {
+  const faixa = el('div', 'inv-selos');
+  const resta = character.premium ?? 0;
+  const vip = el('div', `inv-selo vip${resta > 0 ? ' on' : ''}`);
+  const dias = Math.floor(resta / 86400_000);
+  vip.append(icon(resta > 0 ? 'st-premium' : 'st-premium-off', 'VIP'));
+  const tv = el('div', 'inv-selo-texto');
+  tv.append(el('b', null, 'VIP'), el('span', null, resta <= 0 ? 'inativo' : dias >= 1 ? `${dias} dia${dias > 1 ? 's' : ''}` : `${Math.ceil(resta / 3600_000)}h`));
+  vip.append(tv);
+  tipPanel(vip, () => painelPremium(character));
+  const ativas = (character.blessings ?? []).length;
+  const total = catalog?.blessings?.length ?? 7;
+  const bencaos = el('button', `inv-selo bencaos${ativas ? ' on' : ''}${ativas >= total ? ' todas' : ''}`);
+  bencaos.type = 'button';
+  const arte = document.createElement('img');
+  arte.className = 'ui-icon';
+  arte.src = '/client/assets/icons/blessings.png';
+  arte.alt = '';
+  const tb = el('div', 'inv-selo-texto');
+  tb.append(el('b', null, 'Bênçãos'), el('span', null, `${ativas}/${total}`));
+  bencaos.append(arte, tb);
+  if (aoClicarBencaos) bencaos.onclick = aoClicarBencaos;
+  tipPanel(bencaos, () => painelBlessings(character, catalog));
+  faixa.append(vip, bencaos);
+  return faixa;
+}
+
 /**
  * Quanto falta de premium.
  *
@@ -1068,32 +1092,6 @@ function setBar(id, value, max, label) {
   if (bar.parentElement) tipTexto(bar.parentElement, label);
 }
 
-/*
- * ---- A faixa do treino ----
- *
- * Duas réguas no alto: a perícia que está sendo treinada e o escudo.
- *
- * Ela só existe enquanto se treina, e some sozinha quando o treino acaba — não
- * há botão para fechá-la, porque um painel que aparece por conta própria e
- * exige um clique para sumir é pior do que um que vai embora sozinho.
- *
- * ---- Por que quatro casas depois da vírgula ----
- *
- * Numa perícia alta, um minuto de treino vale alguns milésimos de por cento.
- * Com duas casas o número fica parado e a faixa passa a mentir: ela promete
- * mostrar progresso e mostra `43,72%` por dez minutos seguidos. Com quatro, o
- * último dígito anda a cada poucos segundos — é a diferença entre uma régua e
- * um enfeite.
- */
-const NOME_DA_PERICIA = {
-  melee: 'melee fighting',
-  distance: 'distance fighting',
-  shielding: 'shielding',
-  magic: 'magic level',
-};
-
-/** `0.437291` -> `43,7291%`. Vírgula porque o jogo inteiro é em português. */
-const fracao = (v) => `${((v ?? 0) * 100).toFixed(4).replace('.', ',')}%`;
 
 /*
  * ---- A pílula do Scroll Speed Exercise, dentro da faixa do treino ----
@@ -1523,11 +1521,6 @@ function empilharNoTopo() {
     return maior;
   };
 
-  const faixa = $('treino-faixa');
-  if (faixa && !faixa.hidden) {
-    const acima = fundoDe('cartaz-beta');
-    faixa.style.top = acima ? `${acima + 8}px` : '';
-  }
 
   /*
    * A dos relógios embaixo de todas: cartaz, novidades e treino. Ela é a única
@@ -1798,48 +1791,6 @@ function renderAutoBossFaixa(character) {
   }
 }
 
-function renderEfeitosFaixa(character) {
-  const faixa = $('efeitos-faixa');
-  if (!faixa) return;
-
-  /*
-   * Duas condições, e as duas são necessárias: ter o pergaminho E estar
-   * treinando com exercise. É o único momento em que ele gasta — fora dele o
-   * saldo fica parado, e um relógio parado na tela pergunta mais do que
-   * responde.
-   */
-  const scroll = character.efeitos?.exerciseSpeed ?? null;
-  const treinando = !!character.exercicio?.treinando;
-
-  // A oferta mora na LINHA DO TÍTULO, ao lado do relógio. Ver 'renderOferta'.
-  renderOferta(treinando && !scroll);
-
-  if (!treinando || !scroll) {
-    faixa.hidden = true;
-    faixa.innerHTML = '';
-    return;
-  }
-
-  faixa.hidden = false;
-  /*
-   * Refeita a cada quadro, e é barato: um '<canvas>' de 22px e três textos. O
-   * relógio anda de segundo em segundo, então guardar o nó para só trocar o
-   * texto economizaria quase nada e custaria um segundo caminho para o estado
-   * ficar velho.
-   */
-  faixa.innerHTML = '';
-  const pill = el('div', 'efeito-pill gastando');
-  pill.append(itemCanvas(ITEM_DO_PERGAMINHO, 22));
-
-  const texto = el('div', 'efeito-pill-texto');
-  texto.append(el('span', 'efeito-pill-nome', `Scroll Speed ×${scroll.fator}`));
-  const linha = el('div', 'efeito-pill-linha');
-  linha.append(el('b', 'efeito-pill-tempo', formatTime(scroll.restante)));
-  linha.append(el('em', 'efeito-pill-estado', 'de treino dobrado'));
-  texto.append(linha);
-  pill.append(texto);
-  faixa.append(pill);
-}
 
 
 /*
@@ -2047,136 +1998,7 @@ function renderPilulasDeEfeito(character) {
   }
 }
 
-/*
- * ---- A oferta do pergaminho, LOGO ACIMA do "Parar treino" ----
- *
- * Ela já esteve na linha do título, espremida ao lado do relógio: ali cabia uma
- * linha de dez pixels, e duas linhas com o nome do item não cabiam de jeito
- * nenhum — o botão saía apertado e o alvo do clique ficava fino demais para se
- * acertar sem mirar.
- *
- * Aqui ela é uma faixa da largura do cartaz, imediatamente acima do botão de
- * parar: o mesmo lugar para onde o olho já vai quando se pensa no treino, e
- * espaço de sobra para as duas linhas e para o dedo.
- *
- * Discreta ainda: quem está treinando não pode ser interrompido por um anúncio,
- * mas deve enxergar a porta quando olhar para lá.
- *
- * O nó é criado UMA vez e escondido depois: refazê-lo a cada quadro tiraria o
- * clique de baixo do dedo quatro vezes por segundo.
- */
-function renderOferta(mostrar) {
-  const faixa = $('treino-faixa');
-  const parar = $('treino-faixa-parar');
-  if (!faixa || !parar) return;
 
-  let oferta = faixa.querySelector('.efeito-oferta');
-  if (!oferta) {
-    oferta = el('button', 'efeito-oferta');
-    oferta.type = 'button';
-    oferta.append(itemCanvas(ITEM_DO_PERGAMINHO, 22));
-    /*
-     * Duas linhas: a CHAMADA em cima e o NOME DO ITEM embaixo.
-     *
-     * "Treine mais rápido" diz o que a pessoa ganha; "Scroll Speed Exercise"
-     * diz o que ela vai procurar na loja. Uma linha só teria de escolher entre
-     * as duas — e quem só lê o nome do produto não sabe para que ele serve.
-     */
-    const texto = el('div', 'oferta-texto');
-    texto.append(el('span', 'oferta-chamada', 'Treine mais rápido'));
-    texto.append(el('em', 'oferta-item', 'Scroll Speed Exercise'));
-    oferta.append(texto);
-    tipTexto(
-      oferta,
-      'Scroll Speed Exercise: dobra a velocidade das exercise weapons, e só gasta enquanto você treina. Clique para ver na loja.'
-    );
-    /*
-     * Sem termo de busca: a prateleira de Boosts é curta e o card fica em
-     * destaque nela (ver 'storeDestaque', em panels.mjs). A busca da loja não
-     * varre esta prateleira, e mandar um termo que ela não acha abriria a loja
-     * numa tela dizendo "nada encontrado".
-     */
-    oferta.onclick = () => hudCtx?.abrirLojaEm?.('boosts', '', ITEM_DO_PERGAMINHO);
-    // Acima do botão de parar, e não no fim da faixa: o `insertBefore` é o que
-    // garante a ordem mesmo quando a pílula do saldo já está montada embaixo.
-    faixa.insertBefore(oferta, parar);
-  }
-  oferta.hidden = !mostrar;
-}
-
-function renderTreinoFaixa(character) {
-  const faixa = $('treino-faixa');
-  if (!faixa) return;
-
-  /*
-   * Três treinos, dois deles com régua.
-   *
-   * O do pátio vive na sessão da caçada (`state.hunt.treino`); o de exercise
-   * vive no personagem. O offline não tem régua porque quem o usa não está
-   * olhando a tela — é o ponto dele.
-   */
-  /*
-   * O pátio se reconhece pelo `huntId`, e não por uma bandeira própria.
-   *
-   * O retrato da caçada (`snapshot`) manda `huntId`, e o do pátio é `treino` —
-   * o mesmo id que `treino.mjs` dá à hunt dele. Acrescentar um campo só para
-   * esta faixa seria um segundo jeito de dizer a mesma coisa.
-   */
-  const noPatio = hudCtx?.state?.hunt?.huntId === 'treino';
-  const exercicio = character.exercicio?.treinando ? character.exercicio : null;
-  const pericia = exercicio ? exercicio.skill : noPatio ? character.derived?.skillName : null;
-  if (!pericia) {
-    faixa.hidden = true;
-    return;
-  }
-  faixa.hidden = false;
-  // Onde ela cai — embaixo do cartaz de beta e da pílula dos efeitos, se
-  // houver. Ver `empilharNoTopo`.
-
-  const progresso = (skill) => (skill === 'magic' ? character.magic : character.skills?.[skill]);
-  const encher = (id, dados) => {
-    const barra = $(`bar-${id}`);
-    if (!barra) return;
-    barra.style.setProperty('--fill', `${Math.max(0, Math.min(100, (dados?.percent ?? 0) * 100))}%`);
-    const texto = $(`text-${id}`);
-    if (texto) texto.textContent = `${dados?.value ?? 0} · ${fracao(dados?.percent)}`;
-  };
-
-  $('treino-faixa-modo').textContent = exercicio
-    ? `Exercise · ${exercicio.name} · ${exercicio.restantes.toLocaleString('pt-BR')} cargas`
-    : 'Treinando no boneco';
-
-  /*
-   * Há quanto tempo ele treina.
-   *
-   * Os dois modos carimbam a hora de começar em lugares diferentes — o pátio no
-   * `startedAt` da sessão, o exercise no retrato das perícias —, e é de
-   * propósito: cada um é o mesmo carimbo que o RESUMO daquele modo usa. Se a
-   * faixa tivesse um relógio próprio, ela e o resumo diriam números diferentes
-   * para a mesma sessão.
-   */
-  const desde = exercicio ? exercicio.desde : hudCtx?.state?.hunt?.startedAt;
-  const relogio = $('treino-faixa-tempo');
-  if (relogio) relogio.textContent = desde ? formatTime(Date.now() - desde) : '';
-  $('treino-faixa-nome').textContent = NOME_DA_PERICIA[pericia] ?? pericia;
-  encher('treino', progresso(pericia));
-
-  /*
-   * O escudo só aparece no PÁTIO.
-   *
-   * Lá ele sobe junto — quem apanha do boneco aprende a se defender. Com arma
-   * de exercise, não: cada arma treina a perícia dela e nada mais, e é isso que
-   * faz a `exercise shield` valer o preço. Uma régua parada ao lado de uma que
-   * anda não informa nada; some, e a faixa passa a dizer só a verdade.
-   */
-  const caixaEscudo = $('treino-faixa-escudo');
-  const mostraEscudo = noPatio && pericia !== 'shielding';
-  caixaEscudo.hidden = !mostraEscudo;
-  if (mostraEscudo) {
-    tipTexto(caixaEscudo, 'No pátio o escudo sobe junto com a arma.');
-    encher('treino-escudo', progresso('shielding'));
-  }
-}
 
 /*
  * ---- O balão das réguas de vida e mana ----
@@ -2203,7 +2025,45 @@ const SLOTS_DA_RECUPERACAO = ['neck', 'head', 'backpack', 'weapon', 'body', 'shi
 /** A fração da vida/mana máxima que volta por segundo, sem promoção nem peça. */
 const FRACAO_NATURAL = { hp: 0.004, mana: 0.006 };
 
+/** O balão no modo PoE: a regeneração do PoE (`derived.regenPoe`, a mesma conta do servidor) e de onde vem cada parte. */
+function painelDeRecuperacaoPoe(character, qual) {
+  const derived = character.derived ?? {};
+  const rp = derived.regenPoe;
+  const teto = qual === 'hp' ? derived.maxHp ?? 0 : derived.maxMana ?? 0;
+  const agora = qual === 'hp' ? character.hp ?? 0 : character.mana ?? 0;
+  const total = qual === 'hp' ? rp.vidaPorSegundo : rp.manaPorSegundo;
+  const caixa = el('div', 'tip-stamina');
+  const cor = qual === 'hp' ? 'heal' : 'mana';
+  caixa.append(el('div', 'tip-bless-head', qual === 'hp' ? 'Vida' : 'Mana'));
+  const topo = el('div', 'tip-stamina-topo');
+  topo.append(el('b', null, Math.round(agora).toLocaleString('pt-BR')), el('span', null, `de ${Math.round(teto).toLocaleString('pt-BR')}`));
+  caixa.append(topo);
+  const linha = (rotulo, valor, className = null) => {
+    const item = el('div', 'tip-exp-linha');
+    item.append(el('span', null, rotulo), el('b', className, valor));
+    caixa.append(item);
+  };
+  const ps = (v) => `+${(Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/s`;
+  linha('Recupera', ps(total), cor);
+  const faltam = Math.max(0, teto - agora);
+  if (faltam > 0.5 && total > 0) linha('Para encher', formatTime((faltam / total) * 1000));
+  caixa.append(el('div', 'tip-recuperacao-titulo', 'De onde vem'));
+  if (qual === 'hp') {
+    if (rp.vidaFixa) linha('Equipamento e árvore (+N/s)', ps(rp.vidaFixa), cor);
+    if (rp.vidaPctDoMax) linha(`${rp.vidaPctDoMax.toLocaleString('pt-BR')}% da vida máxima por segundo`, ps((teto * rp.vidaPctDoMax) / 100), cor);
+    if (rp.vidaAumentada) linha('Velocidade de regeneração aumentada', `+${rp.vidaAumentada}%`, cor);
+    if (!rp.vidaFixa && !rp.vidaPctDoMax) caixa.append(el('p', 'shop-note', 'Como no PoE, a vida não regenera sozinha: só com itens e nós da árvore que regeneram vida, frascos e roubo de vida.'));
+  } else {
+    linha('Base do PoE (1,8% da mana máxima)', ps((teto * 1.8) / 100), cor);
+    if (rp.manaFixa) linha('Equipamento e árvore (+N/s)', ps(rp.manaFixa), cor);
+    if (rp.manaAumentada) linha('Regeneração de mana aumentada', `+${rp.manaAumentada}%`, cor);
+  }
+  caixa.append(el('p', 'shop-note', 'Na cidade a vida, a mana e os frascos enchem na hora.'));
+  return caixa;
+}
+
 function painelDeRecuperacao(character, qual) {
+  if (character.derived?.regenPoe) return painelDeRecuperacaoPoe(character, qual);
   const derived = character.derived ?? {};
   const teto = qual === 'hp' ? derived.maxHp ?? 0 : derived.maxMana ?? 0;
   const agora = qual === 'hp' ? character.hp ?? 0 : character.mana ?? 0;
@@ -2590,10 +2450,8 @@ export function renderHud(character, catalog, party = null, escudoDeMana = false
     tipTexto(reguaStamina, null);
     tipPanel(reguaStamina, () => painelStamina(character, grau, enchendo));
   }
-  renderTreinoFaixa(character);
   // A pílula mora DENTRO da faixa, então ela vem depois — e o empilhamento
   // depois das duas, porque ele mede a faixa já com a pílula dentro.
-  renderEfeitosFaixa(character);
   renderPilulasDeEfeito(character);
   renderAutoBossFaixa(character);
   renderBuffsDaMagia(hudCtx?.state?.hunt);

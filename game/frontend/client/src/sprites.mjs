@@ -424,7 +424,9 @@ export function emprestarDoCatalogo(catalogo) {
   for (const [id, meta] of Object.entries(catalogo ?? {})) {
     // A GEMA DO PoE (só com ITENS_POE=1): o ícone dela, da coleção do dono (servido pela engine local).
     if (meta?.poeGema?.icone) {
-      itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/gema/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
+      // O ícone do suporte vem do CDN oficial do PoE (78×78); o da ativa, da coleção (64×64).
+      const lado = meta.poeGema.suporte ? 78 : 64;
+      itemSprites[id] = { w: lado, h: lado, x: 0, y: 0, gerada: `/api/jogo/poe/icone/${meta.poeGema.suporte ? 'suporte' : 'gema'}/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
       continue;
     }
     // As GEMAS ganham o ícone próprio, desenhado (ver `icones-de-gema.mjs`) — no lugar da pedra emprestada.
@@ -432,6 +434,11 @@ export function emprestarDoCatalogo(catalogo) {
       const chave = `gema:${id}`;
       if (!imagensGeradas.has(chave)) imagensGeradas.set(chave, { image: desenharGema(meta.gemaDef, id, 32), ready: true, tocadaEm: 0, falhouEm: 0, tentativas: 0 });
       itemSprites[id] = { w: 32, h: 32, x: 0, y: 0, gerada: chave };
+      continue;
+    }
+    // Os orbes do PoE (Joalheiro, Fusão, Cromático): o ícone do PoE (48×48), no lugar do desenho emprestado.
+    if (meta?.poeMoeda?.icone) {
+      itemSprites[id] = { w: 48, h: 48, x: 0, y: 0, gerada: `/api/jogo/poe/icone/moeda/${encodeURIComponent(meta.poeMoeda.icone)}` };
       continue;
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
@@ -987,6 +994,10 @@ export async function loadEffectData() {
 }
 
 export const effectInfo = (id) => effectMeta[id];
+export const missileInfo = (id) => missileMeta[id];
+/** Os ids de efeito e de projétil que existem (a Arena de Efeitos lista para escolher). */
+export const idsDeEfeitos = () => Object.keys(effectMeta).map(Number).sort((a, b) => a - b);
+export const idsDeProjeteis = () => Object.keys(missileMeta).map(Number).sort((a, b) => a - b);
 
 /** Quanto tempo a animação inteira do efeito dura. */
 export function effectDuration(id) {

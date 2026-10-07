@@ -110,27 +110,24 @@ test('Auto Boss: sequências com nome (máx 5, nome repetido regrava) e remover'
 
 test('loja de Boss Token: cobra o item, entrega; outfit uma vez só', () => {
   const e = novo();
-  assert.match(Bosses.comprar(e, { id: 'bt-exercise-35285' }).erro, /Boss Token/);
+  assert.match(Bosses.comprar(e, { id: 'bt-wildcards-5' }).erro, /Boss Token/);
   e.inventory.push({ id: 55287, count: 400 });
   assert.equal(Bosses.lojaParaCliente(e).loja.saldo, 400);
-  assert.ok(Bosses.comprar(e, { id: 'bt-exercise-35285' }).ok);
-  assert.ok(e.inventory.some((p) => p.id === 35285));
+  const antes = e.wildcards ?? 0;
+  assert.ok(Bosses.comprar(e, { id: 'bt-wildcards-5' }).ok);
+  assert.equal(e.wildcards, antes + 5);
   assert.ok(Bosses.comprar(e, { id: 'bt-outfit-golden' }).ok);
-  assert.equal(Bosses.lojaParaCliente(e).loja.saldo, 40);
+  assert.equal(Bosses.lojaParaCliente(e).loja.saldo, 47);
   assert.equal(Bosses.lojaParaCliente(e).loja.ofertas.find((o) => o.id === 'bt-outfit-golden').owned, true);
   e.inventory.push({ id: 55287, count: 400 });
   assert.match(Bosses.comprar(e, { id: 'bt-outfit-golden' }).erro, /já tem/);
 });
 
-test('loja de Boss Token: sem o nome antigo, e o preço das Lasting Exercise é o da Store', async () => {
-  const { STORE_REAL } = await import('../systems/dados.mjs');
-  const loja = Bosses.lojaParaCliente(novo()).loja;
+test('loja de Boss Token: sem o nome antigo, e sem as armas de Exercise (o treino saiu do jogo — dono, 06/10)', () => {
+  const e = novo();
+  const loja = Bosses.lojaParaCliente(e).loja;
   assert.doesNotMatch(JSON.stringify(loja), /Ravox/i);
-  const exercicios = loja.ofertas.filter((o) => o.grupo === 'exercise');
-  assert.ok(exercicios.length > 0);
-  for (const o of exercicios) {
-    const naStore = STORE_REAL.exercises.find((e) => e.itemId === o.itemId);
-    if (!naStore) continue;
-    assert.match(o.blurb, new RegExp(`na Store ela custa ${naStore.coins} coins`));
-  }
+  assert.equal(loja.ofertas.filter((o) => o.grupo === 'exercise').length, 0);
+  e.inventory.push({ id: 55287, count: 400 });
+  assert.ok(!Bosses.comprar(e, { id: 'bt-exercise-35285' }).ok, 'nem por id');
 });

@@ -1,5 +1,7 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
+import { balaoPoe } from './itens-poe-balao.mjs';
+import { abrirForjaPoe, temForjaPoe } from './forja-poe.mjs';
 import { listaDetalhe } from './lista-detalhe.mjs';
 import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
 import { montarAosPoucos } from './aos-poucos.mjs';
@@ -8,21 +10,14 @@ import { analogicoLigado, ligarAnalogico } from './celular.mjs';
 import { arteTeimosa, fundoTeimoso } from './arte-teimosa.mjs';
 import { itemCanvas, outfitCanvas, outfitInfo, drawEffect, effectDuration, effectInfo } from './sprites.mjs';
 // O item e o level das duas portas de acesso, os mesmos que o servidor cobra.
-import {
-  apelidoDoCharm,
-  textoDoCharm,
-  apelidoDoImbuement,
-  grauEmPortugues,
-  categoriaEmPortugues,
-  textoDoImbuement,
-} from './traduz.mjs';
+import { apelidoDoCharm, textoDoCharm } from './traduz.mjs';
 import { PORTAS_DE_ACESSO } from '/packages/shared/src/portas-de-acesso.mjs';
 // As chaves de gráficos, escolhidas aqui mesmo nos Ajustes da tela.
 import { GRAFICOS, MEDIDORES, TETOS, rotuloDoTeto, graficoLigado, medidorLigado, tetoDeQuadros, trocarGrafico, trocarMedidor, trocarTeto, noModoLeve, deixarLeve } from './graficos.mjs';
 // O contador de FPS e ping do canto, ligado na aba Gráficos. Ver `medidor.mjs`.
 import { atualizarMedidor, quadrosDoMonitor } from './medidor.mjs';
 import {
-  uiIcon, artOrUiIcon, ajustesDaBarra, ITEM_DO_PERGAMINHO,
+  uiIcon, artOrUiIcon, ajustesDaBarra,
   GRUPOS_DE_EFEITO, efeitoNaTela, mostrarEfeitoNaTela,
   MODOS_DE_EFEITO, modoDosEfeitos, trocarModoDosEfeitos,
   TAMANHOS_DA_PILULA, arranjoDasPilulas, tamanhoDasPilulas, posicaoDasPilulas,
@@ -32,7 +27,7 @@ import { savePreset, resetLayout, clearPreset, fecharAoClicarFora, atalhosDaCaix
 import {
   itemCell, aceitarSoltura, quantosMover, trocarArrastando, pedirParaOrganizar,
 } from './inventory.mjs';
-import { tipFor, tipTexto, tipForAction, tipPanel, fichaDeItem, restanteDoImbuement, estrelasDosAfixos, seloDeEstrelas, classeDaRaridade, faltaRequisito } from './tooltip.mjs';
+import { tipFor, tipTexto, tipForAction, tipPanel, fichaDeItem, estrelasDosAfixos, seloDeEstrelas, classeDaRaridade, faltaRequisito } from './tooltip.mjs';
 import { lootComGemas as lootDoBicho } from './loot-do-bicho.mjs';
 // O balão dos bônus das gemas, que a pílula do HUD já usa — ver `resumoDasGemasParaBalao`.
 import { balaoDosBonusDasGemas } from './gemas.mjs';
@@ -44,18 +39,6 @@ import { faltaDoCooldown } from '/packages/shared/src/prazos.mjs';
 // A régua de "quantos?" — a mesma da troca, da mochila e do destruir.
 import { controleDeQuantidade } from './social.mjs';
 import { chatFlutuante, ligarChatFlutuante } from './chat.mjs';
-
-/** Ícone do imbuement, o mesmo PNG que o client usa (iconid do imbuements.xml). */
-function imbuementIcon(iconId, size = 32) {
-  const img = document.createElement('img');
-  img.className = 'imbue-icon';
-  img.width = size;
-  img.height = size;
-  img.src = `/client/assets/imbuing/${iconId}.png`;
-  img.alt = '';
-  img.onerror = () => img.remove();
-  return img;
-}
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -439,8 +422,9 @@ export function openHunts() {
    * verdade chegar, ela reaproveita a progressão em vez de recomeçar do zero.
    */
   // Com o PoE ligado (dono, 06/10): só a CAMPANHA — sem Hunts Vip, Especial Hunts, Bosses nem Treino (no PoE não há treino de skills).
-  const abasDeAventuras = ctx.state.classesPoe ? { hunts: 'Campanha' } : { hunts: 'Normal Hunts', vips: 'Hunts Vip', especiais: 'Especial Hunts', bosses: 'Bosses', training: 'Treino' };
-  if (ctx.state.classesPoe) ctx.tabs.hunts = 'hunts';
+  const abasDeAventuras = ctx.state.classesPoe ? { hunts: 'Campanha' } : { hunts: 'Normal Hunts', vips: 'Hunts Vip', especiais: 'Especial Hunts', bosses: 'Bosses' };
+  // (A aba Treino saiu com o treino — dono, 06/10; quem a tinha aberta volta para as hunts.)
+  if (ctx.state.classesPoe || ctx.tabs.hunts === 'training') ctx.tabs.hunts = 'hunts';
   tabbedModal(ctx.state.classesPoe ? 'Campanha' : 'Aventuras', abasDeAventuras, 'hunts', (body, tab) => {
     // As hunts normais são a CAMPANHA: 4 atos, 3 dificuldades, fases que se liberam (ver `campanhaCards`).
     if (tab === 'hunts') campanhaCards(body);
@@ -513,7 +497,6 @@ export function openHunts() {
       body.append(atalhoDaArenaDeBoss());
       huntCards(body, ctx.state.catalog.bosses, true);
     }
-    else renderTraining(body);
   });
 }
 
@@ -660,6 +643,11 @@ function campanhaCards(body) {
           campanha.aoCompletar = valor;
           send({ t: 'aoCompletarFase', value: valor });
           ctx.redraw();
+        },
+        // A CIDADE (o nó de partida do ato): estando numa caçada, volta para a cidade pelo mesmo fluxo do botão Parar.
+        voltarParaCidade: () => {
+          if (ctx.state.hunt) send({ t: 'stopHunt' });
+          ctx.closeModal();
         },
         fechar: () => ctx.closeModal(),
         verLista: () => {
@@ -2101,7 +2089,7 @@ function huntCards(body, list, isBoss) {
     const moeda = itemCanvas(55287, 16);
     if (moeda) loja.append(moeda);
     loja.append(document.createTextNode('Loja de Boss Token'));
-    tipTexto(loja, 'Troque os Boss Token que caem dos bosses por wildcards, passes, exercise e conjuntos.');
+    tipTexto(loja, 'Troque os Boss Token que caem dos bosses por wildcards, passes e conjuntos.');
     loja.onclick = () => openLojaDeBossToken();
     ctx.acoesDoModal?.().append(loja);
   }
@@ -3922,144 +3910,6 @@ function askBoss(hunt) {
 
 
 /*
- * ---- A tela de treino ----
- *
- * Três cards, e mais nada.
- *
- * Havia um passo antes: escolher a perícia numa grade de sete botões. Ele saiu
- * porque era uma pergunta que o jogo já responde sozinho — quem treina é a ARMA
- * EQUIPADA, exatamente como numa caçada. De machado na mão sobe axe; de rod,
- * magic level; de arco, distance. Perguntar "o que você quer treinar" e depois
- * treinar outra coisa é a pior combinação possível: a tela promete uma escolha
- * que ela não tem como cumprir.
- *
- * Quem quiser treinar outra perícia troca de arma, que é o gesto que o jogo
- * inteiro já usa para isso.
- */
-const MODOS_DE_TREINO = [
-  {
-    id: 'exercise',
-    nome: 'Exercise',
-    resumo: 'Gasta as cargas de uma arma de treino e sobe rápido, sem sair da cidade.',
-    pronto: true,
-  },
-  {
-    id: 'online',
-    nome: 'Treino online',
-    resumo: 'Você vai ao pátio e bate num boneco que não morre. Rende como caçar — e custa o mesmo tempo.',
-    pronto: true,
-  },
-  {
-    id: 'offline',
-    nome: 'Treino offline',
-    resumo:
-      'Você sai do jogo treinando. Rende menos que o pátio, não precisa da aba aberta — e gasta a stamina de treino, que caçar devolve.',
-    pronto: true,
-  },
-];
-
-/*
- * ---- Confirmar o treino offline ----
- *
- * Duas perguntas numa tela só: o QUE treinar e se é isso mesmo.
- *
- * `shielding` não está na lista porque ele sobe junto com qualquer escolha —
- * oferecê-lo seria oferecer o que a pessoa já ganha, e escolhê-lo trocaria um
- * treino de duas perícias por um de uma.
- *
- * O aviso de que ela vai SAIR do jogo aparece em cima do botão, e não no
- * título. É a consequência que ninguém espera de um botão chamado "confirmar",
- * e ela tem de estar onde o olho já está quando a mão vai clicar.
- */
-function confirmarOffline(body) {
-  const { state, send } = ctx;
-  const character = state.character;
-  const lista = state.catalog.treinoOffline ?? state.catalog.trainable ?? [];
-  let escolhida = lista.includes(character.derived?.skillName)
-    ? character.derived.skillName
-    : lista[0];
-
-  body.replaceChildren();
-
-  const voltar = el('button', 'ghost', '‹ voltar');
-  voltar.onclick = () => {
-    body.replaceChildren();
-    renderTraining(body);
-  };
-  body.append(voltar, el('h3', null, 'Treino offline'));
-  body.append(
-    el(
-      'p',
-      'shop-note',
-      'Escolha o que treinar. O escudo sobe junto, qualquer que seja a escolha — por isso ele não está na lista.',
-    ),
-  );
-
-  const grid = el('div', 'train-grid');
-  const desenhar = () => {
-    grid.replaceChildren();
-    for (const skill of lista) {
-      const info = skill === 'magic' ? character.magic : character.skills[skill];
-      const botao = el('button');
-      botao.setAttribute('aria-selected', String(escolhida === skill));
-      botao.append(
-        artOrUiIcon(`sk-${skill}`, skill),
-        el('b', null, skill === 'magic' ? 'magic level' : skill),
-        el('em', null, `atual ${info?.value ?? 0}`),
-      );
-      botao.onclick = () => {
-        escolhida = skill;
-        desenhar();
-      };
-      grid.append(botao);
-    }
-  };
-  desenhar();
-  body.append(grid);
-
-  body.append(
-    el(
-      'p',
-      'relatorio-motivo',
-      'Ao confirmar, você sai deste personagem e volta para a lista. O treino continua rodando.',
-    ),
-  );
-
-  /*
-   * `confirm-actions` traz as duas cores que o jogo já usa para esse par: verde
-   * no que segue, vermelho no que desfaz. São as mesmas do filtro de loot para
-   * "protegido" e "barrado" — não vale inventar um terceiro vocabulário de cor
-   * para a mesma pergunta.
-   */
-  const acoes = el('div', 'confirm-actions');
-  const cancelar = el('button', 'danger', 'Cancelar');
-  cancelar.onclick = () => {
-    body.replaceChildren();
-    renderTraining(body);
-  };
-  const confirmar = el('button', 'primary', 'Confirmar');
-  confirmar.onclick = () => send({ t: 'training', action: 'start', mode: 'offline', skill: escolhida });
-  acoes.append(cancelar, confirmar);
-  body.append(acoes);
-}
-
-/*
- * ---- Escolher a arma de treino ----
- *
- * Duas telas em uma: a arma que já está NA MÃO (com as cargas que sobraram) e
- * as que estão na mochila.
- *
- * A da mão vem primeiro e sozinha porque ela manda: enquanto houver uma pela
- * metade, o servidor recusa trocar — a mochila guarda id e quantidade, não
- * cargas, e devolvê-la significaria devolvê-la cheia. Mostrar as outras como
- * clicáveis nesse estado seria oferecer um botão que só sabe dizer não.
- */
-/*
- * `semVoltar` é para quando esta tela é a janela inteira (o clique direito no
- * boneco): ali não há para onde voltar, e um botão "‹ voltar" que leva à aba de
- * Aventuras seria uma porta para um lugar em que o jogador nunca esteve.
- */
-/*
  * ---- O lobby: a tela de combinar antes de entrar ----
  *
  * "faz meio que um lobby bonitinho pra chamar a pessoa e quando todos derem
@@ -4518,7 +4368,6 @@ export function openLojaDeBossToken() {
        */
       const grupos = [
         { chave: null, titulo: 'Consumíveis' },
-        { chave: 'exercise', titulo: 'Lasting Exercise — 14.400 cargas cada' },
         { chave: 'outfit', titulo: 'Conjuntos completos' },
       ];
       for (const grupo of grupos) {
@@ -4604,457 +4453,6 @@ function cartaoDeBossToken(oferta, loja, desenhar, unidade = 'Boss Token', canal
     });
   card.append(comprar);
   return card;
-}
-
-/**
- * A tela do Exercise sozinha, sem passar pelas quatro abas de Aventuras.
- *
- * Existe para a sonda (`sonda-treino`), pelo mesmo motivo que `limparMochila` e
- * `venderMochila` existem em `__abrir`: chegar ate' aqui pelo caminho do
- * jogador sao quatro cliques em abas, e uma sonda que atravessa quatro telas
- * falha por qualquer uma delas em vez de falhar pela que ela mede.
- *
- * O desenho e' o MESMO da aba — ela chama a funcao de baixo, e nao uma copia.
- */
-export function openExercise() {
-  // Os cartazes desta tela anunciam preço, e quem sabe o preço é a loja. Ver
-  // `escolherExercise`. Uma vez por abertura, como em `openStore`.
-  ctx.send({ t: 'store' });
-  ctx.openModal('Exercise', (body) => {
-    const desenhar = () => escolherExercise(body, { semVoltar: true });
-    ctx.redraw = desenhar;
-    desenhar();
-  });
-}
-
-function escolherExercise(body, { semVoltar = false } = {}) {
-  const { state, send, closeModal } = ctx;
-  const character = state.character;
-  const naMao = character.exercicio ?? null;
-  const guardadas = character.exercicios ?? [];
-
-  body.replaceChildren();
-  if (!semVoltar) {
-    const voltar = el('button', 'ghost', '‹ voltar');
-    voltar.onclick = () => {
-      body.replaceChildren();
-      renderTraining(body);
-    };
-    body.append(voltar);
-  }
-  body.append(el('h3', null, 'Exercise'));
-
-  /*
-   * ---- A marca de continuar sozinho ----
-   *
-   * "se tiver mais de uma varinha de treino na bag, continuar treinando (...) e
-   * coloca pra pessoa habilitar essa função direto nessa página tipo um negócio
-   * pra marcar; se ela marcar sempre ficará marcado a menos que ela desmarque".
-   *
-   * Ela vai para `settings` no servidor, e não para o navegador: quem marcou
-   * num computador não precisa marcar no outro, e o treino que continua sozinho
-   * roda do lado de lá — a marca tem de estar onde a decisão é tomada.
-   *
-   * A frase abaixo diz o que ela GASTA, e não só o que ela faz. É a única
-   * marca do jogo que consome coins sem perguntar de novo, e quem a liga tem
-   * de ler isso antes e não descobrir depois.
-   */
-  const auto = el('label', 'exercise-auto');
-  const marca = document.createElement('input');
-  marca.type = 'checkbox';
-  marca.checked = !!character.settings?.exerciseAuto;
-  marca.onchange = () => send({ t: 'settings', exerciseAuto: marca.checked });
-  const dizeres = el('span');
-  dizeres.append(el('b', null, 'Continuar com a próxima arma do mesmo tipo'));
-  dizeres.append(
-    el(
-      'em',
-      null,
-      'Quando as cargas acabarem, o treino pega outra arma do mesmo tipo que estiver com você — a começada primeiro, depois a mais barata. Isso gasta as cargas dela sem perguntar.',
-    ),
-  );
-  auto.append(marca, dizeres);
-  body.append(auto);
-
-  if (naMao) {
-    body.append(
-      el('p', 'shop-note', 'Esta é a arma na sua mão. Trocar por outra não gasta as cargas dela — ela fica guardada.'),
-    );
-    const caixa = el('div', 'exercise-mao');
-    const arte = itemCanvas(naMao.arte ?? naMao.itemId, 48);
-    if (arte) caixa.append(arte);
-    const texto = el('div', 'exercise-mao-texto');
-    texto.append(el('b', null, naMao.name));
-    texto.append(
-      el(
-        'em',
-        null,
-        `${naMao.restantes.toLocaleString('pt-BR')} de ${naMao.cargas.toLocaleString('pt-BR')} cargas · ${duracaoCurta(naMao.segundos)} de treino`,
-      ),
-    );
-    texto.append(el('em', null, `Treina ${PERICIA_EM_PT[naMao.skill] ?? naMao.skill}.`));
-    caixa.append(texto);
-    body.append(caixa);
-
-    /*
-     * ---- Quanto tempo falta para acabar TUDO ----
-     *
-     * Report do Kemm: "adicionar na tela de treinamento, uma estimativa de
-     * quanto tempo vai demorar pra consumir todas as varinhas".
-     *
-     * A linha de cima ja diz o tempo da arma da mao. Esta responde a outra
-     * pergunta — a que se faz olhando a mochila cheia de armas, e nao a que
-     * esta na mao —, e ela so' existe quando a resposta e' diferente: com a
-     * troca automatica DESLIGADA o treino para na primeira, e somar as outras
-     * prometeria um tempo que nao vai acontecer.
-     *
-     * Por isso a frase muda com a marca em vez de sumir: desligada, ela diz o
-     * que a marca daria. E' a resposta certa para "por que o meu nao mostra?",
-     * dita antes da pergunta.
-     */
-    const falta = character.exercicioFalta;
-    if (falta && falta.armas > 1) {
-      const linha = el('p', 'exercise-falta');
-      if (falta.seguido) {
-        linha.append(
-          el('b', null, `${duracaoCurta(falta.segundosTipo)} até acabar tudo`),
-          el(
-            'em',
-            null,
-            `${falta.armas} armas deste tipo, ${falta.cargasTipo.toLocaleString('pt-BR')} cargas somadas — ` +
-              'o treino passa de uma para a outra sozinho.',
-          ),
-        );
-      } else {
-        linha.classList.add('apagada');
-        linha.append(
-          el('b', null, `${duracaoCurta(falta.segundos)} até esta arma acabar`),
-          el(
-            'em',
-            null,
-            `Você tem ${falta.armas} deste tipo, ${duracaoCurta(falta.segundosTipo)} somando todas. ` +
-              'Marque acima para o treino seguir nelas.',
-          ),
-        );
-      }
-      body.append(linha);
-    }
-
-    const acoes = el('div', 'confirm-actions');
-    if (naMao.treinando) {
-      const parar = el('button', 'danger', 'Parar');
-      parar.onclick = () => {
-        send({ t: 'training', action: 'stop' });
-        closeModal();
-      };
-      acoes.append(parar);
-    } else {
-      const seguir = el('button', 'primary', 'Continuar treinando');
-      seguir.onclick = () => {
-        send({ t: 'training', action: 'start', mode: 'exercise' });
-        closeModal();
-      };
-      acoes.append(seguir);
-    }
-    body.append(acoes);
-  }
-
-  /*
-   * A lista aparece SEMPRE, mesmo com uma arma na mão.
-   *
-   * Ela não aparecia, e trocar de perícia no meio era impossível — foi a
-   * primeira coisa que o dono tentou fazer. A recusa existia para não perder as
-   * cargas da arma pela metade; agora elas ficam guardadas (ver
-   * `startExercicio`), e não há mais motivo para esconder as outras.
-   */
-  if (guardadas.length) {
-    body.append(
-      el('p', 'shop-note', naMao ? 'Trocar para:' : 'Escolha a arma. Cada golpe gasta uma carga.'),
-    );
-    const grid = el('div', 'train-grid');
-    for (const arma of guardadas) {
-      if (naMao && arma.itemId === naMao.itemId && !arma.quantidade) continue;
-      const botao = el('button');
-      const arte = itemCanvas(arma.arte ?? arma.itemId, 32);
-      if (arte) botao.append(arte);
-      botao.append(el('b', null, arma.name));
-      botao.append(el('em', null, PERICIA_EM_PT[arma.skill] ?? arma.skill));
-      /*
-       * Uma começada mostra o que sobrou; uma fechada mostra o total. São
-       * coisas diferentes e a mesma linha diria o mesmo número para as duas.
-       */
-      botao.append(
-        el(
-          'em',
-          null,
-          arma.restantes
-            ? `${arma.restantes.toLocaleString('pt-BR')} cargas (começada)`
-            : `${arma.cargas.toLocaleString('pt-BR')} cargas`,
-        ),
-      );
-      if (arma.quantidade > 1) botao.append(el('em', null, `x${arma.quantidade}`));
-      botao.onclick = () => {
-        send({ t: 'training', action: 'start', mode: 'exercise', itemId: arma.itemId });
-        closeModal();
-      };
-      grid.append(botao);
-    }
-    body.append(grid);
-  } else if (!naMao) {
-    body.append(el('p', 'empty', 'Você não tem nenhuma arma de treino.'));
-  }
-
-  /*
-   * ---- O atalho para a loja ----
-   *
-   * Fica SEMPRE, e não só quando a mochila está vazia. Uma arma de exercise
-   * acaba — é o que ela faz —, e o momento em que a pessoa está nesta tela é
-   * justamente quando a pergunta "onde compro outra?" aparece. Esconder a
-   * resposta até acabar a última é responder tarde.
-   */
-  /*
-   * ---- E o pergaminho ao lado, porque ele é desta tela ----
-   *
-   * "tem que ter indicaçao do scroll speed exercise informando o que ele faz
-   * tambem ao lado do 'as armas de treino estao na store', ai deixa so um botao
-   * no meio que abre a loja".
-   *
-   * O Scroll Speed Exercise só serve para uma coisa no jogo inteiro — dobrar a
-   * velocidade DESTE treino —, e até aqui ele só se anunciava na faixa do topo,
-   * que aparece depois de o treino já ter começado. Quem está nesta tela está
-   * decidindo como vai treinar; é aqui que a informação vale.
-   *
-   * UM botão para os dois cartazes, e não um em cada: os dois levam à mesma
-   * loja, e dois botões lado a lado obrigariam a ler qual é qual antes de
-   * clicar. Ele abre em Armas de Treino, que é a prateleira desta tela — e o
-   * cartaz do pergaminho diz onde ele mora, que é a informação que falta.
-   */
-  const loja = el('div', 'exercise-loja');
-
-  const cartazes = el('div', 'exercise-loja-cartazes');
-
-  /*
-   * ---- Os dois preços saem da LOJA, e não daqui ----
-   *
-   * "na aba de boneco de treino está informando que o Scroll Speed Exercise é
-   *  100 Draevor Coins, quando na verdade agora é 25."
-   *
-   * Os dois cartazes tinham o número escrito à mão. A régua de preços caiu, o
-   * pergaminho foi de 100 para 25, e esta tela continuou anunciando o preço
-   * velho — quatro vezes maior — sem quebrar nada e sem avisar ninguém. É o
-   * mesmo defeito que o pacote de blessings tinha.
-   *
-   * Agora os dois vêm de `state.store`: a faixa das armas é o menor e o maior
-   * preço da prateleira de exercise (hoje 25 e 100), e o do pergaminho é o
-   * `coins` dele na prateleira de Boosts. O dono mexe em `exercicios.mjs` ou em
-   * `consumiveis.mjs` e a tela acompanha sozinha.
-   *
-   * Enquanto a loja não chegou, cada frase sai SEM a parte do preço, e não com
-   * um número de reserva: uma frase mais curta é uma frase certa, e o pedido de
-   * `openHunts` já está a caminho — a chegada redesenha isto.
-   */
-  const armasNaLoja = (ctx.state.store?.exercises ?? []).map((arma) => arma.coins).filter(Number.isFinite);
-  const faixaDasArmas = armasNaLoja.length
-    ? `Da mais barata à melhor: ${Math.min(...armasNaLoja)} a ${Math.max(...armasNaLoja)} Draevor Coins.`
-    : '';
-  const pergaminhoNaLoja =
-    (ctx.state.store?.boosts ?? []).find((boost) => boost.itemId === ITEM_DO_PERGAMINHO) ?? null;
-
-  const armas = el('div', 'exercise-loja-cartaz');
-  armas.append(
-    el('b', null, 'As armas de treino estão na Store'),
-    el(
-      'em',
-      null,
-      `Exercise, Lasting, Durable e as Boosted — que treinam 30% mais rápido.${faixaDasArmas ? ` ${faixaDasArmas}` : ''}`,
-    ),
-  );
-  cartazes.append(armas);
-
-  const pergaminho = el('div', 'exercise-loja-cartaz');
-  const titulo = el('b');
-  const figura = itemCanvas(ITEM_DO_PERGAMINHO, 22);
-  if (figura) titulo.append(figura);
-  titulo.append(document.createTextNode('Scroll Speed Exercise'));
-  pergaminho.append(titulo);
-  /*
-   * As horas também saem da loja (`duracao`, em milissegundos) — são a outra
-   * metade da oferta, e ficariam mentindo pelo mesmo motivo que o preço.
-   */
-  const horasDoPergaminho = pergaminhoNaLoja?.duracao ? Math.round(pergaminhoNaLoja.duracao / 3600000) : null;
-  const ofertaDoPergaminho =
-    horasDoPergaminho && pergaminhoNaLoja?.coins != null
-      ? `São ${horasDoPergaminho} horas de treino dobrado por ${pergaminhoNaLoja.coins} Draevor Coins, e o`
-      : 'O';
-  pergaminho.append(
-    el(
-      'em',
-      null,
-      `Dobra a velocidade das exercise weapons: um golpe a cada 0,2s em vez de 0,4s. ${ofertaDoPergaminho} ` +
-        'saldo só desce enquanto você está treinando — fora do treino ele fica guardado.',
-    ),
-  );
-  /*
-   * Quanto ele TEM, quando tem.
-   *
-   * É a diferença entre um anúncio e uma informação: quem já comprou não
-   * precisa que a tela ofereça de novo, precisa saber quanto sobrou. O mesmo
-   * saldo que a pílula do topo mostra durante o treino (`efeitos.exerciseSpeed`).
-   */
-  const saldo = character.efeitos?.exerciseSpeed?.restante ?? 0;
-  if (saldo > 0) {
-    pergaminho.append(el('span', 'exercise-loja-saldo', `Você tem ${duracaoCurta(Math.round(saldo / 1000))} guardados.`));
-  }
-  cartazes.append(pergaminho);
-  loja.append(cartazes);
-
-  const ir = el('button', 'primary', 'Abrir a loja');
-  ir.onclick = () => {
-    closeModal();
-    openStore();
-    // Já na prateleira certa: quem clicou aqui não quer procurar montaria.
-    ctx.tabs.storeSection = 'exercises';
-    ctx.tabs.storeBusca = '';
-    ctx.redraw?.();
-  };
-  loja.append(ir);
-  body.append(loja);
-}
-
-function renderTraining(body) {
-  const { state, send, closeModal } = ctx;
-  const character = state.character;
-
-  /*
-   * O que ele vai treinar, dito ANTES de ele escolher o modo.
-   *
-   * `skillName` é o que o servidor deriva da arma equipada — a mesma conta que
-   * decide a perícia no combate. Mostrá-la aqui é o que substitui a grade de
-   * escolha: em vez de perguntar, a tela informa, e quem não gostou troca de
-   * arma antes de entrar.
-   */
-  const pericia = character?.derived?.skillName ?? null;
-  body.append(
-    el(
-      'p',
-      'shop-note',
-      pericia
-        ? `Você treina a perícia da arma equipada: ${pericia === 'magic' ? 'magic level' : pericia}. Troque de arma para treinar outra.`
-        : 'Você treina a perícia da arma equipada. Troque de arma para treinar outra.',
-    ),
-  );
-
-  /*
-   * ---- Os mesmos cards dos bosses ----
-   *
-   * `hunt-grid` + `hunt-card boss`: as classes que a aba de Bosses já usa, e
-   * não uma cópia delas. Assim os três cards do treino têm exatamente o mesmo
-   * tamanho, a mesma moldura ornamentada e o mesmo comportamento de hover —
-   * porque SÃO os mesmos cards, e não dois conjuntos de regras parecidas que
-   * vão divergir na primeira vez que alguém mexer num só.
-   *
-   * A `locked` é a mesma que trava um boss em cooldown, pelo mesmo motivo
-   * visual: mostrar que existe e não dá para entrar agora.
-   */
-  const grid = el('div', 'hunt-grid');
-  for (const modo of MODOS_DE_TREINO) {
-    const travado = !modo.pronto || !!state.hunt;
-    const card = el('div', `hunt-card boss treino${travado ? ' locked' : ''}`);
-
-    card.append(el('h3', null, modo.nome));
-    /*
-     * A arte de `assets/icons/treino-<modo>.png`. Enquanto ela não existir,
-     * `artOrUiIcon` cai no caminho antigo e o card aparece sem figura — com o
-     * nome e o resumo, que é o que ele precisa para funcionar.
-     */
-    const arte = el('div', 'treino-arte');
-    arte.append(artOrUiIcon(`treino-${modo.id}`, modo.nome));
-    card.append(arte);
-    card.append(el('p', null, modo.resumo));
-    /*
-     * O card do Exercise diz o que está na mão.
-     *
-     * Sem isso ele promete a mesma coisa esteja o jogador com uma arma pela
-     * metade ou sem nenhuma — e as duas levam a telas diferentes. A linha aqui
-     * é o que evita abrir o card para descobrir.
-     */
-    const emUso = modo.id === 'exercise' ? character?.exercicio : null;
-    card.append(
-      el(
-        'span',
-        'lv',
-        emUso
-          ? `${emUso.name} · ${emUso.restantes.toLocaleString('pt-BR')} cargas${emUso.treinando ? ' (treinando)' : ''}`
-          : modo.pronto
-            ? 'disponível'
-            : 'ainda não',
-      ),
-    );
-
-    if (modo.pronto && !state.hunt) {
-      card.onclick = () => {
-        /*
-         * O offline PERGUNTA antes; o pátio não.
-         *
-         * A diferença não é capricho: confirmar o treino offline TIRA a pessoa
-         * do jogo e a devolve para a lista de personagens. Uma ação que fecha o
-         * personagem por engano é a que mais dói desfazer — e não dá para
-         * desfazer, o tempo já correu. O pátio, por outro lado, é só andar até
-         * um mapa; sair de lá é um clique.
-         */
-        if (modo.id === 'offline') return confirmarOffline(body);
-        // O exercise PERGUNTA qual arma: quem decide não é a que está vestida,
-        // é a que ele comprou — e ele pode ter mais de uma.
-        if (modo.id === 'exercise') return escolherExercise(body);
-        send({ t: 'training', action: 'start', mode: modo.id });
-        closeModal();
-      };
-    }
-    grid.append(card);
-  }
-  body.append(grid);
-
-  if (state.hunt) body.append(el('p', 'empty', 'Saia da caçada antes de treinar.'));
-
-  /*
-   * ---- O tanque do treino offline, aqui e não no canto da tela ----
-   *
-   * Esta é a única tela em que a stamina de treino muda alguma decisão: é aqui
-   * que a pessoa escolhe treinar offline. Um medidor a mais no HUD, ao lado dos
-   * outros, seria um número que quase nunca importa competindo por atenção com
-   * a vida e a mana, que importam sempre.
-   *
-   * Ele aparece SEMPRE, e não só quando está baixo: um recurso que só se mostra
-   * na hora em que acaba é um recurso que a pessoa descobre sendo punida por
-   * ele.
-   */
-  const tanque = character?.treinoStamina;
-  if (tanque) {
-    const caixa = el('div', 'treino-tanque');
-    caixa.append(el('b', null, 'Stamina de treino'));
-    const track = el('div', `track ${tanque.baixa ? 'copper' : 'accent'}`);
-    const fill = el('i');
-    fill.style.width = `${Math.max(0, Math.min(100, tanque.fracao * 100)).toFixed(1)}%`;
-    track.append(fill);
-    caixa.append(track);
-    caixa.append(
-      el(
-        'em',
-        null,
-        `${duracaoCurta(Math.round(tanque.restante / 1000))} de ${duracaoCurta(Math.round(tanque.teto / 1000))} — o treino offline gasta daqui, e caçar devolve.`,
-      ),
-    );
-    body.append(caixa);
-  }
-  /*
-   * Não há botão de parar o treino offline, e não é esquecimento.
-   *
-   * Entrar no personagem JÁ para o treino — é o fim do trato de "eu saio, ele
-   * treina". Então quando esta tela é vista, `character.training` já foi
-   * desligado: um botão para desfazer o que a própria entrada desfez seria uma
-   * pergunta que ninguém precisa responder, e que nunca apareceria de qualquer
-   * forma.
-   */
 }
 
 // ---------- prey ----------
@@ -5285,470 +4683,6 @@ function openPreySelect(index) {
   });
 }
 
-// ---------- imbuements ----------
-
-const IMBUEMENT_SLOTS = ['weapon', 'shield', 'head', 'body', 'legs', 'feet', 'neck', 'ring'];
-
-// Nome do encaixe quando não há nada vestido nele.
-const SLOT_LABEL = {
-  weapon: 'Arma',
-  shield: 'Escudo',
-  head: 'Cabeça',
-  body: 'Corpo',
-  legs: 'Pernas',
-  feet: 'Pés',
-  neck: 'Colar',
-  ring: 'Anel',
-};
-
-export function openImbuements() {
-  ctx.send({ t: 'imbuements' });
-  /*
-   * `imbue` alarga o modal.
-   *
-   * Os tres graus ganharam moldura de 24px por lado — 48px de ornamento por
-   * cartao —, e nos 980px de sempre sobrava coluna estreita demais para o texto
-   * do efeito. O dono autorizou: "aumentei um pouquinho o tamanho do modal da
-   * pagina de imbuements, mas so' se for necessario". Era.
-   */
-  ctx.openModal(
-    'Imbuements',
-    (body) => {
-      const draw = () => {
-        body.innerHTML = '';
-        renderImbuements(body);
-      };
-      ctx.redraw = draw;
-      draw();
-    },
-    null,
-    'imbue'
-  );
-}
-
-/*
- * ---- Um menu suspenso que é NOSSO ----
- *
- * A foto do Imbuing Shrine tem duas listas suspensas, e o dono pediu esse gesto
- * com todas as letras: "seleciona o item, escolhe o imbue pela setinha e etc".
- *
- * O que ele NÃO pode ser é um `<select>`. A lista aberta de um `<select>` é uma
- * janela do sistema: não está no DOM, o CSS não a alcança, e qualquer redesenho
- * da página a fecha. Com uma caçada rodando atrás — loot, dano, chat, oito
- * quadros por segundo — ela fecha antes de o dedo chegar no nome. Foi por isso
- * que o `<select>` saiu dos charms ("os charms está bugado, não dá para colocar
- * o bicho") e da quantidade da loja.
- *
- * Então é um botão com uma seta e um painel comum embaixo. Mesmo gesto, mesma
- * cara, e nada o fecha além do clique da pessoa.
- *
- * `qual` identifica o menu (há dois na tela), e quem está aberto mora em
- * `ctx.tabs` — a gaveta que sobrevive ao redesenho.
- */
-function menuSuspenso({ qual, valor, itens, aoEscolher, comBusca = false, aoRedesenhar }) {
-  const caixa = el('div', 'suspenso');
-  const aberto = ctx.tabs.imbueAberto === qual;
-  const atual = itens.find((item) => item.id === valor) ?? null;
-
-  const botao = el('button', `suspenso-botao${aberto ? ' aberto' : ''}`);
-  if (atual?.arte) {
-    const arte = atual.arte();
-    if (arte) botao.append(arte);
-  }
-  const texto = el('span', 'grow');
-  texto.append(el('b', null, atual?.nome ?? 'escolha'));
-  if (atual?.sub) texto.append(el('em', null, atual.sub));
-  botao.append(texto, el('i', 'suspenso-seta'));
-  botao.onclick = () => {
-    ctx.tabs.imbueAberto = aberto ? null : qual;
-    aoRedesenhar();
-  };
-  caixa.append(botao);
-  if (!aberto) return caixa;
-
-  const painel = el('div', 'suspenso-painel');
-  const lista = el('div', 'suspenso-itens');
-
-  let busca = null;
-  if (comBusca) {
-    busca = document.createElement('input');
-    busca.type = 'search';
-    busca.placeholder = `buscar entre ${itens.length}...`;
-    busca.value = ctx.tabs.imbueSearch ?? '';
-    painel.append(busca);
-  }
-
-  const pintar = () => {
-    const filtro = (ctx.tabs.imbueSearch ?? '').trim().toLowerCase();
-    lista.innerHTML = '';
-    let desenhados = 0;
-    for (const item of itens) {
-      if (comBusca && filtro && !`${item.nome} ${item.sub ?? ''}`.toLowerCase().includes(filtro)) continue;
-      desenhados++;
-      const linha = el('button', `suspenso-item${item.id === valor ? ' escolhido' : ''}`);
-      if (item.arte) {
-        const arte = item.arte();
-        if (arte) linha.append(arte);
-      }
-      const dentro = el('span', 'grow');
-      dentro.append(el('b', null, item.nome));
-      if (item.sub) dentro.append(el('em', null, item.sub));
-      linha.append(dentro);
-      linha.onclick = () => {
-        ctx.tabs.imbueAberto = null;
-        aoEscolher(item.id);
-      };
-      lista.append(linha);
-    }
-    if (!desenhados) lista.append(el('em', 'suspenso-vazio', 'nada com esse nome'));
-  };
-
-  /*
-   * A busca redesenha só a LISTA, e não o painel: refazer o painel jogaria fora
-   * o campo e o cursor a cada tecla — a versão de teclado do mesmo defeito que
-   * tirou o `<select>` daqui.
-   */
-  if (busca) {
-    busca.oninput = () => {
-      ctx.tabs.imbueSearch = busca.value;
-      pintar();
-    };
-  }
-  pintar();
-  painel.append(lista);
-  caixa.append(painel);
-  return caixa;
-}
-
-/*
- * ---- A Oficina de Imbuir, no desenho da foto ----
- *
- * O dono mandou o Imbuing Shrine do cliente antigo e depois apertou o pedido:
- * "pode ser mais parecida com a da foto: seleciona o item, escolhe o imbue pela
- *  setinha e etc".
- *
- * A foto tem três coisas, e as três estão aqui:
- *
- *   1. BLOCOS COM TÍTULO — "Item information", "Imbue empty slot". A tela
- *      deixou de ser uma pilha e passou a ter partes;
- *   2. OS ENCAIXES DESENHADOS — quadrados com a arte do encaixe vazio
- *      (`encaixe-vazio.png`, do próprio cliente, que foi o dono quem apontou
- *      onde estava). Um relance diz quantos a peça tem e quantos estão em uso;
- *   3. ESCOLHER PELA SETINHA — o encantamento num menu, o grau noutro, e só
- *      então o efeito, os reagentes e o preço. É o "escolha, depois compare"
- *      da foto.
- *
- * O que mudou desde a versão anterior desta tela: a lista de 24 famílias com os
- * três cartões abertos de cada uma virou dois menus e UM cartão. O DOM da
- * página caiu de 72 cartões emoldurados para um.
- *
- * Nada do FUNCIONAMENTO mudou: mesmas mensagens (`imbue` e `imbue/remove`),
- * mesmas regras de qual encantamento serve em qual peça, mesmos reagentes,
- * mesmos preços e a mesma duração.
- */
-function renderImbuements(body) {
-  const { state, send } = ctx;
-  const character = state.character;
-
-  /*
-   * ---- Só as peças que ACEITAM imbuement ----
-   *
-   * "se a peça não aceita imbuements ela não deve aparecer lá."
-   *
-   * Eram oito quadrados fixos, e cinco deles costumam estar apagados: slot
-   * vazio, peça sem encaixe, peça que a base não deixa encantar. Um botão
-   * apagado ocupa o mesmo espaço de um que serve e ainda faz procurar entre os
-   * dois — a fileira dizia mais sobre o que NÃO dá para fazer do que sobre o
-   * que dá.
-   *
-   * `imbuementSlots` vem do servidor peça por peça (é o `imbuementslot` do
-   * items.xml), então quem responde não é a tela: é a base.
-   */
-  const aceitam = IMBUEMENT_SLOTS.filter((slot) => (character.imbuementSlots?.[slot] ?? 0) > 0);
-
-  /*
-   * A peça escolhida tem de ser uma das que sobraram: guardada de antes, ela
-   * pode ter sido desequipada, e aí a tela abriria em "nada equipado" com a
-   * fileira inteira apontando para outro lugar.
-   */
-  const chosen = aceitam.includes(ctx.tabs.imbueSlot) ? ctx.tabs.imbueSlot : (aceitam[0] ?? 'weapon');
-  ctx.tabs.imbueSlot = chosen;
-  const equipada = character.equipment[chosen];
-  const ativos = character.imbuements?.[chosen] ?? [];
-  const totalSlots = character.imbuementSlots?.[chosen] ?? 0;
-
-  /** Um bloco com título, como as faixas da foto. */
-  const bloco = (titulo) => {
-    const caixa = el('section', 'imbue-bloco');
-    caixa.append(el('h4', null, titulo));
-    const dentro = el('div', 'imbue-bloco-corpo');
-    caixa.append(dentro);
-    body.append(caixa);
-    return dentro;
-  };
-
-  // ======== 1. A peça ========
-  const daPeca = bloco('Informações da peça');
-
-  const foco = el('div', 'imbue-focus');
-  const moldura = el('div', 'imbue-frame');
-  if (equipada) moldura.append(itemCanvas(equipada.id, 48));
-  else moldura.append(el('span', 'empty', 'vazio'));
-  foco.append(moldura);
-  const nomes = el('div', 'grow');
-  nomes.append(el('b', null, state.items[equipada?.id]?.name ?? 'nada equipado'));
-  nomes.append(
-    el('em', null, totalSlots ? `${ativos.length} de ${totalSlots} encaixes usados` : 'esta peça não aceita imbuement')
-  );
-  foco.append(nomes);
-
-  const linhaDaPeca = el('div', 'imbue-peca-linha');
-  linhaDaPeca.append(foco);
-
-  /*
-   * ---- Os encaixes ----
-   *
-   * Eram bolinhas de 6px. O quadrado diz a mesma coisa e mais três: qual
-   * encantamento está ali, quanto tempo falta e o botão de tirar — que antes
-   * morava numa lista separada logo abaixo, repetindo a mesma informação com
-   * outro desenho.
-   */
-  const encaixes = el('div', 'imbue-encaixes');
-  for (let index = 0; index < Math.max(totalSlots, 1); index++) {
-    const imbued = ativos[index] ?? null;
-    const fonte = imbued ? state.catalog.imbuements.find((entry) => entry.id === imbued.id) : null;
-    const caixa = el(
-      'div',
-      `imbue-encaixe${imbued ? ' cheio' : ''}${totalSlots ? '' : ' morto'}${fonte?.base ? ` grau-${fonte.base}` : ''}`
-    );
-
-    const quadro = el('div', 'imbue-encaixe-quadro');
-    if (imbued && fonte?.iconId) quadro.append(imbuementIcon(fonte.iconId, 34));
-    caixa.append(quadro);
-
-    if (imbued) {
-      /* O apelido no lugar do nome: no quadrado de 108px só cabe um dos dois. */
-      caixa.append(el('b', null, apelidoDoImbuement(imbued.name) ?? imbued.name));
-      caixa.append(el('em', null, `${formatLeft(imbued.left)} restantes`));
-      const tirar = el('button', 'ghost', 'Remover');
-      tirar.onclick = () => send({ t: 'imbue', action: 'remove', slot: chosen, id: imbued.id });
-      caixa.append(tirar);
-    } else {
-      caixa.append(el('b', null, totalSlots ? 'vazio' : 'sem encaixe'));
-    }
-    encaixes.append(caixa);
-  }
-  linhaDaPeca.append(encaixes);
-  daPeca.append(linhaDaPeca);
-
-  // A fileira de peças — só as que aceitam. Ver `aceitam`, lá em cima.
-  const picker = el('div', 'imbue-slots');
-  for (const slot of aceitam) {
-    const equipped = character.equipment[slot];
-    const slots = character.imbuementSlots?.[slot] ?? 0;
-    const usados = (character.imbuements?.[slot] ?? []).length;
-    const button = el('button');
-    button.setAttribute('aria-selected', String(slot === chosen));
-    if (equipped) button.append(itemCanvas(equipped.id, 30));
-    else button.append(el('span', 'hole', ''));
-    button.append(el('span', null, state.items[equipped?.id]?.name ?? SLOT_LABEL[slot] ?? slot));
-    /*
-     * "1/2" em vez de "1 encaixe(s)": o que interessa ao escolher a peça é
-     * quantos ainda estão livres, e o texto antigo só dizia o total.
-     */
-    button.append(el('em', null, equipped ? `${usados}/${slots}` : 'vazio'));
-    button.title = state.items[equipped?.id]?.name ?? SLOT_LABEL[slot] ?? slot;
-    button.onclick = () => {
-      ctx.tabs.imbueSlot = slot;
-      /* Peça nova, escolha nova: o encantamento anterior pode nem servir nela. */
-      ctx.tabs.imbueAberto = null;
-      ctx.redraw();
-    };
-    picker.append(button);
-  }
-  if (!aceitam.length) {
-    picker.append(
-      el('p', 'empty', 'Nenhuma peça vestida aceita imbuement. Equipe uma arma, um escudo ou uma peça com encaixe.')
-    );
-  }
-  daPeca.append(picker);
-
-  // ======== 2. Imbuir ========
-  const daEscolha = bloco('Imbuir encaixe');
-  const oficina = el('div', 'imbue-oficina');
-  daEscolha.append(oficina);
-
-  /* Quanto o personagem tem de um reagente, no inventário mais a bolsa. */
-  const quantosTem = (id) =>
-    [...(character.inventory ?? []), ...(character.pouch ?? [])]
-      .filter((entry) => entry.id === id)
-      .reduce((total, entry) => total + (entry.count ?? 1), 0);
-
-  /*
-   * Só esta parte se redesenha quando a pessoa mexe nos menus. Refazer a tela
-   * inteira apagaria o campo de busca com o cursor dentro dele.
-   */
-  const desenhar = () => {
-    oficina.innerHTML = '';
-
-    // Agrupa por nome, mantendo a ordem em que o catálogo veio.
-    const familias = new Map();
-    for (const imbuement of state.catalog.imbuements) {
-      // Cada categoria só entra na peça certa: dano na arma, proteção na
-      // armadura, velocidade nas botas — a mesma divisão do jogo.
-      if (imbuement.slots?.length && !imbuement.slots.includes(chosen)) continue;
-      /*
-       * E a regra DAQUELA peça, que é mais estreita.
-       *
-       * O dono: "a shiny blade pode imbuir elemento, o souleater não". A base diz
-       * isso item por item, no `imbuementslot` do items.xml — e faz sentido: a
-       * souleater já é 47 de gelo em 57 de ataque.
-       *
-       * `null` quer dizer "esta peça não restringe", e não "não aceita nada":
-       * item fora do items.xml não pode ser barrado por falta de informação.
-       */
-      const aceitos = character.imbuementTipos?.[chosen];
-      if (Array.isArray(aceitos) && aceitos.length && !aceitos.includes(imbuement.category)) continue;
-      if (!familias.has(imbuement.name)) familias.set(imbuement.name, []);
-      familias.get(imbuement.name).push(imbuement);
-    }
-
-    if (!familias.size) {
-      oficina.append(el('p', 'empty', 'Nenhum imbuement serve nessa peça.'));
-      return;
-    }
-
-    /* A escolhida some quando a peça muda; aí vale a primeira da lista. */
-    const nomes = [...familias.keys()];
-    const escolhida = nomes.includes(ctx.tabs.imbueFamilia) ? ctx.tabs.imbueFamilia : nomes[0];
-    ctx.tabs.imbueFamilia = escolhida;
-
-    const graus = [...familias.get(escolhida)].sort((a, b) => a.base - b.base);
-    const grauAtual = graus.find((g) => g.base === ctx.tabs.imbueGrau) ?? graus[0];
-    ctx.tabs.imbueGrau = grauAtual.base;
-
-    // ---- Os dois menus ----
-    const menus = el('div', 'imbue-menus');
-    menus.append(
-      menuSuspenso({
-        qual: 'familia',
-        valor: escolhida,
-        comBusca: true,
-        aoRedesenhar: desenhar,
-        itens: nomes.map((nome) => {
-          const dela = familias.get(nome);
-          const apelido = apelidoDoImbuement(nome);
-          return {
-            /*
-             * `id` é o nome EM INGLÊS, e não o apelido: ele é a chave do
-             * agrupamento (`familias`) e o que fica guardado em `ctx.tabs`.
-             * Traduzir a chave junto com o rótulo faria a escolha se perder
-             * no primeiro redesenho.
-             */
-            id: nome,
-            nome: apelido ? `${nome} — ${apelido}` : nome,
-            sub: categoriaEmPortugues(dela[0].categoryName),
-            arte: () => (dela[0].iconId ? imbuementIcon(dela[0].iconId, 24) : null),
-          };
-        }),
-        aoEscolher: (nome) => {
-          ctx.tabs.imbueFamilia = nome;
-          /*
-           * O grau NÃO é zerado de propósito: quem está comparando famílias
-           * quer ver todas no mesmo grau. Se o grau escolhido não existir na
-           * família nova, o `find` acima cai no primeiro.
-           */
-          desenhar();
-        },
-      })
-    );
-    menus.append(
-      menuSuspenso({
-        qual: 'grau',
-        valor: grauAtual.base,
-        aoRedesenhar: desenhar,
-        itens: graus.map((imbuement) => ({
-          id: imbuement.base,
-          nome: grauEmPortugues(imbuement.baseName),
-          sub: `${money(imbuement.price)}g`,
-        })),
-        aoEscolher: (base) => {
-          ctx.tabs.imbueGrau = base;
-          desenhar();
-        },
-      })
-    );
-    oficina.append(menus);
-
-    // ---- O que este grau faz ----
-    const efeito = el('div', `imbue-efeito grau-${grauAtual.base}`);
-    if (grauAtual.iconId) efeito.append(imbuementIcon(grauAtual.iconId, 34));
-    const dito = el('div', 'grow');
-    const apelidoDoGrau = apelidoDoImbuement(grauAtual.name);
-    dito.append(
-      el('b', null, `${grauAtual.name}${apelidoDoGrau ? ` (${apelidoDoGrau})` : ''} — ${grauEmPortugues(grauAtual.baseName)}`)
-    );
-    dito.append(el('span', null, textoDoImbuement(grauAtual.description)));
-    efeito.append(dito);
-    oficina.append(efeito);
-
-    // ---- O que ele custa ----
-    /*
-     * ---- O reagente que FALTA vem marcado ----
-     *
-     * Desde que a receita virou "N silver token + N gold token + N kk", o que
-     * trava um imbuement quase nunca é o ouro: é o token. O número é o que ele
-     * TEM ao lado do que precisa — "1/3" responde "quanto falta" sem obrigar a
-     * abrir a mochila e contar.
-     */
-    const faltando = grauAtual.items.filter((need) => quantosTem(need.id) < need.count);
-
-    const conta = el('div', 'imbue-conta');
-    const receita = el('div', 'imbue-receita');
-    receita.append(el('span', 'imbue-receita-titulo', 'Precisa de:'));
-    const fichas = el('div', 'imbue-fichas');
-    for (const need of grauAtual.items) {
-      const tem = quantosTem(need.id);
-      const falta = tem < need.count;
-      const chip = el('span', `reagent${falta ? ' falta' : ''}`);
-      chip.append(itemCanvas(need.id, 18), document.createTextNode(`${tem}/${need.count}`));
-      tipFor(chip, need.id, falta ? `faltam ${need.count - tem}` : `${need.count} para este imbuement`);
-      fichas.append(chip);
-    }
-    const ouro = el('span', `reagent ouro${character.gold < grauAtual.price ? ' falta' : ''}`);
-    ouro.append(uiIcon('coin-gold'), document.createTextNode(`${money(grauAtual.price)}g`));
-    tipTexto(ouro, `${money(character.gold)} no bolso`);
-    fichas.append(ouro);
-    receita.append(fichas);
-    conta.append(receita);
-
-    const apply = el('button', 'imbue-aplicar', 'Aplicar');
-    const semPeca = !character.equipment[chosen];
-    /*
-     * Encaixe cheio: o servidor recusaria de qualquer jeito, mas o botão
-     * apagado com o motivo no balão poupa o clique e a recusa.
-     */
-    const semEncaixe = totalSlots > 0 && ativos.length >= totalSlots;
-    const semOuro = character.gold < grauAtual.price;
-    apply.disabled = semPeca || semEncaixe || semOuro || faltando.length > 0;
-    if (semPeca) tipTexto(apply, 'nada equipado neste encaixe');
-    else if (semEncaixe) tipTexto(apply, 'os encaixes desta peça já estão ocupados — remova um primeiro');
-    else if (semOuro) tipTexto(apply, `faltam ${money(grauAtual.price - character.gold)} gold`);
-    else if (faltando.length) {
-      tipTexto(
-        apply,
-        `faltam ${faltando
-          .map((need) => `${need.count - quantosTem(need.id)}x ${ctx.state.items?.[need.id]?.name ?? need.id}`)
-          .join(' e ')}`
-      );
-    }
-    apply.onclick = () => send({ t: 'imbue', slot: chosen, id: grauAtual.id });
-    conta.append(apply);
-    oficina.append(conta);
-  };
-
-  desenhar();
-}
 // ---------- blessings ----------
 
 export function openBlessings() {
@@ -9189,390 +8123,6 @@ export function renderAppearance(body) {
   body.append(wrap);
 }
 
-// ---------- proficiência de arma ----------
-
-// Os nomes dos perks são os do proficiencies_definitions.hpp do servidor.
-const PERK_LABEL = {
-  attackDamage: 'Dano de ataque',
-  defense: 'Bloqueio',
-  weaponShieldMod: 'Bloqueio da arma',
-  skillBonus: 'Perícia',
-  specialMagicLevel: 'Magic level especial',
-  spellAugment: 'Augment de magia',
-  bestiaryDamage: 'Dano no bestiary',
-  bossDamage: 'Dano em boss',
-  critChance: 'Chance de crítico',
-  critChanceElemental: 'Crítico elemental',
-  critChanceRunes: 'Crítico de runa',
-  critChanceAutoAttack: 'Crítico no ataque',
-  critDamage: 'Dano crítico',
-  critDamageElemental: 'Dano crítico elemental',
-  critDamageRunes: 'Dano crítico de runa',
-  critDamageAutoAttack: 'Dano crítico no ataque',
-  manaLeech: 'Mana leech',
-  lifeLeech: 'Life leech',
-  manaOnHit: 'Mana por golpe',
-  lifeOnHit: 'Vida por golpe',
-  manaOnKill: 'Mana por morte',
-  lifeOnKill: 'Vida por morte',
-  damageAtRange: 'Dano à distância',
-  rangedHitChance: 'Precisão à distância',
-  attackRange: 'Alcance',
-  skillAsDamageAutoAttack: 'Perícia como dano',
-  skillAsDamageSpells: 'Perícia como dano de magia',
-  skillAsHealingSpells: 'Perícia como cura',
-  alphaStrike: 'Alpha strike',
-  omegaStrike: 'Omega strike',
-  armorPenetration: 'Penetração de armadura',
-  elementalPierce: 'Perfuração elemental',
-};
-
-const SKILL_LABEL = {
-  magic: 'magic level',
-  shielding: 'escudo',
-  distance: 'distância',
-  sword: 'espada',
-  club: 'clava',
-  axe: 'machado',
-  fist: 'punho',
-  fishing: 'pesca',
-};
-
-/** "+3% de life leech", "+1 de espada" — do jeito que o client escreve. */
-function perkText(perk) {
-  const label = PERK_LABEL[perk.type] ?? perk.type;
-  const skill = perk.skill ? ` de ${SKILL_LABEL[perk.skill] ?? perk.skill}` : '';
-  // Valor abaixo de 1 é percentual; acima é ponto cheio.
-  const value = perk.value < 1 && perk.value > 0 ? `+${(perk.value * 100).toFixed(perk.value < 0.01 ? 1 : 0)}%` : `+${perk.value}`;
-  return `${value} ${label}${skill}`.trim();
-}
-
-export function openProficiency() {
-  ctx.tabs.profSkill ??= 'all';
-  ctx.tabs.profHands ??= 'all';
-  ctx.tabs.profOwned ??= 'all';
-  ctx.send({ t: 'proficiency' });
-
-  ctx.openModal('Proficiência de arma', (body) => {
-    const draw = () => {
-      body.innerHTML = '';
-      renderProficiency(body);
-    };
-    ctx.redraw = draw;
-    /*
-     * ---- Esta tela só renasce quando as ESCOLHAS mudam ----
-     *
-     * Era a tela do report: "vou escolher perk da proficiência da arma, fica
-     * difícil, pq a tela fica re-renderizando o tempo todo". Medido caçando,
-     * ela renascia 0,40 vez por segundo — e cada renascimento troca o
-     * `innerHTML` inteiro debaixo do dedo.
-     *
-     * O culpado era a experiência: ela sobe a cada bicho morto, entrava na
-     * assinatura global e refazia o painel junto. Mas a experiência não muda
-     * NENHUMA das escolhas da tela — muda um número e a largura de uma barra.
-     * Aqui ficou só o que troca o que se pode clicar: a arma, o nível dela, os
-     * perks já escolhidos e os filtros da coluna da esquerda.
-     */
-    ctx.redrawKey = () => {
-      const v = ctx.state.character?.proficiency;
-      return [
-        v?.itemId ?? '-',
-        v?.level ?? 0,
-        v?.max ?? 0,
-        v?.equipped ? 1 : 0,
-        (v?.levels ?? []).map((passo) => `${passo.unlocked ? 1 : 0}:${passo.chosen ?? '-'}`).join(','),
-        (ctx.state.proficiencyList ?? []).length,
-        ctx.tabs.profSkill, ctx.tabs.profHands, ctx.tabs.profOwned, ctx.tabs.profSearch ?? '',
-      ].join('|');
-    };
-    /*
-     * E a barra de XP acompanha o quadro a quadro SEM refazer nada: dois textos
-     * e uma largura. É o que a pessoa quer ver subindo enquanto caça, e é a
-     * única parte da tela que precisava daquele redesenho todo.
-     */
-    ctx.aoVivo = () => {
-      const v = ctx.state.character?.proficiency;
-      if (!v) return;
-      const numero = body.querySelector('.prof-xp b');
-      if (numero) numero.textContent = `${money(v.experience)} / ${money(v.next)}`;
-      const pct = body.querySelector('.prof-progress-label b');
-      if (pct) pct.textContent = `${v.percent.toFixed(1)}%`;
-      const cheio = body.querySelector('.prof-progress > i');
-      if (cheio) cheio.style.width = `${Math.max(0, Math.min(100, v.percent))}%`;
-    };
-    draw();
-  });
-}
-
-/** Recorte de 64x64 da folha de ícones do client para aquele tipo de perk. */
-function perkIcon(perk, size = 34) {
-  const node = document.createElement('i');
-  node.className = 'perk-icon';
-  node.style.width = `${size}px`;
-  node.style.height = `${size}px`;
-  if (!perk.icon) return node;
-
-  const scale = size / 64;
-  node.style.backgroundImage = `url(/client/assets/proficiency/${perk.icon.sheet}.png)`;
-  node.style.backgroundPosition = `${-perk.icon.x * scale}px ${-perk.icon.y * scale}px`;
-  // A folha inteira é escalada junto, senão o recorte sai de outro ícone.
-  node.style.backgroundSize = 'auto 200%';
-  node.style.backgroundSize = `${SHEET_WIDTH[perk.icon.sheet] ? SHEET_WIDTH[perk.icon.sheet] * scale : 'auto'}px auto`;
-  return node;
-}
-
-// Largura de cada folha, para escalar o recorte sem cortar o vizinho.
-const SHEET_WIDTH = {
-  'icons-0': 1216, 'icons-1': 448, 'icons-2': 448, 'icons-3': 1344, 'icons-4': 512,
-  'icons-5': 512, 'icons-6': 512, 'icons-7': 512, 'icons-8': 448, 'icons-9': 1280,
-  'icons-weaponmastery-elementalPiercing': 448,
-};
-
-const SKILL_FILTER = { all: 'Todas', sword: 'Espada', axe: 'Machado', club: 'Clava', distance: 'Distância', fist: 'Punho', magic: 'Mágica' };
-
-/*
- * Proficiência de arma.
- *
- * Duas colunas: a esquerda é a vitrine — busca, filtros e a grade com todas as
- * armas que têm proficiência, as que o personagem carrega marcadas e na frente.
- * A direita é a ficha da arma escolhida: cabeçalho com o grupo, a barra de
- * experiência com a porcentagem, e uma carta por nível com os perks.
- */
-function renderProficiency(body) {
-  const { state, send } = ctx;
-  const view = state.character.proficiency;
-  const list = state.proficiencyList ?? [];
-
-  const layout = el('div', 'prof-layout');
-
-  // ---- coluna da esquerda: escolher a arma ----
-  const left = el('div', 'prof-side');
-
-  const search = document.createElement('input');
-  search.type = 'search';
-  search.className = 'search';
-  search.placeholder = 'buscar arma...';
-  search.value = ctx.tabs.profSearch ?? '';
-  search.oninput = () => {
-    ctx.tabs.profSearch = search.value;
-    ctx.redraw();
-  };
-  left.append(search);
-
-  const row = el('div', 'prof-filters');
-  const seletor = (options, key) => {
-    const node = document.createElement('select');
-    for (const [id, label] of Object.entries(options)) {
-      const option = document.createElement('option');
-      option.value = id;
-      option.textContent = label;
-      node.append(option);
-    }
-    node.value = ctx.tabs[key];
-    node.onchange = () => {
-      ctx.tabs[key] = node.value;
-      ctx.redraw();
-    };
-    return node;
-  };
-  row.append(
-    seletor(SKILL_FILTER, 'profSkill'),
-    seletor({ all: '1H e 2H', one: 'Uma mão', two: 'Duas mãos' }, 'profHands'),
-    seletor({ all: 'Todas as armas', owned: 'Só as minhas' }, 'profOwned')
-  );
-  left.append(row);
-
-  const term = (ctx.tabs.profSearch ?? '').trim().toLowerCase();
-  const weapons = list.filter((entry) => {
-    if (term && !`${entry.name} ${entry.proficiency}`.toLowerCase().includes(term)) return false;
-    if (ctx.tabs.profSkill !== 'all' && entry.skill !== ctx.tabs.profSkill) return false;
-    if (ctx.tabs.profHands === 'one' && entry.twoHanded) return false;
-    if (ctx.tabs.profHands === 'two' && !entry.twoHanded) return false;
-    if (ctx.tabs.profOwned === 'owned' && !entry.owned) return false;
-    return true;
-  });
-
-  const grid = el('div', 'prof-weapons');
-  /*
-   * No telefone a grade vem em páginas: eram as 678 armas desenhadas de uma
-   * vez (1.434 elementos, cada uma com o seu canvas), e só umas vinte cabem na
-   * tela. "Mostrar mais" acrescenta a próxima página. No computador segue
-   * inteira, como era.
-   */
-  const PAGINA_DE_ARMAS = 60;
-  const limite = ehTelefone() ? (ctx.tabs.profLimite ?? PAGINA_DE_ARMAS) : Infinity;
-  for (const entry of weapons.slice(0, limite)) {
-    const cell = el('button', `prof-weapon${entry.equipped ? ' equipped' : ''}${entry.owned ? ' owned' : ''}`);
-    cell.setAttribute('aria-selected', String(view?.itemId === entry.itemId));
-    cell.append(itemCanvas(entry.itemId, 32));
-    if (entry.level) cell.append(el('i', 'prof-weapon-level', String(entry.level)));
-    tipFor(
-      cell,
-      entry.itemId,
-      `Grupo: ${entry.proficiency} — nível ${entry.level}${entry.owned ? '' : ' · você não tem esta arma'}`
-    );
-    cell.onclick = () => {
-      // Escolheu: no telefone a ficha da arma volta a ocupar a tela.
-      ctx.tabs.profNaLista = false;
-      send({ t: 'proficiency', itemId: entry.itemId });
-    };
-    grid.append(cell);
-  }
-  if (!weapons.length) grid.append(el('p', 'empty', 'nenhuma arma com esse filtro'));
-  left.append(grid);
-  if (weapons.length > limite) {
-    const mais = el('button', 'prof-mais', `Mostrar mais (${weapons.length - limite} restantes)`);
-    mais.type = 'button';
-    mais.onclick = () => {
-      ctx.tabs.profLimite = limite + PAGINA_DE_ARMAS;
-      ctx.redraw();
-    };
-    left.append(mais);
-  }
-  left.append(el('em', 'prof-count', `${weapons.length} de ${list.length} armas`));
-  layout.append(left);
-
-  // ---- coluna da direita: a ficha da arma ----
-  const right = el('div', 'prof-tree');
-  /*
-   * No telefone: a ficha da arma (a equipada, de saída) ocupa a tela, e
-   * "← Armas" mostra a grade para trocar (lista-detalhe.mjs).
-   */
-  const mostrarAMetade = () =>
-    listaDetalhe(layout, right, {
-      id: 'proficiencia',
-      rotulo: '← Armas',
-      escolhido: !!view && !ctx.tabs.profNaLista,
-      voltar: () => {
-        ctx.tabs.profNaLista = true;
-        ctx.redraw();
-      },
-    });
-  if (!view) {
-    right.append(el('p', 'empty', 'Escolha uma arma à esquerda, ou equipe uma que tenha proficiência.'));
-    layout.append(right);
-    body.append(layout);
-    mostrarAMetade();
-    return;
-  }
-
-  const cabeca = el('div', 'prof-head');
-  const arte = el('div', 'prof-art');
-  arte.append(itemCanvas(view.itemId, 44));
-  cabeca.append(arte);
-
-  const identidade = el('div', 'prof-id');
-  identidade.append(el('b', null, view.itemName));
-  // A proficiência é de um grupo de armas, não de um item só: "grand sanguine
-  // axe" treina a "Grand Sanguine 2H Axe", junto com as outras do grupo. Sem o
-  // rótulo, o nome diferente embaixo do item parecia erro.
-  identidade.append(el('em', null, view.name));
-  const estrelas = el('div', 'prof-stars');
-  for (let level = 1; level <= view.max; level++) {
-    const star = document.createElement('img');
-    star.className = 'prof-star-art';
-    // A mesma estrela do prey. A do client vinha em duas resoluções
-    // diferentes — a dourada em 5x5, a apagada em 9x10 —, e esticar a de 5px
-    // até 16 deixava a acesa borrada ao lado da apagada, que estava nítida.
-    star.src = `/client/assets/ui/prey-${level <= view.level ? 'star' : 'nostar'}.png`;
-    star.alt = '';
-    estrelas.append(star);
-  }
-  identidade.append(estrelas);
-  cabeca.append(identidade);
-
-  const ficha = el('div', 'prof-xp');
-  ficha.append(el('span', null, 'XP'), el('b', null, `${money(view.experience)} / ${money(view.next)}`));
-  cabeca.append(ficha);
-  right.append(cabeca);
-
-  const legenda = el('div', 'prof-progress-label');
-  legenda.append(
-    el('span', null, view.level >= view.max ? 'Proficiência no máximo' : 'Progresso para o próximo nível'),
-    el('b', null, `${view.percent.toFixed(1)}%`)
-  );
-  const barra = el('div', 'prof-progress');
-  const cheio = el('i');
-  cheio.style.width = `${Math.max(0, Math.min(100, view.percent))}%`;
-  barra.append(cheio);
-  right.append(legenda, barra);
-  if (!view.equipped) right.append(el('em', 'prof-inactive', 'os perks só valem com esta arma na mão'));
-
-  const tree = el('div', 'prof-columns');
-  for (const step of view.levels) {
-    const column = el('div', `prof-column${step.unlocked ? ' unlocked' : ''}`);
-    const topo = el('div', 'prof-column-head');
-    const star = document.createElement('img');
-    star.className = 'prof-star-art';
-    star.src = `/client/assets/ui/prey-${step.unlocked ? 'star' : 'nostar'}.png`;
-    star.alt = '';
-    topo.append(star, el('b', null, `Nível ${step.level}`));
-    column.append(topo);
-
-    /*
-     * ---- QUAL perk foi escolhido ----
-     *
-     * O dono: "o perk escolhido em proficiência não dá pra saber exatamente qual
-     * escolheu, não fica marcado nem nada".
-     *
-     * A marca existia — o `backdrop` do client dele, atrás do aro — e ela é um
-     * halo de dois pixels em volta de uma moldura já cheia de detalhe. Contra um
-     * ícone colorido de 48px, dois pixels de brilho não são uma marca.
-     *
-     * Agora a escolha se lê de três jeitos, e nenhum depende de reparar num
-     * detalhe: o escolhido ganha um SELO de confirmação no canto, os irmãos dele
-     * apagam (é o contraste que responde "qual?" de relance), e o rodapé diz o
-     * nome por extenso.
-     *
-     * Apagar os não escolhidos é a peça mais forte, e a mais barata: numa coluna
-     * de três ícones igualmente acesos, nada distingue o ligado do disponível.
-     */
-    const escolhas = el('div', 'prof-perks');
-    const jaEscolheu = step.chosen != null;
-    for (const perk of step.perks) {
-      const escolhido = step.chosen === perk.slot;
-      const option = el(
-        'button',
-        `prof-perk-slot${escolhido ? ' escolhido' : jaEscolheu ? ' preterido' : ''}`
-      );
-      option.setAttribute('aria-selected', String(escolhido));
-      option.disabled = !step.unlocked;
-      // 48px: a medida exata da abertura do aro de 57px (ver `.prof-perk-slot`).
-      option.append(perkIcon(perk, 48));
-      /*
-       * O selo é um filho, e não um `::after` do CSS: assim ele é lido por quem
-       * usa leitor de tela junto do `aria-selected`, e some sozinho ao trocar.
-       */
-      if (escolhido) option.append(el('i', 'prof-perk-selo', '✓'));
-      option.title = escolhido ? `Escolhido — ${perkText(perk)}` : perkText(perk);
-      option.onclick = () => send({ t: 'proficiency', action: 'perk', itemId: view.itemId, level: step.level, slot: perk.slot });
-      escolhas.append(option);
-    }
-    column.append(escolhas);
-
-    const chosen = step.perks.find((perk) => perk.slot === step.chosen);
-    /*
-     * "Escolhido:" na frente, e não só o texto do perk.
-     *
-     * O rodapé mostrava a mesma frase que o balão de qualquer um dos três — lida
-     * sozinha, ela parecia a descrição do que está debaixo do mouse, e não a
-     * decisão que já foi tomada.
-     */
-    const rodape = el('em', `prof-column-foot${chosen ? ' tem' : ''}`);
-    if (chosen) {
-      rodape.append(el('b', null, 'Escolhido: '), document.createTextNode(perkText(chosen)));
-    } else {
-      rodape.textContent = step.unlocked ? 'escolha um perk' : 'trancado';
-    }
-    column.append(rodape);
-    tree.append(column);
-  }
-  right.append(tree);
-  layout.append(right);
-  body.append(layout);
-  mostrarAMetade();
-}
-
 // ---------- charms do bestiary ----------
 
 /*
@@ -11357,7 +9907,6 @@ const STORE_SECTIONS = {
   buffpower: 'Buff Power',
   pacotes: 'Pacotes',
   itens: 'Itens',
-  exercises: 'Armas de treino',
   mounts: 'Montarias',
   outfits: 'Outfits',
   utilities: 'Utilitários',
@@ -11917,7 +10466,6 @@ function renderStore(body) {
     else if (section === 'buffpower') renderBuffPower(shelf);
     else if (section === 'pacotes') renderPacotes(shelf);
     else if (section === 'itens') renderItens(shelf);
-    else if (section === 'exercises') renderExercises(shelf);
     else if (section === 'utilities') renderUtilities(shelf);
     else if (section === 'upgrades') renderUpgrades(shelf);
     else if (section === 'extras') renderExtras(shelf);
@@ -11953,7 +10501,6 @@ function renderStoreBusca(body, termo) {
   const prateleiras = [
     { id: 'services', lista: store.services ?? [], grade: 'store-grid', cartao: cartaoDaPrateleiraDeServicos },
     { id: 'itens', lista: store.itens ?? [], grade: 'store-grid', cartao: cartaoDeItem },
-    { id: 'exercises', lista: store.exercises ?? [], grade: 'store-grid', cartao: cartaoDeExercicio },
     { id: 'utilities', lista: store.utilities ?? [], grade: 'store-grid', cartao: cartaoDeUtilitario },
     { id: 'upgrades', lista: store.upgrades ?? [], grade: 'store-grid', cartao: cartaoDeMelhoria },
     /*
@@ -12065,14 +10612,14 @@ function storeFooter(store) {
    * store e ao lado de histórico". É onde chega o que se compra aqui, então a
    * porta mora na loja também. O número é quantas vagas estão ocupadas.
    */
-  const naInbox = (ctx.state.character?.storeInbox ?? []).length;
-  const inbox = comIcone(el('button', 'store-transferir store-inbox-botao'), itemCanvas(55368, 32), 'Store Inbox');
+  // Dono, 06/10: a Store Inbox saiu — o que se compra vai para as CHEGADAS do Depósito; o botão abre lá.
+  const naInbox = ((ctx.state.character?.deposito ?? []).find((c) => c.chegadas)?.itens ?? []).length;
+  const inbox = comIcone(el('button', 'store-transferir store-inbox-botao'), itemCanvas(3503, 32), 'Chegadas');
   if (naInbox) inbox.append(el('b', 'store-inbox-conta', String(naInbox)));
-  tipTexto(inbox, 'Tudo o que você compra na Store chega aqui. De lá as compras saem para a mochila.');
-  // A loja é um modal e tampa as janelas: fecha e abre a inbox por cima do jogo.
+  tipTexto(inbox, 'Tudo o que você compra na Store chega nas Chegadas do Depósito. De lá as compras saem para a mochila.');
   inbox.onclick = () => {
     ctx.closeModal?.();
-    ctx.abrirStoreInbox?.();
+    openLocker('chegadas');
   };
   esquerda.append(inbox);
   rodape.append(esquerda);
@@ -12389,45 +10936,6 @@ function renderServices(body) {
 }
 
 /*
- * ---- As armas de treino ----
- *
- * A categoria "Exercise Weapons" da gamestore do dono, com os preços dele. São
- * consumíveis: nenhuma some da prateleira depois de comprada, e comprar a
- * segunda é o uso normal.
- *
- * Os cards vêm agrupados por DEGRAU, e não misturados por perícia. Quem entra
- * aqui já sabe que arma quer (a da perícia dele) e está escolhendo QUANTO
- * comprar — as boosted em cima, porque são as melhores e é o que ele vende.
- */
-function renderExercises(body) {
-  const store = ctx.state.store;
-  const lista = store.exercises ?? [];
-  body.append(
-    el(
-      'p',
-      'shop-note',
-      'Cada golpe gasta uma carga e vale sete vezes um golpe de treino comum. As boosted rendem mais 30%. A arma fica na mão até as cargas acabarem.',
-    ),
-  );
-  if (!lista.length) return void body.append(el('p', 'empty', 'Nada por aqui ainda.'));
-
-  const TITULOS = {
-    boosted: 'Boosted — 30% mais rápido',
-    durable: 'Durable',
-    lasting: 'Lasting',
-    exercise: 'Exercise',
-  };
-  for (const degrau of ['boosted', 'durable', 'lasting', 'exercise']) {
-    const doDegrau = lista.filter((arma) => arma.degrau === degrau);
-    if (!doDegrau.length) continue;
-    body.append(el('h4', 'store-degrau', TITULOS[degrau] ?? degrau));
-    const grid = el('div', 'store-grid');
-    for (const arma of doDegrau) grid.append(cartaoDeExercicio(arma));
-    body.append(grid);
-  }
-}
-
-/*
  * ---- Boosts: as poções de experiência e o pergaminho ----
  *
  * Três produtos, e o que diferencia os dois primeiros é um número dentro do
@@ -12732,82 +11240,6 @@ function renderPacotes(body) {
     grid.append(card);
   }
   body.append(grid);
-}
-
-/**
- * A escolha dentro de uma Boosted Exercise Box.
- *
- * A mesma tela do presente de nível, e de propósito: são o mesmo gesto (escolher
- * uma arma de uma lista fechada) e a pessoa já aprendeu este desenho uma vez.
- * Aqui não há passo de confirmação porque a caixa se compra às unidades — errar
- * a arma custa uma caixa, e não o presente do level 50.
- */
-export function openCaixaBoosted(escolhas) {
-  ctx.openModal('Boosted Exercise Box', (body) => {
-    body.append(
-      el('p', 'shop-note', 'Escolha uma boosted exercise weapon com 64.400 cargas. Elas treinam 30% mais rápido no boneco.'),
-    );
-    const grid = el('div', 'presente-escolha');
-    for (const arma of escolhas ?? []) {
-      const botao = el('button');
-      const arte = itemCanvas(arma.arte ?? arma.itemId, 40);
-      if (arte) botao.append(arte);
-      botao.append(el('b', null, arma.name));
-      botao.append(el('em', null, PERICIA_EM_PT[arma.skill] ?? arma.skill));
-      botao.onclick = () => {
-        ctx.send({ t: 'caixa', itemId: arma.itemId });
-        ctx.closeModal?.();
-      };
-      grid.append(botao);
-    }
-    body.append(grid);
-  });
-}
-
-/** O nome da perícia como o jogador a conhece. */
-const PERICIA_EM_PT = {
-  melee: 'melee fighting',
-  sword: 'melee fighting',
-  axe: 'melee fighting',
-  club: 'melee fighting',
-  distance: 'distance fighting',
-  shielding: 'shielding',
-  fist: 'melee fighting',
-  magic: 'magic level',
-};
-
-function cartaoDeExercicio(arma) {
-  const { state, send } = ctx;
-  const store = state.store;
-  const card = el('div', 'store-card util-card');
-
-  // O mesmo quadro das outras prateleiras. Ver `storeArt`.
-  const arte = storeArt({ itemId: arma.arte ?? arma.itemId });
-  if (arte) card.append(arte);
-  card.append(el('b', null, arma.name));
-  card.append(el('em', null, `Treina ${PERICIA_EM_PT[arma.skill] ?? arma.skill}.`));
-  /*
-   * Cargas E tempo. O número de cargas é o que o jogador compara entre duas
-   * ofertas; as horas são o que ele consegue imaginar. Só um dos dois deixaria
-   * metade das pessoas sem entender o que está levando.
-   */
-  card.append(
-    el('em', 'exercise-cargas', `${arma.cargas.toLocaleString('pt-BR')} cargas · ${duracaoCurta(arma.duracao)}`),
-  );
-  if (arma.tem) card.append(el('em', 'exercise-tem', `você tem ${arma.tem}`));
-
-  const buy = el('button');
-  buy.append(uiIcon('coin-store'), document.createTextNode(money(arma.coins)));
-  buy.onclick = () =>
-    confirmPurchase({
-      title: arma.name,
-      cost: arma.coins,
-      balance: store.coins,
-      preview: itemCanvas(arma.arte ?? arma.itemId, 48),
-      onConfirm: () => send({ t: 'store', action: 'buy', id: arma.id }),
-    });
-  card.append(buy);
-  return card;
 }
 
 /** "7h09" / "4min" — o suficiente para comparar duas ofertas de relance. */
@@ -15073,24 +13505,6 @@ function marcasDaPeca(peca) {
     marcas.append(tier);
   }
 
-  const ativos = (peca.imbu ?? []).filter((imbued) => (imbued?.left ?? 0) > 0);
-  if (ativos.length) {
-    // O MENOR tempo, e não o maior: é o que vence primeiro, e é ele que decide
-    // por quanto tempo a peça ainda vale inteira.
-    const menor = Math.min(...ativos.map((imbued) => imbued.left));
-    const imb = el('span', 'balcao-imbu cheio', `${ativos.length} imbu · ${restanteDoImbuement(menor)}`);
-    tipTexto(
-      imb,
-      `${ativos.length} imbuement(s) ativos — o primeiro a vencer tem ${restanteDoImbuement(menor)}. ` +
-        'Vão com a peça pelo tempo que está sobrando agora: nada é reiniciado na venda.'
-    );
-    marcas.append(imb);
-  } else if (peca.imbuementSlots > 0) {
-    const imb = el('span', 'balcao-imbu', `${peca.imbuementSlots} slots`);
-    tipTexto(imb, `${peca.imbuementSlots} espaço(s) de imbuement, nenhum preenchido`);
-    marcas.append(imb);
-  }
-
   return marcas;
 }
 
@@ -16838,7 +15252,7 @@ function bauDeRecompensa(body, voltar) {
      * servidor: as três portas do baú — esta, o "Levar tudo" de uma sacola e o
      * clique num item — desembocam lá desde o dia em que ela existe.
      */
-    tipTexto(tudo, 'Leva tudo o que está no baú para a Boss Pouch, respeitando a capacidade e as mil vagas dela.');
+    tipTexto(tudo, 'Leva tudo o que está no baú para a mochila (o que couber no peso); o resto vai para a bolsa de loot.');
     tudo.onclick = () => send({ t: 'reward', action: 'takeAll' });
     topo.append(tudo);
 
@@ -16881,7 +15295,7 @@ function bauDeRecompensa(body, voltar) {
     'O que cai de boss vem para aqui em vez da bolsa de loot — a bolsa é vendida sozinha a cada 30 segundos, e ' +
       'o drop de um boss não pode ir junto. Uma sacola por boss derrotado, e cada uma tem prazo: o que passar do ' +
       'prazo some. Clique numa sacola para ver o que tem dentro, num item para levar só ele, ou em Coletar para ' +
-      'levar a sacola inteira para a Boss Pouch.'
+      'levar a sacola inteira para a mochila (o que não couber vai para a bolsa de loot).'
   );
 
   if (!rewards.length) {
@@ -17162,7 +15576,7 @@ function renderLocker(body) {
               ? `${caixa.tipos} sacola${caixa.tipos > 1 ? 's' : ''}`
               : 'vazio'
             : caixa.tipos
-              ? `${caixa.tipos}/${caixa.teto}`
+              ? caixa.semTeto ? `${caixa.tipos}` : `${caixa.tipos}/${caixa.teto}`
               : 'vazia'
         )
       );
@@ -17308,7 +15722,7 @@ function renderLocker(body) {
    * da direita começava por três botões e só depois dizia de qual caixa eles
    * eram.
    */
-  body.append(el('h4', 'deposito-titulo', `${caixa.nome} — ${caixa.tipos}/${caixa.teto} tipos`));
+  body.append(el('h4', 'deposito-titulo', caixa.semTeto ? `${caixa.nome} — ${caixa.tipos} tipos (sem limite)` : `${caixa.nome} — ${caixa.tipos}/${caixa.teto} tipos`));
   body.append(linha);
   /*
    * As duas explicacoes subiram para o "?" do cabecalho (ver `ajudaNoCabecalho`).
@@ -17540,7 +15954,7 @@ function dentroDaSacola(sacola) {
   topo.append(el('span', 'sacola-prazo', `expira em ${quantoFalta(prazoDaSacola(sacola))}`));
   /* "e um botão coletar": o nome é o do dono, e ele diz melhor o que acontece. */
   const levar = el('button', 'primary', 'Coletar');
-  tipTexto(levar, 'Leva o que está nesta sacola para a Boss Pouch.');
+  tipTexto(levar, 'Leva o que está nesta sacola para a mochila; o que não couber vai para a bolsa de loot.');
   levar.onclick = () => send({ t: 'reward', action: 'take', sacola: sacola.indice });
   topo.append(levar);
   /*
@@ -17587,7 +16001,7 @@ function dentroDaSacola(sacola) {
       cela.classList.add('com-afixo');
       cela.append(seloDeEstrelas('selo-afixo', estrelasDaPeca));
     }
-    tipFor(cela, entry.id, `${entry.count > 1 ? `${entry.count} unidades — ` : ''}clique para levar só este para a Boss Pouch`, null, entry);
+    tipFor(cela, entry.id, `${entry.count > 1 ? `${entry.count} unidades — ` : ''}clique para levar só este para a mochila`, null, entry);
     cela.onclick = () => send({ t: 'reward', action: 'takeItem', sacola: sacola.indice, id: entry.id });
     grade.append(cela);
   }
@@ -20287,54 +18701,6 @@ function contextoDoReport() {
   };
 }
 
-/*
- * ---- A escolha rápida, do botão direito no boneco ----
- *
- * O mesmo conteúdo da tela de Exercise, sem o caminho até ela: quem clicou com
- * o direito no boneco já decidiu que vai treinar, e as quatro telas até lá
- * (Aventuras → Treino → Exercise → escolher) só ficam no caminho.
- *
- * É uma janela PRÓPRIA, e não a de Aventuras aberta na aba certa, porque ela
- * abre e fecha num gesto: escolheu a arma, sumiu, o treino começou. Reaproveitar
- * `escolherExercise` mantém as duas dizendo a mesma coisa — se um dia a
- * escolha ganhar um campo novo, ele aparece nas duas sem ninguém lembrar.
- */
-export function openExerciseRapido() {
-  // Mesma tela, mesma razão: os cartazes dizem quanto custa. Ver `openExercise`.
-  ctx.send({ t: 'store' });
-  ctx.openModal('Boneco de treino', (body) => {
-    const desenhar = () => {
-      body.replaceChildren();
-      escolherExercise(body, { semVoltar: true });
-    };
-    ctx.redraw = desenhar;
-    desenhar();
-  });
-}
-
-/*
- * ---- O mesmo atalho, agora para o skill trainer ----
- *
- * "ao clicar no item da posição {32369, 32247, 7} tem que abrir a aba do treino
- * offline."
- *
- * O móvel está plantado na cidade e o caminho oficial até o que ele faz são
- * quatro telas (Aventuras → Treino → Treino offline → escolher a perícia). Quem
- * clicou nele já decidiu; é o mesmo argumento do direito no boneco de treino.
- *
- * A janela é a de AVENTURAS, e não uma janela própria como a do boneco. A
- * diferença é o "‹ voltar" que `confirmarOffline` já desenha: ele leva à lista
- * dos três modos de treino, e essa lista é a de Aventuras. Abrir isto com outro
- * título faria o botão de voltar aterrissar numa janela que nunca foi aberta.
- */
-export function openTreinoOffline() {
-  ctx.openModal('Aventuras', (body) => {
-    const desenhar = () => confirmarOffline(body);
-    ctx.redraw = desenhar;
-    desenhar();
-  });
-}
-
 // ---------- as recompensas de nível ----------
 
 /*
@@ -20359,8 +18725,6 @@ export function openTreinoOffline() {
 /** A moeda de ouro, só para o preço do marco ter cara de preço. */
 const MOEDA_DE_OURO = 3031;
 
-/** Os cinco degraus de arma de treino. O servidor manda o resto do estado. */
-const DEGRAUS_DE_EXERCICIO = [8, 20, 30, 40, 50];
 
 /*
  * O calendário, desenhado DENTRO de um corpo qualquer.
@@ -20409,14 +18773,8 @@ export function corpoDasRecompensas(body, comFechar = true) {
    * 150 na trilha, o sexto cartão apareceria como pego assim que cinco tivessem
    * saído. Quem sabe o que já foi pego é quem guarda. Ver `presentesDe`.
    */
-  const degraus =
-    presentes.degraus ??
-    DEGRAUS_DE_EXERCICIO.map((level, i) => ({
-      level,
-      custo: 0,
-      pego: i < jaPegou,
-      aberto: meuLevel >= level && i >= jaPegou,
-    }));
+  // (Os degraus de arma de treino saíram com o treino — dono, 06/10: o servidor manda a lista vazia.)
+  const degraus = presentes.degraus ?? [];
 
   const cartoes = [
     ...degraus.map((degrau) => ({
@@ -20426,7 +18784,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
       resumo: degrau.boosted ? 'à sua escolha — rende o dobro por carga' : 'à sua escolha, cheia de cargas',
       itens: [],
     })),
-    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: marco.tipo === 'bau' ? 'abre 1 item aleatório — com raridade' : null })),
+    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: marco.tipo === 'bau' ? 'abre 1 item aleatório — com raridade' : marco.tipo === 'bau-poe' ? 'abre 1 peça aleatória de nível 1 — comum' : null })),
   ].sort((a, b) => a.level - b.level);
 
   /* `null` = a grade; um número = a escolha da arma daquele degrau. */
@@ -20550,6 +18908,12 @@ export function corpoDasRecompensas(body, comFechar = true) {
          * perguntar. A confirmação diz o preço, o que sobra depois, e o que
          * entra na mochila.
          */
+        // Grátis (o baú do nível 1 do PoE): sem a conta de ouro — abre direto, e a janela do baú aberto mostra a peça que saiu.
+        if (!(cartao.custo > 0)) {
+          pegar.disabled = true;
+          send({ t: 'marco', id: cartao.id, level: cartao.level });
+          return;
+        }
         confirmando = cartao;
         desenhar();
       };
@@ -20664,7 +19028,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
       const arte = itemCanvas(escolha.arte ?? escolha.itemId, 40);
       if (arte) botao.append(tipFor(arte, escolha.itemId));
       botao.append(el('b', null, escolha.name.replace('Durable Exercise ', '')));
-      botao.append(el('em', null, PERICIA_EM_PT[escolha.skill] ?? escolha.skill));
+      botao.append(el('em', null, escolha.skill));
       botao.onclick = () => {
         escolhido = escolha.itemId;
         desenhar();
@@ -20761,6 +19125,25 @@ export function corpoDasRecompensas(body, comFechar = true) {
   };
 
   desenhar();
+}
+
+/** O baú de um marco aberto: a peça que saiu, com o balão dela (o servidor manda `{t:'marcoAberto', peca}`). */
+export function abrirMarcoAberto({ peca, notice }) {
+  if (!peca) return;
+  ctx.openModal('Baú aberto', (body) => {
+    body.append(el('p', 'shop-note', notice ?? 'O baú abriu:'));
+    const caixa = el('div', 'marco-aberto');
+    const arte = itemCanvas(peca.id, 48);
+    if (arte) caixa.append(tipFor(arte, peca.id, null, null, peca));
+    if (peca.poe) caixa.append(balaoPoe(peca.poe, { nomeDaBase: ctx.state.items?.[peca.id]?.name ?? null, requisitos: ctx.state.items?.[peca.id]?.poe?.requisitos ?? null }));
+    else caixa.append(el('b', null, ctx.state.items?.[peca.id]?.name ?? `item ${peca.id}`));
+    body.append(caixa, el('p', 'shop-note dica', 'A peça foi para a mochila.'));
+    const ok = el('button', 'recompensa-pegar', 'Ok');
+    ok.onclick = () => ctx.closeModal();
+    const acoes = el('div', 'confirm-actions');
+    acoes.append(ok);
+    body.append(acoes);
+  });
 }
 
 /** O calendário como janela — o botão de presente da barra de baixo. */
@@ -21900,6 +20283,8 @@ export function corpoDaJanelaDaParty(body) {
 const ABAS_DA_FORJA = { craft: 'Craft', desmanche: 'Desmanche', tier: 'Tier', afixos: 'Afixos' };
 
 export function openForja() {
+  // No modo PoE a Forja é a bancada do PoE (as moedas — `forja-poe.mjs`).
+  if (temForjaPoe(ctx.state)) return void abrirForjaPoe(ctx);
   ctx.send({ t: 'forja' });
   ctx.tabs.forjaAba ??= 'craft';
   // A sub-aba do Tier. Era `forjaAba`, e o nome subiu um andar junto com a tela.
@@ -26189,76 +24574,6 @@ export function resumoDosCharmsParaBalao() {
     caixa.append(linha);
   }
   caixa.append(el('em', 'tip-resumo-pe', `${money(view.points)} ponto(s) de charm no bolso`));
-  return caixa;
-}
-
-/**
- * Proficiência: a arma da mão, o nível dela e os perks escolhidos.
- *
- * `character.proficiency` vem na atualização do personagem, com os `levels` e o
- * `chosen` de cada um — é a mesma coisa que a tela desenha, só que resumida.
- */
-export function resumoDaProficienciaParaBalao() {
-  const { state } = ctx;
-  const view = state.character?.proficiency;
-  if (!view?.itemId) return null;
-
-  const caixa = el('div', 'tip-resumo');
-  const nome = state.items?.[view.itemId]?.name ?? 'arma';
-  const topo = linhaDoResumo(itemCanvas(view.itemId, 20), nome, `nível ${view.level}/${view.max}`);
-  if (!view.equipped) topo.append(el('em', 'apagado', 'não está na mão'));
-  caixa.append(topo);
-
-  const escolhidos = (view.levels ?? []).filter((passo) => passo.chosen != null);
-  const esperando = (view.levels ?? []).filter((passo) => passo.unlocked && passo.chosen == null);
-  if (!escolhidos.length) {
-    caixa.append(el('em', null, 'nenhum perk escolhido ainda'));
-  } else {
-    for (const passo of escolhidos) {
-      const perk = passo.perks?.find((p) => p.slot === passo.chosen);
-      if (!perk) continue;
-      caixa.append(linhaDoResumo(perkIcon(perk, 20), perkText(perk), `lv ${passo.level}`));
-    }
-  }
-  if (esperando.length) {
-    caixa.append(el('em', 'chama tip-resumo-pe', `${esperando.length} perk(s) esperando escolha`));
-  }
-  return caixa;
-}
-
-/**
- * Imbuements: o que está aceso em cada peça, e quanto falta.
- *
- * `character.imbuements` é um mapa de encaixe -> lista, e vem na atualização do
- * personagem. O balão junta tudo numa lista só, com a peça na frente.
- */
-export function resumoDosImbuementsParaBalao() {
-  const { state } = ctx;
-  const character = state.character;
-  if (!character) return null;
-
-  const caixa = el('div', 'tip-resumo');
-  let quantos = 0;
-  for (const slot of IMBUEMENT_SLOTS) {
-    for (const imbued of character.imbuements?.[slot] ?? []) {
-      quantos++;
-      const fonte = state.catalog?.imbuements?.find((entry) => entry.id === imbued.id);
-      const arte = fonte?.iconId ? imbuementIcon(fonte.iconId, 20) : null;
-      const apelido = apelidoDoImbuement(imbued.name);
-      const linha = linhaDoResumo(
-        arte,
-        apelido ? `${imbued.name} (${apelido})` : imbued.name,
-        formatLeft(imbued.left)
-      );
-      linha.append(el('em', null, state.items?.[character.equipment?.[slot]?.id]?.name ?? SLOT_LABEL[slot] ?? slot));
-      caixa.append(linha);
-    }
-  }
-  if (!quantos) {
-    /* Quantos encaixes existem: "nenhum aceso" sem isso parece defeito. */
-    const vagas = IMBUEMENT_SLOTS.reduce((total, slot) => total + (character.imbuementSlots?.[slot] ?? 0), 0);
-    caixa.append(el('em', null, vagas ? `nenhum aceso — ${vagas} encaixe(s) livre(s)` : 'nenhuma peça sua aceita imbuement'));
-  }
   return caixa;
 }
 

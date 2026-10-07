@@ -4,30 +4,6 @@
  "mapId": "city",
  "objetos": [
   {
-   "uid": "dummy:0",
-   "x": 108,
-   "y": 62,
-   "item": null,
-   "acao": "exercise",
-   "nome": "Exercise Dummy"
-  },
-  {
-   "uid": "dummy:1",
-   "x": 108,
-   "y": 65,
-   "item": null,
-   "acao": "exercise",
-   "nome": "Exercise Dummy"
-  },
-  {
-   "uid": "dummy:2",
-   "x": 108,
-   "y": 68,
-   "item": null,
-   "acao": "exercise",
-   "nome": "Exercise Dummy"
-  },
-  {
    "uid": "marco:aventuras:85,59",
    "x": 85,
    "y": 59,
@@ -59,18 +35,6 @@
    "nome": "Forja",
    "cor": "vermelho",
    "acao": "forja",
-   "pisar": false,
-   "nomeDx": -0.5,
-   "nomeDy": -0.5
-  },
-  {
-   "uid": "marco:imbuements:105,61",
-   "x": 105,
-   "y": 61,
-   "item": null,
-   "nome": "Imbuementos",
-   "cor": "roxo",
-   "acao": "imbuements",
    "pisar": false,
    "nomeDx": -0.5,
    "nomeDy": -0.5
@@ -155,24 +119,6 @@
    "nome": null,
    "cor": null,
    "acao": "arvore"
-  },
-  {
-   "uid": "marco:treino-offline:99,71:99,71",
-   "x": 99,
-   "y": 71,
-   "item": null,
-   "nome": "Treino Offline",
-   "cor": "laranja",
-   "acao": "treino-offline"
-  },
-  {
-   "uid": "marco:treino-offline:26,91:26,91",
-   "x": 26,
-   "y": 91,
-   "item": null,
-   "nome": "Treino Offline",
-   "cor": "laranja",
-   "acao": "treino-offline"
   }
  ],
  "npcs": [

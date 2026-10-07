@@ -53,7 +53,22 @@ export function alvoAtual(hunt) {
    */
   if (hunt.percurso && hunt.alvoTravado != null) {
     const m = hunt.monstros.find((b) => b.uid === hunt.alvoTravado);
-    if (m && m.hp > 0 && passos(m) <= ALCANCE_DO_COMPROMISSO && (m.semCaminhoAte ?? 0) <= (hunt.clock ?? 0)) return m;
+    if (m && m.hp > 0 && passos(m) <= ALCANCE_DO_COMPROMISSO && (m.semCaminhoAte ?? 0) <= (hunt.clock ?? 0)) {
+      /*
+       * ---- "Mais perto" troca quando outro fica MAIS perto (dono, 07/10) ----
+       * A trava segura o alvo contra o vai-e-vem, mas na estratégia "mais perto" um bicho que chegou colado (a 1 casa) ou ficou pelo menos
+       * `FOLGA_DA_TROCA` passos mais perto que o travado vira o alvo. A folga evita a troca a cada passo entre dois bichos quase iguais.
+       */
+      if ((hunt.strategy ?? 'nearest') === 'nearest') {
+        const dele = passos(m);
+        const outro = vivos.filter((b) => b.uid !== m.uid).sort(perto)[0];
+        if (outro && (passos(outro) <= 1 && dele > 1 || passos(outro) + FOLGA_DA_TROCA <= dele)) {
+          hunt.alvoTravado = outro.uid;
+          return outro;
+        }
+      }
+      return m;
+    }
     // Largou porque o caminho até ele AFASTA (a volta por trás da parede passa
     // das 16 casas — Black Serpent: 8 → 17 casas indo atrás de um Lizard
     // Chosen): o bicho fica de fora um tempo, senão a 8 casas ele seria
@@ -80,6 +95,8 @@ export function alvoAtual(hunt) {
  * do trecho do laço por onde ele está passando. Quem vem atrás dele entra no
  * corredor sozinho, porque o corredor anda junto.
  */
+/** Quantos passos a mais perto outro bicho precisa estar para tirar a trava do alvo atual (estratégia "mais perto"). */
+export const FOLGA_DA_TROCA = 2;
 export const CORREDOR = 5;
 export const TRECHO_ANTES = 5;
 export const TRECHO_DEPOIS = 15;

@@ -211,8 +211,11 @@ export function paraCliente(m) {
   };
 }
 
+/** O balão do mob mostra o resumo dos multiplicadores da raridade? (o PoE desliga: lá a raridade é só nome e cor — `modificadores-monstro.mjs`). */
+let RESUMO_NO_BALAO = true;
+export const definirResumoNoBalao = (sim) => { RESUMO_NO_BALAO = !!sim; };
 /** A configuração de cores que o cliente usa para pintar o nome (vai no welcome). */
-export const coresParaCliente = () => Object.fromEntries(Object.entries(CONFIG.raridades).map(([id, r]) => [id, { nome: r.nome, cor: r.cor, resumo: resumoDaRaridade(r) }]));
+export const coresParaCliente = () => Object.fromEntries(Object.entries(CONFIG.raridades).map(([id, r]) => [id, { nome: r.nome, cor: r.cor, resumo: RESUMO_NO_BALAO ? resumoDaRaridade(r) : null }]));
 
 /** "vida ×2 · dano ×1,3 · exp ×3 · loot ×2" — o que a raridade muda (para o tooltip do mob). */
 function resumoDaRaridade(r) {

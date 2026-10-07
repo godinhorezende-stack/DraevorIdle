@@ -60,9 +60,10 @@ test('os números do frasco: a base e os mods (velocidade, quantidade, instantâ
   assert.deepEqual([rubiForte.duracaoMs, rubiForte.af.move_speed, rubiForte.af.fire_res], [10000, 8, 50]);
   const fraco = Fr.parametros(comMod(frasco('Utility_Flasks/Ruby_Flask'), 'Recuperação de Cargas aumentada em {0}% / Efeito reduzido em {1}%', [50, 25]));
   assert.deepEqual([fraco.recargaPct, fraco.af.fire_res], [50, 37.5]);
-  // O que o Draevor ainda não tem fica registrado (aparece, não faz nada).
+  // A imunidade "durante o Efeito" agora vale (07/10): vira atributo enquanto o frasco dura.
   const imune = Fr.parametros(comMod(frasco('Utility_Flasks/Ruby_Flask'), '{0}% menos Duração / Imunidade a Congelamento e Resfriamento durante o Efeito', [33], 'sufixos'));
-  assert.deepEqual(imune.linhas.map((l) => l.estado), ['efeito', 'registrado']);
+  assert.deepEqual(imune.linhas.map((l) => l.estado), ['efeito', 'efeito']);
+  assert.deepEqual([imune.af.imune_congelamento, imune.af.imune_resfriamento], [1, 1]);
   assert.equal(imune.duracaoMs, Math.round(8000 * 0.67));
 });
 
@@ -125,11 +126,40 @@ test('na caçada: enche ao entrar, usa sozinho com a vida baixa, recupera ao lon
   assert.ok(!(Afixos.soma(e).fire_res >= 50));
   // Matar dá cargas a todos (pela raridade do monstro), sem passar do máximo.
   Fr.aoMatar(e, 'raro');
-  assert.equal(Fr.cinto(e)[0].poe.cargas, 7 + 5);
-  assert.equal(Fr.cinto(e)[1].poe.cargas, 30 + 5);
+  assert.equal(Fr.cinto(e)[0].poe.cargas, 7 + 6);
+  assert.equal(Fr.cinto(e)[1].poe.cargas, 30 + 6);
   for (let i = 0; i < 20; i++) Fr.aoMatar(e, 'boss');
   assert.equal(Fr.cinto(e)[1].poe.cargas, 50);
   // Para a tela.
   const tela = Fr.paraCliente(e);
   assert.deepEqual([tela.length, tela[0].tipo, tela[1].cargas, tela[1].cargasPorUso, tela[2]], [5, 'vida', 50, 20, null]);
+});
+
+test('cargas por monstro como o dono pediu (Comum 1, Mágico 3,5, Raro 6, Único 11) e a cidade enche os frascos na hora', { skip: SEM }, async () => {
+  const F = await import('../systems/itens-poe/frascos.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  const Jogo = await import('../systems/itens-poe/jogo.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  Jogo.iniciar(ITEM_CATALOG);
+  const e = personagemDeTeste({ vocacao: 'knight', level: 10 });
+  e.inventory = [Jogo.frascoInicial()];
+  assert.ok(F.por(e, { pilha: 0 }).ok);
+  const f = F.cinto(e)[0];
+  f.poe.cargas = 0;
+  for (const [tipo, n] of [['normal', 1], ['modificado', 3.5], ['raro', 6], ['unico', 11]]) {
+    f.poe.cargas = 0;
+    F.aoMatar(e, tipo);
+    assert.equal(f.poe.cargas, Math.min(n, F.parametros(f).cargasMaximas), tipo);
+  }
+  f.poe.cargas = 2;
+  e.hunt = null;
+  assert.equal(F.paraCliente(e)[0].cargas, F.parametros(f).cargasMaximas, 'na cidade, cheio');
+});
+
+test('morreu e acordou na cidade: os frascos do cinto cheios (a sessão chama encherNaCidade na morte)', async () => {
+  const src = (await import('node:fs')).readFileSync(new URL('../websocket/sessao.mjs', import.meta.url), 'utf8');
+  const morte = src.slice(src.indexOf('const morte = real ? Morte.morrer'), src.indexOf('return morte;', src.indexOf('const morte = real ? Morte.morrer')));
+  assert.match(morte, /FrascosPoe\.encherNaCidade\(this\.estado\)/);
+  const main = (await import('node:fs')).readFileSync(new URL('../frontend/client/src/main.mjs', import.meta.url), 'utf8');
+  assert.match(main.slice(main.indexOf('const bagKey = ['), main.indexOf('const bagKey = [') + 600), /character\.frascosPoe/, 'o inventário redesenha quando as cargas mudam');
 });

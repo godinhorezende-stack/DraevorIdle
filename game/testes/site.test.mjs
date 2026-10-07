@@ -56,7 +56,8 @@ test('/api/personagem: a ficha inteira e o "não existe"', async () => {
   const original = ler('personagem-zoros.json');
   assert.equal(nosso.ok, true);
   assert.deepEqual(chaves(nosso.personagem), chaves(original.personagem));
-  assert.deepEqual(chaves(nosso.personagem.draevor), chaves(original.personagem.draevor));
+  // (Menos `proficiencias`: a proficiência de arma saiu do jogo — dono, 06/10.)
+  assert.deepEqual(chaves(nosso.personagem.draevor), chaves(original.personagem.draevor).filter((k) => k !== 'proficiencias'));
   // As réguas do original, mais os poderes Lendário/Mítico (o texto deles no balão do equipamento).
   const { efeitosDeItem, ...catalogoDoOriginal } = nosso.personagem.catalogo;
   assert.deepEqual(chaves(catalogoDoOriginal), chaves(original.personagem.catalogo));

@@ -155,3 +155,32 @@ test('L12. outfits e montarias reais (mounts-real.json), com o desenho só quand
   assert.equal(B.detalhe('montarias', '1').nome, 'Widow Queen');
   assert.ok(B.listar({ categoria: 'montarias', limite: 200 }).itens.every((m) => !m.desenho || OUTFITS[m.desenho.look]));
 });
+
+test('L9. com o PoE ligado, as moedas empilháveis entram na Biblioteca de itens como "Stackable Currency", com ícone, estado no jogo e ficha própria', async () => {
+  const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+  if (!(await import('node:fs')).existsSync(Catalogo.ARQUIVO)) return;
+  const M = await import('../systems/itens-poe/moedas.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  if (!M.MOEDAS.length) return;
+  const antes = process.env.ITENS_POE;
+  process.env.ITENS_POE = '1';
+  try {
+    (await import('../systems/itens-poe/jogo.mjs')).iniciar(ITEM_CATALOG);
+    M.iniciar();
+    const r = B.listar({ categoria: 'itens', tipo: B.TIPO_DA_MOEDA, limite: 500 });
+    assert.equal(r.total, 195, 'as 195 moedas');
+    const caos = r.itens.find((i) => i.id === String(M.idDa('Chaos_Orb')));
+    assert.ok(caos, 'o Orbe do Caos está na lista');
+    assert.equal(caos.tipo, 'Stackable Currency');
+    assert.equal(caos.raridade, 'funciona');
+    assert.match(caos.desenho.url, /icone\/moeda\/Chaos_Orb\.png$/);
+    assert.ok(r.tipos.includes('Stackable Currency'), 'o filtro de tipo oferece a classe');
+    const d = B.detalhe('itens', String(M.idDa('Cartographers_Chisel')));
+    assert.equal(d.tipo, 'Stackable Currency');
+    assert.equal(d.moeda.status, 'nao');
+    assert.match(d.moeda.descricao, /sem efeito no jogo/);
+    assert.equal(d.moeda.pilha, 20);
+  } finally {
+    if (antes == null) delete process.env.ITENS_POE; else process.env.ITENS_POE = antes;
+  }
+});

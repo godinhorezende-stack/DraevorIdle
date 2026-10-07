@@ -46,14 +46,6 @@ test('bicho com campo diferente do bestiário (exp ajustada, boss com outra vida
   assert.deepEqual(volta, comoTexto(e.hunt));
 });
 
-test('os bonecos do pátio (sem key) vão inteiros', () => {
-  const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
-  assert.equal(Cacadas.entrarNoPatio(e).ok, true);
-  const gravada = Cacadas.huntParaGravar(e.hunt);
-  assert.deepEqual(gravada.monstros, e.hunt.monstros);
-  assert.deepEqual(idaEVolta(e.hunt), comoTexto(e.hunt));
-});
-
 test('personagem gravado antes disto (bichos com todos os campos) carrega sem mudar nada', () => {
   const e = cacando('werelions-1', 4);
   const velho = comoTexto(e.hunt);

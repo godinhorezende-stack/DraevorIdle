@@ -11,6 +11,7 @@ import * as Formulas from '../combate/formulas.mjs';
 import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 import * as Atributos from './atributos.mjs';
 import * as AtributosDoMob from '../mobs/atributos.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 const ES = Atributos.CONFIG.energyShield;
 
@@ -38,7 +39,8 @@ function sorteioDoAcerto(chance, quem, campo) {
 /** O jogador esquivou (Evasion) do golpe corpo a corpo de `bicho`? */
 export const esquivou = (ficha, hunt, bicho) => {
   const level = Atributos.levelDoBicho(hunt, bicho);
-  return sorteioDoAcerto(Atributos.chanceDeEsquiva(ficha.evasion ?? 0, level, AtributosDoMob.precisaoDe(bicho, level)), bicho, 'errosDoBicho');
+  // (PoE: o bicho Cego tem 20% menos precisão — `itens-poe/mods-poe.mjs`.)
+  return sorteioDoAcerto(Atributos.chanceDeEsquiva(ficha.evasion ?? 0, level, AtributosDoMob.precisaoDe(bicho, level) * ModsPoe.doBicho(bicho, hunt?.clock ?? 0).precisaoFator), bicho, 'errosDoBicho');
 };
 
 /** "Chance to Avoid Damage": o dano inteiro não pega. */

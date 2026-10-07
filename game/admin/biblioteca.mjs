@@ -104,10 +104,19 @@ function linhasDeMapas() {
 // Com o sistema de itens do PoE ligado (ITENS_POE=1, só no servidor local), a Biblioteca de itens mostra SÓ as bases do PoE (pedido do
 // dono, 05/10): os itens do Tibia ficam de fora da lista; o desenho é o ícone da coleção e o tipo é a classe do PoE.
 const humanoPoe = (id) => String(id).replace(/_/g, ' ');
+export const TIPO_DA_MOEDA = 'Stackable Currency';
+const ESTADO_DA_MOEDA = { funciona: 'funciona', parcial: 'funciona em parte', nao: 'sem efeito no jogo' };
+const desenhoDaMoeda = (i) => (i.poeMoeda?.icone ? { tipo: 'imagem', url: `/api/jogo/poe/icone/moeda/${encodeURIComponent(i.poeMoeda.icone)}` } : desenhoDoItem(i));
 const desenhoPoe = (icone) => (icone ? { tipo: 'imagem', url: `/api/mapas/_engine/itens-poe/ref/${icone.split('/').map(encodeURIComponent).join('/')}` } : null);
 function linhasDeItens() {
   // `nivel` do item = o nível mínimo para usar (`minLevel`); `sockets` = o máximo do slot (o que cada peça abre é sorteado no drop).
-  if (CatalogoPoe.ligado()) return Object.values(ITEM_CATALOG).filter((i) => i.poe).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: humanoPoe(i.poe.classe), nivel: ou(i.minLevel), desenho: desenhoPoe(i.poe.icone), raridade: null, usos: 0, alertas: 0, slot: ou(i.slot), sockets: null }));
+  // As MOEDAS EMPILHÁVEIS do PoE (dono, 07/10: "os itens empilháveis não aparecem na Engine e têm que ser classificados corretamente"):
+  // entram na lista com a classe do PoE, "Stackable Currency", o ícone delas e o estado no jogo (funciona / parcial / sem efeito) como raridade.
+  if (CatalogoPoe.ligado()) {
+    return Object.values(ITEM_CATALOG).filter((i) => i.poe || i.moedaPoe).map((i) => (i.poe
+      ? { id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: humanoPoe(i.poe.classe), nivel: ou(i.minLevel), desenho: desenhoPoe(i.poe.icone), raridade: null, usos: 0, alertas: 0, slot: ou(i.slot), sockets: null }
+      : { id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: TIPO_DA_MOEDA, nivel: null, desenho: desenhoDaMoeda(i), raridade: ESTADO_DA_MOEDA[i.moedaPoe.status] ?? null, usos: 0, alertas: 0, slot: null, sockets: null, empilhavel: true }));
+  }
   return Object.values(ITEM_CATALOG).map((i) => ({ id: String(i.id), nome: i.name ?? null, categoria: 'itens', tipo: i.type ?? null, nivel: ou(i.minLevel), desenho: desenhoDoItem(i), raridade: ou(i.rarity), usos: usosDe('itens', String(i.id)).length, alertas: 0, slot: ou(i.slot), sockets: maximoDeSockets(i) || null }));
 }
 // Os outfits e as montarias de verdade (`mounts-real.json`, o que a aba Aparência e a Store usam). `vocation` do
@@ -404,10 +413,23 @@ function detalheDeItemPoe(i) {
   };
 }
 
+/** A ficha de uma moeda empilhável do PoE: o que ela faz no PoE, o que faz no jogo (e por que não, quando não faz), a pilha e onde se consegue. */
+function detalheDaMoeda(i) {
+  const m = i.moedaPoe;
+  return {
+    id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: TIPO_DA_MOEDA, raridade: ESTADO_DA_MOEDA[m.status] ?? null, slot: null, equipavel: false,
+    peso: ou(i.weight), empilhavel: true, compra: ou(i.buy), venda: ou(i.sell), npc: ou(i.npc), chanceBase: ou(i.dropChance), sprite: !!i.poeMoeda?.icone,
+    requisitos: { nivelMinimo: null, vocacoes: null }, base: null, imbuements: null, regras: null,
+    moeda: { slug: m.slug, status: m.status, estado: ESTADO_DA_MOEDA[m.status] ?? m.status, alvo: m.alvo ?? null, descricao: i.descricao ?? null, icone: i.poeMoeda?.icone ?? null, pilha: ou(i.pilha), usaNaForja: m.status !== 'nao' },
+    meta: i,
+  };
+}
+
 function detalheDeItem(id) {
   const i = ITEM_CATALOG[id];
   if (!i) return null;
   if (i.poe && CatalogoPoe.ligado()) return detalheDeItemPoe(i);
+  if (i.moedaPoe && CatalogoPoe.ligado()) return detalheDaMoeda(i);
   const equipavel = !!i.slot && !i.stackable;
   return {
     id: String(i.id), nome: ou(i.name), categoria: 'itens', tipo: ou(i.type), raridade: ou(i.rarity), slot: ou(i.slot), equipavel,

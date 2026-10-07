@@ -29,12 +29,17 @@ export function penetracaoDe(penetracao, tipo) {
   if (!penetracao) return 0;
   const max = LIMITES.penetracao.maximo;
   if (tipo === 'physical') return limitar(penetracao.fisica, max);
-  return limitar(limitar(penetracao.elemental, max) + limitar(penetracao.porElemento?.[tipo], max), max);
+  // (Penetração NEGATIVA do PoE — "Seus Acertos Lidam com a Resistência a Gelo como se fossem X% maiores" — aumenta a resistência efetiva.)
+  const doElemento = Number(penetracao.porElemento?.[tipo]) || 0;
+  if (doElemento < 0) return limitar(penetracao.elemental, max) + doElemento;
+  return limitar(limitar(penetracao.elemental, max) + limitar(doElemento, max), max);
 }
 
 /** A resistência EFETIVA: a do alvo menos a penetração. A fraqueza (≤ 0) não muda; o resultado nunca passa de 100. */
 export function resistenciaEfetiva(resistencia, penetracao = 0) {
   const r = Number(resistencia) || 0;
+  // Penetração negativa (PoE: "como se fosse X% maior"): a resistência sobe.
+  if (penetracao < 0) return Math.min(100, r - penetracao);
   if (r <= 0) return r;
   return Math.min(100, Math.max(0, r - limitar(penetracao, LIMITES.penetracao.maximo)));
 }

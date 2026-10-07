@@ -1,4 +1,4 @@
-// A tela WORLD: o mapa da campanha — cabeçalho, dificuldades, abas dos Atos, mapa interativo (zoom, arraste, pinça), painel da fase e barra de atalhos.
+// A tela CAMPANHA (antes "WORLD"): o mapa da campanha — dificuldades, abas dos Atos, mapa interativo (zoom, arraste, pinça), painel da fase e barra de atalhos.
 //
 // É a MESMA campanha de sempre (`{t:'campanha'}` → `systems/campanha.mjs`): quem decide o que está aberto, concluído ou exigido é o
 // SERVIDOR — aqui só se desenha o que chegou e se pede o que o jogo já permite (entrar na fase pelo mesmo fluxo de sempre). Segredo nunca
@@ -8,7 +8,7 @@
 // (`transform`), o pergaminho de cada Ato é desenhado uma vez, e trocar a seleção só mexe em classes e no painel — nada é refeito.
 // Os dados e as contas moram em `world-dados.mjs` (testável sem DOM); a arte procedural em `world-arte.mjs`.
 import { LARGURA, ALTURA, RAIO_DA_FASE, RAIO_DO_BOSS, TIPOS_DE_NO, TEXTO_DO_ESTADO, atosDaCampanha, partesDaCampanha, faseDaFronteira, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, estadoDoNo } from './world-dados.mjs';
-import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, ornamentoDoCabecalho, iconeDeBotao } from './world-arte.mjs';
+import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, iconeDeBotao } from './world-arte.mjs';
 
 export { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from './world-dados.mjs';
 
@@ -63,10 +63,22 @@ const estreita = () => (typeof window !== 'undefined' ? window.innerWidth < 700 
 const K_MIN = 1;
 const K_MAX = 3.5;
 function criarCamera(viewport, svgEl, cam, vista, aoMudar) {
+  /** A parte do viewBox que aparece no palco (com `slice` a proporção do palco corta um dos lados): `{ x0, y0, w, h }` em unidades do mapa. */
+  const visivel = () => {
+    const W = svgEl.clientWidth || LARGURA;
+    const H = svgEl.clientHeight || ALTURA;
+    const slice = (svgEl.getAttribute('preserveAspectRatio') ?? '').includes('slice');
+    const esc = slice ? Math.max(W / LARGURA, H / ALTURA) : Math.min(W / LARGURA, H / ALTURA);
+    const w = Math.min(LARGURA, W / esc);
+    const h = Math.min(ALTURA, H / esc);
+    return { x0: (LARGURA - w) / 2, y0: (ALTURA - h) / 2, w, h };
+  };
   const limitar = () => {
     vista.k = Math.max(K_MIN, Math.min(K_MAX, vista.k));
-    vista.x = Math.max(LARGURA - LARGURA * vista.k, Math.min(0, vista.x));
-    vista.y = Math.max(ALTURA - ALTURA * vista.k, Math.min(0, vista.y));
+    // O mapa (0..LARGURA × 0..ALTURA, escalado por k) sempre cobre a parte visível: dá para arrastar até cada borda, nunca além.
+    const v = visivel();
+    vista.x = Math.max(v.x0 + v.w - LARGURA * vista.k, Math.min(v.x0, vista.x));
+    vista.y = Math.max(v.y0 + v.h - ALTURA * vista.k, Math.min(v.y0, vista.y));
   };
   const aplicar = () => {
     limitar();
@@ -177,8 +189,15 @@ export function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, esc
   if (estado !== 'aberta' && ICONE_DO_TIPO[tipo] && !boss) g.append(svg('g', { class: 'w-selo', transform: `translate(${r - 4} ${-r + 5}) scale(.55)` }, svg('circle', { r: 11 }), ICONES[ICONE_DO_TIPO[tipo]]()));
   // algo que o jogador JÁ ENCONTROU nesta fase (baú, altar, segredo): uma estrela no canto — nunca o que ele ainda não achou
   if (achados) g.append(svg('g', { class: 'w-selo achado', transform: `translate(${-r + 4} ${-r + 5}) scale(.6)` }, svg('circle', { r: 11 }), ICONES.estrela(1.2)));
-  const texto = nome.length > 20 ? `${nome.slice(0, 19)}…` : nome;
-  g.append(svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 17 }, texto));
+  const texto = nome.length > 22 ? `${nome.slice(0, 21)}…` : nome;
+  // A PLACA do rótulo (o estilo do mapa ilustrado — dono, 07/10): fundo escuro atrás do nome, legível sobre qualquer arte. A largura
+  // acompanha o texto (~6,4 px por letra na fonte do rótulo); o número da fase vai pequeno acima do nome.
+  const largura = Math.max(56, Math.round(texto.length * 6.4) + 16);
+  const placa = svg('g', { class: 'w-placa' });
+  placa.append(svg('rect', { x: -largura / 2, y: r + 6, width: largura, height: 20, rx: 4 }));
+  if (numero && !boss) placa.append(svg('text', { class: 'w-placa-num', 'text-anchor': 'middle', y: r + 4 }, String(numero)));
+  placa.append(svg('text', { class: 'w-rotulo', 'text-anchor': 'middle', y: r + 20 }, texto));
+  g.append(placa);
   return g;
 }
 
@@ -211,11 +230,8 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   const raiz = el('div', 'w2');
   raiz.dataset.dificuldade = escolhida.id;
 
-  // ---- 1. cabeçalho
+  // ---- 1. (sem cabeçalho próprio: o título "CAMPANHA" é o da janela do jogo; a tela começa nas dificuldades — dono, 07/10)
   const partes = partesDaCampanha(atos);
-  const cab = el('header', 'w2-cab', ornamentoDoCabecalho(), el('div', 'w2-titulo', el('h2', null, 'WORLD'), partes.length ? el('span', 'w2-parte', atoAtual.parte ?? partes[0]) : null), ornamentoDoCabecalho(true), botao('w2-fechar', iconeDeBotao('fechar'), () => h.fechar?.()));
-  cab.lastChild.setAttribute('aria-label', 'Fechar o mapa');
-  cab.lastChild.title = 'Fechar';
 
   // ---- 2. dificuldades
   const aviso = el('div', 'w2-aviso');
@@ -269,8 +285,15 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
 
   // ---- 4. o mapa
   const palco = el('div', 'w2-palco');
+  const progresso = el('div', 'w2-progresso');
+  const progressoBarra = el('i');
+  progresso.append(progressoBarra);
   const viewport = el('div', 'w2-viewport');
-  const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid meet', role: 'group' });
+  const bussola = el('div', 'w2-bussola');
+  bussola.innerHTML = '<svg viewBox="-42 -42 84 84" aria-hidden="true"><circle r="26" class="b-anel"/><circle r="18" class="b-anel2"/><path d="M0 -24 L5 0 L0 24 L-5 0 Z" class="b-agulha"/><path d="M-24 0 L0 5 L24 0 L0 -5 Z" class="b-agulha2"/><text y="-30" class="b-txt">N</text><text y="38" class="b-txt">S</text><text x="34" y="3.5" class="b-txt">L</text><text x="-34" y="3.5" class="b-txt">O</text></svg>';
+  // `slice` (dono, 07/10: "a foto do ato de fundo não está cheia, tem parte preta"): o mapa COBRE o palco em qualquer proporção; o que
+  // sobra fora da tela se alcança arrastando (a câmera limita pela parte visível — `criarCamera`).
+  const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid slice', role: 'group' });
   const cam = svg('g', { class: 'w2-cam' });
   mapaSvg.append(cam);
   viewport.append(mapaSvg);
@@ -278,13 +301,13 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   balao.hidden = true;
   const controles = el('div', 'w2-controles');
   const dica = el('div', 'w2-dica', 'Arraste para mover · roda ou pinça para o zoom · toque num nó para ver a fase');
-  palco.append(viewport, balao, controles, dica);
+  palco.append(viewport, bussola, balao, controles, dica);
 
   // ---- 5. o painel + 6. a barra
   const painel = el('section', 'w2-painel');
   const barra = el('footer', 'w2-barra');
 
-  raiz.append(cab, dif, barra, abas, aviso, palco, painel);
+  raiz.append(dif, barra, abas, progresso, aviso, palco, painel);
   body.append(raiz);
 
   // A tela se adapta à CAIXA do jogo em que está: mede a janela (e remede quando ela muda) e marca `larga` (700 px+: ocupa a altura toda, sem
@@ -306,7 +329,8 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     raiz.classList.toggle('larga', cabe);
     // O painel vai para o LADO do mapa assim que cabe (a caixa do jogo é baixa: empilhar deixaria o mapa minúsculo).
     raiz.classList.toggle('lado', cabe && larguraUtil >= 780);
-    raiz.style.setProperty('--w2-painel', larguraUtil >= 1100 ? '340px' : '300px');
+    // O painel leva ~34% da largura no desktop (o mapa fica com ~66%); em caixa menor, o mínimo legível.
+    raiz.style.setProperty('--w2-painel', larguraUtil >= 1100 ? '34%' : '300px');
     raiz.style.setProperty('--w2-h', cabe ? `${Math.floor(altura)}px` : 'auto');
   };
   window.addEventListener('resize', medir);
@@ -324,7 +348,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
 
   const selecionarNo = (sel, { centrar = false } = {}) => {
     E.sel = sel;
-    const id = sel.tipo === 'boss' ? `boss:${sel.ato}` : sel.huntId;
+    const id = sel.tipo === 'boss' ? `boss:${sel.ato}` : sel.tipo === 'cidade' ? `cidade:${sel.ato}` : sel.huntId;
     for (const [nid, g] of nosPorId) g.classList.toggle('escolhido', nid === id);
     desenharPainel();
     if (centrar && dadosDoAto) {
@@ -340,22 +364,42 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const pos = posicoesDoAto(a.fases, !!a.boss, mundo, a.ato, a.bossMapa);
     const pontos = [...pos.pontos, ...(pos.boss ? [pos.boss] : [])];
     cam.append(fundoDoAto(a.ato, nomeDoTema(a.ato, a.tema), pontos, a.fundo));
-    const ids = [...a.fases.map((f) => f.huntId), ...(a.boss ? [`boss:${a.ato}`] : [])];
+    // A CIDADE: o nó de partida (sempre aberta). Sem posição do editor, fica à esquerda da primeira fase.
+    const cidadeId = `cidade:${a.ato}`;
+    const cidade = a.cidade ? { ...a.cidade, p: a.cidade.posicao ?? { x: Math.max(60, (pos.pontos[0]?.x ?? 100) - 120), y: pos.pontos[0]?.y ?? ALTURA / 2 } } : null;
+    const ids = [...a.fases.map((f) => f.huntId), ...(a.boss ? [`boss:${a.ato}`] : []), ...(cidade ? [cidadeId] : [])];
+    if (cidade) pontos.push(cidade.p);
     const posicao = (id) => pontos[ids.indexOf(id)];
     // as estradas (sob os nós)
     const estradas = svg('g', { class: 'w2-estradas' });
+    // O caminho que leva à fase ATUAL ganha o azul luminoso (`atual`).
+    const idDaFronteira = fronteira?.ato === a.ato ? fronteira.huntId : null;
     for (const c of conexoesDoAto(a.fases, a.boss, mundo)) {
       const d = tracadoDaEstrada(posicao(c.de), posicao(c.para), c.tipo);
-      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${c.estado} ${c.tipo}` }));
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${c.estado} ${c.tipo}${idDaFronteira && c.para === idDaFronteira ? ' atual' : ''}` }));
+    }
+    // da cidade às fases ligadas a ela: percorrida se a fase já abriu
+    for (const huntId of cidade?.conexoes ?? []) {
+      const alvo = posicao(huntId);
+      if (!alvo) continue;
+      const f = a.fases.find((x) => x.huntId === huntId);
+      const d = tracadoDaEstrada(cidade.p, alvo, 'cadeia');
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${f?.completa ? 'percorrido' : f?.liberada ? 'disponivel' : 'bloqueado'} cadeia${idDaFronteira === huntId ? ' atual' : ''}` }));
     }
     cam.append(estradas);
     const nos = svg('g', { class: 'w2-nos' });
     a.fases.forEach((f, i) => {
       const m = mundo[f.huntId] ?? {};
-      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: E.sel?.huntId === f.huntId, achados: m.descobertos?.length ?? 0 });
+      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: m.grafo?.ordem ?? escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: E.sel?.huntId === f.huntId, achados: m.descobertos?.length ?? 0 });
       nosPorId.set(f.huntId, g);
       nos.append(g);
     });
+    if (cidade) {
+      const g = desenharNo({ id: cidadeId, tipo: 'cidade', estado: 'aberta', numero: 0, nome: cidade.nome, p: cidade.p, escolhido: E.sel?.tipo === 'cidade' && E.sel.ato === a.ato });
+      g.classList.add('t-cidade-no');
+      nosPorId.set(cidadeId, g);
+      nos.append(g);
+    }
     if (a.boss) {
       const g = desenharNo({ id: `boss:${a.ato}`, tipo: 'boss', estado: estadoDoNo(a.boss), numero: 0, nome: a.boss.nome, p: pos.boss, boss: true, escolhido: E.sel?.tipo === 'boss' && E.sel.ato === a.ato });
       nosPorId.set(`boss:${a.ato}`, g);
@@ -413,7 +457,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     }
     const novaSel = a.fases.length ? { tipo: 'fase', huntId: (a.fases.find((f) => f.huntId === fronteira?.huntId) ?? a.fases.find((f) => f.liberada) ?? a.fases[0]).huntId } : null;
     if (!manterSelecao) E.sel = novaSel;
-    cab.querySelector('.w2-parte')?.replaceChildren(a.parte ?? partes[0] ?? '');
+    progressoBarra.style.width = `${a.total ? Math.round((100 * a.feitas) / a.total) : 0}%`;
     montarMapa();
     desenharPainel();
   }
@@ -427,14 +471,14 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const no = noDoPonto(ev.detail.x, ev.detail.y);
     if (!no) return;
     const id = no.dataset.id;
-    selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : { tipo: 'fase', huntId: id });
+    selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : id.startsWith('cidade:') ? { tipo: 'cidade', ato: Number(id.slice(7)) } : { tipo: 'fase', huntId: id });
   });
   viewport.addEventListener('keydown', (ev) => {
     const no = ev.target.closest?.('.w-no');
     if (no && (ev.key === 'Enter' || ev.key === ' ')) {
       ev.preventDefault();
       const id = no.dataset.id;
-      selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : { tipo: 'fase', huntId: id });
+      selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : id.startsWith('cidade:') ? { tipo: 'cidade', ato: Number(id.slice(7)) } : { tipo: 'fase', huntId: id });
     }
   });
   // o balão de resumo (só com mouse — no toque quem resume é o painel)
@@ -443,6 +487,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const no = ev.target.closest?.('.w-no');
     if (!no) return void (balao.hidden = true);
     const id = no.dataset.id;
+    if (id.startsWith('cidade:')) return void (balao.hidden = true);
     const boss = id.startsWith('boss:');
     const f = boss ? null : escolhida.fases.find((x) => x.huntId === id);
     const b = boss ? atoAtual.boss : null;
@@ -469,6 +514,16 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       painel.append(titulo( atoAtual.nome), el('p', 'w2-desc', atoAtual.descricao ?? 'Toque num lugar do mapa para ver os detalhes.'));
       return;
     }
+    if (sel.tipo === 'cidade') {
+      const c = atoAtual.cidade ?? { nome: 'Cidade', conexoes: [] };
+      const col1 = el('div', 'w2-col', titulo(c.nome), el('div', 'w2-sub', `${atoAtual.nome} · Cidade`, el('span', 'w2-estado aberta', 'Aberta'), el('span', 'w2-tipo', TIPOS_DE_NO.cidade)), el('p', 'w2-desc', 'O ponto de partida do ato: loja, depósito e os serviços da vila. Daqui saem as estradas para as primeiras fases.'));
+      const saidas = el('ul', 'w2-lista', ...(c.conexoes ?? []).map((huntId) => { const f = escolhida.fases.find((x) => x.huntId === huntId); return el('li', f?.completa ? 'feito' : null, `${f?.completa ? '✓ ' : ''}${f?.nome ?? huntId}`); }));
+      const col2 = el('div', 'w2-col', el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Estradas daqui'), saidas));
+      const voltar = botao('w2-entrar', 'Voltar à cidade');
+      voltar.onclick = () => h.voltarParaCidade?.();
+      painel.append(col1, col2, el('div', 'w2-col acao', voltar, el('p', 'w2-nota', 'Encerra a caçada atual (se houver) e volta para a vila.')));
+      return;
+    }
     if (sel.tipo === 'fase') {
       const posicao = Math.max(0, escolhida.fases.findIndex((x) => x.huntId === sel.huntId));
       const f = escolhida.fases[posicao];
@@ -476,15 +531,15 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       const st = estadoDoNo(f);
       const tipo = tipoDaFase(m);
       const hunt = hunts.get(f.huntId);
-      const col1 = el('div', 'w2-col', titulo( f.nome), el('div', 'w2-sub', `${atoAtual.nome} · Fase ${posicao + 1}`, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), tipo !== 'comum' ? el('span', 'w2-tipo', TIPOS_DE_NO[tipo]) : null, fronteira?.huntId === f.huntId ? el('span', 'w2-tipo atual', 'Fase atual') : null), m.ambiente ? el('span', 'w2-tag', m.ambiente) : null, el('p', 'w2-desc', m.descricao ?? 'Sem descrição.'), linha('Dificuldade', escolhida.nome), linha('Level dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`), m.bossPrincipal ? linha('Boss principal', m.bossPrincipal) : null);
+      const col1 = el('div', 'w2-col', titulo( f.nome), el('div', 'w2-sub', `${atoAtual.nome} · Fase ${m.grafo?.ordem ?? posicao + 1}`, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), tipo !== 'comum' ? el('span', 'w2-tipo', TIPOS_DE_NO[tipo]) : null, fronteira?.huntId === f.huntId ? el('span', 'w2-tipo atual', 'Fase atual') : null), m.ambiente ? el('span', 'w2-tag', m.ambiente) : null, el('p', 'w2-desc', m.descricao ?? 'Sem descrição.'), linha('Dificuldade', escolhida.nome), linha('Level dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`), m.bossPrincipal ? linha('Boss principal', m.bossPrincipal) : null);
       const col2 = el('div', 'w2-col');
-      if (hunt?.creatures?.length) {
-        const bichos = el('div', 'w2-bichos');
-        for (const c of hunt.creatures.slice(0, 5)) bichos.append(figuraDaCriatura(c, bestiario, 34));
-        col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Monstros'), bichos));
-      }
+      // O bloco "Monstros" saiu do painel (dono, 07/10).
+      // O objetivo de verdade da fase (o servidor manda: limpar a área, matar o chefe, matar N, pegar o item da missão) e o progresso.
       const conclusao = el('ul', 'w2-lista');
-      conclusao.append(el('li', null, 'Eliminar os monstros da fase'));
+      const obj = f.objetivo;
+      const texto = obj?.texto ? `${obj.texto[0].toUpperCase()}${obj.texto.slice(1)}` : 'Limpar a área';
+      const feito = f.completa || (obj && obj.feito >= obj.total);
+      conclusao.append(el('li', feito ? 'feito' : null, `${feito ? '✓ ' : ''}${texto}${obj?.tipo === 'matar-n' && !feito ? ` (${obj.feito}/${obj.total})` : ''}`));
       for (const o of m.obrigatorios ?? []) conclusao.append(el('li', null, `${o.nome}${o.tipo === 'boss' || o.tipo === 'miniboss' ? ' (obrigatório)' : ''}`));
       col2.append(el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Para concluir'), conclusao));
       const exigencias = [];
@@ -498,7 +553,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       entrar.disabled = !f.liberada || !hunt || !!f.pular;
       // Só o servidor decide: este botão pede pelo mesmo fluxo de sempre e o servidor recusa o que não está aberto.
       entrar.onclick = () => h.entrarNaFase(hunt, atoAtual.fases.map((x) => hunts.get(x.huntId)).filter(Boolean));
-      const col3 = el('div', 'w2-col acao', entrar, el('p', 'w2-nota', f.completa ? `${f.limpezas > 1 ? `${f.limpezas} limpezas feitas` : 'Concluída'} — pode repetir a fase.` : f.liberada ? 'Limpe a fase inteira para concluí-la.' : 'Complete os requisitos acima para abrir.'));
+      const col3 = el('div', 'w2-col acao', entrar, el('p', 'w2-nota', f.completa ? `${f.limpezas > 1 ? `${f.limpezas} limpezas feitas` : 'Concluída'} — pode repetir a fase.` : f.liberada ? `Para concluir: ${f.objetivo?.texto ?? 'limpar a área'}.` : 'Complete os requisitos acima para abrir.'));
       painel.append(col1, col2, col3);
     } else {
       const b = atoAtual.boss;

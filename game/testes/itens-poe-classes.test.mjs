@@ -42,12 +42,12 @@ test('escolher a classe: uma vez; inválida recusa', { skip: SEM }, () => {
   assert.match(r.erro, /já é Bruxa/);
 });
 
-test('escala do PoE no personagem: vida 28+12/level, mana 14+6/level (40 e 20 no nível 1), atributos do PoE, precisão 2/level, golpe = a faixa da arma', { skip: SEM }, async () => {
+test('escala do PoE no personagem: vida 38+12/level, mana 34+6/level (50 e 40 no nível 1, como no PoE), atributos do PoE, precisão 2/level, golpe = a faixa da arma', { skip: SEM }, async () => {
   const R = await import('../systems/regras.mjs');
-  assert.deepEqual(R.statsBase('knight', 1), { maxHp: 40, maxMana: 20 });
-  assert.deepEqual(R.statsBase('sorcerer', 13), { maxHp: 184, maxMana: 92 }, 'a vocação não muda a base no PoE');
+  assert.deepEqual(R.statsBase('knight', 1), { maxHp: 50, maxMana: 40 });
+  assert.deepEqual(R.statsBase('sorcerer', 13), { maxHp: 194, maxMana: 112 }, 'a vocação não muda a base no PoE');
   const ef = Atributos.efeitos({ str: 32, dex: 14, int: 14 });
-  assert.deepEqual([ef.vida, ef.danoFisicoPct, ef.precisao, ef.evasaoPct, ef.mana, ef.energyShieldPct, ef.velocidadeDeAtaquePct, ef.danoMagicoPct].map((v) => Math.round(v * 100) / 100), [16, 6.4, 28, 2.8, 14, 2.8, 0, 0]);
+  assert.deepEqual([ef.vida, ef.danoFisicoPct, ef.precisao, ef.evasaoPct, ef.mana, ef.energyShieldPct, ef.velocidadeDeAtaquePct, ef.danoMagicoPct].map((v) => Math.round(v * 100) / 100), [16, 6.4, 28, 2.8, 7, 2.8, 0, 0]);
   assert.equal(Atributos.precisaoBase(13), 26);
   for (let i = 0; i < 50; i++) {
     const g = R.golpeDoJogador({ attack: 7, attackMin: 4, attackMax: 9 }, 80, 300);
@@ -59,16 +59,17 @@ test('escala do PoE no personagem: vida 28+12/level, mana 14+6/level (40 e 20 no
   }
 });
 
-test('vida e mana iniciais de cada classe: a tabela do dono (Marauder ~56/34, Caçadora ~47/34, Bruxa ~47/52, Duelista ~51/34, Templário ~51/43, Sombra ~47/43, Herdeira ~50/40)', { skip: SEM }, async () => {
+test('vida e mana iniciais de cada classe, como no PoE: 50 de vida e 40 de mana no nível 1, mais o que a Força e a Inteligência da classe dão', { skip: SEM }, async () => {
   const R = await import('../systems/regras.mjs');
   const A = await import('../systems/personagem/atributos.mjs');
   const C = await import('../systems/itens-poe/classes.mjs');
-  const tabela = { Marauder: [56, 34], Ranger: [47, 34], Witch: [47, 52], Duelist: [51, 34], Templar: [51, 43], Shadow: [47, 43], Scion: [50, 40] };
-  for (const [slug, [vida, mana]] of Object.entries(tabela)) {
+  for (const [slug, c] of Object.entries(C.CLASSES)) {
     const b = R.statsBase('knight', 1);
-    const ef = A.efeitos({ ...C.CLASSES[slug].atributos });
-    assert.ok(Math.abs(b.maxHp + ef.vida - vida) <= 0.5, `${slug}: vida ${b.maxHp + ef.vida} (tabela ~${vida})`);
-    assert.ok(Math.abs(b.maxMana + ef.mana - mana) <= 0.5, `${slug}: mana ${b.maxMana + ef.mana} (tabela ~${mana})`);
+    const ef = A.efeitos({ ...c.atributos });
+    // (Quanto cada ponto de Força/Inteligência dá é editável no Editor de Classes: o teste lê o efeito, não fixa o 1/2 do PoE.)
+    assert.equal(b.maxHp + ef.vida, 50 + ef.vida, `${slug}: vida`);
+    assert.equal(b.maxMana + ef.mana, 40 + ef.mana, `${slug}: mana`);
+    assert.ok(ef.vida > 0 && ef.mana > 0, `${slug}: Força e Inteligência somam`);
   }
 });
 

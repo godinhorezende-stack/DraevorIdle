@@ -1,8 +1,7 @@
 // Regeneração e stamina na cidade: uma vez por segundo, não a cada tique
 // (250 ms) — são só matemática proporcional ao tempo, então o total ao longo
 // de vários segundos tem de ser EXATAMENTE o mesmo de antes, só que calculado
-// em menos chamadas. `Exercicio.tique` continua a cada tique (o efeito de
-// cada golpe no boneco não pode ficar represado 1s).
+// em menos chamadas.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Sessao } from '../websocket/sessao.mjs';

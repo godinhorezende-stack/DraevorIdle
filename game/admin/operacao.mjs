@@ -7,6 +7,9 @@ import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { proximoSlot } from '../systems/server-save-horario.mjs';
+import { conexoes, vivas } from '../websocket/sessao.mjs';
+import { nomeDaHunt } from '../systems/hunt/terreno.mjs';
+import { avisoGlobal } from '../systems/avisos-globais.mjs';
 
 const REGISTRO = [];
 const MAX_REGISTRO = 50;
@@ -87,6 +90,66 @@ export async function executarServerSave() {
   anotar('server save', 'executado agora (manual)');
   return SS.executarAgora();
 }
+
+// ------------------------------------------------------------------ o servidor: quem está online (com IP) e o reinício
+
+/** Onde o personagem está agora, em palavras. */
+function ondeEsta(s) {
+  const e = s.estado;
+  if (!e) return 'escolhendo personagem';
+  if (e.hunt?.huntId) return `${e.hunt.mode === 'offline' ? 'caçando offline em' : 'caçando em'} ${nomeDaHunt(e.hunt.huntId)}`;
+  return 'na cidade';
+}
+
+/** Contas e personagens online agora, com IP, e os números do processo (para a tela "Servidor"). */
+export function estadoDoServidor({ agora = Date.now() } = {}) {
+  const lista = [...conexoes].filter((s) => s.ws?.readyState === 1);
+  const contas = new Set();
+  const ips = new Set();
+  const online = [];
+  for (const s of lista) {
+    if (s.conta?.id != null) contas.add(s.conta.id);
+    if (s.ip) ips.add(s.ip);
+    online.push({ conta: s.conta?.email ?? null, personagem: s.personagem?.nome ?? null, level: s.estado?.level ?? null, ip: s.ip ?? null, onde: s.personagem ? ondeEsta(s) : (s.conta ? 'escolhendo personagem' : 'sem login'), desde: s.entrouEm ?? s.conectadoEm, conectadoEm: s.conectadoEm });
+  }
+  online.sort((a, b) => (a.personagem ? 0 : 1) - (b.personagem ? 0 : 1) || a.desde - b.desde);
+  const m = process.memoryUsage();
+  return {
+    agora,
+    totais: { conexoes: lista.length, contas: contas.size, personagens: vivas.size, ips: ips.size },
+    online,
+    processo: { pid: process.pid, noDesde: agora - Math.round(process.uptime() * 1000), memoriaMb: Math.round(m.rss / 1048576), node: process.version, supervisionado: !!(process.env.DOCKER || process.env.ENGINE_MODO === 'producao' || process.env.NODE_ENV === 'production') },
+    reinicio: REINICIO ? { ...REINICIO } : null,
+    registro: registro(),
+  };
+}
+
+let REINICIO = null;
+/** O que o `backend/index.mjs` manda parar antes de sair (Server Save, limpeza do chão) — ele registra aqui no boot. */
+export let aoReiniciar = null;
+export const registrarDesligamento = (fn) => { aoReiniciar = fn; };
+const ATRASO_DO_REINICIO_MS = 5000;
+/**
+ * Reinicia o servidor: avisa quem está jogando, grava todo mundo (o mesmo caminho do Ctrl+C) e sai com código 0. Quem sobe o processo de
+ * novo é o supervisor (em produção o Docker, `restart: unless-stopped`); num `node` solto o processo só para. `sair` é injetável para os testes.
+ */
+export function reiniciar({ quem = null, motivo = null, sair = (c) => process.exit(c), esperar = ATRASO_DO_REINICIO_MS, desligar = null } = {}) {
+  if (REINICIO) return { ok: false, erros: [`Já há um reinício em andamento (pedido ${new Date(REINICIO.pedidoEm).toLocaleTimeString('pt-BR')}).`] };
+  const texto = motivo?.trim() ? String(motivo).trim().slice(0, MAX_MENSAGEM) : null;
+  REINICIO = { pedidoEm: Date.now(), quem, motivo: texto, em: Date.now() + esperar };
+  anotar('reinício do servidor', `pedido${quem ? ` por ${quem}` : ''}${texto ? `: ${texto}` : ''}`);
+  const jogadores = avisoGlobal(`O servidor vai reiniciar em ${Math.round(esperar / 1000)} segundos${texto ? ` (${texto})` : ''}. Seu progresso é gravado; entre de novo em instantes.`, 'aviso');
+  setTimeout(() => {
+    try {
+      desligar?.();
+      for (const s of vivas.values()) s.soltarPersonagem?.();
+    } finally {
+      sair(0);
+    }
+  }, esperar).unref?.();
+  return { ok: true, em: REINICIO.em, avisados: jogadores ?? 0 };
+}
+export const _limparReinicioParaTestes = () => { REINICIO = null; };
 
 /** Tudo da tela Configurações. */
 export async function estadoGeral() {

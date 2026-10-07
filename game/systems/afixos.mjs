@@ -19,7 +19,6 @@ import * as Especializacoes from './personagem/especializacoes.mjs';
 import { CATALOGO, ITEM_CATALOG } from './dados.mjs';
 import * as R from './regras.mjs';
 import * as Gemas from './gemas.mjs';
-import * as Imbuements from './imbuements.mjs';
 // O sistema de itens (raridade, níveis 1–5, faixas por nível, pools): a régua
 // de cada atributo passa a ser a dele — ver `systems/itens/config.mjs`.
 import * as ItensConfig from './itens/config.mjs';
@@ -30,6 +29,7 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -148,7 +148,12 @@ export function soma(estado) {
   // + os buffs das gemas do PoE ligados (aura, arauto, guarda: armadura, resistências, dano adicionado... — `itens-poe/gemas-poe.mjs`).
   const gemas = GemasPoe.adds(estado);
   if (gemas) for (const [k, v] of Object.entries(gemas)) total[k] = (total[k] ?? 0) + v;
-  return total;
+  // + os BUFFS nomeados do PoE ativos (Agressividade, Adrenalina, Poder Profano… — ganhos por evento ou "sempre" pela peça).
+  const dosBuffs = ModsPoe.adds(estado, total);
+  if (dosBuffs) for (const [k, v] of Object.entries(dosBuffs)) total[k] = (total[k] ?? 0) + v;
+  // Os mods CONDICIONAIS do PoE ("segurando um Escudo", "se você Matou Recentemente"…) e os "por X" (por nível, a cada N de Destreza, por
+  // carga…): os que valem agora entram no atributo-base.
+  return itensPoeLigado() ? ModsPoe.resolver(estado, total, Atributos.principais(estado, total)) : total;
 }
 
 /** Só os adds das peças VESTIDAS (a parte de `soma` que vem do equipamento; a ficha mostra a origem por categoria). */
@@ -159,7 +164,12 @@ export function somaDeItens(estado) {
     for (const a of peca.af ?? []) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
     // A peça no modelo do PoE (sistema de itens do PoE, Fase 1 — só existe com ITENS_POE=1): os mods já traduzidos para os atributos do
     // Draevor e os atributos NOVOS (`itens-poe/atributos-novos.json`), em `peca.poe.af`. Peça comum não tem `poe`: nada muda para ela.
-    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) if (typeof v === 'number' && Number.isFinite(v)) total[k] = (total[k] ?? 0) + v;
+    for (const [k0, v] of Object.entries(peca.poe?.af ?? {})) {
+      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+      // "Espaço esquerdo/direito de anel: …": vale só no anel daquele lado (`ring` = esquerdo, `ring2` = direito).
+      const k = ModsPoe.ehCondicional(k0) ? ModsPoe.doAnel(k0, slot) : k0;
+      if (k) total[k] = (total[k] ?? 0) + v;
+    }
   }
   return total;
 }
@@ -176,7 +186,9 @@ export function efeitosDeAltar(estado) {
   if (!h?.efeitosDeAltar?.length) return null;
   const agora = relogioDaSala(h);
   const total = {};
-  for (const e of h.efeitosDeAltar) if (e.ate > agora && FICHAS[e.afixo]) total[e.afixo] = (total[e.afixo] ?? 0) + e.valor;
+  // (× o "Efeito dos Buffs de Altares em você aumentado" dos únicos do PoE.)
+  const efeito = 1 + Object.values(estado.equipment ?? {}).reduce((n, p) => n + (Number(p?.poe?.af?.efeito_altar) || 0), 0) / 100;
+  for (const e of h.efeitosDeAltar) if (e.ate > agora && FICHAS[e.afixo]) total[e.afixo] = (total[e.afixo] ?? 0) + e.valor * efeito;
   for (const [id, v] of Object.entries(total)) {
     const teto = FICHAS[id].max * 2;
     total[id] = Math.max(-teto, Math.min(teto, v));
@@ -412,7 +424,7 @@ export function guardaPelosSockets(s, p) {
 // Com o sistema de itens do PoE ligado NÃO HÁ capacidade (dono, 06/10: "não existe cap mais" — o PoE não tem peso): infinita, então o
 // peso nunca impede pegar loot, trocar nem manda nada para o Depósito.
 export const capacidade = (estado) =>
-  itensPoeLigado() ? Infinity : (R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade) * (1 + Imbuements.bonus(estado).capacidadePct / 100);
+  itensPoeLigado() ? Infinity : R.maxCapacity(estado.vocation, estado.level ?? 1) + Gemas.bonus(estado).capacidade;
 
 /**
  * "+Life" e "+Mana" dos adds, mais a Life do STR e a Mana do INT. Aplicados como diferença
@@ -424,14 +436,23 @@ export function sincronizarMaximos(estado) {
   const t = soma(estado);
   // +Life / +Mana dos adds, e o que STR (Life) e INT (Mana) dão — ver `personagem/atributos.mjs`.
   const doAtributo = Atributos.efeitos(Atributos.principais(estado, t));
+  // PoE (únicos): "Força não concede bônus à Vida Máxima", "Inteligência não concede nenhum bônus inerente ao Máximo de Mana".
+  if (itensPoeLigado() && t.str_sem_vida > 0) doAtributo.vida = 0;
+  if (itensPoeLigado() && t.int_sem_mana > 0) doAtributo.mana = 0;
   // + a Life % da especialização da classe (Knight: Life), sobre a vida do level + a dos adds e do STR.
-  const lifePct = Especializacoes.efeitos(estado).stats.life ?? 0;
+  // + a "Vida máxima aumentada em X%" das peças do PoE (`life_inc`).
+  const lifePct = (Especializacoes.efeitos(estado).stats.life ?? 0) + (t.life_inc ?? 0);
   const base = R.statsBase(estado.vocation, estado.level ?? 1);
   const vidaSemPct = base.maxHp + (t.life ?? 0) + doAtributo.vida;
   // + a Mana % (a árvore do PoE: "Mana máxima aumentada em X%"), do mesmo jeito da Life %. Nada do Draevor dá Mana %: sem ela, nada muda.
-  const manaPct = Especializacoes.efeitos(estado).stats.mana ?? 0;
+  const manaPct = (Especializacoes.efeitos(estado).stats.mana ?? 0) + (t.mana_inc ?? 0);
   const manaSemPct = base.maxMana + (t.mana ?? 0) + doAtributo.mana;
   const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
+  // PoE: "X% de Vida Máxima Convertida em Escudo de Energia" — sai da vida e vira escudo (a ficha soma `vidaConvertidaPoe` no escudo).
+  const converte = itensPoeLigado() ? Math.min(100, Number(t.vida_em_escudo) || 0) : 0;
+  const vidaConvertida = converte > 0 ? Math.round(((base.maxHp + quer.hp) * converte) / 100) : 0;
+  quer.hp -= vidaConvertida;
+  estado.vidaConvertidaPoe = vidaConvertida;
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };
   if (quer.hp === tem.hp && quer.mana === tem.mana) return;
   estado.maxHp = (estado.maxHp ?? 0) + quer.hp - tem.hp;

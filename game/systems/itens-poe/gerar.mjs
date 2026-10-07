@@ -47,6 +47,48 @@ export function acharBase(catalogo, id) {
 /** O pool `normal` da base (`{ prefixos, sufixos }`), ou null quando a coleção não tem pool para ela. */
 export const poolDa = (classe, base) => (base?.pool ? classe?.paginas?.[base.pool] ?? null : null);
 
+/**
+ * As REGRAS DA BASE que os implícitos dão (PoE: anéis Engrenado/Geodésico/Composto, amuletos Simples/Focal, anéis de um dano só, varinhas
+ * sem Conjuração): `{ prefixos, sufixos }` (o a mais/a menos nas vagas da raridade), `magnitude: { todos, prefixo, sufixo }` (% a mais nos
+ * valores), `soDano` (a tag do único dano que pode sair) e `semConjuracao`. `implicitos`: os da peça (com os valores sorteados).
+ */
+const DANO_PERMITIDO = { frio: 'Gelo', fogo: 'Fogo', 'elétrico': 'Raio', 'físico': 'Físico', caos: 'Caos' };
+export function regrasDaBase(implicitos = []) {
+  const r = { prefixos: 0, sufixos: 0, magnitude: { todos: 0, prefixo: 0, sufixo: 0 }, soDano: null, semConjuracao: false, implicitosFixos: false };
+  for (const im of implicitos ?? []) {
+    for (const parte of String(im.modelo ?? '').split(' / ')) {
+      const v = Number([...parte.matchAll(/\{(\d+)\}/g)].map((m) => im.valores?.[Number(m[1])])[0]) || 0;
+      // O sinal: o do texto ("+1", "-2") ou, sem sinal no texto, o do próprio valor ("{1} Modificadores…" com −3).
+      const n = /^-/.test(parte) ? -Math.abs(v) : /^\+/.test(parte) ? Math.abs(v) : v;
+      if (/Modificador(?:es)? Prefixo permitidos?$/.test(parte)) r.prefixos += n;
+      else if (/Modificador(?:es)? Sufixo permitidos?$/.test(parte)) r.sufixos += n;
+      else if (/^Magnitudes dos Modificadores Explícitos aumentada/.test(parte)) r.magnitude.todos += v;
+      else if (/^Magnitudes do Modificador Prefixo aumentad/.test(parte)) r.magnitude.prefixo += v;
+      else if (/^Magnitudes do Modificador Sufixo aumentad/.test(parte)) r.magnitude.sufixo += v;
+      else if (/^Não pode rolar Modificadores de Conjuração$/.test(parte)) r.semConjuracao = true;
+      else if (/^Modificadores Implícitos Não Podem ser Mudados$/.test(parte)) r.implicitosFixos = true;
+      else {
+        const m = parte.match(/^Não gera modificadores de dano que não sejam (?:de )?(frio|fogo|elétrico|físico|caos)$/);
+        if (m) r.soDano = DANO_PERMITIDO[m[1]];
+      }
+    }
+  }
+  return r;
+}
+/** O tier pode sair nesta base? (o "só dano de um tipo" e o "sem Conjuração"). */
+const permitidoNaBase = (c, regras) => {
+  const tags = c.tags ?? [];
+  if (regras.semConjuracao && tags.includes('Conjurador')) return false;
+  if (regras.soDano && tags.includes('Dano') && !tags.includes(regras.soDano)) return false;
+  return true;
+};
+/** Os valores de um mod com a MAGNITUDE da base (% a mais), com as casas decimais da faixa. */
+function comMagnitude(mod, pct) {
+  if (!pct) return mod;
+  const valores = mod.valores.map((v) => { const x = Number(v) * (1 + pct / 100); return Number.isInteger(Number(v)) ? Math.round(x) : Math.round(x * 100) / 100; });
+  return { ...mod, valores, texto: escrever(mod.modelo, valores) };
+}
+
 /** Os tiers que PODEM sair numa peça de Item Level `ilvl`, por lado (cada item: `{ familia, lado, tier }`). */
 export function elegiveis(pool, ilvl) {
   const saida = { prefixo: [], sufixo: [] };
@@ -95,20 +137,61 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
   const pool = poolDa(classe, base);
   if (!pool) return { ...peca, aviso: 'a coleção não tem pool de mods para esta base: saiu sem mods' };
   const todos = elegiveis(pool, nivel);
-  const max = { prefixo: R.maxPrefixos ?? 0, sufixo: R.maxSufixos ?? 0 };
+  // As regras da BASE (os implícitos): vagas a mais/a menos, magnitude dos valores, só um tipo de dano, sem Conjuração.
+  const rb = regrasDaBase(peca.implicitos);
+  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos) };
   const usadas = new Set();
   for (let i = 0; i < quantos; i++) {
     const vagas = ['prefixo', 'sufixo'].filter((l) => peca[`${l}s`].length < max[l]);
-    const candidatos = vagas.flatMap((l) => todos[l]).filter((c) => !usadas.has(c.familia));
+    const candidatos = vagas.flatMap((l) => todos[l]).filter((c) => !usadas.has(c.familia) && permitidoNaBase(c, rb));
     const escolhido = porPeso(candidatos.map((c) => [c, c.tier.peso]), rng);
     if (!escolhido) break; // o pool acabou (Item Level baixo demais, ou poucas famílias): a peça sai com menos mods
     usadas.add(escolhido.familia);
-    const { modelo, valores, texto } = rolarTexto(escolhido.tier, rng);
-    peca[`${escolhido.lado}s`].push({ familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, modelo, texto, valores });
+    const rolado = comMagnitude(rolarTexto(escolhido.tier, rng), rb.magnitude.todos + rb.magnitude[escolhido.lado]);
+    peca[`${escolhido.lado}s`].push({ familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, modelo: rolado.modelo, texto: rolado.texto, valores: rolado.valores });
   }
   // O nome do Mágico leva o prefixo e o sufixo ("Primordial Colete de Placas da Baleia"); o do Raro é aleatório no PoE — a coleção
   // não traz as listas de palavras, então fica o nome da base (marcado).
   if (raridade === 'magico') peca.nome = [peca.prefixos[0]?.nome, base.nome, peca.sufixos[0]?.nome].filter(Boolean).join(' ');
   if (raridade === 'raro') peca.nomeAleatorio = null;
   return peca;
+}
+
+// ---------------------------------------------------------------- para as MOEDAS (itens-poe/moedas.mjs)
+export { porPeso, rolarTexto };
+
+/**
+ * UM mod novo para a peça `poe` (`{ base, classe, raridade, ilvl, prefixos, sufixos }`): de uma família ainda não usada, de um lado com
+ * vaga na raridade (`lados` restringe). Devolve `{ lado, mod }` (o mod no formato da peça) ou null (sem vaga / pool esgotado).
+ */
+export function sortearUmMod({ catalogo, regras, poe, rng = Math.random, lados = ['prefixo', 'sufixo'] }) {
+  const achado = acharBase(catalogo, poe.base);
+  if (!achado) return null;
+  const pool = poolDa(achado.classe, achado.base);
+  if (!pool) return null;
+  const R = regras?.raridades?.[poe.raridade] ?? {};
+  const rb = regrasDaBase(poe.implicitos);
+  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos) };
+  const usadas = new Set([...(poe.prefixos ?? []), ...(poe.sufixos ?? [])].map((m) => m.familia));
+  const todos = elegiveis(pool, Math.max(1, Number(poe.ilvl) || 1));
+  const vagas = lados.filter((l) => (poe[`${l}s`] ?? []).length < max[l]);
+  const candidatos = vagas.flatMap((l) => todos[l]).filter((c) => !usadas.has(c.familia) && permitidoNaBase(c, rb));
+  const escolhido = porPeso(candidatos.map((c) => [c, c.tier.peso]), rng);
+  if (!escolhido) return null;
+  const { modelo, valores, texto } = comMagnitude(rolarTexto(escolhido.tier, rng), rb.magnitude.todos + rb.magnitude[escolhido.lado]);
+  return { lado: escolhido.lado, mod: { familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, modelo, texto, valores } };
+}
+
+/** O tier do pool de onde o mod saiu (as faixas dele) — `{ tier, tiers }` (todos os tiers da família, do pool da base) — ou null. */
+export function tierDoMod(catalogo, poe, mod) {
+  const achado = acharBase(catalogo, poe.base);
+  const pool = achado && poolDa(achado.classe, achado.base);
+  for (const lado of ['prefixos', 'sufixos']) {
+    for (const g of pool?.[lado] ?? []) {
+      if (g.familia !== mod.familia) continue;
+      const tier = g.tiers.find((t) => t.tier === mod.tier) ?? null;
+      if (tier) return { tier, tiers: g.tiers };
+    }
+  }
+  return null;
 }

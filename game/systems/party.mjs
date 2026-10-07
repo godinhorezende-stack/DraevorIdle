@@ -406,7 +406,7 @@ export function antesDeSairDaCacada(s) {
  */
 function motivoParaNaoEntrar(convidado, sala) {
   if (!sala) return 'Essa pessoa não está caçando.';
-  if (sala.isBoss || sala.huntId === 'treino') return 'Nessa caçada não dá para entrar.';
+  if (sala.isBoss) return 'Nessa caçada não dá para entrar.';
   const nome = nomeDe(convidado);
   // A fase da campanha NÃO é conferida aqui: na party, qualquer um entra na
   // caçada do outro (decisão do dono — um amigo pode "carregar" o outro).
@@ -433,7 +433,7 @@ function juntar(convidado, anfitriao) {
      * `chamarOutro`, em sessao.mjs.)
      */
     const h = convidado.estado.hunt;
-    if (h.huntId !== 'treino' && Cacadas.salaDe(h) !== sala) {
+    if (Cacadas.salaDe(h) !== sala) {
       const report = Cacadas.relatorio(convidado.estado);
       if (report) {
         convidado.enviar({
@@ -867,11 +867,9 @@ const seguidores = (lider) => {
 /** O líder acabou de entrar numa caçada: quem segue, vai junto. */
 export function seguirOLider(lider) {
   const sala = lider.estado?.hunt ? Cacadas.salaDe(lider.estado.hunt) : null;
-  if (!sala || sala.isBoss || sala.huntId === 'treino') return;
+  if (!sala || sala.isBoss) return;
   for (const o of seguidores(lider)) {
     if (o.estado.hunt && Cacadas.salaDe(o.estado.hunt) === sala) continue;
-    // Treinando no boneco (exercise): o treino é dele, e seguir o interromperia sem ele pedir.
-    if (o.estado.exercicio?.treinando) continue;
     const r = juntar(o, lider);
     if (r.ok) avisar(o, `Seguindo ${nomeDe(lider)}: ${Cacadas.nomeDaHunt(sala.huntId)}.`);
     else {

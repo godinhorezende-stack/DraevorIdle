@@ -74,7 +74,9 @@ export function atosDaCampanha(escolhida, metas = {}) {
       nome: meta.nome || `Ato ${ato}`,
       parte: meta.parte ?? null,
       tema: meta.tema ?? null,
-      fundo: meta.fundo?.arquivo ? meta.fundo : null,
+      fundo: meta.fundo?.url || meta.fundo?.arquivo ? meta.fundo : null,
+      // A cidade do ato (o nó de partida): `{ nome, posicao, conexoes: [huntId] }` — sem posição, fica à esquerda da primeira fase.
+      cidade: meta.cidade ? meta.cidade : null,
       bossMapa: meta.bossMapa && Number.isFinite(meta.bossMapa.x) && Number.isFinite(meta.bossMapa.y) ? meta.bossMapa : null,
       descricao: meta.descricao ?? null,
       fases,
@@ -99,6 +101,8 @@ export const faseDaFronteira = (escolhida) => escolhida.fases.find((f) => f.libe
 
 /** O tipo visual de uma fase: o que o editor definiu (`mundo.tipo`) ou o que se deduz do conteúdo (boss/obrigatórios). */
 export function tipoDaFase(m = {}) {
+  // A fase do editor: o tipo que a Engine marca (o início é uma fase comum com o brilho de "atual"; o resto, o do mapa).
+  if (m.grafo) return m.grafo.tipo === 'inicio' ? 'comum' : TIPOS_DE_NO[m.grafo.tipo] ? m.grafo.tipo : 'comum';
   if (m.tipo && TIPOS_DE_NO[m.tipo] && m.tipo !== 'boss') return m.tipo;
   if (m.bossPrincipal) return 'boss-fase';
   const obr = m.obrigatorios ?? [];
@@ -160,6 +164,15 @@ export function posicoesDoAto(fases, temBoss, mundo = {}, ato = 1, bossManual = 
 export function conexoesDoAto(fases, boss, mundo = {}) {
   const lista = [];
   const estado = (a, b) => ((a.completa || a.pular) && (b.completa || b.vencido || b.pular) ? 'percorrido' : (a.completa || a.pular) && (b.liberada || b.liberado) ? 'disponivel' : 'bloqueado');
+  // Ato do EDITOR (`mundo[id].grafo`): exatamente as ligações da Engine — nada de cadeia implícita — e o boss só da fase que leva a ele.
+  if (fases.length && fases.every((f) => mundo[f.huntId]?.grafo)) {
+    const porId = new Map(fases.map((f) => [f.huntId, f]));
+    for (const f of fases) {
+      for (const alvo of mundo[f.huntId].grafo.conexoes ?? []) if (porId.has(alvo)) lista.push({ de: f.huntId, para: alvo, tipo: 'cadeia', estado: estado(f, porId.get(alvo)) });
+      if (boss && mundo[f.huntId].grafo.aoBoss) lista.push({ de: f.huntId, para: `boss:${boss.ato}`, tipo: 'boss', estado: estado(f, boss) });
+    }
+    return lista;
+  }
   fases.forEach((f, i) => {
     if (i) lista.push({ de: fases[i - 1].huntId, para: f.huntId, tipo: 'cadeia', estado: estado(fases[i - 1], f) });
   });

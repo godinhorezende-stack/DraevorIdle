@@ -12,6 +12,9 @@ import * as Pinaculos from '../systems/itens-poe/pinaculos.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as ModificadoresMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
+import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
+import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
+import * as EfeitosVisuais from '../systems/efeitos-visuais.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as Reforcos from '../systems/skills/reforcos.mjs';
 import * as Acoes from '../systems/acoes.mjs';
@@ -121,6 +124,11 @@ async function servirArquivo(req, res, caminho) {
   // As GEMAS do PoE no jogo (substituem as ativas do Draevor; a coleção do dono, poe-gemas-poedb): a magia, o item e o buff de cada uma.
   const gemasPoe = await GemasPoe.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GemasDeSkill.registrarAtiva(g)), registrarReforco: Reforcos.registrar });
   if (gemasPoe.gemas) console.log(`  gemas do PoE: ${gemasPoe.gemas} (${Object.entries(gemasPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
+  const suportesPoe = SuportesPoe.iniciar({ registrarSuporte: GemasDeSkill.registrarSuporte });
+  // As moedas empilháveis do PoE (os itens, a loja da Zuma; o efeito na Forja do PoE — `itens-poe/moedas.mjs`).
+  const moedasPoe = MoedasPoe.iniciar();
+  if (moedasPoe) console.log(`  moedas do PoE: ${moedasPoe} novas no catálogo (${MoedasPoe.MOEDAS.length} ao todo)`);
+  if (suportesPoe.suportes) console.log(`  suportes do PoE: ${suportesPoe.suportes} (${Object.entries(suportesPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
   if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
 }
 
@@ -175,7 +183,12 @@ async function atender(req, res) {
 
   // As classes ATIVAS para a tela de criação de personagem (público: só nome, descrição, ícone, cor, atributos iniciais e bônus por ponto).
   // O PoE que o JOGO lê (público, só leitura): os ícones das gemas e dos itens do PoE e a ficha da gema num nível (`itens-poe-http.atenderPublico`).
-  if (await ItensPoeHttp.atenderPublico(req, res, caminho, url, { json, fichaDaGema: GemasPoe.fichaNoNivel })) return;
+  if (await ItensPoeHttp.atenderPublico(req, res, caminho, url, { json, fichaDaGema: (slug, n, q) => GemasPoe.fichaNoNivel(slug, n, q) ?? SuportesPoe.fichaNoNivel(slug, n, q) })) return;
+  // O VISUAL das skills (Arena de Efeitos — `systems/efeitos-visuais.mjs`): o jogo lê ao abrir (público, só leitura).
+  if (caminho === '/api/jogo/efeitos') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' });
+    return res.end(JSON.stringify(EfeitosVisuais.paraOCliente()));
+  }
   if (caminho === '/api/classes') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
     return res.end(JSON.stringify(Classes.paraOCliente()));
@@ -292,8 +305,9 @@ const wss = new WebSocketServer({
 // SERVIDOR de WebSocket (porta ocupada, etc.) também derruba o processo.
 wss.on('error', (e) => console.error('wss', e.message));
 
-wss.on('connection', (ws) => {
-  const s = new Sessao(ws);
+wss.on('connection', (ws, req) => {
+  // O IP da conexão (atrás do proxy vem em X-Real-IP) fica na sessão: a tela "Servidor" da Engine mostra quem está online e de onde.
+  const s = new Sessao(ws, { ip: String(req?.headers?.['x-real-ip'] ?? req?.socket?.remoteAddress ?? '').replace(/^::ffff:/, '') || null });
   s.ola();
   const ritmo = new Limites.Ritmo();
 
@@ -354,6 +368,12 @@ ServerSave.iniciar().catch((e) => console.error('[SERVER-SAVE] não iniciou ->',
 // `ENDERECO` (opcional): só nesse endereço — o servidor de desenvolvimento local usa 127.0.0.1 (acesso por túnel SSH). Sem ele, todas as interfaces.
 http.listen(PORTA, ...(process.env.ENDERECO ? [process.env.ENDERECO] : []), () => {
   console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
+});
+
+// O reinício pela Engine (tela "Servidor") para as mesmas rotinas do Ctrl+C antes de gravar todo mundo e sair.
+Operacao.registrarDesligamento(() => {
+  LimpezaDoChao.parar();
+  ServerSave.parar();
 });
 
 // Desligando o servidor (Ctrl+C): grava todo mundo que está online antes de sair.

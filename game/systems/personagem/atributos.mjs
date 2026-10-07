@@ -20,8 +20,8 @@ import { ligado as itensPoeLigado } from '../itens-poe/catalogo.mjs';
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/atributos-principais.json', import.meta.url), 'utf8'));
 export const PRINCIPAIS = ['str', 'dex', 'int'];
 const E = CONFIG.efeitos;
-/** Os bônus por ponto do PoE (Força: 0,5 de vida; Inteligência: 1 de mana — a tabela de vida/mana inicial do dono): a tabela `efeitos` com o PoE ligado — o Editor de Classes edita por cima (`systems/classes.mjs`). */
-export const EFEITOS_DO_POE = { STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2, DEX_ACCURACY_PER_POINT: 2, DEX_EVASION_PER_POINT: 0, DEX_EVASION_PCT_PER_POINT: 0.2, DEX_ATTACK_SPEED_PER_POINT: 0, INT_MANA_PER_POINT: 1, INT_MAGIC_DAMAGE_PER_POINT: 0, INT_ENERGY_SHIELD_PCT_PER_POINT: 0.2 };
+/** Os bônus por ponto do PoE (Força: 0,5 de vida; Inteligência: 0,5 de mana — como no PoE, dono 07/10: "2 de Inteligência = 1 de mana"): a tabela `efeitos` com o PoE ligado — o Editor de Classes edita por cima (`systems/classes.mjs`). */
+export const EFEITOS_DO_POE = { STR_LIFE_PER_POINT: 0.5, STR_PHYSICAL_DAMAGE_PER_POINT: 0.2, DEX_ACCURACY_PER_POINT: 2, DEX_EVASION_PER_POINT: 0, DEX_EVASION_PCT_PER_POINT: 0.2, DEX_ATTACK_SPEED_PER_POINT: 0, INT_MANA_PER_POINT: 0.5, INT_MAGIC_DAMAGE_PER_POINT: 0, INT_ENERGY_SHIELD_PCT_PER_POINT: 0.2 };
 if (itensPoeLigado()) Object.assign(E, EFEITOS_DO_POE);
 
 /** A vocação do jogo sem a promoção ("elite knight" → knight). */
@@ -46,7 +46,8 @@ export function principais(estado, adds = {}) {
   const classe = classeDe(estado);
   const daClasse = classe ? CONFIG.porVocacao[classe.slug.toLowerCase()] ?? { base: classe.atributos, porLevel: {} } : v;
   const daVocacao = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.floor((daClasse.base[k] ?? 0) + (daClasse.porLevel?.[k] ?? 0) * (nivel - 1))]));
-  const total = Object.fromEntries(PRINCIPAIS.map((k) => [k, daVocacao[k] + Math.round(adds[k] ?? 0)]));
+  // PoE: "Força aumentada em X%", "Atributos aumentados em X%" (`str_inc`/`dex_inc`/`int_inc`) multiplicam o total do atributo.
+  const total = Object.fromEntries(PRINCIPAIS.map((k) => [k, Math.round((daVocacao[k] + Math.round(adds[k] ?? 0)) * (1 + (adds[`${k}_inc`] ?? 0) / 100))]));
   return { ...total, daVocacao };
 }
 
@@ -97,6 +98,14 @@ export function chanceDeAcerto(precisao, levelBicho, evasaoDoBichoPronta = null)
   if (Formulas.PARAMETROS.acerto.modo === 'poe') return Formulas.chanceDeAcertoPoe(precisao, evasaoDoBicho);
   const bruta = (c.FATOR * precisao) / Math.max(1, precisao + evasaoDoBicho);
   return Math.min(c.MAX, Math.max(c.MIN, bruta));
+}
+
+/**
+ * Chance (0–1) de acertar um monstro EVASIVO do level: a evasão da curva × (1 + `evasaoPct`/100) — o modificador "Evasivo" dos monstros
+ * (+100% de evasão, `itens-poe/modificadores-monstro.json`). É a linha "Chance de Acertar Monstros Evasivos" da tela do PoE.
+ */
+export function chanceDeAcertoEvasivo(precisao, levelBicho, evasaoPct = 100) {
+  return chanceDeAcerto(precisao, levelBicho, daCurva('evasao', levelBicho) * (1 + evasaoPct / 100));
 }
 
 /** Chance (0–1) de o jogador ESQUIVAR o golpe corpo a corpo do bicho: a Evasion dele contra a precisão do bicho. */

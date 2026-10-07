@@ -1,6 +1,5 @@
 import * as Boosts from './boosts.mjs';
 import * as Stamina from './stamina.mjs';
-import * as Exercicio from './exercicio.mjs';
 import * as Premium from './premium.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
@@ -486,13 +485,20 @@ export function recolherPecasNoSlotErrado(estado) {
  * Peça vestida com `minLevel` ACIMA do level do personagem (de antes de a arma virar a fonte do dano, ou de um requisito que subiu): volta
  * para a mochila, sem perda nenhuma. Roda na entrada; devolve os nomes das peças que saíram.
  */
+/** O level que a peça pede: o da base, menos o "Requisito de Nível reduzido em X%" da própria peça (PoE). */
+export function nivelExigido(meta, peca = null) {
+  const base = meta?.minLevel ?? 0;
+  const red = Number(peca?.poe?.af?.req_level_reduced) || 0;
+  return red > 0 ? Math.floor(base * Math.max(0, 1 - red / 100)) : base;
+}
+
 export function devolverPecasAcimaDoLevel(estado) {
   const eq = estado.equipment ?? {};
   const saiu = [];
   for (const [slot, peca] of Object.entries(eq)) {
     if (!peca || slot === 'backpack') continue;
     const meta = ITEM_CATALOG[peca.id];
-    if (!meta || (meta.minLevel ?? 0) <= (estado.level ?? 0)) continue;
+    if (!meta || nivelExigido(meta, peca) <= (estado.level ?? 0)) continue;
     eq[slot] = null;
     devolverPeca(estado, peca);
     saiu.push(meta.name);
@@ -509,10 +515,14 @@ export function equipar(estado, { id, pilha, slot }) {
   const destino = slot ?? Equipamento.slotDaArmaNoClique(estado, meta) ?? Equipamento.slotDoClique(estado, meta) ?? meta?.slot;
   // Modelo Path of Exile (decisão do dono): nenhuma peça é "só de uma classe" — ela pede STR/DEX/INT
   // (ver `personagem/requisitos.mjs`); a vocação da peça é só a classe recomendada.
+  // (A peça do PoE com "Requisito de Nível reduzido em X%" pede menos level — `nivelExigido`.)
+  const naMochila = lista(estado, 'bag')[acharPilha(lista(estado, 'bag'), id, Number(pilha))] ?? null;
   const valida = Equipamento.validarEquipar(estado, meta, destino, (m) => {
-    const faltaAtributo = Requisitos.falta(m, Atributos.principais(estado, Afixos.soma(estado)));
+    const somaAgora = Afixos.soma(estado);
+    const faltaAtributo = Requisitos.falta(m, Atributos.principais(estado, somaAgora), naMochila, somaAgora);
     if (faltaAtributo) return faltaAtributo;
-    return (m.minLevel ?? 0) > (estado.level ?? 0) ? `Precisa do level ${m.minLevel}.` : null;
+    const nivel = nivelExigido(m, naMochila);
+    return nivel > (estado.level ?? 0) ? `Precisa do level ${nivel}.` : null;
   });
   if (!valida.ok) return valida;
   const itens = lista(estado, 'bag');
@@ -559,14 +569,6 @@ export function desequipar(estado, { slot }) {
 /** `send({t:'usar', id, onde})` — por enquanto, poções (fora da barra de ações). */
 export function usar(estado, { id, onde }) {
   id = Number(id);
-  // Scroll Speed Exercise: treino em dobro por 3 horas de treino.
-  if (id === Exercicio.SCROLL_SPEED) {
-    const itens = lista(estado, onde);
-    const i = acharPilha(itens, id, null);
-    if (i < 0) return { ok: false, erro: 'Você não tem isso.' };
-    if (--itens[i].count <= 0) itens.splice(i, 1);
-    return Exercicio.usarScroll(estado);
-  }
   // Summon Upgrade (loja: 1 por nível até 100; dropado: 100 por nível até 20).
   if (id === Summon.ITEM_DA_LOJA || id === Summon.ITEM_DROPADO) {
     const tem = (estado.inventory ?? []).filter((p) => p.id === id).reduce((a, p) => a + (p.count ?? 1), 0);

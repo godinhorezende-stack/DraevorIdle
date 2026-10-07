@@ -29,9 +29,25 @@ export function requisitoDe(meta) {
  * Este personagem cumpre? `atributos` = os totais dele (`Ficha.combate(estado).atributos`).
  * Devolve null (cumpre) ou o texto do que falta.
  */
-export function falta(meta, atributos) {
+/**
+ * Os requisitos de atributo de uma peça do PoE com os mods dela ("Requisito de Força aumentado em X%", "+N de Força Requisitada", "Não
+ * possui Requisitos de Atributos") e os do personagem ("Itens e Gemas têm o Requisito de Atributos reduzido em X%"). null sem requisito.
+ */
+export function requisitosDaPeca(meta, peca = null, afGlobal = null) {
+  const base = meta?.poe?.requisitos;
+  if (!base) return null;
+  const af = peca?.poe?.af ?? {};
+  if (Number(af.sem_requisitos) > 0) return null;
+  const global = Number(afGlobal?.req_atributos_pct) || 0;
+  const r = {};
+  for (const [a, v] of Object.entries(base)) r[a] = Math.max(0, Math.round(v * (1 + ((Number(af[`req_${a}_pct`]) || 0) + global) / 100) + (Number(af[`req_${a}_flat`]) || 0)));
+  for (const a of ['str', 'dex', 'int']) if (!(a in r) && Number(af[`req_${a}_flat`]) > 0) r[a] = Number(af[`req_${a}_flat`]);
+  return r;
+}
+
+export function falta(meta, atributos, peca = null, afGlobal = null) {
   // Peça do sistema de itens do PoE (só com ITENS_POE=1): os requisitos da base, TODOS valem (como no PoE).
-  const doPoe = meta?.poe?.requisitos;
+  const doPoe = requisitosDaPeca(meta, peca, afGlobal);
   if (doPoe) {
     const faltam = Object.entries(doPoe).filter(([a, v]) => (atributos?.[a] ?? 0) < v);
     return faltam.length ? `Requer ${faltam.map(([a, v]) => `${v} ${NOME_DO_ATRIBUTO[a]}`).join(' e ')}.` : null;

@@ -3589,6 +3589,24 @@ body {
   border-radius: 999px; padding: 0 5px; line-height: 14px; pointer-events: none;
   background: var(--copper); color: #1a1208;
 }
+/* ---- Os FRASCOS na barra do PoE (as 5 primeiras casas, teclas 1 a 5) ----
+   Quadro em bronze, para se distinguir das habilidades; a barrinha à esquerda é a carga (vermelha = vida, azul = mana, dourada =
+   utilidade), o número embaixo são as cargas, e o frasco ativo acende. Um filete separa os frascos da primeira habilidade. */
+.hotbar .slot.frasco-slot { border-color: #6a5a3a; box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 7px -1px #b08a3e55, 0 1px 2px #0006; }
+.hotbar .slot.frasco-slot.filled { border-color: #b08a3ecc; background: #1f1c15; }
+.hotbar .slot.frasco-slot:hover { border-color: #e0c070; box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 11px -1px #d8b56acc; }
+.hotbar .slot.frasco-slot .frasco-cargas { position: absolute; left: 3px; top: 4px; bottom: 13px; width: 3px; background: #0009; border-radius: 2px; display: flex; align-items: flex-end; pointer-events: none; }
+.hotbar .slot.frasco-slot .frasco-cargas > i { display: block; width: 100%; background: #d8b56a; border-radius: 2px; }
+.hotbar .slot.frasco-slot.vida .frasco-cargas > i { background: #d24a3c; }
+.hotbar .slot.frasco-slot.mana .frasco-cargas > i { background: #3c7fd2; }
+.hotbar .slot.frasco-slot .frasco-num { position: absolute; right: 1px; bottom: 0; font: 600 8px/11px system-ui; letter-spacing: -.2px; color: #e8dcc0; background: #0b0f10cc; border-radius: 3px; padding: 0 3px; pointer-events: none; }
+.hotbar .slot.frasco-slot.ativo { border-color: #f0d36b; box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 10px 1px #f0d36b99; }
+.hotbar .slot.frasco-slot .frasco-regra { position: absolute; top: 1px; right: 2px; font: 600 9px/11px system-ui; font-style: normal; color: #d8e8ec; background: #0b0f10cc; border-radius: 3px; padding: 0 2px; pointer-events: none; }
+.hotbar .slot.frasco-slot.over { border-color: #e0c070; box-shadow: 0 0 10px #e0c070aa; }
+.frasco-config { display: flex; align-items: center; gap: 10px; margin: 8px 0 12px; }
+.frasco-config input[type=range] { flex: 1; accent-color: var(--accent); }
+.frasco-config-valor { min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; color: var(--accent); }
+.hotbar .slot.primeira-skill::before { content: ""; position: absolute; left: -4px; top: 5px; bottom: 5px; width: 1px; background: #46656d; }
 /* O número fica por cima do sprite, com fundo próprio: escondido atrás dele
    ninguém enxergava qual tecla era. */
 .hotbar .slot .key {
@@ -4403,8 +4421,12 @@ body {
  */
 /* Sem barra de rolagem: a janela tem a altura exata do que está dentro dela, e
    uma barra de 2px de sobra só sujava a moldura. */
+/* Minimizada, o corpo some também aqui (esta regra tem a mesma força da `.window.minimized .window-body` e vinha depois: o "—" não fechava nada). */
+.window.minimized[data-window-id="inventory"] .window-body { display: none; }
+/* A janela nunca passa da tela: em tela baixa o corpo rola, em vez de cortar a última fileira da mochila (dono, 07/10). */
+.window[data-window-id="inventory"] { max-height: calc(100dvh - 76px); }
 .window[data-window-id="inventory"] .window-body {
-  display: flex; flex-direction: column; overflow: hidden;
+  display: flex; flex-direction: column; overflow: hidden auto;
   /* 2px em vez dos 6 de todas as outras: esta janela nao estica e nao rola,
      entao o recheio do rodape virava sobra de moldura embaixo da lixeira. */
   padding-bottom: 2px;
@@ -19698,7 +19720,7 @@ html.arrastando-item .tooltip { display: none !important; }
 
 /* ---- Gem Atelier no desenho do client: painéis, grade de gemas, cadeado e escada de graus ---- */
 .modal-box.gemas { width: min(1180px, 97vw); }
-.gemas-abas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 10px; }
+.gemas-abas { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px; margin-bottom: 10px; }
 .gemas-aba { justify-content: center; padding: 6px 10px; font-size: 14px; }
 .gemas-painel { background: #15191b; border: 1px solid var(--line); border-radius: 6px; padding: 8px; box-shadow: inset 0 0 0 1px #0006; }
 .gemas-painel-titulo { margin: -8px -8px 8px; padding: 4px 8px; background: #1e2427; border-bottom: 1px solid var(--line); color: var(--muted); font-family: var(--font-heading); font-size: 12px; text-align: center; letter-spacing: .04em; font-weight: normal; }
@@ -27922,3 +27944,234 @@ button.soquete-elo.escolhido { outline: 1px solid #e8c66a; }
 .campanha-boss-secao.vencido .campanha-boss-elo { color: #e0a84a; }
 .campanha-boss-secao.clicavel { cursor: pointer; }
 .campanha-boss-secao.clicavel:hover { filter: brightness(1.2); }
+
+/* As CORES dos sockets do PoE (R Força, G Destreza, B Inteligência, W branco: aceita qualquer gema). */
+.soquete-casa.cor-R { border-color: #c8423a; background: radial-gradient(circle, #3a1412 0%, #0d0d0d 70%); }
+.soquete-casa.cor-G { border-color: #4fae4a; background: radial-gradient(circle, #13301a 0%, #0d0d0d 70%); }
+.soquete-casa.cor-B { border-color: #4f86d8; background: radial-gradient(circle, #122440 0%, #0d0d0d 70%); }
+.soquete-casa.cor-W { border-color: #e6e1d6; background: radial-gradient(circle, #3a3a3a 0%, #0d0d0d 70%); }
+.soquete-casa.escolhido { box-shadow: 0 0 0 2px #e8c66a, 0 0 8px #e8c66a88; }
+.selo-soquetes .sq.cor-R { border-color: #e0564d; } .selo-soquetes .sq.vazio.cor-R { background: #e0564d55; }
+.selo-soquetes .sq.cor-G { border-color: #5ec45a; } .selo-soquetes .sq.vazio.cor-G { background: #5ec45a55; }
+.selo-soquetes .sq.cor-B { border-color: #5a95ea; } .selo-soquetes .sq.vazio.cor-B { background: #5a95ea55; }
+.selo-soquetes .sq.cor-W { border-color: #f0ece4; } .selo-soquetes .sq.vazio.cor-W { background: #f0ece455; }
+.soquetes-gema.cor-errada { opacity: .5; cursor: not-allowed; }
+.soquetes-gema .cor-gema { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.cor-gema.cor-R { background: #e0564d; } .cor-gema.cor-G { background: #5ec45a; } .cor-gema.cor-B { background: #5a95ea; } .cor-gema.cor-W { background: #f0ece4; }
+.soquetes-orbes .orbe-poe { display: inline-flex; align-items: center; gap: 6px; }
+.soquetes-orbes .orbe-poe canvas { flex: none; }
+
+/* ---- O INVENTÁRIO do PoE: o corpo em cima e a MOCHILA embaixo, numa janela só (dono, 06/10, com a foto do inventário do PoE) ----
+   inventory.mjs `renderInventory` (o nó `.inv-mochila`) e `renderContainer` (desenha nele). A janela "Mochila" antiga sai de cena. */
+.window[data-window-id="container"] { display: none !important; }
+html:not([data-perfil="retrato"]):not([data-perfil="deitado"]) .window[data-window-id="inventory"] { width: 268px !important; }
+.window[data-window-id="inventory"] .equipment {
+  padding: 8px 6px; margin: 0 0 4px; border: 1px solid #3d3324; border-radius: 4px;
+  background: radial-gradient(ellipse at 50% 30%, #2a2419 0%, #15120d 60%, #0c0a08 100%);
+  box-shadow: inset 0 0 18px #000;
+}
+.window[data-window-id="inventory"] .equipment .slot { background: #0b0a08; border-color: #4a3d28; box-shadow: inset 0 0 6px #000; }
+.inv-mochila { display: flex; flex-direction: column; min-height: 0; margin-top: 6px; padding-top: 6px; border-top: 1px solid #4a3d28; }
+/* A grade como a do PoE: as casas vazias desenhadas no fundo (44px + 5 de vão, alinhadas com as células; `--linhas` vem do JS). */
+.inv-mochila .bag {
+  grid-template-columns: repeat(auto-fill, 44px); justify-content: start; max-height: 256px; overflow-y: auto;
+  padding: 4px; border: 1px solid #2a2a30; border-radius: 3px;
+  background-color: #08090b;
+  background-image: linear-gradient(90deg, transparent 44px, #08090b 44px), linear-gradient(transparent 44px, #08090b 44px), linear-gradient(#151922, #151922);
+  background-size: 49px 49px, 49px 49px, auto; background-position: 4px 4px; background-origin: padding-box; background-clip: padding-box;
+  /* As 20 casas inteiras (5 fileiras de 49px + o recheio): a última fileira ficava cortada com 232px (dono, 07/10). */
+  min-height: min(calc(var(--linhas, 1) * 49px + 3px), 256px); box-sizing: border-box; align-self: center; width: 100%;
+}
+html:is([data-perfil="retrato"], [data-perfil="deitado"]) .inv-mochila .bag { min-height: calc(var(--linhas, 1) * 49px + 3px); }
+/* Celular em pé: a janela ocupa a gaveta; o corpo maior (zoom), a grade da mochila na largura toda, e a janela rola. */
+html[data-perfil="retrato"] .window[data-window-id="inventory"] .window-body { overflow-y: auto; }
+html[data-perfil="retrato"] .window[data-window-id="inventory"] .equipment { zoom: 1.45; align-self: center; }
+html[data-perfil="retrato"] .inv-mochila .bag { max-height: none; overflow: visible; }
+html[data-perfil="deitado"] .window[data-window-id="inventory"] .window-body { overflow-y: auto; }
+html[data-perfil="deitado"] .inv-mochila .bag { max-height: none; overflow: visible; }
+/* As peças do corpo da janela não encolhem (a coluna flex esmagava o corpo quando a mochila não cabia): quem rola é a janela. */
+.window[data-window-id="inventory"] .window-body > * { flex-shrink: 0; }
+/* Em pé, o inventário toma a gaveta toda (do status até a pilha de baixo). */
+html[data-perfil="retrato"] .window[data-window-id="inventory"] {
+  top: calc(var(--seguro-topo) + var(--cel-status) + 8px) !important; height: auto !important;
+}
+/* A Boss Pouch e a Store Inbox saíram (dono, 06/10): as janelas delas não aparecem mais. */
+.window[data-window-id="bossPouch"], .window[data-window-id="storeInbox"] { display: none !important; }
+/* A linha da mochila é só dos botões (Limpar, Vender), à direita. */
+.inv-mochila .bagline { justify-content: flex-end; }
+/* ---- VIP e Bênçãos: duas fichas legíveis (hud.mjs `faixaDoVipEBencaos`) ---- */
+.inv-selos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 2px 0 4px; }
+.inv-selo {
+  display: flex; align-items: center; gap: 7px; min-width: 0; padding: 4px 8px; box-sizing: border-box;
+  border: 1px solid #3a3326; border-radius: 4px; background: linear-gradient(#17140f, #0d0b08); color: #8e8676; font: inherit; text-align: left;
+}
+.inv-selo img, .inv-selo .ui-icon { width: 22px; height: 22px; flex: none; object-fit: contain; image-rendering: pixelated; }
+.inv-selo.bencaos img { image-rendering: auto; }
+.inv-selo-texto { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.inv-selo-texto b { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: inherit; }
+.inv-selo-texto span { font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inv-selo.vip.on { border-color: #8a6d2a; color: #f0d27a; box-shadow: inset 0 0 8px #f0d27a22; }
+.inv-selo.bencaos { cursor: pointer; }
+.inv-selo.bencaos.on { border-color: #4a7a8a; color: #bfe6f0; }
+.inv-selo.bencaos.todas { border-color: #d8b56a; color: #f3e2b0; box-shadow: inset 0 0 8px #d8b56a33; }
+.inv-selo.bencaos:hover { border-color: #e8c66a; }
+.inv-selo:not(.on) img, .inv-selo:not(.on) .ui-icon { filter: grayscale(1) opacity(.6); }
+html[data-perfil="retrato"] .inv-selo { padding: 8px 10px; }
+html[data-perfil="retrato"] .inv-selo img, html[data-perfil="retrato"] .inv-selo .ui-icon { width: 28px; height: 28px; }
+html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-selo-texto span { font-size: 13px; }
+
+/* ---- A recompensa das missões do PoE (missoes-poe.mjs) ---- */
+.missao-poe-botao {
+  position: fixed; left: 12px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  padding: 8px 12px; border: 1px solid #d8b56a; border-radius: 6px; background: linear-gradient(#2a2216, #15110b); color: #f3e2b0;
+  font-weight: 600; box-shadow: 0 0 10px #d8b56a55; cursor: pointer;
+}
+.missao-poe-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin: 8px 0 12px; }
+.missao-poe-gema {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; text-align: center;
+  border: 1px solid #3a3326; border-radius: 6px; background: #0f1418; color: #e6e1d6; cursor: pointer;
+}
+.missao-poe-gema em { font-size: 11px; color: #a39b8c; }
+.missao-poe-gema:hover { border-color: #e8c66a; }
+.missao-poe-gema.escolhida { border-color: #e8c66a; box-shadow: 0 0 0 2px #e8c66a, 0 0 10px #e8c66a66; }
+
+/* ---- A Forja do PoE (forja-poe.mjs): moedas | peça | aplicar ---- */
+.forja-poe { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.3fr) minmax(240px, 1.3fr); gap: 12px; }
+@media (max-width: 760px) { .forja-poe { grid-template-columns: 1fr; } }
+.forja-poe-col { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.forja-poe-col h4 { margin: 0; font: 600 12px/1.2 var(--font-heading, inherit); letter-spacing: .08em; text-transform: uppercase; color: #c8a15a; }
+.forja-poe-moedas { display: grid; grid-template-columns: repeat(auto-fill, 46px); gap: 5px; max-height: 50vh; overflow-y: auto; }
+.forja-poe-moeda { position: relative; width: 46px; height: 46px; padding: 0; display: flex; align-items: center; justify-content: center; background: #0d0f12; border: 1px solid #3a3326; border-radius: 4px; cursor: pointer; }
+.forja-poe-moeda.st-nao { opacity: .45; }
+.forja-poe-moeda.st-parcial { border-color: #7a6a3a; }
+.forja-poe-moeda.escolhida { border-color: #e8c66a; box-shadow: 0 0 0 2px #e8c66a; }
+.forja-poe-conta { position: absolute; right: 2px; bottom: 1px; font-size: 10px; font-style: normal; color: #fff; text-shadow: 0 0 2px #000, 0 0 2px #000; }
+.forja-poe-pecas { display: flex; flex-direction: column; gap: 5px; max-height: 50vh; overflow-y: auto; }
+.forja-poe-peca { display: flex; align-items: center; gap: 8px; padding: 5px 8px; text-align: left; background: #0f1418; border: 1px solid #3a3326; border-radius: 4px; color: #e6e1d6; cursor: pointer; }
+.forja-poe-peca div { display: flex; flex-direction: column; min-width: 0; }
+.forja-poe-peca em { font-size: 11px; color: #a39b8c; }
+.forja-poe-peca.escolhida { border-color: #e8c66a; box-shadow: 0 0 0 2px #e8c66a; }
+.forja-poe-cab { display: flex; align-items: center; gap: 8px; }
+.forja-poe-st { font-size: 11px; padding: 1px 6px; border-radius: 3px; border: 1px solid currentColor; }
+.forja-poe-st.ok { color: #6fd36f; } .forja-poe-st.parcial { color: #e8c66a; } .forja-poe-st.nao { color: #c06060; }
+.forja-poe-desc { margin: 0; font-size: 12px; color: #c8c2b4; }
+.forja-poe-resumo { display: flex; flex-direction: column; gap: 2px; padding: 8px; background: #08090b; border: 1px solid #2a2a30; border-radius: 4px; font-size: 12px; }
+.forja-poe-resumo .impl { color: #8a8ae8; } .forja-poe-resumo .pre, .forja-poe-resumo .suf { color: #8fb4ff; }
+.forja-poe-resumo .talhado { color: #e8c66a; }
+
+/* ---- Gem Atelier › Equipamento: as peças vestidas com os sockets, as habilidades e de onde vêm (soquetes.mjs → painelDoEquipamento) ---- */
+.eq-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 12px; align-items: start; margin-top: 8px; }
+.eq-coluna { display: grid; gap: 8px; min-width: 0; }
+.eq-coluna h4 { margin: 0 0 4px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #d8b56a; }
+.eq-habilidades { padding: 8px 10px; border: 1px solid #2f4a52; border-radius: 6px; background: #10181b; display: grid; gap: 6px; }
+.eq-hab { display: flex; gap: 8px; align-items: flex-start; text-align: left; padding: 6px 8px; border: 1px solid #263a40; border-radius: 5px; background: #141d20; color: inherit; cursor: pointer; }
+.eq-hab:hover { border-color: var(--accent); }
+.eq-hab b { display: block; font-size: 13px; color: #e6e0cc; }
+.eq-hab em { display: block; font-size: 11px; color: #8fa6ab; font-style: normal; }
+.eq-supports { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.eq-supports i { font-style: normal; font-size: 11px; padding: 0 6px; border-radius: 999px; background: #1d2a2e; color: #9fb3bf; }
+.eq-supports i.vale { color: #9fe0a8; background: #173022; }
+.eq-supports i.nao-vale { color: #f0a090; background: #301a17; }
+.eq-peca { padding: 8px 10px; border: 1px solid #2f3a3d; border-radius: 6px; background: #121718; cursor: pointer; display: grid; gap: 6px; }
+.eq-peca:hover { border-color: #46656d; }
+.eq-peca.escolhida { border-color: var(--accent); box-shadow: 0 0 8px #3fbfa844; }
+.eq-peca-topo { display: flex; gap: 8px; align-items: center; }
+.eq-peca-topo b { display: block; font-size: 13px; }
+.eq-peca-topo em { display: block; font-size: 11px; color: #8fa6ab; font-style: normal; }
+.eq-slot { display: block; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #d8b56a; }
+.eq-fila { display: flex; align-items: center; flex-wrap: wrap; gap: 0; }
+.eq-casa { position: relative; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #6b5a3a; background: #0d0d0d; display: inline-grid; place-items: center; padding: 0; cursor: pointer; }
+.eq-casa.cor-R { border-color: #c8423a; } .eq-casa.cor-G { border-color: #4fae4a; } .eq-casa.cor-B { border-color: #4a7fd8; } .eq-casa.cor-W { border-color: #e8e8e8; }
+.eq-casa.trancado { opacity: .4; border-style: dashed; cursor: not-allowed; }
+.eq-casa.escolhido { box-shadow: 0 0 0 2px #e8c66a, 0 0 8px #e8c66a88; }
+.eq-nivel { position: absolute; right: -3px; bottom: -3px; font: 600 9px/12px system-ui; font-style: normal; color: #fff; background: #0b0f10dd; border-radius: 3px; padding: 0 2px; }
+.eq-elo { width: 8px; height: 3px; background: transparent; }
+.eq-elo.ligado { background: #d8b56a; }
+.eq-detalhe { padding: 8px 10px; border: 1px solid #2f4a52; border-radius: 6px; background: #0f1416; }
+@media (max-width: 760px) { .eq-layout { grid-template-columns: 1fr; } }
+
+/* ---- Gem Atelier › Catálogo de gemas (modo PoE): cada gema e onde se ganha (gemas.mjs → renderCatalogo) ---- */
+.cat-filtros { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+.cat-busca { flex: 1 1 220px; min-width: 0; }
+.cat-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #c8d4d8; }
+.cat-contagem { margin: 2px 0 6px; font-size: 12px; color: #8fa6ab; }
+.cat-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 6px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }
+.cat-gema { display: flex; gap: 8px; align-items: flex-start; padding: 7px 9px; border: 1px solid #2a3a3e; border-radius: 6px; background: #121819; min-width: 0; }
+.cat-texto { min-width: 0; display: grid; gap: 4px; }
+.cat-topo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.cat-topo b { font-size: 13px; color: #e6e0cc; display: inline-flex; align-items: center; gap: 5px; }
+.cat-topo em { width: 100%; font-size: 11px; color: #7f969b; font-style: normal; }
+.cat-cor { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.cat-tipo { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #9fb3bf; }
+.cat-origens { display: grid; gap: 3px; }
+.cat-origem { font-size: 11.5px; line-height: 1.35; color: #c8d4d8; padding: 2px 6px; border-radius: 4px; background: #182326; }
+.cat-origem b { color: #d8b56a; margin-right: 2px; }
+.cat-origem i { display: block; font-style: normal; color: #8fa6ab; font-size: 11px; }
+.cat-origem.recompensa { border-left: 3px solid #d8b56a; }
+.cat-origem.recompensa.nojogo { border-left-color: #4fae4a; }
+.cat-origem.vendedor { border-left: 3px solid #4a7fd8; }
+.cat-origem.loja { border-left: 3px solid #6c8290; color: #9fb3bf; }
+
+/* ---- A ficha do personagem no estilo do PoE (sheet.mjs → fichaPoeNova) ---- */
+.fp { display: grid; gap: 8px; color: #d9d2bf; font-size: 13px; }
+.fp-cab { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid #4a3d28; border-radius: 4px; background: linear-gradient(180deg, #1c1813, #120f0b); }
+.fp-info { display: grid; gap: 2px; min-width: 0; }
+.fp-info b { font: 700 14px var(--font-heading, serif); color: #e8d6a8; }
+.fp-info span { font-size: 12px; color: #9a8c70; }
+.fp-retrato { display: grid; justify-items: center; gap: 2px; }
+.fp-nome { font: 700 12px var(--font-heading, serif); letter-spacing: .08em; text-transform: uppercase; color: #e8c66a; }
+.fp-retrato canvas { border: 1px solid #6b5a3a; border-radius: 4px; background: #0b0a08; }
+.fp-atributos { display: grid; gap: 3px; }
+.fp-atr { display: flex; justify-content: space-between; gap: 8px; padding: 2px 8px; border: 1px solid #3a3124; border-radius: 3px; background: #15120d; }
+.fp-atr span { color: var(--cor); font-variant: small-caps; letter-spacing: .04em; }
+.fp-atr b { font-variant-numeric: tabular-nums; color: #f0e6cc; }
+.fp-grandes, .fp-defesas { display: grid; gap: 6px; }
+.fp-grandes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fp-defesas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.fp-grande, .fp-defesa { display: grid; justify-items: center; gap: 1px; padding: 6px 4px; border: 1px solid #4a3d28; border-radius: 4px; background: radial-gradient(ellipse at 50% 20%, #2a2318, #14110c 70%); text-align: center; }
+.fp-grande img, .fp-defesa img { width: 26px; height: 26px; image-rendering: pixelated; }
+.fp-grande span, .fp-defesa span { font-variant: small-caps; letter-spacing: .05em; color: #b8a888; font-size: 12px; }
+.fp-grande b { font: 700 18px var(--font-heading, serif); font-variant-numeric: tabular-nums; }
+.fp-defesa b { font: 700 15px var(--font-heading, serif); font-variant-numeric: tabular-nums; }
+.fp-defesa em { font-style: normal; font-size: 11px; color: #8fa6ab; }
+.fp-vida b { color: #e86a5c; } .fp-es b { color: #8fd0ff; } .fp-mana b { color: #6ba5e0; }
+.fp-faixa { text-align: center; font-variant: small-caps; letter-spacing: .1em; color: #b8a888; border-bottom: 1px solid #4a3d28; padding-bottom: 2px; margin-bottom: 4px; }
+.fp-resist-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.fp-res { display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid #3a3124; border-radius: 20px; background: #15120d; }
+.fp-res img { width: 22px; height: 22px; image-rendering: pixelated; }
+.fp-res span { flex: 1; font-variant: small-caps; letter-spacing: .05em; }
+.fp-res b { font-variant-numeric: tabular-nums; }
+.fp-res em { font-style: normal; color: #8a7d62; font-size: 11px; }
+.fp-res.no-teto b { color: #e8c66a; } .fp-res.negativa b { color: #e86a5c; }
+.fp-res-fire span { color: #ff8a62; } .fp-res-ice span { color: #8fd0ff; } .fp-res-energy span { color: #ffe36b; } .fp-res-chaos span { color: #c77dff; }
+.fp-secoes { display: grid; gap: 6px; }
+.fp-secao { border: 1px solid #3a3124; border-radius: 4px; background: #110e0a; padding: 4px 10px 6px; }
+.fp-secao-titulo { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 4px 0; font: 700 15px var(--font-heading, serif); color: #e8d6a8; cursor: pointer; }
+.fp-secao-titulo::after { content: '▾'; float: right; color: #8a7d62; }
+.fp-secao.fechada .fp-secao-titulo::after { content: '▸'; }
+.fp-secao.fechada .fp-linha { display: none; }
+.fp-linha { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; border-top: 1px solid #1f1a13; font-size: 12.5px; }
+.fp-linha span { color: #b8a888; font-variant: small-caps; letter-spacing: .03em; }
+.fp-linha b { color: #f0e6cc; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.fp-linha.destaque b { color: #e8c66a; }
+.fp-com-fonte { cursor: help; }
+.fp-com-fonte:hover { border-color: #8a6a2c; }
+.fp-linha.fp-com-fonte:hover span { color: #e8d6a8; }
+.fp-balao { display: grid; gap: 3px; min-width: 220px; }
+.fp-balao > b { color: #e8d6a8; }
+.fp-balao-dica { margin: 0; font-size: 12px; color: #9fb3bf; }
+.fp-balao-sub { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #d8b56a; margin-top: 4px; }
+.fp-balao-linha { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+.fp-balao-linha em { font-style: normal; color: #9fe0a8; font-variant-numeric: tabular-nums; }
+.fp-balao-linha em.neg { color: #f0a090; }
+@media (max-width: 560px) {
+  .fp-cab { grid-template-columns: minmax(0, 1fr) auto; }
+  .fp-atributos { grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fp-defesas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fp-resist-grade { grid-template-columns: 1fr; }
+}
+
+/* O baú de um marco aberto: a peça e o balão dela (panels.mjs → abrirMarcoAberto). */
+.marco-aberto { display: flex; gap: 14px; align-items: flex-start; justify-content: center; margin: 8px 0; }
+.marco-aberto canvas { border: 1px solid #6b5a3a; border-radius: 4px; background: #0b0a08; }
+.marco-aberto .poe-balao { position: static; max-width: 340px; }

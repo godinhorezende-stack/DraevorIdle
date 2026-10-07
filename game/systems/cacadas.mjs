@@ -22,14 +22,12 @@ import * as Ficha from './ficha.mjs';
 import * as Bau from './bau.mjs';
 import * as Boosts from './boosts.mjs';
 import * as Stamina from './stamina.mjs';
-import * as Treinos from './treinos.mjs';
 import * as Premium from './premium.mjs';
 import * as Beta from './modo-beta.mjs';
 import * as BuffPower from './buffpower.mjs';
 import * as Summon from './summon.mjs';
 import * as Afixos from './afixos.mjs';
 import * as Prey from './prey.mjs';
-import * as Imbuements from './imbuements.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Arena from './arena.mjs';
 import * as Arvore from './arvore.mjs';
@@ -68,8 +66,12 @@ import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (
 import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as EventosDeEncontro from './encontros/eventos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
+import * as ModsPoe from './itens-poe/mods-poe.mjs';
+import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as Poderes from './poderes.mjs';
+import * as Areas from '../engine/areas.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -359,15 +361,9 @@ function passarOTempoOffline(estado, hunt, ms, extra) {
   totais.time += ms / 1000;
   totais.kills += extra.kills ?? 0;
   totais.exp += extra.exp ?? 0;
-  if (hunt.huntId === 'treino') {
-    Treino.gastarMana(estado, (Treino.manaDoPatioPorSegundo(estado) * ms) / 1000);
-    return;
-  }
   Boosts.consumir(estado, ms);
   BuffPower.consumir(estado, ms);
   Prey.consumir(estado, ms);
-  Imbuements.consumir(estado, ms);
-  Treinos.encherTanque(estado, ms);
 }
 
 /** Na volta (login): termina a ausência e devolve `{report, morreu}` — ou `null`, sem ausência. */
@@ -407,37 +403,6 @@ function posicaoDoBoss(boss, grade) {
   const [dx, dy] = d >= 2 ? [(cx - px) / d, (cy - py) / d] : [0, -1];
   const alvo = casaAndavelMaisProxima(grade, Math.round(px + dx * 5), Math.round(py + dy * 5));
   return [{ key, x: alvo.x, y: alvo.y }];
-}
-
-/**
- * `send({t:'training', action:'start', mode:'online'})` — o pátio: a hunt
- * 'treino' na sala real do treino online, com os bonecos como alvos que não morrem,
- * não andam e não batem. O personagem começa onde o original põe: entre os dois.
- */
-export function entrarNoPatio(estado) {
-  if (estado.hunt) return { ok: false, erro: 'Você já está numa caçada.' };
-  const grade = gradeDaHunt({ id: 'treino' });
-  const bonecos = Treinos.bonecos();
-  const monstros = bonecos.map((b, i) => ({
-    uid: 800000 + i, key: null, name: b.nome ?? 'Target Dummy', look: b.look ?? 0, x: b.x, y: b.y, dir: 2,
-    hp: 1_000_000, maxHp: 1_000_000, armor: 0, exp: 0, loot: [], dummy: true,
-  }));
-  // O posto: a casa a 1 SQM do boneco, escolhida UMA vez (ver `Treinos.postoNoPatio`).
-  const posto = Treinos.postoNoPatio(grade.andavel, bonecos);
-  if (!posto) return { ok: false, erro: 'Não há lugar livre ao lado do boneco agora.' };
-  const alvo = monstros.find((m) => Math.max(Math.abs(m.x - posto.x), Math.abs(m.y - posto.y)) === 1) ?? monstros[0];
-  const settings = estado.settings ?? {};
-  estado.rumo = null;
-  estado.hunt = {
-    huntId: 'treino', modo: 'auto', z: grade.z, pos: { x: posto.x, y: posto.y, dir: direcaoPara(posto, alvo) }, posto: { x: posto.x, y: posto.y },
-    monstros, alvo: alvo.uid, strategy: 'nearest', distancia: Math.max(0, Math.min(6, Number(settings.distance) || 0)),
-    rumo: null, rumoValidoAte: 0, proximoPassoEm: 0, proximoGolpeEm: 0, eventos: [], mapaEnviado: false,
-    clock: 0, ultimoTique: Date.now(), cooldowns: {}, assistencia: true, autoBarra: true,
-    levaAlvo: 0, lureVolta: 0, leva: 0, lurando: false, respawns: [], isBoss: false, bossId: null,
-    startedAt: Date.now(), sessao: novaSessao(estado, 'Pátio de treino', 'auto'), treinoAntes: Treino.paraCliente(estado),
-    viagem: { hunt: 'Pátio de treino', motivo: 'partida' },
-  };
-  return { ok: true };
 }
 
 /** Mapa de editor fora da campanha (sem instância): os spawns dele viram um ponto por bicho, com a 1ª criatura. */
@@ -638,7 +603,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // — sem isto toda hunt nova voltaria para "não lurar" mesmo com o dono tendo
   // deixado "Lurar até 5" ligado na tela.
   const settings = estado.settings ?? {};
-  const levaAlvo = Math.max(0, Number(settings.lure) || 0);
+  const levaAlvo = Math.max(0, Math.min(MAX_LURE, Number(settings.lure) || 0));
   if (ESTRATEGIAS.has(strategy)) settings.strategy = strategy;
 
   estado.hunt = {
@@ -756,6 +721,8 @@ const estadosDoJogador = (hunt) => [...Controle.ativosNoJogador(hunt), ...Dot.at
 
 /** Os três valores do seletor "Alvo" do client (`jogar.html`, `#strategy`). */
 const ESTRATEGIAS = new Set(['nearest', 'lowest', 'highest']);
+/** O máximo de monstros do lure (dono, 07/10: "lure vai até 8 monstros"). */
+export const MAX_LURE = 8;
 
 /** `send({t:'strategy', value})` — grava a preferência e, numa hunt aberta, troca o alvo na hora. */
 export function definirEstrategia(estado, { value }) {
@@ -803,8 +770,9 @@ export function faseParaSeguir(estado) {
 /** `send({t:'lure', value})`/`{value:null, volta}` — grava a preferência e, se a hunt já estiver aberta, aplica na hora. */
 export function definirLure(estado, { value, volta }) {
   const settings = (estado.settings ??= {});
-  if (value != null) settings.lure = Math.max(0, Number(value) || 0);
-  if (volta != null) settings.lureVolta = Math.max(0, Number(volta) || 0);
+  // O lure vai até 8 monstros (dono, 07/10).
+  if (value != null) settings.lure = Math.max(0, Math.min(MAX_LURE, Number(value) || 0));
+  if (volta != null) settings.lureVolta = Math.max(0, Math.min(MAX_LURE - 1, Number(volta) || 0));
   if (estado.hunt) {
     if (value != null) {
       estado.hunt.levaAlvo = settings.lure;
@@ -1024,33 +992,6 @@ export function adotarNaCampanha(estado) {
 export function sair(estado) {
   estado.hunt = null;
   return { ok: true };
-}
-
-/** Para que lado olhar, de `de` para `para` (0 norte, 1 leste, 2 sul, 3 oeste). */
-function direcaoPara(de, para) {
-  const dx = para.x - de.x;
-  const dy = para.y - de.y;
-  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 1 : 3;
-  return dy > 0 ? 2 : 0;
-}
-
-/*
- * ---- Encerrar o treino online (o pátio) ----
- *
- * O "parar" do pátio (`training stop` e `stopHunt`) caía em `Exercicio.parar`,
- * que só conhece o Exercise: respondia "Você não está treinando." com o
- * personagem DENTRO do pátio, e não havia saída — `relatorioDoPatio` existia e
- * ninguém chamava. Aqui: o relatório, a hunt some (ele volta para a casa da
- * cidade de onde saiu, que nunca mudou — a lógica de sempre da volta de uma
- * caçada) e o movimento fica livre de novo, porque `Treinos.emTreino` deixa de
- * valer.
- */
-export function sairDoPatio(estado) {
-  if (estado.hunt?.huntId !== 'treino') return { ok: false, erro: 'Você não está treinando.' };
-  const relatorio = Treinos.relatorioDoPatio(estado);
-  estado.hunt = null;
-  estado.rumo = null;
-  return { ok: true, relatorio };
 }
 
 /** `send({t:'huntTarget', uid})` — `uid:null` cancela o alvo. */
@@ -1316,14 +1257,26 @@ export function regenerar(estado, ms) {
   const daArvore = ficha.regenDaArvore ?? { hp: 0, mana: 0 };
   // A promoção acelera a base (Elite Knight: vida x1,5 — `Promocao.fatorDeRegeneracao`).
   const promo = Promocao.fatorDeRegeneracao(estado);
-  r.hp += (estado.maxHp ?? 0) * 0.004 * s * promo.hp * (1 + daArvore.hp) + (doEquipamento.hp ?? 0) * s;
-  r.mana += (estado.maxMana ?? 0) * 0.006 * s * promo.mana * (1 + daArvore.mana) + (doEquipamento.mana ?? 0) * s;
+  const poe = ficha.regenPoe;
+  if (poe) {
+    // Como no PoE (dono, 07/10): a VIDA não regenera de base — só o "+N por segundo" e o "N% da Vida por segundo" de itens e árvore,
+    // × "Velocidade de Regeneração de Vida aumentada"; a MANA regenera 1,8% da máxima por segundo (+ o fixo), × "Regeneração de Mana aumentada".
+    // ("Juramento do Zelote": a regeneração de vida vai para o Escudo de Energia.)
+    if (ficha.afPoe?.['keystone:juramentoDoZelote'] > 0 || ficha.afPoe?.['sempre:juramentoDoZelote'] > 0) estado.es = Math.min(Math.round(ficha.energyShield ?? 0), (estado.es ?? 0) + poe.vidaPorSegundo * s);
+    else r.hp += poe.vidaPorSegundo * s;
+    r.mana += poe.manaPorSegundo * s;
+  } else {
+    r.hp += (estado.maxHp ?? 0) * 0.004 * s * promo.hp * (1 + daArvore.hp) + (doEquipamento.hp ?? 0) * s;
+    r.mana += (estado.maxMana ?? 0) * 0.006 * s * promo.mana * (1 + daArvore.mana) + (doEquipamento.mana ?? 0) * s;
+  }
   const hp = Math.floor(r.hp);
   const mana = Math.floor(r.mana);
   r.hp -= hp;
   r.mana -= mana;
   estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + hp);
   estado.mana = Math.min(estado.maxMana ?? estado.mana, (estado.mana ?? 0) + mana);
+  // O roubo do PoE recupera ao longo do tempo (as instâncias de `Ficha.aplicarLeech`).
+  Ficha.recuperarRoubo(estado, ms);
   // O Energy Shield volta sozinho depois de um tempo sem apanhar (`Defesa.recarregar`).
   Defesa.recarregar(estado, ficha, ms);
 }
@@ -1403,19 +1356,16 @@ export function tique(estado, personagem, agora = Date.now()) {
   hunt.clock = (hunt.clock ?? 0) + passou;
   hunt.ultimoTique = agora;
   Ficha.totais(estado).time += passou / 1000;
-  // O pátio "rende como caçar — e custa o mesmo tempo": gasta stamina, mas
-  // não boost (não há exp) nem devolve a stamina de treino.
   Stamina.gastar(estado, passou);
-  // No pátio o personagem gasta em magia a mana que regenera (ver `Treino.manaDoPatioPorSegundo`).
-  if (hunt.huntId === 'treino') Treino.gastarMana(estado, (Treino.manaDoPatioPorSegundo(estado) * passou) / 1000);
-  if (hunt.huntId !== 'treino') {
-    Boosts.consumir(estado, passou);
-    BuffPower.consumir(estado, passou);
-    Prey.consumir(estado, passou); // "o relógio só corre dentro da hunt"
-    Imbuements.consumir(estado, passou); // idem: 50.301 s caçando = 50.340 s a menos no Strike do Zoros
-    Treinos.encherTanque(estado, passou); // "caçar devolve" a stamina de treino
-  }
+  Boosts.consumir(estado, passou);
+  BuffPower.consumir(estado, passou);
+  Prey.consumir(estado, passou); // "o relógio só corre dentro da hunt"
   regenerar(estado, passou);
+  // Os mods do PoE no tempo (Fúria, "movendo-se", a recuperação do dano sofrido, o Escudo regenerado) e a ficha à mão de quem fere o
+  // personagem (dano contínuo e controle dos bichos — `itens-poe/mods-poe.mjs`).
+  ModsPoe.definirFichaDaCacada(hunt, () => Ficha.combate(estado));
+  ModsPoe.tique(estado, hunt, Ficha.combate(estado), passou);
+  ModsPoe.aurasProximas(estado, hunt, Ficha.combate(estado));
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;
@@ -1446,6 +1396,8 @@ export function tique(estado, personagem, agora = Date.now()) {
    * direção do alvo mais perto vivo.
    */
   const gradeDaCacada = gradeDaHunt(huntOuMapaCustom(hunt.huntId));
+  // A grade do andar fica à mão do combate (o Empurrão do PoE só move o bicho para uma casa andável) — fora do estado salvo.
+  ModsPoe.definirGradeDoCombate(hunt, () => andarDaGrade(gradeDaCacada, hunt.z));
   // Convidado da party: o dono mudou de andar, ele vai junto (ver `trocarDeAndar`).
   const sala = salaDe(hunt);
   if (sala !== hunt && sala.z != null && sala.z !== hunt.z) {
@@ -1470,25 +1422,7 @@ export function tique(estado, personagem, agora = Date.now()) {
     hunt.percurso.passo = waypointMaisPerto(grade.percurso, hunt.pos, 0, grade.percurso.length, hunt.z);
   }
 
-  /*
-   * ---- No pátio, nenhum passo ----
-   *
-   * O pátio rodava o passo da Caça Automática: com "Distância" > 0 o kite
-   * levava o personagem a 3 SQM do boneco (18,12 → 18,14), e o `huntWalk` do
-   * teclado/analógico andava. Treinando, ele fica no posto escolhido na entrada
-   * (`hunt.posto`): sem rumo manual, sem perseguição, sem recuo, sem rota. Se
-   * por algum caminho a posição divergir do posto (uma caçada gravada antes
-   * disto), o servidor a devolve ao posto — sem recalcular nada.
-   */
-  if (hunt.huntId === 'treino') {
-    hunt.rumo = null;
-    // Pátio gravado antes de existir o posto: escolhe uma vez e guarda.
-    hunt.posto ??= Treinos.postoNoPatio(grade.andavel);
-    if (hunt.posto && (hunt.pos.x !== hunt.posto.x || hunt.pos.y !== hunt.posto.y)) {
-      hunt.pos.x = hunt.posto.x;
-      hunt.pos.y = hunt.posto.y;
-    }
-  } else if (!hunt.conjurando && Controle.podeAgir(hunt) && R.jaPode(agora, hunt.proximoPassoEm)) {
+  if (!hunt.conjurando && Controle.podeAgir(hunt) && R.jaPode(agora, hunt.proximoPassoEm)) {
     // (Conjurando uma skill — o Cast Time da gema — o personagem não anda.)
     /*
      * ---- Movimento: quantos passos neste tique ----
@@ -1755,6 +1689,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   const usaBarra = hunt.modo !== 'online' || hunt.autoBarra !== false;
   if (usaBarra && livre && estado.hp > 0) eventos.push(...autoDisparo(estado, hunt, personagem));
   if (hunt.summon) eventos.push(...tiqueDoFamiliar(estado, hunt, personagem, grade, agora));
+  // Os LACAIOS e os TOTENS das gemas do PoE (`acoes.invocarLacaios`).
+  if (hunt.lacaios?.length) eventos.push(...tiqueDosLacaios(estado, hunt, personagem, grade, agora));
 
   anotarDano(hunt.sessao, eventos);
   autoVenda(estado, hunt);
@@ -1780,9 +1716,11 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   if (!R.jaPode(agora, f.proximoPassoEm)) return true;
   if (!R.jaPode(agora, f.semRotaAte)) return false;
   const bichos = new Set(hunt.monstros.filter((b) => b.hp > 0).map((b) => `${b.x},${b.y}`));
-  const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`]);
+  // Os outros lacaios também ocupam casa (não se empilham).
+  const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`, ...(hunt.lacaios ?? []).filter((l) => l !== f && l.hp > 0).map((l) => `${l.x},${l.y}`)]);
   const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
-  const passos = d > longe ? 2 : 1;
+  // (PoE: "Lacaios têm X% da Velocidade de Movimento aumentada" — a fração vira a chance de um passo a mais no tique.)
+  const passos = (d > longe ? 2 : 1) + (f.poe?.movimentoPct > 0 && Math.random() * 100 < f.poe.movimentoPct ? 1 : 0);
   let deu = 0;
   for (let k = 0; k < passos; k++) {
     let destino;
@@ -1920,15 +1858,214 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
   return eventos;
 }
 
+/*
+ * ---- Os LACAIOS e os TOTENS das gemas do PoE ----
+ * O lacaio usa a IA do familiar (segue o dono; tem alvo — o do dono ou o bicho mais perto —, vai até ele pela rota e bate), com o golpe
+ * dele (`dano`, a cada `intervaloMs`, no alvo só) e o elemento da gema. O TOTEM não anda (só sai da casa do dono no primeiro passo) e
+ * usa a skill da gema no bicho mais perto a até `alcanceDeAtaque` casas: o dano é a conta do jogo para aquela skill (`Acoes.danoMostrado`)
+ * e o desenho é o dela (o projétil e o impacto, com o `sk`). Os bichos colados num lacaio batem nele; morreu, ou acabou a duração, some.
+ */
+/** O roubo de vida e as chances do PoE no acerto de um lacaio (`l.poe`, de `LacaiosPoe.oQueInvoca`). Devolve os eventos. */
+function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo) {
+  const eventos = [];
+  const p = l.poe;
+  if (p.roubo > 0) l.hp = Math.min(l.maxHp, l.hp + (dano * p.roubo) / 100);
+  if (alvo.hp <= 0) return eventos;
+  const agora = hunt.clock ?? 0;
+  const e = (alvo.estados ??= {});
+  const sorte = (pct) => pct > 0 && Math.random() * 100 < pct;
+  const ev = (st) => eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
+  if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
+  if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs }; ev('provocado'); }
+  if (sorte(p.chances.desacelerar)) {
+    const ate = agora + ModsPoe.NO_ACERTO.desacelerar.duracaoMs;
+    e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, ate), pct: Math.max(e.lento.pct, 30) } : { ate, pct: 30 };
+    ev('lento');
+  }
+  const dot = (tipoDot, porSegundo, duracaoMs) => {
+    const posto = Dot.aplicar(alvo, { tipo: tipoDot, total: dano * porSegundo * (duracaoMs / 1000) * (1 + (p.dotMulti ?? 0) / 100), duracaoMs, origem: { fonte: 'lacaio', habilidade: l.acao } }, agora);
+    if (posto) ev(posto);
+  };
+  if (sorte(p.chances.envenenar) && ['physical', 'chaos'].includes(tipo)) dot('venenoPoe', 0.3, 2000);
+  if (sorte(p.chances.incendiar) && tipo === 'fire') dot('queimadura', 0.9, 4000);
+  return eventos;
+}
+
+function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
+  const eventos = [];
+  const ficha = Ficha.combate(estado);
+  const vivos = [];
+  for (const l of hunt.lacaios) {
+    if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
+      eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
+      // (PoE: "se um Lacaio foi Morto Recentemente".)
+      if (l.hp <= 0) ModsPoe.marcar(hunt, 'lacaioMorreu');
+      continue;
+    }
+    vivos.push(l);
+    // Os bichos colados batem no lacaio (um golpe por bicho a cada ~2 s, metade da força do golpe deles).
+    const oferenda = l.oferenda && l.oferenda.ate > agora ? l.oferenda : null;
+    if (oferenda?.regenPct) l.hp = Math.min(l.maxHp, l.hp + (l.maxHp * oferenda.regenPct) / 100 / 4);
+    // PoE: "Lacaios Regeneram X% / N de Vida por segundo" (o tique é de 1/4 s).
+    if (l.poe && (l.poe.regenPct || l.poe.regen)) l.hp = Math.min(l.maxHp, l.hp + ((l.maxHp * l.poe.regenPct) / 100 + l.poe.regen) / 4);
+    // ("Espíritos Furiosos Convocados sofrem X% de sua Vida Máxima como Dano de Caos por segundo".)
+    if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;
+    for (const b of hunt.monstros) {
+      if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
+      // A Oferenda de Osso: o lacaio bloqueia o golpe.
+      if ((oferenda?.bloqueioPct || l.poe?.bloqueio) && Math.random() * 100 < (oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0)) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true }); continue; }
+      // (PoE: o golpe do bicho com o dano de outros tipos dele passando pelas resistências do lacaio, e o "Lacaios sofrem Dano aumentado/reduzido".)
+      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(75, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? l.poe.res : 0) / 100), 0) : 0;
+      const d = Math.max(1, Math.round((R.ataqueDoMonstro(b) * 0.5 + extras) * Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator));
+      l.hp -= d;
+      eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
+    }
+    if (l.hp <= 0) continue;
+    if (l.tipo === 'totem') {
+      if (l.x === hunt.pos.x && l.y === hunt.pos.y) passoDoFamiliar(hunt, grade, l, agora, hunt.pos, { pararEm: (d) => d >= 1 });
+      if (!R.jaPode(agora, l.proximoGolpe)) continue;
+      let alvo = null;
+      for (const m of hunt.monstros) if (m.hp > 0 && !m.dummy && distancia(m, l) <= l.alcanceDeAtaque && (!alvo || distancia(m, l) < distancia(alvo, l))) alvo = m;
+      if (!alvo) continue;
+      const entry = Acoes.POR_ID_PUBLICO?.(l.acao);
+      const conta = entry ? Acoes.danoMostrado(estado, entry) : l.dano;
+      const uso = entry ? Acoes.temposDaGemaPoe(estado, entry).uso : l.intervaloMs;
+      l.proximoGolpe = agora + Math.max(400, uso);
+      l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
+      const tipo = entry?.element ?? l.elemento ?? 'physical';
+      const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, conta.min + Math.random() * Math.max(0, conta.max - conta.min), ficha)));
+      alvo.hp -= dano;
+      if (entry?.projetil) eventos.push({ t: 'shot', id: entry.projetil, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y, sk: l.acao });
+      eventos.push({ t: 'fx', id: entry?.efeito ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y, sk: l.acao });
+      eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000', sk: l.acao });
+      continue;
+    }
+    // A AURA (os robôs rastejantes): a cada segundo, um pouco do golpe em quem está em volta (resfria/eletriza na cor).
+    const est = l.estilo ?? {};
+    if (est.aura) {
+      if (!R.jaPode(agora, l.proximoGolpe)) { andarFamiliar(hunt, grade, l, agora); continue; }
+      l.proximoGolpe = agora + 1000;
+      for (const m of hunt.monstros) {
+        if (m.hp <= 0 || m.dummy || distancia(m, l) > est.aura.raio) continue;
+        const d = Math.max(1, Math.round(resistido(hunt, m, l.elemento ?? 'ice', ((l.dano.min + l.dano.max) / 2) * est.aura.pct, ficha)));
+        m.hp -= d;
+        eventos.push({ t: 'fx', id: est.aura.efeito, uid: m.uid, x: m.x, y: m.y });
+        eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[l.elemento] ?? '#7fd8ff' });
+      }
+      andarFamiliar(hunt, grade, l, agora);
+      continue;
+    }
+    // O ESPECTRO: as MAGIAS do monstro erguido, cada uma no intervalo e na chance dela, nos bichos (o melee dele vem embaixo).
+    if (l.espectro) eventos.push(...magiasDoEspectro(hunt, l, agora, ficha));
+    // O LACAIO: a IA do familiar (de perto ou de longe — `alcanceDeAtaque` do jeito dele).
+    const alvo = alvoDoFamiliar(hunt, l, agora);
+    if (!alvo) {
+      andarFamiliar(hunt, grade, l, agora);
+      continue;
+    }
+    if (distancia(l, hunt.pos) > l.perto + FOLGA_DO_COMBATE + 1) {
+      esquecerAlvo(l, alvo, agora);
+      andarFamiliar(hunt, grade, l, agora);
+      continue;
+    }
+    if (distancia(l, alvo) > l.alcanceDeAtaque) {
+      const chegou = passoDoFamiliar(hunt, grade, l, agora, alvo, { pararEm: (d) => d <= l.alcanceDeAtaque, longe: l.alcanceDeAtaque + 3 });
+      if (!chegou) { esquecerAlvo(l, alvo, agora); continue; }
+      if (distancia(l, alvo) > l.alcanceDeAtaque) continue;
+    }
+    if (!R.jaPode(agora, l.proximoGolpe)) continue;
+    // A velocidade: a do monstro do nível × o jeito (o espírito é rápido) ÷ os bônus (a gema, a Oferenda de Carne).
+    const vel = 1 + ((l.velAtaquePct ?? 0) + (oferenda?.velAtaquePct ?? 0)) / 100;
+    l.proximoGolpe = agora + Math.max(250, Math.round((l.intervaloMs * (est.rapido ?? 1)) / vel));
+    l.dir = alvo.y < l.y ? 0 : alvo.y > l.y ? 2 : alvo.x > l.x ? 1 : 3;
+    // O ELEMENTO do golpe (o mago varia entre fogo, gelo e raio) e o desenho dele.
+    const tipo = est.magia ? est.elementos[Math.floor(Math.random() * est.elementos.length)] : est.elemento ?? l.elemento ?? 'physical';
+    const PROJETIL = { fire: 4, ice: 37, energy: 36, chaos: 11, physical: 12 };
+    const IMPACTO = { fire: 16, ice: 44, energy: 176, chaos: 17, physical: 10 };
+    if (resistenciaEfetivaDe(hunt, alvo, tipo, ficha) >= 100) continue;
+    // O CRÍTICO do lacaio (a gema: "sempre crítico", "+X% de multiplicador"; a Oferenda de Espírito).
+    const chanceCrit = Math.min(100, (l.critChance ?? 5) * (1 + (oferenda?.critInc ?? 0) / 100));
+    const crit = Math.random() * 100 < chanceCrit;
+    const bruto = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? (l.critMult ?? 1.5) + (oferenda?.critMult ?? 0) / 100 : 1);
+    const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, bruto, ficha)));
+    alvo.hp -= dano;
+    // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
+    if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo));
+    const deLonge = l.alcanceDeAtaque > 1;
+    // O golpe do LACAIO tem o desenho do tipo dele (o mago no elemento da vez): sem o `sk` da gema, que é o da invocação.
+    if (deLonge) eventos.push({ t: 'shot', id: est.projetil ?? PROJETIL[tipo] ?? 12, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
+    eventos.push({ t: 'fx', id: est.magia ? IMPACTO[tipo] : est.impacto ?? IMPACTO[tipo] ?? 10, uid: alvo.uid, x: alvo.x, y: alvo.y });
+    eventos.push({ t: 'dmg', uid: alvo.uid, x: alvo.x, y: alvo.y, v: dano, foe: true, lacaio: true, crit, alvo: alvo.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    if (hunt.sessao) hunt.sessao.danoDosLacaios = (hunt.sessao.danoDosLacaios ?? 0) + dano;
+    // O SANGRAMENTO (o ceifador): o dano contínuo de sempre (`combate/dot.mjs`).
+    if (l.sangrar && Math.random() * 100 < l.sangrar) {
+      const posto = Dot.aplicar(alvo, { tipo: 'sangramento', total: dano * 0.7, origem: { fonte: 'lacaio', habilidade: l.acao } }, hunt.clock ?? 0);
+      if (posto) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: posto });
+    }
+    // O golpe em ÁREA a cada N acertos (a pancada do zumbi, o golem de pedra, a explosão do golem de chamas): 60% em volta do alvo.
+    l.acertos = (l.acertos ?? 0) + 1;
+    if (est.area && l.acertos % est.area.cada === 0) {
+      eventos.push({ t: 'explosao', id: est.area.efeito, x: alvo.x, y: alvo.y, lado: 3 });
+      for (const m of hunt.monstros) {
+        if (m === alvo || m.hp <= 0 || m.dummy || distancia(m, alvo) > 1) continue;
+        const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto * 0.6, ficha)));
+        m.hp -= d;
+        eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+      }
+    }
+  }
+  const antes = hunt.lacaios.filter((l) => l.afDono || l.porLacaioFisico).length;
+  hunt.lacaios = vivos.filter((l) => l.hp > 0);
+  // Um golem nasceu ou morreu (os bônus dele ao dono): a ficha é refeita.
+  if (hunt.lacaiosMudaramAFicha || hunt.lacaios.filter((l) => l.afDono || l.porLacaioFisico).length !== antes) {
+    hunt.lacaiosMudaramAFicha = false;
+    Ficha.invalidar(estado);
+  }
+  processarMortes(estado, personagem, eventos);
+  return eventos;
+}
+
+/**
+ * As magias do ESPECTRO (o monstro erguido — `poderes.mjs`): o mesmo arquivo de magias que o monstro usa contra o jogador, agora
+ * contra os bichos. Cada magia no intervalo e na chance dela; mira no bicho mais perto que ela alcança; a área/feixe pega quem está nas
+ * casas; o dano é o da magia × o fator do espectro, pela resistência de cada bicho ao elemento. O desenho é o da magia do monstro.
+ */
+const ELEMENTO_DO_MONSTRO = { earth: 'chaos', death: 'chaos', lifedrain: 'chaos', holy: 'physical', drown: 'ice', manadrain: null };
+function magiasDoEspectro(hunt, l, agora, ficha) {
+  const eventos = [];
+  const p = Poderes.poderesDe(l.espectro.key);
+  if (!p) return eventos;
+  const vivos = hunt.monstros.filter((m) => m.hp > 0 && !m.dummy);
+  if (!vivos.length) return eventos;
+  p.ataques.forEach((a, i) => {
+    if (a.tipo !== 'magia') return;
+    if ((l.proximoPoder[i] ?? 0) === 0) l.proximoPoder[i] = agora + Math.random() * a.intervalo;
+    if (agora < l.proximoPoder[i]) return;
+    l.proximoPoder[i] = agora + a.intervalo;
+    if (Math.random() * 100 >= (a.chance ?? 100)) return;
+    const alvo = vivos.filter((m) => Poderes.alcanca(a, l, m)).sort((x, y) => distancia(l, x) - distancia(l, y))[0];
+    if (!alvo) return;
+    const tipo = ELEMENTO_DO_MONSTRO[a.elemento] === undefined ? a.elemento : ELEMENTO_DO_MONSTRO[a.elemento];
+    if (!tipo) return;
+    const casas = Poderes.casasDaMagia(a, l, alvo);
+    const efeito = a.efeito ?? Poderes.EFEITO_PADRAO[a.elemento] ?? 10;
+    if (a.tiro != null) eventos.push({ t: 'shot', id: a.tiro, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });
+    if (casas.length > 1) eventos.push({ t: 'area', id: efeito, x: l.x, y: l.y, casas: Areas.paraTela(casas, l) });
+    else eventos.push({ t: 'fx', id: efeito, uid: alvo.uid, x: alvo.x, y: alvo.y });
+    const atingidos = casas.length > 1 ? vivos.filter((m) => casas.some((c) => c.x === m.x && c.y === m.y)) : [alvo];
+    for (const m of atingidos) {
+      const bruto = (Math.min(a.min, a.max) + Math.random() * Math.abs(a.max - a.min)) * l.espectro.fator;
+      const d = Math.max(1, Math.round(resistido(hunt, m, tipo, bruto, ficha)));
+      m.hp -= d;
+      eventos.push({ t: 'dmg', uid: m.uid, x: m.x, y: m.y, v: d, foe: true, lacaio: true, alvo: m.name, color: Acoes.COR_DO_ELEMENTO[a.elemento] ?? Acoes.COR_DO_ELEMENTO[tipo] ?? '#ff0000' });
+    }
+  });
+  return eventos;
+}
+
 /** `send({t:'huntWalk', dx, dy})` — mesmo modelo de rumo do `andar` da cidade. */
 export function andar(estado, { dx, dy }) {
   if (!estado.hunt) return;
-  // No pátio o personagem fica no posto: movimento pedido é recusado.
-  if (estado.hunt.huntId === 'treino') {
-    estado.hunt.rumo = null;
-    estado.hunt.destino = null;
-    return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
-  }
   // A tecla manda mais que o clique: apertou uma direção, larga o destino.
   if (dx || dy) estado.hunt.destino = null;
   if (!dx && !dy) {
@@ -1955,10 +2092,6 @@ export function andarAte(estado, { x, y }) {
   if (!hunt) return { ok: true };
   const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
   if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return { ok: true };
-  if (hunt.huntId === 'treino') {
-    hunt.destino = null;
-    return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
-  }
   if (hunt.modo !== 'online') return { ok: false, erro: 'Na Caça Automática quem anda é a rota.' };
   if (destino.x === hunt.pos.x && destino.y === hunt.pos.y) {
     hunt.destino = null;
@@ -2007,7 +2140,6 @@ function passoDoClique(hunt, grade) {
 export function usarEscada(estado, { x, y }) {
   const hunt = estado.hunt;
   if (!hunt) return { ok: false, erro: 'Você não está numa hunt.' };
-  if (hunt.huntId === 'treino') return { ok: false, erro: 'Treinando: você fica ao lado do boneco até parar o treino.' };
   const base = gradeDaHunt(huntOuMapaCustom(hunt.huntId));
   const mapa = base.mapa;
   const tipo = Number(mapa?.floors?.[hunt.z]?.escada?.[y * mapa.width + x] ?? 0);
@@ -2079,6 +2211,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // nunca viajava, e o alvo nunca aparecia marcado.
     targetUid: alvoAtual(hunt)?.uid ?? null,
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
+    // Os lacaios e os totens das gemas do PoE (desenhados como o familiar, com a vida).
+    lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS })),
     summon: hunt.summon
       ? { uid: hunt.summon.uid, x: hunt.summon.x, y: hunt.summon.y, dir: hunt.summon.dir, look: hunt.summon.look, name: hunt.summon.name, nivel: hunt.summon.nivel, moveMs: hunt.summon.moveMs ?? R.PASSO_MS }
       : null,

@@ -19,7 +19,8 @@ import { ehTelefone } from './perfil.mjs';
 import { itemCanvas } from './sprites.mjs';
 import { artOrUiIcon } from './hud.mjs';
 import { spellIcon } from './actionbar.mjs';
-import { tipPanel } from './tooltip.mjs';
+import { tipPanel, tipFor } from './tooltip.mjs';
+import { painelDoEquipamento } from './soquetes.mjs';
 
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
@@ -169,7 +170,10 @@ function renderGemas(body) {
 
   const abas = el('div', 'gemas-abas');
   for (const [id, rotulo, arte] of [
-    ['gemas', 'Gem Atelier', 'icon-gematelier'],
+    // No modo PoE a primeira aba é o CATÁLOGO das gemas e onde se ganha cada uma (dono, 07/10).
+    ['gemas', ehModoPoe() ? 'Catálogo de gemas' : 'Gem Atelier', 'icon-gematelier'],
+    // Os sockets do EQUIPAMENTO (as gemas de habilidade e as supports, peça por peça — `soquetes.mjs` → painelDoEquipamento).
+    ['equipamento', 'Equipamento', 'icon-socketed'],
     ['encaixes', 'Encaixes', 'icon-socketed'],
     ['oficina', 'Fragment Workshop', 'icon-fragmentworkshop'],
   ]) {
@@ -184,6 +188,14 @@ function renderGemas(body) {
   }
   body.append(abas);
 
+  if (aba === 'equipamento') {
+    painelDoEquipamento(body, ctx);
+    return;
+  }
+  if (aba === 'gemas' && ehModoPoe()) {
+    renderCatalogo(body);
+    return;
+  }
   if (!view.pode) body.append(el('p', 'gemas-aviso', view.motivo));
 
   if (aba === 'gemas') renderAtelier(body, view);
@@ -374,6 +386,116 @@ function confirmarDestruirVarias(view) {
       escolhendo = false;
     }
   );
+}
+
+/* ========================================================= Catálogo de gemas (modo PoE) */
+/*
+ * Dono, 07/10: "em Gem Atelier vira catálogo de gemas e onde é dada cada gema nas missões e ato — faça esse mapeamento para facilitar o
+ * usuário". Todas as gemas do PoE do jogo (habilidades e suportes), cada uma com ONDE se ganha: a recompensa de missão (escolhida ao
+ * concluir — ato, missão e classes) e o vendedor que passa a vender depois da missão; e a loja da Zuma (todas, nível 1). A origem vem do
+ * servidor (`/api/jogo/poe/origem-das-gemas`, da coleção do poedb); "no jogo" marca as missões que já dão a gema aqui.
+ */
+const ehModoPoe = () => Object.values(ctx.state.items ?? {}).some((i) => i?.poeGema);
+const NOME_DA_CLASSE = { Marauder: 'Marauder', Witch: 'Bruxa', Scion: 'Herdeira', Ranger: 'Caçadora', Duelist: 'Duelista', Shadow: 'Sombra', Templar: 'Templário' };
+const COR_DA_GEMA = { vermelha: '#d8584e', verde: '#5fbf5a', azul: '#5a8ee8', branca: '#e8e8e8' };
+let origem = null;
+let pedindoOrigem = false;
+const filtroCat = { q: '', tipo: '', cor: '', ato: '', minhaClasse: true, onde: '' };
+const semAcento = (t) => String(t ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function renderCatalogo(body) {
+  if (!origem) {
+    body.append(el('p', 'empty', 'carregando o catálogo...'));
+    if (!pedindoOrigem) {
+      pedindoOrigem = true;
+      fetch('/api/jogo/poe/origem-das-gemas').then((r) => r.json()).then((d) => { origem = d; ctx.redraw?.(); }).catch(() => { pedindoOrigem = false; });
+    }
+    return;
+  }
+  const minha = ctx.state.character?.classePoe?.slug ?? null;
+  const noJogo = new Set(origem.noJogo ?? []);
+  const itens = Object.values(ctx.state.items ?? {}).filter((i) => i?.gemaDef && i?.poeGema);
+  const linhas = itens.map((meta) => {
+    const o = origem.gemas?.[meta.id] ?? null;
+    return { meta, nome: meta.gemaDef.nomePt ?? meta.gemaDef.nome ?? meta.name, en: meta.gemaDef.poe?.en ?? meta.poeGema.slug?.replace(/_/g, ' '), suporte: meta.gemaDef.tipo === 'support', cor: meta.poeGema.cor ?? o?.cor ?? null, origens: o?.origens ?? [] };
+  });
+  // Os filtros.
+  const barra = el('div', 'cat-filtros');
+  const busca = el('input', 'cat-busca');
+  busca.type = 'search';
+  busca.placeholder = 'Buscar gema (nome em português ou inglês)';
+  busca.value = filtroCat.q;
+  busca.oninput = () => { filtroCat.q = busca.value; desenharLista(); };
+  const sel = (rotulo, chave, opcoes) => {
+    const s = el('select', 'cat-sel');
+    s.title = rotulo;
+    for (const [v, t] of opcoes) { const o = el('option', null, t); o.value = v; if (filtroCat[chave] === v) o.selected = true; s.append(o); }
+    s.onchange = () => { filtroCat[chave] = s.value; desenharLista(); };
+    return s;
+  };
+  const caixa = el('label', 'cat-check');
+  const check = el('input');
+  check.type = 'checkbox';
+  check.checked = filtroCat.minhaClasse && !!minha;
+  check.disabled = !minha;
+  check.onchange = () => { filtroCat.minhaClasse = check.checked; desenharLista(); };
+  caixa.append(check, el('span', null, minha ? `Só o que a ${NOME_DA_CLASSE[minha] ?? minha} ganha` : 'Escolha a classe para filtrar'));
+  barra.append(busca,
+    sel('Tipo', 'tipo', [['', 'Habilidades e suportes'], ['ativa', 'Só habilidades'], ['suporte', 'Só suportes']]),
+    sel('Cor', 'cor', [['', 'Todas as cores'], ['vermelha', 'Vermelhas (For)'], ['verde', 'Verdes (Des)'], ['azul', 'Azuis (Int)'], ['branca', 'Brancas']]),
+    sel('Ato', 'ato', [['', 'Todos os atos'], ...Array.from({ length: 10 }, (_, i) => [String(i + 1), `Ato ${i + 1}`])]),
+    sel('Onde', 'onde', [['', 'Qualquer origem'], ['recompensa', 'Recompensa de missão'], ['vendedor', 'Vendedor depois da missão'], ['nojogo', 'Missão que já dá no jogo'], ['so-loja', 'Só na loja / drop']]),
+    caixa);
+  const contagem = el('p', 'cat-contagem');
+  const lista = el('div', 'cat-lista');
+  body.append(el('p', 'shop-note', 'Onde se ganha cada gema na campanha: a RECOMPENSA de missão (você escolhe uma ao concluir) e o VENDEDOR que passa a vender depois da missão — pela classe. A loja da Zuma vende todas no nível 1, e elas também caem de monstros.'), barra, contagem, lista);
+
+  function origensVisiveis(l) {
+    return l.origens.filter((o) => (!filtroCat.minhaClasse || !minha || o.classes.includes(minha)) && (!filtroCat.ato || String(o.ato) === filtroCat.ato));
+  }
+  function desenharLista() {
+    const q = semAcento(filtroCat.q);
+    const vis = linhas.filter((l) => {
+      if (q && !semAcento(`${l.nome} ${l.en}`).includes(q)) return false;
+      if (filtroCat.tipo === 'ativa' && l.suporte) return false;
+      if (filtroCat.tipo === 'suporte' && !l.suporte) return false;
+      if (filtroCat.cor && l.cor !== filtroCat.cor) return false;
+      const ov = origensVisiveis(l);
+      if (filtroCat.onde === 'so-loja') return !l.origens.length;
+      if ((filtroCat.minhaClasse && minha) || filtroCat.ato) { if (!ov.length) return false; }
+      if (filtroCat.onde === 'recompensa' && !ov.some((o) => o.tipo === 'recompensa')) return false;
+      if (filtroCat.onde === 'vendedor' && !ov.some((o) => o.tipo === 'vendedor')) return false;
+      if (filtroCat.onde === 'nojogo' && !ov.some((o) => o.tipo === 'recompensa' && noJogo.has(o.missao))) return false;
+      return true;
+    }).sort((a, b) => (origensVisiveis(a)[0]?.ato ?? 99) - (origensVisiveis(b)[0]?.ato ?? 99) || a.nome.localeCompare(b.nome));
+    contagem.textContent = `${vis.length} de ${linhas.length} gemas`;
+    lista.replaceChildren(...vis.slice(0, 300).map((l) => {
+      const card = el('div', 'cat-gema');
+      const ic = itemCanvas(l.meta.id, 34);
+      tipFor(ic, l.meta.id);
+      const topo = el('div', 'cat-topo');
+      const nome = el('b', null, l.nome);
+      if (l.cor) nome.prepend(Object.assign(el('i', 'cat-cor'), { style: `background:${COR_DA_GEMA[l.cor] ?? '#999'}` }));
+      topo.append(nome, el('span', 'cat-tipo', l.suporte ? 'suporte' : 'habilidade'), el('em', null, l.en ?? ''));
+      const ondes = el('div', 'cat-origens');
+      const ov = origensVisiveis(l);
+      if (!l.origens.length) ondes.append(el('span', 'cat-origem loja', 'Loja da Zuma (nível 1) · drop de monstros'));
+      for (const o of ov) {
+        const cls = o.classes.map((c) => NOME_DA_CLASSE[c] ?? c);
+        const r = el('span', `cat-origem ${o.tipo}${o.tipo === 'recompensa' && noJogo.has(o.missao) ? ' nojogo' : ''}`);
+        r.append(el('b', null, `Ato ${o.ato}`), ` ${o.tipo === 'recompensa' ? 'Recompensa' : 'Vendedor após'}: ${o.nomeDaMissao}`, el('i', null, cls.length === 7 ? 'todas as classes' : cls.join(', ')));
+        if (o.tipo === 'recompensa') r.title = noJogo.has(o.missao) ? 'Esta missão já dá a gema no jogo (escolha ao concluir).' : 'Missão do PoE ainda não ligada no jogo: por enquanto, compre na loja da Zuma.';
+        ondes.append(r);
+      }
+      if (l.origens.length && !ov.length) ondes.append(el('span', 'cat-origem loja', 'Não vem para a sua classe nas missões: loja da Zuma ou drop'));
+      const texto = el('div', 'cat-texto');
+      texto.append(topo, ondes);
+      card.append(ic, texto);
+      return card;
+    }));
+    if (vis.length > 300) lista.append(el('p', 'empty', `Mostrando 300 de ${vis.length}: refine a busca.`));
+  }
+  desenharLista();
 }
 
 /* ========================================================= Gem Atelier */

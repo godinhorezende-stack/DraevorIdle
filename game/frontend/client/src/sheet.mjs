@@ -2,6 +2,7 @@
 // Os ícones são os mesmos PNGs do client (client/assets/ui).
 import { outfitCanvas, itemCanvas } from './sprites.mjs';
 import { artOrUiIcon } from './hud.mjs';
+import { tipPanel } from './tooltip.mjs';
 import { healthColor } from './map.mjs';
 
 const el = (tag, className, text) => {
@@ -332,7 +333,7 @@ function ataqueElemental(derived) {
     chip.append(artOrUiIcon(`el-${key}`, name), el('span', null, name), total);
     const notas = [];
     if (daArma === key) notas.push('arma');
-    if (doImbuement?.tipo === key) notas.push(`imbuement ${porcento(doImbuement.pct)}%`);
+    if (doImbuement?.tipo === key) notas.push(`conversão ${porcento(doImbuement.pct)}%`);
     if (notas.length) chip.append(el('em', 'element-nota', notas.join(' · ')));
     const uso =
       key === 'physical'
@@ -443,7 +444,7 @@ function fichaDoPoe(body, state) {
     grade(
       statCard('Cargas de Tolerância', `até ${3 + (cg.max_tolerancia ?? 0)}`, '+4% de redução física e +4% de resistências elementais cada'),
       statCard('Cargas de Frenesi', `até ${3 + (cg.max_frenesi ?? 0)}`, '+4% de velocidade de ataque e 4% mais dano cada'),
-      statCard('Cargas de Poder', `até ${3 + (cg.max_poder ?? 0)}`, '+40% de chance de crítico cada'),
+      statCard('Cargas de Poder', `até ${3 + (cg.max_poder ?? 0)}`, '+50% de chance de crítico cada'),
       statCard('Velocidade de movimento', num(d.speed), null),
       ...(d.goldFind ? [statCard('Ouro encontrado', `+${num(d.goldFind)}%`, null)] : []),
       ...(d.lootRate ? [statCard('Quantidade de itens', `+${num(d.lootRate)}%`, null)] : []),
@@ -463,8 +464,119 @@ function fichaDoPoe(body, state) {
   ]);
 }
 
+/*
+ * ---- A FICHA no estilo da tela de personagem do PoE (dono, 07/10) ----
+ * "Melhore a ficha do personagem para algo assim, com todos os atributos importantes e de onde vem." O servidor monta tudo
+ * (`personagem/ficha-poe.mjs` → `character.fichaPoe`); aqui só se desenha: o cabeçalho (nível, classe, ascendência, área, o retrato e
+ * Força/Destreza/Inteligência), os números grandes (Vida, Escudo de Energia, Mana), as defesas, as resistências com o valor sem limite
+ * entre parênteses, e as seções em lista (Vida, Escudo de Energia, Mana, Ataque, Magia, Defesa, Cargas, Diversos). Passar o mouse num
+ * número com origem abre o balão "De onde vem": cada fonte e quanto ela dá.
+ */
+const ARTE_POE = { vida: 'bes-vida', es: 'sk-shielding', mana: 'ficha-regen-mana', armadura: 'ficha-armadura', evasao: 'ficha-defesa', bloqueio: 'ficha-bloqueio', critico: 'ficha-critico', fire: 'el-fire', ice: 'el-ice', energy: 'el-energy', chaos: 'el-death' };
+const COR_DO_ATRIBUTO_POE = { str: '#e0705c', dex: '#7fd36b', int: '#6ba5e0' };
+const fmtFonte = (f) => {
+  const v = Math.round(f.valor * 100) / 100;
+  return f.pct ? `${v > 0 ? '+' : ''}${v.toLocaleString('pt-BR')}%` : `${v > 0 ? '+' : ''}${v.toLocaleString('pt-BR')}`;
+};
+/** O balão "De onde vem" de um número (as fontes, uma por linha, e o total). */
+function comFontes(no, titulo, fontes, dica = null) {
+  if (!fontes?.length && !dica) return no;
+  no.classList.add('fp-com-fonte');
+  return tipPanel(no, () => {
+    const caixa = el('div', 'fp-balao');
+    caixa.append(el('b', null, titulo));
+    if (dica) caixa.append(el('p', 'fp-balao-dica', dica));
+    if (fontes?.length) {
+      caixa.append(el('span', 'fp-balao-sub', 'De onde vem'));
+      for (const f of fontes) {
+        const l = el('div', 'fp-balao-linha');
+        l.append(el('span', null, f.fonte), el('em', f.valor < 0 ? 'neg' : null, fmtFonte(f)));
+        caixa.append(l);
+      }
+    }
+    return caixa;
+  });
+}
+function fichaPoeNova(body, state) {
+  const c = state.character;
+  const f = c.fichaPoe;
+  const quadro = el('div', 'fp');
+  // ---- cabeçalho: nível e classe | retrato | atributos
+  const cab = el('div', 'fp-cab');
+  const info = el('div', 'fp-info');
+  info.append(el('b', null, `Nível ${c.level} ${f.cabecalho.classe ?? ''}`.trim()), el('span', null, f.cabecalho.ascendencia ? `Ascendência: ${f.cabecalho.ascendencia}` : 'Sem ascendência'), el('span', null, f.cabecalho.area));
+  const retrato = el('div', 'fp-retrato');
+  retrato.append(el('span', 'fp-nome', c.name), outfitCanvas(c.outfit.type, c.outfit, 64));
+  const atr = el('div', 'fp-atributos');
+  for (const a of f.cabecalho.atributos) {
+    const l = el('div', 'fp-atr');
+    l.style.setProperty('--cor', COR_DO_ATRIBUTO_POE[a.id] ?? '#ccc');
+    l.append(el('span', null, a.nome), el('b', null, a.valor.toLocaleString('pt-BR')));
+    atr.append(comFontes(l, a.nome, a.fontes, a.dica));
+  }
+  cab.append(info, retrato, atr);
+  // ---- os números grandes
+  const grandes = el('div', 'fp-grandes');
+  for (const g of f.grandes) {
+    const t = el('div', `fp-grande fp-${g.id}`);
+    const img = arteDeFicha(ARTE_POE[g.id]);
+    if (img) t.append(img);
+    t.append(el('span', null, g.nome), el('b', null, g.valor.toLocaleString('pt-BR')));
+    grandes.append(comFontes(t, g.nome, g.fontes));
+  }
+  const defesas = el('div', 'fp-defesas');
+  for (const d of f.defesas) {
+    const t = el('div', 'fp-defesa');
+    const img = arteDeFicha(ARTE_POE[d.id]);
+    if (img) t.append(img);
+    t.append(el('span', null, d.nome), el('b', null, d.valor), d.sub ? el('em', null, d.sub) : '');
+    defesas.append(comFontes(t, d.nome, d.fontes, d.dica));
+  }
+  // ---- resistências: a final e, entre parênteses, a sem limite (como no PoE)
+  const res = el('div', 'fp-resist');
+  res.append(el('div', 'fp-faixa', 'Resistências'));
+  const grade = el('div', 'fp-resist-grade');
+  for (const r of f.resistencias) {
+    const t = el('div', `fp-res fp-res-${r.id}${r.final >= r.maximo ? ' no-teto' : ''}${r.final < 0 ? ' negativa' : ''}`);
+    const img = arteDeFicha(ARTE_POE[r.id]);
+    if (img) t.append(img);
+    t.append(el('span', null, r.nome), el('b', null, `${Math.round(r.final)}%`), el('em', null, `(${Math.round(r.bruta)}%)`));
+    grade.append(comFontes(t, `Resistência a ${r.nome}`, r.fontes, `máximo ${r.maximo}% · entre parênteses, o valor sem o limite`));
+  }
+  res.append(grade);
+  // ---- as seções em lista (as abas Ofensa/Defesa/Diversos/Cargas do PoE), cada uma recolhível
+  const lista = el('div', 'fp-secoes');
+  let fechadas;
+  try { fechadas = new Set(JSON.parse(localStorage.getItem('draevor.fichaPoe.fechadas') ?? '[]')); } catch { fechadas = new Set(); }
+  for (const sec of f.secoes) {
+    const bloco = el('section', `fp-secao${fechadas.has(sec.id) ? ' fechada' : ''}`);
+    const t = el('button', 'fp-secao-titulo', sec.titulo);
+    t.type = 'button';
+    t.onclick = () => {
+      bloco.classList.toggle('fechada');
+      if (bloco.classList.contains('fechada')) fechadas.add(sec.id);
+      else fechadas.delete(sec.id);
+      try { localStorage.setItem('draevor.fichaPoe.fechadas', JSON.stringify([...fechadas])); } catch { /* sem armazenamento */ }
+    };
+    bloco.append(t);
+    for (const l of sec.linhas) {
+      const linha = el('div', `fp-linha${l.destaque ? ' destaque' : ''}`);
+      linha.append(el('span', null, l.rotulo), el('b', null, l.valor));
+      bloco.append(comFontes(linha, l.rotulo, l.fontes, l.dica));
+    }
+    lista.append(bloco);
+  }
+  quadro.append(cab, grandes, defesas, res, lista);
+  body.append(quadro);
+}
+
 export function renderSheet(body, { state, send, closeModal }) {
   const character = state.character;
+  // O modo PoE com a ficha do servidor: a tela de personagem do PoE (cabeçalho próprio, números com a origem).
+  if (state.classesPoe && character.fichaPoe) {
+    fichaPoeNova(body, state);
+    return;
+  }
   const derived = character.derived;
   const vocation = state.catalog.vocations.find((v) => v.id === character.vocation);
   /*
@@ -1011,25 +1123,6 @@ export function renderSheet(body, { state, send, closeModal }) {
     body.append(grade);
   }
 
-
-  // ---------- imbuements ativos ----------
-  const imbued = Object.entries(character.imbuements ?? {}).flatMap(([slot, list]) =>
-    (list ?? []).map((entry) => ({ slot, ...entry }))
-  );
-  if (imbued.length) {
-    body.append(titulo('Imbuements ativos', 'imbuements'));
-    const rows = el('div', 'rows');
-    for (const entry of imbued) {
-      const row = el('div');
-      const left = Math.ceil(entry.left / 60000);
-      row.append(
-        el('span', null, `${entry.name} (${entry.slot})`),
-        el('b', null, entry.paused ? 'pausado' : left >= 60 ? `${Math.floor(left / 60)}h${String(left % 60).padStart(2, '0')}` : `${left} min`)
-      );
-      rows.append(row);
-    }
-    body.append(rows);
-  }
 
   // ---------- totais ----------
   body.append(titulo('Totais', 'ficha-totais'));

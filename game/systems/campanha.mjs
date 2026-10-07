@@ -26,6 +26,7 @@ import { validarAto, temErro, fasesAbertas, normalizar } from './atos-modelo.mjs
 import { lerExecutaveis } from './atos-carregar.mjs';
 import * as RecompensasDeEncontro from './encontros/recompensas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import * as MissoesDeGemas from './itens-poe/missoes-de-gemas.mjs';
 
 /*
  * Com o sistema de itens do PoE ligado (ITENS_POE=1, só local), a campanha é a do PoE (decisão do dono, 05/10): os 4 atos do Draevor saem
@@ -236,9 +237,11 @@ function completar(estado, dif, f) {
   if (!p.completas.includes(f.huntId)) p.completas.push(f.huntId);
   const nomeDif = CAMPANHA.dificuldades[dif].nome;
   const proxima = FASES[f.indice + 1];
-  return proxima && proxima.ato === f.ato
+  // As missões do PoE que terminam nesta fase (a gema de recompensa para escolher — `itens-poe/missoes-de-gemas.mjs`).
+  const daMissao = MissoesDeGemas.aoCompletarFase(estado, f.huntId);
+  return (proxima && proxima.ato === f.ato
     ? `Fase completa: ${f.nome} (${nomeDif}). Liberou ${proxima.nome}.`
-    : `Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`;
+    : `Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`) + daMissao;
 }
 
 // ---- A CONCLUSÃO da fase por objetivo (atos do editor): matar o chefe, matar N, o item da missão (`atos-modelo.TIPOS_DE_CONCLUSAO`).
@@ -324,9 +327,11 @@ export function venceuBoss(estado, dif, ato) {
   p.bosses.push(Number(ato));
   const nomeDif = CAMPANHA.dificuldades[dif].nome;
   const doEditor = ATOS_DO_EDITOR.get(Number(ato));
+  // As missões do PoE que terminam no chefe do ato (O Eterno Pesadelo, o Malachai do Ato 4).
+  const daMissao = MissoesDeGemas.aoVencerBoss(estado, ato);
   if (doEditor) {
     // Ato do editor: concluir libera o ato seguinte que o exige; NÃO mexe na dificuldade (essa é a campanha legada).
-    estado.avisoDaHunt = `${doEditor.ato.nome} concluído no ${nomeDif}!${doEditor.ato.seguinte ? ' O próximo ato está liberado.' : ''}`;
+    estado.avisoDaHunt = `${doEditor.ato.nome} concluído no ${nomeDif}!${doEditor.ato.seguinte ? ' O próximo ato está liberado.' : ''}${daMissao}`;
     return estado.avisoDaHunt;
   }
   const proxDif = DIFICULDADES[DIFICULDADES.indexOf(dif) + 1];
@@ -336,8 +341,8 @@ export function venceuBoss(estado, dif, ato) {
       : proxDif
         ? `Campanha concluída no ${nomeDif}! O ${CAMPANHA.dificuldades[proxDif].nome} está liberado.`
         : `Campanha concluída no ${nomeDif}!`;
-  estado.avisoDaHunt = aviso;
-  return aviso;
+  estado.avisoDaHunt = aviso + daMissao;
+  return estado.avisoDaHunt;
 }
 
 /**
@@ -348,6 +353,18 @@ export function venceuBoss(estado, dif, ato) {
 /** Os tipos de encontro opcional que o mapa pode anunciar de antemão (fixos): bosses, minibosses e eventos de combate. Baús, altares e segredos não. */
 const TIPOS_CONHECIDOS = new Set(['boss', 'miniboss', 'sobrevivencia', 'fenda', 'invasor']);
 
+function grafoDaFase(f) {
+  const g = ATOS_DO_EDITOR.get(f.ato);
+  const fase = g?.ato.fases.find((x) => x.id === f.grafo.faseId);
+  if (!fase) return null;
+  const TIPO = { 'matar-chefe': 'boss-fase', 'item-de-missao': 'quest', 'matar-n': 'desafio' };
+  return {
+    ordem: fase.ordem ?? null,
+    tipo: fase.id === g.ato.inicio ? 'inicio' : TIPO[fase.conclusao?.tipo] ?? (fase.tipo === 'fase-final-do-ato' ? 'especial' : 'comum'),
+    conexoes: g.ato.conexoes.filter((c) => c.de === fase.id).map((c) => g.huntPorFase.get(c.para)).filter(Boolean),
+    aoBoss: g.ato.bossFinal?.faseAnterior === fase.id,
+  };
+}
 function mundoDaFase(estado, f) {
   const c = conteudoDaFase(f.huntId);
   const m = c.mundo ?? {};
@@ -361,6 +378,10 @@ function mundoDaFase(estado, f) {
     ...(c.mapa && Number.isFinite(c.mapa.x) && Number.isFinite(c.mapa.y) ? { mapa: { x: c.mapa.x, y: c.mapa.y, ...(c.mapa.icone ? { icone: c.mapa.icone } : {}) } } : {}),
     ...(c.tipo ? { tipo: c.tipo } : {}),
     ...(c.conexoes?.length ? { conexoes: c.conexoes } : {}),
+    // Fase de ato do EDITOR: o mapa do jogo segue a Engine à risca (dono, 07/10: "quero sempre manter da engine") — o número (`ordem`),
+    // o tipo do nó como a Engine o marca (início, boss por conclusão, item de missão, matar N) e SÓ as ligações desenhadas lá
+    // (sem a cadeia implícita fase→seguinte), mais se é a fase que leva ao boss.
+    ...(f.grafo ? { grafo: grafoDaFase(f) } : {}),
     ...(c.requisitos?.levelMin ? { levelRecomendado: c.requisitos.levelMin } : {}),
     ...(c.requisitos?.exige?.length ? { exige: c.requisitos.exige.map((id) => ({ huntId: id, nome: faseDe(id)?.nome ?? id })) } : {}),
     ...(m.bossPrincipal ? { bossPrincipal: m.bossPrincipal.nome } : {}),
@@ -396,6 +417,9 @@ export function paraCliente(estado) {
           completa: faseCompleta(estado, dif, f.huntId),
           liberada: faseLiberada(estado, dif, f.huntId),
           ...(f.pular ? { pular: true } : {}),
+          // O que conclui a fase DE VERDADE (dono, 07/10: "no Para concluir tem que colocar o que realmente tem que fazer"): o objetivo da
+          // Engine (limpar a área, matar o chefe, matar N, pegar o item da missão) e o progresso dele nesta dificuldade.
+          objetivo: { tipo: conclusaoDa(f.huntId).tipo, texto: objetivoEmTexto(conclusaoDa(f.huntId)), ...progressoDoObjetivo(estado, dif, f.huntId) },
         })),
         bosses: Object.entries(CAMPANHA.bosses).filter(([ato]) => atoAtivo(Number(ato))).map(([ato, b]) => ({
           ato: Number(ato),
@@ -560,7 +584,11 @@ export function registrarAto(bruto) {
   CAMPANHA.bosses[String(numero)] = { bossId: boss.bossId, nome: bossCad?.name ?? boss.bossId, levelOriginal: Math.max(1, bossCad?.level ?? nivelBoss.facil), nivel: nivelBoss };
   desfazer.push(() => delete CAMPANHA.bosses[String(numero)]);
   semEsperaDoBoss(boss.bossId);
-  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: atosDoConteudo()[String(numero)]?.fundo ?? null }));
+  // O FUNDO do mapa no jogo é a IMAGEM do ato do editor (dono, 07/10: "fazer algo assim na parte de hunts e para montar atos" — a mesma arte em
+  // que as fases são posicionadas no editor). Sem imagem no ato, vale a do Mapa do mundo (`atos[n].fundo`); sem nenhuma, o pergaminho desenhado.
+  const imagemDoAto = ato.imagem ? { url: `/gamedata/atos/${ato.imagem}`, doEditor: true } : null;
+  const cidade = ato.cidade ? { nome: ato.cidade.nome, posicao: ato.cidade.posicao ? { x: Math.round(ato.cidade.posicao.x * posX), y: Math.round(ato.cidade.posicao.y * posY) } : null, conexoes: ato.cidade.conexoes.map((id) => huntPorFase.get(id)).filter(Boolean) } : null;
+  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: imagemDoAto ?? atosDoConteudo()[String(numero)]?.fundo ?? null, cidade }));
   ATOS_DO_EDITOR.set(numero, { ato, numero, huntPorFase, desfazer });
   return { ok: true, problemas, numero };
 }

@@ -6,6 +6,9 @@ import { casasDoEvento } from '/packages/shared/src/areas.mjs';
 import { comecarPasso } from './interpolacao.mjs';
 import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.mjs';
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
+import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais } from './efeitos-visuais.mjs';
+/** Os eventos que a camada de efeitos desenha (os outros — números, falas — seguem aqui no mapa). */
+const EVENTOS_DA_CAMADA = new Set(['skill', 'cast', 'fx', 'explosao', 'area', 'shot', 'dmg']);
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
 import { graficoLigado, tetoDeQuadros } from './graficos.mjs';
 import { NameplateDoJogador, escalaDoNameplate } from './nameplate-do-jogador.mjs';
@@ -891,6 +894,8 @@ export class MapView {
      * Ver `assinaturaDoRetrato`.
      */
     this.character = character;
+    // Os buffs ligados do personagem (com a skill: `sk`) — o visual CONTÍNUO deles (a aura) é desenhado sob o boneco.
+    this.buffsDoJogador = (payload?.buffs ?? []).filter((b) => b.sk && visuaisAtuais().skills?.[b.sk]?.continuo);
     if (!payload) {
       this.snapshot = null;
       this.entities.clear();
@@ -1074,7 +1079,8 @@ export class MapView {
      * cada um veria só o seu e a caverna pareceria ter um familiar quando tem
      * três.
      */
-    for (const summon of [payload.summon, ...(payload.summonsDoGrupo ?? [])]) {
+    // + os LACAIOS e os TOTENS das gemas do PoE (como o familiar: andam com o dono, não são alvo).
+    for (const summon of [payload.summon, ...(payload.summonsDoGrupo ?? []), ...(payload.lacaios ?? [])]) {
       if (!summon) continue;
       seen.add(summon.uid);
       this.track(summon.uid, { ...summon, isOther: true, summon: true }, now);
@@ -1262,6 +1268,18 @@ export class MapView {
     const querEfeitos = graficoLigado('efeitos');
     const querProjeteis = graficoLigado('projeteis');
     for (const event of events) {
+      /*
+       * ---- Os EFEITOS e os PROJÉTEIS: a camada de efeitos (`efeitos-visuais.mjs`) ----
+       * A mesma da Arena de Efeitos da engine: sem visual configurado para a skill (`sk`), o desenho de sempre; com, o da skill
+       * (lançamento, projétil, impacto, área, no alvo). Antes do filtro dos números: o efeito "no alvo" vem do evento de dano.
+       */
+      if (EVENTOS_DA_CAMADA.has(event.t)) {
+        // De quem é o lançamento nesta tela (a mesma regra do `deQuem` logo abaixo: o meu boneco é 'player', o do aliado `aliado:<nome>`).
+        const uidDe = (e) => (!e.quem ? e.uid : e.quem === this.meuNome ? 'player' : `aliado:${e.quem}`);
+        const novos = (this.camadaDeEfeitos ??= criarCamada()).receber(event, now, { uidDe });
+        if (querEfeitos) this.effects.push(...novos.efeitos);
+        if (querProjeteis) this.missiles.push(...novos.projeteis);
+      }
       if (!querNumeros && (event.t === 'dmg' || event.t === 'heal' || event.t === 'kill' || event.t === 'block')) continue;
       if (!querEfeitos && (event.t === 'fx' || event.t === 'explosao' || event.t === 'area')) continue;
       if (!querProjeteis && event.t === 'shot') continue;
@@ -1400,23 +1418,8 @@ export class MapView {
         }
       } else if (event.t === 'block') {
         this.texts.push({ uid: deQuem(event), x: event.x, y: event.y, text: textoDoBloqueio(event), color: event.color ?? '#999999', size: 12, born: now, life: 700, drift: 0, degrau: degrauDoNumero(deQuem(event)) });
-      } else if (event.t === 'fx') {
-        this.effects.push({ id: event.id, uid: event.uid, x: event.x, y: event.y, born: now, life: effectDuration(event.id) || 600 });
-      } else if (event.t === 'explosao' || event.t === 'area') {
-        // Uma ÁREA (magia, explosão, boss, mob): o servidor manda UM evento com as casas que de
-        // fato pegaram, e cada uma é desenhada aqui — a mesma geometria (`engine/areas.mjs`).
-        for (const c of casasDoEvento(event)) {
-          this.effects.push({ id: event.id, x: c.x, y: c.y, born: now, life: effectDuration(event.id) || 600 });
-        }
-      } else if (event.t === 'shot') {
-        // A velocidade do projétil segue a distância: 60ms por sqm, como no client.
-        const distance = Math.max(Math.abs(event.tx - event.x), Math.abs(event.ty - event.y));
-        this.missiles.push({
-          id: event.id,
-          x: event.x, y: event.y, tx: event.tx, ty: event.ty,
-          born: now, life: Math.max(80, distance * 60),
-        });
       }
+      // `fx`, `explosao`/`area` (cada casa que pegou — `casasDoEvento`) e `shot` (60 ms por casa, como no client): na camada de efeitos, acima.
     }
     /*
      * ---- Os TETOS da tela não podem cortar uma área no meio ----
@@ -3408,19 +3411,21 @@ export class MapView {
   /** Efeitos e projéteis passam por cima das criaturas. */
   drawEffects(now) {
     const ctx = this.ctx;
+    // A aura ligada (o efeito contínuo do buff), no boneco do jogador.
+    if (this.buffsDoJogador?.length) {
+      const eu = this.entities.get('player');
+      if (eu) {
+        const p = this.position(eu, now);
+        for (const b of this.buffsDoJogador) desenharContinuo(ctx, b.sk, p.x - this.camera.x, p.y - this.camera.y, now);
+      }
+    }
     this.effects = this.effects.filter((effect) => now - effect.born < effect.life);
     for (const effect of this.effects) {
       // Golpe de alvo único segue o boneco; magia de área fica no chão, que é
       // onde ela cai — por isso só o efeito com dono é interpolado.
       const dono = effect.uid != null ? this.entities.get(effect.uid) : null;
       const base = dono ? this.position(dono, now) : { x: effect.x * TILE, y: effect.y * TILE };
-      drawEffect(
-        ctx,
-        effect.id,
-        base.x - this.camera.x,
-        base.y - this.camera.y,
-        (now - effect.born) / effect.life
-      );
+      desenharEfeito(ctx, effect, base.x - this.camera.x, base.y - this.camera.y, now);
     }
   }
 
@@ -3428,11 +3433,8 @@ export class MapView {
     const ctx = this.ctx;
     this.missiles = this.missiles.filter((shot) => now - shot.born < shot.life);
     for (const shot of this.missiles) {
-      const progress = (now - shot.born) / shot.life;
-      // Na altura do corpo, não do chão: meio tile acima do centro do tile.
-      const x = (shot.x + (shot.tx - shot.x) * progress) * TILE + TILE / 2 - this.camera.x;
-      const y = (shot.y + (shot.ty - shot.y) * progress) * TILE - this.camera.y;
-      drawMissile(ctx, shot.id, x, y, shot.tx - shot.x, shot.ty - shot.y);
+      // Na altura do corpo, não do chão: meio tile acima do centro do tile (`desenharProjetil`).
+      desenharProjetil(ctx, shot, now, this.camera);
     }
   }
 
@@ -3466,7 +3468,7 @@ export class MapView {
     // Alguma animação de mapa (água, tocha, portal) trocou de quadro.
     if (now >= this.trocaDeAnimacaoEm) return false;
     // Efeito, projétil, número de dano ou fala no ar.
-    if (this.effects.length || this.missiles.length || this.texts.length || this.falas.length) return false;
+    if (this.effects.length || this.missiles.length || this.texts.length || this.falas.length || this.buffsDoJogador?.length) return false;
     /*
      * E qualquer criatura andando ou em pose de andar. `position` é a mesma
      * conta que o desenho faz, e ela é barata: são poucas entidades, e o caro

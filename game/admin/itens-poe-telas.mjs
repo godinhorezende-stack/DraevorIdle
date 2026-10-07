@@ -125,7 +125,7 @@ export function arvore() {
   const A = Arvore.arvore();
   if (A?.id !== 'poe') return { ligada: false };
   const nos = Object.values(A.nos).map((n) => ({
-    id: n.id, nome: n.nome, en: n.nomeEn ?? null, t: n.tipo, x: n.x, y: n.y, c: n.conexoes ?? [], asc: n.ascendencia ?? null,
+    id: n.id, nome: n.nome, en: n.nomeEn ?? null, t: n.tipo, x: n.x, y: n.y, c: n.conexoes ?? [], asc: n.ascendencia ?? null, ...(n.icone ? { icone: n.icone } : {}),
     textos: n.textos ?? [], estados: n.estados ?? [], efeitos: n.efeitos ?? [],
     ...(n.keystone ? { keystone: n.keystone } : {}),
     ...(n.opcoes ? { opcoes: n.opcoes } : {}), ...(n.grupo != null ? { grupo: n.grupo } : {}),

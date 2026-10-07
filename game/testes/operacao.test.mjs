@@ -101,3 +101,48 @@ test('O6. as telas estão no menu (Recursos), ligadas às rotas e sem editar arq
   assert.match(tela, /confirmar\(/, 'toda ação de risco pede confirmação');
   assert.doesNotMatch(readFileSync(new URL('../admin/operacao.mjs', import.meta.url), 'utf8'), /writeFileSync|unlinkSync/, 'operação não grava arquivo');
 });
+
+test('O9. tela "Servidor": contas e personagens online com IP e onde estão; o reinício avisa, grava e sai (sem sair de verdade no teste)', async () => {
+  const { Sessao, vivas } = await import('../websocket/sessao.mjs');
+  (await import('../systems/avisos-globais.mjs')).ligar(vivas);
+  const ws = () => ({ readyState: 1, bufferedAmount: 0, send: () => {} });
+  const a = new Sessao(ws(), { ip: '10.0.0.1' });
+  a.conta = { id: 1, email: 'a@x.com' };
+  const b = new Sessao(ws(), { ip: '10.0.0.1' });
+  b.conta = { id: 1, email: 'a@x.com' };
+  b.personagem = { id: 7, nome: 'Teste O9' };
+  b.estado = { level: 12, hunt: null };
+  b.entrouEm = Date.now();
+  vivas.set('Teste O9', b);
+  const c = new Sessao(ws(), { ip: '10.0.0.2' });
+  try {
+    const e = Op.estadoDoServidor();
+    assert.equal(e.totais.contas, 1, 'a mesma conta em duas abas conta uma vez');
+    assert.equal(e.totais.personagens, 1);
+    assert.equal(e.totais.ips, 2);
+    assert.ok(e.totais.conexoes >= 3);
+    const linha = e.online.find((o) => o.personagem === 'Teste O9');
+    assert.deepEqual([linha.conta, linha.ip, linha.level, linha.onde], ['a@x.com', '10.0.0.1', 12, 'na cidade']);
+    assert.equal(e.online[0].personagem, 'Teste O9', 'quem tem personagem vem primeiro');
+    assert.ok(e.online.some((o) => o.conta === null && o.onde === 'sem login'));
+    assert.ok(e.processo.pid > 0 && e.processo.memoriaMb > 0);
+    assert.equal((await chamar('GET', 'operacao/servidor'))[1].totais.personagens, 1);
+    // O reinício: avisa, agenda, registra; o segundo pedido é recusado.
+    const saidas = [];
+    let gravou = 0;
+    b.soltarPersonagem = () => { gravou++; };
+    const r = Op.reiniciar({ quem: 'dono@x.com', motivo: 'deploy', sair: (c) => saidas.push(c), esperar: 10 });
+    assert.equal(r.ok, true);
+    assert.equal(r.avisados, 1, 'só quem tem personagem recebe o aviso');
+    assert.equal(Op.reiniciar({ sair: () => {}, esperar: 10 }).ok, false);
+    assert.match(Op.registro()[0].detalhe, /dono@x.com: deploy/);
+    assert.ok(Op.estadoDoServidor().reinicio.em > 0);
+    await new Promise((r) => setTimeout(r, 30));
+    assert.deepEqual(saidas, [0]);
+    assert.equal(gravou, 1);
+  } finally {
+    vivas.delete('Teste O9');
+    for (const s of [a, b, c]) s.desconectar();
+    Op._limparReinicioParaTestes();
+  }
+});

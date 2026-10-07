@@ -34,7 +34,7 @@ test('o que cada carga soma: Tolerância (físico e resistências), Frenesi (vel
   assert.equal(s.phys_res, 8);
   assert.deepEqual([s.fire_res, s.ice_res, s.energy_res], [8, 8, 8]);
   assert.deepEqual([s.atk_speed, s.cast_speed, s.move_speed], [12, 12, 6]);
-  assert.deepEqual([s.crit_chance_inc, s.spell_dmg], [40, 5]);
+  assert.deepEqual([s.crit_chance_inc, s.spell_dmg], [50, 5], 'Poder: +50% de chance de crítico, como no PoE 1');
   assert.ok(Math.abs(C.fatorDeDano(e, { dano_por_poder: 10 }) - 1.12 * 1.1) < 1e-9, '4% mais por Frenesi × dano por Poder');
   assert.equal(C.adds(comCacada(0), {}), null, 'sem carga: nada');
 });
@@ -124,7 +124,7 @@ test('efeitos por carga dos mods e o Conduíte (a party na mesma sala ganha junt
   for (let i = 0; i < 2; i++) C.ganhar(e, 'tolerancia', {});
   C.ganhar(e, 'poder', {});
   const s = C.adds(e, { armour_pct_por_tolerancia: 5, phys_res_por_tolerancia: 1, crit_chance_inc_por_poder: 10, mana_regen_pct_por_poder: 3 });
-  assert.deepEqual([s.armour_pct, s.phys_res, s.crit_chance_inc, s.mana_regen_pct], [10, 10, 50, 3]);
+  assert.deepEqual([s.armour_pct, s.phys_res, s.crit_chance_inc, s.mana_regen_pct], [10, 10, 60, 3], 'Poder: 50% base + 10 do mod');
   assert.ok(Math.abs(C.fatorDeDano(e, { dano_por_tolerancia: 5, dano_por_carga: 2 }) - (1 + (5 * 2 + 2 * 3) / 100)) < 1e-9);
   // Conduíte
   const a = comCacada(0);

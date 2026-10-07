@@ -1128,8 +1128,12 @@ export function corpoDaGemaPoe(entry) {
   else if (f.ataque) linhaDeTempo('Tempo de ataque', `o da arma × ${tb.velAtaqueBase ?? 100}%`);
   else if (tb.conjuracaoMs != null) linhaDeTempo('Tempo de conjuração', tb.conjuracaoMs ? seg(tb.conjuracaoMs) : 'instantânea');
   const recarga = t ? t.recarga : tb.recargaMs ?? 0;
-  linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
-  jogo.append(tempos);
+  if (!f.suporte) linhaDeTempo('Recarga', recarga ? `${seg(recarga)}${(t?.cargas ?? tb.cargas ?? 1) > 1 ? ` (${t?.cargas ?? tb.cargas} usos)` : ''}` : 'sem recarga (como no PoE)');
+  // O suporte de GATILHO: quando as magias ligadas saem sozinhas e a recarga do gatilho.
+  const QUANDO = { critico: 'quando o ataque ligado acerta um crítico', abate: 'quando o ataque corpo a corpo ligado mata', danoRecebido: `a cada ${f.gatilho?.limiar ?? '?'} de dano que você recebe` };
+  if (f.gatilho) linhaDeTempo('Ativa as magias ligadas', `${QUANDO[f.gatilho.quando] ?? f.gatilho.quando} · recarga ${seg(f.gatilho.recargaMs)}`);
+  if (entry.ativadaPor) linhaDeTempo('Ativada por', `${entry.ativadaPor} (não se conjura à mão)`);
+  if (tempos.children.length) jogo.append(tempos);
   if (entry.damage) {
     const cor = entry.element ? `el-${entry.element}` : 'atk';
     jogo.append(el('div', cor, `Dano agora: ${Math.round(Math.abs(entry.damage.min))} a ${Math.round(Math.abs(entry.damage.max))} (com os seus bônus)`));
@@ -1359,33 +1363,6 @@ function pecaVestidaPara(id, slot) {
  * Devolve `null` quando o item não existe no catálogo, e quem chama decide o
  * que fazer com isso.
  */
-/*
- * A cor de um imbuement: a do que ele FAZ.
- *
- * Os que mexem em elemento (converter dano, reduzir dano) saem na cor do
- * elemento, as mesmas que o balao ja usa nas linhas de ataque. Os outros saem
- * na cor da familia deles — critico, leech, skill, velocidade —, tambem as
- * mesmas de cima. Nenhuma cor nova: a peca fica lendo como o resto do balao.
- */
-function corDoImbuement(entrada) {
-  const efeito = entrada?.effect ?? {};
-  if (efeito.combat) return `el-${efeito.combat}`;
-  if (efeito.type === 'speed') return 'speed';
-  if (efeito.value === 'critical') return 'crit';
-  if (efeito.value === 'lifeleech') return 'leech';
-  if (efeito.value === 'manaleech') return 'mana';
-  if (efeito.type === 'skill') return 'skill';
-  return 'plain';
-}
-
-/** O que falta, do jeito que o jogador pensa: horas e minutos. */
-export function restanteDoImbuement(ms) {
-  const total = Math.max(0, Math.floor(ms / 60000));
-  const horas = Math.floor(total / 60);
-  const minutos = total % 60;
-  if (horas) return `${horas}h${String(minutos).padStart(2, '0')}`;
-  return `${minutos}min`;
-}
 
 
 
@@ -2717,7 +2694,7 @@ function blocoDaGemaPoeDoItem(def, gema) {
   }
   bloco.append(corpo);
   if (gema?.xp) bloco.append(el('div', null, `XP ${Math.floor(gema.xp).toLocaleString('pt-BR')}`));
-  bloco.append(el('div', 'tip-gema-ajuda', 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
+  bloco.append(el('div', 'tip-gema-ajuda', def.poe.suporte ? 'Encaixe num socket LIGADO ao da habilidade (numa peça vestida).' : 'Encaixe num socket de uma peça vestida para ganhar a skill.'));
   return bloco;
 }
 
@@ -2800,7 +2777,7 @@ function blocoDosSoquetes(sq) {
     const g = sq.gemas[i];
     const def = g ? itens[g.id]?.gemaDef : null;
     const cls = i >= (sq.abertos ?? 0) ? 'trancado' : !g ? 'vazio' : def?.tipo === 'support' ? 'support' : 'ativa';
-    const casa = el('span', `soquete ${cls}`, cls === 'trancado' ? '🔒' : cls === 'vazio' ? '' : cls === 'support' ? '🔹' : '💎');
+    const casa = el('span', `soquete ${cls}${sq.cores?.[i] && cls !== 'trancado' ? ` cor-${sq.cores[i]}` : ''}`, cls === 'trancado' ? '🔒' : cls === 'vazio' ? '' : cls === 'support' ? '🔹' : '💎');
     if (g) casa.title = `${def?.nome ?? g.id} (nível ${g.nivel})`;
     fila.append(casa);
     if (i < max - 1) fila.append(el('span', `soquete-link${sq.links?.[i] ? ' ligado' : ''}`, sq.links?.[i] ? '─' : ' '));
@@ -2816,7 +2793,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (peca?.poe) {
     const metaPoe = getItems()[id];
     // Os requisitos da base (nível e atributos, como no PoE) vêm do catálogo.
-    const requisitos = { nivel: metaPoe?.minLevel ?? 0, ...(metaPoe?.poe?.requisitos ?? {}) };
+    // (O "Requisito de Nível reduzido em X%" da própria peça já tira do nível pedido, como no PoE.)
+    const reducao = Number(peca.poe.af?.req_level_reduced) || 0;
+    const requisitos = { nivel: Math.floor((metaPoe?.minLevel ?? 0) * Math.max(0, 1 - reducao / 100)), ...(metaPoe?.poe?.requisitos ?? {}) };
     const eu = getPersonagem();
     const at = eu?.derived?.atributos;
     const tem = eu ? { nivel: eu.level ?? 0, str: at?.str ?? 0, dex: at?.dex ?? 0, int: at?.int ?? 0 } : null;
@@ -3229,94 +3208,6 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (porta) {
     regra('Level mínimo', String(porta.level));
     regra('Exige', 'premium ativo');
-  }
-  /*
-   * ---- Os imbuements DE VERDADE ----
-   *
-   * Aqui saia `vazio, vazio` sempre, mesmo numa peca com tres imbuements
-   * dentro: a linha era montada so' com o numero de encaixes do item, e o que
-   * esta' encaixado nao mora no item — mora em `character.imbuements[slot]`.
-   *
-   * Cada um sai numa linha propria, com o quanto falta e na COR do que ele faz.
-   * O balao e' o unico lugar em que se pergunta "o que tem nesta peca?" com o
-   * mouse ja em cima dela; mandar abrir o painel de imbuements para descobrir
-   * era trocar uma resposta por uma viagem.
-   */
-  /*
-   * ---- O que a PEÇA tem manda mais que o que o catálogo diz ----
-   *
-   * A guarda era só `meta.imbuementSlots`, e por isso a Wand of Vortex do dono
-   * — com um `strike-1` de 20h dentro, gravado no banco — não mostrava
-   * imbuement nenhum no balão: o item não declara encaixe no catálogo
-   * (`imbuementSlots: undefined`), e a linha inteira era pulada. O mesmo valia
-   * na mochila e no chat, porque os dois passam por aqui.
-   *
-   * Quem tem a resposta é a peça. Se há imbuement ativo dentro dela, ele é
-   * mostrado — o catálogo pode estar incompleto, mas o que está gravado na peça
-   * aconteceu de verdade e o jogador pagou por isso.
-   *
-   * O número de encaixes desenhados passa a ser o maior entre o que o item
-   * declara e o que a peça carrega: uma peça de três encaixes com um cheio
-   * continua mostrando "cheio, vazio, vazio", e uma peça sem encaixe declarado
-   * mostra só o que tem.
-   */
-  const imbuDaPeca = (peca?.imbu ?? []).filter((imbued) => (imbued?.left ?? 0) > 0);
-  if (meta.imbuementSlots || imbuDaPeca.length) {
-    /*
-     * ---- O que ha' DENTRO DESTA peca ----
-     *
-     * A lista vinha de `imbuements[slot]`, isto e', do slot de equipamento. Uma
-     * arma na mochila nao esta em slot nenhum, e para ela o balao sempre
-     * escrevia "vazio, vazio, vazio" — mesmo com tres imbuements pagos dentro.
-     *
-     * Desde que o imbuement passou a morar no ITEM (ver `imbuementsDoItem`, no
-     * servidor), a resposta certa esta em `imbuementsPorItem[id]`, e vale para
-     * a peca vestida e para a que esta na mochila do mesmo jeito. O `slot` fica
-     * de reserva para um estado gravado antes da mudanca.
-     */
-    const personagem = getPersonagem();
-    /*
-     * Da PECA primeiro, pelo mesmo motivo do tier: duas copias do mesmo item
-     * tem imbuements diferentes, e `imbuementsPorItem` responde por id — com
-     * duas imbuidas, ele so' pode devolver uma das duas.
-     */
-    const ativos = imbuDaPeca.length
-      ? imbuDaPeca
-      : personagem?.imbuementsPorItem?.[String(id)] ??
-        (slot ? personagem?.imbuements?.[slot] ?? [] : []);
-    const catalogo = getCatalogo()?.imbuements ?? [];
-
-    /*
-     * ---- Uma linha so', com o que esta e o que falta ----
-     *
-     * Eram duas: os cheios em linhas proprias e, embaixo, uma linha "Imbuements
-     * vazio, vazio" com o resto. Lido de cima para baixo isso da' a impressao de
-     * que a peca tem dois conjuntos de encaixes.
-     *
-     * O dono pediu o formato do servidor dele: `Imbuements: strike 19h, vazio,
-     * vazio` — os tres encaixes na ordem, numa linha, o que esta' preenchido com
-     * nome e relogio e o que nao esta' com a palavra vazio.
-     */
-    const linha = el('div', 'imbue');
-    linha.append(el('span', null, 'Imbuements'));
-    const encaixes = el('b', 'tip-imbuements');
-    const encaixesDesenhados = Math.max(meta.imbuementSlots ?? 0, ativos.length);
-    for (let i = 0; i < encaixesDesenhados; i++) {
-      const imbuido = ativos[i];
-      if (i) encaixes.append(el('i', 'tip-imbue-virgula', ', '));
-      if (!imbuido) {
-        encaixes.append(el('i', 'tip-imbue-vazio', 'vazio'));
-        continue;
-      }
-      const entrada = catalogo.find((entry) => entry.id === imbuido.id);
-      const nome = [imbuido.name ?? entrada?.name ?? imbuido.id, entrada?.subgroup].filter(Boolean).join(' ');
-      const cheio = el('i', `tip-imbue-cheio ${corDoImbuement(entrada)}`);
-      cheio.append(el('span', null, nome));
-      cheio.append(el('em', null, restanteDoImbuement(imbuido.left ?? 0)));
-      encaixes.append(cheio);
-    }
-    linha.append(encaixes);
-    regras.append(linha);
   }
   regra('Peso', `${meta.weight} oz`);
   // A chance conta de onde saiu a raridade — sem ela o rótulo parece chute.

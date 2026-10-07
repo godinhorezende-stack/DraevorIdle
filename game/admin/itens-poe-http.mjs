@@ -1,18 +1,23 @@
 // As rotas da engine para o sistema de itens no modelo do PoE (Fase 1): SÓ LEITURA, sob `/api/mapas/_engine/itens-poe/` (prefixo que o
 // nginx de produção tranca), e só com o sistema ligado (`ITENS_POE=1` + o catálogo importado — que não existe no container de produção).
 // Também serve as imagens da coleção local (`ref/<caminho>`), para a engine mostrar os ícones sem copiá-los para o repositório.
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, statSync, readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { normalize, join, extname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as Catalogo from '../systems/itens-poe/catalogo.mjs';
 import { gerarPeca, elegiveis, poolDa, acharBase } from '../systems/itens-poe/gerar.mjs';
 import * as Traduzir from '../systems/itens-poe/traduzir.mjs';
 import * as Jogo from '../systems/itens-poe/jogo.mjs';
 import * as Telas from './itens-poe-telas.mjs';
+import * as Pendencias from './itens-poe-pendencias.mjs';
 import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as DropsPorMonstro from '../systems/itens-poe/drops-por-monstro.mjs';
 import * as ModificadoresMonstro from '../systems/itens-poe/modificadores-monstro.mjs';
 import * as GemasPoe from './gemas-poe.mjs';
-import { ITEM_CATALOG } from '../systems/dados.mjs';
+import { ITEM_CATALOG, CATALOGO } from '../systems/dados.mjs';
+import * as MonstrosPoe from '../systems/itens-poe/monstros.mjs';
+const BESTIARY = CATALOGO.bestiary;
 
 const PREFIXO = '/api/mapas/_engine/itens-poe/';
 const TIPOS = { '.png': 'image/png', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.gif': 'image/gif' };
@@ -53,6 +58,14 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     const cat = Catalogo.catalogo();
     if (!cat) return json(res, 409, { ok: false, erros: ['Sistema de itens do PoE desligado neste servidor.'] }), true;
     const d = await corpoJson(req).catch(() => null);
+    // Uma GEMA (ativa ou suporte, pelo slug do PoE ou pelo id do item): a gema nível 1 na mochila do personagem (para testar o encaixe).
+    if (d?.gema) {
+      const GS = await import('../systems/skills/gemas.mjs');
+      const def = [...GS.DEFS.values()].find((x) => String(x.itemId) === String(d.gema) || x.poe?.slug === d.gema || x.slug === d.gema);
+      if (!def) return json(res, 404, { ok: false, erros: [`Gema "${d.gema}" não encontrada.`] }), true;
+      const r = Jogo.entregar(d?.personagem, GS.itemDaGema(GS.novaGema(def.itemId)));
+      return json(res, r.ok ? 200 : 400, r.ok ? { ok: true, nome: r.nome, itemId: def.itemId } : { ok: false, erros: [r.erro] }), true;
+    }
     const q = new URLSearchParams({ base: d?.base ?? '', raridade: d?.raridade ?? 'raro', ilvl: d?.ilvl ?? 84, semente: d?.semente ?? 1, n: Number(d?.indice ?? 0) + 1, ...(d?.unico ? { unico: d.unico } : {}) });
     const gerada = pecasDe(cat, q)[Number(d?.indice ?? 0)];
     const peca = Jogo.pecaDoJogo(gerada);
@@ -159,6 +172,11 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Cada peça vem com a TRADUÇÃO para os atributos do Draevor (o que somaria na ficha) e o estado de cada mod.
     return json(res, 200, { pecas: pecas.map((p) => (p.erro ? p : { ...p, traducao: Traduzir.traduzirPeca(p) })) }), true;
   }
+  // A aba Pendências de modificadores: o estado de cada mod que pode cair (afixos, implícitos, únicos, frascos).
+  if (rota === 'pendencias') {
+    if (q.get('recalcular')) Pendencias.esquecer();
+    return json(res, 200, Pendencias.pendencias()), true;
+  }
   if (rota === 'cobertura') {
     const c = Traduzir.cobertura(cat);
     return json(res, 200, { ...c, semRegra: c.semRegra.slice(0, 80), totalSemRegra: c.semRegra.length, elementos: Traduzir.TABELA.elementos, regras: Traduzir.TABELA.regras.length }), true;
@@ -173,6 +191,31 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
  * nível (`GemasPoe.fichaNoNivel`: o balão da gema na loja e na mochila).
  */
 const PUBLICO = '/api/jogo/poe/';
+let DESENHOS_DOS_MOBS = null;
+/** `{ nome (pt): { look, colors, lookItem } }` para os 830 mobs da Arena de Gemas: o desenho pelo nome (`MonstrosPoe.desenhoPeloNome`); sem regra, um do bestiário pelo nome (sempre o mesmo). */
+function desenhosDosMobs() {
+  if (DESENHOS_DOS_MOBS) return DESENHOS_DOS_MOBS;
+  const arq = join(GemasPoe.PASTA, 'engine', 'dados', 'monstros.js');
+  const janela = {};
+  if (existsSync(arq)) runInNewContext(readFileSync(arq, 'utf8'), { window: janela });
+  const GENERICOS = ['troll', 'orc', 'goblin', 'skeleton', 'demon', 'dragon', 'giant-spider', 'wolf', 'bear', 'cyclops', 'minotaur', 'ghoul', 'scorpion', 'wasp', 'rotworm', 'dwarf'].filter((k) => BESTIARY[k]);
+  const hash = (t) => [...String(t)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  DESENHOS_DOS_MOBS = {};
+  // Os LACAIOS e TOTENS da arena (os nomes que ela dá): pela palavra (o cliente procura no nome).
+  DESENHOS_DOS_MOBS.__lacaios = Object.fromEntries([['zumbi', 'zombie'], ['esqueleto', 'skeleton-warrior'], ['espectro', 'spectre'], ['espírito', 'ghost'], ['fantasma', 'ghost'], ['golem', 'stone-golem'], ['guardi', 'gargoyle'], ['sentinela', 'banshee'], ['totem', 'minotaur-totem'], ['aranha', 'giant-spider'], ['corvo', 'gargoyle']]
+    .filter(([, k]) => BESTIARY[k]).map(([p, k]) => [p, { look: BESTIARY[k].look, colors: BESTIARY[k].colors ?? null, lookItem: BESTIARY[k].lookItem ?? 0 }]));
+  for (const it of janela.MOBDATA?.items ?? []) {
+    const k = MonstrosPoe.desenhoPeloNome(it.n ?? '') ?? GENERICOS[hash(it.en ?? it.n) % Math.max(1, GENERICOS.length)];
+    const b = BESTIARY[k];
+    if (b) DESENHOS_DOS_MOBS[it.n] = { look: b.look, colors: b.colors ?? null, lookItem: b.lookItem ?? 0 };
+  }
+  return DESENHOS_DOS_MOBS;
+}
+const PASTA_DOS_SUPORTES = join(process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe', 'poe-suportes-poedb');
+const PASTA_DAS_MOEDAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-moedas', import.meta.url));
+let origemDasGemas = null;
+const ORIGEM_DAS_GEMAS = () => (origemDasGemas ??= JSON.parse(readFileSync(new URL('../gamedata/itens-poe/origem-das-gemas.json', import.meta.url), 'utf8')));
+const PASTA_DAS_ASCENDENCIAS = fileURLToPath(new URL('../gamedata/itens-poe/icones-ascendencias', import.meta.url));
 const imagem = (res, pasta, relativo) => {
   const alvo = normalize(join(pasta, relativo));
   if (!alvo.startsWith(pasta) || !TIPOS[extname(alvo).toLowerCase()] || !existsSync(alvo) || !statSync(alvo).isFile()) return false;
@@ -187,7 +230,19 @@ export async function atenderPublico(req, res, caminho, url, { json, fichaDaGema
   // O nome pode vir decodificado ou não (há arquivo com "%C3%B6" no próprio nome): tenta os dois.
   const nomes = (r) => { let d = r; try { d = decodeURIComponent(r); } catch { /* fica cru */ } return [...new Set([d, r])]; };
   if (rota.startsWith('icone/gema/')) return nomes(rota.slice('icone/gema/'.length)).some((n) => imagem(res, join(GemasPoe.PASTA, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/suporte/')) return nomes(rota.slice('icone/suporte/'.length)).some((n) => imagem(res, join(PASTA_DOS_SUPORTES, 'icones'), n.replace(/^icones\//, ''))) || (json(res, 404, { ok: false }), true);
+  // Os ícones dos orbes do PoE (Joalheiro, Fusão, Cromático): no repositório (`gamedata/itens-poe/icones-moedas`).
+  // Os ícones das passivas de ascendência (`tools/baixar-ascendencias-poedb.mjs`): a árvore do jogo e da Engine desenham com eles.
+  if (rota.startsWith('icone/ascendencia/')) return nomes(rota.slice('icone/ascendencia/'.length)).some((n) => imagem(res, PASTA_DAS_ASCENDENCIAS, n)) || (json(res, 404, { ok: false }), true);
+  if (rota.startsWith('icone/moeda/')) return nomes(rota.slice('icone/moeda/'.length)).some((n) => imagem(res, PASTA_DAS_MOEDAS, n)) || (json(res, 404, { ok: false }), true);
   if (rota.startsWith('icone/item/')) return nomes(rota.slice('icone/item/'.length)).some((n) => imagem(res, Catalogo.PASTA_ORIGINAL, n)) || (json(res, 404, { ok: false }), true);
+  // O DESENHO de cada mob do bestiário do PoE (a Arena de Gemas com os sprites do jogo): pelo nome, a mesma regra da campanha.
+  if (rota === 'desenhos-dos-mobs') return json(res, 200, desenhosDosMobs()), true;
+  // ONDE SE GANHA CADA GEMA (o catálogo do Gem Atelier): a origem por missão/ato/classe e quais missões já dão a gema no jogo.
+  if (rota === 'origem-das-gemas') {
+    const MG = await import('../systems/itens-poe/missoes-de-gemas.mjs');
+    return json(res, 200, { ...ORIGEM_DAS_GEMAS(), noJogo: MG.MISSOES.map((m) => m.slug) }), true;
+  }
   if (rota === 'gema') {
     const q = url.searchParams;
     const f = fichaDaGema?.(q.get('slug') ?? '', Number(q.get('nivel')) || 1, Number(q.get('qualidade')) || 0);

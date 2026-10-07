@@ -1,4 +1,4 @@
-// As telas de OPERAÇÃO da Engine: "Testes e beta" (modo beta) e "Configurações" (manutenção e Server Save). São controles do SERVIDOR em
+// As telas de OPERAÇÃO da Engine: "Testes e beta" (modo beta), "Configurações" (manutenção e Server Save) e "Servidor" (quem está online, com IP, e o reinício). São controles do SERVIDOR em
 // execução, não editores de arquivo: o estado do modo beta e da manutenção é do processo (volta ao padrão no reinício) e toda ação de risco
 // pede confirmação e fica no registro. Os dados e as regras vêm de `admin/operacao.mjs` (`operacao`, `operacao/beta`, `operacao/…`).
 import { el, cabecalho, confirmar, msg } from './editor-ui.mjs';
@@ -102,8 +102,61 @@ export function criarTelasDeOperacao({ api, raiz, irPara }) {
         el('div', { class: 'dica' }, 'Protegido hoje só pelo bloqueio de rede (túnel SSH). O login de administrador e o registro permanente de ações entram numa etapa seguinte.')));
   }
 
+  // ------------------------------------------------------------------ Servidor (quem está online e o reinício)
+  const V = { estado: null, relogio: null, motivo: '' };
+  const duracao = (ms) => {
+    const s = Math.max(0, Math.round(ms / 1000));
+    if (s < 60) return `${s} s`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m} min`;
+    const h = Math.floor(m / 60);
+    return h < 48 ? `${h} h ${m % 60} min` : `${Math.floor(h / 24)} d ${h % 24} h`;
+  };
+  async function desenharServidor() {
+    V.estado = await api('operacao/servidor');
+    pintarServidor();
+    // A tela se atualiza sozinha enquanto está aberta (a cada 5 s); sai da tela, para.
+    clearInterval(V.relogio);
+    V.relogio = setInterval(async () => {
+      if (!document.querySelector('.op-servidor')) return clearInterval(V.relogio);
+      V.estado = await api('operacao/servidor').catch(() => V.estado);
+      pintarServidor();
+    }, 5000);
+  }
+  async function reiniciar() {
+    const e = V.estado;
+    const ok = await confirmar('Reiniciar o servidor agora?', `${e.totais.personagens} personagem(ns) e ${e.totais.contas} conta(s) online recebem o aviso, todo mundo é gravado e o processo sai em 5 segundos. ${e.processo.supervisionado ? 'O Docker sobe o servidor de novo sozinho (restart: unless-stopped); a Engine fica fora do ar por alguns segundos.' : 'ATENÇÃO: este processo não parece supervisionado (não é produção/Docker): ele só PARA — alguém precisa subir de novo.'}`, { ok: 'Reiniciar', perigo: true });
+    if (!ok) return;
+    const r = await api('operacao/reiniciar', { motivo: V.motivo.trim() || null });
+    if (r.ok === false) return msg((r.erros ?? ['Não reiniciou.']).join(' '), 'erro');
+    msg(`Reinício agendado: ${r.avisados} jogador(es) avisado(s). O servidor sai em instantes.`, 'aviso');
+    await desenharServidor();
+  }
+  function pintarServidor() {
+    const e = V.estado;
+    const t = e.totais;
+    raiz().replaceChildren(
+      cabecalho('Servidor', 'Quem está online agora (contas, personagens e de onde conectam) e o reinício do processo. Atualiza sozinho a cada 5 segundos.'),
+      el('div', { class: 'hunt-painel op-servidor' },
+        secao('Agora',
+          el('div', { class: 'eng-metricas' }, metrica('Contas online', t.contas, 'contas logadas (a mesma conta em duas abas conta uma)'), metrica('Personagens online', t.personagens), metrica('Conexões', t.conexoes, 'abas abertas no jogo, com ou sem login'), metrica('IPs distintos', t.ips)),
+          el('div', { class: 'dica' }, `Processo ${e.processo.pid} · Node ${e.processo.node} · no ar há ${duracao(e.agora - e.processo.noDesde)} · ${e.processo.memoriaMb} MB · ${e.processo.supervisionado ? 'supervisionado (Docker)' : 'sem supervisor (node solto)'}.`)),
+        secao('Quem está online',
+          e.online.length
+            ? el('table', {}, el('thead', {}, el('tr', {}, ['Conta', 'Personagem', 'Level', 'IP', 'Onde está', 'Desde'].map((h) => el('th', {}, h)))),
+              el('tbody', {}, e.online.map((o) => el('tr', { class: o.personagem ? '' : 'op-sem-char' }, el('td', {}, o.conta ?? el('span', { class: 'dica' }, 'sem login')), el('td', {}, o.personagem ? el('b', {}, o.personagem) : '—'), el('td', {}, o.level ?? '—'), el('td', { class: 'mono' }, o.ip ?? '—'), el('td', {}, o.onde), el('td', { class: 'dica', title: quando(o.desde) }, `há ${duracao(e.agora - o.desde)}`)))))
+            : el('div', { class: 'dica' }, 'Ninguém conectado agora.')),
+        secao('Reiniciar o servidor',
+          e.reinicio
+            ? el('div', { class: 'op-linha' }, estadoPill(true, `REINÍCIO EM ANDAMENTO — pedido ${quando(e.reinicio.pedidoEm)}${e.reinicio.quem ? ` por ${e.reinicio.quem}` : ''}`, ''), el('span', { class: 'dica' }, 'O processo sai em instantes; recarregue a Engine depois.'))
+            : [el('label', { class: 'campo' }, 'Motivo (opcional — vai no aviso aos jogadores e no registro)', el('input', { type: 'text', maxlength: 200, value: V.motivo, oninput: (ev) => { V.motivo = ev.target.value; } })),
+              el('div', { class: 'op-linha' }, el('button', { type: 'button', class: 'perigo', onclick: reiniciar }, 'Reiniciar o servidor'), el('span', { class: 'dica' }, 'Avisa quem está jogando, grava todo mundo (como o Ctrl+C) e sai em 5 segundos; em produção o Docker sobe de novo sozinho. O modo beta e a manutenção voltam ao padrão do boot.'))]),
+        secao('Ações desta sessão do servidor', e.registro?.length ? el('table', { class: 'bib-sub' }, el('tbody', {}, e.registro.map((r) => el('tr', {}, el('td', { class: 'dica' }, quando(r.quando)), el('td', {}, r.acao), el('td', {}, r.detalhe ?? ''))))) : el('div', { class: 'dica' }, 'Nenhuma ação nesta sessão do servidor.'))));
+  }
+
   return {
     beta: { desenhar: () => desenharBeta(), abrir: () => desenharBeta(), focarBusca: () => {} },
     config: { desenhar: () => desenharConfig(), abrir: () => desenharConfig(), focarBusca: () => {} },
+    servidor: { desenhar: () => desenharServidor(), abrir: () => desenharServidor(), focarBusca: () => {} },
   };
 }

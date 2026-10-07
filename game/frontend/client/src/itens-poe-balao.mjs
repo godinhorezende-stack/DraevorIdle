@@ -8,9 +8,14 @@ const ROTULO = {
   alcance_metros: 'Alcance', protecao: 'Proteção', recupera: 'Recupera', cargas_por_uso: 'Cargas por uso', cargas_maximas: 'Cargas máximas', duracao_segundos: 'Duração',
 };
 const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance_critico_pct: '%', alcance_metros: ' m', duracao_segundos: ' s' };
-const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○' };
-const ESTADO = { equivalente: 'tem efeito no Draevor (mesma conta)', aproximado: 'tem efeito no Draevor (com diferença)', novo: 'atributo novo do PoE, com efeito', registrado: 'registrado, ainda sem efeito no combate' };
-export const valorDoAtributo = (k, v) => (v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`);
+const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', inerte: '–', lembrete: '', registrado: '○' };
+const ESTADO = { equivalente: 'tem efeito no jogo (mesma conta do PoE)', aproximado: 'tem efeito no jogo (com diferença)', novo: 'atributo do PoE, com efeito no jogo', inerte: 'mecânica do PoE que não existe no jogo', lembrete: 'texto de lembrete do PoE (explica a mecânica do mod de cima)', registrado: 'registrado, ainda sem efeito no combate' };
+/** O valor de um atributo da base no balão. `recupera` (frasco): "70 de Vida em 3 s"; faixa: "min–max"; o resto com o sufixo. */
+export const valorDoAtributo = (k, v) => {
+  if (k === 'recupera' && v && typeof v === 'object') return `${v.quantidade} de ${v.recurso === 'mana' ? 'Mana' : 'Vida'} em ${String(v.segundos).replace('.', ',')} s`;
+  if (k === 'cargas_atuais') return String(v);
+  return v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`;
+};
 
 function no(tag, classe, ...filhos) {
   const e = document.createElement(tag);
@@ -51,14 +56,28 @@ function resumoDoFrasco(f) {
 
 export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null, tem = null } = {}) {
   const fila = [...(estados ?? [])];
+  // `notas` (o servidor manda, na ordem dos mods): por que a mecânica não existe no jogo — o balão mostra ao passar o mouse.
+  const notas = [...(p.notas ?? [])];
   const marca = () => {
     const e = fila.shift();
-    return e ? Object.assign(no('em', `poe-tr ${e}`, SIMBOLO[e] ?? ''), { title: ESTADO[e] ?? e }) : null;
+    const nota = notas.shift();
+    return e ? Object.assign(no('em', `poe-tr ${e}`, SIMBOLO[e] ?? ''), { title: nota && e === 'inerte' ? `${ESTADO[e]}: ${nota}` : ESTADO[e] ?? e }) : null;
   };
   const linhas = (lista, classe, sigla) => (lista ?? []).map((m) => no('div', `poe-mod ${classe}`, estados ? marca() : null, no('span', null, m.texto), m.tier != null ? Object.assign(no('i', null, `${sigla} T${m.tier}`), { title: `${m.familia ?? ''} · iLvl ${m.ilvl ?? '?'}` }) : null));
   const sep = () => no('div', 'poe-sep');
   const titulo = (texto) => no('div', 'poe-secao', texto);
-  const props = Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', null, valorDoAtributo(k, v))));
+  // A QUALIDADE (poedb › Quality): a linha "Qualidade: +X%" em cima e o dano físico/defesa já escalados (em azul, como no PoE).
+  const q = Number(p.qualidade) || 0;
+  const QUALIFICAM = new Set(['dano_fisico', 'armadura', 'evasao', 'escudo_energia', 'recupera']);
+  const comQ = (k, v) => {
+    if (!q || !QUALIFICAM.has(k)) return v;
+    if (k === 'recupera') return v && typeof v === 'object' ? { ...v, quantidade: Math.round(v.quantidade * (1 + q / 100)) } : v;
+    return v && typeof v === 'object' ? { min: Math.round(v.min * (1 + q / 100)), max: Math.round(v.max * (1 + q / 100)) } : Math.round(v * (1 + q / 100));
+  };
+  const props = [
+    q ? no('div', null, 'Qualidade: ', no('b', 'poe-aumentado', `+${q}%`)) : null,
+    ...Object.entries(p.atributos ?? {}).filter(([k]) => ROTULO[k]).map(([k, v]) => no('div', null, `${ROTULO[k]}: `, no('b', q && QUALIFICAM.has(k) ? 'poe-aumentado' : null, valorDoAtributo(k, comQ(k, v))))),
+  ];
   const caixa = no('div', `poe-balao r-${p.raridade}`,
     no('div', 'poe-topo', no('b', null, p.nome), nomeDaBase && nomeDaBase !== p.nome ? no('span', null, nomeDaBase) : null),
     no('div', 'poe-props', categoriaDe(p) ? no('div', 'poe-categoria', categoriaDe(p)) : null, no('div', 'poe-raridade', `${raridadeNome} · Item Level ${p.ilvl}`), props),
@@ -73,7 +92,7 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
     p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,
     p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', null, m.texto)))] : null,
-    af && Object.keys(af).length ? no('div', 'poe-draevor', no('b', null, 'No Draevor: '), Object.entries(af).filter(([, v]) => typeof v === 'number').map(([k, v]) => no('span', 'poe-af', `${k} ${v > 0 ? '+' : ''}${v}`))) : null,
+    // A faixa "No Draevor: STR +20 ..." saiu do balão (dono, 07/10): o que a peça dá já está nas linhas do PoE.
     p.aviso ? no('div', 'poe-aviso', p.aviso) : null,
     p.erro ? no('div', 'poe-aviso', p.erro) : null);
   caixa.style.setProperty('--cor', cor);

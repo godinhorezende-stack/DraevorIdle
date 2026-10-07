@@ -37,13 +37,37 @@ const quantosOrbes = (tipo) => {
   return (ctx.state.character?.inventory ?? []).filter((p) => p.id === id).reduce((t, p) => t + (p.count ?? 1), 0);
 };
 /** O máximo de sockets do slot (a peça sem `soquetes` ainda não diz): o catálogo dos orbes traz a tabela. */
-const limiteDoSlot = (slot) => itemDoOrbe('encaixe')?.limitesDeSocket?.[slot] ?? 0;
+const limiteDoSlot = (slot) => (itemDoOrbe('encaixe') ?? itemDoOrbe('joalheiro'))?.limitesDeSocket?.[slot] ?? 0;
 /** Os sockets da peça, ou os de uma peça que ainda não abriu nenhum (todos bloqueados). */
 const soquetesDe = (peca, slot) => {
   if (peca?.soquetes?.gemas?.length) return peca.soquetes;
   const max = limiteDoSlot(slot);
   return max ? { abertos: 0, links: [], gemas: Array(max).fill(null) } : null;
 };
+/*
+ * ---- As CORES dos sockets e os ORBES DO PoE (só no modo PoE) ----
+ * R vermelho (Força), G verde (Destreza), B azul (Inteligência), W branco (aceita qualquer gema). A gema só entra no socket da cor
+ * dela — a regra é do servidor (`Gemas.encaixar`); aqui só se mostra. Os orbes do PoE (`orbeDoPoe` no catálogo): Joalheiro (número
+ * de sockets), Fusão (links) e Cromático (cores) — sorteios, com a proposta e o "Confirmar" como os outros orbes.
+ */
+const COR_DA_GEMA = { vermelha: 'R', verde: 'G', azul: 'B', branca: 'W' };
+const NOME_DA_COR = { R: 'vermelho', G: 'verde', B: 'azul', W: 'branco' };
+const corDaGemaDoItem = (meta) => COR_DA_GEMA[meta?.poeGema?.cor] ?? 'W';
+const cabe = (socket, gema) => !socket || socket === 'W' || gema === 'W' || socket === gema;
+const ORBES_DO_POE = ['joalheiro', 'fusao', 'cromatico'];
+const modoPoe = () => !!itemDoOrbe('joalheiro');
+const PARA_QUE_SERVE = { joalheiro: 'sorteia de novo o número de sockets', fusao: 'sorteia de novo os links', cromatico: 'sorteia de novo as cores' };
+/** Por que o orbe do PoE não vale nesta peça (ou null). */
+function motivoDoOrbePoe(tipo, sq, max) {
+  const abertos = sq.abertos ?? 0;
+  const comGema = (sq.gemas ?? []).some(Boolean);
+  if (quantosOrbes(tipo) < 1) return `Você não tem ${itemDoOrbe(tipo)?.name ?? 'este orbe'}.`;
+  if (tipo === 'joalheiro') return comGema ? 'Tire as gemas desta peça antes.' : abertos >= max ? `Já está no máximo (${max} sockets).` : null;
+  if (tipo === 'fusao') return abertos < 2 ? 'Precisa de pelo menos 2 sockets.' : (sq.links ?? []).slice(0, abertos - 1).every(Boolean) ? 'Já está toda ligada.' : null;
+  if (tipo === 'cromatico') return comGema ? 'Tire as gemas desta peça antes.' : abertos < 1 ? 'A peça não tem sockets.' : null;
+  return null;
+}
+
 /** Os grupos ligados (a MESMA regra do servidor) como texto: "1+2 | 3". */
 const gruposComoTexto = (sq, links) => gruposLigados({ abertos: sq.abertos, links }).map((g) => g.map((n) => n + 1).join('+')).join(' | ');
 
@@ -53,10 +77,11 @@ export const temSoquetes = (peca) => !!peca?.soquetes?.gemas?.length;
 
 export function abrirSoquetes(context, slot, modo = null) {
   ctx = context;
+  redesenharEmbutido = null;
   slotAberto = slot;
   escolhido = null;
   // Veio de um orbe: a proposta já nasce para ele (encaixe: abrir o próximo socket; ligação: o jogador escolhe o elo).
-  proposta = modo === 'encaixe' ? { tipo: 'encaixe' } : modo === 'ligacao' ? { tipo: 'ligacao', elo: null } : null;
+  proposta = modo === 'encaixe' ? { tipo: 'encaixe' } : modo === 'ligacao' ? { tipo: 'ligacao', elo: null } : ORBES_DO_POE.includes(modo) ? { tipo: 'poe', orbe: modo } : null;
   desenhar();
 }
 
@@ -67,6 +92,7 @@ export function abrirSoquetes(context, slot, modo = null) {
  */
 export function usarOrbe(context, tipo) {
   ctx = context;
+  redesenharEmbutido = null;
   const orbe = itemDoOrbe(tipo);
   const nome = orbe?.name ?? 'orbe';
   ctx.openModal(`Usar ${nome}`, (body) => {
@@ -75,13 +101,14 @@ export function usarOrbe(context, tipo) {
     const lista = el('div', 'soquetes-gemas');
     let algum = false;
     for (const [slot, peca] of Object.entries(ctx.state.character?.equipment ?? {})) {
-      const max = limiteDoSlot(slot);
+      const max = peca?.soquetes?.gemas?.length || limiteDoSlot(slot);
       if (!peca || !max) continue;
       algum = true;
       const sq = soquetesDe(peca, slot);
       const meta = ctx.state.items?.[peca.id];
-      const motivo =
-        tipo === 'encaixe'
+      const motivo = ORBES_DO_POE.includes(tipo)
+        ? motivoDoOrbePoe(tipo, sq, max)
+        : tipo === 'encaixe'
           ? sq.abertos >= max ? `no máximo (${max} sockets)` : null
           : sq.abertos < 2 ? 'precisa de 2 sockets abertos' : null;
       const linha = el('button', 'soquetes-gema');
@@ -98,7 +125,142 @@ export function usarOrbe(context, tipo) {
   });
 }
 
+/*
+ * ---- O EQUIPAMENTO INTEIRO no Gem Atelier (dono, 07/10: "implementar o equipamento de socket mais fácil, aparecendo de onde vem o
+ * socket, de qual parte do set, e visualizando melhor") ----
+ * À esquerda, cada peça vestida (arma, elmo, armadura...) com os sockets dela em miniatura (cor, link, gema e nível) e, em cima, as
+ * HABILIDADES que o equipamento dá agora — cada skill com as supports ligadas e a peça de onde vem. À direita, a peça escolhida com a
+ * fila de sockets completa e o encaixe (o mesmo `corpo` da janela de sockets). Tudo pelo servidor (`{t:'gema', action:'encaixar'|'tirar'}`).
+ */
+let redesenharEmbutido = null;
+const ORDEM_DOS_SLOTS = ['weapon', 'shield', 'head', 'body', 'gloves', 'feet', 'legs', 'neck', 'ring', 'ring2'];
+const NOME_DO_SLOT = { weapon: 'Arma', shield: 'Mão secundária', head: 'Elmo', body: 'Armadura', gloves: 'Luvas', feet: 'Botas', legs: 'Cinto', neck: 'Amuleto', ring: 'Anel (esquerdo)', ring2: 'Anel (direito)' };
+
+/** Os sockets de UMA peça em miniatura (a fila: cor, link, gema). `aoEscolher(i)` no clique de um socket. */
+function filaMiniatura(sq, slot, aoEscolher) {
+  const fila = el('div', 'eq-fila');
+  const grupos = gruposLigados({ abertos: sq.abertos ?? 0, links: sq.links ?? [] });
+  for (let i = 0; i < sq.gemas.length; i++) {
+    const trancado = i >= (sq.abertos ?? 0);
+    const g = sq.gemas[i];
+    const cor = trancado ? null : sq.cores?.[i] ?? null;
+    const nGrupo = grupos.findIndex((x) => x.includes(i));
+    const casa = el('button', `eq-casa${cor ? ` cor-${cor}` : ''}${trancado ? ' trancado' : ''}${slotAberto === slot && escolhido === i ? ' escolhido' : ''}${nGrupo >= 0 && grupos[nGrupo].length > 1 ? ` grupo-${nGrupo % 4}` : ''}`);
+    casa.type = 'button';
+    if (trancado) {
+      casa.disabled = true;
+      casa.title = 'Socket bloqueado';
+    } else if (g) {
+      casa.append(itemCanvas(g.id, 22));
+      casa.append(el('i', 'eq-nivel', String(g.nivel)));
+      tipFor(casa, g.id, null, null, { id: g.id, count: 1, raridade: g.raridade, gema: { nivel: g.nivel, xp: g.xp, qualidade: g.qualidade } });
+    } else casa.title = cor ? `Socket ${NOME_DA_COR[cor]} vazio${cor === 'W' ? ' (aceita qualquer gema)' : ''}` : 'Socket vazio';
+    casa.onclick = (ev) => {
+      ev.stopPropagation();
+      if (!trancado) aoEscolher(i);
+    };
+    fila.append(casa);
+    if (i < sq.gemas.length - 1) fila.append(el('span', `eq-elo${i + 1 < (sq.abertos ?? 0) && sq.links?.[i] ? ' ligado' : ''}`));
+  }
+  return fila;
+}
+
+/** As habilidades do equipamento: cada gema de skill encaixada, as supports que valem para ela e a peça de onde vem. */
+function habilidadesDoEquipamento(state) {
+  const lista = [];
+  for (const slot of ORDEM_DOS_SLOTS) {
+    const peca = state.character?.equipment?.[slot];
+    const sq = peca?.soquetes;
+    if (!sq?.gemas?.length) continue;
+    const def = (g) => (g ? state.items?.[g.id]?.gemaDef ?? null : null);
+    sq.gemas.forEach((g, i) => {
+      const d = def(g);
+      if (!d || d.tipo !== 'ativa' || i >= (sq.abertos ?? 0)) return;
+      const ligadas = grupoDoSocket(sq, i).filter((k) => k !== i).map((k) => ({ g: sq.gemas[k], d: def(sq.gemas[k]) })).filter((x) => x.d?.tipo === 'support');
+      lista.push({ slot, peca, gema: g, def: d, supports: ligadas.map((x) => ({ ...x, vale: compativel(x.d, d.tags) })) });
+    });
+  }
+  return lista;
+}
+
+export function painelDoEquipamento(body, context) {
+  ctx = context;
+  redesenharEmbutido = () => context.redraw?.();
+  const { state } = ctx;
+  const equipamento = state.character?.equipment ?? {};
+  const pecas = ORDEM_DOS_SLOTS.map((slot) => ({ slot, peca: equipamento[slot] })).filter(({ slot, peca }) => peca && (peca.soquetes?.gemas?.length || limiteDoSlot(slot)));
+  if (!pecas.length) return void body.append(el('p', 'empty', 'Nenhuma peça vestida com sockets. Vista uma arma ou armadura com sockets para encaixar gemas.'));
+  if (!pecas.some((x) => x.slot === slotAberto)) {
+    slotAberto = pecas[0].slot;
+    escolhido = null;
+  }
+  const layout = el('div', 'eq-layout');
+  const esquerda = el('div', 'eq-coluna');
+
+  // As habilidades que o equipamento dá agora, e DE ONDE vem cada uma.
+  const habs = habilidadesDoEquipamento(state);
+  const caixaHabs = el('div', 'eq-habilidades');
+  caixaHabs.append(el('h4', null, `Habilidades do equipamento (${habs.length})`));
+  if (!habs.length) caixaHabs.append(el('p', 'empty', 'Nenhuma gema de habilidade encaixada.'));
+  for (const h of habs) {
+    const linha = el('button', 'eq-hab');
+    linha.type = 'button';
+    linha.append(itemCanvas(h.gema.id, 26));
+    const t = el('div');
+    t.append(el('b', null, `${h.def.nomePt ?? h.def.nome} · nv ${h.gema.nivel}`));
+    t.append(el('em', null, `de ${NOME_DO_SLOT[h.slot] ?? h.slot}: ${state.items?.[h.peca.id]?.poe ? h.peca.poe?.nome ?? state.items[h.peca.id].name : state.items?.[h.peca.id]?.name ?? ''}`));
+    const sup = el('div', 'eq-supports');
+    if (!h.supports.length) sup.append(el('i', null, 'sem supports ligadas'));
+    for (const x of h.supports) sup.append(el('i', x.vale ? 'vale' : 'nao-vale', `${x.vale ? '+' : '×'} ${x.d.nomePt ?? x.d.nome}`));
+    t.append(sup);
+    linha.append(t);
+    linha.onclick = () => {
+      slotAberto = h.slot;
+      escolhido = h.peca.soquetes.gemas.indexOf(h.gema);
+      redesenharEmbutido();
+    };
+    caixaHabs.append(linha);
+  }
+  esquerda.append(caixaHabs);
+
+  // Cada peça do set com os sockets em miniatura.
+  for (const { slot, peca } of pecas) {
+    const sq = soquetesDe(peca, slot);
+    const meta = state.items?.[peca.id];
+    const card = el('div', `eq-peca${slot === slotAberto ? ' escolhida' : ''}`);
+    const topo = el('div', 'eq-peca-topo');
+    topo.append(itemCanvas(peca.id, 28));
+    const nome = el('div');
+    const b = el('b', null, peca.poe?.nome ?? meta?.name ?? 'peça');
+    if (peca.poe?.cor) b.style.color = peca.poe.cor;
+    nome.append(el('span', 'eq-slot', NOME_DO_SLOT[slot] ?? slot), b, el('em', null, `${sq.abertos ?? 0}/${sq.gemas.length} sockets · ${sq.gemas.filter(Boolean).length} gema(s)`));
+    topo.append(nome);
+    card.append(topo, filaMiniatura(sq, slot, (i) => {
+      slotAberto = slot;
+      escolhido = escolhido === i && slotAberto === slot ? null : i;
+      redesenharEmbutido();
+    }));
+    card.onclick = () => {
+      if (slotAberto === slot) return;
+      slotAberto = slot;
+      escolhido = null;
+      redesenharEmbutido();
+    };
+    esquerda.append(card);
+  }
+
+  // A peça escolhida: a fila completa e o encaixe.
+  const direita = el('div', 'eq-coluna eq-detalhe');
+  const peca = equipamento[slotAberto];
+  const sq = soquetesDe(peca, slotAberto);
+  direita.append(el('h4', null, `${NOME_DO_SLOT[slotAberto] ?? slotAberto} — ${peca.poe?.nome ?? state.items?.[peca.id]?.name ?? ''}`));
+  if (sq) corpo(direita, { ...peca, soquetes: sq });
+  layout.append(esquerda, direita);
+  body.append(layout);
+}
+
 function desenhar() {
+  if (redesenharEmbutido) return void redesenharEmbutido();
   const { state } = ctx;
   const peca = state.character?.equipment?.[slotAberto];
   const meta = peca ? state.items?.[peca.id] : null;
@@ -132,7 +294,10 @@ function corpo(body, peca) {
       'p',
       'shop-note dica',
       'Links: o traço dourado entre dois sockets é um link — os sockets ligados formam um grupo, e as supports do grupo valem para as skills do mesmo grupo. ' +
-        'Sem traço, os sockets não conversam. Os links vêm na peça: a que cai sorteia (quanto mais rara, mais chance de link) e as peças de antes das gemas vieram todas ligadas. Por enquanto não dá para mudar.'
+        'Sem traço, os sockets não conversam. ' +
+        (modoPoe()
+          ? 'Como no PoE, cada socket tem COR: vermelho (Força), verde (Destreza), azul (Inteligência) ou branco (qualquer gema) — a gema só entra na cor dela. O Orbe do Joalheiro, a Orbe da Fusão e o Orbe Cromático sorteiam de novo o número, os links e as cores.'
+          : 'Os links vêm na peça: a que cai sorteia (quanto mais rara, mais chance de link) e as peças de antes das gemas vieram todas ligadas.')
     )
   );
 
@@ -157,12 +322,15 @@ function corpo(body, peca) {
     const trancado = i >= abertos;
     const nGrupo = trancado ? -1 : grupoDe(i);
     const emGrupo = nGrupo >= 0 && grupos[nGrupo].length > 1;
-    const casa = el('button', `soquete-casa${trancado ? ' trancado' : ''}${escolhido === i ? ' escolhido' : ''}${emGrupo ? ` grupo grupo-${nGrupo % 4}` : ''}${trancado && proposta?.tipo === 'encaixe' && i === abertos ? ' proximo' : ''}`);
+    const cor = !trancado ? sq.cores?.[i] ?? null : null;
+    const casa = el('button', `soquete-casa${cor ? ` cor-${cor}` : ''}${trancado ? ' trancado' : ''}${escolhido === i ? ' escolhido' : ''}${emGrupo ? ` grupo grupo-${nGrupo % 4}` : ''}${trancado && proposta?.tipo === 'encaixe' && i === abertos ? ' proximo' : ''}`);
     casa.type = 'button';
     if (trancado) {
       casa.append(el('span', null, '🔒'));
       casa.disabled = true;
       casa.title = 'Socket bloqueado';
+    } else if (!g && cor) {
+      casa.title = `Socket ${NOME_DA_COR[cor]}${cor === 'W' ? ' (aceita qualquer gema)' : ''}`;
     } else if (g) {
       const def = state.items?.[g.id]?.gemaDef;
       if (def?.tipo === 'support' && !valeAgora(i, def)) {
@@ -183,7 +351,7 @@ function corpo(body, peca) {
       const aberto = i + 1 < abertos; // os DOIS sockets do elo precisam estar abertos
       const ligado = aberto && !!sq.links?.[i];
       const classe = `soquete-elo${ligado ? ' ligado' : ''}${ligado && emGrupo ? ` grupo-${nGrupo % 4}` : ''}${proposta?.tipo === 'ligacao' && proposta.elo === i ? ' escolhido' : ''}`;
-      if (!aberto) fila.append(el('span', classe, ''));
+      if (!aberto || (modoPoe() && quantosOrbes('ligacao') < 1)) fila.append(el('span', classe, aberto ? (ligado ? '━' : '·') : ''));
       else {
         // Um BOTÃO: tocar nele só mostra a proposta (abaixo) — quem muda o link é o "Confirmar".
         const elo = el('button', classe, ligado ? '━' : '·');
@@ -228,8 +396,9 @@ function corpo(body, peca) {
     send({ t: 'gema', action: 'fundir', slot: slotAberto });
   };
   const barraDaPeca = el('div', 'soquetes-acoes');
-  barraDaPeca.append(fundir);
-  body.append(barraDaPeca);
+  // No PoE a Orbe da Fusão faz isto; a Fundidora só aparece para quem ainda tem alguma.
+  if (!modoPoe() || fundidoras > 0) barraDaPeca.append(fundir);
+  if (barraDaPeca.children.length) body.append(barraDaPeca);
   orbes(body, sq, max, abertos);
 
   if (escolhido == null) {
@@ -304,6 +473,17 @@ function corpo(body, peca) {
     texto.append(el('b', null, meta.gemaDef.nomePt ?? meta.gemaDef.nome), el('em', null, `${meta.gemaDef.tipo === 'support' ? 'suporte' : 'skill'} · ${item.raridade ?? 'comum'} · nível ${item.gema?.nivel ?? 1} · ${item.gema?.qualidade ?? 0}%`));
     texto.append(previa(meta.gemaDef));
     linha.classList.add(classeDaRaridade(meta, item));
+    // A cor (PoE): a gema da cor errada não entra neste socket.
+    const corGema = corDaGemaDoItem(meta);
+    const corSocket = sq.cores?.[escolhido] ?? null;
+    if (corSocket) {
+      texto.querySelector('b')?.prepend(el('i', `cor-gema cor-${corGema}`));
+      if (!cabe(corSocket, corGema)) {
+        linha.classList.add('cor-errada');
+        linha.disabled = true;
+        texto.append(el('i', 'nao-vale', `gema ${NOME_DA_COR[corGema]}: precisa de socket ${NOME_DA_COR[corGema]} ou branco`));
+      }
+    }
     linha.append(texto);
     tipFor(linha, item.id, null, null, item);
     linha.onclick = () => send({ t: 'gema', action: 'encaixar', slot: slotAberto, indice: escolhido, de: indice });
@@ -319,6 +499,14 @@ function corpo(body, peca) {
 function orbes(body, sq, max, abertos) {
   const { send } = ctx;
   const caixa = el('div', 'soquetes-orbes');
+  if (modoPoe()) {
+    orbesDoPoe(caixa, sq, max);
+    // Os orbes do Draevor só para quem ainda tem algum (no PoE eles não caem nem se compram mais).
+    if (quantosOrbes('encaixe') < 1 && quantosOrbes('ligacao') < 1) {
+      body.append(caixa);
+      return;
+    }
+  }
   const nEncaixe = quantosOrbes('encaixe');
   const nLigacao = quantosOrbes('ligacao');
   const nomeEncaixe = itemDoOrbe('encaixe')?.name ?? 'orbe de encaixe';
@@ -376,6 +564,42 @@ function orbes(body, sq, max, abertos) {
     caixa.append(p);
   }
   body.append(caixa);
+}
+
+/** Os orbes do PoE nesta peça: um botão por orbe (com quantos você tem e o motivo quando não dá) e a proposta com o "Confirmar". */
+function orbesDoPoe(caixa, sq, max) {
+  const { send } = ctx;
+  const linha = el('div', 'soquetes-acoes');
+  for (const tipo of ORBES_DO_POE) {
+    const item = itemDoOrbe(tipo);
+    if (!item) continue;
+    const motivo = motivoDoOrbePoe(tipo, sq, max);
+    const b = el('button', 'ghost orbe-poe');
+    b.type = 'button';
+    b.append(itemCanvas(item.id, 22), el('span', null, `${item.name} (${quantosOrbes(tipo)})`));
+    b.title = motivo ?? `${item.name}: ${PARA_QUE_SERVE[tipo]}.`;
+    b.disabled = !!motivo;
+    b.onclick = () => {
+      proposta = { tipo: 'poe', orbe: tipo };
+      desenhar();
+    };
+    linha.append(b);
+  }
+  caixa.append(linha);
+  if (proposta?.tipo !== 'poe') return;
+  const tipo = proposta.orbe;
+  const item = itemDoOrbe(tipo);
+  const motivo = motivoDoOrbePoe(tipo, sq, max);
+  const p = el('div', 'orbe-proposta');
+  if (motivo) p.append(el('b', null, 'Não dá para usar agora'), el('p', null, motivo));
+  else {
+    p.append(
+      el('b', null, `Proposta: usar ${item?.name ?? 'o orbe'} nesta peça`),
+      el('p', null, `${PARA_QUE_SERVE[tipo][0].toUpperCase()}${PARA_QUE_SERVE[tipo].slice(1)} (é sorteio: o resultado pode ser pior). Gasta 1 (sobram ${quantosOrbes(tipo) - 1}).${tipo === 'fusao' ? ' As gemas ficam onde estão.' : ''}`)
+    );
+    p.append(botoesDaProposta(() => send({ t: 'gema', action: 'orbePoe', tipo, slot: slotAberto })));
+  }
+  caixa.append(p);
 }
 
 /** "Confirmar" e "Cancelar" de uma proposta. Confirmar manda UMA vez (o botão se desliga) e limpa a proposta. */

@@ -76,6 +76,9 @@ export function normalizar(bruto = {}) {
     estado: ESTADOS.includes(bruto.estado) ? bruto.estado : 'rascunho',
     versao: Number.isInteger(bruto.versao) && bruto.versao > 0 ? bruto.versao : 1,
     inicio: bruto.inicio ?? null,
+    // A CIDADE do ato (dono, 07/10: "falta a ramificação inicial que é a cidade"): o nó de partida do mapa — não é hunt, está sempre
+    // aberta e dela saem as ligações para a(s) fase(s) inicial(is). `posicao` no espaço do editor (920×520), como as fases.
+    cidade: bruto.cidade ? { nome: bruto.cidade.nome ?? 'Cidade', posicao: bruto.cidade.posicao ?? null, conexoes: lista(bruto.cidade.conexoes) } : null,
     fases: lista(bruto.fases).map((f) => ({
       id: f.id ?? '',
       nome: f.nome ?? '',
@@ -259,6 +262,8 @@ export function validarAto(bruto, ctx = {}) {
 
   // ---- ligações
   const pares = new Set();
+  for (const id of a.cidade?.conexoes ?? []) if (!a.fases.some((f) => f.id === id)) r.push(erro('ato.cidade', `A cidade liga à fase "${id}", que não existe.`));
+  if (a.cidade && !a.cidade.conexoes.length && a.inicio) r.push(aviso('ato.cidade', 'A cidade não liga a nenhuma fase: ligue-a à fase inicial.'));
   for (const c of a.conexoes) {
     const onde = `ligação ${c.de} → ${c.para}`;
     if (!ids.has(c.de)) r.push(erro(onde, `A fase de origem "${c.de}" não existe.`));
@@ -307,7 +312,7 @@ export const temErro = (problemas) => problemas.some((p) => p.nivel === 'erro');
 // ------------------------------------------------------------------ comparação entre versões
 
 const igual = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
-const CAMPOS_DO_ATO = ['nome', 'descricao', 'imagem', 'nivelRecomendado', 'ordem', 'anterior', 'seguinte', 'requisitos', 'progressao', 'estado', 'inicio'];
+const CAMPOS_DO_ATO = ['nome', 'descricao', 'imagem', 'nivelRecomendado', 'ordem', 'anterior', 'seguinte', 'requisitos', 'progressao', 'estado', 'inicio', 'cidade'];
 const CAMPOS_DA_FASE = ['nome', 'descricao', 'ordem', 'huntId', 'tipo', 'nivel', 'obrigatoria', 'requisitos', 'objetivos', 'conclusao', 'recompensas', 'eventos', 'sobrescritas'];
 const chaveDaLigacao = (c) => `${c.de}>${c.para}`;
 

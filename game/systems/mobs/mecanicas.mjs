@@ -25,6 +25,7 @@ import { gradeDaHunt, huntOuMapaCustom } from '../hunt/terreno.mjs';
 import { andarDaGrade } from '../hunt/andares.mjs';
 import { daSala } from '../hunt/instancia.mjs';
 import * as Dot from '../combate/dot.mjs';
+import * as ModsPoe from '../itens-poe/mods-poe.mjs';
 
 // A geometria das áreas é a compartilhada (`engine/areas.mjs`): a distância em casas e o quadrado do raio.
 const distancia = Areas.distancia;
@@ -138,7 +139,7 @@ export function aoAtacar(estado, hunt, personagem, m, danoDoGolpe, eventos) {
     const total = (danoDoGolpe * (mec.danoPctDoGolpe ?? 30)) / 100;
     // O dano contínuo no JOGADOR passa pelo motor de efeitos (`combate/dot.mjs`): acumulação por tipo, relógio da caçada, resistência no pulso.
     const tipo = Dot.tipoDoElemento(mec.elemento ?? 'earth');
-    if (tipo) Dot.aplicarNoJogador(hunt, { tipo, total, duracaoMs: pulsos * 1000, origem: { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key } }, agora);
+    if (tipo) ModsPoe.dotNoJogador(hunt, { tipo, total, duracaoMs: pulsos * 1000, origem: { fonte: 'mob', mob: m.name, uid: m.uid, key: m.key } }, agora);
   }
 }
 

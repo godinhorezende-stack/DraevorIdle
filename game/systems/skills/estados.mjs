@@ -59,14 +59,16 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
     estados.controleImuneAte = agora + dur + (cfg.controle?.imunidade ?? 0);
     postos.push(nome);
   };
-  if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', cfg.congelado?.duracao ?? 1500);
+  // (`congelarDuracaoPct`: a "Duração do Congelamento em Inimigos aumentada" do PoE.)
+  if (podeControlar && efeito.congelarChance > 0 && rng() * 100 < efeito.congelarChance) prender('congelado', (cfg.congelado?.duracao ?? 1500) * (1 + (efeito.congelarDuracaoPct ?? 0) / 100));
   else if (podeControlar && efeito.atordoarChance > 0 && rng() * 100 < efeito.atordoarChance) prender('atordoado', cfg.atordoado?.duracao ?? 1500);
 
   if (efeito.lentidaoPct > 0) {
     const maximo = cfg.lento?.maximo ?? 40;
     const pct = Math.min(maximo, efeito.lentidaoPct) * (chefe ? cfg.chefe?.lento ?? 1 : 1);
     if (pct > 0) {
-      const ate = agora + duracaoNo(bicho, cfg.lento?.duracao ?? 3000);
+      // (`lentidaoDuracaoPct`: a "Duração do Resfriamento em Inimigos aumentada" do PoE.)
+      const ate = agora + duracaoNo(bicho, (cfg.lento?.duracao ?? 3000) * (1 + (efeito.lentidaoDuracaoPct ?? 0) / 100));
       const l = estados.lento;
       // Vale a MAIOR lentidão (não a última) e nunca encurta o que já corre.
       estados.lento = ativo(l, agora) ? { ate: Math.max(l.ate, ate), pct: Math.max(l.pct, pct) } : { ate, pct };
@@ -74,6 +76,22 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
     }
   }
   return postos;
+}
+
+/**
+ * O ATORDOAMENTO do PoE num acerto do jogador (`itens-poe/mods-poe.mjs → atordoar`): as mesmas regras de controle do Draevor (chefe,
+ * imunidade depois, resistência do bicho). `duracaoMs` já vem pronta. Devolve true se atordoou.
+ */
+export function atordoar(bicho, duracaoMs, agora, salaDeBoss = false) {
+  if (!bicho || bicho.hp <= 0 || !(duracaoMs > 0)) return false;
+  const cfg = E();
+  const estados = (bicho.estados ??= {});
+  const preso = ativo(estados.congelado, agora) || ativo(estados.atordoado, agora) || agora < (estados.controleImuneAte ?? 0);
+  if (preso || (ehChefe(bicho, salaDeBoss) && (cfg.chefe?.controle ?? 1) <= 0) || resistenciaDoBichoAControle(bicho) >= 100) return false;
+  const dur = duracaoNo(bicho, duracaoMs);
+  estados.atordoado = { ate: agora + dur };
+  estados.controleImuneAte = agora + dur + (cfg.controle?.imunidade ?? 0);
+  return true;
 }
 
 /** Os estados ATIVOS do bicho agora (o cliente mostra um ícone de cada): `['congelado', 'lento', 'queimando']`. */
@@ -103,7 +121,9 @@ export function tique(hunt, eventos, agora) {
   for (const m of hunt?.monstros ?? []) {
     // A REGENERAÇÃO do modificador (`regen`: % da vida por segundo — ver `mobs/raridade.mjs`).
     if (m.regen && m.hp > 0 && m.hp < m.maxHp && R.jaPode(agora, m.proximaRegen)) {
-      m.hp = Math.min(m.maxHp, m.hp + Math.max(1, Math.round((m.maxHp * m.regen) / 100)));
+      // (PoE: "Inimigos Desacelerados por você têm Regeneração de Vida reduzida em X%".)
+      const desacelerado = ativo(m.estados?.desacelerado, agora) ? Math.max(0, 1 - (m.estados.desacelerado.regenMenosPct ?? 0) / 100) : 1;
+      m.hp = Math.min(m.maxHp, m.hp + Math.max(desacelerado > 0 ? 1 : 0, Math.round((m.maxHp * m.regen * desacelerado) / 100)));
       m.proximaRegen = agora + 1000;
     }
   }

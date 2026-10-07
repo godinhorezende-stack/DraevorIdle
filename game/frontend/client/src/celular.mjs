@@ -92,7 +92,7 @@ let relogioDaConfirmacao = 0;
 function momento() {
   const hunt = api.state().hunt;
   if (!hunt) return 'cidade';
-  return hunt.huntId === 'treino' ? 'treino' : 'caca';
+  return 'caca';
 }
 
 function tocarNoCentro() {
@@ -122,7 +122,7 @@ function pintarCentro() {
   const agora = momento();
   const botao = nos.centro;
   const confirmando = agora !== 'cidade' && Date.now() < confirmandoAte;
-  const rotulo = confirmando ? 'Parar?' : agora === 'cidade' ? 'Caçar' : agora === 'treino' ? 'Parar treino' : 'Parar';
+  const rotulo = confirmando ? 'Parar?' : agora === 'cidade' ? 'Caçar' : 'Parar';
   if (botao.dataset.rotulo === rotulo) return;
   botao.dataset.rotulo = rotulo;
   botao.dataset.momento = agora;
@@ -419,20 +419,18 @@ function ligarMenuDoItem() {
  * enquanto qualquer uma das cinco estiver aberta, e cada aba abre a MESMA
  * janela de sempre (com o mesmo desenho, arrasto e menus).
  */
+// O equipamento e a mochila numa aba só (dono, 06/10: o inventário do PoE — a mochila junto com os equipamentos).
 const ABAS_DA_MOCHILA = [
-  ['inventory', 'Equipado'],
-  ['container', 'Mochila'],
+  ['inventory', 'Inventário'],
   ['loot', 'Loot'],
-  ['bossPouch', 'Boss Pouch'],
-  ['storeInbox', 'Store Inbox'],
 ];
 const CHAVE_DA_ABA = 'draevor:aba-mochila';
 const abaGuardada = () => {
   try {
     const id = localStorage.getItem(CHAVE_DA_ABA);
-    return ABAS_DA_MOCHILA.some(([aba]) => aba === id) ? id : 'container';
+    return ABAS_DA_MOCHILA.some(([aba]) => aba === id) ? id : 'inventory';
   } catch {
-    return 'container';
+    return 'inventory';
   }
 };
 const abaAberta = () => ABAS_DA_MOCHILA.map(([id]) => id).find((id) => api.janelaAberta(id)) ?? null;

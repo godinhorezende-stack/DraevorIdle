@@ -24,6 +24,8 @@ import * as AnaliseItemPower from './item-power-analise.mjs';
 import * as EditorItemPower from './item-power-editor.mjs';
 import * as SpritesItens from './overrides-sprites-itens.mjs';
 import * as OverridesClasses from './overrides-classes.mjs';
+// A Arena de Efeitos carrega o combate inteiro (caçada, gemas): só quando uma rota dela é chamada.
+const arenaEfeitos = () => import('./arena-efeitos.mjs');
 import * as Classes from '../systems/classes.mjs';
 import * as ItemPower from '../systems/item-power.mjs';
 import * as Conjuntos from '../systems/conjuntos.mjs';
@@ -116,6 +118,9 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'sprites-itens') return json(res, 200, SpritesItens.listar()), true;
     if (rota.startsWith('sprites-itens/')) { const s = SpritesItens.obter(decodeURIComponent(rota.slice('sprites-itens/'.length))); return s ? json(res, 200, s) : json(res, 404, { ok: false, erros: ['Item não encontrado.'] }), true; }
     // Editor de Classes: a configuração (com os personagens por classe), versões e comparação — só leitura.
+    // Arena de Efeitos (o visual das skills): o override, as skills e as versões — só leitura.
+    if (rota === 'efeitos') return json(res, 200, (await arenaEfeitos()).obter()), true;
+    if (rota === 'efeitos/versoes') return json(res, 200, { versoes: (await arenaEfeitos()).versoes() }), true;
     if (rota === 'classes') return json(res, 200, OverridesClasses.obter(await contagensDeClasses())), true;
     if (rota === 'classes/versoes') return json(res, 200, { versoes: OverridesClasses.versoes() }), true;
     if (rota === 'classes/comparar') { const r = OverridesClasses.comparar(url.searchParams.get('de'), url.searchParams.get('para') ?? 'atual'); return json(res, r.ok ? 200 : 404, r), true; }
@@ -140,6 +145,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
     if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
     if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
+    if (rota === 'operacao/servidor') return json(res, 200, Operacao.estadoDoServidor()), true;
     // Overrides por cima do dado importado (monstros): leitura; a edição é POST `overrides` (grava) e `overrides/validar` (só pré-visualiza).
     // Sprites (monstros, outfits e montarias: o mesmo formato de folha). `overrides/sprites/<look>` é o look inteiro: original, override, quem usa, versões.
     if (rota === 'overrides/sprites') return json(res, 200, OverridesSprites.listar()), true;
@@ -224,6 +230,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
     if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
     if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'operacao/reiniciar') return json(res, 200, Operacao.reiniciar({ quem: req.engineQuem ?? null, motivo: dados?.motivo ?? null, desligar: Operacao.aoReiniciar })), true;
     if (rota === 'hot-reload/recarregar') {
       if (!hot?.estadoAtual().ativo) return json(res, 409, { ok: false, erros: [`Hot Reload desligado: ${(hot?.estadoAtual() ?? SEM_HOT).motivoInativo}`] }), true;
       const r = await hot.recarregar(String(dados?.tipo ?? ''), dados?.id ?? null);
@@ -321,6 +328,19 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'item-power/resolver-defesa') { const r = EditorItemPower.resolverDefesa(String(dados?.id ?? ''), dados?.override ?? null, String(dados?.tipo ?? ''), dados?.valor); return json(res, r.ok ? 200 : 400, r), true; }
     // Classes: validar/prévia (só lê); salvar, reverter, restaurar e migrar (gravam).
     if (rota === 'classes/previa') return json(res, 200, { previa: Classes.previaDeEfeitos(dados?.efeitos ?? {}, { str: Number(dados?.str) || 0, dex: Number(dados?.dex) || 0, int: Number(dados?.int) || 0 }) }), true;
+    // Arena de Efeitos: simular (lança a skill no combate de verdade, sem gravar nada); salvar/restaurar e enviar asset (gravam).
+    if (rota === 'efeitos/previa') return json(res, 200, (await arenaEfeitos()).previa(dados?.override)), true;
+    if (rota === 'efeitos/combate') { const r = (await arenaEfeitos()).combate(dados ?? {}); return json(res, r.ok ? 200 : 400, r), true; }
+    if (rota === 'efeitos/simular') { const r = (await arenaEfeitos()).simular(dados ?? {}); return json(res, r.ok ? 200 : 400, r), true; }
+    if (rota === 'efeitos/asset') { const r = (await arenaEfeitos()).enviarAsset(dados ?? {}, dados?.revisao); return json(res, status(r), r), true; }
+    if (rota === 'efeitos') {
+      const a = dados?.acao;
+      const responder = (r) => (json(res, status(r), r), true);
+      const A = await arenaEfeitos();
+      if (a === 'salvar') return responder(A.salvar(dados.override, dados.revisao));
+      if (a === 'restaurar') return responder(A.restaurar(dados.versao, dados.revisao));
+      return json(res, 400, { ok: false, erros: ['acao deve ser salvar ou restaurar.'] }), true;
+    }
     if (rota === 'classes/validar') return json(res, 200, OverridesClasses.propor(dados?.override ?? null, { contagens: await contagensDeClasses() })), true;
     if (rota === 'classes') {
       const a = dados?.acao;

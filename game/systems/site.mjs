@@ -196,7 +196,7 @@ export async function status(categoria = 'level', agora = Date.now()) {
 
 // ------------------------------------------------------------ /api/online
 
-const lugarDoAusente = (a) => (a.huntId === 'treino' ? 'Pátio de treino' : a.huntId ? nomeDaHunt(a.huntId) : null);
+const lugarDoAusente = (a) => (a.huntId ? nomeDaHunt(a.huntId) : null);
 
 /*
  * Quem caça de aba fechada ganha `cacandoOffline: true` na linha do ranking (o
@@ -208,9 +208,8 @@ const marcarAusente = (agora) => (linha) =>
 
 /** Onde a pessoa está, nas palavras da página /online. */
 function atividade(e) {
-  if (e.exercicio?.treinando) return { onde: 'exercise', lugar: 'Treinando' };
   if (e.hunt) {
-    const lugar = e.hunt.huntId === 'treino' ? 'Pátio de treino' : nomeDaHunt(e.hunt.huntId);
+    const lugar = nomeDaHunt(e.hunt.huntId);
     return { onde: e.hunt.modo === 'online' ? 'online' : 'automatica', lugar };
   }
   return { onde: 'cidade', lugar: null };
@@ -295,7 +294,6 @@ function draevor(e) {
     blessings: (e.blessings ?? []).length,
     charms: seguro(() => Charms.pontosGanhos(e)),
     bestiario: Object.keys(e.bestiary ?? {}).length,
-    proficiencias: Object.keys(e.proficiencia ?? {}).length,
     bossTasks: (e.bossTasks ?? []).filter((t) => t.feito).length,
     mountTasks: (e.tarefas?.montarias ?? []).length,
     voltas: Object.values(e.huntLaps ?? {}).reduce((a, n) => a + n, 0),

@@ -63,8 +63,9 @@
       "unico": 0.00055,
       "_nota": "Números do dono (05/10): Normal ~0,80–0,90, Mágico ~0,10–0,15, Raro ~0,02–0,04, Único ~0,0001–0,001 — aqui o ponto médio de cada faixa. São PESOS relativos (o sorteio divide pela soma), valendo para cada peça que cai."
     },
-    "ilvlMaximo": 100
-  },
+    "ilvlMaximo": 100,
+  "qualidade": {"chance": 0.125, "maximo": 20, "_nota": "Dono (07/10): parte das armas, armaduras e frascos cai Superior, com 1 a `maximo`% de qualidade (chance por peça); o resto cai com 0%, como no PoE."}
+ },
   "ouro": {
     "_nota": "O OURO que o monstro do PoE solta ao morrer (pedido do dono, 05/10): pelo LEVEL do monstro, um valor ALEATÓRIO entre o mínimo e o máximo da tabela (entre dois levels da tabela, a faixa é interpolada), × o multiplicador da raridade do monstro. `porRaridade` vazio para uma raridade = usa (1 + bonusDeQuantidade do drop) — a mesma regra do dono para a quantidade de itens (Mágico ×2,5; Raro ×8,5; Único ×29,5). Soma o Gold Find do jogador. Cai no bolso, como as moedas.",
     "tabela": [
@@ -116,13 +117,20 @@
       "Two_Hand_Swords": 6, "Two_Hand_Axes": 6, "Two_Hand_Maces": 6, "Staves": 6, "Warstaves": 6, "Bows": 6
     },
     "porItemLevel": [[1, 2], [2, 3], [25, 4], [35, 5], [50, 6]],
-    "chanceDeLink": 0.5
+    "chanceDeLink": 0.5,
+    "cores": {"_nota": "As CORES dos sockets (dono, 06/10: 'como no PoE'): R vermelho (Força), G verde (Destreza), B azul (Inteligência), W branco (aceita qualquer gema). Cada cor sai com o peso `requisito do atributo da peça + constante` (a aproximação das calculadoras da comunidade: o PoE não publica a conta). A gema só entra no socket da cor dela; gema branca e socket branco aceitam qualquer uma. Peça que já existia sem cor: a cor sai de um sorteio fixo da peça, e o socket que já tinha gema fica com a cor dela (nenhuma gema sai do lugar).", "constante": 12},
+    "orbes": {
+      "_nota": "Os ORBES do PoE no lugar dos do Draevor (dono, 06/10). Joalheiro: sorteia de novo o NÚMERO de sockets (sempre outro; peça no máximo não aceita). Fusão: sorteia de novo os LINKS (peça toda ligada não aceita). Cromático: sorteia de novo as CORES (sempre outra combinação). Joalheiro e Cromático pedem a peça SEM gema encaixada (nenhuma gema sai sozinha); a Fusão não mexe nas gemas. As chances do PoE não são públicas: os pesos seguem o custo da bancada do PoE (Joalheiro: 3 sockets = 3, 4 = 10, 5 = 70, 6 = 350; Fusão: 3 links = 3, 4 = 5, 5 = 150, 6 = 1.500). `chancePorAto`: a chance de cair de cada bicho (a Fundidora do Draevor cai a 0,1%–0,25%). `loja.preco`: o preço na Zuma, em gold. PREÇOS E CHANCES SÃO UM PONTO DE PARTIDA — decisão de economia do dono.",
+      "joalheiro": {"itemId": 915001, "nome": "Orbe do Joalheiro", "nomeEn": "Jeweller's Orb", "icone": "Jewellers_Orb.png", "descricao": "Use numa peça vestida sem gemas: sorteia de novo o número de sockets (sempre outro número, até o máximo da peça). Cores e links também saem de novo.", "pesoPorNumero": {"1": 1, "2": 1, "3": 0.333, "4": 0.1, "5": 0.0143, "6": 0.00286}, "chancePorAto": {"1": 0.002, "2": 0.003, "3": 0.004, "4": 0.005}, "loja": {"disponivel": true, "preco": 50000}},
+      "fusao": {"itemId": 915002, "nome": "Orbe da Fusão", "nomeEn": "Orb of Fusing", "icone": "Orb_of_Fusing.png", "descricao": "Use numa peça vestida: sorteia de novo os links entre os sockets (6 ligados é raríssimo). As gemas ficam onde estão.", "chanceDeLigarTodos": {"2": 0.9, "3": 0.333, "4": 0.2, "5": 0.00667, "6": 0.000667}, "chancePorAto": {"1": 0.001, "2": 0.0015, "3": 0.002, "4": 0.0025}, "loja": {"disponivel": true, "preco": 150000}},
+      "cromatico": {"itemId": 915003, "nome": "Orbe Cromático", "nomeEn": "Chromatic Orb", "icone": "Chromatic_Orb.png", "descricao": "Use numa peça vestida sem gemas: sorteia de novo as cores dos sockets (sempre outra combinação; a cor puxa para o atributo que a peça pede).", "chancePorAto": {"1": 0.003, "2": 0.004, "3": 0.005, "4": 0.006}, "loja": {"disponivel": true, "preco": 20000}}
+    }
   },
   "frascos": {
-    "_nota": "Os FRASCOS do PoE (systems/itens-poe/frascos.mjs). `vagas`: o cinto. `usoAutomatico`: o jogo usa sozinho na caçada — Vida abaixo de vidaAbaixoPct da vida, Mana abaixo de manaAbaixoPct, Utilidade sempre que há monstro vivo. `cargasPorMorte`: cargas que cada frasco do cinto ganha por monstro morto, pela raridade (× a Recuperação de Cargas do frasco). `utilidade`: o efeito da BASE de cada frasco de Utilidade (o PoE não traz no catálogo importado; números do PoE 1), nos atributos do Draevor — Diamante, Quartzo e Enxofre são aproximados; Água-marinha, Corindo e Ferro (imunidades, Proteção) ficam só no texto.",
+    "_nota": "Os FRASCOS do PoE (systems/itens-poe/frascos.mjs). `vagas`: o cinto. `usoAutomatico`: o jogo usa sozinho na caçada — Vida abaixo de vidaAbaixoPct da vida, Mana abaixo de manaAbaixoPct, Utilidade sempre que há monstro vivo. `cargasPorMorte`: cargas que cada frasco do cinto ganha por monstro morto, pela raridade (dono, 07/10: Comum 1, Mágico 3,5, Raro 6, Único 11; voltar à cidade enche na hora) (× a Recuperação de Cargas do frasco). `utilidade`: o efeito da BASE de cada frasco de Utilidade (o PoE não traz no catálogo importado; números do PoE 1), nos atributos do Draevor — Diamante, Quartzo e Enxofre são aproximados; Água-marinha, Corindo e Ferro (imunidades, Proteção) ficam só no texto.",
     "vagas": 5,
     "usoAutomatico": { "vidaAbaixoPct": 50, "manaAbaixoPct": 30, "utilidadeEmCombate": true },
-    "cargasPorMorte": { "normal": 1, "modificado": 2, "raro": 5, "elite": 5, "unico": 10, "boss": 10 },
+    "cargasPorMorte": { "normal": 1, "modificado": 3.5, "raro": 6, "elite": 6, "unico": 11, "boss": 11 },
     "utilidade": {
       "Ruby_Flask": { "texto": "+50% de Resistência a Fogo", "af": { "fire_res": 50 } },
       "Sapphire_Flask": { "texto": "+50% de Resistência a Gelo", "af": { "ice_res": 50 } },
@@ -143,5 +151,6 @@
       "Corundum_Flask": { "texto": "Não pode ser Atordoado (ainda sem efeito no Draevor)", "af": {} },
       "Iron_Flask": { "texto": "Restaura Proteção (ainda sem efeito no Draevor)", "af": {} }
     }
-  }
+  },
+  "moedas": {"_nota": "As MOEDAS do PoE (systems/itens-poe/moedas.mjs — dono, 07/10). `drop.chancePorMonstro`: a chance de cair UMA moeda por monstro morto, pelo tipo (acima de 1 = mais de uma). `drop.pesos`: qual moeda cai (só as que têm efeito no jogo; as comuns muito, o Espelho quase nunca — proporção inspirada no PoE). `loja`: as que a Zuma vende, em gold. `chance`: o que a Orbe da Chance vira (pesos). TUDO É PONTO DE PARTIDA — decisão de economia do dono.", "drop": {"chancePorMonstro": {"normal": 0.03, "magico": 0.06, "raro": 0.15, "unico": 0.3, "boss": 1}, "pesos": {"Orb_of_Transmutation": 1000, "Transmutation_Shard": 800, "Orb_of_Augmentation": 700, "Armourers_Scrap": 600, "Alteration_Shard": 600, "Orb_of_Alteration": 500, "Blacksmiths_Whetstone": 500, "Chromatic_Orb": 400, "Jewellers_Orb": 300, "Alchemy_Shard": 300, "Orb_of_Chance": 250, "Glassblowers_Bauble": 200, "Chaos_Shard": 150, "Orb_of_Fusing": 120, "Regal_Shard": 120, "Orb_of_Alchemy": 100, "Orb_of_Scouring": 80, "Regal_Orb": 50, "Chaos_Orb": 50, "Gemcutters_Prism": 40, "Vaal_Orb": 40, "Orb_of_Binding": 40, "Orb_of_Regret": 30, "Blessed_Orb": 25, "Annulment_Shard": 25, "Exalted_Shard": 12, "Orb_of_Annulment": 5, "Fracturing_Shard": 5, "Divine_Orb": 4, "Exalted_Orb": 3, "Ancient_Orb": 3, "Gemcutters_Lens": 2, "Volatile_Vaal_Orb": 2, "Tainted_Chromatic_Orb": 2, "Tainted_Orb_of_Fusing": 2, "Tainted_Jewellers_Orb": 2, "Tainted_Chaos_Orb": 2, "Tainted_Exalted_Orb": 2, "Tainted_Armourers_Scrap": 2, "Tainted_Blacksmiths_Whetstone": 2, "Tainted_Divine_Teardrop": 1, "Tainted_Mythic_Orb": 0.5, "Djinn-Touched_Vaal_Orb": 1, "Foulborn_Orb_of_Augmentation": 1, "Foulborn_Regal_Orb": 1, "Foulborn_Exalted_Orb": 1, "Fracturing_Orb": 1, "Sacred_Orb": 0.3, "Mirror_Shard": 0.4, "Mirror_of_Kalandra": 0.02}}, "loja": {"Orb_of_Transmutation": 2000, "Orb_of_Augmentation": 3000, "Armourers_Scrap": 2000, "Blacksmiths_Whetstone": 3000, "Glassblowers_Bauble": 4000, "Orb_of_Alteration": 5000, "Orb_of_Chance": 8000, "Orb_of_Scouring": 15000, "Chromatic_Orb": 20000, "Orb_of_Alchemy": 25000, "Jewellers_Orb": 50000, "Orb_of_Binding": 50000, "Blessed_Orb": 50000, "Orb_of_Regret": 40000, "Regal_Orb": 60000, "Chaos_Orb": 80000, "Gemcutters_Prism": 100000, "Vaal_Orb": 120000, "Orb_of_Fusing": 150000}, "chance": {"magico": 80, "raro": 19, "unico": 1}}
 }

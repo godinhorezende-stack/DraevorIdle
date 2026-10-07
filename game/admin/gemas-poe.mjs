@@ -12,6 +12,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { join, normalize, extname } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
+import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
 
 const RAIZ = process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe';
 export const PASTA = join(RAIZ, 'poe-gemas-poedb');
@@ -45,12 +46,25 @@ export function listar() {
       // O status NO JOGO (o que o combate do Draevor faz da gema — `itens-poe/gemas-poe.mjs`), separado do da arena.
       ...(jogo[g.slug] ? { statusJogo: jogo[g.slug].status, motivosJogo: jogo[g.slug].motivos, moldeJogo: jogo[g.slug].molde } : {}),
     };
-  });
+  }).concat(listarSuportes());
+}
+
+/** Os SUPORTES do PoE (`itens-poe/suportes-poe.mjs`): não têm arena (o status é só o do jogo). */
+function listarSuportes() {
+  return [...SuportesPoe.REGISTRO.values()].map(({ suporte: x, status, motivos }) => ({
+    slug: x.slug, nome: x.nome, en: x.en, cor: x.cor, nivelReq: x.nivelReq, tags: x.tags, icone: x.icone, iconeUrl: `/api/jogo/poe/icone/suporte/${encodeURIComponent(x.icone.replace(/^icones\//, ''))}`,
+    suporte: true, arquetipo: 'suporte', arquetipoNome: 'Suporte', status: null, motivos: [], statusJogo: status, motivosJogo: motivos,
+  }));
 }
 
 /** Tudo de uma gema: os dados do poedb (propriedades, mods, qualidade, tabela por nível, onde se ganha) e a verificação em execução. */
 export function detalhe(slug) {
   const { gemas, status } = carregar();
+  const sp = SuportesPoe.doSlug(slug);
+  if (sp) {
+    const x = sp.suporte;
+    return { ...x, props: x.props, qualidade: x.qualidade, suporte: true, iconeUrl: `/api/jogo/poe/icone/suporte/${encodeURIComponent(x.icone.replace(/^icones\//, ''))}`, verificacao: null, noJogo: { status: sp.status, motivos: sp.motivos, gatilho: SuportesPoe.fichaNoNivel(slug, 1)?.gatilho ?? null, requer: SuportesPoe.requerDe(x) } };
+  }
   const g = gemas.find((x) => x.slug === slug);
   const r = GemasPoe.doSlug(slug);
   return g ? { ...g, verificacao: status[slug] ?? null, noJogo: r ? { status: r.statusNoJogo, motivos: r.motivosNoJogo, molde: r.molde, formato: r.formato, elemento: r.elemento, itemId: r.itemId, acao: r.acao, ataque: r.ataque, tempos: { 1: GemasPoe.temposNoNivel(slug, 1), 20: GemasPoe.temposNoNivel(slug, 20) } } : null } : null;
@@ -84,6 +98,13 @@ window.addEventListener('message', (e) => {
   };
   escolher();
 });
+// A gema escolhida AQUI vai para a engine (a Arena de Efeitos embaixo escolhe a mesma).
+document.addEventListener('click', (e) => {
+  const li = e.target.closest && e.target.closest('#lista-gemas li');
+  if (!li || !window.GEMAS || window.parent === window) return;
+  const g = window.GEMAS.find((x) => (li.dataset.slug || '') === x.slug) || window.GEMAS.find((x) => li.textContent.includes(x.nome));
+  if (g) window.parent.postMessage({ tipo: 'gemaEscolhida', slug: g.slug }, '*');
+});
 </script>`;
 
 /** Um arquivo da coleção (caminho relativo à pasta), ou null. `{ tipo, corpo }`. */
@@ -93,6 +114,11 @@ export function arquivo(relativo) {
   const tipo = TIPOS[extname(alvo).toLowerCase()];
   if (!tipo || !existsSync(alvo) || !statSync(alvo).isFile()) return null;
   let corpo = readFileSync(alvo);
-  if (alvo === join(PASTA, 'engine', 'index.html')) corpo = Buffer.from(String(corpo).replace('</body>', `${PONTE}\n</body>`));
+  if (alvo === join(PASTA, 'engine', 'index.html')) corpo = Buffer.from(String(corpo).replace('</body>', `${PONTE}\n<script type="module" src="/client/src/arena-gemas-sprites.mjs"></script>\n</body>`));
+  // Os SPRITES DO JOGO na arena (dono, 06/10): só na hora de servir, sem mexer nos arquivos dela — o mundo fica visível para o desenho do
+  // jogo (`window.__arenaMundo`) e o desenho dela chama o do jogo antes (que desenha tudo e devolve true quando a chave "Sprites do jogo"
+  // está ligada). Se o código da arena mudar e o trecho não casar, ela segue com o desenho próprio.
+  if (alvo === join(PASTA, 'engine', 'src', 'principal.mjs')) corpo = Buffer.from(String(corpo).replace('const mundo = criarMundo();', 'const mundo = criarMundo(); window.__arenaMundo = mundo;'));
+  if (alvo === join(PASTA, 'engine', 'src', 'render', 'render.mjs')) corpo = Buffer.from(String(corpo).replace('export function desenhar(r, m, ui) {', 'export function desenhar(r, m, ui) {\n  if (window.__desenharComSprites?.(r, m, ui)) return;'));
   return { tipo, corpo };
 }

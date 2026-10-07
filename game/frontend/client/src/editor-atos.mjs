@@ -14,6 +14,7 @@ const obrigatorio = (v) => (v ? null : 'Digite um ID.');
 
 import { tabelaDeDrops } from './editor-drops.mjs';
 import { vistaValidacao, vistaPrevia, vistaVersoes, vistaPublicacao } from './editor-atos-vistas.mjs';
+import { vistaMapa } from './editor-atos-mapa.mjs';
 
 const NS = 'http://www.w3.org/2000/svg';
 const L = 920;
@@ -209,11 +210,12 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
   }
 
   // ------------------------------------------------------------------ edição
-  function novaFase() {
+  function novaFase(posicao = null) {
     const n = E.ato.fases.length + 1;
     let id = `fase-${n}`;
     while (faseDe(id)) id = `${id}-x`;
     E.ato.fases.push({ id, nome: `Fase ${n}`, descricao: '', ordem: n, huntId: null, tipo: 'hunt-normal', nivel: null, obrigatoria: true, requisitos: { exige: [] }, objetivos: [], conclusao: { tipo: 'limpar-hunt' }, recompensas: null, eventos: [], sobrescritas: {}, posicao: null });
+    if (posicao) E.ato.fases.at(-1).posicao = { x: Math.round(posicao.x), y: Math.round(posicao.y) };
     if (!E.ato.inicio) E.ato.inicio = id;
     E.fase = id;
     mudou();
@@ -305,6 +307,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
       svg.append(sv('g', { 'pointer-events': 'none' }, ...linhas));
     }
     // A imagem de fundo do ato (o mapa desenhado por trás do grafo).
+    // `slice` cobre o espaço todo cortando a sobra — a MESMA regra da tela do jogo (world-arte.mjs): o nó cai no mesmo ponto da arte nos dois.
     if (E.ato.imagem) svg.append(sv('image', { href: `/api/mapas/_conteudo/atos-imagem/${encodeURIComponent(E.ato.imagem)}?v=${E.versaoDaImagem ?? 0}`, x: 0, y: 0, width: L, height: A, preserveAspectRatio: 'xMidYMid slice', opacity: 0.55 }));
     E.ato.conexoes.forEach((c, i) => {
       const a = pos.get(c.de);
@@ -331,6 +334,13 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
       svg.append(sv('line', { x1: ult.x + RAIO, y1: ult.y, x2: bx - 26, y2: ult.y, stroke: '#b57bff', 'stroke-width': 2, 'stroke-dasharray': '2 5', 'marker-end': 'url(#seta)' }),
         sv('circle', { cx: bx, cy: ult.y, r: 24, fill: '#2a1a40', stroke: '#b57bff', 'stroke-width': 2 }), sv('text', { x: bx, y: ult.y + 4, 'text-anchor': 'middle', fill: '#e8c8ff', 'font-size': 10 }, 'BOSS'),
         sv('text', { x: bx, y: ult.y + 42, 'text-anchor': 'middle', fill: '#b57bff', 'font-size': 10 }, bf.bossId ? bf.bossId.slice(0, 18) : 'sem boss'));
+    }
+    // A CIDADE (o nó de partida, verde — dono, 07/10): no Fluxo só se mostra, com as estradas dela; posiciona-se na vista Mapa.
+    if (E.ato.cidade) {
+      const c = E.ato.cidade;
+      const pc = c.posicao ?? { x: 40, y: A / 2 };
+      for (const id of c.conexoes ?? []) { const b = pos.get(id); if (b) svg.append(sv('line', { x1: pc.x, y1: pc.y, x2: b.x, y2: b.y, stroke: '#4fae4a', 'stroke-width': 2, 'stroke-dasharray': '6 4', 'marker-end': 'url(#seta)' })); }
+      svg.append(sv('g', { transform: `translate(${pc.x} ${pc.y})` }, sv('circle', { r: RAIO, fill: '#1f4a30', stroke: '#4fae4a', 'stroke-width': 2.5 }), sv('text', { y: 4, 'text-anchor': 'middle', fill: '#dfffe0', 'font-size': 11 }, '⌂'), sv('text', { y: RAIO + 14, 'text-anchor': 'middle', fill: '#9ad99a', 'font-size': 10.5 }, c.nome)));
     }
     for (const f of E.ato.fases) {
       const p = pos.get(f.id);
@@ -381,6 +391,14 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
       });
       svg.append(g);
     }
+    svg.addEventListener('dblclick', (ev) => {
+      if (E.somenteLeitura || ev.target.closest('g')) return;
+      const caixa = svg.getBoundingClientRect();
+      const k = L / E.zoom / caixa.width;
+      const naGrade = (v) => (E.grade && !ev.altKey ? Math.round(v / 20) * 20 : Math.round(v));
+      lembrar();
+      novaFase({ x: naGrade(Math.min(L - 30, Math.max(30, E.pan.x + (ev.clientX - caixa.left) * k))), y: naGrade(Math.min(A - 40, Math.max(30, E.pan.y + (ev.clientY - caixa.top) * k))) });
+    });
     let moveuAVista = false;
     svg.addEventListener('pointerdown', (ev) => {
       if (ev.target !== svg && ev.target.tagName !== 'image' && ev.target.tagName !== 'line') return;
@@ -661,6 +679,21 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
       el('div', { class: 'dica' }, 'Beta/Publicado só gravam com a validação limpa e valem no PRÓXIMO BOOT do servidor (reinício controlado): o arquivo vai para o jogo com o deploy. A ordem é o número do ato no jogo (5 em diante).'));
   }
 
+  /** A CIDADE do ato: o nó de partida do mapa (sem hunt). O nome e para que fases as estradas dela vão. */
+  function painelDaCidade() {
+    const a = E.ato;
+    if (!a.cidade) return el('fieldset', {}, el('legend', {}, 'Cidade'), el('div', { class: 'dica' }, 'O ato ainda não tem o nó da cidade (a ramificação inicial do mapa).'),
+      E.somenteLeitura ? null : el('button', { type: 'button', onclick: () => { lembrar(); a.cidade = { nome: 'Cidade', posicao: null, conexoes: a.inicio ? [a.inicio] : [] }; mudou(); } }, 'Criar a cidade'));
+    const c = a.cidade;
+    const fases = [...a.fases].sort((x, y) => (x.ordem ?? 1e9) - (y.ordem ?? 1e9));
+    return el('fieldset', {}, el('legend', {}, 'Cidade'),
+      campo('Nome', c.nome, (v) => { c.nome = v; mudou(); }),
+      el('div', { class: 'campo' }, 'Estradas da cidade (as fases a que ela liga)',
+        el('div', { class: 'atos-mobs' }, fases.map((f) => el('label', { class: 'linha' }, el('input', { type: 'checkbox', checked: c.conexoes.includes(f.id), disabled: E.somenteLeitura, onchange: (e) => { lembrar(); c.conexoes = e.target.checked ? [...new Set([...c.conexoes, f.id])] : c.conexoes.filter((x) => x !== f.id); mudou(); } }), ` ${f.ordem ?? '·'} · ${f.nome}`)))),
+      el('div', { class: 'dica' }, c.posicao ? `posição ${c.posicao.x}, ${c.posicao.y} — arraste na vista Mapa` : 'sem posição: arraste a cidade na vista Mapa'),
+      E.somenteLeitura ? null : el('button', { type: 'button', onclick: () => { lembrar(); a.cidade = null; mudou(); } }, 'Tirar a cidade'));
+  }
+
   function painelDaFase() {
     const f = faseDe(E.fase);
     if (!f) return null;
@@ -759,7 +792,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
   // ------------------------------------------------------------------ barra de ferramentas, atalhos e ferramentas do ato
   const ATALHOS = [
     ['Ctrl+S', 'Salvar o ato'], ['Ctrl+Z', 'Desfazer'], ['Ctrl+Y ou Ctrl+Shift+Z', 'Refazer'], ['N', 'Nova fase'], ['L', 'Ligar a fase selecionada a outra (clique no destino)'],
-    ['Delete', 'Remover a fase ou a ligação selecionada'], ['Esc', 'Cancelar / desmarcar'], ['Setas', 'Mover a fase selecionada (Shift: 1 px; sem Shift: 20 px)'],
+    ['Delete', 'Remover a fase ou a ligação selecionada'], ['Duplo clique no fundo', 'Nova fase naquele ponto (no Fluxo e no Mapa)'], ['Esc', 'Cancelar / desmarcar'], ['Setas', 'Mover a fase selecionada (Shift: 1 px; sem Shift: 20 px)'],
     ['Page Up / Page Down', 'Fase anterior / seguinte (pela ordem)'], ['F ou /', 'Buscar fase'], ['+ / −  (ou Ctrl+roda)', 'Zoom do grafo'], ['0', 'Ver o ato inteiro'], ['G', 'Grade liga/desliga (Alt ao arrastar solta da grade)'],
     ['O', 'Organizar automático'], ['?', 'Esta ajuda'],
   ];
@@ -827,7 +860,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
 
   // Os atalhos valem só com a aba Acts aberta no fluxo e o foco fora de um campo (Ctrl+S vale sempre).
   document.addEventListener('keydown', (e) => {
-    if (!E.ato || (modo === 'fases' ? !document.querySelector('.fases-modo') : E.vista !== 'fluxo' || !document.querySelector('.atos-canvas'))) return;
+    if (!E.ato || (modo === 'fases' ? !document.querySelector('.fases-modo') : !['fluxo', 'mapa'].includes(E.vista) || !document.querySelector('.atos-canvas, .atos-mapa'))) return;
     const ctrl = e.ctrlKey || e.metaKey;
     const k = e.key.toLowerCase();
     if (ctrl && k === 's') { e.preventDefault(); if (!E.somenteLeitura) salvar(); return; }
@@ -908,12 +941,21 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
     const recFase = fase ? painelDeRecompensa(`fase:${fase.id}`, 'fase', fase.huntId, rotulosDe('fase')) : null;
     const recBoss = E.ato.bossFinal ? painelDeRecompensa('boss', 'boss', null, rotulosDe('boss')) : null;
     const lateral = [painelDoAto(), painelDaFase(), fase ? painelDaConclusao(fase) : null, fase ? painelDosMobs(fase) : null, recFase, painelDaLigacao(), painelDoBoss(), recBoss, painelPicker()].filter(Boolean);
-    const VISTAS = [['fluxo', 'Fluxo'], ['validacao', 'Validação'], ['previa', 'Pré-visualização'], ['versoes', 'Versões'], ['publicacao', 'Publicação']];
+    const VISTAS = [['fluxo', 'Fluxo'], ['mapa', 'Mapa'], ['validacao', 'Validação'], ['previa', 'Pré-visualização'], ['versoes', 'Versões'], ['publicacao', 'Publicação']];
     const barraDeVistas = el('div', { class: 'eng-abas atos-vistas' }, VISTAS.map(([id, nome]) => el('button', { type: 'button', class: E.vista === id ? 'ativa' : '', onclick: () => { E.vista = id; pintar(); } }, nome, id === 'validacao' && E.problemas.length ? el('span', { class: `selo ${E.problemas.some((p) => p.nivel === 'erro') ? 'erro' : 'aviso'}` }, String(E.problemas.length)) : null)));
     if (E.vista !== 'fluxo') {
       const corpo = el('div', { class: 'atos-vista-corpo' }, el('div', { class: 'dica' }, 'Carregando…'));
       const completar = async () => {
-        if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));
+        if (E.vista === 'mapa') corpo.replaceChildren(vistaMapa(E.ato, posicoesAutomaticas(E.ato), {
+          imagem: E.ato.imagem ? `/api/mapas/_conteudo/atos-imagem/${encodeURIComponent(E.ato.imagem)}?v=${E.versaoDaImagem ?? 0}` : null,
+          fase: E.fase, somenteLeitura: E.somenteLeitura,
+          aoMover: (f, p) => { lembrar(); f.posicao = p; mudou(); },
+          aoEscolher: (id) => { E.fase = id; E.lig = null; pintar(); },
+          aoMoverCidade: (p) => { lembrar(); E.ato.cidade.posicao = p; mudou(); },
+          aoCriar: (p) => { lembrar(); novaFase(p); },
+          aoEscolherCidade: () => { E.fase = null; E.lig = null; pintar(); },
+        }), ...[painelDoAto(), painelDaCidade(), painelDaFase()].filter(Boolean));
+        else if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));
         else if (E.vista === 'previa') corpo.replaceChildren(vistaPrevia(E.ato, { dif: E.difPrevia, aoMudarDif: (d) => { E.difPrevia = d; pintar(); } }));
         else if (E.vista === 'versoes') corpo.replaceChildren(await vistaVersoes({ api, ato: E.ato, sujo: sujo(), aoRestaurar: restaurar }));
         else if (E.vista === 'publicacao') corpo.replaceChildren(await vistaPublicacao({ api, ato: E.ato, sujo: sujo(), aoMudarEstado: mudarEstado }));

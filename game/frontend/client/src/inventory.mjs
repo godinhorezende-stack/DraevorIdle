@@ -1,12 +1,14 @@
 // Inventário: slots de equipamento com os PNGs do client, arrastar e soltar
 // para equipar, menu de contexto por item e a loot pouch com venda rápida.
+import { abrirForjaPoe } from './forja-poe.mjs';
+import { configurarFrasco } from './actionbar.mjs';
 import { itemCanvas, itemSprite } from './sprites.mjs';
 import { abrirSoquetes, temSoquetes, usarOrbe } from './soquetes.mjs';
 import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
 // O desenho da bolsa numa definição só, com a reserva. Ver o módulo.
 import { ITEM_DA_BOSS_POUCH, ITEM_DA_BOSS_POUCH_RESERVA, ITEM_DA_STORE_INBOX } from '/packages/shared/src/boss-pouch.mjs';
 import { pedirQuantidade, controleDeQuantidade } from './social.mjs';
-import { seloPremium, seloBlessings } from './hud.mjs';
+import { faixaDoVipEBencaos } from './hud.mjs';
 import {
   windowBody, setVisible, toggleWindow, fecharAoClicarFora, atalhosDaCaixa, botaoNoCabecalho,
 } from './windows.mjs';
@@ -605,7 +607,7 @@ function selarSoquetes(cell, peca, aoTocar = null) {
   }
   sq.gemas.forEach((g, i) => {
     const tipo = i >= (sq.abertos ?? 0) ? 'trancado' : !g ? 'vazio' : itens[g.id]?.gemaDef?.tipo === 'support' ? 'support' : 'ativa';
-    fila.append(el('i', `sq ${tipo}`));
+    fila.append(el('i', `sq ${tipo}${sq.cores?.[i] && tipo !== 'trancado' ? ` cor-${sq.cores[i]}` : ''}`));
     if (i < sq.gemas.length - 1) fila.append(el('i', `lk${sq.links?.[i] ? ' ligado' : ''}`));
   });
   cell.append(fila);
@@ -647,7 +649,7 @@ function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null
    */
   if (meta?.container && from === 'equipment') {
     event.preventDefault();
-    return void toggleWindow('container');
+    return void toggleWindow('inventory');
   }
   /*
    * `usavel` é carimbo do SERVIDOR (`consumiveis.mjs`), e é ele que separa o
@@ -664,6 +666,8 @@ function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null
   const onde = from === 'storeInbox' ? 'storeInbox' : undefined;
   // Os orbes de socket: o direito escolhe a peça e abre a proposta (ver `usarOrbe`, soquetes.mjs) — nada muda sem o "Confirmar".
   if (meta?.orbeDeSocket && from !== 'equipment') return void usarOrbe(ctx, meta.orbeDeSocket);
+  // As moedas do PoE: abrem a Forja do PoE com a moeda já escolhida (`forja-poe.mjs`).
+  if (meta?.moedaPoe && from !== 'equipment') return void abrirForjaPoe(ctx, { moeda: id });
   if (meta?.usavel) return void (ctx.pedirUso ? ctx.pedirUso(id, onde) : ctx.send({ t: 'usar', id, onde }));
 }
 
@@ -837,6 +841,9 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
     meta?.orbeDeSocket && from !== 'equipment' && !naBolsaDeBoss
       ? { label: `Usar ${meta.name} numa peça…`, action: () => usarOrbe(ctx, meta.orbeDeSocket) }
       : null,
+    meta?.moedaPoe && from !== 'equipment' && !naBolsaDeBoss
+      ? { label: `Usar ${meta.name} na Forja…`, action: () => abrirForjaPoe(ctx, { moeda: id }) }
+      : null,
     meta?.slot && from !== 'equipment' && !naBolsaDeBoss
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }
       : null,
@@ -860,7 +867,7 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
      */
     ...tierUpNoMenu(id, from),
     meta?.container && from === 'equipment'
-      ? { label: 'Abrir ou fechar a mochila', action: () => toggleWindow('container') }
+      ? { label: 'Abrir ou fechar o inventário', action: () => toggleWindow('inventory') }
       : null,
     /*
      * Só a VOLTA. A bolsa de loot não recebe nada da mão — ela se esvazia
@@ -1721,10 +1728,9 @@ function selarAfixos(cell, entry) {
 function desgasteDaPeca(entry) {
   const meta = ctx.state.items?.[entry?.id];
   if (!meta) return null;
-  // Cargas: só a ARMA DE TREINO gasta (o servidor desconta a cada golpe no boneco — `exercicio.mjs`). Amuleto, anel e runa trazem `charges` no
-  // catálogo, mas nada os gasta: a barra "5 de 5 cargas" seria uma informação falsa.
-  const ehTreino = meta.type === 'exercise weapons';
-  const tipo = meta.charges > 0 && ehTreino ? 'carga' : meta.duration > 0 ? 'tempo' : null;
+  // Cargas: só a arma de treino gastava (o treino saiu do jogo — dono, 06/10). Amuleto, anel e runa trazem `charges` no catálogo, mas
+  // nada os gasta: a barra "5 de 5 cargas" seria uma informação falsa. Fica o desgaste por tempo.
+  const tipo = meta.duration > 0 ? 'tempo' : null;
   if (!tipo) return null;
 
   const total = tipo === 'carga' ? meta.charges : meta.duration;
@@ -2104,25 +2110,13 @@ export function esquecerOsDesenhos() {
  * direito tira de volta para a mochila. Um frasco da mochila entra no cinto com o clique nele. Chamada a cada estado (`main.mjs`): só refaz
  * quando o cinto mudou.
  */
-let assinaturaDoCinto = null;
+/** O cinto morava ao lado das réguas de vida e mana; agora é a barra de ações que o desenha (frascos 1 a 5 — `actionbar.mjs`). */
 export function renderCintoDeFrascos() {
-  const barras = document.getElementById('hud-bars');
-  if (!barras || !ctx) return;
-  const vagas = ctx.state.character?.frascosPoe ?? null;
-  let slot = barras.querySelector('.bar-slot.poe-cinto-slot');
-  if (!vagas) return void slot?.remove();
-  const assinatura = JSON.stringify(vagas.map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.cargasMaximas, f.ativoAte > 0]));
-  if (slot && assinatura === assinaturaDoCinto) return;
-  assinaturaDoCinto = assinatura;
-  if (!slot) {
-    slot = el('div', 'bar-slot poe-cinto-slot');
-    barras.append(slot);
-  }
-  slot.replaceChildren(cintoDeFrascos(vagas, ctx.send));
+  document.querySelector('#hud-bars .poe-cinto-slot')?.remove();
 }
 function cintoDeFrascos(vagas, send) {
   const cinto = el('div', 'poe-cinto');
-  cinto.title = 'Frascos: usados sozinhos na caçada. Clique para usar agora; botão direito para tirar do cinto.';
+  cinto.title = 'Frascos: usados sozinhos na caçada pela regra de cada um (clique para configurar); botão direito para tirar do cinto. A barra de ações mostra os mesmos, nas teclas 1 a 5.';
   const fila = el('div', 'poe-cinto-fila');
   vagas.forEach((f, v) => {
     if (!f) {
@@ -2131,7 +2125,8 @@ function cintoDeFrascos(vagas, send) {
       return void fila.append(vazia);
     }
     const caixa = el('div', `poe-frasco ${f.tipo ?? ''}${f.ativoAte > 0 ? ' ativo' : ''}`);
-    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => send({ t: 'frasco', action: 'usar', vaga: v }) });
+    // O mesmo clique da casa do frasco na barra (o espelho): abre a regra de uso (vida/mana abaixo de X%), com Beber agora e Tirar.
+    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => configurarFrasco(v) });
     cell.oncontextmenu = (event) => {
       event.preventDefault();
       openMenu(event, [
@@ -2166,12 +2161,20 @@ export function renderInventory() {
   const assinatura = JSON.stringify([
     character.equipment, character.ammoChoices ?? null, character.ammoPending ?? null, character.municao ?? 0,
     character.derived?.capacity, character.weight, character.desgaste ?? null, character.joias ?? null,
-    character.imbuements ?? null, character.itemRules ?? null, (character.premium ?? 0) > 0, character.blessings ?? null,
+    character.itemRules ?? null, (character.premium ?? 0) > 0, character.blessings ?? null,
     (character.frascosPoe ?? []).map((f) => f && [f.peca.id, f.peca.poe?.nome, f.cargas, f.ativoAte > 0]),
   ]);
   if (body.dataset.assinaturaDoInventario === assinatura && body.firstChild) return;
   body.dataset.assinaturaDoInventario = assinatura;
 
+  /*
+   * ---- A MOCHILA mora aqui dentro (dono, 06/10: "inventário desse tipo [o do PoE] e responsivo para mobile, a mochila fica junta com os
+   * equipamentos") ----
+   * O corpo em cima, a grade da mochila embaixo, numa janela só (no computador e no celular). A mochila tem o retrato dela
+   * (`renderContainer`, que refaz só a grade): o nó dela sobrevive ao redesenho do equipamento — sai antes de limpar e volta no fim.
+   */
+  const mochila = body.querySelector(':scope > .inv-mochila') ?? el('div', 'inv-mochila');
+  mochila.remove();
   body.innerHTML = '';
 
   const poe = disposicaoDosSlots(state.items) === SLOT_LAYOUT_COM_LUVAS;
@@ -2182,14 +2185,14 @@ export function renderInventory() {
   const rodape = poe ? el('div', 'inv-rodape-poe') : null;
   const ondeVai = (slot) => (rodape && (slot === 'backpack' || slot.startsWith('@')) ? rodape : equipment);
   for (const slot of slots) {
+    // No PoE a mochila (o item) não aparece: a grade de 20 casas é a mochila; só a lixeira fica no rodapé (dono, 07/10).
+    if (poe && slot === 'backpack') continue;
     // Os dois selos ocupam os buracos da grade: não são slots, não recebem
     // arrasto e não têm moldura de encaixe.
-    if (slot === '@premium') {
-      ondeVai(slot).append(seloPremium(character));
-      continue;
-    }
-    if (slot === '@blessings') {
-      ondeVai(slot).append(seloBlessings(character, state.catalog, () => ctx.abrirBlessings?.()));
+    // O VIP e as bênçãos viraram uma faixa própria, legível (`faixaDoVipEBencaos`, logo abaixo do corpo). Na grade do Draevor o
+    // buraco fica (as peças não andam de lugar); no PoE eles saem do rodapé.
+    if (slot === '@premium' || slot === '@blessings') {
+      if (!poe) equipment.append(el('div', 'inv-buraco'));
       continue;
     }
 
@@ -2246,7 +2249,7 @@ export function renderInventory() {
       cell.oncontextmenu = (event) => {
         if (!event.ctrlKey && slot === 'backpack') {
           event.preventDefault();
-          return void toggleWindow('container');
+          return void toggleWindow('inventory');
         }
         if (!event.ctrlKey && aljava) {
           event.preventDefault();
@@ -2268,7 +2271,7 @@ export function renderInventory() {
       const aljava = slot === 'shield' && character.ammoChoices?.length && ehAljava(equipped.id);
 
       cell.onclick = () => {
-        if (slot === 'backpack') return void setVisible('container', true);
+        if (slot === 'backpack') return void setVisible('inventory', true);
         /*
          * ---- A aljava abre no BOTÃO DIREITO ----
          *
@@ -2478,6 +2481,10 @@ export function renderInventory() {
     rodape.append(lixeira);
     body.append(rodape);
   } else body.append(lixeira);
+  body.append(mochila);
+  if (!mochila.firstChild) renderContainer();
+  // VIP e bênçãos entre o corpo e a mochila.
+  equipment.after(faixaDoVipEBencaos(character, state.catalog, () => ctx.abrirBlessings?.()));
 
 }
 
@@ -4033,9 +4040,13 @@ function soltarDaBossPouch(payload) {
 let cabecaDaMochila = null;
 
 /** O conteúdo da mochila equipada, aberto com o botão direito no slot. */
+/** Onde a mochila é desenhada: dentro do inventário (o arranjo do PoE); a janela "Mochila" antiga só se o inventário ainda não existe. */
+const corpoDaMochila = () => windowBody('inventory')?.querySelector(':scope > .inv-mochila') ?? null;
+/** A janela que leva o botão "Organizar" da mochila no cabeçalho. */
+const janelaDaMochila = () => (corpoDaMochila() ? 'inventory' : 'container');
 export function renderContainer() {
   if (esperaOArrasto(renderContainer)) return;
-  const body = windowBody('container');
+  const body = corpoDaMochila() ?? windowBody('container');
   if (!body) return;
   const { state } = ctx;
   const character = state.character;
@@ -4058,7 +4069,7 @@ export function renderContainer() {
     atualizarCabecaDaMochila(cabecaDaMochila, character, meta);
     // O botão do cabeçalho sobrevive ao retrato — ele mora na moldura da
     // janela, e não neste corpo. Só o `disabled` anda com a mochila.
-    botaoNoCabecalho('container', {
+    botaoNoCabecalho(janelaDaMochila(), {
       classe: 'window-organizar',
       texto: '⇅',
       titulo: 'Organizar a mochila por nome — não junta pilhas, não vende e não joga nada fora',
@@ -4076,7 +4087,7 @@ export function renderContainer() {
      */
     const assinatura = JSON.stringify([
       character.inventory, character.itemRules ?? null, character.bossPouch ?? null,
-      character.storeInbox ?? null, character.imbuements ?? null,
+      character.storeInbox ?? null,
     ]);
     if (cabecaDaMochila.assinatura === assinatura) return;
     cabecaDaMochila.assinatura = assinatura;
@@ -4095,7 +4106,8 @@ export function renderContainer() {
   const nomeDaPeca = el('span', null, meta?.name ?? 'mochila');
   const contador = el('b', null, `${character.inventory.length} / ${meta?.container ?? 20}`);
   titulo.append(nomeDaPeca, contador);
-  head.append(titulo);
+  // Dono, 06/10: "backpack 1/20 tirar também" — a grade já mostra as vagas (as livres desenhadas). Só os botões ficam na linha.
+  if (!corpoDaMochila()) head.append(titulo);
   const botoes = el('div', 'bag-botoes');
   head.append(botoes);
   /*
@@ -4157,7 +4169,7 @@ export function renderContainer() {
    * este so' muda a ordem, e misturar os tres poria o inofensivo ao lado do
    * que apaga. Ver `botaoNoCabecalho`.
    */
-  botaoNoCabecalho('container', {
+  botaoNoCabecalho(janelaDaMochila(), {
     classe: 'window-organizar',
     texto: '⇅',
     titulo: 'Organizar a mochila por nome — não junta pilhas, não vende e não joga nada fora',
@@ -4201,6 +4213,14 @@ export function renderContainer() {
   encherFaixaDaBolsa(faixaDaBolsa, character, state);
   encherGradeDaMochila(grid, character, state);
   body.append(grid);
+  // A grade do PoE mostra TODAS as vagas da mochila (as livres desenhadas no fundo): quantas linhas a capacidade pede nesta largura.
+  if (corpoDaMochila()) requestAnimationFrame(() => {
+    grid.style.maxWidth = '';
+    const colunas = Math.max(1, Math.floor((grid.clientWidth - 8 + 5) / 49));
+    grid.style.setProperty('--linhas', String(Math.ceil((meta?.container ?? 20) / colunas)));
+    // Fecha em colunas inteiras (a casa cortada na borda não existe), centrada.
+    grid.style.maxWidth = `${colunas * 49 - 5 + 8 + (grid.offsetWidth - grid.clientWidth)}px`;
+  });
 }
 
 /*
@@ -4297,6 +4317,9 @@ function celulaDaBossPouch(character, state) {
 function encherFaixaDaBolsa(faixa, character, state) {
   if (!faixa) return;
   faixa.innerHTML = '';
+  // Dono, 06/10: "tire boss pouch e store inbox" — o baú do boss vai para a mochila/bolsa de loot e a Store para as Chegadas.
+  faixa.hidden = true;
+  if (faixa.hidden) return;
   /*
    * As duas coladas, sem o nome e as vagas ao lado (pedido do dono, 15/09): quem
    * diz o que é cada uma é a etiqueta pequena DENTRO do desenho ("boss" /

@@ -1,0 +1,1899 @@
+{
+ "_nota": "As moedas empilháveis do PoE (tools/importar-moedas-poe.mjs, da coleção do dono — poedb pt). O que cada uma FAZ no jogo está em systems/itens-poe/moedas.mjs; o drop e a loja, em itens-poe/regras.json → `moedas`.",
+ "moedas": [
+  {
+   "slug": "Blacksmiths_Whetstone",
+   "nome": "Amolador do Ferreiro",
+   "efeitos": [
+    "Melhora a qualidade de uma arma"
+   ],
+   "pilha": 20,
+   "icone": "Blacksmiths_Whetstone.png",
+   "itemId": 915017
+  },
+  {
+   "slug": "Scroll_of_Wisdom",
+   "nome": "Pergaminho da Sabedoria",
+   "efeitos": [
+    "Identifica um item"
+   ],
+   "pilha": 40,
+   "icone": "Scroll_of_Wisdom.png",
+   "itemId": 915154
+  },
+  {
+   "slug": "Chaos_Orb",
+   "nome": "Orbe do Caos",
+   "efeitos": [
+    "Reforja um item raro com novos modificadores aleatórios"
+   ],
+   "pilha": 20,
+   "icone": "Chaos_Orb.png",
+   "itemId": 915023
+  },
+  {
+   "slug": "Veiled_Exalted_Orb",
+   "nome": "Orbe Exaltado Oculto",
+   "efeitos": [
+    "Remove um modificador aleatório e adiciona um modificador Oculto aleatório em um item raro"
+   ],
+   "pilha": 20,
+   "icone": "Veiled_Exalted_Orb.png",
+   "itemId": 915187
+  },
+  {
+   "slug": "Veiled_Chaos_Orb",
+   "nome": "Orbe do Caos Oculto",
+   "efeitos": [
+    "Reforja um item raro com novos modificadores aleatórios, incluindo um modificador Oculto aleatório"
+   ],
+   "pilha": 20,
+   "icone": "Veiled_Chaos_Orb.png",
+   "itemId": 915186
+  },
+  {
+   "slug": "Armourers_Scrap",
+   "nome": "Sucata do Armeiro",
+   "efeitos": [
+    "Aprimora a qualidade de uma armadura"
+   ],
+   "pilha": 40,
+   "icone": "Armourers_Scrap.png",
+   "itemId": 915012
+  },
+  {
+   "slug": "Mirror_of_Kalandra",
+   "nome": "Espelho de Kalandra",
+   "efeitos": [
+    "Cria uma cópia espelhada de um item"
+   ],
+   "pilha": 10,
+   "icone": "Mirror_of_Kalandra.png",
+   "itemId": 915113
+  },
+  {
+   "slug": "Orb_of_Alchemy",
+   "nome": "Orbe da Alquimia",
+   "efeitos": [
+    "Aprimora um item normal para um item raro"
+   ],
+   "pilha": 20,
+   "icone": "Orb_of_Alchemy.png",
+   "itemId": 915116
+  },
+  {
+   "slug": "Orb_of_Chance",
+   "nome": "Orbe da Chance",
+   "efeitos": [
+    "Aprimora um item normal para uma raridade aleatória"
+   ],
+   "pilha": 20,
+   "icone": "Orb_of_Chance.png",
+   "itemId": 915121
+  },
+  {
+   "slug": "Orb_of_Regret",
+   "nome": "Orbe do Remorso",
+   "efeitos": [
+    "Concede uma restituição de ponto de habilidade passiva."
+   ],
+   "pilha": 40,
+   "icone": "Orb_of_Regret.png",
+   "itemId": 915126
+  },
+  {
+   "slug": "Orb_of_Unmaking",
+   "nome": "Orbe da Restituição",
+   "efeitos": [
+    "Concede uma restituição de ponto de habilidade passiva do atlas."
+   ],
+   "pilha": 40,
+   "icone": "Orb_of_Unmaking.png",
+   "itemId": 915130
+  },
+  {
+   "slug": "Orb_of_Transmutation",
+   "nome": "Orbe da Transmutação",
+   "efeitos": [
+    "Aprimora um item normal para um item mágico"
+   ],
+   "pilha": 40,
+   "icone": "Orb_of_Transmutation.png",
+   "itemId": 915129
+  },
+  {
+   "slug": "Orb_of_Alteration",
+   "nome": "Orbe da Alteração",
+   "efeitos": [
+    "Reforja um item mágico com novas propriedades aleatórias"
+   ],
+   "pilha": 20,
+   "icone": "Orb_of_Alteration.png",
+   "itemId": 915117
+  },
+  {
+   "slug": "Orb_of_Scouring",
+   "nome": "Orbe do Expurgo",
+   "efeitos": [
+    "Remove todas as propriedades de um item"
+   ],
+   "pilha": 30,
+   "icone": "Orb_of_Scouring.png",
+   "itemId": 915128
+  },
+  {
+   "slug": "Exalted_Orb",
+   "nome": "Orbe Exaltado",
+   "efeitos": [
+    "Amplia um item raro com uma nova propriedade aleatória"
+   ],
+   "pilha": 20,
+   "icone": "Exalted_Orb.png",
+   "itemId": 915047
+  },
+  {
+   "slug": "Regal_Orb",
+   "nome": "Orbe Régio",
+   "efeitos": [
+    "Aprimora um item mágico para um item raro"
+   ],
+   "pilha": 20,
+   "icone": "Regal_Orb.png",
+   "itemId": 915144
+  },
+  {
+   "slug": "Orb_of_Augmentation",
+   "nome": "Orbe Ampliador",
+   "efeitos": [
+    "Amplia um item mágico com uma nova propriedade aleatória"
+   ],
+   "pilha": 30,
+   "icone": "Orb_of_Augmentation.png",
+   "itemId": 915119
+  },
+  {
+   "slug": "Portal_Scroll",
+   "nome": "Pergaminho de Portal",
+   "efeitos": [
+    "Cria um portal para a vila"
+   ],
+   "pilha": 40,
+   "icone": "Portal_Scroll.png",
+   "itemId": 915133
+  },
+  {
+   "slug": "Glassblowers_Bauble",
+   "nome": "Bolha do Vidreiro",
+   "efeitos": [
+    "Melhora a qualidade de um frasco ou tintura"
+   ],
+   "pilha": 20,
+   "icone": "Glassblowers_Bauble.png",
+   "itemId": 915069
+  },
+  {
+   "slug": "Gemcutters_Prism",
+   "nome": "Prisma do Lapidário",
+   "efeitos": [
+    "Melhora a qualidade de uma gema"
+   ],
+   "pilha": 20,
+   "icone": "Gemcutters_Prism.png",
+   "itemId": 915068
+  },
+  {
+   "slug": "Chromatic_Orb",
+   "nome": "Orbe Cromático",
+   "efeitos": [
+    "Reforja a cor dos encaixes de um item"
+   ],
+   "pilha": 20,
+   "icone": "Chromatic_Orb.png",
+   "itemId": 915003
+  },
+  {
+   "slug": "Orb_of_Fusing",
+   "nome": "Orbe da Fusão",
+   "efeitos": [
+    "Reforja as conexões entre encaixes de um item"
+   ],
+   "pilha": 20,
+   "icone": "Orb_of_Fusing.png",
+   "itemId": 915002
+  },
+  {
+   "slug": "Jewellers_Orb",
+   "nome": "Orbe do Joalheiro",
+   "efeitos": [
+    "Reforja o número de encaixes em um item"
+   ],
+   "pilha": 20,
+   "icone": "Jewellers_Orb.png",
+   "itemId": 915001
+  },
+  {
+   "slug": "Divine_Orb",
+   "nome": "Orbe Divino",
+   "efeitos": [
+    "Muda os valores das propriedades aleatórias de um item"
+   ],
+   "pilha": 20,
+   "icone": "Divine_Orb.png",
+   "itemId": 915038
+  },
+  {
+   "slug": "Blessed_Orb",
+   "nome": "Orbe Abençoado",
+   "efeitos": [
+    "Muda os valores dos modificadores implícitos de um item"
+   ],
+   "pilha": 20,
+   "icone": "Blessed_Orb.png",
+   "itemId": 915018
+  },
+  {
+   "slug": "Sacred_Orb",
+   "nome": "Orbe Sagrado",
+   "efeitos": [
+    "Randomiza os valores numérigos das defesas base em uma armadura"
+   ],
+   "pilha": 10,
+   "icone": "Sacred_Orb.png",
+   "itemId": 915151
+  },
+  {
+   "slug": "Cartographers_Chisel",
+   "nome": "Cinzel do Cartógrafo",
+   "efeitos": [
+    "Melhora a qualidade de um mapa, aumentando a quantidade de itens Substitui outros tipos de qualidade"
+   ],
+   "pilha": 20,
+   "icone": "Cartographers_Chisel.png",
+   "itemId": 915022
+  },
+  {
+   "slug": "Mavens_Chisel_of_Procurement",
+   "nome": "Cinzel da Maven da Aquisição",
+   "efeitos": [
+    "Melhora a qualidade de um mapa, aprimorando a Raridade dos Itens. Substitui outros tipos de qualidade."
+   ],
+   "pilha": 20,
+   "icone": "Mavens_Chisel_of_Procurement.png",
+   "itemId": 915105
+  },
+  {
+   "slug": "Mavens_Chisel_of_Proliferation",
+   "nome": "Cinzel da Maven da Proliferação",
+   "efeitos": [
+    "Melhora a qualidade de um mapa, aprimorando o Tamanho dos Grupos. Substitui outros tipos de qualidade."
+   ],
+   "pilha": 20,
+   "icone": "Mavens_Chisel_of_Proliferation.png",
+   "itemId": 915106
+  },
+  {
+   "slug": "Mavens_Chisel_of_Divination",
+   "nome": "Cinzel da Maven da Adivinhação",
+   "efeitos": [
+    "Melhora a qualidade de um mapa, aprimorando as Cartas de Adivinhação encontradas. Substitui outros tipos de qualidade."
+   ],
+   "pilha": 20,
+   "icone": "Mavens_Chisel_of_Divination.png",
+   "itemId": 915104
+  },
+  {
+   "slug": "Mavens_Chisel_of_Scarabs",
+   "nome": "Cinzel da Maven dos Escaravelhos",
+   "efeitos": [
+    "Melhora a qualidade de um mapa, aprimorando os Escaravelhos encontrados. Substitui outros tipos de qualidade."
+   ],
+   "pilha": 20,
+   "icone": "Mavens_Chisel_of_Scarabs.png",
+   "itemId": 915107
+  },
+  {
+   "slug": "Mavens_Chisel_of_Avarice",
+   "nome": "Cinzel da Maven da Avareza",
+   "efeitos": [
+    "Melhora a qualidade de um mapa, aprimorando os Itens Monetários encontrados. Substitui outros tipos de qualidade."
+   ],
+   "pilha": 20,
+   "icone": "Mavens_Chisel_of_Avarice.png",
+   "itemId": 915103
+  },
+  {
+   "slug": "Scroll_Fragment",
+   "nome": "Pedaço de Pergaminho",
+   "efeitos": [],
+   "pilha": 5,
+   "icone": "Scroll_Fragment.png",
+   "itemId": 915153
+  },
+  {
+   "slug": "Transmutation_Shard",
+   "nome": "Lasca de Transmutação",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Transmutation_Shard.png",
+   "itemId": 915180
+  },
+  {
+   "slug": "Alteration_Shard",
+   "nome": "Lasca de Alteração",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Alteration_Shard.png",
+   "itemId": 915007
+  },
+  {
+   "slug": "Alchemy_Shard",
+   "nome": "Lasca de Alquimia",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Alchemy_Shard.png",
+   "itemId": 915006
+  },
+  {
+   "slug": "Albino_Rhoa_Feather",
+   "nome": "Pena de Rhoa Albino",
+   "efeitos": [],
+   "pilha": 10,
+   "icone": "Albino_Rhoa_Feather.png",
+   "itemId": 915005
+  },
+  {
+   "slug": "Albino_Crab_Claw",
+   "nome": "Garra de Caranguejo Albino",
+   "efeitos": [],
+   "pilha": 10,
+   "icone": "Albino_Crab_Claw.png",
+   "itemId": 915004
+  },
+  {
+   "slug": "Broken_Mirror_of_Kalandra",
+   "nome": "Espelho de Kalandra Quebrado",
+   "efeitos": [],
+   "pilha": 10,
+   "icone": "Broken_Mirror_of_Kalandra.png",
+   "itemId": 915020
+  },
+  {
+   "slug": "Imprint",
+   "nome": "Gravação",
+   "efeitos": [
+    "Restaura um item gravado ao estado original Não pode ser aplicada em Itens Talhados"
+   ],
+   "pilha": 20,
+   "icone": "Imprint.png",
+   "itemId": 915087
+  },
+  {
+   "slug": "Vaal_Orb",
+   "nome": "Orbe Vaal",
+   "efeitos": [
+    "Corrompe um item, modificando-o de forma imprevisível"
+   ],
+   "pilha": 20,
+   "icone": "Vaal_Orb.png",
+   "itemId": 915184
+  },
+  {
+   "slug": "Enchant",
+   "nome": "Encantamento",
+   "efeitos": [
+    "Adiciona um encantamento a um item, ou substitui um encantamento existente"
+   ],
+   "pilha": 9,
+   "icone": "Enchant.png",
+   "itemId": 915045
+  },
+  {
+   "slug": "Tainted_Blessing",
+   "nome": "Bênção Impura",
+   "efeitos": [],
+   "pilha": 10,
+   "icone": "Tainted_Blessing.png",
+   "itemId": 915164
+  },
+  {
+   "slug": "Corrupt",
+   "nome": "Corrompido",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Corrupt.png",
+   "itemId": 915031
+  },
+  {
+   "slug": "Scrying_Orb",
+   "nome": "Orbe da Vidência",
+   "efeitos": [
+    "Faz uma previsão de um mapa no seu Atlas"
+   ],
+   "pilha": 20,
+   "icone": "Scrying_Orb.png",
+   "itemId": 915155
+  },
+  {
+   "slug": "Prophecy",
+   "nome": "Profecia",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Prophecy.png",
+   "itemId": 915138
+  },
+  {
+   "slug": "Bestiary_Orb",
+   "nome": "Orbe do Bestiário",
+   "efeitos": [
+    "Armazena uma Besta em um item"
+   ],
+   "pilha": 10,
+   "icone": "Bestiary_Orb.png",
+   "itemId": 915016
+  },
+  {
+   "slug": "Imprinted_Bestiary_Orb",
+   "nome": "Orbe Gravado do Bestiário",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Imprinted_Bestiary_Orb.png",
+   "itemId": 915088
+  },
+  {
+   "slug": "Empty_Coffin",
+   "nome": "Caixão Vazio",
+   "efeitos": [
+    "Armazena um Cadáver em um item"
+   ],
+   "pilha": 10,
+   "icone": "Empty_Coffin.png",
+   "itemId": 915044
+  },
+  {
+   "slug": "Filled_Coffin",
+   "nome": "Caixão Ocupado",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Filled_Coffin.png",
+   "itemId": 915058
+  },
+  {
+   "slug": "Shapers_Exalted_Orb",
+   "nome": "Orbe Exaltado do Criador",
+   "efeitos": [
+    "Adiciona influência do Criador e um novo modificador do Criador a um item raro"
+   ],
+   "pilha": 20,
+   "icone": "Shapers_Exalted_Orb.png",
+   "itemId": 915157
+  },
+  {
+   "slug": "Elders_Exalted_Orb",
+   "nome": "Orbe Exaltado do Ancião",
+   "efeitos": [
+    "Adiciona influência do Ancião e um novo modificador do Ancião a um item raro"
+   ],
+   "pilha": 20,
+   "icone": "Elders_Exalted_Orb.png",
+   "itemId": 915040
+  },
+  {
+   "slug": "Orb_of_Remembrance",
+   "nome": "Orbe da Lembrança",
+   "efeitos": [
+    "Aleatoriza o número de Fios de Memória em um item de equipamento normal"
+   ],
+   "pilha": 10,
+   "icone": "Orb_of_Remembrance.png",
+   "itemId": 915127
+  },
+  {
+   "slug": "Orb_of_Unravelling",
+   "nome": "Orbe do Desembaraçar",
+   "efeitos": [
+    "Consome todos os Fios de Memória de um item para tentar melhorar a categoria de modificadores explícitos com base na quantidade de Fios de Memória consumidos"
+   ],
+   "pilha": 10,
+   "icone": "Orb_of_Unravelling.png",
+   "itemId": 915131
+  },
+  {
+   "slug": "Orb_of_Intention",
+   "nome": "Orbe da Intenção",
+   "efeitos": [
+    "Modifica um Mapa com Influência de Memória, fazendo com que os itens encontrados tenham mais Fios de Memória, mas menos itens sejam encontrados"
+   ],
+   "pilha": 10,
+   "icone": "Orb_of_Intention.png",
+   "itemId": 915125
+  },
+  {
+   "slug": "Surveyors_Compass",
+   "nome": "Bússola do Pesquisador",
+   "efeitos": [
+    "Armazena um Modificador Sextante em um item"
+   ],
+   "pilha": 10,
+   "icone": "Surveyors_Compass.png",
+   "itemId": 915160
+  },
+  {
+   "slug": "Prime_Regrading_Lens",
+   "nome": "Lente Reclassificatória Primária",
+   "efeitos": [
+    "Muda o tipo de qualidae de uma gema de habilidade com qualidade por outra qualidade aleatória"
+   ],
+   "pilha": 20,
+   "icone": "Prime_Regrading_Lens.png",
+   "itemId": 915137
+  },
+  {
+   "slug": "Secondary_Regrading_Lens",
+   "nome": "Lente Reclassificatória Secundária",
+   "efeitos": [
+    "Muda o tipo de qualidae de uma gema de suporte com qualidade por outra qualidade aleatória"
+   ],
+   "pilha": 20,
+   "icone": "Secondary_Regrading_Lens.png",
+   "itemId": 915156
+  },
+  {
+   "slug": "Tempering_Orb",
+   "nome": "Orbe da Modificação",
+   "efeitos": [
+    "Adiciona ou substitui um encantamento em uma arma Pode ser que os encaixes da arma sejam reforjados"
+   ],
+   "pilha": 20,
+   "icone": "Tempering_Orb.png",
+   "itemId": 915173
+  },
+  {
+   "slug": "Tailoring_Orb",
+   "nome": "Orbe do Alfaiate",
+   "efeitos": [
+    "Adiciona ou substitui um encantamento em um peitoral Pode ser que os encaixes do peitoral sejam reforjados"
+   ],
+   "pilha": 20,
+   "icone": "Tailoring_Orb.png",
+   "itemId": 915161
+  },
+  {
+   "slug": "Refracting_Fog",
+   "nome": "Névoa Refratária",
+   "efeitos": [
+    "Substitui o encantamento de habilidade passiva pequena de uma Joia Ramificadora"
+   ],
+   "pilha": 20,
+   "icone": "Refracting_Fog.png",
+   "itemId": 915143
+  },
+  {
+   "slug": "Foulborn_Orb_of_Augmentation",
+   "nome": "Orbe da Ampliação Natimpuro",
+   "efeitos": [
+    "Aprimora um item mágico com um novo modificador aleatório, com mais chance de receber modificadores de nível alto"
+   ],
+   "pilha": 10,
+   "icone": "Foulborn_Orb_of_Augmentation.png",
+   "itemId": 915061
+  },
+  {
+   "slug": "Foulborn_Regal_Orb",
+   "nome": "Orbe Real Natimpuro",
+   "efeitos": [
+    "Atualiza um item mágico para um item raro, com mais chance de receber modificadores de nível alto"
+   ],
+   "pilha": 10,
+   "icone": "Foulborn_Regal_Orb.png",
+   "itemId": 915062
+  },
+  {
+   "slug": "Foulborn_Exalted_Orb",
+   "nome": "Orbe Exaltado Natimpuro",
+   "efeitos": [
+    "Aprimora um item raro com um novo modificador aleatório, com mais chance de receber modificadores de nível alto"
+   ],
+   "pilha": 10,
+   "icone": "Foulborn_Exalted_Orb.png",
+   "itemId": 915060
+  },
+  {
+   "slug": "Veiled_Scarab",
+   "nome": "Escaravelho Oculto",
+   "efeitos": [
+    "Uma coleção de Escaravelhos desconhecidos"
+   ],
+   "pilha": 20,
+   "icone": "Veiled_Scarab.png",
+   "itemId": 915188
+  },
+  {
+   "slug": "Flesh_of_Xesht",
+   "nome": "Carne de Xesht",
+   "efeitos": [
+    "Transforma um item único da Fenda em sua forma alternativa"
+   ],
+   "pilha": 10,
+   "icone": "Flesh_of_Xesht.png",
+   "itemId": 915059
+  },
+  {
+   "slug": "Orb_of_Annulment",
+   "nome": "Orbe da Anulação",
+   "efeitos": [
+    "Remove uma propriedade aleatória de um item"
+   ],
+   "pilha": 20,
+   "icone": "Orb_of_Annulment.png",
+   "itemId": 915118
+  },
+  {
+   "slug": "Orb_of_Binding",
+   "nome": "Orbe do Elo",
+   "efeitos": [
+    "Aprimora um item normal para um item raro com até quatro encaixes conectados"
+   ],
+   "pilha": 20,
+   "icone": "Orb_of_Binding.png",
+   "itemId": 915120
+  },
+  {
+   "slug": "Orb_of_Horizons",
+   "nome": "Orbe dos Horizontes",
+   "efeitos": [
+    "Anteriormente, reforjava um item de mapa em outro do mesmo nível"
+   ],
+   "pilha": 20,
+   "icone": "Orb_of_Horizons.png",
+   "itemId": 915124
+  },
+  {
+   "slug": "Ancient_Orb",
+   "nome": "Orbe Ancestral",
+   "efeitos": [
+    "Reforja um equipmaneto único em outro da mesma classe de item"
+   ],
+   "pilha": 20,
+   "icone": "Ancient_Orb.png",
+   "itemId": 915009
+  },
+  {
+   "slug": "Fracturing_Orb",
+   "nome": "Orbe Talhador",
+   "efeitos": [
+    "Talha um modificador aleatório em um item raro com ao menos 4 modificadores, travando-o no lugar"
+   ],
+   "pilha": 20,
+   "icone": "Fracturing_Orb.png",
+   "itemId": 915063
+  },
+  {
+   "slug": "Annulment_Shard",
+   "nome": "Lasca de Anulação",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Annulment_Shard.png",
+   "itemId": 915010
+  },
+  {
+   "slug": "Chaos_Shard",
+   "nome": "Lasca do Caos",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Chaos_Shard.png",
+   "itemId": 915024
+  },
+  {
+   "slug": "Mirror_Shard",
+   "nome": "Lasca do Espelho",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Mirror_Shard.png",
+   "itemId": 915114
+  },
+  {
+   "slug": "Exalted_Shard",
+   "nome": "Lasca Exaltada",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Exalted_Shard.png",
+   "itemId": 915048
+  },
+  {
+   "slug": "Regal_Shard",
+   "nome": "Lasca Régia",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Regal_Shard.png",
+   "itemId": 915145
+  },
+  {
+   "slug": "Fracturing_Shard",
+   "nome": "Lasca Talhadora",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Fracturing_Shard.png",
+   "itemId": 915064
+  },
+  {
+   "slug": "Facetors_Lens",
+   "nome": "Lente Armazenadora",
+   "efeitos": [
+    "Adiciona experiência acumulada em uma gema, até seu nível máximo"
+   ],
+   "pilha": 20,
+   "icone": "Facetors_Lens.png",
+   "itemId": 915056
+  },
+  {
+   "slug": "Magmatic_Ore",
+   "nome": "Minério Magmático",
+   "efeitos": [
+    "Adiciona a experiência do Crisol acumulada em um item"
+   ],
+   "pilha": 20,
+   "icone": "Magmatic_Ore.png",
+   "itemId": 915101
+  },
+  {
+   "slug": "Ritual_Vessel",
+   "nome": "Recipiente Ritualístico",
+   "efeitos": [
+    "Armazena os monstros mortos pela primeira vez em um Altar Ritualístico para usos futuros"
+   ],
+   "pilha": 10,
+   "icone": "Ritual_Vessel.png",
+   "itemId": 915146
+  },
+  {
+   "slug": "Lesser_Eldritch_Ember",
+   "nome": "Brasa Ancestral Menor",
+   "efeitos": [
+    "Adiciona um modificador implícito Menor do Exarca Cauterizado em um Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Devorador de Mundos"
+   ],
+   "pilha": 10,
+   "icone": "Lesser_Eldritch_Ember.png",
+   "itemId": 915096
+  },
+  {
+   "slug": "Greater_Eldritch_Ember",
+   "nome": "Brasa Ancestral Maior",
+   "efeitos": [
+    "Adiciona um modificador implícito Maior do Exarca Cauterizado em um Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Devorador de Mundos"
+   ],
+   "pilha": 10,
+   "icone": "Greater_Eldritch_Ember.png",
+   "itemId": 915079
+  },
+  {
+   "slug": "Grand_Eldritch_Ember",
+   "nome": "Brasa Ancestral Distinta",
+   "efeitos": [
+    "Adiciona um modificador implícito Distinto do Exarca Cauterizado em um qualquer Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Devorador de Mundos"
+   ],
+   "pilha": 10,
+   "icone": "Grand_Eldritch_Ember.png",
+   "itemId": 915072
+  },
+  {
+   "slug": "Exceptional_Eldritch_Ember",
+   "nome": "Brasa Ancestral Excepcional",
+   "efeitos": [
+    "Adiciona um modificador implícito Excepcional do Exarca Cauterizado em um Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Devorador de Mundos"
+   ],
+   "pilha": 10,
+   "icone": "Exceptional_Eldritch_Ember.png",
+   "itemId": 915051
+  },
+  {
+   "slug": "Lesser_Eldritch_Ichor",
+   "nome": "Fluido Ancestral Menor",
+   "efeitos": [
+    "Adiciona um modificador implícito Menor do Devorador de Mundos em um Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Exarca Cauterizado"
+   ],
+   "pilha": 10,
+   "icone": "Lesser_Eldritch_Ichor.png",
+   "itemId": 915097
+  },
+  {
+   "slug": "Greater_Eldritch_Ichor",
+   "nome": "Fluido Ancestral Maior",
+   "efeitos": [
+    "Adiciona um modificador implícito Maior do Devorador de Mundos em um Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Exarca Cauterizado"
+   ],
+   "pilha": 10,
+   "icone": "Greater_Eldritch_Ichor.png",
+   "itemId": 915080
+  },
+  {
+   "slug": "Grand_Eldritch_Ichor",
+   "nome": "Fluido Ancestral Distinto",
+   "efeitos": [
+    "Adiciona um modificador implícito Distinto do Devorador de Mundos em um Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Exarca Cauterizado"
+   ],
+   "pilha": 10,
+   "icone": "Grand_Eldritch_Ichor.png",
+   "itemId": 915073
+  },
+  {
+   "slug": "Exceptional_Eldritch_Ichor",
+   "nome": "Fluido Ancestral Excepcional",
+   "efeitos": [
+    "Adiciona um modificador implícito Excepcional do Devorador de Mundos em um Peitoral, Botas, Luvas ou Elmos Isso substitui qualquer modificador implícito diferente de modificadores implícitos do Exarca Cauterizado"
+   ],
+   "pilha": 10,
+   "icone": "Exceptional_Eldritch_Ichor.png",
+   "itemId": 915052
+  },
+  {
+   "slug": "Orb_of_Conflict",
+   "nome": "Orbe do Conflito",
+   "efeitos": [
+    "Aprimora o tier de um modificador do Exarca Cauterizado ou Devorador de Mundos de forma imprevisível em um item e reduz o tier do outro"
+   ],
+   "pilha": 10,
+   "icone": "Orb_of_Conflict.png",
+   "itemId": 915122
+  },
+  {
+   "slug": "Uncarved_Gemstone",
+   "nome": "Gema Bruta",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Uncarved_Gemstone.png",
+   "itemId": 915182
+  },
+  {
+   "slug": "Valdos_Puzzle_Box",
+   "nome": "Quebra-Cabeças de Valdo",
+   "efeitos": [
+    "Contém um Mapa Misterioso com uma Recompensa Única Laminada."
+   ],
+   "pilha": 10,
+   "icone": "Valdos_Puzzle_Box.png",
+   "itemId": 915185
+  },
+  {
+   "slug": "Stacked_Deck",
+   "nome": "Baralho Fechado",
+   "efeitos": [
+    "Uma pilha de cartas de adivinhação desconhecidas"
+   ],
+   "pilha": 20,
+   "icone": "Stacked_Deck.png",
+   "itemId": 915159
+  },
+  {
+   "slug": "Crusaders_Exalted_Orb",
+   "nome": "Orbe Exaltado do Cruzado",
+   "efeitos": [
+    "Adiciona a influência do Cruzado e um novo modificador Cruzado à um item raro."
+   ],
+   "pilha": 20,
+   "icone": "Crusaders_Exalted_Orb.png",
+   "itemId": 915032
+  },
+  {
+   "slug": "Redeemers_Exalted_Orb",
+   "nome": "Orbe Exaltado do Juiz",
+   "efeitos": [
+    "Adiciona a influência do Redentor e um novo modificador Cruzado à um item raro."
+   ],
+   "pilha": 20,
+   "icone": "Redeemers_Exalted_Orb.png",
+   "itemId": 915141
+  },
+  {
+   "slug": "Hunters_Exalted_Orb",
+   "nome": "Orbe Exaltado do Caçador",
+   "efeitos": [
+    "Adiciona a influência do Caçador e um novo modificador Cruzado à um item raro."
+   ],
+   "pilha": 20,
+   "icone": "Hunters_Exalted_Orb.png",
+   "itemId": 915084
+  },
+  {
+   "slug": "Warlords_Exalted_Orb",
+   "nome": "Orbe Exaltado do Senhor da Guerra",
+   "efeitos": [
+    "Adiciona a influência do Senhor da Guerra e um novo modificador Cruzado à um item raro."
+   ],
+   "pilha": 20,
+   "icone": "Warlords_Exalted_Orb.png",
+   "itemId": 915192
+  },
+  {
+   "slug": "Awakeners_Orb",
+   "nome": "Orbe do Despertar",
+   "efeitos": [
+    "Destrói um item, aplicando sua influência em outro da mesma classe do item O segundo item é reforjado como item raro com ambos os tipos de influência e novos modificadores."
+   ],
+   "pilha": 10,
+   "icone": "Awakeners_Orb.png",
+   "itemId": 915015
+  },
+  {
+   "slug": "Rogues_Marker",
+   "nome": "Insígnia do Renegado",
+   "efeitos": [
+    "Cria um portal para o Porto dos Renegados de uma Cidade ou Refúgio Usado como Moeda por serviços no Porto dos Renegados."
+   ],
+   "pilha": 50000,
+   "icone": "Rogues_Marker.png",
+   "itemId": 915147
+  },
+  {
+   "slug": "Orb_of_Dominance",
+   "nome": "Orbe do Domínio",
+   "efeitos": [
+    "Remove um Modificador Influenciado em um item com ao menos dois Modificadores Influenciados e aprimora outro Modificador Influenciado Aprimorar um modificador do tier mais alto transforma o modificador em um Modificador Elevado Tentar aprimorar um Modificador Elevado redefine seus valores Pode ser usado em Peitorais, Botas, Luvas e Elmos"
+   ],
+   "pilha": 10,
+   "icone": "Orb_of_Dominance.png",
+   "itemId": 915123
+  },
+  {
+   "slug": "Enkindling_Orb",
+   "nome": "Orbe Incandescente",
+   "efeitos": [
+    "Adiciona um encantamento em um frasco utilitário que o melhorará mas o impedirá de ganhar cargas durante seus efeitos Substitui um encantamento existente"
+   ],
+   "pilha": 20,
+   "icone": "Enkindling_Orb.png",
+   "itemId": 915046
+  },
+  {
+   "slug": "Instilling_Orb",
+   "nome": "Orbe Instigante",
+   "efeitos": [
+    "Adiciona um encantamento em um frasco que fará com que ele seja usado quando certas condições forem atingidas Substitui um encantamento existente"
+   ],
+   "pilha": 20,
+   "icone": "Instilling_Orb.png",
+   "itemId": 915089
+  },
+  {
+   "slug": "Exotic_Coinage",
+   "nome": "Moeda Exótica",
+   "efeitos": [],
+   "pilha": 1000,
+   "icone": "Exotic_Coinage.png",
+   "itemId": 915055
+  },
+  {
+   "slug": "Scrap_Metal",
+   "nome": "Ferro Velho",
+   "efeitos": [],
+   "pilha": 1000,
+   "icone": "Scrap_Metal.png",
+   "itemId": 915152
+  },
+  {
+   "slug": "Astragali",
+   "nome": "Astrágalo",
+   "efeitos": [],
+   "pilha": 1000,
+   "icone": "Astragali.png",
+   "itemId": 915013
+  },
+  {
+   "slug": "Burial_Medallion",
+   "nome": "Medalhão Funerário",
+   "efeitos": [],
+   "pilha": 1000,
+   "icone": "Burial_Medallion.png",
+   "itemId": 915021
+  },
+  {
+   "slug": "Lesser_Broken_Circle_Artifact",
+   "nome": "Artefato do Círculo Quebrado Menor",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Lesser_Broken_Circle_Artifact.png",
+   "itemId": 915095
+  },
+  {
+   "slug": "Greater_Broken_Circle_Artifact",
+   "nome": "Artefato do Círculo Quebrado Maior",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Greater_Broken_Circle_Artifact.png",
+   "itemId": 915078
+  },
+  {
+   "slug": "Grand_Broken_Circle_Artifact",
+   "nome": "Artefato do Círculo Quebrado Distinto",
+   "efeitos": [],
+   "pilha": 25000,
+   "icone": "Grand_Broken_Circle_Artifact.png",
+   "itemId": 915071
+  },
+  {
+   "slug": "Exceptional_Broken_Circle_Artifact",
+   "nome": "Artefato do Círculo Quebrado Excepcional",
+   "efeitos": [],
+   "pilha": 5000,
+   "icone": "Exceptional_Broken_Circle_Artifact.png",
+   "itemId": 915050
+  },
+  {
+   "slug": "Lesser_Black_Scythe_Artifact",
+   "nome": "Artefato da Foice Negra Menor",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Lesser_Black_Scythe_Artifact.png",
+   "itemId": 915094
+  },
+  {
+   "slug": "Greater_Black_Scythe_Artifact",
+   "nome": "Artefato da Foice Negra Maior",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Greater_Black_Scythe_Artifact.png",
+   "itemId": 915077
+  },
+  {
+   "slug": "Grand_Black_Scythe_Artifact",
+   "nome": "Artefato da Foice Negra Distinto",
+   "efeitos": [],
+   "pilha": 25000,
+   "icone": "Grand_Black_Scythe_Artifact.png",
+   "itemId": 915070
+  },
+  {
+   "slug": "Exceptional_Black_Scythe_Artifact",
+   "nome": "Grande da Foice Negra Excepcional",
+   "efeitos": [],
+   "pilha": 5000,
+   "icone": "Exceptional_Black_Scythe_Artifact.png",
+   "itemId": 915049
+  },
+  {
+   "slug": "Lesser_Order_Artifact",
+   "nome": "Artefato da Ordem Menor",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Lesser_Order_Artifact.png",
+   "itemId": 915098
+  },
+  {
+   "slug": "Greater_Order_Artifact",
+   "nome": "Artefato da Ordem Maior",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Greater_Order_Artifact.png",
+   "itemId": 915081
+  },
+  {
+   "slug": "Grand_Order_Artifact",
+   "nome": "Artefato da Ordem Distinto",
+   "efeitos": [],
+   "pilha": 25000,
+   "icone": "Grand_Order_Artifact.png",
+   "itemId": 915074
+  },
+  {
+   "slug": "Exceptional_Order_Artifact",
+   "nome": "Artefato da Ordem Excepcional",
+   "efeitos": [],
+   "pilha": 5000,
+   "icone": "Exceptional_Order_Artifact.png",
+   "itemId": 915053
+  },
+  {
+   "slug": "Lesser_Sun_Artifact",
+   "nome": "Artefato do Sol Menor",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Lesser_Sun_Artifact.png",
+   "itemId": 915099
+  },
+  {
+   "slug": "Greater_Sun_Artifact",
+   "nome": "Artefato do Sol Maior",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Greater_Sun_Artifact.png",
+   "itemId": 915082
+  },
+  {
+   "slug": "Grand_Sun_Artifact",
+   "nome": "Artefato do Sol Distinto",
+   "efeitos": [],
+   "pilha": 25000,
+   "icone": "Grand_Sun_Artifact.png",
+   "itemId": 915075
+  },
+  {
+   "slug": "Exceptional_Sun_Artifact",
+   "nome": "Artefato do Sol Excepcional",
+   "efeitos": [],
+   "pilha": 5000,
+   "icone": "Exceptional_Sun_Artifact.png",
+   "itemId": 915054
+  },
+  {
+   "slug": "Tainted_Chromatic_Orb",
+   "nome": "Orbe Cromático Corroído",
+   "efeitos": [
+    "Reforja de forma imprevisível a cor dos encaixes em um item corrompido"
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Chromatic_Orb.png",
+   "itemId": 915166
+  },
+  {
+   "slug": "Tainted_Orb_of_Fusing",
+   "nome": "Orbe da Fusão Corroído",
+   "efeitos": [
+    "Adiciona ou remove de forma imprevisível uma conexão de um grande grupo de encaixes conectados em um item corrompido"
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Orb_of_Fusing.png",
+   "itemId": 915171
+  },
+  {
+   "slug": "Tainted_Jewellers_Orb",
+   "nome": "Orbe do Joalheiro Corroído",
+   "efeitos": [
+    "Adiciona ou remove de forma imprevisível um encaixe em um item corrompido"
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Jewellers_Orb.png",
+   "itemId": 915169
+  },
+  {
+   "slug": "Tainted_Chaos_Orb",
+   "nome": "Orbe do Caos Corroído",
+   "efeitos": [
+    "Ou reforja com um novo modificador aleatório ou remove todos os modificadores de um item raro corrompido"
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Chaos_Orb.png",
+   "itemId": 915165
+  },
+  {
+   "slug": "Tainted_Exalted_Orb",
+   "nome": "Orbe Exaltado Corroído",
+   "efeitos": [
+    "Adiciona ou remove de forma imprevisível um modificador em um item raro corrompido"
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Exalted_Orb.png",
+   "itemId": 915168
+  },
+  {
+   "slug": "Tainted_Mythic_Orb",
+   "nome": "Orbe Mítico Corroído",
+   "efeitos": [
+    "Ou aprimora um item corrompido para único ou destrói o item"
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Mythic_Orb.png",
+   "itemId": 915170
+  },
+  {
+   "slug": "Tainted_Armourers_Scrap",
+   "nome": "Sucata Corroída do Armeiro",
+   "efeitos": [
+    "Randomiza a qualidade de uma armadura corrompida"
+   ],
+   "pilha": 40,
+   "icone": "Tainted_Armourers_Scrap.png",
+   "itemId": 915162
+  },
+  {
+   "slug": "Tainted_Blacksmiths_Whetstone",
+   "nome": "Amolador Corroído do Ferreiro",
+   "efeitos": [
+    "Randomiza a qualidade de uma arma corrompida"
+   ],
+   "pilha": 20,
+   "icone": "Tainted_Blacksmiths_Whetstone.png",
+   "itemId": 915163
+  },
+  {
+   "slug": "Tainted_Divine_Teardrop",
+   "nome": "Lágrima Divina Corroída",
+   "efeitos": [
+    "Aumenta ou reduz de forma imprevisível o tier de cada um dos modificadores em um item raro corrompido"
+   ],
+   "pilha": 10,
+   "icone": "Tainted_Divine_Teardrop.png",
+   "itemId": 915167
+  },
+  {
+   "slug": "Volatile_Vaal_Orb",
+   "nome": "Orbe Vaal Volátil",
+   "efeitos": [
+    "De forma imprevisível, randomiza os valores dos modificadores aleatórios de um equipamento único, corrompendo-o ou destruindo-o"
+   ],
+   "pilha": 20,
+   "icone": "Volatile_Vaal_Orb.png",
+   "itemId": 915191
+  },
+  {
+   "slug": "Eldritch_Chaos_Orb",
+   "nome": "Orbe Ancestral do Caos",
+   "efeitos": [
+    "Se o Exarca Cauterizado for dominante, redefine os modificadores prefixos Se o Devorador de Mundos for dominante, redefine os modificadores sufixos"
+   ],
+   "pilha": 20,
+   "icone": "Eldritch_Chaos_Orb.png",
+   "itemId": 915041
+  },
+  {
+   "slug": "Eldritch_Exalted_Orb",
+   "nome": "Orbe Ancestral Exaltado",
+   "efeitos": [
+    "Se o Exarca Cauterizado for dominante, adiciona um modificador prefixo Se o Devorador de Mundos for dominante, adiciona um modificador sufixo"
+   ],
+   "pilha": 20,
+   "icone": "Eldritch_Exalted_Orb.png",
+   "itemId": 915042
+  },
+  {
+   "slug": "Eldritch_Orb_of_Annulment",
+   "nome": "Orbe Ancestral da Anulação",
+   "efeitos": [
+    "Se o Exarca Cauterizado for dominante, remove um modificador prefixo Se o Devorador de Mundos for dominante, remove um modificador sufixo"
+   ],
+   "pilha": 20,
+   "icone": "Eldritch_Orb_of_Annulment.png",
+   "itemId": 915043
+  },
+  {
+   "slug": "Memory_of_Trauma",
+   "nome": "Memória do Trauma",
+   "efeitos": [
+    "Adiciona um Segmento de Memória ao Atlas que leva à Encarnação do Medo"
+   ],
+   "pilha": 10,
+   "icone": "Memory_of_Trauma.png",
+   "itemId": 915110
+  },
+  {
+   "slug": "Memory_of_Reverence",
+   "nome": "Memória da Reverência",
+   "efeitos": [
+    "Adiciona um Segmento de Memória ao Atlas que leva à Encarnação do Pavor"
+   ],
+   "pilha": 10,
+   "icone": "Memory_of_Reverence.png",
+   "itemId": 915109
+  },
+  {
+   "slug": "Memory_of_Loneliness",
+   "nome": "Memória da Solidão",
+   "efeitos": [
+    "Adiciona um Segmento de Memória ao Atlas que leva à Encarnação do Abandono"
+   ],
+   "pilha": 10,
+   "icone": "Memory_of_Loneliness.png",
+   "itemId": 915108
+  },
+  {
+   "slug": "Power_Core",
+   "nome": "Núcleo de Energia",
+   "efeitos": [
+    "Destrói dois Sentinelas para criar um Sentinela completamente carregado com a combinação de suas propriedades. Em alguns casos, o item resultante pode ser modificado imprevisivelmente"
+   ],
+   "pilha": 20,
+   "icone": "Power_Core.png",
+   "itemId": 915134
+  },
+  {
+   "slug": "Transforming_Power_Core",
+   "nome": "Núcleo de Energia Transformador",
+   "efeitos": [
+    "Destrói dois Sentinelas para criar um Sentinela completamente carregado com a combinação de suas propriedades. Em alguns casos, o Item resultante é modificado de forma imprevisível, com uma chance maior de um tipo base especial"
+   ],
+   "pilha": 20,
+   "icone": "Transforming_Power_Core.png",
+   "itemId": 915179
+  },
+  {
+   "slug": "Amplifying_Power_Core",
+   "nome": "Núcleo de Energia Amplificador",
+   "efeitos": [
+    "Destrói dois Sentinelas para criar um Sentinela completamente carregado com a combinação de suas propriedades. Em alguns casos, o Item resultante é modificado de forma imprevisível, com uma chance maior de aprimoramento do tier dos modificadores"
+   ],
+   "pilha": 20,
+   "icone": "Amplifying_Power_Core.png",
+   "itemId": 915008
+  },
+  {
+   "slug": "Augmenting_Power_Core",
+   "nome": "Núcleo de Energia Ampliador",
+   "efeitos": [
+    "Destrói dois Sentinelas para criar um Sentinela completamente carregado com a combinação de suas propriedades. Em alguns casos, o Item resultante é modificado de forma imprevisível, de novos modificadores aleatórios"
+   ],
+   "pilha": 20,
+   "icone": "Augmenting_Power_Core.png",
+   "itemId": 915014
+  },
+  {
+   "slug": "Armour_Recombinator",
+   "nome": "Recombinador de Armadura",
+   "efeitos": [
+    "Destrói duas Armaduras para criar uma nova Armadura com uma combinação de suas propriedades. Em alguns casos, o item resultante é modificado de forma imprevisível"
+   ],
+   "pilha": 20,
+   "icone": "Armour_Recombinator.png",
+   "itemId": 915011
+  },
+  {
+   "slug": "Weapon_Recombinator",
+   "nome": "Recombinador de Arma",
+   "efeitos": [
+    "Destrói duas Armas ou Aljava para criar uma nova Arma ou Aljava com uma combinação de suas propriedades. Em alguns casos, o item resultante é modificado de forma imprevisível"
+   ],
+   "pilha": 20,
+   "icone": "Weapon_Recombinator.png",
+   "itemId": 915193
+  },
+  {
+   "slug": "Jewellery_Recombinator",
+   "nome": "Recombinador de Acessórios",
+   "efeitos": [
+    "Destrói dois Acessórios para criar uma nova Armadura com uma combinação de suas propriedades. Em alguns casos, o item resultante é modificado de forma imprevisível"
+   ],
+   "pilha": 20,
+   "icone": "Jewellery_Recombinator.png",
+   "itemId": 915090
+  },
+  {
+   "slug": "Wild_Crystallised_Lifeforce",
+   "nome": "Força Vital Cristalizada Selvagem",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Wild_Crystallised_Lifeforce.png",
+   "itemId": 915194
+  },
+  {
+   "slug": "Vivid_Crystallised_Lifeforce",
+   "nome": "Força Vital Cristalizada Vívida",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Vivid_Crystallised_Lifeforce.png",
+   "itemId": 915189
+  },
+  {
+   "slug": "Primal_Crystallised_Lifeforce",
+   "nome": "Força Vital Cristalizada Primitiva",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Primal_Crystallised_Lifeforce.png",
+   "itemId": 915135
+  },
+  {
+   "slug": "Sacred_Crystallised_Lifeforce",
+   "nome": "Força Vital Cristalizada Sagrada",
+   "efeitos": [],
+   "pilha": 10,
+   "icone": "Sacred_Crystallised_Lifeforce.png",
+   "itemId": 915150
+  },
+  {
+   "slug": "Crystallised_Rancour",
+   "nome": "Rancor Cristalizado",
+   "efeitos": [],
+   "pilha": 10,
+   "icone": "Crystallised_Rancour.png",
+   "itemId": 915034
+  },
+  {
+   "slug": "Igneous_Geode",
+   "nome": "Geodo Ígneo",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Igneous_Geode.png",
+   "itemId": 915085
+  },
+  {
+   "slug": "Crystalline_Geode",
+   "nome": "Geodo Cristalino",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Crystalline_Geode.png",
+   "itemId": 915033
+  },
+  {
+   "slug": "Silver_Coin",
+   "nome": "Moeda de Prata",
+   "efeitos": [
+    "Cria um portal para os Salões dos Mortos em uma Cidade ou Refúgio Usado como Moeda nos Salões dos Mortos para participar do Torneio dos Ancestrais"
+   ],
+   "pilha": 30,
+   "icone": "Silver_Coin.png",
+   "itemId": 915158
+  },
+  {
+   "slug": "Hinekoras_Lock",
+   "nome": "Cacho de Hinekora",
+   "efeitos": [
+    "Permite que um item preveja o resultado do próximo Item Monetário utilizado nele Modificar o item de qualquer forma remove a habilidade de premonição"
+   ],
+   "pilha": 10,
+   "icone": "Hinekoras_Lock.png",
+   "itemId": 915083
+  },
+  {
+   "slug": "Vivid_Wisps",
+   "nome": "Espíritos Vívidos",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Vivid_Wisps.png",
+   "itemId": 915190
+  },
+  {
+   "slug": "Wild_Wisps",
+   "nome": "Espíritos Selvagens",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Wild_Wisps.png",
+   "itemId": 915195
+  },
+  {
+   "slug": "Primal_Wisps",
+   "nome": "Espíritos Primitivos",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Primal_Wisps.png",
+   "itemId": 915136
+  },
+  {
+   "slug": "Reflecting_Mist",
+   "nome": "Névoa Refletiva",
+   "efeitos": [
+    "Reflete um amuleto ou anel de forma imprevisível, dividindo-o em duas metades espelhadas com modificadores refletidos"
+   ],
+   "pilha": 10,
+   "icone": "Reflecting_Mist.png",
+   "itemId": 915142
+  },
+  {
+   "slug": "Coin_of_Restoration",
+   "nome": "Moeda de Restauração",
+   "efeitos": [
+    "Restaura um item único afarud à sua forma maraketh"
+   ],
+   "pilha": 10,
+   "icone": "Coin_of_Restoration.png",
+   "itemId": 915029
+  },
+  {
+   "slug": "Coin_of_Desecration",
+   "nome": "Moeda da Profanação",
+   "efeitos": [
+    "Transforma um item único maraketh em sua forma afarud, corrompendo-o e adicionando um modificador implícito"
+   ],
+   "pilha": 10,
+   "icone": "Coin_of_Desecration.png",
+   "itemId": 915026
+  },
+  {
+   "slug": "Coin_of_Knowledge",
+   "nome": "Moeda de Conhecimento",
+   "efeitos": [
+    "Corrompe uma gema de habilidade de nível 20, concedendo a ela um efeito de reforço de Inteligência aleatório"
+   ],
+   "pilha": 10,
+   "icone": "Coin_of_Knowledge.png",
+   "itemId": 915027
+  },
+  {
+   "slug": "Coin_of_Power",
+   "nome": "Moeda de Poder",
+   "efeitos": [
+    "Corrompe uma gema de habilidade de nível 20, concedendo a ela um efeito de reforço de Força aleatório"
+   ],
+   "pilha": 10,
+   "icone": "Coin_of_Power.png",
+   "itemId": 915028
+  },
+  {
+   "slug": "Coin_of_Skill",
+   "nome": "Moeda de Habilidade",
+   "efeitos": [
+    "Corrompe uma gema de habilidade de nível 20, concedendo a ela um efeito de reforço de Destreza aleatório"
+   ],
+   "pilha": 10,
+   "icone": "Coin_of_Skill.png",
+   "itemId": 915030
+  },
+  {
+   "slug": "Djinn-Touched_Vaal_Orb",
+   "nome": "Orbe Vaal Tocada pelo Djinn",
+   "efeitos": [
+    "Corrompe um item único, modificando-o de forma imprevisível Pode modificar itens corrompidos Itens corrompidos dessa forma podem ter até 2 modificadores implícitos"
+   ],
+   "pilha": 20,
+   "icone": "Djinn-Touched_Vaal_Orb.png",
+   "itemId": 915039
+  },
+  {
+   "slug": "Fading_Reflecting_Mist",
+   "nome": "Névoa Refletora Desvanecente",
+   "efeitos": [
+    "Reflete um amuleto ou anel de forma imprevisível, dividindo-o em duas metades espelhadas com modificadores refletidos"
+   ],
+   "pilha": 10,
+   "icone": "Fading_Reflecting_Mist.png",
+   "itemId": 915057
+  },
+  {
+   "slug": "Gemcutters_Lens",
+   "nome": "Lentes do Lapidário",
+   "efeitos": [
+    "Transforma uma gema de suporte ou de habilidade em outra do mesmo tipo Preserva o nível, a qualidade e a experiência da gema"
+   ],
+   "pilha": 20,
+   "icone": "Gemcutters_Lens.png",
+   "itemId": 915067
+  },
+  {
+   "slug": "Templar_Astrolabe",
+   "nome": "Astrolábio Templário",
+   "efeitos": [
+    "Adiciona uma região moldada a um quadrante do Atlas",
+    "Elimine o chefe do mapa para completar com sucesso os mapas dentro desta região moldada Chefes de mapas têm a dificuldade e a recompensa aumentadas para cada mapa completada na região moldada",
+    "Área é influenciada pelas memórias da Originadora",
+    "astrolabe enabled map [1]",
+    "map zana influence doodad density [5]",
+    "templar astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Templar_Astrolabe.png",
+   "itemId": 915174
+  },
+  {
+   "slug": "Fruiting_Astrolabe",
+   "nome": "Astrolábio Frutífero",
+   "efeitos": [
+    "Adiciona uma região moldada contendo o Bosque Sagrado a um quadrante do Atlas",
+    "Conclua todas as Colheitas para completar com sucesso os mapas dentro desta região moldada Monstros da Colheita têm a dificuldade e a recompensa aumentadas para cada mapa completada na região moldada",
+    "Seus Mapas contêm o Bosque Sagrado",
+    "astrolabe enabled map [1]",
+    "fruiting astrolabe enabled map [1]",
+    "map harvest league [1]"
+   ],
+   "pilha": 10,
+   "icone": "Fruiting_Astrolabe.png",
+   "itemId": 915065
+  },
+  {
+   "slug": "Lightless_Astrolabe",
+   "nome": "Astrolábio Obscurecido",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Abismos a um quadrante do Atlas",
+    "Conclua todos os Abismos para completar com sucesso os mapas dentro desta região moldada Monstros do Abismo têm a dificuldade e a recompensa aumentadas para cada mapa completada na região moldada",
+    "Seus mapas contêm 1 Abismos adicionais",
+    "astrolabe enabled map [1]",
+    "lightless astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Lightless_Astrolabe.png",
+   "itemId": 915100
+  },
+  {
+   "slug": "Grasping_Astrolabe",
+   "nome": "Astrolábio Constringente",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Fendas a um quadrante do Atlas",
+    "Estabilize e feche todas as Fendas Instáveis para completar com sucesso os mapas dentro desta região moldada Monstros da Fenda têm a dificuldade e a recompensa aumentadas para cada mapa completada na região moldada",
+    "Seus mapas contêm 1 Fendas Instáveis adicionais",
+    "astrolabe enabled map [1]",
+    "grasping astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Grasping_Astrolabe.png",
+   "itemId": 915076
+  },
+  {
+   "slug": "Nameless_Astrolabe",
+   "nome": "Astrolábio Inominado",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Altares Ritualísticos a um quadrante do Atlas",
+    "Conclua todos os Rituais para completar com sucesso os mapas dentro desta região moldada Monstros do Ritual têm a dificuldade e a recompensa aumentadas para cada mapa completada na região moldada",
+    "Seus Mapas contêm Altares Ritualísticos",
+    "astrolabe enabled map [1]",
+    "nameless astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Nameless_Astrolabe.png",
+   "itemId": 915115
+  },
+  {
+   "slug": "Fungal_Astrolabe",
+   "nome": "Astrolábio Fúngico",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Encontros da Infestação a um quadrante do Atlas",
+    "Defenda a Cassia para completar com sucesso os mapas dentro desta região moldada Monstros infestados têm a dificuldade e a recompensa aumentadas para cada mapa completada na região moldada",
+    "Seus Mapas contêm um Encontro Blight",
+    "astrolabe enabled map [1]",
+    "fungal astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Fungal_Astrolabe.png",
+   "itemId": 915066
+  },
+  {
+   "slug": "Chaotic_Astrolabe",
+   "nome": "Astrolábio Caótico",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Encontros do Ultimato a um quadrante do Atlas",
+    "Conclua ao menos sete levas do Ultimato para completar com sucesso os mapas dentro desta região moldada Monstros do Ultimato têm a dificuldade e a recompensa aumentadas para cada mapa completado na região moldada",
+    "Seus Mapas contêm um Encontro Ultimatum",
+    "astrolabe enabled map [1]",
+    "chaotic astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Chaotic_Astrolabe.png",
+   "itemId": 915025
+  },
+  {
+   "slug": "Deceptive_Astrolabe",
+   "nome": "Astrolábio Enganoso",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Espelhos do Delírio a um quadrante do Atlas",
+    "Ganhe pelo menos 5 recompensas do Delírio para completar com sucesso os mapas dentro desta região moldada Monstros do Delírio têm a dificuldade e a recompensa aumentadas para cada mapa completada na região moldada",
+    "Seus Mapas contêm um espelho do Delírio",
+    "astrolabe enabled map [1]",
+    "enshrouded astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Deceptive_Astrolabe.png",
+   "itemId": 915037
+  },
+  {
+   "slug": "Timeless_Astrolabe",
+   "nome": "Astrolábio Atemporal",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Encontros da Legião a um quadrante do Atlas",
+    "Mate ao menos um general de cada Encontro da Legião para completar com sucesso os mapas dentro desta região moldada Monstros da Legião têm a dificuldade e a recompensa aumentadas para cada mapa completado na região moldada",
+    "Cada Legião é acompanhada de um General",
+    "Seus Mapas contêm 1 Encontros Legion adicionais",
+    "astrolabe enabled map [1]",
+    "timeless astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Timeless_Astrolabe.png",
+   "itemId": 915178
+  },
+  {
+   "slug": "Runic_Astrolabe",
+   "nome": "Astrolábio Rúnico",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Encontros da Expedição a um quadrante do Atlas",
+    "Elimine todos os monstros rúnicos após detonar pelo menos metade dos vestígios para completar com sucesso os mapas dentro desta região moldada Monstros da Expedição têm a dificuldade e a recompensa aumentadas para cada mapa completado na região moldada",
+    "Área contém um Encontro Expedition",
+    "astrolabe enabled map [1]",
+    "runic astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Runic_Astrolabe.png",
+   "itemId": 915149
+  },
+  {
+   "slug": "Prospecting_Astrolabe",
+   "nome": "Astrolábio da Prospecção",
+   "efeitos": [
+    "Adiciona uma região moldada contendo Depósitos de Minério a um quadrante do Atlas",
+    "Áreas contêm Depósitos de Minério",
+    "astrolabe enabled map [1]",
+    "prospecting astrolabe enabled map [1]"
+   ],
+   "pilha": 10,
+   "icone": "Prospecting_Astrolabe.png",
+   "itemId": 915139
+  },
+  {
+   "slug": "Karui_Enshrouding_Crystal",
+   "nome": "Cristal Envolvente Karui",
+   "efeitos": [
+    "Encobre luvas únicas"
+   ],
+   "pilha": 10,
+   "icone": "Karui_Enshrouding_Crystal.png",
+   "itemId": 915091
+  },
+  {
+   "slug": "Imperial_Enshrouding_Crystal",
+   "nome": "Cristal Envolvente Imperial",
+   "efeitos": [
+    "Encobre botas únicas"
+   ],
+   "pilha": 10,
+   "icone": "Imperial_Enshrouding_Crystal.png",
+   "itemId": 915086
+  },
+  {
+   "slug": "Vaal_Enshrouding_Crystal",
+   "nome": "Cristal Envolvente Vaal",
+   "efeitos": [
+    "Encobre elmos únicos"
+   ],
+   "pilha": 10,
+   "icone": "Vaal_Enshrouding_Crystal.png",
+   "itemId": 915183
+  },
+  {
+   "slug": "Templar_Enshrouding_Crystal",
+   "nome": "Cristal Envolvente Templário",
+   "efeitos": [
+    "Encobre escudos únicos"
+   ],
+   "pilha": 10,
+   "icone": "Templar_Enshrouding_Crystal.png",
+   "itemId": 915175
+  },
+  {
+   "slug": "Maraketh_Enshrouding_Crystal",
+   "nome": "Cristal Envolvente Maraketh",
+   "efeitos": [
+    "Encobre peitorais únicos"
+   ],
+   "pilha": 10,
+   "icone": "Maraketh_Enshrouding_Crystal.png",
+   "itemId": 915102
+  },
+  {
+   "slug": "Red_Packet",
+   "nome": "Pacote Vermelho",
+   "efeitos": [
+    "Concede um ponto de evento."
+   ],
+   "pilha": 99,
+   "icone": "Red_Packet.png",
+   "itemId": 915140
+  },
+  {
+   "slug": "Merricks_Ducat",
+   "nome": "Ducado de Merrick",
+   "efeitos": [
+    "Aprimora uma Joia Abissal rara com um modificador adicional aleatório e a corrompe, mesmo que ela já tenha atingido o número máximo de modificadores."
+   ],
+   "pilha": 10,
+   "icone": "Merricks_Ducat.png",
+   "itemId": 915111
+  },
+  {
+   "slug": "Cyaxans_Ducat",
+   "nome": "Ducado de Cyaxan",
+   "efeitos": [
+    "Reforja um item raro com modificadores aleatórios, incluindo um modificador infame"
+   ],
+   "pilha": 10,
+   "icone": "Cyaxans_Ducat.png",
+   "itemId": 915035
+  },
+  {
+   "slug": "Dead_Mans_Sulphur",
+   "nome": "Enxofre do Homem Morto",
+   "efeitos": [],
+   "pilha": 50000,
+   "icone": "Dead_Mans_Sulphur.png",
+   "itemId": 915036
+  },
+  {
+   "slug": "Message_in_a_Bottle",
+   "nome": "Mensagem na Garrafa",
+   "efeitos": [],
+   "pilha": 20,
+   "icone": "Message_in_a_Bottle.png",
+   "itemId": 915112
+  },
+  {
+   "slug": "The_Changelings_Ducat",
+   "nome": "Ducado do Metamorfo",
+   "efeitos": [
+    "Transforma-se em um ducado aleatório"
+   ],
+   "pilha": 10,
+   "icone": "The_Changelings_Ducat.png",
+   "itemId": 915176
+  },
+  {
+   "slug": "The_Genteels_Ducat",
+   "nome": "Ducado do Cavalheiro",
+   "efeitos": [
+    "Altera um modificador que concede um único atributo para conceder um atributo diferente"
+   ],
+   "pilha": 10,
+   "icone": "The_Genteels_Ducat.png",
+   "itemId": 915177
+  },
+  {
+   "slug": "Kisharas_Ducat",
+   "nome": "Ducado de Kishara",
+   "efeitos": [
+    "Divide um item em várias formas fantasmagóricas, cada uma retendo um único modificador aleatório"
+   ],
+   "pilha": 10,
+   "icone": "Kisharas_Ducat.png",
+   "itemId": 915093
+  },
+  {
+   "slug": "Telesias_Ducat",
+   "nome": "Ducado de Telesia",
+   "efeitos": [
+    "Recria o tipo de sala de uma carta náutica, alterando as conexões que ela terá ao ser cartografada."
+   ],
+   "pilha": 10,
+   "icone": "Telesias_Ducat.png",
+   "itemId": 915172
+  },
+  {
+   "slug": "Rotmothers_Ducat",
+   "nome": "Ducado da Mãe da Podridão",
+   "efeitos": [
+    "Aprimora um cinto raro com um modificador de armadilhas ou minas."
+   ],
+   "pilha": 10,
+   "icone": "Rotmothers_Ducat.png",
+   "itemId": 915148
+  },
+  {
+   "slug": "Brinehooks_Ducat",
+   "nome": "Ducado de Salmouranzol",
+   "efeitos": [
+    "Cria uma Habilidade de Aspecto de Panteão aleatória em um item"
+   ],
+   "pilha": 10,
+   "icone": "Brinehooks_Ducat.png",
+   "itemId": 915019
+  },
+  {
+   "slug": "Katakohis_Ducat",
+   "nome": "Ducado de Katakohi",
+   "efeitos": [
+    "Grava runas em um a três encaixes de um par de luvas para conceder encantamentos aleatórios, inutilizando os encaixes."
+   ],
+   "pilha": 10,
+   "icone": "Katakohis_Ducat.png",
+   "itemId": 915092
+  },
+  {
+   "slug": "Tzamotos_Ducat",
+   "nome": "Ducado de Tzamoto",
+   "efeitos": [
+    "Remove aleatoriamente toda a Intangibilidade de um item ou o destrói."
+   ],
+   "pilha": 10,
+   "icone": "Tzamotos_Ducat.png",
+   "itemId": 915181
+  },
+  {
+   "slug": "Pearls_Before_Swine",
+   "nome": "Pérolas aos Porcos",
+   "efeitos": [
+    "Substitui o modificador implícito de um amuleto não único por um modificador sobrenatural."
+   ],
+   "pilha": 10,
+   "icone": "Pearls_Before_Swine.png",
+   "itemId": 915132
+  }
+ ]
+}

@@ -731,53 +731,6 @@
     </div>
   </aside>
 
-  <!--
-    ---- A faixa do treino ----
-
-    Duas réguas no alto da tela, no meio, e só enquanto o personagem treina:
-    a perícia que ele mandou treinar e o escudo ao lado dela.
-
-    Ela existe porque o treino é a única coisa no jogo cujo progresso não se vê:
-    a caçada tem número subindo na tela, o loot cai na bolsa, a experiência tem
-    régua no rodapé — o treino tem meia hora de nada e um resumo no fim. Com a
-    fração à mostra, com casas decimais, dá para ver o número andar.
-
-    No alto e no meio de propósito: o card do personagem fica no canto de cima à
-    esquerda e as janelas se espalham pelos lados. O meio de cima é o único
-    pedaço que costuma estar livre, e é para onde o olho vai.
-  -->
-  <div id="treino-faixa" hidden>
-    <div class="treino-faixa-titulo">
-      <span id="treino-faixa-modo">Treinando</span>
-      <!-- Há quanto tempo. "+0,8% de machado" sozinho não diz se o treino é bom;
-           "em 40 minutos, +0,8%" diz. -->
-      <b id="treino-faixa-tempo"></b>
-    </div>
-    <div class="treino-faixa-barras">
-      <div class="treino-faixa-item">
-        <div class="hud-bar treino"><i id="bar-treino"></i><span id="text-treino">—</span></div>
-        <em id="treino-faixa-nome">—</em>
-      </div>
-      <div class="treino-faixa-item" id="treino-faixa-escudo">
-        <div class="hud-bar treino escudo"><i id="bar-treino-escudo"></i><span id="text-treino-escudo">—</span></div>
-        <em>shielding</em>
-      </div>
-    </div>
-    <!-- Parar dali mesmo. A faixa é onde o jogador está olhando enquanto
-         treina; obrigá-lo a abrir a aba de Aventuras para parar seria mandar
-         procurar o botão em outro cômodo. -->
-    <button id="treino-faixa-parar" type="button">Parar treino</button>
-    <!--
-      O Scroll Speed Exercise, embaixo do botão de parar.
-
-      Ele mora AQUI dentro e não numa faixa própria porque só diz respeito a
-      este treino: o pergaminho deixou de ser um prazo de relógio de parede e
-      virou um saldo que desce enquanto a exercise weapon bate. Fora do treino
-      ele não está gastando nada, e um relógio no alto da tela o dia inteiro
-      seria um aviso sobre coisa nenhuma.
-    -->
-    <div id="efeitos-faixa" hidden></div>
-  </div>
 
   <!-- ---- Os RELOGIOS do que esta ligado ----
 
@@ -930,7 +883,6 @@
             <option value="5">5 monstros</option>
             <option value="6">6 monstros</option>
             <option value="8">8 monstros</option>
-            <option value="10">10 monstros</option>
           </select>
           <span class="lure-sep" id="lure-sep">·</span>
           <select id="lure-volta" title="Com quantos monstros ele larga a briga e volta a juntar">
@@ -942,8 +894,6 @@
             <option value="5">voltar em 5</option>
             <option value="6">voltar em 6</option>
             <option value="7">voltar em 7</option>
-            <option value="8">voltar em 8</option>
-            <option value="9">voltar em 9</option>
           </select>
         </span>
       </label>
