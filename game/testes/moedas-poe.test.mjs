@@ -13,6 +13,7 @@ const Jogo = await import('../systems/itens-poe/jogo.mjs');
 const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
 const M = await import('../systems/itens-poe/moedas.mjs');
 const GS = await import('../systems/skills/gemas.mjs');
+const S = await import('../systems/itens-poe/sockets.mjs');
 const { personagemDeTeste } = await import('./apoio.mjs');
 if (!SEM) {
   Jogo.iniciar(ITEM_CATALOG);
@@ -131,4 +132,27 @@ test('Orbe Vaal corrompe (só as Corroídas valem depois); Espelho copia; Remors
   const h = novo(GS.itemDaGema(GS.novaGema(gema.itemId)));
   assert.ok(usar(h, 'Gemcutters_Prism').ok);
   assert.equal(h.inventory[0].gema.qualidade, 1);
+});
+
+test('qualidade como no poedb: a Bolha sobe a recuperação do frasco (e a duração do de Utilidade), "Superior" no nome da peça Normal, e mais sockets/links com qualidade', { skip: SEM }, () => {
+  const vida = peca('Life_Flasks/Small_Life_Flask');
+  const e = novo(vida);
+  const antes = vida.poe.frasco.quantidade;
+  for (let i = 0; i < 4; i++) usar(e, 'Glassblowers_Bauble');
+  assert.equal(vida.poe.qualidade, 20);
+  assert.equal(vida.poe.frasco.quantidade, Math.round(antes * 1.2), 'recupera 20% a mais');
+  assert.equal(M.STATUS.Glassblowers_Bauble.status, 'funciona');
+  const merc = peca('Utility_Flasks/Quicksilver_Flask');
+  const f = novo(merc);
+  const dur = merc.poe.frasco.duracao;
+  usar(f, 'Glassblowers_Bauble');
+  assert.ok(merc.poe.frasco.duracao > dur, 'o de Utilidade dura mais');
+  const a = peca(ARMA);
+  const g = novo(a);
+  const nome = a.poe.nome;
+  usar(g, 'Blacksmiths_Whetstone');
+  assert.equal(a.poe.nome, `Superior ${nome}`);
+  // Os pesos do Joalheiro: com 20% de qualidade, sair com MAIS sockets que o atual é mais frequente.
+  const conta = (q) => { const r = rngDe(3); let n = 0; for (let i = 0; i < 4000; i++) if (S.sortearNumero(2, 6, r, q) > 2) n++; return n; };
+  assert.ok(conta(20) > conta(0) * 1.08, `${conta(20)} vs ${conta(0)}`);
 });

@@ -185,6 +185,9 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   const R = regras.raridades[p.raridade] ?? {};
   p.raridadeNome = R.nome ?? p.raridade;
   p.cor = R.cor ?? null;
+  // "Superior" (poedb › Quality): a peça Normal com qualidade leva o prefixo no nome; sem qualidade (ou com raridade), o nome limpo.
+  const nomeLimpo = String(p.nome ?? '').replace(/^Superior /, '');
+  p.nome = p.raridade === 'normal' && (Number(p.qualidade) || 0) > 0 ? `Superior ${nomeLimpo}` : nomeLimpo;
   if (FRASCOS.includes(p.classe)) {
     const par = Frascos.parametros({ poe: p });
     p.estados = par.estadosPorMod;

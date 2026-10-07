@@ -75,6 +75,13 @@ export function parametros(peca) {
   const p = { velocidadePct: 0, quantidadePct: 0, instantaneo: false, recargaPct: 0, cargasMaximas: Number(a.cargas_maximas) || 0, custoPct: 0, duracaoPct: 0, duracaoMenos: 1, efeitoPct: 0, maisNaVidaBaixaPct: 0 };
   const durante = {};
   const linhas = [];
+  // A QUALIDADE do frasco (a Bolha do Vidreiro — poedb › Quality): vida/mana recuperada +qualidade%; no frasco de Utilidade, a duração +qualidade%.
+  const qualidade = Math.max(0, Math.min(30, Number(poe.qualidade) || 0));
+  if (qualidade) {
+    if (tipo === 'utilidade') p.duracaoPct += qualidade;
+    else p.quantidadePct += qualidade;
+    linhas.push({ texto: `Qualidade: +${qualidade}% (${tipo === 'utilidade' ? 'duração' : 'recuperação'})`, estado: 'efeito' });
+  }
   // O estado de cada MOD (o balão marca por mod, na ordem implícitos, prefixos, sufixos, mods do único): o pior das partes.
   const estadosPorMod = [];
   for (const mod of [...(poe.implicitos ?? []), ...(poe.prefixos ?? []), ...(poe.sufixos ?? []), ...(poe.modificadores ?? [])]) {

@@ -355,7 +355,7 @@ const FAZ = {
   Orb_of_Alchemy: { f: alquimia }, Chaos_Orb: { f: caos }, Exalted_Orb: { f: exaltar }, Orb_of_Scouring: { f: expurgar },
   Orb_of_Annulment: { f: anular }, Divine_Orb: { f: divino }, Blessed_Orb: { f: abencoar }, Sacred_Orb: { f: sagrado },
   Orb_of_Chance: { f: chance }, Blacksmiths_Whetstone: { f: amolador }, Armourers_Scrap: { f: sucata },
-  Glassblowers_Bauble: { f: bolha, parcial: 'a qualidade do frasco fica gravada, mas ainda não aumenta o efeito dele' },
+  Glassblowers_Bauble: { f: bolha },
   Orb_of_Binding: { f: elo }, Fracturing_Orb: { f: talhar }, Mirror_of_Kalandra: { f: espelhar }, Ancient_Orb: { f: ancestral },
   Vaal_Orb: { f: vaal, parcial: 'o implícito corrompido (vaal) não existe no catálogo: no lugar dele, os valores são sorteados de novo' },
   Volatile_Vaal_Orb: { f: vaalVolatil, parcial: 'sorteia os valores de novo dentro das faixas (sem passar delas) e corrompe' },

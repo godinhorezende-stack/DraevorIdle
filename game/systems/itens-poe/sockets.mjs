@@ -80,19 +80,26 @@ export function sorteioFixo(texto) {
  */
 export const orbes = () => S().orbes ?? {};
 /** O novo número de sockets do Joalheiro: diferente de `atual`, até `max`; null se não há outro. */
-export function sortearNumero(atual, max, rng = Math.random) {
-  const pesos = Object.entries(orbes().joalheiro?.pesoPorNumero ?? {}).map(([n, p]) => [Number(n), Number(p)]).filter(([n, p]) => n >= 1 && n <= max && n !== atual && p > 0);
+/*
+ * A QUALIDADE da peça (poedb › Quality, dono 07/10): "cada 1% de qualidade melhora o resultado do Joalheiro e da Fusão em 1%" — os números
+ * acima do atual (e a chance de ligar) pesam qualidade% a mais; com 20% de qualidade, mais sockets/links ficam 20% mais prováveis.
+ */
+const fatorDaQualidade = (q) => 1 + Math.max(0, Math.min(30, Number(q) || 0)) / 100;
+export function sortearNumero(atual, max, rng = Math.random, qualidade = 0) {
+  const fq = fatorDaQualidade(qualidade);
+  const pesos = Object.entries(orbes().joalheiro?.pesoPorNumero ?? {}).map(([n, p]) => [Number(n), Number(p) * (Number(n) > atual ? fq : 1)]).filter(([n, p]) => n >= 1 && n <= max && n !== atual && p > 0);
   if (!pesos.length) return null;
   let v = rng() * pesos.reduce((t, [, p]) => t + p, 0);
   for (const [n, p] of pesos) if ((v -= p) < 0) return n;
   return pesos.at(-1)[0];
 }
 /** Os novos links da Fusão nos `abertos` sockets (de `max`): todos ligados com a chance do número de sockets; senão, ao acaso (sem ligar todos). */
-export function sortearLinks(abertos, max, rng = Math.random) {
+export function sortearLinks(abertos, max, rng = Math.random, qualidade = 0) {
+  const fq = fatorDaQualidade(qualidade);
   const tudo = Array.from({ length: max - 1 }, (_, i) => i + 1 < abertos);
   if (abertos < 2) return tudo.map(() => false);
-  if (rng() < Number(orbes().fusao?.chanceDeLigarTodos?.[abertos] ?? 0)) return tudo;
-  const chance = Number(S().chanceDeLink ?? 0.5);
+  if (rng() < Number(orbes().fusao?.chanceDeLigarTodos?.[abertos] ?? 0) * fq) return tudo;
+  const chance = Math.min(0.95, Number(S().chanceDeLink ?? 0.5) * fq);
   for (let tentativa = 0; tentativa < 20; tentativa++) {
     const links = tudo.map((pode) => pode && rng() < chance);
     if (links.filter(Boolean).length < abertos - 1) return links;

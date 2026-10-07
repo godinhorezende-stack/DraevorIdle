@@ -870,16 +870,18 @@ export function usarOrbeDoPoe(estado, { slot, tipo }, rng = Math.random) {
   if (tipo === 'joalheiro') {
     if (comGema) return erro('Tire as gemas desta peça antes: o Joalheiro refaz os sockets. O orbe não foi gasto.');
     if (s.abertos >= max) return erro(`Esta peça já está no máximo (${max} sockets). O orbe não foi gasto.`);
-    const n = SocketsPoe.sortearNumero(s.abertos, max, rng);
+    // A qualidade da peça melhora o resultado (poedb › Quality): mais sockets e links ficam qualidade% mais prováveis.
+    const qualidade = Number(peca.poe?.qualidade) || 0;
+    const n = SocketsPoe.sortearNumero(s.abertos, max, rng, qualidade);
     if (n == null) return erro('Não há outro número de sockets para esta peça. O orbe não foi gasto.');
-    const chance = Number(SocketsPoe.orbes().joalheiro?.chanceDeLink ?? 0.5);
+    const chance = Math.min(0.95, Number(SocketsPoe.orbes().joalheiro?.chanceDeLink ?? 0.5) * (1 + qualidade / 100));
     const links = Array.from({ length: max - 1 }, (_, i) => i + 1 < n && rng() < chance);
     gravarSoquetes(peca, { ...s, abertos: n, links, cores: SocketsPoe.sortearCores(max, req, rng) });
     notice = `Sockets: ${s.abertos} → ${n}.`;
   } else if (tipo === 'fusao') {
     if (s.abertos < 2) return erro('Precisa de pelo menos 2 sockets para ligar. O orbe não foi gasto.');
     if (s.links.slice(0, s.abertos - 1).every(Boolean)) return erro('Esta peça já está toda ligada. O orbe não foi gasto.');
-    const links = SocketsPoe.sortearLinks(s.abertos, max, rng);
+    const links = SocketsPoe.sortearLinks(s.abertos, max, rng, Number(peca.poe?.qualidade) || 0);
     gravarSoquetes(peca, { ...s, links });
     notice = `Links sorteados de novo. Grupos agora: ${gruposLigados({ abertos: s.abertos, links }).map((g) => g.map((x) => x + 1).join('+')).join(' | ')}.`;
   } else if (tipo === 'cromatico') {
