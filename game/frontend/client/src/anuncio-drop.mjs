@@ -37,7 +37,7 @@ function montarSistema(m) {
 
 function montar(m) {
   if (m.t === 'avisoGlobal') return montarSistema(m);
-  const cartao = el('div', `anuncio-drop raridade-${String(m.peca?.raridade ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '')}`);
+  const cartao = el('div', `anuncio-drop raridade-${String(m.peca?.poe?.raridade ?? m.peca?.raridade ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '')}`);
   cartao.setAttribute('role', 'status');
   const figura = el('div', 'anuncio-figura');
   try {

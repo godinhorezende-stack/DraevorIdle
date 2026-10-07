@@ -27597,6 +27597,7 @@ b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }
 .anuncio-drop.raridade-epico { --cor: #b184e8; }
 .anuncio-drop.raridade-lendario { --cor: #e0a84a; }
 .anuncio-drop.raridade-mitico { --cor: #f2503f; }
+.anuncio-drop.raridade-unico { --cor: #af6025; } /* o Único do PoE (laranja) */
 .anuncio-drop.saindo { opacity: 0; transform: translateY(-8px); }
 .anuncio-figura {
   flex: none; width: 40px; height: 40px; display: grid; place-items: center;
