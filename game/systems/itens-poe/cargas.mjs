@@ -4,7 +4,7 @@
 // a duração acaba, todas daquele tipo voltam ao MÍNIMO (0, ou o "+N ao Mínimo de Cargas de X"). Por carga:
 //   Tolerância — +4% de redução de dano físico (phys_res) e +4% em todas as resistências elementais.
 //   Frenesi    — +4% de velocidade de ataque e de conjuração, e 4% MAIS dano (multiplica o golpe — `fatorDeDano`).
-//   Poder      — +40% de chance de crítico (aumentada: crit_chance_inc).
+//   Poder      — +50% de chance de crítico (aumentada: crit_chance_inc) — o número do PoE 1 atual (a tela de personagem do PoE: "+50%").
 //   (+ os mods "por carga" — ver `adds` e `fatorDeDano`.)
 // Como se ganha: ao matar, ao acertar um Inimigo Único, quando acertado, ao bloquear, ao atordoar, no crítico (geral, com varinhas,
 // corpo a corpo) e no acerto não crítico, por segundo se foi acertado recentemente, a cada N s enquanto se move, a cada N de mana gasta.
@@ -165,6 +165,17 @@ export function tique(estado, af = {}) {
 /** Só o vencimento (sem as regras do personagem). */
 export const vencer = (estado) => tique(estado, {});
 
+/** Os números BASE de cada carga do PoE (por carga ativa). */
+export const POR_CARGA = { reducaoFisica: 4, resElemental: 4, velAtaque: 4, velConjuracao: 4, danoMais: 4, critAumentado: 50 };
+/** O que UMA carga de cada tipo dá, com os mods "por Carga de X" do personagem (`af`) — o mesmo número do combate e da ficha. */
+export function porCarga(af) {
+  return {
+    tolerancia: { reducaoFisica: POR_CARGA.reducaoFisica + n(af, 'phys_res_por_tolerancia'), resElemental: POR_CARGA.resElemental + n(af, 'elem_res_por_tolerancia') },
+    frenesi: { velAtaque: POR_CARGA.velAtaque + n(af, 'atk_speed_por_frenesi'), velConjuracao: POR_CARGA.velConjuracao, danoMais: POR_CARGA.danoMais },
+    poder: { critAumentado: POR_CARGA.critAumentado + n(af, 'crit_chance_inc_por_poder') },
+  };
+}
+
 /** O que as cargas ativas somam (`adds`, as mesmas chaves dos itens). `af`: a soma sem as cargas (para os mods "por carga"). */
 export function adds(estado, af) {
   if (!ligado()) return null;
@@ -174,15 +185,16 @@ export function adds(estado, af) {
   const mais = (k, v) => {
     if (v) s[k] = (s[k] ?? 0) + v;
   };
-  mais('phys_res', (4 + n(af, 'phys_res_por_tolerancia')) * tolerancia);
-  for (const el of ['fire_res', 'ice_res', 'energy_res']) mais(el, (4 + n(af, 'elem_res_por_tolerancia')) * tolerancia);
+  const pc = porCarga(af);
+  mais('phys_res', pc.tolerancia.reducaoFisica * tolerancia);
+  for (const el of ['fire_res', 'ice_res', 'energy_res']) mais(el, pc.tolerancia.resElemental * tolerancia);
   mais('armour_pct', n(af, 'armour_pct_por_tolerancia') * tolerancia);
   mais('life_regen_pct', n(af, 'life_regen_pct_por_tolerancia') * tolerancia);
-  mais('atk_speed', (4 + n(af, 'atk_speed_por_frenesi')) * frenesi);
-  mais('cast_speed', 4 * frenesi);
+  mais('atk_speed', pc.frenesi.velAtaque * frenesi);
+  mais('cast_speed', pc.frenesi.velConjuracao * frenesi);
   mais('move_speed', n(af, 'move_speed_por_frenesi') * frenesi);
   mais('evasion_pct', n(af, 'evasion_pct_por_frenesi') * frenesi);
-  mais('crit_chance_inc', (40 + n(af, 'crit_chance_inc_por_poder')) * poder);
+  mais('crit_chance_inc', pc.poder.critAumentado * poder);
   mais('crit_dmg', n(af, 'crit_dmg_por_poder') * poder);
   mais('spell_dmg', n(af, 'spell_dmg_por_poder') * poder);
   mais('mana_regen_pct', n(af, 'mana_regen_pct_por_poder') * poder);
@@ -194,7 +206,7 @@ export function fatorDeDano(estado, af) {
   if (!ligado()) return 1;
   const { tolerancia, frenesi, poder } = ativas(estado);
   const aumentado = n(af, 'dano_por_poder') * poder + n(af, 'dano_por_tolerancia') * tolerancia + n(af, 'dano_por_frenesi') * frenesi + n(af, 'dano_por_carga') * (tolerancia + frenesi + poder);
-  return (1 + 0.04 * frenesi) * (1 + aumentado / 100);
+  return (1 + (POR_CARGA.danoMais / 100) * frenesi) * (1 + aumentado / 100);
 }
 
 const tentar = (estado, tipo, af, chance, rng) => chance > 0 && rng() * 100 < chance && ganhar(estado, tipo, af, 1, rng);

@@ -444,7 +444,7 @@ function fichaDoPoe(body, state) {
     grade(
       statCard('Cargas de Tolerância', `até ${3 + (cg.max_tolerancia ?? 0)}`, '+4% de redução física e +4% de resistências elementais cada'),
       statCard('Cargas de Frenesi', `até ${3 + (cg.max_frenesi ?? 0)}`, '+4% de velocidade de ataque e 4% mais dano cada'),
-      statCard('Cargas de Poder', `até ${3 + (cg.max_poder ?? 0)}`, '+40% de chance de crítico cada'),
+      statCard('Cargas de Poder', `até ${3 + (cg.max_poder ?? 0)}`, '+50% de chance de crítico cada'),
       statCard('Velocidade de movimento', num(d.speed), null),
       ...(d.goldFind ? [statCard('Ouro encontrado', `+${num(d.goldFind)}%`, null)] : []),
       ...(d.lootRate ? [statCard('Quantidade de itens', `+${num(d.lootRate)}%`, null)] : []),

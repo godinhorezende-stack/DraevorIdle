@@ -810,7 +810,8 @@ export function curar(estado, vida, mana, eventos, quem, pos) {
  * recupera a 2% da máxima por segundo (um golpe forte dura até 5 s); a soma de todas as instâncias ativas não passa de 20% da máxima por
  * segundo (é preciso ~10 instâncias para bater o teto). Quem faz a recuperação ao longo do tempo é `recuperarRoubo` (no tique da caçada).
  */
-export const LEECH_POE = { porInstanciaPct: 10, taxaDaInstanciaPct: 2, porSegundoPct: 20 };
+// (O Escudo de Energia tem teto total de 10% do máximo por segundo, como no PoE 1 — a tela de personagem: "0 (10%)".)
+export const LEECH_POE = { porInstanciaPct: 10, taxaDaInstanciaPct: 2, porSegundoPct: 20, porSegundoEsPct: 10 };
 export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
   // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
   if (itensPoeLigado() && !ataque) {
@@ -867,7 +868,7 @@ export function recuperarRoubo(estado, ms) {
     const pedido = ativas.reduce((n, x) => n + Math.min(x.restante, x.porSegundo * s), 0);
     // ("Recuperação total por segundo do Dreno de Vida aumentada", "é Dobrado".)
     const fRoubo = combate(estado);
-    const teto = (max * LEECH_POE.porSegundoPct * Math.max(0, 1 + ModsPoe.valor(fRoubo, 'roubo_teto_inc') / 100) * s) / 100;
+    const teto = (max * (recurso === 'es' ? LEECH_POE.porSegundoEsPct : LEECH_POE.porSegundoPct) * Math.max(0, 1 + ModsPoe.valor(fRoubo, 'roubo_teto_inc') / 100) * s) / 100;
     const fator = pedido > teto ? teto / pedido : 1;
     let ganho = 0;
     for (const x of ativas) {

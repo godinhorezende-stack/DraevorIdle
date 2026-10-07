@@ -15,7 +15,9 @@ import * as ClassesPoe from '../itens-poe/classes.mjs';
 import { esperaDaRecarga } from './defesa.mjs';
 import { nomeDaHunt } from '../hunt/terreno.mjs';
 import * as CargasPoe from '../itens-poe/cargas.mjs';
-import { MANA_REGEN_BASE_POE } from '../ficha.mjs';
+import { MANA_REGEN_BASE_POE, LEECH_POE } from '../ficha.mjs';
+import * as AfeccoesPoe from '../itens-poe/afeccoes.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 const ES = Atributos.CONFIG.energyShield ?? {};
 const r2 = (v) => Math.round((Number(v) || 0) * 100) / 100;
@@ -132,6 +134,36 @@ export function montar(estado, ficha, extras = {}) {
   const dano = Object.entries(ficha.danoDoElemento ?? {}).filter(([, v]) => v);
   const NOME_DO_ELEMENTO = { physical: 'Físico', fire: 'de Fogo', ice: 'de Gelo', energy: 'de Raio', chaos: 'de Caos', earth: 'de Veneno', death: 'de Morte', holy: 'Sagrado' };
 
+  // ---- a OFENSA do golpe da arma, como a aba Ofensa do PoE: o Físico e o total do acerto (com os "aumentado" — a mesma conta de
+  // `hunt/combate`: a parte da Força só no corpo a corpo), a chance de acertar, o DPS (média × ataques por segundo × chance de acertar) e o
+  // dano por segundo do Sangramento e do Veneno que o acerto aplica (`itens-poe/afeccoes`: 70% e 30% do dano por segundo, os multiplicadores
+  // e os "aumentado" das afecções).
+  const corpoACorpo = !['distance', 'magic'].includes(ficha.armaEquipada?.familia);
+  const pctDo = (el) => (ficha.danoDoElemento?.[el] ?? 0) - (el === 'physical' && !corpoACorpo ? ficha.danoFisicoDaForca ?? 0 : 0);
+  const fisico = [ficha.damage?.min ?? 0, ficha.damage?.max ?? 0].map((v) => v * (1 + pctDo('physical') / 100));
+  const partesDoAcerto = { physical: fisico };
+  for (const [el, [a0, b0]] of Object.entries(ficha.danoSomado ?? {})) {
+    const x = partesDoAcerto[el] ?? [0, 0];
+    partesDoAcerto[el] = [x[0] + a0 * (1 + pctDo(el) / 100), x[1] + b0 * (1 + pctDo(el) / 100)];
+  }
+  const totalDoAcerto = Object.values(partesDoAcerto).reduce((s, [a0, b0]) => [s[0] + a0, s[1] + b0], [0, 0]);
+  const chanceDeAcertar = chances.acerto ?? 1;
+  const dps = ((totalDoAcerto[0] + totalDoAcerto[1]) / 2) * ataquesPorSegundo * chanceDeAcertar;
+  const af = AfeccoesPoe.daSoma(ficha.afPoe ?? {});
+  const porSegundo = (base, porS, multi, aumentado) => base * porS * (1 + multi / 100) * (1 + ((af.danoAumentado ?? 0) + aumentado) / 100);
+  const faixa = ([a0, b0], casas = 1) => `${num(a0, casas)} – ${num(b0, casas)}`;
+  const sangra = (partesDoAcerto.physical ?? [0, 0]).map((v) => porSegundo(v, AfeccoesPoe.BASE.sangramento.porSegundo, af.multiplicador + (af.multiplicadorSangramento ?? 0), af.danoSangramento ?? 0));
+  const baseDoVeneno = [0, 1].map((i) => (partesDoAcerto.physical?.[i] ?? 0) + (partesDoAcerto.chaos?.[i] ?? 0));
+  const veneno = baseDoVeneno.map((v) => porSegundo(v, AfeccoesPoe.BASE.veneno.porSegundo, af.multiplicador + (af.multiplicadorVeneno ?? 0), af.danoVeneno ?? 0));
+  const SEM_CRIT_NA_AFECCAO = 'o crítico não multiplica o dano das afecções no jogo: o do crítico é o mesmo do acerto';
+  // ---- o ROUBO (aba Diversos do PoE): o máximo por instância e o total por segundo, em pontos e em % do máximo
+  const instPct = LEECH_POE.porInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_instancia_inc') / 100);
+  const tetoPct = LEECH_POE.porSegundoPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_teto_inc') / 100);
+  const tetoEsPct = LEECH_POE.porSegundoEsPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_teto_inc') / 100);
+  const doMax = (max, p0) => `${num((max * p0) / 100, 1)} (${pct(p0, 0)})`;
+  // ---- as CARGAS: o que cada uma dá (os números do combate — `CargasPoe.porCarga`)
+  const pc = CargasPoe.porCarga(cg);
+
   const secoes = [
     { id: 'vida', titulo: 'Vida', linhas: [
       linha('Vida máxima', num(estado.maxHp), { fontes: vida, destaque: true }),
@@ -158,10 +190,17 @@ export function montar(estado, ficha, extras = {}) {
     ] },
     { id: 'ataque', titulo: 'Ataque', linhas: [
       linha('Arma', ficha.armaEquipada?.nome ?? 'nenhuma'),
-      linha('Dano por golpe', `${num(ficha.damage?.min)}–${num(ficha.damage?.max)}`, { dica: `média ${num(danoMedio, 1)}` }),
+      linha('Dano por segundo', num(dps, 2), { destaque: true, dica: 'média do acerto × ataques por segundo × chance de acertar (como na tela do PoE)' }),
+      linha('Chance de acertar', pct(chanceDeAcertar * 100, 0), { dica: 'contra um monstro do seu nível' }),
+      ...(chances.acertoEvasivo != null ? [linha('Chance de acertar monstros evasivos', pct(chances.acertoEvasivo * 100, 0), { dica: 'contra um monstro do seu nível com o modificador Evasivo (+100% de evasão)' })] : []),
       linha('Ataques por segundo', num(ataquesPorSegundo, 2), { fontes: daOrigem('velocidadeDeAtaque'), dica: ficha.velocidadeDeAtaque ? `velocidade de ataque +${pct(ficha.velocidadeDeAtaque, 0)}` : null }),
-      linha('Dano por segundo (golpe da arma)', num(danoMedio * ataquesPorSegundo, 1), { dica: 'média do golpe × ataques por segundo, sem crítico' }),
-      linha('Precisão', num(ficha.accuracy), { fontes: daOrigem('accuracy'), dica: chances.acerto != null ? `${pct(chances.acerto * 100, 0)} de chance de acertar um monstro do seu nível` : null }),
+      linha('Dano total do acerto', faixa(totalDoAcerto, 0), { dica: 'todos os tipos de dano do golpe, com os "aumentado", antes da resistência do monstro' }),
+      linha('Dano físico do acerto', faixa(partesDoAcerto.physical ?? [0, 0], 0), { dica: `o dano da arma ${num(ficha.damage?.min)}–${num(ficha.damage?.max)} × ${num(1 + pctDo('physical') / 100, 2)} (dano físico aumentado)` }),
+      linha('Precisão', num(ficha.accuracy), { fontes: daOrigem('accuracy') }),
+      linha('Sangramento por segundo (acerto)', faixa(sangra), { dica: `${pct(AfeccoesPoe.BASE.sangramento.porSegundo * 100, 0)} do dano físico do acerto por segundo, por ${num(AfeccoesPoe.BASE.sangramento.duracaoMs / 1000)} s` }),
+      linha('Sangramento por segundo (crítico)', faixa(sangra), { dica: SEM_CRIT_NA_AFECCAO }),
+      linha('Veneno por segundo (acerto)', faixa(veneno), { dica: `${pct(AfeccoesPoe.BASE.veneno.porSegundo * 100, 0)} do dano físico e de caos do acerto por segundo, por ${num(AfeccoesPoe.BASE.veneno.duracaoMs / 1000)} s` }),
+      linha('Veneno por segundo (crítico)', faixa(veneno), { dica: SEM_CRIT_NA_AFECCAO }),
       linha('Chance de crítico', pct((ficha.critChance ?? 0) * 100, 2), { fontes: daOrigem('critChance') }),
       linha('Multiplicador de crítico', pct((ficha.critMultiplier ?? 1.5) * 100, 0), { fontes: daOrigem('critMultiplier') }),
       ...dano.map(([el, v]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} aumentado`, `+${pct(v)}`, { fontes: daOrigem(`dano.${el}`) })),
@@ -189,9 +228,23 @@ export function montar(estado, ficha, extras = {}) {
       linha('Velocidade de movimento', num(extras.speed ?? ficha.speed), { fontes: daOrigem('speed') }),
     ] },
     { id: 'cargas', titulo: 'Cargas', linhas: [
-      linha('Cargas de Tolerância', `${cargasAtivas.tolerancia} / ${maxCarga('tolerancia')}`, { dica: 'ativas agora / máximo · cada: +4% de redução de dano físico e +4% às resistências elementais' }),
-      linha('Cargas de Frenesi', `${cargasAtivas.frenesi} / ${maxCarga('frenesi')}`, { dica: 'ativas agora / máximo · cada: +4% de velocidade de ataque e de conjuração e 4% mais dano' }),
-      linha('Cargas de Poder', `${cargasAtivas.poder} / ${maxCarga('poder')}`, { dica: 'ativas agora / máximo · cada: +40% de chance de crítico' }),
+      linha('Cargas de Tolerância', `${cargasAtivas.tolerancia} / ${maxCarga('tolerancia')}`, { dica: 'ativas agora / máximo' }),
+      linha('Redução de dano físico por Carga de Tolerância', pct(pc.tolerancia.reducaoFisica, 1)),
+      linha('Redução de dano elemental por Carga de Tolerância', pct(pc.tolerancia.resElemental, 1), { dica: 'soma às resistências elementais' }),
+      linha('Cargas de Frenesi', `${cargasAtivas.frenesi} / ${maxCarga('frenesi')}`, { dica: 'ativas agora / máximo' }),
+      linha('Velocidade de ataque por Carga de Frenesi', `+${pct(pc.frenesi.velAtaque, 1)}`),
+      linha('Velocidade de conjuração por Carga de Frenesi', `+${pct(pc.frenesi.velConjuracao, 1)}`),
+      linha('Dano por Carga de Frenesi', `${pct(pc.frenesi.danoMais, 1)} mais`),
+      linha('Cargas de Poder', `${cargasAtivas.poder} / ${maxCarga('poder')}`, { dica: 'ativas agora / máximo' }),
+      linha('Chance de crítico por Carga de Poder', `+${pct(pc.poder.critAumentado, 1)}`, { dica: 'aumentada (multiplica a chance de crítico)' }),
+    ] },
+    { id: 'roubo', titulo: 'Roubo', linhas: [
+      linha('Recuperação máxima por instância de roubo de vida', doMax(estado.maxHp ?? 0, instPct), { dica: `cada acerto cria uma instância que recupera ${pct(LEECH_POE.taxaDaInstanciaPct, 0)} da vida máxima por segundo` }),
+      linha('Recuperação total por segundo do roubo de vida', doMax(estado.maxHp ?? 0, tetoPct), { dica: 'a soma de todas as instâncias ativas' }),
+      linha('Recuperação máxima por instância de roubo de mana', doMax(estado.maxMana ?? 0, instPct)),
+      linha('Recuperação total por segundo do roubo de mana', doMax(estado.maxMana ?? 0, tetoPct)),
+      linha('Recuperação máxima por instância de roubo de escudo', doMax(esMax, instPct)),
+      linha('Recuperação total por segundo do roubo de escudo', doMax(esMax, tetoEsPct)),
     ] },
     { id: 'diversos', titulo: 'Diversos', linhas: [
       linha('Quantidade de itens encontrados', `+${pct(ficha.lootRate, 0)}`),

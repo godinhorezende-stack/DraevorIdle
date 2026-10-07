@@ -100,6 +100,14 @@ export function chanceDeAcerto(precisao, levelBicho, evasaoDoBichoPronta = null)
   return Math.min(c.MAX, Math.max(c.MIN, bruta));
 }
 
+/**
+ * Chance (0–1) de acertar um monstro EVASIVO do level: a evasão da curva × (1 + `evasaoPct`/100) — o modificador "Evasivo" dos monstros
+ * (+100% de evasão, `itens-poe/modificadores-monstro.json`). É a linha "Chance de Acertar Monstros Evasivos" da tela do PoE.
+ */
+export function chanceDeAcertoEvasivo(precisao, levelBicho, evasaoPct = 100) {
+  return chanceDeAcerto(precisao, levelBicho, daCurva('evasao', levelBicho) * (1 + evasaoPct / 100));
+}
+
 /** Chance (0–1) de o jogador ESQUIVAR o golpe corpo a corpo do bicho: a Evasion dele contra a precisão do bicho. */
 export function chanceDeEsquiva(evasao, levelBicho, precisaoDoBichoPronta = null) {
   const c = CONFIG.evasao;

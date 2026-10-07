@@ -23,7 +23,7 @@ test('a ficha do PoE: cabeçalho com classe e atributos, Vida/ES/Mana, as 4 resi
   assert.deepEqual(f.cabecalho.atributos.map((a) => a.id), ['str', 'dex', 'int']);
   assert.deepEqual(f.grandes.map((g) => g.id), ['vida', 'es', 'mana']);
   assert.deepEqual(f.resistencias.map((r) => r.nome), ['Fogo', 'Gelo', 'Raio', 'Caos']);
-  assert.deepEqual(f.secoes.map((s) => s.titulo), ['Vida', 'Escudo de Energia', 'Mana', 'Ataque', 'Magia', 'Defesa', 'Cargas', 'Diversos']);
+  assert.deepEqual(f.secoes.map((s) => s.titulo), ['Vida', 'Escudo de Energia', 'Mana', 'Ataque', 'Magia', 'Defesa', 'Cargas', 'Roubo', 'Diversos']);
   // De onde vem: a vida fecha com a soma das fontes (nível + Força + equipamento + árvore + o resto).
   const vida = f.grandes[0];
   assert.equal(Math.round(soma(vida.fontes)), vida.valor);
@@ -69,7 +69,8 @@ test('regras do PoE (dono, 07/10): vida/mana base 50/40 no nível 1, vida sem re
   // A ficha mostra as cargas ativas / máximo e a penalidade.
   const fp = FichaPoe.montar(e, Ficha.combate(e));
   const cargas = fp.secoes.find((s) => s.id === 'cargas').linhas.map((l) => l.valor);
-  assert.deepEqual(cargas, ['0 / 3', '0 / 3', '0 / 3']);
+  // (as ativas / máximo de cada uma e, como na aba Cargas do PoE, o que cada carga dá.)
+  assert.deepEqual(cargas, ['0 / 3', '4%', '4%', '0 / 3', '+4%', '+4%', '4% mais', '0 / 3', '+50%']);
   assert.ok(fp.secoes.find((s) => s.id === 'defesa').linhas.some((l) => /Penalidade/.test(l.rotulo) && l.valor === '−60%'));
   assert.ok(fp.resistencias.find((r) => r.id === 'fire').fontes.some((x) => /Penalidade da campanha/.test(x.fonte) && x.valor === -60));
 });
@@ -161,4 +162,21 @@ test('modo PoE: sem os 3% de crítico "do personagem"; o roubo só nos ataques, 
   for (let k = 0; k < 15; k++) Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
   Ficha.recuperarRoubo(e, 1000);
   assert.equal(e.hp, 400, '+20% (200) no segundo, não +30%');
+});
+
+test('ficha do PoE: a Ofensa (DPS com a chance de acertar, Físico do acerto, Sangramento e Veneno por segundo) e o Roubo, como na tela do PoE', () => {
+  const e = personagemDeTeste({ level: 1 });
+  const f = Ficha.combate(e);
+  const fp = FichaPoe.montar(e, f, { chancesNoLevel: { acerto: 0.91, acertoEvasivo: 0.88 } });
+  const L = (sec, rot) => fp.secoes.find((s) => s.id === sec).linhas.find((l) => l.rotulo === rot)?.valor;
+  const aps = 1000 / f.intervaloDoGolpeMs;
+  const media = ((f.damage.min + f.damage.max) / 2) * (1 + ((f.danoDoElemento?.physical ?? 0) - (['distance', 'magic'].includes(f.armaEquipada?.familia) ? f.danoFisicoDaForca ?? 0 : 0)) / 100);
+  assert.equal(L('ataque', 'Dano por segundo'), (media * aps * 0.91).toLocaleString('pt-BR', { maximumFractionDigits: 2 }), 'média × ataques por segundo × chance de acertar');
+  assert.equal(L('ataque', 'Chance de acertar monstros evasivos'), '88%');
+  assert.ok(L('ataque', 'Sangramento por segundo (acerto)'));
+  assert.ok(L('ataque', 'Veneno por segundo (acerto)'));
+  // Roubo: 10% por instância; o total por segundo 20% (vida e mana) e 10% (escudo).
+  assert.match(L('roubo', 'Recuperação máxima por instância de roubo de vida'), /\(10%\)$/);
+  assert.match(L('roubo', 'Recuperação total por segundo do roubo de vida'), /\(20%\)$/);
+  assert.match(L('roubo', 'Recuperação total por segundo do roubo de escudo'), /\(10%\)$/);
 });

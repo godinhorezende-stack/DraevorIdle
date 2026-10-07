@@ -359,7 +359,11 @@ function characterParaCliente(personagem, estado) {
     es: Defesa.esAtual(estado, Ficha.combate(estado)),
     // A FICHA no estilo do PoE (dono, 07/10): os números, as seções e DE ONDE vem cada um (`personagem/ficha-poe.mjs`). Só com ITENS_POE=1.
     ...(ItensPoeCatalogo.ligado() ? { fichaPoe: FichaPoe.montar(estado, Ficha.combate(estado), {
-      chancesNoLevel: { acerto: Atributos.chanceDeAcerto(Ficha.combate(estado).accuracy, estado.level ?? 1), esquiva: Atributos.chanceDeEsquiva(Ficha.combate(estado).evasion, estado.level ?? 1) },
+      chancesNoLevel: {
+        acerto: Atributos.chanceDeAcerto(Ficha.combate(estado).accuracy, estado.level ?? 1),
+        acertoEvasivo: Atributos.chanceDeAcertoEvasivo(Ficha.combate(estado).accuracy, estado.level ?? 1, ModsDeMonstroPoe.DADOS.mods?.find((m) => m.id === 'MonsterModIncreasedEvasionRating')?.stats?.evasaoPct ?? 100),
+        esquiva: Atributos.chanceDeEsquiva(Ficha.combate(estado).evasion, estado.level ?? 1),
+      },
       ...Promocao.derivados(estado, Ficha.combate(estado).regenDaArvore), speed: R.baseSpeed(estado.level),
     }) } : {}),
     marca: null,
