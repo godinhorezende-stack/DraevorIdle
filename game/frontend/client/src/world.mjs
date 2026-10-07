@@ -376,7 +376,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const nos = svg('g', { class: 'w2-nos' });
     a.fases.forEach((f, i) => {
       const m = mundo[f.huntId] ?? {};
-      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: E.sel?.huntId === f.huntId, achados: m.descobertos?.length ?? 0 });
+      const g = desenharNo({ id: f.huntId, tipo: tipoDaFase(m), estado: estadoDoNo(f), numero: m.grafo?.ordem ?? escolhida.fases.indexOf(f) + 1, nome: f.nome, p: pos.pontos[i], atual: fronteira?.huntId === f.huntId, novo: novos.has(f.huntId), escolhido: E.sel?.huntId === f.huntId, achados: m.descobertos?.length ?? 0 });
       nosPorId.set(f.huntId, g);
       nos.append(g);
     });
@@ -518,7 +518,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       const st = estadoDoNo(f);
       const tipo = tipoDaFase(m);
       const hunt = hunts.get(f.huntId);
-      const col1 = el('div', 'w2-col', titulo( f.nome), el('div', 'w2-sub', `${atoAtual.nome} · Fase ${posicao + 1}`, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), tipo !== 'comum' ? el('span', 'w2-tipo', TIPOS_DE_NO[tipo]) : null, fronteira?.huntId === f.huntId ? el('span', 'w2-tipo atual', 'Fase atual') : null), m.ambiente ? el('span', 'w2-tag', m.ambiente) : null, el('p', 'w2-desc', m.descricao ?? 'Sem descrição.'), linha('Dificuldade', escolhida.nome), linha('Level dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`), m.bossPrincipal ? linha('Boss principal', m.bossPrincipal) : null);
+      const col1 = el('div', 'w2-col', titulo( f.nome), el('div', 'w2-sub', `${atoAtual.nome} · Fase ${m.grafo?.ordem ?? posicao + 1}`, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), tipo !== 'comum' ? el('span', 'w2-tipo', TIPOS_DE_NO[tipo]) : null, fronteira?.huntId === f.huntId ? el('span', 'w2-tipo atual', 'Fase atual') : null), m.ambiente ? el('span', 'w2-tag', m.ambiente) : null, el('p', 'w2-desc', m.descricao ?? 'Sem descrição.'), linha('Dificuldade', escolhida.nome), linha('Level dos monstros', `~${f.nivel}${m.levelRecomendado ? ` (recomendado ${m.levelRecomendado}+)` : ''}`), m.bossPrincipal ? linha('Boss principal', m.bossPrincipal) : null);
       const col2 = el('div', 'w2-col');
       if (hunt?.creatures?.length) {
         const bichos = el('div', 'w2-bichos');

@@ -101,3 +101,18 @@ test('MF8. cliente: o Ato leva o fundo até a tela WORLD (dados), que desenha a 
   assert.match(camp, /fundo: imagemDoAto \?\? atosDoConteudo\(\)\[String\(numero\)\]\?\.fundo \?\? null/);
   assert.equal(ehPrivado('atos/imagens/poe-ato-1.png'), false, 'a imagem do ato é pública');
 });
+
+test('MF9. o mapa do jogo segue a ENGINE à risca (dono, 07/10): as ligações são só as do ato do editor (sem cadeia implícita), o boss só da fase anterior, o número é a ordem', async () => {
+  const { conexoesDoAto, tipoDaFase } = await import('../frontend/client/src/world-dados.mjs');
+  const fases = [{ huntId: 'a', completa: true }, { huntId: 'b', liberada: true }, { huntId: 'c' }];
+  const boss = { ato: 5 };
+  const mundo = { a: { grafo: { ordem: 1, tipo: 'inicio', conexoes: ['b', 'c'], aoBoss: false } }, b: { grafo: { ordem: 2, tipo: 'comum', conexoes: [], aoBoss: true } }, c: { grafo: { ordem: 3, tipo: 'boss-fase', conexoes: [], aoBoss: false } } };
+  const lig = conexoesDoAto(fases, boss, mundo).map((c) => `${c.de}>${c.para}:${c.tipo}`);
+  assert.deepEqual(lig, ['a>b:cadeia', 'a>c:cadeia', 'b>boss:5:boss'], 'nada de b>c (a cadeia implícita) nem c>boss');
+  assert.equal(tipoDaFase(mundo.c), 'boss-fase');
+  assert.equal(tipoDaFase(mundo.a), 'comum');
+  // sem `grafo` (ato legado): a cadeia de sempre
+  assert.ok(conexoesDoAto(fases, boss, {}).some((c) => c.de === 'b' && c.para === 'c'));
+  const camp = readFileSync(new URL('../systems/campanha.mjs', import.meta.url), 'utf8');
+  assert.match(camp, /\.\.\.\(f\.grafo \? \{ grafo: grafoDaFase\(f\) \} : \{\}\)/);
+});

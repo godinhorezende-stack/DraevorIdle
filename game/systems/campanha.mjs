@@ -353,6 +353,18 @@ export function venceuBoss(estado, dif, ato) {
 /** Os tipos de encontro opcional que o mapa pode anunciar de antemão (fixos): bosses, minibosses e eventos de combate. Baús, altares e segredos não. */
 const TIPOS_CONHECIDOS = new Set(['boss', 'miniboss', 'sobrevivencia', 'fenda', 'invasor']);
 
+function grafoDaFase(f) {
+  const g = ATOS_DO_EDITOR.get(f.ato);
+  const fase = g?.ato.fases.find((x) => x.id === f.grafo.faseId);
+  if (!fase) return null;
+  const TIPO = { 'matar-chefe': 'boss-fase', 'item-de-missao': 'quest', 'matar-n': 'desafio' };
+  return {
+    ordem: fase.ordem ?? null,
+    tipo: fase.id === g.ato.inicio ? 'inicio' : TIPO[fase.conclusao?.tipo] ?? (fase.tipo === 'fase-final-do-ato' ? 'especial' : 'comum'),
+    conexoes: g.ato.conexoes.filter((c) => c.de === fase.id).map((c) => g.huntPorFase.get(c.para)).filter(Boolean),
+    aoBoss: g.ato.bossFinal?.faseAnterior === fase.id,
+  };
+}
 function mundoDaFase(estado, f) {
   const c = conteudoDaFase(f.huntId);
   const m = c.mundo ?? {};
@@ -366,6 +378,10 @@ function mundoDaFase(estado, f) {
     ...(c.mapa && Number.isFinite(c.mapa.x) && Number.isFinite(c.mapa.y) ? { mapa: { x: c.mapa.x, y: c.mapa.y, ...(c.mapa.icone ? { icone: c.mapa.icone } : {}) } } : {}),
     ...(c.tipo ? { tipo: c.tipo } : {}),
     ...(c.conexoes?.length ? { conexoes: c.conexoes } : {}),
+    // Fase de ato do EDITOR: o mapa do jogo segue a Engine à risca (dono, 07/10: "quero sempre manter da engine") — o número (`ordem`),
+    // o tipo do nó como a Engine o marca (início, boss por conclusão, item de missão, matar N) e SÓ as ligações desenhadas lá
+    // (sem a cadeia implícita fase→seguinte), mais se é a fase que leva ao boss.
+    ...(f.grafo ? { grafo: grafoDaFase(f) } : {}),
     ...(c.requisitos?.levelMin ? { levelRecomendado: c.requisitos.levelMin } : {}),
     ...(c.requisitos?.exige?.length ? { exige: c.requisitos.exige.map((id) => ({ huntId: id, nome: faseDe(id)?.nome ?? id })) } : {}),
     ...(m.bossPrincipal ? { bossPrincipal: m.bossPrincipal.nome } : {}),
