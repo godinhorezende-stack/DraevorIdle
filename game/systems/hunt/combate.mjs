@@ -1226,7 +1226,10 @@ export function round(estado, personagem) {
         // A carga de Frenesi "ao Acertar um Inimigo Único" (cargas do PoE).
         if (CargasPoe.reageAoAcerto(ficha.cargas) && CargasPoe.aoAcertar(estado, ficha.cargas, alvo, { crit: critico, corpoACorpo: categoriaDaArma(arma) !== 'distancia' }).length) Ficha.invalidar(estado);
         if (ficha.afeccoes) {
-          const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: d.v }))];
+          // O dano das afecções sai do acerto SEM o multiplicador de crítico (como no PoE: o crítico não multiplica o dano ao longo do tempo);
+          // o físico já é o de antes da rolagem, e as partes elementais (roladas junto com o crítico) voltam ao valor sem ele.
+          const semCritico = (v) => (critico ? v / Math.max(1, ficha.critMultiplier ?? 1) : v);
+          const partes = [{ elemento: 'physical', dano: semResistencia }, ...dosAtributos.map((d) => ({ elemento: d.tipo, dano: semCritico(d.v) }))];
           for (const st of AfeccoesPoe.aoAcertar(alvo, partes, { afeccoes: ficha.afeccoes, crit: critico, ataque: true, agora: hunt.clock ?? 0, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
         }
         // Os charms ofensivos apontados para esta criatura (ver `charms.mjs`).

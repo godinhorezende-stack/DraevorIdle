@@ -55,7 +55,8 @@ const PERICIAS_DA_ARVORE = {
 /** O intervalo entre golpes da arma, sem bônus: o 2s do Tibia (a caçada, a barra de magias e o troco dos bichos seguem esse relógio). */
 export const INTERVALO_BASE_DO_GOLPE_MS = 2000;
 const CRITICO_BASE = FORMULAS.critico.chanceBase; // o 3% do molde real (`combate/formulas.json`)
-const MULTIPLICADOR_CRITICO_BASE = FORMULAS.critico.multiplicadorBase; // "+60% de dano", idem
+// No modo PoE o multiplicador de crítico começa em 150%, como no PoE (dono, 07/10); no Draevor, o "+60% de dano" do molde real.
+const MULTIPLICADOR_CRITICO_BASE = itensPoeLigado() ? 1.5 : FORMULAS.critico.multiplicadorBase;
 const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
 /** Os elementos do dano somado das peças do PoE: Fogo, Gelo, Raio e Caos (decisão do dono, 04/10). */
 const ELEMENTOS_DO_POE = ['fire', 'ice', 'energy', 'chaos'];

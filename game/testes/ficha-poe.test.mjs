@@ -125,3 +125,13 @@ test('modo PoE: sem Buff Power (não liga, sem +3000 de vida/mana, fora da Store
   const loja = JSON.stringify(Loja.catalogoDaLoja?.(e) ?? Loja.paraCliente?.(e) ?? {});
   assert.ok(!/"id":"buffpower-/.test(loja), 'o Buff Power não aparece na Store');
 });
+
+test('modo PoE: o multiplicador de crítico começa em 150% (a ficha mostra a base de 150 e soma o resto por cima)', { skip: SEM }, () => {
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 10 }), { classePoe: 'Marauder', equipment: {} });
+  Ficha.invalidar(e);
+  const f = Ficha.combate(e);
+  assert.equal(f.critMultiplier, 1.5);
+  assert.ok(f.origens.critMultiplier.some((x) => x.fonte === 'Base do personagem' && x.valor === 150));
+  const fp = FichaPoe.montar(e, f);
+  assert.equal(fp.secoes.find((s) => s.id === 'ataque').linhas.find((l) => l.rotulo === 'Multiplicador de crítico').valor, '150%');
+});
