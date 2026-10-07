@@ -485,13 +485,20 @@ export function recolherPecasNoSlotErrado(estado) {
  * Peça vestida com `minLevel` ACIMA do level do personagem (de antes de a arma virar a fonte do dano, ou de um requisito que subiu): volta
  * para a mochila, sem perda nenhuma. Roda na entrada; devolve os nomes das peças que saíram.
  */
+/** O level que a peça pede: o da base, menos o "Requisito de Nível reduzido em X%" da própria peça (PoE). */
+export function nivelExigido(meta, peca = null) {
+  const base = meta?.minLevel ?? 0;
+  const red = Number(peca?.poe?.af?.req_level_reduced) || 0;
+  return red > 0 ? Math.floor(base * Math.max(0, 1 - red / 100)) : base;
+}
+
 export function devolverPecasAcimaDoLevel(estado) {
   const eq = estado.equipment ?? {};
   const saiu = [];
   for (const [slot, peca] of Object.entries(eq)) {
     if (!peca || slot === 'backpack') continue;
     const meta = ITEM_CATALOG[peca.id];
-    if (!meta || (meta.minLevel ?? 0) <= (estado.level ?? 0)) continue;
+    if (!meta || nivelExigido(meta, peca) <= (estado.level ?? 0)) continue;
     eq[slot] = null;
     devolverPeca(estado, peca);
     saiu.push(meta.name);
@@ -508,10 +515,13 @@ export function equipar(estado, { id, pilha, slot }) {
   const destino = slot ?? Equipamento.slotDaArmaNoClique(estado, meta) ?? Equipamento.slotDoClique(estado, meta) ?? meta?.slot;
   // Modelo Path of Exile (decisão do dono): nenhuma peça é "só de uma classe" — ela pede STR/DEX/INT
   // (ver `personagem/requisitos.mjs`); a vocação da peça é só a classe recomendada.
+  // (A peça do PoE com "Requisito de Nível reduzido em X%" pede menos level — `nivelExigido`.)
+  const naMochila = lista(estado, 'bag')[acharPilha(lista(estado, 'bag'), id, Number(pilha))] ?? null;
   const valida = Equipamento.validarEquipar(estado, meta, destino, (m) => {
     const faltaAtributo = Requisitos.falta(m, Atributos.principais(estado, Afixos.soma(estado)));
     if (faltaAtributo) return faltaAtributo;
-    return (m.minLevel ?? 0) > (estado.level ?? 0) ? `Precisa do level ${m.minLevel}.` : null;
+    const nivel = nivelExigido(m, naMochila);
+    return nivel > (estado.level ?? 0) ? `Precisa do level ${nivel}.` : null;
   });
   if (!valida.ok) return valida;
   const itens = lista(estado, 'bag');

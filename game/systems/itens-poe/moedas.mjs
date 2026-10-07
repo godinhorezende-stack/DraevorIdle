@@ -150,6 +150,8 @@ const divino = ({ p, rng }) => {
 const abencoar = ({ p, rng }) => {
   const base = Gerar.acharBase(CAT(), p.base)?.base;
   if (!base?.implicitos?.length) return erro('A base desta peça não tem implícito.');
+  // "Modificadores Implícitos Não Podem ser Mudados" (a base): o Orbe Abençoado não vale nela, como no PoE.
+  if (Gerar.regrasDaBase(p.implicitos).implicitosFixos) return erro('Os implícitos desta base não podem ser mudados.');
   p.implicitos = base.implicitos.map((t) => Gerar.rolarTexto(t, rng));
   return { ok: true, notice: `Implícito: ${p.implicitos.map((i) => i.texto).join('; ')}.` };
 };

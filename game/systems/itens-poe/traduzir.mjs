@@ -6,9 +6,12 @@
 // "todas do PoE, sem excluir nada" — todo texto vira atributo. Cada mod sai com um ESTADO:
 //   'equivalente' / 'aproximado' — atributo que o Draevor já calcula (tem efeito no combate);
 //   'novo'       — atributo novo do PoE que JÁ tem efeito no combate (`combate: true` em atributos-novos.json; incremento 3b);
-//   'registrado' — atributo novo ainda sem efeito, ou texto sem regra (atributo automático `poe.<texto>`).
+//   'registrado' — atributo novo ainda sem efeito, ou texto sem regra (atributo automático `poe.<texto>`);
+//   'inerte'     — mecânica do PoE que não tem como existir no jogo (pesca, Fendas, Óleos…): o balão explica (a `nota` da regra).
+// Atributo CONDICIONAL (`dmg_inc@corpo`, `atk_speed@comEscudo` — `mods-poe.mjs`): vale o estado do atributo-base, se as condições existem.
 import { readFileSync } from 'node:fs';
 import { FICHAS } from '../afixos.mjs';
+import { partir, CONDICOES_DE_ESTADO, TAGS_DE_GOLPE, CONDICOES_DE_ANEL } from './condicoes-poe.mjs';
 
 export const TABELA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao.json', import.meta.url), 'utf8'));
 export const NOVOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/atributos-novos.json', import.meta.url), 'utf8')).atributos;
@@ -21,8 +24,16 @@ export const idAutomatico = (parte) =>
 export function compilar(tabela = TABELA) {
   const nomes = Object.keys(tabela.elementos ?? {}).filter((k) => !k.startsWith('_'));
   const grupoE = `(${nomes.join('|')})`;
-  return (tabela.regras ?? []).map((r, i) => ({ ...r, i, re: new RegExp(r.padrao.replace('{E}', grupoE)) }));
+  const base = (tabela.regras ?? []).map((r, i) => ({ ...r, i, re: new RegExp(r.padrao.replace('{E}', grupoE).replace(/^\^\\\+/, '^([+-])?')) }));
+  // As versões "REDUZIDA" das regras "aumentada" (o PoE escreve "Velocidade de Ataque reduzida em 10%" com o mesmo número positivo): o
+  // mesmo atributo com o valor negativo. Só quando nenhuma regra própria já casa o texto.
+  const reduzidas = base
+    .filter((r) => /aumentad[oa]s?/.test(r.padrao) && r.estado !== 'inerte')
+    .map((r) => ({ ...r, reduzida: true, re: new RegExp(r.padrao.replace('{E}', grupoE).replace(/aumentad([oa]s?)/g, 'reduzid$1')) }));
+  return [...base, ...reduzidas];
 }
+/** O texto de LEMBRETE do PoE (entre parênteses: explica a mecânica, não é um mod) — vira nota, sem efeito nem marca. */
+const LEMBRETE = /^\(|\)$|^\(.*\)$/;
 const PADRAO = compilar();
 
 /**
@@ -33,12 +44,13 @@ function valorDo(expr, indices, valores) {
   const v = (n) => Number(valores[indices[Number(n) - 1]]);
   const media = /^media\(\{(\d+)\},\{(\d+)\}\)$/.exec(expr);
   if (media) return (v(media[1]) + v(media[2])) / 2;
-  const um = /^\{(\d+)\}$/.exec(expr);
-  return um ? v(um[1]) : Number(expr);
+  const um = /^(-?)\{(\d+)\}$/.exec(expr);
+  return um ? (um[1] ? -1 : 1) * v(um[2]) : Number(expr);
 }
 
 /** Traduz UMA parte do modelo (sem " / "). */
 export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA } = {}) {
+  if (LEMBRETE.test(String(parte).trim())) return { estado: 'lembrete', efeitos: [], nota: null, regra: null };
   for (const r of regras) {
     const m = r.re.exec(parte);
     if (!m) continue;
@@ -46,10 +58,15 @@ export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA
     const indices = capturas.filter((x) => /^\d+$/.test(x));
     const elemento = capturas.find((x) => tabela.elementos?.[x] && !/^\d+$/.test(x));
     const stat = (s) => s.replace('{E}', tabela.elementos?.[elemento] ?? '?');
-    const efeitos = r.efeitos.map((e) => ({ stat: stat(e.stat), valor: valorDo(e.valor, indices, valores) }));
+    // "reduzida" (a regra derivada) e o "-" na frente do número ("-10% de Resistência a Fogo"): o valor sai negativo.
+    const sinal = (r.reduzida ? -1 : 1) * (m[0].startsWith('-') ? -1 : 1);
+    const efeitos = r.efeitos.map((e) => { const v = valorDo(e.valor, indices, valores); return { stat: stat(e.stat), valor: typeof v === 'number' ? v * sinal : v }; });
+    if (r.estado === 'inerte') return { estado: 'inerte', efeitos: [], nota: r.nota ?? null, regra: r.i };
     // Atributo que o Draevor não tem (ex.: Resistência a Caos → chaos_res): 'novo' se ele já tem efeito no combate, senão 'registrado'.
-    const novos = efeitos.filter((e) => !FICHAS[e.stat]);
-    const estado = novos.length ? (novos.every((e) => NOVOS[e.stat]?.combate) ? 'novo' : 'registrado') : r.estado;
+    // Sem efeito em algum atributo: 'registrado'. Só atributos do Draevor sem condição: o estado da regra. O resto: o da regra, se ela
+    // diz ('equivalente'/'aproximado'), ou 'novo'.
+    const soDoDraevor = efeitos.every((e) => FICHAS[e.stat]);
+    const estado = !efeitos.every(temEfeito) ? 'registrado' : soDoDraevor ? r.estado ?? 'equivalente' : r._nova && r.estado && r.estado !== 'novo' ? r.estado : 'novo';
     return { estado, efeitos, nota: r.nota ?? null, regra: r.i };
   }
   // Sem regra: o atributo automático do próprio texto (nada fica de fora). O valor é o número da parte (ou a lista, se forem vários).
@@ -57,12 +74,19 @@ export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA
   return { estado: 'registrado', efeitos: [{ stat: idAutomatico(parte), valor: nums.length === 1 ? nums[0] : nums.length ? nums : 1 }], nota: null, regra: null };
 }
 
-const PIOR = ['equivalente', 'aproximado', 'novo', 'registrado'];
+/** O atributo tem efeito no combate? (o do Draevor, ou o novo com `combate: true`; condicional: o atributo-base e condições conhecidas.) */
+function temEfeito(e) {
+  const { stat, conds } = partir(e.stat);
+  if (!(FICHAS[stat] || NOVOS[stat]?.combate)) return false;
+  return conds.every((c) => CONDICOES_DE_ESTADO.has(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c]);
+}
+
+const PIOR = ['lembrete', 'equivalente', 'aproximado', 'novo', 'inerte', 'registrado'];
 /** Traduz um mod inteiro (`{ modelo, valores }`): híbridos "A / B" viram as partes; o estado do mod é o PIOR das partes. */
 export function traduzirMod(mod, opcoes) {
   const partes = String(mod?.modelo ?? '').split(' / ');
   const lista = partes.map((p) => ({ parte: p, ...traduzirParte(p, mod?.valores ?? [], opcoes) }));
-  const estado = lista.reduce((pior, x) => (PIOR.indexOf(x.estado) > PIOR.indexOf(pior) ? x.estado : pior), 'equivalente');
+  const estado = lista.reduce((pior, x) => (PIOR.indexOf(x.estado) > PIOR.indexOf(pior) ? x.estado : pior), 'lembrete');
   return { estado, partes: lista, efeitos: lista.flatMap((x) => x.efeitos) };
 }
 
@@ -90,7 +114,7 @@ export function traduzirPeca(peca, opcoes) {
  * e os modelos ainda sem regra, do mais pesado ao mais leve.
  */
 export function cobertura(catalogo, opcoes) {
-  const peso = { equivalente: 0, aproximado: 0, novo: 0, registrado: 0 };
+  const peso = { lembrete: 0, equivalente: 0, aproximado: 0, novo: 0, inerte: 0, registrado: 0 };
   const semRegra = new Map();
   const automaticos = new Set();
   for (const c of Object.values(catalogo?.classes ?? {})) {

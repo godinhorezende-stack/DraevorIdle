@@ -29,6 +29,7 @@ import * as CargasPoe from './itens-poe/cargas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 
 export const FICHAS = CATALOGO.afixos ?? {};
 export const ID_DA_ESSENCIA = 900001;
@@ -147,7 +148,8 @@ export function soma(estado) {
   // + os buffs das gemas do PoE ligados (aura, arauto, guarda: armadura, resistências, dano adicionado... — `itens-poe/gemas-poe.mjs`).
   const gemas = GemasPoe.adds(estado);
   if (gemas) for (const [k, v] of Object.entries(gemas)) total[k] = (total[k] ?? 0) + v;
-  return total;
+  // Os mods CONDICIONAIS do PoE ("segurando um Escudo", "se você Matou Recentemente"…): os que valem agora entram no atributo-base.
+  return ModsPoe.resolver(estado, total);
 }
 
 /** Só os adds das peças VESTIDAS (a parte de `soma` que vem do equipamento; a ficha mostra a origem por categoria). */
@@ -158,7 +160,12 @@ export function somaDeItens(estado) {
     for (const a of peca.af ?? []) if (FICHAS[a.id]) total[a.id] = (total[a.id] ?? 0) + Number(a.value || 0);
     // A peça no modelo do PoE (sistema de itens do PoE, Fase 1 — só existe com ITENS_POE=1): os mods já traduzidos para os atributos do
     // Draevor e os atributos NOVOS (`itens-poe/atributos-novos.json`), em `peca.poe.af`. Peça comum não tem `poe`: nada muda para ela.
-    for (const [k, v] of Object.entries(peca.poe?.af ?? {})) if (typeof v === 'number' && Number.isFinite(v)) total[k] = (total[k] ?? 0) + v;
+    for (const [k0, v] of Object.entries(peca.poe?.af ?? {})) {
+      if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+      // "Espaço esquerdo/direito de anel: …": vale só no anel daquele lado (`ring` = esquerdo, `ring2` = direito).
+      const k = ModsPoe.ehCondicional(k0) ? ModsPoe.doAnel(k0, slot) : k0;
+      if (k) total[k] = (total[k] ?? 0) + v;
+    }
   }
   return total;
 }
@@ -424,11 +431,12 @@ export function sincronizarMaximos(estado) {
   // +Life / +Mana dos adds, e o que STR (Life) e INT (Mana) dão — ver `personagem/atributos.mjs`.
   const doAtributo = Atributos.efeitos(Atributos.principais(estado, t));
   // + a Life % da especialização da classe (Knight: Life), sobre a vida do level + a dos adds e do STR.
-  const lifePct = Especializacoes.efeitos(estado).stats.life ?? 0;
+  // + a "Vida máxima aumentada em X%" das peças do PoE (`life_inc`).
+  const lifePct = (Especializacoes.efeitos(estado).stats.life ?? 0) + (t.life_inc ?? 0);
   const base = R.statsBase(estado.vocation, estado.level ?? 1);
   const vidaSemPct = base.maxHp + (t.life ?? 0) + doAtributo.vida;
   // + a Mana % (a árvore do PoE: "Mana máxima aumentada em X%"), do mesmo jeito da Life %. Nada do Draevor dá Mana %: sem ela, nada muda.
-  const manaPct = Especializacoes.efeitos(estado).stats.mana ?? 0;
+  const manaPct = (Especializacoes.efeitos(estado).stats.mana ?? 0) + (t.mana_inc ?? 0);
   const manaSemPct = base.maxMana + (t.mana ?? 0) + doAtributo.mana;
   const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };

@@ -100,7 +100,8 @@ export function criarCamada() {
       const p = v?.projetil;
       const sprite = p?.sprite ?? { tipo: 'projetil', id: ev.id };
       const dist = Math.max(Math.abs(ev.tx - ev.x), Math.abs(ev.ty - ev.y));
-      const vida = Math.max(80, dist * (p?.velocidade ?? VELOCIDADE_PADRAO));
+      // (`ev.vel`: a "Velocidade do Projétil aumentada" do PoE — o voo encurta.)
+      const vida = Math.max(80, (dist * (p?.velocidade ?? VELOCIDADE_PADRAO)) / Math.max(0.2, Number(ev.vel) || 1));
       if (ev.sk) memo.set(ev.sk, { ...m, voo: Math.max(m.voo ?? 0, vida) });
       if (sprite.tipo !== 'nenhum') {
         saida.projeteis.push({ sprite, x: ev.x, y: ev.y, tx: ev.tx, ty: ev.ty, born: agora + (p?.atraso ?? 0), life: vida, parte: p ?? null, asset: sprite.tipo === 'asset' ? visuais.assets?.[sprite.id] ?? null : null, rotulo: 'projetil' });

@@ -40,6 +40,7 @@ import * as R from './regras.mjs';
 import * as Cacadas from './cacadas.mjs';
 import * as Ficha from './ficha.mjs';
 import * as Defesa from './personagem/defesa.mjs';
+import * as FrascosPoe from './itens-poe/frascos.mjs';
 import { armaDoPersonagem, alcanceDaArma, categoriaDaArma, armorDoPersonagem, definirLevel, ATAQUE_MS } from './hunt/combate.mjs';
 import { distancia } from './hunt/caminho.mjs';
 
@@ -611,6 +612,8 @@ function golpeNoAdversario(s, outro, arma, id) {
   // O Energy Shield do adversário absorve antes da vida.
   const dano = Defesa.absorver(outro.estado, fo, Math.max(0, elemento === 'physical' ? R.danoRecebido(protegido, armorDoPersonagem(outro.estado)) : protegido));
   outro.estado.hp = Math.max(0, outro.estado.hp - dano);
+  // PoE: o frasco com "Efeito é removido quando Acertado por um Jogador" acaba.
+  if (FrascosPoe.aoSerAcertadoPorJogador(outro.estado)) Ficha.invalidar(outro.estado);
   const cor = elemento === 'physical' ? '#ff0000' : undefined;
   // Quem bateu vê o número em cima do adversário; quem apanhou, em cima de si.
   s.enviar({ t: 'events', events: [...eventos, { t: 'fx', id: 1, uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y }, { t: 'dmg', uid: `aliado:${nomeDe(outro)}`, x: oh.pos.x, y: oh.pos.y, v: dano, foe: true, crit, alvo: nomeDe(outro), ...(cor ? { color: cor } : {}) }] });

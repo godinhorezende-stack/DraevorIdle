@@ -2793,7 +2793,9 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
   if (peca?.poe) {
     const metaPoe = getItems()[id];
     // Os requisitos da base (nível e atributos, como no PoE) vêm do catálogo.
-    const requisitos = { nivel: metaPoe?.minLevel ?? 0, ...(metaPoe?.poe?.requisitos ?? {}) };
+    // (O "Requisito de Nível reduzido em X%" da própria peça já tira do nível pedido, como no PoE.)
+    const reducao = Number(peca.poe.af?.req_level_reduced) || 0;
+    const requisitos = { nivel: Math.floor((metaPoe?.minLevel ?? 0) * Math.max(0, 1 - reducao / 100)), ...(metaPoe?.poe?.requisitos ?? {}) };
     const eu = getPersonagem();
     const at = eu?.derived?.atributos;
     const tem = eu ? { nivel: eu.level ?? 0, str: at?.str ?? 0, dex: at?.dex ?? 0, int: at?.int ?? 0 } : null;

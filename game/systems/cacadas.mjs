@@ -66,6 +66,8 @@ import './encontros/tipos-de-onda.mjs'; // registra a sobrevivência e a fenda (
 import './encontros/tipos-de-captura.mjs'; // registra o aprisionado e o invasor
 import * as EventosDeEncontro from './encontros/eventos.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
+import * as ModsPoe from './itens-poe/mods-poe.mjs';
+import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Poderes from './poderes.mjs';
@@ -1357,6 +1359,10 @@ export function tique(estado, personagem, agora = Date.now()) {
   BuffPower.consumir(estado, passou);
   Prey.consumir(estado, passou); // "o relógio só corre dentro da hunt"
   regenerar(estado, passou);
+  // Os mods do PoE no tempo (Fúria, "movendo-se", a recuperação do dano sofrido, o Escudo regenerado) e a ficha à mão de quem fere o
+  // personagem (dano contínuo e controle dos bichos — `itens-poe/mods-poe.mjs`).
+  ModsPoe.definirFichaDaCacada(hunt, () => Ficha.combate(estado));
+  ModsPoe.tique(estado, hunt, Ficha.combate(estado), passou);
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;
@@ -1387,6 +1393,8 @@ export function tique(estado, personagem, agora = Date.now()) {
    * direção do alvo mais perto vivo.
    */
   const gradeDaCacada = gradeDaHunt(huntOuMapaCustom(hunt.huntId));
+  // A grade do andar fica à mão do combate (o Empurrão do PoE só move o bicho para uma casa andável) — fora do estado salvo.
+  ModsPoe.definirGradeDoCombate(hunt, () => andarDaGrade(gradeDaCacada, hunt.z));
   // Convidado da party: o dono mudou de andar, ele vai junto (ver `trocarDeAndar`).
   const sala = salaDe(hunt);
   if (sala !== hunt && sala.z != null && sala.z !== hunt.z) {
@@ -1708,7 +1716,8 @@ function passoDoFamiliar(hunt, grade, f, agora, ate, { pararEm, longe = 3 }) {
   // Os outros lacaios também ocupam casa (não se empilham).
   const bloqueadas = new Set([...bichos, `${hunt.pos.x},${hunt.pos.y}`, ...(hunt.lacaios ?? []).filter((l) => l !== f && l.hp > 0).map((l) => `${l.x},${l.y}`)]);
   const ocupado = (c) => bloqueadas.has(`${c.x},${c.y}`);
-  const passos = d > longe ? 2 : 1;
+  // (PoE: "Lacaios têm X% da Velocidade de Movimento aumentada" — a fração vira a chance de um passo a mais no tique.)
+  const passos = (d > longe ? 2 : 1) + (f.poe?.movimentoPct > 0 && Math.random() * 100 < f.poe.movimentoPct ? 1 : 0);
   let deu = 0;
   for (let k = 0; k < passos; k++) {
     let destino;
@@ -1853,6 +1862,32 @@ function tiqueDoFamiliar(estado, hunt, personagem, grade, agora) {
  * usa a skill da gema no bicho mais perto a até `alcanceDeAtaque` casas: o dano é a conta do jogo para aquela skill (`Acoes.danoMostrado`)
  * e o desenho é o dela (o projétil e o impacto, com o `sk`). Os bichos colados num lacaio batem nele; morreu, ou acabou a duração, some.
  */
+/** O roubo de vida e as chances do PoE no acerto de um lacaio (`l.poe`, de `LacaiosPoe.oQueInvoca`). Devolve os eventos. */
+function efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo) {
+  const eventos = [];
+  const p = l.poe;
+  if (p.roubo > 0) l.hp = Math.min(l.maxHp, l.hp + (dano * p.roubo) / 100);
+  if (alvo.hp <= 0) return eventos;
+  const agora = hunt.clock ?? 0;
+  const e = (alvo.estados ??= {});
+  const sorte = (pct) => pct > 0 && Math.random() * 100 < pct;
+  const ev = (st) => eventos.push({ t: 'estado', uid: alvo.uid, x: alvo.x, y: alvo.y, estado: st });
+  if (sorte(p.chances.cegar)) { e.cego = { ate: agora + ModsPoe.NO_ACERTO.cegar.duracaoMs }; ev('cego'); }
+  if (sorte(p.chances.provocar)) { e.provocado = { ate: agora + ModsPoe.NO_ACERTO.provocar.duracaoMs }; ev('provocado'); }
+  if (sorte(p.chances.desacelerar)) {
+    const ate = agora + ModsPoe.NO_ACERTO.desacelerar.duracaoMs;
+    e.lento = e.lento && e.lento.ate > agora ? { ate: Math.max(e.lento.ate, ate), pct: Math.max(e.lento.pct, 30) } : { ate, pct: 30 };
+    ev('lento');
+  }
+  const dot = (tipoDot, porSegundo, duracaoMs) => {
+    const posto = Dot.aplicar(alvo, { tipo: tipoDot, total: dano * porSegundo * (duracaoMs / 1000) * (1 + (p.dotMulti ?? 0) / 100), duracaoMs, origem: { fonte: 'lacaio', habilidade: l.acao } }, agora);
+    if (posto) ev(posto);
+  };
+  if (sorte(p.chances.envenenar) && ['physical', 'chaos'].includes(tipo)) dot('venenoPoe', 0.3, 2000);
+  if (sorte(p.chances.incendiar) && tipo === 'fire') dot('queimadura', 0.9, 4000);
+  return eventos;
+}
+
 function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   const eventos = [];
   const ficha = Ficha.combate(estado);
@@ -1860,17 +1895,23 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
   for (const l of hunt.lacaios) {
     if (l.hp <= 0 || (l.ate && agora >= l.ate)) {
       eventos.push({ t: 'fx', id: 3, x: l.x, y: l.y });
+      // (PoE: "se um Lacaio foi Morto Recentemente".)
+      if (l.hp <= 0) ModsPoe.marcar(hunt, 'lacaioMorreu');
       continue;
     }
     vivos.push(l);
     // Os bichos colados batem no lacaio (um golpe por bicho a cada ~2 s, metade da força do golpe deles).
     const oferenda = l.oferenda && l.oferenda.ate > agora ? l.oferenda : null;
     if (oferenda?.regenPct) l.hp = Math.min(l.maxHp, l.hp + (l.maxHp * oferenda.regenPct) / 100 / 4);
+    // PoE: "Lacaios Regeneram X% / N de Vida por segundo" (o tique é de 1/4 s).
+    if (l.poe && (l.poe.regenPct || l.poe.regen)) l.hp = Math.min(l.maxHp, l.hp + ((l.maxHp * l.poe.regenPct) / 100 + l.poe.regen) / 4);
     for (const b of hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
       // A Oferenda de Osso: o lacaio bloqueia o golpe.
       if (oferenda?.bloqueioPct && Math.random() * 100 < oferenda.bloqueioPct) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true }); continue; }
-      const d = Math.max(1, Math.round(R.ataqueDoMonstro(b) * 0.5));
+      // (PoE: o golpe do bicho com o dano de outros tipos dele passando pelas resistências do lacaio, e o "Lacaios sofrem Dano aumentado/reduzido".)
+      const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(75, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? l.poe.res : 0) / 100), 0) : 0;
+      const d = Math.max(1, Math.round((R.ataqueDoMonstro(b) * 0.5 + extras) * Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator));
       l.hp -= d;
       eventos.push({ t: 'dmg', uid: l.uid, x: l.x, y: l.y, v: d, foe: false, lacaio: true, de: b.name, color: '#ff8a8a' });
     }
@@ -1943,6 +1984,8 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     const bruto = (l.dano.min + Math.random() * Math.max(0, l.dano.max - l.dano.min) + (l.somado?.[0] ?? 0) + Math.random() * Math.max(0, (l.somado?.[1] ?? 0) - (l.somado?.[0] ?? 0))) * (crit ? (l.critMult ?? 1.5) + (oferenda?.critMult ?? 0) / 100 : 1);
     const dano = Math.max(1, Math.round(resistido(hunt, alvo, tipo, bruto, ficha)));
     alvo.hp -= dano;
+    // PoE: o roubo de vida dos lacaios e as chances deles (Cegar, Provocar, Desacelerar, Envenenar, Incendiar) — `itens-poe/lacaios-poe.mjs`.
+    if (l.poe) eventos.push(...efeitosDoLacaioNoAcerto(hunt, l, alvo, dano, tipo));
     const deLonge = l.alcanceDeAtaque > 1;
     // O golpe do LACAIO tem o desenho do tipo dele (o mago no elemento da vez): sem o `sk` da gema, que é o da invocação.
     if (deLonge) eventos.push({ t: 'shot', id: est.projetil ?? PROJETIL[tipo] ?? 12, x: l.x, y: l.y, tx: alvo.x, ty: alvo.y });

@@ -1754,6 +1754,9 @@ export class Sessao {
       estado.mana = Math.min(estado.mana ?? estado.maxMana, estado.maxMana);
       estado.escalaDeVida = escala;
     }
+    // As peças do PoE traduzidas numa versão antiga (os mods que eram só "registrados" passaram a ter efeito — 07/10): refaz o `af` e os
+    // estados de cada uma (mods, valores, sockets e gemas ficam como estão).
+    ItensPoeJogo.refazerPecasAntigas(estado);
     // O Buff Power ligado (o +3000 de vida/mana): sai no modo PoE, onde ele não existe; no Draevor, acerta pelo relógio.
     BuffPower.sincronizarVida(estado);
     // Vida/mana dos adds e do STR/INT (que crescem com o level): sempre acerta ao entrar.

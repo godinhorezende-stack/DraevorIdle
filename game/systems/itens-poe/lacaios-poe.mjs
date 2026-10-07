@@ -65,7 +65,9 @@ const singular = (t) => String(t).trim().split(/\s+/).map((p) => (/ões$|ãos$/i
  * O que a gema invoca no `nivel`: `{ tipo: 'lacaio'|'totem', nome, maximo, porUso, duracaoMs, nivel, vida, dano: {min,max}, intervaloMs, desenho }`.
  * `efeito` (o dos suportes ligados): `lacaioVidaPct`, `lacaioDanoPct`, `totensExtras`, `duracaoPct`.
  */
-export function oQueInvoca(slug, nivelDaGema = 1, efeito = null) {
+export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
+  // `af`: a soma do DONO (`ficha.afPoe`) — os mods do PoE dos lacaios e totens (vida, dano, velocidade, dano somado, máximos…).
+  const m0 = (k) => Number(af?.[k]) || 0;
   const r = GemasPoe.doSlug(slug);
   if (!r) return null;
   const t = GemasPoe.textosDaGema(slug, nivelDaGema);
@@ -114,18 +116,32 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null) {
     else if ((m = l.match(/são de Nível (\d+)/i))) nivel = Number(m[1]);
   }
   if (totem) maximo += efeito?.totensExtras ?? 0;
+  // "+N ao número máximo de Zumbis / Espectros" (peças do PoE).
+  if (/zumbi/i.test(nome)) maximo += m0('max_zumbis');
+  if (/espectro/i.test(`${nome} ${t.nome}`)) maximo += m0('max_espectros');
   // As OFERENDAS (Osso, Carne, Espírito) e a CONVOCAÇÃO não invocam: dão bônus aos lacaios em campo / chamam todos para perto.
   const en = r.gema.en ?? '';
   if (/Offering/i.test(en)) return { tipo: 'oferenda', nome: t.nome, duracaoMs: duracao ?? 4000, bonus: bonusDaOferenda(t.linhas) };
   if (/^Convocation/i.test(en)) return { tipo: 'convocacao', nome: t.nome, curaPct: Number(t.linhas.map((l) => l.match(/Regenera (\d+(?:\.\d+)?) ?% da Vida por segundo/i)).find(Boolean)?.[1] ?? 0) };
   const n = nivel ?? Math.max(1, t.requer);
   const f = forcaDoNivel(n);
-  const vida = Math.max(10, Math.round(f.vida * (1 + maisVida / 100) * (1 + (efeito?.lacaioVidaPct ?? 0) / 100)));
-  const golpe = f.dano * (1 + maisDano / 100) * (1 + (efeito?.lacaioDanoPct ?? 0) / 100);
+  // (+ a "Vida máxima dos Lacaios aumentada" / "Vida do Totem aumentada" e o "Lacaios causam Dano aumentado" das peças do PoE.)
+  const vida = Math.max(10, Math.round(f.vida * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life')) / 100)));
+  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg')) / 100);
+  // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
+  for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
+  velAtaquePct += m0('minion_atk_speed') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? m0('minion_cast_speed') : 0);
   if (duracao) duracao = Math.round(duracao * (1 + (efeito?.duracaoPct ?? 0) / 100));
   const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, r.elemento);
   return {
-    estilo, velAtaquePct, critChance: semprecritico ? 100 : 5, critMult: 1.5 + critMult / 100, somado, sangrar,
+    estilo, velAtaquePct, critChance: semprecritico ? 100 : 5, critMult: 1.5 + critMult / 100, somado, sangrar: Math.max(sangrar, m0('minion_chance_sangrar')),
+    // Os mods do PoE dos lacaios (o tique deles lê): resistências, dano recebido, regeneração, roubo, movimento, multiplicador degenerativo,
+    // chances de Cegar/Provocar/Desacelerar/Envenenar/Incendiar.
+    poe: af ? {
+      res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: m0('minion_chaos_res'), danoRecebidoPct: m0('lacaios_dano_recebido'), regenPct: m0('minion_regen_pct'), regen: m0('minion_regen'),
+      roubo: m0('minion_leech'), movimentoPct: m0('minion_move'), dotMulti: m0('minion_dot_multi'),
+      chances: { cegar: m0('minion_chance_cegar'), provocar: m0('minion_chance_provocar'), desacelerar: m0('minion_chance_desacelerar'), envenenar: m0('minion_chance_envenenar'), incendiar: m0('minion_chance_incendiar') },
+    } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),
     tipo: totem ? 'totem' : 'lacaio', nome: totem ? (/totem/i.test(t.nome) ? t.nome : `Totem de ${t.nome}`) : nome, maximo: Math.max(1, maximo), porUso: Math.max(1, Math.min(porUso, maximo)), duracaoMs: duracao, nivel: n,
     vida, dano: { min: Math.max(1, Math.round(golpe * 0.8)), max: Math.max(1, Math.round(golpe * 1.2)) }, intervaloMs: Math.round(f.tempo * 1000), elemento: r.elemento,

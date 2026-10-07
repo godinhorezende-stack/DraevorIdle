@@ -35,7 +35,7 @@ const CHAVES = [
   'duracao_cargas', 'carga_qualquer_ao_matar', 'carga_frenesi_ao_acertar_unico', 'dano_por_poder', 'dano_por_tolerancia', 'dano_por_frenesi', 'dano_por_carga',
   'max_tolerancia_igual_frenesi', 'chance_tolerancia_maxima', 'carga_tolerancia_ao_ser_acertado', 'carga_tolerancia_ao_atordoar', 'carga_poder_ao_atordoar',
   'carga_poder_ao_critico', 'carga_poder_ao_critico_varinha', 'carga_tolerancia_ao_critico_corpo', 'carga_poder_ao_acerto_nao_critico',
-  'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta',
+  'tolerancia_por_segundo_acertado', 'frenesi_a_cada_s_movendo', 'poder_por_mana_gasta', 'carga_periodica_n', 'carga_periodica_s',
 ];
 export const regrasDaSoma = (af) => Object.fromEntries(CHAVES.filter((k) => n(af, k)).map((k) => [k, n(af, k)]));
 
@@ -139,6 +139,15 @@ export function tique(estado, af = {}) {
       mudou = ganhar(estado, 'frenesi', af) || mudou;
     }
   } else if (!moveu) delete tempo.movendoDesde;
+  // "Ganha N Cargas de Tolerância, Frenesi ou Poder a cada S segundos": o tipo é sorteado a cada vez.
+  const periodoS = n(af, 'carga_periodica_s');
+  if (periodoS > 0 && n(af, 'carga_periodica_n') > 0) {
+    tempo.proximaPeriodica ??= agora + periodoS * 1000;
+    while (agora >= tempo.proximaPeriodica) {
+      tempo.proximaPeriodica += periodoS * 1000;
+      mudou = ganhar(estado, TIPOS[Math.floor(Math.random() * TIPOS.length)], af, n(af, 'carga_periodica_n')) || mudou;
+    }
+  }
   return mudou;
 }
 

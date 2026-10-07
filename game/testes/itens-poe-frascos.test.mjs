@@ -60,9 +60,10 @@ test('os números do frasco: a base e os mods (velocidade, quantidade, instantâ
   assert.deepEqual([rubiForte.duracaoMs, rubiForte.af.move_speed, rubiForte.af.fire_res], [10000, 8, 50]);
   const fraco = Fr.parametros(comMod(frasco('Utility_Flasks/Ruby_Flask'), 'Recuperação de Cargas aumentada em {0}% / Efeito reduzido em {1}%', [50, 25]));
   assert.deepEqual([fraco.recargaPct, fraco.af.fire_res], [50, 37.5]);
-  // O que o Draevor ainda não tem fica registrado (aparece, não faz nada).
+  // A imunidade "durante o Efeito" agora vale (07/10): vira atributo enquanto o frasco dura.
   const imune = Fr.parametros(comMod(frasco('Utility_Flasks/Ruby_Flask'), '{0}% menos Duração / Imunidade a Congelamento e Resfriamento durante o Efeito', [33], 'sufixos'));
-  assert.deepEqual(imune.linhas.map((l) => l.estado), ['efeito', 'registrado']);
+  assert.deepEqual(imune.linhas.map((l) => l.estado), ['efeito', 'efeito']);
+  assert.deepEqual([imune.af.imune_congelamento, imune.af.imune_resfriamento], [1, 1]);
   assert.equal(imune.duracaoMs, Math.round(8000 * 0.67));
 });
 

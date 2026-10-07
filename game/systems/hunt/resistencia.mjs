@@ -16,6 +16,7 @@ import * as Limites from '../combate/limites.mjs';
 import * as Formulas from '../combate/formulas.mjs';
 import * as Atributos from '../personagem/atributos.mjs';
 import * as AtributosDoMob from '../mobs/atributos.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 /** A resistência (em %) do bicho ao `tipo`, com o teto do boss e o piso da fraqueza (antes do teto de resistência e da penetração). */
 export function resistenciaDe(hunt, alvo, tipo) {
@@ -23,7 +24,10 @@ export function resistenciaDe(hunt, alvo, tipo) {
   // (+ a que os buffs das mecânicas dão por um tempo: Endurecido — `mobs/buffs.mjs`.)
   // (- a janela de vulnerabilidade de um boss único depois que o escudo dele quebra — `bosses-unicos/boss.mjs`.)
   const vulneravel = alvo?.boss?.vulnerabilidade && (hunt?.clock ?? 0) < alvo.boss.vulnerabilidade.ate ? alvo.boss.vulnerabilidade.pct : 0;
-  const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0) + BuffsDeMob.resistencia(alvo, hunt?.clock ?? 0, tipo) - vulneravel;
+  // (- o Causticar do PoE nas resistências elementais: "Inflige Causticar em Inimigos ao Bloquear" — `itens-poe/mods-poe.mjs`.)
+  const causticado = ['fire', 'ice', 'energy'].includes(tipo) ? ModsPoe.causticado(alvo, hunt?.clock ?? 0) : 0;
+  // (+ o Equilíbrio Elemental do PoE: +25 / −50 pelos elementos que acertaram o bicho por último.)
+  const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0) + BuffsDeMob.resistencia(alvo, hunt?.clock ?? 0, tipo) - vulneravel - causticado + ModsPoe.equilibrio(alvo, hunt?.clock ?? 0, tipo);
   const comBoss = hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
   // A fraqueza só vai até o piso (`fraquezaMaxima`); o teto de cima fica para `resistenciaEfetivaDe`.
   return Math.max(-Limites.LIMITES.resistenciaDoMob.fraquezaMaxima, comBoss);
@@ -44,6 +48,8 @@ export function resistenciaEfetivaDe(hunt, alvo, tipo, ficha = null) {
  */
 export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = true } = {}) {
   let v = valor;
+  // PoE: "Acertos ignoram a Redução de Dano Físico dos Monstros Inimigos" (a ficha do golpe sorteou): sem armadura nem resistência física.
+  if (ficha?.ignoraReducaoFisica && tipo === 'physical') return Math.max(0, Math.round(v));
   if (ficha && armadura && tipo === 'physical') v *= 1 - AtributosDoMob.reducaoDeArmadura(alvo, Atributos.levelDoBicho(hunt, alvo), valor, Formulas.PARAMETROS.armadura.poe.coeficiente);
   const reducao = AtributosDoMob.reducaoDeDano(alvo);
   if (reducao > 0) v *= 1 - reducao;

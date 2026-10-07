@@ -564,7 +564,7 @@ details.boss-avancado[open] > summary { margin-bottom: var(--eng-e2); }
 .poe-unico .poe-mod { justify-content: flex-start; text-align: left; padding: 0; }
 .poe-cobertura { display: flex; height: 26px; border-radius: var(--eng-r2); overflow: hidden; border: 1px solid var(--eng-linha); }
 .poe-tr-barra { display: flex; align-items: center; justify-content: center; font-size: 11.5px; color: #0d0f14; white-space: nowrap; overflow: hidden; }
-.poe-tr-barra.equivalente { background: #5cc28a; } .poe-tr-barra.aproximado { background: #e9c34f; } .poe-tr-barra.novo { background: #c79bff; } .poe-tr-barra.registrado { background: #6f7889; }
+.poe-tr-barra.equivalente { background: #5cc28a; } .poe-tr-barra.aproximado { background: #e9c34f; } .poe-tr-barra.novo { background: #c79bff; } .poe-tr-barra.registrado { background: #6f7889; } .poe-tr-barra.inerte { background: #4a5160; }
 /* Ficha da base do PoE na Biblioteca de itens */
 .bib-tabela tr.apagado { opacity: .45; }
 .bib-painel-corpo > div > .poe-mod.imp, .bib-painel-corpo .poe-mod.imp { justify-content: flex-start; text-align: left; padding: 2px 0; }

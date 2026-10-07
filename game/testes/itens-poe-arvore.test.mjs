@@ -14,7 +14,9 @@ test('as linhas da árvore viram efeitos da árvore do Draevor (atributo somado 
   assert.deepEqual(traduzirLinha('Evasão e Armadura aumentadas em 6%').efeitos, [{ add: 'armour_pct', valor: 6 }, { add: 'evasion_pct', valor: 6 }]);
   const nota = traduzirLinha('(Recentemente se refere aos últimos 4 segundos)');
   assert.deepEqual([nota.estado, nota.efeitos.length], ['nota', 0]);
-  const reg = traduzirLinha('Lacaios causam Dano aumentado em 10%');
+  // (07/10: "Lacaios causam Dano aumentado" agora tem efeito — vira o atributo dos lacaios.)
+  assert.deepEqual(traduzirLinha('Lacaios causam Dano aumentado em 10%').efeitos, [{ add: 'minion_dmg', valor: 10 }]);
+  const reg = traduzirLinha('Algo que ninguém escreveu em 10%');
   assert.equal(reg.estado, 'registrado');
   assert.equal(reg.efeitos.length, 0, 'sem regra: registrado, sem efeito (a chave automática não entra na árvore)');
   assert.ok(reg.registrados[0].stat.startsWith('poe.'));

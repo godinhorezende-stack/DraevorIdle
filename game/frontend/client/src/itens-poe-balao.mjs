@@ -8,8 +8,8 @@ const ROTULO = {
   alcance_metros: 'Alcance', protecao: 'Proteção', recupera: 'Recupera', cargas_por_uso: 'Cargas por uso', cargas_maximas: 'Cargas máximas', duracao_segundos: 'Duração',
 };
 const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance_critico_pct: '%', alcance_metros: ' m', duracao_segundos: ' s' };
-const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○' };
-const ESTADO = { equivalente: 'tem efeito no Draevor (mesma conta)', aproximado: 'tem efeito no Draevor (com diferença)', novo: 'atributo novo do PoE, com efeito', registrado: 'registrado, ainda sem efeito no combate' };
+const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', inerte: '–', lembrete: '', registrado: '○' };
+const ESTADO = { equivalente: 'tem efeito no jogo (mesma conta do PoE)', aproximado: 'tem efeito no jogo (com diferença)', novo: 'atributo do PoE, com efeito no jogo', inerte: 'mecânica do PoE que não existe no jogo', lembrete: 'texto de lembrete do PoE (explica a mecânica do mod de cima)', registrado: 'registrado, ainda sem efeito no combate' };
 /** O valor de um atributo da base no balão. `recupera` (frasco): "70 de Vida em 3 s"; faixa: "min–max"; o resto com o sufixo. */
 export const valorDoAtributo = (k, v) => {
   if (k === 'recupera' && v && typeof v === 'object') return `${v.quantidade} de ${v.recurso === 'mana' ? 'Mana' : 'Vida'} em ${String(v.segundos).replace('.', ',')} s`;
@@ -56,9 +56,12 @@ function resumoDoFrasco(f) {
 
 export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNome ?? p.raridade, nomeDaBase = null, estados = p.estados ?? null, af = p.af ?? null, requisitos = null, tem = null } = {}) {
   const fila = [...(estados ?? [])];
+  // `notas` (o servidor manda, na ordem dos mods): por que a mecânica não existe no jogo — o balão mostra ao passar o mouse.
+  const notas = [...(p.notas ?? [])];
   const marca = () => {
     const e = fila.shift();
-    return e ? Object.assign(no('em', `poe-tr ${e}`, SIMBOLO[e] ?? ''), { title: ESTADO[e] ?? e }) : null;
+    const nota = notas.shift();
+    return e ? Object.assign(no('em', `poe-tr ${e}`, SIMBOLO[e] ?? ''), { title: nota && e === 'inerte' ? `${ESTADO[e]}: ${nota}` : ESTADO[e] ?? e }) : null;
   };
   const linhas = (lista, classe, sigla) => (lista ?? []).map((m) => no('div', `poe-mod ${classe}`, estados ? marca() : null, no('span', null, m.texto), m.tier != null ? Object.assign(no('i', null, `${sigla} T${m.tier}`), { title: `${m.familia ?? ''} · iLvl ${m.ilvl ?? '?'}` }) : null));
   const sep = () => no('div', 'poe-sep');

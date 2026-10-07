@@ -7,6 +7,7 @@
 import { readFileSync } from 'node:fs';
 import { ehChefe } from '../skills/estados.mjs';
 import { limitar } from './limites.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 export const CONFIG = JSON.parse(readFileSync(new URL('../../gamedata/combate/controle.json', import.meta.url), 'utf8'));
 
@@ -50,16 +51,22 @@ function sortearEfeito(pesos, rng) {
 export function tentar(hunt, bicho, ficha, agora = hunt?.clock ?? 0, rng = Math.random) {
   const classe = classeDoMob(bicho, !!hunt?.isBoss);
   const cfg = classe ? CONFIG.mobs[classe] : null;
-  if (!cfg || !(rng() * 100 < cfg.chance)) return null;
+  if (!cfg) return null;
+  const sorte = rng() * 100;
   const efeito = sortearEfeito(cfg.efeitos, rng);
+  // PoE (`itens-poe/mods-poe.mjs → controleNoJogador`): evitar e imunidade, a duração em você, a Recuperação de Atordoamentos, o efeito do
+  // Resfriamento em você e o "Ponto de Atordoamento reduzido" (mais chance de ser atordoado). Sem o PoE, tudo 1.
+  const poe = ModsPoe.controleNoJogador(ficha, efeito, rng, hunt);
+  if (!(sorte < cfg.chance * poe.chanceFator) || poe.evitou) return null;
   const c = (hunt.controle ??= {});
   const preso = ativo(c.congelado, agora) || ativo(c.atordoado, agora) || agora < (c.imuneAte ?? 0);
   if (efeito !== 'lento' && preso) return null;
   const resistencia = limitar(ficha?.resistenciaAControle ?? 0, CONFIG.jogador.resistenciaMaxima);
-  const duracao = Math.round(CONFIG.jogador.duracaoMs[efeito] * (1 - resistencia / 100));
+  const duracao = Math.round(CONFIG.jogador.duracaoMs[efeito] * (1 - resistencia / 100) * poe.duracaoFator);
   if (!(duracao > 0)) return null;
   if (efeito === 'lento') {
-    const pct = Math.min(CONFIG.jogador.lentidaoMaxima, cfg.lentidaoPct ?? 30);
+    const pct = Math.min(CONFIG.jogador.lentidaoMaxima, (cfg.lentidaoPct ?? 30) * poe.pctFator);
+    if (!(pct > 0)) return null;
     const atual = c.lento;
     // Vale a MAIOR lentidão e nunca encurta o que já corre.
     c.lento = ativo(atual, agora) ? { ate: Math.max(atual.ate, agora + duracao), pct: Math.max(atual.pct, pct) } : { ate: agora + duracao, pct };

@@ -133,17 +133,20 @@
     "block_inc": {
       "nome": "Chance de Bloquear aumentada (relativa)",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "itens-poe/jogo (bloqueio da própria base, local)"
     },
     "accuracy_inc": {
       "nome": "Precisão Global aumentada",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "ficha.accuracy × (1 + isto)"
     },
     "item_rarity": {
       "nome": "Raridade de Itens encontrados",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "itens-poe/jogo.dropDoMonstro (pesos de Mágico/Raro/Único)"
     },
     "life_on_kill": {
       "nome": "Vida por Inimigo Morto",
@@ -172,28 +175,33 @@
     "reflect_phys_melee": {
       "nome": "Dano Físico refletido a agressores corpo a corpo",
       "unidade": "",
-      "combate": false
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado"
     },
     "req_level_reduced": {
       "nome": "Requisito de Nível reduzido",
       "unidade": "%",
-      "combate": false,
-      "nota": "propriedade da peça (requisito)"
+      "combate": true,
+      "nota": "propriedade da peça (requisito)",
+      "efeito": "personagem/requisitos (nível exigido da própria peça)"
     },
     "stun_recovery": {
       "nome": "Recuperação de Atordoamentos e Bloqueios",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.controleNoJogador (encurta o atordoamento em você)"
     },
     "stun_duration": {
       "nome": "Duração de Atordoamentos em Inimigos",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (atordoamento do PoE)"
     },
     "enemy_stun_threshold_red": {
       "nome": "Ponto de Atordoamento Inimigo reduzido",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (limiar do atordoamento)"
     },
     "spell_suppression": {
       "nome": "Chance de Suprimir Dano Mágico",
@@ -227,7 +235,8 @@
     "avoid_elem_ailments": {
       "nome": "Chance de Evitar Afecções Elementais",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
     },
     "phys_dmg_reduction_inc": {
       "nome": "Redução de Dano Físico aumentada",
@@ -237,12 +246,14 @@
     "projectile_speed": {
       "nome": "Velocidade do Projétil aumentada",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "hunt/combate (evento shot: o projétil voa mais rápido)"
     },
     "crit_dmg_taken_red": {
       "nome": "Dano extra de Críticos recebidos reduzido",
       "unidade": "%",
-      "combate": false
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.criticoDoBicho"
     },
     "chance_ignite": {
       "nome": "Chance de Incendiar",
@@ -591,6 +602,1110 @@
       "unidade": "%",
       "combate": true,
       "efeito": "systems/cacadas.mjs → regenerar: % da vida máxima por segundo (ficha.regenPoe)"
+    },
+    "gem_level_local": {
+      "nome": "Nível das Gemas Encaixadas (da peça, por tipo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe: só as gemas desta peça com a tag"
+    },
+    "gem_quality_local": {
+      "nome": "Qualidade das Gemas Encaixadas (da peça)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe"
+    },
+    "gem_quality": {
+      "nome": "Qualidade de todas as Gemas (por tipo)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "skills/gemas.extrasDaGemaPoe"
+    },
+    "extra_projectiles_local": {
+      "nome": "Projéteis adicionais das Gemas Encaixadas",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.comOsAlvosDaGema → condicoes-poe.alvosDasPecas"
+    },
+    "fire_res_max": {
+      "nome": "Resistência a Fogo máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.maximoDaResistencia: 75% + isto (teto do PoE: 90%)"
+    },
+    "ice_res_max": {
+      "nome": "Resistência a Gelo máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.maximoDaResistencia: 75% + isto (teto do PoE: 90%)"
+    },
+    "energy_res_max": {
+      "nome": "Resistência a Raio máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.maximoDaResistencia: 75% + isto (teto do PoE: 90%)"
+    },
+    "chaos_res_max": {
+      "nome": "Resistência a Caos máxima",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.maximoDaResistencia: 75% + isto (teto do PoE: 90%)"
+    },
+    "crushed": {
+      "nome": "Esmagado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.comOsModsDoPoe: −15% de redução de dano físico"
+    },
+    "life_inc": {
+      "nome": "Vida máxima aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.sincronizarMaximos (soma ao % de vida)"
+    },
+    "mana_inc": {
+      "nome": "Mana máxima aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.sincronizarMaximos (soma ao % de mana)"
+    },
+    "str_inc": {
+      "nome": "Força aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/atributos.principais: × o total do atributo"
+    },
+    "dex_inc": {
+      "nome": "Destreza aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/atributos.principais: × o total do atributo"
+    },
+    "int_inc": {
+      "nome": "Inteligência aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/atributos.principais: × o total do atributo"
+    },
+    "life_as_armour": {
+      "nome": "Vida Máxima ganha como Armadura",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.comOsModsDoPoe: armadura fixa"
+    },
+    "es_regen": {
+      "nome": "Escudo de Energia Regenerado por segundo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs → tique"
+    },
+    "recoup_life": {
+      "nome": "Dano sofrido Recuperado como Vida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs → tique (em 4 s, mods-poe.aoSerAcertado)"
+    },
+    "recoup_mana": {
+      "nome": "Dano sofrido Recuperado como Mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs → tique (em 4 s, mods-poe.aoSerAcertado)"
+    },
+    "action_speed": {
+      "nome": "Velocidade de Ação",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.fatorDeAcao: ataque, conjuração e movimento"
+    },
+    "accuracy_less": {
+      "nome": "Precisão (menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha: accuracy × (1 − isto)"
+    },
+    "dmg_inc": {
+      "nome": "Dano aumentado (com condição)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.danoDoElemento (sem condição) e condicoes-poe.fichaDoGolpe (com condição)"
+    },
+    "dot_dmg_inc": {
+      "nome": "Dano Degenerativo aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (todas as afecções)"
+    },
+    "ignite_dmg_inc": {
+      "nome": "Dano Incendiário aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (incêndio)"
+    },
+    "bleed_dmg_inc": {
+      "nome": "Dano com Sangramento aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (sangramento)"
+    },
+    "poison_dmg_inc": {
+      "nome": "Dano com Veneno aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (veneno)"
+    },
+    "cast_speed_tag": {
+      "nome": "Velocidade de Conjuração com um tipo de habilidade",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes.temposDaGemaPoe (pelas tags da gema)"
+    },
+    "spell_added_physical_dmg_min": {
+      "nome": "Dano Físico somado a Magias (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.contaDoDano (magias físicas)"
+    },
+    "spell_added_physical_dmg_max": {
+      "nome": "Dano Físico somado a Magias (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes.contaDoDano (magias físicas)"
+    },
+    "energy_por_precisao_min": {
+      "nome": "Dano de Raio por Precisão (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.danoSomado (por cada N de precisão)"
+    },
+    "energy_por_precisao_max": {
+      "nome": "Dano de Raio por Precisão (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.danoSomado (por cada N de precisão)"
+    },
+    "energy_por_precisao_cada": {
+      "nome": "Precisão por faixa de Dano de Raio",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.danoSomado"
+    },
+    "phys_as_extra_chaos": {
+      "nome": "Dano Físico como Caos extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.extrasDoFisico (golpe básico e gemas de ataque)"
+    },
+    "phys_as_extra_fire": {
+      "nome": "Dano Físico como Fogo extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.extrasDoFisico"
+    },
+    "phys_conv_random": {
+      "nome": "Dano Físico convertido para um Elemento aleatório",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.extrasDoFisico"
+    },
+    "fire_pen": {
+      "nome": "Penetração de Resistência a Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.penetracao.porElemento (hunt/resistencia)"
+    },
+    "ice_pen": {
+      "nome": "Penetração de Resistência a Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.penetracao.porElemento (hunt/resistencia)"
+    },
+    "energy_pen": {
+      "nome": "Penetração de Resistência a Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.penetracao.porElemento (hunt/resistencia)"
+    },
+    "ignora_reducao_fisica": {
+      "nome": "Chance de ignorar a Redução de Dano Físico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fichaDoGolpe → hunt/resistencia.resistido"
+    },
+    "critico_ignora_res": {
+      "nome": "Críticos de Ataque ignoram a Resistência Elemental",
+      "unidade": "",
+      "combate": true,
+      "efeito": "hunt/combate.danoSomadoDoPoe e acoes (acertar)"
+    },
+    "envenena_qualquer_dano": {
+      "nome": "Todo o Dano pode Envenenar",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (base do veneno)"
+    },
+    "dot_multi_bleed": {
+      "nome": "Multiplicador do Dano Degenerativo do Sangramento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "dot_multi_phys": {
+      "nome": "Multiplicador do Dano Físico Degenerativo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (sangramento)"
+    },
+    "dot_multi_cold": {
+      "nome": "Multiplicador do Dano de Gelo Degenerativo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (nenhuma fonte de dano de gelo ao longo do tempo no jogo ainda)"
+    },
+    "dot_multi_chaos": {
+      "nome": "Multiplicador do Dano de Caos Degenerativo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (veneno)"
+    },
+    "dot_mais_rapido": {
+      "nome": "Afecções causam dano mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes: o mesmo total em menos tempo"
+    },
+    "efeito_resfriamento": {
+      "nome": "Efeito do Resfriamento aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "efeito_eletrizacao": {
+      "nome": "Efeito da Eletrização aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "duracao_congelamento": {
+      "nome": "Duração do Congelamento em Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "duracao_eletrizacao": {
+      "nome": "Duração do Eletrização em Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "duracao_incendio": {
+      "nome": "Duração do Incêndio em Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "duracao_sangramento": {
+      "nome": "Duração do Sangramento em Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "duracao_afeccoes_elementais": {
+      "nome": "Duração do Afecções Elementais em Inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "chance_mutilar": {
+      "nome": "Chance de Mutilar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar: 30% menos movimento por 4 s"
+    },
+    "chance_cegar": {
+      "nome": "Chance de Cegar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar: 20% menos precisão por 4 s (personagem/defesa.esquivou)"
+    },
+    "chance_empalar": {
+      "nome": "Chance de Empalar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar: 10% do físico de novo nos 5 acertos seguintes"
+    },
+    "efeito_empalamento": {
+      "nome": "Efeito do Empalamento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar"
+    },
+    "chance_empurrar": {
+      "nome": "Chance de Empurrar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar → condicoes-poe.empurrar (uma casa)"
+    },
+    "chance_provocar": {
+      "nome": "Chance de Provocar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar: o bicho causa 10% menos dano aos outros"
+    },
+    "chance_desacelerar": {
+      "nome": "Chance de Desacelerar (magias)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar: 30% menos movimento por 4 s"
+    },
+    "chance_dano_dobrado": {
+      "nome": "Chance de Dano Dobrado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fichaDoGolpe → Ficha.rolarCritico"
+    },
+    "cegados_critico_red": {
+      "nome": "Inimigos Cegados: chance de crítico reduzida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.criticoDoBicho"
+    },
+    "mutilados_dot_inc": {
+      "nome": "Inimigos Mutilados: dano degenerativo aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes"
+    },
+    "desacelerados_regen_red": {
+      "nome": "Inimigos Desacelerados: regeneração reduzida",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "skills/estados.tique (regeneração dos bichos)"
+    },
+    "chance_dobrar_atordoamento": {
+      "nome": "Chance de dobrar a Duração dos Atordoamentos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar"
+    },
+    "ponto_atordoamento_proprio_red": {
+      "nome": "Seu Ponto de Atordoamento reduzido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.controleNoJogador (mais chance de ser atordoado)"
+    },
+    "evitar_atordoamento": {
+      "nome": "Chance de Evitar ser Atordoado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "evitar_incendio": {
+      "nome": "Chance de Evitar ser Incendiado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "evitar_congelamento": {
+      "nome": "Chance de Evitar ser Congelado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "evitar_eletrizacao": {
+      "nome": "Chance de Evitar ser Eletrizado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "evitar_veneno": {
+      "nome": "Chance de Evitar ser Envenenado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "evitar_sangramento": {
+      "nome": "Chance de Evitar Sangramento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "evitar_resfriamento": {
+      "nome": "Chance de Evitar ser Resfriado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "imune_veneno": {
+      "nome": "Imunidade a Envenenamento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "imune_eletrizacao": {
+      "nome": "Imunidade a Eletrização",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "imune_congelamento": {
+      "nome": "Imunidade a Congelamento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "imune_resfriamento": {
+      "nome": "Imunidade a Resfriamento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "imune_incendio": {
+      "nome": "Imunidade a Incêndio",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "imune_sangramento": {
+      "nome": "Imunidade a Sangramento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "efeito_maldicao_proprio": {
+      "nome": "Efeito das Maldições em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador (a Maldição dos bichos)"
+    },
+    "efeito_eletrizacao_proprio": {
+      "nome": "Efeito da Eletrização em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador"
+    },
+    "efeito_resfriamento_proprio": {
+      "nome": "Efeito do Resfriamento em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.controleNoJogador (a lentidão) e mods-poe.dotNoJogador"
+    },
+    "duracao_congelamento_propria": {
+      "nome": "Duração do Congelamento em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "duracao_incendio_propria": {
+      "nome": "Duração do Incêndio em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "duracao_veneno_propria": {
+      "nome": "Duração do Envenenamento em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "duracao_sangramento_propria": {
+      "nome": "Duração do Sangramento em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "duracao_afeccoes_elementais_propria": {
+      "nome": "Duração do Afecções Elementais em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "duracao_afeccoes_propria": {
+      "nome": "Duração do Afecções em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.dotNoJogador / condicoes-poe.controleNoJogador"
+    },
+    "duracao_habilidades": {
+      "nome": "Duração do Efeito de Habilidades",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (duração dos reforços das gemas)"
+    },
+    "lacaios_dano_recebido": {
+      "nome": "Dano recebido pelos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "recebe_fire_como_ice": {
+      "nome": "Dano de Fogo recebido como Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fatorDaResistenciaRecebida"
+    },
+    "recebe_fire_como_energy": {
+      "nome": "Dano de Fogo recebido como Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fatorDaResistenciaRecebida"
+    },
+    "recebe_ice_como_fire": {
+      "nome": "Dano de Gelo recebido como Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fatorDaResistenciaRecebida"
+    },
+    "recebe_ice_como_energy": {
+      "nome": "Dano de Gelo recebido como Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fatorDaResistenciaRecebida"
+    },
+    "recebe_energy_como_fire": {
+      "nome": "Dano de Raio recebido como Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fatorDaResistenciaRecebida"
+    },
+    "recebe_energy_como_ice": {
+      "nome": "Dano de Raio recebido como Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.fatorDaResistenciaRecebida"
+    },
+    "fisico_recebido_como_elemento": {
+      "nome": "Dano Físico recebido como Elemento extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.extraDoFisicoRecebido"
+    },
+    "dano_dos_bloqueados": {
+      "nome": "Dano sofrido dos Acertos Bloqueados",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate.contraAtaque (o golpe bloqueado ainda causa isto)"
+    },
+    "congelar_agressor": {
+      "nome": "Chance de Congelar quem te Acerta",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado"
+    },
+    "congelar_agressor_s": {
+      "nome": "Duração do Congelamento em quem te Acerta",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "mods-poe.aoSerAcertado"
+    },
+    "bloqueio_causticar": {
+      "nome": "Ao Bloquear: Causticar (−10% res. elementais)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.aoBloquear"
+    },
+    "bloqueio_enfraquecer": {
+      "nome": "Ao Bloquear: Fragilizar (+6% crítico contra)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.aoBloquear"
+    },
+    "bloqueio_exaurir": {
+      "nome": "Ao Bloquear: Exaurir (10% menos dano)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.aoBloquear"
+    },
+    "es_on_hit": {
+      "nome": "Escudo de Energia por Inimigo Acertado",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar"
+    },
+    "es_leech_magia": {
+      "nome": "Dano Mágico Drenado como Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (magias)"
+    },
+    "eficiencia_custo_mana": {
+      "nome": "Eficiência de custo de mana",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (custo ÷ 1 + isto)"
+    },
+    "chance_devolver_custo": {
+      "nome": "Chance de recuperar o custo da habilidade",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (ao pagar o custo)"
+    },
+    "custo_do_escudo_local": {
+      "nome": "Escudo de Energia antes da Mana nos custos (da peça)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.escudoParaOCusto"
+    },
+    "perfurar": {
+      "nome": "Projéteis Perfuram alvos adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.alvosDasPecas e hunt/combate (golpe de longe)"
+    },
+    "extra_projectiles": {
+      "nome": "Projéteis adicionais",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.alvosDasPecas e hunt/combate (golpe de longe)"
+    },
+    "area_inc": {
+      "nome": "Área de Efeito aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.alvosDasPecas (+1 casa a cada 25%)"
+    },
+    "area_inc_local": {
+      "nome": "Área de Efeito das Gemas Encaixadas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.mjs.alvosDasPecas"
+    },
+    "carga_periodica_n": {
+      "nome": "Cargas ganhas por tempo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/cargas.tique"
+    },
+    "carga_periodica_s": {
+      "nome": "Intervalo das cargas por tempo",
+      "unidade": "s",
+      "combate": true,
+      "efeito": "itens-poe/cargas.tique"
+    },
+    "furia_por_acerto": {
+      "nome": "Fúria por Acerto Corpo a Corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "mods-poe.aoAcertar (+1% de dano de ataque por Fúria, até 30)"
+    },
+    "minion_dmg": {
+      "nome": "Dano dos Lacaios aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_life": {
+      "nome": "Vida máxima dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_res": {
+      "nome": "Resistências Elementais dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_chaos_res": {
+      "nome": "Resistência a Caos dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_atk_speed": {
+      "nome": "Velocidade de Ataque dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_cast_speed": {
+      "nome": "Velocidade de Conjuração dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_regen_pct": {
+      "nome": "Regeneração de Vida dos Lacaios (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_regen": {
+      "nome": "Regeneração de Vida dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_leech": {
+      "nome": "Roubo de Vida dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_move": {
+      "nome": "Velocidade de Movimento dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_dot_multi": {
+      "nome": "Multiplicador degenerativo dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_fire_min": {
+      "nome": "Dano de Fogo somado dos Lacaios (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_fire_max": {
+      "nome": "Dano de Fogo somado dos Lacaios (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_ice_min": {
+      "nome": "Dano de Gelo somado dos Lacaios (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_ice_max": {
+      "nome": "Dano de Gelo somado dos Lacaios (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_energy_min": {
+      "nome": "Dano de Raio somado dos Lacaios (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_energy_max": {
+      "nome": "Dano de Raio somado dos Lacaios (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_chaos_min": {
+      "nome": "Dano de Caos somado dos Lacaios (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_chaos_max": {
+      "nome": "Dano de Caos somado dos Lacaios (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_physical_min": {
+      "nome": "Dano de Físico somado dos Lacaios (mín.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_added_physical_max": {
+      "nome": "Dano de Físico somado dos Lacaios (máx.)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_chance_cegar": {
+      "nome": "Lacaios: chance de Cegar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_chance_provocar": {
+      "nome": "Lacaios: chance de Provocar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_chance_desacelerar": {
+      "nome": "Lacaios: chance de Desacelerar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_chance_envenenar": {
+      "nome": "Lacaios: chance de Envenenar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_chance_incendiar": {
+      "nome": "Lacaios: chance de Incendiar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "minion_chance_sangrar": {
+      "nome": "Lacaios: chance de Sangramento",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "max_zumbis": {
+      "nome": "Máximo de Zumbis",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "max_espectros": {
+      "nome": "Máximo de Espectros",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "totem_life": {
+      "nome": "Vida do Totem",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "totem_res": {
+      "nome": "Resistências Elementais dos Totens",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe"
+    },
+    "frasco_vida_rec": {
+      "nome": "Recuperação de Vida dos Frascos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_mana_rec": {
+      "nome": "Recuperação de Mana dos Frascos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_cargas_recebidas": {
+      "nome": "Cargas de Frasco recebidas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_duracao": {
+      "nome": "Duração do efeito dos Frascos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_cargas_usadas_red": {
+      "nome": "Cargas de Frasco usadas (redução)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_efeito": {
+      "nome": "Efeito dos Frascos em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_carga_no_critico": {
+      "nome": "Chance de Carga de Frasco no Crítico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_util_regen_n": {
+      "nome": "Cargas dos Frascos Utilitários por tempo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "frasco_util_regen_s": {
+      "nome": "Intervalo das cargas dos Utilitários",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/frascos"
+    },
+    "sem_quinto_frasco": {
+      "nome": "Sem o Quinto Frasco",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos (o 5º espaço do cinto não é usado)"
+    },
+    "encaixes_fixos": {
+      "nome": "Encaixes da peça",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/jogo.pecaDoJogo (os sockets da base)"
+    },
+    "implicitos_fixos": {
+      "nome": "Implícitos não podem ser mudados",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/moedas (Orbe Abençoado recusa)"
+    },
+    "prefixos_permitidos": {
+      "nome": "Prefixos permitidos (da base)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/gerar (vagas da raridade)"
+    },
+    "sufixos_permitidos": {
+      "nome": "Sufixos permitidos (da base)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/gerar (vagas da raridade)"
+    },
+    "magnitude_explicitos": {
+      "nome": "Magnitude dos mods explícitos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/gerar (valores × 1 + isto)"
+    },
+    "magnitude_prefixos": {
+      "nome": "Magnitude dos prefixos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/gerar"
+    },
+    "magnitude_sufixos": {
+      "nome": "Magnitude dos sufixos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/gerar"
+    },
+    "so_dano_de": {
+      "nome": "Só gera mods de dano de um tipo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/gerar"
+    },
+    "sem_mods_de_conjuracao": {
+      "nome": "Não gera mods de Conjuração",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/gerar"
+    },
+    "keystone_sobrecarga": {
+      "nome": "Sobrecarga Elemental (keystone)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/keystones"
+    },
+    "keystone_equilibrio": {
+      "nome": "Equilíbrio Elemental (keystone)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/keystones"
+    },
+    "keystone_sofrimento": {
+      "nome": "Segredos do Sofrimento (keystone)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "passivas/keystones"
+    },
+    "phys_conv_fire": {
+      "nome": "Dano Físico convertido em Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.extrasDoFisico"
+    },
+    "phys_conv_ice": {
+      "nome": "Dano Físico convertido em Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.extrasDoFisico"
+    },
+    "phys_conv_energy": {
+      "nome": "Dano Físico convertido em Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.extrasDoFisico"
+    },
+    "phys_conv_chaos": {
+      "nome": "Dano Físico convertido em Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.extrasDoFisico"
+    },
+    "phys_as_extra_ice": {
+      "nome": "Dano Físico como Gelo extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.extrasDoFisico"
+    },
+    "phys_as_extra_energy": {
+      "nome": "Dano Físico como Raio extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "condicoes-poe.extrasDoFisico"
+    },
+    "vida_ao_matar_pct": {
+      "nome": "Recupera % da Vida ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate.matarMonstro"
+    },
+    "mana_ao_matar_pct": {
+      "nome": "Recupera % da Mana ao Matar",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "hunt/combate.matarMonstro"
+    },
+    "imune_atordoamento": {
+      "nome": "Imunidade a Atordoamento",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.controleNoJogador"
+    },
+    "nunca_erra": {
+      "nome": "Acertos não podem ser Evadidos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/defesa.errou (ficha.nuncaErra)"
+    },
+    "incendio_mais_rapido": {
+      "nome": "Incêndios causam dano mais rápido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes (incêndio)"
+    },
+    "vida_como_escudo": {
+      "nome": "Vida Máxima como Escudo de Energia extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.comOsModsDoPoe"
+    },
+    "ricochetes": {
+      "nome": "Habilidades Ricocheteiam",
+      "unidade": "",
+      "combate": true,
+      "efeito": "condicoes-poe.alvosDasPecas"
+    },
+    "critico_sem_dano_extra": {
+      "nome": "Críticos sem dano extra",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha (multiplicador de crítico 100%)"
+    },
+    "sem_encaixes": {
+      "nome": "Sem Encaixes",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/jogo.pecaDoJogo"
+    },
+    "encaixes_brancos": {
+      "nome": "Somente Encaixes Brancos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/jogo.pecaDoJogo"
+    },
+    "keystone_magia_sanguinea": {
+      "nome": "Magia Sanguínea (keystone)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (o custo sai da Vida)"
     }
   }
 }

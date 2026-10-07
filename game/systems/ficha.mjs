@@ -38,6 +38,8 @@ import * as FORMULAS_FN from './combate/formulas.mjs';
 import * as AfeccoesPoe from './itens-poe/afeccoes.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
+import * as FrascosPoe from './itens-poe/frascos.mjs';
+import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -137,7 +139,7 @@ function calcularCombate(estado) {
   const pericia = periciaDaArma(w);
   const buff = BuffPower.bonusDeCombate(estado);
   // Os adds das peças vestidas — ver `afixos.mjs`.
-  const af = Afixos.soma(estado);
+  const af = comOsModsDoPoe(estado, Afixos.soma(estado));
   /*
    * ---- STR, DEX, INT ----
    * Base da vocação + pontos por level + os adds (`personagem/atributos.mjs`);
@@ -256,7 +258,8 @@ function calcularCombate(estado) {
   // A magia do PoE: a chance-base é a da GEMA (somada a estes "+% de chance" fixos) × (1 + o "aumentada" geral e o de magias).
   const critMagiaPoe = itensPoeLigado() ? { fixa: (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0), aumentada: (af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0) } : null;
   // O dano elemental SOMADO das peças do PoE (`added_<el>_dmg_min/max`): faixa por elemento, nos ataques e nas magias.
-  const somado = (prefixo) => Object.fromEntries(ELEMENTOS_DO_POE.map((el) => [el, [af[`${prefixo}${el}_dmg_min`] ?? 0, af[`${prefixo}${el}_dmg_max`] ?? 0]]).filter(([, [a, b]]) => a > 0 || b > 0));
+  // (O Físico só existe somado a MAGIAS: "Adiciona X a Y de Dano Físico a Magias" — o dos ataques é o `phys_add`.)
+  const somado = (prefixo) => Object.fromEntries([...ELEMENTOS_DO_POE, ...(prefixo === 'spell_added_' ? ['physical'] : [])].map((el) => [el, [af[`${prefixo}${el}_dmg_min`] ?? 0, af[`${prefixo}${el}_dmg_max`] ?? 0]]).filter(([, [a, b]]) => a > 0 || b > 0));
   // Caos (elemento próprio do PoE — decisão do dono, 04/10): só aparece na ficha quando alguma peça dá (no PoE, sempre: a penalidade o deixa negativo).
   if (af.chaos_res || itensPoeLigado()) {
     protection.chaos = Limites.resistenciaDoJogador(af.chaos_res ?? 0);
@@ -271,7 +274,8 @@ function calcularCombate(estado) {
   if (itensPoeLigado()) {
     for (const el of ['fire', 'ice', 'energy', 'chaos']) {
       const bruto = (el === 'chaos' ? af.chaos_res ?? 0 : protection[el] + (excedentes.protection[el] ?? 0)) - penalidade;
-      protection[el] = Math.max(-200, Math.min(Limites.LIMITES.resistenciaDoJogador.maximo, bruto));
+      // O MÁXIMO de cada resistência (75%) + o "+X% de Resistência a <elemento> máxima" das peças (até 90%, como no PoE).
+      protection[el] = Math.max(-200, Math.min(maximoDaResistencia(af, el), bruto));
       excedentes.protection[el] = Math.max(0, bruto - protection[el]);
     }
   }
@@ -283,7 +287,7 @@ function calcularCombate(estado) {
     fisica: Limites.limitar((af.phys_pen ?? 0) + (arv.armorPenetration ?? 0) * 100, Limites.LIMITES.penetracao.maximo),
     // Elemental GLOBAL (todos os elementos, menos o físico) e a específica de cada elemento (`<elemento>_pen`).
     elemental: Limites.limitar(af.elem_pen ?? 0, Limites.LIMITES.penetracao.maximo),
-    porElemento: Object.fromEntries(Limites.ELEMENTOS_DE_PENETRACAO.map((el) => [el, Limites.limitar(af[`${el}_pen`] ?? 0, Limites.LIMITES.penetracao.maximo)])),
+    porElemento: Object.fromEntries(Limites.ELEMENTOS_DE_PENETRACAO.map((el) => [el, (af[`${el}_pen`] ?? 0) < 0 ? af[`${el}_pen`] : Limites.limitar(af[`${el}_pen`] ?? 0, Limites.LIMITES.penetracao.maximo)])),
   };
   const alcance = w?.wand || w?.skill === 'distance' ? (w?.range ?? 3) : 1;
   const defesas = defesasDaFicha(estado, af, doAtributo, espStat);
@@ -319,9 +323,19 @@ function calcularCombate(estado) {
     critChance,
     critChanceMagia,
     critMagiaPoe,
+    // Para o crítico de CADA golpe (os "aumentada" com condição — `itens-poe/mods-poe.mjs → fichaDoGolpe`): os pontos, os "aumentada" e o teto.
+    critPontos,
+    critInc: af.crit_chance_inc ?? 0,
+    critIncMagia: af.spell_crit_chance_inc ?? 0,
+    critTeto: Limites.LIMITES.critico.chanceMaxima / 100,
+    // Os mods condicionais do PoE que dependem do GOLPE (tags) e os números dos mods do PoE que o combate lê (`ModsPoe.resumo`).
+    ...(itensPoeLigado() ? { porTag: ModsPoe.porTag(estado, af), afPoe: af, recalcularAfeccoes: AfeccoesPoe.daSoma } : {}),
     // Os números da PRÓPRIA arma (base, qualidade, locais → dano físico final, APS, crítico, DPS físico da arma): o que o tooltip e o editor mostram. `null` sem arma.
     arma: armaFinal,
-    critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
+    // (PoE: "Seus Acertos Críticos não causam Dano extra" — o multiplicador fica em 100%.)
+    critMultiplier: itensPoeLigado() && af.critico_sem_dano_extra ? 1 : MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
+    // "Acertos não podem ser Evadidos" (peça do PoE): o golpe nunca erra (`personagem/defesa.errou`).
+    ...(itensPoeLigado() && af.nunca_erra ? { nuncaErra: true } : {}),
     // Só o escudo bloqueia (a defesa da arma não entra): sem escudo, 0%.
     // O bloqueio vem do escudo (se tiver) MAIS a defesa da arma (metade + o extra dela, como sempre), com a
     // faixa de cada peça: a chance de cada golpe sorteia entre `blockChanceMin` e `blockChanceMax`.
@@ -339,7 +353,8 @@ function calcularCombate(estado) {
     evasion: defesas.evasion,
     energyShield: defesas.energyShield,
     // Accuracy: a chance de o golpe da arma/wand acertar o bicho (`Atributos.chanceDeAcerto`).
-    accuracy: Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') }).bruto),
+    // PoE: × (1 + "Precisão Global aumentada") × (1 − "X% menos Precisão").
+    accuracy: Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100)),
     lifeLeech: soma((it) => it.lifeLeech) / 10000 + buff.lifeLeech + (af.life_leech ?? 0) / 100 + (arv.lifeLeech ?? 0) + gem.lifeLeech / 100,
     manaLeech: soma((it) => it.manaLeech) / 10000 + buff.manaLeech + (af.mana_leech ?? 0) / 100 + (arv.manaLeech ?? 0) + gem.manaLeech / 100,
     // Gemas: esquiva (chance de o golpe não pegar) e "dano recebido" (corte), em fração.
@@ -358,7 +373,8 @@ function calcularCombate(estado) {
     attackRange: alcance,
     regenFlat: { hp: soma((it) => it.regen?.hp) + (af.life_regen ?? 0), mana: soma((it) => it.regen?.mana) + (af.mana_regen ?? 0) },
     // Movement Speed %: sobre a velocidade base do level (+ o speed fixo das botas e do imbuement).
-    speed: Math.round(R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)),
+    // (× a "Velocidade de Ação" do PoE.)
+    speed: Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af)),
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
@@ -366,14 +382,14 @@ function calcularCombate(estado) {
     // O intervalo REAL entre golpes, em ms (o que a caçada usa e a ficha mostra): "Tempo entre golpes"
     // da árvore mexe no próprio intervalo (−3% é 3% mais curto), e a velocidade de ataque (%) o encurta.
     // O intervalo BASE vem do APS FINAL da arma (APS base × % local × qualidade; padrão 0,5 = 2 s): `1000 / APS`. Os aumentos GLOBAIS de velocidade e os limites seguem abaixo, como sempre.
-    intervaloDoGolpeMs: Math.round((armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * ((armaFinal && armaFinal.aps.intervaloMs ? armaFinal.aps.intervaloMs : INTERVALO_BASE_DO_GOLPE_MS) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
+    intervaloDoGolpeMs: Math.round((1 / fatorDeAcao(af)) * (armaSecundaria ? 1 / BONUS_DE_DUAS_ARMAS.velocidadeMais : 1) * ((armaFinal && armaFinal.aps.intervaloMs ? armaFinal.aps.intervaloMs : INTERVALO_BASE_DO_GOLPE_MS) * Math.max(0.2, 1 + (arv.attackInterval ?? 0))) / (1 + ((af.atk_speed ?? 0) + doAtributo.velocidadeDeAtaquePct + espStat('attackSpeed')) / 100)),
     // Em %, somando o afixo e o "Dano de <elemento>" da árvore.
     // O físico soma o add Physical Damage e o que a STR dá.
     danoDoElemento: Object.fromEntries([
       ...ELEMENTOS.map((el) => [el, (af[el === 'physical' ? 'phys_dmg' : `${el}_dmg`] ?? 0) + (arv[`elemento:${el}`] ?? 0) * 100 + (el === 'physical' ? doAtributo.danoFisicoPct : 0)]),
       // O "Dano de Caos aumentado" das peças do PoE (só aparece quando alguma dá).
-      ...(af.chaos_dmg ? [['chaos', af.chaos_dmg]] : []),
-    ]),
+      ...(af.chaos_dmg || af.dmg_inc ? [['chaos', af.chaos_dmg ?? 0]] : []),
+    ].map(([el, v]) => [el, v + (itensPoeLigado() ? af.dmg_inc ?? 0 : 0)])),
     // A parte do "Dano físico" que vem da STR (já somada em `danoDoElemento.physical`): no PoE ela é só de CORPO A CORPO ("+1% de dano físico
     // corpo a corpo a cada 5 de Força") — quem bate de longe ou com magia física tira esta parte.
     danoFisicoDaForca: doAtributo.danoFisicoPct ?? 0,
@@ -382,7 +398,8 @@ function calcularCombate(estado) {
     // Sistema de itens do PoE (Fase 1; tudo 0/vazio sem peças do PoE): "Dano Mágico aumentado" (só magias), o dano elemental somado
     // nos ataques e nas magias, e vida/mana por abate e por acerto.
     danoDeMagiaDoPoe: af.spell_dmg ?? 0,
-    danoSomado: somado('added_'),
+    // (+ o "X a Y de Dano de Raio de Ataques Adicional por cada N de Precisão" do PoE.)
+    danoSomado: comRaioPorPrecisao(somado('added_'), af, Math.round(simples(Atributos.precisaoBase(estado.level), { fixos: doAtributo.precisao + (af.accuracy ?? 0), pct: espStat('accuracy') + (af.accuracy_inc ?? 0) }).bruto * Math.max(0, 1 - (af.accuracy_less ?? 0) / 100))),
     // As afecções do PoE (chances, multiplicadores, duração) — só com o sistema do PoE ligado (`itens-poe/afeccoes.mjs`).
     afeccoes: itensPoeLigado() ? AfeccoesPoe.daSoma(af) : null,
     // As cargas do PoE: o fator do golpe (4% mais por Frenesi, dano por Poder) e as regras de máximo/duração/ganho (`itens-poe/cargas.mjs`).
@@ -395,7 +412,7 @@ function calcularCombate(estado) {
     curaDeMagia: (arv.cura ?? 0) * 100 + espStat('healing'),
     // Cast Speed (intervalo global entre magias), Cooldown Recovery (recarga de cada magia), Skill Cost Reduction.
     // + a identidade da wand na mão (`armas/poder.json`: conjura mais rápido).
-    castSpeed: (af.cast_speed ?? 0) + espStat('castSpeed') + PoderDaArma.castSpeedDaIdentidade(estado),
+    castSpeed: comAcao((af.cast_speed ?? 0) + espStat('castSpeed') + PoderDaArma.castSpeedDaIdentidade(estado), af),
     recuperacaoDeRecarga: af.cooldown_recovery ?? 0,
     // Damage vs Boss / vs Elite / vs Monsters (não-boss), em %.
     danoContra: { boss: af.dmg_vs_boss ?? 0, elite: af.dmg_vs_elite ?? 0, monstros: af.dmg_vs_monsters ?? 0 },
@@ -432,7 +449,10 @@ function calcularCombate(estado) {
     passivas: { keystones: passivas.keystones.map((k) => k.nome) },
   };
   // Os KEYSTONES da árvore que mudam a regra (INT → Ranged, Life Leech ×1,5, físico → fogo), por cima da ficha pronta.
-  return Keystones.aplicarNaFicha(ficha, passivas.keystones, principais, estado);
+  // (+ as keystones que as PEÇAS do PoE dão: "Sobrecarga Elemental" num implícito vale como a da árvore; Equilíbrio Elemental e Segredos do
+  // Sofrimento agem no acerto — `itens-poe/mods-poe.mjs` — e nas afecções.)
+  const dasPecas = itensPoeLigado() && af.keystone_sobrecarga && !passivas.keystones.some((k) => k.id === 'sobrecargaElemental') ? [{ regra: 'poe', id: 'sobrecargaElemental', nome: 'Sobrecarga Elemental' }] : [];
+  return Keystones.aplicarNaFicha(ficha, [...passivas.keystones, ...dasPecas], principais, estado);
 }
 
 /*
@@ -457,6 +477,35 @@ function armaEquipadaDaFicha(estado) {
     raridade: peca.raridade ?? 'comum',
   };
 }
+
+/**
+ * Os mods do PoE que mexem na PRÓPRIA soma antes da ficha (só com o PoE ligado): "X% de Vida Máxima ganha como Armadura Extra" (armadura
+ * fixa), "Você foi Esmagado" (−15% de redução de dano físico, como no PoE). Devolve outra soma (a de `Afixos.soma` não muda).
+ */
+function comOsModsDoPoe(estado, af) {
+  if (!itensPoeLigado() || !(af.life_as_armour || af.crushed || af.vida_como_escudo)) return af;
+  const novo = { ...af };
+  if (af.life_as_armour) novo.armor_flat = (af.armor_flat ?? 0) + ((estado.maxHp ?? 0) * af.life_as_armour) / 100;
+  if (af.vida_como_escudo) novo.energy_shield = (af.energy_shield ?? 0) + ((estado.maxHp ?? 0) * af.vida_como_escudo) / 100;
+  if (af.crushed) novo.phys_res = (af.phys_res ?? 0) - 15;
+  return novo;
+}
+/** O máximo de uma resistência no PoE: 75% + o "+X% de Resistência a <elemento> máxima" (o teto do PoE é 90%). */
+export function maximoDaResistencia(af, el) {
+  return Math.min(90, Limites.LIMITES.resistenciaDoJogador.maximo + (af?.[`${el}_res_max`] ?? 0));
+}
+/** "{min} a {max} de Dano de Raio de Ataques Adicional por cada N de Precisão": soma ao dano de Raio dos ataques. */
+function comRaioPorPrecisao(somado, af, precisao) {
+  const cada = Number(af.energy_por_precisao_cada) || 0;
+  if (!itensPoeLigado() || !(cada > 0)) return somado;
+  const vezes = Math.floor(Math.max(0, precisao) / cada);
+  const [a, b] = somado.energy ?? [0, 0];
+  return { ...somado, energy: [a + vezes * (af.energy_por_precisao_min ?? 0), b + vezes * (af.energy_por_precisao_max ?? 0)] };
+}
+/** Uma velocidade em % com a Velocidade de Ação por cima (sem ela, o mesmo número — sem erro de arredondamento). */
+const comAcao = (pct, af) => (fatorDeAcao(af) === 1 ? pct : ((1 + pct / 100) * fatorDeAcao(af) - 1) * 100);
+/** A "Velocidade de Ação" do PoE (multiplica ataque, conjuração e movimento): 1 sem ela. */
+export const fatorDeAcao = (af) => Math.max(0.1, 1 + (itensPoeLigado() ? af?.action_speed ?? 0 : 0) / 100);
 
 /** A penalidade de resistência da campanha (PoE): −30% depois do chefe do Ato 5 e −60% depois do Ato 10, em qualquer dificuldade. */
 export function penalidadeDeResistencia(estado) {
@@ -631,7 +680,8 @@ export function rolarCritico(estado, base, alvo, eventos, ficha = combate(estado
   // Low Blow e Savage Blow (charms): mais chance e mais dano crítico na criatura apontada.
   const doCharm = Charms.criticoExtra(estado, alvo?.key);
   // O teto da chance FINAL (a ficha + os suportes, os reforços, os charms e o crítico do golpe básico somam depois dela): `combate/limites.json`.
-  const chanceDeCritico = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100));
+  // (+ o Fragilizado do PoE: "+6% de chance de crítico contra" o bicho — "Inflige Enfraquecer … ao Bloquear".)
+  const chanceDeCritico = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, ficha.critChance + doCharm.chance / 100 + ModsPoe.fragilizado(alvo, estado.hunt?.clock ?? 0) / 100));
   const crit = mesmaRolagem ? mesmaRolagem.crit : Math.random() < chanceDeCritico;
   const onslaught = mesmaRolagem ? mesmaRolagem.onslaught : Tiers.rolar(estado, 'weapon');
   // Prey de dano: só contra a criatura do slot (`alvo.key`). Todo golpe do
@@ -727,7 +777,16 @@ export function curar(estado, vida, mana, eventos, quem, pos) {
  */
 export const LEECH_POE = { porInstanciaPct: 10, taxaDaInstanciaPct: 2, porSegundoPct: 20 };
 export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
-  if (itensPoeLigado() && !ataque) return;
+  // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
+  if (itensPoeLigado() && !ataque) {
+    const pct = ModsPoe.valor(ficha, 'es_leech_magia');
+    const max = Math.max(0, Math.round(ficha.energyShield ?? 0));
+    if (pct > 0 && max > 0 && estado.hunt) {
+      const quanto = Math.min((danoTotal * pct) / 100, (max * LEECH_POE.porInstanciaPct) / 100);
+      if (quanto > 0) (estado.hunt.roubos ??= []).push({ recurso: 'es', restante: quanto, porSegundo: (max * LEECH_POE.taxaDaInstanciaPct) / 100, max });
+    }
+    return;
+  }
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
   const vida = Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
@@ -761,7 +820,9 @@ export function recuperarRoubo(estado, ms) {
   if (!lista?.length || !(ms > 0)) return;
   const s = ms / 1000;
   const resto = (estado.hunt.restoDoRoubo ??= { vida: 0, mana: 0 });
-  for (const [recurso, campo, max] of [['vida', 'hp', estado.maxHp ?? 0], ['mana', 'mana', estado.maxMana ?? 0]]) {
+  resto.es ??= 0;
+  const esMax = lista.find((x) => x.recurso === 'es')?.max ?? 0;
+  for (const [recurso, campo, max] of [['vida', 'hp', estado.maxHp ?? 0], ['mana', 'mana', estado.maxMana ?? 0], ['es', 'es', esMax]]) {
     const ativas = lista.filter((x) => x.recurso === recurso);
     if (!ativas.length) continue;
     const pedido = ativas.reduce((n, x) => n + Math.min(x.restante, x.porSegundo * s), 0);
@@ -780,6 +841,9 @@ export function recuperarRoubo(estado, ms) {
   }
   estado.hunt.roubos = lista.filter((x) => x.restante > 0.001);
 }
+
+// Os frascos do PoE leem os mods do personagem que mexem neles (cinto: recuperação, duração, efeito, cargas) pela ficha.
+FrascosPoe.definirLeitor((e) => combate(e).afPoe ?? {});
 
 // As cargas do PoE: o Conduíte reparte as cargas com a party — o módulo das cargas lê as regras dos outros e a keystone por aqui.
 CargasPoe.definirLeitores({ regras: (e) => combate(e).cargas ?? {}, conduite: (e) => Passivas.temHabilidade(e, 'conduite') });

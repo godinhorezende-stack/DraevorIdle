@@ -63,7 +63,8 @@ export function traduzirLinha(texto) {
     if (ADD_VALIDO.test(e.stat) && typeof e.valor === 'number' && Number.isFinite(e.valor)) efeitos.push({ add: e.stat, valor: e.valor });
     else registrados.push({ stat: e.stat, valor: e.valor });
   }
-  return { estado: efeitos.length ? tm.estado : 'registrado', efeitos, registrados, nota: tm.partes.find((p) => p.nota)?.nota ?? null };
+  const semEfeito = ['inerte', 'lembrete'].includes(tm.estado) ? (tm.estado === 'lembrete' ? 'nota' : 'inerte') : 'registrado';
+  return { estado: efeitos.length ? tm.estado : semEfeito, efeitos, registrados, nota: tm.partes.find((p) => p.nota)?.nota ?? null };
 }
 
 const TIPO = { comum: 'small', notavel: 'notable', keystone: 'keystone' };

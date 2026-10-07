@@ -18,8 +18,8 @@ const SUFIXO = { velocidade_movimento_pct: '%', chance_bloqueio_pct: '%', chance
 const valorDoAtributo = (k, v) => (v && typeof v === 'object' ? `${v.min}–${v.max}` : `${v}${SUFIXO[k] ?? ''}`);
 const GRUPO = { Acessorios: 'Acessórios', Armadura: 'Armaduras', Armas_de_Uma_Mao: 'Armas de uma mão', Armas_de_Duas_Maos: 'Armas de duas mãos', Armas_Secundarias: 'Mão secundária', Frascos: 'Frascos', Joias: 'Joias' };
 const humano = (id) => id.replace(/_/g, ' ');
-const ESTADO = { equivalente: 'Equivalente: o Draevor faz a mesma conta (tem efeito no combate)', aproximado: 'Aproximado: existe no Draevor, com diferença (tem efeito no combate)', novo: 'Atributo NOVO do PoE, já com efeito no combate', registrado: 'Registrado, ainda sem efeito no combate (atributo novo não ligado ou automático)' };
-const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', registrado: '○' };
+const ESTADO = { equivalente: 'Equivalente: o Draevor faz a mesma conta (tem efeito no combate)', aproximado: 'Aproximado: existe no Draevor, com diferença (tem efeito no combate)', novo: 'Atributo NOVO do PoE, já com efeito no combate', inerte: 'Mecânica do PoE que não existe no jogo (pesca, Fendas, Óleos…): sem como ter efeito', lembrete: 'Texto de lembrete do PoE (entre parênteses): explica a mecânica, não é um mod', registrado: 'Registrado, ainda sem efeito no combate (atributo novo não ligado ou automático)' };
+const SIMBOLO = { equivalente: '✓', aproximado: '≈', novo: '◆', inerte: '–', lembrete: '', registrado: '○' };
 
 /** O ícone da coleção (ou o marcador quando a base não tem imagem). */
 const icone = (caminho, tam = 64) => (caminho ? el('img', { class: 'poe-icone', src: img(caminho), width: tam, height: tam, loading: 'lazy', alt: '', onerror: (e) => e.target.replaceWith(el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?')) }) : el('span', { class: 'poe-icone vazio', style: `width:${tam}px;height:${tam}px` }, '?'));

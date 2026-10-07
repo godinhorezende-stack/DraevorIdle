@@ -19,6 +19,7 @@ import * as Tags from './tags.mjs';
 import * as R from '../regras.mjs';
 import * as SocketsPoe from '../itens-poe/sockets.mjs';
 import * as CompatSuportes from '../itens-poe/compat-suportes.mjs';
+import * as ModsPoe from '../itens-poe/condicoes-poe.mjs';
 
 const ler = (f) => JSON.parse(readFileSync(new URL(`../../gamedata/gemas/${f}.json`, import.meta.url), 'utf8'));
 export const CONFIG = ler('config');
@@ -357,7 +358,30 @@ export const qualidadeDaGema = (q) => Math.max(0, Math.min(Q.maximo, Math.floor(
 export const novaGema = (itemId, raridade = 'comum', qualidade = 0) => ({ id: Number(itemId), nivel: 1, xp: 0, raridade: raridadeDaGema(raridade), qualidade: qualidadeDaGema(qualidade) });
 
 /** O +N ao nível das gemas que a PEÇA dá (o add `gem_level`) — o que leva a gema além do 20. */
-export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t + (a.id === 'gem_level' ? Number(a.value) || 0 : 0), 0);
+export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t + (a.id === 'gem_level' ? Number(a.value) || 0 : 0), 0) + (Number(peca?.poe?.af?.gem_level) || 0);
+
+/**
+ * O NÍVEL e a QUALIDADE a mais de UMA gema pelos mods do PoE (07/10): os LOCAIS da peça em que ela está ("+1 ao Nível das Gemas de Fogo
+ * Encaixadas", "+2 ao Nível de Gemas de Suporte Encaixadas", "+20% à Qualidade das Gemas Encaixadas") e os GLOBAIS de todas as peças
+ * vestidas ("+1 ao Nível de todas as Gemas Habilidades de Magias de Fogo"). As condições são as tags da gema (`poe:Fogo`…), + `habilidade`
+ * (gema ativa) ou `suporte`. `{ nivel, qualidade }`.
+ */
+export function extrasDaGemaPoe(estado, peca, def) {
+  const tags = new Set([...ModsPoe.tagsDoPoe(def?.tags ?? []), def?.tipo === 'support' ? 'suporte' : 'habilidade']);
+  const vale = (chave, base) => {
+    const { stat, conds } = ModsPoe.partir(chave);
+    return stat === base && conds.every((c) => tags.has(c));
+  };
+  const somar = (af, base) => Object.entries(af ?? {}).reduce((t, [k, v]) => t + (typeof v === 'number' && vale(k, base) ? v : 0), 0);
+  let nivel = somar(peca?.poe?.af, 'gem_level_local');
+  let qualidade = somar(peca?.poe?.af, 'gem_quality_local');
+  for (const p of Object.values(estado?.equipment ?? {})) {
+    if (!p?.poe?.af) continue;
+    nivel += Object.entries(p.poe.af).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_level') ? v : 0), 0);
+    qualidade += Object.entries(p.poe.af).reduce((t, [k, v]) => t + (typeof v === 'number' && ModsPoe.ehCondicional(k) && vale(k, 'gem_quality') ? v : 0), 0);
+  }
+  return { nivel: Math.round(nivel), qualidade: Math.round(qualidade) };
+}
 
 // ---------------------------------------------------------------- sockets
 
@@ -365,7 +389,13 @@ export const bonusDeNivelDaPeca = (peca) => (peca?.af ?? []).reduce((t, a) => t 
  * O máximo de sockets de uma peça (pelo slot do catálogo; 0 = não tem). Peça do PoE (`meta.poe`): pela classe e pelo item level dela
  * (`itens-poe/sockets.mjs`; sem a `peca`, o máximo da classe).
  */
-export const maximoDeSockets = (meta, peca = null) => (meta?.poe ? SocketsPoe.maximo(SocketsPoe.classeDe(meta, peca), peca?.poe?.ilvl ?? null) : CONFIG.sockets.maximo[meta?.slot] ?? 0);
+// (PoE: "Possui N Encaixes" — a base com encaixe fixo, como o anel/amuleto/cinto Desmontado — e "Não Possui Encaixes".)
+export const maximoDeSockets = (meta, peca = null) => {
+  if (!meta?.poe) return CONFIG.sockets.maximo[meta?.slot] ?? 0;
+  if (Number(peca?.poe?.af?.sem_encaixes) > 0) return 0;
+  const fixos = Math.round(Number(peca?.poe?.af?.encaixes_fixos) || 0);
+  return fixos > 0 ? fixos : SocketsPoe.maximo(SocketsPoe.classeDe(meta, peca), peca?.poe?.ilvl ?? null);
+};
 
 /** Os sockets de uma peça, normalizados ao máximo do slot (sem gravar). */
 export function soquetesDe(peca) {
@@ -438,7 +468,8 @@ export { gruposLigados, grupoDoSocket, compativel } from '../../engine/sockets-d
 import { gruposLigados, compativel } from '../../engine/sockets-de-gema.mjs';
 
 // + as luvas, que no PoE têm slot próprio (e sockets).
-const SLOTS_COM_SOCKET = [...new Set([...Object.keys(CONFIG.sockets.maximo), 'gloves'])];
+// (+ o segundo anel do PoE, `ring2`: o anel com encaixe — "Possui 1 Encaixes" — vale nos dois lados.)
+const SLOTS_COM_SOCKET = [...new Set([...Object.keys(CONFIG.sockets.maximo), 'gloves', 'ring2'])];
 
 /**
  * A MESMA support duas vezes no grupo vale UMA vez (como no Path of Exile; pedido do
@@ -473,22 +504,23 @@ export function skillsAtivas(estado) {
       const supports = noGrupo.filter((x) => x.def.tipo === 'support');
       for (const x of noGrupo.filter((y) => y.def.tipo === 'ativa')) {
         const anterior = saida.get(x.def.acao);
-        if (anterior && anterior.nivel >= x.g.nivel + bonus) continue;
+        const doPoe = extrasDaGemaPoe(estado, peca, x.def);
+        if (anterior && anterior.nivel >= x.g.nivel + bonus + doPoe.nivel) continue;
         saida.set(x.def.acao, {
           acao: x.def.acao,
           itemId: x.def.itemId,
-          // O nível que VALE: o da gema + o bônus da peça (21+ só assim). `nivelBase`: o da gema.
-          nivel: x.g.nivel + bonus,
+          // O nível que VALE: o da gema + o bônus da peça (21+ só assim) + os do PoE. `nivelBase`: o da gema.
+          nivel: x.g.nivel + bonus + doPoe.nivel,
           nivelBase: x.g.nivel,
-          bonusDaPeca: bonus,
+          bonusDaPeca: bonus + doPoe.nivel,
           xp: x.g.xp ?? 0,
           raridade: raridadeDaGema(x.g.raridade),
-          qualidade: qualidadeDaGema(x.g.qualidade),
+          qualidade: qualidadeDaGema((x.g.qualidade ?? 0) + doPoe.qualidade),
           def: x.def,
           supports: unicas(
             supports
               .filter((sp) => compativel(sp.def.suporte, x.def.tags))
-              .map((sp) => ({ def: sp.def, nivel: sp.g.nivel + bonus, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema(sp.g.qualidade) })),
+              .map((sp) => { const e = extrasDaGemaPoe(estado, peca, sp.def); return { def: sp.def, nivel: sp.g.nivel + bonus + e.nivel, raridade: raridadeDaGema(sp.g.raridade), qualidade: qualidadeDaGema((sp.g.qualidade ?? 0) + e.qualidade) }; }),
           ),
           onde: { slot, indice: x.i },
         });

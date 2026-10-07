@@ -14,6 +14,5693 @@
   ],
   "regras": [
     {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível das Gemas Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Golem Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Aura Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@aura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas Vaal Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Movimento Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Fogo Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Gelo Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Raio Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Caos Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Lacaios Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas Corpo a Corpo Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Clamor Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Arco Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas Mágicas Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Suporte Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@suporte",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível de Gemas de Maldição Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível de Gemas de Arauto Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível de Gemas Elementais Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível de Gemas de Habilidade Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@habilidade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível de Gemas de Destreza Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@destreza",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^[+]?\\{(\\d+)\\} ao Nível das Gemas de Força Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_level_local@forca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% à Qualidade das Gemas Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Qualidade das Gemas de Suporte Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "gem_quality_local@suporte",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Encaixadas atiram \\{(\\d+)\\} Projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles_local",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas Habilidades de Magias de Fogo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@magia+fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidades de Magias de Gelo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@magia+gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas Habilidades de Magias de Raio$",
+      "efeitos": [
+        {
+          "stat": "gem_level@magia+raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas Habilidades de Magias Físicas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@magia+fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas Habilidades de Magias de Caos$",
+      "efeitos": [
+        {
+          "stat": "gem_level@magia+caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas Habilidades Mágicas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas Habilidade de Fogo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Gelo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas Habilidade de Raio$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade Físicas$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+fisico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Caos$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade+caos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade$",
+      "efeitos": [
+        {
+          "stat": "gem_level@habilidade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidades de Lacaios$",
+      "efeitos": [
+        {
+          "stat": "gem_level@lacaio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade Arauto$",
+      "efeitos": [
+        {
+          "stat": "gem_level@arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidades Vaal$",
+      "efeitos": [
+        {
+          "stat": "gem_level@vaal",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Aura$",
+      "efeitos": [
+        {
+          "stat": "gem_level@aura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "gem_level@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Arco$",
+      "efeitos": [
+        {
+          "stat": "gem_level@arco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Projétil$",
+      "efeitos": [
+        {
+          "stat": "gem_level@projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Movimento$",
+      "efeitos": [
+        {
+          "stat": "gem_level@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Maldição$",
+      "efeitos": [
+        {
+          "stat": "gem_level@maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Nível de [Tt]odas as Gemas de Habilidade de Clamor$",
+      "efeitos": [
+        {
+          "stat": "gem_level@clamor",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Qualidade de todas as Gemas de Habilidade$",
+      "efeitos": [
+        {
+          "stat": "gem_quality@habilidade",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Fogo máxima$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Gelo máxima$",
+      "efeitos": [
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Raio máxima$",
+      "efeitos": [
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Caos máxima$",
+      "efeitos": [
+        {
+          "stat": "chaos_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas Resistências máximas$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chaos_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas as Resistências Elementais máximas$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistências a Fogo e Gelo$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistências a Fogo e Raio$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistências a Gelo e Raio$",
+      "efeitos": [
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Fogo e Caos$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chaos_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Gelo e Caos$",
+      "efeitos": [
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chaos_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Resistência a Raio e Caos$",
+      "efeitos": [
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chaos_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Resistências Elementais adicionais$",
+      "efeitos": [
+        {
+          "stat": "fire_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Redução de Dano Físico aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "phys_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "\"Redução de Dano Físico adicional\" do PoE: soma direto na redução física",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Redução de Dano Físico adicional$",
+      "efeitos": [
+        {
+          "stat": "phys_res",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Você foi Esmagado$",
+      "efeitos": [
+        {
+          "stat": "crushed",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Vida máxima aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "life_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Vida máxima reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "life_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Mana máxima aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mana_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Mana máxima reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mana_inc",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Escudo de Energia máximo reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "es_pct",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Atributos aumentados em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "str_inc",
+          "valor": "{1}"
+        },
+        {
+          "stat": "dex_inc",
+          "valor": "{1}"
+        },
+        {
+          "stat": "int_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Força aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "str_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Destreza aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dex_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inteligência aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "int_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Defesas Globais aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "armour_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion_pct",
+          "valor": "{1}"
+        },
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura e Evasão$",
+      "efeitos": [
+        {
+          "stat": "armor_flat",
+          "valor": "{1}"
+        },
+        {
+          "stat": "evasion",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Armadura e Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "armor_flat",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_shield",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} de Evasão e Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "evasion",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_shield",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Vida Máxima ganha como Armadura Extra$",
+      "efeitos": [
+        {
+          "stat": "life_as_armour",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} de Escudo de Energia Regenerado por segundo$",
+      "efeitos": [
+        {
+          "stat": "es_regen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido é Recuperado como Vida$",
+      "efeitos": [
+        {
+          "stat": "recoup_life",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano sofrido é Recuperado como Mana$",
+      "efeitos": [
+        {
+          "stat": "recoup_mana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "move_speed",
+          "valor": "-{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ação aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "action_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento da Precisão Global$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% menos Precisão$",
+      "efeitos": [
+        {
+          "stat": "accuracy_less",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Precisão Global aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "accuracy_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Dano Físico Global$",
+      "efeitos": [
+        {
+          "stat": "phys_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloqueio$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de redução do Raio de Iluminação$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Convertido em Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "phys_conv_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Convertido em Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "phys_conv_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Convertido em Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "phys_conv_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico Convertido em Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "phys_conv_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano Físico como Dano de Gelo Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano Físico como Dano de Fogo Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano Físico como Dano de Raio Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Vida ao Matar$",
+      "efeitos": [
+        {
+          "stat": "vida_ao_matar_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recupera \\{(\\d+)\\}% da Mana ao Matar$",
+      "efeitos": [
+        {
+          "stat": "mana_ao_matar_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% увеличение максимума энергетического щита$",
+      "efeitos": [
+        {
+          "stat": "es_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente",
+      "nota": "texto em russo no catálogo (é o \"Escudo de Energia máximo aumentado\")"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% увеличение максимума здоровья$",
+      "efeitos": [
+        {
+          "stat": "life_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "nota": "texto em russo no catálogo (é o \"Vida máxima aumentada\")"
+    },
+    {
+      "padrao": "^Não pode ser Congelado$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ser Resfriado$",
+      "efeitos": [
+        {
+          "stat": "imune_resfriamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Pode ser Atordoado$",
+      "efeitos": [
+        {
+          "stat": "imune_atordoamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ser Incendiado$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ser Eletrizado$",
+      "efeitos": [
+        {
+          "stat": "imune_eletrizacao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode ser Envenenado$",
+      "efeitos": [
+        {
+          "stat": "imune_veneno",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos não podem ser Evadidos$",
+      "efeitos": [
+        {
+          "stat": "nunca_erra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Vida Recuperada de Frascos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Mana Recuperada de Frascos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_mana_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% quando em Vida Baixa$",
+      "efeitos": [
+        {
+          "stat": "move_speed@vidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% quando em Vida Cheia$",
+      "efeitos": [
+        {
+          "stat": "move_speed@vidaCheia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Ataques é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^Ponto de Atordoamento Inimigo reduzido em \\{(\\d+)\\}% com esta Arma$",
+      "efeitos": [
+        {
+          "stat": "enemy_stun_threshold_red@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de todas Resistências Elementais máximas$",
+      "efeitos": [
+        {
+          "stat": "fire_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "ice_res_max",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_res_max",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Experiência adquirida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "exp_bonus",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Incêndios infligidos por você causam Dano \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "incendio_mais_rapido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\}% de Vida Máxima como Escudo de Energia Máximo Extra$",
+      "efeitos": [
+        {
+          "stat": "vida_como_escudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades Ricocheteiam \\+\\{(\\d+)\\} vezes$",
+      "efeitos": [
+        {
+          "stat": "ricochetes",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Acertos Críticos não causam Dano extra$",
+      "efeitos": [
+        {
+          "stat": "critico_sem_dano_extra",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Possui Encaixes$",
+      "efeitos": [
+        {
+          "stat": "sem_encaixes",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Somente Encaixes Brancos$",
+      "efeitos": [
+        {
+          "stat": "encaixes_brancos",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente"
+    },
+    {
+      "padrao": "^Magia Sanguínea$",
+      "efeitos": [
+        {
+          "stat": "keystone_magia_sanguinea",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\}% de Dano Físico como Dano Extra de Fogo$",
+      "efeitos": [
+        {
+          "stat": "fisico_recebido_como_elemento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "aproximado"
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Ataque aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Armas Corpo a Corpo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Ataque de Projétil aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Projétil aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@projetil",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@area",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Armas Corpo a Corpo aumentado em \\{(\\d+)\\}% contra Inimigos que estejam com Vida Baixa$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@corpo+alvoVidaBaixa",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Degenerativo aumentado em \\{(\\d+)\\}% enquanto carregando uma Arma de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Degenerativo aumentado em \\{(\\d+)\\}% enquanto em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Degenerativo aumentado em \\{(\\d+)\\}% enquanto carregando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "dot_dmg_inc@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Incendiário aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ignite_dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Sangramento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "bleed_dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Veneno aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "poison_dmg_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano do Totem aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano da Armadilha aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano da Mina aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Ataques enquanto em Dupla Empunhadura aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano de Ataques aumentado em \\{(\\d+)\\}% enquanto empunhando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% enquanto empunhar um Cajado$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% enquanto em Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Mágico aumentado em \\{(\\d+)\\}% enquanto empunhar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_dmg@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Arcos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Arcos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Arcos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Arcos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Habilidades de Arco aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Habilidades de Arco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Habilidades de Arco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Habilidades de Arco$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Garras aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Garras aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Garras aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Garras$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comGarra",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Adagas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Adagas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Adagas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Adagas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comAdaga",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Espadas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Espadas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Espadas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Espadas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comEspada",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Machados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Machados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Machados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Machados$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comMachado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Maças e Cetros aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Cajados aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Cajados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Cajados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Cajados$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Varinhas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Varinhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Varinhas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Varinhas$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+comVarinha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Armas de Uma Mão aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Armas de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Armas de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Armas de Uma Mão$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Armas de Duas Mãos aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "dmg_inc@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Armas de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Armas de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Armas de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@ataque+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Maças e Cetros aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comMaca",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Armas Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque Corpo a Corpo com Armas de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@armaCorpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque Corpo a Corpo com Armas de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@armaCorpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque com Dupla Empunhadura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque segurando um Escudo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque aumentada em \\{(\\d+)\\}% se você causou um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "atk_speed@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Ataque e Conjuração aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "atk_speed",
+          "valor": "{1}"
+        },
+        {
+          "stat": "cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração com Dupla Empunhadura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração segurando um Escudo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração empunhando um Cajado aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração aumentada em \\{(\\d+)\\}% se você causou um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração aumentada em \\{(\\d+)\\}% se um Lacaio foi Morto Recentemente$",
+      "efeitos": [
+        {
+          "stat": "cast_speed@lacaioMorreuRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração com Habilidades de Fogo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Habilidades de Fogo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Habilidades de Fogo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@fogo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração com Habilidades de Gelo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Habilidades de Gelo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Habilidades de Gelo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@gelo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Conjuração com Habilidades de Raio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Habilidades de Raio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Habilidades de Raio$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@raio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Habilidades Elementais aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Habilidades Elementais$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@elemental",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpe Crítico com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Armas Corpo a Corpo de Uma Mão aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@corpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico com Armas Corpo a Corpo de Duas Mãos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@corpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Armas Corpo a Corpo de Uma Mão$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@corpo+umaMao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico com Armas Corpo a Corpo de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@corpo+duasMaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Acerto Crítico de Ataque enquanto em Empunhadura Dupla aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@ataque+duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Crítico enquanto com Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Golpe Crítico para Dano Mágico$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% ao Multiplicador de Crítico se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Crítico aumentada em \\{(\\d+)\\}% se você não causou um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc@naoCriticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Chance de Golpe Crítico aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_chance_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Arco$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comArco",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques com Arco$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comArco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comArco",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com Arco$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comArco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comArco",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques com Arco$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comArco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comArco",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Adaga$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comAdaga",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques com Adaga$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comAdaga",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comAdaga",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com Adaga$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comAdaga",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comAdaga",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques com Adaga$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comAdaga",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comAdaga",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Garra$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comGarra",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques com Garra$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comGarra",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comGarra",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com Garra$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comGarra",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comGarra",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques com Garra$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comGarra",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comGarra",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Espada$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comEspada",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques com Espada$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comEspada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comEspada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com Espada$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comEspada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comEspada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques com Espada$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comEspada",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comEspada",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Machado$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comMachado",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques com Machado$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comMachado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comMachado",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com Machado$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comMachado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comMachado",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques com Machado$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comMachado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comMachado",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques de Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comMaca",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques de Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comMaca",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques de Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comMaca",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques de Maças e Cetros$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comMaca",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comMaca",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Cajado$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comCajado",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques com Cajado$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comCajado",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com Cajado$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comCajado",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques com Cajado$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comCajado",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comCajado",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico aos Ataques com Varinha$",
+      "efeitos": [
+        {
+          "stat": "phys_add@comVarinha",
+          "valor": "media({1},{2})"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo aos Ataques com Varinha$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min@comVarinha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max@comVarinha",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo aos Ataques com Varinha$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min@comVarinha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max@comVarinha",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio aos Ataques com Varinha$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min@comVarinha",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max@comVarinha",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano de [Cc]aos Adicional em Ataques com Arco$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min@comArco",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_dmg_max@comArco",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano de [Cc]aos Adicional em Ataques com Adagas$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min@comAdaga",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_dmg_max@comAdaga",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano de [Cc]aos Adicional em Ataques com Garras$",
+      "efeitos": [
+        {
+          "stat": "added_chaos_dmg_min@comGarra",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_chaos_dmg_max@comGarra",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo (?:a|em) Magias e Ataques$",
+      "efeitos": [
+        {
+          "stat": "added_fire_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_fire_dmg_max",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo (?:em|a) Magias enquanto com Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "spell_added_fire_dmg_min@duasArmas",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max@duasArmas",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo (?:em|a) Magias enquanto empunhar uma Arma de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "spell_added_fire_dmg_min@duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max@duasMaos",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo (?:em|a) Magias enquanto segurar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_fire_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo (?:em|a) Magias enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_fire_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_fire_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo (?:a|em) Magias e Ataques$",
+      "efeitos": [
+        {
+          "stat": "added_ice_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_ice_dmg_max",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_ice_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_ice_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo (?:em|a) Magias enquanto com Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "spell_added_ice_dmg_min@duasArmas",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_ice_dmg_max@duasArmas",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo (?:em|a) Magias enquanto empunhar uma Arma de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "spell_added_ice_dmg_min@duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_ice_dmg_max@duasMaos",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo (?:em|a) Magias enquanto segurar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_ice_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_ice_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo (?:em|a) Magias enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_ice_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_ice_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio (?:a|em) Magias e Ataques$",
+      "efeitos": [
+        {
+          "stat": "added_energy_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "added_energy_dmg_max",
+          "valor": "{2}"
+        },
+        {
+          "stat": "spell_added_energy_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_energy_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio (?:em|a) Magias enquanto com Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "spell_added_energy_dmg_min@duasArmas",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_energy_dmg_max@duasArmas",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio (?:em|a) Magias enquanto empunhar uma Arma de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "spell_added_energy_dmg_min@duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_energy_dmg_max@duasMaos",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio (?:em|a) Magias enquanto segurar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_energy_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_energy_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio (?:em|a) Magias enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_energy_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_energy_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico em Magias enquanto com Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "spell_added_physical_dmg_min@duasArmas",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_max@duasArmas",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos em Magias enquanto com Dupla Empunhadura$",
+      "efeitos": [
+        {
+          "stat": "spell_added_chaos_dmg_min@duasArmas",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_max@duasArmas",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico em Magias enquanto empunhar uma Arma de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "spell_added_physical_dmg_min@duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_max@duasMaos",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos em Magias enquanto empunhar uma Arma de Duas Mãos$",
+      "efeitos": [
+        {
+          "stat": "spell_added_chaos_dmg_min@duasMaos",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_max@duasMaos",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico em Magias enquanto segurar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_physical_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos em Magias enquanto segurar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_added_chaos_dmg_min@comEscudo",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_chaos_dmg_max@comEscudo",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico a Magias$",
+      "efeitos": [
+        {
+          "stat": "spell_added_physical_dmg_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "spell_added_physical_dmg_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio de Ataques Adicional por cada \\{(\\d+)\\} de Precisão$",
+      "efeitos": [
+        {
+          "stat": "energy_por_precisao_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "energy_por_precisao_max",
+          "valor": "{2}"
+        },
+        {
+          "stat": "energy_por_precisao_cada",
+          "valor": "{3}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Receba \\{(\\d+)\\}% do Dano Físico como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de Dano Físico como Dano de Caos Extra$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\}% de Dano Físico como Dano de Fogo extra se você causou um Golpe Crítico Recentemente$",
+      "efeitos": [
+        {
+          "stat": "phys_as_extra_fire@criticoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Físico de Acertos com essa Arma é Convertido para um Elemento Aleatório$",
+      "efeitos": [
+        {
+          "stat": "phys_conv_random",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% da Resistência a Fogo$",
+      "efeitos": [
+        {
+          "stat": "fire_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% de Resistência a Fogo$",
+      "efeitos": [
+        {
+          "stat": "fire_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% da Resistência a Gelo$",
+      "efeitos": [
+        {
+          "stat": "ice_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% de Resistência a Gelo$",
+      "efeitos": [
+        {
+          "stat": "ice_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% da Resistência a Raio$",
+      "efeitos": [
+        {
+          "stat": "energy_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% de Resistência a Raio$",
+      "efeitos": [
+        {
+          "stat": "energy_pen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% de Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "elem_pen",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano com Armas Corpo a Corpo Penetra \\{(\\d+)\\}% das Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Penetra \\{(\\d+)\\}% de Resistência Elemental se você não Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "elem_pen@naoMatouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Seus Acertos Lidam com a Resistência a Gelo como se fossem \\{(\\d+)\\}% maiores do que o valor atual$",
+      "efeitos": [
+        {
+          "stat": "ice_pen",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos ignoram a Redução de Dano Físico dos Monstros Inimigos$",
+      "efeitos": [
+        {
+          "stat": "ignora_reducao_fisica",
+          "valor": "100"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos com esta Arma ignoram a Redução de Dano Físico Inimiga$",
+      "efeitos": [
+        {
+          "stat": "ignora_reducao_fisica@ataque",
+          "valor": "100"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos com esta Arma têm \\{(\\d+)\\}% de chance de ignorar a Redução de Dano Físico Inimiga$",
+      "efeitos": [
+        {
+          "stat": "ignora_reducao_fisica@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Acertos com Armas Corpo a Corpo têm \\{(\\d+)\\}% de chance de ignorar a Redução de Dano Físico Inimiga$",
+      "efeitos": [
+        {
+          "stat": "ignora_reducao_fisica@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Golpes Críticos de Ataques ignoram a Resistência Elemental dos Monstros Inimigos$",
+      "efeitos": [
+        {
+          "stat": "critico_ignora_res@ataque",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar, Eletrizar e Incendiar$",
+      "efeitos": [
+        {
+          "stat": "chance_freeze",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_shock",
+          "valor": "{1}"
+        },
+        {
+          "stat": "chance_ignite",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Sangramento ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_bleed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Envenenar ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_poison",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Todo o Dano de Acertos com Esta Arma pode Envenenar$",
+      "efeitos": [
+        {
+          "stat": "envenena_qualquer_dano@ataque",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Degenerativo para Sangramento$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_bleed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador do Dano Físico Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_phys",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano de Gelo Degenerativo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_cold",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% do Multiplicador de Dano de Caos$",
+      "efeitos": [
+        {
+          "stat": "dot_multi_chaos",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo com Habilidades de Ataque$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Multiplicador de Dano Degenerativo com Ataques com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "dot_multi@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Afecções Danificadoras causam dano \\{(\\d+)\\}% mais rápido$",
+      "efeitos": [
+        {
+          "stat": "dot_mais_rapido",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de Afecções de Gelo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de Afecções de Raio aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do Congelamento em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_congelamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração da Eletrização em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_eletrizacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do Incêndio em Inimigos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_incendio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do Sangramento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_sangramento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração das Afecções Elementais dos Ataques com Armas Corpo a Corpo aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Mutilar ao Acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_mutilar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Cegar Inimigos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_cegar@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empalar Inimigos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_empalar@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Efeito de Empalamento$",
+      "efeitos": [
+        {
+          "stat": "efeito_empalamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Empurrar Inimigos ao acertar$",
+      "efeitos": [
+        {
+          "stat": "chance_empurrar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Provocar Inimigos ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "chance_provocar@ataque",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Desacelerar Inimigos ao Acertar com Magias$",
+      "efeitos": [
+        {
+          "stat": "chance_desacelerar@magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de causar Dano Dobrado$",
+      "efeitos": [
+        {
+          "stat": "chance_dano_dobrado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Cegados por você têm Chance de Golpe Crítico reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cegados_critico_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Mutilados por você sofrem Dano Degenerativo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "mutilados_dot_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Desacelerados por você têm Regeneração de Vida reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "desacelerados_regen_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de dobrar a Duração de Atordoamentos$",
+      "efeitos": [
+        {
+          "stat": "chance_dobrar_atordoamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inimigos Intimidados por você têm duração dos Atordoamentos contra eles aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_duration",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "Intimidar ainda não existe: vale como duração de atordoamento",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ponto de Atordoamento reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "ponto_atordoamento_proprio_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Atordoado$",
+      "efeitos": [
+        {
+          "stat": "evitar_atordoamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recuperação de Bloqueio e Atordoamento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "stun_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Incendiado$",
+      "efeitos": [
+        {
+          "stat": "evitar_incendio",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Congelado$",
+      "efeitos": [
+        {
+          "stat": "evitar_congelamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Eletrizado$",
+      "efeitos": [
+        {
+          "stat": "evitar_eletrizacao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Envenenado$",
+      "efeitos": [
+        {
+          "stat": "evitar_veneno",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Sangramento$",
+      "efeitos": [
+        {
+          "stat": "evitar_sangramento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar ser Resfriado$",
+      "efeitos": [
+        {
+          "stat": "evitar_resfriamento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Imunidade a Envenenamento$",
+      "efeitos": [
+        {
+          "stat": "imune_veneno",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Imunidade a Eletrização$",
+      "efeitos": [
+        {
+          "stat": "imune_eletrizacao",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Imunidade a Congelamento e Resfriamento$",
+      "efeitos": [
+        {
+          "stat": "imune_congelamento",
+          "valor": "1"
+        },
+        {
+          "stat": "imune_resfriamento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Imunidade a Incêndios$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não Afetado por Incendiar$",
+      "efeitos": [
+        {
+          "stat": "imune_incendio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Imunidade a Sangramento e Sangue Corrompido$",
+      "efeitos": [
+        {
+          "stat": "imune_sangramento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito das Maldições em você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeitos? de Maldições em Você reduzidos em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito das Eletrizações em você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de redução do Efeito da Eletrização em você$",
+      "efeitos": [
+        {
+          "stat": "efeito_eletrizacao_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito do Resfriamento em você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Resfriamentos em Você tem Efeito reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_resfriamento_proprio",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do Congelamento em você reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_congelamento_propria",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do Incêndio em Você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_incendio_propria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do Envenenamento em você reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_veneno_propria",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do Sangramento em você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_sangramento_propria",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração de Afecções Elementais em Você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_elementais_propria",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Duração do Efeito de Habilidades reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@anelEsquerdo",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Duração do Efeito de Habilidades aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Efeito de Maldições em Você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio@anelEsquerdo",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Efeito das Maldições em você aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Lacaios sofrem Dano reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaios_dano_recebido@anelEsquerdo",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Lacaios sofrem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaios_dano_recebido@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Duração de Afecções em Você reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_propria@anelEsquerdo",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: Duração das Afecções em Você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_propria@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: \\{(\\d+)\\}% do Dano de Fogo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_ice@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: \\{(\\d+)\\}% do Dano de Fogo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_energy@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: \\{(\\d+)\\}% do Dano de Gelo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_fire@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: \\{(\\d+)\\}% do Dano de Gelo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_energy@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: \\{(\\d+)\\}% do Dano de Raio (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_energy_como_fire@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço esquerdo de anel: \\{(\\d+)\\}% do Dano de Raio (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_energy_como_ice@anelEsquerdo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Duração do Efeito de Habilidades reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@anelDireito",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Duração do Efeito de Habilidades aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Efeito de Maldições em Você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio@anelDireito",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Efeito das Maldições em você aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Lacaios sofrem Dano reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaios_dano_recebido@anelDireito",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Lacaios sofrem Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "lacaios_dano_recebido@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Duração de Afecções em Você reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_propria@anelDireito",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: Duração das Afecções em Você aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_afeccoes_propria@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: \\{(\\d+)\\}% do Dano de Fogo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_ice@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: \\{(\\d+)\\}% do Dano de Fogo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_energy@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: \\{(\\d+)\\}% do Dano de Gelo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_fire@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: \\{(\\d+)\\}% do Dano de Gelo (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_energy@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: \\{(\\d+)\\}% do Dano de Raio (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_energy_como_fire@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Espaço direito de anel: \\{(\\d+)\\}% do Dano de Raio (?:de|dos) Acertos (?:é )?sofrido (?:como|com) Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_energy_como_ice@anelDireito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Fogo dos Acertos recebido como Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Fogo dos Acertos recebido como Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_fire_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Gelo dos Acertos recebido como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Gelo dos Acertos recebido como Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_energy",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Raio dos Acertos recebido como Dano de Fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_energy_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano de Raio dos Acertos recebido como Dano de Gelo$",
+      "efeitos": [
+        {
+          "stat": "recebe_energy_como_ice",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do dano de frio e elétrico dos ataques é sofrido como dano de fogo$",
+      "efeitos": [
+        {
+          "stat": "recebe_ice_como_fire",
+          "valor": "{1}"
+        },
+        {
+          "stat": "recebe_energy_como_fire",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "nota": "no PoE só dos ataques; aqui de todo acerto",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recebe \\{(\\d+)\\}% de Dano Físico como Dano Extra de um Elemento aleatório$",
+      "efeitos": [
+        {
+          "stat": "fisico_recebido_como_elemento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano Extra recebido de Acertos Críticos em Você reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "crit_dmg_taken_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Você sofre \\{(\\d+)\\}% do Dano de Acertos Bloqueados$",
+      "efeitos": [
+        {
+          "stat": "dano_dos_bloqueados",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Congelar Inimigos por \\{(\\d+)\\} segundos? quando te Acertarem$",
+      "efeitos": [
+        {
+          "stat": "congelar_agressor",
+          "valor": "{1}"
+        },
+        {
+          "stat": "congelar_agressor_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques$",
+      "efeitos": [
+        {
+          "stat": "block",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto Segurar Duas Armas$",
+      "efeitos": [
+        {
+          "stat": "block@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto portar um Escudo$",
+      "efeitos": [
+        {
+          "stat": "block@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques enquanto portando um Cajado$",
+      "efeitos": [
+        {
+          "stat": "block@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano Mágico enquanto Segurando Duas Armas$",
+      "efeitos": [
+        {
+          "stat": "spell_block@duasArmas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano Mágico enquanto portando um Escudo$",
+      "efeitos": [
+        {
+          "stat": "spell_block@comEscudo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano Mágico enquanto portando um Cajado$",
+      "efeitos": [
+        {
+          "stat": "spell_block@comCajado",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear o Dano de Ataques caso tenha sofrido Dano de um Acerto Recentemente$",
+      "efeitos": [
+        {
+          "stat": "block@acertadoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\}% de Chance de Bloquear Dano Mágico caso tenha sofrido Dano por um Acerto Recentemente$",
+      "efeitos": [
+        {
+          "stat": "spell_block@acertadoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inflige Causticar em Inimigos ao Bloquear seu Dano$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_causticar",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inflige Enfraquecer em Inimigos ao Bloquear seu Dano$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_enfraquecer",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Inflige Exaurir em Inimigos ao Bloquear seu Dano$",
+      "efeitos": [
+        {
+          "stat": "bloqueio_exaurir",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% se você não sofreu Dano Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@semDanoRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Movimento aumentada em \\{(\\d+)\\}% se você Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "move_speed@matouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de Vida Regenerada por segundo enquanto movendo-se$",
+      "efeitos": [
+        {
+          "stat": "life_regen_max_pct@movendo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Evasão aumentada em \\{(\\d+)\\}% enquanto movendo-se$",
+      "efeitos": [
+        {
+          "stat": "evasion_pct@movendo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Regeneração de Mana aumentada em \\{(\\d+)\\}% enquanto movendo-se$",
+      "efeitos": [
+        {
+          "stat": "mana_regen_pct@movendo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Armadura aumentada em \\{(\\d+)\\}% se você não Matou Recentemente$",
+      "efeitos": [
+        {
+          "stat": "armour_pct@naoMatouRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de Evitar Afecções Elementais enquanto tiver Elusivo$",
+      "efeitos": [
+        {
+          "stat": "avoid_elem_ailments@elusivo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de Maldições em você enquanto em Solo Sagrado é reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "efeito_maldicao_proprio@soloSagrado",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Vida por Inimigo Morto com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "life_on_kill@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Mana por Inimigo Morto com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "mana_on_kill@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Vida por Inimigo Acertado com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "life_on_hit@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Mana por Inimigo Acertado com Armas Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "mana_on_hit@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Mana por Inimigo Acertado com Ataques$",
+      "efeitos": [
+        {
+          "stat": "mana_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} de Escudo de Energia por Inimigo Acertado com Ataques$",
+      "efeitos": [
+        {
+          "stat": "es_on_hit",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano dos Ataques é Drenado como Vida$",
+      "efeitos": [
+        {
+          "stat": "life_leech",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "aproximado",
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% do Dano Mágico é Drenado como Escudo de Energia$",
+      "efeitos": [
+        {
+          "stat": "es_leech_magia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recuperação da Recarga aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Recuperação da Recarga de Habilidades de Movimento aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recuperação da Recarga de Habilidades de Deslocamento aumentada \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@movimento",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Recuperação da Recarga para lançar Armadilhas reduzida em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cooldown_recovery@armadilha",
+          "valor": "-{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades de Armadilha têm Duração do Efeito de habilidades aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "duracao_habilidades@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Eficiência de custo de mana aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_custo_mana",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "_nova": true,
+      "estado": "inerte",
+      "nota": "as auras do jogo não reservam mana (são reforços com duração): não há reserva para melhorar"
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de, quando pagar o Custo de uma Habilidade, ganhar a mesma quantidade de Mana$",
+      "efeitos": [
+        {
+          "stat": "chance_devolver_custo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Gaste Escudo de Energia antes da Mana para os Custos de Habilidades Encaixadas$",
+      "efeitos": [
+        {
+          "stat": "custo_do_escudo_local",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Posicionamento do Totem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@totem",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Arremesso da Armadilha aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@armadilha",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade de Arremesso de Minas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "cast_speed_tag@mina",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Velocidade do Projétil aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "projectile_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Projéteis Perfuram \\{(\\d+)\\} Alvos adicionais$",
+      "efeitos": [
+        {
+          "stat": "perfurar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Flechas Perfuram \\{(\\d+)\\} Alvos adicionais$",
+      "efeitos": [
+        {
+          "stat": "perfurar@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Habilidades disparam \\{(\\d+)\\} Projéteis adicionais$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ataques com Arco disparam \\{(\\d+)\\} Flechas adicionais$",
+      "efeitos": [
+        {
+          "stat": "extra_projectiles@comArco",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Área de Efeito aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Gemas Corpo a Corpo Encaixadas têm Efeito em Área aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "area_inc_local@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao Mínimo de Cargas de Tolerância, Frenesi e Poder$",
+      "efeitos": [
+        {
+          "stat": "min_poder",
+          "valor": "{1}"
+        },
+        {
+          "stat": "min_frenesi",
+          "valor": "{1}"
+        },
+        {
+          "stat": "min_tolerancia",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganha \\{(\\d+)\\} Cargas de Tolerância, Frenesi ou Poder a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "carga_periodica_n",
+          "valor": "{1}"
+        },
+        {
+          "stat": "carga_periodica_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Ganhe \\{(\\d+)\\} de Fúria com Acertos Corpo a Corpo$",
+      "efeitos": [
+        {
+          "stat": "furia_por_acerto@corpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios causam Dano aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_dmg",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios causam Dano aumentado em \\{(\\d+)\\}% caso você tenha usado uma Habilidade Lacaios Recentemente$",
+      "efeitos": [
+        {
+          "stat": "minion_dmg@usouLacaioRecente",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Vida máxima dos Lacaios aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "minion_life",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios possuem \\+\\{(\\d+)\\}% de todas Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "minion_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios possuem \\+\\{(\\d+)\\}% de Resistência a Caos$",
+      "efeitos": [
+        {
+          "stat": "minion_chaos_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios possuem um aumento de \\{(\\d+)\\}% de Velocidade de Ataque$",
+      "efeitos": [
+        {
+          "stat": "minion_atk_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios possuem um aumento de \\{(\\d+)\\}% de Velocidade de Conjuração$",
+      "efeitos": [
+        {
+          "stat": "minion_cast_speed",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios Regeneram \\{(\\d+)\\}% de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "minion_regen_pct",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios Regeneram \\{(\\d+)\\} de Vida por segundo$",
+      "efeitos": [
+        {
+          "stat": "minion_regen",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios Drenam \\{(\\d+)\\}% de Dano como Vida$",
+      "efeitos": [
+        {
+          "stat": "minion_leech",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% da Velocidade de Movimento aumentada$",
+      "efeitos": [
+        {
+          "stat": "minion_move",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\+\\{(\\d+)\\}% de multiplicador de dano degenerativo$",
+      "efeitos": [
+        {
+          "stat": "minion_dot_multi",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios causam \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Fogo adicional$",
+      "efeitos": [
+        {
+          "stat": "minion_added_fire_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_added_fire_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios causam \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Gelo adicional$",
+      "efeitos": [
+        {
+          "stat": "minion_added_ice_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_added_ice_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios causam \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Raio adicional$",
+      "efeitos": [
+        {
+          "stat": "minion_added_energy_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_added_energy_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios causam \\{(\\d+)\\} a \\{(\\d+)\\} de Dano de Caos adicional$",
+      "efeitos": [
+        {
+          "stat": "minion_added_chaos_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_added_chaos_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios causam \\{(\\d+)\\} a \\{(\\d+)\\} de Dano Físico adicional$",
+      "efeitos": [
+        {
+          "stat": "minion_added_physical_min",
+          "valor": "{1}"
+        },
+        {
+          "stat": "minion_added_physical_max",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de Cegar ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_cegar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de Provocar ao Acertar com Ataques$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_provocar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de Desacelerar Inimigos ao Acertar com Magias$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_desacelerar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de Envenenar ao Acertarem$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_envenenar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de Incendiar$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_incendiar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Lacaios têm \\{(\\d+)\\}% de chance de causar Sangramento com Ataques$",
+      "efeitos": [
+        {
+          "stat": "minion_chance_sangrar",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao número máximo de Zumbis$",
+      "efeitos": [
+        {
+          "stat": "max_zumbis",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\+\\{(\\d+)\\} ao número máximo de Espectros$",
+      "efeitos": [
+        {
+          "stat": "max_espectros",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Vida do Totem aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "totem_life",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Totens ganham \\+\\{(\\d+)\\}% de todas Resistências Elementais$",
+      "efeitos": [
+        {
+          "stat": "totem_res",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recuperação de Vida do Frasco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_vida_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recuperação de Mana do Frasco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_mana_rec",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Recarga de Frasco recebida aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_recebidas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Cargas de Frasco recebidas das Mortes com Armas Corpo a Corpo aumentadas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_recebidas@armaCorpo",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Duração do efeito do Frasco aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_duracao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Cargas de Frasco utilizadas reduzidas em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_cargas_usadas_red",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos aplicados a você tem Efeito aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "frasco_efeito",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico$",
+      "efeitos": [
+        {
+          "stat": "frasco_carga_no_critico",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Frascos Utilitários ganham \\{(\\d+)\\} Cargas a cada \\{(\\d+)\\} segundos$",
+      "efeitos": [
+        {
+          "stat": "frasco_util_regen_n",
+          "valor": "{1}"
+        },
+        {
+          "stat": "frasco_util_regen_s",
+          "valor": "{2}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode usar Frascos no Quinto Espaço$",
+      "efeitos": [
+        {
+          "stat": "sem_quinto_frasco",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Requisito de Nível reduzido em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "req_level_reduced",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Raridade de Itens encontrados aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "item_rarity",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Possui \\{(\\d+)\\} Encaixes$",
+      "efeitos": [
+        {
+          "stat": "encaixes_fixos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Modificadores Implícitos Não Podem ser Mudados$",
+      "efeitos": [
+        {
+          "stat": "implicitos_fixos",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^[+-]?\\{(\\d+)\\} Modificador(?:es)? Prefixo permitidos?$",
+      "efeitos": [
+        {
+          "stat": "prefixos_permitidos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra da base: muda quantos prefixos a peça pode ter",
+      "_nova": true
+    },
+    {
+      "padrao": "^[+-]?\\{(\\d+)\\} Modificador(?:es)? Sufixo permitidos?$",
+      "efeitos": [
+        {
+          "stat": "sufixos_permitidos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra da base: muda quantos sufixos a peça pode ter",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitudes dos Modificadores Explícitos aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "magnitude_explicitos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitudes do Modificador Prefixo aumentadas? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "magnitude_prefixos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Magnitudes do Modificador Sufixo aumentadas? em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "magnitude_sufixos",
+          "valor": "{1}"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não gera modificadores de dano que não sejam (?:de )?(frio|fogo|elétrico|físico|caos)$",
+      "efeitos": [
+        {
+          "stat": "so_dano_de",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "nota": "regra da base: os mods de dano de outro tipo não saem",
+      "_nova": true
+    },
+    {
+      "padrao": "^Não pode rolar Modificadores de Conjuração$",
+      "efeitos": [
+        {
+          "stat": "sem_mods_de_conjuracao",
+          "valor": "1"
+        }
+      ],
+      "estado": "equivalente",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sobrecarga Elemental$",
+      "efeitos": [
+        {
+          "stat": "keystone_sobrecarga",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Equilíbrio Elemental$",
+      "efeitos": [
+        {
+          "stat": "keystone_equilibrio",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^Segredos do Sofrimento$",
+      "efeitos": [
+        {
+          "stat": "keystone_sofrimento",
+          "valor": "1"
+        }
+      ],
+      "_nova": true
+    },
+    {
+      "padrao": "^\\{(\\d+)\\}% de aumento do Raio de Iluminação$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "no PoE o raio de luz só muda o quanto se enxerga em volta: o jogo mostra a tela inteira",
+      "_nova": true
+    },
+    {
+      "padrao": "^Recuperação de Bloqueio aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "no PoE é o tempo da animação depois de bloquear: no jogo o bloqueio não trava o personagem",
+      "_nova": true
+    },
+    {
+      "padrao": "^Possui Influência do Ancião, Criador e de todos os Conquistadores$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as influências (e os mods delas) não existem no catálogo do jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Tem \\{(\\d+)\\} Encaixes Abissal$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as Joias Abissais não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Pode ser ungido$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os Óleos (Unção) não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Propriedades são dobradas enquanto em uma Fenda$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as Fendas (Breach) não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Sensibilidade da Fisgada aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a pesca não existe no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de bônus de Aspecto do Caranguejo aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito da penalidade de Aspecto da Aranha aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito do Buff do Aspecto da Ave aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito de bônus de Aspecto do Gato aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as habilidades de Aspecto (dadas por únicos) não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Dano aumentado em \\{(\\d+)\\}% por Rito da Lua concluído$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os Ritos da Lua (liga Ritual) não existem no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Adiciona a de Dano de Raio$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a arma criada pela habilidade Lâmina de Energia: o dano vem da habilidade",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito do Definhamento aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o Definhamento ainda não tem fonte no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^Efeito das suas Marcas aumentado em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "as Marcas do jogo são magias comuns: não têm o efeito de marca do PoE",
+      "_nova": true
+    },
+    {
+      "padrao": "^Clamores Impelem \\{(\\d+)\\} Ataques adicionais$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "os clamores do jogo são reforços: ainda não Impelem ataques",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Impacto Ardente Nível \\{(\\d+)\\} no Acerto Corpo a Corpo com esta Arma$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "a habilidade Impacto Ardente não está na coleção de gemas do jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^local use skill on melee hit % \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "parte interna do \"Ativa Impacto Ardente\" (sem texto no PoE)",
+      "_nova": true
+    },
+    {
+      "padrao": "^Ativa Avanço Ardente Nível \\{(\\d+)\\} ao usar uma Habilidade Encaixada$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "o Avanço Ardente é deslocamento, que não existe no jogo",
+      "_nova": true
+    },
+    {
+      "padrao": "^local skills granted by item are supported by level x unique trigger support \\[\\{(\\d+)\\}\\]$",
+      "efeitos": [
+        {
+          "stat": "inerte",
+          "valor": "1"
+        }
+      ],
+      "estado": "inerte",
+      "nota": "parte interna do \"Ativa Avanço Ardente\" (sem texto no PoE)",
+      "_nova": true
+    },
+    {
       "padrao": "^\\+\\{(\\d+)\\} de Vida máxima$",
       "efeitos": [
         {
