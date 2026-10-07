@@ -6306,9 +6306,11 @@ mapView.onTileClick = (x, y) => {
    * O mesmo `huntTarget` do botão direito, de propósito — o alvo é um só, e
    * dois caminhos para escolhê-lo seriam dois lugares para consertar.
    */
-  if (ehCelular()) {
+  // (E no modo PoE também no computador: o clique esquerdo no monstro o escolhe como alvo, como no PoE. Clicar de novo no alvo já
+  // escolhido TIRA o alvo — dono, 07/10: "quando clico de novo para desselecionar, tem que tirar o target".)
+  if (ehCelular() || state.classesPoe) {
     const bicho = (state.hunt.monsters ?? []).find((m) => m.x === x && m.y === y && m.hp > 0);
-    if (bicho) return send({ t: 'huntTarget', uid: bicho.uid });
+    if (bicho) return send({ t: 'huntTarget', uid: state.hunt.alvoClicado === bicho.uid ? null : bicho.uid });
   }
   send({ t: 'huntWalkTo', x, y });
 };
@@ -6757,7 +6759,8 @@ mapView.onTileRight = (x, y, evento) => {
       ]);
     }
   }
-  send({ t: 'huntTarget', uid: bicho?.uid ?? null });
+  // Clicar de novo no alvo já escolhido tira o alvo.
+  send({ t: 'huntTarget', uid: bicho && state.hunt.alvoClicado === bicho.uid ? null : bicho?.uid ?? null });
 };
 
 /*

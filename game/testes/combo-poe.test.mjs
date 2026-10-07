@@ -143,3 +143,32 @@ test('a barra grande NÃO aparece no monstro que só sorteou a raridade Único (
   h.monstros[0].raridade = 'boss';
   assert.ok(Cacadas.snapshotDaHunt(e).boss, 'o boss continua com a barra');
 });
+
+test('manual sem o Ataque automático: o golpe básico bate no alvo CLICADO; sem clique, não escolhe nenhum; tirar o alvo para', { skip: SEM }, async () => {
+  const { e, Cacadas } = await montar(null);
+  const { PERSONAGEM } = await import('./apoio.mjs');
+  e.actions = Array(e.actions.length).fill(null); // só o golpe básico
+  Cacadas.definirAutomatico(e, { on: false });
+  Cacadas.definirAssistencia(e, { tipo: 'ataque', on: false });
+  const h = e.hunt;
+  h.monstros = h.monstros.slice(0, 1);
+  const bicho = h.monstros[0];
+  const rodar = () => {
+    let t = Date.now();
+    const ev = [];
+    for (let i = 0; i < 16; i++) {
+      Object.assign(bicho, { hp: 1e9, maxHp: 1e9, x: h.pos.x + 1, y: h.pos.y });
+      e.hp = e.maxHp;
+      ev.push(...(Cacadas.tique(e, PERSONAGEM, (t += 250)) ?? []));
+    }
+    return ev.filter((x) => x.t === 'dmg' && x.uid === bicho.uid).length;
+  };
+  h.alvo = null;
+  assert.equal(rodar(), 0, 'sem clique: não ataca nem escolhe alvo');
+  assert.equal(Cacadas.snapshotDaHunt(e).targetUid, null);
+  assert.ok(Cacadas.definirAlvo(e, { uid: bicho.uid }).ok);
+  assert.ok(rodar() > 0, 'clicou: o golpe básico bate');
+  assert.equal(Cacadas.snapshotDaHunt(e).alvoClicado, bicho.uid);
+  Cacadas.definirAlvo(e, { uid: null });
+  assert.equal(rodar(), 0, 'tirou o alvo: para');
+});

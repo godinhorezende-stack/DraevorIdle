@@ -1653,7 +1653,10 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (!livre) hunt.conjurando = null;
   // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
   eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
-  const assiste = hunt.modo !== 'online' || hunt.assistencia !== false;
+  // No manual, o alvo CLICADO (vivo) é atacado com o golpe básico mesmo com o "Ataque automático" desligado (dono, 07/10: "no manual,
+  // quando clico no mob, o ataque básico não pega") — e só ele: sem alvo clicado, nada é escolhido sozinho.
+  const alvoClicado = hunt.modo === 'online' && hunt.alvo != null && hunt.monstros.some((m) => m.uid === hunt.alvo && m.hp > 0);
+  const assiste = hunt.modo !== 'online' || hunt.assistencia !== false || alvoClicado;
   // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
   if (assiste && livre && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
     const golpe = round(estado, personagem);
@@ -2253,7 +2256,10 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     chao: [],
     // Quem marca a moldura vermelha na tela (ver `map.mjs::targetUid`) — antes
     // nunca viajava, e o alvo nunca aparecia marcado.
-    targetUid: alvoAtual(hunt)?.uid ?? null,
+    // (No manual sem o "Ataque automático", o alvo é só o clicado — nada é escolhido sozinho, e a tela não mostra um alvo que não bate.)
+    targetUid: hunt.modo === 'online' && hunt.assistencia === false ? (hunt.monstros.some((m) => m.uid === hunt.alvo && m.hp > 0) ? hunt.alvo : null) : alvoAtual(hunt)?.uid ?? null,
+    // O alvo escolhido À MÃO (clique): clicar de novo nele tira o alvo (a tela compara com este).
+    alvoClicado: hunt.alvo ?? null,
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
     // Os lacaios e os totens das gemas do PoE (desenhados como o familiar, com a vida).
     lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS })),
