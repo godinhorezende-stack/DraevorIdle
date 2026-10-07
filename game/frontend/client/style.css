@@ -28093,6 +28093,11 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 /* ---- Gem Atelier › Catálogo de gemas (modo PoE): cada gema e onde se ganha (gemas.mjs → renderCatalogo) ---- */
 .cat-filtros { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 .cat-busca { flex: 1 1 220px; min-width: 0; }
+/* A busca e os seletores do catálogo de gemas no tema escuro (sem isto ficavam no branco do navegador, com o texto quase invisível). */
+.cat-busca, .cat-sel { background: var(--panel-solid); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; font-size: 12px; color-scheme: dark; }
+.cat-busca::placeholder { color: var(--muted); }
+.cat-busca:focus, .cat-sel:focus { outline: none; border-color: var(--accent, #6fd0c0); }
+.cat-sel option { background: var(--panel-solid); color: var(--text); }
 .cat-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #c8d4d8; }
 .cat-contagem { margin: 2px 0 6px; font-size: 12px; color: #8fa6ab; }
 .cat-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 6px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }

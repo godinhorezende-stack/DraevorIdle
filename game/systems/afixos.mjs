@@ -358,7 +358,9 @@ export function decisaoDoLoot(estado, p) {
   if (id === ID_DA_ESSENCIA) return { acao: 'naoVender', motivo: 'essência' };
   // Peça com GEMA encaixada nunca vai para o NPC (a gema iria junto).
   if (p?.soquetes?.gemas?.some(Boolean)) return { acao: 'naoVender', motivo: 'gema encaixada' };
-  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false);
+  // Peça do PoE (modo PoE): as regras do PoE (raridade Normal/Mágico/Raro/Único, mods e tiers, Item Level, sockets, classe).
+  if (itensPoeLigado() && p?.poe) return decisaoDoLootPoe(estado, p);
+  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false && !r.poe);
   for (const [i, r] of regras.entries()) {
     if (regraBate(r, p)) return { acao: r.acao === 'naoColetar' ? 'naoColetar' : 'naoVender', motivo: `regra específica ${i + 1}` };
   }
@@ -371,6 +373,124 @@ export function decisaoDoLoot(estado, p) {
   const piso = Number(s.guardarRaridade ?? 0);
   if (piso > 0 && indiceDaRaridade(p) >= piso) return { acao: 'naoVender', motivo: 'raridade' };
   return { acao: 'vender', motivo: 'nenhuma regra segura' };
+}
+
+// ------------------------------------------- o filtro de loot do PoE (só com ITENS_POE=1)
+/*
+ * As peças do PoE têm o que um filtro de loot do PoE olha: a RARIDADE (Normal, Mágico, Raro, Único), a CLASSE (Anel, Botas…), o ITEM
+ * LEVEL, os MODS explícitos (prefixos e sufixos) com o TIER de cada um (T1 é o melhor, como no PoE) e os SOCKETS (até 6, os ligados e as
+ * cores — o R-G-B ligado do Cromático). As seções guardam com OU (basta uma segurar); as regras específicas juntam tudo com E e a
+ * primeira que bate decide, antes das seções. As listas "Não coletar"/"Não vender" continuam por base (o id é a base do PoE).
+ */
+export const RARIDADES_POE = ['normal', 'magico', 'raro', 'unico'];
+const indiceDaRaridadePoe = (p) => Math.max(0, RARIDADES_POE.indexOf(p?.poe?.raridade));
+/** Os mods explícitos (prefixos e sufixos) da peça do PoE. */
+const modsExplicitos = (p) => [...(p?.poe?.prefixos ?? []), ...(p?.poe?.sufixos ?? [])];
+/** O melhor tier (o menor número) entre os mods explícitos; null sem mods com tier. */
+export function melhorTierPoe(p) {
+  const tiers = modsExplicitos(p).map((m) => Number(m.tier)).filter((n) => n > 0);
+  return tiers.length ? Math.min(...tiers) : null;
+}
+/** Os sockets da peça e se há um grupo LIGADO com as três cores (R, G e B — o Cromático do PoE). */
+export function socketsPoe(p) {
+  const so = p?.soquetes;
+  const { abertos, ligados } = socketsDaPeca(p);
+  const rgb = !!so?.abertos && gruposLigados(so).some((g) => ['R', 'G', 'B'].every((c) => g.some((i) => so.cores?.[i] === c)));
+  return { abertos, ligados, rgb };
+}
+/** As seções do filtro do PoE (as chaves de `settings`). Sem nada escolhido, os Únicos ficam (vendê-los por engano não tem volta). */
+export function regraDasSecoesPoe(s = {}) {
+  const n = (k, max, padrao = 0) => Math.max(0, Math.min(max, Math.round(Number(s[k] ?? padrao)) || 0));
+  return {
+    raridade: n('guardarRaridadePoe', 3, 3),
+    mods: n('guardarModsPoe', 6),
+    tier: n('guardarTierPoe', 5),
+    ilvl: n('guardarIlvlPoe', 100),
+    abertos: n('guardarSockets', 6),
+    ligados: n('guardarLigados', 6),
+    rgb: s.guardarRgbPoe === true,
+  };
+}
+/** A peça passa em "pelo menos `mods` mods e (com `tier`) um deles T`tier` ou melhor"? */
+function passaModsPoe(p, mods, tier) {
+  const lista = modsExplicitos(p);
+  if (lista.length < mods) return false;
+  if (!tier) return true;
+  const melhor = melhorTierPoe(p);
+  return melhor != null && melhor <= tier;
+}
+/** Uma regra específica do PoE bate nesta peça? `{ poe: true, raridade, acima, classe, quantos, tier, ilvl, ligados, acao }`. */
+export function regraPoeBate(r, p) {
+  if (!p?.poe) return false;
+  if (r.raridade) {
+    const alvo = RARIDADES_POE.indexOf(r.raridade);
+    const tem = indiceDaRaridadePoe(p);
+    if (r.acima ? tem < alvo : tem !== alvo) return false;
+  }
+  if (r.classe && p.poe.classe !== r.classe) return false;
+  const mods = modsExplicitos(p);
+  if (r.quantos === 0) {
+    if (mods.length) return false;
+  } else if (r.quantos != null && mods.length < r.quantos) return false;
+  if (r.tier && !(melhorTierPoe(p) != null && melhorTierPoe(p) <= r.tier)) return false;
+  if (r.ilvl && (Number(p.poe.ilvl) || 0) < r.ilvl) return false;
+  if (r.ligados && socketsPoe(p).ligados < r.ligados) return false;
+  return true;
+}
+/** Uma regra específica do PoE, limpa (o que o cliente manda). */
+export function sanearRegraDeLootPoe(r) {
+  if (!r || typeof r !== 'object') return null;
+  const raridade = RARIDADES_POE.includes(r.raridade) ? r.raridade : null;
+  const inteiro = (v, max) => (v == null || v === '' ? null : Math.max(0, Math.min(max, Math.round(Number(v)) || 0)));
+  return {
+    poe: true,
+    raridade,
+    acima: !!raridade && r.acima === true,
+    classe: typeof r.classe === 'string' && /^[A-Z][A-Za-z_]{1,40}$/.test(r.classe) ? r.classe : null,
+    quantos: inteiro(r.quantos, 6),
+    tier: inteiro(r.tier, 5) || 0,
+    ilvl: inteiro(r.ilvl, 100) || 0,
+    ligados: inteiro(r.ligados, 6) || 0,
+    acao: ACOES_DO_FILTRO.includes(r.acao) ? r.acao : 'naoVender',
+    ativa: r.ativa !== false,
+  };
+}
+/** A decisão do filtro para uma peça do PoE (as listas e a gema encaixada já passaram em `decisaoDoLoot`). */
+export function decisaoDoLootPoe(estado, p) {
+  const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false && r.poe);
+  for (const [i, r] of regras.entries()) {
+    if (regraPoeBate(r, p)) return { acao: r.acao === 'naoColetar' ? 'naoColetar' : 'naoVender', motivo: `regra específica ${i + 1}` };
+  }
+  const s = regraDasSecoesPoe(estado?.settings ?? {});
+  if (s.mods > 0 && passaModsPoe(p, s.mods, s.tier)) return { acao: 'naoVender', motivo: 'mods da peça' };
+  if (!s.mods && s.tier && passaModsPoe(p, 1, s.tier)) return { acao: 'naoVender', motivo: 'tier dos mods' };
+  const so = socketsPoe(p);
+  if ((s.abertos && so.abertos >= s.abertos) || (s.ligados > 1 && so.ligados >= s.ligados) || (s.rgb && so.rgb)) return { acao: 'naoVender', motivo: 'sockets' };
+  if (s.ilvl && (Number(p.poe.ilvl) || 0) >= s.ilvl) return { acao: 'naoVender', motivo: 'item level' };
+  if (s.raridade && indiceDaRaridadePoe(p) >= s.raridade) return { acao: 'naoVender', motivo: 'raridade' };
+  return { acao: 'vender', motivo: 'nenhuma regra segura' };
+}
+/** A prévia do filtro do PoE: peças de exemplo pela MESMA decisão. */
+const EXEMPLOS_DO_FILTRO_POE = [
+  { rotulo: 'Normal, sem mods, 1 socket', raridade: 'normal', tiers: [], ilvl: 40, abertos: 1 },
+  { rotulo: 'Normal, ilvl 84, 6 sockets (5 ligados)', raridade: 'normal', tiers: [], ilvl: 84, abertos: 6, ligados: 5 },
+  { rotulo: 'Normal, 3 sockets R-G-B ligados', raridade: 'normal', tiers: [], ilvl: 30, abertos: 3, ligados: 3, cores: ['R', 'G', 'B'] },
+  { rotulo: 'Mágico, 2 mods (T6 e T7)', raridade: 'magico', tiers: [6, 7], ilvl: 40, abertos: 2 },
+  { rotulo: 'Raro, 4 mods (melhor T4)', raridade: 'raro', tiers: [4, 5, 6, 7], ilvl: 60, abertos: 3 },
+  { rotulo: 'Raro, 6 mods com um T1', raridade: 'raro', tiers: [1, 3, 4, 5, 6, 7], ilvl: 84, abertos: 4 },
+  { rotulo: 'Único', raridade: 'unico', tiers: [], ilvl: 70, abertos: 2 },
+];
+function previaDoFiltroPoe(estado) {
+  const base = { ...estado, itemRules: { ...(estado.itemRules ?? {}), noLoot: [], noSell: [] } };
+  return EXEMPLOS_DO_FILTRO_POE.map((x) => {
+    const lig = x.ligados ?? 1;
+    const p = {
+      id: 0, count: 1,
+      soquetes: { abertos: x.abertos, links: Array.from({ length: Math.max(0, x.abertos - 1) }, (_, i) => i < lig - 1), gemas: [], cores: x.cores ?? Array(x.abertos).fill('R') },
+      poe: { raridade: x.raridade, classe: 'Body_Armours', ilvl: x.ilvl, prefixos: x.tiers.slice(0, 3).map((tier) => ({ tier })), sufixos: x.tiers.slice(3).map((tier) => ({ tier })) },
+    };
+    return { rotulo: x.rotulo, ...decisaoDoLootPoe(base, p) };
+  });
 }
 
 /** A venda automática guarda esta peça? (tudo que não é "vender") */
@@ -393,6 +513,7 @@ const EXEMPLOS_DO_FILTRO = [
 ];
 let pecaDeExemplo = null;
 export function previaDoFiltro(estado) {
+  if (itensPoeLigado()) return previaDoFiltroPoe(estado);
   pecaDeExemplo ??= Number(Object.keys(ITEM_CATALOG).find((id) => aceitaAfixo(Number(id)) && ITEM_CATALOG[id].slot === 'body'));
   const ids = Object.keys(FICHAS);
   return EXEMPLOS_DO_FILTRO.map((x) => {
