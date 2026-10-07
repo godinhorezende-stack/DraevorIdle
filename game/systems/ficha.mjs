@@ -54,7 +54,9 @@ const PERICIAS_DA_ARVORE = {
 
 /** O intervalo entre golpes da arma, sem bônus: o 2s do Tibia (a caçada, a barra de magias e o troco dos bichos seguem esse relógio). */
 export const INTERVALO_BASE_DO_GOLPE_MS = 2000;
-const CRITICO_BASE = FORMULAS.critico.chanceBase; // o 3% do molde real (`combate/formulas.json`)
+// O 3% do molde real (`combate/formulas.json`). No modo PoE não há chance "do personagem" (dono, 07/10: "só mantenha o modo PoE"): o ataque
+// usa a chance-base da ARMA e a magia a da GEMA (`acoes.contaDoDano`), × os "aumentada".
+const CRITICO_BASE = itensPoeLigado() ? 0 : FORMULAS.critico.chanceBase;
 // No modo PoE o multiplicador de crítico começa em 150%, como no PoE (dono, 07/10); no Draevor, o "+60% de dano" do molde real.
 const MULTIPLICADOR_CRITICO_BASE = itensPoeLigado() ? 1.5 : FORMULAS.critico.multiplicadorBase;
 const ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
@@ -251,6 +253,8 @@ function calcularCombate(estado) {
   excedentes.critChance = Math.max(0, critBruto - critChance);
   // Nas magias o PoE ainda soma o "Chance de Golpe Crítico com Magias aumentada" (`spell_crit_chance_inc`).
   const critChanceMagia = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
+  // A magia do PoE: a chance-base é a da GEMA (somada a estes "+% de chance" fixos) × (1 + o "aumentada" geral e o de magias).
+  const critMagiaPoe = itensPoeLigado() ? { fixa: (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0), aumentada: (af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0) } : null;
   // O dano elemental SOMADO das peças do PoE (`added_<el>_dmg_min/max`): faixa por elemento, nos ataques e nas magias.
   const somado = (prefixo) => Object.fromEntries(ELEMENTOS_DO_POE.map((el) => [el, [af[`${prefixo}${el}_dmg_min`] ?? 0, af[`${prefixo}${el}_dmg_max`] ?? 0]]).filter(([, [a, b]]) => a > 0 || b > 0));
   // Caos (elemento próprio do PoE — decisão do dono, 04/10): só aparece na ficha quando alguma peça dá (no PoE, sempre: a penalidade o deixa negativo).
@@ -314,6 +318,7 @@ function calcularCombate(estado) {
     skillBonus: bonusDePericia,
     critChance,
     critChanceMagia,
+    critMagiaPoe,
     // Os números da PRÓPRIA arma (base, qualidade, locais → dano físico final, APS, crítico, DPS físico da arma): o que o tooltip e o editor mostram. `null` sem arma.
     arma: armaFinal,
     critMultiplier: MULTIPLICADOR_CRITICO_BASE + soma((it) => it.critDamage) / 10000 + buff.critMultiplier + (af.crit_dmg ?? 0) / 100 + (arv.critDamage ?? 0) + gem.critico / 100,
@@ -714,11 +719,28 @@ export function curar(estado, vida, mana, eventos, quem, pos) {
 }
 
 /** Leech de um dano total causado: devolve vida e mana e mostra o quanto. */
-export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null) {
+/*
+ * ---- O ROUBO (leech) no modo PoE (dono, 07/10) ----
+ * Como no PoE: as MAGIAS não roubam (só os ataques — o golpe da arma e as gemas de ataque); cada acerto rouba no máximo 10% da vida/mana
+ * máxima, e o total recuperado por roubo não passa de 20% da máxima por SEGUNDO (a janela de 1 s do relógio da caçada).
+ */
+export const LEECH_POE = { porAcertoPct: 10, porSegundoPct: 20 };
+export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
+  if (itensPoeLigado() && !ataque) return;
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
-  const vida = Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
-  const mana = Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
+  let vida = Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
+  let mana = Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
+  if (itensPoeLigado() && (vida > 0 || mana > 0)) {
+    const agora = estado.hunt?.clock ?? 0;
+    const j = estado.hunt ? (estado.hunt.janelaDoRoubo ??= { inicio: agora, vida: 0, mana: 0 }) : { inicio: agora, vida: 0, mana: 0 };
+    if (agora - j.inicio >= 1000) Object.assign(j, { inicio: agora, vida: 0, mana: 0 });
+    const teto = (max, usado) => Math.max(0, Math.min((max * LEECH_POE.porAcertoPct) / 100, (max * LEECH_POE.porSegundoPct) / 100 - usado));
+    vida = Math.floor(Math.min(vida, teto(estado.maxHp ?? 0, j.vida)));
+    mana = Math.floor(Math.min(mana, teto(estado.maxMana ?? 0, j.mana)));
+    j.vida += vida;
+    j.mana += mana;
+  }
   const ganhoVida = Math.min(vida, Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));
   const ganhoMana = Math.min(mana, Math.max(0, (estado.maxMana ?? 0) - (estado.mana ?? 0)));
   if (ganhoVida > 0) {

@@ -85,3 +85,8 @@ test('as missões que faltavam (dono, 07/10): Quebrando Alguns Ovos nos Charcos,
   assert.ok(p.every((x) => x.opcoes.length > 0), 'cada uma com gemas da Bruxa');
   assert.ok(M.escolher(e, { missao: 'The_Sirens_Cadence', itemId: p.find((x) => x.slug === 'The_Sirens_Cadence').opcoes[0] }).ok);
 });
+
+test('modo PoE: a chance de crítico da magia é a base da GEMA (Bola de Fogo 5%, Faísca 6%...), não um valor do personagem', { skip: SEM }, () => {
+  assert.equal(G.criticoBaseNoNivel('Fireball', 1), 0.05);
+  assert.ok(G.criticoBaseNoNivel('Spark', 1) > 0);
+});

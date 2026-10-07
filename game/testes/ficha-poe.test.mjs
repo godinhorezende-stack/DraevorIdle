@@ -135,3 +135,26 @@ test('modo PoE: o multiplicador de crítico começa em 150% (a ficha mostra a ba
   const fp = FichaPoe.montar(e, f);
   assert.equal(fp.secoes.find((s) => s.id === 'ataque').linhas.find((l) => l.rotulo === 'Multiplicador de crítico').valor, '150%');
 });
+
+test('modo PoE: sem os 3% de crítico "do personagem"; o roubo só nos ataques, até 10% por acerto e 20% da máxima por segundo', { skip: SEM }, () => {
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 10 }), { classePoe: 'Marauder', equipment: {} });
+  Ficha.invalidar(e);
+  const f = Ficha.combate(e);
+  assert.equal(f.critChance, 0, 'desarmado e sem itens: nenhuma chance "do personagem"');
+  assert.ok(!f.origens.critChance?.some((x) => x.fonte === 'Base do personagem' && x.valor > 0));
+  assert.ok(f.critMagiaPoe, 'a magia usa a base da gema');
+  // O roubo.
+  Object.assign(e, { maxHp: 1000, hp: 100, maxMana: 500, mana: 0, hunt: { clock: 0 } });
+  const ficha = { lifeLeech: 1, manaLeech: 1 }; // 100% do dano (para ver os tetos)
+  const ev = [];
+  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha, null, { ataque: false });
+  assert.deepEqual([e.hp, e.mana], [100, 0], 'magia não rouba');
+  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
+  assert.deepEqual([e.hp, e.mana], [200, 50], '10% da máxima por acerto');
+  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
+  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
+  assert.deepEqual([e.hp, e.mana], [300, 100], 'no máximo 20% da máxima no mesmo segundo');
+  e.hunt.clock = 1000;
+  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
+  assert.deepEqual([e.hp, e.mana], [400, 150], 'o segundo seguinte libera de novo');
+});

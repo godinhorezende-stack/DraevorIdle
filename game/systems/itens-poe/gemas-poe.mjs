@@ -183,6 +183,17 @@ export function afeccoesElementaisEm(bicho, agora) {
 }
 /** A eficácia de um ATAQUE no nível (o "Dano de Ataque X% de base"): o golpe da arma × isto. */
 export const eficaciaNoNivel = (slug, nivel) => compilada(slug, nivel)?.stats?.efetividade ?? 1;
+/** A chance de crítico BASE da gema no nível ("Chance de Crítico: 6.00%" do poedb), como fração; null se a gema não diz. */
+export function criticoBaseNoNivel(slug, nivel = 1) {
+  const g = POR_SLUG.get(slug);
+  const h = compilada(slug, nivel);
+  if (!g || !h || !COMPILADOR?.propsDoNivel) return null;
+  for (const p of COMPILADOR.propsDoNivel(g, h.nivel)) {
+    const m = /^Chance de Crítico: ([\d.,]+)%/.exec(p);
+    if (m) return Number(m[1].replace(',', '.')) / 100;
+  }
+  return null;
+}
 /** As chances de afecção da arena → as do jogo (`itens-poe/afeccoes.mjs`): as que existem. */
 const AFECCAO_NO_JOGO = { incendiar: 'incendio', congelar: 'congelamento', eletrizar: 'eletrizacao', envenenar: 'veneno', sangrar: 'sangramento' };
 /** As afecções da ficha + as chances da gema no nível (o acerto da skill usa isto). */

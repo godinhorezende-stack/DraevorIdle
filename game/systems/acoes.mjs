@@ -197,6 +197,12 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   const daGema = fichaBase.magiasDasGemas?.[entry.id];
   let ficha = daGema?.critico ? { ...fichaBase, critMultiplier: fichaBase.critMultiplier + daGema.critico / 100 } : fichaBase;
   if (ehMagia && fichaBase.critChanceMagia != null && fichaBase.critChanceMagia !== fichaBase.critChance) ficha = { ...ficha, critChance: fichaBase.critChanceMagia };
+  // A magia do PoE: a chance-base é a da GEMA no nível (+ os "+% de chance" fixos) × os "aumentada" (geral e de magias), como no PoE.
+  if (ehMagia && daGemaPoe && fichaBase.critMagiaPoe) {
+    const daGema = GemasPoe.criticoBaseNoNivel(daGemaPoe.slug, nivelPoe) ?? 0;
+    const cm = fichaBase.critMagiaPoe;
+    ficha = { ...ficha, critChance: Math.min(1, Math.max(0, (daGema + cm.fixa) * (1 + cm.aumentada / 100))), critBaseDaGema: daGema };
+  }
   // (A proficiência de arma saiu — dono, 06/10: o "% da perícia como dano" e o crítico de runa dela não existem mais.)
   const daPericia = 0;
   // O treino em %: magic level (mágicas), melee (físicas de perto), distance (físicas de longe).
@@ -224,7 +230,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   if (partes) for (const p of partes) p.mult = mult + ((doElementoDe(p.elemento) - doElemento) / 100) * sintonia;
   // "X% mais Dano por cada tipo de Afecção Elemental no Inimigo" (Acerto Elemental do Espectro).
   const porAfeccao = daGemaPoe ? GemasPoe.extrasDoAtaque(daGemaPoe.slug, nivelPoe, efeitoDaGema?.qualidade ?? 0).porAfeccao : 0;
-  return { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao };
+  return { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia };
 }
 
 /** O dano que a skill causa agora, por acerto (sem crítico nem resistência): o que o balão mostra. */
@@ -1297,7 +1303,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       }
     }
     // A conta do dano, a MESMA do balão (`contaDoDano`): base pelo level + treino em % + gema + afixos.
-    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao } = contaDoDano(estado, entry, efeitoDaGema);
+    const { min, max, daPericia, mult, fatorDaGema, ficha, partes, porAfeccao, ehMagia: ehMagiaDaConta } = contaDoDano(estado, entry, efeitoDaGema);
     let total = 0;
     const danos = [];
     /*
@@ -1418,7 +1424,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
     }
     // Cataclismo, Arco voltaico, Inverno sem fim, Raiz venenosa (ver `Arvore.depoisDaMagia`).
     if (entry.kind === 'spell') total += Arvore.depoisDaMagia(estado, hunt, entry.element, danos, eventos, cor);
-    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha);
+    // (No PoE as magias não roubam: só os ataques — `Ficha.aplicarLeech`.)
+    Ficha.aplicarLeech(estado, total, eventos, personagem?.nome, { x, y }, ficha, null, { ataque: !ehMagiaDaConta });
     // Life Leech / Mana Leech (supports): % do dano desta skill volta em vida/mana.
     const vidaDoLeech = Math.round((total * (efeitoDaGema?.leechVidaPct ?? 0)) / 100);
     const manaDoLeech = Math.round((total * (efeitoDaGema?.leechManaPct ?? 0)) / 100);

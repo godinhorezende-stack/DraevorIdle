@@ -76,6 +76,8 @@ test('equipada, a peça muda a ficha: a armadura da base e os mods traduzidos (v
   Treino.garantir(e);
   delete e.equipment.armor;
   delete e.equipment.body;
+  // Uma arma do PoE: no PoE a chance de crítico vem da arma (não há chance "do personagem") — o "aumentada" multiplica a dela.
+  e.equipment.weapon = Jogo.pecaDoJogo(gerar('One_Hand_Swords/Rusted_Sword'));
   Ficha.invalidar(e);
   const antes = Ficha.combate(e);
   const p = Jogo.pecaDoJogo(gerar('Body_Armours/Plate_Vest'));
