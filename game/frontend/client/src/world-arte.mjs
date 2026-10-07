@@ -52,7 +52,9 @@ export function fundoDoAto(ato, nome, pontos = [], fundo = null) {
   g.append(simbolos(tema));
   // O VERDE da cidade (dono, 07/10: "onde tem a cidade coloque verde").
   g.append(svg('linearGradient', { id: 'w-verde', x1: 0, y1: 0, x2: 0, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': '#9ad99a' }), svg('stop', { offset: '55%', 'stop-color': '#4fae4a' }), svg('stop', { offset: '100%', 'stop-color': '#1f5a2a' })));
-  // O OURO dos nós (um gradiente, não uma cor chapada — o relevo das moedas do exemplo).
+  // O CIANO da fase atual (a identidade azul/ciano da tela — dono, 07/10).
+  g.append(svg('linearGradient', { id: 'w-ciano', x1: 0, y1: 0, x2: 0, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': '#a8f0f8' }), svg('stop', { offset: '55%', 'stop-color': '#4fd1e0' }), svg('stop', { offset: '100%', 'stop-color': '#1f8aa0' })));
+  // O OURO dos nós concluídos (um gradiente, não uma cor chapada — o relevo das moedas do exemplo).
   g.append(svg('linearGradient', { id: 'w-ouro', x1: 0, y1: 0, x2: 0, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': '#f7dc8a' }), svg('stop', { offset: '55%', 'stop-color': '#dcb04a' }), svg('stop', { offset: '100%', 'stop-color': '#a67a1c' })));
   g.append(svg('radialGradient', { id: 'w-vinheta', cx: '50%', cy: '50%', r: '70%' }, svg('stop', { offset: '55%', 'stop-color': 'rgba(0,0,0,0)' }), svg('stop', { offset: '100%', 'stop-color': 'rgba(8,5,2,.55)' })));
   g.append(svg('linearGradient', { id: `w-papel-${ato}`, x1: 0, y1: 0, x2: 1, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': tema.papel[0] }), svg('stop', { offset: '100%', 'stop-color': tema.papel[1] })));
@@ -64,6 +66,8 @@ export function fundoDoAto(ato, nome, pontos = [], fundo = null) {
     g.append(svg('image', { href: fundo.url ?? `/gamedata/mapa-mundo/${fundo.arquivo}`, x: 0, y: 0, width: LARGURA, height: ALTURA, preserveAspectRatio: 'xMidYMid slice', class: 'w-fundo-imagem' }));
     // Um véu escuro nas bordas (a arte é clara e os rótulos são brancos): a vinheta do estilo do mapa.
     g.append(svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, fill: 'url(#w-vinheta)', 'pointer-events': 'none' }));
+    // Um véu azul-petróleo bem leve: a arte quente passa a conversar com a interface azul sem perder a riqueza.
+    g.append(svg('rect', { x: 0, y: 0, width: LARGURA, height: ALTURA, fill: 'rgba(10, 40, 60, .10)', 'pointer-events': 'none' }));
     return g;
   }
   // manchas e dobras do papel

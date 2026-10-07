@@ -688,7 +688,7 @@ async function desenharMapaDoMundo() {
   const textoDaPrevia = () => (MW.previa === 0 ? 'nada concluído (só a 1ª fase aberta)' : MW.previa >= doAto.length ? 'tudo concluído (boss aberto)' : `${MW.previa} fase(s) concluída(s)`);
   const legendaPrevia = el('span', { class: 'dica' }, textoDaPrevia());
 
-  const palco = el('div', { class: 'w2-palco', style: 'max-width:900px' });
+  const palco = el('div', { class: 'w2-palco eng-previa-mapa', style: 'max-width:900px' });
   const viewport = el('div', { class: 'w2-viewport', style: 'height:auto;aspect-ratio:1000/640;cursor:default;touch-action:none' });
   const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid meet' });
   const cam = svg('g', {});

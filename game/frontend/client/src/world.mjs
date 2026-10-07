@@ -1,4 +1,4 @@
-// A tela WORLD: o mapa da campanha — cabeçalho, dificuldades, abas dos Atos, mapa interativo (zoom, arraste, pinça), painel da fase e barra de atalhos.
+// A tela CAMPANHA (antes "WORLD"): o mapa da campanha — dificuldades, abas dos Atos, mapa interativo (zoom, arraste, pinça), painel da fase e barra de atalhos.
 //
 // É a MESMA campanha de sempre (`{t:'campanha'}` → `systems/campanha.mjs`): quem decide o que está aberto, concluído ou exigido é o
 // SERVIDOR — aqui só se desenha o que chegou e se pede o que o jogo já permite (entrar na fase pelo mesmo fluxo de sempre). Segredo nunca
@@ -8,7 +8,7 @@
 // (`transform`), o pergaminho de cada Ato é desenhado uma vez, e trocar a seleção só mexe em classes e no painel — nada é refeito.
 // Os dados e as contas moram em `world-dados.mjs` (testável sem DOM); a arte procedural em `world-arte.mjs`.
 import { LARGURA, ALTURA, RAIO_DA_FASE, RAIO_DO_BOSS, TIPOS_DE_NO, TEXTO_DO_ESTADO, atosDaCampanha, partesDaCampanha, faseDaFronteira, posicoesDoAto, conexoesDoAto, tracadoDaEstrada, tipoDaFase, estadoDoNo } from './world-dados.mjs';
-import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, ornamentoDoCabecalho, iconeDeBotao } from './world-arte.mjs';
+import { svg, fundoDoAto, nomeDoTema, ICONES, ICONE_DO_TIPO, iconeDeBotao } from './world-arte.mjs';
 
 export { layoutDoAto, colunasPara, estadoDoNo, RAIO_DA_FASE, RAIO_DO_BOSS } from './world-dados.mjs';
 
@@ -218,11 +218,8 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   const raiz = el('div', 'w2');
   raiz.dataset.dificuldade = escolhida.id;
 
-  // ---- 1. cabeçalho
+  // ---- 1. (sem cabeçalho próprio: o título "CAMPANHA" é o da janela do jogo; a tela começa nas dificuldades — dono, 07/10)
   const partes = partesDaCampanha(atos);
-  const cab = el('header', 'w2-cab', ornamentoDoCabecalho(), el('div', 'w2-titulo', el('h2', null, 'WORLD'), partes.length ? el('span', 'w2-parte', atoAtual.parte ?? partes[0]) : null), ornamentoDoCabecalho(true), botao('w2-fechar', iconeDeBotao('fechar'), () => h.fechar?.()));
-  cab.lastChild.setAttribute('aria-label', 'Fechar o mapa');
-  cab.lastChild.title = 'Fechar';
 
   // ---- 2. dificuldades
   const aviso = el('div', 'w2-aviso');
@@ -296,7 +293,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   const painel = el('section', 'w2-painel');
   const barra = el('footer', 'w2-barra');
 
-  raiz.append(cab, dif, barra, abas, progresso, aviso, palco, painel);
+  raiz.append(dif, barra, abas, progresso, aviso, palco, painel);
   body.append(raiz);
 
   // A tela se adapta à CAIXA do jogo em que está: mede a janela (e remede quando ela muda) e marca `larga` (700 px+: ocupa a altura toda, sem
@@ -318,7 +315,8 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     raiz.classList.toggle('larga', cabe);
     // O painel vai para o LADO do mapa assim que cabe (a caixa do jogo é baixa: empilhar deixaria o mapa minúsculo).
     raiz.classList.toggle('lado', cabe && larguraUtil >= 780);
-    raiz.style.setProperty('--w2-painel', larguraUtil >= 1100 ? '340px' : '300px');
+    // O painel leva ~34% da largura no desktop (o mapa fica com ~66%); em caixa menor, o mínimo legível.
+    raiz.style.setProperty('--w2-painel', larguraUtil >= 1100 ? '34%' : '300px');
     raiz.style.setProperty('--w2-h', cabe ? `${Math.floor(altura)}px` : 'auto');
   };
   window.addEventListener('resize', medir);
@@ -360,9 +358,11 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const posicao = (id) => pontos[ids.indexOf(id)];
     // as estradas (sob os nós)
     const estradas = svg('g', { class: 'w2-estradas' });
+    // O caminho que leva à fase ATUAL ganha o azul luminoso (`atual`).
+    const idDaFronteira = fronteira?.ato === a.ato ? fronteira.huntId : null;
     for (const c of conexoesDoAto(a.fases, a.boss, mundo)) {
       const d = tracadoDaEstrada(posicao(c.de), posicao(c.para), c.tipo);
-      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${c.estado} ${c.tipo}` }));
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${c.estado} ${c.tipo}${idDaFronteira && c.para === idDaFronteira ? ' atual' : ''}` }));
     }
     // da cidade às fases ligadas a ela: percorrida se a fase já abriu
     for (const huntId of cidade?.conexoes ?? []) {
@@ -370,7 +370,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       if (!alvo) continue;
       const f = a.fases.find((x) => x.huntId === huntId);
       const d = tracadoDaEstrada(cidade.p, alvo, 'cadeia');
-      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${f?.completa ? 'percorrido' : f?.liberada ? 'disponivel' : 'bloqueado'} cadeia` }));
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${f?.completa ? 'percorrido' : f?.liberada ? 'disponivel' : 'bloqueado'} cadeia${idDaFronteira === huntId ? ' atual' : ''}` }));
     }
     cam.append(estradas);
     const nos = svg('g', { class: 'w2-nos' });
@@ -443,7 +443,6 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     }
     const novaSel = a.fases.length ? { tipo: 'fase', huntId: (a.fases.find((f) => f.huntId === fronteira?.huntId) ?? a.fases.find((f) => f.liberada) ?? a.fases[0]).huntId } : null;
     if (!manterSelecao) E.sel = novaSel;
-    cab.querySelector('.w2-parte')?.replaceChildren(a.parte ?? partes[0] ?? '');
     progressoBarra.style.width = `${a.total ? Math.round((100 * a.feitas) / a.total) : 0}%`;
     montarMapa();
     desenharPainel();
