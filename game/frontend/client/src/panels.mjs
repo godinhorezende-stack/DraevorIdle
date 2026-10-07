@@ -1,6 +1,6 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
-import { balaoPoe } from './itens-poe-balao.mjs';
+import { balaoPoe, CATEGORIA as CATEGORIA_POE } from './itens-poe-balao.mjs';
 import { abrirForjaPoe, temForjaPoe } from './forja-poe.mjs';
 import { listaDetalhe } from './lista-detalhe.mjs';
 import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
@@ -2834,6 +2834,7 @@ function fraseDaRegraDoAfixo() {
  * para o redesenho a cada clique não fechar a gaveta na cara de quem a abriu.
  */
 function resumoDaVendaAutomatica() {
+  if (ehFiltroPoe()) return resumoDoFiltroPoe();
   const marcados = (ctx.state.character?.itemRules?.soAfixo ?? []).length;
   const onde = marcados ? ` Só em ${marcados} ${marcados === 1 ? 'item' : 'itens'}.` : '';
   const raridade = fraseDaRaridade();
@@ -2916,6 +2917,231 @@ function escolhaDeRaridade() {
 }
 
 /*
+ * ---- O FILTRO DE LOOT DO PoE (dono, 07/10: "arrume o filtro de loot de acordo com o PoE; só vai ter itens do PoE") ----
+ *
+ * No modo PoE só caem peças do PoE, e elas têm o que um filtro do PoE olha: a raridade (Normal, Mágico, Raro, Único), os MODS explícitos com
+ * o TIER de cada um (T1 é o melhor), o ITEM LEVEL, os SOCKETS (até 6, os ligados e o R-G-B do Cromático) e a CLASSE. As seções guardam com
+ * OU; as regras específicas juntam tudo com E. O servidor decide (`Afixos.decisaoDoLootPoe`); aqui são as mesmas chaves e os mesmos padrões
+ * (`Afixos.regraDasSecoesPoe`: sem nada escolhido, os Únicos ficam).
+ */
+const ehFiltroPoe = () => !!ctx.state.character?.filtroPoe;
+const COR_DA_RARIDADE_POE = { normal: '#c8c8c8', magico: '#8888ff', raro: '#ffff77', unico: '#af6025' };
+const NOME_DA_RARIDADE_POE = { normal: 'Normal', magico: 'Mágico', raro: 'Raro', unico: 'Único' };
+const RARIDADES_POE = ['normal', 'magico', 'raro', 'unico'];
+/** As classes que caem no jogo, com o nome do PoE em português (a mesma lista do balão). */
+const CLASSES_DO_FILTRO_POE = Object.entries(CATEGORIA_POE).filter(([k]) => !['Trinkets', 'Jewels', 'Abyss_Jewels', 'Fishing_Rods', 'Tinctures'].includes(k));
+function secoesPoe() {
+  const s = ctx.state.character?.settings ?? {};
+  const n = (k, max, padrao = 0) => Math.max(0, Math.min(max, Math.round(Number(s[k] ?? padrao)) || 0));
+  return { raridade: n('guardarRaridadePoe', 3, 3), mods: n('guardarModsPoe', 6), tier: n('guardarTierPoe', 5), ilvl: n('guardarIlvlPoe', 100), abertos: n('guardarSockets', 6), ligados: n('guardarLigados', 6), rgb: s.guardarRgbPoe === true };
+}
+const LINHAS_POE = {
+  guardarRaridadePoe: [
+    { valor: 0, rotulo: 'Não olhar', dica: 'a raridade não segura nada (cuidado: os Únicos vão para o NPC)' },
+    { valor: 1, rotulo: 'Mágico para cima', raridade: 'magico', dica: 'guarda Mágicos, Raros e Únicos' },
+    { valor: 2, rotulo: 'Raro para cima', raridade: 'raro', dica: 'guarda Raros e Únicos' },
+    { valor: 3, rotulo: 'Só Único', raridade: 'unico', dica: 'guarda os Únicos (é o padrão)' },
+  ],
+  guardarModsPoe: [
+    { valor: 0, rotulo: 'Não considerar', dica: 'a quantidade de mods não segura nada (é o padrão)' },
+    { valor: 1, rotulo: '1+', dica: 'guarda a peça com 1 mod ou mais' },
+    { valor: 2, rotulo: '2+', dica: 'guarda a peça com 2 mods ou mais (todo Mágico completo)' },
+    { valor: 4, rotulo: '4+', dica: 'guarda a peça com 4 mods ou mais' },
+    { valor: 5, rotulo: '5+', dica: 'guarda a peça com 5 mods ou mais' },
+    { valor: 6, rotulo: '6', dica: 'guarda só a peça com os 6 mods (3 prefixos e 3 sufixos)' },
+  ],
+  guardarTierPoe: [
+    { valor: 0, rotulo: 'Qualquer', dica: 'qualquer tier serve' },
+    { valor: 5, rotulo: 'T5 ou melhor', dica: 'pelo menos um mod T5, T4, T3, T2 ou T1' },
+    { valor: 3, rotulo: 'T3 ou melhor', dica: 'pelo menos um mod T3, T2 ou T1' },
+    { valor: 2, rotulo: 'T2 ou melhor', dica: 'pelo menos um mod T2 ou T1' },
+    { valor: 1, rotulo: 'T1', dica: 'pelo menos um mod T1 (o melhor tier, como no PoE)' },
+  ],
+  guardarIlvlPoe: [
+    { valor: 0, rotulo: 'Não olhar', dica: 'o Item Level não segura nada (é o padrão)' },
+    { valor: 60, rotulo: '60+', dica: 'guarda a peça de Item Level 60 ou mais' },
+    { valor: 75, rotulo: '75+', dica: 'guarda a peça de Item Level 75 ou mais' },
+    { valor: 84, rotulo: '84+', dica: 'guarda a peça de Item Level 84 ou mais (os tiers mais altos dos mods)' },
+    { valor: 86, rotulo: '86', dica: 'guarda só a peça de Item Level 86 (o teto dos tiers)' },
+  ],
+  guardarSockets: [
+    { valor: 0, rotulo: 'Não olhar', dica: 'os sockets não seguram nada (é o padrão)' },
+    { valor: 3, rotulo: '3+', dica: 'guarda a peça com 3 sockets ou mais' },
+    { valor: 4, rotulo: '4+', dica: 'guarda a peça com 4 sockets ou mais' },
+    { valor: 5, rotulo: '5+', dica: 'guarda a peça com 5 sockets ou mais' },
+    { valor: 6, rotulo: '6', dica: 'guarda a peça com 6 sockets' },
+  ],
+  guardarLigados: [
+    { valor: 0, rotulo: 'Não olhar', dica: 'os links não seguram nada (é o padrão)' },
+    { valor: 3, rotulo: '3L+', dica: 'guarda a peça com 3 sockets ligados ou mais' },
+    { valor: 4, rotulo: '4L+', dica: 'guarda a peça com 4 sockets ligados ou mais' },
+    { valor: 5, rotulo: '5L+', dica: 'guarda a peça com 5 sockets ligados ou mais' },
+    { valor: 6, rotulo: '6L', dica: 'guarda a peça com os 6 sockets ligados' },
+  ],
+  guardarRgbPoe: [
+    { valor: false, rotulo: 'Não olhar', dica: 'as cores não seguram nada (é o padrão)' },
+    { valor: true, rotulo: 'R-G-B ligados', dica: 'guarda a peça com um vermelho, um verde e um azul ligados (a receita do Cromático no PoE)' },
+  ],
+};
+/** Uma fileira de botões de uma chave de `settings` (grava e pinta na hora, como as outras do filtro). */
+function fileiraPoe(titulo, chave, atual) {
+  const { state, send } = ctx;
+  const bloco = el('div', 'filtro-atributos-fileira');
+  bloco.append(el('span', 'filtro-sockets-rotulo', titulo));
+  const linha = el('div', 'filtro-afixo-opcoes');
+  for (const opcao of LINHAS_POE[chave]) {
+    const botao = el('button', `filtro-afixo-opcao${opcao.valor === atual ? ' ativo' : ''}`);
+    botao.type = 'button';
+    botao.dataset.regra = chave;
+    botao.dataset.valor = String(opcao.valor);
+    const rotulo = el('span', null, opcao.rotulo);
+    if (opcao.raridade) rotulo.style.color = COR_DA_RARIDADE_POE[opcao.raridade];
+    botao.append(rotulo);
+    botao.title = opcao.dica;
+    botao.onclick = () => {
+      send({ t: 'settings', [chave]: opcao.valor });
+      state.character.settings = { ...(state.character.settings ?? {}), [chave]: opcao.valor };
+      ctx.redraw?.();
+    };
+    linha.append(botao);
+  }
+  bloco.append(linha);
+  return bloco;
+}
+/** As frases do que cada seção guarda (no pé de cada uma e no resumo recolhido). */
+function frasesPoe() {
+  const s = secoesPoe();
+  const f = {};
+  if (s.mods || s.tier) f.mods = `${s.mods ? `${s.mods === 6 ? 'os 6 mods' : `${s.mods}+ mods`}` : 'pelo menos 1 mod'}${s.tier ? `${s.mods ? ', um deles ' : ' '}${s.tier === 1 ? 'T1' : `T${s.tier} ou melhor`}` : ''}`;
+  if (s.ilvl) f.ilvl = `Item Level ${s.ilvl === 86 ? '86' : `${s.ilvl}+`}`;
+  const so = [];
+  if (s.abertos) so.push(s.abertos === 6 ? '6 sockets' : `${s.abertos}+ sockets`);
+  if (s.ligados) so.push(s.ligados === 6 ? '6 ligados' : `${s.ligados}+ ligados`);
+  if (s.rgb) so.push('R-G-B ligados');
+  if (so.length) f.sockets = so.join(' ou ');
+  if (s.raridade) f.raridade = s.raridade === 3 ? 'os Únicos' : `${NOME_DA_RARIDADE_POE[RARIDADES_POE[s.raridade]]} para cima`;
+  return f;
+}
+function resumoDoFiltroPoe() {
+  const f = frasesPoe();
+  const partes = [f.mods && `mods: ${f.mods}`, f.sockets && `sockets: ${f.sockets}`, f.ilvl, f.raridade && `raridade: ${f.raridade}`].filter(Boolean);
+  const especificas = (ctx.state.character?.lootRegras ?? []).filter((r) => r.poe && r.ativa !== false).length;
+  return `Venda automática: ${partes.length ? `guarda ${partes.join(' OU ')}` : 'nada segura as peças — tudo vai para o NPC'}.${especificas ? ` E ${especificas} regra${especificas === 1 ? '' : 's'} específica${especificas === 1 ? '' : 's'} antes.` : ''}`;
+}
+function escolhaDeModsPoe() {
+  const s = secoesPoe();
+  const caixa = el('div', 'filtro-afixo');
+  caixa.append(el('b', null, 'Mods da peça'));
+  caixa.append(el('em', 'filter-legend', 'Os mods explícitos (prefixos e sufixos) e o tier de cada um: T1 é o melhor, como no PoE. Um Mágico tem até 2 mods; um Raro, até 6. Gema encaixada nunca é vendida.'));
+  caixa.append(fileiraPoe('Quantidade', 'guardarModsPoe', s.mods), fileiraPoe('Melhor tier', 'guardarTierPoe', s.tier));
+  const f = frasesPoe();
+  const regra = el('div', 'filtro-afixo-regra');
+  regra.append(el('b', null, f.mods ? `Guarda a peça com ${f.mods}.` : 'Os mods não seguram nada.'));
+  regra.append(el('em', null, 'Vale com OU junto das outras seções: basta uma segurar para a peça ficar.'));
+  caixa.append(regra);
+  return caixa;
+}
+function escolhaDoIlvlPoe() {
+  const caixa = el('div', 'filtro-sockets');
+  caixa.append(el('b', null, 'Item Level'));
+  caixa.append(el('em', 'filter-legend', frasesPoe().ilvl ? `Guarda a peça de ${frasesPoe().ilvl}, de qualquer raridade (boa para craftar: os tiers altos dos mods pedem Item Level alto).` : 'O nível da peça (o do monstro que a soltou): os tiers mais altos dos mods só saem em Item Level alto.'));
+  caixa.append(fileiraPoe('Mínimo', 'guardarIlvlPoe', secoesPoe().ilvl));
+  return caixa;
+}
+function escolhaDeRaridadePoe() {
+  const caixa = el('div', 'filtro-afixo filtro-raridade');
+  caixa.append(el('b', null, 'Raridade'));
+  const f = frasesPoe();
+  caixa.append(el('em', 'filter-legend', f.raridade ? `Guarda ${f.raridade}, com qualquer mod. Normal (branco), Mágico (azul), Raro (amarelo) e Único (laranja), como no PoE.` : 'A raridade não segura nada: até os Únicos vão para o NPC, se nenhuma outra seção os segurar.'));
+  caixa.append(fileiraPoe('A partir de', 'guardarRaridadePoe', secoesPoe().raridade));
+  return caixa;
+}
+function escolhaDeSocketsPoe() {
+  const s = secoesPoe();
+  const caixa = el('div', 'filtro-sockets');
+  caixa.append(el('b', null, 'Sockets'));
+  const f = frasesPoe();
+  caixa.append(el('em', 'filter-legend', f.sockets ? `Guarda a peça com ${f.sockets}, mesmo Normal.` : 'Até 6 sockets, como no PoE. A peça com os sockets escolhidos fica mesmo Normal.'));
+  caixa.append(fileiraPoe('Sockets', 'guardarSockets', s.abertos), fileiraPoe('Ligados', 'guardarLigados', s.ligados), fileiraPoe('Cores', 'guardarRgbPoe', s.rgb));
+  return caixa;
+}
+/** As regras específicas do PoE: raridade E classe E mods E tier E Item Level E ligados → ação. */
+let rascunhoDasRegrasPoe = null;
+function escolhaDeRegrasPoe() {
+  const { state, send } = ctx;
+  const regras = rascunhoDasRegrasPoe && Date.now() < rascunhoDasRegrasPoe.ate ? rascunhoDasRegrasPoe.lista : structuredClone((state.character?.lootRegras ?? []).filter((r) => r.poe));
+  const gravar = (estrutural = false) => {
+    rascunhoDasRegrasPoe = { lista: regras, ate: Date.now() + 2000 };
+    send({ t: 'lootRegras', regras });
+    state.character.lootRegras = structuredClone(regras);
+    if (estrutural) ctx.redraw?.();
+  };
+  const caixa = el('div', 'filtro-regras-especificas');
+  caixa.append(el('b', null, 'Regras específicas'));
+  caixa.append(el('em', 'filter-legend', 'Cada linha junta raridade E classe E mods E tier E Item Level E ligados, como um bloco de filtro do PoE. A primeira linha que bate decide, antes das seções de cima.'));
+  const select = (opcoes, valor, aoMudar, rotulo) => {
+    const s2 = document.createElement('select');
+    s2.setAttribute('aria-label', rotulo);
+    s2.title = rotulo;
+    for (const [v, texto] of opcoes) {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = texto;
+      s2.append(o);
+    }
+    s2.value = valor;
+    s2.onchange = () => aoMudar(s2.value);
+    return s2;
+  };
+  const opcoesDeRaridade = [['', 'Qualquer raridade'], ...RARIDADES_POE.flatMap((r) => [[r, `Só ${NOME_DA_RARIDADE_POE[r]}`], ...(r !== 'unico' ? [[`${r}+`, `${NOME_DA_RARIDADE_POE[r]} ou acima`]] : [])])];
+  const opcoesDeClasse = [['', 'Qualquer classe'], ...CLASSES_DO_FILTRO_POE.map(([id, nome]) => [id, nome])];
+  regras.forEach((r, i) => {
+    const linha = el('div', 'filtro-regra-linha');
+    linha.dataset.indice = String(i);
+    linha.append(el('span', 'filtro-regra-n', `${i + 1}.`));
+    const num = (v) => (v === '' ? null : Number(v));
+    linha.append(
+      select(opcoesDeRaridade, r.raridade ? `${r.raridade}${r.acima ? '+' : ''}` : '', (v) => { r.raridade = v ? v.replace('+', '') : null; r.acima = v.endsWith('+'); gravar(); }, 'Raridade'),
+      el('span', 'filtro-regra-e', 'E'),
+      select(opcoesDeClasse, r.classe ?? '', (v) => { r.classe = v || null; gravar(); }, 'Classe'),
+      el('span', 'filtro-regra-e', 'E'),
+      select([['', 'Qualquer nº de mods'], ['0', 'Sem mods'], ['1', '1+ mod'], ['2', '2+ mods'], ['3', '3+ mods'], ['4', '4+ mods'], ['5', '5+ mods'], ['6', '6 mods']], r.quantos == null ? '' : String(r.quantos), (v) => { r.quantos = num(v); gravar(); }, 'Mods'),
+      el('span', 'filtro-regra-e', 'E'),
+      select([['0', 'Qualquer tier'], ['5', 'um T5 ou melhor'], ['3', 'um T3 ou melhor'], ['2', 'um T2 ou melhor'], ['1', 'um T1']], String(r.tier ?? 0), (v) => { r.tier = Number(v); gravar(); }, 'Tier'),
+      el('span', 'filtro-regra-e', 'E'),
+      select([['0', 'Qualquer Item Level'], ['60', 'ilvl 60+'], ['75', 'ilvl 75+'], ['84', 'ilvl 84+'], ['86', 'ilvl 86']], String(r.ilvl ?? 0), (v) => { r.ilvl = Number(v); gravar(); }, 'Item Level'),
+      el('span', 'filtro-regra-e', 'E'),
+      select([['0', 'Qualquer link'], ['3', '3L+'], ['4', '4L+'], ['5', '5L+'], ['6', '6L']], String(r.ligados ?? 0), (v) => { r.ligados = Number(v); gravar(); }, 'Ligados'),
+      el('span', 'filtro-regra-e', '→'),
+      select([['naoVender', 'Não vender'], ['naoColetar', 'Não coletar']], r.acao ?? 'naoVender', (v) => { r.acao = v; gravar(); }, 'Ação')
+    );
+    const liga = document.createElement('input');
+    liga.type = 'checkbox';
+    liga.checked = r.ativa !== false;
+    liga.title = 'Ligada';
+    liga.onchange = () => { r.ativa = liga.checked; gravar(); };
+    const subir = el('button', 'ghost step', '↑');
+    subir.title = 'Subir (a de cima decide primeiro)';
+    subir.disabled = i === 0;
+    subir.onclick = () => { [regras[i - 1], regras[i]] = [regras[i], regras[i - 1]]; gravar(true); };
+    const tirar = el('button', 'danger step', '✕');
+    tirar.title = 'Apagar a regra';
+    tirar.onclick = () => { regras.splice(i, 1); gravar(true); };
+    linha.append(liga, subir, tirar);
+    caixa.append(linha);
+  });
+  if (!regras.length) caixa.append(el('p', 'empty', 'Nenhuma regra específica. As seções de cima decidem sozinhas.'));
+  const nova = el('button', 'ghost filtro-regra-nova', '+ Nova regra');
+  nova.disabled = regras.length >= 12;
+  nova.onclick = () => {
+    regras.push({ poe: true, raridade: 'raro', acima: false, classe: null, quantos: null, tier: 0, ilvl: 0, ligados: 0, acao: 'naoVender', ativa: true });
+    gravar(true);
+  };
+  caixa.append(nova);
+  return caixa;
+}
+
+/*
  * As duas regras da venda automática lado a lado — afixo à esquerda, raridade
  * à direita —, no espaço que o dono marcou. Numa tela estreita elas empilham
  * (ver `.filtro-venda-regras`).
@@ -2923,6 +3149,16 @@ function escolhaDeRaridade() {
 function regrasDaVendaAutomatica() {
   const tudo = el('div', 'filtro-venda');
   const lado = el('div', 'filtro-venda-regras');
+  if (ehFiltroPoe()) {
+    // PoE: mods e Item Level à esquerda; raridade e sockets à direita.
+    const esquerda = escolhaDeModsPoe();
+    esquerda.append(escolhaDoIlvlPoe());
+    const direita = escolhaDeRaridadePoe();
+    direita.append(escolhaDeSocketsPoe());
+    lado.append(esquerda, direita);
+    tudo.append(lado, escolhaDeRegrasPoe(), comoOFiltroDecide());
+    return tudo;
+  }
   // Os sockets moram na coluna da raridade: são as duas regras "da peça", e o grid fica em duas colunas.
   const raridade = escolhaDeRaridade();
   raridade.append(escolhaDeSockets());
@@ -3044,7 +3280,18 @@ function comoOFiltroDecide() {
   resumo.textContent = 'Como o filtro decide (e o que acontece com a sua configuração)';
   caixa.append(resumo);
   const ordem = el('ol', 'filtro-ordem');
-  for (const passo of [
+  const poe = ehFiltroPoe();
+  for (const passo of poe ? [
+    'Não coletar (a lista) — fica no chão',
+    'Não vender (a lista) — fica na bolsa',
+    'Gema encaixada — fica',
+    'Regras específicas — a primeira que bate decide',
+    'Mods da peça (quantidade e tier)',
+    'Sockets (quantidade, ligados, R-G-B)',
+    'Item Level',
+    'Raridade',
+    'Nenhuma segurou — vende',
+  ] : [
     'Não coletar (a lista) — fica no chão',
     'Não vender (a lista) — fica na bolsa',
     'Tier, imbuement, essência ou gema encaixada — fica',
@@ -3054,7 +3301,7 @@ function comoOFiltroDecide() {
     'Raridade',
     'Nenhuma segurou — vende',
   ]) ordem.append(el('li', null, passo));
-  caixa.append(ordem, el('em', 'filter-legend', 'Os passos 5, 6 e 7 valem com OU: basta um segurar. Uma regra de cima nunca é desfeita por uma de baixo.'));
+  caixa.append(ordem, el('em', 'filter-legend', poe ? 'Os passos 5 a 8 valem com OU: basta um segurar. Uma regra de cima nunca é desfeita por uma de baixo.' : 'Os passos 5, 6 e 7 valem com OU: basta um segurar. Uma regra de cima nunca é desfeita por uma de baixo.'));
   const previa = ctx.state.character?.filtroPrevia ?? [];
   if (previa.length) {
     const tabela = el('div', 'filtro-previa');
@@ -3135,6 +3382,20 @@ function escolhaDeSockets() {
 }
 
 function escolhaDeAfixo({ recolhido = false } = {}) {
+  if (recolhido && ehFiltroPoe()) {
+    const gaveta = el('details', 'filtro-afixo-gaveta');
+    gaveta.open = !!ctx.tabs.afixoAberto;
+    gaveta.ontoggle = () => { ctx.tabs.afixoAberto = gaveta.open; };
+    const resumo = document.createElement('summary');
+    resumo.textContent = resumoDoFiltroPoe();
+    resumo.title = 'As regras de mods, Item Level, raridade e sockets na venda automática. Clique para mexer.';
+    const esquerda = escolhaDeModsPoe();
+    esquerda.append(escolhaDoIlvlPoe());
+    const direita = escolhaDeRaridadePoe();
+    direita.append(escolhaDeSocketsPoe());
+    gaveta.append(resumo, esquerda, direita);
+    return gaveta;
+  }
   const { state, send } = ctx;
   const { quantos, nivel } = regraDeAtributos(state.character?.settings);
   const gravar = (chave, valor) => {
@@ -3781,7 +4042,17 @@ function montarEscolha(body, hunt, list) {
   );
   online.onclick = () => startRun(hunt, 'online');
 
-  opcoes.append(ciclo, online);
+  /*
+   * ---- Modo PoE: um botão só, "Entrar" (dono, 07/10) ----
+   * A caçada começa no automático e o controle troca a qualquer hora pelo interruptor "Automático" da barra de ações (andar com a mão
+   * também desliga o automático). Sem bônus de XP/loot no manual: os dois são só o jeito de controlar.
+   */
+  if (ctx.state.classesPoe) {
+    const entrar = el('button', 'run-mode cycle run-mode-entrar', 'Entrar');
+    entrar.append(el('em', null, 'começa no automático — o interruptor Automático da barra troca para o controle manual a qualquer hora'));
+    entrar.onclick = () => startRun(hunt, 'single');
+    opcoes.append(entrar);
+  } else opcoes.append(ciclo, online);
   rodape.append(opcoes);
   body.append(rodape);
 }
@@ -3890,7 +4161,12 @@ function askBoss(hunt) {
       );
       online.onclick = () => startRun(hunt, 'online');
 
-      opcoes.append(automatica, online);
+      if (ctx.state.classesPoe) {
+        const entrar = el('button', 'run-mode cycle run-mode-entrar', 'Entrar');
+        entrar.append(el('em', null, 'começa no automático — o interruptor Automático da barra troca para o controle manual a qualquer hora'));
+        entrar.onclick = () => startRun(hunt, 'single');
+        opcoes.append(entrar);
+      } else opcoes.append(automatica, online);
       rodape.append(opcoes);
 
       const acoes = el('div', 'confirm-actions');
@@ -19701,8 +19977,8 @@ function cardDaParty(membro, party, send) {
      * jogador já aprendeu isso na barra de baixo, e um segundo vocabulário para
      * a mesma coisa é uma coisa a mais para aprender sem motivo.
      */
-    card.append(barraDoCard('ficha-regen-vida', 'hp', membro.hp, membro.maxHp, `Vida ${membro.hp} de ${membro.maxHp}`));
-    card.append(barraDoCard('ficha-regen-mana', 'mana', membro.mana, membro.maxMana, `Mana ${membro.mana} de ${membro.maxMana}`));
+    card.append(barraDoCard('ficha-regen-vida', 'hp', membro.hp, membro.maxHp, `Vida ${Math.max(membro.hp > 0 ? 1 : 0, Math.floor(membro.hp ?? 0))} de ${Math.floor(membro.maxHp ?? 0)}`));
+    card.append(barraDoCard('ficha-regen-mana', 'mana', membro.mana, membro.maxMana, `Mana ${Math.floor(membro.mana ?? 0)} de ${Math.floor(membro.maxMana ?? 0)}`));
     card.append(
       barraDoCard(
         'ficha-exp',
@@ -20071,8 +20347,8 @@ export function atualizarBarrasDaParty(body, party, grupo = null) {
       barra.style.width = `${Math.max(0, Math.min(100, (feito / Math.max(1, total)) * 100))}%`;
       if (linha) linha.title = titulo;
     };
-    ajustar('hp', membro.hp, membro.maxHp, `Vida ${membro.hp} de ${membro.maxHp}`);
-    ajustar('mana', membro.mana, membro.maxMana, `Mana ${membro.mana} de ${membro.maxMana}`);
+    ajustar('hp', membro.hp, membro.maxHp, `Vida ${Math.max(membro.hp > 0 ? 1 : 0, Math.floor(membro.hp ?? 0))} de ${Math.floor(membro.maxHp ?? 0)}`);
+    ajustar('mana', membro.mana, membro.maxMana, `Mana ${Math.floor(membro.mana ?? 0)} de ${Math.floor(membro.maxMana ?? 0)}`);
     ajustar('exp', membro.progresso * 100, 100, `${Math.floor(membro.progresso * 100)}% do level ${membro.level}`);
 
     /*

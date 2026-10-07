@@ -1101,6 +1101,8 @@ function atualizarCooldowns(bar, actions) {
  * traz de volta com um clique. Os arranjos ficam no personagem, no servidor,
  * então atravessam troca de navegador.
  */
+// Girar o celular troca o lugar da fileira do Automático (em pé: acima dos slots; deitado: junto de Alvo/Distância/Lurar).
+if (typeof window !== 'undefined') window.addEventListener('draevor:perfil', () => { if (ctx?.state?.character) renderPresets(); });
 function renderPresets() {
   const holder = document.getElementById('hotbar-presets');
   if (!holder) return;
@@ -1135,7 +1137,27 @@ function renderPresets() {
     botao.onclick = () => ctx.send({ t: 'huntAssist', tipo, on: !ligado });
     return botao;
   };
-  holder.append(
+  /*
+   * ---- O AUTOMÁTICO (modo PoE — dono, 07/10) ----
+   * Na caçada, o interruptor principal: ligado, o personagem anda, mira e usa a barra sozinho; desligado, você anda (tecla ou clique) e
+   * os dois de baixo decidem se ele mira/ataca e usa a barra sozinho. Andar com a mão também desliga o automático (`huntAuto` no servidor).
+   */
+  // As duas FILEIRAS da coluna (dono, 07/10: "mais apresentável e responsiva"): em cima o controle da caçada (Automático e os dois
+  // interruptores), embaixo as hotkeys (Salvar HK, Regras, os guardados). No celular só a de cima aparece, em `#auto-movel`.
+  const filaAuto = el('div', 'presets-auto');
+  const filaHk = el('div', 'presets-hk');
+  holder.append(filaAuto, filaHk);
+  if (state.classesPoe && hunt) {
+    const mestre = el('button', `auto-mestre${automatica ? ' ligado' : ''}`);
+    mestre.append(el('i', 'auto-luz'), el('span', null, 'Automático'));
+    mestre.setAttribute('aria-pressed', String(automatica));
+    mestre.title = automatica
+      ? 'O personagem anda, mira e usa a barra sozinho. Clique para assumir o controle (andar com as teclas ou clicar no chão também desliga).'
+      : 'Você controla o movimento; os dois botões ao lado decidem se ele mira/ataca e usa a barra sozinho. Clique para voltar ao automático.';
+    mestre.onclick = () => ctx.send({ t: 'huntAuto', on: !automatica });
+    filaAuto.append(mestre);
+  }
+  filaAuto.append(
     interruptor('ataque', ataque, '⚔', 'Ataque automático', 'Escolhe o alvo sozinho e dá o ataque básico.'),
     interruptor('barra', barra, '', 'Barra automática', 'Magias, runas, curas e poções saem sozinhas com as condições da barra.')
   );
@@ -1143,7 +1165,34 @@ function renderPresets() {
    * O da barra é desenho, e não letra: a mão conjurando da folha de grupos de
    * magia do Tibia (`spellgroup-icons.png`, o 5º quadro). O ✦ não dizia "magia".
    */
-  holder.lastElementChild.classList.add('auto-toggle-magia');
+  filaAuto.lastElementChild.classList.add('auto-toggle-magia');
+  // A cópia da fileira de controle para o CELULAR (acima dos slots — lá a coluna da direita fica guardada atrás da seta da barra).
+  // Em pé, uma fileira acima dos slots; DEITADO, na mesma fileira de Alvo/Distância/Lurar (a altura da tela é pouca).
+  const deitado = document.documentElement.dataset.perfil === 'deitado';
+  const pilha = deitado ? document.querySelector('#actionbar .controls') : document.querySelector('.hotbar-stack');
+  if (pilha) {
+    let movel = document.getElementById('auto-movel');
+    if (!movel) {
+      movel = el('div', 'auto-movel');
+      movel.id = 'auto-movel';
+    }
+    if (movel.parentElement !== pilha) {
+      if (deitado) pilha.append(movel);
+      else pilha.prepend(movel);
+    }
+    movel.innerHTML = '';
+    if (state.classesPoe && hunt) {
+      const copia = filaAuto.cloneNode(true);
+      // Os ouvintes não vêm no clone: liga de novo pelo papel de cada botão.
+      copia.querySelector('.auto-mestre')?.addEventListener('click', () => ctx.send({ t: 'huntAuto', on: !automatica }));
+      const [b1, b2] = copia.querySelectorAll('.auto-toggle');
+      if (!automatica) {
+        b1?.addEventListener('click', () => ctx.send({ t: 'huntAssist', tipo: 'ataque', on: !ataque }));
+        b2?.addEventListener('click', () => ctx.send({ t: 'huntAssist', tipo: 'barra', on: !barra }));
+      }
+      movel.append(copia);
+    }
+  }
 
   // "Salvar hk" e não "+ salvar": um "+" sozinho não dizia salvar O QUÊ, e
   // "salvar hotkey" por extenso alargava a coluna do Hunts, que é estreita de
@@ -1151,12 +1200,12 @@ function renderPresets() {
   const save = el('button', 'preset-save', 'Salvar hk');
   save.title = 'guardar as hotkeys atuais com um nome';
   save.onclick = () => askPresetName(presets.length + 1);
-  holder.append(save);
+  filaHk.append(save);
   // As regras de uso automático por tag (etapa 5): "muitos bichos → área", "boss → alvo único"...
   const regras = el('button', 'preset-save', `Regras${ctx.state.character?.regrasDeUso?.length ? ` · ${ctx.state.character.regrasDeUso.length}` : ''}`);
   regras.title = 'regras de uso automático por tipo de skill';
   regras.onclick = () => abrirRegrasDeUso(ctx);
-  holder.append(regras);
+  filaHk.append(regras);
 
   /*
    * Os arranjos guardados ficam atrás de uma setinha.
@@ -1178,7 +1227,7 @@ function renderPresets() {
     if (aberto) return void aberto.remove();
     abrirPresets(abrir, presets);
   };
-  holder.append(abrir);
+  filaHk.append(abrir);
 }
 
 /** A lista de arranjos, ancorada acima da setinha que a abriu. */
@@ -1586,7 +1635,8 @@ function seletorDoModo() {
   const modo = MODOS_DAS_MAGIAS[settings.modoDasMagias] ? settings.modoDasMagias : 'prioridade';
   const limite = [1, 2, 3].includes(settings.limiteDasMagias) ? settings.limiteDasMagias : 2;
   const caixa = el('div', 'modo-das-magias');
-  const rotulo = el('label', 'modo-das-magias-rotulo', 'Ordem das magias de ataque');
+  const poe = !!ctx.state.character?.filtroPoe;
+  const rotulo = el('label', 'modo-das-magias-rotulo', poe ? 'Ordem das habilidades de ataque' : 'Ordem das magias de ataque');
   const escolha = document.createElement('select');
   for (const [id, [nome]] of Object.entries(MODOS_DAS_MAGIAS)) {
     const opt = el('option', null, nome);
@@ -1617,6 +1667,9 @@ function seletorDoModo() {
     caixa.append(quantas);
   }
   caixa.append(el('small', 'modo-das-magias-ajuda', MODOS_DAS_MAGIAS[modo][1]));
+  // PoE: quem entra na ordem são as habilidades de ataque da barra, na ordem dos slots; auras, arautos, clamores, guardas, maldições e
+  // lacaios saem pela regra própria de cada uma (o sustento — `combo.mjs → slotsDoCombo`).
+  if (poe) caixa.append(el('small', 'modo-das-magias-ajuda', 'Entram nesta ordem as habilidades de ataque da barra (projéteis, magias de dano, corpo a corpo, movimento), na ordem dos slots. Auras, arautos, clamores, guardas, maldições e lacaios ficam de fora: saem sozinhos quando podem.'));
   return caixa;
 }
 

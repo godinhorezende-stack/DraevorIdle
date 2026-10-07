@@ -38,3 +38,17 @@ test('a mensagem leva quem, o bicho e a PEÇA inteira (base, Item Level, adds, p
   assert.deepEqual(m.peca.af, peca.af);
   assert.deepEqual(m.peca.efeito, peca.efeito);
 });
+
+test('o ÚNICO do PoE é anunciado para todo mundo (chat e faixa), com o nome dele; Raro, Mágico e Normal não', async () => {
+  const { ITEM_CATALOG: C } = await import('../systems/dados.mjs');
+  const A = await import('../systems/anuncios.mjs');
+  const id = Number(Object.keys(C)[0]);
+  const unico = { id, count: 1, poe: { raridade: 'unico', nome: 'Correntes do Covarde', cor: '#a66734' } };
+  assert.equal(A.vale(unico), true);
+  assert.equal(A.mensagem({ quem: 'Ana', peca: unico, bicho: 'Hillock' }).nome, 'Correntes do Covarde');
+  for (const r of ['raro', 'magico', 'normal']) assert.equal(A.vale({ id, count: 1, poe: { raridade: r, nome: 'x' } }), false, r);
+  const recebidas = [];
+  A.ligar(new Map([['ana', { personagem: { nome: 'Ana' }, enviarPronto: (t) => recebidas.push(JSON.parse(t)) }], ['bia', { personagem: { nome: 'Bia' }, enviarPronto: (t) => recebidas.push(JSON.parse(t)) }]]));
+  assert.equal(A.dropRaro({ quem: 'Ana', peca: unico, bicho: 'Hillock', onde: 'Costa' }), 2, 'vai para todo mundo online');
+  assert.deepEqual(recebidas.map((m) => [m.t, m.nome, m.peca.poe.raridade]), [['dropRaro', 'Correntes do Covarde', 'unico'], ['dropRaro', 'Correntes do Covarde', 'unico']]);
+});

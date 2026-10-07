@@ -155,7 +155,8 @@ export function montar(estado, ficha, extras = {}) {
   const sangra = (partesDoAcerto.physical ?? [0, 0]).map((v) => porSegundo(v, AfeccoesPoe.BASE.sangramento.porSegundo, af.multiplicador + (af.multiplicadorSangramento ?? 0), af.danoSangramento ?? 0));
   const baseDoVeneno = [0, 1].map((i) => (partesDoAcerto.physical?.[i] ?? 0) + (partesDoAcerto.chaos?.[i] ?? 0));
   const veneno = baseDoVeneno.map((v) => porSegundo(v, AfeccoesPoe.BASE.veneno.porSegundo, af.multiplicador + (af.multiplicadorVeneno ?? 0), af.danoVeneno ?? 0));
-  const SEM_CRIT_NA_AFECCAO = 'o crítico não multiplica o dano das afecções no jogo: o do crítico é o mesmo do acerto';
+  const doCritico = 1 + AfeccoesPoe.BASE.criticoMaisPct / 100;
+  const DO_CRITICO = `posto por um golpe crítico: ${pct(AfeccoesPoe.BASE.criticoMaisPct, 0)} mais (como no PoE)`;
   // ---- o ROUBO (aba Diversos do PoE): o máximo por instância e o total por segundo, em pontos e em % do máximo
   const instPct = LEECH_POE.porInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_instancia_inc') / 100);
   const tetoPct = LEECH_POE.porSegundoPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_teto_inc') / 100);
@@ -198,9 +199,9 @@ export function montar(estado, ficha, extras = {}) {
       linha('Dano físico do acerto', faixa(partesDoAcerto.physical ?? [0, 0], 0), { dica: `o dano da arma ${num(ficha.damage?.min)}–${num(ficha.damage?.max)} × ${num(1 + pctDo('physical') / 100, 2)} (dano físico aumentado)` }),
       linha('Precisão', num(ficha.accuracy), { fontes: daOrigem('accuracy') }),
       linha('Sangramento por segundo (acerto)', faixa(sangra), { dica: `${pct(AfeccoesPoe.BASE.sangramento.porSegundo * 100, 0)} do dano físico do acerto por segundo, por ${num(AfeccoesPoe.BASE.sangramento.duracaoMs / 1000)} s` }),
-      linha('Sangramento por segundo (crítico)', faixa(sangra), { dica: SEM_CRIT_NA_AFECCAO }),
+      linha('Sangramento por segundo (crítico)', faixa(sangra.map((v) => v * doCritico)), { dica: DO_CRITICO }),
       linha('Veneno por segundo (acerto)', faixa(veneno), { dica: `${pct(AfeccoesPoe.BASE.veneno.porSegundo * 100, 0)} do dano físico e de caos do acerto por segundo, por ${num(AfeccoesPoe.BASE.veneno.duracaoMs / 1000)} s` }),
-      linha('Veneno por segundo (crítico)', faixa(veneno), { dica: SEM_CRIT_NA_AFECCAO }),
+      linha('Veneno por segundo (crítico)', faixa(veneno.map((v) => v * doCritico)), { dica: DO_CRITICO }),
       linha('Chance de crítico', pct((ficha.critChance ?? 0) * 100, 2), { fontes: daOrigem('critChance') }),
       linha('Multiplicador de crítico', pct((ficha.critMultiplier ?? 1.5) * 100, 0), { fontes: daOrigem('critMultiplier') }),
       ...dano.map(([el, v]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} aumentado`, `+${pct(v)}`, { fontes: daOrigem(`dano.${el}`) })),

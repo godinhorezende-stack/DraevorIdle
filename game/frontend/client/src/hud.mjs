@@ -1191,7 +1191,8 @@ function barraDoBoss(estado) {
    * continua sendo a fonte da VIDA, porque ela chega a cada quadro; o objeto do
    * boss é a fonte da cara e das resistências, que não mudam durante a luta.
    */
-  const dele = estado?.isBoss ? estado.boss : null;
+  // (Na sala de boss e no CHEFE de qualquer caçada — o servidor só manda `boss` quando há um chefe para mostrar: `cacadas.barraDoChefe`.)
+  const dele = estado?.boss ?? null;
   const naLista = dele ? (estado.monsters ?? []).find((m) => m.uid === dele.uid) : null;
   const chefe = naLista ?? dele;
   if (!chefe || (chefe.hp ?? 0) <= 0) {
@@ -2310,9 +2311,12 @@ export function renderHud(character, catalog, party = null, escudoDeMana = false
   // cinza recua, e só quando acaba a vida começa a descer. O texto mostra os dois.
   const esMax = derived.energyShield ?? 0;
   const esAgora = Math.max(0, Math.min(esMax, character.es ?? esMax));
-  setBar('hp', character.hp, derived.maxHp, esMax > 0 ? `${character.hp}/${derived.maxHp} · ES ${esAgora}/${esMax}` : `${character.hp}/${derived.maxHp}`);
+  // O número INTEIRO no texto (dono, 07/10: "147.00000000000006/246"): a regeneração do PoE soma frações por tique e o servidor guarda o
+  // resto (é ele que faz a regeneração fechar a conta); a tela mostra só o inteiro — e nunca 0 com o personagem vivo.
+  const inteiro = (v) => { const n = Number(v) || 0; return n > 0 && n < 1 ? 1 : Math.floor(n); };
+  setBar('hp', character.hp, derived.maxHp, esMax > 0 ? `${inteiro(character.hp)}/${inteiro(derived.maxHp)} · ES ${inteiro(esAgora)}/${inteiro(esMax)}` : `${inteiro(character.hp)}/${inteiro(derived.maxHp)}`);
   escudoNaBarraDeVida(esAgora, esMax, derived.maxHp > 0 ? character.hp / derived.maxHp : 0);
-  setBar('mana', character.mana, derived.maxMana, `${character.mana}/${derived.maxMana}`);
+  setBar('mana', character.mana, derived.maxMana, `${inteiro(character.mana)}/${inteiro(derived.maxMana)}`);
   /*
    * ---- A barra de mana BRILHA quando e' ela que esta apanhando ----
    *

@@ -12,9 +12,10 @@
 import * as Afixos from './afixos.mjs';
 import * as Gemas from './gemas.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
-import { darItem, guardarMoeda } from './inventario.mjs';
+import { darItem, guardarMoeda, cabeNaMochila, erroDeEspaco } from './inventario.mjs';
 import { pecaEspecial } from './itens/item.mjs';
 import { precoNpc } from './hunt/rentabilidade.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
 export const VAGAS_DA_BOLSA = 1000;
 export const VENDA_A_CADA_S = 120;
@@ -127,7 +128,8 @@ export const MAXIMO_DE_REGRAS_DE_LOOT = 12;
 export function definirRegrasDeLoot(estado, { regras }) {
   garantir(estado);
   if (!Array.isArray(regras)) return { ok: false, erro: 'Regras inválidas.' };
-  estado.lootRegras = regras.slice(0, MAXIMO_DE_REGRAS_DE_LOOT).map(Afixos.sanearRegraDeLoot).filter(Boolean);
+  // No modo PoE as regras são as do PoE (raridade do PoE, classe, mods/tier, Item Level, ligados).
+  estado.lootRegras = regras.slice(0, MAXIMO_DE_REGRAS_DE_LOOT).map(itensPoeLigado() ? Afixos.sanearRegraDeLootPoe : Afixos.sanearRegraDeLoot).filter(Boolean);
   return { ok: true };
 }
 
@@ -263,6 +265,8 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   // Peça com estrela/tier/imbuement passa INTEIRA (o quadrado dela), sem
   // virar uma cópia limpa pelo empilhamento.
   const alvoEspecial = Number.isInteger(pilha) && de[pilha]?.id === id && especial(de[pilha]);
+  // (Modo PoE: a mochila tem vagas — a peça não empilhável só entra com vaga livre.)
+  if (to === 'bag' && !cabeNaMochila(estado, id, alvoEspecial ? 1 : Math.max(1, Number(count) || 1))) return { ok: false, erro: erroDeEspaco(estado, id, 1) };
   if (alvoEspecial) {
     const [peca] = de.splice(pilha, 1);
     if (to === 'bag') (estado.inventory ??= []).push(peca);
@@ -329,6 +333,8 @@ export function paraCliente(estado, faltaParaVender = null) {
     lootRegras: estado.lootRegras,
     // "Com a sua configuração, isto acontece": a decisão para peças de exemplo (a mesma função da venda).
     filtroPrevia: Afixos.previaDoFiltro(estado),
+    // O filtro do PoE (a tela troca as seções: raridade do PoE, mods e tiers, Item Level, sockets até 6).
+    filtroPoe: itensPoeLigado(),
   };
 }
 

@@ -172,7 +172,8 @@ export function desenharNo({ id, tipo, estado, numero, nome, p, atual, novo, esc
   const r = boss ? RAIO_DO_BOSS : RAIO_DA_FASE;
   const g = svg('g', { class: `w-no ${estado} t-${tipo}${atual ? ' atual' : ''}${novo ? ' novo' : ''}${escolhido ? ' escolhido' : ''}`, transform: `translate(${p.x} ${p.y})`, tabindex: 0, role: 'button', 'data-id': id, 'aria-label': `${nome}. ${TIPOS_DE_NO[tipo]}. ${TEXTO_DO_ESTADO[estado]}${atual ? '. Fase atual' : ''}` });
   g.append(svg('circle', { class: 'w-halo', r: r + 9 }));
-  if (atual) g.append(svg('circle', { class: 'w-pulso', r: r + 4 }));
+  // (A fase atual é marcada só pela COR — o ciano do `.w-no.atual`. O anel que pulsava saindo do nó saiu: dono, 07/10, "quero deixar só
+  // uma cor para dizer que estou aqui e tirar essa animação da bola saindo de onde estou".)
   // a forma diz o tipo (não só a cor): disco = fase, hexágono = miniboss/desafio, losango com pontas = boss, anel tracejado = opcional/secreto
   const forma = { class: 'w-forma' };
   if (boss || tipo === 'boss-fase') g.append(svg('polygon', { ...forma, points: `0,${-r - 4} ${r + 4},0 0,${r + 4} ${-r - 4},0` }));

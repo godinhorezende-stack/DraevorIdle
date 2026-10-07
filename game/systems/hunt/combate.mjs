@@ -347,7 +347,11 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   // da tabela EXCLUSIVA dele (`itens-poe/pinaculos.mjs`). Vão na sacola do boss junto com o resto.
   {
     const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
-    itens.push(...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo)));
+    for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo))) {
+      itens.push(daPoe);
+      // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
+      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
+    }
     // As moedas do PoE que o boss solta (`itens-poe/moedas.mjs`, `regras.json → moedas.drop`).
     itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade));
     if (BESTIARY[alvo.key]?.poe) {
@@ -355,7 +359,10 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
       if (ouro > 0) itens.push({ id: 3031, count: ouro });
     }
     const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
-    if (exclusivo) itens.push(exclusivo);
+    if (exclusivo) {
+      itens.push(exclusivo);
+      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
+    }
   }
   Bau.novaSacola(estado, alvo.name, itens);
   // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.
@@ -398,6 +405,8 @@ const SEM_PODIO = { exp: 0, loot: 0, lugar: 0 };
  * PRÓPRIA caçada (como os outros bônus).
  */
 export function fatorDaCacaOnline(hunt) {
+  // Modo PoE (dono, 07/10): sem bônus — o manual e o automático são só o jeito de controlar (um interruptor na barra, a qualquer hora).
+  if (itensPoeLigado()) return 1;
   return hunt?.modo === 'online' ? 1 + (CATALOGO.bonusOnline ?? 0) / 100 : 1;
 }
 
@@ -815,6 +824,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);
+    // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
+    Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: daPoe, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
   }
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
   for (const moeda of MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador)) {

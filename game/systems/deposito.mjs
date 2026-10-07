@@ -7,7 +7,8 @@ import * as Afixos from './afixos.mjs';
 import { converterTudo, pecaEspecial } from './itens/item.mjs';
 import * as R from './regras.mjs';
 import { ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
-import { pesoDoInventario, cabeNoPeso, guardarMoeda } from './inventario.mjs';
+import { pesoDoInventario, cabeNoPeso, guardarMoeda, erroDeEspaco, pecasNaMochila, vagasDaMochila } from './inventario.mjs';
+import * as ItensPoeCatalogo from './itens-poe/catalogo.mjs';
 
 /*
  * As caixas, como o client as separa (`openLocker`, panels.mjs):
@@ -119,6 +120,20 @@ function porNaCaixa(estado, id, count, peca = {}, indice = null, caixas = garant
  */
 export function excessoParaODeposito(estado) {
   const foi = [];
+  // Modo PoE (dono, 07/10: "ainda está acontecendo quando adiciono mais de 20 itens na mochila"): a mochila tem VAGAS — além das 20
+  // peças não empilháveis, as mais RECENTES vão para o Depósito (compra, recompensa, forja, engine… todo caminho passa por `aplicar`).
+  if (ItensPoeCatalogo.ligado()) {
+    const inv = estado.inventory ?? [];
+    for (let i = inv.length - 1; i >= 0 && pecasNaMochila(estado) > vagasDaMochila(estado); i--) {
+      if (ITEM_CATALOG[inv[i].id]?.stackable) continue;
+      const [peca] = inv.splice(i, 1);
+      if (!porNaCaixa(estado, peca.id, peca.count ?? 1, peca)) {
+        inv.splice(i, 0, peca); // depósito cheio: fica na mochila (nada se perde)
+        break;
+      }
+      foi.push({ id: peca.id, count: peca.count ?? 1, name: peca.poe?.nome ?? ITEM_CATALOG[peca.id]?.name });
+    }
+  }
   for (const onde of ['inventory', 'pouch']) {
     const lista = estado[onde] ?? [];
     while (pesoDoInventario(estado) > capacidade(estado) && lista.length) {
@@ -142,6 +157,7 @@ export function excessoParaODeposito(estado) {
 export function avisoDoExcesso(foi) {
   if (!foi.length) return null;
   const n = foi.reduce((a, p) => a + p.count, 0);
+  if (ItensPoeCatalogo.ligado()) return `Mochila cheia: ${n} item(ns) foram para o Depósito. Nada se perdeu.`;
   return `Sem capacidade: ${n} item(ns) foram para o Depósito. Nada se perdeu.`;
 }
 
@@ -190,7 +206,7 @@ export function comando(estado, m, contaCaixa = null) {
     if (i < 0) return { ok: false, erro: 'Essa peça não está na caixa.' };
     const peca = caixa.itens[i];
     const n = Math.min(peca.count ?? 1, Math.max(1, Number(m.count) || 1));
-    if (!cabeNoPeso(estado, id, n)) return { ok: false, erro: 'Você não tem capacidade para carregar isso.' };
+    if (!cabeNoPeso(estado, id, n)) return { ok: false, erro: erroDeEspaco(estado, id, n) };
     peca.count -= n;
     if (peca.count <= 0) caixa.itens.splice(i, 1);
     caixa.tipos = caixa.itens.length;

@@ -72,6 +72,7 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Poderes from './poderes.mjs';
 import * as Areas from '../engine/areas.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -1022,7 +1023,8 @@ function autoDisparo(estado, hunt, personagem) {
   // tique — é ele que salva o personagem, e o primeiro slot de vida manda.
   for (let slot = 0; slot < acoes.length; slot++) {
     if (estado.hp <= 0) break;
-    if (Acoes.PAPEL_DO_SLOT[slot] === 'attack') continue;
+    // A fileira de ataque é do combo (com os modos — prioridade, limite, rotação); no PoE, os slots com habilidade de ataque.
+    if (Combo.ehDoCombo(estado, slot)) continue;
     const action = acoes[slot];
     if (!action?.id || action.enabled === false) continue;
     if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) {
@@ -1651,7 +1653,10 @@ export function tique(estado, personagem, agora = Date.now()) {
   if (!livre) hunt.conjurando = null;
   // A conjuração que chegou ao fim (ou que cancelou): a skill sai aqui, antes do resto.
   eventos.push(...Acoes.concluirConjuracao(estado, hunt, personagem));
-  const assiste = hunt.modo !== 'online' || hunt.assistencia !== false;
+  // No manual, o alvo CLICADO (vivo) é atacado com o golpe básico mesmo com o "Ataque automático" desligado (dono, 07/10: "no manual,
+  // quando clico no mob, o ataque básico não pega") — e só ele: sem alvo clicado, nada é escolhido sozinho.
+  const alvoClicado = hunt.modo === 'online' && hunt.alvo != null && hunt.monstros.some((m) => m.uid === hunt.alvo && m.hp > 0);
+  const assiste = hunt.modo !== 'online' || hunt.assistencia !== false || alvoClicado;
   // Conjurando, o golpe básico espera (como no Path of Exile: uma ação por vez).
   if (assiste && livre && !hunt.conjurando && R.jaPode(agora, hunt.proximoGolpeEm) && estado.hp > 0) {
     const golpe = round(estado, personagem);
@@ -2063,9 +2068,30 @@ function magiasDoEspectro(hunt, l, agora, ficha) {
   return eventos;
 }
 
+/*
+ * ---- O interruptor AUTOMÁTICO (modo PoE — dono, 07/10: "na barra de slots algo para ativar a caça automática; desativando, faço os
+ * movimentos online; tudo posso fazer manual e automático") ----
+ * Uma caçada só ("Entrar" começa no automático); o controle troca a qualquer hora, sem sair: ligado, o personagem anda, mira e usa a
+ * barra sozinho; desligado, quem anda é o jogador (e os interruptores "mirar e atacar" e "usar a barra" continuam valendo). Andar com a
+ * mão (tecla ou clique no chão) DESLIGA o automático (decisão do dono). Sem bônus de XP/loot no manual (`fatorDaCacaOnline`).
+ */
+export function definirAutomatico(estado, { on }) {
+  const hunt = estado.hunt;
+  if (!hunt) return { ok: false, erro: 'Você não está numa caçada.' };
+  hunt.modo = on ? 'auto' : 'online';
+  hunt.destino = null;
+  hunt.rumo = null;
+  return { ok: true };
+}
+/** Andou com a mão no automático (modo PoE): assume o controle — o automático desliga. */
+function assumirControle(hunt) {
+  if (itensPoeLigado() && hunt && hunt.modo !== 'online') hunt.modo = 'online';
+}
+
 /** `send({t:'huntWalk', dx, dy})` — mesmo modelo de rumo do `andar` da cidade. */
 export function andar(estado, { dx, dy }) {
   if (!estado.hunt) return;
+  if (dx || dy) assumirControle(estado.hunt);
   // A tecla manda mais que o clique: apertou uma direção, larga o destino.
   if (dx || dy) estado.hunt.destino = null;
   if (!dx && !dy) {
@@ -2092,6 +2118,7 @@ export function andarAte(estado, { x, y }) {
   if (!hunt) return { ok: true };
   const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
   if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return { ok: true };
+  assumirControle(hunt);
   if (hunt.modo !== 'online') return { ok: false, erro: 'Na Caça Automática quem anda é a rota.' };
   if (destino.x === hunt.pos.x && destino.y === hunt.pos.y) {
     hunt.destino = null;
@@ -2167,7 +2194,27 @@ export function usarEscada(estado, { x, y }) {
 const ORDEM_DOS_ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
 function barraDoBoss(hunt) {
   const b = hunt.monstros.find((m) => m.key === hunt.bossId) ?? hunt.monstros[0];
-  if (!b) return null;
+  return b ? dadosDaBarra(b) : null;
+}
+/*
+ * ---- A BARRA no CHEFE de qualquer caçada (dono, 07/10: "quando tem monstro chefe ou boss a barra de vida tem que ser diferente, estilo
+ * essa") ----
+ * Fora da sala de boss, o chefe (o ÚNICO do PoE — Hillock, Brutus… —, o boss, o chefe de ato) ganha a mesma barra grande do alto da tela:
+ * o que está no ALVO, ou, sem alvo chefe, o chefe vivo mais perto (até `ALCANCE_DA_BARRA` casas — longe, ele ainda não é a luta).
+ */
+const ALCANCE_DA_BARRA = 10;
+// Só boss e CHEFE da fase (o boss, o chefe de ato, o chefe nomeado da área do PoE — Hillock, Brutus…). O monstro que só SORTEOU a raridade
+// Único (o Ahau "único" de uma fase) não ganha a barra (dono, 07/10: "tirar a barra de monstros únicos sem ser bosses/chefes nas fases").
+const ehChefe = (m) => m.hp > 0 && !m.dummy && !!(m.isBoss || m.boss || m.raridade === 'boss' || BESTIARY[m.key]?.boss || BESTIARY[m.key]?.poe?.unico);
+function barraDoChefe(hunt) {
+  if (hunt.isBoss) return barraDoBoss(hunt);
+  const chefes = (hunt.monstros ?? []).filter(ehChefe);
+  if (!chefes.length || !hunt.pos) return null;
+  const dist = (m) => Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y));
+  const b = chefes.find((m) => m.uid === hunt.alvo) ?? chefes.filter((m) => dist(m) <= ALCANCE_DA_BARRA).sort((x, y) => dist(x) - dist(y))[0];
+  return b ? dadosDaBarra(b) : null;
+}
+function dadosDaBarra(b) {
   const el = BESTIARY[b.key]?.elements ?? {};
   const elementos = ORDEM_DOS_ELEMENTOS.filter((id) => el[id]).map((id) => ({ id, valor: Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, el[id]) }));
   return { uid: b.uid, name: b.name, look: b.look, lookItem: b.lookItem ?? 0, colors: b.colors ?? null, hp: b.hp, maxHp: b.maxHp, elementos };
@@ -2209,7 +2256,10 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     chao: [],
     // Quem marca a moldura vermelha na tela (ver `map.mjs::targetUid`) — antes
     // nunca viajava, e o alvo nunca aparecia marcado.
-    targetUid: alvoAtual(hunt)?.uid ?? null,
+    // (No manual sem o "Ataque automático", o alvo é só o clicado — nada é escolhido sozinho, e a tela não mostra um alvo que não bate.)
+    targetUid: hunt.modo === 'online' && hunt.assistencia === false ? (hunt.monstros.some((m) => m.uid === hunt.alvo && m.hp > 0) ? hunt.alvo : null) : alvoAtual(hunt)?.uid ?? null,
+    // O alvo escolhido À MÃO (clique): clicar de novo nele tira o alvo (a tela compara com este).
+    alvoClicado: hunt.alvo ?? null,
     // O familiar em campo (map.mjs desenha com o nível ao lado do nome).
     // Os lacaios e os totens das gemas do PoE (desenhados como o familiar, com a vida).
     lacaios: (hunt.lacaios ?? []).map((l) => ({ uid: l.uid, x: l.x, y: l.y, dir: l.dir, look: l.look, lookItem: l.lookItem ?? 0, colors: l.colors ?? null, name: l.nome, nivel: l.nivel, hp: Math.max(0, Math.round(l.hp)), maxHp: l.maxHp, moveMs: l.moveMs ?? R.PASSO_MS })),
@@ -2236,7 +2286,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // O portal do boss do ato (HUD: "Entrar no portal"): sempre presente (`null` sem portal), para o quadro em delta limpar quando some.
     portalDoBoss: portalParaCliente(estado, hunt),
     // A barra do boss no alto da tela (`barraDoBoss`, hud.mjs) — o formato real.
-    boss: hunt.isBoss ? barraDoBoss(hunt) : null,
+    // (E no chefe de qualquer caçada — o único do PoE, o boss, o chefe de ato: `barraDoChefe`.)
+    boss: barraDoChefe(hunt),
     strategy: hunt.strategy ?? 'nearest',
     distance: hunt.distancia ?? 0,
     alcance: alcanceDaArma(armaDoPersonagem(estado), estado),

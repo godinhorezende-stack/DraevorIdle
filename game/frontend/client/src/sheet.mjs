@@ -601,8 +601,9 @@ export function renderSheet(body, { state, send, closeModal }) {
 
   const bars = el('div', 'sheet-bars');
   bars.append(
-    bar('Vida', character.hp, derived.maxHp, 'hp', `${character.hp} / ${derived.maxHp}`),
-    bar('Mana', character.mana, derived.maxMana, 'mana', `${character.mana} / ${derived.maxMana}`),
+    // (O inteiro no texto: a regeneração deixa frações em `hp`/`mana` — ver `hud.mjs`.)
+    bar('Vida', character.hp, derived.maxHp, 'hp', `${Math.max(character.hp > 0 ? 1 : 0, Math.floor(character.hp ?? 0))} / ${Math.floor(derived.maxHp ?? 0)}`),
+    bar('Mana', character.mana, derived.maxMana, 'mana', `${Math.floor(character.mana ?? 0)} / ${Math.floor(derived.maxMana ?? 0)}`),
     // Energy Shield: só quem tem (peças de mago, adds) — absorve antes da vida.
     ...(derived.energyShield > 0 ? [bar('Energy Shield', character.es ?? derived.energyShield, derived.energyShield, 'es', `${character.es ?? derived.energyShield} / ${derived.energyShield}`)] : []),
     bar('Experiência', character.progress.percent * 100, 100, 'exp', `${(character.progress.percent * 100).toFixed(1)}%`),

@@ -46,6 +46,34 @@ import * as RegrasDeUso from './skills/regras-de-uso.mjs';
 
 /** Os índices da barra que são da fileira de ataque, em ordem (11..21). */
 export const SLOTS_DO_COMBO = Acoes.PAPEL_DO_SLOT.map((papel, i) => (papel === 'attack' ? i : -1)).filter((i) => i >= 0);
+/*
+ * ---- A barra do PoE (dono, 07/10: "a rotação, o limite e a prioridade têm de funcionar com várias skills") ----
+ * No modo PoE os 8 slots são todos 'skill' (qualquer gema em qualquer slot), então a fileira de ataque não é fixa: são os slots que têm
+ * uma habilidade de ATAQUE/dano (o papel 'attack' da gema: projéteis, corpo a corpo, magias de dano, movimento), na ordem da barra. Auras,
+ * arautos, clamores, guardas, maldições e lacaios ('suporte') continuam no sustento (`cacadas`), todo tique, pela ordem da barra.
+ */
+const BARRA_DO_POE = Acoes.PAPEL_DO_SLOT.length > 0 && Acoes.PAPEL_DO_SLOT.every((papel) => papel === 'skill');
+const ehDeAtaque = (id) => !!id && (Acoes.POR_ID_PUBLICO(id)?.papeis ?? []).includes('attack');
+/** Os slots da fileira de ataque deste personagem, em ordem (fixos fora do PoE; no PoE, os que têm habilidade de ataque). */
+export function slotsDoCombo(estado) {
+  if (!BARRA_DO_POE) return SLOTS_DO_COMBO;
+  const acoes = estado?.actions ?? [];
+  return Acoes.PAPEL_DO_SLOT.map((_, i) => i).filter((i) => ehDeAtaque(acoes[i]?.id));
+}
+/** Este slot é da fileira de ataque (o combo, com os modos) — e não do sustento? */
+export const ehDoCombo = (estado, slot) => (BARRA_DO_POE ? ehDeAtaque(estado?.actions?.[slot]?.id) : Acoes.PAPEL_DO_SLOT[slot] === 'attack');
+/** A fileira mudou (no PoE: trocou a gema de um slot): a memória dos modos (cursor, histórico) é da fileira de antes — zera. */
+function fileiraDoTique(estado, hunt) {
+  const slots = slotsDoCombo(estado);
+  const assinatura = slots.map((s) => `${s}:${estado.actions?.[s]?.id}`).join(',');
+  if (hunt.fileiraDoCombo !== assinatura) {
+    hunt.fileiraDoCombo = assinatura;
+    delete hunt.cursorDoCombo;
+    delete hunt.ultimasDoCombo;
+    delete hunt.ultimaOutraDoCombo;
+  }
+  return slots;
+}
 
 // Bloqueios da fileira inteira: esperar, sem pular a vez do slot.
 // (CONJURANDO: a skill da vez está sendo conjurada — a fileira espera ela terminar.)
@@ -88,8 +116,10 @@ export function definirModo(estado, { modo, limite } = {}) {
  */
 export function ordemDoTique(estado, hunt, regras) {
   const acoes = estado.actions ?? [];
-  const total = SLOTS_DO_COMBO.length;
-  const idDe = (posicao) => acoes[SLOTS_DO_COMBO[posicao]]?.id;
+  const slots = fileiraDoTique(estado, hunt);
+  const total = slots.length;
+  if (!total) return [];
+  const idDe = (posicao) => acoes[slots[posicao]]?.id;
   const { modo, limite } = modoDe(estado);
   // 1. O modo: do slot 1 (prioridade, limite) ou do slot seguinte ao último que saiu (rotação).
   const inicio = modo === 'rotacao' ? (((hunt.cursorDoCombo ?? 0) % total) + total) % total : 0;
@@ -111,7 +141,7 @@ export function ordemDoTique(estado, hunt, regras) {
   hunt.topoDoCombo = null;
   if (modo === 'limite') {
     const ativos = ordem.filter((posicao) => {
-      const a = acoes[SLOTS_DO_COMBO[posicao]];
+      const a = acoes[slots[posicao]];
       return a?.id && a.enabled !== false;
     });
     const w = ativos.length;
@@ -171,7 +201,6 @@ function registrar(linha) {
  */
 export function tiqueDoCombo(estado, hunt, personagem, alvo) {
   const acoes = estado.actions ?? [];
-  const total = SLOTS_DO_COMBO.length;
   quemAgora = personagem?.nome ?? null;
   const parede = hunt.ultimoTique ?? Date.now();
   const relogio = hunt.clock ?? 0;
@@ -183,8 +212,10 @@ export function tiqueDoCombo(estado, hunt, personagem, alvo) {
   // (`regras-de-uso.mjs`, configuradas pelo jogador), só as skills que elas
   // deixam, as preferidas primeiro (empate: a ordem dos slots).
   const ordem = ordemDoTique(estado, hunt, RegrasDeUso.ativas(estado, hunt, alvo));
+  const slots = slotsDoCombo(estado);
+  const total = slots.length;
   for (const posicao of ordem) {
-    const slot = SLOTS_DO_COMBO[posicao];
+    const slot = slots[posicao];
     const action = acoes[slot];
     // Vazio ou desligado: não há o que tentar (e nem o que registrar a cada tique).
     if (!action?.id || action.enabled === false) continue;

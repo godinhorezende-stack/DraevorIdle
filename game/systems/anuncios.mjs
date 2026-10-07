@@ -19,7 +19,8 @@ let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
 export const ligar = (mapa) => void (vivas = mapa);
 
 /** Vale anunciar esta peça? */
-export const vale = (peca) => !!peca?.id && RARIDADES_ANUNCIADAS.has(peca.raridade) && !!ITEM_CATALOG[peca.id];
+// (E o ÚNICO do PoE — dono, 07/10: "item únicos são anunciados para todos no servidor, tanto no chat quanto lá na parte de cima".)
+export const vale = (peca) => !!peca?.id && (RARIDADES_ANUNCIADAS.has(peca.raridade) || peca.poe?.raridade === 'unico') && !!ITEM_CATALOG[peca.id];
 
 /** A mensagem do anúncio (exportada para os testes). */
 export function mensagem({ quem, peca, bicho = null, boss = false, onde = null, em = Date.now() }) {
@@ -30,7 +31,8 @@ export function mensagem({ quem, peca, bicho = null, boss = false, onde = null, 
     boss: !!boss,
     onde,
     em,
-    nome: ITEM_CATALOG[peca.id]?.name ?? `item ${peca.id}`,
+    // (A peça do PoE tem o nome dela — o do Único, não o da base.)
+    nome: peca.poe?.nome ?? ITEM_CATALOG[peca.id]?.name ?? `item ${peca.id}`,
     peca: { id: peca.id, count: peca.count ?? 1, ...camposDaPeca(peca) },
   };
 }

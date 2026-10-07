@@ -1097,6 +1097,7 @@ export class Sessao {
           return this.aplicar(usou ? { ok: true } : { ok: false, erro: 'Esse frasco não pode ser usado agora (sem cargas, já ativo ou fora da caçada).' });
         }
         if (m.action === 'configurar') return this.aplicar(FrascosPoe.configurar(this.estado, m));
+        if (m.action === 'mover') return this.aplicar(FrascosPoe.mover(this.estado, m));
         return this.aplicar(m.action === 'tirar' ? FrascosPoe.tirar(this.estado, m) : FrascosPoe.por(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
       // Uma moeda do PoE na Forja do PoE (`itens-poe/moedas.mjs`): `m.moeda` (o item) e `m.alvo` (a peça).
@@ -1352,6 +1353,9 @@ export class Sessao {
         return this.aplicar(Cacadas.usarEscada(this.estado, m));
       case 'huntAssist':
         return this.aplicar(Cacadas.definirAssistencia(this.estado, m));
+      // `send({t:'huntAuto', on})` — o interruptor Automático da barra (modo PoE): troca o controle sem sair da caçada.
+      case 'huntAuto':
+        return this.aplicar(Cacadas.definirAutomatico(this.estado, m));
       // `send({t:'modoDasMagias', modo, limite?})` — a ordem das magias de ataque (prioridade | limite | rotação).
       case 'modoDasMagias':
         return this.aplicar(Combo.definirModo(this.estado, m));

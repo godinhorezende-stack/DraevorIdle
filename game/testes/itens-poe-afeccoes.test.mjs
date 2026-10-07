@@ -88,3 +88,16 @@ test('no combate de verdade: a peça com chance de incendiar e dano de fogo soma
   assert.ok(incendiou, 'o bicho pegou fogo');
   assert.ok(Dot.dosDoTipo(m, 'queimadura').length === 1);
 });
+
+test('a afecção de dano posta por um golpe CRÍTICO causa 50% mais (incêndio, sangramento, veneno — como na tela do PoE)', { skip: SEM }, () => {
+  const partes = [{ elemento: 'fire', dano: 100 }, { elemento: 'physical', dano: 200 }];
+  const a = afeccoes({ chance: { incendio: 100, sangramento: 100, veneno: 100 } });
+  const normal = bicho();
+  A.aoAcertar(normal, partes, { afeccoes: a, rng: sempre, agora: 0 });
+  const critico = bicho();
+  A.aoAcertar(critico, partes, { afeccoes: a, crit: true, rng: sempre, agora: 0 });
+  for (const tipo of ['queimadura', 'sangramento', 'venenoPoe']) {
+    const n = Dot.dosDoTipo(normal, tipo)[0].falta;
+    assert.ok(Math.abs(Dot.dosDoTipo(critico, tipo)[0].falta - n * 1.5) < 1e-6, `${tipo}: 1,5× no crítico`);
+  }
+});

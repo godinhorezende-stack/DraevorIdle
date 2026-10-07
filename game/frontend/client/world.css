@@ -94,8 +94,6 @@
 .w-halo { fill: none; stroke: var(--w-ciano2); stroke-width: 2; stroke-dasharray: 5 4; opacity: 0; pointer-events: none; }
 .w-no.escolhido .w-halo { opacity: 1; }
 .w-no.completa.escolhido .w-halo { stroke: var(--w-ouro2); }
-.w-pulso { fill: none; stroke: var(--w-ciano2); stroke-width: 2; pointer-events: none; animation: w2-pulso 2.2s ease-out infinite; transform-origin: center; }
-@keyframes w2-pulso { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(1.5); } }
 .w-no.novo .w-forma { animation: w2-novo 1.4s ease-out 3; }
 @keyframes w2-novo { 0%, 100% { filter: none; } 50% { filter: drop-shadow(0 0 8px var(--w-ciano2)) brightness(1.5); } }
 .w-selo circle { fill: #0a141c; stroke: var(--w-aco2); stroke-width: 2; }
@@ -199,7 +197,7 @@
   .w2-viewport { height: 74vh; } .w2-dica { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .w2-estrada.disponivel, .w-pulso, .w-no.novo .w-forma, .w2-cam.entra, .w2-painel.abre { animation: none; }
+  .w2-estrada.disponivel, .w-no.novo .w-forma, .w2-cam.entra, .w2-painel.abre { animation: none; }
 }
 /* No EDITOR (a vista Mapa dos atos e a prévia do mapa mundo) os nomes ficam sempre visíveis: lá se posiciona pelo nome. */
 .atos-mapa-palco .w-placa, .eng-previa-mapa .w-placa { opacity: 1; }

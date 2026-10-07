@@ -758,7 +758,9 @@ function afixosDaMarca(bruto) {
  */
 export function nomeDaPeca(peca, nome = null) {
   const meta = getItems?.()?.[peca?.id];
-  const marca = el('span', `item-no-chat ${classeDaRaridade(meta, peca)}`, titleCase(nome ?? meta?.name ?? `item ${peca?.id}`));
+  const marca = el('span', `item-no-chat ${classeDaRaridade(meta, peca)}`, peca?.poe ? (nome ?? peca.poe.nome ?? meta?.name ?? `item ${peca?.id}`) : titleCase(nome ?? meta?.name ?? `item ${peca?.id}`));
+  // A peça do PoE: a cor da raridade do PoE (o laranja do Único), no chat e na faixa do anúncio.
+  if (peca?.poe?.cor) marca.style.color = peca.poe.cor;
   if (peca?.tier > 0) marca.append(el('i', 'item-tier', `T${peca.tier}`));
   if (peca?.af?.length) marca.append(seloDeEstrelas('item-estrelas', estrelasDosAfixos(peca.af)));
   if (meta) tipFor(marca, peca.id, null, null, peca);

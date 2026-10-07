@@ -3606,7 +3606,8 @@ body {
 .frasco-config { display: flex; align-items: center; gap: 10px; margin: 8px 0 12px; }
 .frasco-config input[type=range] { flex: 1; accent-color: var(--accent); }
 .frasco-config-valor { min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; color: var(--accent); }
-.hotbar .slot.primeira-skill::before { content: ""; position: absolute; left: -4px; top: 5px; bottom: 5px; width: 1px; background: #46656d; }
+/* A divisa entre os frascos (1 a 5) e as habilidades: 2px dourados de ponta a ponta, que se veem de relance (era 1px cinza, sumia). */
+.hotbar .slot.primeira-skill::before { content: ""; position: absolute; left: -4px; top: 1px; bottom: 1px; width: 2px; border-radius: 1px; background: linear-gradient(180deg, transparent, #c8a25aa6 20%, #c8a25aa6 80%, transparent); }
 /* O número fica por cima do sprite, com fundo próprio: escondido atrás dele
    ninguém enxergava qual tecla era. */
 .hotbar .slot .key {
@@ -27596,6 +27597,7 @@ b.estrela.n6, .tip-afixo-tier.n6 { --estrela: #ff5a52; }
 .anuncio-drop.raridade-epico { --cor: #b184e8; }
 .anuncio-drop.raridade-lendario { --cor: #e0a84a; }
 .anuncio-drop.raridade-mitico { --cor: #f2503f; }
+.anuncio-drop.raridade-unico { --cor: #af6025; } /* o Único do PoE (laranja) */
 .anuncio-drop.saindo { opacity: 0; transform: translateY(-8px); }
 .anuncio-figura {
   flex: none; width: 40px; height: 40px; display: grid; place-items: center;
@@ -28093,6 +28095,11 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 /* ---- Gem Atelier › Catálogo de gemas (modo PoE): cada gema e onde se ganha (gemas.mjs → renderCatalogo) ---- */
 .cat-filtros { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 .cat-busca { flex: 1 1 220px; min-width: 0; }
+/* A busca e os seletores do catálogo de gemas no tema escuro (sem isto ficavam no branco do navegador, com o texto quase invisível). */
+.cat-busca, .cat-sel { background: var(--panel-solid); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; font-size: 12px; color-scheme: dark; }
+.cat-busca::placeholder { color: var(--muted); }
+.cat-busca:focus, .cat-sel:focus { outline: none; border-color: var(--accent, #6fd0c0); }
+.cat-sel option { background: var(--panel-solid); color: var(--text); }
 .cat-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #c8d4d8; }
 .cat-contagem { margin: 2px 0 6px; font-size: 12px; color: #8fa6ab; }
 .cat-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 6px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }
@@ -28175,3 +28182,65 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 .marco-aberto { display: flex; gap: 14px; align-items: flex-start; justify-content: center; margin: 8px 0; }
 .marco-aberto canvas { border: 1px solid #6b5a3a; border-radius: 4px; background: #0b0a08; }
 .marco-aberto .poe-balao { position: static; max-width: 340px; }
+
+/* O cinto de frascos: a vaga onde o frasco arrastado vai cair. */
+.poe-frasco.alvo-do-arrasto { outline: 2px dashed var(--accent); outline-offset: 1px; }
+
+/* Modo PoE: o "Entrar" sozinho ocupa a largura das duas placas de modo. */
+.run-mode-entrar { grid-column: 1 / -1; }
+
+
+
+/*
+ * ---- A coluna da direita em duas fileiras (dono, 07/10: "mais apresentável e responsiva, no desktop e no mobile") ----
+ * Em cima, o controle da caçada: "Automático" (a luz diz ligado/desligado, a largura não muda) e os dois interruptores de assistência.
+ * Embaixo, as hotkeys: Salvar HK, Regras e a setinha dos guardados — cada fileira na largura da coluna, sem quebrar torto.
+ */
+#hotbar-presets { display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
+#hotbar-presets .presets-auto, #hotbar-presets .presets-hk { display: flex; align-items: center; gap: 4px; min-width: 0; }
+#hotbar-presets .presets-hk > .preset-save { flex: 1 1 auto; min-width: 0; padding: 3px 5px; font-size: 9.5px; letter-spacing: .02em; text-align: center; white-space: nowrap; }
+/* A coluna ganha 16px para as duas fileiras caberem sem cortar ("Salvar HK" saía "SALVAR …"). */
+@media (min-width: 821px) { .bar-side { width: 148px; } }
+#hotbar-presets .presets-hk:empty, #hotbar-presets .presets-auto:empty { display: none; }
+.auto-mestre {
+  flex: 1 1 auto; min-width: 0; height: 22px; padding: 0 7px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 6px; border: 1px solid #34494f; background: #161d20; color: #8aa3a8;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; cursor: pointer;
+  box-shadow: inset 0 0 0 1px #0b0f10d9, 0 1px 2px #0006; transition: color .15s, border-color .15s, background .15s, box-shadow .15s;
+}
+.auto-mestre:hover { border-color: var(--accent); color: #d8f3ee; }
+.auto-mestre.ligado { color: #d9fbe9; border-color: #3fbf7f; background: linear-gradient(180deg, #1d5a3c, #133b28); box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 9px -2px #3fbf7fcc; }
+.auto-luz { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #4a5a5e; box-shadow: inset 0 0 0 1px #0007; }
+.auto-mestre.ligado .auto-luz { background: #6fffb0; box-shadow: 0 0 6px #6fffb0; }
+
+/* A fileira de controle do CELULAR (acima dos slots): escondida no desktop, onde a coluna da direita já a mostra. */
+.auto-movel { display: none; }
+@media (max-width: 820px), (max-height: 540px) and (pointer: coarse) {
+  .auto-movel:not(:empty) { display: block; }
+  .auto-movel .presets-auto { display: flex; align-items: center; gap: 6px; }
+  .auto-movel .auto-mestre { height: 30px; font-size: 12px; }
+  .auto-movel .auto-toggle {
+    width: 38px; height: 30px; padding: 0; flex: none; display: grid; place-items: center; cursor: pointer;
+    font-size: 14px; line-height: 1; color: #6f8a8e; background: #161d20; border: 1px solid #34494f; border-radius: 6px;
+    box-shadow: inset 0 0 0 1px #0b0f10d9, 0 1px 2px #0006;
+  }
+  .auto-movel .auto-toggle.ligado { color: #eafffb; border-color: #4fd1b5; background: linear-gradient(180deg, #1f6f62, #154a42); box-shadow: inset 0 0 0 1px #0b0f10d9, 0 0 9px -1px #4fd1b5cc; }
+  .auto-movel .auto-toggle:disabled { opacity: .35; cursor: default; }
+  .auto-movel .auto-toggle-magia::before {
+    content: ''; width: 18px; height: 18px; border-radius: 3px;
+    background: url('/client/assets/ui/spellgroup-icons.png') no-repeat; background-size: 198px 18px; background-position: -72px 0;
+    image-rendering: pixelated; filter: grayscale(1) brightness(.75);
+  }
+  .auto-movel .auto-toggle-magia.ligado::before { filter: none; }
+  /* Os seletores (Alvo, Distância, Lurar até) num fundo próprio: deitado, os rótulos ficavam soltos sobre o mapa. */
+  #actionbar .controls { background: #0b1214e6; border: 1px solid #1f3236; border-radius: 8px; padding: 4px 6px 6px; }
+}
+/* Nos perfis do celular a pilha dos slots esconde tudo que não é a fileira (`> :not(#hotbar)`); a fileira de controle é a exceção. */
+html[data-perfil="retrato"] #actionbar .hotbar-stack > #auto-movel:not(:empty),
+html[data-perfil="deitado"] #actionbar .hotbar-stack > #auto-movel:not(:empty) { display: block !important; margin-bottom: 4px; }
+/* Deitado: a fileira do Automático é a 4ª coluna da fileira de Alvo/Distância/Lurar (sem rótulo, alinhada embaixo, com os seletores). */
+html[data-perfil="deitado"] #actionbar .controls > #auto-movel:not(:empty) { display: flex !important; align-items: flex-end; flex: 1.3 1 0; min-width: 0; }
+html[data-perfil="deitado"] #actionbar .controls > #auto-movel .presets-auto { width: 100%; }
+html[data-perfil="deitado"] #actionbar .controls > #auto-movel .auto-mestre { height: 30px; font-size: 11px; padding: 0 6px; }
+html[data-perfil="deitado"] #actionbar .controls > #auto-movel .auto-toggle { width: 32px; }

@@ -52,11 +52,16 @@ test('sem capacidade no PoE (dono, 06/10: "não existe cap mais"): o peso não m
   const e = personagemDeTeste({ vocacao: 'knight', level: 1 });
   assert.equal(Afixos.capacidade(e), Infinity);
   const placa = Jogo.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Body_Armours/Plate_Vest', raridade: 'normal', ilvl: 10, rng: semente(4) }));
-  e.inventory = Array.from({ length: 80 }, () => structuredClone(placa));
-  assert.ok(Inventario.pesoDoInventario(e) > 5000);
+  // 20 placas (as vagas da mochila): pesadíssimas, mas o peso não manda nada para o Depósito.
+  e.inventory = Array.from({ length: 20 }, () => structuredClone(placa));
+  assert.ok(Inventario.pesoDoInventario(e) > 1000);
   assert.deepEqual(Deposito.excessoParaODeposito(e), []);
-  assert.equal(e.inventory.length, 80);
-  assert.equal(Inventario.cabeNoPeso(e, placa.id, 1000), true, 'o loot sempre cabe no peso');
+  assert.equal(e.inventory.length, 20);
+  e.inventory.push(...Array.from({ length: 60 }, () => structuredClone(placa)));
+  // O peso não conta; o que limita no PoE são as VAGAS da mochila (20 peças não empilháveis — dono, 07/10).
+  assert.equal(Inventario.cabeNoPeso(e, placa.id, 1), false, 'mochila com 80 peças: sem vaga');
+  e.inventory = [];
+  assert.equal(Inventario.cabeNoPeso(e, placa.id, 1), true, 'mochila vazia: cabe, por mais pesada que seja');
 });
 
 test('sem perícias no PoE (dono, 06/10: "o personagem não vai ter mais skill de treino"): nada sobe, o dano é o da arma, magia pede só level', { skip: SEM }, async () => {

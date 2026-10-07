@@ -22,6 +22,9 @@ export const BASE = {
   veneno: { porSegundo: 0.3, duracaoMs: 2000 },
   eletrizacao: { duracaoMs: 2000, minimo: 5, maximo: 50 },
   resfriamento: { minimo: 5, maximo: 30 },
+  // A afecção de DANO (incêndio, sangramento, veneno) posta por um golpe CRÍTICO causa 50% mais (a tela de personagem do PoE: o
+  // "… from Critical Strikes" é 1,5× o do acerto). O "+X% ao Multiplicador de Crítico" não entra: o dano do golpe chega aqui sem o crítico.
+  criticoMaisPct: 50,
 };
 
 /** O que as peças/árvore dão de afecção (da soma de atributos `af`), no formato que `aoAcertar` usa. */
@@ -97,6 +100,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   const PADRAO = { incendio: ['fire'], congelamento: ['ice'], resfriamento: ['ice'], eletrizacao: ['energy'], sangramento: ['physical'] };
   const baseDe = (t) => (a.naoPode?.[t] ? 0 : [...new Set([...(PADRAO[t] ?? []), ...(a.pode?.[t] ?? [])])].filter((el) => !(a.naoPodeEl?.[t] ?? []).includes(el)).reduce((x, el) => x + (a.semElementais && ['fire', 'ice', 'energy'].includes(el) ? 0 : dano(el)), 0));
   // O crítico incendeia/congela/eletriza de forma inerente (como no PoE), salvo "Golpes Críticos não aplicam Afecções… de forma inerente".
+  const doCritico = crit ? 1 + BASE.criticoMaisPct / 100 : 1;
   crit = crit && !a.semInerente;
   const sorte = (pct) => pct > 0 && rng() * 100 < pct;
   const postos = [];
@@ -105,7 +109,7 @@ export function aoAcertar(bicho, partes, { afeccoes, crit = false, ataque = fals
   // `aumentado`: o "Dano Degenerativo aumentado" daquela afecção. "X% mais rápido": a mesma soma em menos tempo.
   const dot = (tipo, porSegundo, duracaoMs, base, multiplicador, aumentado = 0) => {
     if (!(base > 0)) return;
-    const total = base * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + aumentado + mutilado) / 100);
+    const total = base * doCritico * porSegundo * (duracaoMs / 1000) * (1 + multiplicador / 100) * (1 + ((a.danoAumentado ?? 0) + aumentado + mutilado) / 100);
     const rapido = Math.max(100, Math.round(duracaoMs / (1 + ((a.maisRapido ?? 0) + (tipo === 'queimadura' ? a.incendioMaisRapido ?? 0 : 0)) / 100)));
     const estado = Dot.aplicar(bicho, { tipo, total, duracaoMs: rapido, origem: { fonte: 'poe' } }, agora);
     if (estado) postos.push(estado);
