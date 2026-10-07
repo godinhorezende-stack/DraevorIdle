@@ -48,33 +48,33 @@ test('B3. a barra antiga (22 slots, poções) vira a de 8: as ações compactada
   assert.equal(Acoes.ajustarBarra(e), false, 'já do tamanho certo: não mexe');
 });
 
-test('B4. recompensas de nível no PoE: só o Frasco de Vida Pequeno no level 1; pegar põe no cinto (pede level 3, mas o inicial entra); os marcos antigos saem', { skip: SEM }, async () => {
+test('B4. recompensas de nível no PoE: só o Baú de itens do nível 1 (uma peça comum de nível 1 na mochila); os marcos antigos (o frasco, os do Draevor) viram ele', { skip: SEM }, async () => {
   const R = await import('../systems/recompensas.mjs');
-  const F = await import('../systems/itens-poe/frascos.mjs');
   const { ITEM_CATALOG } = await import('../systems/dados.mjs');
   (await import('../systems/itens-poe/jogo.mjs')).iniciar(ITEM_CATALOG);
-  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 1 }), R.estadoInicial());
-  assert.equal(e.presentes.marcos.length, 1);
+  const e = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 1 }), R.estadoInicial(), { inventory: [] });
   const c = R.presentesParaCliente(e);
-  assert.deepEqual([c.marcos[0].tipo, c.marcos[0].level, c.marcos[0].aberto, c.marcos[0].itens.length, c.marcos[0].id], ['frasco-poe', 1, true, 1, 'frasco-poe-1']);
-  const r = R.coletarMarco(e, { id: 'frasco-poe-1' });
+  assert.deepEqual([c.marcos.length, c.marcos[0].tipo, c.marcos[0].level, c.marcos[0].aberto, c.marcos[0].id], [1, 'bau-poe', 1, true, 'bau-poe-1']);
+  const r = R.coletarMarco(e, { id: 'bau-poe-1' });
   assert.ok(r.ok, r.erro);
-  assert.match(r.notice, /na mochila/);
-  const frasco = e.inventory.at(-1);
-  assert.ok(frasco?.poe?.inicial && /Life/.test(frasco.poe.base), 'o frasco inicial está na mochila');
-  assert.equal(e.presentes.marcos[0].pego, true);
-  assert.ok(!R.coletarMarco(e, { id: 'frasco-poe-1' }).ok, 'não repete');
-  // Pôr no cinto no level 1: o inicial não pede o level 3. E a regra de uso: vida abaixo de X%.
-  assert.ok(F.por(e, { pilha: e.inventory.length - 1 }).ok);
-  assert.equal(F.regraDe(F.cinto(e)[0]).abaixoPct, 50, 'padrão: vida abaixo de 50%');
-  assert.ok(F.configurar(e, { vaga: 0, abaixoPct: 35 }).ok);
-  assert.equal(F.paraCliente(e)[0].regra.abaixoPct, 35);
-  assert.ok(!F.configurar(e, { vaga: 0, abaixoPct: 0 }).ok);
-  assert.match(F.configurar(e, { vaga: 0, emCombate: true }).erro ?? '', /porcentagem/);
-  // Um personagem com os marcos do Draevor (baú 50...) fica só com o do frasco.
-  const velho = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 60 }), { presentes: { ...R.estadoInicial().presentes, marcos: [{ level: 50, custo: 50000, tipo: 'bau', titulo: 'Baú' }, { level: 120, tipo: 'montaria', mount: 1 }] } });
+  const peca = e.inventory.at(-1);
+  assert.equal(peca.poe.raridade, 'normal');
+  assert.ok((ITEM_CATALOG[peca.id].minLevel ?? 1) <= 1, 'peça de nível 1');
+  assert.ok(!/Flask/.test(peca.poe.classe), 'não é frasco');
+  assert.match(r.notice, /baú abriu/);
+  assert.ok(!R.coletarMarco(e, { id: 'bau-poe-1' }).ok, 'não repete');
+  // Quem tinha o marco do frasco (ou os do Draevor) fica com o baú.
+  const velho = Object.assign(personagemDeTeste({ vocacao: 'knight', level: 60 }), { presentes: { ...R.estadoInicial().presentes, marcos: [{ level: 1, tipo: 'frasco-poe', pego: true }, { level: 50, tipo: 'bau', titulo: 'Baú' }] } });
   R.abrirProximas(velho);
-  assert.deepEqual(velho.presentes.marcos.map((m) => m.tipo), ['frasco-poe']);
+  assert.deepEqual(velho.presentes.marcos.map((m) => [m.tipo, !!m.pego]), [['bau-poe', false]]);
+});
+
+test('B4b. todo personagem novo do PoE nasce com 2 Frascos de Vida Pequenos no cinto (vagas 1 e 2)', { skip: SEM }, async () => {
+  const src = (await import('node:fs')).readFileSync(new URL('../websocket/sessao.mjs', import.meta.url), 'utf8');
+  assert.match(src, /frascos: \[ItensPoeJogo\.frascoInicial\(\), ItensPoeJogo\.frascoInicial\(\), null, null, null\]/);
+  const J = await import('../systems/itens-poe/jogo.mjs');
+  const f = J.frascoInicial();
+  assert.ok(f.poe.inicial && /Small_Life_Flask/.test(f.poe.base));
 });
 
 test('B5. o lure vai até 8 monstros (e o "voltar em" até 7), no servidor também (dono, 07/10)', async () => {

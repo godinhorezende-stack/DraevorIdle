@@ -18783,7 +18783,7 @@ export function corpoDasRecompensas(body, comFechar = true) {
       resumo: degrau.boosted ? 'à sua escolha — rende o dobro por carga' : 'à sua escolha, cheia de cargas',
       itens: [],
     })),
-    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: marco.tipo === 'bau' ? 'abre 1 item aleatório — com raridade' : marco.tipo === 'frasco-poe' ? 'todo exilado começa com um: vai direto para o cinto (tecla 1 na caçada). Pede level 3, mas o seu pode usar.' : null })),
+    ...marcos.map((marco) => ({ ...marco, trilha: 'equipamento', resumo: marco.tipo === 'bau' ? 'abre 1 item aleatório — com raridade' : marco.tipo === 'bau-poe' ? 'abre 1 peça aleatória de nível 1 — comum' : null })),
   ].sort((a, b) => a.level - b.level);
 
   /* `null` = a grade; um número = a escolha da arma daquele degrau. */

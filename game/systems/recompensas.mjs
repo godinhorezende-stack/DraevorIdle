@@ -55,22 +55,22 @@ const PRESENTES_SEM_TREINO = { ...CHARACTER_TEMPLATE.presentes, degraus: [], esc
  * level 1, de graça, que vai direto para o cinto (`coletarMarco`). Os marcos do Draevor (baú 50/100, montaria 120, outfit 130) saem —
  * quem já os tinha pegos não perde nada do que recebeu, só o cartão.
  */
-const MARCO_DO_FRASCO = { level: 1, custo: 0, tipo: 'frasco-poe', titulo: 'Frasco de Vida Pequeno', base: ItensPoeJogo.BASE_DO_FRASCO_INICIAL, pego: false, aberto: true };
-const PRESENTES_DO_POE = { ...PRESENTES_SEM_TREINO, marcos: [MARCO_DO_FRASCO], total: 1, pendentes: 0, marcosAbertos: 1, proximo: 1, degrau: 1, custo: 0 };
+// (dono, 07/10: "quero que toda classe venha com 2 frascos de vida lv 1 equipados; aqui pode colocar um baú aleatório de itens lv 1 comum":
+// os frascos vêm no cinto ao criar o personagem — `sessao.criarPersonagem` — e o marco do nível 1 virou o baú.)
+const MARCO_DO_BAU = { level: 1, custo: 0, tipo: 'bau-poe', titulo: 'Baú de itens (nível 1)', pego: false, aberto: true };
+const PRESENTES_DO_POE = { ...PRESENTES_SEM_TREINO, marcos: [MARCO_DO_BAU], total: 1, pendentes: 0, marcosAbertos: 1, proximo: 1, degrau: 1, custo: 0 };
 const presentesPadrao = () => (itensPoeLigado() ? PRESENTES_DO_POE : PRESENTES_SEM_TREINO);
 /** Com o PoE, os marcos do personagem viram só o do frasco (guardando se ele já o pegou). Devolve se mudou. */
 export function marcosDoPoe(estado) {
   const presentes = estado?.presentes;
   if (!presentes || !itensPoeLigado()) return false;
   const marcos = presentes.marcos ?? [];
-  if (marcos.length === 1 && marcos[0].tipo === 'frasco-poe') return false;
-  const antigo = marcos.find((m) => m.tipo === 'frasco-poe');
-  presentes.marcos = [{ ...structuredClone(MARCO_DO_FRASCO), pego: !!antigo?.pego, aberto: !antigo?.pego }];
+  if (marcos.length === 1 && marcos[0].tipo === 'bau-poe') return false;
+  // O marco antigo (o frasco, ou os do Draevor) vira o baú do nível 1 — ainda não pego: quem pegou o frasco ganha o baú também.
+  presentes.marcos = [structuredClone(MARCO_DO_BAU)];
   presentes.total = 1;
   return true;
 }
-/** O item do catálogo que desenha o frasco do marco (a base do PoE registrada como item). */
-const itemDoFrasco = (base) => Object.values(ITEM_CATALOG).find((i) => i.poe?.base === base) ?? null;
 export function estadoInicial() {
   return {
     wildcards: CHARACTER_TEMPLATE.wildcards,
@@ -336,10 +336,7 @@ export function presentesParaCliente(estado) {
   return {
     ...presentes,
     marcos: (presentes.marcos ?? []).map((m) => {
-      if (m.tipo === 'frasco-poe') {
-        const item = itemDoFrasco(m.base);
-        return { ...m, itens: item ? [{ itemId: item.id, name: item.name, count: 1 }] : [], noCinto: FrascosPoe.cinto(estado).some((f) => f?.poe?.inicial) };
-      }
+      if (m.tipo === 'bau-poe') return { ...m, itens: [] };
       if (m.tipo === 'montaria') {
         const look = MONTARIAS_REAIS.mounts.find((x) => x.id === m.mount || x.look === m.look)?.look;
         return { ...m, entregue: temAMontaria(estado, m), emUso: look != null && estado.outfit?.mount === look, onde: 'Personagem › Aparência' };
@@ -385,12 +382,12 @@ export function coletarMarco(estado, { id, level } = {}) {
   } else if (marco.tipo === 'outfit') {
     if (!liberarOutfit(estado, marco.look)) return { ok: false, erro: 'Outfit não encontrado — nada foi cobrado.' };
     aviso = `${marco.name ?? 'Outfit'} liberado, com os 2 addons! Vista em Personagem › Aparência.`;
-  } else if (marco.tipo === 'frasco-poe') {
-    // O frasco inicial vai para a MOCHILA (dono, 07/10): de lá o jogador põe no cinto e configura a regra de uso clicando nele na barra.
-    peca = ItensPoeJogo.frascoInicial();
+  } else if (marco.tipo === 'bau-poe') {
+    // O baú do nível 1: uma peça comum (Normal) de nível 1, sorteada, na mochila.
+    peca = ItensPoeJogo.pecaDoBauInicial();
     if (!peca) return { ok: false, erro: 'O sistema de itens do PoE está desligado — nada foi entregue.' };
     (estado.inventory ??= []).push(peca);
-    aviso = `${peca.poe.nome} na mochila: clique nele para pôr no cinto (vale em qualquer level).`;
+    aviso = `O baú abriu: ${peca.poe.nome} (comum, nível 1) na mochila.`;
   } else {
     for (const item of marco.itens ?? []) darItem(estado, item.itemId, item.count ?? 1);
   }

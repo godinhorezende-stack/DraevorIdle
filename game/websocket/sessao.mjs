@@ -235,6 +235,8 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
     maxHp,
     mana: maxMana,
     maxMana,
+    // Os DOIS Frascos de Vida Pequenos no cinto, já equipados (dono, 07/10: "toda classe vem com 2 frascos de vida lv 1 equipados"), só com o PoE.
+    ...(poe ? { frascos: [ItensPoeJogo.frascoInicial(), ItensPoeJogo.frascoInicial(), null, null, null] } : {}),
     // Ouro, capacidade e fôlego iniciais são os REAIS — capturados criando uma
     // conta de teste no servidor original (`api-mapeada/character-real-example.json`).
     gold: 500,

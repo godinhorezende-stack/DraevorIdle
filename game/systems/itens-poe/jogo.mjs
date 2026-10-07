@@ -307,6 +307,26 @@ export function ouroDoMonstro(nivel, tipo, rng = Math.random, regras = Catalogo.
  * Uma peça do PoE sorteada para o Item Level do bicho (= o level dele, até `ilvlMaximo`): a raridade pelos pesos do dono, a base entre as
  * equipáveis cujo nível exigido cabe no Item Level; o Único só sai de base que tem único. Null sem o sistema ligado ou sem pesos.
  */
+/**
+ * O BAÚ DE NÍVEL 1 (a recompensa do level 1 — dono, 07/10: "um baú aleatório de itens lv 1 comum"): UMA peça equipável sorteada entre as
+ * bases que pedem nível 1, Normal (comum), Item Level 1. Sem frascos (os dois iniciais já vêm no cinto) e sem as bases do Battle Royale.
+ */
+export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
+  const cat = Catalogo.catalogo();
+  if (!cat) return null;
+  const candidatas = [];
+  for (const baseId of REG.porBase.keys()) {
+    const [classe] = baseId.split('/');
+    if (FRASCOS.includes(classe)) continue;
+    const b = cat.classes[classe]?.bases.find((x) => x.id === baseId);
+    if (!b || (b.requisitos?.nivel ?? 1) > 1 || b.slug?.startsWith('Royale_')) continue;
+    candidatas.push(baseId);
+  }
+  if (!candidatas.length) return null;
+  const base = candidatas[Math.floor(rng() * candidatas.length)];
+  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng }), regras, rng);
+}
+
 export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS) {
   const cat = Catalogo.catalogo();
   const D = regras.drop;
