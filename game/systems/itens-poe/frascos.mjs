@@ -110,6 +110,8 @@ export function parametros(peca, afDoPersonagem = null) {
   p.quantidadePct += tipo === 'vida' ? n('frasco_vida_rec') : tipo === 'mana' ? n('frasco_mana_rec') : 0;
   if (tipo === 'utilidade') { p.duracaoPct += n('frasco_duracao'); p.efeitoPct += n('frasco_efeito'); }
   p.custoPct -= n('frasco_cargas_usadas_red');
+  // ("Frascos de Vida usados enquanto em Vida Baixa aplicam sua Recuperação Instantaneamente", o mesmo da Mana em Mana Baixa.)
+  if (tipo && n(`frasco_instantaneo_baixa:${tipo}`) > 0) p.instantaneoNaVidaBaixa = true;
   const durante = {};
   const linhas = [];
   // A QUALIDADE do frasco (a Bolha do Vidreiro — poedb › Quality): vida/mana recuperada +qualidade%; no frasco de Utilidade, a duração +qualidade%.
@@ -233,8 +235,9 @@ export function usar(estado, v, eventos = null, quem = null) {
   const peca = cinto(estado)[v];
   if (!hunt || !peca) return false;
   const afp = doPersonagem(estado);
-  // "Não pode usar Frascos no Quinto Espaço" (o cinto do PoE).
+  // "Não pode usar Frascos no Quinto Espaço" (o cinto do PoE); "Não pode usar frascos de vida/mana"; "Frascos não são aplicados em Você".
   if (v === 4 && Number(afp.sem_quinto_frasco) > 0) return false;
+  if (Number(afp[`sem_frasco:${TIPO_DA_CLASSE[peca.poe?.classe]}`]) > 0 || Number(afp.frascos_nao_aplicam) > 0) return false;
   const par = parametros(peca, afp);
   const cargas = cargasDe(peca, par);
   if (cargas < par.cargasPorUso) return false;
@@ -247,8 +250,8 @@ export function usar(estado, v, eventos = null, quem = null) {
     st.ativos[v] = { ate: agora + par.duracaoMs, af: par.af, nome: peca.poe.nome, ...(par.saiNoPvp ? { saiNoPvp: true } : {}) };
     return true;
   }
-  // Vida/Mana: na vida baixa (abaixo de 50%), o "mais Recuperação se usado enquanto em Vida Baixa".
-  const vidaBaixa = (estado.hp ?? 0) < (estado.maxHp ?? 1) * 0.5;
+  // Vida/Mana: na vida baixa (abaixo de 50%), o "mais Recuperação se usado enquanto em Vida Baixa" (o de mana olha a Mana Baixa).
+  const vidaBaixa = par.recurso === 'mana' && Number(afp['frasco_instantaneo_baixa:mana']) > 0 ? (estado.mana ?? 0) <= (estado.maxMana ?? 1) * 0.5 : (estado.hp ?? 0) < (estado.maxHp ?? 1) * 0.5;
   const total = par.quantidade * (vidaBaixa ? 1 + par.maisNaVidaBaixaPct / 100 : 1);
   const extras = { custoDaOutraPct: par.custoDaOutraPct, lacaiosPct: par.lacaiosPct };
   // "Recuperação Instantânea" (ou "quando em Vida Baixa", na vida baixa): tudo na hora.
@@ -361,12 +364,15 @@ export function tique(estado, eventos = null, quem = null) {
   // As CARGAS dos frascos pelo tempo e pelos acontecimentos (PoE): "Frascos Utilitários ganham N Cargas a cada S segundos" (personagem),
   // "X% de chance de ganhar uma Carga de Frasco ao causar um Golpe Crítico" e "Ganhe N Cargas ao ser Acertado" (o frasco).
   const afp = doPersonagem(estado);
-  const cadaS = Number(afp.frasco_util_regen_s) || 0;
-  if (cadaS > 0 && Number(afp.frasco_util_regen_n) > 0) {
-    st.proximaRegenUtil ??= agora + cadaS * 1000;
-    while (agora >= st.proximaRegenUtil) {
-      st.proximaRegenUtil += cadaS * 1000;
-      for (const p of c) if (p && TIPO_DA_CLASSE[p.poe?.classe] === 'utilidade') { const par = parametros(p, afp); p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + Number(afp.frasco_util_regen_n)); }
+  // (+ "Frascos de Vida/Mana ganham N Cargas a cada S segundos", "Em vida baixa, frascos de vida ganham…" — `frasco_regen_n:<tipo>`.)
+  const regens = [['utilidade', Number(afp.frasco_util_regen_n) || 0, Number(afp.frasco_util_regen_s) || 0], ...['vida', 'mana', 'utilidade', 'todos'].map((t) => [t, Number(afp[`frasco_regen_n:${t}`]) || 0, Number(afp[`frasco_regen_s:${t}`]) || 0])];
+  for (const [tipoR, quantas, cadaS] of regens) {
+    if (!(cadaS > 0 && quantas > 0)) continue;
+    const chave = `proximaRegen:${tipoR}:${cadaS}`;
+    st[chave] ??= agora + cadaS * 1000;
+    while (agora >= st[chave]) {
+      st[chave] += cadaS * 1000;
+      for (const p of c) if (p && (tipoR === 'todos' || TIPO_DA_CLASSE[p.poe?.classe] === tipoR)) { const par = parametros(p, afp); p.poe.cargas = Math.min(par.cargasMaximas, cargasDe(p, par) + quantas); }
     }
   }
   const criticos = hunt.poeCriticosParaFrascos ?? 0;

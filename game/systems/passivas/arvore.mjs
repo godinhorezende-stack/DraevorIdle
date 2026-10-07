@@ -457,7 +457,12 @@ export function efeitos(estado) {
 }
 
 /** O personagem tem a keystone/habilidade `id` alocada? (as do PoE: `keystones.IDS_DO_POE`) */
-export const temHabilidade = (estado, id) => efeitos(estado).habilidades.has(id);
+export const temHabilidade = (estado, id) => efeitos(estado).habilidades.has(id) || keystoneDasPecas(estado, id);
+/** A keystone que uma PEÇA do PoE dá (únicos: "Mente Sobre Matéria", "Postura Inabalável"… — `keystone:<id>` no `poe.af` da peça vestida). */
+export function keystoneDasPecas(estado, id) {
+  for (const [slot, p] of Object.entries(estado?.equipment ?? {})) if (p && slot !== 'backpack' && Number(p.poe?.af?.[`keystone:${id}`]) > 0) return true;
+  return false;
+}
 
 /** Os vessels do Gem Atelier: nós de cada domínio ÷ a referência (0..1). */
 export function fracaoDosDominios(estado) {

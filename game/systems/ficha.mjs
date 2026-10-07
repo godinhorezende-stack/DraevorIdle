@@ -40,6 +40,7 @@ import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 import * as CargasPoe from './itens-poe/cargas.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as ModsPoe from './itens-poe/condicoes-poe.mjs';
+import * as ModsPoeEfeitos from './itens-poe/mods-poe.mjs';
 
 /*
  * Os `skill:*` da árvore em perícias de verdade. Melee é uma perícia só
@@ -110,7 +111,13 @@ export function invalidar(estado) {
 export function combate(estado) {
   const guardada = CACHE.get(estado);
   if (guardada) return guardada;
-  const valor = calcularCombate(estado);
+  let valor = calcularCombate(estado);
+  // PoE: a SEGUNDA PASSADA — os "por X" que dependem da própria ficha ("a cada 10 de Precisão", "por 100 de Armadura", "por % de Chance de
+  // Bloquear"…): somam e a ficha é refeita uma vez com eles (`condicoes-poe.escalasDaFicha`).
+  if (itensPoeLigado() && valor.afPoe) {
+    const extras = ModsPoe.escalasDaFicha(estado, valor.afPoe, valor);
+    if (extras) valor = calcularCombate(estado, extras);
+  }
   CACHE.set(estado, valor);
   return valor;
 }
@@ -124,7 +131,7 @@ function comDuasArmas(bloqueio, armaSecundaria) {
   return { ...bloqueio, blockChance: mais(bloqueio.blockChance), blockChanceMin: mais(bloqueio.blockChanceMin), blockChanceMax: mais(bloqueio.blockChanceMax) };
 }
 
-function calcularCombate(estado) {
+function calcularCombate(estado, extrasDoPoe = null) {
   const itens = pecas(estado);
   const soma = (f) => itens.reduce((a, it) => a + (Number(f(it)) || 0), 0);
   const w = arma(estado);
@@ -139,7 +146,7 @@ function calcularCombate(estado) {
   const pericia = periciaDaArma(w);
   const buff = BuffPower.bonusDeCombate(estado);
   // Os adds das peças vestidas — ver `afixos.mjs`.
-  const af = comOsModsDoPoe(estado, Afixos.soma(estado));
+  const af = comOsModsDoPoe(estado, somarExtras(Afixos.soma(estado), extrasDoPoe));
   /*
    * ---- STR, DEX, INT ----
    * Base da vocação + pontos por level + os adds (`personagem/atributos.mjs`);
@@ -250,13 +257,15 @@ function calcularCombate(estado) {
   const critLocalDaArma = armaFinal ? (armaFinal.critChance.final - armaFinal.critChance.base) / 10000 : 0;
   // A chance em pontos (base + o que soma) × o "Chance de Crítico aumentada" RELATIVO das peças do PoE (`crit_chance_inc`, 0 sem elas).
   const critPontos = CRITICO_BASE + critLocalDaArma + (soma((it) => it.critChance) - (armaSecundaria?.critChance ?? 0)) / 10000 + (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0) + Aparencia.colecao(estado).critChance;
-  const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100);
+  // (× o "X% mais/menos Chance de Crítico" do PoE; "Nunca causa Acertos Críticos" zera.)
+  const critMais = itensPoeLigado() ? (af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100)) : 1;
+  const critBruto = critPontos * (1 + (af.crit_chance_inc ?? 0) / 100) * critMais;
   const critChance = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critBruto));
   excedentes.critChance = Math.max(0, critBruto - critChance);
   // Nas magias o PoE ainda soma o "Chance de Golpe Crítico com Magias aumentada" (`spell_crit_chance_inc`).
   const critChanceMagia = Math.min(Limites.LIMITES.critico.chanceMaxima / 100, Math.max(0, critPontos * (1 + ((af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0)) / 100)));
   // A magia do PoE: a chance-base é a da GEMA (somada a estes "+% de chance" fixos) × (1 + o "aumentada" geral e o de magias).
-  const critMagiaPoe = itensPoeLigado() ? { fixa: (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0), aumentada: (af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0) } : null;
+  const critMagiaPoe = itensPoeLigado() ? { fixa: (af.crit_chance ?? 0) / 100 + (arv.critChance ?? 0), aumentada: (af.crit_chance_inc ?? 0) + (af.spell_crit_chance_inc ?? 0), mais: af.nunca_critico > 0 ? 0 : Math.max(0, 1 + (af.crit_mais_pct ?? 0) / 100) } : null;
   // O dano elemental SOMADO das peças do PoE (`added_<el>_dmg_min/max`): faixa por elemento, nos ataques e nas magias.
   // (O Físico só existe somado a MAGIAS: "Adiciona X a Y de Dano Físico a Magias" — o dos ataques é o `phys_add`.)
   const somado = (prefixo) => Object.fromEntries([...ELEMENTOS_DO_POE, ...(prefixo === 'spell_added_' ? ['physical'] : [])].map((el) => [el, [af[`${prefixo}${el}_dmg_min`] ?? 0, af[`${prefixo}${el}_dmg_max`] ?? 0]]).filter(([, [a, b]]) => a > 0 || b > 0));
@@ -276,6 +285,8 @@ function calcularCombate(estado) {
       const bruto = (el === 'chaos' ? af.chaos_res ?? 0 : protection[el] + (excedentes.protection[el] ?? 0)) - penalidade;
       // O MÁXIMO de cada resistência (75%) + o "+X% de Resistência a <elemento> máxima" das peças (até 90%, como no PoE).
       protection[el] = Math.max(-200, Math.min(maximoDaResistencia(af, el), bruto));
+      // "Resistência a Fogo é de X%", "Resistências Elementais são Zero", "Resistência a Caos é Zero" (únicos): o valor fixo.
+      if (af[`res_fixa_tem:${el}`] > 0) protection[el] = af[`res_fixa:${el}`] ?? 0;
       excedentes.protection[el] = Math.max(0, bruto - protection[el]);
     }
   }
@@ -325,11 +336,12 @@ function calcularCombate(estado) {
     critMagiaPoe,
     // Para o crítico de CADA golpe (os "aumentada" com condição — `itens-poe/mods-poe.mjs → fichaDoGolpe`): os pontos, os "aumentada" e o teto.
     critPontos,
+    critMais,
     critInc: af.crit_chance_inc ?? 0,
     critIncMagia: af.spell_crit_chance_inc ?? 0,
     critTeto: Limites.LIMITES.critico.chanceMaxima / 100,
     // Os mods condicionais do PoE que dependem do GOLPE (tags) e os números dos mods do PoE que o combate lê (`ModsPoe.resumo`).
-    ...(itensPoeLigado() ? { porTag: ModsPoe.porTag(estado, af), afPoe: af, recalcularAfeccoes: AfeccoesPoe.daSoma } : {}),
+    ...(itensPoeLigado() ? { porTag: ModsPoe.porTag(estado, af, principais), afPoe: af, recalcularAfeccoes: AfeccoesPoe.daSoma, eventosPoe: ModsPoe.eventosDa(af) } : {}),
     // Os números da PRÓPRIA arma (base, qualidade, locais → dano físico final, APS, crítico, DPS físico da arma): o que o tooltip e o editor mostram. `null` sem arma.
     arma: armaFinal,
     // (PoE: "Seus Acertos Críticos não causam Dano extra" — o multiplicador fica em 100%.)
@@ -374,7 +386,10 @@ function calcularCombate(estado) {
     regenFlat: { hp: soma((it) => it.regen?.hp) + (af.life_regen ?? 0), mana: soma((it) => it.regen?.mana) + (af.mana_regen ?? 0) },
     // Movement Speed %: sobre a velocidade base do level (+ o speed fixo das botas e do imbuement).
     // (× a "Velocidade de Ação" do PoE.)
-    speed: Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af)),
+    // ("Sua Velocidade de Movimento é de X% de seu valor base": o valor fixo, nada mais muda.)
+    speed: itensPoeLigado() && af.movimento_fixo_pct > 0 ? Math.round((R.baseSpeed(estado.level ?? 1) * af.movimento_fixo_pct) / 100) : Math.round((R.baseSpeed(estado.level ?? 1) * (1 + ((af.move_speed ?? 0) + espStat('moveSpeed')) / 100) + soma((it) => it.speed)) * fatorDeAcao(af)),
+    // O alcance a mais dos golpes corpo a corpo (PoE: "+N metros ao Alcance…"; 1 casa = 2 m).
+    alcanceCorpoExtra: itensPoeLigado() ? Math.floor((af.alcance_corpo_m ?? 0) / 2) : 0,
     // O resto dos afixos, para quem usa: velocidade de ataque (%), dano por
     // elemento (%), dano/cura de magia (%), Onslaught (%), exp e loot (%).
     // % de Attack Speed: o add + o que a DEX dá.
@@ -451,7 +466,8 @@ function calcularCombate(estado) {
   // Os KEYSTONES da árvore que mudam a regra (INT → Ranged, Life Leech ×1,5, físico → fogo), por cima da ficha pronta.
   // (+ as keystones que as PEÇAS do PoE dão: "Sobrecarga Elemental" num implícito vale como a da árvore; Equilíbrio Elemental e Segredos do
   // Sofrimento agem no acerto — `itens-poe/mods-poe.mjs` — e nas afecções.)
-  const dasPecas = itensPoeLigado() && af.keystone_sobrecarga && !passivas.keystones.some((k) => k.id === 'sobrecargaElemental') ? [{ regra: 'poe', id: 'sobrecargaElemental', nome: 'Sobrecarga Elemental' }] : [];
+  const idsDasPecas = itensPoeLigado() ? [...new Set([...(af.keystone_sobrecarga ? ['sobrecargaElemental'] : []), ...Object.keys(af).filter((k) => k.startsWith('keystone:') && af[k] > 0).map((k) => k.slice(9))])].filter((id) => Keystones.IDS_DO_POE.has(id)) : [];
+  const dasPecas = idsDasPecas.filter((id) => !passivas.keystones.some((k) => k.id === id)).map((id) => ({ regra: 'poe', id, nome: id }));
   return Keystones.aplicarNaFicha(ficha, [...passivas.keystones, ...dasPecas], principais, estado);
 }
 
@@ -478,13 +494,29 @@ function armaEquipadaDaFicha(estado) {
   };
 }
 
+/** A soma + os extras da segunda passada (outro objeto; a soma original não muda). */
+const somarExtras = (af, extras) => {
+  if (!extras) return af;
+  const novo = { ...af };
+  for (const [k, v] of Object.entries(extras)) novo[k] = (novo[k] ?? 0) + v;
+  return novo;
+};
+
 /**
  * Os mods do PoE que mexem na PRÓPRIA soma antes da ficha (só com o PoE ligado): "X% de Vida Máxima ganha como Armadura Extra" (armadura
  * fixa), "Você foi Esmagado" (−15% de redução de dano físico, como no PoE). Devolve outra soma (a de `Afixos.soma` não muda).
  */
 function comOsModsDoPoe(estado, af) {
-  if (!itensPoeLigado() || !(af.life_as_armour || af.crushed || af.vida_como_escudo)) return af;
+  if (!itensPoeLigado()) return af;
+  const zera = af.sem_escudo > 0 || af.defesas_zero > 0 || af.sem_armadura_escudo > 0;
+  if (!(af.life_as_armour || af.crushed || af.vida_como_escudo || estado.vidaConvertidaPoe || af.mana_como_escudo || zera)) return af;
   const novo = { ...af };
+  if (estado.vidaConvertidaPoe) novo.energy_shield = (af.energy_shield ?? 0) + estado.vidaConvertidaPoe;
+  if (af.mana_como_escudo) novo.energy_shield = (novo.energy_shield ?? 0) + ((estado.maxMana ?? 0) * af.mana_como_escudo) / 100;
+  // "Não Pode receber Escudo de Energia", "Defesas são Zero", "Você não possui Armadura ou Escudo de Energia Máxima".
+  if (af.sem_escudo > 0 || af.defesas_zero > 0 || af.sem_armadura_escudo > 0) novo.es_pct = -1000;
+  if (af.defesas_zero > 0 || af.sem_armadura_escudo > 0) novo.armour_pct = -1000;
+  if (af.defesas_zero > 0) novo.evasion_pct = -1000;
   if (af.life_as_armour) novo.armor_flat = (af.armor_flat ?? 0) + ((estado.maxHp ?? 0) * af.life_as_armour) / 100;
   if (af.vida_como_escudo) novo.energy_shield = (af.energy_shield ?? 0) + ((estado.maxHp ?? 0) * af.vida_como_escudo) / 100;
   if (af.crushed) novo.phys_res = (af.phys_res ?? 0) - 15;
@@ -492,6 +524,8 @@ function comOsModsDoPoe(estado, af) {
 }
 /** O máximo de uma resistência no PoE: 75% + o "+X% de Resistência a <elemento> máxima" (o teto do PoE é 90%). */
 export function maximoDaResistencia(af, el) {
+  // ("Suas Resistências Máximas são X%": o máximo fixo.)
+  if (af?.res_max_fixa_tem > 0) return af.res_max_fixa ?? 75;
   return Math.min(90, Limites.LIMITES.resistenciaDoJogador.maximo + (af?.[`${el}_res_max`] ?? 0));
 }
 /** "{min} a {max} de Dano de Raio de Ataques Adicional por cada N de Precisão": soma ao dano de Raio dos ataques. */
@@ -516,10 +550,11 @@ export function penalidadeDeResistencia(estado) {
 export const MANA_REGEN_BASE_POE = 1.8;
 export function regenDoPoe(estado, af) {
   const vidaPctDoMax = af.life_regen_max_pct ?? 0;
-  const vidaAumentada = af.life_regen_pct ?? 0;
+  const vidaAumentada = (af.life_regen_pct ?? 0) + (af.recuperacao_inc ?? 0);
   const manaAumentada = af.mana_regen_pct ?? 0;
-  const vidaPorSegundo = Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
-  const manaPorSegundo = Math.max(0, (((estado.maxMana ?? 0) * MANA_REGEN_BASE_POE) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));
+  // ("Você não possui Regeneração de Vida", "Espaço de anel direito: Não pode Regenerar Mana"; "X% de Mana Regenerada por segundo".)
+  const vidaPorSegundo = af.sem_regen_vida > 0 ? 0 : Math.max(0, ((af.life_regen ?? 0) + ((estado.maxHp ?? 0) * vidaPctDoMax) / 100) * (1 + vidaAumentada / 100));
+  const manaPorSegundo = af.sem_regen_mana > 0 ? 0 : Math.max(0, (((estado.maxMana ?? 0) * (MANA_REGEN_BASE_POE + (af.mana_regen_max_pct ?? 0))) / 100 + (af.mana_regen ?? 0)) * (1 + manaAumentada / 100));
   return { vidaPorSegundo, manaPorSegundo, vidaPctDoMax, vidaAumentada, manaAumentada, vidaFixa: af.life_regen ?? 0, manaFixa: af.mana_regen ?? 0 };
 }
 
@@ -779,7 +814,7 @@ export const LEECH_POE = { porInstanciaPct: 10, taxaDaInstanciaPct: 2, porSegund
 export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
   // PoE: magia não rouba vida nem mana; só o "X% do Dano Mágico é Drenado como Escudo de Energia" (frasco/peça), com as regras do roubo.
   if (itensPoeLigado() && !ataque) {
-    const pct = ModsPoe.valor(ficha, 'es_leech_magia');
+    const pct = ModsPoe.valor(ficha, 'es_leech_magia') + ModsPoe.valor(ficha, 'es_leech');
     const max = Math.max(0, Math.round(ficha.energyShield ?? 0));
     if (pct > 0 && max > 0 && estado.hunt) {
       const quanto = Math.min((danoTotal * pct) / 100, (max * LEECH_POE.porInstanciaPct) / 100);
@@ -789,14 +824,18 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
   }
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
-  const vida = Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
-  const mana = Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
+  // (PoE, únicos: "Não Pode Drenar Vida/Mana".)
+  const vida = ModsPoe.valor(ficha, 'sem_roubo_vida') > 0 ? 0 : Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
+  const mana = ModsPoe.valor(ficha, 'sem_roubo_mana') > 0 ? 0 : Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
   if (itensPoeLigado()) {
     if (!estado.hunt) return;
     const lista = (estado.hunt.roubos ??= []);
+    // ("Recuperação Máxima por Dreno de Vida aumentada/reduzida", "Pacto Vaal" — o teto de cada instância e a velocidade.)
+    const porInstancia = LEECH_POE.porInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_instancia_inc') / 100);
+    const taxa = LEECH_POE.taxaDaInstanciaPct * Math.max(0, 1 + ModsPoe.valor(ficha, 'roubo_taxa_inc') / 100);
     const instancia = (recurso, total, max) => {
-      const quanto = Math.min(total, (max * LEECH_POE.porInstanciaPct) / 100);
-      if (quanto > 0) lista.push({ recurso, restante: quanto, porSegundo: (max * LEECH_POE.taxaDaInstanciaPct) / 100 });
+      const quanto = Math.min(total, (max * porInstancia) / 100);
+      if (quanto > 0) lista.push({ recurso, restante: quanto, porSegundo: (max * taxa) / 100 });
     };
     instancia('vida', vida, estado.maxHp ?? 0);
     instancia('mana', mana, estado.maxMana ?? 0);
@@ -826,7 +865,9 @@ export function recuperarRoubo(estado, ms) {
     const ativas = lista.filter((x) => x.recurso === recurso);
     if (!ativas.length) continue;
     const pedido = ativas.reduce((n, x) => n + Math.min(x.restante, x.porSegundo * s), 0);
-    const teto = (max * LEECH_POE.porSegundoPct * s) / 100;
+    // ("Recuperação total por segundo do Dreno de Vida aumentada", "é Dobrado".)
+    const fRoubo = combate(estado);
+    const teto = (max * LEECH_POE.porSegundoPct * Math.max(0, 1 + ModsPoe.valor(fRoubo, 'roubo_teto_inc') / 100) * s) / 100;
     const fator = pedido > teto ? teto / pedido : 1;
     let ganho = 0;
     for (const x of ativas) {
@@ -841,6 +882,22 @@ export function recuperarRoubo(estado, ms) {
   }
   estado.hunt.roubos = lista.filter((x) => x.restante > 0.001);
 }
+
+// Os eventos dos únicos ganham/perdem cargas do PoE com as regras da ficha (o máximo depende da soma).
+ModsPoeEfeitos.definirCargas((e, oque, tipo, n = 1) => {
+  const regras = combate(e).cargas ?? {};
+  if (oque === 'ganhar') CargasPoe.ganhar(e, tipo, regras, n);
+  else if (oque === 'max') CargasPoe.ganhar(e, tipo, regras, CargasPoe.maximo(regras, tipo));
+  else if (oque === 'perder' && e.hunt?.cargasPoe?.[tipo]) delete e.hunt.cargasPoe[tipo];
+  invalidar(e);
+});
+
+// As cargas no máximo / perdidas: os eventos dos únicos ("ao atingir o Máximo de Cargas de Poder", "ao perder uma Carga de Tolerância").
+CargasPoe.definirAoMudar((e, tipo, oque) => {
+  const nome = oque === 'max' ? { poder: 'maxPoder', frenesi: 'maxFrenesi', tolerancia: 'maxTolerancia' }[tipo] : tipo === 'tolerancia' ? 'perderTolerancia' : tipo === 'poder' ? 'perderPoder' : null;
+  if (oque === 'perdeu' && tipo === 'poder' && e.hunt) (e.hunt.poeRecente ??= {}).perdeuPoder = e.hunt.clock ?? 0;
+  if (nome && e.hunt) ModsPoeEfeitos.evento(e, e.hunt, nome, combate(e), {});
+});
 
 // Os frascos do PoE leem os mods do personagem que mexem neles (cinto: recuperação, duração, efeito, cargas) pela ficha.
 FrascosPoe.definirLeitor((e) => combate(e).afPoe ?? {});

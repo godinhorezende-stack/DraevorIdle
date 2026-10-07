@@ -164,6 +164,7 @@ test('catálogo importado de verdade (quando existe nesta máquina): bases com p
 
 import { traduzirMod, traduzirPeca, cobertura, TABELA, NOVOS, idAutomatico } from '../systems/itens-poe/traduzir.mjs';
 import { FICHAS } from '../systems/afixos.mjs';
+import { partir, dinamicoValido } from '../systems/itens-poe/condicoes-poe.mjs';
 
 const mod = (texto) => ({ ...analisarTexto(texto), valores: analisarTexto(texto).faixas.map((f) => f[0]) });
 
@@ -196,11 +197,14 @@ test('tradução: toda regra aponta para um atributo do Draevor ou para um atrib
     assert.ok(r.efeitos.length > 0, `${r.padrao}: regra sem efeito (todo texto vira atributo)`);
     // A mecânica que não existe no jogo (pesca, Fendas…): "inerte", com a nota do porquê.
     if (r.estado === 'inerte') { assert.ok(r.nota, `${r.padrao}: inerte sem nota`); continue; }
+    if (r.estado === 'lembrete') continue; // texto de lembrete do PoE ("or", a explicação de uma mecânica): sem efeito
     for (const e of r.efeitos) {
       // O condicional (`dmg_inc@corpo`): vale o atributo-base.
-      const base = e.stat.split('@')[0];
+      // E a escala (`life%atr:dex:10`), os dinâmicos (`ev:matar:vida`, `concede:{NOME}`, `sempre:<buff>`) e as famílias com parâmetro
+      // (`pode:incendio:chaos`, `max_lacaio:golem`): `partir` + `dinamicoValido`.
+      const base = partir(e.stat.replace('{NOME}', 'x').replace(/\{V\d\}/g, '1')).stat;
       const stats = base.includes('{E}') ? elementos.map((x) => base.replace('{E}', x)) : [base];
-      for (const s of stats) assert.ok(FICHAS[s] || NOVOS[s], `${r.padrao} → ${s} não existe (nem no Draevor nem em atributos-novos.json)`);
+      for (const s of stats) assert.ok(FICHAS[s] || NOVOS[s] || dinamicoValido(s), `${r.padrao} → ${s} não existe (nem no Draevor nem em atributos-novos.json)`);
     }
   }
   for (const [id, a] of Object.entries(NOVOS)) assert.ok(a.nome && 'combate' in a, id);

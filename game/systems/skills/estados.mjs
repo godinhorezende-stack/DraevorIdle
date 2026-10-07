@@ -67,7 +67,8 @@ export function aplicar(bicho, efeito, dano, agora, rng = Math.random, salaDeBos
     const maximo = cfg.lento?.maximo ?? 40;
     const pct = Math.min(maximo, efeito.lentidaoPct) * (chefe ? cfg.chefe?.lento ?? 1 : 1);
     if (pct > 0) {
-      const ate = agora + duracaoNo(bicho, cfg.lento?.duracao ?? 3000);
+      // (`lentidaoDuracaoPct`: a "Duração do Resfriamento em Inimigos aumentada" do PoE.)
+      const ate = agora + duracaoNo(bicho, (cfg.lento?.duracao ?? 3000) * (1 + (efeito.lentidaoDuracaoPct ?? 0) / 100));
       const l = estados.lento;
       // Vale a MAIOR lentidão (não a última) e nunca encurta o que já corre.
       estados.lento = ativo(l, agora) ? { ate: Math.max(l.ate, ate), pct: Math.max(l.pct, pct) } : { ate, pct };

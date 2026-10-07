@@ -146,14 +146,15 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const alcanceMetros = CLASSES_DO_JOGO[gerada.classe]?.alcanceMetros;
   if (alcanceMetros && gerada.atributos && gerada.atributos.alcance_metros == null) gerada.atributos = { ...gerada.atributos, alcance_metros: alcanceMetros };
   const a = gerada.atributos ?? {};
+  const t = traduzirPeca(gerada);
+  const af = { ...t.af };
+  // ("Sem Dano Físico": a arma única não tem o dano físico da base.)
   const base = {
-    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: [a.dano_fisico.min, a.dano_fisico.max] } : {}),
+    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: af.arma_sem_fisico > 0 ? [0, 0] : [a.dano_fisico.min, a.dano_fisico.max] } : {}),
     ...(a.armadura ? { armor: [a.armadura, a.armadura] } : {}),
     ...(a.evasao ? { evasion: [a.evasao, a.evasao] } : {}),
     ...(a.escudo_energia ? { es: [a.escudo_energia, a.escudo_energia] } : {}),
   };
-  const t = traduzirPeca(gerada);
-  const af = { ...t.af };
   for (const [k, v] of Object.entries(afDaBase(a, af))) af[k] = (af[k] ?? 0) + v;
   const R = regras.raridades[gerada.raridade] ?? {};
   // Frasco: não dá atributo ao personagem (só enquanto o efeito dura, pelo cinto — `frascos.mjs`); o balão leva o resumo com os mods aplicados.
@@ -169,7 +170,10 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   const fixos = Math.round(Number(af.encaixes_fixos) || 0);
   const sorteados = af.sem_encaixes ? null : fixos > 0 ? { abertos: fixos, links: Array.from({ length: fixos - 1 }, () => false), gemas: Array(fixos).fill(null), cores: SocketsPoe.sortearCores(fixos, REG.catalogo?.[id]?.poe?.requisitos ?? null, rng) } : SocketsPoe.sortear(gerada.classe, gerada.ilvl, rng, REG.catalogo?.[id]?.poe?.requisitos ?? null);
   // "Somente Encaixes Brancos": todas as cores brancas (aceitam qualquer gema).
-  const soquetes = sorteados && af.encaixes_brancos ? { ...sorteados, cores: sorteados.cores.map(() => 'W') } : sorteados;
+  // "[Six Linked]" / "local six linked sockets": o máximo da classe, todos ligados.
+  const maxDaClasse = SocketsPoe.maximo(gerada.classe, gerada.ilvl) || 6;
+  const ligados = af.encaixes_ligados > 0 ? { abertos: maxDaClasse, links: Array.from({ length: maxDaClasse - 1 }, () => true), gemas: Array(maxDaClasse).fill(null), cores: SocketsPoe.sortearCores(maxDaClasse, REG.catalogo?.[id]?.poe?.requisitos ?? null, rng) } : sorteados;
+  const soquetes = ligados && af.encaixes_brancos ? { ...ligados, cores: ligados.cores.map(() => 'W') } : ligados;
   return {
     id, count: 1,
     ...(Object.keys(base).length ? { base } : {}),
@@ -187,7 +191,7 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
  * A VERSÃO da tradução dos mods (`traducao.json` + `atributos-novos.json`): sobe quando uma regra nova muda o `af` ou os estados das peças.
  * A peça de uma versão antiga é refeita na entrada (`refazerPecasAntigas`) — mods, valores, sockets e gemas ficam como estão.
  */
-export const VERSAO_DA_TRADUCAO = 2;
+export const VERSAO_DA_TRADUCAO = 3;
 /** A nota de cada linha da peça (só a das "inertes": por que a mecânica não existe no jogo), na ordem dos mods. */
 const notasDe = (t) => t.linhas.map((l) => (l.estado === 'inerte' ? l.partes.find((x) => x.nota)?.nota ?? null : null));
 

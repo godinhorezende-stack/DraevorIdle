@@ -14,6 +14,9 @@ import * as GemasPoe from './gemas-poe.mjs';
 import { CAMPANHA, desenhoPeloNome } from './monstros.mjs';
 
 const BESTIARY = CATALOGO.bestiary;
+/** As palavras de cada tipo de lacaio nos mods das peças (`max_lacaio:golem`, `lacaio_dano:espirito`…). */
+const PALAVRA_DO_TIPO = { zumbi: /zumbi|zombie/i, espectro: /espectro|spectre/i, golem: /golem/i, esqueleto: /esqueleto|skeleton/i, totem: /totem/i,
+  espirito: /espírito furioso|raging spirit/i, fantasma: /fantasma|phantasm/i, reliquia: /relíquia|relic/i, sagrado: /espírito sagrado|holy/i, arma: /arma animada|animate/i, aranha: /aranha|spider/i, qualquer: /./ };
 
 // ---- a força de base por nível (a mediana dos monstros comuns da campanha) ----
 const PONTOS = (() => {
@@ -116,9 +119,14 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     else if ((m = l.match(/são de Nível (\d+)/i))) nivel = Number(m[1]);
   }
   if (totem) maximo += efeito?.totensExtras ?? 0;
-  // "+N ao número máximo de Zumbis / Espectros" (peças do PoE).
+  // "+N ao número máximo de Zumbis / Espectros / Golens / Esqueletos / Totens…" (peças do PoE): `max_lacaio:<palavra>`.
   if (/zumbi/i.test(nome)) maximo += m0('max_zumbis');
   if (/espectro/i.test(`${nome} ${t.nome}`)) maximo += m0('max_espectros');
+  const texto = `${nome} ${t.nome} ${r.gema?.en ?? ''}`;
+  const porTipo = (campo) => Object.entries(af ?? {}).reduce((n, [k, v]) => { const m = new RegExp(`^${campo}:(\\w+)$`).exec(k); return n + (m && typeof v === 'number' && PALAVRA_DO_TIPO[m[1]]?.test(totem && m[1] === 'totem' ? 'totem' : texto) ? v : 0); }, 0);
+  maximo += porTipo('max_lacaio');
+  // "Número máximo de Zumbis Erguidos reduzido em X%" (o % do máximo).
+  maximo = Math.max(1, Math.round(maximo * (1 + porTipo('max_lacaio_pct') / 100)));
   // As OFERENDAS (Osso, Carne, Espírito) e a CONVOCAÇÃO não invocam: dão bônus aos lacaios em campo / chamam todos para perto.
   const en = r.gema.en ?? '';
   if (/Offering/i.test(en)) return { tipo: 'oferenda', nome: t.nome, duracaoMs: duracao ?? 4000, bonus: bonusDaOferenda(t.linhas) };
@@ -126,12 +134,15 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
   const n = nivel ?? Math.max(1, t.requer);
   const f = forcaDoNivel(n);
   // (+ a "Vida máxima dos Lacaios aumentada" / "Vida do Totem aumentada" e o "Lacaios causam Dano aumentado" das peças do PoE.)
-  const vida = Math.max(10, Math.round(f.vida * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life')) / 100)));
-  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg')) / 100);
+  // (+ os do TIPO de lacaio: "Golens possuem X% menos Vida", "Espíritos Furiosos Convocados causam Dano aumentado", "Zumbis têm X% da Vida
+  // máxima aumentada", "Zumbis causam X% mais Dano Físico", "+N de Vida máxima" dos Zumbis…)
+  const vida = Math.max(10, Math.round((f.vida + porTipo('lacaio_vida_fixa')) * (1 + maisVida / 100) * (1 + ((efeito?.lacaioVidaPct ?? 0) + m0(totem ? 'totem_life' : 'minion_life') + porTipo('lacaio_vida')) / 100)));
+  const golpe = f.dano * (1 + maisDano / 100) * (1 + ((efeito?.lacaioDanoPct ?? 0) + m0('minion_dmg') + porTipo('lacaio_dano')) / 100) * Math.max(0, 1 + porTipo('lacaio_mais_dano') / 100);
   // O dano SOMADO aos lacaios das peças ("Lacaios causam X a Y de Dano de Fogo adicional"): no golpe deles, como o dano adicionado da gema.
   for (const el of ['physical', 'fire', 'ice', 'energy', 'chaos']) somado = [somado[0] + m0(`minion_added_${el}_min`), somado[1] + m0(`minion_added_${el}_max`)];
   velAtaquePct += m0('minion_atk_speed') + (/mag[oa]|mage|espectro|spectre/i.test(`${nome} ${t.nome}`) ? m0('minion_cast_speed') : 0);
-  if (duracao) duracao = Math.round(duracao * (1 + (efeito?.duracaoPct ?? 0) / 100));
+  if (duracao) duracao = Math.round(duracao * (1 + ((efeito?.duracaoPct ?? 0) + porTipo('lacaio_duracao') + m0('minion_duracao')) / 100));
+  velAtaquePct += porTipo('lacaio_vel_ataque');
   const estilo = estiloDoLacaio(`${nome} ${t.nome} ${en}`, r.elemento);
   return {
     estilo, velAtaquePct, critChance: semprecritico ? 100 : 5, critMult: 1.5 + critMult / 100, somado, sangrar: Math.max(sangrar, m0('minion_chance_sangrar')),
@@ -139,7 +150,8 @@ export function oQueInvoca(slug, nivelDaGema = 1, efeito = null, af = null) {
     // chances de Cegar/Provocar/Desacelerar/Envenenar/Incendiar.
     poe: af ? {
       res: m0(totem ? 'totem_res' : 'minion_res'), resCaos: m0('minion_chaos_res'), danoRecebidoPct: m0('lacaios_dano_recebido'), regenPct: m0('minion_regen_pct'), regen: m0('minion_regen'),
-      roubo: m0('minion_leech'), movimentoPct: m0('minion_move'), dotMulti: m0('minion_dot_multi'),
+      roubo: m0('minion_leech'), movimentoPct: m0('minion_move') + porTipo('lacaio_mov'), dotMulti: m0('minion_dot_multi'), degenPct: porTipo('lacaio_degen'),
+      bloqueio: m0('minion_block'), resFogo: m0('minion_fire_res'), resGelo: m0('minion_ice_res'),
       chances: { cegar: m0('minion_chance_cegar'), provocar: m0('minion_chance_provocar'), desacelerar: m0('minion_chance_desacelerar'), envenenar: m0('minion_chance_envenenar'), incendiar: m0('minion_chance_incendiar') },
     } : null,
     afDono: Object.keys(afDono).length ? afDono : null, porLacaioFisico, golem: /golem/i.test(`${nome} ${en}`),

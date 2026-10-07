@@ -11,7 +11,7 @@
 // Atributo CONDICIONAL (`dmg_inc@corpo`, `atk_speed@comEscudo` — `mods-poe.mjs`): vale o estado do atributo-base, se as condições existem.
 import { readFileSync } from 'node:fs';
 import { FICHAS } from '../afixos.mjs';
-import { partir, CONDICOES_DE_ESTADO, TAGS_DE_GOLPE, CONDICOES_DE_ANEL } from './condicoes-poe.mjs';
+import { partir, ehCondDeEstado, TAGS_DE_GOLPE, CONDICOES_DE_ANEL, dinamicoValido, escalaValida, slugDoNome, gemaConhecida } from './condicoes-poe.mjs';
 
 export const TABELA = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/traducao.json', import.meta.url), 'utf8'));
 export const NOVOS = JSON.parse(readFileSync(new URL('../../gamedata/itens-poe/atributos-novos.json', import.meta.url), 'utf8')).atributos;
@@ -57,15 +57,21 @@ export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA
     const capturas = m.slice(1).filter((x) => x != null);
     const indices = capturas.filter((x) => /^\d+$/.test(x));
     const elemento = capturas.find((x) => tabela.elementos?.[x] && !/^\d+$/.test(x));
-    const stat = (s) => s.replace('{E}', tabela.elementos?.[elemento] ?? '?');
+    // `{NOME}`: o nome capturado (a gema de "Concede a Habilidade X", "Suportadas por X", "Ativa X") como chave.
+    const nome = capturas.find((x) => !/^\d+$/.test(x) && !tabela.elementos?.[x] && x.length > 2);
+    // `{V<n>}`: o n-ésimo número do texto como PARÂMETRO do atributo ("a cada {1} de Destreza" → `%atr:dex:{V2}`).
+    const stat = (s) => s.replace('{E}', tabela.elementos?.[elemento] ?? '?').replace('{NOME}', slugDoNome(nome)).replace(/\{V(\d)\}/g, (_, n) => String(Math.abs(valorDo(`{${n}}`, indices, valores)) || 1));
     // "reduzida" (a regra derivada) e o "-" na frente do número ("-10% de Resistência a Fogo"): o valor sai negativo.
     const sinal = (r.reduzida ? -1 : 1) * (m[0].startsWith('-') ? -1 : 1);
     const efeitos = r.efeitos.map((e) => { const v = valorDo(e.valor, indices, valores); return { stat: stat(e.stat), valor: typeof v === 'number' ? v * sinal : v }; });
     if (r.estado === 'inerte') return { estado: 'inerte', efeitos: [], nota: r.nota ?? null, regra: r.i };
+    if (r.estado === 'lembrete') return { estado: 'lembrete', efeitos: [], nota: r.nota ?? null, regra: r.i };
     // Atributo que o Draevor não tem (ex.: Resistência a Caos → chaos_res): 'novo' se ele já tem efeito no combate, senão 'registrado'.
     // Sem efeito em algum atributo: 'registrado'. Só atributos do Draevor sem condição: o estado da regra. O resto: o da regra, se ela
     // diz ('equivalente'/'aproximado'), ou 'novo'.
     const soDoDraevor = efeitos.every((e) => FICHAS[e.stat]);
+    // A gema nomeada não está na coleção do jogo: o mod não tem como agir (o balão explica).
+    if (r.efeitos.some((e) => e.stat.includes('{NOME}')) && gemaConhecida(slugDoNome(nome)) === false) return { estado: 'inerte', efeitos: [], nota: `a habilidade "${nome}" não está na coleção de gemas do jogo`, regra: r.i };
     const estado = !efeitos.every(temEfeito) ? 'registrado' : soDoDraevor ? r.estado ?? 'equivalente' : r._nova && r.estado && r.estado !== 'novo' ? r.estado : 'novo';
     return { estado, efeitos, nota: r.nota ?? null, regra: r.i };
   }
@@ -76,9 +82,10 @@ export function traduzirParte(parte, valores, { regras = PADRAO, tabela = TABELA
 
 /** O atributo tem efeito no combate? (o do Draevor, ou o novo com `combate: true`; condicional: o atributo-base e condições conhecidas.) */
 function temEfeito(e) {
-  const { stat, conds } = partir(e.stat);
-  if (!(FICHAS[stat] || NOVOS[stat]?.combate)) return false;
-  return conds.every((c) => CONDICOES_DE_ESTADO.has(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c]);
+  const { stat, escala, conds } = partir(e.stat);
+  if (!(FICHAS[stat] || NOVOS[stat]?.combate || dinamicoValido(stat))) return false;
+  if (!escalaValida(escala)) return false;
+  return conds.every((c) => ehCondDeEstado(c) || TAGS_DE_GOLPE.has(c) || CONDICOES_DE_ANEL[c]);
 }
 
 const PIOR = ['lembrete', 'equivalente', 'aproximado', 'novo', 'inerte', 'registrado'];

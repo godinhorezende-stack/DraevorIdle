@@ -120,7 +120,10 @@ export function defesaDoCatalogo(meta) {
  * loja, drop de antes) segue com o valor cheio do catálogo.
  */
 export function metaDaPeca(p) {
-  const meta = ITEM_CATALOG[p?.id];
+  const meta0 = ITEM_CATALOG[p?.id];
+  // PoE (únicos): "A Chance de Golpe Crítico desta Arma é de X%" — a chance-base da própria arma.
+  const critFixa = Number(p?.poe?.af?.crit_arma_fixa) || 0;
+  const meta = critFixa > 0 && meta0 ? { ...meta0, critChance: Math.round(critFixa * 100) } : meta0;
   if (!meta || !p?.base) return meta;
   const medias = {};
   for (const campo of Object.keys(baseValida(p.base))) {

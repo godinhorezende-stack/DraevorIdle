@@ -25,7 +25,7 @@ export function resistenciaDe(hunt, alvo, tipo) {
   // (- a janela de vulnerabilidade de um boss único depois que o escudo dele quebra — `bosses-unicos/boss.mjs`.)
   const vulneravel = alvo?.boss?.vulnerabilidade && (hunt?.clock ?? 0) < alvo.boss.vulnerabilidade.ate ? alvo.boss.vulnerabilidade.pct : 0;
   // (- o Causticar do PoE nas resistências elementais: "Inflige Causticar em Inimigos ao Bloquear" — `itens-poe/mods-poe.mjs`.)
-  const causticado = ['fire', 'ice', 'energy'].includes(tipo) ? ModsPoe.causticado(alvo, hunt?.clock ?? 0) : 0;
+  const causticado = ['fire', 'ice', 'energy'].includes(tipo) ? ModsPoe.causticado(alvo, hunt?.clock ?? 0) + ModsPoe.exposicao(alvo, hunt?.clock ?? 0, tipo) : 0;
   // (+ o Equilíbrio Elemental do PoE: +25 / −50 pelos elementos que acertaram o bicho por último.)
   const r = (BESTIARY[alvo?.key]?.elements?.[tipo] ?? 0) + (alvo?.resist?.[tipo] ?? 0) + BuffsDeMob.resistencia(alvo, hunt?.clock ?? 0, tipo) - vulneravel - causticado + ModsPoe.equilibrio(alvo, hunt?.clock ?? 0, tipo);
   const comBoss = hunt?.isBoss ? Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, r) : r;
@@ -53,5 +53,7 @@ export function resistido(hunt, alvo, tipo, valor, ficha = null, { armadura = tr
   if (ficha && armadura && tipo === 'physical') v *= 1 - AtributosDoMob.reducaoDeArmadura(alvo, Atributos.levelDoBicho(hunt, alvo), valor, Formulas.PARAMETROS.armadura.poe.coeficiente);
   const reducao = AtributosDoMob.reducaoDeDano(alvo);
   if (reducao > 0) v *= 1 - reducao;
+  // (+ os estados do PoE no bicho: Cinzas, Intimidado, Definhado.)
+  if (ficha) v *= ModsPoe.fatorRecebidoPeloBicho(alvo, tipo, ficha, hunt?.clock ?? 0);
   return Math.max(0, Math.round(Limites.danoAposResistencia(v, resistenciaEfetivaDe(hunt, alvo, tipo, ficha))));
 }

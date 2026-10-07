@@ -1261,7 +1261,9 @@ export function regenerar(estado, ms) {
   if (poe) {
     // Como no PoE (dono, 07/10): a VIDA não regenera de base — só o "+N por segundo" e o "N% da Vida por segundo" de itens e árvore,
     // × "Velocidade de Regeneração de Vida aumentada"; a MANA regenera 1,8% da máxima por segundo (+ o fixo), × "Regeneração de Mana aumentada".
-    r.hp += poe.vidaPorSegundo * s;
+    // ("Juramento do Zelote": a regeneração de vida vai para o Escudo de Energia.)
+    if (ficha.afPoe?.['keystone:juramentoDoZelote'] > 0 || ficha.afPoe?.['sempre:juramentoDoZelote'] > 0) estado.es = Math.min(Math.round(ficha.energyShield ?? 0), (estado.es ?? 0) + poe.vidaPorSegundo * s);
+    else r.hp += poe.vidaPorSegundo * s;
     r.mana += poe.manaPorSegundo * s;
   } else {
     r.hp += (estado.maxHp ?? 0) * 0.004 * s * promo.hp * (1 + daArvore.hp) + (doEquipamento.hp ?? 0) * s;
@@ -1363,6 +1365,7 @@ export function tique(estado, personagem, agora = Date.now()) {
   // personagem (dano contínuo e controle dos bichos — `itens-poe/mods-poe.mjs`).
   ModsPoe.definirFichaDaCacada(hunt, () => Ficha.combate(estado));
   ModsPoe.tique(estado, hunt, Ficha.combate(estado), passou);
+  ModsPoe.aurasProximas(estado, hunt, Ficha.combate(estado));
   // Numa caçada em grupo, só o DONO da sala move os bichos e faz renascer —
   // senão eles andariam uma vez por membro a cada tique.
   const donoDaSala = !hunt.anfitriao;
@@ -1905,10 +1908,12 @@ function tiqueDosLacaios(estado, hunt, personagem, grade, agora) {
     if (oferenda?.regenPct) l.hp = Math.min(l.maxHp, l.hp + (l.maxHp * oferenda.regenPct) / 100 / 4);
     // PoE: "Lacaios Regeneram X% / N de Vida por segundo" (o tique é de 1/4 s).
     if (l.poe && (l.poe.regenPct || l.poe.regen)) l.hp = Math.min(l.maxHp, l.hp + ((l.maxHp * l.poe.regenPct) / 100 + l.poe.regen) / 4);
+    // ("Espíritos Furiosos Convocados sofrem X% de sua Vida Máxima como Dano de Caos por segundo".)
+    if (l.poe?.degenPct) l.hp -= (l.maxHp * l.poe.degenPct) / 100 / 4;
     for (const b of hunt.monstros) {
       if (b.hp <= 0 || b.dummy || distancia(b, l) > 1 || Math.random() > 0.125) continue;
       // A Oferenda de Osso: o lacaio bloqueia o golpe.
-      if (oferenda?.bloqueioPct && Math.random() * 100 < oferenda.bloqueioPct) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true }); continue; }
+      if ((oferenda?.bloqueioPct || l.poe?.bloqueio) && Math.random() * 100 < (oferenda?.bloqueioPct ?? 0) + (l.poe?.bloqueio ?? 0)) { eventos.push({ t: 'block', uid: l.uid, x: l.x, y: l.y, color: '#999999', bloqueado: true }); continue; }
       // (PoE: o golpe do bicho com o dano de outros tipos dele passando pelas resistências do lacaio, e o "Lacaios sofrem Dano aumentado/reduzido".)
       const extras = l.poe ? AtributosDoMob.danoExtraDoGolpe(b).reduce((n, x) => n + ((x.min + x.max) / 2) * 0.5 * (1 - Math.min(75, x.elemento === 'chaos' ? l.poe.resCaos : ['fire', 'ice', 'energy'].includes(x.elemento) ? l.poe.res : 0) / 100), 0) : 0;
       const d = Math.max(1, Math.round((R.ataqueDoMonstro(b) * 0.5 + extras) * Math.max(0, 1 + (l.poe?.danoRecebidoPct ?? 0) / 100) * ModsPoe.doBicho(b, hunt.clock ?? 0, { contraOutro: true }).danoFator));

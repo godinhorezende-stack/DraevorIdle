@@ -66,7 +66,7 @@ test('todo atributo novo com "combate: true" é lido por algum sistema (nada mar
   andar(new URL('../systems', import.meta.url).pathname);
   const codigo = arquivos.join('\n');
   // Os que o código monta pelo nome (`${el}_res_max`, `frasco_${tipo}`…): o pedaço fixo tem de estar no código.
-  const montado = (k) => [/_res_max$/, /^recebe_\w+_como_/, /^(evitar|imune|duracao|efeito)_\w+?(_propria|_proprio)?$/, /^minion_added_/, /^minion_chance_/, /^(added|spell_added)_\w+_dmg_(min|max)$/, /_pen$/, /^phys_conv_/, /^phys_as_extra_/, /^(max|min|duracao|carga)_/, /^(str|dex|int)_inc$/, /^bloqueio_/, /^frasco_/, /^gem_(level|quality)/, /^magnitude_/, /^chance_/, /^dot_multi/, /^(ignite|bleed|poison)_dmg_inc$/].some((re) => re.test(k));
+  const montado = (k) => [/_res_max$/, /^recebe_\w+_como_/, /^(evitar|imune|duracao|efeito)_\w+?(_propria|_proprio)?$/, /^minion_added_/, /^minion_chance_/, /^(added|spell_added)_\w+_dmg_(min|max)$/, /_pen$/, /^phys_conv_/, /^phys_as_extra_/, /^(max|min|duracao|carga)_/, /^(str|dex|int)_inc$/, /^bloqueio_/, /^frasco_/, /^gem_(level|quality)/, /^magnitude_/, /^chance_/, /^dot_multi/, /^(ignite|bleed|poison)_dmg_inc$/, /^dano_\w+_recebido_inc$/, /_sofrido_(acerto|ataque)$/, /^conv_\w+_\w+$/, /_as_extra_\w+$/, /^reflect_\w+_melee$/, /^req_(str|dex|int)_(pct|flat)$/].some((re) => re.test(k));
   // As regras da BASE (prefixos/sufixos permitidos, magnitude, um dano só, sem Conjuração, implícitos fixos) o gerador lê do TEXTO do implícito
   // (`gerar.regrasDaBase`), não pelo atributo.
   const peloTexto = new Set(['implicitos_fixos', 'prefixos_permitidos', 'sufixos_permitidos', 'so_dano_de', 'sem_mods_de_conjuracao']);
@@ -213,4 +213,35 @@ test('Vida máxima aumentada em X% (peça) entra no máximo', { skip: SEM }, () 
   const sem = personagem();
   const com = personagem({ af: { life_inc: 10 } });
   assert.ok(com.maxHp > sem.maxHp);
+});
+
+test('únicos: buffs por evento, condição de estado, keystone, culling, imunidade, conversão, escala por encaixe e o que não existe no jogo', () => {
+  const t = (p, v = []) => traduzirParte(p, v);
+  const buff = t('Recebe Presença Enlouquecedora por {0} segundos ao Matar um Inimigo Raro ou Único', [10]);
+  assert.equal(buff.estado, 'novo');
+  assert.deepEqual(buff.efeitos.map((e) => e.stat), ['ev:matar:buff:presencaEnlouquecedora@alvoRaro', 'ev:matar:buff:presencaEnlouquecedora@alvoUnico']);
+  assert.deepEqual(t('Dano aumentado em {0}% se você Matou Recentemente', [30]).efeitos, [{ stat: 'dmg_inc@matouRecente', valor: 30 }]);
+  assert.deepEqual(t('Mente Sobre Matéria').efeitos, [{ stat: 'keystone:menteSobreMateria', valor: 1 }]);
+  assert.equal(t('Golpe de Misericórdia').estado, 'novo');
+  assert.deepEqual(t('Imune a Congelamento, Resfriamento e Incêndio').efeitos.map((e) => e.stat), ['imune_congelamento', 'imune_resfriamento', 'imune_incendio']);
+  assert.deepEqual(t('{0}% do Dano Físico Convertido em Dano de Fogo', [50]).efeitos, [{ stat: 'phys_conv_fire', valor: 50 }]);
+  assert.deepEqual(t('+{0} de Vida Máxima por Encaixe Vermelho', [30]).efeitos, [{ stat: 'life%encaixe:R', valor: 30 }]);
+  assert.deepEqual(t('Resistência a Fogo reduzida em {0}%', [20]).efeitos, [{ stat: 'fire_res', valor: -20 }]);
+  // O que não existe no jogo: inerte, com o porquê; a keystone sem mecânica no jogo fica pendente (não finge efeito).
+  const pegadas = t('Pegadas de Fogo');
+  assert.equal(pegadas.estado, 'inerte');
+  assert.ok(pegadas.nota);
+  assert.equal(t('Mago de Batalha').estado, 'registrado');
+  // A família com parâmetro só vale com um parâmetro que o código conhece.
+  assert.ok(ModsPoe.dinamicoValido('max_lacaio:golem'));
+  assert.ok(!ModsPoe.dinamicoValido('max_lacaio:dragao'));
+  assert.ok(ModsPoe.dinamicoValido('pode:incendio:chaos'));
+  assert.ok(!ModsPoe.dinamicoValido('pode:incendio'));
+});
+
+test('únicos: "Dano Físico como Dano Extra de um Elemento aleatório" soma um elemento sorteado por golpe', () => {
+  const ficha = { afPoe: { phys_as_extra_random: 50 } };
+  const fogo = ModsPoe.extrasDoFisico(ficha, [10, 20], () => 0.1);
+  assert.deepEqual(fogo.extras, { fire: [5, 10] });
+  assert.deepEqual(ModsPoe.extrasDoFisico(ficha, [10, 20], () => 0.9).extras, { energy: [5, 10] });
 });

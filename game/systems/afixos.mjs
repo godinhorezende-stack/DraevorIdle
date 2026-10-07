@@ -148,8 +148,12 @@ export function soma(estado) {
   // + os buffs das gemas do PoE ligados (aura, arauto, guarda: armadura, resistências, dano adicionado... — `itens-poe/gemas-poe.mjs`).
   const gemas = GemasPoe.adds(estado);
   if (gemas) for (const [k, v] of Object.entries(gemas)) total[k] = (total[k] ?? 0) + v;
-  // Os mods CONDICIONAIS do PoE ("segurando um Escudo", "se você Matou Recentemente"…): os que valem agora entram no atributo-base.
-  return ModsPoe.resolver(estado, total);
+  // + os BUFFS nomeados do PoE ativos (Agressividade, Adrenalina, Poder Profano… — ganhos por evento ou "sempre" pela peça).
+  const dosBuffs = ModsPoe.adds(estado, total);
+  if (dosBuffs) for (const [k, v] of Object.entries(dosBuffs)) total[k] = (total[k] ?? 0) + v;
+  // Os mods CONDICIONAIS do PoE ("segurando um Escudo", "se você Matou Recentemente"…) e os "por X" (por nível, a cada N de Destreza, por
+  // carga…): os que valem agora entram no atributo-base.
+  return itensPoeLigado() ? ModsPoe.resolver(estado, total, Atributos.principais(estado, total)) : total;
 }
 
 /** Só os adds das peças VESTIDAS (a parte de `soma` que vem do equipamento; a ficha mostra a origem por categoria). */
@@ -182,7 +186,9 @@ export function efeitosDeAltar(estado) {
   if (!h?.efeitosDeAltar?.length) return null;
   const agora = relogioDaSala(h);
   const total = {};
-  for (const e of h.efeitosDeAltar) if (e.ate > agora && FICHAS[e.afixo]) total[e.afixo] = (total[e.afixo] ?? 0) + e.valor;
+  // (× o "Efeito dos Buffs de Altares em você aumentado" dos únicos do PoE.)
+  const efeito = 1 + Object.values(estado.equipment ?? {}).reduce((n, p) => n + (Number(p?.poe?.af?.efeito_altar) || 0), 0) / 100;
+  for (const e of h.efeitosDeAltar) if (e.ate > agora && FICHAS[e.afixo]) total[e.afixo] = (total[e.afixo] ?? 0) + e.valor * efeito;
   for (const [id, v] of Object.entries(total)) {
     const teto = FICHAS[id].max * 2;
     total[id] = Math.max(-teto, Math.min(teto, v));
@@ -430,6 +436,9 @@ export function sincronizarMaximos(estado) {
   const t = soma(estado);
   // +Life / +Mana dos adds, e o que STR (Life) e INT (Mana) dão — ver `personagem/atributos.mjs`.
   const doAtributo = Atributos.efeitos(Atributos.principais(estado, t));
+  // PoE (únicos): "Força não concede bônus à Vida Máxima", "Inteligência não concede nenhum bônus inerente ao Máximo de Mana".
+  if (itensPoeLigado() && t.str_sem_vida > 0) doAtributo.vida = 0;
+  if (itensPoeLigado() && t.int_sem_mana > 0) doAtributo.mana = 0;
   // + a Life % da especialização da classe (Knight: Life), sobre a vida do level + a dos adds e do STR.
   // + a "Vida máxima aumentada em X%" das peças do PoE (`life_inc`).
   const lifePct = (Especializacoes.efeitos(estado).stats.life ?? 0) + (t.life_inc ?? 0);
@@ -439,6 +448,11 @@ export function sincronizarMaximos(estado) {
   const manaPct = (Especializacoes.efeitos(estado).stats.mana ?? 0) + (t.mana_inc ?? 0);
   const manaSemPct = base.maxMana + (t.mana ?? 0) + doAtributo.mana;
   const quer = { hp: Math.round((t.life ?? 0) + doAtributo.vida + (vidaSemPct * lifePct) / 100), mana: Math.round((t.mana ?? 0) + doAtributo.mana + (manaSemPct * manaPct) / 100) };
+  // PoE: "X% de Vida Máxima Convertida em Escudo de Energia" — sai da vida e vira escudo (a ficha soma `vidaConvertidaPoe` no escudo).
+  const converte = itensPoeLigado() ? Math.min(100, Number(t.vida_em_escudo) || 0) : 0;
+  const vidaConvertida = converte > 0 ? Math.round(((base.maxHp + quer.hp) * converte) / 100) : 0;
+  quer.hp -= vidaConvertida;
+  estado.vidaConvertidaPoe = vidaConvertida;
   const tem = estado.afixoMax ?? { hp: 0, mana: 0 };
   if (quer.hp === tem.hp && quer.mana === tem.mana) return;
   estado.maxHp = (estado.maxHp ?? 0) + quer.hp - tem.hp;

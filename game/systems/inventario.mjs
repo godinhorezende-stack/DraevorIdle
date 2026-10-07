@@ -518,7 +518,8 @@ export function equipar(estado, { id, pilha, slot }) {
   // (A peça do PoE com "Requisito de Nível reduzido em X%" pede menos level — `nivelExigido`.)
   const naMochila = lista(estado, 'bag')[acharPilha(lista(estado, 'bag'), id, Number(pilha))] ?? null;
   const valida = Equipamento.validarEquipar(estado, meta, destino, (m) => {
-    const faltaAtributo = Requisitos.falta(m, Atributos.principais(estado, Afixos.soma(estado)));
+    const somaAgora = Afixos.soma(estado);
+    const faltaAtributo = Requisitos.falta(m, Atributos.principais(estado, somaAgora), naMochila, somaAgora);
     if (faltaAtributo) return faltaAtributo;
     const nivel = nivelExigido(m, naMochila);
     return nivel > (estado.level ?? 0) ? `Precisa do level ${nivel}.` : null;

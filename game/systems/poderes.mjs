@@ -155,7 +155,9 @@ export function alcanca(a, bicho, alvo) {
  * mecânicas dos mobs (explosão, aura, veneno, reflexo — `mobs/mecanicas.mjs`).
  */
 export function aplicarNoJogador({ estado, hunt, bicho, dano, elemento, eventos, base, ficha, temEscudo }) {
-  dano = Defesa.absorver(estado, ficha, dano, eventos, base);
+  // PoE: o dano de CAOS atravessa o Escudo de Energia (a menos que um único diga que não); a espera da recarga reinicia do mesmo jeito.
+  if (elemento === 'chaos' && ModsPoe.caosAtravessaOEscudo(ficha)) estado.esEspera = Defesa.esperaDaRecarga(ficha);
+  else dano = Defesa.absorver(estado, ficha, dano, eventos, base);
   if (dano > 0 && temEscudo && (estado.mana ?? 0) > 0) {
     const daMana = Math.min(estado.mana, dano);
     estado.mana -= daMana;
@@ -198,6 +200,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     const glancing = Formulas.PARAMETROS.bloqueio.glancingPct;
     if (glancing > 0) fatorDoBloqueio = glancing / 100;
     else bloqueouAMagia = true;
+    // PoE: os eventos "ao Bloquear" dos únicos e o "Bloqueou Recentemente".
+    ModsPoe.marcar(hunt, 'bloqueou');
+    ModsPoe.evento(estado, hunt, 'bloquear', ficha, { alvo: bicho, eventos, personagem });
   }
 
   const efeito = a.efeito ?? EFEITO_PADRAO[a.elemento];
@@ -242,7 +247,9 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
   }
   // A SUPRESSÃO DE FEITIÇO do PoE: a magia suprimida causa 50% menos dano (`ficha.supressaoDeMagia`, a chance).
   const suprimiu = (ficha.supressaoDeMagia ?? 0) > 0 && Math.random() < ficha.supressaoDeMagia;
-  let dano = Math.round(bruto * (suprimiu ? 0.5 : 1) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)));
+  // PoE: os eventos "ao Suprimir Dano Mágico" dos únicos.
+  if (suprimiu) ModsPoe.evento(estado, hunt, 'suprimir', ficha, { alvo: bicho, eventos, personagem });
+  let dano = Math.round(bruto * (suprimiu ? 0.5 : 1) * Prey.fatorDeDefesa(estado, bicho.key) * (1 - (ficha.danoRecebidoDasGemas ?? 0)) * (1 + (Number(ficha.afPoe?.dano_magico_recebido_inc) || 0) / 100) + ModsPoe.fixoRecebido(ficha, a.elemento));
   const base = { uid: 'player', quem: personagem.nome, x: alvo.x, y: alvo.y, foe: false, de: bicho.name, golpe: nomeDoGolpe(a) };
   // Void Inversion (charm): o dreno de mana vira ganho de mana.
   if (a.elemento === 'manadrain' && Charms.inverteDreno(estado, bicho)) {
@@ -252,6 +259,8 @@ export function dispararMagia({ estado, hunt, personagem, bicho, eventos, agora,
     return 0;
   }
   if (a.elemento === 'manadrain') {
+    // ("Inimigos Não Podem Drenar Mana De Você".)
+    if (Number(ficha.afPoe?.imune_dreno_mana) > 0) return 0;
     const tira = Math.min(estado.mana ?? 0, dano);
     estado.mana = (estado.mana ?? 0) - tira;
     if (tira > 0) eventos.push({ t: 'dmg', ...base, v: tira, color: COR_DO_ELEMENTO.manadrain });

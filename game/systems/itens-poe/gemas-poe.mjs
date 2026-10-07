@@ -474,7 +474,9 @@ export function adds(estado) {
   if (!hunt?.buffs && !hunt?.lacaios?.length) return null;
   const agora = hunt.clock ?? 0;
   const total = {};
-  for (const b of Object.values(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v;
+  // (× o "Efeito de Auras / dos Buffs dos Clamores / dos Arautos aumentado" dos únicos: `efeito_buff_gema:<arquétipo>` nas peças vestidas.)
+  const efeitoDe = (tipo) => 1 + Object.values(estado.equipment ?? {}).reduce((n, p) => n + (Number(p?.poe?.af?.[`efeito_buff_gema:${String(tipo ?? '').replace(/^poe-/, '')}`]) || 0) + (Number(p?.poe?.af?.['efeito_buff_gema:todos']) || 0), 0) / 100;
+  for (const b of Object.values(hunt.buffs ?? {})) if (b.afPoe && b.ate > agora) { const f = efeitoDe(b.tipo); for (const [k, v] of Object.entries(b.afPoe)) total[k] = (total[k] ?? 0) + v * f; }
   // Os GOLENS dão bônus ao dono enquanto vivem ("Golens aumentam 24% de Dano", "+256 de precisão"...); o Golem Carniçal, dano físico
   // adicional por lacaio não-golem em campo.
   const vivos = (hunt.lacaios ?? []).filter((l) => l.hp > 0);

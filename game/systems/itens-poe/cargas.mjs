@@ -75,9 +75,19 @@ function por(estado, tipo, af, quantas = 1, rng = Math.random) {
   const atual = c[tipo] && c[tipo].ate > agora ? c[tipo].n : 0;
   // O Destruidor: chance de, ao ganhar Tolerância, ir direto ao máximo.
   const tudo = tipo === 'tolerancia' && n(af, 'chance_tolerancia_maxima') > 0 && rng() * 100 < n(af, 'chance_tolerancia_maxima');
-  c[tipo] = { n: tudo ? max : Math.min(max, atual + quantas), ate: agora + duracao(af, tipo) };
+  // ("X% de chance de que se você fosse ganhar Cargas de Poder, você ganha o seu número máximo" — o mesmo do Destruidor, para o Poder.)
+  const tudoPoder = tipo === 'poder' && n(af, 'chance_poder_maxima') > 0 && rng() * 100 < n(af, 'chance_poder_maxima');
+  const novo = tudo || tudoPoder ? max : Math.min(max, atual + quantas);
+  c[tipo] = { n: novo, ate: agora + duracao(af, tipo) };
+  // O "ganhou uma Carga de X Recentemente" e o evento "ao atingir o Máximo de Cargas" (os únicos — `mods-poe.evento`).
+  (hunt.poeRecente ??= {})[tipo === 'poder' ? 'ganhouPoder' : tipo === 'frenesi' ? 'ganhouFrenesi' : 'ganhouTolerancia'] = agora;
+  if (novo >= max && atual < max) aoMudar?.(estado, tipo, 'max');
   return true;
 }
+/** Quem ouve as cargas chegando no máximo / sendo perdidas (a ficha registra: os eventos dos únicos). */
+// eslint-disable-next-line no-var
+var aoMudar;
+export function definirAoMudar(fn) { aoMudar = fn; }
 
 /**
  * Ganha cargas do tipo (até o máximo) e renova a duração de todas dele. Com a keystone Conduíte, a party na mesma sala ganha também (cada
@@ -110,6 +120,7 @@ export function tique(estado, af = {}) {
     const min = minimo(af, t);
     const atual = c?.[t];
     if (atual && atual.ate <= agora) {
+      aoMudar?.(estado, t, 'perdeu');
       if (min > 0) {
         atual.n = min;
         atual.ate = agora + duracao(af, t);

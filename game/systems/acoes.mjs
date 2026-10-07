@@ -215,7 +215,9 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
       for (const el of Object.keys(daMagia)) somar(el, fichaBase.danoSomadoMagia?.[el] ?? [0, 0]);
       for (const [el, v] of Object.entries(doSuporte)) somar(el, v, eficacia);
     }
-    if (!Object.keys(porElemento).length) porElemento = null;
+    // PoE (únicos): as conversões entre elementos, os ganhos extras e a máscara de dano ("Não Causa Dano Elemental"…).
+    porElemento = ModsPoe.transformarPartes(fichaBase, porElemento);
+    if (!porElemento || !Object.keys(porElemento).length) porElemento = null;
   }
   const somaDe = (i) => Object.values(porElemento).reduce((t, v) => t + v[i], 0);
   const min = porElemento ? Math.max(1, Math.round(somaDe(0))) : Math.max(1, Math.round(doNivel.min * fatorDaFicha + somadoMin + doSuporteMin));
@@ -230,7 +232,7 @@ function contaDoDano(estado, entry, efeitoDaGema, fichaBase = Ficha.combate(esta
   if (ehMagia && daGemaPoe && fichaBase.critMagiaPoe) {
     const daGema = GemasPoe.criticoBaseNoNivel(daGemaPoe.slug, nivelPoe) ?? 0;
     const cm = fichaBase.critMagiaPoe;
-    ficha = { ...ficha, critChance: Math.min(1, Math.max(0, (daGema + cm.fixa) * (1 + cm.aumentada / 100))), critBaseDaGema: daGema };
+    ficha = { ...ficha, critChance: Math.min(1, Math.max(0, (daGema + cm.fixa) * (1 + cm.aumentada / 100) * (cm.mais ?? 1))), critBaseDaGema: daGema };
   }
   // (A proficiência de arma saiu — dono, 06/10: o "% da perícia como dano" e o crítico de runa dela não existem mais.)
   const daPericia = 0;
@@ -1034,6 +1036,8 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   if (bloqueio(entry, estado)) return { ok: false, erro: 'Você não pode mais usar isso.', motivo: 'BLOQUEADA' };
   // A magia ligada a um suporte de gatilho só sai pelo gatilho (como no PoE: não se conjura à mão).
   if (!gatilho && entry.poeGema && Gemas.ativadaPor(estado, entry.id)) return { ok: false, erro: `Ativada por ${Gemas.ativadaPor(estado, entry.id)}.`, motivo: 'ATIVADA_POR_GATILHO' };
+  // A habilidade que um ÚNICO ativa ("Ativa X quando…"): só sai pelo evento, como no PoE.
+  if (!gatilho && entry.poeGema && Gemas.skillsAtivas(estado).get(entry.id)?.ativadaPorItem) return { ok: false, erro: 'Ativada pelo item.', motivo: 'ATIVADA_POR_GATILHO' };
 
   const agora = hunt.clock ?? 0;
   const cds = (hunt.cooldowns ??= {});
@@ -1082,7 +1086,10 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const efeitoDaGema = comOsAlvosDaGema(entry, Gemas.ehSkillDeGema(entry) ? Gemas.efeitoNaSkill(estado, entry.id) : null, estado);
   // "Custo de mana das magias" da árvore (−1,8% = mais barata) e o Mana Efficiency da gema.
   // (PoE: ÷ a "Eficiência de custo de mana" das peças.)
-  const custoDeMana = entry.kind === 'item' ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (Ficha.combate(estado).custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100)) / Math.max(0.1, 1 + ModsPoe.valor(Ficha.combate(estado), 'eficiencia_custo_mana') / 100)));
+  // (A habilidade ativada por um ÚNICO não tem custo, como no PoE.)
+  // (PoE: × "Custo de Mana das Habilidades aumentado/reduzido" e + "N ao Custo de Mana Total" dos únicos.)
+  const fichaDoCusto = Ficha.combate(estado);
+  const custoDeMana = entry.kind === 'item' || gatilho?.semCusto ? 0 : Math.max(0, Math.round((custoDaSkill(entry, efeitoDaGema) * (1 + (fichaDoCusto.custoDeMana ?? 0)) * (1 + (efeitoDaGema?.custoPct ?? 0) / 100) * Math.max(0, 1 + ModsPoe.valor(fichaDoCusto, 'custo_mana_inc') / 100)) / Math.max(0.1, 1 + ModsPoe.valor(fichaDoCusto, 'eficiencia_custo_mana') / 100) + ModsPoe.valor(fichaDoCusto, 'custo_mana_fixo')));
   // Life Cost (support): o custo sai da VIDA, e não da mana (sem deixar o personagem a menos de 1).
   // Magia Sanguínea (keystone do PoE): as habilidades custam Vida em vez de Mana.
   const pagaComVida = (!!efeitoDaGema?.custoEmVida || temHabilidade(estado, 'magiaSanguinea') || ModsPoe.valor(Ficha.combate(estado), 'keystone_magia_sanguinea') > 0) && custoDeMana > 0;
@@ -1090,7 +1097,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   // (PoE: com "Gaste Escudo de Energia antes da Mana" na peça da gema, o escudo cobre parte do custo.)
   const slotDaGema = Gemas.ehSkillDeGema(entry) ? Gemas.skillsAtivas(estado).get(entry.id)?.onde?.slot ?? null : null;
   const escudoNoCusto = ModsPoe.escudoParaOCusto(estado, slotDaGema, Ficha.combate(estado));
-  if (!pagaComVida && custoDeMana && (estado.mana ?? 0) + escudoNoCusto < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
+  // ("Mana Insuficiente não impede seus Ataques Corpo a Corpo".)
+  const semManaPode = ModsPoe.valor(fichaDoCusto, 'ataque_sem_mana') > 0 && tagsPoeDaSkill(entry).includes('corpo');
+  if (!pagaComVida && custoDeMana && !semManaPode && (estado.mana ?? 0) + escudoNoCusto < custoDeMana) return { ok: false, erro: 'Sem mana.', motivo: 'MANA' };
   // "Mana mínima (%)" do slot: abaixo dela a skill espera (guarda a mana para a cura).
   if (action.minMana > 0 && entry.kind !== 'item' && (100 * (estado.mana ?? 0)) / Math.max(1, estado.maxMana ?? 1) < action.minMana) {
     return { ok: false, erro: 'Abaixo da mana mínima do slot.', motivo: 'MANA_MINIMA' };
@@ -1421,7 +1430,7 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
       for (const st of postosDaGema) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
       // Os efeitos de acerto do PoE (atordoamento, Mutilar, Cegar, Desacelerar, Empalar, Empurrar, Provocar, Fúria — `itens-poe/mods-poe.mjs`).
       const fisicoDoAcerto = pedacos ? pedacos.filter((p) => p.elemento === 'physical').reduce((t, p) => t + p.dano, 0) : tipo === 'physical' ? bruto : 0;
-      const doAcerto = ModsPoe.aoAcertar(estado, hunt, bicho, ficha, { dano, fisico: fisicoDoAcerto, crit, eventos, agora, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: pedacos ? pedacos.map((p) => p.elemento) : [tipo] });
+      const doAcerto = ModsPoe.aoAcertar(estado, hunt, bicho, ficha, { dano, fisico: fisicoDoAcerto, crit, eventos, agora, personagem, mover: (b) => ModsPoe.empurrar(hunt, b), elementos: pedacos ? pedacos.map((p) => p.elemento) : [tipo] });
       // As afecções do PoE (só com ITENS_POE=1): o acerto entra com o elemento da skill; habilidade de ataque (golpe físico de perto/longe) é ataque.
       // As cargas do PoE no acerto da skill (crítico, não crítico, atordoou, Inimigo Único).
       if (CargasPoe.reageAoAcerto(ficha.cargas)) {
@@ -1433,7 +1442,9 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
         const ataque = entry.poeGema ? !!entry.poeGema.ataque : tagsDoAcerto.includes('physical') && (tagsDoAcerto.includes('melee') || tagsDoAcerto.includes('ranged'));
         // A gema do PoE soma as chances dela (incendiar, congelar, eletrizar, envenenar, sangrar) no nível em que está.
         const afeccoes = entry.poeGema ? GemasPoe.afeccoesComAGema(ficha.afeccoes, entry.poeGema.slug, efeitoDaGema?.nivel ?? 1) : ficha.afeccoes;
-        for (const st of AfeccoesPoe.aoAcertar(bicho, pedacos ?? [{ elemento: tipo, dano: bruto }], { afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss })) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+        const postos = AfeccoesPoe.aoAcertar(bicho, pedacos ?? [{ elemento: tipo, dano: bruto }], { afeccoes, crit, ataque, agora, salaDeBoss: !!hunt.isBoss });
+        for (const st of postos) eventos.push({ t: 'estado', uid: bicho.uid, x: bicho.x, y: bicho.y, estado: st });
+        ModsPoe.aoPorAfeccoes(estado, hunt, bicho, ficha, postos, { eventos, personagem });
       }
     };
     /*
@@ -1516,6 +1527,21 @@ function dispararSemMarcar(estado, hunt, personagem, slot, alvo, { concluir = fa
   const recarga = tempoPoe ? tempoPoe.recarga : Math.max(0, Math.round(((recargaDe(entry, entry.cooldown ?? 1000) - (fichaDaRecarga.magiasDasGemas?.[action.id]?.recargaMs ?? 0)) / (1 + (fichaDaRecarga.recuperacaoDeRecarga ?? 0) / 100)) * (1 + (efeitoDaGema?.recargaPct ?? 0) / 100)));
   // Tudo a partir do instante LÓGICO (`inicio`), não do tique em que saiu.
   cds[action.id] = { ate: inicio + recarga, total: recarga };
+  // PoE: os eventos "ao usar uma Habilidade" dos únicos (e os "recentemente": usou Movimento, Vaal, Clamor) — a ativada por gatilho não conta.
+  if (!gatilho && entry.poeGema) {
+    const tagsPoe = tagsPoeDaSkill(entry);
+    const fichaDoUso = Ficha.combate(estado);
+    ModsPoe.marcar(hunt, 'usouHabilidade');
+    const ctxDoUso = { alvo, eventos, personagem, tags: tagsPoe };
+    ModsPoe.evento(estado, hunt, 'usarHabilidade', fichaDoUso, ctxDoUso);
+    ModsPoe.evento(estado, hunt, tagsPoe.includes('ataque') ? 'usarAtaque' : 'usarMagia', fichaDoUso, ctxDoUso);
+    for (const [tag, rec, ev] of [['movimento', 'usouMovimento', 'usarMovimento'], ['vaal', 'usouVaal', 'usarVaal'], ['clamor', 'clamou', 'usarClamor'], ['maldicao', null, 'conjurarMaldicao']]) {
+      if (!tagsPoe.includes(tag)) continue;
+      if (rec) ModsPoe.marcar(hunt, rec);
+      ModsPoe.evento(estado, hunt, ev, fichaDoUso, ctxDoUso);
+    }
+    if (/^Dash$|Avanço$/i.test(GemasPoe.doSlug(entry.poeGema.slug)?.gema?.en ?? '')) ModsPoe.marcar(hunt, 'usouAvanco');
+  }
   // Recarga com CARGAS (PoE: "Recarga: 3,5 s (3 usos)" — o Avanço Flamejante): gasta uma por uso e elas voltam uma de cada vez; só trava
   // quando todas estão recarregando (até a primeira voltar).
   if (tempoPoe?.cargas > 1 && recarga) {
@@ -1586,6 +1612,25 @@ export function ativarGatilhos(estado, hunt, personagem, evento, { acao = null, 
   }
   return n;
 }
+
+/**
+ * A habilidade que um ÚNICO ativa num evento ("Ativa Disparo Elétrico Nível 20 quando você causar um Golpe Crítico" — `mods-poe.evento`):
+ * a gema pelo nome (ela já está entre as ativas do personagem, marcada `ativadaPorItem`), no alvo do evento ou no bicho mais perto, sem custo.
+ * Uma por evento a cada 0,25 s (o PoE tem a recarga interna das ativadas).
+ */
+ModsPoe.definirDisparo((estado, hunt, personagem, nome, nivel, alvo, eventos = []) => {
+  const def = Gemas.ativaPeloNome(nome);
+  if (!def || !hunt) return;
+  const agora = hunt.clock ?? 0;
+  const cds = (hunt.cooldowns ??= {});
+  const chave = `gatilho-item:${def.acao}`;
+  if (cds[chave] && !R.liberou(agora, cds[chave].ate)) return;
+  const alvoDaMagia = alvo && alvo.hp > 0 ? alvo : hunt.monstros.filter((b) => b.hp > 0).sort((a, b) => distanciaChebyshev(hunt.pos, a) - distanciaChebyshev(hunt.pos, b))[0] ?? null;
+  const r = dispararSemMarcar(estado, hunt, personagem, null, alvoDaMagia, { gatilho: { acao: { id: def.acao, enabled: true, minMana: 0, minTargets: 1, conditions: [] }, semCusto: true } });
+  if (!r.ok) return;
+  cds[chave] = { ate: agora + 250, total: 250 };
+  eventos.push({ t: 'gatilho', quem: personagem?.nome, suporte: 'Item único', skill: def.nome }, ...(r.eventos ?? []));
+});
 
 /**
  * O DANO RECEBIDO pelo personagem ("Conjurar ao Receber Dano"): soma no grupo e, passando do limiar do nível do suporte, ativa as magias

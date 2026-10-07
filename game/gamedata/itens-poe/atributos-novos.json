@@ -1706,6 +1706,732 @@
       "unidade": "",
       "combate": true,
       "efeito": "acoes (o custo sai da Vida)"
+    },
+    "mais_dano": {
+      "nome": "Dano (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fichaDoGolpe: × (1 + isto) no golpe"
+    },
+    "culling": {
+      "nome": "Golpe de Misericórdia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar: mata o alvo Raro/Único com ≤5% de vida, o comum com ≤10%"
+    },
+    "custo_mana_inc": {
+      "nome": "Custo de Mana das Habilidades",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (custo × (1 + isto))"
+    },
+    "custo_mana_fixo": {
+      "nome": "Custo de Mana fixo das Habilidades",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (soma ao custo)"
+    },
+    "alcance_corpo_m": {
+      "nome": "Alcance Corpo a Corpo (metros)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.alcanceCorpoExtra → hunt/combate.alcanceDaArma"
+    },
+    "roubo_teto_inc": {
+      "nome": "Recuperação total por segundo do Roubo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.recuperarRoubo (teto de 20%/s do PoE × (1 + isto))"
+    },
+    "roubo_instancia_inc": {
+      "nome": "Recuperação máxima por instância de Roubo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech (10% por instância × (1 + isto))"
+    },
+    "dano_recebido_inc": {
+      "nome": "Dano recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "dano_recebido_mais": {
+      "nome": "Dano recebido (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "dano_magico_recebido_inc": {
+      "nome": "Dano Mágico recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "poderes (magias dos monstros) e itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "dano_elemental_recebido_inc": {
+      "nome": "Dano Elemental recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "dano_physical_recebido_inc": {
+      "nome": "Dano Físico recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "physical_sofrido_acerto": {
+      "nome": "Dano Físico sofrido dos Acertos (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido"
+    },
+    "physical_sofrido_ataque": {
+      "nome": "Dano Físico sofrido dos Acertos de Ataques (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido (golpes dos monstros)"
+    },
+    "dano_fire_recebido_inc": {
+      "nome": "Dano de Fogo recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "fire_sofrido_acerto": {
+      "nome": "Dano de Fogo sofrido dos Acertos (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido"
+    },
+    "fire_sofrido_ataque": {
+      "nome": "Dano de Fogo sofrido dos Acertos de Ataques (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido (golpes dos monstros)"
+    },
+    "dano_ice_recebido_inc": {
+      "nome": "Dano de Gelo recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "ice_sofrido_acerto": {
+      "nome": "Dano de Gelo sofrido dos Acertos (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido"
+    },
+    "ice_sofrido_ataque": {
+      "nome": "Dano de Gelo sofrido dos Acertos de Ataques (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido (golpes dos monstros)"
+    },
+    "dano_energy_recebido_inc": {
+      "nome": "Dano de Raio recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "energy_sofrido_acerto": {
+      "nome": "Dano de Raio sofrido dos Acertos (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido"
+    },
+    "energy_sofrido_ataque": {
+      "nome": "Dano de Raio sofrido dos Acertos de Ataques (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido (golpes dos monstros)"
+    },
+    "dano_chaos_recebido_inc": {
+      "nome": "Dano de Caos recebido aumentado",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDoDanoRecebido"
+    },
+    "chaos_sofrido_acerto": {
+      "nome": "Dano de Caos sofrido dos Acertos (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido"
+    },
+    "chaos_sofrido_ataque": {
+      "nome": "Dano de Caos sofrido dos Acertos de Ataques (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fixoRecebido (golpes dos monstros)"
+    },
+    "recebe_physical_como_fire": {
+      "nome": "Dano Físico recebido como Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_physical_como_ice": {
+      "nome": "Dano Físico recebido como Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_physical_como_energy": {
+      "nome": "Dano Físico recebido como Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_physical_como_chaos": {
+      "nome": "Dano Físico recebido como Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_fire_como_physical": {
+      "nome": "Dano de Fogo recebido como Físico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_fire_como_chaos": {
+      "nome": "Dano de Fogo recebido como Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_ice_como_physical": {
+      "nome": "Dano de Gelo recebido como Físico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_ice_como_chaos": {
+      "nome": "Dano de Gelo recebido como Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_energy_como_physical": {
+      "nome": "Dano de Raio recebido como Físico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_energy_como_chaos": {
+      "nome": "Dano de Raio recebido como Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_chaos_como_physical": {
+      "nome": "Dano de Caos recebido como Físico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_chaos_como_fire": {
+      "nome": "Dano de Caos recebido como Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_chaos_como_ice": {
+      "nome": "Dano de Caos recebido como Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_chaos_como_energy": {
+      "nome": "Dano de Caos recebido como Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_elemental_como_physical": {
+      "nome": "Dano Elemental recebido como Físico",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_elemental_como_fire": {
+      "nome": "Dano Elemental recebido como Fogo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_elemental_como_ice": {
+      "nome": "Dano Elemental recebido como Gelo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_elemental_como_energy": {
+      "nome": "Dano Elemental recebido como Raio",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "recebe_elemental_como_chaos": {
+      "nome": "Dano Elemental recebido como Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fatorDaResistenciaRecebida (parte do dano usa a resistência do outro elemento)"
+    },
+    "caos_nao_atravessa_escudo": {
+      "nome": "Dano de Caos não atravessa o Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.caosAtravessaOEscudo"
+    },
+    "es_regen_pct": {
+      "nome": "Escudo de Energia Regenerado por segundo (% do máximo)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.tique"
+    },
+    "mana_regen_max_pct": {
+      "nome": "Mana Regenerada por segundo (% do máximo)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe"
+    },
+    "perde_vida_s": {
+      "nome": "Perde Vida por segundo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.tique"
+    },
+    "perde_vida_pct_s": {
+      "nome": "Perde % da Vida por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.tique"
+    },
+    "perde_mana_pct_s": {
+      "nome": "Perde % da Mana por segundo",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.tique"
+    },
+    "recuperacao_inc": {
+      "nome": "Recuperação de Vida e Escudo aumentada",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe / recuperarRoubo"
+    },
+    "sem_regen_vida": {
+      "nome": "Sem regeneração de Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe"
+    },
+    "sem_regen_mana": {
+      "nome": "Sem regeneração de Mana",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.regenDoPoe"
+    },
+    "chance_bleed_critico": {
+      "nome": "Chance de Sangramento nos Golpes Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar"
+    },
+    "chance_poison_critico": {
+      "nome": "Chance de Envenenar nos Golpes Críticos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar"
+    },
+    "critico_sem_afeccao_inerente": {
+      "nome": "Golpes Críticos não aplicam afecções de forma inerente",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar"
+    },
+    "eletrizacao_como_mais": {
+      "nome": "Eletriza como se causasse mais dano",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar"
+    },
+    "resfriamento_como_mais": {
+      "nome": "Resfria como se causasse mais dano",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar"
+    },
+    "duracao_resfriamento": {
+      "nome": "Duração do Resfriamento nos inimigos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/afeccoes.aoAcertar"
+    },
+    "elem_as_extra_chaos": {
+      "nome": "Dano Elemental ganho como Caos extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "naocaos_as_extra_chaos": {
+      "nome": "Dano não-Caótico ganho como Caos extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_elemental_chaos": {
+      "nome": "Dano Elemental convertido em Caos",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_fire_ice": {
+      "nome": "Conversão de dano (fire → ice)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "fire_as_extra_ice": {
+      "nome": "Dano fire ganho como ice extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_fire_energy": {
+      "nome": "Conversão de dano (fire → energy)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "fire_as_extra_energy": {
+      "nome": "Dano fire ganho como energy extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_fire_chaos": {
+      "nome": "Conversão de dano (fire → chaos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_ice_fire": {
+      "nome": "Conversão de dano (ice → fire)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "ice_as_extra_fire": {
+      "nome": "Dano ice ganho como fire extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_ice_energy": {
+      "nome": "Conversão de dano (ice → energy)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "ice_as_extra_energy": {
+      "nome": "Dano ice ganho como energy extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_ice_chaos": {
+      "nome": "Conversão de dano (ice → chaos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_energy_fire": {
+      "nome": "Conversão de dano (energy → fire)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "energy_as_extra_fire": {
+      "nome": "Dano energy ganho como fire extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_energy_ice": {
+      "nome": "Conversão de dano (energy → ice)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "energy_as_extra_ice": {
+      "nome": "Dano energy ganho como ice extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "conv_energy_chaos": {
+      "nome": "Conversão de dano (energy → chaos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.transformarPartes"
+    },
+    "phys_as_extra_random": {
+      "nome": "Dano Físico ganho como um Elemento aleatório extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.extrasDoFisico (um elemento sorteado por golpe)"
+    },
+    "arma_sem_fisico": {
+      "nome": "A arma não causa Dano Físico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/jogo (o Físico da base sai)"
+    },
+    "nunca_critico": {
+      "nome": "Nunca causa Golpes Críticos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fichaDoGolpe"
+    },
+    "crit_mais_pct": {
+      "nome": "Chance de Crítico (mais/menos)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha (critMais: × a chance de crítico)"
+    },
+    "crit_arma_fixa": {
+      "nome": "Chance de Crítico da arma fixa",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens/item.metaDaPeca"
+    },
+    "furia_magica": {
+      "nome": "Fúria concede Dano Mágico",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.fichaDoGolpe"
+    },
+    "bateria_ancia": {
+      "nome": "Bateria Anciã (custo pago com o Escudo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.escudoParaOCusto"
+    },
+    "vida_em_escudo": {
+      "nome": "Vida máxima convertida em Escudo de Energia",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos.sincronizarMaximos"
+    },
+    "mana_como_escudo": {
+      "nome": "Mana máxima ganha como Escudo de Energia extra",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.comOsModsDoPoe"
+    },
+    "sem_escudo": {
+      "nome": "Sem Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.comOsModsDoPoe"
+    },
+    "sem_armadura_escudo": {
+      "nome": "Sem Armadura nem Escudo de Energia",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.comOsModsDoPoe"
+    },
+    "defesas_zero": {
+      "nome": "Defesas são zero",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.comOsModsDoPoe"
+    },
+    "str_sem_vida": {
+      "nome": "Força não dá Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afixos (bônus inerente da Força)"
+    },
+    "int_sem_mana": {
+      "nome": "Inteligência não dá Mana",
+      "unidade": "",
+      "combate": true,
+      "efeito": "afixos (bônus inerente da Inteligência)"
+    },
+    "res_max_fixa": {
+      "nome": "Resistência máxima fixa",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha.maximoDaResistencia"
+    },
+    "res_max_fixa_tem": {
+      "nome": "Resistência máxima fixa (ligada)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.maximoDaResistencia"
+    },
+    "movimento_fixo_pct": {
+      "nome": "Velocidade de Movimento fixa (% da base)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "ficha (speed)"
+    },
+    "reflete_fisico_pct": {
+      "nome": "Reflete % do dano Físico corpo a corpo recebido",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoSerAcertado"
+    },
+    "reflect_fire_melee": {
+      "nome": "Reflete Dano de Fogo a atacantes corpo a corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoSerAcertado"
+    },
+    "reflect_ice_melee": {
+      "nome": "Reflete Dano de Gelo a atacantes corpo a corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoSerAcertado"
+    },
+    "reflect_energy_melee": {
+      "nome": "Reflete Dano de Raio a atacantes corpo a corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoSerAcertado"
+    },
+    "reflect_chaos_melee": {
+      "nome": "Reflete Dano de Caos a atacantes corpo a corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoSerAcertado"
+    },
+    "imune_maldicao": {
+      "nome": "Imune a Maldições",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.dotNoJogador (imune_<afecção>)"
+    },
+    "imune_dreno_mana": {
+      "nome": "Imune a dreno de Mana",
+      "unidade": "",
+      "combate": true,
+      "efeito": "poderes (magias que drenam mana)"
+    },
+    "sem_roubo_vida": {
+      "nome": "Não pode roubar Vida",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech"
+    },
+    "sem_roubo_mana": {
+      "nome": "Não pode roubar Mana",
+      "unidade": "",
+      "combate": true,
+      "efeito": "ficha.aplicarLeech"
+    },
+    "ataque_sem_mana": {
+      "nome": "Mana insuficiente não impede ataques corpo a corpo",
+      "unidade": "",
+      "combate": true,
+      "efeito": "acoes (custo)"
+    },
+    "sem_requisitos": {
+      "nome": "Sem requisitos de atributos",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "req_atributos_pct": {
+      "nome": "Requisito de atributos (%) de itens e gemas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "req_str_pct": {
+      "nome": "Requisito de Força (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "req_str_flat": {
+      "nome": "Requisito de Força (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "req_dex_pct": {
+      "nome": "Requisito de Destreza (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "req_dex_flat": {
+      "nome": "Requisito de Destreza (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "req_int_pct": {
+      "nome": "Requisito de Inteligência (%)",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "req_int_flat": {
+      "nome": "Requisito de Inteligência (fixo)",
+      "unidade": "",
+      "combate": true,
+      "efeito": "personagem/requisitos"
+    },
+    "conta_duas_armas": {
+      "nome": "Conta como Dupla Empunhadura",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.condicoesDe (duasArmas)"
+    },
+    "conta_todas_armas_uma_mao": {
+      "nome": "Conta como todas as armas de uma mão",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/condicoes-poe.condicoesDe (comEspada, comMachado…)"
+    },
+    "minion_block": {
+      "nome": "Chance de Bloqueio dos Lacaios",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/lacaios-poe.oQueInvoca (bloqueio do lacaio)"
+    },
+    "efeito_altar": {
+      "nome": "Efeito dos Altares",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "afixos (buff altarMenor)"
+    },
+    "chance_poder_maxima": {
+      "nome": "Chance de ganhar o máximo de Cargas de Poder",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/cargas"
+    },
+    "duracao_eletrizacao_propria": {
+      "nome": "Duração da Eletrização em você",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.dotNoJogador / itens-poe/condicoes-poe.controleNoJogador"
+    },
+    "cegos_esconjuro": {
+      "nome": "Inimigos Cegados por você têm Esconjuro",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/mods-poe.aoAcertar → itens-poe/condicoes-poe.doBicho (o cego causa 10% menos dano)"
+    },
+    "frascos_nao_aplicam": {
+      "nome": "Frascos não são aplicados em você",
+      "unidade": "",
+      "combate": true,
+      "efeito": "itens-poe/frascos.usar"
     }
   }
 }

@@ -527,6 +527,51 @@ export function skillsAtivas(estado) {
       }
     }
   }
+  return dasPecas(estado, saida);
+}
+
+/** As gemas pelo NOME (`slugDoNome`): as ativas e os suportes — o que as peças do PoE nomeiam ("Concede a Habilidade X"). */
+let PELO_NOME = null;
+function pelosNomes() {
+  if (PELO_NOME && PELO_NOME.n === DEFS.size) return PELO_NOME;
+  PELO_NOME = { n: DEFS.size, ativas: new Map(), suportes: new Map() };
+  for (const d of DEFS.values()) {
+    if (!d.poe) continue;
+    (d.tipo === 'support' ? PELO_NOME.suportes : PELO_NOME.ativas).set(ModsPoe.slugDoNome(d.nome), d);
+  }
+  return PELO_NOME;
+}
+export const ativaPeloNome = (slug) => pelosNomes().ativas.get(slug) ?? null;
+export const suportePeloNome = (slug) => pelosNomes().suportes.get(slug) ?? null;
+ModsPoe.definirGemasConhecidas((slug) => !!(ativaPeloNome(slug) || suportePeloNome(slug)));
+
+/**
+ * As habilidades que as PEÇAS do PoE dão (únicos): "Concede a Habilidade X Nível N" (vira uma gema na barra), "Ativa X Nível N quando…"
+ * (a gema existe, mas só sai pelo evento — `mods-poe.evento`) e "Gemas Encaixadas são Suportadas por X Nível N" (o suporte vale para as
+ * ativas daquela peça). Entram em `skillsAtivas`.
+ */
+function dasPecas(estado, saida) {
+  for (const [slot, peca] of Object.entries(estado?.equipment ?? {})) {
+    const af = peca?.poe?.af;
+    if (!af) continue;
+    for (const [k, v] of Object.entries(af)) {
+      if (typeof v !== 'number' || !(v > 0)) continue;
+      const concede = /^concede:(.+)$/.exec(k);
+      const gatilho = /^ev:\w+:gatilho:([^:@]+)/.exec(k);
+      const nome = concede?.[1] ?? gatilho?.[1];
+      if (!nome) continue;
+      const def = ativaPeloNome(nome);
+      if (!def || (saida.get(def.acao)?.nivel ?? 0) >= v) continue;
+      saida.set(def.acao, { acao: def.acao, itemId: def.itemId, nivel: Math.round(v), nivelBase: Math.round(v), bonusDaPeca: 0, xp: 0, raridade: raridadeDaGema(null), qualidade: 0, def, supports: [], onde: { slot, indice: -1 }, daPeca: true, ...(gatilho ? { ativadaPorItem: true } : {}) });
+    }
+    // Os suportes da peça para as ativas encaixadas NELA.
+    const suportes = Object.entries(af).map(([k, v]) => [/^suporte_local:(.+)$/.exec(k)?.[1], v]).filter(([n, v]) => n && v > 0).map(([n, v]) => [suportePeloNome(n), v]).filter(([d]) => d);
+    if (!suportes.length) continue;
+    for (const a of saida.values()) {
+      if (a.onde?.slot !== slot) continue;
+      for (const [d, nivel] of suportes) if (compativel(d.suporte, a.def.tags) && !a.supports.some((sp) => sp.def.id === d.id)) a.supports.push({ def: d, nivel: Math.round(nivel), raridade: raridadeDaGema(null), qualidade: 0 });
+    }
+  }
   return saida;
 }
 
