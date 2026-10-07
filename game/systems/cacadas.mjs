@@ -601,7 +601,7 @@ export function entrar(estado, { huntId, mode, strategy, dificuldade, campanha: 
   // — sem isto toda hunt nova voltaria para "não lurar" mesmo com o dono tendo
   // deixado "Lurar até 5" ligado na tela.
   const settings = estado.settings ?? {};
-  const levaAlvo = Math.max(0, Number(settings.lure) || 0);
+  const levaAlvo = Math.max(0, Math.min(MAX_LURE, Number(settings.lure) || 0));
   if (ESTRATEGIAS.has(strategy)) settings.strategy = strategy;
 
   estado.hunt = {
@@ -719,6 +719,8 @@ const estadosDoJogador = (hunt) => [...Controle.ativosNoJogador(hunt), ...Dot.at
 
 /** Os três valores do seletor "Alvo" do client (`jogar.html`, `#strategy`). */
 const ESTRATEGIAS = new Set(['nearest', 'lowest', 'highest']);
+/** O máximo de monstros do lure (dono, 07/10: "lure vai até 8 monstros"). */
+export const MAX_LURE = 8;
 
 /** `send({t:'strategy', value})` — grava a preferência e, numa hunt aberta, troca o alvo na hora. */
 export function definirEstrategia(estado, { value }) {
@@ -766,8 +768,9 @@ export function faseParaSeguir(estado) {
 /** `send({t:'lure', value})`/`{value:null, volta}` — grava a preferência e, se a hunt já estiver aberta, aplica na hora. */
 export function definirLure(estado, { value, volta }) {
   const settings = (estado.settings ??= {});
-  if (value != null) settings.lure = Math.max(0, Number(value) || 0);
-  if (volta != null) settings.lureVolta = Math.max(0, Number(volta) || 0);
+  // O lure vai até 8 monstros (dono, 07/10).
+  if (value != null) settings.lure = Math.max(0, Math.min(MAX_LURE, Number(value) || 0));
+  if (volta != null) settings.lureVolta = Math.max(0, Math.min(MAX_LURE - 1, Number(volta) || 0));
   if (estado.hunt) {
     if (value != null) {
       estado.hunt.levaAlvo = settings.lure;

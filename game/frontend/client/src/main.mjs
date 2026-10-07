@@ -7921,13 +7921,33 @@ function renderAll() {
    * arma; entre uma troca e outra, não há nada a fazer aqui.
    */
   const alcance = state.hunt?.alcance ?? character.derived?.attackRange ?? 1;
-  if (alcance !== ultimoAlcanceDaLista) {
-  ultimoAlcanceDaLista = alcance;
+  /*
+   * ---- No modo PoE, em METROS (dono, 07/10) ----
+   * O alcance da arma do PoE é em metros: corpo a corpo de 1 a 1,4 m (a 1 casa), arco e varinha 12 m (6 casas — 1 casa = 2 m). A lista
+   * mostra os metros, e o que passa do alcance da arma fica DESLIGADO (não dá para escolher ficar a 8 m com uma espada).
+   */
+  const armaPoe = character.equipment?.weapon?.poe ?? null;
+  const metrosDaArma = armaPoe ? Number(armaPoe.atributos?.alcance_metros) || null : null;
+  const chaveDaLista = `${alcance}|${metrosDaArma ?? '-'}`;
+  if (chaveDaLista !== ultimoAlcanceDaLista) {
+  ultimoAlcanceDaLista = chaveDaLista;
   for (const opcao of $('distance').options) {
     const sqm = Number(opcao.value);
     const passa = sqm === 0 || sqm <= alcance;
-    opcao.textContent = sqm === 0 ? 'Corpo a corpo' : `${sqm} sqm${passa ? '' : ` · máx ${alcance}`}`;
-    opcao.title = passa ? '' : `A sua arma alcança ${alcance} sqm — escolhendo ${sqm} o personagem vai parar a ${alcance}.`;
+    if (armaPoe) {
+      // Arma corpo a corpo do PoE (até 1,4 m): só "Corpo a corpo" — 2 m seria a mesma casa colada.
+      const corpoACorpo = !metrosDaArma || metrosDaArma < 2;
+      const vale = sqm === 0 || (!corpoACorpo && sqm <= alcance);
+      opcao.classList.toggle('fora-do-alcance', !vale);
+      opcao.disabled = !vale;
+      opcao.textContent = sqm === 0 ? `Corpo a corpo${metrosDaArma && metrosDaArma < 2 ? ` (${String(metrosDaArma).replace('.', ',')} m)` : ''}` : `${sqm * 2} m`;
+      opcao.title = vale ? '' : `A sua arma alcança ${metrosDaArma ? String(metrosDaArma).replace('.', ',') : alcance * 2} m.`;
+      continue;
+    } else {
+      opcao.disabled = false;
+      opcao.textContent = sqm === 0 ? 'Corpo a corpo' : `${sqm} sqm${passa ? '' : ` · máx ${alcance}`}`;
+      opcao.title = passa ? '' : `A sua arma alcança ${alcance} sqm — escolhendo ${sqm} o personagem vai parar a ${alcance}.`;
+    }
     opcao.classList.toggle('fora-do-alcance', !passa);
   }
   }
@@ -8098,7 +8118,7 @@ const CONTROLES_DA_BARRA = [
       'Alvo\nQual criatura o personagem ataca primeiro.\nMais perto: a que está mais próxima.\nMenos vida: a mais perto de morrer.\nMais vida: a com a maior porcentagem de vida.',
   },
   {
-    id: 'distance', nome: 'Distância do alvo', titulo: 'Distância do alvo', curto: (v) => (v === '0' ? 'corpo' : `${v}sqm`),
+    id: 'distance', nome: 'Distância do alvo', titulo: 'Distância do alvo', curto: (v) => (v === '0' ? 'corpo' : state.character?.equipment?.weapon?.poe ? `${Number(v) * 2}m` : `${v}sqm`),
     ajuda:
       'Distância do alvo\nA quantos sqm o personagem fica do bicho enquanto luta.\nCorpo a corpo: cola no bicho.\n1 a 6 sqm: recua e ataca de longe (bom para paladino e mago).',
   },

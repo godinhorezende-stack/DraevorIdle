@@ -76,3 +76,14 @@ test('B4. recompensas de nível no PoE: só o Frasco de Vida Pequeno no level 1;
   R.abrirProximas(velho);
   assert.deepEqual(velho.presentes.marcos.map((m) => m.tipo), ['frasco-poe']);
 });
+
+test('B5. o lure vai até 8 monstros (e o "voltar em" até 7), no servidor também (dono, 07/10)', async () => {
+  const Cacadas = await import('../systems/cacadas.mjs');
+  assert.equal(Cacadas.MAX_LURE, 8);
+  const e = personagemDeTeste({ vocacao: 'knight', level: 30 });
+  Cacadas.definirLure?.(e, { value: 10, volta: 9 });
+  if (Cacadas.definirLure) {
+    assert.equal(e.settings.lure, 8);
+    assert.equal(e.settings.lureVolta, 7);
+  }
+});
