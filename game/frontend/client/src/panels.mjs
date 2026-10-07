@@ -19962,8 +19962,8 @@ function cardDaParty(membro, party, send) {
      * jogador já aprendeu isso na barra de baixo, e um segundo vocabulário para
      * a mesma coisa é uma coisa a mais para aprender sem motivo.
      */
-    card.append(barraDoCard('ficha-regen-vida', 'hp', membro.hp, membro.maxHp, `Vida ${membro.hp} de ${membro.maxHp}`));
-    card.append(barraDoCard('ficha-regen-mana', 'mana', membro.mana, membro.maxMana, `Mana ${membro.mana} de ${membro.maxMana}`));
+    card.append(barraDoCard('ficha-regen-vida', 'hp', membro.hp, membro.maxHp, `Vida ${Math.max(membro.hp > 0 ? 1 : 0, Math.floor(membro.hp ?? 0))} de ${Math.floor(membro.maxHp ?? 0)}`));
+    card.append(barraDoCard('ficha-regen-mana', 'mana', membro.mana, membro.maxMana, `Mana ${Math.floor(membro.mana ?? 0)} de ${Math.floor(membro.maxMana ?? 0)}`));
     card.append(
       barraDoCard(
         'ficha-exp',
@@ -20332,8 +20332,8 @@ export function atualizarBarrasDaParty(body, party, grupo = null) {
       barra.style.width = `${Math.max(0, Math.min(100, (feito / Math.max(1, total)) * 100))}%`;
       if (linha) linha.title = titulo;
     };
-    ajustar('hp', membro.hp, membro.maxHp, `Vida ${membro.hp} de ${membro.maxHp}`);
-    ajustar('mana', membro.mana, membro.maxMana, `Mana ${membro.mana} de ${membro.maxMana}`);
+    ajustar('hp', membro.hp, membro.maxHp, `Vida ${Math.max(membro.hp > 0 ? 1 : 0, Math.floor(membro.hp ?? 0))} de ${Math.floor(membro.maxHp ?? 0)}`);
+    ajustar('mana', membro.mana, membro.maxMana, `Mana ${Math.floor(membro.mana ?? 0)} de ${Math.floor(membro.maxMana ?? 0)}`);
     ajustar('exp', membro.progresso * 100, 100, `${Math.floor(membro.progresso * 100)}% do level ${membro.level}`);
 
     /*
