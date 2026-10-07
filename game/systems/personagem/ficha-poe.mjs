@@ -1,0 +1,196 @@
+// A FICHA DO PERSONAGEM no estilo do PoE (dono, 07/10: "melhore a ficha do personagem para algo assim, com todos os atributos importantes
+// e de onde vem" — a tela de personagem do PoE: https://www.poewiki.net/wiki/Character_screen). Só com ITENS_POE=1.
+//
+// Monta, a partir da ficha de combate (`ficha.mjs → combate`) e do estado, o que a tela desenha: o cabeçalho (classe, ascendência, área,
+// atributos), os números grandes (Vida, Escudo de Energia, Mana; Armadura, Evasão, Bloqueio; as resistências com o valor sem limite entre
+// parênteses) e as SEÇÕES em lista (Vida, Escudo de Energia, Mana, Ataque, Magia, Defesa, Cargas, Diversos) — como as abas Ofensa, Defesa,
+// Diversos e Cargas do PoE. Cada linha pode trazer `fontes` (`[{ fonte, valor }]`): DE ONDE vem o número (classe, nível, atributo,
+// equipamento, árvore, especialização...), que a tela mostra ao passar o mouse.
+import * as R from '../regras.mjs';
+import * as Afixos from '../afixos.mjs';
+import * as Atributos from './atributos.mjs';
+import * as Especializacoes from './especializacoes.mjs';
+import * as Passivas from '../passivas/arvore.mjs';
+import * as ClassesPoe from '../itens-poe/classes.mjs';
+import { esperaDaRecarga } from './defesa.mjs';
+import { nomeDaHunt } from '../hunt/terreno.mjs';
+
+const ES = Atributos.CONFIG.energyShield ?? {};
+const r2 = (v) => Math.round((Number(v) || 0) * 100) / 100;
+const fonte = (nome, valor, extra = {}) => (valor ? [{ fonte: nome, valor: r2(valor), ...extra }] : []);
+const linha = (rotulo, valor, { fontes = null, dica = null, destaque = false } = {}) => ({ rotulo, valor, ...(fontes?.length ? { fontes } : {}), ...(dica ? { dica } : {}), ...(destaque ? { destaque: true } : {}) });
+const pct = (v, casas = 1) => `${(Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: casas })}%`;
+const num = (v, casas = 0) => (Number(v) || 0).toLocaleString('pt-BR', { maximumFractionDigits: casas });
+/** A redução da Armadura contra um golpe físico de `dano` (a fórmula do PoE 1: A / (A + 5 × dano), até 90%). */
+export const reducaoDaArmadura = (armadura, dano) => Math.min(0.9, armadura > 0 ? armadura / (armadura + 5 * Math.max(1, dano)) : 0);
+
+/** Um número que é soma de partes: as partes que somam e um "outros" com o que sobra para fechar o total (buffs, auras, cargas...). */
+function partes(total, lista, resto = 'Outros (buffs, auras, frascos, cargas)') {
+  const somado = lista.reduce((n, f) => n + (f.pct ? 0 : f.valor), 0);
+  const falta = Math.round((total - somado) * 100) / 100;
+  return [...lista, ...(Math.abs(falta) >= 0.5 ? [{ fonte: resto, valor: falta }] : [])];
+}
+
+export function montar(estado, ficha, extras = {}) {
+  const itens = Afixos.somaDeItens(estado);
+  const arv = Passivas.efeitos(estado);
+  const total = Afixos.soma(estado);
+  const outros = (k) => (total[k] ?? 0) - (itens[k] ?? 0) - (arv.adds[k] ?? 0);
+  const esp = Especializacoes.efeitos(estado);
+  const p = Atributos.principais(estado, total);
+  const doAtributo = Atributos.efeitos(p);
+  const classe = ClassesPoe.classeDe(estado);
+  const asc = estado.passivas?.ascendencia ? Passivas.arvore()?.ascendencias?.[estado.passivas.ascendencia] ?? null : null;
+  const o = ficha.origens ?? {};
+  const daOrigem = (chave) => (o[chave] ?? []).map((f) => ({ fonte: f.fonte, valor: f.valor, ...(f.pct ? { pct: true } : {}) }));
+  const base = R.statsBase(estado.vocation, estado.level ?? 1);
+
+  // ---- os atributos (Força, Destreza, Inteligência): a classe, o equipamento, a árvore e o resto
+  const atributo = (k) => partes(p[k], [...fonte(`Classe${classe ? ` (${classe.nome})` : ''}`, p.daVocacao[k]), ...fonte('Equipamento', itens[k]), ...fonte('Árvore de passivas', arv.adds[k]), ...fonte('Outros (frascos, auras)', outros(k))], 'Outros');
+
+  // ---- Vida e Mana: o nível, o atributo, o equipamento, a árvore, os "aumentada em %" e o resto
+  const pctDe = (stat) => (esp.fontes[stat] ?? []).map((f) => ({ fonte: f.especializacao, valor: f.pct, pct: true }));
+  const vida = partes(estado.maxHp ?? 0, [
+    ...fonte(`Nível ${estado.level ?? 1} (base)`, base.maxHp),
+    ...fonte(`Força (${p.str})`, doAtributo.vida),
+    ...fonte('Equipamento', itens.life),
+    ...fonte('Árvore de passivas', arv.adds.life),
+    ...fonte('Buff Power', estado.buffVida ? 3000 : 0),
+  ]);
+  const mana = partes(estado.maxMana ?? 0, [
+    ...fonte(`Nível ${estado.level ?? 1} (base)`, base.maxMana),
+    ...fonte(`Inteligência (${p.int})`, doAtributo.mana),
+    ...fonte('Equipamento', itens.mana),
+    ...fonte('Árvore de passivas', arv.adds.mana),
+    ...fonte('Buff Power', estado.buffVida ? 3000 : 0),
+  ]);
+  const vidaPct = (esp.stats.life ?? 0);
+  const manaPct = (esp.stats.mana ?? 0);
+
+  // ---- Escudo de Energia: a base das peças, o "+N" e o "aumentado em %" (equipamento, árvore e a Inteligência)
+  const esDasPecas = Object.values(estado.equipment ?? {}).reduce((n, pc) => n + (pc?.base?.es ? (pc.base.es[0] + pc.base.es[1]) / 2 : 0), 0);
+  const esPct = (total.es_pct ?? 0) + (doAtributo.energyShieldPct ?? 0);
+  const es = [
+    ...fonte('Base das peças vestidas', esDasPecas),
+    ...fonte('Equipamento (+N)', itens.energy_shield),
+    ...fonte('Árvore de passivas (+N)', arv.adds.energy_shield),
+    ...fonte('Equipamento (aumentado)', itens.es_pct, { pct: true }),
+    ...fonte('Árvore de passivas (aumentado)', arv.adds.es_pct, { pct: true }),
+    ...fonte(`Inteligência (${p.int})`, doAtributo.energyShieldPct, { pct: true }),
+  ];
+  const esMax = Math.round(ficha.energyShield ?? 0);
+  const esRecarga = esMax * (ES.RECARGA_POR_SEGUNDO ?? 0) * (1 + (ficha.esRecargaPct ?? 0) / 100);
+
+  // ---- resistências: a final (limitada) e a sem limite (o PoE mostra as duas)
+  const teto = ficha.limites?.resistenciaDoJogador ?? 75;
+  const RESIST = [['fire', 'Fogo'], ['ice', 'Gelo'], ['energy', 'Raio'], ['chaos', 'Caos']];
+  const resistencias = RESIST.map(([el, nome]) => {
+    const final = ficha.protection?.[el] ?? 0;
+    const bruta = final + (ficha.excedentes?.protection?.[el] ?? 0);
+    return { id: el, nome, final, bruta, maximo: teto, fontes: daOrigem(`protection.${el}`) };
+  });
+
+  // ---- números grandes
+  const ataquesPorSegundo = ficha.intervaloDoGolpeMs ? 1000 / ficha.intervaloDoGolpeMs : 0;
+  const danoMedio = ((ficha.damage?.min ?? 0) + (ficha.damage?.max ?? 0)) / 2;
+  const cg = ficha.cargas ?? {};
+  const maxCarga = (k) => 3 + (cg[`max_${k}`] ?? 0);
+  const chances = extras.chancesNoLevel ?? {};
+  const regenVida = (extras.hpRegen ?? 0) + (ficha.regenFlat?.hp ?? 0) + (ficha.regenDaArvore?.hp ?? 0);
+  const regenMana = (extras.manaRegen ?? 0) + (ficha.regenFlat?.mana ?? 0) + (ficha.regenDaArvore?.mana ?? 0);
+  const dano = Object.entries(ficha.danoDoElemento ?? {}).filter(([, v]) => v);
+  const NOME_DO_ELEMENTO = { physical: 'Físico', fire: 'de Fogo', ice: 'de Gelo', energy: 'de Raio', chaos: 'de Caos', earth: 'de Veneno', death: 'de Morte', holy: 'Sagrado' };
+
+  const secoes = [
+    { id: 'vida', titulo: 'Vida', linhas: [
+      linha('Vida máxima', num(estado.maxHp), { fontes: [...vida, ...pctDe('life')], destaque: true }),
+      ...(vidaPct ? [linha('Vida máxima aumentada', pct(vidaPct), { fontes: pctDe('life') })] : []),
+      linha('Regeneração de vida por segundo', num(regenVida, 1)),
+      linha('Roubo de vida', pct(ficha.lifeLeech), { dica: 'do dano causado volta como vida' }),
+      ...(ficha.vidaPorAcerto ? [linha('Vida por acerto', num(ficha.vidaPorAcerto))] : []),
+      ...(ficha.vidaPorAbate ? [linha('Vida por inimigo morto', num(ficha.vidaPorAbate))] : []),
+    ] },
+    { id: 'es', titulo: 'Escudo de Energia', linhas: [
+      linha('Escudo de Energia máximo', num(esMax), { fontes: es, destaque: true }),
+      linha('Escudo de Energia máximo aumentado', pct(esPct), { fontes: es.filter((f) => f.pct) }),
+      linha('Recarga por segundo', num(esRecarga, 1), { dica: `${pct((ES.RECARGA_POR_SEGUNDO ?? 0) * 100, 0)} do máximo por segundo${ficha.esRecargaPct ? `, +${pct(ficha.esRecargaPct, 0)}` : ''}` }),
+      linha('A recarga começa depois de', `${num(esperaDaRecarga(ficha) / 1000, 2)} s`, { dica: 'sem levar dano' }),
+    ] },
+    { id: 'mana', titulo: 'Mana', linhas: [
+      linha('Mana máxima', num(estado.maxMana), { fontes: [...mana, ...pctDe('mana')], destaque: true }),
+      ...(manaPct ? [linha('Mana máxima aumentada', pct(manaPct), { fontes: pctDe('mana') })] : []),
+      linha('Regeneração de mana por segundo', num(regenMana, 1)),
+      linha('Roubo de mana', pct(ficha.manaLeech)),
+      ...(ficha.manaPorAbate ? [linha('Mana por inimigo morto', num(ficha.manaPorAbate))] : []),
+      ...(ficha.manaPorAcerto ? [linha('Mana por acerto', num(ficha.manaPorAcerto))] : []),
+      ...(ficha.custoDeMana ? [linha('Custo de mana das habilidades', pct(-ficha.custoDeMana, 0))] : []),
+    ] },
+    { id: 'ataque', titulo: 'Ataque', linhas: [
+      linha('Arma', ficha.armaEquipada?.nome ?? 'nenhuma'),
+      linha('Dano por golpe', `${num(ficha.damage?.min)}–${num(ficha.damage?.max)}`, { dica: `média ${num(danoMedio, 1)}` }),
+      linha('Ataques por segundo', num(ataquesPorSegundo, 2), { fontes: daOrigem('velocidadeDeAtaque'), dica: ficha.velocidadeDeAtaque ? `velocidade de ataque +${pct(ficha.velocidadeDeAtaque, 0)}` : null }),
+      linha('Dano por segundo (golpe da arma)', num(danoMedio * ataquesPorSegundo, 1), { dica: 'média do golpe × ataques por segundo, sem crítico' }),
+      linha('Precisão', num(ficha.accuracy), { fontes: daOrigem('accuracy'), dica: chances.acerto != null ? `${pct(chances.acerto * 100, 0)} de chance de acertar um monstro do seu nível` : null }),
+      linha('Chance de crítico', pct((ficha.critChance ?? 0) * 100, 2), { fontes: daOrigem('critChance') }),
+      linha('Multiplicador de crítico', pct((ficha.critMultiplier ?? 1.5) * 100, 0), { fontes: daOrigem('critMultiplier') }),
+      ...dano.map(([el, v]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} aumentado`, `+${pct(v)}`, { fontes: daOrigem(`dano.${el}`) })),
+      ...Object.entries(ficha.danoSomado ?? {}).map(([el, [a, b]]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} adicionado aos ataques`, `${num(a)}–${num(b)}`)),
+      ...(ficha.penetracao?.elemental ? [linha('Penetração elemental', pct(ficha.penetracao.elemental, 0))] : []),
+      ...(ficha.penetracao?.fisica ? [linha('Penetração física', pct(ficha.penetracao.fisica, 0))] : []),
+      ...(ficha.ataqueDuplo ? [linha('Chance de ataque duplo', pct(ficha.ataqueDuplo * 100, 0), { fontes: daOrigem('ataqueDuplo') })] : []),
+    ] },
+    { id: 'magia', titulo: 'Magia', linhas: [
+      linha('Velocidade de conjuração', `+${pct(ficha.castSpeed, 0)}`, { fontes: daOrigem('castSpeed') }),
+      linha('Chance de crítico com magias', pct((ficha.critChanceMagia ?? ficha.critChance ?? 0) * 100, 2)),
+      linha('Dano de magia aumentado', `+${pct((ficha.danoDeMagiaDoPoe ?? 0) + (ficha.danoDeMagia ?? 0))}`, { fontes: daOrigem('dano.spell') }),
+      ...Object.entries(ficha.danoSomadoMagia ?? {}).map(([el, [a, b]]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} adicionado às magias`, `${num(a)}–${num(b)}`)),
+    ] },
+    { id: 'defesa', titulo: 'Defesa', linhas: [
+      linha('Armadura', num(ficha.armor), { fontes: daOrigem('armour'), dica: `reduz ${pct(reducaoDaArmadura(ficha.armor ?? 0, 100) * 100, 0)} de um golpe físico de 100` }),
+      linha('Evasão', num(ficha.evasion), { fontes: daOrigem('evasion'), dica: chances.esquiva != null ? `${pct(chances.esquiva * 100, 0)} de chance de evitar o ataque de um monstro do seu nível` : null }),
+      linha('Chance de bloquear ataques', pct((ficha.blockChance ?? 0) * 100, 1)),
+      linha('Chance de bloquear magias', pct((ficha.bloqueioDeMagia ?? 0) * 100, 1)),
+      ...(ficha.protection?.physical ? [linha('Redução de dano físico', pct(ficha.protection.physical, 0))] : []),
+      ...resistencias.map((r) => linha(`Resistência a ${r.nome}`, `${pct(r.final, 0)}${r.bruta !== r.final ? ` (${pct(r.bruta, 0)})` : ''}`, { fontes: r.fontes, dica: `máximo ${r.maximo}%` })),
+      linha('Velocidade de movimento', num(extras.speed ?? ficha.speed), { fontes: daOrigem('speed') }),
+    ] },
+    { id: 'cargas', titulo: 'Cargas', linhas: [
+      linha('Cargas de Tolerância', `até ${maxCarga('tolerancia')}`, { dica: 'cada: +4% de redução de dano físico e +4% às resistências elementais' }),
+      linha('Cargas de Frenesi', `até ${maxCarga('frenesi')}`, { dica: 'cada: +4% de velocidade de ataque e de conjuração e 4% mais dano' }),
+      linha('Cargas de Poder', `até ${maxCarga('poder')}`, { dica: 'cada: +40% de chance de crítico' }),
+    ] },
+    { id: 'diversos', titulo: 'Diversos', linhas: [
+      linha('Quantidade de itens encontrados', `+${pct(ficha.lootRate, 0)}`),
+      linha('Ouro encontrado', `+${pct(ficha.goldFind, 0)}`),
+      linha('Experiência ganha', `+${pct(ficha.experiencia, 0)}`),
+      ...(ficha.danoContra?.boss ? [linha('Dano contra chefes', `+${pct(ficha.danoContra.boss, 0)}`)] : []),
+      ...(ficha.danoContra?.elite ? [linha('Dano contra monstros raros', `+${pct(ficha.danoContra.elite, 0)}`)] : []),
+    ] },
+  ];
+
+  return {
+    cabecalho: {
+      classe: classe?.nome ?? null,
+      ascendencia: asc?.nome ?? null,
+      area: estado.hunt?.huntId ? nomeDaHunt(estado.hunt.huntId) : 'Cidade',
+      atributos: [
+        { id: 'str', nome: 'Força', valor: p.str, fontes: atributo('str'), dica: `+${num(doAtributo.vida)} de vida · +${pct(doAtributo.danoFisicoPct)} de dano físico corpo a corpo` },
+        { id: 'dex', nome: 'Destreza', valor: p.dex, fontes: atributo('dex'), dica: `+${num(doAtributo.precisao)} de precisão · +${pct(doAtributo.evasaoPct)} de evasão` },
+        { id: 'int', nome: 'Inteligência', valor: p.int, fontes: atributo('int'), dica: `+${num(doAtributo.mana)} de mana · +${pct(doAtributo.energyShieldPct)} de escudo de energia` },
+      ],
+    },
+    grandes: [
+      { id: 'vida', nome: 'Vida', valor: estado.maxHp ?? 0, fontes: [...vida, ...pctDe('life')] },
+      { id: 'es', nome: 'Escudo de Energia', valor: esMax, fontes: es },
+      { id: 'mana', nome: 'Mana', valor: estado.maxMana ?? 0, fontes: [...mana, ...pctDe('mana')] },
+    ],
+    defesas: [
+      { id: 'armadura', nome: 'Armadura', valor: num(ficha.armor), sub: pct(reducaoDaArmadura(ficha.armor ?? 0, 100) * 100, 0), dica: 'redução contra um golpe físico de 100', fontes: daOrigem('armour') },
+      { id: 'evasao', nome: 'Evasão', valor: num(ficha.evasion), sub: chances.esquiva != null ? pct(chances.esquiva * 100, 0) : null, dica: 'chance de evitar o ataque de um monstro do seu nível', fontes: daOrigem('evasion') },
+      { id: 'bloqueio', nome: 'Bloqueio', valor: pct((ficha.blockChance ?? 0) * 100, 0), sub: ficha.bloqueioDeMagia ? `magia ${pct(ficha.bloqueioDeMagia * 100, 0)}` : null, dica: 'chance de bloquear um ataque' },
+      { id: 'critico', nome: 'Crítico', valor: pct((ficha.critChance ?? 0) * 100, 1), sub: `×${num(ficha.critMultiplier ?? 1.5, 2)}`, dica: 'chance de crítico e multiplicador', fontes: daOrigem('critChance') },
+    ],
+    resistencias,
+    secoes,
+  };
+}

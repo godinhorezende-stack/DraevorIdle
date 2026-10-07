@@ -40,6 +40,7 @@ import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
+import * as FichaPoe from '../systems/personagem/ficha-poe.mjs';
 import * as FrascosPoe from '../systems/itens-poe/frascos.mjs';
 import * as PreviaPoe from '../systems/itens-poe/previa-da-area.mjs';
 import * as ModsDeMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
@@ -344,6 +345,11 @@ function characterParaCliente(personagem, estado) {
     },
     // O Energy Shield ATUAL (o máximo é `derived.energyShield`).
     es: Defesa.esAtual(estado, Ficha.combate(estado)),
+    // A FICHA no estilo do PoE (dono, 07/10): os números, as seções e DE ONDE vem cada um (`personagem/ficha-poe.mjs`). Só com ITENS_POE=1.
+    ...(ItensPoeCatalogo.ligado() ? { fichaPoe: FichaPoe.montar(estado, Ficha.combate(estado), {
+      chancesNoLevel: { acerto: Atributos.chanceDeAcerto(Ficha.combate(estado).accuracy, estado.level ?? 1), esquiva: Atributos.chanceDeEsquiva(Ficha.combate(estado).evasion, estado.level ?? 1) },
+      ...Promocao.derivados(estado, Ficha.combate(estado).regenDaArvore), speed: R.baseSpeed(estado.level),
+    }) } : {}),
     marca: null,
     gold: estado.gold ?? 0,
     bank: estado.bank ?? 0,

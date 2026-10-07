@@ -28111,3 +28111,62 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 .cat-origem.recompensa.nojogo { border-left-color: #4fae4a; }
 .cat-origem.vendedor { border-left: 3px solid #4a7fd8; }
 .cat-origem.loja { border-left: 3px solid #6c8290; color: #9fb3bf; }
+
+/* ---- A ficha do personagem no estilo do PoE (sheet.mjs → fichaPoeNova) ---- */
+.fp { display: grid; gap: 8px; color: #d9d2bf; font-size: 13px; }
+.fp-cab { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid #4a3d28; border-radius: 4px; background: linear-gradient(180deg, #1c1813, #120f0b); }
+.fp-info { display: grid; gap: 2px; min-width: 0; }
+.fp-info b { font: 700 14px var(--font-heading, serif); color: #e8d6a8; }
+.fp-info span { font-size: 12px; color: #9a8c70; }
+.fp-retrato { display: grid; justify-items: center; gap: 2px; }
+.fp-nome { font: 700 12px var(--font-heading, serif); letter-spacing: .08em; text-transform: uppercase; color: #e8c66a; }
+.fp-retrato canvas { border: 1px solid #6b5a3a; border-radius: 4px; background: #0b0a08; }
+.fp-atributos { display: grid; gap: 3px; }
+.fp-atr { display: flex; justify-content: space-between; gap: 8px; padding: 2px 8px; border: 1px solid #3a3124; border-radius: 3px; background: #15120d; }
+.fp-atr span { color: var(--cor); font-variant: small-caps; letter-spacing: .04em; }
+.fp-atr b { font-variant-numeric: tabular-nums; color: #f0e6cc; }
+.fp-grandes, .fp-defesas { display: grid; gap: 6px; }
+.fp-grandes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fp-defesas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.fp-grande, .fp-defesa { display: grid; justify-items: center; gap: 1px; padding: 6px 4px; border: 1px solid #4a3d28; border-radius: 4px; background: radial-gradient(ellipse at 50% 20%, #2a2318, #14110c 70%); text-align: center; }
+.fp-grande img, .fp-defesa img { width: 26px; height: 26px; image-rendering: pixelated; }
+.fp-grande span, .fp-defesa span { font-variant: small-caps; letter-spacing: .05em; color: #b8a888; font-size: 12px; }
+.fp-grande b { font: 700 18px var(--font-heading, serif); font-variant-numeric: tabular-nums; }
+.fp-defesa b { font: 700 15px var(--font-heading, serif); font-variant-numeric: tabular-nums; }
+.fp-defesa em { font-style: normal; font-size: 11px; color: #8fa6ab; }
+.fp-vida b { color: #e86a5c; } .fp-es b { color: #8fd0ff; } .fp-mana b { color: #6ba5e0; }
+.fp-faixa { text-align: center; font-variant: small-caps; letter-spacing: .1em; color: #b8a888; border-bottom: 1px solid #4a3d28; padding-bottom: 2px; margin-bottom: 4px; }
+.fp-resist-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.fp-res { display: flex; align-items: center; gap: 8px; padding: 5px 10px; border: 1px solid #3a3124; border-radius: 20px; background: #15120d; }
+.fp-res img { width: 22px; height: 22px; image-rendering: pixelated; }
+.fp-res span { flex: 1; font-variant: small-caps; letter-spacing: .05em; }
+.fp-res b { font-variant-numeric: tabular-nums; }
+.fp-res em { font-style: normal; color: #8a7d62; font-size: 11px; }
+.fp-res.no-teto b { color: #e8c66a; } .fp-res.negativa b { color: #e86a5c; }
+.fp-res-fire span { color: #ff8a62; } .fp-res-ice span { color: #8fd0ff; } .fp-res-energy span { color: #ffe36b; } .fp-res-chaos span { color: #c77dff; }
+.fp-secoes { display: grid; gap: 6px; }
+.fp-secao { border: 1px solid #3a3124; border-radius: 4px; background: #110e0a; padding: 4px 10px 6px; }
+.fp-secao-titulo { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 4px 0; font: 700 15px var(--font-heading, serif); color: #e8d6a8; cursor: pointer; }
+.fp-secao-titulo::after { content: '▾'; float: right; color: #8a7d62; }
+.fp-secao.fechada .fp-secao-titulo::after { content: '▸'; }
+.fp-secao.fechada .fp-linha { display: none; }
+.fp-linha { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; border-top: 1px solid #1f1a13; font-size: 12.5px; }
+.fp-linha span { color: #b8a888; font-variant: small-caps; letter-spacing: .03em; }
+.fp-linha b { color: #f0e6cc; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.fp-linha.destaque b { color: #e8c66a; }
+.fp-com-fonte { cursor: help; }
+.fp-com-fonte:hover { border-color: #8a6a2c; }
+.fp-linha.fp-com-fonte:hover span { color: #e8d6a8; }
+.fp-balao { display: grid; gap: 3px; min-width: 220px; }
+.fp-balao > b { color: #e8d6a8; }
+.fp-balao-dica { margin: 0; font-size: 12px; color: #9fb3bf; }
+.fp-balao-sub { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #d8b56a; margin-top: 4px; }
+.fp-balao-linha { display: flex; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+.fp-balao-linha em { font-style: normal; color: #9fe0a8; font-variant-numeric: tabular-nums; }
+.fp-balao-linha em.neg { color: #f0a090; }
+@media (max-width: 560px) {
+  .fp-cab { grid-template-columns: minmax(0, 1fr) auto; }
+  .fp-atributos { grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .fp-defesas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fp-resist-grade { grid-template-columns: 1fr; }
+}
