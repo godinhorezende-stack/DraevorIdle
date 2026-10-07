@@ -73,7 +73,7 @@ export function balaoPoe(p, { cor = p.cor ?? '#ddd', raridadeNome = p.raridadeNo
     p.prefixos?.length ? [sep(), titulo('Prefixos'), linhas(p.prefixos, 'pre', 'P')] : null,
     p.sufixos?.length ? [p.prefixos?.length ? null : sep(), titulo('Sufixos'), linhas(p.sufixos, 'suf', 'S')] : null,
     p.modificadores?.length ? [sep(), p.modificadores.map((m) => no('div', 'poe-mod uni', estados ? marca() : null, no('span', null, m.texto)))] : null,
-    af && Object.keys(af).length ? no('div', 'poe-draevor', no('b', null, 'No Draevor: '), Object.entries(af).filter(([, v]) => typeof v === 'number').map(([k, v]) => no('span', 'poe-af', `${k} ${v > 0 ? '+' : ''}${v}`))) : null,
+    // A faixa "No Draevor: STR +20 ..." saiu do balão (dono, 07/10): o que a peça dá já está nas linhas do PoE.
     p.aviso ? no('div', 'poe-aviso', p.aviso) : null,
     p.erro ? no('div', 'poe-aviso', p.erro) : null);
   caixa.style.setProperty('--cor', cor);
