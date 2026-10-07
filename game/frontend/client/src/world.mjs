@@ -276,7 +276,12 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
 
   // ---- 4. o mapa
   const palco = el('div', 'w2-palco');
+  const progresso = el('div', 'w2-progresso');
+  const progressoBarra = el('i');
+  progresso.append(progressoBarra);
   const viewport = el('div', 'w2-viewport');
+  const bussola = el('div', 'w2-bussola');
+  bussola.innerHTML = '<svg viewBox="-30 -30 60 60" aria-hidden="true"><circle r="26" class="b-anel"/><circle r="18" class="b-anel2"/><path d="M0 -24 L5 0 L0 24 L-5 0 Z" class="b-agulha"/><path d="M-24 0 L0 5 L24 0 L0 -5 Z" class="b-agulha2"/><text y="-27" class="b-txt">N</text><text y="35" class="b-txt">S</text><text x="33" y="4" class="b-txt">L</text><text x="-33" y="4" class="b-txt">O</text></svg>';
   const mapaSvg = svg('svg', { class: 'w2-svg', viewBox: `0 0 ${LARGURA} ${ALTURA}`, preserveAspectRatio: 'xMidYMid meet', role: 'group' });
   const cam = svg('g', { class: 'w2-cam' });
   mapaSvg.append(cam);
@@ -285,13 +290,13 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
   balao.hidden = true;
   const controles = el('div', 'w2-controles');
   const dica = el('div', 'w2-dica', 'Arraste para mover · roda ou pinça para o zoom · toque num nó para ver a fase');
-  palco.append(viewport, balao, controles, dica);
+  palco.append(viewport, bussola, balao, controles, dica);
 
   // ---- 5. o painel + 6. a barra
   const painel = el('section', 'w2-painel');
   const barra = el('footer', 'w2-barra');
 
-  raiz.append(cab, dif, barra, abas, aviso, palco, painel);
+  raiz.append(cab, dif, barra, abas, progresso, aviso, palco, painel);
   body.append(raiz);
 
   // A tela se adapta à CAIXA do jogo em que está: mede a janela (e remede quando ela muda) e marca `larga` (700 px+: ocupa a altura toda, sem
@@ -331,7 +336,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
 
   const selecionarNo = (sel, { centrar = false } = {}) => {
     E.sel = sel;
-    const id = sel.tipo === 'boss' ? `boss:${sel.ato}` : sel.huntId;
+    const id = sel.tipo === 'boss' ? `boss:${sel.ato}` : sel.tipo === 'cidade' ? `cidade:${sel.ato}` : sel.huntId;
     for (const [nid, g] of nosPorId) g.classList.toggle('escolhido', nid === id);
     desenharPainel();
     if (centrar && dadosDoAto) {
@@ -347,13 +352,25 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const pos = posicoesDoAto(a.fases, !!a.boss, mundo, a.ato, a.bossMapa);
     const pontos = [...pos.pontos, ...(pos.boss ? [pos.boss] : [])];
     cam.append(fundoDoAto(a.ato, nomeDoTema(a.ato, a.tema), pontos, a.fundo));
-    const ids = [...a.fases.map((f) => f.huntId), ...(a.boss ? [`boss:${a.ato}`] : [])];
+    // A CIDADE: o nó de partida (sempre aberta). Sem posição do editor, fica à esquerda da primeira fase.
+    const cidadeId = `cidade:${a.ato}`;
+    const cidade = a.cidade ? { ...a.cidade, p: a.cidade.posicao ?? { x: Math.max(60, (pos.pontos[0]?.x ?? 100) - 120), y: pos.pontos[0]?.y ?? ALTURA / 2 } } : null;
+    const ids = [...a.fases.map((f) => f.huntId), ...(a.boss ? [`boss:${a.ato}`] : []), ...(cidade ? [cidadeId] : [])];
+    if (cidade) pontos.push(cidade.p);
     const posicao = (id) => pontos[ids.indexOf(id)];
     // as estradas (sob os nós)
     const estradas = svg('g', { class: 'w2-estradas' });
     for (const c of conexoesDoAto(a.fases, a.boss, mundo)) {
       const d = tracadoDaEstrada(posicao(c.de), posicao(c.para), c.tipo);
       estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${c.estado} ${c.tipo}` }));
+    }
+    // da cidade às fases ligadas a ela: percorrida se a fase já abriu
+    for (const huntId of cidade?.conexoes ?? []) {
+      const alvo = posicao(huntId);
+      if (!alvo) continue;
+      const f = a.fases.find((x) => x.huntId === huntId);
+      const d = tracadoDaEstrada(cidade.p, alvo, 'cadeia');
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: `w2-estrada ${f?.completa ? 'percorrido' : f?.liberada ? 'disponivel' : 'bloqueado'} cadeia` }));
     }
     cam.append(estradas);
     const nos = svg('g', { class: 'w2-nos' });
@@ -363,6 +380,12 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       nosPorId.set(f.huntId, g);
       nos.append(g);
     });
+    if (cidade) {
+      const g = desenharNo({ id: cidadeId, tipo: 'cidade', estado: 'aberta', numero: 0, nome: cidade.nome, p: cidade.p, escolhido: E.sel?.tipo === 'cidade' && E.sel.ato === a.ato });
+      g.classList.add('t-cidade-no');
+      nosPorId.set(cidadeId, g);
+      nos.append(g);
+    }
     if (a.boss) {
       const g = desenharNo({ id: `boss:${a.ato}`, tipo: 'boss', estado: estadoDoNo(a.boss), numero: 0, nome: a.boss.nome, p: pos.boss, boss: true, escolhido: E.sel?.tipo === 'boss' && E.sel.ato === a.ato });
       nosPorId.set(`boss:${a.ato}`, g);
@@ -421,6 +444,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const novaSel = a.fases.length ? { tipo: 'fase', huntId: (a.fases.find((f) => f.huntId === fronteira?.huntId) ?? a.fases.find((f) => f.liberada) ?? a.fases[0]).huntId } : null;
     if (!manterSelecao) E.sel = novaSel;
     cab.querySelector('.w2-parte')?.replaceChildren(a.parte ?? partes[0] ?? '');
+    progressoBarra.style.width = `${a.total ? Math.round((100 * a.feitas) / a.total) : 0}%`;
     montarMapa();
     desenharPainel();
   }
@@ -434,14 +458,14 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const no = noDoPonto(ev.detail.x, ev.detail.y);
     if (!no) return;
     const id = no.dataset.id;
-    selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : { tipo: 'fase', huntId: id });
+    selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : id.startsWith('cidade:') ? { tipo: 'cidade', ato: Number(id.slice(7)) } : { tipo: 'fase', huntId: id });
   });
   viewport.addEventListener('keydown', (ev) => {
     const no = ev.target.closest?.('.w-no');
     if (no && (ev.key === 'Enter' || ev.key === ' ')) {
       ev.preventDefault();
       const id = no.dataset.id;
-      selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : { tipo: 'fase', huntId: id });
+      selecionarNo(id.startsWith('boss:') ? { tipo: 'boss', ato: Number(id.slice(5)) } : id.startsWith('cidade:') ? { tipo: 'cidade', ato: Number(id.slice(7)) } : { tipo: 'fase', huntId: id });
     }
   });
   // o balão de resumo (só com mouse — no toque quem resume é o painel)
@@ -450,6 +474,7 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const no = ev.target.closest?.('.w-no');
     if (!no) return void (balao.hidden = true);
     const id = no.dataset.id;
+    if (id.startsWith('cidade:')) return void (balao.hidden = true);
     const boss = id.startsWith('boss:');
     const f = boss ? null : escolhida.fases.find((x) => x.huntId === id);
     const b = boss ? atoAtual.boss : null;
@@ -474,6 +499,16 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
     const sel = E.sel;
     if (!sel) {
       painel.append(titulo( atoAtual.nome), el('p', 'w2-desc', atoAtual.descricao ?? 'Toque num lugar do mapa para ver os detalhes.'));
+      return;
+    }
+    if (sel.tipo === 'cidade') {
+      const c = atoAtual.cidade ?? { nome: 'Cidade', conexoes: [] };
+      const col1 = el('div', 'w2-col', titulo(c.nome), el('div', 'w2-sub', `${atoAtual.nome} · Cidade`, el('span', 'w2-estado aberta', 'Aberta'), el('span', 'w2-tipo', TIPOS_DE_NO.cidade)), el('p', 'w2-desc', 'O ponto de partida do ato: loja, depósito e os serviços da vila. Daqui saem as estradas para as primeiras fases.'));
+      const saidas = el('ul', 'w2-lista', ...(c.conexoes ?? []).map((huntId) => { const f = escolhida.fases.find((x) => x.huntId === huntId); return el('li', f?.completa ? 'feito' : null, `${f?.completa ? '✓ ' : ''}${f?.nome ?? huntId}`); }));
+      const col2 = el('div', 'w2-col', el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Estradas daqui'), saidas));
+      const voltar = botao('w2-entrar', 'Voltar à cidade');
+      voltar.onclick = () => h.voltarParaCidade?.();
+      painel.append(col1, col2, el('div', 'w2-col acao', voltar, el('p', 'w2-nota', 'Encerra a caçada atual (se houver) e volta para a vila.')));
       return;
     }
     if (sel.tipo === 'fase') {

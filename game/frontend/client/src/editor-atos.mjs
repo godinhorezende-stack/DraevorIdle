@@ -663,6 +663,21 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
       el('div', { class: 'dica' }, 'Beta/Publicado só gravam com a validação limpa e valem no PRÓXIMO BOOT do servidor (reinício controlado): o arquivo vai para o jogo com o deploy. A ordem é o número do ato no jogo (5 em diante).'));
   }
 
+  /** A CIDADE do ato: o nó de partida do mapa (sem hunt). O nome e para que fases as estradas dela vão. */
+  function painelDaCidade() {
+    const a = E.ato;
+    if (!a.cidade) return el('fieldset', {}, el('legend', {}, 'Cidade'), el('div', { class: 'dica' }, 'O ato ainda não tem o nó da cidade (a ramificação inicial do mapa).'),
+      E.somenteLeitura ? null : el('button', { type: 'button', onclick: () => { lembrar(); a.cidade = { nome: 'Cidade', posicao: null, conexoes: a.inicio ? [a.inicio] : [] }; mudou(); } }, 'Criar a cidade'));
+    const c = a.cidade;
+    const fases = [...a.fases].sort((x, y) => (x.ordem ?? 1e9) - (y.ordem ?? 1e9));
+    return el('fieldset', {}, el('legend', {}, 'Cidade'),
+      campo('Nome', c.nome, (v) => { c.nome = v; mudou(); }),
+      el('div', { class: 'campo' }, 'Estradas da cidade (as fases a que ela liga)',
+        el('div', { class: 'atos-mobs' }, fases.map((f) => el('label', { class: 'linha' }, el('input', { type: 'checkbox', checked: c.conexoes.includes(f.id), disabled: E.somenteLeitura, onchange: (e) => { lembrar(); c.conexoes = e.target.checked ? [...new Set([...c.conexoes, f.id])] : c.conexoes.filter((x) => x !== f.id); mudou(); } }), ` ${f.ordem ?? '·'} · ${f.nome}`)))),
+      el('div', { class: 'dica' }, c.posicao ? `posição ${c.posicao.x}, ${c.posicao.y} — arraste na vista Mapa` : 'sem posição: arraste a cidade na vista Mapa'),
+      E.somenteLeitura ? null : el('button', { type: 'button', onclick: () => { lembrar(); a.cidade = null; mudou(); } }, 'Tirar a cidade'));
+  }
+
   function painelDaFase() {
     const f = faseDe(E.fase);
     if (!f) return null;
@@ -920,7 +935,9 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
           fase: E.fase, somenteLeitura: E.somenteLeitura,
           aoMover: (f, p) => { lembrar(); f.posicao = p; mudou(); },
           aoEscolher: (id) => { E.fase = id; E.lig = null; pintar(); },
-        }), ...[painelDoAto(), painelDaFase()].filter(Boolean));
+          aoMoverCidade: (p) => { lembrar(); E.ato.cidade.posicao = p; mudou(); },
+          aoEscolherCidade: () => { E.fase = null; E.lig = null; pintar(); },
+        }), ...[painelDoAto(), painelDaCidade(), painelDaFase()].filter(Boolean));
         else if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));
         else if (E.vista === 'previa') corpo.replaceChildren(vistaPrevia(E.ato, { dif: E.difPrevia, aoMudarDif: (d) => { E.difPrevia = d; pintar(); } }));
         else if (E.vista === 'versoes') corpo.replaceChildren(await vistaVersoes({ api, ato: E.ato, sujo: sujo(), aoRestaurar: restaurar }));

@@ -40,7 +40,8 @@ export function vistaMapa(ato, posicoes, opcoes) {
     const ult = ato.bossFinal?.faseAnterior ? P.get(ato.bossFinal.faseAnterior) : null;
     return ult ? { x: Math.min(LARGURA - 60, ult.x + 120), y: ult.y } : null;
   })();
-  const pontos = [...P.values(), ...(bossPos ? [bossPos] : [])];
+  const cidade = ato.cidade ? { ...ato.cidade, p: ato.cidade.posicao ? { x: ato.cidade.posicao.x * KX, y: ato.cidade.posicao.y * KY } : { x: 70, y: ALTURA / 2 } } : null;
+  const pontos = [...P.values(), ...(bossPos ? [bossPos] : []), ...(cidade ? [cidade.p] : [])];
   cam.append(fundoDoAto(numero, nomeDoTema(numero, null), pontos, opcoes.imagem ? { url: opcoes.imagem } : null));
 
   const estradas = svg('g', { class: 'w2-estradas' });
@@ -51,6 +52,12 @@ export function vistaMapa(ato, posicoes, opcoes) {
       const b = P.get(c.para);
       if (!a || !b) continue;
       const d = tracadoDaEstrada(a, b, 'cadeia');
+      estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: 'w2-estrada percorrido cadeia' }));
+    }
+    for (const id of cidade?.conexoes ?? []) {
+      const b = P.get(id);
+      if (!b) continue;
+      const d = tracadoDaEstrada(cidade.p, b, 'cadeia');
       estradas.append(svg('path', { d, class: 'w2-leito' }), svg('path', { d, class: 'w2-estrada percorrido cadeia' }));
     }
     if (bossPos && ato.bossFinal?.faseAnterior && P.get(ato.bossFinal.faseAnterior)) {
@@ -99,6 +106,34 @@ export function vistaMapa(ato, posicoes, opcoes) {
     });
     nos.append(g);
   });
+  if (cidade) {
+    const g = desenharNo({ id: 'cidade', tipo: 'cidade', estado: 'aberta', numero: 0, nome: cidade.nome, p: cidade.p, escolhido: opcoes.cidadeEscolhida });
+    let arrastou = false;
+    g.addEventListener('pointerdown', (ev) => {
+      if (opcoes.somenteLeitura) return;
+      ev.preventDefault();
+      const caixa = mapa.getBoundingClientRect();
+      const k = LARGURA / caixa.width;
+      const o = { x: ev.clientX, y: ev.clientY, px: cidade.p.x, py: cidade.p.y };
+      const mover = (m) => {
+        if (Math.hypot(m.clientX - o.x, m.clientY - o.y) > 4) arrastou = true;
+        if (!arrastou) return;
+        cidade.p.x = Math.min(LARGURA - 30, Math.max(30, o.px + (m.clientX - o.x) * k));
+        cidade.p.y = Math.min(ALTURA - 40, Math.max(30, o.py + (m.clientY - o.y) * k));
+        g.setAttribute('transform', `translate(${cidade.p.x} ${cidade.p.y})`);
+        desenharEstradas();
+      };
+      const soltar = () => {
+        window.removeEventListener('pointermove', mover);
+        window.removeEventListener('pointerup', soltar);
+        if (arrastou) opcoes.aoMoverCidade?.({ x: Math.round(cidade.p.x / KX), y: Math.round(cidade.p.y / KY) });
+      };
+      window.addEventListener('pointermove', mover);
+      window.addEventListener('pointerup', soltar);
+    });
+    g.addEventListener('click', (ev) => { ev.stopPropagation(); if (arrastou) return (arrastou = false); opcoes.aoEscolherCidade?.(); });
+    nos.append(g);
+  }
   if (bossPos) {
     const g = desenharNo({ id: 'boss', tipo: 'boss', estado: 'aberta', numero: 0, nome: ato.bossFinal.bossId ?? 'Boss', p: bossPos, boss: true });
     g.addEventListener('click', () => opcoes.aoEscolherBoss?.());

@@ -568,7 +568,8 @@ export function registrarAto(bruto) {
   // O FUNDO do mapa no jogo é a IMAGEM do ato do editor (dono, 07/10: "fazer algo assim na parte de hunts e para montar atos" — a mesma arte em
   // que as fases são posicionadas no editor). Sem imagem no ato, vale a do Mapa do mundo (`atos[n].fundo`); sem nenhuma, o pergaminho desenhado.
   const imagemDoAto = ato.imagem ? { url: `/gamedata/atos/${ato.imagem}`, doEditor: true } : null;
-  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: imagemDoAto ?? atosDoConteudo()[String(numero)]?.fundo ?? null }));
+  const cidade = ato.cidade ? { nome: ato.cidade.nome, posicao: ato.cidade.posicao ? { x: Math.round(ato.cidade.posicao.x * posX), y: Math.round(ato.cidade.posicao.y * posY) } : null, conexoes: ato.cidade.conexoes.map((id) => huntPorFase.get(id)).filter(Boolean) } : null;
+  desfazer.push(registrarMetaDeAto(numero, { nome: ato.nome, descricao: ato.descricao, parte: null, tema: null, fundo: imagemDoAto ?? atosDoConteudo()[String(numero)]?.fundo ?? null, cidade }));
   ATOS_DO_EDITOR.set(numero, { ato, numero, huntPorFase, desfazer });
   return { ok: true, problemas, numero };
 }

@@ -643,6 +643,11 @@ function campanhaCards(body) {
           send({ t: 'aoCompletarFase', value: valor });
           ctx.redraw();
         },
+        // A CIDADE (o nó de partida do ato): estando numa caçada, volta para a cidade pelo mesmo fluxo do botão Parar.
+        voltarParaCidade: () => {
+          if (ctx.state.hunt) send({ t: 'stopHunt' });
+          ctx.closeModal();
+        },
         fechar: () => ctx.closeModal(),
         verLista: () => {
           ctx.tabs.campanhaVisao = 'lista';

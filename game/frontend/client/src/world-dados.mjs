@@ -75,6 +75,8 @@ export function atosDaCampanha(escolhida, metas = {}) {
       parte: meta.parte ?? null,
       tema: meta.tema ?? null,
       fundo: meta.fundo?.url || meta.fundo?.arquivo ? meta.fundo : null,
+      // A cidade do ato (o nó de partida): `{ nome, posicao, conexoes: [huntId] }` — sem posição, fica à esquerda da primeira fase.
+      cidade: meta.cidade ? meta.cidade : null,
       bossMapa: meta.bossMapa && Number.isFinite(meta.bossMapa.x) && Number.isFinite(meta.bossMapa.y) ? meta.bossMapa : null,
       descricao: meta.descricao ?? null,
       fases,
