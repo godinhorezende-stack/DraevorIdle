@@ -48,6 +48,7 @@ const TRACOS = {
   recolher: 'M14 6l-6 6 6 6M20 5v14',
   expandir: 'M10 6l6 6-6 6M4 5v14',
   painelDeControle: 'M4 6h16M4 12h16M4 18h16M9 4v4M15 10v4M8 16v4',
+  servidor: 'M4 4h16v6H4zM4 14h16v6H4zM7 7h.01M7 17h.01M11 7h6M11 17h6',
   engrenagem: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 12l2-1 .5-2-1-2 2-2 2 1 2-.5 1-2h3l1 2 2 .5 2-1 2 2-1 2 .5 2 2 1v3l-2 1-.5 2 1 2-2 2-2-1-2 .5-1 2h-3l-1-2-2-.5-2 1-2-2 1-2-.5-2-2-1z',
 };
 /** Um ícone de traço (`nome` em `TRACOS`), da cor do texto em volta. */

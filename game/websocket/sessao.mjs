@@ -423,9 +423,16 @@ function characterParaCliente(personagem, estado) {
   };
 }
 
+/** TODAS as conexões abertas (com ou sem personagem) — a tela "Servidor" da Engine conta contas e personagens online e mostra o IP. */
+export const conexoes = new Set();
+
 export class Sessao {
-  constructor(ws) {
+  constructor(ws, { ip = null } = {}) {
     this.ws = ws;
+    this.ip = ip; // de onde a conexão veio (X-Real-IP atrás do proxy, senão o endereço do socket)
+    this.conectadoEm = Date.now();
+    this.entrouEm = null; // quando entrou no personagem atual
+    conexoes.add(this);
     this.conta = null;
     this.personagem = null; // linha do banco
     this.estado = null; // estado quente (JSON já parseado)
@@ -1909,6 +1916,7 @@ export class Sessao {
     // o excesso vai para o depósito, com aviso no primeiro `state`.
     this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? ([doPresente, doMercado].filter(Boolean).join(' ') || null) ?? daCampanha;
     vivas.set(personagem.nome, this);
+    this.entrouEm = Date.now();
     // Reconexão: volta ao lugar na party (se estava como offline) — ver `Party.entrouNoJogo`.
     Party.entrouNoJogo(this);
 
@@ -2563,6 +2571,7 @@ export class Sessao {
 
   desconectar() {
     sessoesNoRelogio.delete(this);
+    conexoes.delete(this);
     this.soltarPersonagem();
   }
 }

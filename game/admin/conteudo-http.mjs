@@ -145,6 +145,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     // Operação do servidor (beta, manutenção, Server Save): estado para as telas "Testes e beta" e "Configurações".
     if (rota === 'operacao/beta') return json(res, 200, Operacao.estadoDoBeta()), true;
     if (rota === 'operacao') return json(res, 200, await Operacao.estadoGeral()), true;
+    if (rota === 'operacao/servidor') return json(res, 200, Operacao.estadoDoServidor()), true;
     // Overrides por cima do dado importado (monstros): leitura; a edição é POST `overrides` (grava) e `overrides/validar` (só pré-visualiza).
     // Sprites (monstros, outfits e montarias: o mesmo formato de folha). `overrides/sprites/<look>` é o look inteiro: original, override, quem usa, versões.
     if (rota === 'overrides/sprites') return json(res, 200, OverridesSprites.listar()), true;
@@ -229,6 +230,7 @@ export async function atender(req, res, caminho, url, { json, corpoJson }) {
     if (rota === 'operacao/beta') return json(res, 200, Operacao.definirBeta(dados?.ativo)), true;
     if (rota === 'operacao/manutencao') return json(res, 200, Operacao.definirManutencao(dados?.ativo, dados?.mensagem ?? null)), true;
     if (rota === 'operacao/server-save') return json(res, 200, await Operacao.executarServerSave()), true;
+    if (rota === 'operacao/reiniciar') return json(res, 200, Operacao.reiniciar({ quem: req.engineQuem ?? null, motivo: dados?.motivo ?? null, desligar: Operacao.aoReiniciar })), true;
     if (rota === 'hot-reload/recarregar') {
       if (!hot?.estadoAtual().ativo) return json(res, 409, { ok: false, erros: [`Hot Reload desligado: ${(hot?.estadoAtual() ?? SEM_HOT).motivoInativo}`] }), true;
       const r = await hot.recarregar(String(dados?.tipo ?? ''), dados?.id ?? null);

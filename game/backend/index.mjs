@@ -305,8 +305,9 @@ const wss = new WebSocketServer({
 // SERVIDOR de WebSocket (porta ocupada, etc.) também derruba o processo.
 wss.on('error', (e) => console.error('wss', e.message));
 
-wss.on('connection', (ws) => {
-  const s = new Sessao(ws);
+wss.on('connection', (ws, req) => {
+  // O IP da conexão (atrás do proxy vem em X-Real-IP) fica na sessão: a tela "Servidor" da Engine mostra quem está online e de onde.
+  const s = new Sessao(ws, { ip: String(req?.headers?.['x-real-ip'] ?? req?.socket?.remoteAddress ?? '').replace(/^::ffff:/, '') || null });
   s.ola();
   const ritmo = new Limites.Ritmo();
 
@@ -367,6 +368,12 @@ ServerSave.iniciar().catch((e) => console.error('[SERVER-SAVE] não iniciou ->',
 // `ENDERECO` (opcional): só nesse endereço — o servidor de desenvolvimento local usa 127.0.0.1 (acesso por túnel SSH). Sem ele, todas as interfaces.
 http.listen(PORTA, ...(process.env.ENDERECO ? [process.env.ENDERECO] : []), () => {
   console.log(`\n  Draevor Idle (restaurado)  ->  http://localhost:${PORTA}/jogar\n`);
+});
+
+// O reinício pela Engine (tela "Servidor") para as mesmas rotinas do Ctrl+C antes de gravar todo mundo e sair.
+Operacao.registrarDesligamento(() => {
+  LimpezaDoChao.parar();
+  ServerSave.parar();
 });
 
 // Desligando o servidor (Ctrl+C): grava todo mundo que está online antes de sair.
