@@ -30,6 +30,7 @@ import * as Boosts from '../systems/boosts.mjs';
 import * as Stamina from '../systems/stamina.mjs';
 import * as SemTreino from '../systems/sem-treino.mjs';
 import * as MissoesDeGemas from '../systems/itens-poe/missoes-de-gemas.mjs';
+import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
 import * as Premium from '../systems/premium.mjs';
 import * as BuffPower from '../systems/buffpower.mjs';
 import * as Tiers from '../systems/tiers.mjs';
@@ -1063,6 +1064,9 @@ export class Sessao {
         }
         return this.aplicar(m.action === 'tirar' ? FrascosPoe.tirar(this.estado, m) : FrascosPoe.por(this.estado, m));
       // As GEMAS DE SKILL nos sockets das peças vestidas (`skills/gemas.mjs`): encaixar, tirar.
+      // Uma moeda do PoE na Forja do PoE (`itens-poe/moedas.mjs`): `m.moeda` (o item) e `m.alvo` (a peça).
+      case 'moeda':
+        return this.aplicarComSkills(MoedasPoe.usar(this.estado, m));
       case 'gema':
         return this.aplicarComSkills(
           m.action === 'encaixar' ? GemasDeSkill.encaixar(this.estado, m) :

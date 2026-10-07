@@ -375,7 +375,9 @@ export function planoDeRespec(estado, { ids, tudo = false, junto = false }, emCa
   if (ilhados.length && !junto) return { ...erro('ILHARIA', `Tirar isso deixaria ${ilhados.length} nó(s) sem caminho até o início — tire-os junto.`), ilhados };
   tirar = [...tirar, ...ilhados];
   const gratis = tudo && passivas.respecsGratis > 0;
-  return { ok: true, tirar, gratis, preco: gratis ? 0 : precoDoRespec(estado, tirar.length) };
+  // Os pontos de RESTITUIÇÃO (o Orbe do Remorso do PoE — `itens-poe/moedas.mjs`): cada um tira um nó sem pagar.
+  const restituicoes = gratis ? 0 : Math.min(tirar.length, passivas.restituicoes ?? 0);
+  return { ok: true, tirar, gratis, restituicoes, preco: gratis ? 0 : precoDoRespec(estado, tirar.length - restituicoes) };
 }
 
 /** Carteira primeiro, o resto do banco (como o respec da árvore antiga). */
@@ -396,6 +398,7 @@ export function respec(estado, pedido, emCacada = false) {
   const falta = pagar(estado, plano.preco);
   if (falta) return erro('SEM_OURO', falta);
   if (plano.gratis) estado.passivas.respecsGratis -= 1;
+  if (plano.restituicoes) estado.passivas.restituicoes -= plano.restituicoes;
   const sai = new Set(plano.tirar);
   const ficam = estado.passivas.alocados.filter((x) => !sai.has(x));
   estado.passivas.alocados.splice(0, estado.passivas.alocados.length, ...ficam);

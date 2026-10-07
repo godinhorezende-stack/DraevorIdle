@@ -13,6 +13,7 @@ import * as CampanhaPoe from '../systems/itens-poe/campanha.mjs';
 import * as ModificadoresMonstroPoe from '../systems/itens-poe/modificadores-monstro.mjs';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
+import * as MoedasPoe from '../systems/itens-poe/moedas.mjs';
 import * as EfeitosVisuais from '../systems/efeitos-visuais.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
 import * as Reforcos from '../systems/skills/reforcos.mjs';
@@ -124,6 +125,9 @@ async function servirArquivo(req, res, caminho) {
   const gemasPoe = await GemasPoe.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GemasDeSkill.registrarAtiva(g)), registrarReforco: Reforcos.registrar });
   if (gemasPoe.gemas) console.log(`  gemas do PoE: ${gemasPoe.gemas} (${Object.entries(gemasPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
   const suportesPoe = SuportesPoe.iniciar({ registrarSuporte: GemasDeSkill.registrarSuporte });
+  // As moedas empilháveis do PoE (os itens, a loja da Zuma; o efeito na Forja do PoE — `itens-poe/moedas.mjs`).
+  const moedasPoe = MoedasPoe.iniciar();
+  if (moedasPoe) console.log(`  moedas do PoE: ${moedasPoe} novas no catálogo (${MoedasPoe.MOEDAS.length} ao todo)`);
   if (suportesPoe.suportes) console.log(`  suportes do PoE: ${suportesPoe.suportes} (${Object.entries(suportesPoe.porStatus).map(([k, v]) => `${k} ${v}`).join(', ')})`);
   if (campanha.atos.length) console.log(`  campanha do PoE: ${campanha.atos.length} atos, ${campanha.areas} áreas${campanha.problemas.length ? ` — ${campanha.problemas.length} problemas: ${campanha.problemas.slice(0, 3).join(' | ')}` : ''}`);
 }

@@ -1,5 +1,6 @@
 // Inventário: slots de equipamento com os PNGs do client, arrastar e soltar
 // para equipar, menu de contexto por item e a loot pouch com venda rápida.
+import { abrirForjaPoe } from './forja-poe.mjs';
 import { itemCanvas, itemSprite } from './sprites.mjs';
 import { abrirSoquetes, temSoquetes, usarOrbe } from './soquetes.mjs';
 import { comecouSemArrasto, acaoDaSolturaNoSlot } from './regras-de-toque.mjs';
@@ -664,6 +665,8 @@ function acaoDoDireito(event, id, { from, pilha = null, alvo = null, peca = null
   const onde = from === 'storeInbox' ? 'storeInbox' : undefined;
   // Os orbes de socket: o direito escolhe a peça e abre a proposta (ver `usarOrbe`, soquetes.mjs) — nada muda sem o "Confirmar".
   if (meta?.orbeDeSocket && from !== 'equipment') return void usarOrbe(ctx, meta.orbeDeSocket);
+  // As moedas do PoE: abrem a Forja do PoE com a moeda já escolhida (`forja-poe.mjs`).
+  if (meta?.moedaPoe && from !== 'equipment') return void abrirForjaPoe(ctx, { moeda: id });
   if (meta?.usavel) return void (ctx.pedirUso ? ctx.pedirUso(id, onde) : ctx.send({ t: 'usar', id, onde }));
 }
 
@@ -836,6 +839,9 @@ function itemMenu(event, id, { from, pilha = null, alvo = null, peca = null, slo
       : null,
     meta?.orbeDeSocket && from !== 'equipment' && !naBolsaDeBoss
       ? { label: `Usar ${meta.name} numa peça…`, action: () => usarOrbe(ctx, meta.orbeDeSocket) }
+      : null,
+    meta?.moedaPoe && from !== 'equipment' && !naBolsaDeBoss
+      ? { label: `Usar ${meta.name} na Forja…`, action: () => abrirForjaPoe(ctx, { moeda: id }) }
       : null,
     meta?.slot && from !== 'equipment' && !naBolsaDeBoss
       ? { label: `Equipar ${meta.name}`, action: () => send({ t: 'equip', id, pilha, alvo }) }

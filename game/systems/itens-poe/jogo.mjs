@@ -172,6 +172,43 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   };
 }
 
+/**
+ * REMONTA a peça do jogo a partir do `peca.poe` mudado (as moedas — `moedas.mjs`): os atributos do Draevor (`poe.af`, os estados das
+ * linhas), o dano/defesa da base e o nome/cor da raridade. A QUALIDADE (`poe.qualidade`, o Amolador e a Sucata) aumenta o dano físico da
+ * arma e a defesa da armadura em qualidade%, como no PoE. Sockets, gemas e o resto da peça ficam como estão.
+ */
+export function recalcular(peca, regras = Catalogo.REGRAS) {
+  const p = peca?.poe;
+  if (!p) return peca;
+  const a = p.atributos ?? {};
+  const fq = 1 + (Number(p.qualidade) || 0) / 100;
+  const R = regras.raridades[p.raridade] ?? {};
+  p.raridadeNome = R.nome ?? p.raridade;
+  p.cor = R.cor ?? null;
+  if (FRASCOS.includes(p.classe)) {
+    const par = Frascos.parametros({ poe: p });
+    p.estados = par.estadosPorMod;
+    p.af = {};
+    p.frasco = Frascos.resumo({ poe: p });
+    return peca;
+  }
+  const mult = ([x, y]) => [Math.round(x * fq), Math.round(y * fq)];
+  const base = {
+    ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: mult([a.dano_fisico.min, a.dano_fisico.max]) } : {}),
+    ...(a.armadura ? { armor: mult([a.armadura, a.armadura]) } : {}),
+    ...(a.evasao ? { evasion: mult([a.evasao, a.evasao]) } : {}),
+    ...(a.escudo_energia ? { es: mult([a.escudo_energia, a.escudo_energia]) } : {}),
+  };
+  if (Object.keys(base).length) peca.base = base;
+  else delete peca.base;
+  const t = traduzirPeca(p);
+  const af = { ...t.af };
+  for (const [k, v] of Object.entries(afDaBase(a))) af[k] = (af[k] ?? 0) + v;
+  p.af = af;
+  p.estados = t.linhas.map((l) => l.estado);
+  return peca;
+}
+
 // ---------------------------------------------------------------- entregar a um personagem online (a engine local)
 
 let vivas = new Map();

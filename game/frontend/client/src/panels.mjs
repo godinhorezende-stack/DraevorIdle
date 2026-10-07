@@ -1,5 +1,6 @@
 // Todas as janelas de sistema: hunts, prey, imbuements, blessings, quests,
 // montarias, loja de Draevor Coins, mercado, NPC e banco.
+import { abrirForjaPoe, temForjaPoe } from './forja-poe.mjs';
 import { listaDetalhe } from './lista-detalhe.mjs';
 import { desenharMundo, preferencia as preferenciaDoMundo } from './world.mjs';
 import { montarAosPoucos } from './aos-poucos.mjs';
@@ -20251,6 +20252,8 @@ export function corpoDaJanelaDaParty(body) {
 const ABAS_DA_FORJA = { craft: 'Craft', desmanche: 'Desmanche', tier: 'Tier', afixos: 'Afixos' };
 
 export function openForja() {
+  // No modo PoE a Forja é a bancada do PoE (as moedas — `forja-poe.mjs`).
+  if (temForjaPoe(ctx.state)) return void abrirForjaPoe(ctx);
   ctx.send({ t: 'forja' });
   ctx.tabs.forjaAba ??= 'craft';
   // A sub-aba do Tier. Era `forjaAba`, e o nome subiu um andar junto com a tela.

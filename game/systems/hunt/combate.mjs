@@ -41,6 +41,7 @@ import * as Estados from '../skills/estados.mjs';
 import * as Gemas from '../gemas.mjs';
 import * as Charms from '../charms.mjs';
 import * as ItensPoeJogo from '../itens-poe/jogo.mjs';
+import * as MoedasPoe from '../itens-poe/moedas.mjs';
 import * as Pinaculos from '../itens-poe/pinaculos.mjs';
 import { tipoDoBicho } from './escalonamento.mjs';
 import * as AtributosDoPersonagem from '../personagem/atributos.mjs';
@@ -346,6 +347,8 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   {
     const quantidade = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt);
     itens.push(...ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade));
+    // As moedas do PoE que o boss solta (`itens-poe/moedas.mjs`, `regras.json → moedas.drop`).
+    itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade));
     if (BESTIARY[alvo.key]?.poe) {
       const ouro = ItensPoeJogo.ouroDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, 1 + (Ficha.combate(estado).goldFind ?? 0) / 100);
       if (ouro > 0) itens.push({ id: 3031, count: ouro });
@@ -801,6 +804,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);
+  }
+  // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
+  for (const moeda of MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador)) {
+    if (!Bolsa.porNaBolsa(estado, moeda.id, moeda.count)) break;
+    caiu.push(moeda);
+    conta('loot', moeda.id, moeda.count);
   }
   // O OURO do monstro do PoE (pedido do dono, 05/10): aleatório na faixa do level dele × a raridade (`itens-poe/regras.json` → `ouro`),
   // com o Gold Find de quem matou. Cai no bolso como as moedas (e divide na party).

@@ -112,3 +112,41 @@ export function gerarPeca({ catalogo, regras, base: idDaBase, raridade, ilvl, rn
   if (raridade === 'raro') peca.nomeAleatorio = null;
   return peca;
 }
+
+// ---------------------------------------------------------------- para as MOEDAS (itens-poe/moedas.mjs)
+export { porPeso, rolarTexto };
+
+/**
+ * UM mod novo para a peça `poe` (`{ base, classe, raridade, ilvl, prefixos, sufixos }`): de uma família ainda não usada, de um lado com
+ * vaga na raridade (`lados` restringe). Devolve `{ lado, mod }` (o mod no formato da peça) ou null (sem vaga / pool esgotado).
+ */
+export function sortearUmMod({ catalogo, regras, poe, rng = Math.random, lados = ['prefixo', 'sufixo'] }) {
+  const achado = acharBase(catalogo, poe.base);
+  if (!achado) return null;
+  const pool = poolDa(achado.classe, achado.base);
+  if (!pool) return null;
+  const R = regras?.raridades?.[poe.raridade] ?? {};
+  const max = { prefixo: R.maxPrefixos ?? 0, sufixo: R.maxSufixos ?? 0 };
+  const usadas = new Set([...(poe.prefixos ?? []), ...(poe.sufixos ?? [])].map((m) => m.familia));
+  const todos = elegiveis(pool, Math.max(1, Number(poe.ilvl) || 1));
+  const vagas = lados.filter((l) => (poe[`${l}s`] ?? []).length < max[l]);
+  const candidatos = vagas.flatMap((l) => todos[l]).filter((c) => !usadas.has(c.familia));
+  const escolhido = porPeso(candidatos.map((c) => [c, c.tier.peso]), rng);
+  if (!escolhido) return null;
+  const { modelo, valores, texto } = rolarTexto(escolhido.tier, rng);
+  return { lado: escolhido.lado, mod: { familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, modelo, texto, valores } };
+}
+
+/** O tier do pool de onde o mod saiu (as faixas dele) — `{ tier, tiers }` (todos os tiers da família, do pool da base) — ou null. */
+export function tierDoMod(catalogo, poe, mod) {
+  const achado = acharBase(catalogo, poe.base);
+  const pool = achado && poolDa(achado.classe, achado.base);
+  for (const lado of ['prefixos', 'sufixos']) {
+    for (const g of pool?.[lado] ?? []) {
+      if (g.familia !== mod.familia) continue;
+      const tier = g.tiers.find((t) => t.tier === mod.tier) ?? null;
+      if (tier) return { tier, tiers: g.tiers };
+    }
+  }
+  return null;
+}

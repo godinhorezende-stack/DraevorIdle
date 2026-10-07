@@ -395,7 +395,7 @@ function coresDe(peca, max, gemas) {
   });
 }
 /** Grava os sockets `s` (de `soquetesDe`, mudados) na peça, sem perder campos extras. */
-function gravarSoquetes(peca, s) {
+export function gravarSoquetes(peca, s) {
   peca.soquetes = { ...(peca.soquetes ?? {}), abertos: s.abertos, links: s.links, gemas: s.gemas, ...(s.cores ? { cores: s.cores } : {}) };
 }
 /** No PoE: grava as cores nas peças do personagem que ainda não têm (a tela lê da peça). Devolve quantas mudaram. */
@@ -1042,7 +1042,14 @@ export function catalogoDaLoja(estado) {
 }
 
 /** As linhas da loja dos orbes que estão à venda (`orbes.*.loja`). */
+/*
+ * As MOEDAS DO PoE na loja (`itens-poe/moedas.mjs` registra aqui o que vende — os preços em `regras.json → moedas.loja`): no modo PoE
+ * elas substituem a linha dos orbes (o Cromático, o Joalheiro e a Fusão estão entre elas).
+ */
+let lojaDeMoedas = null;
+export const usarLojaDeMoedas = (f) => (lojaDeMoedas = f);
 export function linhasDosOrbes(estado) {
+  if (SocketsPoe.poeLigado() && lojaDeMoedas) return lojaDeMoedas(estado);
   const tenho = (id) => (estado.inventory ?? []).filter((p) => Number(p.id) === id).reduce((t, p) => t + (p.count ?? 1), 0);
   // No PoE: os orbes do PoE no lugar dos do Draevor.
   return (SocketsPoe.poeLigado() ? Object.values(ORBES_DO_POE).filter((o) => o?.itemId) : [O.encaixe, O.ligacao])
@@ -1060,7 +1067,7 @@ export function linhasDosOrbes(estado) {
 
 /** Comprar `count` gemas (nível 1, na `raridade` pedida) na loja: paga do bolso e depois do banco; vão para a mochila. */
 export function comprarNaLoja(estado, { id, count = 1, raridade = 'comum' }) {
-  const orbe = (SocketsPoe.poeLigado() ? Object.values(ORBES_DO_POE).filter((o) => o?.itemId) : [O.encaixe, O.ligacao]).find((o) => o.itemId === Number(id));
+  const orbe = (SocketsPoe.poeLigado() ? (lojaDeMoedas ? lojaDeMoedas(estado) : Object.values(ORBES_DO_POE).filter((o) => o?.itemId)) : [O.encaixe, O.ligacao]).find((o) => o.itemId === Number(id));
   if (orbe) return comprarOrbe(estado, orbe, count);
   const def = DEFS.get(Number(id));
   if (!def) return { ok: false, erro: 'Ela não vende isso.' };
