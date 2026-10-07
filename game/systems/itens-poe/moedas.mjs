@@ -417,7 +417,7 @@ export function iniciar() {
     }
     ITEM_CATALOG[m.itemId] = {
       id: m.itemId, name: m.nome, weight: 0.1, stackable: true, type: 'moeda', rarity: 'raro', hasSprite: true, spriteDe: 9655,
-      poeMoeda: { icone: m.icone }, moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, descricao, sell: 0,
+      poeMoeda: { icone: m.icone }, moedaPoe: { slug: m.slug, status: st.status, alvo: st.alvo }, descricao, sell: 0, pilha: m.pilha ?? 20,
     };
     n++;
   }
