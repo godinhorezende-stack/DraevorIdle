@@ -132,3 +132,14 @@ test('o interruptor Automático (modo PoE): troca o controle sem sair da caçada
   assert.equal(e.hunt.modo, 'online', 'o clique no chão também');
   assert.equal(Cacadas.definirAutomatico({}, { on: true }).ok, false, 'fora da caçada: nada');
 });
+
+test('a barra grande NÃO aparece no monstro que só sorteou a raridade Único (só boss e chefe da fase)', { skip: SEM }, async () => {
+  const { e, Cacadas } = await montar(null);
+  const h = e.hunt;
+  h.monstros = h.monstros.slice(0, 1);
+  Object.assign(h.monstros[0], { raridade: 'unico', hp: 500, maxHp: 1000, x: h.pos.x + 1, y: h.pos.y });
+  h.alvo = h.monstros[0].uid;
+  assert.equal(Cacadas.snapshotDaHunt(e).boss, null);
+  h.monstros[0].raridade = 'boss';
+  assert.ok(Cacadas.snapshotDaHunt(e).boss, 'o boss continua com a barra');
+});

@@ -2200,7 +2200,9 @@ function barraDoBoss(hunt) {
  * o que está no ALVO, ou, sem alvo chefe, o chefe vivo mais perto (até `ALCANCE_DA_BARRA` casas — longe, ele ainda não é a luta).
  */
 const ALCANCE_DA_BARRA = 10;
-const ehChefe = (m) => m.hp > 0 && !m.dummy && !!(m.isBoss || m.boss || m.raridade === 'boss' || m.raridade === 'unico' || BESTIARY[m.key]?.boss || BESTIARY[m.key]?.poe?.unico);
+// Só boss e CHEFE da fase (o boss, o chefe de ato, o chefe nomeado da área do PoE — Hillock, Brutus…). O monstro que só SORTEOU a raridade
+// Único (o Ahau "único" de uma fase) não ganha a barra (dono, 07/10: "tirar a barra de monstros únicos sem ser bosses/chefes nas fases").
+const ehChefe = (m) => m.hp > 0 && !m.dummy && !!(m.isBoss || m.boss || m.raridade === 'boss' || BESTIARY[m.key]?.boss || BESTIARY[m.key]?.poe?.unico);
 function barraDoChefe(hunt) {
   if (hunt.isBoss) return barraDoBoss(hunt);
   const chefes = (hunt.monstros ?? []).filter(ehChefe);
