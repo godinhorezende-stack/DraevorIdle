@@ -7,7 +7,7 @@ import * as Afixos from './afixos.mjs';
 import { converterTudo, pecaEspecial } from './itens/item.mjs';
 import * as R from './regras.mjs';
 import { ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
-import { pesoDoInventario, cabeNoPeso, guardarMoeda } from './inventario.mjs';
+import { pesoDoInventario, cabeNoPeso, guardarMoeda, erroDeEspaco } from './inventario.mjs';
 
 /*
  * As caixas, como o client as separa (`openLocker`, panels.mjs):
@@ -190,7 +190,7 @@ export function comando(estado, m, contaCaixa = null) {
     if (i < 0) return { ok: false, erro: 'Essa peça não está na caixa.' };
     const peca = caixa.itens[i];
     const n = Math.min(peca.count ?? 1, Math.max(1, Number(m.count) || 1));
-    if (!cabeNoPeso(estado, id, n)) return { ok: false, erro: 'Você não tem capacidade para carregar isso.' };
+    if (!cabeNoPeso(estado, id, n)) return { ok: false, erro: erroDeEspaco(estado, id, n) };
     peca.count -= n;
     if (peca.count <= 0) caixa.itens.splice(i, 1);
     caixa.tipos = caixa.itens.length;

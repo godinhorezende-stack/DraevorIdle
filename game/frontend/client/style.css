@@ -28180,3 +28180,6 @@ html[data-perfil="retrato"] .inv-selo-texto b, html[data-perfil="retrato"] .inv-
 .marco-aberto { display: flex; gap: 14px; align-items: flex-start; justify-content: center; margin: 8px 0; }
 .marco-aberto canvas { border: 1px solid #6b5a3a; border-radius: 4px; background: #0b0a08; }
 .marco-aberto .poe-balao { position: static; max-width: 340px; }
+
+/* O cinto de frascos: a vaga onde o frasco arrastado vai cair. */
+.poe-frasco.alvo-do-arrasto { outline: 2px dashed var(--accent); outline-offset: 1px; }

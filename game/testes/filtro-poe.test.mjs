@@ -80,3 +80,26 @@ test('a tela recebe o modo PoE e a prévia com peças do PoE', { skip: SEM }, ()
   assert.ok(previa.some((l) => /R-G-B/.test(l.rotulo) && l.acao === 'naoVender'));
   assert.equal(estado.filtroPoe, true);
 });
+
+test('mochila do PoE: 20 vagas para peças não empilháveis (as pilhas não contam); cheia, não entra mais nada — e nada se perde', { skip: SEM }, async () => {
+  const Inventario = await import('../systems/inventario.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  const naoEmpilha = Number(Object.keys(ITEM_CATALOG).find((id) => ITEM_CATALOG[id].slot === 'body' && !ITEM_CATALOG[id].stackable));
+  const empilha = Number(Object.keys(ITEM_CATALOG).find((id) => ITEM_CATALOG[id].stackable && !ITEM_CATALOG[id].moeda));
+  const e = quem();
+  e.inventory = Array.from({ length: Inventario.vagasDaMochila(e) - 1 }, () => ({ id: naoEmpilha, count: 1 }));
+  assert.equal(Inventario.cabeNaMochila(e, naoEmpilha), true, 'a última vaga');
+  e.inventory.push({ id: naoEmpilha, count: 1 });
+  assert.equal(Inventario.cabeNaMochila(e, naoEmpilha), false, 'cheia');
+  assert.equal(Inventario.cabeNaMochila(e, empilha, 50), true, 'pilha não ocupa vaga');
+  assert.match(Inventario.erroDeEspaco(e, naoEmpilha), /mochila está cheia/);
+  // Tirar do corpo com a mochila cheia: recusado, a peça fica vestida.
+  e.equipment.body = { id: naoEmpilha, count: 1 };
+  const r = Inventario.desequipar(e, { slot: 'body' });
+  assert.equal(r.ok, false);
+  assert.ok(e.equipment.body, 'continua vestida');
+  // Da bolsa de loot para a mochila: recusado, fica na bolsa.
+  e.pouch = [{ id: naoEmpilha, count: 1, poe: { raridade: 'raro' } }];
+  assert.equal(Bolsa.moverBolsa(e, { id: naoEmpilha, to: 'bag', pilha: 0 }).ok, false);
+  assert.equal(e.pouch.length, 1);
+});

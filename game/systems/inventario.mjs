@@ -83,11 +83,26 @@ export function moedasParaOBolso(estado) {
   }
 }
 
-/** Cabe `count` de `id` na capacidade do level (equipamento + mochila + bolsa)? */
+/**
+ * As VAGAS da mochila no modo PoE (dono, 07/10: "no inventário o máximo de itens não empilháveis são 20 e está podendo colocar mais"): o
+ * PoE não tem peso, então o limite é de vagas — o `container` da mochila (20). Só as peças NÃO empilháveis ocupam vaga; as pilhas (moedas,
+ * orbes) não contam. Fora do modo PoE vale o peso, como antes.
+ */
+export const vagasDaMochila = (estado) => ITEM_CATALOG[estado?.equipment?.backpack?.id]?.container ?? 20;
+export const pecasNaMochila = (estado) => (estado?.inventory ?? []).filter((p) => !ITEM_CATALOG[p.id]?.stackable).length;
+export function cabeNaMochila(estado, id, count = 1) {
+  if (!ItensPoeCatalogo.ligado() || ITEM_CATALOG[id]?.stackable) return true;
+  return pecasNaMochila(estado) + Math.max(1, count) <= vagasDaMochila(estado);
+}
+
+/** Cabe `count` de `id` na capacidade do level (equipamento + mochila + bolsa)? (No modo PoE, nas vagas da mochila.) */
 export function cabeNoPeso(estado, id, count = 1) {
+  if (!cabeNaMochila(estado, id, count)) return false;
   const peso = (ITEM_CATALOG[id]?.weight ?? 0) * count;
   return pesoDoInventario(estado) + peso <= Afixos.capacidade(estado);
 }
+/** O erro de quando não cabe: no modo PoE é a mochila cheia (vagas); fora dele, o peso. */
+export const erroDeEspaco = (estado, id, count = 1) => (cabeNaMochila(estado, id, count) ? 'Você não tem capacidade para carregar isso.' : `A mochila está cheia (${vagasDaMochila(estado)} vagas para peças não empilháveis).`);
 
 /** A peça tem dados de INSTÂNCIA (raridade, afixos, tier, imbuements, sockets, gema...)? — `camposDaPeca`. */
 export const temInstancia = (p) => Object.keys(camposDaPeca(p)).length > 0;
@@ -402,7 +417,7 @@ export function pegar(estado, { x, y, indice }) {
   const i = indice == null ? pilha.length - 1 : indice;
   const peca = pilha[i];
   if (!peca) return { ok: false, erro: 'Não há nada aí.' };
-  if (!VALOR_DA_MOEDA[peca.id] && !cabeNoPeso(estado, peca.id, peca.count)) return { ok: false, erro: 'Você não tem capacidade para carregar isso.' };
+  if (!VALOR_DA_MOEDA[peca.id] && !cabeNoPeso(estado, peca.id, peca.count)) return { ok: false, erro: erroDeEspaco(estado, peca.id, peca.count) };
 
   pilha.splice(i, 1);
   if (!pilha.length) CHAO.delete(chave);
@@ -560,6 +575,7 @@ export function desequipar(estado, { slot }) {
   const peca = eq[slot];
   if (!peca) return { ok: false, erro: 'Não há nada aí.' };
   if (slot === 'backpack') return { ok: false, erro: 'A mochila não sai.' };
+  if (!cabeNaMochila(estado, peca.id, 1)) return { ok: false, erro: erroDeEspaco(estado, peca.id, 1) };
   eq[slot] = null;
   devolverPeca(estado, peca);
   Afixos.sincronizarMaximos(estado);

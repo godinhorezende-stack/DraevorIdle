@@ -16,7 +16,7 @@
 import { ligado, REGRAS } from './catalogo.mjs';
 import { traduzirParte } from './traduzir.mjs';
 import { ITEM_CATALOG } from '../dados.mjs';
-import { darPeca } from '../inventario.mjs';
+import { darPeca, cabeNaMochila, erroDeEspaco } from '../inventario.mjs';
 import { camposDaPeca } from '../itens/item.mjs';
 import * as Dot from '../combate/dot.mjs';
 
@@ -219,10 +219,32 @@ export function tirar(estado, { vaga }) {
   const v = Number(vaga);
   const peca = c[v];
   if (!peca) return { ok: false, erro: 'Essa vaga do cinto está vazia.' };
+  if (!cabeNaMochila(estado, peca.id, 1)) return { ok: false, erro: erroDeEspaco(estado, peca.id, 1) };
   c[v] = null;
   darPeca(estado, peca);
   if (estado.hunt?.frascosPoe) delete estado.hunt.frascosPoe.ativos?.[v];
   return { ok: true, notice: `${peca.poe?.nome ?? 'Frasco'} de volta à mochila.` };
+}
+
+/**
+ * Troca a ORDEM no cinto (dono, 07/10: "arrastar no inventário a ordem dos flasks"): o frasco da vaga `de` vai para `para` e o de lá (ou a
+ * vaga vazia) vem para `de`. As cargas e a regra de uso vão junto (moram na peça); o efeito ativo na caçada também troca de vaga.
+ */
+export function mover(estado, { de, para }) {
+  const c = cinto(estado);
+  const a = Number(de);
+  const b = Number(para);
+  if (!(Number.isInteger(a) && Number.isInteger(b) && a >= 0 && b >= 0 && a < c.length && b < c.length)) return { ok: false, erro: 'Vaga do cinto inválida.' };
+  if (!c[a]) return { ok: false, erro: 'Essa vaga do cinto está vazia.' };
+  if (a === b) return { ok: true };
+  [c[a], c[b]] = [c[b] ?? null, c[a]];
+  const ativos = estado.hunt?.frascosPoe?.ativos;
+  if (ativos) {
+    const [xa, xb] = [ativos[a], ativos[b]];
+    if (xb === undefined) delete ativos[a]; else ativos[a] = xb;
+    if (xa === undefined) delete ativos[b]; else ativos[b] = xa;
+  }
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------- na caçada

@@ -2116,17 +2116,40 @@ export function renderCintoDeFrascos() {
 }
 function cintoDeFrascos(vagas, send) {
   const cinto = el('div', 'poe-cinto');
-  cinto.title = 'Frascos: usados sozinhos na caçada pela regra de cada um (clique para configurar); botão direito para tirar do cinto. A barra de ações mostra os mesmos, nas teclas 1 a 5.';
+  cinto.title = 'Frascos: usados sozinhos na caçada pela regra de cada um (clique para configurar); arraste para mudar a ordem; botão direito para tirar do cinto. A barra de ações mostra os mesmos, nas teclas 1 a 5.';
   const fila = el('div', 'poe-cinto-fila');
+  /*
+   * Arrastar para mudar a ORDEM (dono, 07/10: "quero arrastar no inventário a ordem dos flasks clicando, segurando e arrastando"): cada
+   * vaga (cheia ou vazia) aceita um frasco do próprio cinto — troca as duas vagas — ou da mochila — põe naquela vaga.
+   */
+  const aceitarSoltar = (alvo, v) => {
+    alvo.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      alvo.classList.add('alvo-do-arrasto');
+    });
+    alvo.addEventListener('dragleave', () => alvo.classList.remove('alvo-do-arrasto'));
+    alvo.addEventListener('drop', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      alvo.classList.remove('alvo-do-arrasto');
+      let carga = null;
+      try { carga = JSON.parse(event.dataTransfer.getData('text/plain')); } catch { return; }
+      if (carga?.from === 'frascos' && Number.isInteger(carga.pilha) && carga.pilha !== v) send({ t: 'frasco', action: 'mover', de: carga.pilha, para: v });
+      else if (carga?.from === 'bag' && carga.pilha != null && ctx.state.items[carga.id]?.frasco) send({ t: 'frasco', action: 'por', pilha: carga.pilha, vaga: v });
+    });
+  };
   vagas.forEach((f, v) => {
     if (!f) {
       const vazia = el('div', 'poe-frasco vazio');
-      vazia.title = 'Vaga livre: clique num frasco da mochila para pôr aqui.';
+      vazia.title = 'Vaga livre: clique num frasco da mochila para pôr aqui, ou arraste um frasco para cá.';
+      aceitarSoltar(vazia, v);
       return void fila.append(vazia);
     }
     const caixa = el('div', `poe-frasco ${f.tipo ?? ''}${f.ativoAte > 0 ? ' ativo' : ''}`);
     // O mesmo clique da casa do frasco na barra (o espelho): abre a regra de uso (vida/mana abaixo de X%), com Beber agora e Tirar.
-    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => configurarFrasco(v) });
+    // `pilha: v`: o arrasto leva a vaga de onde saiu (para trocar a ordem ao soltar em outra).
+    const cell = itemCell(f.peca, 'frascos', { size: 34, onClick: () => configurarFrasco(v), pilha: v });
     cell.oncontextmenu = (event) => {
       event.preventDefault();
       openMenu(event, [
@@ -2140,6 +2163,7 @@ function cintoDeFrascos(vagas, send) {
     barra.append(cheio);
     barra.title = `${f.cargas}/${f.cargasMaximas} cargas (usa ${f.cargasPorUso})`;
     caixa.append(cell, barra, el('div', 'poe-frasco-num', `${f.cargas}/${f.cargasMaximas}`));
+    aceitarSoltar(caixa, v);
     fila.append(caixa);
   });
   cinto.append(fila);
@@ -4104,7 +4128,7 @@ export function renderContainer() {
   // O nome é o único que pode encolher — ver a nota do `bag-botoes`, na bolsa.
   const titulo = el('span', 'bag-titulo');
   const nomeDaPeca = el('span', null, meta?.name ?? 'mochila');
-  const contador = el('b', null, `${character.inventory.length} / ${meta?.container ?? 20}`);
+  const contador = el('b', null, `${vagasOcupadas(character)} / ${meta?.container ?? 20}`);
   titulo.append(nomeDaPeca, contador);
   // Dono, 06/10: "backpack 1/20 tirar também" — a grade já mostra as vagas (as livres desenhadas). Só os botões ficam na linha.
   if (!corpoDaMochila()) head.append(titulo);
@@ -4431,10 +4455,13 @@ function encherGradeDaMochila(grid, character, state) {
  * botoes. Os nos sao os mesmos de sempre, e e' isso que impede o clique de se
  * perder entre dois retratos.
  */
+/** As vagas ocupadas da mochila: no modo PoE só as peças não empilháveis ocupam vaga (as pilhas não contam — `Inventario.cabeNaMochila`). */
+const vagasOcupadas = (character) => (character.filtroPoe ? character.inventory.filter((p) => !ctx.state.items[p.id]?.stackable).length : character.inventory.length);
+
 function atualizarCabecaDaMochila(cabeca, character, meta) {
   const cheia = character.inventory.length;
   cabeca.nomeDaPeca.textContent = meta?.name ?? 'mochila';
-  cabeca.contador.textContent = `${cheia} / ${meta?.container ?? 20}`;
+  cabeca.contador.textContent = `${vagasOcupadas(character)} / ${meta?.container ?? 20}`;
   cabeca.limpar.disabled = !cheia;
   cabeca.vender.disabled = !cheia;
   tipTexto(

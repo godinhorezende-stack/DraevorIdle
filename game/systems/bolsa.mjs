@@ -12,7 +12,7 @@
 import * as Afixos from './afixos.mjs';
 import * as Gemas from './gemas.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
-import { darItem, guardarMoeda } from './inventario.mjs';
+import { darItem, guardarMoeda, cabeNaMochila, erroDeEspaco } from './inventario.mjs';
 import { pecaEspecial } from './itens/item.mjs';
 import { precoNpc } from './hunt/rentabilidade.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
@@ -265,6 +265,8 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   // Peça com estrela/tier/imbuement passa INTEIRA (o quadrado dela), sem
   // virar uma cópia limpa pelo empilhamento.
   const alvoEspecial = Number.isInteger(pilha) && de[pilha]?.id === id && especial(de[pilha]);
+  // (Modo PoE: a mochila tem vagas — a peça não empilhável só entra com vaga livre.)
+  if (to === 'bag' && !cabeNaMochila(estado, id, alvoEspecial ? 1 : Math.max(1, Number(count) || 1))) return { ok: false, erro: erroDeEspaco(estado, id, 1) };
   if (alvoEspecial) {
     const [peca] = de.splice(pilha, 1);
     if (to === 'bag') (estado.inventory ??= []).push(peca);

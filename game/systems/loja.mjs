@@ -283,7 +283,7 @@ export function moverDaInbox(estado, { mover }, cabeNoPeso) {
   if (i < 0) return { ok: false, erro: 'Essa peça não está na Store Inbox.' };
   const peca = inbox[i];
   const n = Math.min(peca.count ?? 1, Math.max(1, Number(mover.count) || 1));
-  if (!cabeNoPeso(estado, id, n)) return { ok: false, erro: 'Você não tem capacidade para carregar isso.' };
+  if (!cabeNoPeso(estado, id, n)) return { ok: false, erro: 'Você não tem capacidade (ou vaga na mochila) para carregar isso.' };
   peca.count = (peca.count ?? 1) - n;
   if (peca.count <= 0) inbox.splice(i, 1);
   const { count, ...extras } = peca;
