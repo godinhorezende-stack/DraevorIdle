@@ -212,6 +212,20 @@ export function recalcular(peca, regras = Catalogo.REGRAS) {
   return peca;
 }
 
+/**
+ * A QUALIDADE no drop (dono, 07/10; poedb › Quality): parte das armas, armaduras e frascos cai "Superior", com 1 a `maximo`% de qualidade
+ * (`regras.drop.qualidade.chance` por peça); o resto cai com 0%. A peça é remontada com a qualidade (dano/defesa/recuperação e o nome).
+ */
+export function qualidadeDoDrop(peca, rng = Math.random, regras = Catalogo.REGRAS) {
+  const q = regras.drop?.qualidade;
+  const p = peca?.poe;
+  if (!p || !q?.chance) return peca;
+  const temBase = !!(p.atributos?.dano_fisico || p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia) || FRASCOS.includes(p.classe);
+  if (!temBase || rng() >= q.chance) return peca;
+  p.qualidade = 1 + Math.floor(rng() * Math.max(1, q.maximo ?? 20));
+  return recalcular(peca, regras);
+}
+
 // ---------------------------------------------------------------- entregar a um personagem online (a engine local)
 
 let vivas = new Map();
@@ -312,7 +326,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   const base = candidatas[Math.floor(rng() * candidatas.length)];
   // Frasco não é Raro no PoE (só Normal, Mágico e Único): o Raro sorteado vira Mágico.
   const r = raridade === 'raro' && FRASCOS.includes(base.split('/')[0]) ? 'magico' : raridade;
-  return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: r, ilvl, rng }), regras, rng);
+  return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: r, ilvl, rng }), regras, rng), rng, regras);
 }
 
 /** As peças do PoE que caem do bicho morto (lista, talvez vazia). Só com o sistema ligado. */

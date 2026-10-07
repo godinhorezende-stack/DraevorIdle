@@ -241,3 +241,22 @@ test('o peso da peça do PoE é o de um item do Draevor do mesmo tipo (antes 50 
   for (const base of ['Rings/Iron_Ring', 'Belts/Rustic_Sash', 'Gloves/Wool_Gloves', 'Rings/Iron_Ring', 'Belts/Rustic_Sash', 'Gloves/Wool_Gloves']) Inventario.darPeca(e, Jogo.pecaDoJogo(gerar(base, 'magico')));
   assert.ok(Inventario.pesoDoInventario(e) > 0);
 });
+
+test('qualidade no drop (dono, 07/10): parte das peças cai Superior com 1–20%, já com o dano/defesa da base escalado; o resto cai com 0%', { skip: SEM }, () => {
+  const rngDe = (s) => { let x = s; return () => ((x = (x * 16807) % 2147483647) / 2147483647); };
+  const nova = (rng) => Jogo.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'One_Hand_Swords/Rusted_Sword', raridade: 'normal', ilvl: 10, rng }), Catalogo.REGRAS, rng);
+  const sem = Jogo.qualidadeDoDrop(nova(rngDe(5)), () => 0.99);
+  assert.equal(sem.poe.qualidade ?? 0, 0);
+  const com = nova(rngDe(5));
+  const dano = com.base.attack[1];
+  const seq = [0.01, 0.999];
+  Jogo.qualidadeDoDrop(com, () => seq.shift() ?? 0.5);
+  assert.equal(com.poe.qualidade, 20);
+  assert.equal(com.base.attack[1], Math.round(dano * 1.2));
+  assert.match(com.poe.nome, /^Superior /);
+  // No sorteio de verdade: perto de 1 em 8 cai com qualidade.
+  let n = 0;
+  const r = rngDe(11);
+  for (let i = 0; i < 2000; i++) { const p = Jogo.pecaSorteada(20, r); if (p?.poe?.qualidade > 0) n++; }
+  assert.ok(n > 120 && n < 400, `${n} de 2000 com qualidade`);
+});

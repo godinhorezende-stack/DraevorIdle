@@ -63,8 +63,9 @@
       "unico": 0.00055,
       "_nota": "Números do dono (05/10): Normal ~0,80–0,90, Mágico ~0,10–0,15, Raro ~0,02–0,04, Único ~0,0001–0,001 — aqui o ponto médio de cada faixa. São PESOS relativos (o sorteio divide pela soma), valendo para cada peça que cai."
     },
-    "ilvlMaximo": 100
-  },
+    "ilvlMaximo": 100,
+  "qualidade": {"chance": 0.125, "maximo": 20, "_nota": "Dono (07/10): parte das armas, armaduras e frascos cai Superior, com 1 a `maximo`% de qualidade (chance por peça); o resto cai com 0%, como no PoE."}
+ },
   "ouro": {
     "_nota": "O OURO que o monstro do PoE solta ao morrer (pedido do dono, 05/10): pelo LEVEL do monstro, um valor ALEATÓRIO entre o mínimo e o máximo da tabela (entre dois levels da tabela, a faixa é interpolada), × o multiplicador da raridade do monstro. `porRaridade` vazio para uma raridade = usa (1 + bonusDeQuantidade do drop) — a mesma regra do dono para a quantidade de itens (Mágico ×2,5; Raro ×8,5; Único ×29,5). Soma o Gold Find do jogador. Cai no bolso, como as moedas.",
     "tabela": [
