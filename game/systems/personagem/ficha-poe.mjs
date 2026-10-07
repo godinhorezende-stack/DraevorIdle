@@ -173,7 +173,7 @@ export function montar(estado, ficha, extras = {}) {
     { id: 'magia', titulo: 'Magia', linhas: [
       linha('Velocidade de conjuração', `+${pct(ficha.castSpeed, 0)}`, { fontes: daOrigem('castSpeed') }),
       linha('Chance de crítico com magias', ficha.critMagiaPoe ? `base da gema × ${num(1 + ficha.critMagiaPoe.aumentada / 100, 2)}` : pct((ficha.critChanceMagia ?? ficha.critChance ?? 0) * 100, 2), { dica: 'como no PoE, a chance-base de crítico de cada magia é a da gema (ex.: Bola de Fogo 6%), somada aos "+% de chance" e multiplicada pelo "aumentada"' }),
-      linha('Roubo de vida e mana', 'só ataques', { dica: 'como no PoE: as magias não roubam; cada acerto rouba no máximo 10% da máxima, e o roubo recupera no máximo 20% da máxima por segundo' }),
+      linha('Roubo de vida e mana', 'só ataques', { dica: 'como no PoE: as magias não roubam; cada acerto cria uma instância de até 10% da máxima, que recupera a 2% por segundo; todas juntas recuperam no máximo 20% da máxima por segundo' }),
       linha('Dano de magia aumentado', `+${pct((ficha.danoDeMagiaDoPoe ?? 0) + (ficha.danoDeMagia ?? 0))}`, { fontes: daOrigem('dano.spell') }),
       ...Object.entries(ficha.danoSomadoMagia ?? {}).map(([el, [a, b]]) => linha(`Dano ${NOME_DO_ELEMENTO[el] ?? el} adicionado às magias`, `${num(a)}–${num(b)}`)),
     ] },

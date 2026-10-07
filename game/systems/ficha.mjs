@@ -721,25 +721,27 @@ export function curar(estado, vida, mana, eventos, quem, pos) {
 /** Leech de um dano total causado: devolve vida e mana e mostra o quanto. */
 /*
  * ---- O ROUBO (leech) no modo PoE (dono, 07/10) ----
- * Como no PoE: as MAGIAS não roubam (só os ataques — o golpe da arma e as gemas de ataque); cada acerto rouba no máximo 10% da vida/mana
- * máxima, e o total recuperado por roubo não passa de 20% da máxima por SEGUNDO (a janela de 1 s do relógio da caçada).
+ * Como no PoE: as MAGIAS não roubam (só os ataques). Cada acerto cria uma INSTÂNCIA de roubo com no máximo 10% da vida/mana máxima, que
+ * recupera a 2% da máxima por segundo (um golpe forte dura até 5 s); a soma de todas as instâncias ativas não passa de 20% da máxima por
+ * segundo (é preciso ~10 instâncias para bater o teto). Quem faz a recuperação ao longo do tempo é `recuperarRoubo` (no tique da caçada).
  */
-export const LEECH_POE = { porAcertoPct: 10, porSegundoPct: 20 };
+export const LEECH_POE = { porInstanciaPct: 10, taxaDaInstanciaPct: 2, porSegundoPct: 20 };
 export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = combate(estado), key = null, { ataque = true } = {}) {
   if (itensPoeLigado() && !ataque) return;
   // Vampiric Embrace e Void's Call (charms): leech a mais na criatura apontada.
   const doCharm = Charms.leechExtra(estado, key, ficha);
-  let vida = Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
-  let mana = Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
-  if (itensPoeLigado() && (vida > 0 || mana > 0)) {
-    const agora = estado.hunt?.clock ?? 0;
-    const j = estado.hunt ? (estado.hunt.janelaDoRoubo ??= { inicio: agora, vida: 0, mana: 0 }) : { inicio: agora, vida: 0, mana: 0 };
-    if (agora - j.inicio >= 1000) Object.assign(j, { inicio: agora, vida: 0, mana: 0 });
-    const teto = (max, usado) => Math.max(0, Math.min((max * LEECH_POE.porAcertoPct) / 100, (max * LEECH_POE.porSegundoPct) / 100 - usado));
-    vida = Math.floor(Math.min(vida, teto(estado.maxHp ?? 0, j.vida)));
-    mana = Math.floor(Math.min(mana, teto(estado.maxMana ?? 0, j.mana)));
-    j.vida += vida;
-    j.mana += mana;
+  const vida = Math.floor(danoTotal * ((ficha.lifeLeech ?? 0) + doCharm.vida));
+  const mana = Math.floor(danoTotal * ((ficha.manaLeech ?? 0) + doCharm.mana));
+  if (itensPoeLigado()) {
+    if (!estado.hunt) return;
+    const lista = (estado.hunt.roubos ??= []);
+    const instancia = (recurso, total, max) => {
+      const quanto = Math.min(total, (max * LEECH_POE.porInstanciaPct) / 100);
+      if (quanto > 0) lista.push({ recurso, restante: quanto, porSegundo: (max * LEECH_POE.taxaDaInstanciaPct) / 100 });
+    };
+    instancia('vida', vida, estado.maxHp ?? 0);
+    instancia('mana', mana, estado.maxMana ?? 0);
+    return;
   }
   const ganhoVida = Math.min(vida, Math.max(0, (estado.maxHp ?? 0) - (estado.hp ?? 0)));
   const ganhoMana = Math.min(mana, Math.max(0, (estado.maxMana ?? 0) - (estado.mana ?? 0)));
@@ -751,6 +753,32 @@ export function aplicarLeech(estado, danoTotal, eventos, quem, pos, ficha = comb
     estado.mana += ganhoMana;
     eventos.push({ t: 'heal', uid: 'player', quem, x: pos.x, y: pos.y, v: ganhoMana, color: '#4fc3ff', leech: 'mana' });
   }
+}
+
+/** A recuperação das instâncias de roubo do PoE em `ms` de caçada: cada uma a 2%/s da máxima, a soma até 20%/s; acabou, sai. */
+export function recuperarRoubo(estado, ms) {
+  const lista = estado.hunt?.roubos;
+  if (!lista?.length || !(ms > 0)) return;
+  const s = ms / 1000;
+  const resto = (estado.hunt.restoDoRoubo ??= { vida: 0, mana: 0 });
+  for (const [recurso, campo, max] of [['vida', 'hp', estado.maxHp ?? 0], ['mana', 'mana', estado.maxMana ?? 0]]) {
+    const ativas = lista.filter((x) => x.recurso === recurso);
+    if (!ativas.length) continue;
+    const pedido = ativas.reduce((n, x) => n + Math.min(x.restante, x.porSegundo * s), 0);
+    const teto = (max * LEECH_POE.porSegundoPct * s) / 100;
+    const fator = pedido > teto ? teto / pedido : 1;
+    let ganho = 0;
+    for (const x of ativas) {
+      const d = Math.min(x.restante, x.porSegundo * s) * fator;
+      x.restante -= d;
+      ganho += d;
+    }
+    resto[recurso] += ganho;
+    const inteiro = Math.floor(resto[recurso]);
+    resto[recurso] -= inteiro;
+    if (inteiro > 0 && (campo !== 'hp' || (estado.hp ?? 0) > 0)) estado[campo] = Math.min(max, (estado[campo] ?? 0) + inteiro);
+  }
+  estado.hunt.roubos = lista.filter((x) => x.restante > 0.001);
 }
 
 // As cargas do PoE: o Conduíte reparte as cargas com a party — o módulo das cargas lê as regras dos outros e a keystone por aqui.

@@ -143,18 +143,22 @@ test('modo PoE: sem os 3% de crítico "do personagem"; o roubo só nos ataques, 
   assert.equal(f.critChance, 0, 'desarmado e sem itens: nenhuma chance "do personagem"');
   assert.ok(!f.origens.critChance?.some((x) => x.fonte === 'Base do personagem' && x.valor > 0));
   assert.ok(f.critMagiaPoe, 'a magia usa a base da gema');
-  // O roubo.
+  // O roubo: cada acerto cria uma instância de até 10% da máxima, a 2%/s; todas juntas até 20%/s; magia não rouba.
   Object.assign(e, { maxHp: 1000, hp: 100, maxMana: 500, mana: 0, hunt: { clock: 0 } });
   const ficha = { lifeLeech: 1, manaLeech: 1 }; // 100% do dano (para ver os tetos)
   const ev = [];
   Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha, null, { ataque: false });
-  assert.deepEqual([e.hp, e.mana], [100, 0], 'magia não rouba');
+  assert.equal(e.hunt.roubos?.length ?? 0, 0, 'magia não rouba');
   Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
-  assert.deepEqual([e.hp, e.mana], [200, 50], '10% da máxima por acerto');
-  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
-  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
-  assert.deepEqual([e.hp, e.mana], [300, 100], 'no máximo 20% da máxima no mesmo segundo');
-  e.hunt.clock = 1000;
-  Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
-  assert.deepEqual([e.hp, e.mana], [400, 150], 'o segundo seguinte libera de novo');
+  assert.deepEqual(e.hunt.roubos.map((x) => [x.recurso, x.restante, x.porSegundo]), [['vida', 100, 20], ['mana', 50, 10]], 'instância de 10% da máxima, a 2%/s');
+  assert.equal(e.hp, 100, 'não cura na hora');
+  Ficha.recuperarRoubo(e, 1000);
+  assert.deepEqual([e.hp, e.mana], [120, 10], 'um segundo: 2% da máxima');
+  Ficha.recuperarRoubo(e, 4000);
+  assert.deepEqual([e.hp, e.mana], [200, 50], 'em 5 s a instância acaba (10%)');
+  assert.equal(e.hunt.roubos.length, 0);
+  // 15 golpes de uma vez: 15 × 2% = 30%/s pedidos, mas o teto é 20%/s.
+  for (let k = 0; k < 15; k++) Ficha.aplicarLeech(e, 5000, ev, 'x', { x: 0, y: 0 }, ficha);
+  Ficha.recuperarRoubo(e, 1000);
+  assert.equal(e.hp, 400, '+20% (200) no segundo, não +30%');
 });

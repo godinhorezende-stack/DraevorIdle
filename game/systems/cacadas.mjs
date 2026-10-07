@@ -1271,6 +1271,8 @@ export function regenerar(estado, ms) {
   r.mana -= mana;
   estado.hp = Math.min(estado.maxHp ?? estado.hp, (estado.hp ?? 0) + hp);
   estado.mana = Math.min(estado.maxMana ?? estado.mana, (estado.mana ?? 0) + mana);
+  // O roubo do PoE recupera ao longo do tempo (as instâncias de `Ficha.aplicarLeech`).
+  Ficha.recuperarRoubo(estado, ms);
   // O Energy Shield volta sozinho depois de um tempo sem apanhar (`Defesa.recarregar`).
   Defesa.recarregar(estado, ficha, ms);
 }
