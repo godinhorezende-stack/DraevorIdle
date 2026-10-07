@@ -398,6 +398,8 @@ const SEM_PODIO = { exp: 0, loot: 0, lugar: 0 };
  * PRÓPRIA caçada (como os outros bônus).
  */
 export function fatorDaCacaOnline(hunt) {
+  // Modo PoE (dono, 07/10): sem bônus — o manual e o automático são só o jeito de controlar (um interruptor na barra, a qualquer hora).
+  if (itensPoeLigado()) return 1;
   return hunt?.modo === 'online' ? 1 + (CATALOGO.bonusOnline ?? 0) / 100 : 1;
 }
 

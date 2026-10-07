@@ -5944,8 +5944,8 @@ window.addEventListener('blur', () => {
 /** Diz ao servidor para onde as teclas apontam agora. */
 function mandarRumo() {
   if (!held.size) return;
-  // Na caçada automática o teclado não anda: quem manda no boneco é a rota.
-  if (state.hunt && !state.hunt.manual) return;
+  // Na caçada automática o teclado não anda: quem manda no boneco é a rota. (Modo PoE: anda — e o servidor desliga o Automático.)
+  if (state.hunt && !state.hunt.manual && !state.classesPoe) return;
   let dx = 0;
   let dy = 0;
   for (const key of held) {
@@ -6269,7 +6269,8 @@ mapView.onTileClick = (x, y) => {
    */
   if (!state.hunt && abrirObjetoEm(x, y)) return;
   if (!state.hunt) return send({ t: 'walkTo', x, y });
-  if (!state.hunt.manual) return;
+  // (Modo PoE: o clique no chão anda também no automático — e o servidor desliga o Automático: "andar com a mão assume o controle".)
+  if (!state.hunt.manual && !state.classesPoe) return;
   const encontroAqui = encontroNaCasa(state.hunt.instancia?.encontros, x, y, state.hunt.z);
   if (encontroAqui && encontroPerto([encontroAqui], state.hunt.player ?? {}, state.hunt.z)) return pedirInteracao(encontroAqui);
   /*

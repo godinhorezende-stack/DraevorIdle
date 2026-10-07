@@ -114,3 +114,21 @@ test('a barra grande do alto da tela também no CHEFE de uma caçada comum (o ú
   chefe.hp = 0;
   assert.equal(Cacadas.snapshotDaHunt(e).boss, null, 'morto: some');
 });
+
+test('o interruptor Automático (modo PoE): troca o controle sem sair da caçada; andar com a mão desliga; sem bônus no manual', { skip: SEM }, async () => {
+  const { e, Cacadas } = await montar(null);
+  const Combate = await import('../systems/hunt/combate.mjs');
+  assert.equal(e.hunt.modo, 'auto', '"Entrar" começa no automático');
+  assert.equal(Cacadas.definirAutomatico(e, { on: false }).ok, true);
+  assert.equal(Cacadas.snapshotDaHunt(e).manual, true);
+  assert.equal(Combate.fatorDaCacaOnline(e.hunt), 1, 'sem os +15% no manual');
+  Cacadas.definirAutomatico(e, { on: true });
+  assert.equal(e.hunt.modo, 'auto');
+  // Andar com a tecla no automático: assume o controle.
+  Cacadas.andar(e, { dx: 1, dy: 0 });
+  assert.equal(e.hunt.modo, 'online');
+  Cacadas.definirAutomatico(e, { on: true });
+  Cacadas.andarAte(e, { x: e.hunt.pos.x + 1, y: e.hunt.pos.y });
+  assert.equal(e.hunt.modo, 'online', 'o clique no chão também');
+  assert.equal(Cacadas.definirAutomatico({}, { on: true }).ok, false, 'fora da caçada: nada');
+});

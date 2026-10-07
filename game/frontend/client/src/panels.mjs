@@ -4042,7 +4042,17 @@ function montarEscolha(body, hunt, list) {
   );
   online.onclick = () => startRun(hunt, 'online');
 
-  opcoes.append(ciclo, online);
+  /*
+   * ---- Modo PoE: um botão só, "Entrar" (dono, 07/10) ----
+   * A caçada começa no automático e o controle troca a qualquer hora pelo interruptor "Automático" da barra de ações (andar com a mão
+   * também desliga o automático). Sem bônus de XP/loot no manual: os dois são só o jeito de controlar.
+   */
+  if (ctx.state.classesPoe) {
+    const entrar = el('button', 'run-mode cycle run-mode-entrar', 'Entrar');
+    entrar.append(el('em', null, 'começa no automático — o interruptor Automático da barra troca para o controle manual a qualquer hora'));
+    entrar.onclick = () => startRun(hunt, 'single');
+    opcoes.append(entrar);
+  } else opcoes.append(ciclo, online);
   rodape.append(opcoes);
   body.append(rodape);
 }
@@ -4151,7 +4161,12 @@ function askBoss(hunt) {
       );
       online.onclick = () => startRun(hunt, 'online');
 
-      opcoes.append(automatica, online);
+      if (ctx.state.classesPoe) {
+        const entrar = el('button', 'run-mode cycle run-mode-entrar', 'Entrar');
+        entrar.append(el('em', null, 'começa no automático — o interruptor Automático da barra troca para o controle manual a qualquer hora'));
+        entrar.onclick = () => startRun(hunt, 'single');
+        opcoes.append(entrar);
+      } else opcoes.append(automatica, online);
       rodape.append(opcoes);
 
       const acoes = el('div', 'confirm-actions');

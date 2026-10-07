@@ -72,6 +72,7 @@ import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
 import * as Poderes from './poderes.mjs';
 import * as Areas from '../engine/areas.mjs';
+import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
 
 // A API de antes, agora nos módulos de `hunt/`.
 export { nomeDaHunt, huntsJogaveis, gradeDaHunt, aquecerGrades } from './hunt/terreno.mjs';
@@ -2064,9 +2065,30 @@ function magiasDoEspectro(hunt, l, agora, ficha) {
   return eventos;
 }
 
+/*
+ * ---- O interruptor AUTOMÁTICO (modo PoE — dono, 07/10: "na barra de slots algo para ativar a caça automática; desativando, faço os
+ * movimentos online; tudo posso fazer manual e automático") ----
+ * Uma caçada só ("Entrar" começa no automático); o controle troca a qualquer hora, sem sair: ligado, o personagem anda, mira e usa a
+ * barra sozinho; desligado, quem anda é o jogador (e os interruptores "mirar e atacar" e "usar a barra" continuam valendo). Andar com a
+ * mão (tecla ou clique no chão) DESLIGA o automático (decisão do dono). Sem bônus de XP/loot no manual (`fatorDaCacaOnline`).
+ */
+export function definirAutomatico(estado, { on }) {
+  const hunt = estado.hunt;
+  if (!hunt) return { ok: false, erro: 'Você não está numa caçada.' };
+  hunt.modo = on ? 'auto' : 'online';
+  hunt.destino = null;
+  hunt.rumo = null;
+  return { ok: true };
+}
+/** Andou com a mão no automático (modo PoE): assume o controle — o automático desliga. */
+function assumirControle(hunt) {
+  if (itensPoeLigado() && hunt && hunt.modo !== 'online') hunt.modo = 'online';
+}
+
 /** `send({t:'huntWalk', dx, dy})` — mesmo modelo de rumo do `andar` da cidade. */
 export function andar(estado, { dx, dy }) {
   if (!estado.hunt) return;
+  if (dx || dy) assumirControle(estado.hunt);
   // A tecla manda mais que o clique: apertou uma direção, larga o destino.
   if (dx || dy) estado.hunt.destino = null;
   if (!dx && !dy) {
@@ -2093,6 +2115,7 @@ export function andarAte(estado, { x, y }) {
   if (!hunt) return { ok: true };
   const destino = { x: Math.trunc(Number(x)), y: Math.trunc(Number(y)) };
   if (!Number.isFinite(destino.x) || !Number.isFinite(destino.y)) return { ok: true };
+  assumirControle(hunt);
   if (hunt.modo !== 'online') return { ok: false, erro: 'Na Caça Automática quem anda é a rota.' };
   if (destino.x === hunt.pos.x && destino.y === hunt.pos.y) {
     hunt.destino = null;

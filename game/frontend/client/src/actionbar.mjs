@@ -1135,6 +1135,20 @@ function renderPresets() {
     botao.onclick = () => ctx.send({ t: 'huntAssist', tipo, on: !ligado });
     return botao;
   };
+  /*
+   * ---- O AUTOMÁTICO (modo PoE — dono, 07/10) ----
+   * Na caçada, o interruptor principal: ligado, o personagem anda, mira e usa a barra sozinho; desligado, você anda (tecla ou clique) e
+   * os dois de baixo decidem se ele mira/ataca e usa a barra sozinho. Andar com a mão também desliga o automático (`huntAuto` no servidor).
+   */
+  if (state.classesPoe && hunt) {
+    const mestre = el('button', `auto-mestre${automatica ? ' ligado' : ''}`, automatica ? 'Automático: ligado' : 'Automático: desligado');
+    mestre.setAttribute('aria-pressed', String(automatica));
+    mestre.title = automatica
+      ? 'O personagem anda, mira e usa a barra sozinho. Clique para assumir o controle (andar com as teclas ou clicar no chão também desliga).'
+      : 'Você controla o movimento; os dois botões ao lado decidem se ele mira/ataca e usa a barra sozinho. Clique para voltar ao automático.';
+    mestre.onclick = () => ctx.send({ t: 'huntAuto', on: !automatica });
+    holder.append(mestre);
+  }
   holder.append(
     interruptor('ataque', ataque, '⚔', 'Ataque automático', 'Escolhe o alvo sozinho e dá o ataque básico.'),
     interruptor('barra', barra, '', 'Barra automática', 'Magias, runas, curas e poções saem sozinhas com as condições da barra.')
