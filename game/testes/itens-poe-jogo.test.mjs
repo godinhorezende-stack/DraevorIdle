@@ -260,3 +260,19 @@ test('qualidade no drop (dono, 07/10): parte das peças cai Superior com 1–20%
   for (let i = 0; i < 2000; i++) { const p = Jogo.pecaSorteada(20, r); if (p?.poe?.qualidade > 0) n++; }
   assert.ok(n > 120 && n < 400, `${n} de 2000 com qualidade`);
 });
+
+test('varinha e arco do PoE: 12 m de alcance (o mesmo em casas); a varinha atira um projétil mágico, não flecha (dono, 07/10)', { skip: SEM }, async () => {
+  const { tiroDaArma, ID_DO_TIRO } = await import('../systems/hunt/combate.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  const rngDe = (s) => { let x = s; return () => ((x = (x * 16807) % 2147483647) / 2147483647); };
+  const nova = (base) => Jogo.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base, raridade: 'normal', ilvl: 10, rng: rngDe(3) }), Catalogo.REGRAS, rngDe(3));
+  const vara = nova('Wands/Driftwood_Wand');
+  const arco = nova('Bows/Crude_Bow');
+  assert.equal(vara.poe.atributos.alcance_metros, 12);
+  assert.equal(arco.poe.atributos.alcance_metros, 12);
+  assert.equal(ITEM_CATALOG[vara.id].range, ITEM_CATALOG[arco.id].range, 'o mesmo alcance em casas');
+  assert.equal(tiroDaArma({ equipment: {} }, ITEM_CATALOG[vara.id]), ID_DO_TIRO.energy, 'a varinha atira energia');
+  assert.equal(tiroDaArma({ equipment: {} }, ITEM_CATALOG[arco.id]), ID_DO_TIRO.arrow, 'o arco atira flecha');
+  // As corpo a corpo seguem com o alcance do PoE (1 a 1,4 m), todas a 1 casa.
+  assert.equal(nova('Daggers/Glass_Shank').poe.atributos.alcance_metros, 1);
+});

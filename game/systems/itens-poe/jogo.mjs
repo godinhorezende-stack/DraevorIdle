@@ -46,8 +46,10 @@ export const CLASSES_DO_JOGO = {
   Claws: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 30 },
   Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 20 },
   Rune_Daggers: { slot: 'weapon', tipo: 'sword weapons', skill: 'sword', peso: 20 },
-  Bows: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', twoHanded: true, range: 6, peso: 47 },
-  Wands: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', range: 5, peso: 27 },
+  // Arcos e Varinhas: 12 m no PoE (o limite padrão dos projéteis) — o mesmo alcance em casas para os dois. A varinha atira um projétil
+  // MÁGICO (dono, 07/10: "o efeito do ataque básico da varinha está como flecha"), não flecha.
+  Bows: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', twoHanded: true, range: 6, alcanceMetros: 12, peso: 47 },
+  Wands: { slot: 'weapon', tipo: 'distance weapons', skill: 'distance', range: 6, alcanceMetros: 12, shoot: 'energy', peso: 27 },
 };
 
 const REG = { porBase: new Map(), porId: new Map(), naoEquipaveis: [] };
@@ -89,6 +91,7 @@ export function iniciar(itemCatalog) {
         ...(regra.skill && a.chance_critico_pct ? { critChance: Math.round(Number(a.chance_critico_pct) * 100) } : {}),
         ...(regra.twoHanded ? { twoHanded: true } : {}),
         ...(regra.range ? { range: regra.range } : {}),
+        ...(regra.shoot ? { shoot: regra.shoot } : {}),
         ...(regra.quiver ? { quiver: true } : {}),
         ...(a.armadura ? { armor: media(a.armadura) } : {}),
         // Marca de item do PoE: o cliente desenha o ícone da coleção e o balão próprio; o servidor acha a base.
@@ -138,6 +141,9 @@ export function pecaDoJogo(gerada, regras = Catalogo.REGRAS, rng = Math.random) 
   if (!gerada || gerada.erro) return null;
   const id = idDaBase(gerada.base);
   if (!id) return null;
+  // O alcance da base em metros (o PoE traz nas armas corpo a corpo: 1 a 1,4 m); arco e varinha: 12 m.
+  const alcanceMetros = CLASSES_DO_JOGO[gerada.classe]?.alcanceMetros;
+  if (alcanceMetros && gerada.atributos && gerada.atributos.alcance_metros == null) gerada.atributos = { ...gerada.atributos, alcance_metros: alcanceMetros };
   const a = gerada.atributos ?? {};
   const base = {
     ...(a.dano_fisico && typeof a.dano_fisico === 'object' ? { attack: [a.dano_fisico.min, a.dano_fisico.max] } : {}),
