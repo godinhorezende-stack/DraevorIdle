@@ -1191,7 +1191,8 @@ function barraDoBoss(estado) {
    * continua sendo a fonte da VIDA, porque ela chega a cada quadro; o objeto do
    * boss é a fonte da cara e das resistências, que não mudam durante a luta.
    */
-  const dele = estado?.isBoss ? estado.boss : null;
+  // (Na sala de boss e no CHEFE de qualquer caçada — o servidor só manda `boss` quando há um chefe para mostrar: `cacadas.barraDoChefe`.)
+  const dele = estado?.boss ?? null;
   const naLista = dele ? (estado.monsters ?? []).find((m) => m.uid === dele.uid) : null;
   const chefe = naLista ?? dele;
   if (!chefe || (chefe.hp ?? 0) <= 0) {

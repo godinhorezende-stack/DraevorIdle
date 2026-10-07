@@ -98,3 +98,19 @@ test('Limite 2: numa volta de 3, a de cima sai 2 vezes e as outras se revezam na
   const fb = s.filter((x) => x === 'Fireball').length / s.length;
   assert.ok(fb > 0.5 && fb < 0.75, `Fireball ${fb}`);
 });
+
+test('a barra grande do alto da tela também no CHEFE de uma caçada comum (o único do PoE): no alvo ou o mais perto, até 10 casas', { skip: SEM }, async () => {
+  const { e, Cacadas } = await montar(null);
+  const h = e.hunt;
+  h.monstros = h.monstros.slice(0, 2);
+  const [chefe, comum] = h.monstros;
+  Object.assign(chefe, { key: 'poe-hillock-1', name: 'Hillock', hp: 500, maxHp: 1000, x: h.pos.x + 30, y: h.pos.y });
+  Object.assign(comum, { x: h.pos.x + 1, y: h.pos.y });
+  h.alvo = comum.uid;
+  assert.equal(Cacadas.snapshotDaHunt(e).boss, null, 'chefe longe e fora do alvo: sem barra');
+  chefe.x = h.pos.x + 5;
+  const barra = Cacadas.snapshotDaHunt(e).boss;
+  assert.deepEqual([barra?.name, barra?.hp, barra?.maxHp], ['Hillock', 500, 1000]);
+  chefe.hp = 0;
+  assert.equal(Cacadas.snapshotDaHunt(e).boss, null, 'morto: some');
+});

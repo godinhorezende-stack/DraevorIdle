@@ -2168,7 +2168,25 @@ export function usarEscada(estado, { x, y }) {
 const ORDEM_DOS_ELEMENTOS = ['physical', 'fire', 'ice', 'earth', 'energy', 'death', 'holy'];
 function barraDoBoss(hunt) {
   const b = hunt.monstros.find((m) => m.key === hunt.bossId) ?? hunt.monstros[0];
-  if (!b) return null;
+  return b ? dadosDaBarra(b) : null;
+}
+/*
+ * ---- A BARRA no CHEFE de qualquer caçada (dono, 07/10: "quando tem monstro chefe ou boss a barra de vida tem que ser diferente, estilo
+ * essa") ----
+ * Fora da sala de boss, o chefe (o ÚNICO do PoE — Hillock, Brutus… —, o boss, o chefe de ato) ganha a mesma barra grande do alto da tela:
+ * o que está no ALVO, ou, sem alvo chefe, o chefe vivo mais perto (até `ALCANCE_DA_BARRA` casas — longe, ele ainda não é a luta).
+ */
+const ALCANCE_DA_BARRA = 10;
+const ehChefe = (m) => m.hp > 0 && !m.dummy && !!(m.isBoss || m.boss || m.raridade === 'boss' || m.raridade === 'unico' || BESTIARY[m.key]?.boss || BESTIARY[m.key]?.poe?.unico);
+function barraDoChefe(hunt) {
+  if (hunt.isBoss) return barraDoBoss(hunt);
+  const chefes = (hunt.monstros ?? []).filter(ehChefe);
+  if (!chefes.length || !hunt.pos) return null;
+  const dist = (m) => Math.max(Math.abs(m.x - hunt.pos.x), Math.abs(m.y - hunt.pos.y));
+  const b = chefes.find((m) => m.uid === hunt.alvo) ?? chefes.filter((m) => dist(m) <= ALCANCE_DA_BARRA).sort((x, y) => dist(x) - dist(y))[0];
+  return b ? dadosDaBarra(b) : null;
+}
+function dadosDaBarra(b) {
   const el = BESTIARY[b.key]?.elements ?? {};
   const elementos = ORDEM_DOS_ELEMENTOS.filter((id) => el[id]).map((id) => ({ id, valor: Math.min(R.RESISTENCIA_MAXIMA_DE_BOSS, el[id]) }));
   return { uid: b.uid, name: b.name, look: b.look, lookItem: b.lookItem ?? 0, colors: b.colors ?? null, hp: b.hp, maxHp: b.maxHp, elementos };
@@ -2237,7 +2255,8 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     // O portal do boss do ato (HUD: "Entrar no portal"): sempre presente (`null` sem portal), para o quadro em delta limpar quando some.
     portalDoBoss: portalParaCliente(estado, hunt),
     // A barra do boss no alto da tela (`barraDoBoss`, hud.mjs) — o formato real.
-    boss: hunt.isBoss ? barraDoBoss(hunt) : null,
+    // (E no chefe de qualquer caçada — o único do PoE, o boss, o chefe de ato: `barraDoChefe`.)
+    boss: barraDoChefe(hunt),
     strategy: hunt.strategy ?? 'nearest',
     distance: hunt.distancia ?? 0,
     alcance: alcanceDaArma(armaDoPersonagem(estado), estado),
