@@ -1022,7 +1022,8 @@ function autoDisparo(estado, hunt, personagem) {
   // tique — é ele que salva o personagem, e o primeiro slot de vida manda.
   for (let slot = 0; slot < acoes.length; slot++) {
     if (estado.hp <= 0) break;
-    if (Acoes.PAPEL_DO_SLOT[slot] === 'attack') continue;
+    // A fileira de ataque é do combo (com os modos — prioridade, limite, rotação); no PoE, os slots com habilidade de ataque.
+    if (Combo.ehDoCombo(estado, slot)) continue;
     const action = acoes[slot];
     if (!action?.id || action.enabled === false) continue;
     if (!Acoes.condicoesDoSlotBatem(action, estado, alvo, hunt)) {

@@ -103,3 +103,19 @@ test('mochila do PoE: 20 vagas para peças não empilháveis (as pilhas não con
   assert.equal(Bolsa.moverBolsa(e, { id: naoEmpilha, to: 'bag', pilha: 0 }).ok, false);
   assert.equal(e.pouch.length, 1);
 });
+
+test('mochila do PoE: o que passar das 20 peças (compra, recompensa, engine…) vai para o Depósito, as mais recentes primeiro', { skip: SEM }, async () => {
+  const Inventario = await import('../systems/inventario.mjs');
+  const Deposito = await import('../systems/deposito.mjs');
+  const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+  const naoEmpilha = Number(Object.keys(ITEM_CATALOG).find((id) => ITEM_CATALOG[id].slot === 'body' && !ITEM_CATALOG[id].stackable));
+  const e = quem();
+  e.inventory = [];
+  for (let i = 0; i < 23; i++) Inventario.darItem(e, naoEmpilha, 1);
+  e.inventory.forEach((p, i) => (p.marca = i));
+  const foi = Deposito.excessoParaODeposito(e);
+  assert.equal(foi.length, 3);
+  assert.equal(Inventario.pecasNaMochila(e), 20);
+  assert.deepEqual(e.inventory.map((p) => p.marca).slice(-1), [19], 'as 3 mais recentes saíram');
+  assert.match(Deposito.avisoDoExcesso(foi), /Mochila cheia: 3 item\(ns\) foram para o Depósito/);
+});

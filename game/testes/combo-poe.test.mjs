@@ -1,0 +1,100 @@
+// A ORDEM das habilidades na barra do PoE (dono, 07/10: "a rotação, o limite e a prioridade têm de funcionar com várias skills"):
+// no modo PoE os slots são todos 'skill'; as habilidades de ATAQUE da barra formam a fileira do combo (com os modos) e as de suporte
+// (aura, arauto, lacaio...) ficam no sustento.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+
+process.env.ITENS_POE = '1';
+const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
+const SEM = !existsSync(Catalogo.ARQUIVO) && 'catálogo do PoE não importado nesta máquina';
+const { ITEM_CATALOG } = await import('../systems/dados.mjs');
+const Acoes = await import('../systems/acoes.mjs');
+const GS = await import('../systems/skills/gemas.mjs');
+const R = await import('../systems/skills/reforcos.mjs');
+const G = await import('../systems/itens-poe/gemas-poe.mjs');
+const Combo = await import('../systems/combo.mjs');
+if (!SEM) {
+  (await import('../systems/itens-poe/jogo.mjs')).iniciar(ITEM_CATALOG);
+  await G.iniciar({ registrarGema: (g) => (Acoes.registrarAcao(g.entry), GS.registrarAtiva(g)), registrarReforco: R.registrar });
+}
+
+const ATAQUES = ['Fireball', 'Freezing_Pulse', 'Spark'];
+async function montar(modo, limite = null) {
+  const J = await import('../systems/itens-poe/jogo.mjs');
+  const { gerarPeca } = await import('../systems/itens-poe/gerar.mjs');
+  const Cacadas = await import('../systems/cacadas.mjs');
+  const Ficha = await import('../systems/ficha.mjs');
+  const Afixos = await import('../systems/afixos.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  (await import('../systems/itens-poe/campanha.mjs')).iniciar();
+  const e = personagemDeTeste({ vocacao: 'sorcerer', level: 40 });
+  e.classePoe = 'Witch';
+  const slugs = [...ATAQUES, 'Clarity'];
+  const arma = J.pecaDoJogo(gerarPeca({ catalogo: Catalogo.catalogo(), regras: Catalogo.REGRAS, base: 'Wands/Driftwood_Wand', raridade: 'normal', ilvl: 20, rng: () => 0.99 }));
+  arma.soquetes = { abertos: slugs.length, links: slugs.slice(1).map(() => false), gemas: slugs.map(() => null), cores: slugs.map(() => 'W') };
+  e.equipment = { ...(e.equipment ?? {}), weapon: arma };
+  e.inventory = slugs.map((s) => GS.itemDaGema({ id: G.doSlug(s).itemId, nivel: 10, xp: 0, raridade: 'comum' }));
+  slugs.forEach((_, i) => GS.encaixar(e, { de: 0, slot: 'weapon', indice: i }));
+  Ficha.invalidar(e); Afixos.sincronizarMaximos(e);
+  e.actions = Array(Acoes.SLOTS).fill(null);
+  // A aura no slot 1 (o sustento), os três ataques depois.
+  e.actions[0] = { id: G.doSlug('Clarity').acao, enabled: true, minMana: 0, conditions: [] };
+  ATAQUES.forEach((s, i) => (e.actions[i + 1] = { id: G.doSlug(s).acao, enabled: true, minMana: 0, conditions: [] }));
+  if (modo) assert.ok(Combo.definirModo(e, { modo, limite }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: 'poe-a1-the-coast', mode: 'auto', strategy: 'nearest' }).ok);
+  return { e, Cacadas };
+}
+async function rodar(modo, limite = null, segundos = 40) {
+  const { e, Cacadas } = await montar(modo, limite);
+  const { PERSONAGEM } = await import('./apoio.mjs');
+  const nomes = new Map(ATAQUES.map((s) => [G.doSlug(s).acao, s]));
+  const saidas = [];
+  Combo.ouvirCombo((l) => l.resultado === 'EXECUTADA' && saidas.push(nomes.get(l.skill) ?? l.skill));
+  let t = Date.now();
+  try {
+    for (let i = 0; i < (segundos * 1000) / 250 && e.hunt; i++) {
+      const h = e.hunt;
+      if (!h.monstros?.length) break;
+      h.monstros = h.monstros.slice(0, 1);
+      Object.assign(h.monstros[0], { hp: 1e12, maxHp: 1e12, x: h.pos.x + 2, y: h.pos.y });
+      h.alvo = h.monstros[0].uid;
+      e.hp = e.maxHp; e.mana = 1e6; e.maxMana = 1e6;
+      Cacadas.tique(e, PERSONAGEM, (t += 250));
+    }
+  } finally {
+    Combo.ouvirCombo(null);
+  }
+  return saidas;
+}
+
+test('a fileira do combo no PoE são os slots com habilidade de ataque (a aura fica no sustento)', { skip: SEM }, async () => {
+  const { e } = await montar(null);
+  assert.deepEqual(Combo.slotsDoCombo(e), [1, 2, 3]);
+  assert.equal(Combo.ehDoCombo(e, 0), false, 'Clareza: sustento');
+});
+
+test('Prioridade: a do primeiro slot de ataque sai sempre que pode', { skip: SEM }, async () => {
+  const s = await rodar('prioridade');
+  assert.ok(s.length > 10, `${s.length} execuções`);
+  assert.ok(s.filter((x) => x === 'Fireball').length / s.length > 0.9, s.join(','));
+});
+
+test('Rotação: as três se revezam, uma vez cada, na ordem da barra', { skip: SEM }, async () => {
+  const s = await rodar('rotacao');
+  assert.ok(s.length > 10, `${s.length} execuções`);
+  for (let i = 0; i + 2 < s.length; i += 3) assert.deepEqual(new Set(s.slice(i, i + 3)).size, 3, s.join(','));
+  assert.deepEqual(s.slice(0, 3), ATAQUES);
+});
+
+test('Limite 2: numa volta de 3, a de cima sai 2 vezes e as outras se revezam nas brechas', { skip: SEM }, async () => {
+  const s = await rodar('limite', 2);
+  assert.ok(s.length > 10, `${s.length} execuções`);
+  for (let i = 0; i + 3 <= s.length; i++) {
+    const janela = s.slice(i, i + 3);
+    assert.ok(janela.filter((x) => x === 'Fireball').length <= 2, `janela ${janela}`);
+  }
+  assert.ok(s.includes('Freezing_Pulse') && s.includes('Spark'), s.join(','));
+  const fb = s.filter((x) => x === 'Fireball').length / s.length;
+  assert.ok(fb > 0.5 && fb < 0.75, `Fireball ${fb}`);
+});

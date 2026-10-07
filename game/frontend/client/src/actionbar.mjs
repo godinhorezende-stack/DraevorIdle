@@ -1586,7 +1586,8 @@ function seletorDoModo() {
   const modo = MODOS_DAS_MAGIAS[settings.modoDasMagias] ? settings.modoDasMagias : 'prioridade';
   const limite = [1, 2, 3].includes(settings.limiteDasMagias) ? settings.limiteDasMagias : 2;
   const caixa = el('div', 'modo-das-magias');
-  const rotulo = el('label', 'modo-das-magias-rotulo', 'Ordem das magias de ataque');
+  const poe = !!ctx.state.character?.filtroPoe;
+  const rotulo = el('label', 'modo-das-magias-rotulo', poe ? 'Ordem das habilidades de ataque' : 'Ordem das magias de ataque');
   const escolha = document.createElement('select');
   for (const [id, [nome]] of Object.entries(MODOS_DAS_MAGIAS)) {
     const opt = el('option', null, nome);
@@ -1617,6 +1618,9 @@ function seletorDoModo() {
     caixa.append(quantas);
   }
   caixa.append(el('small', 'modo-das-magias-ajuda', MODOS_DAS_MAGIAS[modo][1]));
+  // PoE: quem entra na ordem são as habilidades de ataque da barra, na ordem dos slots; auras, arautos, clamores, guardas, maldições e
+  // lacaios saem pela regra própria de cada uma (o sustento — `combo.mjs → slotsDoCombo`).
+  if (poe) caixa.append(el('small', 'modo-das-magias-ajuda', 'Entram nesta ordem as habilidades de ataque da barra (projéteis, magias de dano, corpo a corpo, movimento), na ordem dos slots. Auras, arautos, clamores, guardas, maldições e lacaios ficam de fora: saem sozinhos quando podem.'));
   return caixa;
 }
 
