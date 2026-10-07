@@ -50,6 +50,8 @@ export function fundoDoAto(ato, nome, pontos = [], fundo = null) {
   const rnd = aleatorio(ato * 104729 + 7);
   const g = svg('g', { class: 'w-fundo', 'aria-hidden': 'true' });
   g.append(simbolos(tema));
+  // O VERDE da cidade (dono, 07/10: "onde tem a cidade coloque verde").
+  g.append(svg('linearGradient', { id: 'w-verde', x1: 0, y1: 0, x2: 0, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': '#9ad99a' }), svg('stop', { offset: '55%', 'stop-color': '#4fae4a' }), svg('stop', { offset: '100%', 'stop-color': '#1f5a2a' })));
   // O OURO dos nós (um gradiente, não uma cor chapada — o relevo das moedas do exemplo).
   g.append(svg('linearGradient', { id: 'w-ouro', x1: 0, y1: 0, x2: 0, y2: 1 }, svg('stop', { offset: '0%', 'stop-color': '#f7dc8a' }), svg('stop', { offset: '55%', 'stop-color': '#dcb04a' }), svg('stop', { offset: '100%', 'stop-color': '#a67a1c' })));
   g.append(svg('radialGradient', { id: 'w-vinheta', cx: '50%', cy: '50%', r: '70%' }, svg('stop', { offset: '55%', 'stop-color': 'rgba(0,0,0,0)' }), svg('stop', { offset: '100%', 'stop-color': 'rgba(8,5,2,.55)' })));

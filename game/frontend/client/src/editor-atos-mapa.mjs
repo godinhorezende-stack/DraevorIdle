@@ -140,9 +140,18 @@ export function vistaMapa(ato, posicoes, opcoes) {
     nos.append(g);
   }
   cam.append(nos);
+  // duplo clique no fundo: uma fase nova ali (no espaço do editor)
+  mapa.addEventListener('dblclick', (ev) => {
+    if (opcoes.somenteLeitura || ev.target.closest('g.w-no')) return;
+    const caixa = mapa.getBoundingClientRect();
+    const k = LARGURA / caixa.width;
+    const x = Math.min(LARGURA - 30, Math.max(30, (ev.clientX - caixa.left) * k));
+    const y = Math.min(ALTURA - 40, Math.max(30, (ev.clientY - caixa.top) * k));
+    opcoes.aoCriar?.({ x: Math.round(x / KX), y: Math.round(y / KY) });
+  });
   const dica = document.createElement('div');
   dica.className = 'w2-dica';
-  dica.textContent = opcoes.imagem ? 'Arraste cada fase para o lugar dela na arte — é assim que o jogador vê. Sem imagem, carregue uma no painel do ato.' : 'Sem imagem de fundo neste ato: carregue uma no painel "Ato" (o mapa ilustrado). Enquanto isso, o pergaminho.';
+  dica.textContent = opcoes.imagem ? 'Arraste cada fase para o lugar dela na arte — é assim que o jogador vê. Duplo clique no fundo cria uma fase; Delete apaga a selecionada.' : 'Sem imagem de fundo neste ato: carregue uma no painel "Ato" (o mapa ilustrado). Enquanto isso, o pergaminho.';
   palco.append(dica);
   return raiz;
 }

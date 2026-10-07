@@ -210,11 +210,12 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
   }
 
   // ------------------------------------------------------------------ edição
-  function novaFase() {
+  function novaFase(posicao = null) {
     const n = E.ato.fases.length + 1;
     let id = `fase-${n}`;
     while (faseDe(id)) id = `${id}-x`;
     E.ato.fases.push({ id, nome: `Fase ${n}`, descricao: '', ordem: n, huntId: null, tipo: 'hunt-normal', nivel: null, obrigatoria: true, requisitos: { exige: [] }, objetivos: [], conclusao: { tipo: 'limpar-hunt' }, recompensas: null, eventos: [], sobrescritas: {}, posicao: null });
+    if (posicao) E.ato.fases.at(-1).posicao = { x: Math.round(posicao.x), y: Math.round(posicao.y) };
     if (!E.ato.inicio) E.ato.inicio = id;
     E.fase = id;
     mudou();
@@ -334,6 +335,13 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
         sv('circle', { cx: bx, cy: ult.y, r: 24, fill: '#2a1a40', stroke: '#b57bff', 'stroke-width': 2 }), sv('text', { x: bx, y: ult.y + 4, 'text-anchor': 'middle', fill: '#e8c8ff', 'font-size': 10 }, 'BOSS'),
         sv('text', { x: bx, y: ult.y + 42, 'text-anchor': 'middle', fill: '#b57bff', 'font-size': 10 }, bf.bossId ? bf.bossId.slice(0, 18) : 'sem boss'));
     }
+    // A CIDADE (o nó de partida, verde — dono, 07/10): no Fluxo só se mostra, com as estradas dela; posiciona-se na vista Mapa.
+    if (E.ato.cidade) {
+      const c = E.ato.cidade;
+      const pc = c.posicao ?? { x: 40, y: A / 2 };
+      for (const id of c.conexoes ?? []) { const b = pos.get(id); if (b) svg.append(sv('line', { x1: pc.x, y1: pc.y, x2: b.x, y2: b.y, stroke: '#4fae4a', 'stroke-width': 2, 'stroke-dasharray': '6 4', 'marker-end': 'url(#seta)' })); }
+      svg.append(sv('g', { transform: `translate(${pc.x} ${pc.y})` }, sv('circle', { r: RAIO, fill: '#1f4a30', stroke: '#4fae4a', 'stroke-width': 2.5 }), sv('text', { y: 4, 'text-anchor': 'middle', fill: '#dfffe0', 'font-size': 11 }, '⌂'), sv('text', { y: RAIO + 14, 'text-anchor': 'middle', fill: '#9ad99a', 'font-size': 10.5 }, c.nome)));
+    }
     for (const f of E.ato.fases) {
       const p = pos.get(f.id);
       const sel = E.fase === f.id;
@@ -383,6 +391,14 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
       });
       svg.append(g);
     }
+    svg.addEventListener('dblclick', (ev) => {
+      if (E.somenteLeitura || ev.target.closest('g')) return;
+      const caixa = svg.getBoundingClientRect();
+      const k = L / E.zoom / caixa.width;
+      const naGrade = (v) => (E.grade && !ev.altKey ? Math.round(v / 20) * 20 : Math.round(v));
+      lembrar();
+      novaFase({ x: naGrade(Math.min(L - 30, Math.max(30, E.pan.x + (ev.clientX - caixa.left) * k))), y: naGrade(Math.min(A - 40, Math.max(30, E.pan.y + (ev.clientY - caixa.top) * k))) });
+    });
     let moveuAVista = false;
     svg.addEventListener('pointerdown', (ev) => {
       if (ev.target !== svg && ev.target.tagName !== 'image' && ev.target.tagName !== 'line') return;
@@ -776,7 +792,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
   // ------------------------------------------------------------------ barra de ferramentas, atalhos e ferramentas do ato
   const ATALHOS = [
     ['Ctrl+S', 'Salvar o ato'], ['Ctrl+Z', 'Desfazer'], ['Ctrl+Y ou Ctrl+Shift+Z', 'Refazer'], ['N', 'Nova fase'], ['L', 'Ligar a fase selecionada a outra (clique no destino)'],
-    ['Delete', 'Remover a fase ou a ligação selecionada'], ['Esc', 'Cancelar / desmarcar'], ['Setas', 'Mover a fase selecionada (Shift: 1 px; sem Shift: 20 px)'],
+    ['Delete', 'Remover a fase ou a ligação selecionada'], ['Duplo clique no fundo', 'Nova fase naquele ponto (no Fluxo e no Mapa)'], ['Esc', 'Cancelar / desmarcar'], ['Setas', 'Mover a fase selecionada (Shift: 1 px; sem Shift: 20 px)'],
     ['Page Up / Page Down', 'Fase anterior / seguinte (pela ordem)'], ['F ou /', 'Buscar fase'], ['+ / −  (ou Ctrl+roda)', 'Zoom do grafo'], ['0', 'Ver o ato inteiro'], ['G', 'Grade liga/desliga (Alt ao arrastar solta da grade)'],
     ['O', 'Organizar automático'], ['?', 'Esta ajuda'],
   ];
@@ -844,7 +860,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
 
   // Os atalhos valem só com a aba Acts aberta no fluxo e o foco fora de um campo (Ctrl+S vale sempre).
   document.addEventListener('keydown', (e) => {
-    if (!E.ato || (modo === 'fases' ? !document.querySelector('.fases-modo') : E.vista !== 'fluxo' || !document.querySelector('.atos-canvas'))) return;
+    if (!E.ato || (modo === 'fases' ? !document.querySelector('.fases-modo') : !['fluxo', 'mapa'].includes(E.vista) || !document.querySelector('.atos-canvas, .atos-mapa'))) return;
     const ctrl = e.ctrlKey || e.metaKey;
     const k = e.key.toLowerCase();
     if (ctrl && k === 's') { e.preventDefault(); if (!E.somenteLeitura) salvar(); return; }
@@ -936,6 +952,7 @@ export function criarEditorDeAtos({ el, api, raiz, msg, modo = 'atos', irPara = 
           aoMover: (f, p) => { lembrar(); f.posicao = p; mudou(); },
           aoEscolher: (id) => { E.fase = id; E.lig = null; pintar(); },
           aoMoverCidade: (p) => { lembrar(); E.ato.cidade.posicao = p; mudou(); },
+          aoCriar: (p) => { lembrar(); novaFase(p); },
           aoEscolherCidade: () => { E.fase = null; E.lig = null; pintar(); },
         }), ...[painelDoAto(), painelDaCidade(), painelDaFase()].filter(Boolean));
         else if (E.vista === 'validacao') corpo.replaceChildren(vistaValidacao(E.problemas, { irParaFase: (id) => { E.fase = id; E.lig = null; E.vista = 'fluxo'; pintar(); } }));

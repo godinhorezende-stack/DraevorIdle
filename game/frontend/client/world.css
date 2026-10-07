@@ -207,3 +207,7 @@
 .w-no.t-cidade { color: #1d1506; --no-fundo: #e6c15a; --no-borda: #3b2a08; }
 .w-no.t-cidade .w-forma { fill: url(#w-ouro); }
 .w-no.t-cidade .w-icone { transform: scale(1.1); }
+/* a cidade em VERDE (dono, 07/10) — o nó de partida se distingue das fases douradas */
+.w-no.t-cidade { color: #0d2412; --no-borda: #1f4a30; }
+.w-no.t-cidade .w-forma { fill: url(#w-verde); stroke: #163a22; }
+.w-no.t-cidade .w-placa rect { stroke: rgba(111, 211, 111, .45); }
