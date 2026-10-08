@@ -136,6 +136,36 @@ function casaNoSpawn(g, alcancaveis, s, ocupada) {
 }
 
 /**
+ * O CHEFE da fase "matar o chefe" que os spawns do mapa não trazem (dono, 08/10: "um player não consegue completar a fase: limpou tudo,
+ * mas não matou esse chefe" — o Kraityn não nascia na Ponte Quebrada, e a fase não concluía nunca). Ele nasce na instância perto do bicho
+ * mais LONGE da entrada (o fundo da área, como no PoE), numa casa alcançável e livre, e conta como objetivo da limpeza. `{ z, m }` ou null.
+ */
+export function chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala, dadosDaHunt, instanciaId }) {
+  const alcancaveis = casasAlcancaveis(grade, inicio);
+  const zDaEntrada = inicio?.z ?? grade.z;
+  const ocupada = new Set(todos.map(({ z, m }) => `${m.x},${m.y},${z}`));
+  if (inicio) ocupada.add(`${inicio.x},${inicio.y},${zDaEntrada}`);
+  // O mais longe: outro andar (mais fundo na rota) conta como mais longe que qualquer casa do andar da entrada.
+  let fundo = null;
+  for (const { z, m } of todos) {
+    const d = (z !== zDaEntrada ? 100_000 : 0) + (inicio ? distancia(m, inicio) : 0);
+    if (!fundo || d > fundo.d) fundo = { d, x: m.x, y: m.y, z };
+  }
+  fundo ??= inicio ? { x: inicio.x, y: inicio.y, z: zDaEntrada } : null;
+  if (!fundo) return null;
+  const casa = casaNoSpawn(andarDaGrade(grade, fundo.z), alcancaveis.get(fundo.z), { x: fundo.x, y: fundo.y, z: fundo.z, raio: 8 }, ocupada);
+  if (!casa) return null;
+  const m = aplicarEscala(criarMonstro({ key: chave, x: casa.x, y: casa.y, z: fundo.z }, dadosDaHunt), escala);
+  if (!m) return null;
+  delete m.spawn;
+  m.instancia = instanciaId;
+  m.objetivo = 1;
+  m.chefeDaFase = true;
+  m.setor = mapaDeSetores(alcancaveis).setorDe(casa.x, casa.y, fundo.z);
+  return { z: fundo.z, m };
+}
+
+/**
  * Os bichos de uma instância, nos spawns do mapa: cada spawn gera a sua
  * `quantidade`, cada um de uma criatura sorteada pelos pesos, numa casa até o
  * `raio` do ponto. Devolve `[{ z, m }]` (o bicho e o andar dele), como o

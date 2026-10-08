@@ -483,6 +483,14 @@ function spawnsDaSalaGerada(posicoes, hunt, grade) {
     .filter((s) => s.criaturas.length);
 }
 
+/** A chave do bestiário do monstro do PoE `alvo` (o slug: "Kraityn,_Scarbearer"), no nível mais perto de `nivel`. null se não há. */
+function chaveDoChefe(alvo, nivel = null) {
+  const chaves = Object.keys(BESTIARY).filter((k) => Campanha.ehOMonstro(k, alvo));
+  if (!chaves.length) return null;
+  const nivelDe = (k) => Number(k.match(/-(\d+)$/)?.[1]) || 0;
+  return chaves.reduce((m, k) => (Math.abs(nivelDe(k) - (nivel ?? nivelDe(k))) < Math.abs(nivelDe(m) - (nivel ?? nivelDe(m))) ? k : m));
+}
+
 function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
   const grade = gradeDaHunt(hunt ?? { id: huntId });
   const posicoes = boss ? posicaoDoBoss(boss, grade) : hunt?.posicoes?.length ? pontosNoMapa(hunt, grade.mapa?.floors ? grade.mapa : null) : spawnsCapturados(huntId) ?? grade.posicoes ?? mapaCustom?.posicoes ?? pontosDosSpawns(spawnsDaHunt(huntId));
@@ -532,6 +540,14 @@ function povoar({ huntId, hunt, boss, tranca, fase, mapaCustom, escala }) {
   const todos = comInstancia
     ? Instancia.comporBichos({ grade, spawns: spawnsDoMapa, dadosDaHunt: hunt, inicio, escala, aplicarEscala: Campanha.aplicarEscala, instanciaId })
     : [];
+  // A fase que conclui matando um chefe (ou pegando o item que um alvo solta) precisa TER esse monstro: o que os spawns do mapa não trazem
+  // nasce no fundo da área (`chefeNaInstancia`).
+  const conclusao = comInstancia ? Campanha.conclusaoDa(huntId) : null;
+  if ((conclusao?.tipo === 'matar-chefe' || conclusao?.tipo === 'item-de-missao') && conclusao.monstro && !todos.some(({ m }) => Campanha.ehOMonstro(m.key, conclusao.monstro))) {
+    const chave = chaveDoChefe(conclusao.monstro, fase?.levelOriginal);
+    const chefe = chave ? Instancia.chefeNaInstancia({ grade, todos, chave, inicio, escala, aplicarEscala: Campanha.aplicarEscala, dadosDaHunt: hunt, instanciaId }) : null;
+    if (chefe) todos.push(chefe);
+  }
   for (const p of comInstancia ? [] : posicoes) {
     const z = andarDe(p);
     if (!andaresDaRota.has(z)) continue;
