@@ -273,7 +273,7 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   // virar uma cópia limpa pelo empilhamento.
   const alvoEspecial = Number.isInteger(pilha) && de[pilha]?.id === id && especial(de[pilha]);
   // (Modo PoE: a mochila tem vagas — a peça não empilhável só entra com vaga livre.)
-  if (to === 'bag' && !cabeNaMochila(estado, id, alvoEspecial ? 1 : Math.max(1, Number(count) || 1))) return { ok: false, erro: erroDeEspaco(estado, id, 1) };
+  if (to === 'bag' && alvoEspecial && !cabeNaMochila(estado, id, 1)) return { ok: false, erro: erroDeEspaco(estado, id, 1) };
   if (alvoEspecial) {
     const [peca] = de.splice(pilha, 1);
     if (to === 'bag') (estado.inventory ??= []).push(peca);
@@ -289,6 +289,21 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
   const disponivel = de.filter((p) => p.id === id && !especial(p)).reduce((a, p) => a + p.count, 0);
   let falta = Math.min(Math.max(1, Number(count) || 1), disponivel);
   if (!falta) return { ok: false, erro: 'Esse item não está aí.' };
+  /*
+   * ---- Mochila: o que couber, contado sobre o que EXISTE ----
+   * Dono, 08/10: "no mobile está bugado passar item da bolsa de loot para a mochila". O menu do celular manda `count: 9999` ("tudo"), e
+   * a vaga era conferida com 9999 — numa moeda empilhável, ~500 pilhas de 20: recusava sempre, e com a mensagem de PESO ("não tem
+   * capacidade"), porque o erro era montado com 1. Agora a conta usa o que há na bolsa, passa o que couber (as pilhas que já estão lá e as
+   * vagas livres) e, sem vaga nenhuma, diz que a mochila está cheia.
+   */
+  let aviso = null;
+  if (to === 'bag' && !cabeNaMochila(estado, id, falta)) {
+    let cabe = falta;
+    while (cabe > 0 && !cabeNaMochila(estado, id, cabe)) cabe--;
+    if (!cabe) return { ok: false, erro: erroDeEspaco(estado, id, 1) };
+    aviso = `A mochila encheu: passaram ${cabe} de ${falta}; o resto ficou na bolsa de loot.`;
+    falta = cabe;
+  }
   const total = falta;
   // A pilha apontada primeiro, depois as outras do mesmo item.
   const ordem = [...de.keys()].filter((i) => de[i].id === id && !especial(de[i]));
@@ -306,7 +321,7 @@ export function moverBolsa(estado, { id, count = 1, to, pilha, alvo }) {
     estado.inventory = estado.inventory.filter((p) => p.count > 0);
     porNaBolsa(estado, id, total);
   }
-  return { ok: true };
+  return { ok: true, ...(aviso ? { notice: aviso } : {}) };
 }
 
 /** `send({t:'clearPouch', fora:[{i, id}]})` — o "Jogar fora" da tela Limpar Bolsa. */
