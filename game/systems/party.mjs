@@ -692,11 +692,15 @@ export function registrarAtividade(s) {
   if (mexeu || h.alvo != null || h.atividadeEm == null) Object.defineProperty(h, 'atividadeEm', { value: Date.now(), enumerable: false, writable: true, configurable: true });
 }
 
-/** A partilha agora: `{ativa, motivo, bonus, vocacoes, faixa, membros:[estado]}`. */
+/**
+ * A partilha agora: `{ativa, motivo, bonus, vocacoes, faixa, membros:[estado], naSala:[estado]}`. `naSala`: TODOS da party nesta sala, parados ou
+ * não — o objetivo da fase e o chefe do ato contam para eles (regra do PoE: o progresso da missão vale para a party na instância).
+ */
 export function partilha(s) {
+  const daParty = naMesmaSala(s).filter((o) => minhaParty(o) && minhaParty(o) === minhaParty(s));
   // Quem está INDEPENDENTE e parado há `PARADO_MS` (sem andar nem alvo) não entra na partilha: ninguém ganha exp só por estar na sala.
-  const juntos = naMesmaSala(s).filter((o) => minhaParty(o) && minhaParty(o) === minhaParty(s) && (o === s || ativo(o)));
-  const base = { membros: juntos.map((o) => ({ estado: o.estado, nome: nomeDe(o) })), faixa: null, vocacoes: new Set(juntos.map((o) => o.estado.vocation)).size };
+  const juntos = daParty.filter((o) => o === s || ativo(o));
+  const base = { membros: juntos.map((o) => ({ estado: o.estado, nome: nomeDe(o) })), naSala: daParty.map((o) => o.estado), faixa: null, vocacoes: new Set(juntos.map((o) => o.estado.vocation)).size };
   if (juntos.length < 2) return { ...base, ativa: false, motivo: 'sozinho', bonus: 1 };
   // Sem limite de level e sem proximidade: quem está na mesma sala e ativo participa, esteja onde estiver (a fase é da party inteira).
   return { ...base, ativa: true, motivo: null, bonus: BONUS_POR_VOCACOES[Math.min(4, base.vocacoes)] };
