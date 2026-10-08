@@ -26,6 +26,8 @@ import { loadSpriteData, outfitCanvas, emprestarDoCatalogo } from '/client/src/s
  * O que ficou aqui é o que é DAQUI: como esta página lê a ficha pública.
  */
 import { gradeDeEquipamento } from '/client/src/paperdoll.mjs';
+// O balão da PEÇA (o mesmo do jogo e dos drops da capa): ao passar o mouse numa peça do inventário do balão.
+import { fichaDeItem, juntarDados } from '/client/src/tooltip.mjs';
 import { linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
 
 const $ = (id) => document.getElementById(id);
@@ -431,12 +433,47 @@ function estrelas(af, catalogo) {
 let balao = null;
 let linhaAtual = null;
 let espera = null;
+// O balão da peça (os atributos) e o prazo para o balão do inventário fechar depois que o mouse sai da linha — o tempo de ir até ele.
+let balaoDaPeca = null;
+let fechando = null;
+
+function esconderPeca() {
+  balaoDaPeca?.remove();
+  balaoDaPeca = null;
+}
+
+/** O balão do jogo para a peça da casa (a peça inteira — a do PoE com raridade e modificadores), ao lado do balão do inventário. */
+function mostrarPeca(casa, peca, inteira, slot) {
+  esconderPeca();
+  const ficha = fichaDeItem(peca.id, null, slot, inteira);
+  if (!ficha) return;
+  balaoDaPeca = document.createElement('div');
+  balaoDaPeca.className = `tooltip ${ficha.classe}`;
+  balaoDaPeca.style.position = 'fixed';
+  balaoDaPeca.style.zIndex = '40';
+  balaoDaPeca.style.pointerEvents = 'none';
+  balaoDaPeca.append(...ficha.partes);
+  document.body.append(balaoDaPeca);
+  const caixa = (balao ?? casa).getBoundingClientRect();
+  const { width, height } = balaoDaPeca.getBoundingClientRect();
+  let left = caixa.left - width - 8;
+  if (left < 8) left = Math.min(caixa.right + 8, innerWidth - width - 8);
+  const alvo = casa.getBoundingClientRect();
+  const top = Math.max(8, Math.min(alvo.top, innerHeight - height - 8));
+  balaoDaPeca.style.left = `${Math.round(left)}px`;
+  balaoDaPeca.style.top = `${Math.round(top)}px`;
+}
 
 function garantirBalao() {
   if (balao) return balao;
   balao = document.createElement('div');
   balao.className = 'top5-pop';
   balao.hidden = true;
+  // O balão aceita o mouse (para passar nas peças): entrar nele segura; sair dele fecha.
+  balao.addEventListener('pointerenter', () => clearTimeout(fechando));
+  balao.addEventListener('pointerleave', () => esconderInventario());
+  // O rodapé promete: o clique abre a ficha completa de quem está no balão.
+  balao.addEventListener('click', () => { if (balao.dataset.nome) location.href = `/personagem?nome=${encodeURIComponent(balao.dataset.nome)}`; });
   document.body.append(balao);
   return balao;
 }
@@ -471,6 +508,7 @@ function posicionar(li) {
 
 async function mostrarInventario(li, entrada) {
   garantirBalao();
+  balao.dataset.nome = entrada.name;
   const p = await fichaDe(entrada.name);
   // Os ícones das peças do PoE vêm do catálogo da ficha (sem isto, "?" no inventário do balão).
   if (p?.itens) emprestarDoCatalogo(p.itens);
@@ -515,8 +553,10 @@ async function mostrarInventario(li, entrada) {
           id: peca.id,
           tier: inteira.tier,
           count: peca.count,
-          titulo: peca.nome ?? '',
+          // (Sem `titulo`: o balão da peça, ao passar o mouse, já diz tudo.)
           raridade: p.itens?.[peca.id]?.rarity,
+          // A peça do PoE: a borda na cor da raridade dela.
+          corPoe: inteira.poe?.cor ?? null,
           estrelas: estrelas(inteira.af, p.catalogo),
         };
       },
@@ -538,6 +578,16 @@ async function mostrarInventario(li, entrada) {
    * pendura-lo depois dela faria a guilda sumir do cartao sempre que a folha
    * falhasse — por uma coisa que nao tem nada a ver com ela.
    */
+  // O balão de cada peça: o catálogo da ficha JUNTO do que a capa já tem (os drops usam o mesmo balão).
+  juntarDados(p.itens ?? {}, p.catalogo ?? null);
+  for (const casa of balao.querySelectorAll('.top5-pop-equipamento .pd-slot[data-slot]')) {
+    const slot = casa.dataset.slot;
+    const peca = p.equipamento?.[slot];
+    if (!peca) continue;
+    const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
+    casa.addEventListener('pointerenter', () => mostrarPeca(casa, peca, inteira, slot));
+    casa.addEventListener('pointerleave', esconderPeca);
+  }
   const daGuilda = linhaDaGuilda(p.guilda);
   if (daGuilda) balao.querySelector('.top5-pop-voc')?.insertAdjacentElement('afterend', daGuilda);
 
@@ -551,7 +601,9 @@ async function mostrarInventario(li, entrada) {
 
 function esconderInventario() {
   clearTimeout(espera);
+  clearTimeout(fechando);
   linhaAtual = null;
+  esconderPeca();
   if (balao) balao.hidden = true;
 }
 
@@ -562,7 +614,12 @@ function ligarBalao(li, entrada) {
     linhaAtual = li;
     espera = setTimeout(() => mostrarInventario(li, entrada), 120);
   });
-  li.addEventListener('pointerleave', () => { if (linhaAtual === li) esconderInventario(); });
+  // Sair da linha fecha com um respiro: dá tempo de levar o mouse até o balão (que segura enquanto o mouse está nele).
+  li.addEventListener('pointerleave', () => {
+    if (linhaAtual !== li) return;
+    clearTimeout(fechando);
+    fechando = setTimeout(() => { if (!balao?.matches(':hover')) esconderInventario(); }, 180);
+  });
   // A linha inteira abre a ficha, como o rodapé do balão promete.
   li.addEventListener('click', (evento) => {
     if (evento.target.closest('a')) return;
