@@ -38,10 +38,16 @@ const quantosOrbes = (tipo) => {
 };
 /** O máximo de sockets do slot (a peça sem `soquetes` ainda não diz): o catálogo dos orbes traz a tabela. */
 const limiteDoSlot = (slot) => (itemDoOrbe('encaixe') ?? itemDoOrbe('joalheiro'))?.limitesDeSocket?.[slot] ?? 0;
+/*
+ * O máximo de sockets da PEÇA: os dela (`soquetes`); sem eles, a tabela do slot — só na peça do Draevor. A peça do PoE sem `soquetes` NÃO
+ * tem socket (o servidor decide pela classe e pela base — `itens-poe/sockets.mjs`): anel, amuleto e cinto apareciam aqui com os sockets
+ * "bloqueados" da tabela do Draevor (dono, 08/10: "amuletos, cintos e anéis não têm sockets e aqui está aparecendo no sistema de gemas").
+ */
+const limiteDaPeca = (peca, slot) => peca?.soquetes?.gemas?.length || (peca?.poe ? 0 : limiteDoSlot(slot));
 /** Os sockets da peça, ou os de uma peça que ainda não abriu nenhum (todos bloqueados). */
 const soquetesDe = (peca, slot) => {
   if (peca?.soquetes?.gemas?.length) return peca.soquetes;
-  const max = limiteDoSlot(slot);
+  const max = limiteDaPeca(peca, slot);
   return max ? { abertos: 0, links: [], gemas: Array(max).fill(null) } : null;
 };
 /*
@@ -101,7 +107,7 @@ export function usarOrbe(context, tipo) {
     const lista = el('div', 'soquetes-gemas');
     let algum = false;
     for (const [slot, peca] of Object.entries(ctx.state.character?.equipment ?? {})) {
-      const max = peca?.soquetes?.gemas?.length || limiteDoSlot(slot);
+      const max = limiteDaPeca(peca, slot);
       if (!peca || !max) continue;
       algum = true;
       const sq = soquetesDe(peca, slot);
@@ -188,7 +194,7 @@ export function painelDoEquipamento(body, context) {
   redesenharEmbutido = () => context.redraw?.();
   const { state } = ctx;
   const equipamento = state.character?.equipment ?? {};
-  const pecas = ORDEM_DOS_SLOTS.map((slot) => ({ slot, peca: equipamento[slot] })).filter(({ slot, peca }) => peca && (peca.soquetes?.gemas?.length || limiteDoSlot(slot)));
+  const pecas = ORDEM_DOS_SLOTS.map((slot) => ({ slot, peca: equipamento[slot] })).filter(({ slot, peca }) => peca && limiteDaPeca(peca, slot));
   if (!pecas.length) return void body.append(el('p', 'empty', 'Nenhuma peça vestida com sockets. Vista uma arma ou armadura com sockets para encaixar gemas.'));
   if (!pecas.some((x) => x.slot === slotAberto)) {
     slotAberto = pecas[0].slot;
