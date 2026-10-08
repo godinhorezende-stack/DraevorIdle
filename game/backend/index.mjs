@@ -10,6 +10,8 @@ import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
 import * as IniciarPoe from '../systems/itens-poe/iniciar.mjs';
 import * as Legado from '../systems/personagem/legado.mjs';
+import * as RoupaDaClasse from '../systems/personagem/roupa-da-classe.mjs';
+import * as Banco from '../database/banco.mjs';
 import * as Mercado from '../systems/mercado.mjs';
 import * as GemasPoe from '../systems/itens-poe/gemas-poe.mjs';
 import * as SuportesPoe from '../systems/itens-poe/suportes-poe.mjs';
@@ -123,6 +125,9 @@ await IniciarPoe.iniciarJogoDoPoe({ log: (linha) => console.log(`  ${linha}`) })
 if (ItensPoeCatalogo.ligado()) {
   const devolvidas = await Mercado.devolverOfertasDosArquivados(Legado.arquivado);
   if (devolvidas) console.log(`  mercado: ${devolvidas} oferta(s) de personagens arquivados devolvida(s) aos donos (como crédito)`);
+  // A roupa da classe em todo personagem do PoE que ainda não a recebeu (uma vez cada; antes das conexões abrirem).
+  const roupas = await RoupaDaClasse.aplicarEmTodos(Banco);
+  if (roupas.vestidos || roupas.marcados) console.log(`  roupa da classe: ${roupas.vestidos} personagem(ns) vestido(s) com a roupa da classe${roupas.marcados ? `, ${roupas.marcados} sem roupa definida na classe` : ''}`);
 }
 
 const http = createServer((req, res) => {
