@@ -832,6 +832,11 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // do Draevor (Buff Power, afixo Loot, prey, pódio, Caça Online — sem o lootMult, que já é a raridade do bicho); números em `itens-poe/regras.json`.
   const quantidadeDoJogador = BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + (podio?.loot ?? 0) / 100) * fatorDaCacaOnline(hunt);
   for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidadeDoJogador, raridadeDoDrop(estado, alvo))) {
+    // O FILTRO DE LOOT (dono, 08/10: "está pegando itens mesmo setando as coisas"): a peça que o filtro não pega fica no chão ("Ignorado").
+    if (Bolsa.ignora(estado, daPoe.id, daPoe)) {
+      conta('ignorado', daPoe.id, 1);
+      continue;
+    }
     if (!Bolsa.porNaBolsa(estado, daPoe.id, 1, daPoe)) break;
     caiu.push({ id: daPoe.id, count: 1 });
     conta('loot', daPoe.id, 1);
@@ -841,6 +846,11 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   }
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
   for (const moeda of MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador)) {
+    // A moeda marcada em "Não coletar" (a lista) fica no chão.
+    if (Bolsa.ignora(estado, moeda.id)) {
+      conta('ignorado', moeda.id, moeda.count);
+      continue;
+    }
     if (!Bolsa.porNaBolsa(estado, moeda.id, moeda.count)) break;
     caiu.push(moeda);
     conta('loot', moeda.id, moeda.count);

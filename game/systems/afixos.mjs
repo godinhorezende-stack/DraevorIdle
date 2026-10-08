@@ -398,11 +398,11 @@ export function socketsPoe(p) {
   const rgb = !!so?.abertos && gruposLigados(so).some((g) => ['R', 'G', 'B'].every((c) => g.some((i) => so.cores?.[i] === c)));
   return { abertos, ligados, rgb };
 }
-/** As seções do filtro do PoE (as chaves de `settings`). Sem nada escolhido, os Únicos ficam (vendê-los por engano não tem volta). */
+/** As seções do filtro do PoE (as chaves de `settings`). Sem nada escolhido, o filtro pega tudo (como o filtro padrão do PoE). */
 export function regraDasSecoesPoe(s = {}) {
   const n = (k, max, padrao = 0) => Math.max(0, Math.min(max, Math.round(Number(s[k] ?? padrao)) || 0));
   return {
-    raridade: n('guardarRaridadePoe', 3, 3),
+    raridade: n('guardarRaridadePoe', 3),
     mods: n('guardarModsPoe', 6),
     tier: n('guardarTierPoe', 5),
     ilvl: n('guardarIlvlPoe', 100),
@@ -455,20 +455,29 @@ export function sanearRegraDeLootPoe(r) {
     ativa: r.ativa !== false,
   };
 }
-/** A decisão do filtro para uma peça do PoE (as listas e a gema encaixada já passaram em `decisaoDoLoot`). */
+/*
+ * A decisão do filtro para uma peça do PoE (as listas e a gema encaixada já passaram em `decisaoDoLoot`): a COLETA, como o filtro de
+ * loot do PoE — dono, 08/10: "o filtro de loot não está funcionando, está pegando itens mesmo setando as coisas" e "só dá para limpar,
+ * vender não pode". As peças do PoE não têm preço no NPC: a "venda automática" que as seções decidiam nunca vendia nada, e tudo ficava
+ * na bolsa. Agora: `naoVender` = pega (a bolsa recebe), `naoColetar` = fica no chão (`Bolsa.ignora`). Sem seção nenhuma escolhida, pega
+ * tudo; com alguma, só o que ela pega (as seções com OU). O Único sempre é pego, a não ser que uma regra específica diga o contrário.
+ */
 export function decisaoDoLootPoe(estado, p) {
   const regras = (estado?.lootRegras ?? []).filter((r) => r?.ativa !== false && r.poe);
   for (const [i, r] of regras.entries()) {
     if (regraPoeBate(r, p)) return { acao: r.acao === 'naoColetar' ? 'naoColetar' : 'naoVender', motivo: `regra específica ${i + 1}` };
   }
+  if (p.poe.raridade === 'unico') return { acao: 'naoVender', motivo: 'Único (sempre)' };
   const s = regraDasSecoesPoe(estado?.settings ?? {});
+  const algumaSecao = s.mods > 0 || s.tier > 0 || s.abertos > 0 || s.ligados > 1 || s.rgb || s.ilvl > 0 || s.raridade > 0;
+  if (!algumaSecao) return { acao: 'naoVender', motivo: 'sem filtro: pega tudo' };
   if (s.mods > 0 && passaModsPoe(p, s.mods, s.tier)) return { acao: 'naoVender', motivo: 'mods da peça' };
   if (!s.mods && s.tier && passaModsPoe(p, 1, s.tier)) return { acao: 'naoVender', motivo: 'tier dos mods' };
   const so = socketsPoe(p);
   if ((s.abertos && so.abertos >= s.abertos) || (s.ligados > 1 && so.ligados >= s.ligados) || (s.rgb && so.rgb)) return { acao: 'naoVender', motivo: 'sockets' };
   if (s.ilvl && (Number(p.poe.ilvl) || 0) >= s.ilvl) return { acao: 'naoVender', motivo: 'item level' };
   if (s.raridade && indiceDaRaridadePoe(p) >= s.raridade) return { acao: 'naoVender', motivo: 'raridade' };
-  return { acao: 'vender', motivo: 'nenhuma regra segura' };
+  return { acao: 'naoColetar', motivo: 'nenhuma seção pega — fica no chão' };
 }
 /** A prévia do filtro do PoE: peças de exemplo pela MESMA decisão. */
 const EXEMPLOS_DO_FILTRO_POE = [

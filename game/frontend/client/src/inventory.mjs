@@ -3208,6 +3208,8 @@ function acoesDaBolsa({ character, state, send, espera }) {
   const { caixa, toggle, filtro, conta } = linhaDeAcoes;
 
   const auto = character.settings?.autoSellPouch !== false;
+  // O jogo oficial (PoE) não vende peça (dono, 08/10: "só dá para limpar, vender não pode"): sem a chave da venda automática.
+  toggle.hidden = !!character.filtroPoe;
   toggle.className = `autosell ${auto ? 'on' : 'off'}`;
   toggle.querySelector('b').textContent = auto ? 'Auto venda ON' : 'Auto venda OFF';
   toggle.title = auto
@@ -3224,7 +3226,7 @@ function acoesDaBolsa({ character, state, send, espera }) {
   const marcados = (rules.noSell?.length ?? 0) + (rules.noLoot?.length ?? 0);
   conta.textContent = marcados ? String(marcados) : '';
   conta.hidden = !marcados;
-  filtro.title = marcados ? `${marcados} item(ns) no filtro` : 'escolher o que não coletar e o que não vender';
+  filtro.title = marcados ? `${marcados} item(ns) no filtro` : character.filtroPoe ? 'escolher o que coletar (o resto fica no chão)' : 'escolher o que não coletar e o que não vender';
 
   return caixa;
 }
@@ -3294,6 +3296,9 @@ export function renderPouch() {
     };
     cabecalho.insertBefore(atalho, cabecalho.querySelector('.window-reset'));
   }
+  // O jogo oficial não vende: sem o atalho do tempo da auto-venda.
+  const atalhoDaVenda = cabecalho?.querySelector('.bag-store');
+  if (atalhoDaVenda) atalhoDaVenda.hidden = !!character.filtroPoe;
 
   /*
    * ---- A contagem de tipos foi para o TÍTULO da janela ----
@@ -3362,9 +3367,12 @@ export function renderPouch() {
       : `A bolsa se esvazia a cada ${espera}s, pelo ${precoDaVendaRapida(state.catalog.quickSellRate)}.`
   );
   head.append(relogio);
+  // O jogo oficial não vende: sem o relógio da venda automática (escondido — o atalho do redesenho, lá em cima, procura por ele).
+  relogio.hidden = !!character.filtroPoe;
 
   const noMaximo = espera <= 20;
   const mais = el('button', 'bag-timer-buy', noMaximo ? '✓' : '+');
+  mais.hidden = !!character.filtroPoe;
   mais.disabled = noMaximo;
   tipTexto(
     mais,
@@ -3428,6 +3436,8 @@ export function renderPouch() {
    * ponta onde a mão vai sem olhar.
    */
   const vender = el('button', 'bag-clear bag-sell', 'Vender');
+  // O jogo oficial (PoE): só Limpar — vender não existe (dono, 08/10).
+  vender.hidden = !!character.filtroPoe;
   vender.disabled = !pouch.length;
   tipTexto(
     vender,
@@ -4175,6 +4185,8 @@ export function renderContainer() {
    * marcado. Ver `openVenderMochila`.
    */
   const vender = el('button', 'bag-clear bag-sell', 'Vender');
+  // O jogo oficial (PoE): só Limpar — vender não existe (dono, 08/10: "só dá para limpar, vender não pode, tira até o botão de vender").
+  vender.hidden = !!character.filtroPoe;
   vender.disabled = !character.inventory.length;
   tipTexto(
     vender,

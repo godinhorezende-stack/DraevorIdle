@@ -173,6 +173,7 @@ function projetar(estado, base, fator, multExp = 1) {
      * 12 h offline só ganhava atributo no loot da primeira meia hora.
      */
     let entrou = 0;
+    let ignoradas = 0;
     const baseDoPoe = ItensPoeJogo.baseDoId(Number(id));
     if (cabe && baseDoPoe) {
       // A peça do PoE sai do gerador do PoE, uma a uma (raridade, mods, qualidade), como na caçada online. Antes a projeção punha a base
@@ -181,13 +182,20 @@ function projetar(estado, base, fator, multExp = 1) {
       const raridade = raridadeDoDrop(estado, null);
       for (let k = 0; k < cabe; k++) {
         const peca = ItensPoeJogo.pecaSorteada(nivel, Math.random, undefined, raridade, baseDoPoe);
-        if (peca) entrou += Bolsa.porNaBolsa(estado, peca.id, 1, peca) ? 1 : 0;
+        if (!peca) continue;
+        // O filtro de loot vale offline também: a peça sorteada que ele não pega fica no chão ("Ignorado"), como na caçada online.
+        if (Bolsa.ignora(estado, peca.id, peca)) {
+          ignoradas++;
+          continue;
+        }
+        entrou += Bolsa.porNaBolsa(estado, peca.id, 1, peca) ? 1 : 0;
       }
     } else if (cabe && aceitaAtributos(Number(id))) {
       const origem = contextoDoDrop(estado.hunt);
       for (let k = 0; k < cabe; k++) entrou += Bolsa.porNaBolsa(estado, Number(id), 1, gerarItem({ itemId: Number(id), ...origem }));
     } else if (cabe) entrou = Bolsa.porNaBolsa(estado, Number(id), cabe);
-    if (qtd - entrou > 0) extra.itens.perdido[id] = (extra.itens.perdido[id] ?? 0) + (qtd - entrou);
+    if (ignoradas) extra.itens.ignorado[id] = (extra.itens.ignorado[id] ?? 0) + ignoradas;
+    if (qtd - entrou - ignoradas > 0) extra.itens.perdido[id] = (extra.itens.perdido[id] ?? 0) + (qtd - entrou - ignoradas);
     extra.itens.loot[id] = entrou;
   }
   // O que a auto-venda teria vendido nesse tempo todo.
