@@ -10,7 +10,12 @@
 //   EFICÁCIA: × o "Multiplicador de Custo & Reserva" dos suportes ligados (Iluminação reduz, Arrogância aumenta) ÷ (1 + a "Eficácia da
 //             Reserva" das passivas e das peças: de mana, de vida, das habilidades, dos Arautos). Arredonda para cima, como no PoE.
 //   VIDA: com o suporte que reserva Vida (Arrogância: "Reservam Vida ao invés de Mana") ou o Magia Sanguínea, a reserva sai da VIDA.
+//   BLASFÊMIA: a maldição ligada à Blasfêmia vira AURA — liga reservando a "Sobreposição de Reserva" do suporte (35%) em vez de custar, e
+//              fica ligada; as marcas dela têm o "menos Efeito" do suporte. A Eficácia da Reserva de "Aura de Maldição" vale para ela; a de
+//              "Postura", para as gemas com a tag Postura. (A dos "suportados por Feiticeiro" não tem efeito: esse suporte não está no jogo.)
 import { compilada } from './gemas-poe.mjs';
+/** A maldição vira aura (a Blasfêmia ligada a ela). */
+export const ehMaldicaoEmAura = (entry, efeitoDaGema) => !!efeitoDaGema?.maldicaoEmAura && entry?.poeGema?.arquetipo === 'maldicao';
 import * as ModsPoe from './condicoes-poe.mjs';
 
 /** Até quando a aura ligada vale: não expira (sai quando a gema deixa a barra — `desligarAsQueSairam`). */
@@ -28,11 +33,15 @@ export function daGema(slug, nivel = 1) {
  * O fator da reserva: × o "Multiplicador de Custo & Reserva" dos suportes (`efeitoDaGema.custoPct`, em % acima de 100) ÷ (1 + a Eficácia
  * da Reserva: `eficiencia_reserva` vale para as duas; `_mana`/`_vida`, para a sua; `_arauto`, para a mana dos Arautos).
  */
-export function fator(ficha, efeitoDaGema, recurso, arquetipo = null) {
+export function fator(ficha, efeitoDaGema, recurso, arquetipo = null, tipos = null) {
   const mult = Math.max(0, 1 + (Number(efeitoDaGema?.custoPct) || 0) / 100);
+  const deMana = recurso === 'mana';
   const eficacia = ModsPoe.valor(ficha, 'eficiencia_reserva')
     + ModsPoe.valor(ficha, recurso === 'vida' ? 'eficiencia_reserva_vida' : 'eficiencia_reserva_mana')
-    + (recurso === 'mana' && arquetipo === 'arauto' ? ModsPoe.valor(ficha, 'eficiencia_reserva_arauto') : 0);
+    + (deMana && arquetipo === 'arauto' ? ModsPoe.valor(ficha, 'eficiencia_reserva_arauto') : 0)
+    // A maldição em aura (Blasfêmia) e a postura (a tag "Stance" da gema).
+    + (deMana && arquetipo === 'maldicao' ? ModsPoe.valor(ficha, 'eficiencia_reserva_maldicao') : 0)
+    + (deMana && tipos?.has?.('Stance') ? ModsPoe.valor(ficha, 'eficiencia_reserva_postura') : 0);
   return mult / Math.max(0.1, 1 + eficacia / 100);
 }
 
@@ -76,10 +85,12 @@ export function cortarNoLivre(estado) {
  */
 export function pedida(estado, entry, efeitoDaGema, ficha, emVida = false) {
   if (!entry?.poeGema?.buff) return null;
-  const base = daGema(entry.poeGema.slug, efeitoDaGema?.nivel ?? 1);
+  const nivel = efeitoDaGema?.nivel ?? 1;
+  // A maldição com a Blasfêmia reserva a "Sobreposição de Reserva" do suporte; o resto, a reserva da própria gema.
+  const base = ehMaldicaoEmAura(entry, efeitoDaGema) ? { pct: Number(efeitoDaGema.reservaSobreposta) || 35 } : daGema(entry.poeGema.slug, nivel);
   if (!base) return null;
   const recurso = emVida ? 'vida' : 'mana';
-  const r = { recurso, ...base, fator: fator(ficha, efeitoDaGema, recurso, entry.poeGema.arquetipo) };
+  const r = { recurso, ...base, fator: fator(ficha, efeitoDaGema, recurso, entry.poeGema.arquetipo, compilada(entry.poeGema.slug, nivel)?.tipos ?? null) };
   return { ...r, valor: valor(estado, r) };
 }
 

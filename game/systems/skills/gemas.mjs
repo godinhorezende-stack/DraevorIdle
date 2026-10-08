@@ -617,7 +617,8 @@ export const temSkill = (estado, acao) => skillsAtivas(estado).has(acao);
  * recargaPct, critChance, critDano, alvosExtras, danoDosExtrasPct, supports: [nomes] }`.
  * Sem a gema: null. É o que o `disparar` aplica — e o balão mostra.
  */
-const CONTAGENS = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra']);
+// (+ os da Blasfêmia, que não escalam com a gema de suporte: a reserva sobreposta, a maldição em aura e o efeito dela.)
+const CONTAGENS = new Set(['alvosExtras', 'perfurar', 'bifurcar', 'encadear', 'retornar', 'areaExtra', 'reservaSobreposta', 'maldicaoEmAura', 'efeitoMaldicaoPct']);
 const MULTIPLICATIVOS = new Set(['danoDosExtrasPct', 'danoDaPerfuracaoPct', 'danoDaBifurcacaoPct', 'danoDoEncadeamentoPct', 'danoDoRetornoPct']);
 export function efeitoNaSkill(estado, acao, ativas = skillsAtivas(estado)) {
   const a = ativas.get(acao);

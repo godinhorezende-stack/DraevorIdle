@@ -86,6 +86,10 @@ const REGRAS = [
   [new RegExp(`^Multiplicador de Custo & Reserva: ${N}%`), (m) => ({ custoPct: num(m[1]) - 100 })],
   [/não Custam nada/i, () => ({ custoPct: -100 })],
   [/custam Vida ao invés de Mana|Reservam Vida ao invés de Mana/i, () => ({ custoEmVida: 1 })],
+  // A BLASFÊMIA (`itens-poe/reserva.mjs`): a maldição suportada vira AURA — liga e reserva a "Sobreposição de Reserva", com menos efeito.
+  [new RegExp(`^(?:Sobreposição de )?Reserva: ${N}% Mana`), (m) => ({ reservaSobreposta: num(m[1]) })],
+  [/aplicam suas Maldições como Auras/i, () => ({ maldicaoEmAura: 1 })],
+  [new RegExp(`^${N}% menos Efeito de Maldições Suportadas`, 'i'), (m) => ({ efeitoMaldicaoPct: -num(m[1]) })],
   // LACAIOS e TOTENS (`itens-poe/lacaios-poe.mjs`): dano e vida dos lacaios, totens a mais.
   [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?causam? ${N}% (mais|menos) Dano`, 'i'), (m) => ({ lacaioDanoPct: (m[2] === 'mais' ? 1 : -1) * num(m[1]) })],
   [new RegExp(`Lacaios? (?:d[ae]s? Habilidades Suportadas )?(?:causam? )?Dano aumentado em ${N}%`, 'i'), (m) => ({ lacaioDanoPct: num(m[1]) })],
