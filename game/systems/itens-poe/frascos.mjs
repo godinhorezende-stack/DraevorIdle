@@ -454,8 +454,10 @@ export function configurar(estado, { vaga, abaixoPct, emCombate } = {}) {
   return { ok: true, notice: `${peca.poe.nome}: usa quando a ${tipo} estiver abaixo de ${pct}%.` };
 }
 
-/** Enche todos os frascos do cinto (a cidade). */
+/** Enche todos os frascos do cinto (a cidade). Só no jogo do PoE: no clássico o cinto nem existe — e criá-lo (`cinto`) marcava o
+ *  personagem do Draevor como "do PoE" (`personagem/legado.mjs`; `morrerNaHunt` chamava isto também no clássico, 9cc51225). */
 export function encherNaCidade(estado) {
+  if (!ligado()) return;
   for (const p of cinto(estado)) if (p?.poe) p.poe.cargas = parametros(p).cargasMaximas;
 }
 

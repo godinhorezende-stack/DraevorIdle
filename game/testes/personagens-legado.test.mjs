@@ -54,10 +54,45 @@ async function contaComAntigos(t, n) {
   return { conta: await B.contaPorId(conta.id), ids, nomes };
 }
 
-test('quem é do PoE: a marca `sistema: poe` ou o cinto de frascos; o resto, no jogo oficial, é arquivado', { skip: SEM }, () => {
+// (08/10: era "a marca ou o cinto de frascos". O cinto sozinho deixou de bastar — `morrerNaHunt` o criava também no Draevor clássico, e
+// personagens do Draevor escaparam do arquivamento em produção. Os criados no PoE local antes da marca têm classe do PoE.)
+test('quem é do PoE: a marca `sistema: poe`, ou o cinto de frascos com classe do PoE; o resto, no jogo oficial, é arquivado', { skip: SEM }, () => {
   assert.equal(Legado.arquivado({ level: 300, vocation: 'knight' }), true);
   assert.equal(Legado.arquivado({ sistema: 'poe' }), false);
-  assert.equal(Legado.arquivado({ frascos: [null, null, null, null, null] }), false, 'os criados no PoE local antes da marca');
+  assert.equal(Legado.arquivado({ frascos: [null, null, null, null, null], classe: 'marauder', level: 7 }), false, 'os criados no PoE local antes da marca');
+  assert.equal(Legado.arquivado({ frascos: [null, null, null, null, null], classe: 'knight', level: 1024 }), true, 'do Draevor com o cinto ganho ao morrer');
+  assert.equal(Legado.arquivado({ frascos: [null, null, null, null, null], level: 600 }), true, 'do Draevor sem classe, com cinto');
+});
+
+test('a mesma regra em SQL (ranking, site, arena, o script dos arquivados): o cinto sem classe do PoE não passa', { skip: SEM }, async (t) => {
+  const conta = await B.criarConta({ email: `legado-sql-${randomUUID()}@teste.local`, senha: 'x' });
+  const nome = (p) => `${p}${randomUUID().replace(/[^a-z]/g, '').slice(0, 6)}`;
+  const criados = [
+    [nome('Marca'), { sistema: 'poe', level: 3 }, true],
+    [nome('Cinto'), { frascos: [null], classe: 'witch', level: 9 }, true],
+    [nome('Morreu'), { frascos: [null], classe: 'knight', level: 1024 }, false],
+    [nome('Velho'), { level: 300, vocation: 'knight' }, false],
+  ];
+  for (const [n, e] of criados) await B.criarPersonagem({ conta: conta.id, nome: n, vocacao: 'knight', sexo: 'male', estadoInicial: e });
+  t.after(async () => {
+    for (const p of await B.personagensDaConta(conta.id)) B.db.prepare('DELETE FROM personagens WHERE id = ?').run(p.id);
+    B.db.prepare('DELETE FROM contas WHERE id = ?').run(conta.id);
+  });
+  const doPoe = (await B.banco.prepare(`SELECT nome FROM personagens WHERE conta = ? AND ${Legado.sqlDoPoe('sqlite')}`).all(conta.id)).map((l) => l.nome).sort();
+  assert.deepEqual(doPoe, criados.filter(([, , poe]) => poe).map(([n]) => n).sort());
+});
+
+test('morrer no Draevor clássico não cria o cinto de frascos (que marcaria o personagem como do PoE)', async () => {
+  const FrascosPoe = await import('../systems/itens-poe/frascos.mjs');
+  const antes = process.env.DRAEVOR_CLASSICO;
+  process.env.DRAEVOR_CLASSICO = '1';
+  try {
+    const e = { level: 200, vocation: 'knight', classe: 'knight' };
+    FrascosPoe.encherNaCidade(e);
+    assert.equal('frascos' in e, false);
+  } finally {
+    if (antes == null) delete process.env.DRAEVOR_CLASSICO; else process.env.DRAEVOR_CLASSICO = antes;
+  }
 });
 
 test('conta antiga: a conta fica, o personagem antigo aparece ARQUIVADO, não entra e não é mexido; o novo nasce no PoE', { skip: SEM }, async (t) => {

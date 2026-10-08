@@ -278,6 +278,7 @@ consolidação, transferência e "char fora do mundo". Os dois últimos foram co
 | A5 | `migrarClasse` (Engine) reescreve o estado dos arquivados da classe | A | **corrigido** (08/10): `migrarClasse(..., { pular: Legado.arquivado })` |
 | L1 | Transferência do banco por nome gravava ouro no arquivado | efeito colateral | **corrigido** + teste |
 | L2 | "Char da conta fora do mundo" lia e gravava ajustes no arquivado | efeito colateral | **corrigido** + teste |
+| L3 | `morrerNaHunt` enchia o cinto de frascos também no clássico (9cc51225, 07/10) e criava `frascos` em quem morria; a regra "do PoE" aceitava o cinto sozinho → em produção personagens do Draevor (Kinazin 1024, VovoGamer 271, Rinite 216, Sendy 191, Paladuro 180) escaparam do arquivamento e do apagamento e seguiram jogando | A | **corrigido** (08/10): o cinto só enche no PoE; "do PoE" = a marca, ou o cinto COM classe do PoE (JS e SQL) + testes |
 | T1 | Textos de tela ainda mandam "ligar com ITENS_POE=1" (5 lugares) | texto | **corrigido** (08/10) |
 | D1 | Dados do PoE fora do repositório: produção não sobe com este código sem eles; o motor de gemas é código externo executado em tempo de execução | deploy | **corrigido** (08/10, decisão do dono: tudo no repositório): `gamedata/itens-poe/` (catálogo, ícones, gemas, suportes, os 23 pools) e o motor de gemas em `systems/itens-poe/compilador-de-gemas/` |
 | G1 | 19 gemas e 33 suportes com status "não funciona" no catálogo | conteúdo | decidir se caem em produção |
