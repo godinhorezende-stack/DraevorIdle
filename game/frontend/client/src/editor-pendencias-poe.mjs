@@ -1,5 +1,5 @@
-// A aba PENDÊNCIAS DE MODIFICADORES da engine (dono, 07/10): o estado de cada mod do PoE que pode cair no jogo — afixos, implícitos, únicos
-// e frascos — no jogo: funciona, parcial, pendente, não existe no jogo (com o porquê) e lembrete. A mesma tradução do balão da peça.
+// A aba PENDÊNCIAS DE MODIFICADORES da engine (dono, 07/10): o estado de cada mod do PoE que pode cair no jogo — afixos, implícitos, únicos,
+// frascos e os pools especiais que as moedas alcançam (corrompidos, influências, eldritch, veiled) — no jogo: funciona, parcial, pendente, não existe no jogo (com o porquê) e lembrete. A mesma tradução do balão da peça.
 import { el, cabecalho } from './editor-ui.mjs';
 
 const BASE = '/api/mapas/_engine/itens-poe/';
@@ -11,7 +11,8 @@ const ESTADOS = {
   inexiste: { nome: 'Não existe no jogo', simbolo: '–', dica: 'mecânica do PoE que o jogo não tem (o porquê ao passar o mouse)' },
   lembrete: { nome: 'Lembrete', simbolo: '·', dica: 'texto de lembrete do PoE (entre parênteses): não é mod' },
 };
-const ORIGENS = { afixo: 'Afixos (prefixos e sufixos)', implicito: 'Implícitos das bases', unico: 'Únicos', frasco: 'Frascos' };
+// (08/10) + os pools especiais que as moedas do jogo alcançam — `POOLS_DO_JOGO` em admin/itens-poe-pendencias.mjs.
+const ORIGENS = { afixo: 'Afixos (prefixos e sufixos)', implicito: 'Implícitos das bases', unico: 'Únicos', frasco: 'Frascos', corrompido: 'Corrompidos (o implícito da Vaal)', influencia: 'Influências (os Exalted de influência)', eldritch: 'Eldritch (Brasas e Icores)', veiled: 'Veiled (as Oculta)' };
 const PARTE = { equivalente: '✓', aproximado: '≈', novo: '◆', inerte: '–', lembrete: '·', registrado: '○' };
 
 export function criarTelaDasPendenciasPoe({ raiz }) {

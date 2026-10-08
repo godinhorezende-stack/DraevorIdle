@@ -1,5 +1,6 @@
 // A aba PENDÊNCIAS DE MODIFICADORES da engine (dono, 07/10: "uma aba na engine de pendência de modificadores"): cada mod do catálogo do PoE
-// que pode cair no jogo — afixos (prefixos/sufixos), implícitos das bases, mods dos únicos e dos frascos — com o ESTADO dele no jogo:
+// que pode cair no jogo — afixos (prefixos/sufixos), implícitos das bases, mods dos únicos e dos frascos, e (08/10) os dos POOLS ESPECIAIS
+// que as moedas do jogo alcançam (`POOLS_DO_JOGO`) — com o ESTADO dele no jogo:
 //   funciona  — todas as partes têm efeito (✓ equivalente, ≈ aproximado, ◆ atributo novo com efeito);
 //   parcial   — parte tem efeito, parte não;
 //   pendente  — nenhuma parte tem efeito ainda (registrado);
@@ -14,6 +15,18 @@ import * as Frascos from '../systems/itens-poe/frascos.mjs';
 /** As classes que não entram no jogo (os mods delas nunca caem). */
 export const FORA_DO_JOGO = new Set(['Trinkets', 'Fishing_Rods', 'Jewels', 'Abyss_Jewels', 'Tinctures']);
 const COM_EFEITO = new Set(['equivalente', 'aproximado', 'novo']);
+
+/**
+ * Os pools especiais (`gamedata/itens-poe/pools/`) que alguma moeda do jogo põe numa peça (`itens-poe/moedas.mjs`): a Vaal (o implícito
+ * corrompido), as Oculta/Veiled, os 6 Exalted de influência (e o Conflito/Domínio sobre eles) e as Brasas/Icores eldritch. Os outros pools
+ * (delve, essência, bestiário, síntese...) não têm caminho no jogo e ficam fora. `origem`: o grupo da aba.
+ */
+export const POOLS_DO_JOGO = Object.freeze({
+  corrupted: 'corrompido',
+  veiled: 'veiled',
+  shaper: 'influencia', elder: 'influencia', crusader: 'influencia', redeemer: 'influencia', hunter: 'influencia', warlord: 'influencia',
+  searing: 'eldritch', eater: 'eldritch',
+});
 
 /** O estado de uma linha de frasco (o leitor dos frascos) → o da tradução. */
 const DO_FRASCO = { efeito: 'equivalente', registrado: 'registrado', inerte: 'inerte' };
@@ -66,6 +79,14 @@ export function pendencias() {
     for (const pool of Object.values(c.paginas ?? {})) for (const g of [...pool.prefixos, ...pool.sufixos]) for (const t of g.tiers) somar(frasco ? 'frasco' : 'afixo', classe, t, null, t.peso ?? 0);
     for (const b of c.bases ?? []) for (const im of b.implicitos ?? []) somar(frasco ? 'frasco' : 'implicito', classe, im, b.nome);
     for (const u of c.unicos ?? []) for (const m of u.modificadores ?? []) somar('unico', classe, m, u.nome);
+  }
+  // Os pools especiais que as moedas alcançam: na coluna "onde", o nome do pool (qual influência, qual eldritch).
+  for (const [nome, origem] of Object.entries(POOLS_DO_JOGO)) {
+    const pool = Catalogo.poolEspecial(nome);
+    for (const [classe, paginas] of Object.entries(pool?.classes ?? {})) {
+      if (FORA_DO_JOGO.has(classe) || !cat.classes[classe]) continue;
+      for (const pg of Object.values(paginas)) for (const g of [...(pg.prefixos ?? []), ...(pg.sufixos ?? []), ...(pg.implicitos ?? [])]) for (const t of g.tiers) somar(origem, classe, t, pool.nome ?? nome, t.peso ?? 0);
+    }
   }
   const linhas = [...porChave.values()].map((x) => ({ ...x, classes: [...x.classes], itens: [...x.itens].slice(0, 12), totalDeItens: x.itens.size }));
   const resumo = {};
