@@ -190,3 +190,14 @@ test('ficha do personagem: caçando na campanha, o status diz o ato, a fase (a o
     s.estado.campanha = antes.campanha;
   }
 });
+
+// Dono, 08/10: a barra da caçada conta a fase DENTRO do ato, como o mapa da campanha e o site ("Ato 2 · Fase 3", e não "Fase 19").
+test('a barra da caçada: a fase atual conta dentro do ato (a 3ª área do Ato 2 é a Fase 3)', { skip: SEM }, async () => {
+  const Campanha = await import('../systems/campanha.mjs');
+  const terceira = Campanha.FASES.filter((f) => f.ato === 2)[2];
+  const e = { campanha: {} };
+  const f = Campanha.faseAtual(e, { huntId: terceira.huntId, campanha: { huntId: terceira.huntId, ato: 2, dificuldade: 'facil' } });
+  assert.equal(f.ato, 2);
+  assert.equal(f.numero, 3);
+  assert.equal(f.numero, Campanha.numeroNoAto(terceira.huntId), 'o mesmo número do site');
+});

@@ -16,6 +16,7 @@ import { darItem, guardarMoeda, cabeNaMochila, erroDeEspaco } from './inventario
 import { pecaEspecial } from './itens/item.mjs';
 import { precoNpc } from './hunt/rentabilidade.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
+import { pilhaMaxima } from './itens/pilha.mjs';
 
 export const VAGAS_DA_BOLSA = 1000;
 export const VENDA_A_CADA_S = 120;
@@ -97,7 +98,7 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
     for (const pilha of bolsa) {
       if (falta <= 0) break;
       if (pilha.id !== id) continue;
-      const cabe = Math.min(100 - pilha.count, falta);
+      const cabe = Math.min(pilhaMaxima(id) - pilha.count, falta);
       if (cabe > 0) {
         pilha.count += cabe;
         falta -= cabe;
@@ -105,7 +106,7 @@ export function porNaBolsa(estado, id, count = 1, peca = null) {
     }
   }
   while (falta > 0 && bolsa.length < VAGAS_DA_BOLSA) {
-    const n = ITEM_CATALOG[id]?.stackable ? Math.min(100, falta) : 1;
+    const n = ITEM_CATALOG[id]?.stackable ? Math.min(pilhaMaxima(id), falta) : 1;
     bolsa.push({ id, count: n });
     falta -= n;
   }

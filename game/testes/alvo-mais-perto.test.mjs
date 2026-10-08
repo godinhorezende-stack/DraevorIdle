@@ -55,3 +55,22 @@ test('mais perto: a trava solta quando outro bicho chega colado ou fica bem mais
   assert.equal(alvoAtual(h)?.uid, outro.uid, 'o colado vira o alvo');
   assert.equal(h.alvoTravado, outro.uid);
 });
+
+test('o resto da instância (o alvo da limpeza) cede a quem chegou colado: cercado, ele não fica mirando o bicho de trás', () => {
+  const e = personagemDeTeste({ vocacao: 'knight', level: 50 });
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
+  const h = e.hunt;
+  const [longe, colado] = h.monstros;
+  h.monstros.splice(0, h.monstros.length, longe, colado);
+  Object.assign(longe, { x: h.pos.x + 2, y: h.pos.y, hp: 100, maxHp: 100 });
+  Object.assign(colado, { x: h.pos.x, y: h.pos.y + 1, hp: 100, maxHp: 100 });
+  h.alvo = longe.uid;
+  h.alvoDaLimpeza = longe.uid;
+  delete h.aPeGuardado;
+  assert.equal(alvoAtual(h)?.uid, colado.uid, 'briga com o colado');
+  assert.equal(h.alvoDaLimpeza, null, 'a limpeza escolhe de novo quando não houver nada à vista');
+  // O alvo escolhido pelo jogador (clique) não cede.
+  h.alvo = longe.uid;
+  h.alvoTravado = null;
+  assert.equal(alvoAtual(h)?.uid, longe.uid, 'o do clique continua');
+});

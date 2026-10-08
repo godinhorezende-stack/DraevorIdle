@@ -53,8 +53,8 @@ async function criar(prefixo) {
   return { conta: c.id, personagem: { id: p.id, nome } };
 }
 /** Entra no jogo com o estado que está NO BANCO (como a volta depois de um reinício). */
-async function entrar(j) {
-  const s = new Sessao({ readyState: 1, bufferedAmount: 0, send: () => {} });
+async function entrar(j, recebidas = null) {
+  const s = new Sessao({ readyState: 1, bufferedAmount: 0, send: (d) => recebidas?.push(JSON.parse(d)) });
   s.conta = { id: j.conta };
   const linha = await B.banco.prepare('SELECT estado FROM personagens WHERE id = ?').get(j.personagem.id);
   const estado = JSON.parse(linha.estado);
@@ -162,4 +162,27 @@ test('caçada gravada SEM a instância da sala (de antes desta correção): com 
   assert.equal(volta.hunt?.huntId, AREA, 'continua caçando na área');
   assert.equal(volta.hunt.instancia?.status, 'ativa', 'numa instância nova');
   assert.equal(volta.hunt.campanha.dificuldade, gravada.campanha.dificuldade, 'na mesma dificuldade');
+});
+
+test('quem volta para a party e para a caçada do grupo recebe o `welcome` antes de qualquer `state` (o client só monta a tela no welcome)', { skip: SEM }, async () => {
+  const { a, b } = await caçandoJuntos();
+  await gravarTodosAntesDeSair();
+  Party._esquecerParaTeste();
+  await Party.carregar();
+  const deA = [];
+  const deB = [];
+  await entrar(a, deA);
+  const nb = await entrar(b, deB); // volta à party (`entrouNoJogo` atualiza todos) e à sala de A (`juntar`)
+  assert.equal(Cacadas.salaDe(nb.estado.hunt).huntId, AREA, 'voltou para a caçada do grupo');
+  for (const [quem, lista] of [['A', deA], ['B', deB]]) {
+    const tipos = lista.map((m) => m.t);
+    const welcome = tipos.indexOf('welcome');
+    assert.ok(welcome >= 0, `${quem}: recebeu o welcome`);
+    const antes = tipos.slice(0, welcome).filter((t) => t === 'state' || t === 'actionCatalog');
+    assert.deepEqual(antes, [], `${quem}: nada de estado antes do welcome (${tipos.slice(0, welcome + 1).join(', ')})`);
+  }
+  // O aviso da volta segue para o primeiro `state` depois do welcome.
+  deB.length = 0;
+  nb.mandarEstado();
+  assert.match(deB.find((m) => m.t === 'state')?.notice ?? '', /voltou para a caçada do grupo com/);
 });

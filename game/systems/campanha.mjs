@@ -256,15 +256,22 @@ function completar(estado, dif, f) {
 export function conclusaoDa(huntId) {
   const f = faseDe(huntId);
   const g = f?.grafo ? ATOS_DO_EDITOR.get(f.ato) : null;
-  const conc = g?.ato.fases.find((x) => x.id === f.grafo.faseId)?.conclusao ?? { tipo: 'limpar-hunt' };
-  /*
-   * O chefe do PRÓPRIO ato não nasce na fase: ele é enfrentado na sala dele, pelo portal que a última fase abre quando conclui. A fase
-   * que pedia matá-lo nunca concluía — e o portal nunca abria (o Telhado da Catedral pedia o Kitava, e o Ato 5 travava). Ela conclui
-   * limpando a área; o chefe fica para a sala.
-   */
-  const doAto = f ? bossDoAto(f.ato)?.nome : null;
-  if (conc.tipo === 'matar-chefe' && doAto && String(conc.nome ?? '').trim().toLowerCase() === String(doAto).trim().toLowerCase()) return { tipo: 'limpar-hunt', chefeDoAto: conc.nome };
-  return conc;
+  return g?.ato.fases.find((x) => x.id === f.grafo.faseId)?.conclusao ?? { tipo: 'limpar-hunt' };
+}
+
+/*
+ * ---- O chefe do ATO enfrentado na fase (dono, 08/10: "Kitava na fase encerra o ato") ----
+ * A fase que conclui matando o próprio chefe do ato (o Telhado da Catedral pede o Kitava, o chefe do Ato 5): ele nasce na fase (como todo
+ * chefe de fase — `Instancia.chefeNaInstancia`), e matá-lo conclui a fase E vence o chefe do ato — o ato seguinte abre, sem a luta na sala
+ * do chefe (o portal dela não abre). Antes a fase pedia um monstro que só existia na sala, e o ato travava.
+ */
+/** O número do ato cujo chefe a fase `huntId` pede na conclusão; null se ela pede outro monstro (ou nenhum). */
+export function atoDoChefeNaFase(huntId) {
+  const f = faseDe(huntId);
+  const conc = f ? conclusaoDa(huntId) : null;
+  if (conc?.tipo !== 'matar-chefe') return null;
+  const doAto = bossDoAto(f.ato)?.nome;
+  return doAto && String(conc.nome ?? '').trim().toLowerCase() === String(doAto).trim().toLowerCase() ? f.ato : null;
 }
 const slugDoMonstro = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 /** O bicho morto é o monstro do objetivo? (a chave do bestiário, ou o slug do monstro do PoE — `poe-<slug>-<nível>`) */
@@ -311,8 +318,10 @@ export function matou(estado, hunt, bicho, { ganhou = [], dar = null } = {}) {
     if (!veio && !(dar && dar(Number(conc.item)))) return null;
   }
   const aviso = completar(estado, c.dificuldade, f);
-  estado.avisoDaHunt = aviso;
-  return aviso;
+  // O chefe do ato morto na fase: vence o ato também (`atoDoChefeNaFase`).
+  const doAto = conc.tipo === 'matar-chefe' && atoDoChefeNaFase(f.huntId) ? venceuBoss(estado, c.dificuldade, f.ato) : null;
+  estado.avisoDaHunt = [aviso, doAto].filter(Boolean).join(' ');
+  return estado.avisoDaHunt;
 }
 
 /** O que fazer ao completar uma fase: `'repetir'` (fica em loop nela, o padrão) ou `'seguir'`. */
@@ -460,7 +469,9 @@ export function faseAtual(estado, hunt) {
   const p = progresso(estado, c.dificuldade);
   const completa = faseCompleta(estado, c.dificuldade, f.huntId);
   return {
-    tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
+    // No jogo oficial o número é o da fase DENTRO do ato, como no mapa da campanha e no site (dono, 08/10: "Ato 2 · Fase 3", e não "Fase 19");
+    // no Draevor clássico, a posição nas 48 fases.
+    tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: itensPoeLigado() ? numeroNoAto(f.huntId) : f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
     limpezas: p.limpezas[f.huntId] ?? 0, completa,
     // Completa e sem próxima para seguir: fim do ato (o boss é o jogador quem chama).
     fimDoAto: completa && !proximaParaSeguir(estado, c.dificuldade, f.huntId),
@@ -475,6 +486,8 @@ export function faseAtual(estado, hunt) {
 export function abrirPortalDoBoss(hunt, estados) {
   const c = hunt?.campanha;
   if (!c || c.bossDoAto || hunt.anfitriao || !ehUltimaFaseDoAto(c.huntId)) return null;
+  // O chefe do ato é enfrentado NESTA fase (`atoDoChefeNaFase`): não há sala para abrir.
+  if (atoDoChefeNaFase(c.huntId)) return null;
   if (!estados.some((e) => bossLiberado(e, c.dificuldade, c.ato))) return null;
   const b = bossDoAto(c.ato);
   if (!b) return null;

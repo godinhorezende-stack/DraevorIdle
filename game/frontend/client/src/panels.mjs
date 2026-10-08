@@ -3029,7 +3029,7 @@ function resumoDoFiltroPoe() {
   const f = frasesPoe();
   const partes = [f.mods && `mods: ${f.mods}`, f.sockets && `sockets: ${f.sockets}`, f.ilvl, f.raridade && `raridade: ${f.raridade}`].filter(Boolean);
   const especificas = (ctx.state.character?.lootRegras ?? []).filter((r) => r.poe && r.ativa !== false).length;
-  return `Coleta: ${partes.length ? `pega ${partes.join(' OU ')} (e os Únicos); o resto fica no chão` : 'pega tudo (nenhuma seção escolhida)'}.${especificas ? ` E ${especificas} regra${especificas === 1 ? '' : 's'} específica${especificas === 1 ? '' : 's'} antes.` : ''}`;
+  return `Coleta: ${partes.length ? `pega ${partes.join(' OU ')} (e os Únicos, os frascos e as moedas); o resto fica no chão` : 'pega tudo (nenhuma seção escolhida)'}.${especificas ? ` E ${especificas} regra${especificas === 1 ? '' : 's'} específica${especificas === 1 ? '' : 's'} antes.` : ''}`;
 }
 function escolhaDeModsPoe() {
   const s = secoesPoe();
@@ -3055,7 +3055,7 @@ function escolhaDeRaridadePoe() {
   const caixa = el('div', 'filtro-afixo filtro-raridade');
   caixa.append(el('b', null, 'Raridade'));
   const f = frasesPoe();
-  caixa.append(el('em', 'filter-legend', f.raridade ? `Pega ${f.raridade}, com qualquer mod. Normal (branco), Mágico (azul), Raro (amarelo) e Único (laranja), como no PoE.` : 'A raridade não decide nada. O Único sempre vem.'));
+  caixa.append(el('em', 'filter-legend', `${f.raridade ? `Pega ${f.raridade}, com qualquer mod. Normal (branco), Mágico (azul), Raro (amarelo) e Único (laranja), como no PoE.` : 'A raridade não decide nada. O Único sempre vem.'} Vale só para equipamento: frascos e moedas sempre vêm (só a lista "Não coletar" ou uma regra da classe do frasco os deixa no chão).`));
   caixa.append(fileiraPoe('A partir de', 'guardarRaridadePoe', secoesPoe().raridade));
   return caixa;
 }

@@ -438,7 +438,13 @@ function textoDoEfeitoDaPeca(peca) {
 export const ehEquipavel = (meta) => !!meta?.slot && !meta.stackable;
 export const raridadeDaPeca = (meta, peca = null) => peca?.raridade ?? (ehEquipavel(meta) ? 'comum' : meta?.rarity ?? 'comum');
 
-export const classeDaRaridade = (meta, peca = null) => `tier-${tierOf({ rarity: raridadeDaPeca(meta, peca) }).key}`;
+/*
+ * Moeda e gema do PoE NÃO têm raridade (dono, 08/10: "frascos e moedas têm raridade, mas na verdade não era para ser", "gemas não têm
+ * raridade também"): a cor delas é a do PoE — o bege das moedas empilháveis e o verde-azulado das gemas — no nome, na moldura do balão e
+ * na célula. O catálogo ainda traz a `rarity` delas (do Draevor); aqui ela não pinta nada.
+ */
+export const classeSemRaridade = (meta) => (meta?.moedaPoe ? 'tier-moeda-poe' : meta?.gemaDef?.poe ? 'tier-gema-poe' : null);
+export const classeDaRaridade = (meta, peca = null) => classeSemRaridade(meta) ?? `tier-${tierOf({ rarity: raridadeDaPeca(meta, peca) }).key}`;
 
 /*
  * ---- A cor da estrela diz o quanto o afixo é FORTE ----
@@ -2850,13 +2856,17 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     : // A raridade do DROP; equipável sem ela é comum (ver `raridadeDaPeca`).
       raridadeDaPeca(meta, peca);
   const tier = tierOf({ rarity: raridadeDoBalao });
+  // Moeda e gema do PoE: a cor do PoE no lugar da raridade (`classeSemRaridade`).
+  const semRaridade = essencia ? null : classeSemRaridade(meta);
   // `tip-item`: o visual do balão de item (à Path of Exile — ver style.css).
-  const classe = `tier-${tier.key} tip-item`;
+  const classe = `${semRaridade ?? `tier-${tier.key}`} tip-item`;
 
   // ---- cabeçalho: nome à esquerda, sprite grande à direita ----
   const head = el('div', 'tip-head');
   const identidade = el('div', 'tip-id');
-  identidade.append(el('b', null, titleCase(essencia ? nomeDaEssencia(peca) : meta.nomeExibicao ?? meta.name)));
+  // A gema do PoE: só o nome, como no PoE ("Salto Impactante", sem o "Gema:" do catálogo — as tags dela vêm logo abaixo).
+  const nomeDoBalao = essencia ? nomeDaEssencia(peca) : meta.gemaDef?.poe ? String(meta.nomeExibicao ?? meta.name).replace(/^Gema:\s*/i, '') : meta.nomeExibicao ?? meta.name;
+  identidade.append(el('b', null, titleCase(nomeDoBalao)));
   /*
    * ---- O tier da peça, ao lado do nome ----
    *
@@ -2911,8 +2921,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
         }
       : null;
   const linha = [
-    tier.name,
-    TYPE_NAMES[meta.type] ?? meta.type,
+    semRaridade ? null : tier.name,
+    meta.moedaPoe ? 'Moedas Empilháveis' : TYPE_NAMES[meta.type] ?? meta.type,
     meta.twoHanded ? 'duas mãos' : null,
     // A Draevor Over não se distingue da Draevor normal por nenhum número: a
     // diferença é o golpe pegar em área. Ver a linha inteira logo abaixo.
@@ -2928,7 +2938,8 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    * lá ela é sempre "comum", porque o item é um só. É essa raridade que decide
    * onde ela pode entrar, então é ela que a linha tem de dizer.
    */
-  identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
+  // Moeda e gema do PoE: o cabeçalho só com o nome (a moeda diz o tipo e a pilha no corpo, logo abaixo; a gema, as tags).
+  if (!meta.moedaPoe && !meta.gemaDef?.poe) identidade.append(el('em', null, essencia ? linhaDaEssencia(peca) : linha));
   // O Item Level: o da fase onde a peça caiu (libera os tiers dos adds); peça sem drop, o level do item-base.
   if (!essencia && meta.slot) identidade.append(el('em', 'item-level', `Item Level ${peca?.ilvl ?? meta.minLevel ?? 1}`));
   head.append(identidade, el('div', 'tip-art', null));
@@ -2957,6 +2968,11 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     stats.append(linha);
     return linha;
   };
+  // A moeda do PoE, como no PoE: "Moedas Empilháveis" e "Tamanho da Pilha: 1 / 20" (no máximo 20 — `itens/pilha.mjs`).
+  if (meta.moedaPoe) {
+    add(linha, 'moeda-tipo');
+    prop('Tamanho da Pilha', `${(peca?.count ?? 1).toLocaleString('pt-BR')} / ${(meta.pilha ?? 20).toLocaleString('pt-BR')}`);
+  }
 
   const sinal = (value) => (value > 0 ? `+${value}` : String(value));
   // Cada linha sai na cor do que ela fala: ataque em vermelho, defesa em
@@ -3010,7 +3026,7 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
    */
   if (meta.aoVestir) add('Os atributos abaixo valem com a peça VESTIDA', 'plain');
   // As moedas de uso (lapidadora, fundidora, orbes de socket) dizem o que fazem.
-  if (meta.type === 'moeda' && meta.descricao) add(meta.descricao, 'plain');
+  if (meta.type === 'moeda' && meta.descricao && !meta.moedaPoe) add(meta.descricao, 'plain');
   for (const aug of meta.augments ?? []) {
     const linha = add(aug.texto, aug.vale ? 'area' : 'plain');
     if (linha && !aug.vale) {
@@ -3084,6 +3100,11 @@ export function fichaDeItem(id, extra = null, slot = null, peca = null) {
     );
   }
   if (stats.children.length) node.append(stats);
+  // A moeda do PoE: o que ela faz (no azul dos mods) e como usar (em cinza), cada um no seu bloco, como no PoE.
+  if (meta.moedaPoe) {
+    if (meta.descricao) node.append(el('div', 'tip-extra tip-moeda-efeito', meta.descricao));
+    node.append(el('div', 'tip-extra tip-moeda-ajuda', 'Clique com o botão direito para usá-la na Forja.'));
+  }
 
   /*
    * ---- "Atributos extras": o que esta CÓPIA tem a mais ----

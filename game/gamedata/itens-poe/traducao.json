@@ -4788,6 +4788,42 @@
       "nota": "a reserva de mana dos Arautos é ÷ (1 + isto, somado à Eficácia de mana) — itens-poe/reserva.mjs"
     },
     {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades Aura de Maldição aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_maldicao",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente",
+      "nota": "a reserva da maldição em aura (a Blasfêmia) é ÷ (1 + isto, somado à Eficácia de mana) — itens-poe/reserva.mjs"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades de Postura aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_postura",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente",
+      "nota": "a reserva das posturas (Sangue e Areia, Carne e Pedra) é ÷ (1 + isto, somado à Eficácia de mana) — itens-poe/reserva.mjs"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades que arremessam Minas aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_minas",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente",
+      "nota": "a mina reserva mana enquanto está armada; no jogo, a reserva dela é o custo de cada uma, ÷ (1 + isto, somado à Eficácia de mana) — acoes"
+    },
+    {
       "padrao": "^\\{(\\d+)\\}% de chance de, quando pagar o Custo de uma Habilidade, ganhar a mesma quantidade de Mana$",
       "efeitos": [
         {
@@ -7441,7 +7477,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação (de minas, posturas, maldições, condicional…) ainda não tem efeito",
+      "nota": "a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação ainda não tem efeito — a dos suportados por Feiticeiro (Spellslinger) não tem a quem valer: esse suporte não está no jogo",
       "_nova": true,
       "_unico": true
     },

@@ -9,8 +9,12 @@ import { ALCANCE_DE_PERCEPCAO, ALCANCE_DE_PERSEGUICAO } from './monstros.mjs';
 export function alvoAtual(hunt) {
   if (hunt.alvo != null) {
     const m = hunt.monstros.find((m) => m.uid === hunt.alvo);
-    if (m) return m;
+    // O resto da instância (`alvoDaLimpeza`, escolhido quando não havia nada à vista) cede a quem chegou COLADO: cercado, ele mirava o
+    // bicho de trás, que não alcançava, e apanhava parado dos da frente (medido: 4 s no Old Fields, 5 bichos a 1 casa).
+    const cede = m && hunt.alvo === hunt.alvoDaLimpeza && distancia(hunt.pos, m) > 1 && hunt.monstros.some((b) => b !== m && b.hp > 0 && distancia(hunt.pos, b) <= 1);
+    if (m && !cede) return m;
     hunt.alvo = null;
+    if (cede) hunt.alvoDaLimpeza = null;
   }
   // Com percurso, só conta quem está à vista (ou já vindo atrás): o de longe
   // fica para quando o laço passar por ele. Sem percurso (mapa gerado, sala de

@@ -7452,6 +7452,9 @@ input[type='checkbox']:disabled { opacity: .35; cursor: not-allowed; }
  * erro que ela quer evitar.
  */
 .tier-mitico { --tier: #f2503f; }
+/* Moeda e gema do PoE: sem raridade, a cor do PoE (o bege das moedas, o verde-azulado das gemas) — `classeSemRaridade`, tooltip.mjs. */
+.tier-moeda-poe { --tier: #aa9e82; }
+.tier-gema-poe { --tier: #1ba29b; }
 
 .tip-head { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px 9px; }
 .tip-id { flex: 1; min-width: 0; }

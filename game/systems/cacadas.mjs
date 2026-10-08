@@ -48,7 +48,7 @@ import { waypointMaisPerto, passoNoPercurso } from './hunt/percurso.mjs';
 import { proximoMonstroForaDeAlcance, metaDoLure, atualizarLure } from './hunt/lure.mjs';
 import { aliadosPorCasa } from './hunt/aliados.mjs';
 import * as Defesa from './personagem/defesa.mjs';
-import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop } from './hunt/combate.mjs';
+import { processarMortes, armaDoPersonagem, alcanceDaArma, subirDeLevel, ATAQUE_MS, round, golpesDosMonstros, contextoDoDrop, pagarRecompensaDeAto, nivelDoDropPoe, raridadeDoDrop, naSalaDaPartilha } from './hunt/combate.mjs';
 import { gerarItem, aceitaAtributos } from './itens/gerar.mjs';
 import * as Campanha from './campanha.mjs';
 import { bossUnico } from './bosses-unicos/catalogo.mjs';
@@ -964,11 +964,12 @@ function projetarNaInstancia(estado, kills) {
 function aoLimparAInstancia(estado, hunt, personagem = null) {
   Campanha.limpou(estado, hunt);
   const estados = [estado];
-  for (const m of hunt.partilha?.membros ?? []) {
-    const h = m.estado?.hunt;
-    if (m.estado !== estado && h && salaDe(h) === hunt) {
-      Campanha.limpou(m.estado, h);
-      estados.push(m.estado);
+  // Todos da party na sala (`naSala`), também o independente parado — a partilha de exp (`membros`) o deixa de fora, a fase não.
+  for (const outro of naSalaDaPartilha(hunt.partilha)) {
+    const h = outro?.hunt;
+    if (outro !== estado && h && salaDe(h) === hunt) {
+      Campanha.limpou(outro, h);
+      estados.push(outro);
     }
   }
   // Ato do editor: a recompensa configurada da fase. Os drops sorteiam UMA vez por instância limpa (a sala); a primeira limpeza paga cada

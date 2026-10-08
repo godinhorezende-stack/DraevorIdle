@@ -242,7 +242,12 @@ test('Conjurar no Acerto Crítico: o crítico do ataque ligado ativa a magia lig
   const { PERSONAGEM } = await import('./apoio.mjs');
   let agora = Date.now();
   const ev = [];
-  for (let t = 0; t < 320 && e.hunt; t++) ev.push(...(Cacadas.tique(e, PERSONAGEM, (agora += 250)) ?? []));
+  // A vida fica cheia: a bruxa de teste (sem armadura) às vezes morria na Costa em ~18 s, e morta não ataca — o teste é do gatilho, não da
+  // sobrevivência (medido: 3 a 4 ativadas nas sementes em que ela morria, 16 a 29 nas outras).
+  for (let t = 0; t < 320 && e.hunt; t++) {
+    e.hp = e.maxHp;
+    ev.push(...(Cacadas.tique(e, PERSONAGEM, (agora += 250)) ?? []));
+  }
   const ativadas = ev.filter((x) => x.t === 'gatilho').length;
   assert.ok(ativadas > 5, `${ativadas} magias ativadas`);
   assert.equal(ev.filter((x) => x.t === 'cast' && x.skill === 'Bola de Fogo').length, 0, 'a magia ativada não se conjura à mão');

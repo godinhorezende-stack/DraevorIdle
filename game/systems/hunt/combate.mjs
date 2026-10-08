@@ -657,6 +657,19 @@ export function pagarPremio({ estado, gold, exp, itens, nome, rotulo = 'Primeira
   estado.avisoDaHunt = `${rotulo} ${nome}${partes.length ? ` — ${partes.join(', ')}` : ''}.`;
 }
 
+/** Todos da party na sala (`naSala`); a partilha montada sem ela (só `membros`) vale o que tem. */
+export const naSalaDaPartilha = (partilha) => partilha?.naSala ?? (partilha?.membros ?? []).map((m) => m.estado);
+/**
+ * Os OUTROS da party nesta sala (a partilha que o tique da sessão calcula — `Party.partilha`, `naSala`: parados ou não). Regra do PoE: o
+ * progresso da missão vale para a party inteira na instância — o objetivo da fase (o chefe, o item da missão; o Kitava no Telhado, que vence
+ * o ato) conta para cada um, não só para quem deu o golpe final. Sem party (ou na simulação offline, sem partilha): ninguém. (A sala do chefe
+ * do ato não entra: cada um entra nela e luta sozinho.)
+ */
+function outrosDaParty(estado, hunt) {
+  const sala = salaDe(hunt);
+  return naSalaDaPartilha(hunt.partilha).filter((o) => o && o !== estado && o.hunt && salaDe(o.hunt) === sala);
+}
+
 export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   // Uma morte é processada UMA vez: um evento repetido (golpe de área e dano contínuo no mesmo quadro) não paga exp, ouro nem item de novo.
   if (alvo.recompensado) return;
@@ -885,7 +898,15 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       return conc.tipo === 'item-de-missao' && Number(conc.item) === id && !Campanha.faseCompleta(estado, c.dificuldade, c.huntId);
     };
     const daTabela = DropsPorMonstro.soltar(alvo.key, { missaoAberta, existe: (id) => !!ITEM_CATALOG[id] && podeEntrar(id) }).filter((d) => daBolsa(d.id));
+    // O chefe do ATO morto na fase dele (o Kitava no Telhado da Catedral): a recompensa configurada do chefe final vem também (a primeira
+    // vitória uma vez por personagem — `pagarRecompensaDeAto`), como na sala.
+    const atoDoChefe = c && !c.bossDoAto && Campanha.ehOMonstro(alvo.key, Campanha.conclusaoDa(c.huntId).monstro) ? Campanha.atoDoChefeNaFase(c.huntId) : null;
     Campanha.matou(estado, hunt, alvo, { ganhou: daTabela, dar: daBolsa });
+    // A party na sala: o objetivo conta para cada um (o item da missão vai para a bolsa de cada um, como no PoE) — `outrosDaParty`.
+    const outros = c ? outrosDaParty(estado, hunt) : [];
+    for (const o of outros) Campanha.matou(o, o.hunt, alvo, { dar: (id) => Bolsa.porNaBolsa(o, id, 1) });
+    const recDoAto = atoDoChefe ? Campanha.recompensaDoBoss(atoDoChefe) : null;
+    if (recDoAto) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: recDoAto, nome: alvo.name, chave: `boss:${atoDoChefe}`, dificuldade: c.dificuldade, donos: [estado, ...outros] });
   }
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);

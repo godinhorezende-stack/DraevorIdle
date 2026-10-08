@@ -46,7 +46,9 @@ function relogioFalso(inicio) {
         agora = p[1].em;
         p[1].fn();
         for (let i = 0; i < 20; i++) await new Promise((r) => setImmediate(r));
-        for (let i = 0; i < 20000 && SS.situacao()?.rodando; i++) await new Promise((r) => setImmediate(r)); // espera a rotina de verdade terminar
+        // Espera a rotina de verdade terminar — por TEMPO, não por voltas do laço: com o banco ocupado (outros arquivos da suíte), 20.000
+        // voltas não bastavam, o ciclo ficava "executando" e o teste seguinte não via o "concluído" (A4: sem "Último ciclo concluído"; A6: `ultimo` nulo).
+        for (const ate = Date.now() + 15_000; SS.situacao()?.rodando && Date.now() < ate; ) await new Promise((r) => setTimeout(r, 1));
       }
       agora = fim;
     },

@@ -1977,6 +1977,15 @@ export class Sessao {
     // Personagem que já estava acima da capacidade (loot de antes da regra):
     // o excesso vai para o depósito, com aviso no primeiro `state`.
     this.avisoPendente = Deposito.avisoDoExcesso(Deposito.excessoParaODeposito(this.estado)) ?? ([doPresente, doMercado].filter(Boolean).join(' ') || null) ?? daCampanha;
+    const rankingDeExp = await Ranking.topo('exp');
+    /*
+     * ---- Nada de `state` antes do `welcome` ----
+     * Daqui até o `welcome` é tudo síncrono (o ranking veio antes), e a sessão não manda estado: a volta à party (`entrouNoJogo` atualiza
+     * todos os membros, ela inclusive) e à caçada do grupo (`juntar`) mandavam `state` e `actionCatalog` antes do `welcome`, e o client,
+     * que só monta a tela no `welcome`, quebrava (`renderActionBar` sem contexto). O `welcome` já leva o personagem inteiro, com a party e
+     * a caçada; o aviso pendente e o resto seguem para o primeiro `state` depois dele.
+     */
+    this.entrando = true;
     vivas.set(personagem.nome, this);
     this.entrouEm = Date.now();
     // Reconexão: volta ao lugar na party (se estava como offline) — ver `Party.entrouNoJogo`.
@@ -2021,7 +2030,7 @@ export class Sessao {
     this.lembrarCharacter(completo);
     const itensNesteWelcome = !(this.guardaCatalogo && this.itensJaForam);
     this.itensJaForam = true;
-    const rankingDeExp = await Ranking.topo('exp');
+    this.entrando = false;
     this.enviar({
       t: 'welcome',
       versao: VERSAO_DO_CLIENTE,
@@ -2276,6 +2285,7 @@ export class Sessao {
   }
 
   mandarEstado(comMapa = false, eventos = []) {
+    if (this.entrando) return; // o `welcome` ainda não saiu (ver `concluirEntrada`)
     // A cortina de carregamento da hunt nova vai UMA vez (ver `Cacadas.entrar`).
     const viagem = this.estado?.hunt?.viagem ?? null;
     if (viagem) delete this.estado.hunt.viagem;

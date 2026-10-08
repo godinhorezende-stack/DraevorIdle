@@ -7,7 +7,7 @@ import * as Afixos from './afixos.mjs';
 import { converterTudo, pecaEspecial } from './itens/item.mjs';
 import * as R from './regras.mjs';
 import { ITEM_CATALOG, CHARACTER_TEMPLATE } from './dados.mjs';
-import { pesoDoInventario, cabeNoPeso, guardarMoeda, erroDeEspaco, pecasNaMochila, vagasDaMochila } from './inventario.mjs';
+import { pesoDoInventario, cabeNoPeso, guardarMoeda, erroDeEspaco, pecasNaMochila, vagasDaMochila, darItem } from './inventario.mjs';
 import * as ItensPoeCatalogo from './itens-poe/catalogo.mjs';
 
 /*
@@ -211,7 +211,9 @@ export function comando(estado, m, contaCaixa = null) {
     if (peca.count <= 0) caixa.itens.splice(i, 1);
     caixa.tipos = caixa.itens.length;
     const { count, ...extras } = peca;
-    (estado.inventory ??= []).push({ ...extras, id, count: n });
+    // O empilhável limpo entra nas pilhas da mochila, de até `pilhaMaxima` (o monte da caixa não tem teto: 60 viram 20 + 20 + 20).
+    if (ITEM_CATALOG[id]?.stackable && !pecaEspecial(peca)) darItem(estado, id, n);
+    else (estado.inventory ??= []).push({ ...extras, id, count: n });
     return { ok: true };
   }
   return { ok: false, erro: 'Ação desconhecida.' };

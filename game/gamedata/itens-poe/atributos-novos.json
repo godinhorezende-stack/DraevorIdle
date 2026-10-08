@@ -1257,6 +1257,24 @@
       "combate": true,
       "efeito": "itens-poe/reserva (a reserva de mana dos Arautos ÷ 1 + isto)"
     },
+    "eficiencia_reserva_maldicao": {
+      "nome": "Eficácia da Reserva de Mana das Auras de Maldição",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva (a reserva da maldição em aura — Blasfêmia — ÷ 1 + isto)"
+    },
+    "eficiencia_reserva_postura": {
+      "nome": "Eficácia da Reserva de Mana das Posturas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "itens-poe/reserva (a reserva das posturas ÷ 1 + isto)"
+    },
+    "eficiencia_reserva_minas": {
+      "nome": "Eficácia da Reserva de Mana das Minas",
+      "unidade": "%",
+      "combate": true,
+      "efeito": "acoes (o custo de cada mina ÷ 1 + isto)"
+    },
     "chance_devolver_custo": {
       "nome": "Chance de recuperar o custo da habilidade",
       "unidade": "%",
