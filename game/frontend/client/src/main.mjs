@@ -7642,7 +7642,16 @@ function sairDoAutoBossConvidado() {
  */
 const JANELAS_DA_BOLSA = {
   loot: renderPouch,
-  inventory: renderInventory,
+  /*
+   * A GRADE DA MOCHILA mora dentro do Inventário (`.inv-mochila`, desde a mochila do PoE de 20 vagas) — a janela `container` nasce escondida
+   * e quase ninguém a abre. Sem o `renderContainer` aqui, a grade só era desenhada na primeira vez: o que entrava depois (o baú da recompensa,
+   * o que vinha da bolsa de loot) não aparecia até recarregar a página, e equipar deixava a peça desenhada na mochila — parecia duplicada
+   * (dono, 08/10). A grade tem a assinatura dela: chamar sem mudança não refaz nada.
+   */
+  inventory: () => {
+    renderInventory();
+    renderContainer();
+  },
   container: renderContainer,
   bossPouch: renderBossPouch,
   storeInbox: renderStoreInbox,
