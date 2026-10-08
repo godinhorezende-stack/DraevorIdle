@@ -79,7 +79,12 @@ test('ficha do personagem: marcada do PoE, com a classe, a árvore do PoE e o ca
     assert.equal(ok, true);
     assert.equal(p.poe, true);
     assert.equal(p.vocacaoNome, 'Bruxa');
-    assert.ok(p.draevor.arvoreTotal >= 0, `a árvore do PoE (era "0 / -4" no level 1): ${p.draevor.arvoreTotal}`);
+    // A árvore: os nós liberados / os nós da árvore principal do PoE (sem início e ascendência) — era "0 / -4" no level 1, depois pontos.
+    const Passivas = await import('../systems/passivas/arvore.mjs');
+    const principais = [...Passivas.arvore().porId.values()].filter((no) => no.tipo !== 'start' && !no.ascendencia).length;
+    assert.equal(p.draevor.arvoreTotal, principais);
+    assert.ok(principais > 2000, `a árvore do PoE inteira: ${principais}`);
+    assert.ok(p.draevor.arvoreUsados >= 0 && p.draevor.arvoreUsados <= principais);
     assert.ok(p.itens[base]?.poe?.icone, 'o catálogo da peça do PoE, com o ícone');
   } finally {
     s.estado.equipment = antes;

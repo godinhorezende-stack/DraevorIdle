@@ -290,10 +290,16 @@ function draevor(e) {
     summonNome: e.summon?.nome ?? f.nome ?? null,
     summonLook: f.look ?? 0,
     summonSkins: (e.summon?.skins ?? []).length,
-    // No jogo oficial, a árvore do PoE (os pontos do level, os alocados); a conta do Draevor dava "0 / -4" no level 1. Numa cópia rasa:
-    // `garantir` arruma `passivas` e não pode mexer no personagem ao vivo por causa de uma página do site.
+    // No jogo oficial, a árvore do PoE: os NÓS que o personagem liberou / os nós que a árvore principal tem (dono, 08/10: "o que foi
+    // liberado / total existente no jogo") — sem os de início e os de ascendência. A conta do Draevor dava "0 / -4" no level 1. Numa
+    // cópia rasa: `garantir` arruma `passivas` e não pode mexer no personagem ao vivo por causa de uma página do site.
     ...(ligado()
-      ? (({ usados, total }) => ({ arvoreUsados: usados, arvoreTotal: total }))(seguro(() => Passivas.pontos({ ...e, passivas: structuredClone(e.passivas) }), { usados: 0, total: 0 }))
+      ? seguro(() => {
+        const { passivas } = Passivas.garantir({ ...e, passivas: structuredClone(e.passivas) });
+        const arvore = Passivas.arvore();
+        const daArvorePrincipal = (no) => !!no && no.tipo !== 'start' && !no.ascendencia;
+        return { arvoreUsados: passivas.alocados.filter((id) => daArvorePrincipal(arvore.porId.get(id))).length, arvoreTotal: [...arvore.porId.values()].filter(daArvorePrincipal).length };
+      }, { arvoreUsados: 0, arvoreTotal: 0 })
       : { arvoreUsados: Object.values(e.arvore?.graus ?? {}).reduce((a, n) => a + n, 0), arvoreTotal: seguro(() => Math.floor(((e.level ?? 1) - 8) / 2)) }),
     montarias: col.mounts ?? col.montarias ?? (e.lojaMontarias ?? []).length,
     outfits: col.outfits ?? (e.lojaOutfits ?? []).length,

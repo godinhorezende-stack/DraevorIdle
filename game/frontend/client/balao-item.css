@@ -245,7 +245,9 @@
 
 
 /* ---- a peça do sistema de itens do PoE (Fase 1, só com ITENS_POE=1): o mesmo balão no jogo e na engine (itens-poe-balao.mjs) ---- */
-.tooltip.tip-poe { padding: 0; background: transparent; border: 0; box-shadow: none; }
+/* Posição, camada e largura são as do `.tooltip` base do jogo (style.css) — repetidas aqui porque as páginas do SITE (a ficha, a capa) não
+   carregam o style.css do jogo: sem elas o balão da peça do PoE caía no fim da página, sem fundo (08/10). Os mesmos valores: no jogo nada muda. */
+.tooltip.tip-poe { position: fixed; z-index: 90; width: max-content; max-width: 320px; pointer-events: none; overflow: hidden; padding: 0; background: transparent; border: 0; box-shadow: none; }
 .poe-balao { background: #0b0b0d; border: 1px solid color-mix(in srgb, var(--cor) 55%, #000); font: 13px/1.45 var(--font-item, 'Alegreya SC', Georgia, serif); color: #c8c8c8; min-width: 0; }
 .poe-topo { display: grid; justify-items: center; padding: 6px 10px; background: linear-gradient(180deg, color-mix(in srgb, var(--cor) 22%, #000), #0b0b0d); color: var(--cor); border-bottom: 1px solid color-mix(in srgb, var(--cor) 40%, #000); text-align: center; }
 .poe-topo b { font-size: 15px; font-weight: 500; }
