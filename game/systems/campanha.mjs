@@ -44,6 +44,12 @@ export const ATOS = Math.ceil(FASES.length / FASES_POR_ATO);
 
 /** A fase de uma hunt (`null` se ela não é da campanha: boss, VIP, sala gerada...). */
 export const faseDe = (huntId) => (INDICE.has(huntId) ? { ...FASES[INDICE.get(huntId)], indice: INDICE.get(huntId) } : null);
+/** O número da fase DENTRO do ato — a ordem dela no ato, a do mapa da campanha ("Ato 2 · Fase 3"); a posição na campanha inteira é o
+ * `numero` de `faseAtual`. `null` se a hunt não é da campanha. */
+export const numeroNoAto = (huntId) => {
+  const f = faseDe(huntId);
+  return f ? FASES.slice(0, f.indice + 1).filter((x) => x.ato === f.ato).length : null;
+};
 /** O boss que fecha um ato (`{bossId, nome, nivel}`), e o ato de um boss (`null` se não fecha nenhum). */
 export const bossDoAto = (ato) => CAMPANHA.bosses[String(ato)] ?? null;
 export const atoDoBoss = (bossId) => Number(Object.entries(CAMPANHA.bosses).find(([, b]) => b.bossId === bossId)?.[0]) || null;

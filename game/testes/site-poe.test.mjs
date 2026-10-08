@@ -154,3 +154,39 @@ test('a grade do PoE do site (balão do top 5, ficha e card da guilda) é a mesm
   assert.match(ler('personagem.html'), /gradeDeEquipamento\([\s\S]*?poe: true,/);
   assert.match(ler('client/src/guildas.mjs'), /\{ poe: !!ctx\.state\.classesPoe \}/);
 });
+
+// Dono, 08/10: "no status do personagem tem que aparecer qual ato, fase e dificuldade que ele está".
+test('ficha do personagem: caçando na campanha, o status diz o ato, a fase (a ordem no ato, como no mapa) e a dificuldade', { skip: SEM }, async () => {
+  const Campanha = await import('../systems/campanha.mjs');
+  const area = Campanha.FASES.find((f) => f.huntId === 'poe-a1-the-ship-graveyard');
+  assert.ok(area, 'a Necrópole de Navios é uma fase do Ato 1');
+  const segundoAto = Campanha.FASES.filter((f) => f.ato === 2);
+  const antes = { hunt: s.estado.hunt, campanha: s.estado.campanha };
+  try {
+    s.estado.hunt = { huntId: area.huntId, modo: 'automatica', campanha: { huntId: area.huntId, ato: 1, dificuldade: 'facil' } };
+    let { personagem: p } = await Site.personagem(NOME);
+    assert.equal(p.atividade.onde, 'automatica');
+    assert.deepEqual(p.atividade.campanha, { ato: 1, fase: Campanha.FASES.filter((f) => f.ato === 1).findIndex((f) => f.huntId === area.huntId) + 1, area: 'Necrópole de Navios', dificuldade: 'Normal' });
+    assert.equal(s.estado.campanha, antes.campanha, 'a página do site não mexe no progresso do personagem');
+
+    // No Ato 2 a fase conta dentro do ato (a 3ª área do Ato 2 é a Fase 3, como no mapa — e não a posição na campanha inteira).
+    const terceira = segundoAto[2];
+    s.estado.hunt = { huntId: terceira.huntId, modo: 'automatica', campanha: { huntId: terceira.huntId, ato: 2, dificuldade: 'facil' } };
+    ({ personagem: p } = await Site.personagem(NOME));
+    assert.equal(p.atividade.campanha.ato, 2);
+    assert.equal(p.atividade.campanha.fase, 3);
+
+    // Na sala do chefe do ato: o chefe no lugar da fase.
+    s.estado.hunt = { huntId: Campanha.bossDoAto(1).bossId, modo: 'automatica', campanha: { ato: 1, dificuldade: 'facil', bossDoAto: 1 } };
+    ({ personagem: p } = await Site.personagem(NOME));
+    assert.deepEqual(p.atividade.campanha, { ato: 1, chefe: Campanha.bossDoAto(1).nome, dificuldade: 'Normal' });
+
+    // Na cidade: sem campanha no status.
+    s.estado.hunt = null;
+    ({ personagem: p } = await Site.personagem(NOME));
+    assert.equal(p.atividade.campanha, undefined);
+  } finally {
+    s.estado.hunt = antes.hunt;
+    s.estado.campanha = antes.campanha;
+  }
+});

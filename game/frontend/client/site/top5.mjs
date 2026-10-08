@@ -605,7 +605,8 @@ async function mostrarInventario(li, entrada) {
   if (temSprites && p.outfit?.type) {
     try { balao.querySelector('.top5-pop-boneco').append(outfitCanvas(p.outfit.type, p.outfit, 64, 2, true)); } catch { /* sem boneco */ }
   }
-  if (linhaAtual !== li) return;
+  // (A capa refaz as linhas a cada 30 s: a linha que saiu da página não tem onde ancorar o balão — o mouse na nova abre o dela.)
+  if (linhaAtual !== li || !li.isConnected) return;
   balao.hidden = false;
   posicionar(li);
 }
@@ -622,6 +623,9 @@ function ligarBalao(li, entrada) {
   li.addEventListener('pointerenter', (evento) => {
     if (evento.pointerType === 'touch') return; // no toque o link já abre a ficha
     clearTimeout(espera);
+    // Vindo direto da linha vizinha: o respiro dela (o fechar de 180 ms) não pode fechar o balão desta (dono, 08/10: "coloco o mouse em
+    // cima e não aparece os equipamentos" — descendo linha a linha, uma sim, uma não).
+    clearTimeout(fechando);
     linhaAtual = li;
     espera = setTimeout(() => mostrarInventario(li, entrada), 120);
   });
@@ -629,7 +633,7 @@ function ligarBalao(li, entrada) {
   li.addEventListener('pointerleave', () => {
     if (linhaAtual !== li) return;
     clearTimeout(fechando);
-    fechando = setTimeout(() => { if (!balao?.matches(':hover')) esconderInventario(); }, 180);
+    fechando = setTimeout(() => { if (linhaAtual === li && !balao?.matches(':hover')) esconderInventario(); }, 180);
   });
   // A linha inteira abre a ficha, como o rodapé do balão promete.
   li.addEventListener('click', (evento) => {

@@ -36,6 +36,7 @@ import { sqlDoPoe } from './personagem/legado.mjs';
 import { ligado } from './itens-poe/catalogo.mjs';
 import * as Passivas from './passivas/arvore.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
+import * as Campanha from './campanha.mjs';
 
 /** No jogo oficial cada linha leva `classe`: o nome da classe do PoE (Bruxa, Marauder...), que a capa mostra no lugar da vocação do Draevor. */
 const comClasse = (linha, dados) => (ligado() ? { ...linha, classe: Promocao.nomeDaClasse(dados) } : linha);
@@ -216,6 +217,21 @@ const lugarDoAusente = (a) => (a.huntId ? nomeDaHunt(a.huntId) : null);
 const marcarAusente = (agora) => (linha) =>
   !linha.online && Ausentes.cacando(linha.name, agora) ? { ...linha, cacandoOffline: true } : linha;
 
+/**
+ * Onde a caçada está na CAMPANHA (o jogo oficial; dono, 08/10: "no status do personagem tem que aparecer qual ato, fase e dificuldade
+ * que ele está"): o ato, a fase (a ordem dela no ato, como no mapa da campanha do jogo) e a dificuldade — a mesma conta da barra da
+ * caçada (`Campanha.faseAtual`), numa cópia do progresso (ela completa os campos que faltam). `null` fora da campanha.
+ */
+function naCampanha(e) {
+  if (!ligado() || !e.hunt?.campanha) return null;
+  return seguro(() => {
+    const f = Campanha.faseAtual({ ...e, campanha: structuredClone(e.campanha ?? {}) }, e.hunt);
+    if (!f) return null;
+    if (f.tipo === 'boss') return { ato: f.ato, chefe: f.nome, dificuldade: f.nomeDaDificuldade };
+    return { ato: f.ato, fase: Campanha.numeroNoAto(e.hunt.campanha.huntId), area: f.nome, dificuldade: f.nomeDaDificuldade };
+  }, null);
+}
+
 /** Onde a pessoa está, nas palavras da página /online. */
 function atividade(e) {
   if (e.hunt) {
@@ -351,6 +367,9 @@ export async function personagem(nome, agora = Date.now()) {
   // De aba fechada mas caçando: "Caçando offline", com a hunt (ver `ausentes.mjs`).
   const ausente = vivo ? null : Ausentes.cacando(nomeCerto, agora);
   const a = vivo ? atividade(e) : ausente ? { onde: 'cacando-offline', lugar: lugarDoAusente(ausente) } : { onde: 'offline', lugar: null };
+  // Caçando (conectado ou de aba fechada): em que ato, fase e dificuldade da campanha.
+  const campanha = vivo?.estado.hunt || ausente ? naCampanha(e) : null;
+  if (campanha) a.campanha = campanha;
   return {
     ok: true,
     personagem: {
