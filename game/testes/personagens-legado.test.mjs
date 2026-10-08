@@ -196,7 +196,7 @@ test('o idle do jogo oficial: a caçada offline de um personagem do PoE numa ár
   assert.ok(estado.xp > xp, `a caçada offline do PoE não rendeu exp (${xp} → ${estado.xp})`);
 });
 
-test('na tela de escolha (sem personagem em jogo, onde o arquivado fica) pedir a campanha não quebra nem responde', { skip: SEM }, async () => {
+test('na tela de escolha (sem personagem em jogo, onde o arquivado fica) pedir a campanha ou as passivas não quebra nem responde', { skip: SEM }, async () => {
   const ws = socket();
   const s = new Sessao(ws);
   const erros = [];
@@ -204,10 +204,11 @@ test('na tela de escolha (sem personagem em jogo, onde o arquivado fica) pedir a
   console.error = (...a) => erros.push(a.join(' '));
   try {
     s.receber({ t: 'campanha' });
+    s.receber({ t: 'passivas', action: 'arvore' });
     await new Promise((r) => setTimeout(r, 50));
   } finally {
     console.error = erroAntes;
   }
-  assert.deepEqual(erros.filter((e) => /campanha/.test(e)), [], 'sem "sessao campanha -> Cannot read properties of null"');
-  assert.equal(ws.recebidas.some((m) => m.t === 'campanha'), false);
+  assert.deepEqual(erros.filter((e) => /campanha|passivas/.test(e)), [], 'sem "sessao campanha/passivas -> Cannot read properties of null"');
+  assert.equal(ws.recebidas.some((m) => m.t === 'campanha' || m.t === 'passivas'), false);
 });
