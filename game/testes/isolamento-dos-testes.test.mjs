@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const PASTA = fileURLToPath(new URL('.', import.meta.url));
-const DESVIOS = ['DRAEVOR_OVERRIDES', 'ENGINE_AUDITORIA', 'ENGINE_VERSOES', 'ENGINE_ITEM_POWER_HISTORICO', 'PARTY_TABELA', 'DRAEVOR_CAMPANHA'];
+const DESVIOS = ['DRAEVOR_OVERRIDES', 'ENGINE_AUDITORIA', 'ENGINE_VERSOES', 'ENGINE_ITEM_POWER_HISTORICO', 'PARTY_TABELA', 'DRAEVOR_CAMPANHA', 'DRAEVOR_SQLITE'];
 // Os ajudantes que podem vir por import estático: não carregam nada que leia esses caminhos (provado no segundo teste).
 const LEVES = ['./apoio-migracao.mjs', './apoio-classico.mjs'];
 

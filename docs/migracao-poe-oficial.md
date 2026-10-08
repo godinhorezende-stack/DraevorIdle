@@ -302,6 +302,13 @@ consolidação, transferência e "char fora do mundo". Os dois últimos foram co
 - **Pendências antes do deploy:** F2 — ensaio num staging com uma CÓPIA do banco de produção (no primeiro boot, todo personagem do Draevor
   fica arquivado e as ofertas deles no mercado viram crédito); a sua autorização para merge e deploy.
 
+### Personagens arquivados: apagar (decisão do dono, 08/10)
+
+O dono revogou o "arquivados ficam guardados" de 07/10: os arquivados podem ser apagados — o personagem inteiro, com o ouro, os itens e as
+coins que estavam nele; as contas ficam. Quem apaga é o dono, com `game/admin/apagar-arquivados.mjs` dentro do container do jogo: sem
+argumento só lista; `--apagar --confirmo=N` apaga os N listados (N diferente da lista de agora = nada apagado). Backup antes
+(`/srv/draevor/bin/backup.sh`). Conferido no SQLite (`testes/apagar-arquivados.test.mjs`) e num Postgres descartável.
+
 ### Achados para decidir depois
 
 | Achado | Onde |
