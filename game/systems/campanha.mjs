@@ -256,7 +256,15 @@ function completar(estado, dif, f) {
 export function conclusaoDa(huntId) {
   const f = faseDe(huntId);
   const g = f?.grafo ? ATOS_DO_EDITOR.get(f.ato) : null;
-  return g?.ato.fases.find((x) => x.id === f.grafo.faseId)?.conclusao ?? { tipo: 'limpar-hunt' };
+  const conc = g?.ato.fases.find((x) => x.id === f.grafo.faseId)?.conclusao ?? { tipo: 'limpar-hunt' };
+  /*
+   * O chefe do PRÓPRIO ato não nasce na fase: ele é enfrentado na sala dele, pelo portal que a última fase abre quando conclui. A fase
+   * que pedia matá-lo nunca concluía — e o portal nunca abria (o Telhado da Catedral pedia o Kitava, e o Ato 5 travava). Ela conclui
+   * limpando a área; o chefe fica para a sala.
+   */
+  const doAto = f ? bossDoAto(f.ato)?.nome : null;
+  if (conc.tipo === 'matar-chefe' && doAto && String(conc.nome ?? '').trim().toLowerCase() === String(doAto).trim().toLowerCase()) return { tipo: 'limpar-hunt', chefeDoAto: conc.nome };
+  return conc;
 }
 const slugDoMonstro = (s) => String(s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 /** O bicho morto é o monstro do objetivo? (a chave do bestiário, ou o slug do monstro do PoE — `poe-<slug>-<nível>`) */
