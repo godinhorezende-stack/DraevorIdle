@@ -85,10 +85,15 @@ test('caçando de verdade (bichos de um golpe): nunca fica parado sem brigar, e 
     agora += R.PASSO_MS;
     e.hp = e.maxHp;
     for (const m of e.hunt.monstros) if (m.hp > 1) m.hp = 1;
-    for (const ev of Cacadas.tique(e, PERSONAGEM, agora) ?? []) if (ev.t === 'kill') kills++;
+    const eventos = Cacadas.tique(e, PERSONAGEM, agora) ?? [];
+    for (const ev of eventos) if (ev.t === 'kill') kills++;
     const pos = `${e.hunt.pos.x},${e.hunt.pos.y}`;
     const alvo = Cacadas.alvoAtual(e.hunt);
-    const brigando = alvo && Math.max(Math.abs(alvo.x - e.hunt.pos.x), Math.abs(alvo.y - e.hunt.pos.y)) <= 1;
+    // Brigando: o alvo colado OU um golpe dele neste tique (acertou ou matou). Os bichos vêm até ele e morrem a 2 casas (a habilidade
+    // alcança): parado matando o que chega é brigar. Contando só o alvo colado, a espera entre essas mortes somava 2,75 s e o teste caía
+    // ao acaso (2 em 16 rodadas, 08/10 — semente 7 de `Math.random` reproduz).
+    const golpeou = eventos.some((ev) => ev.t === 'kill' || (ev.t === 'dmg' && ev.uid !== 'player'));
+    const brigando = golpeou || (alvo && Math.max(Math.abs(alvo.x - e.hunt.pos.x), Math.abs(alvo.y - e.hunt.pos.y)) <= 1);
     parado = pos === ultimo && !brigando ? parado + 1 : 0;
     maior = Math.max(maior, parado);
     ultimo = pos;
