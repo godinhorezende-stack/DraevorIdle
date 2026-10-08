@@ -11,7 +11,7 @@ import * as Guildas from '../systems/guildas.mjs';
 import * as Ranking from '../systems/ranking.mjs';
 import { personagemDeTeste, comMarcaNova } from './apoio.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { aAdaptar } from './apoio-migracao.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const ler = (n) => comMarcaNova(JSON.parse(readFileSync(new URL(`../../api-mapeada/captura-site-0926/${n}`, import.meta.url), 'utf8')));
 const chaves = (o) => Object.keys(o).sort();
@@ -24,7 +24,7 @@ Ranking.ligar(vivas); // no jogo quem liga é a sessão
 DropsDoSite.gravarNosTestes(); // este teste confere a gravação (e apaga o que gravou)
 after(() => B.db.prepare("DELETE FROM site_drops WHERE dados LIKE ?").run(`%"quem":"${NOME}"%`));
 
-test('/api/status: as chaves e as linhas do original', async () => {
+test('/api/status: as chaves e as linhas do original', { skip: doClassico("Contrato do site do Draevor original (categorias de perícia, vocação, drops e bags do Draevor); no jogo oficial o site é do PoE — classe, Únicos do PoE, só exp/level (site-poe.test.mjs)") }, async () => {
   const nosso = await Site.status('magic');
   const original = ler('status-magic.json');
   assert.deepEqual(chaves(nosso), chaves(original));
@@ -52,7 +52,7 @@ test('exp de hoje e da última hora contam a partir da primeira amostra', { skip
   assert.deepEqual(chaves(hora), chaves(ler('status-level.json').expHora[0]));
 });
 
-test('/api/personagem: a ficha inteira e o "não existe"', async () => {
+test('/api/personagem: a ficha inteira e o "não existe"', { skip: doClassico("Contrato da ficha do site do Draevor original; no jogo oficial a ficha leva `poe: true` (classe, árvore do PoE, sem perícias) — site-poe.test.mjs") }, async () => {
   const nosso = await Site.personagem(NOME.toLowerCase());
   const original = ler('personagem-zoros.json');
   assert.equal(nosso.ok, true);
@@ -69,13 +69,13 @@ test('/api/personagem: a ficha inteira e o "não existe"', async () => {
   assert.deepEqual(await Site.personagem('Ninguemaquixyz'), { ok: false, reason: 'não existe ninguém chamado Ninguemaquixyz' });
 });
 
-test('/api/online: quem está no jogo, com onde está', () => {
+test('/api/online: quem está no jogo, com onde está', { skip: doClassico("Contrato do site do Draevor original (categorias de perícia, vocação, drops e bags do Draevor); no jogo oficial o site é do PoE — classe, Únicos do PoE, só exp/level (site-poe.test.mjs)") }, () => {
   const [j] = Site.jogadoresOnline().jogadores;
   assert.deepEqual(chaves(j), chaves(ler('online.json').jogadores[0]));
   assert.deepEqual([j.name, j.onde, j.hunt], [NOME, 'cidade', null]);
 });
 
-test('/api/drops: só o raro entra, no formato do original', async () => {
+test('/api/drops: só o raro entra, no formato do original', { skip: doClassico("Contrato do site do Draevor original (categorias de perícia, vocação, drops e bags do Draevor); no jogo oficial o site é do PoE — classe, Únicos do PoE, só exp/level (site-poe.test.mjs)") }, async () => {
   // Uma bag entra; um item comum sem afixo não.
   await DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 34109 });
   await DropsDoSite.anotarDrop({ quem: NOME, onde: 'Teste', bicho: 'Bicho', id: 3081 });

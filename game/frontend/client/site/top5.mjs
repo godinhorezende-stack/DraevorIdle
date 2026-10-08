@@ -13,7 +13,7 @@
  * atlas de outfits, que é pesado. Sem o atlas o cartão sai igual, só sem o
  * desenho.
  */
-import { loadSpriteData, outfitCanvas } from '/client/src/sprites.mjs';
+import { loadSpriteData, outfitCanvas, emprestarDoCatalogo } from '/client/src/sprites.mjs';
 /*
  * A GRADE DO EQUIPAMENTO saiu daqui e virou um componente.
  *
@@ -57,6 +57,10 @@ const CATEGORIAS = [
 
 const sprites = loadSpriteData().then(() => true).catch(() => false);
 let categoria = 'level';
+/* As categorias que o SERVIDOR tem (`/api/status` → `categorias`). No jogo oficial (PoE) são só experiência e level: as abas das perícias
+ * do Draevor somem, e o balão do personagem não mostra perícias (o PoE não tem). */
+let categoriasDoServidor = null;
+const oficial = () => !!categoriasDoServidor && !categoriasDoServidor.includes('magic');
 let pedido = 0;
 
 function linha(entrada, posicao, rotulo) {
@@ -64,7 +68,8 @@ function linha(entrada, posicao, rotulo) {
   li.className = `top5-item pos${posicao}`;
   const icone = ICONE_DA_VOCACAO[entrada.vocation];
   const link = `/personagem?nome=${encodeURIComponent(entrada.name)}`;
-  const vocacao = esc(VOCACOES[entrada.vocation] ?? entrada.vocation ?? '—');
+  // No jogo oficial a linha traz `classe` (o nome da classe do PoE — `comClasse`, systems/site.mjs): ela no lugar da vocação do Draevor.
+  const vocacao = esc(entrada.classe ?? VOCACOES[entrada.vocation] ?? entrada.vocation ?? '—');
   // Numa skill, o level vai junto da vocação: o número grande é o da skill.
   const embaixo = categoria === 'level' ? vocacao : `${vocacao} · lv ${numero(entrada.level)}`;
   li.innerHTML = `
@@ -121,6 +126,7 @@ function pintarAbas() {
   }
   for (const botao of barra.children) {
     botao.setAttribute('aria-selected', String(botao.dataset.categoria === categoria));
+    botao.hidden = !!categoriasDoServidor && !categoriasDoServidor.includes(botao.dataset.categoria);
   }
 }
 
@@ -136,6 +142,10 @@ async function pintar() {
     if (!resposta.ok || meu !== pedido) return;
     const dados = await resposta.json();
     if (meu !== pedido) return; // trocou de aba enquanto a resposta vinha
+    if (Array.isArray(dados.categorias)) {
+      categoriasDoServidor = dados.categorias;
+      pintarAbas();
+    }
     // Os dois cartazes de baixo vêm na MESMA resposta — ver `pintarTopExp`.
     pintarTopExp(dados);
     const top = (dados.highscore ?? []).slice(0, 5);
@@ -305,7 +315,7 @@ function pintarTopExp(dados) {
       <a class="top-exp-retrato" href="${link}" aria-hidden="true" tabindex="-1"></a>
       <div class="top-exp-quem">
         <a class="top-exp-nome" href="${link}">${pontoDe(dono)}<span class="top-exp-nome-txt">${esc(dono.name)}</span></a>
-        <span class="top-exp-voc">${icone ? `<img src="/client/assets/icons/${icone}.png" alt="">` : ''}${esc(VOCACOES[dono.vocation] ?? dono.vocation ?? '—')} · lv ${numero(dono.level)}${selo(dono.levels)}</span>
+        <span class="top-exp-voc">${icone ? `<img src="/client/assets/icons/${icone}.png" alt="">` : ''}${esc(dono.classe ?? VOCACOES[dono.vocation] ?? dono.vocation ?? '—')} · lv ${numero(dono.level)}${selo(dono.levels)}</span>
       </div>
       <div class="top-exp-valor">
         <small>${esc(rotulo)}</small>
@@ -462,6 +472,8 @@ function posicionar(li) {
 async function mostrarInventario(li, entrada) {
   garantirBalao();
   const p = await fichaDe(entrada.name);
+  // Os ícones das peças do PoE vêm do catálogo da ficha (sem isto, "?" no inventário do balão).
+  if (p?.itens) emprestarDoCatalogo(p.itens);
   if (linhaAtual !== li) return; // o mouse já saiu
   if (!p) return esconderInventario();
   balao.innerHTML = `
@@ -480,11 +492,11 @@ async function mostrarInventario(li, entrada) {
     </div>
     <div class="top5-pop-titulo">Inventory</div>
     <div class="top5-pop-equipamento"></div>
-    <div class="top5-pop-titulo">Skills</div>
+    ${oficial() ? '' : `<div class="top5-pop-titulo">Skills</div>
     <div class="top5-pop-skills" style="grid-template-columns: repeat(${periciasDa(p.vocacao).length}, 1fr)">${periciasDa(p.vocacao).map(([chave, rotulo]) => `
       <div class="top5-pop-skill${chave === categoria ? ' atual' : ''}" title="${rotulo}">
         <img src="/client/assets/icons/sk-${chave}.png" alt=""><b>${numero(chave === 'magic' ? p.magic : p.skills?.[chave])}</b><span>${rotulo}</span>
-      </div>`).join('')}</div>
+      </div>`).join('')}</div>`}
     <div class="top5-pop-rodape">clique para abrir a ficha completa</div>`;
   const temSprites = await sprites;
   /*

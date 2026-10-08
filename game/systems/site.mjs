@@ -33,6 +33,11 @@ import * as Ausentes from './ausentes.mjs';
 import * as ItensDoJogo from './itens/item.mjs';
 import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
+import { ligado } from './itens-poe/catalogo.mjs';
+import * as Passivas from './passivas/arvore.mjs';
+
+/** No jogo oficial cada linha leva `classe`: o nome da classe do PoE (Bruxa, Marauder...), que a capa mostra no lugar da vocação do Draevor. */
+const comClasse = (linha, dados) => (ligado() ? { ...linha, classe: Promocao.nomeDaClasse(dados) } : linha);
 
 const TOPO = 20;
 const TOPO_EXP = 5;
@@ -102,7 +107,7 @@ export function amostrar(agora = Date.now()) {
 
 const consultaDoDia = banco.prepare(
   banco.dialeto === 'postgres'
-    ? `SELECT nome, vocacao,
+    ? `SELECT nome, vocacao, classe,
          (estado::jsonb #>> '{xp}')::numeric - (estado::jsonb #>> '{expDoDia,xp}')::numeric AS ganho,
          (estado::jsonb #>> '{level}')::int AS level,
          (estado::jsonb #>> '{level}')::int - (estado::jsonb #>> '{expDoDia,level}')::int AS levels,
@@ -111,7 +116,7 @@ const consultaDoDia = banco.prepare(
    WHERE (estado::jsonb #>> '{expDoDia,dia}')::bigint = ? AND ${sqlDoPoe(banco.dialeto)}
    ORDER BY ganho DESC
    LIMIT 50`
-    : `SELECT nome, vocacao,
+    : `SELECT nome, vocacao, classe,
          json_extract(estado, '$.xp') - json_extract(estado, '$.expDoDia.xp') AS ganho,
          json_extract(estado, '$.level') AS level,
          json_extract(estado, '$.level') - json_extract(estado, '$.expDoDia.level') AS levels,
@@ -127,14 +132,14 @@ async function expHoje(agora) {
   const porNome = new Map();
   for (const r of await consultaDoDia.all(dia)) {
     if (!(r.ganho > 0)) continue;
-    porNome.set(r.nome, { name: r.nome, vocation: r.vocacao, level: r.level, value: r.ganho, levels: r.levels ?? 0, online: false, outfit: roupa(r.outfit ? JSON.parse(r.outfit) : {}), guilda: guildaDe(r.nome) });
+    porNome.set(r.nome, comClasse({ name: r.nome, vocation: r.vocacao, level: r.level, value: r.ganho, levels: r.levels ?? 0, online: false, outfit: roupa(r.outfit ? JSON.parse(r.outfit) : {}), guilda: guildaDe(r.nome) }, { vocation: r.vocacao, classe: r.classe ?? undefined }));
   }
   for (const s of online()) {
     const e = s.estado;
     marcarDia(e, agora);
     const ganho = (e.xp ?? 0) - e.expDoDia.xp;
     const nome = s.personagem.nome;
-    if (ganho > 0) porNome.set(nome, { name: nome, vocation: e.vocation, level: e.level, value: ganho, levels: (e.level ?? 1) - e.expDoDia.level, online: true, outfit: roupa(e.outfit), guilda: guildaDe(nome) });
+    if (ganho > 0) porNome.set(nome, comClasse({ name: nome, vocation: e.vocation, level: e.level, value: ganho, levels: (e.level ?? 1) - e.expDoDia.level, online: true, outfit: roupa(e.outfit), guilda: guildaDe(nome) }, e));
     else porNome.delete(nome);
   }
   return [...porNome.values()].sort((a, b) => b.value - a.value).slice(0, TOPO_EXP);
@@ -147,14 +152,14 @@ function expHora(agora) {
     const hist = (amostras.get(nome) ?? []).filter(([t]) => t >= agora - HORA_MS);
     if (!hist.length) continue;
     const ganho = (s.estado.xp ?? 0) - hist[0][1];
-    if (ganho > 0) lista.push({ name: nome, vocation: s.estado.vocation, level: s.estado.level, value: ganho, online: true, outfit: roupa(s.estado.outfit), guilda: guildaDe(nome) });
+    if (ganho > 0) lista.push(comClasse({ name: nome, vocation: s.estado.vocation, level: s.estado.level, value: ganho, online: true, outfit: roupa(s.estado.outfit), guilda: guildaDe(nome) }, s.estado));
   }
   // Quem caça de aba fechada, pela exp que o banco tem dele agora (ver `amostrar`).
   for (const a of Ausentes.agora(agora)) {
     const hist = (amostras.get(a.nome) ?? []).filter(([t]) => t >= agora - HORA_MS);
     if (!hist.length) continue;
     const ganho = a.xp - hist[0][1];
-    if (ganho > 0) lista.push({ name: a.nome, vocation: a.vocacao, level: a.level, value: ganho, online: false, outfit: roupa(a.outfit ?? {}), guilda: guildaDe(a.nome), cacandoOffline: true });
+    if (ganho > 0) lista.push(comClasse({ name: a.nome, vocation: a.vocacao, level: a.level, value: ganho, online: false, outfit: roupa(a.outfit ?? {}), guilda: guildaDe(a.nome), cacandoOffline: true }, { vocation: a.vocacao, classe: a.classe ?? undefined }));
   }
   return lista.sort((a, b) => b.value - a.value).slice(0, TOPO_EXP);
 }
@@ -187,7 +192,8 @@ export async function status(categoria = 'level', agora = Date.now()) {
     googleClientId: null,
     packs: [],
     hunts: CATALOGO.hunts?.length ?? 0,
-    highscore: (await Ranking.topo(categoria)).slice(0, TOPO).map(({ vocationName: _v, ...linha }) => linha).map(marcarAusente(agora)),
+    // (No jogo oficial o `vocationName` do ranking já é o nome da classe do PoE: vai como `classe`.)
+    highscore: (await Ranking.topo(categoria)).slice(0, TOPO).map(({ vocationName, ...linha }) => (ligado() ? { ...linha, classe: vocationName } : linha)).map(marcarAusente(agora)),
     expHoje: (await expHoje(agora)).map(marcarAusente(agora)),
     expHora: expHora(agora),
   };
@@ -221,15 +227,15 @@ export function jogadoresOnline() {
     .map((s) => {
       const e = s.estado;
       const a = atividade(e);
-      return { name: s.personagem.nome, level: e.level ?? 1, vocation: e.vocation, outfit: roupa(e.outfit), guilda: guildaDe(s.personagem.nome), onde: a.onde, hunt: a.lugar };
+      return comClasse({ name: s.personagem.nome, level: e.level ?? 1, vocation: e.vocation, outfit: roupa(e.outfit), guilda: guildaDe(s.personagem.nome), onde: a.onde, hunt: a.lugar }, e);
     })
     .sort((a, b) => b.level - a.level || a.name.localeCompare(b.name));
   // Quem caça de aba fechada vem depois dos conectados, com o selo próprio ("offline").
   const offline = Ausentes.agora()
-    .map((a) => ({
+    .map((a) => comClasse({
       name: a.nome, level: a.level, vocation: a.vocacao, outfit: roupa(a.outfit ?? {}), guilda: guildaDe(a.nome),
       onde: 'offline', hunt: lugarDoAusente(a),
-    }))
+    }, { vocation: a.vocacao, classe: a.classe ?? undefined }))
     .sort((a, b) => b.level - a.level || a.name.localeCompare(b.name));
   return { jogadores: [...jogadores, ...offline] };
 }
@@ -284,8 +290,11 @@ function draevor(e) {
     summonNome: e.summon?.nome ?? f.nome ?? null,
     summonLook: f.look ?? 0,
     summonSkins: (e.summon?.skins ?? []).length,
-    arvoreUsados: Object.values(e.arvore?.graus ?? {}).reduce((a, n) => a + n, 0),
-    arvoreTotal: seguro(() => Math.floor(((e.level ?? 1) - 8) / 2)),
+    // No jogo oficial, a árvore do PoE (os pontos do level, os alocados); a conta do Draevor dava "0 / -4" no level 1. Numa cópia rasa:
+    // `garantir` arruma `passivas` e não pode mexer no personagem ao vivo por causa de uma página do site.
+    ...(ligado()
+      ? (({ usados, total }) => ({ arvoreUsados: usados, arvoreTotal: total }))(seguro(() => Passivas.pontos({ ...e, passivas: structuredClone(e.passivas) }), { usados: 0, total: 0 }))
+      : { arvoreUsados: Object.values(e.arvore?.graus ?? {}).reduce((a, n) => a + n, 0), arvoreTotal: seguro(() => Math.floor(((e.level ?? 1) - 8) / 2)) }),
     montarias: col.mounts ?? col.montarias ?? (e.lojaMontarias ?? []).length,
     outfits: col.outfits ?? (e.lojaOutfits ?? []).length,
     kills: totaisDoPersonagem.kills ?? 0,
@@ -330,6 +339,8 @@ export async function personagem(nome, agora = Date.now()) {
       sexo: r?.sexo ?? e.sex ?? 'male',
       vocacao: e.vocation,
       vocacaoNome: Promocao.nomeDaClasse(e),
+      // O jogo oficial (PoE): a ficha mostra a classe, o level e as estatísticas do PoE (sem as perícias e os sistemas do Draevor).
+      ...(ligado() ? { poe: true } : {}),
       promovido: !!e.promovido,
       level,
       exp: e.xp ?? 0,

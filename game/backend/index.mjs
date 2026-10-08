@@ -262,7 +262,8 @@ async function atender(req, res) {
     if (caminho === '/api/online') return json(res, 200, Site.jogadoresOnline());
     if (caminho === '/api/drops') return json(res, 200, await DropsDoSite.vista());
     if (caminho === '/api/personagem') return json(res, 200, await Site.personagem(q.get('nome')));
-    if (caminho === '/api/wiki/itens') return json(res, 200, Wiki.itens());
+    // No jogo oficial o artigo de itens é o do PoE (`Wiki.itensPoe`); no clássico, o do Draevor.
+    if (caminho === '/api/wiki/itens') return json(res, 200, ItensPoeCatalogo.ligado() ? Wiki.itensPoe() : Wiki.itens());
     if (caminho === '/api/guildas') return json(res, 200, { guildas: await Guildas.listaDoSite() });
     if (caminho === '/api/guilda') return json(res, 200, await Guildas.fichaDoSite(q.get('nome')));
   }

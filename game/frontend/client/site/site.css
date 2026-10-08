@@ -1153,6 +1153,7 @@ footer a:hover { color: var(--texto); }
 .r-epico { color: #b57ae0; }
 .r-lendario { color: #e8b53c; }
 .r-mitico { color: #e2645a; }
+.r-unico { color: #f0a050; }
 
 /* ---------- o balao ----------
    A mesma anatomia do balao de dentro do jogo (`tip-head`, `tip-stats`,

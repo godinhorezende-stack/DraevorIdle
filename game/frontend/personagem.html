@@ -347,7 +347,7 @@
 </footer>
 
 <script type="module">
-import { loadSpriteData, outfitCanvas, itemCanvas } from '/client/src/sprites.mjs';
+import { loadSpriteData, outfitCanvas, itemCanvas, emprestarDoCatalogo } from '/client/src/sprites.mjs';
 // O balão de item do jogo, o mesmo da mochila: tier, imbuements e o que cada afixo dá.
 import { initTooltip, tipFor, tipPanel, seloDeEstrelas, estrelasDosAfixos, classeDaRaridade } from '/client/src/tooltip.mjs';
 /* O MESMO escudo da janela de guildas — ver `brasao-no-site.mjs`. */
@@ -408,6 +408,9 @@ function stat(rotulo, valor, cor, arte) {
 
 function desenhar(p) {
   const r = p.draevor;
+  // O jogo oficial (PoE): a classe, o level e as estatísticas do PoE — sem as perícias e os sistemas do Draevor (summon, mounts, bênçãos,
+  // bestiário, charms, tasks, instance/divine).
+  const poe = !!p.poe;
   const lugar = p.atividade?.lugar ? ` (${esc(p.atividade.lugar)})` : '';
   const status = p.jogando
     ? `<span class="ok">Online</span>${p.atividade ? ` — ${ONDE[p.atividade.onde] ?? 'Conectado'}${lugar}` : ''}`
@@ -425,7 +428,7 @@ function desenhar(p) {
       <div class="tb-corpo"><table class="linhas">
         ${linha('Name', `<b>${esc(p.nome)}</b>${p.marca ? `<span class="marca">${esc(p.marca.tag ?? '')}</span>` : ''}`)}
         ${linha('Sex', p.sexo === 'female' ? 'female' : 'male')}
-        ${linha('Vocation', esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao))}
+        ${linha(poe ? 'Class' : 'Vocation', esc(p.vocacaoNome ?? VOCACOES[p.vocacao] ?? p.vocacao))}
         ${p.guilda?.nome ? linha('Guild', `<span id="ficha-guilda"></span>`) : ''}
         ${linha('Level', n(p.level))}
         ${linha('World', 'Draevor')}
@@ -466,7 +469,7 @@ function desenhar(p) {
             <div class="caixinha" style="margin-top:10px">
               <div class="pericias">
                 <div class="pericia"><div class="ico">${icone('ficha-level')}</div><span>Level</span><b>${n(p.level)}</b></div>
-                ${PERICIAS.map(([k, rot]) => `<div class="pericia"><div class="ico">${icone(`sk-${k}`)}</div><span>${rot}</span><b>${n(k === 'magic' ? p.magic : p.skills?.[k])}</b></div>`).join('')}
+                ${poe ? '' : PERICIAS.map(([k, rot]) => `<div class="pericia"><div class="ico">${icone(`sk-${k}`)}</div><span>${rot}</span><b>${n(k === 'magic' ? p.magic : p.skills?.[k])}</b></div>`).join('')}
               </div>
             </div>
           </div>
@@ -475,9 +478,17 @@ function desenhar(p) {
     </section>
 
     <section class="tb">
-      <h2>Draevor Stats</h2>
+      <h2>${poe ? 'Estatísticas' : 'Draevor Stats'}</h2>
       <div class="tb-corpo">
         <div class="stats">
+          ${poe ? [
+            stat('Pontos da Árvore', `${n(r.arvoreUsados)}<small class="cinza"> / ${n(r.arvoreTotal)}</small>`, 'c-roxo', 'arvore'),
+            stat('Kills', n(r.kills), 'c-verm', 'ficha-kills'),
+            stat('Mortes', n(r.mortes), 'c-verm', 'ficha-mortes'),
+            stat('Tempo caçando', duracao(r.tempoCacando), 'c-laranja', 'ficha-tempo'),
+            stat('EXP total ganha', n(r.expTotal), 'c-verde', 'ficha-exp'),
+            stat('Voltas em hunts', n(r.voltas), 'c-verde', 'hunts'),
+          ].join('') : `
           ${stat('Summon Lv', `${n(r.summonNivel)}<small class="cinza"> / ${n(r.summonTeto)}</small>`, 'c-verde', 'aba-especiais')}
           ${stat('Pontos da Árvore', `${n(r.arvoreUsados)}<small class="cinza"> / ${n(r.arvoreTotal)}</small>`, 'c-roxo', 'arvore')}
           ${stat('Mounts', n(r.montarias), 'c-azul', 'mounts')}
@@ -498,9 +509,9 @@ function desenhar(p) {
           ${stat('Voltas em hunts', n(r.voltas), 'c-verde', 'hunts')}
           ${stat('Slots de Party', n(r.partySlots), 'c-verde', 'amigos')}
           ${stat('Instance Hunts', r.instance ? '<span class="ok">ativo</span>' : '<span class="cinza">—</span>', '', 22771)}
-          ${stat('Divine Hunts', r.divine ? '<span class="ok">ativo</span>' : '<span class="cinza">—</span>', '', 55335)}
+          ${stat('Divine Hunts', r.divine ? '<span class="ok">ativo</span>' : '<span class="cinza">—</span>', '', 55335)}`}
         </div>
-        ${r.summonNome ? `<div class="summon caixinha"><div id="summon"></div><div><b>${esc(r.summonNome)}</b><br><span class="cinza">Familiar · ${n(r.summonSkins)} skin(s)</span></div></div>` : ''}
+        ${!poe && r.summonNome ? `<div class="summon caixinha"><div id="summon"></div><div><b>${esc(r.summonNome)}</b><br><span class="cinza">Familiar · ${n(r.summonSkins)} skin(s)</span></div></div>` : ''}
       </div>
     </section>`;
 
@@ -587,6 +598,9 @@ async function desenharSprites(p) {
   }
 
   if (!(await sprites)) return;
+  // Os ícones das peças do PoE (e das gemas) vêm do catálogo da ficha — sem isto o inventário mostrava "?". DEPOIS da folha de sprites
+  // (carregá-la refaz a tabela de figuras), como o jogo faz no `welcome`.
+  emprestarDoCatalogo(p.itens ?? {});
   try {
     if (p.outfit?.type) $('retrato')?.append(outfitCanvas(p.outfit.type, p.outfit, 80));
   } catch { /* outfit desconhecido: fica sem boneco */ }
@@ -783,14 +797,15 @@ function lerRecentes() {
   try { return JSON.parse(localStorage.getItem(CHAVE_RECENTES) ?? '[]'); } catch { return []; }
 }
 function guardarRecente(p) {
-  const lista = [{ nome: p.nome, level: p.level, vocacao: p.vocacao }, ...lerRecentes().filter((r) => r.nome !== p.nome)].slice(0, 6);
+  // (`classe`: no jogo oficial, o nome da classe do PoE — que a lista mostra no lugar da vocação.)
+  const lista = [{ nome: p.nome, level: p.level, vocacao: p.vocacao, ...(p.poe ? { classe: p.vocacaoNome } : {}) }, ...lerRecentes().filter((r) => r.nome !== p.nome)].slice(0, 6);
   try { localStorage.setItem(CHAVE_RECENTES, JSON.stringify(lista)); } catch { /* sem armazenamento: só não lembra */ }
   pintarRecentes(lista);
 }
 function pintarRecentes(lista = lerRecentes()) {
   $('recentes').innerHTML = lista.length
     ? lista.map((r) => `<li><div class="info"><a href="${linkDe(r.nome)}" data-nome="${esc(r.nome)}">${esc(r.nome)}</a>
-        <small>${esc(vocacaoCurta(r.vocacao))} · lv ${n(r.level)}</small></div></li>`).join('')
+        <small>${esc(r.classe ?? vocacaoCurta(r.vocacao))} · lv ${n(r.level)}</small></div></li>`).join('')
     : '<li class="vazio">nenhum ainda</li>';
 }
 
@@ -825,7 +840,7 @@ async function pintarTop() {
       if (i === 0) li.className = 'top1';
       li.innerHTML = `<span class="pos">${i + 1}</span><div class="info">
         <a href="${linkDe(e.name)}" data-nome="${esc(e.name)}">${esc(e.name)}</a>
-        <small>${esc(vocacaoCurta(e.vocation))} · lv ${n(e.level)}</small></div>`;
+        <small>${esc(e.classe ?? vocacaoCurta(e.vocation))} · lv ${n(e.level)}</small></div>`;
       const daGuilda = linhaDaGuilda(e.guilda);
       if (daGuilda) li.querySelector('.info')?.append(daGuilda);
       ul.append(li);
@@ -849,7 +864,7 @@ async function pintarOnline() {
         try { li.append(outfitCanvas(j.outfit.type, j.outfit, 32)); } catch { /* sem boneco */ }
       }
       li.insertAdjacentHTML('beforeend', `<div class="info"><a href="${linkDe(j.name)}" data-nome="${esc(j.name)}">${esc(j.name)}</a>
-        <small>${esc(vocacaoCurta(j.vocation))} · lv ${n(j.level)}${j.onde === 'offline' ? ' · <span class="ausente">💤 offline</span>' : ''}</small></div>`);
+        <small>${esc(j.classe ?? vocacaoCurta(j.vocation))} · lv ${n(j.level)}${j.onde === 'offline' ? ' · <span class="ausente">💤 offline</span>' : ''}</small></div>`);
       /* E a guilda embaixo da vocação, como na lista de cima e no /online. */
       const daGuilda = linhaDaGuilda(j.guilda);
       if (daGuilda) li.querySelector('.info')?.append(daGuilda);

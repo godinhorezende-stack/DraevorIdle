@@ -34,7 +34,7 @@ export const DICIONARIO = {
     // ---- capa ----
     'capa.linha': 'The RPG that keeps playing without you.',
     'capa.chamada':
-      'Pick a cave, set up your spell bar and let it run — your character hunts, collects loot and levels up with the tab closed. When you feel like playing hands-on, you take the wheel and call your friends.',
+      'Pick an area, socket your gems and let it run — your character hunts, collects loot and levels up with the tab closed. When you feel like playing hands-on, you take the wheel and call your friends.',
     'capa.entrar': 'Play now',
     'capa.criar': 'Create free account',
     'capa.promessa1': 'Runs in the browser — nothing to download',
@@ -56,7 +56,7 @@ export const DICIONARIO = {
     'ranking.titulo': 'Ranking',
     'ranking.legenda': 'Top twenty in each category. The lit dot is who is playing now.',
     'ranking.personagem': 'Character',
-    'ranking.vocacao': 'Vocation',
+    'ranking.vocacao': 'Class',
     'ranking.level': 'Level',
     'ranking.exp': 'Experience',
     'ranking.pontos': 'Points',
@@ -100,13 +100,13 @@ export const DICIONARIO = {
     'como.legenda': 'Three steps, and the rest is how far you want to go.',
     'como.passo1': 'Create your character',
     'como.passo1txt':
-      'Knight, Paladin, Druid, Sorcerer or Monk. Account by e-mail or with Google, and you are in.',
+      'Marauder, Ranger, Witch, Duelist, Templar, Shadow or Scion — the Path of Exile classes. Account by e-mail or with Google, and you are in.',
     'como.passo2': 'Send it hunting',
     'como.passo2txt':
-      'Pick the cave, the strategy and what to spend on supplies. It walks, fights and collects — with the tab closed too.',
+      'Pick the act area, the strategy and your flasks. It walks, fights and collects — with the tab closed too.',
     'como.passo3': 'Take over whenever',
     'como.passo3txt':
-      'In Online Hunt you walk, aim the runes and cast the spells. Bring friends: each one brings their own bar.',
+      'In Online Hunt you walk, aim and cast your skill gems. Bring friends: each one brings their own bar.',
 
     // ---- fecho e rodapé ----
     'fecho.titulo': 'The cave is open',
@@ -117,7 +117,7 @@ export const DICIONARIO = {
 
     // ---- quem está online ----
     'drops.titulo': 'Latest drops',
-    'drops.legenda': 'The rarest things that dropped on the server: every epic, legendary or mythic piece, anything that rolled two T5 modifiers, and the bags — from bosses or ordinary creatures. Hover to see its stats.',
+    'drops.legenda': 'The Unique items that dropped on the server — from monsters, boss chests or the pinnacle bosses\' exclusives. Hover to see their modifiers.',
     'drops.carregando': 'loading...',
     'drops.vazio': 'nothing has dropped yet — the bar fills itself as soon as something does',
     'drops.extras': 'Extra attributes',

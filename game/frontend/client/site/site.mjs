@@ -160,7 +160,7 @@ function pintarRanking(lista, categoria) {
 
     const vocacao = document.createElement('td');
     vocacao.className = 'vocacao';
-    vocacao.textContent = VOCACOES[entrada.vocation] ?? entrada.vocation ?? '—';
+    vocacao.textContent = entrada.classe ?? VOCACOES[entrada.vocation] ?? entrada.vocation ?? '—';
 
     const level = document.createElement('td');
     level.className = 'num';
