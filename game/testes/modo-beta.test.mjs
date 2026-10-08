@@ -6,6 +6,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 afterEach(() => Beta.definir(false));
 const novo = (level = 1) => personagemDeTeste({ level, campanha: {} });
@@ -17,7 +18,7 @@ test('M1. desligado (padrão dos testes): VIP, especial e divina continuam tranc
   assert.equal(Cacadas.entrar(e, { huntId: CATALOGO.vips[0].id, mode: 'auto' }).ok, false);
 });
 
-test('M2. ligado: entra em VIP, Instance e Divine sem premium, pergaminho nem level, e não é expulso por falta de acesso', () => {
+test('M2. ligado: entra em VIP, Instance e Divine sem premium, pergaminho nem level, e não é expulso por falta de acesso', { skip: doClassico("Modo beta das hunts VIP/Instance/Divine e dos bosses do Draevor") }, () => {
   Beta.definir(true);
   for (const h of [CATALOGO.vips[0], CATALOGO.especiais[0], CATALOGO.divinas[0]]) {
     const e = novo(1);
@@ -28,7 +29,7 @@ test('M2. ligado: entra em VIP, Instance e Divine sem premium, pergaminho nem le
   }
 });
 
-test('M3. ligado: boss sem level, sem task e sem recarga, quantas vezes quiser (e nenhuma espera é gravada)', () => {
+test('M3. ligado: boss sem level, sem task e sem recarga, quantas vezes quiser (e nenhuma espera é gravada)', { skip: doClassico("Modo beta das hunts VIP/Instance/Divine e dos bosses do Draevor") }, () => {
   Beta.definir(true);
   const boss = CATALOGO.bosses.find((b) => b.task && (b.level ?? 0) > 50 && !b.id.startsWith('urmahlullu'));
   assert.ok(boss);

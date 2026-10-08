@@ -5,6 +5,7 @@ import * as L from '../frontend/client/src/editor-mapas-logica.mjs';
 import * as Mapas from '../admin/mapas.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
 import { CITY_MAP } from '../systems/dados.mjs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 // Cada teste cita a(s) função(ões) F# da auditoria (docs/editor-de-mapas-auditoria.md) que ele prova na aba Mapas da Engine.
 const cidade = { atlas: CITY_MAP.atlas, cell: CITY_MAP.cell, palette: CITY_MAP.palette };
@@ -31,9 +32,9 @@ test('F5/F6/F8: o corpo de salvar — mapa do editor grava a grade; mapa real s�
   const m = L.novoMapa(5, 5, cidade, 40);
   const ed = L.corpoDeSalvar({ id: 'meu-mapa', mapa: m, spawns: [], real: false, idAberto: null });
   assert.deepEqual(Object.keys(ed.corpo).sort(), ['blocked', 'height', 'id', 'spawns', 'stacks', 'width']);
-  const real = L.corpoDeSalvar({ id: 'troll-cave', mapa: m, spawns: [{ id: 's1' }], real: true, idAberto: 'troll-cave' });
-  assert.deepEqual(real.corpo, { id: 'troll-cave', soSpawns: true, spawns: [{ id: 's1' }] });
-  assert.match(L.corpoDeSalvar({ id: 'outro-id', mapa: m, spawns: [], real: true, idAberto: 'troll-cave' }).erro, /mesmo id/);
+  const real = L.corpoDeSalvar({ id: HUNT_DE_TESTE, mapa: m, spawns: [{ id: 's1' }], real: true, idAberto: HUNT_DE_TESTE });
+  assert.deepEqual(real.corpo, { id: HUNT_DE_TESTE, soSpawns: true, spawns: [{ id: 's1' }] });
+  assert.match(L.corpoDeSalvar({ id: 'outro-id', mapa: m, spawns: [], real: true, idAberto: HUNT_DE_TESTE }).erro, /mesmo id/);
   assert.match(L.corpoDeSalvar({ id: '', mapa: m, spawns: [], real: false }).erro, /Escreva um id/);
   assert.match(L.corpoDeSalvar({ id: 'ID Ruim', mapa: m, spawns: [], real: false }).erro, /inválido/);
   assert.match(L.mensagemDeSalvo('x', true, 3), /Spawns de "x" salvos \(3\)/);

@@ -24,6 +24,11 @@
 import { parentPort, workerData } from 'node:worker_threads';
 import * as Cacadas from './cacadas.mjs';
 import { garantirUidAcimaDe } from './hunt/monstros.mjs';
+import { iniciarJogoDoPoe } from './itens-poe/iniciar.mjs';
+
+// O MESMO jogo do servidor (as áreas, os monstros, as gemas e os itens do PoE): sem isto o tique de uma área do PoE quebrava aqui, como
+// quebrava na thread da caçada offline. Carregado uma vez; as mensagens esperam por ele.
+const pronto = iniciarJogoDoPoe();
 
 // Partição do contador de uid dos bichos: cada worker é um módulo carregado
 // do zero (`proximoUid = 1`) — sem isto, dois workers criando monstro ao
@@ -32,8 +37,9 @@ import { garantirUidAcimaDe } from './hunt/monstros.mjs';
 // carregada do banco não pode reusar um uid vivo" (`huntAoCarregar`).
 if (Number.isFinite(workerData?.faixaDeUid)) garantirUidAcimaDe(workerData.faixaDeUid);
 
-parentPort.on('message', ({ id, estado, personagem, agora, podio }) => {
+parentPort.on('message', async ({ id, estado, personagem, agora, podio }) => {
   try {
+    await pronto;
     // `podio` chega à parte (não-enumerável não sobrevive ao clone
     // estruturado — ver o comentário em `simulador-tique.mjs::tique`);
     // recolocado do mesmo jeito não-enumerável que `sessao.mjs` usaria, para

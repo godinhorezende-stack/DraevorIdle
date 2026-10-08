@@ -9,11 +9,12 @@ import * as Rot from '../systems/combate/simulador-rotacao.mjs';
 import * as Treino from '../systems/treino.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import { ACTION_CATALOG } from '../systems/dados.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const base = (id) => [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes].find((a) => a.id === id);
 const fator = (id, k) => Gemas.defDaGema(Gemas.ITEM_DA_ACAO.get(id))[k];
 
-test('fatorDeCusto muda o custo de mana mostrado no catálogo; fatorDeCura muda a cura mostrada', () => {
+test('fatorDeCusto muda o custo de mana mostrado no catálogo; fatorDeCura muda a cura mostrada', { skip: doClassico("Custo e cura das gemas do Draevor (Knight x Druid)") }, () => {
   const id = 'spell-wound-cleansing';
   assert.ok(fator(id, 'fatorDeCusto') > 1 && fator(id, 'fatorDeCura') < 1);
   const e = personagemDeTeste({ vocacao: 'knight', level: 300 });
@@ -33,7 +34,7 @@ test('fatorDeCusto muda o custo de mana mostrado no catálogo; fatorDeCura muda 
   }
 });
 
-test('o Knight não cura mais barato por mana que o Druid (identidade: o curandeiro é o Druid)', () => {
+test('o Knight não cura mais barato por mana que o Druid (identidade: o curandeiro é o Druid)', { skip: doClassico("Custo e cura das gemas do Draevor (Knight x Druid)") }, () => {
   const e = personagemDeTeste({ vocacao: 'druid', level: 300 });
   const eficiencia = (id) => { const a = Acoes.catalogo(e).spells.find((x) => x.id === id); return ((a.damage.min + a.damage.max) / 2) / a.mana; };
   const knight = Math.max(...['spell-wound-cleansing', 'spell-fair-wound-cleansing', 'spell-intense-wound-cleansing'].map(eficiencia));
@@ -56,7 +57,7 @@ const dps = (voc, skill, alvos) => {
   return Rot.medirRotacao(e, PERSONAGEM, { duracaoMs: 30000, alvos }).dpsDasGemas;
 };
 
-test('trava de balanceamento: o melhor DPS do Monk fica na faixa das demais classes, em alvo único e em área', () => {
+test('trava de balanceamento: o melhor DPS do Monk fica na faixa das demais classes, em alvo único e em área', { skip: doClassico("Balanceamento das gemas do Draevor (DPS do Monk, Flame Strike + GMP + Explosion)") }, () => {
   const monk1 = dps('monk', 'spell-chained-penance', 1);
   const knight1 = dps('knight', 'spell-fierce-berserk', 1);
   assert.ok(monk1 <= knight1 * 1.5, `monk ${monk1} contra knight ${knight1}`);
@@ -67,7 +68,7 @@ test('trava de balanceamento: o melhor DPS do Monk fica na faixa das demais clas
   assert.ok(knight5 <= sorc5, `Shield Bash do Knight (${knight5}) não passa da área do Sorcerer (${sorc5})`);
 });
 
-test('o custo dos suportes se MULTIPLICA (Multiple Projectiles +30% e Explosion +30% = ×1,69), o custo extra não cresce com a raridade e a mana cobrada é a do catálogo × isso', () => {
+test('o custo dos suportes se MULTIPLICA (Multiple Projectiles +30% e Explosion +30% = ×1,69), o custo extra não cresce com a raridade e a mana cobrada é a do catálogo × isso', { skip: doClassico("Balanceamento das gemas do Draevor (DPS do Monk, Flame Strike + GMP + Explosion)") }, () => {
   const montar = (supports, raridade = 'comum') => {
     const e = personagemDeTeste({ vocacao: 'sorcerer', level: 300 });
     assert.ok(Rot.vestirBuild(e, { grupos: [{ skill: 'spell-flame-strike', supports }], raridade }).ok);
@@ -83,7 +84,7 @@ test('o custo dos suportes se MULTIPLICA (Multiple Projectiles +30% e Explosion 
   assert.ok(Math.abs(misto.custoPct - 4) < 0.01, `${misto.custoPct}`);
 });
 
-test('trava: a combinação barata (Flame Strike + Greater Multiple Projectiles + Explosion + Greater Damage) não supera a melhor área nativa gastando menos mana', () => {
+test('trava: a combinação barata (Flame Strike + Greater Multiple Projectiles + Explosion + Greater Damage) não supera a melhor área nativa gastando menos mana', { skip: doClassico("Balanceamento das gemas do Draevor (DPS do Monk, Flame Strike + GMP + Explosion)") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 300 });
   assert.ok(Rot.vestirBuild(e, { grupos: [{ skill: 'spell-flame-strike', supports: ['greater-multiple-projectiles', 'explosion', 'greater-damage'] }] }).ok);
   const combo = Rot.medirRotacao(e, PERSONAGEM, { duracaoMs: 30000, alvos: 5 });

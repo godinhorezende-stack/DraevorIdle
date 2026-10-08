@@ -13,7 +13,8 @@ import { round } from '../systems/hunt/combate.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { definirNivel, nivelDoRegistro, limparRegistro, ultimosGolpes } from '../systems/combate/registro.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
@@ -57,7 +58,7 @@ test('a variação é configurável: 0 = sempre a média; 100 = de ~0 ao dobro d
   }
 });
 
-test('o golpe real (golpeDoJogador) respeita a faixa e a média é a de antes', () => {
+test('o golpe real (golpeDoJogador) respeita a faixa e a média é a de antes', { skip: doClassico("Fórmula do Draevor (ataque × perícia + level/5); no PoE o dano é a faixa da arma, sem perícia") }, () => {
   const arma = { attack: 78 };
   const { min, max } = R.attackDamage({ attack: 78, skill: 77, level: 190 });
   let soma = 0;
@@ -76,7 +77,7 @@ function lutar(af, rodadas = 400) {
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
   e.maxHp = e.hp = 1e12;
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -123,7 +124,7 @@ test('o dano REAL do golpe básico está dentro do "Dano" do tooltip (mesma fór
   assert.ok(min / max > 0.4, `mínimo/máximo = ${(min / max).toFixed(2)}`);
 });
 
-test('o mínimo E o máximo sobem com a perícia da arma: Magic Level (wand/rod), Distance (arma de longe), Melee (arma de perto e punho) — e não com a perícia dos outros', async () => {
+test('o mínimo E o máximo sobem com a perícia da arma: Magic Level (wand/rod), Distance (arma de longe), Melee (arma de perto e punho) — e não com a perícia dos outros', { skip: doClassico("Fórmula do Draevor (ataque × perícia + level/5); no PoE o dano é a faixa da arma, sem perícia") }, async () => {
   const Treino = await import('../systems/treino.mjs');
   const idDe = (n) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === n).id);
   const dano = ({ voc, arma, municao = null, perícia, valor, outras = {} }) => {
@@ -156,7 +157,7 @@ test('o mínimo E o máximo sobem com a perícia da arma: Magic Level (wand/rod)
   }
 });
 
-test('estilo PoE: a arma 48–61 dá mínimo 48 e máximo 61 ANTES dos modificadores; a perícia e o level entram igual nas duas pontas (sem fração arbitrária)', () => {
+test('estilo PoE: a arma 48–61 dá mínimo 48 e máximo 61 ANTES dos modificadores; a perícia e o level entram igual nas duas pontas (sem fração arbitrária)', { skip: doClassico("Fórmula do Draevor (ataque × perícia + level/5); no PoE o dano é a faixa da arma, sem perícia") }, () => {
   const nivel = 100;
   const pericia = 60;
   const f = (a) => Math.floor(a * 0.0425 * (pericia + 4) + nivel / 5);

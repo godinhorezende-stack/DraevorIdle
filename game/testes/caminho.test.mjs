@@ -5,12 +5,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CATALOGO } from '../systems/dados.mjs';
 import { bfsDistancias, bfsDistanciasAntiga, gradeDaHunt, VIZINHANCA_4, VIZINHANCA_8 } from '../systems/cacadas.mjs';
+import { HUNT_DE_TESTE, huntDoPoe } from './apoio.mjs';
 
 let semente = 12345;
 const acaso = () => ((semente = (semente * 1103515245 + 12345) >>> 0) / 2 ** 32);
 
 test('mesmas distâncias da versão antiga em 5 mapas, 60 buscas cada', () => {
-  for (const id of ['troll-cave', 'werelions-1', 'spike-8', 'winter-dream-court', 'magma-bubble']) {
+  for (const id of [HUNT_DE_TESTE, huntDoPoe('werelions-1'), 'spike-8', 'winter-dream-court', 'magma-bubble']) {
     const grade = gradeDaHunt(CATALOGO.hunts.find((h) => h.id === id) ?? CATALOGO.bosses.find((b) => b.id === id) ?? { id });
     const casas = [...grade.andavel].map((k) => k.split(',').map(Number));
     for (let n = 0; n < 60; n++) {

@@ -4,6 +4,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+// O jogo inteiro, como no servidor (o bootstrap do PoE: as áreas da campanha, as gemas, os itens) — a Arena de Efeitos abre uma área do PoE.
+import './apoio.mjs';
 
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');

@@ -7,7 +7,8 @@ import * as R from '../systems/regras.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import { SPAWNS_CAPTURADOS, REFORCO_DE_SPAWN, spawnsCapturados, mapaRealCapturado } from '../systems/hunt/terreno.mjs';
 import { andavelDoAndar } from '../systems/hunt/andares.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, huntDoPoe } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 test('estágios: x3 até o 50, x2 até o 100, normal depois (faixas inclusivas)', () => {
   assert.equal(Boosts.estagioDeExp(8), 3);
@@ -18,7 +19,7 @@ test('estágios: x3 até o 50, x2 até o 100, normal depois (faixas inclusivas)'
   assert.equal(Boosts.estagioDeExp(1500), 1);
 });
 
-test('a exp do bicho leva o estágio por cima de todo o resto', () => {
+test('a exp do bicho leva o estágio por cima de todo o resto', { skip: doClassico("Curva de balanceamento 1–100 do Draevor") }, () => {
   // Troll (20 de exp) sem boost, stamina normal: 20 x (1 + bônus de level) x estágio.
   for (const level of [20, 80, 150]) {
     const e = personagemDeTeste({ level });
@@ -56,7 +57,7 @@ test('reforço de spawn: mais bichos, espalhados, alcançáveis, a mesma mistura
 
 test('entrando numa hunt reforçada, os bichos a mais estão lá (gravados como spawns no mapa pela migração)', () => {
   const e = personagemDeTeste({ level: 45 });
-  assert.equal(Cacadas.entrar(e, { huntId: 'port-hope-corym-dungeons', mode: 'auto' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: huntDoPoe('port-hope-corym-dungeons'), mode: 'auto' }).ok, true);
   const bichos = [...e.hunt.monstros, ...Object.values(e.hunt.outrosAndares ?? {}).flat()];
   // O mapa define 54; só nasce quem cabe numa casa alcançável do raio do spawn.
   assert.ok(bichos.length >= 45, `${bichos.length} bichos (eram 14)`);

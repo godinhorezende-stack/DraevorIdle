@@ -29,6 +29,7 @@ import { gerarItem } from '../itens/gerar.mjs';
 import * as EfeitosDeItem from '../itens/efeitos.mjs';
 import * as Campanha from '../campanha.mjs';
 import * as DropsPorMonstro from '../itens-poe/drops-por-monstro.mjs';
+import { podeEntrar } from '../itens-poe/so-itens-do-poe.mjs';
 import * as RecompensasDeEncontro from '../encontros/recompensas.mjs';
 import * as EventosDeEncontro from '../encontros/eventos.mjs';
 import * as Prey from '../prey.mjs';
@@ -325,6 +326,8 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   if (hunt.vitoria) return;
   const itens = [];
   for (const drop of [...alvo.loot, ...Gemas.DROP.boss]) {
+    // No jogo oficial só entra item do PoE (`itens-poe/so-itens-do-poe.mjs`): a tabela do Draevor do bicho-base fica de fora.
+    if (!podeEntrar(drop.id)) continue;
     // Buff Power Loot +50%, o afixo "Loot" e a Caça Online ("15% mais chance de loot" na sala do boss).
     if (Math.random() >= drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * fatorDaCacaOnline(hunt)) continue;
     // O item inteiro (raridade, atributos, efeito) sai do gerador central.
@@ -339,6 +342,7 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
   // O boss de fim de Ato (campanha) ACRESCENTA equipamento ao loot: antes só dava tokens, poções e gemas (`itens/equipamento-do-boss.mjs`).
   if (hunt.campanha?.bossDoAto) {
     for (const peca of pecasGarantidas(contextoDoDrop(hunt), estado.vocation)) {
+      if (!podeEntrar(peca.id, peca)) continue;
       itens.push(peca);
       Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
@@ -531,6 +535,8 @@ function soltarDrops({ estado, hunt, personagem, alvo, drops, eventos, juntos, s
     // item nenhum — antes entrava na bolsa como um item fantasma (sem nome, sem venda) e como
     // "undefined" no Analisador. Não muda a chance de nenhum item de verdade.
     if (drop.id == null) continue;
+    // No jogo oficial só entra item do PoE: a tabela do Draevor do bicho-base (o desenho do monstro do PoE) não solta nada além do ouro.
+    if (!podeEntrar(drop.id)) continue;
     // `lootMult`: a raridade do mob (raro/elite dão mais loot — ver `mobs/raridade.mjs`).
     const chance = drop.chance * BuffPower.fatorDeLoot(estado) * (1 + Afixos.de(estado, 'loot_bonus') / 100) * Prey.fatorDeLoot(estado, alvo.key) * (1 + podio.loot / 100) * fatorDaCacaOnline(hunt) * (alvo.lootMult ?? 1);
     if (Math.random() >= chance * Progressao.fatorDeDropDe(contextoDoDrop(hunt).dificuldade, drop.id)) continue; // (a dificuldade só mexe na chance de EQUIPAMENTO; neutra por padrão) Buff Power Loot +50%, o afixo "Loot", a prey de loot, o pódio e a Caça Online
@@ -635,7 +641,8 @@ export function pagarPremio({ estado, gold, exp, itens, nome, rotulo = 'Primeira
     subirDeLevel(estado);
     partes.push(`${exp.toLocaleString('pt-BR')} de experiência`);
   }
-  for (const { id, count } of itens) if (Bolsa.porNaBolsa(estado, id, count)) partes.push(`${count}x ${ITEM_CATALOG[id]?.name ?? id}`);
+  // No jogo oficial só entra item do PoE (um prêmio configurado com item do Draevor não paga o item).
+  for (const { id, count } of itens) if (podeEntrar(id) && Bolsa.porNaBolsa(estado, id, count)) partes.push(`${count}x ${ITEM_CATALOG[id]?.name ?? id}`);
   estado.avisoDaHunt = `${rotulo} ${nome}${partes.length ? ` — ${partes.join(', ')}` : ''}.`;
 }
 
@@ -779,7 +786,8 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   });
   // Gemas, lapidadoras, fundidoras e orbes também são sorteados na party (a chance do drop segue a de quem matou).
   const darExtra = (item, peca = undefined) => {
-    if (!item) return;
+    // No jogo oficial só entra item do PoE: as gemas/suportes, a lapidadora e a fundidora do Draevor não caem.
+    if (!item || !podeEntrar(item.id, peca)) return;
     const { dono } = escolherDono({ estado, personagem, juntos, id: item.id, peca, origem: alvo.name, verificar: false });
     if (!dono) return;
     if (dono.estado === estado) {
@@ -854,7 +862,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       const conc = Campanha.conclusaoDa(c.huntId);
       return conc.tipo === 'item-de-missao' && Number(conc.item) === id && !Campanha.faseCompleta(estado, c.dificuldade, c.huntId);
     };
-    const daTabela = DropsPorMonstro.soltar(alvo.key, { missaoAberta, existe: (id) => !!ITEM_CATALOG[id] }).filter((d) => daBolsa(d.id));
+    const daTabela = DropsPorMonstro.soltar(alvo.key, { missaoAberta, existe: (id) => !!ITEM_CATALOG[id] && podeEntrar(id) }).filter((d) => daBolsa(d.id));
     Campanha.matou(estado, hunt, alvo, { ganhou: daTabela, dar: daBolsa });
   }
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
@@ -1137,7 +1145,7 @@ export function danoSomadoDoPoe(estado, hunt, alvo, ficha, rolagem) {
 }
 
 /** A "Raridade de Itens encontrados aumentada" para o drop deste morto (PoE: com as condições dele — "por Inimigos Congelados/Eletrizados"). */
-const raridadeDoDrop = (estado, alvo) => ModsPoe.valor(ModsPoe.fichaDoGolpe(Ficha.combate(estado), [], { alvo, estado }), 'item_rarity');
+export const raridadeDoDrop = (estado, alvo) => ModsPoe.valor(ModsPoe.fichaDoGolpe(Ficha.combate(estado), [], { alvo, estado }), 'item_rarity');
 
 /** Soma faixas por elemento (`{ fire: [a, b] }`). */
 const somarFaixas = (a = {}, b = {}) => {

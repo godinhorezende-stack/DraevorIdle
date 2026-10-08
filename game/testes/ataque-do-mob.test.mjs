@@ -12,7 +12,7 @@ import * as Afixos from '../systems/afixos.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { contraAtaque } from '../systems/hunt/combate.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const troll = (extra = {}) => Object.assign(criarMonstro({ key: 'troll', x: 1, y: 1 }, null), extra);
 const comEspecie = (dados, fn) => {
@@ -58,7 +58,7 @@ test('o intervalo do mob no combate de verdade usa os limites: um mob frenético
 function cena() {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   e.maxHp = e.hp = 1e9;
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   const m = Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null), {});
   h.monstros.splice(0, h.monstros.length, m);

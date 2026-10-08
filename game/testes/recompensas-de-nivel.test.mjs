@@ -8,6 +8,7 @@ import * as Recompensas from '../systems/recompensas.mjs';
 import * as Aparencia from '../systems/aparencia.mjs';
 import { MONTARIAS_REAIS } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const GORGON = MONTARIAS_REAIS.mounts.find((m) => m.name === 'Gorgon Hydra');
 const BLADE = MONTARIAS_REAIS.outfits.filter((o) => o.name === 'Blade Dancer').map((o) => o.look);
@@ -34,7 +35,7 @@ function resgatar(e, id) {
 }
 const FILA = ['bau-50', 'bau-100', 'montaria-120', 'outfit-130'];
 
-test('cadastro: as 4 recompensas (sem a trilha de treino), cada uma com um ID único', () => {
+test('cadastro: as 4 recompensas (sem a trilha de treino), cada uma com um ID único', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo();
   Recompensas.abrirProximas(e);
   const ids = [...e.presentes.degraus, ...e.presentes.marcos].map((r) => r.id);
@@ -44,7 +45,7 @@ test('cadastro: as 4 recompensas (sem a trilha de treino), cada uma com um ID ú
   assert.equal(porId(e, 'bau-50').level, 50);
 });
 
-test('desbloqueio: cada uma abre no level dela, na ordem da fila', () => {
+test('desbloqueio: cada uma abre no level dela, na ordem da fila', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(1);
   for (const id of FILA) {
     const r = porId(e, id) ?? (Recompensas.abrirProximas(e), porId(e, id));
@@ -58,7 +59,7 @@ test('desbloqueio: cada uma abre no level dela, na ordem da fila', () => {
   }
 });
 
-test('resgate de TODAS, uma a uma, e a entrega de cada uma', () => {
+test('resgate de TODAS, uma a uma, e a entrega de cada uma', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(150);
   const mochilaAntes = e.inventory.length;
   for (const id of FILA) {
@@ -74,7 +75,7 @@ test('resgate de TODAS, uma a uma, e a entrega de cada uma', () => {
   for (const look of BLADE) assert.ok(Aparencia.temOutfit(e, look), `Blade Dancer (${look}) liberado`);
 });
 
-test('montaria: entregue no sistema de Aparência, aparece como dona e dá para montar', () => {
+test('montaria: entregue no sistema de Aparência, aparece como dona e dá para montar', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(120);
   for (const id of FILA.slice(0, 2)) resgatar(e, id);
   const r = Recompensas.coletarMarco(e, { id: 'montaria-120' });
@@ -89,7 +90,7 @@ test('montaria: entregue no sistema de Aparência, aparece como dona e dá para 
   assert.equal(naTela.emUso, true);
 });
 
-test('outfit: Blade Dancer nos dois sexos, com os DOIS addons, e dá para vestir com eles', () => {
+test('outfit: Blade Dancer nos dois sexos, com os DOIS addons, e dá para vestir com eles', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(130);
   for (const id of FILA.slice(0, 3)) resgatar(e, id);
   const r = Recompensas.coletarMarco(e, { id: 'outfit-130' });
@@ -108,7 +109,7 @@ test('outfit: Blade Dancer nos dois sexos, com os DOIS addons, e dá para vestir
   assert.equal(naTela.emUso, true);
 });
 
-test('persistência: depois de gravar e ler (o save é JSON), resgates e liberações continuam', () => {
+test('persistência: depois de gravar e ler (o save é JSON), resgates e liberações continuam', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(150);
   for (const id of FILA) resgatar(e, id);
   const relido = JSON.parse(JSON.stringify(e));
@@ -119,7 +120,7 @@ test('persistência: depois de gravar e ler (o save é JSON), resgates e libera�
   assert.equal(Aparencia.addonsQueTem(relido, BLADE[0]), 3);
 });
 
-test('resgate repetido: a segunda chamada é recusada, sem cobrar nem entregar de novo', () => {
+test('resgate repetido: a segunda chamada é recusada, sem cobrar nem entregar de novo', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(150);
   for (const id of FILA.slice(0, 2)) resgatar(e, id);
   assert.equal(Recompensas.coletarMarco(e, { id: 'montaria-120' }).ok, true);
@@ -132,7 +133,7 @@ test('resgate repetido: a segunda chamada é recusada, sem cobrar nem entregar d
   assert.deepEqual(e.lojaMontarias, montarias);
 });
 
-test('erro na entrega: nada é cobrado nem marcado como resgatado', () => {
+test('erro na entrega: nada é cobrado nem marcado como resgatado', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(150);
   for (const id of FILA.slice(0, 2)) resgatar(e, id);
   const marco = porId(e, 'montaria-120');
@@ -158,7 +159,7 @@ test('erro na entrega: nada é cobrado nem marcado como resgatado', () => {
   assert.equal(porId(g, 'bau-50').pego, false);
 });
 
-test('tela: os estados vêm do servidor — bloqueada, disponível, resgatada e, na montaria, entregue/em uso', () => {
+test('tela: os estados vêm do servidor — bloqueada, disponível, resgatada e, na montaria, entregue/em uso', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(120);
   for (const id of FILA.slice(0, 2)) resgatar(e, id);
   let tela = Recompensas.presentesParaCliente(e);
@@ -174,7 +175,7 @@ test('tela: os estados vêm do servidor — bloqueada, disponível, resgatada e,
   assert.equal(e.presentes.marcos.find((x) => x.id === 'montaria-120').entregue, undefined, 'o estado da tela não vai para o save');
 });
 
-test('compatibilidade: quem resgatou a montaria/outfit ANTES (pagou e não recebeu) recebe na entrada, sem pagar de novo', () => {
+test('compatibilidade: quem resgatou a montaria/outfit ANTES (pagou e não recebeu) recebe na entrada, sem pagar de novo', { skip: doClassico("As 4 recompensas de nível do Draevor (montaria, outfit, baús); no PoE há um marco só, o Frasco de Vida Pequeno (decisão do dono, recompensas.mjs)") }, () => {
   const e = novo(150);
   // Como ficou o save de quem resgatou antes da correção: pego, sem id, sem nada liberado.
   for (const m of e.presentes.marcos) {

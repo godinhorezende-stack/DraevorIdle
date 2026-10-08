@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, readFileSync, existsSync, writeFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import './apoio.mjs'; // o mesmo jogo do servidor (as áreas e os atos do PoE): o `Campanha.FASES[0]` daqui é a primeira área
 
 const tmp = mkdtempSync(join(tmpdir(), 'fundo-'));
 after(() => rmSync(tmp, { recursive: true, force: true }));

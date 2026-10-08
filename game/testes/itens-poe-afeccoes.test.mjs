@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
@@ -73,7 +74,7 @@ test('no combate de verdade: a peça com chance de incendiar e dano de fogo soma
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
   assert.equal(Ficha.combate(e).afeccoes.chance.incendio, 100);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];

@@ -11,6 +11,7 @@ import * as Craft from '../systems/craft.mjs';
 import * as Desmanche from '../systems/desmanche.mjs';
 import { contarGuardadas } from '../systems/inventario.mjs';
 import { personagemDeTeste, comMarcaNova } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const API = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'api-mapeada', 'servidor');
 const capturado = (arquivo) => comMarcaNova(JSON.parse(readFileSync(join(API, arquivo), 'utf8')));
@@ -130,7 +131,7 @@ function comTudoParaOCraftedAxe(extraDaBase = {}) {
   return { e, receita };
 }
 
-test('craft: com tudo em mãos, a peça sai HERDANDO tier, imbuements e afixos, no lugar da base', () => {
+test('craft: com tudo em mãos, a peça sai HERDANDO tier, imbuements e afixos, no lugar da base', { skip: doClassico("Forja, craft e desmanche do Draevor; o jogo oficial só aceita itens do PoE") }, () => {
   const af = [{ id: 'crit_chance', tier: 2, value: 3 }];
   const { e } = comTudoParaOCraftedAxe({ tier: 4, imbu: [{ id: 1 }], af });
   const antes = Craft.view(e, { vocacao: 'knight' }).craftado.find((r) => r.id === CRAFTED_AXE);
@@ -147,7 +148,7 @@ test('craft: com tudo em mãos, a peça sai HERDANDO tier, imbuements e afixos, 
   assert.deepEqual(e.inventory, [{ id: 22721, count: 7 }]);
 });
 
-test('craft: base vestida e peça nova de level alto demais → a nova vai para a mochila, não para o corpo', () => {
+test('craft: base vestida e peça nova de level alto demais → a nova vai para a mochila, não para o corpo', { skip: doClassico("Forja, craft e desmanche do Draevor; o jogo oficial só aceita itens do PoE") }, () => {
   const e = vazio({ vocation: 'knight', level: 43, gold: 1e9 });
   e.equipment.weapon = { id: CRAFTED_AXE, count: 1, tier: 10 };
   const v2 = Craft.view(e, { vocacao: 'knight' }).v2.find((r) => r.herda?.id === CRAFTED_AXE);
@@ -158,7 +159,7 @@ test('craft: base vestida e peça nova de level alto demais → a nova vai para 
   assert.deepEqual(e.inventory.find((p) => p.id === v2.id), { id: v2.id, count: 1, tier: 10 });
 });
 
-test('craft: falta material → recusa sem tirar nada', () => {
+test('craft: falta material → recusa sem tirar nada', { skip: doClassico("Forja, craft e desmanche do Draevor; o jogo oficial só aceita itens do PoE") }, () => {
   const { e } = comTudoParaOCraftedAxe();
   e.inventory = e.inventory.filter((p) => p.id !== 34109); // sem as Bag You Desire
   const antes = structuredClone(e);
@@ -193,7 +194,7 @@ test('craft: receita e vocação inexistentes são recusadas', () => {
 const SOULCUTTER = 34082; // Soulwar: 5 tokens
 const BLADE_DESTRUCTION = 27449; // Destructions: 2 tokens
 
-test('desmanche: mostra só o que tem, separa as peças presas e desmancha várias de uma vez', () => {
+test('desmanche: mostra só o que tem, separa as peças presas e desmancha várias de uma vez', { skip: doClassico("Forja, craft e desmanche do Draevor; o jogo oficial só aceita itens do PoE") }, () => {
   const e = vazio();
   e.inventory.push({ id: SOULCUTTER, count: 1 }, { id: SOULCUTTER, count: 1, tier: 3 });
   e.pouch.push({ id: SOULCUTTER, count: 1 }, { id: BLADE_DESTRUCTION, count: 1 }, { id: BLADE_DESTRUCTION, count: 1 });

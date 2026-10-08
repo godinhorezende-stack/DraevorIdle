@@ -7,7 +7,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, huntDoPoe } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const RESUMO = JSON.parse(readFileSync(new URL('../../api-mapeada/captura-bosses-0924/resumo-bosses.json', import.meta.url), 'utf8'));
 
@@ -33,7 +34,7 @@ function apanhar(e, segundos) {
   return golpes;
 }
 
-test('as 72 salas capturadas: o jogador e o boss nascem onde o original põe', () => {
+test('as 72 salas capturadas: o jogador e o boss nascem onde o original põe', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, () => {
   for (const [id, of] of Object.entries(RESUMO)) {
     const e = naSala(id);
     assert.deepEqual({ x: e.hunt.pos.x, y: e.hunt.pos.y }, { x: of.player.x, y: of.player.y }, `${id}: jogador`);
@@ -41,7 +42,7 @@ test('as 72 salas capturadas: o jogador e o boss nascem onde o original põe', (
   }
 });
 
-test('a barra do boss: vida e elementos iguais ao original (resistência no teto de 20%)', () => {
+test('a barra do boss: vida e elementos iguais ao original (resistência no teto de 20%)', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, () => {
   for (const id of ['earl-osam', 'custodian', 'essence-of-malice', 'faceless-bane']) {
     const e = naSala(id);
     const snap = Cacadas.snapshotDaHunt(e);
@@ -52,7 +53,7 @@ test('a barra do boss: vida e elementos iguais ao original (resistência no teto
   }
 });
 
-test('Gaffir: os golpes com os nomes do original e dentro da faixa do monster.lua', () => {
+test('Gaffir: os golpes com os nomes do original e dentro da faixa do monster.lua', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, () => {
   const vistosNoOriginal = new Set(['corpo a corpo', 'físico em área', 'de fogo', 'de terra em feixe', 'de terra em área']);
   const golpes = apanhar(naSala('gaffir'), 240).filter((g) => g.de === 'Gaffir');
   const nomes = new Set(golpes.map((g) => g.golpe));
@@ -63,24 +64,24 @@ test('Gaffir: os golpes com os nomes do original e dentro da faixa do monster.lu
   if (terra) assert.equal(terra.color, '#00ff00');
 });
 
-test('melee de boss é o do arquivo, não metade da vida (Essence of Malice: 0..603)', () => {
+test('melee de boss é o do arquivo, não metade da vida (Essence of Malice: 0..603)', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, () => {
   const golpes = apanhar(naSala('essence-of-malice'), 120).filter((g) => g.golpe === 'corpo a corpo');
   assert.ok(golpes.length > 0);
   assert.ok(golpes.every((g) => g.v <= 603), `máximo ${Math.max(...golpes.map((g) => g.v))}`);
 });
 
-test('Brain Head não tem melee: só magia', () => {
+test('Brain Head não tem melee: só magia', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, () => {
   const golpes = apanhar(naSala('brain-head'), 120);
   assert.ok(!golpes.some((g) => g.golpe === 'corpo a corpo'));
 });
 
-test('Magma Bubble: sala de lava, o boss nasce nela', () => {
+test('Magma Bubble: sala de lava, o boss nasce nela', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, () => {
   const e = naSala('magma-bubble');
   assert.equal(e.hunt.monstros.length, 1);
   assert.deepEqual({ x: e.hunt.monstros[0].x, y: e.hunt.monstros[0].y }, { x: 35, y: 36 });
 });
 
-test('bichos da hunt (Winter Dream Court): as magias com o nome, a cor e o efeito do original', () => {
+test('bichos da hunt (Winter Dream Court): as magias com o nome, a cor e o efeito do original', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, () => {
   // O que o original mostrou em 5 minutos de caçada do Zoros (`captura-monstros-0924`).
   const doOriginal = {
     'de gelo em área': { cor: '#99ffff', fx: 42 },
@@ -128,11 +129,11 @@ test('melee dos bichos é o do arquivo (Crazed Winter Rearguard: até 400, não 
   assert.ok(max <= 400 && max > 300, `máximo ${max}`);
 });
 
-test('bicho novo não solta todas as magias no primeiro tique: o relógio de cada uma começa sorteado', async () => {
+test('bicho novo não solta todas as magias no primeiro tique: o relógio de cada uma começa sorteado', { skip: doClassico("Salas e poderes dos bosses do Draevor (capturados do original)") }, async () => {
   const Poderes = await import('../systems/poderes.mjs');
   const Ficha = await import('../systems/ficha.mjs');
   const e = personagemDeTeste({ level: 300 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'werehyaenna-north', mode: 'auto', dificuldade: 'medio' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: huntDoPoe('werehyaenna-north'), mode: 'auto', dificuldade: 'medio' }).ok);
   e.hp = e.maxHp = 1e9;
   const agora = 1_000_000;
   const aleatorio = Math.random;

@@ -5,6 +5,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync, copyFileSy
 import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const pasta = mkdtempSync(join(tmpdir(), 'hot-int-'));
 const OV = join(pasta, 'overrides');
@@ -213,7 +214,7 @@ const ato5 = (mod = {}) => ({
   ...mod,
 });
 
-test('HI8. ACT: um ato novo entra no jogo sem reiniciar, editar o arquivo o SUBSTITUI, um ato inválido mantém o anterior, rascunho/apagar o tiram', async () => {
+test('HI8. ACT: um ato novo entra no jogo sem reiniciar, editar o arquivo o SUBSTITUI, um ato inválido mantém o anterior, rascunho/apagar o tiram', { skip: aAdaptar("Hot reload do Ato vale para poe-ato-*; o teste usa um ato do Draevor") }, async () => {
   const arquivo = join(ATOS, 'ato-quente.json');
   const grava = (a) => writeFileSync(arquivo, JSON.stringify(a));
   grava(ato5());
@@ -251,7 +252,7 @@ test('HI8. ACT: um ato novo entra no jogo sem reiniciar, editar o arquivo o SUBS
   assert.equal(Campanha.FASES.filter((f) => f.grafo).length, 0, 'nenhuma fase órfã');
 });
 
-test('HI9. CAMPANHA: níveis das fases e dos bosses recarregam a quente; estrutura diferente (fase a mais) exige reinício e não toca em nada', async () => {
+test('HI9. CAMPANHA: níveis das fases e dos bosses recarregam a quente; estrutura diferente (fase a mais) exige reinício e não toca em nada', { skip: doClassico("Níveis das 48 fases/bosses da campanha do Draevor") }, async () => {
   const c = JSON.parse(readFileSync(campanhaTmp, 'utf8'));
   c.fases = c.fases.filter((f) => !hunts.includes(f.huntId)); // este processo já "emprestou" 6 hunts da campanha legada ao ato de teste (HI8)
   const nivel0 = copia(Campanha.FASES[0].nivel);

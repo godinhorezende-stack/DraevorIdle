@@ -7,6 +7,7 @@ import * as Ficha from '../systems/ficha.mjs';
 import * as C from '../systems/itens/config.mjs';
 import * as Atributos from '../systems/personagem/atributos.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
@@ -136,7 +137,7 @@ test('base de defesa pela vocação da peça: knight Armour, paladin Evasion, ma
   assert.equal(Atributos.valoresDaBase(['armour', 'evasion'], 10, 100).armour, 7.5);
 });
 
-test('ficha: Armour, Evasion e Energy Shield somam das peças (base + adds + %); peça de ES não tem Armour', () => {
+test('ficha: Armour, Evasion e Energy Shield somam das peças (base + adds + %); peça de ES não tem Armour', { skip: doClassico("Base por raridade dos itens do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer' });
   // O slot vazio antes (o manto do kit inicial já dá Energy Shield pelo tipo da base).
   e.equipment[armadura.slot] = null;

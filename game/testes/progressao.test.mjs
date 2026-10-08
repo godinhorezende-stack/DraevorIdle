@@ -4,9 +4,12 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'no
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { doClassico } from './apoio-migracao.mjs';
 
 const tmp = mkdtempSync(join(tmpdir(), 'prog-'));
 process.env.DRAEVOR_OVERRIDES = tmp; // overrides DESTE processo ficam na pasta temporária (nunca os do dono)
+// O apoio carrega o jogo inteiro (a pasta de overrides é lida quando o módulo carrega): só DEPOIS de apontá-la para a temporária.
+const { HUNT_DE_TESTE } = await import('./apoio.mjs');
 after(() => rmSync(tmp, { recursive: true, force: true }));
 
 const P = await import('../systems/progressao.mjs');
@@ -48,7 +51,7 @@ test('PG1. a tabela de progressão: 10 Atos, level 1–1000, tiers T1–T2 … T
   assert.deepEqual(P.EM_USO.dificuldades, { facil: { nome: 'Normal' }, medio: { nome: 'Cruel' }, dificil: { nome: 'Merciless' } });
 });
 
-test('PG2. progressão e dificuldade são DIMENSÕES SEPARADAS: o loot é por dificuldade e neutro de fábrica; a progressão não tem campo de dificuldade', () => {
+test('PG2. progressão e dificuldade são DIMENSÕES SEPARADAS: o loot é por dificuldade e neutro de fábrica; a progressão não tem campo de dificuldade', { skip: doClassico("Progressão e dificuldade do Draevor (Atos 1–10 do catálogo do Draevor, neutro de fábrica)") }, () => {
   for (const d of P.DIFICULDADES) assert.deepEqual(P.lootDa(d), NEUTRO, d);
   assert.deepEqual(P.lootDa('qualquer'), NEUTRO, 'dificuldade desconhecida = Normal');
   assert.ok(!JSON.stringify(P.EM_USO.progressao).includes('facil') && !JSON.stringify(P.EM_USO.progressao).includes('dificil'), 'a progressão não menciona dificuldade');
@@ -102,12 +105,12 @@ test('PG4. avisos (não bloqueiam): dificuldade inferior mais vantajosa, e os 49
   assert.ok(!P.basesDoAto(10, { incluirCraft: true, limite: 100000 }).bases.some((b) => b.minLevel > 1000), 'nenhuma base de Ato passa de 1000');
 });
 
-test('PG5. neutro de fábrica: o gerador devolve EXATAMENTE os mesmos itens de antes (mesma semente), com ou sem a configuração explícita', () => {
+test('PG5. neutro de fábrica: o gerador devolve EXATAMENTE os mesmos itens de antes (mesma semente), com ou sem a configuração explícita', { skip: doClassico("Progressão e dificuldade do Draevor (Atos 1–10 do catálogo do Draevor, neutro de fábrica)") }, () => {
   const run = (extra) => Array.from({ length: 1500 }, (_, i) => { const rng = S.criarRng(1000 + i); return G.gerarItem({ itemId: BASE_COM_POOL, ato: 1 + (i % 4), dificuldade: P.DIFICULDADES[i % 3], itemLevel: 20 + (i * 7) % 900, boss: i % 11 === 0, rng, ...extra }); });
   assert.deepEqual(run({}), run({ lootConfig: NEUTRO }));
 });
 
-test('PG6. a DIFICULDADE influencia o gerador real: pesos de raridade, +1 modificador, pesos e teto de tier, e a chance de drop só de EQUIPAMENTO', () => {
+test('PG6. a DIFICULDADE influencia o gerador real: pesos de raridade, +1 modificador, pesos e teto de tier, e a chance de drop só de EQUIPAMENTO', { skip: doClassico("Progressão e dificuldade do Draevor (Atos 1–10 do catálogo do Draevor, neutro de fábrica)") }, () => {
   const contar = (cfgDoLoot, n = 6000, extra = {}) => { const m = { raridade: {}, mods: 0, tiers: {}, itens: [] }; for (let i = 0; i < n; i++) { const it = G.gerarItem({ itemId: BASE_COM_POOL, ato: 3, dificuldade: 'medio', itemLevel: 700, rng: S.criarRng(i + 1), lootConfig: { ...NEUTRO, ...cfgDoLoot }, ...extra }); m.itens.push(it); const r = it.raridade ?? 'comum'; m.raridade[r] = (m.raridade[r] ?? 0) + 1; m.mods += it.af?.length ?? 0; for (const a of it.af ?? []) m.tiers[a.nivel] = (m.tiers[a.nivel] ?? 0) + 1; } return m; };
   const base = contar({});
   const mitico = contar({ pesosDeRaridade: { mítico: 5000 } });
@@ -160,7 +163,7 @@ test('PG8. elegibilidade: modificador nunca aparece em base incompatível nem ac
   if (semEvasao) for (let k = 0; k < 200; k++) { const it = G.gerarItem({ itemId: semEvasao.id, ato: 1, dificuldade: 'dificil', itemLevel: 500, rng: S.criarRng(k), lootConfig: { ...NEUTRO, chanceDeModificadorExtra: 1 } }); for (const a of it.af ?? []) assert.ok(!['armor_flat', 'armour_pct'].includes(a.id), 'armadura sem Armour não rola add de Armour'); }
 });
 
-test('PG9. Atos 1, 5 e 10 nas três dificuldades: mesma faixa e mesmos tiers; distribuição teórica soma 1; Normal < Cruel < Merciless em itens raros; nível 1000 tratado', () => {
+test('PG9. Atos 1, 5 e 10 nas três dificuldades: mesma faixa e mesmos tiers; distribuição teórica soma 1; Normal < Cruel < Merciless em itens raros; nível 1000 tratado', { skip: doClassico("Progressão e dificuldade do Draevor (Atos 1–10 do catálogo do Draevor, neutro de fábrica)") }, () => {
   for (const ato of [1, 5, 10]) {
     const r = P.DIFICULDADES.map((d) => S.resumoAnalitico({ ato, dificuldade: d }));
     assert.deepEqual(new Set(r.map((x) => x.itemLevel)).size, 1, `Ato ${ato}: o Item Level é o mesmo nas dificuldades`);
@@ -173,7 +176,7 @@ test('PG9. Atos 1, 5 e 10 nas três dificuldades: mesma faixa e mesmos tiers; di
   assert.equal(P.estagioDeRaridadeDoAto(1), 1); assert.equal(P.estagioDeRaridadeDoAto(5), 3); assert.equal(P.estagioDeRaridadeDoAto(10), 3);
 });
 
-test('PG10. o SIMULADOR: determinístico por semente, a amostra bate com a teoria, usa o gerador real, cobre monstro e hunt, avisa quando o Ato não tem bases, e a proposta é simulada sem ser aplicada', () => {
+test('PG10. o SIMULADOR: determinístico por semente, a amostra bate com a teoria, usa o gerador real, cobre monstro e hunt, avisa quando o Ato não tem bases, e a proposta é simulada sem ser aplicada', { skip: doClassico("Progressão e dificuldade do Draevor (Atos 1–10 do catálogo do Draevor, neutro de fábrica)") }, () => {
   const a = S.simular({ ato: 5, dificuldade: 'medio', n: 4000, semente: 99 });
   const b = S.simular({ ato: 5, dificuldade: 'medio', n: 4000, semente: 99 });
   assert.deepEqual(a, b);
@@ -187,7 +190,7 @@ test('PG10. o SIMULADOR: determinístico por semente, a amostra bate com a teori
   assert.equal(m.ok, true);
   assert.ok(m.equipamentosPorAbate > 0 && m.basesDoLoot > 0);
   assert.equal(S.simularMonstro({ monstro: 'nao-existe' }).ok, false);
-  const hunt = S.simularHunt({ huntId: 'troll-cave', ato: 1, dificuldade: 'dificil', abates: 2000, semente: 3 });
+  const hunt = S.simularHunt({ huntId: HUNT_DE_TESTE, ato: 1, dificuldade: 'dificil', abates: 2000, semente: 3 });
   assert.equal(hunt.ok, true);
   assert.ok(hunt.equipamentosPorAbate > 0);
   assert.equal(S.simularHunt({ huntId: 'nao-existe' }).ok, false);
@@ -202,7 +205,7 @@ test('PG10. o SIMULADOR: determinístico por semente, a amostra bate com a teori
   assert.deepEqual(P.EM_USO, antes, 'mesmo se a simulação lançar');
 });
 
-test('PG11. bases por Ato: só equipamento cujo level mínimo cai na faixa (independe da dificuldade); craft fora; slot/tier/contagens; level incompatível nunca entra', () => {
+test('PG11. bases por Ato: só equipamento cujo level mínimo cai na faixa (independe da dificuldade); craft fora; slot/tier/contagens; level incompatível nunca entra', { skip: doClassico("Progressão e dificuldade do Draevor (Atos 1–10 do catálogo do Draevor, neutro de fábrica)") }, () => {
   for (const ato of [1, 3, 5]) {
     const b = P.basesDoAto(ato, { limite: 100000 });
     const f = P.faixaDoAto(ato);
@@ -231,7 +234,7 @@ test('PG12. boss e hunt: o boss usa a tabela da dificuldade de cima mas o loot C
   assert.ok(CATALOGO.bestiary.troll.loot.length > 0, 'os drops cadastrados do monstro seguem intactos');
 });
 
-test('PG13. overrides: o arquivo de fábrica nunca é editado; salvar grava só a DIFERENÇA, valida antes, tem prévia de impacto, versões, restaurar, desligar, conflito (409)', () => {
+test('PG13. overrides: o arquivo de fábrica nunca é editado; salvar grava só a DIFERENÇA, valida antes, tem prévia de impacto, versões, restaurar, desligar, conflito (409)', { skip: doClassico("Progressão e dificuldade do Draevor (Atos 1–10 do catálogo do Draevor, neutro de fábrica)") }, () => {
   const fabrica = readFileSync(new URL('../gamedata/progressao.json', import.meta.url), 'utf8');
   assert.equal(Adm.obter().revisao, 'ausente');
   const invalido = Adm.propor({ loot: { medio: { chanceDeDrop: -3 } } });
@@ -340,7 +343,7 @@ test('PG17. rotas: configuração, bases do Ato (com marcos), prévia e simulado
   assert.deepEqual(P.lootDa('dificil'), NEUTRO, 'simular a proposta não a aplica');
   assert.equal((await chama('POST', 'simulador/loot', { modo: 'equipamentos', n: 100, override: { progressao: { nivelMaximoDeEquipamento: 5000 } } }))[0], 409);
   assert.equal((await chama('POST', 'simulador/loot', { modo: 'monstro', monstro: 'troll', ato: 1, n: 500 }))[1].ok, true);
-  assert.equal((await chama('POST', 'simulador/loot', { modo: 'hunt', huntId: 'troll-cave', ato: 1, n: 500 }))[1].ok, true);
+  assert.equal((await chama('POST', 'simulador/loot', { modo: 'hunt', huntId: HUNT_DE_TESTE, ato: 1, n: 500 }))[1].ok, true);
   assert.equal(A.classeDaRota('GET', '/api/mapas/_conteudo/progressao'), 'leitura');
   assert.equal(A.classeDaRota('POST', '/api/mapas/_conteudo/progressao/validar'), 'leitura');
   assert.equal(A.classeDaRota('POST', '/api/mapas/_conteudo/simulador/loot'), 'leitura');

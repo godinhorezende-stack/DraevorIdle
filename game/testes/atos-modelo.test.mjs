@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as M from '../systems/atos-modelo.mjs';
 import * as Legado from '../systems/atos-legado.mjs';
 import * as Campanha from '../systems/campanha.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const fase = (id, extra = {}) => ({ id, nome: id.toUpperCase(), huntId: `hunt-${id}`, tipo: 'hunt-normal', ...extra });
 const ato5 = (mod = {}) => ({
@@ -61,7 +62,7 @@ test('G5. fasesAbertas segue o grafo: bifurcação abre os dois caminhos; a conv
   assert.ok(!M.fasesAbertas(com, ['fase-1', 'fase-2', 'fase-3', 'fase-4']).has('fase-6'));
 });
 
-test('G6. atos legados: 4 atos de 12 fases (a travada fora do grafo), válidos, e a regra do grafo dá o MESMO que o runtime linear atual', () => {
+test('G6. atos legados: 4 atos de 12 fases (a travada fora do grafo), válidos, e a regra do grafo dá o MESMO que o runtime linear atual', { skip: doClassico("Atos legados do Draevor (4 de 12 fases)") }, () => {
   const legados = Legado.atosLegados();
   assert.equal(legados.length, Campanha.ATOS);
   const todasAsHunts = new Set(Campanha.FASES.map((f) => f.huntId));

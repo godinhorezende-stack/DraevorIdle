@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 process.env.ITENS_POE = '1';
 const Catalogo = await import('../systems/itens-poe/catalogo.mjs');
@@ -53,7 +54,7 @@ test('no combate de verdade: matar com "Carga de Frenesi ao Matar" ganha a carga
   e.equipment.ring = { id: Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id), count: 1, af: [], poe: { af: { carga_frenesi_ao_matar: 100 } } };
   Afixos.sincronizarMaximos(e);
   Ficha.invalidar(e);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const antes = Ficha.combate(e);
   const m = criarMonstro({ key: 'troll', x: e.hunt.pos.x + 1, y: e.hunt.pos.y }, null);
   e.hunt.monstros.push(m);

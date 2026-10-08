@@ -1,5 +1,6 @@
 // As GEMAS DE SUPORTE do PoE no jogo (dono, 06/10: "faça isso" — as magias ativadas por gatilho; as gemas do PoE no lugar das do
-// Draevor). Os dados vêm de `tools/baixar-suportes-poedb.mjs` (poedb, pt) — referência local, fora do git, como o resto do PoE.
+// Draevor). Os dados vêm de `tools/baixar-suportes-poedb.mjs` (poedb, pt) para a coleção do dono, e de lá para o repositório
+// (`gamedata/itens-poe/suportes-poe.json`, `game/tools/importar-gemas-poe.mjs`).
 // Cada suporte vira um item de gema (ids estáveis em `gamedata/itens-poe/suportes-poe-ids.json`) com:
 //   - a COMPATIBILIDADE pelas tags do PoE (`Projétil`, `Magia`, `Ataque`, `Corpo a Corpo`...): só as tags que restringem;
 //   - o EFEITO NO NÍVEL: cada linha do suporte (com os números do nível, da tabela do poedb, e da qualidade) traduzida para as chaves do
@@ -7,11 +8,9 @@
 //     a linha que o jogo não faz entra em `naoFeitas` (o status: funciona / parcial / não, como nas ativas);
 //   - o GATILHO (Conjurar no Acerto Crítico, ao Abater Corpo a Corpo, ao Receber Dano): quando e a recarga dele.
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { ligado } from './catalogo.mjs';
 
-const RAIZ = process.env.REFERENCIAS_POE ?? '/home/deploy/referencias-poe';
-export const PASTA = join(RAIZ, 'poe-suportes-poedb');
+const ARQ_SUPORTES = new URL('../../gamedata/itens-poe/suportes-poe.json', import.meta.url);
 const ARQ_IDS = new URL('../../gamedata/itens-poe/suportes-poe-ids.json', import.meta.url);
 const PRIMEIRO_ID = 914001;
 export const PREFIXO = 'poe-suporte:';
@@ -248,10 +247,9 @@ let INICIADO = null;
 const EXCLUI = { Pacifism_Support: ['poe:Aura', 'poe:Arauto', 'poe:Guarda', 'poe:Postura', 'poe:Clamor', 'poe:Vínculo'] };
 export function iniciar({ registrarSuporte } = {}) {
   if (INICIADO) return INICIADO;
-  const arq = join(PASTA, 'suportes.json');
-  if (!ligado() || !existsSync(arq)) return (INICIADO = { suportes: 0, porStatus: {} });
+  if (!ligado() || !existsSync(ARQ_SUPORTES)) return (INICIADO = { suportes: 0, porStatus: {} });
   // Os "Despertados"/"Excepcionais" (só de endgame) ficam de fora junto: o jogo usa os comuns.
-  SUPORTES = JSON.parse(readFileSync(arq, 'utf8')).filter((s) => s.linhas?.length);
+  SUPORTES = JSON.parse(readFileSync(ARQ_SUPORTES, 'utf8')).filter((s) => s.linhas?.length);
   for (const s of SUPORTES) POR_SLUG.set(s.slug, s);
   const ids = idsDosSuportes(SUPORTES.map((s) => s.slug));
   const porStatus = {};

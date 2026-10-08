@@ -20,7 +20,7 @@ export function criarTelaDasPendenciasPoe({ raiz }) {
   async function desenhar() {
     const e = await api('estado');
     if (!e.ligado) {
-      raiz().replaceChildren(cabecalho('Pendências de modificadores', 'Só no servidor local com ITENS_POE=1.'));
+      raiz().replaceChildren(cabecalho('Pendências de modificadores', 'Este servidor está no Draevor clássico (DRAEVOR_CLASSICO=1): suba sem essa variável.'));
       return;
     }
     T.dados = await api('pendencias');

@@ -36,7 +36,8 @@ test('as 195 moedas no catálogo, cada uma com status; as principais funcionam',
   for (const m of M.MOEDAS) assert.ok(ITEM_CATALOG[m.itemId]?.stackable, m.slug);
   const st = (s) => M.STATUS[s].status;
   for (const s of ['Orb_of_Transmutation', 'Orb_of_Augmentation', 'Orb_of_Alteration', 'Regal_Orb', 'Orb_of_Alchemy', 'Chaos_Orb', 'Exalted_Orb', 'Orb_of_Scouring', 'Orb_of_Annulment', 'Divine_Orb', 'Blessed_Orb', 'Orb_of_Chance', 'Mirror_of_Kalandra', 'Fracturing_Orb', 'Gemcutters_Prism']) assert.equal(st(s), 'funciona', s);
-  assert.equal(st('Vaal_Orb'), 'parcial');
+  // O Orbe Vaal era parcial (sem o implícito corrompido); com o pool `corrupted` (08/10) ele faz o que o PoE faz — ver moedas-pools.test.mjs.
+  assert.equal(st('Vaal_Orb'), 'funciona');
   assert.equal(st('Cartographers_Chisel'), 'nao');
   assert.match(M.STATUS.Cartographers_Chisel.motivo, /mapas/);
   assert.equal(ITEM_CATALOG[M.idDa('Chaos_Orb')].poeMoeda.icone, 'Chaos_Orb.png');

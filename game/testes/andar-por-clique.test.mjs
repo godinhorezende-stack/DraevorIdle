@@ -11,7 +11,8 @@ import * as R from '../systems/regras.mjs';
 import { bloqueado, gradeDaCidade } from '../systems/dados.mjs';
 import { bfsDistancias, VIZINHANCA_4 } from '../systems/hunt/caminho.mjs';
 import { gradeDaHunt, gradesCacheadas } from '../systems/hunt/terreno.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const cheb = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 /*
@@ -212,13 +213,13 @@ test('cidade, destino do clique não vai para o banco', async () => {
 function naCacaOnline(modo = 'online') {
   const { s, enviados } = naCidade();
   s.estado = personagemDeTeste({ level: 100 });
-  assert.equal(Cacadas.entrar(s.estado, { huntId: 'troll-cave', mode: modo }).ok, true);
+  assert.equal(Cacadas.entrar(s.estado, { huntId: HUNT_DE_TESTE, mode: modo }).ok, true);
   s.estado.hunt.monstros = [];
   s.estado.hunt.respawns = [];
   // Mapa esvaziado à mão: sem a instância, senão ele contaria como limpo e renovaria (ver hunt/instancia.mjs).
   delete s.estado.hunt.instancia;
   s.estado.hunt.assistencia = false;
-  const grade = gradeDaHunt({ id: 'troll-cave' });
+  const grade = gradeDaHunt({ id: HUNT_DE_TESTE });
   return { s, enviados, grade };
 }
 
@@ -290,7 +291,7 @@ test('Caça Online: tecla depois do clique larga o destino; clique novo troca', 
   assert.equal(s.estado.hunt.destino, null);
 });
 
-test('Caça Automática: o clique não anda (quem anda é a rota — regra de sempre)', () => {
+test('Caça Automática: o clique não anda (quem anda é a rota — regra de sempre)', { skip: doClassico("Decisão do dono (07/10): andar pelo clique desliga o Automático") }, () => {
   const { s, enviados } = naCacaOnline('auto');
   s.receber({ t: 'huntWalkTo', x: s.estado.hunt.pos.x + 1, y: s.estado.hunt.pos.y });
   assert.equal(s.estado.hunt.destino ?? null, null);

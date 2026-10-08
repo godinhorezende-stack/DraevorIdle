@@ -8,7 +8,8 @@ import * as Charms from '../systems/charms.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const CAP = new URL('../../api-mapeada/captura-charms-0925/', import.meta.url);
 const ler = (n) => JSON.parse(readFileSync(new URL(n, CAP), 'utf8'));
@@ -117,11 +118,11 @@ test('dano elemental tem teto de 2x o level (Canary)', () => {
   assert.equal(eventos.find((x) => x.t === 'dmg').v, 20);
 });
 
-test('na caçada: as mortes enchem o bestiary e o Dodge (no Troll) apara o golpe', () => {
+test('na caçada: as mortes enchem o bestiary e o Dodge (no Troll) apara o golpe', { skip: doClassico("Charms e bestiário do Draevor (Dodge no Troll)") }, () => {
   const e = personagemDeTeste({ level: 20 });
   Prey.garantir(e);
   e.charms = { tiers: { 9: 3 }, alvos: { 9: 'troll' }, gastos: 0 };
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   e.maxHp = e.hp = 1e12;
   let t = Date.now();
   e.hunt.ultimoTique = t;

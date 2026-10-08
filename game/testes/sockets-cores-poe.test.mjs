@@ -124,8 +124,10 @@ test('6 sockets e 6 links são raros como no PoE; a loja da Zuma vende os orbes 
   for (let i = 0; i < 20000; i++) if (S.sortearLinks(6, 6, r).every(Boolean)) todos++;
   assert.ok(todos / 20000 < 0.003, `6 links ${todos}/20000`);
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 90 });
-  const ids = G.linhasDosOrbes(e).map((l) => l.id).sort();
-  assert.deepEqual(ids, Object.values(G.ORBES_DO_POE).filter((o) => o?.itemId).map((o) => o.itemId).sort());
+  // Com o jogo inteiro carregado (como no servidor), a Zuma vende também as outras moedas do PoE (`itens-poe/moedas.mjs`); os 3 orbes estão lá.
+  const ids = G.linhasDosOrbes(e).map((l) => l.id);
+  for (const o of Object.values(G.ORBES_DO_POE).filter((x) => x?.itemId)) assert.ok(ids.includes(o.itemId), `a Zuma vende o orbe ${o.itemId}`);
+  assert.ok(ids.every((id) => id >= 915_001 && id <= 915_999), 'só moedas do PoE');
   assert.equal(G.sortearFundidora({ ato: 4, fatorDeChance: 1e9 }), null);
   e.gold = 1e9;
   assert.ok(G.comprarNaLoja(e, { id: G.ORBES_DO_POE.cromatico.itemId, count: 3 }).ok);

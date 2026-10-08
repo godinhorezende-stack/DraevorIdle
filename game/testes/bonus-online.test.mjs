@@ -11,7 +11,8 @@ import * as B from '../database/banco.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { matarMonstro, fatorDaCacaOnline } from '../systems/hunt/combate.mjs';
 import { Sessao, vivas } from '../websocket/sessao.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const BONUS = CATALOGO.bonusOnline;
 let uid = 800_000;
@@ -25,7 +26,7 @@ const bicho = (hunt, exp = 1000, extra = {}) => ({
 /** Um personagem numa caçada, no modo pedido; sem boosts nem premium, nada que mude entre os dois modos. */
 function cacando(modo, level = 600) {
   const e = personagemDeTeste({ vocacao: 'knight', level });
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: modo, strategy: 'nearest' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: modo, strategy: 'nearest' }).ok, true);
   e.hunt.monstros = [];
   e.hunt.respawns = [];
   // Mapa esvaziado à mão: sem a instância, senão ele contaria como limpo e renovaria (ver hunt/instancia.mjs).
@@ -36,14 +37,14 @@ function cacando(modo, level = 600) {
 /** A exp que a MESMA morte pagaria na Caça Automática, pela conta de sempre. */
 const expAutomatica = (e, base) => Math.round(Boosts.expDoBicho(e, base));
 
-test('a regra existente: o bônus é o `bonusOnline` do catálogo (15%)', () => {
+test('a regra existente: o bônus é o `bonusOnline` do catálogo (15%)', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   assert.equal(BONUS, 15);
   assert.equal(fatorDaCacaOnline({ modo: 'online' }), 1.15);
   assert.equal(fatorDaCacaOnline({ modo: 'auto' }), 1);
   assert.equal(fatorDaCacaOnline(null), 1);
 });
 
-test('A/C/F. caça online solo: a morte paga a exp base + 15%', () => {
+test('A/C/F. caça online solo: a morte paga a exp base + 15%', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   const e = cacando('online');
   const alvo = bicho(e.hunt);
   e.hunt.monstros.push(alvo);
@@ -57,7 +58,7 @@ test('A/C/F. caça online solo: a morte paga a exp base + 15%', () => {
   assert.ok(esperado > expAutomatica(e, 1000));
 });
 
-test('B. caça automática: nenhum bônus online (a XP base não mudou)', () => {
+test('B. caça automática: nenhum bônus online (a XP base não mudou)', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   const e = cacando('auto');
   const alvo = bicho(e.hunt);
   e.hunt.monstros.push(alvo);
@@ -66,7 +67,7 @@ test('B. caça automática: nenhum bônus online (a XP base não mudou)', () => 
   assert.equal(e.xp - antes, expAutomatica(e, 1000));
 });
 
-test('B2. caçada OFFLINE de quem saiu da Caça Online: sem bônus online', () => {
+test('B2. caçada OFFLINE de quem saiu da Caça Online: sem bônus online', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   const e = cacando('online');
   e.hp = e.maxHp = 1e12;
   const agora = Date.now();
@@ -84,7 +85,7 @@ test('B2. caçada OFFLINE de quem saiu da Caça Online: sem bônus online', () =
   assert.equal(e.hunt.modo, 'online');
 });
 
-test('D. party online: cada membro recebe a parte dele com o bônus do PRÓPRIO modo', () => {
+test('D. party online: cada membro recebe a parte dele com o bônus do PRÓPRIO modo', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   const dono = cacando('online');
   const online = cacando('online');
   const auto = cacando('auto');
@@ -105,7 +106,7 @@ test('D. party online: cada membro recebe a parte dele com o bônus do PRÓPRIO 
   assert.equal(ganho[2], Math.round(Boosts.expDoBicho(auto, parte)), 'membro na automática: a party de sempre, sem bônus');
 });
 
-test('E. vários bichos: cada morte com o bônus, uma vez só', () => {
+test('E. vários bichos: cada morte com o bônus, uma vez só', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   const e = cacando('online');
   const antes = e.xp;
   let soma = 0;
@@ -118,7 +119,7 @@ test('E. vários bichos: cada morte com o bônus, uma vez só', () => {
   assert.equal(e.xp - antes, soma);
 });
 
-test('G/J. pelo tique de verdade: exp, sessão e ficha batem, e o bônus não é aplicado duas vezes', () => {
+test('G/J. pelo tique de verdade: exp, sessão e ficha batem, e o bônus não é aplicado duas vezes', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   const e = cacando('online');
   e.hp = e.maxHp = 1e12;
   const alvo = bicho(e.hunt, 1000);
@@ -144,7 +145,7 @@ test('G/J. pelo tique de verdade: exp, sessão e ficha batem, e o bônus não é
   assert.equal(e.level, Math.max(e.level, R.levelFromExp(e.xp)));
 });
 
-test('G2. o bônus pode fazer subir de level — pela mesma conta do resto', () => {
+test('G2. o bônus pode fazer subir de level — pela mesma conta do resto', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, () => {
   const e = cacando('online', 8);
   const falta = R.expForLevel(9) - e.xp;
   // A menor morte que SEM o bônus não chega no 9, mas COM ele chega.
@@ -157,7 +158,7 @@ test('G2. o bônus pode fazer subir de level — pela mesma conta do resto', () 
   assert.equal(e.level, R.levelFromExp(e.xp));
 });
 
-test('H/I. persistência e o que vai ao cliente: a exp com bônus é gravada e é a do `character`', async (t) => {
+test('H/I. persistência e o que vai ao cliente: a exp com bônus é gravada e é a do `character`', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, async (t) => {
   const conta = await B.criarConta({ email: `online-${randomUUID()}@teste.local`, senha: 'x' });
   const nome = `Onl${randomUUID().replace(/[^a-z]/g, '').slice(0, 8)}`;
   const inicial = personagemDeTeste({ level: 100 });
@@ -173,7 +174,7 @@ test('H/I. persistência e o que vai ao cliente: a exp com bônus é gravada e �
     B.db.prepare('DELETE FROM sessoes WHERE conta = ?').run(conta.id);
     B.db.prepare('DELETE FROM contas WHERE id = ?').run(conta.id);
   });
-  await s.receber({ t: 'startHunt', huntId: 'troll-cave', mode: 'online' });
+  await s.receber({ t: 'startHunt', huntId: HUNT_DE_TESTE, mode: 'online' });
   assert.equal(s.estado.hunt?.modo, 'online');
   s.estado.hunt.monstros = [];
   delete s.estado.hunt.instancia;
@@ -214,7 +215,7 @@ function sorteioDoLoot(t, valor) {
 const comUmaLinha = (hunt) => bicho(hunt, 10, { loot: [{ id: 3003, name: 'rope', chance: 0.5 }] });
 const ropes = (e) => (e.pouch ?? []).filter((p) => p.id === 3003).reduce((a, p) => a + (p.count ?? 1), 0);
 
-test('loot: a Caça Online dá 15% mais CHANCE em cada linha; a automática não', (t) => {
+test('loot: a Caça Online dá 15% mais CHANCE em cada linha; a automática não', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, (t) => {
   for (const [sorteio, esperado] of [
     [0.55, { online: 1, auto: 0 }],
     [0.58, { online: 0, auto: 0 }],
@@ -248,7 +249,7 @@ test('loot: a quantidade de moedas não muda — o bônus é só na chance', (t)
   assert.equal(ouro.online, ouro.auto);
 });
 
-test('loot na sala do boss (vitória): online 15% mais chance, automática não', (t) => {
+test('loot na sala do boss (vitória): online 15% mais chance, automática não', { skip: doClassico("Bônus da Caça Online (+15%): o dono tirou no PoE (decisão de 07/10)") }, (t) => {
   sorteioDoLoot(t, 0.55);
   const sacola = {};
   for (const modo of ['online', 'auto']) {

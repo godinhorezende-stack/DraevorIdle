@@ -13,6 +13,8 @@ import * as Aud from '../admin/auditoria.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
 import * as A from '../admin/acesso.mjs';
 import { criarGuarda } from '../admin/acesso-http.mjs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const pasta = mkdtempSync(join(tmpdir(), 'infra-'));
 after(() => rmSync(pasta, { recursive: true, force: true }));
@@ -43,17 +45,17 @@ test('IN1. revisão do arquivo: muda quando o conteúdo muda, "ausente" quando n
   assert.equal(Rev.conferirRevisao(undefined, f), null);
 });
 
-test('IN2. campanha: salvar com a revisão LIDA grava; com revisão velha (arquivo mudou no meio) é recusado SEM gravar; restaurar também confere', () => {
+test('IN2. campanha: salvar com a revisão LIDA grava; com revisão velha (arquivo mudou no meio) é recusado SEM gravar; restaurar também confere', { skip: doClassico("Revisão/conflito no editor da campanha do Draevor (campanha.json)") }, () => {
   const lida = Camp.ler().revisao;
-  const r = Camp.salvar({ fases: [{ huntId: 'troll-cave', nivel: { medio: 120 } }], revisao: lida });
+  const r = Camp.salvar({ fases: [{ huntId: HUNT_DE_TESTE, nivel: { medio: 120 } }], revisao: lida });
   assert.equal(r.ok, true);
   const nova = Camp.ler().revisao;
   assert.notEqual(nova, lida);
   const antes = readFileSync(Camp.CAMINHOS.arquivo, 'utf8');
-  const velha = Camp.salvar({ fases: [{ huntId: 'troll-cave', nivel: { medio: 130 } }], revisao: lida });
+  const velha = Camp.salvar({ fases: [{ huntId: HUNT_DE_TESTE, nivel: { medio: 130 } }], revisao: lida });
   assert.deepEqual([velha.ok, velha.codigo], [false, 'conflito']);
   assert.equal(readFileSync(Camp.CAMINHOS.arquivo, 'utf8'), antes, 'conflito não grava');
-  assert.equal(Camp.salvar({ fases: [{ huntId: 'troll-cave', nivel: { medio: 130 } }], revisao: nova }).ok, true);
+  assert.equal(Camp.salvar({ fases: [{ huntId: HUNT_DE_TESTE, nivel: { medio: 130 } }], revisao: nova }).ok, true);
   assert.equal(Camp.restaurar(1, lida).codigo, 'conflito');
   assert.equal(Camp.restaurar(1, Camp.ler().revisao).ok, true);
   writeFileSync(Camp.CAMINHOS.arquivo, REAL_CAMPANHA);
@@ -77,7 +79,7 @@ test('IN3. overrides de monstros e de itens: todas as ações que gravam confere
 });
 
 test('IN4. atos: salvar com a versão que a tela leu; versão velha é recusada; o fluxo normal (salvar em sequência com o que a resposta devolve) segue funcionando', () => {
-  const base = { id: 'ato-conc', nome: 'Ato', inicio: 'fase-1', fases: [{ id: 'fase-1', nome: 'Um', huntId: 'troll-cave' }], conexoes: [] };
+  const base = { id: 'ato-conc', nome: 'Ato', inicio: 'fase-1', fases: [{ id: 'fase-1', nome: 'Um', huntId: HUNT_DE_TESTE }], conexoes: [] };
   const a = Atos.salvar(base);
   assert.equal(a.ato.versao, 1);
   const b = Atos.salvar({ ...a.ato, nome: 'Ato 2' });
@@ -91,14 +93,14 @@ test('IN4. atos: salvar com a versão que a tela leu; versão velha é recusada;
   assert.equal(Atos.duplicar('ato-conc', 'ato-conc-2').ok, true);
 });
 
-test('IN5. HTTP: conflito responde 409 (e o corpo explica); sucesso e erro de validação continuam 200', async () => {
+test('IN5. HTTP: conflito responde 409 (e o corpo explica); sucesso e erro de validação continuam 200', { skip: doClassico("Revisão/conflito no editor da campanha do Draevor (campanha.json)") }, async () => {
   const chama = async (rota, corpo) => { const r = []; await Http.atender({ method: 'POST' }, {}, `/api/mapas/_conteudo/${rota}`, new URL('http://x/'), { json: (a, c, b) => r.push([c, b]), corpoJson: async () => corpo }); return r[0]; };
   const lida = Camp.ler().revisao;
-  assert.equal((await chama('campanha', { fases: [{ huntId: 'troll-cave', nivel: { medio: 121 } }], revisao: lida }))[0], 200);
-  const [status, corpo] = await chama('campanha', { fases: [{ huntId: 'troll-cave', nivel: { medio: 122 } }], revisao: lida });
+  assert.equal((await chama('campanha', { fases: [{ huntId: HUNT_DE_TESTE, nivel: { medio: 121 } }], revisao: lida }))[0], 200);
+  const [status, corpo] = await chama('campanha', { fases: [{ huntId: HUNT_DE_TESTE, nivel: { medio: 122 } }], revisao: lida });
   assert.equal(status, 409);
   assert.equal(corpo.codigo, 'conflito');
-  assert.equal((await chama('campanha', { fases: [{ huntId: 'troll-cave', nivel: { facil: 0 } }], revisao: Camp.ler().revisao }))[0], 200, 'validação inválida não é conflito');
+  assert.equal((await chama('campanha', { fases: [{ huntId: HUNT_DE_TESTE, nivel: { facil: 0 } }], revisao: Camp.ler().revisao }))[0], 200, 'validação inválida não é conflito');
   assert.equal((await chama('overrides', { acao: 'salvar', key: 'troll', override: { hp: 5 }, revisao: 'velha' }))[0], 409);
   assert.equal((await chama('overrides/itens', { acao: 'salvar', id: '3268', override: { attack: 5 }, revisao: 'velha' }))[0], 409);
   writeFileSync(Camp.CAMINHOS.arquivo, REAL_CAMPANHA);

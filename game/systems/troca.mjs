@@ -19,6 +19,7 @@ import { ITEM_CATALOG } from './dados.mjs';
 import { camposDaPeca } from './itens/item.mjs';
 import { pesoDoInventario, VALOR_DA_MOEDA, pilhaDoAlvo } from './inventario.mjs';
 import * as Afixos from './afixos.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 /** Quantos itens diferentes cabem em cada lado da mesa (as casas do quadro). */
 export const LIMITE_DE_ITENS = 8;
@@ -228,6 +229,7 @@ export function comando(s, m) {
     if (ITEM_CATALOG[id]?.fixo) return { ok: false, erro: `${ITEM_CATALOG[id].name} é fixa no personagem — não entra na troca.` };
     const i = pilhaDoAlvo(mochila, id, m.alvo);
     if (i < 0) return { ok: false, erro: 'Esse item não está na sua mochila.' };
+    if (!podeEntrar(id, mochila[i])) return { ok: false, erro: SO_ITENS_DO_POE };
     const chave = assinatura(mochila[i]);
     const ja = meuLado.itens.find((x) => x.id === id && x.chave === chave);
     const ofertado = ja?.count ?? 0;

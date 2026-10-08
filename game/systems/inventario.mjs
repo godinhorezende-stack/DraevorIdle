@@ -15,6 +15,7 @@ import * as Acoes from './acoes.mjs';
 // largar e pegar item do chão. Funções puras sobre `estado` — quem manda a
 // resposta pro cliente é `sessao.mjs`; este arquivo não conhece WebSocket.
 import { ITEM_CATALOG, EQUIPAMENTO_POR_VOCACAO, ACTION_CATALOG } from './dados.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 export function equipamentoInicial(vocacao) {
   const modelo = EQUIPAMENTO_POR_VOCACAO[vocacao].equipment;
@@ -417,6 +418,8 @@ export function pegar(estado, { x, y, indice }) {
   const i = indice == null ? pilha.length - 1 : indice;
   const peca = pilha[i];
   if (!peca) return { ok: false, erro: 'Não há nada aí.' };
+  // No jogo oficial só se pega do chão o item do PoE (o do Draevor fica no chão até a limpeza).
+  if (!podeEntrar(peca.id, peca)) return { ok: false, erro: SO_ITENS_DO_POE };
   if (!VALOR_DA_MOEDA[peca.id] && !cabeNoPeso(estado, peca.id, peca.count)) return { ok: false, erro: erroDeEspaco(estado, peca.id, peca.count) };
 
   pilha.splice(i, 1);

@@ -58,6 +58,8 @@ export const FRASCOS = ['Life_Flasks', 'Mana_Flasks', 'Utility_Flasks'];
 export const registro = () => REG;
 /** O id virtual da base (`Classe/Slug`), ou null. */
 export const idDaBase = (base) => REG.porBase.get(base) ?? null;
+/** A base (`Classe/Slug`) de um id virtual do PoE, ou null. */
+export const baseDoId = (id) => REG.porId.get(Number(id)) ?? null;
 
 const media = (v) => (v && typeof v === 'object' ? Math.round((v.min + v.max) / 2) : Number(v) || 0);
 /** `{ requisitos: { str, dex, int } }` só com o que a base pede (vazio se não pede atributo). */
@@ -364,6 +366,7 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
     if (FRASCOS.includes(classe)) continue;
     const b = cat.classes[classe]?.bases.find((x) => x.id === baseId);
     if (!b || (b.requisitos?.nivel ?? 1) > 1 || b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
+    if (!podeCairComo(cat.classes[classe], b, 'normal')) continue;
     candidatas.push(baseId);
   }
   if (!candidatas.length) return null;
@@ -371,7 +374,18 @@ export function pecaDoBauInicial(rng = Math.random, regras = Catalogo.REGRAS) {
   return pecaDoJogo(gerarPeca({ catalogo: cat, regras, base, raridade: 'normal', ilvl: 1, rng }), regras, rng);
 }
 
-export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0) {
+/**
+ * Uma peça do PoE que cai de um bicho do nível `nivelDoBicho`: a raridade (com a "Raridade de Itens encontrados" do personagem), a base, os
+ * mods e a qualidade. `baseFixa` (`Classe/Slug`): a peça é DESSA base (a projeção da caçada offline repõe as bases que caíram na parte
+ * simulada); um Único sorteado numa base sem Único do PoE vira Raro.
+ */
+/**
+ * A base SEM pool de mods não cai Normal, Mágica nem Rara — só como Único, se tiver um (regra do PoE): as Golden (no PoE só existem como
+ * recompensa, ex.: as do Demigod) e as Rúnicas/Ward (da Expedição; a coleção não traz o pool delas). Antes caíam Raras sem nenhum mod.
+ */
+export const podeCairComo = (classe, base, raridade) => !!base?.pool || (raridade === 'unico' && !!classe?.unicos?.some((u) => u.base === base?.nome));
+
+export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.REGRAS, raridadeAumentada = 0, baseFixa = null) {
   const cat = Catalogo.catalogo();
   const D = regras.drop;
   if (!cat || !D) return null;
@@ -381,8 +395,18 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
   const total = pesos.reduce((n, [, p]) => n + p, 0);
   if (!(total > 0)) return null;
   let sorte = rng() * total;
-  const raridade = pesos.find(([, p]) => (sorte -= p) < 0)?.[0] ?? pesos[pesos.length - 1][0];
+  let raridade = pesos.find(([, p]) => (sorte -= p) < 0)?.[0] ?? pesos[pesos.length - 1][0];
   const ilvl = Math.max(1, Math.min(D.ilvlMaximo ?? 100, Math.round(Number(nivelDoBicho) || 1)));
+  if (baseFixa) {
+    const [classe] = baseFixa.split('/');
+    const c = cat.classes[classe];
+    const b = c?.bases.find((x) => x.id === baseFixa);
+    if (!b) return null;
+    if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) raridade = 'raro';
+    if (!podeCairComo(c, b, raridade)) return null;
+    const r = raridade === 'raro' && FRASCOS.includes(classe) ? 'magico' : raridade;
+    return qualidadeDoDrop(pecaDoJogo(gerarPeca({ catalogo: cat, regras, base: baseFixa, raridade: r, ilvl, rng }), regras, rng), rng, regras);
+  }
   const candidatas = [];
   for (const baseId of REG.porBase.keys()) {
     const [classe] = baseId.split('/');
@@ -393,6 +417,7 @@ export function pecaSorteada(nivelDoBicho, rng = Math.random, regras = Catalogo.
     // não: no PoE ela é a arma que a habilidade Lâmina de Energia cria.
     if (b.slug?.startsWith('Royale_') || b.slug === 'Energy_Blade') continue;
     if (raridade === 'unico' && !c.unicos.some((u) => u.base === b.nome)) continue;
+    if (!podeCairComo(c, b, raridade)) continue;
     candidatas.push(baseId);
   }
   if (!candidatas.length) return null;

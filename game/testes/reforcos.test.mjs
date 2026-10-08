@@ -11,12 +11,13 @@ import * as G from '../systems/skills/gemas.mjs';
 import * as Reforcos from '../systems/skills/reforcos.mjs';
 import { ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const cru = (id) => [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes].find((x) => x.id === id);
 
 function naCacada(e) {
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -38,7 +39,7 @@ function lancar(e, id, alvo = null) {
   return r;
 }
 
-test('toda gema de reforço tem entrada nos dados; os efeitos são de tipos conhecidos', () => {
+test('toda gema de reforço tem entrada nos dados; os efeitos são de tipos conhecidos', { skip: doClassico("Reforços do Draevor (tipos de efeito do catálogo)") }, () => {
   const conhecidos = new Set(['dano', 'critChance', 'critDano', 'treino', 'treinoDeOutraPericia', 'curaRecebida', 'esquivaDeLonge', 'marcaVulneravel', 'marcaEnfraquece', 'provocar']);
   for (const [id, def] of Object.entries(Reforcos.REFORCOS)) {
     assert.ok(G.ITEM_DA_ACAO.has(id), `${id} tem gema`);
@@ -49,7 +50,7 @@ test('toda gema de reforço tem entrada nos dados; os efeitos são de tipos conh
   assert.equal(Object.keys(Reforcos.REFORCOS).length, 17);
 });
 
-test('postura: Master of Flames sobe o dano das skills de fogo (e só delas) enquanto ligada', () => {
+test('postura: Master of Flames sobe o dano das skills de fogo (e só delas) enquanto ligada', { skip: doClassico("Reforços do Draevor (Master of Flames, Blood Rage, Haste, Shared Conservation, Chivalrous Challenge, Cancel Magic Shield)") }, () => {
   const e = comSkills(personagemDeTeste({ vocacao: 'sorcerer', level: 200 }), ['spell-master-of-flames']);
   Treino.garantir(e);
   naCacada(e);
@@ -62,7 +63,7 @@ test('postura: Master of Flames sobe o dano das skills de fogo (e só delas) enq
   assert.equal(Acoes.danoMostrado(e, energia, null).max, antesE, 'energia não');
 });
 
-test('Blood Rage sobe o golpe corpo a corpo (tag melee) — o golpe básico e as skills físicas de perto', () => {
+test('Blood Rage sobe o golpe corpo a corpo (tag melee) — o golpe básico e as skills físicas de perto', { skip: doClassico("Reforços do Draevor (Master of Flames, Blood Rage, Haste, Shared Conservation, Chivalrous Challenge, Cancel Magic Shield)") }, () => {
   const e = comSkills(personagemDeTeste({ vocacao: 'knight', level: 200 }), ['spell-blood-rage']);
   naCacada(e);
   const brutal = cru('spell-brutal-strike');
@@ -72,7 +73,7 @@ test('Blood Rage sobe o golpe corpo a corpo (tag melee) — o golpe básico e as
   assert.ok(Acoes.danoMostrado(e, brutal, null).max > antes);
 });
 
-test('o nível, a raridade e a qualidade da gema escalam o efeito (e a velocidade)', () => {
+test('o nível, a raridade e a qualidade da gema escalam o efeito (e a velocidade)', { skip: doClassico("Reforços do Draevor (Master of Flames, Blood Rage, Haste, Shared Conservation, Chivalrous Challenge, Cancel Magic Shield)") }, () => {
   assert.equal(Reforcos.fatorDaGema(null), 1);
   assert.equal(Reforcos.fatorDaGema({ nivel: 1, raridade: 'comum', qualidade: 0 }), 1);
   const f = Reforcos.fatorDaGema({ nivel: 11, raridade: 'mítico', qualidade: 10 });
@@ -84,7 +85,7 @@ test('o nível, a raridade e a qualidade da gema escalam o efeito (e a velocidad
   assert.ok(e.hunt.buffs['spell-haste'].mult > 1.3, `mult ${e.hunt.buffs['spell-haste'].mult}`);
 });
 
-test('auras: quem você atinge fica vulnerável (+% de fogo/gelo/energia/terra) ou enfraquecido (bate menos)', () => {
+test('auras: quem você atinge fica vulnerável (+% de fogo/gelo/energia/terra) ou enfraquecido (bate menos)', { skip: doClassico("Reforços do Draevor (Master of Flames, Blood Rage, Haste, Shared Conservation, Chivalrous Challenge, Cancel Magic Shield)") }, () => {
   const e = comSkills(personagemDeTeste({ vocacao: 'sorcerer', level: 200 }), ['spell-aura-of-exposed-weakness', 'spell-aura-of-sapped-strength', 'spell-flame-strike']);
   const h = naCacada(e);
   const m = Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null), { hp: 1e9, maxHp: 1e9 });
@@ -101,7 +102,7 @@ test('auras: quem você atinge fica vulnerável (+% de fogo/gelo/energia/terra) 
   assert.equal(Reforcos.forcaDoBicho(m, agora + 60_000), 1);
 });
 
-test('Shared Conservation: a cura recebida vale mais', () => {
+test('Shared Conservation: a cura recebida vale mais', { skip: doClassico("Reforços do Draevor (Master of Flames, Blood Rage, Haste, Shared Conservation, Chivalrous Challenge, Cancel Magic Shield)") }, () => {
   const e = comSkills(personagemDeTeste({ vocacao: 'druid', level: 200 }), ['spell-shared-conservation']);
   naCacada(e);
   assert.equal(Reforcos.bonus(e.hunt, 'curaRecebida'), 0);
@@ -109,7 +110,7 @@ test('Shared Conservation: a cura recebida vale mais', () => {
   assert.equal(Reforcos.bonus(e.hunt, 'curaRecebida'), 10);
 });
 
-test('provocação: Chivalrous Challenge faz os bichos a até 7 sqm (até 6) virem atrás de você', () => {
+test('provocação: Chivalrous Challenge faz os bichos a até 7 sqm (até 6) virem atrás de você', { skip: doClassico("Reforços do Draevor (Master of Flames, Blood Rage, Haste, Shared Conservation, Chivalrous Challenge, Cancel Magic Shield)") }, () => {
   const e = comSkills(personagemDeTeste({ vocacao: 'knight', level: 200 }), ['spell-chivalrous-challenge']);
   const h = naCacada(e);
   for (let i = 1; i <= 9; i++) h.monstros.push(Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + (i <= 8 ? 5 : 20), y: h.pos.y + (i % 3) }, null), { perseguindo: false }));
@@ -125,7 +126,7 @@ test('Magic Wall e Wild Growth são runas de campo (tag ground), não projétil 
   }
 });
 
-test('cancelamento por dados: o Cancel Magic Shield só sai com o escudo ligado, e o desliga', () => {
+test('cancelamento por dados: o Cancel Magic Shield só sai com o escudo ligado, e o desliga', { skip: doClassico("Reforços do Draevor (Master of Flames, Blood Rage, Haste, Shared Conservation, Chivalrous Challenge, Cancel Magic Shield)") }, () => {
   const e = comSkills(personagemDeTeste({ vocacao: 'sorcerer', level: 200 }), ['spell-magic-shield', 'spell-cancel-magic-shield']);
   const h = naCacada(e);
   const slot = Acoes.PAPEL_DO_SLOT.indexOf(cru('spell-cancel-magic-shield').papeis[0]);

@@ -19,7 +19,17 @@ const PALAVRA_DO_TIPO = { zumbi: /zumbi|zombie/i, espectro: /espectro|spectre/i,
   espirito: /espírito furioso|raging spirit/i, fantasma: /fantasma|phantasm/i, reliquia: /relíquia|relic/i, sagrado: /espírito sagrado|holy/i, arma: /arma animada|animate/i, aranha: /aranha|spider/i, qualquer: /./ };
 
 // ---- a força de base por nível (a mediana dos monstros comuns da campanha) ----
-const PONTOS = (() => {
+// PREGUIÇOSA (calculada no primeiro uso e guardada): calcular na carga do módulo lia `CAMPANHA` enquanto `monstros.mjs` ainda carregava,
+// quando a cadeia de imports começava por `itens-poe/campanha.mjs` (campanha → monstros → … → lacaios-poe → monstros):
+// "ReferenceError: Cannot access 'CAMPANHA' before initialization". Sem áreas ainda (campanha não carregada), não guarda.
+let pontosGuardados = null;
+function pontos() {
+  if (pontosGuardados) return pontosGuardados;
+  const calculados = calcularPontos();
+  if (calculados.length) pontosGuardados = calculados;
+  return calculados;
+}
+function calcularPontos() {
   const por = new Map();
   for (const a of Object.values(CAMPANHA.areas ?? {})) for (const m of a.monstros ?? []) {
     if (m.unico || !(m.vida > 0) || !(m.nivel > 0)) continue;
@@ -28,9 +38,10 @@ const PONTOS = (() => {
   }
   const med = (xs) => xs.slice().sort((a, b) => a - b)[Math.floor(xs.length / 2)];
   return [...por.entries()].sort((a, b) => a[0] - b[0]).map(([n, ms]) => ({ n, vida: med(ms.map((m) => m.vida)), dano: med(ms.map((m) => m.dano ?? 1)), tempo: med(ms.map((m) => m.tempoAtaque ?? 1.2)) }));
-})();
+}
 /** A vida, o dano por golpe e o tempo de ataque (s) de um monstro comum do nível `n` (interpolado entre os da campanha). */
 export function forcaDoNivel(n) {
+  const PONTOS = pontos();
   if (!PONTOS.length) return { vida: 50 + n * 30, dano: 4 + n * 2, tempo: 1.2 };
   if (n <= PONTOS[0].n) return { ...PONTOS[0] };
   for (let i = 1; i < PONTOS.length; i++) {

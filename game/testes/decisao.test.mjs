@@ -7,7 +7,7 @@ import * as Tipos from '../systems/encontros/tipos.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
 import { matarMonstro } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 import { Sessao } from '../websocket/sessao.mjs';
 
 const OURO = { id: 3031, chance: 100 };
@@ -18,7 +18,7 @@ const erros = (l) => Modelo.validar(l).join(' | ');
 function luta({ modo = 'online' } = {}) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
   e.maxHp = e.hp = 1e9;
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: modo, strategy: 'nearest', dificuldade: 'facil' }).ok, true);
   e.hunt.monstros.length = 0;
   e.hunt.clock = 1000;
   return e;

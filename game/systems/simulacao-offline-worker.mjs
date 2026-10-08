@@ -7,9 +7,15 @@
 // que deixava ela rodar aqui sem mudar uma linha dela.
 import { parentPort } from 'node:worker_threads';
 import * as Cacadas from './cacadas.mjs';
+import { iniciarJogoDoPoe } from './itens-poe/iniciar.mjs';
 
-parentPort.on('message', ({ id, estado, personagem, agora, modo }) => {
+// O MESMO jogo do servidor: o do PoE (as áreas da campanha, os monstros, as gemas, os itens) — sem isto a caçada offline numa área do PoE
+// quebrava aqui ("reading 'andares'": a área não existia na thread). Carregado uma vez; as mensagens esperam por ele.
+const pronto = iniciarJogoDoPoe();
+
+parentPort.on('message', async ({ id, estado, personagem, agora, modo }) => {
   try {
+    await pronto;
     Cacadas.huntAoCarregar(estado.hunt);
     // `consolidar`: o avanço em segundo plano (ver `consolidacao-offline.mjs`);
     // o personagem continua ausente. O padrão é o login de sempre.

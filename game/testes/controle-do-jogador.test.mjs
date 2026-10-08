@@ -11,7 +11,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { contraAtaque, round } from '../systems/hunt/combate.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 const SEMPRE = () => 0;
 const NUNCA = () => 0.999999;
@@ -88,7 +88,7 @@ test('lentidão: vale a maior, nunca encurta, e o fator é o mesmo dos bichos (1
   assert.ok(Math.abs(Controle.fatorDeLentidao(hunt, 1000) - 1 / 0.7) < 1e-9);
   assert.equal(Controle.fatorDeLentidao(hunt, 3500), 1, 'acabou');
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const normal = Cacadas.razaoDeVelocidade(e);
   e.hunt.controle = { lento: { ate: (e.hunt.clock ?? 0) + 5000, pct: 40 } };
   assert.ok(Math.abs(Cacadas.razaoDeVelocidade(e) - normal / (1 / 0.6)) < 1e-9 || Cacadas.razaoDeVelocidade(e) < normal, 'anda mais devagar');
@@ -96,7 +96,7 @@ test('lentidão: vale a maior, nunca encurta, e o fator é o mesmo dos bichos (1
 
 test('preso, o jogador não lança magia, não dá golpe e o snapshot mostra o controle', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   h.controle = { congelado: { ate: (h.clock ?? 0) + 1500 } };
   const r = Acoes.disparar(e, h, PERSONAGEM, 11, h.monstros[0]);
@@ -111,7 +111,7 @@ test('preso, o jogador não lança magia, não dá golpe e o snapshot mostra o c
 test('o golpe do elite (e do boss) que ACERTA o jogador pode controlá-lo (evento de estado); o do mob comum, nunca', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
   e.maxHp = e.hp = 1e9;
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   const m = Object.assign(criarMonstro({ key: 'troll', x: h.pos.x + 1, y: h.pos.y }, null), { elite: true });
   h.monstros.splice(0, h.monstros.length, m);

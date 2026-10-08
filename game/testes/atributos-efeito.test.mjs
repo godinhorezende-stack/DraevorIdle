@@ -16,8 +16,9 @@ import { ATRIBUTOS } from '../systems/itens/config.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { matarMonstro, round, contraAtaque } from '../systems/hunt/combate.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
 import * as GemasDeSkill from '../systems/skills/gemas.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome)?.id);
@@ -55,7 +56,7 @@ function vestir(e, id, valor) {
   return e;
 }
 function naCacada(e, key = 'troll', forca = 1) {
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -281,7 +282,7 @@ test('todo atributo que pode dropar tem uma sonda de efeito aqui (atributo novo 
 });
 
 for (const [id, [voc, arma, montar, medir, valor, sentido]] of Object.entries(SONDAS)) {
-  test(`${id}: com o atributo, o efeito muda (${sentido})`, () => {
+  test(`${id}: com o atributo, o efeito muda (${sentido})`, { skip: doClassico("Atributos de afixo do Draevor (crit_dmg, elem_pen, *_dmg holy/death/energy/earth, exp_bonus, gem_level…) e magia do Draevor (spell-energy-strike); no PoE os mods vêm traduzidos dos mods do PoE") }, () => {
     const sem = comSemente(() => {
       const e = vestir(personagem(voc, { arma }), null);
       montar(e);
@@ -298,7 +299,7 @@ for (const [id, [voc, arma, montar, medir, valor, sentido]] of Object.entries(SO
   });
 }
 
-test('resistência do bicho vale na magia (troll resiste 20% a energia) e o elemental dos atributos passa por ela', () => {
+test('resistência do bicho vale na magia (troll resiste 20% a energia) e o elemental dos atributos passa por ela', { skip: doClassico("Atributos de afixo do Draevor (crit_dmg, elem_pen, *_dmg holy/death/energy/earth, exp_bonus, gem_level…) e magia do Draevor (spell-energy-strike); no PoE os mods vêm traduzidos dos mods do PoE") }, () => {
   const energia = comSemente(() => {
     const e = personagem('sorcerer');
     naCacada(e, 'troll');

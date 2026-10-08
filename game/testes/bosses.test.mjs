@@ -6,6 +6,7 @@ import * as Cacadas from '../systems/cacadas.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import * as Prey from '../systems/prey.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const HORA = 3_600_000;
 const novo = (level = 400) => {
@@ -14,7 +15,7 @@ const novo = (level = 400) => {
   return e;
 };
 
-test('boss de task: fechado até a task, abre com as kills, paga Task Token e sai uma vez só', () => {
+test('boss de task: fechado até a task, abre com as kills, paga Task Token e sai uma vez só', { skip: doClassico("Bosses do Draevor (task, diário, sala de 25 min, Brain Head/Ghulosh, Auto Boss); o jogo oficial recusa bosses do Draevor") }, () => {
   const e = novo();
   assert.match(Cacadas.entrar(e, { huntId: 'the-horned-fox', mode: 'auto' }).erro, /Boss Task/);
   const task = Bosses.tasks(e).find((t) => t.boss === 'the-horned-fox');
@@ -31,7 +32,7 @@ test('boss de task: fechado até a task, abre com as kills, paga Task Token e sa
   assert.match(Cacadas.entrar(e, { huntId: 'the-horned-fox', mode: 'auto' }).erro, /uma vez por personagem/);
 });
 
-test('boss diário: a espera começa ao ENTRAR, mesmo sem ele cair', () => {
+test('boss diário: a espera começa ao ENTRAR, mesmo sem ele cair', { skip: doClassico("Bosses do Draevor (task, diário, sala de 25 min, Brain Head/Ghulosh, Auto Boss); o jogo oficial recusa bosses do Draevor") }, () => {
   const e = novo();
   const antes = Date.now();
   assert.ok(Cacadas.entrar(e, { huntId: 'ahau', mode: 'auto' }).ok);
@@ -40,7 +41,7 @@ test('boss diário: a espera começa ao ENTRAR, mesmo sem ele cair', () => {
   assert.match(Cacadas.entrar(e, { huntId: 'ahau', mode: 'auto' }).erro, /ainda não voltou/);
 });
 
-test('sala de boss: 25 minutos e volta para a cidade', () => {
+test('sala de boss: 25 minutos e volta para a cidade', { skip: doClassico("Bosses do Draevor (task, diário, sala de 25 min, Brain Head/Ghulosh, Auto Boss); o jogo oficial recusa bosses do Draevor") }, () => {
   const e = novo(3000);
   e.hp = e.maxHp = 1e12; // a luta não é o assunto
   assert.ok(Cacadas.entrar(e, { huntId: 'thor', mode: 'online' }).ok);
@@ -56,7 +57,7 @@ test('sala de boss: 25 minutos e volta para a cidade', () => {
   assert.match(e.avisoDaHunt, /25 minutos/);
 });
 
-test('brain-head e ghulosh: o boss está na sala (a entrada fica no meio dela)', () => {
+test('brain-head e ghulosh: o boss está na sala (a entrada fica no meio dela)', { skip: doClassico("Bosses do Draevor (task, diário, sala de 25 min, Brain Head/Ghulosh, Auto Boss); o jogo oficial recusa bosses do Draevor") }, () => {
   for (const id of ['brain-head', 'ghulosh']) {
     const e = novo();
     assert.ok(Cacadas.entrar(e, { huntId: id, mode: 'auto' }).ok);
@@ -66,7 +67,7 @@ test('brain-head e ghulosh: o boss está na sala (a entrada fica no meio dela)',
   }
 });
 
-test('Auto Boss: pula o que não dá, entra um depois do outro, conta a leva e para no fim', () => {
+test('Auto Boss: pula o que não dá, entra um depois do outro, conta a leva e para no fim', { skip: doClassico("Bosses do Draevor (task, diário, sala de 25 min, Brain Head/Ghulosh, Auto Boss); o jogo oficial recusa bosses do Draevor") }, () => {
   const e = novo();
   const agora = Date.now();
   e.bossCooldownsAte = { alptramun: agora + HORA };

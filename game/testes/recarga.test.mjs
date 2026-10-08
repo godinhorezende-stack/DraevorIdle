@@ -6,14 +6,15 @@ import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Acoes from '../systems/acoes.mjs';
 import { ACTION_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 function naHuntComBarra(ids) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 3000 });
   e.magic = { value: 10 }; // a Fireball Rune pede magic level
   comSkills(e, ids); // as skills vêm das gemas encaixadas
   ids.forEach((id, k) => assert.ok(Acoes.definir(e, { slot: 11 + k, value: { id } }).ok, id));
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   // Três bichos colados nele, que não morrem.
   h.monstros.splice(0, h.monstros.length, ...h.monstros.slice(0, 3));
@@ -21,7 +22,7 @@ function naHuntComBarra(ids) {
   return e;
 }
 
-test('recarga de ataque: Fierce Berserk sai a cada 3 s; a próxima magia de ataque espera o cooldown global', () => {
+test('recarga de ataque: Fierce Berserk sai a cada 3 s; a próxima magia de ataque espera o cooldown global', { skip: doClassico("Recarga de magias/runas do Draevor (Fierce Berserk, runa)") }, () => {
   const e = naHuntComBarra(['spell-fierce-berserk', 'spell-berserk']);
   const h = e.hunt;
   const r = Acoes.disparar(e, h, PERSONAGEM, 11, h.monstros[0]);
@@ -34,7 +35,7 @@ test('recarga de ataque: Fierce Berserk sai a cada 3 s; a próxima magia de ataq
   assert.ok(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, 'depois do global, a segunda magia');
 });
 
-test('runa de ataque divide a recarga do grupo com as magias (não sai junto)', () => {
+test('runa de ataque divide a recarga do grupo com as magias (não sai junto)', { skip: doClassico("Recarga de magias/runas do Draevor (Fierce Berserk, runa)") }, () => {
   const e = naHuntComBarra(['spell-berserk', 'rune-fireball-rune']);
   const h = e.hunt;
   assert.ok(Acoes.disparar(e, h, PERSONAGEM, 11, h.monstros[0]).ok);
@@ -43,7 +44,7 @@ test('runa de ataque divide a recarga do grupo com as magias (não sai junto)', 
   assert.ok(Acoes.disparar(e, h, PERSONAGEM, 12, h.monstros[0]).ok, 'depois do global, a runa sai');
 });
 
-test('o catálogo mandado ao cliente mostra a recarga que o servidor aplica', () => {
+test('o catálogo mandado ao cliente mostra a recarga que o servidor aplica', { skip: doClassico("Recarga das magias do catálogo do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'paladin', level: 8 });
   const cat = Acoes.catalogo(e);
   const lesser = cat.spells.find((s) => s.id === 'spell-lesser-ethereal-spear');

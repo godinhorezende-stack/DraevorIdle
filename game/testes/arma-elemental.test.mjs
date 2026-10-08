@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Prey from '../systems/prey.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 function primeiroGolpe(armaId) {
   const e = personagemDeTeste({ level: 400 });
@@ -16,7 +16,7 @@ function primeiroGolpe(armaId) {
   const original = Math.random;
   Math.random = () => 0.5;
   try {
-    assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+    assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
     let t = Date.now();
     e.hunt.ultimoTique = t;
     for (let i = 0; i < 4 * 600; i++) {

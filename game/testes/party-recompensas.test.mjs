@@ -11,7 +11,10 @@ import * as Combate from '../systems/hunt/combate.mjs';
 import * as PR from '../systems/party-recompensas.mjs';
 import * as Boosts from '../systems/boosts.mjs';
 import { VALOR_DA_MOEDA } from '../systems/inventario.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar } from './apoio-migracao.mjs';
+// (C, docs/migracao-poe-matriz.md: a divisão da party não depende da dificuldade; no jogo oficial só o Normal existe — o Cruel não abre.)
+const DIF_DE_TESTE = HUNT_DE_TESTE === 'troll-cave' ? 'medio' : 'facil';
 
 const criadas = [];
 after(async () => {
@@ -136,7 +139,7 @@ async function partyCacando(...niveis) {
     assert.equal(Party.comandoDoGrupo(lider.s, { action: 'convidar', name: o.nome }).ok, true);
     assert.equal(Party.comandoDoGrupo(o.s, { action: 'aceitar' }).ok, true);
   }
-  assert.equal(Cacadas.entrar(lider.s.estado, { huntId: 'troll-cave', mode: 'auto', dificuldade: 'medio' }).ok, true);
+  assert.equal(Cacadas.entrar(lider.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: DIF_DE_TESTE }).ok, true);
   for (const o of outros) {
     Party.comandoDaCaca(lider.s, { action: 'invite', name: o.nome });
     assert.equal(Party.comandoDaCaca(o.s, { action: 'accept' }).ok, true);
@@ -209,7 +212,7 @@ test('P4. uma morte é processada UMA vez: repetir o evento de morte não paga e
   assert.equal(PR.auditoria().length, 0, 'e nenhum sorteio novo');
 });
 
-test('P5. cada item sorteado vira um registro de auditoria com id, concorrentes e o único dono', async () => {
+test('P5. cada item sorteado vira um registro de auditoria com id, concorrentes e o único dono', { skip: aAdaptar("A auditoria do sorteio é da engine; o teste sorteia um item do Draevor, que não entra no jogo oficial") }, async () => {
   const { js, lider } = await partyCacando(60, 60, 60);
   PR.limparAuditoria();
   const item = Object.entries((await import('../systems/dados.mjs')).ITEM_CATALOG).find(([id, it]) => (it.weight ?? 0) > 0 && (it.weight ?? 0) <= 10 && it.pickupable !== false && ![3031, 3035, 3043].includes(Number(id)))[0];
@@ -228,7 +231,7 @@ test('P5. cada item sorteado vira um registro de auditoria com id, concorrentes 
 
 test('P6. o jogador solo não muda: exp inteira, ouro inteiro e nenhum registro de sorteio', async () => {
   const solo = await jogador(9, 60);
-  assert.equal(Cacadas.entrar(solo.s.estado, { huntId: 'troll-cave', mode: 'auto', dificuldade: 'medio' }).ok, true);
+  assert.equal(Cacadas.entrar(solo.s.estado, { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: DIF_DE_TESTE }).ok, true);
   PR.limparAuditoria();
   const antes = [solo.s.estado.xp ?? 0, solo.s.estado.gold ?? 0];
   matar(solo, { loot: [{ id: 3031, chance: 1 }], exp: 1000 });

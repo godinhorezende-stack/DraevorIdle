@@ -9,7 +9,7 @@ import { gradesCacheadas } from '../systems/hunt/terreno.mjs';
 import * as Caminho from '../systems/hunt/caminho.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import * as Diag from '../systems/hunt/diagnostico.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 let proximaGrade = 0;
 
 /**
@@ -60,7 +60,7 @@ function naGrade(linhas, { vocacao = 'knight', distancia = 0, percurso = null } 
   const g = desenho(linhas);
   const e = personagemDeTeste({ vocacao, level: 600 });
   e.settings.distance = distancia;
-  assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest' }).ok, true);
+  assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest' }).ok, true);
   const alvo = bicho(g.M);
   Object.assign(e.hunt, {
     huntId: g.id, z: 7, pos: { ...g.P, dir: 2 }, percurso, respawns: [], outrosAndares: {},

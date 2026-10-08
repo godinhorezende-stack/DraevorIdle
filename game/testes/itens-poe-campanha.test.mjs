@@ -3,6 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { HUNT_DE_TESTE } from './apoio.mjs';
 
 const C = JSON.parse(readFileSync(new URL('../gamedata/itens-poe/campanha-poe.json', import.meta.url), 'utf8'));
 const CAMPANHA = JSON.parse(readFileSync(new URL('../gamedata/campanha.json', import.meta.url), 'utf8'));
@@ -190,4 +191,16 @@ test('ataques e efeitos (aba Mobs): o ajuste valida, liga/desliga e muda a habil
   Poderes.registrarPoderes('teste-efeito-golpe', { ataques: [{ tipo: 'melee', min: 1, max: 2, intervalo: 1000, chance: 100, efeito: 7 }], curas: [] }, { forcar: true });
   assert.equal(Poderes.efeitoDoGolpe({ key: 'teste-efeito-golpe' }), 7);
   assert.equal(Poderes.efeitoDoGolpe({ key: 'rat-que-nao-existe' }), 1, 'sem ajuste: o sangue de sempre');
+});
+
+test('a campanha do PoE é uma passada só: o Cruel e o Merciless não abrem, e a recusa diz isso (não "o boss do Ato 0")', async () => {
+  const Cacadas = await import('../systems/cacadas.mjs');
+  const { personagemDeTeste } = await import('./apoio.mjs');
+  for (const dificuldade of ['medio', 'dificil']) {
+    const r = Cacadas.entrar(personagemDeTeste({ level: 30 }), { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade });
+    assert.equal(r.ok, false, dificuldade);
+    assert.match(r.erro, /^A campanha do PoE é uma passada só, no .+: o .+ não abre\.$/, r.erro);
+    assert.doesNotMatch(r.erro, /Ato 0/);
+  }
+  assert.equal(Cacadas.entrar(personagemDeTeste({ level: 30 }), { huntId: HUNT_DE_TESTE, mode: 'auto', dificuldade: 'facil' }).ok, true, 'o Normal entra');
 });

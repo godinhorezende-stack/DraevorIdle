@@ -12,6 +12,8 @@ const falhas = [];
 for (const m of ['../systems/dados.mjs', '../systems/poderes.mjs', '../systems/campanha.mjs']) {
   try { await import(m); } catch (e) { falhas.push(`${m}: ${e.message}`); }
 }
+// O jogo do PoE (o oficial), como o servidor sobe: sem isto as fases dos atos do PoE eram "hunt que não existe" e a Validação bloqueava tudo.
+try { await (await import('../systems/itens-poe/iniciar.mjs')).iniciarJogoDoPoe(); } catch (e) { falhas.push(`../systems/itens-poe/iniciar.mjs: ${e.message}`); }
 console.warn = aviso;
 const verificacoes = [];
 for (const v of criarVerificacoes()) {

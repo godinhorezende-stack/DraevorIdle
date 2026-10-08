@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { doClassico } from './apoio-migracao.mjs';
 
 const tmp = mkdtempSync(join(tmpdir(), 'conj-'));
 process.env.DRAEVOR_OVERRIDES = tmp; // overrides DESTE processo ficam na pasta temporária (nunca os do dono)
@@ -224,7 +225,7 @@ test('CJ10. referências ao item, sem cópia: editar o item reflete no conjunto;
   reset();
 });
 
-test('CJ11. busca de itens do seletor: só o slot pedido, filtros por classe/tier/level/nome, sem peça de craft, com sprite e atributos principais', () => {
+test('CJ11. busca de itens do seletor: só o slot pedido, filtros por classe/tier/level/nome, sem peça de craft, com sprite e atributos principais', { skip: doClassico("Editor de conjuntos (sets) de itens do Draevor") }, () => {
   const t = Adm.buscarItens({ slot: 'weapon', classe: 'sorcerer', limite: 200 });
   assert.ok(t.total > 0);
   assert.ok(t.itens.every((i) => i.slot === 'weapon' && (!i.vocations.length || i.vocations.includes('sorcerer'))));
@@ -288,7 +289,7 @@ test('CJ14. validação centralizada, Git e versões: a verificação "conjuntos
   assert.deepEqual(Val.TESTES_POR_MODULO.conjuntos, ['conjuntos', 'hot-reload-conteudo']);
 });
 
-test('CJ15. rotas: consulta, itens, prévia, totais e modelos só LEEM; salvar é "grava" (bloqueado em produção); ação inválida = 400; conflito = 409', async () => {
+test('CJ15. rotas: consulta, itens, prévia, totais e modelos só LEEM; salvar é "grava" (bloqueado em produção); ação inválida = 400; conflito = 409', { skip: doClassico("Editor de conjuntos (sets) de itens do Draevor") }, async () => {
   reset();
   const chama = async (metodo, rota, corpo, q = '') => { const r = []; await Http.atender({ method: metodo }, {}, `/api/mapas/_conteudo/${rota}`, new URL(`http://x/?${q}`), { json: (a, c, b) => r.push([c, b]), corpoJson: async () => corpo }); return r[0]; };
   const g = await chama('GET', 'conjuntos');

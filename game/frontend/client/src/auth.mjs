@@ -1398,14 +1398,16 @@ export function createGate({ send, onPlay }) {
     // Quem manda no número é o servidor (`characterLimit`); isto aqui é só o
     // palpite de quando a conta ainda não chegou.
     const limit = account?.characterLimit ?? MAXIMO_DE_PERSONAGENS;
-    const usados = account?.characters.length ?? 0;
+    // Os ARQUIVADOS (do Draevor clássico, no jogo oficial do PoE) não contam no limite — o servidor também não os conta.
+    const arquivados = (account?.characters ?? []).filter((c) => c.arquivado).length;
+    const usados = (account?.characters.length ?? 0) - arquivados;
     const full = usados >= limit;
     const create = $('new-character');
     create.hidden = full;
     create.disabled = full;
     // Quantas vagas sobraram, para a conta não parecer travada em um.
     const vagas = $('character-slots');
-    if (vagas) vagas.textContent = account ? `${usados} de ${limit} personagens` : '';
+    if (vagas) vagas.textContent = account ? `${usados} de ${limit} personagens${arquivados ? ` · ${arquivados} arquivado${arquivados === 1 ? '' : 's'} do Draevor clássico` : ''}` : '';
     // Só a conta que entra APENAS pela Google vê o convite para criar senha.
     const avisoDaSenha = $('senha-google-aviso');
     if (avisoDaSenha) avisoDaSenha.hidden = !account?.pelaGoogle;
@@ -1424,6 +1426,22 @@ export function createGate({ send, onPlay }) {
        */
       const card = cartaoDePersonagem(character);
       card.classList.add('character-card--vitrine');
+      /*
+       * ---- O personagem do Draevor clássico, ARQUIVADO (dono, 07/10: "não migrar personagens antigos") ----
+       * Ele aparece (a conta é a mesma, nada foi apagado), com o selo e a explicação, mas não entra: o novo Draevor é o do PoE e o
+       * personagem antigo não é convertido. O servidor recusa do mesmo jeito (`personagem/legado.mjs`).
+       */
+      if (character.arquivado) {
+        card.classList.add('character-card--arquivado');
+        card.append(el('span', 'selo-arquivado', 'Draevor clássico · arquivado'));
+        card.title = character.motivoArquivado ?? 'Personagem do Draevor clássico, arquivado.';
+        card.onclick = () => {
+          list.querySelector('.aviso-arquivado')?.remove();
+          card.after(el('p', 'gate-note aviso-arquivado', character.motivoArquivado ?? 'Personagem do Draevor clássico, arquivado. Crie um novo personagem para jogar.'));
+        };
+        list.append(card);
+        continue;
+      }
       card.onclick = () => {
         lembrarPersonagem(character.name);
         // A partir daqui, uma queda de conexão volta sozinha para ele.
@@ -1693,7 +1711,7 @@ export function createGate({ send, onPlay }) {
          * escolhe é a pessoa; numa reconexão o jogo volta como estava.
          */
         const last = personagemDaAba();
-        if (entrouNestaAba && last && account.characters.some((entry) => entry.name === last)) {
+        if (entrouNestaAba && last && account.characters.some((entry) => entry.name === last && !entry.arquivado)) {
           send({ t: 'play', name: last, visto: ultimoVisto(last) });
         }
         return true;

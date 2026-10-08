@@ -12,7 +12,8 @@ import * as Acoes from '../systems/acoes.mjs';
 import * as Combo from '../systems/combo.mjs';
 import * as Ficha from '../systems/ficha.mjs';
 import * as R from '../systems/regras.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 // Seis magias de ataque de recarga curta (1 s efetivo): quem limita é o global, não a recarga delas.
 const CURTAS = ['spell-buzz', 'spell-energy-strike', 'spell-flame-strike', 'spell-ice-strike', 'spell-death-strike', 'spell-terra-strike'];
@@ -30,7 +31,7 @@ function montar(magias, { cs = null, conjuracao = true, vocacao = 'sorcerer' } =
     Ficha.invalidar(e);
     assert.equal(Ficha.combate(e).castSpeed, cs);
   }
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   e.hunt.assistencia = true;
   e.hunt.autoBarra = true;
   return e;
@@ -72,14 +73,14 @@ test('relógio lógico: o instante de uma execução é a liberação que caiu d
   assert.equal(R.liberou(1600, 1600), true);
 });
 
-test('o global conta do INÍCIO da conjuração: com 400 ms de conjuração, o ciclo é 2 s (era 2,5 s)', () => {
+test('o global conta do INÍCIO da conjuração: com 400 ms de conjuração, o ciclo é 2 s (era 2,5 s)', { skip: doClassico("Global do Draevor contado do início da conjuração / Cast Speed do Draevor; no PoE não há global") }, () => {
   const e = montar(CURTAS, { cs: 0 });
   const ex = rodar(e, 60);
   const m = mediaDosIntervalos(ex);
   assert.ok(Math.abs(m - 2000) < 20, `ciclo médio ${m} ms`);
 });
 
-test('Cast Speed: cada valor dá o ciclo do global dele (média exata, sem degraus do tique)', () => {
+test('Cast Speed: cada valor dá o ciclo do global dele (média exata, sem degraus do tique)', { skip: doClassico("Global do Draevor contado do início da conjuração / Cast Speed do Draevor; no PoE não há global") }, () => {
   const ciclos = [];
   for (const cs of [0, 5, 10, 15, 25, 50, 100, 200]) {
     const e = montar(CURTAS, { cs });
@@ -96,7 +97,7 @@ test('Cast Speed: cada valor dá o ciclo do global dele (média exata, sem degra
   for (let i = 1; i < ciclos.length; i++) assert.ok(ciclos[i] < ciclos[i - 1], `ciclos: ${ciclos.map(Math.round).join(' → ')}`);
 });
 
-test('Cast Speed muito alto: no máximo uma magia por tique, e a recarga individual ainda segura', () => {
+test('Cast Speed muito alto: no máximo uma magia por tique, e a recarga individual ainda segura', { skip: doClassico("Global do Draevor contado do início da conjuração / Cast Speed do Draevor; no PoE não há global") }, () => {
   const e = montar(CURTAS, { cs: 500 });
   const ex = rodar(e, 30);
   const instantes = ex.map((x) => x.relogio);
@@ -106,7 +107,7 @@ test('Cast Speed muito alto: no máximo uma magia por tique, e a recarga individ
   for (let i = 1; i < buzz.length; i++) assert.ok(buzz[i].relogio - buzz[i - 1].relogio >= recarga - 250, 'recarga individual');
 });
 
-test('online e offline coerentes: tique oscilando (240–260 ms) e tique exato dão o mesmo ritmo', () => {
+test('online e offline coerentes: tique oscilando (240–260 ms) e tique exato dão o mesmo ritmo', { skip: doClassico("Global do Draevor contado do início da conjuração / Cast Speed do Draevor; no PoE não há global") }, () => {
   for (const cs of [0, 25, 60]) {
     const exato = rodar(montar(CURTAS, { cs }), 300);
     let k = 0;
@@ -116,7 +117,7 @@ test('online e offline coerentes: tique oscilando (240–260 ms) e tique exato d
   }
 });
 
-test('conjuração cancelada devolve o global: a magia seguinte não paga pela que não saiu', () => {
+test('conjuração cancelada devolve o global: a magia seguinte não paga pela que não saiu', { skip: doClassico("Global do Draevor contado do início da conjuração / Cast Speed do Draevor; no PoE não há global") }, () => {
   const e = montar(['spell-lightning', 'spell-buzz'], { cs: 0 });
   const h = e.hunt;
   h.monstros = h.monstros.slice(0, 1);
@@ -137,7 +138,7 @@ test('conjuração cancelada devolve o global: a magia seguinte não paga pela q
   assert.ok(Acoes.disparar(e, h, PERSONAGEM, Combo.SLOTS_DO_COMBO[1], h.monstros[0]).ok, 'a próxima sai na hora');
 });
 
-test('a conclusão da conjuração não é barrada pelo global que ela mesma começou', () => {
+test('a conclusão da conjuração não é barrada pelo global que ela mesma começou', { skip: doClassico("Global do Draevor contado do início da conjuração / Cast Speed do Draevor; no PoE não há global") }, () => {
   const e = montar(['spell-lightning'], { cs: 0 });
   const h = e.hunt;
   h.monstros = h.monstros.slice(0, 1);
@@ -155,7 +156,7 @@ test('a conclusão da conjuração não é barrada pelo global que ela mesma com
   assert.equal(h.cooldowns['spell-lightning'].ate, 1_000 + h.cooldowns['spell-lightning'].total);
 });
 
-test('morto não lança nada: nem pelo clique manual, nem pelo automático', () => {
+test('morto não lança nada: nem pelo clique manual, nem pelo automático', { skip: aAdaptar("Regra da engine (morto não lança, clique repetido sai uma vez, mira no chão) vale para gemas do PoE") }, () => {
   const e = montar(['spell-buzz'], { conjuracao: false });
   const h = e.hunt;
   h.monstros = h.monstros.slice(0, 1);
@@ -167,7 +168,7 @@ test('morto não lança nada: nem pelo clique manual, nem pelo automático', () 
   assert.equal(r.motivo, 'MORTO');
 });
 
-test('cliques repetidos no mesmo instante: sai UMA magia (ataque pelo global, cura pela recarga)', () => {
+test('cliques repetidos no mesmo instante: sai UMA magia (ataque pelo global, cura pela recarga)', { skip: aAdaptar("Regra da engine (morto não lança, clique repetido sai uma vez, mira no chão) vale para gemas do PoE") }, () => {
   const e = montar(['spell-buzz', 'spell-energy-strike'], { conjuracao: false });
   const h = e.hunt;
   h.monstros = h.monstros.slice(0, 1);
@@ -185,7 +186,7 @@ test('cliques repetidos no mesmo instante: sai UMA magia (ataque pelo global, cu
   assert.deepEqual(curas, ['OK', 'COOLDOWN', 'COOLDOWN']);
 });
 
-test('mira no chão: a área cai na casa escolhida, e fora do alcance não sai', () => {
+test('mira no chão: a área cai na casa escolhida, e fora do alcance não sai', { skip: aAdaptar("Regra da engine (morto não lança, clique repetido sai uma vez, mira no chão) vale para gemas do PoE") }, () => {
   const e = montar(['spell-divine-barrage'], { conjuracao: false, vocacao: 'paladin' });
   const h = e.hunt;
   assert.ok(Acoes.catalogo(e).spells.find((s) => s.id === 'spell-divine-barrage').miraNoChao);
@@ -208,7 +209,7 @@ test('mira no chão: a área cai na casa escolhida, e fora do alcance não sai',
 
 test('poção: a recarga também conta do instante lógico', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   const pocao = Acoes.catalogo(e).items.find((i) => i.papeis?.[0] === 'hp' || i.heals);
   assert.ok(pocao, 'há uma poção de vida no catálogo');

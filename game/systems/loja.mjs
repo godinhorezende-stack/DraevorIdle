@@ -21,6 +21,7 @@ function porNaInbox(estado, id, count = 1, extras = {}) {
 }
 import * as Boosts from './boosts.mjs';
 import * as Deposito from './deposito.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 
@@ -83,11 +84,17 @@ const PRATELEIRAS = ['services', 'boosts', 'pacotes', 'itens', 'buffpower', 'upg
  * não se vendem mais (nem aparecem, nem se compram por id).
  */
 // (No modo PoE o Buff Power também sai da Store — dono, 07/10: "esse buff power não vai existir".)
-const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '') || (itensPoeLigado() && /^buffpower-/.test(e?.id ?? ''));
+// (No jogo oficial só entra item do PoE — dono, 07/10: o produto que ENTREGA item do Draevor na Store Inbox sai da Store. Serviço cujo
+// `itemId` é só a figura do cartão — as vagas da Compartilhada — fica; montaria, outfit e XP Boost não entregam item.)
+const SERVICOS_COM_FIGURA = new Set(['cofre-vagas']);
+const entregaItem = (e) => e?.itemId != null && !SERVICOS_COM_FIGURA.has(e.id) && e.kind !== 'xpBoost' && e.mountId == null && e.look == null;
+const FORA_DA_LOJA = (e) => /^exercise-/.test(e?.id ?? '') || e?.id === 'boost-55386' || /^pacote-treinador/.test(e?.id ?? '') || (itensPoeLigado() && /^buffpower-/.test(e?.id ?? '')) || (entregaItem(e) && !podeEntrar(e.itemId));
 const ENTRADA_POR_ID = new Map(PRATELEIRAS.flatMap((k) => (STORE_REAL[k] ?? []).filter((e) => !FORA_DA_LOJA(e)).map((e) => [e.id, { ...e, prateleira: k }])));
 // Os pacotes de quantidade de um produto ("5 Exp Potions", "10 Stamina Extension")
 // vêm em `opcoes`, cada um com o próprio id e preço.
 for (const k of PRATELEIRAS) for (const e of STORE_REAL[k] ?? []) {
+  // O pacote de quantidade é do mesmo produto: fora da Store junto com ele (antes o pacote continuava à venda pelo id dele).
+  if (FORA_DA_LOJA(e)) continue;
   for (const o of e.opcoes ?? []) if (o?.id) ENTRADA_POR_ID.set(o.id, { ...e, id: o.id, coins: o.coins, amount: o.quantos, prateleira: k });
 }
 
@@ -268,6 +275,8 @@ export function descricaoDaCompra(id) {
 }
 
 function precoDoId(id) {
+  // Fora da Store (ex.: o Buff Power no jogo oficial) não tem preço: antes o pedido direto pelo id ainda comprava.
+  if (FORA_DA_LOJA({ id })) return null;
   const real = ENTRADA_POR_ID.get(id)?.coins;
   if (real != null) return real;
   if (id === 'buffpower-trio') return PRECO_BUFF_POWER_TRIO;
@@ -282,6 +291,7 @@ export function moverDaInbox(estado, { mover }, cabeNoPeso) {
   const i = Number.isInteger(mover?.pilha) && inbox[mover.pilha]?.id === id ? mover.pilha : inbox.findIndex((p) => p.id === id);
   if (i < 0) return { ok: false, erro: 'Essa peça não está na Store Inbox.' };
   const peca = inbox[i];
+  if (!podeEntrar(id, peca)) return { ok: false, erro: SO_ITENS_DO_POE };
   const n = Math.min(peca.count ?? 1, Math.max(1, Number(mover.count) || 1));
   if (!cabeNoPeso(estado, id, n)) return { ok: false, erro: 'Você não tem capacidade (ou vaga na mochila) para carregar isso.' };
   peca.count = (peca.count ?? 1) - n;

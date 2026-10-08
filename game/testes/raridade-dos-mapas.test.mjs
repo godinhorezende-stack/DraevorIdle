@@ -13,7 +13,8 @@ import * as Treino from '../systems/treino.mjs';
 import { renascer } from '../systems/hunt/monstros.mjs';
 import { RAIZ_HUNTS } from '../systems/hunt/terreno.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const spawnsDeTeste = (n, key = 'troll') => Array.from({ length: n }, (_, i) => ({ id: `s${i + 1}`, x: i, y: 0, z: 7, raio: 1, quantidade: 1, tipo: 'normal', criaturas: [{ key, peso: 1 }] }));
 
@@ -45,7 +46,7 @@ test('completar: o que já tem raridade fica como está, e dá o mesmo que distr
   assert.equal(r.filter((s) => s.raridade === 'boss').length, 1);
 });
 
-test('distribuir: modificadores do tema, dentro do teto, com no máximo N mecânicas; boss fica de fora', () => {
+test('distribuir: modificadores do tema, dentro do teto, com no máximo N mecânicas; boss fica de fora', { skip: doClassico("Raridade de monstro por mapa do Draevor (temas, editor de mapas)") }, () => {
   const tema = A.temaDe('dragon');
   assert.ok(tema.includes('ignifugo'), 'dragão resiste a fogo: ganha o tema de fogo');
   const a = A.distribuir('mapa-dragao', spawnsDeTeste(200, 'dragon'));
@@ -73,13 +74,13 @@ test('os mapas com spawn já têm a raridade gravada, e válida', () => {
   assert.ok(mapas >= 40);
 });
 
-test('editor: mapa real (troll-cave) é só spawns; o resto é do editor', () => {
-  assert.equal(Mapas.ehMapaReal(Mapas.carregar('troll-cave')), true);
+test('editor: mapa real (troll-cave) é só spawns; o resto é do editor', { skip: doClassico("Raridade de monstro por mapa do Draevor (temas, editor de mapas)") }, () => {
+  assert.equal(Mapas.ehMapaReal(Mapas.carregar(HUNT_DE_TESTE)), true);
   assert.equal(Mapas.ehMapaReal({ atlas: Mapas.cidadeParaEditor().atlas, levels: [7] }), false);
   assert.equal(Mapas.salvarSpawns({ id: 'nao-existe-xyz', spawns: [] }).ok, false);
 });
 
-test('mapa do editor fora da campanha: o mob nasce com a raridade do spawn, e renasce com ela', () => {
+test('mapa do editor fora da campanha: o mob nasce com a raridade do spawn, e renasce com ela', { skip: doClassico("Raridade de monstro por mapa do Draevor (temas, editor de mapas)") }, () => {
   const id = 'teste-raridade-fora-da-campanha';
   const w = 20;
   const h = 10;

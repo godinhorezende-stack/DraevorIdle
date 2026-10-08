@@ -34,11 +34,11 @@ export function criarTelaDeItensPoe({ raiz }) {
     T.estado = await api('estado');
     if (!T.estado.ligado) {
       raiz().replaceChildren(
-        cabecalho('Itens (PoE)', 'O sistema de itens no modelo do PoE — Fase 1, só leitura, desligado em produção.'),
+        cabecalho('Itens (PoE)', 'O sistema de itens do PoE — o do jogo oficial.'),
         el('div', { class: 'eng-painel' }, el('div', { class: 'eng-painel-corpo' },
-          el('p', {}, 'Desligado neste servidor. Para ver o catálogo importado da sua coleção:'),
-          el('pre', { class: 'bib-json' }, 'node tools/importar-poe-itens.mjs\nITENS_POE=1 PORTA=8099 node game/backend/index.mjs'),
-          el('p', { class: 'dica' }, `Catálogo esperado em ${T.estado.arquivo}. Em produção a coleção não existe: a tela fica sempre assim lá.`))));
+          el('p', {}, 'Este servidor está no Draevor clássico (DRAEVOR_CLASSICO=1). Suba sem essa variável para o jogo oficial:'),
+          el('pre', { class: 'bib-json' }, 'PORTA=8099 node game/backend/index.mjs'),
+          el('p', { class: 'dica' }, `O catálogo é do repositório (${T.estado.arquivo}); para regerar da sua coleção: node tools/importar-poe-itens.mjs`))));
       return;
     }
     const c = await api('classes');

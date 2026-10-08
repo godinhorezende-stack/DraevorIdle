@@ -8,6 +8,7 @@ import * as Bau from '../systems/bau.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { vitoriaNoBoss } from '../systems/hunt/combate.mjs';
 import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const F = Campanha.FASES;
 const HORA = 3_600_000;
@@ -37,7 +38,7 @@ function naUltimaFase(dif = 'facil') {
   return { e, ultima };
 }
 
-test('B1. o catálogo: os 4 bosses de fim de ato saem SEM recarga (cooldownHours 0, semEspera); os outros bosses mantêm a recarga real', () => {
+test('B1. o catálogo: os 4 bosses de fim de ato saem SEM recarga (cooldownHours 0, semEspera); os outros bosses mantêm a recarga real', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   assert.equal(BOSSES_DE_ATO.length, 4);
   for (const id of BOSSES_DE_ATO) {
     const b = CATALOGO.bosses.find((x) => x.id === id);
@@ -50,7 +51,7 @@ test('B1. o catálogo: os 4 bosses de fim de ato saem SEM recarga (cooldownHours
   assert.equal(Campanha.ehBossDeAto('ahau'), false);
 });
 
-test('B2. recarga antiga (72 h do The Primal Menace, 12 h dos outros) não bloqueia; limparRecargasDeAto zera só o carimbo dos bosses de ato', () => {
+test('B2. recarga antiga (72 h do The Primal Menace, 12 h dos outros) não bloqueia; limparRecargasDeAto zera só o carimbo dos bosses de ato', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const e = novo(1500);
   const agora = Date.now();
   e.bossCooldownsAte = { 'the-primal-menace': agora + 72 * HORA, 'urmahlullu-the-immaculate': agora + 12 * HORA, ahau: agora + 12 * HORA };
@@ -67,7 +68,7 @@ test('B2. recarga antiga (72 h do The Primal Menace, 12 h dos outros) não bloqu
   assert.match(Cacadas.entrar(e, { huntId: 'ahau', mode: 'auto' }).erro, /ainda não voltou/);
 });
 
-test('B3. tentativas ilimitadas: entrar, sair, morrer e entrar de novo, dez vezes seguidas, sem nenhuma espera gravada', () => {
+test('B3. tentativas ilimitadas: entrar, sair, morrer e entrar de novo, dez vezes seguidas, sem nenhuma espera gravada', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const e = novo(300);
   completarAto(e, 'facil', 1, { menosAUltima: false });
   for (let i = 0; i < 10; i++) {
@@ -87,7 +88,7 @@ test('B3. tentativas ilimitadas: entrar, sair, morrer e entrar de novo, dez veze
   assert.equal(Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true }).ok, true, 'depois de vencer, entra de novo na hora');
 });
 
-test('B4. o boss de ato sem as fases completas continua fechado (a recarga saiu, a progressão não)', () => {
+test('B4. o boss de ato sem as fases completas continua fechado (a recarga saiu, a progressão não)', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const e = novo(300);
   const r = Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });
   assert.equal(r.ok, false);
@@ -105,7 +106,7 @@ test('P1. o portal NÃO aparece antes de concluir a última fase, e entrar nele 
   assert.equal(e.hunt.isBoss, false, 'continua na fase');
 });
 
-test('P2. concluir a última fase abre o portal (uma vez, com o boss do ato), avisa na tela e o cliente recebe o marcador e o botão', () => {
+test('P2. concluir a última fase abre o portal (uma vez, com o boss do ato), avisa na tela e o cliente recebe o marcador e o botão', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const { e } = naUltimaFase();
   limpar(e);
   assert.equal(e.hunt.instancia.status, 'limpa');
@@ -138,7 +139,7 @@ test('P3. instância nova (reinício) fecha o portal: a limpeza antiga não vale
   assert.equal(Cacadas.snapshotDaHunt(e).portalDoBoss, null);
 });
 
-test('P4. entrar no portal leva à arena do boss (sem a recarga), e um segundo pedido igual é recusado (idempotente)', () => {
+test('P4. entrar no portal leva à arena do boss (sem a recarga), e um segundo pedido igual é recusado (idempotente)', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const { e } = naUltimaFase();
   limpar(e);
   let saiu = 0;
@@ -175,7 +176,7 @@ test('P5. fase já completa e boss já vencido NÃO dão portal: entrar na últi
   }
 });
 
-test('N1. startHunt direto no boss de ato (cartão/atalho/cliente) é recusado: só o portal da limpeza atual leva à arena', () => {
+test('N1. startHunt direto no boss de ato (cartão/atalho/cliente) é recusado: só o portal da limpeza atual leva à arena', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const e = novo();
   completarAto(e, 'facil', 1, { menosAUltima: false });
   const r = Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true });
@@ -236,7 +237,7 @@ test('N5. Caça Automática: a sessão entra sozinha no portal uma vez; falha n�
   assert.equal(Cacadas.portalParaCliente(novato, novato.hunt), null, 'sem requisito: nada de entrada automática');
 });
 
-test('P6. só abre na ÚLTIMA fase do ato (fases de antes não abrem portal), e a validação é do servidor (cliente não força)', () => {
+test('P6. só abre na ÚLTIMA fase do ato (fases de antes não abrem portal), e a validação é do servidor (cliente não força)', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const e = novo();
   completarAto(e, 'facil', 1, { menosAUltima: true });
   const anterior = F.filter((f) => f.ato === 1 && !f.pular).at(-2);
@@ -255,7 +256,7 @@ test('P6. só abre na ÚLTIMA fase do ato (fases de antes não abrem portal), e 
   assert.equal(Cacadas.snapshotDaHunt(f).portalDoBoss, null, 'quem não está liberado nem vê o botão');
 });
 
-test('P7. party: o portal vive na sala do dono; cada integrante entra por conta própria, só se ELE tem o ato liberado; ninguém é levado junto', () => {
+test('P7. party: o portal vive na sala do dono; cada integrante entra por conta própria, só se ELE tem o ato liberado; ninguém é levado junto', { skip: doClassico("Boss de fim de ato do Draevor (4 bosses, portal após as 12 fases, recarga); no PoE o chefe do ato está na área e conclui a missão") }, () => {
   const dono = novo();
   completarAto(dono, 'facil', 1);
   const ultima = Campanha.ultimaFaseDoAto(1);
@@ -279,7 +280,7 @@ test('P7. party: o portal vive na sala do dono; cada integrante entra por conta 
   assert.ok(dono.hunt.portalDoBoss, 'o portal segue aberto para os outros');
 });
 
-test('V1. a vitória no boss é registrada UMA vez por luta: evento repetido não paga outra sacola nem outra conclusão; outra luta paga a sua', () => {
+test('V1. a vitória no boss é registrada UMA vez por luta: evento repetido não paga outra sacola nem outra conclusão; outra luta paga a sua', { skip: aAdaptar("Idempotência da vitória no boss (evento repetido não paga de novo) vale para os chefes do PoE (pináculos na arena)") }, () => {
   const e = novo(300);
   completarAto(e, 'facil', 1, { menosAUltima: false });
   Cacadas.entrar(e, { huntId: 'urmahlullu-the-immaculate', mode: 'auto', dificuldade: 'facil', campanha: true, viaPortal: true });

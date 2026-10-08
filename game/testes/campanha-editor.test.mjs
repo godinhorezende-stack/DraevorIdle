@@ -9,6 +9,7 @@ import * as CE from '../admin/campanha-editor.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import { propostoDasEdicoes } from '../frontend/client/src/editor-campanha.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const REAL = fileURLToPath(new URL('../gamedata/campanha.json', import.meta.url));
 const pasta = mkdtempSync(join(tmpdir(), 'camp-'));
@@ -20,7 +21,7 @@ after(() => rmSync(pasta, { recursive: true, force: true }));
 const lerSalvo = () => JSON.parse(readFileSync(CE.CAMINHOS.arquivo, 'utf8'));
 const restauraArquivo = () => { writeFileSync(CE.CAMINHOS.arquivo, original); rmSync(CE.CAMINHOS.versoes, { recursive: true, force: true }); };
 
-test('CE1. ler: as 48 fases e os 4 bosses de ato editáveis; escala e dificuldades vêm só para leitura; nada foi tocado no arquivo real', () => {
+test('CE1. ler: as 48 fases e os 4 bosses de ato editáveis; escala e dificuldades vêm só para leitura; nada foi tocado no arquivo real', { skip: doClassico("Editor da campanha do Draevor (48 fases, 4 bosses de ato)") }, () => {
   const l = CE.ler();
   assert.equal(l.fases.length, Campanha.FASES.length);
   assert.equal(l.bosses.length, 4);
@@ -30,7 +31,7 @@ test('CE1. ler: as 48 fases e os 4 bosses de ato editáveis; escala e dificuldad
   assert.equal(readFileSync(REAL, 'utf8'), original);
 });
 
-test('CE2. pré-visualizar: o impacto é a MESMA conta do jogo (Campanha.escala), sem gravar; mudança grande de vida vira aviso de balanceamento', () => {
+test('CE2. pré-visualizar: o impacto é a MESMA conta do jogo (Campanha.escala), sem gravar; mudança grande de vida vira aviso de balanceamento', { skip: doClassico("Editor da campanha do Draevor (48 fases, 4 bosses de ato)") }, () => {
   const r = CE.propor({ fases: [{ huntId: 'troll-cave', nivel: { medio: 150 } }] });
   assert.deepEqual(r.erros, []);
   assert.equal(r.mudancas.length, 1);
@@ -47,7 +48,7 @@ test('CE2. pré-visualizar: o impacto é a MESMA conta do jogo (Campanha.escala)
   assert.equal(CE.propor({ fases: [{ huntId: 'troll-cave', nivel: { medio: 101 } }] }).semMudancas, true, 'valor igual ao atual não é mudança');
 });
 
-test('CE3. validação: não cria nem remove fase, level inteiro 1–5000, Normal ≤ Cruel ≤ Merciless, hunt/boss existem; escada que desce e fora da faixa são avisos', () => {
+test('CE3. validação: não cria nem remove fase, level inteiro 1–5000, Normal ≤ Cruel ≤ Merciless, hunt/boss existem; escada que desce e fora da faixa são avisos', { skip: doClassico("Editor da campanha do Draevor (48 fases de campanha.json); a campanha do PoE vem de campanha-poe.json") }, () => {
   const erros = (p) => CE.propor(p).erros.join(' | ');
   assert.match(erros({ fases: [{ huntId: 'fase-fantasma', nivel: { facil: 5 } }] }), /não é uma fase da campanha.*Acts/);
   assert.match(erros({ fases: [{ huntId: 'troll-cave', nivel: { facil: 0 } }] }), /inteiro de 1 a 5000/);
@@ -64,7 +65,7 @@ test('CE3. validação: não cria nem remove fase, level inteiro 1–5000, Norma
   assert.equal(CE.ler().fases.length, 48, 'a estrutura é a mesma');
 });
 
-test('CE4. travar/destravar fase é mudança de PROGRESSÃO e avisa com todas as letras', () => {
+test('CE4. travar/destravar fase é mudança de PROGRESSÃO e avisa com todas as letras', { skip: doClassico("Editor da campanha do Draevor (48 fases de campanha.json); a campanha do PoE vem de campanha-poe.json") }, () => {
   const travar = CE.propor({ fases: [{ huntId: 'troll-cave', pular: true }] });
   assert.ok(travar.avisos.some((a) => /PROGRESSÃO — Troll Cave: fica TRAVADA/.test(a)));
   const destravar = CE.propor({ fases: [{ huntId: 'dark-thais', pular: false }] });
@@ -73,7 +74,7 @@ test('CE4. travar/destravar fase é mudança de PROGRESSÃO e avisa com todas as
   assert.ok(boss.avisos.some((a) => /boss do Ato 1.*item level do loot/.test(a)));
 });
 
-test('CE5. salvar: grava SÓ os campos pedidos (o resto do arquivo idêntico), guarda a versão anterior e recusa erro sem gravar nada', () => {
+test('CE5. salvar: grava SÓ os campos pedidos (o resto do arquivo idêntico), guarda a versão anterior e recusa erro sem gravar nada', { skip: doClassico("Editor da campanha do Draevor (48 fases de campanha.json); a campanha do PoE vem de campanha-poe.json") }, () => {
   restauraArquivo();
   const r = CE.salvar({ fases: [{ huntId: 'troll-cave', nivel: { facil: 9, medio: 110 } }], bosses: [{ ato: 2, nivel: { dificil: 1500 } }] });
   assert.equal(r.ok, true, JSON.stringify(r));
@@ -98,7 +99,7 @@ test('CE5. salvar: grava SÓ os campos pedidos (o resto do arquivo idêntico), g
   assert.equal(CE.salvar({ fases: [{ huntId: 'troll-cave', nivel: { facil: 9 } }] }).semMudancas, true, 'igual ao salvo: não grava');
 });
 
-test('CE6. o que o editor SALVA é o que o JOGO LÊ: um processo novo do jogo, apontado para o arquivo salvo, enxerga os levels e a escala novos', () => {
+test('CE6. o que o editor SALVA é o que o JOGO LÊ: um processo novo do jogo, apontado para o arquivo salvo, enxerga os levels e a escala novos', { skip: doClassico("Editor da campanha do Draevor (48 fases, 4 bosses de ato)") }, () => {
   restauraArquivo();
   CE.salvar({ fases: [{ huntId: 'troll-cave', levelOriginal: 10, nivel: { facil: 12, medio: 130, dificil: 700 } }], bosses: [{ ato: 1, nivel: { facil: 35 } }] });
   const codigo = `import * as C from ${JSON.stringify(new URL('../systems/campanha.mjs', import.meta.url).href)};
@@ -114,7 +115,7 @@ test('CE6. o que o editor SALVA é o que o JOGO LÊ: um processo novo do jogo, a
   assert.equal(Campanha.faseDe('troll-cave').nivel.medio, 101, 'o jogo DESTE processo não mudou (só vale no boot): salvar não é publicar');
 });
 
-test('CE7. restaurar: grava a versão antiga como atual e guarda a atual; versão inexistente é recusada', () => {
+test('CE7. restaurar: grava a versão antiga como atual e guarda a atual; versão inexistente é recusada', { skip: doClassico("Editor da campanha do Draevor (48 fases de campanha.json); a campanha do PoE vem de campanha-poe.json") }, () => {
   restauraArquivo();
   CE.salvar({ fases: [{ huntId: 'troll-cave', nivel: { medio: 120 } }] });
   CE.salvar({ fases: [{ huntId: 'troll-cave', nivel: { medio: 140 } }] });
@@ -125,7 +126,7 @@ test('CE7. restaurar: grava a versão antiga como atual e guarda a atual; versã
   assert.deepEqual(CE.versoes(), [3, 2, 1], 'a atual antes de restaurar ficou guardada');
 });
 
-test('CE8. rotas: leitura, pré-visualizar (não grava) e salvar (grava); a tela só edita o PROPOSTO (diferenças) e o acesso classifica certo', async () => {
+test('CE8. rotas: leitura, pré-visualizar (não grava) e salvar (grava); a tela só edita o PROPOSTO (diferenças) e o acesso classifica certo', { skip: doClassico("Editor da campanha do Draevor (48 fases de campanha.json); a campanha do PoE vem de campanha-poe.json") }, async () => {
   restauraArquivo();
   const chama = async (metodo, rota, corpo = {}) => { const r = []; await Http.atender({ method: metodo }, {}, `/api/mapas/_conteudo/${rota}`, new URL('http://x/'), { json: (a, c, b) => r.push([c, b]), corpoJson: async () => corpo }); return r[0]; };
   assert.equal((await chama('GET', 'campanha'))[1].fases.length, 48);

@@ -182,6 +182,35 @@ export function sortearUmMod({ catalogo, regras, poe, rng = Math.random, lados =
   return { lado: escolhido.lado, mod: { familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, modelo, texto, valores } };
 }
 
+/**
+ * Um mod de um POOL ESPECIAL (influência, corrompido, velado, eldritch… — a página dele vem de `Catalogo.poolEspecialDa`): `lados` entre
+ * 'prefixo', 'sufixo' e 'implicito'. As mesmas regras do sorteio comum: tier com iLvl ≤ o da peça e peso > 0 (os Elevados, peso 0, não
+ * saem), família ainda não usada, vaga do lado (prefixo/sufixo, pela raridade e pelo implícito da base) e a magnitude da base. `filtro(tier,
+ * grupo)` restringe (ex.: o tier da brasa). Devolve `{ lado, mod }` (o mod no formato da peça, com `origem` = o pool) ou null.
+ */
+export function sortearDoPool({ pagina, poe, regras, origem, rng = Math.random, lados = ['prefixo', 'sufixo'], filtro = () => true, ignorarVagas = false }) {
+  if (!pagina) return null;
+  const R = regras?.raridades?.[poe.raridade] ?? {};
+  const rb = regrasDaBase(poe.implicitos);
+  const max = { prefixo: Math.max(0, (R.maxPrefixos ?? 0) + rb.prefixos), sufixo: Math.max(0, (R.maxSufixos ?? 0) + rb.sufixos), implicito: Infinity };
+  const usadas = new Set([...(poe.prefixos ?? []), ...(poe.sufixos ?? [])].map((m) => m.familia));
+  const ilvl = Math.max(1, Number(poe.ilvl) || 1);
+  const candidatos = [];
+  for (const lado of lados) {
+    if (!ignorarVagas && lado !== 'implicito' && (poe[`${lado}s`] ?? []).length >= max[lado]) continue;
+    for (const g of pagina[`${lado}s`] ?? []) {
+      if (lado !== 'implicito' && usadas.has(g.familia)) continue;
+      if (!permitidoNaBase(g, rb)) continue;
+      for (const t of g.tiers) if ((t.ilvl ?? 1) <= ilvl && (t.peso ?? 0) > 0 && filtro(t, g)) candidatos.push([{ familia: g.familia, lado, tier: t, origem: g.origem ?? origem }, t.peso]);
+    }
+  }
+  const escolhido = porPeso(candidatos, rng);
+  if (!escolhido) return null;
+  const pct = escolhido.lado === 'implicito' ? 0 : rb.magnitude.todos + rb.magnitude[escolhido.lado];
+  const { modelo, valores, texto } = comMagnitude(rolarTexto(escolhido.tier, rng), pct);
+  return { lado: escolhido.lado, mod: { familia: escolhido.familia, tier: escolhido.tier.tier, nome: escolhido.tier.nome, ilvl: escolhido.tier.ilvl, modelo, texto, valores, ...(escolhido.origem ? { origem: escolhido.origem } : {}) } };
+}
+
 /** O tier do pool de onde o mod saiu (as faixas dele) — `{ tier, tiers }` (todos os tiers da família, do pool da base) — ou null. */
 export function tierDoMod(catalogo, poe, mod) {
   const achado = acharBase(catalogo, poe.base);

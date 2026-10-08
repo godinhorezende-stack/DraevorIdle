@@ -12,7 +12,8 @@ import * as G from '../systems/skills/gemas.mjs';
 import { ACTION_CATALOG, ITEM_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
 import { resistenciaEfetivaDe } from '../systems/hunt/resistencia.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const mob = (extra = {}) => Object.assign(criarMonstro({ key: 'troll', x: 1, y: 1 }, null), { hp: 1e9, maxHp: 1e9, resist: {} }, extra);
 const T = Dot.CONFIG.tipos;
@@ -143,7 +144,7 @@ test('remover tira os efeitos (todos, ou de um tipo)', () => {
 
 test('o estado do mob com efeitos grava e volta com a caçada (JSON puro)', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const m = e.hunt.monstros[0];
   Dot.aplicar(m, { tipo: 'veneno', total: 777, origem: { fonte: 'gema' } }, e.hunt.clock ?? 0);
   const volta = JSON.parse(JSON.stringify(Cacadas.huntParaGravar(e.hunt)));
@@ -165,7 +166,7 @@ function montar(acao, supports = []) {
   const gemas = [G.novaGema(GEMA(acao)), ...supports.map((s) => G.novaGema(SUP(s)))];
   e.equipment.weapon = { id: idDe('wand of vortex'), count: 1, soquetes: { abertos: 4, links: [true, true, true], gemas: [...gemas, ...Array(4 - gemas.length).fill(null)] } };
   Ficha.invalidar(e);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -194,7 +195,7 @@ function lancar(e, acao, alvo) {
   return r.eventos;
 }
 
-test('toda gema de dano contínuo do catálogo vira um EFEITO do tipo certo (sem golpe na hora), com o dano dela como total', () => {
+test('toda gema de dano contínuo do catálogo vira um EFEITO do tipo certo (sem golpe na hora), com o dano dela como total', { skip: doClassico("Gemas de dano contínuo do Draevor") }, () => {
   const gemas = [...ACTION_CATALOG.spells, ...ACTION_CATALOG.runes].filter((a) => a.overTime && Dot.tipoDaFonte(a.overTime.type));
   assert.ok(gemas.length >= 6);
   for (const a of gemas) {
@@ -218,7 +219,7 @@ test('Envenom (veneno), Inflict Wound (sangramento) e Ignite (queimadura): os ma
   assert.equal(Dot.tipoDaFonte('CONDITION_QUALQUER'), null);
 });
 
-test('gema de dano contínuo: o total sai nos pulsos e a resistência do bicho vale em cada um', () => {
+test('gema de dano contínuo: o total sai nos pulsos e a resistência do bicho vale em cada um', { skip: doClassico("Gemas de dano contínuo do Draevor") }, () => {
   const { e, m } = montar('spell-envenom');
   m.resist = { earth: 50 };
   lancar(e, 'spell-envenom', m);
@@ -230,7 +231,7 @@ test('gema de dano contínuo: o total sai nos pulsos e a resistência do bicho v
   assert.ok(Math.abs(pago - total * passa) < total * 0.02 + 5, `pagou ${pago} de ${total} (esperado ${Math.round(total * passa)})`);
 });
 
-test('os suportes Chance de Envenenar e Chance de Sangrar põem veneno e sangramento no acerto (do dano antes da resistência)', () => {
+test('os suportes Chance de Envenenar e Chance de Sangrar põem veneno e sangramento no acerto (do dano antes da resistência)', { skip: aAdaptar("Chance to Poison/Bleed existem no PoE; o teste usa gemas do Draevor") }, () => {
   const venenoNaGema = montar('spell-terra-strike', ['poison']);
   lancar(venenoNaGema.e, 'spell-terra-strike', venenoNaGema.m);
   assert.ok(Dot.restante(venenoNaGema.m, 'veneno') > 0, 'veneno');

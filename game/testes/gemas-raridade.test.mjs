@@ -14,6 +14,7 @@ import * as Gemas from '../systems/skills/gemas.mjs';
 import { pecaEspecial, converterTudo, camposDaPeca } from '../systems/itens/item.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ITEM = 910001; // gema: buzz
 const RARIDADES = ['comum', 'incomum', 'raro', 'épico', 'lendário', 'mítico'].filter((r) => Gemas.raridadeDaGema(r) === r);
@@ -91,7 +92,7 @@ test('juntar continua juntando o que empilha (poção limpa)', () => {
   assert.equal(e.inventory.reduce((a, p) => a + p.count, 0), 15);
 });
 
-test('organizar, trocar, largar e pegar: a gema segue inteira', () => {
+test('organizar, trocar, largar e pegar: a gema segue inteira', { skip: doClassico("Gemas do Draevor com raridade (chão, troca, mercado); o jogo oficial só aceita gemas do PoE") }, () => {
   const e = novo();
   const g = gema('raro');
   e.inventory = [structuredClone(g), { id: 660, count: 1 }];
@@ -154,7 +155,7 @@ test('persistência: gravar e carregar (JSON + migração do personagem) mantém
   igual(volta.deposito[0].itens[0], g);
 });
 
-test('Mercado: anunciar e comprar a gema entrega a MESMA gema (antes chegava limpa, sem raridade)', async () => {
+test('Mercado: anunciar e comprar a gema entrega a MESMA gema (antes chegava limpa, sem raridade)', { skip: doClassico("Gemas do Draevor com raridade (chão, troca, mercado); o jogo oficial só aceita gemas do PoE") }, async () => {
   const vendedor = { id: `v-${randomUUID()}`, nome: 'Vendedor' };
   const comprador = { id: `c-${randomUUID()}`, nome: 'Comprador' };
   const ev = novo();

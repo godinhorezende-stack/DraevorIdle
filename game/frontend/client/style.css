@@ -28244,3 +28244,9 @@ html[data-perfil="deitado"] #actionbar .controls > #auto-movel:not(:empty) { dis
 html[data-perfil="deitado"] #actionbar .controls > #auto-movel .presets-auto { width: 100%; }
 html[data-perfil="deitado"] #actionbar .controls > #auto-movel .auto-mestre { height: 30px; font-size: 11px; padding: 0 6px; }
 html[data-perfil="deitado"] #actionbar .controls > #auto-movel .auto-toggle { width: 32px; }
+
+/* O personagem do Draevor clássico, arquivado (o jogo oficial é o do PoE): apagado, com o selo, sem entrar. */
+.character-card--arquivado { filter: grayscale(.85) brightness(.75); cursor: help; position: relative; }
+.character-card--arquivado:hover { filter: grayscale(.6) brightness(.9); }
+.selo-arquivado { display: inline-block; margin-top: 4px; padding: 2px 7px; border-radius: 4px; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: #e8d6a6; background: #3a2e14; border: 1px solid #6b5626; }
+.aviso-arquivado { color: #e8d6a6; }

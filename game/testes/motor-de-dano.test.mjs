@@ -6,8 +6,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as Gemas from '../systems/skills/gemas.mjs';
 import { contarGemas, medirGema, medirTodas, medirCura, medirTodasAsCuras } from './motor-de-dano.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
-test('contagem: ativas + supports = total; toda ativa tem uma função', () => {
+test('contagem: ativas + supports = total; toda ativa tem uma função', { skip: doClassico("Contagem de ativas e supports do Draevor") }, () => {
   const c = contarGemas();
   assert.equal(c.total, Gemas.DEFS.size);
   assert.equal(c.ativas + c.supports, c.total);
@@ -24,7 +25,7 @@ test('toda gema de ATAQUE causa dano no nível 1, no boneco sem resistência', (
   assert.deepEqual(sem, []);
 });
 
-test('a medida é repetível (semente) e o nível 20 bate mais que o 1', () => {
+test('a medida é repetível (semente) e o nível 20 bate mais que o 1', { skip: aAdaptar("O motor de medida de dano é ferramenta da engine; mede gemas do Draevor") }, () => {
   const a = medirGema('spell-flame-strike', { usos: 20 });
   assert.deepEqual(medirGema('spell-flame-strike', { usos: 20 }), a);
   assert.equal(a.usos, 20, 'todos os usos contam (recarga e intervalo do combo zerados)');
@@ -35,7 +36,7 @@ test('a medida é repetível (semente) e o nível 20 bate mais que o 1', () => {
   assert.ok(n20.media > a.media, `${a.media} → ${n20.media}`);
 });
 
-test('o boneco não tem resistência: mesmo personagem, magias de elementos diferentes e mesmo dano de catálogo batem igual', () => {
+test('o boneco não tem resistência: mesmo personagem, magias de elementos diferentes e mesmo dano de catálogo batem igual', { skip: aAdaptar("O motor de medida de dano é ferramenta da engine; mede gemas do Draevor") }, () => {
   // Energy Strike e Terra Strike são strikes de 1º círculo (mesmo dano de catálogo); no troll, a resistência os separa.
   const o = { level: 100, usos: 40, classe: 'sorcerer' };
   // (Descontado o balanceamento de cada gema — `fatorDeDano`.)
@@ -45,7 +46,7 @@ test('o boneco não tem resistência: mesmo personagem, magias de elementos dife
   assert.ok(Math.abs(energia - terra) / Math.max(energia, terra) < 0.15, `${energia} × ${terra}`);
 });
 
-test('cura: toda gema de cura cura no nível 1; o nível 20 cura mais; o level do personagem também escala', () => {
+test('cura: toda gema de cura cura no nível 1; o nível 20 cura mais; o level do personagem também escala', { skip: aAdaptar("O motor de medida de dano é ferramenta da engine; mede gemas do Draevor") }, () => {
   const sem = medirTodasAsCuras({ usos: 5 }).filter((l) => !(l.media > 0)).map((l) => `${l.acao}: ${l.erro ?? l.media}`);
   assert.deepEqual(sem, []);
   const n1 = medirCura('spell-intense-healing', { usos: 20, level: 100, magicLevel: 0 });

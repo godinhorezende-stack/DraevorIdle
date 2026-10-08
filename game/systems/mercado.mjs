@@ -14,11 +14,12 @@
 // é anunciado sai do personagem na hora (fica "em custódia" no anúncio) e volta
 // se cancelar. Quem recebe algo estando fora do jogo recebe ao entrar: o ouro
 // no bolso e os itens na caixa de Chegadas do depósito (ver `receberCreditos`).
-import { banco } from '../database/banco.mjs';
+import { banco, transacao } from '../database/banco.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
 import { darItem, cabeNoPeso } from './inventario.mjs';
 import * as Deposito from './deposito.mjs';
 import { converterTudo, camposDaPeca, raridadeDaPeca, pecaEspecial } from './itens/item.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 /** A peça de uma oferta, com as de antes do sistema de itens já convertidas. */
 const pecaDa = (o) => {
@@ -158,7 +159,8 @@ const anuncio = (o, personagemId) => {
 
 /** `market browse` → `{list, mine, gold}`. */
 export async function balcao(estado, personagemId) {
-  const ofertas = await banco.prepare('SELECT * FROM mercado_ofertas').all();
+  // No jogo oficial o balcão só tem item do PoE (`itens-poe/so-itens-do-poe.mjs`).
+  const ofertas = (await banco.prepare('SELECT * FROM mercado_ofertas').all()).filter((o) => podeEntrar(o.item));
   const porItem = new Map();
   for (const o of ofertas) {
     const l = porItem.get(o.item) ?? { buy: 0, sell: 0, bestBuy: 0, bestSell: 0 };
@@ -188,7 +190,7 @@ export async function ofertas(personagemId, filtros = {}) {
   const kind = filtros.kind === 'buy' ? 'buy' : 'sell';
   const moeda = moedaValida(filtros.moeda);
   const busca = String(filtros.search ?? '').trim().toLowerCase();
-  let lista = (await banco.prepare('SELECT * FROM mercado_ofertas WHERE kind = ? AND moeda = ?').all(kind, moeda)).map((o) => anuncio(o, personagemId));
+  let lista = (await banco.prepare('SELECT * FROM mercado_ofertas WHERE kind = ? AND moeda = ?').all(kind, moeda)).filter((o) => podeEntrar(o.item)).map((o) => anuncio(o, personagemId));
   if (busca) lista = lista.filter((o) => o.name.toLowerCase().includes(busca));
   if (filtros.slot && filtros.slot !== 'all') lista = lista.filter((o) => o.slot === filtros.slot);
   if (filtros.rarity && filtros.rarity !== 'all') lista = lista.filter((o) => o.rarity === filtros.rarity);
@@ -215,6 +217,7 @@ export async function anunciar(estado, personagem, { kind, id, count, price, pec
   const n = inteiro(count);
   const preco = inteiro(price);
   if (!ITEM_CATALOG[id]) return { ok: false, erro: 'Item desconhecido.' };
+  if (!podeEntrar(id, (estado.inventory ?? [])[peca?.indice] ?? null)) return { ok: false, erro: SO_ITENS_DO_POE };
   let pecaGuardada = null;
   if (kind === 'sell') {
     // O item sai da mochila agora (fica no anúncio); a peça apontada primeiro.
@@ -248,6 +251,7 @@ export async function anunciar(estado, personagem, { kind, id, count, price, pec
 export async function aceitar(estado, personagem, { offerId, count }, aoVivo) {
   const o = await banco.prepare('SELECT * FROM mercado_ofertas WHERE id = ?').get(Number(offerId));
   if (!o) return { ok: false, erro: 'Esse anúncio não existe mais.' };
+  if (!podeEntrar(o.item, pecaDa(o))) return { ok: false, erro: SO_ITENS_DO_POE };
   if (o.personagem === personagem.id) return { ok: false, erro: 'Esse anúncio é seu.' };
   const n = Math.min(o.count, inteiro(count));
   const valor = o.price * n;
@@ -291,6 +295,46 @@ export async function cancelar(estado, personagem, { offerId }) {
   if (o.kind === 'sell') entregar(estado, { itens: [{ id: o.item, count: o.count, peca: pecaDa(o) }] });
   else entregar(estado, o.moeda === 'coin' ? { coins: o.price * o.count } : { gold: o.price * o.count });
   return { ok: true, notice: 'Anúncio cancelado.' };
+}
+
+/**
+ * As ofertas abertas dos personagens ARQUIVADOS (do Draevor clássico — `personagem/legado.mjs`) VOLTAM para os donos (dono, 07/10:
+ * "volta aos donos, mas só vai entrar no jogo itens do PoE"): o que estava em custódia — o item do anúncio de venda, o ouro/coins do de
+ * compra, os coins da ordem de venda e o ouro da de compra do balcão de coins — vira CRÉDITO do dono (a tabela `creditos`, a mesma de
+ * quem vende estando fora do jogo), e o anúncio sai do balcão. O personagem não é tocado: o crédito só entra se ele voltar a jogar (no
+ * clássico). Idempotente: o servidor chama no boot do jogo oficial. `arquivado(estado)`: a regra do legado. Devolve quantos voltaram.
+ */
+export async function devolverOfertasDosArquivados(arquivado) {
+  const ehArquivado = new Map();
+  const doArquivado = async (id) => {
+    if (!ehArquivado.has(id)) {
+      const l = await banco.prepare('SELECT estado FROM personagens WHERE id = ?').get(id);
+      let e = null;
+      try { e = l ? JSON.parse(l.estado) : null; } catch { e = null; }
+      ehArquivado.set(id, !!e && arquivado(e));
+    }
+    return ehArquivado.get(id);
+  };
+  let devolvidas = 0;
+  for (const o of await banco.prepare('SELECT * FROM mercado_ofertas').all()) {
+    if (!(await doArquivado(o.personagem))) continue;
+    const credito = o.kind === 'sell' ? { itens: [{ id: o.item, count: o.count, peca: pecaDa(o) }] } : o.moeda === 'coin' ? { coins: o.price * o.count } : { gold: o.price * o.count };
+    await transacao(async () => {
+      const r = await banco.prepare('DELETE FROM mercado_ofertas WHERE id = ?').run(o.id);
+      if (r.changes) await creditar(o.personagem, credito);
+    });
+    devolvidas++;
+  }
+  for (const o of await banco.prepare('SELECT * FROM coin_ordens').all()) {
+    if (!(await doArquivado(o.personagem))) continue;
+    const credito = o.kind === 'sell' ? { coins: o.amount } : { gold: o.amount * o.price };
+    await transacao(async () => {
+      const r = await banco.prepare('DELETE FROM coin_ordens WHERE id = ?').run(o.id);
+      if (r.changes) await creditar(o.personagem, credito);
+    });
+    devolvidas++;
+  }
+  return devolvidas;
 }
 
 /** `market historico` → `{linhas, gasto, ganho, gastoCoin, ganhoCoin}`. */

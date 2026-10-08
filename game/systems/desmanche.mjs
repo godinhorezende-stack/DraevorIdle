@@ -16,6 +16,7 @@
 // está vestido não entra.
 import { MAQUINA_DE_DESMANCHE } from './dados.mjs';
 import { contarGuardadas, tirarGuardadas, darItem } from './inventario.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 const ITEM_DO_TOKEN = MAQUINA_DE_DESMANCHE.itemDoToken;
 const MOTIVO = 'estão com tier, imbuement ou afixo';
@@ -50,6 +51,8 @@ export function view(estado) {
 }
 
 export function desmanchar(estado, { pedidos }) {
+  // No jogo oficial o token do Draevor não entra: a máquina não desmancha (antes de tirar qualquer peça — nada se perde).
+  if (!podeEntrar(ITEM_DO_TOKEN)) return { ok: false, erro: `A máquina de desmanche é do Draevor clássico. ${SO_ITENS_DO_POE}` };
   if (!Array.isArray(pedidos) || !pedidos.length) return { ok: false, erro: 'Marque alguma peça para desmanchar.' };
   // Junta o mesmo id pedido duas vezes, e confere TUDO antes de tirar qualquer coisa.
   const porId = new Map();

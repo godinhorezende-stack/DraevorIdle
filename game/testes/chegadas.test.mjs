@@ -9,6 +9,7 @@ import * as Bau from '../systems/bau.mjs';
 import * as Afixos from '../systems/afixos.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const acha = (n) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === n).id);
 const chegadas = (e) => Deposito.garantir(e).find((c) => c.chegadas);
@@ -29,7 +30,7 @@ test('o que estava na Store Inbox e na Boss Pouch vai inteiro para as Chegadas (
   assert.equal(chegadas(e).itens.length, 153);
 });
 
-test('a compra da Store vai para as Chegadas; nas Chegadas nada se guarda à mão', () => {
+test('a compra da Store vai para as Chegadas; nas Chegadas nada se guarda à mão', { skip: aAdaptar("As Chegadas são da engine; o teste compra um produto da Store que entrega item do Draevor (fora da loja no oficial)") }, () => {
   const e = novo();
   e.coins = 1e6;
   const antes = chegadas(e).itens.length;
@@ -42,7 +43,7 @@ test('a compra da Store vai para as Chegadas; nas Chegadas nada se guarda à mã
   assert.ok(!g.ok && /Chegadas/.test(g.erro));
 });
 
-test('o Baú do Boss leva para a mochila o que cabe no peso e o resto para a bolsa de loot', () => {
+test('o Baú do Boss leva para a mochila o que cabe no peso e o resto para a bolsa de loot', { skip: doClassico("Capacidade por peso do Draevor; no PoE a capacidade é a mochila de 20 vagas") }, () => {
   const e = novo();
   const espada = acha('fire sword');
   Bau.novaSacola(e, 'Boss', [{ id: espada, count: 1, af: [{ id: 'a', value: 1 }] }]);

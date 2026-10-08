@@ -61,8 +61,10 @@ export function sacar(estado, { amount }) {
 
 /**
  * `destino(nome)` (dado pela sessão) acha o outro personagem e devolve
- * `{ id, nome, estado, gravar }` — o `estado` vivo se ele estiver no jogo, o
- * gravado se não —, ou `null`. Aqui só a regra: conferir e mover o ouro.
+ * `{ id, nome, estado, gravar, arquivado }` — o `estado` vivo se ele estiver no
+ * jogo, o gravado se não —, ou `null`. Aqui só a regra: conferir e mover o ouro.
+ * O personagem ARQUIVADO (do Draevor clássico, `personagem/legado.mjs`) não
+ * recebe: o ouro ficaria preso num personagem que não entra no jogo.
  */
 export async function transferir(estado, { name, amount }, eu, destino) {
   const pedido = quantia(amount);
@@ -71,6 +73,7 @@ export async function transferir(estado, { name, amount }, eu, destino) {
   const outro = nome ? await destino(nome) : null;
   if (!outro) return aviso('personagem não encontrado');
   if (outro.id === eu.id) return aviso('você não pode transferir para si mesmo');
+  if (outro.arquivado) return aviso(`${outro.nome} é do Draevor clássico e está arquivado: não recebe transferências`);
   if (!outro.estado?.vocation) return aviso('o destinatário precisa ter vocação');
   const n = Math.min(pedido, estado.bank ?? 0);
   if (!n) return INVALIDO;

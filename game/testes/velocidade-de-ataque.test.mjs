@@ -5,6 +5,7 @@ import * as Ficha from '../systems/ficha.mjs';
 import { ATAQUE_MS } from '../systems/hunt/combate.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
 import { personagemDeTeste } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const ANEL = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'might ring').id);
 
@@ -16,7 +17,7 @@ function comVelocidade(pct) {
   return Ficha.combate(e);
 }
 
-test('a ficha traz o intervalo real entre golpes: 2 s sem bônus, e a velocidade de ataque (add + DEX) o encurta', () => {
+test('a ficha traz o intervalo real entre golpes: 2 s sem bônus, e a velocidade de ataque (add + DEX) o encurta', { skip: doClassico("Velocidade de ataque do Draevor") }, () => {
   assert.equal(ATAQUE_MS, 2000);
   // O DEX da vocação já dá um pouco de Attack Speed (`Atributos.efeitos`).
   const doDex = comVelocidade(0).velocidadeDeAtaque;

@@ -38,6 +38,7 @@ import * as Summon from '../systems/summon.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import * as Legado from '../systems/personagem/legado.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
 import * as FichaPoe from '../systems/personagem/ficha-poe.mjs';
@@ -202,6 +203,8 @@ function cartaoDaConta(personagens) {
         ? { tipo: 'offline', onde: `Caçando offline em ${Cacadas.nomeDaHunt(e.hunt.huntId)}` }
         : null,
       lastSeen: p.visto_em ?? null,
+      // Do Draevor clássico, no jogo oficial (PoE): arquivado — fica na lista, mas não entra nem é convertido (`personagem/legado.mjs`).
+      ...(Legado.arquivado(e) ? { arquivado: true, motivoArquivado: Legado.MENSAGEM_DO_ARQUIVADO } : {}),
     };
   });
 }
@@ -237,6 +240,8 @@ function estadoInicialPersonagem(vocacao, sexo, classe = null) {
     maxMana,
     // Os DOIS Frascos de Vida Pequenos no cinto, já equipados (dono, 07/10: "toda classe vem com 2 frascos de vida lv 1 equipados"), só com o PoE.
     ...(poe ? { frascos: [ItensPoeJogo.frascoInicial(), ItensPoeJogo.frascoInicial(), null, null, null] } : {}),
+    // O personagem nasce no jogo oficial (PoE): a marca que o separa dos antigos do Draevor clássico, que ficam arquivados (`personagem/legado.mjs`).
+    ...(poe ? { sistema: Legado.SISTEMA_DO_POE } : {}),
     // Ouro, capacidade e fôlego iniciais são os REAIS — capturados criando uma
     // conta de teste no servidor original (`api-mapeada/character-real-example.json`).
     gold: 500,
@@ -628,7 +633,7 @@ export class Sessao {
     const vivo = this.estadoAoVivo(linha.id);
     if (vivo) return { id: linha.id, nome: linha.nome, estado: vivo, gravar: () => {} };
     const estado = JSON.parse(linha.estado);
-    return { id: linha.id, nome: linha.nome, estado, gravar: () => B.regravarEstadoPersonagem(linha.id, estado) };
+    return { id: linha.id, nome: linha.nome, estado, arquivado: Legado.arquivado(estado), gravar: () => B.regravarEstadoPersonagem(linha.id, estado) };
   }
 
   /** `send({t:'party', action, ...})` — `comandoDaCaca` pode ter que tirar o anfitrião de um worker de simulação (Fase 5) antes de juntar a sala. */
@@ -1323,7 +1328,9 @@ export class Sessao {
         return this.mandarHistoricoDaLoja();
       case 'startHunt': {
         Party.antesDeSairDaCacada(this);
-        const entrou = Cacadas.entrar(this.estado, m);
+        // Só o que a tela manda: `campanha`, `viaPortal` e `arenaPvp` são decisões do servidor (antes o pedido inteiro ia para `entrar`, e um
+        // `viaPortal: true` forjado pulava a regra do portal do boss de ato).
+        const entrou = Cacadas.entrar(this.estado, { huntId: m.huntId, mode: m.mode, strategy: m.strategy, dificuldade: m.dificuldade });
         this.aplicar(entrou);
         // Líder de party: quem marcou "Seguir líder" vem junto.
         if (entrou.ok) Party.seguirOLider(this);
@@ -1434,6 +1441,8 @@ export class Sessao {
     const linha = await B.personagemPorNome(String(m.name ?? '').trim());
     if (!linha || linha.conta !== this.conta.id) return this.erro('Esse personagem não é desta conta.');
     if (linha.nome === this.personagem.nome) return this.erro('Esse é o personagem em que você está.');
+    // O arquivado (Draevor clássico) não é lido pelo jogo novo, configurado nem trazido para o mundo: fica como está no banco.
+    if (Legado.arquivado(JSON.parse(linha.estado))) return this.erro(`${linha.nome} é do Draevor clássico e está arquivado: não dá para configurá-lo nem trazê-lo para o jogo.`);
     if (carregandoAgora.has(linha.nome)) return this.erro(`${linha.nome} está entrando agora — tente de novo em instantes.`);
     const vivo = vivas.get(linha.nome)?.personagem ? vivas.get(linha.nome) : null;
     switch (m.op) {
@@ -1646,7 +1655,8 @@ export class Sessao {
     if (!R.VOCACOES_VALIDAS.has(vocation)) return this.erroDeAuth('Vocação inválida.');
     if (sex !== 'male' && sex !== 'female') return this.erroDeAuth('Escolha inválida.');
     if (await B.personagemPorNome(name)) return this.erroDeAuth('Já existe um personagem com esse nome.');
-    const existentes = await B.personagensDaConta(this.conta.id);
+    // Os arquivados (do Draevor clássico) não contam no limite: ninguém precisa apagar um antigo para criar o personagem novo.
+    const existentes = (await B.personagensDaConta(this.conta.id)).filter((p) => !Legado.arquivado(JSON.parse(p.estado)));
     if (existentes.length >= R.MAXIMO_DE_PERSONAGENS) return this.erroDeAuth('Limite de personagens atingido.');
 
     await B.criarPersonagem({
@@ -1699,6 +1709,8 @@ export class Sessao {
     if (Manutencao.bloqueada()) return this.erro(Manutencao.mensagemDeBloqueio());
     let personagem = await B.personagemPorNome(name);
     if (!personagem || personagem.conta !== this.conta.id) return this.erroDeAuth('Personagem não encontrado.');
+    // Do Draevor clássico, no jogo oficial: arquivado — não entra e NÃO é convertido (nada abaixo, nem a caçada offline, roda nele).
+    if (Legado.arquivado(JSON.parse(personagem.estado))) return this.erroDeAuth(Legado.MENSAGEM_DO_ARQUIVADO);
 
     // Aquece o cache síncrono das melhorias da conta (`Party.limiteDeChars`
     // lê dele, não do banco — ver `B.melhoriasCache`) ANTES do primeiro

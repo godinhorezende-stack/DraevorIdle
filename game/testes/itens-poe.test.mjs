@@ -137,12 +137,21 @@ test('determinístico com a mesma semente; erros claros; faixa decimal respeita 
   assert.ok(v >= 0.2 && v <= 0.4 && String(v).split('.')[1].length <= 1);
 });
 
-test('desligado sem a chave: o jogo atual nunca carrega o catálogo do PoE', () => {
-  const antes = process.env.ITENS_POE;
-  delete process.env.ITENS_POE;
-  assert.equal(Catalogo.ligado(), false);
-  assert.equal(Catalogo.catalogo(), null);
-  if (antes != null) process.env.ITENS_POE = antes;
+// (D, docs/migracao-poe-matriz.md: o "desligado sem a chave" deixou de existir — o jogo oficial é o do PoE e a chave não é mais lida.)
+test('o jogo oficial é o do PoE sem chave nenhuma: ITENS_POE não muda nada; só DRAEVOR_CLASSICO=1 (a transição) desliga', () => {
+  const antes = { ITENS_POE: process.env.ITENS_POE, DRAEVOR_CLASSICO: process.env.DRAEVOR_CLASSICO };
+  try {
+    delete process.env.ITENS_POE;
+    delete process.env.DRAEVOR_CLASSICO;
+    assert.equal(Catalogo.ligado(), existsSync(Catalogo.ARQUIVO));
+    process.env.ITENS_POE = '0';
+    assert.equal(Catalogo.ligado(), existsSync(Catalogo.ARQUIVO), 'ITENS_POE não é lida');
+    process.env.DRAEVOR_CLASSICO = '1';
+    assert.equal(Catalogo.ligado(), false);
+    assert.equal(Catalogo.catalogo(), null);
+  } finally {
+    for (const [k, v] of Object.entries(antes)) if (v == null) delete process.env[k]; else process.env[k] = v;
+  }
 });
 
 test('catálogo importado de verdade (quando existe nesta máquina): bases com pool geram peças válidas', { skip: !existsSync(Catalogo.ARQUIVO) && 'catálogo do PoE não importado nesta máquina' }, () => {

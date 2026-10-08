@@ -10,7 +10,8 @@ import * as Ficha from '../systems/ficha.mjs';
 import * as Afixos from '../systems/afixos.mjs';
 import { atributosDoMob } from '../admin/mapas.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste } from './apoio.mjs';
+import { personagemDeTeste, HUNT_DE_TESTE } from './apoio.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const personagem = (vocacao = 'knight', level = 100, af = []) => {
   const e = personagemDeTeste({ vocacao, level });
@@ -37,7 +38,7 @@ test('a simulação é determinística (mesma entrada, mesmo resultado) e traz t
   assert.match(a.aviso, /sem poções/);
 });
 
-test('o monstro se defende com os atributos finais: armadura, bloqueio e redução de dano alongam a luta; a vida e os modificadores contam', () => {
+test('o monstro se defende com os atributos finais: armadura, bloqueio e redução de dano alongam a luta; a vida e os modificadores contam', { skip: doClassico("Modificadores do Draevor no monstro (blindado, escudado, vigoroso, brutal); no oficial o monstro comum troca os do Draevor por modificadores do PoE SORTEADOS (itens-poe/modificadores-monstro.mjs, aplicador): o resultado vira sorte") }, () => {
   const e = personagem();
   const base = Sim.simularLuta(e, { mob: { key: 'troll', raridade: 'raro' }, level: 100, lutas: 60 });
   const vigoroso = Sim.simularLuta(e, { mob: { key: 'troll', raridade: 'raro', modificadores: ['vigoroso'] }, level: 100, lutas: 60 });
@@ -49,7 +50,7 @@ test('o monstro se defende com os atributos finais: armadura, bloqueio e reduç�
   assert.ok(temperado.jogador.dpsNoMob < base.jogador.dpsNoMob, 'a redução de dano do mob também');
 });
 
-test('o monstro ataca com os atributos dele: o Brutal sobe o dano recebido; as defesas do jogador (armadura, proteção) o reduzem', () => {
+test('o monstro ataca com os atributos dele: o Brutal sobe o dano recebido; as defesas do jogador (armadura, proteção) o reduzem', { skip: doClassico("Modificadores do Draevor no monstro (blindado, escudado, vigoroso, brutal); no oficial o monstro comum troca os do Draevor por modificadores do PoE SORTEADOS (itens-poe/modificadores-monstro.mjs, aplicador): o resultado vira sorte") }, () => {
   const e = personagem();
   const base = Sim.simularLuta(e, { mob: { key: 'troll', raridade: 'raro' }, level: 100, lutas: 60 });
   const brutal = Sim.simularLuta(e, { mob: { key: 'troll', raridade: 'raro', modificadores: ['brutal'] }, level: 100, lutas: 60 });
@@ -79,7 +80,7 @@ test('o dano de outros tipos do mob aparece por elemento no dano recebido', () =
   }
 });
 
-test('efeito dos modificadores, classes lado a lado e progressão por level', () => {
+test('efeito dos modificadores, classes lado a lado e progressão por level', { skip: doClassico("Modificadores do Draevor no monstro (blindado, escudado, vigoroso, brutal); no oficial o monstro comum troca os do Draevor por modificadores do PoE SORTEADOS (itens-poe/modificadores-monstro.mjs, aplicador): o resultado vira sorte") }, () => {
   const e = personagem();
   const m = Sim.efeitoDosModificadores(e, { key: 'troll', level: 100, raridade: 'raro', modificadores: ['brutal', 'blindado'], lutas: 40 });
   assert.ok(m.porModificador.brutal.danoRecebidoPorSegundo > m.base.danoRecebidoPorSegundo);
@@ -93,7 +94,7 @@ test('efeito dos modificadores, classes lado a lado e progressão por level', ()
   assert.ok(p[2].vida > p[0].vida && p[2].segundosParaMatar > p[0].segundosParaMatar);
 });
 
-test('o editor recebe o detalhamento do monstro: atributos com origens, ataques, erros e avisos das regras', () => {
+test('o editor recebe o detalhamento do monstro: atributos com origens, ataques, erros e avisos das regras', { skip: doClassico("Simulador do monstro com a raridade do Draevor") }, () => {
   const d = atributosDoMob({ key: 'troll', level: 100, raridade: 'raro', modificadores: ['vigoroso', 'brutal', 'frenetico'] });
   assert.ok(d.ok);
   assert.equal(d.raridade, 'raro');
@@ -111,7 +112,7 @@ test('o editor recebe o detalhamento do monstro: atributos com origens, ataques,
 
 test('os efeitos NO JOGADOR (controle e dano contínuo) vão no snapshot para o ícone ao lado do nome', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 100 });
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   assert.equal(Cacadas.snapshotDaHunt(e, true).player.estados, undefined, 'sem efeito: nada no payload');
   Dot.aplicarNoJogador(h, { tipo: 'veneno', total: 500 }, h.clock ?? 0);

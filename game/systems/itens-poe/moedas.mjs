@@ -33,11 +33,83 @@ const ehFrasco = (p) => Jogo.FRASCOS.includes(p.classe);
 const ehArma = (p) => !!p.atributos?.dano_fisico;
 const ehArmadura = (p) => !!(p.atributos?.armadura || p.atributos?.evasao || p.atributos?.escudo_energia);
 const sortear = (lista, rng) => lista[Math.floor(rng() * lista.length)];
-/** Põe um mod novo (do lado com vaga). */
+/** Põe um mod novo (do lado com vaga). Peça INFLUENCIADA sorteia também do pool da influência dela, como no PoE. */
 function porMod(p, rng, lados) {
-  const novo = Gerar.sortearUmMod({ catalogo: CAT(), regras: R(), poe: p, rng, lados });
+  const novo = influenciada(p) ? Gerar.sortearDoPool({ pagina: paginaComInfluencia(p), poe: p, regras: R(), rng, lados }) : Gerar.sortearUmMod({ catalogo: CAT(), regras: R(), poe: p, rng, lados });
   if (!novo) return false;
-  (p[`${novo.lado}s`] ??= []).push(novo.mod);
+  (p[`${novo.lado}s`] ??= []).push(novo.mod.origem ? { ...novo.mod, influencia: novo.mod.origem } : novo.mod);
+  return true;
+}
+
+// ---------------------------------------------------------------- os POOLS ESPECIAIS (`gamedata/itens-poe/pools/`, `Catalogo.poolEspecialDa`)
+// Influências (Criador, Ancião e os Conquistadores), o implícito corrompido (Orbe Vaal), os Ocultos (Betrayal) e os implícitos Eldritch
+// (Exarca Abrasador e Devorador de Mundos). O mod que vem de um pool leva `origem` (o pool) — é por ela que o Divino o acha de novo.
+const INFLUENCIAS = { Shapers_Exalted_Orb: 'shaper', Elders_Exalted_Orb: 'elder', Crusaders_Exalted_Orb: 'crusader', Redeemers_Exalted_Orb: 'redeemer', Hunters_Exalted_Orb: 'hunter', Warlords_Exalted_Orb: 'warlord' };
+const NOME_DA_INFLUENCIA = { shaper: 'Criador', elder: 'Ancião', crusader: 'Cruzado', redeemer: 'Redentor', hunter: 'Caçador', warlord: 'Senhor da Guerra' };
+const influenciada = (p) => (p.influencias ?? []).length > 0;
+/** A página do pool especial para a base da peça (o mesmo `pool` da base que o drop comum usa), ou null. */
+function paginaDo(p, pool) {
+  const b = Gerar.acharBase(CAT(), p.base)?.base;
+  return b?.pool ? Catalogo.poolEspecialDa(pool, p.classe, b.pool) : null;
+}
+/** O pool normal da base + os das influências da peça (cada grupo com a `origem` dele). */
+function paginaComInfluencia(p) {
+  const achado = Gerar.acharBase(CAT(), p.base);
+  const normal = achado && Gerar.poolDa(achado.classe, achado.base);
+  const juntos = { prefixos: [...(normal?.prefixos ?? [])], sufixos: [...(normal?.sufixos ?? [])] };
+  for (const inf of p.influencias ?? []) {
+    const pg = paginaDo(p, inf);
+    for (const lado of ['prefixos', 'sufixos']) for (const g of pg?.[lado] ?? []) juntos[lado].push({ ...g, origem: inf });
+  }
+  return juntos;
+}
+const doPool = (p, pool, rng, opcoes = {}) => Gerar.sortearDoPool({ pagina: paginaDo(p, pool), poe: p, regras: R(), origem: pool, rng, ...opcoes });
+const tirarMod = (p, m) => {
+  p.prefixos = (p.prefixos ?? []).filter((x) => x !== m);
+  p.sufixos = (p.sufixos ?? []).filter((x) => x !== m);
+};
+/** O tier de onde saiu um mod de pool especial (para o Divino e o Abençoado). */
+function tierEspecial(p, m) {
+  const pg = m.origem ? paginaDo(p, m.origem) : null;
+  for (const lado of ['prefixos', 'sufixos', 'implicitos']) {
+    for (const g of pg?.[lado] ?? []) {
+      if (g.familia !== m.familia) continue;
+      const t = g.tiers.find((x) => x.modelo === m.modelo && x.nome === m.nome) ?? g.tiers.find((x) => x.modelo === m.modelo);
+      if (t) return t;
+    }
+  }
+  return null;
+}
+
+// Os implícitos ELDRITCH: o degrau é Menor 1, Maior 2, Distinto 3, Excepcional 4 e os dois do Orbe do Conflito 5 e 6 (na ordem do PoEDB).
+// Domina quem tem o degrau maior; só um dos dois, ele domina; empate, nenhum.
+const ELDRITCH = { searing: 'Exarca Abrasador', eater: 'Devorador de Mundos' };
+const LADO_DO_DOMINANTE = { searing: 'prefixo', eater: 'sufixo' };
+const CLASSES_ELDRITCH = ['Body_Armours', 'Boots', 'Gloves', 'Helmets'];
+const eldritch = (p, pool) => (p.implicitos ?? []).find((m) => m.origem === pool) ?? null;
+const temEldritch = (p) => Object.keys(ELDRITCH).some((k) => eldritch(p, k));
+const degrauPeloNome = (nome) => (/Menor$/.test(nome) ? 1 : /Maior$/.test(nome) ? 2 : /Distint[ao]$/.test(nome) ? 3 : /Excepcional$/.test(nome) ? 4 : null);
+/** Os tiers do MESMO implícito eldritch (família e texto), em ordem, com o degrau de cada um. */
+function degrausDo(p, m) {
+  const g = paginaDo(p, m.origem)?.implicitos?.find((x) => x.familia === m.familia);
+  let conflitos = 0;
+  return (g?.tiers ?? []).filter((t) => t.modelo === m.modelo).map((t) => ({ tier: t, degrau: degrauPeloNome(t.nome) ?? 5 + conflitos++ }));
+}
+function dominante(p) {
+  const ex = eldritch(p, 'searing');
+  const ea = eldritch(p, 'eater');
+  if (ex && !ea) return 'searing';
+  if (ea && !ex) return 'eater';
+  if (!ex || !ea || ex.degrau === ea.degrau) return null;
+  return ex.degrau > ea.degrau ? 'searing' : 'eater';
+}
+/** Sobe (+1) ou desce (−1) o degrau do implícito eldritch; os valores saem de novo, na faixa do tier novo. */
+function mudarDegrau(p, m, passo, rng) {
+  const lista = degrausDo(p, m);
+  const alvo = lista[lista.findIndex((x) => x.degrau === m.degrau) + passo];
+  if (!alvo) return false;
+  const novo = Gerar.rolarTexto(alvo.tier, rng);
+  Object.assign(m, { nome: alvo.tier.nome, tier: alvo.tier.tier, ilvl: alvo.tier.ilvl, valores: novo.valores, texto: novo.texto, degrau: alvo.degrau });
   return true;
 }
 /** Quantos mods pela raridade (`regras.raridades.<r>.quantidade`). */
@@ -56,7 +128,7 @@ function refazerMods(p, raridade, rng) {
 const nomeDaBase = (p) => Gerar.acharBase(CAT(), p.base)?.base?.nome ?? p.nome;
 /** Os valores de um mod de novo, dentro das faixas do tier dele (`tier` outro = troca o tier). */
 function rerolarValores(p, m, rng, tier = null) {
-  const t = tier ?? Gerar.tierDoMod(CAT(), p, m)?.tier;
+  const t = tier ?? (m.origem ? tierEspecial(p, m) : Gerar.tierDoMod(CAT(), p, m)?.tier);
   if (!t) return false;
   const novo = Gerar.rolarTexto(t, rng);
   Object.assign(m, { modelo: novo.modelo, valores: novo.valores, texto: novo.texto, ...(tier ? { tier: tier.tier, nome: tier.nome, ilvl: tier.ilvl } : {}) });
@@ -149,6 +221,11 @@ const divino = ({ p, rng }) => {
 };
 const abencoar = ({ p, rng }) => {
   const base = Gerar.acharBase(CAT(), p.base)?.base;
+  // Implícito de pool (Eldritch): os valores saem de novo na faixa do tier dele — ele não volta a ser o da base.
+  if ((p.implicitos ?? []).some((m) => m.origem)) {
+    for (const m of p.implicitos) if (m.origem) rerolarValores(p, m, rng);
+    return { ok: true, notice: `Implícito: ${p.implicitos.map((i) => i.texto).join('; ')}.` };
+  }
   if (!base?.implicitos?.length) return erro('A base desta peça não tem implícito.');
   // "Modificadores Implícitos Não Podem ser Mudados" (a base): o Orbe Abençoado não vale nela, como no PoE.
   if (Gerar.regrasDaBase(p.implicitos).implicitosFixos) return erro('Os implícitos desta base não podem ser mudados.');
@@ -215,7 +292,10 @@ const ancestral = ({ p, rng }) => {
   const nome = virarUnico(p, rng, true);
   return nome ? { ok: true, notice: `Virou ${nome}.` } : erro('Não há outro único desta classe de item.');
 };
-/** O Orbe Vaal: 1/4 nada; 1/4 sockets sorteados de novo (com chance de branco); 1/4 vira Rara com mods novos; 1/4 valores de novo. */
+/**
+ * O Orbe Vaal: 1/4 nada; 1/4 sockets sorteados de novo (com chance de branco); 1/4 vira Rara com mods novos (no Único, os valores saem de
+ * novo); 1/4 o IMPLÍCITO CORROMPIDO (pool `corrupted`), no lugar dos implícitos da peça — como no PoE.
+ */
 const vaal = (ctx) => {
   const { p, peca, rng } = ctx;
   p.corrompido = true;
@@ -230,12 +310,133 @@ const vaal = (ctx) => {
     }
     return { ok: true, notice: `${p.nome}: corrompida — nada mais mudou.` };
   }
-  if (caso === 2 && !ehUnico(p)) {
-    refazerMods(p, 'raro', rng);
-    return { ok: true, notice: `${p.nome}: corrompida — virou Rara com modificadores novos.` };
+  if (caso === 2) {
+    if (!ehUnico(p)) {
+      refazerMods(p, 'raro', rng);
+      return { ok: true, notice: `${p.nome}: corrompida — virou Rara com modificadores novos.` };
+    }
+    divino(ctx);
+    return { ok: true, notice: `${p.nome}: corrompida — os valores mudaram.` };
   }
-  divino(ctx);
-  return { ok: true, notice: `${p.nome}: corrompida — os valores mudaram.` };
+  const corrompido = Gerar.regrasDaBase(p.implicitos).implicitosFixos ? null : doPool(p, 'corrupted', rng, { lados: ['implicito'] });
+  if (!corrompido) return { ok: true, notice: `${p.nome}: corrompida — nada mais mudou.` };
+  p.implicitos = [{ ...corrompido.mod, corrompido: true }];
+  return { ok: true, notice: `${p.nome}: corrompida — implícito corrompido: ${corrompido.mod.texto}.` };
+};
+
+// ---------------------------------------------------------------- as moedas dos POOLS ESPECIAIS
+/** O Orbe do Caos Oculto: refaz a Rara com mods novos, um deles OCULTO (pool `veiled`). */
+function porOculto(p, rng) {
+  let o = doPool(p, 'veiled', rng);
+  if (!o) {
+    const podem = mods(p).filter((m) => !m.talhado);
+    if (podem.length) tirarMod(p, sortear(podem, rng));
+    o = doPool(p, 'veiled', rng);
+  }
+  if (!o) return null;
+  (p[`${o.lado}s`] ??= []).push({ ...o.mod, oculto: true });
+  return o.mod;
+}
+const caosOculto = ({ p, rng }) => {
+  if (p.raridade !== 'raro') return erro('O Orbe do Caos Oculto só vale em peça Rara.');
+  refazerMods(p, 'raro', rng);
+  const o = porOculto(p, rng);
+  return o ? { ok: true, notice: `${p.nome}: modificadores novos, com o Oculto "${o.texto}".` } : erro('Não há modificador Oculto possível nesta peça.');
+};
+/** O Orbe Exaltado Oculto: tira um mod qualquer e põe um OCULTO. */
+const exaltadoOculto = ({ p, rng }) => {
+  if (p.raridade !== 'raro') return erro('O Orbe Exaltado Oculto só vale em peça Rara.');
+  const podem = mods(p).filter((m) => !m.talhado);
+  if (!podem.length) return erro('Não há modificador para trocar.');
+  tirarMod(p, sortear(podem, rng));
+  const o = doPool(p, 'veiled', rng);
+  if (!o) return erro('Não há modificador Oculto possível nesta peça.');
+  (p[`${o.lado}s`] ??= []).push({ ...o.mod, oculto: true });
+  return { ok: true, notice: `${p.nome}: ganhou o Oculto "${o.mod.texto}".` };
+};
+/** Os Orbes Exaltados de INFLUÊNCIA: a Rara sem influência ganha a influência e um mod dela. */
+const exaltadoDeInfluencia = (inf) => ({ p, rng }) => {
+  if (p.raridade !== 'raro') return erro('Só vale em peça Rara.');
+  if (influenciada(p)) return erro('A peça já tem influência.');
+  if (temEldritch(p)) return erro('Peça com implícito Eldritch não recebe influência (como no PoE).');
+  const n = doPool(p, inf, rng);
+  if (!n) return erro(`Sem vaga, ou sem modificador do ${NOME_DA_INFLUENCIA[inf]} para esta peça no item level ${p.ilvl}.`);
+  (p[`${n.lado}s`] ??= []).push({ ...n.mod, influencia: inf });
+  p.influencias = [inf];
+  return { ok: true, notice: `${p.nome}: influência do ${NOME_DA_INFLUENCIA[inf]} — ${n.mod.texto}.` };
+};
+/** As BRASAS (Exarca Abrasador) e os FLUIDOS (Devorador de Mundos) ancestrais: o implícito Eldritch do tier da moeda. */
+const implicitoEldritch = (pool) => ({ p, rng, moeda }) => {
+  if (!CLASSES_ELDRITCH.includes(p.classe)) return erro(`${moeda.nome} vale em Peitoral, Botas, Luvas ou Elmo.`);
+  if (influenciada(p)) return erro('Peça influenciada não recebe implícito Eldritch (como no PoE).');
+  if (Gerar.regrasDaBase(p.implicitos).implicitosFixos) return erro('Os implícitos desta base não podem ser mudados.');
+  const pagina = paginaDo(p, pool);
+  const doTier = (pagina?.implicitos ?? []).flatMap((g) => g.tiers).filter((t) => t.nome === moeda.nome);
+  if (!doTier.length) return erro(`${moeda.nome} não tem implícito para esta peça.`);
+  const n = doPool(p, pool, rng, { lados: ['implicito'], filtro: (t) => t.nome === moeda.nome });
+  if (!n) return erro(`${moeda.nome} pede item level ${Math.min(...doTier.map((t) => t.ilvl ?? 1))} (esta peça: ${p.ilvl}).`);
+  const outro = eldritch(p, pool === 'searing' ? 'eater' : 'searing');
+  const mod = { ...n.mod, degrau: degrauPeloNome(n.mod.nome) ?? 1 };
+  p.implicitos = [...(outro ? [outro] : []), mod];
+  return { ok: true, notice: `${p.nome}: implícito do ${ELDRITCH[pool]} — ${mod.texto}.` };
+};
+/** Os orbes ANCESTRAIS (Caos, Exaltado, Anulação): agem no lado da influência Eldritch DOMINANTE (Exarca → prefixos, Devorador → sufixos). */
+function ladoDominante(p) {
+  if (p.raridade !== 'raro') return { erro: 'Só vale em peça Rara.' };
+  const d = dominante(p);
+  if (!d) return { erro: 'Nenhuma influência Eldritch domina esta peça (falta o implícito, ou os dois estão no mesmo tier).' };
+  return { lado: LADO_DO_DOMINANTE[d], quem: ELDRITCH[d] };
+}
+const caosAncestral = ({ p, rng }) => {
+  const { lado, quem, erro: e } = ladoDominante(p);
+  if (e) return erro(e);
+  p[`${lado}s`] = (p[`${lado}s`] ?? []).filter((m) => m.talhado);
+  const n = 1 + Math.floor(rng() * 3);
+  for (let i = 0; i < n; i++) if (!porMod(p, rng, [lado])) break;
+  return { ok: true, notice: `${p.nome}: o ${quem} domina — os ${lado}s foram refeitos.` };
+};
+const exaltadoAncestral = ({ p, rng }) => {
+  const { lado, quem, erro: e } = ladoDominante(p);
+  if (e) return erro(e);
+  return porMod(p, rng, [lado]) ? { ok: true, notice: `${p.nome}: o ${quem} domina — ganhou um ${lado}.` } : erro(`Não há vaga de ${lado}.`);
+};
+const anulacaoAncestral = ({ p, rng }) => {
+  const { lado, quem, erro: e } = ladoDominante(p);
+  if (e) return erro(e);
+  const podem = (p[`${lado}s`] ?? []).filter((m) => !m.talhado);
+  if (!podem.length) return erro(`Não há ${lado} para tirar.`);
+  tirarMod(p, sortear(podem, rng));
+  return { ok: true, notice: `${p.nome}: o ${quem} domina — perdeu um ${lado}.` };
+};
+/** O Orbe do Conflito: sobe o tier de um implícito Eldritch e desce o do outro, ao acaso. */
+const conflito = ({ p, rng }) => {
+  const ex = eldritch(p, 'searing');
+  const ea = eldritch(p, 'eater');
+  if (!ex || !ea) return erro('O Orbe do Conflito pede os dois implícitos Eldritch (Exarca e Devorador).');
+  const [sobe, desce] = rng() < 0.5 ? [ex, ea] : [ea, ex];
+  const subiu = mudarDegrau(p, sobe, +1, rng);
+  const desceu = mudarDegrau(p, desce, -1, rng);
+  if (!subiu && !desceu) return erro('Os implícitos já estão no limite.');
+  return { ok: true, notice: `${p.nome}: ${subiu ? `${ELDRITCH[sobe.origem]} subiu` : ''}${subiu && desceu ? ', ' : ''}${desceu ? `${ELDRITCH[desce.origem]} desceu` : ''}.` };
+};
+/** O Orbe do Domínio: na peça com 2+ mods influenciados, tira um e ELEVA outro (o tier Elevado do pool da influência). */
+function elevadoDe(p, m) {
+  const pg = paginaDo(p, m.influencia);
+  const g = [...(pg?.prefixos ?? []), ...(pg?.sufixos ?? [])].find((x) => x.familia === m.familia);
+  const elevados = (g?.tiers ?? []).filter((t) => /Elevad/.test(t.nome ?? ''));
+  return elevados.find((t) => t.modelo === m.modelo) ?? elevados[0] ?? null;
+}
+const dominio = ({ p, rng }) => {
+  const influenciados = mods(p).filter((m) => m.influencia);
+  if (influenciados.length < 2) return erro('O Orbe do Domínio pede ao menos dois modificadores influenciados.');
+  const elevaveis = influenciados.filter((m) => !m.elevado && elevadoDe(p, m));
+  if (!elevaveis.length) return erro('Nenhum modificador influenciado desta peça tem a versão Elevada.');
+  const alvo = sortear(elevaveis, rng);
+  tirarMod(p, sortear(influenciados.filter((m) => m !== alvo), rng));
+  const t = elevadoDe(p, alvo);
+  const novo = Gerar.rolarTexto(t, rng);
+  Object.assign(alvo, { nome: t.nome, tier: t.tier, ilvl: t.ilvl, modelo: novo.modelo, valores: novo.valores, texto: novo.texto, elevado: true });
+  return { ok: true, notice: `${p.nome}: elevado — ${alvo.texto}.` };
 };
 /** Os fragmentos: 20 (5 no pergaminho) viram 1 orbe (a moeda inteira). */
 const juntarLascas = (alvoSlug, quantos = 20) => ({ estado, moeda }) => {
@@ -359,7 +560,16 @@ const FAZ = {
   Orb_of_Chance: { f: chance }, Blacksmiths_Whetstone: { f: amolador }, Armourers_Scrap: { f: sucata },
   Glassblowers_Bauble: { f: bolha },
   Orb_of_Binding: { f: elo }, Fracturing_Orb: { f: talhar }, Mirror_of_Kalandra: { f: espelhar }, Ancient_Orb: { f: ancestral },
-  Vaal_Orb: { f: vaal, parcial: 'o implícito corrompido (vaal) não existe no catálogo: no lugar dele, os valores são sorteados de novo' },
+  Vaal_Orb: { f: vaal },
+  Veiled_Chaos_Orb: { f: caosOculto, parcial: 'o Oculto já vem revelado (o jogo não tem a Jun para escolher entre três)' },
+  Veiled_Exalted_Orb: { f: exaltadoOculto, parcial: 'o Oculto já vem revelado (o jogo não tem a Jun para escolher entre três)' },
+  ...Object.fromEntries(Object.entries(INFLUENCIAS).map(([slug, inf]) => [slug, { f: exaltadoDeInfluencia(inf) }])),
+  Lesser_Eldritch_Ember: { f: implicitoEldritch('searing') }, Greater_Eldritch_Ember: { f: implicitoEldritch('searing') },
+  Grand_Eldritch_Ember: { f: implicitoEldritch('searing') }, Exceptional_Eldritch_Ember: { f: implicitoEldritch('searing') },
+  Lesser_Eldritch_Ichor: { f: implicitoEldritch('eater') }, Greater_Eldritch_Ichor: { f: implicitoEldritch('eater') },
+  Grand_Eldritch_Ichor: { f: implicitoEldritch('eater') }, Exceptional_Eldritch_Ichor: { f: implicitoEldritch('eater') },
+  Eldritch_Chaos_Orb: { f: caosAncestral }, Eldritch_Exalted_Orb: { f: exaltadoAncestral }, Eldritch_Orb_of_Annulment: { f: anulacaoAncestral },
+  Orb_of_Conflict: { f: conflito }, Orb_of_Dominance: { f: dominio },
   Volatile_Vaal_Orb: { f: vaalVolatil, parcial: 'sorteia os valores de novo dentro das faixas (sem passar delas) e corrompe' },
   'Djinn-Touched_Vaal_Orb': { f: vaalDjinn, parcial: 'corrompe o único como o Orbe Vaal (sem os efeitos próprios dos Djinn)' },
   Foulborn_Orb_of_Augmentation: { f: ampliar, parcial: 'sem a chance a mais de modificador Natimpuro (não existe no catálogo)' },
@@ -389,8 +599,10 @@ function motivoDoNao(m) {
   if (/Scroll_of_Wisdom|Scroll_Fragment/.test(s)) return 'não há itens sem identificar no jogo';
   if (/Portal_Scroll|Rogues_Marker|Silver_Coin/.test(s)) return 'não há portal para a vila/refúgio no jogo';
   if (/Chisel|Scrying|Horizons|Astrolabe|Memory_of|Unmaking|Intention|Telesias|Surveyors|Valdos/.test(s) || /Mapa|Atlas/i.test(t)) return 'mapas e o Atlas não existem no jogo';
-  if (/Shaper|Elder|Crusader|Redeemer|Hunter|Warlord|Awakener|Dominance|Conflict|Eldritch|Ember|Ichor/.test(s)) return 'as influências (Criador, Ancião, Conquistadores, Exarca, Devorador) não existem no jogo';
-  if (/Veiled|Cyaxan/.test(s)) return 'os modificadores Ocultos não existem no jogo';
+  if (/Awakener/.test(s)) return 'ela junta DUAS peças, e a Forja do jogo trabalha com uma por vez';
+  if (/Shaper|Elder|Crusader|Redeemer|Hunter|Warlord|Dominance|Conflict|Eldritch|Ember|Ichor/.test(s)) return 'o efeito dela ainda não foi ligado às influências';
+  if (/Veiled_Scarab/.test(s)) return 'mapas e o Atlas não existem no jogo';
+  if (/Cyaxan/.test(s)) return 'os modificadores Infames não estão na coleção do PoE do jogo';
   if (/Lifeforce|Wisps|Rancour|Geode|Coinage|Scrap_Metal|Astragali|Burial|Artifact|Sulphur|Message_in_a_Bottle|Bestiary|Coffin|Ritual|Magmatic|Power_Core|Stacked_Deck|Prophecy|Feather|Claw|Red_Packet|Puzzle/.test(s)) return 'é moeda de uma liga do PoE (o sistema dela não existe no jogo)';
   if (/Recombinator|Mist|Kishara|Ducat|Pearls/.test(s)) return 'o sistema dela (recombinar, refletir, ducados) não existe no jogo';
   if (/Enchant|Tempering|Tailoring|Refracting|Enkindling|Instilling|Imprint|Lens/.test(s)) return 'encantamentos e gravações não existem no jogo';

@@ -9,6 +9,7 @@ import * as E from '../admin/overrides-itens.mjs';
 import * as Http from '../admin/conteudo-http.mjs';
 import * as A from '../admin/acesso.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
+import { doClassico } from './apoio-migracao.mjs';
 
 const pasta = mkdtempSync(join(tmpdir(), 'ovi-'));
 E.CAMINHOS.arquivo = join(pasta, 'itens.json');
@@ -75,7 +76,7 @@ test('OI3. propor não grava: mudanças com variação %, avisos de balanceament
   assert.equal(JSON.parse(readFileSync(new URL('../gamedata/item-catalog.json', import.meta.url), 'utf8'))[MACHADO].attack, 10, 'o catálogo importado nunca é tocado');
 });
 
-test('OI4. desligar uma entrada ou a camada não apaga nada; restaurar volta uma versão; listar exige busca (ou slot) e mostra os com override', () => {
+test('OI4. desligar uma entrada ou a camada não apaga nada; restaurar volta uma versão; listar exige busca (ou slot) e mostra os com override', { skip: doClassico("Editor de overrides de itens do Draevor") }, () => {
   limpa();
   E.salvar(MACHADO, { attack: 20 });
   assert.equal(E.definirAtivo(false, MACHADO).ok, true);
@@ -113,7 +114,7 @@ test('OI5. O JOGO APLICA o que foi salvo: um processo novo enxerga o item altera
   assert.equal(ITEM_CATALOG[MACHADO].attack, 10, 'o jogo DESTE processo não mudou (só vale no boot): salvar não é publicar');
 });
 
-test('OI6. rotas e acesso: leitura, pré-visualização (não grava) e ações (gravam); em produção o salvar é recusado', async () => {
+test('OI6. rotas e acesso: leitura, pré-visualização (não grava) e ações (gravam); em produção o salvar é recusado', { skip: doClassico("Editor de overrides de itens do Draevor") }, async () => {
   limpa();
   const chama = async (metodo, rota, corpo = {}, query = '') => { const r = []; await Http.atender({ method: metodo }, {}, `/api/mapas/_conteudo/${rota}`, new URL(`http://x/?${query}`), { json: (a, c, b) => r.push([c, b]), corpoJson: async () => corpo }); return r[0]; };
   assert.ok((await chama('GET', 'overrides/itens', {}, 'q=hand axe'))[1].total >= 1);

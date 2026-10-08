@@ -13,7 +13,8 @@ import { converterPersonagem, converterTudo } from '../systems/itens/item.mjs';
 import { gerarItem } from '../systems/itens/gerar.mjs';
 import { ITEM_CATALOG, ACTION_CATALOG } from '../systems/dados.mjs';
 import { criarMonstro } from '../systems/hunt/monstros.mjs';
-import { personagemDeTeste, PERSONAGEM, comSkills } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, comSkills, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const idDe = (nome) => Number(Object.values(ITEM_CATALOG).find((i) => i.name === nome).id);
 const GEMA = (acao) => G.ITEM_DA_ACAO.get(acao);
@@ -34,7 +35,7 @@ function naCacada(e) {
   Treino.garantir(e);
   e.magic.value = 60;
   e.maxMana = e.mana = 1e9;
-  Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' });
+  Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' });
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -105,7 +106,7 @@ test('drop: os sockets abertos saem sorteados (nunca acima do máximo do slot) e
 
 // ---------------------------------------------------------------- sem gema, sem skill (26, 28)
 
-test('sem a gema a skill não existe (Action Bar); encaixada, existe; tirada, some de novo', () => {
+test('sem a gema a skill não existe (Action Bar); encaixada, existe; tirada, some de novo', { skip: doClassico("Gemas de skill do Draevor (barra, loja da Zuma, dano do balão, gemas iniciais da vocação)") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
   const ver = () => Acoes.catalogo(e).spells.find((x) => x.id === FLAME).blocked;
   assert.equal(ver(), 'sem a gema');
@@ -139,7 +140,7 @@ test('10–11. socket aberto aceita; socket bloqueado recusa encaixar', () => {
 
 // ---------------------------------------------------------------- links e supports (12, 13, 29)
 
-test('12–13. support LIGADA à gema ativa modifica a skill; a mesma support sem link, não', () => {
+test('12–13. support LIGADA à gema ativa modifica a skill; a mesma support sem link, não', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
   const GD = SUPPORT('greater-damage');
   const sem = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] }));
   const ligada = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(GD)] }));
@@ -167,7 +168,7 @@ test('29. support removida deixa de modificar; compatibilidade por tags (Multipl
   assert.deepEqual(G.efeitoNaSkill(k, 'spell-brutal-strike').supports, []);
 });
 
-test('Multiple Projectiles: os bichos ao alcance levam o projétil também', () => {
+test('Multiple Projectiles: os bichos ao alcance levam o projétil também', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
   G.DEFS.get(GEMA(FLAME)).castTime = 0;
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
   vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [G.novaGema(GEMA(FLAME)), G.novaGema(SUPPORT('multiple-projectiles'))] });
@@ -201,14 +202,14 @@ test('8–9. XP da gema: as encaixadas em peça vestida ganham a exp das mortes;
   assert.equal(g.xp, 0);
 });
 
-test('o nível da gema é um bônus a mais no dano da skill (a progressão dela)', () => {
+test('o nível da gema é um bônus a mais no dano da skill (a progressão dela)', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, () => {
   const n1 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 1)] }));
   const n11 = danoDaFlame((e) => vestir(e, 'weapon', 'wand of vortex', { gemas: [gemaNv(GEMA(FLAME), 11)] }));
   const esperado = 1 + (G.DEFS.get(GEMA(FLAME)).progressao.dano * 10) / 100;
   assert.ok(Math.abs(n11 / n1 / esperado - 1) < 0.03, `${n1} → ${n11} (×${esperado})`);
 });
 
-test('a XP das gemas vem da morte de verdade (matarMonstro)', async () => {
+test('a XP das gemas vem da morte de verdade (matarMonstro)', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, async () => {
   const { matarMonstro } = await import('../systems/hunt/combate.mjs');
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
   const peca = vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
@@ -235,7 +236,7 @@ test('27. tirar a peça tira as skills das gemas dela; vestir de novo, voltam (a
 
 // ---------------------------------------------------------------- conjuração
 
-test('conjuração de verdade: a skill só sai no fim do Cast Time; durante ela nada mais sai; cancela se o alvo morre', () => {
+test('conjuração de verdade: a skill só sai no fim do Cast Time; durante ela nada mais sai; cancela se o alvo morre', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, () => {
   const def = G.DEFS.get(GEMA(FLAME));
   def.castTime = 800;
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
@@ -276,7 +277,7 @@ test('conjuração de verdade: a skill só sai no fim do Cast Time; durante ela 
   assert.equal(G.tempoDeConjuracao(e, FLAME, 25), Math.round((sem * 0.8) / 1.25));
 });
 
-test('runa virou gema: não gasta mais item nem ouro', () => {
+test('runa virou gema: não gasta mais item nem ouro', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, () => {
   const RUNA = 'rune-fireball-rune';
   G.DEFS.get(GEMA(RUNA)).castTime = 0;
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
@@ -293,7 +294,7 @@ test('runa virou gema: não gasta mais item nem ouro', () => {
 
 // ---------------------------------------------------------------- migração v5
 
-test('migração v5: peças que existiam ganham todos os sockets abertos e ligados; as magias/runas da barra viram gemas encaixadas', () => {
+test('migração v5: peças que existiam ganham todos os sockets abertos e ligados; as magias/runas da barra viram gemas encaixadas', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 120 });
   for (const p of Object.values(e.equipment)) if (p) delete p.soquetes;
   e.versaoDosItens = 4;
@@ -343,7 +344,7 @@ test('drop de gema: sai no nível 1, entre as skills do level da fase; parte sã
 
 // ---------------------------------------------------------------- loja da Zuma Magehide
 
-test('loja da Zuma: vende todas as gemas, só comuns (preço pelo level da magia) e supports (preço fixo)', () => {
+test('loja da Zuma: vende todas as gemas, só comuns (preço pelo level da magia) e supports (preço fixo)', { skip: doClassico("Gemas de skill do Draevor (barra, loja da Zuma, dano do balão, gemas iniciais da vocação)") }, () => {
   const e = personagemDeTeste({ level: 50 });
   // Só as GEMAS: a mesma loja também vende os orbes de socket (categoria 'orbes', testada em orbes-de-socket.test.mjs).
   const lista = G.catalogoDaLoja(e).filter((l) => l.categoria !== 'orbes');
@@ -356,7 +357,7 @@ test('loja da Zuma: vende todas as gemas, só comuns (preço pelo level da magia
   assert.equal(G.CONFIG.loja.npc, 'zuma');
 });
 
-test('loja da Zuma: compra paga do bolso e depois do banco; gema nível 1 na mochila', () => {
+test('loja da Zuma: compra paga do bolso e depois do banco; gema nível 1 na mochila', { skip: doClassico("Gemas de skill do Draevor (barra, loja da Zuma, dano do balão, gemas iniciais da vocação)") }, () => {
   const e = personagemDeTeste({ level: 50 });
   const preco = G.precoNaLoja(G.DEFS.get(GEMA(FLAME)));
   e.gold = preco;
@@ -486,7 +487,7 @@ test('o add de nível das gemas sai pela raridade da peça (+1; épica e acima +
   assert.deepEqual(visto, { raro: 1, 'épico': 2 });
 });
 
-test('sem trava: qualquer personagem usa qualquer gema; o dano base escala pelo level e pelo ML (melee nas físicas)', () => {
+test('sem trava: qualquer personagem usa qualquer gema; o dano base escala pelo level e pelo ML (melee nas físicas)', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, () => {
   const def = G.DEFS.get(GEMA(FLAME));
   assert.equal(def.levelMinimo, 1, 'a gema não pede level');
   // Um personagem level 1 usa a Executioner's Throw (level 300 no catálogo) — nada bloqueia.
@@ -511,7 +512,7 @@ test('sem trava: qualquer personagem usa qualquer gema; o dano base escala pelo 
 
 // ---------------------------------------------------------------- a barra segue as gemas encaixadas
 
-test('barra: gema encaixada entra sozinha no slot livre do papel dela; gema tirada (ou peça desvestida) esvazia o slot', () => {
+test('barra: gema encaixada entra sozinha no slot livre do papel dela; gema tirada (ou peça desvestida) esvazia o slot', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
   e.actions = Array(Acoes.SLOTS).fill(null);
   const pocao = Acoes.catalogo(e).items[0];
@@ -559,7 +560,7 @@ test('regra dos sockets compartilhada com a tela (engine/sockets-de-gema.mjs): a
   assert.equal(E.compativel(cura, flame), false);
 });
 
-test('o dano do balão da skill é o do disparo: sobe com o nível da gema, a support e o level (uma conta só)', () => {
+test('o dano do balão da skill é o do disparo: sobe com o nível da gema, a support e o level (uma conta só)', { skip: doClassico("Gemas de skill do Draevor (barra, loja da Zuma, dano do balão, gemas iniciais da vocação)") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 100 });
   Treino.garantir(e);
   const peca = vestir(e, 'weapon', 'wand of vortex', { links: [true], gemas: [gemaNv(GEMA(FLAME), 1)] });
@@ -582,7 +583,7 @@ test('o dano do balão da skill é o do disparo: sobe com o nível da gema, a su
   assert.ok(noBalao().max > comSupport.max, 'o level também sobe o dano mostrado');
 });
 
-test('categorias das gemas (como no Path of Exile): Ataque, Cura, Reforço, Suporte — no item e na loja, em ordem', () => {
+test('categorias das gemas (como no Path of Exile): Ataque, Cura, Reforço, Suporte — no item e na loja, em ordem', { skip: doClassico("Gemas de skill do Draevor (barra, loja da Zuma, dano do balão, gemas iniciais da vocação)") }, () => {
   const cat = (id) => G.DEFS.get(id).categoria;
   assert.equal(cat(GEMA(FLAME)), 'ataque');
   assert.equal(cat(GEMA('spell-light-healing')), 'cura');
@@ -597,7 +598,7 @@ test('categorias das gemas (como no Path of Exile): Ataque, Cura, Reforço, Supo
 
 // ---------------------------------------------------------------- gemas iniciais, barra guardada, XP pelo level, Fundidora
 
-test('personagem novo: gemas iniciais da classe (ataque + cura), encaixadas, uma vez só', () => {
+test('personagem novo: gemas iniciais da classe (ataque + cura), encaixadas, uma vez só', { skip: doClassico("Gemas de skill do Draevor (barra, loja da Zuma, dano do balão, gemas iniciais da vocação)") }, () => {
   const e = personagemDeTeste({ vocacao: 'druid', level: 8 });
   for (const p of Object.values(e.equipment)) if (p) delete p.soquetes;
   e.versaoDosItens = 4;
@@ -613,7 +614,7 @@ test('personagem novo: gemas iniciais da classe (ataque + cura), encaixadas, uma
   for (const v of ['knight', 'paladin', 'sorcerer', 'monk']) for (const a of G.CONFIG.iniciais[v]) assert.ok(G.ITEM_DA_ACAO.has(a), a);
 });
 
-test('barra: a configuração do slot fica guardada quando a gema sai, e volta igual (mesmo slot) quando ela volta', () => {
+test('barra: a configuração do slot fica guardada quando a gema sai, e volta igual (mesmo slot) quando ela volta', { skip: aAdaptar("Regra da engine de gemas (link do suporte, XP pela morte, gema entra sozinha no slot, configuração guardada) vale para as gemas do PoE; o teste usa gemas do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 200 });
   e.actions = Array(Acoes.SLOTS).fill(null);
   vestir(e, 'weapon', 'wand of vortex', { gemas: [G.novaGema(GEMA(FLAME))] });
@@ -632,7 +633,7 @@ test('barra: a configuração do slot fica guardada quando a gema sai, e volta i
   assert.equal(e.barraGuardada[FLAME], undefined);
 });
 
-test('XP da gema pelo level ATUAL do personagem: o mesmo nível pede a mesma fração de UM level dele', async () => {
+test('XP da gema pelo level ATUAL do personagem: o mesmo nível pede a mesma fração de UM level dele', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, async () => {
   const R = await import('../systems/regras.mjs');
   const umLevel = (L) => R.expForLevel(L + 1) - R.expForLevel(L);
   for (const L of [50, 500]) {
@@ -652,7 +653,7 @@ test('Fundidora: sorteia de novo os links da peça vestida pela chance da rarida
   assert.match(G.fundir(e, { slot: 'weapon' }).erro, /não tem Fundidora/);
 });
 
-test('cadeia (Forked Glacier): salta de bicho em bicho a até a distância do salto, até o número de alvos; cada um leva o golpe', () => {
+test('cadeia (Forked Glacier): salta de bicho em bicho a até a distância do salto, até o número de alvos; cada um leva o golpe', { skip: doClassico("Regra das gemas do Draevor (nível como bônus, sem trava de atributo, runa virou gema, migração v5, XP pelo level do personagem, Forked Glacier); no PoE vale a tabela de cada gema") }, () => {
   const e = personagemDeTeste({ vocacao: 'druid', level: 200 });
   Treino.garantir(e);
   e.maxMana = e.mana = 1e9;

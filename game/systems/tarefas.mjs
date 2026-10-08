@@ -20,6 +20,7 @@
 import { readFileSync } from 'node:fs';
 import { MONTARIAS_REAIS } from './dados.mjs';
 import { darItem, contarGuardadas } from './inventario.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 const DADOS = JSON.parse(readFileSync(new URL('../gamedata/tarefas.json', import.meta.url), 'utf8'));
 export const TASK_TOKEN = 55729;
@@ -88,7 +89,7 @@ function pagar(estado, def) {
   if (!l.aResgatar) return 0;
   const t = garantir(estado);
   t.etapa[def.key] = l.etapa + l.aResgatar;
-  darItem(estado, TASK_TOKEN, l.tokens);
+  if (podeEntrar(TASK_TOKEN)) darItem(estado, TASK_TOKEN, l.tokens);
   return l.tokens;
 }
 
@@ -146,7 +147,7 @@ function conferirMontarias(estado, key) {
     const id = ID_DA_MONTARIA.get(task.mountLook);
     if (montariaGanha(estado, id) || !task.alvos.every((a) => mortesDoBestiary(estado, a.key) >= a.alvo)) continue;
     garantir(estado).montarias.push(id);
-    darItem(estado, TASK_TOKEN, task.tokens);
+    if (podeEntrar(TASK_TOKEN)) darItem(estado, TASK_TOKEN, task.tokens);
     estado.avisoDaHunt = `Task de montaria completa: ${task.name} é sua (+${task.tokens} Task Token).`;
   }
 }

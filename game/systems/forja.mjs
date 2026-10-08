@@ -18,6 +18,7 @@
 import { ITEM_CATALOG, CATALOGO } from './dados.mjs';
 import * as A from './afixos.mjs';
 import { raridadeDaPeca } from './itens/item.mjs';
+import { podeEntrar, MENSAGEM as SO_ITENS_DO_POE } from './itens-poe/so-itens-do-poe.mjs';
 
 const OURO_DA_FORJA = [null, 8e6, 20e6, 40e6, 65e6, 100e6, 250e6, 750e6, 2.5e9, 8e9, 15e9];
 const TIER_MAX = 10;
@@ -263,6 +264,8 @@ function previaDoRetirar(estado, { lugar, indices }) {
 export const previaRetirar = (estado, m) => ({ t: 'forjaAfixoPreviaRetirar', ...previaDoRetirar(estado, m) });
 
 export function retirar(estado, m) {
+  // No jogo oficial a essência do Draevor não entra (no PoE quem muda a peça são as moedas): recusa antes de cobrar.
+  if (!podeEntrar(A.ID_DA_ESSENCIA)) return { erro: `A Forja do Draevor não existe no jogo oficial. ${SO_ITENS_DO_POE}` };
   const p = previaDoRetirar(estado, m);
   if (!p.ok) return { erro: p.reason };
   const falta = pagar(estado, p.custo, m.moeda);
@@ -344,6 +347,7 @@ export const previaFundir = (estado, m) => {
 };
 
 export function fundir(estado, m) {
+  if (!podeEntrar(A.ID_DA_ESSENCIA)) return { erro: `A Forja do Draevor não existe no jogo oficial. ${SO_ITENS_DO_POE}` };
   const p = previaDaFusao(estado, m);
   if (!p.ok) return { erro: p.reason };
   const falta = pagar(estado, p.custo, m.moeda);

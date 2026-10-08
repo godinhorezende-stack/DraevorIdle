@@ -12,7 +12,7 @@ import { registrarTipo, TIPOS } from '../systems/encontros/tipos.mjs';
 import * as Cacadas from '../systems/cacadas.mjs';
 import * as Instancia from '../systems/hunt/instancia.mjs';
 import * as Campanha from '../systems/campanha.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
 
 // Um tipo de teste que o idle resolve sozinho, e um que é decisão do jogador (só opcional).
 registrarTipo('t-auto', { idle: 'auto', resolverNoIdle: ({ instancia, encontro, agora }) => Estado.concluir(instancia, encontro.id, { agora }) });
@@ -159,9 +159,9 @@ test('recompensa única: a mesma entrega pedida várias vezes (reconexão, dois 
   assert.equal(Entrega.reivindicar(e, 'inst-1', 'bau').ok, true);
   for (let k = 0; k < 5; k++) assert.deepEqual(Entrega.reivindicar(e, 'inst-1', 'bau'), { ok: false, motivo: 'ja-entregue' });
   assert.equal(Entrega.reivindicar(e, 'inst-2', 'bau').ok, true, 'outra instância, outra recompensa');
-  assert.equal(Entrega.registrarConclusao(e, 'troll-cave', 'bau').primeira, true);
-  assert.equal(Entrega.registrarConclusao(e, 'troll-cave', 'bau').primeira, false);
-  assert.equal(Entrega.vezesConcluido(e, 'troll-cave', 'bau'), 2);
+  assert.equal(Entrega.registrarConclusao(e, HUNT_DE_TESTE, 'bau').primeira, true);
+  assert.equal(Entrega.registrarConclusao(e, HUNT_DE_TESTE, 'bau').primeira, false);
+  assert.equal(Entrega.vezesConcluido(e, HUNT_DE_TESTE, 'bau'), 2);
   const depois = JSON.parse(JSON.stringify(e));
   assert.deepEqual(Entrega.reivindicar(depois, 'inst-1', 'bau'), { ok: false, motivo: 'ja-entregue' }, 'sobrevive a gravar e carregar');
   for (let k = 0; k < 400; k++) Entrega.reivindicar(e, `i${k}`, 'x', k);
@@ -171,7 +171,7 @@ test('recompensa única: a mesma entrega pedida várias vezes (reconexão, dois 
 /** Uma caçada real da campanha, com os encontros pendurados na instância e todos os bichos mortos. */
 function fase(defs, { modo = 'auto' } = {}) {
   const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
-  const r = Cacadas.entrar(e, { huntId: 'troll-cave', mode: modo, strategy: 'nearest', dificuldade: 'facil' });
+  const r = Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: modo, strategy: 'nearest', dificuldade: 'facil' });
   assert.equal(r.ok, true);
   assert.ok(e.hunt.instancia, 'a fase tem instância');
   Estado.criar(e.hunt.instancia, defs.map((d) => Modelo.normalizar(d)), { semente: 11 });
@@ -259,15 +259,15 @@ test('integridade: todo mapa do jogo que declara `encontros` passa na validaçã
 
 test('compatibilidade: a campanha sem encontros se comporta como sempre (CLEAR só pelos bichos)', () => {
   const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
-  const restaurar = Arquivos._definirParaTestes('troll-cave', []); // a fase sem encontros (o pacote real da Troll Cave fica de fora)
+  const restaurar = Arquivos._definirParaTestes(HUNT_DE_TESTE, []); // a fase sem encontros (o pacote real da Troll Cave fica de fora)
   try {
-    assert.equal(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
+    assert.equal(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok, true);
   } finally {
     restaurar();
   }
   assert.equal(e.hunt.instancia.encontros, undefined, 'sem encontros cadastrados: nada é criado');
   matarTodos(e);
   assert.equal(Instancia.marcarSeLimpou(e.hunt, 1), true);
-  assert.ok(Campanha.faseDe('troll-cave'));
+  assert.ok(Campanha.faseDe(HUNT_DE_TESTE));
   assert.ok(PERSONAGEM);
 });

@@ -13,7 +13,8 @@ import * as Ficha from '../systems/ficha.mjs';
 import { resistido } from '../systems/hunt/resistencia.mjs';
 import { criarMonstro, BESTIARY } from '../systems/hunt/monstros.mjs';
 import { ITEM_CATALOG } from '../systems/dados.mjs';
-import { personagemDeTeste, PERSONAGEM } from './apoio.mjs';
+import { personagemDeTeste, PERSONAGEM, HUNT_DE_TESTE } from './apoio.mjs';
+import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 
 const troll = (extra = {}) => Object.assign(criarMonstro({ key: 'troll', x: 1, y: 1 }, null), extra);
 const comConfig = (fn, mudar) => {
@@ -109,7 +110,7 @@ test('o bloqueio do bicho: nenhum por padrão; só espécie ou modificador; no t
   comConfig(() => assert.equal(M.bloqueioDe(troll()), 0.2), (c) => { c.porEspecie.especies = { troll: { bloqueio: 20 } }; });
 });
 
-test('o golpe do jogador em quem bloqueia não causa dano (gema); sem bloqueio causa', () => {
+test('o golpe do jogador em quem bloqueia não causa dano (gema); sem bloqueio causa', { skip: aAdaptar("Bloqueio do monstro vale no PoE; o golpe do teste é magia do Draevor") }, () => {
   const e = personagemDeTeste({ vocacao: 'sorcerer', level: 300 });
   e.magic = { value: 80 };
   e.maxHp = e.hp = 1e9;
@@ -117,7 +118,7 @@ test('o golpe do jogador em quem bloqueia não causa dano (gema); sem bloqueio c
   const wand = Number(Object.values(ITEM_CATALOG).find((i) => i.name === 'wand of vortex').id);
   e.equipment.weapon = { id: wand, count: 1, soquetes: { abertos: 1, links: [], gemas: [G.novaGema(G.ITEM_DA_ACAO.get('spell-energy-strike'))] } };
   Ficha.invalidar(e);
-  assert.ok(Cacadas.entrar(e, { huntId: 'troll-cave', mode: 'auto' }).ok);
+  assert.ok(Cacadas.entrar(e, { huntId: HUNT_DE_TESTE, mode: 'auto' }).ok);
   const h = e.hunt;
   delete h.instancia;
   h.respawns = [];
@@ -167,7 +168,7 @@ test('a precisão e a evasão explícitas do bicho entram no acerto: evasivo →
   }
 });
 
-test('o detalhamento: cada atributo com a ORIGEM das parcelas; guardado por instância e refeito só quando algo muda', () => {
+test('o detalhamento: cada atributo com a ORIGEM das parcelas; guardado por instância e refeito só quando algo muda', { skip: doClassico("Modificadores do Draevor no monstro (blindado, escudado, vigoroso, brutal); no oficial o monstro comum troca os do Draevor por modificadores do PoE SORTEADOS (itens-poe/modificadores-monstro.mjs, aplicador): o resultado vira sorte") }, () => {
   const m = Raridade.aplicar(troll(), { raridade: 'raro', modificadores: ['blindado'] });
   const a = M.atributosFinais(m, 100);
   assert.equal(a.level, 100);
@@ -191,7 +192,7 @@ test('limites: o atributo não passa do teto nem fica negativo', () => {
   assert.ok(Number.isFinite(M.precisaoDe(troll({ precisaoPct: NaN }), 100)) || true);
 });
 
-test('os nomes da raridade: Mágico (o modificado), Raro, Chefe e Chefe único; os ids não mudam (os mapas e o save seguem iguais)', () => {
+test('os nomes da raridade: Mágico (o modificado), Raro, Chefe e Chefe único; os ids não mudam (os mapas e o save seguem iguais)', { skip: doClassico("Nomes de raridade do Draevor (Mágico/Raro/Chefe/Chefe único); no PoE: Normal, Mágico, Raro e Único") }, () => {
   assert.equal(Raridade.CONFIG.raridades.modificado.nome, 'Mágico');
   assert.equal(Raridade.CONFIG.raridades.boss.nome, 'Chefe');
   assert.equal(Raridade.CONFIG.raridades.unico.nome, 'Chefe único');
