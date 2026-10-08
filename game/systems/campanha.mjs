@@ -248,7 +248,9 @@ function completar(estado, dif, f) {
   const daMissao = MissoesDeGemas.aoCompletarFase(estado, f.huntId);
   return (proxima && proxima.ato === f.ato
     ? `Fase completa: ${f.nome} (${nomeDif}). Liberou ${proxima.nome}.`
-    : `Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`) + daMissao;
+    : chefeDoAtoNaFase()
+      ? `Fase completa: ${f.nome} (${nomeDif}). Um portal se abre: ${bossDoAto(f.ato)?.nome}, o chefe do Ato ${f.ato}, está chegando!`
+      : `Fase completa: ${f.nome} (${nomeDif}). O boss do Ato ${f.ato} (${bossDoAto(f.ato)?.nome}) está liberado: o portal do boss se abriu — entre quando quiser, sem espera.`) + daMissao;
 }
 
 // ---- A CONCLUSÃO da fase por objetivo (atos do editor): matar o chefe, matar N, o item da missão (`atos-modelo.TIPOS_DE_CONCLUSAO`).
@@ -452,6 +454,8 @@ export function paraCliente(estado) {
           nivel: b.nivel[dif],
           liberado: bossLiberado(estado, dif, ato),
           vencido: bossVencido(estado, dif, ato),
+          // No jogo oficial o chefe sai de um portal NA última fase (`chefeDoAtoNaFase`): o cliente leva até ela, não há sala.
+          ...(chefeDoAtoNaFase() ? { naFase: true, ultimaFase: ultimaFaseDoAto(Number(ato))?.huntId ?? null, ...comoOChefeAparece(ato) } : {}),
         })),
       };
     }),
@@ -483,6 +487,47 @@ export function faseAtual(estado, hunt) {
  * já tem o boss liberado (as fases do ato completas na dificuldade). O portal nasce onde o dono está e fica na caçada: uma instância nova da
  * mesma fase não o fecha. Idempotente — não duplica para o mesmo ato e dificuldade. Devolve o portal, ou `null`.
  */
+/*
+ * ---- O chefe do ato sai de um PORTAL na última fase (dono, 08/10) ----
+ * "queria que abrisse o portal com o boss na fase: ele não direciona para outra instância — aparece o boss na fase quando limpa tudo,
+ * na mesma instância". No jogo oficial, cumprida a regra da última fase do ato (no Ato 1, limpar a Caverna da Ira), um portal se abre
+ * NA instância, o chefe sai dele e o portal fecha (`Cacadas` — `abrirPortalDoChefe`/`soltarChefeDoAto`); matá-lo vence o ato para a party
+ * da sala. No Draevor clássico continua a sala do boss, pelo portal (`abrirPortalDoBoss`).
+ */
+export const chefeDoAtoNaFase = () => itensPoeLigado();
+/** O chefe do ato que a última fase de `hunt` solta agora: `{ ato, bossId, nome }`, ou null (não é a última fase, o ato não abriu…). */
+export function chefeQueSaiNaFase(hunt, estados) {
+  const c = hunt?.campanha;
+  if (!chefeDoAtoNaFase() || !c || c.bossDoAto || hunt.anfitriao || !ehUltimaFaseDoAto(c.huntId)) return null;
+  // O chefe do ato que a fase já pede (o Kitava no Telhado da Catedral): ele nasce com a fase — não há portal.
+  if (atoDoChefeNaFase(c.huntId)) return null;
+  if (!estados.some((e) => bossLiberado(e, c.dificuldade, c.ato))) return null;
+  const b = bossDoAto(c.ato);
+  return b ? { ato: c.ato, bossId: b.bossId, nome: b.nome } : null;
+}
+
+/**
+ * A regra da última fase é MATAR um chefe que não é o do ato (o Ato 8 pede a Lunaris na Ponte do Porto; o chefe do ato é Solaris/Lunaris):
+ * a morte dele cumpre a regra e o portal abre ali (`Cacadas` — o pedido `portalDoChefePedido` da instância), sem esperar a limpeza. Com a
+ * limpeza (`limpar-hunt`, o Ato 1) quem abre é o "Hunt Clear!". `key`: a chave do bicho morto.
+ */
+/** Como o chefe do ato aparece, pela regra da última fase (o texto do cartão): `{ comoAparece, semPortal? }`. */
+export function comoOChefeAparece(ato) {
+  const u = ultimaFaseDoAto(Number(ato));
+  if (!u) return {};
+  const conc = conclusaoDa(u.huntId);
+  // "a fase X": o artigo do nome varia ("o Telhado", "a Ascensão") — assim serve para qualquer um.
+  if (atoDoChefeNaFase(u.huntId)) return { semPortal: true, comoAparece: `Ele está na fase ${u.nome}: matá-lo lá vence o ato.` };
+  const regra = conc.tipo === 'matar-chefe' ? `Mate ${conc.nome ?? nomeDoMonstro(conc.monstro)} na fase ${u.nome}` : `Limpe a fase ${u.nome}`;
+  return { comoAparece: `${regra}: um portal se abre e o chefe sai dele, na mesma instância.` };
+}
+export function portalAbreNaMorte(huntId, key) {
+  const f = faseDe(huntId);
+  if (!chefeDoAtoNaFase() || !f || !ehUltimaFaseDoAto(huntId) || atoDoChefeNaFase(huntId)) return false;
+  const conc = conclusaoDa(huntId);
+  return conc.tipo === 'matar-chefe' && ehOMonstro(key, conc.monstro);
+}
+
 export function abrirPortalDoBoss(hunt, estados) {
   const c = hunt?.campanha;
   if (!c || c.bossDoAto || hunt.anfitriao || !ehUltimaFaseDoAto(c.huntId)) return null;

@@ -13,6 +13,9 @@ import { aAdaptar, doClassico } from './apoio-migracao.mjs';
 const F = Campanha.FASES;
 const HORA = 3_600_000;
 const BOSSES_DE_ATO = Object.values(Campanha.CAMPANHA.bosses).map((b) => b.bossId);
+// No jogo oficial o chefe do ato não tem sala: sai de um portal na própria fase (dono, 08/10 — `chefe-do-ato-na-fase.test.mjs` cobre lá a
+// mesma regra: refazer a fase, limpeza parcial, sair antes de limpar e a Caça Automática sem sala para entrar).
+const SALA_DO_BOSS = doClassico('Sala do boss do ato pelo portal (portalDoBoss); no jogo oficial o chefe sai de um portal na própria fase');
 /** Completa as fases do `ato` (menos a última jogável, se `menosAUltima`). */
 function completarAto(e, dif, ato, { menosAUltima = true } = {}) {
   const ultima = Campanha.ultimaFaseDoAto(ato);
@@ -158,7 +161,7 @@ test('P4. entrar no portal leva à arena do boss (sem a recarga), e um segundo p
   assert.equal(e.hunt.isBoss, true);
 });
 
-test('P5. fase já completa e boss já vencido NÃO dão portal: entrar na última fase de novo exige limpar de novo; sem espera', () => {
+test('P5. fase já completa e boss já vencido NÃO dão portal: entrar na última fase de novo exige limpar de novo; sem espera', { skip: SALA_DO_BOSS }, () => {
   const { e, ultima } = naUltimaFase();
   limpar(e);
   assert.equal(Cacadas.entrarNoPortalDoBoss(e).ok, true);
@@ -184,7 +187,7 @@ test('N1. startHunt direto no boss de ato (cartão/atalho/cliente) é recusado: 
   assert.match(r.erro, /Limpe a última hunt/);
 });
 
-test('N2. limpar só parte dos bichos não abre o portal; o mesmo evento de morte repetido não adianta a limpeza', () => {
+test('N2. limpar só parte dos bichos não abre o portal; o mesmo evento de morte repetido não adianta a limpeza', { skip: SALA_DO_BOSS }, () => {
   const { e } = naUltimaFase();
   const todos = vivos(e);
   for (const m of todos.slice(0, Math.max(1, todos.length - 1))) m.hp = 0;
@@ -200,7 +203,7 @@ test('N2. limpar só parte dos bichos não abre o portal; o mesmo evento de mort
   assert.ok(e.hunt.portalDoBoss);
 });
 
-test('N3. sair antes de limpar não deixa portal; a instância espera o portal aberto por um tempo antes de recomeçar', () => {
+test('N3. sair antes de limpar não deixa portal; a instância espera o portal aberto por um tempo antes de recomeçar', { skip: SALA_DO_BOSS }, () => {
   const { e } = naUltimaFase();
   e.hunt = null;
   assert.equal(Cacadas.snapshotDaHunt(e), null);
@@ -221,7 +224,7 @@ test('N4. todos os atos: a última jogável antes do boss é a que abre o portal
   }
 });
 
-test('N5. Caça Automática: a sessão entra sozinha no portal uma vez; falha não vira laço; manual (online) não entra sozinho', async () => {
+test('N5. Caça Automática: a sessão entra sozinha no portal uma vez; falha não vira laço; manual (online) não entra sozinho', { skip: SALA_DO_BOSS }, async () => {
   const { readFileSync } = await import('node:fs');
   const sessao = readFileSync(new URL('../websocket/sessao.mjs', import.meta.url), 'utf8');
   assert.match(sessao, /entrarAutomaticoNoPortal\(\) \{/);

@@ -201,5 +201,11 @@ for (const [id, nome, categoria, desenho, el, cel, quadros, fps, loop] of LISTA)
   assets[`fabrica-${id}`] = { nome, categoria, arquivo: `${id}.png`, colunas: quadros, linhas: 1, fps, inicio: 0, fim: quadros - 1, loop, pingpong: false, reverso: false, fabrica: true, elemento: el };
 }
 await b.close();
+/*
+ * Os IMPORTADOS: a folha já está na pasta (não é desenhada aqui) e o gerador só mantém o registro dela.
+ *   - portal-do-chefe: o vórtice por onde o chefe do ato sai na última fase (dono, 08/10 — o `Glowing_Vortex.gif`, 15 quadros de 96 px a 100 ms,
+ *     convertido numa folha de uma linha).
+ */
+assets['fabrica-portal-do-chefe'] = { nome: 'Portal do Chefe', categoria: 'Other', arquivo: 'portal-do-chefe.png', colunas: 15, linhas: 1, fps: 10, inicio: 0, fim: 14, loop: true, pingpong: false, reverso: false, fabrica: true, importado: true };
 writeFileSync(join(PASTA, 'assets.json'), `${JSON.stringify({ _nota: 'Os sprites de efeito de FÁBRICA (tools/gerar-sprites-de-efeitos.mjs): desenhados por código, por elemento. Os PNGs ficam ao lado. Para mudar, edite o gerador e rode de novo; para variações, use a Arena de Efeitos (escala, cor por cima, fps, quadros).', assets }, null, 1)}\n`);
 console.log(`gerados ${Object.keys(assets).length} sprites em ${PASTA}`);

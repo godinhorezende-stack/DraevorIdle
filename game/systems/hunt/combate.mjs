@@ -321,9 +321,9 @@ export function contextoDoDrop(hunt) {
   return { level: huntOuMapaCustom(hunt?.huntId)?.level ?? 1 };
 }
 
-export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
-  // A vitória é registrada UMA vez por luta: um evento de morte repetido não paga outra sacola nem conta outra conclusão.
-  if (hunt.vitoria) return;
+/** A sacola do chefe para `estado` (o loot dele: Buff Power, afixo de loot, a Caça Online): o drop do boss, as peças garantidas do chefe do
+ * ato (`atoDoChefe`) e o drop do PoE. `quem`: o nome nos anúncios de drop raro. */
+function sacolaDoChefe(estado, hunt, alvo, quem, atoDoChefe) {
   const itens = [];
   for (const drop of [...alvo.loot, ...Gemas.DROP.boss]) {
     // No jogo oficial só entra item do PoE (`itens-poe/so-itens-do-poe.mjs`): a tabela do Draevor do bicho-base fica de fora.
@@ -336,15 +336,15 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
       const peca = gerarItem({ itemId: drop.id, ...contextoDoDrop(hunt), boss: true, origem: 'boss' });
       itens.push(peca);
       // Épico para cima na sacola do boss: o anúncio para o servidor inteiro.
-      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
+      Anuncios.dropRaro({ quem, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
   }
   // O boss de fim de Ato (campanha) ACRESCENTA equipamento ao loot: antes só dava tokens, poções e gemas (`itens/equipamento-do-boss.mjs`).
-  if (hunt.campanha?.bossDoAto) {
+  if (atoDoChefe) {
     for (const peca of pecasGarantidas(contextoDoDrop(hunt), estado.vocation)) {
       if (!podeEntrar(peca.id, peca)) continue;
       itens.push(peca);
-      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca, bicho: alvo.name, boss: true, onde: alvo.name });
+      Anuncios.dropRaro({ quem, peca, bicho: alvo.name, boss: true, onde: alvo.name });
     }
   }
   // Sistema de itens do PoE (só com ITENS_POE=1): o drop do PoE do boss (raridade do monstro: Único) e, no chefe pináculo, 1 Único
@@ -354,9 +354,9 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
     for (const daPoe of ItensPoeJogo.dropsDoMonstro(nivelDoDropPoe(hunt, alvo), tipoDoBicho(alvo), Math.random, undefined, quantidade, raridadeDoDrop(estado, alvo))) {
       itens.push(daPoe);
       // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
-      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
+      Anuncios.dropRaro({ quem, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
       // E a capa do site ("Latest drops"), pelo mesmo critério — fogo e esquece: é só o log da capa.
-      DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: alvo.name, bicho: alvo.name, boss: true, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
+      DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
     }
     // As moedas do PoE que o boss solta (`itens-poe/moedas.mjs`, `regras.json → moedas.drop`).
     itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade));
@@ -367,20 +367,45 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
     const exclusivo = Pinaculos.dropExclusivo(hunt.bossId);
     if (exclusivo) {
       itens.push(exclusivo);
-      Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
-      DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo }).catch((e) => console.error('drops-do-site', e.message));
+      Anuncios.dropRaro({ quem, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
+      DropsDoSite.anotarDropPoe({ quem, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo }).catch((e) => console.error('drops-do-site', e.message));
     }
   }
+  return itens;
+}
+
+export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
+  // O chefe do ato que saiu do PORTAL na última fase (jogo oficial — `abrirPortalDoChefe`, cacadas.mjs): a mesma sacola e a mesma
+  // vitória da sala do boss, mas a caçada continua (a instância nova vem depois), e a vitória do ato vale para a party da sala.
+  const naFase = !hunt.isBoss && !!alvo.chefeDoAto;
+  const registro = naFase ? salaDe(hunt).instancia?.chefeDoAto ?? null : null;
+  // A vitória é registrada UMA vez por luta: um evento de morte repetido não paga outra sacola nem conta outra conclusão.
+  if (naFase ? registro?.vencido : hunt.vitoria) return;
+  if (registro) registro.vencido = true;
+  const atoDoChefe = hunt.campanha?.bossDoAto ?? (naFase ? alvo.chefeDoAto : null);
+  const itens = sacolaDoChefe(estado, hunt, alvo, personagem?.nome ?? null, atoDoChefe);
   Bau.novaSacola(estado, alvo.name, itens);
-  // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte.
-  if (hunt.campanha?.bossDoAto) {
-    Campanha.venceuBoss(estado, hunt.campanha.dificuldade, hunt.campanha.bossDoAto);
+  // Na fase, cada um da party na sala leva a SUA sacola do chefe (sorteada com o loot dele), como cada um levava na sala do boss.
+  if (naFase) for (const o of outrosDaParty(estado, hunt)) Bau.novaSacola(o, alvo.name, sacolaDoChefe(o, hunt, alvo, hunt.partilha?.membros?.find((m) => m.estado === o)?.nome ?? null, atoDoChefe));
+  // O boss de fim de ato (campanha): a primeira vitória libera o ato seguinte — na fase, para todos da party na sala (`outrosDaParty`).
+  if (atoDoChefe) {
+    const donos = naFase ? [estado, ...outrosDaParty(estado, hunt)] : [estado];
+    for (const quem of donos) Campanha.venceuBoss(quem, hunt.campanha.dificuldade, atoDoChefe);
     // Ato do editor: a recompensa configurada do boss final (drops a cada vitória; primeira vitória uma vez por personagem).
-    const rec = Campanha.recompensaDoBoss(hunt.campanha.bossDoAto);
-    if (rec) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: rec, nome: alvo.name, chave: `boss:${hunt.campanha.bossDoAto}`, dificuldade: hunt.campanha.dificuldade });
+    const rec = Campanha.recompensaDoBoss(atoDoChefe);
+    if (rec) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: rec, nome: alvo.name, chave: `boss:${atoDoChefe}`, dificuldade: hunt.campanha.dificuldade, donos });
   }
   // O cooldown já começou na ENTRADA (`Bosses.marcarEntrada`); aqui o de task fecha.
-  Bosses.marcarVitoria(estado, hunt.bossId);
+  Bosses.marcarVitoria(estado, hunt.bossId ?? (naFase ? Campanha.bossDoAto(atoDoChefe)?.bossId : null));
+  if (naFase) {
+    // Na fase: o chefe sai do mapa e a caçada segue (sem a faixa de vitória que encerra a sala). A pausa do "Hunt Clear!" recomeça na
+    // morte dele: a instância seguinte não vem no mesmo instante em que ele cai (a pausa da limpeza já passou enquanto ele lutava).
+    tirarMonstro(hunt, alvo);
+    if (hunt.alvo === alvo.uid) hunt.alvo = null;
+    const inst = salaDe(hunt).instancia;
+    if (inst?.status === 'limpa') inst.limpaNoRelogio = salaDe(hunt).clock ?? hunt.clock ?? 0;
+    return;
+  }
   hunt.vitoria = { boss: alvo.name, exp: alvo.exp, loot: Object.fromEntries(itens.map((i) => [i.id, i.count])) };
   tirarMonstro(hunt, alvo);
   if (hunt.alvo === alvo.uid) hunt.alvo = null;
@@ -778,7 +803,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
   FrascosPoe.aoMatar(estado, tipoDoBicho(alvo));
   if (part?.ativa) for (const m of part.membros) if (m.estado !== estado && m.estado?.hunt) FrascosPoe.aoMatar(m.estado, tipoDoBicho(alvo));
   if (alvo.spawn && !hunt.isBoss) (hunt.respawns ??= []).push({ ...alvo.spawn, volta: (salaDe(hunt).clock ?? 0) + RESPAWN_MS });
-  if (hunt.isBoss) return vitoriaNoBoss(estado, hunt, alvo, personagem);
+  if (hunt.isBoss || alvo.chefeDoAto) return vitoriaNoBoss(estado, hunt, alvo, personagem);
   if (sessao) sessao.byMonster[alvo.name] = (sessao.byMonster[alvo.name] ?? 0) + 1;
   if (sessao) sessao.expPorNome[personagem.nome] = (sessao.expPorNome[personagem.nome] ?? 0) + alvo.exp;
   /*
@@ -905,6 +930,9 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     // A party na sala: o objetivo conta para cada um (o item da missão vai para a bolsa de cada um, como no PoE) — `outrosDaParty`.
     const outros = c ? outrosDaParty(estado, hunt) : [];
     for (const o of outros) Campanha.matou(o, o.hunt, alvo, { dar: (id) => Bolsa.porNaBolsa(o, id, 1) });
+    // A regra da última fase é matar ESTE chefe (a Lunaris do Ato 8): o portal do chefe do ato abre no tique do dono da sala (cacadas.mjs).
+    const inst = c ? salaDe(hunt).instancia : null;
+    if (inst && !inst.chefeDoAto && Campanha.portalAbreNaMorte(c.huntId, alvo.key)) inst.portalDoChefePedido = true;
     const recDoAto = atoDoChefe ? Campanha.recompensaDoBoss(atoDoChefe) : null;
     if (recDoAto) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: recDoAto, nome: alvo.name, chave: `boss:${atoDoChefe}`, dificuldade: c.dificuldade, donos: [estado, ...outros] });
   }

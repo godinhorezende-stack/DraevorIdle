@@ -8,7 +8,7 @@ import { desenharMarcadores, assinaturaDosEncontros } from './encontros-na-tela.
 import { drawItem, drawCreature, outfitInfo, image, isAnimated, drawEffect, drawMissile, effectDuration, itemCanvas } from './sprites.mjs';
 import { criarCamada, desenharEfeito, desenharProjetil, desenharContinuo, visuaisAtuais } from './efeitos-visuais.mjs';
 /** Os eventos que a camada de efeitos desenha (os outros — números, falas — seguem aqui no mapa). */
-const EVENTOS_DA_CAMADA = new Set(['skill', 'cast', 'fx', 'explosao', 'area', 'shot', 'dmg']);
+const EVENTOS_DA_CAMADA = new Set(['skill', 'cast', 'fx', 'explosao', 'area', 'shot', 'dmg', 'portal']);
 // As chaves de gráficos, escolhidas nos Ajustes da tela. Ver `graficos.mjs`.
 import { graficoLigado, tetoDeQuadros } from './graficos.mjs';
 import { NameplateDoJogador, escalaDoNameplate } from './nameplate-do-jogador.mjs';
@@ -1278,7 +1278,8 @@ export class MapView {
         // De quem é o lançamento nesta tela (a mesma regra do `deQuem` logo abaixo: o meu boneco é 'player', o do aliado `aliado:<nome>`).
         const uidDe = (e) => (!e.quem ? e.uid : e.quem === this.meuNome ? 'player' : `aliado:${e.quem}`);
         const novos = (this.camadaDeEfeitos ??= criarCamada()).receber(event, now, { uidDe });
-        if (querEfeitos) this.effects.push(...novos.efeitos);
+        // O portal do chefe do ato aparece mesmo com os efeitos desligados: é dele que o chefe sai (não é enfeite).
+        if (querEfeitos || event.t === 'portal') this.effects.push(...novos.efeitos);
         if (querProjeteis) this.missiles.push(...novos.projeteis);
       }
       if (!querNumeros && (event.t === 'dmg' || event.t === 'heal' || event.t === 'kill' || event.t === 'block')) continue;

@@ -565,11 +565,18 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       const st = estadoDoNo(b);
       const dados = bosses.get(b.bossId);
       const aberto = h.portalAberto(b);
-      const col1 = el('div', 'w2-col', titulo( `Boss do ${atoAtual.nome}`), el('div', 'w2-sub', b.nome, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), el('span', 'w2-tipo', 'Boss principal')), linha('Dificuldade', escolhida.nome), linha('Level', `~${b.nivel}`), el('p', 'w2-desc', aberto ? 'Portal aberto: pode enfrentá-lo agora, sem espera.' : b.liberado ? `${b.vencido ? 'Vencido, sem espera. ' : ''}Elimine todos os monstros da última fase do ato, nesta execução, para abrir o portal.` : `Complete as ${atoAtual.total} fases do ${atoAtual.nome} para liberá-lo.`));
+      // No jogo oficial (`b.naFase`) o chefe sai de um portal NA última fase, na mesma instância: o botão leva até ela.
+      const descricao = b.naFase
+        ? b.liberado
+          ? `${b.vencido ? 'Vencido. ' : ''}${b.comoAparece ?? 'Limpe a última fase do ato: um portal se abre nela e o chefe sai dele, na mesma instância.'}`
+          : `Complete as ${atoAtual.total} fases do ${atoAtual.nome} para liberá-lo.`
+        : aberto ? 'Portal aberto: pode enfrentá-lo agora, sem espera.' : b.liberado ? `${b.vencido ? 'Vencido, sem espera. ' : ''}Elimine todos os monstros da última fase do ato, nesta execução, para abrir o portal.` : `Complete as ${atoAtual.total} fases do ${atoAtual.nome} para liberá-lo.`;
+      const col1 = el('div', 'w2-col', titulo( `Boss do ${atoAtual.nome}`), el('div', 'w2-sub', b.nome, el('span', `w2-estado ${st}`, TEXTO_DO_ESTADO[st]), el('span', 'w2-tipo', 'Boss principal')), linha('Dificuldade', escolhida.nome), linha('Level', `~${b.nivel}`), el('p', 'w2-desc', descricao));
       const col2 = el('div', 'w2-col', dados?.creatures?.length ? el('div', 'w2-bichos', figuraDaCriatura(dados.creatures[0], bestiario, 52)) : null, el('div', 'w2-bloco', el('span', 'w2-rotulo-bloco', 'Requisito'), el('ul', 'w2-lista', el('li', atoAtual.feitas === atoAtual.total ? 'feito' : 'falta', `${atoAtual.feitas === atoAtual.total ? '✓' : '○'} ${atoAtual.feitas}/${atoAtual.total} fases completas`))));
-      const enfrentar = botao('w2-entrar', aberto ? 'Enfrentar' : b.liberado ? 'Limpe a última fase' : 'Bloqueado');
-      enfrentar.disabled = !aberto;
-      enfrentar.onclick = () => h.enfrentarBoss(b);
+      const ultima = b.naFase && b.ultimaFase ? hunts.get(b.ultimaFase) : null;
+      const enfrentar = b.naFase ? botao('w2-entrar', b.liberado ? 'Ir para a última fase' : 'Bloqueado') : botao('w2-entrar', aberto ? 'Enfrentar' : b.liberado ? 'Limpe a última fase' : 'Bloqueado');
+      enfrentar.disabled = b.naFase ? !(b.liberado && ultima) : !aberto;
+      enfrentar.onclick = () => (b.naFase ? h.entrarNaFase(ultima, atoAtual.fases.map((x) => hunts.get(x.huntId)).filter(Boolean)) : h.enfrentarBoss(b));
       painel.append(col1, col2, el('div', 'w2-col acao', enfrentar));
     }
   }

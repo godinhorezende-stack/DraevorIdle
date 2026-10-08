@@ -659,7 +659,7 @@ export function comandoDaCaca(s, m) {
  * projétil, efeito, área, número de dano e de cura, bloqueio/esquiva, estado do bicho) vão também para os outros da sala, com o nome
  * dele (`quem`): a tela de quem vê desenha no aliado certo (`aliado:<nome>`). A experiência, o loot e as falas ficam com cada um.
  */
-const EVENTOS_QUE_A_SALA_VE = new Set(['cast', 'castFim', 'castCancel', 'skill', 'shot', 'fx', 'explosao', 'area', 'dmg', 'heal', 'block', 'estado']);
+const EVENTOS_QUE_A_SALA_VE = new Set(['cast', 'castFim', 'castCancel', 'skill', 'shot', 'fx', 'explosao', 'area', 'dmg', 'heal', 'block', 'estado', 'portal']);
 /** Os outros da party na mesma sala de caçada que `s`. */
 export const outrosNaSala = (s) => naMesmaSala(s).filter((o) => o !== s);
 /** Os eventos de `s` que os outros da sala recebem: só os visuais de combate, e o que era dele (`uid: 'player'`) com o nome dele. */

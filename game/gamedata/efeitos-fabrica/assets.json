@@ -375,6 +375,21 @@
    "reverso": false,
    "fabrica": true,
    "elemento": "caos"
+  },
+  "fabrica-portal-do-chefe": {
+   "nome": "Portal do Chefe",
+   "categoria": "Other",
+   "arquivo": "portal-do-chefe.png",
+   "colunas": 15,
+   "linhas": 1,
+   "fps": 10,
+   "inicio": 0,
+   "fim": 14,
+   "loop": true,
+   "pingpong": false,
+   "reverso": false,
+   "fabrica": true,
+   "importado": true
   }
  }
 }
