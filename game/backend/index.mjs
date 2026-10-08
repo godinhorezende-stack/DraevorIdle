@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
-import { Sessao, vivas, ligarRelogio } from '../websocket/sessao.mjs';
+import { Sessao, vivas, ligarRelogio, gravarTodosAntesDeSair } from '../websocket/sessao.mjs';
 import * as ConteudoHttp from '../admin/conteudo-http.mjs';
 import * as ItensPoeHttp from '../admin/itens-poe-http.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
@@ -376,12 +376,14 @@ Operacao.registrarDesligamento(() => {
   ServerSave.parar();
 });
 
-// Desligando o servidor (Ctrl+C): grava todo mundo que está online antes de sair.
+// Desligando o servidor (Ctrl+C, o SIGTERM do Docker no deploy): grava todo mundo que está online — e ESPERA o banco — antes de sair.
+let saindo = false;
 for (const sinal of ['SIGINT', 'SIGTERM', 'SIGBREAK']) {
   process.on(sinal, () => {
+    if (saindo) return;
+    saindo = true;
     LimpezaDoChao.parar();
     ServerSave.parar();
-    for (const s of vivas.values()) s.soltarPersonagem?.();
-    process.exit(0);
+    gravarTodosAntesDeSair().finally(() => process.exit(0));
   });
 }

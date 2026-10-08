@@ -4743,13 +4743,49 @@
       "padrao": "^Eficácia da Reserva de Mana das Habilidades aumentada em \\{(\\d+)\\}%$",
       "efeitos": [
         {
-          "stat": "inerte",
-          "valor": "1"
+          "stat": "eficiencia_reserva_mana",
+          "valor": "{1}"
         }
       ],
       "_nova": true,
-      "estado": "inerte",
-      "nota": "as auras do jogo não reservam mana (são reforços com duração): não há reserva para melhorar"
+      "estado": "equivalente",
+      "nota": "as auras do PoE reservam mana (itens-poe/reserva.mjs): a reserva é ÷ (1 + isto)"
+    },
+    {
+      "padrao": "^Eficácia da Reserva das Habilidades aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente",
+      "nota": "a reserva das auras (de mana e de vida) é ÷ (1 + isto) — itens-poe/reserva.mjs"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Vida das Habilidades aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_vida",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente",
+      "nota": "a reserva de vida das auras (Arrogância, Magia Sanguínea) é ÷ (1 + isto) — itens-poe/reserva.mjs"
+    },
+    {
+      "padrao": "^Eficácia da Reserva de Mana das Habilidades Arauto aumentada em \\{(\\d+)\\}%$",
+      "efeitos": [
+        {
+          "stat": "eficiencia_reserva_arauto",
+          "valor": "{1}"
+        }
+      ],
+      "_nova": true,
+      "estado": "equivalente",
+      "nota": "a reserva de mana dos Arautos é ÷ (1 + isto, somado à Eficácia de mana) — itens-poe/reserva.mjs"
     },
     {
       "padrao": "^\\{(\\d+)\\}% de chance de, quando pagar o Custo de uma Habilidade, ganhar a mesma quantidade de Mana$",
@@ -7405,7 +7441,7 @@
         }
       ],
       "estado": "inerte",
-      "nota": "as auras do jogo não reservam mana nem vida (são reforços com duração)",
+      "nota": "a reserva das auras existe (itens-poe/reserva.mjs), mas esta variação (de minas, posturas, maldições, condicional…) ainda não tem efeito",
       "_nova": true,
       "_unico": true
     },

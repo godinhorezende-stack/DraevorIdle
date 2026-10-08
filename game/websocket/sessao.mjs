@@ -38,6 +38,7 @@ import * as Summon from '../systems/summon.mjs';
 import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
+import * as Reserva from '../systems/itens-poe/reserva.mjs';
 import * as Legado from '../systems/personagem/legado.mjs';
 import * as RoupaDaClasse from '../systems/personagem/roupa-da-classe.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
@@ -62,7 +63,7 @@ import * as Ranking from '../systems/ranking.mjs';
 import * as Guildas from '../systems/guildas.mjs';
 import * as Arena from '../systems/arena.mjs';
 import * as SimuladorTique from '../systems/simulador-tique.mjs';
-import { descerDeLevel, tirarEventosDaParty, fichaDoBicho } from '../systems/hunt/combate.mjs';
+import { descerDeLevel, tirarEventosDaParty, enfileirarEventosDaParty, fichaDoBicho } from '../systems/hunt/combate.mjs';
 import * as InstanciaDaHunt from '../systems/hunt/instancia.mjs';
 import * as EstadoDosEncontros from '../systems/encontros/estado.mjs';
 import * as TiposDosEncontros from '../systems/encontros/tipos.mjs';
@@ -336,6 +337,8 @@ function characterParaCliente(personagem, estado) {
       ...CHARACTER_TEMPLATE.derived,
       maxHp: estado.maxHp,
       maxMana: estado.maxMana,
+      // A mana (e a vida) que as auras do PoE reservam: a barra marca a parte trancada (`itens-poe/reserva.mjs`).
+      ...(() => { const r = Reserva.reservadas(estado); return r.mana || r.vida ? { reservaDeMana: r.mana, reservaDeVida: r.vida } : {}; })(),
       // `null` = sem capacidade (o PoE não tem peso: a tela esconde a barra de Cap). JSON não carrega o Infinity.
       capacity: Number.isFinite(Afixos.capacidade(estado)) ? Afixos.capacidade(estado) : null,
       speed: R.baseSpeed(estado.level),
@@ -1978,6 +1981,9 @@ export class Sessao {
     this.entrouEm = Date.now();
     // Reconexão: volta ao lugar na party (se estava como offline) — ver `Party.entrouNoJogo`.
     Party.entrouNoJogo(this);
+    // E à caçada do grupo, se caiu caçando junto e voltou em até 2 min (o reinício do servidor também) — `Party.voltarParaACacadaJunta`.
+    const naCacadaDoGrupo = Party.voltarParaACacadaJunta(this);
+    if (naCacadaDoGrupo) this.avisoPendente = [this.avisoPendente, naCacadaDoGrupo].filter(Boolean).join(' ');
 
     /*
      * "Progresso enquanto você esteve fora" — `andamento`, no client — e, se
@@ -2536,6 +2542,12 @@ export class Sessao {
         } else {
           eventos = Cacadas.tique(this.estado, this.personagem, agoraDoTique);
         }
+        // Os outros da sala veem os golpes, os projéteis, o dano e a vida deste (`Party.eventosParaOsOutros`) — saem no próximo tique deles.
+        const outrosNaSala = eventos?.length ? Party.outrosNaSala(this) : [];
+        if (outrosNaSala.length) {
+          const paraOsOutros = Party.eventosParaOsOutros(this, eventos);
+          for (const o of outrosNaSala) enfileirarEventosDaParty(o.estado, paraOsOutros);
+        }
         // Itens que o rodízio da party deu a ESTE char nos golpes dos outros: o "Loot of a ..." no chat dele.
         const daParty = tirarEventosDaParty(this.estado);
         if (daParty) eventos = [...(eventos ?? []), ...daParty];
@@ -2661,6 +2673,29 @@ export class Sessao {
  * Quem liga é o `index.mjs` (`ligarRelogio`); os testes criam sessões sem
  * ele e tocam `tique()` à mão — o relógio nunca entra no meio de um teste.
  */
+/**
+ * Grava todo mundo que está jogando (o mesmo do fechar a aba: a caçada segue offline) e a party, e ESPERA o banco — até `prazoMs`.
+ * O desligamento (o SIGTERM do Docker no deploy, o reinício pela Engine) saía logo depois de MANDAR gravar: o que ainda não tinha
+ * chegado ao banco se perdia, e a party voltava sem o último estado (dono, 08/10: "estou numa pt e quando o servidor atualiza meu
+ * char vai para city"). O Docker dá 30 s (`stop_grace_period`).
+ */
+export async function gravarTodosAntesDeSair(prazoMs = 20_000) {
+  const gravacoes = [...vivas.values()].map((s) => {
+    try {
+      return s.soltarPersonagem?.();
+    } catch (e) {
+      console.error('gravar ao desligar', s.personagem?.nome, '->', e.message);
+      return null;
+    }
+  });
+  const tudo = Promise.allSettled(gravacoes)
+    .then(() => Party.gravarMudancas())
+    .catch((e) => console.error('gravar a party ao desligar ->', e.message));
+  let prazo;
+  await Promise.race([tudo, new Promise((r) => { prazo = setTimeout(r, prazoMs); })]);
+  clearTimeout(prazo);
+}
+
 export const FATIAS = 5;
 const sessoesPorFatia = Array.from({ length: FATIAS }, () => new Set());
 let proximaFatiaLivre = 0;

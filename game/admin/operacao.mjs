@@ -7,7 +7,7 @@ import * as Manutencao from '../systems/modo-de-manutencao.mjs';
 import * as Campanha from '../systems/campanha.mjs';
 import { CATALOGO } from '../systems/dados.mjs';
 import { proximoSlot } from '../systems/server-save-horario.mjs';
-import { conexoes, vivas } from '../websocket/sessao.mjs';
+import { conexoes, vivas, gravarTodosAntesDeSair } from '../websocket/sessao.mjs';
 import { nomeDaHunt } from '../systems/hunt/terreno.mjs';
 import { avisoGlobal } from '../systems/avisos-globais.mjs';
 
@@ -139,13 +139,13 @@ export function reiniciar({ quem = null, motivo = null, sair = (c) => process.ex
   REINICIO = { pedidoEm: Date.now(), quem, motivo: texto, em: Date.now() + esperar };
   anotar('reinício do servidor', `pedido${quem ? ` por ${quem}` : ''}${texto ? `: ${texto}` : ''}`);
   const jogadores = avisoGlobal(`O servidor vai reiniciar em ${Math.round(esperar / 1000)} segundos${texto ? ` (${texto})` : ''}. Seu progresso é gravado; entre de novo em instantes.`, 'aviso');
+  // Grava todo mundo e ESPERA o banco antes de sair (`gravarTodosAntesDeSair`); sai de qualquer jeito, mesmo se algo falhar.
   setTimeout(() => {
-    try {
-      desligar?.();
-      for (const s of vivas.values()) s.soltarPersonagem?.();
-    } finally {
-      sair(0);
-    }
+    Promise.resolve()
+      .then(() => desligar?.())
+      .then(() => gravarTodosAntesDeSair())
+      .catch((e) => console.error('reinício: gravar ->', e.message))
+      .finally(() => sair(0));
   }, esperar).unref?.();
   return { ok: true, em: REINICIO.em, avisados: jogadores ?? 0 };
 }

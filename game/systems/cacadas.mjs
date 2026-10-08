@@ -70,6 +70,7 @@ import * as ModsPoe from './itens-poe/mods-poe.mjs';
 import * as AtributosDoMob from './mobs/atributos.mjs';
 import * as FrascosPoe from './itens-poe/frascos.mjs';
 import * as GemasPoe from './itens-poe/gemas-poe.mjs';
+import * as Reserva from './itens-poe/reserva.mjs';
 import * as Poderes from './poderes.mjs';
 import * as Areas from '../engine/areas.mjs';
 import { ligado as itensPoeLigado } from './itens-poe/catalogo.mjs';
@@ -98,6 +99,12 @@ const compactarLista = (lista) => (Array.isArray(lista) ? lista.map(compactarMon
 export function huntParaGravar(hunt) {
   if (!hunt) return hunt;
   const copia = { ...hunt, monstros: compactarLista(hunt.monstros) };
+  // O convidado da sala da party grava a instância (e os outros andares) da sala: no banco a caçada dele é só dele (ver `levarDaSala`).
+  const sala = salaDe(hunt);
+  if (sala !== hunt) {
+    if (!copia.instancia && sala.instancia) copia.instancia = sala.instancia;
+    if (!copia.outrosAndares && sala.outrosAndares) copia.outrosAndares = sala.outrosAndares;
+  }
   if (hunt.outrosAndares) {
     copia.outrosAndares = Object.fromEntries(Object.entries(hunt.outrosAndares).map(([z, lista]) => [z, compactarLista(lista)]));
   }
@@ -1308,6 +1315,8 @@ export function regenerar(estado, ms) {
   estado.mana = Math.min(estado.maxMana ?? estado.mana, (estado.mana ?? 0) + mana);
   // O roubo do PoE recupera ao longo do tempo (as instâncias de `Ficha.aplicarLeech`).
   Ficha.recuperarRoubo(estado, ms);
+  // A mana (e a vida) reservada pelas auras do PoE não enche: a atual para na parte livre — a poção e o roubo que passaram também.
+  Reserva.cortarNoLivre(estado);
   // O Energy Shield volta sozinho depois de um tempo sem apanhar (`Defesa.recarregar`).
   Defesa.recarregar(estado, ficha, ms);
 }
@@ -1391,6 +1400,8 @@ export function tique(estado, personagem, agora = Date.now()) {
   Boosts.consumir(estado, passou);
   BuffPower.consumir(estado, passou);
   Prey.consumir(estado, passou); // "o relógio só corre dentro da hunt"
+  // A aura que reserva e saiu da barra (ou da peça) desliga — antes da regeneração, para a mana livre já contar.
+  if (Acoes.desligarAurasForaDaBarra(estado, hunt)) Ficha.invalidar(estado);
   regenerar(estado, passou);
   // Os mods do PoE no tempo (Fúria, "movendo-se", a recuperação do dano sofrido, o Escudo regenerado) e a ficha à mão de quem fere o
   // personagem (dano contínuo e controle dos bichos — `itens-poe/mods-poe.mjs`).
@@ -2329,7 +2340,7 @@ export function snapshotDaHunt(estado, forcarMapa = false) {
     session: sessaoParaCliente(hunt.sessao),
     // As magias de suporte ligadas, com o tempo que RESTA (os cards acima da barra).
     // + as cargas do PoE ativas (Tolerância, Frenesi, Poder), como cartões de buff.
-    buffs: [...Acoes.buffsAtivos(hunt), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado)],
+    buffs: [...Acoes.buffsAtivos(hunt, estado), ...CargasPoe.buffs(estado), ...FrascosPoe.buffs(estado)],
     // Por que cada slot não saiu, e o ✔/✖ de cada condição agora (o balão do slot e o editor).
     parados: Acoes.paradosParaCliente(hunt),
     condicoesAgora: Acoes.condicoesParaCliente(estado, hunt, alvoAtual(hunt)),

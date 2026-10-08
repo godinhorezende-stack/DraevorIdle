@@ -244,7 +244,8 @@ function assinaturaDoRetrato(payload) {
   const partes = [payload.z ?? 0, payload.mapId ?? ''];
   const quem = (lista) => {
     for (const e of lista ?? []) {
-      partes.push(e.uid ?? e.name ?? '', e.x, e.y, e.dir ?? 0, Math.round(e.hp ?? 0), Math.round(e.maxHp ?? 0));
+      // (+ a mana: o nameplate do aliado da party desenha a barra dela.)
+      partes.push(e.uid ?? e.name ?? '', e.x, e.y, e.dir ?? 0, Math.round(e.hp ?? 0), Math.round(e.maxHp ?? 0), Math.round(e.mana ?? 0));
     }
   };
   quem(payload.monsters);
@@ -982,7 +983,7 @@ export class MapView {
           marca: character.marca ?? null,
           hp: character.hp,
           maxHp: character.derived.maxHp,
-          // A esfera de nível e a barra de mana do nameplate (só do PRÓPRIO jogador: o servidor não manda a mana dos outros).
+          // A esfera de nível e a barra de mana do nameplate (a do aliado da party vem em `aliados`).
           level: character.level,
           mana: character.mana,
           maxMana: character.derived.maxMana,

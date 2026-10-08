@@ -270,16 +270,26 @@ test('"Permitir entrar na caçada": marcado, a party entra direto; sem marcar, s
   grupo(outro.s, 'sair');
 });
 
-test('"Permitir entrar na caçada" vale mesmo para quem ainda não liberou a fase', async () => {
+// Dono, 08/10: "eu só posso entrar na instância de alguém na party se eu tiver a possibilidade do caminho da fase desbloqueada, as act
+// liberada e a dificuldade" (antes: "na party o amigo carrega" — entrava em qualquer fase).
+test('"Permitir entrar na caçada" não vale para quem ainda não liberou a fase: sem o botão e sem entrar; com a fase liberada, entra', async () => {
   const host = await jogador(0, 1, 45);
   const novato = await jogador(1, 1, 38);
   novato.s.estado.campanha = {};
   partyDe(host, novato);
   host.s.estado.settings.entrarSemConvite = true;
   assert.equal(Cacadas.entrar(host.s.estado, { huntId: huntDoPoe('port-hope-corym-dungeons'), mode: 'auto' }).ok, true);
-  const cartao = Party.camposDoPersonagem(novato.s).party.membros.find((m) => m.name === host.nome);
-  assert.equal(cartao.podeEntrarDireto, true, 'o botão aparece');
+  const cartao = () => Party.camposDoPersonagem(novato.s).party.membros.find((m) => m.name === host.nome);
+  assert.equal(cartao().podeEntrarDireto, false, 'o botão não aparece');
+  const recusado = caca(novato.s, 'entrar', host.nome);
+  assert.equal(recusado.ok, false);
+  assert.match(recusado.erro, /ainda não liberou/);
+  assert.ok(!novato.s.estado.hunt, 'fica na cidade');
+  // Com o mesmo progresso do host (o caminho, o ato e a dificuldade liberados), entra.
+  novato.s.estado.campanha = structuredClone(host.s.estado.campanha);
+  assert.equal(cartao().podeEntrarDireto, true, 'o botão aparece');
   assert.equal(caca(novato.s, 'entrar', host.nome).ok, true);
+  assert.equal(Cacadas.salaDe(novato.s.estado.hunt), Cacadas.salaDe(host.s.estado.hunt));
   grupo(novato.s, 'sair');
 });
 
@@ -322,7 +332,7 @@ test('"Seguir líder": vai junto na caçada, na troca de hunt, na volta para a c
   grupo(naoSegue.s, 'sair');
 });
 
-test('"Seguir líder" leva junto quem ainda não liberou a fase (na party, o líder carrega)', async () => {
+test('"Seguir líder" não leva quem ainda não liberou a fase (o líder não carrega mais; o aviso diz por quê); com a fase liberada, leva', async () => {
   const lider = await jogador(0, 1, 45);
   const segue = await jogador(1, 1, 38);
   segue.s.estado.campanha = {};
@@ -330,6 +340,12 @@ test('"Seguir líder" leva junto quem ainda não liberou a fase (na party, o lí
   segue.s.estado.settings.seguirLider = true;
   lider.s.despachar({ t: 'startHunt', huntId: huntDoPoe('port-hope-corym-dungeons'), mode: 'auto' });
   assert.equal(lider.s.estado.hunt?.huntId, huntDoPoe('port-hope-corym-dungeons'));
+  assert.ok(!segue.s.estado.hunt, 'não seguiu');
+  assert.ok(segue.avisos.some((m) => /Não deu para seguir .*ainda não liberou/.test(m.notice ?? '')), 'o aviso diz por quê');
+  // Com o progresso do líder, segue.
+  lider.s.despachar({ t: 'stopHunt' });
+  segue.s.estado.campanha = structuredClone(lider.s.estado.campanha);
+  lider.s.despachar({ t: 'startHunt', huntId: huntDoPoe('port-hope-corym-dungeons'), mode: 'auto' });
   assert.equal(segue.s.estado.hunt?.huntId, huntDoPoe('port-hope-corym-dungeons'), 'seguiu');
   grupo(segue.s, 'sair');
 });
