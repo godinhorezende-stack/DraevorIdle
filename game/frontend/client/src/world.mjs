@@ -424,10 +424,14 @@ export function desenharMundo(body, { campanha, escolhida, hunts, bosses, bestia
       }
     }
     camera.aplicar();
+    // O esmaecer de entrada vai no `<svg>`, NUNCA na câmera: o modo leve (`body.sem-animacao`, o padrão no celular) zera o `transform` de
+    // todo elemento com "entra"/"abre"/"pulso" na classe — na câmera isso congelava o mapa (arrastar, pinça e zoom calculavam e nada
+    // se mexia; 08/10). E a classe sai ao terminar: não fica pendurada.
     if (!reduzMovimento()) {
-      cam.classList.remove('entra');
-      void cam.getBoundingClientRect();
-      cam.classList.add('entra');
+      mapaSvg.classList.remove('entra');
+      void mapaSvg.getBoundingClientRect();
+      mapaSvg.classList.add('entra');
+      mapaSvg.addEventListener('animationend', () => mapaSvg.classList.remove('entra'), { once: true });
     }
   }
 
