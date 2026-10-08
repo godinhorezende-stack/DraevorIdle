@@ -66,12 +66,26 @@ test('Lago Seco: o Voll nasce, solta o item da missão e a fase conclui', { skip
   assert.ok([...(e.pouch ?? []), ...(e.inventory ?? [])].some((p) => Number(p.id) === Number(c.item)), 'o item da missão veio');
 });
 
-test('Telhado da Catedral: pedia o Kitava (o chefe do próprio Ato 5, que fica na sala dele) — conclui limpando a área e abre o portal', { skip: SEM }, () => {
+test('Telhado da Catedral: o Kitava (o chefe do Ato 5) nasce na fase; matá-lo conclui a fase e vence o ato — o Ato 6 abre, sem a sala', { skip: SEM }, () => {
   const huntId = 'poe-a5-the-cathedral-rooftop';
   const c = Campanha.conclusaoDa(huntId);
-  assert.equal(c.tipo, 'limpar-hunt');
-  assert.match(c.chefeDoAto, /Kitava/);
-  assert.equal(Campanha.ehUltimaFaseDoAto(huntId), true, 'é a fase do portal');
-  // Um chefe de fase que não é o do ato continua pedindo o chefe.
-  assert.equal(Campanha.conclusaoDa('poe-a2-the-broken-bridge').tipo, 'matar-chefe');
+  assert.equal(c.tipo, 'matar-chefe', 'continua "Matar o chefe" (dono, 08/10: "mantenha matar o chefe")');
+  assert.equal(Campanha.atoDoChefeNaFase(huntId), 5);
+  assert.equal(Campanha.atoDoChefeNaFase('poe-a2-the-broken-bridge'), null, 'o Kraityn não é chefe de ato');
+  // Os atos 1 a 4 vencidos e o Ato 5 feito até o Telhado.
+  const e = personagemDeTeste({ vocacao: 'knight', level: 60 });
+  e.sistema = 'poe';
+  e.campanha = { facil: { completas: Campanha.FASES.filter((f) => f.ato <= 5 && f.huntId !== huntId).map((f) => f.huntId), bosses: [1, 2, 3, 4] } };
+  Bolsa.garantir(e);
+  assert.ok(Cacadas.entrar(e, { huntId, mode: 'auto', strategy: 'nearest', dificuldade: 'facil' }).ok);
+  const kitava = bichos(e).find((m) => Campanha.ehOMonstro(m.key, c.monstro));
+  assert.ok(kitava, 'o Kitava nasce no Telhado');
+  const primeiraDoAto6 = Campanha.FASES.find((f) => f.ato === 6);
+  assert.equal(Campanha.faseLiberada(e, 'facil', primeiraDoAto6.huntId), false, 'antes: o Ato 6 fechado');
+  Combate.matarMonstro(e, e.hunt, PERSONAGEM, kitava, []);
+  assert.equal(Campanha.faseCompleta(e, 'facil', huntId), true, 'a fase conclui');
+  assert.equal(Campanha.bossVencido(e, 'facil', 5), true, 'e o chefe do Ato 5 conta como vencido');
+  assert.equal(Campanha.faseLiberada(e, 'facil', primeiraDoAto6.huntId), true, 'o Ato 6 abre');
+  assert.match(e.avisoDaHunt ?? '', /concluíd/);
+  assert.equal(Campanha.abrirPortalDoBoss(e.hunt, [e]), null, 'o portal da sala do chefe não abre (ele já foi enfrentado)');
 });

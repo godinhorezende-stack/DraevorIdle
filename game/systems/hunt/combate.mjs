@@ -885,7 +885,12 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
       return conc.tipo === 'item-de-missao' && Number(conc.item) === id && !Campanha.faseCompleta(estado, c.dificuldade, c.huntId);
     };
     const daTabela = DropsPorMonstro.soltar(alvo.key, { missaoAberta, existe: (id) => !!ITEM_CATALOG[id] && podeEntrar(id) }).filter((d) => daBolsa(d.id));
+    // O chefe do ATO morto na fase dele (o Kitava no Telhado da Catedral): a recompensa configurada do chefe final vem também (a primeira
+    // vitória uma vez por personagem — `pagarRecompensaDeAto`), como na sala.
+    const atoDoChefe = c && !c.bossDoAto && Campanha.ehOMonstro(alvo.key, Campanha.conclusaoDa(c.huntId).monstro) ? Campanha.atoDoChefeNaFase(c.huntId) : null;
     Campanha.matou(estado, hunt, alvo, { ganhou: daTabela, dar: daBolsa });
+    const recDoAto = atoDoChefe ? Campanha.recompensaDoBoss(atoDoChefe) : null;
+    if (recDoAto) pagarRecompensaDeAto({ estado, hunt, personagem, recompensa: recDoAto, nome: alvo.name, chave: `boss:${atoDoChefe}`, dificuldade: c.dificuldade });
   }
   // Sede de sangue (knight) e Fonte eterna (sorcerer).
   Arvore.aoMatar(estado, eventos, hunt.pos, personagem?.nome);
