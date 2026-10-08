@@ -560,7 +560,12 @@ async function mostrarInventario(li, entrada) {
           estrelas: estrelas(inteira.af, p.catalogo),
         };
       },
-      { comSprites: temSprites },
+      // O jogo oficial: a grade do PoE (a mesma do inventário do jogo) e o cinto de frascos embaixo dela.
+      {
+        comSprites: temSprites,
+        poe: !!p.poe,
+        frascos: p.poe ? (p.frascos ?? []).map((f) => f && { id: f.id, corPoe: f.peca?.poe?.cor ?? null, cargas: f.cargas, cargasMaximas: f.cargasMaximas }) : null,
+      },
     ),
   );
   /*
@@ -586,6 +591,12 @@ async function mostrarInventario(li, entrada) {
     if (!peca) continue;
     const inteira = peca.peca ?? { id: peca.id, tier: peca.tier };
     casa.addEventListener('pointerenter', () => mostrarPeca(casa, peca, inteira, slot));
+    casa.addEventListener('pointerleave', esconderPeca);
+  }
+  for (const casa of balao.querySelectorAll('.top5-pop-equipamento .pd-frasco[data-frasco]')) {
+    const f = p.frascos?.[Number(casa.dataset.frasco)];
+    if (!f) continue;
+    casa.addEventListener('pointerenter', () => mostrarPeca(casa, { id: f.id }, f.peca, null));
     casa.addEventListener('pointerleave', esconderPeca);
   }
   const daGuilda = linhaDaGuilda(p.guilda);

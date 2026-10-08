@@ -35,6 +35,7 @@ import * as EfeitosDeItem from './itens/efeitos.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
 import { ligado } from './itens-poe/catalogo.mjs';
 import * as Passivas from './passivas/arvore.mjs';
+import * as FrascosPoe from './itens-poe/frascos.mjs';
 
 /** No jogo oficial cada linha leva `classe`: o nome da classe do PoE (Bruxa, Marauder...), que a capa mostra no lugar da vocação do Draevor. */
 const comClasse = (linha, dados) => (ligado() ? { ...linha, classe: Promocao.nomeDaClasse(dados) } : linha);
@@ -46,6 +47,8 @@ const HORA_MS = 3_600_000;
 const GUARDA_MS = 15_000;
 const FUSO_MS = -3 * HORA_MS;
 const SLOTS = ['head', 'neck', 'body', 'legs', 'feet', 'ring', 'weapon', 'shield', 'ammo', 'backpack'];
+// O jogo oficial (PoE) tem luvas e o segundo anel (a grade do PoE na ficha e no balão do top 5 — `paperdoll.mjs` ORDEM_DO_POE).
+const SLOTS_DO_POE = [...SLOTS, 'gloves', 'ring2'];
 
 let vivas = new Map(); // nome -> Sessao (injetado por index.mjs)
 let relogio = null;
@@ -255,7 +258,7 @@ const seguro = (fn, padrao = 0) => {
 
 function equipamento(e) {
   const saida = {};
-  for (const slot of SLOTS) {
+  for (const slot of ligado() ? SLOTS_DO_POE : SLOTS) {
     const p = e.equipment?.[slot];
     if (!p?.id) {
       saida[slot] = null;
@@ -278,6 +281,16 @@ function equipamento(e) {
   return saida;
 }
 
+/**
+ * O cinto de frascos do PoE (a fileira embaixo da grade): as 5 vagas com o frasco, as cargas e o máximo — null é a vaga livre. O mesmo
+ * cálculo do jogo (`FrascosPoe.paraCliente`), num cinto copiado: ele enche os frascos de quem está na cidade e completa as vagas.
+ */
+function frascos(e) {
+  if (!ligado()) return null;
+  return seguro(() => (FrascosPoe.paraCliente({ ...e, frascos: structuredClone(e.frascos ?? []) }) ?? [])
+    .map((f) => f && { id: f.peca.id, peca: f.peca, cargas: f.cargas, cargasMaximas: f.cargasMaximas, tipo: f.tipo }), null);
+}
+
 function draevor(e) {
   const f = seguro(() => Summon.familiarDe(e), {});
   const col = seguro(() => Aparencia.colecao(e), {});
@@ -290,10 +303,16 @@ function draevor(e) {
     summonNome: e.summon?.nome ?? f.nome ?? null,
     summonLook: f.look ?? 0,
     summonSkins: (e.summon?.skins ?? []).length,
-    // No jogo oficial, a árvore do PoE (os pontos do level, os alocados); a conta do Draevor dava "0 / -4" no level 1. Numa cópia rasa:
-    // `garantir` arruma `passivas` e não pode mexer no personagem ao vivo por causa de uma página do site.
+    // No jogo oficial, a árvore do PoE: os NÓS que o personagem liberou / os nós que a árvore principal tem (dono, 08/10: "o que foi
+    // liberado / total existente no jogo") — sem os de início e os de ascendência. A conta do Draevor dava "0 / -4" no level 1. Numa
+    // cópia rasa: `garantir` arruma `passivas` e não pode mexer no personagem ao vivo por causa de uma página do site.
     ...(ligado()
-      ? (({ usados, total }) => ({ arvoreUsados: usados, arvoreTotal: total }))(seguro(() => Passivas.pontos({ ...e, passivas: structuredClone(e.passivas) }), { usados: 0, total: 0 }))
+      ? seguro(() => {
+        const { passivas } = Passivas.garantir({ ...e, passivas: structuredClone(e.passivas) });
+        const arvore = Passivas.arvore();
+        const daArvorePrincipal = (no) => !!no && no.tipo !== 'start' && !no.ascendencia;
+        return { arvoreUsados: passivas.alocados.filter((id) => daArvorePrincipal(arvore.porId.get(id))).length, arvoreTotal: [...arvore.porId.values()].filter(daArvorePrincipal).length };
+      }, { arvoreUsados: 0, arvoreTotal: 0 })
       : { arvoreUsados: Object.values(e.arvore?.graus ?? {}).reduce((a, n) => a + n, 0), arvoreTotal: seguro(() => Math.floor(((e.level ?? 1) - 8) / 2)) }),
     montarias: col.mounts ?? col.montarias ?? (e.lojaMontarias ?? []).length,
     outfits: col.outfits ?? (e.lojaOutfits ?? []).length,
@@ -326,8 +345,9 @@ export async function personagem(nome, agora = Date.now()) {
   const level = e.level ?? 1;
   const prog = R.progressoDoLevel(level, e.xp ?? 0);
   const eq = equipamento(e);
+  const cinto = frascos(e);
   const itens = {};
-  for (const p of Object.values(eq)) if (p) itens[p.id] = ITEM_CATALOG[p.id];
+  for (const p of [...Object.values(eq), ...(cinto ?? [])]) if (p) itens[p.id] = ITEM_CATALOG[p.id];
   // De aba fechada mas caçando: "Caçando offline", com a hunt (ver `ausentes.mjs`).
   const ausente = vivo ? null : Ausentes.cacando(nomeCerto, agora);
   const a = vivo ? atividade(e) : ausente ? { onde: 'cacando-offline', lugar: lugarDoAusente(ausente) } : { onde: 'offline', lugar: null };
@@ -356,6 +376,7 @@ export async function personagem(nome, agora = Date.now()) {
       skills: Object.fromEntries(Object.entries((Treino.garantir(e), e.skills)).map(([k, v]) => [k, v?.value ?? v])),
       outfit: roupa(e.outfit),
       equipamento: eq,
+      ...(cinto ? { frascos: cinto } : {}),
       // Postgres devolve BIGINT como texto; sem o Number a ficha mostrava "Invalid Date".
       criadoEm: r?.criado_em != null ? Number(r.criado_em) : null,
       visto: vivo ? agora : r?.visto_em != null ? Number(r.visto_em) : null,

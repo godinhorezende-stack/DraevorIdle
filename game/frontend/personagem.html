@@ -132,6 +132,8 @@
   .retrato canvas { image-rendering: pixelated; }
 
   .inventario { display: grid; grid-template-columns: repeat(3, 38px); gap: 4px; justify-content: center; }
+  /* O jogo oficial: a grade do PoE (`paperdoll.mjs`), centrada na caixinha. */
+  .inventario-poe { display: flex; justify-content: center; }
   .slot { width: 38px; height: 38px; position: relative; display: grid; place-items: center;
           background: #0b1114 center / 32px no-repeat; border: 1px solid var(--linha); border-radius: 3px; }
   .slot canvas { image-rendering: pixelated; }
@@ -352,6 +354,8 @@ import { loadSpriteData, outfitCanvas, itemCanvas, emprestarDoCatalogo } from '/
 import { initTooltip, tipFor, tipPanel, seloDeEstrelas, estrelasDosAfixos, classeDaRaridade } from '/client/src/tooltip.mjs';
 /* O MESMO escudo da janela de guildas — ver `brasao-no-site.mjs`. */
 import { seloDaGuilda, linhaDaGuilda } from '/client/site/brasao-no-site.mjs';
+// A grade do equipamento do site (a do PoE, no jogo oficial: a mesma do inventário do jogo).
+import { gradeDeEquipamento } from '/client/src/paperdoll.mjs';
 
 const $ = (id) => document.getElementById(id);
 const n = (v) => Number(v ?? 0).toLocaleString('pt-BR');
@@ -482,7 +486,7 @@ function desenhar(p) {
       <div class="tb-corpo">
         <div class="stats">
           ${poe ? [
-            stat('Pontos da Árvore', `${n(r.arvoreUsados)}<small class="cinza"> / ${n(r.arvoreTotal)}</small>`, 'c-roxo', 'arvore'),
+            stat('Nós da Árvore', `${n(r.arvoreUsados)}<small class="cinza"> / ${n(r.arvoreTotal)}</small>`, 'c-roxo', 'arvore'),
             stat('Kills', n(r.kills), 'c-verm', 'ficha-kills'),
             stat('Mortes', n(r.mortes), 'c-verm', 'ficha-mortes'),
             stat('Tempo caçando', duracao(r.tempoCacando), 'c-laranja', 'ficha-tempo'),
@@ -557,7 +561,8 @@ async function desenharSprites(p) {
   initTooltip(() => p.itens ?? {}, () => null, () => p.catalogo ?? null);
   ligarResumoDosAfixos(p);
   const inv = $('inventario');
-  for (const [slot, fundo] of GRADE) {
+  // O jogo oficial (PoE): a grade é a do PoE, desenhada inteira depois da folha de sprites (`gradeDoPoe`).
+  if (!p.poe) for (const [slot, fundo] of GRADE) {
     const celula = document.createElement('div');
     celula.className = 'slot';
     if (!slot) { celula.style.visibility = 'hidden'; inv.append(celula); continue; }
@@ -601,10 +606,12 @@ async function desenharSprites(p) {
     if (selo) $('ficha-guilda')?.append(selo);
   }
 
-  if (!(await sprites)) return;
+  const temSprites = await sprites;
   // Os ícones das peças do PoE (e das gemas) vêm do catálogo da ficha — sem isto o inventário mostrava "?". DEPOIS da folha de sprites
   // (carregá-la refaz a tabela de figuras), como o jogo faz no `welcome`.
-  emprestarDoCatalogo(p.itens ?? {});
+  if (temSprites) emprestarDoCatalogo(p.itens ?? {});
+  if (p.poe) gradeDoPoe(inv, p, temSprites);
+  if (!temSprites) return;
   try {
     if (p.outfit?.type) $('retrato')?.append(outfitCanvas(p.outfit.type, p.outfit, 80));
   } catch { /* outfit desconhecido: fica sem boneco */ }
@@ -616,6 +623,7 @@ async function desenharSprites(p) {
     try { lugar.append(itemCanvas(Number(lugar.dataset.item), 32)); } catch { /* sem sprite */ }
   }
 
+  if (p.poe) return;
   const celulas = [...inv.children];
   GRADE.forEach(([slot], i) => {
     const peca = slot && p.equipamento?.[slot];
@@ -628,6 +636,36 @@ async function desenharSprites(p) {
 }
 
 /*
+ * A grade do PoE (dono, 08/10: a disposição do site "não está nesse formato", com a foto do inventário do jogo): a mesma do jogo e do
+ * balão do top 5 (`paperdoll.mjs` ORDEM_DO_POE), com o cinto de frascos embaixo; cada peça e cada frasco abrem o balão do item.
+ */
+function gradeDoPoe(inv, p, comSprites) {
+  inv.className = 'inventario-poe balao-do-jogo';
+  const pecaDe = (slot) => p.equipamento?.[slot] ?? null;
+  const inteiraDe = (peca) => peca.peca ?? { id: peca.id, tier: peca.tier };
+  const grade = gradeDeEquipamento((slot) => {
+    const peca = pecaDe(slot);
+    if (!peca) return null;
+    return { id: peca.id, count: peca.count, corPoe: inteiraDe(peca).poe?.cor ?? null };
+  }, {
+    comSprites,
+    poe: true,
+    frascos: (p.frascos ?? []).map((f) => f && { id: f.id, corPoe: f.peca?.poe?.cor ?? null, cargas: f.cargas, cargasMaximas: f.cargasMaximas }),
+  });
+  for (const casa of grade.querySelectorAll('.pd-slot[data-slot]')) {
+    const peca = pecaDe(casa.dataset.slot);
+    casa.setAttribute('aria-label', peca.nome ?? `item ${peca.id}`);
+    if (p.itens?.[peca.id]) tipFor(casa, peca.id, null, casa.dataset.slot, inteiraDe(peca));
+  }
+  for (const casa of grade.querySelectorAll('.pd-frasco[data-frasco]')) {
+    const f = p.frascos[Number(casa.dataset.frasco)];
+    casa.setAttribute('aria-label', f.peca?.poe?.nome ?? `frasco ${f.id}`);
+    if (p.itens?.[f.id]) tipFor(casa, f.id, null, null, f.peca);
+  }
+  inv.replaceChildren(grade);
+}
+
+/*
  * ---- O resumo dos afixos vestidos ----
  *
  * O ícone no canto do Inventory abre, ao passar o mouse, a soma de cada afixo
@@ -635,7 +673,8 @@ async function desenharSprites(p) {
  * (a sprite, a estrela na cor dela e o valor). Somar é o que a pessoa faria de
  * cabeça passando o mouse peça por peça.
  */
-const ORDEM_DOS_SLOTS = GRADE.map(([slot]) => slot).filter(Boolean);
+// + as luvas e o segundo anel do PoE.
+const ORDEM_DOS_SLOTS = [...GRADE.map(([slot]) => slot).filter(Boolean), 'gloves', 'ring2'];
 const valorDoAfixo = (ficha, v) => {
   const redondo = Math.round(Number(v) * 100) / 100;
   const texto = redondo.toLocaleString('pt-BR', { maximumFractionDigits: 2 });

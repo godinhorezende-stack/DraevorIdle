@@ -39,6 +39,7 @@ import * as Bosses from '../systems/bosses.mjs';
 import * as Party from '../systems/party.mjs';
 import * as ItensPoeJogo from '../systems/itens-poe/jogo.mjs';
 import * as Legado from '../systems/personagem/legado.mjs';
+import * as RoupaDaClasse from '../systems/personagem/roupa-da-classe.mjs';
 import * as ClassesPoe from '../systems/itens-poe/classes.mjs';
 import * as ItensPoeCatalogo from '../systems/itens-poe/catalogo.mjs';
 import * as FichaPoe from '../systems/personagem/ficha-poe.mjs';
@@ -1755,6 +1756,8 @@ export class Sessao {
     Recompensas.marcosDaVocacao(estado);
     // As peças de antes do sistema de itens: nível, valor reescalado e raridade (uma vez).
     ItensDoJogo.converterPersonagem(estado);
+    // A roupa da classe (uma vez — o boot já vestiu todo mundo; isto é a garantia para quem escapou): `personagem/roupa-da-classe.mjs`.
+    if (ItensPoeCatalogo.ligado()) RoupaDaClasse.aplicar(estado, personagem.sexo);
     // A Store Inbox e a Boss Pouch saíram: o que ainda estava nelas vai para as Chegadas do Depósito (uma vez; `Deposito.garantir`).
     Deposito.garantir(estado);
     // O personagem novo ganha as gemas iniciais da classe (uma vez).
