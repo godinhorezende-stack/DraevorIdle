@@ -142,6 +142,8 @@
   .slot.vazio-slot { opacity: .5; }
   .slot.raridade { border-color: var(--tier); box-shadow: inset 0 0 10px color-mix(in srgb, var(--tier) 35%, transparent); }
   .ausente { color: var(--ausente); }
+  /* O ato, a fase e a dificuldade da caçada, na linha do Status: embaixo do lugar, num tom mais calmo. */
+  .na-campanha { display: block; margin-top: 2px; font-size: .92em; color: var(--apagado); letter-spacing: .02em; }
 
   /*
    * ---- A raridade, o selo de tier e as ESTRELAS dos afixos ----
@@ -416,11 +418,16 @@ function desenhar(p) {
   // bestiário, charms, tasks, instance/divine).
   const poe = !!p.poe;
   const lugar = p.atividade?.lugar ? ` (${esc(p.atividade.lugar)})` : '';
+  // Caçando na campanha: o ato, a fase (a ordem no ato, como no mapa do jogo) e a dificuldade (dono, 08/10).
+  const c = p.atividade?.campanha;
+  const naCampanha = c
+    ? `<span class="na-campanha">${[`Ato ${n(c.ato)}`, c.chefe ? `Chefe: ${esc(c.chefe)}` : c.fase ? `Fase ${n(c.fase)}` : '', esc(c.dificuldade ?? '')].filter(Boolean).join(' · ')}</span>`
+    : '';
   const status = p.jogando
-    ? `<span class="ok">Online</span>${p.atividade ? ` — ${ONDE[p.atividade.onde] ?? 'Conectado'}${lugar}` : ''}`
+    ? `<span class="ok">Online</span>${p.atividade ? ` — ${ONDE[p.atividade.onde] ?? 'Conectado'}${lugar}` : ''}${naCampanha}`
     // De aba fechada, mas o personagem segue caçando sozinho (a caçada offline).
     : p.atividade?.onde === 'cacando-offline'
-      ? `<span class="ausente"><i class="ponto ausente"></i>Caçando Offline</span>${lugar}`
+      ? `<span class="ausente"><i class="ponto ausente"></i>Caçando Offline</span>${lugar}${naCampanha}`
       : '<span class="cinza">Offline</span>';
   const conta = p.premium
     ? `<span class="ok">Premium</span> até ${quando(p.premiumAte)}`
