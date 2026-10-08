@@ -41,7 +41,9 @@ for (const p of lista) console.log(`  ${p.nome} · level ${p.level} · ouro ${p.
 
 if (!apagar) sair(0, `\nNada foi apagado (só a lista). Para apagar: faça o backup e rode de novo com --apagar --confirmo=${lista.length}`);
 if (!lista.length) sair(0, 'Nenhum arquivado: nada a apagar.');
-if (confirmo !== lista.length) sair(1, `\nRecusado: --confirmo=${Number.isFinite(confirmo) ? confirmo : '(faltou)'} não é ${lista.length}, o número da lista de agora. Nada foi apagado.`);
+const valorDoConfirmo = args.find((a) => a.startsWith('--confirmo='))?.split('=')[1];
+if (!Number.isFinite(confirmo)) sair(1, `\nRecusado: ${valorDoConfirmo == null ? 'faltou o --confirmo' : `--confirmo=${valorDoConfirmo} não é um número`}. Troque pelo número da lista: --apagar --confirmo=${lista.length}. Nada foi apagado.`);
+if (confirmo !== lista.length) sair(1, `\nRecusado: --confirmo=${confirmo} não é ${lista.length}, o número da lista de agora. Nada foi apagado.`);
 
 let apagados = 0;
 await banco.transacao(async () => {

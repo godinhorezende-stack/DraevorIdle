@@ -41,6 +41,10 @@ test('lista por padrão; apaga só com --apagar e o --confirmo certo; só os arq
 
   assert.equal(rodar('--apagar').codigo, 1, 'sem --confirmo: recusa');
   assert.equal(rodar('--apagar', '--confirmo=3').codigo, 1, '--confirmo errado: recusa');
+  // O `N` do texto copiado ao pé da letra: recusa e diz o número a digitar.
+  const literal = rodar('--apagar', '--confirmo=N');
+  assert.equal(literal.codigo, 1);
+  assert.match(literal.saida, /--confirmo=N não é um número\. Troque pelo número da lista: --apagar --confirmo=2\./);
   assert.ok((await existe(antigo1.id)) && (await existe(antigo2.id)), 'recusado não apaga');
 
   const r = rodar('--apagar', '--confirmo=2');
