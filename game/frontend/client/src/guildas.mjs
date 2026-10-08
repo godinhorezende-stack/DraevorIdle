@@ -3635,6 +3635,8 @@ const NOME_DO_SLOT = {
   shield: 'Escudo',
   ammo: 'Munição',
   backpack: 'Mochila',
+  gloves: 'Luvas',
+  ring2: 'Anel',
 };
 
 function balaoDoMembro(membro) {
@@ -3719,9 +3721,12 @@ function balaoDoMembro(membro) {
          */
         titulo: `${nome}${peca.tier ? ` +${peca.tier}` : ''} — ${NOME_DO_SLOT[peca.slot] ?? peca.slot}`,
         raridade: ctx.state.items?.[peca.id]?.rarity,
+        // A peça do PoE: a borda na cor da raridade dela.
+        corPoe: peca.poe?.cor ?? null,
         estrelas: estrelasDosAfixos(peca.af).map(({ q, n }) => ({ q, n })),
       };
-    }),
+    // O jogo oficial: a grade do PoE, a mesma do inventário (com as luvas e o segundo anel).
+    }, { poe: !!ctx.state.classesPoe }),
   );
 
   const resumo = resumoDoConjunto(veste);

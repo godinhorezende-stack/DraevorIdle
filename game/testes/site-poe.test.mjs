@@ -104,3 +104,53 @@ test('wiki: o artigo de itens no jogo oficial é o do PoE (raridades, chance por
   assert.ok(d.moedas.every((m) => ['funciona', 'parcial', 'nao'].includes(m.status)));
   assert.equal(d.moedas.filter((m) => m.status === 'funciona').length, d.totais.funcionam);
 });
+
+// A grade do equipamento do site no formato do jogo (dono, 08/10: a disposição "não está nesse formato", com a foto do inventário do jogo).
+test('ficha do personagem: as luvas, o segundo anel e o cinto de frascos (a grade do PoE no site)', { skip: SEM }, async () => {
+  const ItensPoeJogo = await import('../systems/itens-poe/jogo.mjs');
+  const daCasa = (slot) => Number(Object.keys(ITEM_CATALOG).find((k) => Number(k) >= 7_000_000 && ITEM_CATALOG[k].slot === slot));
+  const peca = (id) => ({ id, count: 1, poe: { raridade: 'normal', nome: ITEM_CATALOG[id].name } });
+  const luva = daCasa('gloves');
+  const anel = daCasa('ring');
+  const frasco = ItensPoeJogo.frascoInicial();
+  const antes = { equipment: s.estado.equipment, frascos: s.estado.frascos };
+  s.estado.equipment = { ...(antes.equipment ?? {}), gloves: peca(luva), ring2: peca(anel) };
+  s.estado.frascos = [frasco, null];
+  const doCinto = JSON.stringify(s.estado.frascos);
+  try {
+    const { personagem: p } = await Site.personagem(NOME);
+    assert.equal(p.equipamento.gloves?.id, luva);
+    assert.equal(p.equipamento.ring2?.id, anel);
+    assert.equal(p.frascos.length, 5, 'as 5 vagas do cinto');
+    assert.equal(p.frascos[0].id, frasco.id);
+    assert.ok(p.frascos[0].cargasMaximas > 0 && p.frascos[0].cargas === p.frascos[0].cargasMaximas, 'na cidade, o frasco cheio');
+    assert.equal(p.frascos[0].peca.poe?.raridade, frasco.poe.raridade);
+    assert.deepEqual(p.frascos.slice(1), [null, null, null, null]);
+    assert.ok(p.itens[frasco.id], 'o catálogo do frasco (o ícone e o balão)');
+    assert.equal(JSON.stringify(s.estado.frascos), doCinto, 'a página do site não mexe no cinto do personagem');
+  } finally {
+    s.estado.equipment = antes.equipment;
+    s.estado.frascos = antes.frascos;
+  }
+});
+
+test('a grade do PoE do site (balão do top 5, ficha e card da guilda) é a mesma do inventário do jogo', async () => {
+  const { readFileSync } = await import('node:fs');
+  const ler = (c) => readFileSync(new URL(`../frontend/${c}`, import.meta.url), 'utf8');
+  const areas = (texto, seletor) => {
+    const bloco = texto.slice(texto.indexOf('grid-template-areas', texto.indexOf(seletor)));
+    return [...bloco.slice(0, bloco.indexOf(';')).matchAll(/"([^"]+)"/g)].map((m) => m[1].trim().split(/\s+/).join(' '));
+  };
+  const doJogo = areas(ler('client/balao-item.css'), '.equipment.poe {');
+  const doSite = areas(ler('client/src/paperdoll.mjs'), '.pd-grade.pd-poe {');
+  assert.deepEqual(doSite, doJogo.filter((linha) => !linha.startsWith('ammo')), 'as mesmas posições (o site não tem a munição)');
+  // Cada casa do jogo (fora a mochila e os selos, que no jogo vão no rodapé) tem a dela no site.
+  const inventario = ler('client/src/inventory.mjs');
+  const casasDoJogo = JSON.parse(inventario.match(/const SLOT_LAYOUT_COM_LUVAS = (\[[^\]]+\])/)[1].replace(/'/g, '"')).filter((c) => c !== 'backpack' && !c.startsWith('@'));
+  const casasDoSite = [...ler('client/src/paperdoll.mjs').match(/export const ORDEM_DO_POE = \[([\s\S]*?)\n\];/)[1].matchAll(/\['(\w+)'/g)].map((m) => m[1]);
+  assert.deepEqual([...casasDoSite].sort(), [...casasDoJogo].sort());
+  // Quem desenha a grade no jogo oficial pede a do PoE.
+  assert.match(ler('client/site/top5.mjs'), /poe: !!p\.poe,/);
+  assert.match(ler('personagem.html'), /gradeDeEquipamento\([\s\S]*?poe: true,/);
+  assert.match(ler('client/src/guildas.mjs'), /\{ poe: !!ctx\.state\.classesPoe \}/);
+});
