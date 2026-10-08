@@ -469,7 +469,9 @@ export function faseAtual(estado, hunt) {
   const p = progresso(estado, c.dificuldade);
   const completa = faseCompleta(estado, c.dificuldade, f.huntId);
   return {
-    tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
+    // No jogo oficial o número é o da fase DENTRO do ato, como no mapa da campanha e no site (dono, 08/10: "Ato 2 · Fase 3", e não "Fase 19");
+    // no Draevor clássico, a posição nas 48 fases.
+    tipo: 'fase', aoCompletar: aoCompletar(estado), ato: f.ato, numero: itensPoeLigado() ? numeroNoAto(f.huntId) : f.indice + 1, dificuldade: c.dificuldade, nomeDaDificuldade: dif?.nome, nome: f.nome,
     limpezas: p.limpezas[f.huntId] ?? 0, completa,
     // Completa e sem próxima para seguir: fim do ato (o boss é o jogador quem chama).
     fimDoAto: completa && !proximaParaSeguir(estado, c.dificuldade, f.huntId),
