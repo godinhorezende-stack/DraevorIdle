@@ -1037,7 +1037,9 @@ export class Sessao {
       case 'contaChar':
         return this.contaChar(m);
       // A campanha inteira (as dificuldades, as 48 fases com o progresso e os bosses dos atos): a lista de hunts pede ao abrir.
+      // Sem personagem em jogo (a tela de escolha — onde o arquivado do Draevor fica) não há campanha a mostrar.
       case 'campanha':
+        if (!this.estado) return;
         return this.enviar({ t: 'campanha', campanha: Campanha.paraCliente(this.estado) });
       case 'walk':
         return this.andar(m);
