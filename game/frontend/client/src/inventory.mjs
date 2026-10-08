@@ -12,7 +12,7 @@ import { faixaDoVipEBencaos } from './hud.mjs';
 import {
   windowBody, setVisible, toggleWindow, fecharAoClicarFora, atalhosDaCaixa, botaoNoCabecalho,
 } from './windows.mjs';
-import { tipFor, tipTexto, tipPanel, previaDaMagia, classeDaRaridade, raridadeDaPeca, estrelasDosAfixos, seloDeEstrelas, marcaDeItem, numerosDoItem as ganhosDoItem, ehEssencia, ehVermelha } from './tooltip.mjs';
+import { tipFor, tipTexto, tipPanel, previaDaMagia, classeDaRaridade, classeSemRaridade, raridadeDaPeca, estrelasDosAfixos, seloDeEstrelas, marcaDeItem, numerosDoItem as ganhosDoItem, ehEssencia, ehVermelha } from './tooltip.mjs';
 import { chatEscrevendo, inserirNoChat } from './chat.mjs';
 
 const el = (tag, className, text) => {
@@ -1896,7 +1896,8 @@ function vestirRaridade(cell, meta, daPeca = null, poe = null) {
     cell.style.setProperty('--cor-poe', poe.cor);
     return;
   }
-  const classe = daPeca ? `tier-${TIER_DA_PECA[daPeca] ?? 'comum'}` : classeDaRaridade(meta);
+  // Moeda e gema do PoE: sem raridade, a cor do PoE (`classeSemRaridade`) — a gema traz `raridade: 'comum'` do Draevor, que não vale aqui.
+  const classe = classeSemRaridade(meta) ?? (daPeca ? `tier-${TIER_DA_PECA[daPeca] ?? 'comum'}` : classeDaRaridade(meta));
   cell.classList.add(classe);
   // Toda peça ganha o anel da raridade, o comum também (cinza) — o dono: "sempre deixar nos itens anel na moldura".
   cell.classList.add('raridade');

@@ -24,6 +24,13 @@
 .tip-item.tier-epico { --tier: #b184e8; }
 .tip-item.tier-lendario { --tier: #e0a84a; }
 .tip-item.tier-mitico { --tier: #f2503f; }
+/* Moeda e gema do PoE não têm raridade (dono, 08/10): a cor delas é a do PoE — o bege das moedas empilháveis e o verde-azulado das gemas. */
+.tip-item.tier-moeda-poe { --tier: #aa9e82; }
+.tip-item.tier-gema-poe { --tier: #1ba29b; }
+/* A moeda do PoE: "Moedas Empilháveis" e "Tamanho da Pilha" em cinza; o efeito no azul dos mods; a ajuda em cinza, inclinada. */
+.tip-item .tip-stats div.moeda-tipo { color: #7f7f7f; }
+.tip-item .tip-extra.tip-moeda-efeito { color: #8888ff; font-size: 13.5px; }
+.tip-item .tip-extra.tip-moeda-ajuda { color: #7f7f7f; font-style: italic; }
 .tip-item .tip-id b, .tip-item .tip-id em { display: block; }
 .tip-item em, .tip-item i { font-style: normal; }
 .tip-item .tip-rules div, .tip-item .tip-prices div { display: flex; }
