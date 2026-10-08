@@ -79,3 +79,29 @@ test('depósito: o monte da caixa não tem teto, mas o que sai para a mochila sa
   assert.deepEqual(contagens(e.inventory, id), [20, 20, 5]);
   assert.equal(caixa.itens.find((p) => p.id === id).count, 15, 'ficaram 15 na caixa');
 });
+
+test('mover da bolsa de loot para a mochila pelo menu do celular (count 9999 = "tudo"): passa o que há; sem vaga, diz "mochila cheia"', { skip: SEM }, () => {
+  // Dono, 08/10: "no mobile está bugado passar item da bolsa de loot para a mochila" — a vaga era conferida com 9999 e a moeda nunca
+  // passava ("Você não tem capacidade para carregar isso."), mesmo com a mochila vazia.
+  const id = REMORSO();
+  const e = quem();
+  e.pouch = [{ id, count: 13 }];
+  const r = Bolsa.moverBolsa(e, { id, count: 9999, to: 'bag', pilha: 0 });
+  assert.ok(r.ok, r.erro);
+  assert.deepEqual(contagens(e.inventory, id), [13], 'os 13 na mochila');
+  assert.deepEqual(contagens(e.pouch, id), [], 'a bolsa ficou sem eles');
+  // Uma vaga só: passa o que cabe (uma pilha de 20) e avisa; o resto fica na bolsa.
+  const naoEmpilha = Number(Object.keys(ITEM_CATALOG).find((i) => ITEM_CATALOG[i].slot === 'body' && !ITEM_CATALOG[i].stackable));
+  const quase = quem();
+  quase.inventory = Array.from({ length: Inventario.vagasDaMochila(quase) - 1 }, () => ({ id: naoEmpilha, count: 1 }));
+  quase.pouch = [{ id, count: 20 }, { id, count: 20 }, { id, count: 5 }];
+  const r2 = Bolsa.moverBolsa(quase, { id, count: 9999, to: 'bag' });
+  assert.ok(r2.ok, r2.erro);
+  assert.match(r2.notice ?? '', /passaram 20 de 45/);
+  assert.deepEqual(contagens(quase.inventory, id), [20]);
+  assert.equal(contagens(quase.pouch, id).reduce((a, b) => a + b, 0), 25, 'nada se perdeu');
+  // Cheia (e sem pilha dele com espaço): a mensagem é a da mochila cheia, não a do peso.
+  const r3 = Bolsa.moverBolsa(quase, { id, count: 9999, to: 'bag' });
+  assert.equal(r3.ok, false);
+  assert.match(r3.erro, /mochila está cheia \(20 vagas\)/);
+});
