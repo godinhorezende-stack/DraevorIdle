@@ -426,7 +426,7 @@ export function emprestarDoCatalogo(catalogo) {
     if (meta?.poeGema?.icone) {
       // O ícone do suporte vem do CDN oficial do PoE (78×78); o da ativa, da coleção (64×64).
       const lado = meta.poeGema.suporte ? 78 : 64;
-      itemSprites[id] = { w: lado, h: lado, x: 0, y: 0, gerada: `/api/jogo/poe/icone/${meta.poeGema.suporte ? 'suporte' : 'gema'}/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
+      itemSprites[id] = { w: lado, h: lado, x: 0, y: 0, umaCasa: true, gerada: `/api/jogo/poe/icone/${meta.poeGema.suporte ? 'suporte' : 'gema'}/${meta.poeGema.icone.split('/').map(encodeURIComponent).join('/')}` };
       continue;
     }
     // As GEMAS ganham o ícone próprio, desenhado (ver `icones-de-gema.mjs`) — no lugar da pedra emprestada.
@@ -438,12 +438,12 @@ export function emprestarDoCatalogo(catalogo) {
     }
     // Os orbes do PoE (Joalheiro, Fusão, Cromático): o ícone do PoE (48×48), no lugar do desenho emprestado.
     if (meta?.poeMoeda?.icone) {
-      itemSprites[id] = { w: 48, h: 48, x: 0, y: 0, gerada: `/api/jogo/poe/icone/moeda/${encodeURIComponent(meta.poeMoeda.icone)}` };
+      itemSprites[id] = { w: 48, h: 48, x: 0, y: 0, umaCasa: true, gerada: `/api/jogo/poe/icone/moeda/${encodeURIComponent(meta.poeMoeda.icone)}` };
       continue;
     }
     if (meta?.spriteDe && !itemSprites[id] && itemSprites[meta.spriteDe]) itemSprites[id] = itemSprites[meta.spriteDe];
     // Item do sistema de itens do PoE (só com ITENS_POE=1 no servidor local): o ícone 64×64 da coleção de referência, servido pela engine.
-    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, gerada: `/api/jogo/poe/icone/item/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
+    if (meta?.poe?.icone && !itemSprites[id]) itemSprites[id] = { w: 64, h: 64, x: 0, y: 0, umaCasa: true, gerada: `/api/jogo/poe/icone/item/${meta.poe.icone.split('/').map(encodeURIComponent).join('/')}` };
   }
   // Quem saiu com o "?" antes deste empréstimo (gema, `spriteDe`) e agora tem figura: refaz.
   for (const canvas of globalThis.document?.querySelectorAll?.('canvas[data-sem-icone]') ?? []) {
@@ -505,6 +505,18 @@ export function drawItem(ctx, id, x, y, options) {
   const atlas = image(pageSrc(sprite, view[0]));
   if (!atlas.ready) return false;
 
+  /*
+   * ---- O ícone do PoE cabe numa casa ----
+   *
+   * O sprite do Tibia maior que 32 é grande DE PROPÓSITO (a árvore, o baú grande): ele cresce para cima e para a esquerda a partir da
+   * casa. O ícone do PoE (a peça 64×64, a gema 64/78, o orbe 48) é a arte do inventário — desenhado no tamanho dele, a peça no chão
+   * ocupava 2×2 casas e ficava muito maior que o personagem (dono, 08/10: "item no chão está absurdamente maior que o personagem, não
+   * está em 1 tile"). Ele vai reduzido para dentro da casa.
+   */
+  if (sprite.umaCasa) {
+    ctx.drawImage(atlas.image, view[1], view[2], sprite.w, sprite.h, x, y, 32, 32);
+    return true;
+  }
   ctx.drawImage(
     atlas.image,
     view[1], view[2], sprite.w, sprite.h,
