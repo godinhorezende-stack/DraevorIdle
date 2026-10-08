@@ -1978,6 +1978,9 @@ export class Sessao {
     this.entrouEm = Date.now();
     // Reconexão: volta ao lugar na party (se estava como offline) — ver `Party.entrouNoJogo`.
     Party.entrouNoJogo(this);
+    // E à caçada do grupo, se caiu caçando junto e voltou em até 2 min (o reinício do servidor também) — `Party.voltarParaACacadaJunta`.
+    const naCacadaDoGrupo = Party.voltarParaACacadaJunta(this);
+    if (naCacadaDoGrupo) this.avisoPendente = [this.avisoPendente, naCacadaDoGrupo].filter(Boolean).join(' ');
 
     /*
      * "Progresso enquanto você esteve fora" — `andamento`, no client — e, se
@@ -2661,6 +2664,29 @@ export class Sessao {
  * Quem liga é o `index.mjs` (`ligarRelogio`); os testes criam sessões sem
  * ele e tocam `tique()` à mão — o relógio nunca entra no meio de um teste.
  */
+/**
+ * Grava todo mundo que está jogando (o mesmo do fechar a aba: a caçada segue offline) e a party, e ESPERA o banco — até `prazoMs`.
+ * O desligamento (o SIGTERM do Docker no deploy, o reinício pela Engine) saía logo depois de MANDAR gravar: o que ainda não tinha
+ * chegado ao banco se perdia, e a party voltava sem o último estado (dono, 08/10: "estou numa pt e quando o servidor atualiza meu
+ * char vai para city"). O Docker dá 30 s (`stop_grace_period`).
+ */
+export async function gravarTodosAntesDeSair(prazoMs = 20_000) {
+  const gravacoes = [...vivas.values()].map((s) => {
+    try {
+      return s.soltarPersonagem?.();
+    } catch (e) {
+      console.error('gravar ao desligar', s.personagem?.nome, '->', e.message);
+      return null;
+    }
+  });
+  const tudo = Promise.allSettled(gravacoes)
+    .then(() => Party.gravarMudancas())
+    .catch((e) => console.error('gravar a party ao desligar ->', e.message));
+  let prazo;
+  await Promise.race([tudo, new Promise((r) => { prazo = setTimeout(r, prazoMs); })]);
+  clearTimeout(prazo);
+}
+
 export const FATIAS = 5;
 const sessoesPorFatia = Array.from({ length: FATIAS }, () => new Set());
 let proximaFatiaLivre = 0;

@@ -19,7 +19,8 @@
 // - Level: SEM limite de diferença entre os integrantes (nem para formar a party
 //   nem para entrar na caçada de alguém) e SEM exigência de proximidade. A caçada
 //   precisa estar LIBERADA para quem entra (o level dela; nas Vip/Instance/Divine,
-//   premium e acesso) — exceto na campanha, onde o amigo carrega.
+//   premium e acesso) — e, na campanha, a fase dela: o caminho até a fase, o ato e
+//   a dificuldade liberados para ele (dono, 08/10; antes "o amigo carregava").
 // - Shared Experience: ativa com 2+ na mesma caçada (a mesma sala/instância).
 //   A exp do bicho, com o bônus por vocações diferentes ("Mesma vocação +20% ·
 //   duas +35% · três +70% · quatro ou mais +100%", criaturas de 20 de exp para
@@ -32,6 +33,7 @@
 // outra"); reiniciar o servidor desfaz as parties.
 import * as B from '../database/banco.mjs';
 import * as Cacadas from './cacadas.mjs';
+import * as Campanha from './campanha.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Amigos from './amigos.mjs';
 
@@ -60,11 +62,16 @@ export function ligar(mapa) {
  * Quem sai do jogo NÃO deixa a party na hora: fica `offline` por `GRACE_MS` (volta em qualquer momento do prazo e retoma
  * o lugar, o modo, a coleira e — se era o líder — a liderança). Enquanto isso o próximo online conduz. Passado o prazo, sai.
  * A party é gravada no banco (`parties_salvas`); ao subir o servidor todos voltam como offline por `GRACE_APOS_REINICIO_MS`.
- * A CAÇADA em grupo não sobrevive à queda (cada um segue offline com a cópia dos bichos, como sempre): ao voltar, o
- * convite/pedido de caçada de sempre refaz a sala. Convites e reagrupamentos (curtos, de 60 s) não são gravados.
+ * A CAÇADA em grupo: na queda cada um segue offline com a cópia dos bichos (e da instância da sala). Quem estava caçando junto e
+ * volta em até `VOLTA_NA_CACADA_MS` (contados da volta do servidor, num reinício) entra de novo, sozinho, na sala de quem do grupo
+ * já estiver caçando na mesma área (`cacadaJunta`, gravada com a party — dono, 08/10: "estou numa pt e quando o servidor atualiza
+ * meu char vai para city; tinha que ter uma tolerância de 2 min para reconectar"). O primeiro a voltar segue na caçada dele, e quem
+ * voltar depois entra nela. Passado o prazo, o convite/pedido de caçada de sempre refaz a sala. Convites e reagrupamentos (curtos, de
+ * 60 s) não são gravados.
  */
 export const GRACE_MS = 5 * 60_000;
 export const GRACE_APOS_REINICIO_MS = 10 * 60_000;
+export const VOLTA_NA_CACADA_MS = 2 * 60_000;
 const BIGINT = B.banco.dialeto === 'postgres' ? 'BIGINT' : 'INTEGER';
 const TABELA = process.env.PARTY_TABELA ?? 'parties_salvas'; // (os testes usam uma tabela só deles: vários arquivos de teste dividem o banco)
 await B.banco.exec(`CREATE TABLE IF NOT EXISTS ${TABELA} (id INTEGER PRIMARY KEY, dados TEXT NOT NULL, atualizado_em ${BIGINT} NOT NULL);`);
@@ -78,10 +85,10 @@ let proximoId = 1;
 
 /** O que vai para o banco de uma party (Maps viram listas; convites e reagrupamento ficam de fora). */
 export function serializar(p) {
-  return JSON.stringify({ id: p.id, lider: p.lider, liderOriginal: p.liderOriginal ?? null, membros: p.membros, frente: p.frente ?? null, coleiras: [...p.coleiras], seguir: [...p.seguir], modo: [...p.modo], offline: [...p.offline], cartoes: [...p.cartoes] });
+  return JSON.stringify({ id: p.id, lider: p.lider, liderOriginal: p.liderOriginal ?? null, membros: p.membros, frente: p.frente ?? null, coleiras: [...p.coleiras], seguir: [...p.seguir], modo: [...p.modo], offline: [...p.offline], cartoes: [...p.cartoes], cacadaJunta: p.cacadaJunta ?? null });
 }
 function novaParty(id, lider) {
-  return { id, lider, liderOriginal: null, membros: [lider], convites: new Map(), frente: null, coleiras: new Map(), seguir: new Map(), modo: new Map(), reagrupar: null, offline: new Map(), cartoes: new Map() };
+  return { id, lider, liderOriginal: null, membros: [lider], convites: new Map(), frente: null, coleiras: new Map(), seguir: new Map(), modo: new Map(), reagrupar: null, offline: new Map(), cartoes: new Map(), cacadaJunta: null };
 }
 /** Grava as que mudaram e apaga as que sumiram. Devolve quantas gravou. */
 export async function gravarMudancas(agora = Date.now()) {
@@ -140,6 +147,12 @@ export async function carregar(agora = Date.now()) {
     for (const [k, v] of d.cartoes ?? []) if (membros.includes(k)) p.cartoes.set(k, v);
     p.liderOriginal = membros.includes(d.liderOriginal) ? d.liderOriginal : null;
     for (const m of membros) p.offline.set(m, agora + GRACE_APOS_REINICIO_MS);
+    // Quem caçava junto quando o servidor caiu: o prazo para voltar à caçada do grupo recomeça agora (o tempo fora não conta).
+    const cj = d.cacadaJunta;
+    if (cj && typeof cj.huntId === 'string' && Array.isArray(cj.membros) && Number(cj.ate) > agora - 30 * 60_000) {
+      const juntos = cj.membros.filter((m) => membros.includes(m));
+      if (juntos.length >= 2) p.cacadaJunta = { huntId: cj.huntId, membros: juntos, ate: agora + VOLTA_NA_CACADA_MS };
+    }
     parties.set(p.id, p);
     for (const m of membros) partyDe.set(m, p.id);
     proximoId = Math.max(proximoId, p.id + 1);
@@ -152,6 +165,7 @@ export async function carregar(agora = Date.now()) {
 /** Tira quem passou do prazo de desconexão e grava o que mudou. Chamado a cada 30 s. */
 export async function varrer(agora = Date.now()) {
   for (const p of [...parties.values()]) {
+    if (p.cacadaJunta && p.cacadaJunta.ate < agora) p.cacadaJunta = null;
     for (const [nome, ate] of [...p.offline]) {
       if (ate > agora || !parties.has(p.id)) continue;
       tirar(p, nome, 'ficou desconectado por muito tempo', { saindoDoJogo: true });
@@ -306,6 +320,7 @@ function tirar(p, nome, motivo, { saindoDoJogo = false } = {}) {
   }
   p.membros = p.membros.filter((n) => n !== nome);
   partyDe.delete(nome);
+  if (p.cacadaJunta) p.cacadaJunta.membros = p.cacadaJunta.membros.filter((n) => n !== nome);
   if (p.frente === nome) p.frente = null;
   // Quem seguia este membro deixa de segui-lo (o follow não anda para uma posição antiga) e é avisado, para escolher outro.
   for (const [seguidor, alvo] of [...p.seguir]) {
@@ -341,6 +356,13 @@ export function saiuDoJogo(s) {
   }
   const nome = nomeDe(s);
   const hunt = s.estado?.hunt;
+  // Caçando junto com outros da party: anota o grupo e a área, para a volta em até `VOLTA_NA_CACADA_MS` (`voltarParaACacadaJunta`).
+  const juntos = naMesmaSala(s).map(nomeDe).filter((n) => p.membros.includes(n));
+  if (hunt && juntos.length >= 2) {
+    const huntId = Cacadas.salaDe(hunt).huntId;
+    const antes = p.cacadaJunta?.huntId === huntId && p.cacadaJunta.ate > Date.now() ? p.cacadaJunta.membros : [];
+    p.cacadaJunta = { huntId, membros: [...new Set([...antes, ...juntos])], ate: Date.now() + VOLTA_NA_CACADA_MS };
+  }
   if (hunt && Cacadas.salaDe(hunt) !== hunt) Cacadas.separar(hunt);
   else antesDeSairDaCacada(s);
   const e = s.estado;
@@ -358,6 +380,31 @@ export function saiuDoJogo(s) {
   // Todos offline: nada a atualizar na tela de ninguém; o prazo corre e o banco guarda.
   atualizar(p);
   agendarGravacao();
+}
+
+/**
+ * Voltou em até `VOLTA_NA_CACADA_MS` depois de cair caçando junto (`cacadaJunta`): entra de novo na sala de quem do grupo já está
+ * caçando na mesma área. O primeiro a voltar segue na caçada dele (a cópia, com a instância da sala), e quem voltar depois entra
+ * nela. Quem voltou noutra área (ou numa sala de boss) não é puxado. Devolve o aviso para a tela, ou null.
+ */
+export function voltarParaACacadaJunta(s, agora = Date.now()) {
+  const p = minhaParty(s);
+  const r = p?.cacadaJunta;
+  const nome = nomeDe(s);
+  if (!r || r.ate < agora || !r.membros.includes(nome)) return null;
+  const minha = s.estado?.hunt;
+  if (minha && (minha.isBoss || Cacadas.salaDe(minha).huntId !== r.huntId)) return null;
+  const naArea = (o) => {
+    const sala = o.estado?.hunt ? Cacadas.salaDe(o.estado.hunt) : null;
+    return !!sala && sala.huntId === r.huntId && !sala.isBoss;
+  };
+  const doGrupo = [...vivas.values()].filter((o) => o !== s && r.membros.includes(nomeDe(o)) && naArea(o));
+  // De preferência o dono da sala (quem os outros já seguem).
+  const anfitriao = doGrupo.find((o) => Cacadas.salaDe(o.estado.hunt) === o.estado.hunt) ?? doGrupo[0];
+  if (!anfitriao) return null;
+  if (minha && Cacadas.salaDe(minha) === Cacadas.salaDe(anfitriao.estado.hunt)) return null;
+  const res = juntar(s, anfitriao, { semExtrato: true });
+  return res.ok ? `Você voltou para a caçada do grupo com ${nomeDe(anfitriao)} (${Cacadas.nomeDaHunt(r.huntId)}).` : null;
 }
 
 /** Entrou (ou reconectou) no jogo: se estava numa party como offline, volta ao lugar dele (e à liderança, se era dele). */
@@ -390,7 +437,7 @@ export function antesDeSairDaCacada(s) {
   const convidados = [...vivas.values()].filter((o) => o !== s && o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === hunt);
   if (!convidados.length) return;
   const [novo, ...resto] = convidados;
-  Cacadas.virarDono(novo.estado.hunt);
+  Cacadas.virarDono(novo.estado.hunt, hunt);
   for (const o of resto) Cacadas.mudarDeDono(o.estado.hunt, novo.estado.hunt);
   // Quem saiu leva uma CÓPIA dos bichos (a caçada dele segue offline sozinha).
   Cacadas.separar(hunt);
@@ -408,13 +455,20 @@ function motivoParaNaoEntrar(convidado, sala) {
   if (!sala) return 'Essa pessoa não está caçando.';
   if (sala.isBoss) return 'Nessa caçada não dá para entrar.';
   const nome = nomeDe(convidado);
-  // A fase da campanha NÃO é conferida aqui: na party, qualquer um entra na
-  // caçada do outro (decisão do dono — um amigo pode "carregar" o outro).
+  // A fase da campanha: só entra na instância de alguém quem tem o caminho até a fase, o ato e a dificuldade liberados (dono, 08/10:
+  // "eu só posso entrar na instância de alguém na party se eu tiver a possibilidade do caminho da fase desbloqueada, as act liberada e a
+  // dificuldade"). Antes o amigo "carregava" — entrava em qualquer fase.
+  const c = sala.campanha;
+  if (c?.huntId && !c.bossDoAto && convidado.estado && !Campanha.faseLiberada(convidado.estado, c.dificuldade, c.huntId)) {
+    const fase = Campanha.faseDe(c.huntId);
+    return `${nome} ainda não liberou ${fase?.nome ?? Cacadas.nomeDaHunt(c.huntId)} (para entrar na instância de alguém é preciso ter o caminho até a fase, o ato e a dificuldade): ${Campanha.motivoParaNaoEntrar(convidado.estado, c.dificuldade, c.huntId) ?? 'a fase está fechada.'}`;
+  }
   const naSala = [...vivas.values()].filter((o) => o !== convidado && o.estado?.hunt && Cacadas.salaDe(o.estado.hunt) === sala).map(nomeDe);
   return foraDaFaixa([...naSala, nome]);
 }
 
-function juntar(convidado, anfitriao) {
+/** `semExtrato`: a volta automática à caçada do grupo — a cópia que ele deixa não abre o extrato (o relatório da ausência já mostra). */
+function juntar(convidado, anfitriao, { semExtrato = false } = {}) {
   const sala = Cacadas.salaDe(anfitriao.estado?.hunt);
   if (!sala) return { ok: false, erro: `${nomeDe(anfitriao)} não está caçando.` };
   const motivo = motivoParaNaoEntrar(convidado, sala);
@@ -433,7 +487,7 @@ function juntar(convidado, anfitriao) {
      * `chamarOutro`, em sessao.mjs.)
      */
     const h = convidado.estado.hunt;
-    if (Cacadas.salaDe(h) !== sala) {
+    if (Cacadas.salaDe(h) !== sala && !semExtrato) {
       const report = Cacadas.relatorio(convidado.estado);
       if (report) {
         convidado.enviar({

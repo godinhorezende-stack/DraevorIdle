@@ -98,6 +98,12 @@ const compactarLista = (lista) => (Array.isArray(lista) ? lista.map(compactarMon
 export function huntParaGravar(hunt) {
   if (!hunt) return hunt;
   const copia = { ...hunt, monstros: compactarLista(hunt.monstros) };
+  // O convidado da sala da party grava a instância (e os outros andares) da sala: no banco a caçada dele é só dele (ver `levarDaSala`).
+  const sala = salaDe(hunt);
+  if (sala !== hunt) {
+    if (!copia.instancia && sala.instancia) copia.instancia = sala.instancia;
+    if (!copia.outrosAndares && sala.outrosAndares) copia.outrosAndares = sala.outrosAndares;
+  }
   if (hunt.outrosAndares) {
     copia.outrosAndares = Object.fromEntries(Object.entries(hunt.outrosAndares).map(([z, lista]) => [z, compactarLista(lista)]));
   }
