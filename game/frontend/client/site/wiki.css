@@ -168,3 +168,11 @@
   .wiki-indice a[aria-current="page"] { border-color: var(--verde); }
   .wiki-artigo h2 { font-size: 20px; margin-top: 34px; }
 }
+
+/* O artigo de itens do PoE: a moeda com o ícone e o status no jogo. */
+.wiki-moeda { display: inline-flex; align-items: center; gap: 8px; }
+.wiki-moeda img { width: 28px; height: 28px; object-fit: contain; flex: none; }
+.wiki-status { white-space: nowrap; font-size: 0.92em; }
+.wiki-status.verde { color: #6fd39a; }
+.wiki-status.amarelo { color: #e8c35a; }
+.wiki-status.cinza { color: #8b97a3; }

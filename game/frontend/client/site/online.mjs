@@ -84,7 +84,7 @@ let ordem = { ...ORDEM_PADRAO };
 /* O que cada coluna compara. O nome é o desempate de todas — ele é único. */
 const CHAVES = {
   nome: (entrada) => String(entrada.name ?? '').toLocaleLowerCase('pt-BR'),
-  vocacao: (entrada) => VOCACOES[entrada.vocation] ?? entrada.vocation ?? '',
+  vocacao: (entrada) => entrada.classe ?? VOCACOES[entrada.vocation] ?? entrada.vocation ?? '',
   level: (entrada) => Number(entrada.level ?? 0),
   fazendo: (entrada) => t(ONDE[entrada.onde]?.chave ?? '', ONDE[entrada.onde]?.rotulo ?? ''),
 };
@@ -206,7 +206,7 @@ function pintar(dados) {
 
     const vocacao = document.createElement('td');
     vocacao.className = 'vocacao';
-    vocacao.textContent = VOCACOES[entrada.vocation] ?? entrada.vocation ?? '—';
+    vocacao.textContent = entrada.classe ?? VOCACOES[entrada.vocation] ?? entrada.vocation ?? '—';
 
     const level = document.createElement('td');
     level.className = 'num';

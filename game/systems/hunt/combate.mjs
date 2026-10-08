@@ -355,6 +355,8 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
       itens.push(daPoe);
       // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
       Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: daPoe, bicho: alvo.name, boss: true, onde: alvo.name });
+      // E a capa do site ("Latest drops"), pelo mesmo critério — fogo e esquece: é só o log da capa.
+      DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: alvo.name, bicho: alvo.name, boss: true, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
     }
     // As moedas do PoE que o boss solta (`itens-poe/moedas.mjs`, `regras.json → moedas.drop`).
     itens.push(...MoedasPoe.dropDoMonstro('boss', Math.random, quantidade));
@@ -366,6 +368,7 @@ export function vitoriaNoBoss(estado, hunt, alvo, personagem = null) {
     if (exclusivo) {
       itens.push(exclusivo);
       Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: exclusivo, bicho: alvo.name, boss: true, onde: alvo.name });
+      DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: alvo.name, bicho: alvo.name, boss: true, peca: exclusivo }).catch((e) => console.error('drops-do-site', e.message));
     }
   }
   Bau.novaSacola(estado, alvo.name, itens);
@@ -834,6 +837,7 @@ export function matarMonstro(estado, hunt, personagem, alvo, eventos) {
     conta('loot', daPoe.id, 1);
     // O Único do PoE: o servidor inteiro fica sabendo (chat e faixa do alto — `anuncios.mjs`).
     Anuncios.dropRaro({ quem: personagem?.nome ?? null, peca: daPoe, bicho: alvo.name, onde: nomeDaHunt(hunt.huntId) });
+    DropsDoSite.anotarDropPoe({ quem: personagem?.nome ?? null, onde: nomeDaHunt(hunt.huntId), bicho: alvo.name, peca: daPoe }).catch((e) => console.error('drops-do-site', e.message));
   }
   // As MOEDAS do PoE (Transmutação, Caos, Exaltado... — `itens-poe/moedas.mjs`, chances em `regras.json → moedas.drop`).
   for (const moeda of MoedasPoe.dropDoMonstro(tipoDoBicho(alvo), Math.random, quantidadeDoJogador)) {

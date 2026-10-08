@@ -10,29 +10,32 @@
 // `database/caca-offline.mjs`), guardada em memória e refeita a cada minuto (e
 // depois de cada rodada da consolidação): o número vai em toda página de
 // status e em todo `welcome`, e não pode custar uma consulta a cada vez.
+// O ARQUIVADO (Draevor clássico, no jogo oficial) nunca entra: a caçada offline dele não roda (a consolidação o pula), mas as colunas
+// ficavam com o "até" de antes do arquivamento — e o Kinazin (level 1024) aparecia "caçando offline" no /online e no número (08/10).
 // Quem está conectado sai da lista na hora de ler (`vivas`): o autosave de quem
 // caça online grava o personagem "como se fosse sair" (para sobreviver a uma
 // queda do servidor), e sem isso ele contaria duas vezes.
 import { banco } from '../database/banco.mjs';
+import { sqlDoPoe } from './personagem/legado.mjs';
 
 const ATUALIZAR_MS = 60_000;
 const TETO_DA_LISTA = 500;
 
 const consulta = banco.prepare(
   banco.dialeto === 'postgres'
-    ? `SELECT nome, vocacao, caca_offline_ate AS ate,
+    ? `SELECT nome, vocacao, classe, caca_offline_ate AS ate,
          (estado::jsonb #>> '{level}')::int AS level,
          (estado::jsonb #>> '{xp}')::numeric AS xp,
          estado::jsonb ->> 'outfit' AS outfit,
          estado::jsonb #>> '{hunt,huntId}' AS hunt
-       FROM personagens WHERE caca_offline_ate > ?
+       FROM personagens WHERE caca_offline_ate > ? AND ${sqlDoPoe('postgres')}
        ORDER BY caca_offline_ate DESC LIMIT ${TETO_DA_LISTA}`
-    : `SELECT nome, vocacao, caca_offline_ate AS ate,
+    : `SELECT nome, vocacao, classe, caca_offline_ate AS ate,
          json_extract(estado, '$.level') AS level,
          json_extract(estado, '$.xp') AS xp,
          json_extract(estado, '$.outfit') AS outfit,
          json_extract(estado, '$.hunt.huntId') AS hunt
-       FROM personagens WHERE caca_offline_ate > ?
+       FROM personagens WHERE caca_offline_ate > ? AND ${sqlDoPoe('sqlite')}
        ORDER BY caca_offline_ate DESC LIMIT ${TETO_DA_LISTA}`,
 );
 
@@ -51,7 +54,7 @@ export async function atualizar(agora = Date.now()) {
       } catch {
         outfit = null;
       }
-      return { nome: r.nome, vocacao: r.vocacao, level: Number(r.level) || 1, xp: Number(r.xp) || 0, outfit, huntId: r.hunt ?? null, ate: Number(r.ate) };
+      return { nome: r.nome, vocacao: r.vocacao, classe: r.classe ?? null, level: Number(r.level) || 1, xp: Number(r.xp) || 0, outfit, huntId: r.hunt ?? null, ate: Number(r.ate) };
     });
   } catch (e) {
     console.error('ausentes ->', e.message);

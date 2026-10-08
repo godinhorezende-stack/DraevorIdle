@@ -34,7 +34,7 @@
  * atlas carregados, dois `fetch` para a mesma rota e duas cópias do balão que
  * inevitavelmente iriam divergindo.
  */
-import { loadSpriteData, itemCanvas } from '/client/src/sprites.mjs';
+import { loadSpriteData, itemCanvas, emprestarDoCatalogo } from '/client/src/sprites.mjs';
 import { fichaDeItem, usarDados } from '/client/src/tooltip.mjs';
 import { t } from '/client/site/idiomas.mjs';
 
@@ -55,6 +55,8 @@ const CLASSE_DA_RARIDADE = {
   épico: 'r-epico',
   lendário: 'r-lendario',
   mítico: 'r-mitico',
+  // O Único do PoE (o jogo oficial): o laranja do Path of Exile.
+  unico: 'r-unico',
 };
 
 /*
@@ -167,7 +169,7 @@ function montarBalao(drop) {
   if (drop.count > 1) nome.append(el('span', 'db-qtd', ` ×${drop.count}`));
   ident.append(nome);
 
-  const oQueE = [drop.raridade];
+  const oQueE = [drop.raridade === 'unico' ? 'Único' : drop.raridade];
   if (drop.tier) oQueE.push(`Tier ${drop.tier}`);
   if (drop.slot) oQueE.push(NOME_DO_SLOT[drop.slot] ?? drop.slot);
   else if (drop.tipo) oQueE.push(drop.tipo);
@@ -455,11 +457,19 @@ async function atualizar() {
     const dados = await resposta.json();
     // O catálogo das peças da faixa e as réguas de afixo/poder: o balão do jogo desenha com eles.
     usarDados(dados.itens ?? {}, null, dados.catalogo ?? null);
+    // Os ícones das peças do PoE (os Únicos) vêm do catálogo da resposta — sem isto o card mostrava "?".
+    emprestarDoCatalogo(dados.itens ?? {});
     pintar(
       'drops-faixa',
       dados.drops ?? [],
       t('drops.vazio', 'nada caiu ainda — a barra enche sozinha assim que cair')
     );
+    // `bags: null`: o servidor está no jogo oficial (PoE), que não tem as bags do Draevor — a faixa delas some.
+    if (dados.bags === null) {
+      const bloco = document.getElementById('bags');
+      if (bloco) bloco.hidden = true;
+      return;
+    }
     pintar(
       'bags-faixa',
       dados.bags ?? [],

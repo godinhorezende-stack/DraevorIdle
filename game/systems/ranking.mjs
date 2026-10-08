@@ -22,11 +22,13 @@ import * as Treino from './treino.mjs';
 import * as Promocao from './promocao.mjs';
 import * as Guildas from './guildas.mjs';
 import { sqlDoPoe } from './personagem/legado.mjs';
+import { ligado } from './itens-poe/catalogo.mjs';
 
 export const TAMANHO = 25;
 const GUARDA_MS = 15_000;
 const PERICIA_INICIAL = 10;
-export const CATEGORIAS = ['exp', 'level', 'magic', ...(CATALOGO.skills ?? [])];
+// No jogo oficial (PoE) não há perícias (magic, melee, distance, shielding, fishing): o ranking é de experiência e level.
+export const CATEGORIAS = ligado() ? ['exp', 'level'] : ['exp', 'level', 'magic', ...(CATALOGO.skills ?? [])];
 
 let vivas = new Map(); // nome -> Sessao (injetado por sessao.mjs)
 export const ligar = (mapa) => void (vivas = mapa);
@@ -63,7 +65,7 @@ function consulta(cat) {
   if (!consultas.has(cat)) {
     const sql =
       banco.dialeto === 'postgres'
-        ? `SELECT nome, vocacao,
+        ? `SELECT nome, vocacao, classe,
              ${valorPg(cat)} AS valor,
              (estado::jsonb #>> '{level}')::int AS level,
              (estado::jsonb #>> '{promovido}')::boolean AS promovido,
@@ -72,7 +74,7 @@ function consulta(cat) {
        WHERE ${sqlDoPoe(banco.dialeto)}
        ORDER BY valor DESC, level DESC, nome
        LIMIT ${TAMANHO}`
-        : `SELECT nome, vocacao,
+        : `SELECT nome, vocacao, classe,
              ${valorSqlite(cat)} AS valor,
              json_extract(estado, '$.level') AS level,
              json_extract(estado, '$.promovido') AS promovido,
@@ -110,7 +112,8 @@ async function baseDoRanking(cat) {
     base.push({
       name: r.nome,
       vocation: r.vocacao,
-      vocationName: Promocao.nomeDaClasse({ vocation: r.vocacao, promovido: !!r.promovido }),
+      // A classe gravada vai junto: no PoE o nome é o da classe (Ranger e Shadow nascem do mesmo paladin — só a classe os separa).
+      vocationName: Promocao.nomeDaClasse({ vocation: r.vocacao, promovido: !!r.promovido, classe: r.classe ?? undefined }),
       level: r.level ?? 1,
       value: r.valor,
       online: false,

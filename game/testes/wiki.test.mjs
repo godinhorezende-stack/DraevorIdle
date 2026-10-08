@@ -54,7 +54,8 @@ test('W3. a página, a rota e o menu: /wiki e /wiki/<artigo> servem wiki.html; o
   const backend = ler('backend/index.mjs');
   assert.match(backend, /'\/wiki': '\/wiki\.html'/);
   assert.match(backend, /caminho\.startsWith\('\/wiki\/'\)/);
-  assert.match(backend, /'\/api\/wiki\/itens'\) return json\(res, 200, Wiki\.itens\(\)\)/);
+  // (08/10: no jogo oficial a mesma rota manda o artigo de itens do PoE — `Wiki.itensPoe`; site-poe.test.mjs.)
+  assert.match(backend, /'\/api\/wiki\/itens'\) return json\(res, 200, ItensPoeCatalogo\.ligado\(\) \? Wiki\.itensPoe\(\) : Wiki\.itens\(\)\)/);
   for (const pagina of ['index.html', 'guildas.html', 'online.html', 'personagem.html', 'wiki.html']) {
     const html = ler(`frontend/${pagina}`);
     assert.match(html, /<a href="\/wiki"[^>]*>Wiki<\/a>/, `${pagina}: link da Wiki`);

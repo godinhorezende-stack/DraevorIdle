@@ -2,6 +2,8 @@
 // diverge do que o servidor faz: mudou um valor no JSON, a tabela da wiki muda junto. O texto explicativo mora em `client/site/wiki.mjs`.
 import { ATRIBUTOS, POOLS, TIERS, RARIDADES, ORDEM, EFEITOS } from './itens/config.mjs';
 import { ITEM_CATALOG } from './dados.mjs';
+import * as CatalogoPoe from './itens-poe/catalogo.mjs';
+import * as MoedasPoe from './itens-poe/moedas.mjs';
 
 /** Os tipos de equipamento com pool, agrupados do jeito que o jogador pensa. */
 export const GRUPOS_DE_EQUIPAMENTO = [
@@ -86,5 +88,54 @@ export function itens() {
     gruposDeEquipamento: GRUPOS_DE_EQUIPAMENTO.map(({ id, nome }) => ({ id, nome })),
     modificadores,
     poderes,
+  };
+}
+
+/*
+ * ---- O artigo de itens no jogo OFICIAL (PoE, 08/10) ----
+ * A wiki do Draevor descrevia o sistema de itens do Draevor (raridades até Mítico, tiers T1–T5, poderes). No jogo oficial o item é o do
+ * Path of Exile: a base, o item level, a raridade (Normal, Mágico, Raro, Único), prefixos e sufixos — e as moedas. Tudo dos dados reais
+ * (`gamedata/itens-poe/regras.json`, o catálogo e `moedas.mjs`).
+ */
+const FORA_DO_JOGO = new Set(['Trinkets', 'Fishing_Rods', 'Jewels', 'Abyss_Jewels', 'Tinctures']);
+const ORDEM_POE = ['normal', 'magico', 'raro', 'unico'];
+
+export function itensPoe() {
+  const R = CatalogoPoe.REGRAS;
+  const raridades = ORDEM_POE.filter((id) => R.raridades?.[id]).map((id) => {
+    const r = R.raridades[id];
+    const quantidade = Object.entries(r.quantidade ?? {}).map(([quantos, peso]) => ({ quantos: Number(quantos), peso: Number(peso) }));
+    const soma = quantidade.reduce((a, q) => a + q.peso, 0) || 1;
+    return { id, nome: r.nome, cor: r.cor, maxPrefixos: r.maxPrefixos ?? null, maxSufixos: r.maxSufixos ?? null, fixos: !!r.fixos, quantidade: quantidade.map((q) => ({ quantos: q.quantos, chance: q.peso / soma })) };
+  });
+  const pesos = R.drop?.raridades ?? {};
+  const somaDosPesos = ORDEM_POE.reduce((a, id) => a + (Number(pesos[id]) || 0), 0) || 1;
+  const chances = Object.fromEntries(ORDEM_POE.map((id) => [id, (Number(pesos[id]) || 0) / somaDosPesos]));
+  const cat = CatalogoPoe.catalogo();
+  let bases = 0;
+  let unicos = 0;
+  for (const [classe, c] of Object.entries(cat?.classes ?? {})) {
+    if (FORA_DO_JOGO.has(classe)) continue;
+    bases += (c.bases ?? []).length;
+    unicos += (c.unicos ?? []).length;
+  }
+  const moedas = MoedasPoe.MOEDAS.map((m) => {
+    const st = MoedasPoe.STATUS[m.slug] ?? { status: 'nao', motivo: null };
+    return {
+      nome: m.nome,
+      efeitos: Array.isArray(m.efeitos) ? m.efeitos : [String(m.efeitos ?? '')].filter(Boolean),
+      icone: m.icone ? `/api/jogo/poe/icone/moeda/${encodeURIComponent(m.icone)}` : null,
+      status: st.status,
+      motivo: st.motivo ?? null,
+    };
+  });
+  return {
+    poe: true,
+    raridades,
+    chances,
+    ilvlMaximo: R.drop?.ilvlMaximo ?? 100,
+    qualidade: R.drop?.qualidade ? { chance: R.drop.qualidade.chance ?? null, maximo: R.drop.qualidade.maximo ?? null } : null,
+    totais: { bases, unicos, moedas: moedas.length, funcionam: moedas.filter((m) => m.status === 'funciona').length, parcial: moedas.filter((m) => m.status === 'parcial').length },
+    moedas,
   };
 }

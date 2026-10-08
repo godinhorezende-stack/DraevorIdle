@@ -238,7 +238,90 @@ function faixaDoMod(m, t) {
 /** As cores do jogo para cada raridade (as mesmas do balão do item). */
 const CORES_DA_RARIDADE = { comum: '#8fa3a1', incomum: '#37c2a0', raro: '#57a6e8', épico: '#b184e8', lendário: '#e0a84a', mítico: '#f2503f' };
 
+/*
+ * ---- O artigo de itens no jogo OFICIAL (PoE) ----
+ * O servidor manda `poe: true` com os dados do Path of Exile (`Wiki.itensPoe`): as raridades, quantos modificadores cada uma rola, a chance
+ * de cada uma por peça, o item level e as moedas (o que fazem e se já funcionam no jogo).
+ */
+const STATUS_DA_MOEDA = { funciona: ['✓ Funciona', 'verde'], parcial: ['◐ Em parte', 'amarelo'], nao: ['✕ Ainda não', 'cinza'] };
+function desenharItensPoe(corpo, d) {
+  const nomeColorido = (r) => {
+    const b = el('b', null, r.nome);
+    if (r.cor) b.style.color = r.cor;
+    return b;
+  };
+  const sumario = el('div', 'wiki-sumario');
+  sumario.append(el('b', null, 'Neste artigo'));
+  for (const [id, texto] of [['visao', 'Visão geral'], ['raridade', 'Raridades'], ['chance', 'Chance de cada raridade'], ['itemlevel', 'Item Level e qualidade'], ['moedas', 'Moedas']]) {
+    const a = el('a', null, texto);
+    a.href = `#${id}`;
+    sumario.append(a);
+  }
+  corpo.append(sumario);
+
+  corpo.append(
+    h2('Visão geral', 'visao'),
+    rico('p', `No Draevor Idle os itens seguem o **Path of Exile**: cada peça tem uma **base** (o tipo do item: uma espada, um elmo, um anel), um **item level** e uma **raridade**, e os modificadores saem de **prefixos** e **sufixos** sorteados pelo item level. O jogo tem **${d.totais.bases.toLocaleString('pt-BR')} bases** e **${d.totais.unicos.toLocaleString('pt-BR')} Únicos**.`),
+    rico('p', 'Além dos prefixos e sufixos, muitas bases têm um **implícito**: o modificador fixo da própria base (o +Vida de um cinto, a resistência de um anel).'),
+  );
+
+  corpo.append(h2('Raridades', 'raridade'));
+  corpo.append(tabela(
+    ['Raridade', 'Prefixos (máx.)', 'Sufixos (máx.)', 'Quantos modificadores'],
+    d.raridades.map((r) => [
+      nomeColorido(r),
+      r.fixos ? '—' : String(r.maxPrefixos ?? 0),
+      r.fixos ? '—' : String(r.maxSufixos ?? 0),
+      r.fixos ? 'Modificadores fixos do próprio Único' : r.quantidade.length ? r.quantidade.map((q) => `${q.quantos} (${pct(q.chance * 100)})`).join(' · ') : 'nenhum',
+    ]),
+    { numericas: [1, 2], rotulo: 'Raridades do PoE' },
+  ));
+
+  corpo.append(
+    h2('Chance de cada raridade', 'chance'),
+    rico('p', 'Para cada peça que cai, a raridade é sorteada com estes pesos. Monstros Mágicos, Raros e Únicos soltam mais peças, mas a raridade de cada uma segue a mesma tabela.'),
+    tabela(['Raridade', 'Chance por peça'], d.raridades.map((r) => [nomeColorido(r), pct((d.chances[r.id] ?? 0) * 100)]), { numericas: [1], rotulo: 'Chance de cada raridade' }),
+  );
+
+  corpo.append(
+    h2('Item Level e qualidade', 'itemlevel'),
+    rico('p', `O **item level** da peça é o nível da área (ou do monstro) onde ela caiu, até **${d.ilvlMaximo}**. Ele decide quais modificadores podem sair: os tiers mais altos de cada modificador pedem item level alto.`),
+    ...(d.qualidade?.chance ? [rico('p', `Uma peça pode cair com **qualidade** (chance de ${pct(d.qualidade.chance * 100)}${d.qualidade.maximo ? `, até ${d.qualidade.maximo}%` : ''}). Na arma, a qualidade aumenta o dano físico; na armadura, a defesa.`)] : []),
+  );
+
+  corpo.append(
+    h2('Moedas', 'moedas'),
+    rico('p', `As moedas do PoE mudam a peça: trocam a raridade, rolam os modificadores de novo, acrescentam um, corrompem. Das **${d.totais.moedas}** moedas, **${d.totais.funcionam}** já funcionam no jogo e **${d.totais.parcial}** funcionam em parte.`),
+  );
+  const ordem = { funciona: 0, parcial: 1, nao: 2 };
+  const moedas = [...d.moedas].sort((a, b) => ordem[a.status] - ordem[b.status] || a.nome.localeCompare(b.nome));
+  corpo.append(tabela(
+    ['Moeda', 'O que faz', 'No jogo'],
+    moedas.filter((m) => m.status !== 'nao').map((m) => {
+      const nome = el('span', 'wiki-moeda');
+      if (m.icone) {
+        const img = el('img');
+        img.src = m.icone;
+        img.alt = '';
+        img.width = 28;
+        img.height = 28;
+        img.loading = 'lazy';
+        nome.append(img);
+      }
+      nome.append(el('b', null, m.nome));
+      const [rotulo, cor] = STATUS_DA_MOEDA[m.status] ?? STATUS_DA_MOEDA.nao;
+      const st = el('span', `wiki-status ${cor}`, rotulo);
+      if (m.motivo) st.title = m.motivo;
+      return [nome, m.efeitos.join(' '), st];
+    }),
+    { rotulo: 'Moedas do PoE' },
+  ));
+  const faltam = moedas.filter((m) => m.status === 'nao').length;
+  if (faltam) corpo.append(aviso(`As outras ${faltam} moedas ainda não têm efeito no jogo (as de mecânicas que o Draevor não tem, como os Escaravelhos do Atlas e as dos Infames).`));
+}
+
 function desenharItens(corpo, d) {
+  if (d?.poe) return desenharItensPoe(corpo, d);
   const nomeDe = Object.fromEntries(d.raridades.map((r) => [r.id, r.nome]));
   const IDS = d.raridades.map((r) => r.id);
   /** "todas", "Raro ou acima" (quando é do degrau X em diante) ou a lista. */
@@ -522,8 +605,9 @@ function desenharLayout(corpo) {
 const ARTIGOS = [
   {
     slug: 'itens',
-    titulo: 'Itens: raridade, tiers e modificadores',
-    resumo: 'Como a raridade, o tier e os modificadores de um item funcionam, com as tabelas reais do jogo.',
+    // (O mesmo slug nos dois jogos: no oficial o servidor manda os dados do PoE — `desenharItensPoe`.)
+    titulo: 'Itens: raridade e modificadores',
+    resumo: 'Como a raridade e os modificadores de um item funcionam, com as tabelas reais do jogo.',
     dados: '/api/wiki/itens',
     desenhar: desenharItens,
   },
