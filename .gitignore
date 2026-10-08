@@ -34,3 +34,6 @@ game/frontend/client/**/*.br
 game/frontend/client/**/*.gz
 game/gamedata/*.br
 game/gamedata/*.gz
+
+# Saída da validação por níveis (game/tools/testes/testar.mjs): logs, tempos e as rodadas aprovadas — ficam só na máquina
+game/testes/.saida/

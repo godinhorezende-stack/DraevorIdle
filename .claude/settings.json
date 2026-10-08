@@ -18,6 +18,16 @@
             "command": "\"C:/Users/godra/AppData/Local/Programs/Python/Python312/python.exe\" -m graphify hook-guard read"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/game/tools/testes/hook-antes-do-commit.mjs\"",
+            "timeout": 3600
+          }
+        ]
       }
     ]
   }

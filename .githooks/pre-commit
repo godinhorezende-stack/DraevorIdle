@@ -1,0 +1,13 @@
+#!/bin/sh
+# O pre-commit do Draevor: os testes por nível (docs/testes-por-nivel.md). Toda a lógica está no motor
+# (game/tools/testes/testar.mjs) — este arquivo só o chama, como o hook do Claude Code. Instalação, uma vez por clone:
+#   npm run test:instalar-hook
+# Saída diferente de 0 barra o commit (validações ou testes falharam). FULL recomendada só avisa.
+raiz="$(git rev-parse --show-toplevel)" || exit 1
+motor="$raiz/game/tools/testes/testar.mjs"
+[ -f "$motor" ] || exit 0
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node não encontrado — os testes não rodaram; o commit foi barrado (use --no-verify por sua conta e risco)." >&2
+  exit 1
+fi
+exec node "$motor" auto --hook
