@@ -6,14 +6,26 @@
 // de personagens da conta (para ninguém ter de apagar um antigo para criar o novo). Os dados dele ficam como estão no banco.
 //
 // Quem é do PoE: o criado no jogo oficial leva `sistema: 'poe'` (`sessao.estadoInicialPersonagem`); os criados antes dessa marca no jogo
-// local do PoE são reconhecidos pelo cinto de frascos (`frascos`), que só o PoE dá na criação.
+// local do PoE são reconhecidos pelo cinto de frascos (`frascos`) JUNTO com uma classe do PoE (ranger, witch, marauder...).
+// Só o cinto não basta (08/10): `morrerNaHunt` enchia o cinto também no Draevor clássico (9cc51225, 07/10) e criava `frascos` em quem morria
+// — em produção, personagens do Draevor de level 1024 e 271 passaram por "do PoE", escaparam do arquivamento e seguiram jogando.
+import { readFileSync, existsSync } from 'node:fs';
 import { ligado } from '../itens-poe/catalogo.mjs';
+
+const ARQUIVO_DAS_CLASSES = new URL('../../gamedata/itens-poe/classes.json', import.meta.url);
+/** As classes do PoE (`ranger`, `witch`...): ids que o Draevor clássico nunca usou (as dele são as vocações, `knight`, `druid`...). */
+export const CLASSES_DO_POE = new Set(
+  existsSync(ARQUIVO_DAS_CLASSES)
+    ? Object.keys(JSON.parse(readFileSync(ARQUIVO_DAS_CLASSES, 'utf8')).classes ?? {}).map((c) => c.toLowerCase()).filter((c) => /^[a-z_-]+$/.test(c))
+    : [],
+);
 
 /** A marca gravada no personagem criado no jogo oficial (PoE). */
 export const SISTEMA_DO_POE = 'poe';
 
-/** O personagem é do jogo do PoE? (a marca, ou o cinto de frascos que só o PoE dá na criação) */
-export const ehDoPoe = (estado) => estado?.sistema === SISTEMA_DO_POE || Array.isArray(estado?.frascos);
+/** O personagem é do jogo do PoE? (a marca, ou o cinto de frascos de quem tem classe do PoE) */
+export const ehDoPoe = (estado) =>
+  estado?.sistema === SISTEMA_DO_POE || (Array.isArray(estado?.frascos) && CLASSES_DO_POE.has(String(estado?.classe ?? '').toLowerCase()));
 
 /** O personagem está ARQUIVADO neste processo? (é do Draevor clássico e o jogo é o oficial, do PoE) */
 export const arquivado = (estado) => ligado() && !ehDoPoe(estado);
@@ -25,9 +37,13 @@ export const arquivado = (estado) => ligado() && !ehDoPoe(estado);
  */
 export const sqlDoPoe = (dialeto) => {
   if (!ligado()) return '1 = 1';
-  return dialeto === 'postgres'
-    ? "(estado::jsonb ->> 'sistema' = 'poe' OR jsonb_typeof(estado::jsonb -> 'frascos') = 'array')"
-    : "(json_extract(estado, '$.sistema') = 'poe' OR json_type(estado, '$.frascos') = 'array')";
+  const classes = [...CLASSES_DO_POE].map((c) => `'${c}'`).join(', ');
+  if (dialeto === 'postgres') {
+    const cinto = classes ? ` OR (jsonb_typeof(estado::jsonb -> 'frascos') = 'array' AND lower(estado::jsonb ->> 'classe') IN (${classes}))` : '';
+    return `(estado::jsonb ->> 'sistema' = 'poe'${cinto})`;
+  }
+  const cinto = classes ? ` OR (json_type(estado, '$.frascos') = 'array' AND lower(json_extract(estado, '$.classe')) IN (${classes}))` : '';
+  return `(json_extract(estado, '$.sistema') = 'poe'${cinto})`;
 };
 
 /** A frase que a tela mostra para o personagem arquivado. */

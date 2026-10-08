@@ -552,6 +552,8 @@ export class Sessao {
    * só quando pedida (`action:'arvore'`) — e o `state` segue quando algo mudou.
    */
   despacharPassivas(m) {
+    // Sem personagem em jogo (a tela de escolha, onde o arquivado fica) não há árvore a mostrar — como na campanha.
+    if (!this.estado) return;
     const emCacada = !!this.estado.hunt;
     const r = ComandosDasPassivas.comando(this.estado, m, emCacada);
     if (!r.ok) return this.erro(r.erro);
